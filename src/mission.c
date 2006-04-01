@@ -457,8 +457,8 @@ struct Mission dogFight2 = {
 // |  Campaign info  |
 // +-----------------+
 
-#include "ogre.h"
-#include "bem.h"
+#include "ogre.inc"
+#include "bem.inc"
 
 
 static TCampaignSetting df1 = {
