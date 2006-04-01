@@ -1,0 +1,45 @@
+# XXX: Not sure if this even works =/
+
+#dogs_OBJS = cdogs.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
+#	    gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
+#	    mission.o game.o mainmenu.o password.o files.o menu.o joystick.o \
+#	    sprcomp.o grafx.o blit.o text.o keyboard.o
+
+dogs_OBJS = cdogs.o draw.o pics.o actors.o map.o defs.o objs.o \
+	    gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
+	    mission.o game.o mainmenu.o password.o files.o menu.o joystick.o \
+	    sprcomp.o grafx.o blit.o text.o keyboard.o sounds.o
+
+dogsed_OBJS = cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o gamedata.o \
+	      triggers.o input.o hiscores.o automap.o mission.o game.o ai.o charsed.o \
+	      events.o joystick.o sprcomp.o grafx.o blit.o text.o keyboard.o name.o
+
+cc=/opt/xmingw/bin/i386-mingw32msvc-gcc
+
+DESTDIR=../dist/
+PREFIX=./
+BINDIR=$(PREFIX)
+DATADIR=$(PREFIX)
+
+DEFS=-DCDOGS_DATA_DIR=\"$(DATADIR)\"
+INCS=-I./include -I./missions
+WINFLAGS=-mmmx -mcpu=i586 -march=i586
+CFLAGS=-O2 -Wall -funroll-loops -DSYS_WIN $(DEFS) -D_REENTRANT -I /opt/xmingw/i386-mingw32msvc/include/SDL
+#LDFLAGS=`sdl-config --libs` # this needs to be fixed
+LDFLAGS=-L . -lmingw32 -lSDLmain -lSDL -mwindows
+
+cdogs.exe: $(dogs_OBJS)
+	$(cc) $(dogs_OBJS) $(WINFLAGS) -o cdogs.exe $(LDFLAGS)
+
+# editor: $(dogsed_OBJS)
+# 	gcc $(dogsed_OBJS) -o dogsed $(LDFLAGS)
+
+.c.o:
+	$(cc) $(CFLAGS) $(WINFLAGS) $(INCS) -c $<
+
+clean:
+	rm *.o cdogs.exe
+
+tidy:
+	indent -kr -i8 *.c *.h
+	rm *~

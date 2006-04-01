@@ -1,0 +1,1882 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5.4	//
+ACTION_ACTIVATEWATCH	include/triggers.h	37;"	d
+ACTION_CHANGETILE	include/triggers.h	35;"	d
+ACTION_CLEARTRIGGER	include/triggers.h	34;"	d
+ACTION_DEACTIVATEWATCH	include/triggers.h	38;"	d
+ACTION_NULL	include/triggers.h	32;"	d
+ACTION_SETTIMEDWATCH	include/triggers.h	36;"	d
+ACTION_SETTRIGGER	include/triggers.h	33;"	d
+ACTION_SOUND	include/triggers.h	39;"	d
+ADD_EDI_4	sprcomp.c	45;"	d	file:
+ALT_C	include/charsed.h	38;"	d
+ALT_COLORS	mission.c	50;"	d	file:
+ALT_E	include/charsed.h	41;"	d
+ALT_H	include/charsed.h	62;"	d
+ALT_M	include/charsed.h	61;"	d
+ALT_N	include/charsed.h	59;"	d
+ALT_Q	include/charsed.h	40;"	d
+ALT_S	include/charsed.h	60;"	d
+ALT_V	include/charsed.h	39;"	d
+ALT_X	include/charsed.h	37;"	d
+ARMS_END	include/actors.h	102;"	d
+ARMS_START	include/actors.h	101;"	d
+ARROW_DOWN	include/charsed.h	43;"	d
+ARROW_LEFT	include/charsed.h	44;"	d
+ARROW_RIGHT	include/charsed.h	45;"	d
+ARROW_UP	include/charsed.h	42;"	d
+AVAILABLE_FACES	prep.c	65;"	d	file:
+Access	map.c	/^static int Access(int x, int y)$/;"	f	file:
+AccessCodeToFlags	map.c	/^static int AccessCodeToFlags(int code)$/;"	f	file:
+Action	include/triggers.h	/^struct Action {$/;"	s
+Action	triggers.c	/^static void Action(TAction * a)$/;"	f	file:
+ActivateWatch	triggers.c	/^static void ActivateWatch(int index)$/;"	f	file:
+Actor	include/actors.h	/^struct Actor {$/;"	s
+ActorList	actors.c	/^TActor *ActorList(void)$/;"	f
+AddActions	triggers.c	/^static TAction *AddActions(int count)$/;"	f	file:
+AddActor	actors.c	/^TActor *AddActor(int character)$/;"	f
+AddBrownBullet	objs.c	/^void AddBrownBullet(int x, int y, int angle, int speed, int range,$/;"	f
+AddBullet	objs.c	/^void AddBullet(int x, int y, int angle, int speed, int range, int power,$/;"	f
+AddChar	cdogsed.c	/^static void AddChar(int xc, int yc, int c)$/;"	f	file:
+AddConditions	triggers.c	/^static TCondition *AddConditions(int count)$/;"	f	file:
+AddDestructibleObject	objs.c	/^void AddDestructibleObject(int x, int y, int w, int h,$/;"	f
+AddDynamite	objs.c	/^void AddDynamite(int x, int y, int flags)$/;"	f
+AddExplosion	objs.c	/^void AddExplosion(int x, int y, int flags)$/;"	f
+AddFileEntry	files.c	/^void AddFileEntry(struct FileEntry **list, const char *name,$/;"	f
+AddFireBall	objs.c	/^TMobileObject *AddFireBall(int flags)$/;"	f
+AddFlame	objs.c	/^void AddFlame(int x, int y, int angle, int flags)$/;"	f
+AddGasCloud	objs.c	/^void AddGasCloud(int x, int y, int angle, int speed, int range, int flags,$/;"	f
+AddGrenade	objs.c	/^void AddGrenade(int x, int y, int angle, int flags, int kind)$/;"	f
+AddHeatseeker	objs.c	/^void AddHeatseeker(int x, int y, int angle, int speed, int range,$/;"	f
+AddItemToDisplayList	draw.c	/^void AddItemToDisplayList(TTileItem * t, TTileItem ** list)$/;"	f
+AddItemToTile	map.c	/^static void AddItemToTile(TTileItem * t, TTile * tile)$/;"	f	file:
+AddLaserBolt	objs.c	/^void AddLaserBolt(int x, int y, int direction, int flags)$/;"	f
+AddMobileObject	objs.c	/^TMobileObject *AddMobileObject(void)$/;"	f
+AddMolotovFlame	objs.c	/^TMobileObject *AddMolotovFlame(int x, int y, int flags)$/;"	f
+AddObject	objs.c	/^void AddObject(int x, int y, int w, int h,$/;"	f
+AddObjective	cdogsed.c	/^void AddObjective(void)$/;"	f
+AddPetrifierBullet	objs.c	/^void AddPetrifierBullet(int x, int y, int angle, int speed, int range,$/;"	f
+AddProximityMine	objs.c	/^void AddProximityMine(int x, int y, int flags)$/;"	f
+AddRapidBullet	objs.c	/^void AddRapidBullet(int x, int y, int angle, int speed, int range,$/;"	f
+AddSniperBullet	objs.c	/^void AddSniperBullet(int x, int y, int direction, int flags)$/;"	f
+AddSong	gamedata.c	/^void AddSong(struct SongDef **songList, const char *path)$/;"	f
+AddTrigger	triggers.c	/^TTrigger *AddTrigger(int x, int y, int actionCount)$/;"	f
+AddWatch	triggers.c	/^TWatch *AddWatch(int conditionCount, int actionCount)$/;"	f
+AdjustInt	charsed.c	/^void AdjustInt(int *i, int min, int max, int wrap)$/;"	f
+AdjustXC	cdogsed.c	/^static void AdjustXC(int yc, int *xc)$/;"	f	file:
+AdjustXC	charsed.c	/^static void AdjustXC(int yc, int *xc)$/;"	f	file:
+AdjustYC	cdogsed.c	/^static void AdjustYC(int *yc)$/;"	f	file:
+AdjustYC	charsed.c	/^static void AdjustYC(int *yc)$/;"	f	file:
+AltScrCopy	blit.c	/^void AltScrCopy(void)$/;"	f
+AnyButton	include/defs.h	85;"	d
+AnyKeyDown	keyboard.c	/^int AnyKeyDown(void)$/;"	f
+AppearanceSelection	prep.c	/^static int AppearanceSelection(const char **menu, int menuCount,$/;"	f	file:
+Append	cdogsed.c	/^static void Append(char *s, int maxlen, int c)$/;"	f	file:
+AppendPics	grafx.c	/^int AppendPics(const char *filename, void **pics, int startIndex,$/;"	f
+AreaClear	map.c	/^int AreaClear(int xOrigin, int yOrigin, int width, int height)$/;"	f
+ArmSelection	prep.c	/^static int ArmSelection(int x, int index, struct PlayerData *data, int cmd)$/;"	f	file:
+AutoCalibrate	joystick.c	/^void AutoCalibrate(void)$/;"	f
+AutoMap	include/map.h	102;"	d
+BACKSPACE	include/charsed.h	46;"	d
+BADDIE_MAX	include/gamedata.h	181;"	d
+BADGUYS_BEMS	include/gamedata.h	126;"	d
+BADGUYS_OGRES	include/gamedata.h	125;"	d
+BADGUY_COMMANDER	include/gamedata.h	128;"	d
+BLIT_BACKGROUND	include/blit.h	34;"	d
+BLIT_TRANSPARENT	include/blit.h	33;"	d
+BLOOD_MAX	include/pics.h	51;"	d
+BLUE_DOOR_COLOR	automap.c	55;"	d	file:
+BODY_ARMED	include/defs.h	41;"	d
+BODY_COUNT	include/defs.h	42;"	d
+BODY_END	include/actors.h	100;"	d
+BODY_START	include/actors.h	99;"	d
+BODY_UNARMED	include/defs.h	40;"	d
+BULLET_Z	include/objs.h	70;"	d
+BYTE	sprcomp.c	51;"	d	file:
+Backspace	cdogsed.c	/^static void Backspace(char *s)$/;"	f	file:
+BadGuy	include/gamedata.h	/^struct BadGuy {$/;"	s
+BestMatch	actors.c	/^static int BestMatch(int r, int g, int b)$/;"	f	file:
+BlackLine	game.c	/^void BlackLine(void)$/;"	f
+Blit	blit.c	/^void Blit(int x, int y, void *pic, void *table, int mode) {$/;"	f
+BodyPartSelection	prep.c	/^static int BodyPartSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+BodySelection	prep.c	/^static int BodySelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+BogusDraw	objs.c	/^void BogusDraw(int x, int y, void *data)$/;"	f
+Bonuses	cdogs.c	/^void Bonuses(void)$/;"	f
+BrightWalk	ai.c	/^static int BrightWalk(TActor * actor, int roll)$/;"	f	file:
+BrownGun	actors.c	/^void BrownGun(TActor * actor)$/;"	f
+Buffer	include/map.h	/^struct Buffer {$/;"	s
+BuildRoom	map.c	/^static int BuildRoom(void)$/;"	f	file:
+BuildSquare	map.c	/^static int BuildSquare(void)$/;"	f	file:
+BuildTranslationTables	actors.c	/^void BuildTranslationTables(void)$/;"	f
+BuildWall	map.c	/^static int BuildWall(int wallLength)$/;"	f	file:
+Button1	include/defs.h	83;"	d
+Button2	include/defs.h	84;"	d
+CAMPAIGN_BADFILE	include/files.h	32;"	d
+CAMPAIGN_BADPATH	include/files.h	34;"	d
+CAMPAIGN_MAGIC	files.c	43;"	d	file:
+CAMPAIGN_OK	include/files.h	31;"	d
+CAMPAIGN_VERSION	files.c	44;"	d	file:
+CAMPAIGN_VERSIONMISMATCH	include/files.h	33;"	d
+CDOGS_CFG_DIR	include/config.h	35;"	d
+CDOGS_DATA_DIR	include/config.h	31;"	d
+CDOGS_SDL_VERSION	include/defs.h	37;"	d
+CDOGS_VERSION	include/defs.h	36;"	d
+CHARACTER_COUNT	include/actors.h	40;"	d
+CHARACTER_OTHERS	include/actors.h	39;"	d
+CHARACTER_PLAYER1	include/actors.h	36;"	d
+CHARACTER_PLAYER2	include/actors.h	37;"	d
+CHARACTER_PRISONER	include/actors.h	38;"	d
+CHARS_IN_FONT	text.c	37;"	d	file:
+CHAR_INDEX	text.c	39;"	d	file:
+CLOCK_LIMIT	game.c	53;"	d	file:
+CMD_BUTTON1	include/defs.h	72;"	d
+CMD_BUTTON2	include/defs.h	73;"	d
+CMD_BUTTON3	include/defs.h	74;"	d
+CMD_BUTTON4	include/defs.h	75;"	d
+CMD_DOWN	include/defs.h	71;"	d
+CMD_ESC	include/defs.h	76;"	d
+CMD_LEFT	include/defs.h	68;"	d
+CMD_RIGHT	include/defs.h	69;"	d
+CMD_UP	include/defs.h	70;"	d
+COLORRANGE_COUNT	mission.c	149;"	d	file:
+CONDITION_NULL	include/triggers.h	41;"	d
+CONDITION_TILECLEAR	include/triggers.h	43;"	d
+CONDITION_TIMEDDELAY	include/triggers.h	42;"	d
+CONFUSED_COUNT	objs.c	46;"	d	file:
+CONGRATULATIONS	cdogs.c	426;"	d	file:
+CONTROLS_COUNT	mainmenu.c	90;"	d	file:
+COPY_DEC_JNZ	include/gamedata.h	61;"	d
+COPY_REPMOVSD	include/gamedata.h	60;"	d
+CREDIT_PERIOD	mainmenu.c	155;"	d	file:
+Campaign	cdogs.c	/^int Campaign(void)$/;"	f
+CampaignIntro	cdogs.c	/^void CampaignIntro(void *bkg)$/;"	f
+CampaignOptions	include/gamedata.h	/^struct CampaignOptions {$/;"	s
+CampaignSetting	include/gamedata.h	/^struct CampaignSetting {$/;"	s
+Change	cdogsed.c	/^static int Change(int yc, int xc, int d, int *mission)$/;"	f	file:
+Change	charsed.c	/^static void Change(TCampaignSetting * setting, int index, int yc, int xc,$/;"	f	file:
+ChangeControl	mainmenu.c	/^static void ChangeControl(struct PlayerData *data,$/;"	f	file:
+ChangeFloor	map.c	/^void ChangeFloor(int x, int y, int normal, int shadow)$/;"	f
+ChangeKey	mainmenu.c	/^void ChangeKey(struct PlayerData *data, struct PlayerData *other,$/;"	f
+ChangeMapKey	mainmenu.c	/^void ChangeMapKey(struct PlayerData *d1, struct PlayerData *d2)$/;"	f
+CharacterDescription	include/actors.h	/^struct CharacterDescription {$/;"	s
+CheckMissionObjective	mission.c	/^int CheckMissionObjective(int flags)$/;"	f
+CheckTileItemCollision	map.c	/^TTileItem *CheckTileItemCollision(TTileItem * item, int x, int y, int mask)$/;"	f
+CheckTrigger	actors.c	/^static void CheckTrigger(TActor * actor, int x, int y)$/;"	f	file:
+CheckWall	map.c	/^int CheckWall(int x, int y, int w, int h)$/;"	f
+CleanupMission	cdogs.c	/^static void CleanupMission(void)$/;"	f	file:
+CleanupPlayerInventory	mission.c	/^static void CleanupPlayerInventory(struct PlayerData *data, int weapons)$/;"	f	file:
+ClearKeys	keyboard.c	/^void ClearKeys(void)$/;"	f
+CloseToPlayer	ai.c	/^static int CloseToPlayer(TActor * actor)$/;"	f	file:
+CmdToDirection	include/defs.h	121;"	d
+ColorRange	mission.c	/^struct ColorRange {$/;"	s	file:
+ColorShade	actors.c	/^typedef unsigned char ColorShade[10];$/;"	t	file:
+CommandActor	actors.c	/^void CommandActor(TActor * actor, int cmd)$/;"	f
+CommandBadGuys	ai.c	/^void CommandBadGuys(void)$/;"	f
+CompilePics	grafx.c	/^int CompilePics(int picCount, void **pics, void **compiledPics)$/;"	f
+Condition	include/triggers.h	/^struct Condition {$/;"	s
+ConditionMet	triggers.c	/^static int ConditionMet(TCondition * c)$/;"	f	file:
+ConfirmQuit	cdogsed.c	/^static int ConfirmQuit(void)$/;"	f	file:
+ConfuseBomb	actors.c	/^void ConfuseBomb(TActor * actor)$/;"	f
+CopyToScreen	blit.c	/^void CopyToScreen(void)$/;"	f
+CreateCharacters	ai.c	/^void CreateCharacters(void)$/;"	f
+CreateDoor	map.c	/^static void CreateDoor(int x, int y, int floor, int room, int flags)$/;"	f	file:
+Credit	mainmenu.c	/^struct Credit {$/;"	s	file:
+DEATH_MAX	include/pics.h	50;"	d
+DELAY_DRAW	include/map.h	52;"	d
+DELETE	include/charsed.h	36;"	d
+DIFFICULTY_EASY	include/gamedata.h	64;"	d
+DIFFICULTY_HARD	include/gamedata.h	66;"	d
+DIFFICULTY_NORMAL	include/gamedata.h	65;"	d
+DIFFICULTY_VERYEASY	include/gamedata.h	63;"	d
+DIFFICULTY_VERYHARD	include/gamedata.h	67;"	d
+DIRECTION_COUNT	include/defs.h	96;"	d
+DIRECTION_DOWN	include/defs.h	92;"	d
+DIRECTION_DOWNLEFT	include/defs.h	93;"	d
+DIRECTION_DOWNRIGHT	include/defs.h	91;"	d
+DIRECTION_LEFT	include/defs.h	94;"	d
+DIRECTION_RIGHT	include/defs.h	90;"	d
+DIRECTION_UP	include/defs.h	88;"	d
+DIRECTION_UPLEFT	include/defs.h	95;"	d
+DIRECTION_UPRIGHT	include/defs.h	89;"	d
+DONE	password.c	43;"	d	file:
+DOORSTYLE_COUNT	mission.c	385;"	d	file:
+DOOR_COLOR	automap.c	52;"	d	file:
+DUMMY	include/charsed.h	64;"	d
+DWORD	sprcomp.c	49;"	d	file:
+DamageSomething	objs.c	/^int DamageSomething(int dx, int dy, int power, int flags,$/;"	f
+DataUpdate	cdogs.c	/^void DataUpdate(int mission, struct PlayerData *data)$/;"	f
+DeactivateWatch	triggers.c	/^static void DeactivateWatch(int index)$/;"	f	file:
+DelChar	cdogsed.c	/^static void DelChar(int xc, int yc)$/;"	f	file:
+DeleteCharacter	cdogsed.c	/^void DeleteCharacter(int index)$/;"	f
+DeleteCharacter	charsed.c	/^static void DeleteCharacter(TCampaignSetting * setting, int *index)$/;"	f	file:
+DeleteItem	cdogsed.c	/^void DeleteItem(int index)$/;"	f
+DeleteMission	cdogsed.c	/^void DeleteMission(int *index)$/;"	f
+DeleteObjective	cdogsed.c	/^void DeleteObjective(int index)$/;"	f
+DeleteSpecial	cdogsed.c	/^void DeleteSpecial(int index)$/;"	f
+Detour	ai.c	/^void Detour(TActor * actor)$/;"	f
+DirectionOK	ai.c	/^static int DirectionOK(TActor * actor, int dir)$/;"	f	file:
+DirectionToCmd	include/defs.h	122;"	d
+Display	cdogsed.c	/^void Display(int index, int xc, int yc, int key)$/;"	f
+Display	charsed.c	/^static void Display(TCampaignSetting * setting, int index, int xc, int yc)$/;"	f	file:
+DisplayAllTimeHighScores	hiscores.c	/^void DisplayAllTimeHighScores(void *bkg)$/;"	f
+DisplayAt	hiscores.c	/^static void DisplayAt(int x, int y, const char *s, int hilite)$/;"	f	file:
+DisplayAutoMap	automap.c	/^void DisplayAutoMap(int showAll)$/;"	f
+DisplayCharacter	cdogsed.c	/^void DisplayCharacter(int x, int y, int character, int hilite)$/;"	f
+DisplayCharacter	charsed.c	/^static void DisplayCharacter(int x, int y, const TBadGuy * data,$/;"	f	file:
+DisplayControl	mainmenu.c	/^static void DisplayControl(int x, int y, int controls)$/;"	f	file:
+DisplayEntry	hiscores.c	/^static int DisplayEntry(int x, int y, int index, struct Entry *e,$/;"	f	file:
+DisplayExit	automap.c	/^static void DisplayExit(void)$/;"	f	file:
+DisplayFlag	charsed.c	/^void DisplayFlag(int x, int y, const char *s, int on, int hilite)$/;"	f
+DisplayKeys	mainmenu.c	/^static void DisplayKeys(int x, int x2, int y, char *title,$/;"	f	file:
+DisplayMapItem	cdogsed.c	/^void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)$/;"	f
+DisplayMenu	menu.c	/^void DisplayMenu(int x, const char **table, int count, int index)$/;"	f
+DisplayMenuItem	menu.c	/^void DisplayMenuItem(int x, int y, const char *s, int selected)$/;"	f
+DisplayMessage	game.c	/^void DisplayMessage(const char *s)$/;"	f
+DisplayObjective	automap.c	/^static void DisplayObjective(TTileItem * t, int objectiveIndex)$/;"	f	file:
+DisplayPage	hiscores.c	/^static int DisplayPage(const char *title, int index, struct Entry *e,$/;"	f	file:
+DisplayPlayer	automap.c	/^static void DisplayPlayer(TActor * player)$/;"	f	file:
+DisplayPlayer	prep.c	/^void DisplayPlayer(int x, struct PlayerData *data, int character,$/;"	f
+DisplaySummary	automap.c	/^static void DisplaySummary()$/;"	f	file:
+DisplayText	cdogsed.c	/^void DisplayText(int x, int y, const char *text, int hilite, int editable)$/;"	f
+DisplayText	charsed.c	/^static void DisplayText(int x, int y, const char *text, int hilite)$/;"	f	file:
+DisplayTodaysHighScores	hiscores.c	/^void DisplayTodaysHighScores(void *bkg)$/;"	f
+Distance	ai.c	80;"	d	file:
+DoBuffer	game.c	/^void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,$/;"	f
+DoSound	sounds.c	/^void DoSound(int i, int len, void *data)$/;"	f
+DoSounds	sounds.c	/^void DoSounds(void)$/;"	f
+DogFight	cdogs.c	/^void DogFight(void)$/;"	f
+DoorColor	automap.c	/^static int DoorColor(int x, int y)$/;"	f	file:
+DoorPic	include/gamedata.h	/^struct DoorPic {$/;"	s
+Down	include/defs.h	82;"	d
+DrawBTPic	include/blit.h	62;"	d
+DrawBrightBolt	objs.c	/^void DrawBrightBolt(int x, int y, const TMobileObject * obj)$/;"	f
+DrawBrownBullet	objs.c	/^void DrawBrownBullet(int x, int y, const TMobileObject * obj)$/;"	f
+DrawBuffer	draw.c	/^void DrawBuffer(struct Buffer *b, int xOffset)$/;"	f
+DrawBullet	objs.c	/^void DrawBullet(int x, int y, const TMobileObject * obj)$/;"	f
+DrawCharacter	actors.c	/^void DrawCharacter(int x, int y, TActor * actor)$/;"	f
+DrawCross	automap.c	/^static void DrawCross(TTileItem * t, int color)$/;"	f	file:
+DrawCursor	charsed.c	/^void DrawCursor(int x, int y)$/;"	f
+DrawDot	automap.c	/^static void DrawDot(TTileItem * t, int color)$/;"	f	file:
+DrawDynamite	objs.c	/^void DrawDynamite(int x, int y, const TMobileObject * obj)$/;"	f
+DrawFireball	objs.c	/^void DrawFireball(int x, int y, const TMobileObject * obj)$/;"	f
+DrawFlame	objs.c	/^void DrawFlame(int x, int y, const TMobileObject * obj)$/;"	f
+DrawGasCloud	objs.c	/^void DrawGasCloud(int x, int y, const TMobileObject * obj)$/;"	f
+DrawGrenade	objs.c	/^void DrawGrenade(int x, int y, const TMobileObject * obj)$/;"	f
+DrawKeycard	game.c	/^static void DrawKeycard(int x, int y, const TOffsetPic * pic)$/;"	f	file:
+DrawLaserBolt	objs.c	/^void DrawLaserBolt(int x, int y, const TMobileObject * obj)$/;"	f
+DrawMine	objs.c	/^void DrawMine(int x, int y, const TMobileObject * obj)$/;"	f
+DrawMolotov	objs.c	/^void DrawMolotov(int x, int y, const TMobileObject * obj)$/;"	f
+DrawObject	objs.c	/^void DrawObject(int x, int y, const TObject * obj)$/;"	f
+DrawObjectiveInfo	cdogs.c	/^void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)$/;"	f
+DrawObjectiveInfo	cdogsed.c	/^void DrawObjectiveInfo(int index, int y, int xc)$/;"	f
+DrawPetrifierBullet	objs.c	/^void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)$/;"	f
+DrawPic	include/blit.h	41;"	d
+DrawScreen	game.c	/^void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)$/;"	f
+DrawSeeker	objs.c	/^void DrawSeeker(int x, int y, const TMobileObject * obj)$/;"	f
+DrawSpark	objs.c	/^void DrawSpark(int x, int y, const TMobileObject * obj)$/;"	f
+DrawTPic	include/blit.h	46;"	d
+DrawTTPic	include/blit.h	54;"	d
+DrawWallColumn	draw.c	/^void DrawWallColumn(int y, int xc, int yc, TTile * tile)$/;"	f
+DynamicInterrupts	include/sounds.h	82;"	d
+Dynamite	actors.c	/^void Dynamite(TActor * actor)$/;"	f
+END	include/charsed.h	34;"	d
+ENTER	include/charsed.h	63;"	d
+ESCAPE	include/charsed.h	47;"	d
+EXIT_COLOR	automap.c	58;"	d	file:
+EXIT_COUNT	mission.c	399;"	d	file:
+EXIT_HEIGHT	mission.c	39;"	d	file:
+EXIT_WIDTH	mission.c	38;"	d	file:
+EditCampaign	cdogsed.c	/^static void EditCampaign(void)$/;"	f	file:
+EditCharacters	charsed.c	/^void EditCharacters(TCampaignSetting * setting)$/;"	f
+EditorInfo	include/mission.h	/^struct EditorInfo {$/;"	s
+EmitAddEDI	sprcomp.c	/^void EmitAddEDI(int inc, unsigned char **storage)$/;"	f
+EmitBMov	sprcomp.c	/^void EmitBMov(int x, unsigned char *p, unsigned char **storage)$/;"	f
+EmitDWMov	sprcomp.c	/^void EmitDWMov(int x, unsigned char *p, unsigned char **storage)$/;"	f
+EmitRet	sprcomp.c	/^void EmitRet(unsigned char **storage)$/;"	f
+EmitWMov	sprcomp.c	/^void EmitWMov(int x, unsigned char *p, unsigned char **storage)$/;"	f
+EnableSticks	joystick.c	/^void EnableSticks(int joy1, int joy2)$/;"	f
+EnterCode	password.c	/^static int EnterCode(void *bkg, const char *password)$/;"	f	file:
+EnterHighScore	hiscores.c	/^void EnterHighScore(struct PlayerData *data)$/;"	f
+EnterPassword	password.c	/^int EnterPassword(void *bkg, const char *password)$/;"	f
+EnterTable	hiscores.c	/^static int EnterTable(struct Entry *table, struct PlayerData *data)$/;"	f	file:
+Entry	hiscores.c	/^struct Entry {$/;"	s	file:
+ExploredPercentage	map.c	/^int ExploredPercentage(void)$/;"	f
+F1	include/charsed.h	48;"	d
+F10	include/charsed.h	52;"	d
+F11	include/charsed.h	53;"	d
+F12	include/charsed.h	54;"	d
+F2	include/charsed.h	49;"	d
+F3	include/charsed.h	50;"	d
+F4	include/charsed.h	51;"	d
+FACE_BLONDIE	include/defs.h	50;"	d
+FACE_BUGEYE	include/defs.h	49;"	d
+FACE_COUNT	include/defs.h	61;"	d
+FACE_CYBORG	include/defs.h	58;"	d
+FACE_GRUNT	include/defs.h	52;"	d
+FACE_HAN	include/defs.h	47;"	d
+FACE_ICE	include/defs.h	45;"	d
+FACE_JONES	include/defs.h	44;"	d
+FACE_LADY	include/defs.h	60;"	d
+FACE_MAD_BUGEYE	include/defs.h	57;"	d
+FACE_OGRE	include/defs.h	46;"	d
+FACE_OGREBOSS	include/defs.h	51;"	d
+FACE_PIRAT1	include/defs.h	54;"	d
+FACE_PIRAT2	include/defs.h	55;"	d
+FACE_PIRAT3	include/defs.h	56;"	d
+FACE_PROFESSOR	include/defs.h	53;"	d
+FACE_ROBOT	include/defs.h	59;"	d
+FACE_WARBABY	include/defs.h	48;"	d
+FIREBALL_MAX	include/pics.h	49;"	d
+FIREBALL_POWER	include/objs.h	65;"	d
+FIRST_CHAR	text.c	35;"	d	file:
+FLAGS_ASBESTOS	include/actors.h	73;"	d
+FLAGS_AWAKEALWAYS	include/actors.h	93;"	d
+FLAGS_DETOURING	include/actors.h	69;"	d
+FLAGS_FOLLOWER	include/actors.h	88;"	d
+FLAGS_GOOD_GUY	include/actors.h	85;"	d
+FLAGS_HURTALWAYS	include/actors.h	63;"	d
+FLAGS_IMMUNITY	include/actors.h	74;"	d
+FLAGS_INVULNERABLE	include/actors.h	87;"	d
+FLAGS_KEYCARD_BLUE	include/actors.h	79;"	d
+FLAGS_KEYCARD_GREEN	include/actors.h	80;"	d
+FLAGS_KEYCARD_RED	include/actors.h	78;"	d
+FLAGS_KEYCARD_YELLOW	include/actors.h	81;"	d
+FLAGS_PENALTY	include/actors.h	89;"	d
+FLAGS_PLAYER1	include/actors.h	60;"	d
+FLAGS_PLAYER2	include/actors.h	61;"	d
+FLAGS_PLAYERS	include/actors.h	62;"	d
+FLAGS_PRISONER	include/actors.h	86;"	d
+FLAGS_RUNS_AWAY	include/actors.h	84;"	d
+FLAGS_SEETHROUGH	include/actors.h	75;"	d
+FLAGS_SLEEPALWAYS	include/actors.h	92;"	d
+FLAGS_SLEEPING	include/actors.h	71;"	d
+FLAGS_SNEAKY	include/actors.h	91;"	d
+FLAGS_SPECIAL_USED	include/actors.h	66;"	d
+FLAGS_TRYRIGHT	include/actors.h	70;"	d
+FLAGS_VICTIM	include/actors.h	90;"	d
+FLAGS_VISIBLE	include/actors.h	72;"	d
+FLAMED_COUNT	objs.c	42;"	d	file:
+FLAME_POWER	include/objs.h	59;"	d
+FLAME_RANGE	include/objs.h	57;"	d
+FLAME_SPEED	include/objs.h	58;"	d
+FLOOR_1	include/pics.h	215;"	d
+FLOOR_2	include/pics.h	216;"	d
+FLOOR_BLUE	include/pics.h	226;"	d
+FLOOR_COLOR	automap.c	51;"	d	file:
+FLOOR_COLORS	mission.c	48;"	d	file:
+FLOOR_COUNT	include/pics.h	233;"	d
+FLOOR_DIRT	include/pics.h	225;"	d
+FLOOR_GREEN	include/pics.h	223;"	d
+FLOOR_GRID	include/pics.h	232;"	d
+FLOOR_NORMAL	include/pics.h	214;"	d
+FLOOR_PURPLE	include/pics.h	224;"	d
+FLOOR_SHADOW	include/pics.h	213;"	d
+FLOOR_SMALLSQUARES	include/pics.h	228;"	d
+FLOOR_STONE	include/pics.h	229;"	d
+FLOOR_STRIPES	include/pics.h	227;"	d
+FLOOR_TYPES	include/pics.h	217;"	d
+FLOOR_WHITE	include/pics.h	231;"	d
+FLOOR_WOOD	include/pics.h	230;"	d
+FPS_FRAMELIMIT	game.c	52;"	d	file:
+FS_OBJ_NEXIST	include/files.h	38;"	d
+FS_OBJ_NWRITE	include/files.h	37;"	d
+FS_OBJ_WRITE	include/files.h	36;"	d
+FXChannels	sounds.c	/^int FXChannels(void)$/;"	f
+FXVolume	sounds.c	/^int FXVolume(void)$/;"	f
+FX_MAXCHANNELS	include/sounds.h	48;"	d
+FaceSelection	prep.c	/^static int FaceSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+Facing	ai.c	/^static int Facing(TActor * a, TActor * a2)$/;"	f	file:
+FacingPlayer	ai.c	/^static int FacingPlayer(TActor * actor)$/;"	f	file:
+FileEntry	include/files.h	/^struct FileEntry {$/;"	s
+FinalScore	cdogs.c	/^void FinalScore(void *bkg, int score1, int score2)$/;"	f
+FindTrigger	triggers.c	/^static TTrigger *FindTrigger(TTrigger * t, int x, int y)$/;"	f	file:
+FindWatch	triggers.c	/^static TWatch *FindWatch(int index)$/;"	f	file:
+Fire	objs.c	/^void Fire(int x, int y, int flags)$/;"	f
+FitColor	mainmenu.c	/^unsigned char FitColor(int c)$/;"	f
+FixBuffer	draw.c	/^void FixBuffer(struct Buffer *buffer, int isShadow)$/;"	f
+FixDoors	map.c	/^static void FixDoors(int floor, int room)$/;"	f	file:
+FixMap	map.c	/^static void FixMap(int floor, int room, int wall)$/;"	f	file:
+Flamer	actors.c	/^void Flamer(TActor * actor)$/;"	f
+Follow	ai.c	/^static int Follow(TActor * actor)$/;"	f	file:
+Frag	objs.c	/^void Frag(int x, int y, int flags)$/;"	f
+FreeFileEntries	files.c	/^void FreeFileEntries(struct FileEntry *entries)$/;"	f
+FreeSongs	gamedata.c	/^void FreeSongs(struct SongDef **songList)$/;"	f
+FreeTrigger	triggers.c	/^void FreeTrigger(TTrigger * t)$/;"	f
+FreeTriggersAndWatches	triggers.c	/^void FreeTriggersAndWatches(void)$/;"	f
+GAMETICKS_PER_FRAME	include/game.h	31;"	d
+GAMETICKS_PER_SECOND	include/game.h	30;"	d
+GREEN_DOOR_COLOR	automap.c	54;"	d	file:
+GRENADE_SPEED	include/objs.h	67;"	d
+GUNPIC_BLASTER	include/defs.h	63;"	d
+GUNPIC_COUNT	include/defs.h	65;"	d
+GUNPIC_KNIFE	include/defs.h	64;"	d
+GUNSTATE_COUNT	include/defs.h	114;"	d
+GUNSTATE_FIRING	include/defs.h	112;"	d
+GUNSTATE_READY	include/defs.h	111;"	d
+GUNSTATE_RECOIL	include/defs.h	113;"	d
+GUN_BROWN	include/actors.h	55;"	d
+GUN_CONFUSEBOMB	include/actors.h	56;"	d
+GUN_COUNT	include/actors.h	58;"	d
+GUN_DYNAMITE	include/actors.h	52;"	d
+GUN_FLAMER	include/actors.h	45;"	d
+GUN_FRAGGRENADE	include/actors.h	48;"	d
+GUN_GASBOMB	include/actors.h	53;"	d
+GUN_GASGUN	include/actors.h	57;"	d
+GUN_GRENADE	include/actors.h	44;"	d
+GUN_KNIFE	include/actors.h	42;"	d
+GUN_MG	include/actors.h	43;"	d
+GUN_MINE	include/actors.h	51;"	d
+GUN_MOLOTOV	include/actors.h	49;"	d
+GUN_PETRIFY	include/actors.h	54;"	d
+GUN_POWERGUN	include/actors.h	47;"	d
+GUN_SHOTGUN	include/actors.h	46;"	d
+GUN_SNIPER	include/actors.h	50;"	d
+Game	cdogs.c	/^int Game(int mission)$/;"	f
+GameOptions	include/gamedata.h	/^struct GameOptions {$/;"	s
+Gas	objs.c	/^void Gas(int x, int y, int flags, int special)$/;"	f
+GasGun	actors.c	/^void GasGun(TActor * actor)$/;"	f
+GetCampaignTitles	files.c	/^void GetCampaignTitles(struct FileEntry **entries)$/;"	f
+GetConfigFilePath	files.c	/^char * GetConfigFilePath(const char *name)$/;"	f
+GetDataFilePath	files.c	/^char * GetDataFilePath(const char *path)$/;"	f
+GetDstScreen	blit.c	/^void *GetDstScreen(void)$/;"	f
+GetEditorInfo	mission.c	/^void GetEditorInfo(struct EditorInfo *info)$/;"	f
+GetEvent	charsed.c	/^void GetEvent(int *key, int *x, int *y, int *buttons)$/;"	f
+GetFilesFromDirectory	files.c	/^struct FileEntry *GetFilesFromDirectory(const char *directory)$/;"	f
+GetHomeDirectory	files.c	/^char * GetHomeDirectory(void)$/;"	f
+GetKey	events.c	/^int GetKey(void)$/;"	f
+GetKeyDown	keyboard.c	/^int GetKeyDown(void)$/;"	f
+GetMenuCmd	input.c	/^void GetMenuCmd(int *cmd)$/;"	f
+GetMouseRectTag	events.c	/^int GetMouseRectTag(int x, int y, int *tag)$/;"	f
+GetMuzzle	actors.c	/^void GetMuzzle(TActor * actor, int *dx, int *dy)$/;"	f
+GetOnePlayerCmd	input.c	/^static void GetOnePlayerCmd(struct PlayerData *data,$/;"	f	file:
+GetPlayerCmd	input.c	/^void GetPlayerCmd(int *cmd1, int *cmd2)$/;"	f
+GetPlayerInput	game.c	/^static void GetPlayerInput(int *cmd1, int *cmd2)$/;"	f	file:
+GetTargetCoords	ai.c	/^static void GetTargetCoords(TActor * actor, int *x, int *y)$/;"	f	file:
+GetVectorsForAngle	defs.c	/^void GetVectorsForAngle(int angle, int *dx, int *dy)$/;"	f
+GetWallPic	map.c	/^static int GetWallPic(int x, int y)$/;"	f	file:
+Grow	map.c	/^static void Grow(int x, int y, int d, int length)$/;"	f	file:
+GuessCoords	map.c	/^void GuessCoords(int *x, int *y)$/;"	f
+GuessPixelCoords	map.c	/^void GuessPixelCoords(int *x, int *y)$/;"	f
+GunDescription	include/actors.h	/^struct GunDescription {$/;"	s
+HAIR_END	include/actors.h	106;"	d
+HAIR_START	include/actors.h	105;"	d
+HOME	include/charsed.h	33;"	d
+HairSelection	prep.c	/^static int HairSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+HandleKey	game.c	/^int HandleKey(int *done, int cmd)$/;"	f
+HasHighAccess	map.c	/^int HasHighAccess(void)$/;"	f
+Heatseeker	actors.c	/^void Heatseeker(TActor * actor)$/;"	f
+HighlightKey	mainmenu.c	/^static void HighlightKey(int index)$/;"	f	file:
+HitItem	objs.c	/^int HitItem(TMobileObject * obj, int x, int y, int special)$/;"	f
+HitWall	include/map.h	99;"	d
+HorzDoor	map.c	/^static void HorzDoor(int x, int y, int floor, int room, int flags)$/;"	f	file:
+Hunt	ai.c	/^static int Hunt(TActor * actor)$/;"	f	file:
+INDEX_OFFSET	hiscores.c	136;"	d	file:
+INSERT	include/charsed.h	35;"	d
+IS_SHADOW	include/map.h	45;"	d
+IS_SHADOW2	include/map.h	48;"	d
+IS_WALL	include/map.h	46;"	d
+ITEMS_COUNT	mission.c	279;"	d	file:
+ITEMS_MAX	include/gamedata.h	183;"	d
+IndexToHair	prep.c	/^static int IndexToHair(int index)$/;"	f	file:
+IndexToHead	prep.c	/^static int IndexToHead(int index)$/;"	f	file:
+IndexToShade	prep.c	/^static int IndexToShade(int index)$/;"	f	file:
+IndexToSkin	prep.c	/^static int IndexToSkin(int index)$/;"	f	file:
+InitData	cdogs.c	/^void InitData(struct PlayerData *data)$/;"	f
+InitKeyboard	keyboard.c	/^void InitKeyboard(void)$/;"	f
+InitMouse	events.c	/^void InitMouse(void)$/;"	f
+InitPlayers	cdogs.c	/^static void InitPlayers(int twoPlayers, int maxHealth, int mission)$/;"	f	file:
+InitSoundDevice	sounds.c	/^int InitSoundDevice(void)$/;"	f
+InitSticks	joystick.c	/^void InitSticks(void)$/;"	f
+InitVideo	grafx.c	/^int InitVideo(int mode)$/;"	f
+InitializeBadGuys	ai.c	/^void InitializeBadGuys(void)$/;"	f
+InitializeSound	sounds.c	/^int InitializeSound(void)$/;"	f
+InitializeTranslationTables	actors.c	/^void InitializeTranslationTables(void)$/;"	f
+InjureActor	actors.c	/^void InjureActor(TActor * actor, int injury)$/;"	f
+InsertCharacter	charsed.c	/^static void InsertCharacter(TCampaignSetting * setting, int index,$/;"	f	file:
+InsertMission	cdogsed.c	/^void InsertMission(int index, struct Mission *mission)$/;"	f
+InternalAddObject	objs.c	/^void InternalAddObject(int x, int y, int w, int h,$/;"	f
+InternalUpdateBullet	objs.c	/^int InternalUpdateBullet(TMobileObject * obj, int special)$/;"	f
+InterruptOff	include/sounds.h	80;"	d
+InterruptOn	include/sounds.h	79;"	d
+IsHighAccess	map.c	/^int IsHighAccess(int x, int y)$/;"	f
+ItemsCollide	map.c	/^int ItemsCollide(TTileItem * item1, TTileItem * item2, int x, int y)$/;"	f
+JOYSTICK_BUTTON1	include/joystick.h	38;"	d
+JOYSTICK_BUTTON2	include/joystick.h	39;"	d
+JOYSTICK_BUTTON3	include/joystick.h	40;"	d
+JOYSTICK_BUTTON4	include/joystick.h	41;"	d
+JOYSTICK_DOWN	include/joystick.h	37;"	d
+JOYSTICK_LEFT	include/joystick.h	34;"	d
+JOYSTICK_ONE	include/input.h	29;"	d
+JOYSTICK_PRESENT	include/joystick.h	42;"	d
+JOYSTICK_RIGHT	include/joystick.h	35;"	d
+JOYSTICK_TWO	include/input.h	30;"	d
+JOYSTICK_UP	include/joystick.h	36;"	d
+JoyRec	include/joystick.h	/^struct JoyRec {$/;"	s
+KEYBOARD	include/input.h	28;"	d
+KEYSTYLE_COUNT	mission.c	336;"	d	file:
+KEY_COLOR	automap.c	59;"	d	file:
+KIND_CHARACTER	include/map.h	54;"	d
+KIND_MOBILEOBJECT	include/map.h	56;"	d
+KIND_OBJECT	include/map.h	57;"	d
+KIND_PIC	include/map.h	55;"	d
+KeyAvailable	mainmenu.c	/^int KeyAvailable(int key, struct PlayerData *data, int index,$/;"	f
+KeyDown	keyboard.c	/^char KeyDown(int key)$/;"	f
+KillAllActors	actors.c	/^void KillAllActors(void)$/;"	f
+KillAllMobileObjects	objs.c	/^void KillAllMobileObjects(void)$/;"	f
+KillAllObjects	objs.c	/^void KillAllObjects(void)$/;"	f
+LASER_POWER	include/objs.h	47;"	d
+LASER_RANGE	include/objs.h	45;"	d
+LASER_SPEED	include/objs.h	46;"	d
+LAST_CHAR	text.c	36;"	d	file:
+LEAVE_XC	cdogsed.c	100;"	d	file:
+LEAVE_YC	cdogsed.c	99;"	d	file:
+LEGS_END	include/actors.h	104;"	d
+LEGS_START	include/actors.h	103;"	d
+LaunchFragGrenade	actors.c	/^void LaunchFragGrenade(TActor * actor)$/;"	f
+LaunchGasBomb	actors.c	/^void LaunchGasBomb(TActor * actor)$/;"	f
+LaunchGrenade	actors.c	/^void LaunchGrenade(TActor * actor)$/;"	f
+LaunchMolotov	actors.c	/^void LaunchMolotov(TActor * actor)$/;"	f
+Left	include/defs.h	79;"	d
+LegSelection	prep.c	/^static int LegSelection(int x, int index, struct PlayerData *data, int cmd)$/;"	f	file:
+LineOfSight	draw.c	/^void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)$/;"	f
+ListWeapons	cdogsed.c	/^void ListWeapons(int y, int xc)$/;"	f
+LoadCampaign	files.c	/^int LoadCampaign(const char *filename, TCampaignSetting * setting,$/;"	f
+LoadConfig	mainmenu.c	/^void LoadConfig(void)$/;"	f
+LoadHighScores	hiscores.c	/^void LoadHighScores(void)$/;"	f
+LoadSongs	gamedata.c	/^void LoadSongs(const char *path, struct SongDef **songList)$/;"	f
+LoadTemplates	prep.c	/^void LoadTemplates(void)$/;"	f
+LookForCustomCampaigns	mainmenu.c	/^void LookForCustomCampaigns(void)$/;"	f
+MAGIC	hiscores.c	204;"	d	file:
+MAIN_COUNT	mainmenu.c	60;"	d	file:
+MAPOBJ_CANBESHOT	include/gamedata.h	94;"	d
+MAPOBJ_CANBETAKEN	include/gamedata.h	95;"	d
+MAPOBJ_EXPLOSIVE	include/gamedata.h	92;"	d
+MAPOBJ_FLAMMABLE	include/gamedata.h	104;"	d
+MAPOBJ_FREEINFRONT	include/gamedata.h	98;"	d
+MAPOBJ_HIDEINSIDE	include/gamedata.h	102;"	d
+MAPOBJ_IMPASSABLE	include/gamedata.h	93;"	d
+MAPOBJ_INOPEN	include/gamedata.h	111;"	d
+MAPOBJ_INSIDE	include/gamedata.h	113;"	d
+MAPOBJ_INTERIOR	include/gamedata.h	103;"	d
+MAPOBJ_NOTINROOM	include/gamedata.h	97;"	d
+MAPOBJ_NOWALLS	include/gamedata.h	101;"	d
+MAPOBJ_ONEWALL	include/gamedata.h	99;"	d
+MAPOBJ_ONEWALLPLUS	include/gamedata.h	100;"	d
+MAPOBJ_ON_WALL	include/gamedata.h	107;"	d
+MAPOBJ_OUTSIDE	include/gamedata.h	109;"	d
+MAPOBJ_POISONOUS	include/gamedata.h	105;"	d
+MAPOBJ_QUAKE	include/gamedata.h	106;"	d
+MAPOBJ_ROOMONLY	include/gamedata.h	96;"	d
+MAP_ACCESSBITS	map.c	54;"	d	file:
+MAP_ACCESS_BLUE	map.c	49;"	d	file:
+MAP_ACCESS_GREEN	map.c	50;"	d	file:
+MAP_ACCESS_RED	map.c	48;"	d	file:
+MAP_ACCESS_YELLOW	map.c	51;"	d	file:
+MAP_DOOR	map.c	43;"	d	file:
+MAP_FACTOR	automap.c	48;"	d	file:
+MAP_FLOOR	map.c	41;"	d	file:
+MAP_LEAVEFREE	map.c	52;"	d	file:
+MAP_MASKACCESS	map.c	53;"	d	file:
+MAP_NOTHING	map.c	46;"	d	file:
+MAP_ROOM	map.c	44;"	d	file:
+MAP_SQUARE	map.c	45;"	d	file:
+MAP_WALL	map.c	42;"	d	file:
+MAP_XOFFS	automap.c	45;"	d	file:
+MAP_YOFFS	automap.c	46;"	d	file:
+MAX_CHARACTERS	include/charsed.h	29;"	d
+MAX_ENTRY	hiscores.c	64;"	d	file:
+MAX_MISSIONS	include/charsed.h	28;"	d
+MAX_POISONED_COUNT	objs.c	44;"	d	file:
+MAX_STRING_LEN	files.c	41;"	d	file:
+MAX_TEMPLATE	prep.c	135;"	d	file:
+MAX_WAIT	joystick.c	41;"	d	file:
+MAX_WEAPONS	include/gamedata.h	29;"	d
+MENU_COUNT	prep.c	57;"	d	file:
+MG_POWER	include/objs.h	51;"	d
+MG_RANGE	include/objs.h	49;"	d
+MG_SPEED	include/objs.h	50;"	d
+MISSIONS_OFFSET	hiscores.c	138;"	d	file:
+MISSION_OFFSET	hiscores.c	139;"	d	file:
+MOBOBJ_BULLET	include/objs.h	36;"	d
+MOBOBJ_FIREBALL	include/objs.h	38;"	d
+MOBOBJ_FRAGGRENADE	include/objs.h	40;"	d
+MOBOBJ_GASBOMB	include/objs.h	42;"	d
+MOBOBJ_GASBOMB2	include/objs.h	43;"	d
+MOBOBJ_GRENADE	include/objs.h	37;"	d
+MOBOBJ_MOLOTOV	include/objs.h	41;"	d
+MOBOBJ_SPARK	include/objs.h	39;"	d
+MODE_CAMPAIGN	mainmenu.c	56;"	d	file:
+MODE_CONTROLS	mainmenu.c	52;"	d	file:
+MODE_DOGFIGHT	mainmenu.c	57;"	d	file:
+MODE_DONE	prep.c	55;"	d	file:
+MODE_KEYS	mainmenu.c	55;"	d	file:
+MODE_LOADTEMPLATE	prep.c	53;"	d	file:
+MODE_MAIN	mainmenu.c	49;"	d	file:
+MODE_MAIN	prep.c	45;"	d	file:
+MODE_OPTIONS	mainmenu.c	51;"	d	file:
+MODE_PLAY	mainmenu.c	50;"	d	file:
+MODE_QUIT	mainmenu.c	54;"	d	file:
+MODE_SAVETEMPLATE	prep.c	54;"	d	file:
+MODE_SELECTARMS	prep.c	50;"	d	file:
+MODE_SELECTBODY	prep.c	51;"	d	file:
+MODE_SELECTFACE	prep.c	47;"	d	file:
+MODE_SELECTHAIR	prep.c	49;"	d	file:
+MODE_SELECTLEGS	prep.c	52;"	d	file:
+MODE_SELECTNAME	prep.c	46;"	d	file:
+MODE_SELECTSKIN	prep.c	48;"	d	file:
+MODE_VOLUME	mainmenu.c	53;"	d	file:
+MODULE_NOLOAD	include/sounds.h	54;"	d
+MODULE_OK	include/sounds.h	53;"	d
+MOV_off_0_b	sprcomp.c	39;"	d	file:
+MOV_off_0_dw	sprcomp.c	30;"	d	file:
+MOV_off_0_w	sprcomp.c	35;"	d	file:
+MOV_off_1_b	sprcomp.c	40;"	d	file:
+MOV_off_1_dw	sprcomp.c	31;"	d	file:
+MOV_off_1_w	sprcomp.c	36;"	d	file:
+MOV_off_4_b	sprcomp.c	41;"	d	file:
+MOV_off_4_dw	sprcomp.c	32;"	d	file:
+MOV_off_4_w	sprcomp.c	37;"	d	file:
+MachineGun	actors.c	/^void MachineGun(TActor * actor)$/;"	f
+MainLoop	cdogs.c	/^void MainLoop(void)$/;"	f
+MainMenu	mainmenu.c	/^int MainMenu(void *bkg)$/;"	f
+MainMenu	prep.c	/^static int MainMenu(int x, int index, int cmd)$/;"	f	file:
+MakeBkg	cdogs.c	/^void *MakeBkg(void)$/;"	f
+MakePassword	password.c	/^const char *MakePassword(int mission)$/;"	f
+MakeRoom	map.c	/^void MakeRoom(int xOrigin, int yOrigin, int width, int height, int doors,$/;"	f
+MakeSelection	mainmenu.c	/^int MakeSelection(int mode, int cmd)$/;"	f
+MakeSelection	prep.c	/^static int MakeSelection(int mode, int x, int character,$/;"	f	file:
+MakeSquare	map.c	/^static void MakeSquare(int xOrigin, int yOrigin, int width, int height)$/;"	f	file:
+Map	include/map.h	98;"	d
+MapAccessLevel	map.c	/^int MapAccessLevel(int x, int y)$/;"	f
+MapLevel	automap.c	/^static int MapLevel(int x, int y)$/;"	f	file:
+MapObject	include/gamedata.h	/^struct MapObject {$/;"	s
+MarkAsSeen	map.c	/^void MarkAsSeen(int x, int y)$/;"	f
+MarkExit	game.c	/^static void MarkExit(void)$/;"	f	file:
+MinMusicChannels	sounds.c	/^int MinMusicChannels(void)$/;"	f
+Mine	actors.c	/^void Mine(TActor * actor)$/;"	f
+Mission	include/gamedata.h	/^struct Mission {$/;"	s
+MissionBriefing	cdogs.c	/^void MissionBriefing(void *bkg)$/;"	f
+MissionCompleted	mission.c	/^int MissionCompleted(void)$/;"	f
+MissionDescription	cdogs.c	/^int MissionDescription(int y, const char *description)$/;"	f
+MissionDescription	cdogsed.c	/^int MissionDescription(int y, const char *description, int hilite)$/;"	f
+MissionObjective	include/gamedata.h	/^struct MissionObjective {$/;"	s
+MissionOptions	include/gamedata.h	/^struct MissionOptions {$/;"	s
+MissionStatus	game.c	/^static void MissionStatus(void)$/;"	f	file:
+MissionSummary	cdogs.c	/^void MissionSummary(void *bkg)$/;"	f
+MobObjUpdateFunc	include/objs.h	/^typedef int (*MobObjUpdateFunc) (struct MobileObject *);$/;"	t
+MobileObject	include/objs.h	/^struct MobileObject {$/;"	s
+ModuleDirectory	sounds.c	/^const char *ModuleDirectory(void)$/;"	f
+ModuleMessage	sounds.c	/^const char *ModuleMessage(void)$/;"	f
+ModuleStatus	sounds.c	/^int ModuleStatus(void)$/;"	f
+Mouse	events.c	/^void Mouse(int *x, int *y, int *button)$/;"	f
+MouseRect	include/events.h	/^struct MouseRect {$/;"	s
+MoveActor	actors.c	/^int MoveActor(TActor * actor, int x, int y)$/;"	f
+MoveTileItem	map.c	/^void MoveTileItem(TTileItem * t, int x, int y)$/;"	f
+MusicVolume	sounds.c	/^int MusicVolume(void)$/;"	f
+NAME_OFFSET	hiscores.c	140;"	d	file:
+NO	include/defs.h	33;"	d
+NO	include/joystick.h	30;"	d
+NO_SEE	include/map.h	43;"	d
+NO_SHOOT	include/map.h	44;"	d
+NO_WALK	include/map.h	42;"	d
+NameSelection	prep.c	/^static int NameSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+NoWalls	map.c	/^static int NoWalls(int x, int y)$/;"	f	file:
+OBJECTIVE_COLLECT	include/gamedata.h	158;"	d
+OBJECTIVE_DESTROY	include/gamedata.h	159;"	d
+OBJECTIVE_HIACCESS	include/gamedata.h	165;"	d
+OBJECTIVE_HIDDEN	include/gamedata.h	163;"	d
+OBJECTIVE_INVESTIGATE	include/gamedata.h	161;"	d
+OBJECTIVE_KILL	include/gamedata.h	157;"	d
+OBJECTIVE_MAX	include/gamedata.h	169;"	d
+OBJECTIVE_NOACCESS	include/gamedata.h	167;"	d
+OBJECTIVE_POSKNOWN	include/gamedata.h	164;"	d
+OBJECTIVE_RESCUE	include/gamedata.h	160;"	d
+OBJECTIVE_SHIFT	include/map.h	63;"	d
+OBJECTIVE_UNKNOWNCOUNT	include/gamedata.h	166;"	d
+OBJFLAG_CONFUSING	include/objs.h	93;"	d
+OBJFLAG_DANGEROUS	include/objs.h	97;"	d
+OBJFLAG_EXPLOSIVE	include/objs.h	90;"	d
+OBJFLAG_FLAMMABLE	include/objs.h	91;"	d
+OBJFLAG_PETRIFYING	include/objs.h	94;"	d
+OBJFLAG_POISONOUS	include/objs.h	92;"	d
+OBJFLAG_QUAKE	include/objs.h	95;"	d
+OBJ_JEWEL	include/objs.h	73;"	d
+OBJ_KEYCARD_BLUE	include/objs.h	75;"	d
+OBJ_KEYCARD_GREEN	include/objs.h	76;"	d
+OBJ_KEYCARD_RED	include/objs.h	74;"	d
+OBJ_KEYCARD_YELLOW	include/objs.h	77;"	d
+OBJ_PUZZLE_1	include/objs.h	78;"	d
+OBJ_PUZZLE_10	include/objs.h	87;"	d
+OBJ_PUZZLE_2	include/objs.h	79;"	d
+OBJ_PUZZLE_3	include/objs.h	80;"	d
+OBJ_PUZZLE_4	include/objs.h	81;"	d
+OBJ_PUZZLE_5	include/objs.h	82;"	d
+OBJ_PUZZLE_6	include/objs.h	83;"	d
+OBJ_PUZZLE_7	include/objs.h	84;"	d
+OBJ_PUZZLE_8	include/objs.h	85;"	d
+OBJ_PUZZLE_9	include/objs.h	86;"	d
+OFFSET_PIC	include/map.h	47;"	d
+OFSPIC_AUTUMNTREE	include/pics.h	141;"	d
+OFSPIC_AUTUMNTREE_REMAINS	include/pics.h	142;"	d
+OFSPIC_BAG	include/pics.h	134;"	d
+OFSPIC_BARREL	include/pics.h	56;"	d
+OFSPIC_BARREL2	include/pics.h	61;"	d
+OFSPIC_BARREL_WOOD	include/pics.h	111;"	d
+OFSPIC_BLOOD	include/pics.h	180;"	d
+OFSPIC_BLOODSTAIN	include/pics.h	148;"	d
+OFSPIC_BLUEPRINT	include/pics.h	132;"	d
+OFSPIC_BONE_N_BLOOD	include/pics.h	178;"	d
+OFSPIC_BOOKSHELF	include/pics.h	127;"	d
+OFSPIC_BOTTLE	include/pics.h	136;"	d
+OFSPIC_BOX	include/pics.h	57;"	d
+OFSPIC_BOX2	include/pics.h	58;"	d
+OFSPIC_BOX3	include/pics.h	62;"	d
+OFSPIC_BULLET	include/pics.h	53;"	d
+OFSPIC_BULLET_MARKS	include/pics.h	179;"	d
+OFSPIC_BURN	include/pics.h	140;"	d
+OFSPIC_CABINET	include/pics.h	83;"	d
+OFSPIC_CD	include/pics.h	133;"	d
+OFSPIC_CHAIR	include/pics.h	87;"	d
+OFSPIC_CIRCUIT	include/pics.h	138;"	d
+OFSPIC_CLOTHEDTABLE	include/pics.h	130;"	d
+OFSPIC_COUNT	include/pics.h	186;"	d
+OFSPIC_DISK1	include/pics.h	66;"	d
+OFSPIC_DISK2	include/pics.h	67;"	d
+OFSPIC_DISK3	include/pics.h	68;"	d
+OFSPIC_DOOR	include/pics.h	54;"	d
+OFSPIC_DOOR2	include/pics.h	95;"	d
+OFSPIC_DYNAMITE	include/pics.h	126;"	d
+OFSPIC_EGG	include/pics.h	145;"	d
+OFSPIC_EGG_REMAINS	include/pics.h	146;"	d
+OFSPIC_FOLDER	include/pics.h	65;"	d
+OFSPIC_GOO	include/pics.h	185;"	d
+OFSPIC_GRAYBOX	include/pics.h	113;"	d
+OFSPIC_GREENBOX	include/pics.h	114;"	d
+OFSPIC_GREENTREE	include/pics.h	143;"	d
+OFSPIC_GREENTREE_REMAINS	include/pics.h	144;"	d
+OFSPIC_HDOOR2_BLUE	include/pics.h	102;"	d
+OFSPIC_HDOOR2_GREEN	include/pics.h	105;"	d
+OFSPIC_HDOOR2_RED	include/pics.h	99;"	d
+OFSPIC_HDOOR2_YELLOW	include/pics.h	108;"	d
+OFSPIC_HDOOR3	include/pics.h	162;"	d
+OFSPIC_HDOOR3_BLUE	include/pics.h	153;"	d
+OFSPIC_HDOOR3_GREEN	include/pics.h	156;"	d
+OFSPIC_HDOOR3_RED	include/pics.h	150;"	d
+OFSPIC_HDOOR3_YELLOW	include/pics.h	159;"	d
+OFSPIC_HDOOR4	include/pics.h	176;"	d
+OFSPIC_HDOOR4_BLUE	include/pics.h	167;"	d
+OFSPIC_HDOOR4_GREEN	include/pics.h	170;"	d
+OFSPIC_HDOOR4_RED	include/pics.h	164;"	d
+OFSPIC_HDOOR4_YELLOW	include/pics.h	173;"	d
+OFSPIC_HDOOR_BLUE	include/pics.h	75;"	d
+OFSPIC_HDOOR_GREEN	include/pics.h	78;"	d
+OFSPIC_HDOOR_RED	include/pics.h	72;"	d
+OFSPIC_HDOOR_YELLOW	include/pics.h	81;"	d
+OFSPIC_HOLO	include/pics.h	135;"	d
+OFSPIC_KEY3_BLUE	include/pics.h	154;"	d
+OFSPIC_KEY3_GREEN	include/pics.h	157;"	d
+OFSPIC_KEY3_RED	include/pics.h	151;"	d
+OFSPIC_KEY3_YELLOW	include/pics.h	160;"	d
+OFSPIC_KEY4_BLUE	include/pics.h	168;"	d
+OFSPIC_KEY4_GREEN	include/pics.h	171;"	d
+OFSPIC_KEY4_RED	include/pics.h	165;"	d
+OFSPIC_KEY4_YELLOW	include/pics.h	174;"	d
+OFSPIC_KEYCARD_BLUE	include/pics.h	76;"	d
+OFSPIC_KEYCARD_GREEN	include/pics.h	79;"	d
+OFSPIC_KEYCARD_RED	include/pics.h	73;"	d
+OFSPIC_KEYCARD_YELLOW	include/pics.h	82;"	d
+OFSPIC_KEY_BLUE	include/pics.h	103;"	d
+OFSPIC_KEY_GREEN	include/pics.h	106;"	d
+OFSPIC_KEY_RED	include/pics.h	100;"	d
+OFSPIC_KEY_YELLOW	include/pics.h	109;"	d
+OFSPIC_LABTABLE	include/pics.h	119;"	d
+OFSPIC_MINE	include/pics.h	125;"	d
+OFSPIC_MOLOTOV	include/pics.h	93;"	d
+OFSPIC_OGRESTATUE	include/pics.h	120;"	d
+OFSPIC_PAPER	include/pics.h	139;"	d
+OFSPIC_PLANT	include/pics.h	89;"	d
+OFSPIC_RADIO	include/pics.h	137;"	d
+OFSPIC_REDBOX	include/pics.h	115;"	d
+OFSPIC_ROCKET	include/pics.h	129;"	d
+OFSPIC_ROD	include/pics.h	123;"	d
+OFSPIC_SAFE	include/pics.h	85;"	d
+OFSPIC_SCRATCH	include/pics.h	182;"	d
+OFSPIC_SKULL	include/pics.h	181;"	d
+OFSPIC_SKULLBARREL_WOOD	include/pics.h	110;"	d
+OFSPIC_SNIPERBULLET	include/pics.h	94;"	d
+OFSPIC_SPARK	include/pics.h	55;"	d
+OFSPIC_STEELTABLE	include/pics.h	131;"	d
+OFSPIC_TABLE	include/pics.h	91;"	d
+OFSPIC_TERMINAL	include/pics.h	121;"	d
+OFSPIC_TREE	include/pics.h	124;"	d
+OFSPIC_TREE_REMAINS	include/pics.h	147;"	d
+OFSPIC_VDOOR	include/pics.h	69;"	d
+OFSPIC_VDOOR2	include/pics.h	96;"	d
+OFSPIC_VDOOR2_BLUE	include/pics.h	101;"	d
+OFSPIC_VDOOR2_GREEN	include/pics.h	104;"	d
+OFSPIC_VDOOR2_OPEN	include/pics.h	97;"	d
+OFSPIC_VDOOR2_RED	include/pics.h	98;"	d
+OFSPIC_VDOOR2_YELLOW	include/pics.h	107;"	d
+OFSPIC_VDOOR3	include/pics.h	161;"	d
+OFSPIC_VDOOR3_BLUE	include/pics.h	152;"	d
+OFSPIC_VDOOR3_GREEN	include/pics.h	155;"	d
+OFSPIC_VDOOR3_RED	include/pics.h	149;"	d
+OFSPIC_VDOOR3_YELLOW	include/pics.h	158;"	d
+OFSPIC_VDOOR4	include/pics.h	175;"	d
+OFSPIC_VDOOR4_BLUE	include/pics.h	166;"	d
+OFSPIC_VDOOR4_GREEN	include/pics.h	169;"	d
+OFSPIC_VDOOR4_RED	include/pics.h	163;"	d
+OFSPIC_VDOOR4_YELLOW	include/pics.h	172;"	d
+OFSPIC_VDOOR_BLUE	include/pics.h	74;"	d
+OFSPIC_VDOOR_GREEN	include/pics.h	77;"	d
+OFSPIC_VDOOR_OPEN	include/pics.h	70;"	d
+OFSPIC_VDOOR_RED	include/pics.h	71;"	d
+OFSPIC_VDOOR_YELLOW	include/pics.h	80;"	d
+OFSPIC_WALL_GOO	include/pics.h	184;"	d
+OFSPIC_WALL_SKULL	include/pics.h	177;"	d
+OFSPIC_WALL_STUFF	include/pics.h	183;"	d
+OFSPIC_WOODENBOX	include/pics.h	128;"	d
+OFSPIC_WOODTABLE	include/pics.h	117;"	d
+OFSPIC_WOODTABLE_CANDLE	include/pics.h	118;"	d
+OFSPIC_WRECKEDBARREL	include/pics.h	59;"	d
+OFSPIC_WRECKEDBARREL2	include/pics.h	64;"	d
+OFSPIC_WRECKEDBARREL_WOOD	include/pics.h	112;"	d
+OFSPIC_WRECKEDBOX	include/pics.h	60;"	d
+OFSPIC_WRECKEDBOX3	include/pics.h	63;"	d
+OFSPIC_WRECKEDBOX_WOOD	include/pics.h	116;"	d
+OFSPIC_WRECKEDCABINET	include/pics.h	84;"	d
+OFSPIC_WRECKEDCHAIR	include/pics.h	88;"	d
+OFSPIC_WRECKEDPLANT	include/pics.h	90;"	d
+OFSPIC_WRECKEDSAFE	include/pics.h	86;"	d
+OFSPIC_WRECKEDTABLE	include/pics.h	92;"	d
+OKforPlayer	map.c	/^int OKforPlayer(int x, int y)$/;"	f
+OPTIONS_COUNT	mainmenu.c	72;"	d	file:
+Object	include/objs.h	/^struct Object {$/;"	s
+Objective	include/gamedata.h	/^struct Objective {$/;"	s
+ObjectiveFromTileItem	include/mission.h	29;"	d
+ObjectiveToTileItem	include/mission.h	30;"	d
+Offset	include/pics.h	/^struct Offset {$/;"	s
+OffsetPic	include/pics.h	/^struct OffsetPic {$/;"	s
+OffsetTable	include/pics.h	/^typedef struct Offset OffsetTable[DIRECTION_COUNT];$/;"	t
+OneWall	map.c	/^static int OneWall(int x, int y)$/;"	f	file:
+OneWallOrMore	map.c	/^static int OneWallOrMore(int x, int y)$/;"	f	file:
+OutputCString	files.c	/^static void OutputCString(FILE * f, const char *s, int indentLevel)$/;"	f	file:
+P2	include/pics.h	46;"	d
+PAGEDOWN	include/charsed.h	32;"	d
+PAGEUP	include/charsed.h	31;"	d
+PASSWORD_MAX	include/password.h	28;"	d
+PETRIFIED_COUNT	objs.c	45;"	d	file:
+PICKUPS_COUNT	mission.c	301;"	d	file:
+PICKUP_LIMIT	game.c	57;"	d	file:
+PIC_COUNT1	include/pics.h	43;"	d
+PIC_COUNT2	include/pics.h	44;"	d
+PIC_DARKNESS	include/pics.h	37;"	d
+PIC_DRAINAGE	include/pics.h	40;"	d
+PIC_LOGO	include/pics.h	47;"	d
+PIC_MAX	include/pics.h	45;"	d
+PIC_TALLDARKNESS	include/pics.h	38;"	d
+PIC_UZIBULLET	include/pics.h	39;"	d
+PLAYER_BODY_COUNT	prep.c	60;"	d	file:
+PLAYER_FACE_COUNT	prep.c	59;"	d	file:
+PLAYER_HAIR_COUNT	prep.c	62;"	d	file:
+PLAYER_SKIN_COUNT	prep.c	61;"	d	file:
+POISONED_COUNT	objs.c	43;"	d	file:
+PaletteAdjust	mainmenu.c	/^static void PaletteAdjust(void)$/;"	f	file:
+PasswordEntry	password.c	/^static int PasswordEntry(int cmd, char *buffer)$/;"	f	file:
+Petrifier	actors.c	/^void Petrifier(TActor * actor)$/;"	f
+PicHeight	grafx.c	/^int PicHeight(void *pic)$/;"	f
+PicWidth	grafx.c	/^int PicWidth(void *pic)$/;"	f
+PickupObject	actors.c	/^static void PickupObject(TActor * actor, TObject * object)$/;"	f	file:
+PlaceActor	cdogs.c	/^static void PlaceActor(TActor * actor)$/;"	f	file:
+PlaceBaddie	ai.c	/^static void PlaceBaddie(TActor * actor)$/;"	f	file:
+PlaceBlowup	map.c	/^static int PlaceBlowup(int objective)$/;"	f	file:
+PlaceCard	map.c	/^static void PlaceCard(int pic, int card, int access)$/;"	f	file:
+PlaceCollectible	map.c	/^static int PlaceCollectible(int objective)$/;"	f	file:
+PlaceObject	map.c	/^static void PlaceObject(int x, int y, int index)$/;"	f	file:
+PlaceOneObject	map.c	/^static int PlaceOneObject(int x, int y, TMapObject * mo, int extraFlags)$/;"	f	file:
+PlacePrisoner	ai.c	/^static void PlacePrisoner(TActor * actor)$/;"	f	file:
+PlayGameSong	cdogs.c	/^static void PlayGameSong(void)$/;"	f	file:
+PlayMenuSong	cdogs.c	/^static void PlayMenuSong(void)$/;"	f	file:
+PlaySong	sounds.c	/^int PlaySong(char *name)$/;"	f
+PlaySound	sounds.c	/^void PlaySound(int sound, int panning, int volume)$/;"	f
+PlaySoundAt	sounds.c	/^void PlaySoundAt(int x, int y, int sound)$/;"	f
+PlayerData	include/gamedata.h	/^struct PlayerData {$/;"	s
+PlayerEquip	prep.c	/^int PlayerEquip(void *bkg)$/;"	f
+PlayerSelection	prep.c	/^int PlayerSelection(int twoPlayers, void *bkg)$/;"	f
+PlayerSpecialCommands	game.c	/^int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)$/;"	f
+PlayerStatus	game.c	/^void PlayerStatus(int x, struct PlayerData *data, TActor * p)$/;"	f
+PlayerTemplate	prep.c	/^struct PlayerTemplate {$/;"	s	file:
+PollDigiSticks	joystick.c	/^void PollDigiSticks(int *joy1, int *joy2)$/;"	f
+PollSticks	joystick.c	/^void PollSticks(int maxWait)$/;"	f
+PositionOK	ai.c	/^static int PositionOK(TActor * actor, int x, int y)$/;"	f	file:
+PowerGun	actors.c	/^void PowerGun(TActor * actor)$/;"	f
+PrintHelp	cdogs.c	/^void PrintHelp (void)$/;"	f
+PrintTitle	cdogs.c	/^void PrintTitle(void)$/;"	f
+PulseRifle	actors.c	/^void PulseRifle(TActor * actor)$/;"	f
+RANGE_FACTOR	sounds.c	360;"	d	file:
+RANGE_FULLVOLUME	sounds.c	359;"	d	file:
+RED_DOOR_COLOR	automap.c	56;"	d	file:
+RET	sprcomp.c	43;"	d	file:
+RGB	include/grafx.h	/^struct RGB {$/;"	s
+RLEncodePics	grafx.c	/^int RLEncodePics(int picCount, void **pics, void **rlePics)$/;"	f
+RLEncodeSprite	sprcomp.c	/^int RLEncodeSprite(void *sprite, unsigned char *rle)$/;"	f
+ROOMFLOOR_COUNT	include/pics.h	235;"	d
+ROOMFLOOR_NORMAL	include/pics.h	220;"	d
+ROOMFLOOR_SHADOW	include/pics.h	219;"	d
+ROOMFLOOR_TYPES	include/pics.h	221;"	d
+ROOM_COLORS	mission.c	49;"	d	file:
+RangeName	mission.c	/^const char *RangeName(int index)$/;"	f
+ReadPics	grafx.c	/^int ReadPics(const char *filename, void **pics, int maxPics,$/;"	f
+RemoveActor	actors.c	/^TActor *RemoveActor(TActor * actor)$/;"	f
+RemoveAllTriggers	triggers.c	/^static RemoveAllTriggers(void)$/;"	f	file:
+RemoveAllWatches	triggers.c	/^static void RemoveAllWatches(void)$/;"	f	file:
+RemoveItemFromTile	map.c	/^static void RemoveItemFromTile(TTileItem * t, TTile * tile)$/;"	f	file:
+RemoveObject	objs.c	/^void RemoveObject(TObject * obj)$/;"	f
+RemoveTileItem	map.c	/^void RemoveTileItem(TTileItem * t)$/;"	f
+ResetCampaign	mission.c	/^void ResetCampaign(void)$/;"	f
+RestoreBkg	charsed.c	/^void RestoreBkg(int x, int y, unsigned int *bkg)$/;"	f
+Right	include/defs.h	80;"	d
+SCORES_FILE	hiscores.c	205;"	d	file:
+SCORE_OFFSET	hiscores.c	137;"	d	file:
+SCREAM_COUNT	actors.c	105;"	d	file:
+SCREEN_WIDTH	sprcomp.c	47;"	d	file:
+SELECTKEY	mainmenu.c	679;"	d	file:
+SELECT_ONLY	cdogsed.c	98;"	d	file:
+SELECT_ONLY_FIRST	cdogsed.c	101;"	d	file:
+SHADE_ASIANSKIN	include/actors.h	118;"	d
+SHADE_BLACK	include/actors.h	120;"	d
+SHADE_BLUE	include/actors.h	108;"	d
+SHADE_BROWN	include/actors.h	110;"	d
+SHADE_COUNT	include/actors.h	122;"	d
+SHADE_DARKSKIN	include/actors.h	119;"	d
+SHADE_DKGRAY	include/actors.h	117;"	d
+SHADE_GOLDEN	include/actors.h	121;"	d
+SHADE_GRAY	include/actors.h	116;"	d
+SHADE_GREEN	include/actors.h	111;"	d
+SHADE_LTGRAY	include/actors.h	115;"	d
+SHADE_PURPLE	include/actors.h	113;"	d
+SHADE_RED	include/actors.h	114;"	d
+SHADE_SKIN	include/actors.h	109;"	d
+SHADE_YELLOW	include/actors.h	112;"	d
+SHOTGUN_POWER	include/objs.h	55;"	d
+SHOTGUN_RANGE	include/objs.h	53;"	d
+SHOTGUN_SPEED	include/objs.h	54;"	d
+SKIN_END	include/actors.h	98;"	d
+SKIN_START	include/actors.h	97;"	d
+SND_BANG	include/sounds.h	40;"	d
+SND_COUNT	include/sounds.h	46;"	d
+SND_DONE	include/sounds.h	43;"	d
+SND_DOOR	include/sounds.h	42;"	d
+SND_EXPLOSION	include/sounds.h	28;"	d
+SND_FLAMER	include/sounds.h	31;"	d
+SND_HAHAHA	include/sounds.h	39;"	d
+SND_KILL	include/sounds.h	35;"	d
+SND_KILL2	include/sounds.h	36;"	d
+SND_KILL3	include/sounds.h	37;"	d
+SND_KILL4	include/sounds.h	38;"	d
+SND_LASER	include/sounds.h	44;"	d
+SND_LAUNCH	include/sounds.h	29;"	d
+SND_MACHINEGUN	include/sounds.h	30;"	d
+SND_MINIGUN	include/sounds.h	45;"	d
+SND_PICKUP	include/sounds.h	41;"	d
+SND_POWERGUN	include/sounds.h	33;"	d
+SND_QUALITYMODE	include/sounds.h	50;"	d
+SND_SHOTGUN	include/sounds.h	32;"	d
+SND_SWITCH	include/sounds.h	34;"	d
+SND_USE486	include/sounds.h	51;"	d
+SNIPER_POWER	include/objs.h	63;"	d
+SNIPER_RANGE	include/objs.h	61;"	d
+SNIPER_SPEED	include/objs.h	62;"	d
+SPECIAL_CONFUSE	include/objs.h	102;"	d
+SPECIAL_FLAME	include/objs.h	99;"	d
+SPECIAL_MAX	include/gamedata.h	182;"	d
+SPECIAL_PETRIFY	include/objs.h	101;"	d
+SPECIAL_POISON	include/objs.h	100;"	d
+SPLIT_X	include/gamedata.h	57;"	d
+SPLIT_Y	include/gamedata.h	58;"	d
+STATE_COUNT	include/defs.h	108;"	d
+STATE_IDLE	include/defs.h	99;"	d
+STATE_IDLELEFT	include/defs.h	100;"	d
+STATE_IDLERIGHT	include/defs.h	101;"	d
+STATE_RECOIL	include/defs.h	107;"	d
+STATE_SHOOTING	include/defs.h	106;"	d
+STATE_WALKING_1	include/defs.h	102;"	d
+STATE_WALKING_2	include/defs.h	103;"	d
+STATE_WALKING_3	include/defs.h	104;"	d
+STATE_WALKING_4	include/defs.h	105;"	d
+STEPSIZE	ai.c	218;"	d	file:
+STICK_PORT	joystick.c	40;"	d	file:
+SWITCH_TURNLIMIT	game.c	55;"	d	file:
+Save	cdogsed.c	/^static void Save(int asCode)$/;"	f	file:
+SaveCampaign	files.c	/^int SaveCampaign(const char *filename, TCampaignSetting * setting)$/;"	f
+SaveCampaignAsC	files.c	/^void SaveCampaignAsC(const char *filename, const char *name,$/;"	f
+SaveConfig	mainmenu.c	/^void SaveConfig(void)$/;"	f
+SaveHighScores	hiscores.c	/^void SaveHighScores(void)$/;"	f
+SaveTemplate	prep.c	/^void SaveTemplate(struct PlayerData *data, struct PlayerTemplate *t)$/;"	f
+SaveTemplates	prep.c	/^void SaveTemplates(void)$/;"	f
+ScanCampaign	files.c	/^int ScanCampaign(const char *filename, char *title, int *missions)$/;"	f
+Score	actors.c	/^void Score(int flags, int points)$/;"	f
+SelectCampaign	mainmenu.c	/^int SelectCampaign(int dogFight, int cmd)$/;"	f
+SelectControls	mainmenu.c	/^int SelectControls(int cmd)$/;"	f
+SelectKeys	mainmenu.c	/^int SelectKeys(int cmd)$/;"	f
+SelectMain	mainmenu.c	/^static int SelectMain(int cmd)$/;"	f	file:
+SelectOptions	mainmenu.c	/^int SelectOptions(int cmd)$/;"	f
+SelectVolume	mainmenu.c	/^int SelectVolume(int cmd)$/;"	f
+SetBuffer	draw.c	/^SetBuffer(int x_origin, int y_origin, struct Buffer *buffer, int width)$/;"	f
+SetCharacter	actors.c	/^void SetCharacter(int index, int face, int skin, int hair, int body,$/;"	f
+SetCharacterColors	actors.c	/^void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,$/;"	f
+SetClip	blit.c	/^void SetClip(int left, int top, int right, int bottom)$/;"	f
+SetColorZero	grafx.c	/^void SetColorZero(int r, int g, int b)$/;"	f
+SetDstScreen	blit.c	/^void SetDstScreen(void *the_screen)$/;"	f
+SetDynamicInterrupts	include/sounds.h	81;"	d
+SetFXChannels	sounds.c	/^void SetFXChannels(int channels)$/;"	f
+SetFXVolume	sounds.c	/^void SetFXVolume(int volume)$/;"	f
+SetLeftEar	sounds.c	/^void SetLeftEar(int x, int y)$/;"	f
+SetMinMusicChannels	sounds.c	/^void SetMinMusicChannels(int channels)$/;"	f
+SetModuleDirectory	sounds.c	/^void SetModuleDirectory(const char *dir)$/;"	f
+SetMouseRects	events.c	/^void SetMouseRects(struct MouseRect *rects)$/;"	f
+SetMusicVolume	sounds.c	/^void SetMusicVolume(int volume)$/;"	f
+SetPalette	blit.c	/^void SetPalette(void *pal)$/;"	f
+SetPlayer	prep.c	/^static void SetPlayer(int character, struct PlayerData *data)$/;"	f	file:
+SetRange	mission.c	/^void SetRange(int start, int range)$/;"	f
+SetRightEar	sounds.c	/^void SetRightEar(int x, int y)$/;"	f
+SetSecondaryMouseRects	events.c	/^void SetSecondaryMouseRects(struct MouseRect *rects)$/;"	f
+SetShade	actors.c	/^void SetShade(TranslationTable * table, int start, int end, int shade)$/;"	f
+SetStateForActor	actors.c	/^void SetStateForActor(TActor * actor, int state)$/;"	f
+Setup	cdogsed.c	/^static void Setup(int index, int buildTables)$/;"	f	file:
+SetupBadguysForMission	mission.c	/^static void SetupBadguysForMission(struct Mission *mission)$/;"	f	file:
+SetupBuiltin	mainmenu.c	/^static void SetupBuiltin(int dogFight, int index)$/;"	f	file:
+SetupBuiltinCampaign	mission.c	/^int SetupBuiltinCampaign(int index)$/;"	f
+SetupBuiltinDogfight	mission.c	/^int SetupBuiltinDogfight(int index)$/;"	f
+SetupMap	map.c	/^void SetupMap(void)$/;"	f
+SetupMission	mission.c	/^void SetupMission(int index, int buildTables)$/;"	f
+SetupMissionCharacter	mission.c	/^void SetupMissionCharacter(int index, const TBadGuy * b)$/;"	f
+SetupObjective	mission.c	/^static void SetupObjective(int o, struct Mission *mission)$/;"	f	file:
+SetupObjectives	mission.c	/^static void SetupObjectives(struct Mission *mission)$/;"	f	file:
+SetupPerimeter	map.c	/^void SetupPerimeter(int w, int h)$/;"	f
+SetupWeapons	mission.c	/^static void SetupWeapons(int weapons)$/;"	f	file:
+ShakeScreen	game.c	/^void ShakeScreen(int amount)$/;"	f
+ShiftSongs	gamedata.c	/^void ShiftSongs(struct SongDef **songList)$/;"	f
+Shoot	actors.c	/^void Shoot(TActor * actor)$/;"	f
+ShotGun	actors.c	/^void ShotGun(TActor * actor)$/;"	f
+ShowAllKeys	mainmenu.c	/^static void ShowAllKeys(int index, int change)$/;"	f	file:
+ShowControls	menu.c	/^void ShowControls(void)$/;"	f
+ShowCredits	mainmenu.c	/^static void ShowCredits(void)$/;"	f	file:
+ShowPlayerControls	prep.c	/^static void ShowPlayerControls(int x, struct PlayerData *data)$/;"	f	file:
+ShowScore	cdogs.c	/^void ShowScore(void *bkg, int score1, int score2)$/;"	f
+ShowSelection	prep.c	/^static void ShowSelection(int x, struct PlayerData *data, int character)$/;"	f	file:
+ShowWeaponStatus	cdogsed.c	/^static void ShowWeaponStatus(int x, int y, int weapon, int xc)$/;"	f	file:
+SizeBMov	sprcomp.c	/^int SizeBMov(int x)$/;"	f
+SizeDWMov	sprcomp.c	/^int SizeDWMov(int x)$/;"	f
+SizeWMov	sprcomp.c	/^int SizeWMov(int x)$/;"	f
+SkinSelection	prep.c	/^static int SkinSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+SlideActor	actors.c	/^void SlideActor(TActor * actor, int cmd)$/;"	f
+SndData	sounds.c	/^struct SndData {$/;"	s	file:
+SniperGun	actors.c	/^void SniperGun(TActor * actor)$/;"	f
+SongDef	include/gamedata.h	/^struct SongDef {$/;"	s
+SoundCallback	sounds.c	/^void SoundCallback(void *userdata, Uint8 * stream, int len)$/;"	f
+SoundTick	include/sounds.h	78;"	d
+StatusDisplay	game.c	/^void StatusDisplay(void)$/;"	f
+Summary	cdogs.c	/^void Summary(int x, struct PlayerData *data, int character)$/;"	f
+SwapButtons	input.c	/^static int SwapButtons(int cmd)$/;"	f	file:
+Synchronize	game.c	/^int Synchronize(void)$/;"	f
+TAction	include/triggers.h	/^typedef struct Action TAction;$/;"	t
+TActor	include/actors.h	/^typedef struct Actor TActor;$/;"	t
+TBadGuy	include/gamedata.h	/^typedef struct BadGuy TBadGuy;$/;"	t
+TCampaignSetting	include/gamedata.h	/^typedef struct CampaignSetting TCampaignSetting;$/;"	t
+TCondition	include/triggers.h	/^typedef struct Condition TCondition;$/;"	t
+TEST_LOS	draw.c	118;"	d	file:
+TH	cdogsed.c	97;"	d	file:
+TH	charsed.c	82;"	d	file:
+TILEITEM_CAN_BE_SHOT	include/map.h	60;"	d
+TILEITEM_CAN_BE_TAKEN	include/map.h	61;"	d
+TILEITEM_IMPASSABLE	include/map.h	59;"	d
+TILEITEM_OBJECTIVE	include/map.h	62;"	d
+TILE_HEIGHT	include/map.h	36;"	d
+TILE_TRIGGER	include/map.h	49;"	d
+TILE_WIDTH	include/map.h	35;"	d
+TMapObject	include/gamedata.h	/^typedef struct MapObject TMapObject;$/;"	t
+TMobileObject	include/objs.h	/^typedef struct MobileObject TMobileObject;$/;"	t
+TObject	include/objs.h	/^typedef struct Object TObject;$/;"	t
+TOffsetPic	include/pics.h	/^typedef struct OffsetPic TOffsetPic;$/;"	t
+TPalette	include/grafx.h	/^typedef color TPalette[256];$/;"	t
+TTile	include/map.h	/^typedef struct Tile TTile;$/;"	t
+TTileItem	include/map.h	/^typedef struct TileItem TTileItem;$/;"	t
+TTrigger	include/triggers.h	/^typedef struct Trigger TTrigger;$/;"	t
+TWatch	include/triggers.h	/^typedef struct Watch TWatch;$/;"	t
+TemplateSelection	prep.c	/^static int TemplateSelection(int loadFlag, int x, int index,$/;"	f	file:
+TestPassword	password.c	/^static int TestPassword(const char *password)$/;"	f	file:
+TextChar	text.c	/^void TextChar(char c)$/;"	f
+TextCharWidth	text.c	/^int TextCharWidth(int c)$/;"	f
+TextCharWithTable	text.c	/^void TextCharWithTable(char c, TranslationTable * table)$/;"	f
+TextGoto	text.c	/^void TextGoto(int x, int y)$/;"	f
+TextHeight	text.c	/^int TextHeight(void)$/;"	f
+TextInit	text.c	/^void TextInit(const char *filename, int offset, int compile, int rle)$/;"	f
+TextString	text.c	/^void TextString(const char *s)$/;"	f
+TextStringAt	text.c	/^void TextStringAt(int x, int y, const char *s)$/;"	f
+TextStringWithTable	text.c	/^void TextStringWithTable(const char *s, TranslationTable * table)$/;"	f
+TextStringWithTableAt	text.c	/^void TextStringWithTableAt(int x, int y, const char *s,$/;"	f
+TextWidth	text.c	/^int TextWidth(const char *s)$/;"	f
+Tile	include/map.h	/^struct Tile {$/;"	s
+TileItem	include/map.h	/^struct TileItem {$/;"	s
+TileItemDrawFunc	include/map.h	/^typedef void (*TileItemDrawFunc) (int, int, void *);$/;"	t
+TileItemIsObjective	include/mission.h	28;"	d
+ToggleTrack	sounds.c	/^void ToggleTrack(int track)$/;"	f
+TrackKills	objs.c	/^static void TrackKills(TActor * victim, int flags)$/;"	f	file:
+TranslationTable	include/grafx.h	/^typedef unsigned char TranslationTable[256];$/;"	t
+Trigger	include/triggers.h	/^struct Trigger {$/;"	s
+TriggerAt	triggers.c	/^void TriggerAt(int x, int y, int flags)$/;"	f
+Up	include/defs.h	81;"	d
+UpdateActiveMine	objs.c	/^int UpdateActiveMine(TMobileObject * obj)$/;"	f
+UpdateActorState	actors.c	/^void UpdateActorState(TActor * actor, int ticks)$/;"	f
+UpdateAllActors	actors.c	/^void UpdateAllActors(int ticks)$/;"	f
+UpdateBrownBullet	objs.c	/^int UpdateBrownBullet(TMobileObject * obj)$/;"	f
+UpdateBullet	objs.c	/^int UpdateBullet(TMobileObject * obj)$/;"	f
+UpdateDroppedMine	objs.c	/^int UpdateDroppedMine(TMobileObject * obj)$/;"	f
+UpdateExplosion	objs.c	/^int UpdateExplosion(TMobileObject * obj)$/;"	f
+UpdateFlame	objs.c	/^int UpdateFlame(TMobileObject * obj)$/;"	f
+UpdateGasCloud	objs.c	/^int UpdateGasCloud(TMobileObject * obj)$/;"	f
+UpdateGrenade	objs.c	/^int UpdateGrenade(TMobileObject * obj)$/;"	f
+UpdateMobileObject	objs.c	/^int UpdateMobileObject(TMobileObject * obj)$/;"	f
+UpdateMobileObjects	objs.c	/^void UpdateMobileObjects(void)$/;"	f
+UpdateMolotov	objs.c	/^int UpdateMolotov(TMobileObject * obj)$/;"	f
+UpdateMolotovFlame	objs.c	/^int UpdateMolotovFlame(TMobileObject * obj)$/;"	f
+UpdatePetrifierBullet	objs.c	/^int UpdatePetrifierBullet(TMobileObject * obj)$/;"	f
+UpdateSeeker	objs.c	/^int UpdateSeeker(TMobileObject * obj)$/;"	f
+UpdateSpark	objs.c	/^int UpdateSpark(TMobileObject * obj)$/;"	f
+UpdateTriggeredMine	objs.c	/^int UpdateTriggeredMine(TMobileObject * obj)$/;"	f
+UpdateWatches	triggers.c	/^void UpdateWatches(void)$/;"	f
+UseTemplate	prep.c	/^void UseTemplate(int character, struct PlayerData *data,$/;"	f
+VGA_PORT	joystick.c	39;"	d	file:
+VID_FULLSCREEN	include/grafx.h	39;"	d
+VID_WIN_NORMAL	include/grafx.h	40;"	d
+VID_WIN_SCALE	include/grafx.h	41;"	d
+VOLUME_COUNT	mainmenu.c	102;"	d	file:
+ValidStart	map.c	/^static int ValidStart(int x, int y)$/;"	f	file:
+VertDoor	map.c	/^static void VertDoor(int x, int y, int flags)$/;"	f	file:
+Victory	cdogs.c	/^void Victory(void *bkg)$/;"	f
+W	map.c	/^static int W(int x, int y)$/;"	f	file:
+WALL_BOTTOM	include/pics.h	192;"	d
+WALL_BOTTOMLEFT	include/pics.h	195;"	d
+WALL_BOTTOMRIGHT	include/pics.h	196;"	d
+WALL_BOTTOM_T	include/pics.h	200;"	d
+WALL_BRICKS	include/pics.h	207;"	d
+WALL_COLOR	automap.c	50;"	d	file:
+WALL_COLORS	mission.c	47;"	d	file:
+WALL_COUNT	include/pics.h	211;"	d
+WALL_CROSS	include/pics.h	203;"	d
+WALL_HORIZONTAL	include/pics.h	202;"	d
+WALL_LEFT	include/pics.h	189;"	d
+WALL_LEFT_T	include/pics.h	197;"	d
+WALL_RED	include/pics.h	208;"	d
+WALL_RIGHT	include/pics.h	190;"	d
+WALL_RIGHT_T	include/pics.h	198;"	d
+WALL_SINGLE	include/pics.h	188;"	d
+WALL_STEEL	include/pics.h	206;"	d
+WALL_STEEL_N_WOOD	include/pics.h	209;"	d
+WALL_STONE	include/pics.h	210;"	d
+WALL_TOP	include/pics.h	191;"	d
+WALL_TOPLEFT	include/pics.h	193;"	d
+WALL_TOPRIGHT	include/pics.h	194;"	d
+WALL_TOP_T	include/pics.h	199;"	d
+WALL_TYPES	include/pics.h	204;"	d
+WALL_VERTICAL	include/pics.h	201;"	d
+WEAPON_MAX	include/gamedata.h	184;"	d
+WORD	sprcomp.c	50;"	d	file:
+WORD_OVERRIDE	sprcomp.c	34;"	d	file:
+Wait	input.c	/^void Wait(void)$/;"	f
+WaitForPress	input.c	/^void WaitForPress(void)$/;"	f
+WaitForRelease	input.c	/^void WaitForRelease(void)$/;"	f
+Watch	include/triggers.h	/^struct Watch {$/;"	s
+WeaponSelection	prep.c	/^static int WeaponSelection(int x, int index, struct PlayerData *data,$/;"	f	file:
+WillFire	ai.c	/^static int WillFire(TActor * actor, int roll)$/;"	f	file:
+XC_ARMS	charsed.c	56;"	d	file:
+XC_ASBESTOS	charsed.c	66;"	d	file:
+XC_AUTHOR	cdogsed.c	63;"	d	file:
+XC_AWAKE	charsed.c	79;"	d	file:
+XC_BODY	charsed.c	55;"	d	file:
+XC_CAMPAIGNDESC	cdogsed.c	64;"	d	file:
+XC_CAMPAIGNTITLE	cdogsed.c	62;"	d	file:
+XC_COLOR1	cdogsed.c	83;"	d	file:
+XC_COLOR2	cdogsed.c	84;"	d	file:
+XC_COLOR3	cdogsed.c	85;"	d	file:
+XC_COLOR4	cdogsed.c	86;"	d	file:
+XC_DELAY	charsed.c	64;"	d	file:
+XC_DENSITY	cdogsed.c	75;"	d	file:
+XC_DOORS	cdogsed.c	80;"	d	file:
+XC_EXIT	cdogsed.c	82;"	d	file:
+XC_FACE	charsed.c	52;"	d	file:
+XC_FLAGS	cdogsed.c	92;"	d	file:
+XC_FLOOR	cdogsed.c	78;"	d	file:
+XC_FOLLOWER	charsed.c	76;"	d	file:
+XC_GOOD_GUY	charsed.c	71;"	d	file:
+XC_HAIR	charsed.c	54;"	d	file:
+XC_HEALTH	charsed.c	60;"	d	file:
+XC_HEIGHT	cdogsed.c	70;"	d	file:
+XC_IMMUNITY	charsed.c	67;"	d	file:
+XC_INDEX	cdogsed.c	89;"	d	file:
+XC_INVULNERABLE	charsed.c	75;"	d	file:
+XC_KEYS	cdogsed.c	81;"	d	file:
+XC_LEGS	charsed.c	57;"	d	file:
+XC_MAXWEAPONS	cdogsed.c	94;"	d	file:
+XC_MISSIONTITLE	cdogsed.c	66;"	d	file:
+XC_MOVE	charsed.c	61;"	d	file:
+XC_MUSICFILE	cdogsed.c	67;"	d	file:
+XC_PENALTY	charsed.c	77;"	d	file:
+XC_PRISONER	charsed.c	74;"	d	file:
+XC_REQUIRED	cdogsed.c	90;"	d	file:
+XC_ROOM	cdogsed.c	79;"	d	file:
+XC_ROOMCOUNT	cdogsed.c	73;"	d	file:
+XC_RUNS_AWAY	charsed.c	69;"	d	file:
+XC_SEETHROUGH	charsed.c	68;"	d	file:
+XC_SHOOT	charsed.c	63;"	d	file:
+XC_SKIN	charsed.c	53;"	d	file:
+XC_SLEEPING	charsed.c	72;"	d	file:
+XC_SNEAKY	charsed.c	70;"	d	file:
+XC_SPEED	charsed.c	59;"	d	file:
+XC_SQRCOUNT	cdogsed.c	74;"	d	file:
+XC_TOTAL	cdogsed.c	91;"	d	file:
+XC_TRACK	charsed.c	62;"	d	file:
+XC_TYPE	cdogsed.c	88;"	d	file:
+XC_VICTIM	charsed.c	78;"	d	file:
+XC_WALL	cdogsed.c	77;"	d	file:
+XC_WALLCOUNT	cdogsed.c	71;"	d	file:
+XC_WALLLENGTH	cdogsed.c	72;"	d	file:
+XC_WIDTH	cdogsed.c	69;"	d	file:
+XMAX	include/map.h	33;"	d
+XYToCharacterIndex	charsed.c	/^static int XYToCharacterIndex(int x, int y, int *index)$/;"	f	file:
+X_TILES	include/map.h	38;"	d
+X_TILES_HALF	include/map.h	39;"	d
+YC_APPEARANCE	charsed.c	46;"	d	file:
+YC_ATTRIBUTES	charsed.c	47;"	d	file:
+YC_CAMPAIGNTITLE	cdogsed.c	50;"	d	file:
+YC_CHARACTERS	cdogsed.c	56;"	d	file:
+YC_FLAGS	charsed.c	48;"	d	file:
+YC_FLAGS2	charsed.c	49;"	d	file:
+YC_ITEMS	cdogsed.c	59;"	d	file:
+YC_MISSIONDESC	cdogsed.c	55;"	d	file:
+YC_MISSIONINDEX	cdogsed.c	51;"	d	file:
+YC_MISSIONLOOKS	cdogsed.c	54;"	d	file:
+YC_MISSIONPROPS	cdogsed.c	53;"	d	file:
+YC_MISSIONTITLE	cdogsed.c	52;"	d	file:
+YC_OBJECTIVES	cdogsed.c	60;"	d	file:
+YC_SPECIALS	cdogsed.c	57;"	d	file:
+YC_WEAPON	charsed.c	50;"	d	file:
+YC_WEAPONS	cdogsed.c	58;"	d	file:
+YELLOW_DOOR_COLOR	automap.c	53;"	d	file:
+YES	include/defs.h	32;"	d
+YES	include/joystick.h	29;"	d
+YMAX	include/map.h	32;"	d
+Y_TILES	include/map.h	40;"	d
+__ACTORS	include/actors.h	33;"	d
+__DEFS	include/defs.h	29;"	d
+__GAMEDATA	include/gamedata.h	291;"	d
+__MAP	include/map.h	30;"	d
+__OBJSH	include/objs.h	29;"	d
+__PICS	include/pics.h	29;"	d
+__TRIGGERS	include/triggers.h	29;"	d
+__blit	include/blit.h	31;"	d
+__grafx	include/grafx.h	29;"	d
+__typeof__	ai.c	36;"	d	file:
+_disable	joystick.c	/^void _disable()$/;"	f
+_dos_getvect	keyboard.c	/^void *_dos_getvect(int x)$/;"	f
+_dos_setvect	keyboard.c	/^void _dos_setvect(int intr_num, void *isr)$/;"	f
+_enable	joystick.c	/^void _enable()$/;"	f
+accessCount	map.c	/^static int accessCount;$/;"	v	file:
+action	include/triggers.h	/^	int action;$/;"	m	struct:Action
+actionDelay	include/actors.h	/^	int actionDelay;$/;"	m	struct:CharacterDescription
+actionDelay	include/gamedata.h	/^	int actionDelay;$/;"	m	struct:BadGuy
+actions	include/triggers.h	/^	TAction *actions;$/;"	m	struct:Trigger
+actions	include/triggers.h	/^	TAction *actions;$/;"	m	struct:Watch
+activeWatches	triggers.c	/^static TWatch *activeWatches = NULL;$/;"	v	file:
+actorList	actors.c	/^static TActor *actorList = NULL;$/;"	v	file:
+alienDoors	mission.c	/^static struct DoorPic alienDoors[6] = { {OFSPIC_HDOOR4, OFSPIC_VDOOR4},$/;"	v	file:
+allTime	include/gamedata.h	/^	int allTime, today;$/;"	m	struct:PlayerData
+allTimeHigh	hiscores.c	/^static struct Entry allTimeHigh[MAX_ENTRY];$/;"	v	file:
+altRange	include/gamedata.h	/^	int altRange;$/;"	m	struct:Mission
+armColor	include/gamedata.h	/^	int armColor;$/;"	m	struct:BadGuy
+armedBodyPic	include/actors.h	/^	int armedBodyPic;$/;"	m	struct:CharacterDescription
+armedBodyPic	include/gamedata.h	/^	int armedBodyPic;$/;"	m	struct:BadGuy
+arms	hiscores.c	/^	int arms;$/;"	m	struct:Entry	file:
+arms	include/gamedata.h	/^	int arms, body, legs, skin, hair;$/;"	m	struct:PlayerData
+arms	prep.c	/^	int arms;$/;"	m	struct:PlayerTemplate	file:
+author	include/gamedata.h	/^	char author[40];$/;"	m	struct:CampaignSetting
+availableWeapons	include/gamedata.h	/^	int availableWeapons[WEAPON_MAX];$/;"	m	struct:MissionOptions
+badGuys	include/gamedata.h	/^	int badGuys;$/;"	m	struct:GameOptions
+baddieCount	ai.c	/^static int baddieCount = 0;$/;"	v	file:
+baddieCount	include/gamedata.h	/^	int baddieCount;$/;"	m	struct:Mission
+baddieDensity	include/gamedata.h	/^	int baddieDensity;$/;"	m	struct:Mission
+baddies	include/gamedata.h	/^	int baddies[BADDIE_MAX];$/;"	m	struct:Mission
+bkg	cdogs.c	/^static void *bkg = NULL;$/;"	v	file:
+blowupObject	include/gamedata.h	/^	TMapObject *blowupObject;$/;"	m	struct:Objective
+blue	include/grafx.h	/^	unsigned char red, green, blue;$/;"	m	struct:RGB
+body	hiscores.c	/^	int body;$/;"	m	struct:Entry	file:
+body	include/gamedata.h	/^	int arms, body, legs, skin, hair;$/;"	m	struct:PlayerData
+body	prep.c	/^	int body;$/;"	m	struct:PlayerTemplate	file:
+bodyColor	include/gamedata.h	/^	int bodyColor;$/;"	m	struct:BadGuy
+bottom	include/events.h	/^	int left, top, right, bottom;$/;"	m	struct:MouseRect
+brightness	include/gamedata.h	/^	int brightness;$/;"	m	struct:GameOptions
+buttons	include/joystick.h	/^	int buttons;$/;"	m	struct:JoyRec
+cBeamPics	pics.c	/^const TOffsetPic cBeamPics[DIRECTION_COUNT] = {$/;"	v
+cBloodPics	pics.c	/^const TOffsetPic cBloodPics[BLOOD_MAX] = {$/;"	v
+cBodyOffset	pics.c	/^const OffsetTable cBodyOffset[BODY_COUNT] = {$/;"	v
+cBodyPic	pics.c	/^const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT] = {$/;"	v
+cBrightBeamPics	pics.c	/^const TOffsetPic cBrightBeamPics[DIRECTION_COUNT] = {$/;"	v
+cColorRanges	mission.c	/^static struct ColorRange cColorRanges[] = {$/;"	v	file:
+cDeathPics	pics.c	/^const TOffsetPic cDeathPics[DEATH_MAX] = {$/;"	v
+cFireBallPics	pics.c	/^const TOffsetPic cFireBallPics[FIREBALL_MAX] = {$/;"	v
+cFlamePics	pics.c	/^const TOffsetPic cFlamePics[4] = {$/;"	v
+cFloorPics	pics.c	/^const int cFloorPics[FLOOR_COUNT][FLOOR_TYPES] = {$/;"	v
+cGeneralPics	pics.c	/^const TOffsetPic cGeneralPics[OFSPIC_COUNT] = {$/;"	v
+cGrenadePics	pics.c	/^const TOffsetPic cGrenadePics[4] = {$/;"	v
+cGunHandOffset	pics.c	/^const OffsetTable cGunHandOffset[BODY_COUNT] = {$/;"	v
+cGunPics	pics.c	/^const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT] = {$/;"	v
+cHeadOffset	pics.c	/^const OffsetTable cHeadOffset[FACE_COUNT] = {$/;"	v
+cHeadPic	pics.c	/^const int cHeadPic[FACE_COUNT][DIRECTION_COUNT][STATE_COUNT] = {$/;"	v
+cMuzzleOffset	pics.c	/^const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {$/;"	v
+cNeckOffset	pics.c	/^const OffsetTable cNeckOffset[BODY_COUNT] = {$/;"	v
+cRoomPics	pics.c	/^const int cRoomPics[ROOMFLOOR_COUNT][ROOMFLOOR_TYPES] = {$/;"	v
+cSinus	defs.c	/^static int cSinus[65] = {$/;"	v	file:
+cWallOffset	pics.c	/^const struct Offset cWallOffset = { 0, -12 };$/;"	v
+cWallPics	pics.c	/^const int cWallPics[WALL_COUNT][WALL_TYPES] = {$/;"	v
+campaign	cdogsed.c	/^TCampaignSetting campaign;$/;"	v
+campaignList	mainmenu.c	/^static struct FileEntry *campaignList = NULL;$/;"	v	file:
+cdogs_homepath	files.c	/^char *cdogs_homepath = NULL;$/;"	v
+channelPosition	sounds.c	/^static int channelPosition[FX_MAXCHANNELS];$/;"	v	file:
+channelPriority	sounds.c	/^static int channelPriority[FX_MAXCHANNELS];$/;"	v	file:
+channelTime	sounds.c	/^static int channelTime[FX_MAXCHANNELS];$/;"	v	file:
+character	include/actors.h	/^	int character;$/;"	m	struct:Actor
+characterCount	include/gamedata.h	/^	int characterCount;$/;"	m	struct:CampaignSetting
+characterDesc	actors.c	/^struct CharacterDescription characterDesc[CHARACTER_COUNT];$/;"	v
+characterTemplate	charsed.c	/^static TBadGuy characterTemplate = {$/;"	v	file:
+characters	cdogsed.c	/^TBadGuy characters[MAX_CHARACTERS];$/;"	v
+characters	include/gamedata.h	/^	TBadGuy *characters;$/;"	m	struct:CampaignSetting
+clipbottom	blit.c	/^int clipleft = 0, cliptop = 0, clipright = 319, clipbottom = 199;$/;"	v
+clipleft	blit.c	/^int clipleft = 0, cliptop = 0, clipright = 319, clipbottom = 199;$/;"	v
+clipright	blit.c	/^int clipleft = 0, cliptop = 0, clipright = 319, clipbottom = 199;$/;"	v
+cliptop	blit.c	/^int clipleft = 0, cliptop = 0, clipright = 319, clipbottom = 199;$/;"	v
+cmd2dir	defs.c	/^int cmd2dir[16] = {$/;"	v
+cmpPrio	sounds.c	/^	int cmpPrio;$/;"	m	struct:SndData	file:
+color	include/gamedata.h	/^	int color;$/;"	m	struct:Objective
+color	include/grafx.h	/^typedef struct RGB color;$/;"	t
+colorShades	actors.c	/^static ColorShade colorShades[SHADE_COUNT] = {$/;"	v	file:
+compileSprite	sprcomp.c	/^int compileSprite(void *sprite, unsigned char *ml)$/;"	f
+compiledFont	text.c	/^static void *compiledFont[CHARS_IN_FONT];$/;"	v	file:
+condition	include/triggers.h	/^	int condition;$/;"	m	struct:Condition
+conditions	include/triggers.h	/^	TCondition *conditions;$/;"	m	struct:Watch
+confused	include/actors.h	/^	int confused;$/;"	m	struct:Actor
+controls	include/gamedata.h	/^	int controls;$/;"	m	struct:PlayerData
+controlsMenu	mainmenu.c	/^static const char *controlsMenu[CONTROLS_COUNT] = {$/;"	v	file:
+copyMode	include/gamedata.h	/^	int copyMode;$/;"	m	struct:GameOptions
+count	include/gamedata.h	/^	int count;$/;"	m	struct:MissionObjective
+count	include/gamedata.h	/^	int count;$/;"	m	struct:Objective
+count	include/objs.h	/^	int count;$/;"	m	struct:MobileObject
+credits	mainmenu.c	/^static struct Credit credits[] = {$/;"	v	file:
+cubeKeys	mission.c	/^static int cubeKeys[4] =$/;"	v	file:
+currentMission	cdogsed.c	/^struct Mission *currentMission;$/;"	v
+customSetting	mainmenu.c	/^static TCampaignSetting customSetting = {$/;"	v	file:
+data	include/files.h	/^	int data;$/;"	m	struct:FileEntry
+data	include/map.h	/^	void *data;$/;"	m	struct:TileItem
+data	sounds.c	/^	char *data;$/;"	m	struct:SndData	file:
+dead	include/actors.h	/^	int dead;$/;"	m	struct:Actor
+defaultGun	include/actors.h	/^	int defaultGun;$/;"	m	struct:CharacterDescription
+delay	include/actors.h	/^	int delay;$/;"	m	struct:Actor
+delayTable	actors.c	/^static int delayTable[STATE_COUNT] = {$/;"	v	file:
+density	include/gamedata.h	/^	int density;$/;"	m	struct:GameOptions
+description	include/gamedata.h	/^	char description[200];$/;"	m	struct:CampaignSetting
+description	include/gamedata.h	/^	char description[400];$/;"	m	struct:Mission
+description	include/gamedata.h	/^	char description[60];$/;"	m	struct:MissionObjective
+df1	mission.c	/^static TCampaignSetting df1 = {$/;"	v	file:
+df2	mission.c	/^static TCampaignSetting df2 = {$/;"	v	file:
+difficulty	include/gamedata.h	/^	int difficulty;$/;"	m	struct:GameOptions
+dir2angle	defs.c	/^int dir2angle[8] = {$/;"	v
+dir2cmd	defs.c	/^int dir2cmd[8] = {$/;"	v
+direction	include/actors.h	/^	int direction;$/;"	m	struct:Actor
+displayFPS	include/gamedata.h	/^	int displayFPS;$/;"	m	struct:GameOptions
+displaySlices	include/gamedata.h	/^	int displaySlices;$/;"	m	struct:GameOptions
+displayTime	include/gamedata.h	/^	int displayTime;$/;"	m	struct:GameOptions
+dogFight	include/gamedata.h	/^	int dogFight;$/;"	m	struct:CampaignOptions
+dogFight1	mission.c	/^struct Mission dogFight1 = {$/;"	v
+dogFight2	mission.c	/^struct Mission dogFight2 = {$/;"	v
+dogfightList	mainmenu.c	/^static struct FileEntry *dogfightList = NULL;$/;"	v	file:
+done	include/gamedata.h	/^	int done;$/;"	m	struct:Objective
+doorCount	include/mission.h	/^	int doorCount;$/;"	m	struct:EditorInfo
+doorPics	include/gamedata.h	/^	struct DoorPic *doorPics;$/;"	m	struct:MissionOptions
+doorStyle	include/gamedata.h	/^	int doorStyle;$/;"	m	struct:Mission
+doorStyles	mission.c	/^static struct DoorPic *doorStyles[] = {$/;"	v	file:
+drawFunc	include/map.h	/^	TileItemDrawFunc drawFunc;$/;"	m	struct:TileItem
+dungeonDoors	mission.c	/^static struct DoorPic dungeonDoors[6] = { {OFSPIC_DOOR2, OFSPIC_VDOOR2},$/;"	v	file:
+dungeonKeys	mission.c	/^static int dungeonKeys[4] =$/;"	v	file:
+dx	include/actors.h	/^	int dx, dy;$/;"	m	struct:Actor
+dx	include/map.h	/^	int dx, dy;$/;"	m	struct:Buffer
+dx	include/objs.h	/^	int dx, dy, dz;$/;"	m	struct:MobileObject
+dx	include/pics.h	/^	int dx, dy;$/;"	m	struct:Offset
+dx	include/pics.h	/^	int dx, dy;$/;"	m	struct:OffsetPic
+dxText	text.c	/^static int dxText = 0;$/;"	v	file:
+dy	include/actors.h	/^	int dx, dy;$/;"	m	struct:Actor
+dy	include/map.h	/^	int dx, dy;$/;"	m	struct:Buffer
+dy	include/objs.h	/^	int dx, dy, dz;$/;"	m	struct:MobileObject
+dy	include/pics.h	/^	int dx, dy;$/;"	m	struct:Offset
+dy	include/pics.h	/^	int dx, dy;$/;"	m	struct:OffsetPic
+dynamicInterrupts	sounds.c	/^static int dynamicInterrupts = 0;$/;"	v	file:
+dz	include/objs.h	/^	int dx, dy, dz;$/;"	m	struct:MobileObject
+endChoice	prep.c	/^const char *endChoice = "(End)";$/;"	v
+escExits	game.c	/^static int escExits = NO;$/;"	v	file:
+exists	sounds.c	/^	int exists;$/;"	m	struct:SndData	file:
+exitBottom	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:Mission
+exitBottom	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:MissionOptions
+exitCount	include/mission.h	/^	int exitCount;$/;"	m	struct:EditorInfo
+exitLeft	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:Mission
+exitLeft	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:MissionOptions
+exitPic	include/gamedata.h	/^	int exitPic, exitShadow;$/;"	m	struct:MissionOptions
+exitPics	mission.c	/^static int exitPics[] = {$/;"	v	file:
+exitRight	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:Mission
+exitRight	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:MissionOptions
+exitShadow	include/gamedata.h	/^	int exitPic, exitShadow;$/;"	m	struct:MissionOptions
+exitStyle	include/gamedata.h	/^	int exitStyle;$/;"	m	struct:Mission
+exitTop	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:Mission
+exitTop	include/gamedata.h	/^	int exitLeft, exitTop, exitRight, exitBottom;$/;"	m	struct:MissionOptions
+fLOS	game.c	51;"	d	file:
+faceNames	prep.c	/^static const char *faceNames[PLAYER_FACE_COUNT] = {$/;"	v	file:
+facePic	include/actors.h	/^	int facePic;$/;"	m	struct:CharacterDescription
+facePic	include/gamedata.h	/^	int facePic;$/;"	m	struct:BadGuy
+fileChanged	charsed.c	/^int fileChanged = 0;$/;"	v
+finalWords1P	cdogs.c	/^static const char *finalWords1P[] = {$/;"	v	file:
+finalWords2P	cdogs.c	/^static const char *finalWords2P[] = {$/;"	v	file:
+flags	include/actors.h	/^	int flags;$/;"	m	struct:Actor
+flags	include/actors.h	/^	int flags;$/;"	m	struct:CharacterDescription
+flags	include/gamedata.h	/^	int flags;$/;"	m	struct:BadGuy
+flags	include/gamedata.h	/^	int flags;$/;"	m	struct:MapObject
+flags	include/gamedata.h	/^	int flags;$/;"	m	struct:MissionObjective
+flags	include/gamedata.h	/^	int flags;$/;"	m	struct:MissionOptions
+flags	include/map.h	/^	int flags;$/;"	m	struct:Tile
+flags	include/map.h	/^	int flags;$/;"	m	struct:TileItem
+flags	include/objs.h	/^	int flags;$/;"	m	struct:MobileObject
+flags	include/objs.h	/^	int flags;$/;"	m	struct:Object
+flags	include/triggers.h	/^	int flags;$/;"	m	struct:Trigger
+flamed	include/actors.h	/^	int flamed;$/;"	m	struct:Actor
+floorRange	include/gamedata.h	/^	int floorRange;$/;"	m	struct:Mission
+floorStyle	include/gamedata.h	/^	int floorStyle;$/;"	m	struct:Mission
+font	text.c	/^static void *font[CHARS_IN_FONT];$/;"	v	file:
+forceVSync	include/gamedata.h	/^	int forceVSync;$/;"	m	struct:GameOptions
+fps	game.c	/^static int fps = 0;$/;"	v	file:
+fpsGameTicks	game.c	/^static volatile int fpsGameTicks = 0;$/;"	v	file:
+frames	game.c	/^static int frames = 0;$/;"	v	file:
+freq	sounds.c	/^	int freq;$/;"	m	struct:SndData	file:
+friendlies	include/gamedata.h	/^	int friendlies;$/;"	m	struct:PlayerData
+fxChannel	sounds.c	/^static int fxChannel;$/;"	v	file:
+fxVolume	sounds.c	/^static int fxVolume = 64;$/;"	v	file:
+gAutoMap	map.c	/^unsigned char gAutoMap[YMAX][XMAX];$/;"	v
+gCampaign	gamedata.c	/^struct CampaignOptions gCampaign = {$/;"	v
+gCompiledPics	pics.c	/^void *gCompiledPics[PIC_MAX];$/;"	v
+gGameSongs	gamedata.c	/^struct SongDef *gGameSongs = NULL;$/;"	v
+gMap	map.c	/^TTile gMap[YMAX][XMAX];$/;"	v
+gMenuSongs	gamedata.c	/^struct SongDef *gMenuSongs = NULL;$/;"	v
+gMission	gamedata.c	/^struct MissionOptions gMission;$/;"	v
+gOptions	gamedata.c	/^struct GameOptions gOptions = {$/;"	v
+gPalette	pics.c	/^color gPalette[256], origPalette[256];$/;"	v
+gPics	pics.c	/^void *gPics[PIC_MAX];$/;"	v
+gPlayer1	actors.c	/^TActor *gPlayer1 = NULL;$/;"	v
+gPlayer1Data	gamedata.c	/^struct PlayerData gPlayer1Data = {$/;"	v
+gPlayer2	actors.c	/^TActor *gPlayer2 = NULL;$/;"	v
+gPlayer2Data	gamedata.c	/^struct PlayerData gPlayer2Data = {$/;"	v
+gPrisoner	actors.c	/^TActor *gPrisoner = NULL;$/;"	v
+gRLEPics	pics.c	/^void *gRLEPics[PIC_MAX];$/;"	v
+gSticks	joystick.c	/^struct JoyRec gSticks[2];$/;"	v
+gameIsPaused	game.c	/^static int gameIsPaused = NO;$/;"	v	file:
+gameTicks	game.c	/^static volatile int gameTicks = 0;$/;"	v	file:
+gameloop	game.c	/^int gameloop(void)$/;"	f
+goodGuysPresent	ai.c	/^static int goodGuysPresent = 0;$/;"	v	file:
+green	include/grafx.h	/^	unsigned char red, green, blue;$/;"	m	struct:RGB
+gun	include/actors.h	/^	int gun;$/;"	m	struct:Actor
+gun	include/gamedata.h	/^	int gun;$/;"	m	struct:BadGuy
+gunDesc	actors.c	/^struct GunDescription gunDesc[] = {$/;"	v
+gunLock	include/actors.h	/^	int gunLock;$/;"	m	struct:Actor
+gunName	include/actors.h	/^	char *gunName;$/;"	m	struct:GunDescription
+gunPic	include/actors.h	/^	int gunPic;$/;"	m	struct:GunDescription
+h	include/map.h	/^	int w, h;$/;"	m	struct:TileItem
+hText	text.c	/^static int hText = 0;$/;"	v	file:
+hair	hiscores.c	/^	int hair;$/;"	m	struct:Entry	file:
+hair	include/gamedata.h	/^	int arms, body, legs, skin, hair;$/;"	m	struct:PlayerData
+hair	prep.c	/^	int hair;$/;"	m	struct:PlayerTemplate	file:
+hairColor	include/gamedata.h	/^	int hairColor;$/;"	m	struct:BadGuy
+hairNames	prep.c	/^static const char *hairNames[PLAYER_HAIR_COUNT] = {$/;"	v	file:
+head	hiscores.c	/^	int head;$/;"	m	struct:Entry	file:
+head	include/gamedata.h	/^	int head;$/;"	m	struct:PlayerData
+head	prep.c	/^	int head;$/;"	m	struct:PlayerTemplate	file:
+health	include/actors.h	/^	int health;$/;"	m	struct:Actor
+health	include/gamedata.h	/^	int health;$/;"	m	struct:BadGuy
+height	include/gamedata.h	/^	int width, height;$/;"	m	struct:MapObject
+horzPic	include/gamedata.h	/^	int horzPic;$/;"	m	struct:DoorPic
+hp	include/gamedata.h	/^	int hp;$/;"	m	struct:PlayerData
+iMap	map.c	65;"	d	file:
+inUse	include/joystick.h	/^	int inUse;$/;"	m	struct:JoyRec
+inactiveWatches	triggers.c	/^static TWatch *inactiveWatches = NULL;$/;"	v	file:
+index	include/gamedata.h	/^	int index;$/;"	m	struct:MissionObjective
+index	include/gamedata.h	/^	int index;$/;"	m	struct:MissionOptions
+index	include/triggers.h	/^	int index;$/;"	m	struct:Watch
+info	include/files.h	/^	char info[80];$/;"	m	struct:FileEntry
+inp	joystick.c	/^int inp(int port)$/;"	f
+internalMap	map.c	/^static unsigned short internalMap[YMAX][XMAX];$/;"	v	file:
+interruptEnabled	sounds.c	/^static int interruptEnabled = 0;$/;"	v	file:
+itemCount	include/gamedata.h	/^	int itemCount;$/;"	m	struct:Mission
+itemCount	include/mission.h	/^	int itemCount;$/;"	m	struct:EditorInfo
+itemDensity	include/gamedata.h	/^	int itemDensity[ITEMS_MAX];$/;"	m	struct:Mission
+items	include/gamedata.h	/^	int items[ITEMS_MAX];$/;"	m	struct:Mission
+join	files.c	/^char * join(const char *s1, const char *s2)$/;"	f
+key0	include/keyboard.h	94;"	d
+key1	include/keyboard.h	85;"	d
+key2	include/keyboard.h	86;"	d
+key3	include/keyboard.h	87;"	d
+key4	include/keyboard.h	88;"	d
+key5	include/keyboard.h	89;"	d
+key6	include/keyboard.h	90;"	d
+key7	include/keyboard.h	91;"	d
+key8	include/keyboard.h	92;"	d
+key9	include/keyboard.h	93;"	d
+keyA	include/keyboard.h	60;"	d
+keyAltGr	include/keyboard.h	41;"	d
+keyApostrophe	include/keyboard.h	101;"	d
+keyArrowDown	include/keyboard.h	114;"	d
+keyArrowLeft	include/keyboard.h	111;"	d
+keyArrowRight	include/keyboard.h	112;"	d
+keyArrowUp	include/keyboard.h	113;"	d
+keyB	include/keyboard.h	61;"	d
+keyBackslash	include/keyboard.h	102;"	d
+keyBackspace	include/keyboard.h	44;"	d
+keyC	include/keyboard.h	62;"	d
+keyCapsLock	include/keyboard.h	34;"	d
+keyComma	include/keyboard.h	103;"	d
+keyCount	include/mission.h	/^	int keyCount;$/;"	m	struct:EditorInfo
+keyD	include/keyboard.h	63;"	d
+keyDelete	include/keyboard.h	107;"	d
+keyE	include/keyboard.h	64;"	d
+keyEnd	include/keyboard.h	109;"	d
+keyEnter	include/keyboard.h	45;"	d
+keyEqual	include/keyboard.h	96;"	d
+keyEsc	include/keyboard.h	43;"	d
+keyF	include/keyboard.h	65;"	d
+keyF1	include/keyboard.h	48;"	d
+keyF10	include/keyboard.h	57;"	d
+keyF11	include/keyboard.h	58;"	d
+keyF12	include/keyboard.h	59;"	d
+keyF2	include/keyboard.h	49;"	d
+keyF3	include/keyboard.h	50;"	d
+keyF4	include/keyboard.h	51;"	d
+keyF5	include/keyboard.h	52;"	d
+keyF6	include/keyboard.h	53;"	d
+keyF7	include/keyboard.h	54;"	d
+keyF8	include/keyboard.h	55;"	d
+keyF9	include/keyboard.h	56;"	d
+keyG	include/keyboard.h	66;"	d
+keyH	include/keyboard.h	67;"	d
+keyHome	include/keyboard.h	108;"	d
+keyInsert	include/keyboard.h	106;"	d
+keyJ	include/keyboard.h	68;"	d
+keyK	include/keyboard.h	69;"	d
+keyKeypad0	include/keyboard.h	115;"	d
+keyKeypad1	include/keyboard.h	116;"	d
+keyKeypad2	include/keyboard.h	117;"	d
+keyKeypad3	include/keyboard.h	118;"	d
+keyKeypad4	include/keyboard.h	119;"	d
+keyKeypad5	include/keyboard.h	120;"	d
+keyKeypad6	include/keyboard.h	121;"	d
+keyKeypad7	include/keyboard.h	122;"	d
+keyKeypad8	include/keyboard.h	123;"	d
+keyKeypad9	include/keyboard.h	124;"	d
+keyKeypadEnter	include/keyboard.h	129;"	d
+keyKeypadMinus	include/keyboard.h	127;"	d
+keyKeypadPlus	include/keyboard.h	128;"	d
+keyKeypadSlash	include/keyboard.h	132;"	d
+keyKeypadStar	include/keyboard.h	126;"	d
+keyL	include/keyboard.h	70;"	d
+keyLBracket	include/keyboard.h	97;"	d
+keyLeftAlt	include/keyboard.h	38;"	d
+keyLeftCtrl	include/keyboard.h	37;"	d
+keyLeftShift	include/keyboard.h	39;"	d
+keyM	include/keyboard.h	71;"	d
+keyMinus	include/keyboard.h	95;"	d
+keyN	include/keyboard.h	72;"	d
+keyNames	keyboard.c	/^char *keyNames[256] =$/;"	v
+keyNumLock	include/keyboard.h	35;"	d
+keyO	include/keyboard.h	73;"	d
+keyP	include/keyboard.h	74;"	d
+keyPageUp	include/keyboard.h	110;"	d
+keyPeriod	include/keyboard.h	104;"	d
+keyPics	include/gamedata.h	/^	int *keyPics;$/;"	m	struct:MissionOptions
+keyQ	include/keyboard.h	75;"	d
+keyR	include/keyboard.h	76;"	d
+keyRBracket	include/keyboard.h	98;"	d
+keyRightCtrl	include/keyboard.h	40;"	d
+keyRightShift	include/keyboard.h	42;"	d
+keyS	include/keyboard.h	77;"	d
+keyScrollLock	include/keyboard.h	36;"	d
+keySemicolon	include/keyboard.h	99;"	d
+keySlash	include/keyboard.h	105;"	d
+keySpace	include/keyboard.h	46;"	d
+keyStyle	include/gamedata.h	/^	int keyStyle;$/;"	m	struct:Mission
+keyStyles	mission.c	/^static int *keyStyles[] = {$/;"	v	file:
+keySysReq	include/keyboard.h	30;"	d
+keyT	include/keyboard.h	78;"	d
+keyTab	include/keyboard.h	47;"	d
+keyTick	include/keyboard.h	100;"	d
+keyU	include/keyboard.h	79;"	d
+keyV	include/keyboard.h	80;"	d
+keyW	include/keyboard.h	81;"	d
+keyX	include/keyboard.h	82;"	d
+keyY	include/keyboard.h	83;"	d
+keyZ	include/keyboard.h	84;"	d
+keys	include/gamedata.h	/^	int keys[6];$/;"	m	struct:PlayerData
+kills	include/gamedata.h	/^	int kills;$/;"	m	struct:PlayerData
+kind	include/map.h	/^	int kind;$/;"	m	struct:TileItem
+kind	include/objs.h	/^	int kind;$/;"	m	struct:MobileObject
+lastCmd	include/actors.h	/^	int lastCmd;$/;"	m	struct:Actor
+lastFile	cdogsed.c	/^static char lastFile[128];$/;"	v	file:
+lastMission	hiscores.c	/^	int lastMission;$/;"	m	struct:Entry	file:
+lastMission	include/gamedata.h	/^	int lastMission;$/;"	m	struct:PlayerData
+lastPassword	cdogs.c	/^static char lastPassword[PASSWORD_MAX + 1] = "";$/;"	v	file:
+left	include/events.h	/^	int left, top, right, bottom;$/;"	m	struct:MouseRect
+left	include/triggers.h	/^	struct Trigger *left, *right;$/;"	m	struct:Trigger
+legColor	include/gamedata.h	/^	int legColor;$/;"	m	struct:BadGuy
+legs	hiscores.c	/^	int legs;$/;"	m	struct:Entry	file:
+legs	include/gamedata.h	/^	int arms, body, legs, skin, hair;$/;"	m	struct:PlayerData
+legs	prep.c	/^	int legs;$/;"	m	struct:PlayerTemplate	file:
+loadSampleConfiguration	sounds.c	/^static void loadSampleConfiguration(void)$/;"	f	file:
+localCampaignClicks	cdogsed.c	/^static struct MouseRect localCampaignClicks[] = {$/;"	v	file:
+localCharacterClicks	cdogsed.c	/^static struct MouseRect localCharacterClicks[] = {$/;"	v	file:
+localClicks	cdogsed.c	/^static struct MouseRect localClicks[] = {$/;"	v	file:
+localClicks	charsed.c	/^static struct MouseRect localClicks[] = {$/;"	v	file:
+localMapItemClicks	cdogsed.c	/^static struct MouseRect localMapItemClicks[] = {$/;"	v	file:
+localMissionClicks	cdogsed.c	/^static struct MouseRect localMissionClicks[] = {$/;"	v	file:
+localObjectiveClicks	cdogsed.c	/^static struct MouseRect localObjectiveClicks[] = {$/;"	v	file:
+localRects	events.c	/^static struct MouseRect *localRects = NULL;$/;"	v	file:
+localRects2	events.c	/^static struct MouseRect *localRects2 = NULL;$/;"	v	file:
+localWeaponClicks	cdogsed.c	/^static struct MouseRect localWeaponClicks[] = {$/;"	v	file:
+main	cdogs.c	/^int main(int argc, char *argv[])$/;"	f
+main	cdogsed.c	/^void main(int argc, char *argv[])$/;"	f
+mainMenu	mainmenu.c	/^static const char *mainMenu[MAIN_COUNT] = {$/;"	v	file:
+mainMenu	prep.c	/^static const char *mainMenu[MENU_COUNT] = {$/;"	v	file:
+map	include/gamedata.h	/^	char map[80];$/;"	m	struct:Mission
+mapHeight	include/gamedata.h	/^	int mapWidth, mapHeight;$/;"	m	struct:Mission
+mapItems	mission.c	/^static TMapObject mapItems[] = {$/;"	v	file:
+mapKey	include/gamedata.h	/^	int mapKey;$/;"	m	struct:GameOptions
+mapObjects	include/gamedata.h	/^	TMapObject *mapObjects[ITEMS_MAX];$/;"	m	struct:MissionOptions
+mapWidth	include/gamedata.h	/^	int mapWidth, mapHeight;$/;"	m	struct:Mission
+max	ai.c	39;"	d	file:
+max	sounds.c	43;"	d	file:
+maxHealth	include/actors.h	/^	int maxHealth;$/;"	m	struct:CharacterDescription
+maxModChannels	sounds.c	/^static int maxModChannels = 0;$/;"	v	file:
+message	game.c	/^static char message[256];$/;"	v	file:
+message	mainmenu.c	/^	char *message;$/;"	m	struct:Credit	file:
+messageTicks	game.c	/^static int messageTicks = 0;$/;"	v	file:
+min	ai.c	40;"	d	file:
+missionCount	include/gamedata.h	/^	int missionCount;$/;"	m	struct:CampaignSetting
+missionData	include/gamedata.h	/^	struct Mission *missionData;$/;"	m	struct:MissionOptions
+missionTime	game.c	/^int missionTime;$/;"	v
+missions	cdogsed.c	/^struct Mission missions[MAX_MISSIONS];$/;"	v
+missions	hiscores.c	/^	int missions;$/;"	m	struct:Entry	file:
+missions	include/gamedata.h	/^	int missions;$/;"	m	struct:PlayerData
+missions	include/gamedata.h	/^	struct Mission *missions;$/;"	m	struct:CampaignSetting
+mobObjList	objs.c	/^static TMobileObject *mobObjList = NULL;$/;"	v	file:
+moduleDirectory	sounds.c	/^static char moduleDirectory[128] = "";$/;"	v	file:
+moduleMessage	sounds.c	/^static char moduleMessage[128];$/;"	v	file:
+moduleStatus	sounds.c	/^static int moduleStatus = 0;$/;"	v	file:
+musicVolume	sounds.c	/^static int musicVolume = 64;$/;"	v	file:
+name	hiscores.c	/^	char name[20];$/;"	m	struct:Entry	file:
+name	include/files.h	/^	char name[13];$/;"	m	struct:FileEntry
+name	include/gamedata.h	/^	char name[20];$/;"	m	struct:PlayerData
+name	mainmenu.c	/^	char *name;$/;"	m	struct:Credit	file:
+name	mission.c	/^	char name[20];$/;"	m	struct:ColorRange	file:
+name	prep.c	/^	char name[20];$/;"	m	struct:PlayerTemplate	file:
+name	sounds.c	/^	char name[81];$/;"	m	struct:SndData	file:
+next	include/actors.h	/^	struct Actor *next;$/;"	m	struct:Actor
+next	include/files.h	/^	struct FileEntry *next;$/;"	m	struct:FileEntry
+next	include/gamedata.h	/^	struct SongDef *next;$/;"	m	struct:SongDef
+next	include/map.h	/^	struct TileItem *next;$/;"	m	struct:TileItem
+next	include/objs.h	/^	struct MobileObject *next;$/;"	m	struct:MobileObject
+next	include/objs.h	/^	struct Object *next;$/;"	m	struct:Object
+next	include/triggers.h	/^	struct Watch *next;$/;"	m	struct:Watch
+nextToDisplay	include/map.h	/^	struct TileItem *nextToDisplay;$/;"	m	struct:TileItem
+noOfFXChannels	sounds.c	/^static int noOfFXChannels = 4;$/;"	v	file:
+npcHp	include/gamedata.h	/^	int npcHp;$/;"	m	struct:GameOptions
+objList	objs.c	/^static TObject *objList = NULL;$/;"	v	file:
+objectCount	include/gamedata.h	/^	int objectCount;$/;"	m	struct:MissionOptions
+objectIndex	include/objs.h	/^	int objectIndex;$/;"	m	struct:Object
+objectiveColors	mission.c	/^int objectiveColors[OBJECTIVE_MAX] = { 14, 16, 22, 31, 39 };$/;"	v
+objectiveCount	include/gamedata.h	/^	int objectiveCount;$/;"	m	struct:Mission
+objectives	include/gamedata.h	/^	struct MissionObjective objectives[OBJECTIVE_MAX];$/;"	m	struct:Mission
+objectives	include/gamedata.h	/^	struct Objective objectives[OBJECTIVE_MAX];$/;"	m	struct:MissionOptions
+officeDoors	mission.c	/^static struct DoorPic officeDoors[6] = { {OFSPIC_DOOR, OFSPIC_VDOOR},$/;"	v	file:
+officeKeys	mission.c	/^static int officeKeys[4] =$/;"	v	file:
+oldtime	game.c	/^long oldtime;$/;"	v
+optionsMenu	mainmenu.c	/^static const char *optionsMenu[OPTIONS_COUNT] = {$/;"	v	file:
+origPalette	pics.c	/^color gPalette[256], origPalette[256];$/;"	v
+outp	joystick.c	/^void outp(int x, int y)$/;"	f
+panning	sounds.c	/^	int panning;$/;"	m	struct:SndData	file:
+pansarDoors	mission.c	/^static struct DoorPic pansarDoors[6] = { {OFSPIC_HDOOR3, OFSPIC_VDOOR3},$/;"	v	file:
+path	include/gamedata.h	/^	char path[81];$/;"	m	struct:SongDef
+petrified	include/actors.h	/^	int petrified;$/;"	m	struct:Actor
+pic	include/gamedata.h	/^	int pic, wreckedPic;$/;"	m	struct:MapObject
+pic	include/map.h	/^	int pic;$/;"	m	struct:Tile
+pic	include/objs.h	/^	TOffsetPic *pic;$/;"	m	struct:Object
+picIndex	include/pics.h	/^	int picIndex;$/;"	m	struct:OffsetPic
+pickupCount	include/mission.h	/^	int pickupCount;$/;"	m	struct:EditorInfo
+pickupItem	include/gamedata.h	/^	int pickupItem;$/;"	m	struct:Objective
+pickupItems	mission.c	/^static int pickupItems[] = {$/;"	v	file:
+pickupTime	include/gamedata.h	/^	int pickupTime;$/;"	m	struct:MissionOptions
+plainKeys	mission.c	/^static int plainKeys[4] =$/;"	v	file:
+playFlag	sounds.c	/^	int playFlag;$/;"	m	struct:SndData	file:
+playPrio	sounds.c	/^	int playPrio;$/;"	m	struct:SndData	file:
+playerHp	include/gamedata.h	/^	int playerHp;$/;"	m	struct:GameOptions
+playersHurt	include/gamedata.h	/^	int playersHurt;$/;"	m	struct:GameOptions
+poisoned	include/actors.h	/^	int poisoned;$/;"	m	struct:Actor
+pos	sounds.c	/^	int pos;$/;"	m	struct:SndData	file:
+power	include/objs.h	/^	int power;$/;"	m	struct:MobileObject
+present	include/joystick.h	/^	int present;$/;"	m	struct:JoyRec
+probabilityToMove	include/actors.h	/^	int probabilityToMove;$/;"	m	struct:CharacterDescription
+probabilityToMove	include/gamedata.h	/^	int probabilityToMove;$/;"	m	struct:BadGuy
+probabilityToShoot	include/actors.h	/^	int probabilityToShoot;$/;"	m	struct:CharacterDescription
+probabilityToShoot	include/gamedata.h	/^	int probabilityToShoot;$/;"	m	struct:BadGuy
+probabilityToTrack	include/actors.h	/^	int probabilityToTrack;$/;"	m	struct:CharacterDescription
+probabilityToTrack	include/gamedata.h	/^	int probabilityToTrack;$/;"	m	struct:BadGuy
+r_screen	blit.c	/^char *r_screen;$/;"	v
+range	include/objs.h	/^	int range;$/;"	m	struct:MobileObject
+range	mission.c	/^	color range[8];$/;"	m	struct:ColorRange	file:
+rangeCount	include/mission.h	/^	int rangeCount;$/;"	m	struct:EditorInfo
+red	include/grafx.h	/^	unsigned char red, green, blue;$/;"	m	struct:RGB
+required	include/gamedata.h	/^	int required;$/;"	m	struct:MissionObjective
+required	include/gamedata.h	/^	int required;$/;"	m	struct:Objective
+right	include/events.h	/^	int left, top, right, bottom;$/;"	m	struct:MouseRect
+right	include/triggers.h	/^	struct Trigger *left, *right;$/;"	m	struct:Trigger
+rleFont	text.c	/^static void *rleFont[CHARS_IN_FONT];$/;"	v	file:
+roomCount	include/gamedata.h	/^	int roomCount;$/;"	m	struct:Mission
+roomRange	include/gamedata.h	/^	int roomRange;$/;"	m	struct:Mission
+roomStyle	include/gamedata.h	/^	int roomStyle;$/;"	m	struct:Mission
+root	triggers.c	/^static TTrigger *root = NULL;$/;"	v	file:
+sF1	include/charsed.h	55;"	d
+sF2	include/charsed.h	56;"	d
+sF3	include/charsed.h	57;"	d
+sF4	include/charsed.h	58;"	d
+score	hiscores.c	/^	int score;$/;"	m	struct:Entry	file:
+score	include/gamedata.h	/^	int score;$/;"	m	struct:PlayerData
+scream	actors.c	/^static int scream = 0;$/;"	v	file:
+screamTable	actors.c	/^static int screamTable[SCREAM_COUNT] =$/;"	v	file:
+screen	grafx.c	/^SDL_Surface *screen;$/;"	v
+screenShaking	game.c	/^static int screenShaking = 0;$/;"	v	file:
+seed	include/gamedata.h	/^	int seed;$/;"	m	struct:CampaignOptions
+setting	include/gamedata.h	/^	TCampaignSetting *setting;$/;"	m	struct:CampaignOptions
+shadeNames	prep.c	/^static const char *shadeNames[PLAYER_BODY_COUNT] = {$/;"	v	file:
+shutDown	sounds.c	/^void shutDown(void)$/;"	f
+size	sounds.c	/^	int size;$/;"	m	struct:SndData	file:
+skin	hiscores.c	/^	int skin;$/;"	m	struct:Entry	file:
+skin	include/gamedata.h	/^	int arms, body, legs, skin, hair;$/;"	m	struct:PlayerData
+skin	prep.c	/^	int skin;$/;"	m	struct:PlayerTemplate	file:
+skinColor	include/gamedata.h	/^	int skinColor;$/;"	m	struct:BadGuy
+skinNames	prep.c	/^static const char *skinNames[PLAYER_SKIN_COUNT] = {$/;"	v	file:
+slowmotion	include/gamedata.h	/^	int slowmotion;$/;"	m	struct:GameOptions
+snd	sounds.c	/^struct SndData snd[SND_COUNT] = {$/;"	v
+sndLock	include/actors.h	/^	int sndLock;$/;"	m	struct:Actor
+song	include/gamedata.h	/^	char song[80];$/;"	m	struct:Mission
+soundInitialized	sounds.c	/^static int soundInitialized = 0;$/;"	v	file:
+spec	sounds.c	/^SDL_AudioSpec *spec;$/;"	v
+specialCount	include/gamedata.h	/^	int specialCount;$/;"	m	struct:Mission
+specials	include/gamedata.h	/^	int specials[SPECIAL_MAX];$/;"	m	struct:Mission
+speed	include/actors.h	/^	int speed;$/;"	m	struct:CharacterDescription
+speed	include/gamedata.h	/^	int speed;$/;"	m	struct:BadGuy
+squareCount	include/gamedata.h	/^	int squareCount;$/;"	m	struct:Mission
+state	include/actors.h	/^	int state;$/;"	m	struct:Actor
+state	include/objs.h	/^	int state;$/;"	m	struct:MobileObject
+stateCounter	include/actors.h	/^	int stateCounter;$/;"	m	struct:Actor
+structure	include/gamedata.h	/^	int structure;$/;"	m	struct:MapObject
+structure	include/objs.h	/^	int structure;$/;"	m	struct:Object
+survived	include/gamedata.h	/^	int survived;$/;"	m	struct:PlayerData
+swapButtonsJoy1	include/gamedata.h	/^	int swapButtonsJoy1;$/;"	m	struct:GameOptions
+swapButtonsJoy2	include/gamedata.h	/^	int swapButtonsJoy2;$/;"	m	struct:GameOptions
+synchronizer	game.c	/^Uint32 synchronizer(Uint32 interval, void *param)$/;"	f
+table	include/actors.h	/^	TranslationTable table;$/;"	m	struct:CharacterDescription
+tableBlack	actors.c	/^TranslationTable tableBlack;$/;"	v
+tableDarker	actors.c	/^TranslationTable tableDarker;$/;"	v
+tableFlamed	actors.c	/^TranslationTable tableFlamed;$/;"	v
+tableGray	actors.c	/^TranslationTable tableGray;$/;"	v
+tableGreen	actors.c	/^TranslationTable tableGreen;$/;"	v
+tablePoison	actors.c	/^TranslationTable tablePoison;$/;"	v
+tablePurple	actors.c	/^TranslationTable tablePurple;$/;"	v
+tag	include/events.h	/^	int tag;$/;"	m	struct:MouseRect
+templates	prep.c	/^struct PlayerTemplate templates[MAX_TEMPLATE] = {$/;"	v
+things	include/map.h	/^	TTileItem *things;$/;"	m	struct:Tile
+tileFlags	include/triggers.h	/^	int tileFlags;$/;"	m	struct:Action
+tileItem	include/actors.h	/^	TTileItem tileItem;$/;"	m	struct:Actor
+tileItem	include/objs.h	/^	TTileItem tileItem;$/;"	m	struct:MobileObject
+tileItem	include/objs.h	/^	TTileItem tileItem;$/;"	m	struct:Object
+tilePic	include/triggers.h	/^	int tilePic;$/;"	m	struct:Action
+tiles	include/map.h	/^	TTile tiles[Y_TILES][X_TILES];$/;"	m	struct:Buffer
+tilesSeen	map.c	/^static int tilesSeen = 0;$/;"	v	file:
+tilesTotal	map.c	/^static int tilesTotal = XMAX * YMAX;$/;"	v	file:
+time	sounds.c	/^	int time;$/;"	m	struct:SndData	file:
+timeHours	game.c	/^static int timeHours, timeMinutes;$/;"	v	file:
+timeMinutes	game.c	/^static int timeHours, timeMinutes;$/;"	v	file:
+title	include/gamedata.h	/^	char title[40];$/;"	m	struct:CampaignSetting
+title	include/gamedata.h	/^	char title[60];$/;"	m	struct:Mission
+today	include/gamedata.h	/^	int allTime, today;$/;"	m	struct:PlayerData
+todaysHigh	hiscores.c	/^static struct Entry todaysHigh[MAX_ENTRY];$/;"	v	file:
+top	include/events.h	/^	int left, top, right, bottom;$/;"	m	struct:MouseRect
+totalScore	include/gamedata.h	/^	int totalScore;$/;"	m	struct:PlayerData
+transitionTable	actors.c	/^static int transitionTable[STATE_COUNT] = {$/;"	v	file:
+turns	include/actors.h	/^	int turns;$/;"	m	struct:Actor
+twoPlayers	include/gamedata.h	/^	int twoPlayers;$/;"	m	struct:GameOptions
+type	include/gamedata.h	/^	int type;$/;"	m	struct:MissionObjective
+uKeys	keyboard.c	/^static volatile unsigned char uKeys[256];$/;"	v	file:
+unarmedBodyPic	include/actors.h	/^	int unarmedBodyPic;$/;"	m	struct:CharacterDescription
+unarmedBodyPic	include/gamedata.h	/^	int unarmedBodyPic;$/;"	m	struct:BadGuy
+updateFunc	include/objs.h	/^	int (*updateFunc) (struct MobileObject *);$/;"	m	struct:MobileObject
+vertPic	include/gamedata.h	/^	int vertPic;$/;"	m	struct:DoorPic
+volume	sounds.c	/^	int volume;$/;"	m	struct:SndData	file:
+volumeMenu	mainmenu.c	/^static const char *volumeMenu[VOLUME_COUNT] = {$/;"	v	file:
+vsync	grafx.c	/^void vsync(void)$/;"	f
+w	include/map.h	/^	int w, h;$/;"	m	struct:TileItem
+wallCount	include/gamedata.h	/^	int wallCount, wallLength;$/;"	m	struct:Mission
+wallLength	include/gamedata.h	/^	int wallCount, wallLength;$/;"	m	struct:Mission
+wallRange	include/gamedata.h	/^	int wallRange;$/;"	m	struct:Mission
+wallStyle	include/gamedata.h	/^	int wallStyle;$/;"	m	struct:Mission
+watchIndex	triggers.c	/^static int watchIndex = 1;$/;"	v	file:
+weaponCount	include/gamedata.h	/^	int weaponCount;$/;"	m	struct:MissionOptions
+weaponCount	include/gamedata.h	/^	int weaponCount;$/;"	m	struct:PlayerData
+weaponSelection	include/gamedata.h	/^	int weaponSelection;$/;"	m	struct:Mission
+weapons	include/gamedata.h	/^	int weapons[MAX_WEAPONS];$/;"	m	struct:PlayerData
+width	include/gamedata.h	/^	int width, height;$/;"	m	struct:MapObject
+width	include/map.h	/^	int width;$/;"	m	struct:Buffer
+wreckedPic	include/gamedata.h	/^	int pic, wreckedPic;$/;"	m	struct:MapObject
+wreckedPic	include/objs.h	/^	TOffsetPic *wreckedPic;$/;"	m	struct:Object
+x	include/actors.h	/^	int x, y;		\/\/ These are the full coordinates, including fractions$/;"	m	struct:Actor
+x	include/joystick.h	/^	int x, y;$/;"	m	struct:JoyRec
+x	include/map.h	/^	int x, y;$/;"	m	struct:TileItem
+x	include/objs.h	/^	int x, y, z;$/;"	m	struct:MobileObject
+x	include/triggers.h	/^	int x, y;		\/\/ Tile coordinates, ie 0..XMAX-1\/YMAX-1$/;"	m	struct:Trigger
+x	include/triggers.h	/^	int x, y;$/;"	m	struct:Action
+x	include/triggers.h	/^	int x, y;$/;"	m	struct:Condition
+xLeft	sounds.c	/^static int xLeft, yLeft;$/;"	v	file:
+xMid	include/joystick.h	/^	int xMid, yMid;$/;"	m	struct:JoyRec
+xRight	sounds.c	/^static int xRight, yRight;$/;"	v	file:
+xSplit	include/gamedata.h	/^	int xSplit;$/;"	m	struct:GameOptions
+xStart	include/map.h	/^	int xStart, yStart;$/;"	m	struct:Buffer
+xText	text.c	/^static int xText = 0;$/;"	v	file:
+xTop	include/map.h	/^	int xTop, yTop;$/;"	m	struct:Buffer
+y	include/actors.h	/^	int x, y;		\/\/ These are the full coordinates, including fractions$/;"	m	struct:Actor
+y	include/joystick.h	/^	int x, y;$/;"	m	struct:JoyRec
+y	include/map.h	/^	int x, y;$/;"	m	struct:TileItem
+y	include/objs.h	/^	int x, y, z;$/;"	m	struct:MobileObject
+y	include/triggers.h	/^	int x, y;		\/\/ Tile coordinates, ie 0..XMAX-1\/YMAX-1$/;"	m	struct:Trigger
+y	include/triggers.h	/^	int x, y;$/;"	m	struct:Action
+y	include/triggers.h	/^	int x, y;$/;"	m	struct:Condition
+yLeft	sounds.c	/^static int xLeft, yLeft;$/;"	v	file:
+yMid	include/joystick.h	/^	int xMid, yMid;$/;"	m	struct:JoyRec
+yRight	sounds.c	/^static int xRight, yRight;$/;"	v	file:
+ySplit	include/gamedata.h	/^	int ySplit;$/;"	m	struct:GameOptions
+yStart	include/map.h	/^	int xStart, yStart;$/;"	m	struct:Buffer
+yText	text.c	/^static int yText = 0;$/;"	v	file:
+yTop	include/map.h	/^	int xTop, yTop;$/;"	m	struct:Buffer
+z	include/objs.h	/^	int x, y, z;$/;"	m	struct:MobileObject

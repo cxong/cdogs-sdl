@@ -1,0 +1,8 @@
+env = Environment(CCFLAGS=Split("-g -Wall -O3"),
+	CPPPATH=Split("include missions"))
+env.ParseConfig("sdl-config --cflags")
+env.ParseConfig("sdl-config --libs")
+env.Program("cdogs", Split("""cdogs.c draw.c pics.c actors.c map.c sounds.c defs.c objs.c
+	gamedata.c ai.c triggers.c input.c prep.c hiscores.c automap.c
+	mission.c game.c mainmenu.c password.c files.c menu.c joystick.c
+	grafx.c blit.c text.c keyboard.c sprcomp.c"""))

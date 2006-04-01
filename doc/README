@@ -1,0 +1,137 @@
+C-Dogs SDL Port v0.01
+---------------------
+(based on C-Dogs 1.06)
+
+        .--------.
+       |  _______|
+      /  /  __       
+     |  |  |  '-.   .---.  .---.  .---.
+    /  /  /  /\  \ |  _  ||  ___||  __|
+   |  |  |  |_/   || (_) || | __  \ \  
+  /  /  /        / |     || '-' |.-' `.
+ |  |   '-------'   '---'  '----''----'
+ /  '.___________
+|                |                  SDL
+ `---------------'                v0.01
+
++----------+
+| Contents |
++----------+
+
+	1. Introduction
+	2. Tested Environments
+	3. Installation
+	4. Command line options
+	5. Contact
+
+
++---+--------------+
+| 1 | Introduction |
++---+--------------+
+
+C-Dogs SDL is a port of a really fun old DOS game to modern operating systems,
+using the SDL media libraries for graphics, sound and input (hence the name).
+
+For more information about the original c-dogs read 'original_readme.txt'.
+
+
++---+---------------------+
+| 2 | Tested Environments |
++---+---------------------+
+
+C-Dogs SDL has been ported with a unix development environment. In theory, C-Dogs SDL
+could run on any system that is supported by SDL. See the SDL website - www.libsdl.org
+for more details on SDL itself.
+
+C-Dogs was primarily developed on these two systems:
+
+Jeremy's System:
+	Procesor:		Pentium 4 2.0ghz
+	OS:			Gentoo Linux
+	Kernel:			Linux kernel 2.6
+	Compiler:		gcc 3.3
+	Misc:			libSDL 1.2.x,
+				XFree86 4.3,
+				glibc 2.3.2
+
+Lucas's System:
+	Processor:		Pentium II 400mhz
+	OS:			Gentoo Linux
+	Kernel:			Linux kernel 2.6
+	Compiler:		gcc 3.3, gcc 3.4
+	Misc:			libSDL 1.2.x,
+				XFree86 4.3, Xorg 6.8
+				glibc 2.3
+
+it was also tested on:
+
+Pentium 166mhz
+96mb RAM
+Slackware Linux 9.1
+Linux kernel 2.4.22
+
++---+--------------+
+| 3 | Installation |
++---+--------------+
+
+
+To compile C-Dogs you need to have the SDL libraries previously installed,
+a compiler (gcc recommended) and the apropriate header files. These instructions
+assume you have the know-how to at least compile something... :)
+
+Step 0: 
+	change into the source directory
+	$ cd src
+	
+Step 1:
+	Edit the Makefile
+	(change the CFLAGS variable so something desirable, as well as
+	the PREFIX for installation and any other variables that you're
+	confident in messing with)
+
+Step 2:
+	(at the command line)
+	$ make
+
+	It is suggested that you shut your eyes, so as to block out your
+	compiler's warnings... ;)
+
+Step 3:
+	(if make worked)
+	$ make install
+
+	You probably need to change to root/super user (you weren't running as
+	root, where you!?!) before you type the above command.
+
+
++---+----------------------+
+| 4 | Command line options |
++---+----------------------+
+
+The C-Dogs binary is called "cdogs", below are some command line arguments:
+
+	-fullscreen	C-Dogs will try and become full screen (recommended)
+	
+	-wait		C-Dogs will wait for a key to be hit before 
+			initialising graphics
+	
+	-nosound	C-Dogs won't play sounds, thus saving CPU usage and
+			leaving your sound-card alone (if you have one)
+
+These can be used in any order/combination:
+	$ cdogs -fullscreen -wait
+Which will make it go full screen after all the pre-video stuff is displayed
+on stdout.
+
+
++---+---------+
+| 5 | Contact |
++---+---------+
+
+If you have an questions, comments, bug reports (yes please), patches (even
+better) or anything else related to C-Dogs SDL email Jeremy or Lucas at:
+
+rekless@gmail.com or lmartinking@gmail.com respectively...
+
+Alternately, if you have IRC visit #oz on cyberarmy. Jeremy is usually 'ReKleSS'
+and Lucas 'Ion-Pookie'.
