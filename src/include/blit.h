@@ -21,7 +21,7 @@
 
 -------------------------------------------------------------------------------
 
- blit.h - <description here>
+ blit.h - image blitting functions
 
 */
 
@@ -66,6 +66,11 @@ void DrawPic(int x, int y, void *pic, void *code);
 void DrawTPic(int x, int y, void *pic, void *code);
 void DrawTTPic(int x, int y, void *pic, void *table, void *rle);
 void DrawBTPic(int x, int y, void *pic, void *table, void *rle); */
+
+#ifdef SYS_MACOSX
+	#define SetClip blit_SetClip
+#endif
+
 void SetClip(int left, int top, int right, int bottom);
 void SetDstScreen(void *the_screen);
 void *GetDstScreen(void);

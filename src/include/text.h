@@ -25,6 +25,14 @@
 
 */
 
+#ifdef SYS_MACOSX
+	/*
+		/sigh/ yet more namespace pollution
+		come on apple... play nice...
+	*/
+	#define TextWidth	text_TextWidth
+#endif
+
 void TextInit(const char *filename, int offset, int compile, int rle);
 void TextChar(char c);
 void TextString(const char *s);

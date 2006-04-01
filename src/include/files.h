@@ -27,6 +27,7 @@
 
 #include "gamedata.h"
 #include "config.h"
+#include "SDL_endian.h"
 
 #define CAMPAIGN_OK                0
 #define CAMPAIGN_BADFILE          -1
@@ -61,3 +62,17 @@ char * GetConfigFilePath(const char *name);
 char * GetDataFilePath(const char *path);
 
 char * join(const char *s1, const char *s2);
+
+#define read8	read
+
+#ifdef SDL_BIG_ENDIAN
+void swap32 (void *d);
+size_t read32(int fd, void *buf, size_t size);
+size_t read16(int fd, void *buf, size_t size);
+size_t readarray32(int fd, void *buf, size_t size);
+void swap16 (void *d);
+#else
+	#define read32	read
+	#define readarray32 read
+	#define read16	read
+#endif

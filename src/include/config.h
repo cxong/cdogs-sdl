@@ -28,9 +28,9 @@
 /* where to look for the cdogs data files */
 
 #ifndef CDOGS_DATA_DIR
-	#define CDOGS_DATA_DIR "/usr/share/games/cdogs/"
+	#define CDOGS_DATA_DIR "./CDogs-SDL.app/Contents/Resources/"
 #endif
 
 #ifndef CDOGS_CFG_DIR
-	#define CDOGS_CFG_DIR ".cdogs"
+	#define CDOGS_CFG_DIR ".cdogs/"
 #endif
