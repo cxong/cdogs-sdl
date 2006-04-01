@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include "grafx.h"
 #include "blit.h"
+#include "text.h"
 
 
 #define FIRST_CHAR      0

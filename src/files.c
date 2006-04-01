@@ -43,6 +43,50 @@
 #define CAMPAIGN_MAGIC    690304
 #define CAMPAIGN_VERSION  6
 
+#ifdef SDL_BIG_ENDIAN
+void swap32 (void *d)
+{
+	*((int *)d) = SDL_Swap32(*((int *)d));
+}
+
+size_t read32(int fd, void *buf, size_t size)
+{
+	ssize_t ret = 0;	
+	if (buf) {
+		ret = read(fd, buf, size);
+		swap32((int *)buf);
+	}
+	return ret;
+}
+
+size_t readarray32(int fd, void *buf, size_t size)
+{
+	int i;
+	if (buf) {
+		read(fd, buf, size);
+		for (i = 0; i < (size/4); i++) {
+			void *cur = (buf + i);
+			swap32((int*)cur);
+		}
+	}
+	return size;
+}
+
+void swap16 (void *d)
+{
+	*((short int *)d) = SDL_Swap16(*((short int *)d));
+}
+
+size_t read16(int fd, void *buf, size_t size)
+{
+	ssize_t ret = 0;	
+	if (buf) {
+		ret = read(fd, buf, size);
+		swap16((short int*)buf);
+	}
+	return ret;
+}
+#endif
 
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
@@ -52,15 +96,20 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 
 	f = open(filename, O_RDONLY);
 	if (f >= 0) {
-		read(f, &i, sizeof(i));
+		read32(f, &i, sizeof(i));
+		//swap32(&i);
+		
 		if (i != CAMPAIGN_MAGIC) {
 			close(f);
+			fprintf(stderr, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
+			fprintf(stderr, "ScanCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
 		}
 
-		read(f, &i, sizeof(i));
+		read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			close(f);
+			printf("ScanCampaign - version mismatch!\n");
 			return CAMPAIGN_VERSIONMISMATCH;
 		}
 
@@ -72,8 +121,10 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		strcpy(title, setting.title);
 		*missions = setting.missionCount;
 		close(f);
+
 		return CAMPAIGN_OK;
 	}
+	printf("ScanCampaign - bad path!?\n");
 	return CAMPAIGN_BADPATH;
 }
 
@@ -85,15 +136,17 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 
 	f = open(filename, O_RDONLY);
 	if (f >= 0) {
-		read(f, &i, sizeof(i));
+		read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_MAGIC) {
 			close(f);
+			printf("LoadCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
 		}
 
-		read(f, &i, sizeof(i));
+		read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			close(f);
+			printf("LoadCampaign - version mismatch!\n");
 			return CAMPAIGN_VERSIONMISMATCH;
 		}
 
@@ -102,7 +155,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		read(f, setting->description,
 		     sizeof(setting->description));
 
-		read(f, &setting->missionCount,
+		read32(f, &setting->missionCount,
 		     sizeof(setting->missionCount));
 
 		if (max_missions <= 0) {
@@ -118,7 +171,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 			     sizeof(struct Mission));
 		}
 
-		read(f, &setting->characterCount,
+		read32(f, &setting->characterCount,
 		     sizeof(setting->characterCount));
 
 		if (max_characters <= 0) {
@@ -130,9 +183,10 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 			max_characters = setting->characterCount;
 
 		for (i = 0; i < max_characters; i++) {
-			read(f, &setting->characters[i], sizeof(TBadGuy));
+			readarray32(f, &setting->characters[i], sizeof(TBadGuy));
 		}
 		close(f);
+
 		return CAMPAIGN_OK;
 	}
 	return CAMPAIGN_BADPATH;

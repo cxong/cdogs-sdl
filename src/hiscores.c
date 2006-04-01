@@ -246,17 +246,22 @@ void LoadHighScores(void)
 
 	f = open(GetConfigFilePath(SCORES_FILE), O_RDONLY);
 	if (f >= 0) {
-		read(f, &magic, sizeof(magic));
+		read32(f, &magic, sizeof(magic));
 		if (magic != MAGIC) {
 			close(f);
 			return;
 		}
-		read(f, allTimeHigh, sizeof(allTimeHigh));
+		// Entry.name
+		read(f, allTimeHigh, sizeof(allTimeHigh->name));
+		// Rest of Entry
+		readarray32(f, allTimeHigh+sizeof(allTimeHigh->name),
+			sizeof(allTimeHigh) - sizeof(allTimeHigh->name));
+
 		t = time(NULL);
 		tp = localtime(&t);
-		read(f, &y, sizeof(y));
-		read(f, &m, sizeof(m));
-		read(f, &d, sizeof(d));
+		read32(f, &y, sizeof(y));
+		read32(f, &m, sizeof(m));
+		read32(f, &d, sizeof(d));
 		if (tp->tm_year == y && tp->tm_mon == m
 		    && tp->tm_mday == d)
 			read(f, todaysHigh, sizeof(todaysHigh));

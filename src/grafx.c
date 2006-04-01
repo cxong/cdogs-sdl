@@ -61,7 +61,11 @@ int InitVideo(int mode)
 		SDL_ShowCursor(SDL_DISABLE);
 	} else if (mode == VID_WIN_NORMAL) {
 		screen = SDL_SetVideoMode(320, 200, 8,
-				SDL_HWPALETTE | SDL_SWSURFACE);
+				SDL_HWPALETTE |
+				SDL_SWSURFACE |
+				SDL_DOUBLEBUF
+			);
+				//SDL_HWPALETTE | SDL_SWSURFACE);
 	} else if (mode == VID_WIN_SCALE) {
 		screen = SDL_SetVideoMode(640, 400, 8,
 				SDL_HWPALETTE | SDL_SWSURFACE);
@@ -94,10 +98,12 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 		else
 			lseek(f, sizeof(TPalette), SEEK_CUR);
 		while (!eof && i < maxPics) {
-			read(f, &size, sizeof(size));
+			read16(f, &size, sizeof(size));
 			if (size) {
 				pics[i] = malloc(size);
-				if (read(f, pics[i], size) == 0)
+				read16(f, pics[i] + 0, 2);
+				read16(f, pics[i] + 2, 2);
+				if (read(f, pics[i] + 4, size - 4) == 0)
 					eof = 1;
 			} else
 				pics[i] = NULL;
@@ -120,10 +126,12 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	if (f >= 0) {
 		lseek(f, sizeof(TPalette), SEEK_CUR);
 		while (!eof && i < maxPics) {
-			read(f, &size, sizeof(size));
+			read16(f, &size, sizeof(size));
 			if (size) {
 				pics[i] = malloc(size);
-				if (read(f, pics[i], size) == 0)
+				read16(f, pics[i] + 0, 2);
+				read16(f, pics[i] + 2, 2);
+				if (read(f, pics[i] + 4, size - 4) == 0)
 					eof = 1;
 			} else
 				pics[i] = NULL;

@@ -860,6 +860,7 @@ int main(int argc, char *argv[])
 	compile = 0;
 	rle = 0;
 
+	printf("Current directory:\t\t%s\n", getcwd(NULL, 0));
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf(" -> Missions:\t\t%s\n",		GetDataFilePath("missions/"));
 	printf(" -> Dogfights:\t\t%s\n",	GetDataFilePath("dogfights/"));
