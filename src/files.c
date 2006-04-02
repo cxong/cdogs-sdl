@@ -632,3 +632,9 @@ char * GetConfigFilePath(const char *name)
 	return tmp;
 }
 
+char * GetPWD(void)
+{
+	char dir_buf[250];	
+	getcwd(dir_buf, 250);
+	return dir_buf;
+}
