@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <SDL.h>
+#include "SDL.h"
 
 #include "draw.h"
 #include "objs.h"
@@ -67,6 +67,7 @@ static int messageTicks = 0;
 static int timeHours, timeMinutes;
 
 static int screenShaking = 0;
+int shakeMultiplier = 1;
 
 static int gameIsPaused = NO;
 static int escExits = NO;
@@ -131,6 +132,9 @@ int Synchronize(void)
 	int ticks = 1;
 	TActor *actor;
 
+	while (gameTicks <= 1)
+		SDL_Delay(10);
+
 	while (gameTicks > GAMETICKS_PER_FRAME) {
 		ticks++;
 		if (!gameIsPaused) {
@@ -160,7 +164,7 @@ void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,
 
 void ShakeScreen(int amount)
 {
-	screenShaking += amount;
+	screenShaking = (screenShaking + amount) * shakeMultiplier;
 
 	/* So we don't shake too much :) */
 	if (screenShaking > 100)
@@ -494,7 +498,7 @@ int gameloop(void)
 	gameIsPaused = NO;
 	gameTicks = fpsGameTicks = frames = 0;
 	missionTime = 0;
-	screenShaking = 0;
+	//screenShaking = 0;
 	while (!done) {
 		ticks = Synchronize();
 

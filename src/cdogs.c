@@ -795,7 +795,7 @@ void PrintHelp (void)
 		"    -wait           Wait for a key hit before initialising video.\n",
 		"    -slices         Display CPU slices [*broken*]");
 }
-	
+
 int main(int argc, char *argv[])
 {
 	int i, wait = 0;
@@ -811,6 +811,16 @@ int main(int argc, char *argv[])
 			if (strcmp(argv[i] + 1, "slices") == 0) {
 				printf("Displaying CPU slices\n");
 				gOptions.displaySlices = 1;
+			}
+			if (strstr(argv[i] + 1, "shakemult=")) {
+				char *val = strchr(argv[i], '=');
+				int nval;
+				extern int shakeMultiplier;
+
+				val++;
+				nval = atoi(val);
+				printf("Shake multiplier: %d\n", nval);
+				shakeMultiplier = nval;	
 			}
 			if (strcmp(argv[i] + 1, "savecampaigns") == 0) {
 				int j = 0;
