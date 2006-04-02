@@ -1,5 +1,28 @@
-DONE (so we feel good):
+TODO:
+	* Binary packages (for lazy people)				[add/mod]
+		- MacOSX (ppc and intel?)
+		- Win32
+		- Linux
+	
+	* Make data directories changable from the command line		[add/mod]
 
+	* Get sound working better					[add/mod]
+	
+	* Optimise stuff :D						[mod]
+	* Clean up the general code, so there's fewer warnings		[mod]
+	* Put all the input event handling together			[mod]
+
+	* Get the mission editor working				[port]
+
+THE _VERY_ DISTANT FUTURE (if at all):
+
+	* Network multiplayer... *whahahah* :)
+	  # More than 2 players?
+	  # Larger maps?
+
+DONE (so we feel good):
+	* Got running on MacOS X (and hopefully other endian machines)	[port]		(lucas)
+	
 	* Graphics							[ported]	(jeremy)
 	* Video Output							[ported]	(jeremy)
 	* Keyboard Input						[ported]	(jeremy)
@@ -13,23 +36,3 @@ DONE (so we feel good):
 
 	* Makefile							[admin]		(lucas/jeremy)
 
-TODO:
-	* Replace the Makefile with the GNU auto* tools			[admin]
-	* Get a CVS server, website, etc				[admin]
-
-	* Make data directories changable from the command line		[add/mod]
-
-	* Get sound working better					[add/mod]
-	
-	* Optimise stuff :D						[mod]
-	* Clean up the general code, so there's fewer warnings		[mod]
-	* Put all the input event handling together			[mod]
-
-	* Get the mission editor working				[port]
-
-
-THE _VERY_ DISTANT FUTURE (if at all):
-
-	* Network multiplayer... *whahahah* :)
-	  # More than 2 players?
-	  # Larger maps?
