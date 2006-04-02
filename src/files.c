@@ -50,7 +50,7 @@ void swap32 (void *d)
 	*((int *)d) = SDL_Swap32(*((int *)d));
 }
 
-size_t read32(int fd, void *buf, size_t size)
+ssize_t read32(int fd, void *buf, size_t size)
 {
 	ssize_t ret = 0;	
 	if (buf) {
@@ -60,7 +60,7 @@ size_t read32(int fd, void *buf, size_t size)
 	return ret;
 }
 
-size_t readarray32(int fd, void *buf, size_t size)
+ssize_t readarray32(int fd, void *buf, size_t size)
 {
 	int i;
 	if (buf) {
@@ -78,7 +78,7 @@ void swap16 (void *d)
 	*((short int *)d) = SDL_Swap16(*((short int *)d));
 }
 
-size_t read16(int fd, void *buf, size_t size)
+ssize_t read16(int fd, void *buf, size_t size)
 {
 	ssize_t ret = 0;	
 	if (buf) {
