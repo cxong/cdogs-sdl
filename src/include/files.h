@@ -63,6 +63,7 @@ char * GetDataFilePath(const char *path);
 
 char * join(const char *s1, const char *s2);
 char * GetPWD(void);
+void SetupConfigDir(void);
 
 #define read8	read
 

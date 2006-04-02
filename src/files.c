@@ -31,6 +31,7 @@
 #include <stdlib.h>
 // #include <io.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -630,6 +631,28 @@ char * GetConfigFilePath(const char *name)
 	strcat(tmp, name);
 
 	return tmp;
+}
+
+void SetupConfigDir(void)
+{
+	char *cfg_p = GetConfigFilePath("");
+
+	printf("Creating Config dir... ");
+	if (mkdir(cfg_p, S_IRUSR | S_IXUSR | S_IWUSR) == -1)
+		switch (errno) {
+			case EACCES:
+				printf("Permission denied!\n");
+				break;
+			case EEXIST:
+				printf("No need. Already exists\n");
+				break;
+			default:
+				printf("Error: (%d)\n", errno);
+		}
+	else
+		printf("Config dir created.\n");
+	
+	return;
 }
 
 char * GetPWD(void)

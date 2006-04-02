@@ -869,7 +869,8 @@ int main(int argc, char *argv[])
 	compile = 0;
 	rle = 0;
 
-	printf("Current directory:\t%s\n",	GetPWD());
+	SetupConfigDir();
+
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf(" -> Missions:\t\t%s\n",		GetDataFilePath("missions/"));
 	printf(" -> Dogfights:\t\t%s\n",	GetDataFilePath("dogfights/"));
