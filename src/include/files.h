@@ -66,7 +66,7 @@ char * GetPWD(void);
 
 #define read8	read
 
-#ifdef SDL_BIG_ENDIAN
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 void swap32 (void *d);
 size_t read32(int fd, void *buf, size_t size);
 size_t read16(int fd, void *buf, size_t size);

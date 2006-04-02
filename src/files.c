@@ -43,7 +43,7 @@
 #define CAMPAIGN_MAGIC    690304
 #define CAMPAIGN_VERSION  6
 
-#ifdef SDL_BIG_ENDIAN
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 void swap32 (void *d)
 {
 	*((int *)d) = SDL_Swap32(*((int *)d));
@@ -86,7 +86,7 @@ size_t read16(int fd, void *buf, size_t size)
 	}
 	return ret;
 }
-#endif /* SDL_BIG_ENDIAN */
+#endif /* SDL_BYTEORDER == SDL_BIG_ENDIAN */
 
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
