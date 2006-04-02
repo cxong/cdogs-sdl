@@ -3,6 +3,8 @@ TODO:
 		- MacOSX (ppc and intel?)
 		- Win32
 		- Linux
+
+	* Get joystick stuff working					[port]
 	
 	* Make data directories changable from the command line		[add/mod]
 
@@ -21,7 +23,8 @@ THE _VERY_ DISTANT FUTURE (if at all):
 	  # Larger maps?
 
 DONE (so we feel good):
-	* Got running on MacOS X (and hopefully other endian machines)	[port]		(lucas)
+	* Got running on MacOS X
+	  (and hopefully other non-intel  machines)			[port]		(lucas)
 	
 	* Graphics							[ported]	(jeremy)
 	* Video Output							[ported]	(jeremy)
