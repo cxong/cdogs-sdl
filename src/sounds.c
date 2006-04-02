@@ -446,30 +446,6 @@ void ToggleTrack(int track)
 	// toggle music track on/off
 }
 
-#if 0
-void InterruptOn(void)
-{
-//      EnableSoundInterrupt();
-}
-
-void InterruptOff(void)
-{
-//      if (!dynamicInterrupts)
-//              return;
-//      DisableSoundInterrupt();
-}
-
-void SetDynamicInterrupts(int flag)
-{
-	dynamicInterrupts = flag;
-}
-
-int DynamicInterrupts(void)
-{
-	return dynamicInterrupts;
-}
-#endif
-
 int ModuleStatus(void)
 {
 	return moduleStatus;
