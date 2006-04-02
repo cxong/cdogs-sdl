@@ -28,7 +28,7 @@
 /* where to look for the cdogs data files */
 
 #ifndef CDOGS_DATA_DIR
-	#define CDOGS_DATA_DIR "./CDogs-SDL.app/Contents/Resources/"
+	#define CDOGS_DATA_DIR "./data/"
 #endif
 
 #ifndef CDOGS_CFG_DIR

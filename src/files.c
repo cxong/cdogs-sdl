@@ -86,7 +86,7 @@ size_t read16(int fd, void *buf, size_t size)
 	}
 	return ret;
 }
-#endif
+#endif /* SDL_BIG_ENDIAN */
 
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
@@ -97,7 +97,6 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	f = open(filename, O_RDONLY);
 	if (f >= 0) {
 		read32(f, &i, sizeof(i));
-		//swap32(&i);
 		
 		if (i != CAMPAIGN_MAGIC) {
 			close(f);
@@ -500,7 +499,7 @@ void GetCampaignTitles(struct FileEntry **entries)
  * It's an ugly piece of sh*t... :/
  */
 
-char *cdogs_homepath = NULL;
+char *cdogs_homepath;
 char * GetHomeDirectory(void)
 {
 	char *home;
