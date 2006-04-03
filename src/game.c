@@ -30,6 +30,7 @@
 #include <string.h>
 #include <time.h>
 #include "SDL.h"
+#include "SDL_mutex.h"
 
 #include "draw.h"
 #include "objs.h"
@@ -73,9 +74,17 @@ static int gameIsPaused = NO;
 static int escExits = NO;
 long oldtime;
 
-
 // This is referenced from CDOGS.C to determine time bonus
 int missionTime;
+
+SDL_mutex *tick_m;
+#define Spin(m)		{ while(SDL_LockMutex(m) != 0); }
+#define Release(m)	SDL_UnlockMutex(m)
+
+void InitMutex(void)
+{
+	tick_m = SDL_CreateMutex();
+}
 
 
 int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
@@ -122,8 +131,11 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 //TODO: replace with a SDL_Timer callback
 Uint32 synchronizer(Uint32 interval, void *param)
 {
-	gameTicks++;
-	fpsGameTicks++;
+	Spin(tick_m);
+		gameTicks++;
+		fpsGameTicks++;
+	Release(tick_m);
+
 	return interval;
 }
 
@@ -145,7 +157,9 @@ int Synchronize(void)
 				actor = actor->next;
 			}
 		}
+		Spin(tick_m);
 		gameTicks -= GAMETICKS_PER_FRAME;
+		Release(tick_m);
 	}
 	return ticks;
 }
@@ -438,7 +452,9 @@ int HandleKey(int *done, int cmd)
 	if ((key == gOptions.mapKey || (cmd & CMD_BUTTON3) != 0) &&
 	    !gCampaign.dogFight) {
 		DisplayAutoMap(0);
-		gameTicks = 0;
+		Spin(tick_m);
+			gameTicks = 0;
+		Release(tick_m);
 	}
 
 	if (((cmd & CMD_BUTTON4) != 0) && !gOptions.twoPlayers) {
@@ -496,7 +512,9 @@ int gameloop(void)
 		DisplayMessage(ModuleMessage());
 
 	gameIsPaused = NO;
-	gameTicks = fpsGameTicks = frames = 0;
+	Spin(tick_m);
+		gameTicks = fpsGameTicks = frames = 0;
+	Release(tick_m);
 	missionTime = 0;
 	//screenShaking = 0;
 	while (!done) {
@@ -546,11 +564,15 @@ int gameloop(void)
 		StatusDisplay();
 
 		if (gameTicks < GAMETICKS_PER_FRAME) {
+			Spin(tick_m);
 			gameTicks = 0;
+			Release(tick_m);
 		} else {
+			Spin(tick_m);
 			gameTicks -= GAMETICKS_PER_FRAME;
 			if (gameTicks < 0)
 				gameTicks = 0;
+			Release(tick_m);
 		}
 
 		if (gOptions.displaySlices)

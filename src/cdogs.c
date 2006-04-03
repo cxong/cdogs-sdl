@@ -948,9 +948,9 @@ int main(int argc, char *argv[])
 	if (InitVideo(vid_mode) == -1) {
 		printf("Video didn't init!\n");
 	} else {
-
 		SetPalette(gPalette);
 		printf(">> Entering main loop\n");
+		InitMutex();
 		SDL_AddTimer(5, synchronizer, NULL);
 		MainLoop();
 	}
