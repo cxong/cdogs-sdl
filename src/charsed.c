@@ -85,6 +85,7 @@
 
 
 int fileChanged = 0;
+extern void *myScreen;
 
 
 static struct MouseRect localClicks[] = {
@@ -588,26 +589,29 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 
 	int xPrev = -1, yPrev = -1;
 	int drawn = 0;
-	void *old = GetDstScreen();
+	//void *old = GetDstScreen();
 
 	Mouse(x, y, buttons);
 	if (*buttons != 0 && wasDown)
-		delay(isRepeating ? 100 : 500);
+		SDL_EnableKeyRepeat(isRepeating ? 100 : 500, 250);
 
-	SetDstScreen((void *) 0xA0000);
+	//SetDstScreen(new);
 	*buttons = *key = 0;
 	do {
-		if (kbhit())
+		//if (kbhit())
+		if (AnyKeyDown()) {
 			*key = GetKey();
-		else {
-			Mouse(x, y, buttons);
-			*x /= scaling;
-			if (*x > 319)
-				scaling++;
 		}
+
+		Mouse(x, y, buttons);
+		*x /= scaling;
+		if (*x > 319)
+			scaling++;
+		
 		if (!(*buttons) && !(*key) && (*x != xPrev || *y != yPrev)) {
 			if (drawn)
-				RestoreBkg(xPrev, yPrev, old);
+				;
+				//RestoreBkg(xPrev, yPrev, old);
 			DrawCursor(*x, *y);
 			xPrev = *x;
 			yPrev = *y;
@@ -617,11 +621,11 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 	while (!(*buttons) && !(*key));
 
 	if (drawn)
-		RestoreBkg(xPrev, yPrev, old);
+		; //RestoreBkg(xPrev, yPrev, old);
 
 	isRepeating = wasDown && (buttons != 0);
 	wasDown = (*buttons != 0);
-	SetDstScreen(old);
+	//SetDstScreen(old);
 }
 
 void EditCharacters(TCampaignSetting * setting)

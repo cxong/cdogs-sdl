@@ -1221,7 +1221,7 @@ static void Save(int asCode)
 		TextChar('\020');
 		TextString(filename);
 		TextChar('\021');
-		vsync();
+		//vsync();
 		CopyToScreen();
 
 		c = GetKey();
@@ -1293,6 +1293,7 @@ static void EditCampaign(void)
 	gCampaign.seed = 0;
 	Setup(mission, 1);
 
+	SDL_EnableKeyRepeat(0, 0);
 	while (!done) {
 		Display(mission, xc, yc, c);
 
@@ -1494,6 +1495,7 @@ static void EditCampaign(void)
 			}
 			break;
 		}
+		SDL_Delay(50);
 	}
 }
 
@@ -1501,12 +1503,12 @@ static void EditCampaign(void)
 struct Mission missions[MAX_MISSIONS];
 TBadGuy characters[MAX_CHARACTERS];
 
+void *myScreen;
 
 void main(int argc, char *argv[])
 {
 	int i;
 	int loaded = 0;
-	void *myScreen;
 
 	memset(&campaign, 0, sizeof(campaign));
 	strcpy(campaign.title, "Campaign title");
@@ -1537,11 +1539,11 @@ void main(int argc, char *argv[])
 		}
 	}
 
-	if (!ReadPics("CDOGS.PX", gPics, PIC_COUNT1, gPalette)) {
+	if (!ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette)) {
 		printf("Unable to read CDOGS.PX\n");
 		exit(0);
 	}
-	if (!AppendPics("CDOGS2.PX", gPics, PIC_COUNT1, PIC_MAX)) {
+	if (!AppendPics(GetDataFilePath("graphics/cdogs2.px"), gPics, PIC_COUNT1, PIC_MAX)) {
 		printf("Unable to read CDOGS2.PX\n");
 		exit(0);
 	}
@@ -1549,9 +1551,10 @@ void main(int argc, char *argv[])
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 	BuildTranslationTables();
-	TextInit("FONT.PX", -2, YES, YES);
+	TextInit(GetDataFilePath("graphics/font.px"), -2, YES, YES);
 
-	InitVideo(YES);
+	//InitVideo(YES);
+	InitVideo(VID_WIN_NORMAL);
 	SetPalette(gPalette);
 
 	myScreen = malloc(64000);
@@ -1563,5 +1566,5 @@ void main(int argc, char *argv[])
 
 	free(myScreen);
 
-	TextMode();
+	//TextMode();
 }

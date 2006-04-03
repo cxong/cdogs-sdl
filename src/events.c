@@ -30,6 +30,7 @@
 //#include <dos.h>
 //#include <i86.h>
 #include "events.h"
+#include "keyboard.h"
 #include "SDL.h"
 
 
@@ -39,10 +40,12 @@ static struct MouseRect *localRects2 = NULL;
 
 void InitMouse(void)
 {
-	if (SDL_ShowCursor(SDL_ENABLE) == SDL_DISABLE) {
-		printf("Unable to show cursor! Bye.\n");
-		exit(-1);
-	}
+	//if (SDL_ShowCursor(SDL_ENABLE) == SDL_DISABLE) {
+	//	printf("Unable to show cursor! Bye.\n");
+	//	exit(-1);
+	//}
+	
+	SDL_ShowCursor(SDL_DISABLE);
 	//union REGS in, out;
 
 	//in.w.ax = 0;
@@ -80,12 +83,16 @@ void Mouse(int *x, int *y, int *button)
 
 int GetKey(void)
 {
-	int c = getch();
 
-	if (c)
-		return c;
-	else
-		return (getch() << 8);
+	while (!AnyKeyDown());
+
+	return GetKeyDown();
+	//	int c = getch();
+
+//	if (c)
+//		return c;
+//	else
+//		return (getch() << 8);
 }
 
 void SetMouseRects(struct MouseRect *rects)
