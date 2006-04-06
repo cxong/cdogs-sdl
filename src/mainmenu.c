@@ -210,6 +210,7 @@ int SelectCampaign(int dogFight, int cmd)
 	static int dogfightIndex = 0;
 	int count, y, i, j;
 	struct FileEntry *list = dogFight ? dogfightList : campaignList;
+	char *prefix = dogFight ? "dogfights/" : "missions/";
 	int *index = dogFight ? &dogfightIndex : &campaignIndex;
 	struct FileEntry *f;
 
@@ -228,7 +229,7 @@ int SelectCampaign(int dogFight, int cmd)
 				free(customSetting.characters);
 			memset(&customSetting, 0, sizeof(customSetting));
 
-			if (LoadCampaign(GetDataFilePath(f->name), &customSetting, 0, 0) ==
+			if (LoadCampaign(GetDataFilePath(join(prefix,f->name)), &customSetting, 0, 0) ==
 			    CAMPAIGN_OK)
 				gCampaign.setting = &customSetting;
 			else

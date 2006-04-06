@@ -131,6 +131,7 @@ void shutDown(void)
 
 void DoSound(int i, int len, void *data)
 {
+	int j;
 	void *newbuffer = malloc(len);
 	//firstly, find if we're going to need to have a buffer with zeros
 	if (len + snd[i].pos > snd[i].size) {
@@ -139,9 +140,17 @@ void DoSound(int i, int len, void *data)
 		       snd[i].size - snd[i].pos);
 //              snd[i].pos = 0;
 		snd[i].playFlag = 0;
-		memcpy(data, newbuffer, len);
+    // Replace this line with a version that mixes
+    //		memcpy(data, newbuffer, len);
+		for (j=0;j<len;j++)
+			((Sint16 *)data)[j]+=
+				((((Uint8 *)newbuffer)[j]-128)*snd[i].volume)/8;
 	} else {
-		memcpy(data, snd[i].data + snd[i].pos, len);
+		// Replaced with mixing version
+		//		memcpy(data, snd[i].data + snd[i].pos, len);
+		for (j=0;j<len;j++)
+			((Sint16 *)data)[j]+=
+				((((Uint8 *)snd[i].data)[j+snd[i].pos]-128)*snd[i].volume)/8;
 		snd[i].pos += len;
 	}
 
@@ -155,11 +164,10 @@ void SoundCallback(void *userdata, Uint8 * stream, int len)
 	memset(stream, 0, len);
 	for (i = 0; i < SND_COUNT; i++) {
 		if (snd[i].playFlag && snd[i].exists) {
-			DoSound(i, len, stream);
-			return;
+			DoSound(i, len/2, stream);
+			//			return;
 		}
 	}
-
 }
 
 int InitSoundDevice(void)
@@ -208,6 +216,8 @@ int InitSoundDevice(void)
 	spec->channels = 1;*/
 	tmpspec.samples = 512;
 	tmpspec.callback = &SoundCallback;
+	tmpspec.channels = 1;
+	tmpspec.format = AUDIO_S16;
 
 	if (SDL_OpenAudio(&tmpspec, NULL) == -1) {
 		printf("%s\n", SDL_GetError());
