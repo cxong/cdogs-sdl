@@ -536,7 +536,9 @@ int gameloop(void)
 			fps =
 			    (frames * GAMETICKS_PER_SECOND +
 			     fpsGameTicks / 2) / fpsGameTicks;
+			Spin(ticks_m);
 			frames = fpsGameTicks = 0;
+			Release(ticks_m);
 		}
 		timeTicks += ticks;
 		if (timeTicks >= CLOCK_LIMIT) {
