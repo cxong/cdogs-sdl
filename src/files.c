@@ -633,6 +633,11 @@ char * GetConfigFilePath(const char *name)
 	return tmp;
 }
 
+
+#ifdef SYS_WIN
+	#define mkdir(p, a)     mkdir(p)
+#endif
+
 void SetupConfigDir(void)
 {
 	char *cfg_p = GetConfigFilePath("");
