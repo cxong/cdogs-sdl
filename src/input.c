@@ -49,7 +49,7 @@ static void GetOnePlayerCmd(struct PlayerData *data,
 			    int *cmd, int joy1, int joy2, int single)
 {
 	if (cmd) {
-/*		if (data->controls == JOYSTICK_ONE) {
+		if (data->controls == JOYSTICK_ONE) {
 			*cmd = joy1;
 			if (gOptions.swapButtonsJoy1)
 				*cmd = SwapButtons(*cmd);
@@ -70,30 +70,30 @@ static void GetOnePlayerCmd(struct PlayerData *data,
 					*cmd |= CMD_BUTTON4;
 			}
 		} else {
-*/ *cmd = 0;
-		if (KeyDown(data->keys[0]))
-			*cmd |= CMD_LEFT;
-		else if (KeyDown(data->keys[1]))
-			*cmd |= CMD_RIGHT;
-		if (KeyDown(data->keys[2]))
-			*cmd |= CMD_UP;
-		else if (KeyDown(data->keys[3]))
-			*cmd |= CMD_DOWN;
-		if (KeyDown(data->keys[4]))
-			*cmd |= CMD_BUTTON1;
-		if (KeyDown(data->keys[5]))
-			*cmd |= CMD_BUTTON2;
-//              }
+			*cmd = 0;
+			if (KeyDown(data->keys[0]))
+				*cmd |= CMD_LEFT;
+			else if (KeyDown(data->keys[1]))
+				*cmd |= CMD_RIGHT;
+			if (KeyDown(data->keys[2]))
+				*cmd |= CMD_UP;
+			else if (KeyDown(data->keys[3]))
+				*cmd |= CMD_DOWN;
+			if (KeyDown(data->keys[4]))
+				*cmd |= CMD_BUTTON1;
+			if (KeyDown(data->keys[5]))
+				*cmd |= CMD_BUTTON2;
+		}
 	}
 }
 
 void GetPlayerCmd(int *cmd1, int *cmd2)
 {
-//      int joy1, joy2;
+	int joy1, joy2;
 
-//      PollDigiSticks(&joy1, &joy2);
-	GetOnePlayerCmd(&gPlayer1Data, cmd1, 0, 0, cmd2 == NULL);
-	GetOnePlayerCmd(&gPlayer2Data, cmd2, 0, 0, cmd1 == NULL);
+	PollDigiSticks(&joy1, &joy2);
+	GetOnePlayerCmd(&gPlayer1Data, cmd1, joy1, joy2, cmd2 == NULL);
+	GetOnePlayerCmd(&gPlayer2Data, cmd2, joy1, joy2, cmd1 == NULL);
 }
 
 void GetMenuCmd(int *cmd)

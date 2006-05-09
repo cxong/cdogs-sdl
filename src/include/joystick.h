@@ -25,6 +25,8 @@
 
 */
 
+#include "SDL_joystick.h"
+
 #ifndef YES
 #define YES            -1
 #define NO             0
@@ -48,6 +50,10 @@ struct JoyRec {
 	int xMid, yMid;
 	int x, y;
 	int buttons;
+
+	SDL_Joystick *j;
+	int nr_buttons;
+	int nr_axes;
 };
 
 

@@ -861,7 +861,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* moved here because -savecampaigns causes a crash, why? */
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0) {
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
@@ -924,7 +924,7 @@ int main(int argc, char *argv[])
 
 	LookForCustomCampaigns();
 
-//      InitSticks();
+	InitSticks();
 	if (gSticks[0].present)
 		printf("Joystick 1 detected\n");
 	if (gSticks[1].present)
