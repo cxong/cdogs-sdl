@@ -3,12 +3,8 @@ TODO:
 		- MacOSX (ppc and intel?)
 		- Win32
 		- Linux
-
-	* Get joystick stuff working					[port]
 	
 	* Make data directories changable from the command line		[add/mod]
-
-	* Get sound working better					[add/mod]
 	
 	* Optimise stuff :D						[mod]
 	* Clean up the general code, so there's fewer warnings		[mod]
@@ -23,6 +19,10 @@ THE _VERY_ DISTANT FUTURE (if at all):
 	  # Larger maps?
 
 DONE (so we feel good):
+	* Get joystick stuff working					[port]
+
+	* Get sound working better					[add/mod]
+
 	* Got running on MacOS X
 	  (and hopefully other non-intel  machines)			[port]		(lucas)
 	
