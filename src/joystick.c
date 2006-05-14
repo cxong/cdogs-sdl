@@ -60,7 +60,7 @@ void PollSticks(int maxWait)
 
 			for (i = 0; i < max; i++) {
 				if (SDL_JoystickGetButton(j, i)) {
-					btn |= (1 << i);
+					btn |= (2^i);
 				}
 			}
 
@@ -150,20 +150,14 @@ void PollDigiSticks(int *joy1, int *joy2)
 			*joy1 |= JOYSTICK_DOWN;
 		}
 
-		if ((gSticks[0].buttons & 1) == 1) {
+		if ((gSticks[0].buttons & 1) != 0)
 			*joy1 |= JOYSTICK_BUTTON1;
-		}
-
-		if ((gSticks[0].buttons & 2) == 1) {
+		if ((gSticks[0].buttons & 2) != 0)
 			*joy1 |= JOYSTICK_BUTTON2;
-		}
-
-		if ((gSticks[0].buttons & 4) == 1) {
+		if ((gSticks[0].buttons & 4) != 0)
 			*joy1 |= JOYSTICK_BUTTON3;
-		}
-		if ((gSticks[0].buttons & 8) == 1) {
+		if ((gSticks[0].buttons & 8) != 0)
 			*joy1 |= JOYSTICK_BUTTON4;
-		}
 	}
 	if (joy2)
 		*joy2 = 0;
@@ -176,13 +170,14 @@ void PollDigiSticks(int *joy1, int *joy2)
 			*joy2 |= JOYSTICK_UP;
 		else if (gSticks[1].y > (7 * gSticks[1].yMid / 6))
 			*joy2 |= JOYSTICK_DOWN;
-		if ((gSticks[1].buttons & 1) == 1)
+
+		if ((gSticks[1].buttons & 1) != 0)
 			*joy2 |= JOYSTICK_BUTTON1;
-		if ((gSticks[1].buttons & 2) == 1)
+		if ((gSticks[1].buttons & 2) != 0)
 			*joy2 |= JOYSTICK_BUTTON2;
-		if ((gSticks[1].buttons & 4) == 1)
+		if ((gSticks[1].buttons & 4) != 0)
 			*joy2 |= JOYSTICK_BUTTON3;
-		if ((gSticks[1].buttons & 8) == 1)
+		if ((gSticks[1].buttons & 8) != 0)
 			*joy2 |= JOYSTICK_BUTTON4;
 	}
 }
