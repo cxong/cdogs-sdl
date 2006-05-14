@@ -12,7 +12,7 @@ C-Dogs SDL Port v0.01
  |  |   '-------'   '---'  '----''----'
  /  '.___________
 |                |                  SDL
- `---------------'                v0.01
+ `---------------'                v0.02
 
 +----------+
 | Contents |
@@ -51,8 +51,8 @@ Jeremy's System:
 	Kernel:			Linux kernel 2.6
 	Compiler:		gcc 3.3
 	Misc:			libSDL 1.2.x,
-				XFree86 4.3,
-				glibc 2.3.2
+				XFree86 4.3, Xorg 6.8
+				glibc 2.3
 
 Lucas's System:
 	Processor:		Pentium II 400mhz
@@ -69,6 +69,8 @@ Pentium 166mhz
 96mb RAM
 Slackware Linux 9.1
 Linux kernel 2.4.22
+
+C-Dogs now also works on MacOSX, using Fink!
 
 +---+--------------+
 | 3 | Installation |
@@ -111,6 +113,8 @@ Step 3:
 The C-Dogs binary is called "cdogs", below are some command line arguments:
 
 	-fullscreen	C-Dogs will try and become full screen (recommended)
+
+	-nojoystick	C-Dogs will not use any available joysticks
 	
 	-wait		C-Dogs will wait for a key to be hit before 
 			initialising graphics
@@ -131,7 +135,7 @@ on stdout.
 If you have an questions, comments, bug reports (yes please), patches (even
 better) or anything else related to C-Dogs SDL email Jeremy or Lucas at:
 
-rekless@gmail.com or lmartinking@gmail.com respectively...
+rekless@fastmail.fm or lmartinking@gmail.com respectively...
 
 Alternately, if you have IRC visit #oz on cyberarmy. Jeremy is usually 'ReKleSS'
 and Lucas 'Ion-Pookie'.
