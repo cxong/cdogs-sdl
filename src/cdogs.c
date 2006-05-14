@@ -788,7 +788,11 @@ void PrintHelp (void)
 		"Video Options:\n",
 		"    -fullscreen     Try and use a fullscreen video mode.\n",
 		"    -scale          Scale the window resolution up.\n");
-
+	
+	printf("%s%s\n",
+		"Control Options:\n",
+		"    -nojoystick     Disable joystick(s)\n");
+		
 	printf("%s%s%s%s\n",
 		"Game Options:\n",
 		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n",
@@ -802,6 +806,7 @@ int main(int argc, char *argv[])
 	char s[13];
 	int compile = 1, rle = 1;
 	int vid_mode = VID_WIN_NORMAL;
+	int js_flag = SDL_INIT_JOYSTICK;
 
 	PrintTitle();
 	
@@ -840,6 +845,8 @@ int main(int argc, char *argv[])
 				compile = 0;
 			if (strcmp(argv[i] + 1, "norle") == 0)
 				rle = 0;
+			if (strcmp(argv[i] + 1, "nojoystick") == 0)
+				js_flag = 0;
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
 				if (vid_mode == VID_WIN_SCALE)
 					printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");
@@ -861,7 +868,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* moved here because -savecampaigns causes a crash, why? */
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | js_flag) != 0) {
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
