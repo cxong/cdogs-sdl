@@ -67,11 +67,11 @@ void SetupConfigDir(void);
 
 #define read8	read
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 void swap32 (void *d);
-size_t read32(int fd, void *buf, size_t size);
-size_t read16(int fd, void *buf, size_t size);
-size_t readarray32(int fd, void *buf, size_t size);
+ssize_t read32(int fd, void *buf, size_t size);
+ssize_t read16(int fd, void *buf, size_t size);
+ssize_t readarray32(int fd, void *buf, size_t size);
 void swap16 (void *d);
 #else
 	#define read32	read

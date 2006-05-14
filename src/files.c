@@ -44,7 +44,7 @@
 #define CAMPAIGN_MAGIC    690304
 #define CAMPAIGN_VERSION  6
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 void swap32 (void *d)
 {
 	*((int *)d) = SDL_Swap32(*((int *)d));
