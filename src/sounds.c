@@ -227,29 +227,6 @@ int InitSoundDevice(void)
 	return 1;
 }
 
-#if 0
-static void EnableSoundInterrupt(void)
-{
-/*	if (!soundInitialized || interruptEnabled)
-		return;
-
-	// yanked
-
-	interruptEnabled = 1;*/
-}
-
-static void DisableSoundInterrupt(void)
-{
-/*	if (!interruptEnabled)
-		return;
-
-	// yanked
-
-	interruptEnabled = 0;*/
-}
-#endif
-
-
 int InitializeSound(void)
 {
 //      atexit(shutDown);
@@ -323,16 +300,6 @@ void DoSounds(void)
 
 */
 }
-
-#if 0
-void SoundTick(void)
-{
-/*	if (!soundInitialized || interruptEnabled)
-		return;
-*/
-	// poll device if needed
-}
-#endif
 
 void SetFXVolume(int volume)
 {
