@@ -274,7 +274,6 @@
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = "\"/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "\"/Library/Frameworks/SDL.framework/Headers\"";
-				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O2";
 				OTHER_LDFLAGS = "-framework SDL";
@@ -288,7 +287,6 @@
 			);
 			isa = PBXApplicationTarget;
 			name = "CDogs-SDL";
-			productInstallPath = "$(HOME)/Applications";
 			productName = "«PROJECTNAME»";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -299,12 +297,18 @@
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>CDogs-SDL</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Version 0.2, Alpha</string>
 	<key>CFBundleIconFile</key>
 	<string>cdogs-icon</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>C-Dogs SDL Port for MacOSX</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>v0.2 (osx alpha)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
