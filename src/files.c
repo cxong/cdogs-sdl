@@ -101,6 +101,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		
 		if (i != CAMPAIGN_MAGIC) {
 			close(f);
+			fprintf(stderr, "Filename: %s\n", filename);
 			fprintf(stderr, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
 			fprintf(stderr, "ScanCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
