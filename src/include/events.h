@@ -39,3 +39,6 @@ int GetKey(void);
 void SetMouseRects(struct MouseRect *rects);
 void SetSecondaryMouseRects(struct MouseRect *rects);
 int GetMouseRectTag(int x, int y, int *tag);
+
+#define EVENT_QUIT	SDL_QUITMASK
+int IsEventPending (unsigned int m);

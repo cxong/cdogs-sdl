@@ -30,6 +30,7 @@
 #include <math.h>
 #include "blit.h"
 #include "grafx.h"
+#include "events.h"
 
 char *r_screen;
 extern SDL_Surface *screen;
@@ -115,6 +116,12 @@ void CopyToScreen(void)
 	float scalex, scaley;
 	int x, y;
 	int yoff, yoff2;
+	
+	if (IsEventPending(EVENT_QUIT)) {
+		printf("QUIT EVENT!\n");
+		exit(0);
+	}
+	
 	if (SDL_LockSurface(screen) == -1) {
 		printf("Couldn't lock surface; not drawing\n");
 		return;
