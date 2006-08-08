@@ -128,7 +128,7 @@ void shutDown(void)
 	SDL_CloseAudio();
 }
 
-
+#ifndef SND_NOMIX 
 void DoSound(int i, int len, void *data)
 {
 	int j;
@@ -142,7 +142,7 @@ void DoSound(int i, int len, void *data)
 		snd[i].playFlag = 0;
     // Replace this line with a version that mixes
     //		memcpy(data, newbuffer, len);
-		for (j=0;j<len;j++)
+			for (j=0;j<len;j++)
 			((Sint16 *)data)[j]+=
 				((((Uint8 *)newbuffer)[j]-128)*snd[i].volume)/8;
 	} else {
@@ -156,6 +156,30 @@ void DoSound(int i, int len, void *data)
 
 	free(newbuffer);
 }
+#else
+void DoSound(int i, int len, void *data)
+{
+	int j;
+	void *newbuffer = malloc(len);
+	//firstly, find if we're going to need to have a buffer with zeros
+	if (len + snd[i].pos > snd[i].size) {
+		memset(newbuffer, 0, len);
+		memcpy(newbuffer, snd[i].data + snd[i].pos,
+		       snd[i].size - snd[i].pos);
+//              snd[i].pos = 0;
+		snd[i].playFlag = 0;
+    // Replace this line with a version that mixes
+		memcpy(data, newbuffer, len);
+		
+	} else {
+		// Replaced with mixing version
+		memcpy(data, snd[i].data + snd[i].pos, len);
+		snd[i].pos += len;
+	}
+
+	free(newbuffer);
+}
+#endif /* SND_NOMIX */
 
 void SoundCallback(void *userdata, Uint8 * stream, int len)
 {
@@ -164,8 +188,12 @@ void SoundCallback(void *userdata, Uint8 * stream, int len)
 	memset(stream, 0, len);
 	for (i = 0; i < SND_COUNT; i++) {
 		if (snd[i].playFlag && snd[i].exists) {
+			#ifdef SND_NOMIX
+			DoSound(i, len, stream);
+			return;
+			#else /* New version */
 			DoSound(i, len/2, stream);
-			//			return;
+			#endif
 		}
 	}
 }
@@ -177,6 +205,12 @@ int InitSoundDevice(void)
 	SDL_AudioSpec tmpspec;
 
 	// Initialization goes here...
+
+	#ifdef SND_NOMIX
+	printf("Old sound code enabled. =/\n");
+	#else
+	printf("Using new sound code..\n");
+	#endif
 
 	// C-Dogs internals:
 	loadSampleConfiguration();
@@ -218,6 +252,11 @@ int InitSoundDevice(void)
 	tmpspec.callback = &SoundCallback;
 	tmpspec.channels = 1;
 	tmpspec.format = AUDIO_S16;
+
+	#ifdef SND_NOMIX
+	tmpspec.samples = 128;
+	tmpspec.format = AUDIO_U8;
+	#endif
 
 	if (SDL_OpenAudio(&tmpspec, NULL) == -1) {
 		printf("%s\n", SDL_GetError());
