@@ -668,7 +668,8 @@ void DogFight(void)
 	do {
 		SetupMission(0, 1);
 		SetupMap();
-		PlayerEquip(bkg);
+		
+		if (PlayerEquip(bkg)) {
 
 		srand(clock());
 		InitPlayers(YES, 500, 0);
@@ -689,6 +690,10 @@ void DogFight(void)
 		PlayGameSong();
 
 		run = gameloop();
+
+		} else {
+			run = 0;
+		}
 
 		if (gPlayer1 != NULL)
 			score1++;
@@ -752,9 +757,11 @@ void MainLoop(void)
 		ResetCampaign();
 		if (!gCampaign.dogFight)
 			CampaignIntro(bkg);
+
 		printf(">> Entering selection\n");
-		PlayerSelection(gOptions.twoPlayers
-				|| gCampaign.dogFight, bkg);
+		if (!PlayerSelection(gOptions.twoPlayers
+				|| gCampaign.dogFight, bkg)) continue;
+				
 		printf(">> Starting campaign\n");
 		if (gCampaign.dogFight)
 			DogFight();

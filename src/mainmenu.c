@@ -322,10 +322,11 @@ static int SelectMain(int cmd)
 	return MODE_MAIN;
 }
 
+#define MAXCOLOUR 254
 unsigned char FitColor(int c)
 {
-	if (c > 63)
-		return 63;
+	if (c > MAXCOLOUR)
+		return MAXCOLOUR;
 	else if (c < 0)
 		return 0;
 	else
@@ -337,7 +338,7 @@ static void PaletteAdjust(void)
 	int i;
 	double f;
 
-	f = 1.0 + gOptions.brightness / 33.0;
+	f = 1.0 + gOptions.brightness / 33.3;
 	for (i = 0; i < 255; i++) {
 		gPalette[i].red = FitColor(f * origPalette[i].red);
 		gPalette[i].green = FitColor(f * origPalette[i].green);

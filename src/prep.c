@@ -783,6 +783,9 @@ int PlayerSelection(int twoPlayers, void *bkg)
 //              printf("x\n");
 		memcpy(GetDstScreen(), bkg, 64000);
 		GetPlayerCmd(&cmd1, &cmd2);
+		
+		if (KeyDown(keyEsc)) return 0; // hack to allow exit
+		
 		if (twoPlayers) {
 			if (cmd1 == prev1)
 				cmd1 = 0;
@@ -828,6 +831,9 @@ int PlayerEquip(void *bkg)
 	while (!done1 || !done2) {
 		memcpy(GetDstScreen(), bkg, 64000);
 		GetPlayerCmd(&cmd1, &cmd2);
+		
+		if (KeyDown(keyEsc)) return 0; // hack to exit from menu
+		
 		if (gOptions.twoPlayers) {
 			if (cmd1 == prev1)
 				cmd1 = 0;
