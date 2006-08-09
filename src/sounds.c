@@ -60,7 +60,7 @@ static int dynamicInterrupts = 0;
 
 static int moduleStatus = 0;
 static char moduleMessage[128];
-static char moduleDirectory[128] = "";
+static char moduleDirectory[128] = ".";
 SDL_AudioSpec *spec;
 
 
