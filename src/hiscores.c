@@ -233,6 +233,23 @@ void SaveHighScores(void)
 		printf("Unable to open %s\n", SCORES_FILE);
 }
 
+#define R32(s,e)	read32(fd, &s->e, sizeof(s->e))
+
+void load_score (int fd, struct Entry *e) {
+	read(fd, e->name, sizeof(e->name));
+	R32(e, head);
+	R32(e, body);
+	R32(e, arms);
+	R32(e, legs);
+	R32(e, skin);
+	R32(e, hair);
+	R32(e, score);
+	R32(e, missions);
+	R32(e, lastMission);
+	
+	fprintf(stderr, "Score. Name: %s\n", e->name);
+} 
+
 void LoadHighScores(void)
 {
 	int magic;
@@ -241,30 +258,44 @@ void LoadHighScores(void)
 	time_t t;
 	struct tm *tp;
 
+	printf("Reading scores...\n");
+
 	memset(allTimeHigh, 0, sizeof(allTimeHigh));
 	memset(todaysHigh, 0, sizeof(todaysHigh));
 
 	f = open(GetConfigFilePath(SCORES_FILE), O_RDONLY);
 	if (f >= 0) {
+		int i;
+	
 		read32(f, &magic, sizeof(magic));
 		if (magic != MAGIC) {
 			close(f);
 			return;
 		}
+		
+		for (i = 0; i < MAX_ENTRY; i++) {
+			load_score(f, &allTimeHigh[i]);
+		}
+
+/*		
 		// Entry.name
 		read(f, allTimeHigh, sizeof(allTimeHigh->name));
 		// Rest of Entry
 		readarray32(f, allTimeHigh+sizeof(allTimeHigh->name),
 			sizeof(allTimeHigh) - sizeof(allTimeHigh->name));
+*/
 
 		t = time(NULL);
 		tp = localtime(&t);
 		read32(f, &y, sizeof(y));
 		read32(f, &m, sizeof(m));
 		read32(f, &d, sizeof(d));
-		if (tp->tm_year == y && tp->tm_mon == m
-		    && tp->tm_mday == d)
-			read(f, todaysHigh, sizeof(todaysHigh));
+		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d)
+			for (i = 0; i < MAX_ENTRY; i++) {
+				load_score(f, &todaysHigh[i]);
+			}
+		
+			//read(f, todaysHigh, sizeof(todaysHigh));
 		close(f);
 	} else
 		printf("Unable to open %s\n", SCORES_FILE);
