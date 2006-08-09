@@ -63,11 +63,14 @@ ssize_t read32(int fd, void *buf, size_t size)
 ssize_t readarray32(int fd, void *buf, size_t size)
 {
 	int i;
+
+	fprintf(stderr, "readarray32(%d, %x, %d)\n", fd, buf, size);
+
 	if (buf) {
-		read(fd, buf, size);
 		for (i = 0; i < (size/4); i++) {
-			void *cur = (buf + i);
-			swap32((int*)cur);
+		//	fprintf(stderr, " i: %d\n", i);
+			read32(fd, buf, sizeof(int));
+			buf += sizeof(int);
 		}
 	}
 	return size;
@@ -129,6 +132,120 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	return CAMPAIGN_BADPATH;
 }
 
+void load_mission_objective(int fd, struct MissionObjective *o)
+{
+		int offset = 0;
+		read(fd, o->description, sizeof(o->description)); offset += sizeof(o->description);
+		read32(fd, &o->type, sizeof(o->type));
+		read32(fd, &o->index, sizeof(o->index));
+		read32(fd, &o->count, sizeof(o->count));
+		read32(fd, &o->required, sizeof(o->required));
+		read32(fd, &o->flags, sizeof(o->flags));
+		//readarray32(fd, o + offset, 5 * sizeof(int));
+		fprintf(stderr, " >> Objective: %s data: %d %d %d %d %d\n", o->description,
+												o->type, o->index, o->count, o->required, o->flags);
+}
+
+#define R32(s,e)	read32(fd, &s->e, sizeof(s->e))
+
+void load_mission(int fd, struct Mission *m)
+{
+		int i;
+		int o = 0;
+
+		read(fd, m->title, sizeof(m->title));				o += sizeof(m->title);
+		read(fd, m->description, sizeof(m->description));	o += sizeof(m->description);
+
+		fprintf(stderr, "== MISSION ==\n");
+		fprintf(stderr, "t: %s\n", m->title);
+		fprintf(stderr, "d: %s\n", m->description);  
+	
+		R32(m,  wallStyle);
+		R32(m,  floorStyle);
+		R32(m,  roomStyle);
+		R32(m,  exitStyle);
+		R32(m,  keyStyle);
+		R32(m,  doorStyle);
+
+		R32(m,  mapWidth); R32(m, mapHeight);
+		R32(m,  wallCount); R32(m, wallLength);
+		R32(m,  roomCount);
+		R32(m,  squareCount);
+
+		R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
+
+		R32(m, objectiveCount);
+	
+	//	readarray32(fd, m + o, 17 * sizeof(int));		
+		o += 17 * sizeof(int);
+		
+		fprintf(stderr, " number of objectives: %d\n", m->objectiveCount);	
+ 		for (i = 0; i < OBJECTIVE_MAX; i++) {
+			load_mission_objective(fd, &m->objectives[i]);
+		}
+	
+		R32(m, baddieCount);
+		for (i = 0; i < BADDIE_MAX; i++) {
+			read32(fd, &m->baddies[i], sizeof(int));
+		}
+		
+		R32(m, specialCount);
+		for (i = 0; i < SPECIAL_MAX; i++) {
+			read32(fd, &m->specials[i], sizeof(int));
+		}
+		
+		R32(m, itemCount);
+		for (i = 0; i < ITEMS_MAX; i++) {
+			read32(fd, &m->items[i], sizeof(int));
+		}
+		for (i = 0; i < ITEMS_MAX; i++) {
+			read32(fd, &m->itemDensity[i], sizeof(int));
+		}
+	
+		R32(m, baddieDensity);	
+		R32(m, weaponSelection);					
+		
+		read(fd, m->song, sizeof(m->song));
+		read(fd, m->map, sizeof(m->map));
+		
+		R32(m, wallRange);						
+		R32(m, floorRange);
+		R32(m, roomRange);
+		R32(m, altRange);			
+																																																																							
+		//o += OBJECTIVE_MAX * sizeof(struct MissionObjective);
+		
+		//readarray32(fd, m + o, sizeof(struct Mission) - o);
+		fprintf(stderr, " number of baddies: %d\n", m->baddieCount);	
+		
+		//read(fd, m + o, sizeof(struct Mission) - o);
+}
+
+
+
+void load_character(int fd, TBadGuy *c)
+{
+		R32(c, armedBodyPic);
+		R32(c, unarmedBodyPic);
+		R32(c, facePic);
+		R32(c, speed);
+		R32(c, probabilityToMove);
+		R32(c, probabilityToTrack);
+		R32(c, probabilityToShoot);
+		R32(c, actionDelay);
+		R32(c, gun);
+		R32(c, skinColor);
+		R32(c, armColor);
+		R32(c, bodyColor);
+		R32(c, legColor);
+		R32(c, hairColor);
+		R32(c, health);
+		R32(c, flags);
+
+//		readarray32(fd, c, sizeof(TBadGuy));
+//		fprintf(stderr, " speed: %d gun: %d\n", c->speed, c->gun);
+}
+
 int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		 int max_missions, int max_characters)
 {
@@ -153,8 +270,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 
 		read(f, setting->title, sizeof(setting->title));
 		read(f, setting->author, sizeof(setting->author));
-		read(f, setting->description,
-		     sizeof(setting->description));
+		read(f, setting->description, sizeof(setting->description));
 
 		read32(f, &setting->missionCount,
 		     sizeof(setting->missionCount));
@@ -167,13 +283,13 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		} else if (setting->missionCount < max_missions)
 			max_missions = setting->missionCount;
 
+		fprintf(stderr, "No. missions: %d\n", max_missions);
+
 		for (i = 0; i < max_missions; i++) {
-			read(f, &setting->missions[i],
-			     sizeof(struct Mission));
+			load_mission(f, &setting->missions[i]);
 		}
 
-		read32(f, &setting->characterCount,
-		     sizeof(setting->characterCount));
+		read32(f, &setting->characterCount, sizeof(setting->characterCount));
 
 		if (max_characters <= 0) {
 			i = setting->characterCount * sizeof(TBadGuy);
@@ -183,8 +299,10 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		} else if (setting->characterCount < max_characters)
 			max_characters = setting->characterCount;
 
+		fprintf(stderr, "No. characters: %d\n", max_characters);
+
 		for (i = 0; i < max_characters; i++) {
-			readarray32(f, &setting->characters[i], sizeof(TBadGuy));
+			load_character(f, &setting->characters[i]);
 		}
 		close(f);
 
