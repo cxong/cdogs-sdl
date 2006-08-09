@@ -21,7 +21,12 @@
 
 -------------------------------------------------------------------------------
 
- defs.h - <description here>
+ defs.h - random definitions
+
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
 
 */
 
