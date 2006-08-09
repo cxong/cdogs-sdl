@@ -796,14 +796,17 @@ void PrintHelp (void)
 		"    -fullscreen     Try and use a fullscreen video mode.\n",
 		"    -scale          Scale the window resolution up.\n");
 	
-	printf("%s%s\n",
-		"Control Options:\n",
-		"    -nojoystick     Disable joystick(s)\n");
-		
 	printf("%s%s%s%s\n",
+		"Control Options:\n",
+		"    -nojoystick     Disable joystick(s)\n",
+		"    -js1threshold=n Joystick 1 threshold.\n",
+		"    -js2threshold=n Joystick 2 threshold.\n");
+		
+	printf("%s%s%s%s%s\n",
 		"Game Options:\n",
 		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n",
 		"    -wait           Wait for a key hit before initialising video.\n",
+		"    -shakemult=n    Screen shaking multiplier (0 = disable).\n",
 		"    -slices         Display CPU slices [*broken*]");
 }
 
@@ -824,6 +827,31 @@ int main(int argc, char *argv[])
 				printf("Displaying CPU slices\n");
 				gOptions.displaySlices = 1;
 			}
+			
+			if (strstr(argv[i] + 1, "js1threshold=")) {
+				char *val = strchr(argv[i], '=');
+				extern int js1_threshold;
+				int nval;
+				val++;
+				
+				nval = atoi(val);
+				if (nval < 0) nval = 0;
+				printf("Joystick 1 threshold: %d\n", nval);
+				js1_threshold = nval;
+			}
+			
+			if (strstr(argv[i] + 1, "js2threshold=")) {
+				char *val = strchr(argv[i], '=');
+				extern int js2_threshold;
+				int nval;
+				val++;
+				
+				nval = atoi(val);
+				if (nval < 0) nval = 0;
+				printf("Joystick 2 threshold: %d\n", nval);
+				js2_threshold = nval;
+			}
+			
 			if (strstr(argv[i] + 1, "shakemult=")) {
 				char *val = strchr(argv[i], '=');
 				int nval;
@@ -831,6 +859,7 @@ int main(int argc, char *argv[])
 
 				val++;
 				nval = atoi(val);
+				if (nval < 0) nval = 0;
 				printf("Shake multiplier: %d\n", nval);
 				shakeMultiplier = nval;	
 			}
@@ -853,7 +882,7 @@ int main(int argc, char *argv[])
 			if (strcmp(argv[i] + 1, "norle") == 0)
 				rle = 0;
 			if (strcmp(argv[i] + 1, "nojoystick") == 0)
-				js_flag = 0;
+				js_flag = 0;				
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
 				if (vid_mode == VID_WIN_SCALE)
 					printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");

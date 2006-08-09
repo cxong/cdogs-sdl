@@ -125,11 +125,22 @@ void AutoCalibrate(void)
 {
 	PollSticks(0);
 
+/*
 	gSticks[0].xMid = gSticks[0].x;
 	gSticks[0].yMid = gSticks[0].y;
 	gSticks[1].xMid = gSticks[1].x;
 	gSticks[1].yMid = gSticks[1].y;
+*/
+	gSticks[0].xMid = 0;
+	gSticks[0].yMid = 0;
+	gSticks[1].xMid = 0;
+	gSticks[1].yMid = 0;
 }
+
+#define JS_DEF_THRESHOLD	16384
+
+int js1_threshold = JS_DEF_THRESHOLD;
+int js2_threshold = JS_DEF_THRESHOLD;
 
 void PollDigiSticks(int *joy1, int *joy2)
 {
@@ -138,15 +149,15 @@ void PollDigiSticks(int *joy1, int *joy2)
 	if (joy1)
 		*joy1 = 0;
 	if (joy1 && gSticks[0].present) {
-		if (gSticks[0].x < gSticks[0].xMid / 2) {
+		if (gSticks[0].x < (gSticks[0].xMid - js1_threshold)) {
 			*joy1 |= JOYSTICK_LEFT;
-		} else if (gSticks[0].x > (7 * gSticks[0].xMid) / 6) {
+		} else if (gSticks[0].x > (gSticks[0].xMid + js1_threshold)) {
 			*joy1 |= JOYSTICK_RIGHT;
 		}
 		
-		if (gSticks[0].y < gSticks[0].yMid / 2) {
+		if (gSticks[0].y < (gSticks[0].yMid - js1_threshold)) {
 			*joy1 |= JOYSTICK_UP;
-		} else if (gSticks[0].y > (7 * gSticks[0].yMid) / 6) {
+		} else if (gSticks[0].y > (gSticks[0].yMid + js1_threshold)) {
 			*joy1 |= JOYSTICK_DOWN;
 		}
 
@@ -162,14 +173,17 @@ void PollDigiSticks(int *joy1, int *joy2)
 	if (joy2)
 		*joy2 = 0;
 	if (joy2 && gSticks[1].present) {
-		if (gSticks[1].x < gSticks[1].xMid / 2)
+		if (gSticks[1].x < gSticks[1].xMid - js2_threshold) {
 			*joy2 |= JOYSTICK_LEFT;
-		else if (gSticks[1].x > (7 * gSticks[1].xMid / 6))
+		} else if (gSticks[1].x > gSticks[1].xMid + js2_threshold) {
 			*joy2 |= JOYSTICK_RIGHT;
-		if (gSticks[1].y < gSticks[1].yMid / 2)
+		}
+		
+		if (gSticks[1].y < gSticks[1].yMid - js2_threshold) {
 			*joy2 |= JOYSTICK_UP;
-		else if (gSticks[1].y > (7 * gSticks[1].yMid / 6))
+		} else if (gSticks[1].y > gSticks[1].yMid + js2_threshold) {
 			*joy2 |= JOYSTICK_DOWN;
+		}
 
 		if ((gSticks[1].buttons & 1) != 0)
 			*joy2 |= JOYSTICK_BUTTON1;
