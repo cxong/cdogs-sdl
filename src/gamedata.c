@@ -71,7 +71,8 @@ struct GameOptions gOptions = {
 	100,
 	100,
 	100,
-	100
+	100,
+	0
 };
 
 struct CampaignOptions gCampaign = {
