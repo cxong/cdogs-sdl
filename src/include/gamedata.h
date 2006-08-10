@@ -276,7 +276,7 @@ extern struct CampaignOptions gCampaign;
 extern struct MissionOptions gMission;
 
 struct SongDef {
-	char path[81];
+	char path[255];
 	struct SongDef *next;
 };
 

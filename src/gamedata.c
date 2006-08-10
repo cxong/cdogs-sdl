@@ -128,14 +128,18 @@ void LoadSongs(const char *path, struct SongDef **songList)
 	FILE *f;
 	char s[100], *p;
 
+	fprintf(stderr, "LoadSongs path: %s\n", path);
+
 	f = fopen(path, "r");
 	if (f) {
 		while (fgets(s, sizeof(s), f)) {
 			p = s + strlen(s);
 			while (p >= s && !isgraph(*p))
 				*p-- = 0;
-			if (s[0])
+			if (s[0]) {
+				fprintf(stderr, "Added song: %s\n", s);
 				AddSong(songList, s);
+			}
 		}
 		fclose(f);
 	}

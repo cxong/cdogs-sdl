@@ -959,6 +959,7 @@ int main(int argc, char *argv[])
 
 	LoadHighScores();
 
+	printf("Loading song lists...\n");
 	LoadSongs(GetConfigFilePath("menusong.cfg"), &gMenuSongs);
 	LoadSongs(GetConfigFilePath("gamesong.cfg"), &gGameSongs);
 	LoadTemplates();
