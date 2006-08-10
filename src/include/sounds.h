@@ -52,6 +52,9 @@
 
 #define MODULE_OK       0
 #define MODULE_NOLOAD   1
+#define	MODULE_PLAYING	2
+#define MODULE_PAUSED	3
+#define MODULE_STOPPED	MODULE_OK
 
 int InitializeSound(void);
 void ShutDownSound(void);
