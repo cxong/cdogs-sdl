@@ -91,8 +91,8 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 
 void SetClip(int left, int top, int right, int bottom)
 {
-	clipright = right + 1;
-	clipleft = left - 1;
+	clipright = right;
+	clipleft = left;
 	cliptop = top;
 	clipbottom = bottom;
 	return;
@@ -142,8 +142,7 @@ void CopyToScreen(void)
 			yoff2 = y*320;
 			for (j = 0; j < width; j++) {
 				x = j * scalex;
-				pScreen[yoff + j] =
-				    r_screen[x + yoff2];
+				pScreen[yoff + j] = r_screen[x + yoff2];
 			}
 		}
 	}
@@ -158,6 +157,12 @@ void AltScrCopy(void)
 	return;
 }
 
+#define GAMMA	3
+
+#define GAMMA_R	GAMMA
+#define GAMMA_G	GAMMA
+#define GAMMA_B	GAMMA
+
 void SetPalette(void *pal)
 {
 	color *palette = (color *) pal;
@@ -165,9 +170,10 @@ void SetPalette(void *pal)
 	int i;
 	
 	for (i = 0; i < 256; i++) {
-		newpal[i].r = palette[i].red * 3;
-		newpal[i].g = palette[i].green * 3;
-		newpal[i].b = palette[i].blue * 3;
+		newpal[i].r = palette[i].red	* GAMMA_R;
+		newpal[i].g = palette[i].green	* GAMMA_G;
+		newpal[i].b = palette[i].blue	* GAMMA_B;
+
 		newpal[i].unused = 0;
 	}
 	SDL_SetPalette(screen, SDL_PHYSPAL, newpal, 0, 256);
