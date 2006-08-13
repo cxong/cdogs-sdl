@@ -619,7 +619,7 @@ void GetCampaignTitles(struct FileEntry **entries)
  * It's an ugly piece of sh*t... :/
  */
 
-char *cdogs_homepath;
+char *cdogs_homepath = NULL;
 char * GetHomeDirectory(void)
 {
 	char *home;
@@ -628,6 +628,14 @@ char * GetHomeDirectory(void)
 	char *tmp2; /* dynamic buffer */
 
 	if (cdogs_homepath == NULL) {
+		char *p;
+		
+		p = getenv("CDOGS_CONFIG_DIR");
+		if (p != NULL && strlen(p) != 0) {
+			cdogs_homepath = strdup(p);
+			return cdogs_homepath;
+		}
+	
 		home = getenv("HOME");
 
 		if (home == NULL || strlen(home) == 0) { /* no HOME var, try to get USER */
@@ -646,7 +654,8 @@ char * GetHomeDirectory(void)
 				strcpy(tmp2, tmp1);
 				free(tmp1);
 				
-				return tmp2;
+				cdogs_homepath = tmp2;
+				return cdogs_homepath;
 			} else {				/* hopefully they have USER set... */
 				tmp1 = calloc(MAX_STRING_LEN, 1);	/* lots of chars... */
 				strcpy(tmp1, "/home/");
@@ -657,7 +666,8 @@ char * GetHomeDirectory(void)
 				free(tmp1);
 				//setenv("HOME", tmp1, 0);	/* set the HOME var anyway :) */
 			
-				return tmp2;
+				cdogs_homepath = tmp2;
+				return cdogs_homepath;
 			}
 		}
 
@@ -705,17 +715,33 @@ int IsWritable(char *name)
 /* GetDataFilePath()
  *
  * returns a full path to a data file...
+ *
+ * XXX: Use default dir as fallback?
  */
+char *data_path = NULL;
+char data_pbuf[255];
 char * GetDataFilePath(const char *path)
 {
-	char *tmp;
+	if (!data_path) {
+		char *tmp;
+		
+		if ((tmp = getenv("CDOGS_DATA_DIR")) != NULL && strlen(tmp) != 0) {
+			data_path = strdup(tmp);
+		} else {
+			tmp = calloc(strlen(CDOGS_DATA_DIR)+strlen(path)+1,sizeof(char));
 
-	tmp = calloc(strlen(CDOGS_DATA_DIR)+strlen(path)+1,sizeof(char));
+			strcpy(tmp, CDOGS_DATA_DIR);
+			strcat(tmp, path);
 
-	strcpy(tmp, CDOGS_DATA_DIR);
-	strcat(tmp, path);
-
-	return strdup(tmp);
+			data_path = strdup(tmp);
+			free(tmp);
+		}
+	}
+	
+	strcpy(data_pbuf, data_path);
+	strcat(data_pbuf, "/");
+	strcat(data_pbuf, path);
+	return data_pbuf;
 }
 
 char * join(const char *s1, const char *s2)
@@ -757,31 +783,56 @@ char * GetConfigFilePath(const char *name)
 	#define mkdir(p, a)     mkdir(p)
 #endif
 
+int mkdir_deep(const char *path, mode_t m)
+{
+        int i;
+        char part[255];
+		
+//		fprintf(stderr, "make_path(%s)\n", path);
+
+        for (i = 0; i < strlen(path); i++) {
+                if (path[i] == '\0') break;
+                if (path[i] == '/') {
+                        strncpy(part, path, i + 1);
+                        part[i+1] = '\0';
+                        
+						if (mkdir(part, m) == -1) {
+							if (errno == EEXIST) continue;
+							else return 1; 
+						}
+                }
+        }
+		
+		return 0;
+}
+
 void SetupConfigDir(void)
 {
 	char *cfg_p = GetConfigFilePath("");
 
 	printf("Creating Config dir... ");
-	if (mkdir(cfg_p, S_IRUSR | S_IXUSR | S_IWUSR) == -1)
+	
+	if (mkdir_deep(cfg_p, S_IRUSR | S_IXUSR | S_IWUSR) == 0) {
+		if (errno != EEXIST)
+			printf("Config dir created.\n");
+		else
+			printf("No need. Already exists!\n");
+	} else {
 		switch (errno) {
 			case EACCES:
 				printf("Permission denied!\n");
 				break;
-			case EEXIST:
-				printf("No need. Already exists\n");
-				break;
 			default:
-				printf("Error: (%d)\n", errno);
+				printf("Error! errno is %d\n", errno);
 		}
-	else
-		printf("Config dir created.\n");
-	
+	}
+		
 	return;
 }
 
+char dir_buf[250];
 char * GetPWD(void)
 {
-	char dir_buf[250];	
 	getcwd(dir_buf, 250);
 	return dir_buf;
 }
