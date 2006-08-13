@@ -27,20 +27,9 @@
 */
 
 #include <string.h>
+
 #include "SDL.h"
-// #include <conio.h>
-// #include <dos.h>
 #include "keyboard.h"
-
-void _dos_setvect(int intr_num, void *isr)
-{
-	return;
-}
-
-void *_dos_getvect(int x)
-{
-	return NULL;
-}
 
 char *keyNames[256] =
     { /* $00 */ NULL, "Esc", "1", "2", "3", "4", "5", "6",
@@ -89,7 +78,7 @@ static volatile unsigned char uKeys[256];
 
 void InitKeyboard(void)
 {
-
+	return;
 }
 
 char KeyDown(int key)
