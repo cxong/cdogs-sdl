@@ -149,7 +149,9 @@ static struct Credit credits[] = {
 	{"Lucas Martin-King",
 	 "He procrastinated about releasing C-Dogs SDL! ...and cleaned up after Jeremy"},
 	{"Jeremy Chin",
-	 "He did all the hard porting work! ;)"}
+	 "He did all the hard porting work! ;)"},
+	{"C-Dogs SDL Homepage!",
+	 "http://www.icculus.org/cdogs-sdl"}
 };
 
 #define CREDIT_PERIOD   10
@@ -162,7 +164,8 @@ static TCampaignSetting customSetting = {
 	.missionCount	=	0,
 	.missions	=	NULL,
 	.characterCount	=	0,
-	.characters	=	NULL };
+	.characters	=	NULL
+};
 
 
 static struct FileEntry *campaignList = NULL;
@@ -218,6 +221,7 @@ int SelectCampaign(int dogFight, int cmd)
 
 	if (cmd == CMD_ESC)
 		return MODE_MAIN;
+
 	if (AnyButton(cmd)) {
 		for (i = 0, f = list; f != NULL && i < *index;
 		     f = f->next, i++);
@@ -236,13 +240,16 @@ int SelectCampaign(int dogFight, int cmd)
 				SetupBuiltin(dogFight, 0);
 		} else if (f)
 			SetupBuiltin(dogFight, f->data);
-		else
+		else {
 			SetupBuiltin(dogFight, 0);
+		}
+
 //  gCampaign.seed = 0;
 		PlaySound(SND_HAHAHA, 0, 255);
 		printf(">> Entering MODE_PLAY\n");
 		return MODE_PLAY;
 	}
+	
 	if (Left(cmd) || Up(cmd)) {
 		(*index)--;
 		if (*index < 0)
@@ -317,6 +324,7 @@ static int SelectMain(int cmd)
 
 	DrawTPic(125, 4, gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
 	TextStringAt(20, 20, CDOGS_VERSION);
+	TextStringAt(280, 20, CDOGS_SDL_VERSION);
 
 	DisplayMenu(132, mainMenu, MAIN_COUNT, index);
 	return MODE_MAIN;
@@ -403,8 +411,7 @@ int SelectOptions(int cmd)
 					gCampaign.seed -= 100;
 				else
 					gCampaign.seed--;
-			} else if Right
-				(cmd) {
+			} else if Right(cmd) {
 				if (Button1(cmd) && Button2(cmd))
 					gCampaign.seed += 1000;
 				else if (Button1(cmd))
@@ -413,17 +420,15 @@ int SelectOptions(int cmd)
 					gCampaign.seed += 100;
 				else
 					gCampaign.seed++;
-				}
+			}
 			break;
 		case 7:
 			if (Left(cmd)) {
-				if (gOptions.difficulty >
-				    DIFFICULTY_VERYEASY)
-					gOptions.difficulty--;
+				if (gOptions.difficulty > DIFFICULTY_VERYEASY)
+						gOptions.difficulty--;
 			} else if (Right(cmd)) {
-				if (gOptions.difficulty <
-				    DIFFICULTY_VERYHARD)
-					gOptions.difficulty++;
+				if (gOptions.difficulty < DIFFICULTY_VERYHARD)
+						gOptions.difficulty++;
 			}
 			break;
 		case 8:
@@ -720,7 +725,7 @@ static void ShowAllKeys(int index, int change)
 
 static void HighlightKey(int index)
 {
-	void *scr = GetDstScreen();
+//	void *scr = GetDstScreen();
 
 	CopyToScreen();
 //      SetDstScreen((void *) 0xA0000);
@@ -874,8 +879,8 @@ static void ShowCredits(void)
 	static int lastTick = 0;
 	int t;
 
-	TextStringWithTableAt(40, 130, "Credits:", &tableDarker);
-	TextStringWithTableAt(50, 140, credits[creditIndex].name,
+	TextStringWithTableAt(16, 128, "Credits:", &tableDarker);
+	TextStringWithTableAt(20, 140, credits[creditIndex].name,
 			      &tablePurple);
 	TextStringWithTableAt(20, 140 + TextHeight(),
 			      credits[creditIndex].message, &tableDarker);
@@ -893,11 +898,10 @@ int MainMenu(void *bkg)
 {
 	int cmd, prev = 0;
 	int mode;
-	SDL_Event evt;
 
 	mode = MODE_MAIN;
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
-		 memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, 64000);
 		ShowControls();
 		if (mode == MODE_MAIN)
 			ShowCredits();
