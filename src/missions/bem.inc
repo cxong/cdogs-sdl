@@ -1,7 +1,13 @@
-/* bem.inc - B.E.M mission.
-*	(C)opyright Ronny Wester.
-*
-*  NOT covered by the GPL... ie: this is freeware
+/* 
+	bem.inc - B.E.M mission.
+	(C)opyright Ronny Wester.
+
+	NOT covered by the GPL... ie: this is freeware
+ 
+	Author: $Author$
+	Rev:    $Revision$
+	URL:    $HeadURL$
+	ID:     $Id$
 */
 
 TBadGuy BEM_badguys[29] = {

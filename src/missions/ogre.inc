@@ -1,7 +1,14 @@
-/* ogre.inc - Ogre Missions
-*	(C)opyright Ronny Wester.
-*
-*  NOT covered by the GPL... ie: this is freeware
+/*
+	ogre.inc - Ogre Missions
+	(C)opyright Ronny Wester.
+
+	NOT covered by the GPL... ie: this is freeware
+ 
+	Author: $Author$
+	Rev:    $Revision$
+	URL:    $HeadURL$
+	ID:     $Id$
+	
 */
 
 TBadGuy OGRE_badguys[42] = {
