@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  prep.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "gamedata.h"

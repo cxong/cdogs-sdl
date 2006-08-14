@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  sounds.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #define SND_EXPLOSION   0

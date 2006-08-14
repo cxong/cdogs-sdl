@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  sprcomp.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 int compileSprite(void *sprite, unsigned char *ml);

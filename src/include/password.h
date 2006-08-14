@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  password.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #define PASSWORD_MAX  16

@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  draw.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "map.h"

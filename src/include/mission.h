@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  mission.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #define TileItemIsObjective(f)   (((f) & TILEITEM_OBJECTIVE) != 0)

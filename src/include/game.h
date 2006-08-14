@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  game.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 //#define GAMETICKS_PER_SECOND 280

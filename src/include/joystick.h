@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  joystick.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "SDL_joystick.h"

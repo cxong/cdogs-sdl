@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  events.h - <description here>
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 

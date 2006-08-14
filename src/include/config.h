@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  config.h - installation options/settings
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 /* where to look for the cdogs data files */
