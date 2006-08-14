@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  input.c - input functions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdlib.h>

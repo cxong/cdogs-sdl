@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  mainmenu.c - main menu functions 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

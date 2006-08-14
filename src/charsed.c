@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  charsed.c - character editor (in game) 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdlib.h>

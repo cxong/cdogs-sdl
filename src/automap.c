@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  automap.c - automatic map generation stuff
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdio.h>

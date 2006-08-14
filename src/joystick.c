@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  joystick.c - um... you know what it is 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

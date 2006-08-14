@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  game.c - game loop and related functions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdlib.h>

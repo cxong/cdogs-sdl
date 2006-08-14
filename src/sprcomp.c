@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  sprcomp.c - sprite stuff
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdio.h>

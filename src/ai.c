@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  ai.c - enemy and friend AI routines
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 

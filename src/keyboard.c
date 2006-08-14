@@ -23,7 +23,12 @@
 
  keyboard.c - keyboard stuff... just think what was once here... (DOS interrupt
  handlers... *shudder*
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

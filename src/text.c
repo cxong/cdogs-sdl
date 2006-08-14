@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  text.c - text rendering and related functions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

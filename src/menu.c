@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  menu.c - menu misc functions 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "grafx.h"

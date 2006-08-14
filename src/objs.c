@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  objs.c - object functions (fun) 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

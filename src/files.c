@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  files.c - file handling functions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <string.h>

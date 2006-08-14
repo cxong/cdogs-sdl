@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  gamedata.c - game data related stuff 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdlib.h>

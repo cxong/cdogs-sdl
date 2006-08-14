@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  defs.c - definitions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "defs.h"

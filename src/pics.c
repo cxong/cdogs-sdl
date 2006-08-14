@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  pics.c - sprite functions
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include "pics.h"

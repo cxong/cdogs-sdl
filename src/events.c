@@ -22,7 +22,12 @@
 -------------------------------------------------------------------------------
 
  events.c - event related functions 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdlib.h>
