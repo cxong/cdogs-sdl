@@ -73,7 +73,8 @@ void DrawTTPic(int x, int y, void *pic, void *table, void *rle);
 void DrawBTPic(int x, int y, void *pic, void *table, void *rle); */
 
 #ifdef SYS_MACOSX
-	#define SetClip blit_SetClip
+	#define SetClip _SetClip
+	#define SetPalette _SetPalette
 #endif
 
 void SetClip(int left, int top, int right, int bottom);
