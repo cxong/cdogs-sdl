@@ -34,15 +34,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #include <io.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
-// #include <direct.h>
 #include "files.h"
+#include "utils.h"
 
 #define MAX_STRING_LEN 1000
 
@@ -69,7 +68,7 @@ ssize_t readarray32(int fd, void *buf, size_t size)
 {
 	int i;
 
-	fprintf(stderr, "readarray32(%d, %x, %d)\n", fd, buf, size);
+	debug("%d, %x, %d\n", fd, buf, size);
 
 	if (buf) {
 		for (i = 0; i < (size/4); i++) {
@@ -147,8 +146,8 @@ void load_mission_objective(int fd, struct MissionObjective *o)
 		read32(fd, &o->required, sizeof(o->required));
 		read32(fd, &o->flags, sizeof(o->flags));
 		//readarray32(fd, o + offset, 5 * sizeof(int));
-		fprintf(stderr, " >> Objective: %s data: %d %d %d %d %d\n", o->description,
-												o->type, o->index, o->count, o->required, o->flags);
+		debug(" >> Objective: %s data: %d %d %d %d %d\n",
+		o->description, o->type, o->index, o->count, o->required, o->flags);
 }
 
 #define R32(s,e)	read32(fd, &s->e, sizeof(s->e))
@@ -161,9 +160,9 @@ void load_mission(int fd, struct Mission *m)
 		read(fd, m->title, sizeof(m->title));				o += sizeof(m->title);
 		read(fd, m->description, sizeof(m->description));	o += sizeof(m->description);
 
-		fprintf(stderr, "== MISSION ==\n");
-		fprintf(stderr, "t: %s\n", m->title);
-		fprintf(stderr, "d: %s\n", m->description);  
+		debug("== MISSION ==\n");
+		debug("t: %s\n", m->title);
+		debug("d: %s\n", m->description);  
 	
 		R32(m,  wallStyle);
 		R32(m,  floorStyle);
@@ -180,11 +179,8 @@ void load_mission(int fd, struct Mission *m)
 		R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
 
 		R32(m, objectiveCount);
-	
-	//	readarray32(fd, m + o, 17 * sizeof(int));		
-		o += 17 * sizeof(int);
 		
-		fprintf(stderr, " number of objectives: %d\n", m->objectiveCount);	
+		debug("number of objectives: %d\n", m->objectiveCount);	
  		for (i = 0; i < OBJECTIVE_MAX; i++) {
 			load_mission_objective(fd, &m->objectives[i]);
 		}
@@ -216,14 +212,11 @@ void load_mission(int fd, struct Mission *m)
 		R32(m, wallRange);						
 		R32(m, floorRange);
 		R32(m, roomRange);
-		R32(m, altRange);			
-																																																																							
-		//o += OBJECTIVE_MAX * sizeof(struct MissionObjective);
-		
-		//readarray32(fd, m + o, sizeof(struct Mission) - o);
-		fprintf(stderr, " number of baddies: %d\n", m->baddieCount);	
-		
-		//read(fd, m + o, sizeof(struct Mission) - o);
+		R32(m, altRange);
+
+		debug("number of baddies: %d\n", m->baddieCount);	
+
+		return;
 }
 
 
