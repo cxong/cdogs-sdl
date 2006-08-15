@@ -78,8 +78,10 @@ int FXChannels(void);
 void SetMinMusicChannels(int channels);
 int MinMusicChannels(void);
 void ToggleTrack(int track);
+void SetModuleStatus(int s);
 int ModuleStatus(void);
 const char *ModuleMessage(void);
+void SetModuleMessage(const char *s);
 void SetModuleDirectory(const char *dir);
 const char *ModuleDirectory(void);
 
