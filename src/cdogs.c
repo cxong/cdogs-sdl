@@ -52,6 +52,7 @@
 #include "mainmenu.h"
 #include "password.h"
 #include "files.h"
+#include "utils.h"
 
 
 static void *bkg = NULL;
@@ -817,6 +818,7 @@ int main(int argc, char *argv[])
 	int compile = 1, rle = 1;
 	int vid_mode = VID_WIN_NORMAL;
 	int js_flag = SDL_INIT_JOYSTICK;
+	int sound = 1;
 
 	PrintTitle();
 	
@@ -881,8 +883,14 @@ int main(int argc, char *argv[])
 				compile = 0;
 			if (strcmp(argv[i] + 1, "norle") == 0)
 				rle = 0;
-			if (strcmp(argv[i] + 1, "nojoystick") == 0)
+			if (strcmp(argv[i] + 1, "nosound") == 0) {
+				printf("Sound disabled!\n");
+				sound = 0;
+			}
+			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
+				debug("nojoystick\n");
 				js_flag = 0;				
+			}
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
 				if (vid_mode == VID_WIN_SCALE)
 					printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");
@@ -904,6 +912,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* moved here because -savecampaigns causes a crash, why? */
+	debug("Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | js_flag) != 0) {
 		printf("Failed to start SDL!\n");
 		return -1;
@@ -952,14 +961,13 @@ int main(int argc, char *argv[])
 
 	TextInit(GetDataFilePath("graphics/font.px"), -2, compile, rle);
 
-	if (!InitializeSound()) {
+	if (sound && !InitializeSound()) {
 		printf("Sound initialization failed!\n");
-		getchar();
 	}
 
 	LoadHighScores();
 
-	printf("Loading song lists...\n");
+	debug("Loading song lists...\n");
 	LoadSongs(GetConfigFilePath("menusong.cfg"), &gMenuSongs);
 	LoadSongs(GetConfigFilePath("gamesong.cfg"), &gGameSongs);
 	LoadTemplates();
