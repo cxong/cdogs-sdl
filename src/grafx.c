@@ -22,64 +22,72 @@
 -------------------------------------------------------------------------------
 
  grafx.c - graphics related functions 
-
+ 
+ Author: $Author$
+ Rev:    $Revision$
+ URL:    $HeadURL$
+ ID:     $Id$
+ 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-// #include <io.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "SDL.h"
 
-// #include <conio.h>
-// #include <i86.h>
 #include "defs.h"
 #include "grafx.h"
 #include "sprcomp.h"
 #include "files.h"
+#include "utils.h"
 
-SDL_Surface *screen;
+SDL_Surface *screen = NULL;
 
 //static int oldMode;
 
 int InitVideo(int mode)
 {	
 	char title[32];
+	SDL_Surface *new_screen = NULL;
 
-	switch (mode) {
-		case VID_FULLSCREEN: printf("-- Fullscreen Video.\n"); break;
-		case VID_WIN_NORMAL: printf("-- Windowed Video. There may be some slowdown.\n"); break;
-		case VID_WIN_SCALE:  printf("-- Scaled Windowed Video. There may be major slowdown.\n"); break;
-	}
-	
+
 	if (mode == VID_FULLSCREEN) {
-		screen = SDL_SetVideoMode(320, 200, 8,
-				SDL_HWPALETTE | SDL_SWSURFACE |
-				     SDL_FULLSCREEN);
+		printf("-- Fullscreen Video.\n");
+		debug("fullscreen 320x240 mode: %d\n", mode);
+		new_screen = SDL_SetVideoMode(320, 200, 8,
+					SDL_HWPALETTE | SDL_SWSURFACE | SDL_FULLSCREEN);
 		SDL_ShowCursor(SDL_DISABLE);
 	} else if (mode == VID_WIN_NORMAL) {
-		screen = SDL_SetVideoMode(320, 200, 8,
-				SDL_HWPALETTE |
-				SDL_SWSURFACE |
-				SDL_DOUBLEBUF
-			);
+		printf("-- Windowed Video. There may be some slowdown.\n");
+		debug("windowed 320x240 mode: %d\n", mode);
+		new_screen = SDL_SetVideoMode(320, 200, 8,
+				SDL_HWPALETTE | SDL_SWSURFACE | SDL_DOUBLEBUF);
 				//SDL_HWPALETTE | SDL_SWSURFACE);
 	} else if (mode == VID_WIN_SCALE) {
-		screen = SDL_SetVideoMode(640, 400, 8,
+		printf("-- Scaled Windowed Video. There may be major slowdown.\n");
+		debug("scaled 640x400 mode: %d\n", mode);
+		new_screen = SDL_SetVideoMode(640, 400, 8,
 				SDL_HWPALETTE | SDL_SWSURFACE);
 	}
 
-	if (screen == NULL) {
+	if (new_screen == NULL) {
 		printf("ERROR: InitVideo: %s\n", SDL_GetError() );
 		return -1;
+	}	
+
+	if (screen == NULL) { /* only do this the first time */
+		debug("setting caption and icon...\n");
+		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
+		SDL_WM_SetCaption(title, NULL);
+		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
+	} else {
+		printf("Changed video mode...\n");
 	}
 	
-	sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
-	SDL_WM_SetCaption(title, NULL);
-	SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
-	
+	screen = new_screen;	
+			
 	return 0;
 }
 
