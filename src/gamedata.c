@@ -41,6 +41,8 @@
 #include "keyboard.h"
 #include "input.h"
 
+#include "utils.h"
+
 
 struct PlayerData gPlayer1Data = {
 	"Player 1", 0, SHADE_BLUE, SHADE_BLUE, SHADE_BLUE, 0, 0,
@@ -133,7 +135,7 @@ void LoadSongs(const char *path, struct SongDef **songList)
 	FILE *f;
 	char s[100], *p;
 
-	fprintf(stderr, "LoadSongs path: %s\n", path);
+	debug("LoadSongs path: %s\n", path);
 
 	f = fopen(path, "r");
 	if (f) {
@@ -142,7 +144,7 @@ void LoadSongs(const char *path, struct SongDef **songList)
 			while (p >= s && !isgraph(*p))
 				*p-- = 0;
 			if (s[0]) {
-				fprintf(stderr, "Added song: %s\n", s);
+				debug("Added song: %s\n", s);
 				AddSong(songList, s);
 			}
 		}
