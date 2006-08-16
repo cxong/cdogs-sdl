@@ -91,6 +91,7 @@ struct GameOptions {
 	int npcHp;
 	int playerHp;
 	int slowmotion;
+	int fullscreen;
 };
 
 // Properties of map objects

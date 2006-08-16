@@ -996,7 +996,8 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-
+	if (vid_mode == VID_WIN_NORMAL && gOptions.fullscreen) vid_mode = VID_FULLSCREEN;
+			
 	if (InitVideo(vid_mode) == -1) {
 		printf("Video didn't init!\n");
 	} else {

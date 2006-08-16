@@ -79,7 +79,8 @@ struct GameOptions gOptions = {
 	100,
 	100,
 	100,
-	0
+	0,
+	0	// not fullscreen by default
 };
 
 struct CampaignOptions gCampaign = {

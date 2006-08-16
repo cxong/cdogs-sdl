@@ -74,7 +74,7 @@ static const char *mainMenu[MAIN_COUNT] = {
 	"Quit"
 };
 
-#define OPTIONS_COUNT   13
+#define OPTIONS_COUNT   14
 
 static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Players shots hurt",
@@ -89,6 +89,7 @@ static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Density",
 	"Non-player hp",
 	"Player hp",
+	"Fullscreen (requires restart)",
 	"Done"
 };
 
@@ -416,7 +417,7 @@ int SelectOptions(int cmd)
 					gCampaign.seed -= 100;
 				else
 					gCampaign.seed--;
-			} else if Right(cmd) {
+			} else if (Right(cmd)) {
 				if (Button1(cmd) && Button2(cmd))
 					gCampaign.seed += 1000;
 				else if (Button1(cmd))
@@ -435,6 +436,8 @@ int SelectOptions(int cmd)
 				if (gOptions.difficulty < DIFFICULTY_VERYHARD)
 						gOptions.difficulty++;
 			}
+			if (gOptions.difficulty > DIFFICULTY_VERYHARD) gOptions.difficulty = DIFFICULTY_VERYHARD;
+			if (gOptions.difficulty < DIFFICULTY_VERYEASY) gOptions.difficulty = DIFFICULTY_VERYEASY;
 			break;
 		case 8:
 			gOptions.slowmotion = !gOptions.slowmotion;
@@ -465,6 +468,9 @@ int SelectOptions(int cmd)
 				if (gOptions.playerHp < 200)
 					gOptions.playerHp += 25;
 			}
+			break;
+		case 12:
+			gOptions.fullscreen = !gOptions.fullscreen;
 			break;
 
 		default:
@@ -501,21 +507,21 @@ int SelectOptions(int cmd)
 	sprintf(s, "%u", gCampaign.seed);
 	TextStringAt(230, 50 + 6 * TextHeight(), s);
 	switch (gOptions.difficulty) {
-	case DIFFICULTY_VERYEASY:
-		strcpy(s, "Easiest");
-		break;
-	case DIFFICULTY_EASY:
-		strcpy(s, "Easy");
-		break;
-	case DIFFICULTY_HARD:
-		strcpy(s, "Hard");
-		break;
-	case DIFFICULTY_VERYHARD:
-		strcpy(s, "Very hard");
-		break;
-	default:
-		strcpy(s, "Normal");
-		break;
+		case DIFFICULTY_VERYEASY:
+			strcpy(s, "Easiest");
+			break;
+		case DIFFICULTY_EASY:
+			strcpy(s, "Easy");
+			break;
+		case DIFFICULTY_HARD:
+			strcpy(s, "Hard");
+			break;
+		case DIFFICULTY_VERYHARD:
+			strcpy(s, "Very hard");
+			break;
+		default:
+			strcpy(s, "Normal");
+			break;
 	}
 	TextStringAt(230, 50 + 7 * TextHeight(), s);
 	TextStringAt(230, 50 + 8 * TextHeight(),
@@ -526,6 +532,8 @@ int SelectOptions(int cmd)
 	TextStringAt(230, 50 + 10 * TextHeight(), s);
 	sprintf(s, "%u%%", gOptions.playerHp);
 	TextStringAt(230, 50 + 11 * TextHeight(), s);
+	sprintf(s, "%s", gOptions.fullscreen == 1 ? "Yes" : "No");
+	TextStringAt(230, 50 + 12 * TextHeight(), s);
 
 	return MODE_OPTIONS;
 }
@@ -715,16 +723,15 @@ static void DisplayKeys(int x, int x2, int y, char *title,
 
 static void ShowAllKeys(int index, int change)
 {
-	DisplayKeys(75, 230, 20, "Player One", &gPlayer1Data, index,
-		    change);
-	DisplayKeys(75, 230, 100, "Player Two", &gPlayer2Data, index - 6,
-		    change - 6);
+	DisplayKeys(75, 230, 20, "Player One", &gPlayer1Data, index, change);
+	DisplayKeys(75, 230, 100, "Player Two", &gPlayer2Data, index - 6, change - 6);
 	TextStringAt(75, 170, "Map");
+	
 	if (change == 12)
 		DisplayMenuItem(230, 170, SELECTKEY, index == 12);
 	else
-		DisplayMenuItem(230, 170, SDL_GetKeyName(gOptions.mapKey),
-				index == 12);
+		DisplayMenuItem(230, 170, SDL_GetKeyName(gOptions.mapKey), index == 12);
+	
 	DisplayMenuItem(75, 180, "Done", index == 13);
 }
 
@@ -904,6 +911,8 @@ int MainMenu(void *bkg)
 	int cmd, prev = 0;
 	int mode;
 
+	PaletteAdjust();
+
 	mode = MODE_MAIN;
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
 		memcpy(GetDstScreen(), bkg, 64000);
@@ -979,6 +988,8 @@ void LoadConfig(void)
 		fscanf(f, "%d\n", &gOptions.playerHp);
 		if (gOptions.playerHp < 25 || gOptions.playerHp > 200)
 			gOptions.playerHp = 100;
+		fscanf(f, "%d\n", &gOptions.fullscreen);
+		if (gOptions.fullscreen != 0) gOptions.fullscreen = 1;
 
 		fclose(f);
 	}
@@ -1025,6 +1036,7 @@ void SaveConfig(void)
 		fprintf(f, "%d\n", gOptions.density);
 		fprintf(f, "%d\n", gOptions.npcHp);
 		fprintf(f, "%d\n", gOptions.playerHp);
+		fprintf(f, "%d\n", gOptions.fullscreen);
 		fclose(f);
 	}
 }
