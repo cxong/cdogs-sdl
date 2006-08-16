@@ -39,8 +39,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-// #include <io.h>
-#include <fcntl.h>
 #include "gamedata.h"
 #include "hiscores.h"
 #include "grafx.h"
@@ -238,6 +236,7 @@ void SaveHighScores(void)
 		printf("Unable to open %s\n", SCORES_FILE);
 }
 
+#define read32		read
 #define R32(s,e)	read32(fd, &s->e, sizeof(s->e))
 
 void load_score (int fd, struct Entry *e) {
