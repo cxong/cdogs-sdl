@@ -303,7 +303,7 @@
 	<key>CFBundleExecutable</key>
 	<string>CDogs-SDL</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Version 0.2, Alpha</string>
+	<string>Version 0.3, Alpha</string>
 	<key>CFBundleIconFile</key>
 	<string>cdogs-icon</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -313,11 +313,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>v0.2 (osx alpha)</string>
+	<string>v0.3 (osx alpha)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.1</string>
+	<string>0.3</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -1410,7 +1410,10 @@
 		};
 		85FA326A0A8C73AE00D557A9 = {
 			buildSettings = {
+				ARCHS = "ppc ppc64 ppc7400 i386";
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 0.3;
+				DEPLOYMENT_POSTPROCESSING = YES;
 				GCC_AUTO_VECTORIZATION = NO;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -1419,9 +1422,11 @@
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PREPROCESSOR_DEFINITIONS = "SYS_MACOSX SND_SDLMIXER";
 				HEADER_SEARCH_PATHS = "/Library/Frameworks/SDL_mixer.framework/Headers /Library/Frameworks/SDL.framework/Headers .";
-				LIBRARY_STYLE = STATIC;
+				LEX_SUPPRESS_WARNINGS = YES;
+				LIBRARY_STYLE = DYNAMIC;
 				MACOSX_DEPLOYMENT_TARGET = 10.1;
 				OPTIMIZATION_CFLAGS = "-O2";
+				PREBINDING = NO;
 				RESMERGER_SOURCES_FORK = auto;
 				REZ_PREPROCESSOR_DEFINITIONS = "SND_SDLMIXER SYS_MACOSX";
 				ZERO_LINK = NO;
