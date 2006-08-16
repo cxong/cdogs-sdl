@@ -1,0 +1,35 @@
+C-Dogs SDL Installation
+=======================
+
+Currently, C-Dogs SDL compiles nicely on Linux and MacOSX.
+
+Linux:
+------
+
+ 1) Manually, edit the Makefile in /src
+	- change SYSTEM to "linux"
+	- set PREFIX, BINDIR, DATADIR
+	- set CF_ARCH if you need architecture-specific optimisations
+	- set I_AM_CONFIGURED to 1 when you're happy
+
+ 2) extract cdogs-data.tar.bz2 to /data:
+	$ cd cdogs-src/data
+	$ tar --strip-path 1 -xjvf cdogs-data-current.tar.bz2
+
+ 3) finally:
+	$ make cdogs
+	$ sudo make install
+
+MacOS X:
+--------
+
+ * Use the XCode project in /build/macosx/ (recommended)
+ 
+ OR
+
+ * Use the "Linux" method, but with "macosx" instead of "linux"
+
+Other *Nixes:
+-------------
+
+ * Use "Linux" method, and pray!
