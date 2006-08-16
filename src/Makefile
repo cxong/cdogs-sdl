@@ -25,6 +25,7 @@ DATADIR		:= $(PREFIX)/share/games/cdogs/
 
 # The following are for a self-contained install
 #PREFIX		:= .
+#BINDIR		:= $(PREFIX)/
 #DATADIR	:= $(PREFIX)/data
 
 # intel, powerpc... uncomment only one (if at all)
@@ -34,12 +35,13 @@ DATADIR		:= $(PREFIX)/share/games/cdogs/
 
 CF_OPTIMISE	+= -O2
 
-CC=gcc
+CC		:= gcc
+STRIP		:= strip
 
 # Set to 1 for debugging
 DEBUG=0
 
-### Change this to yes, one you are ready
+### Change this to yes, once you are ready
 I_AM_CONFIGURED=no
 
 ###  Some logic to work out things
@@ -131,6 +133,7 @@ help:
 cdogs: $(dogs_OBJS) $(EXTRA_OBJS)
 	@echo "Linking..."
 	@$(CC) $(dogs_OBJS) $(EXTRA_OBJS) -o cdogs $(LDFLAGS)
+	@[ "$(DEBUG)" == "0" ] && $(STRIP) -s cdogs
 	@echo "Now type 'make install' as root!"
 
 # editor: $(dogsed_OBJS)
