@@ -1,30 +1,105 @@
-
 ### Variables ###
-DESTDIR=../dist/ # might be handy for distro peeps
-#DESTDIR=/ 
-PREFIX=/usr/local
-BINDIR=$(PREFIX)/games/bin/
-#DATADIR=$(PREFIX)/share/games/cdogs/
 
-DATADIR=".\/" # for windows
-#PREFIX=./  # or self contained install
+# Make sure only one variable in the provided set is uncommented!
+
+# Can be: "linux", "macosx"
+#SYSTEM		:= "macosx"
+#SYSTEM		:= "linux"
+
+# Can be either: sdlmixer, nomix or oldmix
+# sdlmixer is recommended, as you get proper music and sounds =)
+SOUND_CODE	:= "sdlmixer"
+#SOUND_CODE	:= "nomix"
+#SOUND_CODE	:= "oldmix"
+
+# Destdir is where the base dir where everything is installed
+DESTDIR		:= ../dist/
+#DESTDIR 	:= /
+
+# Prefix is the *actual* base directory
+# Bindir is where the cdogs binary is placed
+# Datadir is where the data is
+PREFIX		:= /usr/local/
+BINDIR		:= $(PREFIX)/games/bin/
+DATADIR		:= $(PREFIX)/share/games/cdogs/
+
+# The following are for a self-contained install
+#PREFIX		:= .
+#DATADIR	:= $(PREFIX)/data
+
+# intel, powerpc... uncomment only one (if at all)
+#CF_ARCH 	+= -march=pentium2 -mtune=pentium2	
+#CF_ARCH  	+= -mcpu=G3 -mtune=G3
+#CF_ARCH 	+= -mcpu=G4 -mtune=G4 -maltivec	
+
+CF_OPTIMISE	+= -O2
 
 CC=gcc
 
-#CFLAGS=-O2 -Wall `sdl-config --cflags` -std=c99 -funroll-loops
-CF_OPTIMISE=-O2 -march=pentium
-CF_DEBUG=-ggdb -Wall
-CFLAGS=${CF_OPTIMISE} ${CF_DEBUG} `sdl-config --cflags`
+# Set to 1 for debugging
+DEBUG=0
 
-INCLUDES=-I./include -I./missions
-LDFLAGS=`sdl-config --libs --static-libs` -lSDL_mixer -static -lm -lpthread
-#DEFS=-DCDOGS_DATA_DIR=\"$(DATADIR)\" -DSND_SDLMIXER
+### Change this to yes, one you are ready
+I_AM_CONFIGURED=no
 
-# Windows data dir (current dir)
-DEFS=-DCDOGS_DATA_DIR=\"./\"
-DEFS += -DSND_SDLMIXER
+###  Some logic to work out things
+
+# Sound code
+ifeq ($(SOUND_CODE), "sdlmixer")
+	DEFS	+= -DSND_SDLMIXER
+endif
+
+ifeq ($(SOUND_CODE), "nomix")
+	DEFS	+= -DSND_NOMIX
+endif
+
+# Detection for Linux/
+ifeq ($(shell uname -s), Linux)
+	SYSTEM := "linux"
+endif
+
+# Detection for MacOSX
+ifeq ($(shell uname -s), Darwin)
+	SYSTEM := "macosx"
+endif
+
+ifeq ($(SYSTEM), "macosx")
+	DEFS	+= -DSYS_MACOSX
+	LDFLAGS	+= -framework SDL -framework SDL_mixer -framework AppKit -framework Foundation
+
+	INCLUDES += -I/Library/Frameworks/SDL.framework/Headers
+
+	ifeq ($(SOUND_CODE), "sdlmixer")
+		INCLUDES += -I/Library/Frameworks/SDL_mixer.framework/Headers
+	endif
+
+	EXTRA_OBJS = SDLmain.o
+endif
+
+ifeq ($(SYSTEM), "linux")
+	LDFLAGS	 += $(shell sdl-config --libs)	
+	INCLUDES += $(shell sdl-config --cflags)
+	
+	ifeq ($(SOUND_CODE), sdlmixer)
+		LDFLAGS += -lSDL_mixer
+	endif
+endif
+
+ifeq ($(DEBUG), 1)
+	DEFS		+= -DCDOGS_DEBUG
+	CF_DEBUG 	+= -ggdb -Wall
+else
+	# suppress warnings
+	CF_DEBUG	+= -w
+endif
 
 ### Don't Touch These ###
+
+CFLAGS		+= $(CF_OPTIMISE) $(CF_ARCH) $(CF_DEBUG)
+
+INCLUDES	+= -I./include -I./missions
+LDFLAGS		+= 
+DEFS		+= -DCDOGS_DATA_DIR=\"$(DATADIR)\"
 
 dogs_OBJS = cdogs.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
 	    gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
@@ -37,26 +112,82 @@ dogsed_OBJS = cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o game
 
 ### Targets ###
 
-cdogs: $(dogs_OBJS)
-	$(CC) $(dogs_OBJS) -o cdogs $(LDFLAGS) 
+.PHONY: clean install info tidy help
+
+help:
+	@echo "C-Dogs SDL Build System..."
+	@echo
+	@echo "REMEMBER TO EDIT THE MAKEFILE!"
+	@echo
+	@echo "Targets:"
+	@echo " * cdogs   - build cdogs binary"
+	@echo " * install - install cdogs binary (and data)"
+	@echo " * info    - show configuration"
+	@echo " * clean   - clean tree for building"
+	@echo " * help    - this help"
+	@echo
+	@echo "Usage: make <target>"
+
+cdogs: $(dogs_OBJS) $(EXTRA_OBJS)
+	@echo "Linking..."
+	@$(CC) $(dogs_OBJS) $(EXTRA_OBJS) -o cdogs $(LDFLAGS)
+	@echo "Now type 'make install' as root!"
 
 # editor: $(dogsed_OBJS)
 # 	gcc $(dogsed_OBJS) -o dogsed $(LDFLAGS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) \
-	$(DEFS) -c $<
+	@if [ "$(I_AM_CONFIGURED)" != "yes" ] ; then \
+	echo "Have you really configured the Makefile?" ; \
+	echo "Change I_AM_CONFIGURED to yes" ; \
+	exit 1 ; \
+	fi 
+
+	@echo "Compiling $<... (debug=$(DEBUG))"
+
+	$(CC) \
+	 $(CFLAGS) \
+	 $(INCLUDES) \
+	 $(DEFS) \
+	 -c $<
+
+SDLmain.o: ../build/macosx/SDLmain.m ../build/macosx/SDLmain.h
+	@echo "Compiling SDLmain.m (MacOSX) (debug=$(DEBUG))"
+	@$(CC) \
+		$(CFLAGS) \
+		$(INCLUDES) \
+		-c ../build/macosx/SDLmain.m
+
+info:
+	@echo "=[ System ]="
+	@echo ""
+	@echo "System:   $(SYSTEM)"
+	@echo "Sound:    $(SOUND_CODE)"
+	@echo ""
+	@echo "=[ Paths ]="
+	@echo ""
+	@echo "Prefix:   $(PREFIX)"
+	@echo "Bin dir:  $(BINDIR)"
+	@echo "Data dir: $(DATADIR)"
+	@echo "Dest dir: $(DESTDIR)"
+	@echo ""
+	@echo "=[ Compilation ]="
+	@echo
+	@echo "CC:       $(CC)"
+	@echo "CFLAGS:   $(CFLAGS)"
+	@echo "INCLUDES: $(INCLUDES)"
+	@echo "DEFS:     $(DEFS)"
+	@echo "LDFLAGS:  $(LDFLAGS)"
 
 install:
-	export DESTDIR=$(DESTDIR) ; \
-	export DATADIR=$(DATADIR) ; \
-	export BINDIR=$(BINDIR) ; \
+	DESTDIR=$(DESTDIR) \
+	DATADIR=$(DATADIR) \
+	BINDIR=$(BINDIR) \
 	./install.sh
 
 clean:
 	rm *.o cdogs
 
 tidy:
-	indent -kr -i8 *.c *.h
+	indent -kr -i8 *.c include/*.h
 	rm *~
-
