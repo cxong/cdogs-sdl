@@ -4,8 +4,6 @@ TODO:
 		- Win32
 		- Linux
 	
-	* Make data directories changable from the command line		[add/mod]
-	
 	* Optimise stuff :D						[mod]
 	* Clean up the general code, so there's fewer warnings		[mod]
 	* Put all the input event handling together			[mod]
@@ -19,12 +17,14 @@ THE _VERY_ DISTANT FUTURE (if at all):
 	  # Larger maps?
 
 DONE (so we feel good):
-	* Get joystick stuff working					[port]
+	* Make data directories changable via environment variables	[add/mod]	(lucas)
 
-	* Get sound working better					[add/mod]
+	* Get joystick stuff working					[port]		(lucas)
+
+	* Get sound working better					[add/mod]	(lucas)
 
 	* Got running on MacOS X
-	  (and hopefully other non-intel  machines)			[port]		(lucas)
+	  (and hopefully other non-intel machines)			[port]		(lucas)
 	
 	* Graphics							[ported]	(jeremy)
 	* Video Output							[ported]	(jeremy)
