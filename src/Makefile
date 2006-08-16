@@ -82,7 +82,7 @@ ifeq ($(SYSTEM), "linux")
 	LDFLAGS	 += $(shell sdl-config --libs)	
 	INCLUDES += $(shell sdl-config --cflags)
 	
-	ifeq ($(SOUND_CODE), sdlmixer)
+	ifeq ($(SOUND_CODE), "sdlmixer")
 		LDFLAGS += -lSDL_mixer
 	endif
 endif
