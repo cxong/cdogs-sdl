@@ -1,0 +1,16 @@
+CDogs-SDL ChangeLog
+===============================================================================
+
+Version 0.3
+-----------
+
+ * Joystick support
+ * SDL mixer support (and thus music as well)
+ * Data/Config dirs changable via environment variables
+ * Handles quitting more gracefully
+ * XCode Project (MacOS X)
+ * Loads of bugfixes and code cleanups
+
+
+===============================================================================
+ID: $Id$
