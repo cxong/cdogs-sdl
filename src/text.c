@@ -151,6 +151,30 @@ int TextWidth(const char *s)
 	return w;
 }
 
+#define FLAG_SET(a, b)	((a & b) != 0)
+
+void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
+{
+	int scrw = SCREEN_WIDTH;
+	int scrh = SCREEN_HEIGHT;
+	int x, y, w, h;
+	
+	x = y = w = h = 0;
+	w = TextWidth(s);
+	h = TextHeight();
+	
+	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = (scrw - w) / 2; }
+	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = (scrh - h) / 2; }
+	
+	if (FLAG_SET(opts, TEXT_LEFT))		{ x = 0 + xpad; }
+	if (FLAG_SET(opts, TEXT_RIGHT))		{ x = scrw - w - xpad; }
+	
+	if (FLAG_SET(opts, TEXT_TOP))		{ y = 0 + ypad; }
+	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = scrh - h - ypad; }
+	
+	TextStringAt(x, y, s);
+}
+
 int TextHeight(void)
 {
 	return hText;
