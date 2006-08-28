@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Webster
+    Copyright (C) 1995 Ronny Wester
     Copyright (C) 2003 Jeremy Chin 
     Copyright (C) 2003 Lucas Martin-King 
 
@@ -21,7 +21,7 @@
 
 -------------------------------------------------------------------------------
 
- utils.h - various helpful functions 
+ utils.c - miscellaneous utilities
  
  Author: $Author$
  Rev:    $Revision$
@@ -30,17 +30,42 @@
  
 */
 
-#ifndef __UTILS
-#define __UTILS
+#include <stdlib.h>
 
-#include <stdio.h> /* for stderr */
+#include "utils.h"
 
-extern int debug;
+int debug = 0;
 
-#define debug(args...)	if (debug) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, args); }
+void *	sys_mem_alloc(unsigned int size)
+{
+	void * new = calloc(1, size);
+	
+	if (new == NULL) {
+		printf("### Memory allocation of %d bytes failed! ###\n", size);
+		exit(1);
+	}
+	
+	debug("%d bytes allocated, at 0x%p\n", size, new);
+	
+	return new;
+}
 
-void *	sys_mem_alloc(unsigned int size);
-void *	sys_mem_realloc(void *ptr, unsigned int size);
-void	sys_mem_free(void *ptr);
+void *	sys_mem_realloc(void *ptr, unsigned int size)
+{
+	void * new = realloc(ptr, size);
+	
+	if (new == NULL) {
+		printf("### Memory reallocation failed! ###\n");
+		return ptr;
+	}
+	
+	debug("memory reallocated 0x%p -> 0x%p (now %d bytes)\n", ptr, new, size);
+	return new;
+}
 
-#endif /* __UTILS */
+void	sys_mem_free(void *ptr)
+{
+	if (!ptr) return;
+	debug("freeing memory at: 0x%p\n", ptr);
+	free(ptr);
+}
