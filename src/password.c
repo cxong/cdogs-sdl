@@ -161,7 +161,7 @@ static int EnterCode(void *bkg, const char *password)
 
 	strcpy(buffer, password);
 	while (!done) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetMenuCmd(&cmd);
 		if (cmd != prev)
 			prev = cmd;
@@ -188,7 +188,6 @@ static int EnterCode(void *bkg, const char *password)
 		TextStringAt(50, 5, "Enter code");
 		ShowControls();
 
-		//vsync();
 		CopyToScreen();
 		DoSounds();
 	}
@@ -209,7 +208,7 @@ int EnterPassword(void *bkg, const char *password)
 		index = 1;
 
 	while (1) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetMenuCmd(&cmd);
 		if (cmd != prev)
 			prev = cmd;
@@ -237,7 +236,6 @@ int EnterPassword(void *bkg, const char *password)
 				index == 1);
 		ShowControls();
 
-		//vsync();
 		CopyToScreen();
 		DoSounds();
 	}
