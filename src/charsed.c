@@ -225,7 +225,7 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 	const TBadGuy *b;
 	int i;
 
-	memset(GetDstScreen(), 74, 64000);
+	memset(GetDstScreen(), 74, SCREEN_MEMSIZE);
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	TextStringAt(10, 190, s);
@@ -319,14 +319,13 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 					 &setting->characters[i],
 					 index == i);
 			x += 20;
-			if (x > 320) {
+			if (x > SCREEN_WIDTH) {
 				x = 10;
 				y += 30;
 			}
 		}
 	}
 
-	vsync();
 	CopyToScreen();
 }
 
