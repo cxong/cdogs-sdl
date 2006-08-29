@@ -41,13 +41,29 @@ typedef struct RGB color;
 typedef color TPalette[256];
 typedef unsigned char TranslationTable[256];
 
+typedef enum {
+	HINT_FULLSCREEN,
+	HINT_WINDOW,
+	HINT_SCALEFACTOR,
+	HINT_WIDTH,
+	HINT_HEIGHT,
+	HINT_FORCEMODE,
+	HINT_END
+} GFX_Hint;
+
 #define VID_FULLSCREEN	1
 #define VID_WIN_NORMAL	2
 #define VID_WIN_SCALE	3
 
+
 void SetColorZero(int r, int g, int b);
 
+void Gfx_SetHint(const GFX_Hint h, const int val);
+#define Gfx_HintOn(h)	Gfx_SetHint(h, 1)
+int Gfx_GetHint(const GFX_Hint h);
+
 int InitVideo(int mode);
+
 void TextMode(void);
 int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette);
@@ -58,5 +74,19 @@ int RLEncodePics(int picCount, void **pics, void **rlePics);
 void vsync(void);
 int PicWidth(void *pic);
 int PicHeight(void *pic);
+
+extern int screen_w;
+extern int screen_h;
+
+#define Screen_GetWidth()	(screen_w)
+#define Screen_GetHeight()	(screen_h)
+#define Screen_GetMemSize() (screen_w * screen_h)
+
+#define	SCREEN_WIDTH	Screen_GetWidth()
+#define	SCREEN_HEIGHT	Screen_GetHeight()
+#define SCREEN_MEMSIZE	Screen_GetMemSize()
+
+#define CenterX(w)		((SCREEN_WIDTH - w) / 2)
+#define CenterY(h)		((SCREEN_HEIGHT - h) / 2)
 
 #endif

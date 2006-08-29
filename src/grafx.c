@@ -36,41 +36,106 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "SDL.h"
+#include "SDL_endian.h"
 
 #include "defs.h"
 #include "grafx.h"
+#include "blit.h"
 #include "sprcomp.h"
 #include "files.h"
 #include "utils.h"
 
-SDL_Surface *screen = NULL;
+typedef struct {
+	unsigned int w, h;
+} GFX_Mode;
 
-//static int oldMode;
+GFX_Mode modelist[] = {
+	{ 320, 200 },
+	{ 320, 240 },
+	{ 400, 300 },
+	{ 640, 480 },
+	{ 800, 600 }, /* things go strange above this... */
+	{ 0, 0 },
+};
+
+int ValidMode(int w, int h)
+{
+	int i;
+	
+	for (i = 0; ; i++) {
+		unsigned int m_w = modelist[i].w;
+		unsigned int m_h = modelist[i].h;
+	
+		if (m_w == 0) return 0;
+		if (m_w == w && m_h == h) return 1;
+	}
+	
+	return 0;
+}
+
+int hints[HINT_END] = {
+	0,		// HINT_FULLSCREEN
+	1,		// HINT_WINDOW
+	1,		// HINT_SCALEFACTOR
+	320,	// HINT_WIDTH
+	240		// HINT_HEIGHT
+};
+
+void Gfx_SetHint(const GFX_Hint h, const int val)
+{
+	if (h < 0 || h >= HINT_END) return;
+	hints[h] = val;
+}
+
+//int Gfx_GetHint(const GFX_Hint h)
+#define Hint(h)	hints[h]
+
+int Gfx_GetHint(const GFX_Hint h)
+{
+	if (h < 0 || h >= HINT_END) return 0;
+	return Hint(h);
+}
+
+SDL_Surface *screen = NULL;
+/* probably not the best thing, but we need the performance */
+int screen_w;
+int screen_h; 
 
 int InitVideo(int mode)
 {	
 	char title[32];
 	SDL_Surface *new_screen = NULL;
+	int sdl_flags = 0;
+	int w, h = 0;
+	int rw, rh;
 
+	sdl_flags |= SDL_HWPALETTE;
+	sdl_flags |= SDL_SWSURFACE;
 
-	if (mode == VID_FULLSCREEN) {
-		printf("-- Fullscreen Video.\n");
-		debug("fullscreen 320x240 mode: %d\n", mode);
-		new_screen = SDL_SetVideoMode(320, 200, 8,
-					SDL_HWPALETTE | SDL_SWSURFACE | SDL_FULLSCREEN);
-		SDL_ShowCursor(SDL_DISABLE);
-	} else if (mode == VID_WIN_NORMAL) {
-		printf("-- Windowed Video. There may be some slowdown.\n");
-		debug("windowed 320x240 mode: %d\n", mode);
-		new_screen = SDL_SetVideoMode(320, 200, 8,
-				SDL_HWPALETTE | SDL_SWSURFACE | SDL_DOUBLEBUF);
-				//SDL_HWPALETTE | SDL_SWSURFACE);
-	} else if (mode == VID_WIN_SCALE) {
-		printf("-- Scaled Windowed Video. There may be major slowdown.\n");
-		debug("scaled 640x400 mode: %d\n", mode);
-		new_screen = SDL_SetVideoMode(640, 400, 8,
-				SDL_HWPALETTE | SDL_SWSURFACE);
+	if (Hint(HINT_FULLSCREEN)) sdl_flags |= SDL_FULLSCREEN;
+
+	rw = w = Hint(HINT_WIDTH);
+	rh = h = Hint(HINT_HEIGHT);
+
+	if (Hint(HINT_SCALEFACTOR) > 1) {
+		rw *= Hint(HINT_SCALEFACTOR);
+		rh *= Hint(HINT_SCALEFACTOR);
 	}
+
+	if (!Hint(HINT_FORCEMODE)) {
+		if (!ValidMode(w, h)) {
+			printf("!!! Invalid Video Mode %dx%d\n", w, h);
+			return -1;
+		}
+	} else {
+		printf("\n");
+		printf("  BIG FAT WARNING: If this blows up in your face,\n");
+		printf("  and mutilates your cat, please don't cry.\n");
+		printf("\n");
+	}
+
+	printf("Window dimentions:\t%dx%d\n", rw, rh);
+	new_screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
 
 	if (new_screen == NULL) {
 		printf("ERROR: InitVideo: %s\n", SDL_GetError() );
@@ -86,7 +151,13 @@ int InitVideo(int mode)
 		printf("Changed video mode...\n");
 	}
 	
-	screen = new_screen;	
+	screen = new_screen;
+	
+	screen_w = Hint(HINT_WIDTH);
+	screen_h = Hint(HINT_HEIGHT);
+	
+	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	printf("Internal dimentions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 			
 	return 0;
 }
@@ -99,25 +170,33 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 	unsigned short int size;
 	int i = 0;
 
-	f = open(filename, O_RDONLY);
-	if (f >= 0) {
+	f = fopen(filename, "rb");
+	if (f != NULL) {
 		if (palette)
-			read(f, palette, sizeof(TPalette));
+			fread(palette, sizeof(TPalette), 1, f);
 		else
-			lseek(f, sizeof(TPalette), SEEK_CUR);
+			fseek(f, sizeof(TPalette), SEEK_CUR);
+			
 		while (!eof && i < maxPics) {
-			read16(f, &size, sizeof(size));
+			fread(&size, sizeof(size), 1, f);
+			swap16(&size);
 			if (size) {
-				pics[i] = malloc(size);
-				read16(f, pics[i] + 0, 2);
-				read16(f, pics[i] + 2, 2);
-				if (read(f, pics[i] + 4, size - 4) == 0)
+				pics[i] = sys_mem_alloc(size);
+				
+				fread(pics[i] + 0, 1, 2, f);
+				swap16(pics[i] + 0);
+				fread(pics[i] + 2, 1, 2, f);
+				swap16(pics[i] + 2);
+
+				fread(pics[i] + 4, 1, size - 4, f);
+				
+				if (ferror(f) || feof(f))
 					eof = 1;
 			} else
 				pics[i] = NULL;
 			i++;
 		}
-		close(f);
+		fclose(f);
 	}
 	return i;
 }
@@ -129,24 +208,33 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	int eof = 0;
 	unsigned short int size;
 	int i = startIndex;
-
-	f = open(filename, O_RDONLY);
-	if (f >= 0) {
-		lseek(f, sizeof(TPalette), SEEK_CUR);
+	
+	f = fopen(filename, "rb");
+	if (f != NULL) {
+		fseek(f, sizeof(TPalette), SEEK_CUR);
+			
 		while (!eof && i < maxPics) {
-			read16(f, &size, sizeof(size));
+			fread(&size, sizeof(size), 1, f);
+			swap16(&size);
 			if (size) {
-				pics[i] = malloc(size);
-				read16(f, pics[i] + 0, 2);
-				read16(f, pics[i] + 2, 2);
-				if (read(f, pics[i] + 4, size - 4) == 0)
+				pics[i] = sys_mem_alloc(size);
+				
+				fread(pics[i] + 0, 1, 2, f);
+				swap16(pics[i] + 0);
+				fread(pics[i] + 2, 1, 2, f);
+				swap16(pics[i] + 2);
+
+				fread(pics[i] + 4, 1, size - 4, f);
+				
+				if (ferror(f) || feof(f))
 					eof = 1;
 			} else
 				pics[i] = NULL;
 			i++;
 		}
-		close(f);
+		fclose(f);
 	}
+	
 	return i - startIndex;
 }
 
@@ -160,7 +248,7 @@ int CompilePics(int picCount, void **pics, void **compiledPics)
 			size = compileSprite(pics[i], NULL);
 			total += size;
 			if (size) {
-				compiledPics[i] = malloc(size);
+				compiledPics[i] = sys_mem_alloc(size);
 				compileSprite(pics[i], compiledPics[i]);
 			} else {
 				compiledPics[i] = NULL;
@@ -184,7 +272,7 @@ int RLEncodePics(int picCount, void **pics, void **rlePics)
 			size = RLEncodeSprite(pics[i], NULL);
 			total += size;
 			if (size) {
-				rlePics[i] = malloc(size);
+				rlePics[i] = sys_mem_alloc(size);
 				RLEncodeSprite(pics[i], rlePics[i]);
 			} else {
 				rlePics[i] = NULL;
@@ -200,19 +288,17 @@ int RLEncodePics(int picCount, void **pics, void **rlePics)
 
 void vsync(void)
 {
-//      while ((inp(0x03da) & 8) != 0);
-//      while ((inp(0x03da) & 8) == 0);
 	return;
 }
 
-int PicWidth(void *pic)
+inline int PicWidth(void *pic)
 {
 	if (!pic)
 		return 0;
 	return ((short *) pic)[0];
 }
 
-int PicHeight(void *pic)
+inline int PicHeight(void *pic)
 {
 	if (!pic)
 		return 0;
