@@ -98,7 +98,7 @@ void AddSong(struct SongDef **songList, const char *path)
 {
 	struct SongDef *s;
 
-	s = malloc(sizeof(struct SongDef));
+	s = sys_mem_alloc(sizeof(struct SongDef));
 	strcpy(s->path, path);
 	s->next = *songList;
 	*songList = s;
