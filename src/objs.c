@@ -42,7 +42,7 @@
 #include "gamedata.h"
 #include "mission.h"
 #include "game.h"
-
+#include "utils.h"
 
 #define FLAMED_COUNT        10
 #define POISONED_COUNT       8
@@ -890,7 +890,7 @@ void UpdateMobileObjects(void)
 
 TMobileObject *AddMobileObject(void)
 {
-	TMobileObject *obj = malloc(sizeof(TMobileObject));
+	TMobileObject *obj = sys_mem_alloc(sizeof(TMobileObject));
 
 	memset(obj, 0, sizeof(TMobileObject));
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
@@ -1197,7 +1197,7 @@ void InternalAddObject(int x, int y, int w, int h,
 		       int structure, int index, int objFlags,
 		       int tileFlags)
 {
-	TObject *o = malloc(sizeof(TObject));
+	TObject *o = sys_mem_alloc(sizeof(TObject));
 	memset(o, 0, sizeof(TObject));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
