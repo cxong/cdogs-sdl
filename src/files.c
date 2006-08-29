@@ -124,8 +124,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		read(f, setting.title, sizeof(setting.title));
 		read(f, setting.author, sizeof(setting.author));
 		read(f, setting.description, sizeof(setting.description));
-		read(f, &setting.missionCount,
-		     sizeof(setting.missionCount));
+		read32(f, &setting.missionCount, sizeof(setting.missionCount));
 		strcpy(title, setting.title);
 		*missions = setting.missionCount;
 		close(f);
@@ -275,7 +274,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 
 		if (max_missions <= 0) {
 			i = setting->missionCount * sizeof(struct Mission);
-			setting->missions = malloc(i);
+			setting->missions = sys_mem_alloc(i);
 			memset(setting->missions, 0, i);
 			max_missions = setting->missionCount;
 		} else if (setting->missionCount < max_missions)
@@ -291,7 +290,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 
 		if (max_characters <= 0) {
 			i = setting->characterCount * sizeof(TBadGuy);
-			setting->characters = malloc(i);
+			setting->characters = sys_mem_alloc(i);
 			memset(setting->characters, 0, i);
 			max_characters = setting->characterCount;
 		} else if (setting->characterCount < max_characters)
@@ -551,7 +550,7 @@ void AddFileEntry(struct FileEntry **list, const char *name,
 	else 
 		printf(" -> Adding [%s]\n", name);
 
-	entry = malloc(sizeof(struct FileEntry));
+	entry = sys_mem_alloc(sizeof(struct FileEntry));
 	strcpy(entry->name, name);
 	strcpy(entry->info, info);
 	entry->data = data;

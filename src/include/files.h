@@ -82,4 +82,6 @@ void swap16 (void *d);
 	#define read32	read
 	#define readarray32 read
 	#define read16	read
+	#define swap16(n)	{}
+	#define swap32(n)	{}
 #endif
