@@ -30,6 +30,8 @@
  
 */
 
+#include <string.h>
+
 #include "grafx.h"
 #include "text.h"
 #include "actors.h"
@@ -37,7 +39,7 @@
 
 void ShowControls(void)
 {
-	TextStringAt(50, 190, "(use player 1 controls or arrow keys + Enter/Backspace)");
+	TextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
 }
 
 void DisplayMenuItem(int x, int y, const char *s, int selected)
@@ -50,15 +52,42 @@ void DisplayMenuItem(int x, int y, const char *s, int selected)
 	return;
 }
 
-#define MENU_OFFSET_Y	50
+int  MenuWidth(const char **table, int count)
+{
+	int i;
+	int len, max;
+	
+	len = max = 0;
+	
+	for (i = 0; i < count; i++) {
+		if ( ( len = TextWidth(table[i]) ) > max)
+			max = len;
+	}
+	
+	return max;
+}
 
-void DisplayMenu(int x, const char **table, int count, int index)
+int  MenuHeight(const char **table, int count)
+{
+	return count * TextHeight();
+}
+
+void DisplayMenuAt(int x, int y, const char **table, int count, int index)
 {
 	int i;
 
 	for (i = 0; i < count; i++) {
-		DisplayMenuItem(x, MENU_OFFSET_Y + i * TextHeight(), table[i], i == index);
+		DisplayMenuItem(x, y + i * TextHeight(), table[i], i == index);
 	}
 	
 	return;
 }
+
+#define MENU_OFFSET_Y	50
+
+void DisplayMenu(int x, const char **table, int count, int index)
+{
+	DisplayMenuAt(x, MENU_OFFSET_Y, table, count, index);
+	return;
+}
+
