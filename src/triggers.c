@@ -35,7 +35,7 @@
 #include "triggers.h"
 #include "map.h"
 #include "sounds.h"
-
+#include "utils.h"
 
 static TTrigger *root = NULL;
 static TWatch *activeWatches = NULL;
@@ -45,14 +45,14 @@ static int watchIndex = 1;
 
 static TAction *AddActions(int count)
 {
-	TAction *a = malloc(sizeof(TAction) * (count + 1));
+	TAction *a = sys_mem_alloc(sizeof(TAction) * (count + 1));
 	memset(a, 0, sizeof(TAction) * (count + 1));
 	return a;
 }
 
 TTrigger *AddTrigger(int x, int y, int actionCount)
 {
-	TTrigger *t = malloc(sizeof(TTrigger));
+	TTrigger *t = sys_mem_alloc(sizeof(TTrigger));
 	TTrigger **h;
 
 	memset(t, 0, sizeof(TTrigger));
@@ -92,14 +92,14 @@ static RemoveAllTriggers(void)
 
 static TCondition *AddConditions(int count)
 {
-	TCondition *a = malloc(sizeof(TCondition) * (count + 1));
+	TCondition *a = sys_mem_alloc(sizeof(TCondition) * (count + 1));
 	memset(a, 0, sizeof(TCondition) * (count + 1));
 	return a;
 }
 
 TWatch *AddWatch(int conditionCount, int actionCount)
 {
-	TWatch *t = malloc(sizeof(TWatch));
+	TWatch *t = sys_mem_alloc(sizeof(TWatch));
 
 	memset(t, 0, sizeof(TWatch));
 	t->index = watchIndex++;
