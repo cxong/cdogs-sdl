@@ -40,7 +40,7 @@
 #include "actors.h"
 #include "gamedata.h"
 #include "mission.h"
-
+#include "utils.h"
 
 // Values for internal map
 #define MAP_FLOOR           0
@@ -69,6 +69,44 @@ static int tilesSeen = 0;
 static int tilesTotal = XMAX * YMAX;
 #define iMap( x, y) internalMap[y][x]
 
+struct Buffer * NewBuffer(void)
+{
+	struct Buffer *b;
+	int rows, cols, i, j;
+	
+	b = sys_mem_alloc(sizeof(struct Buffer));
+	
+	rows = X_TILES;
+	cols = Y_TILES;
+	
+//	b->tiles = calloc(rows, sizeof(TTile *));
+
+//	for (i = 0; i < rows; i++) {
+//		b->tiles[i] = calloc(cols, sizeof(TTile));
+//	}
+	
+	b->tiles = (TTile **)sys_mem_alloc(rows * sizeof(TTile *));
+	b->tiles[0] = (TTile *)sys_mem_alloc(rows * cols * sizeof(TTile));
+	for(i = 1; i < rows; i++)
+		b->tiles[i] = b->tiles[0] + i * cols;
+	
+	return b;
+}
+
+void ClearBuffer(struct Buffer *b)
+{
+	if (!b) {
+		printf("!!! Buffer nonexistent?\n"); 
+		return;
+	}
+	
+//	TTile *tmp = b->tiles;
+	
+//	memset(b, 0, sizeof(struct Buffer));
+//	memset(tmp, 0, sizeof(TTile) * X_TILES * Y_TILES);
+	
+//	b->tiles = tmp;
+}
 
 static void AddItemToTile(TTileItem * t, TTile * tile)
 {
