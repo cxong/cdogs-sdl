@@ -149,7 +149,7 @@ void DoSound(int i, int len, void *data)
 	if (!soundInitialized)
 		return;
 	
-	newbuffer = malloc(len);
+	newbuffer = sys_mem_alloc(len);
 	//firstly, find if we're going to need to have a buffer with zeros
 	if (len + snd[i].pos > snd[i].size) {
 		memset(newbuffer, 0, len);
@@ -188,7 +188,7 @@ void DoSound(int i, int len, void *data)
 	if (!soundInitialized)
 		return 0;
 	
-	newbuffer = malloc(len);
+	newbuffer = sys_mem_alloc(len);
 	//firstly, find if we're going to need to have a buffer with zeros
 	if (len + snd[i].pos > snd[i].size) {
 		memset(newbuffer, 0, len);
