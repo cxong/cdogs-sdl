@@ -180,7 +180,7 @@ void DisplayAllTimeHighScores(void *bkg)
 	int index = 0;
 
 	while (index < MAX_ENTRY && allTimeHigh[index].score > 0) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		index = DisplayPage("All time high", index, allTimeHigh,
 				    gPlayer1Data.allTime,
 				    gOptions.twoPlayers ? gPlayer2Data.
@@ -194,7 +194,7 @@ void DisplayTodaysHighScores(void *bkg)
 	int index = 0;
 
 	while (index < MAX_ENTRY && todaysHigh[index].score > 0) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		index = DisplayPage("Todays highest", index, todaysHigh,
 				    gPlayer1Data.today,
 				    gOptions.twoPlayers ? gPlayer2Data.
