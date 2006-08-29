@@ -786,7 +786,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE) {
 //              printf("x\n");
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetPlayerCmd(&cmd1, &cmd2);
 		
 		if (KeyDown(keyEsc)) return 0; // hack to allow exit
@@ -816,7 +816,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 			    MakeSelection(mode1, 125, CHARACTER_PLAYER1,
 					  &gPlayer1Data, cmd1);
 		}
-//              vsync();
+
 		CopyToScreen();
 ///             DoSounds();
 //              SoundTick();
@@ -834,7 +834,7 @@ int PlayerEquip(void *bkg)
 
 	done2 = gOptions.twoPlayers ? 0 : 1;
 	while (!done1 || !done2) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetPlayerCmd(&cmd1, &cmd2);
 		
 		if (KeyDown(keyEsc)) return 0; // hack to exit from menu
@@ -878,7 +878,7 @@ int PlayerEquip(void *bkg)
 				      CHARACTER_PLAYER1);
 			ShowPlayerControls(125, &gPlayer1Data);
 		}
-//              vsync();
+
 		CopyToScreen();
 //              DoSounds();
 //              SoundTick();
