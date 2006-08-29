@@ -53,6 +53,7 @@
 #include "keyboard.h"
 #include "blit.h"
 
+#include "drawtools.h" /* for Draw_Box and Draw_Point */
 
 #define fLOS 1
 #define FPS_FRAMELIMIT       70
@@ -195,11 +196,11 @@ void BlackLine(void)
 	int i;
 	unsigned char *p = GetDstScreen();
 
-	p += 159;
-	for (i = 0; i < 200; i++) {
+	p += (SCREEN_WIDTH / 2) - 1;
+	for (i = 0; i < SCREEN_HEIGHT; i++) {
 		*p++ = 1;
 		*p = 1;
-		p += 319;
+		p += SCREEN_WIDTH - 1;
 	}
 }
 
@@ -216,11 +217,9 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		xNoise = yNoise = 0;
 
 	if (player1 && player2) {
-		if (abs(player1->tileItem.x - player2->tileItem.x) <
-		    gOptions.xSplit
-		    && abs(player1->tileItem.y - player2->tileItem.y) <
-		    gOptions.ySplit) {
-			SetClip(0, 0, 319, 199);
+		if (abs(player1->tileItem.x - player2->tileItem.x) < gOptions.xSplit
+		    && abs(player1->tileItem.y - player2->tileItem.y) < gOptions.ySplit) {
+			SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 			// One screen
 			x = (player1->tileItem.x +
 			     player2->tileItem.x) / 2;
@@ -239,24 +238,18 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			}
 			DrawBuffer(b, 0);
 		} else {
-			SetClip(0, 0, 158, 199);
-			DoBuffer(b, player1->tileItem.x,
-				 player1->tileItem.y, 0, X_TILES_HALF,
-				 xNoise, yNoise);
-			SetLeftEar(player1->tileItem.x,
-				   player1->tileItem.y);
-			SetClip(161, 0, 319, 199);
-			DoBuffer(b, player2->tileItem.x,
-				 player2->tileItem.y, 160, X_TILES_HALF,
-				 xNoise, yNoise);
-			SetRightEar(player2->tileItem.x,
-				    player2->tileItem.y);
+			SetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
+			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
+			SetLeftEar(player1->tileItem.x, player1->tileItem.y);
+			SetClip((SCREEN_WIDTH / 2) + 1, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+			DoBuffer(b, player2->tileItem.x, player2->tileItem.y, (SCREEN_WIDTH / 2) + 1, X_TILES_HALF, xNoise, yNoise);
+			SetRightEar(player2->tileItem.x, player2->tileItem.y);
 			x = player1->tileItem.x;
 			y = player1->tileItem.y;
 			BlackLine();
 		}
 	} else if (player1) {
-		SetClip(0, 0, 319, 199);
+		SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SetLeftEar(player1->tileItem.x, player1->tileItem.y);
@@ -264,7 +257,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		x = player1->tileItem.x;
 		y = player1->tileItem.y;
 	} else if (player2) {
-		SetClip(0, 0, 319, 199);
+		SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SetLeftEar(player2->tileItem.x, player2->tileItem.y);
@@ -273,26 +266,38 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		y = player2->tileItem.y;
 	} else
 		DoBuffer(b, x, y, 0, X_TILES, xNoise, yNoise);
-	SetClip(0, 0, 319, 199);
+	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 }
 
-void PlayerStatus(int x, struct PlayerData *data, TActor * p)
+#define PLACE_LEFT	0
+#define PLACE_RIGHT	1
+
+void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 {
 	char s[50];
 
-	TextStringAt(x, 5, data->name);
+	int flags = TEXT_TOP;
+	
+	if (placement == PLACE_LEFT)	flags |= TEXT_LEFT;
+	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
+
+	//TextStringAt(x, 5, data->name);
+	TextStringSpecial(data->name, flags, 5, 5);
 	if (!gCampaign.dogFight)
 		sprintf(s, "Score: %d", data->score);
 	else
 		s[0] = 0;
 	if (p) {
-		TextStringAt(x, 5 + 2 + 2 * TextHeight(), s);
-		TextStringAt(x, 5 + 1 + TextHeight(),
-			     gunDesc[p->gun].gunName);
+		TextStringSpecial(s, flags, 5, 5 + 2 + 2 * TextHeight());
+		//TextStringAt(x, 5 + 2 + 2 * TextHeight(), s);
+		TextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + TextHeight());
+		//TextStringAt(x, 5 + 1 + TextHeight(), gunDesc[p->gun].gunName);
 		sprintf(s, "%d hp", p->health);
-		TextStringAt(x, 5 + 3 + 3 * TextHeight(), s);
+		TextStringSpecial(s, flags, 5, 5 + 3 + 3 * TextHeight());
+		//TextStringAt(x, 5 + 3 + 3 * TextHeight(), s);
 	} else
-		TextStringAt(x, 5 + 1 + TextHeight(), s);
+		TextStringSpecial(s, flags, 5, 5 + 1 * TextHeight());
+		//TextStringAt(x, 5 + 1 + TextHeight(), s);
 }
 
 static void DrawKeycard(int x, int y, const TOffsetPic * pic)
@@ -332,12 +337,13 @@ static void MissionStatus(void)
 	char s[4];
 	int allDone = 1;
 	static int completed = 0;
-	int x;
+	int x, y;
 
 	if (gCampaign.dogFight)
 		return;
 
-	x = 109;
+	x = 10;
+	y = SCREEN_HEIGHT - 20 - TextHeight(); 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -346,38 +352,23 @@ static void MissionStatus(void)
 		if (gMission.missionData->objectives[i].required > 0) {
 			// Objective color dot
 			color = gMission.objectives[i].color;
-			scr[x + 195 * 320] = color;
-			scr[x + 1 + 195 * 320] = color;
-			scr[x + 1 + 194 * 320] = color;
-			scr[x + 194 * 320] = color;
+			
+			Draw_Box(x, y, (x+1), (y+1), color);
+			Draw_Box((x - 1), (y - 1), (x + 2), (y + 2), 1); 
 
-			// Black frame
-			scr[x - 1 + 193 * 320] = 1;
-			scr[x - 1 + 194 * 320] = 1;
-			scr[x - 1 + 195 * 320] = 1;
-			scr[x - 1 + 196 * 320] = 1;
-			scr[x + 193 * 320] = 1;
-			scr[x + 196 * 320] = 1;
-			scr[x + 1 + 193 * 320] = 1;
-			scr[x + 1 + 196 * 320] = 1;
-			scr[x + 2 + 193 * 320] = 1;
-			scr[x + 2 + 194 * 320] = 1;
-			scr[x + 2 + 195 * 320] = 1;
-			scr[x + 2 + 196 * 320] = 1;
-
-			left =
-			    gMission.objectives[i].required -
-			    gMission.objectives[i].done;
+			left = gMission.objectives[i].required - gMission.objectives[i].done;
+			
 			if (left > 0) {
-				if ((gMission.missionData->objectives[i].
-				     flags & OBJECTIVE_UNKNOWNCOUNT) == 0)
+				if ((gMission.missionData->objectives[i].flags & OBJECTIVE_UNKNOWNCOUNT) == 0) {
 					sprintf(s, "%d", left);
-				else
+				} else {
 					strcpy(s, "?");
-				TextStringAt(x + 5, 190, s);
+				}
+				TextStringAt(x + 5, y - 2, s);
 				allDone = 0;
-			} else
-				TextStringAt(x + 5, 190, "Done");
+			} else {
+				TextStringAt(x + 5, y - 2, "Done");
+			}
 			x += 25;
 		}
 	}
@@ -385,60 +376,64 @@ static void MissionStatus(void)
 	if (allDone && !completed) {
 		completed = 1;
 		MarkExit();
-	} else if (!allDone)
+	} else if (!allDone) {
 		completed = 0;
+	}
 }
 
 void StatusDisplay(void)
 {
 	char s[50];
 
-	PlayerStatus(5, &gPlayer1Data, gPlayer1);
+	PlayerStatus(PLACE_LEFT, &gPlayer1Data, gPlayer1);
 	if (gOptions.twoPlayers)
-		PlayerStatus(250, &gPlayer2Data, gPlayer2);
+		PlayerStatus(PLACE_RIGHT, &gPlayer2Data, gPlayer2);
 
 	if (!gPlayer1 && !gPlayer2) {
 		if (!gCampaign.dogFight)
-			TextStringAt(120, 95, "Game Over");
+			TextStringAtCenter("Game Over!");
 		else
-			TextStringAt(120, 95, "Double kill");
+			TextStringAtCenter("Double Kill!");
 	}
 
 	else if (MissionCompleted()) {
 		sprintf(s, "Pickup in %d seconds\n",
 			(gMission.pickupTime + 69) / 70);
-		TextStringAt(100, 95, s);
+		TextStringAtCenter(s);
 	}
 
 	if (gameIsPaused) {
 		if (escExits)
-			TextStringAt(90, 80, "Esc again to quit");
+			TextStringAtCenter("Press Esc again to quit");
 		else
-			TextStringAt(90, 5, "Paused");
+			TextStringAtCenter("Paused");
 	}
 
 	if (messageTicks > 0)
-		TextStringAt(90, 20, message);
+		TextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
+		//TextStringAt(90, 20, message);
 
 	if (gOptions.displayFPS) {
-		sprintf(s, "%d fps", fps);
-		TextStringAt(250, 190, s);
+		sprintf(s, "FPS: %d", fps);
+		TextStringSpecial(message, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
+		//TextStringAt(250, SCREEN_HEIGHT - 10, s);
 	}
 	if (gOptions.displayTime) {
 		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
-		TextStringAt(10, 190, s);
+		TextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
+		//TextStringAt(10, SCREEN_HEIGHT - 10, s);
 	}
 	if (gMission.flags & FLAGS_KEYCARD_YELLOW)
-		DrawKeycard(155, 8, &cGeneralPics[gMission.keyPics[0]]);
+		DrawKeycard((SCREEN_WIDTH/2) - 15, 16, &cGeneralPics[gMission.keyPics[0]]);
 	if (gMission.flags & FLAGS_KEYCARD_GREEN)
-		DrawKeycard(170, 8, &cGeneralPics[gMission.keyPics[1]]);
+		DrawKeycard((SCREEN_WIDTH/2) - 5, 16, &cGeneralPics[gMission.keyPics[1]]);
 	if (gMission.flags & FLAGS_KEYCARD_BLUE)
-		DrawKeycard(185, 8, &cGeneralPics[gMission.keyPics[2]]);
+		DrawKeycard((SCREEN_WIDTH/2) + 5, 16, &cGeneralPics[gMission.keyPics[2]]);
 	if (gMission.flags & FLAGS_KEYCARD_RED)
-		DrawKeycard(200, 8, &cGeneralPics[gMission.keyPics[3]]);
+		DrawKeycard((SCREEN_WIDTH/2) + 15, 16, &cGeneralPics[gMission.keyPics[3]]);
 
 	sprintf(s, "%d:%02d", missionTime / 4200, (missionTime / 70) % 60);
-	TextStringAt(130, 5, s);
+	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 
 	MissionStatus();
 }
@@ -454,8 +449,7 @@ int HandleKey(int *done, int cmd)
 	static int lastKey = 0;
 	int key = GetKeyDown();
 
-	if ((key == gOptions.mapKey || (cmd & CMD_BUTTON3) != 0) &&
-	    !gCampaign.dogFight) {
+	if ((key == gOptions.mapKey || (cmd & CMD_BUTTON3) != 0) && !gCampaign.dogFight) {
 		DisplayAutoMap(0);
 		Spin(tick_m);
 			gameTicks = 0;
@@ -510,8 +504,8 @@ int gameloop(void)
 	time_t t;
 	struct tm *tp;
 
-	buffer = malloc(sizeof(struct Buffer));
-	SetClip(0, 0, 319, 199);
+	buffer = NewBuffer();
+	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
 	if (ModuleStatus() != MODULE_OK)
 		DisplayMessage(ModuleMessage());
@@ -538,9 +532,7 @@ int gameloop(void)
 		}
 		frames++;
 		if (frames >= FPS_FRAMELIMIT && fpsGameTicks > 0) {
-			fps =
-			    (frames * GAMETICKS_PER_SECOND +
-			     fpsGameTicks / 2) / fpsGameTicks;
+			fps = (frames * GAMETICKS_PER_SECOND + fpsGameTicks / 2) / fpsGameTicks;
 			Spin(tick_m);
 			frames = fpsGameTicks = 0;
 			Release(tick_m);
