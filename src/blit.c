@@ -40,7 +40,8 @@
 char *r_screen;
 extern SDL_Surface *screen;
 
-int clipleft = 0, cliptop = 0, clipright = 319, clipbottom = 199;
+
+int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
 
 //this function is referenced by 4 macros, that do all the args
 
@@ -66,7 +67,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 			current += width;
 			continue;
 		}
-		yoff *= 320;
+		yoff *= SCREEN_WIDTH;
 		for (j = 0; j < width; j++) {
 			xoff = j + x;
 			if (xoff < clipleft){
@@ -114,6 +115,69 @@ void *GetDstScreen(void)
 	return r_screen;
 }
 
+#define PixelIndex(x, y, w, h)		(y * w + x)
+
+static inline
+void Scale8(char *d, const char *s, const int w, const int h, const int sf)
+{
+	int sx;
+	int sy;
+	int f = sf;
+	
+	int dx, dy, dw, dh;
+	char p;
+	
+	if (f > 4) f = 4;	/* max 4x for the moment */
+	 
+	dw = w * f;
+	dh = h * f;
+	
+	for (sy = 0; sy < h; sy++) {
+			dy = f * sy;
+			for (sx = 0; sx < w; sx++) {
+					p = s[PixelIndex(sx, sy, w, h)];
+					dx = f * sx;
+					
+					switch (f) {
+						case 4:
+							/* right side */
+							d[PixelIndex((dx + 3),	(dy + 1),	dw, dh)] = p;
+							d[PixelIndex((dx + 3),	(dy + 2),	dw, dh)] = p;
+							d[PixelIndex((dx + 3),	dy,			dw, dh)] = p;
+							
+							/* bottom row */
+							d[PixelIndex(dx,		(dy + 3),	dw, dh)] = p;
+							d[PixelIndex((dx + 1),	(dy + 3),	dw, dh)] = p;
+							d[PixelIndex((dx + 2),	(dy + 3),	dw, dh)] = p;
+							
+							/* bottom right */
+							d[PixelIndex((dx + 3),	(dy + 3),	dw, dh)] = p;
+						
+						case 3:
+							/* right side */
+							d[PixelIndex((dx + 2),	(dy + 1),	dw, dh)] = p;
+							d[PixelIndex((dx + 2),	dy,			dw, dh)] = p;
+							
+							/* bottom row */
+							d[PixelIndex(dx,		(dy + 2),	dw, dh)] = p;
+							d[PixelIndex((dx + 1),	(dy + 2),	dw, dh)] = p;
+							
+							/* bottom right */
+							d[PixelIndex((dx + 2),	(dy + 2),	dw, dh)] = p;
+						
+						
+						case 2:
+							d[PixelIndex((dx + 1),	dy,			dw, dh)] = p;
+							d[PixelIndex((dx + 1),	(dy + 1),	dw, dh)] = p;
+							d[PixelIndex(dx,		(dy + 1),	dw, dh)] = p;
+					
+						default:
+							d[PixelIndex(dx,		dy,			dw, dh)] = p;
+					}
+			}
+	}
+}
+
 void CopyToScreen(void)
 {
 	char *pScreen = screen->pixels;
@@ -121,6 +185,13 @@ void CopyToScreen(void)
 	float scalex, scaley;
 	int x, y;
 	int yoff, yoff2;
+	
+	int scr_w, scr_h, scr_size, scalef;
+	
+	scr_w = Screen_GetWidth();
+	scr_h = Screen_GetHeight();
+	scr_size = Screen_GetMemSize();
+	scalef = Gfx_GetHint(HINT_SCALEFACTOR);
 	
 	if (IsEventPending(EVENT_QUIT)) {
 		printf("QUIT EVENT!\n");
@@ -131,10 +202,11 @@ void CopyToScreen(void)
 		printf("Couldn't lock surface; not drawing\n");
 		return;
 	}
-	if (screen->w == 320 && screen->h == 200)
-		memcpy(pScreen, r_screen, 64000);	//320*200
+	if (scalef == 1)
+		memcpy(pScreen, r_screen, scr_size);	//320*200
 	else {
-		int i;
+		Scale8(pScreen, r_screen, scr_w, scr_h, scalef); 
+/*		int i;
 	
 		width = screen->w;
 		height = screen->h;
@@ -149,7 +221,7 @@ void CopyToScreen(void)
 				x = j * scalex;
 				pScreen[yoff + j] = r_screen[x + yoff2];
 			}
-		}
+		} */
 	}
 	SDL_UnlockSurface(screen);
 	SDL_Flip(screen);
