@@ -42,7 +42,7 @@
 #include "hiscores.h"
 #include "mission.h"
 #include "game.h"
-
+#include "utils.h"
 
 TActor *gPlayer1 = NULL;
 TActor *gPlayer2 = NULL;
@@ -283,7 +283,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 TActor *AddActor(int character)
 {
-	TActor *actor = malloc(sizeof(TActor));
+	TActor *actor = sys_mem_alloc(sizeof(TActor));
 
 	memset(actor, 0, sizeof(TActor));
 	actor->gun = characterDesc[character].defaultGun;
