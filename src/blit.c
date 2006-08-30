@@ -53,7 +53,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 	unsigned char *current = pic;
 	current += 4;
 	unsigned char *target;
-	unsigned char *xlate = (char *) table;
+	unsigned char *xlate = (unsigned char *) table;
 
 	int i;
 
@@ -180,12 +180,7 @@ void Scale8(char *d, const char *s, const int w, const int h, const int sf)
 
 void CopyToScreen(void)
 {
-	char *pScreen = screen->pixels;
-	int width, height;
-	float scalex, scaley;
-	int x, y;
-	int yoff, yoff2;
-	
+	char *pScreen = screen->pixels;	
 	int scr_w, scr_h, scr_size, scalef;
 	
 	scr_w = Screen_GetWidth();
@@ -202,27 +197,13 @@ void CopyToScreen(void)
 		printf("Couldn't lock surface; not drawing\n");
 		return;
 	}
-	if (scalef == 1)
-		memcpy(pScreen, r_screen, scr_size);	//320*200
-	else {
-		Scale8(pScreen, r_screen, scr_w, scr_h, scalef); 
-/*		int i;
 	
-		width = screen->w;
-		height = screen->h;
-		scalex = 320.0f/width;
-		scaley = 200.0f/height;
-		for (i = 0; i < height; i++) {
-			int j;
-			y = i * scaley;
-			yoff = width*i;
-			yoff2 = y*320;
-			for (j = 0; j < width; j++) {
-				x = j * scalex;
-				pScreen[yoff + j] = r_screen[x + yoff2];
-			}
-		} */
+	if (scalef == 1)
+		memcpy(pScreen, r_screen, scr_size);	/* 1 -> 1 */
+	else {
+		Scale8(pScreen, r_screen, scr_w, scr_h, scalef);
 	}
+	
 	SDL_UnlockSurface(screen);
 	SDL_Flip(screen);
 	return;
