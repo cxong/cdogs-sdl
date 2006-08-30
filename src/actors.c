@@ -999,8 +999,7 @@ void UpdateAllActors(int ticks)
 	while (actor) {
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX) {
-			AddObject(actor->x, actor->y, 0, 0,
-				 &cBloodPics[rand() % BLOOD_MAX], 0, 0);
+			AddObject(actor->x, actor->y, 0, 0, &cBloodPics[rand() % BLOOD_MAX], 0, 0);
 			actor = RemoveActor(actor);
 		} else
 			actor = actor->next;
@@ -1052,8 +1051,7 @@ void SetCharacter(int index, int face, int skin, int hair, int body,
 		  int arms, int legs)
 {
 	characterDesc[index].facePic = face;
-	SetCharacterColors(&characterDesc[index].table, arms, body, legs,
-			   skin, hair);
+	SetCharacterColors(&characterDesc[index].table, arms, body, legs, skin, hair);
 }
 
 void BuildTranslationTables(void)
