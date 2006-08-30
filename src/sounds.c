@@ -402,8 +402,6 @@ void DoSounds(void)
 
 void SetFXVolume(int volume)
 {
-	int i;
-
 	debug("volume: %d\n", volume);
 
 	fxVolume = volume;
