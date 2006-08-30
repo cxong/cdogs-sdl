@@ -33,8 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-//#include <conio.h>
-//#include <i86.h>
+
 #include "SDL.h"
 
 #include "gamedata.h"
@@ -232,38 +231,26 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 
 	if (index >= 0 && index < setting->characterCount) {
 		b = &setting->characters[index];
-		DisplayText(30, y, "Face", yc == YC_APPEARANCE
-			    && xc == XC_FACE);
-		DisplayText(60, y, "Skin", yc == YC_APPEARANCE
-			    && xc == XC_SKIN);
-		DisplayText(90, y, "Hair", yc == YC_APPEARANCE
-			    && xc == XC_HAIR);
-		DisplayText(120, y, "Body", yc == YC_APPEARANCE
-			    && xc == XC_BODY);
-		DisplayText(150, y, "Arms", yc == YC_APPEARANCE
-			    && xc == XC_ARMS);
-		DisplayText(180, y, "Legs", yc == YC_APPEARANCE
-			    && xc == XC_LEGS);
+		DisplayText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
+		DisplayText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
+		DisplayText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
+		DisplayText(120, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
+		DisplayText(150, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
+		DisplayText(180, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
 		y += TextHeight();
 
 		sprintf(s, "Speed: %d%%", (100 * b->speed) / 256);
-		DisplayText(20, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_SPEED);
+		DisplayText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
 		sprintf(s, "Hp: %d", b->health);
-		DisplayText(70, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_HEALTH);
+		DisplayText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
 		sprintf(s, "Move: %d%%", b->probabilityToMove);
-		DisplayText(120, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_MOVE);
+		DisplayText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
 		sprintf(s, "Track: %d%%", b->probabilityToTrack);
-		DisplayText(170, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_TRACK);
+		DisplayText(170, y, s, yc == YC_ATTRIBUTES && xc == XC_TRACK);
 		sprintf(s, "Shoot: %d%%", b->probabilityToShoot);
-		DisplayText(220, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_SHOOT);
+		DisplayText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
 		sprintf(s, "Delay: %d", b->actionDelay);
-		DisplayText(270, y, s, yc == YC_ATTRIBUTES
-			    && xc == XC_DELAY);
+		DisplayText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
 		y += TextHeight();
 
 		DisplayFlag(5, y, "Asbestos",
