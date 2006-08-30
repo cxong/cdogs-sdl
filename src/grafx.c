@@ -165,7 +165,7 @@ int InitVideo(int mode)
 int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette)
 {
-	int f;
+	FILE *f;
 	int eof = 0;
 	unsigned short int size;
 	int i = 0;
@@ -204,7 +204,7 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics)
 {
-	int f;
+	FILE *f;
 	int eof = 0;
 	unsigned short int size;
 	int i = startIndex;
