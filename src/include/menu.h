@@ -30,6 +30,9 @@
  
 */
 
+#ifndef __MENU
+#define __MENU
+
 void ShowControls(void);
 void DisplayMenuItem(int x, int y, const char *s, int selected);
 void DisplayMenuAt(int x, int y, const char **table, int count, int index);
@@ -40,3 +43,6 @@ int  MenuHeight(const char **table, int count);
 #define DisplayMenuXCenter(t, c, i)		DisplayMenu(CenterX(MenuWidth(t, c)), t, c, i)
 
 #define DisplayMenuAtCenter(t, c, i)	DisplayMenuAt(CenterX(MenuWidth(t, c)), CenterY(MenuHeight(t, c)), t, c, i)
+
+#endif /* __MENU */
+
