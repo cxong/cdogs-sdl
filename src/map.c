@@ -72,18 +72,12 @@ static int tilesTotal = XMAX * YMAX;
 struct Buffer * NewBuffer(void)
 {
 	struct Buffer *b;
-	int rows, cols, i, j;
+	int rows, cols, i;
 	
 	b = sys_mem_alloc(sizeof(struct Buffer));
 	
 	rows = X_TILES;
 	cols = Y_TILES;
-	
-//	b->tiles = calloc(rows, sizeof(TTile *));
-
-//	for (i = 0; i < rows; i++) {
-//		b->tiles[i] = calloc(cols, sizeof(TTile));
-//	}
 	
 	b->tiles = (TTile **)sys_mem_alloc(rows * sizeof(TTile *));
 	b->tiles[0] = (TTile *)sys_mem_alloc(rows * cols * sizeof(TTile));
