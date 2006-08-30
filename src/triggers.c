@@ -82,7 +82,7 @@ void FreeTrigger(TTrigger * t)
 	free(t);
 }
 
-static RemoveAllTriggers(void)
+static int RemoveAllTriggers(void)
 {
 	FreeTrigger(root);
 	root = NULL;
