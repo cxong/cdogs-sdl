@@ -68,7 +68,7 @@ ssize_t readarray32(int fd, void *buf, size_t size)
 {
 	int i;
 
-	debug("%d, %x, %d\n", fd, buf, size);
+	debug("%d, %p, %d\n", fd, buf, (int)size);
 
 	if (buf) {
 		for (i = 0; i < (size/4); i++) {
