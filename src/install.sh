@@ -1,28 +1,42 @@
 #!/bin/sh
 
-LOCALDATA="../data/"
+function wantset () {
+	local var=$1
 
-echo Installing into $DESTDIR
+	eval "[ -z \"\$$var\" ] && echo \"$var needs to be set!\" && exit 1"
+}
 
-install -d ${LOCALDATA} ${DESTDIR}/${DATADIR}
+wantset DESTDIR
+wantset BINDIR
+wantset DOCDIR
+wantset PROG
 
-echo -e "Installing data into ${DESTDIR}/${DATADIR}\n\n"
+wantset LOCALDATA
+wantset LOCALDOCS
 
-for dir in `find $LOCALDATA -type d` ; do
-	NEWDIR=`basename $dir`
-	echo "Dir --> ${DESTDIR}/${DATADIR}/${NEWDIR}"
-	install -d ${DESTDIR}/${DATADIR}/${NEWDIR}
-	
-	for file in `find $dir -type f` ; do
-		NEWFILE=`basename $file`
-		echo " --> ${DESTDIR}/${DATADIR}/${NEWDIR}/${NEWFILE}"
-		install $file ${DESTDIR}/${DATADIR}/${NEWDIR}/${NEWFILE}
-	done
-done
+[ ! -d $LOCALDATA ]	&& echo "$LOCALDATA not a directory!" && exit 1
+[ ! -d $LOCALDOCS ]	&& echo "$LOCALDOCS not a directory!" && exit 1
+[ ! -f $PROG ]		&& echo "$PROG not a file!" && exit 1 
 
-echo -e "\nInstalling Binary into ${DESTDIR}/${BINDIR}"
+echo "### Installing into $DESTDIR ###"
+echo "# Data dir: ${DATADIR}"
+echo "# Docs dir: ${DOCDIR}"
+echo "# Bin dir:  ${BINDIR}" 
 
-install -d ${DESTDIR}/${BINDIR}
-install cdogs ${DESTDIR}/${BINDIR}
+echo "** Installing data **"
+datapath="${DESTDIR}/${DATADIR}"
+mkdir -p "${datapath}"
+cp -R "${LOCALDATA}" "${datapath}/"
+
+echo "** Installing docs **"
+docpath="${DESTDIR}/${DOCDIR}/"
+mkdir -p "${docpath}"
+cp -R "${LOCALDOCS}" "${docpath}"
+
+echo "** Installing binary **"
+binpath="${DESTDIR}/${DOCDIR}/"
+mkdir -p "${binpath}"
+cp "${PROG}" "${binpath}/${PROG}"
+chmod +x "${binpath}/${PROG}"
 
 echo "** Finished **"
