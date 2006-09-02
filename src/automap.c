@@ -89,12 +89,12 @@ static void DrawCross(TTileItem * t, int color)
 	unsigned char *scr = GetDstScreen();
 
 	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * 320;
+	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * SCREEN_WIDTH;
 	*scr = color;
 	*(scr - 1) = color;
 	*(scr + 1) = color;
-	*(scr - 320) = color;
-	*(scr + 320) = color;
+	*(scr - SCREEN_WIDTH) = color;
+	*(scr + SCREEN_WIDTH) = color;
 }
 
 static void DisplayObjective(TTileItem * t, int objectiveIndex)
@@ -119,12 +119,12 @@ static void DisplayExit(void)
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
 	for (i = x1; i <= x2; i++) {
-		*(scr + i + y1 * 320) = EXIT_COLOR;
-		*(scr + i + y2 * 320) = EXIT_COLOR;
+		*(scr + i + y1 * SCREEN_WIDTH) = EXIT_COLOR;
+		*(scr + i + y2 * SCREEN_WIDTH) = EXIT_COLOR;
 	}
 	for (i = y1 + 1; i < y2; i++) {
-		*(scr + x1 + i * 320) = EXIT_COLOR;
-		*(scr + x2 + i * 320) = EXIT_COLOR;
+		*(scr + x1 + i * SCREEN_WIDTH) = EXIT_COLOR;
+		*(scr + x2 + i * SCREEN_WIDTH) = EXIT_COLOR;
 	}
 }
 
@@ -135,43 +135,31 @@ static void DisplaySummary()
 	unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = 190 - TextHeight();
+	y = SCREEN_HEIGHT - 20 - TextHeight(); // 10 pixels from bottom
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
 		    gMission.objectives[i].done > 0) {
 			// Objective color dot
 			color = gMission.objectives[i].color;
-			scr[5 + (y + 3) * 320] = color;
-			scr[6 + (y + 3) * 320] = color;
-			scr[5 + (y + 2) * 320] = color;
-			scr[6 + (y + 2) * 320] = color;
+			scr[5 + (y + 3) * SCREEN_WIDTH] = color;
+			scr[6 + (y + 3) * SCREEN_WIDTH] = color;
+			scr[5 + (y + 2) * SCREEN_WIDTH] = color;
+			scr[6 + (y + 2) * SCREEN_WIDTH] = color;
 
-			sprintf(sScore, "(%d)",
-				gMission.objectives[i].done);
+			sprintf(sScore, "(%d)", gMission.objectives[i].done);
 
 			if (gMission.objectives[i].required <= 0) {
 				TextStringWithTableAt(20, y,
-						      gMission.
-						      missionData->
-						      objectives[i].
-						      description,
+						      gMission.missionData->objectives[i].description,
 						      &tablePurple);
-				TextStringWithTableAt(250, y, sScore,
-						      &tablePurple);
-			} else if (gMission.objectives[i].done >=
-				   gMission.objectives[i].required) {
+				TextStringWithTableAt(250, y, sScore, &tablePurple);
+			} else if (gMission.objectives[i].done >= gMission.objectives[i].required) {
 				TextStringWithTableAt(20, y,
-						      gMission.
-						      missionData->
-						      objectives[i].
-						      description,
+						      gMission.missionData->objectives[i].description,
 						      &tableFlamed);
-				TextStringWithTableAt(250, y, sScore,
-						      &tableFlamed);
+				TextStringWithTableAt(250, y, sScore, &tableFlamed);
 			} else {
-				TextStringAt(20, y,
-					     gMission.missionData->
-					     objectives[i].description);
+				TextStringAt(20, y, gMission.missionData->objectives[i].description);
 				TextStringAt(250, y, sScore);
 			}
 			y -= (TextHeight() + 1);
@@ -218,10 +206,10 @@ static void DrawDot(TTileItem * t, int color)
 	unsigned char *scr = GetDstScreen();
 
 	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * 320;
+	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * SCREEN_WIDTH;
 	*scr = color;
 	*(scr - 1) = color;
-	*(scr + 320) = color;
+	*(scr + SCREEN_WIDTH) = color;
 	*(scr + 319) = color;
 }
 
@@ -236,10 +224,10 @@ void DisplayAutoMap(int showAll)
 	int obj;
 
 	p = GetDstScreen();
-	for (x = 0; x < 64000; x++)
+	for (x = 0; x < SCREEN_MEMSIZE; x++)
 		p[x] = tableGreen[p[x] & 0xFF];
 
-	screen += MAP_YOFFS * 320 + MAP_XOFFS;
+	screen += MAP_YOFFS * SCREEN_WIDTH + MAP_XOFFS;
 	for (y = 0; y < YMAX; y++)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
@@ -261,7 +249,7 @@ void DisplayAutoMap(int showAll)
 							    FLOOR_COLOR;
 				} else
 					screen += MAP_FACTOR;
-			screen += 320 - XMAX * MAP_FACTOR;
+			screen += SCREEN_WIDTH - XMAX * MAP_FACTOR;
 		}
 
 	for (y = 0; y < YMAX; y++)
@@ -324,8 +312,7 @@ void DisplayAutoMap(int showAll)
 			GetPlayerCmd(gPlayer1 ? &cmd1 : NULL,
 				     gPlayer2 ? &cmd2 : NULL);
 		}
-		while (((cmd1 | cmd2) & CMD_BUTTON3) != 0
-		       || KeyDown(gOptions.mapKey));
-		memset(GetDstScreen(), 0, 64000);
+		while (((cmd1 | cmd2) & CMD_BUTTON3) != 0 || KeyDown(gOptions.mapKey));
+		memset(GetDstScreen(), 0, SCREEN_MEMSIZE);
 	}
 }
