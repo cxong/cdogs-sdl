@@ -149,7 +149,7 @@ int MissionDescription(int y, const char *description)
 void CampaignIntro(void *bkg)
 {
 	printf("Doing campaign intro\n");
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	TextStringAt(50, 5, gCampaign.setting->title);
 	TextStringAt(60, 15, "by ");
@@ -166,7 +166,7 @@ void MissionBriefing(void *bkg)
 	char s[128];
 	int i, y;
 
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	sprintf(s, "Mission %d", gMission.index + 1);
 	TextStringAt(50, 5, s);
@@ -350,7 +350,7 @@ void Bonuses(void)
 
 void MissionSummary(void *bkg)
 {
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	Bonuses();
 	if (gOptions.twoPlayers) {
@@ -368,7 +368,7 @@ void ShowScore(void *bkg, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	DisplayPlayer(50, &gPlayer1Data, CHARACTER_PLAYER1, 0);
 	sprintf(s, "%d", score1);
@@ -384,7 +384,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 void FinalScore(void *bkg, int score1, int score2)
 {
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	if (score1 == score2) {
 		DisplayPlayer(50, &gPlayer1Data, CHARACTER_PLAYER1, 0);
@@ -431,7 +431,7 @@ void Victory(void *bkg)
 	int x, i;
 	const char *s;
 
-	memcpy(GetDstScreen(), bkg, 64000);
+	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	x = 160 - TextWidth(CONGRATULATIONS) / 2;
 	TextStringAt(x, 100, CONGRATULATIONS);
@@ -718,7 +718,7 @@ void DogFight(void)
 
 void *MakeBkg(void)
 {
-	void *bkg = malloc(64000);
+	void *bkg = sys_mem_alloc(SCREEN_MEMSIZE);
 	struct Buffer *buffer;
 	unsigned char *p;
 	int i;
@@ -727,7 +727,8 @@ void *MakeBkg(void)
 	SetupMission(0, 1);
 	SetupMap();
 	SetDstScreen(bkg);
-	buffer = malloc(sizeof(struct Buffer));
+	//buffer = malloc(sizeof(struct Buffer));
+	buffer = NewBuffer();
 	SetBuffer(512, 384, buffer, X_TILES);
 	FixBuffer(buffer, 255);
 	DrawBuffer(buffer, 0);
@@ -736,7 +737,7 @@ void *MakeBkg(void)
 	FreeTriggersAndWatches();
 
 	p = bkg;
-	for (i = 0; i < 64000; i++)
+	for (i = 0; i < SCREEN_MEMSIZE; i++)
 		p[i] = tableGreen[p[i] & 0xFF];
 
 	return bkg;
@@ -747,8 +748,8 @@ void MainLoop(void)
 	void *myScreen;
 
 	bkg = MakeBkg();
-	myScreen = malloc(64000);
-	memset(myScreen, 0, 64000);
+	myScreen = sys_mem_alloc(SCREEN_MEMSIZE);
+	memset(myScreen, 0, SCREEN_MEMSIZE);
 	SetDstScreen(myScreen);
 
 	SetupBuiltinCampaign(1);
@@ -821,10 +822,11 @@ int main(int argc, char *argv[])
 	int sound = 1;
 
 	PrintTitle();
+
+	if (getenv("DEBUG") != NULL) debug = 1;
 	
 	for (i = 1; i < argc; i++) {
-		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-')
-		    || *(argv[i]) == '/') {
+		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
 			if (strcmp(argv[i] + 1, "slices") == 0) {
 				printf("Displaying CPU slices\n");
 				gOptions.displaySlices = 1;
@@ -892,14 +894,31 @@ int main(int argc, char *argv[])
 				js_flag = 0;				
 			}
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
-				if (vid_mode == VID_WIN_SCALE)
-					printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");
-				vid_mode = VID_FULLSCREEN;
+				Gfx_HintOn(HINT_FULLSCREEN);
+				//if (vid_mode == VID_WIN_SCALE)
+				//	printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");
+				//vid_mode = VID_FULLSCREEN;
 			}
-			if (strcmp(argv[i] + 1, "scale") == 0) {
-				if (vid_mode == VID_FULLSCREEN)
-					printf("Warning: -fullscreen and -scale are mutually exclusive...\n");
-				vid_mode = VID_WIN_SCALE;
+			if (strstr(argv[i] + 1, "screen=")) {
+				int w, h;
+				char *val = strchr(argv[i], '='); val++;
+				sscanf(val, "%dx%d", &w, &h);
+				debug("Video mode %dx%d set...\n", w, h);
+				Gfx_SetHint(HINT_WIDTH, w);
+				Gfx_SetHint(HINT_HEIGHT, h);
+			}
+			if (strcmp(argv[i] + 1, "forcemode") == 0) {
+				Gfx_HintOn(HINT_FORCEMODE);
+			}
+			if (strstr(argv[i] + 1, "scale=")) {
+				int f;
+				char *val = strchr(argv[i], '='); val++;
+				f = atoi(val);
+				if (f > 1)
+					Gfx_SetHint(HINT_SCALEFACTOR, f);
+				//if (vid_mode == VID_FULLSCREEN)
+				//	printf("Warning: -fullscreen and -scale are mutually exclusive...\n");
+				//vid_mode = VID_WIN_SCALE;
 			}
 			if (strcmp(argv[i] + 1, "help") == 0 ||
 				strcmp(argv[i] + 1, "h") == 0 || 
@@ -996,7 +1015,7 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-	if (vid_mode == VID_WIN_NORMAL && gOptions.fullscreen) vid_mode = VID_FULLSCREEN;
+	if (gOptions.fullscreen) Gfx_HintOn(HINT_FULLSCREEN);
 			
 	if (InitVideo(vid_mode) == -1) {
 		printf("Video didn't init!\n");
