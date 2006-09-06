@@ -818,6 +818,7 @@ int main(int argc, char *argv[])
 	char s[13];
 	int compile = 1, rle = 1;
 	int vid_mode = VID_WIN_NORMAL;
+	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
 
@@ -887,6 +888,7 @@ int main(int argc, char *argv[])
 				rle = 0;
 			if (strcmp(argv[i] + 1, "nosound") == 0) {
 				printf("Sound disabled!\n");
+				snd_flag = 0;
 				sound = 0;
 			}
 			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
@@ -932,7 +934,7 @@ int main(int argc, char *argv[])
 
 	/* moved here because -savecampaigns causes a crash, why? */
 	debug("Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | js_flag) != 0) {
+	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0) {
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
