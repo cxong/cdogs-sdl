@@ -37,7 +37,7 @@
 #include "grafx.h"
 #include "events.h"
 
-char *r_screen;
+unsigned char *r_screen;
 extern SDL_Surface *screen;
 
 
