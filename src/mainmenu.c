@@ -38,6 +38,7 @@
 #include "defs.h"
 #include "input.h"
 #include "grafx.h"
+#include "drawtools.h"
 #include "blit.h"
 #include "text.h"
 #include "sounds.h"
@@ -217,7 +218,7 @@ int SelectCampaign(int dogFight, int cmd)
 {
 	static int campaignIndex = 0;
 	static int dogfightIndex = 0;
-	int count, y, i, j;
+	int count, x, y, i, j;
 	struct FileEntry *list = dogFight ? dogfightList : campaignList;
 	char *prefix = dogFight ? "dogfights/" : "missions/";
 	int *index = dogFight ? &dogfightIndex : &campaignIndex;
@@ -266,26 +267,40 @@ int SelectCampaign(int dogFight, int cmd)
 		if (*index >= count)
 			*index = 0;
 		PlaySound(SND_SWITCH, 0, 255);
-	}
-
+	}	
+	
 	if (dogFight)
-		TextStringAt(50, 30, "Pick a dogfight scenario");
+		TextStringSpecial("Pick a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 	else
-		TextStringAt(50, 30, "Select campaign");
+		TextStringSpecial("Select campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 
-	y = 50;
-	for (i = 0, f = list; f != NULL && i <= *index - 12;
-	     f = f->next, i++);
+	x = CenterX(240);
+	y = CenterY(12 * TextHeight());
+	
+#define ARROW_UP	"\036"
+#define ARROW_DOWN	"\037"
+	
+	for (i = 0, f = list; f != NULL && i <= *index - 12; f = f->next, i++);
 	if (i)
-		DisplayMenuItem(25, y - TextHeight(), "\036", 0);
+		DisplayMenuItem(CenterX(TextWidth(ARROW_UP)), y - 2 - TextHeight(), ARROW_UP, 0);
 
 	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++) {
-		DisplayMenuItem(25, y, f->name, i == *index);
-		DisplayMenuItem(125, y, f->info, i == *index);
+		DisplayMenuItem(CenterX(TextWidth(f->info)), y, f->info, i == *index);
+		
+		if (i == *index) {
+			char s[255];
+			if (strlen(f->name) == 0)
+				sprintf(s, "( Internal )");
+			else
+				sprintf(s, "( %s )", f->name);
+			TextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
+		}
+			
 		y += TextHeight();
 	}
 	if (f)
-		DisplayMenuItem(25, y, "\037", 0);
+		DisplayMenuItem(CenterX(TextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
+		
 
 	return dogFight ? MODE_DOGFIGHT : MODE_CAMPAIGN;
 }
@@ -328,11 +343,18 @@ static int SelectMain(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	DrawTPic(125, 4, gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
-	TextStringAt(20, 20, CDOGS_VERSION);
-	TextStringAt(280, 20, CDOGS_SDL_VERSION);
+	DrawTPic((SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2, (SCREEN_HEIGHT / 12), gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
+	TextStringSpecial(CDOGS_VERSION, TEXT_LEFT | TEXT_TOP, 20, 20);
+	TextStringSpecial(CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 
-	DisplayMenu(132, mainMenu, MAIN_COUNT, index);
+	DisplayMenuAtCenter(mainMenu, MAIN_COUNT, index);
+	
+	//Draw_Line(10, 10, 100, 100, 255);
+	
+	Draw_Line(60, 60, 40, 40, 255);
+	 
+	//Draw_Box(20, 20, 50, 50, 255);
+	
 	return MODE_MAIN;
 }
 
@@ -365,6 +387,7 @@ int SelectOptions(int cmd)
 {
 	static int index = 0;
 	char s[10];
+	int x, y;
 
 	if (cmd == CMD_ESC)
 		return MODE_MAIN;
@@ -490,22 +513,30 @@ int SelectOptions(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	DisplayMenu(75, optionsMenu, OPTIONS_COUNT, index);
+	TextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
+	
+	x = CenterX(MenuWidth(optionsMenu, OPTIONS_COUNT));
+	y = CenterY(MenuHeight(optionsMenu, OPTIONS_COUNT));
+	
+	DisplayMenuAt(x - 20, y, optionsMenu, OPTIONS_COUNT, index);
 
-	TextStringAt(230, 50, gOptions.playersHurt ? "Yes" : "No");
-	TextStringAt(230, 50 + TextHeight(),
+	x += MenuWidth(optionsMenu, OPTIONS_COUNT);
+	x += 10;
+	
+	TextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
+	TextStringAt(x, y + TextHeight(),
 		     gOptions.displayFPS ? "On" : "Off");
-	TextStringAt(230, 50 + 2 * TextHeight(),
+	TextStringAt(x, y + 2 * TextHeight(),
 		     gOptions.displayTime ? "On" : "Off");
-	TextStringAt(230, 50 + 3 * TextHeight(),
+	TextStringAt(x, y + 3 * TextHeight(),
 		     gOptions.copyMode ==
 		     COPY_REPMOVSD ? "rep movsd" : "dec/jnz");
 	sprintf(s, "%d", gOptions.brightness);
-	TextStringAt(230, 50 + 4 * TextHeight(), s);
-	TextStringAt(230, 50 + 5 * TextHeight(),
+	TextStringAt(x, y + 4 * TextHeight(), s);
+	TextStringAt(x, y + 5 * TextHeight(),
 		     gOptions.xSplit ? "No" : "Yes");
 	sprintf(s, "%u", gCampaign.seed);
-	TextStringAt(230, 50 + 6 * TextHeight(), s);
+	TextStringAt(x, y + 6 * TextHeight(), s);
 	switch (gOptions.difficulty) {
 		case DIFFICULTY_VERYEASY:
 			strcpy(s, "Easiest");
@@ -523,17 +554,17 @@ int SelectOptions(int cmd)
 			strcpy(s, "Normal");
 			break;
 	}
-	TextStringAt(230, 50 + 7 * TextHeight(), s);
-	TextStringAt(230, 50 + 8 * TextHeight(),
+	TextStringAt(x, y + 7 * TextHeight(), s);
+	TextStringAt(x, y + 8 * TextHeight(),
 		     gOptions.slowmotion ? "Yes" : "No");
 	sprintf(s, "%u%%", gOptions.density);
-	TextStringAt(230, 50 + 9 * TextHeight(), s);
+	TextStringAt(x, y + 9 * TextHeight(), s);
 	sprintf(s, "%u%%", gOptions.npcHp);
-	TextStringAt(230, 50 + 10 * TextHeight(), s);
+	TextStringAt(x, y + 10 * TextHeight(), s);
 	sprintf(s, "%u%%", gOptions.playerHp);
-	TextStringAt(230, 50 + 11 * TextHeight(), s);
+	TextStringAt(x, y + 11 * TextHeight(), s);
 	sprintf(s, "%s", gOptions.fullscreen == 1 ? "Yes" : "No");
-	TextStringAt(230, 50 + 12 * TextHeight(), s);
+	TextStringAt(x, y + 12 * TextHeight(), s);
 
 	return MODE_OPTIONS;
 }
@@ -569,6 +600,7 @@ static void DisplayControl(int x, int y, int controls)
 int SelectControls(int cmd)
 {
 	static int index = 0;
+	int x, y;
 
 	if (cmd == CMD_ESC)
 		return MODE_MAIN;
@@ -584,13 +616,11 @@ int SelectControls(int cmd)
 			break;
 
 		case 2:
-			gOptions.swapButtonsJoy1 =
-			    !gOptions.swapButtonsJoy1;
+			gOptions.swapButtonsJoy1 = !gOptions.swapButtonsJoy1;
 			break;
 
 		case 3:
-			gOptions.swapButtonsJoy2 =
-			    !gOptions.swapButtonsJoy2;
+			gOptions.swapButtonsJoy2 = !gOptions.swapButtonsJoy2;
 			break;
 
 		case 4:
@@ -617,14 +647,20 @@ int SelectControls(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	DisplayMenu(75, controlsMenu, CONTROLS_COUNT, index);
+	TextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));	
+	
+	x = CenterX(MenuWidth(controlsMenu, CONTROLS_COUNT));
+	y = CenterY(MenuHeight(controlsMenu, CONTROLS_COUNT));
+	
+	DisplayMenuAt(x - 20, y, controlsMenu, CONTROLS_COUNT, index);
+	
+	x += MenuWidth(controlsMenu, CONTROLS_COUNT);
+	x += 10;
 
-	DisplayControl(230, 50, gPlayer1Data.controls);
-	DisplayControl(230, 50 + TextHeight(), gPlayer2Data.controls);
-	TextStringAt(230, 50 + 2 * TextHeight(),
-		     gOptions.swapButtonsJoy1 ? "Yes" : "No");
-	TextStringAt(230, 50 + 3 * TextHeight(),
-		     gOptions.swapButtonsJoy2 ? "Yes" : "No");
+	DisplayControl(x, y, gPlayer1Data.controls);
+	DisplayControl(x, y + TextHeight(), gPlayer2Data.controls);
+	TextStringAt(x, y + 2 * TextHeight(), gOptions.swapButtonsJoy1 ? "Yes" : "No");
+	TextStringAt(x, y + 3 * TextHeight(), gOptions.swapButtonsJoy2 ? "Yes" : "No");
 	return MODE_CONTROLS;
 }
 
@@ -723,16 +759,31 @@ static void DisplayKeys(int x, int x2, int y, char *title,
 
 static void ShowAllKeys(int index, int change)
 {
-	DisplayKeys(75, 230, 20, "Player One", &gPlayer1Data, index, change);
-	DisplayKeys(75, 230, 100, "Player Two", &gPlayer2Data, index - 6, change - 6);
-	TextStringAt(75, 170, "Map");
+	int x1, x2, y1, y2;
+	
+	x1 = CenterX((TextCharWidth('a') * 10)) / 2;
+	x2 = x1 * 3;
+	
+	y1 = (SCREEN_HEIGHT / 2) - (TextHeight() * 10);
+	y2 = (SCREEN_HEIGHT / 2) - (TextHeight() * 2);
+	
+	DisplayKeys(x1, x2, y1, "Player One", &gPlayer1Data, index, change);
+	DisplayKeys(x1, x2, y2, "Player Two", &gPlayer2Data, index - 6, change - 6);
+	
+	y2 += TextHeight() * 8;
+	
+	TextStringAt(x1, y2, "Map");
 	
 	if (change == 12)
-		DisplayMenuItem(230, 170, SELECTKEY, index == 12);
+		DisplayMenuItem(x2, y2, SELECTKEY, index == 12);
 	else
-		DisplayMenuItem(230, 170, SDL_GetKeyName(gOptions.mapKey), index == 12);
+		DisplayMenuItem(x2, y2, SDL_GetKeyName(gOptions.mapKey), index == 12);
 	
-	DisplayMenuItem(75, 180, "Done", index == 13);
+#define DONE	"Done"
+	
+	y2 += TextHeight () * 2;
+	
+	DisplayMenuItem(CenterX(TextWidth(DONE)), y2, "Done", index == 13);
 }
 
 static void HighlightKey(int index)
@@ -797,6 +848,7 @@ int SelectVolume(int cmd)
 {
 	static int index = 0;
 	char s[10];
+	int x, y;
 
 	if (cmd == CMD_ESC)
 		return MODE_MAIN;
@@ -851,15 +903,23 @@ int SelectVolume(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	DisplayMenu(75, volumeMenu, VOLUME_COUNT, index);
+	TextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
+	
+	x = CenterX(MenuWidth(volumeMenu, VOLUME_COUNT));
+	y = CenterY(MenuHeight(volumeMenu, VOLUME_COUNT));
+	
+	DisplayMenuAt(x - 20, y, volumeMenu, VOLUME_COUNT, index);
+	
+	x += MenuWidth(volumeMenu, VOLUME_COUNT);
+	x += 10;	
 
 	sprintf(s, "%d", FXVolume() / 8);
-	TextStringAt(230, 50, s);
+	TextStringAt(x, y, s);
 	sprintf(s, "%d", MusicVolume() / 8);
-	TextStringAt(230, 50 + TextHeight(), s);
+	TextStringAt(x, y + TextHeight(), s);
 	sprintf(s, "%d", FXChannels());
-	TextStringAt(230, 50 + 2 * TextHeight(), s);
-	TextStringAt(230, 50 + 3 * TextHeight(), "No");
+	TextStringAt(x, y + 2 * TextHeight(), s);
+	TextStringAt(x, y + 3 * TextHeight(), "No");
 
 	return MODE_VOLUME;
 }
@@ -891,11 +951,9 @@ static void ShowCredits(void)
 	static int lastTick = 0;
 	int t;
 
-	TextStringWithTableAt(16, 128, "Credits:", &tableDarker);
-	TextStringWithTableAt(20, 140, credits[creditIndex].name,
-			      &tablePurple);
-	TextStringWithTableAt(20, 140 + TextHeight(),
-			      credits[creditIndex].message, &tableDarker);
+	TextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
+	TextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
+	TextStringWithTableAt(20, SCREEN_HEIGHT - 40 + TextHeight(), credits[creditIndex].message, &tableDarker);
 
 	t = clock() / CLOCKS_PER_SEC;
 	if (t > lastTick + CREDIT_PERIOD) {
@@ -915,7 +973,7 @@ int MainMenu(void *bkg)
 
 	mode = MODE_MAIN;
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
-		memcpy(GetDstScreen(), bkg, 64000);
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
 		if (mode == MODE_MAIN)
 			ShowCredits();
@@ -925,6 +983,7 @@ int MainMenu(void *bkg)
 		else
 			prev = cmd;
 		mode = MakeSelection(mode, cmd);
+		
 		CopyToScreen();
 	}
 	WaitForRelease();
