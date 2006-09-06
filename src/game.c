@@ -331,7 +331,7 @@ static void MarkExit(void)
 
 static void MissionStatus(void)
 {
-	unsigned char *scr = GetDstScreen();
+	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 	int i, left;
 	char s[4];
@@ -423,14 +423,17 @@ void StatusDisplay(void)
 		TextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 		//TextStringAt(10, SCREEN_HEIGHT - 10, s);
 	}
+	
+#define KEY_WIDTH(n) (PicWidth(&cGeneralPics[gMission.keyPics[n]]))
+	
 	if (gMission.flags & FLAGS_KEYCARD_YELLOW)
-		DrawKeycard((SCREEN_WIDTH/2) - 15, 16, &cGeneralPics[gMission.keyPics[0]]);
+		DrawKeycard(CenterX(KEY_WIDTH(0)) - 30, 20, &cGeneralPics[gMission.keyPics[0]]);
 	if (gMission.flags & FLAGS_KEYCARD_GREEN)
-		DrawKeycard((SCREEN_WIDTH/2) - 5, 16, &cGeneralPics[gMission.keyPics[1]]);
+		DrawKeycard(CenterX(KEY_WIDTH(1)) - 10, 20, &cGeneralPics[gMission.keyPics[1]]);
 	if (gMission.flags & FLAGS_KEYCARD_BLUE)
-		DrawKeycard((SCREEN_WIDTH/2) + 5, 16, &cGeneralPics[gMission.keyPics[2]]);
+		DrawKeycard(CenterX(KEY_WIDTH(2)) + 10, 20, &cGeneralPics[gMission.keyPics[2]]);
 	if (gMission.flags & FLAGS_KEYCARD_RED)
-		DrawKeycard((SCREEN_WIDTH/2) + 15, 16, &cGeneralPics[gMission.keyPics[3]]);
+		DrawKeycard(CenterX(KEY_WIDTH(3)) + 30, 20, &cGeneralPics[gMission.keyPics[3]]);
 
 	sprintf(s, "%d:%02d", missionTime / 4200, (missionTime / 70) % 60);
 	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
@@ -497,9 +500,9 @@ int gameloop(void)
 {
 	struct Buffer *buffer;
 	int ticks;
+	int c = 0;
 	int cmd1, cmd2;
 	int done = NO;
-	int c;
 	int timeTicks = CLOCK_LIMIT;
 	time_t t;
 	struct tm *tp;
