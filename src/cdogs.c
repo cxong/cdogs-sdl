@@ -1013,7 +1013,7 @@ int main(int argc, char *argv[])
 	LoadConfig();
 
 	if (wait) {
-		printf("Press Enter...\n");
+		printf("Press any key to continue...\n");
 		getchar();
 	}
 
