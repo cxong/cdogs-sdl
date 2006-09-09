@@ -1,10 +1,12 @@
+# C-Dogs SDL Makefile
+
 ### Variables ###
 
 # Make sure only one variable in the provided set is uncommented!
 
 # Can be: "linux", "macosx"
 #SYSTEM		:= "macosx"
-#SYSTEM		:= "linux"
+SYSTEM		:= "linux"
 
 # Can be either: sdlmixer, nomix or oldmix
 # sdlmixer is recommended, as you get proper music and sounds =)
@@ -16,17 +18,23 @@ SOUND_CODE	:= "sdlmixer"
 DESTDIR		:= ../dist/
 #DESTDIR 	:= /
 
+DATA		:= ../data/
+DATA		:= ../../cdogs-data/
+#DATA		:= /path/to/where/data/is/unpacked/
+
 # Prefix is the *actual* base directory
 # Bindir is where the cdogs binary is placed
 # Datadir is where the data is
 PREFIX		:= /usr/local/
 BINDIR		:= $(PREFIX)/games/bin/
 DATADIR		:= $(PREFIX)/share/games/cdogs/
+DOCDIR		:= $(PREFIX)/share/doc/cdogs/
 
 # The following are for a self-contained install
 #PREFIX		:= .
 #BINDIR		:= $(PREFIX)/
 #DATADIR	:= $(PREFIX)/data
+#DOCDIR		:= $(PREFIX)/doc
 
 # intel, powerpc... uncomment only one (if at all)
 #CF_ARCH 	+= -march=pentium2 -mtune=pentium2	
@@ -43,6 +51,10 @@ DEBUG=0
 
 ### Change this to yes, once you are ready
 I_AM_CONFIGURED=no
+
+# Name of the cdogs binary (probably doesn't need to be changed)
+CDOGS=cdogs
+CDOGSED=cdogs-editor
 
 ###  Some logic to work out things
 
@@ -95,7 +107,7 @@ else
 	CF_DEBUG	+= -w
 endif
 
-### Don't Touch These ###
+### No need to edit below here ###
 
 CFLAGS		+= $(CF_OPTIMISE) $(CF_ARCH) $(CF_DEBUG)
 
@@ -103,14 +115,18 @@ INCLUDES	+= -I./include -I./missions
 LDFLAGS		+= 
 DEFS		+= -DCDOGS_DATA_DIR=\"$(DATADIR)\"
 
-dogs_OBJS = cdogs.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
-	    gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
-	    mission.o game.o mainmenu.o password.o files.o menu.o joystick.o \
-	    sprcomp.o grafx.o blit.o text.o keyboard.o events.o
+CDOGS_OBJS = \
+	cdogs.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
+	gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
+	mission.o game.o mainmenu.o password.o files.o menu.o joystick.o \
+	sprcomp.o grafx.o blit.o text.o keyboard.o events.o utils.o \
+	drawtools.o
 
-dogsed_OBJS = cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o gamedata.o \
-	      triggers.o input.o hiscores.o automap.o mission.o game.o ai.o charsed.o \
-	      events.o joystick.o sprcomp.o grafx.o blit.o text.o keyboard.o name.o
+CDOGSED_OBJS = \
+	cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
+	gamedata.o triggers.o input.o hiscores.o automap.o mission.o game.o \
+	ai.o charsed.o events.o joystick.o sprcomp.o grafx.o blit.o text.o \
+	keyboard.o name.o
 
 ### Targets ###
 
@@ -122,22 +138,22 @@ help:
 	@echo "REMEMBER TO EDIT THE MAKEFILE!"
 	@echo
 	@echo "Targets:"
-	@echo " * cdogs   - build cdogs binary"
+	@echo " * $(CDOGS) - build cdogs binary"
 	@echo " * install - install cdogs binary (and data)"
-	@echo " * info    - show configuration"
-	@echo " * clean   - clean tree for building"
-	@echo " * help    - this help"
+	@echo " * info - show configuration"
+	@echo " * clean - clean tree for building"
+	@echo " * help - this help"
 	@echo
 	@echo "Usage: make <target>"
 
-cdogs: $(dogs_OBJS) $(EXTRA_OBJS)
+$(CDOGS): $(CDOGS_OBJS) $(EXTRA_OBJS)
 	@echo "Linking..."
-	@$(CC) $(dogs_OBJS) $(EXTRA_OBJS) -o cdogs $(LDFLAGS)
-	@[ "$(DEBUG)" == "0" ] && $(STRIP) -s cdogs
+	$(CC) $(CDOGS_OBJS) $(EXTRA_OBJS) -o $(CDOGS) $(LDFLAGS)
+	@[ "$(DEBUG)" == "0" ] && $(STRIP) -s $(CDOGS)
 	@echo "Now type 'make install' as root!"
 
-# editor: $(dogsed_OBJS)
-# 	gcc $(dogsed_OBJS) -o dogsed $(LDFLAGS)
+#$(CDOGSED): $(CDOGSED_OBJS)
+# 	@$(CC) $(CDOGSED_OBJS) $(EXTRA_OBJS) -o $(CDOGSED) $(LDFLAGS)
 
 .c.o:
 	@if [ "$(I_AM_CONFIGURED)" != "yes" ] ; then \
@@ -154,6 +170,7 @@ cdogs: $(dogs_OBJS) $(EXTRA_OBJS)
 	 $(DEFS) \
 	 -c $<
 
+# This is for Mac OS X
 SDLmain.o: ../build/macosx/SDLmain.m ../build/macosx/SDLmain.h
 	@echo "Compiling SDLmain.m (MacOSX) (debug=$(DEBUG))"
 	@$(CC) \
@@ -184,8 +201,13 @@ info:
 
 install:
 	DESTDIR=$(DESTDIR) \
+	DOCDIR=$(DOCDIR) \
 	DATADIR=$(DATADIR) \
 	BINDIR=$(BINDIR) \
+	PREFIX=$(PREFIX) \
+	PROG=$(CDOGS) \
+	LOCALDATA=$(DATA) \
+	LOCALDOCS="../doc/" \
 	./install.sh
 
 clean:
