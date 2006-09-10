@@ -7,6 +7,7 @@
 # Can be: "linux", "macosx"
 #SYSTEM		:= "macosx"
 SYSTEM		:= "linux"
+#SYSTEM		:= "xmingw"
 
 # Can be either: sdlmixer, nomix or oldmix
 # sdlmixer is recommended, as you get proper music and sounds =)
@@ -25,10 +26,10 @@ DATA		:= ../../cdogs-data/
 # Prefix is the *actual* base directory
 # Bindir is where the cdogs binary is placed
 # Datadir is where the data is
-PREFIX		:= /usr/local/
-BINDIR		:= $(PREFIX)/games/bin/
-DATADIR		:= $(PREFIX)/share/games/cdogs/
-DOCDIR		:= $(PREFIX)/share/doc/cdogs/
+PREFIX		:= /usr/local
+BINDIR		:= $(PREFIX)/games/bin
+DATADIR		:= $(PREFIX)/share/games/cdogs
+DOCDIR		:= $(PREFIX)/share/doc/cdogs
 
 # The following are for a self-contained install
 #PREFIX		:= .
@@ -67,9 +68,11 @@ ifeq ($(SOUND_CODE), "nomix")
 	DEFS	+= -DSND_NOMIX
 endif
 
-# Detection for Linux/
+# Detection for Linux
 ifeq ($(shell uname -s), Linux)
-	SYSTEM := "linux"
+	ifneq ($(SYSTEM), "xmingw")
+		SYSTEM := "linux"
+	endif
 endif
 
 # Detection for MacOSX
@@ -81,10 +84,14 @@ ifeq ($(SYSTEM), "macosx")
 	DEFS	+= -DSYS_MACOSX
 	LDFLAGS	+= -framework SDL -framework SDL_mixer -framework AppKit -framework Foundation
 
-	INCLUDES += -I/Library/Frameworks/SDL.framework/Headers
+	FRAMEWORK_DIR := /Library/Frameworks
+	SDL_FRAMEWORK := $(FRAMEWORK_DIR)/SDL.framework
+	SDLMIXER_FRAMEWORK := $(FRAMEWORK_DIR)/SDL_mixer.framework
+
+	INCLUDES += -I$(SDL_FRAMEWORK)/Headers
 
 	ifeq ($(SOUND_CODE), "sdlmixer")
-		INCLUDES += -I/Library/Frameworks/SDL_mixer.framework/Headers
+		INCLUDES += -I$(SDLMIXER_FRAMEWORK)/Headers
 	endif
 
 	EXTRA_OBJS = SDLmain.o
@@ -94,6 +101,22 @@ ifeq ($(SYSTEM), "linux")
 	LDFLAGS	 += $(shell sdl-config --libs)	
 	INCLUDES += $(shell sdl-config --cflags)
 	
+	ifeq ($(SOUND_CODE), "sdlmixer")
+		LDFLAGS += -lSDL_mixer
+	endif
+endif
+
+ifeq ($(SYSTEM), "xmingw")
+	CC	:= i386-mingw32msvc-gcc
+	STRIP	:= i386-mingw32msvc-strip
+
+	SDLCONFIG := i386-mingw32msvc-sdl-config
+
+	LDFLAGS	 += $(shell $(SDLCONFIG) --libs)
+	INCLUDES += $(shell $(SDLCONFIG) --cflags)
+
+	DEFS	 += -DSYS_WIN
+
 	ifeq ($(SOUND_CODE), "sdlmixer")
 		LDFLAGS += -lSDL_mixer
 	endif
