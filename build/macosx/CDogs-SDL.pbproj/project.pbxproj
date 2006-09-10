@@ -161,6 +161,7 @@
 		};
 		29B97315FDCFA39411CA2CEA = {
 			children = (
+				8536A8880AA2E1EC00C64FD9,
 				8501E1C30A887C1F0064A3FC,
 				8501E1090A8878150064A3FC,
 				8501E10A0A8878150064A3FC,
@@ -190,6 +191,7 @@
 				8501E1220A8878150064A3FC,
 				8501E1230A8878150064A3FC,
 				8501E1240A8878150064A3FC,
+				85C828590AA1B87F00864C0B,
 			);
 			isa = PBXGroup;
 			name = "Other Sources";
@@ -202,6 +204,7 @@
 				85D3BC3D0A889AD100A1F24E,
 				8501E1A80A8879970064A3FC,
 				8501E1A90A8879970064A3FC,
+				8536A8A80AA2E80D00C64FD9,
 				8501E16E0A8879870064A3FC,
 				8501E16F0A8879870064A3FC,
 				8501E1700A8879870064A3FC,
@@ -275,14 +278,14 @@
 				29B9732DFDCFA39411CA2CEA,
 			);
 			buildSettings = {
-				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "/Frameworks/SDL_mixer.framework/Headers /Library/Frameworks/SDL.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O2";
-				OTHER_CFLAGS = "-DSYS_MACOSX -DSND_SDLMIXER";
+				OTHER_CFLAGS = "-DSYS_MACOSX -DSND_SDLMIXER -DCDOGS_DEBUG";
 				OTHER_LDFLAGS = "-framework SDL -framework SDL_mixer";
 				PRODUCT_NAME = "CDogs-SDL";
+				PROFILING_CODE = YES;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wall -Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
 				WRAPPER_EXTENSION = app;
@@ -303,9 +306,11 @@
 	<key>CFBundleExecutable</key>
 	<string>CDogs-SDL</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Version 0.3, Alpha</string>
+	<string>Version 0.03, Alpha</string>
 	<key>CFBundleIconFile</key>
 	<string>cdogs-icon</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.icculus.cdogs</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -313,11 +318,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>v0.3 (osx alpha)</string>
+	<string>v0.03 (osx alpha)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.3</string>
+	<string>0.03</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -360,6 +365,7 @@
 				8501E1A60A8879870064A3FC,
 				8501E1A70A8879870064A3FC,
 				85355DF50A907A6600E46678,
+				8536A8A90AA2E80D00C64FD9,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -376,6 +382,7 @@
 		29B9732BFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
 			files = (
+				8536A80F0AA1BE7D00C64FD9,
 				F5A47AA301A0483001D3D55B,
 				8501E1250A8878160064A3FC,
 				8501E1260A8878160064A3FC,
@@ -406,6 +413,7 @@
 				8501E13F0A8878160064A3FC,
 				8501E1400A8878160064A3FC,
 				8501E1C40A887C1F0064A3FC,
+				8536A8890AA2E1EC00C64FD9,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1393,7 +1401,53 @@
 			fileRef = 85355DF40A907A6600E46678;
 			isa = PBXBuildFile;
 			settings = {
+				COMPILER_FLAGS = "-DCDOGS_DEBUG";
 			};
+		};
+		8536A80F0AA1BE7D00C64FD9 = {
+			fileRef = 85C828590AA1B87F00864C0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8536A8880AA2E1EC00C64FD9 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = drawtools.c;
+			path = ../../src/drawtools.c;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		8536A8890AA2E1EC00C64FD9 = {
+			fileRef = 8536A8880AA2E1EC00C64FD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8536A8A80AA2E80D00C64FD9 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = drawtools.h;
+			path = ../../src/include/drawtools.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		8536A8A90AA2E80D00C64FD9 = {
+			fileRef = 8536A8A80AA2E80D00C64FD9;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		85C828590AA1B87F00864C0B = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = utils.c;
+			path = ../../src/utils.c;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		85D3BC3D0A889AD100A1F24E = {
 			isa = PBXFileReference;
