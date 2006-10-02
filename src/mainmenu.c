@@ -349,12 +349,6 @@ static int SelectMain(int cmd)
 
 	DisplayMenuAtCenter(mainMenu, MAIN_COUNT, index);
 	
-	//Draw_Line(10, 10, 100, 100, 255);
-	
-	Draw_Line(60, 60, 40, 40, 255);
-	 
-	//Draw_Box(20, 20, 50, 50, 255);
-	
 	return MODE_MAIN;
 }
 
