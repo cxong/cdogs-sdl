@@ -16,11 +16,11 @@ SOUND_CODE	:= "sdlmixer"
 #SOUND_CODE	:= "oldmix"
 
 # Destdir is where the base dir where everything is installed
-DESTDIR		:= ../dist/
+DESTDIR		:= ../dist
 #DESTDIR 	:= /
 
-DATA		:= ../data/
-DATA		:= ../../cdogs-data/
+DATA		:= ../data
+DATA		:= ../../cdogs-data
 #DATA		:= /path/to/where/data/is/unpacked/
 
 # Prefix is the *actual* base directory
@@ -202,20 +202,22 @@ SDLmain.o: ../build/macosx/SDLmain.m ../build/macosx/SDLmain.h
 		-c ../build/macosx/SDLmain.m
 
 info:
-	@echo "=[ System ]="
+	@echo "=[ Program ]="
+	@echo "C-Dogs:   $(CDOGS)"
+	@echo "Editor:   $(CDOGSED)"
 	@echo ""
+	@echo "=[ System ]="
 	@echo "System:   $(SYSTEM)"
 	@echo "Sound:    $(SOUND_CODE)"
 	@echo ""
 	@echo "=[ Paths ]="
-	@echo ""
 	@echo "Prefix:   $(PREFIX)"
 	@echo "Bin dir:  $(BINDIR)"
 	@echo "Data dir: $(DATADIR)"
+	@echo "Doc dir:  $(DOCDIR)"
 	@echo "Dest dir: $(DESTDIR)"
 	@echo ""
 	@echo "=[ Compilation ]="
-	@echo
 	@echo "CC:       $(CC)"
 	@echo "CFLAGS:   $(CFLAGS)"
 	@echo "INCLUDES: $(INCLUDES)"
