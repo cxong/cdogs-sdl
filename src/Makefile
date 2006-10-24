@@ -38,7 +38,7 @@ DOCDIR		:= $(PREFIX)/share/doc/cdogs
 #DOCDIR		:= $(PREFIX)/doc
 
 # intel, powerpc... uncomment only one (if at all)
-#CF_ARCH 	+= -march=pentium2 -mtune=pentium2	
+#CF_ARCH 	+= -march=pentium2 -mcpu=pentium2	
 #CF_ARCH  	+= -mcpu=G3 -mtune=G3
 #CF_ARCH 	+= -mcpu=G4 -mtune=G4 -maltivec	
 
@@ -149,7 +149,7 @@ CDOGSED_OBJS = \
 	cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
 	gamedata.o triggers.o input.o hiscores.o automap.o mission.o game.o \
 	ai.o charsed.o events.o joystick.o sprcomp.o grafx.o blit.o text.o \
-	keyboard.o name.o
+	keyboard.o drawtools.o utils.o
 
 ### Targets ###
 
@@ -162,6 +162,7 @@ help:
 	@echo
 	@echo "Targets:"
 	@echo " * $(CDOGS) - build cdogs binary"
+	@echo " * $(CDOGSED) - build cdogs editor binary"
 	@echo " * install - install cdogs binary (and data)"
 	@echo " * info - show configuration"
 	@echo " * clean - clean tree for building"
@@ -170,13 +171,13 @@ help:
 	@echo "Usage: make <target>"
 
 $(CDOGS): $(CDOGS_OBJS) $(EXTRA_OBJS)
-	@echo "Linking..."
+	@echo "Linking... ($(CDOGS))"
 	$(CC) $(CDOGS_OBJS) $(EXTRA_OBJS) -o $(CDOGS) $(LDFLAGS)
-	@[ "$(DEBUG)" == "0" ] && $(STRIP) -s $(CDOGS)
 	@echo "Now type 'make install' as root!"
 
-#$(CDOGSED): $(CDOGSED_OBJS)
-# 	@$(CC) $(CDOGSED_OBJS) $(EXTRA_OBJS) -o $(CDOGSED) $(LDFLAGS)
+$(CDOGSED): $(CDOGSED_OBJS) $(EXTRA_OBJS)
+	@echo "Linking... ($(CDOGSED))"
+	@$(CC) $(CDOGSED_OBJS) $(EXTRA_OBJS) -o $(CDOGSED) $(LDFLAGS)
 
 .c.o:
 	@if [ "$(I_AM_CONFIGURED)" != "yes" ] ; then \
@@ -236,7 +237,7 @@ install:
 	./install.sh
 
 clean:
-	rm *.o cdogs
+	rm *.o $(CDOGS) $(CDOGSED)
 
 tidy:
 	indent -kr -i8 *.c include/*.h
