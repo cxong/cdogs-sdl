@@ -793,23 +793,38 @@ void PrintTitle(void)
 
 void PrintHelp (void)
 {
-	printf("%s%s%s\n",
-		"Video Options:\n",
-		"    -fullscreen     Try and use a fullscreen video mode.\n",
-		"    -scale          Scale the window resolution up.\n");
+	printf("%s\n",
+		"Video Options:\n"
+		"    -fullscreen     Try and use a fullscreen video mode.\n"
+		"    -scale=n        Scale the window resolution up by a factor of n\n"
+		"                    (n = 2, 3, 4 for now).\n"
+		"    -screen=WxH     Set virtual screen width to W x H\n"
+		"    -forcemode      Don't check video mode sanity\n"
+	);    
+
+	printf("%s\n",
+		"Sound Options:\n"
+		"    -nosound        Disable sound\n"
+	);
 	
-	printf("%s%s%s%s\n",
-		"Control Options:\n",
-		"    -nojoystick     Disable joystick(s)\n",
-		"    -js1threshold=n Joystick 1 threshold.\n",
-		"    -js2threshold=n Joystick 2 threshold.\n");
+	printf("%s\n",
+		"Control Options:\n"
+		"    -nojoystick     Disable joystick(s)\n"
+		"    -js1threshold=n Joystick 1 threshold.\n"
+		"    -js2threshold=n Joystick 2 threshold.\n"
+	);
 		
-	printf("%s%s%s%s%s\n",
-		"Game Options:\n",
-		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n",
-		"    -wait           Wait for a key hit before initialising video.\n",
-		"    -shakemult=n    Screen shaking multiplier (0 = disable).\n",
-		"    -slices         Display CPU slices [*broken*]");
+	printf("%s\n",
+		"Game Options:\n"
+		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n"
+		"    -wait           Wait for a key hit before initialising video.\n"
+		"    -shakemult=n    Screen shaking multiplier (0 = disable).\n"
+		"    -slices         Display CPU slices [*broken*]\n"
+	);
+
+	printf("%s\n",
+		"The DEBUG environment variable can be set to show debug information."
+	);
 }
 
 int main(int argc, char *argv[])
@@ -1022,11 +1037,14 @@ int main(int argc, char *argv[])
 	if (InitVideo(vid_mode) == -1) {
 		printf("Video didn't init!\n");
 	} else {
+		SDL_TimerID t;
+
 		SetPalette(gPalette);
 		printf(">> Entering main loop\n");
 		InitMutex();
-		SDL_AddTimer(5, synchronizer, NULL);
+		t = SDL_AddTimer(5, synchronizer, NULL);
 		MainLoop();
+		SDL_RemoveTimer(t);
 	}
 	printf(">> Shutting Down...\n");
 
