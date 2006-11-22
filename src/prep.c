@@ -45,6 +45,7 @@
 #include "keyboard.h"
 #include "menu.h"
 #include "files.h"
+#include "utils.h"
 
 
 #define MODE_MAIN           0
@@ -180,6 +181,8 @@ void SaveTemplates(void)
 	FILE *f;
 	int i;
 
+	debug("begin\n");
+
 	f = fopen(GetConfigFilePath("players.cnf"), "w");
 	if (f) {
 		fprintf(f, "%d\n", MAX_TEMPLATE);
@@ -193,6 +196,8 @@ void SaveTemplates(void)
 				templates[i].skin, templates[i].hair);
 		}
 		fclose(f);
+
+		debug("saved templates\n");
 	}
 }
 
