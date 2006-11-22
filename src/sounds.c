@@ -61,10 +61,6 @@ static int maxModChannels = 0;
 static int channelPriority[FX_MAXCHANNELS];
 static int channelPosition[FX_MAXCHANNELS];
 static int channelTime[FX_MAXCHANNELS];
-static int fxChannel;
-
-static int interruptEnabled = 0;
-static int dynamicInterrupts = 0;
 
 
 static int moduleStatus = 0;
@@ -134,10 +130,14 @@ static void loadSampleConfiguration(void)
 	fclose(f);
 }
 
-void shutDown(void)
+void ShutDownSound(void)
 {
-	// Shutdown goes here...
+	debug("shutting down sound\n");
+#ifdef SND_SDLMIXER
+	Mix_CloseAudio();
+#else
 	SDL_CloseAudio();
+#endif
 }
 
 #ifndef SND_NOMIX /* oldschool version */
