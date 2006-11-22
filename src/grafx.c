@@ -162,6 +162,12 @@ int InitVideo(int mode)
 	return 0;
 }
 
+void ShutDownVideo(void)
+{
+	debug("Shutting down video...\n");
+	SDL_VideoQuit();		
+}
+
 int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette)
 {

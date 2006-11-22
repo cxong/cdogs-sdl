@@ -63,8 +63,8 @@ void Gfx_SetHint(const GFX_Hint h, const int val);
 int Gfx_GetHint(const GFX_Hint h);
 
 int InitVideo(int mode);
+void ShutDownVideo(void);
 
-void TextMode(void);
 int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette);
 int AppendPics(const char *filename, void **pics, int startIndex,
