@@ -49,6 +49,7 @@ STRIP		:= strip
 
 # Set to 1 for debugging
 DEBUG=0
+DEBUG_PROFILE=0
 
 ### Change this to yes, once you are ready
 I_AM_CONFIGURED=no
@@ -125,6 +126,10 @@ endif
 ifeq ($(DEBUG), 1)
 	DEFS		+= -DCDOGS_DEBUG
 	CF_DEBUG 	+= -ggdb -Wall
+
+	ifeq ($(DEBUG_PROFILE), 1)
+		CF_DEBUG += -pg	
+	endif
 else
 	# suppress warnings
 	CF_DEBUG	+= -w
