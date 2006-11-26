@@ -118,7 +118,7 @@ void *GetDstScreen(void)
 #define PixelIndex(x, y, w, h)		(y * w + x)
 
 static inline
-void Scale8(char *d, const char *s, const int w, const int h, const int sf)
+void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h, const int sf)
 {
 	int sx;
 	int sy;
@@ -180,14 +180,16 @@ void Scale8(char *d, const char *s, const int w, const int h, const int sf)
 
 void CopyToScreen(void)
 {
-	char *pScreen = screen->pixels;	
+	unsigned char *pScreen = screen->pixels;	
 	int scr_w, scr_h, scr_size, scalef;
 	
 	scr_w = Screen_GetWidth();
 	scr_h = Screen_GetHeight();
 	scr_size = Screen_GetMemSize();
 	scalef = Gfx_GetHint(HINT_SCALEFACTOR);
-	
+
+	/* this really needs to go someplace nicer,
+	 * as it's a bit of a hack, being here. */
 	if (IsEventPending(EVENT_QUIT)) {
 		printf("QUIT EVENT!\n");
 		exit(0);
