@@ -108,9 +108,9 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		
 		if (i != CAMPAIGN_MAGIC) {
 			close(f);
-			fprintf(stderr, "Filename: %s\n", filename);
-			fprintf(stderr, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
-			fprintf(stderr, "ScanCampaign - bad file!\n");
+			debug("Filename: %s\n", filename);
+			debug("Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
+			debug("ScanCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
 		}
 
@@ -793,14 +793,14 @@ int mkdir_deep(const char *path, mode_t m)
                         strncpy(part, path, i + 1);
                         part[i+1] = '\0';
                         
-						if (mkdir(part, m) == -1) {
-							if (errno == EEXIST) continue;
-							else return 1; 
-						}
+			if (mkdir(part, m) == -1) {
+				if (errno == EEXIST) continue;
+				else return 1; 
+			}
                 }
         }
 		
-		return 0;
+	return 0;
 }
 
 void SetupConfigDir(void)
