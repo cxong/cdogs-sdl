@@ -49,6 +49,7 @@
 #include "sounds.h"
 #include "input.h"
 #include "files.h"
+#include "utils.h"
 
 
 struct Entry {
@@ -214,6 +215,8 @@ void SaveHighScores(void)
 	time_t t;
 	struct tm *tp;
 
+	debug("begin\n");
+
 	f = open(GetConfigFilePath(SCORES_FILE), O_CREAT | O_TRUNC, S_IWUSR | S_IRUSR);
 	if (f >= 0) {
 		magic = MAGIC;
@@ -232,6 +235,8 @@ void SaveHighScores(void)
 		/* I have to do this because open doesn't seem to set perms properly :(*/
 		//fchmod(f, S_IWUSR|S_IRUSR); 
 		close(f);
+
+		debug("saved high scores\n");
 	} else
 		printf("Unable to open %s\n", SCORES_FILE);
 }
