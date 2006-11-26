@@ -50,6 +50,7 @@
 #include "pics.h"
 #include "files.h"
 #include "menu.h"
+#include "utils.h"
 
 
 #define MODE_MAIN       255
@@ -281,6 +282,7 @@ int SelectCampaign(int dogFight, int cmd)
 #define ARROW_DOWN	"\037"
 	
 	for (i = 0, f = list; f != NULL && i <= *index - 12; f = f->next, i++);
+
 	if (i)
 		DisplayMenuItem(CenterX(TextWidth(ARROW_UP)), y - 2 - TextHeight(), ARROW_UP, 0);
 
@@ -289,19 +291,21 @@ int SelectCampaign(int dogFight, int cmd)
 		
 		if (i == *index) {
 			char s[255];
+
 			if (strlen(f->name) == 0)
 				sprintf(s, "( Internal )");
 			else
 				sprintf(s, "( %s )", f->name);
+
 			TextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
 		}
 			
 		y += TextHeight();
 	}
+
 	if (f)
 		DisplayMenuItem(CenterX(TextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
 		
-
 	return dogFight ? MODE_DOGFIGHT : MODE_CAMPAIGN;
 }
 
@@ -413,6 +417,7 @@ int SelectOptions(int cmd)
 				gOptions.brightness++;
 			else
 				break;
+
 			PlaySound(SND_POWERGUN, 0, 255);
 			PaletteAdjust();
 			break;
@@ -420,9 +425,12 @@ int SelectOptions(int cmd)
 			if (gOptions.xSplit == 0) {
 				gOptions.xSplit = SPLIT_X;
 				gOptions.ySplit = SPLIT_Y;
-			} else
+			} else {
 				gOptions.xSplit = gOptions.ySplit = 0;
+			}
+
 			PlaySound(SND_KILL3, 0, 255);
+
 			break;
 		case 6:
 			if (Left(cmd)) {
@@ -444,6 +452,7 @@ int SelectOptions(int cmd)
 				else
 					gCampaign.seed++;
 			}
+
 			break;
 		case 7:
 			if (Left(cmd)) {
@@ -453,11 +462,14 @@ int SelectOptions(int cmd)
 				if (gOptions.difficulty < DIFFICULTY_VERYHARD)
 						gOptions.difficulty++;
 			}
+
 			if (gOptions.difficulty > DIFFICULTY_VERYHARD) gOptions.difficulty = DIFFICULTY_VERYHARD;
 			if (gOptions.difficulty < DIFFICULTY_VERYEASY) gOptions.difficulty = DIFFICULTY_VERYEASY;
+
 			break;
 		case 8:
 			gOptions.slowmotion = !gOptions.slowmotion;
+
 			break;
 		case 9:
 			if (Left(cmd)) {
@@ -467,6 +479,7 @@ int SelectOptions(int cmd)
 				if (gOptions.density < 200)
 					gOptions.density += 25;
 			}
+
 			break;
 		case 10:
 			if (Left(cmd)) {
@@ -476,6 +489,7 @@ int SelectOptions(int cmd)
 				if (gOptions.npcHp < 200)
 					gOptions.npcHp += 25;
 			}
+
 			break;
 		case 11:
 			if (Left(cmd)) {
@@ -485,16 +499,20 @@ int SelectOptions(int cmd)
 				if (gOptions.playerHp < 200)
 					gOptions.playerHp += 25;
 			}
+
 			break;
 		case 12:
 			gOptions.fullscreen = !gOptions.fullscreen;
+
 			break;
 
 		default:
 			PlaySound(SND_BANG, 0, 255);
+
 			return MODE_MAIN;
 		}
 	}
+
 	if (Up(cmd)) {
 		index--;
 		if (index < 0)
@@ -531,6 +549,7 @@ int SelectOptions(int cmd)
 		     gOptions.xSplit ? "No" : "Yes");
 	sprintf(s, "%u", gCampaign.seed);
 	TextStringAt(x, y + 6 * TextHeight(), s);
+
 	switch (gOptions.difficulty) {
 		case DIFFICULTY_VERYEASY:
 			strcpy(s, "Easiest");
@@ -548,6 +567,7 @@ int SelectOptions(int cmd)
 			strcpy(s, "Normal");
 			break;
 	}
+
 	TextStringAt(x, y + 7 * TextHeight(), s);
 	TextStringAt(x, y + 8 * TextHeight(),
 		     gOptions.slowmotion ? "Yes" : "No");
@@ -571,9 +591,9 @@ static void ChangeControl(struct PlayerData *data,
 			data->controls = JOYSTICK_TWO;
 		else
 			data->controls = KEYBOARD;
-	} else if (data->controls == JOYSTICK_TWO)
+	} else if (data->controls == JOYSTICK_TWO) {
 		data->controls = KEYBOARD;
-	else {
+	} else {
 		if (other->controls != JOYSTICK_ONE && gSticks[0].present)
 			data->controls = JOYSTICK_ONE;
 		else if (gSticks[1].present)
@@ -665,15 +685,18 @@ int KeyAvailable(int key, struct PlayerData *data, int index,
 
 	if (key == keyEsc || key == keyF9 || key == keyF10)
 		return 0;
+
 	if (key == gOptions.mapKey && index >= 0)
 		return 0;
 
 	for (i = 0; i < 6; i++)
 		if (i != index && data->keys[i] == key)
 			return 0;
+
 	for (i = 0; i < 6; i++)
 		if (other->keys[i] == key)
 			return 0;
+
 	return 1;
 }
 
@@ -700,7 +723,6 @@ void ChangeKey(struct PlayerData *data, struct PlayerData *other,
 			} else
 				PlaySound(SND_KILL4, 0, 255);
 		}
-//              SoundTick();
 	}
 }
 
@@ -723,6 +745,8 @@ void ChangeMapKey(struct PlayerData *d1, struct PlayerData *d2)
 				PlaySound(SND_KILL4, 0, 255);
 		}
 	}
+
+	return;
 }
 
 
@@ -777,17 +801,15 @@ static void ShowAllKeys(int index, int change)
 	
 	y2 += TextHeight () * 2;
 	
-	DisplayMenuItem(CenterX(TextWidth(DONE)), y2, "Done", index == 13);
+	DisplayMenuItem(CenterX(TextWidth(DONE)), y2, DONE, index == 13);
 }
 
 static void HighlightKey(int index)
 {
-//	void *scr = GetDstScreen();
-
 	CopyToScreen();
-//      SetDstScreen((void *) 0xA0000);
 	ShowAllKeys(index, index);
-//      SetDstScreen(scr);
+
+	return;
 }
 
 int SelectKeys(int cmd)
@@ -796,8 +818,10 @@ int SelectKeys(int cmd)
 
 	if (cmd == CMD_ESC)
 		return MODE_CONTROLS;
+
 	if (AnyButton(cmd)) {
-//              PlaySound(rand() % SND_COUNT, 0, 255);
+		PlaySound(rand() % SND_COUNT, 0, 255);
+
 		switch (index) {
 		case 0:
 		case 1:
@@ -834,7 +858,9 @@ int SelectKeys(int cmd)
 		index++;
 		PlaySound(SND_SWITCH, 0, 255);
 	}
+
 	ShowAllKeys(index, -1);
+
 	return MODE_KEYS;
 }
 
@@ -846,51 +872,58 @@ int SelectVolume(int cmd)
 
 	if (cmd == CMD_ESC)
 		return MODE_MAIN;
+
 	if (AnyButton(cmd) && index == VOLUME_COUNT - 1)
 		return MODE_MAIN;
+
 	if (Left(cmd)) {
 		switch (index) {
-		case 0:
-			if (FXVolume() > 8)
-				SetFXVolume(FXVolume() - 8);
-			break;
-		case 1:
-			if (MusicVolume() > 8)
-				SetMusicVolume(MusicVolume() - 8);
-			break;
-		case 2:
-			if (FXChannels() > 2)
-				SetFXChannels(FXChannels() - 2);
-			break;
-		case 3:
-			break;
+			case 0:
+				if (FXVolume() > 8)
+					SetFXVolume(FXVolume() - 8);
+				break;
+			case 1:
+				if (MusicVolume() > 8)
+					SetMusicVolume(MusicVolume() - 8);
+				break;
+			case 2:
+				if (FXChannels() > 2)
+					SetFXChannels(FXChannels() - 2);
+				break;
+			case 3:
+				break;
 		}
+
 		PlaySound(SND_SWITCH, 0, 255);
 	} else if (Right(cmd)) {
 		switch (index) {
-		case 0:
-			if (FXVolume() < 64)
-				SetFXVolume(FXVolume() + 8);
-			break;
-		case 1:
-			if (MusicVolume() < 64)
-				SetMusicVolume(MusicVolume() + 8);
-			break;
-		case 2:
-			if (FXChannels() < 8)
-				SetFXChannels(FXChannels() + 2);
-			break;
-		case 3:
-			break;
+			case 0:
+				if (FXVolume() < 64)
+					SetFXVolume(FXVolume() + 8);
+				break;
+			case 1:
+				if (MusicVolume() < 64)
+					SetMusicVolume(MusicVolume() + 8);
+				break;
+			case 2:
+				if (FXChannels() < 8)
+					SetFXChannels(FXChannels() + 2);
+				break;
+			case 3:
+				break;
 		}
+
 		PlaySound(SND_SWITCH, 0, 255);
 	} else if (Up(cmd)) {
 		index--;
+
 		if (index < 0)
 			index = VOLUME_COUNT - 1;
+
 		PlaySound(SND_SWITCH, 0, 255);
 	} else if (Down(cmd)) {
 		index++;
+
 		if (index >= VOLUME_COUNT)
 			index = 0;
 
@@ -921,21 +954,22 @@ int SelectVolume(int cmd)
 int MakeSelection(int mode, int cmd)
 {
 	switch (mode) {
-	case MODE_MAIN:
-		return SelectMain(cmd);
-	case MODE_CAMPAIGN:
-		return SelectCampaign(0, cmd);
-	case MODE_DOGFIGHT:
-		return SelectCampaign(1, cmd);
-	case MODE_OPTIONS:
-		return SelectOptions(cmd);
-	case MODE_CONTROLS:
-		return SelectControls(cmd);
-	case MODE_KEYS:
-		return SelectKeys(cmd);
-	case MODE_VOLUME:
-		return SelectVolume(cmd);
+		case MODE_MAIN:
+			return SelectMain(cmd);
+		case MODE_CAMPAIGN:
+			return SelectCampaign(0, cmd);
+		case MODE_DOGFIGHT:
+			return SelectCampaign(1, cmd);
+		case MODE_OPTIONS:
+			return SelectOptions(cmd);
+		case MODE_CONTROLS:
+			return SelectControls(cmd);
+		case MODE_KEYS:
+			return SelectKeys(cmd);
+		case MODE_VOLUME:
+			return SelectVolume(cmd);
 	}
+
 	return MODE_MAIN;
 }
 
@@ -950,6 +984,7 @@ static void ShowCredits(void)
 	TextStringWithTableAt(20, SCREEN_HEIGHT - 40 + TextHeight(), credits[creditIndex].message, &tableDarker);
 
 	t = clock() / CLOCKS_PER_SEC;
+
 	if (t > lastTick + CREDIT_PERIOD) {
 		creditIndex++;
 		if (creditIndex >= sizeof(credits) / sizeof(credits[0]))
@@ -966,21 +1001,30 @@ int MainMenu(void *bkg)
 	PaletteAdjust();
 
 	mode = MODE_MAIN;
+
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
+
 		if (mode == MODE_MAIN)
 			ShowCredits();
+
 		GetMenuCmd(&cmd);
+
 		if (cmd == prev)
 			cmd = 0;
 		else
 			prev = cmd;
+
 		mode = MakeSelection(mode, cmd);
 		
 		CopyToScreen();
+
+		SDL_Delay(10);
 	}
+
 	WaitForRelease();
+
 	return mode == MODE_PLAY;
 }
 
@@ -993,6 +1037,7 @@ void LoadConfig(void)
 	char s[128];
 
 	f = fopen(GetConfigFilePath("options.cnf"), "r");
+
 	if (f) {
 		fscanf(f, "%d %d %d %d %d %d %d %d %d\n",
 		       &gOptions.displayFPS,
@@ -1046,13 +1091,18 @@ void LoadConfig(void)
 
 		fclose(f);
 	}
+
+	return;
 }
 
 void SaveConfig(void)
 {
 	FILE *f;
 
+	debug("begin\n");
+
 	f = fopen(GetConfigFilePath("options.cnf"), "w");
+
 	if (f) {
 		fprintf(f, "%d %d %d %d %d %d %d %d %d\n",
 			gOptions.displayFPS,
@@ -1091,5 +1141,9 @@ void SaveConfig(void)
 		fprintf(f, "%d\n", gOptions.playerHp);
 		fprintf(f, "%d\n", gOptions.fullscreen);
 		fclose(f);
+
+		debug("saved config\n");
 	}
+
+	return;
 }
