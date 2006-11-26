@@ -54,7 +54,7 @@
 static int soundInitialized = 0;
 static int fxVolume = 64;
 static int musicVolume = 64;
-static int noOfFXChannels = 4;
+static int noOfFXChannels = 8;
 static int maxModChannels = 0;
 
 
@@ -132,6 +132,9 @@ static void loadSampleConfiguration(void)
 
 void ShutDownSound(void)
 {
+	if (!soundInitialized)
+		return;
+
 	debug("shutting down sound\n");
 #ifdef SND_SDLMIXER
 	Mix_CloseAudio();
@@ -213,6 +216,8 @@ void SoundCallback(void *userdata, Uint8 * stream, int len)
 {
 	int i;
 
+	debug("sound callback(%p, %p, %d)\n", userdata, stream, len);
+
 	memset(stream, 0, len);
 	for (i = 0; i < SND_COUNT; i++) {
 		if (snd[i].playFlag && snd[i].exists) {
@@ -247,8 +252,27 @@ int InitSoundDevice(void)
 	if (Mix_OpenAudio(22050, AUDIO_S16, 2, 512) != 0) {
 		printf("Couldn't open audio!: %s\n", SDL_GetError());
 		return 0;
-	} 
-	Mix_AllocateChannels(noOfFXChannels);
+	}
+
+	{
+		int f;
+		Uint16 fmt;
+		int c;
+
+		Mix_QuerySpec(&f, &fmt, &c);
+
+		debug("spec: f=%d fmt=%d c=%d\n", f, fmt, c);
+
+		if (f != 22050 || fmt != AUDIO_S16 || c != 2) {
+			printf("Audio not what we want.\n");
+			return 0;
+		}
+	}
+
+	if (Mix_AllocateChannels(noOfFXChannels) != noOfFXChannels) {
+		printf("Couldn't allocate channels!\n");
+		return 0;
+	}
 	#endif
 
 	// C-Dogs internals:
@@ -262,14 +286,14 @@ int InitSoundDevice(void)
 			else {
 				snd[i].exists = 1;
 
-#ifdef SND_SDLMIXER
+				#ifdef SND_SDLMIXER
 				if ((snd[i].data = Mix_LoadWAV(
 					GetDataFilePath(snd[i].name))) == NULL)
-#else
+				#else
 				if (SDL_LoadWAV
 				    (GetDataFilePath(snd[i].name), &tmpspec, &snd[i].data,
 				     &snd[i].size) == NULL)
-#endif
+				#endif
 					snd[i].exists = 0;
 				else
 					snd[i].exists = 1;
@@ -283,7 +307,6 @@ int InitSoundDevice(void)
 	memset(channelPriority, 0, sizeof(channelPriority));
 	memset(channelPosition, 0, sizeof(channelPosition));
 	memset(channelTime, 0, sizeof(channelTime));
-	soundInitialized = 1;
 
 	tmpspec.samples = 512;
 	tmpspec.callback = &SoundCallback;
@@ -305,6 +328,8 @@ int InitSoundDevice(void)
 	}
 	SDL_PauseAudio(0);
 	#endif
+
+	soundInitialized = 1;
 
 	return 1;
 }
@@ -384,8 +409,27 @@ void PlaySound(int sound, int panning, int volume)
 	debug("sound: %d panning: %d volume: %d\n", sound, panning, volume);
 
 #ifdef SND_SDLMIXER
+	{
+	int c;
+	Uint8 p;
+	Uint8 left, right;
+
+	if (panning == 0) {
+		left = right = 255;
+	} else {
+		if (panning < 0) {
+			left = (255 + panning);
+		} else {
+			left = panning;
+		}
+
+		right = 255 - left;
+	}
+
 	Mix_VolumeChunk(snd[sound].data,(volume * fxVolume) / 128 );
-	Mix_PlayChannel(-1, snd[sound].data , 0);
+	c = Mix_PlayChannel(-1, snd[sound].data , 0);
+	Mix_SetPanning(c, left, right);
+	}
 #else
 	snd[sound].playFlag = 1;
 	snd[sound].panning = panning;
