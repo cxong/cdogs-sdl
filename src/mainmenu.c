@@ -271,9 +271,9 @@ int SelectCampaign(int dogFight, int cmd)
 	}	
 	
 	if (dogFight)
-		TextStringSpecial("Pick a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
+		TextStringSpecial("Select a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 	else
-		TextStringSpecial("Select campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
+		TextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 
 	x = CenterX(240);
 	y = CenterY(12 * TextHeight());
