@@ -129,6 +129,7 @@ ifeq ($(DEBUG), 1)
 
 	ifeq ($(DEBUG_PROFILE), 1)
 		CF_DEBUG += -pg	
+		LDFLAGS  += -pg	
 	endif
 else
 	# suppress warnings
