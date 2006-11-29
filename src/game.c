@@ -609,8 +609,6 @@ int gameloop(void)
 		} else
 			GetPlayerInput(&cmd1, &cmd2);
 
-		DoSounds();
-
 		c = HandleKey(&done, cmd1 | cmd2);
 	}
 	free(buffer);
