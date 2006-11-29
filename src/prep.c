@@ -152,7 +152,6 @@ struct PlayerTemplate templates[MAX_TEMPLATE] = {
 	{"-- empty --"}
 };
 
-
 void LoadTemplates(void)
 {
 	FILE *f;
@@ -207,14 +206,17 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	struct CharacterDescription *cd;
 	TOffsetPic body, head;
 	char s[22];
+	int y;
+
+	y = (SCREEN_HEIGHT / 10);
 
 	cd = &characterDesc[character];
 
 	if (editingName) {
 		sprintf(s, "%c%s%c", '\020', data->name, '\021');
-		TextStringAt(x, 10, s);
+		TextStringAt(x, y, s);
 	} else
-		TextStringAt(x, 10, data->name);
+		TextStringAt(x, y, data->name);
 
 	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
 	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;
@@ -229,20 +231,23 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + 10 + body.dx, 40 + body.dy, gPics[body.picIndex],
+	DrawTTPic(x + 20 + body.dx, y + 36 + body.dy, gPics[body.picIndex],
 		  cd->table, gRLEPics[body.picIndex]);
-	DrawTTPic(x + 10 + head.dx, 40 + head.dy, gPics[head.picIndex],
+	DrawTTPic(x + 20 + head.dx, y + 36 + head.dy, gPics[head.picIndex],
 		  cd->table, gRLEPics[head.picIndex]);
 }
 
 static void ShowPlayerControls(int x, struct PlayerData *data)
 {
 	char s[256];
+	int y;
+
+	y = SCREEN_HEIGHT - (SCREEN_HEIGHT / 6);
 
 	if (data->controls == JOYSTICK_ONE)
-		TextStringAt(x, 190, "(joystick one)");
+		TextStringAt(x, y, "(joystick one)");
 	else if (data->controls == JOYSTICK_TWO)
-		TextStringAt(x, 190, "(joystick two)");
+		TextStringAt(x, y, "(joystick two)");
 	else {
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
 			SDL_GetKeyName(data->keys[0]),
@@ -252,18 +257,18 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 			SDL_GetKeyName(data->keys[4]),
 			SDL_GetKeyName(data->keys[5]));
 		if (TextWidth(s) < 125)
-			TextStringAt(x, 190, s);
+			TextStringAt(x, y, s);
 		else {
 			sprintf(s, "(%s, %s, %s,",
 				SDL_GetKeyName(data->keys[0]),
 				SDL_GetKeyName(data->keys[1]),
 				SDL_GetKeyName(data->keys[2]));
-			TextStringAt(x, 180, s);
+			TextStringAt(x, y - 10, s);
 			sprintf(s, "%s, %s and %s)",
 				SDL_GetKeyName(data->keys[3]),
 				SDL_GetKeyName(data->keys[4]),
 				SDL_GetKeyName(data->keys[5]));
-			TextStringAt(x, 190, s);
+			TextStringAt(x, y, s);
 		}
 	}
 }
@@ -273,15 +278,22 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 	int i;
 
 	DisplayPlayer(x, data, character, 0);
-	for (i = 0; i < data->weaponCount; i++)
-		TextStringAt(x, 50 + i * TextHeight(),
-			     gunDesc[data->weapons[i]].gunName);
+
+	if (data->weaponCount == 0) {
+			TextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20, "None selected...");
+	} else {
+		for (i = 0; i < data->weaponCount; i++)
+			TextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20 + i * TextHeight(),
+				     gunDesc[data->weapons[i]].gunName);
+	}
 }
 
 static int NameSelection(int x, int index, struct PlayerData *data,
 			 int cmd)
 {
 	int i;
+	int y;
+
 	char s[2];
 	static char letters[] =
 	    "ABCDEFGHIJKLMNOPQRSTUVWXYZèéô .-0123456789";
@@ -340,16 +352,41 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 			PlaySound(SND_DOOR, 0, 255);
 		}
 	}
+
+	#define ENTRY_COLS	10
+	#define	ENTRY_SPACING	12
+	
+	y = CenterY(((TextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+
+	if (gOptions.twoPlayers && index == CHARACTER_PLAYER1)
+		x = CenterOf(0, (SCREEN_WIDTH / 2), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+	else if (gOptions.twoPlayers && index == CHARACTER_PLAYER2)
+		x = CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+	else
+		x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+
 	// Draw selection
-	x -= 30;
+
 	s[1] = 0;
 	for (i = 0; i < strlen(letters); i++) {
 		s[0] = letters[i];
+
+		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			 y + (i / ENTRY_COLS) * TextHeight());
+
+		if (i == selection[index])
+			TextCharWithTable(letters[i], &tableFlamed);
+		else
+			TextChar(letters[i]);
+/*
 		DisplayMenuItem(x + (i % 10) * 12,
 				80 + (i / 10) * TextHeight(), s,
 				i == selection[index]);
+*/
 	}
-	DisplayMenuItem(x + (i % 10) * 12, 80 + (i / 10) * TextHeight(),
+
+	DisplayMenuItem(x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			y + (i / ENTRY_COLS) * TextHeight(),
 			endChoice, i == selection[index]);
 
 	return 1;
@@ -457,7 +494,10 @@ static int AppearanceSelection(const char **menu, int menuCount,
 			       struct PlayerData *data, int *property,
 			       int cmd, int *selection)
 {
+	int y;
 	int i;
+
+	debug("\n");
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
 		PlaySound(SND_MACHINEGUN, 0, 255);
@@ -477,8 +517,11 @@ static int AppearanceSelection(const char **menu, int menuCount,
 	}
 
 	SetPlayer(index, data);
+
+	y = CenterY((menuCount * TextHeight()));
+
 	for (i = 0; i < menuCount; i++)
-		DisplayMenuItem(x, 80 + i * TextHeight(), menu[i],
+		DisplayMenuItem(x, y + i * TextHeight(), menu[i],
 				i == selection[index]);
 
 	return 1;
@@ -515,6 +558,7 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 			     int cmd, int *property, int *selection)
 {
 	int i;
+	int y;
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
 		PlaySound(SND_POWERGUN, 0, 255);
@@ -533,9 +577,11 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 		}
 	}
 
+	y = CenterY((PLAYER_BODY_COUNT * TextHeight()));
+
 	SetPlayer(index, data);
 	for (i = 0; i < PLAYER_BODY_COUNT; i++)
-		DisplayMenuItem(x, 80 + i * TextHeight(), shadeNames[i],
+		DisplayMenuItem(x, y + i * TextHeight(), shadeNames[i],
 				i == *selection);
 
 	return 1;
@@ -570,7 +616,10 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 			   int cmd, int done)
 {
 	int i;
+	int y;
 	static int selection[2] = { 0, 0 };
+
+	debug("\n");
 
 	if (selection[index] > gMission.weaponCount)
 		selection[index] = gMission.weaponCount;
@@ -583,17 +632,16 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 
 		if (data->weaponCount < MAX_WEAPONS) {
 			for (i = 0; i < data->weaponCount; i++)
-				if (data->weapons[i] ==
-				    gMission.
-				    availableWeapons[selection[index]])
+				if (data->weapons[i] == gMission.availableWeapons[selection[index]])
 					return 1;
 
-			data->weapons[data->weaponCount] =
-			    gMission.availableWeapons[selection[index]];
+			data->weapons[data->weaponCount] = gMission.availableWeapons[selection[index]];
 			data->weaponCount++;
+
 			PlaySound(SND_SHOTGUN, 0, 255);
-		} else
+		} else {
 			PlaySound(SND_KILL, 0, 255);
+		}
 	} else if (cmd & CMD_BUTTON2) {
 		if (data->weaponCount) {
 			data->weaponCount--;
@@ -615,13 +663,14 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 	}
 
 	if (!done) {
+		y = CenterY((TextHeight() * gMission.weaponCount));
+
 		for (i = 0; i < gMission.weaponCount; i++)
-			DisplayMenuItem(x, 90 + i * TextHeight(),
-					gunDesc[gMission.
-						availableWeapons[i]].
+			DisplayMenuItem(x, y + i * TextHeight(),
+					gunDesc[gMission.availableWeapons[i]].
 					gunName, i == selection[index]);
-		DisplayMenuItem(x, 90 + i * TextHeight(), endChoice,
-				i == selection[index]);
+
+		DisplayMenuItem(x, y + i * TextHeight(), endChoice, i == selection[index]);
 	}
 
 	return !done;
@@ -632,12 +681,14 @@ void UseTemplate(int character, struct PlayerData *data,
 {
 	memset(data->name, 0, sizeof(data->name));
 	strncpy(data->name, t->name, sizeof(data->name) - 1);
+
 	data->head = (t->head < AVAILABLE_FACES ? t->head : 0);
 	data->body = t->body;
 	data->arms = t->arms;
 	data->legs = t->legs;
 	data->skin = t->skin;
 	data->hair = t->hair;
+
 	SetPlayer(character, data);
 }
 
@@ -645,6 +696,7 @@ void SaveTemplate(struct PlayerData *data, struct PlayerTemplate *t)
 {
 	memset(t->name, 0, sizeof(t->name));
 	strncpy(t->name, data->name, sizeof(t->name) - 1);
+
 	t->head = data->head;
 	t->body = data->body;
 	t->arms = data->arms;
@@ -657,6 +709,7 @@ static int TemplateSelection(int loadFlag, int x, int index,
 			     struct PlayerData *data, int cmd)
 {
 	int i;
+	int y;
 	static int selection[2] = { 0, 0 };
 
 	if (cmd & CMD_BUTTON1) {
@@ -682,13 +735,16 @@ static int TemplateSelection(int loadFlag, int x, int index,
 		}
 	}
 
+	y = CenterY((TextHeight() * MAX_TEMPLATE));
+
 	if (!loadFlag) {
-		TextStringAt(x, 80 - TextHeight(), "Save ");
+		TextStringAt(x, y - 4 - TextHeight(), "Save ");
 		TextString(data->name);
 		TextString("...");
 	}
+
 	for (i = 0; i < MAX_TEMPLATE; i++)
-		DisplayMenuItem(x, 80 + i * TextHeight(),
+		DisplayMenuItem(x, y + i * TextHeight(),
 				templates[i].name, i == selection[index]);
 
 	return 1;
@@ -697,7 +753,9 @@ static int TemplateSelection(int loadFlag, int x, int index,
 static int MainMenu(int x, int index, int cmd)
 {
 	int i;
+	int y;
 	static int selection[2] = { MODE_DONE, MODE_DONE };
+
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
 		PlaySound(SND_BANG, 0, 255);
 		return selection[index];
@@ -712,8 +770,11 @@ static int MainMenu(int x, int index, int cmd)
 			PlaySound(SND_SWITCH, 0, 255);
 		}
 	}
+
+	y = CenterY((TextHeight() * MENU_COUNT));
+
 	for (i = 1; i < MENU_COUNT; i++)
-		DisplayMenuItem(x, 80 + i * TextHeight(), mainMenu[i],
+		DisplayMenuItem(x, y + i * TextHeight(), mainMenu[i],
 				selection[index] == i);
 
 	return MODE_MAIN;
@@ -723,54 +784,54 @@ static int MakeSelection(int mode, int x, int character,
 			 struct PlayerData *data, int cmd)
 {
 	switch (mode) {
-	case MODE_MAIN:
-		mode = MainMenu(x, character, cmd);
-		break;
+		case MODE_MAIN:
+			mode = MainMenu(x, character, cmd);
+			break;
 
-	case MODE_SELECTNAME:
-		if (!NameSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTNAME:
+			if (!NameSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTFACE:
-		if (!FaceSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTFACE:
+			if (!FaceSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTSKIN:
-		if (!SkinSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTSKIN:
+			if (!SkinSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTHAIR:
-		if (!HairSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTHAIR:
+			if (!HairSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTARMS:
-		if (!ArmSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTARMS:
+			if (!ArmSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTBODY:
-		if (!BodySelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTBODY:
+			if (!BodySelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SELECTLEGS:
-		if (!LegSelection(x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SELECTLEGS:
+			if (!LegSelection(x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_LOADTEMPLATE:
-		if (!TemplateSelection(1, x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_LOADTEMPLATE:
+			if (!TemplateSelection(1, x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 
-	case MODE_SAVETEMPLATE:
-		if (!TemplateSelection(0, x, character, data, cmd))
-			mode = MODE_MAIN;
-		break;
+		case MODE_SAVETEMPLATE:
+			if (!TemplateSelection(0, x, character, data, cmd))
+				mode = MODE_MAIN;
+			break;
 	}
 	DisplayPlayer(x, data, character, mode == MODE_SELECTNAME);
 //      ShowPlayerControls(x, data);
@@ -790,7 +851,6 @@ int PlayerSelection(int twoPlayers, void *bkg)
 	SetPlayer(1, &gPlayer2Data);
 
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE) {
-//              printf("x\n");
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetPlayerCmd(&cmd1, &cmd2);
 		
@@ -801,30 +861,25 @@ int PlayerSelection(int twoPlayers, void *bkg)
 				cmd1 = 0;
 			else
 				prev1 = cmd1;
-			mode1 =
-			    MakeSelection(mode1, 50, CHARACTER_PLAYER1,
-					  &gPlayer1Data, cmd1);
+
+			mode1 = MakeSelection(mode1, CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
 
 			if (cmd2 == prev2)
 				cmd2 = 0;
 			else
 				prev2 = cmd2;
-			mode2 =
-			    MakeSelection(mode2, 200, CHARACTER_PLAYER2,
-					  &gPlayer2Data, cmd2);
+
+			mode2 = MakeSelection(mode2, CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2);
 		} else {
 			if (cmd1 == prev1)
 				cmd1 = 0;
 			else
 				prev1 = cmd1;
-			mode1 =
-			    MakeSelection(mode1, 125, CHARACTER_PLAYER1,
-					  &gPlayer1Data, cmd1);
+
+			mode1 = MakeSelection(mode1, CenterX(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
 		}
 
 		CopyToScreen();
-///             DoSounds();
-//              SoundTick();
 	}
 
 	WaitForRelease();
@@ -836,6 +891,8 @@ int PlayerEquip(void *bkg)
 {
 	int cmd1, cmd2, prev1 = 0, prev2 = 0;
 	int done1 = 0, done2;
+
+	debug("\n");
 
 	done2 = gOptions.twoPlayers ? 0 : 1;
 	while (!done1 || !done2) {
@@ -850,24 +907,18 @@ int PlayerEquip(void *bkg)
 			else
 				prev1 = cmd1;
 //      if (!done1) // || !gPlayer1Data.weaponCount < MAX_WEAPONS)
-			done1 =
-			    !WeaponSelection(50, CHARACTER_PLAYER1,
-					     &gPlayer1Data, cmd1, done1);
-			ShowSelection(50, &gPlayer1Data,
-				      CHARACTER_PLAYER1);
-			ShowPlayerControls(50, &gPlayer1Data);
+			done1 = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
+			ShowSelection(CenterOfLeft(50), &gPlayer1Data,CHARACTER_PLAYER1);
+			ShowPlayerControls(CenterOfLeft(100), &gPlayer1Data);
 
 			if (cmd2 == prev2)
 				cmd2 = 0;
 			else
 				prev2 = cmd2;
 //      if (!done2) // || gPlayer2Data.weaponCount < MAX_WEAPONS)
-			done2 =
-			    !WeaponSelection(200, CHARACTER_PLAYER2,
-					     &gPlayer2Data, cmd2, done2);
-			ShowSelection(200, &gPlayer2Data,
-				      CHARACTER_PLAYER2);
-			ShowPlayerControls(200, &gPlayer2Data);
+			done2 = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2, done2);
+			ShowSelection(CenterOfRight(50), &gPlayer2Data, CHARACTER_PLAYER2);
+			ShowPlayerControls(CenterOfRight(100), &gPlayer2Data);
 		} else {
 			if (cmd1 == prev1)
 				cmd1 = 0;
@@ -875,18 +926,16 @@ int PlayerEquip(void *bkg)
 				prev1 = cmd1;
 			if (!done1)	// || gPlayer1Data.weaponCount <= 0)
 				done1 =
-				    !WeaponSelection(125,
+				    !WeaponSelection(CenterX(80),
 						     CHARACTER_PLAYER1,
 						     &gPlayer1Data, cmd1,
 						     done1);
-			ShowSelection(125, &gPlayer1Data,
+			ShowSelection(CenterX(80), &gPlayer1Data,
 				      CHARACTER_PLAYER1);
-			ShowPlayerControls(125, &gPlayer1Data);
+			ShowPlayerControls(CenterX(100), &gPlayer1Data);
 		}
 
 		CopyToScreen();
-//              DoSounds();
-//              SoundTick();
 	}
 
 	WaitForRelease();
