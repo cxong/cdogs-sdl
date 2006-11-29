@@ -144,6 +144,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	for (i = 0; i < strlen(letters); i++) {
 		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			 y + (i / ENTRY_COLS) * TextHeight());
+
 		if (i == selection)
 			TextCharWithTable(letters[i], &tableFlamed);
 		else
