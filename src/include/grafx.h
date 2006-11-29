@@ -89,4 +89,9 @@ extern int screen_h;
 #define CenterX(w)		((SCREEN_WIDTH - w) / 2)
 #define CenterY(h)		((SCREEN_HEIGHT - h) / 2)
 
+#define CenterOf(a, b, w)	((a + (((b - a) - w) / 2)))
+
+#define CenterOfRight(w)	CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), w)
+#define CenterOfLeft(w)		CenterOf(0, (SCREEN_WIDTH / 2), w)
+
 #endif
