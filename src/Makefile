@@ -20,7 +20,6 @@ DESTDIR		:= ../dist
 #DESTDIR 	:= /
 
 DATA		:= ../data
-DATA		:= ../../cdogs-data
 #DATA		:= /path/to/where/data/is/unpacked/
 
 # Prefix is the *actual* base directory
@@ -192,7 +191,7 @@ $(CDOGSED): $(CDOGSED_OBJS) $(EXTRA_OBJS)
 	exit 1 ; \
 	fi 
 
-	@echo "Compiling $<... (debug=$(DEBUG))"
+	@echo "Compiling $<... (debug=$(DEBUG),profile=$(DEBUG_PROFILE))"
 
 	$(CC) \
 	 $(CFLAGS) \
