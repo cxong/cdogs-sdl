@@ -51,12 +51,14 @@ void TextStringWithTable(const char *s, TranslationTable * table);
 void TextStringWithTableAt(int x, int y, const char *s,
 			   TranslationTable * table);
 			   
-#define TEXT_XCENTER	1
-#define TEXT_YCENTER	2
+#define TEXT_XCENTER		1
+#define TEXT_YCENTER		2
 #define TEXT_LEFT		4
 #define TEXT_RIGHT		8
 #define TEXT_TOP		16
 #define TEXT_BOTTOM		32
+#define TEXT_FLAMED		64
+#define TEXT_PURPLE		128
 
 void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
 #define TextStringAtCenter(s)	TextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)

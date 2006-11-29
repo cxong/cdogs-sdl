@@ -36,7 +36,7 @@
 #include "grafx.h"
 #include "blit.h"
 #include "text.h"
-
+#include "actors.h" /* for tableFlamed */
 
 #define FIRST_CHAR      0
 #define LAST_CHAR       153
@@ -171,8 +171,14 @@ void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsi
 	
 	if (FLAG_SET(opts, TEXT_TOP))		{ y = 0 + ypad; }
 	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = scrh - h - ypad; }
-	
-	TextStringAt(x, y, s);
+
+	if (FLAG_SET(opts, TEXT_FLAMED)) {
+		TextStringWithTableAt(x, y, s, &tableFlamed);
+	} else if (FLAG_SET(opts, TEXT_PURPLE)) {
+		TextStringWithTableAt(x, y, s, &tablePurple);
+	} else {
+		TextStringAt(x, y, s);
+	}
 }
 
 int TextHeight(void)
