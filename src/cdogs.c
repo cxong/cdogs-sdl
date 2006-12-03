@@ -107,35 +107,43 @@ void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 
 int MissionDescription(int y, const char *description)
 {
-	int w, x, lines;
+	int w, ix, x, lines;
 	const char *ws, *word, *p, *s;
 
-	x = 20;
+#define MAX_BOX_WIDTH (SCREEN_WIDTH - (SCREEN_WIDTH / 6))
+
+	ix = x = CenterX((MAX_BOX_WIDTH));
 	lines = 1;
 	TextGoto(x, y);
 
 	s = ws = word = description;
+
 	while (*s) {
 		// Find word
 		ws = s;
+
 		while (*s == ' ' || *s == '\n')
 			s++;
+
 		word = s;
+
 		while (*s != 0 && *s != ' ' && *s != '\n')
 			s++;
 
 		for (w = 0, p = ws; p < s; p++)
 			w += TextCharWidth(*p);
 
-		if (x + w > 300 && w < 280) {
+		//if (x + w > MAX_BOX_WIDTH && w < (MAX_BOX_WIDTH - 20)) {
+		if (x + w > (MAX_BOX_WIDTH + ix) && w < MAX_BOX_WIDTH) {
 			y += TextHeight();
-			x = 20;
+			x = ix;
 			lines++;
 			ws = word;
 		}
 
 		for (p = ws; p < word; p++)
 			x += TextCharWidth(*p);
+
 		TextGoto(x, y);
 
 		for (p = word; p < s; p++) {
@@ -143,19 +151,33 @@ int MissionDescription(int y, const char *description)
 			x += TextCharWidth(*p);
 		}
 	}
+
 	return lines;
 }
 
 void CampaignIntro(void *bkg)
 {
-	printf("Doing campaign intro\n");
+	int y;
+	int x;
+	char s[1024];
+
+	debug("\n");
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
-	TextStringAt(50, 5, gCampaign.setting->title);
-	TextStringAt(60, 15, "by ");
-	TextStringWithTable(gCampaign.setting->author, &tableFlamed);
+	y = (SCREEN_WIDTH / 4);
 
-	MissionDescription(30, gCampaign.setting->description);
+	//TextStringAt(50, y - 25, gCampaign.setting->title);
+	//TextStringAt(60, y - 15, "by ");
+	//TextStringWithTable(gCampaign.setting->author, &tableFlamed);
+	
+	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
+	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+
+	//TextStringSpecial(gCampaign.setting->title, TEXT_TOP | TEXT_XCENTER, 0, (y - 45));
+	//TextStringSpecial("by", TEXT_TOP | TEXT_XCENTER, 0, (y - 35));
+	//TextStringSpecial(gCampaign.setting->author, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+
+	MissionDescription(y, gCampaign.setting->description);
 
 	CopyToScreen();
 	Wait();
@@ -163,39 +185,40 @@ void CampaignIntro(void *bkg)
 
 void MissionBriefing(void *bkg)
 {
-	char s[128];
+	char s[512];
 	int i, y;
 
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
-	sprintf(s, "Mission %d", gMission.index + 1);
-	TextStringAt(50, 5, s);
-	TextStringAt(50, 15, gMission.missionData->title);
+	y = SCREEN_WIDTH / 4;
 
-	y = 30;
-	y += TextHeight() * MissionDescription(y,
-					       gMission.missionData->
-					       description);
+	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
+	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	y += TextHeight();
+	if (gMission.index)
+	{
+		char str[512];
+
+		strcpy(lastPassword, MakePassword(gMission.index));
+
+		sprintf(str, "Password: %s", lastPassword);
+		TextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
+	}
+
+	y += TextHeight() * MissionDescription(y, gMission.missionData->description);
+
+	y += (SCREEN_HEIGHT / 10);
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 		if (gMission.missionData->objectives[i].required > 0) {
-			TextStringAt(50, y,
+			TextStringAt((SCREEN_WIDTH / 6), y,
 				     gMission.missionData->objectives[i].
 				     description);
-			DrawObjectiveInfo(i, 260, y + 8,
+			DrawObjectiveInfo(i, (SCREEN_WIDTH - (SCREEN_WIDTH / 6)), y + 8,
 					  gMission.missionData);
-			y += 20;
-		}
 
-	if (gMission.index)
-//      (gMission.index % 3) == 0)
-	{
-		strcpy(lastPassword, MakePassword(gMission.index));
-		TextStringAt(150, 5, "Password: ");
-		TextString(lastPassword);
-	}
+			y += (SCREEN_HEIGHT / 12);
+		}
 
 	CopyToScreen();
 
@@ -205,11 +228,13 @@ void MissionBriefing(void *bkg)
 void Summary(int x, struct PlayerData *data, int character)
 {
 	char s[50];
-	int y = 50;
+	int y = (SCREEN_HEIGHT / 3);
 
 	if (lastPassword[0]) {
-		TextStringAt(200, 2, "Last password: ");
-		TextString(lastPassword);
+		char s[512];
+
+		sprintf(s, "Last password: %s", lastPassword);
+		TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
 	}
 
 	if (data->survived) {
@@ -234,7 +259,7 @@ void Summary(int x, struct PlayerData *data, int character)
 	else
 		TextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
 
-	y += TextHeight();
+	y += 2 * TextHeight();
 	DisplayPlayer(x, data, character, 0);
 	sprintf(s, "Score: %d", data->score);
 	TextStringAt(x, y, s);
@@ -246,6 +271,7 @@ void Summary(int x, struct PlayerData *data, int character)
 		data->missions + (data->survived ? 1 : 0));
 	TextStringAt(x, y, s);
 	y += TextHeight();
+
 	if (data->survived && (data->hp > 150 || data->hp <= 0)) {
 		if (data->hp > (200 * gOptions.playerHp) / 100 - 50)
 			sprintf(s, "Health bonus: %d",
@@ -256,12 +282,13 @@ void Summary(int x, struct PlayerData *data, int character)
 		TextStringAt(x, y, s);
 		y += TextHeight();
 	}
+
 	if (data->friendlies > 0 && data->friendlies > data->kills / 2) {
 		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
 		TextStringAt(x, y, s);
 		y += TextHeight();
 	} else if (data->weaponCount == 1 &&
-		   data->weapons[0] == GUN_KNIFE && data->kills > 0) {
+			data->weapons[0] == GUN_KNIFE && data->kills > 0) {
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
 		TextStringAt(x, y, s);
 		y += TextHeight();
@@ -275,7 +302,8 @@ void Summary(int x, struct PlayerData *data, int character)
 void Bonuses(void)
 {
 	int i;
-	int y = 100;
+	int y = (SCREEN_HEIGHT / 2) + (SCREEN_HEIGHT / 10);
+	int x = (SCREEN_WIDTH / 6);
 	int done, req, total;
 	int access;
 	int index;
@@ -288,30 +316,34 @@ void Bonuses(void)
 		total = gMission.objectives[i].count;
 
 		if (done > 0 || req > 0) {
-			DrawObjectiveInfo(i, 25, y + 8,
-					  gMission.missionData);
+			DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
 			sprintf(s, "Objective %d: %d of %d, %d required",
 				index, done, total, req);
 			if (req > 0)
-				TextStringAt(50, y, s);
+				TextStringSpecial(s,
+						TEXT_LEFT | TEXT_TOP, x, y);
 			else
-				TextStringWithTableAt(50, y, s,
-						      &tablePurple);
+				TextStringSpecial(s,
+						TEXT_LEFT | TEXT_TOP | TEXT_PURPLE,
+						x, y);
 			if (done < req)
-				TextStringWithTableAt(240, y, "Failed",
-						      &tableFlamed);
+				TextStringSpecial("Failed",
+						TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
 			else if (done == total && done > req
-				 && (gPlayer1Data.survived
-				     || gPlayer2Data.survived)) {
-				TextStringAt(240, y, "Perfect: 500");
+					&& (gPlayer1Data.survived
+					 || gPlayer2Data.survived)) {
+				TextStringSpecial("Perfect: 500",
+						TEXT_RIGHT | TEXT_TOP, x, y);
 				if (gPlayer1Data.survived)
 					gPlayer1Data.totalScore += 500;
 				if (gPlayer2Data.survived)
 					gPlayer2Data.totalScore += 500;
 			} else if (req > 0)
-				TextStringAt(240, y, "Done");
-			else
-				TextStringAt(240, y, "Bonus!");
+				TextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
+			else {
+				TextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
+			}
+
 			y += 15;
 			index++;
 		}
@@ -328,7 +360,7 @@ void Bonuses(void)
 		access += 200;
 	if (access > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
 		sprintf(s, "Access bonus: %d", access);
-		TextStringAt(100, y, s);
+		TextStringAt(x, y, s);
 		y += TextHeight() + 1;
 		if (gPlayer1Data.survived)
 			gPlayer1Data.totalScore += access;
@@ -336,11 +368,11 @@ void Bonuses(void)
 			gPlayer2Data.totalScore += access;
 	}
 
-	i = 60 + gMission.missionData->objectiveCount * 30 -
-	    missionTime / 70;
+	i = 60 + gMission.missionData->objectiveCount * 30 - missionTime / 70;
+
 	if (i > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
 		sprintf(s, "Time bonus: %d secs x 25 = %d", i, i * 25);
-		TextStringAt(100, y, s);
+		TextStringAt(x, y, s);
 		if (gPlayer1Data.survived)
 			gPlayer1Data.totalScore += i * 25;
 		if (gPlayer2Data.survived)
@@ -353,11 +385,12 @@ void MissionSummary(void *bkg)
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	Bonuses();
+
 	if (gOptions.twoPlayers) {
-		Summary(50, &gPlayer1Data, CHARACTER_PLAYER1);
-		Summary(200, &gPlayer2Data, CHARACTER_PLAYER2);
+		Summary(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1);
+		Summary(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2);
 	} else
-		Summary(125, &gPlayer1Data, CHARACTER_PLAYER1);
+		Summary(CenterX(60), &gPlayer1Data, CHARACTER_PLAYER1);
 
 	CopyToScreen();
 
@@ -370,13 +403,19 @@ void ShowScore(void *bkg, int score1, int score2)
 
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
-	DisplayPlayer(50, &gPlayer1Data, CHARACTER_PLAYER1, 0);
-	sprintf(s, "%d", score1);
-	TextStringAt(60, 100, s);
+	debug("\n");
 
-	DisplayPlayer(200, &gPlayer2Data, CHARACTER_PLAYER2, 0);
-	sprintf(s, "%d", score2);
-	TextStringAt(210, 100, s);
+	if (gOptions.twoPlayers) {
+		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		sprintf(s, "Score: %d", score1);
+		TextStringAt(CenterOfLeft(TextWidth(s)), SCREEN_WIDTH / 3, s);
+
+		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		sprintf(s, "Score: %d", score2);
+		TextStringAt(CenterOfRight(TextWidth(s)), SCREEN_WIDTH / 3, s);
+	} else {
+		DisplayPlayer(CenterX(TextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+	}
 
 	CopyToScreen();
 	Wait();
@@ -386,16 +425,21 @@ void FinalScore(void *bkg, int score1, int score2)
 {
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
+#define IS_DRAW		"It's a draw!"
+#define IS_WINNER	"Winner!"
+
 	if (score1 == score2) {
-		DisplayPlayer(50, &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		DisplayPlayer(200, &gPlayer2Data, CHARACTER_PLAYER2, 0);
-		TextStringAt(125, 100, "It's a draw!");
+		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		TextStringAtCenter("It's a draw!");
 	} else if (score1 > score2) {
-		DisplayPlayer(125, &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		TextStringAt(125, 100, "Winner!");
+		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		TextStringAt(CenterOfLeft(TextWidth(IS_WINNER)),SCREEN_WIDTH / 2,
+				IS_WINNER);
 	} else {
-		DisplayPlayer(125, &gPlayer2Data, CHARACTER_PLAYER2, 0);
-		TextStringAt(125, 100, "Winner!");
+		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		TextStringAt(CenterOfRight(TextWidth(IS_WINNER)), SCREEN_WIDTH / 2,
+				IS_WINNER);
 	}
 	CopyToScreen();
 	Wait();
@@ -706,8 +750,8 @@ void DogFight(void)
 
 		if (run)
 			ShowScore(bkg, score1, score2);
-	}
-	while (run && score1 < 5 && score2 < 5);
+
+	} while (run && score1 < 5 && score2 < 5);
 
 	gOptions.badGuys = 1;
 	gOptions.twoPlayers = twoPlayers;
@@ -912,9 +956,6 @@ int main(int argc, char *argv[])
 			}
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
 				Gfx_HintOn(HINT_FULLSCREEN);
-				//if (vid_mode == VID_WIN_SCALE)
-				//	printf("Warning: -fullscreen and -scale are mutually exclusive...\n\n");
-				//vid_mode = VID_FULLSCREEN;
 			}
 			if (strstr(argv[i] + 1, "screen=")) {
 				int w, h;
@@ -933,16 +974,12 @@ int main(int argc, char *argv[])
 				f = atoi(val);
 				if (f > 1)
 					Gfx_SetHint(HINT_SCALEFACTOR, f);
-				//if (vid_mode == VID_FULLSCREEN)
-				//	printf("Warning: -fullscreen and -scale are mutually exclusive...\n");
-				//vid_mode = VID_WIN_SCALE;
 			}
 			if (strcmp(argv[i] + 1, "help") == 0 ||
 				strcmp(argv[i] + 1, "h") == 0 || 
 				strcmp(argv[i] + 1, "-help") == 0) {
 				PrintHelp();
-				SDL_Quit();
-				return 0;
+				exit(EXIT_SUCCESS);
 			}
 		}
 	}
@@ -960,10 +997,12 @@ int main(int argc, char *argv[])
 	SetupConfigDir();
 
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
+/*	
 	printf(" -> Missions:\t\t%s\n",		GetDataFilePath("missions/"));
 	printf(" -> Dogfights:\t\t%s\n",	GetDataFilePath("dogfights/"));
 	printf(" -> Sounds:\t\t%s\n",		GetDataFilePath("sounds/"));
 	printf(" -> Graphics:\t\t%s\n",		GetDataFilePath("graphics/"));
+*/
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
 	i = ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette);
@@ -1036,6 +1075,7 @@ int main(int argc, char *argv[])
 			
 	if (InitVideo(vid_mode) == -1) {
 		printf("Video didn't init!\n");
+		exit(EXIT_FAILURE);
 	} else {
 		SDL_TimerID t;
 
@@ -1048,16 +1088,23 @@ int main(int argc, char *argv[])
 	}
 	printf(">> Shutting Down...\n");
 
+	ShutDownVideo();
+
 	SaveConfig();
 	SaveTemplates();
-//	FreeSongs(&gMenuSongs);
-//	FreeSongs(&gGameSongs);
+	FreeSongs(&gMenuSongs);
+	FreeSongs(&gGameSongs);
 	SaveHighScores();
 
+	if (sound) {
+		ShutDownSound();
+	}
+
+	debug("SDL_Quit()\n");
 	SDL_Quit();
 
 	printf("Bye :)\n");
 
-	return 0;
+	exit(EXIT_SUCCESS);
 }
 
