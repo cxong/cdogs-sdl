@@ -242,7 +242,7 @@ install:
 	./install.sh
 
 clean:
-	rm *.o $(CDOGS) $(CDOGSED)
+	rm -f *.o $(CDOGS) $(CDOGSED)
 
 tidy:
 	indent -kr -i8 *.c include/*.h
