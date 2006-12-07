@@ -841,8 +841,9 @@ void PrintHelp (void)
 		"Video Options:\n"
 		"    -fullscreen     Try and use a fullscreen video mode.\n"
 		"    -scale=n        Scale the window resolution up by a factor of n\n"
-		"                    (n = 2, 3, 4 for now).\n"
+		"                      Factors: 2, 3, 4\n"
 		"    -screen=WxH     Set virtual screen width to W x H\n"
+		"                      Modes: 320x200, 320x240, 400x300, 640x480, 800x600\n"
 		"    -forcemode      Don't check video mode sanity\n"
 	);    
 
