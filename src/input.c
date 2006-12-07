@@ -37,7 +37,6 @@
 #include "defs.h"
 #include "sounds.h"
 #include "gamedata.h"
-#include "grafx.h"		// Need vsync...
 
 
 static int SwapButtons(int cmd)
@@ -149,10 +148,7 @@ void WaitForRelease(void)
 			releaseCount = 0;
 		else
 			releaseCount++;
-//              SoundTick();
-//              vsync();
-	}
-	while (releaseCount < 4);
+	} while (releaseCount < 4);
 }
 
 void WaitForPress(void)
@@ -161,10 +157,7 @@ void WaitForPress(void)
 
 	do {
 		GetPlayerCmd(&cmd1, &cmd2);
-		//SoundTick();
-	}
-	while (((cmd1 | cmd2) & (CMD_BUTTON1 | CMD_BUTTON2)) == 0 &&
-	       !AnyKeyDown());
+	} while (((cmd1 | cmd2) & (CMD_BUTTON1 | CMD_BUTTON2)) == 0 && !AnyKeyDown());
 }
 
 void Wait(void)
