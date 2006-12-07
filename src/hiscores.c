@@ -182,7 +182,7 @@ void DisplayAllTimeHighScores(void *bkg)
 
 	while (index < MAX_ENTRY && allTimeHigh[index].score > 0) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
-		index = DisplayPage("All time high", index, allTimeHigh,
+		index = DisplayPage("All time high scores:", index, allTimeHigh,
 				    gPlayer1Data.allTime,
 				    gOptions.twoPlayers ? gPlayer2Data.
 				    allTime : -1);
@@ -196,7 +196,7 @@ void DisplayTodaysHighScores(void *bkg)
 
 	while (index < MAX_ENTRY && todaysHigh[index].score > 0) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
-		index = DisplayPage("Todays highest", index, todaysHigh,
+		index = DisplayPage("Today's highest score:", index, todaysHigh,
 				    gPlayer1Data.today,
 				    gOptions.twoPlayers ? gPlayer2Data.
 				    today : -1);
@@ -211,58 +211,41 @@ void DisplayTodaysHighScores(void *bkg)
 void SaveHighScores(void)
 {
 	int magic;
-	int f;
+	FILE *f;
 	time_t t;
 	struct tm *tp;
 
 	debug("begin\n");
 
-	f = open(GetConfigFilePath(SCORES_FILE), O_CREAT | O_TRUNC, S_IWUSR | S_IRUSR);
-	if (f >= 0) {
+	f = fopen(GetConfigFilePath(SCORES_FILE), "rwb");
+	if (f != NULL) {
 		magic = MAGIC;
-		write(f, &magic, sizeof(magic));
-		write(f, allTimeHigh, sizeof(allTimeHigh));
+
+		fwrite(&magic, sizeof(magic), 1, f);
+		fwrite(allTimeHigh, sizeof(allTimeHigh), 1, f);
+
 		t = time(NULL);
 		tp = localtime(&t);
 		magic = tp->tm_year;
-		write(f, &magic, sizeof(magic));
+		fwrite(&magic, sizeof(magic), 1, f);
 		magic = tp->tm_mon;
-		write(f, &magic, sizeof(magic));
+		fwrite(&magic, sizeof(magic), 1, f);
 		magic = tp->tm_mday;
-		write(f, &magic, sizeof(magic));
-		write(f, todaysHigh, sizeof(todaysHigh));
+		fwrite(&magic, sizeof(magic), 1, f);
 
-		/* I have to do this because open doesn't seem to set perms properly :(*/
-		//fchmod(f, S_IWUSR|S_IRUSR); 
-		close(f);
+		fwrite(todaysHigh, sizeof(todaysHigh), 1, f);
+
+		fclose(f);
 
 		debug("saved high scores\n");
 	} else
 		printf("Unable to open %s\n", SCORES_FILE);
 }
 
-#define read32		read
-#define R32(s,e)	read32(fd, &s->e, sizeof(s->e))
-
-void load_score (int fd, struct Entry *e) {
-	read(fd, e->name, sizeof(e->name));
-	R32(e, head);
-	R32(e, body);
-	R32(e, arms);
-	R32(e, legs);
-	R32(e, skin);
-	R32(e, hair);
-	R32(e, score);
-	R32(e, missions);
-	R32(e, lastMission);
-	
-	fprintf(stderr, "Score. Name: %s\n", e->name);
-} 
-
 void LoadHighScores(void)
 {
 	int magic;
-	int f;
+	FILE *f;
 	int y, m, d;
 	time_t t;
 	struct tm *tp;
@@ -272,40 +255,30 @@ void LoadHighScores(void)
 	memset(allTimeHigh, 0, sizeof(allTimeHigh));
 	memset(todaysHigh, 0, sizeof(todaysHigh));
 
-	f = open(GetConfigFilePath(SCORES_FILE), O_RDONLY);
-	if (f >= 0) {
+	f = fopen(GetConfigFilePath(SCORES_FILE), "rb");
+	if (f != NULL) {
 		int i;
 	
-		read32(f, &magic, sizeof(magic));
+		fread(&magic, sizeof(magic), 1, f);
 		if (magic != MAGIC) {
-			close(f);
+			fclose(f);
 			return;
 		}
 		
 		for (i = 0; i < MAX_ENTRY; i++) {
-			load_score(f, &allTimeHigh[i]);
+			fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
 		}
-
-/*		
-		// Entry.name
-		read(f, allTimeHigh, sizeof(allTimeHigh->name));
-		// Rest of Entry
-		readarray32(f, allTimeHigh+sizeof(allTimeHigh->name),
-			sizeof(allTimeHigh) - sizeof(allTimeHigh->name));
-*/
 
 		t = time(NULL);
 		tp = localtime(&t);
-		read32(f, &y, sizeof(y));
-		read32(f, &m, sizeof(m));
-		read32(f, &d, sizeof(d));
+		fread(&y, sizeof(y), 1, f);
+		fread(&m, sizeof(m), 1, f);
+		fread(&d, sizeof(d), 1, f);
+
 		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d)
-			for (i = 0; i < MAX_ENTRY; i++) {
-				load_score(f, &todaysHigh[i]);
-			}
-		
-			//read(f, todaysHigh, sizeof(todaysHigh));
-		close(f);
+			fread(todaysHigh, sizeof(todaysHigh), 1, f);
+
+		fclose(f);
 	} else
 		printf("Unable to open %s\n", SCORES_FILE);
 }
