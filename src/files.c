@@ -763,7 +763,11 @@ char * GetConfigFilePath(const char *name)
 	char *tmp;
 	char *homedir;
 
+#ifndef SYS_WIN
 	homedir = GetHomeDirectory();
+#else
+	homedir = "";
+#endif
 
 	tmp = calloc(strlen(homedir) + strlen(name) + strlen(CDOGS_CFG_DIR) + 1, sizeof(char));
 
