@@ -37,5 +37,9 @@
 #endif
 
 #ifndef CDOGS_CFG_DIR
-	#define CDOGS_CFG_DIR ".cdogs/"
+	#ifdef SYS_WIN
+		#define CDOGS_CFG_DIR "./config/"
+	#else
+		#define CDOGS_CFG_DIR ".cdogs/"
+	#endif
 #endif
