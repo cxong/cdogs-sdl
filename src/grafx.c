@@ -77,7 +77,7 @@ int hints[HINT_END] = {
 	0,		// HINT_FULLSCREEN
 	1,		// HINT_WINDOW
 	1,		// HINT_SCALEFACTOR
-	320,	// HINT_WIDTH
+	320,		// HINT_WIDTH
 	240		// HINT_HEIGHT
 };
 
