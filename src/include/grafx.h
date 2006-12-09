@@ -51,18 +51,22 @@ typedef enum {
 	HINT_END
 } GFX_Hint;
 
-#define VID_FULLSCREEN	1
-#define VID_WIN_NORMAL	2
-#define VID_WIN_SCALE	3
-
-
 void SetColorZero(int r, int g, int b);
+
+typedef struct {
+	unsigned int w, h;
+} GFX_Mode;
+
+GFX_Mode * Gfx_ModePrev(void);
+GFX_Mode * Gfx_ModeNext(void);
 
 void Gfx_SetHint(const GFX_Hint h, const int val);
 #define Gfx_HintOn(h)	Gfx_SetHint(h, 1)
+#define Gfx_HintOff(h)	Gfx_SetHint(h, 0)
+#define Gfx_HintToggle(h) Gfx_SetHint(h, !Gfx_GetHint(h))
 int Gfx_GetHint(const GFX_Hint h);
 
-int InitVideo(int mode);
+int InitVideo(void);
 void ShutDownVideo(void);
 
 int ReadPics(const char *filename, void **pics, int maxPics,
