@@ -877,7 +877,6 @@ int main(int argc, char *argv[])
 	int i, wait = 0;
 	char s[13];
 	int compile = 1, rle = 1;
-	int vid_mode = VID_WIN_NORMAL;
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
@@ -885,6 +884,9 @@ int main(int argc, char *argv[])
 	PrintTitle();
 
 	if (getenv("DEBUG") != NULL) debug = 1;
+
+	SetupConfigDir();
+	LoadConfig();
 	
 	for (i = 1; i < argc; i++) {
 		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
@@ -973,7 +975,7 @@ int main(int argc, char *argv[])
 				int f;
 				char *val = strchr(argv[i], '='); val++;
 				f = atoi(val);
-				if (f > 1)
+				if (f >= 1)
 					Gfx_SetHint(HINT_SCALEFACTOR, f);
 			}
 			if (strcmp(argv[i] + 1, "help") == 0 ||
@@ -995,15 +997,7 @@ int main(int argc, char *argv[])
 	compile = 0;
 	rle = 0;
 
-	SetupConfigDir();
-
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
-/*	
-	printf(" -> Missions:\t\t%s\n",		GetDataFilePath("missions/"));
-	printf(" -> Dogfights:\t\t%s\n",	GetDataFilePath("dogfights/"));
-	printf(" -> Sounds:\t\t%s\n",		GetDataFilePath("sounds/"));
-	printf(" -> Graphics:\t\t%s\n",		GetDataFilePath("graphics/"));
-*/
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
 	i = ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette);
@@ -1065,16 +1059,13 @@ int main(int argc, char *argv[])
 	} else if (gSticks[1].present)
 		gPlayer1Data.controls = JOYSTICK_TWO;
 */
-	LoadConfig();
 
 	if (wait) {
 		printf("Press any key to continue...\n");
 		getchar();
 	}
 
-	if (gOptions.fullscreen) Gfx_HintOn(HINT_FULLSCREEN);
-			
-	if (InitVideo(vid_mode) == -1) {
+	if (InitVideo() == -1) {
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	} else {
@@ -1083,7 +1074,7 @@ int main(int argc, char *argv[])
 		SetPalette(gPalette);
 		printf(">> Entering main loop\n");
 		InitMutex();
-		t = SDL_AddTimer(5, synchronizer, NULL);
+		t = SDL_AddTimer((1000 / GAMETICKS_PER_SECOND) , synchronizer, NULL);
 		MainLoop();
 		SDL_RemoveTimer(t);
 	}
