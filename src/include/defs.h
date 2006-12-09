@@ -40,6 +40,7 @@
 
 #define CDOGS_VERSION		"v1.06"
 #define CDOGS_SDL_VERSION	"v0.4"
+#define CDOGS_SDL_HOMEPAGE	"icculus.org/cdogs-sdl"
 
 // Defines
 #define BODY_UNARMED        0
