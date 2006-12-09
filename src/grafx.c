@@ -41,15 +41,12 @@
 #include "defs.h"
 #include "grafx.h"
 #include "blit.h"
+#include "pics.h" /* for gPalette */
 #include "sprcomp.h"
 #include "files.h"
 #include "utils.h"
 
-typedef struct {
-	unsigned int w, h;
-} GFX_Mode;
-
-GFX_Mode modelist[] = {
+GFX_Mode gfx_modelist[] = {
 	{ 320, 200 },
 	{ 320, 240 },
 	{ 400, 300 },
@@ -57,17 +54,48 @@ GFX_Mode modelist[] = {
 	{ 800, 600 }, /* things go strange above this... */
 	{ 0, 0 },
 };
+#define MODE_MAX 4
 
-int ValidMode(int w, int h)
+
+#define Wrap(var, min, max)			\
+	{					\
+		if (var > max) var = min;	\
+		if (var < min) var = max;	\
+	}
+
+static int mode_idx = 1;
+
+GFX_Mode * Gfx_ModePrev(void)
+{
+	mode_idx--;
+	Wrap(mode_idx, 0, MODE_MAX)
+
+	return &gfx_modelist[mode_idx];	
+}
+
+GFX_Mode * Gfx_ModeNext(void)
+{
+	mode_idx++;
+	Wrap(mode_idx, 0, MODE_MAX)
+
+	return &gfx_modelist[mode_idx];	
+}
+
+static int ValidMode(int w, int h)
 {
 	int i;
 	
 	for (i = 0; ; i++) {
-		unsigned int m_w = modelist[i].w;
-		unsigned int m_h = modelist[i].h;
+		unsigned int m_w = gfx_modelist[i].w;
+		unsigned int m_h = gfx_modelist[i].h;
 	
-		if (m_w == 0) return 0;
-		if (m_w == w && m_h == h) return 1;
+		if (m_w == 0)
+			return 0;
+
+		if (m_w == w && m_h == h) {
+			mode_idx = i;	
+			return 1;
+		}
 	}
 	
 	return 0;
@@ -78,7 +106,8 @@ int hints[HINT_END] = {
 	1,		// HINT_WINDOW
 	1,		// HINT_SCALEFACTOR
 	320,		// HINT_WIDTH
-	240		// HINT_HEIGHT
+	240,		// HINT_HEIGHT
+	0		// HINT_FORCEMODE
 };
 
 void Gfx_SetHint(const GFX_Hint h, const int val)
@@ -101,7 +130,7 @@ SDL_Surface *screen = NULL;
 int screen_w;
 int screen_h; 
 
-int InitVideo(int mode)
+int InitVideo(void)
 {	
 	char title[32];
 	SDL_Surface *new_screen = NULL;
@@ -148,7 +177,7 @@ int InitVideo(int mode)
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
 	} else {
-		printf("Changed video mode...\n");
+		debug("Changed video mode...\n");
 	}
 	
 	screen = new_screen;
@@ -157,7 +186,9 @@ int InitVideo(int mode)
 	screen_h = Hint(HINT_HEIGHT);
 	
 	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-	printf("Internal dimentions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	debug("Internal dimentions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	SetPalette(gPalette);
 			
 	return 0;
 }
