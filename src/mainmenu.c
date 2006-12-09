@@ -76,7 +76,7 @@ static const char *mainMenu[MAIN_COUNT] = {
 	"Quit"
 };
 
-#define OPTIONS_COUNT   14
+#define OPTIONS_COUNT   16
 
 static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Players shots hurt",
@@ -91,7 +91,9 @@ static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Density",
 	"Non-player hp",
 	"Player hp",
-	"Fullscreen (requires restart)",
+	"Video fullscreen",
+	"Video resolution (restart required)",
+	"Video scale factor",
 	"Done"
 };
 
@@ -159,7 +161,7 @@ static struct Credit credits[] = {
 	{"Jeremy Chin",
 	 "He did all the hard porting work! ;)"},
 	{"C-Dogs SDL Homepage!",
-	 "http://www.icculus.org/cdogs-sdl"}
+	 CDOGS_SDL_HOMEPAGE}
 };
 
 #define CREDIT_PERIOD   10
@@ -502,7 +504,45 @@ int SelectOptions(int cmd)
 
 			break;
 		case 12:
-			gOptions.fullscreen = !gOptions.fullscreen;
+			Gfx_HintToggle(HINT_FULLSCREEN);
+			InitVideo();
+
+			break;
+
+		case 13:
+			{
+				GFX_Mode *m = NULL;
+
+				if (Left(cmd)) {
+					m = Gfx_ModePrev();
+				} else if (Right(cmd)) {
+					m = Gfx_ModeNext();
+				}
+
+				if (m) {
+					debug("new mode? %d x %d\n", m->w, m->h);
+					Gfx_SetHint(HINT_WIDTH, m->w);
+					Gfx_SetHint(HINT_HEIGHT, m->h);
+				}
+			}
+
+			break;
+
+		case 14:
+			{
+				int fac = Gfx_GetHint(HINT_SCALEFACTOR);
+
+				if (Left(cmd)) {
+					fac--;
+				} else if (Right(cmd)) {
+					fac++;
+				}
+
+				if (fac >= 1 && fac <= 3) {
+					Gfx_SetHint(HINT_SCALEFACTOR, (const int)fac);
+					InitVideo();
+				}
+			}
 
 			break;
 
@@ -577,8 +617,13 @@ int SelectOptions(int cmd)
 	TextStringAt(x, y + 10 * TextHeight(), s);
 	sprintf(s, "%u%%", gOptions.playerHp);
 	TextStringAt(x, y + 11 * TextHeight(), s);
-	sprintf(s, "%s", gOptions.fullscreen == 1 ? "Yes" : "No");
+	sprintf(s, "%s", Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
 	TextStringAt(x, y + 12 * TextHeight(), s);
+	sprintf(s, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
+	TextStringAt(x, y + 13 * TextHeight(), s);
+	sprintf(s, "%dx", Gfx_GetHint(HINT_SCALEFACTOR));
+	TextStringAt(x, y + 14 * TextHeight(), s);
+
 
 	return MODE_OPTIONS;
 }
@@ -1086,8 +1131,18 @@ void LoadConfig(void)
 		fscanf(f, "%d\n", &gOptions.playerHp);
 		if (gOptions.playerHp < 25 || gOptions.playerHp > 200)
 			gOptions.playerHp = 100;
-		fscanf(f, "%d\n", &gOptions.fullscreen);
-		if (gOptions.fullscreen != 0) gOptions.fullscreen = 1;
+		
+		{
+			int w, h, s, fs;
+
+			if (fscanf(f, "%dx%d:%d:%d\n", &w, &h, &fs, &s) == 4) {
+				Gfx_SetHint(HINT_WIDTH, w);
+				Gfx_SetHint(HINT_HEIGHT, h);
+
+				if (fs != 0) Gfx_HintOn(HINT_FULLSCREEN);
+				if (s > 1)  Gfx_SetHint(HINT_SCALEFACTOR, s);
+			}
+		}
 
 		fclose(f);
 	}
@@ -1139,7 +1194,12 @@ void SaveConfig(void)
 		fprintf(f, "%d\n", gOptions.density);
 		fprintf(f, "%d\n", gOptions.npcHp);
 		fprintf(f, "%d\n", gOptions.playerHp);
-		fprintf(f, "%d\n", gOptions.fullscreen);
+		fprintf(f, "%dx%d:%d:%d\n",
+		       		Gfx_GetHint(HINT_WIDTH),
+				Gfx_GetHint(HINT_HEIGHT),
+				Gfx_GetHint(HINT_FULLSCREEN),
+				Gfx_GetHint(HINT_SCALEFACTOR)
+				);
 		fclose(f);
 
 		debug("saved config\n");
