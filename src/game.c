@@ -151,7 +151,7 @@ int Synchronize(void)
 	TActor *actor;
 
 	while (gameTicks <= 1)
-		SDL_Delay(10);
+		SDL_Delay(15);
 
 	while (gameTicks > GAMETICKS_PER_FRAME) {
 		ticks++;
@@ -384,6 +384,9 @@ static void MissionStatus(void)
 void StatusDisplay(void)
 {
 	char s[50];
+	static time_t ot = -1;
+	static time_t t = 0;
+	static time_t td = 0;
 
 	PlayerStatus(PLACE_LEFT, &gPlayer1Data, gPlayer1);
 	if (gOptions.twoPlayers)
@@ -435,7 +438,14 @@ void StatusDisplay(void)
 	if (gMission.flags & FLAGS_KEYCARD_RED)
 		DrawKeycard(CenterX(KEY_WIDTH(3)) + 30, 20, &cGeneralPics[gMission.keyPics[3]]);
 
-	sprintf(s, "%d:%02d", missionTime / 4200, (missionTime / 70) % 60);
+	if (ot == -1)
+		ot = time(NULL);
+
+	t = time(NULL);
+
+	td = t - ot;
+
+	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 
 	MissionStatus();
