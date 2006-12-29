@@ -4,10 +4,11 @@
 
 # Make sure only one variable in the provided set is uncommented!
 
-# Can be: "linux", "macosx"
+# Can be: "linux", "macosx", "xmingw" or "mingw32"
 #SYSTEM		:= "macosx"
-SYSTEM		:= "linux"
+#SYSTEM		:= "linux"
 #SYSTEM		:= "xmingw"
+#SYSTEM		:= "mingw32"
 
 # Can be either: sdlmixer, nomix or oldmix
 # sdlmixer is recommended, as you get proper music and sounds =)
@@ -34,6 +35,7 @@ DOCDIR		:= $(PREFIX)/share/doc/cdogs
 #PREFIX		:= .
 #BINDIR		:= $(PREFIX)/
 #DATADIR	:= $(PREFIX)/data
+#CFGDIR		:= $(PREFIX)/config
 #DOCDIR		:= $(PREFIX)/doc
 
 # intel, powerpc... uncomment only one (if at all)
@@ -57,9 +59,13 @@ I_AM_CONFIGURED=no
 CDOGS=cdogs
 CDOGSED=cdogs-editor
 
-###  Some logic to work out things
+# Suffix of the executable
+PROG_SUFFIX	:=
 
-# Sound code
+
+### Some logic to work out things
+
+### Sound code
 ifeq ($(SOUND_CODE), "sdlmixer")
 	DEFS	+= -DSND_SDLMIXER
 endif
@@ -68,17 +74,17 @@ ifeq ($(SOUND_CODE), "nomix")
 	DEFS	+= -DSND_NOMIX
 endif
 
-# Detection for Linux
-ifeq ($(shell uname -s), Linux)
-	ifneq ($(SYSTEM), "xmingw")
-		SYSTEM := "linux"
-	endif
+# Just assume it's Linux, by default
+ifeq ($(SYSTEM),)
+	SYSTEM	:= "linux"
 endif
 
-# Detection for MacOSX
+# detect MacOS X
 ifeq ($(shell uname -s), Darwin)
-	SYSTEM := "macosx"
+       SYSTEM := "macosx"
 endif
+
+### System specific parts
 
 ifeq ($(SYSTEM), "macosx")
 	DEFS	+= -DSYS_MACOSX
@@ -109,6 +115,7 @@ endif
 ifeq ($(SYSTEM), "xmingw")
 	CC	:= i386-mingw32msvc-gcc
 	STRIP	:= i386-mingw32msvc-strip
+	WINDRES := i386-mingw32msvc-windres
 
 	SDLCONFIG := i386-mingw32msvc-sdl-config
 
@@ -120,7 +127,34 @@ ifeq ($(SYSTEM), "xmingw")
 	ifeq ($(SOUND_CODE), "sdlmixer")
 		LDFLAGS += -lSDL_mixer
 	endif
+
+	PROG_SUFFIX	:= .exe
+
+	EXTRA_OBJS = rc.o
 endif
+
+ifeq ($(SYSTEM), "mingw32")
+	CC	:= mingw32-gcc
+	STRIP	:= mingw32-strip
+	WINDRES := mingw32-windres
+
+	SDLCONFIG := sdl-config
+
+	LDFLAGS	 += $(shell $(SDLCONFIG) --libs)
+	INCLUDES += $(shell $(SDLCONFIG) --cflags)
+
+	DEFS	+= -DSYS_WIN
+
+	ifeq ($(SOUND_CODE), "sdlmixer")
+		LDFLAGS += -lSDL_mixer
+	endif
+
+	PROG_SUFFIX	:= .exe
+
+	EXTRA_OBJS = rc.o
+endif
+
+### Debugging
 
 ifeq ($(DEBUG), 1)
 	DEFS		+= -DCDOGS_DEBUG
@@ -134,6 +168,8 @@ else
 	# suppress warnings
 	CF_DEBUG	+= -w
 endif
+
+
 
 ### No need to edit below here ###
 
@@ -177,14 +213,14 @@ help:
 
 $(CDOGS): $(CDOGS_OBJS) $(EXTRA_OBJS)
 	@echo "Linking... ($(CDOGS))"
-	$(CC) $(CDOGS_OBJS) $(EXTRA_OBJS) -o $(CDOGS) $(LDFLAGS)
+	$(CC) $(CDOGS_OBJS) $(EXTRA_OBJS) -o $(CDOGS)$(PROG_SUFFIX) $(LDFLAGS)
 	@echo "Now type 'make install' as root!"
 
 $(CDOGSED): $(CDOGSED_OBJS) $(EXTRA_OBJS)
 	@echo "Linking... ($(CDOGSED))"
-	@$(CC) $(CDOGSED_OBJS) $(EXTRA_OBJS) -o $(CDOGSED) $(LDFLAGS)
+	@$(CC) $(CDOGSED_OBJS) $(EXTRA_OBJS) -o $(CDOGSED)$(PROG_SUFFIX) $(LDFLAGS)
 
-.c.o:
+.c.o:	include/*.h
 	@if [ "$(I_AM_CONFIGURED)" != "yes" ] ; then \
 	echo "Have you really configured the Makefile?" ; \
 	echo "Change I_AM_CONFIGURED to yes" ; \
@@ -207,10 +243,15 @@ SDLmain.o: ../build/macosx/SDLmain.m ../build/macosx/SDLmain.h
 		$(INCLUDES) \
 		-c ../build/macosx/SDLmain.m
 
+# Windows resource
+rc.o: ../build/windows/cdogs.rc ../build/windows/cdogs-icon.ico
+	@echo "Compiling Windows resourcs (cdogs.rc) (debug=$(DEBUG))"
+	$(WINDRES) -o rc.o -I ../build/windows/ ../build/windows/cdogs.rc
+
 info:
 	@echo "=[ Program ]="
-	@echo "C-Dogs:   $(CDOGS)"
-	@echo "Editor:   $(CDOGSED)"
+	@echo "C-Dogs:   $(CDOGS)$(PROG_SUFFIX)"
+	@echo "Editor:   $(CDOGSED)$(PROG_SUFFIX)"
 	@echo ""
 	@echo "=[ System ]="
 	@echo "System:   $(SYSTEM)"
@@ -236,14 +277,10 @@ install:
 	DATADIR=$(DATADIR) \
 	BINDIR=$(BINDIR) \
 	PREFIX=$(PREFIX) \
-	PROG=$(CDOGS) \
+	PROG=$(CDOGS)$(PROG_SUFFIX) \
 	LOCALDATA=$(DATA) \
 	LOCALDOCS="../doc/" \
 	./install.sh
 
 clean:
-	rm -f *.o $(CDOGS) $(CDOGSED)
-
-tidy:
-	indent -kr -i8 *.c include/*.h
-	rm *~
+	rm -f *.o $(CDOGS)$(PROG_SUFFIX) $(CDOGSED)$(PROG_SUFFIX)
