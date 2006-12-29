@@ -32,7 +32,7 @@
 
 //#define GAMETICKS_PER_SECOND 280
 #include "SDL.h" //for the Uint32
-#define GAMETICKS_PER_SECOND 560
+#define GAMETICKS_PER_SECOND 100
 #define GAMETICKS_PER_FRAME  8
 
 int gameloop(void);
