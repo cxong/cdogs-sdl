@@ -1,4 +1,4 @@
-C-Dogs SDL Port v0.03
+C-Dogs SDL Port v0.04
 ---------------------
 (based on C-Dogs 1.06)
 
@@ -12,7 +12,7 @@ C-Dogs SDL Port v0.03
  |  |   '-------'   '---'  '----''----'
  /  '.___________
 |                |                  SDL
- `---------------'                v0.03
+ `---------------'                v0.04
 
 +----------+
 | Contents |
@@ -54,7 +54,13 @@ MacOSX:
 	* ppc
 	* x86		(reportedly works fine)
 
-Should you succeed in running CDogs-SDL on a different *Nix,
+FreeBSD:
+	* x86		(reportedly works fine)
+
+OpenBSD:
+	* x86		(reportedly works fine)
+
+Should you succeed in running CDogs-SDL on a different operating system,
 please contact us!
 
 
@@ -63,8 +69,9 @@ please contact us!
 +---+--------------+
 
 To compile C-Dogs you need to have the SDL libraries previously installed,
-a compiler (gcc recommended) and the apropriate header files. These instructions
-assume you have the know-how to at least compile something... :)
+a compiler (gcc recommended) and the apropriate header files.
+These instructions assume you have the know-how to at least compile
+something... :)
 
 See INSTALL for more information...
 
@@ -84,6 +91,8 @@ The C-Dogs binary is called "cdogs", below are some command line arguments:
 	
 	-nosound	C-Dogs won't play sounds, thus saving CPU usage and
 			leaving your sound-card alone (if you have one)
+
+	-scale=FACTOR	C-Dogs will scale the window by a factor (2, 3 or 4).
 
 	-help		Display more command line options where are
 			not listed here
