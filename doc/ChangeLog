@@ -1,6 +1,16 @@
 CDogs-SDL ChangeLog
 ===============================================================================
 
+Version 0.4
+-----------
+
+ * Windows build *gasp* (only tested on XP)
+ * cdogs-editor can now be built (needs testing, however)
+ * Sound panning implemented (when using SDL mixer)
+ * Fast scaling (to a factor of 2, 3 or 4)
+ * User interface placement smarter
+ * More bugfixes and cleanups
+
 Version 0.3
 -----------
 
@@ -8,7 +18,7 @@ Version 0.3
  * SDL mixer support (and thus music as well)
  * Data/Config dirs changable via environment variables
  * Handles quitting more gracefully
- * XCode Project (MacOS X)
+ * XCode Project (Mac OS X)
  * Loads of bugfixes and code cleanups
 
 
