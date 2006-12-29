@@ -1,7 +1,7 @@
 C-Dogs SDL Installation
 =======================
 
-Currently, C-Dogs SDL compiles nicely on Linux and MacOSX.
+Currently, C-Dogs SDL compiles nicely on Linux, *BSD and MacOSX.
 
 Linux:
 ------
