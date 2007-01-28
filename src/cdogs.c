@@ -1073,8 +1073,6 @@ int main(int argc, char *argv[])
 
 		SetPalette(gPalette);
 		printf(">> Entering main loop\n");
-		InitMutex();
-		t = SDL_AddTimer((1000 / GAMETICKS_PER_SECOND) , synchronizer, NULL);
 		MainLoop();
 		SDL_RemoveTimer(t);
 	}

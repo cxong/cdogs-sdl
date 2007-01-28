@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include "SDL.h"
 #include "SDL_mutex.h"
 
@@ -52,6 +53,7 @@
 #include "game.h"
 #include "keyboard.h"
 #include "blit.h"
+#include "utils.h"
 
 #include "drawtools.h" /* for Draw_Box and Draw_Point */
 
@@ -59,13 +61,16 @@
 #define FPS_FRAMELIMIT       70
 #define CLOCK_LIMIT       2100
 
+#define FPS_TARGET	30
+
 #define SWITCH_TURNLIMIT     10
 
 #define PICKUP_LIMIT         350
 
+static Uint32 ticks_now;
+static Uint32 ticks_then;
 
 static volatile int gameTicks = 0;
-static volatile int fpsGameTicks = 0;
 static int frames = 0;
 static int fps = 0;
 static char message[256];
@@ -83,15 +88,10 @@ long oldtime;
 // This is referenced from CDOGS.C to determine time bonus
 int missionTime;
 
-SDL_mutex *tick_m;
-#define Spin(m)		{ while(SDL_LockMutex(m) != 0); }
-#define Release(m)	SDL_UnlockMutex(m)
+#define MICROSECS_PER_SEC 1000000
+#define MILLISECS_PER_SEC 1000
 
-void InitMutex(void)
-{
-	tick_m = SDL_CreateMutex();
-}
-
+#define TICKS_PER_SEC MILLISECS_PER_SEC
 
 int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 {
@@ -131,29 +131,69 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 	return YES;
 }
 
-
-// Timer interrupt routine to keep track of time
-//typedef void (*intHandler)(void);
-//TODO: replace with a SDL_Timer callback
-Uint32 synchronizer(Uint32 interval, void *param)
+static void Ticks_Update(void)
 {
-	Spin(tick_m);
-		gameTicks++;
-		fpsGameTicks++;
-	Release(tick_m);
+	static int init = 0;
 
-	return interval;
+	if (init = 0) {
+		ticks_then = SDL_GetTicks();
+		ticks_now = SDL_GetTicks();
+		init = 1;
+	} else {
+		ticks_then = ticks_now;
+		ticks_now = SDL_GetTicks();		
+	}
+
+	return;
 }
 
-int Synchronize(void)
+static int Ticks_TimeElapsed(Uint32 msec)
+{
+	static Uint32 old_ticks = 0;	
+
+	if (old_ticks == 0) {
+		old_ticks = ticks_now;
+		return 0;
+	} else {
+		if (ticks_now - old_ticks > msec) {
+			old_ticks = ticks_now;
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
+
+static void Ticks_FrameBegin(void)
+{
+	Ticks_Update();
+}
+
+static void Ticks_FrameEnd(void)
+{
+	Uint32 now;
+
+	now = SDL_GetTicks();
+	
+	SDL_Delay(33 - (ticks_now - now));
+}
+
+static int Ticks_Synchronize(void)
 {
 	int ticks = 1;
 	TActor *actor;
 
-	while (gameTicks <= 1)
-		SDL_Delay(15);
+	/*
+	while (gameTicks <= 1) {
+		//debug("delay... gameTicks=%d\n", gameTicks);
+		SDL_Delay(30);
+	}
+	*/
 
-	while (gameTicks > GAMETICKS_PER_FRAME) {
+/*	while (gameTicks > GAMETICKS_PER_FRAME) {
+		debug("update... gameTicks=%d\n", gameTicks); */
+
+
 		ticks++;
 		if (!gameIsPaused) {
 			UpdateMobileObjects();
@@ -163,10 +203,10 @@ int Synchronize(void)
 				actor = actor->next;
 			}
 		}
-		Spin(tick_m);
-		gameTicks -= GAMETICKS_PER_FRAME;
-		Release(tick_m);
-	}
+
+/*	} 	*/
+
+
 	return ticks;
 }
 
@@ -342,8 +382,8 @@ static void MissionStatus(void)
 	if (gCampaign.dogFight)
 		return;
 
-	x = 10;
-	y = SCREEN_HEIGHT - 20 - TextHeight(); 
+	x = 5;
+	y = SCREEN_HEIGHT - 5 - TextHeight(); 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -352,9 +392,10 @@ static void MissionStatus(void)
 		if (gMission.missionData->objectives[i].required > 0) {
 			// Objective color dot
 			color = gMission.objectives[i].color;
-			
-			Draw_Box(x, y, (x+1), (y+1), color);
-			Draw_Box((x - 1), (y - 1), (x + 2), (y + 2), 1); 
+
+			y += 3;
+			Draw_Rect(x, y, 2, 2, color); 
+			y -= 3;
 
 			left = gMission.objectives[i].required - gMission.objectives[i].done;
 			
@@ -364,12 +405,12 @@ static void MissionStatus(void)
 				} else {
 					strcpy(s, "?");
 				}
-				TextStringAt(x + 5, y - 2, s);
+				TextStringAt(x + 5, y, s);
 				allDone = 0;
 			} else {
-				TextStringAt(x + 5, y - 2, "Done");
+				TextStringAt(x + 5, y, "Done");
 			}
-			x += 25;
+			x += 30;
 		}
 	}
 
@@ -414,17 +455,14 @@ void StatusDisplay(void)
 
 	if (messageTicks > 0)
 		TextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
-		//TextStringAt(90, 20, message);
 
 	if (gOptions.displayFPS) {
 		sprintf(s, "FPS: %d", fps);
-		TextStringSpecial(message, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
-		//TextStringAt(250, SCREEN_HEIGHT - 10, s);
+		TextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
 	}
 	if (gOptions.displayTime) {
 		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
 		TextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
-		//TextStringAt(10, SCREEN_HEIGHT - 10, s);
 	}
 	
 #define KEY_WIDTH(n) (PicWidth(&cGeneralPics[gMission.keyPics[n]]))
@@ -464,9 +502,6 @@ int HandleKey(int *done, int cmd)
 
 	if ((key == gOptions.mapKey || (cmd & CMD_BUTTON3) != 0) && !gCampaign.dogFight) {
 		DisplayAutoMap(0);
-		Spin(tick_m);
-			gameTicks = 0;
-		Release(tick_m);
 	}
 
 	if (((cmd & CMD_BUTTON4) != 0) && !gOptions.twoPlayers) {
@@ -513,7 +548,6 @@ int gameloop(void)
 	int c = 0;
 	int cmd1, cmd2;
 	int done = NO;
-	int timeTicks = CLOCK_LIMIT;
 	time_t t;
 	struct tm *tp;
 
@@ -524,17 +558,21 @@ int gameloop(void)
 		DisplayMessage(ModuleMessage());
 
 	gameIsPaused = NO;
-	Spin(tick_m);
-		gameTicks = fpsGameTicks = frames = 0;
-	Release(tick_m);
+
 	missionTime = 0;
 	//screenShaking = 0;
 	while (!done) {
-		ticks = Synchronize();
+		frames++;
+
+		Ticks_FrameBegin();
+
+		ticks = Ticks_Synchronize();
 
 		if (gOptions.displaySlices)
 			SetColorZero(32, 0, 0);
+
 		DrawScreen(buffer, gPlayer1, gPlayer2);
+
 		if (gOptions.displaySlices)
 			SetColorZero(0, 0, 0);
 
@@ -543,21 +581,20 @@ int gameloop(void)
 			if (screenShaking < 0)
 				screenShaking = 0;
 		}
-		frames++;
-		if (frames >= FPS_FRAMELIMIT && fpsGameTicks > 0) {
-			fps = (frames * GAMETICKS_PER_SECOND + fpsGameTicks / 2) / fpsGameTicks;
-			Spin(tick_m);
-			frames = fpsGameTicks = 0;
-			Release(tick_m);
-		}
-		timeTicks += ticks;
-		if (timeTicks >= CLOCK_LIMIT) {
+
+		debug("frames... %d\n", frames);
+
+		if (Ticks_TimeElapsed(TICKS_PER_SEC)) {
+			fps = frames;
+			printf("fps = %d\n", fps);
+			frames = 0;
+
 			t = time(NULL);
 			tp = localtime(&t);
 			timeHours = tp->tm_hour;
 			timeMinutes = tp->tm_min;
-			timeTicks = 0;
 		}
+
 		if (messageTicks > 0)
 			messageTicks -= ticks;
 
@@ -575,23 +612,13 @@ int gameloop(void)
 
 		StatusDisplay();
 
-		if (gameTicks < GAMETICKS_PER_FRAME) {
-			Spin(tick_m);
-			gameTicks = 0;
-			Release(tick_m);
-		} else {
-			Spin(tick_m);
-			gameTicks -= GAMETICKS_PER_FRAME;
-			if (gameTicks < 0)
-				gameTicks = 0;
-			Release(tick_m);
-		}
-
 		if (gOptions.displaySlices)
 			SetColorZero(0, 0, 32);
-		CopyToScreen();
+
 		if (gOptions.displaySlices)
 			SetColorZero(0, 0, 0);
+
+		CopyToScreen();
 
 		if (!gameIsPaused) {
 			if (!gOptions.slowmotion || (frames & 1) == 0) {
@@ -600,26 +627,27 @@ int gameloop(void)
 
 				GetPlayerInput(&cmd1, &cmd2);
 
-				if (gPlayer1
-				    && !PlayerSpecialCommands(gPlayer1,
-							      cmd1,
-							      &gPlayer1Data))
+				if (gPlayer1 && !PlayerSpecialCommands(
+							gPlayer1, cmd1, &gPlayer1Data)) {
 					CommandActor(gPlayer1, cmd1);
-				if (gPlayer2
-				    && !PlayerSpecialCommands(gPlayer2,
-							      cmd2,
-							      &gPlayer2Data))
+				}
+				if (gPlayer2 && !PlayerSpecialCommands(
+							gPlayer2, cmd2, &gPlayer2Data)) {
 					CommandActor(gPlayer2, cmd2);
+				}
 
 				if (gOptions.badGuys)
 					CommandBadGuys();
 
 				UpdateWatches();
 			}
-		} else
+		} else {
 			GetPlayerInput(&cmd1, &cmd2);
+		}
 
 		c = HandleKey(&done, cmd1 | cmd2);
+
+		Ticks_FrameEnd();
 	}
 	free(buffer);
 

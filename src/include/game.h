@@ -33,12 +33,10 @@
 //#define GAMETICKS_PER_SECOND 280
 #include "SDL.h" //for the Uint32
 #define GAMETICKS_PER_SECOND 100
-#define GAMETICKS_PER_FRAME  8
+#define GAMETICKS_PER_FRAME  3
 
 int gameloop(void);
 void DisplayMessage(const char *s);
 void ShakeScreen(int amount);
-Uint32 synchronizer(Uint32 interval, void *param);
-void InitMutex(void);
 
 extern int missionTime;
