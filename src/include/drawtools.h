@@ -44,6 +44,6 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 		Draw_Line(x1, y2, x2, y2, c);	\
 		Draw_Line(x1, y1, x1, y2, c);
 
-#define Draw_Rect(x, y, w, h, c)	Draw_Box(x,y,(w-1),(h-1),c)
+#define Draw_Rect(x, y, w, h, c)	Draw_Box(x,y,((x + (w - 1))),((y + (h - 1))),c)
 
 #endif /* __DRAW_TOOLS */
