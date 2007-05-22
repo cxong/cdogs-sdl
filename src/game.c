@@ -135,7 +135,7 @@ static void Ticks_Update(void)
 {
 	static int init = 0;
 
-	if (init = 0) {
+	if (init == 0) {
 		ticks_then = SDL_GetTicks();
 		ticks_now = SDL_GetTicks();
 		init = 1;
