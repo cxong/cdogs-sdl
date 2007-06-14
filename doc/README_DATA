@@ -1,5 +1,5 @@
-Datafiles README
-----------------
+C-Dogs (SDL) Datafiles README
+=============================
 
 All graphics and _included_ (ogre.inc, bem.inc)
 mission data is copyright (c) Ronny Wester.
@@ -7,4 +7,4 @@ mission data is copyright (c) Ronny Wester.
 Thus, this data is distributed as freeware, NOT
 under the GPL like the source code.
 
-NB: The sounds are public domain (AFAIK)
+NB: The sounds are public domain (AFAIK).
