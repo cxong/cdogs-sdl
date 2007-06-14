@@ -1,5 +1,5 @@
-AUTHORS
--------
+C-Dogs SDL Authors
+==================
 
 Original code:
 --------------
@@ -12,3 +12,9 @@ SDL-Port:
 
 Jeremy Chin		(rekless@fastmail.fm)
 Lucas Martin-King	(lmartinking@gmail.com)
+
+
+Additional thanks:
+------------------
+
+To all those who submitted bug reports and patches. :-)
