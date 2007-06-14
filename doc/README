@@ -14,6 +14,8 @@ C-Dogs SDL Port v0.04
 |                |                  SDL
  `---------------'                v0.04
 
+   [ http://lumaki.com/code/cdogs ]
+
 +----------+
 | Contents |
 +----------+
@@ -41,7 +43,7 @@ For more information about the original c-dogs read 'original_readme.txt'.
 
 C-Dogs SDL has been ported with a unix development environment.
 In theory, C-Dogs SDL could run on any system that is supported by SDL.
-See the SDL website - www.libsdl.org for more details on SDL itself.
+See the SDL website - <www.libsdl.org> for more details on SDL itself.
 
 Tested architecture/system combinations include:
 
@@ -49,6 +51,9 @@ Linux:
 	* x86		(gentoo, slackware, ubuntu)
 	* x86-64	(gentoo)
 	* ppc		(ubuntu)
+
+Windows:
+	* x86		(XP SP2) [ could be a little flaky ]
 
 MacOSX:
 	* ppc
@@ -60,7 +65,7 @@ FreeBSD:
 OpenBSD:
 	* x86		(reportedly works fine)
 
-Should you succeed in running CDogs-SDL on a different operating system,
+Should you succeed in running C-Dogs SDL on a different operating system,
 please contact us!
 
 
@@ -68,34 +73,40 @@ please contact us!
 | 3 | Installation |
 +---+--------------+
 
-To compile C-Dogs you need to have the SDL libraries previously installed,
+To compile C-Dogs SDL you need to have the SDL libraries previously installed,
 a compiler (gcc recommended) and the apropriate header files.
-These instructions assume you have the know-how to at least compile
-something... :)
 
-See INSTALL for more information...
+See /doc/INSTALL for actual installation instructions...
 
 
 +---+----------------------+
 | 4 | Command line options |
 +---+----------------------+
 
-The C-Dogs binary is called "cdogs", below are some command line arguments:
+The C-Dogs binary is called "cdogs". Below are some command line arguments:
 
-	-fullscreen	C-Dogs will try and become full screen (recommended)
+Video Options:
+	-fullscreen	Try and use a fullscreen video mode.
+	-scale=n	Scale the window resolution up by a factor of n
+			  Factors: 2, 3, 4
+	-screen=WxH	Set virtual screen width to W x H
+			Modes: 320x200, 320x240, 400x300, 640x480, 800x600
+	-forcemode	Don't check video mode sanity
 
-	-nojoystick	C-Dogs will not use any available joysticks
-	
-	-wait		C-Dogs will wait for a key to be hit before 
-			initialising graphics
-	
-	-nosound	C-Dogs won't play sounds, thus saving CPU usage and
-			leaving your sound-card alone (if you have one)
+Sound Options:
+	-nosound	Disable sound
 
-	-scale=FACTOR	C-Dogs will scale the window by a factor (2, 3 or 4).
+Control Options:
+	-nojoystick	Disable joystick(s)
+	-js1threshold=n Joystick 1 threshold.
+	-js2threshold=n Joystick 2 threshold.
 
-	-help		Display more command line options where are
-			not listed here
+Game Options:
+	-savecampaigns  Save builtin campaigns as in the current directory.
+	-wait		Wait for a key hit before initialising video.
+	-shakemult=n	Screen shaking multiplier (0 = disable).
+
+	-help		Display command line options and version information.
 
 These can be used in any order/combination:
 	$ cdogs -fullscreen -wait
@@ -114,5 +125,5 @@ better) or anything else related to C-Dogs SDL email either:
 
 	Jeremy	<rekless@fastmail.fm>
 
-Alternately, if you have IRC visit #oz on cyberarmy. Jeremy is usually 'ReKleSS'
-and Lucas 'Ion-Pookie'.
+Alternately, if you have IRC visit #oz on cyberarmy.
+Jeremy is usually 'ReKleSS' and Lucas 'Ion-Pookie'.
