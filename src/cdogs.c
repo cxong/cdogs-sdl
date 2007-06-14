@@ -1061,7 +1061,7 @@ int main(int argc, char *argv[])
 */
 
 	if (wait) {
-		printf("Press any key to continue...\n");
+		printf("Press the enter key to continue...\n");
 		getchar();
 	}
 
