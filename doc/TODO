@@ -1,9 +1,7 @@
-TODO:
-	* Binary packages (for lazy people)				[add/mod]
-		- MacOSX (ppc and intel?)
-		- Win32
-		- Linux
-	
+C-Dogs SDL TODO
+===============
+
+STILL TODO:
 	* Optimise stuff :D						[mod]
 	* Clean up the general code, so there's fewer warnings		[mod]
 	* Put all the input event handling together			[mod]
@@ -17,6 +15,12 @@ THE _VERY_ DISTANT FUTURE (if at all):
 	  # Larger maps?
 
 DONE (so we feel good):
+	* Binary packages (for lazy people)				[add/mod]	(lucas)
+	  - MacOSX (ppc and intel?)
+	  - Win32
+	  - Linux
+	  - Windows
+	  
 	* Make data directories changable via environment variables	[add/mod]	(lucas)
 
 	* Get joystick stuff working					[port]		(lucas)
