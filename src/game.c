@@ -586,7 +586,7 @@ int gameloop(void)
 
 		if (Ticks_TimeElapsed(TICKS_PER_SEC)) {
 			fps = frames;
-			printf("fps = %d\n", fps);
+			debug("fps = %d\n", fps);
 			frames = 0;
 
 			t = time(NULL);
