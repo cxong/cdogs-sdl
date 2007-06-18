@@ -21,13 +21,13 @@ DONE (so we feel good):
 	  - Linux
 	  - Windows
 	  
-	* Make data directories changable via environment variables	[add/mod]	(lucas)
+	* Make data directories changeable via environment variables	[add/mod]	(lucas)
 
 	* Get joystick stuff working					[port]		(lucas)
 
 	* Get sound working better					[add/mod]	(lucas)
 
-	* Got running on MacOS X
+	* Got running on Mac OS X
 	  (and hopefully other non-intel machines)			[port]		(lucas)
 	
 	* Graphics							[ported]	(jeremy)
