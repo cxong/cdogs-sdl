@@ -476,12 +476,14 @@ void StatusDisplay(void)
 	if (gMission.flags & FLAGS_KEYCARD_RED)
 		DrawKeycard(CenterX(KEY_WIDTH(3)) + 30, 20, &cGeneralPics[gMission.keyPics[3]]);
 
-	if (ot == -1)
+	if (ot == -1 || missionTime == 0) /* set the original time properly */
 		ot = time(NULL);
 
 	t = time(NULL);
 
-	td = t - ot;
+	if (!gameIsPaused) {
+		td = t - ot;
+	}
 
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
@@ -598,6 +600,8 @@ int gameloop(void)
 		if (messageTicks > 0)
 			messageTicks -= ticks;
 
+		StatusDisplay();
+
 		if (!gameIsPaused) {
 			missionTime += ticks;
 			if ((gPlayer1 || gPlayer2) && MissionCompleted()) {
@@ -609,8 +613,6 @@ int gameloop(void)
 			} else
 				gMission.pickupTime = PICKUP_LIMIT;
 		}
-
-		StatusDisplay();
 
 		if (gOptions.displaySlices)
 			SetColorZero(0, 0, 32);
