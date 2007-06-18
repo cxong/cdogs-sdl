@@ -125,6 +125,9 @@ struct Credit {
 };
 
 static struct Credit credits[] = {
+	{"Visit the C-Dogs SDL Homepage!",
+	 CDOGS_SDL_HOMEPAGE},
+
 	{"Ronny Wester",
 	 "That's me! I designed and coded this game and I did all the graphics too"},
 	{"Joey Lau",
@@ -159,9 +162,7 @@ static struct Credit credits[] = {
 	{"Lucas Martin-King",
 	 "He procrastinated about releasing C-Dogs SDL! ...and cleaned up after Jeremy"},
 	{"Jeremy Chin",
-	 "He did all the hard porting work! ;)"},
-	{"C-Dogs SDL Homepage!",
-	 CDOGS_SDL_HOMEPAGE}
+	 "He did all the hard porting work! ;)"}
 };
 
 #define CREDIT_PERIOD   10
