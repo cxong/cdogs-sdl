@@ -9,17 +9,17 @@ Version 0.4
  * Sound panning implemented (when using SDL mixer)
  * Fast scaling (to a factor of 2, 3 or 4)
  * User interface placement smarter
- * More bugfixes and cleanups
+ * More bug-fixes and cleanups
 
 Version 0.3
 -----------
 
  * Joystick support
  * SDL mixer support (and thus music as well)
- * Data/Config dirs changable via environment variables
+ * Data/Config dirs changeable via environment variables
  * Handles quitting more gracefully
  * XCode Project (Mac OS X)
- * Loads of bugfixes and code cleanups
+ * Loads of bug-fixes and code cleanups
 
 
 ===============================================================================
