@@ -14,7 +14,7 @@ BEGIN
 		BLOCK "040904b0"
 		BEGIN
 			VALUE "Comments", "See <http://lumaki.com/code/cdogs> for more details.\0"
-			VALUE "CompanyName", "Lucas Martin-King\0"
+			VALUE "CompanyName", "Maintained by Lucas Martin-King\0"
 			VALUE "FileDescription", "C-Dogs SDL\0"
 			VALUE "FileVersion", "0.4\0"
 			VALUE "InternalName", "cdogs\0"
