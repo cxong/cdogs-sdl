@@ -45,6 +45,7 @@
 #include "automap.h"
 #include "charsed.h"
 #include "events.h"
+#include "utils.h"
 
 
 #define YC_CAMPAIGNTITLE    0
@@ -505,7 +506,7 @@ void Display(int index, int xc, int yc, int key)
 	int i;
 
 	SetSecondaryMouseRects(NULL);
-	memset(GetDstScreen(), 58, 64000);
+	memset(GetDstScreen(), 58, Screen_GetMemSize());
 
 	sprintf(s, "Key: 0x%x", key);
 	TextStringAt(270, 190, s);
@@ -1215,7 +1216,7 @@ static void Save(int asCode)
 
 	strcpy(filename, lastFile);
 	while (1) {
-		memset(GetDstScreen(), 58, 64000);
+		memset(GetDstScreen(), 58, Screen_GetMemSize());
 		TextStringAt(125, 50, "Save as:");
 		TextGoto(125, 50 + TextHeight());
 		TextChar('\020');
@@ -1263,7 +1264,7 @@ static int ConfirmQuit(void)
 {
 	int c;
 
-	memset(GetDstScreen(), 58, 64000);
+	memset(GetDstScreen(), 58, Screen_GetMemSize());
 	TextStringAt(80, 50, "Campaign has been modified, but not saved");
 	TextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	vsync();
@@ -1505,7 +1506,7 @@ TBadGuy characters[MAX_CHARACTERS];
 
 void *myScreen;
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	int i;
 	int loaded = 0;
@@ -1539,6 +1540,9 @@ void main(int argc, char *argv[])
 		}
 	}
 
+	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
+	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
+
 	if (!ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette)) {
 		printf("Unable to read CDOGS.PX\n");
 		exit(0);
@@ -1554,11 +1558,20 @@ void main(int argc, char *argv[])
 	TextInit(GetDataFilePath("graphics/font.px"), -2, YES, YES);
 
 	//InitVideo(YES);
-	InitVideo(VID_WIN_NORMAL);
+	
+	Gfx_SetHint(HINT_WIDTH, 320);
+	Gfx_SetHint(HINT_HEIGHT, 240);
+	Gfx_SetHint(HINT_SCALEFACTOR, 2);
+	
+	if (InitVideo() == -1) {
+		printf("Video didn't init!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	SetPalette(gPalette);
 
-	myScreen = malloc(64000);
-	memset(myScreen, 0, 64000);
+	myScreen = sys_mem_alloc(Screen_GetMemSize());
+	memset(myScreen, 0, Screen_GetMemSize());
 	SetDstScreen(myScreen);
 
 	InitMouse();
@@ -1567,4 +1580,5 @@ void main(int argc, char *argv[])
 	free(myScreen);
 
 	//TextMode();
+	exit(EXIT_SUCCESS);
 }
