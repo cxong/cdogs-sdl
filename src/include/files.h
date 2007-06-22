@@ -70,18 +70,11 @@ char * join(const char *s1, const char *s2);
 char * GetPWD(void);
 void SetupConfigDir(void);
 
-#define read8	read
+ssize_t f_read(FILE *f, void *buf, size_t size);
+#define f_read8(f, b, s)	f_read(f, b, 1)
+ssize_t f_read32(FILE *f, void *buf, size_t size);
+ssize_t f_read16(FILE *f, void *buf, size_t size);
+ssize_t f_readarray32(FILE *f, void *buf, size_t size);
 
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 void swap32 (void *d);
-ssize_t read32(int fd, void *buf, size_t size);
-ssize_t read16(int fd, void *buf, size_t size);
-ssize_t readarray32(int fd, void *buf, size_t size);
 void swap16 (void *d);
-#else
-	#define read32	read
-	#define readarray32 read
-	#define read16	read
-	#define swap16(n)	{}
-	#define swap32(n)	{}
-#endif
