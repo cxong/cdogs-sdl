@@ -49,6 +49,7 @@
 #include "game.h"
 #include "keyboard.h"
 #include "draw.h"
+#include "blit.h"
 #include "mainmenu.h"
 #include "password.h"
 #include "files.h"
@@ -162,6 +163,7 @@ void CampaignIntro(void *bkg)
 	char s[1024];
 
 	debug("\n");
+	
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	y = (SCREEN_WIDTH / 4);
@@ -234,7 +236,7 @@ void Summary(int x, struct PlayerData *data, int character)
 		char s[512];
 
 		sprintf(s, "Last password: %s", lastPassword);
-		TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
+		TextStringSpecial(s, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
 	}
 
 	if (data->survived) {
@@ -1069,12 +1071,9 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	} else {
-		SDL_TimerID t;
-
 		SetPalette(gPalette);
 		printf(">> Entering main loop\n");
 		MainLoop();
-		SDL_RemoveTimer(t);
 	}
 	printf(">> Shutting Down...\n");
 
