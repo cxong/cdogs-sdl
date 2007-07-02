@@ -169,13 +169,13 @@ static struct Credit credits[] = {
 
 
 static TCampaignSetting customSetting = {
-	.title		=	"",
-	.author		=	"",
-	.description	=	"",
-	.missionCount	=	0,
-	.missions	=	NULL,
-	.characterCount	=	0,
-	.characters	=	NULL
+/*	.title		=*/	"",
+/*	.author		=*/	"",
+/*	.description	=*/	"",
+/*	.missionCount	=*/	0,
+/*	.missions	=*/	NULL,
+/*	.characterCount	=*/	0,
+/*	.characters	=*/	NULL
 };
 
 
@@ -749,13 +749,11 @@ int KeyAvailable(int key, struct PlayerData *data, int index,
 void ChangeKey(struct PlayerData *data, struct PlayerData *other,
 	       int index)
 {
-	printf("x\n");
 	int key = 0;
 
 	while (GetKeyDown());
 
 	while (1) {
-
 		key = GetKeyDown();
 
 		if (key == keyEsc)
