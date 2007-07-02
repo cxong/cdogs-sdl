@@ -92,7 +92,10 @@ ssize_t f_readarray32(FILE *f, void *buf, size_t size)
 		for (i = 0; i < (size/4); i++) {
 		//	fprintf(stderr, " i: %d\n", i);
 			f_read32(f, buf, size);
-			(char *)buf += sizeof(int);
+			#ifdef _MSC_VER
+			(char *)
+			#endif
+			buf += sizeof(int);
 		}
 	}
 	return size;
