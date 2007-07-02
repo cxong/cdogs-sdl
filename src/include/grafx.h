@@ -76,8 +76,14 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 int CompilePics(int picCount, void **pics, void **compiledPics);
 int RLEncodePics(int picCount, void **pics, void **rlePics);
 void vsync(void);
-int PicWidth(void *pic);
-int PicHeight(void *pic);
+
+#ifndef _MSC_VER
+inline int PicWidth(void *pic);
+inline int PicHeight(void *pic);
+#else
+	int PicWidth(void *pic);
+	int PicHeight(void *pic);
+#endif
 
 extern int screen_w;
 extern int screen_h;
