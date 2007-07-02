@@ -94,8 +94,9 @@ void InitSticks(void)
 	printf("%d found\n", n);
 
 	for (i = 0; i < n; i++) {
-		if (i > 1) break; /* Only 2 joysticks supported ATM */
 		SDL_Joystick *j;
+
+		if (i > 1) break; /* Only 2 joysticks supported ATM */
 
 		if ((j = gSticks[i].j)) {
 			printf("Closing joystick.\n");
