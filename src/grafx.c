@@ -34,7 +34,11 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <unistd.h>
+
+#ifndef _MSC_VER
+	#include <unistd.h>
+#endif
+
 #include "SDL.h"
 #include "SDL_endian.h"
 
@@ -199,6 +203,12 @@ void ShutDownVideo(void)
 	SDL_VideoQuit();		
 }
 
+typedef struct _Pic {
+	unsigned short int w;
+	unsigned short int h;
+	char *data;
+} Pic;
+
 int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette)
 {
@@ -218,19 +228,20 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 			fread(&size, sizeof(size), 1, f);
 			swap16(&size);
 			if (size) {
-				pics[i] = sys_mem_alloc(size);
+				Pic *p = sys_mem_alloc(size);
 				
-				fread(pics[i] + 0, 1, 2, f);
-				swap16(pics[i] + 0);
-				fread(pics[i] + 2, 1, 2, f);
-				swap16(pics[i] + 2);
+				f_read16(f, &p->w, 2);
+				f_read16(f, &p->h, 2);
 
-				fread(pics[i] + 4, 1, size - 4, f);
-				
+				f_read(f, &p->data, size - 4);
+
+				pics[i] = p;
+
 				if (ferror(f) || feof(f))
 					eof = 1;
-			} else
+			} else {
 				pics[i] = NULL;
+			}
 			i++;
 		}
 		fclose(f);
@@ -254,19 +265,19 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 			fread(&size, sizeof(size), 1, f);
 			swap16(&size);
 			if (size) {
-				pics[i] = sys_mem_alloc(size);
-				
-				fread(pics[i] + 0, 1, 2, f);
-				swap16(pics[i] + 0);
-				fread(pics[i] + 2, 1, 2, f);
-				swap16(pics[i] + 2);
+				Pic *p = sys_mem_alloc(size);
 
-				fread(pics[i] + 4, 1, size - 4, f);
-				
+				f_read16(f, &p->w, 2);
+				f_read16(f, &p->h, 2);
+				f_read(f, &p->data, size - 4);
+
+				pics[i] = p;
+
 				if (ferror(f) || feof(f))
 					eof = 1;
-			} else
+			} else {
 				pics[i] = NULL;
+			}
 			i++;
 		}
 		fclose(f);
@@ -328,14 +339,20 @@ void vsync(void)
 	return;
 }
 
-inline int PicWidth(void *pic)
+#ifndef _MSC_VER
+inline
+#endif
+int PicWidth(void *pic)
 {
 	if (!pic)
 		return 0;
 	return ((short *) pic)[0];
 }
 
-inline int PicHeight(void *pic)
+#ifndef _MSC_VER
+inline
+#endif
+int PicHeight(void *pic)
 {
 	if (!pic)
 		return 0;
