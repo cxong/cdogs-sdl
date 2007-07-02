@@ -39,7 +39,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <unistd.h>
+
+#ifndef _MSC_VER
+	#include <unistd.h>
+#else
+	#include <direct.h>
+#endif
+
 #include "files.h"
 #include "utils.h"
 
@@ -86,7 +92,7 @@ ssize_t f_readarray32(FILE *f, void *buf, size_t size)
 		for (i = 0; i < (size/4); i++) {
 		//	fprintf(stderr, " i: %d\n", i);
 			f_read32(f, buf, size);
-			buf += sizeof(int);
+			(char *)buf += sizeof(int);
 		}
 	}
 	return size;
@@ -114,6 +120,8 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	FILE *f;
 	int i;
 	TCampaignSetting setting;
+
+	debug("f: %s\n", filename);
 
 	f = fopen(filename, "rb");
 	if (f >= 0) {
@@ -263,8 +271,10 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 	FILE *f;
 	int i;
 
+	debug("f: %s\n", filename);
 	f = fopen(filename, "rb");
-	if (f >= 0) {
+
+	if (f) {
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_MAGIC) {
 			fclose(f);
@@ -580,7 +590,6 @@ struct FileEntry *GetFilesFromDirectory(const char *directory)
 
 	dir = opendir(directory);
 	if (dir != NULL) {
-		
 		while ((d = readdir(dir)) != NULL)
 			AddFileEntry(&list, d->d_name, "", 0);
 		closedir(dir);
@@ -772,6 +781,7 @@ char * join(const char *s1, const char *s2)
  *
  * returns a full path to a data file...
  */
+char cfpath[255];
 char * GetConfigFilePath(const char *name)
 {
 	char *tmp;
@@ -783,19 +793,25 @@ char * GetConfigFilePath(const char *name)
 	homedir = "";
 #endif
 
-	tmp = calloc(strlen(homedir) + strlen(name) + strlen(CDOGS_CFG_DIR) + 1, sizeof(char));
+	//tmp = calloc(strlen(homedir) + strlen(name) + strlen(CDOGS_CFG_DIR) + 1, sizeof(char));
 
-	strcpy(tmp, homedir);
+	strcpy(cfpath, homedir);
 
-	strcat(tmp, CDOGS_CFG_DIR);
-	strcat(tmp, name);
+	strcat(cfpath, CDOGS_CFG_DIR);
+	strcat(cfpath, name);
 
-	return tmp;
+	return cfpath;
 }
 
 
 #ifdef SYS_WIN
 	#define mkdir(p, a)     mkdir(p)
+#endif
+
+#ifdef _MSC_VER
+	typedef int mode_t;
+
+	#define mkdir(p, a)		_mkdir(p)
 #endif
 
 int mkdir_deep(const char *path, mode_t m)
@@ -826,7 +842,13 @@ void SetupConfigDir(void)
 	char *cfg_p = GetConfigFilePath("");
 
 	printf("Creating Config dir... ");
-	
+
+#ifdef _MSC_VER
+#define S_IRUSR 0
+#define S_IXUSR 0
+#define S_IWUSR 0
+#endif
+
 	if (mkdir_deep(cfg_p, S_IRUSR | S_IXUSR | S_IWUSR) == 0) {
 		if (errno != EEXIST)
 			printf("Config dir created.\n");
@@ -844,6 +866,11 @@ void SetupConfigDir(void)
 		
 	return;
 }
+
+
+#ifdef _MSC_VER
+
+#endif
 
 char dir_buf[250];
 char * GetPWD(void)
