@@ -37,7 +37,7 @@
 
 extern int debug;
 
-#define debug(args...)	if (debug) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, args); }
+#define debug(...)	if (debug) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
 
 void *	sys_mem_alloc(unsigned int size);
 void *	sys_mem_realloc(void *ptr, unsigned int size);
