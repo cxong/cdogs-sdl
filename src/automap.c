@@ -45,6 +45,7 @@
 #include "mission.h"
 #include "keyboard.h"
 #include "objs.h"
+#include "grafx.h"
 
 
 #define MAP_XOFFS   60
