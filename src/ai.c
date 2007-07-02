@@ -41,8 +41,10 @@
 	#define __typeof__ typeof
 #endif /* __typeof__ */
 
-#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
-#define min(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a < __b) ? __a : __b;})
+#ifndef _MSC_VER
+	#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
+	#define min(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a < __b) ? __a : __b;})
+#endif
 
 static int baddieCount = 0;
 static int goodGuysPresent = 0;

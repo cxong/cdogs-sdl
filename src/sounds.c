@@ -49,7 +49,9 @@
 
 #include "utils.h"
 
-#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
+#ifndef _MSC_VER
+	#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
+#endif
 
 static int soundInitialized = 0;
 static int fxVolume = 64;
