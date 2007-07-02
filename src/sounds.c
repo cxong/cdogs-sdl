@@ -399,7 +399,7 @@ int PlaySong(char *name)
 #else
 int PlaySong(char *name)
 {
-	return;
+	return 1;
 }
 #endif
 
