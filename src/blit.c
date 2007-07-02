@@ -118,7 +118,7 @@ void *GetDstScreen(void)
 
 #define PixelIndex(x, y, w, h)		(y * w + x)
 
-#ifndef _MSC_VER
+#ifdef _MSC_VER
 #define inline __inline
 #endif
 
