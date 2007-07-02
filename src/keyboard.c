@@ -88,29 +88,41 @@ void InitKeyboard(void)
 
 char KeyDown(int key)
 {
-//      printf("%i\n", key);
+	char *tmp;
+
 	SDL_PumpEvents();
-	int *num = NULL;
-	char *tmp = SDL_GetKeyState(num);
-/*	if (tmp[key])
-		printf("1\n");
-	else
-		printf("0 %i\n", key);
-*/ return tmp[key];
+
+	tmp = SDL_GetKeyState(NULL);
+
+	return tmp[key];
 }
 
 int GetKeyDown(void)
 {
 	int i;
+	int nr_keys;
+	Uint8 *keystate;
+	
 	SDL_PumpEvents();
-	int num;
-	char *tmp = SDL_GetKeyState(&num);
-//      printf("got array: %i\n", num);
-	for (i = 0; i < num; i++) {
-//              printf("%i\n", i);
-		if (tmp[i])
+
+	keystate = SDL_GetKeyState(&nr_keys);
+
+	/* We force these to be ignored, because they are often turned on,
+	   they are toggle keys, and we don't actually need to check for them,
+	   and it fixes a bug of the game "hanging" waiting for key release,
+	   because Windows often has NumLock on by default! */
+	keystate[SDLK_NUMLOCK] = 0;
+	keystate[SDLK_CAPSLOCK] = 0;
+	keystate[SDLK_SCROLLOCK] = 0;
+
+	/* Okay, this isn't particularly smart, as it returns only the first
+	   key it finds. */
+	for (i = 0; i < nr_keys; i++) {
+		if (keystate[i] == 1) {
 			return i;
+		}
 	}
+
 	return 0;
 }
 
