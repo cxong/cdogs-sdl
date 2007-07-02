@@ -70,6 +70,10 @@ char * join(const char *s1, const char *s2);
 char * GetPWD(void);
 void SetupConfigDir(void);
 
+#ifdef _MSC_VER
+typedef size_t ssize_t;
+#endif
+
 ssize_t f_read(FILE *f, void *buf, size_t size);
 #define f_read8(f, b, s)	f_read(f, b, 1)
 ssize_t f_read32(FILE *f, void *buf, size_t size);
