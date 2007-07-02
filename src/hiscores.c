@@ -34,7 +34,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
+
+#ifndef _MSC_VER
+	#include <unistd.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -217,7 +221,7 @@ void SaveHighScores(void)
 
 	debug("begin\n");
 
-	f = fopen(GetConfigFilePath(SCORES_FILE), "rwb");
+	f = fopen(GetConfigFilePath(SCORES_FILE), "wb");
 	if (f != NULL) {
 		magic = MAGIC;
 
