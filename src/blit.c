@@ -31,6 +31,7 @@
 */
 
 #include "SDL.h"
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "blit.h"
@@ -46,16 +47,16 @@ int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
 //this function is referenced by 4 macros, that do all the args
 
 void Blit(int x, int y, void *pic, void *table, int mode) {
-
 	int height = PicHeight(pic);
 	int width = PicWidth(pic);
 	int yoff, xoff;
 	unsigned char *current = pic;
-	current += 4;
 	unsigned char *target;
 	unsigned char *xlate = (unsigned char *) table;
 
 	int i;
+
+	current += 4;
 
 	for (i = 0; i < height; i++) {
 		int j;
@@ -116,6 +117,10 @@ void *GetDstScreen(void)
 }
 
 #define PixelIndex(x, y, w, h)		(y * w + x)
+
+#ifndef _MSC_VER
+#define inline __inline
+#endif
 
 static inline
 void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h, const int sf)
@@ -192,7 +197,7 @@ void CopyToScreen(void)
 	 * as it's a bit of a hack, being here. */
 	if (IsEventPending(EVENT_QUIT)) {
 		printf("QUIT EVENT!\n");
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 	
 	if (SDL_LockSurface(screen) == -1) {
