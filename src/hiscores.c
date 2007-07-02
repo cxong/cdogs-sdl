@@ -230,6 +230,8 @@ void SaveHighScores(void)
 
 		t = time(NULL);
 		tp = localtime(&t);
+		debug("time now, y: %d m: %d d: %d\n", tp->tm_year, tp->tm_mon, tp->tm_mday);
+
 		magic = tp->tm_year;
 		fwrite(&magic, sizeof(magic), 1, f);
 		magic = tp->tm_mon;
@@ -237,6 +239,7 @@ void SaveHighScores(void)
 		magic = tp->tm_mday;
 		fwrite(&magic, sizeof(magic), 1, f);
 
+		debug("writing today's high: %d\n", todaysHigh[0].score);
 		fwrite(todaysHigh, sizeof(todaysHigh), 1, f);
 
 		fclose(f);
@@ -254,7 +257,7 @@ void LoadHighScores(void)
 	time_t t;
 	struct tm *tp;
 
-	printf("Reading scores...\n");
+	debug("Reading hi-scores...\n");
 
 	memset(allTimeHigh, 0, sizeof(allTimeHigh));
 	memset(todaysHigh, 0, sizeof(todaysHigh));
@@ -265,24 +268,30 @@ void LoadHighScores(void)
 	
 		fread(&magic, sizeof(magic), 1, f);
 		if (magic != MAGIC) {
+			debug("Scores file magic doesn't match!\n");
 			fclose(f);
 			return;
 		}
 		
-		for (i = 0; i < MAX_ENTRY; i++) {
-			fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
-		}
+		//for (i = 0; i < MAX_ENTRY; i++) {
+		fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
+		//}
 
 		t = time(NULL);
 		tp = localtime(&t);
 		fread(&y, sizeof(y), 1, f);
 		fread(&m, sizeof(m), 1, f);
 		fread(&d, sizeof(d), 1, f);
+		debug("scores time, y: %d m: %d d: %d\n", y, m, d);	
 
-		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d)
+
+		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d) {
 			fread(todaysHigh, sizeof(todaysHigh), 1, f);
+			debug("reading today's high: %d\n", todaysHigh[0].score);
+		}
 
 		fclose(f);
-	} else
+	} else {
 		printf("Unable to open %s\n", SCORES_FILE);
+	}
 }
