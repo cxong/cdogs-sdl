@@ -539,7 +539,7 @@ int SelectOptions(int cmd)
 					fac++;
 				}
 
-				if (fac >= 1 && fac <= 3) {
+				if (fac >= 1 && fac <= 4) {
 					Gfx_SetHint(HINT_SCALEFACTOR, (const int)fac);
 					InitVideo();
 				}
