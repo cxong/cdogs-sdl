@@ -37,6 +37,7 @@
 #include "blit.h"
 #include "grafx.h"
 #include "events.h"
+#include "pics.h" /* for gPalette */
 
 unsigned char *r_screen;
 extern SDL_Surface *screen;
@@ -198,6 +199,11 @@ void CopyToScreen(void)
 	if (IsEventPending(EVENT_QUIT)) {
 		printf("QUIT EVENT!\n");
 		exit(EXIT_SUCCESS);
+	} else if (IsEventPending(EVENT_ACTIVE)) {
+		/* Set the palette, just in case we had a change of focus
+		 * and we don't things to go trippy for the player */
+		printf("ACTIVE EVENT!\n");
+		SetPalette(gPalette);
 	}
 	
 	if (SDL_LockSurface(screen) == -1) {
