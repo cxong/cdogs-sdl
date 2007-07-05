@@ -43,3 +43,7 @@
 		#define CDOGS_CFG_DIR ".cdogs/"
 	#endif
 #endif
+
+#ifndef CDOGS_MUSIC_DIR
+	#define CDOGS_MUSIC_DIR "./music/"
+#endif
