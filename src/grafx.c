@@ -105,6 +105,7 @@ static int ValidMode(int w, int h)
 	return 0;
 }
 
+/* These are the default hints as used by the graphics subsystem */
 int hints[HINT_END] = {
 	0,		// HINT_FULLSCREEN
 	1,		// HINT_WINDOW
@@ -120,7 +121,6 @@ void Gfx_SetHint(const GFX_Hint h, const int val)
 	hints[h] = val;
 }
 
-//int Gfx_GetHint(const GFX_Hint h)
 #define Hint(h)	hints[h]
 
 int Gfx_GetHint(const GFX_Hint h)
@@ -134,6 +134,9 @@ SDL_Surface *screen = NULL;
 int screen_w;
 int screen_h; 
 
+/* Initialises the video subsystem.
+
+   Note: dynamic resolution change is not supported. */
 int InitVideo(void)
 {	
 	char title[32];
@@ -147,8 +150,15 @@ int InitVideo(void)
 
 	if (Hint(HINT_FULLSCREEN)) sdl_flags |= SDL_FULLSCREEN;
 
-	rw = w = Hint(HINT_WIDTH);
-	rh = h = Hint(HINT_HEIGHT);
+	if (screen == NULL) {
+		rw = w = Hint(HINT_WIDTH);
+		rh = h = Hint(HINT_HEIGHT);
+	} else {
+		/* We do this because the game dies horribly if you try to
+		dynamically change the _virtual_ resolution */
+		rw = w = screen_w;
+		rh = h = screen_h;
+	}
 
 	if (Hint(HINT_SCALEFACTOR) > 1) {
 		rw *= Hint(HINT_SCALEFACTOR);
@@ -180,14 +190,17 @@ int InitVideo(void)
 		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
+		SDL_ShowCursor(SDL_DISABLE);
 	} else {
 		debug("Changed video mode...\n");
 	}
-	
+
+	if (screen == NULL) {
+		screen_w = Hint(HINT_WIDTH);
+		screen_h = Hint(HINT_HEIGHT);
+	}
+
 	screen = new_screen;
-	
-	screen_w = Hint(HINT_WIDTH);
-	screen_h = Hint(HINT_HEIGHT);
 	
 	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 	debug("Internal dimentions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -204,8 +217,8 @@ void ShutDownVideo(void)
 }
 
 typedef struct _Pic {
-	unsigned short int w;
-	unsigned short int h;
+	short int w;
+	short int h;
 	char *data;
 } Pic;
 
@@ -332,11 +345,6 @@ int RLEncodePics(int picCount, void **pics, void **rlePics)
 	if (skipped)
 		printf("%d solid pics not RLE'd\n", skipped);
 	return total;
-}
-
-void vsync(void)
-{
-	return;
 }
 
 #ifndef _MSC_VER
