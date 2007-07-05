@@ -153,15 +153,15 @@ static void DisplaySummary()
 				TextStringWithTableAt(20, y,
 						      gMission.missionData->objectives[i].description,
 						      &tablePurple);
-				TextStringWithTableAt(250, y, sScore, &tablePurple);
+				TextStringWithTableAt(SCREEN_WIDTH - 30, y, sScore, &tablePurple);
 			} else if (gMission.objectives[i].done >= gMission.objectives[i].required) {
 				TextStringWithTableAt(20, y,
 						      gMission.missionData->objectives[i].description,
 						      &tableFlamed);
-				TextStringWithTableAt(250, y, sScore, &tableFlamed);
+				TextStringWithTableAt(SCREEN_WIDTH - 30, y, sScore, &tableFlamed);
 			} else {
 				TextStringAt(20, y, gMission.missionData->objectives[i].description);
-				TextStringAt(250, y, sScore);
+				TextStringAt(SCREEN_WIDTH - 30, y, sScore);
 			}
 			y -= (TextHeight() + 1);
 		}
