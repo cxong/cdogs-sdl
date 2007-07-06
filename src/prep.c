@@ -296,9 +296,9 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 
 	char s[2];
 	static char letters[] =
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ!?.-0123456789";
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
 	static char smallLetters[] =
-	    "abcdefghijklmnopqrstuvwxyz!?.-0123456789";
+		"abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 	static int selection[2] = { -1, -1 };
 
 	// Kludge since Watcom won't let me initialize selection with a strlen()
