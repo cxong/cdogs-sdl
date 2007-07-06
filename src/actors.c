@@ -69,7 +69,7 @@ struct GunDescription gunDesc[] = {
 	{GUNPIC_BLASTER, "Powergun"},
 	{-1, "Shrapnel bombs"},
 	{-1, "Molotovs"},
-	{GUNPIC_BLASTER, "Sniper gun"},
+	{GUNPIC_BLASTER, "Sniper rifle"},
 	{-1, "Prox. mine"},
 	{-1, "Dynamite"},
 	{-1, "Chemo bombs"},
