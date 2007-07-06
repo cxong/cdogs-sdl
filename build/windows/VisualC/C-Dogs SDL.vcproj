@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
@@ -60,11 +60,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalOptions="SDL.lib SDLmain.lib dirent.lib"
-				OutputFile="$(ProjectDir)\..\..\..\src\cdogs-debug.exe"
+				OutputFile="$(ProjectDir)\..\..\..\src\build\cdogs-debug.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;..\..\..\build\windows\VisualC\dirent\lib&quot;"
 				GenerateDebugInformation="true"
+				AssemblyDebug="1"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -143,7 +145,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="SDL.lib SDLmain.lib dirent.lib cdogs.res"
 				ShowProgress="2"
-				OutputFile="$(ProjectDir)\..\..\..\src\cdogs.exe"
+				OutputFile="$(ProjectDir)\..\..\..\src\build\cdogs.exe"
 				Version="0.4"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;..\..\..\build\windows&quot;;&quot;..\..\..\build\windows\VisualC\dirent\lib&quot;"
