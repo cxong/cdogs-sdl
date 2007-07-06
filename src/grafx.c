@@ -177,7 +177,7 @@ int InitVideo(void)
 		printf("\n");
 	}
 
-	printf("Window dimentions:\t%dx%d\n", rw, rh);
+	printf("Window dimensions:\t%dx%d\n", rw, rh);
 	new_screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
 
 	if (new_screen == NULL) {
@@ -203,7 +203,7 @@ int InitVideo(void)
 	screen = new_screen;
 	
 	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-	debug("Internal dimentions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	debug("Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	SetPalette(gPalette);
 			
