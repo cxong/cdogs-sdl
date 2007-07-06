@@ -296,9 +296,9 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 
 	char s[2];
 	static char letters[] =
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZèéô .-0123456789";
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ!?.-0123456789";
 	static char smallLetters[] =
-	    "abcdefghijklmnopqrstuvwxyzÜÑî .-0123456789";
+	    "abcdefghijklmnopqrstuvwxyz!?.-0123456789";
 	static int selection[2] = { -1, -1 };
 
 	// Kludge since Watcom won't let me initialize selection with a strlen()
@@ -507,10 +507,18 @@ static int AppearanceSelection(const char **menu, int menuCount,
 			selection[index]--;
 			*property = selection[index];
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == 0) {
+			selection[index] = menuCount - 1;
+			*property = selection[index];
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < menuCount - 1) {
 			selection[index]++;
+			*property = selection[index];
+			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == menuCount - 1) {
+			selection[index] = 0;
 			*property = selection[index];
 			PlaySound(SND_SWITCH, 0, 255);
 		}
@@ -568,10 +576,18 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 			(*selection)--;
 			*property = IndexToShade(*selection);
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (*selection == 0) {
+			(*selection) = PLAYER_BODY_COUNT - 1;
+			*property = IndexToShade(*selection);
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (*selection < PLAYER_BODY_COUNT - 1) {
 			(*selection)++;
+			*property = IndexToShade(*selection);
+			PlaySound(SND_SWITCH, 0, 255);
+		} else if (*selection == PLAYER_BODY_COUNT - 1) {
+			(*selection) = 0;
 			*property = IndexToShade(*selection);
 			PlaySound(SND_SWITCH, 0, 255);
 		}
@@ -652,11 +668,17 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 		if (selection[index] > 0) {
 			selection[index]--;
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == 0) {
+			selection[index] = gMission.weaponCount;
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 		done = 0;
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < gMission.weaponCount) {
 			selection[index]++;
+			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == gMission.weaponCount) {
+			selection[index] = 0;
 			PlaySound(SND_SWITCH, 0, 255);
 		}
 		done = 0;
@@ -727,10 +749,16 @@ static int TemplateSelection(int loadFlag, int x, int index,
 		if (selection[index] > 0) {
 			selection[index]--;
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == 0) {
+			selection[index] = MAX_TEMPLATE - 1;
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MAX_TEMPLATE - 1) {
 			selection[index]++;
+			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == MAX_TEMPLATE - 1) {
+			selection[index] = 0;
 			PlaySound(SND_SWITCH, 0, 255);
 		}
 	}
@@ -763,11 +791,17 @@ static int MainMenu(int x, int index, int cmd)
 		if (selection[index] > MODE_SELECTNAME) {
 			selection[index]--;
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == MODE_SELECTNAME) {
+			selection[index] = MODE_DONE;
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MODE_DONE) {
 			selection[index]++;
 			PlaySound(SND_SWITCH, 0, 255);
+		} else if (selection[index] == MODE_DONE) {
+			selection[index] = MODE_SELECTNAME;
+			PlaySound(SND_SWITCH, 0, 255);				
 		}
 	}
 
