@@ -38,6 +38,7 @@
 #include "grafx.h"
 #include "events.h"
 #include "pics.h" /* for gPalette */
+#include "utils.h" /* for debug() */
 
 unsigned char *r_screen;
 extern SDL_Surface *screen;
