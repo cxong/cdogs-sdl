@@ -197,12 +197,12 @@ void CopyToScreen(void)
 	/* this really needs to go someplace nicer,
 	 * as it's a bit of a hack, being here. */
 	if (IsEventPending(EVENT_QUIT)) {
-		printf("QUIT EVENT!\n");
+		debug("QUIT EVENT!\n");
 		exit(EXIT_SUCCESS);
 	} else if (IsEventPending(EVENT_ACTIVE)) {
 		/* Set the palette, just in case we had a change of focus
 		 * and we don't things to go trippy for the player */
-		printf("ACTIVE EVENT!\n");
+		debug("ACTIVE EVENT!\n");
 		SetPalette(gPalette);
 	}
 	
