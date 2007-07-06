@@ -79,7 +79,7 @@ static const char *mainMenu[MAIN_COUNT] = {
 #define OPTIONS_COUNT   16
 
 static const char *optionsMenu[OPTIONS_COUNT] = {
-	"Players shots hurt",
+	"Friendly fire",
 	"FPS monitor",
 	"Clock",
 	"Copy to video",
@@ -88,7 +88,7 @@ static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Random seed",
 	"Difficulty",
 	"Slowmotion",
-	"Density",
+	"Enemy density per mission",
 	"Non-player hp",
 	"Player hp",
 	"Video fullscreen",
