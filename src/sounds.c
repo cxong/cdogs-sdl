@@ -67,7 +67,7 @@ static int channelTime[FX_MAXCHANNELS];
 
 static int moduleStatus = 0;
 static char moduleMessage[128];
-static char moduleDirectory[128] = "/tmp";
+static char moduleDirectory[128] = CDOGS_MUSIC_DIR;
 SDL_AudioSpec *spec;
 
 
