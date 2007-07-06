@@ -113,7 +113,7 @@ Draw_OtherLine	(const int x1, const int y1, const int x2, const int y2, const un
 
 void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const unsigned char c)
 {
-	debug("(%d, %d) -> (%d, %d)\n", x1, y1, x2, y2);
+	//debug("(%d, %d) -> (%d, %d)\n", x1, y1, x2, y2);
 	
 	if (x1 == x2 || y1 == y2) 
 		Draw_StraightLine(x1, y1, x2, y2, c);
