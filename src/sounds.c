@@ -349,7 +349,7 @@ int InitializeSound(void)
 
 #ifdef SND_SDLMIXER
 Mix_Music *music = NULL;
-int PlaySong(char *name)
+int PlaySong(char *name) 
 {
 	if (!soundInitialized)
 		return 0;
@@ -359,6 +359,7 @@ int PlaySong(char *name)
 	if (name) {
 		struct stat s;
 		char *p;
+		char path[255];
 	
 		if (music != NULL) {
 			Mix_HaltMusic();
@@ -368,14 +369,15 @@ int PlaySong(char *name)
 	
 		p = name;
 	
+		debug("song path 1: %s\n", name);
 		if (stat(name, &s) != 0) {
-			char path[255];
 			strcpy(path, ModuleDirectory());
 			strcat(path, "/");
 			strcat(path, name);
 			p = path;
 		}
 		
+		debug("song path 2: %s\n", p);
 		if (stat(p, &s) != 0) {
 			return 1;
 		}
@@ -573,11 +575,13 @@ int MinMusicChannels(void)
 // toggle music track on/off
 void ToggleTrack(int track)
 {
+	int status;
+
 	if (!soundInitialized)
 		return;
 
 #ifdef SND_SDLMIXER
-	int status = ModuleStatus();
+	status = ModuleStatus();
 
 	switch (status) {
 		case MODULE_PLAYING:
@@ -621,7 +625,7 @@ const char *ModuleMessage(void)
 
 void SetModuleDirectory(const char *dir)
 {
-//      strcpy(moduleDirectory, dir);
+	strcpy(moduleDirectory, dir);
 }
 
 const char *ModuleDirectory(void)
