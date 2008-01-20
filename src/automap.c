@@ -3,7 +3,7 @@
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
     Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Lucas Martin-King 
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 #include "mission.h"
 #include "keyboard.h"
 #include "objs.h"
-#include "grafx.h"
+#include "drawtools.h"
 
 
 #define MAP_XOFFS   60
@@ -131,37 +131,40 @@ static void DisplayExit(void)
 
 static void DisplaySummary()
 {
-	int i, y;
+	int i, y, x, x2;
 	char sScore[20];
 	unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = SCREEN_HEIGHT - 20 - TextHeight(); // 10 pixels from bottom
+	y = SCREEN_HEIGHT - 5 - TextHeight(); // 10 pixels from bottom
+
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
 		    gMission.objectives[i].done > 0) {
 			// Objective color dot
 			color = gMission.objectives[i].color;
-			scr[5 + (y + 3) * SCREEN_WIDTH] = color;
-			scr[6 + (y + 3) * SCREEN_WIDTH] = color;
-			scr[5 + (y + 2) * SCREEN_WIDTH] = color;
-			scr[6 + (y + 2) * SCREEN_WIDTH] = color;
+
+			x = 5;
+			Draw_Rect(x, (y + 3), 2, 2, color);
+
+			x += 5;
+			x2 = x + TextWidth(gMission.missionData->objectives[i].description) + 5;
 
 			sprintf(sScore, "(%d)", gMission.objectives[i].done);
 
 			if (gMission.objectives[i].required <= 0) {
-				TextStringWithTableAt(20, y,
+				TextStringWithTableAt(x, y,
 						      gMission.missionData->objectives[i].description,
 						      &tablePurple);
-				TextStringWithTableAt(SCREEN_WIDTH - 30, y, sScore, &tablePurple);
+				TextStringWithTableAt(x2, y, sScore, &tablePurple);
 			} else if (gMission.objectives[i].done >= gMission.objectives[i].required) {
-				TextStringWithTableAt(20, y,
+				TextStringWithTableAt(x, y,
 						      gMission.missionData->objectives[i].description,
 						      &tableFlamed);
-				TextStringWithTableAt(SCREEN_WIDTH - 30, y, sScore, &tableFlamed);
+				TextStringWithTableAt(x2, y, sScore, &tableFlamed);
 			} else {
-				TextStringAt(20, y, gMission.missionData->objectives[i].description);
-				TextStringAt(SCREEN_WIDTH - 30, y, sScore);
+				TextStringAt(x, y, gMission.missionData->objectives[i].description);
+				TextStringAt(x2, y, sScore);
 			}
 			y -= (TextHeight() + 1);
 		}
@@ -204,14 +207,12 @@ static int DoorColor(int x, int y)
 
 static void DrawDot(TTileItem * t, int color)
 {
-	unsigned char *scr = GetDstScreen();
+	unsigned int x, y;
 
-	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * SCREEN_WIDTH;
-	*scr = color;
-	*(scr - 1) = color;
-	*(scr + SCREEN_WIDTH) = color;
-	*(scr + 319) = color;
+	x = MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
+	y = MAP_YOFFS + MAP_FACTOR * t-> y / TILE_HEIGHT;
+
+	Draw_Rect(x, y, 2, 2, color);
 }
 
 void DisplayAutoMap(int showAll)
@@ -235,19 +236,13 @@ void DisplayAutoMap(int showAll)
 				if (AutoMap(x, y) || showAll) {
 					tile = &Map(x, y);
 					for (j = 0; j < MAP_FACTOR; j++)
-						if ((tile->
-						     flags & IS_WALL) != 0)
-							*screen++ =
-							    WALL_COLOR;
-						else if ((tile->
-							  flags & NO_WALK)
+						if ((tile->flags & IS_WALL) != 0)
+							*screen++ = WALL_COLOR;
+						else if ((tile->flags & NO_WALK)
 							 != 0)
-							*screen++ =
-							    DoorColor(x,
-								      y);
+							*screen++ = DoorColor(x, y);
 						else
-							*screen++ =
-							    FLOOR_COLOR;
+							*screen++ = FLOOR_COLOR;
 				} else
 					screen += MAP_FACTOR;
 			screen += SCREEN_WIDTH - XMAX * MAP_FACTOR;
@@ -274,24 +269,17 @@ void DisplayAutoMap(int showAll)
 							DisplayObjective(t,
 									 obj);
 					}
-				} else if (t->kind == KIND_OBJECT
-					   && t->data && AutoMap(x, y)) {
+				} else if (t->kind == KIND_OBJECT && t->data && AutoMap(x, y)) {
 					TObject *o = t->data;
-					if (o->objectIndex ==
-					    OBJ_KEYCARD_RED)
+
+					if (o->objectIndex == OBJ_KEYCARD_RED)
 						DrawDot(t, RED_DOOR_COLOR);
-					else if (o->objectIndex ==
-						 OBJ_KEYCARD_BLUE)
-						DrawDot(t,
-							BLUE_DOOR_COLOR);
-					else if (o->objectIndex ==
-						 OBJ_KEYCARD_GREEN)
-						DrawDot(t,
-							GREEN_DOOR_COLOR);
-					else if (o->objectIndex ==
-						 OBJ_KEYCARD_YELLOW)
-						DrawDot(t,
-							YELLOW_DOOR_COLOR);
+					else if (o->objectIndex == OBJ_KEYCARD_BLUE)
+						DrawDot(t, BLUE_DOOR_COLOR);
+					else if (o->objectIndex == OBJ_KEYCARD_GREEN)
+						DrawDot(t, GREEN_DOOR_COLOR);
+					else if (o->objectIndex ==  OBJ_KEYCARD_YELLOW)
+						DrawDot(t, YELLOW_DOOR_COLOR);
 				}
 
 				t = t->next;
