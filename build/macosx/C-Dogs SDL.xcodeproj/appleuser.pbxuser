@@ -1,0 +1,180 @@
+// !$*UTF8*$!
+{
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Deployment;
+		activeExecutable = 852FA5F20D3265D200C16028 /* C-Dogs SDL */;
+		activeTarget = 852FA5E20D3265D200C16028 /* C-Dogs SDL */;
+		addToTargets = (
+			852FA5E20D3265D200C16028 /* C-Dogs SDL */,
+		);
+		breakpointsGroup = 851F9FCA0D2DE56D007DF195 /* XCBreakpointsBucket */;
+		codeSenseManager = 851F9FB70D2DE171007DF195 /* Code sense */;
+		executables = (
+			852FA5F20D3265D200C16028 /* C-Dogs SDL */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXBookmarksDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXBookmarksDataSource_NameID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					200,
+					200,
+					69,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXBookmarksDataSource_LocationID,
+					PBXBookmarksDataSource_NameID,
+					PBXBookmarksDataSource_CommentsID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXErrorsWarningsDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXErrorsWarningsDataSource_LocationID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					300,
+					133,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXErrorsWarningsDataSource_TypeID,
+					PBXErrorsWarningsDataSource_MessageID,
+					PBXErrorsWarningsDataSource_LocationID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXExecutablesDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXExecutablesDataSource_NameID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					22,
+					300,
+					131,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXExecutablesDataSource_ActiveFlagID,
+					PBXExecutablesDataSource_NameID,
+					PBXExecutablesDataSource_CommentsID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					259,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					200,
+					79,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 221485311;
+			PBXWorkspaceStateSaveDate = 221485311;
+		};
+		sourceControlManager = 851F9FB60D2DE171007DF195 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	851F9FB60D2DE171007DF195 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 1;
+		scmConfiguration = {
+		};
+		scmType = scm.subversion;
+	};
+	851F9FB70D2DE171007DF195 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	851F9FCA0D2DE56D007DF195 /* XCBreakpointsBucket */ = {
+		isa = XCBreakpointsBucket;
+		name = "Project Breakpoints";
+		objects = (
+		);
+	};
+	852FA5E20D3265D200C16028 /* C-Dogs SDL */ = {
+		activeExec = 0;
+		executables = (
+			852FA5F20D3265D200C16028 /* C-Dogs SDL */,
+		);
+	};
+	852FA5F20D3265D200C16028 /* C-Dogs SDL */ = {
+		isa = PBXExecutable;
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "C-Dogs SDL";
+		sourceDirectories = (
+		);
+	};
+	852FA60E0D32687500C16028 /* sounds.c */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {650, 8890}}";
+			sepNavSelRange = "{1410, 24}";
+			sepNavVisRect = "{{0, 518}, {650, 182}}";
+		};
+	};
+	852FA6230D3268BE00C16028 /* charsed.c */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {650, 10304}}";
+			sepNavSelRange = "{14244, 22}";
+			sepNavVisRect = "{{0, 508}, {650, 182}}";
+			sepNavWindowFrame = "{{61, 182}, {852, 517}}";
+		};
+	};
+	F5A47A9E01A0483001D3D55B /* SDLMain.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {818, 5376}}";
+			sepNavSelRange = "{5460, 120}";
+			sepNavVisRect = "{{0, 2450}, {650, 182}}";
+			sepNavWindowFrame = "{{15, 224}, {852, 517}}";
+		};
+	};
+}
