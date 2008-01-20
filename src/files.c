@@ -40,6 +40,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include "config.h" /* for CDOGS_CFG_DIR */
+
 #ifndef _MSC_VER
 	#include <unistd.h>
 #else
@@ -822,7 +824,7 @@ int mkdir_deep(const char *path, mode_t m)
 	int i;
 	char part[255];
 
-	debug("path: %s\n", path);
+	debug("mkdir_deep path: %s\n", path);
 
 	for (i = 0; i < strlen(path); i++) {
 		if (path[i] == '\0') break;
@@ -831,7 +833,7 @@ int mkdir_deep(const char *path, mode_t m)
 			part[i+1] = '\0';
 
 			if (mkdir(part, m) == -1) {
-				if (errno == EEXIST) continue;
+				if (errno == EEXIST || errno == EISDIR) continue;
 				else return 1; 
 			}
 		}
@@ -863,7 +865,7 @@ void SetupConfigDir(void)
 				printf("Permission denied!\n");
 				break;
 			default:
-				printf("Error! errno is %d\n", errno);
+				perror("Error creating config directory:");
 		}
 	}
 		

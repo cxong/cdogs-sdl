@@ -39,6 +39,8 @@
 #ifndef CDOGS_CFG_DIR
 	#ifdef SYS_WIN
 		#define CDOGS_CFG_DIR "./config/"
+	#elif SYS_MACOSX
+		#define CDOGS_CFG_DIR "Library/Application Support/C-Dogs SDL/"	
 	#else
 		#define CDOGS_CFG_DIR ".cdogs/"
 	#endif
