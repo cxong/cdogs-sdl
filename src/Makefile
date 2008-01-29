@@ -4,17 +4,17 @@
 
 # Make sure only one variable in the provided set is uncommented!
 
-# Can be: "linux", "macosx", "xmingw" or "mingw32"
-#SYSTEM		:= "macosx"
-#SYSTEM		:= "linux"
-#SYSTEM		:= "xmingw"
-#SYSTEM		:= "mingw32"
+# Can be: linux, macosx, xmingw or mingw32
+#SYSTEM		:= macosx
+#SYSTEM		:= linux
+#SYSTEM		:= xmingw
+#SYSTEM		:= mingw32
 
 # Can be either: sdlmixer, nomix or oldmix
 # sdlmixer is recommended, as you get proper music and sounds =)
-SOUND_CODE	:= "sdlmixer"
-#SOUND_CODE	:= "nomix"
-#SOUND_CODE	:= "oldmix"
+SOUND_CODE	:= sdlmixer
+#SOUND_CODE	:= nomix
+#SOUND_CODE	:= oldmix
 
 # Destdir is where the base dir where everything is installed
 DESTDIR		:= ../dist
@@ -24,12 +24,12 @@ DATA		:= ../data
 #DATA		:= /path/to/where/data/is/unpacked/
 
 # Prefix is the *actual* base directory
-# Bindir is where the cdogs binary is placed
+# Bindir is where the cdogs-sdl binary is placed
 # Datadir is where the data is
 PREFIX		:= /usr/local
 BINDIR		:= $(PREFIX)/games/bin
-DATADIR		:= $(PREFIX)/share/games/cdogs
-DOCDIR		:= $(PREFIX)/share/doc/cdogs
+DATADIR		:= $(PREFIX)/share/games/cdogs-sdl
+DOCDIR		:= $(PREFIX)/share/doc/cdogs-sdl
 
 # The following are for a self-contained install
 #PREFIX		:= .
@@ -55,38 +55,42 @@ DEBUG_PROFILE=0
 ### Change this to yes, once you are ready
 I_AM_CONFIGURED=no
 
-# Name of the cdogs binary (probably doesn't need to be changed)
-CDOGS=cdogs
-CDOGSED=cdogs-editor
+# Name of the cdogs-sdl binary (probably doesn't need to be changed)
+CDOGS=cdogs-sdl
+CDOGSED=cdogs-sdl-editor
 
 # Suffix of the executable
 PROG_SUFFIX	:=
+
+# Use pkg-config to get library information
+# currently only used when SYSTEM is linux
+USE_PKGCONFIG	:= no
 
 
 ### Some logic to work out things
 
 ### Sound code
-ifeq ($(SOUND_CODE), "sdlmixer")
+ifeq ($(SOUND_CODE), sdlmixer)
 	DEFS	+= -DSND_SDLMIXER
 endif
 
-ifeq ($(SOUND_CODE), "nomix")
+ifeq ($(SOUND_CODE), nomix)
 	DEFS	+= -DSND_NOMIX
 endif
 
 # Just assume it's Linux, by default
 ifeq ($(SYSTEM),)
-	SYSTEM	:= "linux"
+	SYSTEM	:= linux
 endif
 
 # detect MacOS X
 ifeq ($(shell uname -s), Darwin)
-       SYSTEM := "macosx"
+       SYSTEM := macosx
 endif
 
 ### System specific parts
 
-ifeq ($(SYSTEM), "macosx")
+ifeq ($(SYSTEM), macosx)
 	DEFS	+= -DSYS_MACOSX
 	LDFLAGS	+= -framework SDL -framework SDL_mixer -framework AppKit -framework Foundation
 
@@ -96,23 +100,29 @@ ifeq ($(SYSTEM), "macosx")
 
 	INCLUDES += -I$(SDL_FRAMEWORK)/Headers
 
-	ifeq ($(SOUND_CODE), "sdlmixer")
+	ifeq ($(SOUND_CODE), sdlmixer)
 		INCLUDES += -I$(SDLMIXER_FRAMEWORK)/Headers
 	endif
 
 	EXTRA_OBJS = SDLmain.o
 endif
 
-ifeq ($(SYSTEM), "linux")
-	LDFLAGS	 += $(shell sdl-config --libs)	
-	INCLUDES += $(shell sdl-config --cflags)
+ifeq ($(SYSTEM), linux)
+
+	ifeq ($(USE_PKGCONFIG), yes)
+		LDFLAGS	 += $(shell pkg-config --libs sdl)
+		INCLUDES += $(shell pkg-config --cflags sdl)		
+	else
+		LDFLAGS	 += $(shell sdl-config --libs)	
+		INCLUDES += $(shell sdl-config --cflags)
+	endif
 	
-	ifeq ($(SOUND_CODE), "sdlmixer")
+	ifeq ($(SOUND_CODE), sdlmixer)
 		LDFLAGS += -lSDL_mixer
 	endif
 endif
 
-ifeq ($(SYSTEM), "xmingw")
+ifeq ($(SYSTEM), xmingw)
 	CC	:= i386-mingw32msvc-gcc
 	STRIP	:= i386-mingw32msvc-strip
 	WINDRES := i386-mingw32msvc-windres
@@ -124,7 +134,7 @@ ifeq ($(SYSTEM), "xmingw")
 
 	DEFS	 += -DSYS_WIN
 
-	ifeq ($(SOUND_CODE), "sdlmixer")
+	ifeq ($(SOUND_CODE), sdlmixer)
 		LDFLAGS += -lSDL_mixer
 	endif
 
@@ -133,7 +143,7 @@ ifeq ($(SYSTEM), "xmingw")
 	EXTRA_OBJS = rc.o
 endif
 
-ifeq ($(SYSTEM), "mingw32")
+ifeq ($(SYSTEM), mingw32)
 	CC	:= mingw32-gcc
 	STRIP	:= mingw32-strip
 	WINDRES := mingw32-windres
@@ -145,7 +155,7 @@ ifeq ($(SYSTEM), "mingw32")
 
 	DEFS	+= -DSYS_WIN
 
-	ifeq ($(SOUND_CODE), "sdlmixer")
+	ifeq ($(SOUND_CODE), sdlmixer)
 		LDFLAGS += -lSDL_mixer
 	endif
 
