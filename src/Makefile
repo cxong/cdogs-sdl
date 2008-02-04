@@ -49,15 +49,15 @@ CC		:= gcc
 STRIP		:= strip
 
 # Set to 1 for debugging
-DEBUG=0
-DEBUG_PROFILE=0
+DEBUG		:= 0
+DEBUG_PROFILE	:= 0
 
 ### Change this to yes, once you are ready
-I_AM_CONFIGURED=no
+I_AM_CONFIGURED	:= no
 
 # Name of the cdogs-sdl binary (probably doesn't need to be changed)
-CDOGS=cdogs-sdl
-CDOGSED=cdogs-sdl-editor
+CDOGS		:= cdogs-sdl
+CDOGSED		:= cdogs-sdl-editor
 
 # Suffix of the executable
 PROG_SUFFIX	:=
@@ -104,7 +104,7 @@ ifeq ($(SYSTEM), macosx)
 		INCLUDES += -I$(SDLMIXER_FRAMEWORK)/Headers
 	endif
 
-	EXTRA_OBJS = SDLmain.o
+	EXTRA_OBJS := SDLmain.o
 endif
 
 ifeq ($(SYSTEM), linux)
@@ -115,10 +115,6 @@ ifeq ($(SYSTEM), linux)
 	else
 		LDFLAGS	 += $(shell sdl-config --libs)	
 		INCLUDES += $(shell sdl-config --cflags)
-	endif
-	
-	ifeq ($(SOUND_CODE), sdlmixer)
-		LDFLAGS += -lSDL_mixer
 	endif
 endif
 
@@ -140,7 +136,7 @@ ifeq ($(SYSTEM), xmingw)
 
 	PROG_SUFFIX	:= .exe
 
-	EXTRA_OBJS = rc.o
+	EXTRA_OBJS := rc.o
 endif
 
 ifeq ($(SYSTEM), mingw32)
@@ -161,7 +157,7 @@ ifeq ($(SYSTEM), mingw32)
 
 	PROG_SUFFIX	:= .exe
 
-	EXTRA_OBJS = rc.o
+	EXTRA_OBJS := rc.o
 endif
 
 ### Debugging
@@ -210,6 +206,8 @@ help:
 	@echo "C-Dogs SDL Build System..."
 	@echo
 	@echo "REMEMBER TO EDIT THE MAKEFILE!"
+	@echo
+	@echo "(and change I_AM_CONFIGURED to yes)"
 	@echo
 	@echo "Targets:"
 	@echo " * $(CDOGS) - build cdogs binary"
