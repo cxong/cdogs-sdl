@@ -35,6 +35,7 @@
 #include "utils.h"
 
 int debug = 0;
+int debug_level = D_NORMAL;
 
 void *	sys_mem_alloc(unsigned int size)
 {
@@ -45,7 +46,7 @@ void *	sys_mem_alloc(unsigned int size)
 		exit(1);
 	}
 	
-	debug("%d bytes allocated, at 0x%p\n", size, new);
+	debug(D_VERBOSE, "%d bytes allocated, at 0x%p\n", size, new);
 	
 	return new;
 }
@@ -59,13 +60,13 @@ void *	sys_mem_realloc(void *ptr, unsigned int size)
 		return ptr;
 	}
 	
-	debug("memory reallocated 0x%p -> 0x%p (now %d bytes)\n", ptr, new, size);
+	debug(D_VERBOSE, "memory reallocated 0x%p -> 0x%p (now %d bytes)\n", ptr, new, size);
 	return new;
 }
 
 void	sys_mem_free(void *ptr)
 {
 	if (!ptr) return;
-	debug("freeing memory at: 0x%p\n", ptr);
+	debug(D_VERBOSE, "freeing memory at: 0x%p\n", ptr);
 	free(ptr);
 }
