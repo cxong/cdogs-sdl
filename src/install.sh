@@ -34,7 +34,7 @@ mkdir -p "${docpath}"
 cp -R "${LOCALDOCS}" "${docpath}"
 
 echo "** Installing binary **"
-binpath="${DESTDIR}/${DOCDIR}/"
+binpath="${DESTDIR}/${BINDIR}/"
 mkdir -p "${binpath}"
 cp "${PROG}" "${binpath}/${PROG}"
 chmod +x "${binpath}/${PROG}"
