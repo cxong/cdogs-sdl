@@ -88,7 +88,7 @@ ssize_t f_readarray32(FILE *f, void *buf, size_t size)
 {
 	int i;
 
-	debug("%d, %p, %d\n", fileno(f), buf, (int)size);
+	debug(D_VERBOSE, "%d, %p, %d\n", fileno(f), buf, (int)size);
 
 	if (buf) {
 		for (i = 0; i < (size/4); i++) {
@@ -120,13 +120,19 @@ ssize_t f_read16(FILE *f, void *buf, size_t size)
 	return ret;
 }
 
+
+#define Is_Writable(n)		(access(n, W_OK) == 0)
+#define Is_Readable(n)		(access(n, R_OK) == 0)
+#define Is_Executable(n)	(access(n, X_OK) == 0)
+#define Is_Browsable(n)		(access(n, X_OK) == 0)
+
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
 	FILE *f;
 	int i;
 	TCampaignSetting setting;
 
-	debug("f: %s\n", filename);
+	debug(D_NORMAL, "f: %s\n", filename);
 
 	f = fopen(filename, "rb");
 	if (f >= 0) {
@@ -134,16 +140,16 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		
 		if (i != CAMPAIGN_MAGIC) {
 			fclose(f);
-			debug("Filename: %s\n", filename);
-			debug("Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
-			debug("ScanCampaign - bad file!\n");
+			debug(D_NORMAL, "Filename: %s\n", filename);
+			debug(D_NORMAL, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
+			debug(D_NORMAL, "ScanCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
 		}
 
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			fclose(f);
-			debug("ScanCampaign - version mismatch!\n");
+			debug(D_NORMAL, "ScanCampaign - version mismatch!\n");
 			return CAMPAIGN_VERSIONMISMATCH;
 		}
 
@@ -158,7 +164,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 
 		return CAMPAIGN_OK;
 	}
-	printf("ScanCampaign - bad path!?\n");
+	perror("ScanCampaign - couldn't read file:");
 	return CAMPAIGN_BADPATH;
 }
 
@@ -172,7 +178,7 @@ void load_mission_objective(FILE *f, struct MissionObjective *o)
 		f_read32(f, &o->required, sizeof(o->required));
 		f_read32(f, &o->flags, sizeof(o->flags));
 		//readarray32(fd, o + offset, 5 * sizeof(int));
-		debug(" >> Objective: %s data: %d %d %d %d %d\n",
+		debug(D_VERBOSE, " >> Objective: %s data: %d %d %d %d %d\n",
 		o->description, o->type, o->index, o->count, o->required, o->flags);
 }
 
@@ -186,9 +192,9 @@ void load_mission(FILE *f, struct Mission *m)
 		f_read(f, m->title, sizeof(m->title));				o += sizeof(m->title);
 		f_read(f, m->description, sizeof(m->description));	o += sizeof(m->description);
 
-		debug("== MISSION ==\n");
-		debug("t: %s\n", m->title);
-		debug("d: %s\n", m->description);  
+		debug(D_NORMAL, "== MISSION ==\n");
+		debug(D_NORMAL, "t: %s\n", m->title);
+		debug(D_NORMAL, "d: %s\n", m->description);  
 	
 		R32(m,  wallStyle);
 		R32(m,  floorStyle);
@@ -206,7 +212,7 @@ void load_mission(FILE *f, struct Mission *m)
 
 		R32(m, objectiveCount);
 		
-		debug("number of objectives: %d\n", m->objectiveCount);	
+		debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);	
  		for (i = 0; i < OBJECTIVE_MAX; i++) {
 			load_mission_objective(f, &m->objectives[i]);
 		}
@@ -240,7 +246,7 @@ void load_mission(FILE *f, struct Mission *m)
 		R32(m, roomRange);
 		R32(m, altRange);
 
-		debug("number of baddies: %d\n", m->baddieCount);	
+		debug(D_NORMAL, "number of baddies: %d\n", m->baddieCount);	
 
 		return;
 }
@@ -276,21 +282,21 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 	FILE *f;
 	int i;
 
-	debug("f: %s\n", filename);
+	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
 
 	if (f) {
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_MAGIC) {
 			fclose(f);
-			debug("LoadCampaign - bad file!\n");
+			debug(D_NORMAL, "LoadCampaign - bad file!\n");
 			return CAMPAIGN_BADFILE;
 		}
 
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			fclose(f);
-			debug("LoadCampaign - version mismatch!\n");
+			debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
 			return CAMPAIGN_VERSIONMISMATCH;
 		}
 
@@ -352,11 +358,11 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 
 		write(f, setting->title, sizeof(setting->title));
 		write(f, setting->author, sizeof(setting->author));
-		write(f, setting->description,
-		      sizeof(setting->description));
+		write(f, setting->description, sizeof(setting->description));
 
 		write(f, &setting->missionCount,
 		      sizeof(setting->missionCount));
+
 		for (i = 0; i < setting->missionCount; i++) {
 			write(f, &setting->missions[i],
 			      sizeof(struct Mission));
@@ -371,6 +377,7 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 		close(f);
 		return CAMPAIGN_OK;
 	}
+	perror("SaveCampaign - couldn't write to file: ");
 	return CAMPAIGN_BADPATH;
 }
 
@@ -563,6 +570,39 @@ void SaveCampaignAsC(const char *filename, const char *name,
 	}
 };
 
+
+int Is_Dir(const char *name)
+{
+	struct stat s;
+
+	debug(D_NORMAL, "name: '%s'\n", name);
+
+	if ((stat(name, &s) == 0)) {
+	//	if ((s.st_mode & S_IFMT) == S_IFDIR) {
+		switch (s.st_mode & S_IFMT) {
+			case S_IFDIR:
+				debug(D_NORMAL, "is a dir...\n");
+				return 1;
+			case S_IFLNK:
+				{
+					char lnk_buf[512];
+
+					debug(D_NORMAL, "is a symlink...\n");
+
+					if (readlink(name, lnk_buf, (size_t) 512) != -1) {
+						debug(D_NORMAL, "resolved to '%s'\n", lnk_buf);
+						return Is_Dir(lnk_buf);
+					} else {
+						return 0;
+					}
+				}
+			default:
+				return 0;
+		}
+	}
+	return 0;
+}
+
 void AddFileEntry(struct FileEntry **list, const char *name,
 		  const char *info, int data)
 {
@@ -570,6 +610,8 @@ void AddFileEntry(struct FileEntry **list, const char *name,
 
 	if (strcmp(name, "..") == 0)	return;
 	if (strcmp(name, ".") == 0)	return;
+
+	if (Is_Dir(name)) return;
 
 	while (*list && strcmp((*list)->name, name) < 0)
 		list = &(*list)->next;
@@ -673,8 +715,9 @@ char * GetHomeDirectory(void)
 				"# It is suggested you get a better shell. :D                 #\n",
 				"##############################################################\n");
 				
-				tmp1 = calloc(MAX_STRING_LEN, sizeof(char));	/* lots of chars... */ 
-				strcpy(tmp1, "/tmp/unknown.user/");	
+				tmp1 = calloc(2048, sizeof(char));	/* lots of chars... */ 
+				strcpy(tmp1, CDOGS_TEMP_DIR);
+	
 				tmp2 = calloc(strlen(tmp1)+1, 1);
 				strcpy(tmp2, tmp1);
 				free(tmp1);
@@ -682,15 +725,14 @@ char * GetHomeDirectory(void)
 				cdogs_homepath = tmp2;
 				return cdogs_homepath;
 			} else {				/* hopefully they have USER set... */
-				tmp1 = calloc(MAX_STRING_LEN, 1);	/* lots of chars... */
+				tmp1 = calloc(2048, 1);	/* lots of chars... */
 				strcpy(tmp1, "/home/");
 				strcat(tmp1, user);
 				strcat(tmp1, "/");
 				tmp2 = calloc(strlen(tmp1)+1, 1); 
 				strcpy(tmp2, tmp1);	
 				free(tmp1);
-				//setenv("HOME", tmp1, 0);	/* set the HOME var anyway :) */
-			
+
 				cdogs_homepath = tmp2;
 				return cdogs_homepath;
 			}
@@ -709,33 +751,6 @@ char * GetHomeDirectory(void)
 	return cdogs_homepath;
 }
 
-#if 0
-int IsWritable(char *name)
-{
-	struct stat s;
-	int tmp;
-	int ret;
-
-	tmp=stat(name, &s);
-
-	if (tmp == -1 && errno == ENOENT) {
-		printf("Error: '%s' does not exist\n", name);
-		ret = FS_OBJ_NEXIST;
-	} else if (ret == 1) {
-		uid_t u;
-		
-		u = getuid();
-	
-		/* Check if it's a file and rw */
-		if (((s.s_mode & S_IFMT) == S_IFREG) &&
-			)
-				
-	}
-
-	return ret;
-}
-#endif
-
 
 /* GetDataFilePath()
  *
@@ -750,7 +765,8 @@ char * GetDataFilePath(const char *path)
 	if (!data_path) {
 		char *tmp;
 		
-		if ((tmp = getenv("CDOGS_DATA_DIR")) != NULL && strlen(tmp) != 0) {
+		if ((tmp = getenv("CDOGS_DATA_DIR")) != NULL && strlen(tmp) != 0
+				&& Is_Dir(tmp) && Is_Readable(tmp)) {
 			data_path = strdup(tmp);
 		} else {
 			tmp = calloc(strlen(CDOGS_DATA_DIR)+strlen(path)+1,sizeof(char));
@@ -786,10 +802,9 @@ char * join(const char *s1, const char *s2)
  *
  * returns a full path to a data file...
  */
-char cfpath[255];
+char cfpath[512];
 char * GetConfigFilePath(const char *name)
 {
-	char *tmp;
 	char *homedir;
 
 #ifndef SYS_WIN
@@ -824,7 +839,7 @@ int mkdir_deep(const char *path, mode_t m)
 	int i;
 	char part[255];
 
-	debug("mkdir_deep path: %s\n", path);
+	debug(D_NORMAL, "mkdir_deep path: %s\n", path);
 
 	for (i = 0; i < strlen(path); i++) {
 		if (path[i] == '\0') break;
@@ -833,6 +848,8 @@ int mkdir_deep(const char *path, mode_t m)
 			part[i+1] = '\0';
 
 			if (mkdir(part, m) == -1) {
+				/* Mac OS X 10.4 returns EISDIR instead of EEXIST
+				 * if a dir already exists... */
 				if (errno == EEXIST || errno == EISDIR) continue;
 				else return 1; 
 			}
@@ -877,9 +894,9 @@ void SetupConfigDir(void)
 
 #endif
 
-char dir_buf[250];
+char dir_buf[512];
 char * GetPWD(void)
 {
-	getcwd(dir_buf, 250);
+	getcwd(dir_buf, 511);
 	return dir_buf;
 }

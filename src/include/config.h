@@ -49,3 +49,11 @@
 #ifndef CDOGS_MUSIC_DIR
 	#define CDOGS_MUSIC_DIR "./music/"
 #endif
+
+#ifndef CDOGS_TEMP_DIR
+	#ifdef SYS_WIN
+		#define CDOGS_TEMP_DIR "C:/temp/cdogs/"
+	#else
+		#define CDOGS_TEMP_DIR "/tmp/cdogs/"
+	#endif
+#endif
