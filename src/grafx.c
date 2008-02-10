@@ -186,13 +186,13 @@ int InitVideo(void)
 	}	
 
 	if (screen == NULL) { /* only do this the first time */
-		debug("setting caption and icon...\n");
+		debug(D_NORMAL, "setting caption and icon...\n");
 		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
 		SDL_ShowCursor(SDL_DISABLE);
 	} else {
-		debug("Changed video mode...\n");
+		debug(D_NORMAL, "Changed video mode...\n");
 	}
 
 	if (screen == NULL) {
@@ -203,7 +203,7 @@ int InitVideo(void)
 	screen = new_screen;
 	
 	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-	debug("Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	SetPalette(gPalette);
 			
@@ -212,7 +212,7 @@ int InitVideo(void)
 
 void ShutDownVideo(void)
 {
-	debug("Shutting down video...\n");
+	debug(D_NORMAL, "Shutting down video...\n");
 	SDL_VideoQuit();		
 }
 

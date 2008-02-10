@@ -588,11 +588,11 @@ int gameloop(void)
 				screenShaking = 0;
 		}
 
-		debug("frames... %d\n", frames);
+		debug(D_VERBOSE, "frames... %d\n", frames);
 
 		if (Ticks_TimeElapsed(TICKS_PER_SEC)) {
 			fps = frames;
-			debug("fps = %d\n", fps);
+			debug(D_NORMAL, "fps = %d\n", fps);
 			frames = 0;
 
 			t = time(NULL);

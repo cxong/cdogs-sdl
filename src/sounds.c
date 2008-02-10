@@ -137,7 +137,7 @@ void ShutDownSound(void)
 	if (!soundInitialized)
 		return;
 
-	debug("shutting down sound\n");
+	debug(D_NORMAL, "shutting down sound\n");
 #ifdef SND_SDLMIXER
 	Mix_CloseAudio();
 #else
@@ -178,7 +178,7 @@ void DoSound(int i, int len, void *data)
 #elif defined(SND_SDLMIXER) /* sdl mixer version */
 void DoSound(int i, int len, void *data)
 {
-	debug("snd: %d (sdl-mixer version)\n", i);
+	debug(D_VERBOSE, "snd: %d (sdl-mixer version)\n", i);
 
 	if (!soundInitialized)
 		return;
@@ -218,7 +218,7 @@ void SoundCallback(void *userdata, Uint8 * stream, int len)
 {
 	int i;
 
-	debug("sound callback(%p, %p, %d)\n", userdata, stream, len);
+	debug(D_VERBOSE, "sound callback(%p, %p, %d)\n", userdata, stream, len);
 
 	memset(stream, 0, len);
 	for (i = 0; i < SND_COUNT; i++) {
@@ -242,12 +242,12 @@ int InitSoundDevice(void)
 	// Initialization goes here...
 
 	#ifdef SND_NOMIX
-	debug("Old sound code enabled. =/\n");
+	debug(D_NORMAL, "Old sound code enabled. =/\n");
 	#endif
 	#ifdef SND_SDLMIXER
-	debug("Using SDL mixer...\n");
+	debug(D_NORMAL, "Using SDL mixer...\n");
 	#else
-	debug("Using newish sound code..\n");
+	debug(D_NORMAL, "Using newish sound code..\n");
 	#endif
 
 	#ifdef SND_SDLMIXER
@@ -263,7 +263,7 @@ int InitSoundDevice(void)
 
 		Mix_QuerySpec(&f, &fmt, &c);
 
-		debug("spec: f=%d fmt=%d c=%d\n", f, fmt, c);
+		debug(D_NORMAL, "spec: f=%d fmt=%d c=%d\n", f, fmt, c);
 
 		if (f != 22050 || fmt != AUDIO_S16 || c != 2) {
 			printf("Audio not what we want.\n");
@@ -354,7 +354,7 @@ int PlaySong(char *name)
 	if (!soundInitialized)
 		return 0;
 
-	debug("Attempting to play song: %s\n", name);
+	debug(D_NORMAL, "Attempting to play song: %s\n", name);
 
 	if (name) {
 		struct stat s;
@@ -369,7 +369,7 @@ int PlaySong(char *name)
 	
 		p = name;
 	
-		debug("song path 1: %s\n", name);
+		debug(D_NORMAL, "song path 1: %s\n", name);
 		if (stat(name, &s) != 0) {
 			strcpy(path, ModuleDirectory());
 			strcat(path, "/");
@@ -377,7 +377,7 @@ int PlaySong(char *name)
 			p = path;
 		}
 		
-		debug("song path 2: %s\n", p);
+		debug(D_NORMAL, "song path 2: %s\n", p);
 		if (stat(p, &s) != 0) {
 			return 1;
 		}
@@ -389,7 +389,7 @@ int PlaySong(char *name)
 			return 1;
 		}
 	
-		debug("Playing song: %s\n", p);
+		debug(D_NORMAL, "Playing song: %s\n", p);
 	
 		Mix_PlayMusic(music, -1);
 		SetModuleStatus(MODULE_PLAYING);
@@ -410,7 +410,7 @@ void PlaySound(int sound, int panning, int volume)
 	if (!soundInitialized)
 		return;
 
-	debug("sound: %d panning: %d volume: %d\n", sound, panning, volume);
+	debug(D_VERBOSE, "sound: %d panning: %d volume: %d\n", sound, panning, volume);
 
 #ifdef SND_SDLMIXER
 	{
@@ -450,7 +450,7 @@ void DoSounds(void)
 
 void SetFXVolume(int volume)
 {
-	debug("volume: %d\n", volume);
+	debug(D_NORMAL, "volume: %d\n", volume);
 
 	fxVolume = volume;
 
@@ -473,7 +473,7 @@ void SetMusicVolume(int volume)
 	if (!soundInitialized)
 		return;
 
-	debug("volume: %d\n", volume);
+	debug(D_NORMAL, "volume: %d\n", volume);
 
 #ifdef SND_SDLMIXER
 	Mix_VolumeMusic(musicVolume);

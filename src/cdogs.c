@@ -162,7 +162,7 @@ void CampaignIntro(void *bkg)
 	int x;
 	char s[1024];
 
-	debug("\n");
+	debug(D_NORMAL, "\n");
 	
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
@@ -405,7 +405,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
-	debug("\n");
+	debug(D_NORMAL, "\n");
 
 	if (gOptions.twoPlayers) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
@@ -870,7 +870,10 @@ void PrintHelp (void)
 	);
 
 	printf("%s\n",
-		"The DEBUG environment variable can be set to show debug information."
+		"The DEBUG environment variable can be set to show debug information.");
+
+	printf(
+		"The DEBUG_LEVEL environment variable can be set to between %d and %d.\n", D_NORMAL, D_MAX
 	);
 }
 
@@ -885,7 +888,15 @@ int main(int argc, char *argv[])
 
 	PrintTitle();
 
-	if (getenv("DEBUG") != NULL) debug = 1;
+	{
+		char *dbg;
+		if (getenv("DEBUG") != NULL) debug = 1;
+		if ((dbg = getenv("DEBUG_LEVEL")) != NULL) {
+			debug_level = atoi(dbg);
+			if (debug_level < 0) debug_level = 0;
+			if (debug_level > D_MAX) debug_level = D_MAX;
+		}
+	}
 
 	SetupConfigDir();
 	LoadConfig();
@@ -956,7 +967,7 @@ int main(int argc, char *argv[])
 				sound = 0;
 			}
 			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
-				debug("nojoystick\n");
+				debug(D_NORMAL, "nojoystick\n");
 				js_flag = 0;				
 			}
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
@@ -966,7 +977,7 @@ int main(int argc, char *argv[])
 				int w, h;
 				char *val = strchr(argv[i], '='); val++;
 				sscanf(val, "%dx%d", &w, &h);
-				debug("Video mode %dx%d set...\n", w, h);
+				debug(D_NORMAL, "Video mode %dx%d set...\n", w, h);
 				Gfx_SetHint(HINT_WIDTH, w);
 				Gfx_SetHint(HINT_HEIGHT, h);
 			}
@@ -990,7 +1001,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* moved here because -savecampaigns causes a crash, why? */
-	debug("Initialising SDL...\n");
+	debug(D_NORMAL, "Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0) {
 		printf("Failed to start SDL!\n");
 		return -1;
@@ -1039,7 +1050,7 @@ int main(int argc, char *argv[])
 
 	LoadHighScores();
 
-	debug("Loading song lists...\n");
+	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs(GetConfigFilePath("menusong.cfg"), &gMenuSongs);
 	LoadSongs(GetConfigFilePath("gamesong.cfg"), &gGameSongs);
 	LoadTemplates();
@@ -1089,7 +1100,7 @@ int main(int argc, char *argv[])
 		ShutDownSound();
 	}
 
-	debug("SDL_Quit()\n");
+	debug(D_NORMAL, "SDL_Quit()\n");
 	SDL_Quit();
 
 	printf("Bye :)\n");

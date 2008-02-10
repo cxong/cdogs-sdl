@@ -521,7 +521,7 @@ int SelectOptions(int cmd)
 				}
 
 				if (m) {
-					debug("new mode? %d x %d\n", m->w, m->h);
+					debug(D_NORMAL, "new mode? %d x %d\n", m->w, m->h);
 					Gfx_SetHint(HINT_WIDTH, m->w);
 					Gfx_SetHint(HINT_HEIGHT, m->h);
 				}
@@ -1153,7 +1153,7 @@ void SaveConfig(void)
 {
 	FILE *f;
 
-	debug("begin\n");
+	debug(D_NORMAL, "begin\n");
 
 	f = fopen(GetConfigFilePath("options.cnf"), "w");
 
@@ -1201,7 +1201,7 @@ void SaveConfig(void)
 				);
 		fclose(f);
 
-		debug("saved config\n");
+		debug(D_NORMAL, "saved config\n");
 	}
 
 	return;

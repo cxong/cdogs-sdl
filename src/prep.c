@@ -180,7 +180,7 @@ void SaveTemplates(void)
 	FILE *f;
 	int i;
 
-	debug("begin\n");
+	debug(D_NORMAL, "begin\n");
 
 	f = fopen(GetConfigFilePath("players.cnf"), "w");
 	if (f) {
@@ -196,7 +196,7 @@ void SaveTemplates(void)
 		}
 		fclose(f);
 
-		debug("saved templates\n");
+		debug(D_NORMAL, "saved templates\n");
 	}
 }
 
@@ -497,7 +497,7 @@ static int AppearanceSelection(const char **menu, int menuCount,
 	int y;
 	int i;
 
-	debug("\n");
+	debug(D_NORMAL, "\n");
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
 		PlaySound(SND_MACHINEGUN, 0, 255);
@@ -635,7 +635,7 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 	int y;
 	static int selection[2] = { 0, 0 };
 
-	debug("\n");
+	debug(D_NORMAL, "\n");
 
 	if (selection[index] > gMission.weaponCount)
 		selection[index] = gMission.weaponCount;
@@ -926,7 +926,7 @@ int PlayerEquip(void *bkg)
 	int cmd1, cmd2, prev1 = 0, prev2 = 0;
 	int done1 = 0, done2;
 
-	debug("\n");
+	debug(D_NORMAL, "\n");
 
 	done2 = gOptions.twoPlayers ? 0 : 1;
 	while (!done1 || !done2) {
