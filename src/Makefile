@@ -108,13 +108,16 @@ ifeq ($(SYSTEM), macosx)
 endif
 
 ifeq ($(SYSTEM), linux)
-
 	ifeq ($(USE_PKGCONFIG), yes)
 		LDFLAGS	 += $(shell pkg-config --libs sdl)
 		INCLUDES += $(shell pkg-config --cflags sdl)		
 	else
 		LDFLAGS	 += $(shell sdl-config --libs)	
 		INCLUDES += $(shell sdl-config --cflags)
+	endif
+
+	ifeq ($(SOUND_CODE), sdlmixer)
+		LDFLAGS	+= -lSDL_mixer
 	endif
 endif
 
