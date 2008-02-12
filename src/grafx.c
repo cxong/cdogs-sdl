@@ -51,14 +51,13 @@
 #include "utils.h"
 
 GFX_Mode gfx_modelist[] = {
-//	{ 320, 200 },
 	{ 320, 240 },
 	{ 400, 300 },
 	{ 640, 480 },
 	{ 800, 600 }, /* things go strange above this... */
 	{ 0, 0 },
 };
-#define MODE_MAX 4
+#define MODE_MAX 3
 
 
 #define Wrap(var, min, max)			\
