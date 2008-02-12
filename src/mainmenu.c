@@ -351,8 +351,9 @@ static int SelectMain(int cmd)
 	}
 
 	DrawTPic((SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2, (SCREEN_HEIGHT / 12), gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
-	TextStringSpecial(CDOGS_VERSION, TEXT_LEFT | TEXT_TOP, 20, 20);
-	TextStringSpecial(CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
+
+	TextStringSpecial("Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
+	TextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 
 	DisplayMenuAtCenter(mainMenu, MAIN_COUNT, index);
 	
