@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=C-Dogs SDL
-GenericName=2D Action/Arcade Game
+GenericName=Action/Arcade Game
 Version=1.0
 Type=Application
 Categories=Game;
@@ -10,4 +10,3 @@ TryExec=cdogs-sdl
 Exec=cdogs-sdl
 Terminal=false
 Icon=cdogs_icon.png
-GenericName=Action/Arcade Game
