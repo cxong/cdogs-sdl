@@ -15,31 +15,31 @@ THE _VERY_ DISTANT FUTURE (if at all):
 	  # Larger maps?
 
 DONE (so we feel good):
-	* Binary packages (for lazy people)				[add/mod]	(lucas)
+	* Binary packages (for lazy people)				[add/mod]
 	  - MacOSX (ppc and intel?)
 	  - Win32
 	  - Linux
 	  - Windows
 	  
-	* Make data directories changeable via environment variables	[add/mod]	(lucas)
+	* Make data directories changeable via environment variables	[add/mod]
 
-	* Get joystick stuff working					[port]		(lucas)
+	* Get joystick stuff working					[port]
 
-	* Get sound working better					[add/mod]	(lucas)
+	* Get sound working better					[add/mod]
 
 	* Got running on Mac OS X
-	  (and hopefully other non-intel machines)			[port]		(lucas)
+	  (and hopefully other non-intel machines)			[port]
 	
-	* Graphics							[ported]	(jeremy)
-	* Video Output							[ported]	(jeremy)
-	* Keyboard Input						[ported]	(jeremy)
-	* Get sound working						[port]		(jeremy)
+	* Graphics							[port]
+	* Video Output							[port]
+	* Keyboard Input						[port]
+	* Get sound working						[port]
 	
-	* Get external missions working					[port]		(lucas)
-	* Get game to use different directories for data and config	[mod]		(lucas)
+	* Get external missions working					[port]
+	* Get game to use different directories for data and config	[mod]
 
-	* Made the screen shake when there's an explosion :D		[add/mod]	(lucas)
-	* Have nicer startup messages :D				[mod]		(lucas)
+	* Made the screen shake when there's an explosion :D		[add/mod]
+	* Have nicer startup messages :D				[mod]
 
-	* Makefile							[admin]		(lucas/jeremy)
+	* Makefile							[admin]
 
