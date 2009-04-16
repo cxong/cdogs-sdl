@@ -730,7 +730,6 @@ void Display(int index, int xc, int yc, int key)
 		break;
 	}
 
-	vsync();
 	CopyToScreen();
 }
 
@@ -1222,7 +1221,6 @@ static void Save(int asCode)
 		TextChar('\020');
 		TextString(filename);
 		TextChar('\021');
-		//vsync();
 		CopyToScreen();
 
 		c = GetKey();
@@ -1267,7 +1265,6 @@ static int ConfirmQuit(void)
 	memset(GetDstScreen(), 58, Screen_GetMemSize());
 	TextStringAt(80, 50, "Campaign has been modified, but not saved");
 	TextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
-	vsync();
 	CopyToScreen();
 
 	c = GetKey();
