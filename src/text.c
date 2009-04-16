@@ -63,12 +63,6 @@ void TextInit(const char *filename, int offset, int compile, int rle)
 	memset(compiledFont, 0, sizeof(compiledFont));
 	memset(rleFont, 0, sizeof(rleFont));
 	ReadPics(filename, font, CHARS_IN_FONT, NULL);
-	if (compile)
-		printf("Compiled font: %d bytes\n",
-		       CompilePics(CHARS_IN_FONT, font, compiledFont));
-	if (rle)
-		printf("RLE font: %d bytes\n",
-		       RLEncodePics(CHARS_IN_FONT, font, rleFont));
 
 	for (i = 0; i < CHARS_IN_FONT; i++) {
 		h = PicHeight(font[i]);

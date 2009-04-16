@@ -298,54 +298,6 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	return i - startIndex;
 }
 
-int CompilePics(int picCount, void **pics, void **compiledPics)
-{
-	int i, size, total = 0;
-	int skipped = 0;
-
-	for (i = 0; i < picCount; i++) {
-		if (pics[i]) {
-			size = compileSprite(pics[i], NULL);
-			total += size;
-			if (size) {
-				compiledPics[i] = sys_mem_alloc(size);
-				compileSprite(pics[i], compiledPics[i]);
-			} else {
-				compiledPics[i] = NULL;
-				skipped++;
-			}
-		} else
-			compiledPics[i] = NULL;
-	}
-	if (skipped)
-		printf("%d solid pics not compiled\n", skipped);
-	return total;
-}
-
-int RLEncodePics(int picCount, void **pics, void **rlePics)
-{
-	int i, size, total = 0;
-	int skipped = 0;
-
-	for (i = 0; i < picCount; i++) {
-		if (pics[i]) {
-			size = RLEncodeSprite(pics[i], NULL);
-			total += size;
-			if (size) {
-				rlePics[i] = sys_mem_alloc(size);
-				RLEncodeSprite(pics[i], rlePics[i]);
-			} else {
-				rlePics[i] = NULL;
-				skipped++;
-			}
-		} else
-			rlePics[i] = NULL;
-	}
-	if (skipped)
-		printf("%d solid pics not RLE'd\n", skipped);
-	return total;
-}
-
 #ifndef _MSC_VER
 inline
 #endif
