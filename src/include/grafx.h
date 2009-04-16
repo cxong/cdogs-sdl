@@ -73,8 +73,6 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 	     color * palette);
 int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics);
-int CompilePics(int picCount, void **pics, void **compiledPics);
-int RLEncodePics(int picCount, void **pics, void **rlePics);
 
 #ifndef _MSC_VER
 inline int PicWidth(void *pic);
