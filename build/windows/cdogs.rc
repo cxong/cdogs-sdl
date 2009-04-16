@@ -5,8 +5,8 @@
 1 VERSIONINFO
 FILEOS		VOS_NT_WINDOWS32
 FILETYPE	VFT_APP
-PRODUCTVERSION	0,4,0,0
-FILEVERSION	0,4,0,0
+PRODUCTVERSION	0,4,1,0
+FILEVERSION	0,4,1,0
 
 BEGIN
 	BLOCK "StringFileInfo"
@@ -16,12 +16,12 @@ BEGIN
 			VALUE "Comments", "See <http://lumaki.com/code/cdogs> for more details.\0"
 			VALUE "CompanyName", "Maintained by Lucas Martin-King\0"
 			VALUE "FileDescription", "C-Dogs SDL\0"
-			VALUE "FileVersion", "0.4\0"
+			VALUE "FileVersion", "0.4.1\0"
 			VALUE "InternalName", "cdogs\0"
-			VALUE "LegalCopyright", "Copyright (C) 1997-2006 Various\0"
+			VALUE "LegalCopyright", "Copyright (C) 1997-2009 Various\0"
 			VALUE "OriginalFilename", "cdogs.exe\0"
 			VALUE "ProductName", "C-Dogs SDL\0"
-			VALUE "ProductVersion", "0.4\0"
+			VALUE "ProductVersion", "0.4.1\0"
 		END
 	END
 END
