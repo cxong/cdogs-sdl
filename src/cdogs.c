@@ -881,7 +881,6 @@ int main(int argc, char *argv[])
 {
 	int i, wait = 0;
 	char s[13];
-	int compile = 1, rle = 1;
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
@@ -957,10 +956,6 @@ int main(int argc, char *argv[])
 			}
 			if (strcmp(argv[i] + 1, "wait") == 0)
 				wait = 1;
-			if (strcmp(argv[i] + 1, "nocompile") == 0)
-				compile = 0;
-			if (strcmp(argv[i] + 1, "norle") == 0)
-				rle = 0;
 			if (strcmp(argv[i] + 1, "nosound") == 0) {
 				printf("Sound disabled!\n");
 				snd_flag = 0;
@@ -1007,9 +1002,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
-	compile = 0;
-	rle = 0;
-
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
@@ -1026,23 +1018,10 @@ int main(int argc, char *argv[])
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 
-	if (compile)
-		printf("Size of compiled sprites: %d bytes\n",
-		       CompilePics(PIC_MAX, gPics, gCompiledPics));
-	else {
-		memset(gCompiledPics, 0, sizeof(gCompiledPics));
-		printf("Not using compiled sprites\n");
-	}
+	memset(gCompiledPics, 0, sizeof(gCompiledPics));
+	memset(gRLEPics, 0, sizeof(gRLEPics));
 
-	if (rle)
-		printf("Size of RLE sprites: %d bytes\n",
-		       RLEncodePics(PIC_MAX, gPics, gRLEPics));
-	else {
-		memset(gRLEPics, 0, sizeof(gRLEPics));
-		printf("Not using RLE\n");
-	}
-
-	TextInit(GetDataFilePath("graphics/font.px"), -2, compile, rle);
+	TextInit(GetDataFilePath("graphics/font.px"), -2, 0, 0);
 
 	if (sound && !InitializeSound()) {
 		printf("Sound initialization failed!\n");
