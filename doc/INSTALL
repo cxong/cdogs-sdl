@@ -13,6 +13,7 @@ Linux:
 	- set I_AM_CONFIGURED to 1 when you're happy
 
  2) extract cdogs-data.tar.bz2 to /data:
+ 	$ mkdir cdogs-sdl/data
 	$ cd cdogs-src/data
 	$ tar --strip-path 1 -xjvf cdogs-data-current.tar.bz2
 
