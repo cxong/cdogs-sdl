@@ -1,5 +1,5 @@
-C-Dogs SDL Port v0.04
----------------------
+C-Dogs SDL Port v0.4.1
+----------------------
 (based on C-Dogs 1.06)
 
         .--------.
@@ -12,7 +12,7 @@ C-Dogs SDL Port v0.04
  |  |   '-------'   '---'  '----''----'
  /  '.___________
 |                |                  SDL
- `---------------'                v0.04
+ `---------------'               v0.4.1
 
    [ http://icculus.org/cdogs-sdl ]
 
@@ -41,32 +41,19 @@ For more information about the original C-Dogs read 'original_readme.txt'.
 | 2 | Tested Environments |
 +---+---------------------+
 
-C-Dogs SDL has been ported with a unix development environment.
+C-Dogs SDL has been ported with a Unix development environment.
 In theory, C-Dogs SDL could run on any system that is supported by SDL.
-See the SDL website - <www.libsdl.org> for more details on SDL itself.
+See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
-Tested architecture/system combinations include:
+C-Dogs SDL runs on Linux, *BSD, Windows and Mac OS X.
 
-Linux:			
-	* x86		(gentoo, slackware, ubuntu)
-	* x86-64	(gentoo)
-	* ppc		(ubuntu)
+There are also unofficial ports to GP2X, BeOS/ZETA/Haiku, MorphOS,
+Nintendo DS, and AmigaOS 4 to name a few.
 
-Windows:
-	* x86		(XP SP2) [ could be a little flaky ]
+See <http://lumaki.com/code/cdogs/download> for a more comprehensive list.
 
-MacOSX:
-	* ppc
-	* x86		(reportedly works fine)
-
-FreeBSD:
-	* x86		(reportedly works fine)
-
-OpenBSD:
-	* x86		(reportedly works fine)
-
-Should you succeed in running C-Dogs SDL on a different operating system,
-please contact us!
+And of course, should you succeed in running C-Dogs SDL on a different
+operating system, platform or toaster please contact us! :-)
 
 
 +---+--------------+
@@ -74,16 +61,17 @@ please contact us!
 +---+--------------+
 
 To compile C-Dogs SDL you need to have the SDL libraries previously installed,
+the SDL_mixer libraries also installed if you want better sound (and music), and
 a compiler (gcc recommended) and the appropriate header files.
 
-See /doc/INSTALL for actual installation instructions...
+See 'INSTALL' for actual installation instructions...
 
 
 +---+----------------------+
 | 4 | Command line options |
 +---+----------------------+
 
-The C-Dogs binary is called "cdogs". Below are some command line arguments:
+The C-Dogs binary is called "cdogs-sdl". Below are some command line arguments:
 
 Video Options:
 	-fullscreen	Try and use a fullscreen video mode.
@@ -109,9 +97,10 @@ Game Options:
 	-help		Display command line options and version information.
 
 These can be used in any order/combination:
-	$ cdogs -fullscreen -wait
-Which will make it go full screen after all the pre-video stuff is displayed
-on stdout.
+
+	$ cdogs-sdl -fullscreen -screen=400x300
+
+Which will make the game try to run fullscreen at 400x300 resolution.
 
 
 +---+---------+
@@ -119,11 +108,6 @@ on stdout.
 +---+---------+
 
 If you have an questions, comments, bug reports (yes please), patches (even
-better) or anything else related to C-Dogs SDL email either:
+better) or anything else related to C-Dogs SDL email or IM (Jabber, MSN):
 
-	Lucas	<lmartinking@gmail.com> (works with MSN and Jabber too)
-
-	Jeremy	<rekless@fastmail.fm>
-
-Alternately, if you have IRC visit #oz on cyberarmy.
-Jeremy is usually 'ReKleSS' and Lucas 'Ion-Pookie'.
+	Lucas Martin-King <lmartinking@gmail.com>
