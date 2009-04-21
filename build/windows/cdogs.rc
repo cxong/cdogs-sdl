@@ -11,17 +11,22 @@ FILEVERSION	0,4,1,0
 BEGIN
 	BLOCK "StringFileInfo"
 	BEGIN
-		BLOCK "040904b0"
+		BLOCK "040904E4"
 		BEGIN
-			VALUE "Comments", "See <http://lumaki.com/code/cdogs> for more details.\0"
 			VALUE "CompanyName", "Maintained by Lucas Martin-King\0"
-			VALUE "FileDescription", "C-Dogs SDL\0"
+			VALUE "FileDescription", "C-Dogs SDL <lumaki.com/code/cdogs>\0"
 			VALUE "FileVersion", "0.4.1\0"
+			VALUE "Comments", "See <http://lumaki.com/code/cdogs> for more details.\0"
 			VALUE "InternalName", "cdogs\0"
 			VALUE "LegalCopyright", "Copyright (C) 1997-2009 Various\0"
-			VALUE "OriginalFilename", "cdogs.exe\0"
+			VALUE "OriginalFilename", "cdogs-sdl.exe\0"
 			VALUE "ProductName", "C-Dogs SDL\0"
 			VALUE "ProductVersion", "0.4.1\0"
 		END
+	END
+	
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 0
 	END
 END
