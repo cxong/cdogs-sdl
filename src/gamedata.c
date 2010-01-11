@@ -133,21 +133,29 @@ void FreeSongs(struct SongDef **songList)
 void LoadSongs(const char *path, struct SongDef **songList)
 {
 	FILE *f;
-	char s[100], *p;
+	char s[100];
+	char *p;
 
-	debug("LoadSongs path: %s\n", path);
+	debug(D_VERBOSE, "LoadSongs path: %s...\n", path);
 
 	f = fopen(path, "r");
 	if (f) {
+		debug(D_VERBOSE, "reading lines...\n");
 		while (fgets(s, sizeof(s), f)) {
+			debug(D_VERBOSE, "song is: %s\n", s);
+			
 			p = s + strlen(s);
-			while (p >= s && !isgraph(*p))
+			while (p >= s && !isgraph(*p)) {
 				*p-- = 0;
+			}
+			
 			if (s[0]) {
-				debug("Added song: %s\n", s);
+				debug(D_VERBOSE, "Added song: %s\n", s);
 				AddSong(songList, s);
 			}
 		}
 		fclose(f);
+	} else {
+		debug(D_VERBOSE, "failed to open songlist?\n");
 	}
 }
