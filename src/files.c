@@ -246,7 +246,7 @@ void load_mission(FILE *f, struct Mission *m)
 		R32(m, roomRange);
 		R32(m, altRange);
 
-		debug(D_NORMAL, "number of baddies: %d\n", m->baddieCount);	
+		debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);	
 
 		return;
 }
@@ -348,7 +348,7 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 	int f;
 	int i;
 
-	f = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+	f = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (f >= 0) {
 		i = CAMPAIGN_MAGIC;
 		write(f, &i, sizeof(i));
@@ -570,7 +570,6 @@ void SaveCampaignAsC(const char *filename, const char *name,
 	}
 };
 
-
 int Is_Dir(const char *name)
 {
 	struct stat s;
@@ -581,21 +580,23 @@ int Is_Dir(const char *name)
 	//	if ((s.st_mode & S_IFMT) == S_IFDIR) {
 		switch (s.st_mode & S_IFMT) {
 			case S_IFDIR:
-				debug(D_NORMAL, "is a dir...\n");
+				debug(D_VERBOSE, "is a dir...\n");
 				return 1;
+#ifndef SYS_WIN
 			case S_IFLNK:
 				{
 					char lnk_buf[512];
 
-					debug(D_NORMAL, "is a symlink...\n");
+					debug(D_VERBOSE, "is a symlink...\n");
 
 					if (readlink(name, lnk_buf, (size_t) 512) != -1) {
-						debug(D_NORMAL, "resolved to '%s'\n", lnk_buf);
+						debug(D_VERBOSE, "resolved to '%s'\n", lnk_buf);
 						return Is_Dir(lnk_buf);
 					} else {
 						return 0;
 					}
 				}
+#endif /* SYS_WIN */
 			default:
 				return 0;
 		}
