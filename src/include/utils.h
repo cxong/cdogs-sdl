@@ -40,9 +40,9 @@ extern int debug_level;
 
 #define D_NORMAL	0
 #define D_VERBOSE	1
-#define D_MAX		1
+#define D_MAX		2
 
-#define debug(n,...)	if (debug && n <= debug_level) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
+#define debug(n,...)	if (debug && (n <= debug_level)) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
 
 void *	sys_mem_alloc(unsigned int size);
 void *	sys_mem_realloc(void *ptr, unsigned int size);
