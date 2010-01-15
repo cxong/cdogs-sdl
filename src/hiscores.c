@@ -264,8 +264,6 @@ void LoadHighScores(void)
 
 	f = fopen(GetConfigFilePath(SCORES_FILE), "rb");
 	if (f != NULL) {
-		int i;
-	
 		fread(&magic, sizeof(magic), 1, f);
 		if (magic != MAGIC) {
 			debug(D_NORMAL, "Scores file magic doesn't match!\n");
