@@ -415,7 +415,7 @@ void PlaySound(int sound, int panning, int volume)
 #ifdef SND_SDLMIXER
 	{
 	int c;
-	Uint8 p;
+	//Uint8 p;
 	Uint8 left, right;
 
 	if (panning == 0) {
@@ -478,8 +478,6 @@ void SetMusicVolume(int volume)
 #ifdef SND_SDLMIXER
 	Mix_VolumeMusic(musicVolume);
 #endif
-
-	// Set music volume
 }
 
 int MusicVolume(void)
