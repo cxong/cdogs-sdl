@@ -45,7 +45,7 @@ void ShowControls(void)
 void DisplayMenuItem(int x, int y, const char *s, int selected)
 {
 	if (selected)
-		TextStringWithTableAt(x, y, s, tableFlamed);
+		TextStringWithTableAt(x, y, s, &tableFlamed);
 	else
 		TextStringAt(x, y, s);
 		
