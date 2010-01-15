@@ -314,7 +314,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		} else if (setting->missionCount < max_missions)
 			max_missions = setting->missionCount;
 
-		fprintf(stderr, "No. missions: %d\n", max_missions);
+		debug(D_NORMAL, "No. missions: %d\n", max_missions);
 
 		for (i = 0; i < max_missions; i++) {
 			load_mission(f, &setting->missions[i]);
@@ -330,7 +330,7 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		} else if (setting->characterCount < max_characters)
 			max_characters = setting->characterCount;
 
-		fprintf(stderr, "No. characters: %d\n", max_characters);
+		debug(D_NORMAL, "No. characters: %d\n", max_characters);
 
 		for (i = 0; i < max_characters; i++) {
 			load_character(f, &setting->characters[i]);

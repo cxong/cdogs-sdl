@@ -159,7 +159,6 @@ int MissionDescription(int y, const char *description)
 void CampaignIntro(void *bkg)
 {
 	int y;
-	int x;
 	char s[1024];
 
 	debug(D_NORMAL, "\n");
@@ -801,16 +800,16 @@ void MainLoop(void)
 	SetupBuiltinCampaign(1);
 
 	while (MainMenu(bkg)) {
-		printf(">> Entering Campaign\n");
+		debug(D_NORMAL, ">> Entering campaign\n");
 		ResetCampaign();
 		if (!gCampaign.dogFight)
 			CampaignIntro(bkg);
 
-		printf(">> Entering selection\n");
+		debug(D_NORMAL, ">> Entering selection\n");
 		if (!PlayerSelection(gOptions.twoPlayers
 				|| gCampaign.dogFight, bkg)) continue;
 				
-		printf(">> Starting campaign\n");
+		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.dogFight)
 			DogFight();
 		else if (Campaign()) {
@@ -818,7 +817,7 @@ void MainLoop(void)
 			DisplayTodaysHighScores(bkg);
 		}
 	}
-	printf(">> Leaving Main Game Loop\n");
+	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 //	free(myScreen);
 //	free(bkg);
 }
@@ -1062,10 +1061,10 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} else {
 		SetPalette(gPalette);
-		printf(">> Entering main loop\n");
+		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop();
 	}
-	printf(">> Shutting Down...\n");
+	debug(D_NORMAL, ">> Shutting down...\n");
 
 	ShutDownVideo();
 
@@ -1076,6 +1075,7 @@ int main(int argc, char *argv[])
 	SaveHighScores();
 
 	if (sound) {
+		debug(D_NORMAL, ">> Shutting down sound...\n");
 		ShutDownSound();
 	}
 
