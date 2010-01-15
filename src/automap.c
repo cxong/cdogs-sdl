@@ -220,11 +220,12 @@ void DisplayAutoMap(int showAll)
 	int x, y, i, j;
 	TTile *tile;
 	unsigned char *p;
+	unsigned char *screen;
 	TTileItem *t;
 	int cmd1, cmd2;
 	int obj;
 
-	p = GetDstScreen();
+	screen = p = GetDstScreen();
 	for (x = 0; x < SCREEN_MEMSIZE; x++)
 		p[x] = tableGreen[p[x] & 0xFF];
 
