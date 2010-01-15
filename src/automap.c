@@ -217,7 +217,6 @@ static void DrawDot(TTileItem * t, int color)
 
 void DisplayAutoMap(int showAll)
 {
-	unsigned char *screen = GetDstScreen();
 	int x, y, i, j;
 	TTile *tile;
 	unsigned char *p;
