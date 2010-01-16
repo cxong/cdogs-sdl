@@ -1,7 +1,10 @@
 C-Dogs SDL Installation
 =======================
 
-Currently, C-Dogs SDL compiles nicely on Linux, *BSD and MacOSX.
+Currently, C-Dogs SDL compiles nicely on Linux, Windows, *BSD and MacOSX.
+
+For every platform, you will need the relevant SDL and the SDL development
+packages installed, and optionally SDL_mixer (recommended).
 
 Linux:
 ------
@@ -30,6 +33,13 @@ MacOS X:
 
  * Use the "Linux" method, but with "macosx" instead of "linux"
 
+ Windows:
+ --------
+ 
+  1) Ensure you have Mingw32 and MSYS installed and configured correctly
+ 
+  2) Use the "Linux" method, but with "mingw32" instead of "linux"
+ 
 Other *Nixes:
 -------------
 
