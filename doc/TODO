@@ -6,8 +6,6 @@ STILL TODO:
 	* Clean up the general code, so there's fewer warnings		[mod]
 	* Put all the input event handling together			[mod]
 
-	* Get the mission editor working				[port]
-
 THE _VERY_ DISTANT FUTURE (if at all):
 
 	* Network multiplayer... *whahahah* :)
@@ -43,3 +41,4 @@ DONE (so we feel good):
 
 	* Makefile							[admin]
 
+	* Get the mission editor working				[port]
