@@ -14,7 +14,7 @@ BEGIN
 		BLOCK "040904E4"
 		BEGIN
 			VALUE "CompanyName", "Maintained by Lucas Martin-King\0"
-			VALUE "FileDescription", "C-Dogs SDL <lumaki.com/code/cdogs>\0"
+			VALUE "FileDescription", "C-Dogs SDL Action/Arcade Game\0"
 			VALUE "FileVersion", "0.4.1\0"
 			VALUE "Comments", "See <http://lumaki.com/code/cdogs> for more details.\0"
 			VALUE "InternalName", "cdogs\0"
