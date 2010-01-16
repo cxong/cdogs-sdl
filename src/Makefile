@@ -143,9 +143,9 @@ ifeq ($(SYSTEM), xmingw)
 endif
 
 ifeq ($(SYSTEM), mingw32)
-	CC	:= mingw32-gcc
-	STRIP	:= mingw32-strip
-	WINDRES := mingw32-windres
+	CC	:= gcc
+	STRIP	:= strip
+	WINDRES := windres
 
 	SDLCONFIG := sdl-config
 
@@ -192,14 +192,14 @@ CDOGS_OBJS = \
 	cdogs.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
 	gamedata.o ai.o triggers.o input.o prep.o hiscores.o automap.o \
 	mission.o game.o mainmenu.o password.o files.o menu.o joystick.o \
-	sprcomp.o grafx.o blit.o text.o keyboard.o events.o utils.o \
+	grafx.o blit.o text.o keyboard.o events.o utils.o \
 	drawtools.o
 
 CDOGSED_OBJS = \
 	cdogsed.o draw.o pics.o actors.o map.o sounds.o defs.o objs.o \
 	gamedata.o triggers.o input.o hiscores.o automap.o mission.o game.o \
-	ai.o charsed.o events.o joystick.o sprcomp.o grafx.o blit.o text.o \
-	keyboard.o drawtools.o utils.o
+	ai.o charsed.o events.o joystick.o grafx.o blit.o text.o \
+	files.o keyboard.o drawtools.o utils.o
 
 ### Targets ###
 
