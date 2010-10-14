@@ -1,0 +1,5 @@
+*.o
+*.swp
+src/Makefile.*
+src/cdogs-sdl
+src/cdogs-sdl-editor
