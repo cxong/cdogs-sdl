@@ -14,8 +14,6 @@ C-Dogs SDL Port v0.4.1
 |                |                  SDL
  `---------------'               v0.4.1
 
-   [ http://icculus.org/cdogs-sdl ]
-
 +----------+
 | Contents |
 +----------+
@@ -49,8 +47,6 @@ C-Dogs SDL runs on Linux, *BSD, Windows and Mac OS X.
 
 There are also unofficial ports to GP2X, BeOS/ZETA/Haiku, MorphOS,
 Nintendo DS, and AmigaOS 4 to name a few.
-
-See <http://lumaki.com/code/cdogs/download> for a more comprehensive list.
 
 And of course, should you succeed in running C-Dogs SDL on a different
 operating system, platform or toaster please contact us! :-)
@@ -108,6 +104,6 @@ Which will make the game try to run fullscreen at 400x300 resolution.
 +---+---------+
 
 If you have an questions, comments, bug reports (yes please), patches (even
-better) or anything else related to C-Dogs SDL email or IM (Jabber, MSN):
+better) or anything else related to C-Dogs SDL email or IM (MSN):
 
-	Lucas Martin-King <lmartinking@gmail.com>
+	Cong <c_xong@hotmail.com>
