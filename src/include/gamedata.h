@@ -159,19 +159,20 @@ struct DoorPic {
 };
 
 
-#define OBJECTIVE_KILL          0
-#define OBJECTIVE_COLLECT       1
-#define OBJECTIVE_DESTROY       2
-#define OBJECTIVE_RESCUE        3
-#define OBJECTIVE_INVESTIGATE   4
+typedef enum {
+	OBJECTIVE_KILL,
+	OBJECTIVE_COLLECT,
+	OBJECTIVE_DESTROY,
+	OBJECTIVE_RESCUE,
+	OBJECTIVE_INVESTIGATE,
+	OBJECTIVE_MAX
+} Objective;
 
 #define OBJECTIVE_HIDDEN        1
 #define OBJECTIVE_POSKNOWN      2
 #define OBJECTIVE_HIACCESS      4
 #define OBJECTIVE_UNKNOWNCOUNT	8
 #define OBJECTIVE_NOACCESS		16
-
-#define OBJECTIVE_MAX           5
 
 struct MissionObjective {
 	char description[60];

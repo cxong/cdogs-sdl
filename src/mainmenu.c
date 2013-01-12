@@ -222,7 +222,7 @@ int SelectCampaign(int dogFight, int cmd)
 {
 	static int campaignIndex = 0;
 	static int dogfightIndex = 0;
-	int count, x, y, i, j;
+	int count, y, i, j;
 	struct FileEntry *list = dogFight ? dogfightList : campaignList;
 	char *prefix = dogFight ? "dogfights/" : "missions/";
 	int *index = dogFight ? &dogfightIndex : &campaignIndex;
@@ -278,7 +278,6 @@ int SelectCampaign(int dogFight, int cmd)
 	else
 		TextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 
-	x = CenterX(240);
 	y = CenterY(12 * TextHeight());
 	
 #define ARROW_UP	"\036"
@@ -1084,51 +1083,72 @@ void LoadConfig(void)
 	f = fopen(GetConfigFilePath("options.cnf"), "r");
 
 	if (f) {
-		fscanf(f, "%d %d %d %d %d %d %d %d %d\n",
-		       &gOptions.displayFPS,
-		       &gOptions.displayTime,
-		       &gOptions.playersHurt,
-		       &gOptions.copyMode,
-		       &gOptions.brightness,
-		       &gOptions.swapButtonsJoy1,
-		       &gOptions.swapButtonsJoy2,
-		       &gOptions.xSplit, &gOptions.ySplit);
-		fscanf(f, "%d\n%d %d %d %d %d %d\n",
-		       &gPlayer1Data.controls,
-		       &gPlayer1Data.keys[0],
-		       &gPlayer1Data.keys[1],
-		       &gPlayer1Data.keys[2],
-		       &gPlayer1Data.keys[3],
-		       &gPlayer1Data.keys[4], &gPlayer1Data.keys[5]);
-		fscanf(f, "%d\n%d %d %d %d %d %d\n",
-		       &gPlayer2Data.controls,
-		       &gPlayer2Data.keys[0],
-		       &gPlayer2Data.keys[1],
-		       &gPlayer2Data.keys[2],
-		       &gPlayer2Data.keys[3],
-		       &gPlayer2Data.keys[4], &gPlayer2Data.keys[5]);
-		fscanf(f, "%d\n", &gOptions.mapKey);
-		fscanf(f, "%d %d %d %d\n",
-		       &fx, &music, &channels, &musicChannels);
+		int fscanfres;
+	#define CHECK_FSCANF(count)\
+		if (fscanfres < count) {\
+			printf("Error loading config\n");\
+			fclose(f);\
+			return;\
+		}
+		fscanfres = fscanf(f, "%d %d %d %d %d %d %d %d %d\n",
+			           &gOptions.displayFPS,
+			           &gOptions.displayTime,
+			           &gOptions.playersHurt,
+			           &gOptions.copyMode,
+			           &gOptions.brightness,
+			           &gOptions.swapButtonsJoy1,
+			           &gOptions.swapButtonsJoy2,
+			           &gOptions.xSplit, &gOptions.ySplit);
+		CHECK_FSCANF(9)
+		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
+			           &gPlayer1Data.controls,
+			           &gPlayer1Data.keys[0],
+			           &gPlayer1Data.keys[1],
+			           &gPlayer1Data.keys[2],
+			           &gPlayer1Data.keys[3],
+			           &gPlayer1Data.keys[4],
+			           &gPlayer1Data.keys[5]);
+		CHECK_FSCANF(7)
+		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
+			           &gPlayer2Data.controls,
+			           &gPlayer2Data.keys[0],
+			           &gPlayer2Data.keys[1],
+		 	           &gPlayer2Data.keys[2],
+			           &gPlayer2Data.keys[3],
+			           &gPlayer2Data.keys[4],
+			           &gPlayer2Data.keys[5]);
+		CHECK_FSCANF(7)
+		fscanfres = fscanf(f, "%d\n", &gOptions.mapKey);
+		CHECK_FSCANF(1)
+		fscanfres = fscanf(f, "%d %d %d %d\n",
+			           &fx, &music, &channels, &musicChannels);
+		CHECK_FSCANF(4)
 		SetFXVolume(fx);
 		SetMusicVolume(music);
 		SetFXChannels(channels);
 		SetMinMusicChannels(musicChannels);
 
-		fscanf(f, "%d\n", &dynamic);
-		fscanf(f, "%s\n", s);
+		fscanfres = fscanf(f, "%d\n", &dynamic);
+		CHECK_FSCANF(1)
+		fscanfres = fscanf(f, "%s\n", s);
+		CHECK_FSCANF(1)
 		SetModuleDirectory(s);
-		fscanf(f, "%u\n", &gCampaign.seed);
-		fscanf(f, "%d %d\n", &gOptions.difficulty,
-		       &gOptions.slowmotion);
+		fscanfres = fscanf(f, "%u\n", &gCampaign.seed);
+		CHECK_FSCANF(1)
+		fscanfres = fscanf(f, "%d %d\n", &gOptions.difficulty,
+			           &gOptions.slowmotion);
+		CHECK_FSCANF(2)
 
-		fscanf(f, "%d\n", &gOptions.density);
+		fscanfres = fscanf(f, "%d\n", &gOptions.density);
+		CHECK_FSCANF(1)
 		if (gOptions.density < 25 || gOptions.density > 200)
 			gOptions.density = 100;
-		fscanf(f, "%d\n", &gOptions.npcHp);
+		fscanfres = fscanf(f, "%d\n", &gOptions.npcHp);
+		CHECK_FSCANF(1)
 		if (gOptions.npcHp < 25 || gOptions.npcHp > 200)
 			gOptions.npcHp = 100;
-		fscanf(f, "%d\n", &gOptions.playerHp);
+		fscanfres = fscanf(f, "%d\n", &gOptions.playerHp);
+		CHECK_FSCANF(1)
 		if (gOptions.playerHp < 25 || gOptions.playerHp > 200)
 			gOptions.playerHp = 100;
 		

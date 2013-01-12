@@ -159,16 +159,28 @@ void LoadTemplates(void)
 
 	f = fopen(GetConfigFilePath("players.cnf"), "r");
 	if (f) {
+		int fscanfres;
 		i = 0;
-		fscanf(f, "%d\n", &count);
+		fscanfres = fscanf(f, "%d\n", &count);
+		if (fscanfres < 1) {
+			printf("Error reading players.cnf count\n");
+			fclose(f);
+			return;
+		}
 		while (i < MAX_TEMPLATE && i < count) {
-			fscanf(f, "[%[^]]] %d %d %d %d %d %d\n",
-			       templates[i].name,
-			       &templates[i].head,
-			       &templates[i].body,
-			       &templates[i].arms,
-			       &templates[i].legs,
-			       &templates[i].skin, &templates[i].hair);
+			fscanfres = fscanf(f, "[%[^]]] %d %d %d %d %d %d\n",
+					   templates[i].name,
+					   &templates[i].head,
+					   &templates[i].body,
+					   &templates[i].arms,
+					   &templates[i].legs,
+					   &templates[i].skin,
+					   &templates[i].hair);
+			if (fscanfres < 1) {
+				printf("Error reading player %d\n", i);
+				fclose(f);
+				return;
+			}
 			i++;
 		}
 		fclose(f);
@@ -294,7 +306,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	int i;
 	int y;
 
-	char s[2];
+	//char s[2];
 	static char letters[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
 	static char smallLetters[] =
@@ -367,9 +379,9 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 
 	// Draw selection
 
-	s[1] = 0;
+	//s[1] = 0;
 	for (i = 0; i < strlen(letters); i++) {
-		s[0] = letters[i];
+		//s[0] = letters[i];
 
 		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			 y + (i / ENTRY_COLS) * TextHeight());

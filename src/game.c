@@ -469,7 +469,7 @@ void StatusDisplay(void)
 		TextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 	}
 	
-#define KEY_WIDTH(n) (PicWidth(&cGeneralPics[gMission.keyPics[n]]))
+#define KEY_WIDTH(n) (PicWidth((const void *)&cGeneralPics[gMission.keyPics[n]]))
 	
 	if (gMission.flags & FLAGS_KEYCARD_YELLOW)
 		DrawKeycard(CenterX(KEY_WIDTH(0)) - 30, 20, &cGeneralPics[gMission.keyPics[0]]);

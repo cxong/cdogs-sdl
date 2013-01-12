@@ -33,6 +33,8 @@
 #ifndef __grafx
 #define __grafx
 
+#include "sys_specifics.h"
+
 
 struct RGB {
 	unsigned char red, green, blue;
@@ -74,13 +76,8 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics);
 
-#ifndef _MSC_VER
-inline int PicWidth(void *pic);
-inline int PicHeight(void *pic);
-#else
-	int PicWidth(void *pic);
-	int PicHeight(void *pic);
-#endif
+INLINE int PicWidth(const void *pic);
+INLINE int PicHeight(const void *pic);
 
 extern int screen_w;
 extern int screen_h;

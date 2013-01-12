@@ -108,8 +108,8 @@
 
 
 struct Object {
-	TOffsetPic *pic;
-	TOffsetPic *wreckedPic;
+	const TOffsetPic *pic;
+	const TOffsetPic *wreckedPic;
 	int objectIndex;
 	int structure;
 	int flags;
@@ -140,9 +140,10 @@ int DamageSomething(int dx, int dy, int power, int flags,
 		    TTileItem * target, int special);
 
 void AddObject(int x, int y, int w, int h,
-	       TOffsetPic * pic, int index, int tileFlags);
+	       const TOffsetPic * pic, int index, int tileFlags);
 void AddDestructibleObject(int x, int y, int w, int h,
-			   TOffsetPic * pic, TOffsetPic * wreckedPic,
+			   const TOffsetPic * pic,
+			   const TOffsetPic * wreckedPic,
 			   int structure, int objFlags, int tileFlags);
 void RemoveObject(TObject * obj);
 void KillAllObjects(void);

@@ -264,7 +264,15 @@ void LoadHighScores(void)
 
 	f = fopen(GetConfigFilePath(SCORES_FILE), "rb");
 	if (f != NULL) {
-		fread(&magic, sizeof(magic), 1, f);
+		size_t elementsRead;
+	#define CHECK_FREAD(count)\
+		if (elementsRead != count) {\
+			debug(D_NORMAL, "Error reading scores file\n");\
+			fclose(f);\
+			return;\
+		}
+		elementsRead = fread(&magic, sizeof(magic), 1, f);
+		CHECK_FREAD(1)
 		if (magic != MAGIC) {
 			debug(D_NORMAL, "Scores file magic doesn't match!\n");
 			fclose(f);
@@ -272,19 +280,24 @@ void LoadHighScores(void)
 		}
 		
 		//for (i = 0; i < MAX_ENTRY; i++) {
-		fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
+		elementsRead = fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
+		CHECK_FREAD(1)
 		//}
 
 		t = time(NULL);
 		tp = localtime(&t);
-		fread(&y, sizeof(y), 1, f);
-		fread(&m, sizeof(m), 1, f);
-		fread(&d, sizeof(d), 1, f);
+		elementsRead = fread(&y, sizeof(y), 1, f);
+		CHECK_FREAD(1)
+		elementsRead = fread(&m, sizeof(m), 1, f);
+		CHECK_FREAD(1)
+		elementsRead = fread(&d, sizeof(d), 1, f);
+		CHECK_FREAD(1)
 		debug(D_NORMAL, "scores time, y: %d m: %d d: %d\n", y, m, d);	
 
 
 		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d) {
-			fread(todaysHigh, sizeof(todaysHigh), 1, f);
+			elementsRead = fread(todaysHigh, sizeof(todaysHigh), 1, f);
+			CHECK_FREAD(1)
 			debug(D_NORMAL, "reading today's high: %d\n", todaysHigh[0].score);
 		}
 

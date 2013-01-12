@@ -118,68 +118,63 @@ void *GetDstScreen(void)
 	return r_screen;
 }
 
-#define PixelIndex(x, y, w, h)		(y * w + x)
+#define PixelIndex(x, y, w)		(y * w + x)
 
-#ifdef _MSC_VER
-#define inline __inline
-#endif
-
-static inline
-void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h, const int sf)
+static INLINE
+void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
+	    const int sf)
 {
 	int sx;
 	int sy;
 	int f = sf;
 	
-	int dx, dy, dw, dh;
+	int dx, dy, dw;
 	char p;
 	
 	if (f > 4) f = 4;	/* max 4x for the moment */
 	 
 	dw = w * f;
-	dh = h * f;
 	
 	for (sy = 0; sy < h; sy++) {
 		dy = f * sy;
 		for (sx = 0; sx < w; sx++) {
-			p = s[PixelIndex(sx, sy, w, h)];
+			p = s[PixelIndex(sx, sy, w)];
 			dx = f * sx;
 
 			switch (f) {
 				case 4:
 					/* right side */
-					d[PixelIndex((dx + 3),	(dy + 1),	dw, dh)] = p;
-					d[PixelIndex((dx + 3),	(dy + 2),	dw, dh)] = p;
-					d[PixelIndex((dx + 3),	dy,			dw, dh)] = p;
+					d[PixelIndex((dx + 3),	(dy + 1),	dw)] = p;
+					d[PixelIndex((dx + 3),	(dy + 2),	dw)] = p;
+					d[PixelIndex((dx + 3),	dy,		dw)] = p;
 
 					/* bottom row */
-					d[PixelIndex(dx,		(dy + 3),	dw, dh)] = p;
-					d[PixelIndex((dx + 1),	(dy + 3),	dw, dh)] = p;
-					d[PixelIndex((dx + 2),	(dy + 3),	dw, dh)] = p;
+					d[PixelIndex(dx,	(dy + 3),	dw)] = p;
+					d[PixelIndex((dx + 1),	(dy + 3),	dw)] = p;
+					d[PixelIndex((dx + 2),	(dy + 3),	dw)] = p;
 
 					/* bottom right */
-					d[PixelIndex((dx + 3),	(dy + 3),	dw, dh)] = p;
+					d[PixelIndex((dx + 3),	(dy + 3),	dw)] = p;
 
 				case 3:
 					/* right side */
-					d[PixelIndex((dx + 2),	(dy + 1),	dw, dh)] = p;
-					d[PixelIndex((dx + 2),	dy,			dw, dh)] = p;
+					d[PixelIndex((dx + 2),	(dy + 1),	dw)] = p;
+					d[PixelIndex((dx + 2),	dy,		dw)] = p;
 
 					/* bottom row */
-					d[PixelIndex(dx,		(dy + 2),	dw, dh)] = p;
-					d[PixelIndex((dx + 1),	(dy + 2),	dw, dh)] = p;
+					d[PixelIndex(dx,	(dy + 2),	dw)] = p;
+					d[PixelIndex((dx + 1),	(dy + 2),	dw)] = p;
 
 					/* bottom right */
-					d[PixelIndex((dx + 2),	(dy + 2),	dw, dh)] = p;
-
+					d[PixelIndex((dx + 2),	(dy + 2),	dw)] = p;
 
 				case 2:
-					d[PixelIndex((dx + 1),	dy,			dw, dh)] = p;
-					d[PixelIndex((dx + 1),	(dy + 1),	dw, dh)] = p;
-					d[PixelIndex(dx,		(dy + 1),	dw, dh)] = p;
+					d[PixelIndex((dx + 1),	dy,		dw)] = p;
+					d[PixelIndex((dx + 1),	(dy + 1),	dw)] = p;
+					d[PixelIndex(dx,	(dy + 1),	dw)] = p;
 
 				default:
-					d[PixelIndex(dx,		dy,			dw, dh)] = p;
+					d[PixelIndex(dx,	dy,		dw)] = p;
 			}
 		}
 	}

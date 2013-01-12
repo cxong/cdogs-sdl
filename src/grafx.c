@@ -231,13 +231,22 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 
 	f = fopen(filename, "rb");
 	if (f != NULL) {
-		if (palette)
-			fread(palette, sizeof(TPalette), 1, f);
-		else
+		size_t elementsRead;
+	#define CHECK_FREAD(count)\
+		if (elementsRead != count) {\
+			debug(D_NORMAL, "Error ReadPics\n");\
+			fclose(f);\
+			return 0;\
+		}
+		if (palette) {
+			elementsRead = fread(palette, sizeof(TPalette), 1, f);
+			CHECK_FREAD(1)
+		} else
 			fseek(f, sizeof(TPalette), SEEK_CUR);
 			
 		while (!eof && i < maxPics) {
-			fread(&size, sizeof(size), 1, f);
+			elementsRead = fread(&size, sizeof(size), 1, f);
+			CHECK_FREAD(1)
 			swap16(&size);
 			if (size) {
 				Pic *p = sys_mem_alloc(size);
@@ -257,6 +266,7 @@ int ReadPics(const char *filename, void **pics, int maxPics,
 			i++;
 		}
 		fclose(f);
+	#undef CHECK_FREAD
 	}
 	return i;
 }
@@ -274,7 +284,15 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 		fseek(f, sizeof(TPalette), SEEK_CUR);
 			
 		while (!eof && i < maxPics) {
-			fread(&size, sizeof(size), 1, f);
+			size_t elementsRead;
+		#define CHECK_FREAD(count)\
+			if (elementsRead != count) {\
+				debug(D_NORMAL, "Error AppendPics\n");\
+				fclose(f);\
+				return 0;\
+			}
+			elementsRead = fread(&size, sizeof(size), 1, f);
+			CHECK_FREAD(1)
 			swap16(&size);
 			if (size) {
 				Pic *p = sys_mem_alloc(size);
@@ -291,6 +309,7 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 				pics[i] = NULL;
 			}
 			i++;
+		#undef CHECK_FREAD
 		}
 		fclose(f);
 	}
@@ -298,24 +317,18 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	return i - startIndex;
 }
 
-#ifndef _MSC_VER
-inline
-#endif
-int PicWidth(void *pic)
+INLINE int PicWidth(const void *pic)
 {
 	if (!pic)
 		return 0;
-	return ((short *) pic)[0];
+	return ((const short *) pic)[0];
 }
 
-#ifndef _MSC_VER
-inline
-#endif
-int PicHeight(void *pic)
+INLINE int PicHeight(const void *pic)
 {
 	if (!pic)
 		return 0;
-	return ((short *) pic)[1];
+	return ((const short *) pic)[1];
 }
 
 void SetColorZero(int r, int g, int b)

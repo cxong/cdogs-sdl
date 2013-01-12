@@ -63,7 +63,7 @@ int HitItem(TMobileObject * obj, int x, int y, int special);
 
 void DrawObject(int x, int y, const TObject * obj)
 {
-	TOffsetPic *pic = obj->pic;
+	const TOffsetPic *pic = obj->pic;
 
 	if (pic)
 		DrawTPic(x + pic->dx,
@@ -1193,7 +1193,7 @@ void KillAllMobileObjects(void)
 }
 
 void InternalAddObject(int x, int y, int w, int h,
-		       TOffsetPic * pic, TOffsetPic * wreckedPic,
+		       const TOffsetPic * pic, const TOffsetPic * wreckedPic,
 		       int structure, int index, int objFlags,
 		       int tileFlags)
 {
@@ -1216,13 +1216,14 @@ void InternalAddObject(int x, int y, int w, int h,
 }
 
 void AddObject(int x, int y, int w, int h,
-	       TOffsetPic * pic, int index, int tileFlags)
+	       const TOffsetPic * pic, int index, int tileFlags)
 {
 	InternalAddObject(x, y, w, h, pic, NULL, 0, index, 0, tileFlags);
 }
 
 void AddDestructibleObject(int x, int y, int w, int h,
-			   TOffsetPic * pic, TOffsetPic * wreckedPic,
+			   const TOffsetPic * pic,
+			   const TOffsetPic * wreckedPic,
 			   int structure, int objFlags, int tileFlags)
 {
 	InternalAddObject(x, y, w, h, pic, wreckedPic, structure, 0,

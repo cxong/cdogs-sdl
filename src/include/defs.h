@@ -91,15 +91,17 @@
 #define AnyButton(x)  (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
 
 // Directions
-#define DIRECTION_UP        0
-#define DIRECTION_UPRIGHT   1
-#define DIRECTION_RIGHT     2
-#define DIRECTION_DOWNRIGHT 3
-#define DIRECTION_DOWN      4
-#define DIRECTION_DOWNLEFT  5
-#define DIRECTION_LEFT      6
-#define DIRECTION_UPLEFT    7
-#define DIRECTION_COUNT     8
+typedef enum {
+	DIRECTION_UP,
+	DIRECTION_UPRIGHT,
+	DIRECTION_RIGHT,
+	DIRECTION_DOWNRIGHT,
+	DIRECTION_DOWN,
+	DIRECTION_DOWNLEFT,
+	DIRECTION_LEFT,
+	DIRECTION_UPLEFT,
+	DIRECTION_COUNT
+} Direction;
 
 // States
 #define STATE_IDLE          0

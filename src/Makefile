@@ -165,17 +165,15 @@ endif
 
 ### Debugging
 
+CF_DEBUG:=-Wall
 ifeq ($(DEBUG), 1)
 	DEFS		+= -DCDOGS_DEBUG
-	CF_DEBUG 	+= -ggdb -Wall
+	CF_DEBUG 	+= -ggdb
 
 	ifeq ($(DEBUG_PROFILE), 1)
 		CF_DEBUG += -pg	
 		LDFLAGS  += -pg	
 	endif
-else
-	# suppress warnings
-	CF_DEBUG	+= -w
 endif
 
 
@@ -204,6 +202,8 @@ CDOGSED_OBJS = \
 ### Targets ###
 
 .PHONY: clean install info tidy help
+
+all: $(CDOGS) $(CDOGSED)
 
 help:
 	@echo "C-Dogs SDL Build System..."

@@ -93,17 +93,22 @@ void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_INVESTIGATE:
+		pic.dx = pic.dy = 0;
+		pic.picIndex = -1;
 		return;
 	default:
 		i = gMission.objectives[i].pickupItem;
 		pic = cGeneralPics[i];
+		break;
 	}
-	if (table)
-		DrawTTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
-			  table, NULL);
-	else
-		DrawTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
-			 NULL);
+	if (pic.picIndex >= 0) {
+		if (table)
+			DrawTTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
+				  table, NULL);
+		else
+			DrawTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
+				 NULL);
+	}
 }
 
 int MissionDescription(int y, const char *description)

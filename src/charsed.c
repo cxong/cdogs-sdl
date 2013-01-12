@@ -40,6 +40,7 @@
 #include "actors.h"
 #include "defs.h"
 #include "grafx.h"
+#include "keyboard.h"
 #include "pics.h"
 #include "text.h"
 #include "mission.h"
@@ -196,7 +197,7 @@ static void DisplayCharacter(int x, int y, const TBadGuy * data,
 static void DisplayText(int x, int y, const char *text, int hilite)
 {
 	if (hilite)
-		TextStringWithTableAt(x, y, text, tableFlamed);
+		TextStringWithTableAt(x, y, text, &tableFlamed);
 	else
 		TextStringAt(x, y, text);
 }
@@ -205,14 +206,14 @@ void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 {
 	TextGoto(x, y);
 	if (hilite) {
-		TextStringWithTable(s, tableFlamed);
-		TextCharWithTable(':', tableFlamed);
+		TextStringWithTable(s, &tableFlamed);
+		TextCharWithTable(':', &tableFlamed);
 	} else {
 		TextString(s);
 		TextChar(':');
 	}
 	if (on)
-		TextStringWithTable("On", tablePurple);
+		TextStringWithTable("On", &tablePurple);
 	else
 		TextString("Off");
 }

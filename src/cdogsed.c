@@ -36,6 +36,7 @@
 #include "objs.h"
 #include "actors.h"
 #include "grafx.h"
+#include "keyboard.h"
 #include "pics.h"
 #include "text.h"
 #include "gamedata.h"
@@ -269,19 +270,19 @@ void DisplayText(int x, int y, const char *text, int hilite, int editable)
 	TextGoto(x, y);
 	if (editable) {
 		if (hilite)
-			TextCharWithTable('\020', tableFlamed);
+			TextCharWithTable('\020', &tableFlamed);
 		else
 			TextChar('\020');
 	}
 
 	if (hilite && !editable)
-		TextStringWithTable(text, tableFlamed);
+		TextStringWithTable(text, &tableFlamed);
 	else
 		TextString(text);
 
 	if (editable) {
 		if (hilite)
-			TextCharWithTable('\021', tableFlamed);
+			TextCharWithTable('\021', &tableFlamed);
 		else
 			TextChar('\021');
 	}
@@ -301,7 +302,7 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		i = characterDesc[currentMission->baddieCount +
 				  CHARACTER_OTHERS].facePic;
 		table =
-		    characterDesc[currentMission->baddieCount +
+		    &characterDesc[currentMission->baddieCount +
 				  CHARACTER_OTHERS].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -310,7 +311,7 @@ void DrawObjectiveInfo(int index, int y, int xc)
 	case OBJECTIVE_RESCUE:
 		typeText = "Rescue";
 		i = characterDesc[CHARACTER_PRISONER].facePic;
-		table = characterDesc[CHARACTER_PRISONER].table;
+		table = &characterDesc[CHARACTER_PRISONER].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
@@ -327,17 +328,19 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		break;
 	case OBJECTIVE_INVESTIGATE:
 		typeText = "Explore";
+		pic.dx = pic.dy = 0;
+		pic.picIndex = -1;
 		break;
 	default:
 		typeText = "???";
-		i = gMission.objectives[i].pickupItem;
+		i = gMission.objectives[index].pickupItem;
 		pic = cGeneralPics[i];
+		break;
 	}
 
 	DisplayText(20, y, typeText, xc == XC_TYPE, 0);
 
-	if (currentMission->objectives[index].type !=
-	    OBJECTIVE_INVESTIGATE) {
+	if (pic.picIndex >= 0) {
 		if (table)
 			DrawTTPic(60 + pic.dx, y + 8 + pic.dy,
 				  gPics[pic.picIndex], table, NULL);
@@ -374,7 +377,7 @@ int MissionDescription(int y, const char *description, int hilite)
 
 	TextGoto(20 - TextCharWidth('\020'), y);
 	if (hilite)
-		TextCharWithTable('\020', tableFlamed);
+		TextCharWithTable('\020', &tableFlamed);
 	else
 		TextChar('\020');
 
@@ -415,7 +418,7 @@ int MissionDescription(int y, const char *description, int hilite)
 	}
 
 	if (hilite)
-		TextCharWithTable('\021', tableFlamed);
+		TextCharWithTable('\021', &tableFlamed);
 	else
 		TextChar('\021');
 
@@ -485,7 +488,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 {
 	char s[10];
 
-	TOffsetPic *pic = &cGeneralPics[mo->pic];
+	const TOffsetPic *pic = &cGeneralPics[mo->pic];
 	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex], NULL);
 
 	if (hilite) {
@@ -899,6 +902,9 @@ static int Change(int yc, int xc, int d, int *mission)
 					limit =
 					    campaign.characterCount - 1;
 					break;
+				default:
+					// should never get here
+					return 0;
 				}
 				currentMission->objectives[yc -
 							   YC_OBJECTIVES].
@@ -1207,7 +1213,7 @@ static void Save(int asCode)
 {
 	char filename[128];
 //      char drive[_MAX_DRIVE];
-	char dir[96];
+//	char dir[96];
 	char name[32];
 //      char ext[_MAX_EXT];
 	char c;

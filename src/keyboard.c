@@ -44,13 +44,13 @@ void InitKeyboard(void)
 
 char KeyDown(int key)
 {
-	char *tmp;
+	Uint8 *tmp;
 
 	SDL_PumpEvents();
 
 	tmp = SDL_GetKeyState(NULL);
 
-	return tmp[key];
+	return (char)tmp[key];
 }
 
 int GetKeyDown(void)

@@ -124,8 +124,14 @@ static void loadSampleConfiguration(void)
 
 	printf("Reading SOUND_FX.CFG\n");
 	for (i = 0; i < SND_COUNT; i++) {
+		int fscanfres;
 		memset(snd[i].name, 0, sizeof(snd[i].name));
-		fscanf(f, "%80s %d\n", snd[i].name, &snd[i].freq);
+		fscanfres = fscanf(f, "%80s %d\n", snd[i].name, &snd[i].freq);
+		if (fscanfres < 2) {
+			printf("%2d. Error reading sound config\n", i);
+			fclose(f);
+			return;
+		}
 		printf("%2d. File:'%s' at %dHz\n", i, snd[i].name,
 		       snd[i].freq);
 	}
@@ -237,7 +243,9 @@ int InitSoundDevice(void)
 {
 	int i;
 	struct stat st;
+	#ifndef SND_SDLMIXER
 	SDL_AudioSpec tmpspec;
+	#endif
 
 	// Initialization goes here...
 
@@ -310,8 +318,8 @@ int InitSoundDevice(void)
 	memset(channelPosition, 0, sizeof(channelPosition));
 	memset(channelTime, 0, sizeof(channelTime));
 
-	tmpspec.samples = 512;
-	tmpspec.callback = &SoundCallback;
+	//tmpspec.samples = 512;
+	//tmpspec.callback = &SoundCallback;
 
 	#ifndef SND_SDLMIXER
 	tmpspec.channels = 1;

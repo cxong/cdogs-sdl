@@ -239,6 +239,9 @@ void DrawCharacter(int x, int y, TActor * actor)
 		pic2 = body;
 		pic3 = head;
 		break;
+	default:
+		// should never get here
+		return;
 	}
 
 	if (transparent) {

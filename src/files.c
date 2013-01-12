@@ -350,28 +350,46 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 
 	f = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (f >= 0) {
+		ssize_t writeres;
+	#define CHECK_WRITE()\
+		if (writeres != 0) {\
+			perror("SaveCampaign - couldn't write to file: ");\
+			close(f);\
+			return CAMPAIGN_BADFILE;\
+		}		
 		i = CAMPAIGN_MAGIC;
-		write(f, &i, sizeof(i));
+		writeres = write(f, &i, sizeof(i));
+		CHECK_WRITE()
 
 		i = CAMPAIGN_VERSION;
-		write(f, &i, sizeof(i));
+		writeres = write(f, &i, sizeof(i));
+		CHECK_WRITE()
 
-		write(f, setting->title, sizeof(setting->title));
-		write(f, setting->author, sizeof(setting->author));
-		write(f, setting->description, sizeof(setting->description));
+		writeres = write(f, setting->title, sizeof(setting->title));
+		CHECK_WRITE()
+		writeres = write(f, setting->author, sizeof(setting->author));
+		CHECK_WRITE()
+		writeres = write(f, setting->description,
+				 sizeof(setting->description));
+		CHECK_WRITE()
 
-		write(f, &setting->missionCount,
-		      sizeof(setting->missionCount));
+		writeres = write(f, &setting->missionCount,
+				 sizeof(setting->missionCount));
+		CHECK_WRITE()
 
 		for (i = 0; i < setting->missionCount; i++) {
-			write(f, &setting->missions[i],
-			      sizeof(struct Mission));
+			writeres = write(f, &setting->missions[i],
+					 sizeof(struct Mission));
+			CHECK_WRITE()
 		}
 
-		write(f, &setting->characterCount,
-		      sizeof(setting->characterCount));
+		writeres = write(f, &setting->characterCount,
+				 sizeof(setting->characterCount));
+		CHECK_WRITE()
 		for (i = 0; i < setting->characterCount; i++) {
-			write(f, &setting->characters[i], sizeof(TBadGuy));
+			writeres = write(f, &setting->characters[i],
+					 sizeof(TBadGuy));
+			CHECK_WRITE()
 		}
 		//fchmod(f, S_IRUSR | S_IRGRP | S_IROTH);
 		close(f);
@@ -898,6 +916,8 @@ void SetupConfigDir(void)
 char dir_buf[512];
 char * GetPWD(void)
 {
-	getcwd(dir_buf, 511);
+	if (getcwd(dir_buf, 511) == NULL) {
+		printf("Error getting PWD\n");
+	}
 	return dir_buf;
 }
