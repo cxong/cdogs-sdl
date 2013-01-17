@@ -1,5 +1,11 @@
 *.o
 *.swp
 src/Makefile.*
-src/cdogs-sdl
-src/cdogs-sdl-editor
+cdogs-sdl
+cdogs-sdl-editor
+*CMakeCache.txt
+CMakeFiles/
+*cmake_install.cmake
+src/libcdogs.a
+.metadata/
+RemoteSystemsTempFiles/
