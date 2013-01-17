@@ -39,8 +39,8 @@
 struct RGB {
 	unsigned char red, green, blue;
 };
-typedef struct RGB color;
-typedef color TPalette[256];
+typedef struct RGB color_t;
+typedef color_t TPalette[256];
 typedef unsigned char TranslationTable[256];
 
 typedef enum {
@@ -71,13 +71,25 @@ int Gfx_GetHint(const GFX_Hint h);
 int InitVideo(void);
 void ShutDownVideo(void);
 
-int ReadPics(const char *filename, void **pics, int maxPics,
-	     color * palette);
+int ReadPics(
+	const char *filename, void **pics, int maxPics,
+	color_t *palette);
 int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics);
 
-INLINE int PicWidth(const void *pic);
-INLINE int PicHeight(const void *pic);
+INLINE static int PicWidth(const void *pic)
+{
+	if (!pic)
+		return 0;
+	return ((const short *)pic)[0];
+}
+
+INLINE static int PicHeight(const void *pic)
+{
+	if (!pic)
+		return 0;
+	return ((const short *)pic)[1];
+}
 
 extern int screen_w;
 extern int screen_h;

@@ -65,7 +65,7 @@ struct JoyRec {
 extern struct JoyRec gSticks[2];
 
 
-void PollSticks(int maxWait);
+void PollSticks(void);
 void InitSticks(void);
 void AutoCalibrate(void);
 void PollDigiSticks(int *joy1, int *joy2);

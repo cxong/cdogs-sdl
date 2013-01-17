@@ -67,7 +67,7 @@ int  MenuWidth(const char **table, int count)
 	return max;
 }
 
-int  MenuHeight(const char **table, int count)
+int MenuHeight(int count)
 {
 	return count * TextHeight();
 }

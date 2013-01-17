@@ -84,8 +84,8 @@ Draw_StraightLine (const int x1, const int y1, const int x2, const int y2, const
 
 #define ABS(x)	( x > 0 ? x : (-x) )
 
-static void
-Draw_DiagonalLine (const int x1, const int y1, const int x2, const int y2, const unsigned char c)
+static void Draw_DiagonalLine(
+	const int x1, const int x2, const unsigned char c)
 {
 	register int i;
 	register int start, end;
@@ -105,11 +105,11 @@ Draw_DiagonalLine (const int x1, const int y1, const int x2, const int y2, const
 	return;
 }
 
-static void
-Draw_OtherLine	(const int x1, const int y1, const int x2, const int y2, const unsigned char c)
+/*static void Draw_OtherLine(
+	const int x1, const int y1, const int x2, const int y2, const unsigned char c)
 {
 	printf("### Other lines not yet implemented! ###\n");
-}
+}*/
 
 void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const unsigned char c)
 {
@@ -118,9 +118,9 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 	if (x1 == x2 || y1 == y2) 
 		Draw_StraightLine(x1, y1, x2, y2, c);
 	else if (ABS((x2 - x1)) == ABS((y1 - y2)))
-		Draw_DiagonalLine(x1, y1, x2, y2, c);
-	else
-		Draw_OtherLine(x1, y1, x2, y2, c);
+		Draw_DiagonalLine(x1, x2, c);
+	/*else
+		Draw_OtherLine(x1, y1, x2, y2, c);*/
 	
 	return;
 }

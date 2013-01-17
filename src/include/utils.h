@@ -48,4 +48,6 @@ void *	sys_mem_alloc(unsigned int size);
 void *	sys_mem_realloc(void *ptr, unsigned int size);
 void	sys_mem_free(void *ptr);
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 #endif /* __UTILS */

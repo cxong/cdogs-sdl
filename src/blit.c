@@ -232,7 +232,7 @@ void AltScrCopy(void)
 
 void SetPalette(void *pal)
 {
-	color *palette = (color *) pal;
+	color_t *palette = (color_t *)pal;
 	SDL_Color newpal[256];
 	int i;
 	

@@ -249,8 +249,9 @@ void DrawFireball(int x, int y, const TMobileObject * obj)
 
 void BogusDraw(int x, int y, void *data)
 {
-	if (data)
-		x = y;		// Just to get rid of warning...
+	UNUSED(x);
+	UNUSED(y);
+	UNUSED(data);
 }
 
 

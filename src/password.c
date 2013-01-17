@@ -57,7 +57,8 @@ const char *MakePassword(int mission)
 	int base = strlen(alphabet);
 
 	sum1 = sum2 = 0;
-	for (i = 0; i < strlen(gCampaign.setting->title); i++) {
+	for (i = 0; i < (int)strlen(gCampaign.setting->title); i++)
+	{
 		sum1 += gCampaign.setting->title[i];
 		sum2 ^= gCampaign.setting->title[i];
 	}
@@ -93,8 +94,10 @@ static int PasswordEntry(int cmd, char *buffer)
 	if (selection < 0)
 		selection = strlen(letters);
 
-	if (cmd & CMD_BUTTON1) {
-		if (selection == strlen(letters)) {
+	if (cmd & CMD_BUTTON1)
+	{
+		if (selection == (int)strlen(letters))
+		{
 			PlaySound(SND_LAUNCH, 0, 255);
 			return 0;
 		}
@@ -118,7 +121,8 @@ static int PasswordEntry(int cmd, char *buffer)
 			PlaySound(SND_DOOR, 0, 255);
 		}
 	} else if (cmd & CMD_RIGHT) {
-		if (selection < strlen(letters)) {
+		if (selection < (int)strlen(letters))
+		{
 			selection++;
 			PlaySound(SND_DOOR, 0, 255);
 		}
@@ -127,8 +131,11 @@ static int PasswordEntry(int cmd, char *buffer)
 			selection -= 10;
 			PlaySound(SND_DOOR, 0, 255);
 		}
-	} else if (cmd & CMD_DOWN) {
-		if (selection < strlen(letters) - 9) {
+	}
+	else if (cmd & CMD_DOWN)
+	{
+		if (selection < (int)strlen(letters) - 9)
+		{
 			selection += 10;
 			PlaySound(SND_DOOR, 0, 255);
 		}
@@ -141,7 +148,8 @@ static int PasswordEntry(int cmd, char *buffer)
 	y = CenterY(((TextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
-	for (i = 0; i < strlen(letters); i++) {
+	for (i = 0; i < (int)strlen(letters); i++)
+	{
 		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			 y + (i / ENTRY_COLS) * TextHeight());
 

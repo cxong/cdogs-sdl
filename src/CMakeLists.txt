@@ -1,14 +1,79 @@
 cmake_minimum_required(VERSION 2.6)
-project(cdogs-sdl)
+project(cdogs-sdl C)
 
-#There are lots of scripts with cmake
-#for finding external libraries. 
-#see /usr/local/share/cmake-2.6/Modules/Find*.cmake for more examples
-find_package(sdl-dev REQUIRED)
-find_package(sdl-mixer)
+set(DEBUG 0)			#set to 1 to enable debug build
+set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
-set(CF_OPTIMISE "-02")
-set(CF_ARCH "")
-set(CF_DEBUG "-w") #-ggdb -Wall, -pg
-set(CMAKE_C_FLAGS "-g -Wall")
-add_subdirectory(w01-cpp)
+if(DEBUG)
+	set(CMAKE_BUILD_TYPE "Debug")
+endif(DEBUG)
+
+find_package(SDL REQUIRED)
+find_package(SDL_mixer)
+
+if(SDL_mixer_FOUND)
+	ADD_DEFINITIONS(-DSND_SDLMIXER -lSDL_mixer)
+else(SDL_mixer_FOUND)
+	ADD_DEFINITIONS(-DSND_NOMIX)
+endif(SDL_mixer_FOUND)
+
+
+execute_process(
+	COMMAND "sdl-config" "--libs"
+	OUTPUT_VARIABLE SDL_LDFLAGS
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+	COMMAND "sdl-config" "--cflags"
+	OUTPUT_VARIABLE SDL_INCLUDES
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror ${SDL_LDFLAGS} ${SDL_INCLUDES})
+if(DEBUG)
+	ADD_DEFINITIONS(-g)
+	if(DEBUG_PROFILE)
+		ADD_DEFINITIONS(-p)
+	endif(DEBUG_PROFILE)
+else(DEBUG)
+	ADD_DEFINITIONS(-O2)
+endif(DEBUG)
+
+include_directories(include missions)
+
+add_library(cdogs STATIC
+	actors.c
+	ai.c
+	automap.c
+	blit.c
+	defs.c
+	draw.c
+	drawtools.c
+	events.c
+	files.c
+	game.c
+	gamedata.c
+	grafx.c
+	hiscores.c
+	input.c
+	joystick.c
+	keyboard.c
+	map.c
+	mission.c
+	objs.c
+	pics.c
+	sounds.c
+	text.c
+	triggers.c
+	utils.c)
+
+add_executable(cdogs-sdl
+	cdogs.c
+	drawtools.c
+	mainmenu.c
+	menu.c
+	password.c
+	prep.c)
+target_link_libraries(cdogs-sdl cdogs SDL)
+
+add_executable(cdogs-sdl-editor
+	cdogsed.c
+	charsed.c)
+target_link_libraries(cdogs-sdl-editor cdogs SDL)

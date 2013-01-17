@@ -54,7 +54,7 @@ static void *compiledFont[CHARS_IN_FONT];
 static void *rleFont[CHARS_IN_FONT];
 
 
-void TextInit(const char *filename, int offset, int compile, int rle)
+void TextInit(const char *filename, int offset)
 {
 	int i, h;
 

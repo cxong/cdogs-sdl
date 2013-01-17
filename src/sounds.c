@@ -81,35 +81,35 @@ struct SndData {
 	int time;
 	int panning;
 	int volume;
-//      int len;
-	int size;
+	Uint32 size;
 	int pos;
 #ifdef SND_SDLMIXER
 	Mix_Chunk *data;
 #else
-	char *data;
+	Uint8 *data;
 #endif
 };
 
-struct SndData snd[SND_COUNT] = {
-	{"sounds/booom.wav", 20, 20, 0, 11025, 0, 82, 0, 0, 0},
-	{"sounds/launch.wav", 8, 8, 0, 11025, 0, 27, 0, 0, 0},
-	{"sounds/mg.wav", 10, 11, 0, 11025, 0, 36, 0, 0, 0},
-	{"sounds/flamer.wav", 10, 10, 0, 11025, 0, 44, 0, 0},
-	{"sounds/shotgun.wav", 12, 13, 0, 11025, 0, 118, 0, 0},
-	{"sounds/fusion.wav", 12, 13, 0, 11025, 0, 90, 0, 0},
-	{"sounds/switch.wav", 18, 19, 0, 11025, 0, 36, 0, 0},
-	{"sounds/scream.wav", 15, 16, 0, 11025, 0, 70, 0, 0},
-	{"sounds/aargh1.wav", 15, 16, 0, 8060, 0, 79, 0, 0},
-	{"sounds/aargh2.wav", 15, 16, 0, 8060, 0, 66, 0, 0},
-	{"sounds/aargh3.wav", 15, 16, 0, 11110, 0, 67, 0, 0},
-	{"sounds/hahaha.wav", 22, 22, 0, 8060, 0, 58, 0, 0},
-	{"sounds/bang.wav", 14, 15, 0, 11025, 0, 60, 0, 0},
-	{"sounds/pickup.wav", 14, 15, 0, 11025, 0, 27, 0, 0},
-	{"sounds/click.wav", 4, 5, 0, 11025, 0, 11, 0, 0},
-	{"sounds/whistle.wav", 20, 20, 0, 11110, 0, 90, 0, 0},
-	{"sounds/powergun.wav", 13, 14, 0, 11110, 0, 90, 0, 0},
-	{"sounds/mg.wav", 10, 11, 0, 11025, 0, 36, 0, 0}
+struct SndData snd[SND_COUNT] =
+{
+	{"sounds/booom.wav",	20,	20,	0,	11025,	0,	82,		0,	0,	0,	0,	NULL},
+	{"sounds/launch.wav",	8,	8,	0,	11025,	0,	27,		0,	0,	0,	0,	NULL},
+	{"sounds/mg.wav",		10,	11,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL},
+	{"sounds/flamer.wav",	10,	10,	0,	11025,	0,	44,		0,	0,	0,	0,	NULL},
+	{"sounds/shotgun.wav",	12,	13,	0,	11025,	0,	118,	0,	0,	0,	0,	NULL},
+	{"sounds/fusion.wav",	12,	13,	0,	11025,	0,	90,		0,	0,	0,	0,	NULL},
+	{"sounds/switch.wav",	18,	19,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL},
+	{"sounds/scream.wav",	15,	16,	0,	11025,	0,	70,		0,	0,	0,	0,	NULL},
+	{"sounds/aargh1.wav",	15,	16,	0,	8060,	0,	79,		0,	0,	0,	0,	NULL},
+	{"sounds/aargh2.wav",	15,	16,	0,	8060,	0,	66,		0,	0,	0,	0,	NULL},
+	{"sounds/aargh3.wav",	15,	16,	0,	11110,	0,	67,		0,	0,	0,	0,	NULL},
+	{"sounds/hahaha.wav",	22,	22,	0,	8060,	0,	58,		0,	0,	0,	0,	NULL},
+	{"sounds/bang.wav",		14,	15,	0,	11025,	0,	60,		0,	0,	0,	0,	NULL},
+	{"sounds/pickup.wav",	14,	15,	0,	11025,	0,	27,		0,	0,	0,	0,	NULL},
+	{"sounds/click.wav",	4,	5,	0,	11025,	0,	11,		0,	0,	0,	0,	NULL},
+	{"sounds/whistle.wav",	20,	20,	0,	11110,	0,	90,		0,	0,	0,	0,	NULL},
+	{"sounds/powergun.wav",	13,	14,	0,	11110,	0,	90,		0,	0,	0,	0,	NULL},
+	{"sounds/mg.wav",		10,	11,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL}
 };
 
 static void loadSampleConfiguration(void)
@@ -193,15 +193,15 @@ void DoSound(int i, int len, void *data)
 #else /* other mixing version */
 void DoSound(int i, int len, void *data)
 {
-	int j;
 	void *newbuffer;
 	
 	if (!soundInitialized)
-		return 0;
-	
+		return;
+
 	newbuffer = sys_mem_alloc(len);
 	//firstly, find if we're going to need to have a buffer with zeros
-	if (len + snd[i].pos > snd[i].size) {
+	if (len + snd[i].pos > (int)snd[i].size)
+	{
 		memset(newbuffer, 0, len);
 		memcpy(newbuffer, snd[i].data + snd[i].pos,
 		       snd[i].size - snd[i].pos);
@@ -409,6 +409,7 @@ int PlaySong(char *name)
 #else
 int PlaySong(char *name)
 {
+	UNUSED(name);
 	return 1;
 }
 #endif
@@ -581,7 +582,11 @@ int MinMusicChannels(void)
 // toggle music track on/off
 void ToggleTrack(int track)
 {
+#ifdef SND_SDLMIXER
 	int status;
+#endif
+
+	UNUSED(track); /* may be unimplemented */
 
 	if (!soundInitialized)
 		return;

@@ -84,25 +84,6 @@ ssize_t f_read32(FILE *f, void *buf, size_t size)
 	return ret;
 }
 
-ssize_t f_readarray32(FILE *f, void *buf, size_t size)
-{
-	int i;
-
-	debug(D_VERBOSE, "%d, %p, %d\n", fileno(f), buf, (int)size);
-
-	if (buf) {
-		for (i = 0; i < (size/4); i++) {
-		//	fprintf(stderr, " i: %d\n", i);
-			f_read32(f, buf, size);
-			#ifdef _MSC_VER
-			(char *)
-			#endif
-			buf += sizeof(int);
-		}
-	}
-	return size;
-}
-
 void swap16 (void *d)
 {
 	if (bendian) {
@@ -135,7 +116,8 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	debug(D_NORMAL, "f: %s\n", filename);
 
 	f = fopen(filename, "rb");
-	if (f >= 0) {
+	if (f != NULL)
+	{
 		f_read32(f, &i, sizeof(i));
 		
 		if (i != CAMPAIGN_MAGIC) {
@@ -177,7 +159,6 @@ void load_mission_objective(FILE *f, struct MissionObjective *o)
 		f_read32(f, &o->count, sizeof(o->count));
 		f_read32(f, &o->required, sizeof(o->required));
 		f_read32(f, &o->flags, sizeof(o->flags));
-		//readarray32(fd, o + offset, 5 * sizeof(int));
 		debug(D_VERBOSE, " >> Objective: %s data: %d %d %d %d %d\n",
 		o->description, o->type, o->index, o->count, o->required, o->flags);
 }
@@ -272,7 +253,6 @@ void load_character(FILE *f, TBadGuy *c)
 		R32(c, health);
 		R32(c, flags);
 
-//		readarray32(fd, c, sizeof(TBadGuy));
 //		fprintf(stderr, " speed: %d gun: %d\n", c->speed, c->gun);
 }
 
@@ -860,7 +840,8 @@ int mkdir_deep(const char *path, mode_t m)
 
 	debug(D_NORMAL, "mkdir_deep path: %s\n", path);
 
-	for (i = 0; i < strlen(path); i++) {
+	for (i = 0; i < (int)strlen(path); i++)
+	{
 		if (path[i] == '\0') break;
 		if (path[i] == '/') {
 			strncpy(part, path, i + 1);

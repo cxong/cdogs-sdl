@@ -56,7 +56,6 @@
 #include "utils.h"
 
 
-static void *bkg = NULL;
 static char lastPassword[PASSWORD_MAX + 1] = "";
 
 
@@ -236,11 +235,12 @@ void Summary(int x, struct PlayerData *data, int character)
 	char s[50];
 	int y = (SCREEN_HEIGHT / 3);
 
-	if (lastPassword[0]) {
-		char s[512];
+	if (lastPassword[0])
+	{
+		char s1[512];
 
-		sprintf(s, "Last password: %s", lastPassword);
-		TextStringSpecial(s, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
+		sprintf(s1, "Last password: %s", lastPassword);
+		TextStringSpecial(s1, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
 	}
 
 	if (data->survived) {
@@ -606,7 +606,7 @@ static void PlayMenuSong(void)
 }
 
 
-int Game(int mission)
+int Game(void *bkg, int mission)
 {
 	int run, gameOver;
 	int allTime, todays;
@@ -691,7 +691,7 @@ int Game(int mission)
 	return run;
 }
 
-int Campaign(void)
+int Campaign(void *bkg)
 {
 	int mission;
 
@@ -701,10 +701,10 @@ int Campaign(void)
 	mission = EnterPassword(bkg, lastPassword);
 	lastPassword[0] = 0;
 
-	return Game(mission);
+	return Game(bkg, mission);
 }
 
-void DogFight(void)
+void DogFight(void *bkg)
 {
 	int run;
 	int score1 = 0, score2 = 0;
@@ -797,7 +797,7 @@ void MainLoop(void)
 {
 	void *myScreen;
 
-	bkg = MakeBkg();
+	void *bkg = MakeBkg();
 	myScreen = sys_mem_alloc(SCREEN_MEMSIZE);
 	memset(myScreen, 0, SCREEN_MEMSIZE);
 	SetDstScreen(myScreen);
@@ -816,8 +816,8 @@ void MainLoop(void)
 				
 		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.dogFight)
-			DogFight();
-		else if (Campaign()) {
+			DogFight(bkg);
+		else if (Campaign(bkg)) {
 			DisplayAllTimeHighScores(bkg);
 			DisplayTodaysHighScores(bkg);
 		}
@@ -1025,7 +1025,7 @@ int main(int argc, char *argv[])
 	memset(gCompiledPics, 0, sizeof(gCompiledPics));
 	memset(gRLEPics, 0, sizeof(gRLEPics));
 
-	TextInit(GetDataFilePath("graphics/font.px"), -2, 0, 0);
+	TextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	if (sound && !InitializeSound()) {
 		printf("Sound initialization failed!\n");

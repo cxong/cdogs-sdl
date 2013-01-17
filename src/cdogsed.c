@@ -1558,7 +1558,7 @@ int main(int argc, char *argv[])
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 	BuildTranslationTables();
-	TextInit(GetDataFilePath("graphics/font.px"), -2, YES, YES);
+	TextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	//InitVideo(YES);
 	

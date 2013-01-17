@@ -38,11 +38,11 @@ void DisplayMenuItem(int x, int y, const char *s, int selected);
 void DisplayMenuAt(int x, int y, const char **table, int count, int index);
 void DisplayMenu(int x, const char **table, int count, int index);	/* for compatibility */
 int  MenuWidth(const char **table, int count);
-int  MenuHeight(const char **table, int count);
+int  MenuHeight(int count);
 
 #define DisplayMenuXCenter(t, c, i)		DisplayMenu(CenterX(MenuWidth(t, c)), t, c, i)
 
-#define DisplayMenuAtCenter(t, c, i)	DisplayMenuAt(CenterX(MenuWidth(t, c)), CenterY(MenuHeight(t, c)), t, c, i)
+#define DisplayMenuAtCenter(t, c, i)	DisplayMenuAt(CenterX(MenuWidth(t, c)), CenterY(MenuHeight(c)), t, c, i)
 
 #endif /* __MENU */
 

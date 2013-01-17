@@ -140,16 +140,16 @@ struct PlayerTemplate {
 
 #define MAX_TEMPLATE  10
 struct PlayerTemplate templates[MAX_TEMPLATE] = {
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"},
-	{"-- empty --"}
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0},
+	{"", 0, 0, 0, 0, 0, 0}
 };
 
 void LoadTemplates(void)
@@ -317,8 +317,10 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	if (selection[0] < 0)
 		selection[0] = selection[1] = strlen(letters);
 
-	if (cmd & CMD_BUTTON1) {
-		if (selection[index] == strlen(letters)) {
+	if (cmd & CMD_BUTTON1)
+	{
+		if (selection[index] == (int)strlen(letters))
+		{
 			PlaySound(SND_LAUNCH, 0, 255);
 			return 0;
 		}
@@ -345,8 +347,11 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 			selection[index]--;
 			PlaySound(SND_DOOR, 0, 255);
 		}
-	} else if (cmd & CMD_RIGHT) {
-		if (selection[index] < strlen(letters)) {
+	}
+	else if (cmd & CMD_RIGHT)
+	{
+		if (selection[index] < (int)strlen(letters))
+		{
 			selection[index]++;
 			PlaySound(SND_DOOR, 0, 255);
 		}
@@ -355,11 +360,16 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 			selection[index] -= 10;
 			PlaySound(SND_DOOR, 0, 255);
 		}
-	} else if (cmd & CMD_DOWN) {
-		if (selection[index] < strlen(letters) - 9) {
+	}
+	else if (cmd & CMD_DOWN)
+	{
+		if (selection[index] < (int)strlen(letters) - 9)
+		{
 			selection[index] += 10;
 			PlaySound(SND_DOOR, 0, 255);
-		} else if (selection[index] < strlen(letters)) {
+		}
+		else if (selection[index] < (int)strlen(letters))
+		{
 			selection[index] = strlen(letters);
 			PlaySound(SND_DOOR, 0, 255);
 		}
@@ -380,7 +390,8 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	// Draw selection
 
 	//s[1] = 0;
-	for (i = 0; i < strlen(letters); i++) {
+	for (i = 0; i < (int)strlen(letters); i++)
+	{
 		//s[0] = letters[i];
 
 		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,

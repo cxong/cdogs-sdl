@@ -32,15 +32,13 @@
 
 #include <string.h>
 #include <stdio.h>
-// #include <conio.h>
-// #include <i86.h>
 #include "joystick.h"
 
 /* some of this stuff could be better, but it works! */
 
 struct JoyRec gSticks[2];
 
-void PollSticks(int maxWait)
+void PollSticks(void)
 {
 	SDL_Joystick *j;
 	int idx;
@@ -129,7 +127,7 @@ void InitSticks(void)
 
 void AutoCalibrate(void)
 {
-	PollSticks(0);
+	PollSticks();
 
 /*
 	gSticks[0].xMid = gSticks[0].x;
@@ -150,7 +148,7 @@ int js2_threshold = JS_DEF_THRESHOLD;
 
 void PollDigiSticks(int *joy1, int *joy2)
 {
-	PollSticks(0);
+	PollSticks();
 
 	if (joy1)
 		*joy1 = 0;

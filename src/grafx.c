@@ -84,7 +84,7 @@ GFX_Mode * Gfx_ModeNext(void)
 	return &gfx_modelist[mode_idx];	
 }
 
-static int ValidMode(int w, int h)
+static int ValidMode(unsigned int w, unsigned int h)
 {
 	int i;
 	
@@ -116,7 +116,8 @@ int hints[HINT_END] = {
 
 void Gfx_SetHint(const GFX_Hint h, const int val)
 {
-	if (h < 0 || h >= HINT_END) return;
+	if (h >= HINT_END)
+		return;
 	hints[h] = val;
 }
 
@@ -124,7 +125,8 @@ void Gfx_SetHint(const GFX_Hint h, const int val)
 
 int Gfx_GetHint(const GFX_Hint h)
 {
-	if (h < 0 || h >= HINT_END) return 0;
+	if (h >= HINT_END)
+		return 0;
 	return Hint(h);
 }
 
@@ -141,8 +143,8 @@ int InitVideo(void)
 	char title[32];
 	SDL_Surface *new_screen = NULL;
 	int sdl_flags = 0;
-	int w, h = 0;
-	int rw, rh;
+	unsigned int w, h = 0;
+	unsigned int rw, rh;
 
 	sdl_flags |= SDL_HWPALETTE;
 	sdl_flags |= SDL_SWSURFACE;
@@ -221,8 +223,9 @@ typedef struct _Pic {
 	char *data;
 } Pic;
 
-int ReadPics(const char *filename, void **pics, int maxPics,
-	     color * palette)
+int ReadPics(
+	const char *filename, void **pics, int maxPics,
+	color_t * palette)
 {
 	FILE *f;
 	int eof = 0;
@@ -315,20 +318,6 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	}
 	
 	return i - startIndex;
-}
-
-INLINE int PicWidth(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *) pic)[0];
-}
-
-INLINE int PicHeight(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *) pic)[1];
 }
 
 void SetColorZero(int r, int g, int b)

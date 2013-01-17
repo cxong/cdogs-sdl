@@ -56,7 +56,7 @@
 
 struct ColorRange {
 	char name[20];
-	color range[8];
+	color_t range[8];
 };
 
 
@@ -763,7 +763,7 @@ void GetEditorInfo(struct EditorInfo *info)
 
 const char *RangeName(int index)
 {
-	if (index >= 0 && index < COLORRANGE_COUNT)
+	if (index >= 0 && index < (int)COLORRANGE_COUNT)
 		return cColorRanges[index].name;
 	else
 		return "Invalid";
