@@ -8,6 +8,8 @@ if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
 endif(DEBUG)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
+
 find_package(SDL REQUIRED)
 find_package(SDL_mixer)
 
@@ -37,6 +39,15 @@ else(DEBUG)
 endif(DEBUG)
 
 include_directories(include missions)
+
+set(CDOGS_DATA_DIR ".")
+set(CDOGS_CFG_DIR "./config")
+set(CDOGS_MUSIC_DIR "./music")
+set(CDOGS_TEMP_DIR "/tmp/cdogs")
+if(WIN32)
+	set(CDOGS_TEMP_DIR $ENV{TMP})
+endif(WIN32)
+CONFIGURE_FILE(config.h.cmake config.h)
 
 add_library(cdogs STATIC
 	actors.c

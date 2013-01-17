@@ -580,7 +580,6 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 	static int isRepeating = 0;
 
 	int xPrev = -1, yPrev = -1;
-	int drawn = 0;
 	//void *old = GetDstScreen();
 
 	Mouse(x, y, buttons);
@@ -600,20 +599,14 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 		if (*x > 319)
 			scaling++;
 		
-		if (!(*buttons) && !(*key) && (*x != xPrev || *y != yPrev)) {
-			if (drawn)
-				;
-				//RestoreBkg(xPrev, yPrev, old);
+		if (!(*buttons) && !(*key) && (*x != xPrev || *y != yPrev))
+		{
 			DrawCursor(*x, *y);
 			xPrev = *x;
 			yPrev = *y;
-			drawn = 1;
 		}
 	}
 	while (!(*buttons) && !(*key));
-
-	if (drawn)
-		; //RestoreBkg(xPrev, yPrev, old);
 
 	isRepeating = wasDown && (buttons != 0);
 	wasDown = (*buttons != 0);

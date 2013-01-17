@@ -148,7 +148,7 @@ static struct Credit credits[] = {
 	{"Chilok Lau", "Joey's brother and a relentless game-player"},
 	{"Niklas Wester",
 	 "My LITTLE brother...yeah, I know he is taller...mumble, grumble..."},
-	{"Anneli L”fgren",
+	{"Anneli LÃ¶fgren",
 	 "My mother. Hi Ma! Sorry, no launcher this time..."},
 	{"Otto Chrons", "Author of the DSMI sound and music library"},
 	{"Ethan Brodsky",
@@ -569,7 +569,7 @@ int SelectOptions(int cmd)
 	TextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
 	
 	x = CenterX(MenuWidth(optionsMenu, OPTIONS_COUNT));
-	y = CenterY(MenuHeight(optionsMenu, OPTIONS_COUNT));
+	y = CenterY(MenuHeight(OPTIONS_COUNT));
 	
 	DisplayMenuAt(x - 20, y, optionsMenu, OPTIONS_COUNT, index);
 
@@ -710,7 +710,7 @@ int SelectControls(int cmd)
 	TextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));	
 	
 	x = CenterX(MenuWidth(controlsMenu, CONTROLS_COUNT));
-	y = CenterY(MenuHeight(controlsMenu, CONTROLS_COUNT));
+	y = CenterY(MenuHeight(CONTROLS_COUNT));
 	
 	DisplayMenuAt(x - 20, y, controlsMenu, CONTROLS_COUNT, index);
 	
@@ -977,7 +977,7 @@ int SelectVolume(int cmd)
 	TextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
 	
 	x = CenterX(MenuWidth(volumeMenu, VOLUME_COUNT));
-	y = CenterY(MenuHeight(volumeMenu, VOLUME_COUNT));
+	y = CenterY(MenuHeight(VOLUME_COUNT));
 	
 	DisplayMenuAt(x - 20, y, volumeMenu, VOLUME_COUNT, index);
 	
@@ -1031,7 +1031,7 @@ static void ShowCredits(void)
 
 	if (t > lastTick + CREDIT_PERIOD) {
 		creditIndex++;
-		if (creditIndex >= sizeof(credits) / sizeof(credits[0]))
+		if (creditIndex >= (int)(sizeof(credits) / sizeof(credits[0])))
 			creditIndex = 0;
 		lastTick = t;
 	}
@@ -1153,14 +1153,17 @@ void LoadConfig(void)
 			gOptions.playerHp = 100;
 		
 		{
-			int w, h, s, fs;
+			int w, h, scaleFactor, fs;
 
-			if (fscanf(f, "%dx%d:%d:%d\n", &w, &h, &fs, &s) == 4) {
+			if (fscanf(f, "%dx%d:%d:%d\n", &w, &h, &fs, &scaleFactor) == 4)
+			{
 				Gfx_SetHint(HINT_WIDTH, w);
 				Gfx_SetHint(HINT_HEIGHT, h);
 
-				if (fs != 0) Gfx_HintOn(HINT_FULLSCREEN);
-				if (s > 1)  Gfx_SetHint(HINT_SCALEFACTOR, s);
+				if (fs != 0)
+					Gfx_HintOn(HINT_FULLSCREEN);
+				if (scaleFactor > 1)
+					Gfx_SetHint(HINT_SCALEFACTOR, scaleFactor);
 			}
 		}
 
