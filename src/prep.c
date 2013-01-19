@@ -176,7 +176,8 @@ void LoadTemplates(void)
 					   &templates[i].legs,
 					   &templates[i].skin,
 					   &templates[i].hair);
-			if (fscanfres < 1) {
+			if (fscanfres < 7)
+			{
 				printf("Error reading player %d\n", i);
 				fclose(f);
 				return;

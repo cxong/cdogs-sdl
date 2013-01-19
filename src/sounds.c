@@ -318,10 +318,9 @@ int InitSoundDevice(void)
 	memset(channelPosition, 0, sizeof(channelPosition));
 	memset(channelTime, 0, sizeof(channelTime));
 
-	//tmpspec.samples = 512;
-	//tmpspec.callback = &SoundCallback;
-
 	#ifndef SND_SDLMIXER
+	tmpspec.samples = 512;
+	tmpspec.callback = &SoundCallback;
 	tmpspec.channels = 1;
 	tmpspec.format = AUDIO_S16;
 	#endif
