@@ -13,11 +13,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
 find_package(SDL REQUIRED)
 find_package(SDL_mixer)
 
-if(SDL_mixer_FOUND)
+if(SDLMIXER_INCLUDE_DIR)
 	ADD_DEFINITIONS(-DSND_SDLMIXER -lSDL_mixer)
-else(SDL_mixer_FOUND)
+else(SDLMIXER_INCLUDE_DIR)
 	ADD_DEFINITIONS(-DSND_NOMIX)
-endif(SDL_mixer_FOUND)
+endif(SDLMIXER_INCLUDE_DIR)
 
 
 execute_process(
@@ -40,7 +40,7 @@ endif(DEBUG)
 
 include_directories(include missions)
 
-set(CDOGS_DATA_DIR "./")
+set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")
 set(CDOGS_MUSIC_DIR "./music/")
 set(CDOGS_TEMP_DIR "/tmp/cdogs/")
@@ -83,8 +83,14 @@ add_executable(cdogs-sdl
 	password.c
 	prep.c)
 target_link_libraries(cdogs-sdl cdogs SDL)
+if(SDLMIXER_INCLUDE_DIR)
+	target_link_libraries(cdogs-sdl SDL_mixer)
+endif(SDLMIXER_INCLUDE_DIR)
 
 add_executable(cdogs-sdl-editor
 	cdogsed.c
 	charsed.c)
 target_link_libraries(cdogs-sdl-editor cdogs SDL)
+if(SDLMIXER_INCLUDE_DIR)
+	target_link_libraries(cdogs-sdl-editor SDL_mixer)
+endif(SDLMIXER_INCLUDE_DIR)

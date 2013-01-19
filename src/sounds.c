@@ -162,7 +162,8 @@ void DoSound(int i, int len, void *data)
 	
 	newbuffer = sys_mem_alloc(len);
 	//firstly, find if we're going to need to have a buffer with zeros
-	if (len + snd[i].pos > snd[i].size) {
+	if (len + snd[i].pos > (int)snd[i].size)
+	{
 		memset(newbuffer, 0, len);
 		memcpy(newbuffer, snd[i].data + snd[i].pos, snd[i].size - snd[i].pos);
 		//snd[i].pos = 0;
@@ -250,12 +251,12 @@ int InitSoundDevice(void)
 	// Initialization goes here...
 
 	#ifdef SND_NOMIX
-	debug(D_NORMAL, "Old sound code enabled. =/\n");
+	printf("Old sound code enabled. =/\n");
 	#endif
 	#ifdef SND_SDLMIXER
-	debug(D_NORMAL, "Using SDL mixer...\n");
+	printf("Using SDL mixer...\n");
 	#else
-	debug(D_NORMAL, "Using newish sound code..\n");
+	printf("Using newish sound code..\n");
 	#endif
 
 	#ifdef SND_SDLMIXER

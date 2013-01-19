@@ -33,7 +33,7 @@
 #define __CONFIG
 
 /* where to look for the cdogs data files */
-#define CDOGS_DATA_DIR "./"
+#define CDOGS_DATA_DIR "."
 
 #define CDOGS_CFG_DIR ".cdogs/"
 
