@@ -39,15 +39,15 @@
 
 void ShowControls(void)
 {
-	TextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
+	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
 }
 
 void DisplayMenuItem(int x, int y, const char *s, int selected)
 {
 	if (selected)
-		TextStringWithTableAt(x, y, s, &tableFlamed);
+		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
 	else
-		TextStringAt(x, y, s);
+		CDogsTextStringAt(x, y, s);
 		
 	return;
 }
@@ -60,7 +60,7 @@ int  MenuWidth(const char **table, int count)
 	len = max = 0;
 	
 	for (i = 0; i < count; i++) {
-		if ( ( len = TextWidth(table[i]) ) > max)
+		if ( ( len = CDogsTextWidth(table[i]) ) > max)
 			max = len;
 	}
 	
@@ -69,7 +69,7 @@ int  MenuWidth(const char **table, int count)
 
 int MenuHeight(int count)
 {
-	return count * TextHeight();
+	return count * CDogsTextHeight();
 }
 
 void DisplayMenuAt(int x, int y, const char **table, int count, int index)
@@ -77,7 +77,7 @@ void DisplayMenuAt(int x, int y, const char **table, int count, int index)
 	int i;
 
 	for (i = 0; i < count; i++) {
-		DisplayMenuItem(x, y + i * TextHeight(), table[i], i == index);
+		DisplayMenuItem(x, y + i * CDogsTextHeight(), table[i], i == index);
 	}
 	
 	return;

@@ -45,20 +45,20 @@
 #define CHAR_INDEX(c) ((int)c - FIRST_CHAR)
 
 
-static int dxText = 0;
-static int xText = 0;
-static int yText = 0;
-static int hText = 0;
+static int dxCDogsText = 0;
+static int xCDogsText = 0;
+static int yCDogsText = 0;
+static int hCDogsText = 0;
 static void *font[CHARS_IN_FONT];
 static void *compiledFont[CHARS_IN_FONT];
 static void *rleFont[CHARS_IN_FONT];
 
 
-void TextInit(const char *filename, int offset)
+void CDogsTextInit(const char *filename, int offset)
 {
 	int i, h;
 
-	dxText = offset;
+	dxCDogsText = offset;
 	memset(font, 0, sizeof(font));
 	memset(compiledFont, 0, sizeof(compiledFont));
 	memset(rleFont, 0, sizeof(rleFont));
@@ -66,96 +66,96 @@ void TextInit(const char *filename, int offset)
 
 	for (i = 0; i < CHARS_IN_FONT; i++) {
 		h = PicHeight(font[i]);
-		if (h > hText)
-			hText = h;
+		if (h > hCDogsText)
+			hCDogsText = h;
 	}
 }
 
-void TextChar(char c)
+void CDogsTextChar(char c)
 {
 	int i = CHAR_INDEX(c);
 	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
-		DrawTPic(xText, yText, font[i], compiledFont[i]);
-		xText += 1 + PicWidth(font[i]) + dxText;
+		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
+		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
 	} else {
 		i = CHAR_INDEX('.');
-		DrawTPic(xText, yText, font[i], compiledFont[i]);
-		xText += 1 + PicWidth(font[i]) + dxText;
+		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
+		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
 	}
 }
 
-void TextCharWithTable(char c, TranslationTable * table)
+void CDogsTextCharWithTable(char c, TranslationTable * table)
 {
 	int i = CHAR_INDEX(c);
 	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
-		DrawTTPic(xText, yText, font[i], table, rleFont[i]);
-		xText += 1 + PicWidth(font[i]) + dxText;
+		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
+		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
 	} else {
 		i = CHAR_INDEX('.');
-		DrawTTPic(xText, yText, font[i], table, rleFont[i]);
-		xText += 1 + PicWidth(font[i]) + dxText;
+		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
+		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
 	}
 }
 
-void TextString(const char *s)
+void CDogsTextString(const char *s)
 {
 	while (*s)
-		TextChar(*s++);
+		CDogsTextChar(*s++);
 }
 
-void TextStringWithTable(const char *s, TranslationTable * table)
+void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 {
 	while (*s)
-		TextCharWithTable(*s++, table);
+		CDogsTextCharWithTable(*s++, table);
 }
 
-void TextGoto(int x, int y)
+void CDogsTextGoto(int x, int y)
 {
-	xText = x;
-	yText = y;
+	xCDogsText = x;
+	yCDogsText = y;
 }
 
-void TextStringAt(int x, int y, const char *s)
+void CDogsTextStringAt(int x, int y, const char *s)
 {
-	TextGoto(x, y);
-	TextString(s);
+	CDogsTextGoto(x, y);
+	CDogsTextString(s);
 }
 
-void TextStringWithTableAt(int x, int y, const char *s,
+void CDogsTextStringWithTableAt(int x, int y, const char *s,
 			   TranslationTable * table)
 {
-	TextGoto(x, y);
-	TextStringWithTable(s, table);
+	CDogsTextGoto(x, y);
+	CDogsTextStringWithTable(s, table);
 }
 
-int TextCharWidth(int c)
+int CDogsTextCharWidth(int c)
 {
 	if (c >= FIRST_CHAR && c <= LAST_CHAR && font[CHAR_INDEX(c)])
-		return 1 + PicWidth(font[CHAR_INDEX(c)]) + dxText;
+		return 1 + PicWidth(font[CHAR_INDEX(c)]) + dxCDogsText;
 	else
-		return 1 + PicWidth(font[CHAR_INDEX('.')]) + dxText;
+		return 1 + PicWidth(font[CHAR_INDEX('.')]) + dxCDogsText;
 }
 
-int TextWidth(const char *s)
+int CDogsTextWidth(const char *s)
 {
 	int w = 0;
 
 	while (*s)
-		w += TextCharWidth(*s++);
+		w += CDogsTextCharWidth(*s++);
 	return w;
 }
 
 #define FLAG_SET(a, b)	((a & b) != 0)
 
-void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
+void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
 {
 	int scrw = SCREEN_WIDTH;
 	int scrh = SCREEN_HEIGHT;
 	int x, y, w, h;
 	
 	x = y = w = h = 0;
-	w = TextWidth(s);
-	h = TextHeight();
+	w = CDogsTextWidth(s);
+	h = CDogsTextHeight();
 	
 	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = (scrw - w) / 2; }
 	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = (scrh - h) / 2; }
@@ -167,15 +167,15 @@ void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsi
 	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = scrh - h - ypad; }
 
 	if (FLAG_SET(opts, TEXT_FLAMED)) {
-		TextStringWithTableAt(x, y, s, &tableFlamed);
+		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
 	} else if (FLAG_SET(opts, TEXT_PURPLE)) {
-		TextStringWithTableAt(x, y, s, &tablePurple);
+		CDogsTextStringWithTableAt(x, y, s, &tablePurple);
 	} else {
-		TextStringAt(x, y, s);
+		CDogsTextStringAt(x, y, s);
 	}
 }
 
-int TextHeight(void)
+int CDogsTextHeight(void)
 {
-	return hText;
+	return hCDogsText;
 }

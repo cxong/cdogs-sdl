@@ -131,9 +131,9 @@ static void DisplayCharacterUsed( int x, int y, struct Entry *entry )
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
 	if (hilite)
-		TextStringWithTableAt(x, y, s, &tableFlamed);
+		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
 	else
-		TextStringAt(x, y, s);
+		CDogsTextStringAt(x, y, s);
 }
 
 static int DisplayEntry(int x, int y, int index, struct Entry *e,
@@ -148,16 +148,16 @@ static int DisplayEntry(int x, int y, int index, struct Entry *e,
 #define NAME_OFFSET      85
 
 	sprintf(s, "%d.", index + 1);
-	DisplayAt(x + INDEX_OFFSET - TextWidth(s), y, s, hilite);
+	DisplayAt(x + INDEX_OFFSET - CDogsTextWidth(s), y, s, hilite);
 	sprintf(s, "%d", e->score);
-	DisplayAt(x + SCORE_OFFSET - TextWidth(s), y, s, hilite);
+	DisplayAt(x + SCORE_OFFSET - CDogsTextWidth(s), y, s, hilite);
 	sprintf(s, "%d", e->missions);
-	DisplayAt(x + MISSIONS_OFFSET - TextWidth(s), y, s, hilite);
+	DisplayAt(x + MISSIONS_OFFSET - CDogsTextWidth(s), y, s, hilite);
 	sprintf(s, "(%d)", e->lastMission + 1);
-	DisplayAt(x + MISSION_OFFSET - TextWidth(s), y, s, hilite);
+	DisplayAt(x + MISSION_OFFSET - CDogsTextWidth(s), y, s, hilite);
 	DisplayAt(x + NAME_OFFSET, y, e->name, hilite);
 
-	return 1 + TextHeight();
+	return 1 + CDogsTextHeight();
 }
 
 static int DisplayPage(const char *title, int index, struct Entry *e,
@@ -166,11 +166,11 @@ static int DisplayPage(const char *title, int index, struct Entry *e,
 	int x = 80;
 	int y = 5;
 
-	TextStringAt(5, 5, title);
+	CDogsTextStringAt(5, 5, title);
 	while (index < MAX_ENTRY && e[index].score > 0 && x < 300) {
 		y += DisplayEntry(x, y, index, &e[index], index == hilite1
 				  || index == hilite2);
-		if (y > 198 - TextHeight()) {
+		if (y > 198 - CDogsTextHeight()) {
 			y = 20;
 			x += 100;
 		}

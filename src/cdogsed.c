@@ -265,26 +265,26 @@ static char lastFile[128];
 
 // Code...
 
-void DisplayText(int x, int y, const char *text, int hilite, int editable)
+void DisplayCDogsText(int x, int y, const char *text, int hilite, int editable)
 {
-	TextGoto(x, y);
+	CDogsTextGoto(x, y);
 	if (editable) {
 		if (hilite)
-			TextCharWithTable('\020', &tableFlamed);
+			CDogsTextCharWithTable('\020', &tableFlamed);
 		else
-			TextChar('\020');
+			CDogsTextChar('\020');
 	}
 
 	if (hilite && !editable)
-		TextStringWithTable(text, &tableFlamed);
+		CDogsTextStringWithTable(text, &tableFlamed);
 	else
-		TextString(text);
+		CDogsTextString(text);
 
 	if (editable) {
 		if (hilite)
-			TextCharWithTable('\021', &tableFlamed);
+			CDogsTextCharWithTable('\021', &tableFlamed);
 		else
-			TextChar('\021');
+			CDogsTextChar('\021');
 	}
 }
 
@@ -293,12 +293,12 @@ void DrawObjectiveInfo(int index, int y, int xc)
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i;
-	const char *typeText;
+	const char *typeCDogsText;
 	char s[50];
 
 	switch (currentMission->objectives[index].type) {
 	case OBJECTIVE_KILL:
-		typeText = "Kill";
+		typeCDogsText = "Kill";
 		i = characterDesc[currentMission->baddieCount +
 				  CHARACTER_OTHERS].facePic;
 		table =
@@ -309,7 +309,7 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_RESCUE:
-		typeText = "Rescue";
+		typeCDogsText = "Rescue";
 		i = characterDesc[CHARACTER_PRISONER].facePic;
 		table = &characterDesc[CHARACTER_PRISONER].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -317,28 +317,28 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_COLLECT:
-		typeText = "Collect";
+		typeCDogsText = "Collect";
 		i = gMission.objectives[index].pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_DESTROY:
-		typeText = "Destroy";
+		typeCDogsText = "Destroy";
 		i = gMission.objectives[index].blowupObject->pic;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_INVESTIGATE:
-		typeText = "Explore";
+		typeCDogsText = "Explore";
 		pic.dx = pic.dy = 0;
 		pic.picIndex = -1;
 		break;
 	default:
-		typeText = "???";
+		typeCDogsText = "???";
 		i = gMission.objectives[index].pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	}
 
-	DisplayText(20, y, typeText, xc == XC_TYPE, 0);
+	DisplayCDogsText(20, y, typeCDogsText, xc == XC_TYPE, 0);
 
 	if (pic.picIndex >= 0) {
 		if (table)
@@ -350,9 +350,9 @@ void DrawObjectiveInfo(int index, int y, int xc)
 	}
 
 	sprintf(s, "%d", currentMission->objectives[index].required);
-	DisplayText(90, y, s, xc == XC_REQUIRED, 0);
+	DisplayCDogsText(90, y, s, xc == XC_REQUIRED, 0);
 	sprintf(s, "out of %d", currentMission->objectives[index].count);
-	DisplayText(110, y, s, xc == XC_TOTAL, 0);
+	DisplayCDogsText(110, y, s, xc == XC_TOTAL, 0);
 
 	sprintf(s, "%s %s %s %s %s",
 		(currentMission->objectives[index].
@@ -365,7 +365,7 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		 flags & OBJECTIVE_UNKNOWNCOUNT) != 0 ? "no-count" : "",
 		(currentMission->objectives[index].
 		 flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
-	DisplayText(150, y, s, xc == XC_FLAGS, 0);
+	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
 
 	SetSecondaryMouseRects(localObjectiveClicks);
 }
@@ -375,15 +375,15 @@ int MissionDescription(int y, const char *description, int hilite)
 	int w_ws, w_word, x, lines;
 	const char *ws, *word, *p, *s;
 
-	TextGoto(20 - TextCharWidth('\020'), y);
+	CDogsTextGoto(20 - CDogsTextCharWidth('\020'), y);
 	if (hilite)
-		TextCharWithTable('\020', &tableFlamed);
+		CDogsTextCharWithTable('\020', &tableFlamed);
 	else
-		TextChar('\020');
+		CDogsTextChar('\020');
 
 	x = 20;
 	lines = 1;
-	TextGoto(x, y);
+	CDogsTextGoto(x, y);
 
 	s = ws = word = description;
 	while (*s) {
@@ -396,12 +396,12 @@ int MissionDescription(int y, const char *description, int hilite)
 			s++;
 
 		for (w_ws = 0, p = ws; p < word; p++)
-			w_ws += TextCharWidth(*p);
+			w_ws += CDogsTextCharWidth(*p);
 		for (w_word = 0; p < s; p++)
-			w_word += TextCharWidth(*p);
+			w_word += CDogsTextCharWidth(*p);
 
 		if (x + w_ws + w_word > 300 && w_ws + w_word < 280) {
-			y += TextHeight();
+			y += CDogsTextHeight();
 			x = 20;
 			lines++;
 			ws = word;
@@ -409,18 +409,18 @@ int MissionDescription(int y, const char *description, int hilite)
 		}
 
 		x += w_ws;
-		TextGoto(x, y);
+		CDogsTextGoto(x, y);
 
 		for (p = word; p < s; p++)
-			TextChar(*p);
+			CDogsTextChar(*p);
 
 		x += w_word;
 	}
 
 	if (hilite)
-		TextCharWithTable('\021', &tableFlamed);
+		CDogsTextCharWithTable('\021', &tableFlamed);
 	else
-		TextChar('\021');
+		CDogsTextChar('\021');
 
 	return lines;
 }
@@ -451,10 +451,10 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 		  cd->table, NULL);
 
 	if (hilite) {
-		TextGoto(x - 8, y - 16);
-		TextChar('\020');
-		TextGoto(x - 8, y + 8);
-		TextString(gunDesc[cd->defaultGun].gunName);
+		CDogsTextGoto(x - 8, y - 16);
+		CDogsTextChar('\020');
+		CDogsTextGoto(x - 8, y + 8);
+		CDogsTextString(gunDesc[cd->defaultGun].gunName);
 	}
 }
 
@@ -492,12 +492,12 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex], NULL);
 
 	if (hilite) {
-		TextGoto(x - 8, y - 4);
-		TextChar('\020');
+		CDogsTextGoto(x - 8, y - 4);
+		CDogsTextChar('\020');
 	}
 	sprintf(s, "%d", density);
-	TextGoto(x - 8, y + 5);
-	TextString(s);
+	CDogsTextGoto(x - 8, y + 5);
+	CDogsTextString(s);
 
 	SetSecondaryMouseRects(localMapItemClicks);
 }
@@ -512,9 +512,9 @@ void Display(int index, int xc, int yc, int key)
 	memset(GetDstScreen(), 58, Screen_GetMemSize());
 
 	sprintf(s, "Key: 0x%x", key);
-	TextStringAt(270, 190, s);
+	CDogsTextStringAt(270, 190, s);
 
-	DisplayText(25, y, campaign.title, yc == YC_CAMPAIGNTITLE
+	DisplayCDogsText(25, y, campaign.title, yc == YC_CAMPAIGNTITLE
 		    && xc == XC_CAMPAIGNTITLE, 1);
 
 	if (fileChanged)
@@ -523,73 +523,73 @@ void Display(int index, int xc, int yc, int key)
 	if (currentMission) {
 		sprintf(s, "Mission %d/%d", index + 1,
 			campaign.missionCount);
-		DisplayText(270, y, s, yc == YC_MISSIONINDEX, 0);
+		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 
-		y += TextHeight() + 3;
-		DisplayText(25, y, currentMission->title,
+		y += CDogsTextHeight() + 3;
+		DisplayCDogsText(25, y, currentMission->title,
 			    yc == YC_MISSIONTITLE
 			    && xc == XC_MISSIONTITLE, 1);
 
-		y += TextHeight() + 2;
+		y += CDogsTextHeight() + 2;
 
 		sprintf(s, "Width: %d", currentMission->mapWidth);
-		DisplayText(20, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(20, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_WIDTH, 0);
 
 		sprintf(s, "Height: %d", currentMission->mapHeight);
-		DisplayText(60, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(60, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_HEIGHT, 0);
 
 		sprintf(s, "Walls: %d", currentMission->wallCount);
-		DisplayText(100, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(100, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_WALLCOUNT, 0);
 
 		sprintf(s, "Len: %d", currentMission->wallLength);
-		DisplayText(140, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(140, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_WALLLENGTH, 0);
 
 		sprintf(s, "Rooms: %d", currentMission->roomCount);
-		DisplayText(180, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(180, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_ROOMCOUNT, 0);
 
 		sprintf(s, "Sqr: %d", currentMission->squareCount);
-		DisplayText(220, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(220, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_SQRCOUNT, 0);
 
 		sprintf(s, "Dens: %d", currentMission->baddieDensity);
-		DisplayText(260, y, s, yc == YC_MISSIONPROPS
+		DisplayCDogsText(260, y, s, yc == YC_MISSIONPROPS
 			    && xc == XC_DENSITY, 0);
 
-		y += TextHeight();
+		y += CDogsTextHeight();
 
-		DisplayText(20, y, "Wall", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(20, y, "Wall", yc == YC_MISSIONLOOKS
 			    && xc == XC_WALL, 0);
-		DisplayText(50, y, "Floor", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(50, y, "Floor", yc == YC_MISSIONLOOKS
 			    && xc == XC_FLOOR, 0);
-		DisplayText(80, y, "Rooms", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(80, y, "Rooms", yc == YC_MISSIONLOOKS
 			    && xc == XC_ROOM, 0);
-		DisplayText(110, y, "Doors", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(110, y, "Doors", yc == YC_MISSIONLOOKS
 			    && xc == XC_DOORS, 0);
-		DisplayText(140, y, "Keys", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(140, y, "Keys", yc == YC_MISSIONLOOKS
 			    && xc == XC_KEYS, 0);
-		DisplayText(170, y, "Exit", yc == YC_MISSIONLOOKS
+		DisplayCDogsText(170, y, "Exit", yc == YC_MISSIONLOOKS
 			    && xc == XC_EXIT, 0);
 
 		sprintf(s, "Walls: %s",
 			RangeName(currentMission->wallRange));
-		DisplayText(200, y, s, yc == YC_MISSIONLOOKS
+		DisplayCDogsText(200, y, s, yc == YC_MISSIONLOOKS
 			    && xc == XC_COLOR1, 0);
 		sprintf(s, "Floor: %s",
 			RangeName(currentMission->floorRange));
-		DisplayText(200, y + TH, s, yc == YC_MISSIONLOOKS
+		DisplayCDogsText(200, y + TH, s, yc == YC_MISSIONLOOKS
 			    && xc == XC_COLOR2, 0);
 		sprintf(s, "Rooms: %s",
 			RangeName(currentMission->roomRange));
-		DisplayText(200, y + 2 * TH, s, yc == YC_MISSIONLOOKS
+		DisplayCDogsText(200, y + 2 * TH, s, yc == YC_MISSIONLOOKS
 			    && xc == XC_COLOR3, 0);
 		sprintf(s, "Extra: %s",
 			RangeName(currentMission->altRange));
-		DisplayText(200, y + 3 * TH, s, yc == YC_MISSIONLOOKS
+		DisplayCDogsText(200, y + 3 * TH, s, yc == YC_MISSIONLOOKS
 			    && xc == XC_COLOR4, 0);
 
 		DrawPic(20, y + TH,
@@ -614,52 +614,52 @@ void Display(int index, int xc, int yc, int key)
 
 		y += TH + 25;
 
-		DisplayText(20, y, "Mission description",
+		DisplayCDogsText(20, y, "Mission description",
 			    yc == YC_MISSIONDESC, 0);
-		y += TextHeight();
+		y += CDogsTextHeight();
 
 		sprintf(s, "Characters (%d/%d)",
 			currentMission->baddieCount, BADDIE_MAX);
-		DisplayText(20, y, s, yc == YC_CHARACTERS, 0);
-		y += TextHeight();
+		DisplayCDogsText(20, y, s, yc == YC_CHARACTERS, 0);
+		y += CDogsTextHeight();
 
 		sprintf(s, "Mission objective characters (%d/%d)",
 			currentMission->specialCount, SPECIAL_MAX);
-		DisplayText(20, y, s, yc == YC_SPECIALS, 0);
-		y += TextHeight();
+		DisplayCDogsText(20, y, s, yc == YC_SPECIALS, 0);
+		y += CDogsTextHeight();
 
 		sprintf(s, "Available weapons (%d/%d)",
 			gMission.weaponCount, WEAPON_MAX);
-		DisplayText(20, y, s, yc == YC_WEAPONS, 0);
-		y += TextHeight();
+		DisplayCDogsText(20, y, s, yc == YC_WEAPONS, 0);
+		y += CDogsTextHeight();
 
 		sprintf(s, "Map items (%d/%d)", gMission.objectCount,
 			ITEMS_MAX);
-		DisplayText(20, y, s, yc == YC_ITEMS, 0);
-		y += TextHeight() + 2;
+		DisplayCDogsText(20, y, s, yc == YC_ITEMS, 0);
+		y += CDogsTextHeight() + 2;
 
 		if (currentMission->objectiveCount) {
 			for (i = 0; i < currentMission->objectiveCount;
 			     i++) {
-				DisplayText(20, y,
+				DisplayCDogsText(20, y,
 					    currentMission->objectives[i].
 					    description,
 					    yc - YC_OBJECTIVES == i, 1);
-				y += TextHeight();
+				y += CDogsTextHeight();
 			}
 		} else
-			DisplayText(20, y, "-- mission objectives --",
+			DisplayCDogsText(20, y, "-- mission objectives --",
 				    yc == YC_OBJECTIVES, 0);
 	} else if (campaign.missionCount) {
 		sprintf(s, "End/%d", campaign.missionCount);
-		DisplayText(270, y, s, yc == YC_MISSIONINDEX, 0);
+		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 	}
 
 	y = 170;
 
 	switch (yc) {
 	case YC_CAMPAIGNTITLE:
-		DisplayText(20, 150, campaign.author,
+		DisplayCDogsText(20, 150, campaign.author,
 			    yc == YC_CAMPAIGNTITLE && xc == XC_AUTHOR, 1);
 		MissionDescription(150 + TH, campaign.description,
 				   yc == YC_CAMPAIGNTITLE
@@ -668,7 +668,7 @@ void Display(int index, int xc, int yc, int key)
 		break;
 
 	case YC_MISSIONTITLE:
-		DisplayText(20, 150, currentMission->song,
+		DisplayCDogsText(20, 150, currentMission->song,
 			    yc == YC_MISSIONTITLE
 			    && xc == XC_MUSICFILE, 1);
 		SetSecondaryMouseRects(localMissionClicks);
@@ -680,7 +680,7 @@ void Display(int index, int xc, int yc, int key)
 		break;
 
 	case YC_CHARACTERS:
-		TextStringAt(5, 190,
+		CDogsTextStringAt(5, 190,
 			     "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 			break;
@@ -691,7 +691,7 @@ void Display(int index, int xc, int yc, int key)
 		break;
 
 	case YC_SPECIALS:
-		TextStringAt(5, 190,
+		CDogsTextStringAt(5, 190,
 			     "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 			break;
@@ -704,7 +704,7 @@ void Display(int index, int xc, int yc, int key)
 		break;
 
 	case YC_ITEMS:
-		TextStringAt(5, 190,
+		CDogsTextStringAt(5, 190,
 			     "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 			break;
@@ -726,7 +726,7 @@ void Display(int index, int xc, int yc, int key)
 		    yc >= YC_OBJECTIVES
 		    && yc - YC_OBJECTIVES <
 		    currentMission->objectiveCount) {
-			TextStringAt(5, 190,
+			CDogsTextStringAt(5, 190,
 				     "Use Insert, Delete and PageUp/PageDown");
 			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
 		}
@@ -1222,11 +1222,11 @@ static void Save(int asCode)
 	strcpy(filename, lastFile);
 	while (1) {
 		memset(GetDstScreen(), 58, Screen_GetMemSize());
-		TextStringAt(125, 50, "Save as:");
-		TextGoto(125, 50 + TextHeight());
-		TextChar('\020');
-		TextString(filename);
-		TextChar('\021');
+		CDogsTextStringAt(125, 50, "Save as:");
+		CDogsTextGoto(125, 50 + CDogsTextHeight());
+		CDogsTextChar('\020');
+		CDogsTextString(filename);
+		CDogsTextChar('\021');
 		CopyToScreen();
 
 		c = GetKey();
@@ -1269,8 +1269,8 @@ static int ConfirmQuit(void)
 	int c;
 
 	memset(GetDstScreen(), 58, Screen_GetMemSize());
-	TextStringAt(80, 50, "Campaign has been modified, but not saved");
-	TextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
+	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
+	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	CopyToScreen();
 
 	c = GetKey();
@@ -1558,7 +1558,7 @@ int main(int argc, char *argv[])
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 	BuildTranslationTables();
-	TextInit(GetDataFilePath("graphics/font.px"), -2);
+	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	//InitVideo(YES);
 	
@@ -1582,6 +1582,6 @@ int main(int argc, char *argv[])
 
 	free(myScreen);
 
-	//TextMode();
+	//CDogsTextMode();
 	exit(EXIT_SUCCESS);
 }

@@ -325,23 +325,23 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	if (placement == PLACE_LEFT)	flags |= TEXT_LEFT;
 	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
 
-	//TextStringAt(x, 5, data->name);
-	TextStringSpecial(data->name, flags, 5, 5);
+	//CDogsTextStringAt(x, 5, data->name);
+	CDogsTextStringSpecial(data->name, flags, 5, 5);
 	if (!gCampaign.dogFight)
 		sprintf(s, "Score: %d", data->score);
 	else
 		s[0] = 0;
 	if (p) {
-		TextStringSpecial(s, flags, 5, 5 + 2 + 2 * TextHeight());
-		//TextStringAt(x, 5 + 2 + 2 * TextHeight(), s);
-		TextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + TextHeight());
-		//TextStringAt(x, 5 + 1 + TextHeight(), gunDesc[p->gun].gunName);
+		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
+		//CDogsTextStringAt(x, 5 + 2 + 2 * CDogsTextHeight(), s);
+		CDogsTextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + CDogsTextHeight());
+		//CDogsTextStringAt(x, 5 + 1 + CDogsTextHeight(), gunDesc[p->gun].gunName);
 		sprintf(s, "%d hp", p->health);
-		TextStringSpecial(s, flags, 5, 5 + 3 + 3 * TextHeight());
-		//TextStringAt(x, 5 + 3 + 3 * TextHeight(), s);
+		CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
+		//CDogsTextStringAt(x, 5 + 3 + 3 * CDogsTextHeight(), s);
 	} else
-		TextStringSpecial(s, flags, 5, 5 + 1 * TextHeight());
-		//TextStringAt(x, 5 + 1 + TextHeight(), s);
+		CDogsTextStringSpecial(s, flags, 5, 5 + 1 * CDogsTextHeight());
+		//CDogsTextStringAt(x, 5 + 1 + CDogsTextHeight(), s);
 }
 
 static void DrawKeycard(int x, int y, const TOffsetPic * pic)
@@ -387,7 +387,7 @@ static void MissionStatus(void)
 		return;
 
 	x = 5;
-	y = SCREEN_HEIGHT - 5 - TextHeight(); 
+	y = SCREEN_HEIGHT - 5 - CDogsTextHeight(); 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -409,10 +409,10 @@ static void MissionStatus(void)
 				} else {
 					strcpy(s, "?");
 				}
-				TextStringAt(x + 5, y, s);
+				CDogsTextStringAt(x + 5, y, s);
 				allDone = 0;
 			} else {
-				TextStringAt(x + 5, y, "Done");
+				CDogsTextStringAt(x + 5, y, "Done");
 			}
 			x += 30;
 		}
@@ -439,34 +439,34 @@ void StatusDisplay(void)
 
 	if (!gPlayer1 && !gPlayer2) {
 		if (!gCampaign.dogFight)
-			TextStringAtCenter("Game Over!");
+			CDogsTextStringAtCenter("Game Over!");
 		else
-			TextStringAtCenter("Double Kill!");
+			CDogsTextStringAtCenter("Double Kill!");
 	}
 
 	else if (MissionCompleted()) {
 		sprintf(s, "Pickup in %d seconds\n",
 			(gMission.pickupTime + 69) / 70);
-		TextStringAtCenter(s);
+		CDogsTextStringAtCenter(s);
 	}
 
 	if (gameIsPaused) {
 		if (escExits)
-			TextStringAtCenter("Press Esc again to quit");
+			CDogsTextStringAtCenter("Press Esc again to quit");
 		else
-			TextStringAtCenter("Paused");
+			CDogsTextStringAtCenter("Paused");
 	}
 
 	if (messageTicks > 0)
-		TextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
+		CDogsTextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
 
 	if (gOptions.displayFPS) {
 		sprintf(s, "FPS: %d", fps);
-		TextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
+		CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
 	}
 	if (gOptions.displayTime) {
 		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
-		TextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
+		CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 	}
 	
 #define KEY_WIDTH(n) (PicWidth((const void *)&cGeneralPics[gMission.keyPics[n]]))
@@ -490,7 +490,7 @@ void StatusDisplay(void)
 	}
 
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
-	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
+	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 
 	MissionStatus();
 }

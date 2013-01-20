@@ -189,33 +189,33 @@ static void DisplayCharacter(int x, int y, const TBadGuy * data,
 		  cd->table, NULL);
 
 	if (hilite) {
-		TextGoto(x - 8, y - 16);
-		TextChar('\020');
+		CDogsTextGoto(x - 8, y - 16);
+		CDogsTextChar('\020');
 	}
 }
 
-static void DisplayText(int x, int y, const char *text, int hilite)
+static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 {
 	if (hilite)
-		TextStringWithTableAt(x, y, text, &tableFlamed);
+		CDogsTextStringWithTableAt(x, y, text, &tableFlamed);
 	else
-		TextStringAt(x, y, text);
+		CDogsTextStringAt(x, y, text);
 }
 
 void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 {
-	TextGoto(x, y);
+	CDogsTextGoto(x, y);
 	if (hilite) {
-		TextStringWithTable(s, &tableFlamed);
-		TextCharWithTable(':', &tableFlamed);
+		CDogsTextStringWithTable(s, &tableFlamed);
+		CDogsTextCharWithTable(':', &tableFlamed);
 	} else {
-		TextString(s);
-		TextChar(':');
+		CDogsTextString(s);
+		CDogsTextChar(':');
 	}
 	if (on)
-		TextStringWithTable("On", &tablePurple);
+		CDogsTextStringWithTable("On", &tablePurple);
 	else
-		TextString("Off");
+		CDogsTextString("Off");
 }
 
 static void Display(TCampaignSetting * setting, int index, int xc, int yc)
@@ -228,31 +228,31 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 	memset(GetDstScreen(), 74, SCREEN_MEMSIZE);
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
-	TextStringAt(10, 190, s);
+	CDogsTextStringAt(10, 190, s);
 
 	if (index >= 0 && index < setting->characterCount) {
 		b = &setting->characters[index];
-		DisplayText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
-		DisplayText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
-		DisplayText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
-		DisplayText(120, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
-		DisplayText(150, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
-		DisplayText(180, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
-		y += TextHeight();
+		DisplayCDogsText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
+		DisplayCDogsText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
+		DisplayCDogsText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
+		DisplayCDogsText(120, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
+		DisplayCDogsText(150, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
+		DisplayCDogsText(180, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
+		y += CDogsTextHeight();
 
 		sprintf(s, "Speed: %d%%", (100 * b->speed) / 256);
-		DisplayText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
+		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
 		sprintf(s, "Hp: %d", b->health);
-		DisplayText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
+		DisplayCDogsText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
 		sprintf(s, "Move: %d%%", b->probabilityToMove);
-		DisplayText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
+		DisplayCDogsText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
 		sprintf(s, "Track: %d%%", b->probabilityToTrack);
-		DisplayText(170, y, s, yc == YC_ATTRIBUTES && xc == XC_TRACK);
+		DisplayCDogsText(170, y, s, yc == YC_ATTRIBUTES && xc == XC_TRACK);
 		sprintf(s, "Shoot: %d%%", b->probabilityToShoot);
-		DisplayText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
+		DisplayCDogsText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
 		sprintf(s, "Delay: %d", b->actionDelay);
-		DisplayText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
-		y += TextHeight();
+		DisplayCDogsText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
+		y += CDogsTextHeight();
 
 		DisplayFlag(5, y, "Asbestos",
 			    (b->flags & FLAGS_ASBESTOS) != 0,
@@ -275,7 +275,7 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 		DisplayFlag(275, y, "Asleep",
 			    (b->flags & FLAGS_SLEEPALWAYS) != 0,
 			    yc == YC_FLAGS && xc == XC_SLEEPING);
-		y += TextHeight();
+		y += CDogsTextHeight();
 
 		DisplayFlag(5, y, "Prisoner",
 			    (b->flags & FLAGS_PRISONER) != 0,
@@ -295,11 +295,11 @@ static void Display(TCampaignSetting * setting, int index, int xc, int yc)
 		DisplayFlag(230, y, "Awake",
 			    (b->flags & FLAGS_AWAKEALWAYS) != 0,
 			    yc == YC_FLAGS2 && xc == XC_AWAKE);
-		y += TextHeight();
+		y += CDogsTextHeight();
 
-		DisplayText(50, y, gunDesc[b->gun].gunName,
+		DisplayCDogsText(50, y, gunDesc[b->gun].gunName,
 			    yc == YC_WEAPON);
-		y += TextHeight() + 5;
+		y += CDogsTextHeight() + 5;
 
 		x = 10;
 		for (i = 0; i < setting->characterCount; i++) {

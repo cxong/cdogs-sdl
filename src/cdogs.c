@@ -119,7 +119,7 @@ int MissionDescription(int y, const char *description)
 
 	ix = x = CenterX((MAX_BOX_WIDTH));
 	lines = 1;
-	TextGoto(x, y);
+	CDogsTextGoto(x, y);
 
 	s = ws = word = description;
 
@@ -136,24 +136,24 @@ int MissionDescription(int y, const char *description)
 			s++;
 
 		for (w = 0, p = ws; p < s; p++)
-			w += TextCharWidth(*p);
+			w += CDogsTextCharWidth(*p);
 
 		//if (x + w > MAX_BOX_WIDTH && w < (MAX_BOX_WIDTH - 20)) {
 		if (x + w > (MAX_BOX_WIDTH + ix) && w < MAX_BOX_WIDTH) {
-			y += TextHeight();
+			y += CDogsTextHeight();
 			x = ix;
 			lines++;
 			ws = word;
 		}
 
 		for (p = ws; p < word; p++)
-			x += TextCharWidth(*p);
+			x += CDogsTextCharWidth(*p);
 
-		TextGoto(x, y);
+		CDogsTextGoto(x, y);
 
 		for (p = word; p < s; p++) {
-			TextChar(*p);
-			x += TextCharWidth(*p);
+			CDogsTextChar(*p);
+			x += CDogsTextCharWidth(*p);
 		}
 	}
 
@@ -171,16 +171,16 @@ void CampaignIntro(void *bkg)
 
 	y = (SCREEN_WIDTH / 4);
 
-	//TextStringAt(50, y - 25, gCampaign.setting->title);
-	//TextStringAt(60, y - 15, "by ");
-	//TextStringWithTable(gCampaign.setting->author, &tableFlamed);
+	//CDogsTextStringAt(50, y - 25, gCampaign.setting->title);
+	//CDogsTextStringAt(60, y - 15, "by ");
+	//CDogsTextStringWithTable(gCampaign.setting->author, &tableFlamed);
 	
 	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
-	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	//TextStringSpecial(gCampaign.setting->title, TEXT_TOP | TEXT_XCENTER, 0, (y - 45));
-	//TextStringSpecial("by", TEXT_TOP | TEXT_XCENTER, 0, (y - 35));
-	//TextStringSpecial(gCampaign.setting->author, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+	//CDogsTextStringSpecial(gCampaign.setting->title, TEXT_TOP | TEXT_XCENTER, 0, (y - 45));
+	//CDogsTextStringSpecial("by", TEXT_TOP | TEXT_XCENTER, 0, (y - 35));
+	//CDogsTextStringSpecial(gCampaign.setting->author, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
 	MissionDescription(y, gCampaign.setting->description);
 
@@ -198,7 +198,7 @@ void MissionBriefing(void *bkg)
 	y = SCREEN_WIDTH / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
-	TextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
 	if (gMission.index)
 	{
@@ -207,16 +207,16 @@ void MissionBriefing(void *bkg)
 		strcpy(lastPassword, MakePassword(gMission.index));
 
 		sprintf(str, "Password: %s", lastPassword);
-		TextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
+		CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
 	}
 
-	y += TextHeight() * MissionDescription(y, gMission.missionData->description);
+	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
 	y += (SCREEN_HEIGHT / 10);
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 		if (gMission.missionData->objectives[i].required > 0) {
-			TextStringAt((SCREEN_WIDTH / 6), y,
+			CDogsTextStringAt((SCREEN_WIDTH / 6), y,
 				     gMission.missionData->objectives[i].
 				     description);
 			DrawObjectiveInfo(i, (SCREEN_WIDTH - (SCREEN_WIDTH / 6)), y + 8,
@@ -240,7 +240,7 @@ void Summary(int x, struct PlayerData *data, int character)
 		char s1[512];
 
 		sprintf(s1, "Last password: %s", lastPassword);
-		TextStringSpecial(s1, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
+		CDogsTextStringSpecial(s1, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
 	}
 
 	if (data->survived) {
@@ -261,22 +261,22 @@ void Summary(int x, struct PlayerData *data, int character)
 	}
 
 	if (data->survived)
-		TextStringAt(x, y, "Completed mission");
+		CDogsTextStringAt(x, y, "Completed mission");
 	else
-		TextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
+		CDogsTextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
 
-	y += 2 * TextHeight();
+	y += 2 * CDogsTextHeight();
 	DisplayPlayer(x, data, character, 0);
 	sprintf(s, "Score: %d", data->score);
-	TextStringAt(x, y, s);
-	y += TextHeight();
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 	sprintf(s, "Total: %d", data->totalScore);
-	TextStringAt(x, y, s);
-	y += TextHeight();
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 	sprintf(s, "Missions: %d",
 		data->missions + (data->survived ? 1 : 0));
-	TextStringAt(x, y, s);
-	y += TextHeight();
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 
 	if (data->survived && (data->hp > 150 || data->hp <= 0)) {
 		if (data->hp > (200 * gOptions.playerHp) / 100 - 50)
@@ -285,23 +285,23 @@ void Summary(int x, struct PlayerData *data, int character)
 				 (200 * gOptions.playerHp) / 100) * 10);
 		else if (data->hp <= 0)
 			sprintf(s, "Resurrection fee: %d", -500);
-		TextStringAt(x, y, s);
-		y += TextHeight();
+		CDogsTextStringAt(x, y, s);
+		y += CDogsTextHeight();
 	}
 
 	if (data->friendlies > 0 && data->friendlies > data->kills / 2) {
 		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
-		TextStringAt(x, y, s);
-		y += TextHeight();
+		CDogsTextStringAt(x, y, s);
+		y += CDogsTextHeight();
 	} else if (data->weaponCount == 1 &&
 			data->weapons[0] == GUN_KNIFE && data->kills > 0) {
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
-		TextStringAt(x, y, s);
-		y += TextHeight();
+		CDogsTextStringAt(x, y, s);
+		y += CDogsTextHeight();
 	} else if (data->kills == 0 && data->friendlies == 0) {
 		sprintf(s, "Friendly bonus: %d", 500);
-		TextStringAt(x, y, s);
-		y += TextHeight();
+		CDogsTextStringAt(x, y, s);
+		y += CDogsTextHeight();
 	}
 }
 
@@ -326,28 +326,28 @@ void Bonuses(void)
 			sprintf(s, "Objective %d: %d of %d, %d required",
 				index, done, total, req);
 			if (req > 0)
-				TextStringSpecial(s,
+				CDogsTextStringSpecial(s,
 						TEXT_LEFT | TEXT_TOP, x, y);
 			else
-				TextStringSpecial(s,
+				CDogsTextStringSpecial(s,
 						TEXT_LEFT | TEXT_TOP | TEXT_PURPLE,
 						x, y);
 			if (done < req)
-				TextStringSpecial("Failed",
+				CDogsTextStringSpecial("Failed",
 						TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
 			else if (done == total && done > req
 					&& (gPlayer1Data.survived
 					 || gPlayer2Data.survived)) {
-				TextStringSpecial("Perfect: 500",
+				CDogsTextStringSpecial("Perfect: 500",
 						TEXT_RIGHT | TEXT_TOP, x, y);
 				if (gPlayer1Data.survived)
 					gPlayer1Data.totalScore += 500;
 				if (gPlayer2Data.survived)
 					gPlayer2Data.totalScore += 500;
 			} else if (req > 0)
-				TextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
+				CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
 			else {
-				TextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
+				CDogsTextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
 			}
 
 			y += 15;
@@ -366,8 +366,8 @@ void Bonuses(void)
 		access += 200;
 	if (access > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
 		sprintf(s, "Access bonus: %d", access);
-		TextStringAt(x, y, s);
-		y += TextHeight() + 1;
+		CDogsTextStringAt(x, y, s);
+		y += CDogsTextHeight() + 1;
 		if (gPlayer1Data.survived)
 			gPlayer1Data.totalScore += access;
 		if (gPlayer2Data.survived)
@@ -378,7 +378,7 @@ void Bonuses(void)
 
 	if (i > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
 		sprintf(s, "Time bonus: %d secs x 25 = %d", i, i * 25);
-		TextStringAt(x, y, s);
+		CDogsTextStringAt(x, y, s);
 		if (gPlayer1Data.survived)
 			gPlayer1Data.totalScore += i * 25;
 		if (gPlayer2Data.survived)
@@ -414,13 +414,13 @@ void ShowScore(void *bkg, int score1, int score2)
 	if (gOptions.twoPlayers) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		sprintf(s, "Score: %d", score1);
-		TextStringAt(CenterOfLeft(TextWidth(s)), SCREEN_WIDTH / 3, s);
+		CDogsTextStringAt(CenterOfLeft(CDogsTextWidth(s)), SCREEN_WIDTH / 3, s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
-		TextStringAt(CenterOfRight(TextWidth(s)), SCREEN_WIDTH / 3, s);
+		CDogsTextStringAt(CenterOfRight(CDogsTextWidth(s)), SCREEN_WIDTH / 3, s);
 	} else {
-		DisplayPlayer(CenterX(TextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		DisplayPlayer(CenterX(CDogsTextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 	}
 
 	CopyToScreen();
@@ -437,14 +437,14 @@ void FinalScore(void *bkg, int score1, int score2)
 	if (score1 == score2) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
-		TextStringAtCenter("It's a draw!");
+		CDogsTextStringAtCenter("It's a draw!");
 	} else if (score1 > score2) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		TextStringAt(CenterOfLeft(TextWidth(IS_WINNER)),SCREEN_WIDTH / 2,
+		CDogsTextStringAt(CenterOfLeft(CDogsTextWidth(IS_WINNER)),SCREEN_WIDTH / 2,
 				IS_WINNER);
 	} else {
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
-		TextStringAt(CenterOfRight(TextWidth(IS_WINNER)), SCREEN_WIDTH / 2,
+		CDogsTextStringAt(CenterOfRight(CDogsTextWidth(IS_WINNER)), SCREEN_WIDTH / 2,
 				IS_WINNER);
 	}
 	CopyToScreen();
@@ -483,10 +483,10 @@ void Victory(void *bkg)
 
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
-	x = 160 - TextWidth(CONGRATULATIONS) / 2;
-	TextStringAt(x, 100, CONGRATULATIONS);
-	x = 160 - TextWidth(gCampaign.setting->title) / 2;
-	TextStringWithTableAt(x, 115, gCampaign.setting->title,
+	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
+	CDogsTextStringAt(x, 100, CONGRATULATIONS);
+	x = 160 - CDogsTextWidth(gCampaign.setting->title) / 2;
+	CDogsTextStringWithTableAt(x, 115, gCampaign.setting->title,
 			      &tableFlamed);
 
 	if (gOptions.twoPlayers) {
@@ -507,11 +507,11 @@ void Victory(void *bkg)
 		gPlayer1Data.missions++;
 	}
 
-	x = 160 - TextWidth(s) / 2;
-	TextGoto(x, 140);
-	TextCharWithTable('"', &tableDarker);
-	TextStringWithTable(s, &tablePurple);
-	TextCharWithTable('"', &tableDarker);
+	x = 160 - CDogsTextWidth(s) / 2;
+	CDogsTextGoto(x, 140);
+	CDogsTextCharWithTable('"', &tableDarker);
+	CDogsTextStringWithTable(s, &tablePurple);
+	CDogsTextCharWithTable('"', &tableDarker);
 
 	PlaySound(SND_HAHAHA, 0, 255);
 
@@ -1025,7 +1025,7 @@ int main(int argc, char *argv[])
 	memset(gCompiledPics, 0, sizeof(gCompiledPics));
 	memset(gRLEPics, 0, sizeof(gRLEPics));
 
-	TextInit(GetDataFilePath("graphics/font.px"), -2);
+	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	if (sound && !InitializeSound()) {
 		printf("Sound initialization failed!\n");

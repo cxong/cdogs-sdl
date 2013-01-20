@@ -227,9 +227,9 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 
 	if (editingName) {
 		sprintf(s, "%c%s%c", '\020', data->name, '\021');
-		TextStringAt(x, y, s);
+		CDogsTextStringAt(x, y, s);
 	} else
-		TextStringAt(x, y, data->name);
+		CDogsTextStringAt(x, y, data->name);
 
 	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
 	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;
@@ -258,9 +258,9 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 	y = SCREEN_HEIGHT - (SCREEN_HEIGHT / 6);
 
 	if (data->controls == JOYSTICK_ONE)
-		TextStringAt(x, y, "(joystick one)");
+		CDogsTextStringAt(x, y, "(joystick one)");
 	else if (data->controls == JOYSTICK_TWO)
-		TextStringAt(x, y, "(joystick two)");
+		CDogsTextStringAt(x, y, "(joystick two)");
 	else {
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
 			SDL_GetKeyName(data->keys[0]),
@@ -269,19 +269,19 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 			SDL_GetKeyName(data->keys[3]),
 			SDL_GetKeyName(data->keys[4]),
 			SDL_GetKeyName(data->keys[5]));
-		if (TextWidth(s) < 125)
-			TextStringAt(x, y, s);
+		if (CDogsTextWidth(s) < 125)
+			CDogsTextStringAt(x, y, s);
 		else {
 			sprintf(s, "(%s, %s, %s,",
 				SDL_GetKeyName(data->keys[0]),
 				SDL_GetKeyName(data->keys[1]),
 				SDL_GetKeyName(data->keys[2]));
-			TextStringAt(x, y - 10, s);
+			CDogsTextStringAt(x, y - 10, s);
 			sprintf(s, "%s, %s and %s)",
 				SDL_GetKeyName(data->keys[3]),
 				SDL_GetKeyName(data->keys[4]),
 				SDL_GetKeyName(data->keys[5]));
-			TextStringAt(x, y, s);
+			CDogsTextStringAt(x, y, s);
 		}
 	}
 }
@@ -293,10 +293,10 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 	DisplayPlayer(x, data, character, 0);
 
 	if (data->weaponCount == 0) {
-			TextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20, "None selected...");
+			CDogsTextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20, "None selected...");
 	} else {
 		for (i = 0; i < data->weaponCount; i++)
-			TextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20 + i * TextHeight(),
+			CDogsTextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20 + i * CDogsTextHeight(),
 				     gunDesc[data->weapons[i]].gunName);
 	}
 }
@@ -379,14 +379,14 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	#define ENTRY_COLS	10
 	#define	ENTRY_SPACING	12
 	
-	y = CenterY(((TextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 
 	if (gOptions.twoPlayers && index == CHARACTER_PLAYER1)
-		x = CenterOf(0, (SCREEN_WIDTH / 2), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+		x = CenterOf(0, (SCREEN_WIDTH / 2), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
 	else if (gOptions.twoPlayers && index == CHARACTER_PLAYER2)
-		x = CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+		x = CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
 	else
-		x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
+		x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
 
 	// Draw selection
 
@@ -395,22 +395,22 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	{
 		//s[0] = letters[i];
 
-		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			 y + (i / ENTRY_COLS) * TextHeight());
+		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			 y + (i / ENTRY_COLS) * CDogsTextHeight());
 
 		if (i == selection[index])
-			TextCharWithTable(letters[i], &tableFlamed);
+			CDogsTextCharWithTable(letters[i], &tableFlamed);
 		else
-			TextChar(letters[i]);
+			CDogsTextChar(letters[i]);
 /*
 		DisplayMenuItem(x + (i % 10) * 12,
-				80 + (i / 10) * TextHeight(), s,
+				80 + (i / 10) * CDogsTextHeight(), s,
 				i == selection[index]);
 */
 	}
 
 	DisplayMenuItem(x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * TextHeight(),
+			y + (i / ENTRY_COLS) * CDogsTextHeight(),
 			endChoice, i == selection[index]);
 
 	return 1;
@@ -550,10 +550,10 @@ static int AppearanceSelection(const char **menu, int menuCount,
 
 	SetPlayer(index, data);
 
-	y = CenterY((menuCount * TextHeight()));
+	y = CenterY((menuCount * CDogsTextHeight()));
 
 	for (i = 0; i < menuCount; i++)
-		DisplayMenuItem(x, y + i * TextHeight(), menu[i],
+		DisplayMenuItem(x, y + i * CDogsTextHeight(), menu[i],
 				i == selection[index]);
 
 	return 1;
@@ -617,11 +617,11 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 		}
 	}
 
-	y = CenterY((PLAYER_BODY_COUNT * TextHeight()));
+	y = CenterY((PLAYER_BODY_COUNT * CDogsTextHeight()));
 
 	SetPlayer(index, data);
 	for (i = 0; i < PLAYER_BODY_COUNT; i++)
-		DisplayMenuItem(x, y + i * TextHeight(), shadeNames[i],
+		DisplayMenuItem(x, y + i * CDogsTextHeight(), shadeNames[i],
 				i == *selection);
 
 	return 1;
@@ -709,14 +709,14 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 	}
 
 	if (!done) {
-		y = CenterY((TextHeight() * gMission.weaponCount));
+		y = CenterY((CDogsTextHeight() * gMission.weaponCount));
 
 		for (i = 0; i < gMission.weaponCount; i++)
-			DisplayMenuItem(x, y + i * TextHeight(),
+			DisplayMenuItem(x, y + i * CDogsTextHeight(),
 					gunDesc[gMission.availableWeapons[i]].
 					gunName, i == selection[index]);
 
-		DisplayMenuItem(x, y + i * TextHeight(), endChoice, i == selection[index]);
+		DisplayMenuItem(x, y + i * CDogsTextHeight(), endChoice, i == selection[index]);
 	}
 
 	return !done;
@@ -787,16 +787,16 @@ static int TemplateSelection(int loadFlag, int x, int index,
 		}
 	}
 
-	y = CenterY((TextHeight() * MAX_TEMPLATE));
+	y = CenterY((CDogsTextHeight() * MAX_TEMPLATE));
 
 	if (!loadFlag) {
-		TextStringAt(x, y - 4 - TextHeight(), "Save ");
-		TextString(data->name);
-		TextString("...");
+		CDogsTextStringAt(x, y - 4 - CDogsTextHeight(), "Save ");
+		CDogsTextString(data->name);
+		CDogsTextString("...");
 	}
 
 	for (i = 0; i < MAX_TEMPLATE; i++)
-		DisplayMenuItem(x, y + i * TextHeight(),
+		DisplayMenuItem(x, y + i * CDogsTextHeight(),
 				templates[i].name, i == selection[index]);
 
 	return 1;
@@ -829,10 +829,10 @@ static int MainMenu(int x, int index, int cmd)
 		}
 	}
 
-	y = CenterY((TextHeight() * MENU_COUNT));
+	y = CenterY((CDogsTextHeight() * MENU_COUNT));
 
 	for (i = 1; i < MENU_COUNT; i++)
-		DisplayMenuItem(x, y + i * TextHeight(), mainMenu[i],
+		DisplayMenuItem(x, y + i * CDogsTextHeight(), mainMenu[i],
 				selection[index] == i);
 
 	return MODE_MAIN;

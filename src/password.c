@@ -144,25 +144,25 @@ static int PasswordEntry(int cmd, char *buffer)
 	#define ENTRY_COLS	10
 	#define	ENTRY_SPACING	12
 	
-	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + TextCharWidth('a')));
-	y = CenterY(((TextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
+	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
-		TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			 y + (i / ENTRY_COLS) * TextHeight());
+		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			 y + (i / ENTRY_COLS) * CDogsTextHeight());
 
 		if (i == selection)
-			TextCharWithTable(letters[i], &tableFlamed);
+			CDogsTextCharWithTable(letters[i], &tableFlamed);
 		else
-			TextChar(letters[i]);
+			CDogsTextChar(letters[i]);
 	}
-	TextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING, y + (i / ENTRY_COLS) * TextHeight());
+	CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING, y + (i / ENTRY_COLS) * CDogsTextHeight());
 	if (i == selection)
-		TextStringWithTable(DONE, &tableFlamed);
+		CDogsTextStringWithTable(DONE, &tableFlamed);
 	else
-		TextString(DONE);
+		CDogsTextString(DONE);
 
 	return 1;
 }
@@ -198,12 +198,12 @@ static int EnterCode(void *bkg, const char *password)
 		#define SYMBOL_LEFT	'\020'
 		#define	SYMBOL_RIGHT	'\021'
 		
-		TextGoto(CenterX(( TextWidth(buffer) + TextCharWidth(SYMBOL_LEFT) + TextCharWidth(SYMBOL_RIGHT) )), (SCREEN_WIDTH / 4));
-		TextChar(SYMBOL_LEFT);
-		TextString(buffer);
-		TextChar(SYMBOL_RIGHT);
+		CDogsTextGoto(CenterX(( CDogsTextWidth(buffer) + CDogsTextCharWidth(SYMBOL_LEFT) + CDogsTextCharWidth(SYMBOL_RIGHT) )), (SCREEN_WIDTH / 4));
+		CDogsTextChar(SYMBOL_LEFT);
+		CDogsTextString(buffer);
+		CDogsTextChar(SYMBOL_RIGHT);
 
-		TextStringSpecial("Enter code", TEXT_XCENTER | TEXT_TOP,
+		CDogsTextStringSpecial("Enter code", TEXT_XCENTER | TEXT_TOP,
 				  0, (SCREEN_HEIGHT / 12));
 		ShowControls();
 
@@ -253,11 +253,11 @@ int EnterPassword(void *bkg, const char *password)
 		#define	TEXT_START	"Start campaign"
 		#define	TEXT_CODE	"Enter code..."
 		
-		DisplayMenuItem(CenterX(TextWidth(TEXT_START)),
-				CenterY(2 * TextHeight()),
+		DisplayMenuItem(CenterX(CDogsTextWidth(TEXT_START)),
+				CenterY(2 * CDogsTextHeight()),
 				TEXT_START, index == 0);
-		DisplayMenuItem(CenterX(TextWidth(TEXT_CODE)),
-				CenterY(2 * TextHeight()) + TextHeight(),
+		DisplayMenuItem(CenterX(CDogsTextWidth(TEXT_CODE)),
+				CenterY(2 * CDogsTextHeight()) + CDogsTextHeight(),
 				TEXT_CODE, index == 1);
 		
 		ShowControls();

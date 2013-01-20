@@ -30,25 +30,17 @@
  
 */
 
-#ifdef SYS_MACOSX
-	/*
-		/sigh/ yet more namespace pollution
-		come on apple... play nice...
-	*/
-	#define TextWidth	text_TextWidth
-#endif
-
-void TextInit(const char *filename, int offset);
-void TextChar(char c);
-void TextString(const char *s);
-void TextGoto(int x, int y);
-void TextStringAt(int x, int y, const char *s);
-int TextCharWidth(int c);
-int TextWidth(const char *s);
-int TextHeight(void);
-void TextCharWithTable(char c, TranslationTable * table);
-void TextStringWithTable(const char *s, TranslationTable * table);
-void TextStringWithTableAt(int x, int y, const char *s,
+void CDogsTextInit(const char *filename, int offset);
+void CDogsTextChar(char c);
+void CDogsTextString(const char *s);
+void CDogsTextGoto(int x, int y);
+void CDogsTextStringAt(int x, int y, const char *s);
+int CDogsTextCharWidth(int c);
+int CDogsTextWidth(const char *s);
+int CDogsTextHeight(void);
+void CDogsTextCharWithTable(char c, TranslationTable * table);
+void CDogsTextStringWithTable(const char *s, TranslationTable * table);
+void CDogsTextStringWithTableAt(int x, int y, const char *s,
 			   TranslationTable * table);
 			   
 #define TEXT_XCENTER		1
@@ -60,5 +52,5 @@ void TextStringWithTableAt(int x, int y, const char *s,
 #define TEXT_FLAMED		64
 #define TEXT_PURPLE		128
 
-void TextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
-#define TextStringAtCenter(s)	TextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
+void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
+#define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)

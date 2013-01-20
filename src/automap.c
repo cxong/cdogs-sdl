@@ -136,7 +136,7 @@ static void DisplaySummary(void)
 	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = SCREEN_HEIGHT - 5 - TextHeight(); // 10 pixels from bottom
+	y = SCREEN_HEIGHT - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
@@ -148,25 +148,25 @@ static void DisplaySummary(void)
 			Draw_Rect(x, (y + 3), 2, 2, color);
 
 			x += 5;
-			x2 = x + TextWidth(gMission.missionData->objectives[i].description) + 5;
+			x2 = x + CDogsTextWidth(gMission.missionData->objectives[i].description) + 5;
 
 			sprintf(sScore, "(%d)", gMission.objectives[i].done);
 
 			if (gMission.objectives[i].required <= 0) {
-				TextStringWithTableAt(x, y,
+				CDogsTextStringWithTableAt(x, y,
 						      gMission.missionData->objectives[i].description,
 						      &tablePurple);
-				TextStringWithTableAt(x2, y, sScore, &tablePurple);
+				CDogsTextStringWithTableAt(x2, y, sScore, &tablePurple);
 			} else if (gMission.objectives[i].done >= gMission.objectives[i].required) {
-				TextStringWithTableAt(x, y,
+				CDogsTextStringWithTableAt(x, y,
 						      gMission.missionData->objectives[i].description,
 						      &tableFlamed);
-				TextStringWithTableAt(x2, y, sScore, &tableFlamed);
+				CDogsTextStringWithTableAt(x2, y, sScore, &tableFlamed);
 			} else {
-				TextStringAt(x, y, gMission.missionData->objectives[i].description);
-				TextStringAt(x2, y, sScore);
+				CDogsTextStringAt(x, y, gMission.missionData->objectives[i].description);
+				CDogsTextStringAt(x2, y, sScore);
 			}
-			y -= (TextHeight() + 1);
+			y -= (CDogsTextHeight() + 1);
 		}
 	}
 }

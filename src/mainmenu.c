@@ -274,11 +274,11 @@ int SelectCampaign(int dogFight, int cmd)
 	}	
 	
 	if (dogFight)
-		TextStringSpecial("Select a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
+		CDogsTextStringSpecial("Select a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 	else
-		TextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
+		CDogsTextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 
-	y = CenterY(12 * TextHeight());
+	y = CenterY(12 * CDogsTextHeight());
 	
 #define ARROW_UP	"\036"
 #define ARROW_DOWN	"\037"
@@ -286,10 +286,10 @@ int SelectCampaign(int dogFight, int cmd)
 	for (i = 0, f = list; f != NULL && i <= *index - 12; f = f->next, i++);
 
 	if (i)
-		DisplayMenuItem(CenterX(TextWidth(ARROW_UP)), y - 2 - TextHeight(), ARROW_UP, 0);
+		DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_UP)), y - 2 - CDogsTextHeight(), ARROW_UP, 0);
 
 	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++) {
-		DisplayMenuItem(CenterX(TextWidth(f->info)), y, f->info, i == *index);
+		DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, i == *index);
 		
 		if (i == *index) {
 			char s[255];
@@ -299,14 +299,14 @@ int SelectCampaign(int dogFight, int cmd)
 			else
 				sprintf(s, "( %s )", f->name);
 
-			TextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
+			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
 		}
 			
-		y += TextHeight();
+		y += CDogsTextHeight();
 	}
 
 	if (f)
-		DisplayMenuItem(CenterX(TextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
+		DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
 		
 	return dogFight ? MODE_DOGFIGHT : MODE_CAMPAIGN;
 }
@@ -351,8 +351,8 @@ static int SelectMain(int cmd)
 
 	DrawTPic((SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2, (SCREEN_HEIGHT / 12), gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
 
-	TextStringSpecial("Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
-	TextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
+	CDogsTextStringSpecial("Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
+	CDogsTextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 
 	DisplayMenuAtCenter(mainMenu, MAIN_COUNT, index);
 	
@@ -566,7 +566,7 @@ int SelectOptions(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	TextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
+	CDogsTextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
 	
 	x = CenterX(MenuWidth(optionsMenu, OPTIONS_COUNT));
 	y = CenterY(MenuHeight(OPTIONS_COUNT));
@@ -576,20 +576,20 @@ int SelectOptions(int cmd)
 	x += MenuWidth(optionsMenu, OPTIONS_COUNT);
 	x += 10;
 	
-	TextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
-	TextStringAt(x, y + TextHeight(),
+	CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
+	CDogsTextStringAt(x, y + CDogsTextHeight(),
 		     gOptions.displayFPS ? "On" : "Off");
-	TextStringAt(x, y + 2 * TextHeight(),
+	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(),
 		     gOptions.displayTime ? "On" : "Off");
-	TextStringAt(x, y + 3 * TextHeight(),
+	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(),
 		     gOptions.copyMode ==
 		     COPY_REPMOVSD ? "rep movsd" : "dec/jnz");
 	sprintf(s, "%d", gOptions.brightness);
-	TextStringAt(x, y + 4 * TextHeight(), s);
-	TextStringAt(x, y + 5 * TextHeight(),
+	CDogsTextStringAt(x, y + 4 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y + 5 * CDogsTextHeight(),
 		     gOptions.xSplit ? "No" : "Yes");
 	sprintf(s, "%u", gCampaign.seed);
-	TextStringAt(x, y + 6 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 6 * CDogsTextHeight(), s);
 
 	switch (gOptions.difficulty) {
 		case DIFFICULTY_VERYEASY:
@@ -609,21 +609,21 @@ int SelectOptions(int cmd)
 			break;
 	}
 
-	TextStringAt(x, y + 7 * TextHeight(), s);
-	TextStringAt(x, y + 8 * TextHeight(),
+	CDogsTextStringAt(x, y + 7 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y + 8 * CDogsTextHeight(),
 		     gOptions.slowmotion ? "Yes" : "No");
 	sprintf(s, "%u%%", gOptions.density);
-	TextStringAt(x, y + 9 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 9 * CDogsTextHeight(), s);
 	sprintf(s, "%u%%", gOptions.npcHp);
-	TextStringAt(x, y + 10 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 10 * CDogsTextHeight(), s);
 	sprintf(s, "%u%%", gOptions.playerHp);
-	TextStringAt(x, y + 11 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 11 * CDogsTextHeight(), s);
 	sprintf(s, "%s", Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
-	TextStringAt(x, y + 12 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 12 * CDogsTextHeight(), s);
 	sprintf(s, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
-	TextStringAt(x, y + 13 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 13 * CDogsTextHeight(), s);
 	sprintf(s, "%dx", Gfx_GetHint(HINT_SCALEFACTOR));
-	TextStringAt(x, y + 14 * TextHeight(), s);
+	CDogsTextStringAt(x, y + 14 * CDogsTextHeight(), s);
 
 
 	return MODE_OPTIONS;
@@ -650,11 +650,11 @@ static void ChangeControl(struct PlayerData *data,
 static void DisplayControl(int x, int y, int controls)
 {
 	if (controls == JOYSTICK_ONE)
-		TextStringAt(x, y, "Joystick 1");
+		CDogsTextStringAt(x, y, "Joystick 1");
 	else if (controls == JOYSTICK_TWO)
-		TextStringAt(x, y, "Joystick 2");
+		CDogsTextStringAt(x, y, "Joystick 2");
 	else
-		TextStringAt(x, y, "Keyboard");
+		CDogsTextStringAt(x, y, "Keyboard");
 }
 
 int SelectControls(int cmd)
@@ -707,7 +707,7 @@ int SelectControls(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	TextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));	
+	CDogsTextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));	
 	
 	x = CenterX(MenuWidth(controlsMenu, CONTROLS_COUNT));
 	y = CenterY(MenuHeight(CONTROLS_COUNT));
@@ -718,9 +718,9 @@ int SelectControls(int cmd)
 	x += 10;
 
 	DisplayControl(x, y, gPlayer1Data.controls);
-	DisplayControl(x, y + TextHeight(), gPlayer2Data.controls);
-	TextStringAt(x, y + 2 * TextHeight(), gOptions.swapButtonsJoy1 ? "Yes" : "No");
-	TextStringAt(x, y + 3 * TextHeight(), gOptions.swapButtonsJoy2 ? "Yes" : "No");
+	DisplayControl(x, y + CDogsTextHeight(), gPlayer2Data.controls);
+	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), gOptions.swapButtonsJoy1 ? "Yes" : "No");
+	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), gOptions.swapButtonsJoy2 ? "Yes" : "No");
 	return MODE_CONTROLS;
 }
 
@@ -801,20 +801,20 @@ static void DisplayKeys(int x, int x2, int y, char *title,
 {
 	int i;
 
-	TextStringAt(x, y, title);
-	TextStringAt(x, y + TextHeight(), "Left");
-	TextStringAt(x, y + 2 * TextHeight(), "Right");
-	TextStringAt(x, y + 3 * TextHeight(), "Up");
-	TextStringAt(x, y + 4 * TextHeight(), "Down");
-	TextStringAt(x, y + 5 * TextHeight(), "Fire");
-	TextStringAt(x, y + 6 * TextHeight(), "Switch/slide");
+	CDogsTextStringAt(x, y, title);
+	CDogsTextStringAt(x, y + CDogsTextHeight(), "Left");
+	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), "Right");
+	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), "Up");
+	CDogsTextStringAt(x, y + 4 * CDogsTextHeight(), "Down");
+	CDogsTextStringAt(x, y + 5 * CDogsTextHeight(), "Fire");
+	CDogsTextStringAt(x, y + 6 * CDogsTextHeight(), "Switch/slide");
 
 	for (i = 0; i < 6; i++)
 		if (change == i)
-			DisplayMenuItem(x2, y + (i + 1) * TextHeight(),
+			DisplayMenuItem(x2, y + (i + 1) * CDogsTextHeight(),
 					SELECTKEY, index == i);
 		else
-			DisplayMenuItem(x2, y + (i + 1) * TextHeight(),
+			DisplayMenuItem(x2, y + (i + 1) * CDogsTextHeight(),
 					SDL_GetKeyName(data->keys[i]),
 					index == i);
 }
@@ -823,18 +823,18 @@ static void ShowAllKeys(int index, int change)
 {
 	int x1, x2, y1, y2;
 	
-	x1 = CenterX((TextCharWidth('a') * 10)) / 2;
+	x1 = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
 	x2 = x1 * 3;
 	
-	y1 = (SCREEN_HEIGHT / 2) - (TextHeight() * 10);
-	y2 = (SCREEN_HEIGHT / 2) - (TextHeight() * 2);
+	y1 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 10);
+	y2 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 2);
 	
 	DisplayKeys(x1, x2, y1, "Player One", &gPlayer1Data, index, change);
 	DisplayKeys(x1, x2, y2, "Player Two", &gPlayer2Data, index - 6, change - 6);
 	
-	y2 += TextHeight() * 8;
+	y2 += CDogsTextHeight() * 8;
 	
-	TextStringAt(x1, y2, "Map");
+	CDogsTextStringAt(x1, y2, "Map");
 	
 	if (change == 12)
 		DisplayMenuItem(x2, y2, SELECTKEY, index == 12);
@@ -843,9 +843,9 @@ static void ShowAllKeys(int index, int change)
 	
 #define DONE	"Done"
 	
-	y2 += TextHeight () * 2;
+	y2 += CDogsTextHeight () * 2;
 	
-	DisplayMenuItem(CenterX(TextWidth(DONE)), y2, DONE, index == 13);
+	DisplayMenuItem(CenterX(CDogsTextWidth(DONE)), y2, DONE, index == 13);
 }
 
 static void HighlightKey(int index)
@@ -974,7 +974,7 @@ int SelectVolume(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	TextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
+	CDogsTextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
 	
 	x = CenterX(MenuWidth(volumeMenu, VOLUME_COUNT));
 	y = CenterY(MenuHeight(VOLUME_COUNT));
@@ -985,12 +985,12 @@ int SelectVolume(int cmd)
 	x += 10;	
 
 	sprintf(s, "%d", FXVolume() / 8);
-	TextStringAt(x, y, s);
+	CDogsTextStringAt(x, y, s);
 	sprintf(s, "%d", MusicVolume() / 8);
-	TextStringAt(x, y + TextHeight(), s);
+	CDogsTextStringAt(x, y + CDogsTextHeight(), s);
 	sprintf(s, "%d", FXChannels());
-	TextStringAt(x, y + 2 * TextHeight(), s);
-	TextStringAt(x, y + 3 * TextHeight(), "No");
+	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), "No");
 
 	return MODE_VOLUME;
 }
@@ -1023,9 +1023,9 @@ static void ShowCredits(void)
 	static int lastTick = 0;
 	int t;
 
-	TextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
-	TextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
-	TextStringWithTableAt(20, SCREEN_HEIGHT - 40 + TextHeight(), credits[creditIndex].message, &tableDarker);
+	CDogsTextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
+	CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
+	CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40 + CDogsTextHeight(), credits[creditIndex].message, &tableDarker);
 
 	t = clock() / CLOCKS_PER_SEC;
 
