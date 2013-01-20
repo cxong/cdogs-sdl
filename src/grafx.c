@@ -203,10 +203,10 @@ int InitVideo(void)
 
 	screen = new_screen;
 	
-	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	SetPalette(gPalette);
+	CDogsSetPalette(gPalette);
 			
 	return 0;
 }

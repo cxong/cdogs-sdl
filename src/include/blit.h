@@ -72,15 +72,10 @@ void DrawTPic(int x, int y, void *pic, void *code);
 void DrawTTPic(int x, int y, void *pic, void *table, void *rle);
 void DrawBTPic(int x, int y, void *pic, void *table, void *rle); */
 
-#ifdef SYS_MACOSX
-	#define SetClip _SetClip
-	#define SetPalette _SetPalette
-#endif
-
-void SetClip(int left, int top, int right, int bottom);
+void CDogsSetClip(int left, int top, int right, int bottom);
 void SetDstScreen(void *the_screen);
 void *GetDstScreen(void);
 void CopyToScreen(void);
 void AltScrCopy(void);
-void SetPalette(void *palette);
+void CDogsSetPalette(void *palette);
 #endif

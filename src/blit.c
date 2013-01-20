@@ -98,7 +98,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 	return;
 }
 
-void SetClip(int left, int top, int right, int bottom)
+void CDogsSetClip(int left, int top, int right, int bottom)
 {
 	clipright = right;
 	clipleft = left;
@@ -199,7 +199,7 @@ void CopyToScreen(void)
 		/* Set the palette, just in case we had a change of focus
 		 * and we don't things to go trippy for the player */
 		debug(D_NORMAL, "ACTIVE EVENT!\n");
-		SetPalette(gPalette);
+		CDogsSetPalette(gPalette);
 	}
 	
 	if (SDL_LockSurface(screen) == -1) {
@@ -230,7 +230,7 @@ void AltScrCopy(void)
 #define GAMMA_G	GAMMA
 #define GAMMA_B	GAMMA
 
-void SetPalette(void *pal)
+void CDogsSetPalette(void *pal)
 {
 	color_t *palette = (color_t *)pal;
 	SDL_Color newpal[256];

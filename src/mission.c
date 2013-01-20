@@ -643,7 +643,7 @@ void SetRange(int start, int range)
 
 	for (i = 0; i < 8; i++)
 		gPalette[start + i] = cColorRanges[range].range[i];
-	SetPalette(gPalette);
+	CDogsSetPalette(gPalette);
 }
 
 void SetupMission(int index, int buildTables)

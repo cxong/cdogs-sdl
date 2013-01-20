@@ -1065,7 +1065,7 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	} else {
-		SetPalette(gPalette);
+		CDogsSetPalette(gPalette);
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop();
 	}

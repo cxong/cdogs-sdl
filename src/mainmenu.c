@@ -381,7 +381,7 @@ static void PaletteAdjust(void)
 		gPalette[i].green = FitColor(f * origPalette[i].green);
 		gPalette[i].blue = FitColor(f * origPalette[i].blue);
 	}
-	SetPalette(gPalette);
+	CDogsSetPalette(gPalette);
 }
 
 int SelectOptions(int cmd)

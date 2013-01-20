@@ -263,7 +263,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	if (player1 && player2) {
 		if (abs(player1->tileItem.x - player2->tileItem.x) < gOptions.xSplit
 		    && abs(player1->tileItem.y - player2->tileItem.y) < gOptions.ySplit) {
-			SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+			CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 			// One screen
 			x = (player1->tileItem.x +
 			     player2->tileItem.x) / 2;
@@ -282,10 +282,10 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			}
 			DrawBuffer(b, 0);
 		} else {
-			SetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
+			CDogsSetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
 			SetLeftEar(player1->tileItem.x, player1->tileItem.y);
-			SetClip((SCREEN_WIDTH / 2) + 1, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+			CDogsSetClip((SCREEN_WIDTH / 2) + 1, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 			DoBuffer(b, player2->tileItem.x, player2->tileItem.y, (SCREEN_WIDTH / 2) + 1, X_TILES_HALF, xNoise, yNoise);
 			SetRightEar(player2->tileItem.x, player2->tileItem.y);
 			x = player1->tileItem.x;
@@ -293,7 +293,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			BlackLine();
 		}
 	} else if (player1) {
-		SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SetLeftEar(player1->tileItem.x, player1->tileItem.y);
@@ -301,7 +301,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		x = player1->tileItem.x;
 		y = player1->tileItem.y;
 	} else if (player2) {
-		SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SetLeftEar(player2->tileItem.x, player2->tileItem.y);
@@ -310,7 +310,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		y = player2->tileItem.y;
 	} else
 		DoBuffer(b, x, y, 0, X_TILES, xNoise, yNoise);
-	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 }
 
 #define PLACE_LEFT	0
@@ -558,7 +558,7 @@ int gameloop(void)
 	struct tm *tp;
 
 	buffer = NewBuffer();
-	SetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
 	if (ModuleStatus() != MODULE_OK)
 		DisplayMessage(ModuleMessage());

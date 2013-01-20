@@ -1571,7 +1571,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	SetPalette(gPalette);
+	CDogsSetPalette(gPalette);
 
 	myScreen = sys_mem_alloc(Screen_GetMemSize());
 	memset(myScreen, 0, Screen_GetMemSize());
