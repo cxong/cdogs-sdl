@@ -22,22 +22,13 @@
 -------------------------------------------------------------------------------
 
  hiscores.c - high score functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
-#ifndef _MSC_VER
-	#include <unistd.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>

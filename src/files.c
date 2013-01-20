@@ -569,7 +569,6 @@ int Is_Dir(const char *name)
 			case S_IFDIR:
 				debug(D_VERBOSE, "is a dir...\n");
 				return 1;
-#ifndef SYS_WIN
 			case S_IFLNK:
 				{
 					char lnk_buf[512];
@@ -583,7 +582,6 @@ int Is_Dir(const char *name)
 						return 0;
 					}
 				}
-#endif /* SYS_WIN */
 			default:
 				return 0;
 		}

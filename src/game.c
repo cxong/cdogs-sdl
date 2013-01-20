@@ -22,22 +22,13 @@
 -------------------------------------------------------------------------------
 
  game.c - game loop and related functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#ifndef _MSC_VER
-#include <sys/time.h>
-#endif
 
 #include "SDL.h"
 #include "SDL_mutex.h"

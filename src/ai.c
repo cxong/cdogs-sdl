@@ -22,12 +22,7 @@
 -------------------------------------------------------------------------------
 
  ai.c - enemy and friend AI routines
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
 
@@ -36,15 +31,7 @@
 #include "actors.h"
 #include "gamedata.h"
 #include "mission.h"
-
-#ifndef __typeof__ /* VC7 doesn't have this */
-	#define __typeof__ typeof
-#endif /* __typeof__ */
-
-#ifndef _MSC_VER
-	#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
-	#define min(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a < __b) ? __a : __b;})
-#endif
+#include "sys_specifics.h"
 
 static int baddieCount = 0;
 static int goodGuysPresent = 0;

@@ -22,13 +22,10 @@
 -------------------------------------------------------------------------------
 
  sounds.c - um... guess what?
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
+
+#include "sounds.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,20 +35,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "SDL.h"
+#include <SDL.h>
+#include <SDL_mixer.h>
 
-#ifdef SND_SDLMIXER
-	#include "SDL_mixer.h"
-#endif
-
-#include "sounds.h"
 #include "files.h"
-
 #include "utils.h"
-
-#ifndef _MSC_VER
-	#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
-#endif
 
 static int soundInitialized = 0;
 static int fxVolume = 64;
@@ -83,11 +71,7 @@ struct SndData {
 	int volume;
 	Uint32 size;
 	int pos;
-#ifdef SND_SDLMIXER
 	Mix_Chunk *data;
-#else
-	Uint8 *data;
-#endif
 };
 
 struct SndData snd[SND_COUNT] =
@@ -144,82 +128,17 @@ void ShutDownSound(void)
 		return;
 
 	debug(D_NORMAL, "shutting down sound\n");
-#ifdef SND_SDLMIXER
 	Mix_CloseAudio();
-#else
-	SDL_CloseAudio();
-#endif
 }
 
-#ifndef SND_NOMIX /* oldschool version */
 void DoSound(int i, int len, void *data)
 {
-	int j;
-	void *newbuffer;
-	
-	if (!soundInitialized)
-		return;
-	
-	newbuffer = sys_mem_alloc(len);
-	//firstly, find if we're going to need to have a buffer with zeros
-	if (len + snd[i].pos > (int)snd[i].size)
-	{
-		memset(newbuffer, 0, len);
-		memcpy(newbuffer, snd[i].data + snd[i].pos, snd[i].size - snd[i].pos);
-		//snd[i].pos = 0;
-		snd[i].playFlag = 0;
-    // Replace this line with a version that mixes
-			for (j=0;j<len;j++)
-			((Sint16 *)data)[j]+=
-				((((Uint8 *)newbuffer)[j]-128)*snd[i].volume)/8;
-	} else {
-		// Replaced with mixing version
-		for (j=0;j<len;j++)
-			((Sint16 *)data)[j]+=
-				((((Uint8 *)snd[i].data)[j+snd[i].pos]-128)*snd[i].volume)/8;
-		snd[i].pos += len;
-	}
-
-	free(newbuffer);
-}
-#elif defined(SND_SDLMIXER) /* sdl mixer version */
-void DoSound(int i, int len, void *data)
-{
-	debug(D_VERBOSE, "snd: %d (sdl-mixer version)\n", i);
-
+	UNUSED(len);
+	UNUSED(data);
 	if (!soundInitialized)
 		return;
 	Mix_PlayChannel(-1, snd[i].data , 0);
 }
-#else /* other mixing version */
-void DoSound(int i, int len, void *data)
-{
-	void *newbuffer;
-	
-	if (!soundInitialized)
-		return;
-
-	newbuffer = sys_mem_alloc(len);
-	//firstly, find if we're going to need to have a buffer with zeros
-	if (len + snd[i].pos > (int)snd[i].size)
-	{
-		memset(newbuffer, 0, len);
-		memcpy(newbuffer, snd[i].data + snd[i].pos,
-		       snd[i].size - snd[i].pos);
-//              snd[i].pos = 0;
-		snd[i].playFlag = 0;
-    // Replace this line with a version that mixes
-		memcpy(data, newbuffer, len);
-		
-	} else {
-		// Replaced with mixing version
-		memcpy(data, snd[i].data + snd[i].pos, len);
-		snd[i].pos += len;
-	}
-
-	free(newbuffer);
-}
-#endif /* SND_NOMIX */
 
 void SoundCallback(void *userdata, Uint8 * stream, int len)
 {
@@ -244,23 +163,9 @@ int InitSoundDevice(void)
 {
 	int i;
 	struct stat st;
-	#ifndef SND_SDLMIXER
-	SDL_AudioSpec tmpspec;
-	#endif
 
-	// Initialization goes here...
-
-	#ifdef SND_NOMIX
-	printf("Old sound code enabled. =/\n");
-	#endif
-	#ifdef SND_SDLMIXER
-	printf("Using SDL mixer...\n");
-	#else
-	printf("Using newish sound code..\n");
-	#endif
-
-	#ifdef SND_SDLMIXER
-	if (Mix_OpenAudio(22050, AUDIO_S16, 2, 512) != 0) {
+	if (Mix_OpenAudio(22050, AUDIO_S16, 2, 512) != 0)
+	{
 		printf("Couldn't open audio!: %s\n", SDL_GetError());
 		return 0;
 	}
@@ -284,7 +189,6 @@ int InitSoundDevice(void)
 		printf("Couldn't allocate channels!\n");
 		return 0;
 	}
-	#endif
 
 	// C-Dogs internals:
 	loadSampleConfiguration();
@@ -297,14 +201,8 @@ int InitSoundDevice(void)
 			else {
 				snd[i].exists = 1;
 
-				#ifdef SND_SDLMIXER
 				if ((snd[i].data = Mix_LoadWAV(
 					GetDataFilePath(snd[i].name))) == NULL)
-				#else
-				if (SDL_LoadWAV
-				    (GetDataFilePath(snd[i].name), &tmpspec, &snd[i].data,
-				     &snd[i].size) == NULL)
-				#endif
 					snd[i].exists = 0;
 				else
 					snd[i].exists = 1;
@@ -318,26 +216,6 @@ int InitSoundDevice(void)
 	memset(channelPriority, 0, sizeof(channelPriority));
 	memset(channelPosition, 0, sizeof(channelPosition));
 	memset(channelTime, 0, sizeof(channelTime));
-
-	#ifndef SND_SDLMIXER
-	tmpspec.samples = 512;
-	tmpspec.callback = &SoundCallback;
-	tmpspec.channels = 1;
-	tmpspec.format = AUDIO_S16;
-	#endif
-
-	#ifdef SND_NOMIX
-	tmpspec.samples = 128;
-	tmpspec.format = AUDIO_U8;
-	#endif
-
-	#ifndef SND_SDLMIXER
-	if (SDL_OpenAudio(&tmpspec, NULL) == -1) {
-		printf("Couldn't open audio: %s\n", SDL_GetError());
-		return 0;
-	}
-	SDL_PauseAudio(0);
-	#endif
 
 	soundInitialized = 1;
 
@@ -355,7 +233,6 @@ int InitializeSound(void)
 	return 1;
 }
 
-#ifdef SND_SDLMIXER
 Mix_Music *music = NULL;
 int PlaySong(char *name) 
 {
@@ -406,13 +283,6 @@ int PlaySong(char *name)
 	}
 	return 1;
 }
-#else
-int PlaySong(char *name)
-{
-	UNUSED(name);
-	return 1;
-}
-#endif
 
 void PlaySound(int sound, int panning, int volume)
 {
@@ -421,7 +291,6 @@ void PlaySound(int sound, int panning, int volume)
 
 	debug(D_VERBOSE, "sound: %d panning: %d volume: %d\n", sound, panning, volume);
 
-#ifdef SND_SDLMIXER
 	{
 	int c;
 	//Uint8 p;
@@ -443,12 +312,6 @@ void PlaySound(int sound, int panning, int volume)
 	c = Mix_PlayChannel(-1, snd[sound].data , 0);
 	Mix_SetPanning(c, left, right);
 	}
-#else
-	snd[sound].playFlag = 1;
-	snd[sound].panning = panning;
-	snd[sound].volume = (volume * fxVolume) / 256;
-	snd[sound].pos = 0;
-#endif
 }
 
 //TODO: Replace this with SDL callback
@@ -466,9 +329,7 @@ void SetFXVolume(int volume)
 	if (!soundInitialized)
 		return;
 
-#ifdef SND_SDLMIXER
 	Mix_Volume(-1, fxVolume);
-#endif
 }
 
 int FXVolume(void)
@@ -484,9 +345,7 @@ void SetMusicVolume(int volume)
 
 	debug(D_NORMAL, "volume: %d\n", volume);
 
-#ifdef SND_SDLMIXER
 	Mix_VolumeMusic(musicVolume);
-#endif
 }
 
 int MusicVolume(void)
@@ -582,16 +441,13 @@ int MinMusicChannels(void)
 // toggle music track on/off
 void ToggleTrack(int track)
 {
-#ifdef SND_SDLMIXER
 	int status;
-#endif
 
 	UNUSED(track); /* may be unimplemented */
 
 	if (!soundInitialized)
 		return;
 
-#ifdef SND_SDLMIXER
 	status = ModuleStatus();
 
 	switch (status) {
@@ -610,8 +466,6 @@ void ToggleTrack(int track)
 			SetModuleStatus(MODULE_PLAYING);
 		break;
 	}
-
-#endif	
 }
 
 void SetModuleStatus(int s)

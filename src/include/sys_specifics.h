@@ -52,6 +52,7 @@
 #ifdef _MSC_VER
 #include <direct.h>
 #else
+#include <sys/time.h>
 #include <unistd.h>
 #endif
 
@@ -68,6 +69,21 @@
 #ifdef _MSC_VER
 typedef int mode_t;
 #define mkdir(p, a) _mkdir(p)
+#endif
+
+#ifndef ssize_t
+typedef int ssize_t;
+#endif
+
+#ifndef max
+	#define max(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a > __b) ? __a : __b;})
+#endif
+#ifndef min
+	#define min(a,b) ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); (__a < __b) ? __a : __b;})
+#endif
+
+#ifndef S_IFLNK
+#define S_IFLNK 0xa000
 #endif
 
 #endif
