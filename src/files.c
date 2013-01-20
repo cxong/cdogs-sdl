@@ -23,11 +23,6 @@
 
  files.c - file handling functions
  
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
 #include <string.h>
@@ -41,14 +36,8 @@
 #include <dirent.h>
 
 #include "config.h" /* for CDOGS_CFG_DIR */
-
-#ifndef _MSC_VER
-	#include <unistd.h>
-#else
-	#include <direct.h>
-#endif
-
 #include "files.h"
+#include "sys_specifics.h"
 #include "utils.h"
 
 #define MAX_STRING_LEN 1000
@@ -686,68 +675,37 @@ void GetCampaignTitles(struct FileEntry **entries)
  */
 
 char *cdogs_homepath = NULL;
-char * GetHomeDirectory(void)
+const char *GetHomeDirectory(void)
 {
-	char *home;
-	char *user;
-	char *tmp1; /* excessive buffer */
-	char *tmp2; /* dynamic buffer */
+	const char *p;
 
-	if (cdogs_homepath == NULL) {
-		char *p;
-		
-		p = getenv("CDOGS_CONFIG_DIR");
-		if (p != NULL && strlen(p) != 0) {
-			cdogs_homepath = strdup(p);
-			return cdogs_homepath;
-		}
-	
-		home = getenv("HOME");
-
-		if (home == NULL || strlen(home) == 0) { /* no HOME var, try to get USER */
-			user = getenv("USER");
-
-			if (user == NULL || strlen(user) == 0) { /* someone has a dodgy shell (or windows) */
-				fprintf(stderr,"%s%s%s%s",
-				"##############################################################\n",
-				"# You don't have the environment variables HOME or USER set. #\n",
-				"# It is suggested you get a better shell. :D                 #\n",
-				"##############################################################\n");
-				
-				tmp1 = calloc(2048, sizeof(char));	/* lots of chars... */ 
-				strcpy(tmp1, CDOGS_TEMP_DIR);
-	
-				tmp2 = calloc(strlen(tmp1)+1, 1);
-				strcpy(tmp2, tmp1);
-				free(tmp1);
-				
-				cdogs_homepath = tmp2;
-				return cdogs_homepath;
-			} else {				/* hopefully they have USER set... */
-				tmp1 = calloc(2048, 1);	/* lots of chars... */
-				strcpy(tmp1, "/home/");
-				strcat(tmp1, user);
-				strcat(tmp1, "/");
-				tmp2 = calloc(strlen(tmp1)+1, 1); 
-				strcpy(tmp2, tmp1);	
-				free(tmp1);
-
-				cdogs_homepath = tmp2;
-				return cdogs_homepath;
-			}
-		}
-
-		tmp1 = calloc(MAX_STRING_LEN, sizeof(char));	/* lots of chars... */ 
-		strcpy(tmp1, home);
-		strcat(tmp1, "/");
-
-		tmp2 = calloc(strlen(tmp1)+1, 1);
-		strcpy(tmp2, tmp1);
-		free(tmp1);
-		cdogs_homepath = tmp2;
+	if (cdogs_homepath != NULL)
+	{
+		return cdogs_homepath;
 	}
 
-	return cdogs_homepath;
+	p = getenv("CDOGS_CONFIG_DIR");
+	if (p != NULL && strlen(p) != 0)
+	{
+		cdogs_homepath = strdup(p);
+		return cdogs_homepath;
+	}
+
+	p = getenv(HOME_DIR_ENV);
+	if (p != NULL && strlen(p) != 0)
+	{
+		cdogs_homepath = calloc(strlen(p) + 1, sizeof(char));
+		strncpy(cdogs_homepath, p, strlen(p));
+		strncat(cdogs_homepath, "/", 1);
+		return cdogs_homepath;
+	}
+
+	fprintf(stderr,"%s%s%s%s",
+	"##############################################################\n",
+	"# You don't have the environment variables HOME or USER set. #\n",
+	"# It is suggested you get a better shell. :D                 #\n",
+	"##############################################################\n");
+	return "";
 }
 
 
@@ -802,17 +760,9 @@ char * join(const char *s1, const char *s2)
  * returns a full path to a data file...
  */
 char cfpath[512];
-char * GetConfigFilePath(const char *name)
+const char *GetConfigFilePath(const char *name)
 {
-	char *homedir;
-
-#ifndef SYS_WIN
-	homedir = GetHomeDirectory();
-#else
-	homedir = "";
-#endif
-
-	//tmp = calloc(strlen(homedir) + strlen(name) + strlen(CDOGS_CFG_DIR) + 1, sizeof(char));
+	const char *homedir = GetHomeDirectory();
 
 	strcpy(cfpath, homedir);
 
@@ -821,17 +771,6 @@ char * GetConfigFilePath(const char *name)
 
 	return cfpath;
 }
-
-
-#ifdef SYS_WIN
-	#define mkdir(p, a)     mkdir(p)
-#endif
-
-#ifdef _MSC_VER
-	typedef int mode_t;
-
-	#define mkdir(p, a)		_mkdir(p)
-#endif
 
 int mkdir_deep(const char *path, mode_t m)
 {
@@ -861,17 +800,12 @@ int mkdir_deep(const char *path, mode_t m)
 
 void SetupConfigDir(void)
 {
-	char *cfg_p = GetConfigFilePath("");
+	const char *cfg_p = GetConfigFilePath("");
 
 	printf("Creating Config dir... ");
 
-#ifdef _MSC_VER
-#define S_IRUSR 0
-#define S_IXUSR 0
-#define S_IWUSR 0
-#endif
-
-	if (mkdir_deep(cfg_p, S_IRUSR | S_IXUSR | S_IWUSR) == 0) {
+	if (mkdir_deep(cfg_p, MKDIR_MODE) == 0)
+	{
 		if (errno != EEXIST)
 			printf("Config dir created.\n");
 		else
@@ -888,11 +822,6 @@ void SetupConfigDir(void)
 		
 	return;
 }
-
-
-#ifdef _MSC_VER
-
-#endif
 
 char dir_buf[512];
 char * GetPWD(void)

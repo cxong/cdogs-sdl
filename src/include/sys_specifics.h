@@ -30,26 +30,44 @@
 
  sys_specifics.h - system and platform specific definitions
  
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
 #ifndef __sys_specifics
 #define __sys_specifics
 
 #ifdef _MSC_VER
-
 /* Windows */
 #define INLINE __inline
-
 #else
-
 /* Default / Linux */
 #define INLINE __inline__
+#endif
 
+#ifdef _MSC_VER
+#define HOME_DIR_ENV "UserProfile"
+#else
+#define HOME_DIR_ENV "HOME"
+#endif
+
+#ifdef _MSC_VER
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
+#ifdef _MSC_VER
+#define MKDIR_MODE 0
+#else
+#define MKDIR_MODE (S_IRUSR | S_IXUSR | S_IWUSR)
+#endif
+
+#ifdef SYS_WIN
+#define mkdir(p, a) mkdir(p)
+#endif
+
+#ifdef _MSC_VER
+typedef int mode_t;
+#define mkdir(p, a) _mkdir(p)
 #endif
 
 #endif

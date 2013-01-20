@@ -62,8 +62,8 @@ struct FileEntry *GetFilesFromDirectory(const char *directory);
 void FreeFileEntries(struct FileEntry *entries);
 void GetCampaignTitles(struct FileEntry **entries);
 
-char * GetHomeDirectory(void);
-char * GetConfigFilePath(const char *name);
+const char *GetHomeDirectory(void);
+const char *GetConfigFilePath(const char *name);
 char * GetDataFilePath(const char *path);
 
 char * join(const char *s1, const char *s2);
