@@ -234,23 +234,25 @@ int InitializeSound(void)
 }
 
 Mix_Music *music = NULL;
-int PlaySong(char *name) 
+int PlaySong(char *name)
 {
 	if (!soundInitialized)
 		return 0;
 
 	debug(D_NORMAL, "Attempting to play song: %s\n", name);
 
-	if (name) {
+	StopSong();
+	
+	if (name == NULL || strlen(name) == 0)
+	{
+		debug(D_NORMAL, "Attempting to play song with empty name\n");
+		return 1;
+	}
+
+	{
 		struct stat s;
 		char *p;
 		char path[255];
-	
-		if (music != NULL) {
-			Mix_HaltMusic();
-			Mix_FreeMusic(music);
-			music = NULL;
-		}
 	
 		p = name;
 	
@@ -279,9 +281,18 @@ int PlaySong(char *name)
 		Mix_PlayMusic(music, -1);
 		SetModuleStatus(MODULE_PLAYING);
 		SetMusicVolume(musicVolume);
-		return 0;
 	}
-	return 1;
+	return 0;
+}
+
+void StopSong(void)
+{
+	if (music != NULL)
+	{
+		Mix_HaltMusic();
+		Mix_FreeMusic(music);
+		music = NULL;
+	}
 }
 
 void PlaySound(int sound, int panning, int volume)

@@ -586,23 +586,24 @@ static void PlayGameSong(void)
 	// Play a tune
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
+	StopSong();
 	if (gMission.missionData->song[0]
 	    && PlaySong(gMission.missionData->song))
 		/* nothing */ ;
 	else if (gGameSongs) {
 		PlaySong(gGameSongs->path);
 		ShiftSongs(&gGameSongs);
-	} else
-		PlaySong(NULL);
+	}
 }
 
 static void PlayMenuSong(void)
 {
-	if (gMenuSongs) {
+	StopSong();
+	if (gMenuSongs)
+	{
 		PlaySong(gMenuSongs->path);
 		ShiftSongs(&gMenuSongs);
-	} else
-		PlaySong(NULL);
+	}
 }
 
 

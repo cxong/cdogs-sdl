@@ -64,6 +64,7 @@
 int InitializeSound(void);
 void ShutDownSound(void);
 int PlaySong(char *name);
+void StopSong(void);
 void PlaySound(int sound, int panning, int volume);
 void DoSounds(void);
 void SetFXVolume(int volume);
