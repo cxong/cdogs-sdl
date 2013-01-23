@@ -96,31 +96,6 @@ struct SndData snd[SND_COUNT] =
 	{"sounds/mg.wav",		10,	11,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL}
 };
 
-static void loadSampleConfiguration(void)
-{
-	int i;
-	FILE *f;
-
-
-	f = fopen(GetConfigFilePath("sound_fx.cfg"), "r");
-	if (!f)
-		return;
-
-	printf("Reading SOUND_FX.CFG\n");
-	for (i = 0; i < SND_COUNT; i++) {
-		int fscanfres;
-		memset(snd[i].name, 0, sizeof(snd[i].name));
-		fscanfres = fscanf(f, "%80s %d\n", snd[i].name, &snd[i].freq);
-		if (fscanfres < 2) {
-			printf("%2d. Error reading sound config\n", i);
-			fclose(f);
-			return;
-		}
-		printf("%2d. File:'%s' at %dHz\n", i, snd[i].name,
-		       snd[i].freq);
-	}
-	fclose(f);
-}
 
 void ShutDownSound(void)
 {
@@ -191,7 +166,6 @@ int InitSoundDevice(void)
 	}
 
 	// C-Dogs internals:
-	loadSampleConfiguration();
 	for (i = 0; i < SND_COUNT; i++) {
 		if (!snd[i].name[0] || snd[i].freq <= 0)
 			snd[i].exists = 0;
