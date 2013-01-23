@@ -61,39 +61,30 @@ SDL_AudioSpec *spec;
 
 struct SndData {
 	char name[81];
-	int playPrio;
-	int cmpPrio;
 	int exists;
-	int freq;
-	int playFlag;
-	int time;
-	int panning;
-	int volume;
-	Uint32 size;
-	int pos;
 	Mix_Chunk *data;
 };
 
 struct SndData snd[SND_COUNT] =
 {
-	{"sounds/booom.wav",	20,	20,	0,	11025,	0,	82,		0,	0,	0,	0,	NULL},
-	{"sounds/launch.wav",	8,	8,	0,	11025,	0,	27,		0,	0,	0,	0,	NULL},
-	{"sounds/mg.wav",		10,	11,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL},
-	{"sounds/flamer.wav",	10,	10,	0,	11025,	0,	44,		0,	0,	0,	0,	NULL},
-	{"sounds/shotgun.wav",	12,	13,	0,	11025,	0,	118,	0,	0,	0,	0,	NULL},
-	{"sounds/fusion.wav",	12,	13,	0,	11025,	0,	90,		0,	0,	0,	0,	NULL},
-	{"sounds/switch.wav",	18,	19,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL},
-	{"sounds/scream.wav",	15,	16,	0,	11025,	0,	70,		0,	0,	0,	0,	NULL},
-	{"sounds/aargh1.wav",	15,	16,	0,	8060,	0,	79,		0,	0,	0,	0,	NULL},
-	{"sounds/aargh2.wav",	15,	16,	0,	8060,	0,	66,		0,	0,	0,	0,	NULL},
-	{"sounds/aargh3.wav",	15,	16,	0,	11110,	0,	67,		0,	0,	0,	0,	NULL},
-	{"sounds/hahaha.wav",	22,	22,	0,	8060,	0,	58,		0,	0,	0,	0,	NULL},
-	{"sounds/bang.wav",		14,	15,	0,	11025,	0,	60,		0,	0,	0,	0,	NULL},
-	{"sounds/pickup.wav",	14,	15,	0,	11025,	0,	27,		0,	0,	0,	0,	NULL},
-	{"sounds/click.wav",	4,	5,	0,	11025,	0,	11,		0,	0,	0,	0,	NULL},
-	{"sounds/whistle.wav",	20,	20,	0,	11110,	0,	90,		0,	0,	0,	0,	NULL},
-	{"sounds/powergun.wav",	13,	14,	0,	11110,	0,	90,		0,	0,	0,	0,	NULL},
-	{"sounds/mg.wav",		10,	11,	0,	11025,	0,	36,		0,	0,	0,	0,	NULL}
+	{"sounds/booom.wav",	0,	NULL},
+	{"sounds/launch.wav",	0,	NULL},
+	{"sounds/mg.wav",		0,	NULL},
+	{"sounds/flamer.wav",	0,	NULL},
+	{"sounds/shotgun.wav",	0,	NULL},
+	{"sounds/fusion.wav",	0,	NULL},
+	{"sounds/switch.wav",	0,	NULL},
+	{"sounds/scream.wav",	0,	NULL},
+	{"sounds/aargh1.wav",	0,	NULL},
+	{"sounds/aargh2.wav",	0,	NULL},
+	{"sounds/aargh3.wav",	0,	NULL},
+	{"sounds/hahaha.wav",	0,	NULL},
+	{"sounds/bang.wav",		0,	NULL},
+	{"sounds/pickup.wav",	0,	NULL},
+	{"sounds/click.wav",	0,	NULL},
+	{"sounds/whistle.wav",	0,	NULL},
+	{"sounds/powergun.wav",	0,	NULL},
+	{"sounds/mg.wav",		0,	NULL}
 };
 
 
@@ -104,34 +95,6 @@ void ShutDownSound(void)
 
 	debug(D_NORMAL, "shutting down sound\n");
 	Mix_CloseAudio();
-}
-
-void DoSound(int i, int len, void *data)
-{
-	UNUSED(len);
-	UNUSED(data);
-	if (!soundInitialized)
-		return;
-	Mix_PlayChannel(-1, snd[i].data , 0);
-}
-
-void SoundCallback(void *userdata, Uint8 * stream, int len)
-{
-	int i;
-
-	debug(D_VERBOSE, "sound callback(%p, %p, %d)\n", userdata, stream, len);
-
-	memset(stream, 0, len);
-	for (i = 0; i < SND_COUNT; i++) {
-		if (snd[i].playFlag && snd[i].exists) {
-			#if defined(SND_NOMIX) || defined(SND_SDLMIXER)
-			DoSound(i, len, stream);
-			return;
-			#else /* newish version */
-			DoSound(i, len/2, stream);
-			#endif
-		}
-	}
 }
 
 int InitSoundDevice(void)
@@ -166,25 +129,26 @@ int InitSoundDevice(void)
 	}
 
 	// C-Dogs internals:
-	for (i = 0; i < SND_COUNT; i++) {
-		if (!snd[i].name[0] || snd[i].freq <= 0)
-			snd[i].exists = 0;
-		else {
-			if (stat(GetDataFilePath(snd[i].name), &st) == -1)
-				snd[i].exists = 0;
-			else {
-				snd[i].exists = 1;
+	for (i = 0; i < SND_COUNT; i++)
+	{
+		snd[i].exists = 0;
 
-				if ((snd[i].data = Mix_LoadWAV(
-					GetDataFilePath(snd[i].name))) == NULL)
-					snd[i].exists = 0;
-				else
-					snd[i].exists = 1;
-			}
-			if (!snd[i].exists)
-				printf("Error loading sample '%s'\n",
-				       GetDataFilePath(snd[i].name));
+		if (stat(GetDataFilePath(snd[i].name), &st) == -1)
+		{
+			printf("Error finding sample '%s'\n",
+				GetDataFilePath(snd[i].name));
+			continue;
 		}
+
+		if ((snd[i].data = Mix_LoadWAV(
+			GetDataFilePath(snd[i].name))) == NULL)
+		{
+			printf("Error loading sample '%s'\n",
+				GetDataFilePath(snd[i].name));
+			continue;
+		}
+
+		snd[i].exists = 1;
 	}
 
 	memset(channelPriority, 0, sizeof(channelPriority));
