@@ -45,7 +45,6 @@ include_directories(include missions)
 
 set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")
-set(CDOGS_MUSIC_DIR "./music/")
 set(CDOGS_TEMP_DIR "/tmp/cdogs/")
 if(WIN32)
 	set(CDOGS_TEMP_DIR $ENV{TMP})

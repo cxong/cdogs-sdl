@@ -1077,8 +1077,6 @@ void LoadConfig(void)
 {
 	FILE *f;
 	int fx, music, channels, musicChannels;
-	int dynamic;
-	char s[128];
 
 	f = fopen(GetConfigFilePath("options.cnf"), "r");
 
@@ -1128,11 +1126,6 @@ void LoadConfig(void)
 		SetFXChannels(channels);
 		SetMinMusicChannels(musicChannels);
 
-		fscanfres = fscanf(f, "%d\n", &dynamic);
-		CHECK_FSCANF(1)
-		fscanfres = fscanf(f, "%s\n", s);
-		CHECK_FSCANF(1)
-		SetModuleDirectory(s);
 		fscanfres = fscanf(f, "%u\n", &gCampaign.seed);
 		CHECK_FSCANF(1)
 		fscanfres = fscanf(f, "%d %d\n", &gOptions.difficulty,
@@ -1209,8 +1202,6 @@ void SaveConfig(void)
 		fprintf(f, "%d %d %d %d\n",
 			FXVolume(),
 			MusicVolume(), FXChannels(), MinMusicChannels());
-		fprintf(f, "%d\n", 0); // DynamicInterrupts
-		fprintf(f, "%s\n", ModuleDirectory());
 		fprintf(f, "%u\n", gCampaign.seed);
 		fprintf(f, "%d %d\n", gOptions.difficulty,
 			gOptions.slowmotion);

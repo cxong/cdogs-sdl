@@ -20,14 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -------------------------------------------------------------------------------
-
- sounds.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
 #define SND_EXPLOSION   0
@@ -66,7 +58,6 @@ void ShutDownSound(void);
 int PlaySong(char *name);
 void StopSong(void);
 void PlaySound(int sound, int panning, int volume);
-void DoSounds(void);
 void SetFXVolume(int volume);
 int FXVolume(void);
 void SetMusicVolume(int volume);
@@ -83,16 +74,3 @@ void SetModuleStatus(int s);
 int ModuleStatus(void);
 const char *ModuleMessage(void);
 void SetModuleMessage(const char *s);
-void SetModuleDirectory(const char *dir);
-const char *ModuleDirectory(void);
-
-#define SoundTick		( #error "Bad!" )
-#define InterruptOn		( #error "Bad!" )
-#define InterruptOff		( #error "Bad!" )
-#define SetDynamicInterrupts	( #error "Bad!" )
-#define DynamicInterrupts	( #error "Bad!" )
-//void SoundTick(void); 
-//void InterruptOn(void);
-//void InterruptOff(void);
-//void SetDynamicInterrupts(int flag);
-//int DynamicInterrupts(void);

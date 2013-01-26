@@ -292,7 +292,7 @@ extern struct SongDef *gMenuSongs;
 void AddSong(struct SongDef **songList, const char *path);
 void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
-void LoadSongs(const char *path, struct SongDef **songList);
+void LoadSongs(void);
 
 #define __GAMEDATA
 #endif

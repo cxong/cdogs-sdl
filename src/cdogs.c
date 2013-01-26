@@ -1035,8 +1035,7 @@ int main(int argc, char *argv[])
 	LoadHighScores();
 
 	debug(D_NORMAL, "Loading song lists...\n");
-	LoadSongs(GetConfigFilePath("menusong.cfg"), &gMenuSongs);
-	LoadSongs(GetConfigFilePath("gamesong.cfg"), &gGameSongs);
+	LoadSongs();
 	LoadTemplates();
 
 	PlayMenuSong();

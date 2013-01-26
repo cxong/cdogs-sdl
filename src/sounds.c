@@ -55,7 +55,6 @@ static int channelTime[FX_MAXCHANNELS];
 
 static int moduleStatus = 0;
 static char moduleMessage[128];
-static char moduleDirectory[128] = CDOGS_MUSIC_DIR;
 SDL_AudioSpec *spec;
 
 
@@ -187,39 +186,19 @@ int PlaySong(char *name)
 		return 1;
 	}
 
-	{
-		struct stat s;
-		char *p;
-		char path[255];
-	
-		p = name;
-	
-		debug(D_NORMAL, "song path 1: %s\n", name);
-		if (stat(name, &s) != 0) {
-			strcpy(path, ModuleDirectory());
-			strcat(path, "/");
-			strcat(path, name);
-			p = path;
-		}
-		
-		debug(D_NORMAL, "song path 2: %s\n", p);
-		if (stat(p, &s) != 0) {
-			return 1;
-		}
-	
-		music = Mix_LoadMUS(p);
-		if (music == NULL) {
-			SetModuleMessage(SDL_GetError());
-			SetModuleStatus(MODULE_NOLOAD);
-			return 1;
-		}
-	
-		debug(D_NORMAL, "Playing song: %s\n", p);
-	
-		Mix_PlayMusic(music, -1);
-		SetModuleStatus(MODULE_PLAYING);
-		SetMusicVolume(musicVolume);
+	music = Mix_LoadMUS(name);
+	if (music == NULL) {
+		SetModuleMessage(SDL_GetError());
+		SetModuleStatus(MODULE_NOLOAD);
+		return 1;
 	}
+
+	debug(D_NORMAL, "Playing song: %s\n", name);
+
+	Mix_PlayMusic(music, -1);
+	SetModuleStatus(MODULE_PLAYING);
+	SetMusicVolume(musicVolume);
+
 	return 0;
 }
 
@@ -261,12 +240,6 @@ void PlaySound(int sound, int panning, int volume)
 	c = Mix_PlayChannel(-1, snd[sound].data , 0);
 	Mix_SetPanning(c, left, right);
 	}
-}
-
-//TODO: Replace this with SDL callback
-void DoSounds(void)
-{
-	return;
 }
 
 void SetFXVolume(int volume)
@@ -435,14 +408,4 @@ void SetModuleMessage(const char *s)
 const char *ModuleMessage(void)
 {
 	return moduleMessage;
-}
-
-void SetModuleDirectory(const char *dir)
-{
-	strcpy(moduleDirectory, dir);
-}
-
-const char *ModuleDirectory(void)
-{
-	return moduleDirectory;
 }

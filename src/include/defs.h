@@ -23,11 +23,6 @@
 
  defs.h - random definitions
 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
-
 */
 
 #ifndef __DEFS
@@ -40,7 +35,7 @@
 
 #define CDOGS_VERSION		"v1.06"
 #define CDOGS_SDL_VERSION	"v0.4.1"
-#define CDOGS_SDL_HOMEPAGE	"http://icculus.org/cdogs-sdl"
+#define CDOGS_SDL_HOMEPAGE	"https://github.com/cxong/cdogs-sdl"
 
 // Defines
 #define BODY_UNARMED        0

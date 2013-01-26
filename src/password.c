@@ -22,12 +22,7 @@
 -------------------------------------------------------------------------------
 
  password.c - mission password functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
 #include <string.h>
@@ -208,7 +203,6 @@ static int EnterCode(void *bkg, const char *password)
 		ShowControls();
 
 		CopyToScreen();
-		DoSounds();
 	}
 
 	PlaySound(SND_SWITCH, 0, 255);
@@ -263,7 +257,6 @@ int EnterPassword(void *bkg, const char *password)
 		ShowControls();
 
 		CopyToScreen();
-		DoSounds();
 	}
 	WaitForRelease();
 	return 0;

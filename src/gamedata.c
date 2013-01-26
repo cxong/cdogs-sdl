@@ -22,21 +22,24 @@
 -------------------------------------------------------------------------------
 
  gamedata.c - game data related stuff 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
+#include "gamedata.h"
+
+#include <dirent.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "SDL.h"
-#include "gamedata.h"
+#include <sys/stat.h>
+
+#include <SDL.h>
+#include <SDL_mixer.h>
+
 #include "actors.h"
+#include "config.h"
 #include "defs.h"
 #include "keyboard.h"
 #include "input.h"
@@ -93,6 +96,9 @@ struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
 
+void LoadSongList(struct SongDef **songList, const char *dirPath);
+
+
 void AddSong(struct SongDef **songList, const char *path)
 {
 	struct SongDef *s;
@@ -130,32 +136,59 @@ void FreeSongs(struct SongDef **songList)
 	}
 }
 
-void LoadSongs(const char *path, struct SongDef **songList)
+void LoadSongs(void)
 {
-	FILE *f;
-	char s[100];
-	char *p;
+	debug(D_NORMAL, "loading game music %s\n", CDOGS_GAME_MUSIC_DIR);
+	LoadSongList(&gGameSongs, CDOGS_GAME_MUSIC_DIR);
+	debug(D_NORMAL, "loading menu music %s\n", CDOGS_MENU_MUSIC_DIR);
+	LoadSongList(&gMenuSongs, CDOGS_MENU_MUSIC_DIR);
+}
 
-	debug(D_VERBOSE, "LoadSongs path: %s...\n", path);
+void LoadSongList(struct SongDef **songList, const char *dirPath)
+{
+	// TODO: refactor dir/file code for use in files.c
+	DIR *d = opendir(dirPath);
+	struct dirent *entry;
+	if (d == NULL)
+	{
+		printf("Cannot open music dir: %s\n", dirPath);
+		return;
+	}
 
-	f = fopen(path, "r");
-	if (f) {
-		debug(D_VERBOSE, "reading lines...\n");
-		while (fgets(s, sizeof(s), f)) {
-			debug(D_VERBOSE, "song is: %s\n", s);
-			
-			p = s + strlen(s);
-			while (p >= s && !isgraph(*p)) {
-				*p-- = 0;
-			}
-			
-			if (s[0]) {
-				debug(D_VERBOSE, "Added song: %s\n", s);
-				AddSong(songList, s);
-			}
+	while (1)
+	{
+		struct stat s;
+		char buf[512];
+		Mix_Music *m;
+
+		entry = readdir(d);
+		if (entry == NULL)
+		{
+			debug(D_VERBOSE, "end of readdir %s\n", dirPath);
+			break;
 		}
-		fclose(f);
-	} else {
-		debug(D_VERBOSE, "failed to open songlist?\n");
+
+		strcpy(buf, dirPath);
+		strcat(buf, entry->d_name);
+		debug(D_VERBOSE, "music file %s\n", buf);
+		if (stat(buf, &s) != 0)
+		{
+			debug(D_VERBOSE, "cannot read file attributes %s: %s\n",
+				buf, strerror(errno));
+			continue;
+		}
+		if (!S_ISREG(s.st_mode))
+		{
+			debug(D_VERBOSE, "not a regular file %s\n", buf);
+			continue;
+		}
+		m = Mix_LoadMUS(buf);
+		if (m == NULL)
+		{
+			debug(D_VERBOSE, "not a music file %s\n", buf);
+			continue;
+		}
+		Mix_FreeMusic(m);
+		AddSong(songList, buf);
 	}
 }

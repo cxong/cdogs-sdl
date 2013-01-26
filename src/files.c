@@ -102,7 +102,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	int i;
 	TCampaignSetting setting;
 
-	debug(D_NORMAL, "f: %s\n", filename);
+	debug(D_NORMAL, "filename: %s\n", filename);
 
 	f = fopen(filename, "rb");
 	if (f != NULL)
