@@ -22,12 +22,7 @@
 -------------------------------------------------------------------------------
 
  utils.h - various helpful functions 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
 #ifndef __UTILS

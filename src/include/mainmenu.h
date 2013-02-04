@@ -20,17 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -------------------------------------------------------------------------------
-
- mainmenu.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+
+typedef struct
+{
+	char *name;
+	char *message;
+} credit_t;
+extern credit_t *gCredits;
+extern int gCreditsCount;
 
 void LookForCustomCampaigns(void);
 void LoadConfig(void);
 void SaveConfig(void);
+void LoadCredits(credit_t **credits, int *creditsCount);
+void UnloadCredits(credit_t **credits, int *creditsCount);
 int MainMenu(void *bkg);

@@ -659,7 +659,7 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 	int y;
 	static int selection[2] = { 0, 0 };
 
-	debug(D_NORMAL, "\n");
+	debug(D_VERBOSE, "\n");
 
 	if (selection[index] > gMission.weaponCount)
 		selection[index] = gMission.weaponCount;

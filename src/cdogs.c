@@ -904,7 +904,8 @@ int main(int argc, char *argv[])
 
 	SetupConfigDir();
 	LoadConfig();
-	
+	LoadCredits(&gCredits, &gCreditsCount);
+
 	for (i = 1; i < argc; i++) {
 		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
 			if (strcmp(argv[i] + 1, "slices") == 0) {
@@ -1078,6 +1079,7 @@ int main(int argc, char *argv[])
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
+	UnloadCredits(&gCredits, &gCreditsCount);
 
 	if (sound) {
 		debug(D_NORMAL, ">> Shutting down sound...\n");

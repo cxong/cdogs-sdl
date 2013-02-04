@@ -34,7 +34,7 @@ execute_process(
 
 ADD_DEFINITIONS(${SDL_LDFLAGS} ${SDL_INCLUDES})
 if(MSVC)
-	#TODO: flags for MSVC
+	ADD_DEFINITIONS(-W4 -WX)
 else(MSVC)
 	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)
@@ -47,7 +47,7 @@ else(MSVC)
 	endif(DEBUG)
 endif(MSVC)
 
-include_directories(include missions)
+include_directories(include missions tinydir)
 
 set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")

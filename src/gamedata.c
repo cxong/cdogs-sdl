@@ -27,16 +27,14 @@
 
 #include "gamedata.h"
 
-#include <dirent.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/stat.h>
 
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <tinydir.h>
 
 #include "actors.h"
 #include "config.h"
@@ -146,49 +144,41 @@ void LoadSongs(void)
 
 void LoadSongList(struct SongDef **songList, const char *dirPath)
 {
-	// TODO: refactor dir/file code for use in files.c
-	DIR *d = opendir(dirPath);
-	struct dirent *entry;
-	if (d == NULL)
+	tinydir_dir dir;
+	int errsv;
+	if (tinydir_open(&dir, dirPath) == -1)
 	{
-		printf("Cannot open music dir: %s\n", dirPath);
-		return;
+		errsv = errno;
+		printf("Cannot open music dir: %s\n", strerror(errsv));
+		goto bail;
 	}
 
-	while (1)
+	for (; dir.has_next; tinydir_next(&dir))
 	{
-		struct stat s;
-		char buf[512];
 		Mix_Music *m;
-
-		entry = readdir(d);
-		if (entry == NULL)
+		tinydir_file file;
+		if (tinydir_readfile(&dir, &file) == -1)
 		{
-			debug(D_VERBOSE, "end of readdir %s\n", dirPath);
-			break;
+			errsv = errno;
+			debug(D_VERBOSE, "cannot read file: %s\n", strerror(errsv));
+			goto bail;
 		}
-
-		strcpy(buf, dirPath);
-		strcat(buf, entry->d_name);
-		debug(D_VERBOSE, "music file %s\n", buf);
-		if (stat(buf, &s) != 0)
+		if (!file.is_reg)
 		{
-			debug(D_VERBOSE, "cannot read file attributes %s: %s\n",
-				buf, strerror(errno));
+			debug(D_VERBOSE, "not a regular file %s\n", file.name);
 			continue;
 		}
-		if (!S_ISREG(s.st_mode))
-		{
-			debug(D_VERBOSE, "not a regular file %s\n", buf);
-			continue;
-		}
-		m = Mix_LoadMUS(buf);
+
+		m = Mix_LoadMUS(file.path);
 		if (m == NULL)
 		{
-			debug(D_VERBOSE, "not a music file %s\n", buf);
+			debug(D_VERBOSE, "not a music file %s\n", file.name);
 			continue;
 		}
 		Mix_FreeMusic(m);
-		AddSong(songList, buf);
+		AddSong(songList, file.path);
 	}
+
+bail:
+	tinydir_close(&dir);
 }

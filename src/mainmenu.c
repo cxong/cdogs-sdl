@@ -22,14 +22,10 @@
 -------------------------------------------------------------------------------
 
  mainmenu.c - main menu functions 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+
 */
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -119,53 +115,9 @@ static const char *volumeMenu[VOLUME_COUNT] = {
 	"Done"
 };
 
-struct Credit {
-	char *name;
-	char *message;
-};
-
-static struct Credit credits[] = {
-	{"Visit the C-Dogs SDL Homepage!",
-	 CDOGS_SDL_HOMEPAGE},
-
-	{"Ronny Wester",
-	 "That's me! I designed and coded this game and I did all the graphics too"},
-	{"Joey Lau",
-	 "My love. Although I had to alter the knife rating to survive the dogfights ;-)"},
-	{"Jan-Olof Hendig",
-	 "A friend with whom I've spent far too much time on the phone far too late"},
-	{"Joakim Johansson",
-	 "Friend and colleague. We keep each other sane...or is it the other way around?"},
-	{"Victor Putz",
-	 "Kindred spirit and a great guy to brainstorm with"},
-	{"Ken Gorley",
-	 "Found the 1st bug in the release: didn't work with a single joystick"},
-	{"Adrian Stacey", "Most helpful in tracking down the vsync bug"},
-	{"Antti Hukkanen",
-	 "Helped locate a bug when using maximum number of characters in a mission"},
-	{"Tim McEvoy", "Instrumental in getting the 1.05 crash bug fixed"},
-	{"Daniel Jansson", "Friend and fellow aikido instructor"},
-	{"Chilok Lau", "Joey's brother and a relentless game-player"},
-	{"Niklas Wester",
-	 "My LITTLE brother...yeah, I know he is taller...mumble, grumble..."},
-	{"Anneli Löfgren",
-	 "My mother. Hi Ma! Sorry, no launcher this time..."},
-	{"Otto Chrons", "Author of the DSMI sound and music library"},
-	{"Ethan Brodsky",
-	 "Author of free SB stuff. Helped me out when I got started"},
-	{"Tech support at DPT",
-	 "The best support staff I've ever come across. Kudos!"},
-	{"Cyberdogs fans wherever",
-	 "Thanks! Without your support this program would never have come about"},
-	
-	/* C-Dogs SDL Credits :D */
-	{"Lucas Martin-King",
-	 "He procrastinated about releasing C-Dogs SDL! ...and cleaned up after Jeremy"},
-	{"Jeremy Chin",
-	 "He did all the hard porting work! ;)"}
-};
-
-#define CREDIT_PERIOD   10
+credit_t *gCredits;
+int gCreditsCount;
+#define CREDIT_PERIOD   1
 
 
 static TCampaignSetting customSetting = {
@@ -1017,23 +969,29 @@ int MakeSelection(int mode, int cmd)
 	return MODE_MAIN;
 }
 
-static void ShowCredits(void)
+static void ShowCredits(const credit_t *credits, int creditsCount)
 {
 	static int creditIndex = 0;
 	static int lastTick = 0;
 	int t;
 
-	CDogsTextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
-	CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
-	CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40 + CDogsTextHeight(), credits[creditIndex].message, &tableDarker);
-
-	t = clock() / CLOCKS_PER_SEC;
-
-	if (t > lastTick + CREDIT_PERIOD) {
-		creditIndex++;
-		if (creditIndex >= (int)(sizeof(credits) / sizeof(credits[0])))
-			creditIndex = 0;
-		lastTick = t;
+	if (creditsCount > 0)
+	{
+		CDogsTextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
+		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
+		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40 + CDogsTextHeight(), credits[creditIndex].message, &tableDarker);
+	
+		t = clock() / CLOCKS_PER_SEC;
+	
+		if (t > lastTick + CREDIT_PERIOD)
+		{
+			creditIndex++;
+			if (creditIndex >= creditsCount)
+			{
+				creditIndex = 0;
+			}
+			lastTick = t;
+		}
 	}
 }
 
@@ -1051,7 +1009,9 @@ int MainMenu(void *bkg)
 		ShowControls();
 
 		if (mode == MODE_MAIN)
-			ShowCredits();
+		{
+			ShowCredits(gCredits, gCreditsCount);
+		}
 
 		GetMenuCmd(&cmd);
 
@@ -1164,6 +1124,85 @@ void LoadConfig(void)
 	}
 
 	return;
+}
+
+void LoadCredits(credit_t **credits, int *creditsCount)
+{
+	char buf[1024];
+	char nameBuf[256];
+	int nameOrMessageCounter = 0;
+	FILE *file;
+
+	debug(D_NORMAL, "Reading CREDITS...\n");
+
+	file = fopen("CREDITS", "r");
+	if (file == NULL)
+	{
+		printf("Error: cannot load CREDITS\n");
+		return;
+	}
+
+	assert(credits != NULL);
+	assert(creditsCount != NULL);
+
+	*credits = NULL;
+	*creditsCount = 0;
+	while (fgets(buf, 1024, file) != NULL)
+	{
+		if (strlen(buf) > 0 && buf[strlen(buf) - 1] == '\n')
+		{
+			buf[strlen(buf) - 1] = '\0';
+		}
+		if (strlen(buf) == 0)
+		{
+			nameOrMessageCounter = 0;
+			continue;
+		}
+		if (nameOrMessageCounter == 0)
+		{
+			strcpy(nameBuf, buf);
+			nameOrMessageCounter = 1;
+		}
+		else
+		{
+			(*creditsCount)++;
+			*credits = (credit_t *)sys_mem_realloc(*credits, sizeof(credit_t)*(*creditsCount));
+			(*credits)[*creditsCount - 1].name = (char *)sys_mem_alloc(strlen(nameBuf) + 1);
+			(*credits)[*creditsCount - 1].message = (char *)sys_mem_alloc(strlen(buf));
+			if (*credits == NULL ||
+				(*credits)[*creditsCount - 1].name == NULL ||
+				(*credits)[*creditsCount - 1].message == NULL)
+			{
+				printf("Error: out of memory\n");
+				goto bail;
+			}
+			strcpy((*credits)[*creditsCount - 1].name, nameBuf);
+			strcpy((*credits)[*creditsCount - 1].message, buf + 1);
+			nameOrMessageCounter = 0;
+
+			debug(D_VERBOSE, "Read credits for \"%s\"\n", (*credits)[*creditsCount - 1].name);
+		}
+	}
+
+	debug(D_NORMAL, "%d credits read\n", *creditsCount);
+
+bail:
+	fclose(file);
+}
+
+void UnloadCredits(credit_t **credits, int *creditsCount)
+{
+	int i;
+	assert(credits != NULL);
+	assert(creditsCount != NULL);
+	for (i = 0; i < *creditsCount; i++)
+	{
+		free((*credits)[i].name);
+		free((*credits)[i].message);
+	}
+	free(*credits);
+	*credits = NULL;
+	*creditsCount = 0;
 }
 
 void SaveConfig(void)
