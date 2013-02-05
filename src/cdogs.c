@@ -32,6 +32,7 @@
 
 #include <SDL.h>
 
+#include "credits.h"
 #include "joystick.h"
 #include "objs.h"
 #include "actors.h"
@@ -794,7 +795,7 @@ void *MakeBkg(void)
 	return bkg;
 }
 
-void MainLoop(void)
+void MainLoop(credits_displayer_t *creditsDisplayer)
 {
 	void *myScreen;
 
@@ -805,7 +806,8 @@ void MainLoop(void)
 
 	SetupBuiltinCampaign(1);
 
-	while (MainMenu(bkg)) {
+	while (MainMenu(bkg, creditsDisplayer))
+	{
 		debug(D_NORMAL, ">> Entering campaign\n");
 		ResetCampaign();
 		if (!gCampaign.dogFight)
@@ -889,6 +891,7 @@ int main(int argc, char *argv[])
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
+	credits_displayer_t creditsDisplayer;
 
 	PrintTitle();
 
@@ -904,7 +907,7 @@ int main(int argc, char *argv[])
 
 	SetupConfigDir();
 	LoadConfig();
-	LoadCredits(&gCredits, &gCreditsCount);
+	LoadCredits(&creditsDisplayer, &tablePurple, &tableDarker);
 
 	for (i = 1; i < argc; i++) {
 		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
@@ -1068,7 +1071,7 @@ int main(int argc, char *argv[])
 	} else {
 		CDogsSetPalette(gPalette);
 		debug(D_NORMAL, ">> Entering main loop\n");
-		MainLoop();
+		MainLoop(&creditsDisplayer);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
 
@@ -1079,7 +1082,7 @@ int main(int argc, char *argv[])
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
-	UnloadCredits(&gCredits, &gCreditsCount);
+	UnloadCredits(&creditsDisplayer);
 
 	if (sound) {
 		debug(D_NORMAL, ">> Shutting down sound...\n");

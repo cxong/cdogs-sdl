@@ -18,19 +18,15 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- mainmenu.c - main menu functions 
-
 */
+#include "mainmenu.h"
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "mainmenu.h"
+
+#include "credits.h"
 #include "defs.h"
 #include "input.h"
 #include "grafx.h"
@@ -114,10 +110,6 @@ static const char *volumeMenu[VOLUME_COUNT] = {
 	"Disable interrupts during game",
 	"Done"
 };
-
-credit_t *gCredits;
-int gCreditsCount;
-#define CREDIT_PERIOD   1
 
 
 static TCampaignSetting customSetting = {
@@ -969,33 +961,7 @@ int MakeSelection(int mode, int cmd)
 	return MODE_MAIN;
 }
 
-static void ShowCredits(const credit_t *credits, int creditsCount)
-{
-	static int creditIndex = 0;
-	static int lastTick = 0;
-	int t;
-
-	if (creditsCount > 0)
-	{
-		CDogsTextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", &tableDarker);
-		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
-		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40 + CDogsTextHeight(), credits[creditIndex].message, &tableDarker);
-	
-		t = clock() / CLOCKS_PER_SEC;
-	
-		if (t > lastTick + CREDIT_PERIOD)
-		{
-			creditIndex++;
-			if (creditIndex >= creditsCount)
-			{
-				creditIndex = 0;
-			}
-			lastTick = t;
-		}
-	}
-}
-
-int MainMenu(void *bkg)
+int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
 	int mode;
@@ -1010,7 +976,7 @@ int MainMenu(void *bkg)
 
 		if (mode == MODE_MAIN)
 		{
-			ShowCredits(gCredits, gCreditsCount);
+			ShowCredits(creditsDisplayer);
 		}
 
 		GetMenuCmd(&cmd);
@@ -1124,85 +1090,6 @@ void LoadConfig(void)
 	}
 
 	return;
-}
-
-void LoadCredits(credit_t **credits, int *creditsCount)
-{
-	char buf[1024];
-	char nameBuf[256];
-	int nameOrMessageCounter = 0;
-	FILE *file;
-
-	debug(D_NORMAL, "Reading CREDITS...\n");
-
-	file = fopen("CREDITS", "r");
-	if (file == NULL)
-	{
-		printf("Error: cannot load CREDITS\n");
-		return;
-	}
-
-	assert(credits != NULL);
-	assert(creditsCount != NULL);
-
-	*credits = NULL;
-	*creditsCount = 0;
-	while (fgets(buf, 1024, file) != NULL)
-	{
-		if (strlen(buf) > 0 && buf[strlen(buf) - 1] == '\n')
-		{
-			buf[strlen(buf) - 1] = '\0';
-		}
-		if (strlen(buf) == 0)
-		{
-			nameOrMessageCounter = 0;
-			continue;
-		}
-		if (nameOrMessageCounter == 0)
-		{
-			strcpy(nameBuf, buf);
-			nameOrMessageCounter = 1;
-		}
-		else
-		{
-			(*creditsCount)++;
-			*credits = (credit_t *)sys_mem_realloc(*credits, sizeof(credit_t)*(*creditsCount));
-			(*credits)[*creditsCount - 1].name = (char *)sys_mem_alloc(strlen(nameBuf) + 1);
-			(*credits)[*creditsCount - 1].message = (char *)sys_mem_alloc(strlen(buf));
-			if (*credits == NULL ||
-				(*credits)[*creditsCount - 1].name == NULL ||
-				(*credits)[*creditsCount - 1].message == NULL)
-			{
-				printf("Error: out of memory\n");
-				goto bail;
-			}
-			strcpy((*credits)[*creditsCount - 1].name, nameBuf);
-			strcpy((*credits)[*creditsCount - 1].message, buf + 1);
-			nameOrMessageCounter = 0;
-
-			debug(D_VERBOSE, "Read credits for \"%s\"\n", (*credits)[*creditsCount - 1].name);
-		}
-	}
-
-	debug(D_NORMAL, "%d credits read\n", *creditsCount);
-
-bail:
-	fclose(file);
-}
-
-void UnloadCredits(credit_t **credits, int *creditsCount)
-{
-	int i;
-	assert(credits != NULL);
-	assert(creditsCount != NULL);
-	for (i = 0; i < *creditsCount; i++)
-	{
-		free((*credits)[i].name);
-		free((*credits)[i].message);
-	}
-	free(*credits);
-	*credits = NULL;
-	*creditsCount = 0;
 }
 
 void SaveConfig(void)

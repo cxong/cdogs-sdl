@@ -21,18 +21,9 @@
 
 -------------------------------------------------------------------------------
 */
-
-typedef struct
-{
-	char *name;
-	char *message;
-} credit_t;
-extern credit_t *gCredits;
-extern int gCreditsCount;
+#include "credits.h"
 
 void LookForCustomCampaigns(void);
 void LoadConfig(void);
 void SaveConfig(void);
-void LoadCredits(credit_t **credits, int *creditsCount);
-void UnloadCredits(credit_t **credits, int *creditsCount);
-int MainMenu(void *bkg);
+int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer);

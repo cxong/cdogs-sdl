@@ -85,6 +85,7 @@ add_library(cdogs STATIC
 
 add_executable(cdogs-sdl
 	cdogs.c
+	credits.c
 	drawtools.c
 	mainmenu.c
 	menu.c
