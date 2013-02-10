@@ -308,6 +308,30 @@ charsed.c.s:
 	$(MAKE) -f CMakeFiles/cdogs-sdl-editor.dir/build.make CMakeFiles/cdogs-sdl-editor.dir/charsed.c.s
 .PHONY : charsed.c.s
 
+config.o: config.c.o
+.PHONY : config.o
+
+# target to build an object file
+config.c.o:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/config.c.o
+.PHONY : config.c.o
+
+config.i: config.c.i
+.PHONY : config.i
+
+# target to preprocess a source file
+config.c.i:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/config.c.i
+.PHONY : config.c.i
+
+config.s: config.c.s
+.PHONY : config.s
+
+# target to generate assembly for a file
+config.c.s:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/config.c.s
+.PHONY : config.c.s
+
 credits.o: credits.c.o
 .PHONY : credits.o
 
@@ -943,6 +967,9 @@ help:
 	@echo "... charsed.o"
 	@echo "... charsed.i"
 	@echo "... charsed.s"
+	@echo "... config.o"
+	@echo "... config.i"
+	@echo "... config.s"
 	@echo "... credits.o"
 	@echo "... credits.i"
 	@echo "... credits.s"

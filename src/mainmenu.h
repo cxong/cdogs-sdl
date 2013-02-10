@@ -24,6 +24,4 @@
 #include "credits.h"
 
 void LookForCustomCampaigns(void);
-void LoadConfig(void);
-void SaveConfig(void);
 int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer);

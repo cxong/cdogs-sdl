@@ -32,6 +32,7 @@
 
 #include <SDL.h>
 
+#include "config.h"
 #include "credits.h"
 #include "joystick.h"
 #include "objs.h"
