@@ -55,7 +55,7 @@ set(CDOGS_TEMP_DIR "/tmp/cdogs/")
 if(WIN32)
 	set(CDOGS_TEMP_DIR $ENV{TMP})
 endif(WIN32)
-CONFIGURE_FILE(config.h.cmake config.h)
+CONFIGURE_FILE(sys_config.h.cmake sys_config.h)
 
 add_library(cdogs STATIC
 	actors.c

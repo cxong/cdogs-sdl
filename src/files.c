@@ -24,6 +24,7 @@
  files.c - file handling functions
  
 */
+#include "files.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -35,8 +36,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include "config.h" /* for CDOGS_CFG_DIR */
-#include "files.h"
 #include "sys_specifics.h"
 #include "utils.h"
 

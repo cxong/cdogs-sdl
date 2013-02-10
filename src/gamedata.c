@@ -37,11 +37,10 @@
 #include <tinydir.h>
 
 #include "actors.h"
-#include "config.h"
 #include "defs.h"
 #include "keyboard.h"
 #include "input.h"
-
+#include "sys_config.h"
 #include "utils.h"
 
 

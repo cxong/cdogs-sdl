@@ -25,12 +25,10 @@
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
-
--------------------------------------------------------------------------------
 */
 
-#ifndef __CONFIG
-#define __CONFIG
+#ifndef __SYS_CONFIG
+#define __SYS_CONFIG
 
 /* where to look for the cdogs data files */
 #define CDOGS_DATA_DIR "@CDOGS_DATA_DIR@"
