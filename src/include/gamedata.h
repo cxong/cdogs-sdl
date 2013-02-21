@@ -18,23 +18,18 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- gamedata.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
 #ifndef __GAMEDATA
+#define __GAMEDATA
+
+#include "input.h"
+
 #define MAX_WEAPONS 3
 
 
-struct PlayerData {
+struct PlayerData
+{
 	char name[20];
 	int head;
 	int arms, body, legs, skin, hair;
@@ -51,42 +46,38 @@ struct PlayerData {
 	int kills;
 	int friendlies;
 
-	int controls;
+	input_device_e inputDevice;
 	int keys[6];
 };
 
 extern struct PlayerData gPlayer1Data;
 extern struct PlayerData gPlayer2Data;
 
+typedef enum
+{
+	DIFFICULTY_VERYEASY = 1,
+	DIFFICULTY_EASY,
+	DIFFICULTY_NORMAL,
+	DIFFICULTY_HARD,
+	DIFFICULTY_VERYHARD
+} difficulty_e;
 
-#define SPLIT_X  300
-#define SPLIT_Y  180
-
-#define COPY_REPMOVSD    0
-#define COPY_DEC_JNZ     1
-
-#define DIFFICULTY_VERYEASY		1
-#define DIFFICULTY_EASY			2
-#define DIFFICULTY_NORMAL		3
-#define DIFFICULTY_HARD			4
-#define DIFFICULTY_VERYHARD		5
+const char *DifficultyStr(difficulty_e d);
 
 struct GameOptions {
 	int twoPlayers;
 	int badGuys;
-	int xSplit;
-	int ySplit;
+	int splitScreenAlways;
 	int displayFPS;
 	int displayTime;
 	int playersHurt;
 	int displaySlices;
-	int copyMode;
 	int forceVSync;
 	int brightness;
 	int swapButtonsJoy1;
 	int swapButtonsJoy2;
 	int mapKey;
-	int difficulty;
+	difficulty_e difficulty;
 	int density;
 	int npcHp;
 	int playerHp;
@@ -242,9 +233,10 @@ struct CampaignSetting {
 };
 typedef struct CampaignSetting TCampaignSetting;
 
-struct CampaignOptions {
+struct CampaignOptions
+{
 	TCampaignSetting *setting;
-	int seed;
+	unsigned int seed;
 	int dogFight;
 };
 
@@ -294,5 +286,4 @@ void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
 
-#define __GAMEDATA
 #endif

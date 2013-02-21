@@ -18,18 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- grafx.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
-
 #ifndef __grafx
 #define __grafx
 
@@ -59,9 +48,6 @@ typedef struct {
 	unsigned int w, h;
 } GFX_Mode;
 
-GFX_Mode * Gfx_ModePrev(void);
-GFX_Mode * Gfx_ModeNext(void);
-
 void Gfx_SetHint(const GFX_Hint h, const int val);
 #define Gfx_HintOn(h)	Gfx_SetHint(h, 1)
 #define Gfx_HintOff(h)	Gfx_SetHint(h, 0)
@@ -70,6 +56,12 @@ int Gfx_GetHint(const GFX_Hint h);
 
 int InitVideo(void);
 void ShutDownVideo(void);
+
+void GrafxToggleFullscreen(void);
+void GrafxTryPrevResolution(void);
+void GrafxTryNextResolution(void);
+int GrafxGetScale(void);
+void GrafxSetScale(int scale);
 
 int ReadPics(
 	const char *filename, void **pics, int maxPics,

@@ -18,13 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- sounds.c - um... guess what?
-
 */
-
 #include "sounds.h"
 
 #include <stdio.h>
@@ -212,29 +206,40 @@ void StopSong(void)
 	}
 }
 
+void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
+{
+	if (panning == 0)
+	{
+		*left = *right = 255;
+	}
+	else
+	{
+		if (panning < 0)
+		{
+			*left = 255 + panning;
+		}
+		else
+		{
+			*left = panning;
+		}
+
+		*right = 255 - *left;
+	}
+}
+
 void PlaySound(int sound, int panning, int volume)
 {
 	if (!soundInitialized)
+	{
 		return;
+	}
 
 	debug(D_VERBOSE, "sound: %d panning: %d volume: %d\n", sound, panning, volume);
 
 	{
 	int c;
-	//Uint8 p;
 	Uint8 left, right;
-
-	if (panning == 0) {
-		left = right = 255;
-	} else {
-		if (panning < 0) {
-			left = (255 + panning);
-		} else {
-			left = panning;
-		}
-
-		right = 255 - left;
-	}
+	CalcLeftRightVolumeFromPanning(&left, &right, panning);
 
 	Mix_VolumeChunk(snd[sound].data,(volume * fxVolume) / 128 );
 	c = Mix_PlayChannel(-1, snd[sound].data , 0);

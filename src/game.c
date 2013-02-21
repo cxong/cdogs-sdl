@@ -62,6 +62,9 @@
 
 #define PICKUP_LIMIT         350
 
+#define SPLIT_X  300
+#define SPLIT_Y  180
+
 static Uint32 ticks_now;
 static Uint32 ticks_then;
 
@@ -252,8 +255,10 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		xNoise = yNoise = 0;
 
 	if (player1 && player2) {
-		if (abs(player1->tileItem.x - player2->tileItem.x) < gOptions.xSplit
-		    && abs(player1->tileItem.y - player2->tileItem.y) < gOptions.ySplit) {
+		if (!gOptions.splitScreenAlways &&
+			abs(player1->tileItem.x - player2->tileItem.x) < SPLIT_X &&
+			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
+		{
 			CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 			// One screen
 			x = (player1->tileItem.x +

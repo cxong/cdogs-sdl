@@ -18,22 +18,12 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- mission.c - mission related functions 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "mission.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include "gamedata.h"
-#include "mission.h"
 #include "map.h"
 #include "defs.h"
 #include "pics.h"

@@ -18,11 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- blit.c - screen blitter 
 */
+#include "blit.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +27,6 @@
 
 #include <SDL.h>
 
-#include "blit.h"
 #include "grafx.h"
 #include "events.h"
 #include "pics.h" /* for gPalette */
@@ -184,7 +180,7 @@ void CopyToScreen(void)
 	scr_w = Screen_GetWidth();
 	scr_h = Screen_GetHeight();
 	scr_size = Screen_GetMemSize();
-	scalef = Gfx_GetHint(HINT_SCALEFACTOR);
+	scalef = GrafxGetScale();
 
 	/* this really needs to go someplace nicer,
 	 * as it's a bit of a hack, being here. */

@@ -18,21 +18,11 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- joystick.c - um... you know what it is 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "joystick.h"
 
 #include <string.h>
 #include <stdio.h>
-#include "joystick.h"
 
 /* some of this stuff could be better, but it works! */
 
@@ -123,6 +113,15 @@ void InitSticks(void)
 		}
 	}
 	AutoCalibrate();
+
+	if (gSticks[0].present)
+	{
+		printf("Joystick 1 detected\n");
+	}
+	if (gSticks[1].present)
+	{
+		printf("Joystick 2 detected\n");
+	}
 }
 
 void AutoCalibrate(void)

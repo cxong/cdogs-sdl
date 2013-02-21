@@ -253,15 +253,10 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 static void ShowPlayerControls(int x, struct PlayerData *data)
 {
 	char s[256];
-	int y;
+	int y = SCREEN_HEIGHT - (SCREEN_HEIGHT / 6);
 
-	y = SCREEN_HEIGHT - (SCREEN_HEIGHT / 6);
-
-	if (data->controls == JOYSTICK_ONE)
-		CDogsTextStringAt(x, y, "(joystick one)");
-	else if (data->controls == JOYSTICK_TWO)
-		CDogsTextStringAt(x, y, "(joystick two)");
-	else {
+	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+	{
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
 			SDL_GetKeyName(data->keys[0]),
 			SDL_GetKeyName(data->keys[1]),
@@ -283,6 +278,11 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 				SDL_GetKeyName(data->keys[5]));
 			CDogsTextStringAt(x, y, s);
 		}
+	}
+	else
+	{
+		sprintf(s, "(%s)", InputDeviceStr(data->inputDevice));
+		CDogsTextStringAt(x, y, s);
 	}
 }
 

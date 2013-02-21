@@ -18,20 +18,11 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- input.c - input functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "input.h"
 
 #include <stdlib.h>
-#include "input.h"
+
 #include "joystick.h"
 #include "keyboard.h"
 #include "defs.h"
@@ -49,45 +40,87 @@ static int SwapButtons(int cmd)
 	return c;
 }
 
-static void GetOnePlayerCmd(struct PlayerData *data,
-			    int *cmd, int joy1, int joy2, int single)
+void GetOnePlayerCmd(
+	struct PlayerData *data, int *cmd, int joy1, int joy2, int isSingle)
 {
-	if (cmd) {
-		if (data->controls == JOYSTICK_ONE) {
-			*cmd = joy1;
-			if (gOptions.swapButtonsJoy1)
-				*cmd = SwapButtons(*cmd);
-			if (single) {
-				if ((joy2 & CMD_BUTTON1) != 0)
-					*cmd |= CMD_BUTTON3;
-				if ((joy2 & CMD_BUTTON2) != 0)
-					*cmd |= CMD_BUTTON4;
-			}
-		} else if (data->controls == JOYSTICK_TWO) {
-			*cmd = joy2;
-			if (gOptions.swapButtonsJoy2)
-				*cmd = SwapButtons(*cmd);
-			if (single) {
-				if ((joy1 & CMD_BUTTON1) != 0)
-					*cmd |= CMD_BUTTON3;
-				if ((joy1 & CMD_BUTTON2) != 0)
-					*cmd |= CMD_BUTTON4;
-			}
-		} else {
+	if (cmd != NULL)
+	{
+		if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+		{
 			*cmd = 0;
 			if (KeyDown(data->keys[0]))
+			{
 				*cmd |= CMD_LEFT;
+			}
 			else if (KeyDown(data->keys[1]))
+			{
 				*cmd |= CMD_RIGHT;
+			}
 			if (KeyDown(data->keys[2]))
+			{
 				*cmd |= CMD_UP;
+			}
 			else if (KeyDown(data->keys[3]))
+			{
 				*cmd |= CMD_DOWN;
+			}
 			if (KeyDown(data->keys[4]))
+			{
 				*cmd |= CMD_BUTTON1;
+			}
 			if (KeyDown(data->keys[5]))
+			{
 				*cmd |= CMD_BUTTON2;
+			}
 		}
+		else
+		{
+			int cmdOther = 0;
+			int swapButtons = 0;
+			if (data->inputDevice == INPUT_DEVICE_JOYSTICK_1)
+			{
+				*cmd = joy1;
+				cmdOther = joy2;
+				swapButtons = gOptions.swapButtonsJoy1;
+			}
+			else if (data->inputDevice == INPUT_DEVICE_JOYSTICK_2)
+			{
+				*cmd = joy2;
+				cmdOther = joy1;
+				swapButtons = gOptions.swapButtonsJoy2;
+			}
+			if (swapButtons)
+			{
+				*cmd = SwapButtons(*cmd);
+			}
+			if (isSingle)
+			{
+				if (cmdOther & CMD_BUTTON1)
+				{
+					*cmd |= CMD_BUTTON3;
+				}
+				if (cmdOther & CMD_BUTTON2)
+				{
+					*cmd |= CMD_BUTTON4;
+				}
+			}
+		}
+	}
+}
+
+
+const char *InputDeviceStr(input_device_e d)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		return "Keyboard";
+	case INPUT_DEVICE_JOYSTICK_1:
+		return "Joystick 1";
+	case INPUT_DEVICE_JOYSTICK_2:
+		return "Joystick 2";
+	default:
+		return "";
 	}
 }
 
@@ -107,13 +140,14 @@ void GetMenuCmd(int *cmd)
 		*cmd = CMD_ESC;
 		return;
 	}
-//      printf("%i - ", keyF10);
 	if (KeyDown(keyF10))
+	{
 		AutoCalibrate();
-//      printf("%i - ", keyF9);
-	if (KeyDown(keyF9)) {
-		gPlayer1Data.controls = KEYBOARD;
-		gPlayer2Data.controls = KEYBOARD;
+	}
+	if (KeyDown(keyF9))
+	{
+		gPlayer1Data.inputDevice = INPUT_DEVICE_KEYBOARD;
+		gPlayer2Data.inputDevice = INPUT_DEVICE_KEYBOARD;
 	}
 
 	GetPlayerCmd(cmd, NULL);

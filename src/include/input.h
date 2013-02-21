@@ -18,24 +18,22 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- input.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#ifndef __INPUT
+#define __INPUT
 
-#define KEYBOARD            0
-#define JOYSTICK_ONE        1
-#define JOYSTICK_TWO        2
+typedef enum
+{
+	INPUT_DEVICE_KEYBOARD,
+	INPUT_DEVICE_JOYSTICK_1,
+	INPUT_DEVICE_JOYSTICK_2
+} input_device_e;
 
+const char *InputDeviceStr(input_device_e d);
 void GetPlayerCmd(int *cmd1, int *cmd2);
 void GetMenuCmd(int *cmd);
 void WaitForRelease(void);
 void WaitForPress(void);
 void Wait(void);
+
+#endif

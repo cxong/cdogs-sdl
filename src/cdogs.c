@@ -780,7 +780,6 @@ void *MakeBkg(void)
 	SetupMission(0, 1);
 	SetupMap();
 	SetDstScreen(bkg);
-	//buffer = malloc(sizeof(struct Buffer));
 	buffer = NewBuffer();
 	SetBuffer(512, 384, buffer, X_TILES);
 	FixBuffer(buffer, 255);
@@ -805,7 +804,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer)
 	memset(myScreen, 0, SCREEN_MEMSIZE);
 	SetDstScreen(myScreen);
 
-	SetupBuiltinCampaign(1);
+	//SetupBuiltinCampaign(1);
 
 	while (MainMenu(bkg, creditsDisplayer))
 	{
@@ -1048,20 +1047,9 @@ int main(int argc, char *argv[])
 	LookForCustomCampaigns();
 
 	InitSticks();
-	if (gSticks[0].present)
-		printf("Joystick 1 detected\n");
-	if (gSticks[1].present)
-		printf("Joystick 2 detected\n");
 
-/*	if (gSticks[0].present) {
-		gPlayer1Data.controls = JOYSTICK_ONE;
-		if (gSticks[1].present)
-			gPlayer2Data.controls = JOYSTICK_TWO;
-	} else if (gSticks[1].present)
-		gPlayer1Data.controls = JOYSTICK_TWO;
-*/
-
-	if (wait) {
+	if (wait)
+	{
 		printf("Press the enter key to continue...\n");
 		getchar();
 	}

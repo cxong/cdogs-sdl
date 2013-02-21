@@ -51,18 +51,17 @@ void LoadConfig(void)
 			fclose(f);\
 			return;\
 		}
-		fscanfres = fscanf(f, "%d %d %d %d %d %d %d %d %d\n",
+		fscanfres = fscanf(f, "%d %d %d %d %d %d %d\n",
 			           &gOptions.displayFPS,
 			           &gOptions.displayTime,
 			           &gOptions.playersHurt,
-			           &gOptions.copyMode,
 			           &gOptions.brightness,
 			           &gOptions.swapButtonsJoy1,
 			           &gOptions.swapButtonsJoy2,
-			           &gOptions.xSplit, &gOptions.ySplit);
-		CHECK_FSCANF(9)
+			           &gOptions.splitScreenAlways);
+		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
-			           &gPlayer1Data.controls,
+			           (int *)&gPlayer1Data.inputDevice,
 			           &gPlayer1Data.keys[0],
 			           &gPlayer1Data.keys[1],
 			           &gPlayer1Data.keys[2],
@@ -71,13 +70,13 @@ void LoadConfig(void)
 			           &gPlayer1Data.keys[5]);
 		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
-			           &gPlayer2Data.controls,
-			           &gPlayer2Data.keys[0],
-			           &gPlayer2Data.keys[1],
-		 	           &gPlayer2Data.keys[2],
-			           &gPlayer2Data.keys[3],
-			           &gPlayer2Data.keys[4],
-			           &gPlayer2Data.keys[5]);
+			(int *)&gPlayer2Data.inputDevice,
+			&gPlayer2Data.keys[0],
+			&gPlayer2Data.keys[1],
+			&gPlayer2Data.keys[2],
+			&gPlayer2Data.keys[3],
+			&gPlayer2Data.keys[4],
+			&gPlayer2Data.keys[5]);
 		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n", &gOptions.mapKey);
 		CHECK_FSCANF(1)
@@ -91,7 +90,7 @@ void LoadConfig(void)
 
 		fscanfres = fscanf(f, "%u\n", &gCampaign.seed);
 		CHECK_FSCANF(1)
-		fscanfres = fscanf(f, "%d %d\n", &gOptions.difficulty,
+		fscanfres = fscanf(f, "%d %d\n", (int *)&gOptions.difficulty,
 			           &gOptions.slowmotion);
 		CHECK_FSCANF(2)
 
@@ -138,24 +137,23 @@ void SaveConfig(void)
 	f = fopen(GetConfigFilePath("options.cnf"), "w");
 
 	if (f) {
-		fprintf(f, "%d %d %d %d %d %d %d %d %d\n",
+		fprintf(f, "%d %d %d %d %d %d %d\n",
 			gOptions.displayFPS,
 			gOptions.displayTime,
 			gOptions.playersHurt,
-			gOptions.copyMode,
 			gOptions.brightness,
 			gOptions.swapButtonsJoy1,
 			gOptions.swapButtonsJoy2,
-			gOptions.xSplit, gOptions.ySplit);
+			gOptions.splitScreenAlways);
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",
-			gPlayer1Data.controls,
+			gPlayer1Data.inputDevice,
 			gPlayer1Data.keys[0],
 			gPlayer1Data.keys[1],
 			gPlayer1Data.keys[2],
 			gPlayer1Data.keys[3],
 			gPlayer1Data.keys[4], gPlayer1Data.keys[5]);
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",
-			gPlayer2Data.controls,
+			gPlayer2Data.inputDevice,
 			gPlayer2Data.keys[0],
 			gPlayer2Data.keys[1],
 			gPlayer2Data.keys[2],
@@ -172,11 +170,10 @@ void SaveConfig(void)
 		fprintf(f, "%d\n", gOptions.npcHp);
 		fprintf(f, "%d\n", gOptions.playerHp);
 		fprintf(f, "%dx%d:%d:%d\n",
-		       		Gfx_GetHint(HINT_WIDTH),
-				Gfx_GetHint(HINT_HEIGHT),
-				Gfx_GetHint(HINT_FULLSCREEN),
-				Gfx_GetHint(HINT_SCALEFACTOR)
-				);
+			Gfx_GetHint(HINT_WIDTH),
+			Gfx_GetHint(HINT_HEIGHT),
+			Gfx_GetHint(HINT_FULLSCREEN),
+			GrafxGetScale());
 		fclose(f);
 
 		debug(D_NORMAL, "saved config\n");

@@ -68,13 +68,12 @@ static const char *mainMenu[MAIN_COUNT] = {
 	"Quit"
 };
 
-#define OPTIONS_COUNT   16
+#define OPTIONS_COUNT   15
 
 static const char *optionsMenu[OPTIONS_COUNT] = {
 	"Friendly fire",
 	"FPS monitor",
 	"Clock",
-	"Copy to video",
 	"Brightness",
 	"Splitscreen always",
 	"Random seed",
@@ -101,13 +100,12 @@ static const char *controlsMenu[CONTROLS_COUNT] = {
 	"Done"
 };
 
-#define VOLUME_COUNT   5
+#define VOLUME_COUNT   4
 
 static const char *volumeMenu[VOLUME_COUNT] = {
 	"Sound effects",
 	"Music",
 	"FX channels",
-	"Disable interrupts during game",
 	"Done"
 };
 
@@ -199,7 +197,6 @@ int SelectCampaign(int dogFight, int cmd)
 			SetupBuiltin(dogFight, 0);
 		}
 
-//  gCampaign.seed = 0;
 		PlaySound(SND_HAHAHA, 0, 255);
 		printf(">> Entering MODE_PLAY\n");
 		return MODE_PLAY;
@@ -351,13 +348,6 @@ int SelectOptions(int cmd)
 			PlaySound(SND_LAUNCH, 0, 255);
 			break;
 		case 3:
-			if (gOptions.copyMode == COPY_REPMOVSD)
-				gOptions.copyMode = COPY_DEC_JNZ;
-			else
-				gOptions.copyMode = COPY_REPMOVSD;
-			PlaySound(SND_EXPLOSION, 0, 255);
-			break;
-		case 4:
 			if (Left(cmd) && gOptions.brightness > -10)
 				gOptions.brightness--;
 			else if (Right(cmd) && gOptions.brightness < 10)
@@ -368,18 +358,11 @@ int SelectOptions(int cmd)
 			PlaySound(SND_POWERGUN, 0, 255);
 			PaletteAdjust();
 			break;
-		case 5:
-			if (gOptions.xSplit == 0) {
-				gOptions.xSplit = SPLIT_X;
-				gOptions.ySplit = SPLIT_Y;
-			} else {
-				gOptions.xSplit = gOptions.ySplit = 0;
-			}
-
+		case 4:
+			gOptions.splitScreenAlways = !gOptions.splitScreenAlways;
 			PlaySound(SND_KILL3, 0, 255);
-
 			break;
-		case 6:
+		case 5:
 			if (Left(cmd)) {
 				if (Button1(cmd) && Button2(cmd))
 					gCampaign.seed -= 1000;
@@ -401,7 +384,7 @@ int SelectOptions(int cmd)
 			}
 
 			break;
-		case 7:
+		case 6:
 			if (Left(cmd)) {
 				if (gOptions.difficulty > DIFFICULTY_VERYEASY)
 						gOptions.difficulty--;
@@ -414,11 +397,11 @@ int SelectOptions(int cmd)
 			if (gOptions.difficulty < DIFFICULTY_VERYEASY) gOptions.difficulty = DIFFICULTY_VERYEASY;
 
 			break;
-		case 8:
+		case 7:
 			gOptions.slowmotion = !gOptions.slowmotion;
 
 			break;
-		case 9:
+		case 8:
 			if (Left(cmd)) {
 				if (gOptions.density > 25)
 					gOptions.density -= 25;
@@ -428,7 +411,7 @@ int SelectOptions(int cmd)
 			}
 
 			break;
-		case 10:
+		case 9:
 			if (Left(cmd)) {
 				if (gOptions.npcHp > 25)
 					gOptions.npcHp -= 25;
@@ -438,7 +421,7 @@ int SelectOptions(int cmd)
 			}
 
 			break;
-		case 11:
+		case 10:
 			if (Left(cmd)) {
 				if (gOptions.playerHp > 25)
 					gOptions.playerHp -= 25;
@@ -448,34 +431,24 @@ int SelectOptions(int cmd)
 			}
 
 			break;
-		case 12:
-			Gfx_HintToggle(HINT_FULLSCREEN);
-			InitVideo();
+		case 11:
+			GrafxToggleFullscreen();
+			break;
 
+		case 12:
+			if (Left(cmd))
+			{
+				GrafxTryPrevResolution();
+			}
+			else if (Right(cmd))
+			{
+				GrafxTryNextResolution();
+			}
 			break;
 
 		case 13:
 			{
-				GFX_Mode *m = NULL;
-
-				if (Left(cmd)) {
-					m = Gfx_ModePrev();
-				} else if (Right(cmd)) {
-					m = Gfx_ModeNext();
-				}
-
-				if (m) {
-					debug(D_NORMAL, "new mode? %d x %d\n", m->w, m->h);
-					Gfx_SetHint(HINT_WIDTH, m->w);
-					Gfx_SetHint(HINT_HEIGHT, m->h);
-				}
-			}
-
-			break;
-
-		case 14:
-			{
-				int fac = Gfx_GetHint(HINT_SCALEFACTOR);
+				int fac = GrafxGetScale();
 
 				if (Left(cmd)) {
 					fac--;
@@ -483,9 +456,9 @@ int SelectOptions(int cmd)
 					fac++;
 				}
 
-				if (fac >= 1 && fac <= 4) {
-					Gfx_SetHint(HINT_SCALEFACTOR, (const int)fac);
-					InitVideo();
+				if (fac >= 1 && fac <= 4)
+				{
+					GrafxSetScale(fac);
 				}
 			}
 
@@ -521,84 +494,75 @@ int SelectOptions(int cmd)
 	x += 10;
 	
 	CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
-	CDogsTextStringAt(x, y + CDogsTextHeight(),
-		     gOptions.displayFPS ? "On" : "Off");
-	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(),
-		     gOptions.displayTime ? "On" : "Off");
-	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(),
-		     gOptions.copyMode ==
-		     COPY_REPMOVSD ? "rep movsd" : "dec/jnz");
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.displayFPS ? "On" : "Off");
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.displayTime ? "On" : "Off");
+	y += CDogsTextHeight();
 	sprintf(s, "%d", gOptions.brightness);
-	CDogsTextStringAt(x, y + 4 * CDogsTextHeight(), s);
-	CDogsTextStringAt(x, y + 5 * CDogsTextHeight(),
-		     gOptions.xSplit ? "No" : "Yes");
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.splitScreenAlways ? "Yes" : "No");
+	y += CDogsTextHeight();
 	sprintf(s, "%u", gCampaign.seed);
-	CDogsTextStringAt(x, y + 6 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y, s);
 
-	switch (gOptions.difficulty) {
-		case DIFFICULTY_VERYEASY:
-			strcpy(s, "Easiest");
-			break;
-		case DIFFICULTY_EASY:
-			strcpy(s, "Easy");
-			break;
-		case DIFFICULTY_HARD:
-			strcpy(s, "Hard");
-			break;
-		case DIFFICULTY_VERYHARD:
-			strcpy(s, "Very hard");
-			break;
-		default:
-			strcpy(s, "Normal");
-			break;
-	}
-
-	CDogsTextStringAt(x, y + 7 * CDogsTextHeight(), s);
-	CDogsTextStringAt(x, y + 8 * CDogsTextHeight(),
-		     gOptions.slowmotion ? "Yes" : "No");
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, DifficultyStr(gOptions.difficulty));
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.slowmotion ? "Yes" : "No");
+	y += CDogsTextHeight();
 	sprintf(s, "%u%%", gOptions.density);
-	CDogsTextStringAt(x, y + 9 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 	sprintf(s, "%u%%", gOptions.npcHp);
-	CDogsTextStringAt(x, y + 10 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y, s);
 	sprintf(s, "%u%%", gOptions.playerHp);
-	CDogsTextStringAt(x, y + 11 * CDogsTextHeight(), s);
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 	sprintf(s, "%s", Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
-	CDogsTextStringAt(x, y + 12 * CDogsTextHeight(), s);
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
 	sprintf(s, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
-	CDogsTextStringAt(x, y + 13 * CDogsTextHeight(), s);
-	sprintf(s, "%dx", Gfx_GetHint(HINT_SCALEFACTOR));
-	CDogsTextStringAt(x, y + 14 * CDogsTextHeight(), s);
-
+	CDogsTextStringAt(x, y, s);
+	y += CDogsTextHeight();
+	sprintf(s, "%dx", GrafxGetScale());
+	CDogsTextStringAt(x, y, s);
 
 	return MODE_OPTIONS;
 }
 
-static void ChangeControl(struct PlayerData *data,
-			  struct PlayerData *other)
+// TODO: simplify into an iterate over struct controls_available
+void ChangeControl(
+	input_device_e *d, input_device_e *dOther, int joy0Present, int joy1Present)
 {
-	if (data->controls == JOYSTICK_ONE) {
-		if (other->controls != JOYSTICK_TWO && gSticks[1].present)
-			data->controls = JOYSTICK_TWO;
+	if (*d == INPUT_DEVICE_JOYSTICK_1)
+	{
+		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && joy1Present)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_2;
+		}
 		else
-			data->controls = KEYBOARD;
-	} else if (data->controls == JOYSTICK_TWO) {
-		data->controls = KEYBOARD;
-	} else {
-		if (other->controls != JOYSTICK_ONE && gSticks[0].present)
-			data->controls = JOYSTICK_ONE;
-		else if (gSticks[1].present)
-			data->controls = JOYSTICK_TWO;
+		{
+			*d = INPUT_DEVICE_KEYBOARD;
+		}
 	}
-}
-
-static void DisplayControl(int x, int y, int controls)
-{
-	if (controls == JOYSTICK_ONE)
-		CDogsTextStringAt(x, y, "Joystick 1");
-	else if (controls == JOYSTICK_TWO)
-		CDogsTextStringAt(x, y, "Joystick 2");
+	else if (*d == INPUT_DEVICE_JOYSTICK_2)
+	{
+		*d = INPUT_DEVICE_KEYBOARD;
+	}
 	else
-		CDogsTextStringAt(x, y, "Keyboard");
+	{
+		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && joy0Present)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_1;
+		}
+		else if (joy1Present)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_2;
+		}
+	}
 }
 
 int SelectControls(int cmd)
@@ -612,11 +576,15 @@ int SelectControls(int cmd)
 		PlaySound(rand() % SND_COUNT, 0, 255);
 		switch (index) {
 		case 0:
-			ChangeControl(&gPlayer1Data, &gPlayer2Data);
+			ChangeControl(
+				&gPlayer1Data.inputDevice, &gPlayer2Data.inputDevice,
+				gSticks[0].present, gSticks[1].present);
 			break;
 
 		case 1:
-			ChangeControl(&gPlayer2Data, &gPlayer1Data);
+			ChangeControl(
+				&gPlayer2Data.inputDevice, &gPlayer1Data.inputDevice,
+				gSticks[0].present, gSticks[1].present);
 			break;
 
 		case 2:
@@ -632,7 +600,6 @@ int SelectControls(int cmd)
 
 		case 5:
 			InitSticks();
-			AutoCalibrate();
 			break;
 
 		default:
@@ -661,10 +628,13 @@ int SelectControls(int cmd)
 	x += MenuWidth(controlsMenu, CONTROLS_COUNT);
 	x += 10;
 
-	DisplayControl(x, y, gPlayer1Data.controls);
-	DisplayControl(x, y + CDogsTextHeight(), gPlayer2Data.controls);
-	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), gOptions.swapButtonsJoy1 ? "Yes" : "No");
-	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), gOptions.swapButtonsJoy2 ? "Yes" : "No");
+	CDogsTextStringAt(x, y, InputDeviceStr(gPlayer1Data.inputDevice));
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, InputDeviceStr(gPlayer2Data.inputDevice));
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.swapButtonsJoy1 ? "Yes" : "No");
+	y += CDogsTextHeight();
+	CDogsTextStringAt(x, y, gOptions.swapButtonsJoy2 ? "Yes" : "No");
 	return MODE_CONTROLS;
 }
 
@@ -939,7 +909,7 @@ int SelectVolume(int cmd)
 	return MODE_VOLUME;
 }
 
-int MakeSelection(int mode, int cmd)
+int MainMenuSelection(int mode, int cmd)
 {
 	switch (mode) {
 		case MODE_MAIN:
@@ -961,14 +931,98 @@ int MakeSelection(int mode, int cmd)
 	return MODE_MAIN;
 }
 
+typedef enum
+{
+	MENU_TYPE_NORMAL,				// normal menu with items, up/down/left/right moves cursor
+	MENU_TYPE_OPTIONS,				// menu with items, only up/down moves
+	MENU_TYPE_SET_OPTION_TOGGLE,	// no items, sets option on/off
+	MENU_TYPE_SET_OPTION_RANGE,		// no items, sets option range low-high
+	MENU_TYPE_SET_OPTION_SEED,		// set random seed
+	MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID,	// set option using up/down functions
+	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
+	MENU_TYPE_SET_OPTION_CHANGE_CONTROL,	// change control device
+	MENU_TYPE_VOID_FUNC_VOID,		// call a void(*f)(void) function
+	MENU_TYPE_BACK,
+	MENU_TYPE_QUIT
+} menu_type_e;
+
+typedef enum
+{
+	MENU_DISPLAY_CREDITS	= 0x01,
+	MENU_DISPLAY_AUTHORS	= 0x02,
+	MENU_DISPLAY_CAMPAIGNS	= 0x04,
+	MENU_DISPLAY_DOGFIGHTS	= 0x08,
+	MENU_DISPLAY_OPTIONS	= 0x10,
+	MENU_DISPLAY_CONTROLS	= 0x20,
+	MENU_DISPLAY_SOUND		= 0x40,
+	MENU_DISPLAY_KEYS		= 0x80
+} menu_display_items_e;
+
+typedef enum
+{
+	MENU_SET_OPTIONS_TWOPLAYERS	= 0x01,
+	MENU_SET_OPTIONS_DOGFIGHT	= 0x02
+} menu_set_options_e;
+
+typedef struct menu
+{
+	char name[64];
+	menu_type_e type;
+	union
+	{
+		// normal menu, with sub menus
+		struct
+		{
+			char title[64];
+			struct menu *subMenus;
+			int numSubMenus;
+			int index;
+			int displayItems;
+			int setOptions;
+		} normal;
+		// menu item only
+		int *optionToggle;
+		struct
+		{
+			int *option;
+			int low;
+			int high;
+			int increment;
+		} optionRange;
+		unsigned int *seed;
+		// function to call
+		struct
+		{
+			void *upFunc;
+			void *downFunc;
+		} upDownFuncs;
+		struct
+		{
+			int (*getFunc)(void);
+			void (*setFunc)(int);
+			int low;
+			int high;
+			int increment;
+		} optionRangeGetSet;
+		struct
+		{
+			input_device_e *device0;
+			input_device_e *device1;
+		} optionChangeControl;
+		void *func;
+	} u;
+} menu_t;
+
+menu_t *MenuCreateAll(void);
+void MenuDestroy(menu_t *menu);
+
 int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
-	int mode;
+	int mode = MODE_MAIN;
+	//menu_t *menu = MenuCreateAll();
 
 	PaletteAdjust();
-
-	mode = MODE_MAIN;
 
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
@@ -986,14 +1040,378 @@ int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 		else
 			prev = cmd;
 
-		mode = MakeSelection(mode, cmd);
+		mode = MainMenuSelection(mode, cmd);
 		
 		CopyToScreen();
 
 		SDL_Delay(10);
 	}
+	
+	//MenuDestroy(menu);
 
 	WaitForRelease();
 
 	return mode == MODE_PLAY;
+}
+
+menu_t *MenuCreate(
+	const char *name,
+	const char *title,
+	menu_type_e type,
+	int displayItems,
+	int setOptions,
+	int initialIndex);
+void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
+menu_t *MenuCreateOnePlayer(const char *name);
+menu_t *MenuCreateTwoPlayers(const char *name);
+menu_t *MenuCreateDogfight(const char *name);
+menu_t *MenuCreateOptions(const char *name);
+menu_t *MenuCreateControls(const char *name);
+menu_t *MenuCreateSound(const char *name);
+menu_t *MenuCreateQuit(const char *name);
+
+menu_t *MenuCreateAll(void)
+{
+	menu_t *menu = MenuCreate(
+		"",
+		"",
+		MENU_TYPE_NORMAL,
+		MENU_DISPLAY_CREDITS | MENU_DISPLAY_AUTHORS,
+		0, 0);
+	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player"));
+	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players"));
+	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight"));
+	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
+	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
+	MenuAddSubmenu(menu, MenuCreateSound("Sound..."));
+	MenuAddSubmenu(menu, MenuCreateQuit("Quit"));
+	return menu;
+}
+
+menu_t *MenuCreate(
+	const char *name,
+	const char *title,
+	menu_type_e type,
+	int displayItems,
+	int setOptions,
+	int initialIndex)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = type;
+	strcpy(menu->u.normal.title, title);
+	menu->u.normal.displayItems = displayItems;
+	menu->u.normal.setOptions = setOptions;
+	menu->u.normal.index = initialIndex;
+	menu->u.normal.subMenus = NULL;
+	menu->u.normal.numSubMenus = 0;
+	return menu;
+}
+
+// TODO: make this more efficient?
+void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
+{
+	menu->u.normal.numSubMenus++;
+	menu->u.normal.subMenus = (menu_t *)sys_mem_realloc(
+		menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
+	memcpy(
+		&menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1],
+		subMenu,
+		sizeof(menu_t));
+	sys_mem_free(subMenu);
+}
+
+menu_t *MenuCreateOnePlayer(const char *name)
+{
+	menu_t *menu = MenuCreate(
+		name,
+		"Select a campaign:",
+		MENU_TYPE_NORMAL,
+		MENU_DISPLAY_CAMPAIGNS,
+		0, 0);
+	return menu;
+}
+
+menu_t *MenuCreateTwoPlayers(const char *name)
+{
+	menu_t *menu = MenuCreate(
+		name,
+		"Select a campaign:",
+		MENU_TYPE_NORMAL,
+		MENU_DISPLAY_CAMPAIGNS,
+		MENU_SET_OPTIONS_TWOPLAYERS,
+		0);
+	return menu;
+}
+
+menu_t *MenuCreateDogfight(const char *name)
+{
+	menu_t *menu = MenuCreate(
+		name,
+		"Select a dogfight scenario:",
+		MENU_TYPE_NORMAL,
+		MENU_DISPLAY_DOGFIGHTS,
+		MENU_SET_OPTIONS_DOGFIGHT,
+		0);
+	return menu;
+}
+
+menu_t *MenuCreateOptionToggle(const char *name, int *config);
+menu_t *MenuCreateOptionRange(
+	const char *name, int *config, int low, int high, int increment);
+menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed);
+menu_t *MenuCreateOptionUpDownFunc(
+	const char *name, void(*upFunc)(void), void(*downFunc)(void));
+menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void));
+menu_t *MenuCreateOptionRangeGetSet(
+	const char *name,
+	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment);
+menu_t *MenuCreateBack(const char *name);
+
+menu_t *MenuCreateOptions(const char *name)
+{
+	menu_t *menu = MenuCreate(
+			name,
+			"Game Options:",
+			MENU_TYPE_OPTIONS,
+			MENU_DISPLAY_OPTIONS,
+			0, 0);
+	MenuAddSubmenu(
+		menu, MenuCreateOptionToggle("Friendly fire", &gOptions.playersHurt));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionToggle("FPS monitor", &gOptions.displayFPS));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange("Brightness", &gOptions.brightness, -10, 10, 1));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Splitscreen always", &gOptions.splitScreenAlways));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionSeed("Random seed", &gCampaign.seed));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Difficulty", (int *)&gOptions.difficulty,
+			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionToggle("Slowmotion", &gOptions.slowmotion));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Enemy density per mission",
+			&gOptions.density,
+			0, 200, 25));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange("Non-player HP", &gOptions.npcHp, 0, 200, 25));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange("Player HP", &gOptions.playerHp, 0, 200, 25));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionFunc("Video fullscreen", GrafxToggleFullscreen));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionUpDownFunc(
+			"Video resolution (restart required)",
+			GrafxTryPrevResolution,
+			GrafxTryNextResolution));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRangeGetSet(
+			"Video scale factor", GrafxGetScale, GrafxSetScale, 1, 4, 1));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+menu_t *MenuCreateOptionChangeControl(
+	const char *name, input_device_e *device0, input_device_e *device1);
+menu_t *MenuCreateKeys(const char *name);
+
+menu_t *MenuCreateControls(const char *name)
+{
+	menu_t *menu = MenuCreate(
+			name,
+			"Configure Controls:",
+			MENU_TYPE_OPTIONS,
+			MENU_DISPLAY_CONTROLS,
+			0, 0);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeControl(
+			"Player 1", &gPlayer1Data.inputDevice, &gPlayer2Data.inputDevice));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeControl(
+			"Player 2", &gPlayer2Data.inputDevice, &gPlayer1Data.inputDevice));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Swap buttons joystick 1", &gOptions.swapButtonsJoy1));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Swap buttons joystick 2", &gOptions.swapButtonsJoy2));
+	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionFunc("Calibrate joystick", InitSticks));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+menu_t *MenuCreateSound(const char *name)
+{
+	menu_t *menu = MenuCreate(
+		name,
+		"Configure Sound:",
+		MENU_TYPE_OPTIONS,
+		MENU_DISPLAY_SOUND,
+		0, 0);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRangeGetSet(
+			"Sound effects", FXVolume, SetFXVolume, 8, 64, 8));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRangeGetSet(
+			"Music", MusicVolume, SetMusicVolume, 8, 64, 8));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRangeGetSet(
+			"FX channels", FXChannels, SetFXChannels, 2, 8, 1));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+menu_t *MenuCreateQuit(const char *name)
+{
+	menu_t *menu = MenuCreate(name, "", MENU_TYPE_QUIT, 0, 0, 0);
+	return menu;
+}
+
+
+menu_t *MenuCreateOptionToggle(const char *name, int *config)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_TOGGLE;
+	menu->u.optionToggle = config;
+	return menu;
+}
+
+menu_t *MenuCreateOptionRange(
+	const char *name, int *config, int low, int high, int increment)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_RANGE;
+	menu->u.optionRange.option = config;
+	menu->u.optionRange.low = low;
+	menu->u.optionRange.high = high;
+	menu->u.optionRange.increment = increment;
+	return menu;
+}
+
+menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_SEED;
+	menu->u.seed = seed;
+	return menu;
+}
+
+menu_t *MenuCreateOptionUpDownFunc(
+	const char *name, void(*upFunc)(void), void(*downFunc)(void))
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID;
+	menu->u.upDownFuncs.upFunc = (void *)upFunc;
+	menu->u.upDownFuncs.downFunc = (void *)downFunc;
+	return menu;
+}
+
+menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void))
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_VOID_FUNC_VOID;
+	menu->u.func = (void *)func;
+	return menu;
+}
+
+menu_t *MenuCreateOptionRangeGetSet(
+	const char *name,
+	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_RANGE_GET_SET;
+	menu->u.optionRangeGetSet.getFunc = getFunc;
+	menu->u.optionRangeGetSet.setFunc = setFunc;
+	menu->u.optionRangeGetSet.low = low;
+	menu->u.optionRangeGetSet.high = high;
+	menu->u.optionRangeGetSet.increment = increment;
+	return menu;
+}
+
+menu_t *MenuCreateBack(const char *name)
+{
+	menu_t *menu = MenuCreate(name, "", MENU_TYPE_BACK, 0, 0, 0);
+	return menu;
+}
+
+menu_t *MenuCreateOptionChangeControl(
+	const char *name, input_device_e *device0, input_device_e *device1)
+{
+	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_CHANGE_CONTROL;
+	menu->u.optionChangeControl.device0 = device0;
+	menu->u.optionChangeControl.device1 = device1;
+	return menu;
+}
+
+menu_t *MenuCreateKeys(const char *name)
+{
+	menu_t *menu = MenuCreate(
+		name,
+		"",
+		MENU_TYPE_OPTIONS,
+		MENU_DISPLAY_KEYS,
+		0, 0);
+	// TODO: convert keys to menu items
+	return menu;
+}
+
+void MenuDestroySubmenus(menu_t *menu);
+
+void MenuDestroy(menu_t *menu)
+{
+	if (menu == NULL)
+	{
+		return;
+	}
+	MenuDestroySubmenus(menu);
+	sys_mem_free(menu);
+}
+
+void MenuDestroySubmenus(menu_t *menu)
+{
+	if (menu == NULL)
+	{
+		return;
+	}
+	if ((menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS) &&
+			menu->u.normal.subMenus != NULL)
+	{
+		int i;
+		for (i = 0; i < menu->u.normal.numSubMenus; i++)
+		{
+			menu_t *subMenu = &menu->u.normal.subMenus[i];
+			MenuDestroySubmenus(subMenu);
+		}
+		sys_mem_free(menu->u.normal.subMenus);
+	}
 }

@@ -213,6 +213,44 @@ void ShutDownVideo(void)
 	SDL_VideoQuit();		
 }
 
+void GrafxToggleFullscreen(void)
+{
+	Gfx_HintToggle(HINT_FULLSCREEN);
+	InitVideo();
+}
+
+void GrafxTryResolution(GFX_Mode *m)
+{
+	if (m != NULL)
+	{
+		debug(D_NORMAL, "new mode? %d x %d\n", m->w, m->h);
+		Gfx_SetHint(HINT_WIDTH, m->w);
+		Gfx_SetHint(HINT_HEIGHT, m->h);
+	}
+}
+
+void GrafxTryPrevResolution(void)
+{
+	GrafxTryResolution(Gfx_ModePrev());
+}
+void GrafxTryNextResolution(void)
+{
+	GrafxTryResolution(Gfx_ModeNext());
+}
+
+int GrafxGetScale(void)
+{
+	return Gfx_GetHint(HINT_SCALEFACTOR);
+}
+void GrafxSetScale(int scale)
+{
+	if (scale >= 1 && scale <= 4)
+	{
+		Gfx_SetHint(HINT_SCALEFACTOR, (const int)scale);
+		InitVideo();
+	}
+}
+
 typedef struct _Pic {
 	short int w;
 	short int h;
