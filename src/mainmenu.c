@@ -931,6 +931,36 @@ int MainMenuSelection(int mode, int cmd)
 	return MODE_MAIN;
 }
 
+int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
+{
+	int cmd, prev = 0;
+	int mode = MODE_MAIN;
+
+	PaletteAdjust();
+
+	while (mode != MODE_QUIT && mode != MODE_PLAY) {
+		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+		ShowControls();
+
+		if (mode == MODE_MAIN)
+		{
+			ShowCredits(creditsDisplayer);
+		}
+
+		GetMenuCmd(&cmd, &prev);
+
+		mode = MainMenuSelection(mode, cmd);
+		
+		CopyToScreen();
+
+		SDL_Delay(10);
+	}
+
+	WaitForRelease();
+
+	return mode == MODE_PLAY;
+}
+
 typedef enum
 {
 	MENU_TYPE_NORMAL,				// normal menu with items, up/down/left/right moves cursor
@@ -1016,15 +1046,16 @@ typedef struct menu
 menu_t *MenuCreateAll(void);
 void MenuDestroy(menu_t *menu);
 
-int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
+int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
-	//menu_t *menu = MenuCreateAll();
+	menu_t *menu = MenuCreateAll();
 
 	PaletteAdjust();
 
-	while (mode != MODE_QUIT && mode != MODE_PLAY) {
+	while (mode != MODE_QUIT && mode != MODE_PLAY)
+	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
 
@@ -1033,24 +1064,16 @@ int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 			ShowCredits(creditsDisplayer);
 		}
 
-		GetMenuCmd(&cmd);
-
-		if (cmd == prev)
-			cmd = 0;
-		else
-			prev = cmd;
+		GetMenuCmd(&cmd, &prev);
 
 		mode = MainMenuSelection(mode, cmd);
 		
 		CopyToScreen();
-
 		SDL_Delay(10);
 	}
-	
-	//MenuDestroy(menu);
 
+	MenuDestroy(menu);
 	WaitForRelease();
-
 	return mode == MODE_PLAY;
 }
 

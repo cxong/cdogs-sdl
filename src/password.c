@@ -172,11 +172,7 @@ static int EnterCode(void *bkg, const char *password)
 	strcpy(buffer, password);
 	while (!done) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
-		GetMenuCmd(&cmd);
-		if (cmd != prev)
-			prev = cmd;
-		else
-			cmd = 0;
+		GetMenuCmd(&cmd, &prev);
 		if (!PasswordEntry(cmd, buffer)) {
 			if (!buffer[0]) {
 				mission = 0;
@@ -222,11 +218,7 @@ int EnterPassword(void *bkg, const char *password)
 
 	while (1) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
-		GetMenuCmd(&cmd);
-		if (cmd != prev)
-			prev = cmd;
-		else
-			cmd = 0;
+		GetMenuCmd(&cmd, &prev);
 
 		if (AnyButton(cmd)) {
 			if (index == 1) {

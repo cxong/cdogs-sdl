@@ -31,7 +31,7 @@ typedef enum
 
 const char *InputDeviceStr(input_device_e d);
 void GetPlayerCmd(int *cmd1, int *cmd2);
-void GetMenuCmd(int *cmd);
+void GetMenuCmd(int *cmd, int *prevCmd);
 void WaitForRelease(void);
 void WaitForPress(void);
 void Wait(void);

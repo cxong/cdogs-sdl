@@ -133,12 +133,12 @@ void GetPlayerCmd(int *cmd1, int *cmd2)
 	GetOnePlayerCmd(&gPlayer2Data, cmd2, joy1, joy2, cmd1 == NULL);
 }
 
-void GetMenuCmd(int *cmd)
+void GetMenuCmd(int *cmd, int *prevCmd)
 {
-//      printf("%i - ", keyEsc);
-	if (KeyDown(keyEsc)) {
+	if (KeyDown(keyEsc))
+	{
 		*cmd = CMD_ESC;
-		return;
+		goto checkPrevCmd;
 	}
 	if (KeyDown(keyF10))
 	{
@@ -152,22 +152,44 @@ void GetMenuCmd(int *cmd)
 
 	GetPlayerCmd(cmd, NULL);
 	if (*cmd)
-		return;
+	{
+		goto checkPrevCmd;
+	}
 
-//      printf("%i - ", keyArrowLeft);
 	if (KeyDown(keyArrowLeft))
+	{
 		*cmd |= CMD_LEFT;
+	}
 	else if (KeyDown(keyArrowRight))
+	{
 		*cmd |= CMD_RIGHT;
-//      printf("%i - ", keyArrowUp);
+	}
 	if (KeyDown(keyArrowUp))
+	{
 		*cmd |= CMD_UP;
+	}
 	else if (KeyDown(keyArrowDown))
+	{
 		*cmd |= CMD_DOWN;
+	}
 	if (KeyDown(keyEnter))
+	{
 		*cmd |= CMD_BUTTON1;
+	}
 	if (KeyDown(keyBackspace))
+	{
 		*cmd |= CMD_BUTTON2;
+	}
+
+checkPrevCmd:
+	if (*cmd == *prevCmd)
+	{
+		*cmd = 0;
+	}
+	else
+	{
+		*prevCmd = *cmd;
+	}
 }
 
 void WaitForRelease(void)
