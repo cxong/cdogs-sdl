@@ -1,4 +1,4 @@
-C-Dogs SDL Port v0.4.1
+C-Dogs SDL Port v0.4.2
 ----------------------
 (based on C-Dogs 1.06)
 
@@ -12,7 +12,7 @@ C-Dogs SDL Port v0.4.1
  |  |   '-------'   '---'  '----''----'
  /  '.___________
 |                |                  SDL
- `---------------'               v0.4.1
+ `---------------'               v0.4.2
 
 +----------+
 | Contents |
@@ -106,4 +106,4 @@ Which will make the game try to run fullscreen at 400x300 resolution.
 If you have an questions, comments, bug reports (yes please), patches (even
 better) or anything else related to C-Dogs SDL email or IM (MSN):
 
-	Cong <c_xong@hotmail.com>
+	Cong <congusbongus@gmail.com>

@@ -84,9 +84,10 @@ void LoadCredits(
 		{
 			int index = displayer->creditsCount;
 			displayer->creditsCount++;
-			displayer->credits = (credit_t *)sys_mem_realloc(displayer->credits, sizeof(credit_t)*displayer->creditsCount);
-			displayer->credits[index].name = (char *)sys_mem_alloc(strlen(nameBuf) + 1);
-			displayer->credits[index].message = (char *)sys_mem_alloc(strlen(buf));
+			displayer->credits = sys_mem_realloc(
+				displayer->credits, sizeof(credit_t)*displayer->creditsCount);
+			displayer->credits[index].name = sys_mem_alloc(strlen(nameBuf) + 1);
+			displayer->credits[index].message = sys_mem_alloc(strlen(buf));
 			if (displayer->credits == NULL ||
 				displayer->credits[index].name == NULL ||
 				displayer->credits[index].message == NULL)

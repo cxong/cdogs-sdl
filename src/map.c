@@ -18,21 +18,12 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- map.c - map related functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "map.h"
 
 #include <string.h>
 #include <stdlib.h>
-#include "map.h"
+
 #include "pics.h"
 #include "objs.h"
 #include "triggers.h"
@@ -79,8 +70,8 @@ struct Buffer * NewBuffer(void)
 	rows = X_TILES;
 	cols = Y_TILES;
 	
-	b->tiles = (TTile **)sys_mem_alloc(rows * sizeof(TTile *));
-	b->tiles[0] = (TTile *)sys_mem_alloc(rows * cols * sizeof(TTile));
+	b->tiles = sys_mem_alloc(rows * sizeof(TTile *));
+	b->tiles[0] = sys_mem_alloc(rows * cols * sizeof(TTile));
 	for(i = 1; i < rows; i++)
 		b->tiles[i] = b->tiles[0] + i * cols;
 	

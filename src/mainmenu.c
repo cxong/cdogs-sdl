@@ -1096,7 +1096,7 @@ menu_t *MenuCreate(
 	int setOptions,
 	int initialIndex)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = type;
 	strcpy(menu->u.normal.title, title);
@@ -1112,7 +1112,7 @@ menu_t *MenuCreate(
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
 	menu->u.normal.numSubMenus++;
-	menu->u.normal.subMenus = (menu_t *)sys_mem_realloc(
+	menu->u.normal.subMenus = sys_mem_realloc(
 		menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
 	memcpy(
 		&menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1],
@@ -1292,7 +1292,7 @@ menu_t *MenuCreateQuit(const char *name)
 
 menu_t *MenuCreateOptionToggle(const char *name, int *config)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_TOGGLE;
 	menu->u.optionToggle = config;
@@ -1302,7 +1302,7 @@ menu_t *MenuCreateOptionToggle(const char *name, int *config)
 menu_t *MenuCreateOptionRange(
 	const char *name, int *config, int low, int high, int increment)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_RANGE;
 	menu->u.optionRange.option = config;
@@ -1314,7 +1314,7 @@ menu_t *MenuCreateOptionRange(
 
 menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_SEED;
 	menu->u.seed = seed;
@@ -1324,7 +1324,7 @@ menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 menu_t *MenuCreateOptionUpDownFunc(
 	const char *name, void(*upFunc)(void), void(*downFunc)(void))
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID;
 	menu->u.upDownFuncs.upFunc = (void *)upFunc;
@@ -1334,7 +1334,7 @@ menu_t *MenuCreateOptionUpDownFunc(
 
 menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void))
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_VOID_FUNC_VOID;
 	menu->u.func = (void *)func;
@@ -1345,7 +1345,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
 	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_RANGE_GET_SET;
 	menu->u.optionRangeGetSet.getFunc = getFunc;
@@ -1365,7 +1365,7 @@ menu_t *MenuCreateBack(const char *name)
 menu_t *MenuCreateOptionChangeControl(
 	const char *name, input_device_e *device0, input_device_e *device1)
 {
-	menu_t *menu = (menu_t *)sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_CHANGE_CONTROL;
 	menu->u.optionChangeControl.device0 = device0;
