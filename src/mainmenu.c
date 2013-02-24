@@ -1049,7 +1049,7 @@ typedef struct menu
 
 menu_t *MenuCreateAll(void);
 void MenuDestroy(menu_t *menu);
-void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
+void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
 
 int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
@@ -1064,9 +1064,9 @@ int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
 	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
-		MenuDisplayItems(menu, creditsDisplayer);
 		GetMenuCmd(&cmd, &prev);
 		menu = MenuProcessCmd(menu, cmd);
+		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();
 		SDL_Delay(10);
 	} while (menu->type != MENU_TYPE_QUIT || (1/*play*/));
@@ -1444,6 +1444,28 @@ void MenuDestroySubmenus(menu_t *menu)
 	}
 }
 
+void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
+void MenuDisplaySubmenusAtCenter(menu_t *menu);
+
+void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
+{
+	MenuDisplayItems(menu, creditsDisplayer);
+
+	if (strlen(menu->u.normal.title) != 0)
+	{
+		CDogsTextStringSpecial(
+			menu->u.normal.title,
+			TEXT_XCENTER | TEXT_TOP,
+			0,
+			SCREEN_WIDTH / 12);
+	}
+
+	if (menu->type == MENU_TYPE_NORMAL)
+	{
+		MenuDisplaySubmenusAtCenter(menu);
+	}
+}
+
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
 	int d = menu->u.normal.displayItems;
@@ -1487,6 +1509,37 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	if (d & MENU_DISPLAY_KEYS)
 	{
 		
+	}
+}
+
+void MenuDisplaySubmenusAtCenter(menu_t *menu)
+{
+	int i;
+	int x, yStart;
+	int maxWidth = 0;
+	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	{
+		int width = CDogsTextWidth(menu->u.normal.subMenus[i].name);
+		if (width > maxWidth)
+		{
+			maxWidth = width;
+		}
+	}
+	x = CenterX(maxWidth);
+	yStart = menu->u.normal.numSubMenus * CDogsTextHeight();
+
+	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	{
+		int y = yStart + i * CDogsTextHeight();
+		const char *name = menu->u.normal.subMenus[i].name;
+		if (i == menu->u.normal.index)
+		{
+			CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+		}
+		else
+		{
+			CDogsTextStringAt(x, y, name);
+		}
 	}
 }
 
