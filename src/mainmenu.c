@@ -21,6 +21,8 @@
 */
 #include "mainmenu.h"
 
+#include <assert.h>
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,7 +60,7 @@
 
 #define MAIN_COUNT      7
 
-static const char *mainMenu[MAIN_COUNT] = {
+static const char *mainMenuStr[MAIN_COUNT] = {
 	"1 player game",
 	"2 player game",
 	"Dog fight",
@@ -295,7 +297,7 @@ static int SelectMain(int cmd)
 	CDogsTextStringSpecial("Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
 	CDogsTextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 
-	DisplayMenuAtCenter(mainMenu, MAIN_COUNT, index);
+	DisplayMenuAtCenter(mainMenuStr, MAIN_COUNT, index);
 	
 	return MODE_MAIN;
 }
@@ -1004,9 +1006,11 @@ typedef struct menu
 		struct
 		{
 			char title[64];
+			struct menu *parentMenu;
 			struct menu *subMenus;
 			int numSubMenus;
 			int index;
+			int quitMenuIndex;
 			int displayItems;
 			int setOptions;
 		} normal;
@@ -1023,8 +1027,8 @@ typedef struct menu
 		// function to call
 		struct
 		{
-			void *upFunc;
-			void *downFunc;
+			void (*upFunc)(void);
+			void (*downFunc)(void);
 		} upDownFuncs;
 		struct
 		{
@@ -1039,40 +1043,35 @@ typedef struct menu
 			input_device_e *device0;
 			input_device_e *device1;
 		} optionChangeControl;
-		void *func;
+		void (*func)(void);
 	} u;
 } menu_t;
 
 menu_t *MenuCreateAll(void);
 void MenuDestroy(menu_t *menu);
+void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
+menu_t *MenuProcessCmd(menu_t *menu, int cmd);
 
 int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
-	menu_t *menu = MenuCreateAll();
+	menu_t *mainMenu = MenuCreateAll();
+	menu_t *menu = mainMenu;
 
 	PaletteAdjust();
-
-	while (mode != MODE_QUIT && mode != MODE_PLAY)
+	do
 	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
-
-		if (mode == MODE_MAIN)
-		{
-			ShowCredits(creditsDisplayer);
-		}
-
+		MenuDisplayItems(menu, creditsDisplayer);
 		GetMenuCmd(&cmd, &prev);
-
-		mode = MainMenuSelection(mode, cmd);
-		
+		menu = MenuProcessCmd(menu, cmd);
 		CopyToScreen();
 		SDL_Delay(10);
-	}
+	} while (menu->type != MENU_TYPE_QUIT || (1/*play*/));
 
-	MenuDestroy(menu);
+	MenuDestroy(mainMenu);
 	WaitForRelease();
 	return mode == MODE_PLAY;
 }
@@ -1126,6 +1125,8 @@ menu_t *MenuCreate(
 	menu->u.normal.displayItems = displayItems;
 	menu->u.normal.setOptions = setOptions;
 	menu->u.normal.index = initialIndex;
+	menu->u.normal.quitMenuIndex = -1;
+	menu->u.normal.parentMenu = NULL;
 	menu->u.normal.subMenus = NULL;
 	menu->u.normal.numSubMenus = 0;
 	return menu;
@@ -1134,13 +1135,17 @@ menu_t *MenuCreate(
 // TODO: make this more efficient?
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
+	menu_t *subMenuLoc = NULL;
 	menu->u.normal.numSubMenus++;
 	menu->u.normal.subMenus = sys_mem_realloc(
 		menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
-	memcpy(
-		&menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1],
-		subMenu,
-		sizeof(menu_t));
+	subMenuLoc = &menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1];
+	memcpy(subMenuLoc, subMenu, sizeof(menu_t));
+	if (subMenu->type == MENU_TYPE_QUIT)
+	{
+		menu->u.normal.quitMenuIndex = menu->u.normal.numSubMenus - 1;
+	}
+	subMenuLoc->u.normal.parentMenu = menu;
 	sys_mem_free(subMenu);
 }
 
@@ -1350,8 +1355,8 @@ menu_t *MenuCreateOptionUpDownFunc(
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID;
-	menu->u.upDownFuncs.upFunc = (void *)upFunc;
-	menu->u.upDownFuncs.downFunc = (void *)downFunc;
+	menu->u.upDownFuncs.upFunc = upFunc;
+	menu->u.upDownFuncs.downFunc = downFunc;
 	return menu;
 }
 
@@ -1360,7 +1365,7 @@ menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void))
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_VOID_FUNC_VOID;
-	menu->u.func = (void *)func;
+	menu->u.func = func;
 	return menu;
 }
 
@@ -1427,7 +1432,7 @@ void MenuDestroySubmenus(menu_t *menu)
 		return;
 	}
 	if ((menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS) &&
-			menu->u.normal.subMenus != NULL)
+		menu->u.normal.subMenus != NULL)
 	{
 		int i;
 		for (i = 0; i < menu->u.normal.numSubMenus; i++)
@@ -1436,5 +1441,286 @@ void MenuDestroySubmenus(menu_t *menu)
 			MenuDestroySubmenus(subMenu);
 		}
 		sys_mem_free(menu->u.normal.subMenus);
+	}
+}
+
+void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
+{
+	int d = menu->u.normal.displayItems;
+	assert(menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS);
+	if (d & MENU_DISPLAY_CREDITS)
+	{
+		ShowCredits(creditsDisplayer);
+	}
+	if (d & MENU_DISPLAY_AUTHORS)
+	{
+		DrawTPic(
+			(SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2,
+			SCREEN_HEIGHT / 12,
+			gPics[PIC_LOGO],
+			gCompiledPics[PIC_LOGO]);
+		CDogsTextStringSpecial(
+			"Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
+		CDogsTextStringSpecial(
+			"SDL Port: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
+	}
+	if (d & MENU_DISPLAY_CAMPAIGNS)
+	{
+		
+	}
+	if (d & MENU_DISPLAY_DOGFIGHTS)
+	{
+		
+	}
+	if (d & MENU_DISPLAY_OPTIONS)
+	{
+		
+	}
+	if (d & MENU_DISPLAY_CONTROLS)
+	{
+		
+	}
+	if (d & MENU_DISPLAY_SOUND)
+	{
+		
+	}
+	if (d & MENU_DISPLAY_KEYS)
+	{
+		
+	}
+}
+
+// returns menu to change to, NULL if no change
+menu_t *MenuProcessEscCmd(menu_t *menu);
+menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd);
+
+void MenuChangeIndex(menu_t *menu, int cmd);
+
+menu_t *MenuProcessCmd(menu_t *menu, int cmd)
+{
+	menu_t *menuToChange = NULL;
+	if (cmd == CMD_ESC)
+	{
+		menuToChange = MenuProcessEscCmd(menu);
+		if (menuToChange != NULL)
+		{
+			return menuToChange;
+		}
+	}
+	menuToChange = MenuProcessButtonCmd(menu, cmd);
+	if (menuToChange != NULL)
+	{
+		return menuToChange;
+	}
+	MenuChangeIndex(menu, cmd);
+	return menu;
+}
+
+menu_t *MenuProcessEscCmd(menu_t *menu)
+{
+	menu_t *menuToChange = NULL;
+	int quitMenuIndex = menu->u.normal.quitMenuIndex;
+	if (quitMenuIndex != -1)
+	{
+		if (menu->u.normal.index != quitMenuIndex)
+		{
+			menu->u.normal.index = quitMenuIndex;
+		}
+		else
+		{
+			menuToChange = &menu->u.normal.subMenus[quitMenuIndex];
+		}
+	}
+	else if (menu->u.normal.parentMenu != NULL)
+	{
+		menuToChange = menu->u.normal.parentMenu;
+	}
+	return menuToChange;
+}
+
+void MenuSetOptions(int setOptions);
+void MenuActivate(menu_t *menu, int cmd);
+
+menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
+{
+	int leftRightMoves = menu->type == MENU_TYPE_NORMAL;
+	if (AnyButton(cmd) ||
+		(!leftRightMoves && (Left(cmd) || Right(cmd))))
+	{
+		menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+		MenuSetOptions(menu->u.normal.setOptions);
+		switch (subMenu->type)
+		{
+		case MENU_TYPE_NORMAL:
+		case MENU_TYPE_OPTIONS:
+			return subMenu;
+		case MENU_TYPE_BACK:
+			return menu->u.normal.parentMenu;
+		case MENU_TYPE_QUIT:
+			return subMenu;	// caller will check if subMenu type is QUIT
+		default:
+			MenuActivate(subMenu, cmd);
+			break;
+		}
+	}
+	return NULL;
+}
+
+void MenuSetOptions(int setOptions)
+{
+	if (setOptions)
+	{
+		gOptions.twoPlayers = !!(setOptions & MENU_SET_OPTIONS_TWOPLAYERS);
+		gCampaign.dogFight = !!(setOptions & MENU_SET_OPTIONS_DOGFIGHT);
+	}
+}
+
+void MenuActivate(menu_t *menu, int cmd)
+{
+	switch (menu->type)
+	{
+	case MENU_TYPE_SET_OPTION_TOGGLE:
+		*menu->u.optionToggle = !*menu->u.optionToggle;
+		break;
+	case MENU_TYPE_SET_OPTION_RANGE:
+		{
+			int option = *menu->u.optionRange.option;
+			int increment = menu->u.optionRange.increment;
+			if (Left(cmd))
+			{
+				if (menu->u.optionRange.low + increment > option)
+				{
+					option = menu->u.optionRange.low;
+				}
+				else
+				{
+					option -= increment;
+				}
+			}
+			else if (Right(cmd))
+			{
+				if (menu->u.optionRange.high - increment < option)
+				{
+					option = menu->u.optionRange.high;
+				}
+				else
+				{
+					option += increment;
+				}
+			}
+			*menu->u.optionRange.option = option;
+		}
+		break;
+	case MENU_TYPE_SET_OPTION_SEED:
+		{
+			unsigned int seed = *menu->u.seed;
+			unsigned int increment = 1;
+			if (Button1(cmd))
+			{
+				increment *= 10;
+			}
+			if (Button2(cmd))
+			{
+				increment *= 100;
+			}
+			if (Left(cmd))
+			{
+				if (increment > seed)
+				{
+					seed = 0;
+				}
+				else
+				{
+					seed -= increment;
+				}
+			}
+			else if (Right(cmd))
+			{
+				if (UINT_MAX - increment < seed)
+				{
+					seed = UINT_MAX;
+				}
+				else
+				{
+					seed += increment;
+				}
+			}
+			*menu->u.seed = seed;
+		}
+		break;
+	case MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID:
+		if (Left(cmd))
+		{
+			menu->u.upDownFuncs.upFunc();
+		}
+		else if (Right(cmd))
+		{
+			menu->u.upDownFuncs.downFunc();
+		}
+		break;
+	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
+		{
+			int option = menu->u.optionRangeGetSet.getFunc();
+			int increment = menu->u.optionRangeGetSet.increment;
+			if (Left(cmd))
+			{
+				if (menu->u.optionRangeGetSet.low + increment > option)
+				{
+					option = menu->u.optionRangeGetSet.low;
+				}
+				else
+				{
+					option -= increment;
+				}
+			}
+			else if (Right(cmd))
+			{
+				if (menu->u.optionRangeGetSet.high - increment < option)
+				{
+					option = menu->u.optionRangeGetSet.high;
+				}
+				else
+				{
+					option += increment;
+				}
+			}
+			menu->u.optionRangeGetSet.setFunc(option);
+		}
+		break;
+	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
+		ChangeControl(
+			menu->u.optionChangeControl.device0,
+			menu->u.optionChangeControl.device1,
+			gSticks[0].present, gSticks[1].present);
+		break;
+	case MENU_TYPE_VOID_FUNC_VOID:
+		menu->u.func();
+		break;
+	default:
+		assert(0);
+		break;
+	}
+}
+
+void MenuChangeIndex(menu_t *menu, int cmd)
+{
+	int leftRightMoves = menu->type == MENU_TYPE_NORMAL;
+	if (Up(cmd) || (leftRightMoves && Left(cmd)))
+	{
+		menu->u.normal.index--;
+		if (menu->u.normal.index < 0)
+		{
+			menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+		}
+		PlaySound(SND_DOOR, 0, 255);
+	}
+	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
+	{
+		menu->u.normal.index++;
+		if (menu->u.normal.index >= menu->u.normal.numSubMenus)
+		{
+			menu->u.normal.index = 0;
+		}
+		PlaySound(SND_DOOR, 0, 255);
 	}
 }
