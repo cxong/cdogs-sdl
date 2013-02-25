@@ -980,15 +980,19 @@ typedef enum
 
 typedef enum
 {
-	MENU_DISPLAY_CREDITS	= 0x01,
-	MENU_DISPLAY_AUTHORS	= 0x02,
-	MENU_DISPLAY_CAMPAIGNS	= 0x04,
-	MENU_DISPLAY_DOGFIGHTS	= 0x08,
-	MENU_DISPLAY_OPTIONS	= 0x10,
-	MENU_DISPLAY_CONTROLS	= 0x20,
-	MENU_DISPLAY_SOUND		= 0x40,
-	MENU_DISPLAY_KEYS		= 0x80
+	MENU_DISPLAY_ITEMS_CREDITS	= 0x01,
+	MENU_DISPLAY_ITEMS_AUTHORS	= 0x02
 } menu_display_items_e;
+
+typedef enum
+{
+	MENU_OPTION_TYPE_CAMPAIGNS,
+	MENU_OPTION_TYPE_DOGFIGHTS,
+	MENU_OPTION_TYPE_OPTIONS,
+	MENU_OPTION_TYPE_CONTROLS,
+	MENU_OPTION_TYPE_SOUND,
+	MENU_OPTION_TYPE_KEYS
+} menu_option_type_e;
 
 typedef enum
 {
@@ -1012,6 +1016,7 @@ typedef struct menu
 			int index;
 			int quitMenuIndex;
 			int displayItems;
+			menu_option_type_e optionType;
 			int setOptions;
 		} normal;
 		// menu item only
@@ -1081,6 +1086,7 @@ menu_t *MenuCreate(
 	const char *title,
 	menu_type_e type,
 	int displayItems,
+	menu_option_type_e optionType,
 	int setOptions,
 	int initialIndex);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
@@ -1098,8 +1104,8 @@ menu_t *MenuCreateAll(void)
 		"",
 		"",
 		MENU_TYPE_NORMAL,
-		MENU_DISPLAY_CREDITS | MENU_DISPLAY_AUTHORS,
-		0, 0);
+		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS,
+		0, 0, 0);
 	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player"));
 	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players"));
 	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight"));
@@ -1115,6 +1121,7 @@ menu_t *MenuCreate(
 	const char *title,
 	menu_type_e type,
 	int displayItems,
+	menu_option_type_e optionType,
 	int setOptions,
 	int initialIndex)
 {
@@ -1123,6 +1130,7 @@ menu_t *MenuCreate(
 	menu->type = type;
 	strcpy(menu->u.normal.title, title);
 	menu->u.normal.displayItems = displayItems;
+	menu->u.normal.optionType = optionType;
 	menu->u.normal.setOptions = setOptions;
 	menu->u.normal.index = initialIndex;
 	menu->u.normal.quitMenuIndex = -1;
@@ -1155,7 +1163,8 @@ menu_t *MenuCreateOnePlayer(const char *name)
 		name,
 		"Select a campaign:",
 		MENU_TYPE_NORMAL,
-		MENU_DISPLAY_CAMPAIGNS,
+		0,
+		MENU_OPTION_TYPE_CAMPAIGNS,
 		0, 0);
 	return menu;
 }
@@ -1166,7 +1175,8 @@ menu_t *MenuCreateTwoPlayers(const char *name)
 		name,
 		"Select a campaign:",
 		MENU_TYPE_NORMAL,
-		MENU_DISPLAY_CAMPAIGNS,
+		0,
+		MENU_OPTION_TYPE_CAMPAIGNS,
 		MENU_SET_OPTIONS_TWOPLAYERS,
 		0);
 	return menu;
@@ -1178,7 +1188,8 @@ menu_t *MenuCreateDogfight(const char *name)
 		name,
 		"Select a dogfight scenario:",
 		MENU_TYPE_NORMAL,
-		MENU_DISPLAY_DOGFIGHTS,
+		0,
+		MENU_OPTION_TYPE_DOGFIGHTS,
 		MENU_SET_OPTIONS_DOGFIGHT,
 		0);
 	return menu;
@@ -1202,7 +1213,8 @@ menu_t *MenuCreateOptions(const char *name)
 			name,
 			"Game Options:",
 			MENU_TYPE_OPTIONS,
-			MENU_DISPLAY_OPTIONS,
+			0,
+			MENU_OPTION_TYPE_OPTIONS,
 			0, 0);
 	MenuAddSubmenu(
 		menu, MenuCreateOptionToggle("Friendly fire", &gOptions.playersHurt));
@@ -1262,7 +1274,8 @@ menu_t *MenuCreateControls(const char *name)
 			name,
 			"Configure Controls:",
 			MENU_TYPE_OPTIONS,
-			MENU_DISPLAY_CONTROLS,
+			0,
+			MENU_OPTION_TYPE_CONTROLS,
 			0, 0);
 	MenuAddSubmenu(
 		menu,
@@ -1293,7 +1306,8 @@ menu_t *MenuCreateSound(const char *name)
 		name,
 		"Configure Sound:",
 		MENU_TYPE_OPTIONS,
-		MENU_DISPLAY_SOUND,
+		0,
+		MENU_OPTION_TYPE_SOUND,
 		0, 0);
 	MenuAddSubmenu(
 		menu,
@@ -1313,7 +1327,7 @@ menu_t *MenuCreateSound(const char *name)
 
 menu_t *MenuCreateQuit(const char *name)
 {
-	menu_t *menu = MenuCreate(name, "", MENU_TYPE_QUIT, 0, 0, 0);
+	menu_t *menu = MenuCreate(name, "", MENU_TYPE_QUIT, 0, 0, 0, 0);
 	return menu;
 }
 
@@ -1386,7 +1400,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 
 menu_t *MenuCreateBack(const char *name)
 {
-	menu_t *menu = MenuCreate(name, "", MENU_TYPE_BACK, 0, 0, 0);
+	menu_t *menu = MenuCreate(name, "", MENU_TYPE_BACK, 0, 0, 0, 0);
 	return menu;
 }
 
@@ -1407,7 +1421,8 @@ menu_t *MenuCreateKeys(const char *name)
 		name,
 		"",
 		MENU_TYPE_OPTIONS,
-		MENU_DISPLAY_KEYS,
+		0,
+		MENU_OPTION_TYPE_KEYS,
 		0, 0);
 	// TODO: convert keys to menu items
 	return menu;
@@ -1445,7 +1460,7 @@ void MenuDestroySubmenus(menu_t *menu)
 }
 
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
-void MenuDisplaySubmenusAtCenter(menu_t *menu);
+void MenuDisplaySubmenus(menu_t *menu, int isCentered);
 
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
@@ -1460,21 +1475,18 @@ void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 			SCREEN_WIDTH / 12);
 	}
 
-	if (menu->type == MENU_TYPE_NORMAL)
-	{
-		MenuDisplaySubmenusAtCenter(menu);
-	}
+	MenuDisplaySubmenus(menu, menu->type == MENU_TYPE_NORMAL);
 }
 
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
 	int d = menu->u.normal.displayItems;
 	assert(menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS);
-	if (d & MENU_DISPLAY_CREDITS)
+	if (d & MENU_DISPLAY_ITEMS_CREDITS)
 	{
 		ShowCredits(creditsDisplayer);
 	}
-	if (d & MENU_DISPLAY_AUTHORS)
+	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		DrawTPic(
 			(SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2,
@@ -1486,33 +1498,9 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 		CDogsTextStringSpecial(
 			"SDL Port: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 	}
-	if (d & MENU_DISPLAY_CAMPAIGNS)
-	{
-		
-	}
-	if (d & MENU_DISPLAY_DOGFIGHTS)
-	{
-		
-	}
-	if (d & MENU_DISPLAY_OPTIONS)
-	{
-		
-	}
-	if (d & MENU_DISPLAY_CONTROLS)
-	{
-		
-	}
-	if (d & MENU_DISPLAY_SOUND)
-	{
-		
-	}
-	if (d & MENU_DISPLAY_KEYS)
-	{
-		
-	}
 }
 
-void MenuDisplaySubmenusAtCenter(menu_t *menu)
+void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 {
 	int i;
 	int x, yStart;
@@ -1526,8 +1514,13 @@ void MenuDisplaySubmenusAtCenter(menu_t *menu)
 		}
 	}
 	x = CenterX(maxWidth);
+	if (!isCentered)
+	{
+		x -= 20;
+	}
 	yStart = menu->u.normal.numSubMenus * CDogsTextHeight();
 
+	// Display normal menu items
 	for (i = 0; i < menu->u.normal.numSubMenus; i++)
 	{
 		int y = yStart + i * CDogsTextHeight();
@@ -1541,6 +1534,8 @@ void MenuDisplaySubmenusAtCenter(menu_t *menu)
 			CDogsTextStringAt(x, y, name);
 		}
 	}
+
+	// Display menu items for options
 }
 
 // returns menu to change to, NULL if no change
