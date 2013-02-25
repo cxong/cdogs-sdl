@@ -906,7 +906,6 @@ int SelectVolume(int cmd)
 	CDogsTextStringAt(x, y + CDogsTextHeight(), s);
 	sprintf(s, "%d", FXChannels());
 	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), s);
-	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), "No");
 
 	return MODE_VOLUME;
 }
@@ -1536,6 +1535,38 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 	}
 
 	// Display menu items for options
+	switch (menu->u.normal.optionType)
+	{
+	case MENU_OPTION_TYPE_CAMPAIGNS:
+		assert(0);
+		break;
+	case MENU_OPTION_TYPE_DOGFIGHTS:
+		assert(0);
+		break;
+	case MENU_OPTION_TYPE_OPTIONS:
+		assert(0);
+		break;
+	case MENU_OPTION_TYPE_CONTROLS:
+		assert(0);
+		break;
+	case MENU_OPTION_TYPE_SOUND:
+		{
+			int y = yStart;
+			x += maxWidth + 10;
+
+			CDogsTextIntAt(x, y, FXVolume() / 8);
+			y += CDogsTextHeight();
+			CDogsTextIntAt(x, y, MusicVolume() / 8);
+			y += CDogsTextHeight();
+			CDogsTextIntAt(x, y, FXChannels());
+		}
+		break;
+	case MENU_OPTION_TYPE_KEYS:
+		assert(0);
+		break;
+	default:
+		break;
+	}
 }
 
 // returns menu to change to, NULL if no change

@@ -18,24 +18,14 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- text.c - text rendering and related functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "text.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "grafx.h"
 #include "blit.h"
-#include "text.h"
 #include "actors.h" /* for tableFlamed */
 
 #define FIRST_CHAR      0
@@ -118,6 +108,14 @@ void CDogsTextGoto(int x, int y)
 void CDogsTextStringAt(int x, int y, const char *s)
 {
 	CDogsTextGoto(x, y);
+	CDogsTextString(s);
+}
+
+void CDogsTextIntAt(int x, int y, int i)
+{
+	char s[32];
+	CDogsTextGoto(x, y);
+	sprintf(s, "%d", i);
 	CDogsTextString(s);
 }
 
