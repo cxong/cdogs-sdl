@@ -1544,10 +1544,54 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 		assert(0);
 		break;
 	case MENU_OPTION_TYPE_OPTIONS:
-		assert(0);
+		{
+			int y = yStart;
+			x += maxWidth + 10;
+
+			CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.displayFPS ? "On" : "Off");
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.displayTime ? "On" : "Off");
+			y += CDogsTextHeight();
+			CDogsTextIntAt(x, y, gOptions.brightness);
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.splitScreenAlways ? "Yes" : "No");
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(x, y, "%u", gCampaign.seed);
+
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, DifficultyStr(gOptions.difficulty));
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.slowmotion ? "Yes" : "No");
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(x, y, "%u%%", gOptions.density);
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(x, y, "%u%%", gOptions.npcHp);
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(x, y, "%u%%", gOptions.playerHp);
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(
+				x, y, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
+			y += CDogsTextHeight();
+			CDogsTextFormatAt(x, y, "%dx", GrafxGetScale());
+		}
 		break;
 	case MENU_OPTION_TYPE_CONTROLS:
-		assert(0);
+		{
+			int y = yStart;
+			x += maxWidth + 10;
+
+			CDogsTextStringAt(x, y, InputDeviceStr(gPlayer1Data.inputDevice));
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, InputDeviceStr(gPlayer2Data.inputDevice));
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.swapButtonsJoy1 ? "Yes" : "No");
+			y += CDogsTextHeight();
+			CDogsTextStringAt(x, y, gOptions.swapButtonsJoy2 ? "Yes" : "No");
+		}
 		break;
 	case MENU_OPTION_TYPE_SOUND:
 		{
@@ -1562,7 +1606,7 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 		}
 		break;
 	case MENU_OPTION_TYPE_KEYS:
-		assert(0);
+		ShowAllKeys(menu->u.normal.index, -1);
 		break;
 	default:
 		break;

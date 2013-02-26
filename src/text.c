@@ -21,9 +21,11 @@
 */
 #include "text.h"
 
-#include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "grafx.h"
 #include "blit.h"
 #include "actors.h" /* for tableFlamed */
@@ -116,6 +118,17 @@ void CDogsTextIntAt(int x, int y, int i)
 	char s[32];
 	CDogsTextGoto(x, y);
 	sprintf(s, "%d", i);
+	CDogsTextString(s);
+}
+
+void CDogsTextFormatAt(int x, int y, const char *fmt, ...)
+{
+	char s[256];
+	va_list argptr;
+	va_start(argptr, fmt);
+	sprintf(s, fmt, argptr);
+	va_end(argptr);
+	CDogsTextGoto(x, y);
 	CDogsTextString(s);
 }
 

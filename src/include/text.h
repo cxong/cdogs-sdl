@@ -27,6 +27,7 @@ void CDogsTextString(const char *s);
 void CDogsTextGoto(int x, int y);
 void CDogsTextStringAt(int x, int y, const char *s);
 void CDogsTextIntAt(int x, int y, int i);
+void CDogsTextFormatAt(int x, int y, const char *fmt, ...);
 int CDogsTextCharWidth(int c);
 int CDogsTextWidth(const char *s);
 int CDogsTextHeight(void);
