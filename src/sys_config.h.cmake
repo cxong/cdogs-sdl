@@ -39,6 +39,9 @@
 #define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "game/"
 #define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "menu/"
 
+#define CDOGS_CAMPAIGN_DIR "missions/"
+#define CDOGS_DOGFIGHT_DIR "dogfights/"
+
 #define CDOGS_TEMP_DIR "@CDOGS_TEMP_DIR@"
 
 #endif

@@ -168,7 +168,7 @@ int SelectCampaign(int dogFight, int cmd)
 	static int dogfightIndex = 0;
 	int count, y, i, j;
 	struct FileEntry *list = dogFight ? dogfightList : campaignList;
-	char *prefix = dogFight ? "dogfights/" : "missions/";
+	const char *prefix = dogFight ? CDOGS_DOGFIGHT_DIR : CDOGS_CAMPAIGN_DIR;
 	int *index = dogFight ? &dogfightIndex : &campaignIndex;
 	struct FileEntry *f;
 
@@ -1534,11 +1534,52 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 		}
 	}
 
+#define ARROW_UP	"\036"
+#define ARROW_DOWN	"\037"
+
 	// Display menu items for options
 	switch (menu->u.normal.optionType)
 	{
 	case MENU_OPTION_TYPE_CAMPAIGNS:
-		assert(0);
+		{
+			int count = 0, y, j;
+			struct FileEntry *list = campaignList;
+			struct FileEntry *f = list;
+			i = 0;
+			while (f != NULL && i <= menu->u.normal.index - 12)
+			{
+				count++;
+				i++;
+				f = f->next;
+			}
+
+			y = CenterY(12 * CDogsTextHeight());
+
+			if (i != 0)
+			{
+				DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_UP)), y - 2 - CDogsTextHeight(), ARROW_UP, 0);
+			}
+
+			for (j = 0; f != NULL && j < 12; f = f->next, i++, j++)
+			{
+				int isSelected = i == menu->u.normal.index;
+				DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, isSelected);
+
+				if (isSelected)
+				{
+					char s[255];
+					sprintf(s, "( %s )", strlen(f->name) == 0 ? "Internal" : f->name);
+					CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
+				}
+
+				y += CDogsTextHeight();
+			}
+
+			if (f != NULL)
+			{
+				DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
+			}
+		}
 		break;
 	case MENU_OPTION_TYPE_DOGFIGHTS:
 		assert(0);
