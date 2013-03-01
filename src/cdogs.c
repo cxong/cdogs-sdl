@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "SDL.h"
+#include <SDL.h>
 
 #include "joystick.h"
 #include "objs.h"

@@ -31,15 +31,21 @@ execute_process(
 	COMMAND "sdl-config" "--cflags"
 	OUTPUT_VARIABLE SDL_INCLUDES
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
-ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror ${SDL_LDFLAGS} ${SDL_INCLUDES})
-if(DEBUG)
-	ADD_DEFINITIONS(-g)
-	if(DEBUG_PROFILE)
-		ADD_DEFINITIONS(-p)
-	endif(DEBUG_PROFILE)
-else(DEBUG)
-	ADD_DEFINITIONS(-O2)
-endif(DEBUG)
+
+ADD_DEFINITIONS(${SDL_LDFLAGS} ${SDL_INCLUDES})
+if(MSVC)
+	#TODO: flags for MSVC
+else(MSVC)
+	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
+	if(DEBUG)
+		ADD_DEFINITIONS(-g)
+		if(DEBUG_PROFILE)
+			ADD_DEFINITIONS(-p)
+		endif(DEBUG_PROFILE)
+	else(DEBUG)
+		ADD_DEFINITIONS(-O2)
+	endif(DEBUG)
+endif(MSVC)
 
 include_directories(include missions)
 

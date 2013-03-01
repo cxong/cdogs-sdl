@@ -20,17 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -------------------------------------------------------------------------------
-
- keyboard.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
-#include "SDL.h"
+#include <SDL.h>
 
 #define keySysReq       SDLK_SYSRQ
 //#define keyCapsLock     SDLK_CAPSLOCK

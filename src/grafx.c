@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include "SDL.h"
+#include <SDL.h>
 #include "SDL_endian.h"
 
 #include "defs.h"

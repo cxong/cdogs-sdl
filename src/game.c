@@ -30,7 +30,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "SDL.h"
+#include <SDL.h>
 #include "SDL_mutex.h"
 
 #include "draw.h"

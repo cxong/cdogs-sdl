@@ -22,18 +22,14 @@
 -------------------------------------------------------------------------------
 
  blit.c - screen blitter 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
-#include "SDL.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include <SDL.h>
+
 #include "blit.h"
 #include "grafx.h"
 #include "events.h"
