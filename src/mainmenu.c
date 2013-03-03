@@ -1499,6 +1499,8 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	}
 }
 
+void MenuDisplayMapList(struct FileEntry *list, int menuIndex);
+
 void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 {
 	int i;
@@ -1534,55 +1536,14 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 		}
 	}
 
-#define ARROW_UP	"\036"
-#define ARROW_DOWN	"\037"
-
 	// Display menu items for options
 	switch (menu->u.normal.optionType)
 	{
 	case MENU_OPTION_TYPE_CAMPAIGNS:
-		{
-			int count = 0, y, j;
-			struct FileEntry *list = campaignList;
-			struct FileEntry *f = list;
-			i = 0;
-			while (f != NULL && i <= menu->u.normal.index - 12)
-			{
-				count++;
-				i++;
-				f = f->next;
-			}
-
-			y = CenterY(12 * CDogsTextHeight());
-
-			if (i != 0)
-			{
-				DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_UP)), y - 2 - CDogsTextHeight(), ARROW_UP, 0);
-			}
-
-			for (j = 0; f != NULL && j < 12; f = f->next, i++, j++)
-			{
-				int isSelected = i == menu->u.normal.index;
-				DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, isSelected);
-
-				if (isSelected)
-				{
-					char s[255];
-					sprintf(s, "( %s )", strlen(f->name) == 0 ? "Internal" : f->name);
-					CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
-				}
-
-				y += CDogsTextHeight();
-			}
-
-			if (f != NULL)
-			{
-				DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
-			}
-		}
+		MenuDisplayMapList(campaignList, menu->u.normal.index);
 		break;
 	case MENU_OPTION_TYPE_DOGFIGHTS:
-		assert(0);
+		MenuDisplayMapList(dogfightList, menu->u.normal.index);
 		break;
 	case MENU_OPTION_TYPE_OPTIONS:
 		{
@@ -1651,6 +1612,57 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 		break;
 	default:
 		break;
+	}
+}
+
+void MenuDisplayMapList(struct FileEntry *list, int menuIndex)
+{
+	int count = 0, y, j;
+	struct FileEntry *f = list;
+	int i = 0;
+	while (f != NULL && i <= menuIndex - 12)
+	{
+		count++;
+		i++;
+		f = f->next;
+	}
+
+	y = CenterY(12 * CDogsTextHeight());
+
+#define ARROW_UP	"\036"
+#define ARROW_DOWN	"\037"
+
+	if (i != 0)
+	{
+		DisplayMenuItem(
+			CenterX(CDogsTextWidth(ARROW_UP)),
+			y - 2 - CDogsTextHeight(),
+			ARROW_UP,
+			0);
+	}
+
+	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++)
+	{
+		int isSelected = i == menuIndex;
+		DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, isSelected);
+
+		if (isSelected)
+		{
+			char s[255];
+			sprintf(s, "( %s )", strlen(f->name) == 0 ? "Internal" : f->name);
+			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
+		}
+
+		y += CDogsTextHeight();
+	}
+
+	if (f != NULL)
+	{
+		DisplayMenuItem(
+			CenterX(CDogsTextWidth(ARROW_DOWN)),
+			y + 2,
+			ARROW_DOWN,
+			0);
 	}
 }
 
