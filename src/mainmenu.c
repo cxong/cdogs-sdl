@@ -932,7 +932,7 @@ int MainMenuSelection(int mode, int cmd)
 	return MODE_MAIN;
 }
 
-int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
+int MainMenuOld(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
@@ -1056,7 +1056,7 @@ void MenuDestroy(menu_t *menu);
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
 
-int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
+int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 {
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
@@ -1068,12 +1068,12 @@ int MainMenuNew(void *bkg, credits_displayer_t *creditsDisplayer)
 	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
+		MenuDisplay(menu, creditsDisplayer);
 		GetMenuCmd(&cmd, &prev);
 		menu = MenuProcessCmd(menu, cmd);
-		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();
 		SDL_Delay(10);
-	} while (menu->type != MENU_TYPE_QUIT || (1/*play*/));
+	} while (menu->type != MENU_TYPE_QUIT && (1/*play*/));
 
 	MenuDestroy(mainMenu);
 	WaitForRelease();
@@ -1519,7 +1519,7 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 	{
 		x -= 20;
 	}
-	yStart = menu->u.normal.numSubMenus * CDogsTextHeight();
+	yStart = CenterY(menu->u.normal.numSubMenus * CDogsTextHeight());
 
 	// Display normal menu items
 	for (i = 0; i < menu->u.normal.numSubMenus; i++)
@@ -1686,6 +1686,7 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 	menuToChange = MenuProcessButtonCmd(menu, cmd);
 	if (menuToChange != NULL)
 	{
+		debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
 		return menuToChange;
 	}
 	MenuChangeIndex(menu, cmd);
