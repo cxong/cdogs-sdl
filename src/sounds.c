@@ -227,7 +227,7 @@ void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
 	}
 }
 
-void PlaySound(int sound, int panning, int volume)
+void PlaySound(sound_e sound, int panning, int volume)
 {
 	if (!soundInitialized)
 	{
@@ -300,7 +300,7 @@ void SetRightEar(int x, int y)
 	yRight = y;
 }
 
-void PlaySoundAt(int x, int y, int sound)
+void PlaySoundAt(int x, int y, sound_e sound)
 {
 	int d, dLeft, dRight;
 	int leftVolume, rightVolume;

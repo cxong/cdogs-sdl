@@ -302,31 +302,6 @@ static int SelectMain(int cmd)
 	return MODE_MAIN;
 }
 
-#define MAXCOLOUR 254
-unsigned char FitColor(int c)
-{
-	if (c > MAXCOLOUR)
-		return MAXCOLOUR;
-	else if (c < 0)
-		return 0;
-	else
-		return (c & 0xFF);
-}
-
-static void PaletteAdjust(void)
-{
-	int i;
-	double f;
-
-	f = 1.0 + gOptions.brightness / 33.3;
-	for (i = 0; i < 255; i++) {
-		gPalette[i].red = FitColor(f * origPalette[i].red);
-		gPalette[i].green = FitColor(f * origPalette[i].green);
-		gPalette[i].blue = FitColor(f * origPalette[i].blue);
-	}
-	CDogsSetPalette(gPalette);
-}
-
 int SelectOptions(int cmd)
 {
 	static int index = 0;
@@ -358,7 +333,6 @@ int SelectOptions(int cmd)
 				break;
 
 			PlaySound(SND_POWERGUN, 0, 255);
-			PaletteAdjust();
 			break;
 		case 4:
 			gOptions.splitScreenAlways = !gOptions.splitScreenAlways;
@@ -937,8 +911,6 @@ int MainMenuOld(void *bkg, credits_displayer_t *creditsDisplayer)
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
 
-	PaletteAdjust();
-
 	while (mode != MODE_QUIT && mode != MODE_PLAY) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
@@ -985,6 +957,7 @@ typedef enum
 
 typedef enum
 {
+	MENU_OPTION_TYPE_NONE,
 	MENU_OPTION_TYPE_CAMPAIGNS,
 	MENU_OPTION_TYPE_DOGFIGHTS,
 	MENU_OPTION_TYPE_OPTIONS,
@@ -1063,7 +1036,7 @@ int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
 	menu_t *mainMenu = MenuCreateAll();
 	menu_t *menu = mainMenu;
 
-	PaletteAdjust();
+	BlitSetBrightness(gOptions.brightness);
 	do
 	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
@@ -1220,8 +1193,11 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(
 		menu, MenuCreateOptionToggle("FPS monitor", &gOptions.displayFPS));
 	MenuAddSubmenu(
+		menu, MenuCreateOptionToggle("Display time", &gOptions.displayTime));
+	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRange("Brightness", &gOptions.brightness, -10, 10, 1));
+		MenuCreateOptionRangeGetSet(
+			"Brightness", BlitGetBrightness, BlitSetBrightness, -10, 10, 1));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
@@ -1680,6 +1656,7 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 		menuToChange = MenuProcessEscCmd(menu);
 		if (menuToChange != NULL)
 		{
+			PlaySound(SND_PICKUP, 0, 255);
 			return menuToChange;
 		}
 	}
@@ -1687,6 +1664,7 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 	if (menuToChange != NULL)
 	{
 		debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
+		PlaySound(SND_MACHINEGUN, 0, 255);
 		return menuToChange;
 	}
 	MenuChangeIndex(menu, cmd);
@@ -1701,6 +1679,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 	{
 		if (menu->u.normal.index != quitMenuIndex)
 		{
+			PlaySound(SND_DOOR, 0, 255);
 			menu->u.normal.index = quitMenuIndex;
 		}
 		else
@@ -1754,6 +1733,7 @@ void MenuSetOptions(int setOptions)
 
 void MenuActivate(menu_t *menu, int cmd)
 {
+	PlaySound(SND_SWITCH, 0, 255);
 	switch (menu->type)
 	{
 	case MENU_TYPE_SET_OPTION_TOGGLE:

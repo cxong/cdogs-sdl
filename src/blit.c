@@ -27,6 +27,7 @@
 
 #include <SDL.h>
 
+#include "gamedata.h"	// for gOptions
 #include "grafx.h"
 #include "events.h"
 #include "pics.h" /* for gPalette */
@@ -237,4 +238,26 @@ void CDogsSetPalette(void *pal)
 	}
 	SDL_SetPalette(screen, SDL_PHYSPAL, newpal, 0, 256);
 	return;
+}
+
+int BlitGetBrightness(void)
+{
+	return gOptions.brightness;
+}
+void BlitSetBrightness(int brightness)
+{
+	if (brightness >= -10 && brightness <= 10)
+	{
+		int i;
+		double f;
+		gOptions.brightness = brightness;
+		f = 1.0 + gOptions.brightness / 33.3;
+		for (i = 0; i < 255; i++)
+		{
+			gPalette[i].red = CLAMP(f * origPalette[i].red, 0, 254);
+			gPalette[i].green = CLAMP(f * origPalette[i].green, 0, 254);
+			gPalette[i].blue = CLAMP(f * origPalette[i].blue, 0, 254);
+		}
+		CDogsSetPalette(gPalette);
+	}
 }

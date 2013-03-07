@@ -18,13 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- utils.h - various helpful functions 
-
 */
-
 #ifndef __UTILS
 #define __UTILS
 
@@ -44,5 +38,9 @@ void *	sys_mem_realloc(void *ptr, unsigned int size);
 void	sys_mem_free(void *ptr);
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
+
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define CLAMP(v, _min, _max) MAX(_min, MIN(_max, v))
 
 #endif /* __UTILS */

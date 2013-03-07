@@ -18,25 +18,16 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- objs.c - object functions (fun) 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "objs.h"
 
 #include <string.h>
 #include <stdlib.h>
+
 #include "map.h"
 #include "blit.h"
 #include "pics.h"
 #include "defs.h"
-#include "objs.h"
 #include "sounds.h"
 #include "actors.h"
 #include "gamedata.h"
