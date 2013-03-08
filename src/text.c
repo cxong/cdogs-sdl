@@ -126,7 +126,7 @@ void CDogsTextFormatAt(int x, int y, const char *fmt, ...)
 	char s[256];
 	va_list argptr;
 	va_start(argptr, fmt);
-	sprintf(s, fmt, argptr);
+	vsprintf(s, fmt, argptr);
 	va_end(argptr);
 	CDogsTextGoto(x, y);
 	CDogsTextString(s);
