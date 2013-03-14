@@ -939,6 +939,7 @@ typedef enum
 {
 	MENU_TYPE_NORMAL,				// normal menu with items, up/down/left/right moves cursor
 	MENU_TYPE_OPTIONS,				// menu with items, only up/down moves
+	MENU_TYPE_CAMPAIGNS,			// menu that scrolls, with items centred
 	MENU_TYPE_SET_OPTION_TOGGLE,	// no items, sets option on/off
 	MENU_TYPE_SET_OPTION_RANGE,		// no items, sets option range low-high
 	MENU_TYPE_SET_OPTION_SEED,		// set random seed
@@ -961,8 +962,6 @@ typedef enum
 typedef enum
 {
 	MENU_OPTION_TYPE_NONE,
-	MENU_OPTION_TYPE_CAMPAIGNS,
-	MENU_OPTION_TYPE_DOGFIGHTS,
 	MENU_OPTION_TYPE_OPTIONS,
 	MENU_OPTION_TYPE_CONTROLS,
 	MENU_OPTION_TYPE_SOUND,
@@ -1145,10 +1144,8 @@ menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 	menu_t *menu = MenuCreate(
 		name,
 		"Select a campaign:",
-		MENU_TYPE_NORMAL,
-		0,
-		MENU_OPTION_TYPE_CAMPAIGNS,
-		0, 0);
+		MENU_TYPE_CAMPAIGNS,
+		0, 0, 0, 0);
 	int i;
 	for (i = 0; i < campaignList->num; i++)
 	{
@@ -1162,9 +1159,8 @@ menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 	menu_t *menu = MenuCreate(
 		name,
 		"Select a campaign:",
-		MENU_TYPE_NORMAL,
-		0,
-		MENU_OPTION_TYPE_CAMPAIGNS,
+		MENU_TYPE_CAMPAIGNS,
+		0, 0,
 		MENU_SET_OPTIONS_TWOPLAYERS,
 		0);
 	int i;
@@ -1180,9 +1176,8 @@ menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 	menu_t *menu = MenuCreate(
 		name,
 		"Select a dogfight scenario:",
-		MENU_TYPE_NORMAL,
-		0,
-		MENU_OPTION_TYPE_DOGFIGHTS,
+		MENU_TYPE_CAMPAIGNS,
+		0, 0,
 		MENU_SET_OPTIONS_DOGFIGHT,
 		0);
 	int i;
@@ -1481,7 +1476,7 @@ void MenuDestroySubmenus(menu_t *menu)
 }
 
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
-void MenuDisplaySubmenus(menu_t *menu, int isCentered);
+void MenuDisplaySubmenus(menu_t *menu);
 
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
@@ -1496,13 +1491,15 @@ void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 			SCREEN_WIDTH / 12);
 	}
 
-	MenuDisplaySubmenus(menu, menu->type == MENU_TYPE_NORMAL);
+	MenuDisplaySubmenus(menu);
 }
 
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
 	int d = menu->u.normal.displayItems;
-	assert(menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS);
+	assert(menu->type == MENU_TYPE_NORMAL ||
+		menu->type == MENU_TYPE_OPTIONS ||
+		menu->type == MENU_TYPE_CAMPAIGNS);
 	if (d & MENU_DISPLAY_ITEMS_CREDITS)
 	{
 		ShowCredits(creditsDisplayer);
@@ -1523,50 +1520,105 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 
 void MenuDisplayMapList(menu_t *menu);
 
-void MenuDisplaySubmenus(menu_t *menu, int isCentered)
+void MenuDisplaySubmenus(menu_t *menu)
 {
 	int i;
-	int x, yStart;
+	int x = 0, yStart = 0;
 	int maxWidth = 0;
-	for (i = 0; i < menu->u.normal.numSubMenus; i++)
-	{
-		int width = CDogsTextWidth(menu->u.normal.subMenus[i].name);
-		if (width > maxWidth)
-		{
-			maxWidth = width;
-		}
-	}
-	x = CenterX(maxWidth);
-	if (!isCentered)
-	{
-		x -= 20;
-	}
-	yStart = CenterY(menu->u.normal.numSubMenus * CDogsTextHeight());
 
-	// Display normal menu items
-	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	switch (menu->type)
 	{
-		int y = yStart + i * CDogsTextHeight();
-		const char *name = menu->u.normal.subMenus[i].name;
-		if (i == menu->u.normal.index)
+	case MENU_TYPE_NORMAL:
+	case MENU_TYPE_OPTIONS:
 		{
-			CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+			int isCentered = menu->type == MENU_TYPE_NORMAL;
+			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			{
+				int width = CDogsTextWidth(menu->u.normal.subMenus[i].name);
+				if (width > maxWidth)
+				{
+					maxWidth = width;
+				}
+			}
+			x = CenterX(maxWidth);
+			if (!isCentered)
+			{
+				x -= 20;
+			}
+			yStart = CenterY(menu->u.normal.numSubMenus * CDogsTextHeight());
+
+			// Display normal menu items
+			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			{
+				int y = yStart + i * CDogsTextHeight();
+				const char *name = menu->u.normal.subMenus[i].name;
+				if (i == menu->u.normal.index)
+				{
+					CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+				}
+				else
+				{
+					CDogsTextStringAt(x, y, name);
+				}
+			}
 		}
-		else
+		break;
+	case MENU_TYPE_CAMPAIGNS:
 		{
-			CDogsTextStringAt(x, y, name);
+			i = 0;	// current menu scroll
+			int j;
+			// TODO: display up/down arrows, handle scrolling
+
+			int y = CenterY(12 * CDogsTextHeight());
+
+		#define ARROW_UP	"\036"
+		#define ARROW_DOWN	"\037"
+
+			if (i != 0)
+			{
+				DisplayMenuItem(
+					CenterX(CDogsTextWidth(ARROW_UP)),
+					y - 2 - CDogsTextHeight(),
+					ARROW_UP,
+					0);
+			}
+
+			for (j = 0; j < MIN(12, menu->u.normal.numSubMenus); i++, j++)
+			{
+				int isSelected = i == menu->u.normal.index;
+				menu_t *subMenu = &menu->u.normal.subMenus[i];
+				// TODO: display subfolders
+				DisplayMenuItem(
+					CenterX(CDogsTextWidth(subMenu->name)), y, subMenu->name, isSelected);
+
+				if (isSelected)
+				{
+					char s[255];
+					sprintf(s, "( %s )", subMenu->u.campaignEntry.filename);
+					CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
+				}
+
+				y += CDogsTextHeight();
+			}
+
+			if (i < menu->u.normal.numSubMenus - 1)
+			{
+				DisplayMenuItem(
+					CenterX(CDogsTextWidth(ARROW_DOWN)),
+					y + 2,
+					ARROW_DOWN,
+					0);
+			}
 		}
+		break;
+	default:
+		assert(0);
+		break;
 	}
 
 	// Display menu items for options
 	switch (menu->u.normal.optionType)
 	{
-	case MENU_OPTION_TYPE_CAMPAIGNS:
-		MenuDisplayMapList(menu);
-		break;
-	case MENU_OPTION_TYPE_DOGFIGHTS:
-		MenuDisplayMapList(menu);
-		break;
 	case MENU_OPTION_TYPE_OPTIONS:
 		{
 			int y = yStart;
@@ -1637,55 +1689,6 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 	}
 }
 
-void MenuDisplayMapList(menu_t *menu)
-{
-	int i = 0;	// current menu scroll
-	int j;
-
-	// TODO: display up/down arrows, handle scrolling
-
-	int y = CenterY(12 * CDogsTextHeight());
-
-#define ARROW_UP	"\036"
-#define ARROW_DOWN	"\037"
-
-	if (i != 0)
-	{
-		DisplayMenuItem(
-			CenterX(CDogsTextWidth(ARROW_UP)),
-			y - 2 - CDogsTextHeight(),
-			ARROW_UP,
-			0);
-	}
-
-	for (j = 0; j < MIN(12, menu->u.normal.numSubMenus); i++, j++)
-	{
-		int isSelected = i == menu->u.normal.index;
-		menu_t *subMenu = &menu->u.normal.subMenus[i];
-		// TODO: display subfolders
-		DisplayMenuItem(
-			CenterX(CDogsTextWidth(subMenu->name)), y, subMenu->name, isSelected);
-
-		if (isSelected)
-		{
-			char s[255];
-			sprintf(s, "( %s )", subMenu->u.campaignEntry.filename);
-			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
-		}
-
-		y += CDogsTextHeight();
-	}
-
-	if (i < menu->u.normal.numSubMenus - 1)
-	{
-		DisplayMenuItem(
-			CenterX(CDogsTextWidth(ARROW_DOWN)),
-			y + 2,
-			ARROW_DOWN,
-			0);
-	}
-}
-
 // returns menu to change to, NULL if no change
 menu_t *MenuProcessEscCmd(menu_t *menu);
 menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd);
@@ -1753,6 +1756,7 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		{
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
+		case MENU_TYPE_CAMPAIGNS:
 			return subMenu;
 		case MENU_TYPE_BACK:
 			return menu->u.normal.parentMenu;
