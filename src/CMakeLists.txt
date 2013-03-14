@@ -84,6 +84,7 @@ add_library(cdogs STATIC
 	utils.c)
 
 add_executable(cdogs-sdl
+	campaigns.c
 	cdogs.c
 	config.c
 	credits.c

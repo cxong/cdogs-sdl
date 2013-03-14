@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-
-#ifndef __files
-#define __files
+#ifndef __FILES
+#define __FILES
 
 #include <SDL_endian.h>
 
@@ -45,6 +44,7 @@ struct FileEntry {
 	struct FileEntry *next;
 };
 
+int ScanCampaign(const char *filename, char *title, int *missions);
 int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		 int max_missions, int max_characters);
 int SaveCampaign(const char *filename, TCampaignSetting * setting);

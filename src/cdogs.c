@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- cdogs.c - main bits
- 
 */
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -32,6 +26,7 @@
 
 #include <SDL.h>
 
+#include "campaigns.h"
 #include "config.h"
 #include "credits.h"
 #include "joystick.h"
@@ -168,7 +163,7 @@ void CampaignIntro(void *bkg)
 	char s[1024];
 
 	debug(D_NORMAL, "\n");
-	
+
 	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 
 	y = (SCREEN_WIDTH / 4);
@@ -176,7 +171,7 @@ void CampaignIntro(void *bkg)
 	//CDogsTextStringAt(50, y - 25, gCampaign.setting->title);
 	//CDogsTextStringAt(60, y - 15, "by ");
 	//CDogsTextStringWithTable(gCampaign.setting->author, &tableFlamed);
-	
+
 	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
@@ -722,7 +717,7 @@ void DogFight(void *bkg)
 	do {
 		SetupMission(0, 1);
 		SetupMap();
-		
+
 		if (PlayerEquip(bkg)) {
 
 		srand(clock());
@@ -795,7 +790,7 @@ void *MakeBkg(void)
 	return bkg;
 }
 
-void MainLoop(credits_displayer_t *creditsDisplayer)
+void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
 	void *myScreen;
 
@@ -804,9 +799,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer)
 	memset(myScreen, 0, SCREEN_MEMSIZE);
 	SetDstScreen(myScreen);
 
-	//SetupBuiltinCampaign(1);
-
-	while (MainMenu(bkg, creditsDisplayer))
+	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
 		ResetCampaign();
@@ -816,7 +809,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer)
 		debug(D_NORMAL, ">> Entering selection\n");
 		if (!PlayerSelection(gOptions.twoPlayers
 				|| gCampaign.dogFight, bkg)) continue;
-				
+
 		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.dogFight)
 			DogFight(bkg);
@@ -854,20 +847,20 @@ void PrintHelp (void)
 		"    -screen=WxH     Set virtual screen width to W x H\n"
 		"                      Modes: 320x200, 320x240, 400x300, 640x480, 800x600\n"
 		"    -forcemode      Don't check video mode sanity\n"
-	);    
+	);
 
 	printf("%s\n",
 		"Sound Options:\n"
 		"    -nosound        Disable sound\n"
 	);
-	
+
 	printf("%s\n",
 		"Control Options:\n"
 		"    -nojoystick     Disable joystick(s)\n"
 		"    -js1threshold=n Joystick 1 threshold.\n"
 		"    -js2threshold=n Joystick 2 threshold.\n"
 	);
-		
+
 	printf("%s\n",
 		"Game Options:\n"
 		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n"
@@ -892,6 +885,7 @@ int main(int argc, char *argv[])
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
 	credits_displayer_t creditsDisplayer;
+	custom_campaigns_t campaigns;
 
 	PrintTitle();
 
@@ -915,31 +909,31 @@ int main(int argc, char *argv[])
 				printf("Displaying CPU slices\n");
 				gOptions.displaySlices = 1;
 			}
-			
+
 			if (strstr(argv[i] + 1, "js1threshold=")) {
 				char *val = strchr(argv[i], '=');
 				extern int js1_threshold;
 				int nval;
 				val++;
-				
+
 				nval = atoi(val);
 				if (nval < 0) nval = 0;
 				printf("Joystick 1 threshold: %d\n", nval);
 				js1_threshold = nval;
 			}
-			
+
 			if (strstr(argv[i] + 1, "js2threshold=")) {
 				char *val = strchr(argv[i], '=');
 				extern int js2_threshold;
 				int nval;
 				val++;
-				
+
 				nval = atoi(val);
 				if (nval < 0) nval = 0;
 				printf("Joystick 2 threshold: %d\n", nval);
 				js2_threshold = nval;
 			}
-			
+
 			if (strstr(argv[i] + 1, "shakemult=")) {
 				char *val = strchr(argv[i], '=');
 				int nval;
@@ -949,11 +943,11 @@ int main(int argc, char *argv[])
 				nval = atoi(val);
 				if (nval < 0) nval = 0;
 				printf("Shake multiplier: %d\n", nval);
-				shakeMultiplier = nval;	
+				shakeMultiplier = nval;
 			}
 			if (strcmp(argv[i] + 1, "savecampaigns") == 0) {
 				int j = 0;
-				
+
 				printf("Saving builtin campaigns as files: \n");
 				while (SetupBuiltinCampaign(j)) {
 					sprintf(s, "bltin%02d.cpn", j);
@@ -972,7 +966,7 @@ int main(int argc, char *argv[])
 			}
 			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
 				debug(D_NORMAL, "nojoystick\n");
-				js_flag = 0;				
+				js_flag = 0;
 			}
 			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
 				Gfx_HintOn(HINT_FULLSCREEN);
@@ -996,7 +990,7 @@ int main(int argc, char *argv[])
 					Gfx_SetHint(HINT_SCALEFACTOR, f);
 			}
 			if (strcmp(argv[i] + 1, "help") == 0 ||
-				strcmp(argv[i] + 1, "h") == 0 || 
+				strcmp(argv[i] + 1, "h") == 0 ||
 				strcmp(argv[i] + 1, "-help") == 0) {
 				PrintHelp();
 				exit(EXIT_SUCCESS);
@@ -1010,7 +1004,7 @@ int main(int argc, char *argv[])
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
-	
+
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
@@ -1044,7 +1038,8 @@ int main(int argc, char *argv[])
 
 	PlayMenuSong();
 
-	LookForCustomCampaigns();
+	//LookForCustomCampaigns();
+	LoadAllCampaigns(&campaigns);
 
 	InitSticks();
 
@@ -1060,7 +1055,7 @@ int main(int argc, char *argv[])
 	} else {
 		CDogsSetPalette(gPalette);
 		debug(D_NORMAL, ">> Entering main loop\n");
-		MainLoop(&creditsDisplayer);
+		MainLoop(&creditsDisplayer, &campaigns);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
 
@@ -1072,6 +1067,7 @@ int main(int argc, char *argv[])
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
 	UnloadCredits(&creditsDisplayer);
+	UnloadAllCampaigns(&campaigns);
 
 	if (sound) {
 		debug(D_NORMAL, ">> Shutting down sound...\n");

@@ -26,24 +26,30 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef __CAMPAIGNS
+#define __CAMPAIGNS
 
-#ifndef __SYS_CONFIG
-#define __SYS_CONFIG
+#include "sys_config.h"
 
-/* where to look for the cdogs data files */
-#define CDOGS_DATA_DIR "."
+typedef struct
+{
+	char filename[CDOGS_FILENAME_MAX];
+	char info[80];
+} campaign_entry_t;
 
-#define CDOGS_CFG_DIR ".cdogs/"
+typedef struct
+{
+	campaign_entry_t *list;
+	int num;
+} campaign_list_t;
 
-#define CDOGS_MUSIC_DIR "./music/"
-#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "game/"
-#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "menu/"
+typedef struct
+{
+	campaign_list_t campaignList;
+	campaign_list_t dogfightList;
+} custom_campaigns_t;
 
-#define CDOGS_CAMPAIGN_DIR "missions/"
-#define CDOGS_DOGFIGHT_DIR "dogfights/"
-
-#define CDOGS_TEMP_DIR "/tmp/cdogs/"
-
-#define CDOGS_FILENAME_MAX 256
+void LoadAllCampaigns(custom_campaigns_t *campaigns);
+void UnloadAllCampaigns(custom_campaigns_t *campaigns);
 
 #endif

@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,8 +123,8 @@ static TCampaignSetting customSetting = {
 };
 
 
-static struct FileEntry *campaignList = NULL;
-static struct FileEntry *dogfightList = NULL;
+static struct FileEntry *gCampaignList = NULL;
+static struct FileEntry *gDogfightList = NULL;
 
 
 void LookForCustomCampaigns(void)
@@ -133,21 +133,21 @@ void LookForCustomCampaigns(void)
 
 	printf("\nCampaigns:\n");
 
-	campaignList = GetFilesFromDirectory(GetDataFilePath("missions/"));
-	GetCampaignTitles(&campaignList);
+	gCampaignList = GetFilesFromDirectory(GetDataFilePath(CDOGS_CAMPAIGN_DIR));
+	GetCampaignTitles(&gCampaignList);
 	i = 0;
 	while (SetupBuiltinCampaign(i)) {
-		AddFileEntry(&campaignList, "", gCampaign.setting->title, i);
+		AddFileEntry(&gCampaignList, "", gCampaign.setting->title, i);
 		i++;
 	}
 
 	printf("\nDogfights:\n");
 
-	dogfightList = GetFilesFromDirectory(GetDataFilePath("dogfights/"));
-	GetCampaignTitles(&dogfightList);
+	gDogfightList = GetFilesFromDirectory(GetDataFilePath(CDOGS_DOGFIGHT_DIR));
+	GetCampaignTitles(&gDogfightList);
 	i = 0;
 	while (SetupBuiltinDogfight(i)) {
-		AddFileEntry(&dogfightList, "", gCampaign.setting->title, i);
+		AddFileEntry(&gDogfightList, "", gCampaign.setting->title, i);
 		i++;
 	}
 
@@ -167,7 +167,7 @@ int SelectCampaign(int dogFight, int cmd)
 	static int campaignIndex = 0;
 	static int dogfightIndex = 0;
 	int count, y, i, j;
-	struct FileEntry *list = dogFight ? dogfightList : campaignList;
+	struct FileEntry *list = dogFight ? gDogfightList : gCampaignList;
 	const char *prefix = dogFight ? CDOGS_DOGFIGHT_DIR : CDOGS_CAMPAIGN_DIR;
 	int *index = dogFight ? &dogfightIndex : &campaignIndex;
 	struct FileEntry *f;
@@ -203,7 +203,7 @@ int SelectCampaign(int dogFight, int cmd)
 		printf(">> Entering MODE_PLAY\n");
 		return MODE_PLAY;
 	}
-	
+
 	if (Left(cmd) || Up(cmd)) {
 		(*index)--;
 		if (*index < 0)
@@ -214,18 +214,18 @@ int SelectCampaign(int dogFight, int cmd)
 		if (*index >= count)
 			*index = 0;
 		PlaySound(SND_SWITCH, 0, 255);
-	}	
-	
+	}
+
 	if (dogFight)
 		CDogsTextStringSpecial("Select a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 	else
 		CDogsTextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
 
 	y = CenterY(12 * CDogsTextHeight());
-	
+
 #define ARROW_UP	"\036"
 #define ARROW_DOWN	"\037"
-	
+
 	for (i = 0, f = list; f != NULL && i <= *index - 12; f = f->next, i++);
 
 	if (i)
@@ -233,7 +233,7 @@ int SelectCampaign(int dogFight, int cmd)
 
 	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++) {
 		DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, i == *index);
-		
+
 		if (i == *index) {
 			char s[255];
 
@@ -244,13 +244,13 @@ int SelectCampaign(int dogFight, int cmd)
 
 			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
 		}
-			
+
 		y += CDogsTextHeight();
 	}
 
 	if (f)
 		DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
-		
+
 	return dogFight ? MODE_DOGFIGHT : MODE_CAMPAIGN;
 }
 
@@ -298,7 +298,7 @@ static int SelectMain(int cmd)
 	CDogsTextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 
 	DisplayMenuAtCenter(mainMenuStr, MAIN_COUNT, index);
-	
+
 	return MODE_MAIN;
 }
 
@@ -460,15 +460,15 @@ int SelectOptions(int cmd)
 	}
 
 	CDogsTextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
-	
+
 	x = CenterX(MenuWidth(optionsMenu, OPTIONS_COUNT));
 	y = CenterY(MenuHeight(OPTIONS_COUNT));
-	
+
 	DisplayMenuAt(x - 20, y, optionsMenu, OPTIONS_COUNT, index);
 
 	x += MenuWidth(optionsMenu, OPTIONS_COUNT);
 	x += 10;
-	
+
 	CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
 	y += CDogsTextHeight();
 	CDogsTextStringAt(x, y, gOptions.displayFPS ? "On" : "Off");
@@ -539,6 +539,7 @@ void ChangeControl(
 			*d = INPUT_DEVICE_JOYSTICK_2;
 		}
 	}
+	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
 }
 
 int SelectControls(int cmd)
@@ -594,13 +595,13 @@ int SelectControls(int cmd)
 		PlaySound(SND_SWITCH, 0, 255);
 	}
 
-	CDogsTextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));	
-	
+	CDogsTextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
+
 	x = CenterX(MenuWidth(controlsMenu, CONTROLS_COUNT));
 	y = CenterY(MenuHeight(CONTROLS_COUNT));
-	
+
 	DisplayMenuAt(x - 20, y, controlsMenu, CONTROLS_COUNT, index);
-	
+
 	x += MenuWidth(controlsMenu, CONTROLS_COUNT);
 	x += 10;
 
@@ -712,29 +713,29 @@ static void DisplayKeys(int x, int x2, int y, char *title,
 static void ShowAllKeys(int index, int change)
 {
 	int x1, x2, y1, y2;
-	
+
 	x1 = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
 	x2 = x1 * 3;
-	
+
 	y1 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 10);
 	y2 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 2);
-	
+
 	DisplayKeys(x1, x2, y1, "Player One", &gPlayer1Data, index, change);
 	DisplayKeys(x1, x2, y2, "Player Two", &gPlayer2Data, index - 6, change - 6);
-	
+
 	y2 += CDogsTextHeight() * 8;
-	
+
 	CDogsTextStringAt(x1, y2, "Map");
-	
+
 	if (change == 12)
 		DisplayMenuItem(x2, y2, SELECTKEY, index == 12);
 	else
 		DisplayMenuItem(x2, y2, SDL_GetKeyName(gOptions.mapKey), index == 12);
-	
+
 #define DONE	"Done"
-	
+
 	y2 += CDogsTextHeight () * 2;
-	
+
 	DisplayMenuItem(CenterX(CDogsTextWidth(DONE)), y2, DONE, index == 13);
 }
 
@@ -865,14 +866,14 @@ int SelectVolume(int cmd)
 	}
 
 	CDogsTextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
-	
+
 	x = CenterX(MenuWidth(volumeMenu, VOLUME_COUNT));
 	y = CenterY(MenuHeight(VOLUME_COUNT));
-	
+
 	DisplayMenuAt(x - 20, y, volumeMenu, VOLUME_COUNT, index);
-	
+
 	x += MenuWidth(volumeMenu, VOLUME_COUNT);
-	x += 10;	
+	x += 10;
 
 	sprintf(s, "%d", FXVolume() / 8);
 	CDogsTextStringAt(x, y, s);
@@ -923,7 +924,7 @@ int MainMenuOld(void *bkg, credits_displayer_t *creditsDisplayer)
 		GetMenuCmd(&cmd, &prev);
 
 		mode = MainMenuSelection(mode, cmd);
-		
+
 		CopyToScreen();
 
 		SDL_Delay(10);
@@ -945,8 +946,10 @@ typedef enum
 	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
 	MENU_TYPE_SET_OPTION_CHANGE_CONTROL,	// change control device
 	MENU_TYPE_VOID_FUNC_VOID,		// call a void(*f)(void) function
+	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
-	MENU_TYPE_QUIT
+	MENU_TYPE_QUIT,
+	MENU_TYPE_SEPARATOR
 } menu_type_e;
 
 typedef enum
@@ -1021,19 +1024,26 @@ typedef struct menu
 			input_device_e *device1;
 		} optionChangeControl;
 		void (*func)(void);
+		struct
+		{
+			char filename[CDOGS_FILENAME_MAX];
+		} campaignEntry;
 	} u;
 } menu_t;
 
-menu_t *MenuCreateAll(void);
+menu_t *MenuCreateAll(custom_campaigns_t *campaigns);
 void MenuDestroy(menu_t *menu);
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
 
-int MainMenu(void *bkg, credits_displayer_t *creditsDisplayer)
+int MainMenu(
+	void *bkg,
+	credits_displayer_t *creditsDisplayer,
+	custom_campaigns_t *campaigns)
 {
 	int cmd, prev = 0;
 	int mode = MODE_MAIN;
-	menu_t *mainMenu = MenuCreateAll();
+	menu_t *mainMenu = MenuCreateAll(campaigns);
 	menu_t *menu = mainMenu;
 
 	BlitSetBrightness(gOptions.brightness);
@@ -1062,15 +1072,15 @@ menu_t *MenuCreate(
 	int setOptions,
 	int initialIndex);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
-menu_t *MenuCreateOnePlayer(const char *name);
-menu_t *MenuCreateTwoPlayers(const char *name);
-menu_t *MenuCreateDogfight(const char *name);
+menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList);
+menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList);
+menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList);
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateControls(const char *name);
 menu_t *MenuCreateSound(const char *name);
 menu_t *MenuCreateQuit(const char *name);
 
-menu_t *MenuCreateAll(void)
+menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 {
 	menu_t *menu = MenuCreate(
 		"",
@@ -1078,9 +1088,9 @@ menu_t *MenuCreateAll(void)
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS,
 		0, 0, 0);
-	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player"));
-	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players"));
-	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight"));
+	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player", &campaigns->campaignList));
+	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players", &campaigns->campaignList));
+	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight", &campaigns->dogfightList));
 	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
 	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
 	MenuAddSubmenu(menu, MenuCreateSound("Sound..."));
@@ -1112,7 +1122,6 @@ menu_t *MenuCreate(
 	return menu;
 }
 
-// TODO: make this more efficient?
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
 	menu_t *subMenuLoc = NULL;
@@ -1129,7 +1138,9 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	sys_mem_free(subMenu);
 }
 
-menu_t *MenuCreateOnePlayer(const char *name)
+menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
+
+menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 {
 	menu_t *menu = MenuCreate(
 		name,
@@ -1138,10 +1149,15 @@ menu_t *MenuCreateOnePlayer(const char *name)
 		0,
 		MENU_OPTION_TYPE_CAMPAIGNS,
 		0, 0);
+	int i;
+	for (i = 0; i < campaignList->num; i++)
+	{
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(&campaignList->list[i]));
+	}
 	return menu;
 }
 
-menu_t *MenuCreateTwoPlayers(const char *name)
+menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 {
 	menu_t *menu = MenuCreate(
 		name,
@@ -1151,10 +1167,15 @@ menu_t *MenuCreateTwoPlayers(const char *name)
 		MENU_OPTION_TYPE_CAMPAIGNS,
 		MENU_SET_OPTIONS_TWOPLAYERS,
 		0);
+	int i;
+	for (i = 0; i < campaignList->num; i++)
+	{
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(&campaignList->list[i]));
+	}
 	return menu;
 }
 
-menu_t *MenuCreateDogfight(const char *name)
+menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 {
 	menu_t *menu = MenuCreate(
 		name,
@@ -1164,6 +1185,21 @@ menu_t *MenuCreateDogfight(const char *name)
 		MENU_OPTION_TYPE_DOGFIGHTS,
 		MENU_SET_OPTIONS_DOGFIGHT,
 		0);
+	int i;
+	for (i = 0; i < dogfightList->num; i++)
+	{
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(&dogfightList->list[i]));
+	}
+	return menu;
+}
+
+menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
+{
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, entry->info);
+	menu->type = MENU_TYPE_CAMPAIGN_ITEM;
+	strcpy(menu->u.campaignEntry.filename, entry->filename);
+	// TODO: details for opening campaign
 	return menu;
 }
 
@@ -1177,6 +1213,7 @@ menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void));
 menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
 	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment);
+menu_t *MenuCreateSeparator(void);
 menu_t *MenuCreateBack(const char *name);
 
 menu_t *MenuCreateOptions(const char *name)
@@ -1235,6 +1272,7 @@ menu_t *MenuCreateOptions(const char *name)
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"Video scale factor", GrafxGetScale, GrafxSetScale, 1, 4, 1));
+	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
@@ -1271,6 +1309,7 @@ menu_t *MenuCreateControls(const char *name)
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
 	MenuAddSubmenu(
 		menu, MenuCreateOptionFunc("Calibrate joystick", InitSticks));
+	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
@@ -1296,6 +1335,7 @@ menu_t *MenuCreateSound(const char *name)
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"FX channels", FXChannels, SetFXChannels, 2, 8, 1));
+	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
@@ -1370,6 +1410,12 @@ menu_t *MenuCreateOptionRangeGetSet(
 	menu->u.optionRangeGetSet.low = low;
 	menu->u.optionRangeGetSet.high = high;
 	menu->u.optionRangeGetSet.increment = increment;
+	return menu;
+}
+
+menu_t *MenuCreateSeparator(void)
+{
+	menu_t *menu = MenuCreate("", "", MENU_TYPE_SEPARATOR, 0, 0, 0, 0);
 	return menu;
 }
 
@@ -1475,7 +1521,7 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	}
 }
 
-void MenuDisplayMapList(struct FileEntry *list, int menuIndex);
+void MenuDisplayMapList(menu_t *menu);
 
 void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 {
@@ -1516,10 +1562,10 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 	switch (menu->u.normal.optionType)
 	{
 	case MENU_OPTION_TYPE_CAMPAIGNS:
-		MenuDisplayMapList(campaignList, menu->u.normal.index);
+		MenuDisplayMapList(menu);
 		break;
 	case MENU_OPTION_TYPE_DOGFIGHTS:
-		MenuDisplayMapList(dogfightList, menu->u.normal.index);
+		MenuDisplayMapList(menu);
 		break;
 	case MENU_OPTION_TYPE_OPTIONS:
 		{
@@ -1591,19 +1637,14 @@ void MenuDisplaySubmenus(menu_t *menu, int isCentered)
 	}
 }
 
-void MenuDisplayMapList(struct FileEntry *list, int menuIndex)
+void MenuDisplayMapList(menu_t *menu)
 {
-	int count = 0, y, j;
-	struct FileEntry *f = list;
-	int i = 0;
-	while (f != NULL && i <= menuIndex - 12)
-	{
-		count++;
-		i++;
-		f = f->next;
-	}
+	int i = 0;	// current menu scroll
+	int j;
 
-	y = CenterY(12 * CDogsTextHeight());
+	// TODO: display up/down arrows, handle scrolling
+
+	int y = CenterY(12 * CDogsTextHeight());
 
 #define ARROW_UP	"\036"
 #define ARROW_DOWN	"\037"
@@ -1617,22 +1658,25 @@ void MenuDisplayMapList(struct FileEntry *list, int menuIndex)
 			0);
 	}
 
-	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++)
+	for (j = 0; j < MIN(12, menu->u.normal.numSubMenus); i++, j++)
 	{
-		int isSelected = i == menuIndex;
-		DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, isSelected);
+		int isSelected = i == menu->u.normal.index;
+		menu_t *subMenu = &menu->u.normal.subMenus[i];
+		// TODO: display subfolders
+		DisplayMenuItem(
+			CenterX(CDogsTextWidth(subMenu->name)), y, subMenu->name, isSelected);
 
 		if (isSelected)
 		{
 			char s[255];
-			sprintf(s, "( %s )", strlen(f->name) == 0 ? "Internal" : f->name);
+			sprintf(s, "( %s )", subMenu->u.campaignEntry.filename);
 			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
 		}
 
 		y += CDogsTextHeight();
 	}
 
-	if (f != NULL)
+	if (i < menu->u.normal.numSubMenus - 1)
 	{
 		DisplayMenuItem(
 			CenterX(CDogsTextWidth(ARROW_DOWN)),
@@ -1864,20 +1908,28 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	int leftRightMoves = menu->type == MENU_TYPE_NORMAL;
 	if (Up(cmd) || (leftRightMoves && Left(cmd)))
 	{
-		menu->u.normal.index--;
-		if (menu->u.normal.index < 0)
+		do
 		{
-			menu->u.normal.index = menu->u.normal.numSubMenus - 1;
-		}
+			menu->u.normal.index--;
+			if (menu->u.normal.index < 0)
+			{
+				menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+			}
+		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
+			MENU_TYPE_SEPARATOR);
 		PlaySound(SND_DOOR, 0, 255);
 	}
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
-		menu->u.normal.index++;
-		if (menu->u.normal.index >= menu->u.normal.numSubMenus)
+		do
 		{
-			menu->u.normal.index = 0;
-		}
+			menu->u.normal.index++;
+			if (menu->u.normal.index >= menu->u.normal.numSubMenus)
+			{
+				menu->u.normal.index = 0;
+			}
+		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
+			MENU_TYPE_SEPARATOR);
 		PlaySound(SND_DOOR, 0, 255);
 	}
 }

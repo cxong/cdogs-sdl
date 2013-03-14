@@ -25,15 +25,9 @@
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
-
--------------------------------------------------------------------------------
-
- sys_specifics.h - system and platform specific definitions
- 
 */
-
-#ifndef __sys_specifics
-#define __sys_specifics
+#ifndef __SYS_SPECIFICS
+#define __SYS_SPECIFICS
 
 #ifdef _MSC_VER
 /* Windows */

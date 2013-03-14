@@ -236,6 +236,30 @@ blit.c.s:
 	$(MAKE) -f CMakeFiles/cdogs.dir/build.make CMakeFiles/cdogs.dir/blit.c.s
 .PHONY : blit.c.s
 
+campaigns.o: campaigns.c.o
+.PHONY : campaigns.o
+
+# target to build an object file
+campaigns.c.o:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/campaigns.c.o
+.PHONY : campaigns.c.o
+
+campaigns.i: campaigns.c.i
+.PHONY : campaigns.i
+
+# target to preprocess a source file
+campaigns.c.i:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/campaigns.c.i
+.PHONY : campaigns.c.i
+
+campaigns.s: campaigns.c.s
+.PHONY : campaigns.s
+
+# target to generate assembly for a file
+campaigns.c.s:
+	$(MAKE) -f CMakeFiles/cdogs-sdl.dir/build.make CMakeFiles/cdogs-sdl.dir/campaigns.c.s
+.PHONY : campaigns.c.s
+
 cdogs.o: cdogs.c.o
 .PHONY : cdogs.o
 
@@ -958,6 +982,9 @@ help:
 	@echo "... blit.o"
 	@echo "... blit.i"
 	@echo "... blit.s"
+	@echo "... campaigns.o"
+	@echo "... campaigns.i"
+	@echo "... campaigns.s"
 	@echo "... cdogs.o"
 	@echo "... cdogs.i"
 	@echo "... cdogs.s"

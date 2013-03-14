@@ -44,4 +44,6 @@
 
 #define CDOGS_TEMP_DIR "@CDOGS_TEMP_DIR@"
 
+#define CDOGS_FILENAME_MAX 256
+
 #endif

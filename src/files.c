@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,11 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- files.c - file handling functions
- 
 */
 #include "files.h"
 
@@ -64,7 +59,7 @@ ssize_t f_read(FILE *f, void *buf, size_t size)
 
 ssize_t f_read32(FILE *f, void *buf, size_t size)
 {
-	ssize_t ret = 0;	
+	ssize_t ret = 0;
 	if (buf) {
 		ret = f_read(f, buf, size);
 		swap32((int *)buf);
@@ -81,7 +76,7 @@ void swap16 (void *d)
 
 ssize_t f_read16(FILE *f, void *buf, size_t size)
 {
-	ssize_t ret = 0;	
+	ssize_t ret = 0;
 	if (buf) {
 		ret = f_read(f, buf, size);
 		swap16((short int*)buf);
@@ -107,7 +102,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	if (f != NULL)
 	{
 		f_read32(f, &i, sizeof(i));
-		
+
 		if (i != CAMPAIGN_MAGIC) {
 			fclose(f);
 			debug(D_NORMAL, "Filename: %s\n", filename);
@@ -163,8 +158,8 @@ void load_mission(FILE *f, struct Mission *m)
 
 		debug(D_NORMAL, "== MISSION ==\n");
 		debug(D_NORMAL, "t: %s\n", m->title);
-		debug(D_NORMAL, "d: %s\n", m->description);  
-	
+		debug(D_NORMAL, "d: %s\n", m->description);
+
 		R32(m,  wallStyle);
 		R32(m,  floorStyle);
 		R32(m,  roomStyle);
@@ -180,22 +175,22 @@ void load_mission(FILE *f, struct Mission *m)
 		R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
 
 		R32(m, objectiveCount);
-		
-		debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);	
+
+		debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);
  		for (i = 0; i < OBJECTIVE_MAX; i++) {
 			load_mission_objective(f, &m->objectives[i]);
 		}
-	
+
 		R32(m, baddieCount);
 		for (i = 0; i < BADDIE_MAX; i++) {
 			f_read32(f, &m->baddies[i], sizeof(int));
 		}
-		
+
 		R32(m, specialCount);
 		for (i = 0; i < SPECIAL_MAX; i++) {
 			f_read32(f, &m->specials[i], sizeof(int));
 		}
-		
+
 		R32(m, itemCount);
 		for (i = 0; i < ITEMS_MAX; i++) {
 			f_read32(f, &m->items[i], sizeof(int));
@@ -203,19 +198,19 @@ void load_mission(FILE *f, struct Mission *m)
 		for (i = 0; i < ITEMS_MAX; i++) {
 			f_read32(f, &m->itemDensity[i], sizeof(int));
 		}
-	
-		R32(m, baddieDensity);	
-		R32(m, weaponSelection);					
-		
+
+		R32(m, baddieDensity);
+		R32(m, weaponSelection);
+
 		f_read(f, m->song, sizeof(m->song));
 		f_read(f, m->map, sizeof(m->map));
-		
-		R32(m, wallRange);						
+
+		R32(m, wallRange);
 		R32(m, floorRange);
 		R32(m, roomRange);
 		R32(m, altRange);
 
-		debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);	
+		debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);
 
 		return;
 }
@@ -324,7 +319,7 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 			perror("SaveCampaign - couldn't write to file: ");\
 			close(f);\
 			return CAMPAIGN_BADFILE;\
-		}		
+		}
 		i = CAMPAIGN_MAGIC;
 		writeres = write(f, &i, sizeof(i));
 		CHECK_WRITE()
@@ -603,7 +598,7 @@ void AddFileEntry(struct FileEntry **list, const char *name,
 
 	if (strcmp(name, "") == 0)
 		printf(" -> Adding [builtin]\n");
-	else 
+	else
 		printf(" -> Adding [%s]\n", name);
 
 	entry = sys_mem_alloc(sizeof(struct FileEntry));
@@ -647,7 +642,7 @@ void GetCampaignTitles(struct FileEntry **entries)
 	char s[10];
 
 	while (*entries) {
-		if (ScanCampaign(join(GetDataFilePath("missions/"),
+		if (ScanCampaign(join(GetDataFilePath(CDOGS_CAMPAIGN_DIR),
 				(*entries)->name),
 				(*entries)->info,
 				&i) == CAMPAIGN_OK) {
@@ -718,7 +713,7 @@ char * GetDataFilePath(const char *path)
 {
 	if (!data_path) {
 		char *tmp;
-		
+
 		if ((tmp = getenv("CDOGS_DATA_DIR")) != NULL && strlen(tmp) != 0
 				&& Is_Dir(tmp) && Is_Readable(tmp)) {
 			data_path = strdup(tmp);
@@ -732,7 +727,7 @@ char * GetDataFilePath(const char *path)
 			free(tmp);
 		}
 	}
-	
+
 	strcpy(data_pbuf, data_path);
 	strcat(data_pbuf, "/");
 	strcat(data_pbuf, path);
@@ -787,7 +782,7 @@ int mkdir_deep(const char *path, mode_t m)
 				/* Mac OS X 10.4 returns EISDIR instead of EEXIST
 				 * if a dir already exists... */
 				if (errno == EEXIST || errno == EISDIR) continue;
-				else return 1; 
+				else return 1;
 			}
 		}
 	}
@@ -816,7 +811,7 @@ void SetupConfigDir(void)
 				perror("Error creating config directory:");
 		}
 	}
-		
+
 	return;
 }
 
