@@ -35,6 +35,9 @@ typedef struct
 {
 	char filename[CDOGS_FILENAME_MAX];
 	char info[80];
+	int isBuiltin;
+	int isDogfight;
+	int builtinIndex;
 } campaign_entry_t;
 
 typedef struct

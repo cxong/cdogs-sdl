@@ -1023,12 +1023,11 @@ typedef struct menu
 			input_device_e *device1;
 		} optionChangeControl;
 		void (*func)(void);
-		struct
-		{
-			char filename[CDOGS_FILENAME_MAX];
-		} campaignEntry;
+		campaign_entry_t campaignEntry;
 	} u;
 } menu_t;
+
+// TODO: create menu system type to hold menus and components such as credits_displayer_t
 
 menu_t *MenuCreateAll(custom_campaigns_t *campaigns);
 void MenuDestroy(menu_t *menu);
@@ -1041,7 +1040,7 @@ int MainMenu(
 	custom_campaigns_t *campaigns)
 {
 	int cmd, prev = 0;
-	int mode = MODE_MAIN;
+	int doPlay = 0;
 	menu_t *mainMenu = MenuCreateAll(campaigns);
 	menu_t *menu = mainMenu;
 
@@ -1055,11 +1054,12 @@ int MainMenu(
 		menu = MenuProcessCmd(menu, cmd);
 		CopyToScreen();
 		SDL_Delay(10);
-	} while (menu->type != MENU_TYPE_QUIT && (1/*play*/));
+	} while (menu->type != MENU_TYPE_QUIT && menu->type != MENU_TYPE_CAMPAIGN_ITEM);
+	doPlay = menu->type == MENU_TYPE_CAMPAIGN_ITEM;
 
 	MenuDestroy(mainMenu);
 	WaitForRelease();
-	return mode == MODE_PLAY;
+	return doPlay;
 }
 
 menu_t *MenuCreate(
@@ -1193,7 +1193,7 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, entry->info);
 	menu->type = MENU_TYPE_CAMPAIGN_ITEM;
-	strcpy(menu->u.campaignEntry.filename, entry->filename);
+	memcpy(&menu->u.campaignEntry, entry, sizeof(menu->u.campaignEntry));
 	// TODO: details for opening campaign
 	return menu;
 }
@@ -1587,14 +1587,17 @@ void MenuDisplaySubmenus(menu_t *menu)
 			{
 				int isSelected = i == menu->u.normal.index;
 				menu_t *subMenu = &menu->u.normal.subMenus[i];
+				const char *name = subMenu->name;
 				// TODO: display subfolders
 				DisplayMenuItem(
-					CenterX(CDogsTextWidth(subMenu->name)), y, subMenu->name, isSelected);
+					CenterX(CDogsTextWidth(name)), y, name, isSelected);
 
 				if (isSelected)
 				{
 					char s[255];
-					sprintf(s, "( %s )", subMenu->u.campaignEntry.filename);
+					const char *filename = subMenu->u.campaignEntry.filename;
+					int isBuiltin = subMenu->u.campaignEntry.isBuiltin;
+					sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
 					CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
 				}
 
@@ -1711,7 +1714,15 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 	if (menuToChange != NULL)
 	{
 		debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
-		PlaySound(SND_MACHINEGUN, 0, 255);
+		// TODO: refactor menu change sound
+		if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
+		{
+			PlaySound(SND_HAHAHA, 0, 255);
+		}
+		else
+		{
+			PlaySound(SND_MACHINEGUN, 0, 255);
+		}
 		return menuToChange;
 	}
 	MenuChangeIndex(menu, cmd);
@@ -1742,6 +1753,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 }
 
 void MenuSetOptions(int setOptions);
+void MenuLoadCampaign(campaign_entry_t *entry);
 void MenuActivate(menu_t *menu, int cmd);
 
 menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
@@ -1758,6 +1770,9 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_CAMPAIGNS:
 			return subMenu;
+		case MENU_TYPE_CAMPAIGN_ITEM:
+			MenuLoadCampaign(&subMenu->u.campaignEntry);
+			return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 		case MENU_TYPE_BACK:
 			return menu->u.normal.parentMenu;
 		case MENU_TYPE_QUIT:
@@ -1777,6 +1792,44 @@ void MenuSetOptions(int setOptions)
 		gOptions.twoPlayers = !!(setOptions & MENU_SET_OPTIONS_TWOPLAYERS);
 		gCampaign.dogFight = !!(setOptions & MENU_SET_OPTIONS_DOGFIGHT);
 	}
+}
+
+void MenuLoadCampaign(campaign_entry_t *entry)
+{
+	if (entry->isBuiltin)
+	{
+		if (entry->isDogfight)
+		{
+			SetupBuiltinDogfight(entry->builtinIndex);
+		}
+		else
+		{
+			SetupBuiltinCampaign(entry->builtinIndex);
+		}
+	}
+	else
+	{
+		const char *filename = entry->filename;
+		if (customSetting.missions)
+		{
+			sys_mem_free(customSetting.missions);
+		}
+		if (customSetting.characters)
+		{
+			sys_mem_free(customSetting.characters);
+		}
+		memset(&customSetting, 0, sizeof(customSetting));
+
+		if (LoadCampaign(GetDataFilePath(filename), &customSetting, 0, 0) !=
+			CAMPAIGN_OK)
+		{
+			assert(0);
+			printf("Failed to load campaign %s!\n", filename);
+		}
+		gCampaign.setting = &customSetting;
+	}
+
+	printf(">> Loading campaign/dogfight\n");
 }
 
 void MenuActivate(menu_t *menu, int cmd)

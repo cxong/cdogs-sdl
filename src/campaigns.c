@@ -78,29 +78,29 @@ void UnloadAllCampaigns(custom_campaigns_t *campaigns)
 	}
 }
 
-void AddCampaignEntry(
-	campaign_list_t *list, const char *filename, const char *title);
+void AddBuiltinCampaignEntry(
+	campaign_list_t *list, const char *title, int isDogfight, int builtinIndex);
 
 void LoadBuiltinCampaigns(campaign_list_t *list)
 {
 	int i = 0;
-	while (SetupBuiltinCampaign(i))
+	for (i = 0; SetupBuiltinCampaign(i); i++)
 	{
-		AddCampaignEntry(list, "Internal", gCampaign.setting->title);
-		i++;
+		AddBuiltinCampaignEntry(list, gCampaign.setting->title, 0, i);
 	}
 }
 void LoadBuiltinDogfights(campaign_list_t *list)
 {
 	int i = 0;
-	while (SetupBuiltinDogfight(i))
+	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
-		AddCampaignEntry(list, "Internal", gCampaign.setting->title);
-		i++;
+		AddBuiltinCampaignEntry(list, gCampaign.setting->title, 1, i);
 	}
 }
 
 int IsCampaignOK(const char *path, char *title);
+void AddCustomCampaignEntry(
+	campaign_list_t *list, const char *filename, const char *title);
 
 void LoadCampaignsFromFolder(campaign_list_t *list, const char *path)
 {
@@ -122,7 +122,7 @@ void LoadCampaignsFromFolder(campaign_list_t *list, const char *path)
 			char title[256];
 			if (IsCampaignOK(file.path, title))
 			{
-				AddCampaignEntry(list, file.name, title);
+				AddCustomCampaignEntry(list, file.name, title);
 			}
 		}
 	}
@@ -142,13 +142,32 @@ int IsCampaignOK(const char *path, char *title)
 	return 0;
 }
 
-void AddCampaignEntry(
+campaign_entry_t *AddAndGetCampaignEntry(
+	campaign_list_t *list, const char *title);
+
+void AddBuiltinCampaignEntry(
+	campaign_list_t *list, const char *title, int isDogfight, int builtinIndex)
+{
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title);
+	entry->isBuiltin = 1;
+	entry->isDogfight = isDogfight;
+	entry->builtinIndex = builtinIndex;
+}
+void AddCustomCampaignEntry(
 	campaign_list_t *list, const char *filename, const char *title)
+{
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title);
+	strcpy(entry->filename, filename);
+	entry->isBuiltin = 0;
+}
+
+campaign_entry_t *AddAndGetCampaignEntry(
+	campaign_list_t *list, const char *title)
 {
 	campaign_entry_t *entry;
 	list->num++;
 	list->list = sys_mem_realloc(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
-	strcpy(entry->filename, filename);
 	strcpy(entry->info, title);
+	return entry;
 }
