@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#ifndef __TEXT
+#define __TEXT
+
 #include "grafx.h"
 
 void CDogsTextInit(const char *filename, int offset);
@@ -35,7 +38,7 @@ void CDogsTextCharWithTable(char c, TranslationTable * table);
 void CDogsTextStringWithTable(const char *s, TranslationTable * table);
 void CDogsTextStringWithTableAt(int x, int y, const char *s,
 			   TranslationTable * table);
-			   
+
 #define TEXT_XCENTER		1
 #define TEXT_YCENTER		2
 #define TEXT_LEFT		4
@@ -47,3 +50,9 @@ void CDogsTextStringWithTableAt(int x, int y, const char *s,
 
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
 #define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
+
+char *PercentStr(int p);
+char *ScaleStr(int s);
+char *Div8Str(int i);
+
+#endif

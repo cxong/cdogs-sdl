@@ -39,7 +39,8 @@
 
 void LoadBuiltinCampaigns(campaign_list_t *list);
 void LoadBuiltinDogfights(campaign_list_t *list);
-void LoadCampaignsFromFolder(campaign_list_t *list, const char *path);
+void LoadCampaignsFromFolder(
+	campaign_list_t *list, const char *path, int isDogfight);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns)
 {
@@ -51,14 +52,16 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	LoadBuiltinCampaigns(&campaigns->campaignList);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList,
-		GetDataFilePath(CDOGS_CAMPAIGN_DIR));
+		GetDataFilePath(CDOGS_CAMPAIGN_DIR),
+		0);
 
 	printf("\nDogfights:\n");
 
 	LoadBuiltinDogfights(&campaigns->dogfightList);
 	LoadCampaignsFromFolder(
 		&campaigns->dogfightList,
-		GetDataFilePath(CDOGS_DOGFIGHT_DIR));
+		GetDataFilePath(CDOGS_DOGFIGHT_DIR),
+		1);
 
 	printf("\n");
 }
@@ -100,9 +103,13 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 
 int IsCampaignOK(const char *path, char *title);
 void AddCustomCampaignEntry(
-	campaign_list_t *list, const char *filename, const char *title);
+	campaign_list_t *list,
+	const char *filename,
+	const char *title,
+	int isDogfight);
 
-void LoadCampaignsFromFolder(campaign_list_t *list, const char *path)
+void LoadCampaignsFromFolder(
+	campaign_list_t *list, const char *path, int isDogfight)
 {
 	tinydir_dir dir;
 	int i;
@@ -122,7 +129,7 @@ void LoadCampaignsFromFolder(campaign_list_t *list, const char *path)
 			char title[256];
 			if (IsCampaignOK(file.path, title))
 			{
-				AddCustomCampaignEntry(list, file.name, title);
+				AddCustomCampaignEntry(list, file.name, title, isDogfight);
 			}
 		}
 	}
@@ -143,31 +150,34 @@ int IsCampaignOK(const char *path, char *title)
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title);
+	campaign_list_t *list, const char *title, int isDogfight);
 
 void AddBuiltinCampaignEntry(
 	campaign_list_t *list, const char *title, int isDogfight, int builtinIndex)
 {
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title);
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, isDogfight);
 	entry->isBuiltin = 1;
-	entry->isDogfight = isDogfight;
 	entry->builtinIndex = builtinIndex;
 }
 void AddCustomCampaignEntry(
-	campaign_list_t *list, const char *filename, const char *title)
+	campaign_list_t *list,
+	const char *filename,
+	const char *title,
+	int isDogfight)
 {
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title);
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, isDogfight);
 	strcpy(entry->filename, filename);
 	entry->isBuiltin = 0;
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title)
+	campaign_list_t *list, const char *title, int isDogfight)
 {
 	campaign_entry_t *entry;
 	list->num++;
 	list->list = sys_mem_realloc(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
 	strcpy(entry->info, title);
+	entry->isDogfight = isDogfight;
 	return entry;
 }

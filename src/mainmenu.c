@@ -955,6 +955,15 @@ typedef enum
 
 typedef enum
 {
+	MENU_OPTION_DISPLAY_STYLE_DEFAULT,
+	MENU_OPTION_DISPLAY_STYLE_YES_NO,
+	MENU_OPTION_DISPLAY_STYLE_ON_OFF,
+	MENU_OPTION_DISPLAY_STYLE_STR_FUNC,	// use a function that returns string
+	MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,	// function that converts int to string
+} menu_option_display_style_e;
+
+typedef enum
+{
 	MENU_DISPLAY_ITEMS_CREDITS	= 0x01,
 	MENU_DISPLAY_ITEMS_AUTHORS	= 0x02
 } menu_display_items_e;
@@ -994,35 +1003,51 @@ typedef struct menu
 			int setOptions;
 		} normal;
 		// menu item only
-		int *optionToggle;
 		struct
 		{
-			int *option;
-			int low;
-			int high;
-			int increment;
-		} optionRange;
-		unsigned int *seed;
-		// function to call
-		struct
-		{
-			void (*upFunc)(void);
-			void (*downFunc)(void);
-		} upDownFuncs;
-		struct
-		{
-			int (*getFunc)(void);
-			void (*setFunc)(int);
-			int low;
-			int high;
-			int increment;
-		} optionRangeGetSet;
+			union
+			{
+				int *optionToggle;
+				struct
+				{
+					int *option;
+					int low;
+					int high;
+					int increment;
+				} optionRange;
+				unsigned int *seed;
+				// function to call
+				struct
+				{
+					void (*upFunc)(void);
+					void (*downFunc)(void);
+				} upDownFuncs;
+				struct
+				{
+					int (*getFunc)(void);
+					void (*setFunc)(int);
+					int low;
+					int high;
+					int increment;
+				} optionRangeGetSet;
+				struct
+				{
+					void (*toggle)(void);
+					int (*get)(void);
+				} toggleFuncs;
+			} uHook;
+			menu_option_display_style_e displayStyle;
+			union
+			{
+				char *(*str)(void);
+				char *(*intToStr)(int);
+			} uFunc;
+		} option;
 		struct
 		{
 			input_device_e *device0;
 			input_device_e *device1;
 		} optionChangeControl;
-		void (*func)(void);
 		campaign_entry_t campaignEntry;
 	} u;
 } menu_t;
@@ -1194,79 +1219,130 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 	strcpy(menu->name, entry->info);
 	menu->type = MENU_TYPE_CAMPAIGN_ITEM;
 	memcpy(&menu->u.campaignEntry, entry, sizeof(menu->u.campaignEntry));
-	// TODO: details for opening campaign
 	return menu;
 }
 
-menu_t *MenuCreateOptionToggle(const char *name, int *config);
+menu_t *MenuCreateOptionToggle(
+	const char *name, int *config, menu_option_display_style_e style);
 menu_t *MenuCreateOptionRange(
-	const char *name, int *config, int low, int high, int increment);
+	const char *name,
+	int *config,
+	int low, int high, int increment,
+	menu_option_display_style_e style, void *func);
 menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed);
 menu_t *MenuCreateOptionUpDownFunc(
-	const char *name, void(*upFunc)(void), void(*downFunc)(void));
-menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void));
+	const char *name,
+	void(*upFunc)(void), void(*downFunc)(void),
+	menu_option_display_style_e style, char *(*strFunc)(void));
+menu_t *MenuCreateOptionFunc(
+	const char *name,
+	void(*toggleFunc)(void), int(*getFunc)(void),
+	menu_option_display_style_e style);
 menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
-	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment);
+	int(*getFunc)(void), void(*setFunc)(int),
+	int low, int high, int increment,
+	menu_option_display_style_e style, void *func);
 menu_t *MenuCreateSeparator(void);
 menu_t *MenuCreateBack(const char *name);
 
 menu_t *MenuCreateOptions(const char *name)
 {
 	menu_t *menu = MenuCreate(
-			name,
-			"Game Options:",
-			MENU_TYPE_OPTIONS,
-			0,
-			MENU_OPTION_TYPE_OPTIONS,
-			0, 0);
-	MenuAddSubmenu(
-		menu, MenuCreateOptionToggle("Friendly fire", &gOptions.playersHurt));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionToggle("FPS monitor", &gOptions.displayFPS));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionToggle("Display time", &gOptions.displayTime));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRangeGetSet(
-			"Brightness", BlitGetBrightness, BlitSetBrightness, -10, 10, 1));
+		name,
+		"Game Options:",
+		MENU_TYPE_OPTIONS,
+		0,
+		MENU_OPTION_TYPE_OPTIONS,
+		0, 0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
-			"Splitscreen always", &gOptions.splitScreenAlways));
+			"Friendly fire",
+			&gOptions.playersHurt,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"FPS monitor",
+			&gOptions.displayFPS,
+			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Display time",
+			&gOptions.displayTime,
+			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRangeGetSet(
+			"Brightness",
+			BlitGetBrightness, BlitSetBrightness,
+			-10, 10, 1,
+			MENU_OPTION_DISPLAY_STYLE_DEFAULT, NULL));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Splitscreen always",
+			&gOptions.splitScreenAlways,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu, MenuCreateOptionSeed("Random seed", &gCampaign.seed));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Difficulty", (int *)&gOptions.difficulty,
-			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1));
+			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)DifficultyStr));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionToggle("Slowmotion", &gOptions.slowmotion));
+		menu,
+		MenuCreateOptionToggle(
+			"Slowmotion",
+			&gOptions.slowmotion,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Enemy density per mission",
 			&gOptions.density,
-			0, 200, 25));
+			0, 200, 25,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRange("Non-player HP", &gOptions.npcHp, 0, 200, 25));
+		MenuCreateOptionRange(
+			"Non-player HP",
+			&gOptions.npcHp,
+			0, 200, 25,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRange("Player HP", &gOptions.playerHp, 0, 200, 25));
+		MenuCreateOptionRange(
+			"Player HP",
+			&gOptions.playerHp,
+			0, 200, 25,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionFunc("Video fullscreen", GrafxToggleFullscreen));
+		menu,
+		MenuCreateOptionFunc(
+			"Video fullscreen",
+			GrafxToggleFullscreen,
+			GrafxIsFullscreen,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
 			"Video resolution (restart required)",
 			GrafxTryPrevResolution,
-			GrafxTryNextResolution));
+			GrafxTryNextResolution,
+			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
+			GrafxGetResolutionStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
-			"Video scale factor", GrafxGetScale, GrafxSetScale, 1, 4, 1));
+			"Video scale factor",
+			GrafxGetScale, GrafxSetScale,
+			1, 4, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)ScaleStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1296,14 +1372,22 @@ menu_t *MenuCreateControls(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
-			"Swap buttons joystick 1", &gOptions.swapButtonsJoy1));
+			"Swap buttons joystick 1",
+			&gOptions.swapButtonsJoy1,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
-			"Swap buttons joystick 2", &gOptions.swapButtonsJoy2));
+			"Swap buttons joystick 2",
+			&gOptions.swapButtonsJoy2,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionFunc("Calibrate joystick", InitSticks));
+		menu,
+		MenuCreateOptionFunc(
+			"Calibrate joystick",
+			InitSticks,
+			NULL, MENU_OPTION_DISPLAY_STYLE_DEFAULT));
 	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1321,15 +1405,24 @@ menu_t *MenuCreateSound(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
-			"Sound effects", FXVolume, SetFXVolume, 8, 64, 8));
+			"Sound effects",
+			FXVolume, SetFXVolume,
+			8, 64, 8,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
-			"Music", MusicVolume, SetMusicVolume, 8, 64, 8));
+			"Music",
+			MusicVolume, SetMusicVolume,
+			8, 64, 8,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
-			"FX channels", FXChannels, SetFXChannels, 2, 8, 1));
+			"FX channels",
+			FXChannels, SetFXChannels,
+			2, 8, 1,
+			MENU_OPTION_DISPLAY_STYLE_DEFAULT, NULL));
 	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1342,25 +1435,39 @@ menu_t *MenuCreateQuit(const char *name)
 }
 
 
-menu_t *MenuCreateOptionToggle(const char *name, int *config)
+menu_t *MenuCreateOptionToggle(
+	const char *name, int *config, menu_option_display_style_e style)
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_TOGGLE;
-	menu->u.optionToggle = config;
+	menu->u.option.uHook.optionToggle = config;
+	menu->u.option.displayStyle = style;
 	return menu;
 }
 
 menu_t *MenuCreateOptionRange(
-	const char *name, int *config, int low, int high, int increment)
+	const char *name,
+	int *config,
+	int low, int high, int increment,
+	menu_option_display_style_e style, void *func)
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_RANGE;
-	menu->u.optionRange.option = config;
-	menu->u.optionRange.low = low;
-	menu->u.optionRange.high = high;
-	menu->u.optionRange.increment = increment;
+	menu->u.option.uHook.optionRange.option = config;
+	menu->u.option.uHook.optionRange.low = low;
+	menu->u.option.uHook.optionRange.high = high;
+	menu->u.option.uHook.optionRange.increment = increment;
+	menu->u.option.displayStyle = style;
+	if (style == MENU_OPTION_DISPLAY_STYLE_STR_FUNC)
+	{
+		menu->u.option.uFunc.str = func;
+	}
+	else if (style == MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC)
+	{
+		menu->u.option.uFunc.intToStr = func;
+	}
 	return menu;
 }
 
@@ -1369,42 +1476,60 @@ menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_SEED;
-	menu->u.seed = seed;
+	menu->u.option.uHook.seed = seed;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_DEFAULT;
 	return menu;
 }
 
 menu_t *MenuCreateOptionUpDownFunc(
-	const char *name, void(*upFunc)(void), void(*downFunc)(void))
+	const char *name,
+	void(*upFunc)(void), void(*downFunc)(void),
+	menu_option_display_style_e style, char *(*strFunc)(void))
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID;
-	menu->u.upDownFuncs.upFunc = upFunc;
-	menu->u.upDownFuncs.downFunc = downFunc;
+	menu->u.option.uHook.upDownFuncs.upFunc = upFunc;
+	menu->u.option.uHook.upDownFuncs.downFunc = downFunc;
+	menu->u.option.displayStyle = style;
+	menu->u.option.uFunc.str = strFunc;
 	return menu;
 }
 
-menu_t *MenuCreateOptionFunc(const char *name, void(*func)(void))
+menu_t *MenuCreateOptionFunc(
+	const char *name,
+	void(*toggleFunc)(void), int(*getFunc)(void),
+	menu_option_display_style_e style)
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_VOID_FUNC_VOID;
-	menu->u.func = func;
+	menu->u.option.uHook.toggleFuncs.toggle = toggleFunc;
+	menu->u.option.uHook.toggleFuncs.get = getFunc;
+	menu->u.option.displayStyle = style;
 	return menu;
 }
 
 menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
-	int(*getFunc)(void), void(*setFunc)(int), int low, int high, int increment)
+	int(*getFunc)(void), void(*setFunc)(int),
+	int low, int high, int increment,
+	menu_option_display_style_e style, void *func)
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_RANGE_GET_SET;
-	menu->u.optionRangeGetSet.getFunc = getFunc;
-	menu->u.optionRangeGetSet.setFunc = setFunc;
-	menu->u.optionRangeGetSet.low = low;
-	menu->u.optionRangeGetSet.high = high;
-	menu->u.optionRangeGetSet.increment = increment;
+	menu->u.option.uHook.optionRangeGetSet.getFunc = getFunc;
+	menu->u.option.uHook.optionRangeGetSet.setFunc = setFunc;
+	menu->u.option.uHook.optionRangeGetSet.low = low;
+	menu->u.option.uHook.optionRangeGetSet.high = high;
+	menu->u.option.uHook.optionRangeGetSet.increment = increment;
+	menu->u.option.displayStyle = style;
+	// TODO: refactor saving of function based on style
+	if (style == MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC)
+	{
+		menu->u.option.uFunc.intToStr = func;
+	}
 	return menu;
 }
 
@@ -1518,7 +1643,7 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	}
 }
 
-void MenuDisplayMapList(menu_t *menu);
+int MenuOptionGetIntValue(menu_t *menu);
 
 void MenuDisplaySubmenus(menu_t *menu)
 {
@@ -1528,10 +1653,12 @@ void MenuDisplaySubmenus(menu_t *menu)
 
 	switch (menu->type)
 	{
+	// TODO: refactor the three menu types (normal, options, campaign) into one
 	case MENU_TYPE_NORMAL:
 	case MENU_TYPE_OPTIONS:
 		{
 			int isCentered = menu->type == MENU_TYPE_NORMAL;
+			int xOptions;
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
 				int width = CDogsTextWidth(menu->u.normal.subMenus[i].name);
@@ -1546,12 +1673,16 @@ void MenuDisplaySubmenus(menu_t *menu)
 				x -= 20;
 			}
 			yStart = CenterY(menu->u.normal.numSubMenus * CDogsTextHeight());
+			xOptions = x + maxWidth + 10;
 
 			// Display normal menu items
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
 				int y = yStart + i * CDogsTextHeight();
-				const char *name = menu->u.normal.subMenus[i].name;
+				menu_t *subMenu = &menu->u.normal.subMenus[i];
+
+				// Display menu item
+				const char *name = subMenu->name;
 				if (i == menu->u.normal.index)
 				{
 					CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
@@ -1559,6 +1690,38 @@ void MenuDisplaySubmenus(menu_t *menu)
 				else
 				{
 					CDogsTextStringAt(x, y, name);
+				}
+
+				// display option value
+				if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE ||
+					subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
+					subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
+					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
+					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET ||
+					subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_CONTROL ||
+					subMenu->type == MENU_TYPE_VOID_FUNC_VOID)
+				{
+					int optionInt = MenuOptionGetIntValue(subMenu);
+					switch (subMenu->u.option.displayStyle)
+					{
+					case MENU_OPTION_DISPLAY_STYLE_DEFAULT:
+						CDogsTextIntAt(xOptions, y, optionInt);
+						break;
+					case MENU_OPTION_DISPLAY_STYLE_YES_NO:
+						CDogsTextStringAt(xOptions, y, optionInt ? "Yes" : "No");
+						break;
+					case MENU_OPTION_DISPLAY_STYLE_ON_OFF:
+						CDogsTextStringAt(xOptions, y, optionInt ? "On" : "Off");
+						break;
+					case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
+						CDogsTextStringAt(xOptions, y, subMenu->u.option.uFunc.str());
+						break;
+					case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
+						CDogsTextStringAt(xOptions, y, subMenu->u.option.uFunc.intToStr(optionInt));
+						break;
+					default:
+						break;
+					}
 				}
 			}
 		}
@@ -1622,42 +1785,6 @@ void MenuDisplaySubmenus(menu_t *menu)
 	// Display menu items for options
 	switch (menu->u.normal.optionType)
 	{
-	case MENU_OPTION_TYPE_OPTIONS:
-		{
-			int y = yStart;
-			x += maxWidth + 10;
-
-			CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.displayFPS ? "On" : "Off");
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.displayTime ? "On" : "Off");
-			y += CDogsTextHeight();
-			CDogsTextIntAt(x, y, gOptions.brightness);
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.splitScreenAlways ? "Yes" : "No");
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(x, y, "%u", gCampaign.seed);
-
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, DifficultyStr(gOptions.difficulty));
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.slowmotion ? "Yes" : "No");
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(x, y, "%u%%", gOptions.density);
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(x, y, "%u%%", gOptions.npcHp);
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(x, y, "%u%%", gOptions.playerHp);
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(
-				x, y, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
-			y += CDogsTextHeight();
-			CDogsTextFormatAt(x, y, "%dx", GrafxGetScale());
-		}
-		break;
 	case MENU_OPTION_TYPE_CONTROLS:
 		{
 			int y = yStart;
@@ -1689,6 +1816,29 @@ void MenuDisplaySubmenus(menu_t *menu)
 		break;
 	default:
 		break;
+	}
+}
+
+int MenuOptionGetIntValue(menu_t *menu)
+{
+	switch (menu->type)
+	{
+	case MENU_TYPE_SET_OPTION_TOGGLE:
+		return *menu->u.option.uHook.optionToggle;
+	case MENU_TYPE_SET_OPTION_RANGE:
+		return *menu->u.option.uHook.optionRange.option;
+	case MENU_TYPE_SET_OPTION_SEED:
+		return (int)*menu->u.option.uHook.seed;
+	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
+		return menu->u.option.uHook.optionRangeGetSet.getFunc();
+	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
+		// TODO: implement
+		assert(0);
+		return 0;
+	case MENU_TYPE_VOID_FUNC_VOID:
+		return menu->u.option.uHook.toggleFuncs.get();
+	default:
+		return 0;
 	}
 }
 
@@ -1810,6 +1960,7 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	else
 	{
 		const char *filename = entry->filename;
+		const char *campaignFolder = entry->isDogfight ? CDOGS_DOGFIGHT_DIR : CDOGS_CAMPAIGN_DIR;
 		if (customSetting.missions)
 		{
 			sys_mem_free(customSetting.missions);
@@ -1820,8 +1971,9 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 
-		if (LoadCampaign(GetDataFilePath(filename), &customSetting, 0, 0) !=
-			CAMPAIGN_OK)
+		if (LoadCampaign(
+				GetDataFilePath(join(campaignFolder, filename)),
+				&customSetting, 0, 0) != CAMPAIGN_OK)
 		{
 			assert(0);
 			printf("Failed to load campaign %s!\n", filename);
@@ -1838,17 +1990,17 @@ void MenuActivate(menu_t *menu, int cmd)
 	switch (menu->type)
 	{
 	case MENU_TYPE_SET_OPTION_TOGGLE:
-		*menu->u.optionToggle = !*menu->u.optionToggle;
+		*menu->u.option.uHook.optionToggle = !*menu->u.option.uHook.optionToggle;
 		break;
 	case MENU_TYPE_SET_OPTION_RANGE:
 		{
-			int option = *menu->u.optionRange.option;
-			int increment = menu->u.optionRange.increment;
+			int option = *menu->u.option.uHook.optionRange.option;
+			int increment = menu->u.option.uHook.optionRange.increment;
 			if (Left(cmd))
 			{
-				if (menu->u.optionRange.low + increment > option)
+				if (menu->u.option.uHook.optionRange.low + increment > option)
 				{
-					option = menu->u.optionRange.low;
+					option = menu->u.option.uHook.optionRange.low;
 				}
 				else
 				{
@@ -1857,21 +2009,21 @@ void MenuActivate(menu_t *menu, int cmd)
 			}
 			else if (Right(cmd))
 			{
-				if (menu->u.optionRange.high - increment < option)
+				if (menu->u.option.uHook.optionRange.high - increment < option)
 				{
-					option = menu->u.optionRange.high;
+					option = menu->u.option.uHook.optionRange.high;
 				}
 				else
 				{
 					option += increment;
 				}
 			}
-			*menu->u.optionRange.option = option;
+			*menu->u.option.uHook.optionRange.option = option;
 		}
 		break;
 	case MENU_TYPE_SET_OPTION_SEED:
 		{
-			unsigned int seed = *menu->u.seed;
+			unsigned int seed = *menu->u.option.uHook.seed;
 			unsigned int increment = 1;
 			if (Button1(cmd))
 			{
@@ -1903,28 +2055,28 @@ void MenuActivate(menu_t *menu, int cmd)
 					seed += increment;
 				}
 			}
-			*menu->u.seed = seed;
+			*menu->u.option.uHook.seed = seed;
 		}
 		break;
 	case MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID:
 		if (Left(cmd))
 		{
-			menu->u.upDownFuncs.upFunc();
+			menu->u.option.uHook.upDownFuncs.upFunc();
 		}
 		else if (Right(cmd))
 		{
-			menu->u.upDownFuncs.downFunc();
+			menu->u.option.uHook.upDownFuncs.downFunc();
 		}
 		break;
 	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
 		{
-			int option = menu->u.optionRangeGetSet.getFunc();
-			int increment = menu->u.optionRangeGetSet.increment;
+			int option = menu->u.option.uHook.optionRangeGetSet.getFunc();
+			int increment = menu->u.option.uHook.optionRangeGetSet.increment;
 			if (Left(cmd))
 			{
-				if (menu->u.optionRangeGetSet.low + increment > option)
+				if (menu->u.option.uHook.optionRangeGetSet.low + increment > option)
 				{
-					option = menu->u.optionRangeGetSet.low;
+					option = menu->u.option.uHook.optionRangeGetSet.low;
 				}
 				else
 				{
@@ -1933,16 +2085,16 @@ void MenuActivate(menu_t *menu, int cmd)
 			}
 			else if (Right(cmd))
 			{
-				if (menu->u.optionRangeGetSet.high - increment < option)
+				if (menu->u.option.uHook.optionRangeGetSet.high - increment < option)
 				{
-					option = menu->u.optionRangeGetSet.high;
+					option = menu->u.option.uHook.optionRangeGetSet.high;
 				}
 				else
 				{
 					option += increment;
 				}
 			}
-			menu->u.optionRangeGetSet.setFunc(option);
+			menu->u.option.uHook.optionRangeGetSet.setFunc(option);
 		}
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
@@ -1952,7 +2104,7 @@ void MenuActivate(menu_t *menu, int cmd)
 			gSticks[0].present, gSticks[1].present);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
-		menu->u.func();
+		menu->u.option.uHook.toggleFuncs.toggle();
 		break;
 	default:
 		assert(0);

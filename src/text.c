@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -163,17 +163,17 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 	int scrw = SCREEN_WIDTH;
 	int scrh = SCREEN_HEIGHT;
 	int x, y, w, h;
-	
+
 	x = y = w = h = 0;
 	w = CDogsTextWidth(s);
 	h = CDogsTextHeight();
-	
+
 	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = (scrw - w) / 2; }
 	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = (scrh - h) / 2; }
-	
+
 	if (FLAG_SET(opts, TEXT_LEFT))		{ x = 0 + xpad; }
 	if (FLAG_SET(opts, TEXT_RIGHT))		{ x = scrw - w - xpad; }
-	
+
 	if (FLAG_SET(opts, TEXT_TOP))		{ y = 0 + ypad; }
 	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = scrh - h - ypad; }
 
@@ -189,4 +189,23 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 int CDogsTextHeight(void)
 {
 	return hCDogsText;
+}
+
+char *PercentStr(int p)
+{
+	static char buf[8];
+	sprintf(buf, "%d%%", p);
+	return buf;
+}
+char *ScaleStr(int s)
+{
+	static char buf[8];
+	sprintf(buf, "%dx", s);
+	return buf;
+}
+char *Div8Str(int i)
+{
+	static char buf[8];
+	sprintf(buf, "%d", i/8);
+	return buf;
 }

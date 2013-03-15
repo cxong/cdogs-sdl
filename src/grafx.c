@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,17 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- grafx.c - graphics related functions 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "grafx.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,10 +27,9 @@
 #include <sys/types.h>
 
 #include <SDL.h>
-#include "SDL_endian.h"
+#include <SDL_endian.h>
 
 #include "defs.h"
-#include "grafx.h"
 #include "blit.h"
 #include "pics.h" /* for gPalette */
 #include "sprcomp.h"
@@ -69,7 +59,7 @@ GFX_Mode * Gfx_ModePrev(void)
 	mode_idx--;
 	Wrap(mode_idx, 0, MODE_MAX)
 
-	return &gfx_modelist[mode_idx];	
+	return &gfx_modelist[mode_idx];
 }
 
 GFX_Mode * Gfx_ModeNext(void)
@@ -77,26 +67,26 @@ GFX_Mode * Gfx_ModeNext(void)
 	mode_idx++;
 	Wrap(mode_idx, 0, MODE_MAX)
 
-	return &gfx_modelist[mode_idx];	
+	return &gfx_modelist[mode_idx];
 }
 
 static int ValidMode(unsigned int w, unsigned int h)
 {
 	int i;
-	
+
 	for (i = 0; ; i++) {
 		unsigned int m_w = gfx_modelist[i].w;
 		unsigned int m_h = gfx_modelist[i].h;
-	
+
 		if (m_w == 0)
 			return 0;
 
 		if (m_w == w && m_h == h) {
-			mode_idx = i;	
+			mode_idx = i;
 			return 1;
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -126,16 +116,21 @@ int Gfx_GetHint(const GFX_Hint h)
 	return Hint(h);
 }
 
+int GrafxIsFullscreen(void)
+{
+	return Gfx_GetHint(HINT_FULLSCREEN);
+}
+
 SDL_Surface *screen = NULL;
 /* probably not the best thing, but we need the performance */
 int screen_w;
-int screen_h; 
+int screen_h;
 
 /* Initialises the video subsystem.
 
    Note: dynamic resolution change is not supported. */
 int InitVideo(void)
-{	
+{
 	char title[32];
 	SDL_Surface *new_screen = NULL;
 	int sdl_flags = 0;
@@ -180,7 +175,7 @@ int InitVideo(void)
 	if (new_screen == NULL) {
 		printf("ERROR: InitVideo: %s\n", SDL_GetError() );
 		return -1;
-	}	
+	}
 
 	if (screen == NULL) { /* only do this the first time */
 		debug(D_NORMAL, "setting caption and icon...\n");
@@ -198,19 +193,19 @@ int InitVideo(void)
 	}
 
 	screen = new_screen;
-	
+
 	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	CDogsSetPalette(gPalette);
-			
+
 	return 0;
 }
 
 void ShutDownVideo(void)
 {
 	debug(D_NORMAL, "Shutting down video...\n");
-	SDL_VideoQuit();		
+	SDL_VideoQuit();
 }
 
 void GrafxToggleFullscreen(void)
@@ -250,6 +245,12 @@ void GrafxSetScale(int scale)
 		InitVideo();
 	}
 }
+char *GrafxGetResolutionStr(void)
+{
+	static char buf[16];
+	sprintf(buf, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
+	return buf;
+}
 
 typedef struct _Pic {
 	short int w;
@@ -280,14 +281,14 @@ int ReadPics(
 			CHECK_FREAD(1)
 		} else
 			fseek(f, sizeof(TPalette), SEEK_CUR);
-			
+
 		while (!eof && i < maxPics) {
 			elementsRead = fread(&size, sizeof(size), 1, f);
 			CHECK_FREAD(1)
 			swap16(&size);
 			if (size) {
 				Pic *p = sys_mem_alloc(size);
-				
+
 				f_read16(f, &p->w, 2);
 				f_read16(f, &p->h, 2);
 
@@ -315,11 +316,11 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	int eof = 0;
 	unsigned short int size;
 	int i = startIndex;
-	
+
 	f = fopen(filename, "rb");
 	if (f != NULL) {
 		fseek(f, sizeof(TPalette), SEEK_CUR);
-			
+
 		while (!eof && i < maxPics) {
 			size_t elementsRead;
 		#define CHECK_FREAD(count)\
@@ -350,7 +351,7 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 		}
 		fclose(f);
 	}
-	
+
 	return i - startIndex;
 }
 

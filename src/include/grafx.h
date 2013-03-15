@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#ifndef __grafx
-#define __grafx
+#ifndef __GRAFX
+#define __GRAFX
 
 #include "sys_specifics.h"
 
@@ -54,6 +54,8 @@ void Gfx_SetHint(const GFX_Hint h, const int val);
 #define Gfx_HintToggle(h) Gfx_SetHint(h, !Gfx_GetHint(h))
 int Gfx_GetHint(const GFX_Hint h);
 
+int GrafxIsFullscreen(void);
+
 int InitVideo(void);
 void ShutDownVideo(void);
 
@@ -62,6 +64,7 @@ void GrafxTryPrevResolution(void);
 void GrafxTryNextResolution(void);
 int GrafxGetScale(void);
 void GrafxSetScale(int scale);
+char *GrafxGetResolutionStr(void);
 
 int ReadPics(
 	const char *filename, void **pics, int maxPics,
