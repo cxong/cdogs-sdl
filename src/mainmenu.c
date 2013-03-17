@@ -955,7 +955,8 @@ typedef enum
 
 typedef enum
 {
-	MENU_OPTION_DISPLAY_STYLE_DEFAULT,
+	MENU_OPTION_DISPLAY_STYLE_NONE,
+	MENU_OPTION_DISPLAY_STYLE_INT,
 	MENU_OPTION_DISPLAY_STYLE_YES_NO,
 	MENU_OPTION_DISPLAY_STYLE_ON_OFF,
 	MENU_OPTION_DISPLAY_STYLE_STR_FUNC,	// use a function that returns string
@@ -1035,6 +1036,11 @@ typedef struct menu
 					void (*toggle)(void);
 					int (*get)(void);
 				} toggleFuncs;
+				struct
+				{
+					input_device_e *device0;
+					input_device_e *device1;
+				} changeControl;
 			} uHook;
 			menu_option_display_style_e displayStyle;
 			union
@@ -1043,11 +1049,6 @@ typedef struct menu
 				char *(*intToStr)(int);
 			} uFunc;
 		} option;
-		struct
-		{
-			input_device_e *device0;
-			input_device_e *device1;
-		} optionChangeControl;
 		campaign_entry_t campaignEntry;
 	} u;
 } menu_t;
@@ -1279,7 +1280,7 @@ menu_t *MenuCreateOptions(const char *name)
 			"Brightness",
 			BlitGetBrightness, BlitSetBrightness,
 			-10, 10, 1,
-			MENU_OPTION_DISPLAY_STYLE_DEFAULT, NULL));
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
@@ -1387,7 +1388,7 @@ menu_t *MenuCreateControls(const char *name)
 		MenuCreateOptionFunc(
 			"Calibrate joystick",
 			InitSticks,
-			NULL, MENU_OPTION_DISPLAY_STYLE_DEFAULT));
+			NULL, MENU_OPTION_DISPLAY_STYLE_NONE));
 	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1422,7 +1423,7 @@ menu_t *MenuCreateSound(const char *name)
 			"FX channels",
 			FXChannels, SetFXChannels,
 			2, 8, 1,
-			MENU_OPTION_DISPLAY_STYLE_DEFAULT, NULL));
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(menu, MenuCreateSeparator());
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1477,7 +1478,7 @@ menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_SEED;
 	menu->u.option.uHook.seed = seed;
-	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_DEFAULT;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT;
 	return menu;
 }
 
@@ -1551,8 +1552,10 @@ menu_t *MenuCreateOptionChangeControl(
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = MENU_TYPE_SET_OPTION_CHANGE_CONTROL;
-	menu->u.optionChangeControl.device0 = device0;
-	menu->u.optionChangeControl.device1 = device1;
+	menu->u.option.uHook.changeControl.device0 = device0;
+	menu->u.option.uHook.changeControl.device1 = device1;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC;
+	menu->u.option.uFunc.intToStr = InputDeviceStr;
 	return menu;
 }
 
@@ -1704,7 +1707,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 					int optionInt = MenuOptionGetIntValue(subMenu);
 					switch (subMenu->u.option.displayStyle)
 					{
-					case MENU_OPTION_DISPLAY_STYLE_DEFAULT:
+					case MENU_OPTION_DISPLAY_STYLE_INT:
 						CDogsTextIntAt(xOptions, y, optionInt);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_YES_NO:
@@ -1785,20 +1788,6 @@ void MenuDisplaySubmenus(menu_t *menu)
 	// Display menu items for options
 	switch (menu->u.normal.optionType)
 	{
-	case MENU_OPTION_TYPE_CONTROLS:
-		{
-			int y = yStart;
-			x += maxWidth + 10;
-
-			CDogsTextStringAt(x, y, InputDeviceStr(gPlayer1Data.inputDevice));
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, InputDeviceStr(gPlayer2Data.inputDevice));
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.swapButtonsJoy1 ? "Yes" : "No");
-			y += CDogsTextHeight();
-			CDogsTextStringAt(x, y, gOptions.swapButtonsJoy2 ? "Yes" : "No");
-		}
-		break;
 	case MENU_OPTION_TYPE_SOUND:
 		{
 			int y = yStart;
@@ -1832,11 +1821,13 @@ int MenuOptionGetIntValue(menu_t *menu)
 	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
 		return menu->u.option.uHook.optionRangeGetSet.getFunc();
 	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
-		// TODO: implement
-		assert(0);
-		return 0;
+		return *menu->u.option.uHook.changeControl.device0;
 	case MENU_TYPE_VOID_FUNC_VOID:
-		return menu->u.option.uHook.toggleFuncs.get();
+		if (menu->u.option.uHook.toggleFuncs.get)
+		{
+			return menu->u.option.uHook.toggleFuncs.get();
+		}
+		return 0;
 	default:
 		return 0;
 	}
@@ -2099,8 +2090,8 @@ void MenuActivate(menu_t *menu, int cmd)
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
 		ChangeControl(
-			menu->u.optionChangeControl.device0,
-			menu->u.optionChangeControl.device1,
+			menu->u.option.uHook.changeControl.device0,
+			menu->u.option.uHook.changeControl.device1,
 			gSticks[0].present, gSticks[1].present);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
