@@ -29,11 +29,36 @@ typedef enum
 	INPUT_DEVICE_JOYSTICK_2
 } input_device_e;
 
+typedef struct
+{
+	int left;
+	int right;
+	int up;
+	int down;
+	int button1;
+	int button2;
+} input_keys_t;
+
+typedef enum
+{
+	KEY_CODE_LEFT,
+	KEY_CODE_RIGHT,
+	KEY_CODE_UP,
+	KEY_CODE_DOWN,
+	KEY_CODE_BUTTON1,
+	KEY_CODE_BUTTON2,
+
+	KEY_CODE_MAP
+} key_code_e;
+
 char *InputDeviceStr(int d);
 void GetPlayerCmd(int *cmd1, int *cmd2);
 void GetMenuCmd(int *cmd, int *prevCmd);
 void WaitForRelease(void);
 void WaitForPress(void);
 void Wait(void);
+
+int InputGetKey(input_keys_t *keys, key_code_e keyCode);
+void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
 
 #endif

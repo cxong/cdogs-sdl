@@ -46,7 +46,7 @@ struct PlayerData
 	int friendlies;
 
 	input_device_e inputDevice;
-	int keys[6];
+	input_keys_t keys;
 };
 
 extern struct PlayerData gPlayer1Data;

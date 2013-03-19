@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,23 +18,13 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- prep.c - preparation stuff 
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
-
+#include "prep.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "prep.h"
+
 #include "input.h"
 #include "grafx.h"
 #include "blit.h"
@@ -258,24 +248,24 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
 	{
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			SDL_GetKeyName(data->keys[0]),
-			SDL_GetKeyName(data->keys[1]),
-			SDL_GetKeyName(data->keys[2]),
-			SDL_GetKeyName(data->keys[3]),
-			SDL_GetKeyName(data->keys[4]),
-			SDL_GetKeyName(data->keys[5]));
+			SDL_GetKeyName(data->keys.left),
+			SDL_GetKeyName(data->keys.right),
+			SDL_GetKeyName(data->keys.up),
+			SDL_GetKeyName(data->keys.down),
+			SDL_GetKeyName(data->keys.button1),
+			SDL_GetKeyName(data->keys.button2));
 		if (CDogsTextWidth(s) < 125)
 			CDogsTextStringAt(x, y, s);
 		else {
 			sprintf(s, "(%s, %s, %s,",
-				SDL_GetKeyName(data->keys[0]),
-				SDL_GetKeyName(data->keys[1]),
-				SDL_GetKeyName(data->keys[2]));
+				SDL_GetKeyName(data->keys.left),
+				SDL_GetKeyName(data->keys.right),
+				SDL_GetKeyName(data->keys.up));
 			CDogsTextStringAt(x, y - 10, s);
 			sprintf(s, "%s, %s and %s)",
-				SDL_GetKeyName(data->keys[3]),
-				SDL_GetKeyName(data->keys[4]),
-				SDL_GetKeyName(data->keys[5]));
+				SDL_GetKeyName(data->keys.down),
+				SDL_GetKeyName(data->keys.button1),
+				SDL_GetKeyName(data->keys.button2));
 			CDogsTextStringAt(x, y, s);
 		}
 	}
@@ -378,7 +368,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 
 	#define ENTRY_COLS	10
 	#define	ENTRY_SPACING	12
-	
+
 	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 
 	if (gOptions.twoPlayers && index == CHARACTER_PLAYER1)
@@ -825,7 +815,7 @@ static int MainMenu(int x, int index, int cmd)
 			PlaySound(SND_SWITCH, 0, 255);
 		} else if (selection[index] == MODE_DONE) {
 			selection[index] = MODE_SELECTNAME;
-			PlaySound(SND_SWITCH, 0, 255);				
+			PlaySound(SND_SWITCH, 0, 255);
 		}
 	}
 
@@ -911,9 +901,9 @@ int PlayerSelection(int twoPlayers, void *bkg)
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetPlayerCmd(&cmd1, &cmd2);
-		
+
 		if (KeyDown(keyEsc)) return 0; // hack to allow exit
-		
+
 		if (twoPlayers) {
 			if (cmd1 == prev1)
 				cmd1 = 0;
@@ -956,9 +946,9 @@ int PlayerEquip(void *bkg)
 	while (!done1 || !done2) {
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetPlayerCmd(&cmd1, &cmd2);
-		
+
 		if (KeyDown(keyEsc)) return 0; // hack to exit from menu
-		
+
 		if (gOptions.twoPlayers) {
 			if (cmd1 == prev1)
 				cmd1 = 0;

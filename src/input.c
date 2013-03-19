@@ -21,6 +21,7 @@
 */
 #include "input.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "joystick.h"
@@ -48,30 +49,15 @@ void GetOnePlayerCmd(
 		if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
 		{
 			*cmd = 0;
-			if (KeyDown(data->keys[0]))
-			{
-				*cmd |= CMD_LEFT;
-			}
-			else if (KeyDown(data->keys[1]))
-			{
-				*cmd |= CMD_RIGHT;
-			}
-			if (KeyDown(data->keys[2]))
-			{
-				*cmd |= CMD_UP;
-			}
-			else if (KeyDown(data->keys[3]))
-			{
-				*cmd |= CMD_DOWN;
-			}
-			if (KeyDown(data->keys[4]))
-			{
-				*cmd |= CMD_BUTTON1;
-			}
-			if (KeyDown(data->keys[5]))
-			{
-				*cmd |= CMD_BUTTON2;
-			}
+			if (KeyDown(data->keys.left))		*cmd |= CMD_LEFT;
+			else if (KeyDown(data->keys.right))	*cmd |= CMD_RIGHT;
+
+			if (KeyDown(data->keys.up))			*cmd |= CMD_UP;
+			else if (KeyDown(data->keys.down))	*cmd |= CMD_DOWN;
+
+			if (KeyDown(data->keys.button1))	*cmd |= CMD_BUTTON1;
+
+			if (KeyDown(data->keys.button2))	*cmd |= CMD_BUTTON2;
 		}
 		else
 		{
@@ -221,4 +207,61 @@ void Wait(void)
 	WaitForRelease();
 	WaitForPress();
 	WaitForRelease();
+}
+
+int InputGetKey(input_keys_t *keys, key_code_e keyCode)
+{
+	switch (keyCode)
+	{
+	case KEY_CODE_LEFT:
+		return keys->left;
+		break;
+	case KEY_CODE_RIGHT:
+		return keys->right;
+		break;
+	case KEY_CODE_UP:
+		return keys->up;
+		break;
+	case KEY_CODE_DOWN:
+		return keys->down;
+		break;
+	case KEY_CODE_BUTTON1:
+		return keys->button1;
+		break;
+	case KEY_CODE_BUTTON2:
+		return keys->button2;
+		break;
+	default:
+		printf("Error unhandled key code %d\n", keyCode);
+		assert(0);
+		return 0;
+	}
+}
+
+void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode)
+{
+	switch (keyCode)
+	{
+	case KEY_CODE_LEFT:
+		keys->left = key;
+		break;
+	case KEY_CODE_RIGHT:
+		keys->right = key;
+		break;
+	case KEY_CODE_UP:
+		keys->up = key;
+		break;
+	case KEY_CODE_DOWN:
+		keys->down = key;
+		break;
+	case KEY_CODE_BUTTON1:
+		keys->button1 = key;
+		break;
+	case KEY_CODE_BUTTON2:
+		keys->button2 = key;
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }

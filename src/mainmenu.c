@@ -615,24 +615,30 @@ int SelectControls(int cmd)
 	return MODE_CONTROLS;
 }
 
-int KeyAvailable(int key, struct PlayerData *data, int index,
+int KeyAvailable(int key, struct PlayerData *data, int code,
 		 struct PlayerData *other)
 {
-	int i;
+	key_code_e i;
 
 	if (key == keyEsc || key == keyF9 || key == keyF10)
 		return 0;
 
-	if (key == gOptions.mapKey && index >= 0)
+	if (key == gOptions.mapKey && code >= 0)
 		return 0;
 
-	for (i = 0; i < 6; i++)
-		if (i != index && data->keys[i] == key)
+	for (i = 0; i < KEY_CODE_MAP; i++)
+		if ((int)i != code && InputGetKey(&data->keys, i) == key)
 			return 0;
 
-	for (i = 0; i < 6; i++)
-		if (other->keys[i] == key)
-			return 0;
+	if (other->keys.left == key ||
+		other->keys.right == key ||
+		other->keys.up == key ||
+		other->keys.down == key ||
+		other->keys.button1 == key ||
+		other->keys.button2 == key)
+	{
+		return 0;
+	}
 
 	return 1;
 }
@@ -651,8 +657,9 @@ void ChangeKey(struct PlayerData *data, struct PlayerData *other,
 			return;
 
 		if (key != 0) {
-			if (KeyAvailable(key, data, index, other)) {
-				data->keys[index] = key;
+			if (KeyAvailable(key, data, (key_code_e)index, other))
+			{
+				InputSetKey(&data->keys, key, (key_code_e)index);
 				PlaySound(SND_EXPLOSION, 0, 255);
 				return;
 			} else
@@ -688,9 +695,9 @@ void ChangeMapKey(struct PlayerData *d1, struct PlayerData *d2)
 #define SELECTKEY "Press a key"
 
 static void DisplayKeys(int x, int x2, int y, char *title,
-			struct PlayerData *data, int index, int change)
+			struct PlayerData *data, key_code_e index, key_code_e change)
 {
-	int i;
+	key_code_e i;
 
 	CDogsTextStringAt(x, y, title);
 	CDogsTextStringAt(x, y + CDogsTextHeight(), "Left");
@@ -706,7 +713,7 @@ static void DisplayKeys(int x, int x2, int y, char *title,
 					SELECTKEY, index == i);
 		else
 			DisplayMenuItem(x2, y + (i + 1) * CDogsTextHeight(),
-					SDL_GetKeyName(data->keys[i]),
+					SDL_GetKeyName(InputGetKey(&data->keys, i)),
 					index == i);
 }
 
@@ -940,12 +947,14 @@ typedef enum
 	MENU_TYPE_NORMAL,				// normal menu with items, up/down/left/right moves cursor
 	MENU_TYPE_OPTIONS,				// menu with items, only up/down moves
 	MENU_TYPE_CAMPAIGNS,			// menu that scrolls, with items centred
+	MENU_TYPE_KEYS,					// extra wide option menu
 	MENU_TYPE_SET_OPTION_TOGGLE,	// no items, sets option on/off
 	MENU_TYPE_SET_OPTION_RANGE,		// no items, sets option range low-high
 	MENU_TYPE_SET_OPTION_SEED,		// set random seed
 	MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID,	// set option using up/down functions
 	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
 	MENU_TYPE_SET_OPTION_CHANGE_CONTROL,	// change control device
+	MENU_TYPE_SET_OPTION_CHANGE_KEY,	// redefine key
 	MENU_TYPE_VOID_FUNC_VOID,		// call a void(*f)(void) function
 	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
@@ -1050,6 +1059,13 @@ typedef struct menu
 			} uFunc;
 		} option;
 		campaign_entry_t campaignEntry;
+		// change key
+		struct
+		{
+			key_code_e code;
+			input_keys_t *keys;
+			input_keys_t *keysOther;
+		} changeKey;
 	} u;
 } menu_t;
 
@@ -1094,8 +1110,7 @@ menu_t *MenuCreate(
 	menu_type_e type,
 	int displayItems,
 	menu_option_type_e optionType,
-	int setOptions,
-	int initialIndex);
+	int setOptions);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
 menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList);
 menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList);
@@ -1112,7 +1127,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS,
-		0, 0, 0);
+		0, 0);
 	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player", &campaigns->campaignList));
 	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players", &campaigns->campaignList));
 	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight", &campaigns->dogfightList));
@@ -1129,8 +1144,7 @@ menu_t *MenuCreate(
 	menu_type_e type,
 	int displayItems,
 	menu_option_type_e optionType,
-	int setOptions,
-	int initialIndex)
+	int setOptions)
 {
 	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
 	strcpy(menu->name, name);
@@ -1139,7 +1153,7 @@ menu_t *MenuCreate(
 	menu->u.normal.displayItems = displayItems;
 	menu->u.normal.optionType = optionType;
 	menu->u.normal.setOptions = setOptions;
-	menu->u.normal.index = initialIndex;
+	menu->u.normal.index = 0;
 	menu->u.normal.quitMenuIndex = -1;
 	menu->u.normal.parentMenu = NULL;
 	menu->u.normal.subMenus = NULL;
@@ -1159,8 +1173,21 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	{
 		menu->u.normal.quitMenuIndex = menu->u.normal.numSubMenus - 1;
 	}
-	subMenuLoc->u.normal.parentMenu = menu;
+	if (subMenu->type == MENU_TYPE_NORMAL ||
+		subMenu->type == MENU_TYPE_OPTIONS ||
+		subMenu->type == MENU_TYPE_CAMPAIGNS ||
+		subMenu->type == MENU_TYPE_KEYS)
+	{
+		subMenuLoc->u.normal.parentMenu = menu;
+	}
 	sys_mem_free(subMenu);
+
+	// move cursor in case first menu item(s) are separators
+	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
+		menu->u.normal.subMenus[menu->u.normal.index].type == MENU_TYPE_SEPARATOR)
+	{
+		menu->u.normal.index++;
+	}
 }
 
 menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
@@ -1171,7 +1198,7 @@ menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 		name,
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
-		0, 0, 0, 0);
+		0, 0, 0);
 	int i;
 	for (i = 0; i < campaignList->num; i++)
 	{
@@ -1187,8 +1214,7 @@ menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
 		0, 0,
-		MENU_SET_OPTIONS_TWOPLAYERS,
-		0);
+		MENU_SET_OPTIONS_TWOPLAYERS);
 	int i;
 	for (i = 0; i < campaignList->num; i++)
 	{
@@ -1204,8 +1230,7 @@ menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 		"Select a dogfight scenario:",
 		MENU_TYPE_CAMPAIGNS,
 		0, 0,
-		MENU_SET_OPTIONS_DOGFIGHT,
-		0);
+		MENU_SET_OPTIONS_DOGFIGHT);
 	int i;
 	for (i = 0; i < dogfightList->num; i++)
 	{
@@ -1244,7 +1269,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	int(*getFunc)(void), void(*setFunc)(int),
 	int low, int high, int increment,
 	menu_option_display_style_e style, void *func);
-menu_t *MenuCreateSeparator(void);
+menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
 
 menu_t *MenuCreateOptions(const char *name)
@@ -1255,7 +1280,7 @@ menu_t *MenuCreateOptions(const char *name)
 		MENU_TYPE_OPTIONS,
 		0,
 		MENU_OPTION_TYPE_OPTIONS,
-		0, 0);
+		0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
@@ -1344,7 +1369,7 @@ menu_t *MenuCreateOptions(const char *name)
 			GrafxGetScale, GrafxSetScale,
 			1, 4, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)ScaleStr));
-	MenuAddSubmenu(menu, MenuCreateSeparator());
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
@@ -1356,12 +1381,12 @@ menu_t *MenuCreateKeys(const char *name);
 menu_t *MenuCreateControls(const char *name)
 {
 	menu_t *menu = MenuCreate(
-			name,
-			"Configure Controls:",
-			MENU_TYPE_OPTIONS,
-			0,
-			MENU_OPTION_TYPE_CONTROLS,
-			0, 0);
+		name,
+		"Configure Controls:",
+		MENU_TYPE_OPTIONS,
+		0,
+		MENU_OPTION_TYPE_CONTROLS,
+		0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeControl(
@@ -1389,7 +1414,7 @@ menu_t *MenuCreateControls(const char *name)
 			"Calibrate joystick",
 			InitSticks,
 			NULL, MENU_OPTION_DISPLAY_STYLE_NONE));
-	MenuAddSubmenu(menu, MenuCreateSeparator());
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
@@ -1402,7 +1427,7 @@ menu_t *MenuCreateSound(const char *name)
 		MENU_TYPE_OPTIONS,
 		0,
 		MENU_OPTION_TYPE_SOUND,
-		0, 0);
+		0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
@@ -1424,14 +1449,16 @@ menu_t *MenuCreateSound(const char *name)
 			FXChannels, SetFXChannels,
 			2, 8, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(menu, MenuCreateSeparator());
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
 }
 
 menu_t *MenuCreateQuit(const char *name)
 {
-	menu_t *menu = MenuCreate(name, "", MENU_TYPE_QUIT, 0, 0, 0, 0);
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_QUIT;
 	return menu;
 }
 
@@ -1534,15 +1561,19 @@ menu_t *MenuCreateOptionRangeGetSet(
 	return menu;
 }
 
-menu_t *MenuCreateSeparator(void)
+menu_t *MenuCreateSeparator(const char *name)
 {
-	menu_t *menu = MenuCreate("", "", MENU_TYPE_SEPARATOR, 0, 0, 0, 0);
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SEPARATOR;
 	return menu;
 }
 
 menu_t *MenuCreateBack(const char *name)
 {
-	menu_t *menu = MenuCreate(name, "", MENU_TYPE_BACK, 0, 0, 0, 0);
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_BACK;
 	return menu;
 }
 
@@ -1559,16 +1590,76 @@ menu_t *MenuCreateOptionChangeControl(
 	return menu;
 }
 
+void MenuCreateKeysSingleSection(
+	menu_t *menu, const char *sectionName,
+	input_keys_t *keys, input_keys_t *keysOther);
+menu_t *MenuCreateOptionChangeKey(
+	const char *name, key_code_e code,
+	input_keys_t *keys, input_keys_t *keysOther);
+
 menu_t *MenuCreateKeys(const char *name)
 {
 	menu_t *menu = MenuCreate(
 		name,
 		"",
-		MENU_TYPE_OPTIONS,
+		MENU_TYPE_KEYS,
 		0,
 		MENU_OPTION_TYPE_KEYS,
-		0, 0);
-	// TODO: convert keys to menu items
+		0);
+	MenuCreateKeysSingleSection(
+		menu, "Player 1", &gPlayer1Data.keys, &gPlayer2Data.keys);
+	MenuCreateKeysSingleSection(
+		menu, "Player 2", &gPlayer2Data.keys, &gPlayer1Data.keys);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Map", KEY_CODE_MAP, NULL, NULL));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+void MenuCreateKeysSingleSection(
+	menu_t *menu, const char *sectionName,
+	input_keys_t *keys, input_keys_t *keysOther)
+{
+	MenuAddSubmenu(menu, MenuCreateSeparator(sectionName));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey("Left", KEY_CODE_LEFT, keys, keysOther));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Right", KEY_CODE_RIGHT, keys, keysOther));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Up", KEY_CODE_UP, keys, keysOther));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Down", KEY_CODE_DOWN, keys, keysOther));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Fire", KEY_CODE_BUTTON1, keys, keysOther));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionChangeKey(
+			"Switch/slide", KEY_CODE_BUTTON2, keys, keysOther));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+}
+
+menu_t *MenuCreateOptionChangeKey(
+	const char *name, key_code_e code,
+	input_keys_t *keys, input_keys_t *keysOther)
+{
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = MENU_TYPE_SET_OPTION_CHANGE_KEY;
+	menu->u.changeKey.code = code;
+	menu->u.changeKey.keys = keys;
+	menu->u.changeKey.keysOther = keysOther;
 	return menu;
 }
 
@@ -1590,7 +1681,10 @@ void MenuDestroySubmenus(menu_t *menu)
 	{
 		return;
 	}
-	if ((menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS) &&
+	if ((menu->type == MENU_TYPE_NORMAL ||
+		menu->type == MENU_TYPE_OPTIONS ||
+		menu->type == MENU_TYPE_CAMPAIGNS ||
+		menu->type == MENU_TYPE_KEYS) &&
 		menu->u.normal.subMenus != NULL)
 	{
 		int i;
@@ -1625,9 +1719,6 @@ void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 {
 	int d = menu->u.normal.displayItems;
-	assert(menu->type == MENU_TYPE_NORMAL ||
-		menu->type == MENU_TYPE_OPTIONS ||
-		menu->type == MENU_TYPE_CAMPAIGNS);
 	if (d & MENU_DISPLAY_ITEMS_CREDITS)
 	{
 		ShowCredits(creditsDisplayer);
@@ -1780,30 +1871,50 @@ void MenuDisplaySubmenus(menu_t *menu)
 			}
 		}
 		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	// Display menu items for options
-	switch (menu->u.normal.optionType)
-	{
-	case MENU_OPTION_TYPE_SOUND:
+	case MENU_TYPE_KEYS:
 		{
-			int y = yStart;
-			x += maxWidth + 10;
+			int xKeys;
+			x = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
+			xKeys = x * 3;
+			yStart = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 10);
 
-			CDogsTextIntAt(x, y, FXVolume() / 8);
-			y += CDogsTextHeight();
-			CDogsTextIntAt(x, y, MusicVolume() / 8);
-			y += CDogsTextHeight();
-			CDogsTextIntAt(x, y, FXChannels());
+			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			{
+				int y = yStart + i * CDogsTextHeight();
+				int isSelected = i == menu->u.normal.index;
+				menu_t *subMenu = &menu->u.normal.subMenus[i];
+
+				const char *name = subMenu->name;
+				if (isSelected &&
+					subMenu->type != MENU_TYPE_SET_OPTION_CHANGE_KEY)
+				{
+					CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+				}
+				else
+				{
+					CDogsTextStringAt(x, y, name);
+				}
+
+				if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
+				{
+					int isChanging = 0;	// TODO: key changing
+					const char *keyName = "Press a key";
+					if (!isChanging)
+					{
+						if (subMenu->u.changeKey.code != KEY_CODE_MAP)
+						{
+							keyName = SDL_GetKeyName(InputGetKey(
+								subMenu->u.changeKey.keys,
+								subMenu->u.changeKey.code));
+						}
+					}
+					DisplayMenuItem(xKeys, y, keyName, isSelected);
+				}
+			}
 		}
 		break;
-	case MENU_OPTION_TYPE_KEYS:
-		ShowAllKeys(menu->u.normal.index, -1);
-		break;
 	default:
+		assert(0);
 		break;
 	}
 }
@@ -1910,6 +2021,7 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_CAMPAIGNS:
+		case MENU_TYPE_KEYS:
 			return subMenu;
 		case MENU_TYPE_CAMPAIGN_ITEM:
 			MenuLoadCampaign(&subMenu->u.campaignEntry);
@@ -2097,7 +2209,11 @@ void MenuActivate(menu_t *menu, int cmd)
 	case MENU_TYPE_VOID_FUNC_VOID:
 		menu->u.option.uHook.toggleFuncs.toggle();
 		break;
+	case MENU_TYPE_SET_OPTION_CHANGE_KEY:
+		// TODO: implement
+		break;
 	default:
+		printf("Error unhandled menu type %d\n", menu->type);
 		assert(0);
 		break;
 	}

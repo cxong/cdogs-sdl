@@ -61,22 +61,22 @@ void LoadConfig(void)
 			           &gOptions.splitScreenAlways);
 		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
-			           (int *)&gPlayer1Data.inputDevice,
-			           &gPlayer1Data.keys[0],
-			           &gPlayer1Data.keys[1],
-			           &gPlayer1Data.keys[2],
-			           &gPlayer1Data.keys[3],
-			           &gPlayer1Data.keys[4],
-			           &gPlayer1Data.keys[5]);
+			(int *)&gPlayer1Data.inputDevice,
+			&gPlayer1Data.keys.left,
+			&gPlayer1Data.keys.right,
+			&gPlayer1Data.keys.up,
+			&gPlayer1Data.keys.down,
+			&gPlayer1Data.keys.button1,
+			&gPlayer1Data.keys.button2);
 		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
 			(int *)&gPlayer2Data.inputDevice,
-			&gPlayer2Data.keys[0],
-			&gPlayer2Data.keys[1],
-			&gPlayer2Data.keys[2],
-			&gPlayer2Data.keys[3],
-			&gPlayer2Data.keys[4],
-			&gPlayer2Data.keys[5]);
+			&gPlayer2Data.keys.left,
+			&gPlayer2Data.keys.right,
+			&gPlayer2Data.keys.up,
+			&gPlayer2Data.keys.down,
+			&gPlayer2Data.keys.button1,
+			&gPlayer2Data.keys.button2);
 		CHECK_FSCANF(7)
 		fscanfres = fscanf(f, "%d\n", &gOptions.mapKey);
 		CHECK_FSCANF(1)
@@ -106,7 +106,7 @@ void LoadConfig(void)
 		CHECK_FSCANF(1)
 		if (gOptions.playerHp < 25 || gOptions.playerHp > 200)
 			gOptions.playerHp = 100;
-		
+
 		{
 			int w, h, scaleFactor, fs;
 
@@ -147,18 +147,20 @@ void SaveConfig(void)
 			gOptions.splitScreenAlways);
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",
 			gPlayer1Data.inputDevice,
-			gPlayer1Data.keys[0],
-			gPlayer1Data.keys[1],
-			gPlayer1Data.keys[2],
-			gPlayer1Data.keys[3],
-			gPlayer1Data.keys[4], gPlayer1Data.keys[5]);
+			gPlayer1Data.keys.left,
+			gPlayer1Data.keys.right,
+			gPlayer1Data.keys.up,
+			gPlayer1Data.keys.down,
+			gPlayer1Data.keys.button1,
+			gPlayer1Data.keys.button2);
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",
 			gPlayer2Data.inputDevice,
-			gPlayer2Data.keys[0],
-			gPlayer2Data.keys[1],
-			gPlayer2Data.keys[2],
-			gPlayer2Data.keys[3],
-			gPlayer2Data.keys[4], gPlayer2Data.keys[5]);
+			gPlayer2Data.keys.left,
+			gPlayer2Data.keys.right,
+			gPlayer2Data.keys.up,
+			gPlayer2Data.keys.down,
+			gPlayer2Data.keys.button1,
+			gPlayer2Data.keys.button2);
 		fprintf(f, "%d\n", gOptions.mapKey);
 		fprintf(f, "%d %d %d %d\n",
 			FXVolume(),
