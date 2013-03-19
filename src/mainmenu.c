@@ -1164,6 +1164,8 @@ menu_t *MenuCreate(
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
 	menu_t *subMenuLoc = NULL;
+	int i;
+
 	menu->u.normal.numSubMenus++;
 	menu->u.normal.subMenus = sys_mem_realloc(
 		menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
@@ -1173,14 +1175,34 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	{
 		menu->u.normal.quitMenuIndex = menu->u.normal.numSubMenus - 1;
 	}
-	if (subMenu->type == MENU_TYPE_NORMAL ||
-		subMenu->type == MENU_TYPE_OPTIONS ||
-		subMenu->type == MENU_TYPE_CAMPAIGNS ||
-		subMenu->type == MENU_TYPE_KEYS)
-	{
-		subMenuLoc->u.normal.parentMenu = menu;
-	}
 	sys_mem_free(subMenu);
+
+	// update all parent pointers, in grandchild menus as well
+	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	{
+		subMenuLoc = &menu->u.normal.subMenus[i];
+		if (subMenuLoc->type == MENU_TYPE_NORMAL ||
+			subMenuLoc->type == MENU_TYPE_OPTIONS ||
+			subMenuLoc->type == MENU_TYPE_CAMPAIGNS ||
+			subMenuLoc->type == MENU_TYPE_KEYS)
+		{
+			int j;
+
+			subMenuLoc->u.normal.parentMenu = menu;
+
+			for (j = 0; j < subMenuLoc->u.normal.numSubMenus; j++)
+			{
+				menu_t *subSubMenu = &subMenuLoc->u.normal.subMenus[j];
+				if (subSubMenu->type == MENU_TYPE_NORMAL ||
+					subSubMenu->type == MENU_TYPE_OPTIONS ||
+					subSubMenu->type == MENU_TYPE_CAMPAIGNS ||
+					subSubMenu->type == MENU_TYPE_KEYS)
+				{
+					subSubMenu->u.normal.parentMenu = subMenuLoc;
+				}
+			}
+		}
+	}
 
 	// move cursor in case first menu item(s) are separators
 	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
