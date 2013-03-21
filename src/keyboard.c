@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,11 +24,9 @@
  keyboard.c - keyboard stuff... just think what was once here... (DOS interrupt
  handlers... *shudder*
 */
+#include "keyboard.h"
 
 #include <string.h>
-
-#include <SDL.h>
-#include "keyboard.h"
 
 
 void InitKeyboard(void)
@@ -52,7 +50,7 @@ int GetKeyDown(void)
 	int i;
 	int nr_keys;
 	Uint8 *keystate;
-	
+
 	SDL_PumpEvents();
 
 	keystate = SDL_GetKeyState(&nr_keys);
@@ -79,9 +77,4 @@ int GetKeyDown(void)
 int AnyKeyDown(void)
 {
 	return (GetKeyDown() > 0);
-}
-
-void ClearKeys(void)
-{
-//      memset(&uKeys, 0, sizeof(uKeys));
 }

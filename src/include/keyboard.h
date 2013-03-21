@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
 */
+#ifndef __KEYBOARD
+#define __KEYBOARD
 
 #include <SDL.h>
 
@@ -119,12 +119,12 @@
 #define keyKeypad7      SDLK_KP7
 #define keyKeypad8      SDLK_KP8
 #define keyKeypad9      SDLK_KP9
-// #define keyKeypadComma  
+// #define keyKeypadComma
 #define keyKeypadStar   SDLK_KP_MULTIPLY
 #define keyKeypadMinus  SDLK_KP_MINUS
 #define keyKeypadPlus   SDLK_KP_PLUS
 #define keyKeypadEnter  SDLK_KP_ENTER
-// #define keyCtrlPrtScr   
+// #define keyCtrlPrtScr
 // #define keyShiftPrtScr  0xB7
 #define keyKeypadSlash  SDLK_KPDIVIDE
 
@@ -135,4 +135,5 @@ void RemoveKbdHandler(void);
 char KeyDown(int key);
 int AnyKeyDown(void);
 int GetKeyDown(void);
-void ClearKeys(void);
+
+#endif

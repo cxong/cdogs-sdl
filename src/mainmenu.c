@@ -47,71 +47,6 @@
 #include "utils.h"
 
 
-#define MODE_MAIN       255
-#define MODE_PLAY       0
-#define MODE_OPTIONS    3
-#define MODE_CONTROLS   4
-#define MODE_VOLUME     5
-#define MODE_QUIT       6
-#define MODE_KEYS       7
-#define MODE_CAMPAIGN   8
-#define MODE_DOGFIGHT   9
-
-
-#define MAIN_COUNT      7
-
-static const char *mainMenuStr[MAIN_COUNT] = {
-	"1 player game",
-	"2 player game",
-	"Dog fight",
-	"Game options...",
-	"Controls...",
-	"Sound...",
-	"Quit"
-};
-
-#define OPTIONS_COUNT   15
-
-static const char *optionsMenu[OPTIONS_COUNT] = {
-	"Friendly fire",
-	"FPS monitor",
-	"Clock",
-	"Brightness",
-	"Splitscreen always",
-	"Random seed",
-	"Difficulty",
-	"Slowmotion",
-	"Enemy density per mission",
-	"Non-player hp",
-	"Player hp",
-	"Video fullscreen",
-	"Video resolution (restart required)",
-	"Video scale factor",
-	"Done"
-};
-
-#define CONTROLS_COUNT   7
-
-static const char *controlsMenu[CONTROLS_COUNT] = {
-	"Player One",
-	"Player Two",
-	"Swap buttons joystick 1",
-	"Swap buttons joystick 2",
-	"Redefine keys...",
-	"Calibrate joystick",
-	"Done"
-};
-
-#define VOLUME_COUNT   4
-
-static const char *volumeMenu[VOLUME_COUNT] = {
-	"Sound effects",
-	"Music",
-	"FX channels",
-	"Done"
-};
-
-
 static TCampaignSetting customSetting = {
 /*	.title		=*/	"",
 /*	.author		=*/	"",
@@ -122,392 +57,6 @@ static TCampaignSetting customSetting = {
 /*	.characters	=*/	NULL
 };
 
-
-static struct FileEntry *gCampaignList = NULL;
-static struct FileEntry *gDogfightList = NULL;
-
-
-void LookForCustomCampaigns(void)
-{
-	int i;
-
-	printf("\nCampaigns:\n");
-
-	gCampaignList = GetFilesFromDirectory(GetDataFilePath(CDOGS_CAMPAIGN_DIR));
-	GetCampaignTitles(&gCampaignList);
-	i = 0;
-	while (SetupBuiltinCampaign(i)) {
-		AddFileEntry(&gCampaignList, "", gCampaign.setting->title, i);
-		i++;
-	}
-
-	printf("\nDogfights:\n");
-
-	gDogfightList = GetFilesFromDirectory(GetDataFilePath(CDOGS_DOGFIGHT_DIR));
-	GetCampaignTitles(&gDogfightList);
-	i = 0;
-	while (SetupBuiltinDogfight(i)) {
-		AddFileEntry(&gDogfightList, "", gCampaign.setting->title, i);
-		i++;
-	}
-
-	printf("\n");
-}
-
-static void SetupBuiltin(int dogFight, int index)
-{
-	if (dogFight)
-		SetupBuiltinDogfight(index);
-	else
-		SetupBuiltinCampaign(index);
-}
-
-int SelectCampaign(int dogFight, int cmd)
-{
-	static int campaignIndex = 0;
-	static int dogfightIndex = 0;
-	int count, y, i, j;
-	struct FileEntry *list = dogFight ? gDogfightList : gCampaignList;
-	const char *prefix = dogFight ? CDOGS_DOGFIGHT_DIR : CDOGS_CAMPAIGN_DIR;
-	int *index = dogFight ? &dogfightIndex : &campaignIndex;
-	struct FileEntry *f;
-
-	for (count = 0, f = list; f != NULL; f = f->next, count++);
-
-	if (cmd == CMD_ESC)
-		return MODE_MAIN;
-
-	if (AnyButton(cmd)) {
-		for (i = 0, f = list; f != NULL && i < *index;
-		     f = f->next, i++);
-
-		if (f && f->name[0]) {
-			if (customSetting.missions)
-				free(customSetting.missions);
-			if (customSetting.characters)
-				free(customSetting.characters);
-			memset(&customSetting, 0, sizeof(customSetting));
-
-			if (LoadCampaign(GetDataFilePath(join(prefix,f->name)), &customSetting, 0, 0) ==
-			    CAMPAIGN_OK)
-				gCampaign.setting = &customSetting;
-			else
-				SetupBuiltin(dogFight, 0);
-		} else if (f)
-			SetupBuiltin(dogFight, f->data);
-		else {
-			SetupBuiltin(dogFight, 0);
-		}
-
-		PlaySound(SND_HAHAHA, 0, 255);
-		printf(">> Entering MODE_PLAY\n");
-		return MODE_PLAY;
-	}
-
-	if (Left(cmd) || Up(cmd)) {
-		(*index)--;
-		if (*index < 0)
-			*index = count - 1;
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Right(cmd) || Down(cmd)) {
-		(*index)++;
-		if (*index >= count)
-			*index = 0;
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	if (dogFight)
-		CDogsTextStringSpecial("Select a dogfight scenario:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
-	else
-		CDogsTextStringSpecial("Select a campaign:", TEXT_TOP | TEXT_XCENTER, 0, (SCREEN_WIDTH / 12));
-
-	y = CenterY(12 * CDogsTextHeight());
-
-#define ARROW_UP	"\036"
-#define ARROW_DOWN	"\037"
-
-	for (i = 0, f = list; f != NULL && i <= *index - 12; f = f->next, i++);
-
-	if (i)
-		DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_UP)), y - 2 - CDogsTextHeight(), ARROW_UP, 0);
-
-	for (j = 0; f != NULL && j < 12; f = f->next, i++, j++) {
-		DisplayMenuItem(CenterX(CDogsTextWidth(f->info)), y, f->info, i == *index);
-
-		if (i == *index) {
-			char s[255];
-
-			if (strlen(f->name) == 0)
-				sprintf(s, "( Internal )");
-			else
-				sprintf(s, "( %s )", f->name);
-
-			CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, (SCREEN_WIDTH / 12));
-		}
-
-		y += CDogsTextHeight();
-	}
-
-	if (f)
-		DisplayMenuItem(CenterX(CDogsTextWidth(ARROW_DOWN)), y + 2, ARROW_DOWN, 0);
-
-	return dogFight ? MODE_DOGFIGHT : MODE_CAMPAIGN;
-}
-
-static int SelectMain(int cmd)
-{
-	static int index = 0;
-
-	if (cmd == CMD_ESC) {
-		if (index != MODE_QUIT)
-			index = MODE_QUIT;
-		else
-			return MODE_QUIT;
-	}
-	if (AnyButton(cmd)) {
-		switch (index) {
-		case 0:
-			gCampaign.dogFight = 0;
-			gOptions.twoPlayers = 0;
-			return MODE_CAMPAIGN;
-		case 1:
-			gCampaign.dogFight = 0;
-			gOptions.twoPlayers = 1;
-			return MODE_CAMPAIGN;
-		case 2:
-			gCampaign.dogFight = 1;
-			return MODE_DOGFIGHT;
-		}
-		return index;
-	}
-	if (Left(cmd) || Up(cmd)) {
-		index--;
-		if (index < 0)
-			index = MAIN_COUNT - 1;
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Right(cmd) || Down(cmd)) {
-		index++;
-		if (index >= MAIN_COUNT)
-			index = 0;
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	DrawTPic((SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2, (SCREEN_HEIGHT / 12), gPics[PIC_LOGO], gCompiledPics[PIC_LOGO]);
-
-	CDogsTextStringSpecial("Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
-	CDogsTextStringSpecial("SDL Port:  " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
-
-	DisplayMenuAtCenter(mainMenuStr, MAIN_COUNT, index);
-
-	return MODE_MAIN;
-}
-
-int SelectOptions(int cmd)
-{
-	static int index = 0;
-	char s[10];
-	int x, y;
-
-	if (cmd == CMD_ESC)
-		return MODE_MAIN;
-	if (AnyButton(cmd) || Left(cmd) || Right(cmd)) {
-		switch (index) {
-		case 0:
-			gOptions.playersHurt = !gOptions.playersHurt;
-			PlaySound(SND_KILL, 0, 255);
-			break;
-		case 1:
-			gOptions.displayFPS = !gOptions.displayFPS;
-			PlaySound(SND_FLAMER, 0, 255);
-			break;
-		case 2:
-			gOptions.displayTime = !gOptions.displayTime;
-			PlaySound(SND_LAUNCH, 0, 255);
-			break;
-		case 3:
-			if (Left(cmd) && gOptions.brightness > -10)
-				gOptions.brightness--;
-			else if (Right(cmd) && gOptions.brightness < 10)
-				gOptions.brightness++;
-			else
-				break;
-
-			PlaySound(SND_POWERGUN, 0, 255);
-			break;
-		case 4:
-			gOptions.splitScreenAlways = !gOptions.splitScreenAlways;
-			PlaySound(SND_KILL3, 0, 255);
-			break;
-		case 5:
-			if (Left(cmd)) {
-				if (Button1(cmd) && Button2(cmd))
-					gCampaign.seed -= 1000;
-				else if (Button1(cmd))
-					gCampaign.seed -= 10;
-				else if (Button2(cmd))
-					gCampaign.seed -= 100;
-				else
-					gCampaign.seed--;
-			} else if (Right(cmd)) {
-				if (Button1(cmd) && Button2(cmd))
-					gCampaign.seed += 1000;
-				else if (Button1(cmd))
-					gCampaign.seed += 10;
-				else if (Button2(cmd))
-					gCampaign.seed += 100;
-				else
-					gCampaign.seed++;
-			}
-
-			break;
-		case 6:
-			if (Left(cmd)) {
-				if (gOptions.difficulty > DIFFICULTY_VERYEASY)
-						gOptions.difficulty--;
-			} else if (Right(cmd)) {
-				if (gOptions.difficulty < DIFFICULTY_VERYHARD)
-						gOptions.difficulty++;
-			}
-
-			if (gOptions.difficulty > DIFFICULTY_VERYHARD) gOptions.difficulty = DIFFICULTY_VERYHARD;
-			if (gOptions.difficulty < DIFFICULTY_VERYEASY) gOptions.difficulty = DIFFICULTY_VERYEASY;
-
-			break;
-		case 7:
-			gOptions.slowmotion = !gOptions.slowmotion;
-
-			break;
-		case 8:
-			if (Left(cmd)) {
-				if (gOptions.density > 25)
-					gOptions.density -= 25;
-			} else if (Right(cmd)) {
-				if (gOptions.density < 200)
-					gOptions.density += 25;
-			}
-
-			break;
-		case 9:
-			if (Left(cmd)) {
-				if (gOptions.npcHp > 25)
-					gOptions.npcHp -= 25;
-			} else if (Right(cmd)) {
-				if (gOptions.npcHp < 200)
-					gOptions.npcHp += 25;
-			}
-
-			break;
-		case 10:
-			if (Left(cmd)) {
-				if (gOptions.playerHp > 25)
-					gOptions.playerHp -= 25;
-			} else if (Right(cmd)) {
-				if (gOptions.playerHp < 200)
-					gOptions.playerHp += 25;
-			}
-
-			break;
-		case 11:
-			GrafxToggleFullscreen();
-			break;
-
-		case 12:
-			if (Left(cmd))
-			{
-				GrafxTryPrevResolution();
-			}
-			else if (Right(cmd))
-			{
-				GrafxTryNextResolution();
-			}
-			break;
-
-		case 13:
-			{
-				int fac = GrafxGetScale();
-
-				if (Left(cmd)) {
-					fac--;
-				} else if (Right(cmd)) {
-					fac++;
-				}
-
-				if (fac >= 1 && fac <= 4)
-				{
-					GrafxSetScale(fac);
-				}
-			}
-
-			break;
-
-		default:
-			PlaySound(SND_BANG, 0, 255);
-
-			return MODE_MAIN;
-		}
-	}
-
-	if (Up(cmd)) {
-		index--;
-		if (index < 0)
-			index = OPTIONS_COUNT - 1;
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Down(cmd)) {
-		index++;
-		if (index >= OPTIONS_COUNT)
-			index = 0;
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	CDogsTextStringSpecial("Game Options:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
-
-	x = CenterX(MenuWidth(optionsMenu, OPTIONS_COUNT));
-	y = CenterY(MenuHeight(OPTIONS_COUNT));
-
-	DisplayMenuAt(x - 20, y, optionsMenu, OPTIONS_COUNT, index);
-
-	x += MenuWidth(optionsMenu, OPTIONS_COUNT);
-	x += 10;
-
-	CDogsTextStringAt(x, y, gOptions.playersHurt ? "Yes" : "No");
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.displayFPS ? "On" : "Off");
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.displayTime ? "On" : "Off");
-	y += CDogsTextHeight();
-	sprintf(s, "%d", gOptions.brightness);
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.splitScreenAlways ? "Yes" : "No");
-	y += CDogsTextHeight();
-	sprintf(s, "%u", gCampaign.seed);
-	CDogsTextStringAt(x, y, s);
-
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, DifficultyStr(gOptions.difficulty));
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.slowmotion ? "Yes" : "No");
-	y += CDogsTextHeight();
-	sprintf(s, "%u%%", gOptions.density);
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	sprintf(s, "%u%%", gOptions.npcHp);
-	CDogsTextStringAt(x, y, s);
-	sprintf(s, "%u%%", gOptions.playerHp);
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	sprintf(s, "%s", Gfx_GetHint(HINT_FULLSCREEN) ? "Yes" : "No");
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	sprintf(s, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	sprintf(s, "%dx", GrafxGetScale());
-	CDogsTextStringAt(x, y, s);
-
-	return MODE_OPTIONS;
-}
 
 // TODO: simplify into an iterate over struct controls_available
 void ChangeControl(
@@ -542,81 +91,7 @@ void ChangeControl(
 	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
 }
 
-int SelectControls(int cmd)
-{
-	static int index = 0;
-	int x, y;
-
-	if (cmd == CMD_ESC)
-		return MODE_MAIN;
-	if (AnyButton(cmd) || Left(cmd) || Right(cmd)) {
-		PlaySound(rand() % SND_COUNT, 0, 255);
-		switch (index) {
-		case 0:
-			ChangeControl(
-				&gPlayer1Data.inputDevice, &gPlayer2Data.inputDevice,
-				gSticks[0].present, gSticks[1].present);
-			break;
-
-		case 1:
-			ChangeControl(
-				&gPlayer2Data.inputDevice, &gPlayer1Data.inputDevice,
-				gSticks[0].present, gSticks[1].present);
-			break;
-
-		case 2:
-			gOptions.swapButtonsJoy1 = !gOptions.swapButtonsJoy1;
-			break;
-
-		case 3:
-			gOptions.swapButtonsJoy2 = !gOptions.swapButtonsJoy2;
-			break;
-
-		case 4:
-			return MODE_KEYS;
-
-		case 5:
-			InitSticks();
-			break;
-
-		default:
-			return MODE_MAIN;
-		}
-	}
-	if (Up(cmd)) {
-		index--;
-		if (index < 0)
-			index = CONTROLS_COUNT - 1;
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Down(cmd)) {
-		index++;
-		if (index >= CONTROLS_COUNT)
-			index = 0;
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	CDogsTextStringSpecial("Configure Controls:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
-
-	x = CenterX(MenuWidth(controlsMenu, CONTROLS_COUNT));
-	y = CenterY(MenuHeight(CONTROLS_COUNT));
-
-	DisplayMenuAt(x - 20, y, controlsMenu, CONTROLS_COUNT, index);
-
-	x += MenuWidth(controlsMenu, CONTROLS_COUNT);
-	x += 10;
-
-	CDogsTextStringAt(x, y, InputDeviceStr(gPlayer1Data.inputDevice));
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, InputDeviceStr(gPlayer2Data.inputDevice));
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.swapButtonsJoy1 ? "Yes" : "No");
-	y += CDogsTextHeight();
-	CDogsTextStringAt(x, y, gOptions.swapButtonsJoy2 ? "Yes" : "No");
-	return MODE_CONTROLS;
-}
-
-int KeyAvailable(int key, struct PlayerData *data, int code,
-		 struct PlayerData *other)
+int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 {
 	key_code_e i;
 
@@ -627,15 +102,15 @@ int KeyAvailable(int key, struct PlayerData *data, int code,
 		return 0;
 
 	for (i = 0; i < KEY_CODE_MAP; i++)
-		if ((int)i != code && InputGetKey(&data->keys, i) == key)
+		if ((int)i != code && InputGetKey(keys, i) == key)
 			return 0;
 
-	if (other->keys.left == key ||
-		other->keys.right == key ||
-		other->keys.up == key ||
-		other->keys.down == key ||
-		other->keys.button1 == key ||
-		other->keys.button2 == key)
+	if (keysOther->left == key ||
+		keysOther->right == key ||
+		keysOther->up == key ||
+		keysOther->down == key ||
+		keysOther->button1 == key ||
+		keysOther->button2 == key)
 	{
 		return 0;
 	}
@@ -643,304 +118,6 @@ int KeyAvailable(int key, struct PlayerData *data, int code,
 	return 1;
 }
 
-void ChangeKey(struct PlayerData *data, struct PlayerData *other,
-	       int index)
-{
-	int key = 0;
-
-	while (GetKeyDown());
-
-	while (1) {
-		key = GetKeyDown();
-
-		if (key == keyEsc)
-			return;
-
-		if (key != 0) {
-			if (KeyAvailable(key, data, (key_code_e)index, other))
-			{
-				InputSetKey(&data->keys, key, (key_code_e)index);
-				PlaySound(SND_EXPLOSION, 0, 255);
-				return;
-			} else
-				PlaySound(SND_KILL4, 0, 255);
-		}
-	}
-}
-
-void ChangeMapKey(struct PlayerData *d1, struct PlayerData *d2)
-{
-	int key;
-
-	while (1) {
-		key = GetKeyDown();
-
-		if (key == keyEsc)
-			return;
-
-		if (key != 0) {
-			if (KeyAvailable(key, d1, -1, d2)) {
-				gOptions.mapKey = key;
-				PlaySound(SND_EXPLOSION, 0, 255);
-				return;
-			} else
-				PlaySound(SND_KILL4, 0, 255);
-		}
-	}
-
-	return;
-}
-
-
-#define SELECTKEY "Press a key"
-
-static void DisplayKeys(int x, int x2, int y, char *title,
-			struct PlayerData *data, key_code_e index, key_code_e change)
-{
-	key_code_e i;
-
-	CDogsTextStringAt(x, y, title);
-	CDogsTextStringAt(x, y + CDogsTextHeight(), "Left");
-	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), "Right");
-	CDogsTextStringAt(x, y + 3 * CDogsTextHeight(), "Up");
-	CDogsTextStringAt(x, y + 4 * CDogsTextHeight(), "Down");
-	CDogsTextStringAt(x, y + 5 * CDogsTextHeight(), "Fire");
-	CDogsTextStringAt(x, y + 6 * CDogsTextHeight(), "Switch/slide");
-
-	for (i = 0; i < 6; i++)
-		if (change == i)
-			DisplayMenuItem(x2, y + (i + 1) * CDogsTextHeight(),
-					SELECTKEY, index == i);
-		else
-			DisplayMenuItem(x2, y + (i + 1) * CDogsTextHeight(),
-					SDL_GetKeyName(InputGetKey(&data->keys, i)),
-					index == i);
-}
-
-static void ShowAllKeys(int index, int change)
-{
-	int x1, x2, y1, y2;
-
-	x1 = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
-	x2 = x1 * 3;
-
-	y1 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 10);
-	y2 = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 2);
-
-	DisplayKeys(x1, x2, y1, "Player One", &gPlayer1Data, index, change);
-	DisplayKeys(x1, x2, y2, "Player Two", &gPlayer2Data, index - 6, change - 6);
-
-	y2 += CDogsTextHeight() * 8;
-
-	CDogsTextStringAt(x1, y2, "Map");
-
-	if (change == 12)
-		DisplayMenuItem(x2, y2, SELECTKEY, index == 12);
-	else
-		DisplayMenuItem(x2, y2, SDL_GetKeyName(gOptions.mapKey), index == 12);
-
-#define DONE	"Done"
-
-	y2 += CDogsTextHeight () * 2;
-
-	DisplayMenuItem(CenterX(CDogsTextWidth(DONE)), y2, DONE, index == 13);
-}
-
-static void HighlightKey(int index)
-{
-	CopyToScreen();
-	ShowAllKeys(index, index);
-
-	return;
-}
-
-int SelectKeys(int cmd)
-{
-	static int index = 12;
-
-	if (cmd == CMD_ESC)
-		return MODE_CONTROLS;
-
-	if (AnyButton(cmd)) {
-		PlaySound(rand() % SND_COUNT, 0, 255);
-
-		switch (index) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-			HighlightKey(index);
-			ChangeKey(&gPlayer1Data, &gPlayer2Data, index);
-			break;
-
-		case 6:
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-		case 11:
-			HighlightKey(index);
-			ChangeKey(&gPlayer2Data, &gPlayer1Data, index - 6);
-			break;
-
-		case 12:
-			HighlightKey(index);
-			ChangeMapKey(&gPlayer1Data, &gPlayer2Data);
-			break;
-
-		default:
-			return MODE_CONTROLS;
-		}
-	} else if (index > 0 && Up(cmd)) {
-		index--;
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (index < 13 && Down(cmd)) {
-		index++;
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	ShowAllKeys(index, -1);
-
-	return MODE_KEYS;
-}
-
-int SelectVolume(int cmd)
-{
-	static int index = 0;
-	char s[10];
-	int x, y;
-
-	if (cmd == CMD_ESC)
-		return MODE_MAIN;
-
-	if (AnyButton(cmd) && index == VOLUME_COUNT - 1)
-		return MODE_MAIN;
-
-	if (Left(cmd)) {
-		switch (index) {
-			case 0:
-				if (FXVolume() > 8)
-					SetFXVolume(FXVolume() - 8);
-				break;
-			case 1:
-				if (MusicVolume() > 8)
-					SetMusicVolume(MusicVolume() - 8);
-				break;
-			case 2:
-				if (FXChannels() > 2)
-					SetFXChannels(FXChannels() - 2);
-				break;
-			case 3:
-				break;
-		}
-
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Right(cmd)) {
-		switch (index) {
-			case 0:
-				if (FXVolume() < 64)
-					SetFXVolume(FXVolume() + 8);
-				break;
-			case 1:
-				if (MusicVolume() < 64)
-					SetMusicVolume(MusicVolume() + 8);
-				break;
-			case 2:
-				if (FXChannels() < 8)
-					SetFXChannels(FXChannels() + 2);
-				break;
-			case 3:
-				break;
-		}
-
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Up(cmd)) {
-		index--;
-
-		if (index < 0)
-			index = VOLUME_COUNT - 1;
-
-		PlaySound(SND_SWITCH, 0, 255);
-	} else if (Down(cmd)) {
-		index++;
-
-		if (index >= VOLUME_COUNT)
-			index = 0;
-
-		PlaySound(SND_SWITCH, 0, 255);
-	}
-
-	CDogsTextStringSpecial("Configure Sound:", TEXT_XCENTER | TEXT_TOP, 0, (SCREEN_WIDTH / 12));
-
-	x = CenterX(MenuWidth(volumeMenu, VOLUME_COUNT));
-	y = CenterY(MenuHeight(VOLUME_COUNT));
-
-	DisplayMenuAt(x - 20, y, volumeMenu, VOLUME_COUNT, index);
-
-	x += MenuWidth(volumeMenu, VOLUME_COUNT);
-	x += 10;
-
-	sprintf(s, "%d", FXVolume() / 8);
-	CDogsTextStringAt(x, y, s);
-	sprintf(s, "%d", MusicVolume() / 8);
-	CDogsTextStringAt(x, y + CDogsTextHeight(), s);
-	sprintf(s, "%d", FXChannels());
-	CDogsTextStringAt(x, y + 2 * CDogsTextHeight(), s);
-
-	return MODE_VOLUME;
-}
-
-int MainMenuSelection(int mode, int cmd)
-{
-	switch (mode) {
-		case MODE_MAIN:
-			return SelectMain(cmd);
-		case MODE_CAMPAIGN:
-			return SelectCampaign(0, cmd);
-		case MODE_DOGFIGHT:
-			return SelectCampaign(1, cmd);
-		case MODE_OPTIONS:
-			return SelectOptions(cmd);
-		case MODE_CONTROLS:
-			return SelectControls(cmd);
-		case MODE_KEYS:
-			return SelectKeys(cmd);
-		case MODE_VOLUME:
-			return SelectVolume(cmd);
-	}
-
-	return MODE_MAIN;
-}
-
-int MainMenuOld(void *bkg, credits_displayer_t *creditsDisplayer)
-{
-	int cmd, prev = 0;
-	int mode = MODE_MAIN;
-
-	while (mode != MODE_QUIT && mode != MODE_PLAY) {
-		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
-		ShowControls();
-
-		if (mode == MODE_MAIN)
-		{
-			ShowCredits(creditsDisplayer);
-		}
-
-		GetMenuCmd(&cmd, &prev);
-
-		mode = MainMenuSelection(mode, cmd);
-
-		CopyToScreen();
-
-		SDL_Delay(10);
-	}
-
-	WaitForRelease();
-
-	return mode == MODE_PLAY;
-}
 
 typedef enum
 {
@@ -961,6 +138,23 @@ typedef enum
 	MENU_TYPE_QUIT,
 	MENU_TYPE_SEPARATOR
 } menu_type_e;
+
+int MenuTypeHasSubMenus(menu_type_e type)
+{
+	return
+		type == MENU_TYPE_NORMAL ||
+		type == MENU_TYPE_OPTIONS ||
+		type == MENU_TYPE_CAMPAIGNS ||
+		type == MENU_TYPE_KEYS;
+}
+
+int MenuTypeLeftRightMoves(menu_type_e type)
+{
+	return
+		type == MENU_TYPE_NORMAL ||
+		type == MENU_TYPE_CAMPAIGNS ||
+		type == MENU_TYPE_KEYS;
+}
 
 typedef enum
 {
@@ -997,13 +191,13 @@ typedef struct menu
 {
 	char name[64];
 	menu_type_e type;
+	struct menu *parentMenu;
 	union
 	{
 		// normal menu, with sub menus
 		struct
 		{
 			char title[64];
-			struct menu *parentMenu;
 			struct menu *subMenus;
 			int numSubMenus;
 			int index;
@@ -1011,6 +205,7 @@ typedef struct menu
 			int displayItems;
 			menu_option_type_e optionType;
 			int setOptions;
+			struct menu *changeKeyMenu;	// if in change key mode, and which item
 		} normal;
 		// menu item only
 		struct
@@ -1075,6 +270,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns);
 void MenuDestroy(menu_t *menu);
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
+void MenuProcessChangeKey(menu_t *menu, int *cmd, int *prevCmd);
 
 int MainMenu(
 	void *bkg,
@@ -1092,9 +288,16 @@ int MainMenu(
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
-		GetMenuCmd(&cmd, &prev);
-		menu = MenuProcessCmd(menu, cmd);
 		CopyToScreen();
+		if (menu->type == MENU_TYPE_KEYS && menu->u.normal.changeKeyMenu != NULL)
+		{
+			MenuProcessChangeKey(menu, &cmd, &prev);
+		}
+		else
+		{
+			GetMenuCmd(&cmd, &prev);
+			menu = MenuProcessCmd(menu, cmd);
+		}
 		SDL_Delay(10);
 	} while (menu->type != MENU_TYPE_QUIT && menu->type != MENU_TYPE_CAMPAIGN_ITEM);
 	doPlay = menu->type == MENU_TYPE_CAMPAIGN_ITEM;
@@ -1104,7 +307,7 @@ int MainMenu(
 	return doPlay;
 }
 
-menu_t *MenuCreate(
+menu_t *MenuCreateNormal(
 	const char *name,
 	const char *title,
 	menu_type_e type,
@@ -1122,7 +325,7 @@ menu_t *MenuCreateQuit(const char *name);
 
 menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		"",
 		"",
 		MENU_TYPE_NORMAL,
@@ -1138,7 +341,9 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 	return menu;
 }
 
-menu_t *MenuCreate(
+menu_t *MenuCreate(const char *name, menu_type_e type);
+
+menu_t *MenuCreateNormal(
 	const char *name,
 	const char *title,
 	menu_type_e type,
@@ -1146,18 +351,25 @@ menu_t *MenuCreate(
 	menu_option_type_e optionType,
 	int setOptions)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = type;
+	menu_t *menu = MenuCreate(name, type);
 	strcpy(menu->u.normal.title, title);
 	menu->u.normal.displayItems = displayItems;
 	menu->u.normal.optionType = optionType;
 	menu->u.normal.setOptions = setOptions;
+	menu->u.normal.changeKeyMenu = NULL;
 	menu->u.normal.index = 0;
 	menu->u.normal.quitMenuIndex = -1;
-	menu->u.normal.parentMenu = NULL;
 	menu->u.normal.subMenus = NULL;
 	menu->u.normal.numSubMenus = 0;
+	return menu;
+}
+
+menu_t *MenuCreate(const char *name, menu_type_e type)
+{
+	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	strcpy(menu->name, name);
+	menu->type = type;
+	menu->parentMenu = NULL;
 	return menu;
 }
 
@@ -1181,25 +393,15 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	for (i = 0; i < menu->u.normal.numSubMenus; i++)
 	{
 		subMenuLoc = &menu->u.normal.subMenus[i];
-		if (subMenuLoc->type == MENU_TYPE_NORMAL ||
-			subMenuLoc->type == MENU_TYPE_OPTIONS ||
-			subMenuLoc->type == MENU_TYPE_CAMPAIGNS ||
-			subMenuLoc->type == MENU_TYPE_KEYS)
+		subMenuLoc->parentMenu = menu;
+		if (MenuTypeHasSubMenus(subMenuLoc->type))
 		{
 			int j;
-
-			subMenuLoc->u.normal.parentMenu = menu;
 
 			for (j = 0; j < subMenuLoc->u.normal.numSubMenus; j++)
 			{
 				menu_t *subSubMenu = &subMenuLoc->u.normal.subMenus[j];
-				if (subSubMenu->type == MENU_TYPE_NORMAL ||
-					subSubMenu->type == MENU_TYPE_OPTIONS ||
-					subSubMenu->type == MENU_TYPE_CAMPAIGNS ||
-					subSubMenu->type == MENU_TYPE_KEYS)
-				{
-					subSubMenu->u.normal.parentMenu = subMenuLoc;
-				}
+				subSubMenu->parentMenu = subMenuLoc;
 			}
 		}
 	}
@@ -1216,7 +418,7 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
 
 menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
@@ -1231,7 +433,7 @@ menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 
 menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
@@ -1247,7 +449,7 @@ menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 
 menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Select a dogfight scenario:",
 		MENU_TYPE_CAMPAIGNS,
@@ -1263,9 +465,7 @@ menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 
 menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, entry->info);
-	menu->type = MENU_TYPE_CAMPAIGN_ITEM;
+	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaignEntry, entry, sizeof(menu->u.campaignEntry));
 	return menu;
 }
@@ -1296,7 +496,7 @@ menu_t *MenuCreateBack(const char *name);
 
 menu_t *MenuCreateOptions(const char *name)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Game Options:",
 		MENU_TYPE_OPTIONS,
@@ -1402,7 +602,7 @@ menu_t *MenuCreateKeys(const char *name);
 
 menu_t *MenuCreateControls(const char *name)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Configure Controls:",
 		MENU_TYPE_OPTIONS,
@@ -1443,7 +643,7 @@ menu_t *MenuCreateControls(const char *name)
 
 menu_t *MenuCreateSound(const char *name)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"Configure Sound:",
 		MENU_TYPE_OPTIONS,
@@ -1478,19 +678,14 @@ menu_t *MenuCreateSound(const char *name)
 
 menu_t *MenuCreateQuit(const char *name)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_QUIT;
-	return menu;
+	return MenuCreate(name, MENU_TYPE_QUIT);
 }
 
 
 menu_t *MenuCreateOptionToggle(
 	const char *name, int *config, menu_option_display_style_e style)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_TOGGLE;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_TOGGLE);
 	menu->u.option.uHook.optionToggle = config;
 	menu->u.option.displayStyle = style;
 	return menu;
@@ -1502,9 +697,7 @@ menu_t *MenuCreateOptionRange(
 	int low, int high, int increment,
 	menu_option_display_style_e style, void *func)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_RANGE;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_RANGE);
 	menu->u.option.uHook.optionRange.option = config;
 	menu->u.option.uHook.optionRange.low = low;
 	menu->u.option.uHook.optionRange.high = high;
@@ -1523,9 +716,7 @@ menu_t *MenuCreateOptionRange(
 
 menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_SEED;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_SEED);
 	menu->u.option.uHook.seed = seed;
 	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT;
 	return menu;
@@ -1536,9 +727,7 @@ menu_t *MenuCreateOptionUpDownFunc(
 	void(*upFunc)(void), void(*downFunc)(void),
 	menu_option_display_style_e style, char *(*strFunc)(void))
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID);
 	menu->u.option.uHook.upDownFuncs.upFunc = upFunc;
 	menu->u.option.uHook.upDownFuncs.downFunc = downFunc;
 	menu->u.option.displayStyle = style;
@@ -1551,9 +740,7 @@ menu_t *MenuCreateOptionFunc(
 	void(*toggleFunc)(void), int(*getFunc)(void),
 	menu_option_display_style_e style)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_VOID_FUNC_VOID;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_VOID_FUNC_VOID);
 	menu->u.option.uHook.toggleFuncs.toggle = toggleFunc;
 	menu->u.option.uHook.toggleFuncs.get = getFunc;
 	menu->u.option.displayStyle = style;
@@ -1566,9 +753,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	int low, int high, int increment,
 	menu_option_display_style_e style, void *func)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_RANGE_GET_SET;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_RANGE_GET_SET);
 	menu->u.option.uHook.optionRangeGetSet.getFunc = getFunc;
 	menu->u.option.uHook.optionRangeGetSet.setFunc = setFunc;
 	menu->u.option.uHook.optionRangeGetSet.low = low;
@@ -1585,26 +770,18 @@ menu_t *MenuCreateOptionRangeGetSet(
 
 menu_t *MenuCreateSeparator(const char *name)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SEPARATOR;
-	return menu;
+	return MenuCreate(name, MENU_TYPE_SEPARATOR);
 }
 
 menu_t *MenuCreateBack(const char *name)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_BACK;
-	return menu;
+	return MenuCreate(name, MENU_TYPE_BACK);
 }
 
 menu_t *MenuCreateOptionChangeControl(
 	const char *name, input_device_e *device0, input_device_e *device1)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_CHANGE_CONTROL;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_CHANGE_CONTROL);
 	menu->u.option.uHook.changeControl.device0 = device0;
 	menu->u.option.uHook.changeControl.device1 = device1;
 	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC;
@@ -1621,7 +798,7 @@ menu_t *MenuCreateOptionChangeKey(
 
 menu_t *MenuCreateKeys(const char *name)
 {
-	menu_t *menu = MenuCreate(
+	menu_t *menu = MenuCreateNormal(
 		name,
 		"",
 		MENU_TYPE_KEYS,
@@ -1635,7 +812,7 @@ menu_t *MenuCreateKeys(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeKey(
-			"Map", KEY_CODE_MAP, NULL, NULL));
+			"Map", KEY_CODE_MAP, &gPlayer1Data.keys, &gPlayer2Data.keys));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -1676,9 +853,7 @@ menu_t *MenuCreateOptionChangeKey(
 	const char *name, key_code_e code,
 	input_keys_t *keys, input_keys_t *keysOther)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
-	strcpy(menu->name, name);
-	menu->type = MENU_TYPE_SET_OPTION_CHANGE_KEY;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_CHANGE_KEY);
 	menu->u.changeKey.code = code;
 	menu->u.changeKey.keys = keys;
 	menu->u.changeKey.keysOther = keysOther;
@@ -1703,11 +878,7 @@ void MenuDestroySubmenus(menu_t *menu)
 	{
 		return;
 	}
-	if ((menu->type == MENU_TYPE_NORMAL ||
-		menu->type == MENU_TYPE_OPTIONS ||
-		menu->type == MENU_TYPE_CAMPAIGNS ||
-		menu->type == MENU_TYPE_KEYS) &&
-		menu->u.normal.subMenus != NULL)
+	if (MenuTypeHasSubMenus(menu->type) && menu->u.normal.subMenus != NULL)
 	{
 		int i;
 		for (i = 0; i < menu->u.normal.numSubMenus; i++)
@@ -1919,16 +1090,20 @@ void MenuDisplaySubmenus(menu_t *menu)
 
 				if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
 				{
-					int isChanging = 0;	// TODO: key changing
-					const char *keyName = "Press a key";
-					if (!isChanging)
+					const char *keyName;
+					if (menu->u.normal.changeKeyMenu == subMenu)
 					{
-						if (subMenu->u.changeKey.code != KEY_CODE_MAP)
-						{
-							keyName = SDL_GetKeyName(InputGetKey(
-								subMenu->u.changeKey.keys,
-								subMenu->u.changeKey.code));
-						}
+						keyName = "Press a key";
+					}
+					else if (subMenu->u.changeKey.code == KEY_CODE_MAP)
+					{
+						keyName = SDL_GetKeyName(gOptions.mapKey);
+					}
+					else
+					{
+						keyName = SDL_GetKeyName(InputGetKey(
+							subMenu->u.changeKey.keys,
+							subMenu->u.changeKey.code));
 					}
 					DisplayMenuItem(xKeys, y, keyName, isSelected);
 				}
@@ -2019,9 +1194,9 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 			menuToChange = &menu->u.normal.subMenus[quitMenuIndex];
 		}
 	}
-	else if (menu->u.normal.parentMenu != NULL)
+	else
 	{
-		menuToChange = menu->u.normal.parentMenu;
+		menuToChange = menu->parentMenu;
 	}
 	return menuToChange;
 }
@@ -2032,9 +1207,8 @@ void MenuActivate(menu_t *menu, int cmd);
 
 menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 {
-	int leftRightMoves = menu->type == MENU_TYPE_NORMAL;
 	if (AnyButton(cmd) ||
-		(!leftRightMoves && (Left(cmd) || Right(cmd))))
+		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
 	{
 		menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
 		MenuSetOptions(menu->u.normal.setOptions);
@@ -2049,7 +1223,7 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 			MenuLoadCampaign(&subMenu->u.campaignEntry);
 			return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 		case MENU_TYPE_BACK:
-			return menu->u.normal.parentMenu;
+			return menu->parentMenu;
 		case MENU_TYPE_QUIT:
 			return subMenu;	// caller will check if subMenu type is QUIT
 		default:
@@ -2232,7 +1406,7 @@ void MenuActivate(menu_t *menu, int cmd)
 		menu->u.option.uHook.toggleFuncs.toggle();
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_KEY:
-		// TODO: implement
+		menu->parentMenu->u.normal.changeKeyMenu = menu;
 		break;
 	default:
 		printf("Error unhandled menu type %d\n", menu->type);
@@ -2243,7 +1417,7 @@ void MenuActivate(menu_t *menu, int cmd)
 
 void MenuChangeIndex(menu_t *menu, int cmd)
 {
-	int leftRightMoves = menu->type == MENU_TYPE_NORMAL;
+	int leftRightMoves = MenuTypeLeftRightMoves(menu->type);
 	if (Up(cmd) || (leftRightMoves && Left(cmd)))
 	{
 		do
@@ -2270,4 +1444,54 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			MENU_TYPE_SEPARATOR);
 		PlaySound(SND_DOOR, 0, 255);
 	}
+}
+
+void MenuProcessChangeKey(menu_t *menu, int *cmd, int *prevCmd)
+{
+	int key;
+	int prevKey = GetKeyDown();
+	do
+	{
+		key = GetKeyDown();
+		if (key == 0)
+		{
+			prevKey = 0;
+		}
+	}
+	while (key == 0 || key == prevKey);	// wait until user has pressed a new button
+
+	if (key == keyEsc)
+	{
+		PlaySound(SND_PICKUP, 0, 255);
+	}
+	else if (KeyAvailable(
+		key,
+		menu->u.normal.changeKeyMenu->u.changeKey.code,
+		menu->u.normal.changeKeyMenu->u.changeKey.keys,
+		menu->u.normal.changeKeyMenu->u.changeKey.keysOther))
+	{
+		if (menu->u.normal.changeKeyMenu->u.changeKey.code != KEY_CODE_MAP)
+		{
+			InputSetKey(
+				menu->u.normal.changeKeyMenu->u.changeKey.keys,
+				key,
+				menu->u.normal.changeKeyMenu->u.changeKey.code);
+		}
+		else
+		{
+			gOptions.mapKey = key;
+		}
+		PlaySound(SND_EXPLOSION, 0, 255);
+	}
+	else
+	{
+		PlaySound(SND_KILL4, 0, 255);
+	}
+	menu->u.normal.changeKeyMenu = NULL;
+
+	// set the current command to what the user pressed, to prevent change key entering loop
+	// TODO: refactor keyboard input routines, combine cmd/prevcmd
+	*prevCmd = 0;
+	GetMenuCmd(cmd, prevCmd);
+	*prevCmd = *cmd;
 }
