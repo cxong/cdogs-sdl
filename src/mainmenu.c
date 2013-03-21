@@ -174,15 +174,6 @@ typedef enum
 
 typedef enum
 {
-	MENU_OPTION_TYPE_NONE,
-	MENU_OPTION_TYPE_OPTIONS,
-	MENU_OPTION_TYPE_CONTROLS,
-	MENU_OPTION_TYPE_SOUND,
-	MENU_OPTION_TYPE_KEYS
-} menu_option_type_e;
-
-typedef enum
-{
 	MENU_SET_OPTIONS_TWOPLAYERS	= 0x01,
 	MENU_SET_OPTIONS_DOGFIGHT	= 0x02
 } menu_set_options_e;
@@ -203,7 +194,6 @@ typedef struct menu
 			int index;
 			int quitMenuIndex;
 			int displayItems;
-			menu_option_type_e optionType;
 			int setOptions;
 			struct menu *changeKeyMenu;	// if in change key mode, and which item
 		} normal;
@@ -312,7 +302,6 @@ menu_t *MenuCreateNormal(
 	const char *title,
 	menu_type_e type,
 	int displayItems,
-	menu_option_type_e optionType,
 	int setOptions);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
 menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList);
@@ -330,7 +319,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS,
-		0, 0);
+		0);
 	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player", &campaigns->campaignList));
 	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players", &campaigns->campaignList));
 	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight", &campaigns->dogfightList));
@@ -348,13 +337,11 @@ menu_t *MenuCreateNormal(
 	const char *title,
 	menu_type_e type,
 	int displayItems,
-	menu_option_type_e optionType,
 	int setOptions)
 {
 	menu_t *menu = MenuCreate(name, type);
 	strcpy(menu->u.normal.title, title);
 	menu->u.normal.displayItems = displayItems;
-	menu->u.normal.optionType = optionType;
 	menu->u.normal.setOptions = setOptions;
 	menu->u.normal.changeKeyMenu = NULL;
 	menu->u.normal.index = 0;
@@ -422,7 +409,7 @@ menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
 		name,
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
-		0, 0, 0);
+		0, 0);
 	int i;
 	for (i = 0; i < campaignList->num; i++)
 	{
@@ -437,7 +424,7 @@ menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
 		name,
 		"Select a campaign:",
 		MENU_TYPE_CAMPAIGNS,
-		0, 0,
+		0,
 		MENU_SET_OPTIONS_TWOPLAYERS);
 	int i;
 	for (i = 0; i < campaignList->num; i++)
@@ -453,7 +440,7 @@ menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
 		name,
 		"Select a dogfight scenario:",
 		MENU_TYPE_CAMPAIGNS,
-		0, 0,
+		0,
 		MENU_SET_OPTIONS_DOGFIGHT);
 	int i;
 	for (i = 0; i < dogfightList->num; i++)
@@ -500,9 +487,7 @@ menu_t *MenuCreateOptions(const char *name)
 		name,
 		"Game Options:",
 		MENU_TYPE_OPTIONS,
-		0,
-		MENU_OPTION_TYPE_OPTIONS,
-		0);
+		0, 0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
@@ -606,9 +591,7 @@ menu_t *MenuCreateControls(const char *name)
 		name,
 		"Configure Controls:",
 		MENU_TYPE_OPTIONS,
-		0,
-		MENU_OPTION_TYPE_CONTROLS,
-		0);
+		0, 0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeControl(
@@ -647,9 +630,7 @@ menu_t *MenuCreateSound(const char *name)
 		name,
 		"Configure Sound:",
 		MENU_TYPE_OPTIONS,
-		0,
-		MENU_OPTION_TYPE_SOUND,
-		0);
+		0, 0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
@@ -802,9 +783,7 @@ menu_t *MenuCreateKeys(const char *name)
 		name,
 		"",
 		MENU_TYPE_KEYS,
-		0,
-		MENU_OPTION_TYPE_KEYS,
-		0);
+		0, 0);
 	MenuCreateKeysSingleSection(
 		menu, "Player 1", &gPlayer1Data.keys, &gPlayer2Data.keys);
 	MenuCreateKeysSingleSection(
