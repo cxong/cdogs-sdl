@@ -635,29 +635,6 @@ void FreeFileEntries(struct FileEntry *entries)
 	}
 }
 
-void GetCampaignTitles(struct FileEntry **entries)
-{
-	int i;
-	struct FileEntry *tmp;
-	char s[10];
-
-	while (*entries) {
-		if (ScanCampaign(join(GetDataFilePath(CDOGS_CAMPAIGN_DIR),
-				(*entries)->name),
-				(*entries)->info,
-				&i) == CAMPAIGN_OK) {
-			sprintf(s, " (%d)", i);
-			strcat((*entries)->info, s);
-			entries = &((*entries)->next);
-		} else		// Bad campaign
-		{
-			tmp = *entries;
-			*entries = tmp->next;
-			free(tmp);
-		}
-	}
-}
-
 /* GetHomeDirectory ()
  *
  * Uses environment variables to determine the users home directory.
@@ -732,18 +709,6 @@ char * GetDataFilePath(const char *path)
 	strcat(data_pbuf, "/");
 	strcat(data_pbuf, path);
 	return data_pbuf;
-}
-
-char * join(const char *s1, const char *s2)
-{
-	char *tmp;
-
-	tmp = calloc(strlen(s1)+strlen(s2)+1,sizeof(char));
-
-	strcpy(tmp, s1);
-	strcat(tmp, s2);
-
-	return tmp;
 }
 
 

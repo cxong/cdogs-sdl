@@ -55,13 +55,11 @@ void AddFileEntry(struct FileEntry **list, const char *name,
 		  const char *info, int data);
 struct FileEntry *GetFilesFromDirectory(const char *directory);
 void FreeFileEntries(struct FileEntry *entries);
-void GetCampaignTitles(struct FileEntry **entries);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);
 char * GetDataFilePath(const char *path);
 
-char * join(const char *s1, const char *s2);
 char * GetPWD(void);
 void SetupConfigDir(void);
 

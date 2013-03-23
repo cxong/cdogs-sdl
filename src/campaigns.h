@@ -34,14 +34,18 @@
 typedef struct
 {
 	char filename[CDOGS_FILENAME_MAX];
+	char path[CDOGS_PATH_MAX];
 	char info[80];
 	int isBuiltin;
 	int isDogfight;
 	int builtinIndex;
 } campaign_entry_t;
 
-typedef struct
+typedef struct campaign_list
 {
+	char name[CDOGS_FILENAME_MAX];
+	struct campaign_list *subFolders;
+	int numSubFolders;
 	campaign_entry_t *list;
 	int num;
 } campaign_list_t;

@@ -304,9 +304,8 @@ menu_t *MenuCreateNormal(
 	int displayItems,
 	int setOptions);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
-menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList);
-menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList);
-menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList);
+menu_t *MenuCreateCampaigns(
+	const char *name, const char *title, campaign_list_t *list, int options);
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateControls(const char *name);
 menu_t *MenuCreateSound(const char *name);
@@ -320,9 +319,24 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS,
 		0);
-	MenuAddSubmenu(menu, MenuCreateOnePlayer("1 player", &campaigns->campaignList));
-	MenuAddSubmenu(menu, MenuCreateTwoPlayers("2 players", &campaigns->campaignList));
-	MenuAddSubmenu(menu, MenuCreateDogfight("Dogfight", &campaigns->dogfightList));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+			"1 player", "Select a campaign:", &campaigns->campaignList, 0));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+			"2 players",
+			"Select a campaign:",
+			&campaigns->campaignList,
+			MENU_SET_OPTIONS_TWOPLAYERS));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+			"Dogfight",
+			"Select a dogfight scenario:",
+			&campaigns->dogfightList,
+			MENU_SET_OPTIONS_DOGFIGHT));
 	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
 	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
 	MenuAddSubmenu(menu, MenuCreateSound("Sound..."));
@@ -403,49 +417,31 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 
 menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
 
-menu_t *MenuCreateOnePlayer(const char *name, campaign_list_t *campaignList)
+menu_t *MenuCreateCampaigns(
+	const char *name, const char *title, campaign_list_t *list, int options)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
-		"Select a campaign:",
-		MENU_TYPE_CAMPAIGNS,
-		0, 0);
-	int i;
-	for (i = 0; i < campaignList->num; i++)
-	{
-		MenuAddSubmenu(menu, MenuCreateCampaignItem(&campaignList->list[i]));
-	}
-	return menu;
-}
-
-menu_t *MenuCreateTwoPlayers(const char *name, campaign_list_t *campaignList)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"Select a campaign:",
+		title,
 		MENU_TYPE_CAMPAIGNS,
 		0,
-		MENU_SET_OPTIONS_TWOPLAYERS);
+		options);
 	int i;
-	for (i = 0; i < campaignList->num; i++)
+	for (i = 0; i < list->numSubFolders; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateCampaignItem(&campaignList->list[i]));
+		char folderName[CDOGS_FILENAME_MAX];
+		sprintf(folderName, "%s/", list->subFolders[i].name);
+		MenuAddSubmenu(
+			menu,
+			MenuCreateCampaigns(
+				folderName,
+				title,
+				&list->subFolders[i],
+				options));
 	}
-	return menu;
-}
-
-menu_t *MenuCreateDogfight(const char *name, campaign_list_t *dogfightList)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"Select a dogfight scenario:",
-		MENU_TYPE_CAMPAIGNS,
-		0,
-		MENU_SET_OPTIONS_DOGFIGHT);
-	int i;
-	for (i = 0; i < dogfightList->num; i++)
+	for (i = 0; i < list->num; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateCampaignItem(&dogfightList->list[i]));
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(&list->list[i]));
 	}
 	return menu;
 }
@@ -1237,8 +1233,6 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	}
 	else
 	{
-		const char *filename = entry->filename;
-		const char *campaignFolder = entry->isDogfight ? CDOGS_DOGFIGHT_DIR : CDOGS_CAMPAIGN_DIR;
 		if (customSetting.missions)
 		{
 			sys_mem_free(customSetting.missions);
@@ -1249,12 +1243,10 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 
-		if (LoadCampaign(
-				GetDataFilePath(join(campaignFolder, filename)),
-				&customSetting, 0, 0) != CAMPAIGN_OK)
+		if (LoadCampaign(entry->path, &customSetting, 0, 0) != CAMPAIGN_OK)
 		{
+			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);
-			printf("Failed to load campaign %s!\n", filename);
 		}
 		gCampaign.setting = &customSetting;
 	}
