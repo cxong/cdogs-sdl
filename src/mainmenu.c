@@ -192,6 +192,7 @@ typedef struct menu
 			struct menu *subMenus;
 			int numSubMenus;
 			int index;
+			int scroll;
 			int quitMenuIndex;
 			int displayItems;
 			int setOptions;
@@ -359,6 +360,7 @@ menu_t *MenuCreateNormal(
 	menu->u.normal.setOptions = setOptions;
 	menu->u.normal.changeKeyMenu = NULL;
 	menu->u.normal.index = 0;
+	menu->u.normal.scroll = 0;
 	menu->u.normal.quitMenuIndex = -1;
 	menu->u.normal.subMenus = NULL;
 	menu->u.normal.numSubMenus = 0;
@@ -990,16 +992,12 @@ void MenuDisplaySubmenus(menu_t *menu)
 		break;
 	case MENU_TYPE_CAMPAIGNS:
 		{
-			i = 0;	// current menu scroll
-			int j;
-			// TODO: display up/down arrows, handle scrolling
-
 			int y = CenterY(12 * CDogsTextHeight());
 
 		#define ARROW_UP	"\036"
 		#define ARROW_DOWN	"\037"
 
-			if (i != 0)
+			if (menu->u.normal.scroll != 0)
 			{
 				DisplayMenuItem(
 					CenterX(CDogsTextWidth(ARROW_UP)),
@@ -1008,7 +1006,9 @@ void MenuDisplaySubmenus(menu_t *menu)
 					0);
 			}
 
-			for (j = 0; j < MIN(12, menu->u.normal.numSubMenus); i++, j++)
+			for (i = menu->u.normal.scroll;
+				i < MIN(menu->u.normal.scroll + 12, menu->u.normal.numSubMenus);
+				i++)
 			{
 				int isSelected = i == menu->u.normal.index;
 				menu_t *subMenu = &menu->u.normal.subMenus[i];
@@ -1414,6 +1414,14 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
 			MENU_TYPE_SEPARATOR);
 		PlaySound(SND_DOOR, 0, 255);
+	}
+	menu->u.normal.scroll =
+		CLAMP(menu->u.normal.scroll,
+			MAX(0, menu->u.normal.index - 11),
+			MIN(menu->u.normal.numSubMenus - 1, menu->u.normal.index + 11));
+	if (menu->u.normal.index < menu->u.normal.scroll)
+	{
+		menu->u.normal.scroll = menu->u.normal.index;
 	}
 }
 
