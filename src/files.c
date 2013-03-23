@@ -583,58 +583,6 @@ int Is_Dir(const char *name)
 	return 0;
 }
 
-void AddFileEntry(struct FileEntry **list, const char *name,
-		  const char *info, int data)
-{
-	struct FileEntry *entry;
-
-	if (strcmp(name, "..") == 0)	return;
-	if (strcmp(name, ".") == 0)	return;
-
-	if (Is_Dir(name)) return;
-
-	while (*list && strcmp((*list)->name, name) < 0)
-		list = &(*list)->next;
-
-	if (strcmp(name, "") == 0)
-		printf(" -> Adding [builtin]\n");
-	else
-		printf(" -> Adding [%s]\n", name);
-
-	entry = sys_mem_alloc(sizeof(struct FileEntry));
-	strcpy(entry->name, name);
-	strcpy(entry->info, info);
-	entry->data = data;
-	entry->next = *list;
-	*list = entry;
-}
-
-struct FileEntry *GetFilesFromDirectory(const char *directory)
-{
-	DIR *dir;
-	struct dirent *d;
-	struct FileEntry *list = NULL;
-
-	dir = opendir(directory);
-	if (dir != NULL) {
-		while ((d = readdir(dir)) != NULL)
-			AddFileEntry(&list, d->d_name, "", 0);
-		closedir(dir);
-	}
-	return list;
-}
-
-void FreeFileEntries(struct FileEntry *entries)
-{
-	struct FileEntry *tmp;
-
-	while (entries) {
-		tmp = entries;
-		entries = entries->next;
-		free(tmp);
-	}
-}
-
 /* GetHomeDirectory ()
  *
  * Uses environment variables to determine the users home directory.
@@ -642,7 +590,6 @@ void FreeFileEntries(struct FileEntry *entries)
  *
  * It's an ugly piece of sh*t... :/
  */
-
 char *cdogs_homepath = NULL;
 const char *GetHomeDirectory(void)
 {

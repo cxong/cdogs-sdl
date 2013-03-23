@@ -33,28 +33,12 @@
 #define CAMPAIGN_VERSIONMISMATCH  -2
 #define CAMPAIGN_BADPATH          -3
 
-#define FS_OBJ_WRITE	1	/* File/dir is writable */
-#define FS_OBJ_NWRITE 	0	/* File/dir isn't writable */
-#define FS_OBJ_NEXIST  -1	/* File/dir doesn't exist */
-
-struct FileEntry {
-	char name[13];
-	char info[80];
-	int data;
-	struct FileEntry *next;
-};
-
 int ScanCampaign(const char *filename, char *title, int *missions);
 int LoadCampaign(const char *filename, TCampaignSetting * setting,
 		 int max_missions, int max_characters);
 int SaveCampaign(const char *filename, TCampaignSetting * setting);
 void SaveCampaignAsC(const char *filename, const char *name,
 		     TCampaignSetting * setting);
-
-void AddFileEntry(struct FileEntry **list, const char *name,
-		  const char *info, int data);
-struct FileEntry *GetFilesFromDirectory(const char *directory);
-void FreeFileEntries(struct FileEntry *entries);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);
