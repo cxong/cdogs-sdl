@@ -18,20 +18,10 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- game.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#ifndef __GAME
+#define __GAME
 
-//#define GAMETICKS_PER_SECOND 280
-#include <SDL.h> //for the Uint32
 #define GAMETICKS_PER_SECOND 100
 #define GAMETICKS_PER_FRAME  3
 
@@ -40,3 +30,5 @@ void DisplayMessage(const char *s);
 void ShakeScreen(int amount);
 
 extern int missionTime;
+
+#endif
