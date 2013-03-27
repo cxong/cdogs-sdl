@@ -29,7 +29,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
 
 #include "sys_specifics.h"
 #include "utils.h"
