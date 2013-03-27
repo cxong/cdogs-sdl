@@ -84,11 +84,6 @@ ssize_t f_read16(FILE *f, void *buf, size_t size)
 }
 
 
-#define Is_Writable(n)		(access(n, W_OK) == 0)
-#define Is_Readable(n)		(access(n, R_OK) == 0)
-#define Is_Executable(n)	(access(n, X_OK) == 0)
-#define Is_Browsable(n)		(access(n, X_OK) == 0)
-
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
 	FILE *f;
@@ -550,38 +545,6 @@ void SaveCampaignAsC(const char *filename, const char *name,
 	}
 };
 
-int Is_Dir(const char *name)
-{
-	struct stat s;
-
-	debug(D_NORMAL, "name: '%s'\n", name);
-
-	if ((stat(name, &s) == 0)) {
-	//	if ((s.st_mode & S_IFMT) == S_IFDIR) {
-		switch (s.st_mode & S_IFMT) {
-			case S_IFDIR:
-				debug(D_VERBOSE, "is a dir...\n");
-				return 1;
-			case S_IFLNK:
-				{
-					char lnk_buf[512];
-
-					debug(D_VERBOSE, "is a symlink...\n");
-
-					if (readlink(name, lnk_buf, (size_t) 512) != -1) {
-						debug(D_VERBOSE, "resolved to '%s'\n", lnk_buf);
-						return Is_Dir(lnk_buf);
-					} else {
-						return 0;
-					}
-				}
-			default:
-				return 0;
-		}
-	}
-	return 0;
-}
-
 /* GetHomeDirectory ()
  *
  * Uses environment variables to determine the users home directory.
@@ -624,37 +587,13 @@ const char *GetHomeDirectory(void)
 }
 
 
-/* GetDataFilePath()
- *
- * returns a full path to a data file...
- *
- * XXX: Use default dir as fallback?
- */
-static char *data_path = NULL;
-static char data_pbuf[255];
-char * GetDataFilePath(const char *path)
+char *GetDataFilePath(const char *path)
 {
-	if (!data_path) {
-		char *tmp;
-
-		if ((tmp = getenv("CDOGS_DATA_DIR")) != NULL && strlen(tmp) != 0
-				&& Is_Dir(tmp) && Is_Readable(tmp)) {
-			data_path = strdup(tmp);
-		} else {
-			tmp = calloc(strlen(CDOGS_DATA_DIR)+strlen(path)+1,sizeof(char));
-
-			strcpy(tmp, CDOGS_DATA_DIR);
-			strcat(tmp, path);
-
-			data_path = strdup(tmp);
-			free(tmp);
-		}
-	}
-
-	strcpy(data_pbuf, data_path);
-	strcat(data_pbuf, "/");
-	strcat(data_pbuf, path);
-	return data_pbuf;
+	static char buf[CDOGS_PATH_MAX];
+	strcpy(buf, CDOGS_DATA_DIR);
+	strcat(buf, "/");
+	strcat(buf, path);
+	return buf;
 }
 
 

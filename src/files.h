@@ -42,7 +42,7 @@ void SaveCampaignAsC(const char *filename, const char *name,
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);
-char * GetDataFilePath(const char *path);
+char *GetDataFilePath(const char *path);
 
 char * GetPWD(void);
 void SetupConfigDir(void);
