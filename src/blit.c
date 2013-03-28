@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #include "utils.h" /* for debug() */
 
 unsigned char *r_screen;
-extern SDL_Surface *screen;
+extern SDL_Surface *gScreen;
 
 
 int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
@@ -55,7 +55,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 
 	for (i = 0; i < height; i++) {
 		int j;
-	
+
 		yoff = i + y;
 		if (yoff > clipbottom)
 			break;
@@ -84,7 +84,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 				}
 				else
 					*target = *current;
-			}			
+			}
 			current++;
 		}
 	}
@@ -120,14 +120,14 @@ void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
 	int sx;
 	int sy;
 	int f = sf;
-	
+
 	int dx, dy, dw;
 	char p;
-	
+
 	if (f > 4) f = 4;	/* max 4x for the moment */
-	 
+
 	dw = w * f;
-	
+
 	for (sy = 0; sy < h; sy++) {
 		dy = f * sy;
 		for (sx = 0; sx < w; sx++) {
@@ -175,9 +175,9 @@ void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
 
 void CopyToScreen(void)
 {
-	unsigned char *pScreen = screen->pixels;	
+	unsigned char *pScreen = gScreen->pixels;
 	int scr_w, scr_h, scr_size, scalef;
-	
+
 	scr_w = Screen_GetWidth();
 	scr_h = Screen_GetHeight();
 	scr_size = Screen_GetMemSize();
@@ -194,21 +194,21 @@ void CopyToScreen(void)
 		debug(D_NORMAL, "ACTIVE EVENT!\n");
 		CDogsSetPalette(gPalette);
 	}
-	
-	if (SDL_LockSurface(screen) == -1) {
+
+	if (SDL_LockSurface(gScreen) == -1)
+	{
 		printf("Couldn't lock surface; not drawing\n");
 		return;
 	}
-	
+
 	if (scalef == 1)
 		memcpy(pScreen, r_screen, scr_size);	/* 1 -> 1 */
 	else {
 		Scale8(pScreen, r_screen, scr_w, scr_h, scalef);
 	}
-	
-	SDL_UnlockSurface(screen);
-	SDL_Flip(screen);
-	return;
+
+	SDL_UnlockSurface(gScreen);
+	SDL_Flip(gScreen);
 }
 
 void AltScrCopy(void)
@@ -228,7 +228,7 @@ void CDogsSetPalette(void *pal)
 	color_t *palette = (color_t *)pal;
 	SDL_Color newpal[256];
 	int i;
-	
+
 	for (i = 0; i < 256; i++) {
 		newpal[i].r = palette[i].red	* GAMMA_R;
 		newpal[i].g = palette[i].green	* GAMMA_G;
@@ -236,7 +236,7 @@ void CDogsSetPalette(void *pal)
 
 		newpal[i].unused = 0;
 	}
-	SDL_SetPalette(screen, SDL_PHYSPAL, newpal, 0, 256);
+	SDL_SetPalette(gScreen, SDL_PHYSPAL, newpal, 0, 256);
 	return;
 }
 

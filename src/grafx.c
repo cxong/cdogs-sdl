@@ -123,7 +123,7 @@ int GrafxIsFullscreen(void)
 	return Gfx_GetHint(HINT_FULLSCREEN);
 }
 
-SDL_Surface *screen = NULL;
+SDL_Surface *gScreen = NULL;
 /* probably not the best thing, but we need the performance */
 int screen_w;
 int screen_h;
@@ -144,7 +144,8 @@ int InitVideo(void)
 
 	if (Hint(HINT_FULLSCREEN)) sdl_flags |= SDL_FULLSCREEN;
 
-	if (screen == NULL) {
+	if (gScreen == NULL)
+	{
 		rw = w = Hint(HINT_WIDTH);
 		rh = h = Hint(HINT_HEIGHT);
 	} else {
@@ -179,7 +180,8 @@ int InitVideo(void)
 		return -1;
 	}
 
-	if (screen == NULL) { /* only do this the first time */
+	if (gScreen == NULL)
+	{ /* only do this the first time */
 		debug(D_NORMAL, "setting caption and icon...\n");
 		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
@@ -189,12 +191,13 @@ int InitVideo(void)
 		debug(D_NORMAL, "Changed video mode...\n");
 	}
 
-	if (screen == NULL) {
+	if (gScreen == NULL)
+	{
 		screen_w = Hint(HINT_WIDTH);
 		screen_h = Hint(HINT_HEIGHT);
 	}
 
-	screen = new_screen;
+	gScreen = new_screen;
 
 	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -363,6 +366,6 @@ void SetColorZero(unsigned char r, unsigned char g, unsigned char b)
 	col.r = r;
 	col.g = g;
 	col.b = b;
-	SDL_SetPalette(screen, SDL_PHYSPAL, &col, 0, 1);
+	SDL_SetPalette(gScreen, SDL_PHYSPAL, &col, 0, 1);
 	return;
 }

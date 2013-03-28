@@ -1024,7 +1024,7 @@ void KillAllActors(void)
 unsigned char BestMatch(int r, int g, int b)
 {
 	int d, dMin = 0;
-	unsigned char i;
+	int i;
 	int best = -1;
 
 	for (i = 0; i < 256; i++) {
