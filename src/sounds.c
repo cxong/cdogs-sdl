@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -173,7 +173,7 @@ int PlaySong(char *name)
 	debug(D_NORMAL, "Attempting to play song: %s\n", name);
 
 	StopSong();
-	
+
 	if (name == NULL || strlen(name) == 0)
 	{
 		debug(D_NORMAL, "Attempting to play song with empty name\n");
@@ -306,9 +306,11 @@ void PlaySoundAt(int x, int y, sound_e sound)
 	int leftVolume, rightVolume;
 	int volume, panning;
 
-	if (xLeft != xRight || yLeft != yRight) {
-		dLeft = max(abs(x - xLeft), abs(y - yLeft));
-		dRight = max(abs(x - xRight), abs(y - yRight));
+	d = AXIS_DISTANCE(x, y, xLeft, yLeft);
+	if (xLeft != xRight || yLeft != yRight)
+	{
+		dLeft = d;
+		dRight = AXIS_DISTANCE(x, y, xRight, yRight);
 
 		d = (dLeft >
 		     RANGE_FULLVOLUME ? dLeft - RANGE_FULLVOLUME : 0);
@@ -328,8 +330,9 @@ void PlaySoundAt(int x, int y, sound_e sound)
 
 		panning = rightVolume - leftVolume;
 		panning /= 4;
-	} else {
-		d = max(abs(x - xLeft), abs(y - yLeft));
+	}
+	else
+	{
 		d -= d / 4;
 		d = (d > RANGE_FULLVOLUME ? d - RANGE_FULLVOLUME : 0);
 		volume = 255 - (RANGE_FACTOR * d) / 256;
@@ -382,12 +385,12 @@ void ToggleTrack(int track)
 			Mix_PauseMusic();
 			SetModuleStatus(MODULE_PAUSED);
 		break;
-		
-		case MODULE_PAUSED: 
+
+		case MODULE_PAUSED:
 			Mix_ResumeMusic();
 			SetModuleStatus(MODULE_PLAYING);
 		break;
-		
+
 		case MODULE_STOPPED:
 			Mix_PlayMusic(music, 0);
 			SetModuleStatus(MODULE_PLAYING);

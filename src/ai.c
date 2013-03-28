@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,20 +18,17 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- ai.c - enemy and friend AI routines
-
 */
-
+#include "ai.h"
 
 #include <stdlib.h>
+
 #include "defs.h"
 #include "actors.h"
 #include "gamedata.h"
 #include "mission.h"
 #include "sys_specifics.h"
+#include "utils.h"
 
 static int baddieCount = 0;
 static int goodGuysPresent = 0;
@@ -71,7 +68,7 @@ static int FacingPlayer(TActor * actor)
 }
 
 
-#define Distance(a,b)  max( abs( a->x - b->x), abs( a->y - b->y))
+#define Distance(a,b) AXIS_DISTANCE(a->x, a->y, b->x, b->y)
 
 /*
 TActor *TrackOtherAICharacter( TActor *actor )
@@ -493,13 +490,13 @@ void CommandBadGuys(void)
 	}
 	if (gMission.missionData->baddieCount > 0 &&
 	    gMission.missionData->baddieDensity > 0 &&
-	    count < max(1,
+	    count < MAX(1,
 			(gMission.missionData->baddieDensity *
 			 gOptions.density) / 100)) {
 		character =
 		    CHARACTER_OTHERS +
 		    rand() % gMission.missionData->baddieCount;
-		character = min(character, CHARACTER_COUNT);
+		character = MIN(character, CHARACTER_COUNT);
 		PlaceBaddie(AddActor(character));
 		baddieCount++;
 	}
@@ -565,13 +562,13 @@ void CreateCharacters(void)
 		return;
 
 	for (i = 0;
-	     i < max(1,
+	     i < MAX(1,
 		     (gMission.missionData->baddieDensity *
 		      gOptions.density) / 100); i++) {
 		character =
 		    CHARACTER_OTHERS +
 		    rand() % gMission.missionData->baddieCount;
-		character = min(character, CHARACTER_COUNT);
+		character = MIN(character, CHARACTER_COUNT);
 		PlaceBaddie(AddActor(character));
 		baddieCount++;
 	}
