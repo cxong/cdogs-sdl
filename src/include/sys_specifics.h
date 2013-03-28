@@ -30,7 +30,7 @@
 #define __SYS_SPECIFICS
 
 #ifdef _MSC_VER
-#define NOMINMAX
+#pragma warning(disable : 4996)
 #endif
 
 #ifdef _MSC_VER

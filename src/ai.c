@@ -152,6 +152,9 @@ static int Hunt(TActor * actor)
 {
 	int cmd = 0;
 	int x, y, dx, dy;
+
+	x = y = 0;
+
 //  TActor *a;
 
 	if ((actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) == 0)

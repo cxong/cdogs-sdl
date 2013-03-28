@@ -79,7 +79,9 @@ static int ValidMode(unsigned int w, unsigned int h)
 		unsigned int m_h = gfx_modelist[i].h;
 
 		if (m_w == 0)
-			return 0;
+		{
+			break;
+		}
 
 		if (m_w == w && m_h == h) {
 			mode_idx = i;
@@ -355,7 +357,7 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	return i - startIndex;
 }
 
-void SetColorZero(int r, int g, int b)
+void SetColorZero(unsigned char r, unsigned char g, unsigned char b)
 {
 	SDL_Color col;
 	col.r = r;

@@ -21,9 +21,10 @@
 */
 #include "actors.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "actors.h"
+
 #include "pics.h"
 #include "sounds.h"
 #include "defs.h"
@@ -1020,9 +1021,11 @@ void KillAllActors(void)
 	}
 }
 
-static int BestMatch(int r, int g, int b)
+unsigned char BestMatch(int r, int g, int b)
 {
-	int d, i, best = -1, dMin = 0;
+	int d, dMin = 0;
+	unsigned char i;
+	int best = -1;
 
 	for (i = 0; i < 256; i++) {
 		d = (r - gPalette[i].red) * (r - gPalette[i].red) +
@@ -1033,7 +1036,7 @@ static int BestMatch(int r, int g, int b)
 			dMin = d;
 		}
 	}
-	return best;
+	return (unsigned char)best;
 }
 
 void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,
@@ -1055,40 +1058,58 @@ void SetCharacter(int index, int face, int skin, int hair, int body,
 
 void BuildTranslationTables(void)
 {
-	int i, f;
+	int i;
+	unsigned char f;
 
-	for (i = 0; i < 256; i++) {
-		f = 0.3 * gPalette[i].red + 0.59 * gPalette[i].green +
-		    0.11 * gPalette[i].blue;
+	for (i = 0; i < 256; i++)
+	{
+		f = (unsigned char)floor(
+			0.3 * gPalette[i].red +
+			0.59 * gPalette[i].green +
+			0.11 * gPalette[i].blue);
 		tableFlamed[i] = BestMatch(f, 0, 0);
 	}
-	for (i = 0; i < 256; i++) {
-		f = 0.4 * gPalette[i].red + 0.49 * gPalette[i].green +
-		    0.11 * gPalette[i].blue;
+	for (i = 0; i < 256; i++)
+	{
+		f = (unsigned char)floor(
+			0.4 * gPalette[i].red +
+			0.49 * gPalette[i].green +
+			0.11 * gPalette[i].blue);
 		tableGreen[i] = BestMatch(0, 2 * f / 3, 0);
 	}
-	for (i = 0; i < 256; i++) {
-		tablePoison[i] = BestMatch(gPalette[i].red + 5,
-					   gPalette[i].green + 15,
-					   gPalette[i].blue + 5);
+	for (i = 0; i < 256; i++)
+	{
+		tablePoison[i] = BestMatch(
+			gPalette[i].red + 5,
+			gPalette[i].green + 15,
+			gPalette[i].blue + 5);
 	}
-	for (i = 0; i < 256; i++) {
-		f = 0.4 * gPalette[i].red + 0.49 * gPalette[i].green +
-		    0.11 * gPalette[i].blue;
+	for (i = 0; i < 256; i++)
+	{
+		f = (unsigned char)floor(
+			0.4 * gPalette[i].red +
+			0.49 * gPalette[i].green +
+			0.11 * gPalette[i].blue);
 		tableGray[i] = BestMatch(f, f, f);
 	}
-	for (i = 0; i < 256; i++) {
+	for (i = 0; i < 256; i++)
+	{
 		tableBlack[i] = BestMatch(0, 0, 0);
 	}
-	for (i = 0; i < 256; i++) {
-		f = 0.4 * gPalette[i].red + 0.49 * gPalette[i].green +
-		    0.11 * gPalette[i].blue;
+	for (i = 0; i < 256; i++)
+	{
+		f = (unsigned char)floor(
+			0.4 * gPalette[i].red +
+			0.49 * gPalette[i].green +
+			0.11 * gPalette[i].blue);
 		tablePurple[i] = BestMatch(f, 0, f);
 	}
-	for (i = 0; i < 256; i++) {
-		tableDarker[i] = BestMatch((200 * gPalette[i].red) / 256,
-					   (200 * gPalette[i].green) / 256,
-					   (200 * gPalette[i].blue) / 256);
+	for (i = 0; i < 256; i++)
+	{
+		tableDarker[i] = BestMatch(
+			(200 * gPalette[i].red) / 256,
+			(200 * gPalette[i].green) / 256,
+			(200 * gPalette[i].blue) / 256);
 	}
 }
 

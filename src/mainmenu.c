@@ -461,7 +461,7 @@ menu_t *MenuCreateOptionRange(
 	const char *name,
 	int *config,
 	int low, int high, int increment,
-	menu_option_display_style_e style, void *func);
+	menu_option_display_style_e style, void (*func)(void));
 menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed);
 menu_t *MenuCreateOptionUpDownFunc(
 	const char *name,
@@ -475,7 +475,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
 	int(*getFunc)(void), void(*setFunc)(int),
 	int low, int high, int increment,
-	menu_option_display_style_e style, void *func);
+	menu_option_display_style_e style, void (*func)(void));
 menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
 
@@ -524,7 +524,7 @@ menu_t *MenuCreateOptions(const char *name)
 		MenuCreateOptionRange(
 			"Difficulty", (int *)&gOptions.difficulty,
 			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)DifficultyStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))DifficultyStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
@@ -537,21 +537,21 @@ menu_t *MenuCreateOptions(const char *name)
 			"Enemy density per mission",
 			&gOptions.density,
 			0, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Non-player HP",
 			&gOptions.npcHp,
 			0, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Player HP",
 			&gOptions.playerHp,
 			0, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)PercentStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionFunc(
@@ -573,7 +573,7 @@ menu_t *MenuCreateOptions(const char *name)
 			"Video scale factor",
 			GrafxGetScale, GrafxSetScale,
 			1, 4, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void *)ScaleStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
@@ -635,14 +635,14 @@ menu_t *MenuCreateSound(const char *name)
 			"Sound effects",
 			FXVolume, SetFXVolume,
 			8, 64, 8,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, Div8Str));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"Music",
 			MusicVolume, SetMusicVolume,
 			8, 64, 8,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, Div8Str));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
@@ -674,7 +674,7 @@ menu_t *MenuCreateOptionRange(
 	const char *name,
 	int *config,
 	int low, int high, int increment,
-	menu_option_display_style_e style, void *func)
+	menu_option_display_style_e style, void (*func)(void))
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_RANGE);
 	menu->u.option.uHook.optionRange.option = config;
@@ -684,11 +684,11 @@ menu_t *MenuCreateOptionRange(
 	menu->u.option.displayStyle = style;
 	if (style == MENU_OPTION_DISPLAY_STYLE_STR_FUNC)
 	{
-		menu->u.option.uFunc.str = func;
+		menu->u.option.uFunc.str = (char *(*)(void))func;
 	}
 	else if (style == MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC)
 	{
-		menu->u.option.uFunc.intToStr = func;
+		menu->u.option.uFunc.intToStr = (char *(*)(int))func;
 	}
 	return menu;
 }
@@ -730,7 +730,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
 	int(*getFunc)(void), void(*setFunc)(int),
 	int low, int high, int increment,
-	menu_option_display_style_e style, void *func)
+	menu_option_display_style_e style, void (*func)(void))
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_RANGE_GET_SET);
 	menu->u.option.uHook.optionRangeGetSet.getFunc = getFunc;
@@ -742,7 +742,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	// TODO: refactor saving of function based on style
 	if (style == MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC)
 	{
-		menu->u.option.uFunc.intToStr = func;
+		menu->u.option.uFunc.intToStr = (char *(*)(int))func;
 	}
 	return menu;
 }

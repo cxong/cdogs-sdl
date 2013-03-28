@@ -476,7 +476,7 @@ static TCampaignSetting df2 = {
 // +---------------------------------------------------+
 
 
-int objectiveColors[OBJECTIVE_MAX] = { 14, 16, 22, 31, 39 };
+unsigned char objectiveColors[OBJECTIVE_MAX] = { 14, 16, 22, 31, 39 };
 
 
 // +-----------------------+

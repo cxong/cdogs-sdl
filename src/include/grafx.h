@@ -42,7 +42,7 @@ typedef enum {
 	HINT_END
 } GFX_Hint;
 
-void SetColorZero(int r, int g, int b);
+void SetColorZero(unsigned char r, unsigned char g, unsigned char b);
 
 typedef struct {
 	unsigned int w, h;

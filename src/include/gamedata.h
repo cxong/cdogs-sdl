@@ -240,8 +240,9 @@ struct CampaignOptions
 };
 
 
-struct Objective {
-	int color;
+struct Objective
+{
+	unsigned char color;
 	int count;
 	int done;
 	int required;

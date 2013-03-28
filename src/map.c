@@ -325,8 +325,9 @@ static int BuildWall(int wallLength)
 	return 0;
 }
 
-void MakeRoom(int xOrigin, int yOrigin, int width, int height, int doors,
-	      int access)
+void MakeRoom(
+	int xOrigin, int yOrigin, int width, int height, int doors,
+	unsigned short access)
 {
 	int x, y;
 
@@ -367,7 +368,8 @@ int AreaClear(int xOrigin, int yOrigin, int width, int height)
 
 static int BuildRoom(void)
 {
-	int x, y, w, h, access = 0;
+	int x, y, w, h;
+	unsigned short access = 0;
 
 	GuessCoords(&x, &y);
 	w = rand() % 6 + 5;
@@ -790,7 +792,8 @@ static void PlaceCard(int pic, int card, int access)
 {
 	int x, y;
 
-	while (1) {
+	for (;;)
+	{
 		GuessCoords(&x, &y);
 		if (y < YMAX - 1 &&
 		    Map(x, y).flags == 0 &&

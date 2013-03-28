@@ -18,17 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- automap.c - automatic map generation stuff
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "automap.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +28,6 @@
 #include "map.h"
 #include "actors.h"
 #include "blit.h"
-#include "automap.h"
 #include "sounds.h"
 #include "text.h"
 #include "gamedata.h"
@@ -46,6 +36,7 @@
 #include "keyboard.h"
 #include "objs.h"
 #include "drawtools.h"
+#include "sys_specifics.h"
 
 
 #define MAP_XOFFS   60
@@ -85,7 +76,7 @@ static void DisplayPlayer(TActor * player)
 	}
 }
 
-static void DrawCross(TTileItem * t, int color)
+void DrawCross(TTileItem * t, unsigned char color)
 {
 	unsigned char *scr = GetDstScreen();
 
@@ -187,7 +178,7 @@ static int MapLevel(int x, int y)
 	return MapAccessLevel(x, y + 1);
 }
 
-static int DoorColor(int x, int y)
+unsigned char DoorColor(int x, int y)
 {
 	int l = MapLevel(x, y);
 
@@ -205,7 +196,7 @@ static int DoorColor(int x, int y)
 	}
 }
 
-static void DrawDot(TTileItem * t, int color)
+void DrawDot(TTileItem * t, unsigned char color)
 {
 	unsigned int x, y;
 

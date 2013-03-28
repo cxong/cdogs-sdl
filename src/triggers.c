@@ -180,8 +180,10 @@ static void Action(TAction * a)
 	TWatch *t;
 	TCondition *c;
 
-	while (1) {
-		switch (a->action) {
+	for (;;)
+	{
+		switch (a->action)
+		{
 		case ACTION_NULL:
 			return;
 
@@ -230,10 +232,12 @@ static void Action(TAction * a)
 	}
 }
 
-static int ConditionMet(TCondition * c)
+static int ConditionMet(TCondition *c)
 {
-	while (1) {
-		switch (c->condition) {
+	for (;;)
+	{
+		switch (c->condition)
+		{
 		case CONDITION_NULL:
 			return 1;
 

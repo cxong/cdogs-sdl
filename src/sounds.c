@@ -216,11 +216,11 @@ void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
 	{
 		if (panning < 0)
 		{
-			*left = 255 + panning;
+			*left = (unsigned char)(255 + panning);
 		}
 		else
 		{
-			*left = panning;
+			*left = (unsigned char)(panning);
 		}
 
 		*right = 255 - *left;

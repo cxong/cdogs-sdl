@@ -216,7 +216,8 @@ int EnterPassword(void *bkg, const char *password)
 	if (TestPassword(password) > 0)
 		index = 1;
 
-	while (1) {
+	for (;;)
+	{
 		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
 		GetMenuCmd(&cmd, &prev);
 

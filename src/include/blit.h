@@ -63,8 +63,8 @@ void DrawTTPic(int x, int y, void *pic, void *table, void *rle);
 void DrawBTPic(int x, int y, void *pic, void *table, void *rle); */
 
 void CDogsSetClip(int left, int top, int right, int bottom);
-void SetDstScreen(void *the_screen);
-void *GetDstScreen(void);
+void SetDstScreen(unsigned char *screen);
+unsigned char *GetDstScreen(void);
 void CopyToScreen(void);
 void AltScrCopy(void);
 void CDogsSetPalette(void *palette);

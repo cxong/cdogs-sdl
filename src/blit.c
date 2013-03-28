@@ -100,13 +100,13 @@ void CDogsSetClip(int left, int top, int right, int bottom)
 	return;
 }
 
-void SetDstScreen(void *the_screen)
+void SetDstScreen(unsigned char *screen)
 {
-	r_screen = the_screen;
+	r_screen = screen;
 	return;
 }
 
-void *GetDstScreen(void)
+unsigned char *GetDstScreen(void)
 {
 	return r_screen;
 }
@@ -254,9 +254,9 @@ void BlitSetBrightness(int brightness)
 		f = 1.0 + gOptions.brightness / 33.3;
 		for (i = 0; i < 255; i++)
 		{
-			gPalette[i].red = CLAMP(f * origPalette[i].red, 0, 254);
-			gPalette[i].green = CLAMP(f * origPalette[i].green, 0, 254);
-			gPalette[i].blue = CLAMP(f * origPalette[i].blue, 0, 254);
+			gPalette[i].red = (unsigned char)CLAMP(f * origPalette[i].red, 0, 254);
+			gPalette[i].green = (unsigned char)CLAMP(f * origPalette[i].green, 0, 254);
+			gPalette[i].blue = (unsigned char)CLAMP(f * origPalette[i].blue, 0, 254);
 		}
 		CDogsSetPalette(gPalette);
 	}

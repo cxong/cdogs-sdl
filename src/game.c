@@ -213,10 +213,10 @@ void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,
 	      int yn)
 {
 	SetBuffer(x + xn, y + yn, b, w);
-	if (fLOS) {
-		LineOfSight(x, y, b, IS_SHADOW);
-		FixBuffer(b, IS_SHADOW);
-	}
+#ifdef fLOS
+	LineOfSight(x, y, b, IS_SHADOW);
+	FixBuffer(b, IS_SHADOW);
+#endif
 	DrawBuffer(b, dx);
 }
 
@@ -267,15 +267,17 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			     player2->tileItem.y) / 2;
 
 			SetBuffer(x + xNoise, y + yNoise, b, X_TILES);
-			if (fLOS) {
-				LineOfSight(player1->tileItem.x,
-					    player1->tileItem.y, b,
-					    IS_SHADOW);
-				LineOfSight(player2->tileItem.x,
-					    player2->tileItem.y, b,
-					    IS_SHADOW2);
-				FixBuffer(b, IS_SHADOW | IS_SHADOW2);
-			}
+		#ifdef fLOS
+			LineOfSight(
+				player1->tileItem.x,
+				player1->tileItem.y, b,
+				IS_SHADOW);
+			LineOfSight(
+				player2->tileItem.x,
+				player2->tileItem.y, b,
+				IS_SHADOW2);
+			FixBuffer(b, IS_SHADOW | IS_SHADOW2);
+		#endif
 			DrawBuffer(b, 0);
 		} else {
 			CDogsSetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
@@ -548,7 +550,6 @@ int gameloop(void)
 	struct Buffer *buffer;
 	int ticks;
 	int c = 0;
-	int cmd1, cmd2;
 	int done = NO;
 	time_t t;
 	struct tm *tp;
@@ -563,7 +564,10 @@ int gameloop(void)
 
 	missionTime = 0;
 	//screenShaking = 0;
-	while (!done) {
+	while (!done)
+	{
+		int cmd1 = 0, cmd2 = 0;
+
 		frames++;
 
 		Ticks_FrameBegin();
