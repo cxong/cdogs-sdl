@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,17 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- actors.c - character related functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#include "actors.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -106,11 +97,6 @@ static int delayTable[STATE_COUNT] = {
 	8,
 	8
 };
-
-#define SCREAM_COUNT   4
-static int screamTable[SCREAM_COUNT] =
-    { SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
-static int scream = 0;
 
 
 typedef unsigned char ColorShade[10];
@@ -523,16 +509,26 @@ int MoveActor(TActor * actor, int x, int y)
 	return 1;
 }
 
+void PlayRandomScreamAt(int x, int y)
+{
+	#define SCREAM_COUNT 4
+	static sound_e screamTable[SCREAM_COUNT] =
+		{ SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
+	static int screamIndex = 0;
+	PlaySoundAt(x, y, screamTable[screamIndex]);
+	screamIndex++;
+	if (screamIndex >= SCREAM_COUNT)
+	{
+		screamIndex = 0;
+	}
+}
+
 void InjureActor(TActor * actor, int injury)
 {
 	actor->health -= injury;
 	if (actor->health <= 0) {
 		actor->stateCounter = 0;
-		PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
-			    screamTable[scream]);
-		scream++;
-		if (scream >= SCREAM_COUNT)
-			scream = 0;
+		PlayRandomScreamAt(actor->tileItem.x, actor->tileItem.y);
 		if ((actor->flags & FLAGS_PLAYERS) != 0)
 			PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
 				    SND_HAHAHA);

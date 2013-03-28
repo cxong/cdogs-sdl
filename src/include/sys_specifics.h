@@ -30,6 +30,10 @@
 #define __SYS_SPECIFICS
 
 #ifdef _MSC_VER
+#define NOMINMAX
+#endif
+
+#ifdef _MSC_VER
 /* Windows */
 #define INLINE __inline
 #else
