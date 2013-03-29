@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <SDL.h>
 
 #include "sys_specifics.h"
 #include "utils.h"
@@ -108,7 +109,10 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			fclose(f);
-			debug(D_NORMAL, "ScanCampaign - version mismatch!\n");
+			debug(
+				D_NORMAL,
+				"ScanCampaign - version mismatch (expected %d, read %d)\n",
+				CAMPAIGN_VERSION, i);
 			return CAMPAIGN_VERSIONMISMATCH;
 		}
 
@@ -302,6 +306,9 @@ int LoadCampaign(const char *filename, TCampaignSetting * setting,
 
 int SaveCampaign(const char *filename, TCampaignSetting * setting)
 {
+	UNUSED(filename);
+	UNUSED(setting);
+	/* Unsupported for now
 	int f;
 	int i;
 
@@ -354,6 +361,8 @@ int SaveCampaign(const char *filename, TCampaignSetting * setting)
 	}
 	perror("SaveCampaign - couldn't write to file: ");
 	return CAMPAIGN_BADPATH;
+	*/
+	return CAMPAIGN_BADFILE;
 }
 
 static void OutputCString(FILE * f, const char *s, int indentLevel)

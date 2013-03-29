@@ -46,18 +46,15 @@ GFX_Mode gfx_modelist[] = {
 #define MODE_MAX 3
 
 
-#define Wrap(var, min, max)			\
-	{					\
-		if (var > max) var = min;	\
-		if (var < min) var = max;	\
-	}
-
 static int mode_idx = 1;
 
 GFX_Mode * Gfx_ModePrev(void)
 {
 	mode_idx--;
-	Wrap(mode_idx, 0, MODE_MAX)
+	if (mode_idx < 0)
+	{
+		mode_idx = MODE_MAX;
+	}
 
 	return &gfx_modelist[mode_idx];
 }
@@ -65,7 +62,10 @@ GFX_Mode * Gfx_ModePrev(void)
 GFX_Mode * Gfx_ModeNext(void)
 {
 	mode_idx++;
-	Wrap(mode_idx, 0, MODE_MAX)
+	if (mode_idx > MODE_MAX)
+	{
+		mode_idx = 0;
+	}
 
 	return &gfx_modelist[mode_idx];
 }

@@ -863,7 +863,6 @@ void PrintHelp (void)
 
 	printf("%s\n",
 		"Game Options:\n"
-		"    -savecampaigns  Save builtin campaigns as files in the current directory.\n"
 		"    -wait           Wait for a key hit before initialising video.\n"
 		"    -shakemult=n    Screen shaking multiplier (0 = disable).\n"
 		"    -slices         Display CPU slices [*broken*]\n"
@@ -880,7 +879,6 @@ void PrintHelp (void)
 int main(int argc, char *argv[])
 {
 	int i, wait = 0;
-	char s[13];
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
@@ -945,18 +943,6 @@ int main(int argc, char *argv[])
 				printf("Shake multiplier: %d\n", nval);
 				shakeMultiplier = nval;
 			}
-			if (strcmp(argv[i] + 1, "savecampaigns") == 0) {
-				int j = 0;
-
-				printf("Saving builtin campaigns as files: \n");
-				while (SetupBuiltinCampaign(j)) {
-					sprintf(s, "bltin%02d.cpn", j);
-					printf(" -> Saving [%s]\n", s);
-					SaveCampaign(s, gCampaign.setting);
-					j++;
-				}
-				printf("Done\n\n");
-			}
 			if (strcmp(argv[i] + 1, "wait") == 0)
 				wait = 1;
 			if (strcmp(argv[i] + 1, "nosound") == 0) {
@@ -998,7 +984,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* moved here because -savecampaigns causes a crash, why? */
 	debug(D_NORMAL, "Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0) {
 		printf("Failed to start SDL!\n");
