@@ -20,7 +20,7 @@ if(WINDOWS)
 	ADD_DEFINITIONS(-DSYS_WIN)
 endif(WINDOWS)
 
-ADD_DEFINITIONS(-DSND_SDLMIXER -lSDL_mixer)
+ADD_DEFINITIONS(-lSDL_mixer)
 
 
 execute_process(
@@ -35,6 +35,7 @@ execute_process(
 ADD_DEFINITIONS(${SDL_LDFLAGS} ${SDL_INCLUDES})
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX)
+	ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
 else(MSVC)
 	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)
@@ -93,15 +94,9 @@ add_executable(cdogs-sdl
 	menu.c
 	password.c
 	prep.c)
-target_link_libraries(cdogs-sdl cdogs SDL)
-if(SDLMIXER_INCLUDE_DIR)
-	target_link_libraries(cdogs-sdl SDL_mixer)
-endif(SDLMIXER_INCLUDE_DIR)
+target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
 add_executable(cdogs-sdl-editor
 	cdogsed.c
 	charsed.c)
-target_link_libraries(cdogs-sdl-editor cdogs SDL)
-if(SDLMIXER_INCLUDE_DIR)
-	target_link_libraries(cdogs-sdl-editor SDL_mixer)
-endif(SDLMIXER_INCLUDE_DIR)
+target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})

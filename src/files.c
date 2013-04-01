@@ -623,7 +623,7 @@ const char *GetConfigFilePath(const char *name)
 	return cfpath;
 }
 
-int mkdir_deep(const char *path, mode_t m)
+int mkdir_deep(const char *path)
 {
 	int i;
 	char part[255];
@@ -637,7 +637,8 @@ int mkdir_deep(const char *path, mode_t m)
 			strncpy(part, path, i + 1);
 			part[i+1] = '\0';
 
-			if (mkdir(part, m) == -1) {
+			if (mkdir(part, MKDIR_MODE) == -1)
+			{
 				/* Mac OS X 10.4 returns EISDIR instead of EEXIST
 				 * if a dir already exists... */
 				if (errno == EEXIST || errno == EISDIR) continue;
@@ -655,7 +656,7 @@ void SetupConfigDir(void)
 
 	printf("Creating Config dir... ");
 
-	if (mkdir_deep(cfg_p, MKDIR_MODE) == 0)
+	if (mkdir_deep(cfg_p) == 0)
 	{
 		if (errno != EEXIST)
 			printf("Config dir created.\n");

@@ -34,7 +34,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "SDL.h"
+#include <SDL.h>
 
 #include "gamedata.h"
 #include "actors.h"

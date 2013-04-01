@@ -60,12 +60,7 @@
 #define MKDIR_MODE (S_IRUSR | S_IXUSR | S_IWUSR)
 #endif
 
-#ifdef SYS_WIN
-#define mkdir(p, a) mkdir(p)
-#endif
-
 #ifdef _MSC_VER
-typedef int mode_t;
 #define mkdir(p, a) _mkdir(p)
 #endif
 

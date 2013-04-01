@@ -136,7 +136,11 @@ void LoadCampaignsFromFolder(
 	int i;
 
 	strcpy(list->name, name);
-	tinydir_open_sorted(&dir, path);
+	if (tinydir_open_sorted(&dir, path) == -1)
+	{
+		printf("Cannot load campaigns from path %s\n", path);
+		return;
+	}
 
 	for (i = 0; i < dir.n_files; i++)
 	{

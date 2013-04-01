@@ -18,11 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- cdogsed.c - map/mission editor 
-
 */
 
 #include <stdlib.h>
@@ -31,7 +26,7 @@
 // #include <conio.h>
 #include <ctype.h>
 // #include <bios.h>
-#include "SDL.h"
+#include <SDL.h>
 
 #include "objs.h"
 #include "actors.h"
@@ -1220,7 +1215,8 @@ static void Save(int asCode)
 	int i;
 
 	strcpy(filename, lastFile);
-	while (1) {
+	for (;;)
+	{
 		memset(GetDstScreen(), 58, Screen_GetMemSize());
 		CDogsTextStringAt(125, 50, "Save as:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
