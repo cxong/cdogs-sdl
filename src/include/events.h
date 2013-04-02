@@ -18,19 +18,9 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- events.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
-
-
+#ifndef __EVENTS
+#define __EVENTS
 
 struct MouseRect {
 	int left, top, right, bottom;
@@ -48,3 +38,5 @@ int GetMouseRectTag(int x, int y, int *tag);
 #define EVENT_QUIT	SDL_QUITMASK
 #define EVENT_ACTIVE	SDL_ACTIVEEVENTMASK
 int IsEventPending (unsigned int m);
+
+#endif

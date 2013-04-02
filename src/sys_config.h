@@ -34,12 +34,12 @@
 
 #define CDOGS_CFG_DIR ".cdogs/"
 
-#define CDOGS_MUSIC_DIR "./music/"
-#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "game/"
-#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "menu/"
+#define CDOGS_MUSIC_DIR "music"
+#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "/game"
+#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "/menu"
 
-#define CDOGS_CAMPAIGN_DIR "missions/"
-#define CDOGS_DOGFIGHT_DIR "dogfights/"
+#define CDOGS_CAMPAIGN_DIR "missions"
+#define CDOGS_DOGFIGHT_DIR "dogfights"
 
 #define CDOGS_TEMP_DIR "/tmp/cdogs/"
 

@@ -1211,7 +1211,7 @@ static void Save(int asCode)
 //	char dir[96];
 	char name[32];
 //      char ext[_MAX_EXT];
-	char c;
+	int c;
 	int i;
 
 	strcpy(filename, lastFile);

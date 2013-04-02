@@ -20,8 +20,6 @@ if(WINDOWS)
 	ADD_DEFINITIONS(-DSYS_WIN)
 endif(WINDOWS)
 
-ADD_DEFINITIONS(-lSDL_mixer)
-
 
 execute_process(
 	COMMAND "sdl-config" "--libs"
