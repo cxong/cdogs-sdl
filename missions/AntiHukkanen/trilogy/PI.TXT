@@ -1,0 +1,105 @@
+Private Investigations
+A Campaign by Antti Hukkanen
+For CDogs by Ronny Wester
+
+Author's Email address: ah58172@uta.fi
+
+Description
+
+Private Investigations is a small, one-player, cyberpunk
+gumshoe campaign for CDogs, with predetermined weapons.
+
+That said, let me expand on the above and relate the
+beginnings of the campaign. From the beginning, it was
+mainly an experiment - to see how well something CDogs
+was not designed for could be done with it - and to me,
+the game stood up well.
+
+The campaign attempts to imitate a cyberpunk variant of
+the hardboiled detective story genre, in the tradition
+of Raymond Chandler, Dashiell Hammett, and others. This
+more or less explains the others points made above.
+Firstly, it is intended for one player only. It isn't
+hard for one player, and with two players becomes almost
+ridiculously easy. Even so, nothing will stop you from
+using two players - even the narrative will make sense.
+
+Secondly, your weapon is predetermined by mission, only
+in one mission do you get to choose from two. This is
+because the campaign is extremely plot-driven; the pro-
+tagonist is a private individual with limited resources,
+and the action does not depend on lots of gunplay.
+
+Thirdly, the plot, actually the central thing in this
+campaign, is rather more "realistic" and down-to-earth
+than is usual with CDogs campaigns. After all, it is
+intended to be cyberpunk. However, I do not feel that it
+clashes too badly with the stylised-looking characters.
+
+The Difficulty:
+When I wrote Private Investigations for CDogs version 1.02,
+I found that the main character almost always had too many
+hits. The story did not justify so many enemies that the
+player would ever be in any real danger. Therefore, if
+playing with version 1.03 or later, I recommend setting the
+Difficulty option to Very Hard.
+
+The Story
+
+ It's a mystery to me
+ The game commences
+ For the usual fee
+ Plus expenses
+ Confidential information
+ It's in a diary
+ This is my investigation
+ It's not a public inquiry
+
+You are a private eye in a big city in the near future.
+Life on the edge is seldom easy, and often dangerous, but
+you pride yourself on your incorruptibility, and your
+customers put their trust on that. Even though you've
+gone up against a Mega-Corporation or two in your time,
+your resourcefulness has always saved the day.
+
+ I go checking out the reports
+ Digging up the dirt
+ You get to meet all sorts
+ In this line of work
+ Treachery and treason
+ There's always an excuse for it
+ And when I find the reason
+ I still can't get used to it
+
+But your toughest case, when it comes, comes not in the
+form of a damsel in distress or discretion-craving suit
+in the doorway. It is a task you take upon yourself out
+of pure, simple sense of duty. Your friend has paid the
+ultimate price for something he saw; you must not let his
+sacrifice go in vain.
+
+ And what have you got
+ At the end of the day?
+ What have you got
+ To take away?
+ A bottle of whiskey
+ And a new set of lies
+ Blinds on the window
+ And a pain behind the eyes
+
+Will you make it through this unusual case? Your life is
+at stake, but that is nothing new to you. This time, your 
+motivation is not the fee. Now, you find yourself fighting
+unknown hostiles for personal honour . . . and justice.
+
+ Scarred for life
+ No compensations
+ Private investigations
+
+Thanks
+
+To Ronny Wester for producing a most awesome action game
+(and for foreseeing the need for a Difficulty scale before
+I even realised needing one!);
+and to Dire Straits for the utterly suitable lyrics - and
+the name.
