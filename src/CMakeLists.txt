@@ -46,7 +46,7 @@ else(MSVC)
 	endif(DEBUG)
 endif(MSVC)
 
-include_directories(include missions tinydir)
+include_directories(missions tinydir)
 
 set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")
