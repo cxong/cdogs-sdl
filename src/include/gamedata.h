@@ -23,6 +23,7 @@
 #define __GAMEDATA
 
 #include "input.h"
+#include "sys_config.h"
 
 #define MAX_WEAPONS 3
 
@@ -221,7 +222,8 @@ struct Mission {
 };
 
 
-struct CampaignSetting {
+typedef struct
+{
 	char title[40];
 	char author[40];
 	char description[200];
@@ -229,12 +231,12 @@ struct CampaignSetting {
 	struct Mission *missions;
 	int characterCount;
 	TBadGuy *characters;
-};
-typedef struct CampaignSetting TCampaignSetting;
+	char path[CDOGS_PATH_MAX];
+} CampaignSetting;
 
 struct CampaignOptions
 {
-	TCampaignSetting *setting;
+	CampaignSetting *setting;
 	unsigned int seed;
 	int dogFight;
 };

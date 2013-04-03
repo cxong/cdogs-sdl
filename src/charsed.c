@@ -218,7 +218,7 @@ void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 		CDogsTextString("Off");
 }
 
-static void Display(TCampaignSetting * setting, int index, int xc, int yc)
+static void Display(CampaignSetting *setting, int index, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
@@ -332,8 +332,11 @@ void AdjustInt(int *i, int min, int max, int wrap)
 	}
 }
 
-static void Change(TCampaignSetting * setting, int index, int yc, int xc,
-		   int d)
+static void Change(
+	CampaignSetting *setting,
+	int index,
+	int yc, int xc,
+	int d)
 {
 	TBadGuy *b;
 
@@ -484,8 +487,9 @@ static TBadGuy characterTemplate = {
 	40, FLAGS_IMMUNITY
 };
 
-static void InsertCharacter(TCampaignSetting * setting, int index,
-			    TBadGuy * data)
+static void InsertCharacter(
+	CampaignSetting *setting, int index,
+	TBadGuy *data)
 {
 	int i;
 
@@ -501,7 +505,7 @@ static void InsertCharacter(TCampaignSetting * setting, int index,
 	setting->characterCount++;
 }
 
-static void DeleteCharacter(TCampaignSetting * setting, int *index)
+static void DeleteCharacter(CampaignSetting *setting, int *index)
 {
 	int i;
 
@@ -613,7 +617,7 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 	//SetDstScreen(old);
 }
 
-void EditCharacters(TCampaignSetting * setting)
+void EditCharacters(CampaignSetting *setting)
 {
 	int done = 0;
 	int c = 0;

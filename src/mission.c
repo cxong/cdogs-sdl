@@ -456,14 +456,16 @@ struct Mission dogFight2 = {
 #include "bem.inc"
 
 
-static TCampaignSetting df1 = {
+static CampaignSetting df1 =
+{
 	"Dogfight in the dungeon",
 	"", "",
 	1, &dogFight1,
 	0, NULL
 };
 
-static TCampaignSetting df2 = {
+static CampaignSetting df2 =
+{
 	"Cubicle wars",
 	"", "",
 	1, &dogFight2,
@@ -504,7 +506,7 @@ static void SetupBadguysForMission(struct Mission *mission)
 {
 	int i, index;
 	const TBadGuy *b;
-	TCampaignSetting *s = gCampaign.setting;
+	CampaignSetting *s = gCampaign.setting;
 
 	if (s->characterCount <= 0)
 		return;

@@ -165,29 +165,28 @@ int InitializeSound(void)
 }
 
 Mix_Music *music = NULL;
-int PlaySong(char *name)
+int PlaySong(const char *path)
 {
 	if (!soundInitialized)
 		return 0;
 
-	debug(D_NORMAL, "Attempting to play song: %s\n", name);
+	debug(D_NORMAL, "Attempting to play song: %s\n", path);
 
-	StopSong();
-
-	if (name == NULL || strlen(name) == 0)
+	if (path == NULL || strlen(path) == 0)
 	{
 		debug(D_NORMAL, "Attempting to play song with empty name\n");
 		return 1;
 	}
 
-	music = Mix_LoadMUS(name);
-	if (music == NULL) {
+	music = Mix_LoadMUS(path);
+	if (music == NULL)
+	{
 		SetModuleMessage(SDL_GetError());
 		SetModuleStatus(MODULE_NOLOAD);
 		return 1;
 	}
 
-	debug(D_NORMAL, "Playing song: %s\n", name);
+	debug(D_NORMAL, "Playing song: %s\n", path);
 
 	Mix_PlayMusic(music, -1);
 	SetModuleStatus(MODULE_PLAYING);

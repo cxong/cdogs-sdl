@@ -403,11 +403,12 @@ struct Mission BEM_missions[9] = {
 	 18, 3, 0, 24},
 };
 
-struct CampaignSetting BEM_campaign = {
+CampaignSetting BEM_campaign = {
 	"Bug-Eyed Monsters",
 	"Ronny Wester",
 	"These irrational foes pop up now and again. Unpredictable and vicious, the"
 	    "ir primary goal seems to be to make a nuisance of themselves rather than a"
 	    "ctually attaining any specific goals.",
-	9, BEM_missions, 29, BEM_badguys
+	9, BEM_missions, 29, BEM_badguys,
+	""
 };

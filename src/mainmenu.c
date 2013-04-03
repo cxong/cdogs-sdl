@@ -47,14 +47,15 @@
 #include "utils.h"
 
 
-static TCampaignSetting customSetting = {
+static CampaignSetting customSetting = {
 /*	.title		=*/	"",
 /*	.author		=*/	"",
 /*	.description	=*/	"",
 /*	.missionCount	=*/	0,
 /*	.missions	=*/	NULL,
 /*	.characterCount	=*/	0,
-/*	.characters	=*/	NULL
+/*	.characters	=*/	NULL,
+/*	.path =*/	""
 };
 
 

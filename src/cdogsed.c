@@ -252,7 +252,7 @@ static struct MouseRect localCharacterClicks[] = {
 
 // Globals
 
-TCampaignSetting campaign;
+CampaignSetting campaign;
 struct Mission *currentMission;
 static char lastFile[128];
 

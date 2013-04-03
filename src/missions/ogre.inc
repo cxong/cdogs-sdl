@@ -697,11 +697,12 @@ struct Mission OGRE_missions[16] = {
 	 14, 13, 5, 0},
 };
 
-struct CampaignSetting OGRE_campaign = {
+CampaignSetting OGRE_campaign = {
 	"Ogre Rampage",
 	"Ronny Wester",
 	"Suddenly, Confederate installations come under sudden, and most unexpected"
 	    ", attack from Ogre troops. There has been no animosity between the Ogre Em"
 	    "pire and the Confederation for ages. What's up?",
-	16, OGRE_missions, 42, OGRE_badguys
+	16, OGRE_missions, 42, OGRE_badguys,
+	""
 };

@@ -55,7 +55,7 @@ typedef enum
 
 int InitializeSound(void);
 void ShutDownSound(void);
-int PlaySong(char *name);
+int PlaySong(const char *path);
 void StopSong(void);
 void PlaySound(sound_e sound, int panning, int volume);
 void SetFXVolume(int volume);

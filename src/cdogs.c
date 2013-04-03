@@ -168,16 +168,8 @@ void CampaignIntro(void *bkg)
 
 	y = (SCREEN_WIDTH / 4);
 
-	//CDogsTextStringAt(50, y - 25, gCampaign.setting->title);
-	//CDogsTextStringAt(60, y - 15, "by ");
-	//CDogsTextStringWithTable(gCampaign.setting->author, &tableFlamed);
-
 	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
-
-	//CDogsTextStringSpecial(gCampaign.setting->title, TEXT_TOP | TEXT_XCENTER, 0, (y - 45));
-	//CDogsTextStringSpecial("by", TEXT_TOP | TEXT_XCENTER, 0, (y - 35));
-	//CDogsTextStringSpecial(gCampaign.setting->author, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
 	MissionDescription(y, gCampaign.setting->description);
 
@@ -580,14 +572,21 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 
 static void PlayGameSong(void)
 {
+	int success = 0;
 	// Play a tune
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
 	StopSong();
-	if (gMission.missionData->song[0]
-	    && PlaySong(gMission.missionData->song))
-		/* nothing */ ;
-	else if (gGameSongs) {
+	if (strlen(gMission.missionData->song) > 0)
+	{
+		char buf[CDOGS_PATH_MAX];
+		strcpy(buf, gCampaign.setting->path);
+		strcat(buf, "/");
+		strcat(buf, gMission.missionData->song);
+		success = !PlaySong(buf);
+	}
+	if (!success && gGameSongs != NULL)
+	{
 		PlaySong(gGameSongs->path);
 		ShiftSongs(&gGameSongs);
 	}
@@ -792,7 +791,7 @@ void *MakeBkg(void)
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	void *myScreen;
+	unsigned char *myScreen;
 
 	void *bkg = MakeBkg();
 	myScreen = sys_mem_alloc(SCREEN_MEMSIZE);

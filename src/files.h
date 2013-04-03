@@ -34,11 +34,13 @@
 #define CAMPAIGN_BADPATH          -3
 
 int ScanCampaign(const char *filename, char *title, int *missions);
-int LoadCampaign(const char *filename, TCampaignSetting * setting,
-		 int max_missions, int max_characters);
-int SaveCampaign(const char *filename, TCampaignSetting * setting);
-void SaveCampaignAsC(const char *filename, const char *name,
-		     TCampaignSetting * setting);
+int LoadCampaign(
+	const char *filename, CampaignSetting *setting,
+	int max_missions, int max_characters);
+int SaveCampaign(const char *filename, CampaignSetting *setting);
+void SaveCampaignAsC(
+	const char *filename, const char *name,
+	CampaignSetting *setting);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);

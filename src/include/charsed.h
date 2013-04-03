@@ -75,4 +75,4 @@ extern int fileChanged;
 void DisplayFlag(int x, int y, const char *s, int on, int hilite);
 void GetEvent(int *key, int *x, int *y, int *buttons);
 void AdjustInt(int *i, int min, int max, int wrap);
-void EditCharacters(TCampaignSetting * setting);
+void EditCharacters(CampaignSetting *setting);

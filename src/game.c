@@ -323,7 +323,6 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	if (placement == PLACE_LEFT)	flags |= TEXT_LEFT;
 	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
 
-	//CDogsTextStringAt(x, 5, data->name);
 	CDogsTextStringSpecial(data->name, flags, 5, 5);
 	if (!gCampaign.dogFight)
 		sprintf(s, "Score: %d", data->score);
@@ -331,15 +330,11 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 		s[0] = 0;
 	if (p) {
 		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
-		//CDogsTextStringAt(x, 5 + 2 + 2 * CDogsTextHeight(), s);
 		CDogsTextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + CDogsTextHeight());
-		//CDogsTextStringAt(x, 5 + 1 + CDogsTextHeight(), gunDesc[p->gun].gunName);
 		sprintf(s, "%d hp", p->health);
 		CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
-		//CDogsTextStringAt(x, 5 + 3 + 3 * CDogsTextHeight(), s);
 	} else
 		CDogsTextStringSpecial(s, flags, 5, 5 + 1 * CDogsTextHeight());
-		//CDogsTextStringAt(x, 5 + 1 + CDogsTextHeight(), s);
 }
 
 static void DrawKeycard(int x, int y, const TOffsetPic * pic)

@@ -89,7 +89,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 {
 	FILE *f;
 	int i;
-	TCampaignSetting setting;
+	CampaignSetting setting;
 
 	debug(D_NORMAL, "filename: %s\n", filename);
 
@@ -237,74 +237,98 @@ void load_character(FILE *f, TBadGuy *c)
 //		fprintf(stderr, " speed: %d gun: %d\n", c->speed, c->gun);
 }
 
-int LoadCampaign(const char *filename, TCampaignSetting * setting,
-		 int max_missions, int max_characters)
+int LoadCampaign(
+	const char *filename, CampaignSetting *setting,
+	int max_missions, int max_characters)
 {
-	FILE *f;
+	FILE *f = NULL;
 	int i;
+	int err = CAMPAIGN_OK;
+	int numMissions = max_missions;
+	int numCharacters = max_characters;
+	int pathLen;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
-
-	if (f) {
-		f_read32(f, &i, sizeof(i));
-		if (i != CAMPAIGN_MAGIC) {
-			fclose(f);
-			debug(D_NORMAL, "LoadCampaign - bad file!\n");
-			return CAMPAIGN_BADFILE;
-		}
-
-		f_read32(f, &i, sizeof(i));
-		if (i != CAMPAIGN_VERSION) {
-			fclose(f);
-			debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
-			return CAMPAIGN_VERSIONMISMATCH;
-		}
-
-		f_read(f, setting->title, sizeof(setting->title));
-		f_read(f, setting->author, sizeof(setting->author));
-		f_read(f, setting->description, sizeof(setting->description));
-
-		f_read32(f, &setting->missionCount, sizeof(setting->missionCount));
-
-		if (max_missions <= 0) {
-			i = setting->missionCount * sizeof(struct Mission);
-			setting->missions = sys_mem_alloc(i);
-			memset(setting->missions, 0, i);
-			max_missions = setting->missionCount;
-		} else if (setting->missionCount < max_missions)
-			max_missions = setting->missionCount;
-
-		debug(D_NORMAL, "No. missions: %d\n", max_missions);
-
-		for (i = 0; i < max_missions; i++) {
-			load_mission(f, &setting->missions[i]);
-		}
-
-		f_read32(f, &setting->characterCount, sizeof(setting->characterCount));
-
-		if (max_characters <= 0) {
-			i = setting->characterCount * sizeof(TBadGuy);
-			setting->characters = sys_mem_alloc(i);
-			memset(setting->characters, 0, i);
-			max_characters = setting->characterCount;
-		} else if (setting->characterCount < max_characters)
-			max_characters = setting->characterCount;
-
-		debug(D_NORMAL, "No. characters: %d\n", max_characters);
-
-		for (i = 0; i < max_characters; i++) {
-			load_character(f, &setting->characters[i]);
-		}
-
-		fclose(f);
-
-		return CAMPAIGN_OK;
+	if (f == NULL)
+	{
+		err = CAMPAIGN_BADPATH;
+		goto bail;
 	}
-	return CAMPAIGN_BADPATH;
+
+	f_read32(f, &i, sizeof(i));
+	if (i != CAMPAIGN_MAGIC)
+	{
+		debug(D_NORMAL, "LoadCampaign - bad file!\n");
+		err = CAMPAIGN_BADFILE;
+		goto bail;
+	}
+
+	f_read32(f, &i, sizeof(i));
+	if (i != CAMPAIGN_VERSION)
+	{
+		debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
+		err = CAMPAIGN_VERSIONMISMATCH;
+		goto bail;
+	}
+
+	f_read(f, setting->title, sizeof(setting->title));
+	f_read(f, setting->author, sizeof(setting->author));
+	f_read(f, setting->description, sizeof(setting->description));
+
+	f_read32(f, &setting->missionCount, sizeof(setting->missionCount));
+
+	if (max_missions <= 0)
+	{
+		size_t size = setting->missionCount * sizeof(struct Mission);
+		setting->missions = sys_mem_alloc(size);
+		memset(setting->missions, 0, size);
+		numMissions = setting->missionCount;
+	}
+	else if (setting->missionCount < max_missions)
+	{
+		numMissions = setting->missionCount;
+	}
+
+	debug(D_NORMAL, "No. missions: %d\n", numMissions);
+	for (i = 0; i < numMissions; i++)
+	{
+		load_mission(f, &setting->missions[i]);
+	}
+
+	f_read32(f, &setting->characterCount, sizeof(setting->characterCount));
+
+	if (max_characters <= 0)
+	{
+		size_t size = setting->characterCount * sizeof(TBadGuy);
+		setting->characters = sys_mem_alloc(size);
+		memset(setting->characters, 0, size);
+		numCharacters = setting->characterCount;
+	}
+	else if (setting->characterCount < max_characters)
+	{
+		numCharacters = setting->characterCount;
+	}
+
+	debug(D_NORMAL, "No. characters: %d\n", numCharacters);
+	for (i = 0; i < numCharacters; i++)
+	{
+		load_character(f, &setting->characters[i]);
+	}
+
+	pathLen = MAX(strrchr(filename, '\\'), strrchr(filename, '/')) - filename;
+	strncpy(setting->path, filename, pathLen);
+	setting->path[pathLen] = '\0';
+
+bail:
+	if (f != NULL)
+	{
+		fclose(f);
+	}
+	return CAMPAIGN_OK;
 }
 
-int SaveCampaign(const char *filename, TCampaignSetting * setting)
+int SaveCampaign(const char *filename, CampaignSetting *setting)
 {
 	UNUSED(filename);
 	UNUSED(setting);
@@ -394,8 +418,9 @@ static void OutputCString(FILE * f, const char *s, int indentLevel)
 	fputc('\"', f);
 }
 
-void SaveCampaignAsC(const char *filename, const char *name,
-		     TCampaignSetting * setting)
+void SaveCampaignAsC(
+	const char *filename, const char *name,
+	CampaignSetting* setting)
 {
 	FILE *f;
 	int i, j;
