@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -461,7 +461,8 @@ static CampaignSetting df1 =
 	"Dogfight in the dungeon",
 	"", "",
 	1, &dogFight1,
-	0, NULL
+	0, NULL,
+	""
 };
 
 static CampaignSetting df2 =
@@ -469,7 +470,8 @@ static CampaignSetting df2 =
 	"Cubicle wars",
 	"", "",
 	1, &dogFight2,
-	0, NULL
+	0, NULL,
+	""
 };
 
 

@@ -325,7 +325,7 @@ bail:
 	{
 		fclose(f);
 	}
-	return CAMPAIGN_OK;
+	return err;
 }
 
 int SaveCampaign(const char *filename, CampaignSetting *setting)
