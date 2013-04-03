@@ -56,7 +56,7 @@ if(WIN32)
 endif(WIN32)
 CONFIGURE_FILE(sys_config.h.cmake sys_config.h)
 
-add_library(cdogs STATIC
+SET(CDOGS_SOURCES
 	actors.c
 	ai.c
 	automap.c
@@ -81,8 +81,36 @@ add_library(cdogs STATIC
 	text.c
 	triggers.c
 	utils.c)
+SET(CDOGS_HEADERS
+	actors.h
+	ai.h
+	automap.h
+	blit.h
+	defs.h
+	draw.h
+	drawtools.h
+	events.h
+	files.h
+	game.h
+	gamedata.h
+	grafx.h
+	hiscores.h
+	input.h
+	joystick.h
+	keyboard.h
+	map.h
+	mission.h
+	objs.h
+	pics.h
+	sounds.h
+	sys_config.h
+	sys_specifics.h
+	text.h
+	triggers.h
+	utils.h)
+add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS})
 
-add_executable(cdogs-sdl
+SET(CDOGS_SDL_SOURCES
 	campaigns.c
 	cdogs.c
 	config.c
@@ -92,9 +120,26 @@ add_executable(cdogs-sdl
 	menu.c
 	password.c
 	prep.c)
+SET(CDOGS_SDL_HEADERS
+	campaigns.h
+	config.h
+	credits.h
+	drawtools.h
+	mainmenu.h
+	menu.h
+	password.h
+	prep.h
+	sys_config.h
+	sys_specifics.h)
+add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
-add_executable(cdogs-sdl-editor
+SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
 	charsed.c)
+SET(CDOGS_SDL_EDITOR_HEADERS
+	charsed.h
+	sys_config.h
+	sys_specifics.h)
+add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
 target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
