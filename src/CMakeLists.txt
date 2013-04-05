@@ -48,7 +48,13 @@ include_directories(missions tinydir)
 
 set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")
-CONFIGURE_FILE(sys_config.h.cmake src/sys_config.h)
+# TODO: fix workaround due to path difference
+IF(MSVC)
+	CONFIGURE_FILE(sys_config.h.cmake src/sys_config.h)
+ELSE()
+	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
+	CONFIGURE_FILE(sys_config.h.cmake sys_config.h)
+ENDIF()
 
 SET(CDOGS_SOURCES
 	actors.c
