@@ -6,7 +6,7 @@ set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
 if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
-endif(DEBUG)
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
 
@@ -15,10 +15,10 @@ find_package(SDL_mixer REQUIRED)
 
 if(APPLE)
 	ADD_DEFINITIONS(-DSYS_MACOSX)
-endif(APPLE)
+endif()
 if(WINDOWS)
 	ADD_DEFINITIONS(-DSYS_WIN)
-endif(WINDOWS)
+endif()
 
 
 execute_process(
@@ -34,17 +34,17 @@ ADD_DEFINITIONS(${SDL_LDFLAGS} ${SDL_INCLUDES})
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX)
 	ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
-else(MSVC)
+else()
 	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)
 			ADD_DEFINITIONS(-p)
 		endif(DEBUG_PROFILE)
-	else(DEBUG)
+	else()
 		ADD_DEFINITIONS(-O2)
-	endif(DEBUG)
-endif(MSVC)
+	endif()
+endif()
 
 include_directories(missions tinydir)
 
@@ -53,8 +53,8 @@ set(CDOGS_CFG_DIR ".cdogs/")
 set(CDOGS_TEMP_DIR "/tmp/cdogs/")
 if(WIN32)
 	set(CDOGS_TEMP_DIR $ENV{TMP})
-endif(WIN32)
-CONFIGURE_FILE(sys_config.h.cmake sys_config.h)
+endif()
+CONFIGURE_FILE(sys_config.h.cmake src/sys_config.h)
 
 SET(CDOGS_SOURCES
 	actors.c
