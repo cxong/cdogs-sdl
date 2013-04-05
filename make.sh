@@ -1,5 +1,5 @@
 #!/bin/sh
 cd src
-cmake .
-make
+cmake ..
 cd ..
+make

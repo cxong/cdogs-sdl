@@ -41,8 +41,6 @@
 #define CDOGS_CAMPAIGN_DIR "missions"
 #define CDOGS_DOGFIGHT_DIR "dogfights"
 
-#define CDOGS_TEMP_DIR "@CDOGS_TEMP_DIR@"
-
 #define CDOGS_FILENAME_MAX 256
 #define CDOGS_PATH_MAX 4096
 

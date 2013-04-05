@@ -1,6 +1,7 @@
 *.o
 *.swp
-src/Makefile.*
+Makefile
+Makefile.*
 cdogs-sdl
 cdogs-sdl.exe
 cdogs-sdl-editor
@@ -8,9 +9,12 @@ cdogs-sdl-editor.exe
 *CMakeCache.txt
 CMakeFiles/
 *cmake_install.cmake
-src/libcdogs.a
+libcdogs.a
 .metadata/
 RemoteSystemsTempFiles/
+
+# Generated files
+src/sys_config.h
 
 # Visual Studio
 Debug/

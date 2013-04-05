@@ -8,8 +8,6 @@ if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
-
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
 
@@ -50,10 +48,6 @@ include_directories(missions tinydir)
 
 set(CDOGS_DATA_DIR ".")
 set(CDOGS_CFG_DIR ".cdogs/")
-set(CDOGS_TEMP_DIR "/tmp/cdogs/")
-if(WIN32)
-	set(CDOGS_TEMP_DIR $ENV{TMP})
-endif()
 CONFIGURE_FILE(sys_config.h.cmake src/sys_config.h)
 
 SET(CDOGS_SOURCES
