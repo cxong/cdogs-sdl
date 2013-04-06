@@ -135,6 +135,9 @@ add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 IF(MSVC)
 	# Stage for packaging
+	SET(OUTPUT_DIRECTORY "cdogs-sdl")
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
 
 	# DLLs
 	FILE(GLOB DLLS "${CMAKE_BINARY_DIR}/*.dll")
@@ -142,7 +145,7 @@ IF(MSVC)
 		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy
 				"${DLL}"
-				"cdogs-sdl/")
+				"${OUTPUT_DIRECTORY}/")
 	ENDFOREACH()
 
 	# exes
@@ -154,27 +157,40 @@ IF(MSVC)
 		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy
 				"${EXE}"
-				"cdogs-sdl/")
+				"${OUTPUT_DIRECTORY}/")
 	ENDFOREACH()
 
 	# docs
-	FILE(GLOB DOCS "${CMAKE_BINARY_DIR}/doc/*")
-	FOREACH(DOC ${DOCS})
-		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy
-				"${DOC}"
-				"cdogs-sdl/")
-	ENDFOREACH()
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			"${CMAKE_BINARY_DIR}/doc"
+			"${OUTPUT_DIRECTORY}/doc/")
 
 	# missions/dogfights
 	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
 			"${CMAKE_BINARY_DIR}/dogfights"
-			"cdogs-sdl/dogfights")
+			"${OUTPUT_DIRECTORY}/dogfights/")
 	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
 			"${CMAKE_BINARY_DIR}/missions"
-			"cdogs-sdl/missions")
+			"${OUTPUT_DIRECTORY}/missions/")
+
+	# data
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			"${CMAKE_BINARY_DIR}/graphics"
+			"${OUTPUT_DIRECTORY}/graphics/")
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			"${CMAKE_BINARY_DIR}/music"
+			"${OUTPUT_DIRECTORY}/music/")
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			"${CMAKE_BINARY_DIR}/sounds"
+			"${OUTPUT_DIRECTORY}/sounds/")
+
+	# TODO: package (with CPack?)
 ENDIF()
 
 SET(CDOGS_SDL_EDITOR_SOURCES
