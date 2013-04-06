@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(cdogs-sdl C)
 
 set(DEBUG 0)			#set to 1 to enable debug build
@@ -133,6 +133,49 @@ SET(CDOGS_SDL_HEADERS
 	sys_specifics.h)
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+IF(MSVC)
+	# Stage for packaging
+
+	# DLLs
+	FILE(GLOB DLLS "${CMAKE_BINARY_DIR}/*.dll")
+	FOREACH(DLL ${DLLS})
+		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+				"${DLL}"
+				"cdogs-sdl/")
+	ENDFOREACH()
+
+	# exes
+	SET(EXES
+		Release/cdogs-sdl.exe
+		#Release/cdogs-sdl-editor.exe
+		)
+	FOREACH(EXE ${EXES})
+		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+				"${EXE}"
+				"cdogs-sdl/")
+	ENDFOREACH()
+
+	# docs
+	FILE(GLOB DOCS "${CMAKE_BINARY_DIR}/doc/*")
+	FOREACH(DOC ${DOCS})
+		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+				"${DOC}"
+				"cdogs-sdl/")
+	ENDFOREACH()
+
+	# missions/dogfights
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${CMAKE_BINARY_DIR}/dogfights"
+			"cdogs-sdl/dogfights")
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy
+			"${CMAKE_BINARY_DIR}/missions"
+			"cdogs-sdl/missions")
+ENDIF()
 
 SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
