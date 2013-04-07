@@ -149,43 +149,49 @@ target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
 
 # Stage for packaging
-SET(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cdogs-sdl_${VERSION}")
+IF(MSVC)
+	SET(SOURCE_DIRECTORY "${CMAKE_BINARY_DIR}")
+	SET(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cdogs-sdl_${VERSION}")
+ELSE()
+	SET(SOURCE_DIRECTORY "..")
+	SET(OUTPUT_DIRECTORY "../cdogs-sdl_${VERSION}")
+ENDIF()
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
 
 # docs
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/doc"
+		"${SOURCE_DIRECTORY}/doc"
 		"${OUTPUT_DIRECTORY}/doc/")
 
 # missions/dogfights
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/dogfights"
+		"${SOURCE_DIRECTORY}/dogfights"
 		"${OUTPUT_DIRECTORY}/dogfights/")
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/missions"
+		"${SOURCE_DIRECTORY}/missions"
 		"${OUTPUT_DIRECTORY}/missions/")
 
 # data
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/graphics"
+		"${SOURCE_DIRECTORY}/graphics"
 		"${OUTPUT_DIRECTORY}/graphics/")
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/music"
+		"${SOURCE_DIRECTORY}/music"
 		"${OUTPUT_DIRECTORY}/music/")
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/sounds"
+		"${SOURCE_DIRECTORY}/sounds"
 		"${OUTPUT_DIRECTORY}/sounds/")
 
 IF(MSVC)
 	# DLLs
-	FILE(GLOB DLLS "${CMAKE_BINARY_DIR}/*.dll")
+	FILE(GLOB DLLS "${SOURCE_DIRECTORY}/*.dll")
 	FOREACH(DLL ${DLLS})
 		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy
@@ -216,5 +222,11 @@ ELSE()
 				"${BIN}"
 				"${OUTPUT_DIRECTORY}/")
 	ENDFOREACH()
+
+	# icon
+	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy
+			"${SOURCE_DIRECTORY}/cdogs_icon.bmp"
+			"${OUTPUT_DIRECTORY}/")
 ENDIF()
 # TODO: package (with CPack?)

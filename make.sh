@@ -1,6 +1,6 @@
 #!/bin/sh
+cmake src
 cd src
-cmake .
 make
 cd ..
 

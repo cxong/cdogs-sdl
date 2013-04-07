@@ -48,7 +48,7 @@ void LoadCredits(
 
 	debug(D_NORMAL, "Reading CREDITS...\n");
 
-	file = fopen("CREDITS", "r");
+	file = fopen("doc/CREDITS", "r");
 	if (file == NULL)
 	{
 		printf("Error: cannot load CREDITS\n");

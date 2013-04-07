@@ -15,6 +15,7 @@ RemoteSystemsTempFiles/
 
 # Generated files
 src/sys_config.h
+cdogs-sdl_*/
 
 # Visual Studio
 Debug/
