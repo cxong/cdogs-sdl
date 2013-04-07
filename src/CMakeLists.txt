@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(cdogs-sdl C)
 
+SET(VERSION "0.4.2")
+
 set(DEBUG 0)			#set to 1 to enable debug build
 set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
@@ -133,12 +135,55 @@ SET(CDOGS_SDL_HEADERS
 	sys_specifics.h)
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
-IF(MSVC)
-	# Stage for packaging
-	SET(OUTPUT_DIRECTORY "cdogs-sdl")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
 
+SET(CDOGS_SDL_EDITOR_SOURCES
+	cdogsed.c
+	charsed.c)
+SET(CDOGS_SDL_EDITOR_HEADERS
+	charsed.h
+	sys_config.h
+	sys_specifics.h)
+add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
+target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+
+
+
+# Stage for packaging
+SET(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cdogs-sdl_${VERSION}")
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
+
+# docs
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/doc"
+		"${OUTPUT_DIRECTORY}/doc/")
+
+# missions/dogfights
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/dogfights"
+		"${OUTPUT_DIRECTORY}/dogfights/")
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/missions"
+		"${OUTPUT_DIRECTORY}/missions/")
+
+# data
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/graphics"
+		"${OUTPUT_DIRECTORY}/graphics/")
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/music"
+		"${OUTPUT_DIRECTORY}/music/")
+ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/sounds"
+		"${OUTPUT_DIRECTORY}/sounds/")
+
+IF(MSVC)
 	# DLLs
 	FILE(GLOB DLLS "${CMAKE_BINARY_DIR}/*.dll")
 	FOREACH(DLL ${DLLS})
@@ -159,46 +204,17 @@ IF(MSVC)
 				"${EXE}"
 				"${OUTPUT_DIRECTORY}/")
 	ENDFOREACH()
-
-	# docs
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/doc"
-			"${OUTPUT_DIRECTORY}/doc/")
-
-	# missions/dogfights
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/dogfights"
-			"${OUTPUT_DIRECTORY}/dogfights/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/missions"
-			"${OUTPUT_DIRECTORY}/missions/")
-
-	# data
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/graphics"
-			"${OUTPUT_DIRECTORY}/graphics/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/music"
-			"${OUTPUT_DIRECTORY}/music/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${CMAKE_BINARY_DIR}/sounds"
-			"${OUTPUT_DIRECTORY}/sounds/")
-
-	# TODO: package (with CPack?)
+ELSE()
+	# binaries
+	SET(BINS
+		../cdogs-sdl
+		#../cdogs-sdl-editor
+		)
+	FOREACH(BIN ${BINS})
+		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+				"${BIN}"
+				"${OUTPUT_DIRECTORY}/")
+	ENDFOREACH()
 ENDIF()
-
-SET(CDOGS_SDL_EDITOR_SOURCES
-	cdogsed.c
-	charsed.c)
-SET(CDOGS_SDL_EDITOR_HEADERS
-	charsed.h
-	sys_config.h
-	sys_specifics.h)
-add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
-target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+# TODO: package (with CPack?)
