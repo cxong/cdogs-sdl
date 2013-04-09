@@ -6,12 +6,15 @@ cdogs-sdl
 cdogs-sdl.exe
 cdogs-sdl-editor
 cdogs-sdl-editor.exe
+libcdogs.a
+
+# CMake stuff
 *CMakeCache.txt
 CMakeFiles/
 *cmake_install.cmake
-libcdogs.a
 .metadata/
 RemoteSystemsTempFiles/
+cdogs-sdl.dir/
 
 # Generated files
 src/sys_config.h
@@ -20,8 +23,13 @@ install_manifest.txt
 
 # Visual Studio
 Debug/
+Release/
 Win32/
 *.opensdf
 *.sdf
 *.suo
 *.vcxproj.user
+*.dll
+*.vcxproj
+*.vcxproj.filters
+*.sln

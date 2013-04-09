@@ -146,16 +146,16 @@ SET(CDOGS_SDL_HEADERS
 	sys_specifics.h)
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
-INSTALL(TARGETS cdogs-sdl DESTINATION ${DESTDIR})
-INSTALL(DIRECTORY
-	${SOURCE_DIRECTORY}/doc
-	${SOURCE_DIRECTORY}/missions
-	${SOURCE_DIRECTORY}/dogfights
-	${SOURCE_DIRECTORY}/graphics
-	${SOURCE_DIRECTORY}/music
-	${SOURCE_DIRECTORY}/sounds
-	DESTINATION ${DESTDIR})
-IF(UNIX AND NOT APPLE)
+IF(UNIX AND NOT APPLE)	# only support installation in linux
+	INSTALL(TARGETS cdogs-sdl DESTINATION ${DESTDIR})
+	INSTALL(DIRECTORY
+		${SOURCE_DIRECTORY}/doc
+		${SOURCE_DIRECTORY}/missions
+		${SOURCE_DIRECTORY}/dogfights
+		${SOURCE_DIRECTORY}/graphics
+		${SOURCE_DIRECTORY}/music
+		${SOURCE_DIRECTORY}/sounds
+		DESTINATION ${DESTDIR})
 	#INSTALL(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${DESTDIR}/cdogs-sdl ${LINKDIR}/cdogs-sdl)")
 	INSTALL(
 		FILES ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl
