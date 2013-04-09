@@ -6,6 +6,9 @@ SET(VERSION "0.4.2")
 set(DEBUG 0)			#set to 1 to enable debug build
 set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
+SET(DESTDIR /opt/cdogs-sdl/bin)
+SET(LINKDIR /usr/games)
+
 if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
 endif()
@@ -48,14 +51,22 @@ endif()
 
 include_directories(missions tinydir)
 
-set(CDOGS_DATA_DIR ".")
+set(CDOGS_DATA_DIR "")
 set(CDOGS_CFG_DIR ".cdogs/")
+IF(MSVC)
+	SET(SOURCE_DIRECTORY "${CMAKE_BINARY_DIR}")
+	SET(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cdogs-sdl_${VERSION}")
+ELSE()
+	SET(SOURCE_DIRECTORY "..")
+	SET(OUTPUT_DIRECTORY "../cdogs-sdl_${VERSION}")
+ENDIF()
 # TODO: fix workaround due to path difference
 IF(MSVC)
 	CONFIGURE_FILE(sys_config.h.cmake src/sys_config.h)
 ELSE()
 	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
 	CONFIGURE_FILE(sys_config.h.cmake sys_config.h)
+	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/linux/cdogs-sdl.cmake ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl)
 ENDIF()
 
 SET(CDOGS_SOURCES
@@ -135,6 +146,22 @@ SET(CDOGS_SDL_HEADERS
 	sys_specifics.h)
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+INSTALL(TARGETS cdogs-sdl DESTINATION ${DESTDIR})
+INSTALL(DIRECTORY
+	${SOURCE_DIRECTORY}/doc
+	${SOURCE_DIRECTORY}/missions
+	${SOURCE_DIRECTORY}/dogfights
+	${SOURCE_DIRECTORY}/graphics
+	${SOURCE_DIRECTORY}/music
+	${SOURCE_DIRECTORY}/sounds
+	DESTINATION ${DESTDIR})
+IF(UNIX AND NOT APPLE)
+	#INSTALL(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${DESTDIR}/cdogs-sdl ${LINKDIR}/cdogs-sdl)")
+	INSTALL(
+		FILES ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl
+		DESTINATION ${LINKDIR}
+		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+ENDIF()
 
 SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
@@ -149,13 +176,6 @@ target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
 
 # Stage for packaging
-IF(MSVC)
-	SET(SOURCE_DIRECTORY "${CMAKE_BINARY_DIR}")
-	SET(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/cdogs-sdl_${VERSION}")
-ELSE()
-	SET(SOURCE_DIRECTORY "..")
-	SET(OUTPUT_DIRECTORY "../cdogs-sdl_${VERSION}")
-ENDIF()
 ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
 

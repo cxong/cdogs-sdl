@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "files.h"
 #include "text.h"
 #include "utils.h"
 
@@ -48,10 +49,10 @@ void LoadCredits(
 
 	debug(D_NORMAL, "Reading CREDITS...\n");
 
-	file = fopen("doc/CREDITS", "r");
+	file = fopen(GetDataFilePath("doc/CREDITS"), "r");
 	if (file == NULL)
 	{
-		printf("Error: cannot load CREDITS\n");
+		printf("Error: cannot load %s\n", GetDataFilePath("doc/CREDITS"));
 		return;
 	}
 
