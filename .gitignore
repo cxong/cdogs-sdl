@@ -3,9 +3,8 @@
 Makefile
 Makefile.*
 cdogs-sdl
-cdogs-sdl.exe
+*.exe
 cdogs-sdl-editor
-cdogs-sdl-editor.exe
 libcdogs.a
 
 # CMake stuff
@@ -15,6 +14,7 @@ CMakeFiles/
 .metadata/
 RemoteSystemsTempFiles/
 cdogs-sdl.dir/
+CPack*
 
 # Generated files
 src/sys_config.h
