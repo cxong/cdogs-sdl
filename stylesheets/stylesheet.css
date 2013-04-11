@@ -252,6 +252,32 @@ a.tar span {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
+a.windows,
+a.windows span {
+  background: transparent url(../images/windows.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  display: inline-block;
+  text-indent: -10000px;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  -webkit-transition: opacity ease-in-out 0.3s;
+}
+
+a.tgz,
+a.tgz span {
+  background: transparent url(../images/tgz.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  display: inline-block;
+  text-indent: -10000px;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  -webkit-transition: opacity ease-in-out 0.3s;
+}
+
 a.code {
   background: transparent url(../images/code.png) no-repeat 0 2px;
   width: 30px;
