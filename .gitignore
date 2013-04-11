@@ -15,6 +15,7 @@ CMakeFiles/
 RemoteSystemsTempFiles/
 cdogs-sdl.dir/
 CPack*
+_CPack_Packages/
 
 # Generated files
 src/sys_config.h
