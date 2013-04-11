@@ -144,7 +144,11 @@ SET(CDOGS_SDL_HEADERS
 	prep.h
 	sys_config.h
 	sys_specifics.h)
-add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS})
+SET(CDOGS_SDL_EXTRA)
+IF(MSVC)
+	SET(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
+ENDIF()
+add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 IF(UNIX AND NOT APPLE)	# only support installation in linux
 	INSTALL(TARGETS cdogs-sdl DESTINATION ${DESTDIR})
