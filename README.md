@@ -29,6 +29,8 @@ C-Dogs SDL Port v0.4.2
 C-Dogs SDL is a port of a really fun old DOS game to modern operating systems,
 using the SDL media libraries for graphics, sound and input (hence the name).
 
+For the latest release notes please see https://github.com/cxong/cdogs-sdl/wiki/Release-Notes
+
 For more information about the original C-Dogs read 'original\_readme.txt'.
 
 

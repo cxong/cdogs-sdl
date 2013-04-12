@@ -163,7 +163,7 @@ INSTALL(DIRECTORY
 	${SOURCE_DIRECTORY}/music
 	${SOURCE_DIRECTORY}/sounds
 	DESTINATION .)
-INSTALL(FILES ${SOURCE_DIRECTORY}/cdogs_icon.bmp DESTINATION .)
+INSTALL(FILES ${SOURCE_DIRECTORY}/cdogs_icon.bmp ${SOURCE_DIRECTORY}/README.md DESTINATION .)
 IF(UNIX AND NOT APPLE)
 	INSTALL(
 		FILES ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl
@@ -209,82 +209,3 @@ SET(CDOGS_SDL_EDITOR_HEADERS
 	sys_specifics.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
 target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
-
-
-
-# Stage for packaging
-IF(UNIX AND NOT APPLE)
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}")
-
-	# docs
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/doc"
-			"${OUTPUT_DIRECTORY}/doc/")
-
-	# missions/dogfights
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/dogfights"
-			"${OUTPUT_DIRECTORY}/dogfights/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/missions"
-			"${OUTPUT_DIRECTORY}/missions/")
-
-	# data
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/graphics"
-			"${OUTPUT_DIRECTORY}/graphics/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/music"
-			"${OUTPUT_DIRECTORY}/music/")
-	ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-			"${SOURCE_DIRECTORY}/sounds"
-			"${OUTPUT_DIRECTORY}/sounds/")
-
-	IF(MSVC)
-		# DLLs
-		FILE(GLOB DLLS "${SOURCE_DIRECTORY}/*.dll")
-		FOREACH(DLL ${DLLS})
-			ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-					"${DLL}"
-					"${OUTPUT_DIRECTORY}/")
-		ENDFOREACH()
-
-		# exes
-		SET(EXES
-			Release/cdogs-sdl.exe
-			#Release/cdogs-sdl-editor.exe
-			)
-		FOREACH(EXE ${EXES})
-			ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-					"${EXE}"
-					"${OUTPUT_DIRECTORY}/")
-		ENDFOREACH()
-	ELSE()
-		# binaries
-		SET(BINS
-			../cdogs-sdl
-			#../cdogs-sdl-editor
-			)
-		FOREACH(BIN ${BINS})
-			ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-					"${BIN}"
-					"${OUTPUT_DIRECTORY}/")
-		ENDFOREACH()
-
-		# icon
-		ADD_CUSTOM_COMMAND(TARGET cdogs-sdl POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy
-				"${SOURCE_DIRECTORY}/cdogs_icon.bmp"
-				"${OUTPUT_DIRECTORY}/")
-	ENDIF()
-ENDIF()
