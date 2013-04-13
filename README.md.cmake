@@ -1,5 +1,5 @@
 
-C-Dogs SDL Port v0.4.2
+C-Dogs SDL Port v@VERSION@
 ======================
 
 (based on C-Dogs 1.06)
@@ -14,7 +14,7 @@ C-Dogs SDL Port v0.4.2
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.4.2
+     `---------------'               v@VERSION@
 
 1. Introduction
 2. Tested Environments
@@ -53,11 +53,13 @@ operating system, platform or toaster please contact us! :-)
 3. Installation
 ---------------
 
+Please use the installers for your platform for installing.
+
 To compile C-Dogs SDL you need to have the SDL libraries previously installed,
 the SDL\_mixer libraries also installed if you want better sound (and music),
 and a compiler (gcc recommended) and the appropriate header files.
 
-See 'INSTALL' for actual installation instructions...
+See the wiki for getting started instructions.
 
 4. Command line options
 -----------------------
@@ -103,7 +105,7 @@ Which will make the game try to run fullscreen at 400x300 resolution.
 ----------
 
 If you have an questions, comments, bug reports (yes please), patches (even
-better) or anything else related to C-Dogs SDL email or IM (MSN):
+better) or anything else related to C-Dogs SDL email:
 
 > Cong <congusbongus@gmail.com>
 
