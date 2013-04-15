@@ -34,7 +34,6 @@
 #endif
 
 #define CDOGS_VERSION		"v1.06"
-#define CDOGS_SDL_VERSION	"v0.4.2"
 
 // Defines
 #define BODY_UNARMED        0
