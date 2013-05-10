@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(cdogs-sdl C)
 
-SET(VERSION "0.4.3")
-SET(VERSION_RC "0,4,3,0")
+SET(VERSION "0.4.2.1")
+SET(VERSION_RC "0,4,2,1")
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "4")
-SET(VERSION_PATCH "3")
+SET(VERSION_PATCH "2")
 SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 set(DEBUG 0)			#set to 1 to enable debug build

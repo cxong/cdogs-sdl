@@ -1,6 +1,6 @@
 
-C-Dogs SDL Port v0.4.3
-======================
+C-Dogs SDL Port v0.4.2.1
+========================
 
 (based on C-Dogs 1.06)
 
@@ -14,7 +14,7 @@ C-Dogs SDL Port v0.4.3
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.4.3
+     `---------------'               v0.4.2.1
 
 1. Introduction
 2. Tested Environments
@@ -26,8 +26,9 @@ C-Dogs SDL Port v0.4.3
 1. Introduction
 ---------------
 
-C-Dogs SDL is a port of a really fun old DOS game to modern operating systems,
-using the SDL media libraries for graphics, sound and input (hence the name).
+C-Dogs SDL is a classic overhead run-and-gun game, supporting up to two players
+in co-op and 1v1 modes. Customize your player, choose from up to 11 weapons,
+and try the dozens of user-created campaigns. Have fun!
 
 For the latest release notes please see https://github.com/cxong/cdogs-sdl/wiki/Release-Notes
 
