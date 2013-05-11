@@ -327,7 +327,7 @@ static int BuildWall(int wallLength)
 
 void MakeRoom(
 	int xOrigin, int yOrigin, int width, int height, int doors,
-	unsigned short access)
+	unsigned short access_mask)
 {
 	int x, y;
 
@@ -339,7 +339,9 @@ void MakeRoom(
 		iMap(x, yOrigin) = MAP_WALL;
 		iMap(x, yOrigin + height) = MAP_WALL;
 		for (y = yOrigin + 1; y < yOrigin + height; y++)
-			iMap(x, y) = MAP_ROOM | access;
+		{
+			iMap(x, y) = MAP_ROOM | access_mask;
+		}
 	}
 	if (doors & 1)
 		iMap(xOrigin, yOrigin + height / 2) = MAP_DOOR;
@@ -369,7 +371,7 @@ int AreaClear(int xOrigin, int yOrigin, int width, int height)
 static int BuildRoom(void)
 {
 	int x, y, w, h;
-	unsigned short access = 0;
+	unsigned short access_mask = 0;
 
 	GuessCoords(&x, &y);
 	w = rand() % 6 + 5;
@@ -378,15 +380,17 @@ static int BuildRoom(void)
 	if (AreaClear(x - 1, y - 1, w + 2, h + 2)) {
 		switch (rand() % 20) {
 		case 0:
-			if (accessCount >= 4) {
-				access = MAP_ACCESS_RED;
+			if (accessCount >= 4)
+			{
+				access_mask = MAP_ACCESS_RED;
 				accessCount = 5;
 				break;
 			}
 		case 1:
 		case 2:
-			if (accessCount >= 3) {
-				access = MAP_ACCESS_BLUE;
+			if (accessCount >= 3)
+			{
+				access_mask = MAP_ACCESS_BLUE;
 				if (accessCount < 4)
 					accessCount = 4;
 				break;
@@ -394,8 +398,9 @@ static int BuildRoom(void)
 		case 3:
 		case 4:
 		case 5:
-			if (accessCount >= 2) {
-				access = MAP_ACCESS_GREEN;
+			if (accessCount >= 2)
+			{
+				access_mask = MAP_ACCESS_GREEN;
 				if (accessCount < 3)
 					accessCount = 3;
 				break;
@@ -404,14 +409,15 @@ static int BuildRoom(void)
 		case 7:
 		case 8:
 		case 9:
-			if (accessCount >= 1) {
-				access = MAP_ACCESS_YELLOW;
+			if (accessCount >= 1)
+			{
+				access_mask = MAP_ACCESS_YELLOW;
 				if (accessCount < 2)
 					accessCount = 2;
 				break;
 			}
 		}
-		MakeRoom(x, y, w, h, rand() % 15 + 1, access);
+		MakeRoom(x, y, w, h, rand() % 15 + 1, access_mask);
 		if (accessCount < 1)
 			accessCount = 1;
 		return 1;
@@ -723,19 +729,19 @@ static void PlaceObject(int x, int y, int index)
 
 static int PlaceCollectible(int objective)
 {
-	int access =
+	int is_hi_access =
 	    (gMission.missionData->objectives[objective].
 	     flags & OBJECTIVE_HIACCESS) != 0 && accessCount > 1;
 	int noaccess =
 	    (gMission.missionData->objectives[objective].
 	     flags & OBJECTIVE_NOACCESS) != 0;
 	int x, y;
-	int i = (noaccess || access) ? 1000 : 100;
+	int i = (noaccess || is_hi_access) ? 1000 : 100;
 
 	while (i) {
 		GuessPixelCoords(&x, &y);
 		if (!CheckWall(x << 8, y << 8, 4, 3)) {
-			if ((!access
+			if ((!is_hi_access
 			     || (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) &
 				 MAP_ACCESSBITS) != 0) && (!noaccess
 							   ||
@@ -764,18 +770,18 @@ static int PlaceCollectible(int objective)
 
 static int PlaceBlowup(int objective)
 {
-	int access =
+	int is_hi_access =
 	    (gMission.missionData->objectives[objective].
 	     flags & OBJECTIVE_HIACCESS) != 0 && accessCount > 1;
 	int noaccess =
 	    (gMission.missionData->objectives[objective].
 	     flags & OBJECTIVE_NOACCESS) != 0;
-	int i = (noaccess || access) ? 1000 : 100;
+	int i = (noaccess || is_hi_access) ? 1000 : 100;
 	int x, y;
 
 	while (i > 0) {
 		GuessCoords(&x, &y);
-		if ((!access || (iMap(x, y) >> 8) != 0) &&
+		if ((!is_hi_access || (iMap(x, y) >> 8) != 0) &&
 		    (!noaccess || (iMap(x, y) >> 8) == 0)) {
 			if (PlaceOneObject(x, y,
 					   gMission.objectives[objective].
@@ -788,7 +794,7 @@ static int PlaceBlowup(int objective)
 	return 0;
 }
 
-static void PlaceCard(int pic, int card, int access)
+static void PlaceCard(int pic, int card, int map_access)
 {
 	int x, y;
 
@@ -798,7 +804,7 @@ static void PlaceCard(int pic, int card, int access)
 		if (y < YMAX - 1 &&
 		    Map(x, y).flags == 0 &&
 		    Map(x, y).things == NULL &&
-		    (iMap(x, y) & 0xF00) == access &&
+		    (iMap(x, y) & 0xF00) == map_access &&
 		    (iMap(x, y) & MAP_MASKACCESS) == MAP_ROOM &&
 		    Map(x, y + 1).flags == 0 &&
 		    Map(x, y + 1).things == NULL) {

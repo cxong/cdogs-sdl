@@ -41,9 +41,9 @@ execute_process(
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 ADD_DEFINITIONS(${SDL_LDFLAGS} ${SDL_INCLUDES})
+ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX)
-	ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
 else()
 	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)

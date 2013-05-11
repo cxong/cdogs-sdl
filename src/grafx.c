@@ -295,7 +295,7 @@ int ReadPics(
 	color_t * palette)
 {
 	FILE *f;
-	int eof = 0;
+	int is_eof = 0;
 	unsigned short int size;
 	int i = 0;
 
@@ -314,7 +314,8 @@ int ReadPics(
 		} else
 			fseek(f, sizeof(TPalette), SEEK_CUR);
 
-		while (!eof && i < maxPics) {
+		while (!is_eof && i < maxPics)
+		{
 			elementsRead = fread(&size, sizeof(size), 1, f);
 			CHECK_FREAD(1)
 			swap16(&size);
@@ -329,8 +330,12 @@ int ReadPics(
 				pics[i] = p;
 
 				if (ferror(f) || feof(f))
-					eof = 1;
-			} else {
+				{
+					is_eof = 1;
+				}
+			}
+			else
+			{
 				pics[i] = NULL;
 			}
 			i++;
@@ -345,7 +350,7 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics)
 {
 	FILE *f;
-	int eof = 0;
+	int is_eof = 0;
 	unsigned short int size;
 	int i = startIndex;
 
@@ -353,7 +358,8 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	if (f != NULL) {
 		fseek(f, sizeof(TPalette), SEEK_CUR);
 
-		while (!eof && i < maxPics) {
+		while (!is_eof && i < maxPics)
+		{
 			size_t elementsRead;
 		#define CHECK_FREAD(count)\
 			if (elementsRead != count) {\
@@ -374,8 +380,12 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 				pics[i] = p;
 
 				if (ferror(f) || feof(f))
-					eof = 1;
-			} else {
+				{
+					is_eof = 1;
+				}
+			}
+			else
+			{
 				pics[i] = NULL;
 			}
 			i++;

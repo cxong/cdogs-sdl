@@ -62,6 +62,8 @@
 
 #ifdef _MSC_VER
 #define mkdir(p, a) _mkdir(p)
+#elif defined(_WIN32)
+#define mkdir(p, a) mkdir(p)
 #endif
 
 #ifndef ssize_t

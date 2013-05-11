@@ -856,16 +856,17 @@ int UpdateExplosion(TMobileObject * obj)
 void UpdateMobileObjects(void)
 {
 	TMobileObject *obj = mobObjList;
-	int remove = 0;
+	int do_remove = 0;
 
 	while (obj) {
 		if ((*(obj->updateFunc)) (obj) == 0) {
 			obj->range = 0;
-			remove = 1;
+			do_remove = 1;
 		}
 		obj = obj->next;
 	}
-	if (remove) {
+	if (do_remove)
+	{
 		TMobileObject **h = &mobObjList;
 
 		while (*h) {

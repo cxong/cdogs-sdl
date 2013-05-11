@@ -327,7 +327,7 @@ void Bonuses(void)
 	int y = (SCREEN_HEIGHT / 2) + (SCREEN_HEIGHT / 10);
 	int x = (SCREEN_WIDTH / 6);
 	int done, req, total;
-	int access;
+	int access_bonus = 0;
 	int index;
 	char s[100];
 
@@ -371,23 +371,23 @@ void Bonuses(void)
 		}
 	}
 
-	access = 0;
-	if ((gMission.flags & FLAGS_KEYCARD_YELLOW) != 0)
-		access += 50;
-	if ((gMission.flags & FLAGS_KEYCARD_GREEN) != 0)
-		access += 100;
-	if ((gMission.flags & FLAGS_KEYCARD_BLUE) != 0)
-		access += 150;
-	if ((gMission.flags & FLAGS_KEYCARD_RED) != 0)
-		access += 200;
-	if (access > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
-		sprintf(s, "Access bonus: %d", access);
+	if (gMission.flags & FLAGS_KEYCARD_YELLOW)	access_bonus += 50;
+	if (gMission.flags & FLAGS_KEYCARD_GREEN)	access_bonus += 100;
+	if (gMission.flags & FLAGS_KEYCARD_BLUE)	access_bonus += 150;
+	if (gMission.flags & FLAGS_KEYCARD_RED)		access_bonus += 200;
+	if (access_bonus > 0 && (gPlayer1Data.survived || gPlayer2Data.survived))
+	{
+		sprintf(s, "Access bonus: %d", access_bonus);
 		CDogsTextStringAt(x, y, s);
 		y += CDogsTextHeight() + 1;
 		if (gPlayer1Data.survived)
-			gPlayer1Data.totalScore += access;
+		{
+			gPlayer1Data.totalScore += access_bonus;
+		}
 		if (gPlayer2Data.survived)
-			gPlayer2Data.totalScore += access;
+		{
+			gPlayer2Data.totalScore += access_bonus;
+		}
 	}
 
 	i = 60 + gMission.missionData->objectiveCount * 30 - missionTime / 70;

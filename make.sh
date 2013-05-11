@@ -1,6 +1,10 @@
 #!/bin/sh
 cmake src
 cd src
-make
+if [ "$(uname -s | cut -c0-5)" == "MINGW" ] ; then
+	mingw32-make
+else
+	make
+fi
 cd ..
 
