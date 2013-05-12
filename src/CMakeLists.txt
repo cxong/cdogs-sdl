@@ -14,6 +14,12 @@ set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 IF(UNIX AND NOT APPLE)
 	SET(CMAKE_INSTALL_PREFIX /opt/cdogs-sdl/bin)
 ENDIF()
+if(MINGW)
+	set(CMAKE_RC_COMPILER_INIT windres)
+	enable_language(RC)
+	SET(CMAKE_RC_COMPILE_OBJECT
+		"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+endif()
 SET(LINKDIR /usr/games)
 
 if(DEBUG)
@@ -22,13 +28,6 @@ endif()
 
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
-
-if(APPLE)
-	ADD_DEFINITIONS(-DSYS_MACOSX)
-endif()
-if(WINDOWS)
-	ADD_DEFINITIONS(-DSYS_WIN)
-endif()
 
 
 execute_process(
@@ -93,7 +92,7 @@ IF(UNIX)
 	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/linux/cdogs-sdl.cmake ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl)
 ENDIF()
-IF(MSVC)
+IF(WIN32)
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/windows/cdogs.rc.cmake ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 CONFIGURE_FILE(sys_config.h.cmake ${SOURCE_DIRECTORY}/src/sys_config.h)
@@ -175,7 +174,7 @@ SET(CDOGS_SDL_HEADERS
 	sys_config.h
 	sys_specifics.h)
 SET(CDOGS_SDL_EXTRA)
-IF(MSVC)
+IF(MSVC)	# TODO: fix MinGW RC build
 	SET(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
