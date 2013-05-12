@@ -35,3 +35,6 @@ Win32/
 *.vcxproj
 *.vcxproj.filters
 *.sln
+
+# MinGW
+stdout.txt
