@@ -18,7 +18,7 @@ if(MINGW)
 	set(CMAKE_RC_COMPILER_INIT windres)
 	enable_language(RC)
 	SET(CMAKE_RC_COMPILE_OBJECT
-		"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+		"<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 endif()
 SET(LINKDIR /usr/games)
 
@@ -174,7 +174,7 @@ SET(CDOGS_SDL_HEADERS
 	sys_config.h
 	sys_specifics.h)
 SET(CDOGS_SDL_EXTRA)
-IF(MSVC)	# TODO: fix MinGW RC build
+IF(WIN32)
 	SET(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
