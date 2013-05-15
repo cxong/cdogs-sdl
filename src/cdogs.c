@@ -800,7 +800,7 @@ void *MakeBkg(void)
 	int i;
 	TranslationTable randomTintTable;
 
-	SetupBuiltinDogfight(0);
+	SetupBuiltinDogfight(rand() % 2);
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
