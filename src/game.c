@@ -18,12 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- game.c - game loop and related functions
-
 */
+#include "game.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,7 +41,6 @@
 #include "mission.h"
 #include "sounds.h"
 #include "triggers.h"
-#include "game.h"
 #include "keyboard.h"
 #include "blit.h"
 #include "utils.h"
@@ -169,11 +164,10 @@ static void Ticks_FrameBegin(void)
 
 static void Ticks_FrameEnd(void)
 {
-	Uint32 now;
-
-	now = SDL_GetTicks();
-	
-	SDL_Delay(33 - (ticks_now - now));
+	Uint32 now = SDL_GetTicks();
+	Uint32 ticksToDelay = 33 - (ticks_now - now);
+	SDL_Delay(ticksToDelay);
+	debug(D_VERBOSE, "Delaying %u ticks_now %u now %u\n", ticksToDelay, ticks_now, now);
 }
 
 static int Ticks_Synchronize(void)
