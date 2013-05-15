@@ -225,7 +225,7 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 	const TBadGuy *b;
 	int i;
 
-	memset(GetDstScreen(), 74, SCREEN_MEMSIZE);
+	memset(GetDstScreen(), 74, Screen_GetMemSize());
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	CDogsTextStringAt(10, 190, s);

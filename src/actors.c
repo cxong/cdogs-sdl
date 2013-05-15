@@ -146,6 +146,34 @@ static ColorShade colorShades[SHADE_COUNT] = {
 	{16, 17, 18, 19, 20, 21, 22, 23, 24, 25}
 };
 
+unsigned char BestMatch(int r, int g, int b);
+
+
+void SetRandomTintTable(TranslationTable *table, int tint)
+{
+	// Generate three random numbers between 0-1, and divide each by 1/3rd the sum.
+	// The resulting three scaled numbers should add up to 1.
+	double r_scalar = rand() * 1.0 / RAND_MAX;
+	double g_scalar = rand() * 1.0 / RAND_MAX;
+	double b_scalar = rand() * 1.0 / RAND_MAX;
+	int i;
+	double scale_factor = r_scalar + g_scalar + b_scalar;
+	r_scalar /= scale_factor;
+	g_scalar /= scale_factor;
+	b_scalar /= scale_factor;
+	for (i = 0; i < 256; i++)
+	{
+		unsigned char f = (unsigned char)floor(
+			0.4 * gPalette[i].red +
+			0.49 * gPalette[i].green +
+			0.11 * gPalette[i].blue);
+		(*table)[i] = BestMatch(
+			(unsigned char)(r_scalar * f * tint / 256),
+			(unsigned char)(g_scalar * f * tint / 256),
+			(unsigned char)(b_scalar * f * tint / 256));
+	}
+}
+
 
 void DrawCharacter(int x, int y, TActor * actor)
 {

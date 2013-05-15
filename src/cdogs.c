@@ -191,7 +191,7 @@ void CampaignIntro(void *bkg)
 
 	debug(D_NORMAL, "\n");
 
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 	y = (SCREEN_WIDTH / 4);
 
@@ -209,7 +209,7 @@ void MissionBriefing(void *bkg)
 	char s[512];
 	int i, y;
 
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 	y = SCREEN_WIDTH / 4;
 
@@ -404,7 +404,7 @@ void Bonuses(void)
 
 void MissionSummary(void *bkg)
 {
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 	Bonuses();
 
@@ -423,7 +423,7 @@ void ShowScore(void *bkg, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 	debug(D_NORMAL, "\n");
 
@@ -445,7 +445,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 void FinalScore(void *bkg, int score1, int score2)
 {
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -497,7 +497,7 @@ void Victory(void *bkg)
 	int x, i;
 	const char *s;
 
-	memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
@@ -638,12 +638,13 @@ int Game(void *bkg, int mission)
 
 	maxHealth = 200 * (gOptions.playerHp) / 100;
 
-	do {
-		SetupMission(mission, 1);
+	do
+	{
+		SetupMission(mission, 1, &gCampaign);
 
 		SetupMap();
 
-		srand(clock());
+		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
 
 		MissionBriefing(bkg);
@@ -740,13 +741,14 @@ void DogFight(void *bkg)
 	gOptions.badGuys = 0;
 	gOptions.twoPlayers = 1;
 
-	do {
-		SetupMission(0, 1);
+	do
+	{
+		SetupMission(0, 1, &gCampaign);
 		SetupMap();
 
 		if (PlayerEquip(bkg)) {
 
-		srand(clock());
+		srand((unsigned int)time(NULL));
 		InitPlayers(YES, 500, 0);
 /*
     gPlayer1 = AddActor( CHARACTER_PLAYER1);
@@ -792,13 +794,15 @@ void DogFight(void *bkg)
 
 void *MakeBkg(void)
 {
-	void *bkg = sys_mem_alloc(SCREEN_MEMSIZE);
+	unsigned char *bkg = sys_mem_alloc(Screen_GetMemSize());
 	struct Buffer *buffer;
 	unsigned char *p;
 	int i;
+	TranslationTable randomTintTable;
 
 	SetupBuiltinDogfight(0);
-	SetupMission(0, 1);
+	gCampaign.seed = rand();
+	SetupMission(0, 1, &gCampaign);
 	SetupMap();
 	SetDstScreen(bkg);
 	buffer = NewBuffer();
@@ -810,8 +814,13 @@ void *MakeBkg(void)
 	FreeTriggersAndWatches();
 
 	p = bkg;
-	for (i = 0; i < SCREEN_MEMSIZE; i++)
-		p[i] = tableGreen[p[i] & 0xFF];
+	SetPaletteRanges(15, 12, 10, 0);
+	BuildTranslationTables();
+	SetRandomTintTable(&randomTintTable, 200);
+	for (i = 0; i < Screen_GetMemSize(); i++)
+	{
+		p[i] = randomTintTable[p[i] & 0xFF];
+	}
 
 	return bkg;
 }
@@ -821,8 +830,8 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	unsigned char *myScreen;
 
 	void *bkg = MakeBkg();
-	myScreen = sys_mem_alloc(SCREEN_MEMSIZE);
-	memset(myScreen, 0, SCREEN_MEMSIZE);
+	myScreen = sys_mem_alloc(Screen_GetMemSize());
+	memset(myScreen, 0, Screen_GetMemSize());
 	SetDstScreen(myScreen);
 
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
@@ -910,6 +919,8 @@ int main(int argc, char *argv[])
 	int sound = 1;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
+
+	srand((unsigned int)time(NULL));
 
 	PrintTitle();
 

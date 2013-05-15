@@ -121,7 +121,8 @@ struct GameOptions gOptions = {
 	0	// slowmotion
 };
 
-struct CampaignOptions gCampaign = {
+CampaignOptions gCampaign =
+{
 	NULL, 0, 0
 };
 

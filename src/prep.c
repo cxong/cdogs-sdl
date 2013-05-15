@@ -898,8 +898,9 @@ int PlayerSelection(int twoPlayers, void *bkg)
 	SetPlayer(0, &gPlayer1Data);
 	SetPlayer(1, &gPlayer2Data);
 
-	while (mode1 != MODE_DONE || mode2 != MODE_DONE) {
-		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
+	{
+		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		GetPlayerCmd(&cmd1, &cmd2);
 
 		if (KeyDown(keyEsc)) return 0; // hack to allow exit
@@ -943,8 +944,9 @@ int PlayerEquip(void *bkg)
 	debug(D_NORMAL, "\n");
 
 	done2 = gOptions.twoPlayers ? 0 : 1;
-	while (!done1 || !done2) {
-		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+	while (!done1 || !done2)
+	{
+		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		GetPlayerCmd(&cmd1, &cmd2);
 
 		if (KeyDown(keyEsc)) return 0; // hack to exit from menu

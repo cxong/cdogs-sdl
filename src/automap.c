@@ -217,8 +217,10 @@ void DisplayAutoMap(int showAll)
 	int obj;
 
 	screen = p = GetDstScreen();
-	for (x = 0; x < SCREEN_MEMSIZE; x++)
+	for (x = 0; x < Screen_GetMemSize(); x++)
+	{
 		p[x] = tableGreen[p[x] & 0xFF];
+	}
 
 	screen += MAP_YOFFS * SCREEN_WIDTH + MAP_XOFFS;
 	for (y = 0; y < YMAX; y++)
@@ -293,6 +295,6 @@ void DisplayAutoMap(int showAll)
 				     gPlayer2 ? &cmd2 : NULL);
 		}
 		while (((cmd1 | cmd2) & CMD_BUTTON3) != 0 || KeyDown(gOptions.mapKey));
-		memset(GetDstScreen(), 0, SCREEN_MEMSIZE);
+		memset(GetDstScreen(), 0, Screen_GetMemSize());
 	}
 }

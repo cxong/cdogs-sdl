@@ -122,7 +122,6 @@ extern int screen_h;
 
 #define	SCREEN_WIDTH	Screen_GetWidth()
 #define	SCREEN_HEIGHT	Screen_GetHeight()
-#define SCREEN_MEMSIZE	Screen_GetMemSize()
 
 #define CenterX(w)		((SCREEN_WIDTH - w) / 2)
 #define CenterY(h)		((SCREEN_HEIGHT - h) / 2)

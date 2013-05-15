@@ -261,12 +261,12 @@ typedef struct
 	char path[CDOGS_PATH_MAX];
 } CampaignSetting;
 
-struct CampaignOptions
+typedef struct
 {
 	CampaignSetting *setting;
 	unsigned int seed;
 	int dogFight;
-};
+} CampaignOptions;
 
 
 struct Objective
@@ -299,7 +299,7 @@ struct MissionOptions {
 };
 
 extern struct GameOptions gOptions;
-extern struct CampaignOptions gCampaign;
+extern CampaignOptions gCampaign;
 extern struct MissionOptions gMission;
 
 struct SongDef {

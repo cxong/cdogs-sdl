@@ -281,7 +281,7 @@ int MainMenu(
 	BlitSetBrightness(gOptions.brightness);
 	do
 	{
-		memcpy(GetDstScreen(), bkg, SCREEN_MEMSIZE);
+		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();

@@ -1197,11 +1197,13 @@ static void AdjustXC(int yc, int *xc)
 
 static void Setup(int index, int buildTables)
 {
-	if (index < campaign.missionCount) {
-		currentMission = &campaign.missions[index];
-		SetupMission(index, buildTables);
-	} else
+	if (index >= campaign.missionCount)
+	{
 		currentMission = NULL;
+		return;
+	}
+	currentMission = &campaign.missions[index];
+	SetupMission(index, buildTables, &gCampaign);
 }
 
 static void Save(int asCode)

@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "mission.h"
 
@@ -640,7 +667,7 @@ void SetRange(int start, int range)
 	CDogsSetPalette(gPalette);
 }
 
-void SetupMission(int index, int buildTables)
+void SetupMission(int index, int buildTables, CampaignOptions *campaign)
 {
 	int i;
 	int x, y;
@@ -648,8 +675,7 @@ void SetupMission(int index, int buildTables)
 
 	memset(&gMission, 0, sizeof(gMission));
 	gMission.index = index;
-	m = &gCampaign.setting->missions[abs(index) %
-					 gCampaign.setting->missionCount];
+	m = &campaign->setting->missions[abs(index) % campaign->setting->missionCount];
 	gMission.missionData = m;
 	gMission.doorPics =
 	    doorStyles[abs(m->doorStyle) % DOORSTYLE_COUNT];
@@ -660,7 +686,7 @@ void SetupMission(int index, int buildTables)
 		gMission.mapObjects[i] =
 		    &mapItems[abs(m->items[i]) % ITEMS_COUNT];
 
-	srand(10 * index + gCampaign.seed);
+	srand(10 * index + campaign->seed);
 
 	gMission.exitPic = exitPics[2 * (abs(m->exitStyle) % EXIT_COUNT)];
 	gMission.exitShadow =
@@ -689,12 +715,17 @@ void SetupMission(int index, int buildTables)
 	SetupObjectives(m);
 	SetupBadguysForMission(m);
 	SetupWeapons(m->weaponSelection);
-	SetRange(WALL_COLORS, abs(m->wallRange) % COLORRANGE_COUNT);
-	SetRange(FLOOR_COLORS, abs(m->floorRange) % COLORRANGE_COUNT);
-	SetRange(ROOM_COLORS, abs(m->roomRange) % COLORRANGE_COUNT);
-	SetRange(ALT_COLORS, abs(m->altRange) % COLORRANGE_COUNT);
+	SetPaletteRanges(m->wallRange, m->floorRange, m->roomRange, m->altRange);
 	if (buildTables)
 		BuildTranslationTables();
+}
+
+void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range)
+{
+	SetRange(WALL_COLORS, abs(wall_range) % COLORRANGE_COUNT);
+	SetRange(FLOOR_COLORS, abs(floor_range) % COLORRANGE_COUNT);
+	SetRange(ROOM_COLORS, abs(room_range) % COLORRANGE_COUNT);
+	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
 }
 
 int CheckMissionObjective(int flags)
