@@ -816,7 +816,7 @@ void *MakeBkg(void)
 	p = bkg;
 	SetPaletteRanges(15, 12, 10, 0);
 	BuildTranslationTables();
-	SetRandomTintTable(&randomTintTable, 200);
+	SetRandomTintTable(&randomTintTable, 256);
 	for (i = 0; i < Screen_GetMemSize(); i++)
 	{
 		p[i] = randomTintTable[p[i] & 0xFF];
