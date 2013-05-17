@@ -1032,7 +1032,7 @@ void DeleteItem(int index)
 	AdjustInt(&currentMission->itemCount, 0, ITEMS_MAX, 0);
 }
 
-static void Append(char *s, int maxlen, int c)
+static void Append(char *s, int maxlen, char c)
 {
 	int l = strlen(s);
 
@@ -1048,7 +1048,7 @@ static void Backspace(char *s)
 		s[strlen(s) - 1] = 0;
 }
 
-static void AddChar(int xc, int yc, int c)
+static void AddChar(int xc, int yc, char c)
 {
 	if (yc == YC_CAMPAIGNTITLE) {
 		switch (xc) {
@@ -1256,7 +1256,7 @@ static void Save(int asCode)
 			    c == '-' || c == '_' || c == '\\') {
 				i = strlen(filename);
 				filename[i + 1] = 0;
-				filename[i] = c;
+				filename[i] = (char)c;
 			}
 		}
 	}
@@ -1493,7 +1493,7 @@ static void EditCampaign(void)
 		default:
 			if (c >= ' ' && c <= 'z') {
 				fileChanged = 1;
-				AddChar(xc, yc, c);
+				AddChar(xc, yc, (char)c);
 			}
 			break;
 		}
