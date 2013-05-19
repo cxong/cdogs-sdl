@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "prep.h"
 
@@ -900,10 +927,11 @@ int PlayerSelection(int twoPlayers, void *bkg)
 
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
 	{
+		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
-		GetPlayerCmd(&cmd1, &cmd2);
+		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyDown(keyEsc)) return 0; // hack to allow exit
+		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
 
 		if (twoPlayers) {
 			if (cmd1 == prev1)
@@ -931,14 +959,11 @@ int PlayerSelection(int twoPlayers, void *bkg)
 		CopyToScreen();
 	}
 
-	WaitForRelease();
-
 	return 1;
 }
 
 int PlayerEquip(void *bkg)
 {
-	int cmd1, cmd2, prev1 = 0, prev2 = 0;
 	int done1 = 0, done2;
 
 	debug(D_NORMAL, "\n");
@@ -946,34 +971,28 @@ int PlayerEquip(void *bkg)
 	done2 = gOptions.twoPlayers ? 0 : 1;
 	while (!done1 || !done2)
 	{
+		int cmd1 = 0;
+		int cmd2 = 0;
+		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
-		GetPlayerCmd(&cmd1, &cmd2);
+		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyDown(keyEsc)) return 0; // hack to exit from menu
+		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to exit from menu
 
-		if (gOptions.twoPlayers) {
-			if (cmd1 == prev1)
-				cmd1 = 0;
-			else
-				prev1 = cmd1;
+		if (gOptions.twoPlayers)
+		{
 //      if (!done1) // || !gPlayer1Data.weaponCount < MAX_WEAPONS)
 			done1 = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
 			ShowSelection(CenterOfLeft(50), &gPlayer1Data,CHARACTER_PLAYER1);
 			ShowPlayerControls(CenterOfLeft(100), &gPlayer1Data);
 
-			if (cmd2 == prev2)
-				cmd2 = 0;
-			else
-				prev2 = cmd2;
 //      if (!done2) // || gPlayer2Data.weaponCount < MAX_WEAPONS)
 			done2 = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2, done2);
 			ShowSelection(CenterOfRight(50), &gPlayer2Data, CHARACTER_PLAYER2);
 			ShowPlayerControls(CenterOfRight(100), &gPlayer2Data);
-		} else {
-			if (cmd1 == prev1)
-				cmd1 = 0;
-			else
-				prev1 = cmd1;
+		}
+		else
+		{
 			if (!done1)	// || gPlayer1Data.weaponCount <= 0)
 				done1 =
 				    !WeaponSelection(CenterX(80),
@@ -986,9 +1005,8 @@ int PlayerEquip(void *bkg)
 		}
 
 		CopyToScreen();
+		SDL_Delay(10);
 	}
-
-	WaitForRelease();
 
 	return 1;
 }

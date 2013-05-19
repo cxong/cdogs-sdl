@@ -56,6 +56,7 @@
 #include "campaigns.h"
 #include "config.h"
 #include "credits.h"
+#include "events.h"
 #include "joystick.h"
 #include "objs.h"
 #include "actors.h"
@@ -201,7 +202,7 @@ void CampaignIntro(void *bkg)
 	MissionDescription(y, gCampaign.setting->description);
 
 	CopyToScreen();
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 void MissionBriefing(void *bkg)
@@ -243,7 +244,7 @@ void MissionBriefing(void *bkg)
 
 	CopyToScreen();
 
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 void Summary(int x, struct PlayerData *data, int character)
@@ -416,7 +417,7 @@ void MissionSummary(void *bkg)
 
 	CopyToScreen();
 
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 void ShowScore(void *bkg, int score1, int score2)
@@ -440,7 +441,7 @@ void ShowScore(void *bkg, int score1, int score2)
 	}
 
 	CopyToScreen();
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 void FinalScore(void *bkg, int score1, int score2)
@@ -464,7 +465,7 @@ void FinalScore(void *bkg, int score1, int score2)
 				IS_WINNER);
 	}
 	CopyToScreen();
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 
@@ -532,7 +533,7 @@ void Victory(void *bkg)
 	PlaySound(SND_HAHAHA, 0, 255);
 
 	CopyToScreen();
-	Wait();
+	GetKey(&gKeyboard);
 }
 
 
@@ -1060,10 +1061,10 @@ int main(int argc, char *argv[])
 
 	PlayMenuSong();
 
-	//LookForCustomCampaigns();
 	LoadAllCampaigns(&campaigns);
 
 	InitSticks();
+	KeyInit(&gKeyboard);
 
 	if (wait)
 	{

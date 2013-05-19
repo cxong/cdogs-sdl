@@ -490,11 +490,16 @@ void DisplayMessage(const char *s)
 
 int HandleKey(int *done, int cmd)
 {
-	static int lastKey = 0;
-	int key = GetKeyDown();
-
-	if ((key == gOptions.mapKey || (cmd & CMD_BUTTON3) != 0) && !gCampaign.dogFight) {
+	while ((KeyIsDown(&gKeyboard, gOptions.mapKey) || (cmd & CMD_BUTTON3) != 0) &&
+		!gCampaign.dogFight)
+	{
 		DisplayAutoMap(0);
+		while (KeyIsDown(&gKeyboard, gOptions.mapKey) ||
+			(cmd & CMD_BUTTON3) != 0)
+		{
+			SDL_Delay(10);
+			KeyPoll(&gKeyboard);
+		}
 	}
 
 	if (((cmd & CMD_BUTTON4) != 0) && !gOptions.twoPlayers) {
@@ -503,47 +508,49 @@ int HandleKey(int *done, int cmd)
 	} else if (gameIsPaused && AnyButton(cmd))
 		gameIsPaused = NO;
 
-	if (key == lastKey)
-		return 0;
-
-	lastKey = key;
-	if (!key)
-		return 0;
-
 	if (!gPlayer1 && !gPlayer2)
-		*done = YES;
-	else if (key == keyEsc) {
+	{
+		*done = 1;
+		return 0;
+	}
+	else if (KeyIsPressed(&gKeyboard, keyEsc))
+	{
 		if (gameIsPaused && escExits)
-			*done = YES;
-		else if (!gameIsPaused) {
+		{
+			*done = 1;
+			return 1;
+		}
+		else if (!gameIsPaused)
+		{
 			gameIsPaused = YES;
 			escExits = YES;
 		}
-	} else
-		gameIsPaused = NO;
+	}
+	else if (KeyGetPressed(&gKeyboard))
+	{
+		gameIsPaused = 0;
+	}
 
 //  if (key >= key1 && key <= key0)
 //    ToggleTrack( key - key1);
 
-	return key;
+	return 0;
 }
 
-static void GetPlayerInput(int *cmd1, int *cmd2)
+void GetPlayerInput(int *cmd1, int *cmd2)
 {
-	*cmd1 = *cmd2 = 0;
-	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL);
+	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL, 0);
 }
 
 int gameloop(void)
 {
-	struct Buffer *buffer;
+	struct Buffer *buffer = NewBuffer();
 	int ticks;
-	int c = 0;
+	int is_esc_pressed = 0;
 	int done = NO;
 	time_t t;
 	struct tm *tp;
 
-	buffer = NewBuffer();
 	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
 	if (ModuleStatus() != MODULE_OK)
@@ -552,7 +559,7 @@ int gameloop(void)
 	gameIsPaused = NO;
 
 	missionTime = 0;
-	//screenShaking = 0;
+	KeyInit(&gKeyboard);
 	while (!done)
 	{
 		int cmd1 = 0, cmd2 = 0;
@@ -615,6 +622,8 @@ int gameloop(void)
 
 		CopyToScreen();
 
+		KeyPoll(&gKeyboard);
+
 		if (!gameIsPaused) {
 			if (!gOptions.slowmotion || (frames & 1) == 0) {
 				UpdateAllActors(ticks);
@@ -640,11 +649,11 @@ int gameloop(void)
 			GetPlayerInput(&cmd1, &cmd2);
 		}
 
-		c = HandleKey(&done, cmd1 | cmd2);
+		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);
 
 		Ticks_FrameEnd();
 	}
 	free(buffer);
 
-	return c != keyEsc;
+	return !is_esc_pressed;
 }

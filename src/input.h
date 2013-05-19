@@ -79,11 +79,8 @@ typedef enum
 } key_code_e;
 
 char *InputDeviceStr(int d);
-void GetPlayerCmd(int *cmd1, int *cmd2);
-void GetMenuCmd(int *cmd, int *prevCmd);
-void WaitForRelease(void);
-void WaitForPress(void);
-void Wait(void);
+void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
+int GetMenuCmd(void);
 
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);

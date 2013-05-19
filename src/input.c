@@ -69,53 +69,72 @@ static int SwapButtons(int cmd)
 }
 
 void GetOnePlayerCmd(
-	struct PlayerData *data, int *cmd, int joy1, int joy2, int isSingle)
+	struct PlayerData *data, int *cmd, int joy1, int joy2,
+	int isSingle, int (*key_func)(keyboard_t*, int))
 {
-	if (cmd != NULL)
+	if (cmd == NULL)
 	{
-		if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+		return;
+	}
+	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+	{
+		if (key_func(&gKeyboard, data->keys.left))
 		{
-			*cmd = 0;
-			if (KeyDown(data->keys.left))		*cmd |= CMD_LEFT;
-			else if (KeyDown(data->keys.right))	*cmd |= CMD_RIGHT;
-
-			if (KeyDown(data->keys.up))			*cmd |= CMD_UP;
-			else if (KeyDown(data->keys.down))	*cmd |= CMD_DOWN;
-
-			if (KeyDown(data->keys.button1))	*cmd |= CMD_BUTTON1;
-
-			if (KeyDown(data->keys.button2))	*cmd |= CMD_BUTTON2;
+			*cmd |= CMD_LEFT;
 		}
-		else
+		else if (key_func(&gKeyboard, data->keys.right))
 		{
-			int cmdOther = 0;
-			int swapButtons = 0;
-			if (data->inputDevice == INPUT_DEVICE_JOYSTICK_1)
+			*cmd |= CMD_RIGHT;
+		}
+
+		if (key_func(&gKeyboard, data->keys.up))
+		{
+			*cmd |= CMD_UP;
+		}
+		else if (key_func(&gKeyboard, data->keys.down))
+		{
+			*cmd |= CMD_DOWN;
+		}
+
+		if (key_func(&gKeyboard, data->keys.button1))
+		{
+			*cmd |= CMD_BUTTON1;
+		}
+
+		if (key_func(&gKeyboard, data->keys.button2))
+		{
+			*cmd |= CMD_BUTTON2;
+		}
+	}
+	else
+	{
+		int cmdOther = 0;
+		int swapButtons = 0;
+		if (data->inputDevice == INPUT_DEVICE_JOYSTICK_1)
+		{
+			*cmd = joy1;
+			cmdOther = joy2;
+			swapButtons = gOptions.swapButtonsJoy1;
+		}
+		else if (data->inputDevice == INPUT_DEVICE_JOYSTICK_2)
+		{
+			*cmd = joy2;
+			cmdOther = joy1;
+			swapButtons = gOptions.swapButtonsJoy2;
+		}
+		if (swapButtons)
+		{
+			*cmd = SwapButtons(*cmd);
+		}
+		if (isSingle)
+		{
+			if (cmdOther & CMD_BUTTON1)
 			{
-				*cmd = joy1;
-				cmdOther = joy2;
-				swapButtons = gOptions.swapButtonsJoy1;
+				*cmd |= CMD_BUTTON3;
 			}
-			else if (data->inputDevice == INPUT_DEVICE_JOYSTICK_2)
+			if (cmdOther & CMD_BUTTON2)
 			{
-				*cmd = joy2;
-				cmdOther = joy1;
-				swapButtons = gOptions.swapButtonsJoy2;
-			}
-			if (swapButtons)
-			{
-				*cmd = SwapButtons(*cmd);
-			}
-			if (isSingle)
-			{
-				if (cmdOther & CMD_BUTTON1)
-				{
-					*cmd |= CMD_BUTTON3;
-				}
-				if (cmdOther & CMD_BUTTON2)
-				{
-					*cmd |= CMD_BUTTON4;
-				}
+				*cmd |= CMD_BUTTON4;
 			}
 		}
 	}
@@ -137,103 +156,63 @@ char *InputDeviceStr(int d)
 	}
 }
 
-void GetPlayerCmd(int *cmd1, int *cmd2)
+void GetPlayerCmd(int *cmd1, int *cmd2, int is_pressed)
 {
 	int joy1, joy2;
+	int (*key_func)(keyboard_t*, int) = is_pressed ? KeyIsPressed : KeyIsDown;
 
 	PollDigiSticks(&joy1, &joy2);
-	GetOnePlayerCmd(&gPlayer1Data, cmd1, joy1, joy2, cmd2 == NULL);
-	GetOnePlayerCmd(&gPlayer2Data, cmd2, joy1, joy2, cmd1 == NULL);
+	GetOnePlayerCmd(&gPlayer1Data, cmd1, joy1, joy2, cmd2 == NULL, key_func);
+	GetOnePlayerCmd(&gPlayer2Data, cmd2, joy1, joy2, cmd1 == NULL, key_func);
 }
 
-void GetMenuCmd(int *cmd, int *prevCmd)
+int GetMenuCmd(void)
 {
-	if (KeyDown(keyEsc))
+	int cmd = 0;
+	if (KeyIsPressed(&gKeyboard, keyEsc))
 	{
-		*cmd = CMD_ESC;
-		goto checkPrevCmd;
+		return CMD_ESC;
 	}
-	if (KeyDown(keyF10))
+	if (KeyIsPressed(&gKeyboard, keyF10))
 	{
 		AutoCalibrate();
 	}
-	if (KeyDown(keyF9))
+	if (KeyIsPressed(&gKeyboard, keyF9))
 	{
 		gPlayer1Data.inputDevice = INPUT_DEVICE_KEYBOARD;
 		gPlayer2Data.inputDevice = INPUT_DEVICE_KEYBOARD;
 	}
 
-	GetPlayerCmd(cmd, NULL);
-	if (*cmd)
+	GetPlayerCmd(&cmd, NULL, 1);
+	if (!cmd)
 	{
-		goto checkPrevCmd;
+		if (KeyIsPressed(&gKeyboard, keyArrowLeft))
+		{
+			cmd |= CMD_LEFT;
+		}
+		else if (KeyIsPressed(&gKeyboard, keyArrowRight))
+		{
+			cmd |= CMD_RIGHT;
+		}
+		if (KeyIsPressed(&gKeyboard, keyArrowUp))
+		{
+			cmd |= CMD_UP;
+		}
+		else if (KeyIsPressed(&gKeyboard, keyArrowDown))
+		{
+			cmd |= CMD_DOWN;
+		}
+		if (KeyIsPressed(&gKeyboard, keyEnter))
+		{
+			cmd |= CMD_BUTTON1;
+		}
+		if (KeyIsPressed(&gKeyboard, keyBackspace))
+		{
+			cmd |= CMD_BUTTON2;
+		} 
 	}
 
-	if (KeyDown(keyArrowLeft))
-	{
-		*cmd |= CMD_LEFT;
-	}
-	else if (KeyDown(keyArrowRight))
-	{
-		*cmd |= CMD_RIGHT;
-	}
-	if (KeyDown(keyArrowUp))
-	{
-		*cmd |= CMD_UP;
-	}
-	else if (KeyDown(keyArrowDown))
-	{
-		*cmd |= CMD_DOWN;
-	}
-	if (KeyDown(keyEnter))
-	{
-		*cmd |= CMD_BUTTON1;
-	}
-	if (KeyDown(keyBackspace))
-	{
-		*cmd |= CMD_BUTTON2;
-	}
-
-checkPrevCmd:
-	if (*cmd == *prevCmd)
-	{
-		*cmd = 0;
-	}
-	else
-	{
-		*prevCmd = *cmd;
-	}
-}
-
-void WaitForRelease(void)
-{
-	int cmd1, cmd2;
-	int releaseCount = 0;
-
-	do {
-		GetPlayerCmd(&cmd1, &cmd2);
-		if (((cmd1 | cmd2) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0
-		    || AnyKeyDown())
-			releaseCount = 0;
-		else
-			releaseCount++;
-	} while (releaseCount < 4);
-}
-
-void WaitForPress(void)
-{
-	int cmd1, cmd2;
-
-	do {
-		GetPlayerCmd(&cmd1, &cmd2);
-	} while (((cmd1 | cmd2) & (CMD_BUTTON1 | CMD_BUTTON2)) == 0 && !AnyKeyDown());
-}
-
-void Wait(void)
-{
-	WaitForRelease();
-	WaitForPress();
-	WaitForRelease();
+	return cmd;
 }
 
 int InputGetKey(input_keys_t *keys, key_code_e keyCode)

@@ -34,6 +34,7 @@
 
 #include "credits.h"
 #include "defs.h"
+#include "events.h"
 #include "input.h"
 #include "grafx.h"
 #include "drawtools.h"
@@ -266,14 +267,13 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns);
 void MenuDestroy(menu_t *menu);
 void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
-void MenuProcessChangeKey(menu_t *menu, int *cmd, int *prevCmd);
+void MenuProcessChangeKey(menu_t *menu);
 
 int MainMenu(
 	void *bkg,
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns)
 {
-	int cmd, prev = 0;
 	int doPlay = 0;
 	menu_t *mainMenu = MenuCreateAll(campaigns);
 	menu_t *menu = mainMenu;
@@ -281,17 +281,18 @@ int MainMenu(
 	BlitSetBrightness(gOptions.brightness);
 	do
 	{
+		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();
 		if (menu->type == MENU_TYPE_KEYS && menu->u.normal.changeKeyMenu != NULL)
 		{
-			MenuProcessChangeKey(menu, &cmd, &prev);
+			MenuProcessChangeKey(menu);
 		}
 		else
 		{
-			GetMenuCmd(&cmd, &prev);
+			int cmd = GetMenuCmd();
 			menu = MenuProcessCmd(menu, cmd);
 		}
 		SDL_Delay(10);
@@ -299,7 +300,6 @@ int MainMenu(
 	doPlay = menu->type == MENU_TYPE_CAMPAIGN_ITEM;
 
 	MenuDestroy(mainMenu);
-	WaitForRelease();
 	return doPlay;
 }
 
@@ -1430,19 +1430,9 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	}
 }
 
-void MenuProcessChangeKey(menu_t *menu, int *cmd, int *prevCmd)
+void MenuProcessChangeKey(menu_t *menu)
 {
-	int key;
-	int prevKey = GetKeyDown();
-	do
-	{
-		key = GetKeyDown();
-		if (key == 0)
-		{
-			prevKey = 0;
-		}
-	}
-	while (key == 0 || key == prevKey);	// wait until user has pressed a new button
+	int key = GetKey(&gKeyboard);	// wait until user has pressed a new button
 
 	if (key == keyEsc)
 	{
@@ -1472,10 +1462,4 @@ void MenuProcessChangeKey(menu_t *menu, int *cmd, int *prevCmd)
 		PlaySound(SND_KILL4, 0, 255);
 	}
 	menu->u.normal.changeKeyMenu = NULL;
-
-	// set the current command to what the user pressed, to prevent change key entering loop
-	// TODO: refactor keyboard input routines, combine cmd/prevcmd
-	*prevCmd = 0;
-	GetMenuCmd(cmd, prevCmd);
-	*prevCmd = *cmd;
 }

@@ -19,25 +19,49 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
--------------------------------------------------------------------------------
+    This file incorporates work covered by the following copyright and
+    permission notice:
 
- password.c - mission password functions
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
 
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
+#include "password.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "input.h"
 #include "grafx.h"
 #include "blit.h"
+#include "keyboard.h"
 #include "text.h"
 #include "sounds.h"
 #include "actors.h"
 #include "defs.h"
 #include "gamedata.h"
 #include "menu.h"
-#include "password.h"
 
 #define DONE          "Done"
 
@@ -164,7 +188,6 @@ static int PasswordEntry(int cmd, char *buffer)
 
 static int EnterCode(void *bkg, const char *password)
 {
-	int cmd, prev = 0;
 	int mission = 0;
 	int done = 0;
 	char buffer[PASSWORD_MAX + 1];
@@ -172,10 +195,14 @@ static int EnterCode(void *bkg, const char *password)
 	strcpy(buffer, password);
 	while (!done)
 	{
+		int cmd;
+		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
-		GetMenuCmd(&cmd, &prev);
-		if (!PasswordEntry(cmd, buffer)) {
-			if (!buffer[0]) {
+		cmd = GetMenuCmd();
+		if (!PasswordEntry(cmd, buffer))
+		{
+			if (!buffer[0])
+			{
 				mission = 0;
 				done = 1;
 			} else {
@@ -203,14 +230,12 @@ static int EnterCode(void *bkg, const char *password)
 	}
 
 	PlaySound(SND_SWITCH, 0, 255);
-	WaitForRelease();
 
 	return mission;
 }
 
 int EnterPassword(void *bkg, const char *password)
 {
-	int cmd, prev = 0;
 	int mission;
 	int index = 0;
 
@@ -219,12 +244,14 @@ int EnterPassword(void *bkg, const char *password)
 
 	for (;;)
 	{
+		int cmd;
+		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
-		GetMenuCmd(&cmd, &prev);
+		cmd = GetMenuCmd();
 
 		if (AnyButton(cmd)) {
-			if (index == 1) {
-				WaitForRelease();
+			if (index == 1)
+			{
 				mission = EnterCode(bkg, password);
 				if (mission)
 					return mission;
@@ -252,6 +279,5 @@ int EnterPassword(void *bkg, const char *password)
 
 		CopyToScreen();
 	}
-	WaitForRelease();
 	return 0;
 }

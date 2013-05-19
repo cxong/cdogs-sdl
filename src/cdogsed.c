@@ -1575,6 +1575,7 @@ int main(int argc, char *argv[])
 	memset(myScreen, 0, Screen_GetMemSize());
 	SetDstScreen(myScreen);
 
+	KeyInit(&gKeyboard);
 	InitMouse();
 	EditCampaign();
 
