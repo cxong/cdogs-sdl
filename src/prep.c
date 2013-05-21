@@ -916,7 +916,6 @@ static int MakeSelection(int mode, int x, int character,
 
 int PlayerSelection(int twoPlayers, void *bkg)
 {
-	int cmd1, cmd2, prev1 = 0, prev2 = 0;
 	int mode1, mode2;
 
 	mode1 = MODE_MAIN;
@@ -925,38 +924,29 @@ int PlayerSelection(int twoPlayers, void *bkg)
 	SetPlayer(0, &gPlayer1Data);
 	SetPlayer(1, &gPlayer2Data);
 
+	KeyInit(&gKeyboard);
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
 	{
+		int cmd1 = 0;
+		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
 
-		if (twoPlayers) {
-			if (cmd1 == prev1)
-				cmd1 = 0;
-			else
-				prev1 = cmd1;
-
+		if (twoPlayers)
+		{
 			mode1 = MakeSelection(mode1, CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
-
-			if (cmd2 == prev2)
-				cmd2 = 0;
-			else
-				prev2 = cmd2;
-
 			mode2 = MakeSelection(mode2, CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2);
-		} else {
-			if (cmd1 == prev1)
-				cmd1 = 0;
-			else
-				prev1 = cmd1;
-
+		}
+		else
+		{
 			mode1 = MakeSelection(mode1, CenterX(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
 		}
 
 		CopyToScreen();
+		SDL_Delay(10);
 	}
 
 	return 1;
