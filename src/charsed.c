@@ -592,10 +592,11 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 
 	//SetDstScreen(new);
 	*buttons = *key = 0;
-	do {
-		//if (kbhit())
-		if (AnyKeyDown()) {
-			*key = GetKey();
+	do
+	{
+		if (KeyGetPressed(&gKeyboard))
+		{
+			*key = GetKey(&gKeyboard);
 		}
 
 		Mouse(x, y, buttons);

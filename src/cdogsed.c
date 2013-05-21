@@ -854,7 +854,8 @@ static int Change(int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_ITEMS:
-		if (KeyDown(SDLK_LSHIFT) || KeyDown(SDLK_RSHIFT))	// Either shift key down?
+		if (KeyIsDown(&gKeyboard, SDLK_LSHIFT) ||
+			KeyIsDown(&gKeyboard, SDLK_RSHIFT))	// Either shift key down?
 		{
 			currentMission->itemDensity[xc] += 5 * d;
 			AdjustInt(&currentMission->itemDensity[xc], 0, 512,
@@ -1227,7 +1228,7 @@ static void Save(int asCode)
 		CDogsTextChar('\021');
 		CopyToScreen();
 
-		c = GetKey();
+		c = GetKey(&gKeyboard);
 		switch (c) {
 		case ENTER:
 			if (!filename[0])
@@ -1271,7 +1272,7 @@ static int ConfirmQuit(void)
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	CopyToScreen();
 
-	c = GetKey();
+	c = GetKey(&gKeyboard);
 	return (c == 'Y' || c == 'y');
 }
 
@@ -1479,7 +1480,7 @@ static void EditCampaign(void)
 			Setup(mission, 0);
 			SetupMap();
 			DisplayAutoMap(1);
-			GetKey();
+			GetKey(&gKeyboard);
 			KillAllObjects();
 			FreeTriggersAndWatches();
 			break;
