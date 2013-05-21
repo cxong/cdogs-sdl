@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "game.h"
 
@@ -134,7 +161,7 @@ static void Ticks_Update(void)
 		init = 1;
 	} else {
 		ticks_then = ticks_now;
-		ticks_now = SDL_GetTicks();		
+		ticks_now = SDL_GetTicks();
 	}
 
 	return;
@@ -142,7 +169,7 @@ static void Ticks_Update(void)
 
 static int Ticks_TimeElapsed(Uint32 msec)
 {
-	static Uint32 old_ticks = 0;	
+	static Uint32 old_ticks = 0;
 
 	if (old_ticks == 0) {
 		old_ticks = ticks_now;
@@ -165,9 +192,14 @@ static void Ticks_FrameBegin(void)
 static void Ticks_FrameEnd(void)
 {
 	Uint32 now = SDL_GetTicks();
-	Uint32 ticksToDelay = 33 - (ticks_now - now);
-	SDL_Delay(ticksToDelay);
-	debug(D_VERBOSE, "Delaying %u ticks_now %u now %u\n", ticksToDelay, ticks_now, now);
+	Uint32 ticksSpent = now - ticks_now;
+	Uint32 ticksIdeal = 33;
+	if (ticksSpent < ticksIdeal)
+	{
+		Uint32 ticksToDelay = 33 - ticksSpent;
+		SDL_Delay(ticksToDelay);
+		debug(D_VERBOSE, "Delaying %u ticks_now %u now %u\n", ticksToDelay, ticks_now, now);
+	}
 }
 
 static int Ticks_Synchronize(void)
@@ -313,7 +345,7 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	char s[50];
 
 	int flags = TEXT_TOP;
-	
+
 	if (placement == PLACE_LEFT)	flags |= TEXT_LEFT;
 	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
 
@@ -374,7 +406,7 @@ static void MissionStatus(void)
 		return;
 
 	x = 5;
-	y = SCREEN_HEIGHT - 5 - CDogsTextHeight(); 
+	y = SCREEN_HEIGHT - 5 - CDogsTextHeight();
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -385,11 +417,11 @@ static void MissionStatus(void)
 			color = gMission.objectives[i].color;
 
 			y += 3;
-			Draw_Rect(x, y, 2, 2, color); 
+			Draw_Rect(x, y, 2, 2, color);
 			y -= 3;
 
 			left = gMission.objectives[i].required - gMission.objectives[i].done;
-			
+
 			if (left > 0) {
 				if ((gMission.missionData->objectives[i].flags & OBJECTIVE_UNKNOWNCOUNT) == 0) {
 					sprintf(s, "%d", left);
@@ -455,9 +487,9 @@ void StatusDisplay(void)
 		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
 		CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 	}
-	
+
 #define KEY_WIDTH(n) (PicWidth((const void *)&cGeneralPics[gMission.keyPics[n]]))
-	
+
 	if (gMission.flags & FLAGS_KEYCARD_YELLOW)
 		DrawKeycard(CenterX(KEY_WIDTH(0)) - 30, 20, &cGeneralPics[gMission.keyPics[0]]);
 	if (gMission.flags & FLAGS_KEYCARD_GREEN)
