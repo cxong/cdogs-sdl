@@ -838,7 +838,6 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
-		ResetCampaign();
 		if (!gCampaign.dogFight)
 			CampaignIntro(bkg);
 

@@ -602,10 +602,6 @@ int SetupBuiltinDogfight(int index)
 	return 1;
 }
 
-void ResetCampaign(void)
-{
-}
-
 static void SetupObjective(int o, struct Mission *mission)
 {
 	gMission.objectives[o].done = 0;
