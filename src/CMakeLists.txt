@@ -76,7 +76,7 @@ else()
 	endif()
 endif()
 
-include_directories(missions tinydir)
+include_directories(missions tinydir .)
 
 set(CDOGS_DATA_DIR "")
 set(CDOGS_CFG_DIR ".cdogs/")
@@ -95,93 +95,38 @@ ENDIF()
 IF(WIN32)
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/windows/cdogs.rc.cmake ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
-CONFIGURE_FILE(sys_config.h.cmake ${SOURCE_DIRECTORY}/src/sys_config.h)
+CONFIGURE_FILE(cdogs/sys_config.h.cmake ${SOURCE_DIRECTORY}/src/cdogs/sys_config.h)
 CONFIGURE_FILE(${SOURCE_DIRECTORY}/README.md.cmake ${SOURCE_DIRECTORY}/README.md)
 
-SET(CDOGS_SOURCES
-	actors.c
-	ai.c
-	automap.c
-	blit.c
-	defs.c
-	draw.c
-	drawtools.c
-	events.c
-	files.c
-	game.c
-	gamedata.c
-	grafx.c
-	hiscores.c
-	input.c
-	joystick.c
-	keyboard.c
-	map.c
-	mission.c
-	objs.c
-	pics.c
-	sounds.c
-	text.c
-	triggers.c
-	utils.c)
-SET(CDOGS_HEADERS
-	actors.h
-	ai.h
-	automap.h
-	blit.h
-	defs.h
-	draw.h
-	drawtools.h
-	events.h
-	files.h
-	game.h
-	gamedata.h
-	grafx.h
-	hiscores.h
-	input.h
-	joystick.h
-	keyboard.h
-	map.h
-	mission.h
-	objs.h
-	pics.h
-	sounds.h
-	sys_config.h
-	sys_specifics.h
-	text.h
-	triggers.h
-	utils.h)
-add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS})
+add_subdirectory(cdogs)
 
-SET(CDOGS_SDL_SOURCES
+set(CDOGS_SDL_SOURCES
 	campaigns.c
 	cdogs.c
 	config.c
 	credits.c
-	drawtools.c
 	mainmenu.c
 	menu.c
 	password.c
 	prep.c)
-SET(CDOGS_SDL_HEADERS
+set(CDOGS_SDL_HEADERS
 	campaigns.h
 	config.h
 	credits.h
-	drawtools.h
 	mainmenu.h
 	menu.h
 	password.h
-	prep.h
-	sys_config.h
-	sys_specifics.h)
-SET(CDOGS_SDL_EXTRA)
-IF(WIN32)
-	SET(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
-ENDIF()
+	prep.h)
+set(CDOGS_SDL_EXTRA)
+if(WIN32)
+	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
+endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
+install(TARGETS cdogs-sdl DESTINATION .)
+
 # Installation
-INSTALL(TARGETS cdogs-sdl DESTINATION .)
 INSTALL(DIRECTORY
 	${SOURCE_DIRECTORY}/doc
 	${SOURCE_DIRECTORY}/missions
@@ -240,8 +185,6 @@ SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
 	charsed.c)
 SET(CDOGS_SDL_EDITOR_HEADERS
-	charsed.h
-	sys_config.h
-	sys_specifics.h)
+	charsed.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
 target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})

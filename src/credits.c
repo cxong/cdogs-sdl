@@ -32,9 +32,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "files.h"
-#include "text.h"
-#include "utils.h"
+#include <cdogs/files.h>
+#include <cdogs/text.h>
+#include <cdogs/utils.h>
 
 
 void LoadCredits(

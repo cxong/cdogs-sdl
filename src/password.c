@@ -52,15 +52,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "input.h"
-#include "grafx.h"
-#include "blit.h"
-#include "keyboard.h"
-#include "text.h"
-#include "sounds.h"
-#include "actors.h"
-#include "defs.h"
-#include "gamedata.h"
+#include <cdogs/actors.h>
+#include <cdogs/blit.h>
+#include <cdogs/defs.h>
+#include <cdogs/gamedata.h>
+#include <cdogs/grafx.h>
+#include <cdogs/input.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/sounds.h>
+#include <cdogs/text.h>
+
 #include "menu.h"
 
 #define DONE          "Done"

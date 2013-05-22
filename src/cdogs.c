@@ -53,32 +53,33 @@
 
 #include <SDL.h>
 
+#include <cdogs/actors.h>
+#include <cdogs/ai.h>
+#include <cdogs/blit.h>
+#include <cdogs/draw.h>
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/game.h>
+#include <cdogs/gamedata.h>
+#include <cdogs/grafx.h>
+#include <cdogs/hiscores.h>
+#include <cdogs/input.h>
+#include <cdogs/joystick.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/mission.h>
+#include <cdogs/objs.h>
+#include <cdogs/pics.h>
+#include <cdogs/sounds.h>
+#include <cdogs/text.h>
+#include <cdogs/triggers.h>
+#include <cdogs/utils.h>
+
 #include "campaigns.h"
 #include "config.h"
 #include "credits.h"
-#include "events.h"
-#include "joystick.h"
-#include "objs.h"
-#include "actors.h"
-#include "grafx.h"
-#include "pics.h"
-#include "sounds.h"
-#include "text.h"
-#include "gamedata.h"
-#include "ai.h"
-#include "triggers.h"
-#include "input.h"
-#include "prep.h"
-#include "hiscores.h"
-#include "mission.h"
-#include "game.h"
-#include "keyboard.h"
-#include "draw.h"
-#include "blit.h"
 #include "mainmenu.h"
 #include "password.h"
-#include "files.h"
-#include "utils.h"
+#include "prep.h"
 
 
 static char lastPassword[PASSWORD_MAX + 1] = "";

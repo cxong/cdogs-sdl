@@ -32,24 +32,25 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <cdogs/actors.h>
+#include <cdogs/blit.h>
+#include <cdogs/defs.h>
+#include <cdogs/drawtools.h>
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/gamedata.h>
+#include <cdogs/grafx.h>
+#include <cdogs/input.h>
+#include <cdogs/joystick.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/mission.h>
+#include <cdogs/pics.h>
+#include <cdogs/sounds.h>
+#include <cdogs/text.h>
+#include <cdogs/utils.h>
+
 #include "credits.h"
-#include "defs.h"
-#include "events.h"
-#include "input.h"
-#include "grafx.h"
-#include "drawtools.h"
-#include "blit.h"
-#include "text.h"
-#include "sounds.h"
-#include "actors.h"
-#include "gamedata.h"
-#include "mission.h"
-#include "keyboard.h"
-#include "joystick.h"
-#include "pics.h"
-#include "files.h"
 #include "menu.h"
-#include "utils.h"
 
 
 static CampaignSetting customSetting = {

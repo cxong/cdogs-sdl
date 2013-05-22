@@ -52,17 +52,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "input.h"
-#include "grafx.h"
-#include "blit.h"
-#include "actors.h"
-#include "pics.h"
-#include "text.h"
-#include "sounds.h"
-#include "keyboard.h"
+#include <cdogs/actors.h>
+#include <cdogs/blit.h>
+#include <cdogs/files.h>
+#include <cdogs/grafx.h>
+#include <cdogs/input.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/pics.h>
+#include <cdogs/sounds.h>
+#include <cdogs/text.h>
+#include <cdogs/utils.h>
+
 #include "menu.h"
-#include "files.h"
-#include "utils.h"
 
 
 #define MODE_MAIN           0

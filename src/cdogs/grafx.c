@@ -59,7 +59,6 @@
 #include "defs.h"
 #include "blit.h"
 #include "pics.h" /* for gPalette */
-#include "sprcomp.h"
 #include "files.h"
 #include "utils.h"
 

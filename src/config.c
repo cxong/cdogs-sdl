@@ -30,10 +30,10 @@
 
 #include <stdio.h>
 
-#include "files.h"
-#include "grafx.h"
-#include "sounds.h"
-#include "utils.h"
+#include <cdogs/files.h>
+#include <cdogs/grafx.h>
+#include <cdogs/sounds.h>
+#include <cdogs/utils.h>
 
 
 void LoadConfig(void)

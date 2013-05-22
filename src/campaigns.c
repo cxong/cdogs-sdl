@@ -32,9 +32,9 @@
 
 #include <tinydir.h>
 
-#include "files.h"
-#include "mission.h"
-#include "utils.h"
+#include <cdogs/files.h>
+#include <cdogs/mission.h>
+#include <cdogs/utils.h>
 
 
 void CampaignListInit(campaign_list_t *list);

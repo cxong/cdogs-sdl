@@ -22,9 +22,9 @@
 
 #include <string.h>
 
-#include "grafx.h"
-#include "text.h"
-#include "actors.h"
+#include <cdogs/actors.h>
+#include <cdogs/grafx.h>
+#include <cdogs/text.h>
 
 
 void ShowControls(void)

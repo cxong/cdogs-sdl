@@ -18,19 +18,11 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- prep.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#ifndef __PREP
+#define __PREP
 
-#include "gamedata.h"
+#include <cdogs/gamedata.h>
 
 void DisplayPlayer(int x, struct PlayerData *data, int character,
 		   int editingName);
@@ -38,3 +30,5 @@ int PlayerSelection(int twoPlayers, void *bkg);
 int PlayerEquip(void *bkg);
 void LoadTemplates(void);
 void SaveTemplates(void);
+
+#endif

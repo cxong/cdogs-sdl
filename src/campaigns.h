@@ -29,7 +29,7 @@
 #ifndef __CAMPAIGNS
 #define __CAMPAIGNS
 
-#include "sys_config.h"
+#include <cdogs/sys_config.h>
 
 typedef struct
 {

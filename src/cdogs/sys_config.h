@@ -26,37 +26,24 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __credits
-#define __credits
+#ifndef __SYS_CONFIG
+#define __SYS_CONFIG
 
-#include <time.h>
+#define CDOGS_SDL_VERSION "v0.4.3"
 
-#include <cdogs/grafx.h>
+/* where to look for the cdogs data files */
+#define CDOGS_DATA_DIR ""
 
+#define CDOGS_CFG_DIR ".cdogs/"
 
-typedef struct
-{
-	char *name;
-	char *message;
-} credit_t;
+#define CDOGS_MUSIC_DIR "music"
+#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "/game"
+#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "/menu"
 
-typedef struct
-{
-	credit_t *credits;
-	int creditsCount;
-	time_t lastUpdateTime;
-	int creditsIndex;
-	TranslationTable *nameTranslationTable;
-	TranslationTable *textTranslationTable;
-} credits_displayer_t;
+#define CDOGS_CAMPAIGN_DIR "missions"
+#define CDOGS_DOGFIGHT_DIR "dogfights"
 
-#define CREDIT_DISPLAY_PERIOD_SECONDS 10.0
-
-void LoadCredits(
-	credits_displayer_t *displayer,
-	TranslationTable *nameTranslationTable,
-	TranslationTable *textTranslationTable);
-void UnloadCredits(credits_displayer_t *displayer);
-void ShowCredits(credits_displayer_t *displayer);
+#define CDOGS_FILENAME_MAX 256
+#define CDOGS_PATH_MAX 4096
 
 #endif

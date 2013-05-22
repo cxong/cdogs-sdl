@@ -38,3 +38,4 @@ Win32/
 
 # MinGW
 stdout.txt
+stderr.txt
