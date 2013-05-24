@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,14 +21,15 @@
 
 -------------------------------------------------------------------------------
 
- charsed.c - character editor (in game) 
- 
+ charsed.c - character editor (in game)
+
  Author: $Author$
  Rev:    $Revision$
  URL:    $HeadURL$
  ID:     $Id$
- 
+
 */
+#include "charsed.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -36,16 +37,14 @@
 
 #include <SDL.h>
 
-#include "gamedata.h"
-#include "actors.h"
-#include "defs.h"
-#include "grafx.h"
-#include "keyboard.h"
-#include "pics.h"
-#include "text.h"
-#include "mission.h"
-#include "charsed.h"
-#include "events.h"
+#include <cdogs/actors.h>
+#include <cdogs/defs.h>
+#include <cdogs/events.h>
+#include <cdogs/grafx.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/mission.h>
+#include <cdogs/pics.h>
+#include <cdogs/text.h>
 
 
 #define YC_APPEARANCE 0
@@ -603,7 +602,7 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 		*x /= scaling;
 		if (*x > 319)
 			scaling++;
-		
+
 		if (!(*buttons) && !(*key) && (*x != xPrev || *y != yPrev))
 		{
 			DrawCursor(*x, *y);

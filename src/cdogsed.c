@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,25 +23,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-// #include <conio.h>
 #include <ctype.h>
-// #include <bios.h>
+
 #include <SDL.h>
 
-#include "objs.h"
-#include "actors.h"
-#include "grafx.h"
-#include "keyboard.h"
-#include "pics.h"
-#include "text.h"
-#include "gamedata.h"
-#include "mission.h"
-#include "files.h"
-#include "triggers.h"
-#include "automap.h"
+#include <cdogs/actors.h>
+#include <cdogs/automap.h>
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/grafx.h>
+#include <cdogs/keyboard.h>
+#include <cdogs/mission.h>
+#include <cdogs/objs.h>
+#include <cdogs/pics.h>
+#include <cdogs/text.h>
+#include <cdogs/triggers.h>
+#include <cdogs/utils.h>
+
 #include "charsed.h"
-#include "events.h"
-#include "utils.h"
 
 
 #define YC_CAMPAIGNTITLE    0
@@ -1560,11 +1559,11 @@ int main(int argc, char *argv[])
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	//InitVideo(YES);
-	
+
 	Gfx_SetHint(HINT_WIDTH, 320);
 	Gfx_SetHint(HINT_HEIGHT, 240);
 	Gfx_SetHint(HINT_SCALEFACTOR, 2);
-	
+
 	if (InitVideo() == -1) {
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
