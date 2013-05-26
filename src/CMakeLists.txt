@@ -76,7 +76,7 @@ else()
 	endif()
 endif()
 
-include_directories(missions tinydir .)
+include_directories(.)
 
 set(CDOGS_DATA_DIR "")
 set(CDOGS_CFG_DIR ".cdogs/")
@@ -116,7 +116,9 @@ set(CDOGS_SDL_HEADERS
 	mainmenu.h
 	menu.h
 	password.h
-	prep.h)
+	prep.h
+	missions/bem.h
+	missions/ogre.h)
 set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)

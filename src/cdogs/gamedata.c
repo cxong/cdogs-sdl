@@ -55,7 +55,7 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <tinydir.h>
+#include <tinydir/tinydir.h>
 
 #include "actors.h"
 #include "defs.h"

@@ -30,7 +30,7 @@
 
 #include <stdio.h>
 
-#include <tinydir.h>
+#include <tinydir/tinydir.h>
 
 #include <cdogs/files.h>
 #include <cdogs/mission.h>

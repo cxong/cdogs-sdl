@@ -479,8 +479,8 @@ struct Mission dogFight2 = {
 // |  Campaign info  |
 // +-----------------+
 
-#include "ogre.inc"
-#include "bem.inc"
+#include <missions/bem.h>
+#include <missions/ogre.h>
 
 
 static CampaignSetting df1 =
