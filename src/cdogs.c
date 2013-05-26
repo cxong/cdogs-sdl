@@ -648,7 +648,10 @@ int Game(void *bkg, int mission)
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
-		MissionBriefing(bkg);
+		if (IsMissionBriefingNeeded(gCampaign.mode))
+		{
+			MissionBriefing(bkg);
+		}
 		PlayerEquip(bkg);
 
 		InitPlayers(gOptions.twoPlayers, maxHealth, mission);
@@ -719,12 +722,15 @@ int Game(void *bkg, int mission)
 
 int Campaign(void *bkg)
 {
-	int mission;
+	int mission = 0;
 
 	InitData(&gPlayer1Data);
 	InitData(&gPlayer2Data);
 
-	mission = EnterPassword(bkg, lastPassword);
+	if (IsPasswordAllowed(gCampaign.mode))
+	{
+		mission = EnterPassword(bkg, lastPassword);
+	}
 	lastPassword[0] = 0;
 
 	return Game(bkg, mission);

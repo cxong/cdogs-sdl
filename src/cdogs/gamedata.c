@@ -241,6 +241,16 @@ int IsAutoMapEnabled(campaign_mode_e mode)
 	return mode != CAMPAIGN_MODE_DOGFIGHT;
 }
 
+int IsPasswordAllowed(campaign_mode_e mode)
+{
+	return mode == CAMPAIGN_MODE_NORMAL;
+}
+
+int IsMissionBriefingNeeded(campaign_mode_e mode)
+{
+	return mode == CAMPAIGN_MODE_NORMAL;
+}
+
 int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
 {
 	return

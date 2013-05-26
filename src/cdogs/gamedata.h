@@ -328,6 +328,8 @@ int IsIntroNeeded(campaign_mode_e mode);
 int IsScoreNeeded(campaign_mode_e mode);
 int HasObjectives(campaign_mode_e mode);
 int IsAutoMapEnabled(campaign_mode_e mode);
+int IsPasswordAllowed(campaign_mode_e mode);
+int IsMissionBriefingNeeded(campaign_mode_e mode);
 
 int IsTileInExit(TTileItem *tile, struct MissionOptions *options);
 
