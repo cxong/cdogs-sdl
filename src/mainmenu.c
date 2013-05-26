@@ -77,8 +77,8 @@ menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list,
-	int isDogfight,
-	int isTwoplayer);
+	campaign_mode_e mode,
+	int is_two_player);
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateControls(const char *name);
 menu_t *MenuCreateSound(const char *name);
@@ -100,7 +100,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 			"1 player",
 			"Select a campaign:",
 			&campaigns->campaignList,
-			0,
+			CAMPAIGN_MODE_NORMAL,
 			0));
 	MenuAddSubmenu(
 		menu,
@@ -108,7 +108,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 			"2 players",
 			"Select a campaign:",
 			&campaigns->campaignList,
-			0,
+			CAMPAIGN_MODE_NORMAL,
 			1));
 	MenuAddSubmenu(
 		menu,
@@ -116,7 +116,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 			"Dogfight",
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList,
-			1,
+			CAMPAIGN_MODE_DOGFIGHT,
 			1));
 	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
 	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
@@ -130,20 +130,20 @@ menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaign.campaignEntry, entry, sizeof(menu->u.campaign.campaignEntry));
-	menu->u.campaign.isDogfight = 0;
-	menu->u.campaign.IsTwoplayer = 0;
+	menu->u.campaign.mode = CAMPAIGN_MODE_QUICK_PLAY;
+	menu->u.campaign.is_two_player = 0;
 	return menu;
 }
 
 menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, int isDogfight, int isTwoplayer);
+	campaign_entry_t *entry, campaign_mode_e mode, int is_two_player);
 
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list,
-	int isDogfight,
-	int isTwoplayer)
+	campaign_mode_e mode,
+	int is_two_player)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -161,24 +161,24 @@ menu_t *MenuCreateCampaigns(
 				folderName,
 				title,
 				&list->subFolders[i],
-				isDogfight,
-				isTwoplayer));
+				mode,
+				is_two_player));
 	}
 	for (i = 0; i < list->num; i++)
 	{
 		MenuAddSubmenu(menu, MenuCreateCampaignItem(
-			&list->list[i], isDogfight, isTwoplayer));
+			&list->list[i], mode, is_two_player));
 	}
 	return menu;
 }
 
 menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, int isDogfight, int isTwoplayer)
+	campaign_entry_t *entry, campaign_mode_e mode, int is_two_player)
 {
 	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaign.campaignEntry, entry, sizeof(menu->u.campaign.campaignEntry));
-	menu->u.campaign.isDogfight = isDogfight;
-	menu->u.campaign.IsTwoplayer = isTwoplayer;
+	menu->u.campaign.mode = mode;
+	menu->u.campaign.is_two_player = is_two_player;
 	return menu;
 }
 

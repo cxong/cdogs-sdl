@@ -220,3 +220,23 @@ void LoadSongList(struct SongDef **songList, const char *dirPath)
 bail:
 	tinydir_close(&dir);
 }
+
+int IsIntroNeeded(campaign_mode_e mode)
+{
+	return mode == CAMPAIGN_MODE_NORMAL;
+}
+
+int IsScoreNeeded(campaign_mode_e mode)
+{
+	return mode != CAMPAIGN_MODE_DOGFIGHT;
+}
+
+int HasObjectives(campaign_mode_e mode)
+{
+	return mode != CAMPAIGN_MODE_DOGFIGHT;
+}
+
+int IsAutoMapEnabled(campaign_mode_e mode)
+{
+	return mode != CAMPAIGN_MODE_DOGFIGHT;
+}

@@ -261,11 +261,18 @@ typedef struct
 	char path[CDOGS_PATH_MAX];
 } CampaignSetting;
 
+typedef enum
+{
+	CAMPAIGN_MODE_NORMAL,
+	CAMPAIGN_MODE_DOGFIGHT,
+	CAMPAIGN_MODE_QUICK_PLAY
+} campaign_mode_e;
+
 typedef struct
 {
 	CampaignSetting *setting;
 	unsigned int seed;
-	int dogFight;
+	campaign_mode_e mode;
 } CampaignOptions;
 
 
@@ -314,5 +321,10 @@ void AddSong(struct SongDef **songList, const char *path);
 void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
+
+int IsIntroNeeded(campaign_mode_e mode);
+int IsScoreNeeded(campaign_mode_e mode);
+int HasObjectives(campaign_mode_e mode);
+int IsAutoMapEnabled(campaign_mode_e mode);
 
 #endif

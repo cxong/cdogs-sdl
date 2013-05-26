@@ -318,19 +318,19 @@ int DamageSomething(int dx, int dy, int power, int flags,
 			if ((actor->flags & FLAGS_INVULNERABLE) != 0)
 				break;
 
-			if ((flags & FLAGS_HURTALWAYS) == 0
-			    && (actor->flags & FLAGS_VICTIM) == 0) {
-				if ((flags & FLAGS_PLAYERS & actor->
-				     flags) != 0)
+			if ((flags & FLAGS_HURTALWAYS) == 0 && (actor->flags & FLAGS_VICTIM) == 0)
+			{
+				if ((flags & FLAGS_PLAYERS & actor->flags) != 0)
+				{
 					break;
-				if (!gCampaign.dogFight &&
-				    !gOptions.playersHurt &&
-				    (flags &
-				     (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0
-				    && (actor->
-					flags & (FLAGS_PLAYERS |
-						 FLAGS_GOOD_GUY)) != 0)
+				}
+				if (gCampaign.mode != CAMPAIGN_MODE_DOGFIGHT &&
+					!gOptions.playersHurt &&
+					(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0 &&
+					(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
+				{
 					break;
+				}
 				if ((flags &
 				     (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) == 0
 				    && (actor->

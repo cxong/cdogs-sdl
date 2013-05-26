@@ -49,6 +49,7 @@
 #ifndef __MENU
 #define __MENU
 
+#include <cdogs/gamedata.h>
 #include <cdogs/input.h>
 
 #include "campaigns.h"
@@ -159,8 +160,8 @@ typedef struct menu
 		struct
 		{
 			campaign_entry_t campaignEntry;
-			int isDogfight;
-			int IsTwoplayer;
+			campaign_mode_e mode;
+			int is_two_player;
 		} campaign;
 		// change key
 		struct

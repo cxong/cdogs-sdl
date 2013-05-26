@@ -18,18 +18,12 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- ai.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
+#ifndef __AI
+#define __AI
 
 void InitializeBadGuys(void);
-void CreateCharacters(void);
+void CreateEnemies(void);
 void CommandBadGuys(void);
+
+#endif

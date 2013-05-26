@@ -648,13 +648,12 @@ int Game(void *bkg, int mission)
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
-
 		MissionBriefing(bkg);
 		PlayerEquip(bkg);
 
 		InitPlayers(gOptions.twoPlayers, maxHealth, mission);
 
-		CreateCharacters();
+		CreateEnemies();
 
 		PlayGameSong();
 
@@ -752,22 +751,7 @@ void DogFight(void *bkg)
 		{
 			srand((unsigned int)time(NULL));
 			InitPlayers(YES, 500, 0);
-	/*
-		gPlayer1 = AddActor( CHARACTER_PLAYER1);
-		gPlayer1->gun = gPlayer1Data.weapons[0];
-		gPlayer1->flags = FLAGS_PLAYER1; // | FLAGS_HURTALWAYS;
-		PlaceActor( gPlayer1);
-		gPlayer1->health = 500;
-
-		gPlayer2 = AddActor( CHARACTER_PLAYER2);
-		gPlayer2->gun = gPlayer2Data.weapons[0];
-		gPlayer2->flags = FLAGS_PLAYER2; // | FLAGS_HURTALWAYS;
-		PlaceActor( gPlayer2);
-		gPlayer2->health = 500;
-	*/
-
 			PlayGameSong();
-
 			run = gameloop();
 		}
 		else
@@ -840,17 +824,24 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
-		if (!gCampaign.dogFight)
+		if (IsIntroNeeded(gCampaign.mode))
+		{
 			CampaignIntro(bkg);
+		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection(gOptions.twoPlayers
-				|| gCampaign.dogFight, bkg)) continue;
+		if (!PlayerSelection(gOptions.twoPlayers, bkg))
+		{
+			continue;
+		}
 
 		debug(D_NORMAL, ">> Starting campaign\n");
-		if (gCampaign.dogFight)
+		if (gCampaign.mode == CAMPAIGN_MODE_DOGFIGHT)
+		{
 			DogFight(bkg);
-		else if (Campaign(bkg)) {
+		}
+		else if (Campaign(bkg))
+		{
 			DisplayAllTimeHighScores(bkg);
 			DisplayTodaysHighScores(bkg);
 		}

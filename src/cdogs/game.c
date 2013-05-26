@@ -350,11 +350,16 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
 
 	CDogsTextStringSpecial(data->name, flags, 5, 5);
-	if (!gCampaign.dogFight)
+	if (IsScoreNeeded(gCampaign.mode))
+	{
 		sprintf(s, "Score: %d", data->score);
+	}
 	else
+	{
 		s[0] = 0;
-	if (p) {
+	}
+	if (p)
+	{
 		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
 		CDogsTextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + CDogsTextHeight());
 		sprintf(s, "%d hp", p->health);
@@ -369,7 +374,7 @@ static void DrawKeycard(int x, int y, const TOffsetPic * pic)
 		 gCompiledPics[pic->picIndex]);
 }
 
-static void MarkExit(void)
+static void DrawExitArea(void)
 {
 	int left, right, top, bottom;
 	int x, y;
@@ -392,18 +397,14 @@ static void MarkExit(void)
 			    gMission.exitShadow);
 }
 
-static void MissionStatus(void)
+static void MissionUpdateObjectives(void)
 {
-	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 	int i, left;
 	char s[4];
 	int allDone = 1;
 	static int completed = 0;
 	int x, y;
-
-	if (gCampaign.dogFight)
-		return;
 
 	x = 5;
 	y = SCREEN_HEIGHT - 5 - CDogsTextHeight();
@@ -437,10 +438,13 @@ static void MissionStatus(void)
 		}
 	}
 
-	if (allDone && !completed) {
+	if (allDone && !completed)
+	{
 		completed = 1;
-		MarkExit();
-	} else if (!allDone) {
+		DrawExitArea();
+	}
+	else if (!allDone)
+	{
 		completed = 0;
 	}
 }
@@ -456,14 +460,19 @@ void StatusDisplay(void)
 	if (gOptions.twoPlayers)
 		PlayerStatus(PLACE_RIGHT, &gPlayer2Data, gPlayer2);
 
-	if (!gPlayer1 && !gPlayer2) {
-		if (!gCampaign.dogFight)
+	if (!gPlayer1 && !gPlayer2)
+	{
+		if (gCampaign.mode != CAMPAIGN_MODE_DOGFIGHT)
+		{
 			CDogsTextStringAtCenter("Game Over!");
+		}
 		else
+		{
 			CDogsTextStringAtCenter("Double Kill!");
+		}
 	}
-
-	else if (MissionCompleted()) {
+	else if (MissionCompleted())
+	{
 		sprintf(s, "Pickup in %d seconds\n",
 			(gMission.pickupTime + 69) / 70);
 		CDogsTextStringAtCenter(s);
@@ -511,7 +520,10 @@ void StatusDisplay(void)
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 
-	MissionStatus();
+	if (HasObjectives(gCampaign.mode))
+	{
+		MissionUpdateObjectives();
+	}
 }
 
 void DisplayMessage(const char *s)
@@ -523,7 +535,7 @@ void DisplayMessage(const char *s)
 int HandleKey(int *done, int cmd)
 {
 	while ((KeyIsDown(&gKeyboard, gOptions.mapKey) || (cmd & CMD_BUTTON3) != 0) &&
-		!gCampaign.dogFight)
+		IsAutoMapEnabled(gCampaign.mode))
 	{
 		DisplayAutoMap(0);
 		while (KeyIsDown(&gKeyboard, gOptions.mapKey) ||

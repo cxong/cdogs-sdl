@@ -740,8 +740,10 @@ int MissionCompleted(void)
 {
 	int i;
 
-	if (gCampaign.dogFight)
+	if (gCampaign.mode == CAMPAIGN_MODE_DOGFIGHT)
+	{
 		return !(gPlayer1 && gPlayer2);
+	}
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 		if (gMission.objectives[i].done <

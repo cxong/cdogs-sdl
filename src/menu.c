@@ -615,10 +615,10 @@ static CampaignSetting customSetting = {
 };
 
 void MenuLoadCampaign(
-	campaign_entry_t *entry, int isDogfight, int isTwoplayer)
+	campaign_entry_t *entry, campaign_mode_e mode, int is_two_player)
 {
-	gOptions.twoPlayers = isTwoplayer;
-	gCampaign.dogFight = isDogfight;
+	gOptions.twoPlayers = is_two_player;
+	gCampaign.mode = mode;
 	if (entry->isBuiltin)
 	{
 		if (entry->isDogfight)
@@ -669,8 +669,8 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		case MENU_TYPE_CAMPAIGN_ITEM:
 			MenuLoadCampaign(
 				&subMenu->u.campaign.campaignEntry,
-				subMenu->u.campaign.isDogfight,
-				subMenu->u.campaign.IsTwoplayer);
+				subMenu->u.campaign.mode,
+				subMenu->u.campaign.is_two_player);
 			return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 		case MENU_TYPE_BACK:
 			return menu->parentMenu;

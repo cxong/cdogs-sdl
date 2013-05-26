@@ -30,8 +30,8 @@
 #include "sys_specifics.h"
 #include "utils.h"
 
-static int baddieCount = 0;
-static int goodGuysPresent = 0;
+static int gBaddieCount = 0;
+static int gAreGoodGuysPresent = 0;
 
 
 static int Facing(TActor * a, TActor * a2)
@@ -296,8 +296,10 @@ static int WillFire(TActor * actor, int roll)
 	    roll < characterDesc[actor->character].probabilityToShoot) {
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
-		else if (goodGuysPresent)
+		else if (gAreGoodGuysPresent)
+		{
 			return 1;
+		}
 		else
 			return FacingPlayer(actor);
 	}
@@ -342,8 +344,10 @@ static void PlaceBaddie(TActor * actor)
 	if ((actor->flags & FLAGS_AWAKEALWAYS) != 0)
 		actor->flags &= ~FLAGS_SLEEPING;
 	else if ((actor->flags & FLAGS_SLEEPALWAYS) == 0 &&
-		 rand() % 100 < baddieCount)
+		 rand() % 100 < gBaddieCount)
+	{
 		actor->flags &= ~FLAGS_SLEEPING;
+	}
 }
 
 static void PlacePrisoner(TActor * actor)
@@ -398,11 +402,14 @@ void CommandBadGuys(void)
 	}
 
 	actor = ActorList();
-	while (actor) {
-		if ((actor->flags & (FLAGS_PLAYERS | FLAGS_PRISONER)) == 0) {
-			if ((actor->
-			     flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
-				goodGuysPresent = 1;
+	while (actor != NULL)
+	{
+		if ((actor->flags & (FLAGS_PLAYERS | FLAGS_PRISONER)) == 0)
+		{
+			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
+			{
+				gAreGoodGuysPresent = 1;
+			}
 
 			count++;
 			cmd = 0;
@@ -501,7 +508,7 @@ void CommandBadGuys(void)
 		    rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
 		PlaceBaddie(AddActor(character));
-		baddieCount++;
+		gBaddieCount++;
 	}
 }
 
@@ -519,12 +526,10 @@ void InitializeBadGuys(void)
 				     j < gMission.objectives[i].count;
 				     j++) {
 					character =
-					    CHARACTER_OTHERS +
-					    gMission.missionData->
-					    baddieCount +
-					    rand() %
-					    gMission.missionData->
-					    specialCount;
+						CHARACTER_OTHERS +
+						gMission.missionData->baddieCount +
+						rand() %
+						gMission.missionData->specialCount;
 					actor = AddActor(character);
 					actor->tileItem.flags |=
 					    ObjectiveToTileItem(i);
@@ -553,11 +558,11 @@ void InitializeBadGuys(void)
 			}
 		}
 
-	baddieCount = gMission.index * 4;
-	goodGuysPresent = 0;
+	gBaddieCount = gMission.index * 4;
+	gAreGoodGuysPresent = 0;
 }
 
-void CreateCharacters(void)
+void CreateEnemies(void)
 {
 	int i, character;
 
@@ -573,6 +578,6 @@ void CreateCharacters(void)
 		    rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
 		PlaceBaddie(AddActor(character));
-		baddieCount++;
+		gBaddieCount++;
 	}
 }
