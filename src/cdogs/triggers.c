@@ -45,17 +45,17 @@ static int watchIndex = 1;
 
 static TAction *AddActions(int count)
 {
-	TAction *a = sys_mem_alloc(sizeof(TAction) * (count + 1));
-	memset(a, 0, sizeof(TAction) * (count + 1));
+	TAction *a;
+	CCALLOC(a, sizeof(TAction) * (count + 1));
 	return a;
 }
 
 TTrigger *AddTrigger(int x, int y, int actionCount)
 {
-	TTrigger *t = sys_mem_alloc(sizeof(TTrigger));
+	TTrigger *t;
 	TTrigger **h;
 
-	memset(t, 0, sizeof(TTrigger));
+	CCALLOC(t, sizeof(TTrigger));
 	t->x = x;
 	t->y = y;
 
@@ -78,8 +78,8 @@ void FreeTrigger(TTrigger * t)
 
 	FreeTrigger(t->left);
 	FreeTrigger(t->right);
-	free(t->actions);
-	free(t);
+	CFREE(t->actions);
+	CFREE(t);
 }
 
 static int RemoveAllTriggers(void)
@@ -92,16 +92,15 @@ static int RemoveAllTriggers(void)
 
 static TCondition *AddConditions(int count)
 {
-	TCondition *a = sys_mem_alloc(sizeof(TCondition) * (count + 1));
-	memset(a, 0, sizeof(TCondition) * (count + 1));
+	TCondition *a;
+	CCALLOC(a, sizeof(TCondition) * (count + 1));
 	return a;
 }
 
 TWatch *AddWatch(int conditionCount, int actionCount)
 {
-	TWatch *t = sys_mem_alloc(sizeof(TWatch));
-
-	memset(t, 0, sizeof(TWatch));
+	TWatch *t;
+	CCALLOC(t, sizeof(TWatch));
 	t->index = watchIndex++;
 	t->next = inactiveWatches;
 	inactiveWatches = t;
@@ -156,16 +155,16 @@ static void RemoveAllWatches(void)
 	while (activeWatches) {
 		t = activeWatches;
 		activeWatches = t->next;
-		free(t->conditions);
-		free(t->actions);
-		free(t);
+		CFREE(t->conditions);
+		CFREE(t->actions);
+		CFREE(t);
 	}
 	while (inactiveWatches) {
 		t = inactiveWatches;
 		inactiveWatches = t->next;
-		free(t->conditions);
-		free(t->actions);
-		free(t);
+		CFREE(t->conditions);
+		CFREE(t->actions);
+		CFREE(t);
 	}
 }
 

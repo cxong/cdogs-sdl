@@ -105,7 +105,8 @@ int MenuTypeLeftRightMoves(menu_type_e type)
 
 menu_t *MenuCreate(const char *name, menu_type_e type)
 {
-	menu_t *menu = sys_mem_alloc(sizeof(menu_t));
+	menu_t *menu;
+	CMALLOC(menu, sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = type;
 	menu->parentMenu = NULL;
@@ -136,15 +137,14 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	int i;
 
 	menu->u.normal.numSubMenus++;
-	menu->u.normal.subMenus = sys_mem_realloc(
-		menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
+	CREALLOC(menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
 	subMenuLoc = &menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1];
 	memcpy(subMenuLoc, subMenu, sizeof(menu_t));
 	if (subMenu->type == MENU_TYPE_QUIT)
 	{
 		menu->u.normal.quitMenuIndex = menu->u.normal.numSubMenus - 1;
 	}
-	sys_mem_free(subMenu);
+	CFREE(subMenu);
 
 	// update all parent pointers, in grandchild menus as well
 	for (i = 0; i < menu->u.normal.numSubMenus; i++)
@@ -502,7 +502,7 @@ void MenuDestroy(menu_t *menu)
 		return;
 	}
 	MenuDestroySubmenus(menu);
-	sys_mem_free(menu);
+	CFREE(menu);
 }
 
 void MenuDestroySubmenus(menu_t *menu)
@@ -519,7 +519,7 @@ void MenuDestroySubmenus(menu_t *menu)
 			menu_t *subMenu = &menu->u.normal.subMenus[i];
 			MenuDestroySubmenus(subMenu);
 		}
-		sys_mem_free(menu->u.normal.subMenus);
+		CFREE(menu->u.normal.subMenus);
 	}
 }
 
@@ -634,11 +634,11 @@ void MenuLoadCampaign(
 	{
 		if (customSetting.missions)
 		{
-			sys_mem_free(customSetting.missions);
+			CFREE(customSetting.missions);
 		}
 		if (customSetting.characters)
 		{
-			sys_mem_free(customSetting.characters);
+			CFREE(customSetting.characters);
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 

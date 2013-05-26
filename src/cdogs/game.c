@@ -685,7 +685,7 @@ int gameloop(void)
 
 		Ticks_FrameEnd();
 	}
-	free(buffer);
+	CFREE(buffer);
 
 	return !is_esc_pressed;
 }

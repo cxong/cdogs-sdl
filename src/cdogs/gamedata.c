@@ -139,8 +139,7 @@ void LoadSongList(struct SongDef **songList, const char *dirPath);
 void AddSong(struct SongDef **songList, const char *path)
 {
 	struct SongDef *s;
-
-	s = sys_mem_alloc(sizeof(struct SongDef));
+	CMALLOC(s, sizeof(struct SongDef));
 	strcpy(s->path, path);
 	s->next = *songList;
 	*songList = s;
@@ -169,7 +168,7 @@ void FreeSongs(struct SongDef **songList)
 	while (*songList) {
 		s = *songList;
 		*songList = s->next;
-		free(s);
+		CFREE(s);
 	}
 }
 

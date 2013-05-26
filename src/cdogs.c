@@ -748,29 +748,30 @@ void DogFight(void *bkg)
 		SetupMission(0, 1, &gCampaign);
 		SetupMap();
 
-		if (PlayerEquip(bkg)) {
+		if (PlayerEquip(bkg))
+		{
+			srand((unsigned int)time(NULL));
+			InitPlayers(YES, 500, 0);
+	/*
+		gPlayer1 = AddActor( CHARACTER_PLAYER1);
+		gPlayer1->gun = gPlayer1Data.weapons[0];
+		gPlayer1->flags = FLAGS_PLAYER1; // | FLAGS_HURTALWAYS;
+		PlaceActor( gPlayer1);
+		gPlayer1->health = 500;
 
-		srand((unsigned int)time(NULL));
-		InitPlayers(YES, 500, 0);
-/*
-    gPlayer1 = AddActor( CHARACTER_PLAYER1);
-    gPlayer1->gun = gPlayer1Data.weapons[0];
-    gPlayer1->flags = FLAGS_PLAYER1; // | FLAGS_HURTALWAYS;
-    PlaceActor( gPlayer1);
-    gPlayer1->health = 500;
+		gPlayer2 = AddActor( CHARACTER_PLAYER2);
+		gPlayer2->gun = gPlayer2Data.weapons[0];
+		gPlayer2->flags = FLAGS_PLAYER2; // | FLAGS_HURTALWAYS;
+		PlaceActor( gPlayer2);
+		gPlayer2->health = 500;
+	*/
 
-    gPlayer2 = AddActor( CHARACTER_PLAYER2);
-    gPlayer2->gun = gPlayer2Data.weapons[0];
-    gPlayer2->flags = FLAGS_PLAYER2; // | FLAGS_HURTALWAYS;
-    PlaceActor( gPlayer2);
-    gPlayer2->health = 500;
-*/
+			PlayGameSong();
 
-		PlayGameSong();
-
-		run = gameloop();
-
-		} else {
+			run = gameloop();
+		}
+		else
+		{
 			run = 0;
 		}
 
@@ -796,22 +797,23 @@ void DogFight(void *bkg)
 
 void *MakeBkg(void)
 {
-	unsigned char *bkg = sys_mem_alloc(Screen_GetMemSize());
-	struct Buffer *buffer;
+	unsigned char *bkg;
+	struct Buffer *buffer = NewBuffer();
 	unsigned char *p;
 	int i;
 	TranslationTable randomTintTable;
+
+	CMALLOC(bkg, Screen_GetMemSize());
 
 	SetupBuiltinDogfight(rand() % 2);
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
 	SetDstScreen(bkg);
-	buffer = NewBuffer();
 	SetBuffer(512, 384, buffer, X_TILES);
 	FixBuffer(buffer, 255);
 	DrawBuffer(buffer, 0);
-	free(buffer);
+	CFREE(buffer);
 	KillAllObjects();
 	FreeTriggersAndWatches();
 
@@ -829,12 +831,11 @@ void *MakeBkg(void)
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	unsigned char *myScreen;
+	unsigned char *my_screen;
 
 	void *bkg = MakeBkg();
-	myScreen = sys_mem_alloc(Screen_GetMemSize());
-	memset(myScreen, 0, Screen_GetMemSize());
-	SetDstScreen(myScreen);
+	CCALLOC(my_screen, Screen_GetMemSize());
+	SetDstScreen(my_screen);
 
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
@@ -855,8 +856,8 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
-//	free(myScreen);
-//	free(bkg);
+	CFREE(my_screen);
+	CFREE(bkg);
 }
 
 void PrintTitle(void)

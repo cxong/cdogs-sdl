@@ -318,8 +318,10 @@ int ReadPics(
 			elementsRead = fread(&size, sizeof(size), 1, f);
 			CHECK_FREAD(1)
 			swap16(&size);
-			if (size) {
-				Pic *p = sys_mem_alloc(size);
+			if (size > 0)
+			{
+				Pic *p;
+				CMALLOC(p, size);
 
 				f_read16(f, &p->w, 2);
 				f_read16(f, &p->h, 2);
@@ -369,8 +371,10 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 			elementsRead = fread(&size, sizeof(size), 1, f);
 			CHECK_FREAD(1)
 			swap16(&size);
-			if (size) {
-				Pic *p = sys_mem_alloc(size);
+			if (size > 0)
+			{
+				Pic *p;
+				CMALLOC(p, size);
 
 				f_read16(f, &p->w, 2);
 				f_read16(f, &p->h, 2);

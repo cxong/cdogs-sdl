@@ -75,19 +75,19 @@ void UnloadAllCampaigns(custom_campaigns_t *campaigns)
 	{
 		if (campaigns->campaignList.subFolders)
 		{
-			sys_mem_free(campaigns->campaignList.subFolders);
+			CFREE(campaigns->campaignList.subFolders);
 		}
 		if (campaigns->campaignList.list)
 		{
-			sys_mem_free(campaigns->campaignList.list);
+			CFREE(campaigns->campaignList.list);
 		}
 		if (campaigns->dogfightList.subFolders)
 		{
-			sys_mem_free(campaigns->dogfightList.subFolders);
+			CFREE(campaigns->dogfightList.subFolders);
 		}
 		if (campaigns->dogfightList.list)
 		{
-			sys_mem_free(campaigns->dogfightList.list);
+			CFREE(campaigns->dogfightList.list);
 		}
 	}
 }
@@ -152,8 +152,7 @@ void LoadCampaignsFromFolder(
 		{
 			campaign_list_t *subFolder;
 			list->numSubFolders++;
-			list->subFolders = sys_mem_realloc(
-				list->subFolders, sizeof(campaign_list_t)*list->numSubFolders);
+			CREALLOC(list->subFolders, sizeof(campaign_list_t)*list->numSubFolders);
 			subFolder = &list->subFolders[list->numSubFolders-1];
 			CampaignListInit(subFolder);
 			LoadCampaignsFromFolder(subFolder, file.name, file.path, isDogfight);
@@ -212,7 +211,7 @@ campaign_entry_t *AddAndGetCampaignEntry(
 {
 	campaign_entry_t *entry;
 	list->num++;
-	list->list = sys_mem_realloc(list->list, sizeof(campaign_entry_t)*list->num);
+	CREALLOC(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
 	strcpy(entry->info, title);
 	entry->isDogfight = isDogfight;

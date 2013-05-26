@@ -308,8 +308,7 @@ int LoadCampaign(
 	if (max_missions <= 0)
 	{
 		size_t size = setting->missionCount * sizeof(struct Mission);
-		setting->missions = sys_mem_alloc(size);
-		memset(setting->missions, 0, size);
+		CCALLOC(setting->missions, sizeof(size));
 		numMissions = setting->missionCount;
 	}
 	else if (setting->missionCount < max_missions)
@@ -328,8 +327,7 @@ int LoadCampaign(
 	if (max_characters <= 0)
 	{
 		size_t size = setting->characterCount * sizeof(TBadGuy);
-		setting->characters = sys_mem_alloc(size);
-		memset(setting->characters, 0, size);
+		CCALLOC(setting->characters, size);
 		numCharacters = setting->characterCount;
 	}
 	else if (setting->characterCount < max_characters)

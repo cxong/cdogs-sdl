@@ -18,50 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- utils.c - miscellaneous utilities
-
 */
-
-#include <stdlib.h>
-
 #include "utils.h"
 
 int debug = 0;
 int debug_level = D_NORMAL;
-
-void *	sys_mem_alloc(unsigned int size)
-{
-	void * new = calloc(1, size);
-	
-	if (new == NULL) {
-		printf("### Memory allocation of %d bytes failed! ###\n", size);
-		exit(1);
-	}
-	
-	debug(D_MAX, "%d bytes allocated, at 0x%p\n", size, new);
-	
-	return new;
-}
-
-void *	sys_mem_realloc(void *ptr, unsigned int size)
-{
-	void * new = realloc(ptr, size);
-	
-	if (new == NULL) {
-		printf("### Memory reallocation failed! ###\n");
-		return ptr;
-	}
-	
-	debug(D_MAX, "memory reallocated 0x%p -> 0x%p (now %d bytes)\n", ptr, new, size);
-	return new;
-}
-
-void	sys_mem_free(void *ptr)
-{
-	if (!ptr) return;
-	debug(D_MAX, "freeing memory at: 0x%p\n", ptr);
-	free(ptr);
-}

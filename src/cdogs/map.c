@@ -64,14 +64,14 @@ struct Buffer * NewBuffer(void)
 {
 	struct Buffer *b;
 	int rows, cols, i;
-	
-	b = sys_mem_alloc(sizeof(struct Buffer));
-	
+
+	CMALLOC(b, sizeof(struct Buffer));
+
 	rows = X_TILES;
 	cols = Y_TILES;
-	
-	b->tiles = sys_mem_alloc(rows * sizeof(TTile *));
-	b->tiles[0] = sys_mem_alloc(rows * cols * sizeof(TTile));
+
+	CMALLOC(b->tiles, rows * sizeof(TTile *));
+	CMALLOC(b->tiles[0], rows * cols * sizeof(TTile));
 	for(i = 1; i < rows; i++)
 		b->tiles[i] = b->tiles[0] + i * cols;
 	

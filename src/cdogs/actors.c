@@ -328,9 +328,9 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 TActor *AddActor(int character)
 {
-	TActor *actor = sys_mem_alloc(sizeof(TActor));
+	TActor *actor;
+	CCALLOC(actor, sizeof(TActor));
 
-	memset(actor, 0, sizeof(TActor));
 	actor->gun = characterDesc[character].defaultGun;
 	actor->health = characterDesc[character].maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
@@ -361,7 +361,7 @@ TActor *RemoveActor(TActor * actor)
 			gPlayer1 = NULL;
 		else if (actor == gPlayer2)
 			gPlayer2 = NULL;
-		free(actor);
+		CFREE(actor);
 		return *h;
 	}
 	return NULL;

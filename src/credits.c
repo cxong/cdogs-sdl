@@ -62,6 +62,7 @@ void LoadCredits(
 
 	displayer->credits = NULL;
 	displayer->creditsCount = 0;
+	displayer->lastUpdateTime = time(NULL);
 	displayer->creditsIndex = 0;
 	displayer->nameTranslationTable = nameTranslationTable;
 	displayer->textTranslationTable = textTranslationTable;
@@ -85,17 +86,9 @@ void LoadCredits(
 		{
 			int index = displayer->creditsCount;
 			displayer->creditsCount++;
-			displayer->credits = sys_mem_realloc(
-				displayer->credits, sizeof(credit_t)*displayer->creditsCount);
-			displayer->credits[index].name = sys_mem_alloc(strlen(nameBuf) + 1);
-			displayer->credits[index].message = sys_mem_alloc(strlen(buf));
-			if (displayer->credits == NULL ||
-				displayer->credits[index].name == NULL ||
-				displayer->credits[index].message == NULL)
-			{
-				printf("Error: out of memory\n");
-				goto bail;
-			}
+			CREALLOC(displayer->credits, sizeof(credit_t)*displayer->creditsCount);
+			CMALLOC(displayer->credits[index].name, strlen(nameBuf) + 1);
+			CMALLOC(displayer->credits[index].message, strlen(buf));
 			strcpy(displayer->credits[index].name, nameBuf);
 			strcpy(displayer->credits[index].message, buf + 1);
 			nameOrMessageCounter = 0;
@@ -106,7 +99,6 @@ void LoadCredits(
 
 	debug(D_NORMAL, "%d credits read\n", displayer->creditsCount);
 
-bail:
 	fclose(file);
 }
 
@@ -116,10 +108,10 @@ void UnloadCredits(credits_displayer_t *displayer)
 	assert(displayer != NULL);
 	for (i = 0; i < displayer->creditsCount; i++)
 	{
-		sys_mem_free(displayer->credits[i].name);
-		sys_mem_free(displayer->credits[i].message);
+		CFREE(displayer->credits[i].name);
+		CFREE(displayer->credits[i].message);
 	}
-	sys_mem_free(displayer->credits);
+	CFREE(displayer->credits);
 	displayer->credits = NULL;
 	displayer->creditsCount = 0;
 	displayer->creditsIndex = 0;

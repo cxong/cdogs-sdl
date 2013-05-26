@@ -874,18 +874,21 @@ void UpdateMobileObjects(void)
 				obj = *h;
 				*h = obj->next;
 				RemoveTileItem(&obj->tileItem);
-				free(obj);
-			} else
+				CFREE(obj);
+			}
+			else
+			{
 				h = &((*h)->next);
+			}
 		}
 	}
 }
 
 TMobileObject *AddMobileObject(void)
 {
-	TMobileObject *obj = sys_mem_alloc(sizeof(TMobileObject));
+	TMobileObject *obj;
+	CCALLOC(obj, sizeof(TMobileObject));
 
-	memset(obj, 0, sizeof(TMobileObject));
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.data = obj;
 	obj->next = mobObjList;
@@ -1181,7 +1184,7 @@ void KillAllMobileObjects(void)
 		o = mobObjList;
 		mobObjList = mobObjList->next;
 		RemoveTileItem(&o->tileItem);
-		free(o);
+		CFREE(o);
 	}
 }
 
@@ -1190,8 +1193,8 @@ void InternalAddObject(int x, int y, int w, int h,
 		       int structure, int index, int objFlags,
 		       int tileFlags)
 {
-	TObject *o = sys_mem_alloc(sizeof(TObject));
-	memset(o, 0, sizeof(TObject));
+	TObject *o;
+	CCALLOC(o, sizeof(TObject));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
 	o->objectIndex = index;
@@ -1232,7 +1235,7 @@ void RemoveObject(TObject * obj)
 	if (*h) {
 		*h = obj->next;
 		RemoveTileItem(&obj->tileItem);
-		free(obj);
+		CFREE(obj);
 	}
 }
 
@@ -1244,6 +1247,6 @@ void KillAllObjects(void)
 		o = objList;
 		objList = objList->next;
 		RemoveTileItem(&o->tileItem);
-		free(o);
+		CFREE(o);
 	}
 }

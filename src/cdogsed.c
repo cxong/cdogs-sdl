@@ -1505,12 +1505,11 @@ static void EditCampaign(void)
 struct Mission missions[MAX_MISSIONS];
 TBadGuy characters[MAX_CHARACTERS];
 
-void *myScreen;
-
 int main(int argc, char *argv[])
 {
 	int i;
 	int loaded = 0;
+	unsigned char *my_screen;
 
 	memset(&campaign, 0, sizeof(campaign));
 	strcpy(campaign.title, "Campaign title");
@@ -1571,15 +1570,14 @@ int main(int argc, char *argv[])
 
 	CDogsSetPalette(gPalette);
 
-	myScreen = sys_mem_alloc(Screen_GetMemSize());
-	memset(myScreen, 0, Screen_GetMemSize());
-	SetDstScreen(myScreen);
+	CCALLOC(my_screen, Screen_GetMemSize());
+	SetDstScreen(my_screen);
 
 	KeyInit(&gKeyboard);
 	InitMouse();
 	EditCampaign();
 
-	free(myScreen);
+	CFREE(my_screen);
 
 	//CDogsTextMode();
 	exit(EXIT_SUCCESS);
