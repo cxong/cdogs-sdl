@@ -665,7 +665,7 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 		gQuickPlayMission.items[i] = i;
 		gQuickPlayMission.itemDensity[i] = rand() % 32;
 	}
-	gQuickPlayMission.baddieDensity = 25 + (rand() % 25);
+	gQuickPlayMission.baddieDensity = 10 + (rand() % 10);
 	gQuickPlayMission.weaponSelection = 0;
 	strcpy(gQuickPlayMission.song, "");
 	strcpy(gQuickPlayMission.map, "");
