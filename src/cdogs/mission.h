@@ -66,6 +66,7 @@ struct EditorInfo {
 
 int SetupBuiltinCampaign(int index);
 int SetupBuiltinDogfight(int index);
+CampaignSetting *SetupAndGetQuickPlay(void);
 void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 int CheckMissionObjective(int flags);

@@ -104,6 +104,7 @@ extern int debug_level;
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define CLAMP(v, _min, _max) MAX(_min, MIN(_max, v))
+#define CLAMP_OPPOSITE(v, _min, _max) (v > _max ? _min : (v < _min ? _max : v))
 #define AXIS_DISTANCE(x1, y1, x2, y2)  MAX(abs((x1) - (x2)), abs((y1) - (y2)))
 
 #endif

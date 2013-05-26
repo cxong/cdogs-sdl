@@ -50,6 +50,7 @@
 #define __GAMEDATA
 
 #include "input.h"
+#include "pics.h"
 #include "sys_config.h"
 
 #define MAX_WEAPONS 3
@@ -211,9 +212,9 @@ struct MissionObjective {
 struct Mission {
 	char title[60];
 	char description[400];
-	int wallStyle;
-	int floorStyle;
-	int roomStyle;
+	wall_style_e wallStyle;
+	floor_style_e floorStyle;
+	floor_style_e roomStyle;
 	int exitStyle;
 	int keyStyle;
 	int doorStyle;

@@ -18,16 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- charsed.c - character editor (in game)
-
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
-
 */
 #include "charsed.h"
 
@@ -45,6 +35,7 @@
 #include <cdogs/mission.h>
 #include <cdogs/pics.h>
 #include <cdogs/text.h>
+#include <cdogs/utils.h>
 
 
 #define YC_APPEARANCE 0
@@ -316,21 +307,6 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 	CopyToScreen();
 }
 
-void AdjustInt(int *i, int min, int max, int wrap)
-{
-	if (*i < min) {
-		if (wrap)
-			*i = max;
-		else
-			*i = min;
-	} else if (*i > max) {
-		if (wrap)
-			*i = min;
-		else
-			*i = max;
-	}
-}
-
 static void Change(
 	CampaignSetting *setting,
 	int index,
@@ -347,33 +323,27 @@ static void Change(
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
-			b->facePic += d;
-			AdjustInt(&b->facePic, 0, FACE_COUNT - 1, 1);
+			b->facePic = CLAMP_OPPOSITE(b->facePic + d, 0, FACE_COUNT - 1);
 			break;
 
 		case XC_SKIN:
-			b->skinColor += d;
-			AdjustInt(&b->skinColor, 0, SHADE_COUNT - 1, 1);
+			b->skinColor = CLAMP_OPPOSITE(b->skinColor + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_HAIR:
-			b->hairColor += d;
-			AdjustInt(&b->hairColor, 0, SHADE_COUNT - 1, 1);
+			b->hairColor = CLAMP_OPPOSITE(b->hairColor + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_BODY:
-			b->bodyColor += d;
-			AdjustInt(&b->bodyColor, 0, SHADE_COUNT - 1, 1);
+			b->bodyColor = CLAMP_OPPOSITE(b->bodyColor + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_ARMS:
-			b->armColor += d;
-			AdjustInt(&b->armColor, 0, SHADE_COUNT - 1, 1);
+			b->armColor = CLAMP_OPPOSITE(b->armColor + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_LEGS:
-			b->legColor += d;
-			AdjustInt(&b->legColor, 0, SHADE_COUNT - 1, 1);
+			b->legColor = CLAMP_OPPOSITE(b->legColor + d, 0, SHADE_COUNT - 1);
 			break;
 		}
 		break;
@@ -381,33 +351,27 @@ static void Change(
 	case YC_ATTRIBUTES:
 		switch (xc) {
 		case XC_SPEED:
-			b->speed += d * 64;
-			AdjustInt(&b->speed, 128, 512, 0);
+			b->speed = CLAMP(b->speed + d * 64, 128, 512);
 			break;
 
 		case XC_HEALTH:
-			b->health += d * 10;
-			AdjustInt(&b->health, 10, 500, 0);
+			b->health = CLAMP(b->health + d * 10, 10, 500);
 			break;
 
 		case XC_MOVE:
-			b->probabilityToMove += d * 5;
-			AdjustInt(&b->probabilityToMove, 0, 100, 0);
+			b->probabilityToMove = CLAMP(b->probabilityToMove + d * 5, 0, 100);
 			break;
 
 		case XC_TRACK:
-			b->probabilityToTrack += d * 5;
-			AdjustInt(&b->probabilityToTrack, 0, 100, 0);
+			b->probabilityToTrack = CLAMP(b->probabilityToTrack + d * 5, 0, 100);
 			break;
 
 		case XC_SHOOT:
-			b->probabilityToShoot += d * 5;
-			AdjustInt(&b->probabilityToShoot, 0, 100, 0);
+			b->probabilityToShoot = CLAMP(b->probabilityToShoot + d * 5, 0, 100);
 			break;
 
 		case XC_DELAY:
-			b->actionDelay += d;
-			AdjustInt(&b->actionDelay, 0, 50, 0);
+			b->actionDelay = CLAMP(b->actionDelay + d, 0, 50);
 			break;
 		}
 		break;
@@ -473,8 +437,7 @@ static void Change(
 		break;
 
 	case YC_WEAPON:
-		b->gun += d;
-		AdjustInt(&b->gun, 0, GUN_COUNT - 1, 1);
+		b->gun = CLAMP_OPPOSITE(b->gun + d, 0, GUN_COUNT - 1);
 		break;
 	}
 }
@@ -508,36 +471,39 @@ static void DeleteCharacter(CampaignSetting *setting, int *index)
 {
 	int i;
 
-	setting->characterCount--;
+	setting->characterCount = CLAMP(setting->characterCount - 1, 0, 1000);
 	for (i = *index; i < setting->characterCount; i++)
+	{
 		setting->characters[i] = setting->characters[i + 1];
-	AdjustInt(&setting->characterCount, 0, 1000, 0);
+	}
 	if (*index > 0 && *index >= setting->characterCount - 1)
+	{
 		(*index)--;
+	}
 }
 
 static void AdjustYC(int *yc)
 {
-	AdjustInt(yc, 0, YC_WEAPON, 1);
+	*yc = CLAMP_OPPOSITE(*yc, 0, YC_WEAPON);
 }
 
 static void AdjustXC(int yc, int *xc)
 {
 	switch (yc) {
 	case YC_APPEARANCE:
-		AdjustInt(xc, 0, XC_LEGS, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_LEGS);
 		break;
 
 	case YC_ATTRIBUTES:
-		AdjustInt(xc, 0, XC_DELAY, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_DELAY);
 		break;
 
 	case YC_FLAGS:
-		AdjustInt(xc, 0, XC_SLEEPING, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_SLEEPING);
 		break;
 
 	case YC_FLAGS2:
-		AdjustInt(xc, 0, XC_AWAKE, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_AWAKE);
 		break;
 	}
 }

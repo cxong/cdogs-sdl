@@ -208,12 +208,17 @@
 #define WALL_CROSS         15
 #define WALL_TYPES         16
 
-#define WALL_STEEL            0
-#define WALL_BRICKS           1
-#define WALL_RED              2
-#define WALL_STEEL_N_WOOD     3
-#define WALL_STONE            4
-#define WALL_COUNT            7
+typedef enum
+{
+	WALL_STYLE_STEEL,
+	WALL_STYLE_BRICKS,
+	WALL_STYLE_RED,
+	WALL_STYLE_STEEL_N_WOOD,
+	WALL_STYLE_STONE,
+	WALL_STYLE_PLASTEEL,
+	WALL_STYLE_GRANITE,
+	WALL_STYLE_COUNT
+} wall_style_e;
 
 #define FLOOR_SHADOW       0
 #define FLOOR_NORMAL       1
@@ -225,17 +230,20 @@
 #define ROOMFLOOR_NORMAL   1
 #define ROOMFLOOR_TYPES    2
 
-#define FLOOR_GREEN        0
-#define FLOOR_PURPLE       1
-#define FLOOR_DIRT         2
-#define FLOOR_BLUE         3
-#define FLOOR_STRIPES      4
-#define FLOOR_SMALLSQUARES 5
-#define FLOOR_STONE        6
-#define FLOOR_WOOD         7
-#define FLOOR_WHITE        8
-#define FLOOR_GRID         9
-#define FLOOR_COUNT       10
+typedef enum
+{
+	FLOOR_STYLE_GREEN,
+	FLOOR_STYLE_PURPLE,
+	FLOOR_STYLE_DIRT,
+	FLOOR_STYLE_BLUE,
+	FLOOR_STYLE_STRIPES,
+	FLOOR_STYLE_SMALLSQUARES,
+	FLOOR_STYLE_STONE,
+	FLOOR_STYLE_WOOD,
+	FLOOR_STYLE_WHITE,
+	FLOOR_STYLE_GRID,
+	FLOOR_STYLE_COUNT
+} floor_style_e;
 
 #define ROOMFLOOR_COUNT   11
 
@@ -274,8 +282,8 @@ extern const TOffsetPic cGeneralPics[OFSPIC_COUNT];
 extern const TOffsetPic
     cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
-extern const int cWallPics[WALL_COUNT][WALL_TYPES];
-extern const int cFloorPics[FLOOR_COUNT][FLOOR_TYPES];
+extern const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES];
+extern const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES];
 extern const int cRoomPics[ROOMFLOOR_COUNT][ROOMFLOOR_TYPES];
 extern const struct Offset cWallOffset;
 extern const TOffsetPic cDeathPics[DEATH_MAX];

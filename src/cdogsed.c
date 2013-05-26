@@ -589,11 +589,11 @@ void Display(int index, int xc, int yc, int key)
 		DrawPic(20, y + TH,
 			gPics[cWallPics
 			      [currentMission->wallStyle %
-			       WALL_COUNT][WALL_SINGLE]], NULL);
+			       WALL_STYLE_COUNT][WALL_SINGLE]], NULL);
 		DrawPic(50, y + TH,
 			gPics[cFloorPics
 			      [currentMission->floorStyle %
-			       FLOOR_COUNT][FLOOR_NORMAL]], NULL);
+			       FLOOR_STYLE_COUNT][FLOOR_NORMAL]], NULL);
 		DrawPic(80, y + TH,
 			gPics[cRoomPics
 			      [currentMission->roomStyle %
@@ -737,7 +737,7 @@ static int Change(int yc, int xc, int d, int *mission)
 
 	if (yc == YC_MISSIONINDEX) {
 		*mission += d;
-		AdjustInt(mission, 0, campaign.missionCount, 0);
+		*mission = CLAMP(*mission, 0, campaign.missionCount);
 		return 0;
 	}
 
@@ -750,33 +750,25 @@ static int Change(int yc, int xc, int d, int *mission)
 	case YC_MISSIONPROPS:
 		switch (xc) {
 		case XC_WIDTH:
-			currentMission->mapWidth += d;
-			AdjustInt(&currentMission->mapWidth, 16, 64, 0);
+			currentMission->mapWidth = CLAMP(currentMission->mapWidth + d, 16, 64);
 			break;
 		case XC_HEIGHT:
-			currentMission->mapHeight += d;
-			AdjustInt(&currentMission->mapHeight, 16, 64, 0);
+			currentMission->mapHeight = CLAMP(currentMission->mapHeight + d, 16, 64);
 			break;
 		case XC_WALLCOUNT:
-			currentMission->wallCount += d;
-			AdjustInt(&currentMission->wallCount, 0, 200, 0);
+			currentMission->wallCount = CLAMP(currentMission->wallCount + d, 0, 200);
 			break;
 		case XC_WALLLENGTH:
-			currentMission->wallLength += d;
-			AdjustInt(&currentMission->wallLength, 1, 100, 0);
+			currentMission->wallLength = CLAMP(currentMission->wallLength + d, 1, 100);
 			break;
 		case XC_ROOMCOUNT:
-			currentMission->roomCount += d;
-			AdjustInt(&currentMission->roomCount, 0, 100, 0);
+			currentMission->roomCount = CLAMP(currentMission->roomCount + d, 0, 100);
 			break;
 		case XC_SQRCOUNT:
-			currentMission->squareCount += d;
-			AdjustInt(&currentMission->squareCount, 0, 100, 0);
+			currentMission->squareCount = CLAMP(currentMission->squareCount + d, 0, 100);
 			break;
 		case XC_DENSITY:
-			currentMission->baddieDensity += d;
-			AdjustInt(&currentMission->baddieDensity, 0, 100,
-				  0);
+			currentMission->baddieDensity = CLAMP(currentMission->baddieDensity + d, 0, 100);
 			break;
 		}
 		break;
@@ -784,68 +776,58 @@ static int Change(int yc, int xc, int d, int *mission)
 	case YC_MISSIONLOOKS:
 		switch (xc) {
 		case XC_WALL:
-			currentMission->wallStyle += d;
-			AdjustInt(&currentMission->wallStyle, 0,
-				  WALL_COUNT - 1, 1);
+			currentMission->wallStyle = CLAMP_OPPOSITE(
+				currentMission->wallStyle + d, 0, WALL_STYLE_COUNT - 1);
 			break;
 		case XC_FLOOR:
-			currentMission->floorStyle += d;
-			AdjustInt(&currentMission->floorStyle, 0,
-				  FLOOR_COUNT - 1, 1);
+			currentMission->floorStyle = CLAMP_OPPOSITE(
+				currentMission->floorStyle + d,
+				0,
+				FLOOR_STYLE_COUNT - 1);
 			break;
 		case XC_ROOM:
-			currentMission->roomStyle += d;
-			AdjustInt(&currentMission->roomStyle, 0,
-				  ROOMFLOOR_COUNT - 1, 1);
+			currentMission->roomStyle = CLAMP_OPPOSITE(
+				currentMission->roomStyle + d, 0, ROOMFLOOR_COUNT - 1);
 			break;
 		case XC_DOORS:
-			currentMission->doorStyle += d;
-			AdjustInt(&currentMission->doorStyle, 0,
-				  edInfo.doorCount - 1, 1);
+			currentMission->doorStyle =
+				CLAMP_OPPOSITE(currentMission->doorStyle + d, 0, edInfo.doorCount - 1);
 			break;
 		case XC_KEYS:
-			currentMission->keyStyle += d;
-			AdjustInt(&currentMission->keyStyle, 0,
-				  edInfo.keyCount - 1, 1);
+			currentMission->keyStyle = CLAMP_OPPOSITE(
+				currentMission->keyStyle + d, 0, edInfo.keyCount - 1);
 			break;
 		case XC_EXIT:
-			currentMission->exitStyle += d;
-			AdjustInt(&currentMission->exitStyle, 0,
-				  edInfo.exitCount - 1, 1);
+			currentMission->exitStyle = CLAMP_OPPOSITE(
+				currentMission->exitStyle + d, 0, edInfo.exitCount - 1);
 			break;
 		case XC_COLOR1:
-			currentMission->wallRange += d;
-			AdjustInt(&currentMission->wallRange, 0,
-				  edInfo.rangeCount - 1, 1);
+			currentMission->wallRange = CLAMP_OPPOSITE(
+				currentMission->wallRange + d, 0, edInfo.rangeCount - 1);
 			break;
 		case XC_COLOR2:
-			currentMission->floorRange += d;
-			AdjustInt(&currentMission->floorRange, 0,
-				  edInfo.rangeCount - 1, 1);
+			currentMission->floorRange = CLAMP_OPPOSITE(
+				currentMission->floorRange + d, 0, edInfo.rangeCount - 1);
 			break;
 		case XC_COLOR3:
-			currentMission->roomRange += d;
-			AdjustInt(&currentMission->roomRange, 0,
-				  edInfo.rangeCount - 1, 1);
+			currentMission->roomRange = CLAMP_OPPOSITE(
+				currentMission->roomRange + d, 0, edInfo.rangeCount - 1);
 			break;
 		case XC_COLOR4:
-			currentMission->altRange += d;
-			AdjustInt(&currentMission->altRange, 0,
-				  edInfo.rangeCount - 1, 1);
+			currentMission->altRange = CLAMP_OPPOSITE(
+				currentMission->altRange + d, 0, edInfo.rangeCount - 1);
 			break;
 		}
 		break;
 
 	case YC_CHARACTERS:
-		currentMission->baddies[xc] += d;
-		AdjustInt(&currentMission->baddies[xc], 0,
-			  campaign.characterCount - 1, 1);
+		currentMission->baddies[xc] = CLAMP_OPPOSITE(
+			currentMission->baddies[xc] + d, 0, campaign.characterCount - 1);
 		break;
 
 	case YC_SPECIALS:
-		currentMission->specials[xc] += d;
-		AdjustInt(&currentMission->specials[xc], 0,
-			  campaign.characterCount - 1, 1);
+		currentMission->specials[xc] = CLAMP_OPPOSITE(
+			currentMission->specials[xc] + d, 0, campaign.characterCount - 1);
 		break;
 
 	case YC_WEAPONS:
@@ -856,13 +838,13 @@ static int Change(int yc, int xc, int d, int *mission)
 		if (KeyIsDown(&gKeyboard, SDLK_LSHIFT) ||
 			KeyIsDown(&gKeyboard, SDLK_RSHIFT))	// Either shift key down?
 		{
-			currentMission->itemDensity[xc] += 5 * d;
-			AdjustInt(&currentMission->itemDensity[xc], 0, 512,
-				  0);
-		} else {
-			currentMission->items[xc] += d;
-			AdjustInt(&currentMission->items[xc], 0,
-				  edInfo.itemCount - 1, 1);
+			currentMission->itemDensity[xc] =
+				CLAMP(currentMission->itemDensity[xc] +  5 * d, 0, 512);
+		}
+		else
+		{
+			currentMission->items[xc] = CLAMP_OPPOSITE(
+				currentMission->items[xc] + d, 0, edInfo.itemCount - 1);
 		}
 		break;
 
@@ -870,14 +852,13 @@ static int Change(int yc, int xc, int d, int *mission)
 		if (yc >= YC_OBJECTIVES) {
 			switch (xc) {
 			case XC_TYPE:
-				currentMission->objectives[yc -
-							   YC_OBJECTIVES].
-				    type += d;
-				AdjustInt(&currentMission->
-					  objectives[yc -
-						     YC_OBJECTIVES].type,
-					  0, OBJECTIVE_INVESTIGATE, 1);
+				currentMission->objectives[yc - YC_OBJECTIVES].type =
+					CLAMP_OPPOSITE(
+						currentMission->objectives[yc - YC_OBJECTIVES].type + d,
+						0,
+						OBJECTIVE_INVESTIGATE);
 				d = 0;
+				// fallthrough
 
 			case XC_INDEX:
 				switch (currentMission->
@@ -901,43 +882,35 @@ static int Change(int yc, int xc, int d, int *mission)
 					// should never get here
 					return 0;
 				}
-				currentMission->objectives[yc -
-							   YC_OBJECTIVES].
-				    index += d;
-				AdjustInt(&currentMission->
-					  objectives[yc -
-						     YC_OBJECTIVES].index,
-					  0, limit, 1);
+				currentMission->objectives[yc - YC_OBJECTIVES].index =
+					CLAMP_OPPOSITE(
+						currentMission->objectives[yc - YC_OBJECTIVES].index + d,
+						0,
+						limit);
 				break;
 
 			case XC_REQUIRED:
-				currentMission->objectives[yc -
-							   YC_OBJECTIVES].
-				    required += d;
-				AdjustInt(&currentMission->
-					  objectives[yc -
-						     YC_OBJECTIVES].
-					  required, 0, 100, 1);
+				currentMission->objectives[yc - YC_OBJECTIVES].required =
+					CLAMP_OPPOSITE(
+						currentMission->objectives[yc - YC_OBJECTIVES].required + d,
+						0,
+						100);
 				break;
 
 			case XC_TOTAL:
-				currentMission->objectives[yc -
-							   YC_OBJECTIVES].
-				    count += d;
-				AdjustInt(&currentMission->
-					  objectives[yc -
-						     YC_OBJECTIVES].count,
-					  0, 100, 1);
+				currentMission->objectives[yc - YC_OBJECTIVES].count =
+					CLAMP_OPPOSITE(
+						currentMission->objectives[yc - YC_OBJECTIVES].count + d,
+						0,
+						100);
 				break;
 
 			case XC_FLAGS:
-				currentMission->objectives[yc -
-							   YC_OBJECTIVES].
-				    flags += d;
-				AdjustInt(&currentMission->
-					  objectives[yc -
-						     YC_OBJECTIVES].flags,
-					  0, 15, 1);
+				currentMission->objectives[yc - YC_OBJECTIVES].flags =
+					CLAMP_OPPOSITE(
+						currentMission->objectives[yc - YC_OBJECTIVES].flags + d,
+						0,
+						15);
 				break;
 			}
 		}
@@ -985,51 +958,56 @@ void DeleteMission(int *index)
 
 void AddObjective(void)
 {
-	currentMission->objectiveCount++;
-	AdjustInt(&currentMission->objectiveCount, 0, OBJECTIVE_MAX, 0);
+	currentMission->objectiveCount =
+		CLAMP(currentMission->objectiveCount + 1, 0, OBJECTIVE_MAX);
 }
 
 void DeleteObjective(int index)
 {
 	int i;
 
-	currentMission->objectiveCount--;
+	currentMission->objectiveCount =
+		CLAMP(currentMission->objectiveCount - 1, 0, OBJECTIVE_MAX);
 	for (i = index; i < currentMission->objectiveCount; i++)
-		currentMission->objectives[i] =
-		    currentMission->objectives[i + 1];
-	AdjustInt(&currentMission->objectiveCount, 0, OBJECTIVE_MAX, 0);
+	{
+		currentMission->objectives[i] = currentMission->objectives[i + 1];
+	}
 }
 
 void DeleteCharacter(int index)
 {
 	int i;
 
-	currentMission->baddieCount--;
+	currentMission->baddieCount =
+		CLAMP(currentMission->baddieCount - 1, 0, BADDIE_MAX);
 	for (i = index; i < currentMission->baddieCount; i++)
-		currentMission->baddies[i] =
-		    currentMission->baddies[i + 1];
-	AdjustInt(&currentMission->baddieCount, 0, BADDIE_MAX, 0);
+	{
+		currentMission->baddies[i] = currentMission->baddies[i + 1];
+	}
 }
 
 void DeleteSpecial(int index)
 {
 	int i;
 
-	currentMission->specialCount--;
+	currentMission->specialCount =
+		CLAMP(currentMission->specialCount - 1, 0, SPECIAL_MAX);
 	for (i = index; i < currentMission->specialCount; i++)
-		currentMission->specials[i] =
-		    currentMission->specials[i + 1];
-	AdjustInt(&currentMission->specialCount, 0, SPECIAL_MAX, 0);
+	{
+		currentMission->specials[i] = currentMission->specials[i + 1];
+	}
 }
 
 void DeleteItem(int index)
 {
 	int i;
 
-	currentMission->itemCount--;
+	currentMission->itemCount =
+		CLAMP(currentMission->itemCount - 1, 0, ITEMS_MAX);
 	for (i = index; i < currentMission->itemCount; i++)
+	{
 		currentMission->items[i] = currentMission->items[i + 1];
-	AdjustInt(&currentMission->itemCount, 0, ITEMS_MAX, 0);
+	}
 }
 
 static void Append(char *s, int maxlen, char c)
@@ -1137,60 +1115,74 @@ static void DelChar(int xc, int yc)
 
 static void AdjustYC(int *yc)
 {
-	if (currentMission) {
+	if (currentMission != NULL)
+	{
 		if (currentMission->objectiveCount)
-			AdjustInt(yc, 0,
-				  YC_OBJECTIVES +
-				  currentMission->objectiveCount - 1, 1);
+		{
+			*yc = CLAMP_OPPOSITE(
+				*yc, 0, YC_OBJECTIVES + currentMission->objectiveCount - 1);
+		}
 		else
-			AdjustInt(yc, 0, YC_OBJECTIVES, 1);
-	} else
-		AdjustInt(yc, 0, YC_MISSIONINDEX, 1);
+		{
+			*yc = CLAMP_OPPOSITE(*yc, 0, YC_OBJECTIVES);
+		}
+	}
+	else
+	{
+		*yc = CLAMP_OPPOSITE(*yc, 0, YC_MISSIONINDEX);
+	}
 }
 
 static void AdjustXC(int yc, int *xc)
 {
-	switch (yc) {
+	switch (yc)
+	{
 	case YC_CAMPAIGNTITLE:
-		AdjustInt(xc, 0, XC_CAMPAIGNDESC, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_CAMPAIGNDESC);
 		break;
 
 	case YC_MISSIONTITLE:
-		AdjustInt(xc, 0, XC_MUSICFILE, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_MUSICFILE);
 		break;
 
 	case YC_MISSIONPROPS:
-		AdjustInt(xc, 0, XC_DENSITY, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_DENSITY);
 		break;
 
 	case YC_MISSIONLOOKS:
-		AdjustInt(xc, 0, XC_COLOR4, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_COLOR4);
 		break;
 
 	case YC_CHARACTERS:
-		if (currentMission && currentMission->baddieCount)
-			AdjustInt(xc, 0, currentMission->baddieCount - 1,
-				  1);
+		if (currentMission && currentMission->baddieCount > 0)
+		{
+			*xc = CLAMP_OPPOSITE(*xc, 0, currentMission->baddieCount - 1);
+		}
 		break;
 
 	case YC_SPECIALS:
-		if (currentMission && currentMission->specialCount)
-			AdjustInt(xc, 0, currentMission->specialCount - 1,
-				  1);
+		if (currentMission && currentMission->specialCount > 0)
+		{
+			*xc = CLAMP_OPPOSITE(*xc, 0, currentMission->specialCount - 1);
+		}
 		break;
 
 	case YC_ITEMS:
-		if (currentMission && currentMission->itemCount)
-			AdjustInt(xc, 0, currentMission->itemCount - 1, 1);
+		if (currentMission && currentMission->itemCount > 0)
+		{
+			*xc = CLAMP_OPPOSITE(*xc, 0, currentMission->itemCount - 1);
+		}
 		break;
 
 	case YC_WEAPONS:
-		AdjustInt(xc, 0, XC_MAXWEAPONS, 1);
+		*xc = CLAMP_OPPOSITE(*xc, 0, XC_MAXWEAPONS);
 		break;
 
 	default:
 		if (yc >= YC_OBJECTIVES)
-			AdjustInt(xc, 0, XC_FLAGS, 1);
+		{
+			*xc = CLAMP_OPPOSITE(*xc, 0, XC_FLAGS);
+		}
 		break;
 	}
 }
@@ -1344,23 +1336,20 @@ static void EditCampaign(void)
 		case INSERT:
 			switch (yc) {
 			case YC_CHARACTERS:
-				currentMission->baddieCount++;
-				AdjustInt(&currentMission->baddieCount, 0,
-					  BADDIE_MAX, 0);
+				currentMission->baddieCount =
+					CLAMP(currentMission->baddieCount + 1, 0, BADDIE_MAX);
 				xc = currentMission->baddieCount - 1;
 				break;
 
 			case YC_SPECIALS:
-				currentMission->specialCount++;
-				AdjustInt(&currentMission->specialCount, 0,
-					  SPECIAL_MAX, 0);
+				currentMission->specialCount =
+					CLAMP(currentMission->specialCount + 1, 0, SPECIAL_MAX);
 				xc = currentMission->specialCount - 1;
 				break;
 
 			case YC_ITEMS:
-				currentMission->itemCount++;
-				AdjustInt(&currentMission->itemCount, 0,
-					  ITEMS_MAX, 0);
+				currentMission->itemCount =
+					CLAMP(currentMission->itemCount + 1, 0, ITEMS_MAX);
 				xc = currentMission->itemCount - 1;
 				break;
 

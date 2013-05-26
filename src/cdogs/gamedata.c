@@ -123,7 +123,7 @@ struct GameOptions gOptions = {
 
 CampaignOptions gCampaign =
 {
-	NULL, 0, 0
+	NULL, 0, CAMPAIGN_MODE_NORMAL
 };
 
 struct MissionOptions gMission;

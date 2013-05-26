@@ -789,7 +789,7 @@ void *MakeBkg(void)
 
 	CMALLOC(bkg, Screen_GetMemSize());
 
-	SetupBuiltinDogfight(rand() % 2);
+	gCampaign.setting = SetupAndGetQuickPlay();
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();

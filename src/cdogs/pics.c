@@ -625,7 +625,7 @@ const TOffsetPic cBrightBeamPics[DIRECTION_COUNT] = {
 	{-2, -2, 364}
 };
 
-const int cWallPics[WALL_COUNT][WALL_TYPES] = {
+const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES] = {
 	{6, 108, 107, 95, 102, 97, 96, 104,	// "Steel"
 	 103, 101, 100, 98, 105, 99, 106, 94},
 
@@ -644,15 +644,15 @@ const int cWallPics[WALL_COUNT][WALL_TYPES] = {
 	{P2 + 60, P2 + 67, P2 + 66, P2 + 53, P2 + 61, P2 + 55, P2 + 54,
 	 P2 + 63,
 	 P2 + 62, P2 + 59, P2 + 58, P2 + 56, P2 + 64, P2 + 57, P2 + 65,
-	 P2 + 52},
+	 P2 + 52},	// Plasteel
 
 	{P2 + 76, P2 + 83, P2 + 82, P2 + 69, P2 + 77, P2 + 71, P2 + 70,
 	 P2 + 79,
 	 P2 + 78, P2 + 75, P2 + 74, P2 + 72, P2 + 80, P2 + 73, P2 + 81,
-	 P2 + 68}
+	 P2 + 68}	// Granite
 };
 
-const int cFloorPics[FLOOR_COUNT][FLOOR_TYPES] = {
+const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES] = {
 	{2, 1, 165, 166},	// Green grid
 
 	{152, 151, 167, 168},	// Purple plates

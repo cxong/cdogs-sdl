@@ -1172,8 +1172,8 @@ void SetupMap(void)
 {
 	int i, j, count;
 	struct Mission *mission = gMission.missionData;
-	int floor = mission->floorStyle % FLOOR_COUNT;
-	int wall = mission->wallStyle % WALL_COUNT;
+	int floor = mission->floorStyle % FLOOR_STYLE_COUNT;
+	int wall = mission->wallStyle % WALL_STYLE_COUNT;
 	int room = mission->roomStyle % ROOMFLOOR_COUNT;
 	int x, y, w, h;
 

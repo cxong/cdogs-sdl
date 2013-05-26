@@ -413,8 +413,8 @@ static struct DoorPic *doorStyles[] = {
 
 
 static int exitPics[] = {
-	375, 376,
-	380, 381
+	375, 376,	// hazard stripes
+	380, 381	// yellow plates
 };
 
 // Every exit has TWO pics, so actual # of exits == # pics / 2!
@@ -429,7 +429,7 @@ static int exitPics[] = {
 struct Mission dogFight1 = {
 	"",
 	"",
-	WALL_STONE, FLOOR_STONE, FLOOR_WOOD, 0, 1, 1,
+	WALL_STYLE_STONE, FLOOR_STYLE_STONE, FLOOR_STYLE_WOOD, 0, 1, 1,
 	32, 32,
 	50, 25,
 	4, 2,
@@ -453,7 +453,7 @@ struct Mission dogFight1 = {
 struct Mission dogFight2 = {
 	"",
 	"",
-	WALL_STEEL, FLOOR_BLUE, FLOOR_WHITE, 0, 0, 0,
+	WALL_STYLE_STEEL, FLOOR_STYLE_BLUE, FLOOR_STYLE_WHITE, 0, 0, 0,
 	64, 64,
 	50, 50,
 	10, 3,
@@ -473,6 +473,8 @@ struct Mission dogFight2 = {
 	"", "",
 	5, 2, 9, 4
 };
+
+struct Mission gQuickPlayMission;
 
 
 // +-----------------+
@@ -498,6 +500,17 @@ static CampaignSetting df2 =
 	"", "",
 	1, &dogFight2,
 	0, NULL,
+	""
+};
+
+static TBadGuy gQuickPlayEnemies[BADDIE_MAX];
+
+static CampaignSetting gQuickPlayCampaignSetting =
+{
+	"Quick play",
+	"", "",
+	1, &gQuickPlayMission,
+	BADDIE_MAX, gQuickPlayEnemies,
 	""
 };
 
@@ -600,6 +613,68 @@ int SetupBuiltinDogfight(int index)
 		return 0;
 	}
 	return 1;
+}
+
+CampaignSetting *SetupAndGetQuickPlay(void)
+{
+	int i;
+	strcpy(gQuickPlayMission.title, "");
+	strcpy(gQuickPlayMission.description, "");
+	gQuickPlayMission.wallStyle = rand() % WALL_STYLE_COUNT;
+	gQuickPlayMission.floorStyle = rand() % FLOOR_STYLE_COUNT;
+	gQuickPlayMission.roomStyle = rand() % FLOOR_STYLE_COUNT;
+	gQuickPlayMission.exitStyle = rand() % EXIT_COUNT;
+	gQuickPlayMission.keyStyle = rand() % KEYSTYLE_COUNT;
+	gQuickPlayMission.doorStyle = rand() % DOORSTYLE_COUNT;
+	gQuickPlayMission.mapWidth = 16 + (rand() % (64 - 16 + 1));
+	gQuickPlayMission.mapHeight = 16 + (rand() % (64 - 16 + 1));
+	gQuickPlayMission.wallCount = rand() % (200 + 1);
+	gQuickPlayMission.wallLength = 1 + (rand() % (200 - 1 + 1));
+	gQuickPlayMission.roomCount = rand() % (100 + 1);
+	gQuickPlayMission.squareCount = rand() % (100 + 1);
+	gQuickPlayMission.exitLeft = 0;
+	gQuickPlayMission.exitTop = 0;
+	gQuickPlayMission.exitRight = 0;
+	gQuickPlayMission.exitBottom = 0;
+	gQuickPlayMission.objectiveCount = 0;
+	gQuickPlayMission.baddieCount = 1 + (rand() % (BADDIE_MAX - 1));
+	for (i = 0; i < gQuickPlayMission.baddieCount; i++)
+	{
+		gQuickPlayMission.baddies[i] = i;
+		gQuickPlayEnemies[i].armedBodyPic = BODY_ARMED;
+		gQuickPlayEnemies[i].unarmedBodyPic = BODY_UNARMED;
+		gQuickPlayEnemies[i].facePic = rand() % FACE_COUNT;
+		gQuickPlayEnemies[i].speed = 128 + (rand() % (512 - 128 + 1));
+		gQuickPlayEnemies[i].probabilityToMove = rand() % (100 + 1);
+		gQuickPlayEnemies[i].probabilityToTrack = rand() % (100 + 1);
+		gQuickPlayEnemies[i].probabilityToShoot = rand() % (100 + 1);
+		gQuickPlayEnemies[i].actionDelay = rand() % (50 + 1);
+		gQuickPlayEnemies[i].gun = rand() % GUN_COUNT;
+		gQuickPlayEnemies[i].skinColor = rand() % SHADE_COUNT;
+		gQuickPlayEnemies[i].armColor = rand() % SHADE_COUNT;
+		gQuickPlayEnemies[i].bodyColor = rand() % SHADE_COUNT;
+		gQuickPlayEnemies[i].legColor = rand() % SHADE_COUNT;
+		gQuickPlayEnemies[i].hairColor = rand() % SHADE_COUNT;
+		gQuickPlayEnemies[i].health = 10 + (rand() % (500 - 10 + 1));
+		gQuickPlayEnemies[i].flags = 0;
+	}
+	gQuickPlayMission.specialCount = 0;
+	gQuickPlayMission.itemCount = rand() % (ITEMS_MAX + 1);
+	for (i = 0; i < gQuickPlayMission.itemCount; i++)
+	{
+		gQuickPlayMission.items[i] = i;
+		gQuickPlayMission.itemDensity[i] = rand() % (512 + 1);
+		gQuickPlayMission.itemDensity[i] /= 16;	// tone down the items
+	}
+	gQuickPlayMission.baddieDensity = rand() % (100 + 1);
+	gQuickPlayMission.weaponSelection = 0;
+	strcpy(gQuickPlayMission.song, "");
+	strcpy(gQuickPlayMission.map, "");
+	gQuickPlayMission.wallRange = rand() % (COLORRANGE_COUNT - 1 + 1);
+	gQuickPlayMission.floorRange = rand() % (COLORRANGE_COUNT - 1 + 1);
+	gQuickPlayMission.roomRange = rand() % (COLORRANGE_COUNT - 1 + 1);
+	gQuickPlayMission.altRange = rand() % (COLORRANGE_COUNT - 1 + 1);
+	return &gQuickPlayCampaignSetting;
 }
 
 static void SetupObjective(int o, struct Mission *mission)
