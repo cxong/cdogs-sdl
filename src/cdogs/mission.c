@@ -615,6 +615,51 @@ int SetupBuiltinDogfight(int index)
 	return 1;
 }
 
+void SetupQuickPlayEnemy(TBadGuy *enemy)
+{
+	enemy->armedBodyPic = BODY_ARMED;
+	enemy->unarmedBodyPic = BODY_UNARMED;
+	enemy->facePic = rand() % FACE_COUNT;
+	enemy->gun = rand() % GUN_COUNT;
+	if (IsShortRange(enemy->gun))
+	{
+		enemy->speed = 256 + (rand() % (384 - 256 + 1));
+	}
+	else
+	{
+		enemy->speed = 128 + (rand() % (384 - 128 + 1));
+	}
+	if (IsShortRange(enemy->gun))
+	{
+		enemy->probabilityToMove = 50 + (rand() % 50);
+	}
+	else
+	{
+		enemy->probabilityToMove = 25 + (rand() % 75);
+	}
+	enemy->probabilityToTrack = 25 + (rand() % 75);
+	if (enemy->gun == GUN_KNIFE)
+	{
+		enemy->probabilityToShoot = 0;
+	}
+	else if (IsHighDPS(enemy->gun))
+	{
+		enemy->probabilityToShoot = 10 + (rand() % 10);
+	}
+	else
+	{
+		enemy->probabilityToShoot = 25 + (rand() % 75);
+	}
+	enemy->actionDelay = rand() % (50 + 1);
+	enemy->skinColor = rand() % SHADE_COUNT;
+	enemy->armColor = rand() % SHADE_COUNT;
+	enemy->bodyColor = rand() % SHADE_COUNT;
+	enemy->legColor = rand() % SHADE_COUNT;
+	enemy->hairColor = rand() % SHADE_COUNT;
+	enemy->health = 10 + (rand() % (100 - 10 + 1));
+	enemy->flags = 0;
+}
+
 CampaignSetting *SetupAndGetQuickPlay(void)
 {
 	int i;
@@ -641,22 +686,7 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 	for (i = 0; i < gQuickPlayMission.baddieCount; i++)
 	{
 		gQuickPlayMission.baddies[i] = i;
-		gQuickPlayEnemies[i].armedBodyPic = BODY_ARMED;
-		gQuickPlayEnemies[i].unarmedBodyPic = BODY_UNARMED;
-		gQuickPlayEnemies[i].facePic = rand() % FACE_COUNT;
-		gQuickPlayEnemies[i].speed = 128 + (rand() % (256 - 128 + 1));
-		gQuickPlayEnemies[i].probabilityToMove = 25 + (rand() % 75);
-		gQuickPlayEnemies[i].probabilityToTrack = 25 + (rand() % 75);
-		gQuickPlayEnemies[i].probabilityToShoot = 25 + (rand() % 75);
-		gQuickPlayEnemies[i].actionDelay = rand() % (50 + 1);
-		gQuickPlayEnemies[i].gun = rand() % GUN_COUNT;
-		gQuickPlayEnemies[i].skinColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].armColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].bodyColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].legColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].hairColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].health = 10 + (rand() % (100 - 10 + 1));
-		gQuickPlayEnemies[i].flags = 0;
+		SetupQuickPlayEnemy(&gQuickPlayEnemies[i]);
 	}
 	gQuickPlayMission.specialCount = 0;
 	gQuickPlayMission.itemCount = rand() % (ITEMS_MAX + 1);
@@ -665,7 +695,7 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 		gQuickPlayMission.items[i] = i;
 		gQuickPlayMission.itemDensity[i] = rand() % 32;
 	}
-	gQuickPlayMission.baddieDensity = 10 + (rand() % 10);
+	gQuickPlayMission.baddieDensity = 10 + (rand() % 5);
 	gQuickPlayMission.weaponSelection = 0;
 	strcpy(gQuickPlayMission.song, "");
 	strcpy(gQuickPlayMission.map, "");

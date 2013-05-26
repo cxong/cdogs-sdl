@@ -59,23 +59,29 @@
 #define CHARACTER_OTHERS                  3
 #define CHARACTER_COUNT                  21
 
-#define GUN_KNIFE           0
-#define GUN_MG              1
-#define GUN_GRENADE         2
-#define GUN_FLAMER          3
-#define GUN_SHOTGUN         4
-#define GUN_POWERGUN        5
-#define GUN_FRAGGRENADE     6
-#define GUN_MOLOTOV         7
-#define GUN_SNIPER          8
-#define GUN_MINE            9
-#define GUN_DYNAMITE        10
-#define GUN_GASBOMB         11
-#define GUN_PETRIFY         12
-#define GUN_BROWN           13
-#define GUN_CONFUSEBOMB     14
-#define GUN_GASGUN          15
-#define GUN_COUNT           16
+typedef enum
+{
+	GUN_KNIFE,
+	GUN_MG,
+	GUN_GRENADE,
+	GUN_FLAMER,
+	GUN_SHOTGUN,
+	GUN_POWERGUN,
+	GUN_FRAGGRENADE,
+	GUN_MOLOTOV,
+	GUN_SNIPER,
+	GUN_MINE,
+	GUN_DYNAMITE,
+	GUN_GASBOMB,
+	GUN_PETRIFY,
+	GUN_BROWN,
+	GUN_CONFUSEBOMB,
+	GUN_GASGUN,
+	GUN_COUNT
+} gun_e;
+
+int IsHighDPS(gun_e gun);
+int IsShortRange(gun_e gun);
 
 #define FLAGS_PLAYER1       (1 << 0)
 #define FLAGS_PLAYER2       (1 << 1)

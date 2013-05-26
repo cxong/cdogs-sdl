@@ -49,6 +49,7 @@
 #ifndef __GAMEDATA
 #define __GAMEDATA
 
+#include "actors.h"
 #include "input.h"
 #include "map.h"
 #include "pics.h"
@@ -162,7 +163,7 @@ struct BadGuy {
 	int probabilityToTrack;
 	int probabilityToShoot;
 	int actionDelay;
-	int gun;
+	gun_e gun;
 	int skinColor;
 	int armColor;
 	int bodyColor;

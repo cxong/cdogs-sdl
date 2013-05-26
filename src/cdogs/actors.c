@@ -63,6 +63,38 @@
 #include "game.h"
 #include "utils.h"
 
+
+int IsHighDPS(gun_e gun)
+{
+	switch (gun)
+	{
+	case GUN_GRENADE:
+	case GUN_FRAGGRENADE:
+	case GUN_MOLOTOV:
+	case GUN_MINE:
+	case GUN_DYNAMITE:
+		return 1;
+	default:
+		return 0;
+	}
+}
+int IsShortRange(gun_e gun)
+{
+	switch (gun)
+	{
+	case GUN_KNIFE:
+	case GUN_FLAMER:
+	case GUN_MOLOTOV:
+	case GUN_MINE:
+	case GUN_DYNAMITE:
+	case GUN_BROWN:
+	case GUN_GASGUN:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 TActor *gPlayer1 = NULL;
 TActor *gPlayer2 = NULL;
 TActor *gPrisoner = NULL;
