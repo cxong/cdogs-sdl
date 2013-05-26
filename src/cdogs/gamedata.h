@@ -50,6 +50,7 @@
 #define __GAMEDATA
 
 #include "input.h"
+#include "map.h"
 #include "pics.h"
 #include "sys_config.h"
 
@@ -327,5 +328,7 @@ int IsIntroNeeded(campaign_mode_e mode);
 int IsScoreNeeded(campaign_mode_e mode);
 int HasObjectives(campaign_mode_e mode);
 int IsAutoMapEnabled(campaign_mode_e mode);
+
+int IsTileInExit(TTileItem *tile, struct MissionOptions *options);
 
 #endif

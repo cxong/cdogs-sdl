@@ -471,7 +471,7 @@ void StatusDisplay(void)
 			CDogsTextStringAtCenter("Double Kill!");
 		}
 	}
-	else if (MissionCompleted())
+	else if (IsMissionComplete(&gMission))
 	{
 		sprintf(s, "Pickup in %d seconds\n",
 			(gMission.pickupTime + 69) / 70);
@@ -648,7 +648,8 @@ int gameloop(void)
 
 		if (!gameIsPaused) {
 			missionTime += ticks;
-			if ((gPlayer1 || gPlayer2) && MissionCompleted()) {
+			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
+			{
 				if (gMission.pickupTime == PICKUP_LIMIT)
 					PlaySound(SND_DONE, 0, 255);
 				gMission.pickupTime -= ticks;

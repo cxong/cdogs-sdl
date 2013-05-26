@@ -637,17 +637,17 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 	gQuickPlayMission.exitRight = 0;
 	gQuickPlayMission.exitBottom = 0;
 	gQuickPlayMission.objectiveCount = 0;
-	gQuickPlayMission.baddieCount = 1 + (rand() % (BADDIE_MAX - 1));
+	gQuickPlayMission.baddieCount = 3 + (rand() % (BADDIE_MAX - 3));
 	for (i = 0; i < gQuickPlayMission.baddieCount; i++)
 	{
 		gQuickPlayMission.baddies[i] = i;
 		gQuickPlayEnemies[i].armedBodyPic = BODY_ARMED;
 		gQuickPlayEnemies[i].unarmedBodyPic = BODY_UNARMED;
 		gQuickPlayEnemies[i].facePic = rand() % FACE_COUNT;
-		gQuickPlayEnemies[i].speed = 128 + (rand() % (512 - 128 + 1));
-		gQuickPlayEnemies[i].probabilityToMove = rand() % (100 + 1);
-		gQuickPlayEnemies[i].probabilityToTrack = rand() % (100 + 1);
-		gQuickPlayEnemies[i].probabilityToShoot = rand() % (100 + 1);
+		gQuickPlayEnemies[i].speed = 128 + (rand() % (256 - 128 + 1));
+		gQuickPlayEnemies[i].probabilityToMove = 25 + (rand() % 75);
+		gQuickPlayEnemies[i].probabilityToTrack = 25 + (rand() % 75);
+		gQuickPlayEnemies[i].probabilityToShoot = 25 + (rand() % 75);
 		gQuickPlayEnemies[i].actionDelay = rand() % (50 + 1);
 		gQuickPlayEnemies[i].gun = rand() % GUN_COUNT;
 		gQuickPlayEnemies[i].skinColor = rand() % SHADE_COUNT;
@@ -655,7 +655,7 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 		gQuickPlayEnemies[i].bodyColor = rand() % SHADE_COUNT;
 		gQuickPlayEnemies[i].legColor = rand() % SHADE_COUNT;
 		gQuickPlayEnemies[i].hairColor = rand() % SHADE_COUNT;
-		gQuickPlayEnemies[i].health = 10 + (rand() % (500 - 10 + 1));
+		gQuickPlayEnemies[i].health = 10 + (rand() % (100 - 10 + 1));
 		gQuickPlayEnemies[i].flags = 0;
 	}
 	gQuickPlayMission.specialCount = 0;
@@ -663,10 +663,9 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 	for (i = 0; i < gQuickPlayMission.itemCount; i++)
 	{
 		gQuickPlayMission.items[i] = i;
-		gQuickPlayMission.itemDensity[i] = rand() % (512 + 1);
-		gQuickPlayMission.itemDensity[i] /= 16;	// tone down the items
+		gQuickPlayMission.itemDensity[i] = rand() % 32;
 	}
-	gQuickPlayMission.baddieDensity = rand() % (100 + 1);
+	gQuickPlayMission.baddieDensity = 25 + (rand() % 25);
 	gQuickPlayMission.weaponSelection = 0;
 	strcpy(gQuickPlayMission.song, "");
 	strcpy(gQuickPlayMission.map, "");
@@ -811,40 +810,52 @@ int CheckMissionObjective(int flags)
 	return 0;
 }
 
-int MissionCompleted(void)
+int CanCompleteMission(struct MissionOptions *options)
 {
 	int i;
 
+	// Death is the only escape from dogfights and quick play
 	if (gCampaign.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return !(gPlayer1 && gPlayer2);
 	}
+	else if (gCampaign.mode == CAMPAIGN_MODE_QUICK_PLAY)
+	{
+		return !gPlayer1;
+	}
 
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-		if (gMission.objectives[i].done <
-		    gMission.objectives[i].required)
+	// Check all objective counts are enough
+	for (i = 0; i < options->missionData->objectiveCount; i++)
+	{
+		if (options->objectives[i].done < options->objectives[i].required)
+		{
 			return 0;
+		}
+	}
 
-	if (gPlayer1 &&
-	    (gPlayer1->tileItem.x < gMission.exitLeft ||
-	     gPlayer1->tileItem.x > gMission.exitRight ||
-	     gPlayer1->tileItem.y < gMission.exitTop ||
-	     gPlayer1->tileItem.y > gMission.exitBottom))
-		return 0;
+	return 1;
+}
 
-	if (gPlayer2 &&
-	    (gPlayer2->tileItem.x < gMission.exitLeft ||
-	     gPlayer2->tileItem.x > gMission.exitRight ||
-	     gPlayer2->tileItem.y < gMission.exitTop ||
-	     gPlayer2->tileItem.y > gMission.exitBottom))
+int IsMissionComplete(struct MissionOptions *options)
+{
+	if (!CanCompleteMission(options))
+	{
 		return 0;
+	}
 
-	if (gPrisoner &&
-	    (gPrisoner->tileItem.x < gMission.exitLeft ||
-	     gPrisoner->tileItem.x > gMission.exitRight ||
-	     gPrisoner->tileItem.y < gMission.exitTop ||
-	     gPrisoner->tileItem.y > gMission.exitBottom))
+	// Check that all players are in exit zone
+	if (gPlayer1 && !IsTileInExit(&gPlayer1->tileItem, options))
+	{
 		return 0;
+	}
+	if (gPlayer2 && !IsTileInExit(&gPlayer2->tileItem, options))
+	{
+		return 0;
+	}
+	if (gPrisoner && !IsTileInExit(&gPrisoner->tileItem, options))
+	{
+		return 0;
+	}
 
 	return 1;
 }

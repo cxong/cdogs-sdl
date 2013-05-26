@@ -233,10 +233,19 @@ int IsScoreNeeded(campaign_mode_e mode)
 
 int HasObjectives(campaign_mode_e mode)
 {
-	return mode != CAMPAIGN_MODE_DOGFIGHT;
+	return mode == CAMPAIGN_MODE_NORMAL;
 }
 
 int IsAutoMapEnabled(campaign_mode_e mode)
 {
 	return mode != CAMPAIGN_MODE_DOGFIGHT;
+}
+
+int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
+{
+	return
+		tile->x >= options->exitLeft &&
+		tile->x <= options->exitRight &&
+		tile->y >= options->exitTop &&
+		tile->y <= options->exitBottom;
 }

@@ -127,10 +127,10 @@ static void DisplayExit(void)
 	int i;
 	int x1, x2, y1, y2;
 
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-		if (gMission.objectives[i].done <
-		    gMission.objectives[i].required)
-			return;
+	if (!CanCompleteMission(&gMission))
+	{
+		return;
+	}
 
 	x1 = MAP_FACTOR * gMission.exitLeft / TILE_WIDTH + MAP_XOFFS;
 	y1 = MAP_FACTOR * gMission.exitTop / TILE_HEIGHT + MAP_YOFFS;

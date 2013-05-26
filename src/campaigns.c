@@ -41,7 +41,8 @@ void CampaignListInit(campaign_list_t *list);
 void LoadBuiltinCampaigns(campaign_list_t *list);
 void LoadBuiltinDogfights(campaign_list_t *list);
 void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path, int isDogfight);
+	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode);
+void LoadQuickPlayEntry(campaign_entry_t *entry);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns)
 {
@@ -65,6 +66,8 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		"",
 		GetDataFilePath(CDOGS_DOGFIGHT_DIR),
 		1);
+
+	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
 
 	printf("\n");
 }
@@ -102,14 +105,15 @@ void CampaignListInit(campaign_list_t *list)
 }
 
 void AddBuiltinCampaignEntry(
-	campaign_list_t *list, const char *title, int isDogfight, int builtinIndex);
+	campaign_list_t *list, const char *title, campaign_mode_e mode, int builtinIndex);
 
 void LoadBuiltinCampaigns(campaign_list_t *list)
 {
 	int i = 0;
 	for (i = 0; SetupBuiltinCampaign(i); i++)
 	{
-		AddBuiltinCampaignEntry(list, gCampaign.setting->title, 0, i);
+		AddBuiltinCampaignEntry(
+			list, gCampaign.setting->title, CAMPAIGN_MODE_NORMAL, i);
 	}
 }
 void LoadBuiltinDogfights(campaign_list_t *list)
@@ -117,8 +121,19 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 	int i = 0;
 	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
-		AddBuiltinCampaignEntry(list, gCampaign.setting->title, 1, i);
+		AddBuiltinCampaignEntry(
+			list, gCampaign.setting->title, CAMPAIGN_MODE_DOGFIGHT, i);
 	}
+}
+
+void LoadQuickPlayEntry(campaign_entry_t *entry)
+{
+	strcpy(entry->filename, "");
+	strcpy(entry->path, "");
+	strcpy(entry->info, "");
+	entry->isBuiltin = 1;
+	entry->mode = CAMPAIGN_MODE_QUICK_PLAY;
+	entry->builtinIndex = 0;
 }
 
 int IsCampaignOK(const char *path, char *title);
@@ -127,10 +142,10 @@ void AddCustomCampaignEntry(
 	const char *filename,
 	const char *path,
 	const char *title,
-	int isDogfight);
+	campaign_mode_e mode);
 
 void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path, int isDogfight)
+	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode)
 {
 	tinydir_dir dir;
 	int i;
@@ -155,15 +170,14 @@ void LoadCampaignsFromFolder(
 			CREALLOC(list->subFolders, sizeof(campaign_list_t)*list->numSubFolders);
 			subFolder = &list->subFolders[list->numSubFolders-1];
 			CampaignListInit(subFolder);
-			LoadCampaignsFromFolder(subFolder, file.name, file.path, isDogfight);
+			LoadCampaignsFromFolder(subFolder, file.name, file.path, mode);
 		}
 		else if (file.is_reg)
 		{
 			char title[256];
 			if (IsCampaignOK(file.path, title))
 			{
-				AddCustomCampaignEntry(
-					list, file.name, file.path, title, isDogfight);
+				AddCustomCampaignEntry(list, file.name, file.path, title, mode);
 			}
 		}
 	}
@@ -184,12 +198,12 @@ int IsCampaignOK(const char *path, char *title)
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title, int isDogfight);
+	campaign_list_t *list, const char *title, campaign_mode_e mode);
 
 void AddBuiltinCampaignEntry(
-	campaign_list_t *list, const char *title, int isDogfight, int builtinIndex)
+	campaign_list_t *list, const char *title, campaign_mode_e mode, int builtinIndex)
 {
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, isDogfight);
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
 	entry->isBuiltin = 1;
 	entry->builtinIndex = builtinIndex;
 }
@@ -198,22 +212,22 @@ void AddCustomCampaignEntry(
 	const char *filename,
 	const char *path,
 	const char *title,
-	int isDogfight)
+	campaign_mode_e mode)
 {
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, isDogfight);
+	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
 	strcpy(entry->filename, filename);
 	strcpy(entry->path, path);
 	entry->isBuiltin = 0;
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title, int isDogfight)
+	campaign_list_t *list, const char *title, campaign_mode_e mode)
 {
 	campaign_entry_t *entry;
 	list->num++;
 	CREALLOC(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
 	strcpy(entry->info, title);
-	entry->isDogfight = isDogfight;
+	entry->mode = mode;
 	return entry;
 }

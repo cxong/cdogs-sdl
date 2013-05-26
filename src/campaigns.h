@@ -29,6 +29,7 @@
 #ifndef __CAMPAIGNS
 #define __CAMPAIGNS
 
+#include <cdogs/gamedata.h>
 #include <cdogs/sys_config.h>
 
 typedef struct
@@ -37,7 +38,7 @@ typedef struct
 	char path[CDOGS_PATH_MAX];
 	char info[80];
 	int isBuiltin;
-	int isDogfight;
+	campaign_mode_e mode;
 	int builtinIndex;
 } campaign_entry_t;
 
@@ -54,6 +55,7 @@ typedef struct
 {
 	campaign_list_t campaignList;
 	campaign_list_t dogfightList;
+	campaign_entry_t quickPlayEntry;
 } custom_campaigns_t;
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns);

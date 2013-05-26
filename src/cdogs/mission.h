@@ -70,7 +70,8 @@ CampaignSetting *SetupAndGetQuickPlay(void);
 void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 int CheckMissionObjective(int flags);
-int MissionCompleted(void);
+int CanCompleteMission(struct MissionOptions *options);
+int IsMissionComplete(struct MissionOptions *options);
 
 
 // Intended for use with the editor only

@@ -77,7 +77,6 @@ menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list,
-	campaign_mode_e mode,
 	int is_two_player);
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateControls(const char *name);
@@ -91,16 +90,15 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	/*MenuAddSubmenu(
+	MenuAddSubmenu(
 		menu,
-		MenuCreateQuickPlay("Quick Play", &campaigns->dogfightList.list[0]));*/
+		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateCampaigns(
 			"1 player",
 			"Select a campaign:",
 			&campaigns->campaignList,
-			CAMPAIGN_MODE_NORMAL,
 			0));
 	MenuAddSubmenu(
 		menu,
@@ -108,7 +106,6 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 			"2 players",
 			"Select a campaign:",
 			&campaigns->campaignList,
-			CAMPAIGN_MODE_NORMAL,
 			1));
 	MenuAddSubmenu(
 		menu,
@@ -116,7 +113,6 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 			"Dogfight",
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList,
-			CAMPAIGN_MODE_DOGFIGHT,
 			1));
 	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
 	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
@@ -129,20 +125,21 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
-	memcpy(&menu->u.campaign.campaignEntry, entry, sizeof(menu->u.campaign.campaignEntry));
-	menu->u.campaign.mode = CAMPAIGN_MODE_QUICK_PLAY;
+	memcpy(
+		&menu->u.campaign.campaignEntry,
+		entry,
+		sizeof(menu->u.campaign.campaignEntry));
 	menu->u.campaign.is_two_player = 0;
 	return menu;
 }
 
 menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, campaign_mode_e mode, int is_two_player);
+	campaign_entry_t *entry, int is_two_player);
 
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list,
-	campaign_mode_e mode,
 	int is_two_player)
 {
 	menu_t *menu = MenuCreateNormal(
@@ -161,23 +158,24 @@ menu_t *MenuCreateCampaigns(
 				folderName,
 				title,
 				&list->subFolders[i],
-				mode,
 				is_two_player));
 	}
 	for (i = 0; i < list->num; i++)
 	{
 		MenuAddSubmenu(menu, MenuCreateCampaignItem(
-			&list->list[i], mode, is_two_player));
+			&list->list[i], is_two_player));
 	}
 	return menu;
 }
 
 menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, campaign_mode_e mode, int is_two_player)
+	campaign_entry_t *entry, int is_two_player)
 {
 	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
-	memcpy(&menu->u.campaign.campaignEntry, entry, sizeof(menu->u.campaign.campaignEntry));
-	menu->u.campaign.mode = mode;
+	memcpy(
+		&menu->u.campaign.campaignEntry,
+		entry,
+		sizeof(menu->u.campaign.campaignEntry));
 	menu->u.campaign.is_two_player = is_two_player;
 	return menu;
 }
