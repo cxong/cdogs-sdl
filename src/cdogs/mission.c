@@ -615,12 +615,12 @@ int SetupBuiltinDogfight(int index)
 	return 1;
 }
 
-void SetupQuickPlayEnemy(TBadGuy *enemy)
+void SetupQuickPlayEnemy(TBadGuy *enemy, gun_e gun)
 {
 	enemy->armedBodyPic = BODY_ARMED;
 	enemy->unarmedBodyPic = BODY_UNARMED;
 	enemy->facePic = rand() % FACE_COUNT;
-	enemy->gun = rand() % GUN_COUNT;
+	enemy->gun = gun;
 	if (IsShortRange(enemy->gun))
 	{
 		enemy->speed = 256 + (rand() % (384 - 256 + 1));
@@ -663,6 +663,7 @@ void SetupQuickPlayEnemy(TBadGuy *enemy)
 CampaignSetting *SetupAndGetQuickPlay(void)
 {
 	int i;
+	gun_e gun;
 	strcpy(gQuickPlayMission.title, "");
 	strcpy(gQuickPlayMission.description, "");
 	gQuickPlayMission.wallStyle = rand() % WALL_STYLE_COUNT;
@@ -683,10 +684,36 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 	gQuickPlayMission.exitBottom = 0;
 	gQuickPlayMission.objectiveCount = 0;
 	gQuickPlayMission.baddieCount = 3 + (rand() % (BADDIE_MAX - 3));
-	for (i = 0; i < gQuickPlayMission.baddieCount; i++)
+
+	// make at least one of each type of enemy:
+	// - Short range weapon
+	// - Long range weapon
+	// - High explosive weapon
+	gQuickPlayMission.baddies[0] = 0;
+	do
+	{
+		gun = rand() % GUN_COUNT;
+	} while (!IsShortRange(gun));
+	SetupQuickPlayEnemy(&gQuickPlayEnemies[0], gun);
+
+	gQuickPlayMission.baddies[1] = 1;
+	do
+	{
+		gun = rand() % GUN_COUNT;
+	} while (!IsLongRange(gun));
+	SetupQuickPlayEnemy(&gQuickPlayEnemies[1], gun);
+
+	gQuickPlayMission.baddies[2] = 2;
+	do
+	{
+		gun = rand() % GUN_COUNT;
+	} while (!IsHighDPS(gun));
+	SetupQuickPlayEnemy(&gQuickPlayEnemies[2], gun);
+
+	for (i = 3; i < gQuickPlayMission.baddieCount; i++)
 	{
 		gQuickPlayMission.baddies[i] = i;
-		SetupQuickPlayEnemy(&gQuickPlayEnemies[i]);
+		SetupQuickPlayEnemy(&gQuickPlayEnemies[i], rand() % GUN_COUNT);
 	}
 	gQuickPlayMission.specialCount = 0;
 	gQuickPlayMission.itemCount = rand() % (ITEMS_MAX + 1);
@@ -695,7 +722,8 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 		gQuickPlayMission.items[i] = i;
 		gQuickPlayMission.itemDensity[i] = rand() % 32;
 	}
-	gQuickPlayMission.baddieDensity = 10 + (rand() % 5);
+	gQuickPlayMission.baddieDensity =
+		(40 + (rand() % 20)) / gQuickPlayMission.baddieCount;
 	gQuickPlayMission.weaponSelection = 0;
 	strcpy(gQuickPlayMission.song, "");
 	strcpy(gQuickPlayMission.map, "");

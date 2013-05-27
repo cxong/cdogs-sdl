@@ -571,7 +571,7 @@ void Gas(int x, int y, int flags, int special)
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 8; i++)
 		AddGasCloud(x, y, rand() & 255, (256 + rand()) & 255,
-			    ((48 - rand()) % 8) * 4 - 1, flags, special);
+			    (48 - (rand() % 8)) * 4 - 1, flags, special);
 	PlaySoundAt(x >> 8, y >> 8, SND_BANG);
 }
 

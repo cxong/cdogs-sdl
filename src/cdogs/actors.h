@@ -81,6 +81,7 @@ typedef enum
 } gun_e;
 
 int IsHighDPS(gun_e gun);
+int IsLongRange(gun_e gun);
 int IsShortRange(gun_e gun);
 
 #define FLAGS_PLAYER1       (1 << 0)

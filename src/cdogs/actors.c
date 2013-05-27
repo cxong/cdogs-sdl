@@ -78,6 +78,20 @@ int IsHighDPS(gun_e gun)
 		return 0;
 	}
 }
+int IsLongRange(gun_e gun)
+{
+	switch (gun)
+	{
+	case GUN_MG:
+	case GUN_POWERGUN:
+	case GUN_SNIPER:
+	case GUN_PETRIFY:
+	case GUN_BROWN:
+		return 1;
+	default:
+		return 0;
+	}
+}
 int IsShortRange(gun_e gun)
 {
 	switch (gun)
@@ -87,7 +101,6 @@ int IsShortRange(gun_e gun)
 	case GUN_MOLOTOV:
 	case GUN_MINE:
 	case GUN_DYNAMITE:
-	case GUN_BROWN:
 	case GUN_GASGUN:
 		return 1;
 	default:
@@ -956,6 +969,10 @@ void Shoot(TActor * actor)
 
 	case GUN_DYNAMITE:
 		Dynamite(actor);
+		break;
+
+	default:
+		// unknown gun?
 		break;
 	}
 }
