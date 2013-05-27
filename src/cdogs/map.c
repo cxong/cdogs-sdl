@@ -54,7 +54,7 @@ TTile gMap[YMAX][XMAX];
 unsigned char gAutoMap[YMAX][XMAX];
 
 
-static int accessCount;
+static int gKeyAccessCount;
 static unsigned short internalMap[YMAX][XMAX];
 static int tilesSeen = 0;
 static int tilesTotal = XMAX * YMAX;
@@ -368,58 +368,81 @@ int AreaClear(int xOrigin, int yOrigin, int width, int height)
 	return YES;
 }
 
-static int BuildRoom(void)
+unsigned short GenerateAccessMask(int *accessLevel)
+{
+	unsigned short accessMask = 0;
+	switch (rand() % 20)
+	{
+		case 0:
+			if (*accessLevel >= 4)
+			{
+				accessMask = MAP_ACCESS_RED;
+				*accessLevel = 5;
+			}
+			break;
+		case 1:
+		case 2:
+			if (*accessLevel >= 3)
+			{
+				accessMask = MAP_ACCESS_BLUE;
+				if (*accessLevel < 4)
+				{
+					*accessLevel = 4;
+				}
+			}
+			break;
+		case 3:
+		case 4:
+		case 5:
+			if (*accessLevel >= 2)
+			{
+				accessMask = MAP_ACCESS_GREEN;
+				if (*accessLevel < 3)
+				{
+					*accessLevel = 3;
+				}
+			}
+			break;
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+			if (*accessLevel >= 1)
+			{
+				accessMask = MAP_ACCESS_YELLOW;
+				if (*accessLevel < 2)
+				{
+					*accessLevel = 2;
+				}
+			}
+			break;
+	}
+	return accessMask;
+}
+
+static int BuildRoom(int hasKeys)
 {
 	int x, y, w, h;
-	unsigned short access_mask = 0;
 
 	GuessCoords(&x, &y);
 	w = rand() % 6 + 5;
 	h = rand() % 6 + 5;
 
-	if (AreaClear(x - 1, y - 1, w + 2, h + 2)) {
-		switch (rand() % 20) {
-		case 0:
-			if (accessCount >= 4)
+	if (AreaClear(x - 1, y - 1, w + 2, h + 2))
+	{
+		unsigned short accessMask = 0;
+		if (hasKeys)
+		{
+			accessMask = GenerateAccessMask(&gKeyAccessCount);
+		}
+		MakeRoom(x, y, w, h, rand() % 15 + 1, accessMask);
+		if (hasKeys)
+		{
+			if (gKeyAccessCount < 1)
 			{
-				access_mask = MAP_ACCESS_RED;
-				accessCount = 5;
-				break;
-			}
-		case 1:
-		case 2:
-			if (accessCount >= 3)
-			{
-				access_mask = MAP_ACCESS_BLUE;
-				if (accessCount < 4)
-					accessCount = 4;
-				break;
-			}
-		case 3:
-		case 4:
-		case 5:
-			if (accessCount >= 2)
-			{
-				access_mask = MAP_ACCESS_GREEN;
-				if (accessCount < 3)
-					accessCount = 3;
-				break;
-			}
-		case 6:
-		case 7:
-		case 8:
-		case 9:
-			if (accessCount >= 1)
-			{
-				access_mask = MAP_ACCESS_YELLOW;
-				if (accessCount < 2)
-					accessCount = 2;
-				break;
+				gKeyAccessCount = 1;
 			}
 		}
-		MakeRoom(x, y, w, h, rand() % 15 + 1, access_mask);
-		if (accessCount < 1)
-			accessCount = 1;
 		return 1;
 	}
 	return 0;
@@ -710,15 +733,15 @@ static int PlaceOneObject(int x, int y, TMapObject * mo, int extraFlags)
 	return 1;
 }
 
-int HasHighAccess(void)
+int HasLockedRooms(void)
 {
-	return accessCount > 1;
+	return gKeyAccessCount > 1;
 }
 
+// TODO: rename this function
 int IsHighAccess(int x, int y)
 {
-	return (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) & MAP_ACCESSBITS) !=
-	    0;
+	return (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) & MAP_ACCESSBITS) != 0;
 }
 
 static void PlaceObject(int x, int y, int index)
@@ -729,29 +752,21 @@ static void PlaceObject(int x, int y, int index)
 
 static int PlaceCollectible(int objective)
 {
-	int is_hi_access =
-	    (gMission.missionData->objectives[objective].
-	     flags & OBJECTIVE_HIACCESS) != 0 && accessCount > 1;
+	int hasLockedRooms =
+		(gMission.missionData->objectives[objective].flags & OBJECTIVE_HIACCESS) != 0 &&
+		HasLockedRooms();
 	int noaccess =
-	    (gMission.missionData->objectives[objective].
-	     flags & OBJECTIVE_NOACCESS) != 0;
+		(gMission.missionData->objectives[objective].flags & OBJECTIVE_NOACCESS) != 0;
 	int x, y;
-	int i = (noaccess || is_hi_access) ? 1000 : 100;
+	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
 	while (i) {
 		GuessPixelCoords(&x, &y);
-		if (!CheckWall(x << 8, y << 8, 4, 3)) {
-			if ((!is_hi_access
-			     || (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) &
-				 MAP_ACCESSBITS) != 0) && (!noaccess
-							   ||
-							   (iMap
-							    (x /
-							     TILE_WIDTH,
-							     y /
-							     TILE_HEIGHT) &
-							    MAP_ACCESSBITS)
-							   == 0)) {
+		if (!CheckWall(x << 8, y << 8, 4, 3))
+		{
+			if ((!hasLockedRooms || IsHighAccess(x, y)) &&
+				(!noaccess || !IsHighAccess(x, y)))
+			{
 				AddObject(x << 8, y << 8, 3, 2,
 					  &cGeneralPics[gMission.
 							objectives
@@ -770,18 +785,18 @@ static int PlaceCollectible(int objective)
 
 static int PlaceBlowup(int objective)
 {
-	int is_hi_access =
-	    (gMission.missionData->objectives[objective].
-	     flags & OBJECTIVE_HIACCESS) != 0 && accessCount > 1;
+	int hasLockedRooms =
+		(gMission.missionData->objectives[objective].flags & OBJECTIVE_HIACCESS) != 0 &&
+		HasLockedRooms();
 	int noaccess =
 	    (gMission.missionData->objectives[objective].
 	     flags & OBJECTIVE_NOACCESS) != 0;
-	int i = (noaccess || is_hi_access) ? 1000 : 100;
+	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 	int x, y;
 
 	while (i > 0) {
 		GuessCoords(&x, &y);
-		if ((!is_hi_access || (iMap(x, y) >> 8) != 0) &&
+		if ((!hasLockedRooms || (iMap(x, y) >> 8) != 0) &&
 		    (!noaccess || (iMap(x, y) >> 8) == 0)) {
 			if (PlaceOneObject(x, y,
 					   gMission.objectives[objective].
@@ -1200,12 +1215,15 @@ void SetupMap(void)
 		i++;
 	}
 
-	accessCount = 0;
+	gKeyAccessCount = 0;
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->roomCount) {
-		if (BuildRoom())
+	while (i < 1000 && count < mission->roomCount)
+	{
+		if (BuildRoom(AreKeysAllowed(gCampaign.mode)))
+		{
 			count++;
+		}
 		i++;
 	}
 
@@ -1250,14 +1268,22 @@ void SetupMap(void)
 				    gMission.objectives[i].count;
 		}
 
-	if (accessCount >= 5)
+	if (gKeyAccessCount >= 5)
+	{
 		PlaceCard(3, OBJ_KEYCARD_RED, MAP_ACCESS_BLUE);
-	if (accessCount >= 4)
+	}
+	if (gKeyAccessCount >= 4)
+	{
 		PlaceCard(2, OBJ_KEYCARD_BLUE, MAP_ACCESS_GREEN);
-	if (accessCount >= 3)
+	}
+	if (gKeyAccessCount >= 3)
+	{
 		PlaceCard(1, OBJ_KEYCARD_GREEN, MAP_ACCESS_YELLOW);
-	if (accessCount >= 2)
+	}
+	if (gKeyAccessCount >= 2)
+	{
 		PlaceCard(0, OBJ_KEYCARD_YELLOW, 0);
+	}
 }
 
 int OKforPlayer(int x, int y)

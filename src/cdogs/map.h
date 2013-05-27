@@ -104,7 +104,7 @@ extern unsigned char gAutoMap[YMAX][XMAX];
 #define AutoMap( x, y)  gAutoMap[y][x]
 
 int CheckWall(int x, int y, int w, int h);
-int HasHighAccess(void);
+int HasLockedRooms(void);
 int IsHighAccess(int x, int y);
 int MapAccessLevel(int x, int y);
 

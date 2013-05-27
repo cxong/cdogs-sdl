@@ -251,6 +251,11 @@ int IsMissionBriefingNeeded(campaign_mode_e mode)
 	return mode == CAMPAIGN_MODE_NORMAL;
 }
 
+int AreKeysAllowed(campaign_mode_e mode)
+{
+	return mode == CAMPAIGN_MODE_NORMAL;
+}
+
 int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
 {
 	return

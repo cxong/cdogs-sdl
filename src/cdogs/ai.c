@@ -545,10 +545,11 @@ void InitializeBadGuys(void)
 				gMission.objectives[i].count = 1;
 				gMission.objectives[i].required = 1;
 				gPrisoner = AddActor(CHARACTER_PRISONER);
-				gPrisoner->tileItem.flags |=
-				    ObjectiveToTileItem(i);
-				if (HasHighAccess())
+				gPrisoner->tileItem.flags |= ObjectiveToTileItem(i);
+				if (HasLockedRooms())
+				{
 					PlacePrisoner(gPrisoner);
+				}
 				else
 					PlaceBaddie(gPrisoner);
 			} else {
