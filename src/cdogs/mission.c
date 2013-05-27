@@ -627,7 +627,7 @@ void SetupQuickPlayEnemy(TBadGuy *enemy, gun_e gun)
 	}
 	else
 	{
-		enemy->speed = 128 + (rand() % (384 - 128 + 1));
+		enemy->speed = 128 + (rand() % (256 - 128 + 1));
 	}
 	if (IsShortRange(enemy->gun))
 	{
