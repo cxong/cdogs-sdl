@@ -777,17 +777,17 @@ static int Change(int yc, int xc, int d, int *mission)
 		switch (xc) {
 		case XC_WALL:
 			currentMission->wallStyle = CLAMP_OPPOSITE(
-				currentMission->wallStyle + d, 0, WALL_STYLE_COUNT - 1);
+				(int)(currentMission->wallStyle + d), 0, WALL_STYLE_COUNT - 1);
 			break;
 		case XC_FLOOR:
 			currentMission->floorStyle = CLAMP_OPPOSITE(
-				currentMission->floorStyle + d,
+				(int)(currentMission->floorStyle + d),
 				0,
 				FLOOR_STYLE_COUNT - 1);
 			break;
 		case XC_ROOM:
 			currentMission->roomStyle = CLAMP_OPPOSITE(
-				currentMission->roomStyle + d, 0, ROOMFLOOR_COUNT - 1);
+				(int)(currentMission->roomStyle + d), 0, ROOMFLOOR_COUNT - 1);
 			break;
 		case XC_DOORS:
 			currentMission->doorStyle =
