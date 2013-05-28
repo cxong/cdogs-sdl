@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(cdogs-sdl C)
 
 SET(VERSION "0.4.3")
-SET(VERSION_RC "0,4,3")
+SET(VERSION_RC "0,4,3,0")
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "4")
 SET(VERSION_PATCH "3")
@@ -120,7 +120,7 @@ set(CDOGS_SDL_HEADERS
 	missions/bem.h
 	missions/ogre.h)
 set(CDOGS_SDL_EXTRA)
-if(WIN32 AND NOT MINGW)
+if(WIN32)
 	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
