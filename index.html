@@ -8,8 +8,22 @@
 
   <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
   <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <style>
+	/* Galleria styles */
+	html,body{background:#222;margin:0;}
+	body{border-top:4px solid #000;}
+	.content{color:#777;font:12px/1.4 "helvetica neue",arial,sans-serif;width:620px;margin:20px auto;}
+	h1{font-size:12px;font-weight:normal;color:#ddd;margin:0;}
+	p{margin:0 0 20px}
+	a {color:#22BCB9;text-decoration:none;}
+	.cred{margin-top:20px;font-size:11px;}
+	/* This rule is read by Galleria to define the gallery height: */
+	#galleria{height:480px}
+  </style>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
   <script type="text/javascript" src="javascripts/script.js"></script>
+  <!-- load Galleria -->
+  <script src="javascripts/galleria-1.2.9.min.js"></script>
 
   <title>C-Dogs SDL</title>
   <meta name="description" content="Action/Arcade Game">
@@ -41,7 +55,26 @@
 <h3>
 <a href="https://github.com/cxong/cdogs-sdl/wiki"><strong>Visit the wiki</strong></a> for more information.</h3>
 
-<p><img src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/game_screen.png" alt=""></p>
+		  <div id="galleria">
+            <img 
+                src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/game_screen.png",
+                data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/game_screen.png"
+                data-title="Game Screen"
+                data-description="Customize your player and jump into the action"
+            >
+            <img 
+                src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/menu_with_quick_play.png",
+                data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/menu_with_quick_play.png"
+                data-title="Main menu"
+                data-description="Try different game modes - Quick Play, 1 or 2 player co-op campaign, and 2 player Dogfight"
+            >
+			<img 
+                src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png",
+                data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png"
+                data-title="Quick Play"
+                data-description="Jump right in the action with Quick Play, in a randomly generated arena with a variety of enemies. No two games are the same!"
+            >
+          </div>
         </article>
       </div>
     </div>
@@ -53,7 +86,8 @@
       </div>
       <div class="creds">
         <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a><br/>
-		Contains icons from <a href="http://icons.yootheme.com">http://icons.yootheme.com</a> and <a href="http://www.fatcow.com/free-icons">http://www.fatcow.com/free-icons</a></small>
+		Contains icons from <a href="http://icons.yootheme.com">http://icons.yootheme.com</a> and <a href="http://www.fatcow.com/free-icons">http://www.fatcow.com/free-icons</a><br/>
+		Gallery by <a href="http://galleria.io/">Galleria</a>, under the <a href="javascripts/LICENSE.galleria">MIT license</a></small>
       </div>
     </footer>
   </div>
@@ -63,6 +97,12 @@
     <p class="name"></p>
   </div>
 
+  <script>
+    // Load the classic theme
+    Galleria.loadTheme('javascripts/galleria.classic.min.js');
+    // Initialize Galleria
+    Galleria.run('#galleria');
+  </script>
   
 </body>
 </html>
