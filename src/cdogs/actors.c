@@ -743,7 +743,7 @@ void Flamer(TActor * actor)
 	Score(actor->flags, -1);
 	if (!actor->sndLock) {
 		SoundPlayAt(SND_FLAMER, actor->tileItem.x, actor->tileItem.y);
-		actor->sndLock = 48;
+		actor->sndLock = 36;
 	}
 }
 

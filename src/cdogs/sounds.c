@@ -194,13 +194,6 @@ void SoundTerminate(int isWaitingUntilSoundsComplete)
 	}
 }
 
-void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
-{
-	panning = CLAMP(panning*2, -128, 128);
-	*left = (Uint8)CLAMP(128 - panning, 0, 255);
-	*right = 255 - *left;
-}
-
 void SoundPlayAtPosition(
 	SoundDevice *device, sound_e sound, int distance, int bearing)
 {
