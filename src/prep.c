@@ -340,7 +340,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	{
 		if (selection[index] == (int)strlen(letters))
 		{
-			SoundPlay(SND_LAUNCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_LAUNCH);
 			return 0;
 		}
 
@@ -352,19 +352,30 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 				    smallLetters[selection[index]];
 			else
 				data->name[l] = letters[selection[index]];
-			SoundPlay(SND_MACHINEGUN, 0, 255);
-		} else
-			SoundPlay(SND_KILL, 0, 255);
-	} else if (cmd & CMD_BUTTON2) {
+			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+		}
+		else
+		{
+			SoundPlay(&gSoundDevice, SND_KILL);
+		}
+	}
+	else if (cmd & CMD_BUTTON2)
+	{
 		if (data->name[0]) {
 			data->name[strlen(data->name) - 1] = 0;
-			SoundPlay(SND_BANG, 0, 255);
-		} else
-			SoundPlay(SND_KILL, 0, 255);
-	} else if (cmd & CMD_LEFT) {
-		if (selection[index] > 0) {
+			SoundPlay(&gSoundDevice, SND_BANG);
+		}
+		else
+		{
+			SoundPlay(&gSoundDevice, SND_KILL);
+		}
+	}
+	else if (cmd & CMD_LEFT)
+	{
+		if (selection[index] > 0)
+		{
 			selection[index]--;
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 	}
 	else if (cmd & CMD_RIGHT)
@@ -372,12 +383,12 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 		if (selection[index] < (int)strlen(letters))
 		{
 			selection[index]++;
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 	} else if (cmd & CMD_UP) {
 		if (selection[index] > 9) {
 			selection[index] -= 10;
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 	}
 	else if (cmd & CMD_DOWN)
@@ -385,12 +396,12 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 		if (selection[index] < (int)strlen(letters) - 9)
 		{
 			selection[index] += 10;
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 		else if (selection[index] < (int)strlen(letters))
 		{
 			selection[index] = strlen(letters);
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 	}
 
@@ -541,28 +552,33 @@ static int AppearanceSelection(const char **menu, int menuCount,
 
 	debug(D_NORMAL, "\n");
 
-	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		SoundPlay(SND_MACHINEGUN, 0, 255);
+	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
+	{
+		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
 			*property = selection[index];
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == 0) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == 0)
+		{
 			selection[index] = menuCount - 1;
 			*property = selection[index];
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < menuCount - 1) {
 			selection[index]++;
 			*property = selection[index];
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == menuCount - 1) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == menuCount - 1)
+		{
 			selection[index] = 0;
 			*property = selection[index];
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 
@@ -610,28 +626,33 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 	int i;
 	int y;
 
-	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		SoundPlay(SND_POWERGUN, 0, 255);
+	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
+	{
+		SoundPlay(&gSoundDevice, SND_POWERGUN);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (*selection > 0) {
 			(*selection)--;
 			*property = IndexToShade(*selection);
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (*selection == 0) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (*selection == 0)
+		{
 			(*selection) = PLAYER_BODY_COUNT - 1;
 			*property = IndexToShade(*selection);
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (*selection < PLAYER_BODY_COUNT - 1) {
 			(*selection)++;
 			*property = IndexToShade(*selection);
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (*selection == PLAYER_BODY_COUNT - 1) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (*selection == PLAYER_BODY_COUNT - 1)
+		{
 			(*selection) = 0;
 			*property = IndexToShade(*selection);
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 
@@ -682,9 +703,11 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 	if (selection[index] > gMission.weaponCount)
 		selection[index] = gMission.weaponCount;
 
-	if (cmd & CMD_BUTTON1) {
-		if (selection[index] == gMission.weaponCount) {
-			SoundPlay(SND_KILL2, 0, 255);
+	if (cmd & CMD_BUTTON1)
+	{
+		if (selection[index] == gMission.weaponCount)
+		{
+			SoundPlay(&gSoundDevice, SND_KILL2);
 			return data->weaponCount > 0 ? 0 : 1;
 		}
 
@@ -696,32 +719,38 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 			data->weapons[data->weaponCount] = gMission.availableWeapons[selection[index]];
 			data->weaponCount++;
 
-			SoundPlay(SND_SHOTGUN, 0, 255);
-		} else {
-			SoundPlay(SND_KILL, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SHOTGUN);
+		}
+		else
+		{
+			SoundPlay(&gSoundDevice, SND_KILL);
 		}
 	} else if (cmd & CMD_BUTTON2) {
 		if (data->weaponCount) {
 			data->weaponCount--;
-			SoundPlay(SND_PICKUP, 0, 255);
+			SoundPlay(&gSoundDevice, SND_PICKUP);
 			done = 0;
 		}
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == 0) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == 0)
+		{
 			selection[index] = gMission.weaponCount;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		done = 0;
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < gMission.weaponCount) {
 			selection[index]++;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == gMission.weaponCount) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == gMission.weaponCount)
+		{
 			selection[index] = 0;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		done = 0;
 	}
@@ -776,32 +805,42 @@ static int TemplateSelection(int loadFlag, int x, int index,
 	int y;
 	static int selection[2] = { 0, 0 };
 
-	if (cmd & CMD_BUTTON1) {
+	if (cmd & CMD_BUTTON1)
+	{
 		if (loadFlag)
-			UseTemplate(index, data,
-				    &templates[selection[index]]);
+		{
+			UseTemplate(index, data, &templates[selection[index]]);
+		}
 		else
+		{
 			SaveTemplate(data, &templates[selection[index]]);
-		SoundPlay(rand() % SND_COUNT, 0, 255);
+		}
+		SoundPlay(&gSoundDevice, rand() % SND_COUNT);
 		return 0;
-	} else if (cmd & CMD_BUTTON2) {
-		SoundPlay(rand() % SND_COUNT, 0, 255);
+	}
+	else if (cmd & CMD_BUTTON2)
+	{
+		SoundPlay(&gSoundDevice, rand() % SND_COUNT);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == 0) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == 0)
+		{
 			selection[index] = MAX_TEMPLATE - 1;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MAX_TEMPLATE - 1) {
 			selection[index]++;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == MAX_TEMPLATE - 1) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == MAX_TEMPLATE - 1)
+		{
 			selection[index] = 0;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 
@@ -826,24 +865,29 @@ static int MainMenu(int x, int index, int cmd)
 	int y;
 	static int selection[2] = { MODE_DONE, MODE_DONE };
 
-	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		SoundPlay(SND_BANG, 0, 255);
+	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
+	{
+		SoundPlay(&gSoundDevice, SND_BANG);
 		return selection[index];
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > MODE_SELECTNAME) {
 			selection[index]--;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == MODE_SELECTNAME) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == MODE_SELECTNAME)
+		{
 			selection[index] = MODE_DONE;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MODE_DONE) {
 			selection[index]++;
-			SoundPlay(SND_SWITCH, 0, 255);
-		} else if (selection[index] == MODE_DONE) {
+			SoundPlay(&gSoundDevice, SND_SWITCH);
+		}
+		else if (selection[index] == MODE_DONE)
+		{
 			selection[index] = MODE_SELECTNAME;
-			SoundPlay(SND_SWITCH, 0, 255);
+			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 

@@ -102,7 +102,7 @@ extern SoundDevice gSoundDevice;
 
 int SoundInitialize(void);
 void SoundTerminate(int isWaitingUntilSoundsComplete);
-void SoundPlay(sound_e sound, int panning, int volume);
+void SoundPlay(SoundDevice *device, sound_e sound);
 void SoundSetVolume(int volume);
 int SoundGetVolume(void);
 void SoundSetLeftEar(int x, int y);

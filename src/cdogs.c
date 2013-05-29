@@ -532,7 +532,7 @@ void Victory(void *bkg)
 	CDogsTextStringWithTable(s, &tablePurple);
 	CDogsTextCharWithTable('"', &tableDarker);
 
-	SoundPlay(SND_HAHAHA, 0, 255);
+	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
 	CopyToScreen();
 	GetKey(&gKeyboard);

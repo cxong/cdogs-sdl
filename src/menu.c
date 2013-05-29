@@ -557,7 +557,7 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 		menuToChange = MenuProcessEscCmd(menu);
 		if (menuToChange != NULL)
 		{
-			SoundPlay(SND_PICKUP, 0, 255);
+			SoundPlay(&gSoundDevice, SND_PICKUP);
 			return menuToChange;
 		}
 	}
@@ -568,11 +568,11 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 		// TODO: refactor menu change sound
 		if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
 		{
-			SoundPlay(SND_HAHAHA, 0, 255);
+			SoundPlay(&gSoundDevice, SND_HAHAHA);
 		}
 		else
 		{
-			SoundPlay(SND_MACHINEGUN, 0, 255);
+			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
 		}
 		return menuToChange;
 	}
@@ -588,7 +588,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 	{
 		if (menu->u.normal.index != quitMenuIndex)
 		{
-			SoundPlay(SND_DOOR, 0, 255);
+			SoundPlay(&gSoundDevice, SND_DOOR);
 			menu->u.normal.index = quitMenuIndex;
 		}
 		else
@@ -721,7 +721,7 @@ void MenuProcessChangeKey(menu_t *menu)
 
 	if (key == keyEsc)
 	{
-		SoundPlay(SND_PICKUP, 0, 255);
+		SoundPlay(&gSoundDevice, SND_PICKUP);
 	}
 	else if (KeyAvailable(
 		key,
@@ -740,11 +740,11 @@ void MenuProcessChangeKey(menu_t *menu)
 		{
 			gOptions.mapKey = key;
 		}
-		SoundPlay(SND_EXPLOSION, 0, 255);
+		SoundPlay(&gSoundDevice, SND_EXPLOSION);
 	}
 	else
 	{
-		SoundPlay(SND_KILL4, 0, 255);
+		SoundPlay(&gSoundDevice, SND_KILL4);
 	}
 	menu->u.normal.changeKeyMenu = NULL;
 }
@@ -764,7 +764,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			}
 		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
 			MENU_TYPE_SEPARATOR);
-		SoundPlay(SND_DOOR, 0, 255);
+		SoundPlay(&gSoundDevice, SND_DOOR);
 	}
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
@@ -777,7 +777,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			}
 		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
 			MENU_TYPE_SEPARATOR);
-		SoundPlay(SND_DOOR, 0, 255);
+		SoundPlay(&gSoundDevice, SND_DOOR);
 	}
 	menu->u.normal.scroll =
 		CLAMP(menu->u.normal.scroll,
@@ -826,7 +826,7 @@ void ChangeControl(
 
 void MenuActivate(menu_t *menu, int cmd)
 {
-	SoundPlay(SND_SWITCH, 0, 255);
+	SoundPlay(&gSoundDevice, SND_SWITCH);
 	switch (menu->type)
 	{
 	case MENU_TYPE_SET_OPTION_TOGGLE:

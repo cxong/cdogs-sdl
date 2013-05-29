@@ -48,6 +48,7 @@
 */
 #include "sounds.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -195,44 +196,38 @@ void SoundTerminate(int isWaitingUntilSoundsComplete)
 
 void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
 {
-	if (panning == 0)
-	{
-		*left = *right = 255;
-	}
-	else
-	{
-		if (panning < 0)
-		{
-			*left = (unsigned char)(255 + panning);
-		}
-		else
-		{
-			*left = (unsigned char)(panning);
-		}
-
-		*right = 255 - *left;
-	}
+	panning = CLAMP(panning*2, -128, 128);
+	*left = (Uint8)CLAMP(128 - panning, 0, 255);
+	*right = 255 - *left;
 }
 
-void SoundPlay(sound_e sound, int panning, int volume)
+void SoundPlayAtPosition(
+	SoundDevice *device, sound_e sound, int distance, int bearing)
 {
-	int c;
-	Uint8 left, right;
+	int channel;
+	// make sure we always hear something
+	Uint8 distanceAdjusted = (Uint8)CLAMP(distance / 2, 0, 200);
 
-	if (!gSoundDevice.isInitialised)
+	if (!device->isInitialised)
 	{
 		return;
 	}
 
-	debug(D_VERBOSE, "sound: %d panning: %d volume: %d\n", sound, panning, volume);
+	debug(D_VERBOSE, "sound: %d distance: %d bearing: %d\n",
+		sound, distance, bearing);
 
-	CalcLeftRightVolumeFromPanning(&left, &right, panning);
+	channel = Mix_PlayChannel(-1, device->sounds[sound].data , 0);
+	Mix_SetPosition(channel, (Sint16)bearing, distanceAdjusted);
+}
 
-	Mix_VolumeChunk(
-		gSoundDevice.sounds[sound].data,
-		(volume * gSoundDevice.volume) / 128);
-	c = Mix_PlayChannel(-1, gSoundDevice.sounds[sound].data , 0);
-	Mix_SetPanning(c, left, right);
+void SoundPlay(SoundDevice *device, sound_e sound)
+{
+	if (!device->isInitialised)
+	{
+		return;
+	}
+
+	SoundPlayAtPosition(device, sound, 0, 0);
 }
 
 void SoundSetVolume(int volume)
@@ -276,51 +271,13 @@ void SoundSetEars(int x, int y)
 #define RANGE_FACTOR		128
 void SoundPlayAt(sound_e sound, int x, int y)
 {
-	int d = AXIS_DISTANCE(x, y, gSoundDevice.earLeft.x, gSoundDevice.earLeft.y);
-	int volume, panning;
-
-	if (gSoundDevice.earLeft.x != gSoundDevice.earRight.x ||
-		gSoundDevice.earLeft.y != gSoundDevice.earRight.y)
-	{
-		int dLeft = d;
-		int dRight = AXIS_DISTANCE(
-			x, y, gSoundDevice.earRight.x, gSoundDevice.earRight.y);
-		int leftVolume, rightVolume;
-
-		d = (dLeft >
-		     RANGE_FULLVOLUME ? dLeft - RANGE_FULLVOLUME : 0);
-		leftVolume = 255 - (RANGE_FACTOR * d) / 256;
-		if (leftVolume < 0)
-			leftVolume = 0;
-
-		d = (dRight >
-		     RANGE_FULLVOLUME ? dRight - RANGE_FULLVOLUME : 0);
-		rightVolume = 255 - (RANGE_FACTOR * d) / 256;
-		if (rightVolume < 0)
-			rightVolume = 0;
-
-		volume = leftVolume + rightVolume;
-		if (volume > 256)
-			volume = 256;
-
-		panning = rightVolume - leftVolume;
-		panning /= 4;
-	}
-	else
-	{
-		d -= d / 4;
-		d = (d > RANGE_FULLVOLUME ? d - RANGE_FULLVOLUME : 0);
-		volume = 255 - (RANGE_FACTOR * d) / 256;
-		if (volume < 0)
-			volume = 0;
-
-		panning = (x - gSoundDevice.earLeft.x) / 4;
-	}
-
-	if (volume > 0)
-	{
-		SoundPlay(sound, panning, volume);
-	}
+	int distance, bearing;
+	Vector2i origin = gSoundDevice.earLeft;
+	Vector2i target;
+	target.x = x;
+	target.y = y;
+	CalcChebyshevDistanceSquaredAndBearing(origin, target, &distance, &bearing);
+	SoundPlayAtPosition(&gSoundDevice, sound, distance, bearing);
 }
 
 void SoundSetChannels(int channels)

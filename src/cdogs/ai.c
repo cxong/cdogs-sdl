@@ -68,7 +68,7 @@ static int FacingPlayer(TActor * actor)
 }
 
 
-#define Distance(a,b) AXIS_DISTANCE(a->x, a->y, b->x, b->y)
+#define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
 /*
 TActor *TrackOtherAICharacter( TActor *actor )

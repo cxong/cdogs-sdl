@@ -651,7 +651,9 @@ int gameloop(void)
 			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
 			{
 				if (gMission.pickupTime == PICKUP_LIMIT)
-					SoundPlay(SND_DONE, 0, 255);
+				{
+					SoundPlay(&gSoundDevice, SND_DONE);
+				}
 				gMission.pickupTime -= ticks;
 				if (gMission.pickupTime <= 0)
 					done = YES;
