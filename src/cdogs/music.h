@@ -46,70 +46,22 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SOUNDS
-#define __SOUNDS
-
-#include <SDL_mixer.h>
-
-#include "music.h"
-#include "utils.h"
+#ifndef __MUSIC
+#define __MUSIC
 
 typedef enum
 {
-	SND_EXPLOSION,
-	SND_LAUNCH,
-	SND_MACHINEGUN,
-	SND_FLAMER,
-	SND_SHOTGUN,
-	SND_POWERGUN,
-	SND_SWITCH,
-	SND_KILL,
-	SND_KILL2,
-	SND_KILL3,
-	SND_KILL4,
-	SND_HAHAHA,
-	SND_BANG,
-	SND_PICKUP,
-	SND_DOOR,
-	SND_DONE,
-	SND_LASER,
-	SND_MINIGUN,
-	SND_COUNT
-} sound_e;
+	MUSIC_OK,
+	MUSIC_NOLOAD,
+	MUSIC_PLAYING,
+	MUSIC_PAUSED
+} music_status_e;
 
-typedef struct
-{
-	char name[81];
-	int isLoaded;
-	Mix_Chunk *data;
-} SoundData;
-
-typedef struct
-{
-	int isInitialised;
-	int volume;
-	int musicVolume;
-	int channels;
-	Mix_Music *music;
-	music_status_e musicStatus;
-	char musicErrorMessage[128];
-	Vector2i earLeft;
-	Vector2i earRight;
-	SoundData sounds[SND_COUNT];
-} SoundDevice;
-
-extern SoundDevice gSoundDevice;
-
-int SoundInitialize(void);
-void SoundTerminate(void);
-void SoundPlay(sound_e sound, int panning, int volume);
-void SoundSetVolume(int volume);
-int SoundGetVolume(void);
-void SoundSetLeftEar(int x, int y);
-void SoundSetRightEar(int x, int y);
-void SoundSetEars(int x, int y);
-void SoundPlayAt(sound_e sound, int x, int y);
-void SoundSetChannels(int channels);
-int SoundGetChannels(void);
+int MusicPlay(const char *path);
+void MusicStop(void);
+void MusicSetVolume(int volume);
+int MusicGetVolume(void);
+int MusicGetStatus(void);
+const char *MusicGetErrorMessage(void);
 
 #endif

@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,70 +46,82 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SOUNDS
-#define __SOUNDS
+#include "music.h"
 
+#include <string.h>
+
+#include <SDL.h>
 #include <SDL_mixer.h>
 
-#include "music.h"
-#include "utils.h"
+#include "sounds.h"
 
-typedef enum
+
+int MusicPlay(const char *path)
 {
-	SND_EXPLOSION,
-	SND_LAUNCH,
-	SND_MACHINEGUN,
-	SND_FLAMER,
-	SND_SHOTGUN,
-	SND_POWERGUN,
-	SND_SWITCH,
-	SND_KILL,
-	SND_KILL2,
-	SND_KILL3,
-	SND_KILL4,
-	SND_HAHAHA,
-	SND_BANG,
-	SND_PICKUP,
-	SND_DOOR,
-	SND_DONE,
-	SND_LASER,
-	SND_MINIGUN,
-	SND_COUNT
-} sound_e;
+	if (!gSoundDevice.isInitialised)
+	{
+		return 0;
+	}
 
-typedef struct
+	debug(D_NORMAL, "Attempting to play song: %s\n", path);
+
+	if (path == NULL || strlen(path) == 0)
+	{
+		debug(D_NORMAL, "Attempting to play song with empty name\n");
+		return 1;
+	}
+
+	gSoundDevice.music = Mix_LoadMUS(path);
+	if (gSoundDevice.music == NULL)
+	{
+		strcpy(gSoundDevice.musicErrorMessage, SDL_GetError());
+		gSoundDevice.musicStatus = MUSIC_NOLOAD;
+		return 1;
+	}
+
+	debug(D_NORMAL, "Playing song: %s\n", path);
+
+	Mix_PlayMusic(gSoundDevice.music, -1);
+	gSoundDevice.musicStatus = MUSIC_PLAYING;
+	MusicSetVolume(gSoundDevice.musicVolume);
+
+	return 0;
+}
+
+void MusicStop(void)
 {
-	char name[81];
-	int isLoaded;
-	Mix_Chunk *data;
-} SoundData;
+	if (gSoundDevice.music != NULL)
+	{
+		Mix_HaltMusic();
+		Mix_FreeMusic(gSoundDevice.music);
+		gSoundDevice.music = NULL;
+	}
+}
 
-typedef struct
+void MusicSetVolume(int volume)
 {
-	int isInitialised;
-	int volume;
-	int musicVolume;
-	int channels;
-	Mix_Music *music;
-	music_status_e musicStatus;
-	char musicErrorMessage[128];
-	Vector2i earLeft;
-	Vector2i earRight;
-	SoundData sounds[SND_COUNT];
-} SoundDevice;
+	gSoundDevice.musicVolume = volume;
+	if (!gSoundDevice.isInitialised)
+	{
+		return;
+	}
 
-extern SoundDevice gSoundDevice;
+	debug(D_NORMAL, "volume: %d\n", volume);
 
-int SoundInitialize(void);
-void SoundTerminate(void);
-void SoundPlay(sound_e sound, int panning, int volume);
-void SoundSetVolume(int volume);
-int SoundGetVolume(void);
-void SoundSetLeftEar(int x, int y);
-void SoundSetRightEar(int x, int y);
-void SoundSetEars(int x, int y);
-void SoundPlayAt(sound_e sound, int x, int y);
-void SoundSetChannels(int channels);
-int SoundGetChannels(void);
+	Mix_VolumeMusic(gSoundDevice.musicVolume);
+}
 
-#endif
+int MusicGetVolume(void)
+{
+	return gSoundDevice.musicVolume;
+}
+
+int MusicGetStatus(void)
+{
+	return gSoundDevice.musicStatus;
+}
+
+const char *MusicGetErrorMessage(void)
+{
+	return gSoundDevice.musicErrorMessage;
+}

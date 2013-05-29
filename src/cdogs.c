@@ -67,6 +67,7 @@
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
+#include <cdogs/music.h>
 #include <cdogs/objs.h>
 #include <cdogs/pics.h>
 #include <cdogs/sounds.h>
@@ -531,7 +532,7 @@ void Victory(void *bkg)
 	CDogsTextStringWithTable(s, &tablePurple);
 	CDogsTextCharWithTable('"', &tableDarker);
 
-	PlaySound(SND_HAHAHA, 0, 255);
+	SoundPlay(SND_HAHAHA, 0, 255);
 
 	CopyToScreen();
 	GetKey(&gKeyboard);
@@ -605,28 +606,28 @@ static void PlayGameSong(void)
 	// Play a tune
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
-	StopSong();
+	MusicStop();
 	if (strlen(gMission.missionData->song) > 0)
 	{
 		char buf[CDOGS_PATH_MAX];
 		strcpy(buf, gCampaign.setting->path);
 		strcat(buf, "/");
 		strcat(buf, gMission.missionData->song);
-		success = !PlaySong(buf);
+		success = !MusicPlay(buf);
 	}
 	if (!success && gGameSongs != NULL)
 	{
-		PlaySong(gGameSongs->path);
+		MusicPlay(gGameSongs->path);
 		ShiftSongs(&gGameSongs);
 	}
 }
 
 static void PlayMenuSong(void)
 {
-	StopSong();
+	MusicStop();
 	if (gMenuSongs)
 	{
-		PlaySong(gMenuSongs->path);
+		MusicPlay(gMenuSongs->path);
 		ShiftSongs(&gMenuSongs);
 	}
 }
@@ -915,7 +916,7 @@ int main(int argc, char *argv[])
 	int i, wait = 0;
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
-	int sound = 1;
+	int isSoundEnabled = 1;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
 
@@ -984,7 +985,7 @@ int main(int argc, char *argv[])
 			if (strcmp(argv[i] + 1, "nosound") == 0) {
 				printf("Sound disabled!\n");
 				snd_flag = 0;
-				sound = 0;
+				isSoundEnabled = 0;
 			}
 			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
 				debug(D_NORMAL, "nojoystick\n");
@@ -1047,7 +1048,8 @@ int main(int argc, char *argv[])
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
-	if (sound && !InitializeSound()) {
+	if (isSoundEnabled && !SoundInitialize())
+	{
 		printf("Sound initialization failed!\n");
 	}
 
@@ -1090,9 +1092,10 @@ int main(int argc, char *argv[])
 	UnloadCredits(&creditsDisplayer);
 	UnloadAllCampaigns(&campaigns);
 
-	if (sound) {
+	if (isSoundEnabled)
+	{
 		debug(D_NORMAL, ">> Shutting down sound...\n");
-		ShutDownSound();
+		SoundTerminate();
 	}
 
 	debug(D_NORMAL, "SDL_Quit()\n");

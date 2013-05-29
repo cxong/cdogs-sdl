@@ -29,6 +29,7 @@
 #include <cdogs/gamedata.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
+#include <cdogs/music.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 
@@ -334,21 +335,21 @@ menu_t *MenuCreateSound(const char *name)
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"Sound effects",
-			FXVolume, SetFXVolume,
+			SoundGetVolume, SoundSetVolume,
 			8, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"Music",
-			MusicVolume, SetMusicVolume,
+			MusicGetVolume, MusicSetVolume,
 			8, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRangeGetSet(
 			"FX channels",
-			FXChannels, SetFXChannels,
+			SoundGetChannels, SoundSetChannels,
 			2, 8, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));

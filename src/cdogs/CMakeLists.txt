@@ -17,6 +17,7 @@ set(CDOGS_SOURCES
 	keyboard.c
 	map.c
 	mission.c
+	music.c
 	objs.c
 	pics.c
 	sounds.c
@@ -42,6 +43,7 @@ set(CDOGS_HEADERS
 	keyboard.h
 	map.h
 	mission.h
+	music.h
 	objs.h
 	pics.h
 	sounds.h

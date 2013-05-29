@@ -107,4 +107,10 @@ extern int debug_level;
 #define CLAMP_OPPOSITE(v, _min, _max) (v > _max ? _min : (v < _min ? _max : v))
 #define AXIS_DISTANCE(x1, y1, x2, y2)  MAX(abs((x1) - (x2)), abs((y1) - (y2)))
 
+typedef struct
+{
+	int x;
+	int y;
+} Vector2i;
+
 #endif

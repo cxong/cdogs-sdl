@@ -57,6 +57,7 @@
 #include "SDL_mutex.h"
 
 #include "draw.h"
+#include "music.h"
 #include "objs.h"
 #include "actors.h"
 #include "pics.h"
@@ -142,10 +143,12 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 		if (i >= data->weaponCount)
 			i = 0;
 		actor->gun = data->weapons[i];
-		PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
-			    SND_SWITCH);
-	} else
+		SoundPlayAt(SND_SWITCH, actor->tileItem.x, actor->tileItem.y);
+	}
+	else
+	{
 		return NO;
+	}
 
 	actor->lastCmd = cmd;
 	return YES;
@@ -196,7 +199,7 @@ static void Ticks_FrameEnd(void)
 	Uint32 ticksIdeal = 33;
 	if (ticksSpent < ticksIdeal)
 	{
-		Uint32 ticksToDelay = 33 - ticksSpent;
+		Uint32 ticksToDelay = ticksIdeal - ticksSpent;
 		SDL_Delay(ticksToDelay);
 		debug(D_VERBOSE, "Delaying %u ticks_now %u now %u\n", ticksToDelay, ticks_now, now);
 	}
@@ -308,10 +311,10 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		} else {
 			CDogsSetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
-			SetLeftEar(player1->tileItem.x, player1->tileItem.y);
+			SoundSetLeftEar(player1->tileItem.x, player1->tileItem.y);
 			CDogsSetClip((SCREEN_WIDTH / 2) + 1, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 			DoBuffer(b, player2->tileItem.x, player2->tileItem.y, (SCREEN_WIDTH / 2) + 1, X_TILES_HALF, xNoise, yNoise);
-			SetRightEar(player2->tileItem.x, player2->tileItem.y);
+			SoundSetRightEar(player2->tileItem.x, player2->tileItem.y);
 			x = player1->tileItem.x;
 			y = player1->tileItem.y;
 			BlackLine();
@@ -320,16 +323,14 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
-		SetLeftEar(player1->tileItem.x, player1->tileItem.y);
-		SetRightEar(player1->tileItem.x, player1->tileItem.y);
+		SoundSetEars(player1->tileItem.x, player1->tileItem.y);
 		x = player1->tileItem.x;
 		y = player1->tileItem.y;
 	} else if (player2) {
 		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
-		SetLeftEar(player2->tileItem.x, player2->tileItem.y);
-		SetRightEar(player2->tileItem.x, player2->tileItem.y);
+		SoundSetEars(player2->tileItem.x, player2->tileItem.y);
 		x = player2->tileItem.x;
 		y = player2->tileItem.y;
 	} else
@@ -575,9 +576,6 @@ int HandleKey(int *done, int cmd)
 		gameIsPaused = 0;
 	}
 
-//  if (key >= key1 && key <= key0)
-//    ToggleTrack( key - key1);
-
 	return 0;
 }
 
@@ -597,8 +595,10 @@ int gameloop(void)
 
 	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
-	if (ModuleStatus() != MODULE_OK)
-		DisplayMessage(ModuleMessage());
+	if (MusicGetStatus() != MUSIC_OK)
+	{
+		DisplayMessage(MusicGetErrorMessage());
+	}
 
 	gameIsPaused = NO;
 
@@ -651,7 +651,7 @@ int gameloop(void)
 			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
 			{
 				if (gMission.pickupTime == PICKUP_LIMIT)
-					PlaySound(SND_DONE, 0, 255);
+					SoundPlay(SND_DONE, 0, 255);
 				gMission.pickupTime -= ticks;
 				if (gMission.pickupTime <= 0)
 					done = YES;

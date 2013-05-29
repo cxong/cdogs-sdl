@@ -531,7 +531,7 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 	CheckMissionObjective(object->tileItem.flags);
 	RemoveObject(object);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_PICKUP);
+	SoundPlayAt(SND_PICKUP, actor->tileItem.x, actor->tileItem.y);
 }
 
 int MoveActor(TActor * actor, int x, int y)
@@ -616,7 +616,7 @@ void PlayRandomScreamAt(int x, int y)
 	static sound_e screamTable[SCREAM_COUNT] =
 		{ SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
 	static int screamIndex = 0;
-	PlaySoundAt(x, y, screamTable[screamIndex]);
+	SoundPlayAt(screamTable[screamIndex], x, y);
 	screamIndex++;
 	if (screamIndex >= SCREAM_COUNT)
 	{
@@ -631,8 +631,9 @@ void InjureActor(TActor * actor, int injury)
 		actor->stateCounter = 0;
 		PlayRandomScreamAt(actor->tileItem.x, actor->tileItem.y);
 		if ((actor->flags & FLAGS_PLAYERS) != 0)
-			PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
-				    SND_HAHAHA);
+		{
+			SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
+		}
 		CheckMissionObjective(actor->tileItem.flags);
 	}
 }
@@ -657,7 +658,7 @@ void LaunchGrenade(TActor * actor)
 		   MOBOBJ_GRENADE);
 	actor->gunLock = 30;
 	Score(actor->flags, -20);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void LaunchFragGrenade(TActor * actor)
@@ -669,7 +670,7 @@ void LaunchFragGrenade(TActor * actor)
 		   MOBOBJ_FRAGGRENADE);
 	actor->gunLock = 30;
 	Score(actor->flags, -20);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void LaunchMolotov(TActor * actor)
@@ -681,7 +682,7 @@ void LaunchMolotov(TActor * actor)
 		   MOBOBJ_MOLOTOV);
 	actor->gunLock = 30;
 	Score(actor->flags, -20);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void LaunchGasBomb(TActor * actor)
@@ -693,7 +694,7 @@ void LaunchGasBomb(TActor * actor)
 		   MOBOBJ_GASBOMB);
 	actor->gunLock = 30;
 	Score(actor->flags, -10);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void GetMuzzle(TActor * actor, int *dx, int *dy)
@@ -725,7 +726,7 @@ void MachineGun(TActor * actor)
 		  MG_SPEED, MG_RANGE, MG_POWER, actor->flags);
 	actor->gunLock = 6;
 	Score(actor->flags, -1);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_MACHINEGUN);
+	SoundPlayAt(SND_MACHINEGUN, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Flamer(TActor * actor)
@@ -741,8 +742,7 @@ void Flamer(TActor * actor)
 	actor->gunLock = 6;
 	Score(actor->flags, -1);
 	if (!actor->sndLock) {
-		PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
-			    SND_FLAMER);
+		SoundPlayAt(SND_FLAMER, actor->tileItem.x, actor->tileItem.y);
 		actor->sndLock = 48;
 	}
 }
@@ -765,7 +765,7 @@ void ShotGun(TActor * actor)
 
 	Score(actor->flags, -5);
 	actor->gunLock = 50;
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_SHOTGUN);
+	SoundPlayAt(SND_SHOTGUN, actor->tileItem.x, actor->tileItem.y);
 }
 
 void PowerGun(TActor * actor)
@@ -778,7 +778,7 @@ void PowerGun(TActor * actor)
 		     actor->flags);
 	actor->gunLock = 20;
 	Score(actor->flags, -2);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_POWERGUN);
+	SoundPlayAt(SND_POWERGUN, actor->tileItem.x, actor->tileItem.y);
 }
 
 void SniperGun(TActor * actor)
@@ -791,7 +791,7 @@ void SniperGun(TActor * actor)
 			actor->flags);
 	actor->gunLock = 100;
 	Score(actor->flags, -5);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LASER);
+	SoundPlayAt(SND_LASER, actor->tileItem.x, actor->tileItem.y);
 }
 
 void BrownGun(TActor * actor)
@@ -806,7 +806,7 @@ void BrownGun(TActor * actor)
 		       768, 45, 15, actor->flags);
 	actor->gunLock = 30;
 	Score(actor->flags, -7);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_POWERGUN);
+	SoundPlayAt(SND_POWERGUN, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Petrifier(TActor * actor)
@@ -821,7 +821,7 @@ void Petrifier(TActor * actor)
 			   768, 45, actor->flags);
 	actor->gunLock = 100;
 	Score(actor->flags, -7);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LASER);
+	SoundPlayAt(SND_LASER, actor->tileItem.x, actor->tileItem.y);
 }
 
 void GasGun(TActor * actor)
@@ -837,8 +837,7 @@ void GasGun(TActor * actor)
 	actor->gunLock = 6;
 	Score(actor->flags, -1);
 	if (!actor->sndLock) {
-		PlaySoundAt(actor->tileItem.x, actor->tileItem.y,
-			    SND_FLAMER);
+		SoundPlayAt(SND_FLAMER, actor->tileItem.x, actor->tileItem.y);
 		actor->sndLock = 48;
 	}
 }
@@ -852,7 +851,7 @@ void ConfuseBomb(TActor * actor)
 		   MOBOBJ_GASBOMB2);
 	actor->gunLock = 30;
 	Score(actor->flags, -10);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Heatseeker(TActor * actor)
@@ -867,7 +866,7 @@ void Heatseeker(TActor * actor)
 		      512, 60, 20, actor->flags);
 	actor->gunLock = 30;
 	Score(actor->flags, -7);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_LAUNCH);
+	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void PulseRifle(TActor * actor)
@@ -886,7 +885,7 @@ void PulseRifle(TActor * actor)
 		       1280, 25, 7, actor->flags);
 	actor->gunLock = 4;
 	Score(actor->flags, -1);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_MINIGUN);
+	SoundPlayAt(SND_MINIGUN, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Mine(TActor * actor)
@@ -894,7 +893,7 @@ void Mine(TActor * actor)
 	AddProximityMine(actor->x, actor->y, actor->flags);
 	actor->gunLock = 100;
 	Score(actor->flags, -10);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_HAHAHA);
+	SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Dynamite(TActor * actor)
@@ -902,7 +901,7 @@ void Dynamite(TActor * actor)
 	AddDynamite(actor->x, actor->y, actor->flags);
 	actor->gunLock = 100;
 	Score(actor->flags, -5);
-	PlaySoundAt(actor->tileItem.x, actor->tileItem.y, SND_HAHAHA);
+	SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
 }
 
 void Shoot(TActor * actor)

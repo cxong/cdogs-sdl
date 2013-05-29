@@ -118,7 +118,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	{
 		if (selection == (int)strlen(letters))
 		{
-			PlaySound(SND_LAUNCH, 0, 255);
+			SoundPlay(SND_LAUNCH, 0, 255);
 			return 0;
 		}
 
@@ -126,30 +126,30 @@ static int PasswordEntry(int cmd, char *buffer)
 			int l = strlen(buffer);
 			buffer[l + 1] = 0;
 			buffer[l] = letters[selection];
-			PlaySound(SND_MACHINEGUN, 0, 255);
+			SoundPlay(SND_MACHINEGUN, 0, 255);
 		} else
-			PlaySound(SND_KILL, 0, 255);
+			SoundPlay(SND_KILL, 0, 255);
 	} else if (cmd & CMD_BUTTON2) {
 		if (buffer[0]) {
 			buffer[strlen(buffer) - 1] = 0;
-			PlaySound(SND_BANG, 0, 255);
+			SoundPlay(SND_BANG, 0, 255);
 		} else
-			PlaySound(SND_KILL, 0, 255);
+			SoundPlay(SND_KILL, 0, 255);
 	} else if (cmd & CMD_LEFT) {
 		if (selection > 0) {
 			selection--;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	} else if (cmd & CMD_RIGHT) {
 		if (selection < (int)strlen(letters))
 		{
 			selection++;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	} else if (cmd & CMD_UP) {
 		if (selection > 9) {
 			selection -= 10;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	}
 	else if (cmd & CMD_DOWN)
@@ -157,7 +157,7 @@ static int PasswordEntry(int cmd, char *buffer)
 		if (selection < (int)strlen(letters) - 9)
 		{
 			selection += 10;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	}
 	
@@ -211,7 +211,7 @@ static int EnterCode(void *bkg, const char *password)
 				if (mission > 0)
 					done = 1;
 				else
-					PlaySound(SND_KILL2, 0, 255);
+					SoundPlay(SND_KILL2, 0, 255);
 			}
 		}
 
@@ -230,7 +230,7 @@ static int EnterCode(void *bkg, const char *password)
 		CopyToScreen();
 	}
 
-	PlaySound(SND_SWITCH, 0, 255);
+	SoundPlay(SND_SWITCH, 0, 255);
 
 	return mission;
 }
@@ -260,10 +260,10 @@ int EnterPassword(void *bkg, const char *password)
 				break;
 		} else if (index > 0 && (Left(cmd) || Up(cmd))) {
 			index--;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (index == 0 && (Right(cmd) || Down(cmd))) {
 			index++;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 
 		#define	TEXT_START	"Start campaign"

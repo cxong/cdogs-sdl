@@ -340,7 +340,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	{
 		if (selection[index] == (int)strlen(letters))
 		{
-			PlaySound(SND_LAUNCH, 0, 255);
+			SoundPlay(SND_LAUNCH, 0, 255);
 			return 0;
 		}
 
@@ -352,19 +352,19 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 				    smallLetters[selection[index]];
 			else
 				data->name[l] = letters[selection[index]];
-			PlaySound(SND_MACHINEGUN, 0, 255);
+			SoundPlay(SND_MACHINEGUN, 0, 255);
 		} else
-			PlaySound(SND_KILL, 0, 255);
+			SoundPlay(SND_KILL, 0, 255);
 	} else if (cmd & CMD_BUTTON2) {
 		if (data->name[0]) {
 			data->name[strlen(data->name) - 1] = 0;
-			PlaySound(SND_BANG, 0, 255);
+			SoundPlay(SND_BANG, 0, 255);
 		} else
-			PlaySound(SND_KILL, 0, 255);
+			SoundPlay(SND_KILL, 0, 255);
 	} else if (cmd & CMD_LEFT) {
 		if (selection[index] > 0) {
 			selection[index]--;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	}
 	else if (cmd & CMD_RIGHT)
@@ -372,12 +372,12 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 		if (selection[index] < (int)strlen(letters))
 		{
 			selection[index]++;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	} else if (cmd & CMD_UP) {
 		if (selection[index] > 9) {
 			selection[index] -= 10;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	}
 	else if (cmd & CMD_DOWN)
@@ -385,12 +385,12 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 		if (selection[index] < (int)strlen(letters) - 9)
 		{
 			selection[index] += 10;
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 		else if (selection[index] < (int)strlen(letters))
 		{
 			selection[index] = strlen(letters);
-			PlaySound(SND_DOOR, 0, 255);
+			SoundPlay(SND_DOOR, 0, 255);
 		}
 	}
 
@@ -542,27 +542,27 @@ static int AppearanceSelection(const char **menu, int menuCount,
 	debug(D_NORMAL, "\n");
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		PlaySound(SND_MACHINEGUN, 0, 255);
+		SoundPlay(SND_MACHINEGUN, 0, 255);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
 			*property = selection[index];
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == 0) {
 			selection[index] = menuCount - 1;
 			*property = selection[index];
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < menuCount - 1) {
 			selection[index]++;
 			*property = selection[index];
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == menuCount - 1) {
 			selection[index] = 0;
 			*property = selection[index];
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	}
 
@@ -611,27 +611,27 @@ static int BodyPartSelection(int x, int index, struct PlayerData *data,
 	int y;
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		PlaySound(SND_POWERGUN, 0, 255);
+		SoundPlay(SND_POWERGUN, 0, 255);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (*selection > 0) {
 			(*selection)--;
 			*property = IndexToShade(*selection);
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (*selection == 0) {
 			(*selection) = PLAYER_BODY_COUNT - 1;
 			*property = IndexToShade(*selection);
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (*selection < PLAYER_BODY_COUNT - 1) {
 			(*selection)++;
 			*property = IndexToShade(*selection);
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (*selection == PLAYER_BODY_COUNT - 1) {
 			(*selection) = 0;
 			*property = IndexToShade(*selection);
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	}
 
@@ -684,7 +684,7 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 
 	if (cmd & CMD_BUTTON1) {
 		if (selection[index] == gMission.weaponCount) {
-			PlaySound(SND_KILL2, 0, 255);
+			SoundPlay(SND_KILL2, 0, 255);
 			return data->weaponCount > 0 ? 0 : 1;
 		}
 
@@ -696,32 +696,32 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 			data->weapons[data->weaponCount] = gMission.availableWeapons[selection[index]];
 			data->weaponCount++;
 
-			PlaySound(SND_SHOTGUN, 0, 255);
+			SoundPlay(SND_SHOTGUN, 0, 255);
 		} else {
-			PlaySound(SND_KILL, 0, 255);
+			SoundPlay(SND_KILL, 0, 255);
 		}
 	} else if (cmd & CMD_BUTTON2) {
 		if (data->weaponCount) {
 			data->weaponCount--;
-			PlaySound(SND_PICKUP, 0, 255);
+			SoundPlay(SND_PICKUP, 0, 255);
 			done = 0;
 		}
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == 0) {
 			selection[index] = gMission.weaponCount;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 		done = 0;
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < gMission.weaponCount) {
 			selection[index]++;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == gMission.weaponCount) {
 			selection[index] = 0;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 		done = 0;
 	}
@@ -782,26 +782,26 @@ static int TemplateSelection(int loadFlag, int x, int index,
 				    &templates[selection[index]]);
 		else
 			SaveTemplate(data, &templates[selection[index]]);
-		PlaySound(rand() % SND_COUNT, 0, 255);
+		SoundPlay(rand() % SND_COUNT, 0, 255);
 		return 0;
 	} else if (cmd & CMD_BUTTON2) {
-		PlaySound(rand() % SND_COUNT, 0, 255);
+		SoundPlay(rand() % SND_COUNT, 0, 255);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > 0) {
 			selection[index]--;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == 0) {
 			selection[index] = MAX_TEMPLATE - 1;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MAX_TEMPLATE - 1) {
 			selection[index]++;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == MAX_TEMPLATE - 1) {
 			selection[index] = 0;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	}
 
@@ -827,23 +827,23 @@ static int MainMenu(int x, int index, int cmd)
 	static int selection[2] = { MODE_DONE, MODE_DONE };
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2)) {
-		PlaySound(SND_BANG, 0, 255);
+		SoundPlay(SND_BANG, 0, 255);
 		return selection[index];
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (selection[index] > MODE_SELECTNAME) {
 			selection[index]--;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == MODE_SELECTNAME) {
 			selection[index] = MODE_DONE;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (selection[index] < MODE_DONE) {
 			selection[index]++;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		} else if (selection[index] == MODE_DONE) {
 			selection[index] = MODE_SELECTNAME;
-			PlaySound(SND_SWITCH, 0, 255);
+			SoundPlay(SND_SWITCH, 0, 255);
 		}
 	}
 

@@ -388,9 +388,7 @@ int DamageSomething(int dx, int dy, int power, int flags,
 					obj->power = 0;
 					obj->x = object->tileItem.x << 8;
 					obj->y = object->tileItem.y << 8;
-					PlaySoundAt(object->tileItem.x,
-						    object->tileItem.y,
-						    SND_BANG);
+					SoundPlayAt(SND_BANG, object->tileItem.x, object->tileItem.y);
 				}
 				if (object->wreckedPic) {
 					object->structure = 0;
@@ -427,9 +425,10 @@ void Frag(int x, int y, int flags)
 
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 16; i++)
-		AddBullet(x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40,
-			  flags);
-	PlaySoundAt(x >> 8, y >> 8, SND_BANG);
+	{
+		AddBullet(x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40, flags);
+	}
+	SoundPlayAt(SND_BANG, x >> 8, y >> 8);
 }
 
 int UpdateMolotovFlame(TMobileObject * obj)
@@ -503,8 +502,10 @@ void Fire(int x, int y, int flags)
 
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 16; i++)
+	{
 		AddMolotovFlame(x, y, flags);
-	PlaySoundAt(x >> 8, y >> 8, SND_BANG);
+	}
+	SoundPlayAt(SND_BANG, x >> 8, y >> 8);
 }
 
 int UpdateGasCloud(TMobileObject * obj)
@@ -570,9 +571,16 @@ void Gas(int x, int y, int flags, int special)
 
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 8; i++)
-		AddGasCloud(x, y, rand() & 255, (256 + rand()) & 255,
-			    (48 - (rand() % 8)) * 4 - 1, flags, special);
-	PlaySoundAt(x >> 8, y >> 8, SND_BANG);
+	{
+		AddGasCloud(
+			x, y,
+			rand() & 255,
+			(256 + rand()) & 255,
+			(48 - (rand() % 8)) * 4 - 1,
+			flags,
+			special);
+	}
+	SoundPlayAt(SND_BANG, x >> 8, y >> 8);
 }
 
 int UpdateGrenade(TMobileObject * obj)
@@ -777,9 +785,7 @@ int UpdateActiveMine(TMobileObject * obj)
 					    UpdateTriggeredMine;
 					obj->count = 0;
 					obj->range = 5;
-					PlaySoundAt(obj->tileItem.x,
-						    obj->tileItem.y,
-						    SND_HAHAHA);
+					SoundPlayAt(SND_HAHAHA, obj->tileItem.x, obj->tileItem.y);
 					return 1;
 				}
 				i = i->next;
@@ -1173,7 +1179,7 @@ void AddExplosion(int x, int y, int flags)
 		obj->count = -16;
 	}
 	ShakeScreen(15);
-	PlaySoundAt(x >> 8, y >> 8, SND_EXPLOSION);
+	SoundPlayAt(SND_EXPLOSION, x >> 8, y >> 8);
 }
 
 void KillAllMobileObjects(void)

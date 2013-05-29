@@ -187,7 +187,7 @@ static void Action(TAction * a)
 			return;
 
 		case ACTION_SOUND:
-			PlaySoundAt(a->x, a->y, a->tileFlags);
+			SoundPlayAt(a->tileFlags, a->x, a->y);
 			break;
 
 		case ACTION_SETTRIGGER:

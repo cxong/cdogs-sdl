@@ -32,6 +32,7 @@
 
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
+#include <cdogs/music.h>
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
 
@@ -83,10 +84,10 @@ void LoadConfig(void)
 		fscanfres = fscanf(f, "%d %d %d %d\n",
 			           &fx, &music, &channels, &musicChannels);
 		CHECK_FSCANF(4)
-		SetFXVolume(fx);
-		SetMusicVolume(music);
-		SetFXChannels(channels);
-		SetMinMusicChannels(musicChannels);
+		SoundSetVolume(fx);
+		MusicSetVolume(music);
+		SoundSetChannels(channels);
+		//MusicSetChannels(musicChannels);
 
 		fscanfres = fscanf(f, "%u\n", &gCampaign.seed);
 		CHECK_FSCANF(1)
@@ -163,8 +164,10 @@ void SaveConfig(void)
 			gPlayer2Data.keys.button2);
 		fprintf(f, "%d\n", gOptions.mapKey);
 		fprintf(f, "%d %d %d %d\n",
-			FXVolume(),
-			MusicVolume(), FXChannels(), MinMusicChannels());
+			SoundGetVolume(),
+			MusicGetVolume(),
+			SoundGetChannels(),
+			0);//MusicGetChannels());
 		fprintf(f, "%u\n", gCampaign.seed);
 		fprintf(f, "%d %d\n", gOptions.difficulty,
 			gOptions.slowmotion);
