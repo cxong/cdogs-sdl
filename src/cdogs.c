@@ -1095,7 +1095,7 @@ int main(int argc, char *argv[])
 	if (isSoundEnabled)
 	{
 		debug(D_NORMAL, ">> Shutting down sound...\n");
-		SoundTerminate();
+		SoundTerminate(1);
 	}
 
 	debug(D_NORMAL, "SDL_Quit()\n");

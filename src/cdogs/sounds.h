@@ -101,7 +101,7 @@ typedef struct
 extern SoundDevice gSoundDevice;
 
 int SoundInitialize(void);
-void SoundTerminate(void);
+void SoundTerminate(int isWaitingUntilSoundsComplete);
 void SoundPlay(sound_e sound, int panning, int volume);
 void SoundSetVolume(int volume);
 int SoundGetVolume(void);

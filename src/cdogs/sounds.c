@@ -166,16 +166,31 @@ bail:
 	return result;
 }
 
-void SoundTerminate(void)
+void SoundTerminate(int isWaitingUntilSoundsComplete)
 {
+	int i;
 	if (!gSoundDevice.isInitialised)
 	{
 		return;
 	}
 
 	debug(D_NORMAL, "shutting down sound\n");
+	if (isWaitingUntilSoundsComplete)
+	{
+		Uint32 waitStart = SDL_GetTicks();
+		while (Mix_Playing(-1) > 0 &&
+			SDL_GetTicks() - waitStart < 1000);
+	}
 	MusicStop();
 	Mix_CloseAudio();
+	for (i = 0; i < SND_COUNT; i++)
+	{
+		if (gSoundDevice.sounds[i].isLoaded)
+		{
+			Mix_FreeChunk(gSoundDevice.sounds[i].data);
+			gSoundDevice.sounds[i].data = NULL;
+		}
+	}
 }
 
 void CalcLeftRightVolumeFromPanning(Uint8 *left, Uint8 *right, int panning)
