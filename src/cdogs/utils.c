@@ -58,14 +58,7 @@ double ToDegrees(double radians)
 	return radians * 180.0 / PI;
 }
 
-int CalcDistanceSquared(Vector2i origin, Vector2i target)
-{
-	int xDiff = origin.x - target.x;
-	int yDiff = origin.y - target.y;
-	return xDiff*xDiff + yDiff*yDiff;
-}
-
-void CalcChebyshevDistanceSquaredAndBearing(
+void CalcChebyshevDistanceAndBearing(
 	Vector2i origin, Vector2i target, int *distance, int *bearing)
 {
 	// short circuit if origin and target same

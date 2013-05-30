@@ -269,7 +269,7 @@ void SoundPlayAt(sound_e sound, int x, int y)
 	Vector2i target;
 	target.x = x;
 	target.y = y;
-	CalcChebyshevDistanceSquaredAndBearing(origin, target, &distance, &bearing);
+	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance, bearing);
 }
 
