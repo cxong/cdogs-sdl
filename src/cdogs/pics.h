@@ -279,9 +279,6 @@ extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
 extern const TOffsetPic cBeamPics[DIRECTION_COUNT];
 extern const TOffsetPic cBrightBeamPics[DIRECTION_COUNT];
 extern const TOffsetPic cGeneralPics[OFSPIC_COUNT];
-extern const TOffsetPic
-    cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
-extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 extern const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES];
 extern const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES];
 extern const int cRoomPics[ROOMFLOOR_COUNT][ROOMFLOOR_TYPES];

@@ -292,8 +292,9 @@ static int BrightWalk(TActor * actor, int roll)
 static int WillFire(TActor * actor, int roll)
 {
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-	    actor->gunLock <= 0 &&
-	    roll < characterDesc[actor->character].probabilityToShoot) {
+		WeaponCanFire(&actor->weapon) &&
+		roll < characterDesc[actor->character].probabilityToShoot)
+	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
 		else if (gAreGoodGuysPresent)
@@ -468,23 +469,22 @@ void CommandBadGuys(void)
 							  character].
 					    actionDelay * delayModifier;
 				}
-				if (!bypass) {
+				if (!bypass)
+				{
 					if (WillFire(actor, roll))
+					{
 						cmd = CMD_BUTTON1;
-					else {
-						if ((actor->
-						     flags & FLAGS_VISIBLE)
-						    == 0)
-							actor->gunLock =
-							    40;
-						if (cmd
-						    && !DirectionOK(actor,
-								    CmdToDirection
-								    (cmd))
-						    && (actor->
-							flags &
-							FLAGS_DETOURING) ==
-						    0) {
+					}
+					else
+					{
+						if ((actor->flags & FLAGS_VISIBLE) == 0)
+						{
+							// I think this is some hack to make sure invisible enemies don't fire so much
+							actor->weapon.lock = 40;
+						}
+						if (cmd && !DirectionOK(actor, CmdToDirection(cmd)) &&
+							(actor->flags & FLAGS_DETOURING) == 0)
+						{
 							Detour(actor);
 							cmd = 0;
 						}

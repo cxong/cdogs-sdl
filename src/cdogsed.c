@@ -448,15 +448,18 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 		CDogsTextGoto(x - 8, y - 16);
 		CDogsTextChar('\020');
 		CDogsTextGoto(x - 8, y + 8);
-		CDogsTextString(gunDesc[cd->defaultGun].gunName);
+		CDogsTextString(gGunDescriptions[cd->defaultGun].gunName);
 	}
 }
 
 static void ShowWeaponStatus(int x, int y, int weapon, int xc)
 {
-	DisplayFlag(x, y, gunDesc[weapon].gunName,
-		    (currentMission->weaponSelection & (1 << weapon)) != 0,
-		    xc == weapon);
+	DisplayFlag(
+		x,
+		y,
+		gGunDescriptions[weapon].gunName,
+		(currentMission->weaponSelection & (1 << weapon)) != 0,
+		xc == weapon);
 }
 
 void ListWeapons(int y, int xc)

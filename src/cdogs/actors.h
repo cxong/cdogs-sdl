@@ -49,8 +49,9 @@
 #ifndef __ACTORS
 #define __ACTORS
 
-#include "map.h"
 #include "grafx.h"
+#include "map.h"
+#include "weapon.h"
 
 
 #define CHARACTER_PLAYER1                 0
@@ -58,31 +59,6 @@
 #define CHARACTER_PRISONER                2
 #define CHARACTER_OTHERS                  3
 #define CHARACTER_COUNT                  21
-
-typedef enum
-{
-	GUN_KNIFE,
-	GUN_MG,
-	GUN_GRENADE,
-	GUN_FLAMER,
-	GUN_SHOTGUN,
-	GUN_POWERGUN,
-	GUN_FRAGGRENADE,
-	GUN_MOLOTOV,
-	GUN_SNIPER,
-	GUN_MINE,
-	GUN_DYNAMITE,
-	GUN_GASBOMB,
-	GUN_PETRIFY,
-	GUN_BROWN,
-	GUN_CONFUSEBOMB,
-	GUN_GASGUN,
-	GUN_COUNT
-} gun_e;
-
-int IsHighDPS(gun_e gun);
-int IsLongRange(gun_e gun);
-int IsShortRange(gun_e gun);
 
 #define FLAGS_PLAYER1       (1 << 0)
 #define FLAGS_PLAYER2       (1 << 1)
@@ -159,26 +135,20 @@ struct CharacterDescription {
 	int probabilityToShoot;
 	int actionDelay;
 	TranslationTable table;
-	int defaultGun;
+	gun_e defaultGun;
 	int maxHealth;
 	int flags;
 };
 
-struct GunDescription {
-	int gunPic;
-	char *gunName;
-};
-
 struct Actor {
 	int x, y;		// These are the full coordinates, including fractions
-	int direction;
+	direction_e direction;
 	int state;
 	int stateCounter;
 	int lastCmd;
-	int gunLock;
 	int sndLock;
 	int character;
-	int gun;
+	Weapon weapon;
 	int dx, dy;
 
 	int health;
@@ -203,7 +173,6 @@ extern TActor *gPlayer2;
 extern TActor *gPrisoner;
 
 extern struct CharacterDescription characterDesc[CHARACTER_COUNT];
-extern struct GunDescription gunDesc[GUN_COUNT];
 
 extern TranslationTable tableFlamed;
 extern TranslationTable tableGreen;

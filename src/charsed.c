@@ -287,8 +287,7 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 			    yc == YC_FLAGS2 && xc == XC_AWAKE);
 		y += CDogsTextHeight();
 
-		DisplayCDogsText(50, y, gunDesc[b->gun].gunName,
-			    yc == YC_WEAPON);
+		DisplayCDogsText(50, y, GunGetName(b->gun), yc == YC_WEAPON);
 		y += CDogsTextHeight() + 5;
 
 		x = 10;

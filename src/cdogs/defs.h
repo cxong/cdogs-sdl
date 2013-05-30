@@ -59,10 +59,6 @@
 #define FACE_LADY          16
 #define FACE_COUNT         17
 
-#define GUNPIC_BLASTER      0
-#define GUNPIC_KNIFE        1
-#define GUNPIC_COUNT        2
-
 // Commands
 #define CMD_LEFT            1
 #define CMD_RIGHT           2
@@ -84,7 +80,8 @@
 #define AnyButton(x)  (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
 
 // Directions
-typedef enum {
+typedef enum
+{
 	DIRECTION_UP,
 	DIRECTION_UPRIGHT,
 	DIRECTION_RIGHT,
@@ -94,7 +91,7 @@ typedef enum {
 	DIRECTION_LEFT,
 	DIRECTION_UPLEFT,
 	DIRECTION_COUNT
-} Direction;
+} direction_e;
 
 // States
 #define STATE_IDLE          0
@@ -107,12 +104,6 @@ typedef enum {
 #define STATE_SHOOTING      7
 #define STATE_RECOIL        8
 #define STATE_COUNT         9
-
-// Gun states
-#define GUNSTATE_READY      0
-#define GUNSTATE_FIRING     1
-#define GUNSTATE_RECOIL     2
-#define GUNSTATE_COUNT      3
 
 
 extern int cmd2dir[16];

@@ -64,50 +64,6 @@
 #include "utils.h"
 
 
-int IsHighDPS(gun_e gun)
-{
-	switch (gun)
-	{
-	case GUN_GRENADE:
-	case GUN_FRAGGRENADE:
-	case GUN_MOLOTOV:
-	case GUN_MINE:
-	case GUN_DYNAMITE:
-		return 1;
-	default:
-		return 0;
-	}
-}
-int IsLongRange(gun_e gun)
-{
-	switch (gun)
-	{
-	case GUN_MG:
-	case GUN_POWERGUN:
-	case GUN_SNIPER:
-	case GUN_PETRIFY:
-	case GUN_BROWN:
-		return 1;
-	default:
-		return 0;
-	}
-}
-int IsShortRange(gun_e gun)
-{
-	switch (gun)
-	{
-	case GUN_KNIFE:
-	case GUN_FLAMER:
-	case GUN_MOLOTOV:
-	case GUN_MINE:
-	case GUN_DYNAMITE:
-	case GUN_GASGUN:
-		return 1;
-	default:
-		return 0;
-	}
-}
-
 TActor *gPlayer1 = NULL;
 TActor *gPlayer2 = NULL;
 TActor *gPrisoner = NULL;
@@ -123,25 +79,6 @@ TranslationTable tablePurple;
 void SetShade(TranslationTable * table, int start, int end, int shade);
 
 struct CharacterDescription characterDesc[CHARACTER_COUNT];
-
-struct GunDescription gunDesc[] = {
-	{GUNPIC_KNIFE, "Knife"},
-	{GUNPIC_BLASTER, "Machine gun"},
-	{-1, "Grenades"},
-	{GUNPIC_BLASTER, "Flamer"},
-	{GUNPIC_BLASTER, "Shotgun"},
-	{GUNPIC_BLASTER, "Powergun"},
-	{-1, "Shrapnel bombs"},
-	{-1, "Molotovs"},
-	{GUNPIC_BLASTER, "Sniper rifle"},
-	{-1, "Prox. mine"},
-	{-1, "Dynamite"},
-	{-1, "Chemo bombs"},
-	{GUNPIC_BLASTER, "Petrify gun"},
-	{GUNPIC_BLASTER, "Browny gun"},
-	{-1, "Confusion bombs"},
-	{GUNPIC_BLASTER, "Chemo gun"}
-};
 
 
 static TActor *actorList = NULL;
@@ -229,8 +166,8 @@ void DrawCharacter(int x, int y, TActor * actor)
 	TranslationTable *table = (TranslationTable *) c->table;
 	int f = c->facePic;
 	int b;
-	int g = gunDesc[actor->gun].gunPic;
-	int gunState = 0;
+	int g = GunGetPic(actor->weapon.gun);
+	gunstate_e gunState = GUNSTATE_READY;
 
 	TOffsetPic body, head, gun;
 	TOffsetPic pic1, pic2, pic3;
@@ -276,12 +213,13 @@ void DrawCharacter(int x, int y, TActor * actor)
 	else {
 		b = c->armedBodyPic;
 		if (state == STATE_SHOOTING)
+		{
 			gunState = GUNSTATE_FIRING;
+		}
 		else if (state == STATE_RECOIL)
+		{
 			gunState = GUNSTATE_RECOIL;
-		else
-			gunState = GUNSTATE_READY;
-
+		}
 	}
 
 	body.dx = cBodyOffset[b][dir].dx;
@@ -376,7 +314,7 @@ TActor *AddActor(int character)
 	TActor *actor;
 	CCALLOC(actor, sizeof(TActor));
 
-	actor->gun = characterDesc[character].defaultGun;
+	actor->weapon = WeaponCreate(characterDesc[character].defaultGun);
 	actor->health = characterDesc[character].maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
@@ -416,23 +354,20 @@ void SetStateForActor(TActor * actor, int state)
 {
 	actor->state = state;
 	if (state == STATE_RECOIL)
-		actor->stateCounter = actor->gunLock;
+	{
+		// This is to make sure the player stays frozen after firing the gun
+		// TODO: rethink this; makes sniper gun enemies freeze for too long
+		actor->stateCounter = actor->weapon.lock;
+	}
 	else
+	{
 		actor->stateCounter = delayTable[state];
+	}
 }
 
 void UpdateActorState(TActor * actor, int ticks)
 {
-	if (actor->gunLock) {
-		actor->gunLock -= ticks;
-		if (actor->gunLock < 0)
-			actor->gunLock = 0;
-	}
-	if (actor->sndLock) {
-		actor->sndLock -= ticks;
-		if (actor->sndLock < 0)
-			actor->sndLock = 0;
-	}
+	WeaponUpdate(&actor->weapon, ticks);
 
 	if (actor->health > 0) {
 		if (actor->flamed)
@@ -568,14 +503,12 @@ int MoveActor(TActor * actor, int x, int y)
 			}
 		}
 
-		if (actor->gun == GUN_KNIFE && actor->health > 0) {
-			object =
-			    (target->kind ==
-			     KIND_OBJECT ? target->data : NULL);
-			if (!object
-			    || (object->flags & OBJFLAG_DANGEROUS) == 0) {
-				DamageSomething(0, 0, 2, actor->flags,
-						target, 0);
+		if (actor->weapon.gun == GUN_KNIFE && actor->health > 0)
+		{
+			object = target->kind == KIND_OBJECT ? target->data : NULL;
+			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
+			{
+				DamageSomething(0, 0, 2, actor->flags, target, 0);
 				return 0;
 			}
 		}
@@ -649,331 +582,47 @@ void Score(int flags, int points)
 	}
 }
 
-void LaunchGrenade(TActor * actor)
-{
-	int angle;
-
-	angle = dir2angle[actor->direction];
-	AddGrenade(actor->x, actor->y, angle, actor->flags,
-		   MOBOBJ_GRENADE);
-	actor->gunLock = 30;
-	Score(actor->flags, -20);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void LaunchFragGrenade(TActor * actor)
-{
-	int angle;
-
-	angle = dir2angle[actor->direction];
-	AddGrenade(actor->x, actor->y, angle, actor->flags,
-		   MOBOBJ_FRAGGRENADE);
-	actor->gunLock = 30;
-	Score(actor->flags, -20);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void LaunchMolotov(TActor * actor)
-{
-	int angle;
-
-	angle = dir2angle[actor->direction];
-	AddGrenade(actor->x, actor->y, angle, actor->flags,
-		   MOBOBJ_MOLOTOV);
-	actor->gunLock = 30;
-	Score(actor->flags, -20);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void LaunchGasBomb(TActor * actor)
-{
-	int angle;
-
-	angle = dir2angle[actor->direction];
-	AddGrenade(actor->x, actor->y, angle, actor->flags,
-		   MOBOBJ_GASBOMB);
-	actor->gunLock = 30;
-	Score(actor->flags, -10);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void GetMuzzle(TActor * actor, int *dx, int *dy)
+Vector2i GetMuzzleOffset(TActor *actor)
 {
 	int b, g, d = actor->direction;
+	Vector2i position;
 
 	b = characterDesc[actor->character].armedBodyPic;
-	g = gunDesc[actor->gun].gunPic;
-	*dx = cGunHandOffset[b][d].dx +
-	    cGunPics[g][d][GUNSTATE_FIRING].dx + cMuzzleOffset[g][d].dx;
-	*dy = cGunHandOffset[b][d].dy +
-	    cGunPics[g][d][GUNSTATE_FIRING].dy +
-	    cMuzzleOffset[g][d].dy + BULLET_Z;
+	g = GunGetPic(actor->weapon.gun);
+	position.x =
+		cGunHandOffset[b][d].dx +
+		cGunPics[g][d][GUNSTATE_FIRING].dx +
+		cMuzzleOffset[g][d].dx;
+	position.y =
+		cGunHandOffset[b][d].dy +
+		cGunPics[g][d][GUNSTATE_FIRING].dy +
+		cMuzzleOffset[g][d].dy + BULLET_Z;
+	position.x *= 256;
+	position.y *= 256;
+	return position;
 }
 
-void MachineGun(TActor * actor)
+void Shoot(TActor *actor)
 {
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	angle += (rand() & 7) - 4;
-	if (angle < 0)
-		angle += 256;
-
-	GetMuzzle(actor, &dx, &dy);
-	AddBullet(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		  MG_SPEED, MG_RANGE, MG_POWER, actor->flags);
-	actor->gunLock = 6;
-	Score(actor->flags, -1);
-	SoundPlayAt(SND_MACHINEGUN, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Flamer(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddFlame(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		 actor->flags);
-	actor->gunLock = 6;
-	Score(actor->flags, -1);
-	if (!actor->sndLock) {
-		SoundPlayAt(SND_FLAMER, actor->tileItem.x, actor->tileItem.y);
-		actor->sndLock = 36;
-	}
-}
-
-void ShotGun(TActor * actor)
-{
-	int i, angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	GetMuzzle(actor, &dx, &dy);
-
-	angle = dir2angle[d];
-	angle -= 16;
-	for (i = 0; i <= 32; i += 8, angle += 8)
-		AddBullet(actor->x + 256 * dx, actor->y + 256 * dy,
-			  (angle > 0 ? angle : angle + 256),
-			  SHOTGUN_SPEED, SHOTGUN_RANGE, SHOTGUN_POWER,
-			  actor->flags);
-
-	Score(actor->flags, -5);
-	actor->gunLock = 50;
-	SoundPlayAt(SND_SHOTGUN, actor->tileItem.x, actor->tileItem.y);
-}
-
-void PowerGun(TActor * actor)
-{
-	int d = actor->direction;
-	int dx, dy;
-
-	GetMuzzle(actor, &dx, &dy);
-	AddLaserBolt(actor->x + 256 * dx, actor->y + 256 * dy, d,
-		     actor->flags);
-	actor->gunLock = 20;
-	Score(actor->flags, -2);
-	SoundPlayAt(SND_POWERGUN, actor->tileItem.x, actor->tileItem.y);
-}
-
-void SniperGun(TActor * actor)
-{
-	int d = actor->direction;
-	int dx, dy;
-
-	GetMuzzle(actor, &dx, &dy);
-	AddSniperBullet(actor->x + 256 * dx, actor->y + 256 * dy, d,
-			actor->flags);
-	actor->gunLock = 100;
-	Score(actor->flags, -5);
-	SoundPlayAt(SND_LASER, actor->tileItem.x, actor->tileItem.y);
-}
-
-void BrownGun(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddBrownBullet(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		       768, 45, 15, actor->flags);
-	actor->gunLock = 30;
-	Score(actor->flags, -7);
-	SoundPlayAt(SND_POWERGUN, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Petrifier(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddPetrifierBullet(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-			   768, 45, actor->flags);
-	actor->gunLock = 100;
-	Score(actor->flags, -7);
-	SoundPlayAt(SND_LASER, actor->tileItem.x, actor->tileItem.y);
-}
-
-void GasGun(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddGasCloud(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		    384, 35, actor->flags, SPECIAL_POISON);
-	actor->gunLock = 6;
-	Score(actor->flags, -1);
-	if (!actor->sndLock) {
-		SoundPlayAt(SND_FLAMER, actor->tileItem.x, actor->tileItem.y);
-		actor->sndLock = 48;
-	}
-}
-
-void ConfuseBomb(TActor * actor)
-{
-	int angle;
-
-	angle = dir2angle[actor->direction];
-	AddGrenade(actor->x, actor->y, angle, actor->flags,
-		   MOBOBJ_GASBOMB2);
-	actor->gunLock = 30;
-	Score(actor->flags, -10);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Heatseeker(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddHeatseeker(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		      512, 60, 20, actor->flags);
-	actor->gunLock = 30;
-	Score(actor->flags, -7);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-
-void PulseRifle(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	angle += (rand() & 7) - 4;
-	if (angle < 0)
-		angle += 256;
-
-	GetMuzzle(actor, &dx, &dy);
-	AddRapidBullet(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		       1280, 25, 7, actor->flags);
-	actor->gunLock = 4;
-	Score(actor->flags, -1);
-	SoundPlayAt(SND_MINIGUN, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Mine(TActor * actor)
-{
-	AddProximityMine(actor->x, actor->y, actor->flags);
-	actor->gunLock = 100;
-	Score(actor->flags, -10);
-	SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Dynamite(TActor * actor)
-{
-	AddDynamite(actor->x, actor->y, actor->flags);
-	actor->gunLock = 100;
-	Score(actor->flags, -5);
-	SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
-}
-
-void Shoot(TActor * actor)
-{
-	if (actor->gunLock)
+	Vector2i muzzlePosition;
+	Vector2i tilePosition;
+	if (!WeaponCanFire(&actor->weapon))
+	{
 		return;
-
-	switch (actor->gun) {
-	case GUN_MG:
-		MachineGun(actor);
-		break;
-
-	case GUN_GRENADE:
-		LaunchGrenade(actor);
-		break;
-
-	case GUN_FLAMER:
-		Flamer(actor);
-		break;
-
-	case GUN_SHOTGUN:
-		ShotGun(actor);
-		break;
-
-	case GUN_POWERGUN:
-		PowerGun(actor);
-		break;
-
-	case GUN_FRAGGRENADE:
-		LaunchFragGrenade(actor);
-		break;
-
-	case GUN_MOLOTOV:
-		LaunchMolotov(actor);
-		break;
-
-	case GUN_SNIPER:
-		SniperGun(actor);
-		break;
-
-	case GUN_GASBOMB:
-		LaunchGasBomb(actor);
-		break;
-
-	case GUN_PETRIFY:
-		Petrifier(actor);
-		break;
-
-	case GUN_BROWN:
-		BrownGun(actor);
-		break;
-
-	case GUN_CONFUSEBOMB:
-		ConfuseBomb(actor);
-		break;
-
-	case GUN_GASGUN:
-		GasGun(actor);
-		break;
-
-	case GUN_MINE:
-		Mine(actor);
-		break;
-
-	case GUN_DYNAMITE:
-		Dynamite(actor);
-		break;
-
-	default:
-		// unknown gun?
-		break;
 	}
+	muzzlePosition.x = actor->x;
+	muzzlePosition.y = actor->y;
+	if (GunHasMuzzle(actor->weapon.gun))
+	{
+		Vector2i muzzleOffset = GetMuzzleOffset(actor);
+		muzzlePosition.x += muzzleOffset.x;
+		muzzlePosition.y += muzzleOffset.y;
+	}
+	tilePosition.x = actor->tileItem.x;
+	tilePosition.y = actor->tileItem.y;
+	WeaponFire(
+		&actor->weapon, actor->direction, muzzlePosition, tilePosition, actor->flags);
+	Score(actor->flags, -GunGetScore(actor->weapon.gun));
 }
 
 void CommandActor(TActor * actor, int cmd)
@@ -1044,18 +693,6 @@ void CommandActor(TActor * actor, int cmd)
 			    actor->state != STATE_IDLERIGHT)
 				SetStateForActor(actor, STATE_IDLE);
 		}
-/*
-    The infamous turn-and-shoot maneuver...
-
-    if (!actor->petrified && (cmd & (CMD_BUTTON1 | CMD_BUTTON4)) == CMD_BUTTON4)
-    {
-      actor->direction = ((actor->direction + 4) & 7);
-      if (actor->state != STATE_SHOOTING &&
-          actor->state != STATE_RECOIL)
-        SetStateForActor( actor, STATE_SHOOTING);
-      Shoot( actor);
-    }
-*/
 	}
 
 	if (shallMove)

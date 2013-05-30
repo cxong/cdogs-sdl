@@ -582,7 +582,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 	gPlayer1Data.allTime = gPlayer1Data.today = -1;
 	gPlayer1Data.lastMission = mission;
 	gPlayer1 = AddActor(CHARACTER_PLAYER1);
-	gPlayer1->gun = gPlayer1Data.weapons[0];
+	gPlayer1->weapon = WeaponCreate(gPlayer1Data.weapons[0]);
 	gPlayer1->flags = FLAGS_PLAYER1;
 	PlaceActor(gPlayer1);
 	gPlayer1->health = maxHealth;
@@ -593,7 +593,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 		gPlayer2Data.allTime = gPlayer2Data.today = -1;
 		gPlayer2Data.lastMission = mission;
 		gPlayer2 = AddActor(CHARACTER_PLAYER2);
-		gPlayer2->gun = gPlayer2Data.weapons[0];
+		gPlayer2->weapon = WeaponCreate(gPlayer2Data.weapons[0]);
 		gPlayer2->flags = FLAGS_PLAYER2;
 		PlaceActor(gPlayer2);
 		gPlayer2->health = maxHealth;

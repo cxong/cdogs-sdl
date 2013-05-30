@@ -116,10 +116,10 @@ int missionTime;
 
 int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 {
-	int i;
-
 	if (!actor)
+	{
 		return NO;
+	}
 
 	if (((cmd | actor->lastCmd) & CMD_BUTTON2) == 0)
 		actor->flags &= ~FLAGS_SPECIAL_USED;
@@ -129,20 +129,28 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 	    actor->dx == 0 && actor->dy == 0) {
 		SlideActor(actor, cmd);
 		actor->flags |= FLAGS_SPECIAL_USED;
-	} else if ((actor->lastCmd & CMD_BUTTON2) != 0 &&
-		   (cmd & CMD_BUTTON2) == 0 &&
-		   (actor->flags & FLAGS_SPECIAL_USED) == 0 &&
-		   (cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) == 0
-		   &&
-//     actor->dx == 0 && actor->dy == 0 &&
-		   data->weaponCount > 1) {
+	}
+	else if (
+		(actor->lastCmd & CMD_BUTTON2) != 0 &&
+		(cmd & CMD_BUTTON2) == 0 &&
+		(actor->flags & FLAGS_SPECIAL_USED) == 0 &&
+		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) == 0 &&
+		data->weaponCount > 1)
+	{
+		int i;
 		for (i = 0; i < data->weaponCount; i++)
-			if (actor->gun == data->weapons[i])
+		{
+			if (actor->weapon.gun == data->weapons[i])
+			{
 				break;
+			}
+		}
 		i++;
 		if (i >= data->weaponCount)
+		{
 			i = 0;
-		actor->gun = data->weapons[i];
+		}
+		actor->weapon.gun = data->weapons[i];
 		SoundPlayAt(SND_SWITCH, actor->tileItem.x, actor->tileItem.y);
 	}
 	else
@@ -362,7 +370,8 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	if (p)
 	{
 		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
-		CDogsTextStringSpecial(gunDesc[p->gun].gunName, flags, 5, 5 + 1 + CDogsTextHeight());
+		CDogsTextStringSpecial(
+			GunGetName(p->weapon.gun), flags, 5, 5 + 1 + CDogsTextHeight());
 		sprintf(s, "%d hp", p->health);
 		CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
 	} else

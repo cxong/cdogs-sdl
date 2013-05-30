@@ -306,16 +306,21 @@ static void ShowPlayerControls(int x, struct PlayerData *data)
 
 static void ShowSelection(int x, struct PlayerData *data, int character)
 {
-	int i;
-
 	DisplayPlayer(x, data, character, 0);
 
 	if (data->weaponCount == 0) {
 			CDogsTextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20, "None selected...");
-	} else {
+	}
+	else
+	{
+		int i;
 		for (i = 0; i < data->weaponCount; i++)
-			CDogsTextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20 + i * CDogsTextHeight(),
-				     gunDesc[data->weapons[i]].gunName);
+		{
+			CDogsTextStringAt(
+				x + 40,
+				(SCREEN_HEIGHT / 10) + 20 + i * CDogsTextHeight(),
+				gGunDescriptions[data->weapons[i]].gunName);
+		}
 	}
 }
 
@@ -759,9 +764,13 @@ static int WeaponSelection(int x, int index, struct PlayerData *data,
 		y = CenterY((CDogsTextHeight() * gMission.weaponCount));
 
 		for (i = 0; i < gMission.weaponCount; i++)
-			DisplayMenuItem(x, y + i * CDogsTextHeight(),
-					gunDesc[gMission.availableWeapons[i]].
-					gunName, i == selection[index]);
+		{
+			DisplayMenuItem(
+				x,
+				y + i * CDogsTextHeight(),
+				gGunDescriptions[gMission.availableWeapons[i]].gunName,
+				i == selection[index]);
+		}
 
 		DisplayMenuItem(x, y + i * CDogsTextHeight(), endChoice, i == selection[index]);
 	}
