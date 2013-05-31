@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(cdogs-sdl C)
 
-SET(VERSION "0.4.3")
-SET(VERSION_RC "0,4,3,0")
+SET(VERSION "0.4.3.1")
+SET(VERSION_RC "0,4,3,1")
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "4")
 SET(VERSION_PATCH "3")
