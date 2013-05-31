@@ -21,6 +21,7 @@
 */
 #include "ai.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "defs.h"
@@ -53,6 +54,10 @@ static int Facing(TActor * a, TActor * a2)
 		return a->x < a2->x;
 	case DIRECTION_UPRIGHT:
 		return (a->y > a2->y && a->x < a2->x);
+	default:
+		// should nver get here
+		assert(0);
+		break;
 	}
 	return NO;
 }

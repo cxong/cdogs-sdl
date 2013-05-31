@@ -140,7 +140,7 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 		int i;
 		for (i = 0; i < data->weaponCount; i++)
 		{
-			if (actor->weapon.gun == data->weapons[i])
+			if (actor->weapon.gun == (gun_e)data->weapons[i])
 			{
 				break;
 			}
