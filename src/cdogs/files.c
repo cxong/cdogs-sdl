@@ -308,7 +308,7 @@ int LoadCampaign(
 	if (max_missions <= 0)
 	{
 		size_t size = setting->missionCount * sizeof(struct Mission);
-		CCALLOC(setting->missions, sizeof(size));
+		CCALLOC(setting->missions, size);
 		numMissions = setting->missionCount;
 	}
 	else if (setting->missionCount < max_missions)
