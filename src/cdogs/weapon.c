@@ -151,7 +151,7 @@ int cGunLocks[GUN_COUNT] =
 	6,
 	30,
 	6,
-	5,
+	50,
 	20,
 	30,
 	30,
@@ -171,7 +171,7 @@ int cGunScores[GUN_COUNT] =
 	1,
 	20,
 	1,
-	50,
+	5,
 	2,
 	20,
 	20,
@@ -201,13 +201,13 @@ sound_e cGunSounds[GUN_COUNT] =
 	SND_LAUNCH,
 	SND_LAUNCH,
 	SND_LASER,
+	SND_HAHAHA,
+	SND_HAHAHA,
 	SND_LAUNCH,
 	SND_LASER,
 	SND_POWERGUN,
 	SND_LAUNCH,
-	SND_FLAMER,
-	SND_HAHAHA,
-	SND_HAHAHA
+	SND_FLAMER
 };
 
 int cGunSoundLocks[GUN_COUNT] =
