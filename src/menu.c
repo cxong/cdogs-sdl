@@ -790,39 +790,6 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 }
 
 
-// TODO: simplify into an iterate over struct controls_available
-void ChangeControl(
-	input_device_e *d, input_device_e *dOther, int numJoysticks)
-{
-	if (*d == INPUT_DEVICE_JOYSTICK_1)
-	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && numJoysticks >= 2)
-		{
-			*d = INPUT_DEVICE_JOYSTICK_2;
-		}
-		else
-		{
-			*d = INPUT_DEVICE_KEYBOARD;
-		}
-	}
-	else if (*d == INPUT_DEVICE_JOYSTICK_2)
-	{
-		*d = INPUT_DEVICE_KEYBOARD;
-	}
-	else
-	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && numJoysticks >= 1)
-		{
-			*d = INPUT_DEVICE_JOYSTICK_1;
-		}
-		else if (numJoysticks >= 2)
-		{
-			*d = INPUT_DEVICE_JOYSTICK_2;
-		}
-	}
-	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
-}
-
 void MenuActivate(menu_t *menu, int cmd)
 {
 	SoundPlay(&gSoundDevice, SND_SWITCH);
@@ -937,7 +904,7 @@ void MenuActivate(menu_t *menu, int cmd)
 		}
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
-		ChangeControl(
+		InputChangeDevice(
 			menu->u.option.uHook.changeControl.device0,
 			menu->u.option.uHook.changeControl.device1,
 			gJoysticks.numJoys);

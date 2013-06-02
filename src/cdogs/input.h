@@ -78,6 +78,9 @@ typedef enum
 	KEY_CODE_MAP
 } key_code_e;
 
+void InputChangeDevice(
+	input_device_e *d, input_device_e *dOther, int numJoysticks);
+
 char *InputDeviceStr(int d);
 void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
 int GetMenuCmd(void);

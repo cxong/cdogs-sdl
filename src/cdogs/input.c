@@ -58,6 +58,39 @@
 #include "gamedata.h"
 
 
+// TODO: simplify into an iterate over struct controls_available
+void InputChangeDevice(
+	input_device_e *d, input_device_e *dOther, int numJoysticks)
+{
+	if (*d == INPUT_DEVICE_JOYSTICK_1)
+	{
+		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && numJoysticks >= 2)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_2;
+		}
+		else
+		{
+			*d = INPUT_DEVICE_KEYBOARD;
+		}
+	}
+	else if (*d == INPUT_DEVICE_JOYSTICK_2)
+	{
+		*d = INPUT_DEVICE_KEYBOARD;
+	}
+	else
+	{
+		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && numJoysticks >= 1)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_1;
+		}
+		else if (numJoysticks >= 2)
+		{
+			*d = INPUT_DEVICE_JOYSTICK_2;
+		}
+	}
+	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
+}
+
 static int SwapButtons(int cmd)
 {
 	int c = (cmd & ~(CMD_BUTTON1 | CMD_BUTTON2));

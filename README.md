@@ -1,5 +1,5 @@
 
-C-Dogs SDL Port v0.4.3.1
+C-Dogs SDL Port v0.4.4
 ========================
 
 (based on C-Dogs 1.06)
@@ -14,7 +14,7 @@ C-Dogs SDL Port v0.4.3.1
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.4.3.1
+     `---------------'               v0.4.4
 
 1. Introduction
 2. Tested Environments

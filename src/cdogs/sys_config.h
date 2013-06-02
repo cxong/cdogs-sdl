@@ -29,7 +29,7 @@
 #ifndef __SYS_CONFIG
 #define __SYS_CONFIG
 
-#define CDOGS_SDL_VERSION "v0.4.3.1"
+#define CDOGS_SDL_VERSION "v0.4.4"
 
 /* where to look for the cdogs data files */
 #define CDOGS_DATA_DIR ""
