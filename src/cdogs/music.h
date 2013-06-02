@@ -49,19 +49,13 @@
 #ifndef __MUSIC
 #define __MUSIC
 
-typedef enum
-{
-	MUSIC_OK,
-	MUSIC_NOLOAD,
-	MUSIC_PLAYING,
-	MUSIC_PAUSED
-} music_status_e;
+#include "sounds.h"
 
-int MusicPlay(const char *path);
-void MusicStop(void);
+int MusicPlay(SoundDevice *device, const char *path);
+void MusicStop(SoundDevice *device);
 void MusicSetVolume(int volume);
 int MusicGetVolume(void);
-int MusicGetStatus(void);
-const char *MusicGetErrorMessage(void);
+int MusicGetStatus(SoundDevice *device);
+const char *MusicGetErrorMessage(SoundDevice *device);
 
 #endif

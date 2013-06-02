@@ -57,6 +57,7 @@
 #include <SDL.h>
 
 #include "files.h"
+#include "music.h"
 
 SoundDevice gSoundDevice =
 {
@@ -138,7 +139,7 @@ void LoadSound(SoundData *sound)
 	sound->isLoaded = 1;
 }
 
-int SoundInitialize(void)
+int SoundInitialize(SoundDevice *device)
 {
 	int result = 1;
 	int i;
@@ -149,7 +150,7 @@ int SoundInitialize(void)
 		goto bail;
 	}
 
-	if (Mix_AllocateChannels(gSoundDevice.channels) != gSoundDevice.channels)
+	if (Mix_AllocateChannels(device->channels) != device->channels)
 	{
 		printf("Couldn't allocate channels!\n");
 		result = 0;
@@ -158,19 +159,23 @@ int SoundInitialize(void)
 
 	for (i = 0; i < SND_COUNT; i++)
 	{
-		LoadSound(&gSoundDevice.sounds[i]);
+		LoadSound(&device->sounds[i]);
 	}
 
-	gSoundDevice.isInitialised = 1;
+	// set initial volumes
+	Mix_Volume(-1, device->volume);
+	Mix_VolumeMusic(device->musicVolume);
+
+	device->isInitialised = 1;
 
 bail:
 	return result;
 }
 
-void SoundTerminate(int isWaitingUntilSoundsComplete)
+void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 {
 	int i;
-	if (!gSoundDevice.isInitialised)
+	if (!device->isInitialised)
 	{
 		return;
 	}
@@ -182,14 +187,14 @@ void SoundTerminate(int isWaitingUntilSoundsComplete)
 		while (Mix_Playing(-1) > 0 &&
 			SDL_GetTicks() - waitStart < 1000);
 	}
-	MusicStop();
+	MusicStop(device);
 	Mix_CloseAudio();
 	for (i = 0; i < SND_COUNT; i++)
 	{
-		if (gSoundDevice.sounds[i].isLoaded)
+		if (device->sounds[i].isLoaded)
 		{
-			Mix_FreeChunk(gSoundDevice.sounds[i].data);
-			gSoundDevice.sounds[i].data = NULL;
+			Mix_FreeChunk(device->sounds[i].data);
+			device->sounds[i].data = NULL;
 		}
 	}
 }

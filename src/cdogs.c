@@ -606,28 +606,28 @@ static void PlayGameSong(void)
 	// Play a tune
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
-	MusicStop();
+	MusicStop(&gSoundDevice);
 	if (strlen(gMission.missionData->song) > 0)
 	{
 		char buf[CDOGS_PATH_MAX];
 		strcpy(buf, gCampaign.setting->path);
 		strcat(buf, "/");
 		strcat(buf, gMission.missionData->song);
-		success = !MusicPlay(buf);
+		success = !MusicPlay(&gSoundDevice, buf);
 	}
 	if (!success && gGameSongs != NULL)
 	{
-		MusicPlay(gGameSongs->path);
+		MusicPlay(&gSoundDevice, gGameSongs->path);
 		ShiftSongs(&gGameSongs);
 	}
 }
 
 static void PlayMenuSong(void)
 {
-	MusicStop();
+	MusicStop(&gSoundDevice);
 	if (gMenuSongs)
 	{
-		MusicPlay(gMenuSongs->path);
+		MusicPlay(&gSoundDevice, gMenuSongs->path);
 		ShiftSongs(&gMenuSongs);
 	}
 }
@@ -1022,7 +1022,7 @@ int main(int argc, char *argv[])
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
-	if (isSoundEnabled && !SoundInitialize())
+	if (isSoundEnabled && !SoundInitialize(&gSoundDevice))
 	{
 		printf("Sound initialization failed!\n");
 	}
@@ -1071,7 +1071,7 @@ int main(int argc, char *argv[])
 	if (isSoundEnabled)
 	{
 		debug(D_NORMAL, ">> Shutting down sound...\n");
-		SoundTerminate(1);
+		SoundTerminate(&gSoundDevice, 1);
 	}
 
 	debug(D_NORMAL, "SDL_Quit()\n");

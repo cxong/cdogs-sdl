@@ -56,9 +56,9 @@
 #include "sounds.h"
 
 
-int MusicPlay(const char *path)
+int MusicPlay(SoundDevice *device, const char *path)
 {
-	if (!gSoundDevice.isInitialised)
+	if (!device->isInitialised)
 	{
 		return 0;
 	}
@@ -71,30 +71,30 @@ int MusicPlay(const char *path)
 		return 1;
 	}
 
-	gSoundDevice.music = Mix_LoadMUS(path);
-	if (gSoundDevice.music == NULL)
+	device->music = Mix_LoadMUS(path);
+	if (device->music == NULL)
 	{
-		strcpy(gSoundDevice.musicErrorMessage, SDL_GetError());
-		gSoundDevice.musicStatus = MUSIC_NOLOAD;
+		strcpy(device->musicErrorMessage, SDL_GetError());
+		device->musicStatus = MUSIC_NOLOAD;
 		return 1;
 	}
 
 	debug(D_NORMAL, "Playing song: %s\n", path);
 
-	Mix_PlayMusic(gSoundDevice.music, -1);
-	gSoundDevice.musicStatus = MUSIC_PLAYING;
-	MusicSetVolume(gSoundDevice.musicVolume);
+	MusicSetVolume(device->musicVolume);
+	Mix_PlayMusic(device->music, -1);
+	device->musicStatus = MUSIC_PLAYING;
 
 	return 0;
 }
 
-void MusicStop(void)
+void MusicStop(SoundDevice *device)
 {
-	if (gSoundDevice.music != NULL)
+	if (device->music != NULL)
 	{
 		Mix_HaltMusic();
-		Mix_FreeMusic(gSoundDevice.music);
-		gSoundDevice.music = NULL;
+		Mix_FreeMusic(device->music);
+		device->music = NULL;
 	}
 }
 
@@ -116,12 +116,12 @@ int MusicGetVolume(void)
 	return gSoundDevice.musicVolume;
 }
 
-int MusicGetStatus(void)
+int MusicGetStatus(SoundDevice *device)
 {
-	return gSoundDevice.musicStatus;
+	return device->musicStatus;
 }
 
-const char *MusicGetErrorMessage(void)
+const char *MusicGetErrorMessage(SoundDevice *device)
 {
-	return gSoundDevice.musicErrorMessage;
+	return device->musicErrorMessage;
 }

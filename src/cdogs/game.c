@@ -606,9 +606,9 @@ int gameloop(void)
 
 	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
-	if (MusicGetStatus() != MUSIC_OK)
+	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
-		DisplayMessage(MusicGetErrorMessage());
+		DisplayMessage(MusicGetErrorMessage(&gSoundDevice));
 	}
 
 	gameIsPaused = NO;

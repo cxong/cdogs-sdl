@@ -51,7 +51,6 @@
 
 #include <SDL_mixer.h>
 
-#include "music.h"
 #include "utils.h"
 
 typedef enum
@@ -84,6 +83,14 @@ typedef struct
 	Mix_Chunk *data;
 } SoundData;
 
+typedef enum
+{
+	MUSIC_OK,
+	MUSIC_NOLOAD,
+	MUSIC_PLAYING,
+	MUSIC_PAUSED
+} music_status_e;
+
 typedef struct
 {
 	int isInitialised;
@@ -100,8 +107,8 @@ typedef struct
 
 extern SoundDevice gSoundDevice;
 
-int SoundInitialize(void);
-void SoundTerminate(int isWaitingUntilSoundsComplete);
+int SoundInitialize(SoundDevice *device);
+void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete);
 void SoundPlay(SoundDevice *device, sound_e sound);
 void SoundSetVolume(int volume);
 int SoundGetVolume(void);
