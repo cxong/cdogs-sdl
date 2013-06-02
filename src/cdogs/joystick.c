@@ -1,26 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
 
     Copyright (c) 2013, Cong Xu
     All rights reserved.
@@ -51,183 +31,171 @@
 #include <string.h>
 #include <stdio.h>
 
-/* some of this stuff could be better, but it works! */
+#include "defs.h"
 
-struct JoyRec gSticks[2];
 
-void PollSticks(void)
+joysticks_t gJoysticks;
+
+void JoyInit(joysticks_t *joys)
 {
-	SDL_Joystick *j;
-	int idx;
-
-	SDL_JoystickUpdate();
-
-	gSticks[0].x = gSticks[0].y = gSticks[1].x = gSticks[1].y = 0;
-	gSticks[0].buttons = gSticks[1].buttons = 0;
-
-	for (idx = 0; idx < 2; idx++) {
-		if (gSticks[idx].present && gSticks[idx].inUse) {
-			int i;
-			int max;
-			int btn = 0;
-			
-			j = gSticks[idx].j;
-			gSticks[idx].x = SDL_JoystickGetAxis(j, 0);
-			gSticks[idx].y = SDL_JoystickGetAxis(j, 1);
-
-			max = gSticks[idx].nr_buttons;
-			if (max > 4) max = 4;
-
-			for (i = 0; i < max; i++) {
-				if (SDL_JoystickGetButton(j, i)) {
-					btn |= (2^i);
-				}
-			}
-
-			gSticks[idx].buttons = btn;
-		}
-	}
+	memset(joys->joys, 0, sizeof(joys->joys));
+	JoyReset(joys);
 }
 
-void InitSticks(void)
+void JoyReset(joysticks_t *joys)
 {
 	int i;
-	int n;
-	
-	gSticks[0].present = NO;
-	gSticks[1].present = NO;
-	gSticks[0].inUse = NO;
-	gSticks[1].inUse = NO;
+
+	JoyTerminate(joys);
 
 	printf("Checking for joysticks... ");
-
-	if ((n = SDL_NumJoysticks()) == 0) {
+	joys->numJoys = SDL_NumJoysticks();
+	if (joys->numJoys == 0)
+	{
 		printf("None found.\n");
 		return;
 	}
-
-	printf("%d found\n", n);
-
-	n = 2;	// only support 2 joysticks
-	for (i = 0; i < n; i++)
+	printf("%d found\n", joys->numJoys);
+	for (i = 0; i < joys->numJoys; i++)
 	{
-		SDL_Joystick *j = gSticks[i].j;
-		if (j != NULL)
-		{
-			printf("Closing joystick.\n");
-			SDL_JoystickClose(j);
-			j = NULL;
-		}
-		
-		j = SDL_JoystickOpen(i);
+		joys->joys[i].j = SDL_JoystickOpen(i);
 
-		if (j) {
-			int nb, na;
-			nb = SDL_JoystickNumButtons(j);
-			na = SDL_JoystickNumAxes(j);
-			
-			printf("Opened Joystick %d\n", i);
-			printf(" -> %s\n", SDL_JoystickName(i));
-			printf(" -> Axes: %d Buttons: %d\n", na, nb);
-			gSticks[i].present = YES;
-			gSticks[i].inUse = YES;
-			gSticks[i].nr_buttons = nb;
-			gSticks[i].nr_axes = na;
-			gSticks[i].buttons = 0;
-			gSticks[i].j = j;
-		} else {
+		if (joys->joys[i].j == NULL)
+		{
 			printf("Failed to open joystick.\n");
 		}
-	}
-	AutoCalibrate();
 
-	if (gSticks[0].present)
+		joys->joys[i].numButtons = SDL_JoystickNumButtons(joys->joys[i].j);
+		joys->joys[i].numAxes = SDL_JoystickNumAxes(joys->joys[i].j);
+		joys->joys[i].numHats = SDL_JoystickNumHats(joys->joys[i].j);
+
+		printf("Opened Joystick %d\n", i);
+		printf(" -> %s\n", SDL_JoystickName(i));
+		printf(" -> Axes: %d Buttons: %d Hats: %d\n",
+			joys->joys[i].numAxes, joys->joys[i].numButtons, joys->joys[i].numHats);
+	}
+	JoyPoll(joys);
+}
+
+void GJoyReset(void)
+{
+	JoyReset(&gJoysticks);
+}
+
+void JoyTerminate(joysticks_t *joys)
+{
+	int i;
+	for (i = 0; i < MAX_JOYSTICKS; i++)
 	{
-		printf("Joystick 1 detected\n");
+		if (joys->joys[i].j != NULL)
+		{
+			printf("Closing joystick.\n");
+			SDL_JoystickClose(joys->joys[i].j);
+			joys->joys[i].j = NULL;
+		}
 	}
-	if (gSticks[1].present)
+}
+
+#define JOY_AXIS_THRESHOLD	16384
+
+void JoyPollOne(joystick_t *joy)
+{
+	int i;
+	joy->previousButtonsField = joy->currentButtonsField;
+	joy->currentButtonsField = 0;
+
+	// Get axes values, convert to direction
+	for (i = 0; i < joy->numAxes; i += 2)
 	{
-		printf("Joystick 2 detected\n");
+		int x = SDL_JoystickGetAxis(joy->j, 0);
+		int y = SDL_JoystickGetAxis(joy->j, 1);
+		if (x < -JOY_AXIS_THRESHOLD)
+		{
+			joy->currentButtonsField |= CMD_LEFT;
+		}
+		else if (x > JOY_AXIS_THRESHOLD)
+		{
+			joy->currentButtonsField |= CMD_RIGHT;
+		}
+		if (y < -JOY_AXIS_THRESHOLD)
+		{
+			joy->currentButtonsField |= CMD_UP;
+		}
+		else if (y > JOY_AXIS_THRESHOLD)
+		{
+			joy->currentButtonsField |= CMD_DOWN;
+		}
+	}
+
+	// Get hat state, convert to direction
+	for (i = 0; i < joy->numHats; i++)
+	{
+		Uint8 hat = SDL_JoystickGetHat(joy->j, i);
+		switch (hat)
+		{
+		case SDL_HAT_UP:
+			joy->currentButtonsField |= CMD_UP;
+			break;
+		case SDL_HAT_RIGHT:
+			joy->currentButtonsField |= CMD_RIGHT;
+			break;
+		case SDL_HAT_DOWN:
+			joy->currentButtonsField |= CMD_DOWN;
+			break;
+		case SDL_HAT_LEFT:
+			joy->currentButtonsField |= CMD_LEFT;
+			break;
+		case SDL_HAT_RIGHTUP:
+			joy->currentButtonsField |= CMD_RIGHT;
+			joy->currentButtonsField |= CMD_UP;
+			break;
+		case SDL_HAT_RIGHTDOWN:
+			joy->currentButtonsField |= CMD_RIGHT;
+			joy->currentButtonsField |= CMD_DOWN;
+			break;
+		case SDL_HAT_LEFTUP:
+			joy->currentButtonsField |= CMD_LEFT;
+			joy->currentButtonsField |= CMD_UP;
+			break;
+		case SDL_HAT_LEFTDOWN:
+			joy->currentButtonsField |= CMD_LEFT;
+			joy->currentButtonsField |= CMD_DOWN;
+			break;
+		case SDL_HAT_CENTERED:
+		default:
+			break;
+		}
+	}
+
+	// Get buttons
+	for (i = 0; i < joy->numButtons; i++)
+	{
+		if (SDL_JoystickGetButton(joy->j, i))
+		{
+			joy->currentButtonsField |= CMD_BUTTON1 << i;
+		}
 	}
 }
 
-void AutoCalibrate(void)
+void JoyPoll(joysticks_t *joys)
 {
-	PollSticks();
-
-/*
-	gSticks[0].xMid = gSticks[0].x;
-	gSticks[0].yMid = gSticks[0].y;
-	gSticks[1].xMid = gSticks[1].x;
-	gSticks[1].yMid = gSticks[1].y;
-*/
-	gSticks[0].xMid = 0;
-	gSticks[0].yMid = 0;
-	gSticks[1].xMid = 0;
-	gSticks[1].yMid = 0;
-}
-
-#define JS_DEF_THRESHOLD	16384
-
-int js1_threshold = JS_DEF_THRESHOLD;
-int js2_threshold = JS_DEF_THRESHOLD;
-
-void PollDigiSticks(int *joy1, int *joy2)
-{
-	PollSticks();
-
-	if (joy1)
-		*joy1 = 0;
-	if (joy1 && gSticks[0].present) {
-		if (gSticks[0].x < (gSticks[0].xMid - js1_threshold)) {
-			*joy1 |= JOYSTICK_LEFT;
-		} else if (gSticks[0].x > (gSticks[0].xMid + js1_threshold)) {
-			*joy1 |= JOYSTICK_RIGHT;
+	int i;
+	SDL_JoystickUpdate();
+	for (i = 0; i < joys->numJoys; i++)
+	{
+		if (joys->joys[i].j != NULL)
+		{
+			JoyPollOne(&joys->joys[i]);
 		}
-		
-		if (gSticks[0].y < (gSticks[0].yMid - js1_threshold)) {
-			*joy1 |= JOYSTICK_UP;
-		} else if (gSticks[0].y > (gSticks[0].yMid + js1_threshold)) {
-			*joy1 |= JOYSTICK_DOWN;
-		}
-
-		if ((gSticks[0].buttons & 1) != 0)
-			*joy1 |= JOYSTICK_BUTTON1;
-		if ((gSticks[0].buttons & 2) != 0)
-			*joy1 |= JOYSTICK_BUTTON2;
-		if ((gSticks[0].buttons & 4) != 0)
-			*joy1 |= JOYSTICK_BUTTON3;
-		if ((gSticks[0].buttons & 8) != 0)
-			*joy1 |= JOYSTICK_BUTTON4;
-	}
-	if (joy2)
-		*joy2 = 0;
-	if (joy2 && gSticks[1].present) {
-		if (gSticks[1].x < gSticks[1].xMid - js2_threshold) {
-			*joy2 |= JOYSTICK_LEFT;
-		} else if (gSticks[1].x > gSticks[1].xMid + js2_threshold) {
-			*joy2 |= JOYSTICK_RIGHT;
-		}
-		
-		if (gSticks[1].y < gSticks[1].yMid - js2_threshold) {
-			*joy2 |= JOYSTICK_UP;
-		} else if (gSticks[1].y > gSticks[1].yMid + js2_threshold) {
-			*joy2 |= JOYSTICK_DOWN;
-		}
-
-		if ((gSticks[1].buttons & 1) != 0)
-			*joy2 |= JOYSTICK_BUTTON1;
-		if ((gSticks[1].buttons & 2) != 0)
-			*joy2 |= JOYSTICK_BUTTON2;
-		if ((gSticks[1].buttons & 4) != 0)
-			*joy2 |= JOYSTICK_BUTTON3;
-		if ((gSticks[1].buttons & 8) != 0)
-			*joy2 |= JOYSTICK_BUTTON4;
 	}
 }
 
-void EnableSticks(int joy1, int joy2)
+int JoyIsDown(joystick_t *joystick, int button)
 {
-	gSticks[0].inUse = joy1;
-	gSticks[1].inUse = joy2;
+	return !!(joystick->currentButtonsField & button);
+}
+
+int JoyIsPressed(joystick_t *joystick, int button)
+{
+	return JoyIsDown(joystick, button) && !(joystick->previousButtonsField & button);
 }

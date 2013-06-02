@@ -68,76 +68,92 @@ static int SwapButtons(int cmd)
 	return c;
 }
 
-void GetOnePlayerCmd(
-	struct PlayerData *data, int *cmd, int joy1, int joy2,
-	int isSingle, int (*key_func)(keyboard_t*, int))
+int GetOnePlayerCmd(
+	struct PlayerData *data,
+	int (*keyFunc)(keyboard_t *, int),
+	int (*joyFunc)(joystick_t *, int))
 {
-	if (cmd == NULL)
-	{
-		return;
-	}
+	int cmd = 0;
 	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
 	{
-		if (key_func(&gKeyboard, data->keys.left))
+		if (keyFunc(&gKeyboard, data->keys.left))
 		{
-			*cmd |= CMD_LEFT;
+			cmd |= CMD_LEFT;
 		}
-		else if (key_func(&gKeyboard, data->keys.right))
+		else if (keyFunc(&gKeyboard, data->keys.right))
 		{
-			*cmd |= CMD_RIGHT;
-		}
-
-		if (key_func(&gKeyboard, data->keys.up))
-		{
-			*cmd |= CMD_UP;
-		}
-		else if (key_func(&gKeyboard, data->keys.down))
-		{
-			*cmd |= CMD_DOWN;
+			cmd |= CMD_RIGHT;
 		}
 
-		if (key_func(&gKeyboard, data->keys.button1))
+		if (keyFunc(&gKeyboard, data->keys.up))
 		{
-			*cmd |= CMD_BUTTON1;
+			cmd |= CMD_UP;
+		}
+		else if (keyFunc(&gKeyboard, data->keys.down))
+		{
+			cmd |= CMD_DOWN;
 		}
 
-		if (key_func(&gKeyboard, data->keys.button2))
+		if (keyFunc(&gKeyboard, data->keys.button1))
 		{
-			*cmd |= CMD_BUTTON2;
+			cmd |= CMD_BUTTON1;
+		}
+
+		if (keyFunc(&gKeyboard, data->keys.button2))
+		{
+			cmd |= CMD_BUTTON2;
 		}
 	}
 	else
 	{
-		int cmdOther = 0;
 		int swapButtons = 0;
+		joystick_t *joystick = &gJoysticks.joys[0];
+
 		if (data->inputDevice == INPUT_DEVICE_JOYSTICK_1)
 		{
-			*cmd = joy1;
-			cmdOther = joy2;
+			joystick = &gJoysticks.joys[0];
 			swapButtons = gOptions.swapButtonsJoy1;
 		}
 		else if (data->inputDevice == INPUT_DEVICE_JOYSTICK_2)
 		{
-			*cmd = joy2;
-			cmdOther = joy1;
+			joystick = &gJoysticks.joys[1];
 			swapButtons = gOptions.swapButtonsJoy2;
 		}
+
+		if (joyFunc(joystick, CMD_LEFT))
+		{
+			cmd |= CMD_LEFT;
+		}
+		else if (joyFunc(joystick, CMD_RIGHT))
+		{
+			cmd |= CMD_RIGHT;
+		}
+
+		if (joyFunc(joystick, CMD_UP))
+		{
+			cmd |= CMD_UP;
+		}
+		else if (joyFunc(joystick, CMD_DOWN))
+		{
+			cmd |= CMD_DOWN;
+		}
+
+		if (joyFunc(joystick, CMD_BUTTON1))
+		{
+			cmd |= CMD_BUTTON1;
+		}
+
+		if (joyFunc(joystick, CMD_BUTTON2))
+		{
+			cmd |= CMD_BUTTON2;
+		}
+
 		if (swapButtons)
 		{
-			*cmd = SwapButtons(*cmd);
-		}
-		if (isSingle)
-		{
-			if (cmdOther & CMD_BUTTON1)
-			{
-				*cmd |= CMD_BUTTON3;
-			}
-			if (cmdOther & CMD_BUTTON2)
-			{
-				*cmd |= CMD_BUTTON4;
-			}
+			cmd = SwapButtons(cmd);
 		}
 	}
+	return cmd;
 }
 
 
@@ -156,14 +172,19 @@ char *InputDeviceStr(int d)
 	}
 }
 
-void GetPlayerCmd(int *cmd1, int *cmd2, int is_pressed)
+void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 {
-	int joy1, joy2;
-	int (*key_func)(keyboard_t*, int) = is_pressed ? KeyIsPressed : KeyIsDown;
+	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
+	int (*joyFunc)(joystick_t *, int) = isPressed ? JoyIsPressed : JoyIsDown;
 
-	PollDigiSticks(&joy1, &joy2);
-	GetOnePlayerCmd(&gPlayer1Data, cmd1, joy1, joy2, cmd2 == NULL, key_func);
-	GetOnePlayerCmd(&gPlayer2Data, cmd2, joy1, joy2, cmd1 == NULL, key_func);
+	if (cmd1 != NULL)
+	{
+		*cmd1 = GetOnePlayerCmd(&gPlayer1Data, keyFunc, joyFunc);
+	}
+	if (cmd2 != NULL)
+	{
+		*cmd2 = GetOnePlayerCmd(&gPlayer2Data, keyFunc, joyFunc);
+	}
 }
 
 int GetMenuCmd(void)
@@ -172,10 +193,6 @@ int GetMenuCmd(void)
 	if (KeyIsPressed(&gKeyboard, keyEsc))
 	{
 		return CMD_ESC;
-	}
-	if (KeyIsPressed(&gKeyboard, keyF10))
-	{
-		AutoCalibrate();
 	}
 	if (KeyIsPressed(&gKeyboard, keyF9))
 	{

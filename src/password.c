@@ -58,6 +58,7 @@
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
+#include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
@@ -208,6 +209,7 @@ static int EnterCode(void *bkg, const char *password)
 	{
 		int cmd;
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
@@ -259,6 +261,7 @@ int EnterPassword(void *bkg, const char *password)
 	{
 		int cmd;
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		cmd = GetMenuCmd();
 

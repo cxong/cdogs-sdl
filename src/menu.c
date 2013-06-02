@@ -792,12 +792,11 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 
 // TODO: simplify into an iterate over struct controls_available
 void ChangeControl(
-	input_device_e *d, input_device_e *dOther,
-	int joy0Present, int joy1Present)
+	input_device_e *d, input_device_e *dOther, int numJoysticks)
 {
 	if (*d == INPUT_DEVICE_JOYSTICK_1)
 	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && joy1Present)
+		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && numJoysticks >= 2)
 		{
 			*d = INPUT_DEVICE_JOYSTICK_2;
 		}
@@ -812,11 +811,11 @@ void ChangeControl(
 	}
 	else
 	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && joy0Present)
+		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && numJoysticks >= 1)
 		{
 			*d = INPUT_DEVICE_JOYSTICK_1;
 		}
-		else if (joy1Present)
+		else if (numJoysticks >= 2)
 		{
 			*d = INPUT_DEVICE_JOYSTICK_2;
 		}
@@ -941,7 +940,7 @@ void MenuActivate(menu_t *menu, int cmd)
 		ChangeControl(
 			menu->u.option.uHook.changeControl.device0,
 			menu->u.option.uHook.changeControl.device1,
-			gSticks[0].present, gSticks[1].present);
+			gJoysticks.numJoys);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
 		menu->u.option.uHook.toggleFuncs.toggle();

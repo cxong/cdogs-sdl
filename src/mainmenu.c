@@ -52,6 +52,7 @@ int MainMenu(
 	do
 	{
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
@@ -316,8 +317,8 @@ menu_t *MenuCreateControls(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionFunc(
-			"Calibrate joystick",
-			InitSticks,
+			"Reset joysticks",
+			GJoyReset,
 			NULL, MENU_OPTION_DISPLAY_STYLE_NONE));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));

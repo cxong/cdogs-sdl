@@ -57,6 +57,7 @@
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
+#include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/pics.h>
 #include <cdogs/sounds.h>
@@ -984,6 +985,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 		int cmd1 = 0;
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
@@ -1018,6 +1020,7 @@ int PlayerEquip(void *bkg)
 		int cmd1 = 0;
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 

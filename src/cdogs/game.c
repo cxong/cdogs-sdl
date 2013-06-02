@@ -57,6 +57,7 @@
 #include "SDL_mutex.h"
 
 #include "draw.h"
+#include "joystick.h"
 #include "music.h"
 #include "objs.h"
 #include "actors.h"
@@ -553,6 +554,7 @@ int HandleKey(int *done, int cmd)
 		{
 			SDL_Delay(10);
 			KeyPoll(&gKeyboard);
+			JoyPoll(&gJoysticks);
 		}
 	}
 
@@ -679,6 +681,7 @@ int gameloop(void)
 		CopyToScreen();
 
 		KeyPoll(&gKeyboard);
+		JoyPoll(&gJoysticks);
 
 		if (!gameIsPaused) {
 			if (!gOptions.slowmotion || (frames & 1) == 0) {

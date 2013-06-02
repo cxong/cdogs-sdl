@@ -83,8 +83,6 @@ The C-Dogs binary is called "cdogs-sdl". Below are some command line arguments:
 ### Control Options
 
     -nojoystick     Disable joystick(s)
-    -js1threshold=n Joystick 1 threshold.
-    -js2threshold=n Joystick 2 threshold.
 
 ### Game Options
 

@@ -892,8 +892,6 @@ void PrintHelp (void)
 	printf("%s\n",
 		"Control Options:\n"
 		"    -nojoystick     Disable joystick(s)\n"
-		"    -js1threshold=n Joystick 1 threshold.\n"
-		"    -js2threshold=n Joystick 2 threshold.\n"
 	);
 
 	printf("%s\n",
@@ -943,30 +941,6 @@ int main(int argc, char *argv[])
 			if (strcmp(argv[i] + 1, "slices") == 0) {
 				printf("Displaying CPU slices\n");
 				gOptions.displaySlices = 1;
-			}
-
-			if (strstr(argv[i] + 1, "js1threshold=")) {
-				char *val = strchr(argv[i], '=');
-				extern int js1_threshold;
-				int nval;
-				val++;
-
-				nval = atoi(val);
-				if (nval < 0) nval = 0;
-				printf("Joystick 1 threshold: %d\n", nval);
-				js1_threshold = nval;
-			}
-
-			if (strstr(argv[i] + 1, "js2threshold=")) {
-				char *val = strchr(argv[i], '=');
-				extern int js2_threshold;
-				int nval;
-				val++;
-
-				nval = atoi(val);
-				if (nval < 0) nval = 0;
-				printf("Joystick 2 threshold: %d\n", nval);
-				js2_threshold = nval;
 			}
 
 			if (strstr(argv[i] + 1, "shakemult=")) {
@@ -1063,7 +1037,7 @@ int main(int argc, char *argv[])
 
 	LoadAllCampaigns(&campaigns);
 
-	InitSticks();
+	JoyInit(&gJoysticks);
 	KeyInit(&gKeyboard);
 
 	if (wait)
@@ -1081,6 +1055,8 @@ int main(int argc, char *argv[])
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
+
+	JoyTerminate(&gJoysticks);
 
 	ShutDownVideo();
 
