@@ -32,6 +32,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+#include "config.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"

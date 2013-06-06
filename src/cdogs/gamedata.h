@@ -53,6 +53,7 @@
 #include "input.h"
 #include "map.h"
 #include "pics.h"
+#include "weapon.h"
 #include "sys_config.h"
 
 #define MAX_WEAPONS 3
@@ -75,9 +76,6 @@ struct PlayerData
 	int allTime, today;
 	int kills;
 	int friendlies;
-
-	input_device_e inputDevice;
-	input_keys_t keys;
 };
 
 extern struct PlayerData gPlayer1Data;
@@ -97,21 +95,7 @@ const char *DifficultyStr(difficulty_e d);
 struct GameOptions {
 	int twoPlayers;
 	int badGuys;
-	int splitScreenAlways;
-	int displayFPS;
-	int displayTime;
-	int playersHurt;
-	int displaySlices;
-	int forceVSync;
-	int brightness;
-	int swapButtonsJoy1;
-	int swapButtonsJoy2;
-	int mapKey;
-	difficulty_e difficulty;
-	int density;
-	int npcHp;
-	int playerHp;
-	int slowmotion;
+	int displaySlices;	// TODO: what does this do?
 };
 
 // Properties of map objects

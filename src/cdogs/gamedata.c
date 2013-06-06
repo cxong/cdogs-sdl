@@ -68,19 +68,13 @@
 struct PlayerData gPlayer1Data = {
 	"Player 1", 0, SHADE_BLUE, SHADE_BLUE, SHADE_BLUE, 0, 0,
 	3, {GUN_SHOTGUN, GUN_MG, GUN_FRAGGRENADE},
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	INPUT_DEVICE_KEYBOARD,
-	{SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_DOWN,
-	 SDLK_RSHIFT, SDLK_RETURN}
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 struct PlayerData gPlayer2Data = {
 	"Player 2", 1, SHADE_RED, SHADE_RED, SHADE_RED, 2, 0,
 	3, {GUN_POWERGUN, GUN_FLAMER, GUN_GRENADE},
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	INPUT_DEVICE_KEYBOARD,
-	{keyKeypad4, keyKeypad6, keyKeypad8, keyKeypad2, keyKeypad0,
-	 keyKeypadEnter}
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 const char *DifficultyStr(difficulty_e d)
@@ -105,20 +99,7 @@ const char *DifficultyStr(difficulty_e d)
 struct GameOptions gOptions = {
 	0,	// twoPlayers
 	1,	// badGuys
-	0,	// splitScreenAlways
-	0,	// displayFPS
-	0,	// displayTime
-	0,	// playersHurt
 	0,	// displaySlices
-	0,	// forceVSync
-	0,	// brightness
-	0, 0,	// swapButtonsJoy1/2
-	keyTab,	// mapKey
-	DIFFICULTY_NORMAL,	// difficulty
-	100,	// density
-	100,	// npcHp
-	100,	// playerHp
-	0	// slowmotion
 };
 
 CampaignOptions gCampaign =

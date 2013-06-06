@@ -49,6 +49,8 @@
 #ifndef __GRAFX
 #define __GRAFX
 
+#include <SDL.h>
+
 #include "sys_specifics.h"
 
 
@@ -59,38 +61,41 @@ typedef struct RGB color_t;
 typedef color_t TPalette[256];
 typedef unsigned char TranslationTable[256];
 
-typedef enum {
-	HINT_FULLSCREEN,
-	HINT_WINDOW,
-	HINT_SCALEFACTOR,
-	HINT_WIDTH,
-	HINT_HEIGHT,
-	HINT_FORCEMODE,
-	HINT_END
-} GFX_Hint;
+typedef struct
+{
+	int IsInitialized;
+	int IsWindowInitialized;
+	SDL_Surface *screen;
+} GraphicsDevice;
 
-void SetColorZero(unsigned char r, unsigned char g, unsigned char b);
+extern GraphicsDevice gGraphicsDevice;
+
+typedef struct
+{
+	int Brightness;
+	int ResolutionWidth;
+	int ResolutionHeight;
+	int Fullscreen;
+	int ScaleFactor;
+} GraphicsConfig;
+
+void SetColorZero(
+	GraphicsDevice *device, unsigned char r, unsigned char g, unsigned char b);
 
 typedef struct {
 	unsigned int w, h;
 } GFX_Mode;
 
-void Gfx_SetHint(const GFX_Hint h, const int val);
-#define Gfx_HintOn(h)	Gfx_SetHint(h, 1)
-#define Gfx_HintOff(h)	Gfx_SetHint(h, 0)
-#define Gfx_HintToggle(h) Gfx_SetHint(h, !Gfx_GetHint(h))
-int Gfx_GetHint(const GFX_Hint h);
+void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
+void GraphicsTerminate(GraphicsDevice *device);
+INLINE int GraphicsGetMemSize(GraphicsConfig *config)
+{
+	return config->ResolutionWidth * config->ResolutionHeight;
+}
 
-int GrafxIsFullscreen(void);
+void Gfx_ModePrev(void);
+void Gfx_ModeNext(void);
 
-int InitVideo(void);
-void ShutDownVideo(void);
-
-void GrafxToggleFullscreen(void);
-void GrafxTryPrevResolution(void);
-void GrafxTryNextResolution(void);
-int GrafxGetScale(void);
-void GrafxSetScale(int scale);
 char *GrafxGetResolutionStr(void);
 
 int ReadPics(
@@ -113,22 +118,12 @@ INLINE static int PicHeight(const void *pic)
 	return ((const short *)pic)[1];
 }
 
-extern int screen_w;
-extern int screen_h;
-
-#define Screen_GetWidth()	(screen_w)
-#define Screen_GetHeight()	(screen_h)
-#define Screen_GetMemSize() (screen_w * screen_h)
-
-#define	SCREEN_WIDTH	Screen_GetWidth()
-#define	SCREEN_HEIGHT	Screen_GetHeight()
-
-#define CenterX(w)		((SCREEN_WIDTH - w) / 2)
-#define CenterY(h)		((SCREEN_HEIGHT - h) / 2)
+#define CenterX(w)		((gConfig.Graphics.ResolutionWidth - w) / 2)
+#define CenterY(h)		((gConfig.Graphics.ResolutionHeight - h) / 2)
 
 #define CenterOf(a, b, w)	((a + (((b - a) - w) / 2)))
 
-#define CenterOfRight(w)	CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), w)
-#define CenterOfLeft(w)		CenterOf(0, (SCREEN_WIDTH / 2), w)
+#define CenterOfRight(w)	CenterOf((gConfig.Graphics.ResolutionWidth / 2), (gConfig.Graphics.ResolutionWidth), w)
+#define CenterOfLeft(w)		CenterOf(0, (gConfig.Graphics.ResolutionWidth / 2), w)
 
 #endif

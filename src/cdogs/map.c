@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "pics.h"
 #include "objs.h"
 #include "triggers.h"

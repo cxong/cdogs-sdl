@@ -54,6 +54,7 @@
 
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
+#include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
@@ -210,7 +211,7 @@ static int EnterCode(void *bkg, const char *password)
 		int cmd;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
 		{
@@ -231,14 +232,22 @@ static int EnterCode(void *bkg, const char *password)
 
 		#define SYMBOL_LEFT	'\020'
 		#define	SYMBOL_RIGHT	'\021'
-		
-		CDogsTextGoto(CenterX(( CDogsTextWidth(buffer) + CDogsTextCharWidth(SYMBOL_LEFT) + CDogsTextCharWidth(SYMBOL_RIGHT) )), (SCREEN_WIDTH / 4));
+
+		CDogsTextGoto(
+			CenterX(
+				CDogsTextWidth(buffer) +
+				CDogsTextCharWidth(SYMBOL_LEFT) +
+				CDogsTextCharWidth(SYMBOL_RIGHT)),
+				gConfig.Graphics.ResolutionWidth / 4);
 		CDogsTextChar(SYMBOL_LEFT);
 		CDogsTextString(buffer);
 		CDogsTextChar(SYMBOL_RIGHT);
 
-		CDogsTextStringSpecial("Enter code", TEXT_XCENTER | TEXT_TOP,
-				  0, (SCREEN_HEIGHT / 12));
+		CDogsTextStringSpecial(
+			"Enter code",
+			TEXT_XCENTER | TEXT_TOP,
+			0,
+			gConfig.Graphics.ResolutionHeight / 12);
 		ShowControls();
 
 		CopyToScreen();
@@ -262,7 +271,7 @@ int EnterPassword(void *bkg, const char *password)
 		int cmd;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		cmd = GetMenuCmd();
 
 		if (AnyButton(cmd)) {

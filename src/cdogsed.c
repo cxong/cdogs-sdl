@@ -29,6 +29,7 @@
 
 #include <cdogs/actors.h>
 #include <cdogs/automap.h>
+#include <cdogs/config.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
@@ -506,7 +507,7 @@ void Display(int index, int xc, int yc, int key)
 	int i;
 
 	SetSecondaryMouseRects(NULL);
-	memset(GetDstScreen(), 58, Screen_GetMemSize());
+	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
 
 	sprintf(s, "Key: 0x%x", key);
 	CDogsTextStringAt(270, 190, s);
@@ -1214,7 +1215,7 @@ static void Save(int asCode)
 	strcpy(filename, lastFile);
 	for (;;)
 	{
-		memset(GetDstScreen(), 58, Screen_GetMemSize());
+		memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
 		CDogsTextStringAt(125, 50, "Save as:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
 		CDogsTextChar('\020');
@@ -1261,7 +1262,7 @@ static int ConfirmQuit(void)
 {
 	int c;
 
-	memset(GetDstScreen(), 58, Screen_GetMemSize());
+	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
 	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	CopyToScreen();
@@ -1549,20 +1550,18 @@ int main(int argc, char *argv[])
 	BuildTranslationTables();
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
-	//InitVideo(YES);
-
-	Gfx_SetHint(HINT_WIDTH, 320);
-	Gfx_SetHint(HINT_HEIGHT, 240);
-	Gfx_SetHint(HINT_SCALEFACTOR, 2);
-
-	if (InitVideo() == -1) {
+	ConfigLoadDefault(&gConfig);
+	ConfigLoad(&gConfig, CONFIG_FILE);
+	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, 0);
+	if (!gGraphicsDevice.IsInitialized)
+	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
 
 	CDogsSetPalette(gPalette);
 
-	CCALLOC(my_screen, Screen_GetMemSize());
+	CCALLOC(my_screen, GraphicsGetMemSize(&gConfig.Graphics));
 	SetDstScreen(my_screen);
 
 	KeyInit(&gKeyboard);

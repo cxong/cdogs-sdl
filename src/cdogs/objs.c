@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "map.h"
 #include "blit.h"
 #include "pics.h"
@@ -325,7 +326,7 @@ int DamageSomething(int dx, int dy, int power, int flags,
 					break;
 				}
 				if (gCampaign.mode != CAMPAIGN_MODE_DOGFIGHT &&
-					!gOptions.playersHurt &&
+					!gConfig.Game.FriendlyFire &&
 					(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0 &&
 					(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
 				{

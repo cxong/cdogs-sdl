@@ -54,14 +54,13 @@
 
 #include <SDL.h>
 
-#include "gamedata.h"	// for gOptions
+#include "config.h"
 #include "grafx.h"
 #include "events.h"
 #include "pics.h" /* for gPalette */
 #include "utils.h" /* for debug() */
 
 unsigned char *r_screen;
-extern SDL_Surface *gScreen;
 
 
 int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
@@ -90,7 +89,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 			current += width;
 			continue;
 		}
-		yoff *= SCREEN_WIDTH;
+		yoff *= gConfig.Graphics.ResolutionWidth;
 		for (j = 0; j < width; j++) {
 			xoff = j + x;
 			if (xoff < clipleft){
@@ -202,13 +201,13 @@ void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
 
 void CopyToScreen(void)
 {
-	unsigned char *pScreen = gScreen->pixels;
+	unsigned char *pScreen = gGraphicsDevice.screen->pixels;
 	int scr_w, scr_h, scr_size, scalef;
 
-	scr_w = Screen_GetWidth();
-	scr_h = Screen_GetHeight();
-	scr_size = Screen_GetMemSize();
-	scalef = GrafxGetScale();
+	scr_w = gConfig.Graphics.ResolutionWidth;
+	scr_h = gConfig.Graphics.ResolutionHeight;
+	scr_size = scr_w * scr_h;
+	scalef = gConfig.Graphics.ScaleFactor;
 
 	/* this really needs to go someplace nicer,
 	 * as it's a bit of a hack, being here. */
@@ -222,7 +221,7 @@ void CopyToScreen(void)
 		CDogsSetPalette(gPalette);
 	}
 
-	if (SDL_LockSurface(gScreen) == -1)
+	if (SDL_LockSurface(gGraphicsDevice.screen) == -1)
 	{
 		printf("Couldn't lock surface; not drawing\n");
 		return;
@@ -234,8 +233,8 @@ void CopyToScreen(void)
 		Scale8(pScreen, r_screen, scr_w, scr_h, scalef);
 	}
 
-	SDL_UnlockSurface(gScreen);
-	SDL_Flip(gScreen);
+	SDL_UnlockSurface(gGraphicsDevice.screen);
+	SDL_Flip(gGraphicsDevice.screen);
 }
 
 void AltScrCopy(void)
@@ -263,13 +262,13 @@ void CDogsSetPalette(void *pal)
 
 		newpal[i].unused = 0;
 	}
-	SDL_SetPalette(gScreen, SDL_PHYSPAL, newpal, 0, 256);
+	SDL_SetPalette(gGraphicsDevice.screen, SDL_PHYSPAL, newpal, 0, 256);
 	return;
 }
 
 int BlitGetBrightness(void)
 {
-	return gOptions.brightness;
+	return gConfig.Graphics.Brightness;
 }
 void BlitSetBrightness(int brightness)
 {
@@ -277,8 +276,7 @@ void BlitSetBrightness(int brightness)
 	{
 		int i;
 		double f;
-		gOptions.brightness = brightness;
-		f = 1.0 + gOptions.brightness / 33.3;
+		f = 1.0 + brightness / 33.3;
 		for (i = 0; i < 255; i++)
 		{
 			gPalette[i].red = (unsigned char)CLAMP(f * origPalette[i].red, 0, 254);

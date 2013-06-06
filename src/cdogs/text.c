@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "grafx.h"
 #include "blit.h"
 #include "actors.h" /* for tableFlamed */
@@ -187,8 +188,8 @@ int CDogsTextWidth(const char *s)
 
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
 {
-	int scrw = SCREEN_WIDTH;
-	int scrh = SCREEN_HEIGHT;
+	int scrw = gConfig.Graphics.ResolutionWidth;
+	int scrh = gConfig.Graphics.ResolutionHeight;
 	int x, y, w, h;
 
 	x = y = w = h = 0;

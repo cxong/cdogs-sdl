@@ -56,6 +56,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
 #include <cdogs/blit.h>
+#include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
@@ -76,7 +77,6 @@
 #include <cdogs/utils.h>
 
 #include "campaigns.h"
-#include "config.h"
 #include "credits.h"
 #include "mainmenu.h"
 #include "password.h"
@@ -142,7 +142,7 @@ int MissionDescription(int y, const char *description)
 	int w, ix, x, lines;
 	const char *ws, *word, *p, *s;
 
-#define MAX_BOX_WIDTH (SCREEN_WIDTH - (SCREEN_WIDTH / 6))
+#define MAX_BOX_WIDTH (gConfig.Graphics.ResolutionWidth - (gConfig.Graphics.ResolutionWidth / 6))
 
 	ix = x = CenterX((MAX_BOX_WIDTH));
 	lines = 1;
@@ -194,9 +194,9 @@ void CampaignIntro(void *bkg)
 
 	debug(D_NORMAL, "\n");
 
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
-	y = (SCREEN_WIDTH / 4);
+	y = gConfig.Graphics.ResolutionWidth / 4;
 
 	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -212,9 +212,9 @@ void MissionBriefing(void *bkg)
 	char s[512];
 	int i, y;
 
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
-	y = SCREEN_WIDTH / 4;
+	y = gConfig.Graphics.ResolutionWidth / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -231,18 +231,25 @@ void MissionBriefing(void *bkg)
 
 	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
-	y += (SCREEN_HEIGHT / 10);
+	y += gConfig.Graphics.ResolutionHeight / 10;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-		if (gMission.missionData->objectives[i].required > 0) {
-			CDogsTextStringAt((SCREEN_WIDTH / 6), y,
-				     gMission.missionData->objectives[i].
-				     description);
-			DrawObjectiveInfo(i, (SCREEN_WIDTH - (SCREEN_WIDTH / 6)), y + 8,
-					  gMission.missionData);
+	{
+		if (gMission.missionData->objectives[i].required > 0)
+		{
+			CDogsTextStringAt(
+				gConfig.Graphics.ResolutionWidth / 6,
+				y,
+				gMission.missionData->objectives[i].description);
+			DrawObjectiveInfo(
+				i,
+				gConfig.Graphics.ResolutionWidth - (gConfig.Graphics.ResolutionWidth / 6),
+				y + 8,
+				gMission.missionData);
 
-			y += (SCREEN_HEIGHT / 12);
+			y += gConfig.Graphics.ResolutionHeight / 12;
 		}
+	}
 
 	CopyToScreen();
 
@@ -252,14 +259,18 @@ void MissionBriefing(void *bkg)
 void Summary(int x, struct PlayerData *data, int character)
 {
 	char s[50];
-	int y = (SCREEN_HEIGHT / 3);
+	int y = gConfig.Graphics.ResolutionHeight / 3;
 
 	if (lastPassword[0])
 	{
 		char s1[512];
 
 		sprintf(s1, "Last password: %s", lastPassword);
-		CDogsTextStringSpecial(s1, TEXT_BOTTOM | TEXT_XCENTER, 0, (SCREEN_HEIGHT / 12));
+		CDogsTextStringSpecial(
+			s1,
+			TEXT_BOTTOM | TEXT_XCENTER,
+			0,
+			gConfig.Graphics.ResolutionHeight / 12);
 	}
 
 	if (data->survived) {
@@ -297,13 +308,17 @@ void Summary(int x, struct PlayerData *data, int character)
 	CDogsTextStringAt(x, y, s);
 	y += CDogsTextHeight();
 
-	if (data->survived && (data->hp > 150 || data->hp <= 0)) {
-		if (data->hp > (200 * gOptions.playerHp) / 100 - 50)
-			sprintf(s, "Health bonus: %d",
-				(data->hp + 50 -
-				 (200 * gOptions.playerHp) / 100) * 10);
+	if (data->survived && (data->hp > 150 || data->hp <= 0))
+	{
+		int maxHealth = (200 * gConfig.Game.PlayerHP) / 100;
+		if (data->hp > maxHealth - 50)
+		{
+			sprintf(s, "Health bonus: %d", (data->hp + 50 - maxHealth) * 10);
+		}
 		else if (data->hp <= 0)
+		{
 			sprintf(s, "Resurrection fee: %d", -500);
+		}
 		CDogsTextStringAt(x, y, s);
 		y += CDogsTextHeight();
 	}
@@ -327,8 +342,8 @@ void Summary(int x, struct PlayerData *data, int character)
 void Bonuses(void)
 {
 	int i;
-	int y = (SCREEN_HEIGHT / 2) + (SCREEN_HEIGHT / 10);
-	int x = (SCREEN_WIDTH / 6);
+	int y = (gConfig.Graphics.ResolutionHeight / 2) + (gConfig.Graphics.ResolutionHeight / 10);
+	int x = gConfig.Graphics.ResolutionWidth / 6;
 	int done, req, total;
 	int access_bonus = 0;
 	int index;
@@ -407,7 +422,7 @@ void Bonuses(void)
 
 void MissionSummary(void *bkg)
 {
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
 	Bonuses();
 
@@ -426,19 +441,27 @@ void ShowScore(void *bkg, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
 	debug(D_NORMAL, "\n");
 
 	if (gOptions.twoPlayers) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		sprintf(s, "Score: %d", score1);
-		CDogsTextStringAt(CenterOfLeft(CDogsTextWidth(s)), SCREEN_WIDTH / 3, s);
+		CDogsTextStringAt(
+			CenterOfLeft(CDogsTextWidth(s)),
+			gConfig.Graphics.ResolutionWidth / 3,
+			s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
-		CDogsTextStringAt(CenterOfRight(CDogsTextWidth(s)), SCREEN_WIDTH / 3, s);
-	} else {
+		CDogsTextStringAt(
+			CenterOfRight(CDogsTextWidth(s)),
+			gConfig.Graphics.ResolutionWidth / 3,
+			s);
+	}
+	else
+	{
 		DisplayPlayer(CenterX(CDogsTextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 	}
 
@@ -448,7 +471,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 void FinalScore(void *bkg, int score1, int score2)
 {
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -459,12 +482,18 @@ void FinalScore(void *bkg, int score1, int score2)
 		CDogsTextStringAtCenter("It's a draw!");
 	} else if (score1 > score2) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		CDogsTextStringAt(CenterOfLeft(CDogsTextWidth(IS_WINNER)),SCREEN_WIDTH / 2,
-				IS_WINNER);
-	} else {
+		CDogsTextStringAt(
+			CenterOfLeft(CDogsTextWidth(IS_WINNER)),
+			gConfig.Graphics.ResolutionWidth / 2,
+			IS_WINNER);
+	}
+	else
+	{
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
-		CDogsTextStringAt(CenterOfRight(CDogsTextWidth(IS_WINNER)), SCREEN_WIDTH / 2,
-				IS_WINNER);
+		CDogsTextStringAt(
+			CenterOfRight(CDogsTextWidth(IS_WINNER)),
+			gConfig.Graphics.ResolutionWidth / 2,
+			IS_WINNER);
 	}
 	CopyToScreen();
 	GetKey(&gKeyboard);
@@ -500,7 +529,7 @@ void Victory(void *bkg)
 	int x, i;
 	const char *s;
 
-	memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
@@ -639,7 +668,7 @@ int Game(void *bkg, int mission)
 	int allTime, todays;
 	int maxHealth;
 
-	maxHealth = 200 * (gOptions.playerHp) / 100;
+	maxHealth = 200 * gConfig.Game.PlayerHP / 100;
 
 	do
 	{
@@ -794,7 +823,7 @@ void *MakeBkg(void)
 	int i;
 	TranslationTable randomTintTable;
 
-	CMALLOC(bkg, Screen_GetMemSize());
+	CMALLOC(bkg, GraphicsGetMemSize(&gConfig.Graphics));
 
 	gCampaign.setting = SetupAndGetQuickPlay();
 	gCampaign.seed = rand();
@@ -812,7 +841,7 @@ void *MakeBkg(void)
 	SetPaletteRanges(15, 12, 10, 0);
 	BuildTranslationTables();
 	SetRandomTintTable(&randomTintTable, 256);
-	for (i = 0; i < Screen_GetMemSize(); i++)
+	for (i = 0; i < GraphicsGetMemSize(&gConfig.Graphics); i++)
 	{
 		p[i] = randomTintTable[p[i] & 0xFF];
 	}
@@ -825,7 +854,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	unsigned char *my_screen;
 
 	void *bkg = MakeBkg();
-	CCALLOC(my_screen, Screen_GetMemSize());
+	CCALLOC(my_screen, GraphicsGetMemSize(&gConfig.Graphics));
 	SetDstScreen(my_screen);
 
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
@@ -917,6 +946,7 @@ int main(int argc, char *argv[])
 	int isSoundEnabled = 1;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
+	int forceResolution = 0;
 
 	srand((unsigned int)time(NULL));
 
@@ -933,7 +963,8 @@ int main(int argc, char *argv[])
 	}
 
 	SetupConfigDir();
-	LoadConfig();
+	ConfigLoadDefault(&gConfig);
+	ConfigLoad(&gConfig, CONFIG_FILE);
 	LoadCredits(&creditsDisplayer, &tablePurple, &tableDarker);
 
 	for (i = 1; i < argc; i++) {
@@ -965,26 +996,30 @@ int main(int argc, char *argv[])
 				debug(D_NORMAL, "nojoystick\n");
 				js_flag = 0;
 			}
-			if (strcmp(argv[i] + 1, "fullscreen") == 0) {
-				Gfx_HintOn(HINT_FULLSCREEN);
+			if (strcmp(argv[i] + 1, "fullscreen") == 0)
+			{
+				gConfig.Graphics.Fullscreen = 1;
 			}
-			if (strstr(argv[i] + 1, "screen=")) {
-				int w, h;
+			if (strstr(argv[i] + 1, "screen="))
+			{
 				char *val = strchr(argv[i], '='); val++;
-				sscanf(val, "%dx%d", &w, &h);
-				debug(D_NORMAL, "Video mode %dx%d set...\n", w, h);
-				Gfx_SetHint(HINT_WIDTH, w);
-				Gfx_SetHint(HINT_HEIGHT, h);
+				sscanf(val, "%dx%d",
+					&gConfig.Graphics.ResolutionWidth, &gConfig.Graphics.ResolutionHeight);
+				debug(D_NORMAL, "Video mode %dx%d set...\n",
+					gConfig.Graphics.ResolutionWidth, gConfig.Graphics.ResolutionHeight);
 			}
-			if (strcmp(argv[i] + 1, "forcemode") == 0) {
-				Gfx_HintOn(HINT_FORCEMODE);
+			if (strcmp(argv[i] + 1, "forcemode") == 0)
+			{
+				forceResolution = 1;
 			}
 			if (strstr(argv[i] + 1, "scale=")) {
 				int f;
 				char *val = strchr(argv[i], '='); val++;
 				f = atoi(val);
 				if (f >= 1)
-					Gfx_SetHint(HINT_SCALEFACTOR, f);
+				{
+					gConfig.Graphics.ScaleFactor = f;
+				}
 			}
 			if (strcmp(argv[i] + 1, "help") == 0 ||
 				strcmp(argv[i] + 1, "h") == 0 ||
@@ -1022,9 +1057,13 @@ int main(int argc, char *argv[])
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
-	if (isSoundEnabled && !SoundInitialize(&gSoundDevice))
+	if (isSoundEnabled)
 	{
-		printf("Sound initialization failed!\n");
+		SoundInitialize(&gSoundDevice, &gConfig.Sound);
+		if (!gSoundDevice.isInitialised)
+		{
+			printf("Sound initialization failed!\n");
+		}
 	}
 
 	LoadHighScores();
@@ -1046,7 +1085,9 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-	if (InitVideo() == -1) {
+	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
+	if (!gGraphicsDevice.IsInitialized)
+	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	} else {
@@ -1058,9 +1099,9 @@ int main(int argc, char *argv[])
 
 	JoyTerminate(&gJoysticks);
 
-	ShutDownVideo();
+	GraphicsTerminate(&gGraphicsDevice);
 
-	SaveConfig();
+	ConfigSave(&gConfig, CONFIG_FILE);
 	SaveTemplates();
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);

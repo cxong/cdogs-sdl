@@ -62,8 +62,6 @@
 SoundDevice gSoundDevice =
 {
 	0,
-	64, 64,
-	8,
 	NULL,
 	MUSIC_OK,
 	"",
@@ -139,37 +137,37 @@ void LoadSound(SoundData *sound)
 	sound->isLoaded = 1;
 }
 
-int SoundInitialize(SoundDevice *device)
+void SoundInitialize(SoundDevice *device, SoundConfig *config)
 {
-	int result = 1;
 	int i;
 
 	if (OpenAudio(22050, AUDIO_S16, 2, 512) != 0)
 	{
-		result = 0;
-		goto bail;
+		return;
 	}
 
-	if (Mix_AllocateChannels(device->channels) != device->channels)
-	{
-		printf("Couldn't allocate channels!\n");
-		result = 0;
-		goto bail;
-	}
+	SoundReconfigure(device, config);
 
 	for (i = 0; i < SND_COUNT; i++)
 	{
 		LoadSound(&device->sounds[i]);
 	}
+}
 
-	// set initial volumes
-	Mix_Volume(-1, device->volume);
-	Mix_VolumeMusic(device->musicVolume);
+void SoundReconfigure(SoundDevice *device, SoundConfig *config)
+{
+	device->isInitialised = 0;
+
+	if (Mix_AllocateChannels(config->SoundChannels) != config->SoundChannels)
+	{
+		printf("Couldn't allocate channels!\n");
+		return;
+	}
+
+	Mix_Volume(-1, config->SoundVolume);
+	Mix_VolumeMusic(config->MusicVolume);
 
 	device->isInitialised = 1;
-
-bail:
-	return result;
 }
 
 void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
@@ -228,24 +226,6 @@ void SoundPlay(SoundDevice *device, sound_e sound)
 	SoundPlayAtPosition(device, sound, 0, 0);
 }
 
-void SoundSetVolume(int volume)
-{
-	debug(D_NORMAL, "volume: %d\n", volume);
-
-	gSoundDevice.volume = volume;
-
-	if (!gSoundDevice.isInitialised)
-	{
-		return;
-	}
-	Mix_Volume(-1, gSoundDevice.volume);
-}
-
-int SoundGetVolume(void)
-{
-	return gSoundDevice.volume;
-}
-
 
 void SoundSetLeftEar(int x, int y)
 {
@@ -276,14 +256,4 @@ void SoundPlayAt(sound_e sound, int x, int y)
 	target.y = y;
 	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance, bearing);
-}
-
-void SoundSetChannels(int channels)
-{
-	gSoundDevice.channels = CLAMP(channels, 2, 8);
-}
-
-int SoundGetChannels(void)
-{
-	return gSoundDevice.channels;
 }

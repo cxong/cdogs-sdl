@@ -103,7 +103,6 @@ add_subdirectory(cdogs)
 set(CDOGS_SDL_SOURCES
 	campaigns.c
 	cdogs.c
-	config.c
 	credits.c
 	mainmenu.c
 	menu.c
@@ -111,7 +110,6 @@ set(CDOGS_SDL_SOURCES
 	prep.c)
 set(CDOGS_SDL_HEADERS
 	campaigns.h
-	config.h
 	credits.h
 	mainmenu.h
 	menu.h

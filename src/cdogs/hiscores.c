@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "config.h"
 #include "gamedata.h"
 #include "grafx.h"
 #include "blit.h"
@@ -201,7 +202,10 @@ void DisplayAllTimeHighScores(void *bkg)
 
 	while (index < MAX_ENTRY && allTimeHigh[index].score > 0)
 	{
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(
+			GetDstScreen(),
+			bkg,
+			GraphicsGetMemSize(&gConfig.Graphics));
 		index = DisplayPage("All time high scores:", index, allTimeHigh,
 				    gPlayer1Data.allTime,
 				    gOptions.twoPlayers ? gPlayer2Data.
@@ -216,7 +220,7 @@ void DisplayTodaysHighScores(void *bkg)
 
 	while (index < MAX_ENTRY && todaysHigh[index].score > 0)
 	{
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		index = DisplayPage("Today's highest score:", index, todaysHigh,
 				    gPlayer1Data.today,
 				    gOptions.twoPlayers ? gPlayer2Data.

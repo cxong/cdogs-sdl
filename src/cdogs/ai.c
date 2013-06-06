@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "defs.h"
 #include "actors.h"
 #include "gamedata.h"
@@ -328,7 +329,7 @@ static void PlaceBaddie(TActor * actor)
 {
 	int x, y;
 
-	actor->health = (actor->health * gOptions.npcHp) / 100;
+	actor->health = (actor->health * gConfig.Game.NonPlayerHP) / 100;
 
 	if (actor->health <= 0)
 		actor->health = 1;
@@ -384,7 +385,8 @@ void CommandBadGuys(void)
 	int delayModifier;
 	int rollLimit;
 
-	switch (gOptions.difficulty) {
+	switch (gConfig.Game.Difficulty)
+	{
 	case DIFFICULTY_VERYEASY:
 		delayModifier = 4;
 		rollLimit = 300;
@@ -504,10 +506,9 @@ void CommandBadGuys(void)
 		actor = actor->next;
 	}
 	if (gMission.missionData->baddieCount > 0 &&
-	    gMission.missionData->baddieDensity > 0 &&
-	    count < MAX(1,
-			(gMission.missionData->baddieDensity *
-			 gOptions.density) / 100)) {
+		gMission.missionData->baddieDensity > 0 &&
+		count < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100))
+	{
 		character =
 		    CHARACTER_OTHERS +
 		    rand() % gMission.missionData->baddieCount;
@@ -576,12 +577,10 @@ void CreateEnemies(void)
 		return;
 
 	for (i = 0;
-	     i < MAX(1,
-		     (gMission.missionData->baddieDensity *
-		      gOptions.density) / 100); i++) {
-		character =
-		    CHARACTER_OTHERS +
-		    rand() % gMission.missionData->baddieCount;
+		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);
+		i++)
+	{
+		character = CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
 		PlaceBaddie(AddActor(character));
 		gBaddieCount++;

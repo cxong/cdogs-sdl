@@ -81,7 +81,6 @@ int MusicPlay(SoundDevice *device, const char *path)
 
 	debug(D_NORMAL, "Playing song: %s\n", path);
 
-	MusicSetVolume(device->musicVolume);
 	Mix_PlayMusic(device->music, -1);
 	device->musicStatus = MUSIC_PLAYING;
 
@@ -96,24 +95,6 @@ void MusicStop(SoundDevice *device)
 		Mix_FreeMusic(device->music);
 		device->music = NULL;
 	}
-}
-
-void MusicSetVolume(int volume)
-{
-	gSoundDevice.musicVolume = volume;
-	if (!gSoundDevice.isInitialised)
-	{
-		return;
-	}
-
-	debug(D_NORMAL, "volume: %d\n", volume);
-
-	Mix_VolumeMusic(gSoundDevice.musicVolume);
-}
-
-int MusicGetVolume(void)
-{
-	return gSoundDevice.musicVolume;
 }
 
 int MusicGetStatus(SoundDevice *device)

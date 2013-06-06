@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 
+#include "config.h"
 #include "drawtools.h"
 #include "utils.h"
 #include "blit.h"
@@ -44,7 +45,7 @@ void	Draw_Point (const int x, const int y, const unsigned char c)
 	
 	//debug("(%d, %d)\n", x, y);
 	
-	screen[PixelIndex(x, y, SCREEN_WIDTH, SCREEN_HEIGHT)] = c;
+	screen[PixelIndex(x, y, gConfig.Graphics.ResolutionWidth, gConfig.Graphics.ResolutionHeight)] = c;
 }
 
 static

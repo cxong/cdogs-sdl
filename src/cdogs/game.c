@@ -56,6 +56,7 @@
 #include <SDL.h>
 #include "SDL_mutex.h"
 
+#include "config.h"
 #include "draw.h"
 #include "joystick.h"
 #include "music.h"
@@ -272,11 +273,12 @@ void BlackLine(void)
 	int i;
 	unsigned char *p = GetDstScreen();
 
-	p += (SCREEN_WIDTH / 2) - 1;
-	for (i = 0; i < SCREEN_HEIGHT; i++) {
+	p += (gConfig.Graphics.ResolutionWidth / 2) - 1;
+	for (i = 0; i < gConfig.Graphics.ResolutionHeight; i++)
+	{
 		*p++ = 1;
 		*p = 1;
-		p += SCREEN_WIDTH - 1;
+		p += gConfig.Graphics.ResolutionWidth - 1;
 	}
 }
 
@@ -292,12 +294,13 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	} else
 		xNoise = yNoise = 0;
 
-	if (player1 && player2) {
-		if (!gOptions.splitScreenAlways &&
+	if (player1 && player2)
+	{
+		if (!gConfig.Interface.SplitscreenAlways &&
 			abs(player1->tileItem.x - player2->tileItem.x) < SPLIT_X &&
 			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
 		{
-			CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+			CDogsSetClip(0, 0, gConfig.Graphics.ResolutionWidth - 1, gConfig.Graphics.ResolutionHeight - 1);
 			// One screen
 			x = (player1->tileItem.x +
 			     player2->tileItem.x) / 2;
@@ -317,34 +320,70 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			FixBuffer(b, IS_SHADOW | IS_SHADOW2);
 		#endif
 			DrawBuffer(b, 0);
-		} else {
-			CDogsSetClip(0, 0, (SCREEN_WIDTH / 2) - 1, SCREEN_HEIGHT - 1);
+		}
+		else
+		{
+			CDogsSetClip(
+				0,
+				0,
+				(gConfig.Graphics.ResolutionWidth / 2) - 1,
+				gConfig.Graphics.ResolutionHeight - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
 			SoundSetLeftEar(player1->tileItem.x, player1->tileItem.y);
-			CDogsSetClip((SCREEN_WIDTH / 2) + 1, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-			DoBuffer(b, player2->tileItem.x, player2->tileItem.y, (SCREEN_WIDTH / 2) + 1, X_TILES_HALF, xNoise, yNoise);
+			CDogsSetClip(
+				(gConfig.Graphics.ResolutionWidth / 2) + 1,
+				0,
+				gConfig.Graphics.ResolutionWidth - 1,
+				gConfig.Graphics.ResolutionHeight - 1);
+			DoBuffer(
+				b,
+				player2->tileItem.x,
+				player2->tileItem.y,
+				(gConfig.Graphics.ResolutionWidth / 2) + 1,
+				X_TILES_HALF,
+				xNoise,
+				yNoise);
 			SoundSetRightEar(player2->tileItem.x, player2->tileItem.y);
 			x = player1->tileItem.x;
 			y = player1->tileItem.y;
 			BlackLine();
 		}
-	} else if (player1) {
-		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	}
+	else if (player1)
+	{
+		CDogsSetClip(
+			0,
+			0,
+			gConfig.Graphics.ResolutionWidth - 1,
+			gConfig.Graphics.ResolutionHeight - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player1->tileItem.x, player1->tileItem.y);
 		x = player1->tileItem.x;
 		y = player1->tileItem.y;
-	} else if (player2) {
-		CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	}
+	else if (player2)
+	{
+		CDogsSetClip(
+			0,
+			0,
+			gConfig.Graphics.ResolutionWidth - 1,
+			gConfig.Graphics.ResolutionHeight - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player2->tileItem.x, player2->tileItem.y);
 		x = player2->tileItem.x;
 		y = player2->tileItem.y;
-	} else
+	}
+	else
+	{
 		DoBuffer(b, x, y, 0, X_TILES, xNoise, yNoise);
-	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	}
+	CDogsSetClip(
+		0,
+		0,
+		gConfig.Graphics.ResolutionWidth - 1,
+		gConfig.Graphics.ResolutionHeight - 1);
 }
 
 #define PLACE_LEFT	0
@@ -418,7 +457,7 @@ static void MissionUpdateObjectives(void)
 	int x, y;
 
 	x = 5;
-	y = SCREEN_HEIGHT - 5 - CDogsTextHeight();
+	y = gConfig.Graphics.ResolutionHeight - 5 - CDogsTextHeight();
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -499,11 +538,13 @@ void StatusDisplay(void)
 	if (messageTicks > 0)
 		CDogsTextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
 
-	if (gOptions.displayFPS) {
+	if (gConfig.Interface.ShowFPS)
+	{
 		sprintf(s, "FPS: %d", fps);
 		CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
 	}
-	if (gOptions.displayTime) {
+	if (gConfig.Interface.ShowTime)
+	{
 		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
 		CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 	}
@@ -545,13 +586,12 @@ void DisplayMessage(const char *s)
 
 int HandleKey(int *done, int cmd)
 {
-	while ((KeyIsDown(&gKeyboard, gOptions.mapKey) || (cmd & CMD_BUTTON3) != 0) &&
-		IsAutoMapEnabled(gCampaign.mode))
+	if (IsAutoMapEnabled(gCampaign.mode))
 	{
-		DisplayAutoMap(0);
-		while (KeyIsDown(&gKeyboard, gOptions.mapKey) ||
+		while (KeyIsDown(&gKeyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
+			DisplayAutoMap(0);
 			SDL_Delay(10);
 			KeyPoll(&gKeyboard);
 			JoyPoll(&gJoysticks);
@@ -604,7 +644,7 @@ int gameloop(void)
 	time_t t;
 	struct tm *tp;
 
-	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+	CDogsSetClip(0, 0, gConfig.Graphics.ResolutionWidth - 1, gConfig.Graphics.ResolutionHeight - 1);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
@@ -626,12 +666,16 @@ int gameloop(void)
 		ticks = Ticks_Synchronize();
 
 		if (gOptions.displaySlices)
-			SetColorZero(32, 0, 0);
+		{
+			SetColorZero(&gGraphicsDevice, 32, 0, 0);
+		}
 
 		DrawScreen(buffer, gPlayer1, gPlayer2);
 
 		if (gOptions.displaySlices)
-			SetColorZero(0, 0, 0);
+		{
+			SetColorZero(&gGraphicsDevice, 0, 0, 0);
+		}
 
 		if (screenShaking) {
 			screenShaking -= ticks;
@@ -672,19 +716,15 @@ int gameloop(void)
 				gMission.pickupTime = PICKUP_LIMIT;
 		}
 
-		if (gOptions.displaySlices)
-			SetColorZero(0, 0, 32);
-
-		if (gOptions.displaySlices)
-			SetColorZero(0, 0, 0);
-
 		CopyToScreen();
 
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
 
-		if (!gameIsPaused) {
-			if (!gOptions.slowmotion || (frames & 1) == 0) {
+		if (!gameIsPaused)
+		{
+			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
+			{
 				UpdateAllActors(ticks);
 				UpdateMobileObjects();
 

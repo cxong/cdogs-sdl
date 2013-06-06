@@ -64,6 +64,7 @@ typedef struct
 	int down;
 	int button1;
 	int button2;
+	int map;
 } input_keys_t;
 
 typedef enum

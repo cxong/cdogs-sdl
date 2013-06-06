@@ -54,6 +54,7 @@
 
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
+#include <cdogs/config.h>
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
@@ -240,7 +241,7 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	char s[22];
 	int y;
 
-	y = (SCREEN_HEIGHT / 10);
+	y = gConfig.Graphics.ResolutionHeight / 10;
 
 	cd = &characterDesc[character];
 
@@ -269,38 +270,41 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 		  cd->table, gRLEPics[head.picIndex]);
 }
 
-static void ShowPlayerControls(int x, struct PlayerData *data)
+static void ShowPlayerControls(int x, KeyConfig *config)
 {
 	char s[256];
-	int y = SCREEN_HEIGHT - (SCREEN_HEIGHT / 6);
+	int y = gConfig.Graphics.ResolutionHeight - (gConfig.Graphics.ResolutionHeight / 6);
 
-	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+	if (config->Device == INPUT_DEVICE_KEYBOARD)
 	{
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			SDL_GetKeyName(data->keys.left),
-			SDL_GetKeyName(data->keys.right),
-			SDL_GetKeyName(data->keys.up),
-			SDL_GetKeyName(data->keys.down),
-			SDL_GetKeyName(data->keys.button1),
-			SDL_GetKeyName(data->keys.button2));
+			SDL_GetKeyName(config->Keys.left),
+			SDL_GetKeyName(config->Keys.right),
+			SDL_GetKeyName(config->Keys.up),
+			SDL_GetKeyName(config->Keys.down),
+			SDL_GetKeyName(config->Keys.button1),
+			SDL_GetKeyName(config->Keys.button2));
 		if (CDogsTextWidth(s) < 125)
+		{
 			CDogsTextStringAt(x, y, s);
-		else {
+		}
+		else
+		{
 			sprintf(s, "(%s, %s, %s,",
-				SDL_GetKeyName(data->keys.left),
-				SDL_GetKeyName(data->keys.right),
-				SDL_GetKeyName(data->keys.up));
+				SDL_GetKeyName(config->Keys.left),
+				SDL_GetKeyName(config->Keys.right),
+				SDL_GetKeyName(config->Keys.up));
 			CDogsTextStringAt(x, y - 10, s);
 			sprintf(s, "%s, %s and %s)",
-				SDL_GetKeyName(data->keys.down),
-				SDL_GetKeyName(data->keys.button1),
-				SDL_GetKeyName(data->keys.button2));
+				SDL_GetKeyName(config->Keys.down),
+				SDL_GetKeyName(config->Keys.button1),
+				SDL_GetKeyName(config->Keys.button2));
 			CDogsTextStringAt(x, y, s);
 		}
 	}
 	else
 	{
-		sprintf(s, "(%s)", InputDeviceStr(data->inputDevice));
+		sprintf(s, "(%s)", InputDeviceStr(config->Device));
 		CDogsTextStringAt(x, y, s);
 	}
 }
@@ -309,8 +313,12 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 {
 	DisplayPlayer(x, data, character, 0);
 
-	if (data->weaponCount == 0) {
-			CDogsTextStringAt(x + 40, (SCREEN_HEIGHT / 10) + 20, "None selected...");
+	if (data->weaponCount == 0)
+	{
+		CDogsTextStringAt(
+			x + 40,
+			(gConfig.Graphics.ResolutionHeight / 10) + 20,
+			"None selected...");
 	}
 	else
 	{
@@ -319,7 +327,7 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 		{
 			CDogsTextStringAt(
 				x + 40,
-				(SCREEN_HEIGHT / 10) + 20 + i * CDogsTextHeight(),
+				(gConfig.Graphics.ResolutionHeight / 10) + 20 + i * CDogsTextHeight(),
 				gGunDescriptions[data->weapons[i]].gunName);
 		}
 	}
@@ -417,11 +425,24 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 
 	if (gOptions.twoPlayers && index == CHARACTER_PLAYER1)
-		x = CenterOf(0, (SCREEN_WIDTH / 2), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
+	{
+		x = CenterOf(
+			0,
+			gConfig.Graphics.ResolutionWidth / 2
+			,
+			(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
+	}
 	else if (gOptions.twoPlayers && index == CHARACTER_PLAYER2)
-		x = CenterOf((SCREEN_WIDTH / 2), (SCREEN_WIDTH), ((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
+	{
+		x = CenterOf(
+			gConfig.Graphics.ResolutionWidth / 2,
+			gConfig.Graphics.ResolutionWidth,
+			(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
+	}
 	else
-		x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
+	{
+		x = CenterX((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
+	}
 
 	// Draw selection
 
@@ -964,7 +985,6 @@ static int MakeSelection(int mode, int x, int character,
 			break;
 	}
 	DisplayPlayer(x, data, character, mode == MODE_SELECTNAME);
-//      ShowPlayerControls(x, data);
 
 	return mode;
 }
@@ -986,7 +1006,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
@@ -1021,34 +1041,26 @@ int PlayerEquip(void *bkg)
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to exit from menu
 
 		if (gOptions.twoPlayers)
 		{
-//      if (!done1) // || !gPlayer1Data.weaponCount < MAX_WEAPONS)
 			done1 = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
 			ShowSelection(CenterOfLeft(50), &gPlayer1Data,CHARACTER_PLAYER1);
-			ShowPlayerControls(CenterOfLeft(100), &gPlayer1Data);
+			ShowPlayerControls(CenterOfLeft(100), &gConfig.Input.PlayerKeys[0]);
 
-//      if (!done2) // || gPlayer2Data.weaponCount < MAX_WEAPONS)
 			done2 = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2, done2);
 			ShowSelection(CenterOfRight(50), &gPlayer2Data, CHARACTER_PLAYER2);
-			ShowPlayerControls(CenterOfRight(100), &gPlayer2Data);
+			ShowPlayerControls(CenterOfRight(100), &gConfig.Input.PlayerKeys[1]);
 		}
 		else
 		{
-			if (!done1)	// || gPlayer1Data.weaponCount <= 0)
-				done1 =
-				    !WeaponSelection(CenterX(80),
-						     CHARACTER_PLAYER1,
-						     &gPlayer1Data, cmd1,
-						     done1);
-			ShowSelection(CenterX(80), &gPlayer1Data,
-				      CHARACTER_PLAYER1);
-			ShowPlayerControls(CenterX(100), &gPlayer1Data);
+			done1 = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
+			ShowSelection(CenterX(80), &gPlayer1Data, CHARACTER_PLAYER1);
+			ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
 		}
 
 		CopyToScreen();

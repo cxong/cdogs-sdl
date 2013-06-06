@@ -94,9 +94,6 @@ typedef enum
 typedef struct
 {
 	int isInitialised;
-	int volume;
-	int musicVolume;
-	int channels;
 	Mix_Music *music;
 	music_status_e musicStatus;
 	char musicErrorMessage[128];
@@ -107,16 +104,20 @@ typedef struct
 
 extern SoundDevice gSoundDevice;
 
-int SoundInitialize(SoundDevice *device);
+typedef struct
+{
+	int SoundVolume;
+	int MusicVolume;
+	int SoundChannels;
+} SoundConfig;
+
+void SoundInitialize(SoundDevice *device, SoundConfig *config);
+void SoundReconfigure(SoundDevice *device, SoundConfig *config);
 void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete);
 void SoundPlay(SoundDevice *device, sound_e sound);
-void SoundSetVolume(int volume);
-int SoundGetVolume(void);
 void SoundSetLeftEar(int x, int y);
 void SoundSetRightEar(int x, int y);
 void SoundSetEars(int x, int y);
 void SoundPlayAt(sound_e sound, int x, int y);
-void SoundSetChannels(int channels);
-int SoundGetChannels(void);
 
 #endif

@@ -50,6 +50,8 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#include "config.h"
 #include "defs.h"
 #include "pics.h"
 #include "map.h"
@@ -108,12 +110,12 @@ void DrawCross(TTileItem * t, unsigned char color)
 	unsigned char *scr = GetDstScreen();
 
 	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * SCREEN_WIDTH;
+	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * gConfig.Graphics.ResolutionWidth;
 	*scr = color;
 	*(scr - 1) = color;
 	*(scr + 1) = color;
-	*(scr - SCREEN_WIDTH) = color;
-	*(scr + SCREEN_WIDTH) = color;
+	*(scr - gConfig.Graphics.ResolutionWidth) = color;
+	*(scr + gConfig.Graphics.ResolutionWidth) = color;
 }
 
 static void DisplayObjective(TTileItem * t, int objectiveIndex)
@@ -137,13 +139,15 @@ static void DisplayExit(void)
 	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
-	for (i = x1; i <= x2; i++) {
-		*(scr + i + y1 * SCREEN_WIDTH) = EXIT_COLOR;
-		*(scr + i + y2 * SCREEN_WIDTH) = EXIT_COLOR;
+	for (i = x1; i <= x2; i++)
+	{
+		*(scr + i + y1 * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
+		*(scr + i + y2 * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
 	}
-	for (i = y1 + 1; i < y2; i++) {
-		*(scr + x1 + i * SCREEN_WIDTH) = EXIT_COLOR;
-		*(scr + x2 + i * SCREEN_WIDTH) = EXIT_COLOR;
+	for (i = y1 + 1; i < y2; i++)
+	{
+		*(scr + x1 + i * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
+		*(scr + x2 + i * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
 	}
 }
 
@@ -154,7 +158,7 @@ static void DisplaySummary(void)
 	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = SCREEN_HEIGHT - 5 - CDogsTextHeight(); // 10 pixels from bottom
+	y = gConfig.Graphics.ResolutionWidth - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
@@ -243,12 +247,14 @@ void DisplayAutoMap(int showAll)
 	int obj;
 
 	screen = p = GetDstScreen();
-	for (x = 0; x < Screen_GetMemSize(); x++)
+	for (x = 0;
+		x < gConfig.Graphics.ResolutionWidth * gConfig.Graphics.ResolutionHeight;
+		x++)
 	{
 		p[x] = tableGreen[p[x] & 0xFF];
 	}
 
-	screen += MAP_YOFFS * SCREEN_WIDTH + MAP_XOFFS;
+	screen += MAP_YOFFS * gConfig.Graphics.ResolutionWidth + MAP_XOFFS;
 	for (y = 0; y < YMAX; y++)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
@@ -264,7 +270,7 @@ void DisplayAutoMap(int showAll)
 							*screen++ = FLOOR_COLOR;
 				} else
 					screen += MAP_FACTOR;
-			screen += SCREEN_WIDTH - XMAX * MAP_FACTOR;
+			screen += gConfig.Graphics.ResolutionWidth - XMAX * MAP_FACTOR;
 		}
 
 	for (y = 0; y < YMAX; y++)

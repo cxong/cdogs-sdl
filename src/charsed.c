@@ -28,6 +28,7 @@
 #include <SDL.h>
 
 #include <cdogs/actors.h>
+#include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/events.h>
 #include <cdogs/grafx.h>
@@ -215,7 +216,7 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 	const TBadGuy *b;
 	int i;
 
-	memset(GetDstScreen(), 74, Screen_GetMemSize());
+	memset(GetDstScreen(), 74, GraphicsGetMemSize(&gConfig.Graphics));
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	CDogsTextStringAt(10, 190, s);
@@ -296,7 +297,8 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 					 &setting->characters[i],
 					 index == i);
 			x += 20;
-			if (x > SCREEN_WIDTH) {
+			if (x > gConfig.Graphics.ResolutionWidth)
+			{
 				x = 10;
 				y += 30;
 			}

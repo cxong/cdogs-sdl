@@ -29,7 +29,57 @@
 #ifndef __CONFIG
 #define __CONFIG
 
-void LoadConfig(void);
-void SaveConfig(void);
+#include "gamedata.h"
+#include "input.h"
+#include "sounds.h"
+
+#define CONFIG_FILE "options.cnf"
+
+typedef struct
+{
+	input_device_e Device;
+	input_keys_t Keys;
+} KeyConfig;
+
+typedef struct
+{
+	int SwapButtonsJoystick1;
+	int SwapButtonsJoystick2;
+	KeyConfig PlayerKeys[2];
+} InputConfig;
+
+typedef struct
+{
+	int FriendlyFire;
+	unsigned int RandomSeed;
+	difficulty_e Difficulty;
+	int SlowMotion;
+	int EnemyDensity;
+	int NonPlayerHP;
+	int PlayerHP;
+} GameConfig;
+
+typedef struct
+{
+	int ShowFPS;
+	int ShowTime;
+	int SplitscreenAlways;
+} InterfaceConfig;
+
+typedef struct
+{
+	GameConfig Game;
+	GraphicsConfig Graphics;
+	InputConfig Input;
+	InterfaceConfig Interface;
+	SoundConfig Sound;
+} Config;
+
+extern Config gConfig;
+
+void ConfigLoad(Config *config, const char *filename);
+void ConfigSave(Config *config, const char *filename);
+void ConfigApply(Config *config);
+void ConfigLoadDefault(Config *config);
 
 #endif

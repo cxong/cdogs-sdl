@@ -51,6 +51,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "defs.h"
@@ -102,37 +103,37 @@ static int SwapButtons(int cmd)
 }
 
 int GetOnePlayerCmd(
-	struct PlayerData *data,
+	KeyConfig *config,
 	int (*keyFunc)(keyboard_t *, int),
 	int (*joyFunc)(joystick_t *, int))
 {
 	int cmd = 0;
-	if (data->inputDevice == INPUT_DEVICE_KEYBOARD)
+	if (config->Device == INPUT_DEVICE_KEYBOARD)
 	{
-		if (keyFunc(&gKeyboard, data->keys.left))
+		if (keyFunc(&gKeyboard, config->Keys.left))
 		{
 			cmd |= CMD_LEFT;
 		}
-		else if (keyFunc(&gKeyboard, data->keys.right))
+		else if (keyFunc(&gKeyboard, config->Keys.right))
 		{
 			cmd |= CMD_RIGHT;
 		}
 
-		if (keyFunc(&gKeyboard, data->keys.up))
+		if (keyFunc(&gKeyboard, config->Keys.up))
 		{
 			cmd |= CMD_UP;
 		}
-		else if (keyFunc(&gKeyboard, data->keys.down))
+		else if (keyFunc(&gKeyboard, config->Keys.down))
 		{
 			cmd |= CMD_DOWN;
 		}
 
-		if (keyFunc(&gKeyboard, data->keys.button1))
+		if (keyFunc(&gKeyboard, config->Keys.button1))
 		{
 			cmd |= CMD_BUTTON1;
 		}
 
-		if (keyFunc(&gKeyboard, data->keys.button2))
+		if (keyFunc(&gKeyboard, config->Keys.button2))
 		{
 			cmd |= CMD_BUTTON2;
 		}
@@ -142,15 +143,15 @@ int GetOnePlayerCmd(
 		int swapButtons = 0;
 		joystick_t *joystick = &gJoysticks.joys[0];
 
-		if (data->inputDevice == INPUT_DEVICE_JOYSTICK_1)
+		if (config->Device == INPUT_DEVICE_JOYSTICK_1)
 		{
 			joystick = &gJoysticks.joys[0];
-			swapButtons = gOptions.swapButtonsJoy1;
+			swapButtons = gConfig.Input.SwapButtonsJoystick1;
 		}
-		else if (data->inputDevice == INPUT_DEVICE_JOYSTICK_2)
+		else if (config->Device == INPUT_DEVICE_JOYSTICK_2)
 		{
 			joystick = &gJoysticks.joys[1];
-			swapButtons = gOptions.swapButtonsJoy2;
+			swapButtons = gConfig.Input.SwapButtonsJoystick2;
 		}
 
 		if (joyFunc(joystick, CMD_LEFT))
@@ -212,11 +213,11 @@ void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 
 	if (cmd1 != NULL)
 	{
-		*cmd1 = GetOnePlayerCmd(&gPlayer1Data, keyFunc, joyFunc);
+		*cmd1 = GetOnePlayerCmd(&gConfig.Input.PlayerKeys[0], keyFunc, joyFunc);
 	}
 	if (cmd2 != NULL)
 	{
-		*cmd2 = GetOnePlayerCmd(&gPlayer2Data, keyFunc, joyFunc);
+		*cmd2 = GetOnePlayerCmd(&gConfig.Input.PlayerKeys[1], keyFunc, joyFunc);
 	}
 }
 
@@ -226,11 +227,6 @@ int GetMenuCmd(void)
 	if (KeyIsPressed(&gKeyboard, keyEsc))
 	{
 		return CMD_ESC;
-	}
-	if (KeyIsPressed(&gKeyboard, keyF9))
-	{
-		gPlayer1Data.inputDevice = INPUT_DEVICE_KEYBOARD;
-		gPlayer2Data.inputDevice = INPUT_DEVICE_KEYBOARD;
 	}
 
 	GetPlayerCmd(&cmd, NULL, 1);

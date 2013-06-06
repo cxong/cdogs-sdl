@@ -3,6 +3,7 @@ set(CDOGS_SOURCES
 	ai.c
 	automap.c
 	blit.c
+	config.c
 	defs.c
 	draw.c
 	drawtools.c
@@ -30,6 +31,7 @@ set(CDOGS_HEADERS
 	ai.h
 	automap.h
 	blit.h
+	config.h
 	defs.h
 	draw.h
 	drawtools.h

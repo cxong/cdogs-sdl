@@ -26,6 +26,7 @@
 #include "mainmenu.h"
 
 #include <cdogs/blit.h>
+#include <cdogs/config.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
@@ -48,12 +49,11 @@ int MainMenu(
 	menu_t *mainMenu = MenuCreateAll(campaigns);
 	menu_t *menu = mainMenu;
 
-	BlitSetBrightness(gOptions.brightness);
 	do
 	{
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, Screen_GetMemSize());
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();
@@ -193,19 +193,19 @@ menu_t *MenuCreateOptions(const char *name)
 		menu,
 		MenuCreateOptionToggle(
 			"Friendly fire",
-			&gOptions.playersHurt,
+			&gConfig.Game.FriendlyFire,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
 			"FPS monitor",
-			&gOptions.displayFPS,
+			&gConfig.Interface.ShowFPS,
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
 			"Display time",
-			&gOptions.displayTime,
+			&gConfig.Interface.ShowTime,
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
 	MenuAddSubmenu(
 		menu,
@@ -218,63 +218,62 @@ menu_t *MenuCreateOptions(const char *name)
 		menu,
 		MenuCreateOptionToggle(
 			"Splitscreen always",
-			&gOptions.splitScreenAlways,
+			&gConfig.Interface.SplitscreenAlways,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionSeed("Random seed", &gCampaign.seed));
+		menu, MenuCreateOptionSeed("Random seed", &gConfig.Game.RandomSeed));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
-			"Difficulty", (int *)&gOptions.difficulty,
+			"Difficulty", (int *)&gConfig.Game.Difficulty,
 			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))DifficultyStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
 			"Slowmotion",
-			&gOptions.slowmotion,
+			&gConfig.Game.SlowMotion,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
-			"Enemy density per mission",
-			&gOptions.density,
-			0, 200, 25,
+			"Enemy density",
+			&gConfig.Game.EnemyDensity,
+			25, 200, 25,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Non-player HP",
-			&gOptions.npcHp,
-			0, 200, 25,
+			&gConfig.Game.NonPlayerHP,
+			25, 200, 25,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Player HP",
-			&gOptions.playerHp,
-			0, 200, 25,
+			&gConfig.Game.PlayerHP,
+			25, 200, 25,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionFunc(
+		MenuCreateOptionToggle(
 			"Video fullscreen",
-			GrafxToggleFullscreen,
-			GrafxIsFullscreen,
+			&gConfig.Graphics.Fullscreen,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
 			"Video resolution (restart required)",
-			GrafxTryPrevResolution,
-			GrafxTryNextResolution,
+			Gfx_ModePrev,
+			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
 			GrafxGetResolutionStr));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRangeGetSet(
+		MenuCreateOptionRange(
 			"Video scale factor",
-			GrafxGetScale, GrafxSetScale,
+			&gConfig.Graphics.ScaleFactor,
 			1, 4, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
@@ -296,22 +295,22 @@ menu_t *MenuCreateControls(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeControl(
-			"Player 1", &gPlayer1Data.inputDevice, &gPlayer2Data.inputDevice));
+			"Player 1", &gConfig.Input.PlayerKeys[0].Device, &gConfig.Input.PlayerKeys[1].Device));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeControl(
-			"Player 2", &gPlayer2Data.inputDevice, &gPlayer1Data.inputDevice));
+			"Player 2", &gConfig.Input.PlayerKeys[1].Device, &gConfig.Input.PlayerKeys[0].Device));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
 			"Swap buttons joystick 1",
-			&gOptions.swapButtonsJoy1,
+			&gConfig.Input.SwapButtonsJoystick1,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
 			"Swap buttons joystick 2",
-			&gOptions.swapButtonsJoy2,
+			&gConfig.Input.SwapButtonsJoystick2,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
 	MenuAddSubmenu(
@@ -334,23 +333,23 @@ menu_t *MenuCreateSound(const char *name)
 		0);
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRangeGetSet(
+		MenuCreateOptionRange(
 			"Sound effects",
-			SoundGetVolume, SoundSetVolume,
+			&gConfig.Sound.SoundVolume,
 			8, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRangeGetSet(
+		MenuCreateOptionRange(
 			"Music",
-			MusicGetVolume, MusicSetVolume,
+			&gConfig.Sound.MusicVolume,
 			8, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRangeGetSet(
+		MenuCreateOptionRange(
 			"FX channels",
-			SoundGetChannels, SoundSetChannels,
+			&gConfig.Sound.SoundChannels,
 			2, 8, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
@@ -388,13 +387,16 @@ menu_t *MenuCreateKeys(const char *name)
 		MENU_TYPE_KEYS,
 		0);
 	MenuCreateKeysSingleSection(
-		menu, "Player 1", &gPlayer1Data.keys, &gPlayer2Data.keys);
+		menu, "Player 1",
+		&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys);
 	MenuCreateKeysSingleSection(
-		menu, "Player 2", &gPlayer2Data.keys, &gPlayer1Data.keys);
+		menu, "Player 2",
+		&gConfig.Input.PlayerKeys[1].Keys, &gConfig.Input.PlayerKeys[0].Keys);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionChangeKey(
-			"Map", KEY_CODE_MAP, &gPlayer1Data.keys, &gPlayer2Data.keys));
+			"Map", KEY_CODE_MAP,
+			&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

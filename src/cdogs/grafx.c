@@ -53,11 +53,11 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include <SDL.h>
 #include <SDL_endian.h>
 
 #include "defs.h"
 #include "blit.h"
+#include "config.h"
 #include "pics.h" /* for gPalette */
 #include "files.h"
 #include "utils.h"
@@ -74,7 +74,7 @@ GFX_Mode gfx_modelist[] = {
 
 static int mode_idx = 1;
 
-GFX_Mode * Gfx_ModePrev(void)
+void Gfx_ModePrev(void)
 {
 	mode_idx--;
 	if (mode_idx < 0)
@@ -82,10 +82,11 @@ GFX_Mode * Gfx_ModePrev(void)
 		mode_idx = MODE_MAX;
 	}
 
-	return &gfx_modelist[mode_idx];
+	gConfig.Graphics.ResolutionWidth = gfx_modelist[mode_idx].w;
+	gConfig.Graphics.ResolutionHeight = gfx_modelist[mode_idx].h;
 }
 
-GFX_Mode * Gfx_ModeNext(void)
+void Gfx_ModeNext(void)
 {
 	mode_idx++;
 	if (mode_idx > MODE_MAX)
@@ -93,7 +94,8 @@ GFX_Mode * Gfx_ModeNext(void)
 		mode_idx = 0;
 	}
 
-	return &gfx_modelist[mode_idx];
+	gConfig.Graphics.ResolutionWidth = gfx_modelist[mode_idx].w;
+	gConfig.Graphics.ResolutionHeight = gfx_modelist[mode_idx].h;
 }
 
 static int ValidMode(unsigned int w, unsigned int h)
@@ -118,80 +120,51 @@ static int ValidMode(unsigned int w, unsigned int h)
 	return 0;
 }
 
-/* These are the default hints as used by the graphics subsystem */
-int hints[HINT_END] = {
-	0,		// HINT_FULLSCREEN
-	1,		// HINT_WINDOW
-	1,		// HINT_SCALEFACTOR
-	320,		// HINT_WIDTH
-	240,		// HINT_HEIGHT
-	0		// HINT_FORCEMODE
+GraphicsDevice gGraphicsDevice =
+{
+	0,
+	0,
+	NULL
 };
-
-void Gfx_SetHint(const GFX_Hint h, const int val)
-{
-	if (h >= HINT_END)
-		return;
-	hints[h] = val;
-}
-
-#define Hint(h)	hints[h]
-
-int Gfx_GetHint(const GFX_Hint h)
-{
-	if (h >= HINT_END)
-		return 0;
-	return Hint(h);
-}
-
-int GrafxIsFullscreen(void)
-{
-	return Gfx_GetHint(HINT_FULLSCREEN);
-}
-
-SDL_Surface *gScreen = NULL;
-/* probably not the best thing, but we need the performance */
-int screen_w;
-int screen_h;
 
 /* Initialises the video subsystem.
 
    Note: dynamic resolution change is not supported. */
-int InitVideo(void)
+void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force)
 {
-	char title[32];
-	SDL_Surface *new_screen = NULL;
 	int sdl_flags = 0;
 	unsigned int w, h = 0;
 	unsigned int rw, rh;
 
+	device->IsInitialized = 0;
+
 	sdl_flags |= SDL_HWPALETTE;
 	sdl_flags |= SDL_SWSURFACE;
 
-	if (Hint(HINT_FULLSCREEN)) sdl_flags |= SDL_FULLSCREEN;
-
-	if (gScreen == NULL)
+	if (config->Fullscreen)
 	{
-		rw = w = Hint(HINT_WIDTH);
-		rh = h = Hint(HINT_HEIGHT);
-	} else {
-		/* We do this because the game dies horribly if you try to
-		dynamically change the _virtual_ resolution */
-		rw = w = screen_w;
-		rh = h = screen_h;
+		sdl_flags |= SDL_FULLSCREEN;
 	}
 
-	if (Hint(HINT_SCALEFACTOR) > 1) {
-		rw *= Hint(HINT_SCALEFACTOR);
-		rh *= Hint(HINT_SCALEFACTOR);
+	rw = w = config->ResolutionWidth;
+	rh = h = config->ResolutionHeight;
+
+	if (config->ScaleFactor > 1)
+	{
+		rw *= config->ScaleFactor;
+		rh *= config->ScaleFactor;
 	}
 
-	if (!Hint(HINT_FORCEMODE)) {
-		if (!ValidMode(w, h)) {
+	if (!force)
+	{
+		if (!ValidMode(w, h))
+		{
 			printf("!!! Invalid Video Mode %dx%d\n", w, h);
-			return -1;
+			return;
 		}
-	} else {
+	}
+	else
+	{
 		printf("\n");
 		printf("  BIG FAT WARNING: If this blows up in your face,\n");
 		printf("  and mutilates your cat, please don't cry.\n");
@@ -199,87 +172,51 @@ int InitVideo(void)
 	}
 
 	printf("Window dimensions:\t%dx%d\n", rw, rh);
-	new_screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
-
-	if (new_screen == NULL) {
-		printf("ERROR: InitVideo: %s\n", SDL_GetError() );
-		return -1;
+	SDL_FreeSurface(device->screen);
+	device->screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
+	if (device->screen == NULL)
+	{
+		printf("ERROR: InitVideo: %s\n", SDL_GetError());
+		return;
 	}
 
-	if (gScreen == NULL)
-	{ /* only do this the first time */
+	if (!device->IsWindowInitialized)
+	{
+		/* only do this the first time */
+		char title[32];
 		debug(D_NORMAL, "setting caption and icon...\n");
 		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
 		SDL_ShowCursor(SDL_DISABLE);
-	} else {
+	}
+	else
+	{
 		debug(D_NORMAL, "Changed video mode...\n");
 	}
 
-	if (gScreen == NULL)
-	{
-		screen_w = Hint(HINT_WIDTH);
-		screen_h = Hint(HINT_HEIGHT);
-	}
-
-	gScreen = new_screen;
-
-	CDogsSetClip(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	CDogsSetClip(0, 0, config->ResolutionWidth - 1, config->ResolutionHeight - 1);
+	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
+		config->ResolutionWidth, config->ResolutionHeight);
 
 	CDogsSetPalette(gPalette);
 
-	return 0;
+	device->IsInitialized = 1;
+	device->IsWindowInitialized = 1;
 }
 
-void ShutDownVideo(void)
+void GraphicsTerminate(GraphicsDevice *device)
 {
 	debug(D_NORMAL, "Shutting down video...\n");
+	SDL_FreeSurface(device->screen);
 	SDL_VideoQuit();
 }
 
-void GrafxToggleFullscreen(void)
-{
-	Gfx_HintToggle(HINT_FULLSCREEN);
-	InitVideo();
-}
-
-void GrafxTryResolution(GFX_Mode *m)
-{
-	if (m != NULL)
-	{
-		debug(D_NORMAL, "new mode? %d x %d\n", m->w, m->h);
-		Gfx_SetHint(HINT_WIDTH, m->w);
-		Gfx_SetHint(HINT_HEIGHT, m->h);
-	}
-}
-
-void GrafxTryPrevResolution(void)
-{
-	GrafxTryResolution(Gfx_ModePrev());
-}
-void GrafxTryNextResolution(void)
-{
-	GrafxTryResolution(Gfx_ModeNext());
-}
-
-int GrafxGetScale(void)
-{
-	return Gfx_GetHint(HINT_SCALEFACTOR);
-}
-void GrafxSetScale(int scale)
-{
-	if (scale >= 1 && scale <= 4)
-	{
-		Gfx_SetHint(HINT_SCALEFACTOR, (const int)scale);
-		InitVideo();
-	}
-}
 char *GrafxGetResolutionStr(void)
 {
 	static char buf[16];
-	sprintf(buf, "%dx%d", Gfx_GetHint(HINT_WIDTH), Gfx_GetHint(HINT_HEIGHT));
+	sprintf(buf, "%dx%d",
+		gConfig.Graphics.ResolutionWidth, gConfig.Graphics.ResolutionHeight);
 	return buf;
 }
 
@@ -400,12 +337,13 @@ int AppendPics(const char *filename, void **pics, int startIndex,
 	return i - startIndex;
 }
 
-void SetColorZero(unsigned char r, unsigned char g, unsigned char b)
+void SetColorZero(
+	GraphicsDevice *device, unsigned char r, unsigned char g, unsigned char b)
 {
 	SDL_Color col;
 	col.r = r;
 	col.g = g;
 	col.b = b;
-	SDL_SetPalette(gScreen, SDL_PHYSPAL, &col, 0, 1);
+	SDL_SetPalette(device->screen, SDL_PHYSPAL, &col, 0, 1);
 	return;
 }

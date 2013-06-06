@@ -56,6 +56,7 @@
 
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
+#include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
@@ -284,7 +285,7 @@ void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 			menu->u.normal.title,
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			SCREEN_WIDTH / 12);
+			gConfig.Graphics.ResolutionWidth / 12);
 	}
 
 	MenuDisplaySubmenus(menu);
@@ -300,8 +301,8 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		DrawTPic(
-			(SCREEN_WIDTH - PicWidth(gPics[PIC_LOGO])) / 2,
-			SCREEN_HEIGHT / 12,
+			(gConfig.Graphics.ResolutionWidth - PicWidth(gPics[PIC_LOGO])) / 2,
+			gConfig.Graphics.ResolutionHeight / 12,
 			gPics[PIC_LOGO],
 			gCompiledPics[PIC_LOGO]);
 		CDogsTextStringSpecial(
@@ -425,7 +426,11 @@ void MenuDisplaySubmenus(menu_t *menu)
 					const char *filename = subMenu->u.campaign.campaignEntry.filename;
 					int isBuiltin = subMenu->u.campaign.campaignEntry.isBuiltin;
 					sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
-					CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_BOTTOM, 0, SCREEN_WIDTH / 12);
+					CDogsTextStringSpecial(
+						s,
+						TEXT_XCENTER | TEXT_BOTTOM,
+						0,
+						gConfig.Graphics.ResolutionWidth / 12);
 				}
 
 				y += CDogsTextHeight();
@@ -446,7 +451,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			int xKeys;
 			x = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
 			xKeys = x * 3;
-			yStart = (SCREEN_HEIGHT / 2) - (CDogsTextHeight() * 10);
+			yStart = (gConfig.Graphics.ResolutionHeight / 2) - (CDogsTextHeight() * 10);
 
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
@@ -474,7 +479,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 					}
 					else if (subMenu->u.changeKey.code == KEY_CODE_MAP)
 					{
-						keyName = SDL_GetKeyName(gOptions.mapKey);
+						keyName = SDL_GetKeyName(gConfig.Input.PlayerKeys[0].Keys.map);
 					}
 					else
 					{
@@ -695,8 +700,10 @@ int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 	if (key == keyEsc || key == keyF9 || key == keyF10)
 		return 0;
 
-	if (key == gOptions.mapKey && code >= 0)
+	if (key == gConfig.Input.PlayerKeys[0].Keys.map && code >= 0)
+	{
 		return 0;
+	}
 
 	for (i = 0; i < KEY_CODE_MAP; i++)
 		if ((int)i != code && InputGetKey(keys, i) == key)
@@ -738,7 +745,7 @@ void MenuProcessChangeKey(menu_t *menu)
 		}
 		else
 		{
-			gOptions.mapKey = key;
+			gConfig.Input.PlayerKeys[0].Keys.map = key;
 		}
 		SoundPlay(&gSoundDevice, SND_EXPLOSION);
 	}
@@ -920,4 +927,5 @@ void MenuActivate(menu_t *menu, int cmd)
 		assert(0);
 		break;
 	}
+	ConfigApply(&gConfig);
 }

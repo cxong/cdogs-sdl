@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cdogs/config.h>
 #include <cdogs/files.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
@@ -125,9 +126,20 @@ void ShowCredits(credits_displayer_t *displayer)
 		time_t now = time(NULL);
 		credit_t *credits = &displayer->credits[displayer->creditsIndex];
 
-		CDogsTextStringWithTableAt(16, SCREEN_HEIGHT - 50, "Credits:", displayer->textTranslationTable);
-		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits->name, displayer->nameTranslationTable);
-		CDogsTextStringWithTableAt(20, SCREEN_HEIGHT - 40 + CDogsTextHeight(), credits->message, displayer->textTranslationTable);
+		CDogsTextStringWithTableAt(
+			16,
+			gConfig.Graphics.ResolutionHeight - 50,
+			"Credits:",
+			displayer->textTranslationTable);
+		CDogsTextStringWithTableAt(
+			20,
+			gConfig.Graphics.ResolutionHeight - 40,
+			credits->name,
+			displayer->nameTranslationTable);
+		CDogsTextStringWithTableAt(
+			20, gConfig.Graphics.ResolutionHeight - 40 + CDogsTextHeight(),
+			credits->message,
+			displayer->textTranslationTable);
 
 		if (difftime(now, displayer->lastUpdateTime) > CREDIT_DISPLAY_PERIOD_SECONDS)
 		{
