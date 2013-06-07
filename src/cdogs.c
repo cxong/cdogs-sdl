@@ -142,7 +142,7 @@ int MissionDescription(int y, const char *description)
 	int w, ix, x, lines;
 	const char *ws, *word, *p, *s;
 
-#define MAX_BOX_WIDTH (gConfig.Graphics.ResolutionWidth - (gConfig.Graphics.ResolutionWidth / 6))
+#define MAX_BOX_WIDTH (gGraphicsDevice.cachedConfig.ResolutionWidth - (gGraphicsDevice.cachedConfig.ResolutionWidth / 6))
 
 	ix = x = CenterX((MAX_BOX_WIDTH));
 	lines = 1;
@@ -194,9 +194,9 @@ void CampaignIntro(void *bkg)
 
 	debug(D_NORMAL, "\n");
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
-	y = gConfig.Graphics.ResolutionWidth / 4;
+	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -212,9 +212,9 @@ void MissionBriefing(void *bkg)
 	char s[512];
 	int i, y;
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
-	y = gConfig.Graphics.ResolutionWidth / 4;
+	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -231,23 +231,23 @@ void MissionBriefing(void *bkg)
 
 	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
-	y += gConfig.Graphics.ResolutionHeight / 10;
+	y += gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
 		if (gMission.missionData->objectives[i].required > 0)
 		{
 			CDogsTextStringAt(
-				gConfig.Graphics.ResolutionWidth / 6,
+				gGraphicsDevice.cachedConfig.ResolutionWidth / 6,
 				y,
 				gMission.missionData->objectives[i].description);
 			DrawObjectiveInfo(
 				i,
-				gConfig.Graphics.ResolutionWidth - (gConfig.Graphics.ResolutionWidth / 6),
+				gGraphicsDevice.cachedConfig.ResolutionWidth - (gGraphicsDevice.cachedConfig.ResolutionWidth / 6),
 				y + 8,
 				gMission.missionData);
 
-			y += gConfig.Graphics.ResolutionHeight / 12;
+			y += gGraphicsDevice.cachedConfig.ResolutionHeight / 12;
 		}
 	}
 
@@ -259,7 +259,7 @@ void MissionBriefing(void *bkg)
 void Summary(int x, struct PlayerData *data, int character)
 {
 	char s[50];
-	int y = gConfig.Graphics.ResolutionHeight / 3;
+	int y = gGraphicsDevice.cachedConfig.ResolutionHeight / 3;
 
 	if (lastPassword[0])
 	{
@@ -270,7 +270,7 @@ void Summary(int x, struct PlayerData *data, int character)
 			s1,
 			TEXT_BOTTOM | TEXT_XCENTER,
 			0,
-			gConfig.Graphics.ResolutionHeight / 12);
+			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
 	}
 
 	if (data->survived) {
@@ -342,8 +342,8 @@ void Summary(int x, struct PlayerData *data, int character)
 void Bonuses(void)
 {
 	int i;
-	int y = (gConfig.Graphics.ResolutionHeight / 2) + (gConfig.Graphics.ResolutionHeight / 10);
-	int x = gConfig.Graphics.ResolutionWidth / 6;
+	int y = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) + (gGraphicsDevice.cachedConfig.ResolutionHeight / 10);
+	int x = gGraphicsDevice.cachedConfig.ResolutionWidth / 6;
 	int done, req, total;
 	int access_bonus = 0;
 	int index;
@@ -422,7 +422,7 @@ void Bonuses(void)
 
 void MissionSummary(void *bkg)
 {
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	Bonuses();
 
@@ -441,7 +441,7 @@ void ShowScore(void *bkg, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	debug(D_NORMAL, "\n");
 
@@ -450,14 +450,14 @@ void ShowScore(void *bkg, int score1, int score2)
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(s)),
-			gConfig.Graphics.ResolutionWidth / 3,
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 3,
 			s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(s)),
-			gConfig.Graphics.ResolutionWidth / 3,
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 3,
 			s);
 	}
 	else
@@ -471,7 +471,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 void FinalScore(void *bkg, int score1, int score2)
 {
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -484,7 +484,7 @@ void FinalScore(void *bkg, int score1, int score2)
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(IS_WINNER)),
-			gConfig.Graphics.ResolutionWidth / 2,
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
 	else
@@ -492,7 +492,7 @@ void FinalScore(void *bkg, int score1, int score2)
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(IS_WINNER)),
-			gConfig.Graphics.ResolutionWidth / 2,
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
 	CopyToScreen();
@@ -529,7 +529,7 @@ void Victory(void *bkg)
 	int x, i;
 	const char *s;
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
@@ -823,7 +823,7 @@ void *MakeBkg(void)
 	int i;
 	TranslationTable randomTintTable;
 
-	CMALLOC(bkg, GraphicsGetMemSize(&gConfig.Graphics));
+	CMALLOC(bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	gCampaign.setting = SetupAndGetQuickPlay();
 	gCampaign.seed = rand();
@@ -841,7 +841,7 @@ void *MakeBkg(void)
 	SetPaletteRanges(15, 12, 10, 0);
 	BuildTranslationTables();
 	SetRandomTintTable(&randomTintTable, 256);
-	for (i = 0; i < GraphicsGetMemSize(&gConfig.Graphics); i++)
+	for (i = 0; i < GraphicsGetMemSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		p[i] = randomTintTable[p[i] & 0xFF];
 	}
@@ -854,7 +854,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	unsigned char *my_screen;
 
 	void *bkg = MakeBkg();
-	CCALLOC(my_screen, GraphicsGetMemSize(&gConfig.Graphics));
+	CCALLOC(my_screen, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 	SetDstScreen(my_screen);
 
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
@@ -1004,9 +1004,9 @@ int main(int argc, char *argv[])
 			{
 				char *val = strchr(argv[i], '='); val++;
 				sscanf(val, "%dx%d",
-					&gConfig.Graphics.ResolutionWidth, &gConfig.Graphics.ResolutionHeight);
+					&gGraphicsDevice.cachedConfig.ResolutionWidth, &gGraphicsDevice.cachedConfig.ResolutionHeight);
 				debug(D_NORMAL, "Video mode %dx%d set...\n",
-					gConfig.Graphics.ResolutionWidth, gConfig.Graphics.ResolutionHeight);
+					gGraphicsDevice.cachedConfig.ResolutionWidth, gGraphicsDevice.cachedConfig.ResolutionHeight);
 			}
 			if (strcmp(argv[i] + 1, "forcemode") == 0)
 			{

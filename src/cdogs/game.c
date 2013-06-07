@@ -273,12 +273,12 @@ void BlackLine(void)
 	int i;
 	unsigned char *p = GetDstScreen();
 
-	p += (gConfig.Graphics.ResolutionWidth / 2) - 1;
-	for (i = 0; i < gConfig.Graphics.ResolutionHeight; i++)
+	p += (gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1;
+	for (i = 0; i < gGraphicsDevice.cachedConfig.ResolutionHeight; i++)
 	{
 		*p++ = 1;
 		*p = 1;
-		p += gConfig.Graphics.ResolutionWidth - 1;
+		p += gGraphicsDevice.cachedConfig.ResolutionWidth - 1;
 	}
 }
 
@@ -300,7 +300,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			abs(player1->tileItem.x - player2->tileItem.x) < SPLIT_X &&
 			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
 		{
-			CDogsSetClip(0, 0, gConfig.Graphics.ResolutionWidth - 1, gConfig.Graphics.ResolutionHeight - 1);
+			CDogsSetClip(0, 0, gGraphicsDevice.cachedConfig.ResolutionWidth - 1, gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			// One screen
 			x = (player1->tileItem.x +
 			     player2->tileItem.x) / 2;
@@ -326,20 +326,20 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			CDogsSetClip(
 				0,
 				0,
-				(gConfig.Graphics.ResolutionWidth / 2) - 1,
-				gConfig.Graphics.ResolutionHeight - 1);
+				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1,
+				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
 			SoundSetLeftEar(player1->tileItem.x, player1->tileItem.y);
 			CDogsSetClip(
-				(gConfig.Graphics.ResolutionWidth / 2) + 1,
+				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
 				0,
-				gConfig.Graphics.ResolutionWidth - 1,
-				gConfig.Graphics.ResolutionHeight - 1);
+				gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
+				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(
 				b,
 				player2->tileItem.x,
 				player2->tileItem.y,
-				(gConfig.Graphics.ResolutionWidth / 2) + 1,
+				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
 				X_TILES_HALF,
 				xNoise,
 				yNoise);
@@ -354,8 +354,8 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		CDogsSetClip(
 			0,
 			0,
-			gConfig.Graphics.ResolutionWidth - 1,
-			gConfig.Graphics.ResolutionHeight - 1);
+			gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
+			gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player1->tileItem.x, player1->tileItem.y);
@@ -367,8 +367,8 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		CDogsSetClip(
 			0,
 			0,
-			gConfig.Graphics.ResolutionWidth - 1,
-			gConfig.Graphics.ResolutionHeight - 1);
+			gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
+			gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player2->tileItem.x, player2->tileItem.y);
@@ -382,8 +382,8 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	CDogsSetClip(
 		0,
 		0,
-		gConfig.Graphics.ResolutionWidth - 1,
-		gConfig.Graphics.ResolutionHeight - 1);
+		gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
+		gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 }
 
 #define PLACE_LEFT	0
@@ -457,7 +457,7 @@ static void MissionUpdateObjectives(void)
 	int x, y;
 
 	x = 5;
-	y = gConfig.Graphics.ResolutionHeight - 5 - CDogsTextHeight();
+	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.missionData->objectives[i].type ==
 		    OBJECTIVE_INVESTIGATE)
@@ -644,7 +644,7 @@ int gameloop(void)
 	time_t t;
 	struct tm *tp;
 
-	CDogsSetClip(0, 0, gConfig.Graphics.ResolutionWidth - 1, gConfig.Graphics.ResolutionHeight - 1);
+	CDogsSetClip(0, 0, gGraphicsDevice.cachedConfig.ResolutionWidth - 1, gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{

@@ -45,7 +45,7 @@ void	Draw_Point (const int x, const int y, const unsigned char c)
 	
 	//debug("(%d, %d)\n", x, y);
 	
-	screen[PixelIndex(x, y, gConfig.Graphics.ResolutionWidth, gConfig.Graphics.ResolutionHeight)] = c;
+	screen[PixelIndex(x, y, gGraphicsDevice.cachedConfig.ResolutionWidth, gGraphicsDevice.cachedConfig.ResolutionHeight)] = c;
 }
 
 static

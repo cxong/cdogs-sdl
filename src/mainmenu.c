@@ -53,7 +53,7 @@ int MainMenu(
 	{
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		ShowControls();
 		MenuDisplay(menu, creditsDisplayer);
 		CopyToScreen();

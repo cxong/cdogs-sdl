@@ -128,16 +128,16 @@ void ShowCredits(credits_displayer_t *displayer)
 
 		CDogsTextStringWithTableAt(
 			16,
-			gConfig.Graphics.ResolutionHeight - 50,
+			gGraphicsDevice.cachedConfig.ResolutionHeight - 50,
 			"Credits:",
 			displayer->textTranslationTable);
 		CDogsTextStringWithTableAt(
 			20,
-			gConfig.Graphics.ResolutionHeight - 40,
+			gGraphicsDevice.cachedConfig.ResolutionHeight - 40,
 			credits->name,
 			displayer->nameTranslationTable);
 		CDogsTextStringWithTableAt(
-			20, gConfig.Graphics.ResolutionHeight - 40 + CDogsTextHeight(),
+			20, gGraphicsDevice.cachedConfig.ResolutionHeight - 40 + CDogsTextHeight(),
 			credits->message,
 			displayer->textTranslationTable);
 

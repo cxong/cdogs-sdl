@@ -507,7 +507,7 @@ void Display(int index, int xc, int yc, int key)
 	int i;
 
 	SetSecondaryMouseRects(NULL);
-	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
+	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	sprintf(s, "Key: 0x%x", key);
 	CDogsTextStringAt(270, 190, s);
@@ -1215,7 +1215,7 @@ static void Save(int asCode)
 	strcpy(filename, lastFile);
 	for (;;)
 	{
-		memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
+		memset(GetDstScreen(), 58, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		CDogsTextStringAt(125, 50, "Save as:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
 		CDogsTextChar('\020');
@@ -1262,7 +1262,7 @@ static int ConfirmQuit(void)
 {
 	int c;
 
-	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gConfig.Graphics));
+	memset(GetDstScreen(), 58, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	CopyToScreen();
@@ -1561,7 +1561,7 @@ int main(int argc, char *argv[])
 
 	CDogsSetPalette(gPalette);
 
-	CCALLOC(my_screen, GraphicsGetMemSize(&gConfig.Graphics));
+	CCALLOC(my_screen, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 	SetDstScreen(my_screen);
 
 	KeyInit(&gKeyboard);

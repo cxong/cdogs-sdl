@@ -188,8 +188,8 @@ int CDogsTextWidth(const char *s)
 
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
 {
-	int scrw = gConfig.Graphics.ResolutionWidth;
-	int scrh = gConfig.Graphics.ResolutionHeight;
+	int scrw = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	int scrh = gGraphicsDevice.cachedConfig.ResolutionHeight;
 	int x, y, w, h;
 
 	x = y = w = h = 0;

@@ -110,12 +110,12 @@ void DrawCross(TTileItem * t, unsigned char color)
 	unsigned char *scr = GetDstScreen();
 
 	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * gConfig.Graphics.ResolutionWidth;
+	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * gGraphicsDevice.cachedConfig.ResolutionWidth;
 	*scr = color;
 	*(scr - 1) = color;
 	*(scr + 1) = color;
-	*(scr - gConfig.Graphics.ResolutionWidth) = color;
-	*(scr + gConfig.Graphics.ResolutionWidth) = color;
+	*(scr - gGraphicsDevice.cachedConfig.ResolutionWidth) = color;
+	*(scr + gGraphicsDevice.cachedConfig.ResolutionWidth) = color;
 }
 
 static void DisplayObjective(TTileItem * t, int objectiveIndex)
@@ -141,13 +141,13 @@ static void DisplayExit(void)
 
 	for (i = x1; i <= x2; i++)
 	{
-		*(scr + i + y1 * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
-		*(scr + i + y2 * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
+		*(scr + i + y1 * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
+		*(scr + i + y2 * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
 	}
 	for (i = y1 + 1; i < y2; i++)
 	{
-		*(scr + x1 + i * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
-		*(scr + x2 + i * gConfig.Graphics.ResolutionWidth) = EXIT_COLOR;
+		*(scr + x1 + i * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
+		*(scr + x2 + i * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
 	}
 }
 
@@ -158,7 +158,7 @@ static void DisplaySummary(void)
 	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = gConfig.Graphics.ResolutionWidth - 5 - CDogsTextHeight(); // 10 pixels from bottom
+	y = gGraphicsDevice.cachedConfig.ResolutionWidth - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
@@ -248,13 +248,13 @@ void DisplayAutoMap(int showAll)
 
 	screen = p = GetDstScreen();
 	for (x = 0;
-		x < gConfig.Graphics.ResolutionWidth * gConfig.Graphics.ResolutionHeight;
+		x < gGraphicsDevice.cachedConfig.ResolutionWidth * gGraphicsDevice.cachedConfig.ResolutionHeight;
 		x++)
 	{
 		p[x] = tableGreen[p[x] & 0xFF];
 	}
 
-	screen += MAP_YOFFS * gConfig.Graphics.ResolutionWidth + MAP_XOFFS;
+	screen += MAP_YOFFS * gGraphicsDevice.cachedConfig.ResolutionWidth + MAP_XOFFS;
 	for (y = 0; y < YMAX; y++)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
@@ -270,7 +270,7 @@ void DisplayAutoMap(int showAll)
 							*screen++ = FLOOR_COLOR;
 				} else
 					screen += MAP_FACTOR;
-			screen += gConfig.Graphics.ResolutionWidth - XMAX * MAP_FACTOR;
+			screen += gGraphicsDevice.cachedConfig.ResolutionWidth - XMAX * MAP_FACTOR;
 		}
 
 	for (y = 0; y < YMAX; y++)

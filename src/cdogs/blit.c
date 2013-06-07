@@ -89,7 +89,7 @@ void Blit(int x, int y, void *pic, void *table, int mode) {
 			current += width;
 			continue;
 		}
-		yoff *= gConfig.Graphics.ResolutionWidth;
+		yoff *= gGraphicsDevice.cachedConfig.ResolutionWidth;
 		for (j = 0; j < width; j++) {
 			xoff = j + x;
 			if (xoff < clipleft){
@@ -204,8 +204,8 @@ void CopyToScreen(void)
 	unsigned char *pScreen = gGraphicsDevice.screen->pixels;
 	int scr_w, scr_h, scr_size, scalef;
 
-	scr_w = gConfig.Graphics.ResolutionWidth;
-	scr_h = gConfig.Graphics.ResolutionHeight;
+	scr_w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	scr_h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 	scr_size = scr_w * scr_h;
 	scalef = gConfig.Graphics.ScaleFactor;
 

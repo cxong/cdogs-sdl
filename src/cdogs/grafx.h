@@ -63,21 +63,22 @@ typedef unsigned char TranslationTable[256];
 
 typedef struct
 {
-	int IsInitialized;
-	int IsWindowInitialized;
-	SDL_Surface *screen;
-} GraphicsDevice;
-
-extern GraphicsDevice gGraphicsDevice;
-
-typedef struct
-{
 	int Brightness;
 	int ResolutionWidth;
 	int ResolutionHeight;
 	int Fullscreen;
 	int ScaleFactor;
 } GraphicsConfig;
+
+typedef struct
+{
+	int IsInitialized;
+	int IsWindowInitialized;
+	SDL_Surface *screen;
+	GraphicsConfig cachedConfig;
+} GraphicsDevice;
+
+extern GraphicsDevice gGraphicsDevice;
 
 void SetColorZero(
 	GraphicsDevice *device, unsigned char r, unsigned char g, unsigned char b);
@@ -118,12 +119,12 @@ INLINE static int PicHeight(const void *pic)
 	return ((const short *)pic)[1];
 }
 
-#define CenterX(w)		((gConfig.Graphics.ResolutionWidth - w) / 2)
-#define CenterY(h)		((gConfig.Graphics.ResolutionHeight - h) / 2)
+#define CenterX(w)		((gGraphicsDevice.cachedConfig.ResolutionWidth - w) / 2)
+#define CenterY(h)		((gGraphicsDevice.cachedConfig.ResolutionHeight - h) / 2)
 
 #define CenterOf(a, b, w)	((a + (((b - a) - w) / 2)))
 
-#define CenterOfRight(w)	CenterOf((gConfig.Graphics.ResolutionWidth / 2), (gConfig.Graphics.ResolutionWidth), w)
-#define CenterOfLeft(w)		CenterOf(0, (gConfig.Graphics.ResolutionWidth / 2), w)
+#define CenterOfRight(w)	CenterOf((gGraphicsDevice.cachedConfig.ResolutionWidth / 2), (gGraphicsDevice.cachedConfig.ResolutionWidth), w)
+#define CenterOfLeft(w)		CenterOf(0, (gGraphicsDevice.cachedConfig.ResolutionWidth / 2), w)
 
 #endif

@@ -285,7 +285,7 @@ void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
 			menu->u.normal.title,
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			gConfig.Graphics.ResolutionWidth / 12);
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 12);
 	}
 
 	MenuDisplaySubmenus(menu);
@@ -301,8 +301,8 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		DrawTPic(
-			(gConfig.Graphics.ResolutionWidth - PicWidth(gPics[PIC_LOGO])) / 2,
-			gConfig.Graphics.ResolutionHeight / 12,
+			(gGraphicsDevice.cachedConfig.ResolutionWidth - PicWidth(gPics[PIC_LOGO])) / 2,
+			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
 			gPics[PIC_LOGO],
 			gCompiledPics[PIC_LOGO]);
 		CDogsTextStringSpecial(
@@ -430,7 +430,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 						s,
 						TEXT_XCENTER | TEXT_BOTTOM,
 						0,
-						gConfig.Graphics.ResolutionWidth / 12);
+						gGraphicsDevice.cachedConfig.ResolutionWidth / 12);
 				}
 
 				y += CDogsTextHeight();
@@ -451,7 +451,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			int xKeys;
 			x = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
 			xKeys = x * 3;
-			yStart = (gConfig.Graphics.ResolutionHeight / 2) - (CDogsTextHeight() * 10);
+			yStart = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) - (CDogsTextHeight() * 10);
 
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{

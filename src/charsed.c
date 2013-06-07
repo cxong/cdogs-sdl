@@ -216,7 +216,7 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 	const TBadGuy *b;
 	int i;
 
-	memset(GetDstScreen(), 74, GraphicsGetMemSize(&gConfig.Graphics));
+	memset(GetDstScreen(), 74, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	CDogsTextStringAt(10, 190, s);
@@ -297,7 +297,7 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 					 &setting->characters[i],
 					 index == i);
 			x += 20;
-			if (x > gConfig.Graphics.ResolutionWidth)
+			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
 			{
 				x = 10;
 				y += 30;

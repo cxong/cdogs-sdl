@@ -120,6 +120,7 @@ static int ValidMode(unsigned int w, unsigned int h)
 	return 0;
 }
 
+
 GraphicsDevice gGraphicsDevice =
 {
 	0,
@@ -127,14 +128,29 @@ GraphicsDevice gGraphicsDevice =
 	NULL
 };
 
+int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
+{
+	return
+		!device->IsInitialized ||
+		device->cachedConfig.Fullscreen != config->Fullscreen ||
+		device->cachedConfig.ScaleFactor != config->ScaleFactor;
+}
+
 /* Initialises the video subsystem.
 
    Note: dynamic resolution change is not supported. */
+// To prevent needless screen flickering, config is compared with cache
+// to see if anything changed. If not, don't recreate the screen.
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force)
 {
 	int sdl_flags = 0;
 	unsigned int w, h = 0;
 	unsigned int rw, rh;
+
+	if (!IsRestartRequiredForConfig(device, config))
+	{
+		return;
+	}
 
 	device->IsInitialized = 0;
 
@@ -146,8 +162,17 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 		sdl_flags |= SDL_FULLSCREEN;
 	}
 
-	rw = w = config->ResolutionWidth;
-	rh = h = config->ResolutionHeight;
+	// Don't allow resolution to change
+	if (!device->IsWindowInitialized)
+	{
+		rw = w = config->ResolutionWidth;
+		rh = h = config->ResolutionHeight;
+	}
+	else
+	{
+		rw = w = device->cachedConfig.ResolutionWidth;
+		rh = h = device->cachedConfig.ResolutionHeight;
+	}
 
 	if (config->ScaleFactor > 1)
 	{
@@ -203,6 +228,7 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 
 	device->IsInitialized = 1;
 	device->IsWindowInitialized = 1;
+	device->cachedConfig = *config;
 }
 
 void GraphicsTerminate(GraphicsDevice *device)

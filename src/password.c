@@ -211,7 +211,7 @@ static int EnterCode(void *bkg, const char *password)
 		int cmd;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
 		{
@@ -238,7 +238,7 @@ static int EnterCode(void *bkg, const char *password)
 				CDogsTextWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
-				gConfig.Graphics.ResolutionWidth / 4);
+				gGraphicsDevice.cachedConfig.ResolutionWidth / 4);
 		CDogsTextChar(SYMBOL_LEFT);
 		CDogsTextString(buffer);
 		CDogsTextChar(SYMBOL_RIGHT);
@@ -247,7 +247,7 @@ static int EnterCode(void *bkg, const char *password)
 			"Enter code",
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			gConfig.Graphics.ResolutionHeight / 12);
+			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
 		ShowControls();
 
 		CopyToScreen();
@@ -271,7 +271,7 @@ int EnterPassword(void *bkg, const char *password)
 		int cmd;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		cmd = GetMenuCmd();
 
 		if (AnyButton(cmd)) {

@@ -241,7 +241,7 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	char s[22];
 	int y;
 
-	y = gConfig.Graphics.ResolutionHeight / 10;
+	y = gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
 
 	cd = &characterDesc[character];
 
@@ -273,7 +273,7 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 static void ShowPlayerControls(int x, KeyConfig *config)
 {
 	char s[256];
-	int y = gConfig.Graphics.ResolutionHeight - (gConfig.Graphics.ResolutionHeight / 6);
+	int y = gGraphicsDevice.cachedConfig.ResolutionHeight - (gGraphicsDevice.cachedConfig.ResolutionHeight / 6);
 
 	if (config->Device == INPUT_DEVICE_KEYBOARD)
 	{
@@ -317,7 +317,7 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 	{
 		CDogsTextStringAt(
 			x + 40,
-			(gConfig.Graphics.ResolutionHeight / 10) + 20,
+			(gGraphicsDevice.cachedConfig.ResolutionHeight / 10) + 20,
 			"None selected...");
 	}
 	else
@@ -327,7 +327,7 @@ static void ShowSelection(int x, struct PlayerData *data, int character)
 		{
 			CDogsTextStringAt(
 				x + 40,
-				(gConfig.Graphics.ResolutionHeight / 10) + 20 + i * CDogsTextHeight(),
+				(gGraphicsDevice.cachedConfig.ResolutionHeight / 10) + 20 + i * CDogsTextHeight(),
 				gGunDescriptions[data->weapons[i]].gunName);
 		}
 	}
@@ -428,15 +428,15 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	{
 		x = CenterOf(
 			0,
-			gConfig.Graphics.ResolutionWidth / 2
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 2
 			,
 			(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
 	}
 	else if (gOptions.twoPlayers && index == CHARACTER_PLAYER2)
 	{
 		x = CenterOf(
-			gConfig.Graphics.ResolutionWidth / 2,
-			gConfig.Graphics.ResolutionWidth,
+			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
+			gGraphicsDevice.cachedConfig.ResolutionWidth,
 			(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
 	}
 	else
@@ -1006,7 +1006,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
@@ -1041,7 +1041,7 @@ int PlayerEquip(void *bkg)
 		int cmd2 = 0;
 		KeyPoll(&gKeyboard);
 		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gConfig.Graphics));
+		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to exit from menu
