@@ -99,6 +99,7 @@ CONFIGURE_FILE(cdogs/sys_config.h.cmake ${SOURCE_DIRECTORY}/src/cdogs/sys_config
 CONFIGURE_FILE(${SOURCE_DIRECTORY}/README.md.cmake ${SOURCE_DIRECTORY}/README.md)
 
 add_subdirectory(cdogs)
+add_subdirectory(json)
 add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
