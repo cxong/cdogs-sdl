@@ -37,6 +37,25 @@
 #include <cdogs/utils.h>
 
 
+const char *DifficultyStr(difficulty_e d)
+{
+	switch (d)
+	{
+	case DIFFICULTY_VERYEASY:
+		return "Easiest";
+	case DIFFICULTY_EASY:
+		return "Easy";
+	case DIFFICULTY_NORMAL:
+		return "Normal";
+	case DIFFICULTY_HARD:
+		return "Hard";
+	case DIFFICULTY_VERYHARD:
+		return "Very hard";
+	default:
+		return "";
+	}
+}
+
 Config gConfig;
 
 void ConfigLoad(Config *config, const char *filename)

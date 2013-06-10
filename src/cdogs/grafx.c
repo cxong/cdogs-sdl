@@ -53,7 +53,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include <SDL_endian.h>
+#include <SDL_events.h>
+#include <SDL_mouse.h>
 
 #include "defs.h"
 #include "blit.h"

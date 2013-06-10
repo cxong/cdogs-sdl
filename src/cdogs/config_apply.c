@@ -28,6 +28,9 @@
 */
 #include "config.h"
 
+#include "blit.h"
+#include "gamedata.h"
+
 
 void ConfigApply(Config *config)
 {
