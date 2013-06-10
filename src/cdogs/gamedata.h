@@ -81,17 +81,6 @@ struct PlayerData
 extern struct PlayerData gPlayer1Data;
 extern struct PlayerData gPlayer2Data;
 
-typedef enum
-{
-	DIFFICULTY_VERYEASY = 1,
-	DIFFICULTY_EASY,
-	DIFFICULTY_NORMAL,
-	DIFFICULTY_HARD,
-	DIFFICULTY_VERYHARD
-} difficulty_e;
-
-const char *DifficultyStr(difficulty_e d);
-
 struct GameOptions {
 	int twoPlayers;
 	int badGuys;

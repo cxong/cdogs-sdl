@@ -4,6 +4,7 @@ set(CDOGS_SOURCES
 	automap.c
 	blit.c
 	config.c
+	config_apply.c
 	defs.c
 	draw.c
 	drawtools.c

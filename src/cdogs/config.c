@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 
-#include <cdogs/files.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/music.h>
@@ -42,15 +41,15 @@ Config gConfig;
 
 void ConfigLoad(Config *config, const char *filename)
 {
-	FILE *f = fopen(GetConfigFilePath(filename), "r");
+	FILE *f = fopen(filename, "r");
 	int dummy;
 	int fscanfres;
 	int i;
 
-	memset(config, 0, sizeof(Config));
+	ConfigLoadDefault(config);
 	if (f == NULL)
 	{
-		printf("Error loading config '%s'\n", GetConfigFilePath(filename));
+		printf("Error loading config '%s'\n", filename);
 		return;
 	}
 
@@ -126,14 +125,12 @@ void ConfigLoad(Config *config, const char *filename)
 
 void ConfigSave(Config *config, const char *filename)
 {
-	FILE *f = fopen(GetConfigFilePath(filename), "w");
+	FILE *f = fopen(filename, "w");
 	int i;
-
-	debug(D_NORMAL, "begin\n");
 
 	if (f == NULL)
 	{
-		printf("Error saving config '%s'\n", GetConfigFilePath(filename));
+		printf("Error saving config '%s'\n", filename);
 		return;
 	}
 
@@ -176,21 +173,12 @@ void ConfigSave(Config *config, const char *filename)
 		config->Graphics.ScaleFactor);
 
 	fclose(f);
-
-	debug(D_NORMAL, "saved config\n");
-}
-
-void ConfigApply(Config *config)
-{
-	BlitSetBrightness(config->Graphics.Brightness);
-	SoundReconfigure(&gSoundDevice, &config->Sound);
-	gCampaign.seed = config->Game.RandomSeed;
-	GraphicsInitialize(&gGraphicsDevice, &config->Graphics, 0);
 }
 
 void ConfigLoadDefault(Config *config)
 {
 	int i;
+	memset(config, 0, sizeof(Config));
 	config->Game.Difficulty = DIFFICULTY_NORMAL;
 	config->Game.EnemyDensity = 100;
 	config->Game.FriendlyFire = 0;

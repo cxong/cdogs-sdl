@@ -49,7 +49,7 @@
 #ifndef __GRAFX
 #define __GRAFX
 
-#include <SDL.h>
+#include <SDL_video.h>
 
 #include "sys_specifics.h"
 

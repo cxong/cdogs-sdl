@@ -1551,7 +1551,7 @@ int main(int argc, char *argv[])
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	ConfigLoadDefault(&gConfig);
-	ConfigLoad(&gConfig, CONFIG_FILE);
+	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{

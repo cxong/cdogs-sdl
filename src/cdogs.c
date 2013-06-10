@@ -964,7 +964,7 @@ int main(int argc, char *argv[])
 
 	SetupConfigDir();
 	ConfigLoadDefault(&gConfig);
-	ConfigLoad(&gConfig, CONFIG_FILE);
+	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	LoadCredits(&creditsDisplayer, &tablePurple, &tableDarker);
 
 	for (i = 1; i < argc; i++) {
@@ -1101,7 +1101,7 @@ int main(int argc, char *argv[])
 
 	GraphicsTerminate(&gGraphicsDevice);
 
-	ConfigSave(&gConfig, CONFIG_FILE);
+	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	SaveTemplates();
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
