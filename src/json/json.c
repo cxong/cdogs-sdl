@@ -357,6 +357,13 @@ json_new_false (void)
 }
 
 
+json_t *
+json_new_bool (int value)
+{
+	return !!value ? json_new_true() : json_new_false();
+}
+
+
 static void
 intern_json_free_value (json_t ** value)
 {

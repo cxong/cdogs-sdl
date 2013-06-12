@@ -28,6 +28,7 @@
 */
 #include "config.h"
 
+#include <locale.h>
 #include <stdio.h>
 
 #include <cdogs/grafx.h>
@@ -35,6 +36,7 @@
 #include <cdogs/music.h>
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
+#include <json/json.h>
 
 
 const char *DifficultyStr(difficulty_e d)
@@ -190,6 +192,89 @@ void ConfigSave(Config *config, const char *filename)
 		config->Graphics.ResolutionHeight,
 		config->Graphics.Fullscreen,
 		config->Graphics.ScaleFactor);
+
+	fclose(f);
+}
+
+void ConfigLoadJSON(Config *config, const char *filename)
+{
+	UNUSED(config);
+	UNUSED(filename);
+}
+
+void ConfigSaveJSON(Config *config, const char *filename)
+{
+	FILE *f = fopen(filename, "w");
+	//int i;
+	char *text;
+	json_t *root, *subConfig, *label, *value;
+
+	if (f == NULL)
+	{
+		printf("Error saving config '%s'\n", filename);
+		return;
+	}
+
+	setlocale(LC_ALL, "");
+
+	root = json_new_object();
+
+	// GameConfig
+	subConfig = json_new_object();
+
+	label = json_new_string("FriendlyFire");
+	value = json_new_bool(config->Game.FriendlyFire);
+	json_insert_child(label, value);
+	json_insert_child(subConfig, label);
+	label = json_new_string("GameConfig");
+	json_insert_child(label, subConfig);
+	json_insert_child(root, label);
+
+	// print the result
+	json_tree_to_string(root, &text);
+	printf("%s\n",text);
+
+	// clean up
+	free(text);
+	json_free_value(&root);
+
+	/*fprintf(f, "%d %d %d %d %d %d %d\n",
+		config->Interface.ShowFPS,
+		config->Interface.ShowTime,
+		config->Game.FriendlyFire,
+		config->Graphics.Brightness,
+		config->Input.SwapButtonsJoystick1,
+		config->Input.SwapButtonsJoystick2,
+		config->Interface.SplitscreenAlways);
+	for (i = 0; i < 2; i++)
+	{
+		fprintf(f, "%d\n%d %d %d %d %d %d\n",
+			config->Input.PlayerKeys[i].Device,
+			config->Input.PlayerKeys[i].Keys.left,
+			config->Input.PlayerKeys[i].Keys.right,
+			config->Input.PlayerKeys[i].Keys.up,
+			config->Input.PlayerKeys[i].Keys.down,
+			config->Input.PlayerKeys[i].Keys.button1,
+			config->Input.PlayerKeys[i].Keys.button2);
+	}
+	fprintf(f, "%d\n", config->Input.PlayerKeys[0].Keys.map);
+	fprintf(f, "%d %d %d %d\n",
+		config->Sound.SoundVolume,
+		config->Sound.MusicVolume,
+		config->Sound.SoundChannels,
+		0);
+	fprintf(f, "%u\n", config->Game.RandomSeed);
+	fprintf(f, "%d %d\n",
+		config->Game.Difficulty,
+		config->Game.SlowMotion);
+	fprintf(f, "%d\n", config->Game.EnemyDensity);
+	fprintf(f, "%d\n", config->Game.NonPlayerHP);
+	fprintf(f, "%d\n", config->Game.PlayerHP);
+	fprintf(f, "%dx%d:%d:%d\n",
+		config->Graphics.ResolutionWidth,
+		config->Graphics.ResolutionHeight,
+		config->Graphics.Fullscreen,
+		config->Graphics.ScaleFactor);*/
 
 	fclose(f);
 }

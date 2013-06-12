@@ -214,6 +214,13 @@ Creates a new JSON false
 
 
 /**
+Creates a new JSON true/false
+@return a pointer to the newly created JSON true/false value
+**/
+	json_t *json_new_bool (int value);
+
+
+/**
 Frees the memory appointed to the value fed as the parameter, as well as all the child nodes
 @param value the root node of the tree being freed
 **/

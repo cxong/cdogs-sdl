@@ -90,6 +90,8 @@ extern Config gConfig;
 
 void ConfigLoad(Config *config, const char *filename);
 void ConfigSave(Config *config, const char *filename);
+void ConfigLoadJSON(Config *config, const char *filename);
+void ConfigSaveJSON(Config *config, const char *filename);
 void ConfigApply(Config *config);
 void ConfigLoadDefault(Config *config);
 

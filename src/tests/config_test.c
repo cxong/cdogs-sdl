@@ -44,12 +44,35 @@ FEATURE(2, "Save and load")
 	SCENARIO_END
 FEATURE_END
 
+FEATURE(3, "Saving config to JSON file")
+	SCENARIO("Save and load a JSON config file")
+	{
+		Config config1, config2;
+		GIVEN("a config file with some values, and I save the config to a JSON file")
+			ConfigLoadDefault(&config1);
+			config1.Game.FriendlyFire = 1;
+			config1.Graphics.Brightness = 5;
+			ConfigSaveJSON(&config1, "tmp");
+		GIVEN_END
+
+		WHEN("I load a second config from that file")
+			ConfigLoadJSON(&config2, "tmp");
+		WHEN_END
+
+		THEN("the two configs should be equal")
+			SHOULD_MEM_EQUAL(&config1, &config2, sizeof(Config));
+		THEN_END
+	}
+	SCENARIO_END
+FEATURE_END
+
 int main(void)
 {
 	cbehave_feature features[] =
 	{
 		{feature_idx(1)},
-		{feature_idx(2)}
+		{feature_idx(2)},
+		{feature_idx(3)}
 	};
 
 	return cbehave_runner("Config features are:", features);

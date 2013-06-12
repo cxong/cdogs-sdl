@@ -7,4 +7,4 @@ add_subdirectory(cbehave)
 include_directories(. ../cdogs)
 
 add_executable(config_test config_test.c ../cdogs/config.h ../cdogs/config.c)
-target_link_libraries(config_test cbehave)
+target_link_libraries(config_test cbehave json)
