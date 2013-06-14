@@ -124,7 +124,7 @@ if(WIN32)
 	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
-target_link_libraries(cdogs-sdl cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
 
 install(TARGETS cdogs-sdl DESTINATION .)
 

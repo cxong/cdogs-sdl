@@ -26,13 +26,13 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CONFIG_JSON
-#define __CONFIG_JSON
+#ifndef __CONFIG_OLD
+#define __CONFIG_OLD
 
 #include "config.h"
 
-void ConfigLoadJSON(Config *config, const char *filename);
-void ConfigSaveJSON(Config *config, const char *filename);
-int ConfigGetJSONVersion(FILE *f);
+void ConfigLoadOld(Config *config, const char *filename);
+void ConfigSaveOld(Config *config, const char *filename);
+int ConfigIsOld(FILE *f);
 
 #endif

@@ -198,8 +198,6 @@ void ConfigLoadJSON(Config *config, const char *filename)
 {
 	FILE *f = fopen(filename, "r");
 	json_t *root = NULL;
-	json_t *child = NULL;
-	int version;
 
 	if (f == NULL)
 	{
@@ -212,13 +210,6 @@ void ConfigLoadJSON(Config *config, const char *filename)
 		printf("Error parsing config '%s'\n", filename);
 		goto bail;
 	}
-	child = json_find_first_label(root, "Version");
-	if (child == NULL)
-	{
-		printf("Error parsing Version\n");
-		goto bail;
-	}
-	version = atoi(child->child->text);
 	LoadGameConfigNode(&config->Game, json_find_first_label(root, "Game")->child);
 	LoadGraphicsConfigNode(&config->Graphics, json_find_first_label(root, "Graphics")->child);
 	LoadInputConfigNode(&config->Input, json_find_first_label(root, "Input")->child);
@@ -263,4 +254,28 @@ void ConfigSaveJSON(Config *config, const char *filename)
 	json_free_value(&root);
 
 	fclose(f);
+}
+
+int ConfigGetJSONVersion(FILE *f)
+{
+	json_t *root = NULL;
+	json_t *child = NULL;
+	int version = -1;
+
+	if (json_stream_parse(f, &root) != JSON_OK)
+	{
+		printf("Error parsing JSON config\n");
+		goto bail;
+	}
+	child = json_find_first_label(root, "Version");
+	if (child == NULL)
+	{
+		printf("Error parsing JSON config version\n");
+		goto bail;
+	}
+	version = atoi(child->child->text);
+
+bail:
+	json_free_value(&root);
+	return version;
 }

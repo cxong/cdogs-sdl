@@ -93,5 +93,6 @@ void ConfigLoad(Config *config, const char *filename);
 void ConfigSave(Config *config, const char *filename);
 void ConfigApply(Config *config);
 void ConfigLoadDefault(Config *config);
+int ConfigGetVersion(FILE *f);
 
 #endif

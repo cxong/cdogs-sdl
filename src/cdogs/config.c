@@ -30,11 +30,13 @@
 
 #include <stdio.h>
 
-#include <cdogs/grafx.h>
-#include <cdogs/keyboard.h>
-#include <cdogs/music.h>
-#include <cdogs/sounds.h>
-#include <cdogs/utils.h>
+#include "config_json.h"
+#include "config_old.h"
+#include "grafx.h"
+#include "keyboard.h"
+#include "music.h"
+#include "sounds.h"
+#include "utils.h"
 
 
 const char *DifficultyStr(difficulty_e d)
@@ -85,140 +87,40 @@ difficulty_e StrDifficulty(const char *str)
 
 Config gConfig;
 
+int ConfigGetVersion(FILE *f)
+{
+	if (ConfigIsOld(f))
+	{
+		return 0;
+	}
+	rewind(f);
+	return ConfigGetJSONVersion(f);
+}
+
 void ConfigLoad(Config *config, const char *filename)
 {
 	FILE *f = fopen(filename, "r");
-	int dummy;
-	int fscanfres;
-	int i;
-
-	ConfigLoadDefault(config);
-	if (f == NULL)
-	{
-		printf("Error loading config '%s'\n", filename);
-		return;
-	}
-
-#define CHECK_FSCANF(count)\
-	if (fscanfres < count)\
-	{\
-		printf("Error loading config\n");\
-		fclose(f);\
-		return;\
-	}
-	fscanfres = fscanf(f, "%d %d %d %d %d %d %d\n",
-		&config->Interface.ShowFPS,
-		&config->Interface.ShowTime,
-		&config->Game.FriendlyFire,
-		&config->Graphics.Brightness,
-		&config->Input.SwapButtonsJoystick1,
-		&config->Input.SwapButtonsJoystick2,
-		&config->Interface.SplitscreenAlways);
-	CHECK_FSCANF(7);
-	for (i = 0; i < 2; i++)
-	{
-		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
-			(int *)&config->Input.PlayerKeys[i].Device,
-			&config->Input.PlayerKeys[i].Keys.left,
-			&config->Input.PlayerKeys[i].Keys.right,
-			&config->Input.PlayerKeys[i].Keys.up,
-			&config->Input.PlayerKeys[i].Keys.down,
-			&config->Input.PlayerKeys[i].Keys.button1,
-			&config->Input.PlayerKeys[i].Keys.button2);
-		CHECK_FSCANF(7);
-	}
-	fscanfres = fscanf(f, "%d\n", &config->Input.PlayerKeys[0].Keys.map);
-	CHECK_FSCANF(1);
-	fscanfres = fscanf(f, "%d %d %d %d\n",
-		&config->Sound.SoundVolume,
-		&config->Sound.MusicVolume,
-		&config->Sound.SoundChannels,
-		&dummy);
-	CHECK_FSCANF(4);
-	fscanfres = fscanf(f, "%u\n", &config->Game.RandomSeed);
-	CHECK_FSCANF(1);
-	fscanfres = fscanf(f, "%d %d\n",
-		(int *)&config->Game.Difficulty,
-		&config->Game.SlowMotion);
-	CHECK_FSCANF(2);
-	fscanfres = fscanf(f, "%d\n", &config->Game.EnemyDensity);
-	CHECK_FSCANF(1);
-	if (config->Game.EnemyDensity < 25 || config->Game.EnemyDensity > 200)
-	{
-		config->Game.EnemyDensity = 100;
-	}
-	fscanfres = fscanf(f, "%d\n", &config->Game.NonPlayerHP);
-	CHECK_FSCANF(1);
-	if (config->Game.NonPlayerHP < 25 || config->Game.NonPlayerHP > 200)
-	{
-		config->Game.NonPlayerHP = 100;
-	}
-	fscanfres = fscanf(f, "%d\n", &config->Game.PlayerHP);
-	CHECK_FSCANF(1);
-	if (config->Game.PlayerHP < 25 || config->Game.PlayerHP > 200)
-	{
-		config->Game.PlayerHP = 100;
-	}
-	fscanfres = fscanf(f, "%dx%d:%d:%d\n",
-		&config->Graphics.ResolutionWidth,
-		&config->Graphics.ResolutionHeight,
-		&config->Graphics.Fullscreen,
-		&config->Graphics.ScaleFactor);
-	CHECK_FSCANF(4);
-
+	int configVersion = ConfigGetVersion(f);
 	fclose(f);
+	switch (configVersion)
+	{
+	case 0:
+		ConfigLoadOld(config, filename);
+		break;
+	case 1:
+		ConfigLoadJSON(config, filename);
+		break;
+	default:
+		printf("Unknown config version\n");
+		// try loading anyway
+		ConfigLoadJSON(config, filename);
+		break;
+	}
 }
 
 void ConfigSave(Config *config, const char *filename)
 {
-	FILE *f = fopen(filename, "w");
-	int i;
-
-	if (f == NULL)
-	{
-		printf("Error saving config '%s'\n", filename);
-		return;
-	}
-
-	fprintf(f, "%d %d %d %d %d %d %d\n",
-		config->Interface.ShowFPS,
-		config->Interface.ShowTime,
-		config->Game.FriendlyFire,
-		config->Graphics.Brightness,
-		config->Input.SwapButtonsJoystick1,
-		config->Input.SwapButtonsJoystick2,
-		config->Interface.SplitscreenAlways);
-	for (i = 0; i < 2; i++)
-	{
-		fprintf(f, "%d\n%d %d %d %d %d %d\n",
-			config->Input.PlayerKeys[i].Device,
-			config->Input.PlayerKeys[i].Keys.left,
-			config->Input.PlayerKeys[i].Keys.right,
-			config->Input.PlayerKeys[i].Keys.up,
-			config->Input.PlayerKeys[i].Keys.down,
-			config->Input.PlayerKeys[i].Keys.button1,
-			config->Input.PlayerKeys[i].Keys.button2);
-	}
-	fprintf(f, "%d\n", config->Input.PlayerKeys[0].Keys.map);
-	fprintf(f, "%d %d %d %d\n",
-		config->Sound.SoundVolume,
-		config->Sound.MusicVolume,
-		config->Sound.SoundChannels,
-		0);
-	fprintf(f, "%u\n", config->Game.RandomSeed);
-	fprintf(f, "%d %d\n",
-		config->Game.Difficulty,
-		config->Game.SlowMotion);
-	fprintf(f, "%d\n", config->Game.EnemyDensity);
-	fprintf(f, "%d\n", config->Game.NonPlayerHP);
-	fprintf(f, "%d\n", config->Game.PlayerHP);
-	fprintf(f, "%dx%d:%d:%d\n",
-		config->Graphics.ResolutionWidth,
-		config->Graphics.ResolutionHeight,
-		config->Graphics.Fullscreen,
-		config->Graphics.ScaleFactor);
-
-	fclose(f);
+	ConfigSaveJSON(config, filename);
 }
 
 void ConfigLoadDefault(Config *config)

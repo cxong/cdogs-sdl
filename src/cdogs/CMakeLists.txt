@@ -6,6 +6,7 @@ set(CDOGS_SOURCES
 	config.c
 	config_apply.c
 	config_json.c
+	config_old.c
 	defs.c
 	draw.c
 	drawtools.c
@@ -35,6 +36,7 @@ set(CDOGS_HEADERS
 	blit.h
 	config.h
 	config_json.h
+	config_old.h
 	defs.h
 	draw.h
 	drawtools.h
