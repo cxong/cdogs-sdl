@@ -191,21 +191,6 @@ int GetOnePlayerCmd(
 }
 
 
-char *InputDeviceStr(int d)
-{
-	switch (d)
-	{
-	case INPUT_DEVICE_KEYBOARD:
-		return "Keyboard";
-	case INPUT_DEVICE_JOYSTICK_1:
-		return "Joystick 1";
-	case INPUT_DEVICE_JOYSTICK_2:
-		return "Joystick 2";
-	default:
-		return "";
-	}
-}
-
 void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 {
 	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;

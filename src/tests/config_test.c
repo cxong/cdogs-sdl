@@ -1,6 +1,7 @@
 #include <cbehave/cbehave.h>
 
 #include <config.h>
+#include <config_json.h>
 
 
 FEATURE(1, "Load default config")
@@ -42,9 +43,7 @@ FEATURE(2, "Save and load")
 		THEN_END
 	}
 	SCENARIO_END
-FEATURE_END
 
-FEATURE(3, "Saving config to JSON file")
 	SCENARIO("Save and load a JSON config file")
 	{
 		Config config1, config2;
@@ -71,8 +70,7 @@ int main(void)
 	cbehave_feature features[] =
 	{
 		{feature_idx(1)},
-		{feature_idx(2)},
-		{feature_idx(3)}
+		{feature_idx(2)}
 	};
 
 	return cbehave_runner("Config features are:", features);

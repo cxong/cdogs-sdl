@@ -49,6 +49,10 @@
 #ifndef __INPUT
 #define __INPUT
 
+#include <string.h>
+
+#include "sys_specifics.h"
+
 typedef enum
 {
 	INPUT_DEVICE_KEYBOARD,
@@ -82,7 +86,40 @@ typedef enum
 void InputChangeDevice(
 	input_device_e *d, input_device_e *dOther, int numJoysticks);
 
-char *InputDeviceStr(int d);
+INLINE char *InputDeviceStr(int d)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		return "Keyboard";
+	case INPUT_DEVICE_JOYSTICK_1:
+		return "Joystick 1";
+	case INPUT_DEVICE_JOYSTICK_2:
+		return "Joystick 2";
+	default:
+		return "";
+	}
+}
+INLINE input_device_e StrInputDevice(const char *str)
+{
+	if (strcmp(str, "Keyboard") == 0)
+	{
+		return INPUT_DEVICE_KEYBOARD;
+	}
+	else if (strcmp(str, "Joystick 1") == 0)
+	{
+		return INPUT_DEVICE_JOYSTICK_1;
+	}
+	else if (strcmp(str, "Joystick 1") == 0)
+	{
+		return INPUT_DEVICE_JOYSTICK_2;
+	}
+	else
+	{
+		return INPUT_DEVICE_KEYBOARD;
+	}
+}
+
 void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
 int GetMenuCmd(void);
 

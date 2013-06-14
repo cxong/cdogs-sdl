@@ -26,72 +26,12 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CONFIG
-#define __CONFIG
+#ifndef __CONFIG_JSON
+#define __CONFIG_JSON
 
-#include "grafx.h"
-#include "input.h"
-#include "sounds.h"
+#include "config.h"
 
-#define CONFIG_FILE "options.cnf"
-
-typedef enum
-{
-	DIFFICULTY_VERYEASY = 1,
-	DIFFICULTY_EASY,
-	DIFFICULTY_NORMAL,
-	DIFFICULTY_HARD,
-	DIFFICULTY_VERYHARD
-} difficulty_e;
-
-const char *DifficultyStr(difficulty_e d);
-difficulty_e StrDifficulty(const char *str);
-
-typedef struct
-{
-	input_device_e Device;
-	input_keys_t Keys;
-} KeyConfig;
-
-typedef struct
-{
-	int SwapButtonsJoystick1;
-	int SwapButtonsJoystick2;
-	KeyConfig PlayerKeys[2];
-} InputConfig;
-
-typedef struct
-{
-	int FriendlyFire;
-	unsigned int RandomSeed;
-	difficulty_e Difficulty;
-	int SlowMotion;
-	int EnemyDensity;
-	int NonPlayerHP;
-	int PlayerHP;
-} GameConfig;
-
-typedef struct
-{
-	int ShowFPS;
-	int ShowTime;
-	int SplitscreenAlways;
-} InterfaceConfig;
-
-typedef struct
-{
-	GameConfig Game;
-	GraphicsConfig Graphics;
-	InputConfig Input;
-	InterfaceConfig Interface;
-	SoundConfig Sound;
-} Config;
-
-extern Config gConfig;
-
-void ConfigLoad(Config *config, const char *filename);
-void ConfigSave(Config *config, const char *filename);
-void ConfigApply(Config *config);
-void ConfigLoadDefault(Config *config);
+void ConfigLoadJSON(Config *config, const char *filename);
+void ConfigSaveJSON(Config *config, const char *filename);
 
 #endif
