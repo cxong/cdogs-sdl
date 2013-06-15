@@ -240,7 +240,7 @@ int GetMenuCmd(void)
 		if (KeyIsPressed(&gKeyboard, keyBackspace))
 		{
 			cmd |= CMD_BUTTON2;
-		} 
+		}
 	}
 
 	return cmd;

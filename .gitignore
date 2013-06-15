@@ -6,6 +6,9 @@ cdogs-sdl
 *.exe
 cdogs-sdl-editor
 libcdogs.a
+config_test
+tmp
+libjson.a
 
 # CMake stuff
 *CMakeCache.txt

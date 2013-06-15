@@ -2,14 +2,14 @@
 UNAME_SHORT=`uname -s | cut -c1-5`
 if [ "$UNAME_SHORT" = "MINGW" ] ; then
 	cmake -G"MinGW Makefiles" src
+	cd src
 else
-	cmake src
+	cd src
+	cmake .
 fi
-cd src
 if [ "$UNAME_SHORT" = "MINGW" ] ; then
 	mingw32-make
 else
 	make
 fi
 cd ..
-

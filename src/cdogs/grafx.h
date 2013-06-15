@@ -89,10 +89,7 @@ typedef struct {
 
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
 void GraphicsTerminate(GraphicsDevice *device);
-INLINE int GraphicsGetMemSize(GraphicsConfig *config)
-{
-	return config->ResolutionWidth * config->ResolutionHeight;
-}
+int GraphicsGetMemSize(GraphicsConfig *config);
 
 void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);

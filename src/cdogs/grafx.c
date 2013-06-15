@@ -126,7 +126,10 @@ GraphicsDevice gGraphicsDevice =
 {
 	0,
 	0,
-	NULL
+	NULL,
+	{
+		0, 0, 0, 0, 0
+	}
 };
 
 int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
@@ -237,6 +240,11 @@ void GraphicsTerminate(GraphicsDevice *device)
 	debug(D_NORMAL, "Shutting down video...\n");
 	SDL_FreeSurface(device->screen);
 	SDL_VideoQuit();
+}
+
+int GraphicsGetMemSize(GraphicsConfig *config)
+{
+	return config->ResolutionWidth * config->ResolutionHeight;
 }
 
 char *GrafxGetResolutionStr(void)

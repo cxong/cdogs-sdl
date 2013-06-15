@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 #include "utils.h"
 
 #include <math.h>
+#include <string.h>
 
 int debug = 0;
 int debug_level = D_NORMAL;
@@ -78,5 +79,39 @@ void CalcChebyshevDistanceAndBearing(
 		// then reflect about Y axis
 		angle = 360 - angle;
 		*bearing = (int)floor(angle + 0.5);
+	}
+}
+
+char *InputDeviceStr(int d)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		return "Keyboard";
+	case INPUT_DEVICE_JOYSTICK_1:
+		return "Joystick 1";
+	case INPUT_DEVICE_JOYSTICK_2:
+		return "Joystick 2";
+	default:
+		return "";
+	}
+}
+input_device_e StrInputDevice(const char *str)
+{
+	if (strcmp(str, "Keyboard") == 0)
+	{
+		return INPUT_DEVICE_KEYBOARD;
+	}
+	else if (strcmp(str, "Joystick 1") == 0)
+	{
+		return INPUT_DEVICE_JOYSTICK_1;
+	}
+	else if (strcmp(str, "Joystick 1") == 0)
+	{
+		return INPUT_DEVICE_JOYSTICK_2;
+	}
+	else
+	{
+		return INPUT_DEVICE_KEYBOARD;
 	}
 }

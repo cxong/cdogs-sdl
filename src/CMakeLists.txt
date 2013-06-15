@@ -31,11 +31,11 @@ find_package(SDL_mixer REQUIRED)
 
 
 execute_process(
-	COMMAND "sh" "sdl-config" "--libs"
+	COMMAND "sdl-config" "--libs"
 	OUTPUT_VARIABLE SDL_LDFLAGS
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(
-	COMMAND "sh" "sdl-config" "--cflags"
+	COMMAND "sdl-config" "--cflags"
 	OUTPUT_VARIABLE SDL_CFLAGS
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 # Work-around for CMake SDL bug (need to link SDLmain before SDL)
@@ -185,4 +185,4 @@ SET(CDOGS_SDL_EDITOR_SOURCES
 SET(CDOGS_SDL_EDITOR_HEADERS
 	charsed.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
-target_link_libraries(cdogs-sdl-editor cdogs ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
+target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})
