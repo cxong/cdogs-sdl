@@ -183,6 +183,7 @@ static void LoadSoundConfigNode(SoundConfig *config, json_t *node)
 	config->SoundVolume = atoi(json_find_first_label(node, "SoundVolume")->child->text);
 	config->MusicVolume = atoi(json_find_first_label(node, "MusicVolume")->child->text);
 	config->SoundChannels = atoi(json_find_first_label(node, "SoundChannels")->child->text);
+	config->Footsteps = json_find_first_label(node, "Footsteps")->child->type == JSON_TRUE;
 }
 static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 {
@@ -190,6 +191,8 @@ static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 	AddIntPair(subConfig, "SoundVolume", config->SoundVolume);
 	AddIntPair(subConfig, "MusicVolume", config->MusicVolume);
 	AddIntPair(subConfig, "SoundChannels", config->SoundChannels);
+	json_insert_pair_into_object(
+		subConfig, "Footsteps", json_new_bool(config->Footsteps));
 	json_insert_pair_into_object(root, "Sound", subConfig);
 }
 

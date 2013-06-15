@@ -2,6 +2,7 @@ if(MSVC)
 	add_definitions(-wd"4127" -wd"4102")
 else()
 	add_definitions(-Wno-unused-label)
+	set(EXTRA_LIBRARIES "m")
 endif()
 
 add_subdirectory(cbehave)
@@ -18,4 +19,4 @@ add_executable(config_test
 	../cdogs/config_old.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_link_libraries(config_test cbehave json m)
+target_link_libraries(config_test cbehave json ${EXTRA_LIBRARIES})

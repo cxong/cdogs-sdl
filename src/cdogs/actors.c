@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "pics.h"
 #include "sounds.h"
 #include "defs.h"
@@ -62,6 +63,8 @@
 #include "mission.h"
 #include "game.h"
 #include "utils.h"
+
+#define SOUND_LOCK_FOOTSTEP 4
 
 
 TActor *gPlayer1 = NULL;
@@ -314,6 +317,7 @@ TActor *AddActor(int character)
 	TActor *actor;
 	CCALLOC(actor, sizeof(TActor));
 
+	actor->soundLock = 0;
 	actor->weapon = WeaponCreate(characterDesc[character].defaultGun);
 	actor->health = characterDesc[character].maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
@@ -403,12 +407,31 @@ void UpdateActorState(TActor * actor, int ticks)
 		return;
 	}
 
+	// Footstep sounds
+	if (gConfig.Sound.Footsteps &&
+		(actor->state == STATE_WALKING_1 ||
+		actor->state == STATE_WALKING_2 ||
+		actor->state == STATE_WALKING_3 ||
+		actor->state == STATE_WALKING_4) &&
+		actor->soundLock <= 0)
+	{
+		SoundPlayAt(SND_FOOTSTEP, actor->tileItem.x, actor->tileItem.y);
+		actor->soundLock = SOUND_LOCK_FOOTSTEP;
+	}
+
 	if (actor->state == STATE_IDLE && !actor->petrified)
 		SetStateForActor(actor, ((rand() & 1) != 0 ?
 					 STATE_IDLELEFT :
 					 STATE_IDLERIGHT));
 	else
 		SetStateForActor(actor, transitionTable[actor->state]);
+
+	// Sound lock
+	actor->soundLock -= ticks;
+	if (actor->soundLock < 0)
+	{
+		actor->soundLock = 0;
+	}
 }
 
 

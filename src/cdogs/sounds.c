@@ -85,7 +85,8 @@ SoundDevice gSoundDevice =
 		{"sounds/click.wav",	0,	NULL},
 		{"sounds/whistle.wav",	0,	NULL},
 		{"sounds/powergun.wav",	0,	NULL},
-		{"sounds/mg.wav",		0,	NULL}
+		{"sounds/mg.wav",		0,	NULL},
+		{"sounds/footstep.wav",	0,	NULL}
 	}
 };
 

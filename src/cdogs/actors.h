@@ -146,7 +146,7 @@ struct Actor {
 	int state;
 	int stateCounter;
 	int lastCmd;
-	int sndLock;
+	int soundLock;
 	int character;
 	Weapon weapon;
 	int dx, dy;

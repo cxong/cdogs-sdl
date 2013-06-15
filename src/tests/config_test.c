@@ -146,6 +146,27 @@ FEATURE(4, "Save config as latest format by default")
 	SCENARIO_END
 FEATURE_END
 
+FEATURE(5, "New configs not saved in old files")
+	SCENARIO("New JSON config saved as old file")
+	{
+		Config config;
+		GIVEN("a config file with new values, and I save the config to file in the old format")
+			ConfigLoadDefault(&config);
+			config.Sound.Footsteps = 1;
+			ConfigSaveOld(&config, "tmp");
+		GIVEN_END
+
+		WHEN("I load the config from that file")
+			ConfigLoad(&config, "tmp");
+		WHEN_END
+
+		THEN("the new config should have the default value")
+			SHOULD_INT_EQUAL(config.Sound.Footsteps, 0);
+		THEN_END
+	}
+	SCENARIO_END
+FEATURE_END
+
 int main(void)
 {
 	cbehave_feature features[] =

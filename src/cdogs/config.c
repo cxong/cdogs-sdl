@@ -99,8 +99,14 @@ int ConfigGetVersion(FILE *f)
 
 void ConfigLoad(Config *config, const char *filename)
 {
+	int configVersion = -1;
 	FILE *f = fopen(filename, "r");
-	int configVersion = ConfigGetVersion(f);
+	if (f == NULL)
+	{
+		printf("Error loading config '%s'\n", filename);
+		return;
+	}
+	configVersion = ConfigGetVersion(f);
 	fclose(f);
 	switch (configVersion)
 	{
@@ -165,4 +171,5 @@ void ConfigLoadDefault(Config *config)
 	config->Sound.MusicVolume = 64;
 	config->Sound.SoundChannels = 8;
 	config->Sound.SoundVolume = 64;
+	config->Sound.Footsteps = 0;
 }

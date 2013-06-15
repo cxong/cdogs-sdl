@@ -73,6 +73,7 @@ typedef enum
 	SND_DONE,
 	SND_LASER,
 	SND_MINIGUN,
+	SND_FOOTSTEP,
 	SND_COUNT
 } sound_e;
 
@@ -109,6 +110,7 @@ typedef struct
 	int SoundVolume;
 	int MusicVolume;
 	int SoundChannels;
+	int Footsteps;
 } SoundConfig;
 
 void SoundInitialize(SoundDevice *device, SoundConfig *config);
