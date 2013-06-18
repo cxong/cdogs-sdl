@@ -368,6 +368,10 @@ void WeaponFire(
 	assert(WeaponCanFire(w));
 	switch (w->gun)
 	{
+		case GUN_KNIFE:
+			// Do nothing
+			break;
+
 		case GUN_MG:
 			MachineGun(muzzlePosition, angle, flags);
 			break;
@@ -435,7 +439,7 @@ void WeaponFire(
 	}
 
 	w->lock = cGunLocks[w->gun];
-	if (w->soundLock <= 0)
+	if (w->soundLock <= 0 && cGunSounds[w->gun] != -1)
 	{
 		SoundPlayAt(cGunSounds[w->gun], tilePosition.x, tilePosition.y);
 		w->soundLock = cGunSoundLocks[w->gun];
