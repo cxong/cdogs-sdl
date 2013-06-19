@@ -361,6 +361,15 @@ void PulseRifle(TActor * actor)
 }
 */
 
+void WeaponPlaySound(Weapon *w, Vector2i tilePosition)
+{
+	if (w->soundLock <= 0 && (int)cGunSounds[w->gun] != -1)
+	{
+		SoundPlayAt(cGunSounds[w->gun], tilePosition.x, tilePosition.y);
+		w->soundLock = cGunSoundLocks[w->gun];
+	}
+}
+
 void WeaponFire(
 	Weapon *w, direction_e d, Vector2i muzzlePosition, Vector2i tilePosition, int flags)
 {
@@ -439,11 +448,7 @@ void WeaponFire(
 	}
 
 	w->lock = cGunLocks[w->gun];
-	if (w->soundLock <= 0 && cGunSounds[w->gun] != -1)
-	{
-		SoundPlayAt(cGunSounds[w->gun], tilePosition.x, tilePosition.y);
-		w->soundLock = cGunSoundLocks[w->gun];
-	}
+	WeaponPlaySound(w, tilePosition);
 }
 
 int GunIsStatic(gun_e gun)
