@@ -174,7 +174,8 @@ int main(void)
 		{feature_idx(1)},
 		{feature_idx(2)},
 		{feature_idx(3)},
-		{feature_idx(4)}
+		{feature_idx(4)},
+		{feature_idx(5)}
 	};
 
 	return cbehave_runner("Config features are:", features);
