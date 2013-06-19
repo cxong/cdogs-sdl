@@ -1,4 +1,4 @@
-footstep-wood.wav by swuing
-http://www.freesound.org/people/swuing/sounds/38876/
+Derived from footstep-concrete.wav by swuing
+http://www.freesound.org/people/swuing/sounds/38873/
 
 http://creativecommons.org/licenses/by/3.0/

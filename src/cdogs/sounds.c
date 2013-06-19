@@ -202,8 +202,13 @@ void SoundPlayAtPosition(
 	SoundDevice *device, sound_e sound, int distance, int bearing)
 {
 	int channel;
-	// make sure we always hear something
-	Uint8 distanceAdjusted = (Uint8)CLAMP(distance / 2, 0, 200);
+	distance /= 2;
+	// Don't play anything if it's too distant
+	// This means we don't waste sound channels
+	if (distance > 255)
+	{
+		return;
+	}
 
 	if (!device->isInitialised)
 	{
@@ -212,9 +217,11 @@ void SoundPlayAtPosition(
 
 	debug(D_VERBOSE, "sound: %d distance: %d bearing: %d\n",
 		sound, distance, bearing);
+	printf("sound: %d distance: %d bearing: %d\n",
+		sound, distance, bearing);
 
 	channel = Mix_PlayChannel(-1, device->sounds[sound].data , 0);
-	Mix_SetPosition(channel, (Sint16)bearing, distanceAdjusted);
+	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
 }
 
 void SoundPlay(SoundDevice *device, sound_e sound)
@@ -246,9 +253,12 @@ void SoundSetEars(int x, int y)
 	SoundSetRightEar(x, y);
 }
 
-#define RANGE_FULLVOLUME	70
-#define RANGE_FACTOR		128
 void SoundPlayAt(sound_e sound, int x, int y)
+{
+	SoundPlayAtPlusDistance(sound, x, y, 0);
+}
+
+void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance)
 {
 	int distance, bearing;
 	Vector2i origin = gSoundDevice.earLeft;
@@ -256,5 +266,5 @@ void SoundPlayAt(sound_e sound, int x, int y)
 	target.x = x;
 	target.y = y;
 	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
-	SoundPlayAtPosition(&gSoundDevice, sound, distance, bearing);
+	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
 }

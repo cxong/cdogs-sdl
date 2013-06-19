@@ -65,6 +65,7 @@
 #include "utils.h"
 
 #define SOUND_LOCK_FOOTSTEP 4
+#define FOOTSTEP_DISTANCE_PLUS 380
 
 
 TActor *gPlayer1 = NULL;
@@ -415,7 +416,10 @@ void UpdateActorState(TActor * actor, int ticks)
 		actor->state == STATE_WALKING_4) &&
 		actor->soundLock <= 0)
 	{
-		SoundPlayAt(SND_FOOTSTEP, actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAtPlusDistance(
+			SND_FOOTSTEP,
+			actor->tileItem.x, actor->tileItem.y,
+			FOOTSTEP_DISTANCE_PLUS);
 		actor->soundLock = SOUND_LOCK_FOOTSTEP;
 	}
 

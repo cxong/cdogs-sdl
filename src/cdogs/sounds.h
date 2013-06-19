@@ -122,4 +122,8 @@ void SoundSetRightEar(int x, int y);
 void SoundSetEars(int x, int y);
 void SoundPlayAt(sound_e sound, int x, int y);
 
+// Play a sound but with distance added
+// Simulates a quieter sound by adding distance attenuation
+void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance);
+
 #endif
