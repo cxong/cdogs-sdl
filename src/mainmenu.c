@@ -343,7 +343,7 @@ menu_t *MenuCreateSound(const char *name)
 		MenuCreateOptionRange(
 			"Music",
 			&gConfig.Sound.MusicVolume,
-			8, 64, 8,
+			0, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(
 		menu,
