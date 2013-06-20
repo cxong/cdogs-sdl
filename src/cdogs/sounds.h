@@ -76,6 +76,7 @@ typedef enum
 	SND_FOOTSTEP,
 	SND_SHOTGUN_R,
 	SND_LASER_R,
+	SND_PACKAGE_R,
 	SND_COUNT
 } sound_e;
 
