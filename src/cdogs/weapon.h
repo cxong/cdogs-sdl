@@ -51,6 +51,7 @@
 
 #include "defs.h"
 #include "pics.h"
+#include "sounds.h"
 #include "utils.h"
 
 typedef enum
@@ -95,6 +96,10 @@ typedef struct
 {
 	gunpic_e gunPic;
 	char *gunName;
+	int Lock;
+	int ReloadLead;
+	sound_e Sound;
+	sound_e ReloadSound;
 } GunDescription;
 
 typedef struct
@@ -113,7 +118,7 @@ Weapon WeaponCreate(gun_e gun);
 gunpic_e GunGetPic(gun_e gun);
 const char *GunGetName(gun_e gun);
 int GunGetScore(gun_e gun);
-void WeaponUpdate(Weapon *w, int ticks);
+void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(
 	Weapon *w, direction_e d, Vector2i muzzlePosition, Vector2i tilePosition, int flags);

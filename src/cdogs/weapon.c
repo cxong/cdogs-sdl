@@ -56,23 +56,26 @@
 
 GunDescription gGunDescriptions[] =
 {
-	{GUNPIC_KNIFE, "Knife"},
-	{GUNPIC_BLASTER, "Machine gun"},
-	{-1, "Grenades"},
-	{GUNPIC_BLASTER, "Flamer"},
-	{GUNPIC_BLASTER, "Shotgun"},
-	{GUNPIC_BLASTER, "Powergun"},
-	{-1, "Shrapnel bombs"},
-	{-1, "Molotovs"},
-	{GUNPIC_BLASTER, "Sniper rifle"},
-	{-1, "Prox. mine"},
-	{-1, "Dynamite"},
-	{-1, "Chemo bombs"},
-	{GUNPIC_BLASTER, "Petrify gun"},
-	{GUNPIC_BLASTER, "Browny gun"},
-	{-1, "Confusion bombs"},
-	{GUNPIC_BLASTER, "Chemo gun"}
+	// Gun picture		Name				Lock	ReloadLead	Sound			Reload sound
+	{GUNPIC_KNIFE,		"Knife",			0,		-1,			-1,				-1},
+	{GUNPIC_BLASTER,	"Machine gun",		6,		-1,			SND_MACHINEGUN,	-1},
+	{-1,				"Grenades",			30,		-1,			SND_LAUNCH,		-1},
+	{GUNPIC_BLASTER,	"Flamer",			6,		-1,			SND_FLAMER,		-1},
+	{GUNPIC_BLASTER,	"Shotgun",			50,		-1,			SND_SHOTGUN,	-1},
+	{GUNPIC_BLASTER,	"Powergun",			20,		-1,			SND_POWERGUN,	-1},
+	{-1,				"Shrapnel bombs",	30,		-1,			SND_LAUNCH,		-1},
+	{-1,				"Molotovs",			30,		-1,			SND_LAUNCH,		-1},
+	{GUNPIC_BLASTER,	"Sniper rifle",		100,	15,			SND_LASER,		SND_LASER_R},
+	{-1,				"Prox. mine",		100,	-1,			SND_HAHAHA,		-1},
+	{-1,				"Dynamite",			100,	-1,			SND_HAHAHA,		-1},
+	{-1,				"Chemo bombs",		30,		-1,			SND_LAUNCH,		-1},
+	{GUNPIC_BLASTER,	"Petrify gun",		100,	15,			SND_LASER,		SND_LASER_R},
+	{GUNPIC_BLASTER,	"Browny gun",		30,		-1,			SND_POWERGUN,	-1},
+	{-1,				"Confusion bombs",	30,		-1,			SND_LAUNCH,		-1},
+	{GUNPIC_BLASTER,	"Chemo gun",		6,		-1,			SND_FLAMER,		-1}
 };
+
+#define RELOAD_DISTANCE_PLUS 300
 
 const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT] = {
 	{
@@ -131,8 +134,18 @@ const char *GunGetName(gun_e gun)
 	return gGunDescriptions[gun].gunName;
 }
 
-void WeaponUpdate(Weapon *w, int ticks)
+void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition)
 {
+	if (w->lock > gGunDescriptions[w->gun].ReloadLead &&
+		w->lock - ticks <= gGunDescriptions[w->gun].ReloadLead &&
+		w->lock > 0 &&
+		(int)gGunDescriptions[w->gun].ReloadSound != -1)
+	{
+		SoundPlayAtPlusDistance(
+			gGunDescriptions[w->gun].ReloadSound,
+			tilePosition.x, tilePosition.y,
+			RELOAD_DISTANCE_PLUS);
+	}
 	w->lock -= ticks;
 	if (w->lock < 0)
 	{
@@ -144,26 +157,6 @@ void WeaponUpdate(Weapon *w, int ticks)
 		w->soundLock = 0;
 	}
 }
-
-int cGunLocks[GUN_COUNT] =
-{
-	0,
-	6,
-	30,
-	6,
-	50,
-	20,
-	30,
-	30,
-	100,
-	100,
-	100,
-	30,
-	100,
-	30,
-	30,
-	6
-};
 
 int cGunScores[GUN_COUNT] =
 {
@@ -189,26 +182,6 @@ int GunGetScore(gun_e gun)
 {
 	return cGunScores[gun];
 }
-
-sound_e cGunSounds[GUN_COUNT] =
-{
-	-1,
-	SND_MACHINEGUN,
-	SND_LAUNCH,
-	SND_FLAMER,
-	SND_SHOTGUN,
-	SND_POWERGUN,
-	SND_LAUNCH,
-	SND_LAUNCH,
-	SND_LASER,
-	SND_HAHAHA,
-	SND_HAHAHA,
-	SND_LAUNCH,
-	SND_LASER,
-	SND_POWERGUN,
-	SND_LAUNCH,
-	SND_FLAMER
-};
 
 int cGunSoundLocks[GUN_COUNT] =
 {
@@ -363,9 +336,9 @@ void PulseRifle(TActor * actor)
 
 void WeaponPlaySound(Weapon *w, Vector2i tilePosition)
 {
-	if (w->soundLock <= 0 && (int)cGunSounds[w->gun] != -1)
+	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
 	{
-		SoundPlayAt(cGunSounds[w->gun], tilePosition.x, tilePosition.y);
+		SoundPlayAt(gGunDescriptions[w->gun].Sound, tilePosition.x, tilePosition.y);
 		w->soundLock = cGunSoundLocks[w->gun];
 	}
 }
@@ -447,7 +420,7 @@ void WeaponFire(
 			break;
 	}
 
-	w->lock = cGunLocks[w->gun];
+	w->lock = gGunDescriptions[w->gun].Lock;
 	WeaponPlaySound(w, tilePosition);
 }
 

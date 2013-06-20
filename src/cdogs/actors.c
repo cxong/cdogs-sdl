@@ -372,7 +372,10 @@ void SetStateForActor(TActor * actor, int state)
 
 void UpdateActorState(TActor * actor, int ticks)
 {
-	WeaponUpdate(&actor->weapon, ticks);
+	Vector2i tilePosition;
+	tilePosition.x = actor->tileItem.x;
+	tilePosition.y = actor->tileItem.y;
+	WeaponUpdate(&actor->weapon, ticks, tilePosition);
 
 	if (actor->health > 0) {
 		if (actor->flamed)
