@@ -61,7 +61,7 @@ GunDescription gGunDescriptions[] =
 	{GUNPIC_BLASTER,	"Machine gun",		6,		-1,			SND_MACHINEGUN,	-1},
 	{-1,				"Grenades",			30,		-1,			SND_LAUNCH,		-1},
 	{GUNPIC_BLASTER,	"Flamer",			6,		-1,			SND_FLAMER,		-1},
-	{GUNPIC_BLASTER,	"Shotgun",			50,		-1,			SND_SHOTGUN,	-1},
+	{GUNPIC_BLASTER,	"Shotgun",			50,		10,			SND_SHOTGUN,	SND_SHOTGUN_R},
 	{GUNPIC_BLASTER,	"Powergun",			20,		-1,			SND_POWERGUN,	-1},
 	{-1,				"Shrapnel bombs",	30,		-1,			SND_LAUNCH,		-1},
 	{-1,				"Molotovs",			30,		-1,			SND_LAUNCH,		-1},
