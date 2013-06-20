@@ -43,12 +43,31 @@ static void AddIntPair(json_t *parent, const char *name, int number)
 	json_insert_pair_into_object(parent, name, json_new_number(buf));
 }
 
+static void LoadBool(int *value, json_t *node, const char *name)
+{
+	if (node == NULL)
+	{
+		return;
+	}
+	node = json_find_first_label(node, name);
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
+	if (node == NULL)
+	{
+		return;
+	}
+	*value = node->type == JSON_TRUE;
+}
+
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
 {
-	config->FriendlyFire = json_find_first_label(node, "FriendlyFire")->child->type == JSON_TRUE;
+	LoadBool(&config->FriendlyFire, node, "FriendlyFire");
 	config->RandomSeed = atoi(json_find_first_label(node, "RandomSeed")->child->text);
 	config->Difficulty = StrDifficulty(json_find_first_label(node, "Difficulty")->child->text);
-	config->SlowMotion = json_find_first_label(node, "SlowMotion")->child->type == JSON_TRUE;
+	LoadBool(&config->SlowMotion, node, "SlowMotion");
 	config->EnemyDensity = atoi(json_find_first_label(node, "EnemyDensity")->child->text);
 	config->NonPlayerHP = atoi(json_find_first_label(node, "NonPlayerHP")->child->text);
 	config->PlayerHP = atoi(json_find_first_label(node, "PlayerHP")->child->text);
@@ -77,7 +96,7 @@ static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 	config->Brightness = atoi(json_find_first_label(node, "Brightness")->child->text);
 	config->ResolutionWidth = atoi(json_find_first_label(node, "ResolutionWidth")->child->text);
 	config->ResolutionHeight = atoi(json_find_first_label(node, "ResolutionHeight")->child->text);
-	config->Fullscreen = json_find_first_label(node, "Fullscreen")->child->type == JSON_TRUE;
+	LoadBool(&config->Fullscreen, node, "Fullscreen");
 	config->ScaleFactor = atoi(json_find_first_label(node, "ScaleFactor")->child->text);
 }
 static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
@@ -134,8 +153,8 @@ static void LoadInputConfigNode(InputConfig *config, json_t *node)
 {
 	int i;
 	json_t *keyNode;
-	config->SwapButtonsJoystick1 = json_find_first_label(node, "SwapButtonsJoystick1")->child->type == JSON_TRUE;
-	config->SwapButtonsJoystick2 = json_find_first_label(node, "SwapButtonsJoystick2")->child->type == JSON_TRUE;
+	LoadBool(&config->SwapButtonsJoystick1, node, "SwapButtonsJoystick1");
+	LoadBool(&config->SwapButtonsJoystick2, node, "SwapButtonsJoystick2");
 	keyNode = json_find_first_label(node, "Keys")->child->child;
 	for (i = 0; i < 2 && keyNode != NULL; i++)
 	{
@@ -162,8 +181,8 @@ static void AddInputConfigNode(InputConfig *config, json_t *root)
 
 static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
 {
-	config->ShowFPS = json_find_first_label(node, "ShowFPS")->child->type == JSON_TRUE;
-	config->ShowTime = json_find_first_label(node, "ShowTime")->child->type == JSON_TRUE;
+	LoadBool(&config->ShowFPS, node, "ShowFPS");
+	LoadBool(&config->ShowTime, node, "ShowTime");
 	config->SplitscreenAlways = json_find_first_label(node, "SplitscreenAlways")->child->type == JSON_TRUE;
 }
 static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
@@ -183,7 +202,9 @@ static void LoadSoundConfigNode(SoundConfig *config, json_t *node)
 	config->SoundVolume = atoi(json_find_first_label(node, "SoundVolume")->child->text);
 	config->MusicVolume = atoi(json_find_first_label(node, "MusicVolume")->child->text);
 	config->SoundChannels = atoi(json_find_first_label(node, "SoundChannels")->child->text);
-	config->Footsteps = json_find_first_label(node, "Footsteps")->child->type == JSON_TRUE;
+	LoadBool(&config->Footsteps, node, "Footsteps");
+	LoadBool(&config->Hits, node, "Hits");
+	LoadBool(&config->Reloads, node, "Reloads");
 }
 static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 {
@@ -193,6 +214,10 @@ static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 	AddIntPair(subConfig, "SoundChannels", config->SoundChannels);
 	json_insert_pair_into_object(
 		subConfig, "Footsteps", json_new_bool(config->Footsteps));
+	json_insert_pair_into_object(
+		subConfig, "Hits", json_new_bool(config->Hits));
+	json_insert_pair_into_object(
+		subConfig, "Reloads", json_new_bool(config->Reloads));
 	json_insert_pair_into_object(root, "Sound", subConfig);
 }
 

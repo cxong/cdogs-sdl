@@ -77,6 +77,7 @@ typedef enum
 	SND_SHOTGUN_R,
 	SND_LASER_R,
 	SND_PACKAGE_R,
+	SND_HIT_FLESH,
 	SND_COUNT
 } sound_e;
 
@@ -114,6 +115,8 @@ typedef struct
 	int MusicVolume;
 	int SoundChannels;
 	int Footsteps;
+	int Hits;
+	int Reloads;
 } SoundConfig;
 
 void SoundInitialize(SoundDevice *device, SoundConfig *config);

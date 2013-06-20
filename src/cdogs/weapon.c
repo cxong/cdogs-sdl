@@ -50,6 +50,7 @@
 
 #include <assert.h>
 
+#include "config.h"
 #include "objs.h"
 #include "sounds.h"
 
@@ -136,7 +137,9 @@ const char *GunGetName(gun_e gun)
 
 void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition)
 {
-	if (w->lock > gGunDescriptions[w->gun].ReloadLead &&
+	// Reload sound
+	if (gConfig.Sound.Reloads &&
+		w->lock > gGunDescriptions[w->gun].ReloadLead &&
 		w->lock - ticks <= gGunDescriptions[w->gun].ReloadLead &&
 		w->lock > 0 &&
 		(int)gGunDescriptions[w->gun].ReloadSound != -1)

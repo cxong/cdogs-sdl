@@ -172,4 +172,6 @@ void ConfigLoadDefault(Config *config)
 	config->Sound.SoundChannels = 8;
 	config->Sound.SoundVolume = 64;
 	config->Sound.Footsteps = 0;
+	config->Sound.Hits = 0;
+	config->Sound.Reloads = 1;
 }

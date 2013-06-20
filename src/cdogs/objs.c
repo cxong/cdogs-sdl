@@ -316,6 +316,11 @@ int DamageSomething(int dx, int dy, int power, int flags,
 			actor->dx += (power * dx) / 25;
 			actor->dy += (power * dy) / 25;
 
+			if (gConfig.Sound.Hits)
+			{
+				SoundPlayAt(SND_HIT_FLESH, target->x, target->y);
+			}
+
 			if ((actor->flags & FLAGS_INVULNERABLE) != 0)
 				break;
 
