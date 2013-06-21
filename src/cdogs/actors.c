@@ -539,7 +539,7 @@ int MoveActor(TActor * actor, int x, int y)
 			object = target->kind == KIND_OBJECT ? target->data : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
-				DamageSomething(0, 0, 2, actor->flags, target, 0);
+				DamageSomething(0, 0, 2, actor->flags, target, SPECIAL_KNIFE);
 				return 0;
 			}
 		}
