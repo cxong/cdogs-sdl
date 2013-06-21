@@ -78,6 +78,7 @@ typedef enum
 	SND_LASER_R,
 	SND_PACKAGE_R,
 	SND_HIT_FLESH,
+	SND_HIT_HARD,
 	SND_COUNT
 } sound_e;
 

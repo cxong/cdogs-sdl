@@ -49,7 +49,6 @@
 #ifndef __GAMEDATA
 #define __GAMEDATA
 
-#include "actors.h"
 #include "input.h"
 #include "map.h"
 #include "pics.h"

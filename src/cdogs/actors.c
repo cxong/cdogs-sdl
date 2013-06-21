@@ -48,6 +48,7 @@
 */
 #include "actors.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -899,4 +900,108 @@ void SetShade(TranslationTable * table, int start, int end, int shade)
 
 	for (i = start; i <= end; i++)
 		(*table)[i] = colorShades[shade][i - start];
+}
+
+int ActorIsImmune(TActor *actor, special_damage_e damage)
+{
+	// Fire immunity
+	if (damage == SPECIAL_FLAME && (actor->flags & FLAGS_ASBESTOS))
+	{
+		return 1;
+	}
+	// Poison immunity
+	if (damage == SPECIAL_POISON && (actor->flags & FLAGS_IMMUNITY))
+	{
+		return 1;
+	}
+	// Confuse immunity
+	if (damage == SPECIAL_CONFUSE && (actor->flags & FLAGS_IMMUNITY))
+	{
+		return 1;
+	}
+	// Don't bother if health already 0 or less
+	if (actor->health <= 0)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+
+// Special damage durations
+#define FLAMED_COUNT        10
+#define POISONED_COUNT       8
+#define MAX_POISONED_COUNT 140
+#define PETRIFIED_COUNT     95
+#define CONFUSED_COUNT     700
+
+void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
+{
+	switch (damage)
+	{
+	case SPECIAL_FLAME:
+		actor->flamed = FLAMED_COUNT;
+		break;
+	case SPECIAL_POISON:
+		if (actor->poisoned < MAX_POISONED_COUNT)
+		{
+			actor->poisoned += POISONED_COUNT;
+		}
+		break;
+	case SPECIAL_PETRIFY:
+		if (!actor->petrified)
+		{
+			actor->petrified = PETRIFIED_COUNT;
+		}
+		break;
+	case SPECIAL_CONFUSE:
+		actor->confused = CONFUSED_COUNT;
+		break;
+	default:
+		// do nothing
+		break;
+	}
+}
+
+void ActorTakeHit(TActor *actor, int dx, int dy, int power, special_damage_e damage)
+{
+	assert(!ActorIsImmune(actor, damage));
+	ActorTakeSpecialDamage(actor, damage);
+
+	// Pushback
+	actor->dx += (power * dx) / 25;
+	actor->dy += (power * dy) / 25;
+}
+
+int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode)
+{
+	if (actor->flags & FLAGS_INVULNERABLE)
+	{
+		return 1;
+	}
+
+	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
+	{
+		// Player to player hits
+		if (flags & FLAGS_PLAYERS & actor->flags)
+		{
+			return 1;
+		}
+		// Friendly fire (NPCs)
+		if (mode != CAMPAIGN_MODE_DOGFIGHT &&
+			!gConfig.Game.FriendlyFire &&
+			(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
+			(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+		{
+			return 1;
+		}
+		// Enemies don't hurt each other
+		if (!(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
+			!(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }

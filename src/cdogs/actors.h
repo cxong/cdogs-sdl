@@ -49,8 +49,10 @@
 #ifndef __ACTORS
 #define __ACTORS
 
+#include "gamedata.h"
 #include "grafx.h"
 #include "map.h"
+#include "objs.h"
 #include "weapon.h"
 
 
@@ -203,5 +205,10 @@ void InitializeTranslationTables(void);
 void Score(int flags, int points);
 void InjureActor(TActor * actor, int injury);
 void KillAllActors(void);
+
+int ActorIsImmune(TActor *actor, special_damage_e damage);
+// Taking a hit only gives the appearance (pushback, special effect) but deals no damage
+void ActorTakeHit(TActor *actor, int dx, int dy, int power, special_damage_e damage);
+int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode);
 
 #endif

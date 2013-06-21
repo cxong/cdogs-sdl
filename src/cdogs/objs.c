@@ -36,12 +36,6 @@
 #include "game.h"
 #include "utils.h"
 
-#define FLAMED_COUNT        10
-#define POISONED_COUNT       8
-#define MAX_POISONED_COUNT 140
-#define PETRIFIED_COUNT     95
-#define CONFUSED_COUNT     700
-
 
 static TMobileObject *mobObjList = NULL;
 static TObject *objList = NULL;
@@ -272,145 +266,149 @@ static void TrackKills(TActor * victim, int flags)
 
 // The damage function!
 
-int DamageSomething(int dx, int dy, int power, int flags,
-		    TTileItem * target, int special)
+int DamageCharacter(
+	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage)
 {
-	TActor *actor;
-	TObject *object;
+	TActor *actor = (TActor *)target->data;
 
-	if (!target)
-		return NO;
+	if (!(flags & FLAGS_HURTALWAYS) &&
+		(flags & FLAGS_PLAYERS) &&
+		(flags & FLAGS_PLAYERS) == (actor->flags & FLAGS_PLAYERS))
+	{
+		return 0;
+	}
 
-	switch (target->kind) {
-	case KIND_CHARACTER:
-		actor = target->data;
+	if (ActorIsImmune(actor, damage))
+	{
+		return 1;
+	}
+	ActorTakeHit(actor, dx, dy, power, damage);
+	if (gConfig.Sound.Hits)
+	{
+		SoundPlayAt(SND_HIT_FLESH, target->x, target->y);
+	}
 
-		if ((flags & FLAGS_HURTALWAYS) == 0 &&
-		    (flags & FLAGS_PLAYERS) != 0 &&
-		    (flags & FLAGS_PLAYERS) ==
-		    (actor->flags & FLAGS_PLAYERS))
-			return NO;
+	if (ActorIsInvulnerable(actor, flags, gCampaign.mode))
+	{
+		return 1;
+	}
 
-		if (special == SPECIAL_FLAME
-		    && (actor->flags & FLAGS_ASBESTOS) != 0)
-			break;
-		if (special == SPECIAL_POISON
-		    && (actor->flags & FLAGS_IMMUNITY) != 0)
-			break;
-		if (special == SPECIAL_CONFUSE
-		    && (actor->flags & FLAGS_IMMUNITY) != 0)
-			break;
-
-		if (actor->health > 0) {
-			if (special == SPECIAL_FLAME)
-				actor->flamed = FLAMED_COUNT;
-			else if (special == SPECIAL_POISON) {
-				if (actor->poisoned < MAX_POISONED_COUNT)
-					actor->poisoned += POISONED_COUNT;
-			} else if (special == SPECIAL_PETRIFY
-				   && !actor->petrified)
-				actor->petrified = PETRIFIED_COUNT;
-			else if (special == SPECIAL_CONFUSE)
-				actor->confused = CONFUSED_COUNT;
-
-			actor->dx += (power * dx) / 25;
-			actor->dy += (power * dy) / 25;
-
-			if (gConfig.Sound.Hits)
-			{
-				SoundPlayAt(SND_HIT_FLESH, target->x, target->y);
-			}
-
-			if ((actor->flags & FLAGS_INVULNERABLE) != 0)
-				break;
-
-			if ((flags & FLAGS_HURTALWAYS) == 0 && (actor->flags & FLAGS_VICTIM) == 0)
-			{
-				if ((flags & FLAGS_PLAYERS & actor->flags) != 0)
-				{
-					break;
-				}
-				if (gCampaign.mode != CAMPAIGN_MODE_DOGFIGHT &&
-					!gConfig.Game.FriendlyFire &&
-					(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0 &&
-					(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
-				{
-					break;
-				}
-				if ((flags &
-				     (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) == 0
-				    && (actor->
-					flags & (FLAGS_PLAYERS |
-						 FLAGS_GOOD_GUY)) == 0)
-					break;
-			}
-			InjureActor(actor, power);
-			if (actor->health <= 0)
-				TrackKills(actor, flags);
-			if ((flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0
-			    &&
-			    ((actor->
-			      flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) ==
-			     0)) {
-				if ((actor->flags & FLAGS_PENALTY) != 0)
-					Score(flags, -3 * power);
-				else
-					Score(flags, power);
-			}
+	InjureActor(actor, power);
+	if (actor->health <= 0)
+	{
+		TrackKills(actor, flags);
+	}
+	// If a good guy hurt a non-good guy
+	if ((flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
+		!(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+	{
+		// Calculate score
+		if (actor->flags & FLAGS_PENALTY)
+		{
+			Score(flags, -3 * power);
 		}
-		break;
+		else
+		{
+			Score(flags, power);
+		}
+	}
+
+	return 1;
+}
+
+void DamageObject(int power, int flags, TTileItem *target)
+{
+	TObject *object = (TObject *)target->data;
+	// Don't bother if object already destroyed
+	if (object->structure <= 0)
+	{
+		return;
+	}
+
+	object->structure -= power;
+	if (gConfig.Sound.Hits)
+	{
+		SoundPlayAt(SND_HIT_HARD, target->x, target->y);
+	}
+
+	// Destroying objects and all the wonderful things that happen
+	if (object->structure <= 0)
+	{
+		object->structure = 0;
+		if (CheckMissionObjective(object->tileItem.flags))
+		{
+			Score(flags, 50);
+		}
+		if (object->flags & OBJFLAG_QUAKE)
+		{
+			ShakeScreen(70);
+		}
+		if (object->flags & OBJFLAG_EXPLOSIVE)
+		{
+			AddExplosion(object->tileItem.x << 8, object->tileItem.y << 8, flags);
+		}
+		else if (object->flags & OBJFLAG_FLAMMABLE)
+		{
+			Fire(object->tileItem.x << 8, object->tileItem.y << 8, flags);
+		}
+		else if (object->flags & OBJFLAG_POISONOUS)
+		{
+			Gas(object->tileItem.x << 8,
+				object->tileItem.y << 8,
+				flags,
+				SPECIAL_POISON);
+		}
+		else if (object->flags & OBJFLAG_CONFUSING)
+		{
+			Gas(object->tileItem.x << 8,
+				object->tileItem.y << 8,
+				flags,
+				SPECIAL_CONFUSE);
+		}
+		else
+		{
+			TMobileObject *obj = AddFireBall(0);
+			obj->count = 10;
+			obj->power = 0;
+			obj->x = object->tileItem.x << 8;
+			obj->y = object->tileItem.y << 8;
+			SoundPlayAt(SND_BANG, object->tileItem.x, object->tileItem.y);
+		}
+		if (object->wreckedPic)
+		{
+			object->tileItem.flags = 0;
+			object->pic = object->wreckedPic;
+		}
+		else
+		{
+			RemoveObject(object);
+		}
+	}
+}
+
+int DamageSomething(
+	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage)
+{
+	if (!target)
+	{
+		return 0;
+	}
+
+	switch (target->kind)
+	{
+	case KIND_CHARACTER:
+		return DamageCharacter(dx, dy, power, flags, target, damage);
 
 	case KIND_OBJECT:
-		object = target->data;
-		if (object->structure > 0) {
-			object->structure -= power;
-			if (object->structure <= 0) {
-				if (CheckMissionObjective
-				    (object->tileItem.flags))
-					Score(flags, 50);
-				if (object->flags & OBJFLAG_QUAKE)
-					ShakeScreen(70);
-				if (object->flags & OBJFLAG_EXPLOSIVE){
-					AddExplosion(object->tileItem.
-						     x << 8,
-						     object->tileItem.
-						     y << 8, flags);
-				} else if (object->flags & OBJFLAG_FLAMMABLE) {
-					Fire(object->tileItem.x << 8,
-					     object->tileItem.y << 8,
-					     flags);
-				} else if (object->flags & OBJFLAG_POISONOUS)
-					Gas(object->tileItem.x << 8,
-					    object->tileItem.y << 8, flags,
-					    SPECIAL_POISON);
-				else if (object->flags & OBJFLAG_CONFUSING)
-					Gas(object->tileItem.x << 8,
-					    object->tileItem.y << 8, flags,
-					    SPECIAL_CONFUSE);
-				else {
-					TMobileObject *obj =
-					    AddFireBall(0);
-					obj->count = 10;
-					obj->power = 0;
-					obj->x = object->tileItem.x << 8;
-					obj->y = object->tileItem.y << 8;
-					SoundPlayAt(SND_BANG, object->tileItem.x, object->tileItem.y);
-				}
-				if (object->wreckedPic) {
-					object->structure = 0;
-					object->tileItem.flags = 0;
-					object->pic = object->wreckedPic;
-				} else
-					RemoveObject(object);
-			}
-		}
+		DamageObject(power, flags, target);
 		break;
 
 	case KIND_PIC:
 	case KIND_MOBILEOBJECT:
 		break;
 	}
-	return YES;
+
+	return 1;
 }
 
 
@@ -689,6 +687,13 @@ int UpdateSpark(TMobileObject * obj)
 int HitItem(TMobileObject * obj, int x, int y, int special)
 {
 	TTileItem *tile;
+
+	// Don't hit if no damage dealt
+	// This covers non-damaging debris explosions
+	if (obj->power <= 0)
+	{
+		return 0;
+	}
 
 	tile =
 	    CheckTileItemCollision(&obj->tileItem, x >> 8, y >> 8,

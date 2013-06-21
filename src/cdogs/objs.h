@@ -90,10 +90,13 @@
 
 #define OBJFLAG_DANGEROUS   31
 
-#define SPECIAL_FLAME       1
-#define SPECIAL_POISON      2
-#define SPECIAL_PETRIFY     3
-#define SPECIAL_CONFUSE     4
+typedef enum
+{
+	SPECIAL_FLAME = 1,
+	SPECIAL_POISON,
+	SPECIAL_PETRIFY,
+	SPECIAL_CONFUSE
+} special_damage_e;
 
 
 struct Object {
@@ -125,8 +128,8 @@ typedef struct MobileObject TMobileObject;
 typedef int (*MobObjUpdateFunc) (struct MobileObject *);
 
 
-int DamageSomething(int dx, int dy, int power, int flags,
-		    TTileItem * target, int special);
+int DamageSomething(
+	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage);
 
 void AddObject(int x, int y, int w, int h,
 	       const TOffsetPic * pic, int index, int tileFlags);
