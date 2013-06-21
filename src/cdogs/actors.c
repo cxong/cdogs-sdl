@@ -539,7 +539,21 @@ int MoveActor(TActor * actor, int x, int y)
 			object = target->kind == KIND_OBJECT ? target->data : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
-				DamageSomething(0, 0, 2, actor->flags, target, SPECIAL_KNIFE);
+				Vector2i hitVector;
+				hitVector.x = 0;
+				hitVector.y = 0;
+				DamageSomething(
+					hitVector,
+					2,
+					actor->flags,
+					target,
+					SPECIAL_KNIFE,
+					actor->weapon.soundLock <= 0);
+				if (actor->weapon.soundLock <= 0)
+				{
+					actor->weapon.soundLock +=
+						gGunDescriptions[actor->weapon.gun].SoundLockLength;
+				}
 				return 0;
 			}
 		}
@@ -985,6 +999,10 @@ void ActorTakeHit(
 		if (damage == SPECIAL_FLAME)
 		{
 			hitSound = SND_HIT_FIRE;
+		}
+		else if (damage == SPECIAL_KNIFE)
+		{
+			hitSound = SND_KNIFE_FLESH;
 		}
 		SoundPlayAt(hitSound, hitLocation.x, hitLocation.y);
 	}

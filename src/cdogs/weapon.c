@@ -57,23 +57,23 @@
 
 GunDescription gGunDescriptions[] =
 {
-	// Gun picture		Name				Lock	ReloadLead	Sound			Reload sound
-	{GUNPIC_KNIFE,		"Knife",			0,		-1,			-1,				-1},
-	{GUNPIC_BLASTER,	"Machine gun",		6,		-1,			SND_MACHINEGUN,	-1},
-	{-1,				"Grenades",			30,		-1,			SND_LAUNCH,		-1},
-	{GUNPIC_BLASTER,	"Flamer",			6,		-1,			SND_FLAMER,		-1},
-	{GUNPIC_BLASTER,	"Shotgun",			50,		10,			SND_SHOTGUN,	SND_SHOTGUN_R},
-	{GUNPIC_BLASTER,	"Powergun",			20,		-1,			SND_POWERGUN,	-1},
-	{-1,				"Shrapnel bombs",	30,		-1,			SND_LAUNCH,		-1},
-	{-1,				"Molotovs",			30,		-1,			SND_LAUNCH,		-1},
-	{GUNPIC_BLASTER,	"Sniper rifle",		100,	15,			SND_LASER,		SND_LASER_R},
-	{-1,				"Prox. mine",		100,	15,			SND_HAHAHA,		SND_PACKAGE_R},
-	{-1,				"Dynamite",			100,	15,			SND_HAHAHA,		SND_PACKAGE_R},
-	{-1,				"Chemo bombs",		30,		-1,			SND_LAUNCH,		-1},
-	{GUNPIC_BLASTER,	"Petrify gun",		100,	15,			SND_LASER,		SND_LASER_R},
-	{GUNPIC_BLASTER,	"Browny gun",		30,		-1,			SND_POWERGUN,	-1},
-	{-1,				"Confusion bombs",	30,		-1,			SND_LAUNCH,		-1},
-	{GUNPIC_BLASTER,	"Chemo gun",		6,		-1,			SND_FLAMER,		-1}
+	// Gun picture		Name				Lock	ReloadLead	Sound			Reload sound	SoundLockLength
+	{GUNPIC_KNIFE,		"Knife",			0,		-1,			-1,				-1,				10},
+	{GUNPIC_BLASTER,	"Machine gun",		6,		-1,			SND_MACHINEGUN,	-1,				0},
+	{-1,				"Grenades",			30,		-1,			SND_LAUNCH,		-1,				0},
+	{GUNPIC_BLASTER,	"Flamer",			6,		-1,			SND_FLAMER,		-1,				36},
+	{GUNPIC_BLASTER,	"Shotgun",			50,		10,			SND_SHOTGUN,	SND_SHOTGUN_R,	0},
+	{GUNPIC_BLASTER,	"Powergun",			20,		-1,			SND_POWERGUN,	-1,				0},
+	{-1,				"Shrapnel bombs",	30,		-1,			SND_LAUNCH,		-1,				0},
+	{-1,				"Molotovs",			30,		-1,			SND_LAUNCH,		-1,				0},
+	{GUNPIC_BLASTER,	"Sniper rifle",		100,	15,			SND_LASER,		SND_LASER_R,	0},
+	{-1,				"Prox. mine",		100,	15,			SND_HAHAHA,		SND_PACKAGE_R,	0},
+	{-1,				"Dynamite",			100,	15,			SND_HAHAHA,		SND_PACKAGE_R,	0},
+	{-1,				"Chemo bombs",		30,		-1,			SND_LAUNCH,		-1,				0},
+	{GUNPIC_BLASTER,	"Petrify gun",		100,	15,			SND_LASER,		SND_LASER_R,	0},
+	{GUNPIC_BLASTER,	"Browny gun",		30,		-1,			SND_POWERGUN,	-1,				0},
+	{-1,				"Confusion bombs",	30,		-1,			SND_LAUNCH,		-1,				0},
+	{GUNPIC_BLASTER,	"Chemo gun",		6,		-1,			SND_FLAMER,		-1,				36}
 };
 
 #define RELOAD_DISTANCE_PLUS 300
@@ -185,26 +185,6 @@ int GunGetScore(gun_e gun)
 {
 	return cGunScores[gun];
 }
-
-int cGunSoundLocks[GUN_COUNT] =
-{
-	0,
-	0,
-	0,
-	36,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	36
-};
 
 int WeaponCanFire(Weapon *w)
 {
@@ -342,7 +322,7 @@ void WeaponPlaySound(Weapon *w, Vector2i tilePosition)
 	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
 	{
 		SoundPlayAt(gGunDescriptions[w->gun].Sound, tilePosition.x, tilePosition.y);
-		w->soundLock = cGunSoundLocks[w->gun];
+		w->soundLock = gGunDescriptions[w->gun].SoundLockLength;
 	}
 }
 

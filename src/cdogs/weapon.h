@@ -100,6 +100,7 @@ typedef struct
 	int ReloadLead;
 	sound_e Sound;
 	sound_e ReloadSound;
+	int SoundLockLength;
 } GunDescription;
 
 typedef struct

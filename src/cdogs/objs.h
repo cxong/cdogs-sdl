@@ -24,6 +24,7 @@
 
 #include "map.h"
 #include "pics.h"
+#include "utils.h"
 
 
 // Mobile objects
@@ -130,7 +131,12 @@ typedef int (*MobObjUpdateFunc) (struct MobileObject *);
 
 
 int DamageSomething(
-	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage);
+	Vector2i hitVector,
+	int power,
+	int flags,
+	TTileItem *target,
+	special_damage_e damage,
+	int isHitSoundEnabled);
 
 void AddObject(int x, int y, int w, int h,
 	       const TOffsetPic * pic, int index, int tileFlags);

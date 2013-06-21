@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "objs.h"
 
@@ -342,6 +369,10 @@ void DamageObject(
 		{
 			hitSound = SND_HIT_FIRE;
 		}
+		else if (damage == SPECIAL_KNIFE)
+		{
+			hitSound = SND_KNIFE_HARD;
+		}
 		SoundPlayAt(hitSound, target->x, target->y);
 	}
 
@@ -401,12 +432,13 @@ void DamageObject(
 }
 
 int DamageSomething(
-	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage)
+	Vector2i hitVector,
+	int power,
+	int flags,
+	TTileItem *target,
+	special_damage_e damage,
+	int isHitSoundEnabled)
 {
-	Vector2i hitVector;
-	hitVector.x = dx;
-	hitVector.y = dy;
-
 	if (!target)
 	{
 		return 0;
@@ -422,10 +454,10 @@ int DamageSomething(
 			target,
 			damage,
 			gCampaign.mode,
-			gConfig.Sound.Hits);
+			gConfig.Sound.Hits && isHitSoundEnabled);
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, target, damage, gConfig.Sound.Hits);
+		DamageObject(power, flags, target, damage, gConfig.Sound.Hits && isHitSoundEnabled);
 		break;
 
 	case KIND_PIC:
@@ -712,6 +744,7 @@ int UpdateSpark(TMobileObject * obj)
 int HitItem(TMobileObject * obj, int x, int y, int special)
 {
 	TTileItem *tile;
+	Vector2i hitVector;
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
@@ -720,11 +753,11 @@ int HitItem(TMobileObject * obj, int x, int y, int special)
 		return 0;
 	}
 
-	tile =
-	    CheckTileItemCollision(&obj->tileItem, x >> 8, y >> 8,
-				   TILEITEM_CAN_BE_SHOT);
-	return DamageSomething(obj->dx, obj->dy, obj->power, obj->flags,
-			       tile, special);
+	tile = CheckTileItemCollision(
+		&obj->tileItem, x >> 8, y >> 8, TILEITEM_CAN_BE_SHOT);
+	hitVector.x = obj->dx;
+	hitVector.y = obj->dy;
+	return DamageSomething(hitVector, obj->power, obj->flags, tile, special, 1);
 }
 
 int InternalUpdateBullet(TMobileObject * obj, int special)
