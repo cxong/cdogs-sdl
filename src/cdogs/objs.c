@@ -267,9 +267,18 @@ static void TrackKills(TActor * victim, int flags)
 // The damage function!
 
 int DamageCharacter(
-	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage)
+	Vector2i hitVector,
+	int power,
+	int flags,
+	TTileItem *target,
+	special_damage_e damage,
+	campaign_mode_e mode,
+	int isHitSoundEnabled)
 {
 	TActor *actor = (TActor *)target->data;
+	Vector2i hitLocation;
+	hitLocation.x = target->x;
+	hitLocation.y = target->y;
 
 	if (!(flags & FLAGS_HURTALWAYS) &&
 		(flags & FLAGS_PLAYERS) &&
@@ -282,17 +291,12 @@ int DamageCharacter(
 	{
 		return 1;
 	}
-	ActorTakeHit(actor, dx, dy, power, damage);
-	if (gConfig.Sound.Hits)
-	{
-		SoundPlayAt(SND_HIT_FLESH, target->x, target->y);
-	}
+	ActorTakeHit(actor, hitVector, power, damage, isHitSoundEnabled, hitLocation);
 
-	if (ActorIsInvulnerable(actor, flags, gCampaign.mode))
+	if (ActorIsInvulnerable(actor, flags, mode))
 	{
 		return 1;
 	}
-
 	InjureActor(actor, power);
 	if (actor->health <= 0)
 	{
@@ -316,7 +320,12 @@ int DamageCharacter(
 	return 1;
 }
 
-void DamageObject(int power, int flags, TTileItem *target)
+void DamageObject(
+	int power,
+	int flags,
+	TTileItem *target,
+	special_damage_e damage,
+	int isHitSoundEnabled)
 {
 	TObject *object = (TObject *)target->data;
 	// Don't bother if object already destroyed
@@ -326,9 +335,14 @@ void DamageObject(int power, int flags, TTileItem *target)
 	}
 
 	object->structure -= power;
-	if (gConfig.Sound.Hits)
+	if (isHitSoundEnabled)
 	{
-		SoundPlayAt(SND_HIT_HARD, target->x, target->y);
+		sound_e hitSound = SND_HIT_HARD;
+		if (damage == SPECIAL_FLAME)
+		{
+			hitSound = SND_HIT_FIRE;
+		}
+		SoundPlayAt(hitSound, target->x, target->y);
 	}
 
 	// Destroying objects and all the wonderful things that happen
@@ -389,6 +403,10 @@ void DamageObject(int power, int flags, TTileItem *target)
 int DamageSomething(
 	int dx, int dy, int power, int flags, TTileItem *target, special_damage_e damage)
 {
+	Vector2i hitVector;
+	hitVector.x = dx;
+	hitVector.y = dy;
+
 	if (!target)
 	{
 		return 0;
@@ -397,10 +415,17 @@ int DamageSomething(
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
-		return DamageCharacter(dx, dy, power, flags, target, damage);
+		return DamageCharacter(
+			hitVector,
+			power,
+			flags,
+			target,
+			damage,
+			gCampaign.mode,
+			gConfig.Sound.Hits);
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, target);
+		DamageObject(power, flags, target, damage, gConfig.Sound.Hits);
 		break;
 
 	case KIND_PIC:

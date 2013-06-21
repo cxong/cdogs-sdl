@@ -963,14 +963,31 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 	}
 }
 
-void ActorTakeHit(TActor *actor, int dx, int dy, int power, special_damage_e damage)
+void ActorTakeHit(
+	TActor *actor,
+	Vector2i hitVector,
+	int power,
+	special_damage_e damage,
+	int isHitSoundEnabled,
+	Vector2i hitLocation)
 {
 	assert(!ActorIsImmune(actor, damage));
 	ActorTakeSpecialDamage(actor, damage);
 
 	// Pushback
-	actor->dx += (power * dx) / 25;
-	actor->dy += (power * dy) / 25;
+	actor->dx += (power * hitVector.x) / 25;
+	actor->dy += (power * hitVector.y) / 25;
+
+	// Hit sound
+	if (isHitSoundEnabled)
+	{
+		sound_e hitSound = SND_HIT_FLESH;
+		if (damage == SPECIAL_FLAME)
+		{
+			hitSound = SND_HIT_FIRE;
+		}
+		SoundPlayAt(hitSound, hitLocation.x, hitLocation.y);
+	}
 }
 
 int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode)
