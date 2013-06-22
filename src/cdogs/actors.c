@@ -995,16 +995,7 @@ void ActorTakeHit(
 	// Hit sound
 	if (isHitSoundEnabled)
 	{
-		sound_e hitSound = SND_HIT_FLESH;
-		if (damage == SPECIAL_FLAME)
-		{
-			hitSound = SND_HIT_FIRE;
-		}
-		else if (damage == SPECIAL_KNIFE)
-		{
-			hitSound = SND_KNIFE_FLESH;
-		}
-		SoundPlayAt(hitSound, hitLocation.x, hitLocation.y);
+		SoundPlayAt(SoundGetHit(damage, 1), hitLocation.x, hitLocation.y);
 	}
 }
 

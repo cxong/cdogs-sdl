@@ -69,7 +69,7 @@ static TObject *objList = NULL;
 
 void Fire(int x, int y, int flags);
 void Gas(int x, int y, int flags, int special);
-int HitItem(TMobileObject * obj, int x, int y, int special);
+int HitItem(TMobileObject * obj, int x, int y, special_damage_e special);
 
 
 // Draw functions
@@ -364,16 +364,7 @@ void DamageObject(
 	object->structure -= power;
 	if (isHitSoundEnabled)
 	{
-		sound_e hitSound = SND_HIT_HARD;
-		if (damage == SPECIAL_FLAME)
-		{
-			hitSound = SND_HIT_FIRE;
-		}
-		else if (damage == SPECIAL_KNIFE)
-		{
-			hitSound = SND_KNIFE_HARD;
-		}
-		SoundPlayAt(hitSound, target->x, target->y);
+		SoundPlayAt(SoundGetHit(damage, 0), target->x, target->y);
 	}
 
 	// Destroying objects and all the wonderful things that happen
@@ -741,14 +732,14 @@ int UpdateSpark(TMobileObject * obj)
 	return 1;
 }
 
-int HitItem(TMobileObject * obj, int x, int y, int special)
+int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 {
 	TTileItem *tile;
 	Vector2i hitVector;
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
-	if (obj->power <= 0)
+	if (obj->power <= 0 && special == SPECIAL_NONE)
 	{
 		return 0;
 	}
@@ -917,7 +908,7 @@ int UpdateExplosion(TMobileObject * obj)
 	obj->z += obj->dz;
 	obj->dz--;
 
-	HitItem(obj, x, y, 0);
+	HitItem(obj, x, y, SPECIAL_EXPLOSION);
 
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;

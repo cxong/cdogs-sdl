@@ -94,6 +94,7 @@ SoundDevice gSoundDevice =
 		{"sounds/knife_hard.wav",	0,	NULL},
 		{"sounds/hit_fire.wav",		0,	NULL},
 		{"sounds/hit_flesh.wav",	0,	NULL},
+		{"sounds/hit_gas.wav",		0,	NULL},
 		{"sounds/hit_hard.wav",		0,	NULL}
 	}
 };
@@ -275,4 +276,25 @@ void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance)
 	target.y = y;
 	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
+}
+
+sound_e SoundGetHit(special_damage_e damage, int isActor)
+{
+	switch (damage)
+	{
+	case SPECIAL_FLAME:
+		return SND_HIT_FIRE;
+	case SPECIAL_POISON:
+		return SND_HIT_GAS;
+	/*case SPECIAL_PETRIFY:
+		return ;*/
+	case SPECIAL_CONFUSE:
+		return SND_HIT_GAS;
+	case SPECIAL_KNIFE:
+		return isActor ? SND_KNIFE_FLESH : SND_KNIFE_HARD;
+	case SPECIAL_EXPLOSION:
+		return SND_HIT_GAS;
+	default:
+		return isActor ? SND_HIT_FLESH : SND_HIT_HARD;
+	}
 }

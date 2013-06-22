@@ -51,6 +51,7 @@
 
 #include <SDL_mixer.h>
 
+#include "objs.h"
 #include "utils.h"
 
 typedef enum
@@ -81,6 +82,7 @@ typedef enum
 	SND_KNIFE_HARD,
 	SND_HIT_FIRE,
 	SND_HIT_FLESH,
+	SND_HIT_GAS,
 	SND_HIT_HARD,
 	SND_COUNT
 } sound_e;
@@ -135,5 +137,7 @@ void SoundPlayAt(sound_e sound, int x, int y);
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
 void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance);
+
+sound_e SoundGetHit(special_damage_e damage, int isActor);
 
 #endif
