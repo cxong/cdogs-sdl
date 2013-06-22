@@ -11,6 +11,10 @@ SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 set(DEBUG 0)			#set to 1 to enable debug build
 set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(CLANG 1)
+endif()
+
 IF(UNIX AND NOT APPLE)
 	SET(CMAKE_INSTALL_PREFIX /opt/cdogs-sdl/bin)
 ENDIF()
@@ -65,7 +69,7 @@ ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX -wd"4996")
 else()
-	ADD_DEFINITIONS(-fsigned-char -freg-struct-return -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
+	add_definitions(-fsigned-char -Wall -W -Wshadow -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)
@@ -74,6 +78,11 @@ else()
 	else()
 		ADD_DEFINITIONS(-O2)
 	endif()
+    if(CLANG)
+    else()
+        # Probably GCC...
+        add_definitions(-freg-struct-return)
+    endif()
 endif()
 
 include_directories(.)
@@ -122,6 +131,10 @@ set(CDOGS_SDL_HEADERS
 set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
+elseif(APPLE)
+	set(CDOGS_SDL_EXTRA
+		${SOURCE_DIRECTORY}/build/macosx/SDLMain.m
+		${SOURCE_DIRECTORY}/build/macosx/SDLMain.h)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY})

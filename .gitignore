@@ -46,3 +46,4 @@ stderr.txt
 # XCode
 CMakeScripts/
 *.xcodeproj/
+.DS_Store

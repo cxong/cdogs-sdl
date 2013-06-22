@@ -54,6 +54,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef __APPLE__
+#include <MacTypes.h>
+#endif
+
 #ifdef _MSC_VER
 #define MKDIR_MODE 0
 #else
@@ -66,7 +70,7 @@
 #define mkdir(p, a) mkdir(p)
 #endif
 
-#ifndef ssize_t
+#if !defined(ssize_t) && !defined(__MACTYPES__)
 typedef int ssize_t;
 #endif
 

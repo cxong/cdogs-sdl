@@ -93,7 +93,6 @@
 static Uint32 ticks_now;
 static Uint32 ticks_then;
 
-static volatile int gameTicks = 0;
 static int frames = 0;
 static int fps = 0;
 static char message[256];
@@ -220,29 +219,17 @@ static int Ticks_Synchronize(void)
 	int ticks = 1;
 	TActor *actor;
 
-	/*
-	while (gameTicks <= 1) {
-		//debug("delay... gameTicks=%d\n", gameTicks);
-		SDL_Delay(30);
-	}
-	*/
-
-/*	while (gameTicks > GAMETICKS_PER_FRAME) {
-		debug("update... gameTicks=%d\n", gameTicks); */
-
-
-		ticks++;
-		if (!gameIsPaused) {
-			UpdateMobileObjects();
-			actor = ActorList();
-			while (actor) {
-				CommandActor(actor, actor->lastCmd);
-				actor = actor->next;
-			}
+	ticks++;
+	if (!gameIsPaused)
+	{
+		UpdateMobileObjects();
+		actor = ActorList();
+		while (actor)
+		{
+			CommandActor(actor, actor->lastCmd);
+			actor = actor->next;
 		}
-
-/*	} 	*/
-
+	}
 
 	return ticks;
 }

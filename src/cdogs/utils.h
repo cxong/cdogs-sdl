@@ -67,28 +67,28 @@ extern int debug_level;
 	{\
 		debug(D_MAX,\
 			_func "(" #_var " size %d) failed\n",\
-			_size);\
+			(int)_size);\
 		exit(1);\
 	}\
 	debug(D_MAX,\
 		_func "(" #_var " size %d) at 0x%p\n",\
-		_size, _var);\
+		(int)_size, _var);\
 }
 
 #define CMALLOC(_var, _size)\
 {\
 	_var = malloc(_size);\
-	_CCHECKALLOC("CMALLOC", _var, _size)\
+	_CCHECKALLOC("CMALLOC", _var, (_size))\
 }
 #define CCALLOC(_var, _size)\
 {\
 	_var = calloc(1, _size);\
-	_CCHECKALLOC("CCALLOC", _var, _size)\
+	_CCHECKALLOC("CCALLOC", _var, (_size))\
 }
 #define CREALLOC(_var, _size)\
 {\
 	_var = realloc(_var, _size);\
-	_CCHECKALLOC("CREALLOC", _var, _size)\
+	_CCHECKALLOC("CREALLOC", _var, (_size))\
 }
 
 #define CFREE(_var)\
