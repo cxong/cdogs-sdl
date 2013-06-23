@@ -64,7 +64,7 @@
 #include "utils.h"
 
 
-static TMobileObject *mobObjList = NULL;
+TMobileObject *gMobObjList = NULL;
 static TObject *objList = NULL;
 
 void Fire(int x, int y, int flags);
@@ -524,14 +524,23 @@ int UpdateMolotovFlame(TMobileObject * obj)
 		return 1;
 }
 
-// Prototype to simplify matters (I don't want this in the .h file)
-TMobileObject *AddMobileObject(void);
+TMobileObject *AddMobileObject(TMobileObject **mobObjList)
+{
+	TMobileObject *obj;
+	CCALLOC(obj, sizeof(TMobileObject));
+
+	obj->tileItem.kind = KIND_MOBILEOBJECT;
+	obj->tileItem.data = obj;
+	obj->next = *mobObjList;
+	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
+	obj->updateFunc = UpdateMobileObject;
+	*mobObjList = obj;
+	return obj;
+}
 
 TMobileObject *AddMolotovFlame(int x, int y, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateMolotovFlame;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
 	obj->tileItem.w = 5;
@@ -598,9 +607,7 @@ int UpdateGasCloud(TMobileObject * obj)
 void AddGasCloud(int x, int y, int angle, int speed, int range, int flags,
 		 int special)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateGasCloud;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
 	obj->tileItem.w = 10;
@@ -739,7 +746,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
-	if (obj->power <= 0 && special == SPECIAL_NONE)
+	if (obj->power <= 0 && (special == SPECIAL_NONE || special == SPECIAL_EXPLOSION))
 	{
 		return 0;
 	}
@@ -919,9 +926,9 @@ int UpdateExplosion(TMobileObject * obj)
 	return 0;
 }
 
-void UpdateMobileObjects(void)
+void UpdateMobileObjects(TMobileObject **mobObjList)
 {
-	TMobileObject *obj = mobObjList;
+	TMobileObject *obj = *mobObjList;
 	int do_remove = 0;
 
 	while (obj) {
@@ -933,43 +940,28 @@ void UpdateMobileObjects(void)
 	}
 	if (do_remove)
 	{
-		TMobileObject **h = &mobObjList;
-
-		while (*h) {
-			if ((*h)->range == 0) {
-				obj = *h;
-				*h = obj->next;
+		while (*mobObjList)
+		{
+			if ((*mobObjList)->range == 0)
+			{
+				obj = *mobObjList;
+				*mobObjList = obj->next;
 				RemoveTileItem(&obj->tileItem);
 				CFREE(obj);
 			}
 			else
 			{
-				h = &((*h)->next);
+				mobObjList = &((*mobObjList)->next);
 			}
 		}
 	}
 }
 
-TMobileObject *AddMobileObject(void)
-{
-	TMobileObject *obj;
-	CCALLOC(obj, sizeof(TMobileObject));
-
-	obj->tileItem.kind = KIND_MOBILEOBJECT;
-	obj->tileItem.data = obj;
-	obj->next = mobObjList;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
-	obj->updateFunc = UpdateMobileObject;
-	mobObjList = obj;
-	return obj;
-}
-
 void AddGrenade(int x, int y, int angle, int flags, int kind)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
-	if (kind == MOBOBJ_MOLOTOV) {
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	if (kind == MOBOBJ_MOLOTOV)
+	{
 		obj->updateFunc = UpdateMolotov;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
 	} else {
@@ -991,9 +983,7 @@ void AddGrenade(int x, int y, int angle, int flags, int kind)
 void AddBullet(int x, int y, int angle, int speed, int range, int power,
 	       int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1011,9 +1001,7 @@ void AddBullet(int x, int y, int angle, int speed, int range, int power,
 void AddRapidBullet(int x, int y, int angle, int speed, int range,
 		    int power, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1030,9 +1018,7 @@ void AddRapidBullet(int x, int y, int angle, int speed, int range,
 
 void AddSniperBullet(int x, int y, int direction, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc =  (TileItemDrawFunc)DrawBrightBolt;
 	obj->kind = MOBOBJ_BULLET;
@@ -1051,9 +1037,7 @@ void AddSniperBullet(int x, int y, int direction, int flags)
 void AddBrownBullet(int x, int y, int angle, int speed, int range,
 		    int power, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateBrownBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1070,9 +1054,7 @@ void AddBrownBullet(int x, int y, int angle, int speed, int range,
 
 void AddFlame(int x, int y, int angle, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateFlame;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
 	obj->tileItem.w = 5;
@@ -1091,9 +1073,7 @@ void AddFlame(int x, int y, int angle, int flags)
 
 void AddLaserBolt(int x, int y, int direction, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawLaserBolt;
 	obj->tileItem.w = 2;
@@ -1114,9 +1094,7 @@ void AddLaserBolt(int x, int y, int direction, int flags)
 void AddPetrifierBullet(int x, int y, int angle, int speed, int range,
 			int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdatePetrifierBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawPetrifierBullet;
 	obj->tileItem.w = 5;
@@ -1136,9 +1114,7 @@ void AddPetrifierBullet(int x, int y, int angle, int speed, int range,
 void AddHeatseeker(int x, int y, int angle, int speed, int range,
 		   int power, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateSeeker;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSeeker;
 	obj->tileItem.w = 3;
@@ -1158,9 +1134,7 @@ void AddHeatseeker(int x, int y, int angle, int speed, int range,
 
 void AddProximityMine(int x, int y, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateDroppedMine;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMine;
 	obj->kind = MOBOBJ_BULLET;
@@ -1173,9 +1147,7 @@ void AddProximityMine(int x, int y, int flags)
 
 void AddDynamite(int x, int y, int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateTriggeredMine;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawDynamite;
 	obj->kind = MOBOBJ_BULLET;
@@ -1188,9 +1160,7 @@ void AddDynamite(int x, int y, int flags)
 
 TMobileObject *AddFireBall(int flags)
 {
-	TMobileObject *obj;
-
-	obj = AddMobileObject();
+	TMobileObject *obj = AddMobileObject(&gMobObjList);
 	obj->updateFunc = UpdateExplosion;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
 	obj->tileItem.w = 7;
@@ -1242,13 +1212,12 @@ void AddExplosion(int x, int y, int flags)
 	SoundPlayAt(SND_EXPLOSION, x >> 8, y >> 8);
 }
 
-void KillAllMobileObjects(void)
+void KillAllMobileObjects(TMobileObject **mobObjList)
 {
-	TMobileObject *o;
-
-	while (mobObjList) {
-		o = mobObjList;
-		mobObjList = mobObjList->next;
+	while (*mobObjList)
+	{
+		TMobileObject *o = *mobObjList;
+		*mobObjList = (*mobObjList)->next;
 		RemoveTileItem(&o->tileItem);
 		CFREE(o);
 	}

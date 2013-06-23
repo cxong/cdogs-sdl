@@ -222,7 +222,7 @@ static int Ticks_Synchronize(void)
 	ticks++;
 	if (!gameIsPaused)
 	{
-		UpdateMobileObjects();
+		UpdateMobileObjects(&gMobObjList);
 		actor = ActorList();
 		while (actor)
 		{
@@ -713,7 +713,7 @@ int gameloop(void)
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
 				UpdateAllActors(ticks);
-				UpdateMobileObjects();
+				UpdateMobileObjects(&gMobObjList);
 
 				GetPlayerInput(&cmd1, &cmd2);
 

@@ -130,6 +130,7 @@ struct MobileObject {
 };
 typedef struct MobileObject TMobileObject;
 typedef int (*MobObjUpdateFunc) (struct MobileObject *);
+extern TMobileObject *gMobObjList;
 
 
 int DamageSomething(
@@ -149,7 +150,7 @@ void AddDestructibleObject(int x, int y, int w, int h,
 void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
-void UpdateMobileObjects(void);
+void UpdateMobileObjects(TMobileObject **mobObjList);
 void AddGrenade(int x, int y, int angle, int flags, int kind);
 void AddBullet(int x, int y, int angle, int speed, int range, int power,
 	       int flags);
@@ -169,6 +170,6 @@ void AddHeatseeker(int x, int y, int angle, int speed, int range,
 		   int power, int flags);
 void AddProximityMine(int x, int y, int flags);
 void AddDynamite(int x, int y, int flags);
-void KillAllMobileObjects(void);
+void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif

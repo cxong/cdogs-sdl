@@ -598,7 +598,7 @@ void DataUpdate(int mission, struct PlayerData *data)
 static void CleanupMission(void)
 {
 	KillAllActors();
-	KillAllMobileObjects();
+	KillAllMobileObjects(&gMobObjList);
 	KillAllObjects();
 	FreeTriggersAndWatches();
 	gPlayer1 = gPlayer2 = gPrisoner = NULL;
