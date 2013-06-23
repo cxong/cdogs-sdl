@@ -63,6 +63,8 @@
 #include "game.h"
 #include "utils.h"
 
+#define SOUND_LOCK_MOBILE_OBJECT 12
+
 
 TMobileObject *gMobObjList = NULL;
 static TObject *objList = NULL;
@@ -462,10 +464,20 @@ int DamageSomething(
 
 // Update functions
 
+// Base update function
+void MobileObjectUpdate(TMobileObject *obj)
+{
+	obj->count++;
+	obj->soundLock--;
+	if (obj->soundLock < 0)
+	{
+		obj->soundLock = 0;
+	}
+}
 
 int UpdateMobileObject(TMobileObject * obj)
 {
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 	return 1;
@@ -487,7 +499,7 @@ int UpdateMolotovFlame(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 
@@ -531,6 +543,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList)
 
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.data = obj;
+	obj->soundLock = 0;
 	obj->next = *mobObjList;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
 	obj->updateFunc = UpdateMobileObject;
@@ -573,7 +586,7 @@ int UpdateGasCloud(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 
@@ -646,9 +659,11 @@ int UpdateGrenade(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
-	if (obj->count > obj->range) {
-		switch (obj->kind) {
+	MobileObjectUpdate(obj);
+	if (obj->count > obj->range)
+	{
+		switch (obj->kind)
+		{
 		case MOBOBJ_GRENADE:
 			AddExplosion(obj->x, obj->y, obj->flags);
 			break;
@@ -704,8 +719,9 @@ int UpdateMolotov(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
-	if (obj->count > obj->range) {
+	MobileObjectUpdate(obj);
+	if (obj->count > obj->range)
+	{
 		Fire(obj->x, obj->y, obj->flags);
 		return 0;
 	}
@@ -733,7 +749,7 @@ int UpdateMolotov(TMobileObject * obj)
 
 int UpdateSpark(TMobileObject * obj)
 {
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 	return 1;
@@ -743,6 +759,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 {
 	TTileItem *tile;
 	Vector2i hitVector;
+	int hasHit;
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
@@ -755,14 +772,20 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 		&obj->tileItem, x >> 8, y >> 8, TILEITEM_CAN_BE_SHOT);
 	hitVector.x = obj->dx;
 	hitVector.y = obj->dy;
-	return DamageSomething(hitVector, obj->power, obj->flags, tile, special, 1);
+	hasHit = DamageSomething(
+		hitVector, obj->power, obj->flags, tile, special, obj->soundLock <= 0);
+	if (hasHit && obj->soundLock <= 0)
+	{
+		obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+	}
+	return hasHit;
 }
 
 int InternalUpdateBullet(TMobileObject * obj, int special)
 {
 	int x, y;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 
@@ -817,8 +840,9 @@ int UpdateBrownBullet(TMobileObject * obj)
 
 int UpdateTriggeredMine(TMobileObject * obj)
 {
-	obj->count++;
-	if (obj->count >= obj->range) {
+	MobileObjectUpdate(obj);
+	if (obj->count >= obj->range)
+	{
 		AddExplosion(obj->x, obj->y, obj->flags);
 		return 0;
 	}
@@ -831,7 +855,7 @@ int UpdateActiveMine(TMobileObject * obj)
 	int tx, ty, dx, dy;
 	TTile *tile;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if ((obj->count & 3) != 0)
 		return 1;
 
@@ -863,7 +887,7 @@ int UpdateActiveMine(TMobileObject * obj)
 
 int UpdateDroppedMine(TMobileObject * obj)
 {
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count >= obj->range)
 		obj->updateFunc = UpdateActiveMine;
 	return 1;
@@ -873,7 +897,7 @@ int UpdateFlame(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count > obj->range)
 		return 0;
 
@@ -904,7 +928,7 @@ int UpdateExplosion(TMobileObject * obj)
 {
 	int x, y;
 
-	obj->count++;
+	MobileObjectUpdate(obj);
 	if (obj->count < 0)
 		return 1;
 	if (obj->count > obj->range)

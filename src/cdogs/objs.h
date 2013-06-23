@@ -124,6 +124,7 @@ struct MobileObject {
 	int range;
 	int power;
 	int flags;
+	int soundLock;
 	TTileItem tileItem;
 	int (*updateFunc) (struct MobileObject *);
 	struct MobileObject *next;
