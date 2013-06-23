@@ -84,6 +84,7 @@ typedef enum
 	SND_HIT_FLESH,
 	SND_HIT_GAS,
 	SND_HIT_HARD,
+	SND_HIT_PETRIFY,
 	SND_COUNT
 } sound_e;
 

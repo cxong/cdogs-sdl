@@ -95,7 +95,8 @@ SoundDevice gSoundDevice =
 		{"sounds/hit_fire.wav",		0,	NULL},
 		{"sounds/hit_flesh.wav",	0,	NULL},
 		{"sounds/hit_gas.wav",		0,	NULL},
-		{"sounds/hit_hard.wav",		0,	NULL}
+		{"sounds/hit_hard.wav",		0,	NULL},
+		{"sounds/hit_petrify.wav",	0,	NULL}
 	}
 };
 
@@ -286,8 +287,8 @@ sound_e SoundGetHit(special_damage_e damage, int isActor)
 		return SND_HIT_FIRE;
 	case SPECIAL_POISON:
 		return SND_HIT_GAS;
-	/*case SPECIAL_PETRIFY:
-		return ;*/
+	case SPECIAL_PETRIFY:
+		return SND_HIT_PETRIFY;
 	case SPECIAL_CONFUSE:
 		return SND_HIT_GAS;
 	case SPECIAL_KNIFE:
