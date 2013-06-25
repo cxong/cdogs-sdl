@@ -364,7 +364,7 @@ void DamageObject(
 	}
 
 	object->structure -= power;
-	if (isHitSoundEnabled)
+	if (isHitSoundEnabled && power > 0)
 	{
 		SoundPlayAt(SoundGetHit(damage, 0), target->x, target->y);
 	}
