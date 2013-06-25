@@ -39,7 +39,7 @@
 
 int MusicPlay(SoundDevice *device, const char *path)
 {
-	if (!device->isInitialised || gConfig.Sound.MusicVolume == 0)
+	if (!device->isInitialised)
 	{
 		return 0;
 	}
@@ -65,6 +65,11 @@ int MusicPlay(SoundDevice *device, const char *path)
 	Mix_PlayMusic(device->music, -1);
 	device->musicStatus = MUSIC_PLAYING;
 
+	if (gConfig.Sound.MusicVolume == 0)
+	{
+		MusicPause(device);
+	}
+
 	return 0;
 }
 
@@ -75,6 +80,24 @@ void MusicStop(SoundDevice *device)
 		Mix_HaltMusic();
 		Mix_FreeMusic(device->music);
 		device->music = NULL;
+	}
+}
+
+void MusicPause(SoundDevice *device)
+{
+	if (device->musicStatus == MUSIC_PLAYING)
+	{
+		Mix_PauseMusic();
+		device->musicStatus = MUSIC_PAUSED;
+	}
+}
+
+void MusicResume(SoundDevice *device)
+{
+	if (device->musicStatus == MUSIC_PAUSED)
+	{
+		Mix_ResumeMusic();
+		device->musicStatus = MUSIC_PLAYING;
 	}
 }
 

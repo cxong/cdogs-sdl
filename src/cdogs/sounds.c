@@ -177,6 +177,14 @@ void SoundReconfigure(SoundDevice *device, SoundConfig *config)
 
 	Mix_Volume(-1, config->SoundVolume);
 	Mix_VolumeMusic(config->MusicVolume);
+	if (config->MusicVolume > 0)
+	{
+		MusicResume(device);
+	}
+	else
+	{
+		MusicPause(device);
+	}
 
 	device->isInitialised = 1;
 }
@@ -226,8 +234,6 @@ void SoundPlayAtPosition(
 	}
 
 	debug(D_VERBOSE, "sound: %d distance: %d bearing: %d\n",
-		sound, distance, bearing);
-	printf("sound: %d distance: %d bearing: %d\n",
 		sound, distance, bearing);
 
 	channel = Mix_PlayChannel(-1, device->sounds[sound].data , 0);
