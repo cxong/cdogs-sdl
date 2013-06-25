@@ -776,6 +776,12 @@ void SlideActor(TActor * actor, int cmd)
 
 	actor->dx = dx;
 	actor->dy = dy;
+
+	// Slide sound
+	if (gConfig.Sound.Footsteps)
+	{
+		SoundPlayAt(SND_SLIDE, actor->tileItem.x, actor->tileItem.y);
+	}
 }
 
 void UpdateAllActors(int ticks)
