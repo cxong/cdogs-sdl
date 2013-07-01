@@ -233,6 +233,8 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	device->IsInitialized = 1;
 	device->IsWindowInitialized = 1;
 	device->cachedConfig = *config;
+	device->cachedConfig.ResolutionWidth = w;
+	device->cachedConfig.ResolutionHeight = h;
 }
 
 void GraphicsTerminate(GraphicsDevice *device)
