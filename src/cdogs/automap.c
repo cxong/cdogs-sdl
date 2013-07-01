@@ -247,6 +247,7 @@ void DisplayAutoMap(int showAll)
 	int obj;
 
 	screen = p = GetDstScreen();
+	// Draw faded green overlay
 	for (x = 0;
 		x < gGraphicsDevice.cachedConfig.ResolutionWidth * gGraphicsDevice.cachedConfig.ResolutionHeight;
 		x++)

@@ -575,10 +575,15 @@ int HandleKey(int *done, int cmd)
 {
 	if (IsAutoMapEnabled(gCampaign.mode))
 	{
+		int hasDisplayedAutomap = 0;
 		while (KeyIsDown(&gKeyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
-			DisplayAutoMap(0);
+			if (!hasDisplayedAutomap)
+			{
+				DisplayAutoMap(0);
+				hasDisplayedAutomap = 1;
+			}
 			SDL_Delay(10);
 			KeyPoll(&gKeyboard);
 			JoyPoll(&gJoysticks);
