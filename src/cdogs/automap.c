@@ -158,7 +158,7 @@ static void DisplaySummary(void)
 	//unsigned char *scr = GetDstScreen();
 	unsigned char color;
 
-	y = gGraphicsDevice.cachedConfig.ResolutionWidth - 5 - CDogsTextHeight(); // 10 pixels from bottom
+	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
