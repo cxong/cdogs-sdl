@@ -152,7 +152,7 @@ FEATURE(5, "New configs not saved in old files")
 		Config config;
 		GIVEN("a config file with new values, and I save the config to file in the old format")
 			ConfigLoadDefault(&config);
-			config.Sound.Footsteps = 1;
+			config.Sound.Footsteps = 0;
 			ConfigSaveOld(&config, "tmp");
 		GIVEN_END
 
@@ -161,7 +161,7 @@ FEATURE(5, "New configs not saved in old files")
 		WHEN_END
 
 		THEN("the new config should have the default value")
-			SHOULD_INT_EQUAL(config.Sound.Footsteps, 0);
+			SHOULD_INT_EQUAL(config.Sound.Footsteps, 1);
 		THEN_END
 	}
 	SCENARIO_END
