@@ -799,6 +799,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 
 void MenuActivate(menu_t *menu, int cmd)
 {
+	Config lastConfig = gConfig;
 	SoundPlay(&gSoundDevice, SND_SWITCH);
 	switch (menu->type)
 	{
@@ -927,5 +928,14 @@ void MenuActivate(menu_t *menu, int cmd)
 		assert(0);
 		break;
 	}
-	ConfigApply(&gConfig);
+	if (!ConfigApply(&gConfig))
+	{
+		printf("Error: cannot apply new config; applying last config\n");
+		gConfig = lastConfig;
+		if (!ConfigApply(&gConfig))
+		{
+			printf("Error: cannot apply last config!\n");
+			exit(1);
+		}
+	}
 }

@@ -32,10 +32,11 @@
 #include "gamedata.h"
 
 
-void ConfigApply(Config *config)
+int ConfigApply(Config *config)
 {
 	BlitSetBrightness(config->Graphics.Brightness);
 	SoundReconfigure(&gSoundDevice, &config->Sound);
 	gCampaign.seed = config->Game.RandomSeed;
 	GraphicsInitialize(&gGraphicsDevice, &config->Graphics, 0);
+	return gGraphicsDevice.IsInitialized;
 }
