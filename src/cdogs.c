@@ -1088,6 +1088,14 @@ int main(int argc, char *argv[])
 	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{
+		Config defaultConfig;
+		printf("Cannot initialise video; trying default config\n");
+		ConfigLoadDefault(&defaultConfig);
+		gConfig.Graphics = defaultConfig.Graphics;
+		GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
+	}
+	if (!gGraphicsDevice.IsInitialized)
+	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	} else {
