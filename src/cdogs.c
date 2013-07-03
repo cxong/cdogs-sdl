@@ -830,7 +830,7 @@ void *MakeBkg(void)
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
 	SetDstScreen(bkg);
-	SetBuffer(512, 384, buffer, X_TILES);
+	SetBuffer(1024, 768, buffer, X_TILES);
 	FixBuffer(buffer, 255);
 	DrawBuffer(buffer, 0);
 	CFREE(buffer);

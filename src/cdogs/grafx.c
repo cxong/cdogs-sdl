@@ -68,9 +68,10 @@ GFX_Mode gfx_modelist[] = {
 	{ 400, 300 },
 	{ 640, 480 },
 	{ 800, 600 }, /* things go strange above this... */
+	{ 1024, 768 },
 	{ 0, 0 },
 };
-#define MODE_MAX 3
+#define MODE_MAX 4
 
 
 static int mode_idx = 1;

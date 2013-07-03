@@ -54,9 +54,6 @@ SetBuffer(int x_origin, int y_origin, struct Buffer *buffer, int width)
 	int x, y;
 	TTile *bufTile;
 
-	//memset(buffer, 0, sizeof(struct Buffer));
-	ClearBuffer(buffer);
-
 	buffer->width = width;
 
 	buffer->xTop = x_origin - TILE_WIDTH * width / 2;

@@ -22,8 +22,8 @@
 #ifndef __MAP
 #define __MAP
 
-#define YMAX    64
-#define XMAX    64
+#define YMAX    128
+#define XMAX    128
 
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
@@ -92,7 +92,6 @@ struct Buffer {
 };
 
 struct Buffer * NewBuffer(void);
-void ClearBuffer(struct Buffer *b);
 
 extern TTile gMap[YMAX][XMAX];
 #define Map( x, y)  gMap[y][x]

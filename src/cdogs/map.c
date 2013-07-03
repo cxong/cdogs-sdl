@@ -79,21 +79,6 @@ struct Buffer * NewBuffer(void)
 	return b;
 }
 
-void ClearBuffer(struct Buffer *b)
-{
-	if (!b) {
-		printf("!!! Buffer nonexistent?\n"); 
-		return;
-	}
-	
-//	TTile *tmp = b->tiles;
-	
-//	memset(b, 0, sizeof(struct Buffer));
-//	memset(tmp, 0, sizeof(TTile) * X_TILES * Y_TILES);
-	
-//	b->tiles = tmp;
-}
-
 static void AddItemToTile(TTileItem * t, TTile * tile)
 {
 	t->next = tile->things;
