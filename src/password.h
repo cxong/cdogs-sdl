@@ -18,20 +18,11 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- password.h - <description here>
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
-
-#define PASSWORD_MAX  16
-
+#ifndef __password
+#define __password
 
 const char *MakePassword(int mission);
 int EnterPassword(void *bkg, const char *password);
+
+#endif

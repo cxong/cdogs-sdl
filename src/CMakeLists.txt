@@ -116,6 +116,7 @@ add_subdirectory(json)
 add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
+	autosave.c
 	campaigns.c
 	cdogs.c
 	credits.c
@@ -124,6 +125,7 @@ set(CDOGS_SDL_SOURCES
 	password.c
 	prep.c)
 set(CDOGS_SDL_HEADERS
+	autosave.h
 	campaigns.h
 	credits.h
 	mainmenu.h

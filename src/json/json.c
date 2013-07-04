@@ -434,8 +434,10 @@ json_free_value (json_t ** value)
 {
 	json_t *cursor = *value;
 
-	assert (value);
-	assert (*value);
+	if (value == NULL || *value == NULL)
+	{
+		return;
+	}
 
 	while (*value)
 	{

@@ -6,6 +6,7 @@ cdogs-sdl
 *.exe
 cdogs-sdl-editor
 libcdogs.a
+autosave_test
 config_test
 tmp
 libjson.a

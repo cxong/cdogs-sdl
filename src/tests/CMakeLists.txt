@@ -9,6 +9,12 @@ add_subdirectory(cbehave)
 
 include_directories(. ../cdogs)
 
+add_executable(autosave_test
+	autosave_test.c
+	../autosave.h
+	../autosave.c)
+target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
+
 add_executable(config_test
 	config_test.c
 	../cdogs/config.h

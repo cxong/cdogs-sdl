@@ -64,6 +64,7 @@
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 
+#include "autosave.h"
 #include "menu.h"
 
 #define DONE          "Done"

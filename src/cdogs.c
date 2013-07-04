@@ -76,6 +76,7 @@
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
+#include "autosave.h"
 #include "campaigns.h"
 #include "credits.h"
 #include "mainmenu.h"
@@ -83,7 +84,7 @@
 #include "prep.h"
 
 
-static char lastPassword[PASSWORD_MAX + 1] = "";
+Autosave gAutosave;
 
 
 void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
@@ -222,10 +223,9 @@ void MissionBriefing(void *bkg)
 	if (gMission.index)
 	{
 		char str[512];
-
-		strcpy(lastPassword, MakePassword(gMission.index));
-
-		sprintf(str, "Password: %s", lastPassword);
+		strcpy(gAutosave.LastMission.Password, MakePassword(gMission.index));
+		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
 		CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
 	}
 
@@ -261,11 +261,10 @@ void Summary(int x, struct PlayerData *data, int character)
 	char s[50];
 	int y = gGraphicsDevice.cachedConfig.ResolutionHeight / 3;
 
-	if (lastPassword[0])
+	if (strlen(gAutosave.LastMission.Password) > 0)
 	{
 		char s1[512];
-
-		sprintf(s1, "Last password: %s", lastPassword);
+		sprintf(s1, "Last password: %s", gAutosave.LastMission.Password);
 		CDogsTextStringSpecial(
 			s1,
 			TEXT_BOTTOM | TEXT_XCENTER,
@@ -759,9 +758,9 @@ int Campaign(void *bkg)
 
 	if (IsPasswordAllowed(gCampaign.mode))
 	{
-		mission = EnterPassword(bkg, lastPassword);
+		mission = EnterPassword(bkg, gAutosave.LastMission.Password);
 	}
-	lastPassword[0] = 0;
+	strcpy(gAutosave.LastMission.Password, "");
 
 	return Game(bkg, mission);
 }
@@ -836,6 +835,7 @@ void *MakeBkg(void)
 	CFREE(buffer);
 	KillAllObjects();
 	FreeTriggersAndWatches();
+	gCampaign.seed = gConfig.Game.RandomSeed;
 
 	p = bkg;
 	SetPaletteRanges(15, 12, 10, 0);
@@ -966,6 +966,8 @@ int main(int argc, char *argv[])
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	LoadCredits(&creditsDisplayer, &tablePurple, &tableDarker);
+	AutosaveInit(&gAutosave);
+	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	for (i = 1; i < argc; i++) {
 		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
@@ -1109,6 +1111,7 @@ int main(int argc, char *argv[])
 
 	GraphicsTerminate(&gGraphicsDevice);
 
+	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	SaveTemplates();
 	FreeSongs(&gMenuSongs);
