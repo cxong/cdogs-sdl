@@ -18,6 +18,7 @@ set(CDOGS_SOURCES
 	hiscores.c
 	input.c
 	joystick.c
+	json_utils.c
 	keyboard.c
 	map.c
 	mission.c
@@ -48,6 +49,7 @@ set(CDOGS_HEADERS
 	hiscores.h
 	input.h
 	joystick.h
+	json_utils.h
 	keyboard.h
 	map.h
 	mission.h

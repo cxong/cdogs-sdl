@@ -68,6 +68,8 @@
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
 
+#include "autosave.h"
+
 
 void ShowControls(void)
 {
@@ -620,20 +622,19 @@ static CampaignSetting customSetting = {
 /*	.path =*/	""
 };
 
-void MenuLoadCampaign(
-	campaign_entry_t *entry, int is_two_player)
+void MenuLoadCampaign(CampaignMenuEntry *entry)
 {
-	gOptions.twoPlayers = is_two_player;
-	gCampaign.mode = entry->mode;
-	if (entry->isBuiltin)
+	gOptions.twoPlayers = entry->is_two_player;
+	gCampaign.mode = entry->campaignEntry.mode;
+	if (entry->campaignEntry.isBuiltin)
 	{
-		if (entry->mode == CAMPAIGN_MODE_NORMAL)
+		if (entry->campaignEntry.mode == CAMPAIGN_MODE_NORMAL)
 		{
-			SetupBuiltinCampaign(entry->builtinIndex);
+			SetupBuiltinCampaign(entry->campaignEntry.builtinIndex);
 		}
-		else if (entry->mode == CAMPAIGN_MODE_DOGFIGHT)
+		else if (entry->campaignEntry.mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			SetupBuiltinDogfight(entry->builtinIndex);
+			SetupBuiltinDogfight(entry->campaignEntry.builtinIndex);
 		}
 		else
 		{
@@ -652,14 +653,19 @@ void MenuLoadCampaign(
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 
-		if (LoadCampaign(entry->path, &customSetting, 0, 0) != CAMPAIGN_OK)
+		if (LoadCampaign(entry->campaignEntry.path, &customSetting, 0, 0) != CAMPAIGN_OK)
 		{
-			printf("Failed to load campaign %s!\n", entry->path);
+			printf("Failed to load campaign %s!\n", entry->campaignEntry.path);
 			assert(0);
 		}
 		gCampaign.setting = &customSetting;
 	}
 
+	if (entry->campaignEntry.mode == CAMPAIGN_MODE_NORMAL)
+	{
+		gAutosave.LastMission.Campaign = *entry;
+	}
+	
 	printf(">> Loading campaign/dogfight\n");
 }
 
@@ -677,9 +683,7 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		case MENU_TYPE_KEYS:
 			return subMenu;
 		case MENU_TYPE_CAMPAIGN_ITEM:
-			MenuLoadCampaign(
-				&subMenu->u.campaign.campaignEntry,
-				subMenu->u.campaign.is_two_player);
+			MenuLoadCampaign(&subMenu->u.campaign);
 			return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 		case MENU_TYPE_BACK:
 			return menu->parentMenu;

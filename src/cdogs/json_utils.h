@@ -26,31 +26,12 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __autosave
-#define __autosave
+#ifndef __json_utils
+#define __json_utils
 
-#include <cdogs/sys_config.h>
+#include <json/json.h>
 
-#include "campaigns.h"
-
-#define PASSWORD_MAX 16
-#define AUTOSAVE_FILE "autosave.json"
-
-typedef struct
-{
-	CampaignMenuEntry Campaign;
-	char Password[PASSWORD_MAX + 1];
-} MissionSave;
-
-typedef struct
-{
-	MissionSave LastMission;
-} Autosave;
-
-extern Autosave gAutosave;
-
-void AutosaveInit(Autosave *autosave);
-void AutosaveLoad(Autosave *autosave, const char *filename);
-void AutosaveSave(Autosave *autosave, const char *filename);
+void AddIntPair(json_t *parent, const char *name, int number);
+void LoadBool(int *value, json_t *node, const char *name);
 
 #endif

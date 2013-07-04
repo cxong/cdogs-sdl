@@ -84,8 +84,6 @@
 #include "prep.h"
 
 
-Autosave gAutosave;
-
 
 void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 {

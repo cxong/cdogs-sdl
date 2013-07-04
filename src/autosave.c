@@ -34,25 +34,48 @@
 
 #include <json/json.h>
 
+#include <cdogs/json_utils.h>
 #include <cdogs/utils.h>
+
+Autosave gAutosave;
 
 
 void AutosaveInit(Autosave *autosave)
 {
-	strcpy(autosave->LastMission.CampaignPath, "");
+	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
+	autosave->LastMission.Campaign.campaignEntry.mode = CAMPAIGN_MODE_NORMAL;
 	strcpy(autosave->LastMission.Password, "");
+}
+
+static void LoadCampaignNode(CampaignMenuEntry *c, json_t *node)
+{
+	strcpy(c->campaignEntry.path, json_find_first_label(node, "Path")->child->text);
+	LoadBool(&c->campaignEntry.isBuiltin, node, "IsBuiltin");
+	c->campaignEntry.builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
+	LoadBool(&c->is_two_player, node, "IsTwoPlayer");
+}
+static void AddCampaignNode(CampaignMenuEntry *c, json_t *root)
+{
+	json_t *subConfig = json_new_object();
+	json_insert_pair_into_object(
+								 subConfig, "Path", json_new_string(c->campaignEntry.path));
+	json_insert_pair_into_object(
+								 subConfig, "IsBuiltin", json_new_bool(c->campaignEntry.isBuiltin));
+	AddIntPair(subConfig, "BuiltinIndex", c->campaignEntry.builtinIndex);
+	json_insert_pair_into_object(
+								 subConfig, "IsTwoPlayer", json_new_bool(c->is_two_player));
+	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 
 static void LoadLastMissionNode(MissionSave *lm, json_t *node)
 {
-	strcpy(lm->CampaignPath, json_find_first_label(node, "CampaignPath")->child->text);
+	LoadCampaignNode(&lm->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(lm->Password, json_find_first_label(node, "Password")->child->text);
 }
 static void AddLastMissionNode(MissionSave *lm, json_t *root)
 {
 	json_t *subConfig = json_new_object();
-	json_insert_pair_into_object(
-								 subConfig, "CampaignPath", json_new_string(lm->CampaignPath));
+	AddCampaignNode(&lm->Campaign, subConfig);
 	json_insert_pair_into_object(
 								 subConfig, "Password", json_new_string(lm->Password));
 	json_insert_pair_into_object(root, "LastMission", subConfig);

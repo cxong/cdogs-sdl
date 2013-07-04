@@ -157,12 +157,7 @@ typedef struct menu
 				char *(*intToStr)(int);
 			} uFunc;
 		} option;
-		struct
-		{
-			campaign_entry_t campaignEntry;
-			campaign_mode_e mode;
-			int is_two_player;
-		} campaign;
+		CampaignMenuEntry campaign;
 		// change key
 		struct
 		{

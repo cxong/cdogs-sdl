@@ -58,6 +58,12 @@ typedef struct
 	campaign_entry_t quickPlayEntry;
 } custom_campaigns_t;
 
+typedef struct
+{
+	campaign_entry_t campaignEntry;
+	int is_two_player;
+} CampaignMenuEntry;
+
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
 

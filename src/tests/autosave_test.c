@@ -18,7 +18,7 @@ FEATURE(1, "Initialise autosave")
 		WHEN_END
 
 		THEN("they should equal each other");
-			SHOULD_STR_EQUAL(autosave1.LastMission.CampaignPath, autosave2.LastMission.CampaignPath);
+			SHOULD_MEM_EQUAL(&autosave1.LastMission.Campaign, &autosave2.LastMission.Campaign, sizeof autosave1.LastMission.Campaign);
 			SHOULD_STR_EQUAL(autosave1.LastMission.Password, autosave2.LastMission.Password);
 		THEN_END
 	}
@@ -31,17 +31,18 @@ FEATURE(2, "Save and load")
 		Autosave autosave1, autosave2;
 		GIVEN("an autosave with some values, and I save it to file")
 			AutosaveInit(&autosave1);
-			strcpy(autosave1.LastMission.CampaignPath, "path/to/file");
+			strcpy(autosave1.LastMission.Campaign.campaignEntry.path, "path/to/file");
 			strcpy(autosave1.LastMission.Password, "password");
 			AutosaveSave(&autosave1, "tmp");
 		GIVEN_END
 		
-		WHEN("I load a second autosave from that file")
+		WHEN("I initialise and load a second autosave from that file")
+			AutosaveInit(&autosave2);
 			AutosaveLoad(&autosave2, "tmp");
 		WHEN_END
 		
 		THEN("they should equal each other");
-			SHOULD_STR_EQUAL(autosave1.LastMission.CampaignPath, autosave2.LastMission.CampaignPath);
+			SHOULD_MEM_EQUAL(&autosave1.LastMission.Campaign, &autosave2.LastMission.Campaign, sizeof autosave1.LastMission.Campaign);
 			SHOULD_STR_EQUAL(autosave1.LastMission.Password, autosave2.LastMission.Password);
 		THEN_END
 	}

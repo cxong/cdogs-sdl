@@ -227,6 +227,7 @@ campaign_entry_t *AddAndGetCampaignEntry(
 	list->num++;
 	CREALLOC(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
+	memset(entry, 0, sizeof *entry);
 	strcpy(entry->info, title);
 	entry->mode = mode;
 	return entry;

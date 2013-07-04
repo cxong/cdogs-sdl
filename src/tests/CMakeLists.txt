@@ -12,7 +12,9 @@ include_directories(. ../cdogs)
 add_executable(autosave_test
 	autosave_test.c
 	../autosave.h
-	../autosave.c)
+	../autosave.c
+	../cdogs/json_utils.c
+	../cdogs/json_utils.h)
 target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
 
 add_executable(config_test
@@ -23,6 +25,8 @@ add_executable(config_test
 	../cdogs/config_json.h
 	../cdogs/config_old.c
 	../cdogs/config_old.h
+	../cdogs/json_utils.c
+	../cdogs/json_utils.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(config_test cbehave json ${EXTRA_LIBRARIES})

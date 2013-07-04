@@ -33,34 +33,9 @@
 
 #include <json/json.h>
 
+#include "json_utils.h"
 #include "keyboard.h"
 
-
-static void AddIntPair(json_t *parent, const char *name, int number)
-{
-	char buf[32];
-	sprintf(buf, "%d", number);
-	json_insert_pair_into_object(parent, name, json_new_number(buf));
-}
-
-static void LoadBool(int *value, json_t *node, const char *name)
-{
-	if (node == NULL)
-	{
-		return;
-	}
-	node = json_find_first_label(node, name);
-	if (node == NULL)
-	{
-		return;
-	}
-	node = node->child;
-	if (node == NULL)
-	{
-		return;
-	}
-	*value = node->type == JSON_TRUE;
-}
 
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
 {
