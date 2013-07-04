@@ -34,6 +34,7 @@
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 
+#include "autosave.h"
 #include "credits.h"
 #include "menu.h"
 
@@ -74,6 +75,7 @@ int MainMenu(
 	return doPlay;
 }
 
+menu_t *MenuCreateContinue(const char *name, CampaignMenuEntry *entry);
 menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry);
 menu_t *MenuCreateCampaigns(
 	const char *name,
@@ -92,6 +94,13 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
+	if (strlen(gAutosave.LastMission.Password) > 0)
+	{
+		MenuAddSubmenu(
+			menu,
+			MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
+		MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	}
 	MenuAddSubmenu(
 		menu,
 		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
@@ -123,6 +132,13 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 	return menu;
 }
 
+
+menu_t *MenuCreateContinue(const char *name, CampaignMenuEntry *entry)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
+	menu->u.campaign = *entry;
+	return menu;
+}
 
 menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 {
