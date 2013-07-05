@@ -29,6 +29,8 @@
 #ifndef __autosave
 #define __autosave
 
+#include <stddef.h>
+
 #include <cdogs/campaigns.h>
 #include <cdogs/sys_config.h>
 
@@ -44,6 +46,8 @@ typedef struct
 typedef struct
 {
 	MissionSave LastMission;
+	MissionSave *Missions;
+	size_t NumMissions;
 } Autosave;
 
 extern Autosave gAutosave;
@@ -51,5 +55,7 @@ extern Autosave gAutosave;
 void AutosaveInit(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
+void AutosaveAddMission(Autosave *autosave, MissionSave *mission);
+void AutosaveLoadMission(Autosave *autosave, MissionSave *mission, const char *path);
 
 #endif

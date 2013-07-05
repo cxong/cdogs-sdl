@@ -14,7 +14,9 @@ add_executable(autosave_test
 	../autosave.h
 	../autosave.c
 	../cdogs/json_utils.c
-	../cdogs/json_utils.h)
+	../cdogs/json_utils.h
+	../cdogs/utils.c
+	../cdogs/utils.h)
 target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
 
 add_executable(config_test

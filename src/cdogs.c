@@ -222,8 +222,10 @@ void MissionBriefing(void *bkg)
 	if (gMission.index > 0)
 	{
 		char str[512];
-		gAutosave.LastMission.Campaign = gCampaign.Entry;
-		strcpy(gAutosave.LastMission.Password, MakePassword(gMission.index));
+		MissionSave ms;
+		ms.Campaign = gCampaign.Entry;
+		strcpy(ms.Password, MakePassword(gMission.index));
+		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
 		CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
@@ -762,12 +764,9 @@ int Campaign(void *bkg)
 
 	if (IsPasswordAllowed(gCampaign.Entry.mode))
 	{
-		char *lastPassword = "";
-		if (strcmp(gCampaign.Entry.path, gAutosave.LastMission.Campaign.path) == 0)
-		{
-			lastPassword = gAutosave.LastMission.Password;
-		}
-		mission = EnterPassword(bkg, lastPassword);
+		MissionSave m;
+		AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.path);
+		mission = EnterPassword(bkg, m.Password);
 	}
 
 	return Game(bkg, mission);
