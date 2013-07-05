@@ -305,6 +305,7 @@ int DamageCharacter(
 	int isHitSoundEnabled)
 {
 	TActor *actor = (TActor *)target->data;
+	int isInvulnerable;
 	Vector2i hitLocation;
 	hitLocation.x = target->x;
 	hitLocation.y = target->y;
@@ -320,9 +321,16 @@ int DamageCharacter(
 	{
 		return 1;
 	}
-	ActorTakeHit(actor, hitVector, power, damage, isHitSoundEnabled, hitLocation);
-
-	if (ActorIsInvulnerable(actor, flags, mode))
+	isInvulnerable = ActorIsInvulnerable(actor, flags, mode);
+	ActorTakeHit(
+		actor,
+		hitVector,
+		power,
+		damage,
+		isHitSoundEnabled,
+		isInvulnerable,
+		hitLocation);
+	if (isInvulnerable)
 	{
 		return 1;
 	}

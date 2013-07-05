@@ -214,6 +214,7 @@ void ActorTakeHit(
 	int power,
 	special_damage_e damage,
 	int isHitSoundEnabled,
+	int isInvulnerable,
 	Vector2i hitLocation);
 int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode);
 

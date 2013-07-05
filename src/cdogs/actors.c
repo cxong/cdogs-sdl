@@ -989,6 +989,7 @@ void ActorTakeHit(
 	int power,
 	special_damage_e damage,
 	int isHitSoundEnabled,
+	int isInvulnerable,
 	Vector2i hitLocation)
 {
 	assert(!ActorIsImmune(actor, damage));
@@ -1001,7 +1002,11 @@ void ActorTakeHit(
 	// Hit sound
 	if (isHitSoundEnabled)
 	{
-		SoundPlayAt(SoundGetHit(damage, 1), hitLocation.x, hitLocation.y);
+		sound_e sound = SoundGetHit(damage, 1);
+		if (!isInvulnerable || sound != SND_KNIFE_FLESH)
+		{
+			SoundPlayAt(sound, hitLocation.x, hitLocation.y);
+		}
 	}
 }
 
