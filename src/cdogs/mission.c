@@ -490,8 +490,7 @@ static CampaignSetting df1 =
 	"Dogfight in the dungeon",
 	"", "",
 	1, &dogFight1,
-	0, NULL,
-	""
+	0, NULL
 };
 
 static CampaignSetting df2 =
@@ -499,20 +498,10 @@ static CampaignSetting df2 =
 	"Cubicle wars",
 	"", "",
 	1, &dogFight2,
-	0, NULL,
-	""
+	0, NULL
 };
 
 static TBadGuy gQuickPlayEnemies[BADDIE_MAX];
-
-static CampaignSetting gQuickPlayCampaignSetting =
-{
-	"Quick play",
-	"", "",
-	1, &gQuickPlayMission,
-	BADDIE_MAX, gQuickPlayEnemies,
-	""
-};
 
 
 // +---------------------------------------------------+
@@ -548,7 +537,7 @@ static void SetupBadguysForMission(struct Mission *mission)
 {
 	int i, index;
 	const TBadGuy *b;
-	CampaignSetting *s = gCampaign.setting;
+	CampaignSetting *s = &gCampaign.Setting;
 
 	if (s->characterCount <= 0)
 		return;
@@ -587,13 +576,13 @@ int SetupBuiltinCampaign(int index)
 {
 	switch (index) {
 	case 0:
-		gCampaign.setting = &BEM_campaign;
+		gCampaign.Setting = BEM_campaign;
 		break;
 	case 1:
-		gCampaign.setting = &OGRE_campaign;
+		gCampaign.Setting = OGRE_campaign;
 		break;
 	default:
-		gCampaign.setting = &OGRE_campaign;
+		gCampaign.Setting = OGRE_campaign;
 		return 0;
 	}
 	return 1;
@@ -603,13 +592,13 @@ int SetupBuiltinDogfight(int index)
 {
 	switch (index) {
 	case 0:
-		gCampaign.setting = &df1;
+		gCampaign.Setting = df1;
 		break;
 	case 1:
-		gCampaign.setting = &df2;
+		gCampaign.Setting = df2;
 		break;
 	default:
-		gCampaign.setting = &df1;
+		gCampaign.Setting = df1;
 		return 0;
 	}
 	return 1;
@@ -660,7 +649,7 @@ void SetupQuickPlayEnemy(TBadGuy *enemy, gun_e gun)
 	enemy->flags = 0;
 }
 
-CampaignSetting *SetupAndGetQuickPlay(void)
+void SetupQuickPlayCampaign(CampaignSetting *setting)
 {
 	int i;
 	gun_e gun;
@@ -731,7 +720,14 @@ CampaignSetting *SetupAndGetQuickPlay(void)
 	gQuickPlayMission.floorRange = rand() % (COLORRANGE_COUNT - 1 + 1);
 	gQuickPlayMission.roomRange = rand() % (COLORRANGE_COUNT - 1 + 1);
 	gQuickPlayMission.altRange = rand() % (COLORRANGE_COUNT - 1 + 1);
-	return &gQuickPlayCampaignSetting;
+
+	strcpy(setting->title, "Quick play");
+	strcpy(setting->author, "");
+	strcpy(setting->description, "");
+	setting->missionCount = 1;
+	setting->missions = &gQuickPlayMission;
+	setting->characterCount = BADDIE_MAX;
+	setting->characters = gQuickPlayEnemies;
 }
 
 static void SetupObjective(int o, struct Mission *mission)
@@ -803,7 +799,7 @@ void SetupMission(int index, int buildTables, CampaignOptions *campaign)
 
 	memset(&gMission, 0, sizeof(gMission));
 	gMission.index = index;
-	m = &campaign->setting->missions[abs(index) % campaign->setting->missionCount];
+	m = &campaign->Setting.missions[abs(index) % campaign->Setting.missionCount];
 	gMission.missionData = m;
 	gMission.doorPics =
 	    doorStyles[abs(m->doorStyle) % DOORSTYLE_COUNT];
@@ -873,11 +869,11 @@ int CanCompleteMission(struct MissionOptions *options)
 	int i;
 
 	// Death is the only escape from dogfights and quick play
-	if (gCampaign.mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return !(gPlayer1 && gPlayer2);
 	}
-	else if (gCampaign.mode == CAMPAIGN_MODE_QUICK_PLAY)
+	else if (gCampaign.Entry.mode == CAMPAIGN_MODE_QUICK_PLAY)
 	{
 		return !gPlayer1;
 	}

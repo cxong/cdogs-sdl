@@ -113,7 +113,7 @@ void LoadBuiltinCampaigns(campaign_list_t *list)
 	for (i = 0; SetupBuiltinCampaign(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.setting->title, CAMPAIGN_MODE_NORMAL, i);
+			list, gCampaign.Setting.title, CAMPAIGN_MODE_NORMAL, i);
 	}
 }
 void LoadBuiltinDogfights(campaign_list_t *list)
@@ -122,7 +122,7 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.setting->title, CAMPAIGN_MODE_DOGFIGHT, i);
+			list, gCampaign.Setting.title, CAMPAIGN_MODE_DOGFIGHT, i);
 	}
 }
 
@@ -134,6 +134,7 @@ void LoadQuickPlayEntry(campaign_entry_t *entry)
 	entry->isBuiltin = 1;
 	entry->mode = CAMPAIGN_MODE_QUICK_PLAY;
 	entry->builtinIndex = 0;
+	entry->is_two_player = 0;
 }
 
 int IsCampaignOK(const char *path, char *title);

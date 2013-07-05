@@ -31,7 +31,7 @@ FEATURE(2, "Save and load")
 		Autosave autosave1, autosave2;
 		GIVEN("an autosave with some values, and I save it to file")
 			AutosaveInit(&autosave1);
-			strcpy(autosave1.LastMission.Campaign.campaignEntry.path, "path/to/file");
+			strcpy(autosave1.LastMission.Campaign.path, "path/to/file");
 			strcpy(autosave1.LastMission.Password, "password");
 			AutosaveSave(&autosave1, "tmp");
 		GIVEN_END

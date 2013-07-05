@@ -43,27 +43,24 @@ Autosave gAutosave;
 void AutosaveInit(Autosave *autosave)
 {
 	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
-	autosave->LastMission.Campaign.campaignEntry.mode = CAMPAIGN_MODE_NORMAL;
+	autosave->LastMission.Campaign.mode = CAMPAIGN_MODE_NORMAL;
 	strcpy(autosave->LastMission.Password, "");
 }
 
-static void LoadCampaignNode(CampaignMenuEntry *c, json_t *node)
+static void LoadCampaignNode(campaign_entry_t *c, json_t *node)
 {
-	strcpy(c->campaignEntry.path, json_find_first_label(node, "Path")->child->text);
-	LoadBool(&c->campaignEntry.isBuiltin, node, "IsBuiltin");
-	c->campaignEntry.builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
+	strcpy(c->path, json_find_first_label(node, "Path")->child->text);
+	LoadBool(&c->isBuiltin, node, "IsBuiltin");
+	c->builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
 	LoadBool(&c->is_two_player, node, "IsTwoPlayer");
 }
-static void AddCampaignNode(CampaignMenuEntry *c, json_t *root)
+static void AddCampaignNode(campaign_entry_t *c, json_t *root)
 {
 	json_t *subConfig = json_new_object();
-	json_insert_pair_into_object(
-								 subConfig, "Path", json_new_string(c->campaignEntry.path));
-	json_insert_pair_into_object(
-								 subConfig, "IsBuiltin", json_new_bool(c->campaignEntry.isBuiltin));
-	AddIntPair(subConfig, "BuiltinIndex", c->campaignEntry.builtinIndex);
-	json_insert_pair_into_object(
-								 subConfig, "IsTwoPlayer", json_new_bool(c->is_two_player));
+	json_insert_pair_into_object(subConfig, "Path", json_new_string(c->path));
+	json_insert_pair_into_object(subConfig, "IsBuiltin", json_new_bool(c->isBuiltin));
+	AddIntPair(subConfig, "BuiltinIndex", c->builtinIndex);
+	json_insert_pair_into_object(subConfig, "IsTwoPlayer", json_new_bool(c->is_two_player));
 	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 

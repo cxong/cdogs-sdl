@@ -386,7 +386,7 @@ void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
 	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
 
 	CDogsTextStringSpecial(data->name, flags, 5, 5);
-	if (IsScoreNeeded(gCampaign.mode))
+	if (IsScoreNeeded(gCampaign.Entry.mode))
 	{
 		sprintf(s, "Score: %d", data->score);
 	}
@@ -499,7 +499,7 @@ void StatusDisplay(void)
 
 	if (!gPlayer1 && !gPlayer2)
 	{
-		if (gCampaign.mode != CAMPAIGN_MODE_DOGFIGHT)
+		if (gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 		{
 			CDogsTextStringAtCenter("Game Over!");
 		}
@@ -559,7 +559,7 @@ void StatusDisplay(void)
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 
-	if (HasObjectives(gCampaign.mode))
+	if (HasObjectives(gCampaign.Entry.mode))
 	{
 		MissionUpdateObjectives();
 	}
@@ -573,7 +573,7 @@ void DisplayMessage(const char *s)
 
 int HandleKey(int *done, int cmd)
 {
-	if (IsAutoMapEnabled(gCampaign.mode))
+	if (IsAutoMapEnabled(gCampaign.Entry.mode))
 	{
 		int hasDisplayedAutomap = 0;
 		while (KeyIsDown(&gKeyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||

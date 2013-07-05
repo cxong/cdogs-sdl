@@ -454,7 +454,7 @@ int DamageSomething(
 			flags,
 			target,
 			damage,
-			gCampaign.mode,
+			gCampaign.Entry.mode,
 			gConfig.Sound.Hits && isHitSoundEnabled);
 
 	case KIND_OBJECT:

@@ -80,10 +80,10 @@ const char *MakePassword(int mission)
 	int base = strlen(alphabet);
 
 	sum1 = sum2 = 0;
-	for (i = 0; i < (int)strlen(gCampaign.setting->title); i++)
+	for (i = 0; i < (int)strlen(gCampaign.Setting.title); i++)
 	{
-		sum1 += gCampaign.setting->title[i];
-		sum2 ^= gCampaign.setting->title[i];
+		sum1 += gCampaign.Setting.title[i];
+		sum2 ^= gCampaign.Setting.title[i];
 	}
 
 	x = ((sum2 << 23) | (mission << 16) | sum1) ^ gCampaign.seed;
@@ -101,9 +101,13 @@ static int TestPassword(const char *password)
 {
 	int i;
 
-	for (i = 0; i < gCampaign.setting->missionCount; i++)
+	for (i = 0; i < gCampaign.Setting.missionCount; i++)
+	{
 		if (strcmp(password, MakePassword(i)) == 0)
+		{
 			return i;
+		}
+	}
 	return -1;
 }
 

@@ -83,10 +83,7 @@ struct GameOptions gOptions = {
 	0,	// displaySlices
 };
 
-CampaignOptions gCampaign =
-{
-	NULL, 0, CAMPAIGN_MODE_NORMAL
-};
+CampaignOptions gCampaign;
 
 struct MissionOptions gMission;
 

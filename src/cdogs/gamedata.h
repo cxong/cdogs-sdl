@@ -49,6 +49,7 @@
 #ifndef __GAMEDATA
 #define __GAMEDATA
 
+#include "campaigns.h"
 #include "input.h"
 #include "map.h"
 #include "pics.h"
@@ -233,21 +234,13 @@ typedef struct
 	struct Mission *missions;
 	int characterCount;
 	TBadGuy *characters;
-	char path[CDOGS_PATH_MAX];
 } CampaignSetting;
-
-typedef enum
-{
-	CAMPAIGN_MODE_NORMAL,
-	CAMPAIGN_MODE_DOGFIGHT,
-	CAMPAIGN_MODE_QUICK_PLAY
-} campaign_mode_e;
 
 typedef struct
 {
-	CampaignSetting *setting;
+	CampaignSetting Setting;
+	campaign_entry_t Entry;
 	unsigned int seed;
-	campaign_mode_e mode;
 } CampaignOptions;
 
 

@@ -29,16 +29,15 @@
 #ifndef __autosave
 #define __autosave
 
+#include <cdogs/campaigns.h>
 #include <cdogs/sys_config.h>
-
-#include "campaigns.h"
 
 #define PASSWORD_MAX 16
 #define AUTOSAVE_FILE "autosave.json"
 
 typedef struct
 {
-	CampaignMenuEntry Campaign;
+	campaign_entry_t Campaign;
 	char Password[PASSWORD_MAX + 1];
 } MissionSave;
 

@@ -3,6 +3,7 @@ set(CDOGS_SOURCES
 	ai.c
 	automap.c
 	blit.c
+	campaigns.c
 	config.c
 	config_apply.c
 	config_json.c
@@ -35,6 +36,7 @@ set(CDOGS_HEADERS
 	ai.h
 	automap.h
 	blit.h
+	campaigns.h
 	config.h
 	config_json.h
 	config_old.h

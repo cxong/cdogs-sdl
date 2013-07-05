@@ -409,6 +409,5 @@ CampaignSetting BEM_campaign = {
 	"These irrational foes pop up now and again. Unpredictable and vicious, the"
 	    "ir primary goal seems to be to make a nuisance of themselves rather than a"
 	    "ctually attaining any specific goals.",
-	9, BEM_missions, 29, BEM_badguys,
-	""
+	9, BEM_missions, 29, BEM_badguys
 };

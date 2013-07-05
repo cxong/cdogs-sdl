@@ -26,7 +26,8 @@
 #ifndef __MAINMENU
 #define __MAINMENU
 
-#include "campaigns.h"
+#include <cdogs/campaigns.h>
+
 #include "credits.h"
 
 int MainMenu(

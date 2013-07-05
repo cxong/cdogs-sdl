@@ -273,7 +273,6 @@ int LoadCampaign(
 	int err = CAMPAIGN_OK;
 	int numMissions = max_missions;
 	int numCharacters = max_characters;
-	int pathLen;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
@@ -340,10 +339,6 @@ int LoadCampaign(
 	{
 		load_character(f, &setting->characters[i]);
 	}
-
-	pathLen = MAX(strrchr(filename, '\\'), strrchr(filename, '/')) - filename;
-	strncpy(setting->path, filename, pathLen);
-	setting->path[pathLen] = '\0';
 
 bail:
 	if (f != NULL)

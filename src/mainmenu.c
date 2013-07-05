@@ -75,7 +75,7 @@ int MainMenu(
 	return doPlay;
 }
 
-menu_t *MenuCreateContinue(const char *name, CampaignMenuEntry *entry);
+menu_t *MenuCreateContinue(const char *name, campaign_entry_t *entry);
 menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry);
 menu_t *MenuCreateCampaigns(
 	const char *name,
@@ -133,7 +133,7 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 }
 
 
-menu_t *MenuCreateContinue(const char *name, CampaignMenuEntry *entry)
+menu_t *MenuCreateContinue(const char *name, campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	menu->u.campaign = *entry;
@@ -143,11 +143,7 @@ menu_t *MenuCreateContinue(const char *name, CampaignMenuEntry *entry)
 menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
-	memcpy(
-		&menu->u.campaign.campaignEntry,
-		entry,
-		sizeof(menu->u.campaign.campaignEntry));
-	menu->u.campaign.is_two_player = 0;
+	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
 	return menu;
 }
 
@@ -190,10 +186,7 @@ menu_t *MenuCreateCampaignItem(
 	campaign_entry_t *entry, int is_two_player)
 {
 	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
-	memcpy(
-		&menu->u.campaign.campaignEntry,
-		entry,
-		sizeof(menu->u.campaign.campaignEntry));
+	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
 	menu->u.campaign.is_two_player = is_two_player;
 	return menu;
 }

@@ -56,6 +56,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
 #include <cdogs/blit.h>
+#include <cdogs/campaigns.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
@@ -77,7 +78,6 @@
 #include <cdogs/utils.h>
 
 #include "autosave.h"
-#include "campaigns.h"
 #include "credits.h"
 #include "mainmenu.h"
 #include "password.h"
@@ -197,10 +197,10 @@ void CampaignIntro(void *bkg)
 
 	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
 
-	sprintf(s, "%s by %s", gCampaign.setting->title, gCampaign.setting->author);
+	sprintf(s, "%s by %s", gCampaign.Setting.title, gCampaign.Setting.author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	MissionDescription(y, gCampaign.setting->description);
+	MissionDescription(y, gCampaign.Setting.description);
 
 	CopyToScreen();
 	GetKey(&gKeyboard);
@@ -218,9 +218,11 @@ void MissionBriefing(void *bkg)
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	if (gMission.index)
+	// Save password if we're not on the first mission
+	if (gMission.index > 0)
 	{
 		char str[512];
+		gAutosave.LastMission.Campaign = gCampaign.Entry;
 		strcpy(gAutosave.LastMission.Password, MakePassword(gMission.index));
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
@@ -530,9 +532,8 @@ void Victory(void *bkg)
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
-	x = 160 - CDogsTextWidth(gCampaign.setting->title) / 2;
-	CDogsTextStringWithTableAt(x, 115, gCampaign.setting->title,
-			      &tableFlamed);
+	x = 160 - CDogsTextWidth(gCampaign.Setting.title) / 2;
+	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.title, &tableFlamed);
 
 	if (gOptions.twoPlayers) {
 		i = sizeof(finalWords2P) / sizeof(char *);
@@ -636,7 +637,11 @@ static void PlayGameSong(void)
 	if (strlen(gMission.missionData->song) > 0)
 	{
 		char buf[CDOGS_PATH_MAX];
-		strcpy(buf, gCampaign.setting->path);
+		int pathLen;
+		pathLen = MAX(strrchr(gCampaign.Entry.path, '\\'), strrchr(gCampaign.Entry.path, '/')) - gCampaign.Entry.path;
+		strncpy(buf, gCampaign.Entry.path, pathLen);
+		buf[pathLen] = '\0';
+
 		strcat(buf, "/");
 		strcat(buf, gMission.missionData->song);
 		success = !MusicPlay(&gSoundDevice, buf);
@@ -675,7 +680,7 @@ int Game(void *bkg, int mission)
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
-		if (IsMissionBriefingNeeded(gCampaign.mode))
+		if (IsMissionBriefingNeeded(gCampaign.Entry.mode))
 		{
 			MissionBriefing(bkg);
 		}
@@ -689,8 +694,9 @@ int Game(void *bkg, int mission)
 
 		run = gameloop();
 
-		gameOver = (!gPlayer1 && !gPlayer2) ||
-		    mission == gCampaign.setting->missionCount - 1;
+		gameOver =
+			(!gPlayer1 && !gPlayer2) ||
+			mission == gCampaign.Setting.missionCount - 1;
 
 		gPlayer1Data.survived = gPlayer1 != NULL;
 		if (gPlayer1)
@@ -754,11 +760,15 @@ int Campaign(void *bkg)
 	InitData(&gPlayer1Data);
 	InitData(&gPlayer2Data);
 
-	if (IsPasswordAllowed(gCampaign.mode))
+	if (IsPasswordAllowed(gCampaign.Entry.mode))
 	{
-		mission = EnterPassword(bkg, gAutosave.LastMission.Password);
+		char *lastPassword = "";
+		if (strcmp(gCampaign.Entry.path, gAutosave.LastMission.Campaign.path) == 0)
+		{
+			lastPassword = gAutosave.LastMission.Password;
+		}
+		mission = EnterPassword(bkg, lastPassword);
 	}
-	strcpy(gAutosave.LastMission.Password, "");
 
 	return Game(bkg, mission);
 }
@@ -822,7 +832,7 @@ void *MakeBkg(void)
 
 	CMALLOC(bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
-	gCampaign.setting = SetupAndGetQuickPlay();
+	SetupQuickPlayCampaign(&gCampaign.Setting);
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
@@ -858,7 +868,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
-		if (IsIntroNeeded(gCampaign.mode))
+		if (IsIntroNeeded(gCampaign.Entry.mode))
 		{
 			CampaignIntro(bkg);
 		}
@@ -870,7 +880,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 
 		debug(D_NORMAL, ">> Starting campaign\n");
-		if (gCampaign.mode == CAMPAIGN_MODE_DOGFIGHT)
+		if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
 			DogFight(bkg);
 		}

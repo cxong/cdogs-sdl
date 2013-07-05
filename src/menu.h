@@ -49,10 +49,10 @@
 #ifndef __MENU
 #define __MENU
 
+#include <cdogs/campaigns.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/input.h>
 
-#include "campaigns.h"
 #include "credits.h"
 
 typedef enum
@@ -157,7 +157,7 @@ typedef struct menu
 				char *(*intToStr)(int);
 			} uFunc;
 		} option;
-		CampaignMenuEntry campaign;
+		campaign_entry_t campaign;
 		// change key
 		struct
 		{

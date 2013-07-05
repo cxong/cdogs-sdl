@@ -29,8 +29,14 @@
 #ifndef __CAMPAIGNS
 #define __CAMPAIGNS
 
-#include <cdogs/gamedata.h>
-#include <cdogs/sys_config.h>
+#include "sys_config.h"
+
+typedef enum
+{
+	CAMPAIGN_MODE_NORMAL,
+	CAMPAIGN_MODE_DOGFIGHT,
+	CAMPAIGN_MODE_QUICK_PLAY
+} campaign_mode_e;
 
 typedef struct
 {
@@ -40,6 +46,7 @@ typedef struct
 	int isBuiltin;
 	campaign_mode_e mode;
 	int builtinIndex;
+	int is_two_player;
 } campaign_entry_t;
 
 typedef struct campaign_list
@@ -57,12 +64,6 @@ typedef struct
 	campaign_list_t dogfightList;
 	campaign_entry_t quickPlayEntry;
 } custom_campaigns_t;
-
-typedef struct
-{
-	campaign_entry_t campaignEntry;
-	int is_two_player;
-} CampaignMenuEntry;
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);

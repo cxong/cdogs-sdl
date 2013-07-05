@@ -425,8 +425,8 @@ void MenuDisplaySubmenus(menu_t *menu)
 				if (isSelected)
 				{
 					char s[255];
-					const char *filename = subMenu->u.campaign.campaignEntry.filename;
-					int isBuiltin = subMenu->u.campaign.campaignEntry.isBuiltin;
+					const char *filename = subMenu->u.campaign.filename;
+					int isBuiltin = subMenu->u.campaign.isBuiltin;
 					sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
 					CDogsTextStringSpecial(
 						s,
@@ -618,27 +618,26 @@ static CampaignSetting customSetting = {
 /*	.missionCount	=*/	0,
 /*	.missions	=*/	NULL,
 /*	.characterCount	=*/	0,
-/*	.characters	=*/	NULL,
-/*	.path =*/	""
+/*	.characters	=*/	NULL
 };
 
-void MenuLoadCampaign(CampaignMenuEntry *entry)
+void MenuLoadCampaign(campaign_entry_t *entry)
 {
 	gOptions.twoPlayers = entry->is_two_player;
-	gCampaign.mode = entry->campaignEntry.mode;
-	if (entry->campaignEntry.isBuiltin)
+	gCampaign.Entry = *entry;
+	if (entry->isBuiltin)
 	{
-		if (entry->campaignEntry.mode == CAMPAIGN_MODE_NORMAL)
+		if (entry->mode == CAMPAIGN_MODE_NORMAL)
 		{
-			SetupBuiltinCampaign(entry->campaignEntry.builtinIndex);
+			SetupBuiltinCampaign(entry->builtinIndex);
 		}
-		else if (entry->campaignEntry.mode == CAMPAIGN_MODE_DOGFIGHT)
+		else if (entry->mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			SetupBuiltinDogfight(entry->campaignEntry.builtinIndex);
+			SetupBuiltinDogfight(entry->builtinIndex);
 		}
 		else
 		{
-			gCampaign.setting = SetupAndGetQuickPlay();
+			SetupQuickPlayCampaign(&gCampaign.Setting);
 		}
 	}
 	else
@@ -653,17 +652,12 @@ void MenuLoadCampaign(CampaignMenuEntry *entry)
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 
-		if (LoadCampaign(entry->campaignEntry.path, &customSetting, 0, 0) != CAMPAIGN_OK)
+		if (LoadCampaign(entry->path, &customSetting, 0, 0) != CAMPAIGN_OK)
 		{
-			printf("Failed to load campaign %s!\n", entry->campaignEntry.path);
+			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);
 		}
-		gCampaign.setting = &customSetting;
-	}
-
-	if (entry->campaignEntry.mode == CAMPAIGN_MODE_NORMAL)
-	{
-		gAutosave.LastMission.Campaign = *entry;
+		gCampaign.Setting = customSetting;
 	}
 	
 	printf(">> Loading campaign/dogfight\n");

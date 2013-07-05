@@ -1287,7 +1287,7 @@ static void EditCampaign(void)
 	memset(&scrap, 0, sizeof(scrap));
 	SetMouseRects(localClicks);
 
-	gCampaign.setting = &campaign;
+	gCampaign.Setting = campaign;
 	gCampaign.seed = 0;
 	Setup(mission, 1);
 

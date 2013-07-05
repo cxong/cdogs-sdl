@@ -1206,7 +1206,7 @@ void SetupMap(void)
 	i = 0;
 	while (i < 1000 && count < mission->roomCount)
 	{
-		if (BuildRoom(AreKeysAllowed(gCampaign.mode)))
+		if (BuildRoom(AreKeysAllowed(gCampaign.Entry.mode)))
 		{
 			count++;
 		}

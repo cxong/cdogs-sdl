@@ -117,7 +117,6 @@ add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
 	autosave.c
-	campaigns.c
 	cdogs.c
 	credits.c
 	mainmenu.c
@@ -126,7 +125,6 @@ set(CDOGS_SDL_SOURCES
 	prep.c)
 set(CDOGS_SDL_HEADERS
 	autosave.h
-	campaigns.h
 	credits.h
 	mainmenu.h
 	menu.h
