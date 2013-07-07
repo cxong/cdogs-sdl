@@ -214,8 +214,7 @@ static int EnterCode(void *bkg, const char *password)
 	while (!done)
 	{
 		int cmd;
-		KeyPoll(&gKeyboard);
-		JoyPoll(&gJoysticks);
+		InputPoll(&gJoysticks, &gKeyboard);
 		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
@@ -263,8 +262,11 @@ static int EnterCode(void *bkg, const char *password)
 	return mission;
 }
 
+//menu_t *MenuCreateStart(const char *password);
+
 int EnterPassword(void *bkg, const char *password)
 {
+	//menu_t *startMenu = MenuCreateStart(password);
 	int mission;
 	int index = 0;
 
@@ -274,8 +276,7 @@ int EnterPassword(void *bkg, const char *password)
 	for (;;)
 	{
 		int cmd;
-		KeyPoll(&gKeyboard);
-		JoyPoll(&gJoysticks);
+		InputPoll(&gJoysticks, &gKeyboard);
 		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		cmd = GetMenuCmd();
 

@@ -302,3 +302,9 @@ void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode)
 		break;
 	}
 }
+
+void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard)
+{
+	JoyPoll(joysticks);
+	KeyPoll(keyboard);
+}

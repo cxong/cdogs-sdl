@@ -168,14 +168,27 @@ typedef struct menu
 	} u;
 } menu_t;
 
-// TODO: create menu system type to hold menus and components such as credits_displayer_t
+typedef struct
+{
+	menu_t *root;
+	menu_t *current;
+	menu_type_e *exitTypes;
+	int numExitTypes;
+	credits_displayer_t *creditsDisplayer;
+	joysticks_t *joysticks;
+	keyboard_t *keyboard;
+	void *bkg;
+} MenuSystem;
 
+
+void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
+void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *keyboard);
+void MenuSetBackground(MenuSystem *menu, void *bkg);
+void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
+void MenuLoop(MenuSystem *menu);
 
 void ShowControls(void);
 void DisplayMenuItem(int x, int y, const char *s, int selected);
-
-int MenuTypeHasSubMenus(menu_type_e type);
-int MenuTypeLeftRightMoves(menu_type_e type);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(
@@ -209,20 +222,6 @@ menu_t *MenuCreateOptionRangeGetSet(
 menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
 
-void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer);
-
-void MenuDestroy(menu_t *menu);
-
-int MenuOptionGetIntValue(menu_t *menu);
-
-menu_t *MenuProcessCmd(menu_t *menu, int cmd);
-// returns menu to change to, NULL if no change
-menu_t *MenuProcessEscCmd(menu_t *menu);
-menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd);
-void MenuProcessChangeKey(menu_t *menu);
-
-void MenuChangeIndex(menu_t *menu, int cmd);
-
-void MenuActivate(menu_t *menu, int cmd);
+void MenuDestroy(MenuSystem *menu);
 
 #endif

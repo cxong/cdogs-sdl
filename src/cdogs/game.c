@@ -585,8 +585,7 @@ int HandleKey(int *done, int cmd)
 				hasDisplayedAutomap = 1;
 			}
 			SDL_Delay(10);
-			KeyPoll(&gKeyboard);
-			JoyPoll(&gJoysticks);
+			InputPoll(&gJoysticks, &gKeyboard);
 		}
 	}
 
@@ -710,8 +709,7 @@ int gameloop(void)
 
 		CopyToScreen();
 
-		KeyPoll(&gKeyboard);
-		JoyPoll(&gJoysticks);
+		InputPoll(&gJoysticks, &gKeyboard);
 
 		if (!gameIsPaused)
 		{

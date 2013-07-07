@@ -51,6 +51,8 @@
 
 #include <string.h>
 
+#include "joystick.h"
+#include "keyboard.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -85,5 +87,6 @@ int GetMenuCmd(void);
 
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
+void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard);
 
 #endif

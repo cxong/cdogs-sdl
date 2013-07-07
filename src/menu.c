@@ -50,6 +50,7 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include <SDL.h>
@@ -70,6 +71,87 @@
 
 #include "autosave.h"
 
+
+void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer)
+{
+	menu->creditsDisplayer = creditsDisplayer;
+}
+
+void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *keyboard)
+{
+	menu->joysticks = joysticks;
+	menu->keyboard = keyboard;
+}
+
+void MenuSetBackground(MenuSystem *menu, void *bkg)
+{
+	menu->bkg = bkg;
+}
+
+int MenuHasExitType(MenuSystem *menu, menu_type_e exitType)
+{
+	int i;
+	for (i = 0; i < menu->numExitTypes; i++)
+	{
+		if (menu->exitTypes[i] == exitType)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
+{
+	if (MenuHasExitType(menu, exitType))
+	{
+		return;
+	}
+	// Add the new exit type
+	menu->numExitTypes++;
+	CREALLOC(menu->exitTypes, menu->numExitTypes * sizeof *menu->exitTypes);
+	menu->exitTypes[menu->numExitTypes - 1] = exitType;
+}
+
+void MenuProcessChangeKey(menu_t *menu);
+menu_t *MenuProcessCmd(menu_t *menu, int cmd);
+void MenuDisplay(MenuSystem *menu);
+
+void MenuLoop(MenuSystem *menu)
+{
+	assert(menu->numExitTypes > 0);
+	for (;; SDL_Delay(10))
+	{
+		// Input
+		InputPoll(menu->joysticks, menu->keyboard);
+		// Update
+		if (menu->current->type == MENU_TYPE_KEYS &&
+			menu->current->u.normal.changeKeyMenu != NULL)
+		{
+			MenuProcessChangeKey(menu->current);
+		}
+		else
+		{
+			int cmd = GetMenuCmd();
+			menu->current = MenuProcessCmd(menu->current, cmd);
+		}
+		if (MenuHasExitType(menu, menu->current->type))
+		{
+			break;
+		}
+		// Draw
+		if (menu->bkg != NULL)
+		{
+			memcpy(
+				GetDstScreen(),
+				menu->bkg,
+				GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		}
+		ShowControls();
+		MenuDisplay(menu);
+		CopyToScreen();
+	}
+}
 
 void ShowControls(void)
 {
@@ -274,31 +356,31 @@ menu_t *MenuCreateOptionChangeControl(
 }
 
 
-void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer);
+void MenuDisplayItems(MenuSystem *menu);
 void MenuDisplaySubmenus(menu_t *menu);
 
-void MenuDisplay(menu_t *menu, credits_displayer_t *creditsDisplayer)
+void MenuDisplay(MenuSystem *menu)
 {
-	MenuDisplayItems(menu, creditsDisplayer);
+	MenuDisplayItems(menu);
 
-	if (strlen(menu->u.normal.title) != 0)
+	if (strlen(menu->current->u.normal.title) != 0)
 	{
 		CDogsTextStringSpecial(
-			menu->u.normal.title,
+			menu->current->u.normal.title,
 			TEXT_XCENTER | TEXT_TOP,
 			0,
 			gGraphicsDevice.cachedConfig.ResolutionWidth / 12);
 	}
 
-	MenuDisplaySubmenus(menu);
+	MenuDisplaySubmenus(menu->current);
 }
 
-void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
+void MenuDisplayItems(MenuSystem *menu)
 {
-	int d = menu->u.normal.displayItems;
-	if (d & MENU_DISPLAY_ITEMS_CREDITS)
+	int d = menu->current->u.normal.displayItems;
+	if ((d & MENU_DISPLAY_ITEMS_CREDITS) && menu->creditsDisplayer != NULL)
 	{
-		ShowCredits(creditsDisplayer);
+		ShowCredits(menu->creditsDisplayer);
 	}
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
@@ -313,6 +395,8 @@ void MenuDisplayItems(menu_t *menu, credits_displayer_t *creditsDisplayer)
 			"SDL Port: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 	}
 }
+
+int MenuOptionGetIntValue(menu_t *menu);
 
 void MenuDisplaySubmenus(menu_t *menu)
 {
@@ -503,13 +587,14 @@ void MenuDisplaySubmenus(menu_t *menu)
 
 void MenuDestroySubmenus(menu_t *menu);
 
-void MenuDestroy(menu_t *menu)
+void MenuDestroy(MenuSystem *menu)
 {
-	if (menu == NULL)
+	if (menu == NULL || menu->root == NULL)
 	{
 		return;
 	}
-	MenuDestroySubmenus(menu);
+	MenuDestroySubmenus(menu->root);
+	CFREE(menu->root);
 	CFREE(menu);
 }
 
@@ -555,6 +640,11 @@ int MenuOptionGetIntValue(menu_t *menu)
 		return 0;
 	}
 }
+
+// returns menu to change to, NULL if no change
+menu_t *MenuProcessEscCmd(menu_t *menu);
+menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd);
+void MenuChangeIndex(menu_t *menu, int cmd);
 
 menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 {
@@ -662,6 +752,8 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	
 	printf(">> Loading campaign/dogfight\n");
 }
+
+void MenuActivate(menu_t *menu, int cmd);
 
 menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 {

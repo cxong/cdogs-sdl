@@ -39,7 +39,7 @@
 #include "menu.h"
 
 
-menu_t *MenuCreateAll(custom_campaigns_t *campaigns);
+MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns);
 
 int MainMenu(
 	void *bkg,
@@ -47,31 +47,16 @@ int MainMenu(
 	custom_campaigns_t *campaigns)
 {
 	int doPlay = 0;
-	menu_t *mainMenu = MenuCreateAll(campaigns);
-	menu_t *menu = mainMenu;
+	MenuSystem *menu = MenuCreateAll(campaigns);
+	MenuSetCreditsDisplayer(menu, creditsDisplayer);
+	MenuSetInputDevices(menu, &gJoysticks, &gKeyboard);
+	MenuSetBackground(menu, bkg);
+	MenuAddExitType(menu, MENU_TYPE_QUIT);
+	MenuAddExitType(menu, MENU_TYPE_CAMPAIGN_ITEM);
+	MenuLoop(menu);
+	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
 
-	do
-	{
-		KeyPoll(&gKeyboard);
-		JoyPoll(&gJoysticks);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-		ShowControls();
-		MenuDisplay(menu, creditsDisplayer);
-		CopyToScreen();
-		if (menu->type == MENU_TYPE_KEYS && menu->u.normal.changeKeyMenu != NULL)
-		{
-			MenuProcessChangeKey(menu);
-		}
-		else
-		{
-			int cmd = GetMenuCmd();
-			menu = MenuProcessCmd(menu, cmd);
-		}
-		SDL_Delay(10);
-	} while (menu->type != MENU_TYPE_QUIT && menu->type != MENU_TYPE_CAMPAIGN_ITEM);
-	doPlay = menu->type == MENU_TYPE_CAMPAIGN_ITEM;
-
-	MenuDestroy(mainMenu);
+	MenuDestroy(menu);
 	return doPlay;
 }
 
@@ -87,9 +72,11 @@ menu_t *MenuCreateControls(const char *name);
 menu_t *MenuCreateSound(const char *name);
 menu_t *MenuCreateQuit(const char *name);
 
-menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
+MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
 {
-	menu_t *menu = MenuCreateNormal(
+	MenuSystem *ms;
+	CCALLOC(ms, sizeof *ms);
+	ms->root = ms->current = MenuCreateNormal(
 		"",
 		"",
 		MENU_TYPE_NORMAL,
@@ -97,39 +84,39 @@ menu_t *MenuCreateAll(custom_campaigns_t *campaigns)
 	if (strlen(gAutosave.LastMission.Password) > 0)
 	{
 		MenuAddSubmenu(
-			menu,
+			ms->root,
 			MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-		MenuAddSubmenu(menu, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	}
 	MenuAddSubmenu(
-		menu,
+		ms->root,
 		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
 	MenuAddSubmenu(
-		menu,
+		ms->root,
 		MenuCreateCampaigns(
 			"1 player",
 			"Select a campaign:",
 			&campaigns->campaignList,
 			0));
 	MenuAddSubmenu(
-		menu,
+		ms->root,
 		MenuCreateCampaigns(
 			"2 players",
 			"Select a campaign:",
 			&campaigns->campaignList,
 			1));
 	MenuAddSubmenu(
-		menu,
+		ms->root,
 		MenuCreateCampaigns(
 			"Dogfight",
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList,
 			1));
-	MenuAddSubmenu(menu, MenuCreateOptions("Game options..."));
-	MenuAddSubmenu(menu, MenuCreateControls("Controls..."));
-	MenuAddSubmenu(menu, MenuCreateSound("Sound..."));
-	MenuAddSubmenu(menu, MenuCreateQuit("Quit"));
-	return menu;
+	MenuAddSubmenu(ms->root, MenuCreateOptions("Game options..."));
+	MenuAddSubmenu(ms->root, MenuCreateControls("Controls..."));
+	MenuAddSubmenu(ms->root, MenuCreateSound("Sound..."));
+	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
+	return ms;
 }
 
 
