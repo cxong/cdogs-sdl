@@ -51,8 +51,6 @@ int MainMenu(
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	MenuSetInputDevices(menu, &gJoysticks, &gKeyboard);
 	MenuSetBackground(menu, bkg);
-	MenuAddExitType(menu, MENU_TYPE_QUIT);
-	MenuAddExitType(menu, MENU_TYPE_CAMPAIGN_ITEM);
 	MenuLoop(menu);
 	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
 
@@ -116,6 +114,8 @@ MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
 	MenuAddSubmenu(ms->root, MenuCreateControls("Controls..."));
 	MenuAddSubmenu(ms->root, MenuCreateSound("Sound..."));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
+	MenuAddExitType(ms, MENU_TYPE_QUIT);
+	MenuAddExitType(ms, MENU_TYPE_CAMPAIGN_ITEM);
 	return ms;
 }
 

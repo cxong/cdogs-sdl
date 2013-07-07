@@ -153,6 +153,11 @@ void MenuLoop(MenuSystem *menu)
 	}
 }
 
+void MenuReset(MenuSystem *menu)
+{
+	menu->current = menu->root;
+}
+
 void ShowControls(void)
 {
 	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
@@ -342,6 +347,13 @@ menu_t *MenuCreateSeparator(const char *name)
 menu_t *MenuCreateBack(const char *name)
 {
 	return MenuCreate(name, MENU_TYPE_BACK);
+}
+
+menu_t *MenuCreateReturn(const char *name, int returnCode)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
+	menu->u.returnCode = returnCode;
+	return menu;
 }
 
 menu_t *MenuCreateOptionChangeControl(
@@ -775,6 +787,8 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 			return menu->parentMenu;
 		case MENU_TYPE_QUIT:
 			return subMenu;	// caller will check if subMenu type is QUIT
+		case MENU_TYPE_RETURN:
+			return subMenu;
 		default:
 			MenuActivate(subMenu, cmd);
 			break;

@@ -72,6 +72,7 @@ typedef enum
 	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
 	MENU_TYPE_QUIT,
+	MENU_TYPE_RETURN,	// Return with a code
 	MENU_TYPE_SEPARATOR
 } menu_type_e;
 
@@ -165,6 +166,7 @@ typedef struct menu
 			input_keys_t *keys;
 			input_keys_t *keysOther;
 		} changeKey;
+		int returnCode;
 	} u;
 } menu_t;
 
@@ -186,6 +188,7 @@ void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *k
 void MenuSetBackground(MenuSystem *menu, void *bkg);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuLoop(MenuSystem *menu);
+void MenuReset(MenuSystem *menu);
 
 void ShowControls(void);
 void DisplayMenuItem(int x, int y, const char *s, int selected);
@@ -221,6 +224,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 	menu_option_display_style_e style, void (*func)(void));
 menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
+menu_t *MenuCreateReturn(const char *name, int returnCode);
 
 void MenuDestroy(MenuSystem *menu);
 

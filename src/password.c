@@ -48,6 +48,7 @@
 */
 #include "password.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -262,55 +263,62 @@ static int EnterCode(void *bkg, const char *password)
 	return mission;
 }
 
-//menu_t *MenuCreateStart(const char *password);
+typedef enum
+{
+	RETURN_CODE_CONTINUE,
+	RETURN_CODE_START,
+	RETURN_CODE_ENTER_CODE
+} ReturnCode;
+
+MenuSystem *MenuCreateStart(
+	int hasPassword, void *bkg, joysticks_t *joysticks, keyboard_t *keyboard);
 
 int EnterPassword(void *bkg, const char *password)
 {
-	//menu_t *startMenu = MenuCreateStart(password);
-	int mission;
-	int index = 0;
-
-	if (TestPassword(password) > 0)
-		index = 1;
-
+	MenuSystem *startMenu;
+	int mission = TestPassword(password);
+	int hasPassword = mission > 0;
+	startMenu = MenuCreateStart(hasPassword, bkg, &gJoysticks, &gKeyboard);
 	for (;;)
 	{
-		int cmd;
-		InputPoll(&gJoysticks, &gKeyboard);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-		cmd = GetMenuCmd();
-
-		if (AnyButton(cmd)) {
-			if (index == 1)
-			{
-				mission = EnterCode(bkg, password);
-				if (mission)
-					return mission;
-			} else
-				break;
-		} else if (index > 0 && (Left(cmd) || Up(cmd))) {
-			index--;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
-		}
-		else if (index == 0 && (Right(cmd) || Down(cmd)))
+		int returnCode;
+		MenuLoop(startMenu);
+		assert(startMenu->current->type == MENU_TYPE_RETURN);
+		returnCode = startMenu->current->u.returnCode;
+		if (returnCode == RETURN_CODE_CONTINUE)
 		{
-			index++;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
+			return mission;
 		}
-
-		#define	TEXT_START	"Start campaign"
-		#define	TEXT_CODE	"Enter code..."
-		
-		DisplayMenuItem(CenterX(CDogsTextWidth(TEXT_START)),
-				CenterY(2 * CDogsTextHeight()),
-				TEXT_START, index == 0);
-		DisplayMenuItem(CenterX(CDogsTextWidth(TEXT_CODE)),
-				CenterY(2 * CDogsTextHeight()) + CDogsTextHeight(),
-				TEXT_CODE, index == 1);
-		
-		ShowControls();
-
-		CopyToScreen();
+		else if (returnCode == RETURN_CODE_START)
+		{
+			return 0;
+		}
+		else if (returnCode == RETURN_CODE_ENTER_CODE)
+		{
+			int enteredMission = EnterCode(bkg, password);
+			if (enteredMission > 0)
+			{
+				return enteredMission;
+			}
+			MenuReset(startMenu);
+		}
 	}
-	return 0;
+}
+
+MenuSystem *MenuCreateStart(
+	int hasPassword, void *bkg, joysticks_t *joysticks, keyboard_t *keyboard)
+{
+	MenuSystem *ms;
+	CCALLOC(ms, sizeof *ms);
+	MenuSetInputDevices(ms, joysticks, keyboard);
+	MenuSetBackground(ms, bkg);
+	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	if (hasPassword)
+	{
+		MenuAddSubmenu(ms->root, MenuCreateReturn("Continue", RETURN_CODE_CONTINUE));
+	}
+	MenuAddSubmenu(ms->root, MenuCreateReturn("Start campaign", RETURN_CODE_START));
+	MenuAddSubmenu(ms->root, MenuCreateReturn("Enter code...", RETURN_CODE_ENTER_CODE));
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
+	return ms;
 }
