@@ -84,7 +84,6 @@ MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
 		MenuAddSubmenu(
 			ms->root,
 			MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	}
 	MenuAddSubmenu(
 		ms->root,

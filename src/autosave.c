@@ -53,6 +53,7 @@ static void LoadCampaignNode(campaign_entry_t *c, json_t *node)
 {
 	strcpy(c->path, json_find_first_label(node, "Path")->child->text);
 	LoadBool(&c->isBuiltin, node, "IsBuiltin");
+	c->mode = CAMPAIGN_MODE_NORMAL;
 	c->builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
 	LoadBool(&c->is_two_player, node, "IsTwoPlayer");
 }
