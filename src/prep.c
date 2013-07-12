@@ -115,7 +115,7 @@ static const char *shadeNames[PLAYER_BODY_COUNT] = {
 };
 
 static const char *skinNames[PLAYER_SKIN_COUNT] = {
-	"Cacausian",
+	"Caucasian",
 	"Asian",
 	"Black"
 };
