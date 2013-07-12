@@ -31,7 +31,7 @@
 
 #include <time.h>
 
-#include <cdogs/grafx.h>
+#include <cdogs/pic_file.h>
 
 
 typedef struct

@@ -53,14 +53,6 @@
 
 #include "sys_specifics.h"
 
-
-struct RGB {
-	unsigned char red, green, blue;
-};
-typedef struct RGB color_t;
-typedef color_t TPalette[256];
-typedef unsigned char TranslationTable[256];
-
 typedef struct
 {
 	int Brightness;
@@ -95,26 +87,6 @@ void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);
 
 char *GrafxGetResolutionStr(void);
-
-int ReadPics(
-	const char *filename, void **pics, int maxPics,
-	color_t *palette);
-int AppendPics(const char *filename, void **pics, int startIndex,
-	       int maxPics);
-
-INLINE static int PicWidth(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *)pic)[0];
-}
-
-INLINE static int PicHeight(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *)pic)[1];
-}
 
 #define CenterX(w)		((gGraphicsDevice.cachedConfig.ResolutionWidth - w) / 2)
 #define CenterY(h)		((gGraphicsDevice.cachedConfig.ResolutionHeight - h) / 2)

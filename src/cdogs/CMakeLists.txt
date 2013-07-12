@@ -25,6 +25,7 @@ set(CDOGS_SOURCES
 	mission.c
 	music.c
 	objs.c
+	pic_file.c
 	pics.c
 	sounds.c
 	text.c
@@ -57,6 +58,7 @@ set(CDOGS_HEADERS
 	mission.h
 	music.h
 	objs.h
+	pic_file.h
 	pics.h
 	sounds.h
 	sys_config.h

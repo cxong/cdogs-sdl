@@ -46,40 +46,126 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TEXT
-#define __TEXT
-
 #include "pic_file.h"
 
-void CDogsTextInit(const char *filename, int offset);
-void CDogsTextChar(char c);
-void CDogsTextString(const char *s);
-void CDogsTextGoto(int x, int y);
-void CDogsTextStringAt(int x, int y, const char *s);
-void CDogsTextIntAt(int x, int y, int i);
-void CDogsTextFormatAt(int x, int y, const char *fmt, ...);
-int CDogsTextCharWidth(int c);
-int CDogsTextWidth(const char *s);
-int CDogsTextHeight(void);
-void CDogsTextCharWithTable(char c, TranslationTable * table);
-void CDogsTextStringWithTable(const char *s, TranslationTable * table);
-void CDogsTextStringWithTableAt(int x, int y, const char *s,
-			   TranslationTable * table);
+#include <stdio.h>
 
-#define TEXT_XCENTER		1
-#define TEXT_YCENTER		2
-#define TEXT_LEFT		4
-#define TEXT_RIGHT		8
-#define TEXT_TOP		16
-#define TEXT_BOTTOM		32
-#define TEXT_FLAMED		64
-#define TEXT_PURPLE		128
+#include "files.h"
+#include "utils.h"
 
-void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
-#define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
+typedef struct _Pic {
+	short int w;
+	short int h;
+	char *data;
+} Pic;
 
-char *PercentStr(int p);
-char *ScaleStr(int s);
-char *Div8Str(int i);
+int ReadPics(
+	const char *filename, void **pics, int maxPics,
+	color_t * palette)
+{
+	FILE *f;
+	int is_eof = 0;
+	unsigned short int size;
+	int i = 0;
 
-#endif
+	f = fopen(filename, "rb");
+	if (f != NULL) {
+		size_t elementsRead;
+	#define CHECK_FREAD(count)\
+		if (elementsRead != count) {\
+			debug(D_NORMAL, "Error ReadPics\n");\
+			fclose(f);\
+			return 0;\
+		}
+		if (palette) {
+			elementsRead = fread(palette, sizeof(TPalette), 1, f);
+			CHECK_FREAD(1)
+		} else
+			fseek(f, sizeof(TPalette), SEEK_CUR);
+
+		while (!is_eof && i < maxPics)
+		{
+			elementsRead = fread(&size, sizeof(size), 1, f);
+			CHECK_FREAD(1)
+			swap16(&size);
+			if (size > 0)
+			{
+				Pic *p;
+				CMALLOC(p, size);
+
+				f_read16(f, &p->w, 2);
+				f_read16(f, &p->h, 2);
+
+				f_read(f, &p->data, size - 4);
+
+				pics[i] = p;
+
+				if (ferror(f) || feof(f))
+				{
+					is_eof = 1;
+				}
+			}
+			else
+			{
+				pics[i] = NULL;
+			}
+			i++;
+		}
+		fclose(f);
+	#undef CHECK_FREAD
+	}
+	return i;
+}
+
+int AppendPics(const char *filename, void **pics, int startIndex,
+	       int maxPics)
+{
+	FILE *f;
+	int is_eof = 0;
+	unsigned short int size;
+	int i = startIndex;
+
+	f = fopen(filename, "rb");
+	if (f != NULL) {
+		fseek(f, sizeof(TPalette), SEEK_CUR);
+
+		while (!is_eof && i < maxPics)
+		{
+			size_t elementsRead;
+		#define CHECK_FREAD(count)\
+			if (elementsRead != count) {\
+				debug(D_NORMAL, "Error AppendPics\n");\
+				fclose(f);\
+				return 0;\
+			}
+			elementsRead = fread(&size, sizeof(size), 1, f);
+			CHECK_FREAD(1)
+			swap16(&size);
+			if (size > 0)
+			{
+				Pic *p;
+				CMALLOC(p, size);
+
+				f_read16(f, &p->w, 2);
+				f_read16(f, &p->h, 2);
+				f_read(f, &p->data, size - 4);
+
+				pics[i] = p;
+
+				if (ferror(f) || feof(f))
+				{
+					is_eof = 1;
+				}
+			}
+			else
+			{
+				pics[i] = NULL;
+			}
+			i++;
+		#undef CHECK_FREAD
+		}
+		fclose(f);
+	}
+
+	return i - startIndex;
+}

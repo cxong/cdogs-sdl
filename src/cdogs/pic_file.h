@@ -46,40 +46,37 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TEXT
-#define __TEXT
+#ifndef __PIC_FILE
+#define __PIC_FILE
 
-#include "pic_file.h"
+#include "sys_specifics.h"
 
-void CDogsTextInit(const char *filename, int offset);
-void CDogsTextChar(char c);
-void CDogsTextString(const char *s);
-void CDogsTextGoto(int x, int y);
-void CDogsTextStringAt(int x, int y, const char *s);
-void CDogsTextIntAt(int x, int y, int i);
-void CDogsTextFormatAt(int x, int y, const char *fmt, ...);
-int CDogsTextCharWidth(int c);
-int CDogsTextWidth(const char *s);
-int CDogsTextHeight(void);
-void CDogsTextCharWithTable(char c, TranslationTable * table);
-void CDogsTextStringWithTable(const char *s, TranslationTable * table);
-void CDogsTextStringWithTableAt(int x, int y, const char *s,
-			   TranslationTable * table);
 
-#define TEXT_XCENTER		1
-#define TEXT_YCENTER		2
-#define TEXT_LEFT		4
-#define TEXT_RIGHT		8
-#define TEXT_TOP		16
-#define TEXT_BOTTOM		32
-#define TEXT_FLAMED		64
-#define TEXT_PURPLE		128
+struct RGB {
+	unsigned char red, green, blue;
+};
+typedef struct RGB color_t;
+typedef color_t TPalette[256];
+typedef unsigned char TranslationTable[256];
 
-void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
-#define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
+int ReadPics(
+	const char *filename, void **pics, int maxPics,
+	color_t *palette);
+int AppendPics(const char *filename, void **pics, int startIndex,
+	       int maxPics);
 
-char *PercentStr(int p);
-char *ScaleStr(int s);
-char *Div8Str(int i);
+INLINE static int PicWidth(const void *pic)
+{
+	if (!pic)
+		return 0;
+	return ((const short *)pic)[0];
+}
+
+INLINE static int PicHeight(const void *pic)
+{
+	if (!pic)
+		return 0;
+	return ((const short *)pic)[1];
+}
 
 #endif
