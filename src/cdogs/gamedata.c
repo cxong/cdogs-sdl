@@ -79,8 +79,7 @@ struct PlayerData gPlayer2Data = {
 
 struct GameOptions gOptions = {
 	0,	// twoPlayers
-	1,	// badGuys
-	0,	// displaySlices
+	1	// badGuys
 };
 
 CampaignOptions gCampaign;

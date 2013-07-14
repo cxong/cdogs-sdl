@@ -82,6 +82,7 @@
 #include "mainmenu.h"
 #include "password.h"
 #include "prep.h"
+#include "XGetopt.h"
 
 
 
@@ -912,29 +913,28 @@ void PrintHelp (void)
 {
 	printf("%s\n",
 		"Video Options:\n"
-		"    -fullscreen     Try and use a fullscreen video mode.\n"
-		"    -scale=n        Scale the window resolution up by a factor of n\n"
-		"                      Factors: 2, 3, 4\n"
-		"    -screen=WxH     Set virtual screen width to W x H\n"
-		"                      Modes: 320x200, 320x240, 400x300, 640x480, 800x600\n"
-		"    -forcemode      Don't check video mode sanity\n"
+		"    --fullscreen     Try and use a fullscreen video mode.\n"
+		"    --scale=n        Scale the window resolution up by a factor of n\n"
+		"                       Factors: 2, 3, 4\n"
+		"    --screen=WxH     Set virtual screen width to W x H\n"
+		"                       Modes: 320x200, 320x240, 400x300, 640x480, 800x600, 1024x768\n"
+		"    --forcemode      Don't check video mode sanity\n"
 	);
 
 	printf("%s\n",
 		"Sound Options:\n"
-		"    -nosound        Disable sound\n"
+		"    --nosound        Disable sound\n"
 	);
 
 	printf("%s\n",
 		"Control Options:\n"
-		"    -nojoystick     Disable joystick(s)\n"
+		"    --nojoystick     Disable joystick(s)\n"
 	);
 
 	printf("%s\n",
 		"Game Options:\n"
-		"    -wait           Wait for a key hit before initialising video.\n"
-		"    -shakemult=n    Screen shaking multiplier (0 = disable).\n"
-		"    -slices         Display CPU slices [*broken*]\n"
+		"    --wait           Wait for a key hit before initialising video.\n"
+		"    --shakemult=n    Screen shaking multiplier (0 = disable).\n"
 	);
 
 	printf("%s\n",
@@ -976,65 +976,72 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
-	for (i = 1; i < argc; i++) {
-		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
-			if (strcmp(argv[i] + 1, "slices") == 0) {
-				printf("Displaying CPU slices\n");
-				gOptions.displaySlices = 1;
-			}
-
-			if (strstr(argv[i] + 1, "shakemult=")) {
-				char *val = strchr(argv[i], '=');
-				int nval;
-				extern int shakeMultiplier;
-
-				val++;
-				nval = atoi(val);
-				if (nval < 0) nval = 0;
-				printf("Shake multiplier: %d\n", nval);
-				shakeMultiplier = nval;
-			}
-			if (strcmp(argv[i] + 1, "wait") == 0)
-				wait = 1;
-			if (strcmp(argv[i] + 1, "nosound") == 0) {
+	{
+		struct option longopts[] =
+		{
+			{"fullscreen",	no_argument,		NULL,	'f'},
+			{"scale",		required_argument,	NULL,	's'},
+			{"screen",		required_argument,	NULL,	'c'},
+			{"forcemode",	no_argument,		NULL,	'o'},
+			{"nosound",		no_argument,		NULL,	'n'},
+			{"nojoystick",	no_argument,		NULL,	'j'},
+			{"wait",		no_argument,		NULL,	'w'},
+			{"shakemult",	required_argument,	NULL,	'm'},
+			{"help",		no_argument,		NULL,	'h'},
+			{0,				0,					NULL,	0}
+		};
+		int opt = 0;
+		int index = 0;
+		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:h", longopts, &index)) != -1)
+		{
+			switch (opt)
+			{
+			case 'f':
+				gConfig.Graphics.Fullscreen = 1;
+				break;
+			case 's':
+				gConfig.Graphics.ScaleFactor = atoi(optarg);
+				break;
+			case 'c':
+				sscanf(optarg, "%dx%d",
+					&gConfig.Graphics.ResolutionWidth,
+					&gConfig.Graphics.ResolutionHeight);
+				debug(D_NORMAL, "Video mode %dx%d set...\n",
+					gConfig.Graphics.ResolutionWidth,
+					gConfig.Graphics.ResolutionHeight);
+				break;
+			case 'o':
+				forceResolution = 1;
+				break;
+			case 'n':
 				printf("Sound disabled!\n");
 				snd_flag = 0;
 				isSoundEnabled = 0;
-			}
-			if (strcmp(argv[i] + 1, "nojoystick") == 0) {
+				break;
+			case 'j':
 				debug(D_NORMAL, "nojoystick\n");
 				js_flag = 0;
-			}
-			if (strcmp(argv[i] + 1, "fullscreen") == 0)
-			{
-				gConfig.Graphics.Fullscreen = 1;
-			}
-			if (strstr(argv[i] + 1, "screen="))
-			{
-				char *val = strchr(argv[i], '='); val++;
-				sscanf(val, "%dx%d",
-					&gGraphicsDevice.cachedConfig.ResolutionWidth, &gGraphicsDevice.cachedConfig.ResolutionHeight);
-				debug(D_NORMAL, "Video mode %dx%d set...\n",
-					gGraphicsDevice.cachedConfig.ResolutionWidth, gGraphicsDevice.cachedConfig.ResolutionHeight);
-			}
-			if (strcmp(argv[i] + 1, "forcemode") == 0)
-			{
-				forceResolution = 1;
-			}
-			if (strstr(argv[i] + 1, "scale=")) {
-				int f;
-				char *val = strchr(argv[i], '='); val++;
-				f = atoi(val);
-				if (f >= 1)
+				break;
+			case 'w':
+				wait = 1;
+				break;
+			case 'm':
 				{
-					gConfig.Graphics.ScaleFactor = f;
+					extern int shakeMultiplier;
+					shakeMultiplier = atoi(optarg);
+					if (shakeMultiplier < 0)
+					{
+						shakeMultiplier = 0;
+					}
+					printf("Shake multiplier: %d\n", shakeMultiplier);
 				}
-			}
-			if (strcmp(argv[i] + 1, "help") == 0 ||
-				strcmp(argv[i] + 1, "h") == 0 ||
-				strcmp(argv[i] + 1, "-help") == 0) {
+				break;
+			case 'h':
 				PrintHelp();
 				exit(EXIT_SUCCESS);
+			default:
+				PrintHelp();
+				exit(EXIT_FAILURE);
 			}
 		}
 	}

@@ -656,17 +656,7 @@ int gameloop(void)
 
 		ticks = Ticks_Synchronize();
 
-		if (gOptions.displaySlices)
-		{
-			SetColorZero(&gGraphicsDevice, 32, 0, 0);
-		}
-
 		DrawScreen(buffer, gPlayer1, gPlayer2);
-
-		if (gOptions.displaySlices)
-		{
-			SetColorZero(&gGraphicsDevice, 0, 0, 0);
-		}
 
 		if (screenShaking) {
 			screenShaking -= ticks;

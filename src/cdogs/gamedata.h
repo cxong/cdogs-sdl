@@ -84,7 +84,6 @@ extern struct PlayerData gPlayer2Data;
 struct GameOptions {
 	int twoPlayers;
 	int badGuys;
-	int displaySlices;	// TODO: what does this do?
 };
 
 // Properties of map objects

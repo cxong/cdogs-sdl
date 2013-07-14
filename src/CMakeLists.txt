@@ -122,7 +122,8 @@ set(CDOGS_SDL_SOURCES
 	mainmenu.c
 	menu.c
 	password.c
-	prep.c)
+	prep.c
+	XGetopt.c)
 set(CDOGS_SDL_HEADERS
 	autosave.h
 	credits.h
@@ -130,6 +131,7 @@ set(CDOGS_SDL_HEADERS
 	menu.h
 	password.h
 	prep.h
+	XGetopt.h
 	missions/bem.h
 	missions/ogre.h)
 set(CDOGS_SDL_EXTRA)
