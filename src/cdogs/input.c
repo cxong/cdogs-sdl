@@ -176,10 +176,17 @@ int GetOnePlayerCmd(
 		{
 			cmd |= CMD_BUTTON1;
 		}
-
 		if (joyFunc(joystick, CMD_BUTTON2))
 		{
 			cmd |= CMD_BUTTON2;
+		}
+		if (joyFunc(joystick, CMD_BUTTON3))
+		{
+			cmd |= CMD_BUTTON3;
+		}
+		if (joyFunc(joystick, CMD_BUTTON4))
+		{
+			cmd |= CMD_BUTTON4;
 		}
 
 		if (swapButtons)

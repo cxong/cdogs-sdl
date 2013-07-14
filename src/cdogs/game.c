@@ -436,6 +436,11 @@ static void MissionUpdateObjectives(void)
 	}
 }
 
+void GetPlayerInput(int *cmd1, int *cmd2)
+{
+	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL, 0);
+}
+
 int HandleKey(int *done, int cmd)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
@@ -444,6 +449,7 @@ int HandleKey(int *done, int cmd)
 		while (KeyIsDown(&gKeyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
+			int cmd1 = 0, cmd2 = 0;
 			if (!hasDisplayedAutomap)
 			{
 				DisplayAutoMap(0);
@@ -451,21 +457,24 @@ int HandleKey(int *done, int cmd)
 			}
 			SDL_Delay(10);
 			InputPoll(&gJoysticks, &gKeyboard);
+			GetPlayerInput(&cmd1, &cmd2);
+			cmd = cmd1 | cmd2;
 		}
 	}
 
-	if (((cmd & CMD_BUTTON4) != 0) && !gOptions.twoPlayers) {
-		gameIsPaused = YES;
-		escExits = NO;
-	} else if (gameIsPaused && AnyButton(cmd))
+	if (gameIsPaused && AnyButton(cmd))
+	{
 		gameIsPaused = NO;
+	}
 
 	if (!gPlayer1 && !gPlayer2)
 	{
 		*done = 1;
 		return 0;
 	}
-	else if (KeyIsPressed(&gKeyboard, keyEsc))
+	else if (KeyIsPressed(&gKeyboard, keyEsc) ||
+		JoyIsPressed(&gJoysticks.joys[0], CMD_BUTTON4) ||
+		JoyIsPressed(&gJoysticks.joys[1], CMD_BUTTON4))
 	{
 		if (gameIsPaused && escExits)
 		{
@@ -484,11 +493,6 @@ int HandleKey(int *done, int cmd)
 	}
 
 	return 0;
-}
-
-void GetPlayerInput(int *cmd1, int *cmd2)
-{
-	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL, 0);
 }
 
 int gameloop(void)
@@ -511,6 +515,7 @@ int gameloop(void)
 
 	missionTime = 0;
 	KeyInit(&gKeyboard);
+	JoyInit(&gJoysticks);
 	while (!done)
 	{
 		int cmd1 = 0, cmd2 = 0;
