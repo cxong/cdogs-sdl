@@ -26,7 +26,6 @@
 #define GAMETICKS_PER_FRAME  3
 
 int gameloop(void);
-void DisplayMessage(const char *s);
 void ShakeScreen(int amount);
 
 extern int missionTime;

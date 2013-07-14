@@ -17,6 +17,7 @@ set(CDOGS_SOURCES
 	gamedata.c
 	grafx.c
 	hiscores.c
+	hud.c
 	input.c
 	joystick.c
 	json_utils.c
@@ -50,6 +51,7 @@ set(CDOGS_HEADERS
 	gamedata.h
 	grafx.h
 	hiscores.h
+	hud.h
 	input.h
 	joystick.h
 	json_utils.h

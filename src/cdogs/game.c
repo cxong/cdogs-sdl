@@ -58,6 +58,7 @@
 
 #include "config.h"
 #include "draw.h"
+#include "hud.h"
 #include "joystick.h"
 #include "music.h"
 #include "objs.h"
@@ -94,11 +95,6 @@ static Uint32 ticks_now;
 static Uint32 ticks_then;
 
 static int frames = 0;
-static int fps = 0;
-static char message[256];
-static int messageTicks = 0;
-
-static int timeHours, timeMinutes;
 
 static int screenShaking = 0;
 
@@ -111,8 +107,6 @@ int missionTime;
 
 #define MICROSECS_PER_SEC 1000000
 #define MILLISECS_PER_SEC 1000
-
-#define TICKS_PER_SEC MILLISECS_PER_SEC
 
 int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 {
@@ -193,11 +187,6 @@ static int Ticks_TimeElapsed(Uint32 msec)
 			return 0;
 		}
 	}
-}
-
-static void Ticks_FrameBegin(void)
-{
-	Ticks_Update();
 }
 
 static void Ticks_FrameEnd(void)
@@ -372,44 +361,6 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 }
 
-#define PLACE_LEFT	0
-#define PLACE_RIGHT	1
-
-void PlayerStatus(int placement, struct PlayerData *data, TActor * p)
-{
-	char s[50];
-
-	int flags = TEXT_TOP;
-
-	if (placement == PLACE_LEFT)	flags |= TEXT_LEFT;
-	if (placement == PLACE_RIGHT)	flags |= TEXT_RIGHT;
-
-	CDogsTextStringSpecial(data->name, flags, 5, 5);
-	if (IsScoreNeeded(gCampaign.Entry.mode))
-	{
-		sprintf(s, "Score: %d", data->score);
-	}
-	else
-	{
-		s[0] = 0;
-	}
-	if (p)
-	{
-		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
-		CDogsTextStringSpecial(
-			GunGetName(p->weapon.gun), flags, 5, 5 + 1 + CDogsTextHeight());
-		sprintf(s, "%d hp", p->health);
-		CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
-	} else
-		CDogsTextStringSpecial(s, flags, 5, 5 + 1 * CDogsTextHeight());
-}
-
-static void DrawKeycard(int x, int y, const TOffsetPic * pic)
-{
-	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex],
-		 gCompiledPics[pic->picIndex]);
-}
-
 static void DrawExitArea(void)
 {
 	int left, right, top, bottom;
@@ -485,91 +436,6 @@ static void MissionUpdateObjectives(void)
 	}
 }
 
-void StatusDisplay(void)
-{
-	char s[50];
-	static time_t ot = -1;
-	static time_t t = 0;
-	static time_t td = 0;
-
-	PlayerStatus(PLACE_LEFT, &gPlayer1Data, gPlayer1);
-	if (gOptions.twoPlayers)
-		PlayerStatus(PLACE_RIGHT, &gPlayer2Data, gPlayer2);
-
-	if (!gPlayer1 && !gPlayer2)
-	{
-		if (gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
-		{
-			CDogsTextStringAtCenter("Game Over!");
-		}
-		else
-		{
-			CDogsTextStringAtCenter("Double Kill!");
-		}
-	}
-	else if (IsMissionComplete(&gMission))
-	{
-		sprintf(s, "Pickup in %d seconds\n",
-			(gMission.pickupTime + 69) / 70);
-		CDogsTextStringAtCenter(s);
-	}
-
-	if (gameIsPaused) {
-		if (escExits)
-			CDogsTextStringAtCenter("Press Esc again to quit");
-		else
-			CDogsTextStringAtCenter("Paused");
-	}
-
-	if (messageTicks > 0)
-		CDogsTextStringSpecial(message, TEXT_XCENTER | TEXT_TOP, 0, 20);
-
-	if (gConfig.Interface.ShowFPS)
-	{
-		sprintf(s, "FPS: %d", fps);
-		CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
-	}
-	if (gConfig.Interface.ShowTime)
-	{
-		sprintf(s, "%02d:%02d", timeHours, timeMinutes);
-		CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
-	}
-
-#define KEY_WIDTH(n) (cGeneralPics[gMission.keyPics[n]].dx)
-
-	if (gMission.flags & FLAGS_KEYCARD_YELLOW)
-		DrawKeycard(CenterX(KEY_WIDTH(0)) - 30, 20, &cGeneralPics[gMission.keyPics[0]]);
-	if (gMission.flags & FLAGS_KEYCARD_GREEN)
-		DrawKeycard(CenterX(KEY_WIDTH(1)) - 10, 20, &cGeneralPics[gMission.keyPics[1]]);
-	if (gMission.flags & FLAGS_KEYCARD_BLUE)
-		DrawKeycard(CenterX(KEY_WIDTH(2)) + 10, 20, &cGeneralPics[gMission.keyPics[2]]);
-	if (gMission.flags & FLAGS_KEYCARD_RED)
-		DrawKeycard(CenterX(KEY_WIDTH(3)) + 30, 20, &cGeneralPics[gMission.keyPics[3]]);
-
-	if (ot == -1 || missionTime == 0) /* set the original time properly */
-		ot = time(NULL);
-
-	t = time(NULL);
-
-	if (!gameIsPaused) {
-		td = t - ot;
-	}
-
-	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
-	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
-
-	if (HasObjectives(gCampaign.Entry.mode))
-	{
-		MissionUpdateObjectives();
-	}
-}
-
-void DisplayMessage(const char *s)
-{
-	strcpy(message, s);
-	messageTicks = 140;
-}
-
 int HandleKey(int *done, int cmd)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
@@ -631,14 +497,14 @@ int gameloop(void)
 	int ticks;
 	int is_esc_pressed = 0;
 	int done = NO;
-	time_t t;
-	struct tm *tp;
+	HUD hud;
 
 	CDogsSetClip(0, 0, gGraphicsDevice.cachedConfig.ResolutionWidth - 1, gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+	HUDInit(&hud, &gConfig.Interface, &gMission);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
-		DisplayMessage(MusicGetErrorMessage(&gSoundDevice));
+		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice));
 	}
 
 	gameIsPaused = NO;
@@ -651,7 +517,7 @@ int gameloop(void)
 
 		frames++;
 
-		Ticks_FrameBegin();
+		Ticks_Update();
 
 		ticks = Ticks_Synchronize();
 
@@ -665,21 +531,18 @@ int gameloop(void)
 
 		debug(D_VERBOSE, "frames... %d\n", frames);
 
-		if (Ticks_TimeElapsed(TICKS_PER_SEC)) {
-			fps = frames;
-			debug(D_NORMAL, "fps = %d\n", fps);
+		if (Ticks_TimeElapsed(MILLISECS_PER_SEC))
+		{
 			frames = 0;
-
-			t = time(NULL);
-			tp = localtime(&t);
-			timeHours = tp->tm_hour;
-			timeMinutes = tp->tm_min;
 		}
 
-		if (messageTicks > 0)
-			messageTicks -= ticks;
+		HUDUpdate(&hud, ticks_now - ticks_then);
+		HUDDraw(&hud, gameIsPaused, escExits);
 
-		StatusDisplay();
+		if (HasObjectives(gCampaign.Entry.mode))
+		{
+			MissionUpdateObjectives();
+		}
 
 		if (!gameIsPaused) {
 			missionTime += ticks;
