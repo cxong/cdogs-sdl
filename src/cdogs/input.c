@@ -315,3 +315,18 @@ void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard)
 	JoyPoll(joysticks);
 	KeyPoll(keyboard);
 }
+
+const char *InputDeviceName(int d)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		return "Keyboard";
+	case INPUT_DEVICE_JOYSTICK_1:
+		return SDL_JoystickName(0);
+	case INPUT_DEVICE_JOYSTICK_2:
+		return SDL_JoystickName(1);
+	default:
+		return "";
+	}
+}

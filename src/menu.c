@@ -363,7 +363,7 @@ menu_t *MenuCreateOptionChangeControl(
 	menu->u.option.uHook.changeControl.device0 = device0;
 	menu->u.option.uHook.changeControl.device1 = device1;
 	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC;
-	menu->u.option.uFunc.intToStr = InputDeviceStr;
+	menu->u.option.uFunc.intToStr = InputDeviceName;
 	return menu;
 }
 

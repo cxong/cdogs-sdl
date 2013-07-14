@@ -155,7 +155,7 @@ typedef struct menu
 			union
 			{
 				char *(*str)(void);
-				char *(*intToStr)(int);
+				const char *(*intToStr)(int);
 			} uFunc;
 		} option;
 		campaign_entry_t campaign;

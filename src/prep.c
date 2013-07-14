@@ -304,7 +304,7 @@ static void ShowPlayerControls(int x, KeyConfig *config)
 	}
 	else
 	{
-		sprintf(s, "(%s)", InputDeviceStr(config->Device));
+		sprintf(s, "(%s)", InputDeviceName(config->Device));
 		CDogsTextStringAt(x, y, s);
 	}
 }
