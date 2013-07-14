@@ -36,6 +36,8 @@
 #include "json_utils.h"
 #include "keyboard.h"
 
+#define VERSION "2"
+
 
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
 {
@@ -43,9 +45,9 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	config->RandomSeed = atoi(json_find_first_label(node, "RandomSeed")->child->text);
 	config->Difficulty = StrDifficulty(json_find_first_label(node, "Difficulty")->child->text);
 	LoadBool(&config->SlowMotion, node, "SlowMotion");
-	config->EnemyDensity = atoi(json_find_first_label(node, "EnemyDensity")->child->text);
-	config->NonPlayerHP = atoi(json_find_first_label(node, "NonPlayerHP")->child->text);
-	config->PlayerHP = atoi(json_find_first_label(node, "PlayerHP")->child->text);
+	LoadInt(&config->EnemyDensity, node, "EnemyDensity");
+	LoadInt(&config->NonPlayerHP, node, "NonPlayerHP");
+	LoadInt(&config->PlayerHP, node, "PlayerHP");
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -68,11 +70,12 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 
 static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 {
-	config->Brightness = atoi(json_find_first_label(node, "Brightness")->child->text);
-	config->ResolutionWidth = atoi(json_find_first_label(node, "ResolutionWidth")->child->text);
-	config->ResolutionHeight = atoi(json_find_first_label(node, "ResolutionHeight")->child->text);
+	LoadInt(&config->Brightness, node, "Brightness");
+	LoadInt(&config->ResolutionWidth, node, "ResolutionWidth");
+	LoadInt(&config->ResolutionHeight, node, "ResolutionHeight");
 	LoadBool(&config->Fullscreen, node, "Fullscreen");
-	config->ScaleFactor = atoi(json_find_first_label(node, "ScaleFactor")->child->text);
+	LoadInt(&config->ScaleFactor, node, "ScaleFactor");
+	LoadInt(&config->ShakeMultiplier, node, "ShakeMultiplier");
 }
 static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 {
@@ -83,18 +86,19 @@ static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 	json_insert_pair_into_object(
 		subConfig, "Fullscreen", json_new_bool(config->Fullscreen));
 	AddIntPair(subConfig, "ScaleFactor", config->ScaleFactor);
+	AddIntPair(subConfig, "ShakeMultiplier", config->ShakeMultiplier);
 	json_insert_pair_into_object(root, "Graphics", subConfig);
 }
 
 static void LoadKeysNode(input_keys_t *keys, json_t *node)
 {
-	keys->left = atoi(json_find_first_label(node, "left")->child->text);
-	keys->right = atoi(json_find_first_label(node, "right")->child->text);
-	keys->up = atoi(json_find_first_label(node, "up")->child->text);
-	keys->down = atoi(json_find_first_label(node, "down")->child->text);
-	keys->button1 = atoi(json_find_first_label(node, "button1")->child->text);
-	keys->button2 = atoi(json_find_first_label(node, "button2")->child->text);
-	keys->map = atoi(json_find_first_label(node, "map")->child->text);
+	LoadInt(&keys->left, node, "left");
+	LoadInt(&keys->right, node, "right");
+	LoadInt(&keys->up, node, "up");
+	LoadInt(&keys->down, node, "down");
+	LoadInt(&keys->button1, node, "button1");
+	LoadInt(&keys->button2, node, "button2");
+	LoadInt(&keys->map, node, "map");
 }
 static void AddKeysNode(input_keys_t *keys, json_t *parent)
 {
@@ -158,7 +162,7 @@ static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
 {
 	LoadBool(&config->ShowFPS, node, "ShowFPS");
 	LoadBool(&config->ShowTime, node, "ShowTime");
-	config->SplitscreenAlways = json_find_first_label(node, "SplitscreenAlways")->child->type == JSON_TRUE;
+	LoadBool(&config->SplitscreenAlways, node, "SplitscreenAlways");
 }
 static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 {
@@ -174,9 +178,9 @@ static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 
 static void LoadSoundConfigNode(SoundConfig *config, json_t *node)
 {
-	config->SoundVolume = atoi(json_find_first_label(node, "SoundVolume")->child->text);
-	config->MusicVolume = atoi(json_find_first_label(node, "MusicVolume")->child->text);
-	config->SoundChannels = atoi(json_find_first_label(node, "SoundChannels")->child->text);
+	LoadInt(&config->SoundVolume, node, "SoundVolume");
+	LoadInt(&config->MusicVolume, node, "MusicVolume");
+	LoadInt(&config->SoundChannels, node, "SoundChannels");
 	LoadBool(&config->Footsteps, node, "Footsteps");
 	LoadBool(&config->Hits, node, "Hits");
 	LoadBool(&config->Reloads, node, "Reloads");
@@ -242,7 +246,7 @@ void ConfigSaveJSON(Config *config, const char *filename)
 	setlocale(LC_ALL, "");
 
 	root = json_new_object();
-	json_insert_pair_into_object(root, "Version", json_new_number("1"));
+	json_insert_pair_into_object(root, "Version", json_new_number(VERSION));
 	AddGameConfigNode(&config->Game, root);
 	AddGraphicsConfigNode(&config->Graphics, root);
 	AddInputConfigNode(&config->Input, root);

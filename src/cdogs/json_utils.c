@@ -28,6 +28,8 @@
  */
 #include "json_utils.h"
 
+#include <stdlib.h>
+
 void AddIntPair(json_t *parent, const char *name, int number)
 {
 	char buf[32];
@@ -35,21 +37,37 @@ void AddIntPair(json_t *parent, const char *name, int number)
 	json_insert_pair_into_object(parent, name, json_new_number(buf));
 }
 
+int TryLoadValue(json_t **node, const char *name)
+{
+	if (*node == NULL)
+	{
+		return 0;
+	}
+	*node = json_find_first_label(*node, name);
+	if (*node == NULL)
+	{
+		return 0;
+	}
+	*node = (*node)->child;
+	if (*node == NULL)
+	{
+		return 0;
+	}
+	return 1;
+}
 void LoadBool(int *value, json_t *node, const char *name)
 {
-	if (node == NULL)
-	{
-		return;
-	}
-	node = json_find_first_label(node, name);
-	if (node == NULL)
-	{
-		return;
-	}
-	node = node->child;
-	if (node == NULL)
+	if (!TryLoadValue(&node, name))
 	{
 		return;
 	}
 	*value = node->type == JSON_TRUE;
+}
+void LoadInt(int *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = atoi(node->text);
 }

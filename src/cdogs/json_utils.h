@@ -33,5 +33,6 @@
 
 void AddIntPair(json_t *parent, const char *name, int number);
 void LoadBool(int *value, json_t *node, const char *name);
+void LoadInt(int *value, json_t *node, const char *name);
 
 #endif

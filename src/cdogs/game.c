@@ -101,7 +101,6 @@ static int messageTicks = 0;
 static int timeHours, timeMinutes;
 
 static int screenShaking = 0;
-int shakeMultiplier = 1;
 
 static int gameIsPaused = NO;
 static int escExits = NO;
@@ -248,7 +247,7 @@ void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,
 
 void ShakeScreen(int amount)
 {
-	screenShaking = (screenShaking + amount) * shakeMultiplier;
+	screenShaking = (screenShaking + amount) * gConfig.Graphics.ShakeMultiplier;
 
 	/* So we don't shake too much :) */
 	if (screenShaking > 100)

@@ -60,6 +60,7 @@ typedef struct
 	int ResolutionHeight;
 	int Fullscreen;
 	int ScaleFactor;
+	int ShakeMultiplier;
 } GraphicsConfig;
 
 typedef struct

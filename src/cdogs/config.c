@@ -114,6 +114,7 @@ void ConfigLoad(Config *config, const char *filename)
 		ConfigLoadOld(config, filename);
 		break;
 	case 1:
+	case 2:
 		ConfigLoadJSON(config, filename);
 		break;
 	default:
@@ -145,6 +146,7 @@ void ConfigLoadDefault(Config *config)
 	config->Graphics.ResolutionHeight = 240;
 	config->Graphics.ResolutionWidth = 320;
 	config->Graphics.ScaleFactor = 1;
+	config->Graphics.ShakeMultiplier = 1;
 	config->Input.PlayerKeys[0].Device = INPUT_DEVICE_KEYBOARD;
 	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;

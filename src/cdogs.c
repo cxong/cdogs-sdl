@@ -1027,13 +1027,12 @@ int main(int argc, char *argv[])
 				break;
 			case 'm':
 				{
-					extern int shakeMultiplier;
-					shakeMultiplier = atoi(optarg);
-					if (shakeMultiplier < 0)
+					gConfig.Graphics.ShakeMultiplier = atoi(optarg);
+					if (gConfig.Graphics.ShakeMultiplier < 0)
 					{
-						shakeMultiplier = 0;
+						gConfig.Graphics.ShakeMultiplier = 0;
 					}
-					printf("Shake multiplier: %d\n", shakeMultiplier);
+					printf("Shake multiplier: %d\n", gConfig.Graphics.ShakeMultiplier);
 				}
 				break;
 			case 'h':
