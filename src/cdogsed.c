@@ -1018,7 +1018,8 @@ static void Append(char *s, int maxlen, char c)
 {
 	size_t l = strlen(s);
 
-	if (l < maxlen) {
+	if ((int)l < maxlen)
+	{
 		s[l + 1] = 0;
 		s[l] = c;
 	}

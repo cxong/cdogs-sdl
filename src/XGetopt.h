@@ -5,7 +5,7 @@
   getopt.h - comand line option parsing
   Copyright Keristor Systems and Chris Croughton 1997 - 2005
   Internet: swdev@keristor.org
-  
+
   Permission is granted to anyone to use this software for any purpose,
   including commercial applications, and to alter it and redistribute it
   freely, subject to the following restrictions:
@@ -17,7 +17,7 @@
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
- 
+
   THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,7 +40,7 @@
  * names of the external variables and functions are hidden so that
  * namespace clashes don't occur (some linkers object if they find
  * the same symbol in more than one library).
- * 
+ *
  * It was written originally because of systems which don't have the GNU
  * C library installed.
  *
@@ -71,11 +71,11 @@ extern "C" {
 #define optind                 _XLIB_optind
 #define opterr                 _XLIB_opterr
 #define optopt                 _XLIB_optopt
- 
+
 #define getopt                 _XLIB_getopt
 #define getopt_long            _XLIB_getopt_long
 #define getopt_long_only       _XLIB_getopt_long_only
- 
+
 /** holds a pointer to an option argument */
 extern char *optarg;
 /** index to te first non-option argument */
@@ -113,14 +113,14 @@ struct option
 };
 
 /** Scan the command-line parameters for options in the form {\em -x}. */
-int getopt(int argc, char * const argv[], const char *optstring);
+int getopt(int argc, char * argv[], const char *optstring);
 /** Scan the command-line parameters for options, allowing both the short
  * (single character) options and long (string) options.
  */
-int getopt_long(int argc, char * const argv[], const char *optstring,
+int getopt_long(int argc, char * argv[], const char *optstring,
                 const struct option *longopts, int *longindex);
 /** Scan the command-line parameters for long options only */
-int getopt_long_only(int argc, char * const argv[], const char *optstring,
+int getopt_long_only(int argc, char * argv[], const char *optstring,
                      const struct option *longopts, int *longindex);
 
 #if defined(_cplusplus) || defined(__cplusplus)

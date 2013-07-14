@@ -129,7 +129,7 @@ GraphicsDevice gGraphicsDevice =
 	0,
 	NULL,
 	{
-		0, 0, 0, 0, 0
+		0, 0, 0, 0, 0, 0
 	}
 };
 

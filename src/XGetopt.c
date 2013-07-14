@@ -2,7 +2,7 @@
   getopt.c - implementation of getopt(3) and getopt_long(3)
   Copyright Keristor Systems and Chris Croughton 1997
   Internet: swdev@keristor.org
-  
+
   Permission is granted to anyone to use this software for any purpose,
   including commercial applications, and to alter it and redistribute it
   freely, subject to the following restrictions:
@@ -14,7 +14,7 @@
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
- 
+
   THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,12 +43,6 @@ char *optarg = NULL;
 int   optind = 0;
 int   opterr = 1;
 int   optopt = 0;
-
-int getopt(int argc, char * const argv[], const char *optstring);
-int getopt_long(int argc, char * const argv[], const char *optstring,
-                const struct option *longopts, int *longindex);
-int getopt_long_only(int argc, char * const argv[], const char *optstring,
-                     const struct option *longopts, int *longindex);
 
 /************************************************************************
  *
@@ -146,8 +140,8 @@ lookup_shortopt(int argc, char **argv, const char *opts)
 }
 
 static int
-lookup_longopt(int argc, char **argv, 
-               const struct option *longopts, 
+lookup_longopt(int argc, char **argv,
+               const struct option *longopts,
                int *longindex)
 {
     char *eqp;
@@ -167,7 +161,7 @@ lookup_longopt(int argc, char **argv,
     }
     /* look for equality or fraternity */
     eqp = strchr(optarg, '=');
-    min = (int)(eqp ? eqp - optarg : strlen(optarg));
+    min = (eqp ? eqp - optarg : (int)strlen(optarg));
     for (i = 0; longopts[i].name; i++)
     {
         len = (int)strlen(longopts[i].name);
@@ -254,7 +248,7 @@ lookup_longopt(int argc, char **argv,
  */
 static int
 getnextopt(int argc, char **argv, const char *optstring,
-           const struct option *longopts, int *longindex, 
+           const struct option *longopts, int *longindex,
            bool longonly, enum action act)
 {
     static int thisind = 0;
@@ -427,9 +421,9 @@ getnextopt(int argc, char **argv, const char *optstring,
 /**
  * Scan the command-line parameters for options in the form \b -x.
  */
-int getopt(int argc, char * const argv[], const char *optstring)
+int getopt(int argc, char * argv[], const char *optstring)
 {
-    return getnextopt(argc, (char**)argv, optstring, NULL, NULL, 
+    return getnextopt(argc, (char**)argv, optstring, NULL, NULL,
                       false, E_PERMUTE);
 }
 
@@ -437,20 +431,20 @@ int getopt(int argc, char * const argv[], const char *optstring)
  * Scan the command-line parameters for options, allowing both the short
  * (single character) options and long (string) options.
  */
-int getopt_long(int argc, char * const argv[], const char *optstring,
+int getopt_long(int argc, char * argv[], const char *optstring,
                 const struct option *longopts, int *longindex)
 {
-    return getnextopt(argc, (char**)argv, optstring, longopts, longindex, 
+    return getnextopt(argc, (char**)argv, optstring, longopts, longindex,
                       false, E_PERMUTE);
 }
 
 /**
  * Scan the command-line parameters for long options only
  */
-int getopt_long_only(int argc, char * const argv[], const char *optstring,
+int getopt_long_only(int argc, char * argv[], const char *optstring,
                      const struct option *longopts, int *longindex)
 {
-    return getnextopt(argc, (char**)argv, optstring, longopts, longindex, 
+    return getnextopt(argc, (char**)argv, optstring, longopts, longindex,
                       true, E_PERMUTE);
 }
 

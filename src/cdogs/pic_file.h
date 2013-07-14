@@ -67,8 +67,7 @@ typedef struct
 	unsigned char data[1];
 } Pic;
 
-int ReadPics(const char *filename, void **pics, int maxPics, TPalette palette);
-int AppendPics(const char *filename, void **pics, int startIndex,
-	       int maxPics);
+int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette);
+int AppendPics(const char *filename, Pic **pics, int startIndex, int maxPics);
 
 #endif
