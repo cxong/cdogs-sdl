@@ -199,3 +199,8 @@ int JoyIsPressed(joystick_t *joystick, int button)
 {
 	return JoyIsDown(joystick, button) && !(joystick->previousButtonsField & button);
 }
+
+int JoyIsAnyPressed(joystick_t *joystick)
+{
+	return !!joystick->currentButtonsField;
+}

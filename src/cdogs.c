@@ -204,7 +204,7 @@ void CampaignIntro(void *bkg)
 	MissionDescription(y, gCampaign.Setting.description);
 
 	CopyToScreen();
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 void MissionBriefing(void *bkg)
@@ -255,8 +255,7 @@ void MissionBriefing(void *bkg)
 	}
 
 	CopyToScreen();
-
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 void Summary(int x, struct PlayerData *data, int character)
@@ -435,8 +434,7 @@ void MissionSummary(void *bkg)
 		Summary(CenterX(60), &gPlayer1Data, CHARACTER_PLAYER1);
 
 	CopyToScreen();
-
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 void ShowScore(void *bkg, int score1, int score2)
@@ -468,7 +466,7 @@ void ShowScore(void *bkg, int score1, int score2)
 	}
 
 	CopyToScreen();
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 void FinalScore(void *bkg, int score1, int score2)
@@ -498,7 +496,7 @@ void FinalScore(void *bkg, int score1, int score2)
 			IS_WINNER);
 	}
 	CopyToScreen();
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 
@@ -565,7 +563,7 @@ void Victory(void *bkg)
 	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
 	CopyToScreen();
-	GetKey(&gKeyboard);
+	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
 

@@ -206,11 +206,11 @@ void DisplayAllTimeHighScores(void *bkg)
 			GetDstScreen(),
 			bkg,
 			GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-		index = DisplayPage("All time high scores:", index, allTimeHigh,
-				    gPlayer1Data.allTime,
-				    gOptions.twoPlayers ? gPlayer2Data.
-				    allTime : -1);
-		GetKey(&gKeyboard);
+		index = DisplayPage(
+			"All time high scores:", index, allTimeHigh,
+			gPlayer1Data.allTime,
+			gOptions.twoPlayers ? gPlayer2Data.allTime : -1);
+		WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 	}
 }
 
@@ -222,10 +222,10 @@ void DisplayTodaysHighScores(void *bkg)
 	{
 		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		index = DisplayPage("Today's highest score:", index, todaysHigh,
-				    gPlayer1Data.today,
-				    gOptions.twoPlayers ? gPlayer2Data.
-				    today : -1);
-		GetKey(&gKeyboard);
+			gPlayer1Data.today,
+			gOptions.twoPlayers ? gPlayer2Data.
+			today : -1);
+		WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 	}
 }
 

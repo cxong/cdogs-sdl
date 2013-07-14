@@ -60,5 +60,6 @@ void JoyPoll(joysticks_t *joys);
 
 int JoyIsDown(joystick_t *joystick, int button);
 int JoyIsPressed(joystick_t *joystick, int button);
+int JoyIsAnyPressed(joystick_t *joystick);
 
 #endif

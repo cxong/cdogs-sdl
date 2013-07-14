@@ -49,6 +49,7 @@
 #ifndef __EVENTS
 #define __EVENTS
 
+#include "joystick.h"
 #include "keyboard.h"
 
 struct MouseRect {
@@ -60,6 +61,7 @@ struct MouseRect {
 void InitMouse(void);
 void Mouse(int *x, int *y, int *button);
 int GetKey(keyboard_t *keyboard);
+void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks);
 void SetMouseRects(struct MouseRect *rects);
 void SetSecondaryMouseRects(struct MouseRect *rects);
 int GetMouseRectTag(int x, int y, int *tag);

@@ -94,6 +94,27 @@ int GetKey(keyboard_t *keyboard)
 	return key_pressed;
 }
 
+void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks)
+{
+	for (;;)
+	{
+		int i;
+		KeyPoll(keyboard);
+		JoyPoll(joysticks);
+		if (KeyGetPressed(keyboard))
+		{
+			return;
+		}
+		for (i = 0; i < joysticks->numJoys; i++)
+		{
+			if (JoyIsAnyPressed(&joysticks->joys[i]))
+			{
+				return;
+			}
+		}
+	}
+}
+
 void SetMouseRects(struct MouseRect *rects)
 {
 	localRects = rects;
