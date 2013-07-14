@@ -69,14 +69,14 @@ static int dxCDogsText = 0;
 static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
-static void *font[CHARS_IN_FONT];
+static Pic *font[CHARS_IN_FONT];
 static void *compiledFont[CHARS_IN_FONT];
 static void *rleFont[CHARS_IN_FONT];
 
 
 void CDogsTextInit(const char *filename, int offset)
 {
-	int i, h;
+	int i;
 
 	dxCDogsText = offset;
 	memset(font, 0, sizeof(font));
@@ -84,10 +84,12 @@ void CDogsTextInit(const char *filename, int offset)
 	memset(rleFont, 0, sizeof(rleFont));
 	ReadPics(filename, font, CHARS_IN_FONT, NULL);
 
-	for (i = 0; i < CHARS_IN_FONT; i++) {
-		h = PicHeight(font[i]);
-		if (h > hCDogsText)
-			hCDogsText = h;
+	for (i = 0; i < CHARS_IN_FONT; i++)
+	{
+		if (font[i] != NULL)
+		{
+			hCDogsText = MAX(hCDogsText, font[i]->h);
+		}
 	}
 }
 
@@ -96,11 +98,13 @@ void CDogsTextChar(char c)
 	int i = CHAR_INDEX(c);
 	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
 		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
-		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
-	} else {
+		xCDogsText += 1 + font[i]->w + dxCDogsText;
+	}
+	else
+	{
 		i = CHAR_INDEX('.');
 		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
-		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
+		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 }
 
@@ -109,11 +113,13 @@ void CDogsTextCharWithTable(char c, TranslationTable * table)
 	int i = CHAR_INDEX(c);
 	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
 		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
-		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
-	} else {
+		xCDogsText += 1 + font[i]->w + dxCDogsText;
+	}
+	else
+	{
 		i = CHAR_INDEX('.');
 		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
-		xCDogsText += 1 + PicWidth(font[i]) + dxCDogsText;
+		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 }
 
@@ -170,9 +176,13 @@ void CDogsTextStringWithTableAt(int x, int y, const char *s,
 int CDogsTextCharWidth(int c)
 {
 	if (c >= FIRST_CHAR && c <= LAST_CHAR && font[CHAR_INDEX(c)])
-		return 1 + PicWidth(font[CHAR_INDEX(c)]) + dxCDogsText;
+	{
+		return 1 + font[CHAR_INDEX(c)]->w + dxCDogsText;
+	}
 	else
-		return 1 + PicWidth(font[CHAR_INDEX('.')]) + dxCDogsText;
+	{
+		return 1 + font[CHAR_INDEX('.')]->w + dxCDogsText;
+	}
 }
 
 int CDogsTextWidth(const char *s)

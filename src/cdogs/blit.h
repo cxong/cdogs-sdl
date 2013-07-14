@@ -49,10 +49,12 @@
 #ifndef __BLIT
 #define __BLIT
 
+#include "pic_file.h"
+
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
-void Blit(int x, int y, void *pic, void *table, int mode);
+void Blit(int x, int y, Pic *pic, void *table, int mode);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.

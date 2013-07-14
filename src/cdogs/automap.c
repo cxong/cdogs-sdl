@@ -99,8 +99,8 @@ static void DisplayPlayer(TActor * player)
 		    MAP_FACTOR * player->tileItem.x / TILE_WIDTH;
 		y = MAP_YOFFS +
 		    MAP_FACTOR * player->tileItem.y / TILE_HEIGHT;
-		x -= PicWidth(gPics[pic]) / 2;
-		y -= PicHeight(gPics[pic]) / 2;
+		x -= gPics[pic]->w / 2;
+		y -= gPics[pic]->h / 2;
 		DrawTTPic(x, y, gPics[pic], c->table, gRLEPics[pic]);
 	}
 }

@@ -67,37 +67,38 @@ int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
 
 //this function is referenced by 4 macros, that do all the args
 
-void Blit(int x, int y, void *pic, void *table, int mode) {
-	int height = PicHeight(pic);
-	int width = PicWidth(pic);
+void Blit(int x, int y, Pic *pic, void *table, int mode)
+{
 	int yoff, xoff;
-	unsigned char *current = pic;
+	unsigned char *current = pic->data;
 	unsigned char *target;
 	unsigned char *xlate = (unsigned char *) table;
 
 	int i;
 
-	current += 4;
-
-	for (i = 0; i < height; i++) {
+	for (i = 0; i < pic->h; i++)
+	{
 		int j;
 
 		yoff = i + y;
 		if (yoff > clipbottom)
 			break;
-		if (yoff < cliptop){
-			current += width;
+		if (yoff < cliptop)
+		{
+			current += pic->w;
 			continue;
 		}
 		yoff *= gGraphicsDevice.cachedConfig.ResolutionWidth;
-		for (j = 0; j < width; j++) {
+		for (j = 0; j < pic->w; j++)
+		{
 			xoff = j + x;
 			if (xoff < clipleft){
 				current++;
 				continue;
 			}
-			if (xoff > clipright){
-				current += width - j;
+			if (xoff > clipright)
+			{
+				current += pic->w - j;
 				break;
 			}
 			target = r_screen + yoff + xoff;

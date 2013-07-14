@@ -51,6 +51,8 @@
 
 #include "sys_specifics.h"
 
+#include <stdint.h>
+
 
 struct RGB {
 	unsigned char red, green, blue;
@@ -58,25 +60,15 @@ struct RGB {
 typedef struct RGB color_t;
 typedef color_t TPalette[256];
 typedef unsigned char TranslationTable[256];
+typedef struct
+{
+	uint16_t w;
+	uint16_t h;
+	unsigned char data[1];
+} Pic;
 
-int ReadPics(
-	const char *filename, void **pics, int maxPics,
-	color_t *palette);
+int ReadPics(const char *filename, void **pics, int maxPics, TPalette palette);
 int AppendPics(const char *filename, void **pics, int startIndex,
 	       int maxPics);
-
-INLINE static int PicWidth(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *)pic)[0];
-}
-
-INLINE static int PicHeight(const void *pic)
-{
-	if (!pic)
-		return 0;
-	return ((const short *)pic)[1];
-}
 
 #endif

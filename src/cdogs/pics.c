@@ -34,7 +34,7 @@
 
 
 color_t gPalette[256], origPalette[256];
-void *gPics[PIC_MAX];
+Pic *gPics[PIC_MAX];
 void *gCompiledPics[PIC_MAX];
 void *gRLEPics[PIC_MAX];
 

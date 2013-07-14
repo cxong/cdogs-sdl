@@ -397,7 +397,7 @@ void MenuDisplayItems(MenuSystem *menu)
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		DrawTPic(
-			(gGraphicsDevice.cachedConfig.ResolutionWidth - PicWidth(gPics[PIC_LOGO])) / 2,
+			(gGraphicsDevice.cachedConfig.ResolutionWidth - gPics[PIC_LOGO]->w) / 2,
 			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
 			gPics[PIC_LOGO],
 			gCompiledPics[PIC_LOGO]);

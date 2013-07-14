@@ -252,7 +252,7 @@ typedef struct OffsetPic TOffsetPic;
 
 
 extern TPalette gPalette, origPalette;
-extern void *gPics[PIC_MAX];
+extern Pic *gPics[PIC_MAX];
 extern void *gCompiledPics[PIC_MAX];
 extern void *gRLEPics[PIC_MAX];
 

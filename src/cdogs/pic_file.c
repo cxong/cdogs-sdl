@@ -53,15 +53,7 @@
 #include "files.h"
 #include "utils.h"
 
-typedef struct _Pic {
-	short int w;
-	short int h;
-	char *data;
-} Pic;
-
-int ReadPics(
-	const char *filename, void **pics, int maxPics,
-	color_t * palette)
+int ReadPics(const char *filename, void **pics, int maxPics, TPalette palette)
 {
 	FILE *f;
 	int is_eof = 0;
