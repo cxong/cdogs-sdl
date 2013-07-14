@@ -135,6 +135,36 @@ void HUDUpdate(HUD *hud, int ms)
 }
 
 
+void DrawHealth(int health, int maxHealth, int flags)
+{
+	char s[50];
+	int colourMaxHealth = 16;
+	int colourMinHealth = 21;
+	int barWidth = 50;
+	unsigned char colour = (unsigned char)((colourMaxHealth - colourMinHealth) * health / maxHealth + colourMinHealth);
+	int healthBarWidth = MAX(1, barWidth * health / maxHealth);
+	unsigned char backColour = 29;
+	int barLeft = 4;
+	int barTop = 4 * CDogsTextHeight() - 1;
+	int barHeight = CDogsTextHeight() + 1;
+	BlitRectangle(
+		GetDstScreen(),
+		barLeft, barTop,
+		barWidth,
+		barHeight,
+		backColour,
+		BLIT_FLAG_ROUNDED);
+	BlitRectangle(
+		GetDstScreen(),
+		barLeft + 1, barTop + 1,
+		MAX(0, healthBarWidth - 2),
+		barHeight - 2,
+		colour,
+		0);
+	sprintf(s, "%d", health);
+	CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
+}
+
 #define HUD_PLACE_LEFT	0
 #define HUD_PLACE_RIGHT	1
 // Draw player's score, health etc.
@@ -161,8 +191,7 @@ void DrawPlayerStatus(struct PlayerData *data, TActor *p, int placement)
 		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
 		CDogsTextStringSpecial(
 			GunGetName(p->weapon.gun), flags, 5, 5 + 1 + CDogsTextHeight());
-		sprintf(s, "%d hp", p->health);
-		CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
+		DrawHealth(p->health, gCharacterDesc[p->character].maxHealth, flags);
 	}
 	else
 	{

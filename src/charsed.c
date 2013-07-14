@@ -158,7 +158,7 @@ static void DisplayCharacter(int x, int y, const TBadGuy * data,
 	struct CharacterDescription *cd;
 	TOffsetPic body, head;
 
-	cd = &characterDesc[0];
+	cd = &gCharacterDesc[0];
 	SetupMissionCharacter(0, data);
 
 	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;

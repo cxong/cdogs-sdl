@@ -94,18 +94,18 @@ void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 
 	switch (mission->objectives[index].type) {
 	case OBJECTIVE_KILL:
-		i = characterDesc[mission->baddieCount +
+		i = gCharacterDesc[mission->baddieCount +
 				  CHARACTER_OTHERS].facePic;
 		table =
-		    &characterDesc[mission->baddieCount +
+		    &gCharacterDesc[mission->baddieCount +
 				  CHARACTER_OTHERS].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_RESCUE:
-		i = characterDesc[CHARACTER_PRISONER].facePic;
-		table = &characterDesc[CHARACTER_PRISONER].table;
+		i = gCharacterDesc[CHARACTER_PRISONER].facePic;
+		table = &gCharacterDesc[CHARACTER_PRISONER].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;

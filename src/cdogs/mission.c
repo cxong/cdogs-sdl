@@ -521,16 +521,16 @@ void SetupMissionCharacter(int index, const TBadGuy * b)
 {
 	SetCharacter(index, b->facePic, b->skinColor, b->hairColor,
 		     b->bodyColor, b->armColor, b->legColor);
-	characterDesc[index].armedBodyPic = b->armedBodyPic;
-	characterDesc[index].unarmedBodyPic = b->unarmedBodyPic;
-	characterDesc[index].speed = b->speed;
-	characterDesc[index].probabilityToMove = b->probabilityToMove;
-	characterDesc[index].probabilityToTrack = b->probabilityToTrack;
-	characterDesc[index].probabilityToShoot = b->probabilityToShoot;
-	characterDesc[index].actionDelay = b->actionDelay;
-	characterDesc[index].defaultGun = b->gun;
-	characterDesc[index].maxHealth = b->health;
-	characterDesc[index].flags = b->flags;
+	gCharacterDesc[index].armedBodyPic = b->armedBodyPic;
+	gCharacterDesc[index].unarmedBodyPic = b->unarmedBodyPic;
+	gCharacterDesc[index].speed = b->speed;
+	gCharacterDesc[index].probabilityToMove = b->probabilityToMove;
+	gCharacterDesc[index].probabilityToTrack = b->probabilityToTrack;
+	gCharacterDesc[index].probabilityToShoot = b->probabilityToShoot;
+	gCharacterDesc[index].actionDelay = b->actionDelay;
+	gCharacterDesc[index].defaultGun = b->gun;
+	gCharacterDesc[index].maxHealth = b->health;
+	gCharacterDesc[index].flags = b->flags;
 }
 
 static void SetupBadguysForMission(struct Mission *mission)

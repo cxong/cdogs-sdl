@@ -93,7 +93,7 @@ static void DisplayPlayer(TActor * player)
 	int pic;
 
 	if (player) {
-		c = &characterDesc[player->character];
+		c = &gCharacterDesc[player->character];
 		pic = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
 		x = MAP_XOFFS +
 		    MAP_FACTOR * player->tileItem.x / TILE_WIDTH;

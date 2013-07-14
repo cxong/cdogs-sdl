@@ -118,6 +118,45 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 	return;
 }
 
+void BlitRectangle(
+	unsigned char *screen,
+	int left, int top,
+	int width, int height,
+	unsigned char colour,
+	int flags)
+{
+	int y;
+	if (width < 3 || height < 3)
+	{
+		flags &= ~BLIT_FLAG_ROUNDED;
+	}
+	for (y = top; y < top + height; y++)
+	{
+		int isFirstOrLastLine = y == top || y == top + height - 1;
+		if (isFirstOrLastLine && (flags & BLIT_FLAG_ROUNDED))
+		{
+			memset(
+				screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
+				colour,
+				width - 2);
+		}
+		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
+		{
+			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
+				colour;
+			*(screen + left + width - 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
+				colour;
+		}
+		else
+		{
+			memset(
+				screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
+				colour,
+				width);
+		}
+	}
+}
+
 void CDogsSetClip(int left, int top, int right, int bottom)
 {
 	clipright = right;

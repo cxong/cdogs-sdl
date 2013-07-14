@@ -294,10 +294,10 @@ void DrawObjectiveInfo(int index, int y, int xc)
 	switch (currentMission->objectives[index].type) {
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
-		i = characterDesc[currentMission->baddieCount +
+		i = gCharacterDesc[currentMission->baddieCount +
 				  CHARACTER_OTHERS].facePic;
 		table =
-		    &characterDesc[currentMission->baddieCount +
+		    &gCharacterDesc[currentMission->baddieCount +
 				  CHARACTER_OTHERS].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -305,8 +305,8 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		break;
 	case OBJECTIVE_RESCUE:
 		typeCDogsText = "Rescue";
-		i = characterDesc[CHARACTER_PRISONER].facePic;
-		table = &characterDesc[CHARACTER_PRISONER].table;
+		i = gCharacterDesc[CHARACTER_PRISONER].facePic;
+		table = &gCharacterDesc[CHARACTER_PRISONER].table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
@@ -425,7 +425,7 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 	struct CharacterDescription *cd;
 	TOffsetPic body, head;
 
-	cd = &characterDesc[character];
+	cd = &gCharacterDesc[character];
 
 	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
 	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;

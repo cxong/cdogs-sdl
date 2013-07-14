@@ -83,7 +83,7 @@ TranslationTable tablePurple;
 
 void SetShade(TranslationTable * table, int start, int end, int shade);
 
-struct CharacterDescription characterDesc[CHARACTER_COUNT];
+struct CharacterDescription gCharacterDesc[CHARACTER_COUNT];
 
 
 static TActor *actorList = NULL;
@@ -167,7 +167,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	int dir = actor->direction, state = actor->state;
 	int headDir = dir;
 
-	struct CharacterDescription *c = &characterDesc[actor->character];
+	struct CharacterDescription *c = &gCharacterDesc[actor->character];
 	TranslationTable *table = (TranslationTable *) c->table;
 	int f = c->facePic;
 	int b;
@@ -320,8 +320,8 @@ TActor *AddActor(int character)
 	CCALLOC(actor, sizeof(TActor));
 
 	actor->soundLock = 0;
-	actor->weapon = WeaponCreate(characterDesc[character].defaultGun);
-	actor->health = characterDesc[character].maxHealth;
+	actor->weapon = WeaponCreate(gCharacterDesc[character].defaultGun);
+	actor->health = gCharacterDesc[character].maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
 	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
@@ -330,7 +330,7 @@ TActor *AddActor(int character)
 	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
 	actor->next = actorList;
 	actorList = actor;
-	actor->flags = FLAGS_SLEEPING | characterDesc[character].flags;
+	actor->flags = FLAGS_SLEEPING | gCharacterDesc[character].flags;
 	actor->character = character;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
@@ -632,7 +632,7 @@ Vector2i GetMuzzleOffset(TActor *actor)
 	int b, g, d = actor->direction;
 	Vector2i position;
 
-	b = characterDesc[actor->character].armedBodyPic;
+	b = gCharacterDesc[actor->character].armedBodyPic;
 	g = GunGetPic(actor->weapon.gun);
 	position.x =
 		cGunHandOffset[b][d].dx +
@@ -718,13 +718,13 @@ void CommandActor(TActor * actor, int cmd)
 			shallMove = YES;
 
 			if (cmd & CMD_LEFT)
-				x -= characterDesc[actor->character].speed;
+				x -= gCharacterDesc[actor->character].speed;
 			else if (cmd & CMD_RIGHT)
-				x += characterDesc[actor->character].speed;
+				x += gCharacterDesc[actor->character].speed;
 			if (cmd & CMD_UP)
-				y -= characterDesc[actor->character].speed;
+				y -= gCharacterDesc[actor->character].speed;
 			else if (cmd & CMD_DOWN)
-				y += characterDesc[actor->character].speed;
+				y += gCharacterDesc[actor->character].speed;
 
 			if (actor->state != STATE_WALKING_1 &&
 			    actor->state != STATE_WALKING_2 &&
@@ -843,8 +843,8 @@ void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,
 void SetCharacter(int index, int face, int skin, int hair, int body,
 		  int arms, int legs)
 {
-	characterDesc[index].facePic = face;
-	SetCharacterColors(&characterDesc[index].table, arms, body, legs, skin, hair);
+	gCharacterDesc[index].facePic = face;
+	SetCharacterColors(&gCharacterDesc[index].table, arms, body, legs, skin, hair);
 }
 
 void BuildTranslationTables(void)
@@ -910,7 +910,7 @@ void InitializeTranslationTables(void)
 
 	for (i = 0; i < CHARACTER_COUNT; i++)
 		for (f = 0; f < 256; f++)
-			characterDesc[i].table[f] = (f & 0xFF);
+			gCharacterDesc[i].table[f] = (f & 0xFF);
 
 }
 

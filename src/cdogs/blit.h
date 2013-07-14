@@ -82,11 +82,17 @@ void Blit(int x, int y, Pic *pic, void *table, int mode);
  */
 #define DrawBTPic(x, y, pic, table, rle) (Blit(x, y, pic, table, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
-/*
-void DrawPic(int x, int y, void *pic, void *code);
-void DrawTPic(int x, int y, void *pic, void *code);
-void DrawTTPic(int x, int y, void *pic, void *table, void *rle);
-void DrawBTPic(int x, int y, void *pic, void *table, void *rle); */
+typedef enum
+{
+	BLIT_FLAG_LINE = 1,
+	BLIT_FLAG_ROUNDED = 2
+} BlitFlags;
+void BlitRectangle(
+	unsigned char *screen,
+	int left, int top,
+	int width, int height,
+	unsigned char colour,
+	int flags);
 
 void CDogsSetClip(int left, int top, int right, int bottom);
 void SetDstScreen(unsigned char *screen);

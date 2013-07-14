@@ -243,7 +243,7 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 
 	y = gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
 
-	cd = &characterDesc[character];
+	cd = &gCharacterDesc[character];
 
 	if (editingName) {
 		sprintf(s, "%c%s%c", '\020', data->name, '\021');
@@ -561,10 +561,10 @@ static void SetPlayer(int character, struct PlayerData *data)
 	face = IndexToHead(data->head);
 	skin = IndexToSkin(data->skin);
 	hair = IndexToHair(data->hair);
-	characterDesc[character].armedBodyPic = BODY_ARMED;
-	characterDesc[character].unarmedBodyPic = BODY_UNARMED;
-	characterDesc[character].speed = 256;
-	characterDesc[character].maxHealth = 200;
+	gCharacterDesc[character].armedBodyPic = BODY_ARMED;
+	gCharacterDesc[character].unarmedBodyPic = BODY_UNARMED;
+	gCharacterDesc[character].speed = 256;
+	gCharacterDesc[character].maxHealth = 200;
 	SetCharacter(character, face, skin, hair, data->body, data->arms,
 		     data->legs);
 }
