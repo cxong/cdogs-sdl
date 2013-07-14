@@ -74,14 +74,15 @@
 const char *MakePassword(int mission)
 {
 	static char s[PASSWORD_MAX + 1];
-	int i, sum1, sum2, x, count;
+	int sum1, sum2, count;
+	size_t i, x;
 	static char *alphabet1 = "0123456789abcdefghijklmnopqrstuvwxyz";
 	static char *alphabet2 = "9876543210kjihgfedcbazyxwvutsrqponml";
 	char *alphabet = (gOptions.twoPlayers ? alphabet2 : alphabet1);
-	int base = strlen(alphabet);
+	size_t base = strlen(alphabet);
 
 	sum1 = sum2 = 0;
-	for (i = 0; i < (int)strlen(gCampaign.Setting.title); i++)
+	for (i = 0; i < strlen(gCampaign.Setting.title); i++)
 	{
 		sum1 += gCampaign.Setting.title[i];
 		sum2 ^= gCampaign.Setting.title[i];
@@ -115,23 +116,29 @@ static int TestPassword(const char *password)
 static int PasswordEntry(int cmd, char *buffer)
 {
 	int i, x, y;
-	static char letters[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-	static int selection = -1;
+	static const char letters[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+	static size_t selection;
+	static int isFirst = 1;
 
 	// Kludge since Watcom won't let me initialize selection with a strlen()
-	if (selection < 0)
+	if (isFirst)
+	{
 		selection = strlen(letters);
+		isFirst = 0;
+	}
+
 
 	if (cmd & CMD_BUTTON1)
 	{
-		if (selection == (int)strlen(letters))
+		if (selection == strlen(letters))
 		{
 			SoundPlay(&gSoundDevice, SND_LAUNCH);
 			return 0;
 		}
 
-		if (strlen(buffer) < PASSWORD_MAX) {
-			int l = strlen(buffer);
+		if (strlen(buffer) < PASSWORD_MAX)
+		{
+			size_t l = strlen(buffer);
 			buffer[l + 1] = 0;
 			buffer[l] = letters[selection];
 			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
@@ -158,8 +165,10 @@ static int PasswordEntry(int cmd, char *buffer)
 			selection--;
 			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
-	} else if (cmd & CMD_RIGHT) {
-		if (selection < (int)strlen(letters))
+	}
+	else if (cmd & CMD_RIGHT)
+	{
+		if (selection < strlen(letters))
 		{
 			selection++;
 			SoundPlay(&gSoundDevice, SND_DOOR);
@@ -172,7 +181,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (selection < (int)strlen(letters) - 9)
+		if (selection < strlen(letters) - 9)
 		{
 			selection += 10;
 			SoundPlay(&gSoundDevice, SND_DOOR);
@@ -183,7 +192,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	#define	ENTRY_SPACING	12
 	
 	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
-	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+	y = (int)CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
 	for (i = 0; i < (int)strlen(letters); i++)
@@ -191,14 +200,18 @@ static int PasswordEntry(int cmd, char *buffer)
 		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			 y + (i / ENTRY_COLS) * CDogsTextHeight());
 
-		if (i == selection)
+		if (i == (int)selection)
+		{
 			CDogsTextCharWithTable(letters[i], &tableFlamed);
+		}
 		else
 			CDogsTextChar(letters[i]);
 	}
 	CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING, y + (i / ENTRY_COLS) * CDogsTextHeight());
-	if (i == selection)
+	if (i == (int)selection)
+	{
 		CDogsTextStringWithTable(DONE, &tableFlamed);
+	}
 	else
 		CDogsTextString(DONE);
 

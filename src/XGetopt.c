@@ -167,10 +167,10 @@ lookup_longopt(int argc, char **argv,
     }
     /* look for equality or fraternity */
     eqp = strchr(optarg, '=');
-    min = (eqp ? eqp - optarg : strlen(optarg));
+    min = (int)(eqp ? eqp - optarg : strlen(optarg));
     for (i = 0; longopts[i].name; i++)
     {
-        len = strlen(longopts[i].name);
+        len = (int)strlen(longopts[i].name);
         /* is it exact? */
         if (len == min && strncmp(longopts[i].name, optarg, len) == 0)
         {

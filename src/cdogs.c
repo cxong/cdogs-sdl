@@ -640,8 +640,9 @@ static void PlayGameSong(void)
 	if (strlen(gMission.missionData->song) > 0)
 	{
 		char buf[CDOGS_PATH_MAX];
-		int pathLen;
-		pathLen = MAX(strrchr(gCampaign.Entry.path, '\\'), strrchr(gCampaign.Entry.path, '/')) - gCampaign.Entry.path;
+		size_t pathLen = MAX(
+			strrchr(gCampaign.Entry.path, '\\'),
+			strrchr(gCampaign.Entry.path, '/')) - gCampaign.Entry.path;
 		strncpy(buf, gCampaign.Entry.path, pathLen);
 		buf[pathLen] = '\0';
 

@@ -348,7 +348,9 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 
 	// Kludge since Watcom won't let me initialize selection with a strlen()
 	if (selection[0] < 0)
-		selection[0] = selection[1] = strlen(letters);
+	{
+		selection[0] = selection[1] = (int)strlen(letters);
+	}
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -358,8 +360,9 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 			return 0;
 		}
 
-		if (strlen(data->name) < sizeof(data->name) - 1) {
-			int l = strlen(data->name);
+		if (strlen(data->name) < sizeof(data->name) - 1)
+		{
+			size_t l = strlen(data->name);
 			data->name[l + 1] = 0;
 			if (l > 0 && data->name[l - 1] != ' ')
 				data->name[l] =
@@ -414,7 +417,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 		}
 		else if (selection[index] < (int)strlen(letters))
 		{
-			selection[index] = strlen(letters);
+			selection[index] = (int)strlen(letters);
 			SoundPlay(&gSoundDevice, SND_DOOR);
 		}
 	}
@@ -422,7 +425,7 @@ static int NameSelection(int x, int index, struct PlayerData *data,
 	#define ENTRY_COLS	10
 	#define	ENTRY_SPACING	12
 
-	y = CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+	y = (int)CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 
 	if (gOptions.twoPlayers && index == CHARACTER_PLAYER1)
 	{

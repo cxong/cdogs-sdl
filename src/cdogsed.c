@@ -1016,7 +1016,7 @@ void DeleteItem(int index)
 
 static void Append(char *s, int maxlen, char c)
 {
-	int l = strlen(s);
+	size_t l = strlen(s);
 
 	if (l < maxlen) {
 		s[l + 1] = 0;
@@ -1210,7 +1210,6 @@ static void Save(int asCode)
 	char name[32];
 //      char ext[_MAX_EXT];
 	int c;
-	int i;
 
 	strcpy(filename, lastFile);
 	for (;;)
@@ -1248,9 +1247,9 @@ static void Save(int asCode)
 			if (strlen(filename) == sizeof(filename) - 1)
 				break;
 			c = toupper(c);
-			if ((c >= 'A' && c <= 'Z') ||
-			    c == '-' || c == '_' || c == '\\') {
-				i = strlen(filename);
+			if ((c >= 'A' && c <= 'Z') || c == '-' || c == '_' || c == '\\')
+			{
+				size_t i = strlen(filename);
 				filename[i + 1] = 0;
 				filename[i] = (char)c;
 			}

@@ -76,10 +76,10 @@ char *GetDataFilePath(const char *path);
 char * GetPWD(void);
 void SetupConfigDir(void);
 
-ssize_t f_read(FILE *f, void *buf, size_t size);
+size_t f_read(FILE *f, void *buf, size_t size);
 #define f_read8(f, b, s)	f_read(f, b, 1)
-ssize_t f_read32(FILE *f, void *buf, size_t size);
-ssize_t f_read16(FILE *f, void *buf, size_t size);
+size_t f_read32(FILE *f, void *buf, size_t size);
+size_t f_read16(FILE *f, void *buf, size_t size);
 
 void swap32 (void *d);
 void swap16 (void *d);

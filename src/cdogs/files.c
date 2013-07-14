@@ -74,19 +74,20 @@ static const int bendian = 0;
 
 void swap32 (void *d)
 {
-	if (bendian) {
-		*((int *)d) = SDL_Swap32(*((int *)d));
+	if (bendian)
+	{
+		*((int32_t *)d) = SDL_Swap32(*((int32_t *)d));
 	}
 }
 
-ssize_t f_read(FILE *f, void *buf, size_t size)
+size_t f_read(FILE *f, void *buf, size_t size)
 {
 	return fread(buf, size, 1, f);
 }
 
-ssize_t f_read32(FILE *f, void *buf, size_t size)
+size_t f_read32(FILE *f, void *buf, size_t size)
 {
-	ssize_t ret = 0;
+	size_t ret = 0;
 	if (buf) {
 		ret = f_read(f, buf, size);
 		swap32((int *)buf);
@@ -96,17 +97,19 @@ ssize_t f_read32(FILE *f, void *buf, size_t size)
 
 void swap16 (void *d)
 {
-	if (bendian) {
-		*((short int *)d) = SDL_Swap16(*((short int *)d));
+	if (bendian)
+	{
+		*((int16_t *)d) = SDL_Swap16(*((int16_t *)d));
 	}
 }
 
-ssize_t f_read16(FILE *f, void *buf, size_t size)
+size_t f_read16(FILE *f, void *buf, size_t size)
 {
-	ssize_t ret = 0;
-	if (buf) {
+	size_t ret = 0;
+	if (buf)
+	{
 		ret = f_read(f, buf, size);
-		swap16((short int*)buf);
+		swap16((int16_t *)buf);
 	}
 	return ret;
 }
