@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ struct Buffer * NewBuffer(void)
 	CMALLOC(b->tiles[0], rows * cols * sizeof(TTile));
 	for(i = 1; i < rows; i++)
 		b->tiles[i] = b->tiles[0] + i * cols;
-	
+
 	return b;
 }
 
@@ -730,9 +730,9 @@ int IsHighAccess(int x, int y)
 	return (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) & MAP_ACCESSBITS) != 0;
 }
 
-static void PlaceObject(int x, int y, int index)
+static void PlaceObject(int x, int y, int idx)
 {
-	TMapObject *mo = gMission.mapObjects[index];
+	TMapObject *mo = gMission.mapObjects[idx];
 	PlaceOneObject(x, y, mo, 0);
 }
 

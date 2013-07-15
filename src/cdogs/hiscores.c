@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,8 +152,7 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 		CDogsTextStringAt(x, y, s);
 }
 
-static int DisplayEntry(int x, int y, int index, struct Entry *e,
-			int hilite)
+static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 {
 	char s[10];
 
@@ -163,7 +162,7 @@ static int DisplayEntry(int x, int y, int index, struct Entry *e,
 #define MISSION_OFFSET   80
 #define NAME_OFFSET      85
 
-	sprintf(s, "%d.", index + 1);
+	sprintf(s, "%d.", idx + 1);
 	DisplayAt(x + INDEX_OFFSET - CDogsTextWidth(s), y, s, hilite);
 	sprintf(s, "%d", e->score);
 	DisplayAt(x + SCORE_OFFSET - CDogsTextWidth(s), y, s, hilite);
@@ -176,38 +175,40 @@ static int DisplayEntry(int x, int y, int index, struct Entry *e,
 	return 1 + CDogsTextHeight();
 }
 
-static int DisplayPage(const char *title, int index, struct Entry *e,
-		       int hilite1, int hilite2)
+static int DisplayPage(
+	const char *title, int idx, struct Entry *e, int hilite1, int hilite2)
 {
 	int x = 80;
 	int y = 5;
 
 	CDogsTextStringAt(5, 5, title);
-	while (index < MAX_ENTRY && e[index].score > 0 && x < 300) {
-		y += DisplayEntry(x, y, index, &e[index], index == hilite1
-				  || index == hilite2);
-		if (y > 198 - CDogsTextHeight()) {
+	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
+	{
+		y += DisplayEntry(
+			x, y, idx, &e[idx], idx == hilite1 || idx == hilite2);
+		if (y > 198 - CDogsTextHeight())
+		{
 			y = 20;
 			x += 100;
 		}
-		index++;
+		idx++;
 	}
 	CopyToScreen();
-	return index;
+	return idx;
 }
 
 void DisplayAllTimeHighScores(void *bkg)
 {
-	int index = 0;
+	int idx = 0;
 
-	while (index < MAX_ENTRY && allTimeHigh[index].score > 0)
+	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		memcpy(
 			GetDstScreen(),
 			bkg,
 			GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-		index = DisplayPage(
-			"All time high scores:", index, allTimeHigh,
+		idx = DisplayPage(
+			"All time high scores:", idx, allTimeHigh,
 			gPlayer1Data.allTime,
 			gOptions.twoPlayers ? gPlayer2Data.allTime : -1);
 		WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
@@ -216,12 +217,12 @@ void DisplayAllTimeHighScores(void *bkg)
 
 void DisplayTodaysHighScores(void *bkg)
 {
-	int index = 0;
+	int idx = 0;
 
-	while (index < MAX_ENTRY && todaysHigh[index].score > 0)
+	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
 		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-		index = DisplayPage("Today's highest score:", index, todaysHigh,
+		idx = DisplayPage("Today's highest score:", idx, todaysHigh,
 			gPlayer1Data.today,
 			gOptions.twoPlayers ? gPlayer2Data.
 			today : -1);
@@ -299,7 +300,7 @@ void LoadHighScores(void)
 			fclose(f);
 			return;
 		}
-		
+
 		//for (i = 0; i < MAX_ENTRY; i++) {
 		elementsRead = fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
 		CHECK_FREAD(1)
@@ -313,7 +314,7 @@ void LoadHighScores(void)
 		CHECK_FREAD(1)
 		elementsRead = fread(&d, sizeof(d), 1, f);
 		CHECK_FREAD(1)
-		debug(D_NORMAL, "scores time, y: %d m: %d d: %d\n", y, m, d);	
+		debug(D_NORMAL, "scores time, y: %d m: %d d: %d\n", y, m, d);
 
 
 		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d) {

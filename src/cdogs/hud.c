@@ -79,31 +79,31 @@ void FPSCounterDraw(FPSCounter *counter)
 	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
 }
 
-void WallClockSetTime(WallClock *clock)
+void WallClockSetTime(WallClock *wc)
 {
 	time_t t = time(NULL);
 	struct tm *tp = localtime(&t);
-	clock->hours = tp->tm_hour;
-	clock->minutes = tp->tm_min;
+	wc->hours = tp->tm_hour;
+	wc->minutes = tp->tm_min;
 }
-void WallClockInit(WallClock *clock)
+void WallClockInit(WallClock *wc)
 {
-	clock->elapsed = 0;
-	WallClockSetTime(clock);
+	wc->elapsed = 0;
+	WallClockSetTime(wc);
 }
-void WallClockUpdate(WallClock *clock, int ms)
+void WallClockUpdate(WallClock *wc, int ms)
 {
-	clock->elapsed += ms;
-	if (clock->elapsed > 60*1000)	// update every minute
+	wc->elapsed += ms;
+	if (wc->elapsed > 60*1000)	// update every minute
 	{
-		WallClockSetTime(clock);
-		clock->elapsed -= 60*1000;
+		WallClockSetTime(wc);
+		wc->elapsed -= 60*1000;
 	}
 }
-void WallClockDraw(WallClock *clock)
+void WallClockDraw(WallClock *wc)
 {
 	char s[50];
-	sprintf(s, "%02d:%02d", clock->hours, clock->minutes);
+	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
 	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 }
 

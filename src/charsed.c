@@ -139,7 +139,7 @@ static struct MouseRect localClicks[] = {
 };
 
 
-static int XYToCharacterIndex(int x, int y, int *index)
+static int XYToCharacterIndex(int x, int y, int *idx)
 {
 	if (y < 10 + 5 * TH + 5)
 		return 0;
@@ -148,7 +148,7 @@ static int XYToCharacterIndex(int x, int y, int *index)
 
 	x /= 20;
 	y /= 30;
-	*index = 16 * y + x;
+	*idx = 16 * y + x;
 	return 1;
 }
 
@@ -209,7 +209,7 @@ void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 		CDogsTextString("Off");
 }
 
-static void Display(CampaignSetting *setting, int index, int xc, int yc)
+static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
@@ -221,8 +221,9 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	CDogsTextStringAt(10, 190, s);
 
-	if (index >= 0 && index < setting->characterCount) {
-		b = &setting->characters[index];
+	if (idx >= 0 && idx < setting->characterCount)
+	{
+		b = &setting->characters[idx];
 		DisplayCDogsText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
 		DisplayCDogsText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
 		DisplayCDogsText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
@@ -292,10 +293,9 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 		y += CDogsTextHeight() + 5;
 
 		x = 10;
-		for (i = 0; i < setting->characterCount; i++) {
-			DisplayCharacter(x, y + 20,
-					 &setting->characters[i],
-					 index == i);
+		for (i = 0; i < setting->characterCount; i++)
+		{
+			DisplayCharacter(x, y + 20, &setting->characters[i], idx == i);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
 			{
@@ -310,17 +310,20 @@ static void Display(CampaignSetting *setting, int index, int xc, int yc)
 
 static void Change(
 	CampaignSetting *setting,
-	int index,
+	int idx,
 	int yc, int xc,
 	int d)
 {
 	TBadGuy *b;
 
-	if (index < 0 || index >= setting->characterCount)
+	if (idx < 0 || idx >= setting->characterCount)
+	{
 		return;
+	}
 
-	b = &setting->characters[index];
-	switch (yc) {
+	b = &setting->characters[idx];
+	switch (yc)
+	{
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
@@ -450,36 +453,40 @@ static TBadGuy characterTemplate = {
 	40, FLAGS_IMMUNITY
 };
 
-static void InsertCharacter(
-	CampaignSetting *setting, int index,
-	TBadGuy *data)
+static void InsertCharacter(CampaignSetting *setting, int idx, TBadGuy *data)
 {
 	int i;
 
 	if (setting->characterCount == MAX_CHARACTERS)
 		return;
 
-	for (i = setting->characterCount; i > index; i--)
+	for (i = setting->characterCount; i > idx; i--)
+	{
 		setting->characters[i] = setting->characters[i - 1];
+	}
 	if (data)
-		setting->characters[index] = *data;
+	{
+		setting->characters[idx] = *data;
+	}
 	else
-		setting->characters[index] = characterTemplate;
+	{
+		setting->characters[idx] = characterTemplate;
+	}
 	setting->characterCount++;
 }
 
-static void DeleteCharacter(CampaignSetting *setting, int *index)
+static void DeleteCharacter(CampaignSetting *setting, int *idx)
 {
 	int i;
 
 	setting->characterCount = CLAMP(setting->characterCount - 1, 0, 1000);
-	for (i = *index; i < setting->characterCount; i++)
+	for (i = *idx; i < setting->characterCount; i++)
 	{
 		setting->characters[i] = setting->characters[i + 1];
 	}
-	if (*index > 0 && *index >= setting->characterCount - 1)
+	if (*idx > 0 && *idx >= setting->characterCount - 1)
 	{
-		(*index)--;
+		(*idx)--;
 	}
 }
 
@@ -588,7 +595,7 @@ void EditCharacters(CampaignSetting *setting)
 {
 	int done = 0;
 	int c = 0;
-	int index = 0;
+	int idx = 0;
 	int xc = 0, yc = 0;
 	TBadGuy scrap;
 	int x, y, buttons, tag;
@@ -596,17 +603,20 @@ void EditCharacters(CampaignSetting *setting)
 	memset(&scrap, 0, sizeof(scrap));
 	SetMouseRects(localClicks);
 
-	while (!done) {
-		Display(setting, index, xc, yc);
+	while (!done)
+	{
+		Display(setting, idx, xc, yc);
 
 		do {
 			GetEvent(&c, &x, &y, &buttons);
-			if (buttons) {
-				if (XYToCharacterIndex(x, y, &tag)) {
-					if (tag >= 0
-					    && tag <
-					    setting->characterCount)
-						index = tag;
+			if (buttons)
+			{
+				if (XYToCharacterIndex(x, y, &tag))
+				{
+					if (tag >= 0 && tag < setting->characterCount)
+					{
+						idx = tag;
+					}
 					c = DUMMY;
 				} else if (GetMouseRectTag(x, y, &tag)) {
 					xc = (tag >> 8);
@@ -622,41 +632,44 @@ void EditCharacters(CampaignSetting *setting)
 
 		switch (c) {
 		case HOME:
-			if (index > 0)
-				index--;
+			if (idx > 0)
+			{
+				idx--;
+			}
 			break;
 
 		case END:
-			if (index < setting->characterCount - 1)
-				index++;
+			if (idx < setting->characterCount - 1)
+			{
+				idx++;
+			}
 			break;
 
 		case INSERT:
-			InsertCharacter(setting, index, NULL);
+			InsertCharacter(setting, idx, NULL);
 			fileChanged = 1;
 			break;
 
 		case ALT_X:
-			scrap = setting->characters[index];
+			scrap = setting->characters[idx];
 
 		case DELETE:
-			DeleteCharacter(setting, &index);
+			DeleteCharacter(setting, &idx);
 			fileChanged = 1;
 			break;
 
 		case ALT_C:
-			scrap = setting->characters[index];
+			scrap = setting->characters[idx];
 			break;
 
 		case ALT_V:
-			InsertCharacter(setting, index, &scrap);
+			InsertCharacter(setting, idx, &scrap);
 			fileChanged = 1;
 			break;
 
 		case ALT_N:
-			InsertCharacter(setting, setting->characterCount,
-					NULL);
-			index = setting->characterCount - 1;
+			InsertCharacter(setting, setting->characterCount, NULL);
+			idx = setting->characterCount - 1;
 			fileChanged = 1;
 			break;
 
@@ -683,12 +696,12 @@ void EditCharacters(CampaignSetting *setting)
 			break;
 
 		case PAGEUP:
-			Change(setting, index, yc, xc, 1);
+			Change(setting, idx, yc, xc, 1);
 			fileChanged = 1;
 			break;
 
 		case PAGEDOWN:
-			Change(setting, index, yc, xc, -1);
+			Change(setting, idx, yc, xc, -1);
 			fileChanged = 1;
 			break;
 

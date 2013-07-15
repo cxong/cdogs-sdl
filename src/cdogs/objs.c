@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1255,16 +1255,16 @@ void KillAllMobileObjects(TMobileObject **mobObjList)
 	}
 }
 
-void InternalAddObject(int x, int y, int w, int h,
-		       const TOffsetPic * pic, const TOffsetPic * wreckedPic,
-		       int structure, int index, int objFlags,
-		       int tileFlags)
+void InternalAddObject(
+	int x, int y, int w, int h,
+	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	int structure, int idx, int objFlags, int tileFlags)
 {
 	TObject *o;
 	CCALLOC(o, sizeof(TObject));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
-	o->objectIndex = index;
+	o->objectIndex = idx;
 	o->structure = structure;
 	o->flags = objFlags;
 	o->tileItem.flags = tileFlags;
@@ -1278,10 +1278,10 @@ void InternalAddObject(int x, int y, int w, int h,
 	objList = o;
 }
 
-void AddObject(int x, int y, int w, int h,
-	       const TOffsetPic * pic, int index, int tileFlags)
+void AddObject(
+	int x, int y, int w, int h, const TOffsetPic * pic, int idx, int tileFlags)
 {
-	InternalAddObject(x, y, w, h, pic, NULL, 0, index, 0, tileFlags);
+	InternalAddObject(x, y, w, h, pic, NULL, 0, idx, 0, tileFlags);
 }
 
 void AddDestructibleObject(int x, int y, int w, int h,

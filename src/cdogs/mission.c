@@ -517,25 +517,31 @@ unsigned char objectiveColors[OBJECTIVE_MAX] = { 14, 16, 22, 31, 39 };
 // +-----------------------+
 
 
-void SetupMissionCharacter(int index, const TBadGuy * b)
+void SetupMissionCharacter(int idx, const TBadGuy * b)
 {
-	SetCharacter(index, b->facePic, b->skinColor, b->hairColor,
-		     b->bodyColor, b->armColor, b->legColor);
-	gCharacterDesc[index].armedBodyPic = b->armedBodyPic;
-	gCharacterDesc[index].unarmedBodyPic = b->unarmedBodyPic;
-	gCharacterDesc[index].speed = b->speed;
-	gCharacterDesc[index].probabilityToMove = b->probabilityToMove;
-	gCharacterDesc[index].probabilityToTrack = b->probabilityToTrack;
-	gCharacterDesc[index].probabilityToShoot = b->probabilityToShoot;
-	gCharacterDesc[index].actionDelay = b->actionDelay;
-	gCharacterDesc[index].defaultGun = b->gun;
-	gCharacterDesc[index].maxHealth = b->health;
-	gCharacterDesc[index].flags = b->flags;
+	SetCharacter(
+		idx,
+		b->facePic,
+		b->skinColor,
+		b->hairColor,
+		b->bodyColor,
+		b->armColor,
+		b->legColor);
+	gCharacterDesc[idx].armedBodyPic = b->armedBodyPic;
+	gCharacterDesc[idx].unarmedBodyPic = b->unarmedBodyPic;
+	gCharacterDesc[idx].speed = b->speed;
+	gCharacterDesc[idx].probabilityToMove = b->probabilityToMove;
+	gCharacterDesc[idx].probabilityToTrack = b->probabilityToTrack;
+	gCharacterDesc[idx].probabilityToShoot = b->probabilityToShoot;
+	gCharacterDesc[idx].actionDelay = b->actionDelay;
+	gCharacterDesc[idx].defaultGun = b->gun;
+	gCharacterDesc[idx].maxHealth = b->health;
+	gCharacterDesc[idx].flags = b->flags;
 }
 
 static void SetupBadguysForMission(struct Mission *mission)
 {
-	int i, index;
+	int i, idx;
 	const TBadGuy *b;
 	CampaignSetting *s = &gCampaign.Setting;
 
@@ -543,38 +549,44 @@ static void SetupBadguysForMission(struct Mission *mission)
 		return;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-		if (gMission.missionData->objectives[i].type ==
-		    OBJECTIVE_RESCUE) {
-			b = &s->characters[gMission.missionData->
-					   objectives[i].index %
-					   s->characterCount];
+	{
+		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		{
+			b = &s->characters[
+				gMission.missionData->objectives[i].index % s->characterCount];
 			SetupMissionCharacter(CHARACTER_PRISONER, b);
 			break;
 		}
-
-	for (i = 0; i < mission->baddieCount; i++) {
-		index = i + CHARACTER_OTHERS;
-		if (index >= CHARACTER_COUNT)
-			break;
-
-		b = &s->characters[mission->baddies[i] %
-				   s->characterCount];
-		SetupMissionCharacter(index, b);
 	}
-	for (i = 0; i < mission->specialCount; i++) {
-		index = i + mission->baddieCount + CHARACTER_OTHERS;
-		if (index >= CHARACTER_COUNT)
-			break;
 
-		b = &s->characters[mission->specials[i] %
-				   s->characterCount];
-		SetupMissionCharacter(index, b);
+	for (i = 0; i < mission->baddieCount; i++)
+	{
+		idx = i + CHARACTER_OTHERS;
+		if (idx >= CHARACTER_COUNT)
+		{
+			break;
+		}
+
+		b = &s->characters[mission->baddies[i] % s->characterCount];
+		SetupMissionCharacter(idx, b);
+	}
+	for (i = 0; i < mission->specialCount; i++)
+	{
+		idx = i + mission->baddieCount + CHARACTER_OTHERS;
+		if (idx >= CHARACTER_COUNT)
+		{
+			break;
+		}
+
+		b = &s->characters[mission->specials[i] % s->characterCount];
+		SetupMissionCharacter(idx, b);
 	}
 }
 
-int SetupBuiltinCampaign(int index)
+int SetupBuiltinCampaign(int idx)
 {
-	switch (index) {
+	switch (idx)
+	{
 	case 0:
 		gCampaign.Setting = BEM_campaign;
 		break;
@@ -588,9 +600,10 @@ int SetupBuiltinCampaign(int index)
 	return 1;
 }
 
-int SetupBuiltinDogfight(int index)
+int SetupBuiltinDogfight(int idx)
 {
-	switch (index) {
+	switch (idx)
+	{
 	case 0:
 		gCampaign.Setting = df1;
 		break;
@@ -791,15 +804,15 @@ void SetRange(int start, int range)
 	CDogsSetPalette(gPalette);
 }
 
-void SetupMission(int index, int buildTables, CampaignOptions *campaign)
+void SetupMission(int idx, int buildTables, CampaignOptions *campaign)
 {
 	int i;
 	int x, y;
 	struct Mission *m;
 
 	memset(&gMission, 0, sizeof(gMission));
-	gMission.index = index;
-	m = &campaign->Setting.missions[abs(index) % campaign->Setting.missionCount];
+	gMission.index = idx;
+	m = &campaign->Setting.missions[abs(idx) % campaign->Setting.missionCount];
 	gMission.missionData = m;
 	gMission.doorPics =
 	    doorStyles[abs(m->doorStyle) % DOORSTYLE_COUNT];
@@ -810,7 +823,7 @@ void SetupMission(int index, int buildTables, CampaignOptions *campaign)
 		gMission.mapObjects[i] =
 		    &mapItems[abs(m->items[i]) % ITEMS_COUNT];
 
-	srand(10 * index + campaign->seed);
+	srand(10 * idx + campaign->seed);
 
 	gMission.exitPic = exitPics[2 * (abs(m->exitStyle) % EXIT_COUNT)];
 	gMission.exitShadow =
@@ -854,11 +867,12 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 
 int CheckMissionObjective(int flags)
 {
-	int index;
+	int idx;
 
-	if (TileItemIsObjective(flags)) {
-		index = ObjectiveFromTileItem(flags);
-		gMission.objectives[index].done++;
+	if (TileItemIsObjective(flags))
+	{
+		idx = ObjectiveFromTileItem(flags);
+		gMission.objectives[idx].done++;
 		return 1;
 	}
 	return 0;
@@ -924,10 +938,14 @@ void GetEditorInfo(struct EditorInfo *info)
 	info->rangeCount = COLORRANGE_COUNT;
 }
 
-const char *RangeName(int index)
+const char *RangeName(int idx)
 {
-	if (index >= 0 && index < (int)COLORRANGE_COUNT)
-		return cColorRanges[index].name;
+	if (idx >= 0 && idx < (int)COLORRANGE_COUNT)
+	{
+		return cColorRanges[idx].name;
+	}
 	else
+	{
 		return "Invalid";
+	}
 }

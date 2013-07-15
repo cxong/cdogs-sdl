@@ -86,13 +86,14 @@
 
 
 
-void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
+void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 {
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i = 0;
 
-	switch (mission->objectives[index].type) {
+	switch (mission->objectives[idx].type)
+	{
 	case OBJECTIVE_KILL:
 		i = gCharacterDesc[mission->baddieCount +
 				  CHARACTER_OTHERS].facePic;
@@ -111,11 +112,11 @@ void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_COLLECT:
-		i = gMission.objectives[index].pickupItem;
+		i = gMission.objectives[idx].pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_DESTROY:
-		i = gMission.objectives[index].blowupObject->pic;
+		i = gMission.objectives[idx].blowupObject->pic;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_INVESTIGATE:
@@ -347,11 +348,11 @@ void Bonuses(void)
 	int x = gGraphicsDevice.cachedConfig.ResolutionWidth / 6;
 	int done, req, total;
 	int access_bonus = 0;
-	int index;
+	int idx = 1;
 	char s[100];
 
-	index = 1;
-	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
+	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	{
 		done = gMission.objectives[i].done;
 		req = gMission.objectives[i].required;
 		total = gMission.objectives[i].count;
@@ -359,10 +360,11 @@ void Bonuses(void)
 		if (done > 0 || req > 0) {
 			DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
 			sprintf(s, "Objective %d: %d of %d, %d required",
-				index, done, total, req);
+				idx, done, total, req);
 			if (req > 0)
-				CDogsTextStringSpecial(s,
-						TEXT_LEFT | TEXT_TOP, x, y);
+			{
+				CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_TOP, x, y);
+			}
 			else
 				CDogsTextStringSpecial(s,
 						TEXT_LEFT | TEXT_TOP | TEXT_PURPLE,
@@ -386,7 +388,7 @@ void Bonuses(void)
 			}
 
 			y += 15;
-			index++;
+			idx++;
 		}
 	}
 
@@ -990,8 +992,8 @@ int main(int argc, char *argv[])
 			{0,				0,					NULL,	0}
 		};
 		int opt = 0;
-		int index = 0;
-		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:h", longopts, &index)) != -1)
+		int idx = 0;
+		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:h", longopts, &idx)) != -1)
 		{
 			switch (opt)
 			{

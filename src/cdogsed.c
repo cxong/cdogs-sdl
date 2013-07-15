@@ -283,7 +283,7 @@ void DisplayCDogsText(int x, int y, const char *text, int hilite, int editable)
 	}
 }
 
-void DrawObjectiveInfo(int index, int y, int xc)
+void DrawObjectiveInfo(int idx, int y, int xc)
 {
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
@@ -291,7 +291,8 @@ void DrawObjectiveInfo(int index, int y, int xc)
 	const char *typeCDogsText;
 	char s[50];
 
-	switch (currentMission->objectives[index].type) {
+	switch (currentMission->objectives[idx].type)
+	{
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
 		i = gCharacterDesc[currentMission->baddieCount +
@@ -313,12 +314,12 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		break;
 	case OBJECTIVE_COLLECT:
 		typeCDogsText = "Collect";
-		i = gMission.objectives[index].pickupItem;
+		i = gMission.objectives[idx].pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_DESTROY:
 		typeCDogsText = "Destroy";
-		i = gMission.objectives[index].blowupObject->pic;
+		i = gMission.objectives[idx].blowupObject->pic;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_INVESTIGATE:
@@ -328,7 +329,7 @@ void DrawObjectiveInfo(int index, int y, int xc)
 		break;
 	default:
 		typeCDogsText = "???";
-		i = gMission.objectives[index].pickupItem;
+		i = gMission.objectives[idx].pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	}
@@ -344,22 +345,17 @@ void DrawObjectiveInfo(int index, int y, int xc)
 				 gPics[pic.picIndex], NULL);
 	}
 
-	sprintf(s, "%d", currentMission->objectives[index].required);
+	sprintf(s, "%d", currentMission->objectives[idx].required);
 	DisplayCDogsText(90, y, s, xc == XC_REQUIRED, 0);
-	sprintf(s, "out of %d", currentMission->objectives[index].count);
+	sprintf(s, "out of %d", currentMission->objectives[idx].count);
 	DisplayCDogsText(110, y, s, xc == XC_TOTAL, 0);
 
 	sprintf(s, "%s %s %s %s %s",
-		(currentMission->objectives[index].
-		 flags & OBJECTIVE_HIDDEN) != 0 ? "hidden" : "",
-		(currentMission->objectives[index].
-		 flags & OBJECTIVE_POSKNOWN) != 0 ? "pos.known" : "",
-		(currentMission->objectives[index].
-		 flags & OBJECTIVE_HIACCESS) != 0 ? "access" : "",
-		(currentMission->objectives[index].
-		 flags & OBJECTIVE_UNKNOWNCOUNT) != 0 ? "no-count" : "",
-		(currentMission->objectives[index].
-		 flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
+		(currentMission->objectives[idx].flags & OBJECTIVE_HIDDEN) != 0 ? "hidden" : "",
+		(currentMission->objectives[idx].flags & OBJECTIVE_POSKNOWN) != 0 ? "pos.known" : "",
+		(currentMission->objectives[idx].flags & OBJECTIVE_HIACCESS) != 0 ? "access" : "",
+		(currentMission->objectives[idx].flags & OBJECTIVE_UNKNOWNCOUNT) != 0 ? "no-count" : "",
+		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
 	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
 
 	SetSecondaryMouseRects(localObjectiveClicks);
@@ -500,7 +496,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	SetSecondaryMouseRects(localMapItemClicks);
 }
 
-void Display(int index, int xc, int yc, int key)
+void Display(int idx, int xc, int yc, int key)
 {
 	char s[128];
 	int y = 5;
@@ -518,9 +514,9 @@ void Display(int index, int xc, int yc, int key)
 	if (fileChanged)
 		DrawTPic(10, y, gPics[221], NULL);
 
-	if (currentMission) {
-		sprintf(s, "Mission %d/%d", index + 1,
-			campaign.missionCount);
+	if (currentMission)
+	{
+		sprintf(s, "Mission %d/%d", idx + 1, campaign.missionCount);
 		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 
 		y += CDogsTextHeight() + 3;
@@ -923,41 +919,50 @@ static int Change(int yc, int xc, int d, int *mission)
 	return 1;
 }
 
-void InsertMission(int index, struct Mission *mission)
+void InsertMission(int idx, struct Mission *mission)
 {
 	int i;
 
 	if (campaign.missionCount == MAX_MISSIONS)
 		return;
 
-	for (i = campaign.missionCount; i > index; i--)
+	for (i = campaign.missionCount; i > idx; i--)
+	{
 		campaign.missions[i] = campaign.missions[i - 1];
+	}
 	if (mission)
-		campaign.missions[index] = *mission;
-	else {
-		memset(&campaign.missions[index], 0,
-		       sizeof(struct Mission));
-		strcpy(campaign.missions[index].title, "Mission title");
-		strcpy(campaign.missions[index].description,
-		       "Briefing text");
-		campaign.missions[index].mapWidth = 48;
-		campaign.missions[index].mapHeight = 48;
+	{
+		campaign.missions[idx] = *mission;
+	}
+	else
+	{
+		memset(&campaign.missions[idx], 0, sizeof(struct Mission));
+		strcpy(campaign.missions[idx].title, "Mission title");
+		strcpy(campaign.missions[idx].description, "Briefing text");
+		campaign.missions[idx].mapWidth = 48;
+		campaign.missions[idx].mapHeight = 48;
 	}
 	campaign.missionCount++;
 }
 
-void DeleteMission(int *index)
+void DeleteMission(int *idx)
 {
 	int i;
 
-	if (*index >= campaign.missionCount)
+	if (*idx >= campaign.missionCount)
+	{
 		return;
+	}
 
-	for (i = *index; i < campaign.missionCount - 1; i++)
+	for (i = *idx; i < campaign.missionCount - 1; i++)
+	{
 		campaign.missions[i] = campaign.missions[i + 1];
+	}
 	campaign.missionCount--;
-	if (campaign.missionCount > 0 && *index >= campaign.missionCount)
-		*index = campaign.missionCount - 1;
+	if (campaign.missionCount > 0 && *idx >= campaign.missionCount)
+	{
+		*idx = campaign.missionCount - 1;
+	}
 }
 
 void AddObjective(void)
@@ -966,49 +971,49 @@ void AddObjective(void)
 		CLAMP(currentMission->objectiveCount + 1, 0, OBJECTIVE_MAX);
 }
 
-void DeleteObjective(int index)
+void DeleteObjective(int idx)
 {
 	int i;
 
 	currentMission->objectiveCount =
 		CLAMP(currentMission->objectiveCount - 1, 0, OBJECTIVE_MAX);
-	for (i = index; i < currentMission->objectiveCount; i++)
+	for (i = idx; i < currentMission->objectiveCount; i++)
 	{
 		currentMission->objectives[i] = currentMission->objectives[i + 1];
 	}
 }
 
-void DeleteCharacter(int index)
+void DeleteCharacter(int idx)
 {
 	int i;
 
 	currentMission->baddieCount =
 		CLAMP(currentMission->baddieCount - 1, 0, BADDIE_MAX);
-	for (i = index; i < currentMission->baddieCount; i++)
+	for (i = idx; i < currentMission->baddieCount; i++)
 	{
 		currentMission->baddies[i] = currentMission->baddies[i + 1];
 	}
 }
 
-void DeleteSpecial(int index)
+void DeleteSpecial(int idx)
 {
 	int i;
 
 	currentMission->specialCount =
 		CLAMP(currentMission->specialCount - 1, 0, SPECIAL_MAX);
-	for (i = index; i < currentMission->specialCount; i++)
+	for (i = idx; i < currentMission->specialCount; i++)
 	{
 		currentMission->specials[i] = currentMission->specials[i + 1];
 	}
 }
 
-void DeleteItem(int index)
+void DeleteItem(int idx)
 {
 	int i;
 
 	currentMission->itemCount =
 		CLAMP(currentMission->itemCount - 1, 0, ITEMS_MAX);
-	for (i = index; i < currentMission->itemCount; i++)
+	for (i = idx; i < currentMission->itemCount; i++)
 	{
 		currentMission->items[i] = currentMission->items[i + 1];
 	}
@@ -1192,15 +1197,15 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-static void Setup(int index, int buildTables)
+static void Setup(int idx, int buildTables)
 {
-	if (index >= campaign.missionCount)
+	if (idx >= campaign.missionCount)
 	{
 		currentMission = NULL;
 		return;
 	}
-	currentMission = &campaign.missions[index];
-	SetupMission(index, buildTables, &gCampaign);
+	currentMission = &campaign.missions[idx];
+	SetupMission(idx, buildTables, &gCampaign);
 }
 
 static void Save(int asCode)

@@ -85,16 +85,16 @@ void LoadCredits(
 		}
 		else
 		{
-			int index = displayer->creditsCount;
+			int idx = displayer->creditsCount;
 			displayer->creditsCount++;
 			CREALLOC(displayer->credits, sizeof(credit_t)*displayer->creditsCount);
-			CMALLOC(displayer->credits[index].name, strlen(nameBuf) + 1);
-			CMALLOC(displayer->credits[index].message, strlen(buf));
-			strcpy(displayer->credits[index].name, nameBuf);
-			strcpy(displayer->credits[index].message, buf + 1);
+			CMALLOC(displayer->credits[idx].name, strlen(nameBuf) + 1);
+			CMALLOC(displayer->credits[idx].message, strlen(buf));
+			strcpy(displayer->credits[idx].name, nameBuf);
+			strcpy(displayer->credits[idx].message, buf + 1);
 			nameOrMessageCounter = 0;
 
-			debug(D_VERBOSE, "Read credits for \"%s\"\n", displayer->credits[index].name);
+			debug(D_VERBOSE, "Read credits for \"%s\"\n", displayer->credits[idx].name);
 		}
 	}
 

@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 -------------------------------------------------------------------------------
 
  triggers.c - trigger related functions
- 
+
  Author: $Author$
  Rev:    $Revision$
  URL:    $HeadURL$
  ID:     $Id$
- 
+
 */
 
 #include <stdlib.h>
@@ -109,23 +109,28 @@ TWatch *AddWatch(int conditionCount, int actionCount)
 	return t;
 }
 
-static TWatch *FindWatch(int index)
+static TWatch *FindWatch(int idx)
 {
 	TWatch *t = inactiveWatches;
 
-	while (t && t->index != index)
+	while (t && t->index != idx)
+	{
 		t = t->next;
+	}
 	return t;
 }
 
-static void ActivateWatch(int index)
+static void ActivateWatch(int idx)
 {
 	TWatch **h = &inactiveWatches;
 	TWatch *t;
 
-	while (*h && (*h)->index != index)
+	while (*h && (*h)->index != idx)
+	{
 		h = &((*h)->next);
-	if (*h) {
+	}
+	if (*h)
+	{
 		t = *h;
 		*h = t->next;
 		t->next = activeWatches;
@@ -133,14 +138,17 @@ static void ActivateWatch(int index)
 	}
 }
 
-static void DeactivateWatch(int index)
+static void DeactivateWatch(int idx)
 {
 	TWatch **h = &activeWatches;
 	TWatch *t;
 
-	while (*h && (*h)->index != index)
+	while (*h && (*h)->index != idx)
+	{
 		h = &((*h)->next);
-	if (*h) {
+	}
+	if (*h)
+	{
 		t = *h;
 		*h = t->next;
 		t->next = inactiveWatches;

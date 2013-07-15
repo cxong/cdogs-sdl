@@ -840,11 +840,10 @@ void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,
 	SetShade(t, HAIR_START, HAIR_END, hair);
 }
 
-void SetCharacter(int index, int face, int skin, int hair, int body,
-		  int arms, int legs)
+void SetCharacter(int idx, int face, int skin, int hair, int body, int arms, int legs)
 {
-	gCharacterDesc[index].facePic = face;
-	SetCharacterColors(&gCharacterDesc[index].table, arms, body, legs, skin, hair);
+	gCharacterDesc[idx].facePic = face;
+	SetCharacterColors(&gCharacterDesc[idx].table, arms, body, legs, skin, hair);
 }
 
 void BuildTranslationTables(void)
