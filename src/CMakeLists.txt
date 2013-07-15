@@ -69,7 +69,10 @@ ADD_DEFINITIONS(-I${SDL_INCLUDE_DIR})
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX -wd"4996")
 else()
-	add_definitions(-fsigned-char -Wall -W -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror -m32)
+	add_definitions(
+		-fsigned-char
+		-Wall -W
+		-Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)
@@ -85,8 +88,7 @@ else()
 		if(NOT APPLE)
 			add_definitions(-Wshadow)
 		endif()
-    endif()
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
+	endif()
 endif()
 
 include_directories(.)

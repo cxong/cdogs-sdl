@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ void InitMouse(void)
 }
 
 void Mouse(int *x, int *y, int *button)
-{	
+{
 	SDL_Event event;
 
 	/* I'm not sure whether this works */
@@ -80,7 +80,7 @@ void Mouse(int *x, int *y, int *button)
 				*button = 1;
 				break;
 		}
-	}	
+	}
 }
 
 int GetKey(keyboard_t *keyboard)
