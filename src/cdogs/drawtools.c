@@ -41,7 +41,7 @@
 
 void	Draw_Point (const int x, const int y, const unsigned char c)
 {
-	unsigned char *screen = GetDstScreen();
+	unsigned char *screen = gGraphicsDevice.buf;
 	
 	//debug("(%d, %d)\n", x, y);
 	

@@ -143,7 +143,7 @@ void MenuLoop(MenuSystem *menu)
 		if (menu->bkg != NULL)
 		{
 			memcpy(
-				GetDstScreen(),
+				gGraphicsDevice.buf,
 				menu->bkg,
 				GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		}

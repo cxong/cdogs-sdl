@@ -246,7 +246,7 @@ void ShakeScreen(int amount)
 void BlackLine(void)
 {
 	int i;
-	unsigned char *p = GetDstScreen();
+	unsigned char *p = gGraphicsDevice.buf;
 
 	p += (gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1;
 	for (i = 0; i < gGraphicsDevice.cachedConfig.ResolutionHeight; i++)

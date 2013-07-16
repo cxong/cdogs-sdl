@@ -69,6 +69,7 @@ typedef struct
 	int IsWindowInitialized;
 	SDL_Surface *screen;
 	GraphicsConfig cachedConfig;
+	unsigned char *buf;
 } GraphicsDevice;
 
 extern GraphicsDevice gGraphicsDevice;
@@ -80,6 +81,7 @@ typedef struct {
 	unsigned int w, h;
 } GFX_Mode;
 
+void GraphicsInit(GraphicsDevice *device);
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetMemSize(GraphicsConfig *config);

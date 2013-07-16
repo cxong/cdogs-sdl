@@ -123,15 +123,7 @@ static int ValidMode(unsigned int w, unsigned int h)
 }
 
 
-GraphicsDevice gGraphicsDevice =
-{
-	0,
-	0,
-	NULL,
-	{
-		0, 0, 0, 0, 0, 0
-	}
-};
+GraphicsDevice gGraphicsDevice;
 
 int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
 {
@@ -139,6 +131,15 @@ int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
 		!device->IsInitialized ||
 		device->cachedConfig.Fullscreen != config->Fullscreen ||
 		device->cachedConfig.ScaleFactor != config->ScaleFactor;
+}
+
+void GraphicsInit(GraphicsDevice *device)
+{
+	device->IsInitialized = 0;
+	device->IsWindowInitialized = 0;
+	device->screen = NULL;
+	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
+	device->buf = NULL;
 }
 
 /* Initialises the video subsystem.
@@ -210,6 +211,9 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 		return;
 	}
 
+	CFREE(device->buf);
+	CCALLOC(device->buf, GraphicsGetMemSize(config));
+
 	if (!device->IsWindowInitialized)
 	{
 		/* only do this the first time */
@@ -243,6 +247,7 @@ void GraphicsTerminate(GraphicsDevice *device)
 	debug(D_NORMAL, "Shutting down video...\n");
 	SDL_FreeSurface(device->screen);
 	SDL_VideoQuit();
+	CFREE(device->buf);
 }
 
 int GraphicsGetMemSize(GraphicsConfig *config)

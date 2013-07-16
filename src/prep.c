@@ -1057,7 +1057,7 @@ int PlayerSelection(int twoPlayers, void *bkg)
 		int cmd1 = 0;
 		int cmd2 = 0;
 		InputPoll(&gJoysticks, &gKeyboard);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
@@ -1091,7 +1091,7 @@ int PlayerEquip(void *bkg)
 		int cmd1 = 0;
 		int cmd2 = 0;
 		InputPoll(&gJoysticks, &gKeyboard);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
 		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to exit from menu

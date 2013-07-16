@@ -95,8 +95,6 @@ void BlitRectangle(
 	int flags);
 
 void CDogsSetClip(int left, int top, int right, int bottom);
-void SetDstScreen(unsigned char *screen);
-unsigned char *GetDstScreen(void);
 void CopyToScreen(void);
 void AltScrCopy(void);
 void CDogsSetPalette(void *palette);

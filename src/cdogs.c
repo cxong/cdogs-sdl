@@ -195,7 +195,7 @@ void CampaignIntro(void *bkg)
 
 	debug(D_NORMAL, "\n");
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
 
@@ -213,7 +213,7 @@ void MissionBriefing(void *bkg)
 	char s[512];
 	int i, y;
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
 
@@ -425,7 +425,7 @@ void Bonuses(void)
 
 void MissionSummary(void *bkg)
 {
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	Bonuses();
 
@@ -443,7 +443,7 @@ void ShowScore(void *bkg, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	debug(D_NORMAL, "\n");
 
@@ -473,7 +473,7 @@ void ShowScore(void *bkg, int score1, int score2)
 
 void FinalScore(void *bkg, int score1, int score2)
 {
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -531,7 +531,7 @@ void Victory(void *bkg)
 	int x, i;
 	const char *s;
 
-	memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
@@ -831,13 +831,10 @@ void *MakeBkg(void)
 	int i;
 	TranslationTable randomTintTable;
 
-	CMALLOC(bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-
 	SetupQuickPlayCampaign(&gCampaign.Setting);
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
-	SetDstScreen(bkg);
 	SetBuffer(1024, 768, buffer, X_TILES);
 	FixBuffer(buffer, 255);
 	DrawBuffer(buffer, 0);
@@ -846,7 +843,7 @@ void *MakeBkg(void)
 	FreeTriggersAndWatches();
 	gCampaign.seed = gConfig.Game.RandomSeed;
 
-	p = bkg;
+	p = gGraphicsDevice.buf;
 	SetPaletteRanges(15, 12, 10, 0);
 	BuildTranslationTables();
 	SetRandomTintTable(&randomTintTable, 256);
@@ -855,16 +852,14 @@ void *MakeBkg(void)
 		p[i] = randomTintTable[p[i] & 0xFF];
 	}
 
+	CMALLOC(bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memcpy(bkg, gGraphicsDevice.buf, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 	return bkg;
 }
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	unsigned char *my_screen;
-
 	void *bkg = MakeBkg();
-	CCALLOC(my_screen, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-	SetDstScreen(my_screen);
 
 	while (MainMenu(bkg, creditsDisplayer, campaigns))
 	{
@@ -892,7 +887,6 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
-	CFREE(my_screen);
 	CFREE(bkg);
 }
 
@@ -1101,6 +1095,7 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
+	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{

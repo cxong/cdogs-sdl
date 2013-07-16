@@ -60,8 +60,6 @@
 #include "pics.h" /* for gPalette */
 #include "utils.h" /* for debug() */
 
-unsigned char *r_screen;
-
 
 int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
 
@@ -101,7 +99,7 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 				current += pic->w - j;
 				break;
 			}
-			target = r_screen + yoff + xoff;
+			target = gGraphicsDevice.buf + yoff + xoff;
 			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT)){
 				if (table){
 					if (mode & BLIT_BACKGROUND)
@@ -164,17 +162,6 @@ void CDogsSetClip(int left, int top, int right, int bottom)
 	cliptop = top;
 	clipbottom = bottom;
 	return;
-}
-
-void SetDstScreen(unsigned char *screen)
-{
-	r_screen = screen;
-	return;
-}
-
-unsigned char *GetDstScreen(void)
-{
-	return r_screen;
 }
 
 #define PixelIndex(x, y, w)		(y * w + x)
@@ -268,9 +255,12 @@ void CopyToScreen(void)
 	}
 
 	if (scalef == 1)
-		memcpy(pScreen, r_screen, scr_size);	/* 1 -> 1 */
-	else {
-		Scale8(pScreen, r_screen, scr_w, scr_h, scalef);
+	{
+		memcpy(pScreen, gGraphicsDevice.buf, scr_size);	/* 1 -> 1 */
+	}
+	else
+	{
+		Scale8(pScreen, gGraphicsDevice.buf, scr_w, scr_h, scalef);
 	}
 
 	SDL_UnlockSurface(gGraphicsDevice.screen);

@@ -204,7 +204,7 @@ void DisplayAllTimeHighScores(void *bkg)
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		memcpy(
-			GetDstScreen(),
+			gGraphicsDevice.buf,
 			bkg,
 			GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		idx = DisplayPage(
@@ -221,7 +221,7 @@ void DisplayTodaysHighScores(void *bkg)
 
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		idx = DisplayPage("Today's highest score:", idx, todaysHigh,
 			gPlayer1Data.today,
 			gOptions.twoPlayers ? gPlayer2Data.

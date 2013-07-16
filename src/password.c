@@ -229,7 +229,7 @@ static int EnterCode(void *bkg, const char *password)
 	{
 		int cmd;
 		InputPoll(&gJoysticks, &gKeyboard);
-		memcpy(GetDstScreen(), bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
 		{

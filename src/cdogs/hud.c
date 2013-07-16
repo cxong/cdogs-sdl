@@ -148,14 +148,14 @@ void DrawHealth(int health, int maxHealth, int flags)
 	int barTop = 4 * CDogsTextHeight() - 1;
 	int barHeight = CDogsTextHeight() + 1;
 	BlitRectangle(
-		GetDstScreen(),
+		gGraphicsDevice.buf,
 		barLeft, barTop,
 		barWidth,
 		barHeight,
 		backColour,
 		BLIT_FLAG_ROUNDED);
 	BlitRectangle(
-		GetDstScreen(),
+		gGraphicsDevice.buf,
 		barLeft + 1, barTop + 1,
 		MAX(0, healthBarWidth - 2),
 		barHeight - 2,

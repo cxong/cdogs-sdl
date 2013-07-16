@@ -107,7 +107,7 @@ static void DisplayPlayer(TActor * player)
 
 void DrawCross(TTileItem * t, unsigned char color)
 {
-	unsigned char *scr = GetDstScreen();
+	unsigned char *scr = gGraphicsDevice.buf;
 
 	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
 	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * gGraphicsDevice.cachedConfig.ResolutionWidth;
@@ -125,7 +125,7 @@ static void DisplayObjective(TTileItem * t, int objectiveIndex)
 
 static void DisplayExit(void)
 {
-	unsigned char *scr = GetDstScreen();
+	unsigned char *scr = gGraphicsDevice.buf;
 	int i;
 	int x1, x2, y1, y2;
 
@@ -246,7 +246,7 @@ void DisplayAutoMap(int showAll)
 	TTileItem *t;
 	int obj;
 
-	screen = p = GetDstScreen();
+	screen = p = gGraphicsDevice.buf;
 	// Draw faded green overlay
 	for (x = 0;
 		x < gGraphicsDevice.cachedConfig.ResolutionWidth * gGraphicsDevice.cachedConfig.ResolutionHeight;
