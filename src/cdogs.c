@@ -188,16 +188,16 @@ int MissionDescription(int y, const char *description)
 	return lines;
 }
 
-void CampaignIntro(void *bkg)
+void CampaignIntro(GraphicsDevice *graphicsDevice)
 {
 	int y;
 	char s[1024];
 
 	debug(D_NORMAL, "\n");
 
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphicsDevice);
 
-	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
+	y = graphicsDevice->cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "%s by %s", gCampaign.Setting.title, gCampaign.Setting.author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -208,14 +208,14 @@ void CampaignIntro(void *bkg)
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void MissionBriefing(void *bkg)
+void MissionBriefing(GraphicsDevice *graphics)
 {
 	char s[512];
 	int i, y;
 
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphics);
 
-	y = gGraphicsDevice.cachedConfig.ResolutionWidth / 4;
+	y = graphics->cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -235,23 +235,23 @@ void MissionBriefing(void *bkg)
 
 	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
-	y += gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
+	y += graphics->cachedConfig.ResolutionHeight / 10;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
 		if (gMission.missionData->objectives[i].required > 0)
 		{
 			CDogsTextStringAt(
-				gGraphicsDevice.cachedConfig.ResolutionWidth / 6,
+				graphics->cachedConfig.ResolutionWidth / 6,
 				y,
 				gMission.missionData->objectives[i].description);
 			DrawObjectiveInfo(
 				i,
-				gGraphicsDevice.cachedConfig.ResolutionWidth - (gGraphicsDevice.cachedConfig.ResolutionWidth / 6),
+				graphics->cachedConfig.ResolutionWidth - (graphics->cachedConfig.ResolutionWidth / 6),
 				y + 8,
 				gMission.missionData);
 
-			y += gGraphicsDevice.cachedConfig.ResolutionHeight / 12;
+			y += graphics->cachedConfig.ResolutionHeight / 12;
 		}
 	}
 
@@ -423,9 +423,9 @@ void Bonuses(void)
 	}
 }
 
-void MissionSummary(void *bkg)
+void MissionSummary(GraphicsDevice *graphics)
 {
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphics);
 
 	Bonuses();
 
@@ -439,11 +439,11 @@ void MissionSummary(void *bkg)
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void ShowScore(void *bkg, int score1, int score2)
+void ShowScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 {
 	char s[10];
 
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphicsDevice);
 
 	debug(D_NORMAL, "\n");
 
@@ -452,14 +452,14 @@ void ShowScore(void *bkg, int score1, int score2)
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(s)),
-			gGraphicsDevice.cachedConfig.ResolutionWidth / 3,
+			graphicsDevice->cachedConfig.ResolutionWidth / 3,
 			s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(s)),
-			gGraphicsDevice.cachedConfig.ResolutionWidth / 3,
+			graphicsDevice->cachedConfig.ResolutionWidth / 3,
 			s);
 	}
 	else
@@ -471,9 +471,9 @@ void ShowScore(void *bkg, int score1, int score2)
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void FinalScore(void *bkg, int score1, int score2)
+void FinalScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 {
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphicsDevice);
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -486,7 +486,7 @@ void FinalScore(void *bkg, int score1, int score2)
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(IS_WINNER)),
-			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
+			graphicsDevice->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
 	else
@@ -494,7 +494,7 @@ void FinalScore(void *bkg, int score1, int score2)
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(IS_WINNER)),
-			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
+			graphicsDevice->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
 	CopyToScreen();
@@ -526,12 +526,12 @@ static const char *finalWords2P[] = {
 
 #define CONGRATULATIONS "Congratulations, you have completed "
 
-void Victory(void *bkg)
+void Victory(GraphicsDevice *graphics)
 {
 	int x, i;
 	const char *s;
 
-	memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	GraphicsBlitBkg(graphics);
 
 	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
@@ -668,7 +668,7 @@ static void PlayMenuSong(void)
 }
 
 
-int Game(void *bkg, int mission)
+int Game(GraphicsDevice *graphics, int mission)
 {
 	int run, gameOver;
 	int allTime, todays;
@@ -686,9 +686,9 @@ int Game(void *bkg, int mission)
 		InitializeBadGuys();
 		if (IsMissionBriefingNeeded(gCampaign.Entry.mode))
 		{
-			MissionBriefing(bkg);
+			MissionBriefing(graphics);
 		}
-		PlayerEquip(bkg);
+		PlayerEquip(graphics);
 
 		InitPlayers(gOptions.twoPlayers, maxHealth, mission);
 
@@ -714,12 +714,13 @@ int Game(void *bkg, int mission)
 		PlayMenuSong();
 		printf(">> Starting\n");
 
-		if (run) {
-			MissionSummary(bkg);
-			if (gameOver
-			    && (gPlayer1Data.survived
-				|| gPlayer2Data.survived))
-				Victory(bkg);
+		if (run)
+		{
+			MissionSummary(graphics);
+			if (gameOver && (gPlayer1Data.survived || gPlayer2Data.survived))
+			{
+				Victory(graphics);
+			}
 		}
 
 		allTime = todays = 0;
@@ -743,9 +744,13 @@ int Game(void *bkg, int mission)
 				gPlayer1Data.today++;
 		}
 		if (allTime && !gameOver)
-			DisplayAllTimeHighScores(bkg);
+		{
+			DisplayAllTimeHighScores(graphics);
+		}
 		if (todays && !gameOver)
-			DisplayTodaysHighScores(bkg);
+		{
+			DisplayTodaysHighScores(graphics);
+		}
 
 		mission++;
 
@@ -757,7 +762,7 @@ int Game(void *bkg, int mission)
 	return run;
 }
 
-int Campaign(void *bkg)
+int Campaign(GraphicsDevice *graphics)
 {
 	int mission = 0;
 
@@ -768,13 +773,13 @@ int Campaign(void *bkg)
 	{
 		MissionSave m;
 		AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.path);
-		mission = EnterPassword(bkg, m.Password);
+		mission = EnterPassword(graphics, m.Password);
 	}
 
-	return Game(bkg, mission);
+	return Game(graphics, mission);
 }
 
-void DogFight(void *bkg)
+void DogFight(GraphicsDevice *graphicsDevice)
 {
 	int run;
 	int score1 = 0, score2 = 0;
@@ -791,7 +796,7 @@ void DogFight(void *bkg)
 		SetupMission(0, 1, &gCampaign);
 		SetupMap();
 
-		if (PlayerEquip(bkg))
+		if (PlayerEquip(graphicsDevice))
 		{
 			srand((unsigned int)time(NULL));
 			InitPlayers(YES, 500, 0);
@@ -812,7 +817,9 @@ void DogFight(void *bkg)
 		PlayMenuSong();
 
 		if (run)
-			ShowScore(bkg, score1, score2);
+		{
+			ShowScore(graphicsDevice, score1, score2);
+		}
 
 	} while (run && score1 < 5 && score2 < 5);
 
@@ -820,57 +827,23 @@ void DogFight(void *bkg)
 	gOptions.twoPlayers = twoPlayers;
 
 	if (run)
-		FinalScore(bkg, score1, score2);
-}
-
-void *MakeBkg(void)
-{
-	unsigned char *bkg;
-	struct Buffer *buffer = NewBuffer();
-	unsigned char *p;
-	int i;
-	TranslationTable randomTintTable;
-
-	SetupQuickPlayCampaign(&gCampaign.Setting);
-	gCampaign.seed = rand();
-	SetupMission(0, 1, &gCampaign);
-	SetupMap();
-	SetBuffer(1024, 768, buffer, X_TILES);
-	FixBuffer(buffer, 255);
-	DrawBuffer(buffer, 0);
-	CFREE(buffer);
-	KillAllObjects();
-	FreeTriggersAndWatches();
-	gCampaign.seed = gConfig.Game.RandomSeed;
-
-	p = gGraphicsDevice.buf;
-	SetPaletteRanges(15, 12, 10, 0);
-	BuildTranslationTables();
-	SetRandomTintTable(&randomTintTable, 256);
-	for (i = 0; i < GraphicsGetMemSize(&gGraphicsDevice.cachedConfig); i++)
 	{
-		p[i] = randomTintTable[p[i] & 0xFF];
+		FinalScore(graphicsDevice, score1, score2);
 	}
-
-	CMALLOC(bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-	memcpy(bkg, gGraphicsDevice.buf, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-	return bkg;
 }
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	void *bkg = MakeBkg();
-
-	while (MainMenu(bkg, creditsDisplayer, campaigns))
+	while (MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
 		if (IsIntroNeeded(gCampaign.Entry.mode))
 		{
-			CampaignIntro(bkg);
+			CampaignIntro(&gGraphicsDevice);
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection(gOptions.twoPlayers, bkg))
+		if (!PlayerSelection(gOptions.twoPlayers, &gGraphicsDevice))
 		{
 			continue;
 		}
@@ -878,16 +851,15 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			DogFight(bkg);
+			DogFight(&gGraphicsDevice);
 		}
-		else if (Campaign(bkg))
+		else if (Campaign(&gGraphicsDevice))
 		{
-			DisplayAllTimeHighScores(bkg);
-			DisplayTodaysHighScores(bkg);
+			DisplayAllTimeHighScores(&gGraphicsDevice);
+			DisplayTodaysHighScores(&gGraphicsDevice);
 		}
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
-	CFREE(bkg);
 }
 
 void PrintTitle(void)

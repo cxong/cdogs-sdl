@@ -51,6 +51,7 @@
 
 #include <cdogs/campaigns.h>
 #include <cdogs/gamedata.h>
+#include <cdogs/grafx.h>
 #include <cdogs/input.h>
 
 #include "credits.h"
@@ -179,13 +180,13 @@ typedef struct
 	credits_displayer_t *creditsDisplayer;
 	joysticks_t *joysticks;
 	keyboard_t *keyboard;
-	void *bkg;
+	GraphicsDevice *graphics;
 } MenuSystem;
 
 
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
 void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *keyboard);
-void MenuSetBackground(MenuSystem *menu, void *bkg);
+void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuLoop(MenuSystem *menu);
 void MenuReset(MenuSystem *menu);

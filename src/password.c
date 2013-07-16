@@ -218,7 +218,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	return 1;
 }
 
-static int EnterCode(void *bkg, const char *password)
+static int EnterCode(GraphicsDevice *graphicsDevice, const char *password)
 {
 	int mission = 0;
 	int done = 0;
@@ -229,7 +229,7 @@ static int EnterCode(void *bkg, const char *password)
 	{
 		int cmd;
 		InputPoll(&gJoysticks, &gKeyboard);
-		memcpy(gGraphicsDevice.buf, bkg, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		GraphicsBlitBkg(graphicsDevice);
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
 		{
@@ -256,7 +256,7 @@ static int EnterCode(void *bkg, const char *password)
 				CDogsTextWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
-				gGraphicsDevice.cachedConfig.ResolutionWidth / 4);
+				graphicsDevice->cachedConfig.ResolutionWidth / 4);
 		CDogsTextChar(SYMBOL_LEFT);
 		CDogsTextString(buffer);
 		CDogsTextChar(SYMBOL_RIGHT);
@@ -265,7 +265,7 @@ static int EnterCode(void *bkg, const char *password)
 			"Enter code",
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
+			graphicsDevice->cachedConfig.ResolutionHeight / 12);
 		ShowControls();
 
 		CopyToScreen();
@@ -284,14 +284,17 @@ typedef enum
 } ReturnCode;
 
 MenuSystem *MenuCreateStart(
-	int hasPassword, void *bkg, joysticks_t *joysticks, keyboard_t *keyboard);
+	int hasPassword,
+	GraphicsDevice *graphics,
+	joysticks_t *joysticks,
+	keyboard_t *keyboard);
 
-int EnterPassword(void *bkg, const char *password)
+int EnterPassword(GraphicsDevice *graphics, const char *password)
 {
 	MenuSystem *startMenu;
 	int mission = TestPassword(password);
 	int hasPassword = mission > 0;
-	startMenu = MenuCreateStart(hasPassword, bkg, &gJoysticks, &gKeyboard);
+	startMenu = MenuCreateStart(hasPassword, graphics, &gJoysticks, &gKeyboard);
 	for (;;)
 	{
 		int returnCode;
@@ -308,7 +311,7 @@ int EnterPassword(void *bkg, const char *password)
 		}
 		else if (returnCode == RETURN_CODE_ENTER_CODE)
 		{
-			int enteredMission = EnterCode(bkg, password);
+			int enteredMission = EnterCode(graphics, password);
 			if (enteredMission > 0)
 			{
 				return enteredMission;
@@ -319,12 +322,15 @@ int EnterPassword(void *bkg, const char *password)
 }
 
 MenuSystem *MenuCreateStart(
-	int hasPassword, void *bkg, joysticks_t *joysticks, keyboard_t *keyboard)
+	int hasPassword,
+	GraphicsDevice *graphics,
+	joysticks_t *joysticks,
+	keyboard_t *keyboard)
 {
 	MenuSystem *ms;
 	CCALLOC(ms, sizeof *ms);
 	MenuSetInputDevices(ms, joysticks, keyboard);
-	MenuSetBackground(ms, bkg);
+	MenuSetGraphicsDevice(ms, graphics);
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	if (hasPassword)
 	{

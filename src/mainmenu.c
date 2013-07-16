@@ -42,7 +42,7 @@
 MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns);
 
 int MainMenu(
-	void *bkg,
+	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns)
 {
@@ -50,7 +50,7 @@ int MainMenu(
 	MenuSystem *menu = MenuCreateAll(campaigns);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	MenuSetInputDevices(menu, &gJoysticks, &gKeyboard);
-	MenuSetBackground(menu, bkg);
+	MenuSetGraphicsDevice(menu, graphics);
 	MenuLoop(menu);
 	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
 
@@ -259,7 +259,7 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
-			"Video resolution (restart required)",
+			"Video resolution",
 			Gfx_ModePrev,
 			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,

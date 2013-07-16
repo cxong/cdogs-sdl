@@ -50,10 +50,11 @@
 #define __HISCORES
 
 #include "gamedata.h"
+#include "grafx.h"
 
 void EnterHighScore(struct PlayerData *data);
-void DisplayAllTimeHighScores(void *bkg);
-void DisplayTodaysHighScores(void *bkg);
+void DisplayAllTimeHighScores(GraphicsDevice *graphics);
+void DisplayTodaysHighScores(GraphicsDevice *graphics);
 void SaveHighScores(void);
 void LoadHighScores(void);
 

@@ -27,11 +27,12 @@
 #define __MAINMENU
 
 #include <cdogs/campaigns.h>
+#include <cdogs/grafx.h>
 
 #include "credits.h"
 
 int MainMenu(
-	void *bkg,
+	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns);
 

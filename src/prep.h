@@ -23,11 +23,11 @@
 #define __PREP
 
 #include <cdogs/gamedata.h>
+#include <cdogs/grafx.h>
 
-void DisplayPlayer(int x, struct PlayerData *data, int character,
-		   int editingName);
-int PlayerSelection(int twoPlayers, void *bkg);
-int PlayerEquip(void *bkg);
+void DisplayPlayer(int x, struct PlayerData *data, int character, int editingName);
+int PlayerSelection(int twoPlayers, GraphicsDevice *graphics);
+int PlayerEquip(GraphicsDevice *graphics);
 void LoadTemplates(void);
 void SaveTemplates(void);
 

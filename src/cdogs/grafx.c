@@ -56,11 +56,15 @@
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
-#include "defs.h"
+#include "actors.h"
 #include "blit.h"
 #include "config.h"
+#include "defs.h"
+#include "draw.h"
+#include "mission.h"
 #include "pics.h" /* for gPalette */
 #include "files.h"
+#include "triggers.h"
 #include "utils.h"
 
 GFX_Mode gfx_modelist[] = {
@@ -130,6 +134,8 @@ int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
 	return
 		!device->IsInitialized ||
 		device->cachedConfig.Fullscreen != config->Fullscreen ||
+		device->cachedConfig.ResolutionWidth != config->ResolutionWidth ||
+		device->cachedConfig.ResolutionHeight != config->ResolutionHeight ||
 		device->cachedConfig.ScaleFactor != config->ScaleFactor;
 }
 
@@ -140,11 +146,39 @@ void GraphicsInit(GraphicsDevice *device)
 	device->screen = NULL;
 	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
 	device->buf = NULL;
+	device->bkg = NULL;
 }
 
-/* Initialises the video subsystem.
+void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
+{
+	struct Buffer *buffer = NewBuffer();
+	unsigned char *p;
+	int i;
+	TranslationTable randomTintTable;
 
-   Note: dynamic resolution change is not supported. */
+	SetupQuickPlayCampaign(&gCampaign.Setting);
+	gCampaign.seed = rand();
+	SetupMission(0, 1, &gCampaign);
+	SetupMap();
+	SetBuffer(1024, 768, buffer, X_TILES);
+	FixBuffer(buffer, 255);
+	DrawBuffer(buffer, 0);
+	CFREE(buffer);
+	KillAllObjects();
+	FreeTriggersAndWatches();
+	gCampaign.seed = gConfig.Game.RandomSeed;
+
+	p = device->buf;
+	SetPaletteRanges(15, 12, 10, 0);
+	BuildTranslationTables();
+	SetRandomTintTable(&randomTintTable, 256);
+	for (i = 0; i < GraphicsGetMemSize(config); i++)
+	{
+		p[i] = randomTintTable[p[i] & 0xFF];
+	}
+}
+
+// Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force)
@@ -168,17 +202,8 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 		sdl_flags |= SDL_FULLSCREEN;
 	}
 
-	// Don't allow resolution to change
-	if (!device->IsWindowInitialized)
-	{
-		rw = w = config->ResolutionWidth;
-		rh = h = config->ResolutionHeight;
-	}
-	else
-	{
-		rw = w = device->cachedConfig.ResolutionWidth;
-		rh = h = device->cachedConfig.ResolutionHeight;
-	}
+	rw = w = config->ResolutionWidth;
+	rh = h = config->ResolutionHeight;
 
 	if (config->ScaleFactor > 1)
 	{
@@ -213,6 +238,8 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 
 	CFREE(device->buf);
 	CCALLOC(device->buf, GraphicsGetMemSize(config));
+	CFREE(device->bkg);
+	CCALLOC(device->bkg, GraphicsGetMemSize(config));
 
 	if (!device->IsWindowInitialized)
 	{
@@ -240,6 +267,10 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	device->cachedConfig = *config;
 	device->cachedConfig.ResolutionWidth = w;
 	device->cachedConfig.ResolutionHeight = h;
+	// Need to make background here since dimensions use cached config
+	MakeBkg(device, config);
+	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
+	memset(device->buf, 0, GraphicsGetMemSize(config));
 }
 
 void GraphicsTerminate(GraphicsDevice *device)
@@ -248,11 +279,17 @@ void GraphicsTerminate(GraphicsDevice *device)
 	SDL_FreeSurface(device->screen);
 	SDL_VideoQuit();
 	CFREE(device->buf);
+	CFREE(device->bkg);
 }
 
 int GraphicsGetMemSize(GraphicsConfig *config)
 {
 	return config->ResolutionWidth * config->ResolutionHeight;
+}
+
+void GraphicsBlitBkg(GraphicsDevice *device)
+{
+	memcpy(device->buf, device->bkg, GraphicsGetMemSize(&device->cachedConfig));
 }
 
 char *GrafxGetResolutionStr(void)

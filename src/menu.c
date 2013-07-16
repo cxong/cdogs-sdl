@@ -83,9 +83,9 @@ void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *k
 	menu->keyboard = keyboard;
 }
 
-void MenuSetBackground(MenuSystem *menu, void *bkg)
+void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics)
 {
-	menu->bkg = bkg;
+	menu->graphics = graphics;
 }
 
 int MenuHasExitType(MenuSystem *menu, menu_type_e exitType)
@@ -140,12 +140,9 @@ void MenuLoop(MenuSystem *menu)
 			break;
 		}
 		// Draw
-		if (menu->bkg != NULL)
+		if (menu->graphics != NULL)
 		{
-			memcpy(
-				gGraphicsDevice.buf,
-				menu->bkg,
-				GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+			GraphicsBlitBkg(menu->graphics);
 		}
 		ShowControls();
 		MenuDisplay(menu);

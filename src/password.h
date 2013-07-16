@@ -19,10 +19,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#ifndef __password
-#define __password
+#ifndef __PASSWORD
+#define __PASSWORD
+
+#include <cdogs/grafx.h>
 
 const char *MakePassword(int mission);
-int EnterPassword(void *bkg, const char *password);
+int EnterPassword(GraphicsDevice *graphics, const char *password);
 
 #endif
