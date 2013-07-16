@@ -1,5 +1,5 @@
 
-C-Dogs SDL Port v0.4.4
+C-Dogs SDL Port v0.4.5
 ========================
 
 (based on C-Dogs 1.06)
@@ -14,7 +14,7 @@ C-Dogs SDL Port v0.4.4
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.4.4
+     `---------------'               v0.4.5
 
 1. Introduction
 2. Tested Environments
@@ -69,33 +69,32 @@ The C-Dogs binary is called "cdogs-sdl". Below are some command line arguments:
 
 ### Video Options
 
-    -fullscreen Try and use a fullscreen video mode.
-    -scale=n    Scale the window resolution up by a factor of n
-                  Factors: 2, 3, 4
-    -screen=WxH Set virtual screen width to W x H
-                  Modes: 320x200, 320x240, 400x300, 640x480, 800x600
-    -forcemode  Don't check video mode sanity
+    --fullscreen Try and use a fullscreen video mode.
+    --scale=n    Scale the window resolution up by a factor of n
+                   Factors: 2, 3, 4
+    --screen=WxH Set virtual screen width to W x H
+                   Modes: 320x200, 320x240, 400x300, 640x480, 800x600
+    --forcemode  Don't check video mode sanity
 
 ### Sound Options
 
-    -nosound    Disable sound
+    --nosound    Disable sound
 
 ### Control Options
 
-    -nojoystick     Disable joystick(s)
+    --nojoystick     Disable joystick(s)
 
 ### Game Options
 
-    -savecampaigns  Save builtin campaigns as in the current directory.
-    -wait           Wait for a key hit before initialising video.
-    -shakemult=n    Screen shaking multiplier (0 = disable).
+    --wait           Wait for a key hit before initialising video.
+    --shakemult=n    Screen shaking multiplier (0 = disable).
 
-    -help           Display command line options and version information.
+    --help           Display command line options and version information.
 
 These can be used in any order/combination:
 
 ```bash
-$ cdogs-sdl -fullscreen -screen=400x300
+$ cdogs-sdl --fullscreen --screen=400x300
 ```
 
 Which will make the game try to run fullscreen at 400x300 resolution.
