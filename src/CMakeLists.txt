@@ -89,6 +89,7 @@ else()
 			add_definitions(-Wshadow)
 		endif()
 	endif()
+	set(EXTRA_LIBRARIES "m")
 endif()
 
 include_directories(.)
@@ -145,7 +146,7 @@ elseif(APPLE)
 		${SOURCE_DIRECTORY}/build/macosx/SDLMain.h)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
-target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} m)
+target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
 
 install(TARGETS cdogs-sdl DESTINATION .)
 
@@ -207,4 +208,4 @@ SET(CDOGS_SDL_EDITOR_SOURCES
 SET(CDOGS_SDL_EDITOR_HEADERS
 	charsed.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
-target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} m)
+target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
