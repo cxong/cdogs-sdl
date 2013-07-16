@@ -1507,7 +1507,6 @@ int main(int argc, char *argv[])
 {
 	int i;
 	int loaded = 0;
-	unsigned char *my_screen;
 
 	memset(&campaign, 0, sizeof(campaign));
 	strcpy(campaign.title, "Campaign title");
