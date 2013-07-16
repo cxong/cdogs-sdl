@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <limits.h>
 
 #ifndef JSON_H
 #define JSON_H
