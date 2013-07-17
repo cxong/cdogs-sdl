@@ -260,8 +260,6 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
 		config->ResolutionWidth, config->ResolutionHeight);
 
-	CDogsSetPalette(gPalette);
-
 	device->IsInitialized = 1;
 	device->IsWindowInitialized = 1;
 	device->cachedConfig = *config;
@@ -269,6 +267,8 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	device->cachedConfig.ResolutionHeight = h;
 	// Need to make background here since dimensions use cached config
 	MakeBkg(device, config);
+	CDogsSetPalette(gPalette);
+	BlitSetBrightness(config->Brightness);
 	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
 	memset(device->buf, 0, GraphicsGetMemSize(config));
 }

@@ -267,28 +267,18 @@ void CopyToScreen(void)
 	SDL_Flip(gGraphicsDevice.screen);
 }
 
-void AltScrCopy(void)
-{
-	CopyToScreen();
-	return;
-}
-
-#define GAMMA	3
-
-#define GAMMA_R	GAMMA
-#define GAMMA_G	GAMMA
-#define GAMMA_B	GAMMA
-
+#define GAMMA 3
 void CDogsSetPalette(void *pal)
 {
 	color_t *palette = (color_t *)pal;
 	SDL_Color newpal[256];
 	int i;
 
-	for (i = 0; i < 256; i++) {
-		newpal[i].r = palette[i].red	* GAMMA_R;
-		newpal[i].g = palette[i].green	* GAMMA_G;
-		newpal[i].b = palette[i].blue	* GAMMA_B;
+	for (i = 0; i < 256; i++)
+	{
+		newpal[i].r = (Uint8)CLAMP(palette[i].red * GAMMA, 0, 255);
+		newpal[i].g = (Uint8)CLAMP(palette[i].green * GAMMA, 0, 255);
+		newpal[i].b = (Uint8)CLAMP(palette[i].blue * GAMMA, 0, 255);
 
 		newpal[i].unused = 0;
 	}
@@ -302,17 +292,19 @@ int BlitGetBrightness(void)
 }
 void BlitSetBrightness(int brightness)
 {
-	if (brightness >= -10 && brightness <= 10)
+	int i;
+	double f;
+	if (brightness < BLIT_BRIGHTNESS_MIN || brightness > BLIT_BRIGHTNESS_MAX)
 	{
-		int i;
-		double f;
-		f = 1.0 + brightness / 33.3;
-		for (i = 0; i < 255; i++)
-		{
-			gPalette[i].red = (unsigned char)CLAMP(f * origPalette[i].red, 0, 254);
-			gPalette[i].green = (unsigned char)CLAMP(f * origPalette[i].green, 0, 254);
-			gPalette[i].blue = (unsigned char)CLAMP(f * origPalette[i].blue, 0, 254);
-		}
-		CDogsSetPalette(gPalette);
+		return;
 	}
+
+	f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
+	for (i = 0; i < 255; i++)
+	{
+		gPalette[i].red = (unsigned char)CLAMP(f * origPalette[i].red, 0, 255);
+		gPalette[i].green = (unsigned char)CLAMP(f * origPalette[i].green, 0, 255);
+		gPalette[i].blue = (unsigned char)CLAMP(f * origPalette[i].blue, 0, 255);
+	}
+	CDogsSetPalette(gPalette);
 }

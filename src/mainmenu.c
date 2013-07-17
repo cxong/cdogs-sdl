@@ -204,10 +204,9 @@ menu_t *MenuCreateOptions(const char *name)
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionRangeGetSet(
-			"Brightness",
-			BlitGetBrightness, BlitSetBrightness,
-			-10, 10, 1,
+		MenuCreateOptionRange(
+			"Brightness", (int *)&gConfig.Graphics.Brightness,
+			BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(
 		menu,
