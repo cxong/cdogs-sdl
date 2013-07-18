@@ -497,7 +497,7 @@ int HandleKey(int *done, int cmd)
 
 int gameloop(void)
 {
-	struct Buffer *buffer = NewBuffer();
+	struct Buffer *buffer = NewBuffer(X_TILES, Y_TILES);
 	int ticks;
 	int is_esc_pressed = 0;
 	int done = NO;

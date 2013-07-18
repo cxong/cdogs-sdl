@@ -86,15 +86,20 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 	TTile *tile, *tileBelow;
 
 	tile = &buffer->tiles[0][0];
-	tileBelow = &buffer->tiles[1][0];
-	for (y = 0; y < Y_TILES - 1; y++) {
-		for (x = 0; x < buffer->width; x++, tile++, tileBelow++) {
-			if ((tile->flags & (IS_WALL | OFFSET_PIC)) == 0 &&
-			    (tileBelow->flags & IS_WALL) != 0)
+	tileBelow = &buffer->tiles[0][0] + X_TILES;
+	for (y = 0; y < Y_TILES - 1; y++)
+	{
+		for (x = 0; x < buffer->width; x++, tile++, tileBelow++)
+		{
+			if (!(tile->flags & (IS_WALL | OFFSET_PIC)) &&
+				(tileBelow->flags & IS_WALL))
+			{
 				tile->pic = -1;
-			else if ((tile->flags & IS_WALL) != 0 &&
-				 (tileBelow->flags & IS_WALL) != 0)
+			}
+			else if ((tile->flags & IS_WALL) && (tileBelow->flags & IS_WALL))
+			{
 				tile->flags |= DELAY_DRAW;
+			}
 		}
 		tile += X_TILES - buffer->width;
 		tileBelow += X_TILES - buffer->width;
@@ -121,8 +126,16 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 	}
 }
 
-#define TEST_LOS(x,y,dx,dy)   if (buffer->tiles[y+dy][x+dx].flags & (NO_SEE|shadowFlag)) \
-                              buffer->tiles[y][x].flags |= shadowFlag
+void SetLineOfSight(
+	struct Buffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
+{
+	TTile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
+	if (dTile->flags & (NO_SEE|shadowFlag))
+	{
+		TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
+		tile->flags |= shadowFlag;
+	}
+}
 
 void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 {
@@ -132,22 +145,36 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 	yc = yc / TILE_HEIGHT - buffer->yStart;
 
 	for (x = xc - 2; x >= 0; x--)
-		TEST_LOS(x, yc, 1, 0);
-	for (x = xc + 2; x < buffer->width; x++)
-		TEST_LOS(x, yc, -1, 0);
-	for (y = yc - 1; y >= 0; y--) {
-		TEST_LOS(xc, y, 0, 1);
-		for (x = xc - 1; x >= 0; x--)
-			TEST_LOS(x, y, 1, 1);
-		for (x = xc + 1; x < buffer->width; x++)
-			TEST_LOS(x, y, -1, 1);
+	{
+		SetLineOfSight(buffer, x, yc, 1, 0, shadowFlag);
 	}
-	for (y = yc + 1; y < Y_TILES; y++) {
-		TEST_LOS(xc, y, 0, -1);
+	for (x = xc + 2; x < buffer->width; x++)
+	{
+		SetLineOfSight(buffer, x, yc, -1, 0, shadowFlag);
+	}
+	for (y = yc - 1; y >= 0; y--)
+	{
+		SetLineOfSight(buffer, xc, y, 0, 1, shadowFlag);
 		for (x = xc - 1; x >= 0; x--)
-			TEST_LOS(x, y, 1, -1);
+		{
+			SetLineOfSight(buffer, x, y, 1, 1, shadowFlag);
+		}
 		for (x = xc + 1; x < buffer->width; x++)
-			TEST_LOS(x, y, -1, -1);
+		{
+			SetLineOfSight(buffer, x, y, -1, 1, shadowFlag);
+		}
+	}
+	for (y = yc + 1; y < Y_TILES; y++)
+	{
+		SetLineOfSight(buffer, xc, y, 0, -1, shadowFlag);
+		for (x = xc - 1; x >= 0; x--)
+		{
+			SetLineOfSight(buffer, x, y, 1, -1, shadowFlag);
+		}
+		for (x = xc + 1; x < buffer->width; x++)
+		{
+			SetLineOfSight(buffer, x, y, -1, -1, shadowFlag);
+		}
 	}
 }
 

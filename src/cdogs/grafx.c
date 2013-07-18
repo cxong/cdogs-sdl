@@ -73,9 +73,12 @@ GFX_Mode gfx_modelist[] = {
 	{ 640, 480 },
 	{ 800, 600 }, /* things go strange above this... */
 	{ 1024, 768 },
+	{ 480, 320 },	// HVGA
+	{ 800, 480 },	// WVGA
+	{ 960, 540 },	// qHD
 	{ 0, 0 },
 };
-#define MODE_MAX 4
+#define MODE_MAX 7
 
 
 static int mode_idx = 1;
@@ -151,7 +154,7 @@ void GraphicsInit(GraphicsDevice *device)
 
 void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 {
-	struct Buffer *buffer = NewBuffer();
+	struct Buffer *buffer = NewBuffer(128, 128);
 	unsigned char *p;
 	int i;
 	TranslationTable randomTintTable;
@@ -161,7 +164,6 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
 	SetBuffer(1024, 768, buffer, X_TILES);
-	FixBuffer(buffer, 255);
 	DrawBuffer(buffer, 0);
 	CFREE(buffer);
 	KillAllObjects();

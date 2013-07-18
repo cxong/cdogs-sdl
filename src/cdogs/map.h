@@ -91,7 +91,7 @@ struct Buffer {
 	TTile **tiles; // we're dynamic now
 };
 
-struct Buffer * NewBuffer(void);
+struct Buffer *NewBuffer(int rows, int cols);
 
 extern TTile gMap[YMAX][XMAX];
 #define Map( x, y)  gMap[y][x]

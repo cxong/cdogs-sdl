@@ -61,18 +61,13 @@ static int tilesSeen = 0;
 static int tilesTotal = XMAX * YMAX;
 #define iMap( x, y) internalMap[y][x]
 
-struct Buffer * NewBuffer(void)
+struct Buffer *NewBuffer(int rows, int cols)
 {
 	struct Buffer *b;
-	int rows, cols, i;
-
-	CMALLOC(b, sizeof(struct Buffer));
-
-	rows = X_TILES;
-	cols = Y_TILES;
-
-	CMALLOC(b->tiles, rows * sizeof(TTile *));
-	CMALLOC(b->tiles[0], rows * cols * sizeof(TTile));
+	int i;
+	CMALLOC(b, sizeof *b);
+	CMALLOC(b->tiles, rows * sizeof *b->tiles);
+	CMALLOC(b->tiles[0], rows * cols * sizeof *b->tiles[0]);
 	for(i = 1; i < rows; i++)
 		b->tiles[i] = b->tiles[0] + i * cols;
 
