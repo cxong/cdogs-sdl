@@ -258,18 +258,11 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
-			"Video resolution",
+			"Video mode",
 			Gfx_ModePrev,
 			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
-			GrafxGetResolutionStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Video scale factor",
-			&gConfig.Graphics.ScaleFactor,
-			1, 4, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleStr));
+			GrafxGetModeStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

@@ -235,12 +235,6 @@ char *PercentStr(int p)
 	sprintf(buf, "%d%%", p);
 	return buf;
 }
-char *ScaleStr(int s)
-{
-	static char buf[8];
-	sprintf(buf, "%dx", s);
-	return buf;
-}
 char *Div8Str(int i)
 {
 	static char buf[8];

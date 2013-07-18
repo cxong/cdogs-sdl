@@ -79,7 +79,6 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 #define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
 
 char *PercentStr(int p);
-char *ScaleStr(int s);
 char *Div8Str(int i);
 
 #endif

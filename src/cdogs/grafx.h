@@ -65,22 +65,25 @@ typedef struct
 
 typedef struct
 {
+	int Width;
+	int Height;
+	int ScaleFactor;
+} GraphicsMode;
+
+typedef struct
+{
 	int IsInitialized;
 	int IsWindowInitialized;
 	SDL_Surface *screen;
 	GraphicsConfig cachedConfig;
+	GraphicsMode *validModes;
+	int numValidModes;
+	int modeIndex;
 	unsigned char *buf;
 	unsigned char *bkg;
 } GraphicsDevice;
 
 extern GraphicsDevice gGraphicsDevice;
-
-void SetColorZero(
-	GraphicsDevice *device, unsigned char r, unsigned char g, unsigned char b);
-
-typedef struct {
-	unsigned int w, h;
-} GFX_Mode;
 
 void GraphicsInit(GraphicsDevice *device);
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
@@ -91,7 +94,7 @@ void GraphicsBlitBkg(GraphicsDevice *device);
 void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);
 
-char *GrafxGetResolutionStr(void);
+char *GrafxGetModeStr(void);
 
 #define CenterX(w)		((gGraphicsDevice.cachedConfig.ResolutionWidth - w) / 2)
 #define CenterY(h)		((gGraphicsDevice.cachedConfig.ResolutionHeight - h) / 2)
