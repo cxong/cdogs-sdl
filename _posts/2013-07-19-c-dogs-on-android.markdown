@@ -13,4 +13,4 @@ Thanks to [knepe][knepe] for doing the porting work. Check out the port [here][p
 
 [playstore]: https://play.google.com/store/apps/details?id=com.knepe.cdogs
 [knepe]: http://github.com/knepe
-[port]: http://knepe.github.com/cdogs-sdl-android
+[port]: https://github.com/knepe/cdogs-sdl-android
