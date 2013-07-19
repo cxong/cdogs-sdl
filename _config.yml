@@ -1,3 +1,4 @@
 name: C-Dogs SDL
 markdown: redcarpet
 pygments: true
+baseurl: http://cxong.github.io/cdogs-sdl/
