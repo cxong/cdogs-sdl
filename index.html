@@ -35,9 +35,9 @@ title: C-Dogs SDL
   <h3>Blog Posts</h3>
   <ul class="posts">
     {% for post in site.posts %}
-      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></li>
+      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
       {{ post.content | strip_html | truncatewords:75}}<br>
-      <a href="{{ post.url }}">Read more...</a><br><br>
+      <a href="{{ site.baseurl }}{{ post.url }}">Read more...</a><br><br>
     {% endfor %}
   </ul>
 </div>
