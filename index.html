@@ -30,9 +30,15 @@ title: C-Dogs SDL
     data-title="Android"
     data-description="Play C-Dogs on your Android device! Find it in the Play Store"
   />
+  <img 
+    src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/widescreen.png",
+    data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/widescreen.png"
+    data-title="Widescreen"
+    data-description="C-Dogs supports any resolution available on your platform"
+  />
 </div>
 <div id="home">
-  <h3>Blog Posts</h3>
+  <h3>News</h3>
   <ul class="posts">
     {% for post in site.posts %}
       <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
