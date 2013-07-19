@@ -70,10 +70,6 @@
 #define mkdir(p, a) mkdir(p)
 #endif
 
-#if !defined(ssize_t) && !defined(__MACTYPES__)
-typedef int ssize_t;
-#endif
-
 #ifndef S_IFLNK
 #define S_IFLNK 0xa000
 #endif
