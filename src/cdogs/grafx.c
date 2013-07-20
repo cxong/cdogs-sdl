@@ -208,23 +208,28 @@ void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
 
 	for (i = 0; modes[i]; i++)
 	{
-		int w = modes[i]->w;
-		int h = modes[i]->h;
-		int scaleFactor = 1;
-		for (;;)
+		int validScaleFactors[] = { 1, 2, 3, 4 };
+		int j;
+		for (j = 0; j < 4; j++)
 		{
-			if (w % 4 || h % 4)
+			int scaleFactor = validScaleFactors[j];
+			int w, h;
+			if (modes[i]->w % scaleFactor || modes[i]->h % scaleFactor)
 			{
-				break;
+				continue;
 			}
-			AddGraphicsMode(device, w, h, scaleFactor);
-			w /= 2;
-			h /= 2;
-			scaleFactor *= 2;
+			if (modes[i]->w % 4)
+			{
+				// TODO: why does width have to be divisible by 4? 1366x768 doesn't work
+				continue;
+			}
+			w = modes[i]->w / scaleFactor;
+			h = modes[i]->h / scaleFactor;
 			if (w < 320 || h < 240)
 			{
 				break;
 			}
+			AddGraphicsMode(device, w, h, scaleFactor);
 		}
 	}
 }
