@@ -616,6 +616,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 	gPlayer1->flags = FLAGS_PLAYER1;
 	PlaceActor(gPlayer1);
 	gPlayer1->health = maxHealth;
+	gCharacterDesc[gPlayer1->character].maxHealth = maxHealth;
 
 	if (twoPlayers) {
 		gPlayer2Data.score = 0;
@@ -627,6 +628,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 		gPlayer2->flags = FLAGS_PLAYER2;
 		PlaceActor(gPlayer2);
 		gPlayer2->health = maxHealth;
+		gCharacterDesc[gPlayer2->character].maxHealth = maxHealth;
 	}
 }
 
