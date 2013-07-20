@@ -58,6 +58,7 @@
 
 #include "files.h"
 #include "music.h"
+#include "vector.h"
 
 SoundDevice gSoundDevice =
 {
@@ -270,18 +271,21 @@ void SoundSetEars(int x, int y)
 	SoundSetRightEar(x, y);
 }
 
-void SoundPlayAt(sound_e sound, int x, int y)
+void SoundPlayAt(SoundDevice *device, sound_e sound, int x, int y)
 {
-	SoundPlayAtPlusDistance(sound, x, y, 0);
+	SoundPlayAtPlusDistance(device, sound, x, y, 0);
 }
 
-void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance)
+void SoundPlayAtPlusDistance(
+	SoundDevice *device, sound_e sound, int x, int y, int plusDistance)
 {
 	int distance, bearing;
-	Vector2i origin = gSoundDevice.earLeft;
+	Vector2i origin;
 	Vector2i target;
 	target.x = x;
 	target.y = y;
+	origin = CalcClosestPointOnLineSegmentToPoint(
+		device->earLeft, device->earRight, target);
 	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
 }

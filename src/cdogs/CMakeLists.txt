@@ -32,6 +32,7 @@ set(CDOGS_SOURCES
 	text.c
 	triggers.c
 	utils.c
+	vector.c
 	weapon.c)
 set(CDOGS_HEADERS
 	actors.h
@@ -68,5 +69,6 @@ set(CDOGS_HEADERS
 	text.h
 	triggers.h
 	utils.h
+	vector.h
 	weapon.h)
 add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS})

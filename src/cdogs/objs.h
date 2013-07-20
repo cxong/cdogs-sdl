@@ -24,7 +24,7 @@
 
 #include "map.h"
 #include "pics.h"
-#include "utils.h"
+#include "vector.h"
 
 
 // Mobile objects

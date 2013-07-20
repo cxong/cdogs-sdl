@@ -145,7 +145,7 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 			i = 0;
 		}
 		actor->weapon.gun = data->weapons[i];
-		SoundPlayAt(SND_SWITCH, actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAt(&gSoundDevice, SND_SWITCH, actor->tileItem.x, actor->tileItem.y);
 	}
 	else
 	{

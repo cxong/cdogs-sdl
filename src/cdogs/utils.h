@@ -106,20 +106,12 @@ extern int debug_level;
 #define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
 #define CLAMP_OPPOSITE(v, _min, _max)\
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
-#define CHEBYSHEV_DISTANCE(x1, y1, x2, y2)  MAX(abs((x1) - (x2)), abs((y1) - (y2)))
-
-typedef struct
-{
-	int x;
-	int y;
-} Vector2i;
 
 #define PI 3.14159265
 
-double ToDegrees(double radians);
+double Round(double x);
 
-void CalcChebyshevDistanceAndBearing(
-	Vector2i origin, Vector2i target, int *distance, int *bearing);
+double ToDegrees(double radians);
 
 typedef enum
 {

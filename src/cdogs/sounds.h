@@ -134,11 +134,12 @@ void SoundPlay(SoundDevice *device, sound_e sound);
 void SoundSetLeftEar(int x, int y);
 void SoundSetRightEar(int x, int y);
 void SoundSetEars(int x, int y);
-void SoundPlayAt(sound_e sound, int x, int y);
+void SoundPlayAt(SoundDevice *device, sound_e sound, int x, int y);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
-void SoundPlayAtPlusDistance(sound_e sound, int x, int y, int plusDistance);
+void SoundPlayAtPlusDistance(
+	SoundDevice *device, sound_e sound, int x, int y, int plusDistance);
 
 sound_e SoundGetHit(special_damage_e damage, int isActor);
 

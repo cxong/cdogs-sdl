@@ -421,6 +421,7 @@ void UpdateActorState(TActor * actor, int ticks)
 		actor->soundLock <= 0)
 	{
 		SoundPlayAtPlusDistance(
+			&gSoundDevice,
 			SND_FOOTSTEP,
 			actor->tileItem.x, actor->tileItem.y,
 			FOOTSTEP_DISTANCE_PLUS);
@@ -497,7 +498,7 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 	CheckMissionObjective(object->tileItem.flags);
 	RemoveObject(object);
-	SoundPlayAt(SND_PICKUP, actor->tileItem.x, actor->tileItem.y);
+	SoundPlayAt(&gSoundDevice, SND_PICKUP, actor->tileItem.x, actor->tileItem.y);
 }
 
 int MoveActor(TActor * actor, int x, int y)
@@ -594,7 +595,7 @@ void PlayRandomScreamAt(int x, int y)
 	static sound_e screamTable[SCREAM_COUNT] =
 		{ SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
 	static int screamIndex = 0;
-	SoundPlayAt(screamTable[screamIndex], x, y);
+	SoundPlayAt(&gSoundDevice, screamTable[screamIndex], x, y);
 	screamIndex++;
 	if (screamIndex >= SCREAM_COUNT)
 	{
@@ -610,7 +611,8 @@ void InjureActor(TActor * actor, int injury)
 		PlayRandomScreamAt(actor->tileItem.x, actor->tileItem.y);
 		if ((actor->flags & FLAGS_PLAYERS) != 0)
 		{
-			SoundPlayAt(SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
+			SoundPlayAt(
+				&gSoundDevice, SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
 		}
 		CheckMissionObjective(actor->tileItem.flags);
 	}
@@ -780,7 +782,7 @@ void SlideActor(TActor * actor, int cmd)
 	// Slide sound
 	if (gConfig.Sound.Footsteps)
 	{
-		SoundPlayAt(SND_SLIDE, actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAt(&gSoundDevice, SND_SLIDE, actor->tileItem.x, actor->tileItem.y);
 	}
 }
 
@@ -1004,7 +1006,7 @@ void ActorTakeHit(
 		sound_e sound = SoundGetHit(damage, 1);
 		if (!isInvulnerable || sound != SND_KNIFE_FLESH)
 		{
-			SoundPlayAt(sound, hitLocation.x, hitLocation.y);
+			SoundPlayAt(&gSoundDevice, sound, hitLocation.x, hitLocation.y);
 		}
 	}
 }

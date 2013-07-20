@@ -54,32 +54,14 @@
 int debug = 0;
 int debug_level = D_NORMAL;
 
+double Round(double x)
+{
+	return floor(x + 0.5);
+}
+
 double ToDegrees(double radians)
 {
 	return radians * 180.0 / PI;
-}
-
-void CalcChebyshevDistanceAndBearing(
-	Vector2i origin, Vector2i target, int *distance, int *bearing)
-{
-	// short circuit if origin and target same
-	if (origin.x == target.x && origin.y == target.y)
-	{
-		*distance = 0;
-		*bearing = 0;
-	}
-	else
-	{
-		double angle;
-		*distance = CHEBYSHEV_DISTANCE(origin.x, origin.y, target.x, target.y);
-		angle = ToDegrees(atan2(target.y - origin.y, target.x - origin.x));
-		// convert angle to bearings
-		// first rotate so 0 angle = 0 bearing
-		angle -= 90.0;
-		// then reflect about Y axis
-		angle = 360 - angle;
-		*bearing = (int)floor(angle + 0.5);
-	}
 }
 
 char *InputDeviceStr(int d)

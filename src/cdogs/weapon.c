@@ -145,6 +145,7 @@ void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition)
 		(int)gGunDescriptions[w->gun].ReloadSound != -1)
 	{
 		SoundPlayAtPlusDistance(
+			&gSoundDevice,
 			gGunDescriptions[w->gun].ReloadSound,
 			tilePosition.x, tilePosition.y,
 			RELOAD_DISTANCE_PLUS);
@@ -294,7 +295,7 @@ void Heatseeker(TActor * actor)
 		      512, 60, 20, actor->flags);
 	actor->gunLock = 30;
 	Score(actor->flags, -7);
-	SoundPlayAt(SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
+	SoundPlayAt(&gSoundDevice, SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
 
 void PulseRifle(TActor * actor)
@@ -313,7 +314,7 @@ void PulseRifle(TActor * actor)
 		       1280, 25, 7, actor->flags);
 	actor->gunLock = 4;
 	Score(actor->flags, -1);
-	SoundPlayAt(SND_MINIGUN, actor->tileItem.x, actor->tileItem.y);
+	SoundPlayAt(&gSoundDevice, SND_MINIGUN, actor->tileItem.x, actor->tileItem.y);
 }
 */
 
@@ -321,7 +322,11 @@ void WeaponPlaySound(Weapon *w, Vector2i tilePosition)
 {
 	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
 	{
-		SoundPlayAt(gGunDescriptions[w->gun].Sound, tilePosition.x, tilePosition.y);
+		SoundPlayAt(
+			&gSoundDevice,
+			gGunDescriptions[w->gun].Sound,
+			tilePosition.x,
+			tilePosition.y);
 		w->soundLock = gGunDescriptions[w->gun].SoundLockLength;
 	}
 }
