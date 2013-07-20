@@ -503,8 +503,12 @@ int gameloop(void)
 	int done = NO;
 	HUD hud;
 
-	CDogsSetClip(0, 0, gGraphicsDevice.cachedConfig.ResolutionWidth - 1, gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
-	HUDInit(&hud, &gConfig.Interface, &gMission);
+	CDogsSetClip(
+		0,
+		0,
+		gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
+		gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+	HUDInit(&hud, &gConfig.Interface, &gConfig.Graphics, &gMission);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{

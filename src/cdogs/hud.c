@@ -107,12 +107,17 @@ void WallClockDraw(WallClock *wc)
 	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
 }
 
-void HUDInit(HUD *hud, InterfaceConfig *config, struct MissionOptions *mission)
+void HUDInit(
+	HUD *hud,
+	InterfaceConfig *config,
+	GraphicsConfig *graphics,
+	struct MissionOptions *mission)
 {
 	hud->mission = mission;
 	strcpy(hud->message, "");
 	hud->messageTicks = 0;
-	hud->config = *config;
+	hud->config = config;
+	hud->graphicsConfig = graphics;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
 }
@@ -135,7 +140,7 @@ void HUDUpdate(HUD *hud, int ms)
 }
 
 
-void DrawHealth(int health, int maxHealth, int flags)
+void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 {
 	char s[50];
 	int colourMaxHealth = 16;
@@ -147,6 +152,10 @@ void DrawHealth(int health, int maxHealth, int flags)
 	int barLeft = 4;
 	int barTop = 4 * CDogsTextHeight() - 1;
 	int barHeight = CDogsTextHeight() + 1;
+	if (flags & TEXT_RIGHT)
+	{
+		barLeft = config->ResolutionWidth - barLeft - barWidth;
+	}
 	BlitRectangle(
 		gGraphicsDevice.buf,
 		barLeft, barTop,
@@ -168,7 +177,8 @@ void DrawHealth(int health, int maxHealth, int flags)
 #define HUD_PLACE_LEFT	0
 #define HUD_PLACE_RIGHT	1
 // Draw player's score, health etc.
-void DrawPlayerStatus(struct PlayerData *data, TActor *p, int placement)
+void DrawPlayerStatus(
+	struct PlayerData *data, TActor *p, int placement, GraphicsConfig *config)
 {
 	char s[50];
 
@@ -191,7 +201,7 @@ void DrawPlayerStatus(struct PlayerData *data, TActor *p, int placement)
 		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
 		CDogsTextStringSpecial(
 			GunGetName(p->weapon.gun), flags, 5, 5 + 1 + CDogsTextHeight());
-		DrawHealth(p->health, gCharacterDesc[p->character].maxHealth, flags);
+		DrawHealth(p->health, gCharacterDesc[p->character].maxHealth, flags, config);
 	}
 	else
 	{
@@ -237,10 +247,11 @@ void HUDDraw(HUD *hud, int isPaused, int isEscExit)
 	static time_t t = 0;
 	static time_t td = 0;
 
-	DrawPlayerStatus(&gPlayer1Data, gPlayer1, HUD_PLACE_LEFT);
+	DrawPlayerStatus(&gPlayer1Data, gPlayer1, HUD_PLACE_LEFT, hud->graphicsConfig);
 	if (gOptions.twoPlayers)
 	{
-		DrawPlayerStatus(&gPlayer2Data, gPlayer2, HUD_PLACE_RIGHT);
+		DrawPlayerStatus(
+			&gPlayer2Data, gPlayer2, HUD_PLACE_RIGHT, hud->graphicsConfig);
 	}
 
 	if (!gPlayer1 && !gPlayer2)
@@ -278,11 +289,11 @@ void HUDDraw(HUD *hud, int isPaused, int isEscExit)
 		CDogsTextStringSpecial(hud->message, TEXT_XCENTER | TEXT_TOP, 0, 20);
 	}
 
-	if (hud->config.ShowFPS)
+	if (hud->config->ShowFPS)
 	{
 		FPSCounterDraw(&hud->fpsCounter);
 	}
-	if (hud->config.ShowTime)
+	if (hud->config->ShowTime)
 	{
 		WallClockDraw(&hud->clock);
 	}

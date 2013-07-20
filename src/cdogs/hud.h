@@ -59,12 +59,17 @@ typedef struct
 	struct MissionOptions *mission;
 	char message[256];
 	int messageTicks;
-	InterfaceConfig config;
+	InterfaceConfig *config;
+	GraphicsConfig *graphicsConfig;
 	FPSCounter fpsCounter;
 	WallClock clock;
 } HUD;
 
-void HUDInit(HUD *hud, InterfaceConfig *config, struct MissionOptions *mission);
+void HUDInit(
+	HUD *hud,
+	InterfaceConfig *config,
+	GraphicsConfig *graphics,
+	struct MissionOptions *mission);
 void HUDDisplayMessage(HUD *hud, const char *msg);
 void HUDUpdate(HUD *hud, int ms);
 void HUDDraw(HUD *hud, int isPaused, int isEscExit);
