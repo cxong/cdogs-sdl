@@ -50,14 +50,6 @@ void CalcChebyshevDistanceAndBearing(
 	}
 }
 
-static Vector2i Minus(Vector2i a, Vector2i b)
-{
-	Vector2i x;
-	x.x = a.x - b.x;
-	x.y = a.y - b.y;
-	return x;
-}
-
 static int DistanceSquared(Vector2i a, Vector2i b)
 {
 	int dx = a.x - b.x;

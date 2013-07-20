@@ -76,7 +76,7 @@ void FPSCounterDraw(FPSCounter *counter)
 	char s[50];
 	counter->framesDrawn++;
 	sprintf(s, "FPS: %d", counter->fps);
-	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 10);
+	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 5 + CDogsTextHeight());
 }
 
 void WallClockSetTime(WallClock *wc)
@@ -104,7 +104,7 @@ void WallClockDraw(WallClock *wc)
 {
 	char s[50];
 	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
-	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 10);
+	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 5 + CDogsTextHeight());
 }
 
 void HUDInit(
