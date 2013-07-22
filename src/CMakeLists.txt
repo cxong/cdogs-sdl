@@ -142,6 +142,7 @@ if(WIN32)
 	set(CDOGS_SDL_EXTRA ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 elseif(APPLE)
 	set(CDOGS_SDL_EXTRA
+		${SOURCE_DIRECTORY}/build/macosx/cdogs-icon.icns
 		${SOURCE_DIRECTORY}/build/macosx/SDLMain.m
 		${SOURCE_DIRECTORY}/build/macosx/SDLMain.h)
 endif()
