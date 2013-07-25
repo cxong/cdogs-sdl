@@ -297,7 +297,6 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 
 	device->IsInitialized = 0;
 
-	sdl_flags |= SDL_HWPALETTE;
 	sdl_flags |= SDL_SWSURFACE;
 
 	if (config->Fullscreen)
@@ -335,7 +334,7 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	printf("Graphics mode:\t%dx%d %dx (actual %dx%d)\n",
 		w, h, config->ScaleFactor, rw, rh);
 	SDL_FreeSurface(device->screen);
-	device->screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
+	device->screen = SDL_SetVideoMode(rw, rh, 32, sdl_flags);
 	if (device->screen == NULL)
 	{
 		printf("ERROR: InitVideo: %s\n", SDL_GetError());

@@ -53,6 +53,12 @@
 
 #include "sys_specifics.h"
 
+typedef enum
+{
+	SCALE_MODE_NN,
+	SCALE_MODE_BILINEAR
+} ScaleMode;
+
 typedef struct
 {
 	int Brightness;
@@ -61,6 +67,7 @@ typedef struct
 	int Fullscreen;
 	int ScaleFactor;
 	int ShakeMultiplier;
+	ScaleMode ScaleMode;
 } GraphicsConfig;
 
 typedef struct

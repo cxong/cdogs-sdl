@@ -33,6 +33,7 @@
 
 #include <json/json.h>
 
+#include "config.h"
 #include "json_utils.h"
 #include "keyboard.h"
 
@@ -43,7 +44,7 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 {
 	LoadBool(&config->FriendlyFire, node, "FriendlyFire");
 	config->RandomSeed = atoi(json_find_first_label(node, "RandomSeed")->child->text);
-	config->Difficulty = StrDifficulty(json_find_first_label(node, "Difficulty")->child->text);
+	JSON_UTILS_LOAD_ENUM(config->Difficulty, node, "Difficulty", StrDifficulty);
 	LoadBool(&config->SlowMotion, node, "SlowMotion");
 	LoadInt(&config->EnemyDensity, node, "EnemyDensity");
 	LoadInt(&config->NonPlayerHP, node, "NonPlayerHP");
@@ -58,8 +59,7 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 	sprintf(buf, "%u", config->RandomSeed);
 	json_insert_pair_into_object(
 		subConfig, "RandomSeed", json_new_number(buf));
-	json_insert_pair_into_object(
-		subConfig, "Difficulty", json_new_string(DifficultyStr(config->Difficulty)));
+	JSON_UTILS_ADD_ENUM_PAIR(subConfig, "Difficulty", config->Difficulty, DifficultyStr);
 	json_insert_pair_into_object(
 		subConfig, "SlowMotion", json_new_bool(config->SlowMotion));
 	AddIntPair(subConfig, "EnemyDensity", config->EnemyDensity);
@@ -76,6 +76,7 @@ static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 	LoadBool(&config->Fullscreen, node, "Fullscreen");
 	LoadInt(&config->ScaleFactor, node, "ScaleFactor");
 	LoadInt(&config->ShakeMultiplier, node, "ShakeMultiplier");
+	JSON_UTILS_LOAD_ENUM(config->ScaleMode, node, "ScaleMode", StrScaleMode);
 }
 static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 {
@@ -87,6 +88,7 @@ static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 		subConfig, "Fullscreen", json_new_bool(config->Fullscreen));
 	AddIntPair(subConfig, "ScaleFactor", config->ScaleFactor);
 	AddIntPair(subConfig, "ShakeMultiplier", config->ShakeMultiplier);
+	JSON_UTILS_ADD_ENUM_PAIR(subConfig, "ScaleMode", config->ScaleMode, ScaleModeStr);
 	json_insert_pair_into_object(root, "Graphics", subConfig);
 }
 

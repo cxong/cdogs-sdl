@@ -263,6 +263,12 @@ menu_t *MenuCreateOptions(const char *name)
 			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
 			GrafxGetModeStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Scale mode", (int *)&gConfig.Graphics.ScaleMode,
+			SCALE_MODE_NN, SCALE_MODE_BILINEAR, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleModeStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

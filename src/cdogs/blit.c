@@ -164,10 +164,27 @@ void CDogsSetClip(int left, int top, int right, int bottom)
 	return;
 }
 
+static TPalette gCurrentPalette;
+#define GAMMA 3
+Uint32 LookupPalette(unsigned char index)
+{
+	color_t color = gCurrentPalette[index];
+	union
+	{
+		Uint8 rgba[4];
+		Uint32 out;
+	} u;
+	u.rgba[0] = (Uint8)CLAMP(color.blue * GAMMA, 0, 255);
+	u.rgba[1] = (Uint8)CLAMP(color.green * GAMMA, 0, 255);
+	u.rgba[2] = (Uint8)CLAMP(color.red * GAMMA, 0, 255);
+	u.rgba[3] = 255;
+	return u.out;
+}
+
 #define PixelIndex(x, y, w)		(y * w + x)
 
 static INLINE
-void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
+void Scale8(Uint32 *d, const unsigned char *s, const int w, const int h,
 	    const int sf)
 {
 	int sx;
@@ -175,16 +192,19 @@ void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
 	int f = sf;
 
 	int dx, dy, dw;
-	char p;
 
-	if (f > 4) f = 4;	/* max 4x for the moment */
+	if (f > 4)
+	{
+		f = 4;	/* max 4x for the moment */
+	}
 
 	dw = w * f;
 
 	for (sy = 0; sy < h; sy++) {
 		dy = f * sy;
-		for (sx = 0; sx < w; sx++) {
-			p = s[PixelIndex(sx, sy, w)];
+		for (sx = 0; sx < w; sx++)
+		{
+			Uint32 p = LookupPalette(s[PixelIndex(sx, sy, w)]);
 			dx = f * sx;
 
 			switch (f) {
@@ -226,9 +246,162 @@ void Scale8(char unsigned *d, const unsigned char *s, const int w, const int h,
 	}
 }
 
+static Uint32 PixAvg(Uint32 p1, Uint32 p2)
+{
+	union
+	{
+		Uint8 rgba[4];
+		Uint32 out;
+	} u1, u2;
+	int i;
+	u1.out = p1;
+	u2.out = p2;
+	for (i = 0; i < 4; i++)
+	{
+		u1.rgba[i] = (Uint8)CLAMP(((int)u1.rgba[i] + u2.rgba[i]) / 2, 0, 255);
+	}
+	return u1.out;
+}
+static Uint32 Pix3rds(Uint32 p1, Uint32 p2)
+{
+	union
+	{
+		Uint8 rgba[4];
+		Uint32 out;
+	} u1, u2;
+	int i;
+	u1.out = p1;
+	u2.out = p2;
+	for (i = 0; i < 4; i++)
+	{
+		u1.rgba[i] = (Uint8)CLAMP(((int)u1.rgba[i]*2 + u2.rgba[i]) / 3, 0, 255);
+	}
+	return u1.out;
+}
+static void Bilinear(
+	Uint32 *dest, const unsigned char *src,
+	const int w, const int h,
+	const int scaleFactor)
+{
+	int sx, sy;
+	int dw = scaleFactor * w;
+	for (sy = 0; sy < h; sy++)
+	{
+		int dy = scaleFactor * sy;
+		for (sx = 0; sx < w; sx++)
+		{
+			Uint32 p = LookupPalette(src[PixelIndex(sx, sy, w)]);
+			int dx = scaleFactor * sx;
+			switch (scaleFactor)
+			{
+			#define BLIT(x, y, pix) dest[PixelIndex((x), (y), dw)] = pix;
+			case 4:
+				{
+					// 0 1 2 3|g
+					// 4 5 6 7|h
+					// 8 9 a b|i
+					// c d e f|j
+					// k-l-m-n+o
+					Uint32 pg = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 p2 = PixAvg(p, pg);
+					Uint32 p1 = PixAvg(p, p2);
+					Uint32 p3 = PixAvg(p2, pg);
+					Uint32 pk = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 p8 = PixAvg(p, pk);
+					Uint32 p4 = PixAvg(p, p8);
+					Uint32 pc = PixAvg(p8, pk);
+					Uint32 po = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 pi = PixAvg(pg, po);
+					Uint32 pa = PixAvg(p8, pi);
+					Uint32 p9 = PixAvg(p8, pa);
+					Uint32 pb = PixAvg(pa, pi);
+					Uint32 p6 = PixAvg(p2, pa);
+					Uint32 p5 = PixAvg(p4, p6);
+					Uint32 pm = PixAvg(pk, po);
+					Uint32 pe = PixAvg(pa, pm);
+					Uint32 ph = PixAvg(pg, pi);
+					Uint32 p7 = PixAvg(p6, ph);
+					Uint32 pj = PixAvg(pi, po);
+					Uint32 pd = PixAvg(pc, pe);
+					Uint32 pf = PixAvg(pe, pj);
+					BLIT(dx, dy, p);
+					BLIT(dx+1, dy, p1);
+					BLIT(dx+2, dy, p2);
+					BLIT(dx+3, dy, p3);
+					BLIT(dx, dy+1, p4);
+					BLIT(dx+1, dy+1, p5);
+					BLIT(dx+2, dy+1, p6);
+					BLIT(dx+3, dy+1, p7);
+					BLIT(dx, dy+2, p8);
+					BLIT(dx+1, dy+2, p9);
+					BLIT(dx+2, dy+2, pa);
+					BLIT(dx+3, dy+2, pb);
+					BLIT(dx, dy+3, pc);
+					BLIT(dx+1, dy+3, pd);
+					BLIT(dx+2, dy+3, pe);
+					BLIT(dx+3, dy+3, pf);
+				}
+				break;
+			case 3:
+				{
+					// 0 1 2|9
+					// 3 4 5|a
+					// 6 7 8|b
+					// c-d-e+f
+					Uint32 p9 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 p1 = Pix3rds(p9, p);
+					Uint32 p2 = Pix3rds(p, p9);
+					Uint32 pc = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 p3 = Pix3rds(pc, p);
+					Uint32 p6 = Pix3rds(p, pc);
+					Uint32 pf = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 pa = Pix3rds(pf, p9);
+					Uint32 pb = Pix3rds(p9, pf);
+					Uint32 p4 = Pix3rds(pa, p3);
+					Uint32 p5 = Pix3rds(p3, pa);
+					Uint32 p7 = Pix3rds(pb, p6);
+					Uint32 p8 = Pix3rds(p6, pb);
+					BLIT(dx, dy, p);
+					BLIT(dx+1, dy, p1);
+					BLIT(dx+2, dy, p2);
+					BLIT(dx, dy+1, p3);
+					BLIT(dx+1, dy+1, p4);
+					BLIT(dx+2, dy+1, p5);
+					BLIT(dx, dy+2, p6);
+					BLIT(dx+1, dy+2, p7);
+					BLIT(dx+2, dy+2, p8);
+				}
+				break;
+			case 2:
+				{
+					// 0 1|4
+					// 2 3|5
+					// 6-7+8
+					Uint32 p4 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 p1 = PixAvg(p, p4);
+					Uint32 p6 = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 p2 = PixAvg(p, p6);
+					Uint32 p8 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 p5 = PixAvg(p4, p8);
+					Uint32 p3 = PixAvg(p2, p5);
+					BLIT(dx, dy, p);
+					BLIT(dx+1, dy, p1);
+					BLIT(dx, dy+1, p2);
+					BLIT(dx+1, dy+1, p3);
+				}
+				break;
+			default:
+				BLIT(dx, dy, p);
+				break;
+			#undef BLIT
+			}
+		}
+	}
+}
+
 void CopyToScreen(void)
 {
-	unsigned char *pScreen = gGraphicsDevice.screen->pixels;
+	Uint32 *pScreen = (Uint32 *)gGraphicsDevice.screen->pixels;
 	int scr_w, scr_h, scr_size, scalef;
 
 	scr_w = gGraphicsDevice.cachedConfig.ResolutionWidth;
@@ -256,7 +429,15 @@ void CopyToScreen(void)
 
 	if (scalef == 1)
 	{
-		memcpy(pScreen, gGraphicsDevice.buf, scr_size);	/* 1 -> 1 */
+		int i;
+		for (i = 0; i < scr_size; i++)
+		{
+			pScreen[i] = LookupPalette(gGraphicsDevice.buf[i]);
+		}
+	}
+	else if (gConfig.Graphics.ScaleMode == SCALE_MODE_BILINEAR)
+	{
+		Bilinear(pScreen, gGraphicsDevice.buf, scr_w, scr_h, scalef);
 	}
 	else
 	{
@@ -267,23 +448,9 @@ void CopyToScreen(void)
 	SDL_Flip(gGraphicsDevice.screen);
 }
 
-#define GAMMA 3
-void CDogsSetPalette(void *pal)
+void CDogsSetPalette(TPalette palette)
 {
-	color_t *palette = (color_t *)pal;
-	SDL_Color newpal[256];
-	int i;
-
-	for (i = 0; i < 256; i++)
-	{
-		newpal[i].r = (Uint8)CLAMP(palette[i].red * GAMMA, 0, 255);
-		newpal[i].g = (Uint8)CLAMP(palette[i].green * GAMMA, 0, 255);
-		newpal[i].b = (Uint8)CLAMP(palette[i].blue * GAMMA, 0, 255);
-
-		newpal[i].unused = 0;
-	}
-	SDL_SetPalette(gGraphicsDevice.screen, SDL_PHYSPAL, newpal, 0, 256);
-	return;
+	memcpy(gCurrentPalette, palette, sizeof gCurrentPalette);
 }
 
 int BlitGetBrightness(void)

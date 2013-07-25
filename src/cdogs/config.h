@@ -47,6 +47,9 @@ typedef enum
 const char *DifficultyStr(difficulty_e d);
 difficulty_e StrDifficulty(const char *str);
 
+const char *ScaleModeStr(ScaleMode s);
+ScaleMode StrScaleMode(const char *str);
+
 typedef struct
 {
 	input_device_e Device;

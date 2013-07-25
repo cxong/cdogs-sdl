@@ -96,7 +96,7 @@ void BlitRectangle(
 
 void CDogsSetClip(int left, int top, int right, int bottom);
 void CopyToScreen(void);
-void CDogsSetPalette(void *palette);
+void CDogsSetPalette(TPalette palette);
 
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10

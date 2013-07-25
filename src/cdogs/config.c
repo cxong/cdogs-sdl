@@ -84,6 +84,34 @@ difficulty_e StrDifficulty(const char *str)
 		return DIFFICULTY_NORMAL;
 	}
 }
+const char *ScaleModeStr(ScaleMode s)
+{
+	switch (s)
+	{
+	case SCALE_MODE_NN:
+		return "Nearest neighbor";
+	case SCALE_MODE_BILINEAR:
+		return "Bilinear";
+	default:
+		return "";
+	}
+}
+ScaleMode StrScaleMode(const char *str)
+{
+	if (strcmp(str, "Nearest neighbor") == 0)
+	{
+		return SCALE_MODE_NN;
+	}
+	else if (strcmp(str, "Bilinear") == 0)
+	{
+		return SCALE_MODE_BILINEAR;
+	}
+	else
+	{
+		return SCALE_MODE_NN;
+	}
+}
+
 
 Config gConfig;
 
@@ -147,6 +175,7 @@ void ConfigLoadDefault(Config *config)
 	config->Graphics.ResolutionWidth = 320;
 	config->Graphics.ScaleFactor = 1;
 	config->Graphics.ShakeMultiplier = 1;
+	config->Graphics.ScaleMode = SCALE_MODE_NN;
 	config->Input.PlayerKeys[0].Device = INPUT_DEVICE_KEYBOARD;
 	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;

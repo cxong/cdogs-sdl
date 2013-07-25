@@ -35,4 +35,18 @@ void AddIntPair(json_t *parent, const char *name, int number);
 void LoadBool(int *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 
+#define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\
+	json_insert_pair_into_object(\
+		(parent), (name), json_new_string(func(value)));
+
+int TryLoadValue(json_t **node, const char *name);
+#define JSON_UTILS_LOAD_ENUM(value, node, name, func)\
+	{\
+		json_t *_node = (node);\
+		if (TryLoadValue(&_node, (name)))\
+		{\
+			(value) = func(_node->text);\
+		}\
+	}
+
 #endif
