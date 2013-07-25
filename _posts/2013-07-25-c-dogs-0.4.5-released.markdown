@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 0.4.5 Released!"
+date:   2013-07-25
+categories: release
+---
+
+Get the release here: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+This release coincides with an Android port, and includes a big list of enhancements; see if you can spot any!
+
+![](https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/split_screen.png)
+
+See the full release notes here: <https://github.com/cxong/cdogs-sdl/releases/tag/0.4.5>
