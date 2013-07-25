@@ -274,7 +274,7 @@ static Uint32 Pix3rds(Uint32 p1, Uint32 p2)
 	u2.out = p2;
 	for (i = 0; i < 4; i++)
 	{
-		u1.rgba[i] = (Uint8)CLAMP(((int)u1.rgba[i]*2 + u2.rgba[i]) / 3, 0, 255);
+		u1.rgba[i] = (Uint8)CLAMP(((int)u1.rgba[i] + u2.rgba[i]*2) / 3, 0, 255);
 	}
 	return u1.out;
 }
