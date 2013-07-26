@@ -169,16 +169,10 @@ static TPalette gCurrentPalette;
 Uint32 LookupPalette(unsigned char index)
 {
 	color_t color = gCurrentPalette[index];
-	union
-	{
-		Uint8 rgba[4];
-		Uint32 out;
-	} u;
-	u.rgba[0] = (Uint8)CLAMP(color.blue * GAMMA, 0, 255);
-	u.rgba[1] = (Uint8)CLAMP(color.green * GAMMA, 0, 255);
-	u.rgba[2] = (Uint8)CLAMP(color.red * GAMMA, 0, 255);
-	u.rgba[3] = 255;
-	return u.out;
+	color.red = (Uint8)CLAMP(color.red * GAMMA, 0, 255);
+	color.green = (Uint8)CLAMP(color.green * GAMMA, 0, 255);
+	color.blue = (Uint8)CLAMP(color.blue * GAMMA, 0, 255);
+	return SDL_MapRGB(gGraphicsDevice.screen->format, color.red, color.green, color.blue);
 }
 
 #define PixelIndex(x, y, w)		(y * w + x)

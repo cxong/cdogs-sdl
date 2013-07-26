@@ -52,6 +52,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <SDL_timer.h>
+
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
