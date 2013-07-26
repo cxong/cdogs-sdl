@@ -112,8 +112,8 @@ FEATURE(3, "Detect config version")
 			ConfigLoad(&config2, "tmp");
 		WHEN_END
 
-		THEN("the version should be 1, and the two configs should be equal")
-			SHOULD_INT_EQUAL(version, 1);
+		THEN("the version should be 2, and the two configs should be equal")
+			SHOULD_INT_EQUAL(version, 2);
 			SHOULD_MEM_EQUAL(&config1, &config2, sizeof(Config));
 		THEN_END
 	}
@@ -139,8 +139,8 @@ FEATURE(4, "Save config as latest format by default")
 			fclose(file);
 		WHEN_END
 
-		THEN("the version should be 1")
-			SHOULD_INT_EQUAL(version, 1);
+		THEN("the version should be 2")
+			SHOULD_INT_EQUAL(version, 2);
 		THEN_END
 	}
 	SCENARIO_END

@@ -49,7 +49,8 @@
 #ifndef __KEYBOARD
 #define __KEYBOARD
 
-#include <SDL.h>
+#include <SDL_events.h>
+#include <SDL_keysym.h>
 
 #define keySysReq       SDLK_SYSRQ
 #define keyCapsLock -1
