@@ -212,5 +212,5 @@ SET(CDOGS_SDL_EDITOR_SOURCES
 	charsed.c)
 SET(CDOGS_SDL_EDITOR_HEADERS
 	charsed.h)
-add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS})
+add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
