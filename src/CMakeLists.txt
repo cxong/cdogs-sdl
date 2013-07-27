@@ -145,6 +145,8 @@ elseif(APPLE)
 		${SOURCE_DIRECTORY}/build/macosx/cdogs-icon.icns
 		${SOURCE_DIRECTORY}/build/macosx/SDLMain.m
 		${SOURCE_DIRECTORY}/build/macosx/SDLMain.h)
+	set_source_files_properties(${SOURCE_DIRECTORY}/build/macosx/SDLMain.m
+		PROPERTIES LANGUAGE C)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
