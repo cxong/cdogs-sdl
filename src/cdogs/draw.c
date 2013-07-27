@@ -215,9 +215,12 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 
 	// First draw the floor tiles (which do not obstruct anything)
 	tile = &b->tiles[0][0];
-	for (y = 0, yc = b->dy; y < Y_TILES - 1; y++, yc += TILE_HEIGHT) {
+	for (y = 0, yc = b->dy; y < Y_TILES; y++, yc += TILE_HEIGHT)
+	{
 		for (x = 0, xc = b->dx + xOffset;
-		     x < b->width; x++, tile++, xc += TILE_WIDTH) {
+			 x < b->width;
+			 x++, tile++, xc += TILE_WIDTH)
+		{
 			if (tile->pic >= 0
 			    && (tile->flags & (IS_WALL | OFFSET_PIC)) == 0)
 				DrawPic(xc, yc, gPics[tile->pic],

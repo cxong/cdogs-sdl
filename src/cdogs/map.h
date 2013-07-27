@@ -28,11 +28,9 @@
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
 
-//#define X_TILES         21
 #define X_TILES			(gGraphicsDevice.cachedConfig.ResolutionWidth / TILE_WIDTH + 2)
 
 #define X_TILES_HALF    ((X_TILES / 2) + 1)
-//#define Y_TILES         19
 #define Y_TILES			(gGraphicsDevice.cachedConfig.ResolutionHeight / TILE_HEIGHT + 2)
 
 #define NO_WALK           1
