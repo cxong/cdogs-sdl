@@ -132,13 +132,12 @@ void DrawBrownBullet(int x, int y, const TMobileObject * obj)
 
 void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
 {
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_MOLOTOV];
-	DrawBTPic(x + pic->dx,
-		  y + pic->dy - obj->z,
-		  gPics[pic->picIndex],
-		  tableDarker, gRLEPics[pic->picIndex]);
+	const TOffsetPic *pic = &cGeneralPics[OFSPIC_MOLOTOV];
+	DrawBTPic(
+		x + pic->dx, y + pic->dy - obj->z,
+		gPics[pic->picIndex],
+		&colorDarker,
+		gRLEPics[pic->picIndex]);
 }
 
 void DrawSeeker(int x, int y, const TMobileObject * obj)
@@ -241,11 +240,10 @@ void DrawGasCloud(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cFireBallPics[8 + (obj->state & 3)];
-	DrawBTPic(x + pic->dx,
-		  y + pic->dy,
-		  gPics[pic->picIndex],
-		  obj->z ? tablePurple : tablePoison,
-		  gRLEPics[pic->picIndex]);
+	DrawBTPic(x + pic->dx, y + pic->dy,
+		gPics[pic->picIndex],
+		obj->z ? &colorPurple : &colorPoison,
+		gRLEPics[pic->picIndex]);
 }
 
 void DrawFireball(int x, int y, const TMobileObject * obj)

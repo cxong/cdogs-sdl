@@ -136,32 +136,6 @@ static ColorShade colorShades[SHADE_COUNT] = {
 unsigned char BestMatch(int r, int g, int b);
 
 
-void SetRandomTintTable(TranslationTable *table, int tint)
-{
-	// Generate three random numbers between 0-1, and divide each by 1/3rd the sum.
-	// The resulting three scaled numbers should add up to 1.
-	double r_scalar = rand() * 1.0 / RAND_MAX;
-	double g_scalar = rand() * 1.0 / RAND_MAX;
-	double b_scalar = rand() * 1.0 / RAND_MAX;
-	int i;
-	double scale_factor = r_scalar + g_scalar + b_scalar;
-	r_scalar /= scale_factor;
-	g_scalar /= scale_factor;
-	b_scalar /= scale_factor;
-	for (i = 0; i < 256; i++)
-	{
-		unsigned char f = (unsigned char)floor(
-			0.4 * gPalette[i].red +
-			0.49 * gPalette[i].green +
-			0.11 * gPalette[i].blue);
-		(*table)[i] = BestMatch(
-			(unsigned char)(r_scalar * f * tint / 256),
-			(unsigned char)(g_scalar * f * tint / 256),
-			(unsigned char)(b_scalar * f * tint / 256));
-	}
-}
-
-
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
@@ -169,6 +143,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	struct CharacterDescription *c = &gCharacterDesc[actor->character];
 	TranslationTable *table = (TranslationTable *) c->table;
+	color_t blend;
 	int f = c->facePic;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
@@ -194,9 +169,12 @@ void DrawCharacter(int x, int y, TActor * actor)
 		if (actor->dead <= DEATH_MAX) {
 			body = cDeathPics[actor->dead - 1];
 			if (transparent)
+			{
+				assert(0);	// TODO implement
 				DrawBTPic(x + body.dx, y + body.dy,
-					  gPics[body.picIndex], table,
+					  gPics[body.picIndex], &blend,
 					  gRLEPics[body.picIndex]);
+			}
 			else
 				DrawTTPic(x + body.dx, y + body.dy,
 					  gPics[body.picIndex], table,
@@ -277,15 +255,15 @@ void DrawCharacter(int x, int y, TActor * actor)
 	if (transparent) {
 		if (pic1.picIndex >= 0)
 			DrawBTPic(x + pic1.dx, y + pic1.dy,
-				  gPics[pic1.picIndex], table,
+				  gPics[pic1.picIndex], &blend,	// TODO implement
 				  gRLEPics[pic1.picIndex]);
 		if (pic2.picIndex >= 0)
 			DrawBTPic(x + pic2.dx, y + pic2.dy,
-				  gPics[pic2.picIndex], table,
+				  gPics[pic2.picIndex], &blend,	// TODO implement
 				  gRLEPics[pic2.picIndex]);
 		if (pic3.picIndex >= 0)
 			DrawBTPic(x + pic3.dx, y + pic3.dy,
-				  gPics[pic3.picIndex], table,
+				  gPics[pic3.picIndex], &blend,	// TODO implement
 				  gRLEPics[pic3.picIndex]);
 	} else if (table) {
 		if (pic1.picIndex >= 0)

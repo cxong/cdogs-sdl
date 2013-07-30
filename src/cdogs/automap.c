@@ -107,15 +107,12 @@ static void DisplayPlayer(TActor * player)
 
 void DrawCross(TTileItem * t, unsigned char color)
 {
-	unsigned char *scr = gGraphicsDevice.buf;
-
-	scr += MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	scr += (MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT) * gGraphicsDevice.cachedConfig.ResolutionWidth;
-	*scr = color;
-	*(scr - 1) = color;
-	*(scr + 1) = color;
-	*(scr - gGraphicsDevice.cachedConfig.ResolutionWidth) = color;
-	*(scr + gGraphicsDevice.cachedConfig.ResolutionWidth) = color;
+	Uint32 *scr = gGraphicsDevice.buf;
+	BlitCross(
+		scr,
+		MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH,
+		MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT,
+		color);
 }
 
 static void DisplayObjective(TTileItem * t, int objectiveIndex)
@@ -125,8 +122,7 @@ static void DisplayObjective(TTileItem * t, int objectiveIndex)
 
 static void DisplayExit(void)
 {
-	unsigned char *scr = gGraphicsDevice.buf;
-	int i;
+	Uint32 *scr = gGraphicsDevice.buf;
 	int x1, x2, y1, y2;
 
 	if (!CanCompleteMission(&gMission))
@@ -139,16 +135,7 @@ static void DisplayExit(void)
 	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
-	for (i = x1; i <= x2; i++)
-	{
-		*(scr + i + y1 * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
-		*(scr + i + y2 * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
-	}
-	for (i = y1 + 1; i < y2; i++)
-	{
-		*(scr + x1 + i * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
-		*(scr + x2 + i * gGraphicsDevice.cachedConfig.ResolutionWidth) = EXIT_COLOR;
-	}
+	BlitRectangle(scr, x1, y1, x2, y2, EXIT_COLOR, BLIT_FLAG_LINE);
 }
 
 static void DisplaySummary(void)
@@ -241,18 +228,19 @@ void DisplayAutoMap(int showAll)
 {
 	int x, y, i, j;
 	TTile *tile;
-	unsigned char *p;
-	unsigned char *screen;
+	Uint32 *screen = gGraphicsDevice.buf;
 	TTileItem *t;
 	int obj;
 
-	screen = p = gGraphicsDevice.buf;
 	// Draw faded green overlay
 	for (x = 0;
 		x < gGraphicsDevice.cachedConfig.ResolutionWidth * gGraphicsDevice.cachedConfig.ResolutionHeight;
 		x++)
 	{
-		p[x] = tableGreen[p[x] & 0xFF];
+		Uint8 r, g, b;
+		SDL_GetRGB(screen[x], gGraphicsDevice.screen->format, &r, &g, &b);
+		r = b = 0;
+		screen[x] = SDL_MapRGB(gGraphicsDevice.screen->format, r, g, b);
 	}
 
 	screen += MAP_YOFFS * gGraphicsDevice.cachedConfig.ResolutionWidth + MAP_XOFFS;
@@ -262,15 +250,25 @@ void DisplayAutoMap(int showAll)
 				if (AutoMap(x, y) || showAll) {
 					tile = &Map(x, y);
 					for (j = 0; j < MAP_FACTOR; j++)
-						if ((tile->flags & IS_WALL) != 0)
-							*screen++ = WALL_COLOR;
-						else if ((tile->flags & NO_WALK)
-							 != 0)
-							*screen++ = DoorColor(x, y);
+					{
+						if (tile->flags & IS_WALL)
+						{
+							*screen++ = LookupPalette(WALL_COLOR);
+						}
+						else if (tile->flags & NO_WALK)
+						{
+							*screen++ = LookupPalette(DoorColor(x, y));
+						}
 						else
-							*screen++ = FLOOR_COLOR;
-				} else
+						{
+							*screen++ = LookupPalette(FLOOR_COLOR);
+						}
+					}
+				}
+				else
+				{
 					screen += MAP_FACTOR;
+				}
 			screen += gGraphicsDevice.cachedConfig.ResolutionWidth - XMAX * MAP_FACTOR;
 		}
 

@@ -184,8 +184,6 @@ extern TranslationTable tableBlack;
 extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
-void SetRandomTintTable(TranslationTable *table, int tint);
-
 void SetCharacter(int index, int face, int skin, int hair, int body,
 		  int arms, int legs);
 void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,

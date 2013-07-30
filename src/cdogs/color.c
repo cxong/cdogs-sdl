@@ -1,26 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
 
     Copyright (c) 2013, Cong Xu
     All rights reserved.
@@ -46,24 +26,41 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_FILE
-#define __PIC_FILE
-
 #include "color.h"
-#include "sys_specifics.h"
 
-#include <stdint.h>
+#include <stdlib.h>
 
-typedef color_t TPalette[256];
-typedef unsigned char TranslationTable[256];
-typedef struct
+#include "utils.h"
+
+color_t colorRed = { 255, 0, 0 };
+color_t colorGreen = { 0, 255, 0 };
+color_t colorPoison = { 64, 255, 64 };
+color_t colorBlack = { 0, 0, 0 };
+color_t colorDarker = { 192, 192, 192 };
+color_t colorPurple = { 128, 0, 128 };
+
+color_t ColorMult(color_t a, color_t b)
 {
-	uint16_t w;
-	uint16_t h;
-	unsigned char data[1];
-} Pic;
+	a.red = (int)a.red * b.red / 255;
+	a.green = (int)a.green * b.green / 255;
+	a.blue = (int)a.blue * b.blue / 255;
+	return a;
+}
 
-int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette);
-int AppendPics(const char *filename, Pic **pics, int startIndex, int maxPics);
-
-#endif
+color_t ColorRandomTint(void)
+{
+	// Generate three random numbers between 0-1, and divide each by 1/3rd the sum.
+	// The resulting three scaled numbers should add up to 1.
+	color_t c;
+	double r_scalar = rand() * 1.0 / RAND_MAX;
+	double g_scalar = rand() * 1.0 / RAND_MAX;
+	double b_scalar = rand() * 1.0 / RAND_MAX;
+	double scale_factor = r_scalar + g_scalar + b_scalar;
+	r_scalar /= scale_factor;
+	g_scalar /= scale_factor;
+	b_scalar /= scale_factor;
+	c.red = (uint8_t)CLAMP(r_scalar * 256, 0, 255);
+	c.green = (uint8_t)CLAMP(g_scalar * 256, 0, 255);
+	c.blue = (uint8_t)CLAMP(b_scalar * 256, 0, 255);
+	return c;
+}

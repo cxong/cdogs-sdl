@@ -41,11 +41,12 @@
 
 void	Draw_Point (const int x, const int y, const unsigned char c)
 {
-	unsigned char *screen = gGraphicsDevice.buf;
-	
-	//debug("(%d, %d)\n", x, y);
-	
-	screen[PixelIndex(x, y, gGraphicsDevice.cachedConfig.ResolutionWidth, gGraphicsDevice.cachedConfig.ResolutionHeight)] = c;
+	Uint32 *screen = gGraphicsDevice.buf;
+	screen[PixelIndex(
+		x,
+		y,
+		gGraphicsDevice.cachedConfig.ResolutionWidth,
+		gGraphicsDevice.cachedConfig.ResolutionHeight)] = LookupPalette(c);
 }
 
 static

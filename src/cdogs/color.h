@@ -1,26 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
 
     Copyright (c) 2013, Cong Xu
     All rights reserved.
@@ -46,24 +26,29 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_FILE
-#define __PIC_FILE
+#ifndef __COLOR
+#define __COLOR
 
-#include "color.h"
 #include "sys_specifics.h"
 
 #include <stdint.h>
 
-typedef color_t TPalette[256];
-typedef unsigned char TranslationTable[256];
 typedef struct
 {
-	uint16_t w;
-	uint16_t h;
-	unsigned char data[1];
-} Pic;
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+} color_t;
+extern color_t colorRed;
+extern color_t colorGreen;
+extern color_t colorPoison;
+extern color_t colorBlack;
+extern color_t colorDarker;
+extern color_t colorPurple;
 
-int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette);
-int AppendPics(const char *filename, Pic **pics, int startIndex, int maxPics);
+// Multiply color components; used for tinting
+color_t ColorMult(color_t a, color_t b);
+
+color_t ColorRandomTint(void);
 
 #endif

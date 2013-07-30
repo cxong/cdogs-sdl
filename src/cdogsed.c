@@ -1220,7 +1220,10 @@ static void Save(int asCode)
 	strcpy(filename, lastFile);
 	for (;;)
 	{
-		memset(gGraphicsDevice.buf, 58, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+		memset(
+			gGraphicsDevice.buf,
+			LookupPalette(58),
+			GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 		CDogsTextStringAt(125, 50, "Save as:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
 		CDogsTextChar('\020');
@@ -1267,7 +1270,10 @@ static int ConfirmQuit(void)
 {
 	int c;
 
-	memset(gGraphicsDevice.buf, 58, GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	memset(
+		gGraphicsDevice.buf,
+		LookupPalette(58),
+		GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	CopyToScreen();

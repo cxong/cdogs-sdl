@@ -19,6 +19,12 @@ add_executable(autosave_test
 	../cdogs/utils.h)
 target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
 
+add_executable(color_test
+	color_test.c
+	../cdogs/color.c
+	../cdogs/color.h)
+target_link_libraries(color_test cbehave ${EXTRA_LIBRARIES})
+
 add_executable(config_test
 	config_test.c
 	../cdogs/config.h

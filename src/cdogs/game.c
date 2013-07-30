@@ -246,13 +246,14 @@ void ShakeScreen(int amount)
 void BlackLine(void)
 {
 	int i;
-	unsigned char *p = gGraphicsDevice.buf;
+	Uint32 *p = gGraphicsDevice.buf;
+	Uint32 black = SDL_MapRGB(gGraphicsDevice.screen->format, 0, 0, 0);
 
 	p += (gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1;
 	for (i = 0; i < gGraphicsDevice.cachedConfig.ResolutionHeight; i++)
 	{
-		*p++ = 1;
-		*p = 1;
+		*p++ = black;
+		*p = black;
 		p += gGraphicsDevice.cachedConfig.ResolutionWidth - 1;
 	}
 }

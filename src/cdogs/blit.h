@@ -49,12 +49,16 @@
 #ifndef __BLIT
 #define __BLIT
 
+#include <SDL_stdinc.h>
+
 #include "pic_file.h"
 
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
+Uint32 LookupPalette(unsigned char index);
 void Blit(int x, int y, Pic *pic, void *table, int mode);
+void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
@@ -80,7 +84,7 @@ void Blit(int x, int y, Pic *pic, void *table, int mode);
  * translate that value through the table and put it back. This is used to
  * do the "invisible" guys as well as the gas clouds.
  */
-#define DrawBTPic(x, y, pic, table, rle) (Blit(x, y, pic, table, BLIT_TRANSPARENT | BLIT_BACKGROUND))
+#define DrawBTPic(x, y, pic, table, rle) (BlitBackground(x, y, pic, table, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
 typedef enum
 {
@@ -88,11 +92,12 @@ typedef enum
 	BLIT_FLAG_ROUNDED = 2
 } BlitFlags;
 void BlitRectangle(
-	unsigned char *screen,
+	Uint32 *screen,
 	int left, int top,
 	int width, int height,
-	unsigned char colour,
+	unsigned char color,
 	int flags);
+void BlitCross(Uint32 *screen, int x, int y, unsigned char color);
 
 void CDogsSetClip(int left, int top, int right, int bottom);
 void CopyToScreen(void);

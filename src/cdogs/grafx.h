@@ -86,8 +86,8 @@ typedef struct
 	GraphicsMode *validModes;
 	int numValidModes;
 	int modeIndex;
-	unsigned char *buf;
-	unsigned char *bkg;
+	Uint32 *buf;
+	Uint32 *bkg;
 } GraphicsDevice;
 
 extern GraphicsDevice gGraphicsDevice;
@@ -95,6 +95,7 @@ extern GraphicsDevice gGraphicsDevice;
 void GraphicsInit(GraphicsDevice *device);
 void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
 void GraphicsTerminate(GraphicsDevice *device);
+int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsBlitBkg(GraphicsDevice *device);
 

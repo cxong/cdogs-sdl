@@ -48,6 +48,7 @@
 */
 #include "blit.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -69,10 +70,11 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
-	unsigned char *target;
-	unsigned char *xlate = (unsigned char *) table;
+	unsigned char *xlate = (unsigned char *)table;
 
 	int i;
+
+	assert(!(mode & BLIT_BACKGROUND));
 
 	for (i = 0; i < pic->h; i++)
 	{
@@ -99,31 +101,91 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 				current += pic->w - j;
 				break;
 			}
-			target = gGraphicsDevice.buf + yoff + xoff;
-			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT)){
-				if (table){
-					if (mode & BLIT_BACKGROUND)
-						*target = xlate[*target];
-					else
-						*target = xlate[*current];
+			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT))
+			{
+				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
+				if (table != NULL)
+				{
+					*target = LookupPalette(xlate[*current]);
 				}
 				else
-					*target = *current;
+				{
+					*target = LookupPalette(*current);
+				}
 			}
 			current++;
 		}
 	}
-	return;
+}
+
+void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode)
+{
+	int yoff, xoff;
+	unsigned char *current = pic->data;
+
+	int i;
+
+	assert(mode & BLIT_BACKGROUND);
+
+	for (i = 0; i < pic->h; i++)
+	{
+		int j;
+
+		yoff = i + y;
+		if (yoff > clipbottom)
+			break;
+		if (yoff < cliptop)
+		{
+			current += pic->w;
+			continue;
+		}
+		yoff *= gGraphicsDevice.cachedConfig.ResolutionWidth;
+		for (j = 0; j < pic->w; j++)
+		{
+			xoff = j + x;
+			if (xoff < clipleft){
+				current++;
+				continue;
+			}
+			if (xoff > clipright)
+			{
+				current += pic->w - j;
+				break;
+			}
+			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT))
+			{
+				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
+				if (blend != NULL)
+				{
+					color_t targetColor, blendedColor;
+					SDL_GetRGB(
+						*target,
+						gGraphicsDevice.screen->format,
+						&targetColor.red, &targetColor.green, &targetColor.blue);
+					blendedColor = ColorMult(targetColor, *blend);
+					*target = SDL_MapRGB(
+						gGraphicsDevice.screen->format,
+						blendedColor.red, blendedColor.green, blendedColor.blue);
+				}
+				else
+				{
+					*target = LookupPalette(*current);
+				}
+			}
+			current++;
+		}
+	}
 }
 
 void BlitRectangle(
-	unsigned char *screen,
+	Uint32 *screen,
 	int left, int top,
 	int width, int height,
-	unsigned char colour,
+	unsigned char color,
 	int flags)
 {
 	int y;
+	Uint32 rgbColor = LookupPalette(color);
 	if (width < 3 || height < 3)
 	{
 		flags &= ~BLIT_FLAG_ROUNDED;
@@ -135,24 +197,39 @@ void BlitRectangle(
 		{
 			memset(
 				screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
-				colour,
-				width - 2);
+				rgbColor,
+				(width - 2) * sizeof *screen);
 		}
 		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
 		{
 			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-				colour;
+				rgbColor;
 			*(screen + left + width - 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-				colour;
+				rgbColor;
 		}
 		else
 		{
 			memset(
 				screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
-				colour,
-				width);
+				rgbColor,
+				width * sizeof *screen);
 		}
 	}
+}
+
+//  *
+// ***
+//  *
+void BlitCross(Uint32 *screen, int x, int y, unsigned char color)
+{
+	Uint32 rgbColor = LookupPalette(color);
+	screen += x;
+	screen += y * gGraphicsDevice.cachedConfig.ResolutionWidth;
+	*screen = rgbColor;
+	*(screen - 1) = rgbColor;
+	*(screen + 1) = rgbColor;
+	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
+	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
 }
 
 void CDogsSetClip(int left, int top, int right, int bottom)
@@ -178,8 +255,7 @@ Uint32 LookupPalette(unsigned char index)
 #define PixelIndex(x, y, w)		(y * w + x)
 
 static INLINE
-void Scale8(Uint32 *d, const unsigned char *s, const int w, const int h,
-	    const int sf)
+void Scale8(Uint32 *d, const Uint32 *s, const int w, const int h, const int sf)
 {
 	int sx;
 	int sy;
@@ -198,7 +274,7 @@ void Scale8(Uint32 *d, const unsigned char *s, const int w, const int h,
 		dy = f * sy;
 		for (sx = 0; sx < w; sx++)
 		{
-			Uint32 p = LookupPalette(s[PixelIndex(sx, sy, w)]);
+			Uint32 p = s[PixelIndex(sx, sy, w)];
 			dx = f * sx;
 
 			switch (f) {
@@ -273,7 +349,7 @@ static Uint32 Pix3rds(Uint32 p1, Uint32 p2)
 	return u1.out;
 }
 static void Bilinear(
-	Uint32 *dest, const unsigned char *src,
+	Uint32 *dest, const Uint32 *src,
 	const int w, const int h,
 	const int scaleFactor)
 {
@@ -284,7 +360,7 @@ static void Bilinear(
 		int dy = scaleFactor * sy;
 		for (sx = 0; sx < w; sx++)
 		{
-			Uint32 p = LookupPalette(src[PixelIndex(sx, sy, w)]);
+			Uint32 p = src[PixelIndex(sx, sy, w)];
 			int dx = scaleFactor * sx;
 			switch (scaleFactor)
 			{
@@ -296,15 +372,15 @@ static void Bilinear(
 					// 8 9 a b|i
 					// c d e f|j
 					// k-l-m-n+o
-					Uint32 pg = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 pg = src[PixelIndex(MIN(sx+1, w-1), sy, w)];
 					Uint32 p2 = PixAvg(p, pg);
 					Uint32 p1 = PixAvg(p, p2);
 					Uint32 p3 = PixAvg(p2, pg);
-					Uint32 pk = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 pk = src[PixelIndex(sx, MIN(sy+1, h-1), w)];
 					Uint32 p8 = PixAvg(p, pk);
 					Uint32 p4 = PixAvg(p, p8);
 					Uint32 pc = PixAvg(p8, pk);
-					Uint32 po = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 po = src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)];
 					Uint32 pi = PixAvg(pg, po);
 					Uint32 pa = PixAvg(p8, pi);
 					Uint32 p9 = PixAvg(p8, pa);
@@ -342,13 +418,13 @@ static void Bilinear(
 					// 3 4 5|a
 					// 6 7 8|b
 					// c-d-e+f
-					Uint32 p9 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 p9 = src[PixelIndex(MIN(sx+1, w-1), sy, w)];
 					Uint32 p1 = Pix3rds(p9, p);
 					Uint32 p2 = Pix3rds(p, p9);
-					Uint32 pc = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 pc = src[PixelIndex(sx, MIN(sy+1, h-1), w)];
 					Uint32 p3 = Pix3rds(pc, p);
 					Uint32 p6 = Pix3rds(p, pc);
-					Uint32 pf = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 pf = src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)];
 					Uint32 pa = Pix3rds(pf, p9);
 					Uint32 pb = Pix3rds(p9, pf);
 					Uint32 p4 = Pix3rds(pa, p3);
@@ -371,11 +447,11 @@ static void Bilinear(
 					// 0 1|4
 					// 2 3|5
 					// 6-7+8
-					Uint32 p4 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), sy, w)]);
+					Uint32 p4 = src[PixelIndex(MIN(sx+1, w-1), sy, w)];
 					Uint32 p1 = PixAvg(p, p4);
-					Uint32 p6 = LookupPalette(src[PixelIndex(sx, MIN(sy+1, h-1), w)]);
+					Uint32 p6 = src[PixelIndex(sx, MIN(sy+1, h-1), w)];
 					Uint32 p2 = PixAvg(p, p6);
-					Uint32 p8 = LookupPalette(src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)]);
+					Uint32 p8 = src[PixelIndex(MIN(sx+1, w-1), MIN(sy+1, h-1), w)];
 					Uint32 p5 = PixAvg(p4, p8);
 					Uint32 p3 = PixAvg(p2, p5);
 					BLIT(dx, dy, p);
@@ -423,11 +499,7 @@ void CopyToScreen(void)
 
 	if (scalef == 1)
 	{
-		int i;
-		for (i = 0; i < scr_size; i++)
-		{
-			pScreen[i] = LookupPalette(gGraphicsDevice.buf[i]);
-		}
+		memcpy(pScreen, gGraphicsDevice.buf, sizeof *pScreen * scr_w * scr_h);
 	}
 	else if (gConfig.Graphics.ScaleMode == SCALE_MODE_BILINEAR)
 	{

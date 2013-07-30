@@ -244,9 +244,9 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 {
 	struct Buffer *buffer = NewBuffer(128, 128);
-	unsigned char *p;
+	Uint32 *p;
 	int i;
-	TranslationTable randomTintTable;
+	color_t randomTintColor;
 
 	SetupQuickPlayCampaign(&gCampaign.Setting);
 	gCampaign.seed = rand();
@@ -260,12 +260,13 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	gCampaign.seed = gConfig.Game.RandomSeed;
 
 	p = device->buf;
-	SetPaletteRanges(15, 12, 10, 0);
-	BuildTranslationTables();
-	SetRandomTintTable(&randomTintTable, 256);
-	for (i = 0; i < GraphicsGetMemSize(config); i++)
+	randomTintColor = ColorRandomTint();
+	for (i = 0; i < GraphicsGetScreenSize(config); i++)
 	{
-		p[i] = randomTintTable[p[i] & 0xFF];
+		color_t c;
+		SDL_GetRGB(p[i], device->screen->format, &c.red, &c.green, &c.blue);
+		c = ColorMult(c, randomTintColor);
+		p[i] = SDL_MapRGB(device->screen->format, c.red, c.green, c.blue);
 	}
 }
 
@@ -374,9 +375,14 @@ void GraphicsTerminate(GraphicsDevice *device)
 	CFREE(device->bkg);
 }
 
-int GraphicsGetMemSize(GraphicsConfig *config)
+int GraphicsGetScreenSize(GraphicsConfig *config)
 {
 	return config->ResolutionWidth * config->ResolutionHeight;
+}
+
+int GraphicsGetMemSize(GraphicsConfig *config)
+{
+	return GraphicsGetScreenSize(config) * sizeof(Uint32);
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)
