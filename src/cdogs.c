@@ -1032,7 +1032,7 @@ int main(int argc, char *argv[])
 		printf("Unable to read CDOGS2.PX (%s)\n", GetDataFilePath("graphics/cdogs2.px"));
 		exit(0);
 	}
-	gPalette[0].red = gPalette[0].green = gPalette[0].blue = 0;
+	gPalette[0].r = gPalette[0].g = gPalette[0].b = 0;
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 

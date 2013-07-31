@@ -118,7 +118,7 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 	}
 }
 
-void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode)
+void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
@@ -155,17 +155,17 @@ void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode)
 			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT))
 			{
 				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
-				if (blend != NULL)
+				if (tint != NULL)
 				{
 					color_t targetColor, blendedColor;
 					SDL_GetRGB(
 						*target,
 						gGraphicsDevice.screen->format,
-						&targetColor.red, &targetColor.green, &targetColor.blue);
-					blendedColor = ColorMult(targetColor, *blend);
+						&targetColor.r, &targetColor.g, &targetColor.b);
+					blendedColor = ColorTint(targetColor, *tint);
 					*target = SDL_MapRGB(
 						gGraphicsDevice.screen->format,
-						blendedColor.red, blendedColor.green, blendedColor.blue);
+						blendedColor.r, blendedColor.g, blendedColor.b);
 				}
 				else
 				{
@@ -246,10 +246,10 @@ static TPalette gCurrentPalette;
 Uint32 LookupPalette(unsigned char index)
 {
 	color_t color = gCurrentPalette[index];
-	color.red = (Uint8)CLAMP(color.red * GAMMA, 0, 255);
-	color.green = (Uint8)CLAMP(color.green * GAMMA, 0, 255);
-	color.blue = (Uint8)CLAMP(color.blue * GAMMA, 0, 255);
-	return SDL_MapRGB(gGraphicsDevice.screen->format, color.red, color.green, color.blue);
+	color.r = (Uint8)CLAMP(color.r * GAMMA, 0, 255);
+	color.g = (Uint8)CLAMP(color.g * GAMMA, 0, 255);
+	color.b = (Uint8)CLAMP(color.b * GAMMA, 0, 255);
+	return SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b);
 }
 
 #define PixelIndex(x, y, w)		(y * w + x)
@@ -535,9 +535,9 @@ void BlitSetBrightness(int brightness)
 	f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
 	for (i = 0; i < 255; i++)
 	{
-		gPalette[i].red = (unsigned char)CLAMP(f * origPalette[i].red, 0, 255);
-		gPalette[i].green = (unsigned char)CLAMP(f * origPalette[i].green, 0, 255);
-		gPalette[i].blue = (unsigned char)CLAMP(f * origPalette[i].blue, 0, 255);
+		gPalette[i].r = (unsigned char)CLAMP(f * origPalette[i].r, 0, 255);
+		gPalette[i].g = (unsigned char)CLAMP(f * origPalette[i].g, 0, 255);
+		gPalette[i].b = (unsigned char)CLAMP(f * origPalette[i].b, 0, 255);
 	}
 	CDogsSetPalette(gPalette);
 }

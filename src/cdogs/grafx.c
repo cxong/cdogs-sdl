@@ -246,7 +246,7 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	struct Buffer *buffer = NewBuffer(128, 128);
 	Uint32 *p;
 	int i;
-	color_t randomTintColor;
+	HSV tint;
 
 	SetupQuickPlayCampaign(&gCampaign.Setting);
 	gCampaign.seed = rand();
@@ -260,13 +260,15 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	gCampaign.seed = gConfig.Game.RandomSeed;
 
 	p = device->buf;
-	randomTintColor = ColorRandomTint();
+	tint.h = rand() * 360.0 / RAND_MAX;
+	tint.s = rand() * 1.0 / RAND_MAX;
+	tint.v = 0.5;
 	for (i = 0; i < GraphicsGetScreenSize(config); i++)
 	{
 		color_t c;
-		SDL_GetRGB(p[i], device->screen->format, &c.red, &c.green, &c.blue);
-		c = ColorMult(c, randomTintColor);
-		p[i] = SDL_MapRGB(device->screen->format, c.red, c.green, c.blue);
+		SDL_GetRGB(p[i], device->screen->format, &c.r, &c.g, &c.b);
+		c = ColorTint(c, tint);
+		p[i] = SDL_MapRGB(device->screen->format, c.r, c.g, c.b);
 	}
 }
 

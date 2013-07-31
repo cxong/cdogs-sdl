@@ -2,68 +2,103 @@
 
 #include <color.h>
 
+#include <float.h>
 
-FEATURE(1, "Multiply")
-	SCENARIO("Multiply two colors")
+
+FEATURE(1, "Tint")
+	SCENARIO("Tint to gray (0 saturation)")
 	{
-		color_t c1, c2, result;
-		GIVEN("two colors")
-			c1.red = c1.green = c1.blue = 123;
-			c2.red = c2.green = c2.blue = 234;
+		color_t c;
+		HSV hsv;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
 		GIVEN_END
 
-		WHEN("I multiply them")
-			result = ColorMult(c1, c2);
+		WHEN("I tint it with 0 saturation")
+			hsv.h = 0.0;
+			hsv.s = 0.0;
+			hsv.v = 1.0;
+			c = ColorTint(c, hsv);
 		WHEN_END
 
-		THEN("the result should be a multiply blend of the two color's components");
-			SHOULD_INT_EQUAL(result.red, c1.red * c2.red / 255);
-			SHOULD_INT_EQUAL(result.green, c1.green * c2.green / 255);
-			SHOULD_INT_EQUAL(result.blue, c1.blue * c2.blue / 255);
+		THEN("the result should have equal RGB components");
+			SHOULD_INT_EQUAL(c.r, c.g);
+			SHOULD_INT_EQUAL(c.g, c.b);
 		THEN_END
 	}
 	SCENARIO_END
 
-	SCENARIO("Multiply by white")
+	SCENARIO("Tint to white (max value)")
 	{
-		color_t c, white, result;
+		color_t c;
+		HSV hsv;
 		GIVEN("a color")
-			c.red = 123;
-			c.green = 234;
-			c.blue = 45;
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
 		GIVEN_END
 
-		WHEN("I multiply it by white")
-			white.red = white.green = white.blue = 255;
-			result = ColorMult(c, white);
+		WHEN("I tint it with max value and no hue")
+			hsv.h = -1.0;
+			hsv.s = 1.0;
+			hsv.v = DBL_MAX;
+			c = ColorTint(c, hsv);
 		WHEN_END
 
-		THEN("the result should be the same as the color");
-			SHOULD_INT_EQUAL(result.red, c.red);
-			SHOULD_INT_EQUAL(result.green, c.green);
-			SHOULD_INT_EQUAL(result.blue, c.blue);
+		THEN("the result should be white");
+			SHOULD_INT_EQUAL(c.r, 255);
+			SHOULD_INT_EQUAL(c.g, 255);
+			SHOULD_INT_EQUAL(c.b, 255);
 		THEN_END
 	}
 	SCENARIO_END
 
-	SCENARIO("Multiply by black")
+	SCENARIO("Tint to red")
 	{
-		color_t c, black, result;
+		color_t c;
+		HSV hsv;
 		GIVEN("a color")
-			c.red = 123;
-			c.green = 234;
-			c.blue = 45;
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
 		GIVEN_END
 
-		WHEN("I multiply it by black")
-			black.red = black.green = black.blue = 0;
-			result = ColorMult(c, black);
+		WHEN("I tint it with the red hue")
+			hsv.h = 0.0;
+			hsv.s = 1.0;
+			hsv.v = 1.0;
+			c = ColorTint(c, hsv);
 		WHEN_END
 
-		THEN("the result should be black");
-			SHOULD_INT_EQUAL(result.red, black.red);
-			SHOULD_INT_EQUAL(result.green, black.green);
-			SHOULD_INT_EQUAL(result.blue, black.blue);
+		THEN("the result should be red");
+			SHOULD_INT_GT(c.r, 0);
+			SHOULD_INT_EQUAL(c.g, 0);
+			SHOULD_INT_EQUAL(c.b, 0);
+		THEN_END
+	}
+	SCENARIO_END
+
+	SCENARIO("Tint with nothing")
+	{
+		color_t c, result;
+		HSV hsv;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
+		GIVEN_END
+
+		WHEN("I tint it with null values (-1 hue)")
+			hsv.h = -1.0;
+			hsv.s = 1.0;
+			hsv.v = 1.0;
+			result = ColorTint(c, hsv);
+		WHEN_END
+
+		THEN("the result should be the same as the original color");
+			SHOULD_MEM_EQUAL(&result, &c, sizeof result);
 		THEN_END
 	}
 	SCENARIO_END

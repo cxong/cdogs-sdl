@@ -58,7 +58,7 @@
 
 Uint32 LookupPalette(unsigned char index);
 void Blit(int x, int y, Pic *pic, void *table, int mode);
-void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode);
+void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
@@ -84,7 +84,7 @@ void BlitBackground(int x, int y, Pic *pic, color_t *blend, int mode);
  * translate that value through the table and put it back. This is used to
  * do the "invisible" guys as well as the gas clouds.
  */
-#define DrawBTPic(x, y, pic, table, rle) (BlitBackground(x, y, pic, table, BLIT_TRANSPARENT | BLIT_BACKGROUND))
+#define DrawBTPic(x, y, pic, tint, rle) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
 typedef enum
 {

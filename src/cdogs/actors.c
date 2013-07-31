@@ -143,7 +143,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	struct CharacterDescription *c = &gCharacterDesc[actor->character];
 	TranslationTable *table = (TranslationTable *) c->table;
-	color_t blend;
+	HSV *tint = NULL;
 	int f = c->facePic;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
@@ -155,25 +155,40 @@ void DrawCharacter(int x, int y, TActor * actor)
 	int transparent = (actor->flags & FLAGS_SEETHROUGH) != 0;
 
 	if (actor->flamed)
+	{
 		table = &tableFlamed;
+		tint = &tintRed;
+	}
 	else if (actor->poisoned)
+	{
 		table = &tableGreen;
+		tint = &tintPoison;
+	}
 	else if (actor->petrified)
+	{
 		table = &tableGray;
+		tint = &tintGray;
+	}
 	else if (actor->confused)
+	{
 		table = &tablePurple;
+		tint = &tintPurple;
+	}
 	else if (transparent)
+	{
 		table = &tableDarker;
+		tint = &tintDarker;
+	}
 
 	if (actor->dead) {
 		if (actor->dead <= DEATH_MAX) {
 			body = cDeathPics[actor->dead - 1];
 			if (transparent)
 			{
-				assert(0);	// TODO implement
-				DrawBTPic(x + body.dx, y + body.dy,
-					  gPics[body.picIndex], &blend,
-					  gRLEPics[body.picIndex]);
+				DrawBTPic(
+					x + body.dx, y + body.dy,
+					gPics[body.picIndex], tint,
+					gRLEPics[body.picIndex]);
 			}
 			else
 				DrawTTPic(x + body.dx, y + body.dy,
@@ -252,42 +267,68 @@ void DrawCharacter(int x, int y, TActor * actor)
 		return;
 	}
 
-	if (transparent) {
+	if (transparent)
+	{
 		if (pic1.picIndex >= 0)
-			DrawBTPic(x + pic1.dx, y + pic1.dy,
-				  gPics[pic1.picIndex], &blend,	// TODO implement
-				  gRLEPics[pic1.picIndex]);
+		{
+			DrawBTPic(
+				x + pic1.dx, y + pic1.dy,
+				gPics[pic1.picIndex], tint,
+				gRLEPics[pic1.picIndex]);
+		}
 		if (pic2.picIndex >= 0)
-			DrawBTPic(x + pic2.dx, y + pic2.dy,
-				  gPics[pic2.picIndex], &blend,	// TODO implement
-				  gRLEPics[pic2.picIndex]);
+		{
+			DrawBTPic(
+				x + pic2.dx, y + pic2.dy,
+				gPics[pic2.picIndex], tint,
+				gRLEPics[pic2.picIndex]);
+		}
 		if (pic3.picIndex >= 0)
-			DrawBTPic(x + pic3.dx, y + pic3.dy,
-				  gPics[pic3.picIndex], &blend,	// TODO implement
-				  gRLEPics[pic3.picIndex]);
-	} else if (table) {
+		{
+			DrawBTPic(
+				x + pic3.dx, y + pic3.dy,
+				gPics[pic3.picIndex], tint,
+				gRLEPics[pic3.picIndex]);
+		}
+	}
+	else if (table)
+	{
 		if (pic1.picIndex >= 0)
-			DrawTTPic(x + pic1.dx, y + pic1.dy,
-				  gPics[pic1.picIndex], table,
-				  gRLEPics[pic1.picIndex]);
+		{
+			DrawTTPic(
+				x + pic1.dx, y + pic1.dy,
+				gPics[pic1.picIndex], table,
+				gRLEPics[pic1.picIndex]);
+		}
 		if (pic2.picIndex >= 0)
-			DrawTTPic(x + pic2.dx, y + pic2.dy,
-				  gPics[pic2.picIndex], table,
-				  gRLEPics[pic2.picIndex]);
+		{
+			DrawTTPic(
+				x + pic2.dx, y + pic2.dy,
+				gPics[pic2.picIndex], table,
+				gRLEPics[pic2.picIndex]);
+		}
 		if (pic3.picIndex >= 0)
-			DrawTTPic(x + pic3.dx, y + pic3.dy,
-				  gPics[pic3.picIndex], table,
-				  gRLEPics[pic3.picIndex]);
-	} else {
+		{
+			DrawTTPic(
+				x + pic3.dx, y + pic3.dy,
+				gPics[pic3.picIndex], table,
+				gRLEPics[pic3.picIndex]);
+		}
+	}
+	else
+	{
 		if (pic1.picIndex >= 0)
-			DrawTPic(x + pic1.dx, y + pic1.dy,
-				 gPics[pic1.picIndex], NULL);
+		{
+			DrawTPic(x + pic1.dx, y + pic1.dy, gPics[pic1.picIndex], NULL);
+		}
 		if (pic2.picIndex >= 0)
-			DrawTPic(x + pic2.dx, y + pic2.dy,
-				 gPics[pic2.picIndex], NULL);
+		{
+			DrawTPic(x + pic2.dx, y + pic2.dy, gPics[pic2.picIndex], NULL);
+		}
 		if (pic3.picIndex >= 0)
-			DrawTPic(x + pic3.dx, y + pic3.dy,
-				 gPics[pic3.picIndex], NULL);
+		{
+			DrawTPic(x + pic3.dx, y + pic3.dy, gPics[pic3.picIndex], NULL);
+		}
 	}
 }
 
@@ -798,11 +839,13 @@ unsigned char BestMatch(int r, int g, int b)
 	int i;
 	int best = -1;
 
-	for (i = 0; i < 256; i++) {
-		d = (r - gPalette[i].red) * (r - gPalette[i].red) +
-		    (g - gPalette[i].green) * (g - gPalette[i].green) +
-		    (b - gPalette[i].blue) * (b - gPalette[i].blue);
-		if (best < 0 || d < dMin) {
+	for (i = 0; i < 256; i++)
+	{
+		d = (r - gPalette[i].r) * (r - gPalette[i].r) +
+			(g - gPalette[i].g) * (g - gPalette[i].g) +
+			(b - gPalette[i].b) * (b - gPalette[i].b);
+		if (best < 0 || d < dMin)
+		{
 			best = i;
 			dMin = d;
 		}
@@ -834,32 +877,32 @@ void BuildTranslationTables(void)
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.3 * gPalette[i].red +
-			0.59 * gPalette[i].green +
-			0.11 * gPalette[i].blue);
+			0.3 * gPalette[i].r +
+			0.59 * gPalette[i].g +
+			0.11 * gPalette[i].b);
 		tableFlamed[i] = BestMatch(f, 0, 0);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].red +
-			0.49 * gPalette[i].green +
-			0.11 * gPalette[i].blue);
+			0.4 * gPalette[i].r +
+			0.49 * gPalette[i].g +
+			0.11 * gPalette[i].b);
 		tableGreen[i] = BestMatch(0, 2 * f / 3, 0);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		tablePoison[i] = BestMatch(
-			gPalette[i].red + 5,
-			gPalette[i].green + 15,
-			gPalette[i].blue + 5);
+			gPalette[i].r + 5,
+			gPalette[i].g + 15,
+			gPalette[i].b + 5);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].red +
-			0.49 * gPalette[i].green +
-			0.11 * gPalette[i].blue);
+			0.4 * gPalette[i].r +
+			0.49 * gPalette[i].g +
+			0.11 * gPalette[i].b);
 		tableGray[i] = BestMatch(f, f, f);
 	}
 	for (i = 0; i < 256; i++)
@@ -869,17 +912,17 @@ void BuildTranslationTables(void)
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].red +
-			0.49 * gPalette[i].green +
-			0.11 * gPalette[i].blue);
+			0.4 * gPalette[i].r +
+			0.49 * gPalette[i].g +
+			0.11 * gPalette[i].b);
 		tablePurple[i] = BestMatch(f, 0, f);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		tableDarker[i] = BestMatch(
-			(200 * gPalette[i].red) / 256,
-			(200 * gPalette[i].green) / 256,
-			(200 * gPalette[i].blue) / 256);
+			(200 * gPalette[i].r) / 256,
+			(200 * gPalette[i].g) / 256,
+			(200 * gPalette[i].b) / 256);
 	}
 }
 

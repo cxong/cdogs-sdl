@@ -34,33 +34,94 @@
 
 color_t colorRed = { 255, 0, 0 };
 color_t colorGreen = { 0, 255, 0 };
-color_t colorPoison = { 64, 255, 64 };
+color_t colorPoison = { 64, 192, 64 };
 color_t colorBlack = { 0, 0, 0 };
 color_t colorDarker = { 192, 192, 192 };
-color_t colorPurple = { 128, 0, 128 };
+color_t colorPurple = { 192, 0, 192 };
 
-color_t ColorMult(color_t a, color_t b)
-{
-	a.red = (int)a.red * b.red / 255;
-	a.green = (int)a.green * b.green / 255;
-	a.blue = (int)a.blue * b.blue / 255;
-	return a;
-}
+HSV tintRed = { 0.0, 1.0, 1.0 };
+HSV tintGreen = { 120.0, 1.0, 1.0 };
+HSV tintPoison = { 120.0, 0.33, 2.0 };
+HSV tintGray = { -1.0, 0.0, 1.0 };
+HSV tintPurple = { 300, 1.0, 1.0 };
+HSV tintDarker = { -1.0, 1.0, 0.75 };
 
-color_t ColorRandomTint(void)
+color_t ColorTint(color_t c, HSV hsv)
 {
-	// Generate three random numbers between 0-1, and divide each by 1/3rd the sum.
-	// The resulting three scaled numbers should add up to 1.
-	color_t c;
-	double r_scalar = rand() * 1.0 / RAND_MAX;
-	double g_scalar = rand() * 1.0 / RAND_MAX;
-	double b_scalar = rand() * 1.0 / RAND_MAX;
-	double scale_factor = r_scalar + g_scalar + b_scalar;
-	r_scalar /= scale_factor;
-	g_scalar /= scale_factor;
-	b_scalar /= scale_factor;
-	c.red = (uint8_t)CLAMP(r_scalar * 256, 0, 255);
-	c.green = (uint8_t)CLAMP(g_scalar * 256, 0, 255);
-	c.blue = (uint8_t)CLAMP(b_scalar * 256, 0, 255);
-	return c;
+	// Adapted from answer by David H
+	// http://stackoverflow.com/a/6930407/2038264
+	color_t out;
+	int vAvg = ((int)c.r + c.g + c.b) / 3;
+	uint8_t vComponent = (uint8_t)CLAMP(hsv.v * vAvg, 0, 255);
+
+	if (hsv.s <= 0.0)
+	{
+		// No saturation; just gray
+		out.r = vComponent;
+		out.g = vComponent;
+		out.b = vComponent;
+	}
+	else if (hsv.h >= 0)
+	{
+		// set hue to h; use regular HSV to RGB conversion
+		double ff;
+		uint8_t p, q, t;
+		long i;
+		double hh = hsv.h;
+		if (hh >= 360.0)
+		{
+			hh = 0.0;
+		}
+		hh /= 60.0;
+		i = (long)hh;
+		ff = hh - i;
+		p = (uint8_t)CLAMP(vComponent * (1.0 - hsv.s), 0, 255);
+		q = (uint8_t)CLAMP(vComponent * (1.0 - (hsv.s * ff)), 0, 255);
+		t = (uint8_t)CLAMP(vComponent * (1.0 - (hsv.s * (1.0 - ff))), 0, 255);
+
+		switch(i)
+		{
+		case 0:
+			out.r = vComponent;
+			out.g = t;
+			out.b = p;
+			break;
+		case 1:
+			out.r = q;
+			out.g = vComponent;
+			out.b = p;
+			break;
+		case 2:
+			out.r = p;
+			out.g = vComponent;
+			out.b = t;
+			break;
+
+		case 3:
+			out.r = p;
+			out.g = q;
+			out.b = vComponent;
+			break;
+		case 4:
+			out.r = t;
+			out.g = p;
+			out.b = vComponent;
+			break;
+		case 5:
+		default:
+			out.r = vComponent;
+			out.g = p;
+			out.b = q;
+			break;
+		}
+	}
+	else
+	{
+		// Just set saturation and value
+		// Use weighted average to shift components towards grey for saturation
+		out.r = (uint8_t)CLAMP(hsv.v * (vAvg*(1.0-hsv.s) + hsv.s*c.r), 0, 255);
+		out.g = (uint8_t)CLAMP(hsv.v * (vAvg*(1.0-hsv.s) + hsv.s*c.g), 0, 255);
+		out.b = (uint8_t)CLAMP(hsv.v * (vAvg*(1.0-hsv.s) + hsv.s*c.b), 0, 255);
+	}
+	return out;
 }

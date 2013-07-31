@@ -35,9 +35,9 @@
 
 typedef struct
 {
-	uint8_t red;
-	uint8_t green;
-	uint8_t blue;
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
 } color_t;
 extern color_t colorRed;
 extern color_t colorGreen;
@@ -46,9 +46,20 @@ extern color_t colorBlack;
 extern color_t colorDarker;
 extern color_t colorPurple;
 
-// Multiply color components; used for tinting
-color_t ColorMult(color_t a, color_t b);
-
-color_t ColorRandomTint(void);
+typedef struct
+{
+	double h, s, v;
+} HSV;
+extern HSV tintRed;
+extern HSV tintGreen;
+extern HSV tintPoison;
+extern HSV tintGray;
+extern HSV tintPurple;
+extern HSV tintDarker;
+// Multiply by HSV components; used for tinting
+// h: hue, if >= 0 then the hue is forced to be this value
+// s: saturation, where all RGB components are shifted towards the average value
+// v: scale factor on the final components
+color_t ColorTint(color_t c, HSV hsv);
 
 #endif
