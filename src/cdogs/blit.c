@@ -177,15 +177,14 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 	}
 }
 
-void BlitRectangle(
+void BlitRectangleRaw(
 	Uint32 *screen,
 	int left, int top,
 	int width, int height,
-	unsigned char color,
+	Uint32 rgbColor,
 	int flags)
 {
 	int y;
-	Uint32 rgbColor = LookupPalette(color);
 	if (width < 3 || height < 3)
 	{
 		flags &= ~BLIT_FLAG_ROUNDED;
@@ -195,10 +194,12 @@ void BlitRectangle(
 		int isFirstOrLastLine = y == top || y == top + height - 1;
 		if (isFirstOrLastLine && (flags & BLIT_FLAG_ROUNDED))
 		{
-			memset(
-				screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
-				rgbColor,
-				(width - 2) * sizeof *screen);
+			int i;
+			for (i = 0; i < width - 2; i++)
+			{
+				*(screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
+					rgbColor;
+			}
 		}
 		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
 		{
@@ -209,12 +210,38 @@ void BlitRectangle(
 		}
 		else
 		{
-			memset(
-				screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth,
-				rgbColor,
-				width * sizeof *screen);
+			int i;
+			for (i = 0; i < width; i++)
+			{
+				*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
+					rgbColor;
+			}
 		}
 	}
+}
+
+void BlitRectangle(
+	Uint32 *screen,
+	int left, int top,
+	int width, int height,
+	unsigned char color,
+	int flags)
+{
+	BlitRectangleRaw(screen, left, top, width, height, LookupPalette(color), flags);
+}
+
+void BlitRectangleRGB(
+	Uint32 *screen,
+	int left, int top,
+	int width, int height,
+	color_t color,
+	int flags)
+{
+	BlitRectangleRaw(
+		screen,
+		left, top, width, height,
+		SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b),
+		flags);
 }
 
 //  *

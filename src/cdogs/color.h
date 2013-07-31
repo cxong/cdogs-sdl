@@ -39,6 +39,7 @@ typedef struct
 	uint8_t g;
 	uint8_t b;
 } color_t;
+extern color_t colorWhite;
 extern color_t colorRed;
 extern color_t colorGreen;
 extern color_t colorPoison;

@@ -216,10 +216,10 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	const TBadGuy *b;
 	int i;
 
-	memset(
-		gGraphicsDevice.buf,
-		LookupPalette(74),
-		GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	{
+		gGraphicsDevice.buf[i] = LookupPalette(74);
+	}
 
 	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
 	CDogsTextStringAt(10, 190, s);

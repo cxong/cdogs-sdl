@@ -32,6 +32,7 @@
 
 #include "utils.h"
 
+color_t colorWhite = { 255, 255, 255 };
 color_t colorRed = { 255, 0, 0 };
 color_t colorGreen = { 0, 255, 0 };
 color_t colorPoison = { 64, 192, 64 };

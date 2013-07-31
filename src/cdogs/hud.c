@@ -143,12 +143,14 @@ void HUDUpdate(HUD *hud, int ms)
 void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 {
 	char s[50];
-	int colourMaxHealth = 16;
-	int colourMinHealth = 21;
+	double maxHealthHue = 50.0;
+	double minHealthHue = 0.0;
 	int barWidth = 50;
-	unsigned char colour = (unsigned char)((colourMaxHealth - colourMinHealth) * health / maxHealth + colourMinHealth);
+	double hue = ((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
+	HSV hsv = { 0.0, 1.0, 1.0 };
+	color_t colour;
 	int healthBarWidth = MAX(1, barWidth * health / maxHealth);
-	unsigned char backColour = 29;
+	color_t backColour = { 50, 0, 0 };
 	int barLeft = 4;
 	int barTop = 4 * CDogsTextHeight() - 1;
 	int barHeight = CDogsTextHeight() + 1;
@@ -156,14 +158,16 @@ void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 	{
 		barLeft = config->ResolutionWidth - barLeft - barWidth;
 	}
-	BlitRectangle(
+	BlitRectangleRGB(
 		gGraphicsDevice.buf,
 		barLeft, barTop,
 		barWidth,
 		barHeight,
 		backColour,
 		BLIT_FLAG_ROUNDED);
-	BlitRectangle(
+	hsv.h = hue;
+	colour = ColorTint(colorWhite, hsv);
+	BlitRectangleRGB(
 		gGraphicsDevice.buf,
 		barLeft + 1, barTop + 1,
 		MAX(0, healthBarWidth - 2),

@@ -97,6 +97,12 @@ void BlitRectangle(
 	int width, int height,
 	unsigned char color,
 	int flags);
+void BlitRectangleRGB(
+	Uint32 *screen,
+	int left, int top,
+	int width, int height,
+	color_t color,
+	int flags);
 void BlitCross(Uint32 *screen, int x, int y, unsigned char color);
 
 void CDogsSetClip(int left, int top, int right, int bottom);
