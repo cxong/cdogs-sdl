@@ -363,7 +363,6 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	// Need to make background here since dimensions use cached config
 	MakeBkg(device, config);
 	CDogsSetPalette(gPalette);
-	BlitSetBrightness(config->Brightness);
 	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
 	memset(device->buf, 0, GraphicsGetMemSize(config));
 }

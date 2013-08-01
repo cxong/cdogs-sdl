@@ -496,27 +496,38 @@ static void Bilinear(
 	}
 }
 
+static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
+{
+	double f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
+	int y;
+	for (y = 0; y < screenSize.y; y++)
+	{
+		int x;
+		for (x = 0; x < screenSize.x; x++)
+		{
+			color_t color;
+			int idx = x + y * screenSize.x;
+			SDL_GetRGB(screen[idx], gGraphicsDevice.screen->format, &color.r, &color.g, &color.b);
+			color.r = (uint8_t)CLAMP(f * color.r, 0, 255);
+			color.g = (uint8_t)CLAMP(f * color.g, 0, 255);
+			color.b = (uint8_t)CLAMP(f * color.b, 0, 255);
+			screen[idx] = SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b);
+		}
+	}
+}
+
 void CopyToScreen(void)
 {
 	Uint32 *pScreen = (Uint32 *)gGraphicsDevice.screen->pixels;
-	int scr_w, scr_h, scr_size, scalef;
+	Vector2i screenSize;
+	int scr_size, scalef;
 
-	scr_w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	scr_h = gGraphicsDevice.cachedConfig.ResolutionHeight;
-	scr_size = scr_w * scr_h;
+	screenSize.x = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	screenSize.y = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	scr_size = screenSize.x * screenSize.y;
 	scalef = gConfig.Graphics.ScaleFactor;
-
-	/* this really needs to go someplace nicer,
-	 * as it's a bit of a hack, being here. */
-	if (IsEventPending(EVENT_QUIT)) {
-		debug(D_NORMAL, "QUIT EVENT!\n");
-		exit(EXIT_SUCCESS);
-	} else if (IsEventPending(EVENT_ACTIVE)) {
-		/* Set the palette, just in case we had a change of focus
-		 * and we don't things to go trippy for the player */
-		debug(D_NORMAL, "ACTIVE EVENT!\n");
-		CDogsSetPalette(gPalette);
-	}
+	
+	ApplyBrightness(gGraphicsDevice.buf, screenSize, gConfig.Graphics.Brightness);
 
 	if (SDL_LockSurface(gGraphicsDevice.screen) == -1)
 	{
@@ -526,15 +537,15 @@ void CopyToScreen(void)
 
 	if (scalef == 1)
 	{
-		memcpy(pScreen, gGraphicsDevice.buf, sizeof *pScreen * scr_w * scr_h);
+		memcpy(pScreen, gGraphicsDevice.buf, sizeof *pScreen * scr_size);
 	}
 	else if (gConfig.Graphics.ScaleMode == SCALE_MODE_BILINEAR)
 	{
-		Bilinear(pScreen, gGraphicsDevice.buf, scr_w, scr_h, scalef);
+		Bilinear(pScreen, gGraphicsDevice.buf, screenSize.x, screenSize.y, scalef);
 	}
 	else
 	{
-		Scale8(pScreen, gGraphicsDevice.buf, scr_w, scr_h, scalef);
+		Scale8(pScreen, gGraphicsDevice.buf, screenSize.x, screenSize.y, scalef);
 	}
 
 	SDL_UnlockSurface(gGraphicsDevice.screen);
@@ -544,27 +555,4 @@ void CopyToScreen(void)
 void CDogsSetPalette(TPalette palette)
 {
 	memcpy(gCurrentPalette, palette, sizeof gCurrentPalette);
-}
-
-int BlitGetBrightness(void)
-{
-	return gConfig.Graphics.Brightness;
-}
-void BlitSetBrightness(int brightness)
-{
-	int i;
-	double f;
-	if (brightness < BLIT_BRIGHTNESS_MIN || brightness > BLIT_BRIGHTNESS_MAX)
-	{
-		return;
-	}
-
-	f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
-	for (i = 0; i < 255; i++)
-	{
-		gPalette[i].r = (unsigned char)CLAMP(f * origPalette[i].r, 0, 255);
-		gPalette[i].g = (unsigned char)CLAMP(f * origPalette[i].g, 0, 255);
-		gPalette[i].b = (unsigned char)CLAMP(f * origPalette[i].b, 0, 255);
-	}
-	CDogsSetPalette(gPalette);
 }
