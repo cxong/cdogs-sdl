@@ -51,6 +51,8 @@ color_t ColorTint(color_t c, HSV hsv)
 {
 	// Adapted from answer by David H
 	// http://stackoverflow.com/a/6930407/2038264
+	// License: http://creativecommons.org/licenses/by-sa/3.0/
+	// Author profile: http://stackoverflow.com/users/1633251/david-h
 	color_t out;
 	int vAvg = ((int)c.r + c.g + c.b) / 3;
 	uint8_t vComponent = (uint8_t)CLAMP(hsv.v * vAvg, 0, 255);
