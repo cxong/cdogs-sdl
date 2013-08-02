@@ -79,11 +79,20 @@ typedef struct
 
 typedef struct
 {
+	int left;
+	int top;
+	int right;
+	int bottom;
+} BlitClipping;
+
+typedef struct
+{
 	int IsInitialized;
 	int IsWindowInitialized;
 	SDL_Surface *screen;
 	GraphicsConfig cachedConfig;
 	GraphicsMode *validModes;
+	BlitClipping clipping;
 	int numValidModes;
 	int modeIndex;
 	Uint32 *buf;
@@ -103,6 +112,10 @@ void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);
 
 char *GrafxGetModeStr(void);
+
+void GraphicsSetBlitClip(
+	GraphicsDevice *device, int left, int top, int right, int bottom);
+void GraphicsResetBlitClip(GraphicsDevice *device);
 
 #define CenterX(w)		((gGraphicsDevice.cachedConfig.ResolutionWidth - w) / 2)
 #define CenterY(h)		((gGraphicsDevice.cachedConfig.ResolutionHeight - h) / 2)

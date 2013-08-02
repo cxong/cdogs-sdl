@@ -105,7 +105,6 @@ void BlitRectangleRGB(
 	int flags);
 void BlitCross(Uint32 *screen, int x, int y, unsigned char color);
 
-void CDogsSetClip(int left, int top, int right, int bottom);
 void CopyToScreen(void);
 void CDogsSetPalette(TPalette palette);
 

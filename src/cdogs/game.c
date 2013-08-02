@@ -270,13 +270,13 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	} else
 		xNoise = yNoise = 0;
 
+	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (player1 && player2)
 	{
 		if (!gConfig.Interface.SplitscreenAlways &&
 			abs(player1->tileItem.x - player2->tileItem.x) < SPLIT_X &&
 			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
 		{
-			CDogsSetClip(0, 0, gGraphicsDevice.cachedConfig.ResolutionWidth - 1, gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			// One screen
 			x = (player1->tileItem.x +
 			     player2->tileItem.x) / 2;
@@ -299,14 +299,16 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 		}
 		else
 		{
-			CDogsSetClip(
+			GraphicsSetBlitClip(
+				&gGraphicsDevice,
 				0,
 				0,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1,
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
 			SoundSetLeftEar(player1->tileItem.x, player1->tileItem.y);
-			CDogsSetClip(
+			GraphicsSetBlitClip(
+				&gGraphicsDevice,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
 				0,
 				gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
@@ -327,11 +329,6 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	}
 	else if (player1)
 	{
-		CDogsSetClip(
-			0,
-			0,
-			gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
-			gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player1->tileItem.x, player1->tileItem.y);
@@ -340,11 +337,6 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	}
 	else if (player2)
 	{
-		CDogsSetClip(
-			0,
-			0,
-			gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
-			gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
 		SoundSetEars(player2->tileItem.x, player2->tileItem.y);
@@ -355,11 +347,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	{
 		DoBuffer(b, x, y, 0, X_TILES, xNoise, yNoise);
 	}
-	CDogsSetClip(
-		0,
-		0,
-		gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
-		gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+	GraphicsResetBlitClip(&gGraphicsDevice);
 }
 
 static void DrawExitArea(void)
@@ -504,11 +492,6 @@ int gameloop(void)
 	int done = NO;
 	HUD hud;
 
-	CDogsSetClip(
-		0,
-		0,
-		gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
-		gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 	HUDInit(&hud, &gConfig.Interface, &gConfig.Graphics, &gMission);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)

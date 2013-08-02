@@ -62,10 +62,6 @@
 #include "utils.h" /* for debug() */
 
 
-int clipleft = 0, cliptop = 0, clipright = 0, clipbottom = 0;
-
-//this function is referenced by 4 macros, that do all the args
-
 void Blit(int x, int y, Pic *pic, void *table, int mode)
 {
 	int yoff, xoff;
@@ -81,9 +77,11 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 		int j;
 
 		yoff = i + y;
-		if (yoff > clipbottom)
+		if (yoff > gGraphicsDevice.clipping.bottom)
+		{
 			break;
-		if (yoff < cliptop)
+		}
+		if (yoff < gGraphicsDevice.clipping.top)
 		{
 			current += pic->w;
 			continue;
@@ -92,11 +90,12 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 		for (j = 0; j < pic->w; j++)
 		{
 			xoff = j + x;
-			if (xoff < clipleft){
+			if (xoff < gGraphicsDevice.clipping.left)
+			{
 				current++;
 				continue;
 			}
-			if (xoff > clipright)
+			if (xoff > gGraphicsDevice.clipping.right)
 			{
 				current += pic->w - j;
 				break;
@@ -132,9 +131,11 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 		int j;
 
 		yoff = i + y;
-		if (yoff > clipbottom)
+		if (yoff > gGraphicsDevice.clipping.bottom)
+		{
 			break;
-		if (yoff < cliptop)
+		}
+		if (yoff < gGraphicsDevice.clipping.top)
 		{
 			current += pic->w;
 			continue;
@@ -143,11 +144,12 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 		for (j = 0; j < pic->w; j++)
 		{
 			xoff = j + x;
-			if (xoff < clipleft){
+			if (xoff < gGraphicsDevice.clipping.left)
+			{
 				current++;
 				continue;
 			}
-			if (xoff > clipright)
+			if (xoff > gGraphicsDevice.clipping.right)
 			{
 				current += pic->w - j;
 				break;
@@ -257,15 +259,6 @@ void BlitCross(Uint32 *screen, int x, int y, unsigned char color)
 	*(screen + 1) = rgbColor;
 	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
 	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
-}
-
-void CDogsSetClip(int left, int top, int right, int bottom)
-{
-	clipright = right;
-	clipleft = left;
-	cliptop = top;
-	clipbottom = bottom;
-	return;
 }
 
 static TPalette gCurrentPalette;

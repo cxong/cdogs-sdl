@@ -231,16 +231,18 @@ void DisplayAutoMap(int showAll)
 	Uint32 *screen = gGraphicsDevice.buf;
 	TTileItem *t;
 	int obj;
+	color_t mask = { 0, 128, 0 };
 
 	// Draw faded green overlay
-	for (x = 0;
-		x < gGraphicsDevice.cachedConfig.ResolutionWidth * gGraphicsDevice.cachedConfig.ResolutionHeight;
-		x++)
+	for (y = 0; y < gGraphicsDevice.cachedConfig.ResolutionHeight; y++)
 	{
-		Uint8 r, g, b;
-		SDL_GetRGB(screen[x], gGraphicsDevice.screen->format, &r, &g, &b);
-		r = b = 0;
-		screen[x] = SDL_MapRGB(gGraphicsDevice.screen->format, r, g, b);
+		for (x = 0; x < gGraphicsDevice.cachedConfig.ResolutionWidth; x++)
+		{
+			Vector2i pos;
+			pos.x = x;
+			pos.y = y;
+			DrawPointMask(&gGraphicsDevice, pos, mask);
+		}
 	}
 
 	screen += MAP_YOFFS * gGraphicsDevice.cachedConfig.ResolutionWidth + MAP_XOFFS;

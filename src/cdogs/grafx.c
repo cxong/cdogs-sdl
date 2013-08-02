@@ -177,6 +177,10 @@ void GraphicsInit(GraphicsDevice *device)
 	device->screen = NULL;
 	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
 	device->validModes = NULL;
+	device->clipping.left = 0;
+	device->clipping.top = 0;
+	device->clipping.right = 0;
+	device->clipping.bottom = 0;
 	device->numValidModes = 0;
 	device->modeIndex = 0;
 	// Add default modes
@@ -351,7 +355,9 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 
 	debug(D_NORMAL, "Changed video mode...\n");
 
-	CDogsSetClip(0, 0, config->ResolutionWidth - 1, config->ResolutionHeight - 1);
+	GraphicsSetBlitClip(
+		device,
+		0, 0, config->ResolutionWidth - 1,config->ResolutionHeight - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
 		config->ResolutionWidth, config->ResolutionHeight);
 
@@ -399,4 +405,22 @@ char *GrafxGetModeStr(void)
 		gConfig.Graphics.ResolutionHeight,
 		gConfig.Graphics.ScaleFactor);
 	return buf;
+}
+
+void GraphicsSetBlitClip(
+	GraphicsDevice *device, int left, int top, int right, int bottom)
+{
+	device->clipping.left = left;
+	device->clipping.top = top;
+	device->clipping.right = right;
+	device->clipping.bottom = bottom;
+}
+
+void GraphicsResetBlitClip(GraphicsDevice *device)
+{
+	GraphicsSetBlitClip(
+		device,
+		0, 0,
+		device->cachedConfig.ResolutionWidth - 1,
+		device->cachedConfig.ResolutionHeight - 1);
 }
