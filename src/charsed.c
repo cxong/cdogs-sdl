@@ -586,6 +586,7 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 			xPrev = *x;
 			yPrev = *y;
 		}
+		SDL_Delay(10);
 	}
 	while (!(*buttons) && !(*key));
 

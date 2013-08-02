@@ -1547,6 +1547,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	debug(D_NORMAL, "Initialising SDL...\n");
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
+	{
+		printf("Failed to start SDL!\n");
+		return -1;
+	}
+
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
@@ -1558,7 +1565,7 @@ int main(int argc, char *argv[])
 		printf("Unable to read CDOGS2.PX\n");
 		exit(0);
 	}
-	gPalette[0].red = gPalette[0].green = gPalette[0].blue = 0;
+	gPalette[0].r = gPalette[0].g = gPalette[0].b = 0;
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
 	BuildTranslationTables();
