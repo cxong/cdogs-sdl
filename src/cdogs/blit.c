@@ -185,88 +185,6 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 	}
 }
 
-void BlitRectangleRaw(
-	Uint32 *screen,
-	int left, int top,
-	int width, int height,
-	Uint32 rgbColor,
-	int flags)
-{
-	int y;
-	if (width < 3 || height < 3)
-	{
-		flags &= ~BLIT_FLAG_ROUNDED;
-	}
-	for (y = top; y < top + height; y++)
-	{
-		int isFirstOrLastLine = y == top || y == top + height - 1;
-		if (isFirstOrLastLine && (flags & BLIT_FLAG_ROUNDED))
-		{
-			int i;
-			for (i = 0; i < width - 2; i++)
-			{
-				*(screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
-					rgbColor;
-			}
-		}
-		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
-		{
-			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-				rgbColor;
-			*(screen + left + width - 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-				rgbColor;
-		}
-		else
-		{
-			int i;
-			for (i = 0; i < width; i++)
-			{
-				*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
-					rgbColor;
-			}
-		}
-	}
-}
-
-void BlitRectangle(
-	Uint32 *screen,
-	int left, int top,
-	int width, int height,
-	unsigned char color,
-	int flags)
-{
-	BlitRectangleRaw(screen, left, top, width, height, LookupPalette(color), flags);
-}
-
-void BlitRectangleRGB(
-	Uint32 *screen,
-	int left, int top,
-	int width, int height,
-	color_t color,
-	int flags)
-{
-	BlitRectangleRaw(
-		screen,
-		left, top, width, height,
-		PixelFromColor(&gGraphicsDevice, color),
-		flags);
-}
-
-//  *
-// ***
-//  *
-void BlitCross(Uint32 *screen, int x, int y, unsigned char color)
-{
-	Uint32 rgbColor = LookupPalette(color);
-	screen += x;
-	screen += y * gGraphicsDevice.cachedConfig.ResolutionWidth;
-	*screen = rgbColor;
-	*(screen - 1) = rgbColor;
-	*(screen + 1) = rgbColor;
-	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
-	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
-}
-
 static TPalette gCurrentPalette;
 #define GAMMA 3
 Uint32 LookupPalette(unsigned char index)
@@ -525,7 +443,8 @@ void CopyToScreen(void)
 	scr_size = screenSize.x * screenSize.y;
 	scalef = gConfig.Graphics.ScaleFactor;
 	
-	ApplyBrightness(gGraphicsDevice.buf, screenSize, gConfig.Graphics.Brightness);
+	ApplyBrightness(
+		gGraphicsDevice.buf, screenSize, gConfig.Graphics.Brightness);
 
 	if (SDL_LockSurface(gGraphicsDevice.screen) == -1)
 	{

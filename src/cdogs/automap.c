@@ -105,19 +105,12 @@ static void DisplayPlayer(TActor * player)
 	}
 }
 
-void DrawCross(TTileItem * t, unsigned char color)
-{
-	Uint32 *scr = gGraphicsDevice.buf;
-	BlitCross(
-		scr,
-		MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH,
-		MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT,
-		color);
-}
-
 static void DisplayObjective(TTileItem * t, int objectiveIndex)
 {
-	DrawCross(t, gMission.objectives[objectiveIndex].color);
+	int x = MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
+	int y = MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT;
+	DrawCross(
+		&gGraphicsDevice, x, y, gMission.objectives[objectiveIndex].color);
 }
 
 static void DisplayExit(void)
@@ -135,7 +128,7 @@ static void DisplayExit(void)
 	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
-	BlitRectangle(scr, x1, y1, x2, y2, EXIT_COLOR, BLIT_FLAG_LINE);
+	DrawRectangle(scr, x1, y1, x2, y2, EXIT_COLOR, BLIT_FLAG_LINE);
 }
 
 static void DisplaySummary(void)

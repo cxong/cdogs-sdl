@@ -51,6 +51,7 @@
 #include <time.h>
 
 #include "actors.h"
+#include "drawtools.h"
 #include "game.h"
 #include "mission.h"
 #include "text.h"
@@ -158,7 +159,7 @@ void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 	{
 		barLeft = config->ResolutionWidth - barLeft - barWidth;
 	}
-	BlitRectangleRGB(
+	DrawRectangleRGB(
 		gGraphicsDevice.buf,
 		barLeft, barTop,
 		barWidth,
@@ -167,7 +168,7 @@ void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 		BLIT_FLAG_ROUNDED);
 	hsv.h = hue;
 	colour = ColorTint(colorWhite, hsv);
-	BlitRectangleRGB(
+	DrawRectangleRGB(
 		gGraphicsDevice.buf,
 		barLeft + 1, barTop + 1,
 		MAX(0, healthBarWidth - 2),

@@ -90,25 +90,6 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode);
  */
 #define DrawBTPic(x, y, pic, tint, rle) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
-typedef enum
-{
-	BLIT_FLAG_LINE = 1,
-	BLIT_FLAG_ROUNDED = 2
-} BlitFlags;
-void BlitRectangle(
-	Uint32 *screen,
-	int left, int top,
-	int width, int height,
-	unsigned char color,
-	int flags);
-void BlitRectangleRGB(
-	Uint32 *screen,
-	int left, int top,
-	int width, int height,
-	color_t color,
-	int flags);
-void BlitCross(Uint32 *screen, int x, int y, unsigned char color);
-
 void CopyToScreen(void);
 void CDogsSetPalette(TPalette palette);
 

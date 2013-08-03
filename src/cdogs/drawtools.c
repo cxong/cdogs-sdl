@@ -169,3 +169,73 @@ void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint)
 	c = ColorTint(c, tint);
 	screen[idx] = PixelFromColor(device, c);
 }
+
+void DrawRectangleRaw(
+	Uint32 *screen, int left, int top, int width, int height,
+	Uint32 rgbColor, int flags)
+{
+	int y;
+	if (width < 3 || height < 3)
+	{
+		flags &= ~BLIT_FLAG_ROUNDED;
+	}
+	for (y = top; y < top + height; y++)
+	{
+		int isFirstOrLastLine = y == top || y == top + height - 1;
+		if (isFirstOrLastLine && (flags & BLIT_FLAG_ROUNDED))
+		{
+			int i;
+			for (i = 0; i < width - 2; i++)
+			{
+				*(screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
+				rgbColor;
+			}
+		}
+		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
+		{
+			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
+			rgbColor;
+			*(screen + left + width - 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
+			rgbColor;
+		}
+		else
+		{
+			int i;
+			for (i = 0; i < width; i++)
+			{
+				*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
+				rgbColor;
+			}
+		}
+	}
+}
+
+void DrawRectangle(
+	Uint32 *screen, int left, int top, int width, int height,
+	unsigned char color, int flags)
+{
+	DrawRectangleRaw(
+		screen, left, top, width, height, LookupPalette(color), flags);
+}
+
+void DrawRectangleRGB(
+	Uint32 *screen, int left, int top, int width, int height,
+	color_t color, int flags)
+{
+	DrawRectangleRaw(
+		screen, left, top, width, height,
+		PixelFromColor(&gGraphicsDevice, color), flags);
+}
+
+void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color)
+{
+	Uint32 *screen = device->buf;
+	Uint32 rgbColor = LookupPalette(color);
+	screen += x;
+	screen += y * gGraphicsDevice.cachedConfig.ResolutionWidth;
+	*screen = rgbColor;
+	*(screen - 1) = rgbColor;
+	*(screen + 1) = rgbColor;
+	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
+	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
+}

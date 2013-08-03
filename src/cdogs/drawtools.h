@@ -66,4 +66,21 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask);
 void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint);
 
+typedef enum
+{
+	BLIT_FLAG_LINE = 1,
+	BLIT_FLAG_ROUNDED = 2
+} DrawFlags;
+void DrawRectangle(
+	Uint32 *screen, int left, int top, int width, int height,
+	unsigned char color, int flags);
+void DrawRectangleRGB(
+	Uint32 *screen, int left, int top, int width, int height,
+	color_t color, int flags);
+
+//  *
+// ***
+//  *
+void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color);
+
 #endif /* __DRAW_TOOLS */
