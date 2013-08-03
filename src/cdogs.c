@@ -188,34 +188,34 @@ int MissionDescription(int y, const char *description)
 	return lines;
 }
 
-void CampaignIntro(GraphicsDevice *graphicsDevice)
+void CampaignIntro(GraphicsDevice *device)
 {
 	int y;
 	char s[1024];
 
 	debug(D_NORMAL, "\n");
 
-	GraphicsBlitBkg(graphicsDevice);
+	GraphicsBlitBkg(device);
 
-	y = graphicsDevice->cachedConfig.ResolutionWidth / 4;
+	y = device->cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "%s by %s", gCampaign.Setting.title, gCampaign.Setting.author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
 	MissionDescription(y, gCampaign.Setting.description);
 
-	CopyToScreen();
+	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void MissionBriefing(GraphicsDevice *graphics)
+void MissionBriefing(GraphicsDevice *device)
 {
 	char s[512];
 	int i, y;
 
-	GraphicsBlitBkg(graphics);
+	GraphicsBlitBkg(device);
 
-	y = graphics->cachedConfig.ResolutionWidth / 4;
+	y = device->cachedConfig.ResolutionWidth / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -235,27 +235,27 @@ void MissionBriefing(GraphicsDevice *graphics)
 
 	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
-	y += graphics->cachedConfig.ResolutionHeight / 10;
+	y += device->cachedConfig.ResolutionHeight / 10;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
 		if (gMission.missionData->objectives[i].required > 0)
 		{
 			CDogsTextStringAt(
-				graphics->cachedConfig.ResolutionWidth / 6,
+				device->cachedConfig.ResolutionWidth / 6,
 				y,
 				gMission.missionData->objectives[i].description);
 			DrawObjectiveInfo(
 				i,
-				graphics->cachedConfig.ResolutionWidth - (graphics->cachedConfig.ResolutionWidth / 6),
+				device->cachedConfig.ResolutionWidth - (device->cachedConfig.ResolutionWidth / 6),
 				y + 8,
 				gMission.missionData);
 
-			y += graphics->cachedConfig.ResolutionHeight / 12;
+			y += device->cachedConfig.ResolutionHeight / 12;
 		}
 	}
 
-	CopyToScreen();
+	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
@@ -423,9 +423,9 @@ void Bonuses(void)
 	}
 }
 
-void MissionSummary(GraphicsDevice *graphics)
+void MissionSummary(GraphicsDevice *device)
 {
-	GraphicsBlitBkg(graphics);
+	GraphicsBlitBkg(device);
 
 	Bonuses();
 
@@ -435,15 +435,15 @@ void MissionSummary(GraphicsDevice *graphics)
 	} else
 		Summary(CenterX(60), &gPlayer1Data, CHARACTER_PLAYER1);
 
-	CopyToScreen();
+	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void ShowScore(GraphicsDevice *graphicsDevice, int score1, int score2)
+void ShowScore(GraphicsDevice *device, int score1, int score2)
 {
 	char s[10];
 
-	GraphicsBlitBkg(graphicsDevice);
+	GraphicsBlitBkg(device);
 
 	debug(D_NORMAL, "\n");
 
@@ -452,14 +452,14 @@ void ShowScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(s)),
-			graphicsDevice->cachedConfig.ResolutionWidth / 3,
+			device->cachedConfig.ResolutionWidth / 3,
 			s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(s)),
-			graphicsDevice->cachedConfig.ResolutionWidth / 3,
+			device->cachedConfig.ResolutionWidth / 3,
 			s);
 	}
 	else
@@ -467,13 +467,13 @@ void ShowScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 		DisplayPlayer(CenterX(CDogsTextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 	}
 
-	CopyToScreen();
+	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
-void FinalScore(GraphicsDevice *graphicsDevice, int score1, int score2)
+void FinalScore(GraphicsDevice *device, int score1, int score2)
 {
-	GraphicsBlitBkg(graphicsDevice);
+	GraphicsBlitBkg(device);
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
@@ -486,7 +486,7 @@ void FinalScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		CDogsTextStringAt(
 			CenterOfLeft(CDogsTextWidth(IS_WINNER)),
-			graphicsDevice->cachedConfig.ResolutionWidth / 2,
+			device->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
 	else
@@ -494,10 +494,10 @@ void FinalScore(GraphicsDevice *graphicsDevice, int score1, int score2)
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		CDogsTextStringAt(
 			CenterOfRight(CDogsTextWidth(IS_WINNER)),
-			graphicsDevice->cachedConfig.ResolutionWidth / 2,
+			device->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
-	CopyToScreen();
+	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 
@@ -564,7 +564,7 @@ void Victory(GraphicsDevice *graphics)
 
 	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
-	CopyToScreen();
+	BlitFlip(graphics, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
 }
 

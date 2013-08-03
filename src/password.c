@@ -218,7 +218,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	return 1;
 }
 
-static int EnterCode(GraphicsDevice *graphicsDevice, const char *password)
+static int EnterCode(GraphicsDevice *graphics, const char *password)
 {
 	int mission = 0;
 	int done = 0;
@@ -229,7 +229,7 @@ static int EnterCode(GraphicsDevice *graphicsDevice, const char *password)
 	{
 		int cmd;
 		InputPoll(&gJoysticks, &gKeyboard);
-		GraphicsBlitBkg(graphicsDevice);
+		GraphicsBlitBkg(graphics);
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
 		{
@@ -256,7 +256,7 @@ static int EnterCode(GraphicsDevice *graphicsDevice, const char *password)
 				CDogsTextWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
-				graphicsDevice->cachedConfig.ResolutionWidth / 4);
+				graphics->cachedConfig.ResolutionWidth / 4);
 		CDogsTextChar(SYMBOL_LEFT);
 		CDogsTextString(buffer);
 		CDogsTextChar(SYMBOL_RIGHT);
@@ -265,10 +265,10 @@ static int EnterCode(GraphicsDevice *graphicsDevice, const char *password)
 			"Enter code",
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			graphicsDevice->cachedConfig.ResolutionHeight / 12);
+			graphics->cachedConfig.ResolutionHeight / 12);
 		ShowControls();
 
-		CopyToScreen();
+		BlitFlip(graphics, &gConfig.Graphics);
 	}
 
 	SoundPlay(&gSoundDevice, SND_SWITCH);

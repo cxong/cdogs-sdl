@@ -730,7 +730,7 @@ void Display(int idx, int xc, int yc, int key)
 		break;
 	}
 
-	CopyToScreen();
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
 static int Change(int yc, int xc, int d, int *mission)
@@ -1233,7 +1233,7 @@ static void Save(int asCode)
 		CDogsTextChar('\020');
 		CDogsTextString(filename);
 		CDogsTextChar('\021');
-		CopyToScreen();
+		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		c = GetKey(&gKeyboard);
 		switch (c) {
@@ -1280,7 +1280,7 @@ static int ConfirmQuit(void)
 	}
 	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
-	CopyToScreen();
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 	c = GetKey(&gKeyboard);
 	return (c == 'Y' || c == 'y');

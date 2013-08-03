@@ -308,7 +308,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		}
 	}
 
-	CopyToScreen();
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
 static void Change(

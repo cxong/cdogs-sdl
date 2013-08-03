@@ -312,5 +312,5 @@ void DisplayAutoMap(int showAll)
 	DisplayExit();
 	DisplaySummary();
 
-	CopyToScreen();
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }

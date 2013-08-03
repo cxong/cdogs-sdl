@@ -90,7 +90,7 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode);
  */
 #define DrawBTPic(x, y, pic, tint, rle) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
-void CopyToScreen(void);
+void BlitFlip(GraphicsDevice *device, GraphicsConfig *config);
 void CDogsSetPalette(TPalette palette);
 
 #define BLIT_BRIGHTNESS_MIN (-10)

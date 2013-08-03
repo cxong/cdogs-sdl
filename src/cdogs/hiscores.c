@@ -193,7 +193,7 @@ static int DisplayPage(
 		}
 		idx++;
 	}
-	CopyToScreen();
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	return idx;
 }
 

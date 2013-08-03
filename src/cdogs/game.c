@@ -552,7 +552,7 @@ int gameloop(void)
 				gMission.pickupTime = PICKUP_LIMIT;
 		}
 
-		CopyToScreen();
+		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		InputPoll(&gJoysticks, &gKeyboard);
 

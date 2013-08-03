@@ -1074,7 +1074,7 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 			mode1 = MakeSelection(mode1, CenterX(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
 		}
 
-		CopyToScreen();
+		BlitFlip(graphics, &gConfig.Graphics);
 		SDL_Delay(10);
 	}
 
@@ -1115,7 +1115,7 @@ int PlayerEquip(GraphicsDevice *graphics)
 			ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
 		}
 
-		CopyToScreen();
+		BlitFlip(graphics, &gConfig.Graphics);
 		SDL_Delay(10);
 	}
 

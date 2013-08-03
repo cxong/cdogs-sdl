@@ -432,21 +432,20 @@ static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
 	}
 }
 
-void CopyToScreen(void)
+void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 {
-	Uint32 *pScreen = (Uint32 *)gGraphicsDevice.screen->pixels;
+	Uint32 *pScreen = (Uint32 *)device->screen->pixels;
 	Vector2i screenSize;
 	int scr_size, scalef;
 
-	screenSize.x = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	screenSize.y = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	screenSize.x = device->cachedConfig.ResolutionWidth;
+	screenSize.y = device->cachedConfig.ResolutionHeight;
 	scr_size = screenSize.x * screenSize.y;
-	scalef = gConfig.Graphics.ScaleFactor;
+	scalef = config->ScaleFactor;
 	
-	ApplyBrightness(
-		gGraphicsDevice.buf, screenSize, gConfig.Graphics.Brightness);
+	ApplyBrightness(device->buf, screenSize, config->Brightness);
 
-	if (SDL_LockSurface(gGraphicsDevice.screen) == -1)
+	if (SDL_LockSurface(device->screen) == -1)
 	{
 		printf("Couldn't lock surface; not drawing\n");
 		return;
@@ -454,19 +453,19 @@ void CopyToScreen(void)
 
 	if (scalef == 1)
 	{
-		memcpy(pScreen, gGraphicsDevice.buf, sizeof *pScreen * scr_size);
+		memcpy(pScreen, device->buf, sizeof *pScreen * scr_size);
 	}
-	else if (gConfig.Graphics.ScaleMode == SCALE_MODE_BILINEAR)
+	else if (config->ScaleMode == SCALE_MODE_BILINEAR)
 	{
-		Bilinear(pScreen, gGraphicsDevice.buf, screenSize.x, screenSize.y, scalef);
+		Bilinear(pScreen, device->buf, screenSize.x, screenSize.y, scalef);
 	}
 	else
 	{
-		Scale8(pScreen, gGraphicsDevice.buf, screenSize.x, screenSize.y, scalef);
+		Scale8(pScreen, device->buf, screenSize.x, screenSize.y, scalef);
 	}
 
-	SDL_UnlockSurface(gGraphicsDevice.screen);
-	SDL_Flip(gGraphicsDevice.screen);
+	SDL_UnlockSurface(device->screen);
+	SDL_Flip(device->screen);
 }
 
 void CDogsSetPalette(TPalette palette)

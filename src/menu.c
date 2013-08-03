@@ -140,13 +140,10 @@ void MenuLoop(MenuSystem *menu)
 			break;
 		}
 		// Draw
-		if (menu->graphics != NULL)
-		{
-			GraphicsBlitBkg(menu->graphics);
-		}
+		GraphicsBlitBkg(menu->graphics);
 		ShowControls();
 		MenuDisplay(menu);
-		CopyToScreen();
+		BlitFlip(menu->graphics, &gConfig.Graphics);
 	}
 }
 
