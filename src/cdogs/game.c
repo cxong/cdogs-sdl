@@ -247,7 +247,7 @@ void BlackLine(void)
 {
 	int i;
 	Uint32 *p = gGraphicsDevice.buf;
-	Uint32 black = SDL_MapRGB(gGraphicsDevice.screen->format, 0, 0, 0);
+	Uint32 black = PixelFromColor(&gGraphicsDevice, colorBlack);
 
 	p += (gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1;
 	for (i = 0; i < gGraphicsDevice.cachedConfig.ResolutionHeight; i++)

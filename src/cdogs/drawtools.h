@@ -64,5 +64,6 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 #define Draw_Rect(x, y, w, h, c)	Draw_Box(x,y,((x + (w - 1))),((y + (h - 1))),c)
 
 void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask);
+void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint);
 
 #endif /* __DRAW_TOOLS */

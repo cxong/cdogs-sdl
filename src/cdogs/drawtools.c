@@ -147,14 +147,25 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask)
 {
 	Uint32 *screen = device->buf;
-	color_t c;
 	int idx = PixelIndex(
 		pos.x, pos.y,
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
-	SDL_GetRGB(screen[idx], device->screen->format, &c.r, &c.g, &c.b);
+	color_t c = PixelToColor(device, screen[idx]);
 	c.r = (uint8_t)((int)c.r * mask.r / 255);
 	c.g = (uint8_t)((int)c.g * mask.g / 255);
 	c.b = (uint8_t)((int)c.b * mask.b / 255);
-	screen[idx] = SDL_MapRGB(device->screen->format, c.r, c.g, c.b);
+	screen[idx] = PixelFromColor(device, c);
+}
+
+void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint)
+{
+	Uint32 *screen = device->buf;
+	int idx = PixelIndex(
+		pos.x, pos.y,
+		device->cachedConfig.ResolutionWidth,
+		device->cachedConfig.ResolutionHeight);
+	color_t c = PixelToColor(device, screen[idx]);
+	c = ColorTint(c, tint);
+	screen[idx] = PixelFromColor(device, c);
 }

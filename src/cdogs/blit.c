@@ -62,6 +62,17 @@
 #include "utils.h" /* for debug() */
 
 
+color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
+{
+	color_t c;
+	SDL_GetRGB(pixel, device->screen->format, &c.r, &c.g, &c.b);
+	return c;
+}
+Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
+{
+	return SDL_MapRGB(device->screen->format, color.r, color.g, color.b);
+}
+
 void Blit(int x, int y, Pic *pic, void *table, int mode)
 {
 	int yoff, xoff;
@@ -159,15 +170,10 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
 				if (tint != NULL)
 				{
-					color_t targetColor, blendedColor;
-					SDL_GetRGB(
-						*target,
-						gGraphicsDevice.screen->format,
-						&targetColor.r, &targetColor.g, &targetColor.b);
-					blendedColor = ColorTint(targetColor, *tint);
-					*target = SDL_MapRGB(
-						gGraphicsDevice.screen->format,
-						blendedColor.r, blendedColor.g, blendedColor.b);
+					color_t targetColor =
+						PixelToColor(&gGraphicsDevice, *target);
+					color_t blendedColor = ColorTint(targetColor, *tint);
+					*target = PixelFromColor(&gGraphicsDevice, blendedColor);
 				}
 				else
 				{
@@ -242,7 +248,7 @@ void BlitRectangleRGB(
 	BlitRectangleRaw(
 		screen,
 		left, top, width, height,
-		SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b),
+		PixelFromColor(&gGraphicsDevice, color),
 		flags);
 }
 
@@ -269,7 +275,7 @@ Uint32 LookupPalette(unsigned char index)
 	color.r = (Uint8)CLAMP(color.r * GAMMA, 0, 255);
 	color.g = (Uint8)CLAMP(color.g * GAMMA, 0, 255);
 	color.b = (Uint8)CLAMP(color.b * GAMMA, 0, 255);
-	return SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b);
+	return PixelFromColor(&gGraphicsDevice, color);
 }
 
 #define PixelIndex(x, y, w)		(y * w + x)
@@ -498,13 +504,12 @@ static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
 		int x;
 		for (x = 0; x < screenSize.x; x++)
 		{
-			color_t color;
 			int idx = x + y * screenSize.x;
-			SDL_GetRGB(screen[idx], gGraphicsDevice.screen->format, &color.r, &color.g, &color.b);
+			color_t color = PixelToColor(&gGraphicsDevice, screen[idx]);
 			color.r = (uint8_t)CLAMP(f * color.r, 0, 255);
 			color.g = (uint8_t)CLAMP(f * color.g, 0, 255);
 			color.b = (uint8_t)CLAMP(f * color.b, 0, 255);
-			screen[idx] = SDL_MapRGB(gGraphicsDevice.screen->format, color.r, color.g, color.b);
+			screen[idx] = PixelFromColor(&gGraphicsDevice, color);
 		}
 	}
 }

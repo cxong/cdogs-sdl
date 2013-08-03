@@ -61,6 +61,7 @@
 #include "config.h"
 #include "defs.h"
 #include "draw.h"
+#include "drawtools.h"
 #include "mission.h"
 #include "pics.h" /* for gPalette */
 #include "files.h"
@@ -248,8 +249,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 {
 	struct Buffer *buffer = NewBuffer(128, 128);
-	Uint32 *p;
-	int i;
+	int y;
 	HSV tint;
 
 	SetupQuickPlayCampaign(&gCampaign.Setting);
@@ -263,16 +263,19 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	FreeTriggersAndWatches();
 	gCampaign.seed = gConfig.Game.RandomSeed;
 
-	p = device->buf;
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	for (i = 0; i < GraphicsGetScreenSize(config); i++)
+	for (y = 0; y < config->ResolutionHeight; y++)
 	{
-		color_t c;
-		SDL_GetRGB(p[i], device->screen->format, &c.r, &c.g, &c.b);
-		c = ColorTint(c, tint);
-		p[i] = SDL_MapRGB(device->screen->format, c.r, c.g, c.b);
+		int x;
+		for (x = 0; x < config->ResolutionWidth; x++)
+		{
+			Vector2i pos;
+			pos.x = x;
+			pos.y = y;
+			DrawPointTint(device, pos, tint);
+		}
 	}
 }
 
