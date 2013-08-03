@@ -152,9 +152,7 @@ void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask)
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
 	color_t c = PixelToColor(device, screen[idx]);
-	c.r = (uint8_t)((int)c.r * mask.r / 255);
-	c.g = (uint8_t)((int)c.g * mask.g / 255);
-	c.b = (uint8_t)((int)c.b * mask.b / 255);
+	c = ColorMult(c, mask);
 	screen[idx] = PixelFromColor(device, c);
 }
 

@@ -127,17 +127,13 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 		for (x = 0; x < buffer->width; x++, tile++) {
 			if ((tile->flags & isShadow) == isShadow) {
 				tile->things = NULL;
-				if ((tile->
-				     flags & (IS_WALL | DELAY_DRAW)) ==
-				    IS_WALL)
-					tile->pic = PIC_TALLDARKNESS;
-				else {
-					tile->pic = PIC_DARKNESS;
-					tile->flags &= ~OFFSET_PIC;
-				}
-			} else
-				MarkAsSeen(x + buffer->xStart,
-					   y + buffer->yStart);
+				tile->flags |= OUT_OF_SIGHT;
+			}
+			else
+			{
+				MarkAsSeen(x + buffer->xStart, y + buffer->yStart);
+				tile->flags &= ~OUT_OF_SIGHT;
+			}
 		}
 		tile += X_TILES - buffer->width;
 	}
@@ -196,11 +192,31 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 }
 
 
+// Two types of tile drawing, based on line of sight:
+// Out of sight: dark
+// In sight: full color
+static color_t GetTileLOSMask(int flags)
+{
+	if (flags & OUT_OF_SIGHT)
+	{
+		color_t mask = { 96, 96, 96 };
+		return mask;
+	}
+	return colorWhite;
+}
+
 void DrawWallColumn(int y, int xc, int yc, TTile * tile)
 {
-	while (y >= 0 && (tile->flags & IS_WALL) != 0) {
-		DrawPic(xc, yc, gPics[tile->pic],
-			gCompiledPics[tile->pic]);
+	while (y >= 0 && (tile->flags & IS_WALL) != 0)
+	{
+		Vector2i pos;
+		pos.x = xc;
+		pos.y = yc;
+		BlitWithMask(
+			&gGraphicsDevice,
+			gPics[tile->pic],
+			pos,
+			GetTileLOSMask(tile->flags));
 		yc -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
@@ -221,10 +237,17 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			 x < b->width;
 			 x++, tile++, xc += TILE_WIDTH)
 		{
-			if (tile->pic >= 0
-			    && (tile->flags & (IS_WALL | OFFSET_PIC)) == 0)
-				DrawPic(xc, yc, gPics[tile->pic],
-					gCompiledPics[tile->pic]);
+			if (tile->pic >= 0 && !(tile->flags & (IS_WALL | OFFSET_PIC)))
+			{
+				Vector2i pos;
+				pos.x = xc;
+				pos.y = yc;
+				BlitWithMask(
+					&gGraphicsDevice,
+					gPics[tile->pic],
+					pos,
+					GetTileLOSMask(tile->flags));
+			}
 		}
 		tile += X_TILES - b->width;
 	}

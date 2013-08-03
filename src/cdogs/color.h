@@ -47,6 +47,8 @@ extern color_t colorBlack;
 extern color_t colorDarker;
 extern color_t colorPurple;
 
+color_t ColorMult(color_t c, color_t m);
+
 typedef struct
 {
 	double h, s, v;

@@ -41,9 +41,9 @@
 #define OFFSET_PIC       32
 #define IS_SHADOW2       64
 #define TILE_TRIGGER    128
-
 // This constant is used internally in draw, it is never set in the map
 #define DELAY_DRAW      256
+#define OUT_OF_SIGHT	512
 
 #define KIND_CHARACTER      0
 #define KIND_PIC            1

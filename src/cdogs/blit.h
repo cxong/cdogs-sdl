@@ -53,6 +53,7 @@
 
 #include "grafx.h"
 #include "pic_file.h"
+#include "vector.h"
 
 color_t PixelToColor(GraphicsDevice *device, Uint32 pixel);
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
@@ -63,6 +64,8 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 Uint32 LookupPalette(unsigned char index);
 void Blit(int x, int y, Pic *pic, void *table, int mode);
 void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode);
+void BlitWithMask(
+	GraphicsDevice *device, Pic *pic, Vector2i pos, color_t mask);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.

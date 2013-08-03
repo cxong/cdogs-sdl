@@ -187,13 +187,60 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 
 static TPalette gCurrentPalette;
 #define GAMMA 3
-Uint32 LookupPalette(unsigned char index)
+color_t PaletteToColor(unsigned char index)
 {
 	color_t color = gCurrentPalette[index];
-	color.r = (Uint8)CLAMP(color.r * GAMMA, 0, 255);
-	color.g = (Uint8)CLAMP(color.g * GAMMA, 0, 255);
-	color.b = (Uint8)CLAMP(color.b * GAMMA, 0, 255);
-	return PixelFromColor(&gGraphicsDevice, color);
+	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
+	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
+	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
+	return color;
+}
+Uint32 LookupPalette(unsigned char index)
+{
+	return PixelFromColor(&gGraphicsDevice, PaletteToColor(index));
+}
+
+void BlitWithMask(GraphicsDevice *device, Pic *pic, Vector2i pos, color_t mask)
+{
+	unsigned char *current = pic->data;
+
+	int i;
+	for (i = 0; i < pic->h; i++)
+	{
+		int j;
+		int yoff = i + pos.y;
+		if (yoff > device->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < device->clipping.top)
+		{
+			current += pic->w;
+			continue;
+		}
+		yoff *= device->cachedConfig.ResolutionWidth;
+		for (j = 0; j < pic->w; j++)
+		{
+			Uint32 *target;
+			color_t c;
+			int xoff = j + pos.x;
+			if (xoff < device->clipping.left)
+			{
+				current++;
+				continue;
+			}
+			if (xoff > device->clipping.right)
+			{
+				current += pic->w - j;
+				break;
+			}
+			target = device->buf + yoff + xoff;
+			c = PaletteToColor(*current);
+			c = ColorMult(c, mask);
+			*target = PixelFromColor(device, c);
+			current++;
+		}
+	}
 }
 
 #define PixelIndex(x, y, w)		(y * w + x)

@@ -40,6 +40,14 @@ color_t colorBlack = { 0, 0, 0 };
 color_t colorDarker = { 192, 192, 192 };
 color_t colorPurple = { 192, 0, 192 };
 
+color_t ColorMult(color_t c, color_t m)
+{
+	c.r = (uint8_t)((int)c.r * m.r / 255);
+	c.g = (uint8_t)((int)c.g * m.g / 255);
+	c.b = (uint8_t)((int)c.b * m.b / 255);
+	return c;
+}
+
 HSV tintRed = { 0.0, 1.0, 1.0 };
 HSV tintGreen = { 120.0, 1.0, 1.0 };
 HSV tintPoison = { 120.0, 0.33, 2.0 };
