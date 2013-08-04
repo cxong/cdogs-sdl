@@ -252,6 +252,19 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
+			"Fog",
+			&gConfig.Game.Fog,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Sight range",
+			&gConfig.Game.SightRange,
+			8, 40, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
 			"Video fullscreen",
 			&gConfig.Graphics.Fullscreen,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));

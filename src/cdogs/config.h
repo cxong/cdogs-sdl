@@ -72,6 +72,8 @@ typedef struct
 	int EnemyDensity;
 	int NonPlayerHP;
 	int PlayerHP;
+	int Fog;
+	int SightRange;
 } GameConfig;
 
 typedef struct

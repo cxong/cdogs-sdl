@@ -194,6 +194,28 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 			SetLineOfSight(buffer, x, y, -1, -1, shadowFlag);
 		}
 	}
+	
+	if (gConfig.Game.SightRange > 0)
+	{
+		Vector2i c;
+		int distanceSquared = gConfig.Game.SightRange * gConfig.Game.SightRange;
+		c.x = xc;
+		c.y = yc;
+		for (y = 0; y < Y_TILES; y++)
+		{
+			for (x = 0; x < buffer->width; x++)
+			{
+				Vector2i v;
+				v.x = x;
+				v.y = y;
+				if (DistanceSquared(c, v) >= distanceSquared)
+				{
+					TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
+					tile->flags |= shadowFlag;
+				}
+			}
+		}
+	}
 }
 
 
@@ -208,8 +230,15 @@ static color_t GetTileLOSMask(int flags)
 	}
 	if (flags & MAPTILE_OUT_OF_SIGHT)
 	{
-		color_t mask = { 96, 96, 96 };
-		return mask;
+		if (gConfig.Game.Fog)
+		{
+			color_t mask = { 96, 96, 96 };
+			return mask;
+		}
+		else
+		{
+			return colorBlack;
+		}
 	}
 	return colorWhite;
 }

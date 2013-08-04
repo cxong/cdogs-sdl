@@ -36,6 +36,7 @@ typedef struct
 	int y;
 } Vector2i;
 
+int DistanceSquared(Vector2i a, Vector2i b);
 void CalcChebyshevDistanceAndBearing(
 	Vector2i origin, Vector2i target, int *distance, int *bearing);
 Vector2i CalcClosestPointOnLineSegmentToPoint(

@@ -50,7 +50,7 @@ void CalcChebyshevDistanceAndBearing(
 	}
 }
 
-static int DistanceSquared(Vector2i a, Vector2i b)
+int DistanceSquared(Vector2i a, Vector2i b)
 {
 	int dx = a.x - b.x;
 	int dy = a.y - b.y;
