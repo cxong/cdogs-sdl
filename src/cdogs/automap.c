@@ -128,7 +128,7 @@ static void DisplayExit(void)
 	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
-	DrawRectangle(scr, x1, y1, x2, y2, EXIT_COLOR, BLIT_FLAG_LINE);
+	DrawRectangle(scr, x1, y1, x2 - x1, y2 - y1, EXIT_COLOR, BLIT_FLAG_LINE);
 }
 
 static void DisplaySummary(void)
