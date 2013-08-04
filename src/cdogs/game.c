@@ -228,8 +228,8 @@ void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,
 {
 	SetBuffer(x + xn, y + yn, b, w);
 #ifdef fLOS
-	LineOfSight(x, y, b, IS_SHADOW);
-	FixBuffer(b, IS_SHADOW);
+	LineOfSight(x, y, b, MAPTILE_IS_SHADOW);
+	FixBuffer(b, MAPTILE_IS_SHADOW);
 #endif
 	DrawBuffer(b, dx);
 }
@@ -288,12 +288,12 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			LineOfSight(
 				player1->tileItem.x,
 				player1->tileItem.y, b,
-				IS_SHADOW);
+				MAPTILE_IS_SHADOW);
 			LineOfSight(
 				player2->tileItem.x,
 				player2->tileItem.y, b,
-				IS_SHADOW2);
-			FixBuffer(b, IS_SHADOW | IS_SHADOW2);
+				MAPTILE_IS_SHADOW2);
+			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
 		#endif
 			DrawBuffer(b, 0);
 		}

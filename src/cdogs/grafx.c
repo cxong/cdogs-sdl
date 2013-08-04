@@ -256,6 +256,7 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	gCampaign.seed = rand();
 	SetupMission(0, 1, &gCampaign);
 	SetupMap();
+	MapMarkAllAsVisited();
 	SetBuffer(1024, 768, buffer, X_TILES);
 	DrawBuffer(buffer, 0);
 	CFREE(buffer);

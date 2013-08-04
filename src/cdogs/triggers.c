@@ -199,11 +199,11 @@ static void Action(TAction * a)
 			break;
 
 		case ACTION_SETTRIGGER:
-			Map(a->x, a->y).flags |= TILE_TRIGGER;
+			Map(a->x, a->y).flags |= MAPTILE_TILE_TRIGGER;
 			break;
 
 		case ACTION_CLEARTRIGGER:
-			Map(a->x, a->y).flags &= ~TILE_TRIGGER;
+			Map(a->x, a->y).flags &= ~MAPTILE_TILE_TRIGGER;
 			break;
 
 		case ACTION_CHANGETILE:

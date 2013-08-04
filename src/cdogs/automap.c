@@ -223,7 +223,6 @@ void DisplayAutoMap(int showAll)
 	TTile *tile;
 	Uint32 *screen = gGraphicsDevice.buf;
 	TTileItem *t;
-	int obj;
 	color_t mask = { 0, 128, 0 };
 
 	// Draw faded green overlay
@@ -242,15 +241,17 @@ void DisplayAutoMap(int showAll)
 	for (y = 0; y < YMAX; y++)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
-				if (AutoMap(x, y) || showAll) {
+			{
+				if ((Map(x, y).flags & MAPTILE_VISITED) || showAll)
+				{
 					tile = &Map(x, y);
 					for (j = 0; j < MAP_FACTOR; j++)
 					{
-						if (tile->flags & IS_WALL)
+						if (tile->flags & MAPTILE_IS_WALL)
 						{
 							*screen++ = LookupPalette(WALL_COLOR);
 						}
-						else if (tile->flags & NO_WALK)
+						else if (tile->flags & MAPTILE_NO_WALK)
 						{
 							*screen++ = LookupPalette(DoorColor(x, y));
 						}
@@ -264,31 +265,33 @@ void DisplayAutoMap(int showAll)
 				{
 					screen += MAP_FACTOR;
 				}
+			}
 			screen += gGraphicsDevice.cachedConfig.ResolutionWidth - XMAX * MAP_FACTOR;
 		}
 
 	for (y = 0; y < YMAX; y++)
 		for (x = 0; x < XMAX; x++) {
 			t = Map(x, y).things;
-			while (t) {
-				if ((t->flags & TILEITEM_OBJECTIVE) != 0) {
-					obj =
-					    ObjectiveFromTileItem(t->
-								  flags);
-					if ((gMission.missionData->
-					     objectives[obj].
-					     flags & OBJECTIVE_HIDDEN) == 0
-					    || showAll) {
-						if ((gMission.missionData->
-						     objectives[obj].
-						     flags &
-						     OBJECTIVE_POSKNOWN) !=
-						    0 || AutoMap(x, y)
-						    || showAll)
-							DisplayObjective(t,
-									 obj);
+			while (t)
+			{
+				if ((t->flags & TILEITEM_OBJECTIVE) != 0)
+				{
+					int obj = ObjectiveFromTileItem(t->flags);
+					int objFlags = gMission.missionData->objectives[obj].flags;
+					if (!(objFlags & OBJECTIVE_HIDDEN) || showAll)
+					{
+						if ((objFlags & OBJECTIVE_POSKNOWN) ||
+							(Map(x, y).flags & MAPTILE_VISITED) ||
+							showAll)
+						{
+							DisplayObjective(t, obj);
+						}
 					}
-				} else if (t->kind == KIND_OBJECT && t->data && AutoMap(x, y)) {
+				}
+				else if (t->kind == KIND_OBJECT &&
+					t->data &&
+					(Map(x, y).flags & MAPTILE_VISITED))
+				{
 					TObject *o = t->data;
 
 					if (o->objectIndex == OBJ_KEYCARD_RED)

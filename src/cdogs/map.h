@@ -22,6 +22,8 @@
 #ifndef __MAP
 #define __MAP
 
+#include "vector.h"
+
 #define YMAX    128
 #define XMAX    128
 
@@ -33,17 +35,21 @@
 #define X_TILES_HALF    ((X_TILES / 2) + 1)
 #define Y_TILES			(gGraphicsDevice.cachedConfig.ResolutionHeight / TILE_HEIGHT + 3)
 
-#define NO_WALK           1
-#define NO_SEE            2
-#define NO_SHOOT          4
-#define IS_SHADOW         8
-#define IS_WALL          16
-#define OFFSET_PIC       32
-#define IS_SHADOW2       64
-#define TILE_TRIGGER    128
-// This constant is used internally in draw, it is never set in the map
-#define DELAY_DRAW      256
-#define OUT_OF_SIGHT	512
+typedef enum
+{
+	MAPTILE_NO_WALK			= 0x001,
+	MAPTILE_NO_SEE			= 0x002,
+	MAPTILE_NO_SHOOT		= 0x004,
+	MAPTILE_IS_SHADOW		= 0x008,
+	MAPTILE_IS_WALL			= 0x010,
+	MAPTILE_OFFSET_PIC		= 0x020,
+	MAPTILE_IS_SHADOW2		= 0x040,
+	MAPTILE_TILE_TRIGGER	= 0x080,
+	MAPTILE_VISITED			= 0x100,
+// These constants are used internally in draw, it is never set in the map
+	MAPTILE_DELAY_DRAW		= 0x200,
+	MAPTILE_OUT_OF_SIGHT	= 0x400
+} MapTileFlags;
 
 #define KIND_CHARACTER      0
 #define KIND_PIC            1
@@ -93,10 +99,7 @@ struct Buffer *NewBuffer(int rows, int cols);
 
 extern TTile gMap[YMAX][XMAX];
 #define Map( x, y)  gMap[y][x]
-#define HitWall(x,y) ((gMap[(y)/TILE_HEIGHT][(x)/TILE_WIDTH].flags & NO_WALK) != 0)
-
-extern unsigned char gAutoMap[YMAX][XMAX];
-#define AutoMap( x, y)  gAutoMap[y][x]
+#define HitWall(x,y) ((gMap[(y)/TILE_HEIGHT][(x)/TILE_WIDTH].flags & MAPTILE_NO_WALK) != 0)
 
 int CheckWall(int x, int y, int w, int h);
 int HasLockedRooms(void);
@@ -112,7 +115,8 @@ TTileItem *CheckTileItemCollision(TTileItem * item, int x, int y,
 void SetupMap(void);
 int OKforPlayer(int x, int y);
 void ChangeFloor(int x, int y, int normal, int shadow);
-void MarkAsSeen(int x, int y);
+void MapMarkAsVisited(Vector2i pos);
+void MapMarkAllAsVisited(void);
 int ExploredPercentage(void);
 
 #endif

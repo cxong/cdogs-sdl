@@ -467,7 +467,8 @@ static void CheckTrigger(TActor * actor, int x, int y)
 {
 	x /= TILE_WIDTH;
 	y /= TILE_HEIGHT;
-	if ((Map(x, y).flags & TILE_TRIGGER) != 0) {
+	if ((Map(x, y).flags & MAPTILE_TILE_TRIGGER))
+	{
 //  if ((actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
 		TriggerAt(x, y, actor->flags | gMission.flags);
 //  else

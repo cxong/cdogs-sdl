@@ -108,14 +108,15 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 	{
 		for (x = 0; x < buffer->width; x++, tile++, tileBelow++)
 		{
-			if (!(tile->flags & (IS_WALL | OFFSET_PIC)) &&
-				(tileBelow->flags & IS_WALL))
+			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
+				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
 				tile->pic = -1;
 			}
-			else if ((tile->flags & IS_WALL) && (tileBelow->flags & IS_WALL))
+			else if ((tile->flags & MAPTILE_IS_WALL) &&
+				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
-				tile->flags |= DELAY_DRAW;
+				tile->flags |= MAPTILE_DELAY_DRAW;
 			}
 		}
 		tile += X_TILES - buffer->width;
@@ -127,12 +128,16 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 		for (x = 0; x < buffer->width; x++, tile++) {
 			if ((tile->flags & isShadow) == isShadow) {
 				tile->things = NULL;
-				tile->flags |= OUT_OF_SIGHT;
+				tile->flags |= MAPTILE_OUT_OF_SIGHT;
 			}
 			else
 			{
-				MarkAsSeen(x + buffer->xStart, y + buffer->yStart);
-				tile->flags &= ~OUT_OF_SIGHT;
+				Vector2i pos;
+				pos.x = x + buffer->xStart;
+				pos.y = y + buffer->yStart;
+				MapMarkAsVisited(pos);
+				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
+				tile->flags |= MAPTILE_VISITED;
 			}
 		}
 		tile += X_TILES - buffer->width;
@@ -143,7 +148,7 @@ void SetLineOfSight(
 	struct Buffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
 {
 	TTile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
-	if (dTile->flags & (NO_SEE|shadowFlag))
+	if (dTile->flags & (MAPTILE_NO_SEE | shadowFlag))
 	{
 		TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 		tile->flags |= shadowFlag;
@@ -197,7 +202,11 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 // In sight: full color
 static color_t GetTileLOSMask(int flags)
 {
-	if (flags & OUT_OF_SIGHT)
+	if (!(flags & MAPTILE_VISITED))
+	{
+		return colorBlack;
+	}
+	if (flags & MAPTILE_OUT_OF_SIGHT)
 	{
 		color_t mask = { 96, 96, 96 };
 		return mask;
@@ -207,7 +216,7 @@ static color_t GetTileLOSMask(int flags)
 
 void DrawWallColumn(int y, int xc, int yc, TTile * tile)
 {
-	while (y >= 0 && (tile->flags & IS_WALL) != 0)
+	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
 		Vector2i pos;
 		pos.x = xc;
@@ -237,7 +246,8 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			 x < b->width;
 			 x++, tile++, xc += TILE_WIDTH)
 		{
-			if (tile->pic >= 0 && !(tile->flags & (IS_WALL | OFFSET_PIC)))
+			if (tile->pic >= 0 &&
+				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
 				Vector2i pos;
 				pos.x = xc;
@@ -258,11 +268,17 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 	for (y = 0; y < Y_TILES; y++, yc += TILE_HEIGHT) {
 		displayList = NULL;
 		xc = b->dx + cWallOffset.dx + xOffset;
-		for (x = 0; x < b->width; x++, tile++, xc += TILE_WIDTH) {
-			if (tile->flags & IS_WALL) {
-				if ((tile->flags & DELAY_DRAW) == 0)
+		for (x = 0; x < b->width; x++, tile++, xc += TILE_WIDTH)
+		{
+			if (tile->flags & MAPTILE_IS_WALL)
+			{
+				if (!(tile->flags & MAPTILE_DELAY_DRAW))
+				{
 					DrawWallColumn(y, xc, yc, tile);
-			} else if ((tile->flags & OFFSET_PIC) != 0) {
+				}
+			}
+			else if ((tile->flags & MAPTILE_OFFSET_PIC))
+			{
 				const TOffsetPic *p;
 				p = &(cGeneralPics[tile->pic]);
 				DrawPic (xc + p->dx,

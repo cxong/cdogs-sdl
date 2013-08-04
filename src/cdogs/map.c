@@ -504,10 +504,10 @@ static void FixMap(int floor, int room, int wall)
 			switch (iMap(x, y) & MAP_MASKACCESS) {
 			case MAP_FLOOR:
 			case MAP_SQUARE:
-				if (y > 0
-				    && (Map(x, y - 1).flags & NO_SEE) != 0)
-					Map(x, y).pic = cFloorPics[floor]
-					    [FLOOR_SHADOW];
+				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
+				{
+					Map(x, y).pic = cFloorPics[floor][FLOOR_SHADOW];
+				}
 				else
 					Map(x, y).pic = cFloorPics[floor]
 					    [FLOOR_NORMAL];
@@ -515,10 +515,10 @@ static void FixMap(int floor, int room, int wall)
 
 			case MAP_ROOM:
 			case MAP_DOOR:
-				if (y > 0
-				    && (Map(x, y - 1).flags & NO_SEE) != 0)
-					Map(x, y).pic = cRoomPics[room]
-					    [ROOMFLOOR_SHADOW];
+				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
+				{
+					Map(x, y).pic = cRoomPics[room][ROOMFLOOR_SHADOW];
+				}
 				else
 					Map(x, y).pic = cRoomPics[room]
 					    [ROOMFLOOR_NORMAL];
@@ -528,11 +528,11 @@ static void FixMap(int floor, int room, int wall)
 				Map(x, y).pic =
 				    cWallPics[wall][GetWallPic(x, y)];
 				Map(x, y).flags =
-				    NO_WALK | NO_SEE | IS_WALL;
+				    MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 				break;
 
 			case MAP_NOTHING:
-				Map(x, y).flags = NO_WALK | NO_SEE;
+				Map(x, y).flags = MAPTILE_NO_WALK | MAPTILE_NO_SEE;
 				break;
 			}
 		}
@@ -567,9 +567,13 @@ void ChangeFloor(int x, int y, int normal, int shadow)
 	case MAP_SQUARE:
 	case MAP_ROOM:
 		if (Map(x, y).pic == PIC_DRAINAGE)
+		{
 			return;
-		if (y > 0 && (Map(x, y - 1).flags & NO_SEE) != 0)
+		}
+		if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
+		{
 			Map(x, y).pic = shadow;
+		}
 		else
 			Map(x, y).pic = normal;
 		break;
@@ -590,15 +594,24 @@ static int CheckForItems( int x, int y, int w, int h )
 static int OneWall(int x, int y)
 {
 	int count = 0;
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1) {
-		if ((Map(x - 1, y).flags & NO_WALK) != 0)
+	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
+	{
+		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x + 1, y).flags & NO_WALK) != 0)
+		}
+		if ((Map(x + 1, y).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x, y - 1).flags & NO_WALK) != 0)
+		}
+		if ((Map(x, y - 1).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x, y + 1).flags & NO_WALK) != 0)
+		}
+		if ((Map(x, y + 1).flags & MAPTILE_NO_WALK))
+		{
 			count++;
+		}
 	}
 	return (count == 1);
 }
@@ -606,38 +619,43 @@ static int OneWall(int x, int y)
 static int OneWallOrMore(int x, int y)
 {
 	int count = 0;
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1) {
-		if ((Map(x - 1, y).flags & NO_WALK) != 0)
+	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
+	{
+		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x + 1, y).flags & NO_WALK) != 0)
+		}
+		if ((Map(x + 1, y).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x, y - 1).flags & NO_WALK) != 0)
+		}
+		if ((Map(x, y - 1).flags & MAPTILE_NO_WALK))
+		{
 			count++;
-		if ((Map(x, y + 1).flags & NO_WALK) != 0)
+		}
+		if ((Map(x, y + 1).flags & MAPTILE_NO_WALK))
+		{
 			count++;
+		}
 	}
 	return (count >= 1);
 }
 
 static int NoWalls(int x, int y)
 {
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1) {
-		if ((Map(x - 1, y).flags & NO_WALK) != 0)
+	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
+	{
+		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK) ||
+			(Map(x + 1, y).flags & MAPTILE_NO_WALK) ||
+			(Map(x, y - 1).flags & MAPTILE_NO_WALK) ||
+			(Map(x, y + 1).flags & MAPTILE_NO_WALK) ||
+			(Map(x - 1, y - 1).flags & MAPTILE_NO_WALK) ||
+			(Map(x + 1, y + 1).flags & MAPTILE_NO_WALK) ||
+			(Map(x + 1, y - 1).flags & MAPTILE_NO_WALK) ||
+			(Map(x - 1, y + 1).flags & MAPTILE_NO_WALK))
+		{
 			return 0;
-		if ((Map(x + 1, y).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x, y - 1).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x, y + 1).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x - 1, y - 1).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x + 1, y + 1).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x + 1, y - 1).flags & NO_WALK) != 0)
-			return 0;
-		if ((Map(x - 1, y + 1).flags & NO_WALK) != 0)
-			return 0;
+		}
 		return 1;
 	}
 	return 0;
@@ -863,9 +881,11 @@ static void VertDoor(int x, int y, int flags)
 	}
 
 	Map(x, y).pic = pic;
-	Map(x, y).flags = NO_SEE | NO_WALK | NO_SHOOT | OFFSET_PIC;
-	Map(x - 1, y).flags |= TILE_TRIGGER;
-	Map(x + 1, y).flags |= TILE_TRIGGER;
+	Map(x, y).flags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	Map(x - 1, y).flags |= MAPTILE_TILE_TRIGGER;
+	Map(x + 1, y).flags |= MAPTILE_TILE_TRIGGER;
 
 	// Create the watch responsible for closing the door
 	w = AddWatch(3, 5);
@@ -899,7 +919,9 @@ static void VertDoor(int x, int y, int flags)
 	a[2].x = x;
 	a[2].y = y;
 	a[2].tilePic = pic;
-	a[2].tileFlags = NO_SEE | NO_WALK | NO_SHOOT | OFFSET_PIC;
+	a[2].tileFlags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 
 	// Reenable trigger to the right of the door
 	a[3].action = ACTION_SETTRIGGER;
@@ -931,7 +953,7 @@ static void VertDoor(int x, int y, int flags)
 	a[2].x = x;
 	a[2].y = y;
 	a[2].tilePic = gMission.doorPics[5].vertPic;
-	a[2].tileFlags = OFFSET_PIC;
+	a[2].tileFlags = MAPTILE_OFFSET_PIC;
 
 	// Deactivate other trigger
 	a[3].action = ACTION_CLEARTRIGGER;
@@ -976,9 +998,11 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	}
 
 	Map(x, y).pic = pic;
-	Map(x, y).flags = NO_SEE | NO_WALK | NO_SHOOT | OFFSET_PIC;
-	Map(x, y - 1).flags |= TILE_TRIGGER;
-	Map(x, y + 1).flags |= TILE_TRIGGER;
+	Map(x, y).flags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	Map(x, y - 1).flags |= MAPTILE_TILE_TRIGGER;
+	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
 	if (iMap(x, y + 1) == MAP_FLOOR)
 		Map(x, y + 1).pic = cFloorPics[floor][FLOOR_SHADOW];
 	else
@@ -1016,7 +1040,9 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].x = x;
 	a[2].y = y;
 	a[2].tilePic = pic;
-	a[2].tileFlags = NO_SEE | NO_WALK | NO_SHOOT | OFFSET_PIC;
+	a[2].tileFlags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 
 	// Add shadow below door (also reenables trigger)
 	a[3].action = ACTION_CHANGETILE;
@@ -1025,8 +1051,10 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	if (iMap(x, y + 1) == MAP_FLOOR)
 		a[3].tilePic = cFloorPics[floor][FLOOR_SHADOW];
 	else
+	{
 		a[3].tilePic = cRoomPics[room][ROOMFLOOR_SHADOW];
-	a[3].tileFlags = TILE_TRIGGER;
+	}
+	a[3].tileFlags = MAPTILE_TILE_TRIGGER;
 
 	a[4].action = ACTION_SOUND;
 	a[4].x = x * TILE_WIDTH;
@@ -1272,11 +1300,24 @@ int OKforPlayer(int x, int y)
 	return (iMap((x >> 8) / TILE_WIDTH, (y >> 8) / TILE_HEIGHT) == 0);
 }
 
-void MarkAsSeen(int x, int y)
+void MapMarkAsVisited(Vector2i pos)
 {
-	if (AutoMap(x, y) == 0) {
+	if (!(Map(pos.x, pos.y).flags & MAPTILE_VISITED))
+	{
 		tilesSeen++;
-		AutoMap(x, y) = 1;
+		Map(pos.x, pos.y).flags |= MAPTILE_VISITED;
+	}
+}
+
+void MapMarkAllAsVisited(void)
+{
+	Vector2i pos;
+	for (pos.y = 0; pos.y < YMAX; pos.y++)
+	{
+		for (pos.x = 0; pos.x < XMAX; pos.x++)
+		{
+			Map(pos.x, pos.y).flags |= MAPTILE_VISITED;
+		}
 	}
 }
 
