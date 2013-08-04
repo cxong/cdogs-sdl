@@ -165,7 +165,7 @@ void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 		barWidth,
 		barHeight,
 		backColour,
-		BLIT_FLAG_ROUNDED);
+		DRAW_FLAG_ROUNDED);
 	hsv.h = hue;
 	colour = ColorTint(colorWhite, hsv);
 	DrawRectangleRGB(
@@ -216,7 +216,7 @@ void DrawPlayerStatus(
 
 static void DrawKeycard(int x, int y, const TOffsetPic * pic)
 {
-	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex]);
 }
 
 void DrawKeycards(HUD *hud)

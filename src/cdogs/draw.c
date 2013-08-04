@@ -310,10 +310,10 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			{
 				const TOffsetPic *p;
 				p = &(cGeneralPics[tile->pic]);
-				DrawPic (xc + p->dx,
-				     yc + p->dy,
-				     gPics[p->picIndex],
-				     gCompiledPics[p->picIndex]);
+				DrawPic(
+					xc + p->dx,
+					yc + p->dy,
+					gPics[p->picIndex]);
 			}
 			t = tile->things;
 			while (t) {

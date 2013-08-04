@@ -68,8 +68,8 @@ void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint);
 
 typedef enum
 {
-	BLIT_FLAG_LINE = 1,
-	BLIT_FLAG_ROUNDED = 2
+	DRAW_FLAG_LINE = 1,
+	DRAW_FLAG_ROUNDED = 2
 } DrawFlags;
 void DrawRectangle(
 	Uint32 *screen, int left, int top, int width, int height,

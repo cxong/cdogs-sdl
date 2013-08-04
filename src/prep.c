@@ -266,10 +266,12 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + 20 + body.dx, y + 36 + body.dy, gPics[body.picIndex],
-		  cd->table, gRLEPics[body.picIndex]);
-	DrawTTPic(x + 20 + head.dx, y + 36 + head.dy, gPics[head.picIndex],
-		  cd->table, gRLEPics[head.picIndex]);
+	DrawTTPic(
+		x + 20 + body.dx, y + 36 + body.dy, gPics[body.picIndex],
+		cd->table);
+	DrawTTPic(
+		x + 20 + head.dx, y + 36 + head.dy, gPics[head.picIndex],
+		cd->table);
 }
 
 static void ShowPlayerControls(int x, KeyConfig *config)

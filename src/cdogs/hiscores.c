@@ -139,8 +139,8 @@ static void DisplayCharacterUsed( int x, int y, struct Entry *entry )
   head.dy = cNeckOffset[ BODY_UNARMED][ DIRECTION_DOWN].dy + cHeadOffset[ entry->head][ DIRECTION_DOWN].dy;
   head.picIndex = cHeadPic[ entry->head][ DIRECTION_DOWN][ STATE_IDLE];
 
-  DrawTTPic( x + body.dx, y + body.dy, gPics[ body.picIndex], table, gRLEPics[ body.picIndex]);
-  DrawTTPic( x + head.dx, y + head.dy, gPics[ head.picIndex], table, gRLEPics[ head.picIndex]);
+  DrawTTPic( x + body.dx, y + body.dy, gPics[ body.picIndex], table);
+  DrawTTPic( x + head.dx, y + head.dy, gPics[ head.picIndex], table);
 }
 */
 

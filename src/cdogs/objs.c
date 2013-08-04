@@ -81,10 +81,12 @@ void DrawObject(int x, int y, const TObject * obj)
 	const TOffsetPic *pic = obj->pic;
 
 	if (pic)
-		DrawTPic(x + pic->dx,
-			 y + pic->dy,
-			 gPics[pic->picIndex],
-			 gCompiledPics[pic->picIndex]);
+	{
+		DrawTPic(
+			x + pic->dx,
+			y + pic->dy,
+			gPics[pic->picIndex]);
+	}
 }
 
 /*
@@ -104,8 +106,7 @@ void DrawPuzzlePiece( int x, int y, const TObject *obj )
                tableBlack);
     DrawTPic( x - w/2,
               y - h/2,
-              gPics[ pic->picIndex],
-              gCompiledPics[ pic->picIndex]);
+              gPics[ pic->picIndex]);
   }
 }
 */
@@ -115,9 +116,10 @@ void DrawBullet(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_BULLET];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawBrownBullet(int x, int y, const TMobileObject * obj)
@@ -125,9 +127,10 @@ void DrawBrownBullet(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_SNIPERBULLET];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
@@ -136,8 +139,7 @@ void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
 	DrawBTPic(
 		x + pic->dx, y + pic->dy - obj->z,
 		gPics[pic->picIndex],
-		&tintDarker,
-		gRLEPics[pic->picIndex]);
+		&tintDarker);
 }
 
 void DrawSeeker(int x, int y, const TMobileObject * obj)
@@ -145,10 +147,11 @@ void DrawSeeker(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_SNIPERBULLET];
-	DrawTTPic(x + pic->dx,
-		  y + pic->dy - obj->z,
-		  gPics[pic->picIndex],
-		  tableFlamed, gRLEPics[pic->picIndex]);
+	DrawTTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex],
+		tableFlamed);
 }
 
 void DrawMine(int x, int y, const TMobileObject * obj)
@@ -156,9 +159,10 @@ void DrawMine(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_MINE];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawDynamite(int x, int y, const TMobileObject * obj)
@@ -166,9 +170,10 @@ void DrawDynamite(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_DYNAMITE];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawMolotov(int x, int y, const TMobileObject * obj)
@@ -177,10 +182,13 @@ void DrawMolotov(int x, int y, const TMobileObject * obj)
 
 	pic = &cGeneralPics[OFSPIC_MOLOTOV];
 	if (obj->z > 0)
+	{
 		y -= obj->z / 16;
-	DrawTPic(x + pic->dx,
-		 y + pic->dy,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	}
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy,
+		gPics[pic->picIndex]);
 }
 
 void DrawFlame(int x, int y, const TMobileObject * obj)
@@ -188,9 +196,10 @@ void DrawFlame(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cFlamePics[obj->state & 3];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawLaserBolt(int x, int y, const TMobileObject * obj)
@@ -198,9 +207,10 @@ void DrawLaserBolt(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cBeamPics[obj->state];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawBrightBolt(int x, int y, const TMobileObject * obj)
@@ -208,9 +218,10 @@ void DrawBrightBolt(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cBrightBeamPics[obj->state];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawSpark(int x, int y, const TMobileObject * obj)
@@ -218,9 +229,10 @@ void DrawSpark(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic;
 
 	pic = &cGeneralPics[OFSPIC_SPARK];
-	DrawTPic(x + pic->dx,
-		 y + pic->dy - obj->z,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy - obj->z,
+		gPics[pic->picIndex]);
 }
 
 void DrawGrenade(int x, int y, const TMobileObject * obj)
@@ -229,10 +241,13 @@ void DrawGrenade(int x, int y, const TMobileObject * obj)
 
 	pic = &cGrenadePics[(obj->count / 2) & 3];
 	if (obj->z > 0)
+	{
 		y -= obj->z / 16;
-	DrawTPic(x + pic->dx,
-		 y + pic->dy,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	}
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy,
+		gPics[pic->picIndex]);
 }
 
 void DrawGasCloud(int x, int y, const TMobileObject * obj)
@@ -243,8 +258,7 @@ void DrawGasCloud(int x, int y, const TMobileObject * obj)
 	DrawBTPic(
 		x + pic->dx, y + pic->dy,
 		gPics[pic->picIndex],
-		obj->z ? &tintPurple : &tintPoison,
-		gRLEPics[pic->picIndex]);
+		obj->z ? &tintPurple : &tintPoison);
 }
 
 void DrawFireball(int x, int y, const TMobileObject * obj)
@@ -255,10 +269,13 @@ void DrawFireball(int x, int y, const TMobileObject * obj)
 		return;
 	pic = &cFireBallPics[(obj->count - obj->state) / 4];
 	if (obj->z > 0)
+	{
 		y -= obj->z / 4;
-	DrawTPic(x + pic->dx,
-		 y + pic->dy,
-		 gPics[pic->picIndex], gCompiledPics[pic->picIndex]);
+	}
+	DrawTPic(
+		x + pic->dx,
+		y + pic->dy,
+		gPics[pic->picIndex]);
 }
 
 void BogusDraw(int x, int y, void *data)

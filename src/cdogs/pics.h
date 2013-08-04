@@ -253,8 +253,6 @@ typedef struct OffsetPic TOffsetPic;
 
 extern TPalette gPalette, origPalette;
 extern Pic *gPics[PIC_MAX];
-extern void *gCompiledPics[PIC_MAX];
-extern void *gRLEPics[PIC_MAX];
 
 
 extern const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT];

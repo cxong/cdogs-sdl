@@ -128,13 +128,16 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 		pic = cGeneralPics[i];
 		break;
 	}
-	if (pic.picIndex >= 0) {
+	if (pic.picIndex >= 0)
+	{
 		if (table)
-			DrawTTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
-				  table, NULL);
+		{
+			DrawTTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex], table);
+		}
 		else
-			DrawTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex],
-				 NULL);
+		{
+			DrawTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex]);
+		}
 	}
 }
 
@@ -1035,9 +1038,6 @@ int main(int argc, char *argv[])
 	gPalette[0].r = gPalette[0].g = gPalette[0].b = 0;
 	memcpy(origPalette, gPalette, sizeof(origPalette));
 	InitializeTranslationTables();
-
-	memset(gCompiledPics, 0, sizeof(gCompiledPics));
-	memset(gRLEPics, 0, sizeof(gRLEPics));
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 

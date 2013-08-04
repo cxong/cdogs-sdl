@@ -70,12 +70,12 @@ void BlitWithMask(
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
  */
-#define DrawPic(x, y, pic, code) (Blit(x, y, pic, NULL, 0))
+#define DrawPic(x, y, pic) (Blit(x, y, pic, NULL, 0))
 /* 
  * DrawTPic - I think the T here stands for transparent, ie ignore zero
  * source pixels when copying data.
  */
-#define DrawTPic(x, y, pic, code) (Blit(x, y, pic, NULL, BLIT_TRANSPARENT))
+#define DrawTPic(x, y, pic) (Blit(x, y, pic, NULL, BLIT_TRANSPARENT))
 /*
  * DrawTTPic - I think this stands for translated transparent. What this
  * does is that for each source pixel that would be copied it will first
@@ -83,7 +83,7 @@ void BlitWithMask(
  * that you can provide a 256 byte table to change any or all colors of
  * the source image. This feature is used heavily in the game.
  */
-#define DrawTTPic(x, y, pic, table, rle) (Blit(x, y, pic, table, BLIT_TRANSPARENT))
+#define DrawTTPic(x, y, pic, table) (Blit(x, y, pic, table, BLIT_TRANSPARENT))
 /* 
  * DrawBTPic - I think the B stands for background here. If I remember
  * correctly this one uses the sourc eimage only as a mask. If a pixel in
@@ -91,7 +91,7 @@ void BlitWithMask(
  * translate that value through the table and put it back. This is used to
  * do the "invisible" guys as well as the gas clouds.
  */
-#define DrawBTPic(x, y, pic, tint, rle) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
+#define DrawBTPic(x, y, pic, tint) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
 void BlitFlip(GraphicsDevice *device, GraphicsConfig *config);
 void CDogsSetPalette(TPalette palette);

@@ -393,8 +393,7 @@ void MenuDisplayItems(MenuSystem *menu)
 		DrawTPic(
 			(gGraphicsDevice.cachedConfig.ResolutionWidth - gPics[PIC_LOGO]->w) / 2,
 			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
-			gPics[PIC_LOGO],
-			gCompiledPics[PIC_LOGO]);
+			gPics[PIC_LOGO]);
 		CDogsTextStringSpecial(
 			"Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
 		CDogsTextStringSpecial(

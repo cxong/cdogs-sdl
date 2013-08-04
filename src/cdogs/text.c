@@ -70,8 +70,6 @@ static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
 static Pic *font[CHARS_IN_FONT];
-static void *compiledFont[CHARS_IN_FONT];
-static void *rleFont[CHARS_IN_FONT];
 
 
 void CDogsTextInit(const char *filename, int offset)
@@ -80,8 +78,6 @@ void CDogsTextInit(const char *filename, int offset)
 
 	dxCDogsText = offset;
 	memset(font, 0, sizeof(font));
-	memset(compiledFont, 0, sizeof(compiledFont));
-	memset(rleFont, 0, sizeof(rleFont));
 	ReadPics(filename, font, CHARS_IN_FONT, NULL);
 
 	for (i = 0; i < CHARS_IN_FONT; i++)
@@ -96,14 +92,15 @@ void CDogsTextInit(const char *filename, int offset)
 void CDogsTextChar(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
-		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
+	if (i >= 0 && i <= CHARS_IN_FONT && font[i])
+	{
+		DrawTPic(xCDogsText, yCDogsText, font[i]);
 		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTPic(xCDogsText, yCDogsText, font[i], compiledFont[i]);
+		DrawTPic(xCDogsText, yCDogsText, font[i]);
 		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 }
@@ -111,14 +108,15 @@ void CDogsTextChar(char c)
 void CDogsTextCharWithTable(char c, TranslationTable * table)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && font[i]) {
-		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
+	if (i >= 0 && i <= CHARS_IN_FONT && font[i])
+	{
+		DrawTTPic(xCDogsText, yCDogsText, font[i], table);
 		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTTPic(xCDogsText, yCDogsText, font[i], table, rleFont[i]);
+		DrawTTPic(xCDogsText, yCDogsText, font[i], table);
 		xCDogsText += 1 + font[i]->w + dxCDogsText;
 	}
 }

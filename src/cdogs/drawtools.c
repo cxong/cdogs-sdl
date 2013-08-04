@@ -175,12 +175,12 @@ void DrawRectangleRaw(
 	int y;
 	if (width < 3 || height < 3)
 	{
-		flags &= ~BLIT_FLAG_ROUNDED;
+		flags &= ~DRAW_FLAG_ROUNDED;
 	}
 	for (y = top; y < top + height; y++)
 	{
 		int isFirstOrLastLine = y == top || y == top + height - 1;
-		if (isFirstOrLastLine && (flags & BLIT_FLAG_ROUNDED))
+		if (isFirstOrLastLine && (flags & DRAW_FLAG_ROUNDED))
 		{
 			int i;
 			for (i = 0; i < width - 2; i++)
@@ -189,7 +189,7 @@ void DrawRectangleRaw(
 				rgbColor;
 			}
 		}
-		else if (!isFirstOrLastLine && (flags & BLIT_FLAG_LINE))
+		else if (!isFirstOrLastLine && (flags & DRAW_FLAG_LINE))
 		{
 			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
 			rgbColor;

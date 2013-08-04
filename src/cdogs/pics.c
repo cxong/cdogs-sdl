@@ -35,8 +35,6 @@
 
 color_t gPalette[256], origPalette[256];
 Pic *gPics[PIC_MAX];
-void *gCompiledPics[PIC_MAX];
-void *gRLEPics[PIC_MAX];
 
 
 const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT] = {

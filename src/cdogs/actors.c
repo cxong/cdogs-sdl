@@ -187,13 +187,11 @@ void DrawCharacter(int x, int y, TActor * actor)
 			{
 				DrawBTPic(
 					x + body.dx, y + body.dy,
-					gPics[body.picIndex], tint,
-					gRLEPics[body.picIndex]);
+					gPics[body.picIndex], tint);
 			}
 			else
 				DrawTTPic(x + body.dx, y + body.dy,
-					  gPics[body.picIndex], table,
-					  gRLEPics[body.picIndex]);
+					  gPics[body.picIndex], table);
 		}
 		return;
 	}
@@ -273,22 +271,19 @@ void DrawCharacter(int x, int y, TActor * actor)
 		{
 			DrawBTPic(
 				x + pic1.dx, y + pic1.dy,
-				gPics[pic1.picIndex], tint,
-				gRLEPics[pic1.picIndex]);
+				gPics[pic1.picIndex], tint);
 		}
 		if (pic2.picIndex >= 0)
 		{
 			DrawBTPic(
 				x + pic2.dx, y + pic2.dy,
-				gPics[pic2.picIndex], tint,
-				gRLEPics[pic2.picIndex]);
+				gPics[pic2.picIndex], tint);
 		}
 		if (pic3.picIndex >= 0)
 		{
 			DrawBTPic(
 				x + pic3.dx, y + pic3.dy,
-				gPics[pic3.picIndex], tint,
-				gRLEPics[pic3.picIndex]);
+				gPics[pic3.picIndex], tint);
 		}
 	}
 	else if (table)
@@ -297,37 +292,34 @@ void DrawCharacter(int x, int y, TActor * actor)
 		{
 			DrawTTPic(
 				x + pic1.dx, y + pic1.dy,
-				gPics[pic1.picIndex], table,
-				gRLEPics[pic1.picIndex]);
+				gPics[pic1.picIndex], table);
 		}
 		if (pic2.picIndex >= 0)
 		{
 			DrawTTPic(
 				x + pic2.dx, y + pic2.dy,
-				gPics[pic2.picIndex], table,
-				gRLEPics[pic2.picIndex]);
+				gPics[pic2.picIndex], table);
 		}
 		if (pic3.picIndex >= 0)
 		{
 			DrawTTPic(
 				x + pic3.dx, y + pic3.dy,
-				gPics[pic3.picIndex], table,
-				gRLEPics[pic3.picIndex]);
+				gPics[pic3.picIndex], table);
 		}
 	}
 	else
 	{
 		if (pic1.picIndex >= 0)
 		{
-			DrawTPic(x + pic1.dx, y + pic1.dy, gPics[pic1.picIndex], NULL);
+			DrawTPic(x + pic1.dx, y + pic1.dy, gPics[pic1.picIndex]);
 		}
 		if (pic2.picIndex >= 0)
 		{
-			DrawTPic(x + pic2.dx, y + pic2.dy, gPics[pic2.picIndex], NULL);
+			DrawTPic(x + pic2.dx, y + pic2.dy, gPics[pic2.picIndex]);
 		}
 		if (pic3.picIndex >= 0)
 		{
-			DrawTPic(x + pic3.dx, y + pic3.dy, gPics[pic3.picIndex], NULL);
+			DrawTPic(x + pic3.dx, y + pic3.dy, gPics[pic3.picIndex]);
 		}
 	}
 }
