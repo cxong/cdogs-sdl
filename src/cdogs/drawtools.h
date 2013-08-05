@@ -75,8 +75,7 @@ void DrawRectangle(
 	Uint32 *screen, int left, int top, int width, int height,
 	unsigned char color, int flags);
 void DrawRectangleRGB(
-	Uint32 *screen, int left, int top, int width, int height,
-	color_t color, int flags);
+	Uint32 *screen, Vector2i pos, Vector2i size, color_t color, int flags);
 
 //  *
 // ***

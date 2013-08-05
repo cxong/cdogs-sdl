@@ -492,7 +492,7 @@ int gameloop(void)
 	int done = NO;
 	HUD hud;
 
-	HUDInit(&hud, &gConfig.Interface, &gConfig.Graphics, &gMission);
+	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{

@@ -60,7 +60,7 @@ typedef struct
 	char message[256];
 	int messageTicks;
 	InterfaceConfig *config;
-	GraphicsConfig *graphicsConfig;
+	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
 } HUD;
@@ -68,7 +68,7 @@ typedef struct
 void HUDInit(
 	HUD *hud,
 	InterfaceConfig *config,
-	GraphicsConfig *graphics,
+	GraphicsDevice *device,
 	struct MissionOptions *mission);
 void HUDDisplayMessage(HUD *hud, const char *msg);
 void HUDUpdate(HUD *hud, int ms);

@@ -111,14 +111,14 @@ void WallClockDraw(WallClock *wc)
 void HUDInit(
 	HUD *hud,
 	InterfaceConfig *config,
-	GraphicsConfig *graphics,
+	GraphicsDevice *device,
 	struct MissionOptions *mission)
 {
 	hud->mission = mission;
 	strcpy(hud->message, "");
 	hud->messageTicks = 0;
 	hud->config = config;
-	hud->graphicsConfig = graphics;
+	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
 }
@@ -141,54 +141,85 @@ void HUDUpdate(HUD *hud, int ms)
 }
 
 
-static void DrawWeaponStatus(const Weapon *weapon, Vector2i pos, int flags)
+// Draw a gauge with an outer background and inner level
+// +--------------+
+// |XXXXXXXX|     |
+// +--------------+
+static void DrawGauge(
+	GraphicsDevice *device,
+	Vector2i pos, Vector2i size, int innerWidth,
+	color_t barColor, color_t backColor,
+	int flags)
 {
+	Vector2i barPos;
+	Vector2i barSize;
+	if (flags & TEXT_RIGHT)
+	{
+		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
+	}
+	DrawRectangleRGB(device->buf, pos, size, backColor, DRAW_FLAG_ROUNDED);
+	barPos.x = pos.x + 1;
+	barPos.y = pos.y + 1;
+	barSize.x = MAX(0, innerWidth - 2);
+	barSize.y = size.y - 2;
+	DrawRectangleRGB(device->buf, barPos, barSize, barColor, 0);
+}
+
+static void DrawWeaponStatus(
+	GraphicsDevice *device, const Weapon *weapon, Vector2i pos, int flags)
+{
+	// don't draw gauge if not reloading
+	if (weapon->lock > 0)
+	{
+		Vector2i gaugePos;
+		Vector2i size;
+		color_t barColor = { 0, 0, 255 };
+		int maxLock = gGunDescriptions[weapon->gun].Lock;
+		int innerWidth;
+		color_t backColor = { 128, 128, 128 };
+		gaugePos.x = pos.x - 1;
+		gaugePos.y = pos.y - 1;
+		size.x = 50;
+		size.y = CDogsTextHeight() + 1;
+		innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
+		DrawGauge(
+			device, gaugePos, size, innerWidth, barColor, backColor, flags);
+	}
 	CDogsTextStringSpecial(GunGetName(weapon->gun), flags, pos.x, pos.y);
 }
 
-void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
+static void DrawHealth(
+	GraphicsDevice *device, TActor *actor, Vector2i pos, int flags)
 {
 	char s[50];
+	Vector2i gaugePos;
+	Vector2i size;
+	HSV hsv = { 0.0, 1.0, 1.0 };
+	color_t barColor;
+	int health = actor->health;
+	int maxHealth = gCharacterDesc[actor->character].maxHealth;
+	int innerWidth;
 	double maxHealthHue = 50.0;
 	double minHealthHue = 0.0;
-	int barWidth = 50;
-	double hue = ((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
-	HSV hsv = { 0.0, 1.0, 1.0 };
-	color_t colour;
-	int healthBarWidth = MAX(1, barWidth * health / maxHealth);
-	color_t backColour = { 50, 0, 0 };
-	int barLeft = 4;
-	int barTop = 4 * CDogsTextHeight() - 1;
-	int barHeight = CDogsTextHeight() + 1;
-	if (flags & TEXT_RIGHT)
-	{
-		barLeft = config->ResolutionWidth - barLeft - barWidth;
-	}
-	DrawRectangleRGB(
-		gGraphicsDevice.buf,
-		barLeft, barTop,
-		barWidth,
-		barHeight,
-		backColour,
-		DRAW_FLAG_ROUNDED);
-	hsv.h = hue;
-	colour = ColorTint(colorWhite, hsv);
-	DrawRectangleRGB(
-		gGraphicsDevice.buf,
-		barLeft + 1, barTop + 1,
-		MAX(0, healthBarWidth - 2),
-		barHeight - 2,
-		colour,
-		0);
+	color_t backColor = { 50, 0, 0 };
+	gaugePos.x = pos.x - 1;
+	gaugePos.y = pos.y - 1;
+	size.x = 50;
+	size.y = CDogsTextHeight() + 1;
+	innerWidth = MAX(1, size.x * health / maxHealth);
+	hsv.h =
+		((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
+	barColor = ColorTint(colorWhite, hsv);
+	DrawGauge(device, gaugePos, size, innerWidth, barColor, backColor, flags);
 	sprintf(s, "%d", health);
-	CDogsTextStringSpecial(s, flags, 5, 5 + 3 + 3 * CDogsTextHeight());
+	CDogsTextStringSpecial(s, flags, pos.x, pos.y);
 }
 
 #define HUD_PLACE_LEFT	0
 #define HUD_PLACE_RIGHT	1
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	struct PlayerData *data, TActor *p, int placement, GraphicsConfig *config)
+	GraphicsDevice *device, struct PlayerData *data, TActor *p, int placement)
 {
 	char s[50];
 
@@ -211,10 +242,11 @@ static void DrawPlayerStatus(
 		Vector2i pos;
 		pos.x = 5;
 		pos.y = 5 + 1 + CDogsTextHeight();
-		DrawWeaponStatus(&p->weapon, pos, flags);
+		DrawWeaponStatus(device, &p->weapon, pos, flags);
 		pos.y += 1 + CDogsTextHeight();
 		CDogsTextStringSpecial(s, flags, pos.x, pos.y);
-		DrawHealth(p->health, gCharacterDesc[p->character].maxHealth, flags, config);
+		pos.y += 1 + CDogsTextHeight();
+		DrawHealth(device, p, pos, flags);
 	}
 	else
 	{
@@ -260,11 +292,11 @@ void HUDDraw(HUD *hud, int isPaused, int isEscExit)
 	static time_t t = 0;
 	static time_t td = 0;
 
-	DrawPlayerStatus(&gPlayer1Data, gPlayer1, HUD_PLACE_LEFT, hud->graphicsConfig);
+	DrawPlayerStatus(hud->device, &gPlayer1Data, gPlayer1, HUD_PLACE_LEFT);
 	if (gOptions.twoPlayers)
 	{
 		DrawPlayerStatus(
-			&gPlayer2Data, gPlayer2, HUD_PLACE_RIGHT, hud->graphicsConfig);
+			hud->device,  &gPlayer2Data, gPlayer2, HUD_PLACE_RIGHT);
 	}
 
 	if (!gPlayer1 && !gPlayer2)

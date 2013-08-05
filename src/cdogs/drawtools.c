@@ -217,11 +217,10 @@ void DrawRectangle(
 }
 
 void DrawRectangleRGB(
-	Uint32 *screen, int left, int top, int width, int height,
-	color_t color, int flags)
+	Uint32 *screen, Vector2i pos, Vector2i size, color_t color, int flags)
 {
 	DrawRectangleRaw(
-		screen, left, top, width, height,
+		screen, pos.x, pos.y, size.x, size.y,
 		PixelFromColor(&gGraphicsDevice, color), flags);
 }
 
