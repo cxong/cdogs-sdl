@@ -482,14 +482,12 @@ static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
 void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 {
 	Uint32 *pScreen = (Uint32 *)device->screen->pixels;
-	Vector2i screenSize;
-	int scr_size, scalef;
+	Vector2i screenSize = Vector2iNew(
+		device->cachedConfig.ResolutionWidth,
+		device->cachedConfig.ResolutionHeight);
+	int scr_size = scr_size = screenSize.x * screenSize.y;
+	int scalef = config->ScaleFactor;
 
-	screenSize.x = device->cachedConfig.ResolutionWidth;
-	screenSize.y = device->cachedConfig.ResolutionHeight;
-	scr_size = screenSize.x * screenSize.y;
-	scalef = config->ScaleFactor;
-	
 	ApplyBrightness(device->buf, screenSize, config->Brightness);
 
 	if (SDL_LockSurface(device->screen) == -1)

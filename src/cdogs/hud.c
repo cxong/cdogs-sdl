@@ -151,15 +151,13 @@ static void DrawGauge(
 	color_t barColor, color_t backColor,
 	int flags)
 {
-	Vector2i barPos;
+	Vector2i barPos = Vector2iAdd(pos, Vector2iNew(1, 1));
 	Vector2i barSize;
 	if (flags & TEXT_RIGHT)
 	{
 		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
 	}
 	DrawRectangleRGB(device->buf, pos, size, backColor, DRAW_FLAG_ROUNDED);
-	barPos.x = pos.x + 1;
-	barPos.y = pos.y + 1;
 	barSize.x = MAX(0, innerWidth - 2);
 	barSize.y = size.y - 2;
 	DrawRectangleRGB(device->buf, barPos, barSize, barColor, 0);
@@ -171,16 +169,12 @@ static void DrawWeaponStatus(
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
-		Vector2i gaugePos;
-		Vector2i size;
+		Vector2i gaugePos = Vector2iAdd(pos, Vector2iNew(-1, -1));
+		Vector2i size = Vector2iNew(50, CDogsTextHeight() + 1);
 		color_t barColor = { 0, 0, 255 };
 		int maxLock = gGunDescriptions[weapon->gun].Lock;
 		int innerWidth;
 		color_t backColor = { 128, 128, 128 };
-		gaugePos.x = pos.x - 1;
-		gaugePos.y = pos.y - 1;
-		size.x = 50;
-		size.y = CDogsTextHeight() + 1;
 		innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		DrawGauge(
 			device, gaugePos, size, innerWidth, barColor, backColor, flags);
@@ -192,8 +186,8 @@ static void DrawHealth(
 	GraphicsDevice *device, TActor *actor, Vector2i pos, int flags)
 {
 	char s[50];
-	Vector2i gaugePos;
-	Vector2i size;
+	Vector2i gaugePos = Vector2iAdd(pos, Vector2iNew(-1, -1));
+	Vector2i size = Vector2iNew(50, CDogsTextHeight() + 1);
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
@@ -202,10 +196,6 @@ static void DrawHealth(
 	double maxHealthHue = 50.0;
 	double minHealthHue = 0.0;
 	color_t backColor = { 50, 0, 0 };
-	gaugePos.x = pos.x - 1;
-	gaugePos.y = pos.y - 1;
-	size.x = 50;
-	size.y = CDogsTextHeight() + 1;
 	innerWidth = MAX(1, size.x * health / maxHealth);
 	hsv.h =
 		((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
@@ -239,13 +229,12 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		Vector2i pos;
-		pos.x = 5;
-		pos.y = 5 + 1 + CDogsTextHeight();
+		Vector2i pos = Vector2iNew(5, 5 + 1 + CDogsTextHeight());
+		const int rowHeight = 1 + CDogsTextHeight();
 		DrawWeaponStatus(device, &p->weapon, pos, flags);
-		pos.y += 1 + CDogsTextHeight();
+		pos.y += rowHeight;
 		CDogsTextStringSpecial(s, flags, pos.x, pos.y);
-		pos.y += 1 + CDogsTextHeight();
+		pos.y += rowHeight;
 		DrawHealth(device, p, pos, flags);
 	}
 	else

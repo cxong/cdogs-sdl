@@ -249,7 +249,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 {
 	struct Buffer *buffer = NewBuffer(128, 128);
-	int y;
+	Vector2i v;
 	HSV tint;
 
 	SetupQuickPlayCampaign(&gCampaign.Setting);
@@ -267,15 +267,11 @@ void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	for (y = 0; y < config->ResolutionHeight; y++)
+	for (v.y = 0; v.y < config->ResolutionHeight; v.y++)
 	{
-		int x;
-		for (x = 0; x < config->ResolutionWidth; x++)
+		for (v.x = 0; v.x < config->ResolutionWidth; v.x++)
 		{
-			Vector2i pos;
-			pos.x = x;
-			pos.y = y;
-			DrawPointTint(device, pos, tint);
+			DrawPointTint(device, v, tint);
 		}
 	}
 }

@@ -132,10 +132,8 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 			}
 			else
 			{
-				Vector2i pos;
-				pos.x = x + buffer->xStart;
-				pos.y = y + buffer->yStart;
-				MapMarkAsVisited(pos);
+				MapMarkAsVisited(
+					Vector2iNew(x + buffer->xStart, y + buffer->yStart));
 				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
 				tile->flags |= MAPTILE_VISITED;
 			}
@@ -197,18 +195,13 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 	
 	if (gConfig.Game.SightRange > 0)
 	{
-		Vector2i c;
+		Vector2i c = Vector2iNew(xc, yc);
 		int distanceSquared = gConfig.Game.SightRange * gConfig.Game.SightRange;
-		c.x = xc;
-		c.y = yc;
 		for (y = 0; y < Y_TILES; y++)
 		{
 			for (x = 0; x < buffer->width; x++)
 			{
-				Vector2i v;
-				v.x = x;
-				v.y = y;
-				if (DistanceSquared(c, v) >= distanceSquared)
+				if (DistanceSquared(c, Vector2iNew(x, y)) >= distanceSquared)
 				{
 					TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 					tile->flags |= shadowFlag;
@@ -306,15 +299,11 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			else if ((tile->flags & MAPTILE_OFFSET_PIC))
 			{
 				// Drawing doors
-				Vector2i doorPos;
-				const TOffsetPic *p;
-				p = &(cGeneralPics[tile->pic]);
-				doorPos.x = pos.x + p->dx;
-				doorPos.y = pos.y + p->dy;
+				const TOffsetPic *p = &(cGeneralPics[tile->pic]);
 				BlitWithMask(
 					&gGraphicsDevice,
 					gPics[p->picIndex],
-					doorPos,
+					Vector2iNew(pos.x + p->dx, pos.y + p->dy),
 					GetTileLOSMask(tile->flags));
 			}
 			t = tile->things;

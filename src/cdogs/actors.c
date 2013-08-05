@@ -330,10 +330,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	}
 	else
 	{
-		Vector2i pos;
-		pos.x = x;
-		pos.y = y;
-		DrawShadow(pos);
+		DrawShadow(Vector2iNew(x, y));
 		if (pic1.picIndex >= 0)
 		{
 			Blit(
@@ -415,10 +412,10 @@ void SetStateForActor(TActor * actor, int state)
 
 void UpdateActorState(TActor * actor, int ticks)
 {
-	Vector2i tilePosition;
-	tilePosition.x = actor->tileItem.x;
-	tilePosition.y = actor->tileItem.y;
-	WeaponUpdate(&actor->weapon, ticks, tilePosition);
+	WeaponUpdate(
+		&actor->weapon,
+		ticks,
+		Vector2iNew(actor->tileItem.x, actor->tileItem.y));
 
 	if (actor->health > 0) {
 		if (actor->flamed)
@@ -583,11 +580,8 @@ int MoveActor(TActor * actor, int x, int y)
 			object = target->kind == KIND_OBJECT ? target->data : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
-				Vector2i hitVector;
-				hitVector.x = 0;
-				hitVector.y = 0;
 				DamageSomething(
-					hitVector,
+					Vector2iZero(),
 					2,
 					actor->flags,
 					target,
@@ -687,29 +681,21 @@ Vector2i GetMuzzleOffset(TActor *actor)
 		cGunHandOffset[b][d].dy +
 		cGunPics[g][d][GUNSTATE_FIRING].dy +
 		cMuzzleOffset[g][d].dy + BULLET_Z;
-	position.x *= 256;
-	position.y *= 256;
-	return position;
+	return Vector2iScale(position, 256);
 }
 
 void Shoot(TActor *actor)
 {
-	Vector2i muzzlePosition;
-	Vector2i tilePosition;
+	Vector2i muzzlePosition = Vector2iNew(actor->x, actor->y);
+	Vector2i tilePosition = Vector2iNew(actor->tileItem.x, actor->tileItem.y);
 	if (!WeaponCanFire(&actor->weapon))
 	{
 		return;
 	}
-	muzzlePosition.x = actor->x;
-	muzzlePosition.y = actor->y;
 	if (GunHasMuzzle(actor->weapon.gun))
 	{
-		Vector2i muzzleOffset = GetMuzzleOffset(actor);
-		muzzlePosition.x += muzzleOffset.x;
-		muzzlePosition.y += muzzleOffset.y;
+		muzzlePosition = Vector2iAdd(muzzlePosition, GetMuzzleOffset(actor));
 	}
-	tilePosition.x = actor->tileItem.x;
-	tilePosition.y = actor->tileItem.y;
 	WeaponFire(
 		&actor->weapon, actor->direction, muzzlePosition, tilePosition, actor->flags);
 	Score(actor->flags, -GunGetScore(actor->weapon.gun));

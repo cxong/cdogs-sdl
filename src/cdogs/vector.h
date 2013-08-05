@@ -36,6 +36,11 @@ typedef struct
 	int y;
 } Vector2i;
 
+Vector2i Vector2iNew(int x, int y);
+Vector2i Vector2iZero(void);
+Vector2i Vector2iAdd(Vector2i a, Vector2i b);
+Vector2i Vector2iScale(Vector2i v, int scalar);
+
 int DistanceSquared(Vector2i a, Vector2i b);
 void CalcChebyshevDistanceAndBearing(
 	Vector2i origin, Vector2i target, int *distance, int *bearing);

@@ -280,11 +280,8 @@ void SoundPlayAtPlusDistance(
 	SoundDevice *device, sound_e sound, int x, int y, int plusDistance)
 {
 	int distance, bearing;
-	Vector2i origin;
-	Vector2i target;
-	target.x = x;
-	target.y = y;
-	origin = CalcClosestPointOnLineSegmentToPoint(
+	Vector2i target = Vector2iNew(x, y);
+	Vector2i origin = CalcClosestPointOnLineSegmentToPoint(
 		device->earLeft, device->earRight, target);
 	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);

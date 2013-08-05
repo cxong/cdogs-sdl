@@ -322,9 +322,6 @@ int DamageCharacter(
 {
 	TActor *actor = (TActor *)target->data;
 	int isInvulnerable;
-	Vector2i hitLocation;
-	hitLocation.x = target->x;
-	hitLocation.y = target->y;
 
 	if (!(flags & FLAGS_HURTALWAYS) &&
 		(flags & FLAGS_PLAYERS) &&
@@ -345,7 +342,7 @@ int DamageCharacter(
 		damage,
 		isHitSoundEnabled,
 		isInvulnerable,
-		hitLocation);
+		Vector2iNew(target->x, target->y));
 	if (isInvulnerable)
 	{
 		return 1;
@@ -783,7 +780,6 @@ int UpdateSpark(TMobileObject * obj)
 int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 {
 	TTileItem *tile;
-	Vector2i hitVector;
 	int hasHit;
 
 	// Don't hit if no damage dealt
@@ -795,10 +791,13 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 
 	tile = CheckTileItemCollision(
 		&obj->tileItem, x >> 8, y >> 8, TILEITEM_CAN_BE_SHOT);
-	hitVector.x = obj->dx;
-	hitVector.y = obj->dy;
 	hasHit = DamageSomething(
-		hitVector, obj->power, obj->flags, tile, special, obj->soundLock <= 0);
+		Vector2iNew(obj->dx, obj->dy),
+		obj->power,
+		obj->flags,
+		tile,
+		special,
+		obj->soundLock <= 0);
 	if (hasHit && obj->soundLock <= 0)
 	{
 		obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;

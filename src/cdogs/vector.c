@@ -27,6 +27,33 @@
 
 #include <math.h>
 
+Vector2i Vector2iNew(int x, int y)
+{
+	Vector2i v;
+	v.x = x;
+	v.y = y;
+	return v;
+}
+
+Vector2i Vector2iZero(void)
+{
+	return Vector2iNew(0, 0);
+}
+
+Vector2i Vector2iAdd(Vector2i a, Vector2i b)
+{
+	a.x += b.x;
+	a.y += b.y;
+	return a;
+}
+
+Vector2i Vector2iScale(Vector2i v, int scalar)
+{
+	v.x *= scalar;
+	v.y *= scalar;
+	return v;
+}
+
 void CalcChebyshevDistanceAndBearing(
 	Vector2i origin, Vector2i target, int *distance, int *bearing)
 {
