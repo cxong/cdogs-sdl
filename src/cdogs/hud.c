@@ -141,6 +141,11 @@ void HUDUpdate(HUD *hud, int ms)
 }
 
 
+static void DrawWeaponStatus(const Weapon *weapon, Vector2i pos, int flags)
+{
+	CDogsTextStringSpecial(GunGetName(weapon->gun), flags, pos.x, pos.y);
+}
+
 void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 {
 	char s[50];
@@ -182,7 +187,7 @@ void DrawHealth(int health, int maxHealth, int flags, GraphicsConfig *config)
 #define HUD_PLACE_LEFT	0
 #define HUD_PLACE_RIGHT	1
 // Draw player's score, health etc.
-void DrawPlayerStatus(
+static void DrawPlayerStatus(
 	struct PlayerData *data, TActor *p, int placement, GraphicsConfig *config)
 {
 	char s[50];
@@ -203,9 +208,12 @@ void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		CDogsTextStringSpecial(s, flags, 5, 5 + 2 + 2 * CDogsTextHeight());
-		CDogsTextStringSpecial(
-			GunGetName(p->weapon.gun), flags, 5, 5 + 1 + CDogsTextHeight());
+		Vector2i pos;
+		pos.x = 5;
+		pos.y = 5 + 1 + CDogsTextHeight();
+		DrawWeaponStatus(&p->weapon, pos, flags);
+		pos.y += 1 + CDogsTextHeight();
+		CDogsTextStringSpecial(s, flags, pos.x, pos.y);
 		DrawHealth(p->health, gCharacterDesc[p->character].maxHealth, flags, config);
 	}
 	else

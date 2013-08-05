@@ -146,11 +146,27 @@ static void DrawShadow(Vector2i pos)
 	const int dy = 6;
 	for (drawPos.y = pos.y - dy; drawPos.y < pos.y + dy; drawPos.y++)
 	{
+		if (drawPos.y >= gGraphicsDevice.clipping.bottom)
+		{
+			break;
+		}
+		if (drawPos.y < gGraphicsDevice.clipping.top)
+		{
+			continue;
+		}
 		for (drawPos.x = pos.x - dx; drawPos.x < pos.x + dx; drawPos.x++)
 		{
 			// Calculate value tint based on distance from center
 			Vector2i scaledPos;
 			int distance2;
+			if (drawPos.x >= gGraphicsDevice.clipping.right)
+			{
+				break;
+			}
+			if (drawPos.y < gGraphicsDevice.clipping.left)
+			{
+				continue;
+			}
 			scaledPos.x = drawPos.x;
 			scaledPos.y = (drawPos.y - pos.y) * dx / dy + pos.y;
 			distance2 = DistanceSquared(scaledPos, pos);
