@@ -219,8 +219,9 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 }
 
 
-// Two types of tile drawing, based on line of sight:
-// Out of sight: dark
+// Three types of tile drawing, based on line of sight:
+// Unvisited: black
+// Out of sight: dark, or if fog disabled, black
 // In sight: full color
 static color_t GetTileLOSMask(int flags)
 {

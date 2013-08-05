@@ -54,6 +54,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "drawtools.h"
 #include "pics.h"
 #include "sounds.h"
 #include "defs.h"
@@ -136,6 +137,30 @@ static ColorShade colorShades[SHADE_COUNT] = {
 unsigned char BestMatch(int r, int g, int b);
 
 
+static void DrawShadow(Vector2i pos)
+{
+	Vector2i drawPos;
+	HSV tint = { -1.0, 1.0, 0.0 };
+	// Size of shadow
+	const int dx = 8;
+	const int dy = 6;
+	for (drawPos.y = pos.y - dy; drawPos.y < pos.y + dy; drawPos.y++)
+	{
+		for (drawPos.x = pos.x - dx; drawPos.x < pos.x + dx; drawPos.x++)
+		{
+			// Calculate value tint based on distance from center
+			Vector2i scaledPos;
+			int distance2;
+			scaledPos.x = drawPos.x;
+			scaledPos.y = (drawPos.y - pos.y) * dx / dy + pos.y;
+			distance2 = DistanceSquared(scaledPos, pos);
+			// Maximum distance is dx, so scale distance squared by dx squared
+			tint.v = CLAMP(distance2 * 1.0 / (dx*dx), 0.0, 1.0);
+			DrawPointTint(&gGraphicsDevice, drawPos, tint);
+		}
+	}
+}
+
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
@@ -197,6 +222,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	}
 
 	actor->flags |= FLAGS_VISIBLE;
+	// TODO: this means any character wakes up when visible
 	actor->flags &= ~FLAGS_SLEEPING;
 
 	if (state == STATE_IDLELEFT)
@@ -286,40 +312,29 @@ void DrawCharacter(int x, int y, TActor * actor)
 				gPics[pic3.picIndex], tint);
 		}
 	}
-	else if (table)
-	{
-		if (pic1.picIndex >= 0)
-		{
-			DrawTTPic(
-				x + pic1.dx, y + pic1.dy,
-				gPics[pic1.picIndex], table);
-		}
-		if (pic2.picIndex >= 0)
-		{
-			DrawTTPic(
-				x + pic2.dx, y + pic2.dy,
-				gPics[pic2.picIndex], table);
-		}
-		if (pic3.picIndex >= 0)
-		{
-			DrawTTPic(
-				x + pic3.dx, y + pic3.dy,
-				gPics[pic3.picIndex], table);
-		}
-	}
 	else
 	{
+		Vector2i pos;
+		pos.x = x;
+		pos.y = y;
+		DrawShadow(pos);
 		if (pic1.picIndex >= 0)
 		{
-			DrawTPic(x + pic1.dx, y + pic1.dy, gPics[pic1.picIndex]);
+			Blit(
+				x + pic1.dx, y + pic1.dy,
+				gPics[pic1.picIndex], table, BLIT_TRANSPARENT);
 		}
 		if (pic2.picIndex >= 0)
 		{
-			DrawTPic(x + pic2.dx, y + pic2.dy, gPics[pic2.picIndex]);
+			Blit(
+				x + pic2.dx, y + pic2.dy,
+				gPics[pic2.picIndex], table, BLIT_TRANSPARENT);
 		}
 		if (pic3.picIndex >= 0)
 		{
-			DrawTPic(x + pic3.dx, y + pic3.dy, gPics[pic3.picIndex]);
+			Blit(
+				x + pic3.dx, y + pic3.dy,
+				gPics[pic3.picIndex], table, BLIT_TRANSPARENT);
 		}
 	}
 }
