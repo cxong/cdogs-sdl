@@ -861,6 +861,9 @@ static void VertDoor(int x, int y, int flags)
 	TCondition *c;
 	TAction *a;
 	int pic;
+	int tileFlags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 
 	switch (flags) {
 	case FLAGS_KEYCARD_RED:
@@ -881,9 +884,7 @@ static void VertDoor(int x, int y, int flags)
 	}
 
 	Map(x, y).pic = pic;
-	Map(x, y).flags =
-		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
-		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	Map(x, y).flags = tileFlags;
 	Map(x - 1, y).flags |= MAPTILE_TILE_TRIGGER;
 	Map(x + 1, y).flags |= MAPTILE_TILE_TRIGGER;
 
@@ -919,9 +920,7 @@ static void VertDoor(int x, int y, int flags)
 	a[2].x = x;
 	a[2].y = y;
 	a[2].tilePic = pic;
-	a[2].tileFlags =
-		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
-		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	a[2].tileFlags = tileFlags;
 
 	// Reenable trigger to the right of the door
 	a[3].action = ACTION_SETTRIGGER;
@@ -978,6 +977,9 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	TCondition *c;
 	TAction *a;
 	int pic;
+	int tileFlags =
+		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
+		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 
 	switch (flags) {
 	case FLAGS_KEYCARD_RED:
@@ -998,9 +1000,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	}
 
 	Map(x, y).pic = pic;
-	Map(x, y).flags =
-		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
-		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	Map(x, y).flags = tileFlags;
 	Map(x, y - 1).flags |= MAPTILE_TILE_TRIGGER;
 	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
 	if (iMap(x, y + 1) == MAP_FLOOR)
@@ -1040,9 +1040,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].x = x;
 	a[2].y = y;
 	a[2].tilePic = pic;
-	a[2].tileFlags =
-		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
-		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	a[2].tileFlags = tileFlags;
 
 	// Add shadow below door (also reenables trigger)
 	a[3].action = ACTION_CHANGETILE;

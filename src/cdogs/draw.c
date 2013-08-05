@@ -243,19 +243,16 @@ static color_t GetTileLOSMask(int flags)
 	return colorWhite;
 }
 
-void DrawWallColumn(int y, int xc, int yc, TTile * tile)
+void DrawWallColumn(int y, Vector2i pos, TTile *tile)
 {
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
-		Vector2i pos;
-		pos.x = xc;
-		pos.y = yc;
 		BlitWithMask(
 			&gGraphicsDevice,
 			gPics[tile->pic],
 			pos,
 			GetTileLOSMask(tile->flags));
-		yc -= TILE_HEIGHT;
+		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
 	}
@@ -263,24 +260,22 @@ void DrawWallColumn(int y, int xc, int yc, TTile * tile)
 
 void DrawBuffer(struct Buffer *b, int xOffset)
 {
-	int x, y, xc, yc;
+	int x, y;
+	Vector2i pos;
 	TTile *tile;
-	TTileItem *t, *displayList;
+	TTileItem *t;
 
 	// First draw the floor tiles (which do not obstruct anything)
 	tile = &b->tiles[0][0];
-	for (y = 0, yc = b->dy; y < Y_TILES; y++, yc += TILE_HEIGHT)
+	for (y = 0, pos.y = b->dy; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
-		for (x = 0, xc = b->dx + xOffset;
+		for (x = 0, pos.x = b->dx + xOffset;
 			 x < b->width;
-			 x++, tile++, xc += TILE_WIDTH)
+			 x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->pic >= 0 &&
 				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
-				Vector2i pos;
-				pos.x = xc;
-				pos.y = yc;
 				BlitWithMask(
 					&gGraphicsDevice,
 					gPics[tile->pic],
@@ -293,27 +288,33 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 
 	// Now draw walls and things in proper order
 	tile = &b->tiles[0][0];
-	yc = b->dy + cWallOffset.dy;
-	for (y = 0; y < Y_TILES; y++, yc += TILE_HEIGHT) {
-		displayList = NULL;
-		xc = b->dx + cWallOffset.dx + xOffset;
-		for (x = 0; x < b->width; x++, tile++, xc += TILE_WIDTH)
+	pos.y = b->dy + cWallOffset.dy;
+	for (y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	{
+		TTileItem *displayList = NULL;
+		pos.x = b->dx + cWallOffset.dx + xOffset;
+		for (x = 0; x < b->width; x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->flags & MAPTILE_IS_WALL)
 			{
 				if (!(tile->flags & MAPTILE_DELAY_DRAW))
 				{
-					DrawWallColumn(y, xc, yc, tile);
+					DrawWallColumn(y, pos, tile);
 				}
 			}
 			else if ((tile->flags & MAPTILE_OFFSET_PIC))
 			{
+				// Drawing doors
+				Vector2i doorPos;
 				const TOffsetPic *p;
 				p = &(cGeneralPics[tile->pic]);
-				DrawPic(
-					xc + p->dx,
-					yc + p->dy,
-					gPics[p->picIndex]);
+				doorPos.x = pos.x + p->dx;
+				doorPos.y = pos.y + p->dy;
+				BlitWithMask(
+					&gGraphicsDevice,
+					gPics[p->picIndex],
+					doorPos,
+					GetTileLOSMask(tile->flags));
 			}
 			t = tile->things;
 			while (t) {
