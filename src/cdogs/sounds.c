@@ -253,37 +253,34 @@ void SoundPlay(SoundDevice *device, sound_e sound)
 }
 
 
-void SoundSetLeftEar(int x, int y)
+void SoundSetLeftEar(Vec2i pos)
 {
-	gSoundDevice.earLeft.x = x;
-	gSoundDevice.earLeft.y = y;
+	gSoundDevice.earLeft = pos;
 }
 
-void SoundSetRightEar(int x, int y)
+void SoundSetRightEar(Vec2i pos)
 {
-	gSoundDevice.earRight.x = x;
-	gSoundDevice.earRight.y = y;
+	gSoundDevice.earRight = pos;
 }
 
-void SoundSetEars(int x, int y)
+void SoundSetEars(Vec2i pos)
 {
-	SoundSetLeftEar(x, y);
-	SoundSetRightEar(x, y);
+	SoundSetLeftEar(pos);
+	SoundSetRightEar(pos);
 }
 
-void SoundPlayAt(SoundDevice *device, sound_e sound, int x, int y)
+void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos)
 {
-	SoundPlayAtPlusDistance(device, sound, x, y, 0);
+	SoundPlayAtPlusDistance(device, sound, pos, 0);
 }
 
 void SoundPlayAtPlusDistance(
-	SoundDevice *device, sound_e sound, int x, int y, int plusDistance)
+	SoundDevice *device, sound_e sound, Vec2i pos, int plusDistance)
 {
 	int distance, bearing;
-	Vector2i target = Vector2iNew(x, y);
-	Vector2i origin = CalcClosestPointOnLineSegmentToPoint(
-		device->earLeft, device->earRight, target);
-	CalcChebyshevDistanceAndBearing(origin, target, &distance, &bearing);
+	Vec2i origin = CalcClosestPointOnLineSegmentToPoint(
+		device->earLeft, device->earRight, pos);
+	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
 }
 

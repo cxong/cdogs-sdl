@@ -27,27 +27,27 @@
 
 #include <math.h>
 
-Vector2i Vector2iNew(int x, int y)
+Vec2i Vec2iNew(int x, int y)
 {
-	Vector2i v;
+	Vec2i v;
 	v.x = x;
 	v.y = y;
 	return v;
 }
 
-Vector2i Vector2iZero(void)
+Vec2i Vec2iZero(void)
 {
-	return Vector2iNew(0, 0);
+	return Vec2iNew(0, 0);
 }
 
-Vector2i Vector2iAdd(Vector2i a, Vector2i b)
+Vec2i Vec2iAdd(Vec2i a, Vec2i b)
 {
 	a.x += b.x;
 	a.y += b.y;
 	return a;
 }
 
-Vector2i Vector2iScale(Vector2i v, int scalar)
+Vec2i Vec2iScale(Vec2i v, int scalar)
 {
 	v.x *= scalar;
 	v.y *= scalar;
@@ -55,7 +55,7 @@ Vector2i Vector2iScale(Vector2i v, int scalar)
 }
 
 void CalcChebyshevDistanceAndBearing(
-	Vector2i origin, Vector2i target, int *distance, int *bearing)
+	Vec2i origin, Vec2i target, int *distance, int *bearing)
 {
 	// short circuit if origin and target same
 	if (origin.x == target.x && origin.y == target.y)
@@ -77,15 +77,15 @@ void CalcChebyshevDistanceAndBearing(
 	}
 }
 
-int DistanceSquared(Vector2i a, Vector2i b)
+int DistanceSquared(Vec2i a, Vec2i b)
 {
 	int dx = a.x - b.x;
 	int dy = a.y - b.y;
 	return dx*dx + dy*dy;
 }
 
-Vector2i CalcClosestPointOnLineSegmentToPoint(
-	Vector2i l1, Vector2i l2, Vector2i p)
+Vec2i CalcClosestPointOnLineSegmentToPoint(
+	Vec2i l1, Vec2i l2, Vec2i p)
 {
 	// Using parametric representation, line l1->l2 is
 	// P(t) = l1 + t(l2 - l1)
@@ -94,7 +94,7 @@ Vector2i CalcClosestPointOnLineSegmentToPoint(
 	int lineDistanceSquared = DistanceSquared(l1, l2);
 	int numerator;
 	double t;
-	Vector2i closestPoint;
+	Vec2i closestPoint;
 	// Early exit since same point means 0 distance, and div by 0
 	if (lineDistanceSquared == 0)
 	{

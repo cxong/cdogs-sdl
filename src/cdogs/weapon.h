@@ -119,10 +119,10 @@ Weapon WeaponCreate(gun_e gun);
 gunpic_e GunGetPic(gun_e gun);
 const char *GunGetName(gun_e gun);
 int GunGetScore(gun_e gun);
-void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition);
+void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(
-	Weapon *w, direction_e d, Vector2i muzzlePosition, Vector2i tilePosition, int flags);
+	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition, int flags);
 
 int GunIsStatic(gun_e gun);
 int GunHasMuzzle(gun_e gun);

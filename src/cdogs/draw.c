@@ -133,7 +133,7 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 			else
 			{
 				MapMarkAsVisited(
-					Vector2iNew(x + buffer->xStart, y + buffer->yStart));
+					Vec2iNew(x + buffer->xStart, y + buffer->yStart));
 				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
 				tile->flags |= MAPTILE_VISITED;
 			}
@@ -195,13 +195,13 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 	
 	if (gConfig.Game.SightRange > 0)
 	{
-		Vector2i c = Vector2iNew(xc, yc);
+		Vec2i c = Vec2iNew(xc, yc);
 		int distanceSquared = gConfig.Game.SightRange * gConfig.Game.SightRange;
 		for (y = 0; y < Y_TILES; y++)
 		{
 			for (x = 0; x < buffer->width; x++)
 			{
-				if (DistanceSquared(c, Vector2iNew(x, y)) >= distanceSquared)
+				if (DistanceSquared(c, Vec2iNew(x, y)) >= distanceSquared)
 				{
 					TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 					tile->flags |= shadowFlag;
@@ -237,7 +237,7 @@ static color_t GetTileLOSMask(int flags)
 	return colorWhite;
 }
 
-void DrawWallColumn(int y, Vector2i pos, TTile *tile)
+void DrawWallColumn(int y, Vec2i pos, TTile *tile)
 {
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
@@ -255,7 +255,7 @@ void DrawWallColumn(int y, Vector2i pos, TTile *tile)
 void DrawBuffer(struct Buffer *b, int xOffset)
 {
 	int x, y;
-	Vector2i pos;
+	Vec2i pos;
 	TTile *tile;
 	TTileItem *t;
 
@@ -303,7 +303,7 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 				BlitWithMask(
 					&gGraphicsDevice,
 					gPics[p->picIndex],
-					Vector2iNew(pos.x + p->dx, pos.y + p->dy),
+					Vec2iNew(pos.x + p->dx, pos.y + p->dy),
 					GetTileLOSMask(tile->flags));
 			}
 			t = tile->things;

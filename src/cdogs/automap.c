@@ -230,7 +230,7 @@ void DisplayAutoMap(int showAll)
 	{
 		for (x = 0; x < gGraphicsDevice.cachedConfig.ResolutionWidth; x++)
 		{
-			DrawPointMask(&gGraphicsDevice, Vector2iNew(x, y), mask);
+			DrawPointMask(&gGraphicsDevice, Vec2iNew(x, y), mask);
 		}
 	}
 

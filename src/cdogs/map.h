@@ -142,7 +142,7 @@ TTileItem *CheckTileItemCollision(TTileItem * item, int x, int y,
 void SetupMap(void);
 int OKforPlayer(int x, int y);
 void ChangeFloor(int x, int y, int normal, int shadow);
-void MapMarkAsVisited(Vector2i pos);
+void MapMarkAsVisited(Vec2i pos);
 void MapMarkAllAsVisited(void);
 int ExploredPercentage(void);
 

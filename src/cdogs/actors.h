@@ -208,12 +208,12 @@ int ActorIsImmune(TActor *actor, special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect) but deals no damage
 void ActorTakeHit(
 	TActor *actor,
-	Vector2i hitVector,
+	Vec2i hitVector,
 	int power,
 	special_damage_e damage,
 	int isHitSoundEnabled,
 	int isInvulnerable,
-	Vector2i hitLocation);
+	Vec2i hitLocation);
 int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode);
 
 #endif

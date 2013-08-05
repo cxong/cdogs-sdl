@@ -145,7 +145,10 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 			i = 0;
 		}
 		actor->weapon.gun = data->weapons[i];
-		SoundPlayAt(&gSoundDevice, SND_SWITCH, actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAt(
+			&gSoundDevice,
+			SND_SWITCH,
+			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 	else
 	{
@@ -306,7 +309,8 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1,
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
-			SoundSetLeftEar(player1->tileItem.x, player1->tileItem.y);
+			SoundSetLeftEar(
+				Vec2iNew(player1->tileItem.x, player1->tileItem.y));
 			GraphicsSetBlitClip(
 				&gGraphicsDevice,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
@@ -321,7 +325,8 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 				X_TILES_HALF,
 				xNoise,
 				yNoise);
-			SoundSetRightEar(player2->tileItem.x, player2->tileItem.y);
+			SoundSetRightEar(
+				Vec2iNew(player2->tileItem.x, player2->tileItem.y));
 			x = player1->tileItem.x;
 			y = player1->tileItem.y;
 			BlackLine();
@@ -331,7 +336,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	{
 		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
-		SoundSetEars(player1->tileItem.x, player1->tileItem.y);
+		SoundSetEars(Vec2iNew(player1->tileItem.x, player1->tileItem.y));
 		x = player1->tileItem.x;
 		y = player1->tileItem.y;
 	}
@@ -339,7 +344,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 	{
 		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
 			 X_TILES, xNoise, yNoise);
-		SoundSetEars(player2->tileItem.x, player2->tileItem.y);
+		SoundSetEars(Vec2iNew(player2->tileItem.x, player2->tileItem.y));
 		x = player2->tileItem.x;
 		y = player2->tileItem.y;
 	}

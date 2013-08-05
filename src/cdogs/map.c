@@ -1298,7 +1298,7 @@ int OKforPlayer(int x, int y)
 	return (iMap((x >> 8) / TILE_WIDTH, (y >> 8) / TILE_HEIGHT) == 0);
 }
 
-void MapMarkAsVisited(Vector2i pos)
+void MapMarkAsVisited(Vec2i pos)
 {
 	if (!(Map(pos.x, pos.y).flags & MAPTILE_VISITED))
 	{
@@ -1309,7 +1309,7 @@ void MapMarkAsVisited(Vector2i pos)
 
 void MapMarkAllAsVisited(void)
 {
-	Vector2i pos;
+	Vec2i pos;
 	for (pos.y = 0; pos.y < YMAX; pos.y++)
 	{
 		for (pos.x = 0; pos.x < XMAX; pos.x++)

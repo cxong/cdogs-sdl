@@ -195,7 +195,7 @@ static void Action(TAction * a)
 			return;
 
 		case ACTION_SOUND:
-			SoundPlayAt(&gSoundDevice, a->tileFlags, a->x, a->y);
+			SoundPlayAt(&gSoundDevice, a->tileFlags, Vec2iNew(a->x, a->y));
 			break;
 
 		case ACTION_SETTRIGGER:

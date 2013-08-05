@@ -200,7 +200,7 @@ Uint32 LookupPalette(unsigned char index)
 	return PixelFromColor(&gGraphicsDevice, PaletteToColor(index));
 }
 
-void BlitWithMask(GraphicsDevice *device, Pic *pic, Vector2i pos, color_t mask)
+void BlitWithMask(GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask)
 {
 	unsigned char *current = pic->data;
 
@@ -460,7 +460,7 @@ static void Bilinear(
 	}
 }
 
-static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
+static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 {
 	double f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
 	int y;
@@ -482,7 +482,7 @@ static void ApplyBrightness(Uint32 *screen, Vector2i screenSize, int brightness)
 void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 {
 	Uint32 *pScreen = (Uint32 *)device->screen->pixels;
-	Vector2i screenSize = Vector2iNew(
+	Vec2i screenSize = Vec2iNew(
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
 	int scr_size = scr_size = screenSize.x * screenSize.y;

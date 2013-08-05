@@ -144,7 +144,7 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 	return;
 }
 
-void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask)
+void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask)
 {
 	Uint32 *screen = device->buf;
 	int idx = PixelIndex(
@@ -156,7 +156,7 @@ void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask)
 	screen[idx] = PixelFromColor(device, c);
 }
 
-void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint)
+void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 {
 	Uint32 *screen = device->buf;
 	int idx = PixelIndex(
@@ -217,7 +217,7 @@ void DrawRectangle(
 }
 
 void DrawRectangleRGB(
-	Uint32 *screen, Vector2i pos, Vector2i size, color_t color, int flags)
+	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags)
 {
 	DrawRectangleRaw(
 		screen, pos.x, pos.y, size.x, size.y,

@@ -34,17 +34,17 @@ typedef struct
 {
 	int x;
 	int y;
-} Vector2i;
+} Vec2i;
 
-Vector2i Vector2iNew(int x, int y);
-Vector2i Vector2iZero(void);
-Vector2i Vector2iAdd(Vector2i a, Vector2i b);
-Vector2i Vector2iScale(Vector2i v, int scalar);
+Vec2i Vec2iNew(int x, int y);
+Vec2i Vec2iZero(void);
+Vec2i Vec2iAdd(Vec2i a, Vec2i b);
+Vec2i Vec2iScale(Vec2i v, int scalar);
 
-int DistanceSquared(Vector2i a, Vector2i b);
+int DistanceSquared(Vec2i a, Vec2i b);
 void CalcChebyshevDistanceAndBearing(
-	Vector2i origin, Vector2i target, int *distance, int *bearing);
-Vector2i CalcClosestPointOnLineSegmentToPoint(
-	Vector2i l1, Vector2i l2, Vector2i p);
+	Vec2i origin, Vec2i target, int *distance, int *bearing);
+Vec2i CalcClosestPointOnLineSegmentToPoint(
+	Vec2i l1, Vec2i l2, Vec2i p);
 
 #endif

@@ -110,8 +110,8 @@ typedef struct
 	Mix_Music *music;
 	music_status_e musicStatus;
 	char musicErrorMessage[128];
-	Vector2i earLeft;
-	Vector2i earRight;
+	Vec2i earLeft;
+	Vec2i earRight;
 	SoundData sounds[SND_COUNT];
 } SoundDevice;
 
@@ -131,15 +131,15 @@ void SoundInitialize(SoundDevice *device, SoundConfig *config);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
 void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete);
 void SoundPlay(SoundDevice *device, sound_e sound);
-void SoundSetLeftEar(int x, int y);
-void SoundSetRightEar(int x, int y);
-void SoundSetEars(int x, int y);
-void SoundPlayAt(SoundDevice *device, sound_e sound, int x, int y);
+void SoundSetLeftEar(Vec2i pos);
+void SoundSetRightEar(Vec2i pos);
+void SoundSetEars(Vec2i pos);
+void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
 void SoundPlayAtPlusDistance(
-	SoundDevice *device, sound_e sound, int x, int y, int plusDistance);
+	SoundDevice *device, sound_e sound, Vec2i pos, int plusDistance);
 
 sound_e SoundGetHit(special_damage_e damage, int isActor);
 

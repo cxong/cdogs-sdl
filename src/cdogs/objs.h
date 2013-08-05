@@ -135,7 +135,7 @@ extern TMobileObject *gMobObjList;
 
 
 int DamageSomething(
-	Vector2i hitVector,
+	Vec2i hitVector,
 	int power,
 	int flags,
 	TTileItem *target,

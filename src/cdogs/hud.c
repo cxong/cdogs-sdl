@@ -147,12 +147,12 @@ void HUDUpdate(HUD *hud, int ms)
 // +--------------+
 static void DrawGauge(
 	GraphicsDevice *device,
-	Vector2i pos, Vector2i size, int innerWidth,
+	Vec2i pos, Vec2i size, int innerWidth,
 	color_t barColor, color_t backColor,
 	int flags)
 {
-	Vector2i barPos = Vector2iAdd(pos, Vector2iNew(1, 1));
-	Vector2i barSize;
+	Vec2i barPos = Vec2iAdd(pos, Vec2iNew(1, 1));
+	Vec2i barSize;
 	if (flags & TEXT_RIGHT)
 	{
 		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
@@ -164,13 +164,13 @@ static void DrawGauge(
 }
 
 static void DrawWeaponStatus(
-	GraphicsDevice *device, const Weapon *weapon, Vector2i pos, int flags)
+	GraphicsDevice *device, const Weapon *weapon, Vec2i pos, int flags)
 {
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
-		Vector2i gaugePos = Vector2iAdd(pos, Vector2iNew(-1, -1));
-		Vector2i size = Vector2iNew(50, CDogsTextHeight() + 1);
+		Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
+		Vec2i size = Vec2iNew(50, CDogsTextHeight() + 1);
 		color_t barColor = { 0, 0, 255 };
 		int maxLock = gGunDescriptions[weapon->gun].Lock;
 		int innerWidth;
@@ -183,11 +183,11 @@ static void DrawWeaponStatus(
 }
 
 static void DrawHealth(
-	GraphicsDevice *device, TActor *actor, Vector2i pos, int flags)
+	GraphicsDevice *device, TActor *actor, Vec2i pos, int flags)
 {
 	char s[50];
-	Vector2i gaugePos = Vector2iAdd(pos, Vector2iNew(-1, -1));
-	Vector2i size = Vector2iNew(50, CDogsTextHeight() + 1);
+	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
+	Vec2i size = Vec2iNew(50, CDogsTextHeight() + 1);
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
@@ -229,7 +229,7 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		Vector2i pos = Vector2iNew(5, 5 + 1 + CDogsTextHeight());
+		Vec2i pos = Vec2iNew(5, 5 + 1 + CDogsTextHeight());
 		const int rowHeight = 1 + CDogsTextHeight();
 		DrawWeaponStatus(device, &p->weapon, pos, flags);
 		pos.y += rowHeight;

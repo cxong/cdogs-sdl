@@ -312,7 +312,7 @@ static void TrackKills(TActor * victim, int flags)
 // The damage function!
 
 int DamageCharacter(
-	Vector2i hitVector,
+	Vec2i hitVector,
 	int power,
 	int flags,
 	TTileItem *target,
@@ -342,7 +342,7 @@ int DamageCharacter(
 		damage,
 		isHitSoundEnabled,
 		isInvulnerable,
-		Vector2iNew(target->x, target->y));
+		Vec2iNew(target->x, target->y));
 	if (isInvulnerable)
 	{
 		return 1;
@@ -387,7 +387,10 @@ void DamageObject(
 	object->structure -= power;
 	if (isHitSoundEnabled && power > 0)
 	{
-		SoundPlayAt(&gSoundDevice, SoundGetHit(damage, 0), target->x, target->y);
+		SoundPlayAt(
+			&gSoundDevice,
+			SoundGetHit(damage, 0),
+			Vec2iNew(target->x, target->y));
 	}
 
 	// Destroying objects and all the wonderful things that happen
@@ -432,7 +435,9 @@ void DamageObject(
 			obj->x = object->tileItem.x << 8;
 			obj->y = object->tileItem.y << 8;
 			SoundPlayAt(
-				&gSoundDevice, SND_BANG, object->tileItem.x, object->tileItem.y);
+				&gSoundDevice,
+				SND_BANG,
+				Vec2iNew(object->tileItem.x, object->tileItem.y));
 		}
 		if (object->wreckedPic)
 		{
@@ -447,7 +452,7 @@ void DamageObject(
 }
 
 int DamageSomething(
-	Vector2i hitVector,
+	Vec2i hitVector,
 	int power,
 	int flags,
 	TTileItem *target,
@@ -514,7 +519,7 @@ void Frag(int x, int y, int flags)
 	{
 		AddBullet(x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40, flags);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, x >> 8, y >> 8);
+	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
 int UpdateMolotovFlame(TMobileObject * obj)
@@ -601,7 +606,7 @@ void Fire(int x, int y, int flags)
 	{
 		AddMolotovFlame(x, y, flags);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, x >> 8, y >> 8);
+	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
 int UpdateGasCloud(TMobileObject * obj)
@@ -674,7 +679,7 @@ void Gas(int x, int y, int flags, int special)
 			flags,
 			special);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, x >> 8, y >> 8);
+	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
 int UpdateGrenade(TMobileObject * obj)
@@ -792,7 +797,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 	tile = CheckTileItemCollision(
 		&obj->tileItem, x >> 8, y >> 8, TILEITEM_CAN_BE_SHOT);
 	hasHit = DamageSomething(
-		Vector2iNew(obj->dx, obj->dy),
+		Vec2iNew(obj->dx, obj->dy),
 		obj->power,
 		obj->flags,
 		tile,
@@ -901,7 +906,9 @@ int UpdateActiveMine(TMobileObject * obj)
 					obj->count = 0;
 					obj->range = 5;
 					SoundPlayAt(
-						&gSoundDevice, SND_HAHAHA, obj->tileItem.x, obj->tileItem.y);
+						&gSoundDevice,
+						SND_HAHAHA,
+						Vec2iNew(obj->tileItem.x, obj->tileItem.y));
 					return 1;
 				}
 				i = i->next;
@@ -1258,7 +1265,7 @@ void AddExplosion(int x, int y, int flags)
 		obj->count = -16;
 	}
 	ShakeScreen(15);
-	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, x >> 8, y >> 8);
+	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, Vec2iNew(x >> 8, y >> 8));
 }
 
 void KillAllMobileObjects(TMobileObject **mobObjList)

@@ -249,7 +249,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
 {
 	struct Buffer *buffer = NewBuffer(128, 128);
-	Vector2i v;
+	Vec2i v;
 	HSV tint;
 
 	SetupQuickPlayCampaign(&gCampaign.Setting);

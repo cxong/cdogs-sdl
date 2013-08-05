@@ -63,8 +63,8 @@ void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const u
 
 #define Draw_Rect(x, y, w, h, c)	Draw_Box(x,y,((x + (w - 1))),((y + (h - 1))),c)
 
-void DrawPointMask(GraphicsDevice *device, Vector2i pos, color_t mask);
-void DrawPointTint(GraphicsDevice *device, Vector2i pos, HSV tint);
+void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask);
+void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint);
 
 typedef enum
 {
@@ -75,7 +75,7 @@ void DrawRectangle(
 	Uint32 *screen, int left, int top, int width, int height,
 	unsigned char color, int flags);
 void DrawRectangleRGB(
-	Uint32 *screen, Vector2i pos, Vector2i size, color_t color, int flags);
+	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags);
 
 //  *
 // ***

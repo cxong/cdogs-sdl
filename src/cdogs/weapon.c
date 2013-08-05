@@ -135,7 +135,7 @@ const char *GunGetName(gun_e gun)
 	return gGunDescriptions[gun].gunName;
 }
 
-void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition)
+void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 {
 	// Reload sound
 	if (gConfig.Sound.Reloads &&
@@ -147,7 +147,7 @@ void WeaponUpdate(Weapon *w, int ticks, Vector2i tilePosition)
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
 			gGunDescriptions[w->gun].ReloadSound,
-			tilePosition.x, tilePosition.y,
+			tilePosition,
 			RELOAD_DISTANCE_PLUS);
 	}
 	w->lock -= ticks;
@@ -192,7 +192,7 @@ int WeaponCanFire(Weapon *w)
 	return w->lock <= 0;
 }
 
-void MachineGun(Vector2i muzzlePosition, int angle, int flags)
+void MachineGun(Vec2i muzzlePosition, int angle, int flags)
 {
 	angle += (rand() & 7) - 4;
 	if (angle < 0)
@@ -203,17 +203,17 @@ void MachineGun(Vector2i muzzlePosition, int angle, int flags)
 		MG_SPEED, MG_RANGE, MG_POWER, flags);
 }
 
-void LaunchGrenade(Vector2i muzzlePosition, int angle, int flags)
+void LaunchGrenade(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GRENADE);
 }
 
-void Flamer(Vector2i muzzlePosition, int angle, int flags)
+void Flamer(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddFlame(muzzlePosition.x, muzzlePosition.y, angle, flags);
 }
 
-void ShotGun(Vector2i muzzlePosition, int angle, int flags)
+void ShotGun(Vec2i muzzlePosition, int angle, int flags)
 {
 	int i;
 	angle -= 16;
@@ -227,57 +227,57 @@ void ShotGun(Vector2i muzzlePosition, int angle, int flags)
 	}
 }
 
-void PowerGun(Vector2i muzzlePosition, direction_e d, int flags)
+void PowerGun(Vec2i muzzlePosition, direction_e d, int flags)
 {
 	AddLaserBolt(muzzlePosition.x, muzzlePosition.y, d, flags);
 }
 
-void LaunchFragGrenade(Vector2i muzzlePosition, int angle, int flags)
+void LaunchFragGrenade(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_FRAGGRENADE);
 }
 
-void LaunchMolotov(Vector2i muzzlePosition, int angle, int flags)
+void LaunchMolotov(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_MOLOTOV);
 }
 
-void SniperGun(Vector2i muzzlePosition, direction_e d, int flags)
+void SniperGun(Vec2i muzzlePosition, direction_e d, int flags)
 {
 	AddSniperBullet(muzzlePosition.x, muzzlePosition.y, d, flags);
 }
 
-void LaunchGasBomb(Vector2i muzzlePosition, int angle, int flags)
+void LaunchGasBomb(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GASBOMB);
 }
 
-void Petrifier(Vector2i muzzlePosition, int angle, int flags)
+void Petrifier(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddPetrifierBullet(muzzlePosition.x, muzzlePosition.y, angle, 768, 45, flags);
 }
 
-void BrownGun(Vector2i muzzlePosition, int angle, int flags)
+void BrownGun(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddBrownBullet(muzzlePosition.x, muzzlePosition.y, angle, 768, 45, 15, flags);
 }
 
-void ConfuseBomb(Vector2i muzzlePosition, int angle, int flags)
+void ConfuseBomb(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GASBOMB2);
 }
 
-void GasGun(Vector2i muzzlePosition, int angle, int flags)
+void GasGun(Vec2i muzzlePosition, int angle, int flags)
 {
 	AddGasCloud(muzzlePosition.x, muzzlePosition.y, angle, 384, 35, flags, SPECIAL_POISON);
 }
 
-void Mine(Vector2i muzzlePosition, int flags)
+void Mine(Vec2i muzzlePosition, int flags)
 {
 	AddProximityMine(muzzlePosition.x, muzzlePosition.y, flags);
 }
 
-void Dynamite(Vector2i muzzlePosition, int flags)
+void Dynamite(Vec2i muzzlePosition, int flags)
 {
 	AddDynamite(muzzlePosition.x, muzzlePosition.y, flags);
 }
@@ -318,21 +318,20 @@ void PulseRifle(TActor * actor)
 }
 */
 
-void WeaponPlaySound(Weapon *w, Vector2i tilePosition)
+void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 {
 	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
 	{
 		SoundPlayAt(
 			&gSoundDevice,
 			gGunDescriptions[w->gun].Sound,
-			tilePosition.x,
-			tilePosition.y);
+			tilePosition);
 		w->soundLock = gGunDescriptions[w->gun].SoundLockLength;
 	}
 }
 
 void WeaponFire(
-	Weapon *w, direction_e d, Vector2i muzzlePosition, Vector2i tilePosition, int flags)
+	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition, int flags)
 {
 	int angle = dir2angle[d];
 	assert(WeaponCanFire(w));

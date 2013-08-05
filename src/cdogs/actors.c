@@ -137,9 +137,9 @@ static ColorShade colorShades[SHADE_COUNT] = {
 unsigned char BestMatch(int r, int g, int b);
 
 
-static void DrawShadow(Vector2i pos)
+static void DrawShadow(Vec2i pos)
 {
-	Vector2i drawPos;
+	Vec2i drawPos;
 	HSV tint = { -1.0, 1.0, 0.0 };
 	// Size of shadow
 	const int dx = 8;
@@ -157,7 +157,7 @@ static void DrawShadow(Vector2i pos)
 		for (drawPos.x = pos.x - dx; drawPos.x < pos.x + dx; drawPos.x++)
 		{
 			// Calculate value tint based on distance from center
-			Vector2i scaledPos;
+			Vec2i scaledPos;
 			int distance2;
 			if (drawPos.x >= gGraphicsDevice.clipping.right)
 			{
@@ -330,7 +330,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	}
 	else
 	{
-		DrawShadow(Vector2iNew(x, y));
+		DrawShadow(Vec2iNew(x, y));
 		if (pic1.picIndex >= 0)
 		{
 			Blit(
@@ -415,7 +415,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	WeaponUpdate(
 		&actor->weapon,
 		ticks,
-		Vector2iNew(actor->tileItem.x, actor->tileItem.y));
+		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 
 	if (actor->health > 0) {
 		if (actor->flamed)
@@ -462,7 +462,7 @@ void UpdateActorState(TActor * actor, int ticks)
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
 			SND_FOOTSTEP,
-			actor->tileItem.x, actor->tileItem.y,
+			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
 			FOOTSTEP_DISTANCE_PLUS);
 		actor->soundLock = SOUND_LOCK_FOOTSTEP;
 	}
@@ -538,7 +538,10 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 	CheckMissionObjective(object->tileItem.flags);
 	RemoveObject(object);
-	SoundPlayAt(&gSoundDevice, SND_PICKUP, actor->tileItem.x, actor->tileItem.y);
+	SoundPlayAt(
+		&gSoundDevice,
+		SND_PICKUP,
+		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 }
 
 int MoveActor(TActor * actor, int x, int y)
@@ -581,7 +584,7 @@ int MoveActor(TActor * actor, int x, int y)
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
 				DamageSomething(
-					Vector2iZero(),
+					Vec2iZero(),
 					2,
 					actor->flags,
 					target,
@@ -626,13 +629,13 @@ int MoveActor(TActor * actor, int x, int y)
 	return 1;
 }
 
-void PlayRandomScreamAt(int x, int y)
+void PlayRandomScreamAt(Vec2i pos)
 {
 	#define SCREAM_COUNT 4
 	static sound_e screamTable[SCREAM_COUNT] =
 		{ SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
 	static int screamIndex = 0;
-	SoundPlayAt(&gSoundDevice, screamTable[screamIndex], x, y);
+	SoundPlayAt(&gSoundDevice, screamTable[screamIndex], pos);
 	screamIndex++;
 	if (screamIndex >= SCREAM_COUNT)
 	{
@@ -645,11 +648,13 @@ void InjureActor(TActor * actor, int injury)
 	actor->health -= injury;
 	if (actor->health <= 0) {
 		actor->stateCounter = 0;
-		PlayRandomScreamAt(actor->tileItem.x, actor->tileItem.y);
+		PlayRandomScreamAt(Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		if ((actor->flags & FLAGS_PLAYERS) != 0)
 		{
 			SoundPlayAt(
-				&gSoundDevice, SND_HAHAHA, actor->tileItem.x, actor->tileItem.y);
+				&gSoundDevice,
+				SND_HAHAHA,
+				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
 		CheckMissionObjective(actor->tileItem.flags);
 	}
@@ -666,10 +671,10 @@ void Score(int flags, int points)
 	}
 }
 
-Vector2i GetMuzzleOffset(TActor *actor)
+Vec2i GetMuzzleOffset(TActor *actor)
 {
 	int b, g, d = actor->direction;
-	Vector2i position;
+	Vec2i position;
 
 	b = gCharacterDesc[actor->character].armedBodyPic;
 	g = GunGetPic(actor->weapon.gun);
@@ -681,20 +686,20 @@ Vector2i GetMuzzleOffset(TActor *actor)
 		cGunHandOffset[b][d].dy +
 		cGunPics[g][d][GUNSTATE_FIRING].dy +
 		cMuzzleOffset[g][d].dy + BULLET_Z;
-	return Vector2iScale(position, 256);
+	return Vec2iScale(position, 256);
 }
 
 void Shoot(TActor *actor)
 {
-	Vector2i muzzlePosition = Vector2iNew(actor->x, actor->y);
-	Vector2i tilePosition = Vector2iNew(actor->tileItem.x, actor->tileItem.y);
+	Vec2i muzzlePosition = Vec2iNew(actor->x, actor->y);
+	Vec2i tilePosition = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 	if (!WeaponCanFire(&actor->weapon))
 	{
 		return;
 	}
 	if (GunHasMuzzle(actor->weapon.gun))
 	{
-		muzzlePosition = Vector2iAdd(muzzlePosition, GetMuzzleOffset(actor));
+		muzzlePosition = Vec2iAdd(muzzlePosition, GetMuzzleOffset(actor));
 	}
 	WeaponFire(
 		&actor->weapon, actor->direction, muzzlePosition, tilePosition, actor->flags);
@@ -811,7 +816,10 @@ void SlideActor(TActor * actor, int cmd)
 	// Slide sound
 	if (gConfig.Sound.Footsteps)
 	{
-		SoundPlayAt(&gSoundDevice, SND_SLIDE, actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAt(
+			&gSoundDevice,
+			SND_SLIDE,
+			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 }
 
@@ -1017,12 +1025,12 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 
 void ActorTakeHit(
 	TActor *actor,
-	Vector2i hitVector,
+	Vec2i hitVector,
 	int power,
 	special_damage_e damage,
 	int isHitSoundEnabled,
 	int isInvulnerable,
-	Vector2i hitLocation)
+	Vec2i hitLocation)
 {
 	assert(!ActorIsImmune(actor, damage));
 	ActorTakeSpecialDamage(actor, damage);
@@ -1037,7 +1045,7 @@ void ActorTakeHit(
 		sound_e sound = SoundGetHit(damage, 1);
 		if (!isInvulnerable || sound != SND_KNIFE_FLESH)
 		{
-			SoundPlayAt(&gSoundDevice, sound, hitLocation.x, hitLocation.y);
+			SoundPlayAt(&gSoundDevice, sound, hitLocation);
 		}
 	}
 }
