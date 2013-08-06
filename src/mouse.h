@@ -1,26 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
 
     Copyright (c) 2013, Cong Xu
     All rights reserved.
@@ -46,13 +26,41 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EVENTS
-#define __EVENTS
+#ifndef __MOUSE
+#define __MOUSE
 
-#include "joystick.h"
-#include "keyboard.h"
+#include <SDL_stdinc.h>
 
-int GetKey(keyboard_t *keyboard);
-void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks);
+#include <cdogs/pic_file.h>
+#include <cdogs/vector.h>
+
+typedef struct
+{
+	int left, top, right, bottom;
+	int tag;
+} MouseRect;
+
+typedef struct
+{
+	Uint32 previousButtons;
+	Uint32 currentButtons;
+	Vec2i previousPos;
+	Vec2i currentPos;
+	Pic *cursor;
+	// C-Dogs editor uses rectangles to detect mouse presses on key areas
+	// TODO: redesign this, is there a light-weight mouse-GUI framework?
+	MouseRect *rects;
+	MouseRect *rects2;
+} Mouse;
+
+extern Mouse gMouse;
+
+void MouseInit(Mouse *mouse, Pic *cursor);
+void MousePoll(Mouse *mouse);
+int MouseHasMoved(Mouse *mouse);
+void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2);
+void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects);
+int MouseTryGetRectTag(Mouse *mouse, int *tag);
+void MouseDraw(Mouse *mouse);
 
 #endif

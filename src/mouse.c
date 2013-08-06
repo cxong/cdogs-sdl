@@ -46,40 +46,76 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#include "mouse.h"
 
-#include <stdlib.h>
-#include "events.h"
-#include "keyboard.h"
+#include <SDL_events.h>
+#include <SDL_mouse.h>
 
+#include <cdogs/config.h>
 
-int GetKey(keyboard_t *keyboard)
+Mouse gMouse;
+
+void MouseInit(Mouse *mouse, Pic *cursor)
 {
-	int key_pressed = 0;
-	do
-	{
-		KeyPoll(keyboard);
-		key_pressed = KeyGetPressed(keyboard);
-	} while (!key_pressed);
-	return key_pressed;
+	memset(mouse, 0, sizeof *mouse);
+	mouse->cursor = cursor;
+	SDL_ShowCursor(SDL_DISABLE);
 }
 
-void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks)
+void MousePoll(Mouse *mouse)
 {
-	for (;;)
+	mouse->previousButtons = mouse->currentButtons;
+	mouse->previousPos = mouse->currentPos;
+	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
+	mouse->currentPos =
+		Vec2iScaleDiv(mouse->currentPos, gConfig.Graphics.ScaleFactor);
+}
+
+int MouseHasMoved(Mouse *mouse)
+{
+	return !Vec2iEqual(mouse->previousPos, mouse->currentPos);
+}
+
+void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2)
+{
+	mouse->rects = rects;
+	mouse->rects2 = rects2;
+}
+
+void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects)
+{
+	mouse->rects2 = rects;
+}
+
+static int TryGetRectTag(MouseRect *rects, Vec2i pos, int *tag)
+{
+	while (rects && rects->right > 0)
 	{
-		int i;
-		KeyPoll(keyboard);
-		JoyPoll(joysticks);
-		if (KeyGetPressed(keyboard))
+		if (pos.y >= rects->top && pos.y <= rects->bottom &&
+			pos.x >= rects->left && pos.x <= rects->right)
 		{
-			return;
+			*tag = rects->tag;
+			return 1;
 		}
-		for (i = 0; i < joysticks->numJoys; i++)
-		{
-			if (JoyIsAnyPressed(&joysticks->joys[i]))
-			{
-				return;
-			}
-		}
+		rects++;
 	}
+	return 0;
+}
+
+int MouseTryGetRectTag(Mouse *mouse, int *tag)
+{
+	if (TryGetRectTag(mouse->rects, mouse->currentPos, tag))
+	{
+		return 1;
+	}
+	if (TryGetRectTag(mouse->rects2, mouse->currentPos, tag))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+void MouseDraw(Mouse *mouse)
+{
+	DrawTPic(mouse->currentPos.x, mouse->currentPos.y, mouse->cursor);
 }

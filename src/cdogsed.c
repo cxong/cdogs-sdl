@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
@@ -42,6 +69,7 @@
 #include <cdogs/utils.h>
 
 #include "charsed.h"
+#include "mouse.h"
 
 
 #define YC_CAMPAIGNTITLE    0
@@ -100,7 +128,8 @@
 
 // Mouse click areas:
 
-static struct MouseRect localClicks[] = {
+static MouseRect localClicks[] =
+{
 	{25, 5, 265, 5 + TH - 1, YC_CAMPAIGNTITLE + SELECT_ONLY},
 	{270, 5, 319, 5 + TH - 1, YC_MISSIONINDEX + SELECT_ONLY},
 	{25, 8 + TH, 200, 8 + 2 * TH - 1, YC_MISSIONTITLE + SELECT_ONLY},
@@ -163,7 +192,8 @@ static struct MouseRect localClicks[] = {
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localCampaignClicks[] = {
+static MouseRect localCampaignClicks[] =
+{
 	{0, 150, 319, 150 + TH - 1,
 	 YC_CAMPAIGNTITLE + (XC_AUTHOR << 8) + SELECT_ONLY},
 	{0, 150 + TH, 319, 190,
@@ -172,14 +202,16 @@ static struct MouseRect localCampaignClicks[] = {
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localMissionClicks[] = {
+static MouseRect localMissionClicks[] =
+{
 	{0, 150, 319, 160,
 	 YC_MISSIONTITLE + (XC_MUSICFILE << 8) + SELECT_ONLY},
 
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localWeaponClicks[] = {
+static MouseRect localWeaponClicks[] =
+{
 	{10, 150, 90, 150 + TH - 1, LEAVE_YC + (0 << 8)},
 	{10, 150 + TH, 90, 150 + 2 * TH - 1, LEAVE_YC + (1 << 8)},
 	{10, 150 + 2 * TH, 90, 150 + 3 * TH - 1, LEAVE_YC + (2 << 8)},
@@ -197,7 +229,8 @@ static struct MouseRect localWeaponClicks[] = {
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localMapItemClicks[] = {
+static MouseRect localMapItemClicks[] =
+{
 	{0, 150, 19, 190, LEAVE_YC + (0 << 8)},
 	{20, 150, 39, 190, LEAVE_YC + (1 << 8)},
 	{40, 150, 59, 190, LEAVE_YC + (2 << 8)},
@@ -218,7 +251,8 @@ static struct MouseRect localMapItemClicks[] = {
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localObjectiveClicks[] = {
+static MouseRect localObjectiveClicks[] =
+{
 	{20, 150, 55, 190, LEAVE_YC + (XC_TYPE << 8)},
 	{60, 150, 85, 190, LEAVE_YC + (XC_INDEX << 8)},
 	{90, 150, 105, 190, LEAVE_YC + (XC_REQUIRED << 8)},
@@ -228,7 +262,8 @@ static struct MouseRect localObjectiveClicks[] = {
 	{0, 0, 0, 0, 0}
 };
 
-static struct MouseRect localCharacterClicks[] = {
+static MouseRect localCharacterClicks[] =
+{
 	{10, 150, 29, 190, LEAVE_YC + (0 << 8) + SELECT_ONLY_FIRST},
 	{30, 150, 49, 190, LEAVE_YC + (1 << 8) + SELECT_ONLY_FIRST},
 	{50, 150, 69, 190, LEAVE_YC + (2 << 8) + SELECT_ONLY_FIRST},
@@ -354,7 +389,7 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
 	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
 
-	SetSecondaryMouseRects(localObjectiveClicks);
+	MouseSetSecondaryRects(&gMouse, localObjectiveClicks);
 }
 
 int MissionDescription(int y, const char *description, int hilite)
@@ -469,7 +504,7 @@ void ListWeapons(int y, int xc)
 	ShowWeaponStatus(190, y + TH, 9, xc);
 	ShowWeaponStatus(190, y + 2 * TH, 10, xc);
 
-	SetSecondaryMouseRects(localWeaponClicks);
+	MouseSetSecondaryRects(&gMouse, localWeaponClicks);
 }
 
 void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
@@ -487,7 +522,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	CDogsTextGoto(x - 8, y + 5);
 	CDogsTextString(s);
 
-	SetSecondaryMouseRects(localMapItemClicks);
+	MouseSetSecondaryRects(&gMouse, localMapItemClicks);
 }
 
 void Display(int idx, int xc, int yc, int key)
@@ -496,7 +531,7 @@ void Display(int idx, int xc, int yc, int key)
 	int y = 5;
 	int i;
 
-	SetSecondaryMouseRects(NULL);
+	MouseSetSecondaryRects(&gMouse, NULL);
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
@@ -655,14 +690,14 @@ void Display(int idx, int xc, int yc, int key)
 		MissionDescription(150 + TH, campaign.description,
 				   yc == YC_CAMPAIGNTITLE
 				   && xc == XC_CAMPAIGNDESC);
-		SetSecondaryMouseRects(localCampaignClicks);
+		MouseSetSecondaryRects(&gMouse, localCampaignClicks);
 		break;
 
 	case YC_MISSIONTITLE:
 		DisplayCDogsText(20, 150, currentMission->song,
 			    yc == YC_MISSIONTITLE
 			    && xc == XC_MUSICFILE, 1);
-		SetSecondaryMouseRects(localMissionClicks);
+		MouseSetSecondaryRects(&gMouse, localMissionClicks);
 		break;
 
 	case YC_MISSIONDESC:
@@ -678,7 +713,7 @@ void Display(int idx, int xc, int yc, int key)
 		for (i = 0; i < currentMission->baddieCount; i++)
 			DisplayCharacter(20 + 20 * i, y,
 					 CHARACTER_OTHERS + i, xc == i);
-		SetSecondaryMouseRects(localCharacterClicks);
+		MouseSetSecondaryRects(&gMouse, localCharacterClicks);
 		break;
 
 	case YC_SPECIALS:
@@ -691,7 +726,7 @@ void Display(int idx, int xc, int yc, int key)
 					 CHARACTER_OTHERS +
 					 currentMission->baddieCount + i,
 					 xc == i);
-		SetSecondaryMouseRects(localCharacterClicks);
+		MouseSetSecondaryRects(&gMouse, localCharacterClicks);
 		break;
 
 	case YC_ITEMS:
@@ -723,6 +758,8 @@ void Display(int idx, int xc, int yc, int key)
 		}
 		break;
 	}
+
+	MouseDraw(&gMouse);
 
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
@@ -1283,55 +1320,61 @@ static int ConfirmQuit(void)
 static void EditCampaign(void)
 {
 	int done = 0;
-	int c = 0;
 	int mission = 0;
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
 	struct Mission scrap;
 	struct EditorInfo edInfo;
-	int x, y, buttons, tag;
+	int tag;
 
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	SetMouseRects(localClicks);
+	MouseSetRects(&gMouse, localClicks, NULL);
 
 	gCampaign.Setting = campaign;
 	gCampaign.seed = 0;
 	Setup(mission, 1);
 
 	SDL_EnableKeyRepeat(0, 0);
-	while (!done) {
-		Display(mission, xc, yc, c);
-
-		do {
-			GetEvent(&c, &x, &y, &buttons);
-			if (buttons) {
-				if (GetMouseRectTag(x, y, &tag)) {
-					xcOld = xc;
-					ycOld = yc;
-					if ((tag & LEAVE_YC) == 0) {
-						yc = (tag & 0xFF);
-						AdjustYC(&yc);
-					}
-					if ((tag & LEAVE_XC) == 0) {
-						xc = ((tag >> 8) & 0xFF);
-						AdjustXC(yc, &xc);
-					}
-					if ((tag & SELECT_ONLY) != 0)
-						c = DUMMY;
-					else if ((tag & SELECT_ONLY_FIRST)
-						 == 0 || (xc == xcOld
-							  && yc == ycOld))
-						c = (buttons ==
-						     1 ? PAGEUP :
-						     PAGEDOWN);
-					else
-						c = DUMMY;
+	while (!done)
+	{
+		int c;
+		KeyPoll(&gKeyboard);
+		c = KeyGetPressed(&gKeyboard);
+		MousePoll(&gMouse);
+		if (gMouse.currentButtons)
+		{
+			if (MouseTryGetRectTag(&gMouse, &tag))
+			{
+				xcOld = xc;
+				ycOld = yc;
+				if ((tag & LEAVE_YC) == 0)
+				{
+					yc = (tag & 0xFF);
+					AdjustYC(&yc);
+				}
+				if ((tag & LEAVE_XC) == 0)
+				{
+					xc = ((tag >> 8) & 0xFF);
+					AdjustXC(yc, &xc);
+				}
+				if ((tag & SELECT_ONLY) != 0)
+				{
+					c = DUMMY;
+				}
+				else if (!(tag & SELECT_ONLY_FIRST) ||
+					(xc == xcOld && yc == ycOld))
+				{
+					c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
+						PAGEUP : PAGEDOWN;
+				}
+				else
+				{
+					c = DUMMY;
 				}
 			}
 		}
-		while (!c);
 
 		switch (c) {
 		case HOME:
@@ -1489,7 +1532,7 @@ static void EditCampaign(void)
 		case ALT_E:
 			EditCharacters(&campaign);
 			Setup(mission, 0);
-			SetMouseRects(localClicks);
+			MouseSetRects(&gMouse, localClicks, NULL);
 			break;
 
 		default:
@@ -1499,6 +1542,8 @@ static void EditCampaign(void)
 			}
 			break;
 		}
+		Display(mission, xc, yc, c);
+		SDL_Delay(10);
 	}
 }
 
@@ -1567,6 +1612,9 @@ int main(int argc, char *argv[])
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	GraphicsInit(&gGraphicsDevice);
+	// Override config for editor; only 320x240 supported
+	gConfig.Graphics.ResolutionWidth = 320;
+	gConfig.Graphics.ResolutionHeight = 240;
 	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{
@@ -1577,7 +1625,7 @@ int main(int argc, char *argv[])
 	CDogsSetPalette(gPalette);
 
 	KeyInit(&gKeyboard);
-	InitMouse();
+	MouseInit(&gMouse, gPics[145]);
 	EditCampaign();
 
 	GraphicsTerminate(&gGraphicsDevice);

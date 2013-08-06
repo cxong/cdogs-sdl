@@ -54,6 +54,18 @@ Vec2i Vec2iScale(Vec2i v, int scalar)
 	return v;
 }
 
+Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)
+{
+	v.x /= scaleDiv;
+	v.y /= scaleDiv;
+	return v;
+}
+
+int Vec2iEqual(Vec2i a, Vec2i b)
+{
+	return a.x == b.x && a.y == b.y;
+}
+
 void CalcChebyshevDistanceAndBearing(
 	Vec2i origin, Vec2i target, int *distance, int *bearing)
 {

@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "charsed.h"
 
@@ -30,13 +57,14 @@
 #include <cdogs/actors.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
-#include <cdogs/events.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
 #include <cdogs/pics.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
+
+#include "mouse.h"
 
 
 #define YC_APPEARANCE 0
@@ -84,7 +112,8 @@ int fileChanged = 0;
 extern void *myScreen;
 
 
-static struct MouseRect localClicks[] = {
+static MouseRect localClicks[] =
+{
 	{30, 10, 55, 10 + TH - 1, YC_APPEARANCE + (XC_FACE << 8)},
 	{60, 10, 85, 10 + TH - 1, YC_APPEARANCE + (XC_SKIN << 8)},
 	{90, 10, 115, 10 + TH - 1, YC_APPEARANCE + (XC_HAIR << 8)},
@@ -139,16 +168,18 @@ static struct MouseRect localClicks[] = {
 };
 
 
-static int XYToCharacterIndex(int x, int y, int *idx)
+static int PosToCharacterIndex(Vec2i pos, int *idx)
 {
-	if (y < 10 + 5 * TH + 5)
+	if (pos.y < 10 + 5 * TH + 5)
+	{
 		return 0;
+	}
 
-	y -= 10 + 5 * TH + 5;
+	pos.y -= 10 + 5 * TH + 5;
 
-	x /= 20;
-	y /= 30;
-	*idx = 16 * y + x;
+	pos.x /= 20;
+	pos.y /= 30;
+	*idx = 16 * pos.y + pos.x;
 	return 1;
 }
 
@@ -305,6 +336,8 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 			}
 		}
 	}
+
+	MouseDraw(&gMouse);
 
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
@@ -517,11 +550,6 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-void DrawCursor(int x, int y)
-{
-	DrawTPic(x, y, gPics[145]);
-}
-
 void RestoreBkg(int x, int y, unsigned int *bkg)
 {
 	int w = ((short *) (gPics[145]))[0];
@@ -551,75 +579,43 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 	}
 }
 
-void GetEvent(int *key, int *x, int *y, int *buttons)
-{
-	static int scaling = 1;
-
-	int xPrev = -1, yPrev = -1;
-	//void *old = GetDstScreen();
-
-	Mouse(x, y, buttons);
-
-	*buttons = *key = 0;
-	do
-	{
-		KeyPoll(&gKeyboard);
-		*key = KeyGetPressed(&gKeyboard);
-
-		Mouse(x, y, buttons);
-		*x /= scaling;
-		if (*x > 319)
-			scaling++;
-
-		if (!(*buttons) && !(*key) && (*x != xPrev || *y != yPrev))
-		{
-			DrawCursor(*x, *y);
-			xPrev = *x;
-			yPrev = *y;
-		}
-		SDL_Delay(10);
-	}
-	while (!(*buttons) && !(*key));
-}
-
 void EditCharacters(CampaignSetting *setting)
 {
 	int done = 0;
-	int c = 0;
 	int idx = 0;
 	int xc = 0, yc = 0;
 	TBadGuy scrap;
-	int x, y, buttons, tag;
 
 	memset(&scrap, 0, sizeof(scrap));
-	SetMouseRects(localClicks);
+	MouseSetRects(&gMouse, localClicks, NULL);
 
 	while (!done)
 	{
-		Display(setting, idx, xc, yc);
-
-		do {
-			GetEvent(&c, &x, &y, &buttons);
-			if (buttons)
+		int tag;
+		int c;
+		KeyPoll(&gKeyboard);
+		c = KeyGetPressed(&gKeyboard);
+		MousePoll(&gMouse);
+		if (gMouse.currentButtons)
+		{
+			if (PosToCharacterIndex(gMouse.currentPos, &tag))
 			{
-				if (XYToCharacterIndex(x, y, &tag))
+				if (tag >= 0 && tag < setting->characterCount)
 				{
-					if (tag >= 0 && tag < setting->characterCount)
-					{
-						idx = tag;
-					}
-					c = DUMMY;
-				} else if (GetMouseRectTag(x, y, &tag)) {
-					xc = (tag >> 8);
-					yc = (tag & 0xFF);
-					AdjustYC(&yc);
-					AdjustXC(yc, &xc);
-					c = (buttons ==
-					     1 ? PAGEUP : PAGEDOWN);
+					idx = tag;
 				}
+				c = DUMMY;
+			}
+			else if (MouseTryGetRectTag(&gMouse, &tag))
+			{
+				xc = (tag >> 8);
+				yc = (tag & 0xFF);
+				AdjustYC(&yc);
+				AdjustXC(yc, &xc);
+				c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
+					PAGEUP : PAGEDOWN;
 			}
 		}
-		while (!c);
 
 		switch (c) {
 		case HOME:
@@ -700,5 +696,7 @@ void EditCharacters(CampaignSetting *setting)
 			done = 1;
 			break;
 		}
+		Display(setting, idx, xc, yc);
+		SDL_Delay(10);
 	}
 }
