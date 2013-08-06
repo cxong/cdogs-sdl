@@ -72,10 +72,9 @@ typedef enum
 	MAPTILE_OFFSET_PIC		= 0x020,
 	MAPTILE_IS_SHADOW2		= 0x040,
 	MAPTILE_TILE_TRIGGER	= 0x080,
-	MAPTILE_VISITED			= 0x100,
 // These constants are used internally in draw, it is never set in the map
-	MAPTILE_DELAY_DRAW		= 0x200,
-	MAPTILE_OUT_OF_SIGHT	= 0x400
+	MAPTILE_DELAY_DRAW		= 0x100,
+	MAPTILE_OUT_OF_SIGHT	= 0x200
 } MapTileFlags;
 
 #define KIND_CHARACTER      0
@@ -108,6 +107,7 @@ typedef struct TileItem TTileItem;
 struct Tile {
 	int pic;
 	int flags;
+	int isVisited;
 	TTileItem *things;
 };
 typedef struct Tile TTile;

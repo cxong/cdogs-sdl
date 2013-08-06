@@ -880,9 +880,7 @@ int UpdateTriggeredMine(TMobileObject * obj)
 
 int UpdateActiveMine(TMobileObject * obj)
 {
-	TTileItem *i;
 	int tx, ty, dx, dy;
-	TTile *tile;
 
 	MobileObjectUpdate(obj);
 	if ((obj->count & 3) != 0)
@@ -896,13 +894,15 @@ int UpdateActiveMine(TMobileObject * obj)
 		return 0;
 
 	for (dy = -1; dy <= 1; dy++)
-		for (dx = -1; dx <= 1; dx++) {
-			tile = &Map(tx + dx, ty + dy);
-			i = tile->things;
-			while (i) {
-				if (i->kind == KIND_CHARACTER) {
-					obj->updateFunc =
-					    UpdateTriggeredMine;
+	{
+		for (dx = -1; dx <= 1; dx++)
+		{
+			TTileItem *item = Map(tx + dx, ty + dy).things;
+			while (item)
+			{
+				if (item->kind == KIND_CHARACTER)
+				{
+					obj->updateFunc = UpdateTriggeredMine;
 					obj->count = 0;
 					obj->range = 5;
 					SoundPlayAt(
@@ -911,9 +911,10 @@ int UpdateActiveMine(TMobileObject * obj)
 						Vec2iNew(obj->tileItem.x, obj->tileItem.y));
 					return 1;
 				}
-				i = i->next;
+				item = item->next;
 			}
 		}
+	}
 	return 1;
 }
 

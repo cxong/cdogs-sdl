@@ -220,7 +220,6 @@ void DrawDot(TTileItem * t, unsigned char color)
 void DisplayAutoMap(int showAll)
 {
 	int x, y, i, j;
-	TTile *tile;
 	Uint32 *screen = gGraphicsDevice.buf;
 	TTileItem *t;
 	color_t mask = { 0, 128, 0 };
@@ -239,16 +238,16 @@ void DisplayAutoMap(int showAll)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
 			{
-				if ((Map(x, y).flags & MAPTILE_VISITED) || showAll)
+				if (Map(x, y).isVisited || showAll)
 				{
-					tile = &Map(x, y);
+					int tileFlags = Map(x, y).flags;
 					for (j = 0; j < MAP_FACTOR; j++)
 					{
-						if (tile->flags & MAPTILE_IS_WALL)
+						if (tileFlags & MAPTILE_IS_WALL)
 						{
 							*screen++ = LookupPalette(WALL_COLOR);
 						}
-						else if (tile->flags & MAPTILE_NO_WALK)
+						else if (tileFlags & MAPTILE_NO_WALK)
 						{
 							*screen++ = LookupPalette(DoorColor(x, y));
 						}
@@ -278,7 +277,7 @@ void DisplayAutoMap(int showAll)
 					if (!(objFlags & OBJECTIVE_HIDDEN) || showAll)
 					{
 						if ((objFlags & OBJECTIVE_POSKNOWN) ||
-							(Map(x, y).flags & MAPTILE_VISITED) ||
+							Map(x, y).isVisited ||
 							showAll)
 						{
 							DisplayObjective(t, obj);
@@ -287,7 +286,7 @@ void DisplayAutoMap(int showAll)
 				}
 				else if (t->kind == KIND_OBJECT &&
 					t->data &&
-					(Map(x, y).flags & MAPTILE_VISITED))
+					Map(x, y).isVisited)
 				{
 					TObject *o = t->data;
 

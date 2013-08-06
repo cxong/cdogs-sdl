@@ -135,7 +135,7 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 				MapMarkAsVisited(
 					Vec2iNew(x + buffer->xStart, y + buffer->yStart));
 				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
-				tile->flags |= MAPTILE_VISITED;
+				tile->isVisited = 1;
 			}
 		}
 		tile += X_TILES - buffer->width;
@@ -216,13 +216,13 @@ void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
 // Unvisited: black
 // Out of sight: dark, or if fog disabled, black
 // In sight: full color
-static color_t GetTileLOSMask(int flags)
+static color_t GetTileLOSMask(TTile *tile)
 {
-	if (!(flags & MAPTILE_VISITED))
+	if (!tile->isVisited)
 	{
 		return colorBlack;
 	}
-	if (flags & MAPTILE_OUT_OF_SIGHT)
+	if (tile->flags & MAPTILE_OUT_OF_SIGHT)
 	{
 		if (gConfig.Game.Fog)
 		{
@@ -245,7 +245,7 @@ void DrawWallColumn(int y, Vec2i pos, TTile *tile)
 			&gGraphicsDevice,
 			gPics[tile->pic],
 			pos,
-			GetTileLOSMask(tile->flags));
+			GetTileLOSMask(tile));
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
@@ -274,7 +274,7 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 					&gGraphicsDevice,
 					gPics[tile->pic],
 					pos,
-					GetTileLOSMask(tile->flags));
+					GetTileLOSMask(tile));
 			}
 		}
 		tile += X_TILES - b->width;
@@ -304,7 +304,7 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 					&gGraphicsDevice,
 					gPics[p->picIndex],
 					Vec2iNew(pos.x + p->dx, pos.y + p->dy),
-					GetTileLOSMask(tile->flags));
+					GetTileLOSMask(tile));
 			}
 			t = tile->things;
 			while (t) {

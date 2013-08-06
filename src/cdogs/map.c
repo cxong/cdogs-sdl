@@ -52,7 +52,6 @@
 
 
 TTile gMap[YMAX][XMAX];
-unsigned char gAutoMap[YMAX][XMAX];
 
 
 static int gKeyAccessCount;
@@ -1200,7 +1199,6 @@ void SetupMap(void)
 	int x, y, w, h;
 
 	memset(gMap, 0, sizeof(gMap));
-	memset(gAutoMap, 0, sizeof(gAutoMap));
 	memset(internalMap, 0, sizeof(internalMap));
 	tilesSeen = 0;
 
@@ -1300,10 +1298,10 @@ int OKforPlayer(int x, int y)
 
 void MapMarkAsVisited(Vec2i pos)
 {
-	if (!(Map(pos.x, pos.y).flags & MAPTILE_VISITED))
+	if (!Map(pos.x, pos.y).isVisited)
 	{
 		tilesSeen++;
-		Map(pos.x, pos.y).flags |= MAPTILE_VISITED;
+		Map(pos.x, pos.y).isVisited = 1;
 	}
 }
 
@@ -1314,7 +1312,7 @@ void MapMarkAllAsVisited(void)
 	{
 		for (pos.x = 0; pos.x < XMAX; pos.x++)
 		{
-			Map(pos.x, pos.y).flags |= MAPTILE_VISITED;
+			Map(pos.x, pos.y).isVisited = 1;
 		}
 	}
 }
