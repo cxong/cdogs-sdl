@@ -336,13 +336,9 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 
 	DisplayCDogsText(20, y, typeCDogsText, xc == XC_TYPE, 0);
 
-	if (pic.picIndex >= 0) {
-		if (table)
-			DrawTTPic(60 + pic.dx, y + 8 + pic.dy,
-				  gPics[pic.picIndex], table, NULL);
-		else
-			DrawTPic(60 + pic.dx, y + 8 + pic.dy,
-				 gPics[pic.picIndex], NULL);
+	if (pic.picIndex >= 0)
+	{
+		DrawTTPic(60 + pic.dx, y + 8 + pic.dy, gPics[pic.picIndex], table);
 	}
 
 	sprintf(s, "%d", currentMission->objectives[idx].required);
@@ -436,10 +432,8 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex],
-		  cd->table, NULL);
-	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex],
-		  cd->table, NULL);
+	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex], cd->table);
+	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex], cd->table);
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 16);
@@ -483,7 +477,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	char s[10];
 
 	const TOffsetPic *pic = &cGeneralPics[mo->pic];
-	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex], NULL);
+	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex]);
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 4);
@@ -515,7 +509,9 @@ void Display(int idx, int xc, int yc, int key)
 		    && xc == XC_CAMPAIGNTITLE, 1);
 
 	if (fileChanged)
-		DrawTPic(10, y, gPics[221], NULL);
+	{
+		DrawTPic(10, y, gPics[221]);
+	}
 
 	if (currentMission)
 	{
@@ -592,22 +588,20 @@ void Display(int idx, int xc, int yc, int key)
 		DrawPic(20, y + TH,
 			gPics[cWallPics
 			      [currentMission->wallStyle %
-			       WALL_STYLE_COUNT][WALL_SINGLE]], NULL);
+			       WALL_STYLE_COUNT][WALL_SINGLE]]);
 		DrawPic(50, y + TH,
 			gPics[cFloorPics
 			      [currentMission->floorStyle %
-			       FLOOR_STYLE_COUNT][FLOOR_NORMAL]], NULL);
+			       FLOOR_STYLE_COUNT][FLOOR_NORMAL]]);
 		DrawPic(80, y + TH,
 			gPics[cRoomPics
 			      [currentMission->roomStyle %
-			       ROOMFLOOR_COUNT][ROOMFLOOR_NORMAL]], NULL);
+			       ROOMFLOOR_COUNT][ROOMFLOOR_NORMAL]]);
 		DrawPic(110, y + TH,
-			gPics[cGeneralPics[gMission.doorPics[0].horzPic].
-			      picIndex], NULL);
+			gPics[cGeneralPics[gMission.doorPics[0].horzPic].picIndex]);
 		DrawTPic(140, y + TH,
-			 gPics[cGeneralPics[gMission.keyPics[0]].picIndex],
-			 NULL);
-		DrawPic(170, y + TH, gPics[gMission.exitPic], NULL);
+			gPics[cGeneralPics[gMission.keyPics[0]].picIndex]);
+		DrawPic(170, y + TH, gPics[gMission.exitPic]);
 
 		y += TH + 25;
 
@@ -1505,7 +1499,6 @@ static void EditCampaign(void)
 			}
 			break;
 		}
-		SDL_Delay(50);
 	}
 }
 

@@ -174,10 +174,8 @@ static void DisplayCharacter(int x, int y, const TBadGuy * data,
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex],
-		  cd->table, NULL);
-	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex],
-		  cd->table, NULL);
+	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex], cd->table);
+	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex], cd->table);
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 16);
@@ -521,7 +519,7 @@ static void AdjustXC(int yc, int *xc)
 
 void DrawCursor(int x, int y)
 {
-	DrawTPic(x, y, gPics[145], NULL);
+	DrawTPic(x, y, gPics[145]);
 }
 
 void RestoreBkg(int x, int y, unsigned int *bkg)
@@ -556,24 +554,17 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 void GetEvent(int *key, int *x, int *y, int *buttons)
 {
 	static int scaling = 1;
-	static int wasDown = 0;
-	static int isRepeating = 0;
 
 	int xPrev = -1, yPrev = -1;
 	//void *old = GetDstScreen();
 
 	Mouse(x, y, buttons);
-	if (*buttons != 0 && wasDown)
-		SDL_EnableKeyRepeat(isRepeating ? 100 : 500, 250);
 
-	//SetDstScreen(new);
 	*buttons = *key = 0;
 	do
 	{
-		if (KeyGetPressed(&gKeyboard))
-		{
-			*key = GetKey(&gKeyboard);
-		}
+		KeyPoll(&gKeyboard);
+		*key = KeyGetPressed(&gKeyboard);
 
 		Mouse(x, y, buttons);
 		*x /= scaling;
@@ -589,10 +580,6 @@ void GetEvent(int *key, int *x, int *y, int *buttons)
 		SDL_Delay(10);
 	}
 	while (!(*buttons) && !(*key));
-
-	isRepeating = wasDown && (buttons != 0);
-	wasDown = (*buttons != 0);
-	//SetDstScreen(old);
 }
 
 void EditCharacters(CampaignSetting *setting)
