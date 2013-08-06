@@ -395,9 +395,7 @@ void MenuDisplayItems(MenuSystem *menu)
 			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
 			gPics[PIC_LOGO]);
 		CDogsTextStringSpecial(
-			"Classic: " CDOGS_VERSION, TEXT_TOP | TEXT_LEFT, 20, 20);
-		CDogsTextStringSpecial(
-			"SDL Port: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
+			"Version: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 	}
 }
 

@@ -295,7 +295,7 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 		/* only do this the first time */
 		char title[32];
 		debug(D_NORMAL, "setting caption and icon...\n");
-		sprintf(title, "C-Dogs %s [Port %s]", CDOGS_VERSION, CDOGS_SDL_VERSION);
+		sprintf(title, "C-Dogs SDL %s", CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
 		SDL_ShowCursor(SDL_DISABLE);

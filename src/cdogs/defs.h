@@ -33,8 +33,6 @@
 #define NO             0
 #endif
 
-#define CDOGS_VERSION		"v1.06"
-
 // Defines
 #define BODY_UNARMED        0
 #define BODY_ARMED          1

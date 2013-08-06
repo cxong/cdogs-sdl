@@ -869,11 +869,11 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 
 void PrintTitle(void)
 {
-	printf("C-Dogs %s, (SDL Port %s)\n", CDOGS_VERSION, CDOGS_SDL_VERSION);
+	printf("C-Dogs SDL %s\n", CDOGS_SDL_VERSION);
 
 	printf("Original Code Copyright Ronny Wester 1995\n");
 	printf("Game Data Copyright Ronny Wester 1995\n");
-	printf("SDL Port by Jeremy Chin and Lucas Martin-King, Copyright 2003-2006\n\n");
+	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2013\n\n");
 	printf("%s%s%s%s",
 		"C-Dogs SDL comes with ABSOLUTELY NO WARRANTY;\n",
 		"see the file COPYING that came with this distibution...\n",
