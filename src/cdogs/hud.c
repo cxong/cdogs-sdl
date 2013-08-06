@@ -193,12 +193,20 @@ static void DrawHealth(
 	int health = actor->health;
 	int maxHealth = gCharacterDesc[actor->character].maxHealth;
 	int innerWidth;
-	double maxHealthHue = 50.0;
-	double minHealthHue = 0.0;
 	color_t backColor = { 50, 0, 0 };
 	innerWidth = MAX(1, size.x * health / maxHealth);
-	hsv.h =
-		((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
+	if (actor->poisoned)
+	{
+		hsv.h = 120.0;
+		hsv.v = 0.5;
+	}
+	else
+	{
+		double maxHealthHue = 50.0;
+		double minHealthHue = 0.0;
+		hsv.h =
+			((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
+	}
 	barColor = ColorTint(colorWhite, hsv);
 	DrawGauge(device, gaugePos, size, innerWidth, barColor, backColor, flags);
 	sprintf(s, "%d", health);
