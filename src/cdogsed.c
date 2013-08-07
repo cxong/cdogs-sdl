@@ -287,7 +287,6 @@ static MouseRect localCharacterClicks[] =
 
 // Globals
 
-CampaignSetting campaign;
 struct Mission *currentMission;
 static char lastFile[128];
 
@@ -540,8 +539,9 @@ void Display(int idx, int xc, int yc, int key)
 	sprintf(s, "Key: 0x%x", key);
 	CDogsTextStringAt(270, 190, s);
 
-	DisplayCDogsText(25, y, campaign.title, yc == YC_CAMPAIGNTITLE
-		    && xc == XC_CAMPAIGNTITLE, 1);
+	DisplayCDogsText(
+		25, y, gCampaign.Setting.title,
+		yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNTITLE, 1);
 
 	if (fileChanged)
 	{
@@ -550,7 +550,7 @@ void Display(int idx, int xc, int yc, int key)
 
 	if (currentMission)
 	{
-		sprintf(s, "Mission %d/%d", idx + 1, campaign.missionCount);
+		sprintf(s, "Mission %d/%d", idx + 1, gCampaign.Setting.missionCount);
 		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 
 		y += CDogsTextHeight() + 3;
@@ -673,11 +673,16 @@ void Display(int idx, int xc, int yc, int key)
 					    yc - YC_OBJECTIVES == i, 1);
 				y += CDogsTextHeight();
 			}
-		} else
-			DisplayCDogsText(20, y, "-- mission objectives --",
-				    yc == YC_OBJECTIVES, 0);
-	} else if (campaign.missionCount) {
-		sprintf(s, "End/%d", campaign.missionCount);
+		}
+		else
+		{
+			DisplayCDogsText(
+				20, y, "-- mission objectives --", yc == YC_OBJECTIVES, 0);
+		}
+	}
+	else if (gCampaign.Setting.missionCount)
+	{
+		sprintf(s, "End/%d", gCampaign.Setting.missionCount);
 		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 	}
 
@@ -685,11 +690,12 @@ void Display(int idx, int xc, int yc, int key)
 
 	switch (yc) {
 	case YC_CAMPAIGNTITLE:
-		DisplayCDogsText(20, 150, campaign.author,
-			    yc == YC_CAMPAIGNTITLE && xc == XC_AUTHOR, 1);
-		MissionDescription(150 + TH, campaign.description,
-				   yc == YC_CAMPAIGNTITLE
-				   && xc == XC_CAMPAIGNDESC);
+		DisplayCDogsText(
+			20, 150, gCampaign.Setting.author,
+			yc == YC_CAMPAIGNTITLE && xc == XC_AUTHOR, 1);
+		MissionDescription(
+			150 + TH, gCampaign.Setting.description,
+			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
 		MouseSetSecondaryRects(&gMouse, localCampaignClicks);
 		break;
 
@@ -771,7 +777,7 @@ static int Change(int yc, int xc, int d, int *mission)
 
 	if (yc == YC_MISSIONINDEX) {
 		*mission += d;
-		*mission = CLAMP(*mission, 0, campaign.missionCount);
+		*mission = CLAMP(*mission, 0, gCampaign.Setting.missionCount);
 		return 0;
 	}
 
@@ -856,12 +862,16 @@ static int Change(int yc, int xc, int d, int *mission)
 
 	case YC_CHARACTERS:
 		currentMission->baddies[xc] = CLAMP_OPPOSITE(
-			currentMission->baddies[xc] + d, 0, campaign.characterCount - 1);
+			currentMission->baddies[xc] + d,
+			0,
+			gCampaign.Setting.characterCount - 1);
 		break;
 
 	case YC_SPECIALS:
 		currentMission->specials[xc] = CLAMP_OPPOSITE(
-			currentMission->specials[xc] + d, 0, campaign.characterCount - 1);
+			currentMission->specials[xc] + d,
+			0,
+			gCampaign.Setting.characterCount - 1);
 		break;
 
 	case YC_WEAPONS:
@@ -909,8 +919,7 @@ static int Change(int yc, int xc, int d, int *mission)
 					limit = 0;
 					break;
 				case OBJECTIVE_RESCUE:
-					limit =
-					    campaign.characterCount - 1;
+					limit = gCampaign.Setting.characterCount - 1;
 					break;
 				default:
 					// should never get here
@@ -957,45 +966,47 @@ void InsertMission(int idx, struct Mission *mission)
 {
 	int i;
 
-	if (campaign.missionCount == MAX_MISSIONS)
-		return;
-
-	for (i = campaign.missionCount; i > idx; i--)
+	if (gCampaign.Setting.missionCount == MAX_MISSIONS)
 	{
-		campaign.missions[i] = campaign.missions[i - 1];
+		return;
+	}
+
+	for (i = gCampaign.Setting.missionCount; i > idx; i--)
+	{
+		gCampaign.Setting.missions[i] = gCampaign.Setting.missions[i - 1];
 	}
 	if (mission)
 	{
-		campaign.missions[idx] = *mission;
+		gCampaign.Setting.missions[idx] = *mission;
 	}
 	else
 	{
-		memset(&campaign.missions[idx], 0, sizeof(struct Mission));
-		strcpy(campaign.missions[idx].title, "Mission title");
-		strcpy(campaign.missions[idx].description, "Briefing text");
-		campaign.missions[idx].mapWidth = 48;
-		campaign.missions[idx].mapHeight = 48;
+		memset(&gCampaign.Setting.missions[idx], 0, sizeof(struct Mission));
+		strcpy(gCampaign.Setting.missions[idx].title, "Mission title");
+		strcpy(gCampaign.Setting.missions[idx].description, "Briefing text");
+		gCampaign.Setting.missions[idx].mapWidth = 48;
+		gCampaign.Setting.missions[idx].mapHeight = 48;
 	}
-	campaign.missionCount++;
+	gCampaign.Setting.missionCount++;
 }
 
 void DeleteMission(int *idx)
 {
 	int i;
 
-	if (*idx >= campaign.missionCount)
+	if (*idx >= gCampaign.Setting.missionCount)
 	{
 		return;
 	}
 
-	for (i = *idx; i < campaign.missionCount - 1; i++)
+	for (i = *idx; i < gCampaign.Setting.missionCount - 1; i++)
 	{
-		campaign.missions[i] = campaign.missions[i + 1];
+		gCampaign.Setting.missions[i] = gCampaign.Setting.missions[i + 1];
 	}
-	campaign.missionCount--;
-	if (campaign.missionCount > 0 && *idx >= campaign.missionCount)
+	gCampaign.Setting.missionCount--;
+	if (gCampaign.Setting.missionCount > 0 && *idx >= gCampaign.Setting.missionCount)
 	{
-		*idx = campaign.missionCount - 1;
+		*idx = gCampaign.Setting.missionCount - 1;
 	}
 }
 
@@ -1075,16 +1086,22 @@ static void AddChar(int xc, int yc, char c)
 	if (yc == YC_CAMPAIGNTITLE) {
 		switch (xc) {
 		case XC_CAMPAIGNTITLE:
-			Append(campaign.title, sizeof(campaign.title) - 1,
-			       c);
+			Append(
+				gCampaign.Setting.title,
+				sizeof(gCampaign.Setting.title) - 1,
+				c);
 			break;
 		case XC_AUTHOR:
-			Append(campaign.author,
-			       sizeof(campaign.author) - 1, c);
+			Append(
+				gCampaign.Setting.author,
+				sizeof(gCampaign.Setting.author) - 1,
+				c);
 			break;
 		case XC_CAMPAIGNDESC:
-			Append(campaign.description,
-			       sizeof(campaign.description) - 1, c);
+			Append(
+				gCampaign.Setting.description,
+				sizeof(gCampaign.Setting.description) - 1,
+				c);
 			break;
 		}
 	}
@@ -1122,13 +1139,13 @@ static void DelChar(int xc, int yc)
 	if (yc == YC_CAMPAIGNTITLE) {
 		switch (xc) {
 		case XC_CAMPAIGNTITLE:
-			Backspace(campaign.title);
+			Backspace(gCampaign.Setting.title);
 			break;
 		case XC_AUTHOR:
-			Backspace(campaign.author);
+			Backspace(gCampaign.Setting.author);
 			break;
 		case XC_CAMPAIGNDESC:
-			Backspace(campaign.description);
+			Backspace(gCampaign.Setting.description);
 			break;
 		}
 	}
@@ -1233,12 +1250,12 @@ static void AdjustXC(int yc, int *xc)
 
 static void Setup(int idx, int buildTables)
 {
-	if (idx >= campaign.missionCount)
+	if (idx >= gCampaign.Setting.missionCount)
 	{
 		currentMission = NULL;
 		return;
 	}
-	currentMission = &campaign.missions[idx];
+	currentMission = &gCampaign.Setting.missions[idx];
 	SetupMission(idx, buildTables, &gCampaign);
 }
 
@@ -1273,10 +1290,13 @@ static void Save(int asCode)
 		case SDLK_KP_ENTER:
 			if (!filename[0])
 				break;
-			if (asCode) {
-				SaveCampaignAsC(filename, name, &campaign);
-			} else {
-				SaveCampaign(filename, &campaign);
+			if (asCode)
+			{
+				SaveCampaignAsC(filename, name, &gCampaign.Setting);
+			}
+			else
+			{
+				SaveCampaign(filename, &gCampaign.Setting);
 			}
 			fileChanged = 0;
 			return;
@@ -1359,12 +1379,12 @@ static void HandleInput(
 		switch (c)
 		{
 		case 'x':
-			*scrap = campaign.missions[*mission];
+			*scrap = gCampaign.Setting.missions[*mission];
 			Delete(*xc, *yc, mission);
 			break;
 
 		case 'c':
-			*scrap = campaign.missions[*mission];
+			*scrap = gCampaign.Setting.missions[*mission];
 			break;
 
 		case 'v':
@@ -1381,8 +1401,8 @@ static void HandleInput(
 			break;
 
 		case 'n':
-			InsertMission(campaign.missionCount, NULL);
-			*mission = campaign.missionCount - 1;
+			InsertMission(gCampaign.Setting.missionCount, NULL);
+			*mission = gCampaign.Setting.missionCount - 1;
 			fileChanged = 1;
 			Setup(*mission, 0);
 			break;
@@ -1405,7 +1425,7 @@ static void HandleInput(
 			break;
 
 		case 'e':
-			EditCharacters(&campaign);
+			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
 			MouseSetRects(&gMouse, localClicks, NULL);
 			break;
@@ -1424,8 +1444,10 @@ static void HandleInput(
 			break;
 
 		case SDLK_END:
-			if (*mission < campaign.missionCount)
+			if (*mission < gCampaign.Setting.missionCount)
+			{
 				(*mission)++;
+			}
 			Setup(*mission, 0);
 			break;
 
@@ -1545,7 +1567,6 @@ static void EditCampaign(void)
 	memset(&scrap, 0, sizeof(scrap));
 	MouseSetRects(&gMouse, localClicks, NULL);
 
-	gCampaign.Setting = campaign;
 	gCampaign.seed = 0;
 	Setup(mission, 1);
 
@@ -1596,14 +1617,6 @@ int main(int argc, char *argv[])
 	int i;
 	int loaded = 0;
 
-	memset(&campaign, 0, sizeof(campaign));
-	strcpy(campaign.title, "Campaign title");
-	memset(&missions, 0, sizeof(missions));
-	campaign.missions = missions;
-	memset(&characters, 0, sizeof(characters));
-	campaign.characters = characters;
-	currentMission = NULL;
-
 	printf("C-Dogs Editor v0.8\n");
 	printf("Copyright Ronny Wester 1996\n");
 
@@ -1618,10 +1631,14 @@ int main(int argc, char *argv[])
 			    sizeof(lastFile) - strlen(lastFile) > 3) {
 				strcat(lastFile, ".CPN");
 			}
-			if (LoadCampaign
-			    (lastFile, &campaign, MAX_MISSIONS,
-			     MAX_CHARACTERS) == CAMPAIGN_OK)
+			if (LoadCampaign(
+					lastFile,
+					&gCampaign.Setting,
+					MAX_MISSIONS,
+					MAX_CHARACTERS) == CAMPAIGN_OK)
+			{
 				loaded = 1;
+			}
 		}
 	}
 
@@ -1666,6 +1683,16 @@ int main(int argc, char *argv[])
 
 	KeyInit(&gKeyboard);
 	MouseInit(&gMouse, gPics[145]);
+
+	// Reset campaign (graphics init may have created dummy campaigns)
+	memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
+	strcpy(gCampaign.Setting.title, "Campaign title");
+	memset(&missions, 0, sizeof(missions));
+	gCampaign.Setting.missions = missions;
+	memset(&characters, 0, sizeof(characters));
+	gCampaign.Setting.characters = characters;
+	currentMission = NULL;
+
 	EditCampaign();
 
 	GraphicsTerminate(&gGraphicsDevice);
