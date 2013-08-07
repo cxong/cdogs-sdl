@@ -1267,8 +1267,10 @@ static void Save(int asCode)
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		c = GetKey(&gKeyboard);
-		switch (c) {
-		case ENTER:
+		switch (c)
+		{
+		case SDLK_RETURN:
+		case SDLK_KP_ENTER:
 			if (!filename[0])
 				break;
 			if (asCode) {
@@ -1279,10 +1281,10 @@ static void Save(int asCode)
 			fileChanged = 0;
 			return;
 
-		case ESCAPE:
+		case SDLK_ESCAPE:
 			return;
 
-		case BACKSPACE:
+		case SDLK_BACKSPACE:
 			if (filename[0])
 				filename[strlen(filename) - 1] = 0;
 			break;
@@ -1315,6 +1317,217 @@ static int ConfirmQuit(void)
 
 	c = GetKey(&gKeyboard);
 	return (c == 'Y' || c == 'y');
+}
+
+static void Delete(int xc, int yc, int *mission)
+{
+	switch (yc)
+	{
+	case YC_CHARACTERS:
+		DeleteCharacter(xc);
+		break;
+
+	case YC_SPECIALS:
+		DeleteSpecial(xc);
+		break;
+
+	case YC_ITEMS:
+		DeleteItem(xc);
+		break;
+
+	default:
+		if (yc >= YC_OBJECTIVES)
+		{
+			DeleteObjective(yc - YC_OBJECTIVES);
+		}
+		else
+		{
+			DeleteMission(mission);
+		}
+		AdjustYC(&yc);
+		break;
+	}
+	fileChanged = 1;
+	Setup(*mission, 0);
+}
+
+static void HandleInput(
+	int c, int *xc, int *yc, int *mission, struct Mission *scrap, int *done)
+{
+	if (gKeyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	{
+		switch (c)
+		{
+		case 'x':
+			*scrap = campaign.missions[*mission];
+			Delete(*xc, *yc, mission);
+			break;
+
+		case 'c':
+			*scrap = campaign.missions[*mission];
+			break;
+
+		case 'v':
+			InsertMission(*mission, scrap);
+			fileChanged = 1;
+			Setup(*mission, 0);
+			break;
+
+		case 'q':
+			if (!fileChanged || ConfirmQuit())
+			{
+				*done = 1;
+			}
+			break;
+
+		case 'n':
+			InsertMission(campaign.missionCount, NULL);
+			*mission = campaign.missionCount - 1;
+			fileChanged = 1;
+			Setup(*mission, 0);
+			break;
+
+		case 's':
+			Save(0);
+			break;
+
+		case 'h':
+			Save(1);
+			break;
+
+		case 'm':
+			Setup(*mission, 0);
+			SetupMap();
+			DisplayAutoMap(1);
+			GetKey(&gKeyboard);
+			KillAllObjects();
+			FreeTriggersAndWatches();
+			break;
+
+		case 'e':
+			EditCharacters(&campaign);
+			Setup(*mission, 0);
+			MouseSetRects(&gMouse, localClicks, NULL);
+			break;
+		}
+	}
+	else
+	{
+		switch (c)
+		{
+		case SDLK_HOME:
+			if (*mission > 0)
+			{
+				(*mission)--;
+			}
+			Setup(*mission, 0);
+			break;
+
+		case SDLK_END:
+			if (*mission < campaign.missionCount)
+				(*mission)++;
+			Setup(*mission, 0);
+			break;
+
+		case SDLK_INSERT:
+			switch (*yc)
+			{
+			case YC_CHARACTERS:
+				currentMission->baddieCount =
+					CLAMP(currentMission->baddieCount + 1, 0, BADDIE_MAX);
+				*xc = currentMission->baddieCount - 1;
+				break;
+
+			case YC_SPECIALS:
+				currentMission->specialCount =
+					CLAMP(currentMission->specialCount + 1, 0, SPECIAL_MAX);
+				*xc = currentMission->specialCount - 1;
+				break;
+
+			case YC_ITEMS:
+				currentMission->itemCount =
+					CLAMP(currentMission->itemCount + 1, 0, ITEMS_MAX);
+				*xc = currentMission->itemCount - 1;
+				break;
+
+			default:
+				if (*yc >= YC_OBJECTIVES)
+				{
+					AddObjective();
+				}
+				else
+				{
+					InsertMission(*mission, NULL);
+				}
+				break;
+			}
+			fileChanged = 1;
+			Setup(*mission, 0);
+			break;
+
+		case SDLK_DELETE:
+			Delete(*xc, *yc, mission);
+			break;
+
+		case SDLK_UP:
+			(*yc)--;
+			AdjustYC(yc);
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_DOWN:
+			(*yc)++;
+			AdjustYC(yc);
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_LEFT:
+			(*xc)--;
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_RIGHT:
+			(*xc)++;
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_PAGEUP:
+			if (Change(*yc, *xc, 1, mission))
+			{
+				fileChanged = 1;
+			}
+			Setup(*mission, 0);
+			break;
+
+		case SDLK_PAGEDOWN:
+			if (Change(*yc, *xc, -1, mission))
+			{
+				fileChanged = 1;
+			}
+			Setup(*mission, 0);
+			break;
+
+		case SDLK_ESCAPE:
+			if (!fileChanged || ConfirmQuit())
+			{
+				*done = 1;
+			}
+			break;
+
+		case SDLK_BACKSPACE:
+			DelChar(*xc, *yc);
+			fileChanged = 1;
+			break;
+
+		default:
+			if (c >= ' ' && c <= 'z')
+			{
+				fileChanged = 1;
+				AddChar(*xc, *yc, (char)c);
+			}
+			break;
+		}
+	}
 }
 
 static void EditCampaign(void)
@@ -1359,189 +1572,16 @@ static void EditCampaign(void)
 					xc = ((tag >> 8) & 0xFF);
 					AdjustXC(yc, &xc);
 				}
-				if ((tag & SELECT_ONLY) != 0)
-				{
-					c = DUMMY;
-				}
 				else if (!(tag & SELECT_ONLY_FIRST) ||
 					(xc == xcOld && yc == ycOld))
 				{
 					c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
-						PAGEUP : PAGEDOWN;
-				}
-				else
-				{
-					c = DUMMY;
+						SDLK_PAGEUP : SDLK_PAGEDOWN;
 				}
 			}
 		}
 
-		switch (c) {
-		case HOME:
-			if (mission > 0)
-				mission--;
-			Setup(mission, 0);
-			break;
-
-		case END:
-			if (mission < campaign.missionCount)
-				mission++;
-			Setup(mission, 0);
-			break;
-
-		case INSERT:
-			switch (yc) {
-			case YC_CHARACTERS:
-				currentMission->baddieCount =
-					CLAMP(currentMission->baddieCount + 1, 0, BADDIE_MAX);
-				xc = currentMission->baddieCount - 1;
-				break;
-
-			case YC_SPECIALS:
-				currentMission->specialCount =
-					CLAMP(currentMission->specialCount + 1, 0, SPECIAL_MAX);
-				xc = currentMission->specialCount - 1;
-				break;
-
-			case YC_ITEMS:
-				currentMission->itemCount =
-					CLAMP(currentMission->itemCount + 1, 0, ITEMS_MAX);
-				xc = currentMission->itemCount - 1;
-				break;
-
-			default:
-				if (yc >= YC_OBJECTIVES)
-					AddObjective();
-				else
-					InsertMission(mission, NULL);
-				break;
-			}
-			fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case ALT_X:
-			scrap = campaign.missions[mission];
-
-		case DELETE:
-			switch (yc) {
-			case YC_CHARACTERS:
-				DeleteCharacter(xc);
-				break;
-
-			case YC_SPECIALS:
-				DeleteSpecial(xc);
-				break;
-
-			case YC_ITEMS:
-				DeleteItem(xc);
-				break;
-
-			default:
-				if (yc >= YC_OBJECTIVES)
-					DeleteObjective(yc -
-							YC_OBJECTIVES);
-				else
-					DeleteMission(&mission);
-				AdjustYC(&yc);
-				break;
-			}
-			fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case ALT_C:
-			scrap = campaign.missions[mission];
-			break;
-
-		case ALT_V:
-			InsertMission(mission, &scrap);
-			fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case ALT_N:
-			InsertMission(campaign.missionCount, NULL);
-			mission = campaign.missionCount - 1;
-			fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case ARROW_UP:
-			yc--;
-			AdjustYC(&yc);
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_DOWN:
-			yc++;
-			AdjustYC(&yc);
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_LEFT:
-			xc--;
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_RIGHT:
-			xc++;
-			AdjustXC(yc, &xc);
-			break;
-
-		case PAGEUP:
-			if (Change(yc, xc, 1, &mission))
-				fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case PAGEDOWN:
-			if (Change(yc, xc, -1, &mission))
-				fileChanged = 1;
-			Setup(mission, 0);
-			break;
-
-		case ESCAPE:
-		case ALT_Q:
-			if (!fileChanged || ConfirmQuit())
-				done = 1;
-			break;
-
-		case BACKSPACE:
-			DelChar(xc, yc);
-			fileChanged = 1;
-			break;
-
-		case ALT_S:
-			Save(0);
-			break;
-
-		case ALT_H:
-			Save(1);
-			break;
-
-		case ALT_M:
-			Setup(mission, 0);
-			SetupMap();
-			DisplayAutoMap(1);
-			GetKey(&gKeyboard);
-			KillAllObjects();
-			FreeTriggersAndWatches();
-			break;
-
-		case ALT_E:
-			EditCharacters(&campaign);
-			Setup(mission, 0);
-			MouseSetRects(&gMouse, localClicks, NULL);
-			break;
-
-		default:
-			if (c >= ' ' && c <= 'z') {
-				fileChanged = 1;
-				AddChar(xc, yc, (char)c);
-			}
-			break;
-		}
+		HandleInput(c, &xc, &yc, &mission, &scrap, &done);
 		Display(mission, xc, yc, c);
 		SDL_Delay(10);
 	}

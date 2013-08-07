@@ -155,6 +155,7 @@ typedef struct
 	SDL_Event keyevent;
 	int previous_keys[512];
 	int current_keys[512];
+	SDLMod modState;
 } keyboard_t;
 extern keyboard_t gKeyboard;
 

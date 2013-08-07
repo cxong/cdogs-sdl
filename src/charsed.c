@@ -579,6 +579,103 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 	}
 }
 
+static void HandleInput(
+	int c, int *xc, int *yc,
+	int *idx, CampaignSetting *setting, TBadGuy *scrap, int *done)
+{
+	if (gKeyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	{
+		switch (c)
+		{
+		case 'x':
+			*scrap = setting->characters[*idx];
+			DeleteCharacter(setting, idx);
+			fileChanged = 1;
+			break;
+
+		case 'c':
+			*scrap = setting->characters[*idx];
+			break;
+
+		case 'v':
+			InsertCharacter(setting, *idx, scrap);
+			fileChanged = 1;
+			break;
+
+		case 'n':
+			InsertCharacter(setting, setting->characterCount, NULL);
+			*idx = setting->characterCount - 1;
+			fileChanged = 1;
+			break;
+		}
+	}
+	else
+	{
+		switch (c)
+		{
+		case SDLK_HOME:
+			if (*idx > 0)
+			{
+				(*idx)--;
+			}
+			break;
+
+		case SDLK_END:
+			if (*idx < setting->characterCount - 1)
+			{
+				(*idx)++;
+			}
+			break;
+
+		case SDLK_INSERT:
+			InsertCharacter(setting, *idx, NULL);
+			fileChanged = 1;
+			break;
+
+		case SDLK_DELETE:
+			DeleteCharacter(setting, idx);
+			fileChanged = 1;
+			break;
+
+		case SDLK_UP:
+			(*yc)--;
+			AdjustYC(yc);
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_DOWN:
+			(*yc)++;
+			AdjustYC(yc);
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_LEFT:
+			(*xc)--;
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_RIGHT:
+			(*xc)++;
+			AdjustXC(*yc, xc);
+			break;
+
+		case SDLK_PAGEUP:
+			Change(setting, *idx, *yc, *xc, 1);
+			fileChanged = 1;
+			break;
+
+		case SDLK_PAGEDOWN:
+			Change(setting, *idx, *yc, *xc, -1);
+			fileChanged = 1;
+			break;
+
+		case SDLK_ESCAPE:
+			*done = 1;
+			break;
+		}
+	}
+}
+
 void EditCharacters(CampaignSetting *setting)
 {
 	int done = 0;
@@ -604,7 +701,6 @@ void EditCharacters(CampaignSetting *setting)
 				{
 					idx = tag;
 				}
-				c = DUMMY;
 			}
 			else if (MouseTryGetRectTag(&gMouse, &tag))
 			{
@@ -613,89 +709,11 @@ void EditCharacters(CampaignSetting *setting)
 				AdjustYC(&yc);
 				AdjustXC(yc, &xc);
 				c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
-					PAGEUP : PAGEDOWN;
+					SDLK_PAGEUP : SDLK_PAGEDOWN;
 			}
 		}
 
-		switch (c) {
-		case HOME:
-			if (idx > 0)
-			{
-				idx--;
-			}
-			break;
-
-		case END:
-			if (idx < setting->characterCount - 1)
-			{
-				idx++;
-			}
-			break;
-
-		case INSERT:
-			InsertCharacter(setting, idx, NULL);
-			fileChanged = 1;
-			break;
-
-		case ALT_X:
-			scrap = setting->characters[idx];
-
-		case DELETE:
-			DeleteCharacter(setting, &idx);
-			fileChanged = 1;
-			break;
-
-		case ALT_C:
-			scrap = setting->characters[idx];
-			break;
-
-		case ALT_V:
-			InsertCharacter(setting, idx, &scrap);
-			fileChanged = 1;
-			break;
-
-		case ALT_N:
-			InsertCharacter(setting, setting->characterCount, NULL);
-			idx = setting->characterCount - 1;
-			fileChanged = 1;
-			break;
-
-		case ARROW_UP:
-			yc--;
-			AdjustYC(&yc);
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_DOWN:
-			yc++;
-			AdjustYC(&yc);
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_LEFT:
-			xc--;
-			AdjustXC(yc, &xc);
-			break;
-
-		case ARROW_RIGHT:
-			xc++;
-			AdjustXC(yc, &xc);
-			break;
-
-		case PAGEUP:
-			Change(setting, idx, yc, xc, 1);
-			fileChanged = 1;
-			break;
-
-		case PAGEDOWN:
-			Change(setting, idx, yc, xc, -1);
-			fileChanged = 1;
-			break;
-
-		case ESCAPE:
-			done = 1;
-			break;
-		}
+		HandleInput(c, &xc, &yc, &idx, setting, &scrap, &done);
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}

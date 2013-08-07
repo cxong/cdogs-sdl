@@ -37,6 +37,7 @@ void KeyInit(keyboard_t *keyboard)
 {
 	memset(keyboard->current_keys, 0, sizeof(keyboard->current_keys));
 	memset(keyboard->previous_keys, 0, sizeof(keyboard->previous_keys));
+	keyboard->modState = KMOD_NONE;
 }
 
 void KeyPoll(keyboard_t *keyboard)
@@ -55,6 +56,7 @@ void KeyPoll(keyboard_t *keyboard)
 			break;
 		}
 	}
+	keyboard->modState = SDL_GetModState();
 }
 
 int KeyIsDown(keyboard_t *keyboard, int key)
