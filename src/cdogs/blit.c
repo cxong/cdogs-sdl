@@ -186,7 +186,7 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 }
 
 static TPalette gCurrentPalette;
-#define GAMMA 3
+#define GAMMA 4
 color_t PaletteToColor(unsigned char index)
 {
 	color_t color = gCurrentPalette[index];

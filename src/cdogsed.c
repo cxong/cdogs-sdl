@@ -1576,8 +1576,8 @@ static void EditCampaign(void)
 		int c;
 		KeyPoll(&gKeyboard);
 		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse);
-		if (gMouse.currentButtons)
+		MousePoll(&gMouse, SDL_GetTicks());
+		if (MouseGetPressed(&gMouse))
 		{
 			if (MouseTryGetRectTag(&gMouse, &tag))
 			{
@@ -1593,10 +1593,10 @@ static void EditCampaign(void)
 					xc = ((tag >> 8) & 0xFF);
 					AdjustXC(yc, &xc);
 				}
-				else if (!(tag & SELECT_ONLY_FIRST) ||
+				if (!(tag & SELECT_ONLY_FIRST) ||
 					(xc == xcOld && yc == ycOld))
 				{
-					c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
+					c = MouseGetPressed(&gMouse) == SDL_BUTTON_LEFT ?
 						SDLK_PAGEUP : SDLK_PAGEDOWN;
 				}
 			}

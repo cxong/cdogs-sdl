@@ -692,8 +692,8 @@ void EditCharacters(CampaignSetting *setting)
 		int c;
 		KeyPoll(&gKeyboard);
 		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse);
-		if (gMouse.currentButtons)
+		MousePoll(&gMouse, SDL_GetTicks());
+		if (MouseGetPressed(&gMouse))
 		{
 			if (PosToCharacterIndex(gMouse.currentPos, &tag))
 			{
@@ -708,7 +708,7 @@ void EditCharacters(CampaignSetting *setting)
 				yc = (tag & 0xFF);
 				AdjustYC(&yc);
 				AdjustXC(yc, &xc);
-				c = gMouse.currentButtons == SDL_BUTTON_LEFT ?
+				c = MouseGetPressed(&gMouse) == SDL_BUTTON_LEFT ?
 					SDLK_PAGEUP : SDLK_PAGEDOWN;
 			}
 		}
