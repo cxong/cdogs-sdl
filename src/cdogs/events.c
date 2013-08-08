@@ -46,9 +46,12 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#include "events.h"
 
 #include <stdlib.h>
-#include "events.h"
+
+#include <SDL_timer.h>
+
 #include "keyboard.h"
 
 
@@ -57,7 +60,7 @@ int GetKey(keyboard_t *keyboard)
 	int key_pressed = 0;
 	do
 	{
-		KeyPoll(keyboard);
+		KeyPoll(keyboard, SDL_GetTicks());
 		key_pressed = KeyGetPressed(keyboard);
 	} while (!key_pressed);
 	return key_pressed;
@@ -68,7 +71,7 @@ void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks)
 	for (;;)
 	{
 		int i;
-		KeyPoll(keyboard);
+		KeyPoll(keyboard, SDL_GetTicks());
 		JoyPoll(joysticks);
 		if (KeyGetPressed(keyboard))
 		{

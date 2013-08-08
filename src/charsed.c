@@ -690,9 +690,10 @@ void EditCharacters(CampaignSetting *setting)
 	{
 		int tag;
 		int c;
-		KeyPoll(&gKeyboard);
+		Uint32 ticks = SDL_GetTicks();
+		KeyPoll(&gKeyboard, ticks);
 		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse, SDL_GetTicks());
+		MousePoll(&gMouse, ticks);
 		if (MouseGetPressed(&gMouse))
 		{
 			if (PosToCharacterIndex(gMouse.currentPos, &tag))

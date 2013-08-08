@@ -216,7 +216,7 @@ void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 int GetMenuCmd(void)
 {
 	int cmd = 0;
-	if (KeyIsPressed(&gKeyboard, keyEsc))
+	if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
 	{
 		return CMD_ESC;
 	}
@@ -224,27 +224,27 @@ int GetMenuCmd(void)
 	GetPlayerCmd(&cmd, NULL, 1);
 	if (!cmd)
 	{
-		if (KeyIsPressed(&gKeyboard, keyArrowLeft))
+		if (KeyIsPressed(&gKeyboard, SDLK_LEFT))
 		{
 			cmd |= CMD_LEFT;
 		}
-		else if (KeyIsPressed(&gKeyboard, keyArrowRight))
+		else if (KeyIsPressed(&gKeyboard, SDLK_RIGHT))
 		{
 			cmd |= CMD_RIGHT;
 		}
-		if (KeyIsPressed(&gKeyboard, keyArrowUp))
+		if (KeyIsPressed(&gKeyboard, SDLK_UP))
 		{
 			cmd |= CMD_UP;
 		}
-		else if (KeyIsPressed(&gKeyboard, keyArrowDown))
+		else if (KeyIsPressed(&gKeyboard, SDLK_DOWN))
 		{
 			cmd |= CMD_DOWN;
 		}
-		if (KeyIsPressed(&gKeyboard, keyEnter))
+		if (KeyIsPressed(&gKeyboard, SDLK_RETURN))
 		{
 			cmd |= CMD_BUTTON1;
 		}
-		if (KeyIsPressed(&gKeyboard, keyBackspace))
+		if (KeyIsPressed(&gKeyboard, SDLK_BACKSPACE))
 		{
 			cmd |= CMD_BUTTON2;
 		}
@@ -310,10 +310,10 @@ void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode)
 	}
 }
 
-void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard)
+void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard, Uint32 ticks)
 {
 	JoyPoll(joysticks);
-	KeyPoll(keyboard);
+	KeyPoll(keyboard, ticks);
 }
 
 const char *InputDeviceName(int d)

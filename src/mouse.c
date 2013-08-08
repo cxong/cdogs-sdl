@@ -62,13 +62,13 @@ void MouseInit(Mouse *mouse, Pic *cursor)
 	memset(mouse, 0, sizeof *mouse);
 	mouse->cursor = cursor;
 	mouse->ticks = 0;
-	mouse->repeatedButton = 0;
-	mouse->repeatedButtonPressedTicks = 0;
+	mouse->repeatedTicks = 0;
 	SDL_ShowCursor(SDL_DISABLE);
 }
 
 void MousePoll(Mouse *mouse, Uint32 ticks)
 {
+	int areSameButtonsDown = mouse->previousButtons == mouse->currentButtons;
 	mouse->previousButtons = mouse->currentButtons;
 	mouse->previousPos = mouse->currentPos;
 	mouse->currentButtons =
@@ -77,21 +77,19 @@ void MousePoll(Mouse *mouse, Uint32 ticks)
 		Vec2iScaleDiv(mouse->currentPos, gConfig.Graphics.ScaleFactor);
 
 	// If same keys have been pressed, remember how long they have been pressed
-	if (mouse->repeatedButton == mouse->currentButtons)
+	if (areSameButtonsDown)
 	{
 		Uint32 ticksElapsed = ticks - mouse->ticks;
-		mouse->repeatedButtonPressedTicks += ticksElapsed;
+		mouse->repeatedTicks += ticksElapsed;
 	}
 	else
 	{
-		// Remember which key(s) were pressed
-		mouse->repeatedButton = mouse->currentButtons;
-		mouse->repeatedButtonPressedTicks = 0;
+		mouse->repeatedTicks = 0;
 	}
 	// If more time has elapsed, forget about previous buttons for repeating
-	if (mouse->repeatedButtonPressedTicks > MOUSE_REPEAT_TICKS)
+	if (mouse->repeatedTicks > MOUSE_REPEAT_TICKS)
 	{
-		mouse->repeatedButtonPressedTicks -= MOUSE_REPEAT_TICKS;
+		mouse->repeatedTicks -= MOUSE_REPEAT_TICKS;
 		mouse->pressedButtons = mouse->currentButtons;
 	}
 	else

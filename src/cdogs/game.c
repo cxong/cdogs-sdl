@@ -450,7 +450,7 @@ int HandleKey(int *done, int cmd)
 				hasDisplayedAutomap = 1;
 			}
 			SDL_Delay(10);
-			InputPoll(&gJoysticks, &gKeyboard);
+			InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
 			GetPlayerInput(&cmd1, &cmd2);
 			cmd = cmd1 | cmd2;
 		}
@@ -466,7 +466,7 @@ int HandleKey(int *done, int cmd)
 		*done = 1;
 		return 0;
 	}
-	else if (KeyIsPressed(&gKeyboard, keyEsc) ||
+	else if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE) ||
 		JoyIsPressed(&gJoysticks.joys[0], CMD_BUTTON4) ||
 		JoyIsPressed(&gJoysticks.joys[1], CMD_BUTTON4))
 	{
@@ -559,7 +559,7 @@ int gameloop(void)
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-		InputPoll(&gJoysticks, &gKeyboard);
+		InputPoll(&gJoysticks, &gKeyboard, ticks_now);
 
 		if (!gameIsPaused)
 		{

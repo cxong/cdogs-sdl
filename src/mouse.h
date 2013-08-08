@@ -49,8 +49,7 @@ typedef struct
 	Vec2i currentPos;
 	Pic *cursor;
 	Uint32 ticks;
-	Uint32 repeatedButton;
-	Uint32 repeatedButtonPressedTicks;
+	Uint32 repeatedTicks;
 	// C-Dogs editor uses rectangles to detect mouse presses on key areas
 	// TODO: redesign this, is there a light-weight mouse-GUI framework?
 	MouseRect *rects;

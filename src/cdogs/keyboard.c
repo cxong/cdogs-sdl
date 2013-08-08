@@ -33,45 +33,87 @@
 
 keyboard_t gKeyboard;
 
+#define KEYBOARD_REPEAT_TICKS 100
+
 void KeyInit(keyboard_t *keyboard)
 {
-	memset(keyboard->current_keys, 0, sizeof(keyboard->current_keys));
-	memset(keyboard->previous_keys, 0, sizeof(keyboard->previous_keys));
+	memset(keyboard->currentKeys, 0, sizeof keyboard->currentKeys);
+	memset(keyboard->previousKeys, 0, sizeof keyboard->previousKeys);
+	memset(keyboard->pressedKeys, 0, sizeof keyboard->pressedKeys);
 	keyboard->modState = KMOD_NONE;
+	keyboard->ticks = 0;
+	keyboard->repeatedTicks;
 }
 
-void KeyPoll(keyboard_t *keyboard)
+void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 {
-	memcpy(keyboard->previous_keys, keyboard->current_keys, sizeof(keyboard->previous_keys));
+	int areSameKeysDown = memcmp(
+		keyboard->previousKeys,
+		keyboard->currentKeys,
+		sizeof keyboard->previousKeys) == 0;
+	memcpy(
+		keyboard->previousKeys,
+		keyboard->currentKeys,
+		sizeof keyboard->previousKeys);
 	while (SDL_PollEvent(&keyboard->keyevent))
 	{
 		switch(keyboard->keyevent.type)
 		{
 		case SDL_KEYDOWN:
-			keyboard->current_keys[keyboard->keyevent.key.keysym.sym] = 1;
+			keyboard->currentKeys[keyboard->keyevent.key.keysym.sym] = 1;
 			break;
 		case SDL_KEYUP:
-			keyboard->current_keys[keyboard->keyevent.key.keysym.sym] = 0;
+			keyboard->currentKeys[keyboard->keyevent.key.keysym.sym] = 0;
 		default:
 			break;
 		}
 	}
 	keyboard->modState = SDL_GetModState();
+
+	// If same keys have been pressed, remember how long they have been pressed
+	if (areSameKeysDown)
+	{
+		Uint32 ticksElapsed = ticks - keyboard->ticks;
+		keyboard->repeatedTicks += ticksElapsed;
+	}
+	else
+	{
+		keyboard->repeatedTicks = 0;
+	}
+	// If more time has elapsed, forget about previous keys for repeating
+	if (keyboard->repeatedTicks > KEYBOARD_REPEAT_TICKS)
+	{
+		keyboard->repeatedTicks -= KEYBOARD_REPEAT_TICKS;
+		memcpy(
+			keyboard->pressedKeys,
+			keyboard->currentKeys,
+			sizeof keyboard->pressedKeys);
+	}
+	else
+	{
+		int i;
+		for (i = 0; i < 512; i++)
+		{
+			keyboard->pressedKeys[i] =
+				keyboard->currentKeys[i] && !keyboard->previousKeys[i];
+		}
+	}
+	keyboard->ticks = ticks;
 }
 
 int KeyIsDown(keyboard_t *keyboard, int key)
 {
-	return keyboard->current_keys[key];
+	return keyboard->currentKeys[key];
 }
 
 int KeyIsPressed(keyboard_t *keyboard, int key)
 {
-	return KeyIsDown(keyboard, key) && !keyboard->previous_keys[key];
+	return keyboard->pressedKeys[key];
 }
 
 int KeyIsReleased(keyboard_t *keyboard, int key)
 {
-	return !KeyIsDown(keyboard, key) && keyboard->previous_keys[key];
+	return !KeyIsDown(keyboard, key) && keyboard->previousKeys[key];
 }
 
 int KeyGetPressed(keyboard_t *keyboard)

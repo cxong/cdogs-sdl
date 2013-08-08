@@ -1545,6 +1545,10 @@ static void HandleInput(
 			if (c >= ' ' && c <= 'z')
 			{
 				fileChanged = 1;
+				if (gKeyboard.modState & (KMOD_SHIFT | KMOD_CAPS))
+				{
+					c = toupper(c);
+				}
 				AddChar(*xc, *yc, (char)c);
 			}
 			break;
@@ -1574,9 +1578,10 @@ static void EditCampaign(void)
 	while (!done)
 	{
 		int c;
-		KeyPoll(&gKeyboard);
+		Uint32 ticks = SDL_GetTicks();
+		KeyPoll(&gKeyboard, ticks);
 		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse, SDL_GetTicks());
+		MousePoll(&gMouse, ticks);
 		if (MouseGetPressed(&gMouse))
 		{
 			if (MouseTryGetRectTag(&gMouse, &tag))

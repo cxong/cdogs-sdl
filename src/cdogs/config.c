@@ -187,15 +187,15 @@ void ConfigLoadDefault(Config *config)
 	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RSHIFT;
 	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RETURN;
 	config->Input.PlayerKeys[1].Device = INPUT_DEVICE_KEYBOARD;
-	config->Input.PlayerKeys[1].Keys.left = keyKeypad4;
-	config->Input.PlayerKeys[1].Keys.right = keyKeypad6;
-	config->Input.PlayerKeys[1].Keys.up = keyKeypad8;
-	config->Input.PlayerKeys[1].Keys.down = keyKeypad2;
-	config->Input.PlayerKeys[1].Keys.button1 = keyKeypad0;
-	config->Input.PlayerKeys[1].Keys.button2 = keyKeypadEnter;
+	config->Input.PlayerKeys[1].Keys.left = SDLK_KP4;
+	config->Input.PlayerKeys[1].Keys.right = SDLK_KP6;
+	config->Input.PlayerKeys[1].Keys.up = SDLK_KP8;
+	config->Input.PlayerKeys[1].Keys.down = SDLK_KP2;
+	config->Input.PlayerKeys[1].Keys.button1 = SDLK_KP0;
+	config->Input.PlayerKeys[1].Keys.button2 = SDLK_KP_ENTER;
 	for (i = 0; i < 2; i++)
 	{
-		config->Input.PlayerKeys[i].Keys.map = keyTab;
+		config->Input.PlayerKeys[i].Keys.map = SDLK_TAB;
 	}
 	config->Input.SwapButtonsJoystick1 = 0;
 	config->Input.SwapButtonsJoystick2 = 0;
