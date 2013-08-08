@@ -236,3 +236,44 @@ void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color)
 	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
 	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
 }
+
+void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
+{
+	Vec2i drawPos;
+	HSV tint = { -1.0, 1.0, 0.0 };
+	if (!gConfig.Game.Shadows)
+	{
+		return;
+	}
+	for (drawPos.y = pos.y - size.y; drawPos.y < pos.y + size.y; drawPos.y++)
+	{
+		if (drawPos.y >= device->clipping.bottom)
+		{
+			break;
+		}
+		if (drawPos.y < device->clipping.top)
+		{
+			continue;
+		}
+		for (drawPos.x = pos.x - size.x; drawPos.x < pos.x + size.x; drawPos.x++)
+		{
+			// Calculate value tint based on distance from center
+			Vec2i scaledPos;
+			int distance2;
+			if (drawPos.x >= device->clipping.right)
+			{
+				break;
+			}
+			if (drawPos.y < device->clipping.left)
+			{
+				continue;
+			}
+			scaledPos.x = drawPos.x;
+			scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
+			distance2 = DistanceSquared(scaledPos, pos);
+			// Maximum distance is x, so scale distance squared by x squared
+			tint.v = CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0);
+			DrawPointTint(device, drawPos, tint);
+		}
+	}
+}

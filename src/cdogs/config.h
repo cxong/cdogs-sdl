@@ -74,6 +74,7 @@ typedef struct
 	int PlayerHP;
 	int Fog;
 	int SightRange;
+	int Shadows;
 } GameConfig;
 
 typedef struct

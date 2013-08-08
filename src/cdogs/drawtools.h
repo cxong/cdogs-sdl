@@ -82,4 +82,6 @@ void DrawRectangleRGB(
 //  *
 void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color);
 
+void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size);
+
 #endif /* __DRAW_TOOLS */

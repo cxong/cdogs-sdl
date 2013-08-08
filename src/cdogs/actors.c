@@ -136,47 +136,6 @@ static ColorShade colorShades[SHADE_COUNT] = {
 
 unsigned char BestMatch(int r, int g, int b);
 
-
-static void DrawShadow(Vec2i pos)
-{
-	Vec2i drawPos;
-	HSV tint = { -1.0, 1.0, 0.0 };
-	// Size of shadow
-	const int dx = 8;
-	const int dy = 6;
-	for (drawPos.y = pos.y - dy; drawPos.y < pos.y + dy; drawPos.y++)
-	{
-		if (drawPos.y >= gGraphicsDevice.clipping.bottom)
-		{
-			break;
-		}
-		if (drawPos.y < gGraphicsDevice.clipping.top)
-		{
-			continue;
-		}
-		for (drawPos.x = pos.x - dx; drawPos.x < pos.x + dx; drawPos.x++)
-		{
-			// Calculate value tint based on distance from center
-			Vec2i scaledPos;
-			int distance2;
-			if (drawPos.x >= gGraphicsDevice.clipping.right)
-			{
-				break;
-			}
-			if (drawPos.y < gGraphicsDevice.clipping.left)
-			{
-				continue;
-			}
-			scaledPos.x = drawPos.x;
-			scaledPos.y = (drawPos.y - pos.y) * dx / dy + pos.y;
-			distance2 = DistanceSquared(scaledPos, pos);
-			// Maximum distance is dx, so scale distance squared by dx squared
-			tint.v = CLAMP(distance2 * 1.0 / (dx*dx), 0.0, 1.0);
-			DrawPointTint(&gGraphicsDevice, drawPos, tint);
-		}
-	}
-}
-
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
@@ -330,7 +289,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	}
 	else
 	{
-		DrawShadow(Vec2iNew(x, y));
+		DrawShadow(&gGraphicsDevice, Vec2iNew(x, y), Vec2iNew(8, 6));
 		if (pic1.picIndex >= 0)
 		{
 			Blit(

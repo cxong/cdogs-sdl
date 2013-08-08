@@ -52,6 +52,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "drawtools.h"
 #include "map.h"
 #include "blit.h"
 #include "pics.h"
@@ -176,6 +177,11 @@ void DrawDynamite(int x, int y, const TMobileObject * obj)
 		gPics[pic->picIndex]);
 }
 
+static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
+{
+	DrawShadow(device, pos, Vec2iNew(4, 3));
+}
+
 void DrawMolotov(int x, int y, const TMobileObject * obj)
 {
 	const TOffsetPic *pic;
@@ -183,6 +189,7 @@ void DrawMolotov(int x, int y, const TMobileObject * obj)
 	pic = &cGeneralPics[OFSPIC_MOLOTOV];
 	if (obj->z > 0)
 	{
+		DrawGrenadeShadow(&gGraphicsDevice, Vec2iNew(x, y));
 		y -= obj->z / 16;
 	}
 	DrawTPic(
@@ -242,6 +249,7 @@ void DrawGrenade(int x, int y, const TMobileObject * obj)
 	pic = &cGrenadePics[(obj->count / 2) & 3];
 	if (obj->z > 0)
 	{
+		DrawGrenadeShadow(&gGraphicsDevice, Vec2iNew(x, y));
 		y -= obj->z / 16;
 	}
 	DrawTPic(

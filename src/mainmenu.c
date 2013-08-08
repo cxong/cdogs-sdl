@@ -66,8 +66,6 @@ menu_t *MenuCreateCampaigns(
 	campaign_list_t *list,
 	int is_two_player);
 menu_t *MenuCreateOptions(const char *name);
-menu_t *MenuCreateControls(const char *name);
-menu_t *MenuCreateSound(const char *name);
 menu_t *MenuCreateQuit(const char *name);
 
 MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
@@ -109,9 +107,7 @@ MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList,
 			1));
-	MenuAddSubmenu(ms->root, MenuCreateOptions("Game options..."));
-	MenuAddSubmenu(ms->root, MenuCreateControls("Controls..."));
-	MenuAddSubmenu(ms->root, MenuCreateSound("Sound..."));
+	MenuAddSubmenu(ms->root, MenuCreateOptions("Options..."));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
 	MenuAddExitType(ms, MENU_TYPE_CAMPAIGN_ITEM);
@@ -177,7 +173,28 @@ menu_t *MenuCreateCampaignItem(
 	return menu;
 }
 
+menu_t *MenuCreateOptionsGame(const char *name);
+menu_t *MenuCreateOptionsGraphics(const char *name);
+menu_t *MenuCreateOptionsControls(const char *name);
+menu_t *MenuCreateOptionsSound(const char *name);
+
 menu_t *MenuCreateOptions(const char *name)
+{
+	menu_t *menu = MenuCreateNormal(
+		name,
+		"Options:",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddSubmenu(menu, MenuCreateOptionsGame("Game..."));
+	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics..."));
+	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls..."));
+	MenuAddSubmenu(menu, MenuCreateOptionsSound("Sound..."));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Back"));
+	return menu;
+}
+
+menu_t *MenuCreateOptionsGame(const char *name)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -202,18 +219,6 @@ menu_t *MenuCreateOptions(const char *name)
 			"Display time",
 			&gConfig.Interface.ShowTime,
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Brightness", (int *)&gConfig.Graphics.Brightness,
-			BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Splitscreen always",
-			&gConfig.Interface.SplitscreenAlways,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu, MenuCreateOptionSeed("Random seed", &gConfig.Game.RandomSeed));
 	MenuAddSubmenu(
@@ -265,6 +270,36 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
+			"Shadows",
+			&gConfig.Game.Shadows,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+menu_t *MenuCreateOptionsGraphics(const char *name)
+{
+	menu_t *menu = MenuCreateNormal(
+		name,
+		"Graphics Options:",
+		MENU_TYPE_OPTIONS,
+		0);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Brightness", (int *)&gConfig.Graphics.Brightness,
+			BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Splitscreen always",
+			&gConfig.Interface.SplitscreenAlways,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
 			"Video fullscreen",
 			&gConfig.Graphics.Fullscreen,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
@@ -291,7 +326,7 @@ menu_t *MenuCreateOptionChangeControl(
 	const char *name, input_device_e *device0, input_device_e *device1);
 menu_t *MenuCreateKeys(const char *name);
 
-menu_t *MenuCreateControls(const char *name)
+menu_t *MenuCreateOptionsControls(const char *name)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -330,7 +365,7 @@ menu_t *MenuCreateControls(const char *name)
 	return menu;
 }
 
-menu_t *MenuCreateSound(const char *name)
+menu_t *MenuCreateOptionsSound(const char *name)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,

@@ -51,6 +51,7 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadInt(&config->PlayerHP, node, "PlayerHP");
 	LoadBool(&config->Fog, node, "Fog");
 	LoadInt(&config->SightRange, node, "SightRange");
+	LoadBool(&config->Shadows, node, "Shadows");
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -70,6 +71,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 	json_insert_pair_into_object(
 		subConfig, "Fog", json_new_bool(config->Fog));
 	AddIntPair(subConfig, "SightRange", config->SightRange);
+	json_insert_pair_into_object(
+		subConfig, "Shadows", json_new_bool(config->Shadows));
 	json_insert_pair_into_object(root, "Game", subConfig);
 }
 
