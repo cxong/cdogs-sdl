@@ -114,6 +114,16 @@ size_t f_read16(FILE *f, void *buf, size_t size)
 	return ret;
 }
 
+int fwrite32(FILE *f, void *buf)
+{
+	size_t ret = fwrite(buf, 4, 1, f);
+	if (ret != 1)
+	{
+		return 0;
+	}
+	return 1;
+}
+
 
 int ScanCampaign(const char *filename, char *title, int *missions)
 {
@@ -353,63 +363,51 @@ bail:
 
 int SaveCampaign(const char *filename, CampaignSetting *setting)
 {
-	UNUSED(filename);
-	UNUSED(setting);
-	/* Unsupported for now
-	int f;
+	FILE *f;
 	int i;
+	char buf[CDOGS_FILENAME_MAX];
 
-	f = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (f >= 0) {
-		ssize_t writeres;
-	#define CHECK_WRITE()\
-		if (writeres != 0) {\
-			perror("SaveCampaign - couldn't write to file: ");\
-			close(f);\
-			return CAMPAIGN_BADFILE;\
-		}
-		i = CAMPAIGN_MAGIC;
-		writeres = write(f, &i, sizeof(i));
-		CHECK_WRITE()
-
-		i = CAMPAIGN_VERSION;
-		writeres = write(f, &i, sizeof(i));
-		CHECK_WRITE()
-
-		writeres = write(f, setting->title, sizeof(setting->title));
-		CHECK_WRITE()
-		writeres = write(f, setting->author, sizeof(setting->author));
-		CHECK_WRITE()
-		writeres = write(f, setting->description,
-				 sizeof(setting->description));
-		CHECK_WRITE()
-
-		writeres = write(f, &setting->missionCount,
-				 sizeof(setting->missionCount));
-		CHECK_WRITE()
-
-		for (i = 0; i < setting->missionCount; i++) {
-			writeres = write(f, &setting->missions[i],
-					 sizeof(struct Mission));
-			CHECK_WRITE()
-		}
-
-		writeres = write(f, &setting->characterCount,
-				 sizeof(setting->characterCount));
-		CHECK_WRITE()
-		for (i = 0; i < setting->characterCount; i++) {
-			writeres = write(f, &setting->characters[i],
-					 sizeof(TBadGuy));
-			CHECK_WRITE()
-		}
-		//fchmod(f, S_IRUSR | S_IRGRP | S_IROTH);
-		close(f);
-		return CAMPAIGN_OK;
+	sprintf(buf, "%.cpn", filename);
+	f = fopen(buf, "wb");
+	if (f == NULL)
+	{
+		perror("SaveCampaign - couldn't write to file: ");
+		return CAMPAIGN_BADFILE;
 	}
-	perror("SaveCampaign - couldn't write to file: ");
-	return CAMPAIGN_BADPATH;
-	*/
-	return CAMPAIGN_BADFILE;
+#define CHECK_WRITE(res)\
+	if (!(res))\
+	{\
+		perror("SaveCampaign - couldn't write to file: ");\
+		fclose(f);\
+		return CAMPAIGN_BADFILE;\
+	}
+	i = CAMPAIGN_MAGIC;
+	CHECK_WRITE(fwrite32(f, &i))
+
+	i = CAMPAIGN_VERSION;
+	CHECK_WRITE(fwrite32(f, &i))
+
+	CHECK_WRITE(fwrite(setting->title, sizeof setting->title, 1, f) == 1)
+	CHECK_WRITE(fwrite(setting->author, sizeof setting->author, 1, f) == 1)
+	CHECK_WRITE(fwrite(setting->description, sizeof setting->description, 1, f) == 1)
+
+	i = setting->missionCount;
+	CHECK_WRITE(fwrite32(f, &i))
+	for (i = 0; i < setting->missionCount; i++)
+	{
+		CHECK_WRITE(fwrite(&setting->missions[i], sizeof(struct Mission), 1, f) == 1)
+	}
+
+	i = setting->characterCount;
+	CHECK_WRITE(fwrite32(f, &i))
+	for (i = 0; i < setting->characterCount; i++)
+	{
+		CHECK_WRITE(fwrite(&setting->characters[i], sizeof(TBadGuy), 1, f) == 1)
+	}
+
+#undef CHECK_WRITE
+	fclose(f);
+	return CAMPAIGN_OK;
 }
 
 static void OutputCString(FILE * f, const char *s, int indentLevel)

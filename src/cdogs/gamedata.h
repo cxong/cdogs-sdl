@@ -126,6 +126,7 @@ typedef struct MapObject TMapObject;
 #define BADGUY_COMMANDER    1
 
 
+// WARNING: written as-is to file
 struct BadGuy {
 	int armedBodyPic;
 	int unarmedBodyPic;
@@ -183,6 +184,7 @@ struct MissionObjective {
 #define WEAPON_MAX  11
 
 
+// WARNING: written as-is to file
 struct Mission {
 	char title[60];
 	char description[400];
