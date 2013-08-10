@@ -1060,11 +1060,14 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
-		InputPoll(&gJoysticks, &gKeyboard);
+		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to allow exit
+		if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
+		{
+			return 0; // hack to allow exit
+		}
 
 		if (twoPlayers)
 		{
@@ -1094,11 +1097,14 @@ int PlayerEquip(GraphicsDevice *graphics)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
-		InputPoll(&gJoysticks, &gKeyboard);
+		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyIsPressed(&gKeyboard, keyEsc)) return 0; // hack to exit from menu
+		if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
+		{
+			return 0; // hack to exit from menu
+		}
 
 		if (gOptions.twoPlayers)
 		{

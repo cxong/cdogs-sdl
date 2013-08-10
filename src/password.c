@@ -53,6 +53,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <SDL_timer.h>
+
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
@@ -228,7 +230,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 	while (!done)
 	{
 		int cmd;
-		InputPoll(&gJoysticks, &gKeyboard);
+		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))

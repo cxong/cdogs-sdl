@@ -220,7 +220,7 @@ void BlitMasked(
 			continue;
 		}
 		yoff *= device->cachedConfig.ResolutionWidth;
-		for (j = 0; j < pic->w; j++, current++)
+		for (j = 0; j < pic->w; j++)
 		{
 			Uint32 *target;
 			color_t c;
@@ -237,12 +237,14 @@ void BlitMasked(
 			}
 			if (isTransparent && !*current)
 			{
+				current++;
 				continue;
 			}
 			target = device->buf + yoff + xoff;
 			c = PaletteToColor(*current);
 			c = ColorMult(c, mask);
 			*target = PixelFromColor(device, c);
+			current++;
 		}
 	}
 }

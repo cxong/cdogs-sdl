@@ -123,7 +123,7 @@ void MenuLoop(MenuSystem *menu)
 	for (;; SDL_Delay(10))
 	{
 		// Input
-		InputPoll(menu->joysticks, menu->keyboard);
+		InputPoll(menu->joysticks, menu->keyboard, SDL_GetTicks());
 		// Update
 		if (menu->current->type == MENU_TYPE_KEYS &&
 			menu->current->u.normal.changeKeyMenu != NULL)
@@ -792,9 +792,10 @@ int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 {
 	key_code_e i;
 
-	if (key == keyEsc || key == keyF9 || key == keyF10)
+	if (key == SDLK_ESCAPE || key == SDLK_F9 || key == SDLK_F10)
+	{
 		return 0;
-
+	}
 	if (key == gConfig.Input.PlayerKeys[0].Keys.map && code >= 0)
 	{
 		return 0;
@@ -821,7 +822,7 @@ void MenuProcessChangeKey(menu_t *menu)
 {
 	int key = GetKey(&gKeyboard);	// wait until user has pressed a new button
 
-	if (key == keyEsc)
+	if (key == SDLK_ESCAPE)
 	{
 		SoundPlay(&gSoundDevice, SND_PICKUP);
 	}
