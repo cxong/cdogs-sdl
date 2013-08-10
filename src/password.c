@@ -253,7 +253,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 
 		CDogsTextGoto(
 			CenterX(
-				CDogsTextWidth(buffer) +
+				TextGetStringWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
 				graphics->cachedConfig.ResolutionWidth / 4);

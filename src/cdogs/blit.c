@@ -200,7 +200,8 @@ Uint32 LookupPalette(unsigned char index)
 	return PixelFromColor(&gGraphicsDevice, PaletteToColor(index));
 }
 
-void BlitWithMask(GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask)
+void BlitMasked(
+	GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask, int isTransparent)
 {
 	unsigned char *current = pic->data;
 
@@ -219,7 +220,7 @@ void BlitWithMask(GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask)
 			continue;
 		}
 		yoff *= device->cachedConfig.ResolutionWidth;
-		for (j = 0; j < pic->w; j++)
+		for (j = 0; j < pic->w; j++, current++)
 		{
 			Uint32 *target;
 			color_t c;
@@ -234,11 +235,14 @@ void BlitWithMask(GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask)
 				current += pic->w - j;
 				break;
 			}
+			if (isTransparent && !*current)
+			{
+				continue;
+			}
 			target = device->buf + yoff + xoff;
 			c = PaletteToColor(*current);
 			c = ColorMult(c, mask);
 			*target = PixelFromColor(device, c);
-			current++;
 		}
 	}
 }

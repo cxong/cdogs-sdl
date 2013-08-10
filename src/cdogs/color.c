@@ -39,6 +39,7 @@ color_t colorPoison = { 64, 192, 64 };
 color_t colorBlack = { 0, 0, 0 };
 color_t colorDarker = { 192, 192, 192 };
 color_t colorPurple = { 192, 0, 192 };
+color_t colorGray = { 128, 128, 128 };
 
 color_t ColorMult(color_t c, color_t m)
 {

@@ -150,7 +150,7 @@ static void DisplaySummary(void)
 			Draw_Rect(x, (y + 3), 2, 2, color);
 
 			x += 5;
-			x2 = x + CDogsTextWidth(gMission.missionData->objectives[i].description) + 5;
+			x2 = x + TextGetStringWidth(gMission.missionData->objectives[i].description) + 5;
 
 			sprintf(sScore, "(%d)", gMission.objectives[i].done);
 

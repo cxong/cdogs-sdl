@@ -288,7 +288,7 @@ static void ShowPlayerControls(int x, KeyConfig *config)
 			SDL_GetKeyName(config->Keys.down),
 			SDL_GetKeyName(config->Keys.button1),
 			SDL_GetKeyName(config->Keys.button2));
-		if (CDogsTextWidth(s) < 125)
+		if (TextGetStringWidth(s) < 125)
 		{
 			CDogsTextStringAt(x, y, s);
 		}

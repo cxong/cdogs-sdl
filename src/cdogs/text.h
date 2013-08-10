@@ -49,7 +49,9 @@
 #ifndef __TEXT
 #define __TEXT
 
+#include "grafx.h"
 #include "pic_file.h"
+#include "vector.h"
 
 void CDogsTextInit(const char *filename, int offset);
 void CDogsTextChar(char c);
@@ -59,12 +61,20 @@ void CDogsTextStringAt(int x, int y, const char *s);
 void CDogsTextIntAt(int x, int y, int i);
 void CDogsTextFormatAt(int x, int y, const char *fmt, ...);
 int CDogsTextCharWidth(int c);
-int CDogsTextWidth(const char *s);
+int TextGetSubstringWidth(const char *s, int len);
+int TextGetStringWidth(const char *s);
 int CDogsTextHeight(void);
 void CDogsTextCharWithTable(char c, TranslationTable * table);
 void CDogsTextStringWithTable(const char *s, TranslationTable * table);
 void CDogsTextStringWithTableAt(int x, int y, const char *s,
 			   TranslationTable * table);
+
+// Draw character/string with a color mask
+// Returns updated cursor position
+Vec2i DrawTextCharMasked(
+	char c, GraphicsDevice *device, Vec2i pos, color_t mask);
+Vec2i DrawTextStringMasked(
+	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask);
 
 #define TEXT_XCENTER		1
 #define TEXT_YCENTER		2

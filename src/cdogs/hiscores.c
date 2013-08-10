@@ -163,13 +163,13 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 #define NAME_OFFSET      85
 
 	sprintf(s, "%d.", idx + 1);
-	DisplayAt(x + INDEX_OFFSET - CDogsTextWidth(s), y, s, hilite);
+	DisplayAt(x + INDEX_OFFSET - TextGetStringWidth(s), y, s, hilite);
 	sprintf(s, "%d", e->score);
-	DisplayAt(x + SCORE_OFFSET - CDogsTextWidth(s), y, s, hilite);
+	DisplayAt(x + SCORE_OFFSET - TextGetStringWidth(s), y, s, hilite);
 	sprintf(s, "%d", e->missions);
-	DisplayAt(x + MISSIONS_OFFSET - CDogsTextWidth(s), y, s, hilite);
+	DisplayAt(x + MISSIONS_OFFSET - TextGetStringWidth(s), y, s, hilite);
 	sprintf(s, "(%d)", e->lastMission + 1);
-	DisplayAt(x + MISSION_OFFSET - CDogsTextWidth(s), y, s, hilite);
+	DisplayAt(x + MISSION_OFFSET - TextGetStringWidth(s), y, s, hilite);
 	DisplayAt(x + NAME_OFFSET, y, e->name, hilite);
 
 	return 1 + CDogsTextHeight();

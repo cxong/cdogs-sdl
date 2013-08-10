@@ -417,7 +417,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			int xOptions;
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
-				int width = CDogsTextWidth(menu->u.normal.subMenus[i].name);
+				int width = TextGetStringWidth(menu->u.normal.subMenus[i].name);
 				if (width > maxWidth)
 				{
 					maxWidth = width;
@@ -492,7 +492,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			if (menu->u.normal.scroll != 0)
 			{
 				DisplayMenuItem(
-					CenterX(CDogsTextWidth(ARROW_UP)),
+					CenterX(TextGetStringWidth(ARROW_UP)),
 					y - 2 - CDogsTextHeight(),
 					ARROW_UP,
 					0);
@@ -507,7 +507,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 				const char *name = subMenu->name;
 				// TODO: display subfolders
 				DisplayMenuItem(
-					CenterX(CDogsTextWidth(name)), y, name, isSelected);
+					CenterX(TextGetStringWidth(name)), y, name, isSelected);
 
 				if (isSelected)
 				{
@@ -528,7 +528,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			if (i < menu->u.normal.numSubMenus - 1)
 			{
 				DisplayMenuItem(
-					CenterX(CDogsTextWidth(ARROW_DOWN)),
+					CenterX(TextGetStringWidth(ARROW_DOWN)),
 					y + 2,
 					ARROW_DOWN,
 					0);

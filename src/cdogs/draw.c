@@ -241,11 +241,12 @@ void DrawWallColumn(int y, Vec2i pos, TTile *tile)
 {
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
-		BlitWithMask(
+		BlitMasked(
 			&gGraphicsDevice,
 			gPics[tile->pic],
 			pos,
-			GetTileLOSMask(tile));
+			GetTileLOSMask(tile),
+			0);
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
@@ -270,11 +271,12 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			if (tile->pic >= 0 &&
 				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
-				BlitWithMask(
+				BlitMasked(
 					&gGraphicsDevice,
 					gPics[tile->pic],
 					pos,
-					GetTileLOSMask(tile));
+					GetTileLOSMask(tile),
+					0);
 			}
 		}
 		tile += X_TILES - b->width;
@@ -300,11 +302,12 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			{
 				// Drawing doors
 				const TOffsetPic *p = &(cGeneralPics[tile->pic]);
-				BlitWithMask(
+				BlitMasked(
 					&gGraphicsDevice,
 					gPics[p->picIndex],
 					Vec2iNew(pos.x + p->dx, pos.y + p->dy),
-					GetTileLOSMask(tile));
+					GetTileLOSMask(tile),
+					0);
 			}
 			t = tile->things;
 			while (t) {

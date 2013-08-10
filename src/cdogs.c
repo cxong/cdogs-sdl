@@ -454,20 +454,20 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
-			CenterOfLeft(CDogsTextWidth(s)),
+			CenterOfLeft(TextGetStringWidth(s)),
 			device->cachedConfig.ResolutionWidth / 3,
 			s);
 
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
-			CenterOfRight(CDogsTextWidth(s)),
+			CenterOfRight(TextGetStringWidth(s)),
 			device->cachedConfig.ResolutionWidth / 3,
 			s);
 	}
 	else
 	{
-		DisplayPlayer(CenterX(CDogsTextWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		DisplayPlayer(CenterX(TextGetStringWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
@@ -488,7 +488,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 	} else if (score1 > score2) {
 		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
 		CDogsTextStringAt(
-			CenterOfLeft(CDogsTextWidth(IS_WINNER)),
+			CenterOfLeft(TextGetStringWidth(IS_WINNER)),
 			device->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
@@ -496,7 +496,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 	{
 		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
 		CDogsTextStringAt(
-			CenterOfRight(CDogsTextWidth(IS_WINNER)),
+			CenterOfRight(TextGetStringWidth(IS_WINNER)),
 			device->cachedConfig.ResolutionWidth / 2,
 			IS_WINNER);
 	}
@@ -536,9 +536,9 @@ void Victory(GraphicsDevice *graphics)
 
 	GraphicsBlitBkg(graphics);
 
-	x = 160 - CDogsTextWidth(CONGRATULATIONS) / 2;
+	x = 160 - TextGetStringWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
-	x = 160 - CDogsTextWidth(gCampaign.Setting.title) / 2;
+	x = 160 - TextGetStringWidth(gCampaign.Setting.title) / 2;
 	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.title, &tableFlamed);
 
 	if (gOptions.twoPlayers) {
@@ -559,7 +559,7 @@ void Victory(GraphicsDevice *graphics)
 		gPlayer1Data.missions++;
 	}
 
-	x = 160 - CDogsTextWidth(s) / 2;
+	x = 160 - TextGetStringWidth(s) / 2;
 	CDogsTextGoto(x, 140);
 	CDogsTextCharWithTable('"', &tableDarker);
 	CDogsTextStringWithTable(s, &tablePurple);

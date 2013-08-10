@@ -48,6 +48,7 @@
 */
 #include "text.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,6 +134,38 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 		CDogsTextCharWithTable(*s++, table);
 }
 
+static Pic *GetFontPic(char c)
+{
+	int i = CHAR_INDEX(c);
+	if (i < 0 || i > CHARS_IN_FONT || !font[i])
+	{
+		i = CHAR_INDEX('.');
+	}
+	assert(font[i]);
+	return font[i];
+}
+
+Vec2i DrawTextCharMasked(
+	char c, GraphicsDevice *device, Vec2i pos, color_t mask)
+{
+	Pic *font = GetFontPic(c);
+	BlitMasked(device, font, pos, mask, 1);
+	pos.x += 1 + font->w + dxCDogsText;
+	CDogsTextGoto(pos.x, pos.y);
+	return pos;
+}
+
+Vec2i DrawTextStringMasked(
+	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask)
+{
+	while (*s)
+	{
+		pos = DrawTextCharMasked(*s, device, pos, mask);
+		s++;
+	}
+	return pos;
+}
+
 void CDogsTextGoto(int x, int y)
 {
 	xCDogsText = x;
@@ -183,13 +216,24 @@ int CDogsTextCharWidth(int c)
 	}
 }
 
-int CDogsTextWidth(const char *s)
+int TextGetSubstringWidth(const char *s, int len)
 {
 	int w = 0;
-
-	while (*s)
+	int i;
+	if (len > (int)strlen(s))
+	{
+		len = (int)strlen(s);
+	}
+	for (i = 0; i < len; i++)
+	{
 		w += CDogsTextCharWidth(*s++);
+	}
 	return w;
+}
+
+int TextGetStringWidth(const char *s)
+{
+	return TextGetSubstringWidth(s, (int)strlen(s));
 }
 
 #define FLAG_SET(a, b)	((a & b) != 0)
@@ -201,7 +245,7 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 	int x, y, w, h;
 
 	x = y = w = h = 0;
-	w = CDogsTextWidth(s);
+	w = TextGetStringWidth(s);
 	h = CDogsTextHeight();
 
 	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = (scrw - w) / 2; }
