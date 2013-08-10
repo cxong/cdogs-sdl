@@ -1400,7 +1400,6 @@ static void Save(int asCode)
 			{
 				c = toupper(c);
 			}
-			c = toupper(c);
 			if (c >= ' ' && c <= '~' && c != '*' &&
 				(strlen(filename) > 1 || c != '-') && c != '/' &&
 				c != ':' && c != '<' && c != '>' && c != '?' &&

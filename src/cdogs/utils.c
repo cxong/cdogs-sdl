@@ -68,6 +68,20 @@ int MemIsZero(const void *buf, size_t len)
 	return 1;
 }
 
+// From answer by ThiefMaster
+// http://stackoverflow.com/a/5309508/2038264
+// License: http://creativecommons.org/licenses/by-sa/3.0/
+// Author profile: http://stackoverflow.com/users/298479/thiefmaster
+const char *StrGetFileExt(const char *filename)
+{
+	const char *dot = strrchr(filename, '.');
+	if (!dot || dot == filename)
+	{
+		return "";
+	}
+	return dot + 1;
+}
+
 double Round(double x)
 {
 	return floor(x + 0.5);

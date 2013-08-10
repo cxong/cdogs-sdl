@@ -109,6 +109,8 @@ extern int debug_level;
 
 int MemIsZero(const void *buf, size_t len);
 
+const char *StrGetFileExt(const char *filename);
+
 #define PI 3.14159265
 
 double Round(double x);
