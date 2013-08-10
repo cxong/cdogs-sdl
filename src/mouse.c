@@ -68,7 +68,6 @@ void MouseInit(Mouse *mouse, Pic *cursor)
 
 void MousePoll(Mouse *mouse, Uint32 ticks)
 {
-	int areSameButtonsDown = mouse->previousButtons == mouse->currentButtons;
 	mouse->previousButtons = mouse->currentButtons;
 	mouse->previousPos = mouse->currentPos;
 	mouse->currentButtons =
@@ -77,7 +76,8 @@ void MousePoll(Mouse *mouse, Uint32 ticks)
 		Vec2iScaleDiv(mouse->currentPos, gConfig.Graphics.ScaleFactor);
 
 	// If same keys have been pressed, remember how long they have been pressed
-	if (areSameButtonsDown)
+	if (mouse->previousButtons == mouse->currentButtons &&
+		mouse->currentButtons != 0)
 	{
 		Uint32 ticksElapsed = ticks - mouse->ticks;
 		mouse->repeatedTicks += ticksElapsed;

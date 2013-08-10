@@ -41,6 +41,7 @@ typedef struct
 	SDLMod modState;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
+	int isFirstRepeat;
 } keyboard_t;
 extern keyboard_t gKeyboard;
 

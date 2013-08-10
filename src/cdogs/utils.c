@@ -54,6 +54,20 @@
 int debug = 0;
 int debug_level = D_NORMAL;
 
+int MemIsZero(const void *buf, size_t len)
+{
+	char *bytes = (char *)buf;
+	size_t i;
+	for (i = 0; i < len; i++)
+	{
+		if (bytes[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 double Round(double x)
 {
 	return floor(x + 0.5);

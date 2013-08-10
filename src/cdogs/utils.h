@@ -107,6 +107,8 @@ extern int debug_level;
 #define CLAMP_OPPOSITE(v, _min, _max)\
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
 
+int MemIsZero(const void *buf, size_t len);
+
 #define PI 3.14159265
 
 double Round(double x);

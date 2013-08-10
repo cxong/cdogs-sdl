@@ -30,9 +30,12 @@
 
 #include <string.h>
 
+#include "utils.h"
+
 
 keyboard_t gKeyboard;
 
+#define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
 
 void KeyInit(keyboard_t *keyboard)
@@ -42,15 +45,13 @@ void KeyInit(keyboard_t *keyboard)
 	memset(keyboard->pressedKeys, 0, sizeof keyboard->pressedKeys);
 	keyboard->modState = KMOD_NONE;
 	keyboard->ticks = 0;
-	keyboard->repeatedTicks;
+	keyboard->repeatedTicks = 0;
+	keyboard->isFirstRepeat = 1;
 }
 
 void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 {
-	int areSameKeysDown = memcmp(
-		keyboard->previousKeys,
-		keyboard->currentKeys,
-		sizeof keyboard->previousKeys) == 0;
+	int isRepeating = 0;
 	memcpy(
 		keyboard->previousKeys,
 		keyboard->currentKeys,
@@ -71,7 +72,11 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 	keyboard->modState = SDL_GetModState();
 
 	// If same keys have been pressed, remember how long they have been pressed
-	if (areSameKeysDown)
+	if (memcmp(
+		keyboard->previousKeys,
+		keyboard->currentKeys,
+		sizeof keyboard->previousKeys) == 0 &&
+		!MemIsZero(keyboard->currentKeys, sizeof keyboard->currentKeys))
 	{
 		Uint32 ticksElapsed = ticks - keyboard->ticks;
 		keyboard->repeatedTicks += ticksElapsed;
@@ -79,15 +84,28 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 	else
 	{
 		keyboard->repeatedTicks = 0;
+		keyboard->isFirstRepeat = 1;
 	}
 	// If more time has elapsed, forget about previous keys for repeating
-	if (keyboard->repeatedTicks > KEYBOARD_REPEAT_TICKS)
+	if (keyboard->repeatedTicks > KEYBOARD_REPEAT_DELAY &&
+		keyboard->isFirstRepeat)
+	{
+		keyboard->repeatedTicks -= KEYBOARD_REPEAT_DELAY;
+		isRepeating = 1;
+	}
+	else if (keyboard->repeatedTicks > KEYBOARD_REPEAT_TICKS &&
+		!keyboard->isFirstRepeat)
 	{
 		keyboard->repeatedTicks -= KEYBOARD_REPEAT_TICKS;
+		isRepeating = 1;
+	}
+	if (isRepeating)
+	{
 		memcpy(
 			keyboard->pressedKeys,
 			keyboard->currentKeys,
 			sizeof keyboard->pressedKeys);
+		keyboard->isFirstRepeat = 0;
 	}
 	else
 	{
