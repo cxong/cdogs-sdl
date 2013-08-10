@@ -51,6 +51,7 @@
 
 #include <SDL_video.h>
 
+#include "color.h"
 #include "sys_specifics.h"
 
 typedef enum
@@ -106,6 +107,8 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
+void GrafxMakeBackground(
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

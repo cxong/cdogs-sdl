@@ -246,34 +246,17 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 	AddSupportedModesForBPP(device, 32);
 }
 
-void MakeBkg(GraphicsDevice *device, GraphicsConfig *config)
+static void MakeRandomBackground(
+	GraphicsDevice *device, GraphicsConfig *config)
 {
-	struct Buffer *buffer = NewBuffer(128, 128);
-	Vec2i v;
 	HSV tint;
-
 	SetupQuickPlayCampaign(&gCampaign.Setting);
 	gCampaign.seed = rand();
-	SetupMission(0, 1, &gCampaign);
-	SetupMap();
-	MapMarkAllAsVisited();
-	SetBuffer(1024, 768, buffer, X_TILES);
-	DrawBuffer(buffer, 0);
-	CFREE(buffer);
-	KillAllObjects();
-	FreeTriggersAndWatches();
-	gCampaign.seed = gConfig.Game.RandomSeed;
-
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	for (v.y = 0; v.y < config->ResolutionHeight; v.y++)
-	{
-		for (v.x = 0; v.x < config->ResolutionWidth; v.x++)
-		{
-			DrawPointTint(device, v, tint);
-		}
-	}
+	GrafxMakeBackground(device, config, tint, 0);
+	gCampaign.seed = gConfig.Game.RandomSeed;
 }
 
 // Initialises the video subsystem.
@@ -366,11 +349,9 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	device->cachedConfig = *config;
 	device->cachedConfig.ResolutionWidth = w;
 	device->cachedConfig.ResolutionHeight = h;
-	// Need to make background here since dimensions use cached config
-	MakeBkg(device, config);
 	CDogsSetPalette(gPalette);
-	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
-	memset(device->buf, 0, GraphicsGetMemSize(config));
+	// Need to make background here since dimensions use cached config
+	MakeRandomBackground(device, config);
 }
 
 void GraphicsTerminate(GraphicsDevice *device)
@@ -390,6 +371,32 @@ int GraphicsGetScreenSize(GraphicsConfig *config)
 int GraphicsGetMemSize(GraphicsConfig *config)
 {
 	return GraphicsGetScreenSize(config) * sizeof(Uint32);
+}
+
+void GrafxMakeBackground(
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
+{
+	struct Buffer *buffer = NewBuffer(128, 128);
+	Vec2i v;
+
+	SetupMission(missionIdx, 1, &gCampaign);
+	SetupMap();
+	MapMarkAllAsVisited();
+	SetBuffer(1024, 768, buffer, X_TILES);
+	DrawBuffer(buffer, 0);
+	CFREE(buffer);
+	KillAllObjects();
+	FreeTriggersAndWatches();
+
+	for (v.y = 0; v.y < config->ResolutionHeight; v.y++)
+	{
+		for (v.x = 0; v.x < config->ResolutionWidth; v.x++)
+		{
+			DrawPointTint(device, v, tint);
+		}
+	}
+	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
+	memset(device->buf, 0, GraphicsGetMemSize(config));
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)

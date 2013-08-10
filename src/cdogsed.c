@@ -717,9 +717,16 @@ void Display(int idx, int xc, int yc, int key)
 	int i;
 
 	MouseSetSecondaryRects(&gMouse, NULL);
-	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	if (currentMission)
 	{
-		gGraphicsDevice.buf[i] = LookupPalette(58);
+		GraphicsBlitBkg(&gGraphicsDevice);
+	}
+	else
+	{
+		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+		{
+			gGraphicsDevice.buf[i] = LookupPalette(58);
+		}
 	}
 
 	sprintf(s, "Key: 0x%x", key);
@@ -1341,6 +1348,7 @@ static void Setup(int idx, int buildTables)
 	}
 	currentMission = &gCampaign.Setting.missions[idx];
 	SetupMission(idx, buildTables, &gCampaign);
+	GrafxMakeBackground(&gGraphicsDevice, &gConfig.Graphics, tintDarker, idx);
 }
 
 static void Save(int asCode)
