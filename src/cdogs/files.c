@@ -367,7 +367,7 @@ int SaveCampaign(const char *filename, CampaignSetting *setting)
 	int i;
 	char buf[CDOGS_FILENAME_MAX];
 
-	sprintf(buf, "%.cpn", filename);
+	sprintf(buf, "%s.cpn", filename);
 	f = fopen(buf, "wb");
 	if (f == NULL)
 	{
