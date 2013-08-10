@@ -250,7 +250,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		gGraphicsDevice.buf[i] = LookupPalette(74);
 	}
 
-	sprintf(s, "%d/%d", setting->characterCount, MAX_CHARACTERS);
+	sprintf(s, "%d", setting->characterCount);
 	CDogsTextStringAt(10, 190, s);
 
 	if (idx >= 0 && idx < setting->characterCount)
@@ -490,10 +490,9 @@ static TBadGuy characterTemplate = {
 static void InsertCharacter(CampaignSetting *setting, int idx, TBadGuy *data)
 {
 	int i;
-
-	if (setting->characterCount == MAX_CHARACTERS)
-		return;
-
+	CREALLOC(
+		setting->characters,
+		sizeof *setting->characters * (setting->characterCount + 1));
 	for (i = setting->characterCount; i > idx; i--)
 	{
 		setting->characters[i] = setting->characters[i - 1];

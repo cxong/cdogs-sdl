@@ -24,9 +24,6 @@
 
 #include <cdogs/gamedata.h>
 
-#define MAX_MISSIONS    50
-#define MAX_CHARACTERS  50
-
 extern int fileChanged;
 
 

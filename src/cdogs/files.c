@@ -277,15 +277,13 @@ void load_character(FILE *f, TBadGuy *c)
 //		fprintf(stderr, " speed: %d gun: %d\n", c->speed, c->gun);
 }
 
-int LoadCampaign(
-	const char *filename, CampaignSetting *setting,
-	int max_missions, int max_characters)
+int LoadCampaign(const char *filename, CampaignSetting *setting)
 {
 	FILE *f = NULL;
 	int i;
 	int err = CAMPAIGN_OK;
-	int numMissions = max_missions;
-	int numCharacters = max_characters;
+	int numMissions;
+	int numCharacters;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
@@ -316,18 +314,10 @@ int LoadCampaign(
 	f_read(f, setting->description, sizeof(setting->description));
 
 	f_read32(f, &setting->missionCount, sizeof(setting->missionCount));
-
-	if (max_missions <= 0)
-	{
-		size_t size = setting->missionCount * sizeof(struct Mission);
-		CCALLOC(setting->missions, size);
-		numMissions = setting->missionCount;
-	}
-	else if (setting->missionCount < max_missions)
-	{
-		numMissions = setting->missionCount;
-	}
-
+	CCALLOC(
+		setting->missions,
+		setting->missionCount * sizeof *setting->missions);
+	numMissions = setting->missionCount;
 	debug(D_NORMAL, "No. missions: %d\n", numMissions);
 	for (i = 0; i < numMissions; i++)
 	{
@@ -335,18 +325,10 @@ int LoadCampaign(
 	}
 
 	f_read32(f, &setting->characterCount, sizeof(setting->characterCount));
-
-	if (max_characters <= 0)
-	{
-		size_t size = setting->characterCount * sizeof(TBadGuy);
-		CCALLOC(setting->characters, size);
-		numCharacters = setting->characterCount;
-	}
-	else if (setting->characterCount < max_characters)
-	{
-		numCharacters = setting->characterCount;
-	}
-
+	CCALLOC(
+		setting->characters,
+		setting->characterCount * sizeof *setting->characters);
+	numCharacters = setting->characterCount;
 	debug(D_NORMAL, "No. characters: %d\n", numCharacters);
 	for (i = 0; i < numCharacters; i++)
 	{
@@ -406,6 +388,7 @@ int SaveCampaign(const char *filename, CampaignSetting *setting)
 	}
 
 #undef CHECK_WRITE
+	printf("Saved to %d\n", filename);
 	fclose(f);
 	return CAMPAIGN_OK;
 }
@@ -596,6 +579,7 @@ void SaveCampaignAsC(
 			setting->missionCount, name,
 			setting->characterCount, name);
 
+		printf("Saved to %d\n", filename);
 		fclose(f);
 	}
 };

@@ -288,7 +288,7 @@ static MouseRect localCharacterClicks[] =
 // Globals
 
 struct Mission *currentMission;
-static char lastFile[128];
+static char lastFile[CDOGS_FILENAME_MAX];
 
 
 
@@ -837,6 +837,7 @@ static int Change(int yc, int xc, int d, int *mission)
 {
 	struct EditorInfo edInfo;
 	int limit;
+	int isChanged = 0;
 
 	if (yc == YC_MISSIONINDEX) {
 		*mission += d;
@@ -874,6 +875,7 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->baddieDensity = CLAMP(currentMission->baddieDensity + d, 0, 100);
 			break;
 		}
+		isChanged = 1;
 		break;
 
 	case YC_MISSIONLOOKS:
@@ -921,6 +923,7 @@ static int Change(int yc, int xc, int d, int *mission)
 				currentMission->altRange + d, 0, edInfo.rangeCount - 1);
 			break;
 		}
+		isChanged = 1;
 		break;
 
 	case YC_CHARACTERS:
@@ -928,6 +931,7 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->baddies[xc] + d,
 			0,
 			gCampaign.Setting.characterCount - 1);
+		isChanged = 1;
 		break;
 
 	case YC_SPECIALS:
@@ -935,15 +939,16 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->specials[xc] + d,
 			0,
 			gCampaign.Setting.characterCount - 1);
+		isChanged = 1;
 		break;
 
 	case YC_WEAPONS:
 		currentMission->weaponSelection ^= (1 << xc);
+		isChanged = 1;
 		break;
 
 	case YC_ITEMS:
-		if (KeyIsDown(&gKeyboard, SDLK_LSHIFT) ||
-			KeyIsDown(&gKeyboard, SDLK_RSHIFT))	// Either shift key down?
+		if (gKeyboard.modState & KMOD_SHIFT)
 		{
 			currentMission->itemDensity[xc] =
 				CLAMP(currentMission->itemDensity[xc] +  5 * d, 0, 512);
@@ -953,6 +958,7 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->items[xc] = CLAMP_OPPOSITE(
 				currentMission->items[xc] + d, 0, edInfo.itemCount - 1);
 		}
+		isChanged = 1;
 		break;
 
 	default:
@@ -993,6 +999,7 @@ static int Change(int yc, int xc, int d, int *mission)
 						currentMission->objectives[yc - YC_OBJECTIVES].index + d,
 						0,
 						limit);
+				isChanged = 1;
 				break;
 
 			case XC_REQUIRED:
@@ -1001,6 +1008,7 @@ static int Change(int yc, int xc, int d, int *mission)
 						currentMission->objectives[yc - YC_OBJECTIVES].required + d,
 						0,
 						100);
+				isChanged = 1;
 				break;
 
 			case XC_TOTAL:
@@ -1009,6 +1017,7 @@ static int Change(int yc, int xc, int d, int *mission)
 						currentMission->objectives[yc - YC_OBJECTIVES].count + d,
 						0,
 						100);
+				isChanged = 1;
 				break;
 
 			case XC_FLAGS:
@@ -1017,23 +1026,21 @@ static int Change(int yc, int xc, int d, int *mission)
 						currentMission->objectives[yc - YC_OBJECTIVES].flags + d,
 						0,
 						15);
+				isChanged = 1;
 				break;
 			}
 		}
 		break;
 	}
-	return 1;
+	return isChanged;
 }
 
 void InsertMission(int idx, struct Mission *mission)
 {
 	int i;
-
-	if (gCampaign.Setting.missionCount == MAX_MISSIONS)
-	{
-		return;
-	}
-
+	CREALLOC(
+		gCampaign.Setting.missions,
+		sizeof *gCampaign.Setting.missions * (gCampaign.Setting.missionCount + 1));
 	for (i = gCampaign.Setting.missionCount; i > idx; i--)
 	{
 		gCampaign.Setting.missions[i] = gCampaign.Setting.missions[i - 1];
@@ -1338,11 +1345,8 @@ static void Setup(int idx, int buildTables)
 
 static void Save(int asCode)
 {
-	char filename[128];
-//      char drive[_MAX_DRIVE];
-//	char dir[96];
+	char filename[CDOGS_FILENAME_MAX];
 	char name[32];
-//      char ext[_MAX_EXT];
 	int c;
 
 	strcpy(filename, lastFile);
@@ -1376,6 +1380,7 @@ static void Save(int asCode)
 				SaveCampaign(filename, &gCampaign.Setting);
 			}
 			fileChanged = 0;
+			strcpy(lastFile, filename);
 			return;
 
 		case SDLK_ESCAPE:
@@ -1388,15 +1393,25 @@ static void Save(int asCode)
 
 		default:
 			if (strlen(filename) == sizeof(filename) - 1)
+			{
 				break;
+			}
+			if (gKeyboard.modState & (KMOD_SHIFT | KMOD_CAPS))
+			{
+				c = toupper(c);
+			}
 			c = toupper(c);
-			if ((c >= 'A' && c <= 'Z') || c == '-' || c == '_' || c == '\\')
+			if (c >= ' ' && c <= '~' && c != '*' &&
+				(strlen(filename) > 1 || c != '-') && c != '/' &&
+				c != ':' && c != '<' && c != '>' && c != '?' &&
+				c != '\\' && c != '|')
 			{
 				size_t i = strlen(filename);
 				filename[i + 1] = 0;
 				filename[i] = (char)c;
 			}
 		}
+		SDL_Delay(10);
 	}
 }
 
@@ -1691,9 +1706,6 @@ static void EditCampaign(void)
 }
 
 
-struct Mission missions[MAX_MISSIONS];
-TBadGuy characters[MAX_CHARACTERS];
-
 int main(int argc, char *argv[])
 {
 	int i;
@@ -1701,28 +1713,6 @@ int main(int argc, char *argv[])
 
 	printf("C-Dogs Editor v0.8\n");
 	printf("Copyright Ronny Wester 1996\n");
-
-	for (i = 1; i < argc; i++) {
-		if (strlen(argv[i]) > 1
-		    && (*(argv[i]) == '-' || *(argv[i]) == '/')) {
-			// check options here...
-		} else if (!loaded) {
-			memset(lastFile, 0, sizeof(lastFile));
-			strncpy(lastFile, argv[i], sizeof(lastFile) - 1);
-			if (strchr(lastFile, '.') == NULL &&
-			    sizeof(lastFile) - strlen(lastFile) > 3) {
-				strcat(lastFile, ".CPN");
-			}
-			if (LoadCampaign(
-					lastFile,
-					&gCampaign.Setting,
-					MAX_MISSIONS,
-					MAX_CHARACTERS) == CAMPAIGN_OK)
-			{
-				loaded = 1;
-			}
-		}
-	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
@@ -1766,12 +1756,31 @@ int main(int argc, char *argv[])
 	KeyInit(&gKeyboard);
 	MouseInit(&gMouse, gPics[145]);
 
-	// Reset campaign (graphics init may have created dummy campaigns)
-	memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
-	memset(&missions, 0, sizeof(missions));
-	gCampaign.Setting.missions = missions;
-	memset(&characters, 0, sizeof(characters));
-	gCampaign.Setting.characters = characters;
+	for (i = 1; i < argc; i++)
+	{
+		if (!loaded)
+		{
+			memset(lastFile, 0, sizeof(lastFile));
+			strncpy(lastFile, argv[i], sizeof(lastFile) - 1);
+			if (strchr(lastFile, '.') == NULL &&
+				sizeof lastFile - strlen(lastFile) > 3)
+			{
+				strcat(lastFile, ".CPN");
+			}
+			if (LoadCampaign(lastFile, &gCampaign.Setting) == CAMPAIGN_OK)
+			{
+				loaded = 1;
+			}
+		}
+	}
+
+	if (!loaded)
+	{
+		// Reset campaign (graphics init may have created dummy campaigns)
+		memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
+		gCampaign.Setting.missions = NULL;
+		gCampaign.Setting.characters = NULL;
+	}
 	currentMission = NULL;
 
 	EditCampaign();

@@ -745,7 +745,7 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 		}
 		memset(&customSetting, 0, sizeof(customSetting));
 
-		if (LoadCampaign(entry->path, &customSetting, 0, 0) != CAMPAIGN_OK)
+		if (LoadCampaign(entry->path, &customSetting) != CAMPAIGN_OK)
 		{
 			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);

@@ -61,9 +61,7 @@
 #define CAMPAIGN_BADPATH          -3
 
 int ScanCampaign(const char *filename, char *title, int *missions);
-int LoadCampaign(
-	const char *filename, CampaignSetting *setting,
-	int max_missions, int max_characters);
+int LoadCampaign(const char *filename, CampaignSetting *setting);
 int SaveCampaign(const char *filename, CampaignSetting *setting);
 void SaveCampaignAsC(
 	const char *filename, const char *name,
