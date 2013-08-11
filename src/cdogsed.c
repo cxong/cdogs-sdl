@@ -1391,11 +1391,8 @@ static void Save(int asCode)
 			{
 				break;
 			}
-			if (gKeyboard.modState & (KMOD_SHIFT | KMOD_CAPS))
-			{
-				c = toupper(c);
-			}
-			if (c >= ' ' && c <= '~' && c != '*' &&
+			c = KeyGetTyped(&gKeyboard);
+			if (c && c != '*' &&
 				(strlen(filename) > 1 || c != '-') && c != '/' &&
 				c != ':' && c != '<' && c != '>' && c != '?' &&
 				c != '\\' && c != '|')
@@ -1628,13 +1625,10 @@ static void HandleInput(
 			break;
 
 		default:
-			if (c >= ' ' && c <= 'z')
+			c = KeyGetTyped(&gKeyboard);
+			if (c)
 			{
 				fileChanged = 1;
-				if (gKeyboard.modState & (KMOD_SHIFT | KMOD_CAPS))
-				{
-					c = toupper(c);
-				}
 				AddChar(*xc, *yc, (char)c);
 			}
 			break;
@@ -1714,6 +1708,7 @@ int main(int argc, char *argv[])
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
+	SDL_EnableUNICODE(SDL_ENABLE);
 
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));

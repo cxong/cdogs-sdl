@@ -34,10 +34,16 @@
 
 typedef struct
 {
+	int isPressed;
+	Uint16 unicode;
+} KeyPress;
+
+typedef struct
+{
 	SDL_Event keyevent;
-	int previousKeys[512];
-	int currentKeys[512];
-	int pressedKeys[512];
+	KeyPress previousKeys[512];
+	KeyPress currentKeys[512];
+	KeyPress pressedKeys[512];
 	SDLMod modState;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
@@ -51,5 +57,6 @@ int KeyIsDown(keyboard_t *keyboard, int key);
 int KeyIsPressed(keyboard_t *keyboard, int key);
 int KeyIsReleased(keyboard_t *keyboard, int key);
 int KeyGetPressed(keyboard_t *keyboard);
+int KeyGetTyped(keyboard_t *keyboard);
 
 #endif

@@ -75,9 +75,9 @@
 #define FLAGS_TRYRIGHT      (1 << 6)
 #define FLAGS_SLEEPING      (1 << 7)
 #define FLAGS_VISIBLE       (1 << 8)
-#define FLAGS_ASBESTOS      (1 << 9)
+#define FLAGS_ASBESTOS      (1 << 9)	// Immune to fire
 #define FLAGS_IMMUNITY      (1 << 10)
-#define FLAGS_SEETHROUGH    (1 << 11)
+#define FLAGS_SEETHROUGH    (1 << 11)	// Almost transparent
 
 // All characters - but only set for players
 #define FLAGS_KEYCARD_RED     (1 << 12)
@@ -86,14 +86,14 @@
 #define FLAGS_KEYCARD_YELLOW  (1 << 15)
 
 // Special flags
-#define FLAGS_RUNS_AWAY       (1 << 16)
-#define FLAGS_GOOD_GUY        (1 << 17)
-#define FLAGS_PRISONER        (1 << 18)
+#define FLAGS_RUNS_AWAY       (1 << 16)	// Move directly away from player
+#define FLAGS_GOOD_GUY        (1 << 17)	// Shots cannot hurt player
+#define FLAGS_PRISONER        (1 << 18)	// Won't move until touched by player
 #define FLAGS_INVULNERABLE    (1 << 19)
-#define FLAGS_FOLLOWER        (1 << 20)
-#define FLAGS_PENALTY         (1 << 21)
-#define FLAGS_VICTIM          (1 << 22)
-#define FLAGS_SNEAKY          (1 << 23)
+#define FLAGS_FOLLOWER        (1 << 20)	// Follows player
+#define FLAGS_PENALTY         (1 << 21)	// Big score penalty if shot
+#define FLAGS_VICTIM          (1 << 22)	// Can be shot by everyone
+#define FLAGS_SNEAKY          (1 << 23)	// Always shoot back when player shoots
 #define FLAGS_SLEEPALWAYS     (1 << 24)
 #define FLAGS_AWAKEALWAYS     (1 << 25)
 

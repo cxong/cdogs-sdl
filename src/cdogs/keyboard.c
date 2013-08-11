@@ -40,9 +40,7 @@ keyboard_t gKeyboard;
 
 void KeyInit(keyboard_t *keyboard)
 {
-	memset(keyboard->currentKeys, 0, sizeof keyboard->currentKeys);
-	memset(keyboard->previousKeys, 0, sizeof keyboard->previousKeys);
-	memset(keyboard->pressedKeys, 0, sizeof keyboard->pressedKeys);
+	memset(keyboard, 0, sizeof *keyboard);
 	keyboard->modState = KMOD_NONE;
 	keyboard->ticks = 0;
 	keyboard->repeatedTicks = 0;
@@ -52,31 +50,49 @@ void KeyInit(keyboard_t *keyboard)
 void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 {
 	int isRepeating = 0;
+	int areSameKeysPressed = 1;
+	int areAnyKeysPressed = 0;
+	int i;
 	memcpy(
 		keyboard->previousKeys,
 		keyboard->currentKeys,
 		sizeof keyboard->previousKeys);
 	while (SDL_PollEvent(&keyboard->keyevent))
 	{
+		SDL_keysym s = keyboard->keyevent.key.keysym;
 		switch(keyboard->keyevent.type)
 		{
 		case SDL_KEYDOWN:
-			keyboard->currentKeys[keyboard->keyevent.key.keysym.sym] = 1;
+			keyboard->currentKeys[s.sym].isPressed = 1;
+			if (s.unicode >= (Uint16)' ' && s.unicode <= (Uint16)'~')
+			{
+				keyboard->currentKeys[s.sym].unicode = s.unicode;
+			}
 			break;
 		case SDL_KEYUP:
-			keyboard->currentKeys[keyboard->keyevent.key.keysym.sym] = 0;
+			keyboard->currentKeys[s.sym].isPressed = 0;
+			break;
 		default:
 			break;
 		}
 	}
 	keyboard->modState = SDL_GetModState();
 
+	for (i = 0; i < 512; i++)
+	{
+		if (keyboard->currentKeys[i].isPressed)
+		{
+			areAnyKeysPressed = 1;
+		}
+		if (keyboard->previousKeys[i].isPressed !=
+			keyboard->currentKeys[i].isPressed)
+		{
+			areSameKeysPressed = 0;
+			break;
+		}
+	}
 	// If same keys have been pressed, remember how long they have been pressed
-	if (memcmp(
-		keyboard->previousKeys,
-		keyboard->currentKeys,
-		sizeof keyboard->previousKeys) == 0 &&
-		!MemIsZero(keyboard->currentKeys, sizeof keyboard->currentKeys))
+	if (areSameKeysPressed && areAnyKeysPressed)
 	{
 		Uint32 ticksElapsed = ticks - keyboard->ticks;
 		keyboard->repeatedTicks += ticksElapsed;
@@ -112,8 +128,9 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 		int i;
 		for (i = 0; i < 512; i++)
 		{
-			keyboard->pressedKeys[i] =
-				keyboard->currentKeys[i] && !keyboard->previousKeys[i];
+			keyboard->pressedKeys[i].isPressed =
+				keyboard->currentKeys[i].isPressed &&
+				!keyboard->previousKeys[i].isPressed;
 		}
 	}
 	keyboard->ticks = ticks;
@@ -121,17 +138,17 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 
 int KeyIsDown(keyboard_t *keyboard, int key)
 {
-	return keyboard->currentKeys[key];
+	return keyboard->currentKeys[key].isPressed;
 }
 
 int KeyIsPressed(keyboard_t *keyboard, int key)
 {
-	return keyboard->pressedKeys[key];
+	return keyboard->pressedKeys[key].isPressed;
 }
 
 int KeyIsReleased(keyboard_t *keyboard, int key)
 {
-	return !KeyIsDown(keyboard, key) && keyboard->previousKeys[key];
+	return !KeyIsDown(keyboard, key) && keyboard->previousKeys[key].isPressed;
 }
 
 int KeyGetPressed(keyboard_t *keyboard)
@@ -142,6 +159,22 @@ int KeyGetPressed(keyboard_t *keyboard)
 		if (KeyIsPressed(keyboard, i))
 		{
 			return i;
+		}
+	}
+	return 0;
+}
+
+int KeyGetTyped(keyboard_t *keyboard)
+{
+	int i;
+	for (i = 0; i < 128; i++)
+	{
+		Uint16 unicode = keyboard->currentKeys[i].unicode;
+		if (KeyIsPressed(keyboard, i) &&
+			unicode >= (Uint16)' ' &&
+			unicode <= (Uint16)'~')
+		{
+			return unicode;
 		}
 	}
 	return 0;
