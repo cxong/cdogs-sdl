@@ -68,6 +68,10 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 			{
 				keyboard->currentKeys[s.sym].unicode = s.unicode;
 			}
+			else
+			{
+				keyboard->currentKeys[s.sym].unicode = 0;
+			}
 			break;
 		case SDL_KEYUP:
 			keyboard->currentKeys[s.sym].isPressed = 0;
