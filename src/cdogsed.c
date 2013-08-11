@@ -969,21 +969,21 @@ static int Change(int yc, int xc, int d, int *mission)
 		break;
 
 	default:
-		if (yc >= YC_OBJECTIVES) {
-			switch (xc) {
+		if (yc >= YC_OBJECTIVES)
+		{
+			struct MissionObjective *objective =
+				&currentMission->objectives[yc - YC_OBJECTIVES];
+			switch (xc)
+			{
 			case XC_TYPE:
-				currentMission->objectives[yc - YC_OBJECTIVES].type =
-					CLAMP_OPPOSITE(
-						currentMission->objectives[yc - YC_OBJECTIVES].type + d,
-						0,
-						OBJECTIVE_INVESTIGATE);
+				objective->type = CLAMP_OPPOSITE(
+						objective->type + d, 0, OBJECTIVE_INVESTIGATE);
 				d = 0;
 				// fallthrough
 
 			case XC_INDEX:
-				switch (currentMission->
-					objectives[yc -
-						   YC_OBJECTIVES].type) {
+				switch (objective->type)
+				{
 				case OBJECTIVE_COLLECT:
 					limit = edInfo.pickupCount - 1;
 					break;
@@ -1001,38 +1001,25 @@ static int Change(int yc, int xc, int d, int *mission)
 					// should never get here
 					return 0;
 				}
-				currentMission->objectives[yc - YC_OBJECTIVES].index =
-					CLAMP_OPPOSITE(
-						currentMission->objectives[yc - YC_OBJECTIVES].index + d,
-						0,
-						limit);
+				objective->index =
+					CLAMP_OPPOSITE(objective->index + d, 0, limit);
 				isChanged = 1;
 				break;
 
 			case XC_REQUIRED:
-				currentMission->objectives[yc - YC_OBJECTIVES].required =
-					CLAMP_OPPOSITE(
-						currentMission->objectives[yc - YC_OBJECTIVES].required + d,
-						0,
-						100);
+				objective->required = CLAMP_OPPOSITE(
+					objective->required + d, 0, MIN(100, objective->count));
 				isChanged = 1;
 				break;
 
 			case XC_TOTAL:
-				currentMission->objectives[yc - YC_OBJECTIVES].count =
-					CLAMP_OPPOSITE(
-						currentMission->objectives[yc - YC_OBJECTIVES].count + d,
-						0,
-						100);
+				objective->count = CLAMP_OPPOSITE(
+					objective->count + d, objective->required, 100);
 				isChanged = 1;
 				break;
 
 			case XC_FLAGS:
-				currentMission->objectives[yc - YC_OBJECTIVES].flags =
-					CLAMP_OPPOSITE(
-						currentMission->objectives[yc - YC_OBJECTIVES].flags + d,
-						0,
-						15);
+				objective->flags = CLAMP_OPPOSITE(objective->flags + d, 0, 15);
 				isChanged = 1;
 				break;
 			}
@@ -1748,9 +1735,6 @@ int main(int argc, char *argv[])
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	GraphicsInit(&gGraphicsDevice);
-	// Override config for editor; only 320x240 supported
-	gConfig.Graphics.ResolutionWidth = 320;
-	gConfig.Graphics.ResolutionHeight = 240;
 	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{

@@ -395,7 +395,7 @@ int SaveCampaign(const char *filename, CampaignSetting *setting)
 	}
 
 #undef CHECK_WRITE
-	printf("Saved to %d\n", filename);
+	printf("Saved to %s\n", filename);
 	fclose(f);
 	return CAMPAIGN_OK;
 }
@@ -586,7 +586,7 @@ void SaveCampaignAsC(
 			setting->missionCount, name,
 			setting->characterCount, name);
 
-		printf("Saved to %d\n", filename);
+		printf("Saved to %s\n", filename);
 		fclose(f);
 	}
 };
