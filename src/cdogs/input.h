@@ -53,6 +53,7 @@
 
 #include "joystick.h"
 #include "keyboard.h"
+#include "mouse.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -79,15 +80,26 @@ typedef enum
 	KEY_CODE_MAP
 } key_code_e;
 
+typedef struct
+{
+	keyboard_t keyboard;
+	joysticks_t joysticks;
+	Mouse mouse;
+} InputDevices;
+
+extern InputDevices gInputDevices;
+
 void InputChangeDevice(
 	input_device_e *d, input_device_e *dOther, int numJoysticks);
 
 void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
 int GetMenuCmd(void);
 
+void InputInit(InputDevices *devices, Pic *mouseCursor);
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
-void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard, Uint32 ticks);
+void InputPoll(InputDevices *devices, Uint32 ticks);
+void InputTerminate(InputDevices *devices);
 
 const char *InputDeviceName(int d);
 

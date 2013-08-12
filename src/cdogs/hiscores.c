@@ -208,7 +208,7 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 			"All time high scores:", idx, allTimeHigh,
 			gPlayer1Data.allTime,
 			gOptions.twoPlayers ? gPlayer2Data.allTime : -1);
-		WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+		WaitForAnyKeyOrButton(&gInputDevices);
 	}
 }
 
@@ -223,7 +223,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 			gPlayer1Data.today,
 			gOptions.twoPlayers ? gPlayer2Data.
 			today : -1);
-		WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+		WaitForAnyKeyOrButton(&gInputDevices);
 	}
 }
 

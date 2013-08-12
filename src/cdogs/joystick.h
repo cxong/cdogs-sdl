@@ -50,7 +50,6 @@ typedef struct
 	int numJoys;
 	joystick_t joys[MAX_JOYSTICKS];
 } joysticks_t;
-extern joysticks_t gJoysticks;
 
 void JoyInit(joysticks_t *joys);
 void JoyReset(joysticks_t *joys);

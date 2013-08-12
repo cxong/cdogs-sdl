@@ -28,8 +28,6 @@
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
 #include <cdogs/gamedata.h>
-#include <cdogs/joystick.h>
-#include <cdogs/keyboard.h>
 #include <cdogs/music.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
@@ -49,7 +47,7 @@ int MainMenu(
 	int doPlay = 0;
 	MenuSystem *menu = MenuCreateAll(campaigns);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
-	MenuSetInputDevices(menu, &gJoysticks, &gKeyboard);
+	MenuSetInputDevices(menu, &gInputDevices);
 	MenuSetGraphicsDevice(menu, graphics);
 	MenuLoop(menu);
 	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;

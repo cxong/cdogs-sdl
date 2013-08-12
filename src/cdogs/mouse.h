@@ -31,8 +31,8 @@
 
 #include <SDL_stdinc.h>
 
-#include <cdogs/pic_file.h>
-#include <cdogs/vector.h>
+#include "pic_file.h"
+#include "vector.h"
 
 typedef struct
 {
@@ -42,9 +42,9 @@ typedef struct
 
 typedef struct
 {
-	Uint32 previousButtons;
-	Uint32 currentButtons;
-	Uint32 pressedButtons;
+	char previousButtons[8];
+	char currentButtons[8];
+	char pressedButtons[8];
 	Vec2i previousPos;
 	Vec2i currentPos;
 	Pic *cursor;
@@ -56,15 +56,17 @@ typedef struct
 	MouseRect *rects2;
 } Mouse;
 
-extern Mouse gMouse;
-
 void MouseInit(Mouse *mouse, Pic *cursor);
-void MousePoll(Mouse *mouse, Uint32 ticks);
+void MousePrePoll(Mouse *mouse);
+void MouseOnButtonDown(Mouse *mouse, Uint8 button);
+void MouseOnButtonUp(Mouse *mouse, Uint8 button);
+void MousePostPoll(Mouse *mouse, Uint32 ticks);
 int MouseHasMoved(Mouse *mouse);
-Uint32 MouseGetPressed(Mouse *mouse);
+int MouseGetPressed(Mouse *mouse);
 void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2);
 void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects);
 int MouseTryGetRectTag(Mouse *mouse, int *tag);
+MouseRect *MouseGetRectByTag(Mouse *mouse, int tag);
 void MouseDraw(Mouse *mouse);
 
 #endif

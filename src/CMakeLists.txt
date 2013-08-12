@@ -209,10 +209,8 @@ INCLUDE(CPack)
 
 SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
-	charsed.c
-	mouse.c)
+	charsed.c)
 SET(CDOGS_SDL_EDITOR_HEADERS
-	charsed.h
-	mouse.h)
+	charsed.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})

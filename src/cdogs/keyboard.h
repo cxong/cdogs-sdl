@@ -40,7 +40,6 @@ typedef struct
 
 typedef struct
 {
-	SDL_Event keyevent;
 	KeyPress previousKeys[512];
 	KeyPress currentKeys[512];
 	KeyPress pressedKeys[512];
@@ -49,10 +48,12 @@ typedef struct
 	Uint32 repeatedTicks;
 	int isFirstRepeat;
 } keyboard_t;
-extern keyboard_t gKeyboard;
 
 void KeyInit(keyboard_t *keyboard);
-void KeyPoll(keyboard_t *keyboard, Uint32 ticks);
+void KeyPrePoll(keyboard_t *keyboard);
+void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s);
+void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s);
+void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks);
 int KeyIsDown(keyboard_t *keyboard, int key);
 int KeyIsPressed(keyboard_t *keyboard, int key);
 int KeyIsReleased(keyboard_t *keyboard, int key);

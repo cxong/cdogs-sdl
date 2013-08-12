@@ -208,7 +208,7 @@ void CampaignIntro(GraphicsDevice *device)
 	MissionDescription(y, gCampaign.Setting.description);
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 void MissionBriefing(GraphicsDevice *device)
@@ -259,7 +259,7 @@ void MissionBriefing(GraphicsDevice *device)
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 void Summary(int x, struct PlayerData *data, int character)
@@ -439,7 +439,7 @@ void MissionSummary(GraphicsDevice *device)
 		Summary(CenterX(60), &gPlayer1Data, CHARACTER_PLAYER1);
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 void ShowScore(GraphicsDevice *device, int score1, int score2)
@@ -471,7 +471,7 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 void FinalScore(GraphicsDevice *device, int score1, int score2)
@@ -501,7 +501,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 			IS_WINNER);
 	}
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 
@@ -568,7 +568,7 @@ void Victory(GraphicsDevice *graphics)
 	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
 	BlitFlip(graphics, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gKeyboard, &gJoysticks);
+	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 
@@ -1059,9 +1059,7 @@ int main(int argc, char *argv[])
 	PlayMenuSong();
 
 	LoadAllCampaigns(&campaigns);
-
-	JoyInit(&gJoysticks);
-	KeyInit(&gKeyboard);
+	InputInit(&gInputDevices, NULL);
 
 	if (wait)
 	{
@@ -1089,9 +1087,7 @@ int main(int argc, char *argv[])
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
-
-	JoyTerminate(&gJoysticks);
-
+	InputTerminate(&gInputDevices);
 	GraphicsTerminate(&gGraphicsDevice);
 
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));

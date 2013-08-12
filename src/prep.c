@@ -1055,16 +1055,16 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 	SetPlayer(0, &gPlayer1Data);
 	SetPlayer(1, &gPlayer2Data);
 
-	KeyInit(&gKeyboard);
+	KeyInit(&gInputDevices.keyboard);
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
-		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
+		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
 			return 0; // hack to allow exit
 		}
@@ -1097,11 +1097,11 @@ int PlayerEquip(GraphicsDevice *graphics)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
-		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
+		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2, 1);
 
-		if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
 			return 0; // hack to exit from menu
 		}

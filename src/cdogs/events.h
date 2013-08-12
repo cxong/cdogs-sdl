@@ -49,10 +49,9 @@
 #ifndef __EVENTS
 #define __EVENTS
 
-#include "joystick.h"
-#include "keyboard.h"
+#include "input.h"
 
-int GetKey(keyboard_t *keyboard);
-void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks);
+int GetKey(InputDevices *devices);
+void WaitForAnyKeyOrButton(InputDevices *devices);
 
 #endif

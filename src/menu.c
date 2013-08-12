@@ -62,7 +62,6 @@
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/gamedata.h>
-#include <cdogs/joystick.h>
 #include <cdogs/mission.h>
 #include <cdogs/pics.h>
 #include <cdogs/sounds.h>
@@ -77,10 +76,9 @@ void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDispl
 	menu->creditsDisplayer = creditsDisplayer;
 }
 
-void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *keyboard)
+void MenuSetInputDevices(MenuSystem *menu, InputDevices *devices)
 {
-	menu->joysticks = joysticks;
-	menu->keyboard = keyboard;
+	menu->inputDevices = devices;
 }
 
 void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics)
@@ -123,7 +121,7 @@ void MenuLoop(MenuSystem *menu)
 	for (;; SDL_Delay(10))
 	{
 		// Input
-		InputPoll(menu->joysticks, menu->keyboard, SDL_GetTicks());
+		InputPoll(menu->inputDevices, SDL_GetTicks());
 		// Update
 		if (menu->current->type == MENU_TYPE_KEYS &&
 			menu->current->u.normal.changeKeyMenu != NULL)
@@ -820,7 +818,7 @@ int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 
 void MenuProcessChangeKey(menu_t *menu)
 {
-	int key = GetKey(&gKeyboard);	// wait until user has pressed a new button
+	int key = GetKey(&gInputDevices);	// wait until user has pressed a new button
 
 	if (key == SDLK_ESCAPE)
 	{
@@ -1011,7 +1009,7 @@ void MenuActivate(menu_t *menu, int cmd)
 		InputChangeDevice(
 			menu->u.option.uHook.changeControl.device0,
 			menu->u.option.uHook.changeControl.device1,
-			gJoysticks.numJoys);
+			gInputDevices.joysticks.numJoys);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
 		menu->u.option.uHook.toggleFuncs.toggle();

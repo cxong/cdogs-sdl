@@ -52,34 +52,31 @@
 
 #include <SDL_timer.h>
 
-#include "keyboard.h"
 
-
-int GetKey(keyboard_t *keyboard)
+int GetKey(InputDevices *devices)
 {
 	int key_pressed = 0;
 	do
 	{
-		KeyPoll(keyboard, SDL_GetTicks());
-		key_pressed = KeyGetPressed(keyboard);
+		InputPoll(devices, SDL_GetTicks());
+		key_pressed = KeyGetPressed(&devices->keyboard);
 	} while (!key_pressed);
 	return key_pressed;
 }
 
-void WaitForAnyKeyOrButton(keyboard_t *keyboard, joysticks_t *joysticks)
+void WaitForAnyKeyOrButton(InputDevices *devices)
 {
 	for (;;)
 	{
 		int i;
-		KeyPoll(keyboard, SDL_GetTicks());
-		JoyPoll(joysticks);
-		if (KeyGetPressed(keyboard))
+		InputPoll(devices, SDL_GetTicks());
+		if (KeyGetPressed(&devices->keyboard))
 		{
 			return;
 		}
-		for (i = 0; i < joysticks->numJoys; i++)
+		for (i = 0; i < devices->joysticks.numJoys; i++)
 		{
-			if (JoyIsAnyPressed(&joysticks->joys[i]))
+			if (JoyIsAnyPressed(&devices->joysticks.joys[i]))
 			{
 				return;
 			}

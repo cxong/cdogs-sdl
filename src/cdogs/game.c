@@ -440,7 +440,8 @@ int HandleKey(int *done, int cmd)
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
 	{
 		int hasDisplayedAutomap = 0;
-		while (KeyIsDown(&gKeyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
+		while (KeyIsDown(
+			&gInputDevices.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
 			int cmd1 = 0, cmd2 = 0;
@@ -450,7 +451,7 @@ int HandleKey(int *done, int cmd)
 				hasDisplayedAutomap = 1;
 			}
 			SDL_Delay(10);
-			InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
+			InputPoll(&gInputDevices, SDL_GetTicks());
 			GetPlayerInput(&cmd1, &cmd2);
 			cmd = cmd1 | cmd2;
 		}
@@ -466,9 +467,9 @@ int HandleKey(int *done, int cmd)
 		*done = 1;
 		return 0;
 	}
-	else if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gJoysticks.joys[0], CMD_BUTTON4) ||
-		JoyIsPressed(&gJoysticks.joys[1], CMD_BUTTON4))
+	else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
+		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4) ||
+		JoyIsPressed(&gInputDevices.joysticks.joys[1], CMD_BUTTON4))
 	{
 		if (gameIsPaused && escExits)
 		{
@@ -481,7 +482,7 @@ int HandleKey(int *done, int cmd)
 			escExits = YES;
 		}
 	}
-	else if (KeyGetPressed(&gKeyboard))
+	else if (KeyGetPressed(&gInputDevices.keyboard))
 	{
 		gameIsPaused = 0;
 	}
@@ -507,8 +508,7 @@ int gameloop(void)
 	gameIsPaused = NO;
 
 	missionTime = 0;
-	KeyInit(&gKeyboard);
-	JoyInit(&gJoysticks);
+	InputInit(&gInputDevices, NULL);
 	while (!done)
 	{
 		int cmd1 = 0, cmd2 = 0;
@@ -559,7 +559,7 @@ int gameloop(void)
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-		InputPoll(&gJoysticks, &gKeyboard, ticks_now);
+		InputPoll(&gInputDevices, ticks_now);
 
 		if (!gameIsPaused)
 		{

@@ -33,8 +33,6 @@
 #include "utils.h"
 
 
-keyboard_t gKeyboard;
-
 #define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
 
@@ -47,44 +45,36 @@ void KeyInit(keyboard_t *keyboard)
 	keyboard->isFirstRepeat = 1;
 }
 
-void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
+void KeyPrePoll(keyboard_t *keyboard)
 {
-	int isRepeating = 0;
-	int areSameKeysPressed = 1;
-	int areAnyKeysPressed = 0;
-	int i;
 	memcpy(
 		keyboard->previousKeys,
 		keyboard->currentKeys,
 		sizeof keyboard->previousKeys);
-	while (SDL_PollEvent(&keyboard->keyevent))
-	{
-		SDL_keysym s = keyboard->keyevent.key.keysym;
-		switch(keyboard->keyevent.type)
-		{
-		case SDL_KEYDOWN:
-			keyboard->currentKeys[s.sym].isPressed = 1;
-			if (s.unicode >= (Uint16)' ' && s.unicode <= (Uint16)'~')
-			{
-				keyboard->currentKeys[s.sym].unicode = s.unicode;
-			}
-			break;
-		case SDL_KEYUP:
-			keyboard->currentKeys[s.sym].isPressed = 0;
-			break;
-		default:
-			break;
-		}
-	}
 	keyboard->modState = SDL_GetModState();
+}
 
+void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s)
+{
+	keyboard->currentKeys[s.sym].isPressed = 1;
+	if (s.unicode >= (Uint16)' ' && s.unicode <= (Uint16)'~')
+	{
+		keyboard->currentKeys[s.sym].unicode = s.unicode;
+	}
+}
+void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s)
+{
+	keyboard->currentKeys[s.sym].isPressed = 0;
+}
+
+void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
+{
+	int isRepeating = 0;
+	int areSameKeysPressed = 1;
+	int i;
 	for (i = 0; i < 512; i++)
 	{
-		if (keyboard->currentKeys[i].isPressed)
-		{
-			areAnyKeysPressed = 1;
-		}
-		if (keyboard->previousKeys[i].isPressed !=
+		if (keyboard->previousKeys[i].isPressed ^
 			keyboard->currentKeys[i].isPressed)
 		{
 			areSameKeysPressed = 0;
@@ -92,7 +82,7 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 		}
 	}
 	// If same keys have been pressed, remember how long they have been pressed
-	if (areSameKeysPressed && areAnyKeysPressed)
+	if (areSameKeysPressed)
 	{
 		Uint32 ticksElapsed = ticks - keyboard->ticks;
 		keyboard->repeatedTicks += ticksElapsed;
@@ -125,7 +115,6 @@ void KeyPoll(keyboard_t *keyboard, Uint32 ticks)
 	}
 	else
 	{
-		int i;
 		for (i = 0; i < 512; i++)
 		{
 			keyboard->pressedKeys[i].isPressed =

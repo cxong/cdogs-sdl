@@ -69,7 +69,6 @@
 #include <cdogs/utils.h>
 
 #include "charsed.h"
-#include "mouse.h"
 
 
 #define YC_CAMPAIGNTITLE    0
@@ -388,7 +387,7 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
 	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
 
-	MouseSetSecondaryRects(&gMouse, localObjectiveClicks);
+	MouseSetSecondaryRects(&gInputDevices.mouse, localObjectiveClicks);
 }
 
 static int MissionDescription(
@@ -512,7 +511,7 @@ void ListWeapons(int y, int xc)
 	ShowWeaponStatus(190, y + TH, 9, xc);
 	ShowWeaponStatus(190, y + 2 * TH, 10, xc);
 
-	MouseSetSecondaryRects(&gMouse, localWeaponClicks);
+	MouseSetSecondaryRects(&gInputDevices.mouse, localWeaponClicks);
 }
 
 static void DrawEditableTextWithEmptyHint(
@@ -545,7 +544,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	CDogsTextGoto(x - 8, y + 5);
 	CDogsTextString(s);
 
-	MouseSetSecondaryRects(&gMouse, localMapItemClicks);
+	MouseSetSecondaryRects(&gInputDevices.mouse, localMapItemClicks);
 }
 
 static void DrawStyleArea(
@@ -716,7 +715,7 @@ void Display(int idx, int xc, int yc, int key)
 	int y = 5;
 	int i;
 
-	MouseSetSecondaryRects(&gMouse, NULL);
+	MouseSetSecondaryRects(&gInputDevices.mouse, NULL);
 	if (currentMission)
 	{
 		GraphicsBlitBkg(&gGraphicsDevice);
@@ -763,7 +762,7 @@ void Display(int idx, int xc, int yc, int key)
 		MissionDescription(
 			150 + TH, gCampaign.Setting.description, "(Campaign description)",
 			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
-		MouseSetSecondaryRects(&gMouse, localCampaignClicks);
+		MouseSetSecondaryRects(&gInputDevices.mouse, localCampaignClicks);
 		break;
 
 	case YC_MISSIONTITLE:
@@ -771,7 +770,7 @@ void Display(int idx, int xc, int yc, int key)
 			Vec2iNew(20, 150),
 			currentMission->song, "(Mission song)",
 			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
-		MouseSetSecondaryRects(&gMouse, localMissionClicks);
+		MouseSetSecondaryRects(&gInputDevices.mouse, localMissionClicks);
 		break;
 
 	case YC_MISSIONDESC:
@@ -782,27 +781,32 @@ void Display(int idx, int xc, int yc, int key)
 		break;
 
 	case YC_CHARACTERS:
-		CDogsTextStringAt(5, 190,
-			     "Use Insert, Delete and PageUp/PageDown");
+		CDogsTextStringAt(5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
+		{
 			break;
+		}
 		for (i = 0; i < currentMission->baddieCount; i++)
-			DisplayCharacter(20 + 20 * i, y,
-					 CHARACTER_OTHERS + i, xc == i);
-		MouseSetSecondaryRects(&gMouse, localCharacterClicks);
+		{
+			DisplayCharacter(20 + 20 * i, y, CHARACTER_OTHERS + i, xc == i);
+		}
+		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
 		break;
 
 	case YC_SPECIALS:
-		CDogsTextStringAt(5, 190,
-			     "Use Insert, Delete and PageUp/PageDown");
+		CDogsTextStringAt(5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
+		{
 			break;
+		}
 		for (i = 0; i < currentMission->specialCount; i++)
-			DisplayCharacter(20 + 20 * i, y,
-					 CHARACTER_OTHERS +
-					 currentMission->baddieCount + i,
-					 xc == i);
-		MouseSetSecondaryRects(&gMouse, localCharacterClicks);
+		{
+			DisplayCharacter(
+				20 + 20 * i, y,
+				CHARACTER_OTHERS + currentMission->baddieCount + i,
+				xc == i);
+		}
+		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
 		break;
 
 	case YC_ITEMS:
@@ -835,8 +839,7 @@ void Display(int idx, int xc, int yc, int key)
 		break;
 	}
 
-	MouseDraw(&gMouse);
-
+	MouseDraw(&gInputDevices.mouse);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
@@ -955,7 +958,7 @@ static int Change(int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_ITEMS:
-		if (gKeyboard.modState & KMOD_SHIFT)
+		if (gInputDevices.keyboard.modState & KMOD_SHIFT)
 		{
 			currentMission->itemDensity[xc] =
 				CLAMP(currentMission->itemDensity[xc] +  5 * d, 0, 512);
@@ -1359,7 +1362,7 @@ static void Save(int asCode)
 		CDogsTextChar('\021');
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-		c = GetKey(&gKeyboard);
+		c = GetKey(&gInputDevices);
 		switch (c)
 		{
 		case SDLK_RETURN:
@@ -1391,7 +1394,7 @@ static void Save(int asCode)
 			{
 				break;
 			}
-			c = KeyGetTyped(&gKeyboard);
+			c = KeyGetTyped(&gInputDevices.keyboard);
 			if (c && c != '*' &&
 				(strlen(filename) > 1 || c != '-') && c != '/' &&
 				c != ':' && c != '<' && c != '>' && c != '?' &&
@@ -1418,7 +1421,7 @@ static int ConfirmQuit(void)
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-	c = GetKey(&gKeyboard);
+	c = GetKey(&gInputDevices);
 	return (c == 'Y' || c == 'y');
 }
 
@@ -1457,7 +1460,7 @@ static void Delete(int xc, int yc, int *mission)
 static void HandleInput(
 	int c, int *xc, int *yc, int *mission, struct Mission *scrap, int *done)
 {
-	if (gKeyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
 		{
@@ -1502,7 +1505,7 @@ static void HandleInput(
 			Setup(*mission, 0);
 			SetupMap();
 			DisplayAutoMap(1);
-			GetKey(&gKeyboard);
+			GetKey(&gInputDevices);
 			KillAllObjects();
 			FreeTriggersAndWatches();
 			break;
@@ -1510,7 +1513,7 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			MouseSetRects(&gMouse, localClicks, NULL);
+			MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
 			break;
 		}
 	}
@@ -1583,7 +1586,8 @@ static void HandleInput(
 			break;
 
 		case SDLK_TAB:
-			MoveSelection(!(gKeyboard.modState & KMOD_SHIFT), yc, xc);
+			MoveSelection(
+				!(gInputDevices.keyboard.modState & KMOD_SHIFT), yc, xc);
 			break;
 
 		case SDLK_LEFT:
@@ -1625,7 +1629,7 @@ static void HandleInput(
 			break;
 
 		default:
-			c = KeyGetTyped(&gKeyboard);
+			c = KeyGetTyped(&gInputDevices.keyboard);
 			if (c)
 			{
 				fileChanged = 1;
@@ -1644,12 +1648,11 @@ static void EditCampaign(void)
 	int xcOld, ycOld;
 	struct Mission scrap;
 	struct EditorInfo edInfo;
-	int tag;
 
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gMouse, localClicks, NULL);
+	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
 
 	gCampaign.seed = 0;
 	Setup(mission, 1);
@@ -1657,32 +1660,38 @@ static void EditCampaign(void)
 	SDL_EnableKeyRepeat(0, 0);
 	while (!done)
 	{
+		int tag;
 		int c;
-		Uint32 ticks = SDL_GetTicks();
-		KeyPoll(&gKeyboard, ticks);
-		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse, ticks);
-		if (MouseGetPressed(&gMouse))
+		InputPoll(&gInputDevices, SDL_GetTicks());
+		c = KeyGetPressed(&gInputDevices.keyboard);
+		if (MouseGetPressed(&gInputDevices.mouse) &&
+			MouseTryGetRectTag(&gInputDevices.mouse, &tag))
 		{
-			if (MouseTryGetRectTag(&gMouse, &tag))
+			xcOld = xc;
+			ycOld = yc;
+			if ((tag & LEAVE_YC) == 0)
 			{
-				xcOld = xc;
-				ycOld = yc;
-				if ((tag & LEAVE_YC) == 0)
+				yc = (tag & 0xFF);
+				AdjustYC(&yc);
+			}
+			if ((tag & LEAVE_XC) == 0)
+			{
+				xc = ((tag >> 8) & 0xFF);
+				AdjustXC(yc, &xc);
+			}
+			if (!(tag & SELECT_ONLY) &&
+				(!(tag & SELECT_ONLY_FIRST) || (xc == xcOld && yc == ycOld)))
+			{
+				if (MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_LEFT ||
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELUP)
 				{
-					yc = (tag & 0xFF);
-					AdjustYC(&yc);
+					c = SDLK_PAGEUP;
 				}
-				if ((tag & LEAVE_XC) == 0)
+				else if (
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_RIGHT ||
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELDOWN)
 				{
-					xc = ((tag >> 8) & 0xFF);
-					AdjustXC(yc, &xc);
-				}
-				if (!(tag & SELECT_ONLY_FIRST) ||
-					(xc == xcOld && yc == ycOld))
-				{
-					c = MouseGetPressed(&gMouse) == SDL_BUTTON_LEFT ?
-						SDLK_PAGEUP : SDLK_PAGEDOWN;
+					c = SDLK_PAGEDOWN;
 				}
 			}
 		}
@@ -1738,9 +1747,7 @@ int main(int argc, char *argv[])
 	}
 
 	CDogsSetPalette(gPalette);
-
-	KeyInit(&gKeyboard);
-	MouseInit(&gMouse, gPics[145]);
+	InputInit(&gInputDevices, gPics[145]);
 
 	for (i = 1; i < argc; i++)
 	{

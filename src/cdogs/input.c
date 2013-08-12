@@ -58,6 +58,8 @@
 #include "sounds.h"
 #include "gamedata.h"
 
+InputDevices gInputDevices;
+
 
 // TODO: simplify into an iterate over struct controls_available
 void InputChangeDevice(
@@ -110,30 +112,30 @@ int GetOnePlayerCmd(
 	int cmd = 0;
 	if (config->Device == INPUT_DEVICE_KEYBOARD)
 	{
-		if (keyFunc(&gKeyboard, config->Keys.left))
+		if (keyFunc(&gInputDevices.keyboard, config->Keys.left))
 		{
 			cmd |= CMD_LEFT;
 		}
-		else if (keyFunc(&gKeyboard, config->Keys.right))
+		else if (keyFunc(&gInputDevices.keyboard, config->Keys.right))
 		{
 			cmd |= CMD_RIGHT;
 		}
 
-		if (keyFunc(&gKeyboard, config->Keys.up))
+		if (keyFunc(&gInputDevices.keyboard, config->Keys.up))
 		{
 			cmd |= CMD_UP;
 		}
-		else if (keyFunc(&gKeyboard, config->Keys.down))
+		else if (keyFunc(&gInputDevices.keyboard, config->Keys.down))
 		{
 			cmd |= CMD_DOWN;
 		}
 
-		if (keyFunc(&gKeyboard, config->Keys.button1))
+		if (keyFunc(&gInputDevices.keyboard, config->Keys.button1))
 		{
 			cmd |= CMD_BUTTON1;
 		}
 
-		if (keyFunc(&gKeyboard, config->Keys.button2))
+		if (keyFunc(&gInputDevices.keyboard, config->Keys.button2))
 		{
 			cmd |= CMD_BUTTON2;
 		}
@@ -141,16 +143,16 @@ int GetOnePlayerCmd(
 	else
 	{
 		int swapButtons = 0;
-		joystick_t *joystick = &gJoysticks.joys[0];
+		joystick_t *joystick = &gInputDevices.joysticks.joys[0];
 
 		if (config->Device == INPUT_DEVICE_JOYSTICK_1)
 		{
-			joystick = &gJoysticks.joys[0];
+			joystick = &gInputDevices.joysticks.joys[0];
 			swapButtons = gConfig.Input.SwapButtonsJoystick1;
 		}
 		else if (config->Device == INPUT_DEVICE_JOYSTICK_2)
 		{
-			joystick = &gJoysticks.joys[1];
+			joystick = &gInputDevices.joysticks.joys[1];
 			swapButtons = gConfig.Input.SwapButtonsJoystick2;
 		}
 
@@ -216,7 +218,7 @@ void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 int GetMenuCmd(void)
 {
 	int cmd = 0;
-	if (KeyIsPressed(&gKeyboard, SDLK_ESCAPE))
+	if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 	{
 		return CMD_ESC;
 	}
@@ -224,33 +226,40 @@ int GetMenuCmd(void)
 	GetPlayerCmd(&cmd, NULL, 1);
 	if (!cmd)
 	{
-		if (KeyIsPressed(&gKeyboard, SDLK_LEFT))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_LEFT))
 		{
 			cmd |= CMD_LEFT;
 		}
-		else if (KeyIsPressed(&gKeyboard, SDLK_RIGHT))
+		else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_RIGHT))
 		{
 			cmd |= CMD_RIGHT;
 		}
-		if (KeyIsPressed(&gKeyboard, SDLK_UP))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_UP))
 		{
 			cmd |= CMD_UP;
 		}
-		else if (KeyIsPressed(&gKeyboard, SDLK_DOWN))
+		else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_DOWN))
 		{
 			cmd |= CMD_DOWN;
 		}
-		if (KeyIsPressed(&gKeyboard, SDLK_RETURN))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_RETURN))
 		{
 			cmd |= CMD_BUTTON1;
 		}
-		if (KeyIsPressed(&gKeyboard, SDLK_BACKSPACE))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_BACKSPACE))
 		{
 			cmd |= CMD_BUTTON2;
 		}
 	}
 
 	return cmd;
+}
+
+void InputInit(InputDevices *devices, Pic *mouseCursor)
+{
+	KeyInit(&devices->keyboard);
+	JoyInit(&devices->joysticks);
+	MouseInit(&devices->mouse, mouseCursor);
 }
 
 int InputGetKey(input_keys_t *keys, key_code_e keyCode)
@@ -310,10 +319,39 @@ void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode)
 	}
 }
 
-void InputPoll(joysticks_t *joysticks, keyboard_t *keyboard, Uint32 ticks)
+void InputPoll(InputDevices *devices, Uint32 ticks)
 {
-	JoyPoll(joysticks);
-	KeyPoll(keyboard, ticks);
+	SDL_Event e;
+	KeyPrePoll(&devices->keyboard);
+	JoyPoll(&devices->joysticks);
+	MousePrePoll(&devices->mouse);
+	while (SDL_PollEvent(&e))
+	{
+		switch(e.type)
+		{
+		case SDL_KEYDOWN:
+			KeyOnKeyDown(&devices->keyboard, e.key.keysym);
+			break;
+		case SDL_KEYUP:
+			KeyOnKeyUp(&devices->keyboard, e.key.keysym);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			MouseOnButtonDown(&devices->mouse, e.button.button);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			MouseOnButtonUp(&devices->mouse, e.button.button);
+			break;
+		default:
+			break;
+		}
+	}
+	KeyPostPoll(&devices->keyboard, ticks);
+	MousePostPoll(&devices->mouse, ticks);
+}
+
+void InputTerminate(InputDevices *devices)
+{
+	JoyTerminate(&devices->joysticks);
 }
 
 const char *InputDeviceName(int d)

@@ -32,9 +32,8 @@
 #include <stdio.h>
 
 #include "defs.h"
+#include "input.h"
 
-
-joysticks_t gJoysticks;
 
 void JoyInit(joysticks_t *joys)
 {
@@ -79,7 +78,7 @@ void JoyReset(joysticks_t *joys)
 
 void GJoyReset(void)
 {
-	JoyReset(&gJoysticks);
+	JoyReset(&gInputDevices.joysticks);
 }
 
 void JoyTerminate(joysticks_t *joys)
@@ -180,6 +179,10 @@ void JoyPollOne(joystick_t *joy)
 void JoyPoll(joysticks_t *joys)
 {
 	int i;
+	if (joys->numJoys == 0)
+	{
+		return;
+	}
 	SDL_JoystickUpdate();
 	for (i = 0; i < joys->numJoys; i++)
 	{

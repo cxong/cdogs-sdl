@@ -178,14 +178,13 @@ typedef struct
 	menu_type_e *exitTypes;
 	int numExitTypes;
 	credits_displayer_t *creditsDisplayer;
-	joysticks_t *joysticks;
-	keyboard_t *keyboard;
+	InputDevices *inputDevices;
 	GraphicsDevice *graphics;
 } MenuSystem;
 
 
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
-void MenuSetInputDevices(MenuSystem *menu, joysticks_t *joysticks, keyboard_t *keyboard);
+void MenuSetInputDevices(MenuSystem *menu, InputDevices *devices);
 void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuLoop(MenuSystem *menu);

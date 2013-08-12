@@ -64,8 +64,6 @@
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
 
-#include "mouse.h"
-
 
 #define YC_APPEARANCE 0
 #define YC_ATTRIBUTES 1
@@ -337,7 +335,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		}
 	}
 
-	MouseDraw(&gMouse);
+	MouseDraw(&gInputDevices.mouse);
 
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
@@ -582,7 +580,7 @@ static void HandleInput(
 	int c, int *xc, int *yc,
 	int *idx, CampaignSetting *setting, TBadGuy *scrap, int *done)
 {
-	if (gKeyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
 		{
@@ -683,33 +681,40 @@ void EditCharacters(CampaignSetting *setting)
 	TBadGuy scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gMouse, localClicks, NULL);
+	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
 
 	while (!done)
 	{
 		int tag;
 		int c;
-		Uint32 ticks = SDL_GetTicks();
-		KeyPoll(&gKeyboard, ticks);
-		c = KeyGetPressed(&gKeyboard);
-		MousePoll(&gMouse, ticks);
-		if (MouseGetPressed(&gMouse))
+		InputPoll(&gInputDevices, SDL_GetTicks());
+		c = KeyGetPressed(&gInputDevices.keyboard);
+		if (MouseGetPressed(&gInputDevices.mouse))
 		{
-			if (PosToCharacterIndex(gMouse.currentPos, &tag))
+			if (PosToCharacterIndex(gInputDevices.mouse.currentPos, &tag))
 			{
 				if (tag >= 0 && tag < setting->characterCount)
 				{
 					idx = tag;
 				}
 			}
-			else if (MouseTryGetRectTag(&gMouse, &tag))
+			else if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
 			{
 				xc = (tag >> 8);
 				yc = (tag & 0xFF);
 				AdjustYC(&yc);
 				AdjustXC(yc, &xc);
-				c = MouseGetPressed(&gMouse) == SDL_BUTTON_LEFT ?
-					SDLK_PAGEUP : SDLK_PAGEDOWN;
+				if (MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_LEFT ||
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELUP)
+				{
+					c = SDLK_PAGEUP;
+				}
+				else if (
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_RIGHT ||
+					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELDOWN)
+				{
+					c = SDLK_PAGEDOWN;
+				}
 			}
 		}
 

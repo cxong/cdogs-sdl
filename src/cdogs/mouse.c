@@ -51,9 +51,7 @@
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
-#include <cdogs/config.h>
-
-Mouse gMouse;
+#include "config.h"
 
 #define MOUSE_REPEAT_TICKS 150
 
@@ -66,18 +64,42 @@ void MouseInit(Mouse *mouse, Pic *cursor)
 	SDL_ShowCursor(SDL_DISABLE);
 }
 
-void MousePoll(Mouse *mouse, Uint32 ticks)
+void MousePrePoll(Mouse *mouse)
 {
-	mouse->previousButtons = mouse->currentButtons;
+	memcpy(
+		mouse->previousButtons,
+		mouse->currentButtons,
+		sizeof mouse->previousButtons);
 	mouse->previousPos = mouse->currentPos;
-	mouse->currentButtons =
-		SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
+	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
 	mouse->currentPos =
 		Vec2iScaleDiv(mouse->currentPos, gConfig.Graphics.ScaleFactor);
+}
 
-	// If same keys have been pressed, remember how long they have been pressed
-	if (mouse->previousButtons == mouse->currentButtons &&
-		mouse->currentButtons != 0)
+
+void MouseOnButtonDown(Mouse *mouse, Uint8 button)
+{
+	mouse->currentButtons[button] = 1;
+}
+void MouseOnButtonUp(Mouse *mouse, Uint8 button)
+{
+	mouse->currentButtons[button] = 0;
+}
+
+void MousePostPoll(Mouse *mouse, Uint32 ticks)
+{
+	int areSameButtonsPressed = 1;
+	int i;
+	for (i = 0; i < 8; i++)
+	{
+		if (mouse->previousButtons[i] ^ mouse->currentButtons[i])
+		{
+			areSameButtonsPressed = 0;
+			break;
+		}
+	}
+	// If same buttons have been pressed, remember how long they have been pressed
+	if (areSameButtonsPressed)
 	{
 		Uint32 ticksElapsed = ticks - mouse->ticks;
 		mouse->repeatedTicks += ticksElapsed;
@@ -90,11 +112,18 @@ void MousePoll(Mouse *mouse, Uint32 ticks)
 	if (mouse->repeatedTicks > MOUSE_REPEAT_TICKS)
 	{
 		mouse->repeatedTicks -= MOUSE_REPEAT_TICKS;
-		mouse->pressedButtons = mouse->currentButtons;
+		memcpy(
+			mouse->pressedButtons,
+			mouse->currentButtons,
+			sizeof mouse->pressedButtons);
 	}
 	else
 	{
-		mouse->pressedButtons = mouse->currentButtons & ~mouse->previousButtons;
+		for (i = 0; i < 8; i++)
+		{
+			mouse->pressedButtons[i] =
+				mouse->currentButtons[i] && !mouse->previousButtons[i];
+		}
 	}
 	mouse->ticks = ticks;
 }
@@ -104,9 +133,17 @@ int MouseHasMoved(Mouse *mouse)
 	return !Vec2iEqual(mouse->previousPos, mouse->currentPos);
 }
 
-Uint32 MouseGetPressed(Mouse *mouse)
+int MouseGetPressed(Mouse *mouse)
 {
-	return mouse->pressedButtons;
+	int i;
+	for (i = 0; i < 8; i++)
+	{
+		if (mouse->pressedButtons[i])
+		{
+			return i;
+		}
+	}
+	return 0;
 }
 
 void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2)
@@ -146,6 +183,29 @@ int MouseTryGetRectTag(Mouse *mouse, int *tag)
 		return 1;
 	}
 	return 0;
+}
+
+MouseRect *MouseGetRectByTag(Mouse *mouse, int tag)
+{
+	MouseRect *rects = mouse->rects;
+	while (rects && rects->right > 0)
+	{
+		if (rects->tag == tag)
+		{
+			return rects;
+		}
+		rects++;
+	}
+	rects = mouse->rects2;
+	while (rects && rects->right > 0)
+	{
+		if (rects->tag == tag)
+		{
+			return rects;
+		}
+		rects++;
+	}
+	return NULL;
 }
 
 void MouseDraw(Mouse *mouse)

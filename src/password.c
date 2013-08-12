@@ -230,7 +230,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 	while (!done)
 	{
 		int cmd;
-		InputPoll(&gJoysticks, &gKeyboard, SDL_GetTicks());
+		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		cmd = GetMenuCmd();
 		if (!PasswordEntry(cmd, buffer))
@@ -286,17 +286,14 @@ typedef enum
 } ReturnCode;
 
 MenuSystem *MenuCreateStart(
-	int hasPassword,
-	GraphicsDevice *graphics,
-	joysticks_t *joysticks,
-	keyboard_t *keyboard);
+	int hasPassword, GraphicsDevice *graphics, InputDevices *inputDevices);
 
 int EnterPassword(GraphicsDevice *graphics, const char *password)
 {
 	MenuSystem *startMenu;
 	int mission = TestPassword(password);
 	int hasPassword = mission > 0;
-	startMenu = MenuCreateStart(hasPassword, graphics, &gJoysticks, &gKeyboard);
+	startMenu = MenuCreateStart(hasPassword, graphics, &gInputDevices);
 	for (;;)
 	{
 		int returnCode;
@@ -324,14 +321,11 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 }
 
 MenuSystem *MenuCreateStart(
-	int hasPassword,
-	GraphicsDevice *graphics,
-	joysticks_t *joysticks,
-	keyboard_t *keyboard)
+	int hasPassword, GraphicsDevice *graphics, InputDevices *inputDevices)
 {
 	MenuSystem *ms;
 	CCALLOC(ms, sizeof *ms);
-	MenuSetInputDevices(ms, joysticks, keyboard);
+	MenuSetInputDevices(ms, inputDevices);
 	MenuSetGraphicsDevice(ms, graphics);
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	if (hasPassword)
