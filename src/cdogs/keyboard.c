@@ -61,6 +61,10 @@ void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s)
 	{
 		keyboard->currentKeys[s.sym].unicode = s.unicode;
 	}
+	else
+	{
+		keyboard->currentKeys[s.sym].unicode = 0;
+	}
 }
 void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s)
 {
