@@ -57,7 +57,8 @@
 typedef enum
 {
 	SCALE_MODE_NN,
-	SCALE_MODE_BILINEAR
+	SCALE_MODE_BILINEAR,
+	SCALE_MODE_HQX
 } ScaleMode;
 
 typedef struct

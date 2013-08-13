@@ -53,6 +53,7 @@
 #include <string.h>
 #include <math.h>
 
+#include <hqx/hqx.h>
 #include <SDL.h>
 
 #include "config.h"
@@ -509,6 +510,24 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 	else if (config->ScaleMode == SCALE_MODE_BILINEAR)
 	{
 		Bilinear(pScreen, device->buf, screenSize.x, screenSize.y, scalef);
+	}
+	else if (config->ScaleMode == SCALE_MODE_HQX)
+	{
+		switch (scalef)
+		{
+		case 2:
+			hq2x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			break;
+		case 3:
+			hq3x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			break;
+		case 4:
+			hq4x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			break;
+		default:
+			assert(0);
+			break;
+		}
 	}
 	else
 	{

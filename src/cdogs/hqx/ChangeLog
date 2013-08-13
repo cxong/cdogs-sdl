@@ -1,0 +1,13 @@
+2010-03-31 Cameron Zemek <grom@zeminvaders.net>
+    * *.c: Changed to use stdint.h for fixed width integer types
+    * common.h: Changed interpolate functions to work with 24bit color
+    * init.c: Changed RGBtoYUV table to convert 24bit color values
+    * hqx.c: Created command line tool that uses DevIL
+
+2011-12-05 Cameron Zemek <grom@zeminvaders.net>
+    * Thanks for this change go to anbaricforce
+    * hqx.h: Added declarations for row byte versions
+    * hq*x.c: Added version of function that takes row bytes
+
+2011-12-05 Cameron Zemek <grom@zeminvaders.net>, Francois Gannaz <mytskine@gmail.com>
+    * Added transparency support

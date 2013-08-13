@@ -313,7 +313,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name)
 		menu,
 		MenuCreateOptionRange(
 			"Scale mode", (int *)&gConfig.Graphics.ScaleMode,
-			SCALE_MODE_NN, SCALE_MODE_BILINEAR, 1,
+			SCALE_MODE_NN, SCALE_MODE_HQX, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleModeStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));

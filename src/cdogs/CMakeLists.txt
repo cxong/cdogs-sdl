@@ -1,3 +1,6 @@
+add_subdirectory(hqx)
+include_directories(.)
+
 set(CDOGS_SOURCES
 	actors.c
 	ai.c

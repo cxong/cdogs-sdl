@@ -53,6 +53,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include <hqx/hqx.h>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
@@ -191,6 +192,7 @@ void GraphicsInit(GraphicsDevice *device)
 	AddGraphicsMode(device, 320, 240, 2);
 	device->buf = NULL;
 	device->bkg = NULL;
+	hqxInit();
 }
 
 void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)

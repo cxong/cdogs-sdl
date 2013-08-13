@@ -1,0 +1,8 @@
+These are just highlights of what was changed during each release.  For a more
+in-depth version of what was changed, please look at the ChangeLog.
+
+1.0
+---
+- Added support for 24 bit color
+- Created command line tool that uses DevIL library for loading/saving images
+- Use autotools for build system

@@ -92,6 +92,8 @@ const char *ScaleModeStr(ScaleMode s)
 		return "Nearest neighbor";
 	case SCALE_MODE_BILINEAR:
 		return "Bilinear";
+	case SCALE_MODE_HQX:
+		return "hqx";
 	default:
 		return "";
 	}
@@ -105,6 +107,10 @@ ScaleMode StrScaleMode(const char *str)
 	else if (strcmp(str, "Bilinear") == 0)
 	{
 		return SCALE_MODE_BILINEAR;
+	}
+	else if (strcmp(str, "hqx") == 0)
+	{
+		return SCALE_MODE_HQX;
 	}
 	else
 	{

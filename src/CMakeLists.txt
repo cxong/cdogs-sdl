@@ -149,7 +149,7 @@ elseif(APPLE)
 		PROPERTIES LANGUAGE C)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
-target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl cdogs json hqx ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
 
 install(TARGETS cdogs-sdl DESTINATION .)
 
@@ -213,4 +213,4 @@ SET(CDOGS_SDL_EDITOR_SOURCES
 SET(CDOGS_SDL_EDITOR_HEADERS
 	charsed.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS} ${CDOGS_SDL_EXTRA})
-target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl-editor cdogs json hqx ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
