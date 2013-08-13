@@ -678,6 +678,7 @@ void EditCharacters(CampaignSetting *setting)
 	int done = 0;
 	int idx = 0;
 	int xc = 0, yc = 0;
+	int xcOld, ycOld;
 	TBadGuy scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
@@ -686,12 +687,17 @@ void EditCharacters(CampaignSetting *setting)
 	while (!done)
 	{
 		int tag;
-		int c;
+		int c, m;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		c = KeyGetPressed(&gInputDevices.keyboard);
-		if (MouseGetPressed(&gInputDevices.mouse))
+		m = MouseGetPressed(&gInputDevices.mouse);
+		if (m)
 		{
-			if (PosToCharacterIndex(gInputDevices.mouse.currentPos, &tag))
+			xcOld = xc;
+			ycOld = yc;
+			// Only change selection on left/right click
+			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
+				PosToCharacterIndex(gInputDevices.mouse.currentPos, &tag))
 			{
 				if (tag >= 0 && tag < setting->characterCount)
 				{
@@ -700,18 +706,24 @@ void EditCharacters(CampaignSetting *setting)
 			}
 			else if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
 			{
-				xc = (tag >> 8);
-				yc = (tag & 0xFF);
-				AdjustYC(&yc);
-				AdjustXC(yc, &xc);
-				if (MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_LEFT ||
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELUP)
+				int isSameSelection;
+				xcOld = xc;
+				ycOld = yc;
+				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+				{
+					xc = (tag >> 8);
+					yc = (tag & 0xFF);
+					AdjustYC(&yc);
+					AdjustXC(yc, &xc);
+				}
+				isSameSelection = xc == xcOld && yc == ycOld;
+				if (m == SDL_BUTTON_LEFT ||
+					(m == SDL_BUTTON_WHEELUP && isSameSelection))
 				{
 					c = SDLK_PAGEUP;
 				}
-				else if (
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_RIGHT ||
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELDOWN)
+				else if (m == SDL_BUTTON_RIGHT ||
+					(m == SDL_BUTTON_WHEELDOWN && isSameSelection))
 				{
 					c = SDLK_PAGEDOWN;
 				}

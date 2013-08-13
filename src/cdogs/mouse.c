@@ -66,6 +66,7 @@ void MouseInit(Mouse *mouse, Pic *cursor)
 
 void MousePrePoll(Mouse *mouse)
 {
+	memset(mouse->pressedButtons, 0, sizeof mouse->pressedButtons);
 	memcpy(
 		mouse->previousButtons,
 		mouse->currentButtons,
@@ -83,6 +84,12 @@ void MouseOnButtonDown(Mouse *mouse, Uint8 button)
 }
 void MouseOnButtonUp(Mouse *mouse, Uint8 button)
 {
+	// Certain mouse buttons can be pressed very quickly (e.g. mousewheel)
+	// Detect these mouse presses before PostPoll
+	if (mouse->currentButtons[button] && !mouse->previousButtons[button])
+	{
+		mouse->pressedButtons[button] = 1;
+	}
 	mouse->currentButtons[button] = 0;
 }
 
@@ -112,6 +119,10 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 	if (mouse->repeatedTicks > MOUSE_REPEAT_TICKS)
 	{
 		mouse->repeatedTicks -= MOUSE_REPEAT_TICKS;
+		for (i = 0; i < 8; i++)
+		{
+			mouse->pressedButtons[i] |= mouse->currentButtons[i];
+		}
 		memcpy(
 			mouse->pressedButtons,
 			mouse->currentButtons,
@@ -121,7 +132,7 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 	{
 		for (i = 0; i < 8; i++)
 		{
-			mouse->pressedButtons[i] =
+			mouse->pressedButtons[i] |=
 				mouse->currentButtons[i] && !mouse->previousButtons[i];
 		}
 	}

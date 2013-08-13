@@ -129,8 +129,8 @@
 
 static MouseRect localClicks[] =
 {
-	{25, 5, 265, 5 + TH - 1, YC_CAMPAIGNTITLE + SELECT_ONLY},
-	{270, 5, 319, 5 + TH - 1, YC_MISSIONINDEX + SELECT_ONLY},
+	{25, 5, 265, 5 + TH - 1, YC_CAMPAIGNTITLE + SELECT_ONLY_FIRST},
+	{270, 5, 319, 5 + TH - 1, YC_MISSIONINDEX},
 	{25, 8 + TH, 200, 8 + 2 * TH - 1, YC_MISSIONTITLE + SELECT_ONLY},
 
 	{20, 10 + 2 * TH, 55, 10 + 3 * TH - 1,
@@ -1661,35 +1661,36 @@ static void EditCampaign(void)
 	while (!done)
 	{
 		int tag;
-		int c;
+		int c, m;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		c = KeyGetPressed(&gInputDevices.keyboard);
-		if (MouseGetPressed(&gInputDevices.mouse) &&
-			MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+		m = MouseGetPressed(&gInputDevices.mouse);
+		if (m && MouseTryGetRectTag(&gInputDevices.mouse, &tag))
 		{
 			xcOld = xc;
 			ycOld = yc;
-			if ((tag & LEAVE_YC) == 0)
+			// Only change selection on left/right click
+			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
 			{
-				yc = (tag & 0xFF);
-				AdjustYC(&yc);
-			}
-			if ((tag & LEAVE_XC) == 0)
-			{
-				xc = ((tag >> 8) & 0xFF);
-				AdjustXC(yc, &xc);
+				if ((tag & LEAVE_YC) == 0)
+				{
+					yc = (tag & 0xFF);
+					AdjustYC(&yc);
+				}
+				if ((tag & LEAVE_XC) == 0)
+				{
+					xc = ((tag >> 8) & 0xFF);
+					AdjustXC(yc, &xc);
+				}
 			}
 			if (!(tag & SELECT_ONLY) &&
 				(!(tag & SELECT_ONLY_FIRST) || (xc == xcOld && yc == ycOld)))
 			{
-				if (MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_LEFT ||
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELUP)
+				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
 				{
 					c = SDLK_PAGEUP;
 				}
-				else if (
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_RIGHT ||
-					MouseGetPressed(&gInputDevices.mouse) == SDL_BUTTON_WHEELDOWN)
+				else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
 				{
 					c = SDLK_PAGEDOWN;
 				}
