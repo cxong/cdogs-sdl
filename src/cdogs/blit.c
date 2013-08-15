@@ -53,7 +53,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <hqx/hqx.h>
+#include <hqx.h>
 #include <SDL.h>
 
 #include "config.h"

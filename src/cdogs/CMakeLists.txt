@@ -1,5 +1,5 @@
-add_subdirectory(hqx)
-include_directories(.)
+add_subdirectory(hqx/src)
+include_directories(hqx/src)
 
 set(CDOGS_SOURCES
 	actors.c

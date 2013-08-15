@@ -4,3 +4,6 @@
 [submodule "src/tests/cbehave"]
 	path = src/tests/cbehave
 	url = https://github.com/cxong/cbehave.git
+[submodule "src/cdogs/hqx"]
+	path = src/cdogs/hqx
+	url = https://github.com/cxong/hqx.git
