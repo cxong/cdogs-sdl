@@ -449,7 +449,7 @@ void DamageObject(
 		}
 		if (object->wreckedPic)
 		{
-			object->tileItem.flags = 0;
+			object->tileItem.flags = TILEITEM_IS_WRECK;
 			object->pic = object->wreckedPic;
 		}
 		else

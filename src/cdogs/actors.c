@@ -787,11 +787,20 @@ void UpdateAllActors(int ticks)
 	TActor *actor = actorList;
 	while (actor) {
 		UpdateActorState(actor, ticks);
-		if (actor->dead > DEATH_MAX) {
-			AddObject(actor->x, actor->y, 0, 0, &cBloodPics[rand() % BLOOD_MAX], 0, 0);
+		if (actor->dead > DEATH_MAX)
+		{
+			AddObject(
+				actor->x, actor->y,
+				0, 0,
+				&cBloodPics[rand() % BLOOD_MAX],
+				0,
+				TILEITEM_IS_WRECK);
 			actor = RemoveActor(actor);
-		} else
+		}
+		else
+		{
 			actor = actor->next;
+		}
 	}
 }
 

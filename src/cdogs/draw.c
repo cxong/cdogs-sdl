@@ -59,10 +59,26 @@
 
 void AddItemToDisplayList(TTileItem * t, TTileItem ** list)
 {
-	while (*list && (*list)->y < t->y)
-		list = &(*list)->nextToDisplay;
-	t->nextToDisplay = *list;
-	*list = t;
+	TTileItem *l;
+	TTileItem *lPrev;
+	t->nextToDisplay = NULL;
+	for (lPrev = NULL, l = *list; l; lPrev = l, l = l->nextToDisplay)
+	{
+		// draw in Y order
+		if (l->y >= t->y)
+		{
+			break;
+		}
+	}
+	t->nextToDisplay = l;
+	if (lPrev)
+	{
+		lPrev->nextToDisplay = t;
+	}
+	else
+	{
+		*list = t;
+	}
 }
 
 void
@@ -258,7 +274,6 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 	int x, y;
 	Vec2i pos;
 	TTile *tile;
-	TTileItem *t;
 
 	// First draw the floor tiles (which do not obstruct anything)
 	tile = &b->tiles[0][0];
@@ -281,13 +296,37 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 		}
 		tile += X_TILES - b->width;
 	}
+	
+	// Then draw debris (wrecks)
+	tile = &b->tiles[0][0];
+	for (y = 0; y < Y_TILES; y++)
+	{
+		TTileItem *displayList = NULL;
+		TTileItem *t;
+		for (x = 0; x < b->width; x++, tile++)
+		{
+			for (t = tile->things; t; t = t->next)
+			{
+				if (t->flags & TILEITEM_IS_WRECK)
+				{
+					AddItemToDisplayList(t, &displayList);
+				}
+			}
+		}
+		for (t = displayList; t; t = t->nextToDisplay)
+		{
+			(*(t->drawFunc))(t->x - b->xTop + xOffset, t->y - b->yTop, t->data);
+		}
+		tile += X_TILES - b->width;
+	}
 
-	// Now draw walls and things in proper order
+	// Now draw walls and (non-wreck) things in proper order
 	tile = &b->tiles[0][0];
 	pos.y = b->dy + cWallOffset.dy;
 	for (y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		TTileItem *displayList = NULL;
+		TTileItem *t;
 		pos.x = b->dx + cWallOffset.dx + xOffset;
 		for (x = 0; x < b->width; x++, tile++, pos.x += TILE_WIDTH)
 		{
@@ -309,19 +348,17 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 					GetTileLOSMask(tile),
 					0);
 			}
-			t = tile->things;
-			while (t) {
-				AddItemToDisplayList(t, &displayList);
-				t = t->next;
+			for (t = tile->things; t; t = t->next)
+			{
+				if (!(t->flags & TILEITEM_IS_WRECK))
+				{
+					AddItemToDisplayList(t, &displayList);
+				}
 			}
 		}
-
-		t = displayList;
-		while (t) {
-			(*(t->drawFunc)) (t->x - b->xTop +
-					  xOffset, t->y - b->yTop,
-					  t->data);
-			t = t->nextToDisplay;
+		for (t = displayList; t; t = t->nextToDisplay)
+		{
+			(*(t->drawFunc))(t->x - b->xTop + xOffset, t->y - b->yTop, t->data);
 		}
 		tile += X_TILES - b->width;
 	}

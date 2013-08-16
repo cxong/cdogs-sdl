@@ -86,6 +86,7 @@ typedef enum
 #define TILEITEM_CAN_BE_SHOT    2
 #define TILEITEM_CAN_BE_TAKEN   4
 #define TILEITEM_OBJECTIVE      (8 + 16 + 32 + 64 + 128)
+#define TILEITEM_IS_WRECK		256
 #define OBJECTIVE_SHIFT         3
 
 
