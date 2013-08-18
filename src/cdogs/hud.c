@@ -175,7 +175,14 @@ static void DrawWeaponStatus(
 		int maxLock = gGunDescriptions[weapon->gun].Lock;
 		int innerWidth;
 		color_t backColor = { 128, 128, 128 };
-		innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
+		if (maxLock == 0)
+		{
+			innerWidth = 0;
+		}
+		else
+		{
+			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
+		}
 		DrawGauge(
 			device, gaugePos, size, innerWidth, barColor, backColor, flags);
 	}
