@@ -112,41 +112,42 @@ void SetLineOfSight(
 	}
 }
 
-void LineOfSight(int xc, int yc, DrawBuffer *buffer, int shadowFlag)
+void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag)
 {
 	int x, y;
+	Vec2i centerTile;
 
-	xc = xc / TILE_WIDTH - buffer->xStart;
-	yc = yc / TILE_HEIGHT - buffer->yStart;
+	centerTile.x = center.x / TILE_WIDTH - buffer->xStart;
+	centerTile.y = center.y / TILE_HEIGHT - buffer->yStart;
 
-	for (x = xc - 2; x >= 0; x--)
+	for (x = centerTile.x - 2; x >= 0; x--)
 	{
-		SetLineOfSight(buffer, x, yc, 1, 0, shadowFlag);
+		SetLineOfSight(buffer, x, centerTile.y, 1, 0, shadowFlag);
 	}
-	for (x = xc + 2; x < buffer->width; x++)
+	for (x = centerTile.x + 2; x < buffer->width; x++)
 	{
-		SetLineOfSight(buffer, x, yc, -1, 0, shadowFlag);
+		SetLineOfSight(buffer, x, centerTile.y, -1, 0, shadowFlag);
 	}
-	for (y = yc - 1; y >= 0; y--)
+	for (y = centerTile.y - 1; y >= 0; y--)
 	{
-		SetLineOfSight(buffer, xc, y, 0, 1, shadowFlag);
-		for (x = xc - 1; x >= 0; x--)
+		SetLineOfSight(buffer, centerTile.x, y, 0, 1, shadowFlag);
+		for (x = centerTile.x - 1; x >= 0; x--)
 		{
 			SetLineOfSight(buffer, x, y, 1, 1, shadowFlag);
 		}
-		for (x = xc + 1; x < buffer->width; x++)
+		for (x = centerTile.x + 1; x < buffer->width; x++)
 		{
 			SetLineOfSight(buffer, x, y, -1, 1, shadowFlag);
 		}
 	}
-	for (y = yc + 1; y < Y_TILES; y++)
+	for (y = centerTile.y + 1; y < Y_TILES; y++)
 	{
-		SetLineOfSight(buffer, xc, y, 0, -1, shadowFlag);
-		for (x = xc - 1; x >= 0; x--)
+		SetLineOfSight(buffer, centerTile.x, y, 0, -1, shadowFlag);
+		for (x = centerTile.x - 1; x >= 0; x--)
 		{
 			SetLineOfSight(buffer, x, y, 1, -1, shadowFlag);
 		}
-		for (x = xc + 1; x < buffer->width; x++)
+		for (x = centerTile.x + 1; x < buffer->width; x++)
 		{
 			SetLineOfSight(buffer, x, y, -1, -1, shadowFlag);
 		}
@@ -154,13 +155,13 @@ void LineOfSight(int xc, int yc, DrawBuffer *buffer, int shadowFlag)
 	
 	if (gConfig.Game.SightRange > 0)
 	{
-		Vec2i c = Vec2iNew(xc, yc);
 		int distanceSquared = gConfig.Game.SightRange * gConfig.Game.SightRange;
 		for (y = 0; y < Y_TILES; y++)
 		{
 			for (x = 0; x < buffer->width; x++)
 			{
-				if (DistanceSquared(c, Vec2iNew(x, y)) >= distanceSquared)
+				if (DistanceSquared(centerTile, Vec2iNew(x, y)) >=
+					distanceSquared)
 				{
 					TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 					tile->flags |= shadowFlag;

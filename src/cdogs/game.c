@@ -225,11 +225,11 @@ static int Ticks_Synchronize(void)
 }
 
 
-void DoBuffer(DrawBuffer *b, int x, int y, int dx, int w, int xn, int yn)
+void DoBuffer(DrawBuffer *b, Vec2i center, int dx, int w, Vec2i noise)
 {
 	DrawBufferSetFromMap(
-		b, gMap, Vec2iNew(x + xn, y + yn), w, Vec2iNew(X_TILES, Y_TILES));
-	LineOfSight(x, y, b, MAPTILE_IS_SHADOW);
+		b, gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
+	LineOfSight(center, b, MAPTILE_IS_SHADOW);
 	FixBuffer(b, MAPTILE_IS_SHADOW);
 	DrawBufferDraw(b, dx);
 }
@@ -258,17 +258,16 @@ void BlackLine(void)
 	}
 }
 
-void DrawScreen(DrawBuffer *b, TActor * player1, TActor * player2)
+Vec2i DrawScreen(
+	DrawBuffer *b, TActor *player1, TActor *player2, Vec2i lastPosition)
 {
-	static int x = 0;
-	static int y = 0;
-	int xNoise, yNoise;
+	Vec2i noise = Vec2iZero();
 
-	if (screenShaking) {
-		xNoise = rand() & 7;
-		yNoise = rand() & 7;
-	} else
-		xNoise = yNoise = 0;
+	if (screenShaking)
+	{
+		noise.x = rand() & 7;
+		noise.y = rand() & 7;
+	}
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (player1 && player2)
@@ -278,23 +277,21 @@ void DrawScreen(DrawBuffer *b, TActor * player1, TActor * player2)
 			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
 		{
 			// One screen
-			x = (player1->tileItem.x +
-			     player2->tileItem.x) / 2;
-			y = (player1->tileItem.y +
-			     player2->tileItem.y) / 2;
+			lastPosition.x = (player1->tileItem.x + player2->tileItem.x) / 2;
+			lastPosition.y = (player1->tileItem.y + player2->tileItem.y) / 2;
 
 			DrawBufferSetFromMap(
 				b, gMap,
-				Vec2iNew(x + xNoise, y + yNoise),
+				Vec2iAdd(lastPosition, noise),
 				X_TILES,
 				Vec2iNew(X_TILES, Y_TILES));
 			LineOfSight(
-				player1->tileItem.x,
-				player1->tileItem.y, b,
+				Vec2iNew(player1->tileItem.x, player1->tileItem.y),
+				b,
 				MAPTILE_IS_SHADOW);
 			LineOfSight(
-				player2->tileItem.x,
-				player2->tileItem.y, b,
+				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
+				b,
 				MAPTILE_IS_SHADOW2);
 			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
 			DrawBufferDraw(b, 0);
@@ -307,7 +304,12 @@ void DrawScreen(DrawBuffer *b, TActor * player1, TActor * player2)
 				0,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1,
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
-			DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0, X_TILES_HALF, xNoise, yNoise);
+			DoBuffer(
+				b,
+				Vec2iNew(player1->tileItem.x, player1->tileItem.y),
+				0,
+				X_TILES_HALF,
+				noise);
 			SoundSetLeftEar(
 				Vec2iNew(player1->tileItem.x, player1->tileItem.y));
 			GraphicsSetBlitClip(
@@ -318,40 +320,47 @@ void DrawScreen(DrawBuffer *b, TActor * player1, TActor * player2)
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(
 				b,
-				player2->tileItem.x,
-				player2->tileItem.y,
+				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
 				X_TILES_HALF,
-				xNoise,
-				yNoise);
+				noise);
 			SoundSetRightEar(
 				Vec2iNew(player2->tileItem.x, player2->tileItem.y));
-			x = player1->tileItem.x;
-			y = player1->tileItem.y;
+			lastPosition.x = player1->tileItem.x;
+			lastPosition.y = player1->tileItem.y;
 			BlackLine();
 		}
 	}
 	else if (player1)
 	{
-		DoBuffer(b, player1->tileItem.x, player1->tileItem.y, 0,
-			 X_TILES, xNoise, yNoise);
+		DoBuffer(
+			b,
+			Vec2iNew(player1->tileItem.x, player1->tileItem.y),
+			0,
+			X_TILES,
+			noise);
 		SoundSetEars(Vec2iNew(player1->tileItem.x, player1->tileItem.y));
-		x = player1->tileItem.x;
-		y = player1->tileItem.y;
+		lastPosition.x = player1->tileItem.x;
+		lastPosition.y = player1->tileItem.y;
 	}
 	else if (player2)
 	{
-		DoBuffer(b, player2->tileItem.x, player2->tileItem.y, 0,
-			 X_TILES, xNoise, yNoise);
+		DoBuffer(
+			b,
+			Vec2iNew(player2->tileItem.x, player2->tileItem.y),
+			0,
+			X_TILES,
+			noise);
 		SoundSetEars(Vec2iNew(player2->tileItem.x, player2->tileItem.y));
-		x = player2->tileItem.x;
-		y = player2->tileItem.y;
+		lastPosition.x = player2->tileItem.x;
+		lastPosition.y = player2->tileItem.y;
 	}
 	else
 	{
-		DoBuffer(b, x, y, 0, X_TILES, xNoise, yNoise);
+		DoBuffer(b, lastPosition, 0, X_TILES, noise);
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
+	return lastPosition;
 }
 
 static void DrawExitArea(void)
@@ -496,6 +505,7 @@ int gameloop(void)
 	int is_esc_pressed = 0;
 	int done = NO;
 	HUD hud;
+	Vec2i lastPosition = Vec2iZero();
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
@@ -519,7 +529,7 @@ int gameloop(void)
 
 		ticks = Ticks_Synchronize();
 
-		DrawScreen(&buffer, gPlayer1, gPlayer2);
+		lastPosition = DrawScreen(&buffer, gPlayer1, gPlayer2, lastPosition);
 
 		if (screenShaking) {
 			screenShaking -= ticks;

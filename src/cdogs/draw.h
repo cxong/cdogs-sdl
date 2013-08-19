@@ -24,7 +24,7 @@
 
 #include "draw_buffer.h"
 
-void LineOfSight(int xc, int yc, DrawBuffer *buffer, int shadowFlag);
+void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag);
 void FixBuffer(DrawBuffer *b, int isShadow);
 void DrawBufferDraw(DrawBuffer *b, int xOffset);
 
