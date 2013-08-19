@@ -78,7 +78,6 @@
 
 #include "drawtools.h" /* for Draw_Box and Draw_Point */
 
-#define fLOS 1
 #define FPS_FRAMELIMIT       70
 #define CLOCK_LIMIT       2100
 
@@ -226,15 +225,13 @@ static int Ticks_Synchronize(void)
 }
 
 
-void DoBuffer(struct Buffer *b, int x, int y, int dx, int w, int xn,
-	      int yn)
+void DoBuffer(DrawBuffer *b, int x, int y, int dx, int w, int xn, int yn)
 {
-	SetBuffer(x + xn, y + yn, b, w);
-#ifdef fLOS
+	DrawBufferSetFromMap(
+		b, gMap, Vec2iNew(x + xn, y + yn), w, Vec2iNew(X_TILES, Y_TILES));
 	LineOfSight(x, y, b, MAPTILE_IS_SHADOW);
 	FixBuffer(b, MAPTILE_IS_SHADOW);
-#endif
-	DrawBuffer(b, dx);
+	DrawBufferDraw(b, dx);
 }
 
 void ShakeScreen(int amount)
@@ -261,7 +258,7 @@ void BlackLine(void)
 	}
 }
 
-void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
+void DrawScreen(DrawBuffer *b, TActor * player1, TActor * player2)
 {
 	static int x = 0;
 	static int y = 0;
@@ -286,8 +283,11 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 			y = (player1->tileItem.y +
 			     player2->tileItem.y) / 2;
 
-			SetBuffer(x + xNoise, y + yNoise, b, X_TILES);
-		#ifdef fLOS
+			DrawBufferSetFromMap(
+				b, gMap,
+				Vec2iNew(x + xNoise, y + yNoise),
+				X_TILES,
+				Vec2iNew(X_TILES, Y_TILES));
 			LineOfSight(
 				player1->tileItem.x,
 				player1->tileItem.y, b,
@@ -297,8 +297,7 @@ void DrawScreen(struct Buffer *b, TActor * player1, TActor * player2)
 				player2->tileItem.y, b,
 				MAPTILE_IS_SHADOW2);
 			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
-		#endif
-			DrawBuffer(b, 0);
+			DrawBufferDraw(b, 0);
 		}
 		else
 		{
@@ -492,12 +491,13 @@ int HandleKey(int *done, int cmd)
 
 int gameloop(void)
 {
-	struct Buffer *buffer = NewBuffer(X_TILES, Y_TILES);
+	DrawBuffer buffer;
 	int ticks;
 	int is_esc_pressed = 0;
 	int done = NO;
 	HUD hud;
 
+	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
@@ -519,7 +519,7 @@ int gameloop(void)
 
 		ticks = Ticks_Synchronize();
 
-		DrawScreen(buffer, gPlayer1, gPlayer2);
+		DrawScreen(&buffer, gPlayer1, gPlayer2);
 
 		if (screenShaking) {
 			screenShaking -= ticks;
@@ -592,7 +592,7 @@ int gameloop(void)
 
 		Ticks_FrameEnd();
 	}
-	CFREE(buffer);
+	DrawBufferTerminate(&buffer);
 
 	return !is_esc_pressed;
 }

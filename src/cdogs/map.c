@@ -60,19 +60,6 @@ static int tilesSeen = 0;
 static int tilesTotal = XMAX * YMAX;
 #define iMap( x, y) internalMap[y][x]
 
-struct Buffer *NewBuffer(int rows, int cols)
-{
-	struct Buffer *b;
-	int i;
-	CMALLOC(b, sizeof *b);
-	CMALLOC(b->tiles, rows * sizeof *b->tiles);
-	CMALLOC(b->tiles[0], rows * cols * sizeof *b->tiles[0]);
-	for(i = 1; i < rows; i++)
-		b->tiles[i] = b->tiles[0] + i * cols;
-
-	return b;
-}
-
 static void AddItemToTile(TTileItem * t, TTile * tile)
 {
 	t->next = tile->things;

@@ -14,6 +14,7 @@ set(CDOGS_SOURCES
 	config_old.c
 	defs.c
 	draw.c
+	draw_buffer.c
 	drawtools.c
 	events.c
 	files.c
@@ -51,6 +52,7 @@ set(CDOGS_HEADERS
 	config_old.h
 	defs.h
 	draw.h
+	draw_buffer.h
 	drawtools.h
 	events.h
 	files.h

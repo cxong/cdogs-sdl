@@ -56,64 +56,7 @@
 #include "blit.h"
 
 
-
-void AddItemToDisplayList(TTileItem * t, TTileItem ** list)
-{
-	TTileItem *l;
-	TTileItem *lPrev;
-	t->nextToDisplay = NULL;
-	for (lPrev = NULL, l = *list; l; lPrev = l, l = l->nextToDisplay)
-	{
-		// draw in Y order
-		if (l->y >= t->y)
-		{
-			break;
-		}
-	}
-	t->nextToDisplay = l;
-	if (lPrev)
-	{
-		lPrev->nextToDisplay = t;
-	}
-	else
-	{
-		*list = t;
-	}
-}
-
-void
-SetBuffer(int x_origin, int y_origin, struct Buffer *buffer, int width)
-{
-	int x, y;
-	TTile *bufTile;
-
-	buffer->width = width;
-
-	buffer->xTop = x_origin - TILE_WIDTH * width / 2;
-	//buffer->yTop = y_origin - 100;
-	buffer->yTop = y_origin - TILE_HEIGHT * Y_TILES / 2;
-
-	buffer->xStart = buffer->xTop / TILE_WIDTH;
-	buffer->yStart = buffer->yTop / TILE_HEIGHT;
-	if (buffer->xTop < 0)
-		buffer->xStart--;
-	if (buffer->yTop < 0)
-		buffer->yStart--;
-
-	buffer->dx = buffer->xStart * TILE_WIDTH - buffer->xTop;
-	buffer->dy = buffer->yStart * TILE_HEIGHT - buffer->yTop;
-
-	bufTile = &buffer->tiles[0][0];
-	for (y = buffer->yStart; y < buffer->yStart + Y_TILES; y++) {
-		for (x = buffer->xStart;
-		     x < buffer->xStart + buffer->width; x++, bufTile++)
-			if (x >= 0 && x < XMAX && y >= 0 && y < YMAX)
-				*bufTile = Map(x, y);
-		bufTile += X_TILES - buffer->width;
-	}
-}
-
-void FixBuffer(struct Buffer *buffer, int isShadow)
+void FixBuffer(DrawBuffer *buffer, int isShadow)
 {
 	int x, y;
 	TTile *tile, *tileBelow;
@@ -159,7 +102,7 @@ void FixBuffer(struct Buffer *buffer, int isShadow)
 }
 
 void SetLineOfSight(
-	struct Buffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
+	DrawBuffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
 {
 	TTile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
 	if (dTile->flags & (MAPTILE_NO_SEE | shadowFlag))
@@ -169,7 +112,7 @@ void SetLineOfSight(
 	}
 }
 
-void LineOfSight(int xc, int yc, struct Buffer *buffer, int shadowFlag)
+void LineOfSight(int xc, int yc, DrawBuffer *buffer, int shadowFlag)
 {
 	int x, y;
 
@@ -269,7 +212,10 @@ void DrawWallColumn(int y, Vec2i pos, TTile *tile)
 	}
 }
 
-void DrawBuffer(struct Buffer *b, int xOffset)
+
+void AddItemToDisplayList(TTileItem * t, TTileItem ** list);
+
+void DrawBufferDraw(DrawBuffer *b, int xOffset)
 {
 	int x, y;
 	Vec2i pos;
@@ -361,5 +307,29 @@ void DrawBuffer(struct Buffer *b, int xOffset)
 			(*(t->drawFunc))(t->x - b->xTop + xOffset, t->y - b->yTop, t->data);
 		}
 		tile += X_TILES - b->width;
+	}
+}
+
+void AddItemToDisplayList(TTileItem * t, TTileItem ** list)
+{
+	TTileItem *l;
+	TTileItem *lPrev;
+	t->nextToDisplay = NULL;
+	for (lPrev = NULL, l = *list; l; lPrev = l, l = l->nextToDisplay)
+	{
+		// draw in Y order
+		if (l->y >= t->y)
+		{
+			break;
+		}
+	}
+	t->nextToDisplay = l;
+	if (lPrev)
+	{
+		lPrev->nextToDisplay = t;
+	}
+	else
+	{
+		*list = t;
 	}
 }

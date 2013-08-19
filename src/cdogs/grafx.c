@@ -378,15 +378,20 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 void GrafxMakeBackground(
 	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
 {
-	struct Buffer *buffer = NewBuffer(128, 128);
+	DrawBuffer buffer;
 	Vec2i v;
 
+	DrawBufferInit(&buffer, Vec2iNew(128, 128));
 	SetupMission(missionIdx, 1, &gCampaign);
 	SetupMap();
 	MapMarkAllAsVisited();
-	SetBuffer(1024, 768, buffer, X_TILES);
-	DrawBuffer(buffer, 0);
-	CFREE(buffer);
+	DrawBufferSetFromMap(
+		&buffer, gMap,
+		Vec2iNew(1024, 768),
+		X_TILES,
+		Vec2iNew(X_TILES, Y_TILES));
+	DrawBufferDraw(&buffer, 0);
+	DrawBufferTerminate(&buffer);
 	KillAllObjects();
 	FreeTriggersAndWatches();
 
