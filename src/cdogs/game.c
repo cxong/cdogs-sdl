@@ -204,26 +204,6 @@ static void Ticks_FrameEnd(void)
 	}
 }
 
-static int Ticks_Synchronize(void)
-{
-	int ticks = 1;
-	TActor *actor;
-
-	ticks++;
-	if (!gameIsPaused)
-	{
-		UpdateMobileObjects(&gMobObjList);
-		actor = ActorList();
-		while (actor)
-		{
-			CommandActor(actor, actor->lastCmd);
-			actor = actor->next;
-		}
-	}
-
-	return ticks;
-}
-
 
 void DoBuffer(DrawBuffer *b, Vec2i center, int dx, int w, Vec2i noise)
 {
@@ -501,7 +481,6 @@ int HandleKey(int *done, int cmd)
 int gameloop(void)
 {
 	DrawBuffer buffer;
-	int ticks;
 	int is_esc_pressed = 0;
 	int done = NO;
 	HUD hud;
@@ -522,12 +501,76 @@ int gameloop(void)
 	while (!done)
 	{
 		int cmd1 = 0, cmd2 = 0;
-
-		frames++;
+		int ticks = 2;
 
 		Ticks_Update();
 
-		ticks = Ticks_Synchronize();
+		InputPoll(&gInputDevices, ticks_now);
+
+		if (!gameIsPaused)
+		{
+			TActor *actor;
+			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
+			{
+				UpdateAllActors(ticks);
+				UpdateMobileObjects(&gMobObjList);
+
+				GetPlayerInput(&cmd1, &cmd2);
+
+				if (gPlayer1 &&
+					!PlayerSpecialCommands(gPlayer1, cmd1, &gPlayer1Data))
+				{
+					CommandActor(gPlayer1, cmd1);
+				}
+				if (gPlayer2 &&
+					!PlayerSpecialCommands(gPlayer2, cmd2, &gPlayer2Data))
+				{
+					CommandActor(gPlayer2, cmd2);
+				}
+
+				if (gOptions.badGuys)
+				{
+					CommandBadGuys();
+				}
+
+				UpdateWatches();
+			}
+
+			UpdateMobileObjects(&gMobObjList);
+			actor = ActorList();
+			while (actor)
+			{
+				CommandActor(actor, actor->lastCmd);
+				actor = actor->next;
+			}
+
+			missionTime += ticks;
+			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
+			{
+				if (gMission.pickupTime == PICKUP_LIMIT)
+				{
+					SoundPlay(&gSoundDevice, SND_DONE);
+				}
+				gMission.pickupTime -= ticks;
+				if (gMission.pickupTime <= 0)
+				{
+					done = 1;
+				}
+			}
+			else
+			{
+				gMission.pickupTime = PICKUP_LIMIT;
+			}
+		}
+		else
+		{
+			GetPlayerInput(&cmd1, &cmd2);
+		}
+
+		if (HasObjectives(gCampaign.Entry.mode))
+		{
+			MissionUpdateObjectives();
+		}
 
 		lastPosition = DrawScreen(&buffer, gPlayer1, gPlayer2, lastPosition);
 
@@ -547,56 +590,7 @@ int gameloop(void)
 		HUDUpdate(&hud, ticks_now - ticks_then);
 		HUDDraw(&hud, gameIsPaused, escExits);
 
-		if (HasObjectives(gCampaign.Entry.mode))
-		{
-			MissionUpdateObjectives();
-		}
-
-		if (!gameIsPaused) {
-			missionTime += ticks;
-			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
-			{
-				if (gMission.pickupTime == PICKUP_LIMIT)
-				{
-					SoundPlay(&gSoundDevice, SND_DONE);
-				}
-				gMission.pickupTime -= ticks;
-				if (gMission.pickupTime <= 0)
-					done = YES;
-			} else
-				gMission.pickupTime = PICKUP_LIMIT;
-		}
-
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-
-		InputPoll(&gInputDevices, ticks_now);
-
-		if (!gameIsPaused)
-		{
-			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
-			{
-				UpdateAllActors(ticks);
-				UpdateMobileObjects(&gMobObjList);
-
-				GetPlayerInput(&cmd1, &cmd2);
-
-				if (gPlayer1 && !PlayerSpecialCommands(
-							gPlayer1, cmd1, &gPlayer1Data)) {
-					CommandActor(gPlayer1, cmd1);
-				}
-				if (gPlayer2 && !PlayerSpecialCommands(
-							gPlayer2, cmd2, &gPlayer2Data)) {
-					CommandActor(gPlayer2, cmd2);
-				}
-
-				if (gOptions.badGuys)
-					CommandBadGuys();
-
-				UpdateWatches();
-			}
-		} else {
-			GetPlayerInput(&cmd1, &cmd2);
-		}
 
 		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);
 
