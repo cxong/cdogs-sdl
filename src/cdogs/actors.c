@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "collision.h"
 #include "config.h"
 #include "drawtools.h"
 #include "pics.h"
@@ -508,25 +509,39 @@ int MoveActor(TActor * actor, int x, int y)
 	TTileItem *target;
 	TObject *object;
 	TActor *otherCharacter;
+	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 
-	if (CheckWall(x, y, actor->tileItem.w, actor->tileItem.h)) {
-		if (CheckWall
-		    (actor->x, y, actor->tileItem.w, actor->tileItem.h))
+	// Check collision with wall; try to limit x and y movement if still in
+	// collision in those axes
+	if (IsCollisionWithWall(realPos, size))
+	{
+		Vec2i realXPos, realYPos;
+		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
+		if (IsCollisionWithWall(realYPos, size))
+		{
 			y = actor->y;
-		if (CheckWall
-		    (x, actor->y, actor->tileItem.w, actor->tileItem.h))
+		}
+		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
+		if (IsCollisionWithWall(realXPos, size))
+		{
 			x = actor->x;
+		}
 		if ((x == actor->x && y == actor->y) ||
 		    (x != actor->x && y != actor->y))
 			return 0;
 	}
 
-	target =
-	    CheckTileItemCollision(&actor->tileItem, x >> 8, y >> 8,
-				   TILEITEM_IMPASSABLE);
-	if (target) {
-		if ((actor->flags & FLAGS_PLAYERS) != 0
-		    && target->kind == KIND_CHARACTER) {
+	realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	target = GetItemOnTileInCollision(
+		&actor->tileItem, realPos, TILEITEM_IMPASSABLE);
+	if (target)
+	{
+		Vec2i realXPos, realYPos;
+
+		if ((actor->flags & FLAGS_PLAYERS) != 0 &&
+			target->kind == KIND_CHARACTER)
+		{
 			otherCharacter = target->data;
 			if (otherCharacter
 			    && (otherCharacter->flags & FLAGS_PRISONER) !=
@@ -558,28 +573,38 @@ int MoveActor(TActor * actor, int x, int y)
 			}
 		}
 
-		if (CheckTileItemCollision
-		    (&actor->tileItem, actor->x >> 8, y >> 8,
-		     TILEITEM_IMPASSABLE))
+		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
+		if (GetItemOnTileInCollision(
+			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE))
+		{
 			y = actor->y;
-		if (CheckTileItemCollision
-		    (&actor->tileItem, x >> 8, actor->y >> 8,
-		     TILEITEM_IMPASSABLE))
+		}
+		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
+		if (GetItemOnTileInCollision(
+			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE))
+		{
 			x = actor->x;
+		}
+		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 		if ((x == actor->x && y == actor->y) ||
-		    (x != actor->x && y != actor->y) ||
-		    CheckWall(x, y, actor->tileItem.w, actor->tileItem.h))
+			(x != actor->x && y != actor->y) ||
+			IsCollisionWithWall(realPos, size))
+		{
 			return 0;
+		}
 	}
 
 	CheckTrigger(actor, x >> 8, y >> 8);
 
-	if ((actor->flags & FLAGS_PLAYERS) != 0) {
-		target =
-		    CheckTileItemCollision(&actor->tileItem, x >> 8,
-					   y >> 8, TILEITEM_CAN_BE_TAKEN);
+	if (actor->flags & FLAGS_PLAYERS)
+	{
+		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+		target = GetItemOnTileInCollision(
+			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN);
 		if (target && target->kind == KIND_OBJECT)
+		{
 			PickupObject(actor, target->data);
+		}
 	}
 
 	actor->x = x;

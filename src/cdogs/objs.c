@@ -51,6 +51,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "collision.h"
 #include "config.h"
 #include "drawtools.h"
 #include "map.h"
@@ -792,8 +793,9 @@ int UpdateSpark(TMobileObject * obj)
 
 int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 {
-	TTileItem *tile;
+	TTileItem *item;
 	int hasHit;
+	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
@@ -802,13 +804,13 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 		return 0;
 	}
 
-	tile = CheckTileItemCollision(
-		&obj->tileItem, x >> 8, y >> 8, TILEITEM_CAN_BE_SHOT);
+	item = GetItemOnTileInCollision(
+		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT);
 	hasHit = DamageSomething(
 		Vec2iNew(obj->dx, obj->dy),
 		obj->power,
 		obj->flags,
-		tile,
+		item,
 		special,
 		obj->soundLock <= 0);
 	if (hasHit && obj->soundLock <= 0)

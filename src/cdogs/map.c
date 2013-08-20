@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "collision.h"
 #include "config.h"
 #include "pics.h"
 #include "objs.h"
@@ -105,67 +106,6 @@ void RemoveTileItem(TTileItem * t)
 
 	tile = &Map(x, y);
 	RemoveItemFromTile(t, tile);
-}
-
-int CheckWall(int x, int y, int w, int h)
-{
-	x >>= 8;
-	y >>= 8;
-	if (HitWall(x - w, y - h) ||
-	    HitWall(x - w, y) ||
-	    HitWall(x - w, y + h) ||
-	    HitWall(x, y + h) ||
-	    HitWall(x + w, y + h) ||
-	    HitWall(x + w, y) ||
-	    HitWall(x + w, y - h) || HitWall(x, y - h))
-		return 1;
-	return 0;
-}
-
-int ItemsCollide(TTileItem * item1, TTileItem * item2, int x, int y)
-{
-	int dx = abs(x - item2->x);
-	int dy = abs(y - item2->y);
-	int rx = item1->w + item2->w;
-	int ry = item1->h + item2->h;
-
-	if (dx < rx && dy < ry) {
-		int odx = abs(item1->x - item2->x);
-		int ody = abs(item1->y - item2->y);
-
-		if (dx <= odx || dy <= ody)
-			return 1;
-	}
-	return 0;
-}
-
-TTileItem *CheckTileItemCollision(TTileItem * item, int x, int y, int mask)
-{
-	TTileItem *i;
-	int tx, ty, dx, dy;
-	TTile *tile;
-
-
-	tx = x / TILE_WIDTH;
-	ty = y / TILE_HEIGHT;
-
-	if (tx == 0 || ty == 0 || tx >= XMAX - 1 || ty >= YMAX - 1)
-		return NULL;
-
-	for (dy = -1; dy <= 1; dy++)
-		for (dx = -1; dx <= 1; dx++) {
-			tile = &Map(tx + dx, ty + dy);
-			i = tile->things;
-			while (i) {
-				if (item != i &&
-				    (i->flags & mask) != 0 &&
-				    ItemsCollide(item, i, x, y))
-					return i;
-				i = i->next;
-			}
-		}
-
-	return NULL;
 }
 
 void GuessCoords(int *x, int *y)
@@ -566,17 +506,6 @@ void ChangeFloor(int x, int y, int normal, int shadow)
 	}
 }
 
-/*
-static int CheckForItems( int x, int y, int w, int h )
-{
-  TTileItem item;
-
-  item.w = w;
-  item.h = h;
-  return CheckTileItemCollision( &item, x, y, TILEITEM_IMPASSABLE) != NULL;
-}
-*/
-
 static int OneWall(int x, int y)
 {
 	int count = 0;
@@ -747,7 +676,8 @@ static int PlaceCollectible(int objective)
 
 	while (i) {
 		GuessPixelCoords(&x, &y);
-		if (!CheckWall(x << 8, y << 8, 4, 3))
+		// Collectibles all have size 4x3
+		if (!IsCollisionWithWall(Vec2iNew(x, y), Vec2iNew(4, 3)))
 		{
 			if ((!hasLockedRooms || IsHighAccess(x, y)) &&
 				(!noaccess || !IsHighAccess(x, y)))

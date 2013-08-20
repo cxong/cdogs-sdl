@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "collision.h"
 #include "config.h"
 #include "defs.h"
 #include "actors.h"
@@ -207,12 +208,18 @@ static int Hunt(TActor * actor)
 
 static int PositionOK(TActor * actor, int x, int y)
 {
-	if (CheckWall(x, y, actor->tileItem.w, actor->tileItem.h))
-		return NO;
-	if (CheckTileItemCollision(&actor->tileItem, x >> 8, y >> 8,
-				   TILEITEM_IMPASSABLE) != NULL)
-		return NO;
-	return YES;
+	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
+	if (IsCollisionWithWall(realPos, size))
+	{
+		return 0;
+	}
+	if (GetItemOnTileInCollision(
+		&actor->tileItem, realPos, TILEITEM_IMPASSABLE))
+	{
+		return 0;
+	}
+	return 1;
 }
 
 #define STEPSIZE    1024
