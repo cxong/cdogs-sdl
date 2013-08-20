@@ -214,16 +214,25 @@ void DrawWallColumn(int y, Vec2i pos, TTile *tile)
 }
 
 
-void AddItemToDisplayList(TTileItem * t, TTileItem ** list);
+void DrawFloor(DrawBuffer *b, int xOffset);
+void DrawDebris(DrawBuffer *b, int xOffset);
+void DrawWallsAndThings(DrawBuffer *b, int xOffset);
 
 void DrawBufferDraw(DrawBuffer *b, int xOffset)
 {
+	// First draw the floor tiles (which do not obstruct anything)
+	DrawFloor(b, xOffset);
+	// Then draw debris (wrecks)
+	DrawDebris(b, xOffset);
+	// Now draw walls and (non-wreck) things in proper order
+	DrawWallsAndThings(b, xOffset);
+}
+
+void DrawFloor(DrawBuffer *b, int xOffset)
+{
 	int x, y;
 	Vec2i pos;
-	TTile *tile;
-
-	// First draw the floor tiles (which do not obstruct anything)
-	tile = &b->tiles[0][0];
+	TTile *tile = &b->tiles[0][0];
 	for (y = 0, pos.y = b->dy; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		for (x = 0, pos.x = b->dx + xOffset;
@@ -243,9 +252,14 @@ void DrawBufferDraw(DrawBuffer *b, int xOffset)
 		}
 		tile += X_TILES - b->width;
 	}
-	
-	// Then draw debris (wrecks)
-	tile = &b->tiles[0][0];
+}
+
+void AddItemToDisplayList(TTileItem * t, TTileItem **list);
+
+void DrawDebris(DrawBuffer *b, int xOffset)
+{
+	int x, y;
+	TTile *tile = &b->tiles[0][0];
 	for (y = 0; y < Y_TILES; y++)
 	{
 		TTileItem *displayList = NULL;
@@ -266,9 +280,13 @@ void DrawBufferDraw(DrawBuffer *b, int xOffset)
 		}
 		tile += X_TILES - b->width;
 	}
+}
 
-	// Now draw walls and (non-wreck) things in proper order
-	tile = &b->tiles[0][0];
+void DrawWallsAndThings(DrawBuffer *b, int xOffset)
+{
+	int x, y;
+	Vec2i pos;
+	TTile *tile = &b->tiles[0][0];
 	pos.y = b->dy + cWallOffset.dy;
 	for (y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
@@ -311,7 +329,7 @@ void DrawBufferDraw(DrawBuffer *b, int xOffset)
 	}
 }
 
-void AddItemToDisplayList(TTileItem * t, TTileItem ** list)
+void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 {
 	TTileItem *l;
 	TTileItem *lPrev;
