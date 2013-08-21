@@ -99,9 +99,7 @@ typedef enum
 #define STATE_WALKING_2     4
 #define STATE_WALKING_3     5
 #define STATE_WALKING_4     6
-#define STATE_SHOOTING      7
-#define STATE_RECOIL        8
-#define STATE_COUNT         9
+#define STATE_COUNT         7
 
 
 extern int cmd2dir[16];

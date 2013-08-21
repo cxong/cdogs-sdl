@@ -256,7 +256,7 @@ extern Pic *gPics[PIC_MAX];
 
 
 extern const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT];
-extern const int cHeadPic[FACE_COUNT][DIRECTION_COUNT][STATE_COUNT];
+extern const int cHeadPic[FACE_COUNT][DIRECTION_COUNT][STATE_COUNT+2];
 extern const OffsetTable cBodyOffset[BODY_COUNT];
 extern const OffsetTable cNeckOffset[BODY_COUNT];
 extern const OffsetTable cGunHandOffset[BODY_COUNT];

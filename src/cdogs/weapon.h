@@ -109,6 +109,7 @@ typedef struct
 	gunstate_e state;
 	int lock;
 	int soundLock;
+	int stateCounter;
 } Weapon;
 
 extern GunDescription gGunDescriptions[GUN_COUNT];
@@ -123,6 +124,7 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(
 	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition, int flags);
+void WeaponHoldFire(Weapon *w);
 
 int GunIsStatic(gun_e gun);
 int GunHasMuzzle(gun_e gun);

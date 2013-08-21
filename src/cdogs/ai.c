@@ -490,7 +490,7 @@ void CommandBadGuys(int ticks)
 				{
 					if (WillFire(actor, roll))
 					{
-						cmd = CMD_BUTTON1;
+						cmd |= CMD_BUTTON1;
 					}
 					else
 					{

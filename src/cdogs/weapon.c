@@ -122,6 +122,7 @@ Weapon WeaponCreate(gun_e gun)
 	w.state = GUNSTATE_READY;
 	w.lock = 0;
 	w.soundLock = 0;
+	w.stateCounter = -1;
 	return w;
 }
 
@@ -134,6 +135,8 @@ const char *GunGetName(gun_e gun)
 {
 	return gGunDescriptions[gun].gunName;
 }
+
+void WeaponSetState(Weapon *w, gunstate_e state);
 
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 {
@@ -159,6 +162,25 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 	if (w->soundLock < 0)
 	{
 		w->soundLock = 0;
+	}
+	if (w->stateCounter >= 0)
+	{
+		w->stateCounter = MAX(0, w->stateCounter - ticks);
+		if (w->stateCounter == 0)
+		{
+			switch (w->state)
+			{
+			case GUNSTATE_FIRING:
+				WeaponSetState(w, GUNSTATE_RECOIL);
+				break;
+			case GUNSTATE_RECOIL:
+				WeaponSetState(w, GUNSTATE_READY);
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		}
 	}
 }
 
@@ -409,6 +431,34 @@ void WeaponFire(
 
 	w->lock = gGunDescriptions[w->gun].Lock;
 	WeaponPlaySound(w, tilePosition);
+	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
+	{
+		WeaponSetState(w, GUNSTATE_FIRING);
+	}
+}
+
+void WeaponHoldFire(Weapon *w)
+{
+	WeaponSetState(w, GUNSTATE_READY);
+}
+
+void WeaponSetState(Weapon *w, gunstate_e state)
+{
+	w->state = state;
+	switch (state)
+	{
+	case GUNSTATE_FIRING:
+		w->stateCounter = 8;
+		break;
+	case GUNSTATE_RECOIL:
+		// This is to make sure the gun stays recoiled as long as the gun is
+		// "locked", i.e. cannot fire
+		w->stateCounter = w->lock;
+		break;
+	default:
+		w->stateCounter = -1;
+		break;
+	}
 }
 
 int GunIsStatic(gun_e gun)

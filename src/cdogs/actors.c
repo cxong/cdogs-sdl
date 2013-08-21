@@ -98,9 +98,7 @@ static int transitionTable[STATE_COUNT] = {
 	STATE_WALKING_2,
 	STATE_WALKING_3,
 	STATE_WALKING_4,
-	STATE_WALKING_1,
-	STATE_RECOIL,
-	STATE_SHOOTING
+	STATE_WALKING_1
 };
 
 static int delayTable[STATE_COUNT] = {
@@ -111,8 +109,6 @@ static int delayTable[STATE_COUNT] = {
 	8,
 	8,
 	8,
-	8,
-	8
 };
 
 
@@ -141,6 +137,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
 	int headDir = dir;
+	int headState = state;
 
 	struct CharacterDescription *c = &gCharacterDesc[actor->character];
 	TranslationTable *table = (TranslationTable *) c->table;
@@ -148,12 +145,17 @@ void DrawCharacter(int x, int y, TActor * actor)
 	int f = c->facePic;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
-	gunstate_e gunState = GUNSTATE_READY;
+	gunstate_e gunState = actor->weapon.state;
 
 	TOffsetPic body, head, gun;
 	TOffsetPic pic1, pic2, pic3;
 
 	int transparent = (actor->flags & FLAGS_SEETHROUGH) != 0;
+
+	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
+	{
+		headState = STATE_COUNT + gunState - GUNSTATE_FIRING;
+	}
 
 	if (actor->flamed)
 	{
@@ -207,17 +209,12 @@ void DrawCharacter(int x, int y, TActor * actor)
 		headDir = (dir + 1) % 8;
 
 	if (g < 0)
+	{
 		b = c->unarmedBodyPic;
-	else {
+	}
+	else
+	{
 		b = c->armedBodyPic;
-		if (state == STATE_SHOOTING)
-		{
-			gunState = GUNSTATE_FIRING;
-		}
-		else if (state == STATE_RECOIL)
-		{
-			gunState = GUNSTATE_RECOIL;
-		}
 	}
 
 	body.dx = cBodyOffset[b][dir].dx;
@@ -226,7 +223,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
 	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
-	head.picIndex = cHeadPic[f][headDir][state];
+	head.picIndex = cHeadPic[f][headDir][headState];
 
 	if (g >= 0) {
 		gun.dx =
@@ -358,16 +355,7 @@ TActor *RemoveActor(TActor * actor)
 void SetStateForActor(TActor * actor, int state)
 {
 	actor->state = state;
-	if (state == STATE_RECOIL)
-	{
-		// This is to make sure the player stays frozen after firing the gun
-		// TODO: rethink this; makes sniper gun enemies freeze for too long
-		actor->stateCounter = actor->weapon.lock;
-	}
-	else
-	{
-		actor->stateCounter = delayTable[state];
-	}
+	actor->stateCounter = delayTable[state];
 }
 
 void UpdateActorState(TActor * actor, int ticks)
@@ -697,11 +685,11 @@ int ActorTryShoot(TActor *actor, int cmd)
 	int willShoot = !actor->petrified && (cmd & CMD_BUTTON1);
 	if (willShoot)
 	{
-		if (actor->state != STATE_SHOOTING && actor->state != STATE_RECOIL)
-		{
-			SetStateForActor(actor, STATE_SHOOTING);
-		}
 		Shoot(actor);
+	}
+	else
+	{
+		WeaponHoldFire(&actor->weapon);
 	}
 	return willShoot;
 }
@@ -738,6 +726,16 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 			actor->state != STATE_WALKING_4)
 		{
 			SetStateForActor(actor, STATE_WALKING_1);
+		}
+	}
+	else
+	{
+		if (actor->state == STATE_WALKING_1 ||
+			actor->state == STATE_WALKING_2 ||
+			actor->state == STATE_WALKING_3 ||
+			actor->state == STATE_WALKING_4)
+		{
+			SetStateForActor(actor, STATE_IDLE);
 		}
 	}
 	return willMove;
@@ -790,7 +788,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		hasChangedDirection = ActorTryChangeDirection(actor, cmd);
 		hasShot = ActorTryShoot(actor, cmd);
 		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks, &movePos);
-		if (!hasChangedDirection && !hasShot && !shallMove)
+		if (!hasChangedDirection && !hasShot && !hasMoved)
 		{
 			// Idle if player hasn't done anything
 			if (actor->state != STATE_IDLE &&
