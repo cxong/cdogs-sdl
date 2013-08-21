@@ -680,9 +680,72 @@ void Shoot(TActor *actor)
 	Score(actor->flags, -GunGetScore(actor->weapon.gun));
 }
 
+int ActorTryChangeDirection(TActor *actor, int cmd)
+{
+	int willChangeDirecton =
+		!actor->petrified &&
+		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN));
+	if (willChangeDirecton)
+	{
+		actor->direction = CmdToDirection(cmd);
+	}
+	return willChangeDirecton;
+}
+
+int ActorTryShoot(TActor *actor, int cmd)
+{
+	int willShoot = !actor->petrified && (cmd & CMD_BUTTON1);
+	if (willShoot)
+	{
+		if (actor->state != STATE_SHOOTING && actor->state != STATE_RECOIL)
+		{
+			SetStateForActor(actor, STATE_SHOOTING);
+		}
+		Shoot(actor);
+	}
+	return willShoot;
+}
+
+int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
+{
+	int willMove =
+		!actor->petrified &&
+		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		(gConfig.Game.MoveWhenShooting || !hasShot);
+	if (willMove)
+	{
+		int moveAmount = gCharacterDesc[actor->character].speed * ticks;
+		if (cmd & CMD_LEFT)
+		{
+			pos->x -= moveAmount;
+		}
+		else if (cmd & CMD_RIGHT)
+		{
+			pos->x += moveAmount;
+		}
+		if (cmd & CMD_UP)
+		{
+			pos->y -= moveAmount;
+		}
+		else if (cmd & CMD_DOWN)
+		{
+			pos->y += moveAmount;
+		}
+
+		if (actor->state != STATE_WALKING_1 &&
+			actor->state != STATE_WALKING_2 &&
+			actor->state != STATE_WALKING_3 &&
+			actor->state != STATE_WALKING_4)
+		{
+			SetStateForActor(actor, STATE_WALKING_1);
+		}
+	}
+	return willMove;
+}
+
 void CommandActor(TActor * actor, int cmd, int ticks)
 {
-	int x = actor->x, y = actor->y;
+	Vec2i movePos = Vec2iNew(actor->x, actor->y);
 	int shallMove = NO;
 	int resetDir = NO;
 
@@ -692,8 +755,8 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		shallMove = 1;
 		resetDir = 1;
 
-		x += actor->dx * ticks;
-		y += actor->dy * ticks;
+		movePos.x += actor->dx * ticks;
+		movePos.y += actor->dy * ticks;
 
 		for (i = 0; i < ticks; i++)
 		{
@@ -721,55 +784,31 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	if (actor->confused)
 		cmd = ((cmd & 5) << 1) | ((cmd & 10) >> 1) | (cmd & 0xF0);
 
-	if (actor->health > 0) {
-		if (!actor->petrified && (cmd & CMD_BUTTON1) != 0) {
-			if (actor->state != STATE_SHOOTING &&
-			    actor->state != STATE_RECOIL)
-				SetStateForActor(actor, STATE_SHOOTING);
-			if (cmd &
-			    (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
-				actor->direction = CmdToDirection(cmd);
-			Shoot(actor);
-		} else if (!actor->petrified
-			   && (cmd &
-			       (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
-			   != 0) {
-			shallMove = YES;
-
-			if (cmd & CMD_LEFT)
-			{
-				x -= gCharacterDesc[actor->character].speed * ticks;
-			}
-			else if (cmd & CMD_RIGHT)
-			{
-				x += gCharacterDesc[actor->character].speed * ticks;
-			}
-			if (cmd & CMD_UP)
-			{
-				y -= gCharacterDesc[actor->character].speed * ticks;
-			}
-			else if (cmd & CMD_DOWN)
-			{
-				y += gCharacterDesc[actor->character].speed * ticks;
-			}
-
-			if (actor->state != STATE_WALKING_1 &&
-			    actor->state != STATE_WALKING_2 &&
-			    actor->state != STATE_WALKING_3 &&
-			    actor->state != STATE_WALKING_4)
-				SetStateForActor(actor, STATE_WALKING_1);
-			actor->direction = CmdToDirection(cmd);
-		} else {
+	if (actor->health > 0)
+	{
+		int hasChangedDirection, hasShot, hasMoved;
+		hasChangedDirection = ActorTryChangeDirection(actor, cmd);
+		hasShot = ActorTryShoot(actor, cmd);
+		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks, &movePos);
+		if (!hasChangedDirection && !hasShot && !shallMove)
+		{
+			// Idle if player hasn't done anything
 			if (actor->state != STATE_IDLE &&
-			    actor->state != STATE_IDLELEFT &&
-			    actor->state != STATE_IDLERIGHT)
+				actor->state != STATE_IDLELEFT &&
+				actor->state != STATE_IDLERIGHT)
+			{
 				SetStateForActor(actor, STATE_IDLE);
+			}
+		}
+		if (hasMoved)
+		{
+			shallMove = 1;
 		}
 	}
 
 	if (shallMove)
 	{
-		MoveActor(actor, x, y);
+		MoveActor(actor, movePos.x, movePos.y);
 	}
 
 	if (resetDir) {

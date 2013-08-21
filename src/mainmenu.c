@@ -271,6 +271,12 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			"Shadows",
 			&gConfig.Game.Shadows,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Move when shooting",
+			&gConfig.Game.MoveWhenShooting,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

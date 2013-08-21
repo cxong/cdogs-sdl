@@ -178,6 +178,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.Fog = 1;
 	config->Game.SightRange = 15;
 	config->Game.Shadows = 1;
+	config->Game.MoveWhenShooting = 0;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.ResolutionHeight = 240;

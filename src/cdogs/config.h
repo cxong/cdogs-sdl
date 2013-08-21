@@ -75,6 +75,7 @@ typedef struct
 	int Fog;
 	int SightRange;
 	int Shadows;
+	int MoveWhenShooting;
 } GameConfig;
 
 typedef struct
