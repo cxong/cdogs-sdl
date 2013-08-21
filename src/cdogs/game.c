@@ -107,7 +107,7 @@ int missionTime;
 #define MICROSECS_PER_SEC 1000000
 #define MILLISECS_PER_SEC 1000
 
-int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
+int PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 {
 	if (!actor)
 	{
@@ -117,9 +117,10 @@ int PlayerSpecialCommands(TActor * actor, int cmd, struct PlayerData *data)
 	if (((cmd | actor->lastCmd) & CMD_BUTTON2) == 0)
 		actor->flags &= ~FLAGS_SPECIAL_USED;
 
-	if ((cmd & CMD_BUTTON2) != 0 &&
-	    (cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) != 0 &&
-	    actor->dx == 0 && actor->dy == 0) {
+	if ((cmd & CMD_BUTTON2) &&
+		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		actor->dx == 0 && actor->dy == 0)
+	{
 		SlideActor(actor, cmd);
 		actor->flags |= FLAGS_SPECIAL_USED;
 	}
@@ -195,7 +196,7 @@ static void Ticks_FrameEnd(void)
 {
 	Uint32 now = SDL_GetTicks();
 	Uint32 ticksSpent = now - ticks_now;
-	Uint32 ticksIdeal = 33;
+	Uint32 ticksIdeal = 16;
 	if (ticksSpent < ticksIdeal)
 	{
 		Uint32 ticksToDelay = ticksIdeal - ticksSpent;
@@ -501,47 +502,37 @@ int gameloop(void)
 	while (!done)
 	{
 		int cmd1 = 0, cmd2 = 0;
-		int ticks = 2;
-
+		int ticks = 1;
 		Ticks_Update();
 
 		InputPoll(&gInputDevices, ticks_now);
+		GetPlayerInput(&cmd1, &cmd2);
+		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);
 
 		if (!gameIsPaused)
 		{
-			TActor *actor;
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
 				UpdateAllActors(ticks);
-				UpdateMobileObjects(&gMobObjList);
-
-				GetPlayerInput(&cmd1, &cmd2);
+				UpdateMobileObjects(&gMobObjList, ticks);
 
 				if (gPlayer1 &&
 					!PlayerSpecialCommands(gPlayer1, cmd1, &gPlayer1Data))
 				{
-					CommandActor(gPlayer1, cmd1);
+					CommandActor(gPlayer1, cmd1, ticks);
 				}
 				if (gPlayer2 &&
 					!PlayerSpecialCommands(gPlayer2, cmd2, &gPlayer2Data))
 				{
-					CommandActor(gPlayer2, cmd2);
+					CommandActor(gPlayer2, cmd2, ticks);
 				}
 
 				if (gOptions.badGuys)
 				{
-					CommandBadGuys();
+					CommandBadGuys(ticks);
 				}
 
 				UpdateWatches();
-			}
-
-			UpdateMobileObjects(&gMobObjList);
-			actor = ActorList();
-			while (actor)
-			{
-				CommandActor(actor, actor->lastCmd);
-				actor = actor->next;
 			}
 
 			missionTime += ticks;
@@ -561,10 +552,6 @@ int gameloop(void)
 			{
 				gMission.pickupTime = PICKUP_LIMIT;
 			}
-		}
-		else
-		{
-			GetPlayerInput(&cmd1, &cmd2);
 		}
 
 		if (HasObjectives(gCampaign.Entry.mode))
@@ -591,8 +578,6 @@ int gameloop(void)
 		HUDDraw(&hud, gameIsPaused, escExits);
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-
-		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);
 
 		Ticks_FrameEnd();
 	}

@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #ifndef __OBJSH
 #define __OBJSH
@@ -126,11 +153,11 @@ struct MobileObject {
 	int flags;
 	int soundLock;
 	TTileItem tileItem;
-	int (*updateFunc) (struct MobileObject *);
+	int (*updateFunc)(struct MobileObject *, int);
 	struct MobileObject *next;
 };
 typedef struct MobileObject TMobileObject;
-typedef int (*MobObjUpdateFunc) (struct MobileObject *);
+typedef int (*MobObjUpdateFunc)(struct MobileObject *, int);
 extern TMobileObject *gMobObjList;
 
 
@@ -151,7 +178,7 @@ void AddDestructibleObject(int x, int y, int w, int h,
 void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
-void UpdateMobileObjects(TMobileObject **mobObjList);
+void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
 void AddGrenade(int x, int y, int angle, int flags, int kind);
 void AddBullet(int x, int y, int angle, int speed, int range, int power,
 	       int flags);

@@ -24,6 +24,6 @@
 
 void InitializeBadGuys(void);
 void CreateEnemies(void);
-void CommandBadGuys(void);
+void CommandBadGuys(int ticks);
 
 #endif

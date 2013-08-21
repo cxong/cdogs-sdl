@@ -501,19 +501,15 @@ int DamageSomething(
 // Update functions
 
 // Base update function
-void MobileObjectUpdate(TMobileObject *obj)
+void MobileObjectUpdate(TMobileObject *obj, int ticks)
 {
-	obj->count++;
-	obj->soundLock--;
-	if (obj->soundLock < 0)
-	{
-		obj->soundLock = 0;
-	}
+	obj->count += ticks;
+	obj->soundLock = MAX(0, obj->soundLock - ticks);
 }
 
-int UpdateMobileObject(TMobileObject * obj)
+int UpdateMobileObject(TMobileObject *obj, int ticks)
 {
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 	return 1;
@@ -531,42 +527,71 @@ void Frag(int x, int y, int flags)
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
-int UpdateMolotovFlame(TMobileObject * obj)
+Vec2i UpdateAndGetCloudPosition(TMobileObject *obj, int ticks)
 {
-	int x, y;
+	Vec2i pos;
+	int i;
 
-	MobileObjectUpdate(obj);
+	pos.x = obj->x + obj->dx * ticks;
+	pos.y = obj->y + obj->dy * ticks;
+
+	for (i = 0; i < ticks; i++)
+	{
+		if (obj->dx > 0)
+		{
+			obj->dx -= 4;
+		}
+		else if (obj->dx < 0)
+		{
+			obj->dx += 4;
+		}
+
+		if (obj->dy > 0)
+		{
+			obj->dy -= 3;
+		}
+		else if (obj->dy < 0)
+		{
+			obj->dy += 3;
+		}
+	}
+
+	return pos;
+}
+
+int UpdateMolotovFlame(TMobileObject *obj, int ticks)
+{
+	Vec2i pos;
+	int i;
+
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 
 	if ((obj->count & 3) == 0)
 		obj->state = rand();
 
-	obj->z += obj->dz / 2;
-	if (obj->z <= 0)
-		obj->z = 0;
-	else
-		obj->dz--;
+	for (i = 0; i < ticks; i++)
+	{
+		obj->z += obj->dz / 2;
+		if (obj->z <= 0)
+		{
+			obj->z = 0;
+		}
+		else
+		{
+			obj->dz--;
+		}
+	}
+	pos = UpdateAndGetCloudPosition(obj, ticks);
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	HitItem(obj, pos.x, pos.y, SPECIAL_FLAME);
 
-	if (obj->dx > 0)
-		obj->dx -= 4;
-	else if (obj->dx < 0)
-		obj->dx += 4;
-
-	if (obj->dy > 0)
-		obj->dy -= 3;
-	else if (obj->dy < 0)
-		obj->dy += 3;
-
-	HitItem(obj, x, y, SPECIAL_FLAME);
-
-	if (!HitWall(x >> 8, y >> 8)) {
-		obj->x = x;
-		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+	if (!HitWall(pos.x >> 8, pos.y >> 8))
+	{
+		obj->x = pos.x;
+		obj->y = pos.y;
+		MoveTileItem(&obj->tileItem, pos.x >> 8, pos.y >> 8);
 		return 1;
 	} else
 		return 1;
@@ -618,36 +643,26 @@ void Fire(int x, int y, int flags)
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
-int UpdateGasCloud(TMobileObject * obj)
+int UpdateGasCloud(TMobileObject *obj, int ticks)
 {
-	int x, y;
+	Vec2i pos;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 
 	if ((obj->count & 3) == 0)
 		obj->state = rand();
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	pos = UpdateAndGetCloudPosition(obj, ticks);
 
-	if (obj->dx > 0)
-		obj->dx -= 4;
-	else if (obj->dx < 0)
-		obj->dx += 4;
+	HitItem(obj, pos.x, pos.y, obj->z ? SPECIAL_CONFUSE : SPECIAL_POISON);
 
-	if (obj->dy > 0)
-		obj->dy -= 3;
-	else if (obj->dy < 0)
-		obj->dy += 3;
-
-	HitItem(obj, x, y, obj->z ? SPECIAL_CONFUSE : SPECIAL_POISON);
-
-	if (!HitWall(x >> 8, y >> 8)) {
-		obj->x = x;
-		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+	if (!HitWall(pos.x >> 8, pos.y >> 8))
+	{
+		obj->x = pos.x;
+		obj->y = pos.y;
+		MoveTileItem(&obj->tileItem, pos.x >> 8, pos.y >> 8);
 		return 1;
 	} else
 		return 1;
@@ -691,11 +706,12 @@ void Gas(int x, int y, int flags, int special)
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
-int UpdateGrenade(TMobileObject * obj)
+int UpdateGrenade(TMobileObject *obj, int ticks)
 {
 	int x, y;
+	int i;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
 		switch (obj->kind)
@@ -723,15 +739,22 @@ int UpdateGrenade(TMobileObject * obj)
 		return 0;
 	}
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	x = obj->x + obj->dx * ticks;
+	y = obj->y + obj->dy * ticks;
 
-	obj->z += obj->dz;
-	if (obj->z <= 0) {
-		obj->z = 0;
-		obj->dz = -obj->dz / 2;
-	} else
-		obj->dz--;
+	for (i = 0; i < ticks; i++)
+	{
+		obj->z += obj->dz;
+		if (obj->z <= 0)
+		{
+			obj->z = 0;
+			obj->dz = -obj->dz / 2;
+		}
+		else
+		{
+			obj->dz--;
+		}
+	}
 
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
@@ -751,26 +774,30 @@ int UpdateGrenade(TMobileObject * obj)
 	return 1;
 }
 
-int UpdateMolotov(TMobileObject * obj)
+int UpdateMolotov(TMobileObject *obj, int ticks)
 {
 	int x, y;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
 		Fire(obj->x, obj->y, obj->flags);
 		return 0;
 	}
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	x = obj->x + obj->dx * ticks;
+	y = obj->y + obj->dy * ticks;
 
-	obj->z += obj->dz;
-	if (obj->z <= 0) {
+	obj->z += obj->dz * ticks;
+	if (obj->z <= 0)
+	{
 		Fire(obj->x, obj->y, obj->flags);
 		return 0;
-	} else
-		obj->dz--;
+	}
+	else
+	{
+		obj->dz -= ticks;
+	}
 
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
@@ -783,9 +810,9 @@ int UpdateMolotov(TMobileObject * obj)
 	return 1;
 }
 
-int UpdateSpark(TMobileObject * obj)
+int UpdateSpark(TMobileObject *obj, int ticks)
 {
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 	return 1;
@@ -820,16 +847,16 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 	return hasHit;
 }
 
-int InternalUpdateBullet(TMobileObject * obj, int special)
+int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 {
 	int x, y;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	x = obj->x + obj->dx * ticks;
+	y = obj->y + obj->dy * ticks;
 
 	if (HitItem(obj, x, y, special)) {
 		obj->count = 0;
@@ -852,34 +879,39 @@ int InternalUpdateBullet(TMobileObject * obj, int special)
 	}
 }
 
-int UpdateBullet(TMobileObject * obj)
+int UpdateBullet(TMobileObject *obj, int ticks)
 {
-	return InternalUpdateBullet(obj, 0);
+	return InternalUpdateBullet(obj, 0, ticks);
 }
 
-int UpdatePetrifierBullet(TMobileObject * obj)
+int UpdatePetrifierBullet(TMobileObject *obj, int ticks)
 {
-	return InternalUpdateBullet(obj, SPECIAL_PETRIFY);
+	return InternalUpdateBullet(obj, SPECIAL_PETRIFY, ticks);
 }
 
-int UpdateSeeker(TMobileObject * obj)
+int UpdateSeeker(TMobileObject * obj, int ticks)
 {
-	return InternalUpdateBullet(obj, 0);
+	return InternalUpdateBullet(obj, 0, ticks);
 }
 
-int UpdateBrownBullet(TMobileObject * obj)
+int UpdateBrownBullet(TMobileObject *obj, int ticks)
 {
-	if (InternalUpdateBullet(obj, 0)) {
-		obj->dx += ((rand() % 3) - 1) * 128;
-		obj->dy += ((rand() % 3) - 1) * 128;
+	if (InternalUpdateBullet(obj, 0, ticks))
+	{
+		int i;
+		for (i = 0; i < ticks; i++)
+		{
+			obj->dx += ((rand() % 3) - 1) * 128;
+			obj->dy += ((rand() % 3) - 1) * 128;
+		}
 		return 1;
 	}
 	return 0;
 }
 
-int UpdateTriggeredMine(TMobileObject * obj)
+int UpdateTriggeredMine(TMobileObject *obj, int ticks)
 {
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count >= obj->range)
 	{
 		AddExplosion(obj->x, obj->y, obj->flags);
@@ -888,20 +920,23 @@ int UpdateTriggeredMine(TMobileObject * obj)
 	return 1;
 }
 
-int UpdateActiveMine(TMobileObject * obj)
+int UpdateActiveMine(TMobileObject *obj, int ticks)
 {
 	int tx, ty, dx, dy;
 
-	MobileObjectUpdate(obj);
-	if ((obj->count & 3) != 0)
+	MobileObjectUpdate(obj, ticks);
+	if (obj->count & 3)
+	{
 		return 1;
+	}
 
 	tx = (obj->x >> 8) / TILE_WIDTH;
 	ty = (obj->y >> 8) / TILE_HEIGHT;
 
 	if (tx == 0 || ty == 0 || tx >= XMAX - 1 || ty >= YMAX - 1)
-		//return NULL;
+	{
 		return 0;
+	}
 
 	for (dy = -1; dy <= 1; dy++)
 	{
@@ -928,27 +963,27 @@ int UpdateActiveMine(TMobileObject * obj)
 	return 1;
 }
 
-int UpdateDroppedMine(TMobileObject * obj)
+int UpdateDroppedMine(TMobileObject *obj, int ticks)
 {
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count >= obj->range)
 		obj->updateFunc = UpdateActiveMine;
 	return 1;
 }
 
-int UpdateFlame(TMobileObject * obj)
+int UpdateFlame(TMobileObject *obj, int ticks)
 {
 	int x, y;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 
 	if ((obj->count & 3) == 0)
 		obj->state = rand();
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
+	x = obj->x + obj->dx * ticks;
+	y = obj->y + obj->dy * ticks;
 
 	if (HitItem(obj, x, y, SPECIAL_FLAME)) {
 		obj->count = obj->range;
@@ -967,20 +1002,20 @@ int UpdateFlame(TMobileObject * obj)
 		return 0;
 }
 
-int UpdateExplosion(TMobileObject * obj)
+int UpdateExplosion(TMobileObject *obj, int ticks)
 {
 	int x, y;
 
-	MobileObjectUpdate(obj);
+	MobileObjectUpdate(obj, ticks);
 	if (obj->count < 0)
 		return 1;
 	if (obj->count > obj->range)
 		return 0;
 
-	x = obj->x + obj->dx;
-	y = obj->y + obj->dy;
-	obj->z += obj->dz;
-	obj->dz--;
+	x = obj->x + obj->dx * ticks;
+	y = obj->y + obj->dy * ticks;
+	obj->z += obj->dz * ticks;
+	obj->dz = MAX(0, obj->dz - ticks);
 
 	HitItem(obj, x, y, SPECIAL_EXPLOSION);
 
@@ -993,13 +1028,15 @@ int UpdateExplosion(TMobileObject * obj)
 	return 0;
 }
 
-void UpdateMobileObjects(TMobileObject **mobObjList)
+void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
 {
 	TMobileObject *obj = *mobObjList;
 	int do_remove = 0;
 
-	while (obj) {
-		if ((*(obj->updateFunc)) (obj) == 0) {
+	while (obj)
+	{
+		if ((*(obj->updateFunc))(obj, ticks) == 0)
+		{
 			obj->range = 0;
 			do_remove = 1;
 		}

@@ -377,31 +377,25 @@ void UpdateActorState(TActor * actor, int ticks)
 		ticks,
 		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 
-	if (actor->health > 0) {
-		if (actor->flamed)
-			actor->flamed--;
-		if (actor->poisoned) {
+	if (actor->health > 0)
+	{
+		actor->flamed = MAX(0, actor->flamed - ticks);
+		if (actor->poisoned)
+		{
 			if ((actor->poisoned & 7) == 0)
+			{
 				InjureActor(actor, 1);
-			actor->poisoned--;
+			}
+			actor->poisoned = MAX(0, actor->poisoned - ticks);
 		}
-		if (actor->petrified) {
-			actor->petrified -= ticks;
-			if (actor->petrified < 0)
-				actor->petrified = 0;
-		}
-		if (actor->confused) {
-			actor->confused -= ticks;
-			if (actor->confused < 0)
-				actor->confused = 0;
-		}
+		actor->petrified = MAX(0, actor->petrified - ticks);
+		actor->confused = MAX(0, actor->confused - ticks);
 	}
 
-	if (actor->stateCounter) {
-		actor->stateCounter -= ticks;
-		if (actor->stateCounter > 0)
-			return;
-		actor->stateCounter = 0;
+	actor->stateCounter = MAX(0, actor->stateCounter - ticks);
+	if (actor->stateCounter > 0)
+	{
+		return;
 	}
 
 	if (actor->health <= 0) {
@@ -435,11 +429,7 @@ void UpdateActorState(TActor * actor, int ticks)
 		SetStateForActor(actor, transitionTable[actor->state]);
 
 	// Sound lock
-	actor->soundLock -= ticks;
-	if (actor->soundLock < 0)
-	{
-		actor->soundLock = 0;
-	}
+	actor->soundLock = MAX(0, actor->soundLock - ticks);
 }
 
 
@@ -690,31 +680,40 @@ void Shoot(TActor *actor)
 	Score(actor->flags, -GunGetScore(actor->weapon.gun));
 }
 
-void CommandActor(TActor * actor, int cmd)
+void CommandActor(TActor * actor, int cmd, int ticks)
 {
 	int x = actor->x, y = actor->y;
 	int shallMove = NO;
 	int resetDir = NO;
 
-	if (actor->dx || actor->dy) {
-		shallMove = YES;
-		resetDir = YES;
+	if (actor->dx || actor->dy)
+	{
+		int i;
+		shallMove = 1;
+		resetDir = 1;
 
-		x += actor->dx;
-		y += actor->dy;
+		x += actor->dx * ticks;
+		y += actor->dy * ticks;
 
-		if (actor->dx > 0)
-			actor->dx -= 32;
-		else if (actor->dx < 0)
-			actor->dx += 32;
-		if (abs(actor->dx) < 32)
-			actor->dx = 0;
-		if (actor->dy > 0)
-			actor->dy -= 32;
-		else if (actor->dy < 0)
-			actor->dy += 32;
-		if (abs(actor->dy) < 32)
-			actor->dy = 0;
+		for (i = 0; i < ticks; i++)
+		{
+			if (actor->dx > 0)
+			{
+				actor->dx = MAX(0, actor->dx - 32);
+			}
+			else if (actor->dx < 0)
+			{
+				actor->dx = MIN(0, actor->dx + 32);
+			}
+			if (actor->dy > 0)
+			{
+				actor->dy = MAX(0, actor->dy - 32);
+			}
+			else if (actor->dy < 0)
+			{
+				actor->dy = MIN(0, actor->dy + 32);
+			}
+		}
 	}
 
 	actor->lastCmd = cmd;
@@ -738,13 +737,21 @@ void CommandActor(TActor * actor, int cmd)
 			shallMove = YES;
 
 			if (cmd & CMD_LEFT)
-				x -= gCharacterDesc[actor->character].speed;
+			{
+				x -= gCharacterDesc[actor->character].speed * ticks;
+			}
 			else if (cmd & CMD_RIGHT)
-				x += gCharacterDesc[actor->character].speed;
+			{
+				x += gCharacterDesc[actor->character].speed * ticks;
+			}
 			if (cmd & CMD_UP)
-				y -= gCharacterDesc[actor->character].speed;
+			{
+				y -= gCharacterDesc[actor->character].speed * ticks;
+			}
 			else if (cmd & CMD_DOWN)
-				y += gCharacterDesc[actor->character].speed;
+			{
+				y += gCharacterDesc[actor->character].speed * ticks;
+			}
 
 			if (actor->state != STATE_WALKING_1 &&
 			    actor->state != STATE_WALKING_2 &&
@@ -761,7 +768,9 @@ void CommandActor(TActor * actor, int cmd)
 	}
 
 	if (shallMove)
+	{
 		MoveActor(actor, x, y);
+	}
 
 	if (resetDir) {
 		if (actor->health > 0 &&
@@ -771,7 +780,7 @@ void CommandActor(TActor * actor, int cmd)
 	}
 }
 
-void SlideActor(TActor * actor, int cmd)
+void SlideActor(TActor *actor, int cmd)
 {
 	int dx, dy;
 

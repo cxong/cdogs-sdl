@@ -382,7 +382,7 @@ static void PlacePrisoner(TActor * actor)
 }
 
 
-void CommandBadGuys(void)
+void CommandBadGuys(int ticks)
 {
 	TActor *actor;
 	int roll, cmd;
@@ -456,32 +456,35 @@ void CommandBadGuys(void)
 						    0))) {
 					cmd = Hunt(actor) | CMD_BUTTON1;
 					bypass = 1;
-				} else if (actor->flags & FLAGS_DETOURING)
+				}
+				else if (actor->flags & FLAGS_DETOURING)
+				{
 					cmd = BrightWalk(actor, roll);
-				else if (actor->delay > 0) {
-					actor->delay--;
-					cmd =
-					    (actor->
-					     lastCmd & ~CMD_BUTTON1);
-				} else {
+				}
+				else if (actor->delay > 0)
+				{
+					actor->delay = MAX(0, actor->delay - ticks);
+					cmd = actor->lastCmd & ~CMD_BUTTON1;
+				}
+				else
+				{
 					if (roll <
-					    gCharacterDesc[actor->
-							  character].
-					    probabilityToTrack)
+						gCharacterDesc[actor->character].probabilityToTrack)
+					{
 						cmd = Hunt(actor);
+					}
 					else if (roll <
-						 gCharacterDesc[actor->
-							       character].
-						 probabilityToMove)
-						cmd =
-						    DirectionToCmd(rand() &
-								   7);
+						gCharacterDesc[actor->character].probabilityToMove)
+					{
+						cmd = DirectionToCmd(rand() & 7);
+					}
 					else
+					{
 						cmd = 0;
+					}
 					actor->delay =
-					    gCharacterDesc[actor->
-							  character].
-					    actionDelay * delayModifier;
+						gCharacterDesc[actor->character].actionDelay *
+						delayModifier;
 				}
 				if (!bypass)
 				{
@@ -505,10 +508,13 @@ void CommandBadGuys(void)
 					}
 				}
 			}
-			CommandActor(actor, cmd);
+			CommandActor(actor, cmd, ticks);
 			actor->flags &= ~FLAGS_VISIBLE;
-		} else if ((actor->flags & FLAGS_PRISONER) != 0)
-			CommandActor(actor, 0);
+		}
+		else if ((actor->flags & FLAGS_PRISONER) != 0)
+		{
+			CommandActor(actor, 0, ticks);
+		}
 
 		actor = actor->next;
 	}
