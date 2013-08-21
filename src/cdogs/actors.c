@@ -672,7 +672,8 @@ int ActorTryChangeDirection(TActor *actor, int cmd)
 {
 	int willChangeDirecton =
 		!actor->petrified &&
-		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN));
+		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		(!(cmd & CMD_BUTTON2) || gConfig.Game.SwitchMoveStyle != SWITCHMOVE_STRAFE);
 	if (willChangeDirecton)
 	{
 		actor->direction = CmdToDirection(cmd);

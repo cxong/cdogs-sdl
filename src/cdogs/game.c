@@ -122,8 +122,11 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 	{
 		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
 		{
-			actor->flags |= FLAGS_SPECIAL_USED;
 			SlideActor(actor, cmd);
+		}
+		if (gConfig.Game.SwitchMoveStyle != SWITCHMOVE_NONE)
+		{
+			actor->flags |= FLAGS_SPECIAL_USED;
 		}
 	}
 	else if (
