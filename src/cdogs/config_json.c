@@ -53,6 +53,8 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadInt(&config->SightRange, node, "SightRange");
 	LoadBool(&config->Shadows, node, "Shadows");
 	LoadBool(&config->MoveWhenShooting, node, "MoveWhenShooting");
+	JSON_UTILS_LOAD_ENUM(
+		config->SwitchMoveStyle, node, "SwitchMoveStyle", StrSwitchMoveStyle);
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -76,6 +78,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "Shadows", json_new_bool(config->Shadows));
 	json_insert_pair_into_object(
 		subConfig, "MoveWhenShooting", json_new_bool(config->MoveWhenShooting));
+	JSON_UTILS_ADD_ENUM_PAIR(
+		subConfig, "SwitchMoveStyle", config->SwitchMoveStyle, SwitchMoveStyleStr);
 	json_insert_pair_into_object(root, "Game", subConfig);
 }
 

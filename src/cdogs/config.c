@@ -84,6 +84,33 @@ difficulty_e StrDifficulty(const char *str)
 		return DIFFICULTY_NORMAL;
 	}
 }
+const char *SwitchMoveStyleStr(SwitchMoveStyle s)
+{
+	switch (s)
+	{
+	case SWITCHMOVE_SLIDE:
+		return "Slide";
+	case SWITCHMOVE_STRAFE:
+		return "Strafe";
+	default:
+		return "";
+	}
+}
+SwitchMoveStyle StrSwitchMoveStyle(const char *str)
+{
+	if (strcmp(str, "Slide") == 0)
+	{
+		return SWITCHMOVE_SLIDE;
+	}
+	else if (strcmp(str, "Strafe") == 0)
+	{
+		return SWITCHMOVE_STRAFE;
+	}
+	else
+	{
+		return SWITCHMOVE_SLIDE;
+	}
+}
 const char *ScaleModeStr(ScaleMode s)
 {
 	switch (s)
@@ -179,6 +206,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.SightRange = 15;
 	config->Game.Shadows = 1;
 	config->Game.MoveWhenShooting = 0;
+	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.ResolutionHeight = 240;

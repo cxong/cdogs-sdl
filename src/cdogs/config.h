@@ -44,8 +44,17 @@ typedef enum
 	DIFFICULTY_VERYHARD
 } difficulty_e;
 
-const char *DifficultyStr(difficulty_e d);
+const char *DifficultyStr(difficulty_e s);
 difficulty_e StrDifficulty(const char *str);
+
+typedef enum
+{
+	SWITCHMOVE_SLIDE = 0,
+	SWITCHMOVE_STRAFE
+} SwitchMoveStyle;
+
+const char *SwitchMoveStyleStr(SwitchMoveStyle d);
+SwitchMoveStyle StrSwitchMoveStyle(const char *str);
 
 const char *ScaleModeStr(ScaleMode s);
 ScaleMode StrScaleMode(const char *str);
@@ -76,6 +85,7 @@ typedef struct
 	int SightRange;
 	int Shadows;
 	int MoveWhenShooting;
+	SwitchMoveStyle SwitchMoveStyle;
 } GameConfig;
 
 typedef struct

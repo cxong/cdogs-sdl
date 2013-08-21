@@ -904,11 +904,17 @@ void MenuActivate(menu_t *menu, int cmd)
 		{
 			int option = *menu->u.option.uHook.optionRange.option;
 			int increment = menu->u.option.uHook.optionRange.increment;
+			int low = menu->u.option.uHook.optionRange.low;
+			int high = menu->u.option.uHook.optionRange.high;
 			if (Left(cmd))
 			{
-				if (menu->u.option.uHook.optionRange.low + increment > option)
+				if (low == option)
 				{
-					option = menu->u.option.uHook.optionRange.low;
+					option = high;
+				}
+				else if (low + increment > option)
+				{
+					option = low;
 				}
 				else
 				{
@@ -917,9 +923,13 @@ void MenuActivate(menu_t *menu, int cmd)
 			}
 			else if (Right(cmd))
 			{
-				if (menu->u.option.uHook.optionRange.high - increment < option)
+				if (high == option)
 				{
-					option = menu->u.option.uHook.optionRange.high;
+					option = low;
+				}
+				else if (high - increment < option)
+				{
+					option = high;
 				}
 				else
 				{

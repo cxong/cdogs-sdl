@@ -277,6 +277,13 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			"Move when shooting",
 			&gConfig.Game.MoveWhenShooting,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Switch move style", (int *)&gConfig.Game.SwitchMoveStyle,
+			SWITCHMOVE_SLIDE, SWITCHMOVE_STRAFE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))SwitchMoveStyleStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
