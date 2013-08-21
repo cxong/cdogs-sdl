@@ -50,7 +50,8 @@ difficulty_e StrDifficulty(const char *str);
 typedef enum
 {
 	SWITCHMOVE_SLIDE = 0,
-	SWITCHMOVE_STRAFE
+	SWITCHMOVE_STRAFE,
+	SWITCHMOVE_NONE
 } SwitchMoveStyle;
 
 const char *SwitchMoveStyleStr(SwitchMoveStyle d);

@@ -48,6 +48,7 @@
 */
 #include "game.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -107,28 +108,28 @@ int missionTime;
 #define MICROSECS_PER_SEC 1000000
 #define MILLISECS_PER_SEC 1000
 
-int PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
+void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 {
-	if (!actor)
+	assert(actor);
+	if (!((cmd | actor->lastCmd) & CMD_BUTTON2))
 	{
-		return NO;
-	}
-
-	if (((cmd | actor->lastCmd) & CMD_BUTTON2) == 0)
 		actor->flags &= ~FLAGS_SPECIAL_USED;
+	}
 
 	if ((cmd & CMD_BUTTON2) &&
 		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
 		actor->dx == 0 && actor->dy == 0)
 	{
-		SlideActor(actor, cmd);
-		actor->flags |= FLAGS_SPECIAL_USED;
+		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
+		{
+			actor->flags |= FLAGS_SPECIAL_USED;
+			SlideActor(actor, cmd);
+		}
 	}
 	else if (
-		(actor->lastCmd & CMD_BUTTON2) != 0 &&
-		(cmd & CMD_BUTTON2) == 0 &&
-		(actor->flags & FLAGS_SPECIAL_USED) == 0 &&
-		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) == 0 &&
+		(actor->lastCmd & CMD_BUTTON2) &&
+		!(cmd & CMD_BUTTON2) &&
+		!(actor->flags & FLAGS_SPECIAL_USED) &&
 		data->weaponCount > 1)
 	{
 		int i;
@@ -150,13 +151,6 @@ int PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 			SND_SWITCH,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
-	else
-	{
-		return NO;
-	}
-
-	actor->lastCmd = cmd;
-	return YES;
 }
 
 static void Ticks_Update(void)
@@ -516,14 +510,14 @@ int gameloop(void)
 				UpdateAllActors(ticks);
 				UpdateMobileObjects(&gMobObjList, ticks);
 
-				if (gPlayer1 &&
-					!PlayerSpecialCommands(gPlayer1, cmd1, &gPlayer1Data))
+				if (gPlayer1)
 				{
+					PlayerSpecialCommands(gPlayer1, cmd1, &gPlayer1Data);
 					CommandActor(gPlayer1, cmd1, ticks);
 				}
-				if (gPlayer2 &&
-					!PlayerSpecialCommands(gPlayer2, cmd2, &gPlayer2Data))
+				if (gPlayer2)
 				{
+					PlayerSpecialCommands(gPlayer2, cmd2, &gPlayer2Data);
 					CommandActor(gPlayer2, cmd2, ticks);
 				}
 

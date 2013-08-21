@@ -92,6 +92,8 @@ const char *SwitchMoveStyleStr(SwitchMoveStyle s)
 		return "Slide";
 	case SWITCHMOVE_STRAFE:
 		return "Strafe";
+	case SWITCHMOVE_NONE:
+		return "None";
 	default:
 		return "";
 	}
@@ -105,6 +107,10 @@ SwitchMoveStyle StrSwitchMoveStyle(const char *str)
 	else if (strcmp(str, "Strafe") == 0)
 	{
 		return SWITCHMOVE_STRAFE;
+	}
+	else if (strcmp(str, "None") == 0)
+	{
+		return SWITCHMOVE_NONE;
 	}
 	else
 	{

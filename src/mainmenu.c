@@ -281,7 +281,7 @@ menu_t *MenuCreateOptionsGame(const char *name)
 		menu,
 		MenuCreateOptionRange(
 			"Switch move style", (int *)&gConfig.Game.SwitchMoveStyle,
-			SWITCHMOVE_SLIDE, SWITCHMOVE_STRAFE, 1,
+			SWITCHMOVE_SLIDE, SWITCHMOVE_NONE, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
 			(void (*)(void))SwitchMoveStyleStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
