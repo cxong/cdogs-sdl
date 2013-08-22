@@ -255,7 +255,7 @@ int GetMenuCmd(void)
 	return cmd;
 }
 
-void InputInit(InputDevices *devices, Pic *mouseCursor)
+void InputInit(InputDevices *devices, PicPaletted *mouseCursor)
 {
 	KeyInit(&devices->keyboard);
 	JoyInit(&devices->joysticks);

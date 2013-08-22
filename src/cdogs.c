@@ -71,6 +71,7 @@
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/objs.h>
+#include <cdogs/palette.h>
 #include <cdogs/pics.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>

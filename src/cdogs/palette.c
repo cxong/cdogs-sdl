@@ -1,27 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
     Copyright (c) 2013, Cong Xu
     All rights reserved.
 
@@ -46,24 +25,27 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_FILE
-#define __PIC_FILE
+#include "palette.h"
 
-#include "color.h"
-#include "sys_specifics.h"
+#include "blit.h"
+#include "utils.h"
 
-#include <stdint.h>
-
-typedef color_t TPalette[256];
-typedef unsigned char TranslationTable[256];
-typedef struct
+static TPalette gCurrentPalette;
+#define GAMMA 4
+color_t PaletteToColor(unsigned char index)
 {
-	uint16_t w;
-	uint16_t h;
-	unsigned char data[1];
-} PicPaletted;
+	color_t color = gCurrentPalette[index];
+	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
+	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
+	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
+	return color;
+}
+Uint32 LookupPalette(unsigned char index)
+{
+	return PixelFromColor(&gGraphicsDevice, PaletteToColor(index));
+}
 
-int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette palette);
-int AppendPics(const char *filename, PicPaletted **pics, int startIndex, int maxPics);
-
-#endif
+void CDogsSetPalette(TPalette palette)
+{
+	memcpy(gCurrentPalette, palette, sizeof gCurrentPalette);
+}

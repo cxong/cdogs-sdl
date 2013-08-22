@@ -33,6 +33,8 @@ set(CDOGS_SOURCES
 	mouse.c
 	music.c
 	objs.c
+	palette.c
+	pic.c
 	pic_file.c
 	pics.c
 	sounds.c
@@ -72,6 +74,8 @@ set(CDOGS_HEADERS
 	mouse.h
 	music.h
 	objs.h
+	palette.h
+	pic.h
 	pic_file.h
 	pics.h
 	sounds.h

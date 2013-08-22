@@ -55,7 +55,7 @@
 
 #define MOUSE_REPEAT_TICKS 150
 
-void MouseInit(Mouse *mouse, Pic *cursor)
+void MouseInit(Mouse *mouse, PicPaletted *cursor)
 {
 	memset(mouse, 0, sizeof *mouse);
 	mouse->cursor = cursor;

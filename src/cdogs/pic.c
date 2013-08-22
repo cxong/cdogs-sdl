@@ -1,27 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
     Copyright (c) 2013, Cong Xu
     All rights reserved.
 
@@ -46,24 +25,23 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_FILE
-#define __PIC_FILE
+#include "pic.h"
 
-#include "color.h"
-#include "sys_specifics.h"
+#include "palette.h"
+#include "utils.h"
 
-#include <stdint.h>
-
-typedef color_t TPalette[256];
-typedef unsigned char TranslationTable[256];
-typedef struct
+void PicFromPicPaletted(Pic *pic, PicPaletted *picP)
 {
-	uint16_t w;
-	uint16_t h;
-	unsigned char data[1];
-} PicPaletted;
+	int i;
+	pic->size = Vec2iNew(picP->w, picP->h);
+	CMALLOC(pic->data, pic->size.x * pic->size.y * sizeof *pic->data);
+	for (i = 0; i < pic->size.x * pic->size.y; i++)
+	{
+		pic->data[i] = PaletteToColor(*(picP->data + i));
+	}
+}
 
-int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette palette);
-int AppendPics(const char *filename, PicPaletted **pics, int startIndex, int maxPics);
-
-#endif
+void PicFree(Pic *pic)
+{
+	CFREE(pic->data);
+}

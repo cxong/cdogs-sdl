@@ -53,6 +53,7 @@
 
 #include "config.h"
 #include "defs.h"
+#include "palette.h"
 #include "pics.h"
 #include "map.h"
 #include "actors.h"

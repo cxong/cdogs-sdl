@@ -51,6 +51,7 @@
 
 #include "config.h"
 #include "drawtools.h"
+#include "palette.h"
 #include "utils.h"
 #include "blit.h"
 #include "grafx.h"

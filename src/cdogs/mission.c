@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include "gamedata.h"
 #include "map.h"
+#include "palette.h"
 #include "defs.h"
 #include "pics.h"
 #include "actors.h"

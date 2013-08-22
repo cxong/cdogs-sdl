@@ -66,4 +66,6 @@ extern HSV tintDarker;
 // v: scale factor on the final components
 color_t ColorTint(color_t c, HSV hsv);
 
+int ColorEquals(color_t a, color_t b);
+
 #endif

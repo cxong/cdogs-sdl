@@ -47,7 +47,7 @@ typedef struct
 	char pressedButtons[8];
 	Vec2i previousPos;
 	Vec2i currentPos;
-	Pic *cursor;
+	PicPaletted *cursor;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 	// C-Dogs editor uses rectangles to detect mouse presses on key areas
@@ -56,7 +56,7 @@ typedef struct
 	MouseRect *rects2;
 } Mouse;
 
-void MouseInit(Mouse *mouse, Pic *cursor);
+void MouseInit(Mouse *mouse, PicPaletted *cursor);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);

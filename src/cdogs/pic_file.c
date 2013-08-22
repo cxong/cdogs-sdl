@@ -53,7 +53,7 @@
 #include "files.h"
 #include "utils.h"
 
-int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette)
+int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette palette)
 {
 	FILE *f;
 	int is_eof = 0;
@@ -82,7 +82,7 @@ int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette)
 			swap16(&size);
 			if (size > 0)
 			{
-				Pic *p;
+				PicPaletted *p;
 				CMALLOC(p, size);
 
 				f_read16(f, &p->w, 2);
@@ -109,7 +109,7 @@ int ReadPics(const char *filename, Pic **pics, int maxPics, TPalette palette)
 	return i;
 }
 
-int AppendPics(const char *filename, Pic **pics, int startIndex, int maxPics)
+int AppendPics(const char *filename, PicPaletted **pics, int startIndex, int maxPics)
 {
 	FILE *f;
 	int is_eof = 0;
@@ -134,7 +134,7 @@ int AppendPics(const char *filename, Pic **pics, int startIndex, int maxPics)
 			swap16(&size);
 			if (size > 0)
 			{
-				Pic *p;
+				PicPaletted *p;
 				CMALLOC(p, size);
 
 				f_read16(f, &p->w, 2);

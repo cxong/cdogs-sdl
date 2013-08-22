@@ -59,6 +59,7 @@
 #include "config.h"
 #include "grafx.h"
 #include "events.h"
+#include "palette.h"
 #include "pics.h" /* for gPalette */
 #include "utils.h" /* for debug() */
 
@@ -74,7 +75,7 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
 	return SDL_MapRGB(device->screen->format, color.r, color.g, color.b);
 }
 
-void Blit(int x, int y, Pic *pic, void *table, int mode)
+void Blit(int x, int y, PicPaletted *pic, void *table, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
@@ -129,7 +130,7 @@ void Blit(int x, int y, Pic *pic, void *table, int mode)
 	}
 }
 
-void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
+void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
@@ -186,28 +187,17 @@ void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode)
 	}
 }
 
-static TPalette gCurrentPalette;
-#define GAMMA 4
-color_t PaletteToColor(unsigned char index)
-{
-	color_t color = gCurrentPalette[index];
-	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
-	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
-	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
-	return color;
-}
-Uint32 LookupPalette(unsigned char index)
-{
-	return PixelFromColor(&gGraphicsDevice, PaletteToColor(index));
-}
-
 void BlitMasked(
-	GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask, int isTransparent)
+	GraphicsDevice *device,
+	Pic *pic,
+	Vec2i pos,
+	color_t mask,
+	int isTransparent)
 {
-	unsigned char *current = pic->data;
+	color_t *current = pic->data;
 
 	int i;
-	for (i = 0; i < pic->h; i++)
+	for (i = 0; i < pic->size.y; i++)
 	{
 		int j;
 		int yoff = i + pos.y;
@@ -217,11 +207,11 @@ void BlitMasked(
 		}
 		if (yoff < device->clipping.top)
 		{
-			current += pic->w;
+			current += pic->size.x;
 			continue;
 		}
 		yoff *= device->cachedConfig.ResolutionWidth;
-		for (j = 0; j < pic->w; j++)
+		for (j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
 			color_t c;
@@ -233,17 +223,16 @@ void BlitMasked(
 			}
 			if (xoff > device->clipping.right)
 			{
-				current += pic->w - j;
+				current += pic->size.x - j;
 				break;
 			}
-			if (isTransparent && !*current)
+			if (isTransparent && ColorEquals(*current, colorBlack))
 			{
 				current++;
 				continue;
 			}
 			target = device->buf + yoff + xoff;
-			c = PaletteToColor(*current);
-			c = ColorMult(c, mask);
+			c = ColorMult(*current, mask);
 			*target = PixelFromColor(device, c);
 			current++;
 		}
@@ -536,9 +525,4 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 
 	SDL_UnlockSurface(device->screen);
 	SDL_Flip(device->screen);
-}
-
-void CDogsSetPalette(TPalette palette)
-{
-	memcpy(gCurrentPalette, palette, sizeof gCurrentPalette);
 }

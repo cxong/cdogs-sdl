@@ -137,3 +137,8 @@ color_t ColorTint(color_t c, HSV hsv)
 	}
 	return out;
 }
+
+int ColorEquals(color_t a, color_t b)
+{
+	return a.r == b.r && a.g == b.g && a.b == b.b;
+}

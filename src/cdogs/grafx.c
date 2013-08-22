@@ -64,6 +64,7 @@
 #include "draw.h"
 #include "drawtools.h"
 #include "mission.h"
+#include "palette.h"
 #include "pics.h" /* for gPalette */
 #include "files.h"
 #include "triggers.h"

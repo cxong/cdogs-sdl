@@ -95,7 +95,7 @@ void InputChangeDevice(
 void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
 int GetMenuCmd(void);
 
-void InputInit(InputDevices *devices, Pic *mouseCursor);
+void InputInit(InputDevices *devices, PicPaletted *mouseCursor);
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
 void InputPoll(InputDevices *devices, Uint32 ticks);

@@ -70,7 +70,7 @@ static int dxCDogsText = 0;
 static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
-static Pic *font[CHARS_IN_FONT];
+static PicPaletted *font[CHARS_IN_FONT];
 
 
 void CDogsTextInit(const char *filename, int offset)
@@ -134,7 +134,7 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 		CDogsTextCharWithTable(*s++, table);
 }
 
-static Pic *GetFontPic(char c)
+static PicPaletted *GetFontPic(char c)
 {
 	int i = CHAR_INDEX(c);
 	if (i < 0 || i > CHARS_IN_FONT || !font[i])
@@ -148,10 +148,13 @@ static Pic *GetFontPic(char c)
 Vec2i DrawTextCharMasked(
 	char c, GraphicsDevice *device, Vec2i pos, color_t mask)
 {
-	Pic *font = GetFontPic(c);
-	BlitMasked(device, font, pos, mask, 1);
+	PicPaletted *font = GetFontPic(c);
+	Pic pic;
+	PicFromPicPaletted(&pic, font);
+	BlitMasked(device, &pic, pos, mask, 1);
 	pos.x += 1 + font->w + dxCDogsText;
 	CDogsTextGoto(pos.x, pos.y);
+	PicFree(&pic);
 	return pos;
 }
 

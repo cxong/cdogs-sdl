@@ -551,7 +551,7 @@ static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
 	GraphicsDevice *device,
-	Pic *pic,
+	PicPaletted *pic,
 	int index, int count,
 	int isHighlighted)
 {

@@ -52,6 +52,7 @@
 #include <SDL_stdinc.h>
 
 #include "grafx.h"
+#include "pic.h"
 #include "pic_file.h"
 #include "vector.h"
 
@@ -61,11 +62,14 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
-Uint32 LookupPalette(unsigned char index);
-void Blit(int x, int y, Pic *pic, void *table, int mode);
-void BlitBackground(int x, int y, Pic *pic, HSV *tint, int mode);
+void Blit(int x, int y, PicPaletted *pic, void *table, int mode);
+void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode);
 void BlitMasked(
-	GraphicsDevice *device, Pic *pic, Vec2i pos, color_t mask, int isTransparent);
+	GraphicsDevice *device,
+	Pic *pic,
+	Vec2i pos,
+	color_t mask,
+	int isTransparent);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
@@ -94,7 +98,6 @@ void BlitMasked(
 #define DrawBTPic(x, y, pic, tint) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
 
 void BlitFlip(GraphicsDevice *device, GraphicsConfig *config);
-void CDogsSetPalette(TPalette palette);
 
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10
