@@ -709,7 +709,7 @@ static void DisplayMission(int idx, int xc, int yc, int y)
 	}
 }
 
-void Display(int idx, int xc, int yc, int key)
+static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 {
 	char s[128];
 	int y = 5;
@@ -728,9 +728,6 @@ void Display(int idx, int xc, int yc, int key)
 		}
 	}
 
-	sprintf(s, "Key: 0x%x", key);
-	CDogsTextStringAt(270, 190, s);
-
 	DrawEditableTextWithEmptyHint(
 		Vec2iNew(25, y),
 		gCampaign.Setting.title, "(Campaign title)",
@@ -745,7 +742,7 @@ void Display(int idx, int xc, int yc, int key)
 
 	if (currentMission)
 	{
-		DisplayMission(idx, xc, yc, y);
+		DisplayMission(mission, xc, yc, y);
 	}
 	else if (gCampaign.Setting.missionCount)
 	{
@@ -841,7 +838,14 @@ void Display(int idx, int xc, int yc, int key)
 		break;
 	}
 
-	MouseDraw(&gInputDevices.mouse);
+	if (willDisplayAutomap)
+	{
+		DisplayAutoMap(1);
+	}
+	else
+	{
+		MouseDraw(&gInputDevices.mouse);
+	}
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
@@ -1512,7 +1516,7 @@ static void HandleInput(
 	int c, int m,
 	int *xc, int *yc, int *xcOld, int *ycOld,
 	int *mission, struct Mission *scrap,
-	int *done)
+	int *willDisplayAutomap, int *done)
 {
 	int mouseTag;
 	if (m && MouseTryGetRectTag(&gInputDevices.mouse, &mouseTag))
@@ -1588,12 +1592,7 @@ static void HandleInput(
 			break;
 
 		case 'm':
-			Setup(*mission, 0);
-			SetupMap();
-			DisplayAutoMap(1);
-			GetKey(&gInputDevices);
-			KillAllObjects();
-			FreeTriggersAndWatches();
+			*willDisplayAutomap = 1;
 			break;
 
 		case 'e':
@@ -1750,13 +1749,22 @@ static void EditCampaign(void)
 	SDL_EnableKeyRepeat(0, 0);
 	while (!done)
 	{
+		int willDisplayAutomap = 0;
 		int c, m;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		c = KeyGetPressed(&gInputDevices.keyboard);
 		m = MouseGetPressed(&gInputDevices.mouse);
 
-		HandleInput(c, m, &xc, &yc, &xcOld, &ycOld, &mission, &scrap, &done);
-		Display(mission, xc, yc, c);
+		HandleInput(
+			c, m,
+			&xc, &yc, &xcOld, &ycOld,
+			&mission, &scrap,
+			&willDisplayAutomap, &done);
+		Display(mission, xc, yc, willDisplayAutomap);
+		if (willDisplayAutomap)
+		{
+			GetKey(&gInputDevices);
+		}
 		SDL_Delay(10);
 	}
 }

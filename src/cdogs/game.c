@@ -434,6 +434,7 @@ int HandleKey(int *done, int cmd)
 			if (!hasDisplayedAutomap)
 			{
 				DisplayAutoMap(0);
+				BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 				hasDisplayedAutomap = 1;
 			}
 			SDL_Delay(10);

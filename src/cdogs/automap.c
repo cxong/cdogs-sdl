@@ -238,7 +238,8 @@ void DisplayAutoMap(int showAll)
 		for (i = 0; i < MAP_FACTOR; i++) {
 			for (x = 0; x < XMAX; x++)
 			{
-				if (Map(x, y).isVisited || showAll)
+				if (!(Map(x, y).flags & MAPTILE_IS_NOTHING) &&
+					(Map(x, y).isVisited || showAll))
 				{
 					int tileFlags = Map(x, y).flags;
 					for (j = 0; j < MAP_FACTOR; j++)
@@ -310,6 +311,4 @@ void DisplayAutoMap(int showAll)
 
 	DisplayExit();
 	DisplaySummary();
-
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }

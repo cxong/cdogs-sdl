@@ -458,7 +458,8 @@ static void FixMap(int floor, int room, int wall)
 				break;
 
 			case MAP_NOTHING:
-				Map(x, y).flags = MAPTILE_NO_WALK | MAPTILE_NO_SEE;
+				Map(x, y).flags =
+					MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_NOTHING;
 				break;
 			}
 		}
