@@ -106,16 +106,15 @@ struct TileItem {
 typedef struct TileItem TTileItem;
 
 
-struct Tile {
+typedef struct
+{
 	int pic;
 	int flags;
 	int isVisited;
 	TTileItem *things;
-};
-typedef struct Tile TTile;
+} Tile;
 
-
-extern TTile gMap[YMAX][XMAX];
+extern Tile gMap[YMAX][XMAX];
 #define Map( x, y)  gMap[y][x]
 
 int HasLockedRooms(void);

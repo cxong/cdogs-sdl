@@ -65,11 +65,11 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, TTile map[YMAX][XMAX], Vec2i origin,
+	DrawBuffer *buffer, Tile map[YMAX][XMAX], Vec2i origin,
 	int width, Vec2i tilesXY)
 {
 	int x, y;
-	TTile *bufTile;
+	Tile *bufTile;
 
 	buffer->width = width;
 

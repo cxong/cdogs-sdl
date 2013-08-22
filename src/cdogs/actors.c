@@ -751,13 +751,11 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 {
 	Vec2i movePos = Vec2iNew(actor->x, actor->y);
 	int shallMove = NO;
-	int resetDir = NO;
 
 	if (actor->dx || actor->dy)
 	{
 		int i;
 		shallMove = 1;
-		resetDir = 1;
 
 		movePos.x += actor->dx * ticks;
 		movePos.y += actor->dy * ticks;
@@ -813,13 +811,6 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	if (shallMove)
 	{
 		MoveActor(actor, movePos.x, movePos.y);
-	}
-
-	if (resetDir) {
-		if (actor->health > 0 &&
-		    (cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) !=
-		    0)
-			actor->direction = CmdToDirection(cmd);
 	}
 }
 

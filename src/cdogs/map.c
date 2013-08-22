@@ -52,7 +52,7 @@
 #define MAP_ACCESSBITS      0x0F00
 
 
-TTile gMap[YMAX][XMAX];
+Tile gMap[YMAX][XMAX];
 
 
 static int gKeyAccessCount;
@@ -61,13 +61,13 @@ static int tilesSeen = 0;
 static int tilesTotal = XMAX * YMAX;
 #define iMap( x, y) internalMap[y][x]
 
-static void AddItemToTile(TTileItem * t, TTile * tile)
+static void AddItemToTile(TTileItem * t, Tile * tile)
 {
 	t->next = tile->things;
 	tile->things = t;
 }
 
-static void RemoveItemFromTile(TTileItem * t, TTile * tile)
+static void RemoveItemFromTile(TTileItem * t, Tile * tile)
 {
 	TTileItem **h = &tile->things;
 
@@ -81,7 +81,7 @@ static void RemoveItemFromTile(TTileItem * t, TTile * tile)
 
 void MoveTileItem(TTileItem * t, int x, int y)
 {
-	TTile *tile;
+	Tile *tile;
 	int x1 = t->x / TILE_WIDTH;
 	int y1 = t->y / TILE_HEIGHT;
 	int x2 = x / TILE_WIDTH;
@@ -100,7 +100,7 @@ void MoveTileItem(TTileItem * t, int x, int y)
 
 void RemoveTileItem(TTileItem * t)
 {
-	TTile *tile;
+	Tile *tile;
 	int x = t->x / TILE_WIDTH;
 	int y = t->y / TILE_HEIGHT;
 

@@ -59,7 +59,7 @@
 void FixBuffer(DrawBuffer *buffer, int isShadow)
 {
 	int x, y;
-	TTile *tile, *tileBelow;
+	Tile *tile, *tileBelow;
 
 	tile = &buffer->tiles[0][0];
 	tileBelow = &buffer->tiles[0][0] + X_TILES;
@@ -104,10 +104,10 @@ void FixBuffer(DrawBuffer *buffer, int isShadow)
 void SetLineOfSight(
 	DrawBuffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
 {
-	TTile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
+	Tile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
 	if (dTile->flags & (MAPTILE_NO_SEE | shadowFlag))
 	{
-		TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
+		Tile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 		tile->flags |= shadowFlag;
 	}
 }
@@ -163,7 +163,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag)
 				if (DistanceSquared(centerTile, Vec2iNew(x, y)) >=
 					distanceSquared)
 				{
-					TTile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
+					Tile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
 					tile->flags |= shadowFlag;
 				}
 			}
@@ -176,7 +176,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag)
 // Unvisited: black
 // Out of sight: dark, or if fog disabled, black
 // In sight: full color
-static color_t GetTileLOSMask(TTile *tile)
+static color_t GetTileLOSMask(Tile *tile)
 {
 	if (!tile->isVisited)
 	{
@@ -197,7 +197,7 @@ static color_t GetTileLOSMask(TTile *tile)
 	return colorWhite;
 }
 
-void DrawWallColumn(int y, Vec2i pos, TTile *tile)
+void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 {
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
@@ -232,7 +232,7 @@ void DrawFloor(DrawBuffer *b, int xOffset)
 {
 	int x, y;
 	Vec2i pos;
-	TTile *tile = &b->tiles[0][0];
+	Tile *tile = &b->tiles[0][0];
 	for (y = 0, pos.y = b->dy; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		for (x = 0, pos.x = b->dx + xOffset;
@@ -259,7 +259,7 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list);
 void DrawDebris(DrawBuffer *b, int xOffset)
 {
 	int x, y;
-	TTile *tile = &b->tiles[0][0];
+	Tile *tile = &b->tiles[0][0];
 	for (y = 0; y < Y_TILES; y++)
 	{
 		TTileItem *displayList = NULL;
@@ -286,7 +286,7 @@ void DrawWallsAndThings(DrawBuffer *b, int xOffset)
 {
 	int x, y;
 	Vec2i pos;
-	TTile *tile = &b->tiles[0][0];
+	Tile *tile = &b->tiles[0][0];
 	pos.y = b->dy + cWallOffset.dy;
 	for (y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
