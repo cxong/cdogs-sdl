@@ -166,6 +166,11 @@ Vec2i DrawTextStringMasked(
 	return pos;
 }
 
+Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos)
+{
+	return DrawTextStringMasked(s, device, pos, colorWhite);
+}
+
 void CDogsTextGoto(int x, int y)
 {
 	xCDogsText = x;

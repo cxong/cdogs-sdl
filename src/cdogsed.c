@@ -741,6 +741,8 @@ void Display(int idx, int xc, int yc, int key)
 		DrawTPic(10, y, gPics[221]);
 	}
 
+	DrawTextString("Press F1 for help", &gGraphicsDevice, Vec2iNew(20, 200));
+
 	if (currentMission)
 	{
 		DisplayMission(idx, xc, yc, y);
@@ -1425,6 +1427,55 @@ static int ConfirmQuit(void)
 	return (c == 'Y' || c == 'y');
 }
 
+static void HelpScreen(void)
+{
+	Vec2i pos = Vec2iNew(20, 20);
+	const char *helpText =
+		"Help\n"
+		"====\n"
+		"Use mouse to select controls; keyboard to type text\n"
+		"\n"
+		"Common commands\n"
+		"===============\n"
+		"left/right click, page up/down: Increase/decrease value\n"
+		"shift + left/right click:       Increase/decrease number of items\n"
+		"insert:                         Add new item\n"
+		"delete:                         Delete selected item\n"
+		"\n"
+		"Other commands\n"
+		"==============\n"
+		"Escape:                         Back or quit\n"
+		"Ctrl+E:                         Go to character editor\n"
+		"Ctrl+N:                         New mission or character\n"
+		"Ctrl+S:                         Save file\n"
+		"Ctrl+X, C, V:                   Cut/copy/paste\n"
+		"Ctrl+M:                         Preview automap\n"
+		"F1:                             This screen\n";
+	const char *textP = helpText;
+	int i;
+	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	{
+		gGraphicsDevice.buf[i] = LookupPalette(58);
+	}
+	// Display help text line-by-line
+	for (;;)
+	{
+		char buf[256];
+		const char *eol = strchr(textP, '\n');
+		if (eol == NULL)
+		{
+			break;
+		}
+		strncpy(buf, textP, eol - textP);
+		buf[eol - textP] = '\0';
+		DrawTextString(buf, &gGraphicsDevice, pos);
+		pos.y += CDogsTextHeight();
+		textP = eol + 1;
+	}
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+	GetKey(&gInputDevices);
+}
+
 static void Delete(int xc, int yc, int *mission)
 {
 	switch (yc)
@@ -1458,8 +1509,43 @@ static void Delete(int xc, int yc, int *mission)
 }
 
 static void HandleInput(
-	int c, int *xc, int *yc, int *mission, struct Mission *scrap, int *done)
+	int c, int m,
+	int *xc, int *yc, int *xcOld, int *ycOld,
+	int *mission, struct Mission *scrap,
+	int *done)
 {
+	int mouseTag;
+	if (m && MouseTryGetRectTag(&gInputDevices.mouse, &mouseTag))
+	{
+		*xcOld = *xc;
+		*ycOld = *yc;
+		// Only change selection on left/right click
+		if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+		{
+			if ((mouseTag & LEAVE_YC) == 0)
+			{
+				*yc = (mouseTag & 0xFF);
+				AdjustYC(yc);
+			}
+			if ((mouseTag & LEAVE_XC) == 0)
+			{
+				*xc = ((mouseTag >> 8) & 0xFF);
+				AdjustXC(*yc, xc);
+			}
+		}
+		if (!(mouseTag & SELECT_ONLY) &&
+			(!(mouseTag & SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+		{
+			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
+			{
+				c = SDLK_PAGEUP;
+			}
+			else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
+			{
+				c = SDLK_PAGEDOWN;
+			}
+		}
+	}
 	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
@@ -1521,6 +1607,10 @@ static void HandleInput(
 	{
 		switch (c)
 		{
+		case SDLK_F1:
+			HelpScreen();
+			break;
+
 		case SDLK_HOME:
 			if (*mission > 0)
 			{
@@ -1660,44 +1750,12 @@ static void EditCampaign(void)
 	SDL_EnableKeyRepeat(0, 0);
 	while (!done)
 	{
-		int tag;
 		int c, m;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		c = KeyGetPressed(&gInputDevices.keyboard);
 		m = MouseGetPressed(&gInputDevices.mouse);
-		if (m && MouseTryGetRectTag(&gInputDevices.mouse, &tag))
-		{
-			xcOld = xc;
-			ycOld = yc;
-			// Only change selection on left/right click
-			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
-			{
-				if ((tag & LEAVE_YC) == 0)
-				{
-					yc = (tag & 0xFF);
-					AdjustYC(&yc);
-				}
-				if ((tag & LEAVE_XC) == 0)
-				{
-					xc = ((tag >> 8) & 0xFF);
-					AdjustXC(yc, &xc);
-				}
-			}
-			if (!(tag & SELECT_ONLY) &&
-				(!(tag & SELECT_ONLY_FIRST) || (xc == xcOld && yc == ycOld)))
-			{
-				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
-				{
-					c = SDLK_PAGEUP;
-				}
-				else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
-				{
-					c = SDLK_PAGEDOWN;
-				}
-			}
-		}
 
-		HandleInput(c, &xc, &yc, &mission, &scrap, &done);
+		HandleInput(c, m, &xc, &yc, &xcOld, &ycOld, &mission, &scrap, &done);
 		Display(mission, xc, yc, c);
 		SDL_Delay(10);
 	}
