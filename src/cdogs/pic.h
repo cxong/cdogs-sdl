@@ -39,5 +39,7 @@ typedef struct
 
 void PicFromPicPaletted(Pic *pic, PicPaletted *picP);
 void PicFree(Pic *pic);
+Pic PicNone(void);
+int PicIsNotNone(Pic *pic);
 
 #endif

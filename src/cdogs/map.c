@@ -421,6 +421,12 @@ static int GetWallPic(int x, int y)
 	return WALL_SINGLE;
 }
 
+static void TileLoadPic(Tile *tile, int idx)
+{
+	tile->picIndex = idx;
+	PicFromPicPaletted(&tile->pic, gPics[idx]);
+}
+
 static void FixMap(int floor, int room, int wall)
 {
 	int x, y, i;
@@ -432,27 +438,28 @@ static void FixMap(int floor, int room, int wall)
 			case MAP_SQUARE:
 				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 				{
-					Map(x, y).pic = cFloorPics[floor][FLOOR_SHADOW];
+					TileLoadPic(&Map(x, y), cFloorPics[floor][FLOOR_SHADOW]);
 				}
 				else
-					Map(x, y).pic = cFloorPics[floor]
-					    [FLOOR_NORMAL];
+				{
+					TileLoadPic(&Map(x, y), cFloorPics[floor][FLOOR_NORMAL]);
+				}
 				break;
 
 			case MAP_ROOM:
 			case MAP_DOOR:
 				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 				{
-					Map(x, y).pic = cRoomPics[room][ROOMFLOOR_SHADOW];
+					TileLoadPic(&Map(x, y), cRoomPics[room][ROOMFLOOR_SHADOW]);
 				}
 				else
-					Map(x, y).pic = cRoomPics[room]
-					    [ROOMFLOOR_NORMAL];
+				{
+					TileLoadPic(&Map(x, y), cRoomPics[room][ROOMFLOOR_NORMAL]);
+				}
 				break;
 
 			case MAP_WALL:
-				Map(x, y).pic =
-				    cWallPics[wall][GetWallPic(x, y)];
+				TileLoadPic(&Map(x, y), cWallPics[wall][GetWallPic(x, y)]);
 				Map(x, y).flags =
 				    MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 				break;
@@ -468,22 +475,28 @@ static void FixMap(int floor, int room, int wall)
 		x = (rand() % XMAX) & 0xFFFFFE;
 		y = (rand() % YMAX) & 0xFFFFFE;
 		if (Map(x, y).flags == 0 &&
-		    Map(x, y).pic == cFloorPics[floor][FLOOR_NORMAL])
-			Map(x, y).pic = PIC_DRAINAGE;
+			Map(x, y).picIndex == cFloorPics[floor][FLOOR_NORMAL])
+		{
+			TileLoadPic(&Map(x, y), PIC_DRAINAGE);
+		}
 	}
 	for (i = 0; i < 100; i++) {
 		x = rand() % XMAX;
 		y = rand() % YMAX;
 		if (Map(x, y).flags == 0 &&
-		    Map(x, y).pic == cFloorPics[floor][FLOOR_NORMAL])
-			Map(x, y).pic = cFloorPics[floor][FLOOR_1];
+			Map(x, y).picIndex == cFloorPics[floor][FLOOR_NORMAL])
+		{
+			TileLoadPic(&Map(x, y), cFloorPics[floor][FLOOR_1]);
+		}
 	}
 	for (i = 0; i < 150; i++) {
 		x = rand() % XMAX;
 		y = rand() % YMAX;
 		if (Map(x, y).flags == 0 &&
-		    Map(x, y).pic == cFloorPics[floor][FLOOR_NORMAL])
-			Map(x, y).pic = cFloorPics[floor][FLOOR_2];
+			Map(x, y).picIndex == cFloorPics[floor][FLOOR_NORMAL])
+		{
+			TileLoadPic(&Map(x, y), cFloorPics[floor][FLOOR_2]);
+		}
 	}
 }
 
@@ -493,16 +506,18 @@ void ChangeFloor(int x, int y, int normal, int shadow)
 	case MAP_FLOOR:
 	case MAP_SQUARE:
 	case MAP_ROOM:
-		if (Map(x, y).pic == PIC_DRAINAGE)
+		if (Map(x, y).picIndex == PIC_DRAINAGE)
 		{
 			return;
 		}
 		if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 		{
-			Map(x, y).pic = shadow;
+			TileLoadPic(&Map(x, y), shadow);
 		}
 		else
-			Map(x, y).pic = normal;
+		{
+			TileLoadPic(&Map(x, y), normal);
+		}
 		break;
 	}
 }
@@ -800,7 +815,7 @@ static void VertDoor(int x, int y, int flags)
 		break;
 	}
 
-	Map(x, y).pic = pic;
+	TileLoadPic(&Map(x, y), pic);
 	Map(x, y).flags = tileFlags;
 	Map(x - 1, y).flags |= MAPTILE_TILE_TRIGGER;
 	Map(x + 1, y).flags |= MAPTILE_TILE_TRIGGER;
@@ -836,7 +851,7 @@ static void VertDoor(int x, int y, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	a[2].tilePic = pic;
+	PicFromPicPaletted(&a[2].tilePic, gPics[pic]);
 	a[2].tileFlags = tileFlags;
 
 	// Reenable trigger to the right of the door
@@ -868,7 +883,7 @@ static void VertDoor(int x, int y, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	a[2].tilePic = gMission.doorPics[5].vertPic;
+	PicFromPicPaletted(&a[2].tilePic, gPics[gMission.doorPics[5].vertPic]);
 	a[2].tileFlags = MAPTILE_OFFSET_PIC;
 
 	// Deactivate other trigger
@@ -916,14 +931,18 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 		break;
 	}
 
-	Map(x, y).pic = pic;
+	TileLoadPic(&Map(x, y), pic);
 	Map(x, y).flags = tileFlags;
 	Map(x, y - 1).flags |= MAPTILE_TILE_TRIGGER;
 	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
 	if (iMap(x, y + 1) == MAP_FLOOR)
-		Map(x, y + 1).pic = cFloorPics[floor][FLOOR_SHADOW];
+	{
+		TileLoadPic(&Map(x, y + 1), cFloorPics[floor][FLOOR_SHADOW]);
+	}
 	else
-		Map(x, y + 1).pic = cRoomPics[room][ROOMFLOOR_SHADOW];
+	{
+		TileLoadPic(&Map(x, y + 1), cRoomPics[floor][ROOMFLOOR_SHADOW]);
+	}
 
 	// Create the watch responsible for closing the door
 	w = AddWatch(3, 5);
@@ -956,7 +975,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	a[2].tilePic = pic;
+	PicFromPicPaletted(&a[2].tilePic, gPics[pic]);
 	a[2].tileFlags = tileFlags;
 
 	// Add shadow below door (also reenables trigger)
@@ -964,10 +983,14 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[3].x = x;
 	a[3].y = y + 1;
 	if (iMap(x, y + 1) == MAP_FLOOR)
-		a[3].tilePic = cFloorPics[floor][FLOOR_SHADOW];
+	{
+		PicFromPicPaletted(
+			&a[3].tilePic, gPics[cFloorPics[floor][FLOOR_SHADOW]]);
+	}
 	else
 	{
-		a[3].tilePic = cRoomPics[room][ROOMFLOOR_SHADOW];
+		PicFromPicPaletted(
+			&a[3].tilePic, gPics[cRoomPics[room][ROOMFLOOR_SHADOW]]);
 	}
 	a[3].tileFlags = MAPTILE_TILE_TRIGGER;
 
@@ -995,7 +1018,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	a[2].tilePic = gMission.doorPics[5].horzPic;
+	PicFromPicPaletted(&a[2].tilePic, gPics[gMission.doorPics[5].horzPic]);
 	a[2].tileFlags = 0;
 
 	// Remove shadow below door (also clears trigger)
@@ -1003,9 +1026,15 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[3].x = x;
 	a[3].y = y + 1;
 	if (iMap(x, y + 1) == MAP_FLOOR)
-		a[3].tilePic = cFloorPics[floor][FLOOR_NORMAL];
+	{
+		PicFromPicPaletted(
+			&a[3].tilePic, gPics[cFloorPics[floor][FLOOR_NORMAL]]);
+	}
 	else
-		a[3].tilePic = cRoomPics[room][ROOMFLOOR_SHADOW];
+	{
+		PicFromPicPaletted(
+			&a[3].tilePic, gPics[cRoomPics[room][ROOMFLOOR_SHADOW]]);
+	}
 	a[3].tileFlags = 0;
 
 	a[4].action = ACTION_SOUND;

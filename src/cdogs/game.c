@@ -242,11 +242,17 @@ Vec2i DrawScreen(
 	DrawBuffer *b, TActor *player1, TActor *player2, Vec2i lastPosition)
 {
 	Vec2i noise = Vec2iZero();
+	int i;
 
 	if (screenShaking)
 	{
 		noise.x = rand() & 7;
 		noise.y = rand() & 7;
+	}
+
+	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	{
+		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
 	}
 
 	GraphicsResetBlitClip(&gGraphicsDevice);

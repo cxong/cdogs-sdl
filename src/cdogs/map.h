@@ -49,6 +49,7 @@
 #ifndef __MAP
 #define __MAP
 
+#include "pic.h"
 #include "vector.h"
 
 #define YMAX    128
@@ -108,7 +109,8 @@ typedef struct TileItem TTileItem;
 
 typedef struct
 {
-	int pic;
+	Pic pic;
+	int picIndex;
 	int flags;
 	int isVisited;
 	TTileItem *things;

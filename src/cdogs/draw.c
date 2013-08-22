@@ -70,7 +70,7 @@ void FixBuffer(DrawBuffer *buffer, int isShadow)
 			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
-				tile->pic = -1;
+				tile->pic = PicNone();
 			}
 			else if ((tile->flags & MAPTILE_IS_WALL) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
@@ -201,18 +201,15 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 {
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
-		Pic pic;
-		PicFromPicPaletted(&pic, gPics[tile->pic]);
 		BlitMasked(
 			&gGraphicsDevice,
-			&pic,
+			&tile->pic,
 			pos,
 			GetTileLOSMask(tile),
 			0);
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
-		PicFree(&pic);
 	}
 }
 
@@ -242,18 +239,15 @@ void DrawFloor(DrawBuffer *b, int xOffset)
 			 x < b->width;
 			 x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (tile->pic >= 0 &&
+			if (PicIsNotNone(&tile->pic) &&
 				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
-				Pic pic;
-				PicFromPicPaletted(&pic, gPics[tile->pic]);
 				BlitMasked(
 					&gGraphicsDevice,
-					&pic,
+					&tile->pic,
 					pos,
 					GetTileLOSMask(tile),
 					0);
-				PicFree(&pic);
 			}
 		}
 		tile += X_TILES - b->width;
@@ -311,7 +305,7 @@ void DrawWallsAndThings(DrawBuffer *b, int xOffset)
 			else if ((tile->flags & MAPTILE_OFFSET_PIC))
 			{
 				// Drawing doors
-				const TOffsetPic *p = &(cGeneralPics[tile->pic]);
+				const TOffsetPic *p = &(cGeneralPics[tile->picIndex]);
 				Pic pic;
 				PicFromPicPaletted(&pic, gPics[p->picIndex]);
 				BlitMasked(

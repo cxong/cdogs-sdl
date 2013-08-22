@@ -45,3 +45,16 @@ void PicFree(Pic *pic)
 {
 	CFREE(pic->data);
 }
+
+Pic PicNone(void)
+{
+	Pic pic;
+	pic.size = Vec2iZero();
+	pic.data = NULL;
+	return pic;
+}
+
+int PicIsNotNone(Pic *pic)
+{
+	return pic->size.x > 0 && pic->size.y > 0 && pic->data != NULL;
+}
