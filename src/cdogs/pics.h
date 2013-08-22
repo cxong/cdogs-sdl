@@ -244,12 +244,6 @@ struct Offset {
 
 typedef struct Offset OffsetTable[DIRECTION_COUNT];
 
-struct OffsetPic {
-	int dx, dy;
-	int picIndex;
-};
-typedef struct OffsetPic TOffsetPic;
-
 
 extern TPalette gPalette, origPalette;
 extern PicPaletted *gPics[PIC_MAX];

@@ -65,18 +65,20 @@
 
 typedef enum
 {
-	MAPTILE_NO_WALK			= 0x001,
-	MAPTILE_NO_SEE			= 0x002,
-	MAPTILE_NO_SHOOT		= 0x004,
-	MAPTILE_IS_SHADOW		= 0x008,
-	MAPTILE_IS_WALL			= 0x010,
-	MAPTILE_IS_NOTHING		= 0x020,
-	MAPTILE_OFFSET_PIC		= 0x040,
-	MAPTILE_IS_SHADOW2		= 0x080,
-	MAPTILE_TILE_TRIGGER	= 0x100,
+	MAPTILE_NO_WALK			= 0x0001,
+	MAPTILE_NO_SEE			= 0x0002,
+	MAPTILE_NO_SHOOT		= 0x0004,
+	MAPTILE_IS_SHADOW		= 0x0008,
+	MAPTILE_IS_WALL			= 0x0010,
+	MAPTILE_IS_NOTHING		= 0x0020,
+	MAPTILE_IS_NORMAL_FLOOR	= 0x0040,
+	MAPTILE_IS_DRAINAGE		= 0x0080,
+	MAPTILE_OFFSET_PIC		= 0x0100,
+	MAPTILE_IS_SHADOW2		= 0x0200,
+	MAPTILE_TILE_TRIGGER	= 0x0400,
 // These constants are used internally in draw, it is never set in the map
-	MAPTILE_DELAY_DRAW		= 0x200,
-	MAPTILE_OUT_OF_SIGHT	= 0x400
+	MAPTILE_DELAY_DRAW		= 0x0800,
+	MAPTILE_OUT_OF_SIGHT	= 0x1000
 } MapTileFlags;
 
 #define KIND_CHARACTER      0
@@ -110,7 +112,7 @@ typedef struct TileItem TTileItem;
 typedef struct
 {
 	Pic pic;
-	int picIndex;
+	Pic picAlt;
 	int flags;
 	int isVisited;
 	TTileItem *things;

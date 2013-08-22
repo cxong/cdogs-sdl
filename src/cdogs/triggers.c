@@ -209,6 +209,7 @@ static void Action(TAction * a)
 		case ACTION_CHANGETILE:
 			Map(a->x, a->y).flags = a->tileFlags;
 			Map(a->x, a->y).pic = a->tilePic;
+			Map(a->x, a->y).picAlt = a->tilePicAlt;
 			break;
 
 		case ACTION_SETTIMEDWATCH:

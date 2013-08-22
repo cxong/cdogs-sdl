@@ -34,11 +34,18 @@ void PicFromPicPaletted(Pic *pic, PicPaletted *picP)
 {
 	int i;
 	pic->size = Vec2iNew(picP->w, picP->h);
+	pic->offset = Vec2iZero();
 	CMALLOC(pic->data, pic->size.x * pic->size.y * sizeof *pic->data);
 	for (i = 0; i < pic->size.x * pic->size.y; i++)
 	{
 		pic->data[i] = PaletteToColor(*(picP->data + i));
 	}
+}
+void PicFromPicPalettedOffset(
+	Pic *pic, PicPaletted *picP, const TOffsetPic *picOff)
+{
+	PicFromPicPaletted(pic, picP);
+	pic->offset = Vec2iNew(picOff->dx, picOff->dy);
 }
 
 void PicFree(Pic *pic)

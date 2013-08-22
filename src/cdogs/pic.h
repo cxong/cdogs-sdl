@@ -34,10 +34,13 @@
 typedef struct
 {
 	Vec2i size;
+	Vec2i offset;
 	color_t *data;
 } Pic;
 
 void PicFromPicPaletted(Pic *pic, PicPaletted *picP);
+void PicFromPicPalettedOffset(
+	Pic *pic, PicPaletted *picP, const TOffsetPic *picOff);
 void PicFree(Pic *pic);
 Pic PicNone(void);
 int PicIsNotNone(Pic *pic);

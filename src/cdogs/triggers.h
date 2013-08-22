@@ -69,6 +69,7 @@ struct Action {
 	int action;
 	int x, y;
 	Pic tilePic;
+	Pic tilePicAlt;
 	int tileFlags;
 };
 typedef struct Action TAction;

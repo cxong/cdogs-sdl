@@ -302,19 +302,15 @@ void DrawWallsAndThings(DrawBuffer *b, int xOffset)
 					DrawWallColumn(y, pos, tile);
 				}
 			}
-			else if ((tile->flags & MAPTILE_OFFSET_PIC))
+			else if (tile->flags & MAPTILE_OFFSET_PIC)
 			{
 				// Drawing doors
-				const TOffsetPic *p = &(cGeneralPics[tile->picIndex]);
-				Pic pic;
-				PicFromPicPaletted(&pic, gPics[p->picIndex]);
 				BlitMasked(
 					&gGraphicsDevice,
-					&pic,
-					Vec2iNew(pos.x + p->dx, pos.y + p->dy),
+					&tile->picAlt,
+					pos,
 					GetTileLOSMask(tile),
 					0);
-				PicFree(&pic);
 			}
 			for (t = tile->things; t; t = t->next)
 			{

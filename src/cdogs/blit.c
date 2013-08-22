@@ -195,8 +195,8 @@ void BlitMasked(
 	int isTransparent)
 {
 	color_t *current = pic->data;
-
 	int i;
+	pos = Vec2iAdd(pos, pic->offset);
 	for (i = 0; i < pic->size.y; i++)
 	{
 		int j;

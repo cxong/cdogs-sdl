@@ -63,6 +63,12 @@ typedef struct
 	unsigned char data[1];
 } PicPaletted;
 
+typedef struct
+{
+	int dx, dy;
+	int picIndex;
+} TOffsetPic;
+
 int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette palette);
 int AppendPics(const char *filename, PicPaletted **pics, int startIndex, int maxPics);
 
