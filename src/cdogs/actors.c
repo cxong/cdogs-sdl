@@ -697,10 +697,15 @@ int ActorTryShoot(TActor *actor, int cmd)
 
 int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 {
+	int canMoveWhenShooting =
+		gConfig.Game.MoveWhenShooting ||
+		!hasShot ||
+		(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_STRAFE &&
+		actor->flags & FLAGS_SPECIAL_USED);
 	int willMove =
 		!actor->petrified &&
 		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
-		(gConfig.Game.MoveWhenShooting || !hasShot);
+		canMoveWhenShooting;
 	if (willMove)
 	{
 		int moveAmount = gCharacterDesc[actor->character].speed * ticks;

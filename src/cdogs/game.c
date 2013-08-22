@@ -110,6 +110,7 @@ int missionTime;
 
 void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 {
+	int isDirectionCmd = cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN);
 	assert(actor);
 	if (!((cmd | actor->lastCmd) & CMD_BUTTON2))
 	{
@@ -117,7 +118,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 	}
 
 	if ((cmd & CMD_BUTTON2) &&
-		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		isDirectionCmd &&
 		actor->dx == 0 && actor->dy == 0)
 	{
 		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
@@ -133,6 +134,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		(actor->lastCmd & CMD_BUTTON2) &&
 		!(cmd & CMD_BUTTON2) &&
 		!(actor->flags & FLAGS_SPECIAL_USED) &&
+		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && isDirectionCmd) &&
 		data->weaponCount > 1)
 	{
 		int i;
