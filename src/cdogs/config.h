@@ -44,7 +44,7 @@ typedef enum
 	DIFFICULTY_VERYHARD
 } difficulty_e;
 
-const char *DifficultyStr(difficulty_e s);
+const char *DifficultyStr(difficulty_e d);
 difficulty_e StrDifficulty(const char *str);
 
 typedef enum
@@ -54,7 +54,7 @@ typedef enum
 	SWITCHMOVE_NONE
 } SwitchMoveStyle;
 
-const char *SwitchMoveStyleStr(SwitchMoveStyle d);
+const char *SwitchMoveStyleStr(SwitchMoveStyle s);
 SwitchMoveStyle StrSwitchMoveStyle(const char *str);
 
 const char *ScaleModeStr(ScaleMode s);
