@@ -60,6 +60,7 @@
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
+#include <cdogs/palette.h>
 #include <cdogs/pics.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>

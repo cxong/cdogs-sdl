@@ -247,7 +247,7 @@ typedef struct
 
 struct Objective
 {
-	unsigned char color;
+	color_t color;
 	int count;
 	int done;
 	int required;

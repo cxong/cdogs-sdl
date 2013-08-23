@@ -63,6 +63,7 @@
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
 #include <cdogs/objs.h>
+#include <cdogs/palette.h>
 #include <cdogs/pics.h>
 #include <cdogs/text.h>
 #include <cdogs/triggers.h>
@@ -840,7 +841,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 
 	if (willDisplayAutomap)
 	{
-		DisplayAutoMap(1);
+		AutomapDraw(AUTOMAP_FLAGS_SHOWALL);
 	}
 	else
 	{

@@ -50,8 +50,9 @@
 #ifndef __DRAW_TOOLS
 #define __DRAW_TOOLS
 
-void	Draw_Point (const int x, const int y, const unsigned char c);
-void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const unsigned char c);
+void Draw_Point(const int x, const int y, color_t c);
+void Draw_Line(
+	const int x1, const int y1, const int x2, const int y2, color_t c);
 
 #define PixelIndex(x, y, w, h)		(y * w + x)
 
@@ -80,7 +81,7 @@ void DrawRectangleRGB(
 //  *
 // ***
 //  *
-void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color);
+void DrawCross(GraphicsDevice *device, int x, int y, color_t color);
 
 void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size);
 

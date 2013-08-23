@@ -510,7 +510,14 @@ static TBadGuy gQuickPlayEnemies[BADDIE_MAX];
 // +---------------------------------------------------+
 
 
-unsigned char objectiveColors[OBJECTIVE_MAX] = { 14, 16, 22, 31, 39 };
+color_t objectiveColors[OBJECTIVE_MAX] =
+{
+	{ 0, 252, 252 },
+	{ 252, 224, 0 },
+	{ 252, 0, 0 },
+	{ 192, 0, 192 },
+	{ 112, 112, 112 }
+};
 
 
 // +-----------------------+

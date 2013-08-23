@@ -53,7 +53,6 @@
 
 #include "config.h"
 #include "defs.h"
-#include "palette.h"
 #include "pics.h"
 #include "map.h"
 #include "actors.h"
@@ -74,13 +73,13 @@
 
 #define MAP_FACTOR  2
 
-#define WALL_COLOR   		85
-#define FLOOR_COLOR  		88
-#define DOOR_COLOR   		36
-#define YELLOW_DOOR_COLOR   16
-#define GREEN_DOOR_COLOR	11
-#define BLUE_DOOR_COLOR		14
-#define RED_DOOR_COLOR		134
+color_t colorWall = { 72, 152, 72 };
+color_t colorFloor = { 12, 92, 12 };
+color_t colorDoor = { 172, 172, 172 };
+color_t colorYellowDoor = { 252, 224, 0 };
+color_t colorGreenDoor = { 0, 252, 0 };
+color_t colorBlueDoor = { 0, 252, 252 };
+color_t colorRedDoor = { 132, 0, 0 };
 
 #define EXIT_COLOR  255
 #define KEY_COLOR   255
@@ -136,19 +135,16 @@ static void DisplaySummary(void)
 {
 	int i, y, x, x2;
 	char sScore[20];
-	//unsigned char *scr = GetDstScreen();
-	unsigned char color;
 
 	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
 		if (gMission.objectives[i].required > 0 ||
-		    gMission.objectives[i].done > 0) {
-			// Objective color dot
-			color = gMission.objectives[i].color;
-
+			gMission.objectives[i].done > 0)
+		{
 			x = 5;
-			Draw_Rect(x, (y + 3), 2, 2, color);
+			// Objective color dot
+			Draw_Rect(x, (y + 3), 2, 2, gMission.objectives[i].color);
 
 			x += 5;
 			x2 = x + TextGetStringWidth(gMission.missionData->objectives[i].description) + 5;
@@ -190,25 +186,25 @@ static int MapLevel(int x, int y)
 	return MapAccessLevel(x, y + 1);
 }
 
-unsigned char DoorColor(int x, int y)
+color_t DoorColor(int x, int y)
 {
 	int l = MapLevel(x, y);
 
 	switch (l) {
 	case FLAGS_KEYCARD_YELLOW:
-		return YELLOW_DOOR_COLOR;
+		return colorYellowDoor;
 	case FLAGS_KEYCARD_GREEN:
-		return GREEN_DOOR_COLOR;
+		return colorGreenDoor;
 	case FLAGS_KEYCARD_BLUE:
-		return BLUE_DOOR_COLOR;
+		return colorBlueDoor;
 	case FLAGS_KEYCARD_RED:
-		return RED_DOOR_COLOR;
+		return colorRedDoor;
 	default:
-		return DOOR_COLOR;
+		return colorDoor;
 	}
 }
 
-void DrawDot(TTileItem * t, unsigned char color)
+void DrawDot(TTileItem * t, color_t color)
 {
 	unsigned int x, y;
 
@@ -218,7 +214,7 @@ void DrawDot(TTileItem * t, unsigned char color)
 	Draw_Rect(x, y, 2, 2, color);
 }
 
-void DisplayAutoMap(int showAll)
+void AutomapDraw(int flags)
 {
 	int x, y, i, j;
 	Uint32 *screen = gGraphicsDevice.buf;
@@ -240,22 +236,25 @@ void DisplayAutoMap(int showAll)
 			for (x = 0; x < XMAX; x++)
 			{
 				if (!(Map(x, y).flags & MAPTILE_IS_NOTHING) &&
-					(Map(x, y).isVisited || showAll))
+					(Map(x, y).isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
 				{
 					int tileFlags = Map(x, y).flags;
 					for (j = 0; j < MAP_FACTOR; j++)
 					{
 						if (tileFlags & MAPTILE_IS_WALL)
 						{
-							*screen++ = LookupPalette(WALL_COLOR);
+							*screen++ =
+								PixelFromColor(&gGraphicsDevice, colorWall);
 						}
 						else if (tileFlags & MAPTILE_NO_WALK)
 						{
-							*screen++ = LookupPalette(DoorColor(x, y));
+							*screen++ =
+								PixelFromColor(&gGraphicsDevice, DoorColor(x, y));
 						}
 						else
 						{
-							*screen++ = LookupPalette(FLOOR_COLOR);
+							*screen++ =
+								PixelFromColor(&gGraphicsDevice, colorFloor);
 						}
 					}
 				}
@@ -276,11 +275,12 @@ void DisplayAutoMap(int showAll)
 				{
 					int obj = ObjectiveFromTileItem(t->flags);
 					int objFlags = gMission.missionData->objectives[obj].flags;
-					if (!(objFlags & OBJECTIVE_HIDDEN) || showAll)
+					if (!(objFlags & OBJECTIVE_HIDDEN) ||
+						(flags & AUTOMAP_FLAGS_SHOWALL))
 					{
 						if ((objFlags & OBJECTIVE_POSKNOWN) ||
 							Map(x, y).isVisited ||
-							showAll)
+							(flags & AUTOMAP_FLAGS_SHOWALL))
 						{
 							DisplayObjective(t, obj);
 						}
@@ -290,16 +290,28 @@ void DisplayAutoMap(int showAll)
 					t->data &&
 					Map(x, y).isVisited)
 				{
-					TObject *o = t->data;
-
-					if (o->objectIndex == OBJ_KEYCARD_RED)
-						DrawDot(t, RED_DOOR_COLOR);
-					else if (o->objectIndex == OBJ_KEYCARD_BLUE)
-						DrawDot(t, BLUE_DOOR_COLOR);
-					else if (o->objectIndex == OBJ_KEYCARD_GREEN)
-						DrawDot(t, GREEN_DOOR_COLOR);
-					else if (o->objectIndex ==  OBJ_KEYCARD_YELLOW)
-						DrawDot(t, YELLOW_DOOR_COLOR);
+					color_t dotColor = colorBlack;
+					switch (((TObject *)t->data)->objectIndex)
+					{
+					case OBJ_KEYCARD_RED:
+						dotColor = colorRedDoor;
+						break;
+					case OBJ_KEYCARD_BLUE:
+						dotColor = colorBlueDoor;
+						break;
+					case OBJ_KEYCARD_GREEN:
+						dotColor = colorGreenDoor;
+						break;
+					case OBJ_KEYCARD_YELLOW:
+						dotColor = colorYellowDoor;
+						break;
+					default:
+						break;
+					}
+					if (!ColorEquals(dotColor, colorBlack))
+					{
+						DrawDot(t, dotColor);
+					}
 				}
 
 				t = t->next;

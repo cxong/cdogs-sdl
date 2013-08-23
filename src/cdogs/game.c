@@ -63,6 +63,7 @@
 #include "joystick.h"
 #include "music.h"
 #include "objs.h"
+#include "palette.h"
 #include "actors.h"
 #include "pics.h"
 #include "text.h"
@@ -374,7 +375,6 @@ static void DrawExitArea(void)
 
 static void MissionUpdateObjectives(void)
 {
-	unsigned char color;
 	int i, left;
 	char s[4];
 	int allDone = 1;
@@ -388,12 +388,11 @@ static void MissionUpdateObjectives(void)
 		    OBJECTIVE_INVESTIGATE)
 			gMission.objectives[i].done = ExploredPercentage();
 
-		if (gMission.missionData->objectives[i].required > 0) {
-			// Objective color dot
-			color = gMission.objectives[i].color;
-
+		if (gMission.missionData->objectives[i].required > 0)
+		{
 			y += 3;
-			Draw_Rect(x, y, 2, 2, color);
+			// Objective color dot
+			Draw_Rect(x, y, 2, 2, gMission.objectives[i].color);
 			y -= 3;
 
 			left = gMission.objectives[i].required - gMission.objectives[i].done;
@@ -441,7 +440,7 @@ int HandleKey(int *done, int cmd)
 			int cmd1 = 0, cmd2 = 0;
 			if (!hasDisplayedAutomap)
 			{
-				DisplayAutoMap(0);
+				AutomapDraw(0);
 				BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 				hasDisplayedAutomap = 1;
 			}

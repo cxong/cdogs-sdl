@@ -935,17 +935,11 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
-		PicLoadOffset(
-			&Map(x, y + 1).pic,
-			&Map(x, y + 1).picAlt,
-			cFloorPics[floor][FLOOR_SHADOW]);
+		PicLoad(&Map(x, y + 1).pic, cFloorPics[floor][FLOOR_SHADOW]);
 	}
 	else
 	{
-		PicLoadOffset(
-			&Map(x, y + 1).pic,
-			&Map(x, y + 1).picAlt,
-			cRoomPics[floor][ROOMFLOOR_SHADOW]);
+		PicLoad(&Map(x, y + 1).pic, cRoomPics[floor][ROOMFLOOR_SHADOW]);
 	}
 
 	// Create the watch responsible for closing the door

@@ -57,19 +57,21 @@
 #include "grafx.h"
 
 
-void	Draw_Point (const int x, const int y, const unsigned char c)
+void Draw_Point(const int x, const int y, color_t c)
 {
 	Uint32 *screen = gGraphicsDevice.buf;
 	screen[PixelIndex(
 		x,
 		y,
 		gGraphicsDevice.cachedConfig.ResolutionWidth,
-		gGraphicsDevice.cachedConfig.ResolutionHeight)] = LookupPalette(c);
+		gGraphicsDevice.cachedConfig.ResolutionHeight)] =
+		PixelFromColor(&gGraphicsDevice, c);
 }
 
 static
 void
-Draw_StraightLine (const int x1, const int y1, const int x2, const int y2, const unsigned char c)
+Draw_StraightLine(
+	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
 	register int i;
 	register int start, end;
@@ -104,8 +106,7 @@ Draw_StraightLine (const int x1, const int y1, const int x2, const int y2, const
 
 #define ABS(x)	( x > 0 ? x : (-x) )
 
-static void Draw_DiagonalLine(
-	const int x1, const int x2, const unsigned char c)
+static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 {
 	register int i;
 	register int start, end;
@@ -131,7 +132,8 @@ static void Draw_DiagonalLine(
 	printf("### Other lines not yet implemented! ###\n");
 }*/
 
-void	Draw_Line  (const int x1, const int y1, const int x2, const int y2, const unsigned char c)
+void Draw_Line(
+	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
 	//debug("(%d, %d) -> (%d, %d)\n", x1, y1, x2, y2);
 	
@@ -225,17 +227,17 @@ void DrawRectangleRGB(
 		PixelFromColor(&gGraphicsDevice, color), flags);
 }
 
-void DrawCross(GraphicsDevice *device, int x, int y, unsigned char color)
+void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 {
 	Uint32 *screen = device->buf;
-	Uint32 rgbColor = LookupPalette(color);
+	Uint32 pixel = PixelFromColor(device, color);
 	screen += x;
 	screen += y * gGraphicsDevice.cachedConfig.ResolutionWidth;
-	*screen = rgbColor;
-	*(screen - 1) = rgbColor;
-	*(screen + 1) = rgbColor;
-	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
-	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = rgbColor;
+	*screen = pixel;
+	*(screen - 1) = pixel;
+	*(screen + 1) = pixel;
+	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = pixel;
+	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = pixel;
 }
 
 void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
