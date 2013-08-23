@@ -939,7 +939,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	}
 	else
 	{
-		PicLoad(&Map(x, y + 1).pic, cRoomPics[floor][ROOMFLOOR_SHADOW]);
+		PicLoad(&Map(x, y + 1).pic, cRoomPics[room][ROOMFLOOR_SHADOW]);
 	}
 
 	// Create the watch responsible for closing the door

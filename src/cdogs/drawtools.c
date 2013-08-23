@@ -173,9 +173,10 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 
 void DrawRectangleRaw(
 	Uint32 *screen, int left, int top, int width, int height,
-	Uint32 rgbColor, int flags)
+	color_t color, int flags)
 {
 	int y;
+	Uint32 rgbColor = PixelFromColor(&gGraphicsDevice, color);
 	if (width < 3 || height < 3)
 	{
 		flags &= ~DRAW_FLAG_ROUNDED;
@@ -213,18 +214,17 @@ void DrawRectangleRaw(
 
 void DrawRectangle(
 	Uint32 *screen, int left, int top, int width, int height,
-	unsigned char color, int flags)
+	color_t color, int flags)
 {
 	DrawRectangleRaw(
-		screen, left, top, width, height, LookupPalette(color), flags);
+		screen, left, top, width, height, color, flags);
 }
 
 void DrawRectangleRGB(
 	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags)
 {
 	DrawRectangleRaw(
-		screen, pos.x, pos.y, size.x, size.y,
-		PixelFromColor(&gGraphicsDevice, color), flags);
+		screen, pos.x, pos.y, size.x, size.y, color, flags);
 }
 
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color)

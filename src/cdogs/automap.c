@@ -51,21 +51,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "config.h"
-#include "defs.h"
-#include "pics.h"
-#include "map.h"
 #include "actors.h"
-#include "blit.h"
-#include "sounds.h"
-#include "text.h"
-#include "gamedata.h"
-#include "input.h"
-#include "mission.h"
-#include "keyboard.h"
-#include "objs.h"
+#include "config.h"
 #include "drawtools.h"
-#include "sys_specifics.h"
+#include "map.h"
+#include "mission.h"
+#include "text.h"
 
 
 #define MAP_XOFFS   60
@@ -80,9 +71,7 @@ color_t colorYellowDoor = { 252, 224, 0 };
 color_t colorGreenDoor = { 0, 252, 0 };
 color_t colorBlueDoor = { 0, 252, 252 };
 color_t colorRedDoor = { 132, 0, 0 };
-
-#define EXIT_COLOR  255
-#define KEY_COLOR   255
+color_t colorExit = { 255, 255, 255 };
 
 
 
@@ -128,7 +117,7 @@ static void DisplayExit(void)
 	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
 	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
 
-	DrawRectangle(scr, x1, y1, x2 - x1, y2 - y1, EXIT_COLOR, DRAW_FLAG_LINE);
+	DrawRectangle(scr, x1, y1, x2 - x1, y2 - y1, colorExit, DRAW_FLAG_LINE);
 }
 
 static void DisplaySummary(void)

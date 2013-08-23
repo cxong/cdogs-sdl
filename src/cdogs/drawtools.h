@@ -74,7 +74,7 @@ typedef enum
 } DrawFlags;
 void DrawRectangle(
 	Uint32 *screen, int left, int top, int width, int height,
-	unsigned char color, int flags);
+	color_t color, int flags);
 void DrawRectangleRGB(
 	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags);
 
