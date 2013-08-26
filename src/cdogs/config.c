@@ -213,6 +213,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.Shadows = 1;
 	config->Game.MoveWhenShooting = 0;
 	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
+	config->Game.ShotsPushback = 1;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.ResolutionHeight = 240;

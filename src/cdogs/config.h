@@ -87,6 +87,7 @@ typedef struct
 	int Shadows;
 	int MoveWhenShooting;
 	SwitchMoveStyle SwitchMoveStyle;
+	int ShotsPushback;
 } GameConfig;
 
 typedef struct

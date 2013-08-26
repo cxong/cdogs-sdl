@@ -1071,9 +1071,11 @@ void ActorTakeHit(
 	assert(!ActorIsImmune(actor, damage));
 	ActorTakeSpecialDamage(actor, damage);
 
-	// Pushback
-	actor->dx += (power * hitVector.x) / 25;
-	actor->dy += (power * hitVector.y) / 25;
+	if (gConfig.Game.ShotsPushback)
+	{
+		actor->dx += (power * hitVector.x) / 25;
+		actor->dy += (power * hitVector.y) / 25;
+	}
 
 	// Hit sound
 	if (isHitSoundEnabled)

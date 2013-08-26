@@ -55,6 +55,7 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadBool(&config->MoveWhenShooting, node, "MoveWhenShooting");
 	JSON_UTILS_LOAD_ENUM(
 		config->SwitchMoveStyle, node, "SwitchMoveStyle", StrSwitchMoveStyle);
+	LoadBool(&config->ShotsPushback, node, "ShotsPushback");
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -80,6 +81,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "MoveWhenShooting", json_new_bool(config->MoveWhenShooting));
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "SwitchMoveStyle", config->SwitchMoveStyle, SwitchMoveStyleStr);
+	json_insert_pair_into_object(
+		subConfig, "ShotsPushback", json_new_bool(config->ShotsPushback));
 	json_insert_pair_into_object(root, "Game", subConfig);
 }
 
