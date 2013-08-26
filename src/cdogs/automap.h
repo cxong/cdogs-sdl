@@ -25,7 +25,21 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef __AUTOMAP
+#define __AUTOMAP
+
+#include "actors.h"
+#include "grafx.h"
+#include "map.h"
 
 #define AUTOMAP_FLAGS_SHOWALL 0x01
+#define AUTOMAP_FLAGS_MASK 0x02
 
 void AutomapDraw(int flags);
+void AutomapDrawRegion(
+	Tile map[YMAX][XMAX],
+	Vec2i pos, Vec2i size,
+	TActor *player,
+	int scale, int flags);
+
+#endif

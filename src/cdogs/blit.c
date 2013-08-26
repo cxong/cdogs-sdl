@@ -68,6 +68,7 @@ color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
 {
 	color_t c;
 	SDL_GetRGB(pixel, device->screen->format, &c.r, &c.g, &c.b);
+	c.a = 255;
 	return c;
 }
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color)

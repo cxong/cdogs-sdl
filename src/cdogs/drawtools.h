@@ -73,10 +73,10 @@ typedef enum
 	DRAW_FLAG_ROUNDED = 2
 } DrawFlags;
 void DrawRectangle(
-	Uint32 *screen, int left, int top, int width, int height,
-	color_t color, int flags);
+	GraphicsDevice *device,
+	int left, int top, int width, int height, color_t color, int flags);
 void DrawRectangleRGB(
-	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags);
+	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags);
 
 //  *
 // ***

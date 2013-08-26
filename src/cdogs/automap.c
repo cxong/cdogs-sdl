@@ -59,65 +59,81 @@
 #include "text.h"
 
 
-#define MAP_XOFFS   60
-#define MAP_YOFFS   10
+#define MAP_FACTOR 2
+#define MASK_ALPHA 128;
 
-#define MAP_FACTOR  2
-
-color_t colorWall = { 72, 152, 72 };
-color_t colorFloor = { 12, 92, 12 };
-color_t colorDoor = { 172, 172, 172 };
-color_t colorYellowDoor = { 252, 224, 0 };
-color_t colorGreenDoor = { 0, 252, 0 };
-color_t colorBlueDoor = { 0, 252, 252 };
-color_t colorRedDoor = { 132, 0, 0 };
-color_t colorExit = { 255, 255, 255 };
+color_t colorWall = { 72, 152, 72, 255 };
+color_t colorFloor = { 12, 92, 12, 255 };
+color_t colorDoor = { 172, 172, 172, 255 };
+color_t colorYellowDoor = { 252, 224, 0, 255 };
+color_t colorGreenDoor = { 0, 252, 0, 255 };
+color_t colorBlueDoor = { 0, 252, 252, 255 };
+color_t colorRedDoor = { 132, 0, 0, 255 };
+color_t colorExit = { 255, 255, 255, 255 };
 
 
 
-static void DisplayPlayer(TActor * player)
+static void DisplayPlayer(TActor *player, Vec2i pos, int scale)
 {
-	int x, y;
-	struct CharacterDescription *c;
-	int pic;
-
-	if (player) {
-		c = &gCharacterDesc[player->character];
-		pic = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
-		x = MAP_XOFFS +
-		    MAP_FACTOR * player->tileItem.x / TILE_WIDTH;
-		y = MAP_YOFFS +
-		    MAP_FACTOR * player->tileItem.y / TILE_HEIGHT;
-		x -= gPics[pic]->w / 2;
-		y -= gPics[pic]->h / 2;
-		DrawTTPic(x, y, gPics[pic], c->table);
+	Vec2i playerPos = Vec2iNew(
+		player->tileItem.x / TILE_WIDTH,
+		player->tileItem.y / TILE_HEIGHT);
+	struct CharacterDescription *c = &gCharacterDesc[player->character];
+	int pic = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
+	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
+	if (scale >= 2)
+	{
+		pos.x -= gPics[pic]->w / 2;
+		pos.y -= gPics[pic]->h / 2;
+		DrawTTPic(pos.x, pos.y, gPics[pic], c->table);
+	}
+	else
+	{
+		Draw_Point(pos.x, pos.y, colorWhite);
 	}
 }
 
-static void DisplayObjective(TTileItem * t, int objectiveIndex)
+static void DisplayObjective(
+	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
 {
-	int x = MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	int y = MAP_YOFFS + MAP_FACTOR * t->y / TILE_HEIGHT;
-	DrawCross(
-		&gGraphicsDevice, x, y, gMission.objectives[objectiveIndex].color);
+	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
+	color_t color = gMission.objectives[objectiveIndex].color;
+	pos = Vec2iAdd(pos, Vec2iScale(objectivePos, scale));
+	if (flags & AUTOMAP_FLAGS_MASK)
+	{
+		color.a = MASK_ALPHA;
+	}
+	if (scale >= 2)
+	{
+		DrawCross(&gGraphicsDevice, pos.x, pos.y, color);
+	}
+	else
+	{
+		Draw_Point(pos.x, pos.y, color);
+	}
 }
 
-static void DisplayExit(void)
+static void DisplayExit(Vec2i pos, int scale, int flags)
 {
-	Uint32 *scr = gGraphicsDevice.buf;
 	int x1, x2, y1, y2;
+	color_t color = colorExit;
 
 	if (!CanCompleteMission(&gMission))
 	{
 		return;
 	}
 
-	x1 = MAP_FACTOR * gMission.exitLeft / TILE_WIDTH + MAP_XOFFS;
-	y1 = MAP_FACTOR * gMission.exitTop / TILE_HEIGHT + MAP_YOFFS;
-	x2 = MAP_FACTOR * gMission.exitRight / TILE_WIDTH + MAP_XOFFS;
-	y2 = MAP_FACTOR * gMission.exitBottom / TILE_HEIGHT + MAP_YOFFS;
+	x1 = scale * gMission.exitLeft / TILE_WIDTH + pos.x;
+	y1 = scale * gMission.exitTop / TILE_HEIGHT + pos.y;
+	x2 = scale * gMission.exitRight / TILE_WIDTH + pos.x;
+	y2 = scale * gMission.exitBottom / TILE_HEIGHT + pos.y;
 
-	DrawRectangle(scr, x1, y1, x2 - x1, y2 - y1, colorExit, DRAW_FLAG_LINE);
+	if (flags & AUTOMAP_FLAGS_MASK)
+	{
+		color.a = MASK_ALPHA;
+	}
+	DrawRectangle(
+		&gGraphicsDevice, x1, y1, x2 - x1, y2 - y1, color, DRAW_FLAG_LINE);
 }
 
 static void DisplaySummary(void)
@@ -193,71 +209,84 @@ color_t DoorColor(int x, int y)
 	}
 }
 
-void DrawDot(TTileItem * t, color_t color)
+void DrawDot(TTileItem *t, color_t color, Vec2i pos, int scale)
 {
-	unsigned int x, y;
-
-	x = MAP_XOFFS + MAP_FACTOR * t->x / TILE_WIDTH;
-	y = MAP_YOFFS + MAP_FACTOR * t-> y / TILE_HEIGHT;
-
-	Draw_Rect(x, y, 2, 2, color);
+	Vec2i dotPos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
+	pos = Vec2iAdd(pos, Vec2iScale(dotPos, scale));
+	Draw_Rect(pos.x, pos.y, scale, scale, color);
 }
 
-void AutomapDraw(int flags)
+static void DrawMap(
+	Tile map[YMAX][XMAX],
+	Vec2i center, Vec2i centerOn, Vec2i size,
+	int scale, int flags)
 {
-	int x, y, i, j;
-	Uint32 *screen = gGraphicsDevice.buf;
-	TTileItem *t;
-	color_t mask = { 0, 128, 0 };
-
-	// Draw faded green overlay
-	for (y = 0; y < gGraphicsDevice.cachedConfig.ResolutionHeight; y++)
-	{
-		for (x = 0; x < gGraphicsDevice.cachedConfig.ResolutionWidth; x++)
-		{
-			DrawPointMask(&gGraphicsDevice, Vec2iNew(x, y), mask);
-		}
-	}
-
-	screen += MAP_YOFFS * gGraphicsDevice.cachedConfig.ResolutionWidth + MAP_XOFFS;
+	int x, y;
+	Vec2i mapPos = Vec2iAdd(center, Vec2iScale(centerOn, -scale));
 	for (y = 0; y < YMAX; y++)
-		for (i = 0; i < MAP_FACTOR; i++) {
+	{
+		int i;
+		for (i = 0; i < scale; i++)
+		{
 			for (x = 0; x < XMAX; x++)
 			{
-				if (!(Map(x, y).flags & MAPTILE_IS_NOTHING) &&
-					(Map(x, y).isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
+				Tile *tile = &map[y][x];
+				if (!(tile->flags & MAPTILE_IS_NOTHING) &&
+					(tile->isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
 				{
-					int tileFlags = Map(x, y).flags;
-					for (j = 0; j < MAP_FACTOR; j++)
+					int j;
+					for (j = 0; j < scale; j++)
 					{
-						if (tileFlags & MAPTILE_IS_WALL)
+						Vec2i drawPos = Vec2iNew(
+							mapPos.x + x*scale + j,
+							mapPos.y + y*scale + i);
+						color_t color = colorBlack;
+						if (tile->flags & MAPTILE_IS_WALL)
 						{
-							*screen++ =
-								PixelFromColor(&gGraphicsDevice, colorWall);
+							color = colorWall;
 						}
-						else if (tileFlags & MAPTILE_NO_WALK)
+						else if (tile->flags & MAPTILE_NO_WALK)
 						{
-							*screen++ =
-								PixelFromColor(&gGraphicsDevice, DoorColor(x, y));
+							color = DoorColor(x, y);
 						}
 						else
 						{
-							*screen++ =
-								PixelFromColor(&gGraphicsDevice, colorFloor);
+							color = colorFloor;
+						}
+						if (!ColorEquals(color, colorBlack))
+						{
+							if (flags & AUTOMAP_FLAGS_MASK)
+							{
+								color.a = MASK_ALPHA;
+							}
+							Draw_Point(drawPos.x, drawPos.y, color);
 						}
 					}
 				}
-				else
-				{
-					screen += MAP_FACTOR;
-				}
 			}
-			screen += gGraphicsDevice.cachedConfig.ResolutionWidth - XMAX * MAP_FACTOR;
 		}
+	}
+	if (flags & AUTOMAP_FLAGS_MASK)
+	{
+		color_t color = { 255, 255, 255, 128 };
+		Draw_Rect(
+			center.x - size.x / 2,
+			center.y - size.y / 2,
+			size.x, size.y,
+			color);
+	}
+}
 
+static void DrawObjectivesAndKeys(
+	Tile map[YMAX][XMAX], Vec2i pos, int scale, int flags)
+{
+	int y;
 	for (y = 0; y < YMAX; y++)
-		for (x = 0; x < XMAX; x++) {
-			t = Map(x, y).things;
+	{
+		int x;
+		for (x = 0; x < XMAX; x++)
+		{
+			TTileItem *t = map[y][x].things;
 			while (t)
 			{
 				if ((t->flags & TILEITEM_OBJECTIVE) != 0)
@@ -268,16 +297,16 @@ void AutomapDraw(int flags)
 						(flags & AUTOMAP_FLAGS_SHOWALL))
 					{
 						if ((objFlags & OBJECTIVE_POSKNOWN) ||
-							Map(x, y).isVisited ||
+							map[y][x].isVisited ||
 							(flags & AUTOMAP_FLAGS_SHOWALL))
 						{
-							DisplayObjective(t, obj);
+							DisplayObjective(t, obj, pos, scale, flags);
 						}
 					}
 				}
 				else if (t->kind == KIND_OBJECT &&
 					t->data &&
-					Map(x, y).isVisited)
+					map[y][x].isVisited)
 				{
 					color_t dotColor = colorBlack;
 					switch (((TObject *)t->data)->objectIndex)
@@ -299,18 +328,83 @@ void AutomapDraw(int flags)
 					}
 					if (!ColorEquals(dotColor, colorBlack))
 					{
-						DrawDot(t, dotColor);
+						DrawDot(t, dotColor, pos, scale);
 					}
 				}
 
 				t = t->next;
 			}
 		}
+	}
+}
 
+void AutomapDraw(int flags)
+{
+	int x, y;
+	color_t mask = { 0, 128, 0, 255 };
+	Vec2i mapCenter = Vec2iNew(
+		gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
+		gGraphicsDevice.cachedConfig.ResolutionHeight / 2);
+	Vec2i centerOn = Vec2iNew(XMAX / 2, YMAX / 2);
+	Vec2i pos = Vec2iAdd(mapCenter, Vec2iScale(centerOn, -MAP_FACTOR));
 
-	DisplayPlayer(gPlayer1);
-	DisplayPlayer(gPlayer2);
+	// Draw faded green overlay
+	for (y = 0; y < gGraphicsDevice.cachedConfig.ResolutionHeight; y++)
+	{
+		for (x = 0; x < gGraphicsDevice.cachedConfig.ResolutionWidth; x++)
+		{
+			DrawPointMask(&gGraphicsDevice, Vec2iNew(x, y), mask);
+		}
+	}
 
-	DisplayExit();
+	DrawMap(
+		gMap,
+		mapCenter,
+		centerOn,
+		Vec2iNew(XMAX, YMAX),
+		MAP_FACTOR,
+		flags);
+
+	DrawObjectivesAndKeys(gMap, pos, MAP_FACTOR, flags);
+
+	if (gPlayer1)
+	{
+		DisplayPlayer(gPlayer1, pos, MAP_FACTOR);
+	}
+	if (gPlayer2)
+	{
+		DisplayPlayer(gPlayer2, pos, MAP_FACTOR);
+	}
+
+	DisplayExit(pos, MAP_FACTOR, flags);
 	DisplaySummary();
+}
+
+void AutomapDrawRegion(
+	Tile map[YMAX][XMAX],
+	Vec2i pos, Vec2i size,
+	TActor *player,
+	int scale, int flags)
+{
+	Vec2i playerPos;
+	Vec2i centerOn;
+	BlitClipping oldClip = gGraphicsDevice.clipping;
+	if (!player)
+	{
+		return;
+	}
+	GraphicsSetBlitClip(
+		&gGraphicsDevice,
+		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
+	pos = Vec2iAdd(pos, Vec2iScaleDiv(size, 2));
+	playerPos = Vec2iNew(
+		player->tileItem.x / TILE_WIDTH, player->tileItem.y / TILE_HEIGHT);
+	DrawMap(map, pos, playerPos, size, scale, flags);
+	centerOn = Vec2iAdd(pos, Vec2iScale(playerPos, -scale));
+	DisplayPlayer(player, centerOn, scale);
+	DrawObjectivesAndKeys(gMap, centerOn, scale, flags);
+	DisplayExit(centerOn, scale, flags);
+	GraphicsSetBlitClip(
+		&gGraphicsDevice,
+		oldClip.left, oldClip.top, oldClip.right, oldClip.bottom);
 }

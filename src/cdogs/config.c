@@ -243,6 +243,7 @@ void ConfigLoadDefault(Config *config)
 	config->Interface.ShowFPS = 0;
 	config->Interface.ShowTime = 0;
 	config->Interface.SplitscreenAlways = 0;
+	config->Interface.ShowHUDMap = 1;
 	config->Sound.MusicVolume = 64;
 	config->Sound.SoundChannels = 8;
 	config->Sound.SoundVolume = 64;

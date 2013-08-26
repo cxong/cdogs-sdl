@@ -94,6 +94,7 @@ typedef struct
 	int ShowFPS;
 	int ShowTime;
 	int SplitscreenAlways;
+	int ShowHUDMap;
 } InterfaceConfig;
 
 typedef struct

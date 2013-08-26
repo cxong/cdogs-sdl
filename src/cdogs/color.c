@@ -32,14 +32,14 @@
 
 #include "utils.h"
 
-color_t colorWhite = { 255, 255, 255 };
-color_t colorRed = { 255, 0, 0 };
-color_t colorGreen = { 0, 255, 0 };
-color_t colorPoison = { 64, 192, 64 };
-color_t colorBlack = { 0, 0, 0 };
-color_t colorDarker = { 192, 192, 192 };
-color_t colorPurple = { 192, 0, 192 };
-color_t colorGray = { 128, 128, 128 };
+color_t colorWhite = { 255, 255, 255, 255 };
+color_t colorRed = { 255, 0, 0, 255 };
+color_t colorGreen = { 0, 255, 0, 255 };
+color_t colorPoison = { 64, 192, 64, 255 };
+color_t colorBlack = { 0, 0, 0, 255 };
+color_t colorDarker = { 192, 192, 192, 255 };
+color_t colorPurple = { 192, 0, 192, 255 };
+color_t colorGray = { 128, 128, 128, 255 };
 
 color_t ColorMult(color_t c, color_t m)
 {
@@ -47,6 +47,14 @@ color_t ColorMult(color_t c, color_t m)
 	c.g = (uint8_t)((int)c.g * m.g / 255);
 	c.b = (uint8_t)((int)c.b * m.b / 255);
 	return c;
+}
+color_t ColorAlphaBlend(color_t a, color_t b)
+{
+	a.r = (uint8_t)(((int)a.r*(255 - b.a) + (int)b.r*b.a)/255);
+	a.g = (uint8_t)(((int)a.g*(255 - b.a) + (int)b.g*b.a)/255);
+	a.b = (uint8_t)(((int)a.b*(255 - b.a) + (int)b.b*b.a)/255);
+	a.a = 255;
+	return a;
 }
 
 HSV tintRed = { 0.0, 1.0, 1.0 };

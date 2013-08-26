@@ -38,6 +38,7 @@ color_t PaletteToColor(unsigned char index)
 	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
 	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
 	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
+	color.a = 255;
 	return color;
 }
 Uint32 LookupPalette(unsigned char index)

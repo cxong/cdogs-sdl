@@ -5,7 +5,146 @@
 #include <float.h>
 
 
-FEATURE(1, "Tint")
+FEATURE(1, "Multiply")
+	SCENARIO("Multiply two colors")
+	{
+		color_t c1, c2, result;
+		GIVEN("two colors")
+			c1.r = c1.g = c1.b = 123;
+			c2.r = c2.g = c2.b = 234;
+		GIVEN_END
+
+		WHEN("I multiply them")
+			result = ColorMult(c1, c2);
+		WHEN_END
+
+		THEN("the result should be a multiply blend of the two color's components");
+			SHOULD_INT_EQUAL(result.r, c1.r * c2.r / 255);
+			SHOULD_INT_EQUAL(result.g, c1.g * c2.g / 255);
+			SHOULD_INT_EQUAL(result.b, c1.b * c2.b / 255);
+		THEN_END
+	}
+	SCENARIO_END
+
+	SCENARIO("Multiply by white")
+	{
+		color_t c, white, result;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
+		GIVEN_END
+
+		WHEN("I multiply it by white")
+			white.r = white.g = white.b = 255;
+			result = ColorMult(c, white);
+		WHEN_END
+
+		THEN("the result should be the same as the color");
+			SHOULD_INT_EQUAL(result.r, c.r);
+			SHOULD_INT_EQUAL(result.g, c.g);
+			SHOULD_INT_EQUAL(result.b, c.b);
+		THEN_END
+	}
+	SCENARIO_END
+
+	SCENARIO("Multiply by black")
+	{
+		color_t c, black, result;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
+		GIVEN_END
+
+		WHEN("I multiply it by black")
+			black.r = black.g = black.b = 0;
+			result = ColorMult(c, black);
+		WHEN_END
+
+		THEN("the result should be black");
+			SHOULD_INT_EQUAL(result.r, black.r);
+			SHOULD_INT_EQUAL(result.g, black.g);
+			SHOULD_INT_EQUAL(result.b, black.b);
+		THEN_END
+	}
+	SCENARIO_END
+FEATURE_END
+
+FEATURE(2, "Alpha blend")
+	SCENARIO("Alpha blend two colors")
+	{
+		color_t c1, c2, result;
+		GIVEN("two colors")
+			c1.r = c1.g = c1.b = c1.a = 123;
+			c2.r = c2.g = c2.b = c2.a = 234;
+		GIVEN_END
+
+		WHEN("I alpha blend them")
+			result = ColorAlphaBlend(c1, c2);
+		WHEN_END
+
+		THEN("the result should be an alpha blend of the two color's components");
+			SHOULD_INT_EQUAL(result.r, ((int)c1.r*(255 - c2.a) + (int)c2.r*c2.a)/255);
+			SHOULD_INT_EQUAL(result.g, ((int)c1.g*(255 - c2.a) + (int)c2.g*c2.a)/255);
+			SHOULD_INT_EQUAL(result.b, ((int)c1.r*(255 - c2.a) + (int)c2.b*c2.a)/255);
+			SHOULD_INT_EQUAL(result.a, 255);
+		THEN_END
+	}
+	SCENARIO_END
+
+	SCENARIO("Alpha blend with full transparent")
+	{
+		color_t c, transparent, result;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
+			c.a = 42;
+		GIVEN_END
+
+		WHEN("I alpha blend it by transparent")
+			transparent.r = transparent.g = transparent.b = 255;
+			transparent.a = 0;
+			result = ColorAlphaBlend(c, transparent);
+		WHEN_END
+
+		THEN("the result should be the same as the color");
+			SHOULD_INT_EQUAL(result.r, c.r);
+			SHOULD_INT_EQUAL(result.g, c.g);
+			SHOULD_INT_EQUAL(result.b, c.b);
+			SHOULD_INT_EQUAL(result.a, 255);
+		THEN_END
+	}
+	SCENARIO_END
+
+	SCENARIO("Alpha blend with full opaque black")
+	{
+		color_t c, black, result;
+		GIVEN("a color")
+			c.r = 123;
+			c.g = 234;
+			c.b = 45;
+			c.a = 194;
+		GIVEN_END
+
+		WHEN("I alpha blend it by opaque black")
+			black.r = black.g = black.b = 0;
+			black.a = 255;
+			result = ColorAlphaBlend(c, black);
+		WHEN_END
+
+		THEN("the result should be black");
+			SHOULD_INT_EQUAL(result.r, black.r);
+			SHOULD_INT_EQUAL(result.g, black.g);
+			SHOULD_INT_EQUAL(result.b, black.b);
+			SHOULD_INT_EQUAL(result.a, black.a);
+		THEN_END
+	}
+	SCENARIO_END
+FEATURE_END
+
+FEATURE(3, "Tint")
 	SCENARIO("Tint to gray (0 saturation)")
 	{
 		color_t c;
@@ -108,7 +247,9 @@ int main(void)
 {
 	cbehave_feature features[] =
 	{
-		{feature_idx(1)}
+		{feature_idx(1)},
+		{feature_idx(2)},
+		{feature_idx(3)}
 	};
 	
 	return cbehave_runner("Color features are:", features);

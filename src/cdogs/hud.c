@@ -51,6 +51,7 @@
 #include <time.h>
 
 #include "actors.h"
+#include "automap.h"
 #include "drawtools.h"
 #include "game.h"
 #include "mission.h"
@@ -149,32 +150,31 @@ static void DrawGauge(
 	GraphicsDevice *device,
 	Vec2i pos, Vec2i size, int innerWidth,
 	color_t barColor, color_t backColor,
-	int flags)
+	int textFlags)
 {
 	Vec2i barPos = Vec2iAdd(pos, Vec2iNew(1, 1));
-	Vec2i barSize;
-	if (flags & TEXT_RIGHT)
+	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
+	if (textFlags & TEXT_RIGHT)
 	{
 		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
+		barPos.x = device->cachedConfig.ResolutionWidth - barPos.x - barSize.x;
 	}
-	DrawRectangleRGB(device->buf, pos, size, backColor, DRAW_FLAG_ROUNDED);
-	barSize.x = MAX(0, innerWidth - 2);
-	barSize.y = size.y - 2;
-	DrawRectangleRGB(device->buf, barPos, barSize, barColor, 0);
+	DrawRectangleRGB(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
+	DrawRectangleRGB(device, barPos, barSize, barColor, 0);
 }
 
 static void DrawWeaponStatus(
-	GraphicsDevice *device, const Weapon *weapon, Vec2i pos, int flags)
+	GraphicsDevice *device, const Weapon *weapon, Vec2i pos, int textFlags)
 {
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
 		Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
 		Vec2i size = Vec2iNew(50, CDogsTextHeight() + 1);
-		color_t barColor = { 0, 0, 255 };
+		color_t barColor = { 0, 0, 255, 255 };
 		int maxLock = gGunDescriptions[weapon->gun].Lock;
 		int innerWidth;
-		color_t backColor = { 128, 128, 128 };
+		color_t backColor = { 128, 128, 128, 255 };
 		if (maxLock == 0)
 		{
 			innerWidth = 0;
@@ -184,13 +184,13 @@ static void DrawWeaponStatus(
 			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		}
 		DrawGauge(
-			device, gaugePos, size, innerWidth, barColor, backColor, flags);
+			device, gaugePos, size, innerWidth, barColor, backColor, textFlags);
 	}
-	CDogsTextStringSpecial(GunGetName(weapon->gun), flags, pos.x, pos.y);
+	CDogsTextStringSpecial(GunGetName(weapon->gun), textFlags, pos.x, pos.y);
 }
 
 static void DrawHealth(
-	GraphicsDevice *device, TActor *actor, Vec2i pos, int flags)
+	GraphicsDevice *device, TActor *actor, Vec2i pos, int textFlags)
 {
 	char s[50];
 	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
@@ -200,7 +200,7 @@ static void DrawHealth(
 	int health = actor->health;
 	int maxHealth = gCharacterDesc[actor->character].maxHealth;
 	int innerWidth;
-	color_t backColor = { 50, 0, 0 };
+	color_t backColor = { 50, 0, 0, 255 };
 	innerWidth = MAX(1, size.x * health / maxHealth);
 	if (actor->poisoned)
 	{
@@ -215,25 +215,90 @@ static void DrawHealth(
 			((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
 	}
 	barColor = ColorTint(colorWhite, hsv);
-	DrawGauge(device, gaugePos, size, innerWidth, barColor, backColor, flags);
+	DrawGauge(
+		device, gaugePos, size, innerWidth, barColor, backColor, textFlags);
 	sprintf(s, "%d", health);
-	CDogsTextStringSpecial(s, flags, pos.x, pos.y);
+	CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
 }
 
-#define HUD_PLACE_LEFT	0
-#define HUD_PLACE_RIGHT	1
+#define HUDFLAGS_PLACE_RIGHT	0x01
+#define HUDFLAGS_HALF_SCREEN	0x02
+
+#define AUTOMAP_PADDING	5
+#define AUTOMAP_SIZE	45
+static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
+{
+	Vec2i automapSize = Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE);
+	// Four possible map positions:
+	// top-right (player 1 only)
+	// top-left (player 2 only)
+	// top-left-of-middle (player 1 when two players)
+	// top-right-of-middle (player 2 when two players)
+	if (!(flags & HUDFLAGS_PLACE_RIGHT) &&
+		!(flags & HUDFLAGS_HALF_SCREEN))
+	{
+		// player 1 only
+		AutomapDrawRegion(
+			gMap,
+			Vec2iNew(device->cachedConfig.ResolutionWidth - AUTOMAP_SIZE - AUTOMAP_PADDING, AUTOMAP_PADDING),
+			automapSize,
+			p,
+			scale,
+			AUTOMAP_FLAGS_MASK);
+	}
+	else if (
+		(flags & HUDFLAGS_PLACE_RIGHT) &&
+		!(flags & HUDFLAGS_HALF_SCREEN))
+	{
+		// player 2 only
+		AutomapDrawRegion(
+			gMap,
+			Vec2iNew(AUTOMAP_PADDING, AUTOMAP_PADDING),
+			automapSize,
+			p,
+			scale,
+			AUTOMAP_FLAGS_MASK);
+	}
+	else if (
+		!(flags & HUDFLAGS_PLACE_RIGHT) &&
+		(flags & HUDFLAGS_HALF_SCREEN))
+	{
+		// player 1 when two players
+		AutomapDrawRegion(
+			gMap,
+			Vec2iNew(device->cachedConfig.ResolutionWidth / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING, AUTOMAP_PADDING),
+			automapSize,
+			p,
+			scale,
+			AUTOMAP_FLAGS_MASK);
+	}
+	else if (
+		(flags & HUDFLAGS_PLACE_RIGHT) &&
+		(flags & HUDFLAGS_HALF_SCREEN))
+	{
+		// player 2 when two players
+		AutomapDrawRegion(
+			gMap,
+			Vec2iNew(device->cachedConfig.ResolutionWidth / 2 + AUTOMAP_PADDING, AUTOMAP_PADDING),
+			automapSize,
+			p,
+			scale,
+			AUTOMAP_FLAGS_MASK);
+	}
+}
+
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	GraphicsDevice *device, struct PlayerData *data, TActor *p, int placement)
+	GraphicsDevice *device, struct PlayerData *data, TActor *p, int flags)
 {
 	char s[50];
+	int textFlags = TEXT_TOP | TEXT_LEFT;
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		textFlags |= TEXT_RIGHT;
+	}
 
-	int flags = TEXT_TOP;
-
-	if (placement == HUD_PLACE_LEFT)	flags |= TEXT_LEFT;
-	if (placement == HUD_PLACE_RIGHT)	flags |= TEXT_RIGHT;
-
-	CDogsTextStringSpecial(data->name, flags, 5, 5);
+	CDogsTextStringSpecial(data->name, textFlags, 5, 5);
 	if (IsScoreNeeded(gCampaign.Entry.mode))
 	{
 		sprintf(s, "Score: %d", data->score);
@@ -246,15 +311,20 @@ static void DrawPlayerStatus(
 	{
 		Vec2i pos = Vec2iNew(5, 5 + 1 + CDogsTextHeight());
 		const int rowHeight = 1 + CDogsTextHeight();
-		DrawWeaponStatus(device, &p->weapon, pos, flags);
+		DrawWeaponStatus(device, &p->weapon, pos, textFlags);
 		pos.y += rowHeight;
-		CDogsTextStringSpecial(s, flags, pos.x, pos.y);
+		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
 		pos.y += rowHeight;
-		DrawHealth(device, p, pos, flags);
+		DrawHealth(device, p, pos, textFlags);
 	}
 	else
 	{
-		CDogsTextStringSpecial(s, flags, 5, 5 + 1 * CDogsTextHeight());
+		CDogsTextStringSpecial(s, textFlags, 5, 5 + 1 * CDogsTextHeight());
+	}
+
+	if (gConfig.Interface.ShowHUDMap)
+	{
+		DrawRadar(device, p, 1, flags);
 	}
 }
 
@@ -295,12 +365,20 @@ void HUDDraw(HUD *hud, int isPaused, int isEscExit)
 	static time_t ot = -1;
 	static time_t t = 0;
 	static time_t td = 0;
+	int flags = 0;
+	if (gOptions.twoPlayers && gPlayer1 && gPlayer2)
+	{
+		flags |= HUDFLAGS_HALF_SCREEN;
+	}
 
-	DrawPlayerStatus(hud->device, &gPlayer1Data, gPlayer1, HUD_PLACE_LEFT);
+	DrawPlayerStatus(hud->device, &gPlayer1Data, gPlayer1, flags);
 	if (gOptions.twoPlayers)
 	{
 		DrawPlayerStatus(
-			hud->device,  &gPlayer2Data, gPlayer2, HUD_PLACE_RIGHT);
+			hud->device,
+			&gPlayer2Data,
+			gPlayer2,
+			flags | HUDFLAGS_PLACE_RIGHT);
 	}
 
 	if (!gPlayer1 && !gPlayer2)

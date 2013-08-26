@@ -218,6 +218,12 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			&gConfig.Interface.ShowTime,
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
 	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Show HUD map",
+			&gConfig.Interface.ShowHUDMap,
+			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
+	MenuAddSubmenu(
 		menu, MenuCreateOptionSeed("Random seed", &gConfig.Game.RandomSeed));
 	MenuAddSubmenu(
 		menu,

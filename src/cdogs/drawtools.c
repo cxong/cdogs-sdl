@@ -60,12 +60,28 @@
 void Draw_Point(const int x, const int y, color_t c)
 {
 	Uint32 *screen = gGraphicsDevice.buf;
-	screen[PixelIndex(
+	int index = PixelIndex(
 		x,
 		y,
 		gGraphicsDevice.cachedConfig.ResolutionWidth,
-		gGraphicsDevice.cachedConfig.ResolutionHeight)] =
-		PixelFromColor(&gGraphicsDevice, c);
+		gGraphicsDevice.cachedConfig.ResolutionHeight);
+	if (x < gGraphicsDevice.clipping.left ||
+		x > gGraphicsDevice.clipping.right ||
+		y < gGraphicsDevice.clipping.top ||
+		y > gGraphicsDevice.clipping.bottom)
+	{
+		return;
+	}
+	if (c.a == 255)
+	{
+		screen[index] = PixelFromColor(&gGraphicsDevice, c);
+	}
+	else
+	{
+		color_t existing = PixelToColor(&gGraphicsDevice, screen[index]);
+		screen[index] =
+			PixelFromColor(&gGraphicsDevice, ColorAlphaBlend(existing, c));
+	}
 }
 
 static
@@ -154,7 +170,15 @@ void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask)
 		pos.x, pos.y,
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
-	color_t c = PixelToColor(device, screen[idx]);
+	color_t c;
+	if (pos.x < gGraphicsDevice.clipping.left ||
+		pos.x > gGraphicsDevice.clipping.right ||
+		pos.y < gGraphicsDevice.clipping.top ||
+		pos.y > gGraphicsDevice.clipping.bottom)
+	{
+		return;
+	}
+	c = PixelToColor(device, screen[idx]);
 	c = ColorMult(c, mask);
 	screen[idx] = PixelFromColor(device, c);
 }
@@ -166,65 +190,72 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 		pos.x, pos.y,
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
-	color_t c = PixelToColor(device, screen[idx]);
+	color_t c;
+	if (pos.x < gGraphicsDevice.clipping.left ||
+		pos.x > gGraphicsDevice.clipping.right ||
+		pos.y < gGraphicsDevice.clipping.top ||
+		pos.y > gGraphicsDevice.clipping.bottom)
+	{
+		return;
+	}
+	c = PixelToColor(device, screen[idx]);
 	c = ColorTint(c, tint);
 	screen[idx] = PixelFromColor(device, c);
 }
 
 void DrawRectangleRaw(
-	Uint32 *screen, int left, int top, int width, int height,
-	color_t color, int flags)
+	GraphicsDevice *device,
+	int left, int top, int width, int height, color_t color, int flags)
 {
 	int y;
-	Uint32 rgbColor = PixelFromColor(&gGraphicsDevice, color);
 	if (width < 3 || height < 3)
 	{
 		flags &= ~DRAW_FLAG_ROUNDED;
 	}
-	for (y = top; y < top + height; y++)
+	for (y = MAX(top, device->clipping.top);
+		y < MIN(top + height, device->clipping.bottom + 1);
+		y++)
 	{
 		int isFirstOrLastLine = y == top || y == top + height - 1;
 		if (isFirstOrLastLine && (flags & DRAW_FLAG_ROUNDED))
 		{
-			int i;
-			for (i = 0; i < width - 2; i++)
+			int x;
+			for (x = MAX(left + 1, device->clipping.left);
+				x < MIN(left + width - 1, device->clipping.right + 1);
+				x++)
 			{
-				*(screen + left + 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
-				rgbColor;
+				Draw_Point(x, y, color);
 			}
 		}
 		else if (!isFirstOrLastLine && (flags & DRAW_FLAG_LINE))
 		{
-			*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-			rgbColor;
-			*(screen + left + width - 1 + y*gGraphicsDevice.cachedConfig.ResolutionWidth) =
-			rgbColor;
+			Draw_Point(left, y, color);
+			Draw_Point(left + width - 1, y, color);
 		}
 		else
 		{
-			int i;
-			for (i = 0; i < width; i++)
+			int x;
+			for (x = MAX(left, device->clipping.left);
+				x < MIN(left + width, device->clipping.right + 1);
+				x++)
 			{
-				*(screen + left + y*gGraphicsDevice.cachedConfig.ResolutionWidth + i) =
-				rgbColor;
+				Draw_Point(x, y, color);
 			}
 		}
 	}
 }
 
 void DrawRectangle(
-	Uint32 *screen, int left, int top, int width, int height,
-	color_t color, int flags)
+	GraphicsDevice *device,
+	int left, int top, int width, int height, color_t color, int flags)
 {
-	DrawRectangleRaw(
-		screen, left, top, width, height, color, flags);
+	DrawRectangleRaw(device, left, top, width, height, color, flags);
 }
 
 void DrawRectangleRGB(
-	Uint32 *screen, Vec2i pos, Vec2i size, color_t color, int flags)
+	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
 {
-	DrawRectangleRaw(
-		screen, pos.x, pos.y, size.x, size.y, color, flags);
+	DrawRectangleRaw(device, pos.x, pos.y, size.x, size.y, color, flags);
 }
 
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color)

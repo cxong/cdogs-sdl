@@ -53,6 +53,11 @@
 #include "files.h"
 #include "utils.h"
 
+typedef struct
+{
+	uint8_t r, g, b;
+} PaletteColor;
+
 int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette palette)
 {
 	FILE *f;
@@ -69,12 +74,21 @@ int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette pal
 			fclose(f);\
 			return 0;\
 		}
-		if (palette) {
-			elementsRead = fread(palette, sizeof(TPalette), 1, f);
+		for (i = 0; i < 256; i++)
+		{
+			PaletteColor pc;
+			elementsRead = fread(&pc, sizeof pc, 1, f);
 			CHECK_FREAD(1)
-		} else
-			fseek(f, sizeof(TPalette), SEEK_CUR);
+			if (palette)
+			{
+				palette[i].r = pc.r;
+				palette[i].g = pc.g;
+				palette[i].b = pc.b;
+				palette[i].a = 255;
+			}
+		}
 
+		i = 0;
 		while (!is_eof && i < maxPics)
 		{
 			elementsRead = fread(&size, sizeof(size), 1, f);
@@ -117,8 +131,9 @@ int AppendPics(const char *filename, PicPaletted **pics, int startIndex, int max
 	int i = startIndex;
 
 	f = fopen(filename, "rb");
-	if (f != NULL) {
-		fseek(f, sizeof(TPalette), SEEK_CUR);
+	if (f != NULL)
+	{
+		fseek(f, sizeof(PaletteColor)*256, SEEK_CUR);
 
 		while (!is_eof && i < maxPics)
 		{

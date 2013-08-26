@@ -180,6 +180,7 @@ static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
 	LoadBool(&config->ShowFPS, node, "ShowFPS");
 	LoadBool(&config->ShowTime, node, "ShowTime");
 	LoadBool(&config->SplitscreenAlways, node, "SplitscreenAlways");
+	LoadBool(&config->ShowHUDMap, node, "ShowHUDMap");
 }
 static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 {
@@ -190,6 +191,8 @@ static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 		subConfig, "ShowTime", json_new_bool(config->ShowTime));
 	json_insert_pair_into_object(
 		subConfig, "SplitscreenAlways", json_new_bool(config->SplitscreenAlways));
+	json_insert_pair_into_object(
+		subConfig, "ShowHUDMap", json_new_bool(config->ShowHUDMap));
 	json_insert_pair_into_object(root, "Interface", subConfig);
 }
 
