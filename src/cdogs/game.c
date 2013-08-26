@@ -282,6 +282,7 @@ Vec2i DrawScreen(
 				MAPTILE_IS_SHADOW2);
 			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
 			DrawBufferDraw(b, 0);
+			SoundSetEars(lastPosition);
 		}
 		else
 		{
