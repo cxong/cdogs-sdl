@@ -221,12 +221,11 @@ void ConfigLoad(Config *config, const char *filename)
 		break;
 	case 1:
 	case 2:
+	case 3:
 		ConfigLoadJSON(config, filename);
 		break;
 	default:
 		printf("Unknown config version\n");
-		// try loading anyway
-		ConfigLoadJSON(config, filename);
 		break;
 	}
 }
