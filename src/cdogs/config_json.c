@@ -37,7 +37,7 @@
 #include "json_utils.h"
 #include "keyboard.h"
 
-#define VERSION "2"
+#define VERSION "3"
 
 
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
