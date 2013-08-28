@@ -57,7 +57,7 @@ typedef enum
 const char *SwitchMoveStyleStr(SwitchMoveStyle s);
 SwitchMoveStyle StrSwitchMoveStyle(const char *str);
 
-const char *ScaleModeStr(ScaleMode s);
+const char *ScaleModeStr(ScaleMode q);
 ScaleMode StrScaleMode(const char *str);
 
 typedef struct
@@ -98,6 +98,31 @@ typedef struct
 	int ShowHUDMap;
 } InterfaceConfig;
 
+typedef enum
+{
+	QUICKPLAY_QUANTITY_ANY,
+	QUICKPLAY_QUANTITY_SMALL,
+	QUICKPLAY_QUANTITY_MEDIUM,
+	QUICKPLAY_QUANTITY_LARGE
+} QuickPlayQuantity;
+
+const char *QuickPlayQuantityStr(QuickPlayQuantity s);
+QuickPlayQuantity StrQuickPlayQuantity(const char *str);
+
+typedef struct
+{
+	QuickPlayQuantity MapSize;
+	QuickPlayQuantity WallCount;
+	QuickPlayQuantity WallLength;
+	QuickPlayQuantity RoomCount;
+	QuickPlayQuantity SquareCount;
+	QuickPlayQuantity EnemyCount;
+	QuickPlayQuantity EnemySpeed;
+	QuickPlayQuantity EnemyHealth;
+	int EnemiesWithExplosives;
+	QuickPlayQuantity ItemCount;
+} QuickPlayConfig;
+
 typedef struct
 {
 	GameConfig Game;
@@ -105,6 +130,7 @@ typedef struct
 	InputConfig Input;
 	InterfaceConfig Interface;
 	SoundConfig Sound;
+	QuickPlayConfig QuickPlay;
 } Config;
 
 extern Config gConfig;

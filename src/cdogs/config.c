@@ -150,6 +150,45 @@ ScaleMode StrScaleMode(const char *str)
 		return SCALE_MODE_NN;
 	}
 }
+const char *QuickPlayQuantityStr(QuickPlayQuantity q)
+{
+	switch (q)
+	{
+	case QUICKPLAY_QUANTITY_ANY:
+		return "Any";
+	case QUICKPLAY_QUANTITY_SMALL:
+		return "Small";
+	case QUICKPLAY_QUANTITY_MEDIUM:
+		return "Medium";
+	case QUICKPLAY_QUANTITY_LARGE:
+		return "Large";
+	default:
+		return "";
+	}
+}
+QuickPlayQuantity StrQuickPlayQuantity(const char *str)
+{
+	if (strcmp(str, "Any") == 0)
+	{
+		return QUICKPLAY_QUANTITY_ANY;
+	}
+	else if (strcmp(str, "Small") == 0)
+	{
+		return QUICKPLAY_QUANTITY_SMALL;
+	}
+	else if (strcmp(str, "Medium") == 0)
+	{
+		return QUICKPLAY_QUANTITY_MEDIUM;
+	}
+	else if (strcmp(str, "Large") == 0)
+	{
+		return QUICKPLAY_QUANTITY_LARGE;
+	}
+	else
+	{
+		return QUICKPLAY_QUANTITY_ANY;
+	}
+}
 
 
 Config gConfig;
@@ -251,4 +290,14 @@ void ConfigLoadDefault(Config *config)
 	config->Sound.Footsteps = 1;
 	config->Sound.Hits = 1;
 	config->Sound.Reloads = 1;
+	config->QuickPlay.MapSize = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.WallCount = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.WallLength = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.RoomCount = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.SquareCount = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.EnemyCount = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.EnemySpeed = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.EnemyHealth = QUICKPLAY_QUANTITY_ANY;
+	config->QuickPlay.EnemiesWithExplosives = 1;
+	config->QuickPlay.ItemCount = QUICKPLAY_QUANTITY_ANY;
 }

@@ -48,6 +48,7 @@
 */
 #include "mission.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include "gamedata.h"
@@ -512,11 +513,11 @@ static TBadGuy gQuickPlayEnemies[BADDIE_MAX];
 
 color_t objectiveColors[OBJECTIVE_MAX] =
 {
-	{ 0, 252, 252 },
-	{ 252, 224, 0 },
-	{ 252, 0, 0 },
-	{ 192, 0, 192 },
-	{ 112, 112, 112 }
+	{ 0, 252, 252, 255 },
+	{ 252, 224, 0, 255 },
+	{ 252, 0, 0, 255 },
+	{ 192, 0, 192, 255 },
+	{ 112, 112, 112, 255 }
 };
 
 
@@ -625,40 +626,135 @@ int SetupBuiltinDogfight(int idx)
 	return 1;
 }
 
-void SetupQuickPlayEnemy(TBadGuy *enemy, gun_e gun)
+// Generate a random partition of an integer `total` into a pair of ints x, y
+// With the restrictions that neither x, y are less than min, and
+// neither x, y are greater than max
+static void GenerateRandomPairPartitionWithRestrictions(
+	int *x, int *y, int total, int min, int max)
+{
+	int xLow, xHigh;
+
+	// Check for invalid input
+	// Can't proceed if exactly half of total is greater than max,
+	// or if total less than min
+	if ((total + 1) / 2 > max || total < min)
+	{
+		assert(0);
+		*x = total / 2;
+		*y = total - *x;
+		return;
+	}
+
+	// Find range of x first
+	// Must be at least min, or total - max
+	// Must be at most max, or total - min
+	xLow = MAX(min, total - max);
+	xHigh = MIN(max, total - min);
+	*x = xLow + (rand() % (xHigh - xLow + 1));
+	*y = total - *x;
+	assert(*x >= min);
+	assert(*y >= min);
+	assert(*x <= max);
+	assert(*y <= max);
+}
+
+static void SetupQuickPlayMapSize(
+	QuickPlayQuantity size, int *width, int *height)
+{
+	const int minMapDim = 16;
+	const int maxMapDim = 64;
+	// Map sizes based on total dimensions (width + height)
+	// Small: 32 - 64
+	// Medium: 64 - 96
+	// Large: 96 - 128
+	// Restrictions: at least 16, at most 64 per side
+	switch (size)
+	{
+	case QUICKPLAY_QUANTITY_ANY:
+		GenerateRandomPairPartitionWithRestrictions(
+			width, height,
+			32 + (rand() % (128 - 32 + 1)),
+			minMapDim, maxMapDim);
+		break;
+	case QUICKPLAY_QUANTITY_SMALL:
+		GenerateRandomPairPartitionWithRestrictions(
+			width, height,
+			32 + (rand() % (64 - 32 + 1)),
+			minMapDim, maxMapDim);
+		break;
+	case QUICKPLAY_QUANTITY_MEDIUM:
+		GenerateRandomPairPartitionWithRestrictions(
+			width, height,
+			64 + (rand() % (96 - 64 + 1)),
+			minMapDim, maxMapDim);
+		break;
+	case QUICKPLAY_QUANTITY_LARGE:
+		GenerateRandomPairPartitionWithRestrictions(
+			width, height,
+			96 + (rand() % (128 - 96 + 1)),
+			minMapDim, maxMapDim);
+		break;
+	default:
+		assert(0);
+		break;
+	}
+}
+
+// Generate a quick play parameter based on the quantity setting, and various
+// thresholds
+// e.g. if qty is "small", generate random number between small and medium
+static int GenerateQuickPlayParam(
+	QuickPlayQuantity qty, int small, int medium, int large, int max)
+{
+	switch (qty)
+	{
+	case QUICKPLAY_QUANTITY_ANY:
+		return small + (rand() % (max - small + 1));
+	case QUICKPLAY_QUANTITY_SMALL:
+		return small + (rand() % (medium - small + 1));
+	case QUICKPLAY_QUANTITY_MEDIUM:
+		return medium + (rand() % (large - medium + 1));
+	case QUICKPLAY_QUANTITY_LARGE:
+		return large + (rand() % (max - large + 1));
+	default:
+		assert(0);
+		return 0;
+	}
+}
+
+static void SetupQuickPlayEnemy(
+	TBadGuy *enemy, const QuickPlayConfig *config, gun_e gun)
 {
 	enemy->armedBodyPic = BODY_ARMED;
 	enemy->unarmedBodyPic = BODY_UNARMED;
 	enemy->facePic = rand() % FACE_COUNT;
 	enemy->gun = gun;
+	enemy->speed =
+		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
 	if (IsShortRange(enemy->gun))
 	{
-		enemy->speed = 256 + (rand() % (384 - 256 + 1));
+		enemy->speed = enemy->speed * 4 / 3;
+	}
+	if (IsShortRange(enemy->gun))
+	{
+		enemy->probabilityToMove = 35 + (rand() % 35);
 	}
 	else
 	{
-		enemy->speed = 128 + (rand() % (256 - 128 + 1));
+		enemy->probabilityToMove = 30 + (rand() % 30);
 	}
-	if (IsShortRange(enemy->gun))
-	{
-		enemy->probabilityToMove = 50 + (rand() % 50);
-	}
-	else
-	{
-		enemy->probabilityToMove = 25 + (rand() % 75);
-	}
-	enemy->probabilityToTrack = 25 + (rand() % 75);
+	enemy->probabilityToTrack = 10 + (rand() % 60);
 	if (enemy->gun == GUN_KNIFE)
 	{
 		enemy->probabilityToShoot = 0;
 	}
 	else if (IsHighDPS(enemy->gun))
 	{
-		enemy->probabilityToShoot = 10 + (rand() % 10);
+		enemy->probabilityToShoot = 2 + (rand() % 10);
 	}
 	else
 	{
-		enemy->probabilityToShoot = 25 + (rand() % 75);
+		enemy->probabilityToShoot = 15 + (rand() % 30);
 	}
 	enemy->actionDelay = rand() % (50 + 1);
 	enemy->skinColor = rand() % SHADE_COUNT;
@@ -666,14 +762,56 @@ void SetupQuickPlayEnemy(TBadGuy *enemy, gun_e gun)
 	enemy->bodyColor = rand() % SHADE_COUNT;
 	enemy->legColor = rand() % SHADE_COUNT;
 	enemy->hairColor = rand() % SHADE_COUNT;
-	enemy->health = 10 + (rand() % (100 - 10 + 1));
+	enemy->health =
+		GenerateQuickPlayParam(config->EnemyHealth, 10, 20, 40, 60);
 	enemy->flags = 0;
 }
 
-void SetupQuickPlayCampaign(CampaignSetting *setting)
+static void SetupQuickPlayEnemies(
+	struct Mission *mission,
+	TBadGuy enemies[BADDIE_MAX],
+	const QuickPlayConfig *config)
 {
 	int i;
-	gun_e gun;
+	for (i = 0; i < mission->baddieCount; i++)
+	{
+		gun_e gun;
+		mission->baddies[i] = i;
+
+		for (;;)
+		{
+			gun = rand() % GUN_COUNT;
+			// make at least one of each type of enemy:
+			// - Short range weapon
+			// - Long range weapon
+			// - High explosive weapon
+			if (i == 0 && !IsShortRange(gun))
+			{
+				continue;
+			}
+			if (i == 1 && !IsLongRange(gun))
+			{
+				continue;
+			}
+			if (i == 2 && config->EnemiesWithExplosives && !IsHighDPS(gun))
+			{
+				continue;
+			}
+
+			if (!config->EnemiesWithExplosives && IsHighDPS(gun))
+			{
+				continue;
+			}
+			break;
+		}
+		SetupQuickPlayEnemy(&enemies[i], config, gun);
+	}
+}
+
+void SetupQuickPlayCampaign(
+	CampaignSetting *setting, const QuickPlayConfig *config)
+{
+	int i;
 	strcpy(gQuickPlayMission.title, "");
 	strcpy(gQuickPlayMission.description, "");
 	gQuickPlayMission.wallStyle = rand() % WALL_STYLE_COUNT;
@@ -682,55 +820,35 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	gQuickPlayMission.exitStyle = rand() % EXIT_COUNT;
 	gQuickPlayMission.keyStyle = rand() % KEYSTYLE_COUNT;
 	gQuickPlayMission.doorStyle = rand() % DOORSTYLE_COUNT;
-	gQuickPlayMission.mapWidth = 16 + (rand() % (64 - 16 + 1));
-	gQuickPlayMission.mapHeight = 16 + (rand() % (64 - 16 + 1));
-	gQuickPlayMission.wallCount = rand() % (200 + 1);
-	gQuickPlayMission.wallLength = 1 + (rand() % (200 - 1 + 1));
-	gQuickPlayMission.roomCount = rand() % (100 + 1);
-	gQuickPlayMission.squareCount = rand() % (100 + 1);
+	SetupQuickPlayMapSize(
+		config->MapSize,
+		&gQuickPlayMission.mapWidth, &gQuickPlayMission.mapHeight);
+	gQuickPlayMission.wallCount =
+		GenerateQuickPlayParam(config->WallCount, 0, 5, 15, 30);
+	gQuickPlayMission.wallLength =
+		GenerateQuickPlayParam(config->WallLength, 1, 3, 6, 12);
+	gQuickPlayMission.roomCount =
+		GenerateQuickPlayParam(config->RoomCount, 0, 2, 5, 12);
+	gQuickPlayMission.squareCount =
+		GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
 	gQuickPlayMission.exitLeft = 0;
 	gQuickPlayMission.exitTop = 0;
 	gQuickPlayMission.exitRight = 0;
 	gQuickPlayMission.exitBottom = 0;
 	gQuickPlayMission.objectiveCount = 0;
-	gQuickPlayMission.baddieCount = 3 + (rand() % (BADDIE_MAX - 3));
+	gQuickPlayMission.baddieCount =
+		GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
 
-	// make at least one of each type of enemy:
-	// - Short range weapon
-	// - Long range weapon
-	// - High explosive weapon
-	gQuickPlayMission.baddies[0] = 0;
-	do
-	{
-		gun = rand() % GUN_COUNT;
-	} while (!IsShortRange(gun));
-	SetupQuickPlayEnemy(&gQuickPlayEnemies[0], gun);
-
-	gQuickPlayMission.baddies[1] = 1;
-	do
-	{
-		gun = rand() % GUN_COUNT;
-	} while (!IsLongRange(gun));
-	SetupQuickPlayEnemy(&gQuickPlayEnemies[1], gun);
-
-	gQuickPlayMission.baddies[2] = 2;
-	do
-	{
-		gun = rand() % GUN_COUNT;
-	} while (!IsHighDPS(gun));
-	SetupQuickPlayEnemy(&gQuickPlayEnemies[2], gun);
-
-	for (i = 3; i < gQuickPlayMission.baddieCount; i++)
-	{
-		gQuickPlayMission.baddies[i] = i;
-		SetupQuickPlayEnemy(&gQuickPlayEnemies[i], rand() % GUN_COUNT);
-	}
+	SetupQuickPlayEnemies(&gQuickPlayMission, gQuickPlayEnemies, config);
+	
 	gQuickPlayMission.specialCount = 0;
-	gQuickPlayMission.itemCount = rand() % (ITEMS_MAX + 1);
+	gQuickPlayMission.itemCount =
+		GenerateQuickPlayParam(config->SquareCount, 0, 2, 5, 10);
 	for (i = 0; i < gQuickPlayMission.itemCount; i++)
 	{
 		gQuickPlayMission.items[i] = i;
-		gQuickPlayMission.itemDensity[i] = rand() % 32;
+		gQuickPlayMission.itemDensity[i] =
+			GenerateQuickPlayParam(config->SquareCount, 0, 5, 10, 20);
 	}
 	gQuickPlayMission.baddieDensity =
 		(40 + (rand() % 20)) / gQuickPlayMission.baddieCount;

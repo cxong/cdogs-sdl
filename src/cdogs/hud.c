@@ -223,63 +223,66 @@ static void DrawHealth(
 
 #define HUDFLAGS_PLACE_RIGHT	0x01
 #define HUDFLAGS_HALF_SCREEN	0x02
+#define HUDFLAGS_SHARE_SCREEN	0x04
 
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
 static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 {
 	Vec2i automapSize = Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE);
-	// Four possible map positions:
+	Vec2i pos = Vec2iZero();
+	// Five possible map positions:
 	// top-right (player 1 only)
 	// top-left (player 2 only)
 	// top-left-of-middle (player 1 when two players)
 	// top-right-of-middle (player 2 when two players)
+	// top (two player shared screen)
 	if (!(flags & HUDFLAGS_PLACE_RIGHT) &&
 		!(flags & HUDFLAGS_HALF_SCREEN))
 	{
 		// player 1 only
-		AutomapDrawRegion(
-			gMap,
-			Vec2iNew(device->cachedConfig.ResolutionWidth - AUTOMAP_SIZE - AUTOMAP_PADDING, AUTOMAP_PADDING),
-			automapSize,
-			p,
-			scale,
-			AUTOMAP_FLAGS_MASK);
+		pos = Vec2iNew(
+			device->cachedConfig.ResolutionWidth - AUTOMAP_SIZE - AUTOMAP_PADDING,
+			AUTOMAP_PADDING);
 	}
 	else if (
 		(flags & HUDFLAGS_PLACE_RIGHT) &&
 		!(flags & HUDFLAGS_HALF_SCREEN))
 	{
 		// player 2 only
-		AutomapDrawRegion(
-			gMap,
-			Vec2iNew(AUTOMAP_PADDING, AUTOMAP_PADDING),
-			automapSize,
-			p,
-			scale,
-			AUTOMAP_FLAGS_MASK);
+		pos = Vec2iNew(AUTOMAP_PADDING, AUTOMAP_PADDING);
 	}
 	else if (
 		!(flags & HUDFLAGS_PLACE_RIGHT) &&
 		(flags & HUDFLAGS_HALF_SCREEN))
 	{
 		// player 1 when two players
-		AutomapDrawRegion(
-			gMap,
-			Vec2iNew(device->cachedConfig.ResolutionWidth / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING, AUTOMAP_PADDING),
-			automapSize,
-			p,
-			scale,
-			AUTOMAP_FLAGS_MASK);
+		pos = Vec2iNew(
+			device->cachedConfig.ResolutionWidth / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING,
+			AUTOMAP_PADDING);
 	}
 	else if (
 		(flags & HUDFLAGS_PLACE_RIGHT) &&
 		(flags & HUDFLAGS_HALF_SCREEN))
 	{
 		// player 2 when two players
+		pos = Vec2iNew(
+			device->cachedConfig.ResolutionWidth / 2 + AUTOMAP_PADDING,
+			AUTOMAP_PADDING);
+	}
+	else if (flags & HUDFLAGS_SHARE_SCREEN)
+	{
+		// share screen
+		pos = Vec2iNew(
+			device->cachedConfig.ResolutionWidth / 2 - automapSize.x / 2,
+			AUTOMAP_PADDING);
+	}
+
+	if (!Vec2iEqual(pos, Vec2iZero()))
+	{
 		AutomapDrawRegion(
 			gMap,
-			Vec2iNew(device->cachedConfig.ResolutionWidth / 2 + AUTOMAP_PADDING, AUTOMAP_PADDING),
+			pos,
 			automapSize,
 			p,
 			scale,

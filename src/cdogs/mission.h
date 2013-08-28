@@ -49,6 +49,7 @@
 #ifndef __MISSION
 #define __MISSION
 
+#include "config.h"
 #include "gamedata.h"
 
 #define TileItemIsObjective(f)   (((f) & TILEITEM_OBJECTIVE) != 0)
@@ -66,7 +67,8 @@ struct EditorInfo {
 
 int SetupBuiltinCampaign(int index);
 int SetupBuiltinDogfight(int index);
-void SetupQuickPlayCampaign(CampaignSetting *setting);
+void SetupQuickPlayCampaign(
+	CampaignSetting *setting, const QuickPlayConfig *config);
 void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 int CheckMissionObjective(int flags);

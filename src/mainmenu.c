@@ -175,6 +175,7 @@ menu_t *MenuCreateOptionsGame(const char *name);
 menu_t *MenuCreateOptionsGraphics(const char *name);
 menu_t *MenuCreateOptionsControls(const char *name);
 menu_t *MenuCreateOptionsSound(const char *name);
+menu_t *MenuCreateOptionsQuickPlay(const char *name);
 
 menu_t *MenuCreateOptions(const char *name)
 {
@@ -187,6 +188,7 @@ menu_t *MenuCreateOptions(const char *name)
 	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics..."));
 	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls..."));
 	MenuAddSubmenu(menu, MenuCreateOptionsSound("Sound..."));
+	MenuAddSubmenu(menu, MenuCreateOptionsQuickPlay("Quick Play..."));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 	return menu;
@@ -416,6 +418,96 @@ menu_t *MenuCreateOptionsSound(const char *name)
 			&gConfig.Sound.SoundChannels,
 			2, 8, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	return menu;
+}
+
+menu_t *MenuCreateOptionsQuickPlay(const char *name)
+{
+	menu_t *menu = MenuCreateNormal(
+		name,
+		"Quick Play Options:",
+		MENU_TYPE_OPTIONS,
+		0);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Map size",
+			(int *)&gConfig.QuickPlay.MapSize,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Wall count",
+			(int *)&gConfig.QuickPlay.WallCount,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Wall length",
+			(int *)&gConfig.QuickPlay.WallLength,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Room count",
+			(int *)&gConfig.QuickPlay.RoomCount,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Square count",
+			(int *)&gConfig.QuickPlay.SquareCount,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Enemy count",
+			(int *)&gConfig.QuickPlay.EnemyCount,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Enemy speed",
+			(int *)&gConfig.QuickPlay.EnemySpeed,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Enemy health",
+			(int *)&gConfig.QuickPlay.EnemyHealth,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
+			"Enemies with explosives",
+			&gConfig.QuickPlay.EnemiesWithExplosives,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Item count",
+			(int *)&gConfig.QuickPlay.ItemCount,
+			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))QuickPlayQuantityStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

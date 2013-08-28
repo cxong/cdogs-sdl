@@ -42,6 +42,11 @@
 
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
 {
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadBool(&config->FriendlyFire, node, "FriendlyFire");
 	config->RandomSeed = atoi(json_find_first_label(node, "RandomSeed")->child->text);
 	JSON_UTILS_LOAD_ENUM(config->Difficulty, node, "Difficulty", StrDifficulty);
@@ -88,6 +93,11 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 
 static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 {
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadInt(&config->Brightness, node, "Brightness");
 	LoadInt(&config->ResolutionWidth, node, "ResolutionWidth");
 	LoadInt(&config->ResolutionHeight, node, "ResolutionHeight");
@@ -112,6 +122,11 @@ static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 
 static void LoadKeysNode(input_keys_t *keys, json_t *node)
 {
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadInt(&keys->left, node, "left");
 	LoadInt(&keys->right, node, "right");
 	LoadInt(&keys->up, node, "up");
@@ -137,7 +152,7 @@ static void AddKeysNode(input_keys_t *keys, json_t *parent)
 static void LoadKeyConfigNode(KeyConfig *config, json_t *node)
 {
 	config->Device = StrInputDevice(json_find_first_label(node, "Device")->child->text);
-	LoadKeysNode(&config->Keys, json_find_first_label(node, "Keys")->child);
+	LoadKeysNode(&config->Keys, json_find_first_label(node, "Keys"));
 }
 static void AddKeyConfigNode(KeyConfig *config, json_t *parent)
 {
@@ -152,6 +167,11 @@ static void LoadInputConfigNode(InputConfig *config, json_t *node)
 {
 	int i;
 	json_t *keyNode;
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadBool(&config->SwapButtonsJoystick1, node, "SwapButtonsJoystick1");
 	LoadBool(&config->SwapButtonsJoystick2, node, "SwapButtonsJoystick2");
 	keyNode = json_find_first_label(node, "Keys")->child->child;
@@ -180,6 +200,11 @@ static void AddInputConfigNode(InputConfig *config, json_t *root)
 
 static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
 {
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadBool(&config->ShowFPS, node, "ShowFPS");
 	LoadBool(&config->ShowTime, node, "ShowTime");
 	LoadBool(&config->SplitscreenAlways, node, "SplitscreenAlways");
@@ -201,6 +226,11 @@ static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 
 static void LoadSoundConfigNode(SoundConfig *config, json_t *node)
 {
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
 	LoadInt(&config->SoundVolume, node, "SoundVolume");
 	LoadInt(&config->MusicVolume, node, "MusicVolume");
 	LoadInt(&config->SoundChannels, node, "SoundChannels");
@@ -223,6 +253,50 @@ static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 	json_insert_pair_into_object(root, "Sound", subConfig);
 }
 
+static void LoadQuickPlayConfigNode(QuickPlayConfig *config, json_t *node)
+{
+	if (node == NULL)
+	{
+		return;
+	}
+	node = node->child;
+	config->MapSize = StrQuickPlayQuantity(json_find_first_label(node, "MapSize")->child->text);
+	config->WallCount = StrQuickPlayQuantity(json_find_first_label(node, "WallCount")->child->text);
+	config->WallLength = StrQuickPlayQuantity(json_find_first_label(node, "WallLength")->child->text);
+	config->RoomCount = StrQuickPlayQuantity(json_find_first_label(node, "RoomCount")->child->text);
+	config->SquareCount = StrQuickPlayQuantity(json_find_first_label(node, "SquareCount")->child->text);
+	config->EnemyCount = StrQuickPlayQuantity(json_find_first_label(node, "EnemyCount")->child->text);
+	config->EnemySpeed = StrQuickPlayQuantity(json_find_first_label(node, "EnemySpeed")->child->text);
+	config->EnemyHealth = StrQuickPlayQuantity(json_find_first_label(node, "EnemyHealth")->child->text);
+	LoadBool(&config->EnemiesWithExplosives, node, "EnemiesWithExplosives");
+	config->ItemCount = StrQuickPlayQuantity(json_find_first_label(node, "ItemCount")->child->text);
+}
+static void AddQuickPlayConfigNode(QuickPlayConfig *config, json_t *root)
+{
+	json_t *subConfig = json_new_object();
+	json_insert_pair_into_object(
+		subConfig, "MapSize", json_new_string(QuickPlayQuantityStr(config->MapSize)));
+	json_insert_pair_into_object(
+		subConfig, "WallCount", json_new_string(QuickPlayQuantityStr(config->WallCount)));
+	json_insert_pair_into_object(
+		subConfig, "WallLength", json_new_string(QuickPlayQuantityStr(config->WallLength)));
+	json_insert_pair_into_object(
+		subConfig, "RoomCount", json_new_string(QuickPlayQuantityStr(config->RoomCount)));
+	json_insert_pair_into_object(
+		subConfig, "SquareCount", json_new_string(QuickPlayQuantityStr(config->SquareCount)));
+	json_insert_pair_into_object(
+		subConfig, "EnemyCount", json_new_string(QuickPlayQuantityStr(config->EnemyCount)));
+	json_insert_pair_into_object(
+		subConfig, "EnemySpeed", json_new_string(QuickPlayQuantityStr(config->EnemySpeed)));
+	json_insert_pair_into_object(
+		subConfig, "EnemyHealth", json_new_string(QuickPlayQuantityStr(config->EnemyHealth)));
+	json_insert_pair_into_object(
+		subConfig, "EnemiesWithExplosives", json_new_bool(config->EnemiesWithExplosives));
+	json_insert_pair_into_object(
+		subConfig, "ItemCount", json_new_string(QuickPlayQuantityStr(config->ItemCount)));
+	json_insert_pair_into_object(root, "QuickPlay", subConfig);
+}
+
 
 void ConfigLoadJSON(Config *config, const char *filename)
 {
@@ -240,11 +314,12 @@ void ConfigLoadJSON(Config *config, const char *filename)
 		printf("Error parsing config '%s'\n", filename);
 		goto bail;
 	}
-	LoadGameConfigNode(&config->Game, json_find_first_label(root, "Game")->child);
-	LoadGraphicsConfigNode(&config->Graphics, json_find_first_label(root, "Graphics")->child);
-	LoadInputConfigNode(&config->Input, json_find_first_label(root, "Input")->child);
-	LoadInterfaceConfigNode(&config->Interface, json_find_first_label(root, "Interface")->child);
-	LoadSoundConfigNode(&config->Sound, json_find_first_label(root, "Sound")->child);
+	LoadGameConfigNode(&config->Game, json_find_first_label(root, "Game"));
+	LoadGraphicsConfigNode(&config->Graphics, json_find_first_label(root, "Graphics"));
+	LoadInputConfigNode(&config->Input, json_find_first_label(root, "Input"));
+	LoadInterfaceConfigNode(&config->Interface, json_find_first_label(root, "Interface"));
+	LoadSoundConfigNode(&config->Sound, json_find_first_label(root, "Sound"));
+	LoadQuickPlayConfigNode(&config->QuickPlay, json_find_first_label(root, "QuickPlay"));
 
 bail:
 	json_free_value(&root);
@@ -275,6 +350,7 @@ void ConfigSaveJSON(Config *config, const char *filename)
 	AddInputConfigNode(&config->Input, root);
 	AddInterfaceConfigNode(&config->Interface, root);
 	AddSoundConfigNode(&config->Sound, root);
+	AddQuickPlayConfigNode(&config->QuickPlay, root);
 
 	json_tree_to_string(root, &text);
 	fputs(json_format_string(text), f);

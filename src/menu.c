@@ -726,9 +726,14 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 		{
 			SetupBuiltinDogfight(entry->builtinIndex);
 		}
+		else if (entry->mode == CAMPAIGN_MODE_QUICK_PLAY)
+		{
+			SetupQuickPlayCampaign(&gCampaign.Setting, &gConfig.QuickPlay);
+		}
 		else
 		{
-			SetupQuickPlayCampaign(&gCampaign.Setting);
+			printf("Unknown game mode!\n");
+			assert(0);
 		}
 	}
 	else
