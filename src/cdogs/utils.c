@@ -56,7 +56,7 @@ int debug_level = D_NORMAL;
 
 int MemIsZero(const void *buf, size_t len)
 {
-	char *bytes = (char *)buf;
+	const char *bytes = (const char *)buf;
 	size_t i;
 	for (i = 0; i < len; i++)
 	{

@@ -186,7 +186,7 @@ static color_t GetTileLOSMask(Tile *tile)
 	{
 		if (gConfig.Game.Fog)
 		{
-			color_t mask = { 96, 96, 96 };
+			color_t mask = { 96, 96, 96, 255 };
 			return mask;
 		}
 		else

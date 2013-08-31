@@ -1407,9 +1407,9 @@ static void Save(int asCode)
 				c != ':' && c != '<' && c != '>' && c != '?' &&
 				c != '\\' && c != '|')
 			{
-				size_t i = strlen(filename);
-				filename[i + 1] = 0;
-				filename[i] = (char)c;
+				size_t si = strlen(filename);
+				filename[si + 1] = 0;
+				filename[si] = (char)c;
 			}
 		}
 		SDL_Delay(10);

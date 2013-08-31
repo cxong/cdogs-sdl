@@ -61,7 +61,7 @@
 
 #define FIRST_CHAR      0
 #define LAST_CHAR       153
-#define CHARS_IN_FONT   (LAST_CHAR - FIRST_CHAR + 1)
+#define CHARS_IN_gFont   (LAST_CHAR - FIRST_CHAR + 1)
 
 #define CHAR_INDEX(c) ((int)c - FIRST_CHAR)
 
@@ -70,7 +70,7 @@ static int dxCDogsText = 0;
 static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
-static PicPaletted *font[CHARS_IN_FONT];
+static PicPaletted *gFont[CHARS_IN_gFont];
 
 
 void CDogsTextInit(const char *filename, int offset)
@@ -78,14 +78,14 @@ void CDogsTextInit(const char *filename, int offset)
 	int i;
 
 	dxCDogsText = offset;
-	memset(font, 0, sizeof(font));
-	ReadPics(filename, font, CHARS_IN_FONT, NULL);
+	memset(gFont, 0, sizeof(gFont));
+	ReadPics(filename, gFont, CHARS_IN_gFont, NULL);
 
-	for (i = 0; i < CHARS_IN_FONT; i++)
+	for (i = 0; i < CHARS_IN_gFont; i++)
 	{
-		if (font[i] != NULL)
+		if (gFont[i] != NULL)
 		{
-			hCDogsText = MAX(hCDogsText, font[i]->h);
+			hCDogsText = MAX(hCDogsText, gFont[i]->h);
 		}
 	}
 }
@@ -93,32 +93,32 @@ void CDogsTextInit(const char *filename, int offset)
 void CDogsTextChar(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && font[i])
+	if (i >= 0 && i <= CHARS_IN_gFont && gFont[i])
 	{
-		DrawTPic(xCDogsText, yCDogsText, font[i]);
-		xCDogsText += 1 + font[i]->w + dxCDogsText;
+		DrawTPic(xCDogsText, yCDogsText, gFont[i]);
+		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTPic(xCDogsText, yCDogsText, font[i]);
-		xCDogsText += 1 + font[i]->w + dxCDogsText;
+		DrawTPic(xCDogsText, yCDogsText, gFont[i]);
+		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
 	}
 }
 
 void CDogsTextCharWithTable(char c, TranslationTable * table)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && font[i])
+	if (i >= 0 && i <= CHARS_IN_gFont && gFont[i])
 	{
-		DrawTTPic(xCDogsText, yCDogsText, font[i], table);
-		xCDogsText += 1 + font[i]->w + dxCDogsText;
+		DrawTTPic(xCDogsText, yCDogsText, gFont[i], table);
+		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTTPic(xCDogsText, yCDogsText, font[i], table);
-		xCDogsText += 1 + font[i]->w + dxCDogsText;
+		DrawTTPic(xCDogsText, yCDogsText, gFont[i], table);
+		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
 	}
 }
 
@@ -134,21 +134,21 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 		CDogsTextCharWithTable(*s++, table);
 }
 
-static PicPaletted *GetFontPic(char c)
+static PicPaletted *GetgFontPic(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i < 0 || i > CHARS_IN_FONT || !font[i])
+	if (i < 0 || i > CHARS_IN_gFont || !gFont[i])
 	{
 		i = CHAR_INDEX('.');
 	}
-	assert(font[i]);
-	return font[i];
+	assert(gFont[i]);
+	return gFont[i];
 }
 
 Vec2i DrawTextCharMasked(
 	char c, GraphicsDevice *device, Vec2i pos, color_t mask)
 {
-	PicPaletted *font = GetFontPic(c);
+	PicPaletted *font = GetgFontPic(c);
 	Pic pic;
 	PicFromPicPaletted(&pic, font);
 	BlitMasked(device, &pic, pos, mask, 1);
@@ -214,13 +214,13 @@ void CDogsTextStringWithTableAt(int x, int y, const char *s,
 
 int CDogsTextCharWidth(int c)
 {
-	if (c >= FIRST_CHAR && c <= LAST_CHAR && font[CHAR_INDEX(c)])
+	if (c >= FIRST_CHAR && c <= LAST_CHAR && gFont[CHAR_INDEX(c)])
 	{
-		return 1 + font[CHAR_INDEX(c)]->w + dxCDogsText;
+		return 1 + gFont[CHAR_INDEX(c)]->w + dxCDogsText;
 	}
 	else
 	{
-		return 1 + font[CHAR_INDEX('.')]->w + dxCDogsText;
+		return 1 + gFont[CHAR_INDEX('.')]->w + dxCDogsText;
 	}
 }
 
