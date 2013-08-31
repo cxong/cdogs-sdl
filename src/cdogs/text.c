@@ -61,7 +61,7 @@
 
 #define FIRST_CHAR      0
 #define LAST_CHAR       153
-#define CHARS_IN_gFont   (LAST_CHAR - FIRST_CHAR + 1)
+#define CHARS_IN_FONT   (LAST_CHAR - FIRST_CHAR + 1)
 
 #define CHAR_INDEX(c) ((int)c - FIRST_CHAR)
 
@@ -70,7 +70,7 @@ static int dxCDogsText = 0;
 static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
-static PicPaletted *gFont[CHARS_IN_gFont];
+static PicPaletted *gFont[CHARS_IN_FONT];
 
 
 void CDogsTextInit(const char *filename, int offset)
@@ -79,9 +79,9 @@ void CDogsTextInit(const char *filename, int offset)
 
 	dxCDogsText = offset;
 	memset(gFont, 0, sizeof(gFont));
-	ReadPics(filename, gFont, CHARS_IN_gFont, NULL);
+	ReadPics(filename, gFont, CHARS_IN_FONT, NULL);
 
-	for (i = 0; i < CHARS_IN_gFont; i++)
+	for (i = 0; i < CHARS_IN_FONT; i++)
 	{
 		if (gFont[i] != NULL)
 		{
@@ -93,7 +93,7 @@ void CDogsTextInit(const char *filename, int offset)
 void CDogsTextChar(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_gFont && gFont[i])
+	if (i >= 0 && i <= CHARS_IN_FONT && gFont[i])
 	{
 		DrawTPic(xCDogsText, yCDogsText, gFont[i]);
 		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
@@ -109,7 +109,7 @@ void CDogsTextChar(char c)
 void CDogsTextCharWithTable(char c, TranslationTable * table)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_gFont && gFont[i])
+	if (i >= 0 && i <= CHARS_IN_FONT && gFont[i])
 	{
 		DrawTTPic(xCDogsText, yCDogsText, gFont[i], table);
 		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
@@ -137,7 +137,7 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 static PicPaletted *GetgFontPic(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i < 0 || i > CHARS_IN_gFont || !gFont[i])
+	if (i < 0 || i > CHARS_IN_FONT || !gFont[i])
 	{
 		i = CHAR_INDEX('.');
 	}
