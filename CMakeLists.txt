@@ -107,17 +107,11 @@ CONFIGURE_FILE(${SOURCE_DIRECTORY}/README.md.cmake ${SOURCE_DIRECTORY}/README.md
 
 add_subdirectory(src)
 
-if(MSVC)
-	add_custom_command(
-		TARGET hqx
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs/hqx/src/hqx.dll ${CMAKE_CURRENT_BINARY_DIR}/src)
-elseif(MINGW)
-	add_custom_command(
-		TARGET hqx
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs/hqx/src/libhqx.dll ${CMAKE_CURRENT_BINARY_DIR}/src)
-endif()
+# Build the shared library next to cdogs-sdl
+set_target_properties(hqx PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
+)
 
 install(FILES cdogs-sdl DESTINATION .)
 install(FILES hqx DESTINATION .)
