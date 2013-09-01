@@ -107,6 +107,18 @@ CONFIGURE_FILE(${SOURCE_DIRECTORY}/README.md.cmake ${SOURCE_DIRECTORY}/README.md
 
 add_subdirectory(src)
 
+if(MSVC)
+	add_custom_command(
+		TARGET hqx
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs/hqx/src/hqx.dll ${CMAKE_CURRENT_BINARY_DIR}/src)
+elseif(MINGW)
+	add_custom_command(
+		TARGET hqx
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs/hqx/src/libhqx.dll ${CMAKE_CURRENT_BINARY_DIR}/src)
+endif()
+
 install(FILES cdogs-sdl DESTINATION .)
 install(FILES hqx DESTINATION .)
 
@@ -163,10 +175,3 @@ ELSE()
 	SET(CPACK_GENERATOR TGZ)
 ENDIF()
 INCLUDE(CPack)
-
-if(MSVC)
-	add_custom_command(
-		TARGET hqx
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs/hqx/hqx.dll ${CMAKE_CURRENT_BINARY_DIR})
-endif()
