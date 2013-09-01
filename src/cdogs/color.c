@@ -143,6 +143,7 @@ color_t ColorTint(color_t c, HSV hsv)
 		out.g = (uint8_t)CLAMP(hsv.v * (vAvg*(1.0-hsv.s) + hsv.s*c.g), 0, 255);
 		out.b = (uint8_t)CLAMP(hsv.v * (vAvg*(1.0-hsv.s) + hsv.s*c.b), 0, 255);
 	}
+	out.a = c.a;
 	return out;
 }
 
