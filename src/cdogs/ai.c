@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "ai.h"
 
@@ -332,36 +359,47 @@ void Detour(TActor * actor)
 		    (CmdToDirection(actor->lastCmd) + 7) % 8;
 }
 
-static void PlaceBaddie(TActor * actor)
+static int TryPlaceBaddie(TActor *actor)
 {
-	int x, y;
+	int hasPlaced = 0;
+	int i;
+	for (i = 0; i < 10; i++)	// Don't try forever trying to place baddie
+	{
+		Vec2i pos;
+		// Try spawning out of players' sights
+		do
+		{
+			actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
+			actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
+		}
+		while ((gPlayer1 && Distance(actor, gPlayer1) < 256 * 150) ||
+			(gPlayer2 && Distance(actor, gPlayer2) < 256 * 150));
+		pos.x = actor->x;
+		pos.y = actor->y;
+		actor->x = actor->y = 0;
+		if (MoveActor(actor, pos.x, pos.y))
+		{
+			hasPlaced = 1;
+			break;
+		}
+	}
 
 	actor->health = (actor->health * gConfig.Game.NonPlayerHP) / 100;
-
 	if (actor->health <= 0)
+	{
 		actor->health = 1;
-
-	do {
-		do {
-			actor->x = ((rand() % (XMAX * TILE_WIDTH)) << 8);
-			actor->y = ((rand() % (YMAX * TILE_HEIGHT)) << 8);
-		}
-		while ((gPlayer1 && Distance(actor, gPlayer1) < 256 * 150)
-		       || (gPlayer2
-			   && Distance(actor, gPlayer2) < 256 * 150));
-		x = actor->x;
-		y = actor->y;
-		actor->x = actor->y = 0;
 	}
-	while (!MoveActor(actor, x, y));
-
-	if ((actor->flags & FLAGS_AWAKEALWAYS) != 0)
-		actor->flags &= ~FLAGS_SLEEPING;
-	else if ((actor->flags & FLAGS_SLEEPALWAYS) == 0 &&
-		 rand() % 100 < gBaddieCount)
+	if (actor->flags & FLAGS_AWAKEALWAYS)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
+	else if (!(actor->flags & FLAGS_SLEEPALWAYS) &&
+		rand() % 100 < gBaddieCount)
+	{
+		actor->flags &= ~FLAGS_SLEEPING;
+	}
+
+	return hasPlaced;
 }
 
 static void PlacePrisoner(TActor * actor)
@@ -522,12 +560,20 @@ void CommandBadGuys(int ticks)
 		gMission.missionData->baddieDensity > 0 &&
 		count < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100))
 	{
+		TActor *baddie;
 		character =
 		    CHARACTER_OTHERS +
 		    rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
-		PlaceBaddie(AddActor(character));
-		gBaddieCount++;
+		baddie = AddActor(character);
+		if (!TryPlaceBaddie(baddie))
+		{
+			RemoveActor(baddie);
+		}
+		else
+		{
+			gBaddieCount++;
+		}
 	}
 }
 
@@ -550,9 +596,11 @@ void InitializeBadGuys(void)
 						rand() %
 						gMission.missionData->specialCount;
 					actor = AddActor(character);
-					actor->tileItem.flags |=
-					    ObjectiveToTileItem(i);
-					PlaceBaddie(actor);
+					actor->tileItem.flags |= ObjectiveToTileItem(i);
+					if (!TryPlaceBaddie(actor))
+					{
+						RemoveActor(actor);
+					}
 				}
 			}
 	}
@@ -570,8 +618,19 @@ void InitializeBadGuys(void)
 					PlacePrisoner(gPrisoner);
 				}
 				else
-					PlaceBaddie(gPrisoner);
-			} else {
+				{
+					if (!TryPlaceBaddie(gPrisoner))
+					{
+						// Can't place prisoner when it's the objective
+						// Fatal error, can't recover
+						printf("Cannot place prisoner!\n");
+						assert(0);
+						exit(1);
+					}
+				}
+			}
+			else
+			{
 				// This is an error!
 				gMission.objectives[i].count = 0;
 				gMission.objectives[i].required = 0;
@@ -593,9 +652,17 @@ void CreateEnemies(void)
 		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
+		TActor *enemy;
 		character = CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
-		PlaceBaddie(AddActor(character));
-		gBaddieCount++;
+		enemy = AddActor(character);
+		if (!TryPlaceBaddie(enemy))
+		{
+			RemoveActor(enemy);
+		}
+		else
+		{
+			gBaddieCount++;
+		}
 	}
 }

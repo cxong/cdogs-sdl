@@ -196,6 +196,7 @@ int MoveActor(TActor * actor, int x, int y);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 TActor *AddActor(int character);
+TActor *RemoveActor(TActor *actor);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
