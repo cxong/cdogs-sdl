@@ -112,6 +112,7 @@ set_target_properties(hqx PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
+	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
 if(WIN32)
@@ -121,7 +122,9 @@ else()
 	set(EXE_EXTENSION "")
 	set(LIB_EXTENSION ".so")
 endif()
-install(FILES src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION} src/libhqx${LIB_EXTENSION} DESTINATION bin)
+install(
+	PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION} src/libhqx${LIB_EXTENSION}
+	DESTINATION bin)
 
 # Installation
 INSTALL(DIRECTORY
@@ -141,7 +144,7 @@ IF(UNIX AND NOT APPLE)
 	INSTALL(FILES
 		${SOURCE_DIRECTORY}/build/linux/cdogs-sdl.desktop
 		${SOURCE_DIRECTORY}/cdogs_icon.png
-		DESTINATION .)
+		DESTINATION bin)
 ENDIF()
 IF(MSVC)
 	# Package for Windows

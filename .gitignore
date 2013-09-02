@@ -4,13 +4,16 @@ Makefile
 Makefile.*
 cdogs-sdl
 *.exe
+*.tar.gz
 cdogs-sdl-editor
 libcdogs.a
 autosave_test
+color_test
 config_test
 tmp
 libjson.a
 .cdogs/
+*.so
 
 # CMake stuff
 *CMakeCache.txt
