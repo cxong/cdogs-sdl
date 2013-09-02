@@ -62,7 +62,7 @@
 #include <cdogs/input.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
-#include <cdogs/pics.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
@@ -267,10 +267,12 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
 	DrawTTPic(
-		x + 20 + body.dx, y + 36 + body.dy, gPics[body.picIndex],
+		x + 20 + body.dx, y + 36 + body.dy,
+		PicManagerGetOldPic(&gPicManager, body.picIndex),
 		cd->table);
 	DrawTTPic(
-		x + 20 + head.dx, y + 36 + head.dy, gPics[head.picIndex],
+		x + 20 + head.dx, y + 36 + head.dy,
+		PicManagerGetOldPic(&gPicManager, head.picIndex),
 		cd->table);
 }
 

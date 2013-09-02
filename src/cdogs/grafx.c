@@ -65,7 +65,6 @@
 #include "drawtools.h"
 #include "mission.h"
 #include "palette.h"
-#include "pics.h" /* for gPalette */
 #include "files.h"
 #include "triggers.h"
 #include "utils.h"
@@ -265,7 +264,8 @@ static void MakeRandomBackground(
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
-void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force)
+void GraphicsInitialize(
+	GraphicsDevice *device, GraphicsConfig *config, TPalette palette, int force)
 {
 	int sdl_flags = 0;
 	unsigned int w, h = 0;
@@ -352,7 +352,7 @@ void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int forc
 	device->cachedConfig = *config;
 	device->cachedConfig.ResolutionWidth = w;
 	device->cachedConfig.ResolutionHeight = h;
-	CDogsSetPalette(gPalette);
+	CDogsSetPalette(palette);
 	// Need to make background here since dimensions use cached config
 	MakeRandomBackground(device, config);
 }

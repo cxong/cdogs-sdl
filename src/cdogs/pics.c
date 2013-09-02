@@ -33,8 +33,7 @@
 #include "pics.h"
 
 
-color_t gPalette[256], origPalette[256];
-PicPaletted *gPics[PIC_MAX];
+color_t origPalette[256];
 
 
 const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT] =

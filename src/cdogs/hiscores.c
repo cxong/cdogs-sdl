@@ -123,27 +123,6 @@ void EnterHighScore(struct PlayerData *data)
 	data->today = EnterTable(todaysHigh, data);
 }
 
-/*
-static void DisplayCharacterUsed( int x, int y, struct Entry *entry )
-{
-  TOffsetPic body, head;
-  TranslationTable table;
-
-  SetCharacterColors( table, entry->arms, entry->body, entry->legs, entry->skin, entry->hair);
-
-  body.dx = cBodyOffset[ BODY_UNARMED][ DIRECTION_DOWN].dx;
-  body.dy = cBodyOffset[ BODY_UNARMED][ DIRECTION_DOWN].dy;
-  body.picIndex = cBodyPic[ BODY_UNARMED][ DIRECTION_DOWN][ STATE_IDLE];
-
-  head.dx = cNeckOffset[ BODY_UNARMED][ DIRECTION_DOWN].dx + cHeadOffset[ entry->head][ DIRECTION_DOWN].dx;
-  head.dy = cNeckOffset[ BODY_UNARMED][ DIRECTION_DOWN].dy + cHeadOffset[ entry->head][ DIRECTION_DOWN].dy;
-  head.picIndex = cHeadPic[ entry->head][ DIRECTION_DOWN][ STATE_IDLE];
-
-  DrawTTPic( x + body.dx, y + body.dy, gPics[ body.picIndex], table);
-  DrawTTPic( x + head.dx, y + head.dy, gPics[ head.picIndex], table);
-}
-*/
-
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
 	if (hilite)

@@ -52,6 +52,7 @@
 #include <SDL_video.h>
 
 #include "color.h"
+#include "pic_file.h"
 #include "sys_specifics.h"
 
 typedef enum
@@ -104,7 +105,8 @@ typedef struct
 extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device);
-void GraphicsInitialize(GraphicsDevice *device, GraphicsConfig *config, int force);
+void GraphicsInitialize(
+	GraphicsDevice *device, GraphicsConfig *config, TPalette palette, int force);
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);

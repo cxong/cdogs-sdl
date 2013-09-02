@@ -56,7 +56,7 @@
 #include "drawtools.h"
 #include "map.h"
 #include "blit.h"
-#include "pics.h"
+#include "pic_manager.h"
 #include "defs.h"
 #include "sounds.h"
 #include "actors.h"
@@ -87,31 +87,9 @@ void DrawObject(int x, int y, const TObject * obj)
 		DrawTPic(
 			x + pic->dx,
 			y + pic->dy,
-			gPics[pic->picIndex]);
+			PicManagerGetOldPic(&gPicManager, pic->picIndex));
 	}
 }
-
-/*
-void DrawPuzzlePiece( int x, int y, const TObject *obj )
-{
-  TOffsetPic *pic = obj->pic;
-  int w, h;
-
-  if (pic)
-  {
-    w = PicWidth( gPics[ pic->picIndex]);
-    h = PicHeight( gPics[ pic->picIndex]);
-
-    DrawTTPic( x - w/2 + 1,
-               y - h/2 + 1,
-               gPics[ pic->picIndex],
-               tableBlack);
-    DrawTPic( x - w/2,
-              y - h/2,
-              gPics[ pic->picIndex]);
-  }
-}
-*/
 
 void DrawBullet(int x, int y, const TMobileObject * obj)
 {
@@ -121,7 +99,7 @@ void DrawBullet(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawBrownBullet(int x, int y, const TMobileObject * obj)
@@ -132,7 +110,7 @@ void DrawBrownBullet(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
@@ -140,7 +118,7 @@ void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
 	const TOffsetPic *pic = &cGeneralPics[OFSPIC_MOLOTOV];
 	DrawBTPic(
 		x + pic->dx, y + pic->dy - obj->z,
-		gPics[pic->picIndex],
+		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		&tintDarker);
 }
 
@@ -152,7 +130,7 @@ void DrawSeeker(int x, int y, const TMobileObject * obj)
 	DrawTTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex],
+		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		tableFlamed);
 }
 
@@ -164,7 +142,7 @@ void DrawMine(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawDynamite(int x, int y, const TMobileObject * obj)
@@ -175,7 +153,7 @@ void DrawDynamite(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
@@ -196,7 +174,7 @@ void DrawMolotov(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawFlame(int x, int y, const TMobileObject * obj)
@@ -207,7 +185,7 @@ void DrawFlame(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawLaserBolt(int x, int y, const TMobileObject * obj)
@@ -218,7 +196,7 @@ void DrawLaserBolt(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawBrightBolt(int x, int y, const TMobileObject * obj)
@@ -229,7 +207,7 @@ void DrawBrightBolt(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawSpark(int x, int y, const TMobileObject * obj)
@@ -240,7 +218,7 @@ void DrawSpark(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy - obj->z,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawGrenade(int x, int y, const TMobileObject * obj)
@@ -256,7 +234,7 @@ void DrawGrenade(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawGasCloud(int x, int y, const TMobileObject * obj)
@@ -266,7 +244,7 @@ void DrawGasCloud(int x, int y, const TMobileObject * obj)
 	pic = &cFireBallPics[8 + (obj->state & 3)];
 	DrawBTPic(
 		x + pic->dx, y + pic->dy,
-		gPics[pic->picIndex],
+		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		obj->z ? &tintPurple : &tintPoison);
 }
 
@@ -284,7 +262,7 @@ void DrawFireball(int x, int y, const TMobileObject * obj)
 	DrawTPic(
 		x + pic->dx,
 		y + pic->dy,
-		gPics[pic->picIndex]);
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void BogusDraw(int x, int y, void *data)

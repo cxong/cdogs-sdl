@@ -63,7 +63,7 @@
 #include <cdogs/files.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/mission.h>
-#include <cdogs/pics.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
@@ -388,10 +388,11 @@ void MenuDisplayItems(MenuSystem *menu)
 	}
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
+		PicPaletted *logo = PicManagerGetOldPic(&gPicManager, PIC_LOGO);
 		DrawTPic(
-			(gGraphicsDevice.cachedConfig.ResolutionWidth - gPics[PIC_LOGO]->w) / 2,
+			(gGraphicsDevice.cachedConfig.ResolutionWidth - logo->w) / 2,
 			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
-			gPics[PIC_LOGO]);
+			logo);
 		CDogsTextStringSpecial(
 			"Version: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
 	}

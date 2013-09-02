@@ -55,6 +55,7 @@
 #include "drawtools.h"
 #include "game.h"
 #include "mission.h"
+#include "pic_manager.h"
 #include "text.h"
 
 void FPSCounterInit(FPSCounter *counter)
@@ -333,7 +334,9 @@ static void DrawPlayerStatus(
 
 static void DrawKeycard(int x, int y, const TOffsetPic * pic)
 {
-	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx, y + pic->dy,
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
 void DrawKeycards(HUD *hud)

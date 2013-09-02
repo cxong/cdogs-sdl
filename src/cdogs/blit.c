@@ -60,7 +60,6 @@
 #include "grafx.h"
 #include "events.h"
 #include "palette.h"
-#include "pics.h" /* for gPalette */
 #include "utils.h" /* for debug() */
 
 

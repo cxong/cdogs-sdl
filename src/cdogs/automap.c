@@ -56,6 +56,7 @@
 #include "drawtools.h"
 #include "map.h"
 #include "mission.h"
+#include "pic_manager.h"
 #include "text.h"
 
 
@@ -78,14 +79,15 @@ static void DisplayPlayer(TActor *player, Vec2i pos, int scale)
 	Vec2i playerPos = Vec2iNew(
 		player->tileItem.x / TILE_WIDTH,
 		player->tileItem.y / TILE_HEIGHT);
-	struct CharacterDescription *c = &gCharacterDesc[player->character];
-	int pic = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
 	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
 	if (scale >= 2)
 	{
-		pos.x -= gPics[pic]->w / 2;
-		pos.y -= gPics[pic]->h / 2;
-		DrawTTPic(pos.x, pos.y, gPics[pic], c->table);
+		struct CharacterDescription *c = &gCharacterDesc[player->character];
+		int picIdx = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
+		PicPaletted *pic = PicManagerGetOldPic(&gPicManager, picIdx);
+		pos.x -= pic->w / 2;
+		pos.y -= pic->h / 2;
+		DrawTTPic(pos.x, pos.y, pic, c->table);
 	}
 	else
 	{

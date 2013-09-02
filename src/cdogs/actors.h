@@ -198,7 +198,7 @@ void SlideActor(TActor *actor, int cmd);
 TActor *AddActor(int character);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
-void BuildTranslationTables(void);
+void BuildTranslationTables(const TPalette palette);
 void InitializeTranslationTables(void);
 void Score(int flags, int points);
 void InjureActor(TActor * actor, int injury);

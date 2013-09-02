@@ -36,6 +36,7 @@ set(CDOGS_SOURCES
 	palette.c
 	pic.c
 	pic_file.c
+	pic_manager.c
 	pics.c
 	sounds.c
 	text.c
@@ -77,6 +78,7 @@ set(CDOGS_HEADERS
 	palette.h
 	pic.h
 	pic_file.h
+	pic_manager.h
 	pics.h
 	sounds.h
 	sys_config.h

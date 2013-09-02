@@ -1,7 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
     Copyright (c) 2013, Cong Xu
     All rights reserved.
 
@@ -26,18 +25,24 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "config.h"
+#ifndef __PIC_MANAGER
+#define __PIC_MANAGER
 
-#include "blit.h"
-#include "gamedata.h"
-#include "pic_manager.h"
+#include "pic.h"
+#include "pics.h"
 
-
-int ConfigApply(Config *config)
+typedef struct
 {
-	SoundReconfigure(&gSoundDevice, &config->Sound);
-	gCampaign.seed = config->Game.RandomSeed;
-	GraphicsInitialize(
-		&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
-	return gGraphicsDevice.IsInitialized;
-}
+	PicPaletted *oldPics[PIC_MAX];
+	TPalette palette;
+} PicManager;
+
+extern PicManager gPicManager;
+
+int PicManagerTryInit(
+	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
+void PicManagerTerminate(PicManager *pm);
+
+PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
+
+#endif

@@ -18,6 +18,33 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    This file incorporates work covered by the following copyright and
+    permission notice:
+
+    Copyright (c) 2013, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map.h"
 
@@ -26,7 +53,7 @@
 
 #include "collision.h"
 #include "config.h"
-#include "pics.h"
+#include "pic_manager.h"
 #include "objs.h"
 #include "triggers.h"
 #include "sounds.h"
@@ -423,13 +450,15 @@ static int GetWallPic(int x, int y)
 
 static void PicLoad(Pic *pic, int idx)
 {
-	PicFromPicPaletted(pic, gPics[idx]);
+	PicFromPicPaletted(pic, PicManagerGetOldPic(&gPicManager, idx));
 }
 static void PicLoadOffset(Pic *pic, Pic *picAlt, int idx)
 {
-	PicFromPicPaletted(pic, gPics[idx]);
+	PicFromPicPaletted(pic, PicManagerGetOldPic(&gPicManager, idx));
 	PicFromPicPalettedOffset(
-		picAlt, gPics[cGeneralPics[idx].picIndex], &cGeneralPics[idx]);
+		picAlt,
+		PicManagerGetOldPic(&gPicManager, cGeneralPics[idx].picIndex),
+		&cGeneralPics[idx]);
 }
 
 static void FixMap(int floor, int room, int wall)
@@ -973,7 +1002,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	PicFromPicPaletted(&a[2].tilePic, gPics[pic]);
+	PicFromPicPaletted(&a[2].tilePic, PicManagerGetOldPic(&gPicManager, pic));
 	if (tileFlags & MAPTILE_OFFSET_PIC)
 	{
 		PicLoadOffset(&a[2].tilePic, &a[2].tilePicAlt, pic);
@@ -987,12 +1016,14 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
 		PicFromPicPaletted(
-			&a[3].tilePic, gPics[cFloorPics[floor][FLOOR_SHADOW]]);
+			&a[3].tilePic,
+			PicManagerGetOldPic(&gPicManager, cFloorPics[floor][FLOOR_SHADOW]));
 	}
 	else
 	{
 		PicFromPicPaletted(
-			&a[3].tilePic, gPics[cRoomPics[room][ROOMFLOOR_SHADOW]]);
+			&a[3].tilePic,
+			PicManagerGetOldPic(&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]));
 	}
 	a[3].tileFlags = MAPTILE_TILE_TRIGGER;
 
@@ -1020,7 +1051,9 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	PicFromPicPaletted(&a[2].tilePic, gPics[gMission.doorPics[5].horzPic]);
+	PicFromPicPaletted(
+		&a[2].tilePic,
+		PicManagerGetOldPic(&gPicManager, gMission.doorPics[5].horzPic));
 	a[2].tileFlags = 0;
 
 	// Remove shadow below door (also clears trigger)
@@ -1030,12 +1063,14 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
 		PicFromPicPaletted(
-			&a[3].tilePic, gPics[cFloorPics[floor][FLOOR_NORMAL]]);
+			&a[3].tilePic,
+			PicManagerGetOldPic(&gPicManager, cFloorPics[floor][FLOOR_NORMAL]));
 	}
 	else
 	{
 		PicFromPicPaletted(
-			&a[3].tilePic, gPics[cRoomPics[room][ROOMFLOOR_SHADOW]]);
+			&a[3].tilePic,
+			PicManagerGetOldPic(&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]));
 	}
 	a[3].tileFlags = 0;
 

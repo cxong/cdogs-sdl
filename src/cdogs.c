@@ -72,6 +72,7 @@
 #include <cdogs/music.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
@@ -133,11 +134,15 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	{
 		if (table)
 		{
-			DrawTTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex], table);
+			DrawTTPic(
+				x + pic.dx, y + pic.dy,
+				PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 		}
 		else
 		{
-			DrawTPic(x + pic.dx, y + pic.dy, gPics[pic.picIndex]);
+			DrawTPic(
+				x + pic.dx, y + pic.dy,
+				PicManagerGetOldPic(&gPicManager, pic.picIndex));
 		}
 	}
 }
@@ -920,7 +925,7 @@ void PrintHelp (void)
 
 int main(int argc, char *argv[])
 {
-	int i, wait = 0;
+	int wait = 0;
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int isSoundEnabled = 1;
@@ -1027,17 +1032,12 @@ int main(int argc, char *argv[])
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
-	i = ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette);
-	if (!i) {
-		printf("Unable to read CDOGS.PX (%s)\n", GetDataFilePath("graphics/cdogs.px"));
+	if (!PicManagerTryInit(
+		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+	{
 		exit(0);
 	}
-	if (!AppendPics(GetDataFilePath("graphics/cdogs2.px"), gPics, PIC_COUNT1, PIC_MAX)) {
-		printf("Unable to read CDOGS2.PX (%s)\n", GetDataFilePath("graphics/cdogs2.px"));
-		exit(0);
-	}
-	gPalette[0].r = gPalette[0].g = gPalette[0].b = 0;
-	memcpy(origPalette, gPalette, sizeof(origPalette));
+	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
 	InitializeTranslationTables();
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
@@ -1069,21 +1069,26 @@ int main(int argc, char *argv[])
 	}
 
 	GraphicsInit(&gGraphicsDevice);
-	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
+	GraphicsInitialize(
+		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
+		forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		Config defaultConfig;
 		printf("Cannot initialise video; trying default config\n");
 		ConfigLoadDefault(&defaultConfig);
 		gConfig.Graphics = defaultConfig.Graphics;
-		GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, forceResolution);
+		GraphicsInitialize(
+			&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
+			forceResolution);
 	}
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
-	} else {
-		CDogsSetPalette(gPalette);
+	}
+	else
+	{
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
@@ -1091,6 +1096,7 @@ int main(int argc, char *argv[])
 	InputTerminate(&gInputDevices);
 	GraphicsTerminate(&gGraphicsDevice);
 
+	PicManagerTerminate(&gPicManager);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	SaveTemplates();

@@ -1,7 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
     Copyright (c) 2013, Cong Xu
     All rights reserved.
 
@@ -26,18 +25,47 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "config.h"
-
-#include "blit.h"
-#include "gamedata.h"
 #include "pic_manager.h"
 
+#include "files.h"
 
-int ConfigApply(Config *config)
+PicManager gPicManager;
+
+int PicManagerTryInit(
+	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
 {
-	SoundReconfigure(&gSoundDevice, &config->Sound);
-	gCampaign.seed = config->Game.RandomSeed;
-	GraphicsInitialize(
-		&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
-	return gGraphicsDevice.IsInitialized;
+	int i;
+	memset(pm, 0, sizeof *pm);
+	i = ReadPics(
+		GetDataFilePath(oldGfxFile1), pm->oldPics, PIC_COUNT1, pm->palette);
+	if (!i)
+	{
+		printf("Unable to read %s\n", GetDataFilePath(oldGfxFile1));
+		return 0;
+	}
+	if (!AppendPics(
+		GetDataFilePath(oldGfxFile2), pm->oldPics, PIC_COUNT1, PIC_MAX))
+	{
+		printf("Unable to read %s\n", GetDataFilePath(oldGfxFile2));
+		return 0;
+	}
+	pm->palette[0].r = pm->palette[0].g = pm->palette[0].b = 0;
+	return 1;
+}
+
+void PicManagerTerminate(PicManager *pm)
+{
+	int i;
+	for (i = 0; i < PIC_MAX; i++)
+	{
+		if (pm->oldPics[i] != NULL)
+		{
+			CFREE(pm->oldPics[i]);
+		}
+	}
+}
+
+PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
+{
+	return pm->oldPics[idx];
 }

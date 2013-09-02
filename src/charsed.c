@@ -61,7 +61,7 @@
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
 #include <cdogs/palette.h>
-#include <cdogs/pics.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
 
@@ -204,8 +204,12 @@ static void DisplayCharacter(int x, int y, const TBadGuy * data,
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex], cd->table);
-	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex], cd->table);
+	DrawTTPic(
+		x + body.dx, y + body.dy,
+		PicManagerGetOldPic(&gPicManager, body.picIndex), cd->table);
+	DrawTTPic(
+		x + head.dx, y + head.dy,
+		PicManagerGetOldPic(&gPicManager, head.picIndex), cd->table);
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 16);
@@ -550,8 +554,9 @@ static void AdjustXC(int yc, int *xc)
 
 void RestoreBkg(int x, int y, unsigned int *bkg)
 {
-	int w = ((short *) (gPics[145]))[0];
-	int h = ((short *) (gPics[145]))[1];
+	PicPaletted *bgPic = PicManagerGetOldPic(&gPicManager, 145);
+	int w = bgPic->w;
+	int h = bgPic->h;
 	int xMax = x + w - 1;
 	int yMax = y + h - 1;
 	int i;

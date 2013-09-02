@@ -56,7 +56,7 @@
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
-#include "pics.h"
+#include "pic_manager.h"
 #include "sounds.h"
 #include "defs.h"
 #include "objs.h"
@@ -131,8 +131,6 @@ static ColorShade colorShades[SHADE_COUNT] = {
 	{16, 17, 18, 19, 20, 21, 22, 23, 24, 25}
 };
 
-unsigned char BestMatch(int r, int g, int b);
-
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
@@ -190,11 +188,14 @@ void DrawCharacter(int x, int y, TActor * actor)
 			{
 				DrawBTPic(
 					x + body.dx, y + body.dy,
-					gPics[body.picIndex], tint);
+					PicManagerGetOldPic(&gPicManager, body.picIndex), tint);
 			}
 			else
-				DrawTTPic(x + body.dx, y + body.dy,
-					  gPics[body.picIndex], table);
+			{
+				DrawTTPic(
+					x + body.dx, y + body.dy,
+					PicManagerGetOldPic(&gPicManager, body.picIndex), table);
+			}
 		}
 		return;
 	}
@@ -270,19 +271,19 @@ void DrawCharacter(int x, int y, TActor * actor)
 		{
 			DrawBTPic(
 				x + pic1.dx, y + pic1.dy,
-				gPics[pic1.picIndex], tint);
+				PicManagerGetOldPic(&gPicManager, pic1.picIndex), tint);
 		}
 		if (pic2.picIndex >= 0)
 		{
 			DrawBTPic(
 				x + pic2.dx, y + pic2.dy,
-				gPics[pic2.picIndex], tint);
+				PicManagerGetOldPic(&gPicManager, pic2.picIndex), tint);
 		}
 		if (pic3.picIndex >= 0)
 		{
 			DrawBTPic(
 				x + pic3.dx, y + pic3.dy,
-				gPics[pic3.picIndex], tint);
+				PicManagerGetOldPic(&gPicManager, pic3.picIndex), tint);
 		}
 	}
 	else
@@ -292,19 +293,22 @@ void DrawCharacter(int x, int y, TActor * actor)
 		{
 			Blit(
 				x + pic1.dx, y + pic1.dy,
-				gPics[pic1.picIndex], table, BLIT_TRANSPARENT);
+				PicManagerGetOldPic(&gPicManager, pic1.picIndex),
+				table, BLIT_TRANSPARENT);
 		}
 		if (pic2.picIndex >= 0)
 		{
 			Blit(
 				x + pic2.dx, y + pic2.dy,
-				gPics[pic2.picIndex], table, BLIT_TRANSPARENT);
+				PicManagerGetOldPic(&gPicManager, pic2.picIndex),
+				table, BLIT_TRANSPARENT);
 		}
 		if (pic3.picIndex >= 0)
 		{
 			Blit(
 				x + pic3.dx, y + pic3.dy,
-				gPics[pic3.picIndex], table, BLIT_TRANSPARENT);
+				PicManagerGetOldPic(&gPicManager, pic3.picIndex),
+				table, BLIT_TRANSPARENT);
 		}
 	}
 }
@@ -887,7 +891,7 @@ void KillAllActors(void)
 	}
 }
 
-unsigned char BestMatch(int r, int g, int b)
+unsigned char BestMatch(const TPalette palette, int r, int g, int b)
 {
 	int d, dMin = 0;
 	int i;
@@ -895,9 +899,9 @@ unsigned char BestMatch(int r, int g, int b)
 
 	for (i = 0; i < 256; i++)
 	{
-		d = (r - gPalette[i].r) * (r - gPalette[i].r) +
-			(g - gPalette[i].g) * (g - gPalette[i].g) +
-			(b - gPalette[i].b) * (b - gPalette[i].b);
+		d = (r - palette[i].r) * (r - palette[i].r) +
+			(g - palette[i].g) * (g - palette[i].g) +
+			(b - palette[i].b) * (b - palette[i].b);
 		if (best < 0 || d < dMin)
 		{
 			best = i;
@@ -923,7 +927,7 @@ void SetCharacter(int idx, int face, int skin, int hair, int body, int arms, int
 	SetCharacterColors(&gCharacterDesc[idx].table, arms, body, legs, skin, hair);
 }
 
-void BuildTranslationTables(void)
+void BuildTranslationTables(const TPalette palette)
 {
 	int i;
 	unsigned char f;
@@ -931,52 +935,54 @@ void BuildTranslationTables(void)
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.3 * gPalette[i].r +
-			0.59 * gPalette[i].g +
-			0.11 * gPalette[i].b);
-		tableFlamed[i] = BestMatch(f, 0, 0);
+			0.3 * palette[i].r +
+			0.59 * palette[i].g +
+			0.11 * palette[i].b);
+		tableFlamed[i] = BestMatch(palette, f, 0, 0);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].r +
-			0.49 * gPalette[i].g +
-			0.11 * gPalette[i].b);
-		tableGreen[i] = BestMatch(0, 2 * f / 3, 0);
+			0.4 * palette[i].r +
+			0.49 * palette[i].g +
+			0.11 * palette[i].b);
+		tableGreen[i] = BestMatch(palette, 0, 2 * f / 3, 0);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		tablePoison[i] = BestMatch(
-			gPalette[i].r + 5,
-			gPalette[i].g + 15,
-			gPalette[i].b + 5);
+			palette,
+			palette[i].r + 5,
+			palette[i].g + 15,
+			palette[i].b + 5);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].r +
-			0.49 * gPalette[i].g +
-			0.11 * gPalette[i].b);
-		tableGray[i] = BestMatch(f, f, f);
+			0.4 * palette[i].r +
+			0.49 * palette[i].g +
+			0.11 * palette[i].b);
+		tableGray[i] = BestMatch(palette, f, f, f);
 	}
 	for (i = 0; i < 256; i++)
 	{
-		tableBlack[i] = BestMatch(0, 0, 0);
+		tableBlack[i] = BestMatch(palette, 0, 0, 0);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		f = (unsigned char)floor(
-			0.4 * gPalette[i].r +
-			0.49 * gPalette[i].g +
-			0.11 * gPalette[i].b);
-		tablePurple[i] = BestMatch(f, 0, f);
+			0.4 * palette[i].r +
+			0.49 * palette[i].g +
+			0.11 * palette[i].b);
+		tablePurple[i] = BestMatch(palette, f, 0, f);
 	}
 	for (i = 0; i < 256; i++)
 	{
 		tableDarker[i] = BestMatch(
-			(200 * gPalette[i].r) / 256,
-			(200 * gPalette[i].g) / 256,
-			(200 * gPalette[i].b) / 256);
+			palette,
+			(200 * palette[i].r) / 256,
+			(200 * palette[i].g) / 256,
+			(200 * palette[i].b) / 256);
 	}
 }
 

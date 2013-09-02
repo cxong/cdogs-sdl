@@ -55,7 +55,7 @@
 #include "map.h"
 #include "palette.h"
 #include "defs.h"
-#include "pics.h"
+#include "pic_manager.h"
 #include "actors.h"
 
 
@@ -926,8 +926,10 @@ void SetRange(int start, int range)
 	int i;
 
 	for (i = 0; i < 8; i++)
-		gPalette[start + i] = cColorRanges[range].range[i];
-	CDogsSetPalette(gPalette);
+	{
+		gPicManager.palette[start + i] = cColorRanges[range].range[i];
+	}
+	CDogsSetPalette(gPicManager.palette);
 }
 
 void SetupMission(int idx, int buildTables, CampaignOptions *campaign)
@@ -980,7 +982,9 @@ void SetupMission(int idx, int buildTables, CampaignOptions *campaign)
 	SetupWeapons(m->weaponSelection);
 	SetPaletteRanges(m->wallRange, m->floorRange, m->roomRange, m->altRange);
 	if (buildTables)
-		BuildTranslationTables();
+	{
+		BuildTranslationTables(gPicManager.palette);
+	}
 }
 
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range)

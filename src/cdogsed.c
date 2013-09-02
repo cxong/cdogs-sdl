@@ -64,7 +64,7 @@
 #include <cdogs/mission.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
-#include <cdogs/pics.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
@@ -372,7 +372,9 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 
 	if (pic.picIndex >= 0)
 	{
-		DrawTTPic(60 + pic.dx, y + 8 + pic.dy, gPics[pic.picIndex], table);
+		DrawTTPic(
+			60 + pic.dx, y + 8 + pic.dy,
+			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 
 	sprintf(s, "%d", currentMission->objectives[idx].required);
@@ -475,8 +477,12 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
 	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
 
-	DrawTTPic(x + body.dx, y + body.dy, gPics[body.picIndex], cd->table);
-	DrawTTPic(x + head.dx, y + head.dy, gPics[head.picIndex], cd->table);
+	DrawTTPic(
+		x + body.dx, y + body.dy,
+		PicManagerGetOldPic(&gPicManager, body.picIndex), cd->table);
+	DrawTTPic(
+		x + head.dx, y + head.dy,
+		PicManagerGetOldPic(&gPicManager, head.picIndex), cd->table);
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 16);
@@ -535,7 +541,9 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	char s[10];
 
 	const TOffsetPic *pic = &cGeneralPics[mo->pic];
-	DrawTPic(x + pic->dx, y + pic->dy, gPics[pic->picIndex]);
+	DrawTPic(
+		x + pic->dx, y + pic->dy,
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 
 	if (hilite) {
 		CDogsTextGoto(x - 8, y - 4);
@@ -612,21 +620,21 @@ static void DisplayMission(int idx, int xc, int yc, int y)
 		Vec2iNew(20, y),
 		"Wall",
 		&gGraphicsDevice,
-		gPics[cWallPics[currentMission->wallStyle % WALL_STYLE_COUNT][WALL_SINGLE]],
+		PicManagerGetOldPic(&gPicManager, cWallPics[currentMission->wallStyle % WALL_STYLE_COUNT][WALL_SINGLE]),
 		currentMission->wallStyle, WALL_STYLE_COUNT,
 		yc == YC_MISSIONLOOKS && xc == XC_WALL);
 	DrawStyleArea(
 		Vec2iNew(50, y),
 		"Floor",
 		&gGraphicsDevice,
-		gPics[cFloorPics[currentMission->floorStyle % FLOOR_STYLE_COUNT][FLOOR_NORMAL]],
+		PicManagerGetOldPic(&gPicManager, cFloorPics[currentMission->floorStyle % FLOOR_STYLE_COUNT][FLOOR_NORMAL]),
 		currentMission->floorStyle, FLOOR_STYLE_COUNT,
 		yc == YC_MISSIONLOOKS && xc == XC_FLOOR);
 	DrawStyleArea(
 		Vec2iNew(80, y),
 		"Rooms",
 		&gGraphicsDevice,
-		gPics[cRoomPics[currentMission->roomStyle % ROOMFLOOR_COUNT][ROOMFLOOR_NORMAL]],
+		PicManagerGetOldPic(&gPicManager, cRoomPics[currentMission->roomStyle % ROOMFLOOR_COUNT][ROOMFLOOR_NORMAL]),
 		currentMission->roomStyle, ROOMFLOOR_COUNT,
 		yc == YC_MISSIONLOOKS && xc == XC_ROOM);
 	GetEditorInfo(&ei);
@@ -634,21 +642,21 @@ static void DisplayMission(int idx, int xc, int yc, int y)
 		Vec2iNew(110, y),
 		"Doors",
 		&gGraphicsDevice,
-		gPics[cGeneralPics[gMission.doorPics[0].horzPic].picIndex],
+		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
 		currentMission->doorStyle, ei.doorCount,
 		yc == YC_MISSIONLOOKS && xc == XC_DOORS);
 	DrawStyleArea(
 		Vec2iNew(140, y),
 		"Keys",
 		&gGraphicsDevice,
-		gPics[cGeneralPics[gMission.keyPics[0]].picIndex],
+		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
 		currentMission->keyStyle, ei.keyCount,
 		yc == YC_MISSIONLOOKS && xc == XC_KEYS);
 	DrawStyleArea(
 		Vec2iNew(170, y),
 		"Exit",
 		&gGraphicsDevice,
-		gPics[gMission.exitPic],
+		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
 		currentMission->exitStyle, ei.exitCount,
 		yc == YC_MISSIONLOOKS && xc == XC_EXIT);
 
@@ -736,7 +744,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 
 	if (fileChanged)
 	{
-		DrawTPic(10, y, gPics[221]);
+		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
 	}
 
 	DrawTextString("Press F1 for help", &gGraphicsDevice, Vec2iNew(20, 200));
@@ -1790,32 +1798,28 @@ int main(int argc, char *argv[])
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
-	if (!ReadPics(GetDataFilePath("graphics/cdogs.px"), gPics, PIC_COUNT1, gPalette)) {
-		printf("Unable to read CDOGS.PX\n");
+	if (!PicManagerTryInit(
+		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+	{
 		exit(0);
 	}
-	if (!AppendPics(GetDataFilePath("graphics/cdogs2.px"), gPics, PIC_COUNT1, PIC_MAX)) {
-		printf("Unable to read CDOGS2.PX\n");
-		exit(0);
-	}
-	gPalette[0].r = gPalette[0].g = gPalette[0].b = 0;
-	memcpy(origPalette, gPalette, sizeof(origPalette));
+	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
 	InitializeTranslationTables();
-	BuildTranslationTables();
+	BuildTranslationTables(gPicManager.palette);
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	GraphicsInit(&gGraphicsDevice);
-	GraphicsInitialize(&gGraphicsDevice, &gConfig.Graphics, 0);
+	GraphicsInitialize(
+		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
 
-	CDogsSetPalette(gPalette);
-	InputInit(&gInputDevices, gPics[145]);
+	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 145));
 
 	for (i = 1; i < argc; i++)
 	{
@@ -1847,5 +1851,6 @@ int main(int argc, char *argv[])
 	EditCampaign();
 
 	GraphicsTerminate(&gGraphicsDevice);
+	PicManagerTerminate(&gPicManager);
 	exit(EXIT_SUCCESS);
 }

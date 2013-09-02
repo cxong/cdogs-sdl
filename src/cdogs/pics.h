@@ -245,9 +245,7 @@ struct Offset {
 typedef struct Offset OffsetTable[DIRECTION_COUNT];
 
 
-extern TPalette gPalette, origPalette;
-extern PicPaletted *gPics[PIC_MAX];
-
+extern TPalette origPalette;
 
 extern const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT];
 extern const int cHeadPic[FACE_COUNT][DIRECTION_COUNT][STATE_COUNT+2];
