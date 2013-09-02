@@ -10,6 +10,7 @@ autosave_test
 config_test
 tmp
 libjson.a
+.cdogs/
 
 # CMake stuff
 *CMakeCache.txt
