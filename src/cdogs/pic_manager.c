@@ -53,6 +53,29 @@ int PicManagerTryInit(
 	return 1;
 }
 
+void PicManagerGenerateOldPics(PicManager *pm)
+{
+	int i;
+	// Convert old pics into new format ones
+	// TODO: this is wasteful; better to eliminate old pics altogether
+	for (i = 0; i < PIC_MAX; i++)
+	{
+		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
+		if (PicIsNotNone(&pm->picsFromOld[i]))
+		{
+			PicFree(&pm->picsFromOld[i]);
+		}
+		if (oldPic == NULL)
+		{
+			memcpy(&pm->picsFromOld[i], &picNone, sizeof picNone);
+		}
+		else
+		{
+			PicFromPicPaletted(&pm->picsFromOld[i], oldPic);
+		}
+	}
+}
+
 void PicManagerTerminate(PicManager *pm)
 {
 	int i;
@@ -62,10 +85,18 @@ void PicManagerTerminate(PicManager *pm)
 		{
 			CFREE(pm->oldPics[i]);
 		}
+		if (PicIsNotNone(&pm->picsFromOld[i]))
+		{
+			PicFree(&pm->picsFromOld[i]);
+		}
 	}
 }
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
 {
 	return pm->oldPics[idx];
+}
+Pic *PicManagerGetFromOld(PicManager *pm, int idx)
+{
+	return &pm->picsFromOld[idx];
 }

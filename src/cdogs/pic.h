@@ -38,11 +38,12 @@ typedef struct
 	color_t *data;
 } Pic;
 
+extern Pic picNone;
+
 void PicFromPicPaletted(Pic *pic, PicPaletted *picP);
 void PicFromPicPalettedOffset(
 	Pic *pic, PicPaletted *picP, const TOffsetPic *picOff);
 void PicFree(Pic *pic);
-Pic PicNone(void);
 int PicIsNotNone(Pic *pic);
 
 #endif

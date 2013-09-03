@@ -111,7 +111,7 @@ typedef struct TileItem TTileItem;
 
 typedef struct
 {
-	Pic pic;
+	Pic *pic;
 	Pic picAlt;
 	int flags;
 	int isVisited;

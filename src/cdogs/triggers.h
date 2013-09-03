@@ -68,7 +68,7 @@
 struct Action {
 	int action;
 	int x, y;
-	Pic tilePic;
+	Pic *tilePic;
 	Pic tilePicAlt;
 	int tileFlags;
 };

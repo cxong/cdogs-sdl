@@ -70,7 +70,7 @@ void FixBuffer(DrawBuffer *buffer, int isShadow)
 			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
-				tile->pic = PicNone();
+				tile->pic = &picNone;
 			}
 			else if ((tile->flags & MAPTILE_IS_WALL) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
@@ -203,7 +203,7 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 	{
 		BlitMasked(
 			&gGraphicsDevice,
-			&tile->pic,
+			tile->pic,
 			pos,
 			GetTileLOSMask(tile),
 			0);
@@ -239,12 +239,12 @@ void DrawFloor(DrawBuffer *b, int xOffset)
 			 x < b->width;
 			 x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (PicIsNotNone(&tile->pic) &&
+			if (PicIsNotNone(tile->pic) &&
 				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
 				BlitMasked(
 					&gGraphicsDevice,
-					&tile->pic,
+					tile->pic,
 					pos,
 					GetTileLOSMask(tile),
 					0);

@@ -448,13 +448,9 @@ static int GetWallPic(int x, int y)
 	return WALL_SINGLE;
 }
 
-static void PicLoad(Pic *pic, int idx)
+static void PicLoadOffset(Pic **pic, Pic *picAlt, int idx)
 {
-	PicFromPicPaletted(pic, PicManagerGetOldPic(&gPicManager, idx));
-}
-static void PicLoadOffset(Pic *pic, Pic *picAlt, int idx)
-{
-	PicFromPicPaletted(pic, PicManagerGetOldPic(&gPicManager, idx));
+	*pic = PicManagerGetFromOld(&gPicManager, idx);
 	PicFromPicPalettedOffset(
 		picAlt,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[idx].picIndex),
@@ -472,11 +468,13 @@ static void FixMap(int floor, int room, int wall)
 			case MAP_SQUARE:
 				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 				{
-					PicLoad(&Map(x, y).pic, cFloorPics[floor][FLOOR_SHADOW]);
+					Map(x, y).pic = PicManagerGetFromOld(
+						&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 				}
 				else
 				{
-					PicLoad(&Map(x, y).pic, cFloorPics[floor][FLOOR_NORMAL]);
+					Map(x, y).pic = PicManagerGetFromOld(
+						&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
 					// Normal floor tiles can be replaced randomly with
 					// special floor tiles such as drainage
 					Map(x, y).flags |= MAPTILE_IS_NORMAL_FLOOR;
@@ -487,16 +485,19 @@ static void FixMap(int floor, int room, int wall)
 			case MAP_DOOR:
 				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 				{
-					PicLoad(&Map(x, y).pic, cRoomPics[room][ROOMFLOOR_SHADOW]);
+					Map(x, y).pic = PicManagerGetFromOld(
+						&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 				}
 				else
 				{
-					PicLoad(&Map(x, y).pic, cRoomPics[room][ROOMFLOOR_NORMAL]);
+					Map(x, y).pic = PicManagerGetFromOld(
+						&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
 				}
 				break;
 
 			case MAP_WALL:
-				PicLoad(&Map(x, y).pic, cWallPics[wall][GetWallPic(x, y)]);
+				Map(x, y).pic = PicManagerGetFromOld(
+					&gPicManager, cWallPics[wall][GetWallPic(x, y)]);
 				Map(x, y).flags =
 				    MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 				break;
@@ -513,7 +514,7 @@ static void FixMap(int floor, int room, int wall)
 		y = (rand() % YMAX) & 0xFFFFFE;
 		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
 		{
-			PicLoad(&Map(x, y).pic, PIC_DRAINAGE);
+			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, PIC_DRAINAGE);
 			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
 			Map(x, y).flags |= MAPTILE_IS_DRAINAGE;
 		}
@@ -523,7 +524,8 @@ static void FixMap(int floor, int room, int wall)
 		y = rand() % YMAX;
 		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
 		{
-			PicLoad(&Map(x, y).pic, cFloorPics[floor][FLOOR_1]);
+			Map(x, y).pic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_1]);
 			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
 		}
 	}
@@ -532,7 +534,8 @@ static void FixMap(int floor, int room, int wall)
 		y = rand() % YMAX;
 		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
 		{
-			PicLoad(&Map(x, y).pic, cFloorPics[floor][FLOOR_2]);
+			Map(x, y).pic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_2]);
 			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
 		}
 	}
@@ -550,11 +553,11 @@ void ChangeFloor(int x, int y, int normal, int shadow)
 		}
 		if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
 		{
-			PicLoad(&Map(x, y).pic, shadow);
+			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, shadow);
 		}
 		else
 		{
-			PicLoad(&Map(x, y).pic, normal);
+			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, normal);
 		}
 		break;
 	}
@@ -873,7 +876,7 @@ static void VertDoor(int x, int y, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	PicLoad(&a[2].tilePic, pic);
+	a[2].tilePic = PicManagerGetFromOld(&gPicManager, pic);
 	if (tileFlags & MAPTILE_OFFSET_PIC)
 	{
 		PicLoadOffset(&a[2].tilePic, &a[2].tilePicAlt, pic);
@@ -964,11 +967,13 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
-		PicLoad(&Map(x, y + 1).pic, cFloorPics[floor][FLOOR_SHADOW]);
+		Map(x, y + 1).pic = PicManagerGetFromOld(
+			&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 	}
 	else
 	{
-		PicLoad(&Map(x, y + 1).pic, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		Map(x, y + 1).pic = PicManagerGetFromOld(
+			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 	}
 
 	// Create the watch responsible for closing the door
@@ -1002,7 +1007,7 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	PicFromPicPaletted(&a[2].tilePic, PicManagerGetOldPic(&gPicManager, pic));
+	a[2].tilePic = PicManagerGetFromOld(&gPicManager, pic);
 	if (tileFlags & MAPTILE_OFFSET_PIC)
 	{
 		PicLoadOffset(&a[2].tilePic, &a[2].tilePicAlt, pic);
@@ -1015,15 +1020,13 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[3].y = y + 1;
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
-		PicFromPicPaletted(
-			&a[3].tilePic,
-			PicManagerGetOldPic(&gPicManager, cFloorPics[floor][FLOOR_SHADOW]));
+		a[3].tilePic = PicManagerGetFromOld(
+			&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 	}
 	else
 	{
-		PicFromPicPaletted(
-			&a[3].tilePic,
-			PicManagerGetOldPic(&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]));
+		a[3].tilePic = PicManagerGetFromOld(
+			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 	}
 	a[3].tileFlags = MAPTILE_TILE_TRIGGER;
 
@@ -1051,9 +1054,8 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[2].action = ACTION_CHANGETILE;
 	a[2].x = x;
 	a[2].y = y;
-	PicFromPicPaletted(
-		&a[2].tilePic,
-		PicManagerGetOldPic(&gPicManager, gMission.doorPics[5].horzPic));
+	a[2].tilePic = PicManagerGetFromOld(
+		&gPicManager, gMission.doorPics[5].horzPic);
 	a[2].tileFlags = 0;
 
 	// Remove shadow below door (also clears trigger)
@@ -1062,15 +1064,13 @@ static void HorzDoor(int x, int y, int floor, int room, int flags)
 	a[3].y = y + 1;
 	if (iMap(x, y + 1) == MAP_FLOOR)
 	{
-		PicFromPicPaletted(
-			&a[3].tilePic,
-			PicManagerGetOldPic(&gPicManager, cFloorPics[floor][FLOOR_NORMAL]));
+		a[3].tilePic = PicManagerGetFromOld(
+			&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
 	}
 	else
 	{
-		PicFromPicPaletted(
-			&a[3].tilePic,
-			PicManagerGetOldPic(&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]));
+		a[3].tilePic = PicManagerGetFromOld(
+			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 	}
 	a[3].tileFlags = 0;
 
@@ -1182,7 +1182,16 @@ void SetupMap(void)
 	int room = mission->roomStyle % ROOMFLOOR_COUNT;
 	int x, y, w, h;
 
+	PicManagerGenerateOldPics(&gPicManager);
 	memset(gMap, 0, sizeof(gMap));
+	for (y = 0; y < YMAX; y++)
+	{
+		for (x = 0; x < XMAX; x++)
+		{
+			Map(x, y).pic = &picNone;
+			memcpy(&Map(x, y).picAlt, &picNone, sizeof picNone);
+		}
+	}
 	memset(internalMap, 0, sizeof(internalMap));
 	tilesSeen = 0;
 

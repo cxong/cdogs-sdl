@@ -30,6 +30,8 @@
 #include "palette.h"
 #include "utils.h"
 
+Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
+
 void PicFromPicPaletted(Pic *pic, PicPaletted *picP)
 {
 	int i;
@@ -51,14 +53,6 @@ void PicFromPicPalettedOffset(
 void PicFree(Pic *pic)
 {
 	CFREE(pic->data);
-}
-
-Pic PicNone(void)
-{
-	Pic pic;
-	pic.size = Vec2iZero();
-	pic.data = NULL;
-	return pic;
 }
 
 int PicIsNotNone(Pic *pic)

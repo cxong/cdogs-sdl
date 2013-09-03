@@ -34,6 +34,7 @@
 typedef struct
 {
 	PicPaletted *oldPics[PIC_MAX];
+	Pic picsFromOld[PIC_MAX];
 	TPalette palette;
 } PicManager;
 
@@ -41,8 +42,11 @@ extern PicManager gPicManager;
 
 int PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
+// Old paletted pics need the palette to be set before using
+void PicManagerGenerateOldPics(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
+Pic *PicManagerGetFromOld(PicManager *pm, int idx);
 
 #endif
