@@ -359,13 +359,19 @@ void Detour(TActor * actor)
 		    (CmdToDirection(actor->lastCmd) + 7) % 8;
 }
 
+static int IsActorPositionValid(TActor *actor)
+{
+	Vec2i pos = Vec2iNew(actor->x, actor->y);
+	actor->x = actor->y = 0;
+	return MoveActor(actor, pos.x, pos.y);
+}
+
 static int TryPlaceBaddie(TActor *actor)
 {
 	int hasPlaced = 0;
 	int i;
-	for (i = 0; i < 10; i++)	// Don't try forever trying to place baddie
+	for (i = 0; i < 100; i++)	// Don't try forever trying to place baddie
 	{
-		Vec2i pos;
 		// Try spawning out of players' sights
 		do
 		{
@@ -374,13 +380,24 @@ static int TryPlaceBaddie(TActor *actor)
 		}
 		while ((gPlayer1 && Distance(actor, gPlayer1) < 256 * 150) ||
 			(gPlayer2 && Distance(actor, gPlayer2) < 256 * 150));
-		pos.x = actor->x;
-		pos.y = actor->y;
-		actor->x = actor->y = 0;
-		if (MoveActor(actor, pos.x, pos.y))
+		if (IsActorPositionValid(actor))
 		{
 			hasPlaced = 1;
 			break;
+		}
+	}
+	if (!hasPlaced)
+	{
+		// Keep trying, but this time try spawning anywhere, even close to player
+		for (i = 0; i < 100; i++)	// Don't try forever trying to place baddie
+		{
+			actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
+			actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
+			if (IsActorPositionValid(actor))
+			{
+				hasPlaced = 1;
+				break;
+			}
 		}
 	}
 
