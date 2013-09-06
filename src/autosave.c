@@ -31,6 +31,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <json/json.h>
 
@@ -71,6 +72,12 @@ static void LoadMissionNode(MissionSave *m, json_t *node)
 {
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
+	m->IsValid = 1;
+	// If the campaign is from a file, check that file exists
+	if (!m->Campaign.isBuiltin)
+	{
+		m->IsValid = access(m->Campaign.path, F_OK | R_OK) != -1;
+	}
 }
 static json_t *CreateMissionNode(MissionSave *m)
 {

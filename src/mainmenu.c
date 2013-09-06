@@ -75,7 +75,8 @@ MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	if (strlen(gAutosave.LastMission.Password) > 0)
+	if (strlen(gAutosave.LastMission.Password) > 0 &&
+		gAutosave.LastMission.IsValid)
 	{
 		MenuAddSubmenu(
 			ms->root,
