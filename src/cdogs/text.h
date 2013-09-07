@@ -76,6 +76,7 @@ Vec2i DrawTextCharMasked(
 Vec2i DrawTextStringMasked(
 	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask);
 Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos);
+Vec2i TextGetSize(const char *s);
 
 #define TEXT_XCENTER		1
 #define TEXT_YCENTER		2

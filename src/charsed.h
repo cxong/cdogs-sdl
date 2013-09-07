@@ -29,5 +29,6 @@ extern int fileChanged;
 
 void DisplayFlag(int x, int y, const char *s, int on, int hilite);
 void EditCharacters(CampaignSetting *setting);
+void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s);
 
 #endif

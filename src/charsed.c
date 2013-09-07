@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
@@ -241,12 +242,69 @@ void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 		CDogsTextString("Off");
 }
 
+static void DrawTooltips(
+	GraphicsDevice *device, Vec2i pos, int yc, int xc, int mouseYc, int mouseXc)
+{
+	UNUSED(yc);
+	UNUSED(xc);
+	switch (mouseYc)
+	{
+		case YC_ATTRIBUTES:
+			switch (mouseXc)
+			{
+				case XC_TRACK:
+					DrawTooltip(device, pos,
+						"Looking towards the player\n"
+						"Useless for friendly characters");
+					break;
+				case XC_DELAY:
+					DrawTooltip(device, pos,
+						"Frames before making another decision");
+					break;
+			}
+			break;
+		case YC_FLAGS:
+			switch (mouseXc)
+			{
+				case XC_IMMUNITY:
+					DrawTooltip(device, pos, "Immune to poison");
+					break;
+				case XC_RUNS_AWAY:
+					DrawTooltip(device, pos, "Runs away from player");
+					break;
+				case XC_SNEAKY:
+					DrawTooltip(device, pos, "Shoots back when player shoots");
+					break;
+				case XC_SLEEPING:
+					DrawTooltip(device, pos, "Doesn't move unless seen");
+					break;
+			}
+			break;
+		case YC_FLAGS2:
+			switch (mouseXc)
+			{
+				case XC_PRISONER:
+					DrawTooltip(device, pos, "Doesn't move until touched");
+					break;
+				case XC_PENALTY:
+					DrawTooltip(device, pos, "Large score penalty when shot");
+					break;
+				case XC_VICTIM:
+					DrawTooltip(device, pos, "Takes damage from everyone");
+					break;
+			}
+		default:
+			break;
+	}
+}
+
 static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
 	const TBadGuy *b;
 	int i;
+	int tag;
 
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
@@ -340,6 +398,14 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		}
 	}
 
+	if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+	{
+		int mouseYc = tag & 0xFF;
+		int mouseXc = (tag & 0xFF00) >> 8;
+		Vec2i tooltipPos = Vec2iAdd(
+			gInputDevices.mouse.currentPos, Vec2iNew(10, 10));
+		DrawTooltips(&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
+	}
 	MouseDraw(&gInputDevices.mouse);
 
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
@@ -740,4 +806,12 @@ void EditCharacters(CampaignSetting *setting)
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}
+}
+
+void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)
+{
+	Vec2i bgSize = TextGetSize(s);
+	color_t bgColor = { 64, 64, 64, 196 };
+	DrawRectangle(device, pos, bgSize, bgColor, 0);
+	DrawTextString(s, device, pos);
 }

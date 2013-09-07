@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
@@ -718,6 +719,44 @@ static void DisplayMission(int idx, int xc, int yc, int y)
 	}
 }
 
+static void DrawTooltips(
+	GraphicsDevice *device, Vec2i pos, int yc, int xc, int mouseYc, int mouseXc)
+{
+	UNUSED(xc);
+	switch (mouseYc)
+	{
+		case YC_CAMPAIGNTITLE:
+			if (yc == YC_ITEMS)
+			{
+				DrawTooltip(device, pos, "Shift+click to change amounts");
+			}
+			break;
+		case YC_MISSIONPROPS:
+			switch (mouseXc)
+			{
+				case XC_DENSITY:
+					DrawTooltip(
+						device, pos, "Number of non-objective characters");
+					break;
+			}
+			break;
+		case YC_OBJECTIVES:
+			DrawTooltip(device, pos, "insert/delete: add/remove objective");
+			break;
+		case YC_OBJECTIVES + 1:
+		case YC_OBJECTIVES + 2:
+		case YC_OBJECTIVES + 3:
+		case YC_OBJECTIVES + 4:
+			if (yc == YC_OBJECTIVES)
+			{
+				DrawTooltip(device, pos, "0 required: optional objective");
+			}
+			break;
+		default:
+			break;
+	}
+}
+
 static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 {
 	char s[128];
@@ -853,6 +892,16 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	}
 	else
 	{
+		int tag;
+		if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+		{
+			int mouseYc = tag & 0xFF;
+			int mouseXc = (tag & 0xFF00) >> 8;
+			Vec2i tooltipPos = Vec2iAdd(
+				gInputDevices.mouse.currentPos, Vec2iNew(10, 10));
+			DrawTooltips(
+				&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
+		}
 		MouseDraw(&gInputDevices.mouse);
 	}
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
@@ -1447,6 +1496,7 @@ static void HelpScreen(void)
 		"Help\n"
 		"====\n"
 		"Use mouse to select controls; keyboard to type text\n"
+		"Open files by dragging them over the editor shortcut\n"
 		"\n"
 		"Common commands\n"
 		"===============\n"

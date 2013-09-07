@@ -117,25 +117,31 @@ static void DisplayObjective(
 
 static void DisplayExit(Vec2i pos, int scale, int flags)
 {
-	int x1, x2, y1, y2;
+	Vec2i exitPos = Vec2iNew(
+		gMission.exitLeft, gMission.exitTop);
+	Vec2i exitSize = Vec2iAdd(
+		Vec2iNew(gMission.exitRight, gMission.exitBottom),
+		Vec2iScale(exitPos, -1));
 	color_t color = colorExit;
 
 	if (!CanCompleteMission(&gMission))
 	{
 		return;
 	}
-
-	x1 = scale * gMission.exitLeft / TILE_WIDTH + pos.x;
-	y1 = scale * gMission.exitTop / TILE_HEIGHT + pos.y;
-	x2 = scale * gMission.exitRight / TILE_WIDTH + pos.x;
-	y2 = scale * gMission.exitBottom / TILE_HEIGHT + pos.y;
+	
+	exitPos = Vec2iScale(exitPos, scale);
+	exitSize = Vec2iScale(exitSize, scale);
+	exitPos.x /= TILE_WIDTH;
+	exitSize.x /= TILE_WIDTH;
+	exitPos.y /= TILE_HEIGHT;
+	exitSize.y /= TILE_HEIGHT;
+	exitPos = Vec2iAdd(exitPos, pos);
 
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
 		color.a = MASK_ALPHA;
 	}
-	DrawRectangle(
-		&gGraphicsDevice, x1, y1, x2 - x1, y2 - y1, color, DRAW_FLAG_LINE);
+	DrawRectangle(&gGraphicsDevice, exitPos, exitSize, color, DRAW_FLAG_LINE);
 }
 
 static void DisplaySummary(void)

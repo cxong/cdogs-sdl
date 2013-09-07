@@ -161,9 +161,18 @@ Vec2i DrawTextCharMasked(
 Vec2i DrawTextStringMasked(
 	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask)
 {
+	int left = pos.x;
 	while (*s)
 	{
-		pos = DrawTextCharMasked(*s, device, pos, mask);
+		if (*s == '\n')
+		{
+			pos.x = left;
+			pos.y += CDogsTextHeight();
+		}
+		else
+		{
+			pos = DrawTextCharMasked(*s, device, pos, mask);
+		}
 		s++;
 	}
 	return pos;
@@ -172,6 +181,27 @@ Vec2i DrawTextStringMasked(
 Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos)
 {
 	return DrawTextStringMasked(s, device, pos, colorWhite);
+}
+
+Vec2i TextGetSize(const char *s)
+{
+	Vec2i size = Vec2iZero();
+	while (*s)
+	{
+		char *lineEnd = strchr(s, '\n');
+		size.y += CDogsTextHeight();
+		if (lineEnd)
+		{
+			size.x = MAX(size.x, TextGetSubstringWidth(s, lineEnd - s));
+			s = lineEnd + 1;
+		}
+		else
+		{
+			size.x = MAX(size.x, TextGetStringWidth(s));
+			s += strlen(s);
+		}
+	}
+	return size;
 }
 
 void CDogsTextGoto(int x, int y)

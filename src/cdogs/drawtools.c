@@ -203,25 +203,24 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 	screen[idx] = PixelFromColor(device, c);
 }
 
-void DrawRectangleRaw(
-	GraphicsDevice *device,
-	int left, int top, int width, int height, color_t color, int flags)
+void DrawRectangle(
+	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
 {
 	int y;
-	if (width < 3 || height < 3)
+	if (size.x < 3 || size.y < 3)
 	{
 		flags &= ~DRAW_FLAG_ROUNDED;
 	}
-	for (y = MAX(top, device->clipping.top);
-		y < MIN(top + height, device->clipping.bottom + 1);
+	for (y = MAX(pos.y, device->clipping.top);
+		y < MIN(pos.y + size.y, device->clipping.bottom + 1);
 		y++)
 	{
-		int isFirstOrLastLine = y == top || y == top + height - 1;
+		int isFirstOrLastLine = y == pos.y || y == pos.y + size.y - 1;
 		if (isFirstOrLastLine && (flags & DRAW_FLAG_ROUNDED))
 		{
 			int x;
-			for (x = MAX(left + 1, device->clipping.left);
-				x < MIN(left + width - 1, device->clipping.right + 1);
+			for (x = MAX(pos.x + 1, device->clipping.left);
+				x < MIN(pos.x + size.x - 1, device->clipping.right + 1);
 				x++)
 			{
 				Draw_Point(x, y, color);
@@ -229,33 +228,20 @@ void DrawRectangleRaw(
 		}
 		else if (!isFirstOrLastLine && (flags & DRAW_FLAG_LINE))
 		{
-			Draw_Point(left, y, color);
-			Draw_Point(left + width - 1, y, color);
+			Draw_Point(pos.x, y, color);
+			Draw_Point(pos.x + size.x - 1, y, color);
 		}
 		else
 		{
 			int x;
-			for (x = MAX(left, device->clipping.left);
-				x < MIN(left + width, device->clipping.right + 1);
+			for (x = MAX(pos.x, device->clipping.left);
+				x < MIN(pos.x + size.x, device->clipping.right + 1);
 				x++)
 			{
 				Draw_Point(x, y, color);
 			}
 		}
 	}
-}
-
-void DrawRectangle(
-	GraphicsDevice *device,
-	int left, int top, int width, int height, color_t color, int flags)
-{
-	DrawRectangleRaw(device, left, top, width, height, color, flags);
-}
-
-void DrawRectangleRGB(
-	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
-{
-	DrawRectangleRaw(device, pos.x, pos.y, size.x, size.y, color, flags);
 }
 
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color)

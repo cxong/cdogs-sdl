@@ -160,8 +160,8 @@ static void DrawGauge(
 		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
 		barPos.x = device->cachedConfig.ResolutionWidth - barPos.x - barSize.x;
 	}
-	DrawRectangleRGB(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
-	DrawRectangleRGB(device, barPos, barSize, barColor, 0);
+	DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
+	DrawRectangle(device, barPos, barSize, barColor, 0);
 }
 
 static void DrawWeaponStatus(
