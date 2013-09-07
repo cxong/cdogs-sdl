@@ -726,9 +726,26 @@ static void DrawTooltips(
 	switch (mouseYc)
 	{
 		case YC_CAMPAIGNTITLE:
-			if (yc == YC_ITEMS)
+			switch (yc)
 			{
-				DrawTooltip(device, pos, "Shift+click to change amounts");
+				case YC_ITEMS:
+					DrawTooltip(device, pos, "Shift+click to change amounts");
+					break;
+				case YC_OBJECTIVES:
+					switch (mouseXc)
+					{
+						case XC_REQUIRED:
+							DrawTooltip(device, pos, "0: optional objective");
+							break;
+						case XC_FLAGS:
+							DrawTooltip(device, pos,
+								"hidden: not shown on map\n"
+								"pos.known: always shown on map\n"
+								"access: in locked room\n"
+								"no-count: don't show completed count");
+							break;
+					}
+					break;
 			}
 			break;
 		case YC_MISSIONPROPS:
@@ -741,16 +758,11 @@ static void DrawTooltips(
 			}
 			break;
 		case YC_OBJECTIVES:
-			DrawTooltip(device, pos, "insert/delete: add/remove objective");
-			break;
 		case YC_OBJECTIVES + 1:
 		case YC_OBJECTIVES + 2:
 		case YC_OBJECTIVES + 3:
 		case YC_OBJECTIVES + 4:
-			if (yc == YC_OBJECTIVES)
-			{
-				DrawTooltip(device, pos, "0 required: optional objective");
-			}
+			DrawTooltip(device, pos, "insert/delete: add/remove objective");
 			break;
 		default:
 			break;
@@ -1514,27 +1526,12 @@ static void HelpScreen(void)
 		"Ctrl+X, C, V:                   Cut/copy/paste\n"
 		"Ctrl+M:                         Preview automap\n"
 		"F1:                             This screen\n";
-	const char *textP = helpText;
 	int i;
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
 	}
-	// Display help text line-by-line
-	for (;;)
-	{
-		char buf[256];
-		const char *eol = strchr(textP, '\n');
-		if (eol == NULL)
-		{
-			break;
-		}
-		strncpy(buf, textP, eol - textP);
-		buf[eol - textP] = '\0';
-		DrawTextString(buf, &gGraphicsDevice, pos);
-		pos.y += CDogsTextHeight();
-		textP = eol + 1;
-	}
+	DrawTextString(helpText, &gGraphicsDevice, pos);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	GetKey(&gInputDevices);
 }
