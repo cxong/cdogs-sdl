@@ -52,3 +52,5 @@ stderr.txt
 CMakeScripts/
 *.xcodeproj/
 .DS_Store
+*.dmg
+*.dylib
