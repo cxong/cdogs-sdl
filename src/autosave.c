@@ -31,12 +31,12 @@
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <json/json.h>
 
 #include <cdogs/json_utils.h>
 #include <cdogs/utils.h>
+#include <cdogs/sys_specifics.h>
 
 Autosave gAutosave;
 

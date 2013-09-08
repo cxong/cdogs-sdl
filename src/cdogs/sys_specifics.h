@@ -49,6 +49,13 @@
 
 #ifdef _MSC_VER
 #include <direct.h>
+#include <io.h>
+#define access _access
+/* Values for the second argument to access.
+   These may be OR'd together.  */
+#define R_OK    4       /* Test for read permission.  */
+#define W_OK    2       /* Test for write permission.  */
+#define F_OK    0       /* Test for existence.  */
 #else
 #include <sys/time.h>
 #include <unistd.h>
