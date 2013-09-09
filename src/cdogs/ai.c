@@ -64,9 +64,10 @@ static int gBaddieCount = 0;
 static int gAreGoodGuysPresent = 0;
 
 
-static int Facing(TActor * a, TActor * a2)
+static int IsFacing(TActor *a, TActor *a2, direction_e d)
 {
-	switch (a->direction) {
+	switch (d)
+	{
 	case DIRECTION_UP:
 		return (a->y > a2->y);
 	case DIRECTION_UPLEFT:
@@ -92,13 +93,17 @@ static int Facing(TActor * a, TActor * a2)
 }
 
 
-static int FacingPlayer(TActor * actor)
+static int IsFacingPlayer(TActor *actor, direction_e d)
 {
-	if (gPlayer1 && !gPlayer1->dead && Facing(actor, gPlayer1))
-		return YES;
-	if (gPlayer2 && !gPlayer2->dead && Facing(actor, gPlayer2))
-		return YES;
-	return NO;
+	if (gPlayer1 && !gPlayer1->dead && IsFacing(actor, gPlayer1, d))
+	{
+		return 1;
+	}
+	if (gPlayer2 && !gPlayer2->dead && IsFacing(actor, gPlayer2, d))
+	{
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -353,7 +358,9 @@ static int WillFire(TActor * actor, int roll)
 			return 1;
 		}
 		else
-			return FacingPlayer(actor);
+		{
+			return IsFacingPlayer(actor, actor->direction);
+		}
 	}
 	return 0;
 }
@@ -557,9 +564,24 @@ void CommandBadGuys(int ticks)
 					if (WillFire(actor, roll))
 					{
 						cmd |= CMD_BUTTON1;
-						// Turn back and shoot for running away characters
+						if (actor->flags & FLAGS_FOLLOWER)
+						{
+							// Shoot in a random direction away
+							int i;
+							for (i = 0; i < 10; i++)
+							{
+								direction_e d =
+									(direction_e)(rand() % DIRECTION_COUNT);
+								if (!IsFacingPlayer(actor, d))
+								{
+									cmd = DirectionToCmd(d) | CMD_BUTTON1;
+									break;
+								}
+							}
+						}
 						if (actor->flags & FLAGS_RUNS_AWAY)
 						{
+							// Turn back and shoot for running away characters
 							cmd |= ReverseDirection(Hunt(actor));
 						}
 					}
