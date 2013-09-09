@@ -182,6 +182,19 @@ static int Follow(TActor * actor)
 }
 
 
+static int ReverseDirection(int cmd)
+{
+	if (cmd & (CMD_LEFT | CMD_RIGHT))
+	{
+		cmd ^= CMD_LEFT | CMD_RIGHT;
+	}
+	if (cmd & (CMD_UP | CMD_DOWN))
+	{
+		cmd ^= CMD_UP | CMD_DOWN;
+	}
+	return cmd;
+}
+
 static int Hunt(TActor * actor)
 {
 	int cmd = 0;
@@ -222,11 +235,9 @@ static int Hunt(TActor * actor)
 			cmd |= CMD_UP;
 	}
 	// If it's a coward, reverse directions...
-	if ((actor->flags & FLAGS_RUNS_AWAY) != 0) {
-		if ((cmd & (CMD_LEFT | CMD_RIGHT)) != 0)
-			cmd ^= (CMD_LEFT | CMD_RIGHT);
-		if ((cmd & (CMD_UP | CMD_DOWN)) != 0)
-			cmd ^= (CMD_UP | CMD_DOWN);
+	if (actor->flags & FLAGS_RUNS_AWAY)
+	{
+		cmd = ReverseDirection(cmd);
 	}
 
 	return cmd;
@@ -546,6 +557,11 @@ void CommandBadGuys(int ticks)
 					if (WillFire(actor, roll))
 					{
 						cmd |= CMD_BUTTON1;
+						// Turn back and shoot for running away characters
+						if (actor->flags & FLAGS_RUNS_AWAY)
+						{
+							cmd |= ReverseDirection(Hunt(actor));
+						}
 					}
 					else
 					{

@@ -76,7 +76,7 @@
 #define FLAGS_SLEEPING      (1 << 7)
 #define FLAGS_VISIBLE       (1 << 8)
 #define FLAGS_ASBESTOS      (1 << 9)	// Immune to fire
-#define FLAGS_IMMUNITY      (1 << 10)
+#define FLAGS_IMMUNITY      (1 << 10)	// Immune to poison
 #define FLAGS_SEETHROUGH    (1 << 11)	// Almost transparent
 
 // All characters - but only set for players
