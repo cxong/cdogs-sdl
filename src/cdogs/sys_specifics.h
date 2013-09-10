@@ -77,9 +77,4 @@
 #define mkdir(p, a) mkdir(p)
 #endif
 
-#ifndef S_IFLNK
-#define S_IFLNK 0xa000
 #endif
-
-#endif
-

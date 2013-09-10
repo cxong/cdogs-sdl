@@ -72,7 +72,7 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
-		-Wstrict-prototypes -Wpointer-arith -Wcast-qual -Winline -Werror)
+		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)
@@ -89,7 +89,10 @@ else()
 			add_definitions(-Wshadow)
 		endif()
 	endif()
-	set(EXTRA_LIBRARIES "m")
+	if(NOT BEOS AND NOT HAIKU)
+		add_definitions(-Winline -Werror)
+		set(EXTRA_LIBRARIES "m")
+	endif()
 endif()
 
 set(CDOGS_DATA_DIR "../")
