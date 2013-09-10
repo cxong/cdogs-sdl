@@ -85,7 +85,7 @@ else()
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return)
-		if(NOT APPLE)
+		if(NOT APPLE AND NOT BEOS AND NOT HAIKU)
 			add_definitions(-Wshadow)
 		endif()
 	endif()
