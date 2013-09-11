@@ -661,20 +661,20 @@ void InitializeBadGuys(void)
 	}
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-		if (gMission.missionData->objectives[i].type ==
-		    OBJECTIVE_RESCUE) {
-			if (!gPrisoner) {
-				gMission.objectives[i].count = 1;
-				gMission.objectives[i].required = 1;
-				gPrisoner = AddActor(CHARACTER_PRISONER);
-				gPrisoner->tileItem.flags |= ObjectiveToTileItem(i);
+	{
+		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		{
+			for (j = 0; j < gMission.objectives[i].count; j++)
+			{
+				actor = AddActor(CHARACTER_PRISONER);
+				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (HasLockedRooms())
 				{
-					PlacePrisoner(gPrisoner);
+					PlacePrisoner(actor);
 				}
 				else
 				{
-					if (!TryPlaceBaddie(gPrisoner))
+					if (!TryPlaceBaddie(actor))
 					{
 						// Can't place prisoner when it's the objective
 						// Fatal error, can't recover
@@ -684,13 +684,8 @@ void InitializeBadGuys(void)
 					}
 				}
 			}
-			else
-			{
-				// This is an error!
-				gMission.objectives[i].count = 0;
-				gMission.objectives[i].required = 0;
-			}
 		}
+	}
 
 	gBaddieCount = gMission.index * 4;
 	gAreGoodGuysPresent = 0;

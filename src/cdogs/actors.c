@@ -73,7 +73,6 @@
 
 TActor *gPlayer1 = NULL;
 TActor *gPlayer2 = NULL;
-TActor *gPrisoner = NULL;
 
 TranslationTable tableFlamed;
 TranslationTable tableGreen;

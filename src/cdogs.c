@@ -611,7 +611,7 @@ static void CleanupMission(void)
 	KillAllMobileObjects(&gMobObjList);
 	KillAllObjects();
 	FreeTriggersAndWatches();
-	gPlayer1 = gPlayer2 = gPrisoner = NULL;
+	gPlayer1 = gPlayer2 = NULL;
 }
 
 static void InitPlayers(int twoPlayers, int maxHealth, int mission)

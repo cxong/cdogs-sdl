@@ -172,7 +172,6 @@ typedef struct Actor TActor;
 
 extern TActor *gPlayer1;
 extern TActor *gPlayer2;
-extern TActor *gPrisoner;
 
 extern struct CharacterDescription gCharacterDesc[CHARACTER_COUNT];
 

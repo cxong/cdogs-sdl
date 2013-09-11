@@ -1472,9 +1472,9 @@ static void Save(int asCode)
 			}
 			c = KeyGetTyped(&gInputDevices.keyboard);
 			if (c && c != '*' &&
-				(strlen(filename) > 1 || c != '-') && c != '/' &&
+				(strlen(filename) > 1 || c != '-') &&
 				c != ':' && c != '<' && c != '>' && c != '?' &&
-				c != '\\' && c != '|')
+				c != '|')
 			{
 				size_t si = strlen(filename);
 				filename[si + 1] = 0;

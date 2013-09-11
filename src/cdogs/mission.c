@@ -975,6 +975,9 @@ int CanCompleteMission(struct MissionOptions *options)
 
 int IsMissionComplete(struct MissionOptions *options)
 {
+	int rescuesRequired = 0;
+	int i;
+
 	if (!CanCompleteMission(options))
 	{
 		return 0;
@@ -989,9 +992,34 @@ int IsMissionComplete(struct MissionOptions *options)
 	{
 		return 0;
 	}
-	if (gPrisoner && !IsTileInExit(&gPrisoner->tileItem, options))
+	// Find number of rescues required
+	// TODO: support multiple rescue objectives
+	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
-		return 0;
+		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		{
+			rescuesRequired = gMission.objectives[i].required;
+			break;
+		}
+	}
+	// Check that enough prisoners are in exit zone
+	if (rescuesRequired > 0)
+	{
+		int prisonersRescued = 0;
+		TActor *a = ActorList();
+		while (a != NULL)
+		{
+			if (a->character == CHARACTER_PRISONER &&
+				IsTileInExit(&a->tileItem, options))
+			{
+				prisonersRescued++;
+			}
+			a = a->next;
+		}
+		if (prisonersRescued < rescuesRequired)
+		{
+			return 0;
+		}
 	}
 
 	return 1;
