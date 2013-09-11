@@ -61,6 +61,19 @@ Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)
 	return v;
 }
 
+Vec2i Vec2iNorm(Vec2i v)
+{
+	double magnitude;
+	if (Vec2iEqual(v, Vec2iZero()))
+	{
+		return v;
+	}
+	magnitude = sqrt(v.x*v.x + v.y*v.y);
+	v.x = (int)floor(v.x / magnitude + 0.5);
+	v.y = (int)floor(v.y / magnitude + 0.5);
+	return v;
+}
+
 int Vec2iEqual(Vec2i a, Vec2i b)
 {
 	return a.x == b.x && a.y == b.y;

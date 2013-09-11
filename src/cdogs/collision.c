@@ -48,6 +48,23 @@
 */
 #include "collision.h"
 
+#include "actors.h"
+
+CollisionTeam CalcCollisionTeam(int isActor, int actorFlags)
+{
+	// Need to have prisoners collide with everything otherwise they will not
+	// be "rescued"
+	if (!isActor || (actorFlags & FLAGS_PRISONER))
+	{
+		return COLLISIONTEAM_NONE;
+	}
+	if (actorFlags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY))
+	{
+		return COLLISIONTEAM_GOOD;
+	}
+	return COLLISIONTEAM_BAD;
+}
+
 int IsCollisionWithWall(Vec2i pos, Vec2i size)
 {
 	if (HitWall(pos.x - size.x,	pos.y - size.y) ||
@@ -84,7 +101,8 @@ int ItemsCollide(TTileItem *item1, TTileItem *item2, Vec2i pos)
 	return 0;
 }
 
-TTileItem *GetItemOnTileInCollision(TTileItem *item, Vec2i pos, int mask)
+TTileItem *GetItemOnTileInCollision(
+	TTileItem *item, Vec2i pos, int mask, CollisionTeam team)
 {
 	int dy;
 	int tx = pos.x / TILE_WIDTH;
@@ -103,11 +121,23 @@ TTileItem *GetItemOnTileInCollision(TTileItem *item, Vec2i pos, int mask)
 			TTileItem *i = Map(tx + dx, ty + dy).things;
 			while (i)
 			{
-				if (item != i &&
+				// Don't collide if items are on the same team
+				CollisionTeam itemTeam = COLLISIONTEAM_NONE;
+				if (i->kind == KIND_CHARACTER)
+				{
+					TActor *a = i->actor;
+					itemTeam = CalcCollisionTeam(1, a->flags);
+				}
+				if (team == COLLISIONTEAM_NONE ||
+					itemTeam == COLLISIONTEAM_NONE ||
+					team != itemTeam)
+				{
+					if (item != i &&
 					(i->flags & mask) &&
 					ItemsCollide(item, i, pos))
-				{
-					return i;
+					{
+						return i;
+					}
 				}
 				i = i->next;
 			}

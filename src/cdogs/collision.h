@@ -53,7 +53,19 @@
 
 #define HitWall(x, y) (gMap[(y)/TILE_HEIGHT][(x)/TILE_WIDTH].flags & MAPTILE_NO_WALK)
 
+// Which "team" the actor's on, for collision
+// Actors on the same team don't have to collide
+typedef enum
+{
+	COLLISIONTEAM_NONE,
+	COLLISIONTEAM_GOOD,
+	COLLISIONTEAM_BAD
+} CollisionTeam;
+
+CollisionTeam CalcCollisionTeam(int isActor, int actorFlags);
+
 int IsCollisionWithWall(Vec2i pos, Vec2i size);
-TTileItem *GetItemOnTileInCollision(TTileItem *item, Vec2i pos, int mask);
+TTileItem *GetItemOnTileInCollision(
+	TTileItem *item, Vec2i pos, int mask, CollisionTeam team);
 
 #endif

@@ -34,6 +34,8 @@ For the latest release notes please see https://github.com/cxong/cdogs-sdl/wiki/
 
 For more information about the original C-Dogs read 'original\_readme.txt'.
 
+Join the C-Dogs SDL mailing list here: https://groups.google.com/forum/#!forum/c-dogs-sdl
+
 
 2.Tested Environments
 ---------------------
@@ -103,7 +105,10 @@ Which will make the game try to run fullscreen at 400x300 resolution.
 ----------
 
 If you have an questions, comments, bug reports (yes please), patches (even
-better) or anything else related to C-Dogs SDL email:
+better) or anything else related to C-Dogs SDL, check out the mailing list:
+
+> https://groups.google.com/forum/#!forum/c-dogs-sdl
+
+Or email:
 
 > Cong <congusbongus@gmail.com>
-

@@ -103,6 +103,7 @@ struct TileItem {
 	int flags;
 	void *data;
 	TileItemDrawFunc drawFunc;
+	void *actor;
 	struct TileItem *next;
 	struct TileItem *nextToDisplay;
 };

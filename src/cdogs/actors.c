@@ -69,6 +69,7 @@
 
 #define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
+#define REPEL_STRENGTH 20
 
 
 TActor *gPlayer1 = NULL;
@@ -327,6 +328,7 @@ TActor *AddActor(int character)
 	actor->tileItem.w = 7;
 	actor->tileItem.h = 5;
 	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
+	actor->tileItem.actor = actor;
 	actor->next = actorList;
 	actorList = actor;
 	actor->flags = FLAGS_SLEEPING | gCharacterDesc[character].flags;
@@ -515,7 +517,8 @@ int MoveActor(TActor * actor, int x, int y)
 
 	realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 	target = GetItemOnTileInCollision(
-		&actor->tileItem, realPos, TILEITEM_IMPASSABLE);
+		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+		CalcCollisionTeam(1, actor->flags));
 	if (target)
 	{
 		Vec2i realXPos, realYPos;
@@ -556,13 +559,15 @@ int MoveActor(TActor * actor, int x, int y)
 
 		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
 		if (GetItemOnTileInCollision(
-			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE))
+			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
+			CalcCollisionTeam(1, actor->flags)))
 		{
 			y = actor->y;
 		}
 		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
 		if (GetItemOnTileInCollision(
-			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE))
+			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
+			CalcCollisionTeam(1, actor->flags)))
 		{
 			x = actor->x;
 		}
@@ -581,7 +586,8 @@ int MoveActor(TActor * actor, int x, int y)
 	{
 		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 		target = GetItemOnTileInCollision(
-			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN);
+			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
+			CalcCollisionTeam(1, actor->flags));
 		if (target && target->kind == KIND_OBJECT)
 		{
 			PickupObject(actor, target->data);
@@ -870,6 +876,33 @@ void UpdateAllActors(int ticks)
 		}
 		else
 		{
+			// Find actors that are on the same team and colliding,
+			// and repel them
+			Vec2i realPos = Vec2iScaleDiv(
+				Vec2iNew(actor->x, actor->y), 256);
+			TTileItem *collidingItem = GetItemOnTileInCollision(
+				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+				COLLISIONTEAM_NONE);
+			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
+			{
+				TActor *collidingActor = collidingItem->actor;
+				if (CalcCollisionTeam(1, collidingActor->flags) ==
+					CalcCollisionTeam(1, actor->flags))
+				{
+					Vec2i v = Vec2iNew(
+						actor->x - collidingActor->x,
+						actor->y - collidingActor->y);
+					if (Vec2iEqual(v, Vec2iZero()))
+					{
+						v = Vec2iNew(1, 0);
+					}
+					v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
+					actor->dx += v.x;
+					actor->dy += v.y;
+					collidingActor->dx -= v.x;
+					collidingActor->dy -= v.y;
+				}
+			}
 			actor = actor->next;
 		}
 	}

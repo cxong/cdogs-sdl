@@ -258,7 +258,8 @@ static int PositionOK(TActor * actor, int x, int y)
 		return 0;
 	}
 	if (GetItemOnTileInCollision(
-		&actor->tileItem, realPos, TILEITEM_IMPASSABLE))
+		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+		CalcCollisionTeam(1, actor->flags)))
 	{
 		return 0;
 	}

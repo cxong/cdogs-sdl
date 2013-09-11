@@ -810,7 +810,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 	}
 
 	item = GetItemOnTileInCollision(
-		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT);
+		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE);
 	hasHit = DamageSomething(
 		Vec2iNew(obj->dx, obj->dy),
 		obj->power,
@@ -1323,6 +1323,7 @@ void InternalAddObject(
 	o->tileItem.drawFunc = (TileItemDrawFunc)DrawObject;
 	o->tileItem.w = w;
 	o->tileItem.h = h;
+	o->tileItem.actor = NULL;
 	MoveTileItem(&o->tileItem, x >> 8, y >> 8);
 	o->next = objList;
 	objList = o;

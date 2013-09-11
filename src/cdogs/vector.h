@@ -41,6 +41,7 @@ Vec2i Vec2iZero(void);
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
+Vec2i Vec2iNorm(Vec2i v);
 int Vec2iEqual(Vec2i a, Vec2i b);
 
 int DistanceSquared(Vec2i a, Vec2i b);
