@@ -61,6 +61,8 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	JSON_UTILS_LOAD_ENUM(
 		config->SwitchMoveStyle, node, "SwitchMoveStyle", StrSwitchMoveStyle);
 	LoadBool(&config->ShotsPushback, node, "ShotsPushback");
+	JSON_UTILS_LOAD_ENUM(
+		config->AllyCollision, node, "AllyCollision", StrAllyCollision);
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -88,6 +90,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "SwitchMoveStyle", config->SwitchMoveStyle, SwitchMoveStyleStr);
 	json_insert_pair_into_object(
 		subConfig, "ShotsPushback", json_new_bool(config->ShotsPushback));
+	JSON_UTILS_ADD_ENUM_PAIR(
+		subConfig, "AllyCollision", config->AllyCollision, AllyCollisionStr);
 	json_insert_pair_into_object(root, "Game", subConfig);
 }
 

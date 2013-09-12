@@ -39,6 +39,41 @@
 #include "utils.h"
 
 
+const char *AllyCollisionStr(AllyCollision a)
+{
+	switch (a)
+	{
+	case ALLYCOLLISION_NORMAL:
+		return "Normal";
+	case ALLYCOLLISION_REPEL:
+		return "Repel";
+	case ALLYCOLLISION_NONE:
+		return "None";
+	default:
+		return "";
+	}
+}
+AllyCollision StrAllyCollision(const char *str)
+{
+	if (strcmp(str, "Normal") == 0)
+	{
+		return ALLYCOLLISION_NORMAL;
+	}
+	else if (strcmp(str, "Repel") == 0)
+	{
+		return ALLYCOLLISION_REPEL;
+	}
+	else 
+		if (strcmp(str, "None") == 0)
+	{
+		return ALLYCOLLISION_NONE;
+	}
+	else
+	{
+		return ALLYCOLLISION_NORMAL;
+	}
+}
+
 const char *DifficultyStr(difficulty_e d)
 {
 	switch (d)
@@ -252,6 +287,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.MoveWhenShooting = 0;
 	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
 	config->Game.ShotsPushback = 1;
+	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.ResolutionHeight = 240;

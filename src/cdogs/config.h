@@ -37,6 +37,16 @@
 
 typedef enum
 {
+	ALLYCOLLISION_NORMAL,
+	ALLYCOLLISION_REPEL,
+	ALLYCOLLISION_NONE
+} AllyCollision;
+
+const char *AllyCollisionStr(AllyCollision a);
+AllyCollision StrAllyCollision(const char *str);
+
+typedef enum
+{
 	DIFFICULTY_VERYEASY = 1,
 	DIFFICULTY_EASY,
 	DIFFICULTY_NORMAL,
@@ -88,6 +98,7 @@ typedef struct
 	int MoveWhenShooting;
 	SwitchMoveStyle SwitchMoveStyle;
 	int ShotsPushback;
+	AllyCollision AllyCollision;
 } GameConfig;
 
 typedef struct

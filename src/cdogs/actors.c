@@ -878,29 +878,32 @@ void UpdateAllActors(int ticks)
 		{
 			// Find actors that are on the same team and colliding,
 			// and repel them
-			Vec2i realPos = Vec2iScaleDiv(
-				Vec2iNew(actor->x, actor->y), 256);
-			TTileItem *collidingItem = GetItemOnTileInCollision(
-				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-				COLLISIONTEAM_NONE);
-			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
+			if (gConfig.Game.AllyCollision == ALLYCOLLISION_REPEL)
 			{
-				TActor *collidingActor = collidingItem->actor;
-				if (CalcCollisionTeam(1, collidingActor->flags) ==
-					CalcCollisionTeam(1, actor->flags))
+				Vec2i realPos = Vec2iScaleDiv(
+					Vec2iNew(actor->x, actor->y), 256);
+				TTileItem *collidingItem = GetItemOnTileInCollision(
+					&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+					COLLISIONTEAM_NONE);
+				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
-					Vec2i v = Vec2iNew(
-						actor->x - collidingActor->x,
-						actor->y - collidingActor->y);
-					if (Vec2iEqual(v, Vec2iZero()))
+					TActor *collidingActor = collidingItem->actor;
+					if (CalcCollisionTeam(1, collidingActor->flags) ==
+						CalcCollisionTeam(1, actor->flags))
 					{
-						v = Vec2iNew(1, 0);
+						Vec2i v = Vec2iNew(
+							actor->x - collidingActor->x,
+							actor->y - collidingActor->y);
+						if (Vec2iEqual(v, Vec2iZero()))
+						{
+							v = Vec2iNew(1, 0);
+						}
+						v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
+						actor->dx += v.x;
+						actor->dy += v.y;
+						collidingActor->dx -= v.x;
+						collidingActor->dy -= v.y;
 					}
-					v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
-					actor->dx += v.x;
-					actor->dy += v.y;
-					collidingActor->dx -= v.x;
-					collidingActor->dy -= v.y;
 				}
 			}
 			actor = actor->next;

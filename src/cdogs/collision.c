@@ -49,6 +49,7 @@
 #include "collision.h"
 
 #include "actors.h"
+#include "config.h"
 
 CollisionTeam CalcCollisionTeam(int isActor, int actorFlags)
 {
@@ -102,6 +103,24 @@ int ItemsCollide(TTileItem *item1, TTileItem *item2, Vec2i pos)
 	return 0;
 }
 
+static int IsOnSameTeam(TTileItem *i, CollisionTeam team)
+{
+	if (gConfig.Game.AllyCollision != ALLYCOLLISION_NORMAL)
+	{
+		CollisionTeam itemTeam = COLLISIONTEAM_NONE;
+		if (i->kind == KIND_CHARACTER)
+		{
+			TActor *a = i->actor;
+			itemTeam = CalcCollisionTeam(1, a->flags);
+		}
+		return
+			team != COLLISIONTEAM_NONE &&
+			itemTeam != COLLISIONTEAM_NONE &&
+			team == itemTeam;
+	}
+	return 0;
+}
+
 TTileItem *GetItemOnTileInCollision(
 	TTileItem *item, Vec2i pos, int mask, CollisionTeam team)
 {
@@ -123,15 +142,7 @@ TTileItem *GetItemOnTileInCollision(
 			while (i)
 			{
 				// Don't collide if items are on the same team
-				CollisionTeam itemTeam = COLLISIONTEAM_NONE;
-				if (i->kind == KIND_CHARACTER)
-				{
-					TActor *a = i->actor;
-					itemTeam = CalcCollisionTeam(1, a->flags);
-				}
-				if (team == COLLISIONTEAM_NONE ||
-					itemTeam == COLLISIONTEAM_NONE ||
-					team != itemTeam)
+				if (!IsOnSameTeam(i, team))
 				{
 					if (item != i &&
 					(i->flags & mask) &&

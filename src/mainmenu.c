@@ -299,6 +299,13 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			"Shots push back",
 			&gConfig.Game.ShotsPushback,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Ally collision", (int *)&gConfig.Game.AllyCollision,
+			ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))AllyCollisionStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;
