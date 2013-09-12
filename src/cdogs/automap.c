@@ -128,6 +128,10 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 	{
 		return;
 	}
+	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
+	{
+		return;
+	}
 	
 	exitPos = Vec2iScale(exitPos, scale);
 	exitSize = Vec2iScale(exitSize, scale);

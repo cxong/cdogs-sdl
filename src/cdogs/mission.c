@@ -983,6 +983,13 @@ int IsMissionComplete(struct MissionOptions *options)
 		return 0;
 	}
 
+	// Check if dogfight is complete
+	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT &&
+		!(gPlayer1 && gPlayer2))
+	{
+		return 1;
+	}
+
 	// Check that all players are in exit zone
 	if (gPlayer1 && !IsTileInExit(&gPlayer1->tileItem, options))
 	{
