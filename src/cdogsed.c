@@ -940,10 +940,10 @@ static int Change(int yc, int xc, int d, int *mission)
 	case YC_MISSIONPROPS:
 		switch (xc) {
 		case XC_WIDTH:
-			currentMission->mapWidth = CLAMP(currentMission->mapWidth + d, 16, 64);
+			currentMission->mapWidth = CLAMP(currentMission->mapWidth + d, 16, XMAX);
 			break;
 		case XC_HEIGHT:
-			currentMission->mapHeight = CLAMP(currentMission->mapHeight + d, 16, 64);
+			currentMission->mapHeight = CLAMP(currentMission->mapHeight + d, 16, YMAX);
 			break;
 		case XC_WALLCOUNT:
 			currentMission->wallCount = CLAMP(currentMission->wallCount + d, 0, 200);

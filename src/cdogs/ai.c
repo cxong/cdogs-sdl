@@ -385,7 +385,7 @@ static int IsActorPositionValid(TActor *actor)
 	return MoveActor(actor, pos.x, pos.y);
 }
 
-static int TryPlaceBaddie(TActor *actor)
+static void PlaceBaddie(TActor *actor)
 {
 	int hasPlaced = 0;
 	int i;
@@ -405,18 +405,15 @@ static int TryPlaceBaddie(TActor *actor)
 			break;
 		}
 	}
-	if (!hasPlaced)
+	// Keep trying, but this time try spawning anywhere, even close to player
+	while (!hasPlaced)
 	{
-		// Keep trying, but this time try spawning anywhere, even close to player
-		for (i = 0; i < 100; i++)	// Don't try forever trying to place baddie
+		actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
+		actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
+		if (IsActorPositionValid(actor))
 		{
-			actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
-			actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
-			if (IsActorPositionValid(actor))
-			{
-				hasPlaced = 1;
-				break;
-			}
+			hasPlaced = 1;
+			break;
 		}
 	}
 
@@ -434,8 +431,6 @@ static int TryPlaceBaddie(TActor *actor)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
-
-	return hasPlaced;
 }
 
 static void PlacePrisoner(TActor * actor)
@@ -622,14 +617,8 @@ void CommandBadGuys(int ticks)
 		    rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
 		baddie = AddActor(character);
-		if (!TryPlaceBaddie(baddie))
-		{
-			RemoveActor(baddie);
-		}
-		else
-		{
-			gBaddieCount++;
-		}
+		PlaceBaddie(baddie);
+		gBaddieCount++;
 	}
 }
 
@@ -653,10 +642,7 @@ void InitializeBadGuys(void)
 						gMission.missionData->specialCount;
 					actor = AddActor(character);
 					actor->tileItem.flags |= ObjectiveToTileItem(i);
-					if (!TryPlaceBaddie(actor))
-					{
-						RemoveActor(actor);
-					}
+					PlaceBaddie(actor);
 				}
 			}
 	}
@@ -675,14 +661,7 @@ void InitializeBadGuys(void)
 				}
 				else
 				{
-					if (!TryPlaceBaddie(actor))
-					{
-						// Can't place prisoner when it's the objective
-						// Fatal error, can't recover
-						printf("Cannot place prisoner!\n");
-						assert(0);
-						exit(1);
-					}
+					PlaceBaddie(actor);
 				}
 			}
 		}
@@ -707,13 +686,7 @@ void CreateEnemies(void)
 		character = CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
 		enemy = AddActor(character);
-		if (!TryPlaceBaddie(enemy))
-		{
-			RemoveActor(enemy);
-		}
-		else
-		{
-			gBaddieCount++;
-		}
+		PlaceBaddie(enemy);
+		gBaddieCount++;
 	}
 }
