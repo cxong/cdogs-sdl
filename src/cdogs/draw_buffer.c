@@ -102,6 +102,10 @@ void DrawBufferSetFromMap(
 			{
 				*bufTile = map[y][x];
 			}
+			else
+			{
+				*bufTile = tileNone;
+			}
 		}
 		bufTile += tilesXY.x - buffer->width;
 	}

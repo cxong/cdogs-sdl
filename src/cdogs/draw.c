@@ -239,7 +239,7 @@ void DrawFloor(DrawBuffer *b, int xOffset)
 			 x < b->width;
 			 x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (PicIsNotNone(tile->pic) &&
+			if (tile->pic != NULL && PicIsNotNone(tile->pic) &&
 				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
 			{
 				BlitMasked(

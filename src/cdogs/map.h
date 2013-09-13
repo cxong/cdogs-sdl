@@ -119,6 +119,7 @@ typedef struct
 	TTileItem *things;
 } Tile;
 
+extern Tile tileNone;
 extern Tile gMap[YMAX][XMAX];
 #define Map( x, y)  gMap[y][x]
 

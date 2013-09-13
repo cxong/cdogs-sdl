@@ -79,6 +79,7 @@
 #define MAP_ACCESSBITS      0x0F00
 
 
+Tile tileNone = { NULL, { { 0, 0 }, { 0, 0 }, NULL }, 0, 0, NULL };
 Tile gMap[YMAX][XMAX];
 
 
