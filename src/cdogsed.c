@@ -1407,6 +1407,7 @@ static void MoveSelection(int isForward, int *y, int *x)
 
 static void Setup(int idx, int buildTables)
 {
+	int i;
 	if (idx >= gCampaign.Setting.missionCount)
 	{
 		currentMission = NULL;
@@ -1414,6 +1415,11 @@ static void Setup(int idx, int buildTables)
 	}
 	currentMission = &gCampaign.Setting.missions[idx];
 	SetupMission(idx, buildTables, &gCampaign);
+	// Clear background first
+	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	{
+		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
+	}
 	GrafxMakeBackground(&gGraphicsDevice, &gConfig.Graphics, tintDarker, idx);
 }
 
