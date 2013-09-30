@@ -481,7 +481,7 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 	Vec2i screenSize = Vec2iNew(
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
-	int scr_size = scr_size = screenSize.x * screenSize.y;
+	int scr_size = screenSize.x * screenSize.y;
 	int scalef = config->ScaleFactor;
 
 	ApplyBrightness(device->buf, screenSize, config->Brightness);
