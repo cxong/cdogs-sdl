@@ -1,8 +1,10 @@
 if(MSVC)
 	add_definitions(-wd"4127" -wd"4102")
 else()
-	add_definitions(-Wno-unused-label)
-	set(EXTRA_LIBRARIES "m")
+	if(NOT BEOS AND NOT HAIKU)
+		add_definitions(-Wno-unused-label)
+		set(EXTRA_LIBRARIES "m")
+	endif()
 endif()
 
 add_subdirectory(cbehave)
