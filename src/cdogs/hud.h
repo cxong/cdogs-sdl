@@ -72,6 +72,6 @@ void HUDInit(
 	struct MissionOptions *mission);
 void HUDDisplayMessage(HUD *hud, const char *msg);
 void HUDUpdate(HUD *hud, int ms);
-void HUDDraw(HUD *hud, int isPaused, int isEscExit);
+void HUDDraw(HUD *hud, int isPaused);
 
 #endif
