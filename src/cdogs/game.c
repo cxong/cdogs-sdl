@@ -99,8 +99,6 @@ static int frames = 0;
 
 static int screenShaking = 0;
 
-static int gameIsPaused = NO;
-static int escExits = NO;
 long oldtime;
 
 // This is referenced from CDOGS.C to determine time bonus
@@ -429,7 +427,7 @@ void GetPlayerInput(int *cmd1, int *cmd2)
 	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL, 0);
 }
 
-int HandleKey(int *done, int cmd)
+int HandleKey(int cmd, int *isPaused)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
 	{
@@ -452,39 +450,29 @@ int HandleKey(int *done, int cmd)
 		}
 	}
 
-	if (gameIsPaused && AnyButton(cmd))
+	if (*isPaused && AnyButton(cmd))
 	{
-		gameIsPaused = NO;
+		*isPaused = 0;
 	}
 
-	if (!gPlayer1 && !gPlayer2)
-	{
-		*done = 1;
-		return 0;
-	}
-	else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
+	if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
 		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4) ||
 		JoyIsPressed(&gInputDevices.joysticks.joys[1], CMD_BUTTON4))
 	{
-		if (gameIsPaused && escExits)
+		if (!*isPaused)
 		{
-			*done = 1;
-			return 1;
+			*isPaused = 1;
 		}
-		else if (!gameIsPaused)
-		{
-			gameIsPaused = YES;
-			escExits = YES;
-		}
+		return 1;
 	}
 	else if (KeyGetPressed(&gInputDevices.keyboard))
 	{
-		gameIsPaused = 0;
+		*isPaused = 0;
 	}
 
-	if (!gameIsPaused && !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
+	if (!*isPaused && !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
 	{
-		gameIsPaused = 1;
+		*isPaused = 1;
 	}
 
 	return 0;
@@ -494,7 +482,8 @@ int gameloop(void)
 {
 	DrawBuffer buffer;
 	int is_esc_pressed = 0;
-	int done = NO;
+	int isDone = 0;
+	int isPaused = 0;
 	HUD hud;
 	Vec2i lastPosition = Vec2iZero();
 
@@ -506,11 +495,9 @@ int gameloop(void)
 		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice));
 	}
 
-	gameIsPaused = NO;
-
 	missionTime = 0;
 	InputInit(&gInputDevices, NULL);
-	while (!done)
+	while (!isDone)
 	{
 		int cmd1 = 0, cmd2 = 0;
 		int ticks = 1;
@@ -519,9 +506,13 @@ int gameloop(void)
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
 		GetPlayerInput(&cmd1, &cmd2);
-		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);
+		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
+		if (is_esc_pressed && isPaused)
+		{
+			isDone = 1;
+		}
 
-		if (!gameIsPaused)
+		if (!isPaused)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
@@ -557,7 +548,7 @@ int gameloop(void)
 				gMission.pickupTime -= ticks;
 				if (gMission.pickupTime <= 0)
 				{
-					done = 1;
+					isDone = 1;
 				}
 			}
 			else
@@ -569,6 +560,11 @@ int gameloop(void)
 		if (HasObjectives(gCampaign.Entry.mode))
 		{
 			MissionUpdateObjectives();
+		}
+
+		if (!gPlayer1 && !gPlayer2)
+		{
+			isDone = 1;
 		}
 
 		lastPosition = DrawScreen(&buffer, gPlayer1, gPlayer2, lastPosition);
@@ -587,7 +583,7 @@ int gameloop(void)
 		}
 
 		HUDUpdate(&hud, ticks_now - ticks_then);
-		HUDDraw(&hud, gameIsPaused, escExits);
+		HUDDraw(&hud, isPaused);
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 

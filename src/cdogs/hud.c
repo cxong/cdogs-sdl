@@ -365,7 +365,7 @@ void DrawKeycards(HUD *hud)
 	}
 }
 
-void HUDDraw(HUD *hud, int isPaused, int isEscExit)
+void HUDDraw(HUD *hud, int isPaused)
 {
 	char s[50];
 	static time_t ot = -1;
@@ -407,14 +407,7 @@ void HUDDraw(HUD *hud, int isPaused, int isEscExit)
 
 	if (isPaused)
 	{
-		if (isEscExit)
-		{
-			CDogsTextStringAtCenter("Press Esc again to quit");
-		}
-		else
-		{
-			CDogsTextStringAtCenter("Paused");
-		}
+		CDogsTextStringAtCenter("Press Esc again to quit");
 	}
 
 	if (hud->messageTicks > 0)
