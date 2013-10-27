@@ -127,6 +127,9 @@ typedef struct MapObject TMapObject;
 
 
 // WARNING: written as-is to file
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
 struct BadGuy {
 	int32_t armedBodyPic;
 	int32_t unarmedBodyPic;
@@ -144,7 +147,13 @@ struct BadGuy {
 	int32_t hairColor;
 	int32_t health;
 	int32_t flags;
-};
+}
+#ifdef _MSC_VER
+;
+#pragma pack(pop)
+#else
+__attribute__((packed));
+#endif
 typedef struct BadGuy TBadGuy;
 
 struct DoorPic {
@@ -169,6 +178,9 @@ typedef enum {
 #define OBJECTIVE_NOACCESS		16
 
 // WARNING: written as-is to file
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
 struct MissionObjective {
 	char description[60];
 	int32_t type;
@@ -176,7 +188,13 @@ struct MissionObjective {
 	int32_t count;
 	int32_t required;
 	int32_t flags;
-};
+}
+#ifdef _MSC_VER
+;
+#pragma pack(pop)
+#else
+__attribute__((packed));
+#endif
 
 
 // WARNING: affects file format
@@ -188,12 +206,15 @@ struct MissionObjective {
 
 
 // WARNING: written as-is to file
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
 struct Mission {
 	char title[60];
 	char description[400];
-	wall_style_e wallStyle;
-	floor_style_e floorStyle;
-	floor_style_e roomStyle;
+	int32_t wallStyle;
+	int32_t floorStyle;
+	int32_t roomStyle;
 	int32_t exitStyle;
 	int32_t keyStyle;
 	int32_t doorStyle;
@@ -226,7 +247,13 @@ struct Mission {
 	int32_t floorRange;
 	int32_t roomRange;
 	int32_t altRange;
-};
+}
+#ifdef _MSC_VER
+;
+#pragma pack(pop)
+#else
+__attribute__((packed));
+#endif
 
 
 typedef struct
