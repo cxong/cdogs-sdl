@@ -101,6 +101,18 @@ void MusicResume(SoundDevice *device)
 	}
 }
 
+void MusicSetPlaying(SoundDevice *device, int isPlaying)
+{
+	if (isPlaying)
+	{
+		MusicResume(device);
+	}
+	else
+	{
+		MusicPause(device);
+	}
+}
+
 int MusicGetStatus(SoundDevice *device)
 {
 	return device->musicStatus;

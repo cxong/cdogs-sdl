@@ -482,6 +482,11 @@ int HandleKey(int *done, int cmd)
 		gameIsPaused = 0;
 	}
 
+	if (!gameIsPaused && !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
+	{
+		gameIsPaused = 1;
+	}
+
 	return 0;
 }
 
@@ -511,6 +516,7 @@ int gameloop(void)
 		int ticks = 1;
 		Ticks_Update();
 
+		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
 		GetPlayerInput(&cmd1, &cmd2);
 		is_esc_pressed = HandleKey(&done, cmd1 | cmd2);

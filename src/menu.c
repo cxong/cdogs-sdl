@@ -63,6 +63,7 @@
 #include <cdogs/files.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/mission.h>
+#include <cdogs/music.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
@@ -120,6 +121,7 @@ void MenuLoop(MenuSystem *menu)
 	assert(menu->numExitTypes > 0);
 	for (;; SDL_Delay(10))
 	{
+		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		// Input
 		InputPoll(menu->inputDevices, SDL_GetTicks());
 		// Update
