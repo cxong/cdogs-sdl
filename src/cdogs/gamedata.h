@@ -128,22 +128,22 @@ typedef struct MapObject TMapObject;
 
 // WARNING: written as-is to file
 struct BadGuy {
-	int armedBodyPic;
-	int unarmedBodyPic;
-	int facePic;
-	int speed;
-	int probabilityToMove;
-	int probabilityToTrack;
-	int probabilityToShoot;
-	int actionDelay;
-	gun_e gun;
-	int skinColor;
-	int armColor;
-	int bodyColor;
-	int legColor;
-	int hairColor;
-	int health;
-	int flags;
+	int32_t armedBodyPic;
+	int32_t unarmedBodyPic;
+	int32_t facePic;
+	int32_t speed;
+	int32_t probabilityToMove;
+	int32_t probabilityToTrack;
+	int32_t probabilityToShoot;
+	int32_t actionDelay;
+	int32_t gun;
+	int32_t skinColor;
+	int32_t armColor;
+	int32_t bodyColor;
+	int32_t legColor;
+	int32_t hairColor;
+	int32_t health;
+	int32_t flags;
 };
 typedef struct BadGuy TBadGuy;
 
@@ -168,19 +168,22 @@ typedef enum {
 #define OBJECTIVE_UNKNOWNCOUNT	8
 #define OBJECTIVE_NOACCESS		16
 
+// WARNING: written as-is to file
 struct MissionObjective {
 	char description[60];
-	int type;
-	int index;
-	int count;
-	int required;
-	int flags;
+	int32_t type;
+	int32_t index;
+	int32_t count;
+	int32_t required;
+	int32_t flags;
 };
 
 
+// WARNING: affects file format
 #define BADDIE_MAX  12
 #define SPECIAL_MAX 6
 #define ITEMS_MAX   16
+
 #define WEAPON_MAX  11
 
 
@@ -191,38 +194,38 @@ struct Mission {
 	wall_style_e wallStyle;
 	floor_style_e floorStyle;
 	floor_style_e roomStyle;
-	int exitStyle;
-	int keyStyle;
-	int doorStyle;
+	int32_t exitStyle;
+	int32_t keyStyle;
+	int32_t doorStyle;
 
-	int mapWidth, mapHeight;
-	int wallCount, wallLength;
-	int roomCount;
-	int squareCount;
+	int32_t mapWidth, mapHeight;
+	int32_t wallCount, wallLength;
+	int32_t roomCount;
+	int32_t squareCount;
 
-	int exitLeft, exitTop, exitRight, exitBottom;
+	int32_t exitLeft, exitTop, exitRight, exitBottom;
 
-	int objectiveCount;
+	int32_t objectiveCount;
 	struct MissionObjective objectives[OBJECTIVE_MAX];
 
-	int baddieCount;
-	int baddies[BADDIE_MAX];
-	int specialCount;
-	int specials[SPECIAL_MAX];
-	int itemCount;
-	int items[ITEMS_MAX];
-	int itemDensity[ITEMS_MAX];
+	int32_t baddieCount;
+	int32_t baddies[BADDIE_MAX];
+	int32_t specialCount;
+	int32_t specials[SPECIAL_MAX];
+	int32_t itemCount;
+	int32_t items[ITEMS_MAX];
+	int32_t itemDensity[ITEMS_MAX];
 
-	int baddieDensity;
-	int weaponSelection;
+	int32_t baddieDensity;
+	int32_t weaponSelection;
 
 	char song[80];
 	char map[80];
 
-	int wallRange;
-	int floorRange;
-	int roomRange;
-	int altRange;
+	int32_t wallRange;
+	int32_t floorRange;
+	int32_t roomRange;
+	int32_t altRange;
 };
 
 
@@ -231,9 +234,9 @@ typedef struct
 	char title[40];
 	char author[40];
 	char description[200];
-	int missionCount;
+	int32_t missionCount;
 	struct Mission *missions;
-	int characterCount;
+	int32_t characterCount;
 	TBadGuy *characters;
 } CampaignSetting;
 

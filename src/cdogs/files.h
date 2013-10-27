@@ -55,6 +55,28 @@
 #include "gamedata.h"
 #include "sys_specifics.h"
 
+/*
+C-Dogs (classic) file format:
+Sizes in bytes unless otherwise stated
+
+Priviledged types (types that are used directly in the file format)
+Changing these types will break the game!
+- struct Mission
+- TBadGuy
+- struct MissionObjective
+
+Campaign:
+- CAMPAIGN_MAGIC (4)
+- CAMPAIGN_VERSION (4)
+- Title (40, char *)
+- Author (40, char *)
+- Description (200, char *)
+- MissionCount (4)
+- <Missions> (MissionCount * sizeof(struct Mission))
+- CharacterCount (4)
+- <Characters> (CharacterCount * sizeof(TBadGuy))
+*/
+
 #define CAMPAIGN_OK                0
 #define CAMPAIGN_BADFILE          -1
 #define CAMPAIGN_VERSIONMISMATCH  -2

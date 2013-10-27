@@ -188,69 +188,66 @@ void load_mission_objective(FILE *f, struct MissionObjective *o)
 
 void load_mission(FILE *f, struct Mission *m)
 {
-		int i;
-		int o = 0;
+	int i;
 
-		f_read(f, m->title, sizeof(m->title));				o += sizeof(m->title);
-		f_read(f, m->description, sizeof(m->description));	o += sizeof(m->description);
+	f_read(f, m->title, sizeof(m->title));
+	f_read(f, m->description, sizeof(m->description));
 
-		debug(D_NORMAL, "== MISSION ==\n");
-		debug(D_NORMAL, "t: %s\n", m->title);
-		debug(D_NORMAL, "d: %s\n", m->description);
+	debug(D_NORMAL, "== MISSION ==\n");
+	debug(D_NORMAL, "t: %s\n", m->title);
+	debug(D_NORMAL, "d: %s\n", m->description);
 
-		R32(m,  wallStyle);
-		R32(m,  floorStyle);
-		R32(m,  roomStyle);
-		R32(m,  exitStyle);
-		R32(m,  keyStyle);
-		R32(m,  doorStyle);
+	R32(m,  wallStyle);
+	R32(m,  floorStyle);
+	R32(m,  roomStyle);
+	R32(m,  exitStyle);
+	R32(m,  keyStyle);
+	R32(m,  doorStyle);
 
-		R32(m,  mapWidth); R32(m, mapHeight);
-		R32(m,  wallCount); R32(m, wallLength);
-		R32(m,  roomCount);
-		R32(m,  squareCount);
+	R32(m,  mapWidth); R32(m, mapHeight);
+	R32(m,  wallCount); R32(m, wallLength);
+	R32(m,  roomCount);
+	R32(m,  squareCount);
 
-		R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
+	R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
 
-		R32(m, objectiveCount);
+	R32(m, objectiveCount);
 
-		debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);
- 		for (i = 0; i < OBJECTIVE_MAX; i++) {
-			load_mission_objective(f, &m->objectives[i]);
-		}
+	debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);
+ 	for (i = 0; i < OBJECTIVE_MAX; i++) {
+		load_mission_objective(f, &m->objectives[i]);
+	}
 
-		R32(m, baddieCount);
-		for (i = 0; i < BADDIE_MAX; i++) {
-			f_read32(f, &m->baddies[i], sizeof(int));
-		}
+	R32(m, baddieCount);
+	for (i = 0; i < BADDIE_MAX; i++) {
+		f_read32(f, &m->baddies[i], sizeof(int));
+	}
 
-		R32(m, specialCount);
-		for (i = 0; i < SPECIAL_MAX; i++) {
-			f_read32(f, &m->specials[i], sizeof(int));
-		}
+	R32(m, specialCount);
+	for (i = 0; i < SPECIAL_MAX; i++) {
+		f_read32(f, &m->specials[i], sizeof(int));
+	}
 
-		R32(m, itemCount);
-		for (i = 0; i < ITEMS_MAX; i++) {
-			f_read32(f, &m->items[i], sizeof(int));
-		}
-		for (i = 0; i < ITEMS_MAX; i++) {
-			f_read32(f, &m->itemDensity[i], sizeof(int));
-		}
+	R32(m, itemCount);
+	for (i = 0; i < ITEMS_MAX; i++) {
+		f_read32(f, &m->items[i], sizeof(int));
+	}
+	for (i = 0; i < ITEMS_MAX; i++) {
+		f_read32(f, &m->itemDensity[i], sizeof(int));
+	}
 
-		R32(m, baddieDensity);
-		R32(m, weaponSelection);
+	R32(m, baddieDensity);
+	R32(m, weaponSelection);
 
-		f_read(f, m->song, sizeof(m->song));
-		f_read(f, m->map, sizeof(m->map));
+	f_read(f, m->song, sizeof(m->song));
+	f_read(f, m->map, sizeof(m->map));
 
-		R32(m, wallRange);
-		R32(m, floorRange);
-		R32(m, roomRange);
-		R32(m, altRange);
+	R32(m, wallRange);
+	R32(m, floorRange);
+	R32(m, roomRange);
+	R32(m, altRange);
 
-		debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);
-
-		return;
+	debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);
 }
 
 
@@ -280,10 +277,9 @@ void load_character(FILE *f, TBadGuy *c)
 int LoadCampaign(const char *filename, CampaignSetting *setting)
 {
 	FILE *f = NULL;
-	int i;
+	int32_t i;
 	int err = CAMPAIGN_OK;
 	int numMissions;
-	int numCharacters;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
@@ -328,9 +324,8 @@ int LoadCampaign(const char *filename, CampaignSetting *setting)
 	CCALLOC(
 		setting->characters,
 		setting->characterCount * sizeof *setting->characters);
-	numCharacters = setting->characterCount;
-	debug(D_NORMAL, "No. characters: %d\n", numCharacters);
-	for (i = 0; i < numCharacters; i++)
+	debug(D_NORMAL, "No. characters: %d\n", setting->characterCount);
+	for (i = 0; i < setting->characterCount; i++)
 	{
 		load_character(f, &setting->characters[i]);
 	}
