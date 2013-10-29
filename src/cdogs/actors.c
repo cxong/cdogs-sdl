@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "character.h"
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
@@ -83,10 +84,6 @@ TranslationTable tableBlack;
 TranslationTable tableDarker;
 TranslationTable tablePurple;
 
-void SetShade(TranslationTable * table, int start, int end, int shade);
-
-struct CharacterDescription gCharacterDesc[CHARACTER_COUNT];
-
 
 static TActor *actorList = NULL;
 
@@ -112,35 +109,16 @@ static int delayTable[STATE_COUNT] = {
 };
 
 
-typedef unsigned char ColorShade[10];
-
-static ColorShade colorShades[SHADE_COUNT] = {
-	{52, 53, 54, 55, 56, 57, 58, 59, 60, 61},
-	{2, 3, 4, 5, 6, 7, 8, 9, 9, 9},
-	{68, 69, 70, 71, 72, 73, 74, 75, 76, 77},
-	{84, 85, 86, 87, 88, 89, 90, 91, 92, 93},
-	{100, 101, 102, 103, 104, 105, 106, 107, 107, 107},
-	{116, 117, 118, 119, 120, 121, 122, 123, 124, 125},
-	{132, 133, 134, 135, 136, 137, 138, 139, 140, 141},
-	{32, 33, 34, 35, 36, 37, 38, 39, 40, 41},
-	{36, 37, 38, 39, 40, 41, 42, 43, 44, 45},
-	{41, 42, 43, 44, 45, 46, 47, 47, 47, 47},
-	{144, 145, 146, 147, 148, 149, 150, 151, 151, 151},
-	{4, 5, 6, 7, 8, 9, 9, 9, 9, 9},
-	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	{16, 17, 18, 19, 20, 21, 22, 23, 24, 25}
-};
-
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	int dir = actor->direction, state = actor->state;
 	int headDir = dir;
 	int headState = state;
 
-	struct CharacterDescription *c = &gCharacterDesc[actor->character];
+	CharacterDescription *c = &gCharacterDesc[actor->character];
 	TranslationTable *table = (TranslationTable *) c->table;
 	HSV *tint = NULL;
-	int f = c->facePic;
+	int f = c->character.looks.face;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
 	gunstate_e gunState = actor->weapon.state;
@@ -211,11 +189,11 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	if (g < 0)
 	{
-		b = c->unarmedBodyPic;
+		b = c->character.looks.unarmedBody;
 	}
 	else
 	{
-		b = c->armedBodyPic;
+		b = c->character.looks.armedBody;
 	}
 
 	body.dx = cBodyOffset[b][dir].dx;
@@ -320,8 +298,8 @@ TActor *AddActor(int character)
 	CCALLOC(actor, sizeof(TActor));
 
 	actor->soundLock = 0;
-	actor->weapon = WeaponCreate(gCharacterDesc[character].defaultGun);
-	actor->health = gCharacterDesc[character].maxHealth;
+	actor->weapon = WeaponCreate(gCharacterDesc[character].character.gun);
+	actor->health = gCharacterDesc[character].character.maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
 	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
@@ -331,7 +309,7 @@ TActor *AddActor(int character)
 	actor->tileItem.actor = actor;
 	actor->next = actorList;
 	actorList = actor;
-	actor->flags = FLAGS_SLEEPING | gCharacterDesc[character].flags;
+	actor->flags = FLAGS_SLEEPING | gCharacterDesc[character].character.flags;
 	actor->character = character;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
@@ -647,7 +625,7 @@ Vec2i GetMuzzleOffset(TActor *actor)
 	int b, g, d = actor->direction;
 	Vec2i position;
 
-	b = gCharacterDesc[actor->character].armedBodyPic;
+	b = gCharacterDesc[actor->character].character.looks.armedBody;
 	g = GunGetPic(actor->weapon.gun);
 	position.x =
 		cGunHandOffset[b][d].dx +
@@ -717,7 +695,7 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 		canMoveWhenShooting;
 	if (willMove)
 	{
-		int moveAmount = gCharacterDesc[actor->character].speed * ticks;
+		int moveAmount = gCharacterDesc[actor->character].character.speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
 			pos->x -= moveAmount;
@@ -946,22 +924,6 @@ unsigned char BestMatch(const TPalette palette, int r, int g, int b)
 	return (unsigned char)best;
 }
 
-void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,
-			int skin, int hair)
-{
-	SetShade(t, BODY_START, BODY_END, body);
-	SetShade(t, ARMS_START, ARMS_END, arms);
-	SetShade(t, LEGS_START, LEGS_END, legs);
-	SetShade(t, SKIN_START, SKIN_END, skin);
-	SetShade(t, HAIR_START, HAIR_END, hair);
-}
-
-void SetCharacter(int idx, int face, int skin, int hair, int body, int arms, int legs)
-{
-	gCharacterDesc[idx].facePic = face;
-	SetCharacterColors(&gCharacterDesc[idx].table, arms, body, legs, skin, hair);
-}
-
 void BuildTranslationTables(const TPalette palette)
 {
 	int i;
@@ -1029,14 +991,6 @@ void InitializeTranslationTables(void)
 		for (f = 0; f < 256; f++)
 			gCharacterDesc[i].table[f] = (f & 0xFF);
 
-}
-
-void SetShade(TranslationTable * table, int start, int end, int shade)
-{
-	int i;
-
-	for (i = start; i <= end; i++)
-		(*table)[i] = colorShades[shade][i - start];
 }
 
 int ActorIsImmune(TActor *actor, special_damage_e damage)

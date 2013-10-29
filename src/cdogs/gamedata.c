@@ -66,13 +66,21 @@
 
 
 struct PlayerData gPlayer1Data = {
-	"Player 1", 0, SHADE_BLUE, SHADE_BLUE, SHADE_BLUE, 0, 0,
+	"Player 1",
+	{
+		BODY_ARMED, BODY_UNARMED,
+		FACE_JONES, SHADE_SKIN, SHADE_BLUE, SHADE_BLUE, SHADE_BLUE, SHADE_RED
+	},
 	3, {GUN_SHOTGUN, GUN_MG, GUN_FRAGGRENADE},
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 struct PlayerData gPlayer2Data = {
-	"Player 2", 1, SHADE_RED, SHADE_RED, SHADE_RED, 2, 0,
+	"Player 2",
+	{
+		BODY_ARMED, BODY_UNARMED,
+		FACE_ICE, SHADE_DARKSKIN, SHADE_RED, SHADE_RED, SHADE_RED, SHADE_RED
+	},
 	3, {GUN_POWERGUN, GUN_FLAMER, GUN_GRENADE},
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };

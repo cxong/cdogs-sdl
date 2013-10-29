@@ -82,8 +82,8 @@ static void DisplayPlayer(TActor *player, Vec2i pos, int scale)
 	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
 	if (scale >= 2)
 	{
-		struct CharacterDescription *c = &gCharacterDesc[player->character];
-		int picIdx = cHeadPic[c->facePic][DIRECTION_DOWN][STATE_IDLE];
+		CharacterDescription *c = &gCharacterDesc[player->character];
+		int picIdx = cHeadPic[c->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
 		PicPaletted *pic = PicManagerGetOldPic(&gPicManager, picIdx);
 		pos.x -= pic->w / 2;
 		pos.y -= pic->h / 2;

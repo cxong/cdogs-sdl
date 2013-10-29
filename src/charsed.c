@@ -183,27 +183,26 @@ static int PosToCharacterIndex(Vec2i pos, int *idx)
 	return 1;
 }
 
-static void DisplayCharacter(int x, int y, const TBadGuy * data,
-			     int hilite)
+static void DisplayCharacter(int x, int y, const CharEnemy *data, int hilite)
 {
-	struct CharacterDescription *cd;
+	CharacterDescription *cd;
 	TOffsetPic body, head;
 
 	cd = &gCharacterDesc[0];
-	SetupMissionCharacter(0, data);
+	SetCharacterLooks(&gCharacterDesc[0], &data->looks);
 
-	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;
+	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
+	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
 	body.picIndex =
-	    cBodyPic[cd->unarmedBodyPic][DIRECTION_DOWN][STATE_IDLE];
+		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
 
 	head.dx =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dx;
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
 	head.dy =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
+	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
 
 	DrawTTPic(
 		x + body.dx, y + body.dy,
@@ -298,11 +297,11 @@ static void DrawTooltips(
 	}
 }
 
-static void Display(CampaignSetting *setting, int idx, int xc, int yc)
+static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
-	const TBadGuy *b;
+	const CharEnemy *b;
 	int i;
 	int tag;
 
@@ -327,7 +326,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 
 		sprintf(s, "Speed: %d%%", (100 * b->speed) / 256);
 		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
-		sprintf(s, "Hp: %d", b->health);
+		sprintf(s, "Hp: %d", b->maxHealth);
 		DisplayCDogsText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
 		sprintf(s, "Move: %d%%", b->probabilityToMove);
 		DisplayCDogsText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
@@ -412,12 +411,12 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 }
 
 static void Change(
-	CampaignSetting *setting,
+	CampaignSettingNew *setting,
 	int idx,
 	int yc, int xc,
 	int d)
 {
-	TBadGuy *b;
+	CharEnemy *b;
 
 	if (idx < 0 || idx >= setting->characterCount)
 	{
@@ -430,27 +429,27 @@ static void Change(
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
-			b->facePic = CLAMP_OPPOSITE(b->facePic + d, 0, FACE_COUNT - 1);
+			b->looks.face = CLAMP_OPPOSITE(b->looks.face + d, 0, FACE_COUNT - 1);
 			break;
 
 		case XC_SKIN:
-			b->skinColor = CLAMP_OPPOSITE(b->skinColor + d, 0, SHADE_COUNT - 1);
+			b->looks.skin = CLAMP_OPPOSITE(b->looks.skin + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_HAIR:
-			b->hairColor = CLAMP_OPPOSITE(b->hairColor + d, 0, SHADE_COUNT - 1);
+			b->looks.hair = CLAMP_OPPOSITE(b->looks.hair + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_BODY:
-			b->bodyColor = CLAMP_OPPOSITE(b->bodyColor + d, 0, SHADE_COUNT - 1);
+			b->looks.body = CLAMP_OPPOSITE(b->looks.body + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_ARMS:
-			b->armColor = CLAMP_OPPOSITE(b->armColor + d, 0, SHADE_COUNT - 1);
+			b->looks.arm = CLAMP_OPPOSITE(b->looks.arm + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_LEGS:
-			b->legColor = CLAMP_OPPOSITE(b->legColor + d, 0, SHADE_COUNT - 1);
+			b->looks.leg = CLAMP_OPPOSITE(b->looks.leg + d, 0, SHADE_COUNT - 1);
 			break;
 		}
 		break;
@@ -462,7 +461,7 @@ static void Change(
 			break;
 
 		case XC_HEALTH:
-			b->health = CLAMP(b->health + d * 10, 10, 500);
+			b->maxHealth = CLAMP(b->maxHealth + d * 10, 10, 500);
 			break;
 
 		case XC_MOVE:
@@ -544,19 +543,21 @@ static void Change(
 		break;
 
 	case YC_WEAPON:
-		b->gun = CLAMP_OPPOSITE((int)(b->gun + d), 0, GUN_COUNT - 1);
+		b->gun = (gun_e)CLAMP_OPPOSITE(b->gun + d, 0, GUN_COUNT - 1);
 		break;
 	}
 }
 
 
-static TBadGuy characterTemplate = {
-	BODY_ARMED, BODY_UNARMED, FACE_OGRE, 256, 50, 25, 2, 15, GUN_MG,
-	SHADE_GREEN, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_BLACK,
-	40, FLAGS_IMMUNITY
+static CharEnemy characterTemplate = {
+	{
+		BODY_ARMED, BODY_UNARMED, FACE_OGRE,
+		SHADE_GREEN, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_BLACK
+	},
+	256, 50, 25, 2, 15, GUN_MG, 40, FLAGS_IMMUNITY
 };
 
-static void InsertCharacter(CampaignSetting *setting, int idx, TBadGuy *data)
+static void InsertCharacter(CampaignSettingNew *setting, int idx, CharEnemy *data)
 {
 	int i;
 	CREALLOC(
@@ -577,7 +578,7 @@ static void InsertCharacter(CampaignSetting *setting, int idx, TBadGuy *data)
 	setting->characterCount++;
 }
 
-static void DeleteCharacter(CampaignSetting *setting, int *idx)
+static void DeleteCharacter(CampaignSettingNew *setting, int *idx)
 {
 	int i;
 
@@ -650,7 +651,7 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 
 static void HandleInput(
 	int c, int *xc, int *yc,
-	int *idx, CampaignSetting *setting, TBadGuy *scrap, int *done)
+	int *idx, CampaignSettingNew *setting, CharEnemy *scrap, int *done)
 {
 	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
@@ -745,13 +746,13 @@ static void HandleInput(
 	}
 }
 
-void EditCharacters(CampaignSetting *setting)
+void EditCharacters(CampaignSettingNew *setting)
 {
 	int done = 0;
 	int idx = 0;
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
-	TBadGuy scrap;
+	CharEnemy scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
 	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);

@@ -7,6 +7,7 @@ set(CDOGS_SOURCES
 	automap.c
 	blit.c
 	campaigns.c
+	character.c
 	collision.c
 	color.c
 	config.c
@@ -50,6 +51,7 @@ set(CDOGS_HEADERS
 	automap.h
 	blit.h
 	campaigns.h
+	character.h
 	collision.h
 	color.h
 	config.h

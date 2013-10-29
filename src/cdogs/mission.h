@@ -68,7 +68,7 @@ struct EditorInfo {
 int SetupBuiltinCampaign(int index);
 int SetupBuiltinDogfight(int index);
 void SetupQuickPlayCampaign(
-	CampaignSetting *setting, const QuickPlayConfig *config);
+	CampaignSettingNew *setting, const QuickPlayConfig *config);
 void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 int CheckMissionObjective(int flags);
@@ -78,7 +78,6 @@ int IsMissionComplete(struct MissionOptions *options);
 
 // Intended for use with the editor only
 
-void SetupMissionCharacter(int index, const TBadGuy * b);
 void GetEditorInfo(struct EditorInfo *info);
 const char *RangeName(int index);
 

@@ -422,6 +422,7 @@ struct Mission gQuickPlayMission;
 // |  Campaign info  |
 // +-----------------+
 
+#include "files.h"
 #include <missions/bem.h>
 #include <missions/ogre.h>
 
@@ -442,7 +443,7 @@ static CampaignSetting df2 =
 	0, NULL
 };
 
-static TBadGuy gQuickPlayEnemies[BADDIE_MAX];
+static CharEnemy gQuickPlayEnemies[BADDIE_MAX];
 
 
 // +---------------------------------------------------+
@@ -465,33 +466,17 @@ color_t objectiveColors[OBJECTIVE_MAX] =
 // +-----------------------+
 
 
-void SetupMissionCharacter(int idx, const TBadGuy * b)
+void SetupMissionCharacter(CharacterDescription *desc, const CharEnemy *b)
 {
-	SetCharacter(
-		idx,
-		b->facePic,
-		b->skinColor,
-		b->hairColor,
-		b->bodyColor,
-		b->armColor,
-		b->legColor);
-	gCharacterDesc[idx].armedBodyPic = b->armedBodyPic;
-	gCharacterDesc[idx].unarmedBodyPic = b->unarmedBodyPic;
-	gCharacterDesc[idx].speed = b->speed;
-	gCharacterDesc[idx].probabilityToMove = b->probabilityToMove;
-	gCharacterDesc[idx].probabilityToTrack = b->probabilityToTrack;
-	gCharacterDesc[idx].probabilityToShoot = b->probabilityToShoot;
-	gCharacterDesc[idx].actionDelay = b->actionDelay;
-	gCharacterDesc[idx].defaultGun = b->gun;
-	gCharacterDesc[idx].maxHealth = b->health;
-	gCharacterDesc[idx].flags = b->flags;
+	desc->character = *b;
+	SetCharacterLooks(desc, &b->looks);
 }
 
 static void SetupBadguysForMission(struct Mission *mission)
 {
 	int i, idx;
-	const TBadGuy *b;
-	CampaignSetting *s = &gCampaign.Setting;
+	const CharEnemy *b;
+	CampaignSettingNew *s = &gCampaign.Setting;
 
 	if (s->characterCount <= 0)
 		return;
@@ -502,7 +487,7 @@ static void SetupBadguysForMission(struct Mission *mission)
 		{
 			b = &s->characters[
 				gMission.missionData->objectives[i].index % s->characterCount];
-			SetupMissionCharacter(CHARACTER_PRISONER, b);
+			SetupMissionCharacter(&gCharacterDesc[CHARACTER_PRISONER], b);
 			break;
 		}
 	}
@@ -516,7 +501,7 @@ static void SetupBadguysForMission(struct Mission *mission)
 		}
 
 		b = &s->characters[mission->baddies[i] % s->characterCount];
-		SetupMissionCharacter(idx, b);
+		SetupMissionCharacter(&gCharacterDesc[idx], b);
 	}
 	for (i = 0; i < mission->specialCount; i++)
 	{
@@ -527,7 +512,7 @@ static void SetupBadguysForMission(struct Mission *mission)
 		}
 
 		b = &s->characters[mission->specials[i] % s->characterCount];
-		SetupMissionCharacter(idx, b);
+		SetupMissionCharacter(&gCharacterDesc[idx], b);
 	}
 }
 
@@ -536,13 +521,13 @@ int SetupBuiltinCampaign(int idx)
 	switch (idx)
 	{
 	case 0:
-		gCampaign.Setting = BEM_campaign;
+		ConvertCampaignSetting(&gCampaign.Setting, &BEM_campaign);
 		break;
 	case 1:
-		gCampaign.Setting = OGRE_campaign;
+		ConvertCampaignSetting(&gCampaign.Setting, &OGRE_campaign);
 		break;
 	default:
-		gCampaign.Setting = OGRE_campaign;
+		ConvertCampaignSetting(&gCampaign.Setting, &OGRE_campaign);
 		return 0;
 	}
 	return 1;
@@ -553,13 +538,13 @@ int SetupBuiltinDogfight(int idx)
 	switch (idx)
 	{
 	case 0:
-		gCampaign.Setting = df1;
+		ConvertCampaignSetting(&gCampaign.Setting, &df1);
 		break;
 	case 1:
-		gCampaign.Setting = df2;
+		ConvertCampaignSetting(&gCampaign.Setting, &df2);
 		break;
 	default:
-		gCampaign.Setting = df1;
+		ConvertCampaignSetting(&gCampaign.Setting, &df1);
 		return 0;
 	}
 	return 1;
@@ -662,11 +647,11 @@ static int GenerateQuickPlayParam(
 }
 
 static void SetupQuickPlayEnemy(
-	TBadGuy *enemy, const QuickPlayConfig *config, gun_e gun)
+	CharEnemy *enemy, const QuickPlayConfig *config, gun_e gun)
 {
-	enemy->armedBodyPic = BODY_ARMED;
-	enemy->unarmedBodyPic = BODY_UNARMED;
-	enemy->facePic = rand() % FACE_COUNT;
+	enemy->looks.armedBody = BODY_ARMED;
+	enemy->looks.unarmedBody = BODY_UNARMED;
+	enemy->looks.face = rand() % FACE_COUNT;
 	enemy->gun = gun;
 	enemy->speed =
 		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
@@ -696,19 +681,19 @@ static void SetupQuickPlayEnemy(
 		enemy->probabilityToShoot = 15 + (rand() % 30);
 	}
 	enemy->actionDelay = rand() % (50 + 1);
-	enemy->skinColor = rand() % SHADE_COUNT;
-	enemy->armColor = rand() % SHADE_COUNT;
-	enemy->bodyColor = rand() % SHADE_COUNT;
-	enemy->legColor = rand() % SHADE_COUNT;
-	enemy->hairColor = rand() % SHADE_COUNT;
-	enemy->health =
+	enemy->looks.skin = rand() % SHADE_COUNT;
+	enemy->looks.arm = rand() % SHADE_COUNT;
+	enemy->looks.body = rand() % SHADE_COUNT;
+	enemy->looks.leg = rand() % SHADE_COUNT;
+	enemy->looks.hair = rand() % SHADE_COUNT;
+	enemy->maxHealth =
 		GenerateQuickPlayParam(config->EnemyHealth, 10, 20, 40, 60);
 	enemy->flags = 0;
 }
 
 static void SetupQuickPlayEnemies(
 	struct Mission *mission,
-	TBadGuy enemies[BADDIE_MAX],
+	CharEnemy enemies[BADDIE_MAX],
 	const QuickPlayConfig *config)
 {
 	int i;
@@ -748,7 +733,7 @@ static void SetupQuickPlayEnemies(
 }
 
 void SetupQuickPlayCampaign(
-	CampaignSetting *setting, const QuickPlayConfig *config)
+	CampaignSettingNew *setting, const QuickPlayConfig *config)
 {
 	int i;
 	strcpy(gQuickPlayMission.title, "");
@@ -803,9 +788,19 @@ void SetupQuickPlayCampaign(
 	strcpy(setting->author, "");
 	strcpy(setting->description, "");
 	setting->missionCount = 1;
-	setting->missions = &gQuickPlayMission;
+	CMALLOC(setting->missions, sizeof *setting->missions);
+	memcpy(
+		setting->missions,
+		&gQuickPlayMission,
+		sizeof *setting->missions * setting->missionCount);
 	setting->characterCount = BADDIE_MAX;
-	setting->characters = gQuickPlayEnemies;
+	CMALLOC(
+		setting->characters,
+		sizeof *setting->characters * setting->characterCount);
+	memcpy(
+		setting->characters,
+		&gQuickPlayEnemies,
+		sizeof *setting->characters * setting->characterCount);
 }
 
 static void SetupObjective(int o, struct Mission *mission)

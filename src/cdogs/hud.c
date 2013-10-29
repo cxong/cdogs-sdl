@@ -199,7 +199,7 @@ static void DrawHealth(
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
-	int maxHealth = gCharacterDesc[actor->character].maxHealth;
+	int maxHealth = gCharacterDesc[actor->character].character.maxHealth;
 	int innerWidth;
 	color_t backColor = { 50, 0, 0, 255 };
 	innerWidth = MAX(1, size.x * health / maxHealth);

@@ -50,6 +50,7 @@
 #define __GAMEDATA
 
 #include "campaigns.h"
+#include "character.h"
 #include "input.h"
 #include "map.h"
 #include "pics.h"
@@ -62,10 +63,9 @@
 struct PlayerData
 {
 	char name[20];
-	int head;
-	int arms, body, legs, skin, hair;
+	CharLooks looks;
 	int weaponCount;
-	int weapons[MAX_WEAPONS];
+	gun_e weapons[MAX_WEAPONS];
 
 	int score;
 	int totalScore;
@@ -125,36 +125,6 @@ typedef struct MapObject TMapObject;
 
 #define BADGUY_COMMANDER    1
 
-
-// WARNING: written as-is to file
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
-struct BadGuy {
-	int32_t armedBodyPic;
-	int32_t unarmedBodyPic;
-	int32_t facePic;
-	int32_t speed;
-	int32_t probabilityToMove;
-	int32_t probabilityToTrack;
-	int32_t probabilityToShoot;
-	int32_t actionDelay;
-	int32_t gun;
-	int32_t skinColor;
-	int32_t armColor;
-	int32_t bodyColor;
-	int32_t legColor;
-	int32_t hairColor;
-	int32_t health;
-	int32_t flags;
-}
-#ifdef _MSC_VER
-;
-#pragma pack(pop)
-#else
-__attribute__((packed));
-#endif
-typedef struct BadGuy TBadGuy;
 
 struct DoorPic {
 	int horzPic;
@@ -256,25 +226,6 @@ __attribute__((packed));
 #endif
 
 
-typedef struct
-{
-	char title[40];
-	char author[40];
-	char description[200];
-	int32_t missionCount;
-	struct Mission *missions;
-	int32_t characterCount;
-	TBadGuy *characters;
-} CampaignSetting;
-
-typedef struct
-{
-	CampaignSetting Setting;
-	campaign_entry_t Entry;
-	unsigned int seed;
-} CampaignOptions;
-
-
 struct Objective
 {
 	color_t color;
@@ -305,7 +256,6 @@ struct MissionOptions {
 };
 
 extern struct GameOptions gOptions;
-extern CampaignOptions gCampaign;
 extern struct MissionOptions gMission;
 
 struct SongDef {

@@ -325,24 +325,24 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	int i;
 	const char *typeCDogsText;
 	char s[50];
+	CharacterDescription *cd;
 
 	switch (currentMission->objectives[idx].type)
 	{
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
-		i = gCharacterDesc[currentMission->baddieCount +
-				  CHARACTER_OTHERS].facePic;
-		table =
-		    &gCharacterDesc[currentMission->baddieCount +
-				  CHARACTER_OTHERS].table;
+		cd = &gCharacterDesc[currentMission->baddieCount + CHARACTER_OTHERS];
+		i = cd->character.looks.face;
+		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_RESCUE:
 		typeCDogsText = "Rescue";
-		i = gCharacterDesc[CHARACTER_PRISONER].facePic;
-		table = &gCharacterDesc[CHARACTER_PRISONER].table;
+		cd = &gCharacterDesc[CHARACTER_PRISONER];
+		i = cd->character.looks.face;
+		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
@@ -460,23 +460,23 @@ static int MissionDescription(
 
 void DisplayCharacter(int x, int y, int character, int hilite)
 {
-	struct CharacterDescription *cd;
+	CharacterDescription *cd;
 	TOffsetPic body, head;
 
 	cd = &gCharacterDesc[character];
 
-	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;
+	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
+	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
 	body.picIndex =
-	    cBodyPic[cd->unarmedBodyPic][DIRECTION_DOWN][STATE_IDLE];
+		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
 
 	head.dx =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dx;
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
 	head.dy =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
+	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
 
 	DrawTTPic(
 		x + body.dx, y + body.dy,
@@ -489,7 +489,7 @@ void DisplayCharacter(int x, int y, int character, int hilite)
 		CDogsTextGoto(x - 8, y - 16);
 		CDogsTextChar('\020');
 		CDogsTextGoto(x - 8, y + 8);
-		CDogsTextString(gGunDescriptions[cd->defaultGun].gunName);
+		CDogsTextString(gGunDescriptions[cd->character.gun].gunName);
 	}
 }
 
@@ -1861,6 +1861,8 @@ int main(int argc, char *argv[])
 	BuildTranslationTables(gPicManager.palette);
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
+	CampaignInit(&gCampaign);
+
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	GraphicsInit(&gGraphicsDevice);
@@ -1902,6 +1904,8 @@ int main(int argc, char *argv[])
 	currentMission = NULL;
 
 	EditCampaign();
+
+	CampaignTerminate(&gCampaign);
 
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);

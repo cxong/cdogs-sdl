@@ -37,6 +37,26 @@
 #include <cdogs/utils.h>
 
 
+void CampaignInit(CampaignOptions *campaign)
+{
+	memset(campaign, 0, sizeof *campaign);
+}
+void CampaignTerminate(CampaignOptions *campaign)
+{
+	CampaignSettingTerminate(&campaign->Setting);
+	memset(campaign, 0, sizeof *campaign);
+}
+void CampaignSettingInit(CampaignSettingNew *setting)
+{
+	memset(setting, 0, sizeof *setting);
+}
+void CampaignSettingTerminate(CampaignSettingNew *setting)
+{
+	CFREE(setting->missions);
+	CFREE(setting->characters);
+	memset(setting, 0, sizeof *setting);
+}
+
 void CampaignListInit(campaign_list_t *list);
 void LoadBuiltinCampaigns(campaign_list_t *list);
 void LoadBuiltinDogfights(campaign_list_t *list);

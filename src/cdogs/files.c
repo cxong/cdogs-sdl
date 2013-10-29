@@ -184,7 +184,7 @@ void load_mission_objective(FILE *f, struct MissionObjective *o)
 		o->description, o->type, o->index, o->count, o->required, o->flags);
 }
 
-#define R32(s,e)	f_read32(f, &s->e, sizeof(s->e))
+#define R32(s,e)	f_read32(f, &(s)->e, sizeof((s)->e))
 
 void load_mission(FILE *f, struct Mission *m)
 {
@@ -252,29 +252,91 @@ void load_mission(FILE *f, struct Mission *m)
 
 
 
-void load_character(FILE *f, TBadGuy *c)
+void load_character(FILE *f, TBadGuy *b)
 {
-		R32(c, armedBodyPic);
-		R32(c, unarmedBodyPic);
-		R32(c, facePic);
-		R32(c, speed);
-		R32(c, probabilityToMove);
-		R32(c, probabilityToTrack);
-		R32(c, probabilityToShoot);
-		R32(c, actionDelay);
-		R32(c, gun);
-		R32(c, skinColor);
-		R32(c, armColor);
-		R32(c, bodyColor);
-		R32(c, legColor);
-		R32(c, hairColor);
-		R32(c, health);
-		R32(c, flags);
-
-//		fprintf(stderr, " speed: %d gun: %d\n", c->speed, c->gun);
+	R32(b, armedBodyPic);
+	R32(b, unarmedBodyPic);
+	R32(b, facePic);
+	R32(b, speed);
+	R32(b, probabilityToMove);
+	R32(b, probabilityToTrack);
+	R32(b, probabilityToShoot);
+	R32(b, actionDelay);
+	R32(b, gun);
+	R32(b, skinColor);
+	R32(b, armColor);
+	R32(b, bodyColor);
+	R32(b, legColor);
+	R32(b, hairColor);
+	R32(b, health);
+	R32(b, flags);
+}
+CharEnemy ConvertCharEnemy(TBadGuy *b)
+{
+	CharEnemy e;
+	e.looks.armedBody = b->armedBodyPic;
+	e.looks.unarmedBody = b->unarmedBodyPic;
+	e.looks.face = b->facePic;
+	e.speed = b->speed;
+	e.probabilityToMove = b->probabilityToMove;
+	e.probabilityToTrack = b->probabilityToTrack;
+	e.probabilityToShoot = b->probabilityToShoot;
+	e.actionDelay = b->actionDelay;
+	e.gun = (gun_e)b->gun;
+	e.looks.skin = b->skinColor;
+	e.looks.arm = b->armColor;
+	e.looks.body = b->bodyColor;
+	e.looks.leg = b->legColor;
+	e.looks.hair = b->hairColor;
+	e.maxHealth = b->health;
+	e.flags = b->flags;
+	return e;
+}
+TBadGuy ConvertTBadGuy(CharEnemy *e)
+{
+	TBadGuy b;
+	b.armedBodyPic = e->looks.armedBody;
+	b.unarmedBodyPic = e->looks.unarmedBody;
+	b.facePic = e->looks.face;
+	b.speed = e->speed;
+	b.probabilityToMove = e->probabilityToMove;
+	b.probabilityToTrack = e->probabilityToTrack;
+	b.probabilityToShoot = e->probabilityToShoot;
+	b.actionDelay = e->actionDelay;
+	b.gun = e->gun;
+	b.skinColor = e->looks.skin;
+	b.armColor = e->looks.arm;
+	b.bodyColor = e->looks.body;
+	b.legColor = e->looks.leg;
+	b.hairColor = e->looks.hair;
+	b.health = e->maxHealth;
+	b.flags = e->flags;
+	return b;
 }
 
-int LoadCampaign(const char *filename, CampaignSetting *setting)
+void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src)
+{
+	int i;
+	strcpy(dest->title, src->title);
+	strcpy(dest->author, src->author);
+	strcpy(dest->description, src->description);
+	dest->missionCount = src->missionCount;
+	CFREE(dest->missions);
+	CMALLOC(dest->missions, sizeof *dest->missions * dest->missionCount);
+	for (i = 0; i < dest->missionCount; i++)
+	{
+		memcpy(&dest->missions[i], &src->missions[i], sizeof dest->missions[i]);
+	}
+	dest->characterCount = src->characterCount;
+	CFREE(dest->characters);
+	CMALLOC(dest->characters, sizeof *dest->characters * dest->characterCount);
+	for (i = 0; i < dest->characterCount; i++)
+	{
+		dest->characters[i] = ConvertCharEnemy(&src->characters[i]);
+	}
+}
+
+int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 {
 	FILE *f = NULL;
 	int32_t i;
@@ -309,7 +371,7 @@ int LoadCampaign(const char *filename, CampaignSetting *setting)
 	f_read(f, setting->author, sizeof(setting->author));
 	f_read(f, setting->description, sizeof(setting->description));
 
-	f_read32(f, &setting->missionCount, sizeof(setting->missionCount));
+	f_read32(f, &setting->missionCount, sizeof(int32_t));
 	CCALLOC(
 		setting->missions,
 		setting->missionCount * sizeof *setting->missions);
@@ -320,14 +382,16 @@ int LoadCampaign(const char *filename, CampaignSetting *setting)
 		load_mission(f, &setting->missions[i]);
 	}
 
-	f_read32(f, &setting->characterCount, sizeof(setting->characterCount));
+	f_read32(f, &setting->characterCount, sizeof(int32_t));
 	CCALLOC(
 		setting->characters,
 		setting->characterCount * sizeof *setting->characters);
 	debug(D_NORMAL, "No. characters: %d\n", setting->characterCount);
 	for (i = 0; i < setting->characterCount; i++)
 	{
-		load_character(f, &setting->characters[i]);
+		TBadGuy b;
+		load_character(f, &b);
+		setting->characters[i] = ConvertCharEnemy(&b);
 	}
 
 bail:
@@ -338,10 +402,10 @@ bail:
 	return err;
 }
 
-int SaveCampaign(const char *filename, CampaignSetting *setting)
+int SaveCampaign(const char *filename, CampaignSettingNew *setting)
 {
 	FILE *f;
-	int i;
+	int32_t i;
 	char buf[CDOGS_FILENAME_MAX];
 
 	if (SDL_strcasecmp(StrGetFileExt(filename), "cpn") == 0)
@@ -386,7 +450,8 @@ int SaveCampaign(const char *filename, CampaignSetting *setting)
 	CHECK_WRITE(fwrite32(f, &i))
 	for (i = 0; i < setting->characterCount; i++)
 	{
-		CHECK_WRITE(fwrite(&setting->characters[i], sizeof(TBadGuy), 1, f) == 1)
+		TBadGuy b = ConvertTBadGuy(&setting->characters[i]);
+		CHECK_WRITE(fwrite(&b, sizeof(TBadGuy), 1, f) == 1)
 	}
 
 #undef CHECK_WRITE
@@ -426,164 +491,168 @@ static void OutputCString(FILE * f, const char *s, int indentLevel)
 
 void SaveCampaignAsC(
 	const char *filename, const char *name,
-	CampaignSetting* setting)
+	CampaignSettingNew* setting)
 {
 	FILE *f;
 	int i, j;
 
 	f = fopen(filename, "w");
-	if (f) {
-		fprintf(f, "TBadGuy %s_badguys[ %d] =\n{\n", name,
-			setting->characterCount);
-		for (i = 0; i < setting->characterCount; i++) {
-			fprintf(f,
-				"  {%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,0x%x}%s\n",
-				setting->characters[i].armedBodyPic,
-				setting->characters[i].unarmedBodyPic,
-				setting->characters[i].facePic,
-				setting->characters[i].speed,
-				setting->characters[i].probabilityToMove,
-				setting->characters[i].probabilityToTrack,
-				setting->characters[i].probabilityToShoot,
-				setting->characters[i].actionDelay,
-				setting->characters[i].gun,
-				setting->characters[i].skinColor,
-				setting->characters[i].armColor,
-				setting->characters[i].bodyColor,
-				setting->characters[i].legColor,
-				setting->characters[i].hairColor,
-				setting->characters[i].health,
-				setting->characters[i].flags,
-				i <
-				setting->characterCount - 1 ? "," : "");
-		}
-		fprintf(f, "};\n\n");
-
-		fprintf(f, "struct Mission %s_missions[ %d] =\n{\n", name,
-			setting->missionCount);
-		for (i = 0; i < setting->missionCount; i++) {
-			fprintf(f, "  {\n");
-			OutputCString(f, setting->missions[i].title, 4);
-			fprintf(f, ",\n");
-			OutputCString(f, setting->missions[i].description,
-				      4);
-			fprintf(f, ",\n");
-			fprintf(f,
-				"    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\n",
-				setting->missions[i].wallStyle,
-				setting->missions[i].floorStyle,
-				setting->missions[i].roomStyle,
-				setting->missions[i].exitStyle,
-				setting->missions[i].keyStyle,
-				setting->missions[i].doorStyle,
-				setting->missions[i].mapWidth,
-				setting->missions[i].mapHeight,
-				setting->missions[i].wallCount,
-				setting->missions[i].wallLength,
-				setting->missions[i].roomCount,
-				setting->missions[i].squareCount);
-			fprintf(f, "    %d,%d,%d,%d,\n",
-				setting->missions[i].exitLeft,
-				setting->missions[i].exitTop,
-				setting->missions[i].exitRight,
-				setting->missions[i].exitBottom);
-			fprintf(f, "    %d,\n",
-				setting->missions[i].objectiveCount);
-			fprintf(f, "    {\n");
-			for (j = 0; j < OBJECTIVE_MAX; j++) {
-				fprintf(f, "      {\n");
-				OutputCString(f,
-					      setting->missions[i].
-					      objectives[j].description,
-					      8);
-				fprintf(f, ",\n");
-				fprintf(f, "        %d,%d,%d,%d,0x%x\n",
-					setting->missions[i].objectives[j].
-					type,
-					setting->missions[i].objectives[j].
-					index,
-					setting->missions[i].objectives[j].
-					count,
-					setting->missions[i].objectives[j].
-					required,
-					setting->missions[i].objectives[j].
-					flags);
-				fprintf(f, "      }%s\n",
-					j < OBJECTIVE_MAX - 1 ? "," : "");
-			}
-			fprintf(f, "    },\n");
-
-			fprintf(f, "    %d,\n",
-				setting->missions[i].baddieCount);
-			fprintf(f, "    {");
-			for (j = 0; j < BADDIE_MAX; j++) {
-				fprintf(f, "%d%s",
-					setting->missions[i].baddies[j],
-					j < BADDIE_MAX - 1 ? "," : "");
-			}
-			fprintf(f, "},\n");
-
-			fprintf(f, "    %d,\n",
-				setting->missions[i].specialCount);
-			fprintf(f, "    {");
-			for (j = 0; j < SPECIAL_MAX; j++) {
-				fprintf(f, "%d%s",
-					setting->missions[i].specials[j],
-					j < SPECIAL_MAX - 1 ? "," : "");
-			}
-			fprintf(f, "},\n");
-
-			fprintf(f, "    %d,\n",
-				setting->missions[i].itemCount);
-			fprintf(f, "    {");
-			for (j = 0; j < ITEMS_MAX; j++) {
-				fprintf(f, "%d%s",
-					setting->missions[i].items[j],
-					j < ITEMS_MAX - 1 ? "," : "");
-			}
-			fprintf(f, "},\n");
-
-			fprintf(f, "    {");
-			for (j = 0; j < ITEMS_MAX; j++) {
-				fprintf(f, "%d%s",
-					setting->missions[i].
-					itemDensity[j],
-					j < ITEMS_MAX - 1 ? "," : "");
-			}
-			fprintf(f, "},\n");
-
-			fprintf(f, "    %d,0x%x,\n",
-				setting->missions[i].baddieDensity,
-				setting->missions[i].weaponSelection);
-			OutputCString(f, setting->missions[i].song, 4);
-			fprintf(f, ",\n");
-			OutputCString(f, setting->missions[i].map, 4);
-			fprintf(f, ",\n");
-			fprintf(f, "    %d,%d,%d,%d\n",
-				setting->missions[i].wallRange,
-				setting->missions[i].floorRange,
-				setting->missions[i].roomRange,
-				setting->missions[i].altRange);
-			fprintf(f, "  }%s\n",
-				i < setting->missionCount ? "," : "");
-		}
-		fprintf(f, "};\n\n");
-
-		fprintf(f, "struct CampaignSetting %s_campaign =\n{\n",
-			name);
-		OutputCString(f, setting->title, 2);
-		fprintf(f, ",\n");
-		OutputCString(f, setting->author, 2);
-		fprintf(f, ",\n");
-		OutputCString(f, setting->description, 2);
-		fprintf(f, ",\n");
-		fprintf(f, "  %d, %s_missions, %d, %s_badguys\n};\n",
-			setting->missionCount, name,
-			setting->characterCount, name);
-
-		printf("Saved to %s\n", filename);
-		fclose(f);
+	if (!f)
+	{
+		printf("Failed to save to C\n");
+		return;
 	}
+	fprintf(f, "TBadGuy %s_badguys[ %d] =\n{\n", name,
+		setting->characterCount);
+	for (i = 0; i < setting->characterCount; i++)
+	{
+		TBadGuy b = ConvertTBadGuy(&setting->characters[i]);
+		fprintf(f,
+			"  {%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,0x%x}%s\n",
+			b.armedBodyPic,
+			b.unarmedBodyPic,
+			b.facePic,
+			b.speed,
+			b.probabilityToMove,
+			b.probabilityToTrack,
+			b.probabilityToShoot,
+			b.actionDelay,
+			b.gun,
+			b.skinColor,
+			b.armColor,
+			b.bodyColor,
+			b.legColor,
+			b.hairColor,
+			b.health,
+			b.flags,
+			i < setting->characterCount - 1 ? "," : "");
+	}
+	fprintf(f, "};\n\n");
+
+	fprintf(f, "struct Mission %s_missions[ %d] =\n{\n", name,
+		setting->missionCount);
+	for (i = 0; i < setting->missionCount; i++) {
+		fprintf(f, "  {\n");
+		OutputCString(f, setting->missions[i].title, 4);
+		fprintf(f, ",\n");
+		OutputCString(f, setting->missions[i].description,
+				    4);
+		fprintf(f, ",\n");
+		fprintf(f,
+			"    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\n",
+			setting->missions[i].wallStyle,
+			setting->missions[i].floorStyle,
+			setting->missions[i].roomStyle,
+			setting->missions[i].exitStyle,
+			setting->missions[i].keyStyle,
+			setting->missions[i].doorStyle,
+			setting->missions[i].mapWidth,
+			setting->missions[i].mapHeight,
+			setting->missions[i].wallCount,
+			setting->missions[i].wallLength,
+			setting->missions[i].roomCount,
+			setting->missions[i].squareCount);
+		fprintf(f, "    %d,%d,%d,%d,\n",
+			setting->missions[i].exitLeft,
+			setting->missions[i].exitTop,
+			setting->missions[i].exitRight,
+			setting->missions[i].exitBottom);
+		fprintf(f, "    %d,\n",
+			setting->missions[i].objectiveCount);
+		fprintf(f, "    {\n");
+		for (j = 0; j < OBJECTIVE_MAX; j++) {
+			fprintf(f, "      {\n");
+			OutputCString(f,
+					    setting->missions[i].
+					    objectives[j].description,
+					    8);
+			fprintf(f, ",\n");
+			fprintf(f, "        %d,%d,%d,%d,0x%x\n",
+				setting->missions[i].objectives[j].
+				type,
+				setting->missions[i].objectives[j].
+				index,
+				setting->missions[i].objectives[j].
+				count,
+				setting->missions[i].objectives[j].
+				required,
+				setting->missions[i].objectives[j].
+				flags);
+			fprintf(f, "      }%s\n",
+				j < OBJECTIVE_MAX - 1 ? "," : "");
+		}
+		fprintf(f, "    },\n");
+
+		fprintf(f, "    %d,\n",
+			setting->missions[i].baddieCount);
+		fprintf(f, "    {");
+		for (j = 0; j < BADDIE_MAX; j++) {
+			fprintf(f, "%d%s",
+				setting->missions[i].baddies[j],
+				j < BADDIE_MAX - 1 ? "," : "");
+		}
+		fprintf(f, "},\n");
+
+		fprintf(f, "    %d,\n",
+			setting->missions[i].specialCount);
+		fprintf(f, "    {");
+		for (j = 0; j < SPECIAL_MAX; j++) {
+			fprintf(f, "%d%s",
+				setting->missions[i].specials[j],
+				j < SPECIAL_MAX - 1 ? "," : "");
+		}
+		fprintf(f, "},\n");
+
+		fprintf(f, "    %d,\n",
+			setting->missions[i].itemCount);
+		fprintf(f, "    {");
+		for (j = 0; j < ITEMS_MAX; j++) {
+			fprintf(f, "%d%s",
+				setting->missions[i].items[j],
+				j < ITEMS_MAX - 1 ? "," : "");
+		}
+		fprintf(f, "},\n");
+
+		fprintf(f, "    {");
+		for (j = 0; j < ITEMS_MAX; j++) {
+			fprintf(f, "%d%s",
+				setting->missions[i].
+				itemDensity[j],
+				j < ITEMS_MAX - 1 ? "," : "");
+		}
+		fprintf(f, "},\n");
+
+		fprintf(f, "    %d,0x%x,\n",
+			setting->missions[i].baddieDensity,
+			setting->missions[i].weaponSelection);
+		OutputCString(f, setting->missions[i].song, 4);
+		fprintf(f, ",\n");
+		OutputCString(f, setting->missions[i].map, 4);
+		fprintf(f, ",\n");
+		fprintf(f, "    %d,%d,%d,%d\n",
+			setting->missions[i].wallRange,
+			setting->missions[i].floorRange,
+			setting->missions[i].roomRange,
+			setting->missions[i].altRange);
+		fprintf(f, "  }%s\n",
+			i < setting->missionCount ? "," : "");
+	}
+	fprintf(f, "};\n\n");
+
+	fprintf(f, "struct CampaignSetting %s_campaign =\n{\n",
+		name);
+	OutputCString(f, setting->title, 2);
+	fprintf(f, ",\n");
+	OutputCString(f, setting->author, 2);
+	fprintf(f, ",\n");
+	OutputCString(f, setting->description, 2);
+	fprintf(f, ",\n");
+	fprintf(f, "  %d, %s_missions, %d, %s_badguys\n};\n",
+		setting->missionCount, name,
+		setting->characterCount, name);
+
+	printf("Saved to %s\n", filename);
+	fclose(f);
 };
 
 /* GetHomeDirectory ()

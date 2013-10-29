@@ -61,6 +61,7 @@ Sizes in bytes unless otherwise stated
 
 Priviledged types (types that are used directly in the file format)
 Changing these types will break the game!
+- CampaignSetting
 - struct Mission
 - TBadGuy
 - struct MissionObjective
@@ -76,6 +77,48 @@ Campaign:
 - CharacterCount (4)
 - <Characters> (CharacterCount * sizeof(TBadGuy))
 */
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+typedef struct
+{
+	int32_t armedBodyPic;
+	int32_t unarmedBodyPic;
+	int32_t facePic;
+	int32_t speed;
+	int32_t probabilityToMove;
+	int32_t probabilityToTrack;
+	int32_t probabilityToShoot;
+	int32_t actionDelay;
+	int32_t gun;
+	int32_t skinColor;
+	int32_t armColor;
+	int32_t bodyColor;
+	int32_t legColor;
+	int32_t hairColor;
+	int32_t health;
+	int32_t flags;
+} TBadGuy
+#ifdef _MSC_VER
+;
+#pragma pack(pop)
+#else
+__attribute__((packed));
+#endif
+
+// WARNING: data type used in C format (builtin campaigns)
+typedef struct
+{
+	char title[40];
+	char author[40];
+	char description[200];
+	int missionCount;
+	struct Mission *missions;
+	int characterCount;
+	TBadGuy *characters;
+} CampaignSetting;
+
+void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src);
 
 #define CAMPAIGN_OK                0
 #define CAMPAIGN_BADFILE          -1
@@ -83,11 +126,11 @@ Campaign:
 #define CAMPAIGN_BADPATH          -3
 
 int ScanCampaign(const char *filename, char *title, int *missions);
-int LoadCampaign(const char *filename, CampaignSetting *setting);
-int SaveCampaign(const char *filename, CampaignSetting *setting);
+int LoadCampaign(const char *filename, CampaignSettingNew *setting);
+int SaveCampaign(const char *filename, CampaignSettingNew *setting);
 void SaveCampaignAsC(
 	const char *filename, const char *name,
-	CampaignSetting *setting);
+	CampaignSettingNew *setting);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);

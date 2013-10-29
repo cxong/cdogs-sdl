@@ -60,7 +60,6 @@
 #define CHARACTER_PLAYER2                 1
 #define CHARACTER_PRISONER                2
 #define CHARACTER_OTHERS                  3
-#define CHARACTER_COUNT                  21
 
 #define FLAGS_PLAYER1       (1 << 0)
 #define FLAGS_PLAYER2       (1 << 1)
@@ -98,18 +97,6 @@
 #define FLAGS_AWAKEALWAYS     (1 << 25)
 
 
-// Color range defines
-#define SKIN_START 2
-#define SKIN_END   9
-#define BODY_START 52
-#define BODY_END   61
-#define ARMS_START 68
-#define ARMS_END   77
-#define LEGS_START 84
-#define LEGS_END   93
-#define HAIR_START 132
-#define HAIR_END   135
-
 #define SHADE_BLUE          0
 #define SHADE_SKIN          1
 #define SHADE_BROWN         2
@@ -126,21 +113,6 @@
 #define SHADE_GOLDEN        13
 #define SHADE_COUNT         14
 
-
-struct CharacterDescription {
-	int armedBodyPic;
-	int unarmedBodyPic;
-	int facePic;
-	int speed;
-	int probabilityToMove;
-	int probabilityToTrack;
-	int probabilityToShoot;
-	int actionDelay;
-	TranslationTable table;
-	gun_e defaultGun;
-	int maxHealth;
-	int flags;
-};
 
 struct Actor {
 	int x, y;		// These are the full coordinates, including fractions
@@ -173,8 +145,6 @@ typedef struct Actor TActor;
 extern TActor *gPlayer1;
 extern TActor *gPlayer2;
 
-extern struct CharacterDescription gCharacterDesc[CHARACTER_COUNT];
-
 extern TranslationTable tableFlamed;
 extern TranslationTable tableGreen;
 extern TranslationTable tablePoison;
@@ -183,10 +153,6 @@ extern TranslationTable tableBlack;
 extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
-void SetCharacter(int index, int face, int skin, int hair, int body,
-		  int arms, int legs);
-void SetCharacterColors(TranslationTable * t, int arms, int body, int legs,
-			int skin, int hair);
 void DrawCharacter(int x, int y, TActor * actor);
 
 void SetStateForActor(TActor * actor, int state);

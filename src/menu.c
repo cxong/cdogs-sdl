@@ -705,20 +705,11 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 }
 
 
-static CampaignSetting customSetting = {
-/*	.title		=*/	"",
-/*	.author		=*/	"",
-/*	.description	=*/	"",
-/*	.missionCount	=*/	0,
-/*	.missions	=*/	NULL,
-/*	.characterCount	=*/	0,
-/*	.characters	=*/	NULL
-};
-
 void MenuLoadCampaign(campaign_entry_t *entry)
 {
 	gOptions.twoPlayers = entry->is_two_player;
 	gCampaign.Entry = *entry;
+	CampaignSettingTerminate(&gCampaign.Setting);
 	if (entry->isBuiltin)
 	{
 		if (entry->mode == CAMPAIGN_MODE_NORMAL)
@@ -741,22 +732,15 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	}
 	else
 	{
-		if (customSetting.missions)
-		{
-			CFREE(customSetting.missions);
-		}
-		if (customSetting.characters)
-		{
-			CFREE(customSetting.characters);
-		}
-		memset(&customSetting, 0, sizeof(customSetting));
+		CampaignSettingNew customSetting;
+		CampaignSettingInit(&customSetting);
 
 		if (LoadCampaign(entry->path, &customSetting) != CAMPAIGN_OK)
 		{
 			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);
 		}
-		gCampaign.Setting = customSetting;
+		memcpy(&gCampaign.Setting, &customSetting, sizeof gCampaign.Setting);
 	}
 
 	printf(">> Loading campaign/dogfight\n");

@@ -93,22 +93,22 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i = 0;
+	CharacterDescription *cd;
 
 	switch (mission->objectives[idx].type)
 	{
 	case OBJECTIVE_KILL:
-		i = gCharacterDesc[mission->baddieCount +
-				  CHARACTER_OTHERS].facePic;
-		table =
-		    &gCharacterDesc[mission->baddieCount +
-				  CHARACTER_OTHERS].table;
+		cd = &gCharacterDesc[mission->baddieCount + CHARACTER_OTHERS];
+		i = cd->character.looks.face;
+		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_RESCUE:
-		i = gCharacterDesc[CHARACTER_PRISONER].facePic;
-		table = &gCharacterDesc[CHARACTER_PRISONER].table;
+		cd = &gCharacterDesc[CHARACTER_PRISONER];
+		i = cd->character.looks.face;
+		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
@@ -625,7 +625,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 	gPlayer1->flags = FLAGS_PLAYER1;
 	PlaceActor(gPlayer1);
 	gPlayer1->health = maxHealth;
-	gCharacterDesc[gPlayer1->character].maxHealth = maxHealth;
+	gCharacterDesc[gPlayer1->character].character.maxHealth = maxHealth;
 
 	if (twoPlayers) {
 		gPlayer2Data.score = 0;
@@ -637,7 +637,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 		gPlayer2->flags = FLAGS_PLAYER2;
 		PlaceActor(gPlayer2);
 		gPlayer2->health = maxHealth;
-		gCharacterDesc[gPlayer2->character].maxHealth = maxHealth;
+		gCharacterDesc[gPlayer2->character].character.maxHealth = maxHealth;
 	}
 }
 
@@ -1059,6 +1059,7 @@ int main(int argc, char *argv[])
 
 	PlayMenuSong();
 
+	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
 	InputInit(&gInputDevices, NULL);
 
@@ -1105,6 +1106,7 @@ int main(int argc, char *argv[])
 	SaveHighScores();
 	UnloadCredits(&creditsDisplayer);
 	UnloadAllCampaigns(&campaigns);
+	CampaignTerminate(&gCampaign);
 
 	if (isSoundEnabled)
 	{

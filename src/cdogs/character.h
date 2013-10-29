@@ -26,70 +26,45 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CAMPAIGNS
-#define __CAMPAIGNS
+#ifndef __CHARACTER
+#define __CHARACTER
 
-#include "character.h"
-#include "sys_config.h"
-
-typedef enum
-{
-	CAMPAIGN_MODE_NORMAL,
-	CAMPAIGN_MODE_DOGFIGHT,
-	CAMPAIGN_MODE_QUICK_PLAY
-} campaign_mode_e;
+#include "weapon.h"
 
 typedef struct
 {
-	char filename[CDOGS_FILENAME_MAX];
-	char path[CDOGS_PATH_MAX];
-	char info[80];
-	int isBuiltin;
-	campaign_mode_e mode;
-	int builtinIndex;
-	int is_two_player;
-} campaign_entry_t;
-
-typedef struct campaign_list
-{
-	char name[CDOGS_FILENAME_MAX];
-	struct campaign_list *subFolders;
-	int numSubFolders;
-	campaign_entry_t *list;
-	int num;
-} campaign_list_t;
+	int armedBody;
+	int unarmedBody;
+	int face;
+	int skin;
+	int arm;
+	int body;
+	int leg;
+	int hair;
+} CharLooks;
 
 typedef struct
 {
-	campaign_list_t campaignList;
-	campaign_list_t dogfightList;
-	campaign_entry_t quickPlayEntry;
-} custom_campaigns_t;
+	CharLooks looks;
+	int speed;
+	int probabilityToMove;
+	int probabilityToTrack;
+	int probabilityToShoot;
+	int actionDelay;
+	gun_e gun;
+	int maxHealth;
+	int flags;
+} CharEnemy;
 
 typedef struct
 {
-	char title[40];
-	char author[40];
-	char description[200];
-	int missionCount;
-	struct Mission *missions;
-	int characterCount;
-	CharEnemy *characters;
-} CampaignSettingNew;
+	CharEnemy character;
+	TranslationTable table;
+} CharacterDescription;
 
-typedef struct
-{
-	CampaignSettingNew Setting;
-	campaign_entry_t Entry;
-	unsigned int seed;
-} CampaignOptions;
-extern CampaignOptions gCampaign;
+#define CHARACTER_COUNT 21
+extern CharacterDescription gCharacterDesc[CHARACTER_COUNT];
 
-void CampaignInit(CampaignOptions *campaign);
-void CampaignTerminate(CampaignOptions *campaign);
-void CampaignSettingInit(CampaignSettingNew *setting);
-void CampaignSettingTerminate(CampaignSettingNew *setting);
-void LoadAllCampaigns(custom_campaigns_t *campaigns);
-void UnloadAllCampaigns(custom_campaigns_t *campaigns);
+void SetCharacterLooks(CharacterDescription *description, const CharLooks *c);
 
 #endif

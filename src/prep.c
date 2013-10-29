@@ -238,7 +238,7 @@ void SaveTemplates(void)
 void DisplayPlayer(int x, struct PlayerData *data, int character,
 		   int editingName)
 {
-	struct CharacterDescription *cd;
+	CharacterDescription *cd;
 	TOffsetPic body, head;
 	char s[22];
 	int y;
@@ -253,18 +253,18 @@ void DisplayPlayer(int x, struct PlayerData *data, int character,
 	} else
 		CDogsTextStringAt(x, y, data->name);
 
-	body.dx = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy;
+	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
+	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
 	body.picIndex =
-	    cBodyPic[cd->unarmedBodyPic][DIRECTION_DOWN][STATE_IDLE];
+		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
 
 	head.dx =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dx +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dx;
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
 	head.dy =
-	    cNeckOffset[cd->unarmedBodyPic][DIRECTION_DOWN].dy +
-	    cHeadOffset[cd->facePic][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->facePic][DIRECTION_DOWN][STATE_IDLE];
+		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
+		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
+	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
 
 	DrawTTPic(
 		x + 20 + body.dx, y + 36 + body.dy,
@@ -577,23 +577,17 @@ static int IndexToShade(int idx)
 
 static void SetPlayer(int character, struct PlayerData *data)
 {
-	int face, skin, hair;
-
-	face = IndexToHead(data->head);
-	skin = IndexToSkin(data->skin);
-	hair = IndexToHair(data->hair);
-	gCharacterDesc[character].armedBodyPic = BODY_ARMED;
-	gCharacterDesc[character].unarmedBodyPic = BODY_UNARMED;
-	gCharacterDesc[character].speed = 256;
-	gCharacterDesc[character].maxHealth = 200;
-	SetCharacter(character, face, skin, hair, data->body, data->arms,
-		     data->legs);
+	data->looks.armedBody = BODY_ARMED;
+	data->looks.unarmedBody = BODY_UNARMED;
+	SetCharacterLooks(&gCharacterDesc[character], &data->looks);
+	gCharacterDesc[character].character.speed = 256;
+	gCharacterDesc[character].character.maxHealth = 200;
 }
 
 static int AppearanceSelection(
 	const char **menu, int menuCount,
 	int x, int idx,
-	struct PlayerData *data, int *property, int cmd, int *selection)
+	struct PlayerData *data, int *property, int (*func)(int), int cmd, int *selection)
 {
 	int y;
 	int i;
@@ -610,13 +604,13 @@ static int AppearanceSelection(
 		if (selection[idx] > 0)
 		{
 			selection[idx]--;
-			*property = selection[idx];
+			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == 0)
 		{
 			selection[idx] = menuCount - 1;
-			*property = selection[idx];
+			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
@@ -625,13 +619,13 @@ static int AppearanceSelection(
 		if (selection[idx] < menuCount - 1)
 		{
 			selection[idx]++;
-			*property = selection[idx];
+			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == menuCount - 1)
 		{
 			selection[idx] = 0;
-			*property = selection[idx];
+			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
@@ -654,7 +648,9 @@ static int FaceSelection(int x, int idx, struct PlayerData *data, int cmd)
 	static int selection[2] = { 0, 1 };
 
 	return AppearanceSelection(
-		faceNames, AVAILABLE_FACES, x, idx, data, &data->head, cmd, selection);
+		faceNames,
+		AVAILABLE_FACES,
+		x, idx, data, &data->looks.face, IndexToHead, cmd, selection);
 }
 
 static int SkinSelection(int x, int idx, struct PlayerData *data, int cmd)
@@ -663,7 +659,7 @@ static int SkinSelection(int x, int idx, struct PlayerData *data, int cmd)
 
 	return AppearanceSelection(
 		skinNames, PLAYER_SKIN_COUNT,
-		x, idx, data, &data->skin, cmd, selection);
+		x, idx, data, &data->looks.skin, IndexToSkin, cmd, selection);
 }
 
 static int HairSelection(int x, int idx, struct PlayerData *data, int cmd)
@@ -672,7 +668,7 @@ static int HairSelection(int x, int idx, struct PlayerData *data, int cmd)
 
 	return AppearanceSelection(
 		hairNames, PLAYER_HAIR_COUNT,
-		x, idx, data, &data->hair, cmd, selection);
+		x, idx, data, &data->looks.hair, IndexToHair, cmd, selection);
 }
 
 static int BodyPartSelection(
@@ -726,7 +722,8 @@ static int ArmSelection(int x, int idx, struct PlayerData *data, int cmd)
 {
 	static int selection[2] = { 0, 0 };
 
-	return BodyPartSelection(x, idx, data, cmd, &data->arms, &selection[idx]);
+	return BodyPartSelection(
+		x, idx, data, cmd, &data->looks.arm, &selection[idx]);
 }
 
 static int BodySelection(int x, int idx, struct PlayerData *data,
@@ -734,14 +731,16 @@ static int BodySelection(int x, int idx, struct PlayerData *data,
 {
 	static int selection[2] = { 0, 0 };
 
-	return BodyPartSelection(x, idx, data, cmd, &data->body, &selection[idx]);
+	return BodyPartSelection(
+		x, idx, data, cmd, &data->looks.body, &selection[idx]);
 }
 
 static int LegSelection(int x, int idx, struct PlayerData *data, int cmd)
 {
 	static int selection[2] = { 0, 0 };
 
-	return BodyPartSelection(x, idx, data, cmd, &data->legs, &selection[idx]);
+	return BodyPartSelection(
+		x, idx, data, cmd, &data->looks.leg, &selection[idx]);
 }
 
 static int WeaponSelection(
@@ -847,12 +846,12 @@ void UseTemplate(int character, struct PlayerData *data,
 	memset(data->name, 0, sizeof(data->name));
 	strncpy(data->name, t->name, sizeof(data->name) - 1);
 
-	data->head = (t->head < AVAILABLE_FACES ? t->head : 0);
-	data->body = t->body;
-	data->arms = t->arms;
-	data->legs = t->legs;
-	data->skin = t->skin;
-	data->hair = t->hair;
+	data->looks.face = IndexToHead(t->head < AVAILABLE_FACES ? t->head : 0);
+	data->looks.body = t->body;
+	data->looks.arm = t->arms;
+	data->looks.leg = t->legs;
+	data->looks.skin = IndexToSkin(t->skin);
+	data->looks.hair = IndexToHair(t->hair);
 
 	SetPlayer(character, data);
 }
@@ -862,12 +861,12 @@ void SaveTemplate(struct PlayerData *data, struct PlayerTemplate *t)
 	memset(t->name, 0, sizeof(t->name));
 	strncpy(t->name, data->name, sizeof(t->name) - 1);
 
-	t->head = data->head;
-	t->body = data->body;
-	t->arms = data->arms;
-	t->legs = data->legs;
-	t->skin = data->skin;
-	t->hair = data->hair;
+	t->head = data->looks.face - FACE_JONES;
+	t->body = data->looks.body;
+	t->arms = data->looks.arm;
+	t->legs = data->looks.leg;
+	t->skin = data->looks.skin - SHADE_SKIN;
+	t->hair = data->looks.hair - SHADE_RED;
 }
 
 static int TemplateSelection(

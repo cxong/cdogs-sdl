@@ -72,17 +72,18 @@
 #include "utils.h"
 
 
+// Warning: written as-is to file
 struct Entry {
 	char name[20];
-	int head;
-	int body;
-	int arms;
-	int legs;
-	int skin;
-	int hair;
-	int score;
-	int missions;
-	int lastMission;
+	int32_t unused1;
+	int32_t unused2;
+	int32_t unused3;
+	int32_t unused4;
+	int32_t unused5;
+	int32_t unused6;
+	int32_t score;
+	int32_t missions;
+	int32_t lastMission;
 };
 
 #define MAX_ENTRY 20
@@ -104,12 +105,6 @@ static int EnterTable(struct Entry *table, struct PlayerData *data)
 			table[i].score = data->totalScore;
 			table[i].missions = data->missions;
 			table[i].lastMission = data->lastMission;
-			table[i].head = data->head;
-			table[i].arms = data->arms;
-			table[i].body = data->body;
-			table[i].legs = data->legs;
-			table[i].skin = data->skin;
-			table[i].hair = data->hair;
 
 			return i;
 		}

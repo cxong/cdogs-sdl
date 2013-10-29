@@ -306,8 +306,9 @@ static int DirectionOK(TActor * actor, int dir)
 
 static int BrightWalk(TActor * actor, int roll)
 {
-	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-	    roll < gCharacterDesc[actor->character].probabilityToTrack) {
+	if (!!(actor->flags & FLAGS_VISIBLE) &&
+		roll < gCharacterDesc[actor->character].character.probabilityToTrack)
+	{
 		actor->flags &= ~FLAGS_DETOURING;
 		return Hunt(actor);
 	}
@@ -350,7 +351,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
 		WeaponCanFire(&actor->weapon) &&
-		roll < gCharacterDesc[actor->character].probabilityToShoot)
+		roll < gCharacterDesc[actor->character].character.probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
@@ -490,6 +491,7 @@ void CommandBadGuys(int ticks)
 	{
 		if ((actor->flags & (FLAGS_PLAYERS | FLAGS_PRISONER)) == 0)
 		{
+			CharEnemy *charDesc = &gCharacterDesc[actor->character].character;
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 			{
 				gAreGoodGuysPresent = 1;
@@ -501,28 +503,23 @@ void CommandBadGuys(int ticks)
 			    (actor->flags & FLAGS_SLEEPING) == 0) {
 				bypass = 0;
 				roll = rand() % rollLimit;
-				if ((actor->flags & FLAGS_FOLLOWER) != 0) {
+				if (!!(actor->flags & FLAGS_FOLLOWER))
+				{
 					if (CloseToPlayer(actor))
+					{
 						cmd = 0;
+					}
 					else
+					{
 						cmd = Follow(actor);
-					actor->delay =
-					    gCharacterDesc[actor->
-							  character].
-					    actionDelay;
-				} else if ((actor->flags & FLAGS_SNEAKY) !=
-					   0
-					   && (actor->
-					       flags & FLAGS_VISIBLE) != 0
-					   &&
-					   ((gPlayer1
-					     && (gPlayer1->
-						 lastCmd & CMD_BUTTON1) !=
-					     0) || (gPlayer2
-						    && (gPlayer2->
-							lastCmd &
-							CMD_BUTTON1) !=
-						    0))) {
+					}
+					actor->delay = charDesc->actionDelay;
+				}
+				else if (!!(actor->flags & FLAGS_SNEAKY) &&
+					!!(actor->flags & FLAGS_VISIBLE) &&
+					((gPlayer1 && !!(gPlayer1->lastCmd & CMD_BUTTON1)) ||
+					(gPlayer2 && !!(gPlayer2->lastCmd & CMD_BUTTON1))))
+				{
 					cmd = Hunt(actor) | CMD_BUTTON1;
 					bypass = 1;
 				}
@@ -537,13 +534,11 @@ void CommandBadGuys(int ticks)
 				}
 				else
 				{
-					if (roll <
-						gCharacterDesc[actor->character].probabilityToTrack)
+					if (roll < charDesc->probabilityToTrack)
 					{
 						cmd = Hunt(actor);
 					}
-					else if (roll <
-						gCharacterDesc[actor->character].probabilityToMove)
+					else if (roll < charDesc->probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
 					}
@@ -551,9 +546,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = 0;
 					}
-					actor->delay =
-						gCharacterDesc[actor->character].actionDelay *
-						delayModifier;
+					actor->delay = charDesc->actionDelay * delayModifier;
 				}
 				if (!bypass)
 				{
