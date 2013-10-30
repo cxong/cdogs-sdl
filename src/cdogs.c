@@ -307,7 +307,7 @@ void Summary(int x, struct PlayerData *data, int character)
 		CDogsTextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
 
 	y += 2 * CDogsTextHeight();
-	DisplayPlayer(x, data, character, 0);
+	DisplayPlayer(x, data->name, &gCharacterDesc[character], 0);
 	sprintf(s, "Score: %d", data->score);
 	CDogsTextStringAt(x, y, s);
 	y += CDogsTextHeight();
@@ -456,15 +456,23 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 
 	debug(D_NORMAL, "\n");
 
-	if (gOptions.twoPlayers) {
-		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+	if (gOptions.twoPlayers)
+	{
+		DisplayPlayer(
+			CenterOfLeft(60),
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
 			CenterOfLeft(TextGetStringWidth(s)),
 			device->cachedConfig.ResolutionWidth / 3,
 			s);
 
-		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		DisplayPlayer(
+			CenterOfRight(60), gPlayer2Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER2],
+			0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
 			CenterOfRight(TextGetStringWidth(s)),
@@ -473,7 +481,11 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 	}
 	else
 	{
-		DisplayPlayer(CenterX(TextGetStringWidth(s)), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		DisplayPlayer(
+			CenterX(TextGetStringWidth(s)),
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
@@ -487,12 +499,27 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
 
-	if (score1 == score2) {
-		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+	if (score1 == score2)
+	{
+		DisplayPlayer(
+			CenterOfLeft(60),
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
+		DisplayPlayer(
+			CenterOfRight(60),
+			gPlayer2Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER2],
+			0);
 		CDogsTextStringAtCenter("It's a draw!");
-	} else if (score1 > score2) {
-		DisplayPlayer(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1, 0);
+	}
+	else if (score1 > score2)
+	{
+		DisplayPlayer(
+			CenterOfLeft(60),
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
 		CDogsTextStringAt(
 			CenterOfLeft(TextGetStringWidth(IS_WINNER)),
 			device->cachedConfig.ResolutionWidth / 2,
@@ -500,7 +527,11 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 	}
 	else
 	{
-		DisplayPlayer(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		DisplayPlayer(
+			CenterOfRight(60),
+			gPlayer2Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER2],
+			0);
 		CDogsTextStringAt(
 			CenterOfRight(TextGetStringWidth(IS_WINNER)),
 			device->cachedConfig.ResolutionWidth / 2,
@@ -551,8 +582,16 @@ void Victory(GraphicsDevice *graphics)
 		i = sizeof(finalWords2P) / sizeof(char *);
 		i = rand() % i;
 		s = finalWords2P[i];
-		DisplayPlayer(50, &gPlayer1Data, CHARACTER_PLAYER1, 0);
-		DisplayPlayer(200, &gPlayer2Data, CHARACTER_PLAYER2, 0);
+		DisplayPlayer(
+			50,
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
+		DisplayPlayer(
+			200,
+			gPlayer2Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER2],
+			0);
 		if (gPlayer1Data.survived)
 			gPlayer1Data.missions++;
 		if (gPlayer2Data.survived)
@@ -561,7 +600,11 @@ void Victory(GraphicsDevice *graphics)
 		i = sizeof(finalWords1P) / sizeof(char *);
 		i = rand() % i;
 		s = finalWords1P[i];
-		DisplayPlayer(125, &gPlayer1Data, CHARACTER_PLAYER1, 0);
+		DisplayPlayer(
+			125,
+			gPlayer1Data.name,
+			&gCharacterDesc[CHARACTER_PLAYER1],
+			0);
 		gPlayer1Data.missions++;
 	}
 

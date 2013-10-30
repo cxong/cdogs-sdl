@@ -98,12 +98,13 @@ typedef struct
 	int32_t hairColor;
 	int32_t health;
 	int32_t flags;
-} TBadGuy
+}
+#ifndef _MSC_VER
+__attribute__((packed))
+#endif
+TBadGuy;
 #ifdef _MSC_VER
-;
 #pragma pack(pop)
-#else
-__attribute__((packed));
 #endif
 
 // WARNING: data type used in C format (builtin campaigns)

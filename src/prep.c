@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
+#include <cdogs/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
@@ -235,47 +236,6 @@ void SaveTemplates(void)
 	}
 }
 
-void DisplayPlayer(int x, struct PlayerData *data, int character,
-		   int editingName)
-{
-	CharacterDescription *cd;
-	TOffsetPic body, head;
-	char s[22];
-	int y;
-
-	y = gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
-
-	cd = &gCharacterDesc[character];
-
-	if (editingName) {
-		sprintf(s, "%c%s%c", '\020', data->name, '\021');
-		CDogsTextStringAt(x, y, s);
-	} else
-		CDogsTextStringAt(x, y, data->name);
-
-	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
-	body.picIndex =
-		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
-
-	head.dx =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
-	head.dy =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
-
-	DrawTTPic(
-		x + 20 + body.dx, y + 36 + body.dy,
-		PicManagerGetOldPic(&gPicManager, body.picIndex),
-		cd->table);
-	DrawTTPic(
-		x + 20 + head.dx, y + 36 + head.dy,
-		PicManagerGetOldPic(&gPicManager, head.picIndex),
-		cd->table);
-}
-
 static void ShowPlayerControls(int x, KeyConfig *config)
 {
 	char s[256];
@@ -317,7 +277,7 @@ static void ShowPlayerControls(int x, KeyConfig *config)
 
 static void ShowSelection(int x, struct PlayerData *data, int character)
 {
-	DisplayPlayer(x, data, character, 0);
+	DisplayPlayer(x, data->name, &gCharacterDesc[character], 0);
 
 	if (data->weaponCount == 0)
 	{
@@ -1041,7 +1001,8 @@ static int MakeSelection(int mode, int x, int character,
 				mode = MODE_MAIN;
 			break;
 	}
-	DisplayPlayer(x, data, character, mode == MODE_SELECTNAME);
+	DisplayPlayer(
+		x, data->name, &gCharacterDesc[character], mode == MODE_SELECTNAME);
 
 	return mode;
 }

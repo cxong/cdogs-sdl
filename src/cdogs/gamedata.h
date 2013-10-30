@@ -159,11 +159,12 @@ struct MissionObjective {
 	int32_t required;
 	int32_t flags;
 }
-#ifdef _MSC_VER
+#ifndef _MSC_VER
+__attribute__((packed))
+#endif
 ;
+#ifdef _MSC_VER
 #pragma pack(pop)
-#else
-__attribute__((packed));
 #endif
 
 
@@ -218,11 +219,12 @@ struct Mission {
 	int32_t roomRange;
 	int32_t altRange;
 }
-#ifdef _MSC_VER
+#ifndef _MSC_VER
+__attribute__((packed))
+#endif
 ;
+#ifdef _MSC_VER
 #pragma pack(pop)
-#else
-__attribute__((packed));
 #endif
 
 

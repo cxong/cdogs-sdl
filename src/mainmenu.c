@@ -25,15 +25,13 @@
 */
 #include "mainmenu.h"
 
-#include <cdogs/blit.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <cdogs/config.h>
-#include <cdogs/gamedata.h>
-#include <cdogs/music.h>
-#include <cdogs/sounds.h>
 #include <cdogs/text.h>
 
 #include "autosave.h"
-#include "credits.h"
 #include "menu.h"
 
 

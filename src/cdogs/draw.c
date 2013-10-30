@@ -54,6 +54,8 @@
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
+#include "pic_manager.h"
+#include "text.h"
 
 
 void FixBuffer(DrawBuffer *buffer, int isShadow)
@@ -350,4 +352,48 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 	{
 		*list = t;
 	}
+}
+
+void DisplayPlayer(
+	int x, const char *name, CharacterDescription *cd, int editingName)
+{
+	TOffsetPic body, head;
+	char s[22];
+	direction_e dir = DIRECTION_DOWN;
+	int state = STATE_IDLE;
+	int y;
+
+	y = gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
+
+	if (editingName)
+	{
+		sprintf(s, "%c%s%c", '\020', name, '\021');
+		CDogsTextStringAt(x, y, s);
+	}
+	else
+	{
+		CDogsTextStringAt(x, y, name);
+	}
+
+	body.dx = cBodyOffset[cd->character.looks.unarmedBody][dir].dx;
+	body.dy = cBodyOffset[cd->character.looks.unarmedBody][dir].dy;
+	body.picIndex =
+		cBodyPic[cd->character.looks.unarmedBody][dir][state];
+
+	head.dx =
+		cNeckOffset[cd->character.looks.unarmedBody][dir].dx +
+		cHeadOffset[cd->character.looks.face][dir].dx;
+	head.dy =
+		cNeckOffset[cd->character.looks.unarmedBody][dir].dy +
+		cHeadOffset[cd->character.looks.face][dir].dy;
+	head.picIndex = cHeadPic[cd->character.looks.face][dir][state];
+
+	DrawTTPic(
+		x + 20 + body.dx, y + 36 + body.dy,
+		PicManagerGetOldPic(&gPicManager, body.picIndex),
+		cd->table);
+	DrawTTPic(
+		x + 20 + head.dx, y + 36 + head.dy,
+		PicManagerGetOldPic(&gPicManager, head.picIndex),
+		cd->table);
 }
