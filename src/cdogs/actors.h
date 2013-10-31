@@ -121,7 +121,7 @@ struct Actor {
 	int stateCounter;
 	int lastCmd;
 	int soundLock;
-	int character;
+	CharacterDescription *character;
 	Weapon weapon;
 	int dx, dy;
 
@@ -160,12 +160,11 @@ void UpdateActorState(TActor * actor, int ticks);
 int MoveActor(TActor * actor, int x, int y);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
-TActor *AddActor(int character);
+TActor *AddActor(CharacterDescription *c);
 TActor *RemoveActor(TActor *actor);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
-void InitializeTranslationTables(void);
 void Score(int flags, int points);
 void InjureActor(TActor * actor, int injury);
 void KillAllActors(void);

@@ -270,17 +270,18 @@ void load_character(FILE *f, TBadGuy *b)
 	R32(b, health);
 	R32(b, flags);
 }
-CharEnemy ConvertCharEnemy(TBadGuy *b)
+CharacterDescription ConvertCharacterDescription(TBadGuy *b)
 {
-	CharEnemy e;
+	CharacterDescription e;
 	e.looks.armedBody = b->armedBodyPic;
 	e.looks.unarmedBody = b->unarmedBodyPic;
 	e.looks.face = b->facePic;
 	e.speed = b->speed;
-	e.probabilityToMove = b->probabilityToMove;
-	e.probabilityToTrack = b->probabilityToTrack;
-	e.probabilityToShoot = b->probabilityToShoot;
-	e.actionDelay = b->actionDelay;
+	CMALLOC(e.bot, sizeof *e.bot);
+	e.bot->probabilityToMove = b->probabilityToMove;
+	e.bot->probabilityToTrack = b->probabilityToTrack;
+	e.bot->probabilityToShoot = b->probabilityToShoot;
+	e.bot->actionDelay = b->actionDelay;
 	e.gun = (gun_e)b->gun;
 	e.looks.skin = b->skinColor;
 	e.looks.arm = b->armColor;
@@ -291,17 +292,17 @@ CharEnemy ConvertCharEnemy(TBadGuy *b)
 	e.flags = b->flags;
 	return e;
 }
-TBadGuy ConvertTBadGuy(CharEnemy *e)
+TBadGuy ConvertTBadGuy(CharacterDescription *e)
 {
 	TBadGuy b;
 	b.armedBodyPic = e->looks.armedBody;
 	b.unarmedBodyPic = e->looks.unarmedBody;
 	b.facePic = e->looks.face;
 	b.speed = e->speed;
-	b.probabilityToMove = e->probabilityToMove;
-	b.probabilityToTrack = e->probabilityToTrack;
-	b.probabilityToShoot = e->probabilityToShoot;
-	b.actionDelay = e->actionDelay;
+	b.probabilityToMove = e->bot->probabilityToMove;
+	b.probabilityToTrack = e->bot->probabilityToTrack;
+	b.probabilityToShoot = e->bot->probabilityToShoot;
+	b.actionDelay = e->bot->actionDelay;
 	b.gun = e->gun;
 	b.skinColor = e->looks.skin;
 	b.armColor = e->looks.arm;
@@ -326,12 +327,17 @@ void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src)
 	{
 		memcpy(&dest->missions[i], &src->missions[i], sizeof dest->missions[i]);
 	}
-	dest->characterCount = src->characterCount;
+	for (i = 0; i < dest->characterCount; i++)
+	{
+		CFREE(dest->characters[i].bot);
+	}
 	CFREE(dest->characters);
+	dest->characterCount = src->characterCount;
 	CMALLOC(dest->characters, sizeof *dest->characters * dest->characterCount);
 	for (i = 0; i < dest->characterCount; i++)
 	{
-		dest->characters[i] = ConvertCharEnemy(&src->characters[i]);
+		dest->characters[i] = ConvertCharacterDescription(&src->characters[i]);
+		SetCharacterLooks(&dest->characters[i], &dest->characters[i].looks);
 	}
 }
 
@@ -390,7 +396,8 @@ int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 	{
 		TBadGuy b;
 		load_character(f, &b);
-		setting->characters[i] = ConvertCharEnemy(&b);
+		setting->characters[i] = ConvertCharacterDescription(&b);
+		SetCharacterLooks(&setting->characters[i], &setting->characters[i].looks);
 	}
 
 bail:

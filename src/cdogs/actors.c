@@ -115,10 +115,10 @@ void DrawCharacter(int x, int y, TActor * actor)
 	int headDir = dir;
 	int headState = state;
 
-	CharacterDescription *c = &gCharacterDesc[actor->character];
+	CharacterDescription *c = actor->character;
 	TranslationTable *table = (TranslationTable *) c->table;
 	HSV *tint = NULL;
-	int f = c->character.looks.face;
+	int f = c->looks.face;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
 	gunstate_e gunState = actor->weapon.state;
@@ -189,11 +189,11 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	if (g < 0)
 	{
-		b = c->character.looks.unarmedBody;
+		b = c->looks.unarmedBody;
 	}
 	else
 	{
-		b = c->character.looks.armedBody;
+		b = c->looks.armedBody;
 	}
 
 	body.dx = cBodyOffset[b][dir].dx;
@@ -292,14 +292,14 @@ void DrawCharacter(int x, int y, TActor * actor)
 }
 
 
-TActor *AddActor(int character)
+TActor *AddActor(CharacterDescription *c)
 {
 	TActor *actor;
 	CCALLOC(actor, sizeof(TActor));
 
 	actor->soundLock = 0;
-	actor->weapon = WeaponCreate(gCharacterDesc[character].character.gun);
-	actor->health = gCharacterDesc[character].character.maxHealth;
+	actor->weapon = WeaponCreate(c->gun);
+	actor->health = c->maxHealth;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
 	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
@@ -309,8 +309,8 @@ TActor *AddActor(int character)
 	actor->tileItem.actor = actor;
 	actor->next = actorList;
 	actorList = actor;
-	actor->flags = FLAGS_SLEEPING | gCharacterDesc[character].character.flags;
-	actor->character = character;
+	actor->flags = FLAGS_SLEEPING | c->flags;
+	actor->character = c;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
 	return actor;
@@ -625,7 +625,7 @@ Vec2i GetMuzzleOffset(TActor *actor)
 	int b, g, d = actor->direction;
 	Vec2i position;
 
-	b = gCharacterDesc[actor->character].character.looks.armedBody;
+	b = actor->character->looks.armedBody;
 	g = GunGetPic(actor->weapon.gun);
 	position.x =
 		cGunHandOffset[b][d].dx +
@@ -695,7 +695,7 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 		canMoveWhenShooting;
 	if (willMove)
 	{
-		int moveAmount = gCharacterDesc[actor->character].character.speed * ticks;
+		int moveAmount = actor->character->speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
 			pos->x -= moveAmount;
@@ -981,16 +981,6 @@ void BuildTranslationTables(const TPalette palette)
 			(200 * palette[i].g) / 256,
 			(200 * palette[i].b) / 256);
 	}
-}
-
-void InitializeTranslationTables(void)
-{
-	int i, f;
-
-	for (i = 0; i < CHARACTER_COUNT; i++)
-		for (f = 0; f < 256; f++)
-			gCharacterDesc[i].table[f] = (f & 0xFF);
-
 }
 
 int ActorIsImmune(TActor *actor, special_damage_e damage)

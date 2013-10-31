@@ -84,8 +84,19 @@ void SetCharacterColors(TranslationTable *t, CharLooks looks)
 
 void SetCharacterLooks(CharacterDescription *description, const CharLooks *c)
 {
-	description->character.looks = *c;
-	SetCharacterColors(
-		&description->table,
-		description->character.looks);
+	description->looks = *c;
+	SetCharacterColors(&description->table, description->looks);
+}
+
+void InitializeTranslationTables(void)
+{
+	int i;
+	for (i = 0; i < CHARACTER_COUNT; i++)
+	{
+		int f;
+		for (f = 0; f < 256; f++)
+		{
+			gCharacterDesc[i].table[f] = f & 0xFF;
+		}
+	}
 }

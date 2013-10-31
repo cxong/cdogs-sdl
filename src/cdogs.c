@@ -99,7 +99,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	{
 	case OBJECTIVE_KILL:
 		cd = &gCharacterDesc[mission->baddieCount + CHARACTER_OTHERS];
-		i = cd->character.looks.face;
+		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -107,7 +107,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 		break;
 	case OBJECTIVE_RESCUE:
 		cd = &gCharacterDesc[CHARACTER_PRISONER];
-		i = cd->character.looks.face;
+		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -663,24 +663,24 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 	gPlayer1Data.kills = gPlayer1Data.friendlies = 0;
 	gPlayer1Data.allTime = gPlayer1Data.today = -1;
 	gPlayer1Data.lastMission = mission;
-	gPlayer1 = AddActor(CHARACTER_PLAYER1);
+	gPlayer1 = AddActor(&gCharacterDesc[CHARACTER_PLAYER1]);
 	gPlayer1->weapon = WeaponCreate(gPlayer1Data.weapons[0]);
 	gPlayer1->flags = FLAGS_PLAYER1;
 	PlaceActor(gPlayer1);
 	gPlayer1->health = maxHealth;
-	gCharacterDesc[gPlayer1->character].character.maxHealth = maxHealth;
+	gPlayer1->character->maxHealth = maxHealth;
 
 	if (twoPlayers) {
 		gPlayer2Data.score = 0;
 		gPlayer2Data.kills = gPlayer2Data.friendlies = 0;
 		gPlayer2Data.allTime = gPlayer2Data.today = -1;
 		gPlayer2Data.lastMission = mission;
-		gPlayer2 = AddActor(CHARACTER_PLAYER2);
+		gPlayer2 = AddActor(&gCharacterDesc[CHARACTER_PLAYER2]);
 		gPlayer2->weapon = WeaponCreate(gPlayer2Data.weapons[0]);
 		gPlayer2->flags = FLAGS_PLAYER2;
 		PlaceActor(gPlayer2);
 		gPlayer2->health = maxHealth;
-		gCharacterDesc[gPlayer2->character].character.maxHealth = maxHealth;
+		gPlayer2->character->maxHealth = maxHealth;
 	}
 }
 

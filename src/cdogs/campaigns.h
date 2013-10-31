@@ -74,7 +74,7 @@ typedef struct
 	int missionCount;
 	struct Mission *missions;
 	int characterCount;
-	CharEnemy *characters;
+	CharacterDescription *characters;
 } CampaignSettingNew;
 
 typedef struct

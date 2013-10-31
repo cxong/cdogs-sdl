@@ -307,7 +307,7 @@ static int DirectionOK(TActor * actor, int dir)
 static int BrightWalk(TActor * actor, int roll)
 {
 	if (!!(actor->flags & FLAGS_VISIBLE) &&
-		roll < gCharacterDesc[actor->character].character.probabilityToTrack)
+		roll < actor->character->bot->probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
 		return Hunt(actor);
@@ -351,7 +351,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
 		WeaponCanFire(&actor->weapon) &&
-		roll < gCharacterDesc[actor->character].character.probabilityToShoot)
+		roll < actor->character->bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
@@ -491,7 +491,6 @@ void CommandBadGuys(int ticks)
 	{
 		if ((actor->flags & (FLAGS_PLAYERS | FLAGS_PRISONER)) == 0)
 		{
-			CharEnemy *charDesc = &gCharacterDesc[actor->character].character;
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 			{
 				gAreGoodGuysPresent = 1;
@@ -513,7 +512,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = Follow(actor);
 					}
-					actor->delay = charDesc->actionDelay;
+					actor->delay = actor->character->bot->actionDelay;
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
 					!!(actor->flags & FLAGS_VISIBLE) &&
@@ -534,11 +533,11 @@ void CommandBadGuys(int ticks)
 				}
 				else
 				{
-					if (roll < charDesc->probabilityToTrack)
+					if (roll < actor->character->bot->probabilityToTrack)
 					{
 						cmd = Hunt(actor);
 					}
-					else if (roll < charDesc->probabilityToMove)
+					else if (roll < actor->character->bot->probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
 					}
@@ -546,7 +545,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = 0;
 					}
-					actor->delay = charDesc->actionDelay * delayModifier;
+					actor->delay = actor->character->bot->actionDelay * delayModifier;
 				}
 				if (!bypass)
 				{
@@ -609,7 +608,7 @@ void CommandBadGuys(int ticks)
 		    CHARACTER_OTHERS +
 		    rand() % gMission.missionData->baddieCount;
 		character = MIN(character, CHARACTER_COUNT);
-		baddie = AddActor(character);
+		baddie = AddActor(&gCharacterDesc[character]);
 		PlaceBaddie(baddie);
 		gBaddieCount++;
 	}
@@ -633,7 +632,7 @@ void InitializeBadGuys(void)
 						gMission.missionData->baddieCount +
 						rand() %
 						gMission.missionData->specialCount;
-					actor = AddActor(character);
+					actor = AddActor(&gCharacterDesc[character]);
 					actor->tileItem.flags |= ObjectiveToTileItem(i);
 					PlaceBaddie(actor);
 				}
@@ -646,7 +645,7 @@ void InitializeBadGuys(void)
 		{
 			for (j = 0; j < gMission.objectives[i].count; j++)
 			{
-				actor = AddActor(CHARACTER_PRISONER);
+				actor = AddActor(&gCharacterDesc[CHARACTER_PRISONER]);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (HasLockedRooms())
 				{
@@ -666,8 +665,7 @@ void InitializeBadGuys(void)
 
 void CreateEnemies(void)
 {
-	int i, character;
-
+	int i;
 	if (gMission.missionData->baddieCount <= 0)
 		return;
 
@@ -675,10 +673,10 @@ void CreateEnemies(void)
 		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
-		TActor *enemy;
-		character = CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount;
-		character = MIN(character, CHARACTER_COUNT);
-		enemy = AddActor(character);
+		int character = MIN(
+			CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount,
+			CHARACTER_COUNT);
+		TActor *enemy = AddActor(&gCharacterDesc[character]);
 		PlaceBaddie(enemy);
 		gBaddieCount++;
 	}

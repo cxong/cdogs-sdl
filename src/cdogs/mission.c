@@ -443,7 +443,7 @@ static CampaignSetting df2 =
 	0, NULL
 };
 
-static CharEnemy gQuickPlayEnemies[BADDIE_MAX];
+static CharacterDescription gQuickPlayEnemies[BADDIE_MAX];
 
 
 // +---------------------------------------------------+
@@ -466,16 +466,22 @@ color_t objectiveColors[OBJECTIVE_MAX] =
 // +-----------------------+
 
 
-void SetupMissionCharacter(CharacterDescription *desc, const CharEnemy *b)
+void SetupMissionCharacter(
+	CharacterDescription *desc, const CharacterDescription *b)
 {
-	desc->character = *b;
+	// Need to copy everything except table
+	// Portions of it are pre-set from InitializeTranslationTables
+	TranslationTable table;
+	memcpy(table, desc->table, sizeof table);
+	*desc = *b;
+	memcpy(desc->table, table, sizeof desc->table);
 	SetCharacterLooks(desc, &b->looks);
 }
 
 static void SetupBadguysForMission(struct Mission *mission)
 {
 	int i, idx;
-	const CharEnemy *b;
+	const CharacterDescription *b;
 	CampaignSettingNew *s = &gCampaign.Setting;
 
 	if (s->characterCount <= 0)
@@ -647,7 +653,7 @@ static int GenerateQuickPlayParam(
 }
 
 static void SetupQuickPlayEnemy(
-	CharEnemy *enemy, const QuickPlayConfig *config, gun_e gun)
+	CharacterDescription *enemy, const QuickPlayConfig *config, gun_e gun)
 {
 	enemy->looks.armedBody = BODY_ARMED;
 	enemy->looks.unarmedBody = BODY_UNARMED;
@@ -655,32 +661,33 @@ static void SetupQuickPlayEnemy(
 	enemy->gun = gun;
 	enemy->speed =
 		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
+	CMALLOC(enemy->bot, sizeof *enemy->bot);
 	if (IsShortRange(enemy->gun))
 	{
 		enemy->speed = enemy->speed * 4 / 3;
 	}
 	if (IsShortRange(enemy->gun))
 	{
-		enemy->probabilityToMove = 35 + (rand() % 35);
+		enemy->bot->probabilityToMove = 35 + (rand() % 35);
 	}
 	else
 	{
-		enemy->probabilityToMove = 30 + (rand() % 30);
+		enemy->bot->probabilityToMove = 30 + (rand() % 30);
 	}
-	enemy->probabilityToTrack = 10 + (rand() % 60);
+	enemy->bot->probabilityToTrack = 10 + (rand() % 60);
 	if (enemy->gun == GUN_KNIFE)
 	{
-		enemy->probabilityToShoot = 0;
+		enemy->bot->probabilityToShoot = 0;
 	}
 	else if (IsHighDPS(enemy->gun))
 	{
-		enemy->probabilityToShoot = 2 + (rand() % 10);
+		enemy->bot->probabilityToShoot = 2 + (rand() % 10);
 	}
 	else
 	{
-		enemy->probabilityToShoot = 15 + (rand() % 30);
+		enemy->bot->probabilityToShoot = 15 + (rand() % 30);
 	}
-	enemy->actionDelay = rand() % (50 + 1);
+	enemy->bot->actionDelay = rand() % (50 + 1);
 	enemy->looks.skin = rand() % SHADE_COUNT;
 	enemy->looks.arm = rand() % SHADE_COUNT;
 	enemy->looks.body = rand() % SHADE_COUNT;
@@ -693,7 +700,7 @@ static void SetupQuickPlayEnemy(
 
 static void SetupQuickPlayEnemies(
 	struct Mission *mission,
-	CharEnemy enemies[BADDIE_MAX],
+	CharacterDescription enemies[BADDIE_MAX],
 	const QuickPlayConfig *config)
 {
 	int i;
@@ -1011,7 +1018,7 @@ int IsMissionComplete(struct MissionOptions *options)
 		TActor *a = ActorList();
 		while (a != NULL)
 		{
-			if (a->character == CHARACTER_PRISONER &&
+			if (a->character == &gCharacterDesc[CHARACTER_PRISONER] &&
 				IsTileInExit(&a->tileItem, options))
 			{
 				prisonersRescued++;

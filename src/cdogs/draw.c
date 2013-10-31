@@ -375,18 +375,18 @@ void DisplayPlayer(
 		CDogsTextStringAt(x, y, name);
 	}
 
-	body.dx = cBodyOffset[cd->character.looks.unarmedBody][dir].dx;
-	body.dy = cBodyOffset[cd->character.looks.unarmedBody][dir].dy;
+	body.dx = cBodyOffset[cd->looks.unarmedBody][dir].dx;
+	body.dy = cBodyOffset[cd->looks.unarmedBody][dir].dy;
 	body.picIndex =
-		cBodyPic[cd->character.looks.unarmedBody][dir][state];
+		cBodyPic[cd->looks.unarmedBody][dir][state];
 
 	head.dx =
-		cNeckOffset[cd->character.looks.unarmedBody][dir].dx +
-		cHeadOffset[cd->character.looks.face][dir].dx;
+		cNeckOffset[cd->looks.unarmedBody][dir].dx +
+		cHeadOffset[cd->looks.face][dir].dx;
 	head.dy =
-		cNeckOffset[cd->character.looks.unarmedBody][dir].dy +
-		cHeadOffset[cd->character.looks.face][dir].dy;
-	head.picIndex = cHeadPic[cd->character.looks.face][dir][state];
+		cNeckOffset[cd->looks.unarmedBody][dir].dy +
+		cHeadOffset[cd->looks.face][dir].dy;
+	head.picIndex = cHeadPic[cd->looks.face][dir][state];
 
 	DrawTTPic(
 		x + 20 + body.dx, y + 36 + body.dy,

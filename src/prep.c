@@ -540,8 +540,8 @@ static void SetPlayer(int character, struct PlayerData *data)
 	data->looks.armedBody = BODY_ARMED;
 	data->looks.unarmedBody = BODY_UNARMED;
 	SetCharacterLooks(&gCharacterDesc[character], &data->looks);
-	gCharacterDesc[character].character.speed = 256;
-	gCharacterDesc[character].character.maxHealth = 200;
+	gCharacterDesc[character].speed = 256;
+	gCharacterDesc[character].maxHealth = 200;
 }
 
 static int AppearanceSelection(

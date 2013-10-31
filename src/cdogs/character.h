@@ -45,26 +45,27 @@ typedef struct
 
 typedef struct
 {
-	CharLooks looks;
-	int speed;
 	int probabilityToMove;
 	int probabilityToTrack;
 	int probabilityToShoot;
 	int actionDelay;
-	gun_e gun;
-	int maxHealth;
-	int flags;
-} CharEnemy;
+} CharBot;
 
 typedef struct
 {
-	CharEnemy character;
+	CharLooks looks;
+	int speed;
+	gun_e gun;
+	int maxHealth;
+	int flags;
 	TranslationTable table;
+	CharBot *bot;	// NULL for normal players
 } CharacterDescription;
 
 #define CHARACTER_COUNT 21
 extern CharacterDescription gCharacterDesc[CHARACTER_COUNT];
 
 void SetCharacterLooks(CharacterDescription *description, const CharLooks *c);
+void InitializeTranslationTables(void);
 
 #endif
