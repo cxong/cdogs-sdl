@@ -59,13 +59,40 @@ typedef struct
 	int maxHealth;
 	int flags;
 	TranslationTable table;
-	CharBot *bot;	// NULL for normal players
-} CharacterDescription;
+	CharBot *bot;	// NULL for human players
+} Character;
 
-#define CHARACTER_COUNT 21
-extern CharacterDescription gCharacterDesc[CHARACTER_COUNT];
+typedef struct
+{
+	int hasGet;	// check that no adds occur after getting
+	int playerCount;
+	Character *players;	// human players
+	int otherCount;
+	Character *others;	// both normal baddies and special chars
 
-void SetCharacterLooks(CharacterDescription *description, const CharLooks *c);
-void InitializeTranslationTables(void);
+	// References only
+	int prisonerCount;
+	Character **prisoners;
+	int baddieCount;
+	Character **baddies;
+	int specialCount;
+	Character **specials;
+} CharacterStore;
+
+#define CHARACTER_PLAYER_COUNT 2
+
+void CharacterSetLooks(Character *c, const CharLooks *l);
+
+void CharacterStoreInit(CharacterStore *store);
+void CharacterStoreTerminate(CharacterStore *store);
+void CharacterStoreResetOthers(CharacterStore *store);
+Character *CharacterStoreAddOther(CharacterStore *store);
+void CharacterStoreAddPrisoner(CharacterStore *store, int character);
+void CharacterStoreAddBaddie(CharacterStore *store, int character);
+void CharacterStoreAddSpecial(CharacterStore *store, int character);
+Character *CharacterStoreGetPrisoner(CharacterStore *store, int i);
+Character *CharacterStoreGetOther(CharacterStore *store, int i);
+Character *CharacterStoreGetRandomBaddie(CharacterStore *store);
+Character *CharacterStoreGetRandomSpecial(CharacterStore *store);
 
 #endif

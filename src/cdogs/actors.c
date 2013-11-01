@@ -115,7 +115,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 	int headDir = dir;
 	int headState = state;
 
-	CharacterDescription *c = actor->character;
+	Character *c = actor->character;
 	TranslationTable *table = (TranslationTable *) c->table;
 	HSV *tint = NULL;
 	int f = c->looks.face;
@@ -292,7 +292,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 }
 
 
-TActor *AddActor(CharacterDescription *c)
+TActor *AddActor(Character *c)
 {
 	TActor *actor;
 	CCALLOC(actor, sizeof(TActor));

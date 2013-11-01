@@ -443,8 +443,6 @@ static CampaignSetting df2 =
 	0, NULL
 };
 
-static CharacterDescription gQuickPlayEnemies[BADDIE_MAX];
-
 
 // +---------------------------------------------------+
 // |  Objective colors (for automap & status display)  |
@@ -465,60 +463,36 @@ color_t objectiveColors[OBJECTIVE_MAX] =
 // |  And now the code...  |
 // +-----------------------+
 
-
-void SetupMissionCharacter(
-	CharacterDescription *desc, const CharacterDescription *b)
-{
-	// Need to copy everything except table
-	// Portions of it are pre-set from InitializeTranslationTables
-	TranslationTable table;
-	memcpy(table, desc->table, sizeof table);
-	*desc = *b;
-	memcpy(desc->table, table, sizeof desc->table);
-	SetCharacterLooks(desc, &b->looks);
-}
-
 static void SetupBadguysForMission(struct Mission *mission)
 {
-	int i, idx;
-	const CharacterDescription *b;
-	CampaignSettingNew *s = &gCampaign.Setting;
+	int i;
+	CharacterStore *s = &gCampaign.Setting.characters;
 
-	if (s->characterCount <= 0)
-		return;
+	CharacterStoreResetOthers(s);
 
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	if (s->otherCount <= 0)
 	{
-		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		return;
+	}
+
+	for (i = 0; i < mission->objectiveCount; i++)
+	{
+		if (mission->objectives[i].type == OBJECTIVE_RESCUE)
 		{
-			b = &s->characters[
-				gMission.missionData->objectives[i].index % s->characterCount];
-			SetupMissionCharacter(&gCharacterDesc[CHARACTER_PRISONER], b);
-			break;
+			CharacterStoreAddPrisoner(
+				s, mission->objectives[i].index);
+			break;	// TODO: multiple prisoners
 		}
 	}
 
 	for (i = 0; i < mission->baddieCount; i++)
 	{
-		idx = i + CHARACTER_OTHERS;
-		if (idx >= CHARACTER_COUNT)
-		{
-			break;
-		}
-
-		b = &s->characters[mission->baddies[i] % s->characterCount];
-		SetupMissionCharacter(&gCharacterDesc[idx], b);
+		CharacterStoreAddBaddie(s, mission->baddies[i]);
 	}
+
 	for (i = 0; i < mission->specialCount; i++)
 	{
-		idx = i + mission->baddieCount + CHARACTER_OTHERS;
-		if (idx >= CHARACTER_COUNT)
-		{
-			break;
-		}
-
-		b = &s->characters[mission->specials[i] % s->characterCount];
-		SetupMissionCharacter(&gCharacterDesc[idx], b);
+		CharacterStoreAddSpecial(s, mission->specials[i]);
 	}
 }
 
@@ -653,7 +627,7 @@ static int GenerateQuickPlayParam(
 }
 
 static void SetupQuickPlayEnemy(
-	CharacterDescription *enemy, const QuickPlayConfig *config, gun_e gun)
+	Character *enemy, const QuickPlayConfig *config, gun_e gun)
 {
 	enemy->looks.armedBody = BODY_ARMED;
 	enemy->looks.unarmedBody = BODY_UNARMED;
@@ -700,12 +674,13 @@ static void SetupQuickPlayEnemy(
 
 static void SetupQuickPlayEnemies(
 	struct Mission *mission,
-	CharacterDescription enemies[BADDIE_MAX],
+	CharacterStore *store,
 	const QuickPlayConfig *config)
 {
 	int i;
 	for (i = 0; i < mission->baddieCount; i++)
 	{
+		Character *ch;
 		gun_e gun;
 		mission->baddies[i] = i;
 
@@ -735,7 +710,9 @@ static void SetupQuickPlayEnemies(
 			}
 			break;
 		}
-		SetupQuickPlayEnemy(&enemies[i], config, gun);
+		ch = CharacterStoreAddOther(store);
+		SetupQuickPlayEnemy(ch, config, gun);
+		CharacterSetLooks(ch, &ch->looks);
 	}
 }
 
@@ -770,8 +747,6 @@ void SetupQuickPlayCampaign(
 	gQuickPlayMission.baddieCount =
 		GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
 
-	SetupQuickPlayEnemies(&gQuickPlayMission, gQuickPlayEnemies, config);
-	
 	gQuickPlayMission.specialCount = 0;
 	gQuickPlayMission.itemCount =
 		GenerateQuickPlayParam(config->SquareCount, 0, 2, 5, 10);
@@ -800,14 +775,8 @@ void SetupQuickPlayCampaign(
 		setting->missions,
 		&gQuickPlayMission,
 		sizeof *setting->missions * setting->missionCount);
-	setting->characterCount = BADDIE_MAX;
-	CMALLOC(
-		setting->characters,
-		sizeof *setting->characters * setting->characterCount);
-	memcpy(
-		setting->characters,
-		&gQuickPlayEnemies,
-		sizeof *setting->characters * setting->characterCount);
+	CharacterStoreInit(&setting->characters);
+	SetupQuickPlayEnemies(&gQuickPlayMission, &setting->characters, config);
 }
 
 static void SetupObjective(int o, struct Mission *mission)
@@ -1018,7 +987,8 @@ int IsMissionComplete(struct MissionOptions *options)
 		TActor *a = ActorList();
 		while (a != NULL)
 		{
-			if (a->character == &gCharacterDesc[CHARACTER_PRISONER] &&
+			if (a->character == CharacterStoreGetPrisoner(
+				&gCampaign.Setting.characters, 0) &&
 				IsTileInExit(&a->tileItem, options))
 			{
 				prisonersRescued++;

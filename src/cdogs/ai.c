@@ -457,7 +457,6 @@ void CommandBadGuys(int ticks)
 	TActor *actor;
 	int roll, cmd;
 	int count = 0;
-	int character;
 	int bypass;
 	int delayModifier;
 	int rollLimit;
@@ -603,12 +602,9 @@ void CommandBadGuys(int ticks)
 		gMission.missionData->baddieDensity > 0 &&
 		count < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100))
 	{
-		TActor *baddie;
-		character =
-		    CHARACTER_OTHERS +
-		    rand() % gMission.missionData->baddieCount;
-		character = MIN(character, CHARACTER_COUNT);
-		baddie = AddActor(&gCharacterDesc[character]);
+		Character *character = CharacterStoreGetRandomBaddie(
+			&gCampaign.Setting.characters);
+		TActor *baddie = AddActor(character);
 		PlaceBaddie(baddie);
 		gBaddieCount++;
 	}
@@ -617,26 +613,23 @@ void CommandBadGuys(int ticks)
 void InitializeBadGuys(void)
 {
 	int i, j;
-	int character;
 	TActor *actor;
 
-	if (gMission.missionData->specialCount > 0) {
+	if (gMission.missionData->specialCount > 0)
+	{
 		for (i = 0; i < gMission.missionData->objectiveCount; i++)
-			if (gMission.missionData->objectives[i].type ==
-			    OBJECTIVE_KILL) {
-				for (j = 0;
-				     j < gMission.objectives[i].count;
-				     j++) {
-					character =
-						CHARACTER_OTHERS +
-						gMission.missionData->baddieCount +
-						rand() %
-						gMission.missionData->specialCount;
-					actor = AddActor(&gCharacterDesc[character]);
+		{
+			if (gMission.missionData->objectives[i].type == OBJECTIVE_KILL)
+			{
+				for (j = 0; j < gMission.objectives[i].count; j++)
+				{
+					actor = AddActor(CharacterStoreGetRandomSpecial(
+						&gCampaign.Setting.characters));
 					actor->tileItem.flags |= ObjectiveToTileItem(i);
 					PlaceBaddie(actor);
 				}
 			}
+		}
 	}
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
@@ -645,7 +638,8 @@ void InitializeBadGuys(void)
 		{
 			for (j = 0; j < gMission.objectives[i].count; j++)
 			{
-				actor = AddActor(&gCharacterDesc[CHARACTER_PRISONER]);
+				actor = AddActor(CharacterStoreGetPrisoner(
+					&gCampaign.Setting.characters, 0));
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (HasLockedRooms())
 				{
@@ -673,10 +667,8 @@ void CreateEnemies(void)
 		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
-		int character = MIN(
-			CHARACTER_OTHERS + rand() % gMission.missionData->baddieCount,
-			CHARACTER_COUNT);
-		TActor *enemy = AddActor(&gCharacterDesc[character]);
+		TActor *enemy = AddActor(CharacterStoreGetRandomBaddie(
+			&gCampaign.Setting.characters));
 		PlaceBaddie(enemy);
 		gBaddieCount++;
 	}

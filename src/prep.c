@@ -275,9 +275,9 @@ static void ShowPlayerControls(int x, KeyConfig *config)
 	}
 }
 
-static void ShowSelection(int x, struct PlayerData *data, int character)
+static void ShowSelection(int x, struct PlayerData *data, Character *ch)
 {
-	DisplayPlayer(x, data->name, &gCharacterDesc[character], 0);
+	DisplayPlayer(x, data->name, ch, 0);
 
 	if (data->weaponCount == 0)
 	{
@@ -535,13 +535,13 @@ static int IndexToShade(int idx)
 	return SHADE_BLUE;
 };
 
-static void SetPlayer(int character, struct PlayerData *data)
+static void SetPlayer(Character *c, struct PlayerData *data)
 {
 	data->looks.armedBody = BODY_ARMED;
 	data->looks.unarmedBody = BODY_UNARMED;
-	SetCharacterLooks(&gCharacterDesc[character], &data->looks);
-	gCharacterDesc[character].speed = 256;
-	gCharacterDesc[character].maxHealth = 200;
+	CharacterSetLooks(c, &data->looks);
+	c->speed = 256;
+	c->maxHealth = 200;
 }
 
 static int AppearanceSelection(
@@ -551,6 +551,7 @@ static int AppearanceSelection(
 {
 	int y;
 	int i;
+	int hasChanged = 0;
 
 	debug(D_NORMAL, "\n");
 
@@ -573,6 +574,7 @@ static int AppearanceSelection(
 			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
+		hasChanged = 1;
 	}
 	else if (cmd & (CMD_RIGHT | CMD_DOWN))
 	{
@@ -588,9 +590,13 @@ static int AppearanceSelection(
 			*property = func(selection[idx]);
 			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
+		hasChanged = 1;
 	}
 
-	SetPlayer(idx, data);
+	if (hasChanged)
+	{
+		SetPlayer(&gCampaign.Setting.characters.players[idx], data);
+	}
 
 	y = CenterY((menuCount * CDogsTextHeight()));
 
@@ -670,7 +676,7 @@ static int BodyPartSelection(
 
 	y = CenterY((PLAYER_BODY_COUNT * CDogsTextHeight()));
 
-	SetPlayer(idx, data);
+	SetPlayer(&gCampaign.Setting.characters.players[idx], data);
 	for (i = 0; i < PLAYER_BODY_COUNT; i++)
 		DisplayMenuItem(x, y + i * CDogsTextHeight(), shadeNames[i],
 				i == *selection);
@@ -813,7 +819,7 @@ void UseTemplate(int character, struct PlayerData *data,
 	data->looks.skin = IndexToSkin(t->skin);
 	data->looks.hair = IndexToHair(t->hair);
 
-	SetPlayer(character, data);
+	SetPlayer(&gCampaign.Setting.characters.players[character], data);
 }
 
 void SaveTemplate(struct PlayerData *data, struct PlayerTemplate *t)
@@ -1002,7 +1008,10 @@ static int MakeSelection(int mode, int x, int character,
 			break;
 	}
 	DisplayPlayer(
-		x, data->name, &gCharacterDesc[character], mode == MODE_SELECTNAME);
+		x,
+		data->name,
+		&gCampaign.Setting.characters.players[character],
+		mode == MODE_SELECTNAME);
 
 	return mode;
 }
@@ -1014,8 +1023,8 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 	mode1 = MODE_MAIN;
 	mode2 = twoPlayers ? MODE_MAIN : MODE_DONE;
 
-	SetPlayer(0, &gPlayer1Data);
-	SetPlayer(1, &gPlayer2Data);
+	SetPlayer(&gCampaign.Setting.characters.players[0], &gPlayer1Data);
+	SetPlayer(&gCampaign.Setting.characters.players[1], &gPlayer2Data);
 
 	KeyInit(&gInputDevices.keyboard);
 	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
@@ -1071,17 +1080,26 @@ int PlayerEquip(GraphicsDevice *graphics)
 		if (gOptions.twoPlayers)
 		{
 			done1 = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
-			ShowSelection(CenterOfLeft(50), &gPlayer1Data,CHARACTER_PLAYER1);
+			ShowSelection(
+				CenterOfLeft(50),
+				&gPlayer1Data,
+				&gCampaign.Setting.characters.players[0]);
 			ShowPlayerControls(CenterOfLeft(100), &gConfig.Input.PlayerKeys[0]);
 
 			done2 = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2, done2);
-			ShowSelection(CenterOfRight(50), &gPlayer2Data, CHARACTER_PLAYER2);
+			ShowSelection(
+				CenterOfRight(50),
+				&gPlayer2Data,
+				&gCampaign.Setting.characters.players[1]);
 			ShowPlayerControls(CenterOfRight(100), &gConfig.Input.PlayerKeys[1]);
 		}
 		else
 		{
 			done1 = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
-			ShowSelection(CenterX(80), &gPlayer1Data, CHARACTER_PLAYER1);
+			ShowSelection(
+				CenterX(80),
+				&gPlayer1Data,
+				&gCampaign.Setting.characters.players[0]);
 			ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
 		}
 

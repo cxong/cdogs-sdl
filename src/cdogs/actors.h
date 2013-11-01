@@ -121,7 +121,7 @@ struct Actor {
 	int stateCounter;
 	int lastCmd;
 	int soundLock;
-	CharacterDescription *character;
+	Character *character;
 	Weapon weapon;
 	int dx, dy;
 
@@ -160,7 +160,7 @@ void UpdateActorState(TActor * actor, int ticks);
 int MoveActor(TActor * actor, int x, int y);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
-TActor *AddActor(CharacterDescription *c);
+TActor *AddActor(Character *c);
 TActor *RemoveActor(TActor *actor);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);

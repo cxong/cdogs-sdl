@@ -49,11 +49,12 @@ void CampaignTerminate(CampaignOptions *campaign)
 void CampaignSettingInit(CampaignSettingNew *setting)
 {
 	memset(setting, 0, sizeof *setting);
+	CharacterStoreInit(&setting->characters);
 }
 void CampaignSettingTerminate(CampaignSettingNew *setting)
 {
 	CFREE(setting->missions);
-	CFREE(setting->characters);
+	CharacterStoreTerminate(&setting->characters);
 	memset(setting, 0, sizeof *setting);
 }
 

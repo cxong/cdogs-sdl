@@ -270,29 +270,27 @@ void load_character(FILE *f, TBadGuy *b)
 	R32(b, health);
 	R32(b, flags);
 }
-CharacterDescription ConvertCharacterDescription(TBadGuy *b)
+void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	CharacterDescription e;
-	e.looks.armedBody = b->armedBodyPic;
-	e.looks.unarmedBody = b->unarmedBodyPic;
-	e.looks.face = b->facePic;
-	e.speed = b->speed;
-	CMALLOC(e.bot, sizeof *e.bot);
-	e.bot->probabilityToMove = b->probabilityToMove;
-	e.bot->probabilityToTrack = b->probabilityToTrack;
-	e.bot->probabilityToShoot = b->probabilityToShoot;
-	e.bot->actionDelay = b->actionDelay;
-	e.gun = (gun_e)b->gun;
-	e.looks.skin = b->skinColor;
-	e.looks.arm = b->armColor;
-	e.looks.body = b->bodyColor;
-	e.looks.leg = b->legColor;
-	e.looks.hair = b->hairColor;
-	e.maxHealth = b->health;
-	e.flags = b->flags;
-	return e;
+	c->looks.armedBody = b->armedBodyPic;
+	c->looks.unarmedBody = b->unarmedBodyPic;
+	c->looks.face = b->facePic;
+	c->speed = b->speed;
+	CMALLOC(c->bot, sizeof *c->bot);
+	c->bot->probabilityToMove = b->probabilityToMove;
+	c->bot->probabilityToTrack = b->probabilityToTrack;
+	c->bot->probabilityToShoot = b->probabilityToShoot;
+	c->bot->actionDelay = b->actionDelay;
+	c->gun = (gun_e)b->gun;
+	c->looks.skin = b->skinColor;
+	c->looks.arm = b->armColor;
+	c->looks.body = b->bodyColor;
+	c->looks.leg = b->legColor;
+	c->looks.hair = b->hairColor;
+	c->maxHealth = b->health;
+	c->flags = b->flags;
 }
-TBadGuy ConvertTBadGuy(CharacterDescription *e)
+TBadGuy ConvertTBadGuy(Character *e)
 {
 	TBadGuy b;
 	b.armedBodyPic = e->looks.armedBody;
@@ -327,17 +325,13 @@ void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src)
 	{
 		memcpy(&dest->missions[i], &src->missions[i], sizeof dest->missions[i]);
 	}
-	for (i = 0; i < dest->characterCount; i++)
+	CharacterStoreTerminate(&dest->characters);
+	CharacterStoreInit(&dest->characters);
+	for (i = 0; i < src->characterCount; i++)
 	{
-		CFREE(dest->characters[i].bot);
-	}
-	CFREE(dest->characters);
-	dest->characterCount = src->characterCount;
-	CMALLOC(dest->characters, sizeof *dest->characters * dest->characterCount);
-	for (i = 0; i < dest->characterCount; i++)
-	{
-		dest->characters[i] = ConvertCharacterDescription(&src->characters[i]);
-		SetCharacterLooks(&dest->characters[i], &dest->characters[i].looks);
+		Character *ch = CharacterStoreAddOther(&dest->characters);
+		ConvertCharacter(ch, &src->characters[i]);
+		CharacterSetLooks(ch, &ch->looks);
 	}
 }
 
@@ -347,6 +341,7 @@ int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 	int32_t i;
 	int err = CAMPAIGN_OK;
 	int numMissions;
+	int numCharacters;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
@@ -387,17 +382,16 @@ int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 		load_mission(f, &setting->missions[i]);
 	}
 
-	f_read32(f, &setting->characterCount, sizeof(int32_t));
-	CCALLOC(
-		setting->characters,
-		setting->characterCount * sizeof *setting->characters);
-	debug(D_NORMAL, "No. characters: %d\n", setting->characterCount);
-	for (i = 0; i < setting->characterCount; i++)
+	f_read32(f, &numCharacters, sizeof(int32_t));
+	debug(D_NORMAL, "No. characters: %d\n", numCharacters);
+	for (i = 0; i < numCharacters; i++)
 	{
 		TBadGuy b;
+		Character *ch;
 		load_character(f, &b);
-		setting->characters[i] = ConvertCharacterDescription(&b);
-		SetCharacterLooks(&setting->characters[i], &setting->characters[i].looks);
+		ch = CharacterStoreAddOther(&setting->characters);
+		ConvertCharacter(ch, &b);
+		CharacterSetLooks(ch, &ch->looks);
 	}
 
 bail:
@@ -456,7 +450,7 @@ int SaveCampaign(const char *filename, CampaignSettingNew *setting)
 	CHECK_WRITE(fwrite32(f, &i))
 	for (i = 0; i < setting->characterCount; i++)
 	{
-		TBadGuy b = ConvertTBadGuy(&setting->characters[i]);
+		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
 		CHECK_WRITE(fwrite(&b, sizeof(TBadGuy), 1, f) == 1)
 	}
 
@@ -512,7 +506,7 @@ void SaveCampaignAsC(
 		setting->characterCount);
 	for (i = 0; i < setting->characterCount; i++)
 	{
-		TBadGuy b = ConvertTBadGuy(&setting->characters[i]);
+		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
 		fprintf(f,
 			"  {%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,0x%x}%s\n",
 			b.armedBodyPic,

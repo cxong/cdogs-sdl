@@ -28,9 +28,9 @@
 */
 #include "character.h"
 
-#include "actors.h"
+#include <assert.h>
 
-CharacterDescription gCharacterDesc[CHARACTER_COUNT];
+#include "actors.h"
 
 // Color range defines
 #define SKIN_START 2
@@ -75,6 +75,11 @@ void SetShade(TranslationTable * table, int start, int end, int shade)
 
 void SetCharacterColors(TranslationTable *t, CharLooks looks)
 {
+	int f;
+	for (f = 0; f < 256; f++)
+	{
+		(*t)[f] = f & 0xFF;
+	}
 	SetShade(t, BODY_START, BODY_END, looks.body);
 	SetShade(t, ARMS_START, ARMS_END, looks.arm);
 	SetShade(t, LEGS_START, LEGS_END, looks.leg);
@@ -82,21 +87,98 @@ void SetCharacterColors(TranslationTable *t, CharLooks looks)
 	SetShade(t, HAIR_START, HAIR_END, looks.hair);
 }
 
-void SetCharacterLooks(CharacterDescription *description, const CharLooks *c)
+void CharacterSetLooks(Character *c, const CharLooks *l)
 {
-	description->looks = *c;
-	SetCharacterColors(&description->table, description->looks);
+	c->looks = *l;
+	SetCharacterColors(&c->table, c->looks);
 }
 
-void InitializeTranslationTables(void)
+
+void CharacterStoreInit(CharacterStore *store)
+{
+	memset(store, 0, sizeof *store);
+	store->playerCount = CHARACTER_PLAYER_COUNT;
+	CCALLOC(store->players, sizeof *store->players * store->playerCount);
+}
+
+void CharacterStoreTerminate(CharacterStore *store)
 {
 	int i;
-	for (i = 0; i < CHARACTER_COUNT; i++)
+	for (i = 0; i < store->playerCount; i++)
 	{
-		int f;
-		for (f = 0; f < 256; f++)
-		{
-			gCharacterDesc[i].table[f] = f & 0xFF;
-		}
+		CFREE(store->players[i].bot);
 	}
+	CFREE(store->players);
+	for (i = 0; i < store->otherCount; i++)
+	{
+		CFREE(store->others[i].bot);
+	}
+	CFREE(store->others);
+	CFREE(store->prisoners);
+	CFREE(store->baddies);
+	CFREE(store->specials);
+	memset(store, 0, sizeof *store);
+}
+
+void CharacterStoreResetOthers(CharacterStore *store)
+{
+	CFREE(store->prisoners);
+	store->prisoners = NULL;
+	store->prisonerCount = 0;
+	CFREE(store->baddies);
+	store->baddies = NULL;
+	store->baddieCount = 0;
+	CFREE(store->specials);
+	store->specials = NULL;
+	store->specialCount = 0;
+}
+
+Character *CharacterStoreAddOther(CharacterStore *store)
+{
+	assert(!store->hasGet);
+	store->otherCount++;
+	CREALLOC(store->others, store->otherCount * sizeof *store->others);
+	return &store->others[store->otherCount - 1];
+}
+
+void CharacterStoreAddPrisoner(CharacterStore *store, int character)
+{
+	store->prisonerCount++;
+	CREALLOC(store->prisoners, store->prisonerCount * sizeof *store->prisoners);
+	store->prisoners[store->prisonerCount - 1] = &store->others[character];
+}
+
+void CharacterStoreAddBaddie(CharacterStore *store, int character)
+{
+	store->baddieCount++;
+	CREALLOC(store->baddies, store->baddieCount * sizeof *store->baddies);
+	store->baddies[store->baddieCount - 1] = &store->others[character];
+}
+void CharacterStoreAddSpecial(CharacterStore *store, int character)
+{
+	store->specialCount++;
+	CREALLOC(store->specials, store->specialCount * sizeof *store->specials);
+	store->specials[store->specialCount - 1] = &store->others[character];
+}
+
+Character *CharacterStoreGetPrisoner(CharacterStore *store, int i)
+{
+	store->hasGet = 1;
+	return store->prisoners[i];
+}
+
+Character *CharacterStoreGetOther(CharacterStore *store, int i)
+{
+	store->hasGet = 1;
+	return &store->others[i];
+}
+Character *CharacterStoreGetRandomBaddie(CharacterStore *store)
+{
+	store->hasGet = 1;
+	return store->baddies[rand() % store->baddieCount];
+}
+Character *CharacterStoreGetRandomSpecial(CharacterStore *store)
+{
+	store->hasGet = 1;
+	return store->specials[rand() % store->specialCount];
 }

@@ -93,12 +93,13 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i = 0;
-	CharacterDescription *cd;
+	Character *cd;
 
 	switch (mission->objectives[idx].type)
 	{
 	case OBJECTIVE_KILL:
-		cd = &gCharacterDesc[mission->baddieCount + CHARACTER_OTHERS];
+		cd = CharacterStoreGetOther(
+			&gCampaign.Setting.characters, mission->baddieCount);
 		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -106,7 +107,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_RESCUE:
-		cd = &gCharacterDesc[CHARACTER_PRISONER];
+		cd = CharacterStoreGetPrisoner(&gCampaign.Setting.characters, 0);
 		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -307,7 +308,11 @@ void Summary(int x, struct PlayerData *data, int character)
 		CDogsTextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
 
 	y += 2 * CDogsTextHeight();
-	DisplayPlayer(x, data->name, &gCharacterDesc[character], 0);
+	DisplayPlayer(
+		x,
+		data->name,
+		&gCampaign.Setting.characters.players[character],
+		0);
 	sprintf(s, "Score: %d", data->score);
 	CDogsTextStringAt(x, y, s);
 	y += CDogsTextHeight();
@@ -461,7 +466,7 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(
 			CenterOfLeft(60),
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 		sprintf(s, "Score: %d", score1);
 		CDogsTextStringAt(
@@ -471,7 +476,7 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 
 		DisplayPlayer(
 			CenterOfRight(60), gPlayer2Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER2],
+			&gCampaign.Setting.characters.players[1],
 			0);
 		sprintf(s, "Score: %d", score2);
 		CDogsTextStringAt(
@@ -484,7 +489,7 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(
 			CenterX(TextGetStringWidth(s)),
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 	}
 
@@ -504,12 +509,12 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(
 			CenterOfLeft(60),
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 		DisplayPlayer(
 			CenterOfRight(60),
 			gPlayer2Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER2],
+			&gCampaign.Setting.characters.players[1],
 			0);
 		CDogsTextStringAtCenter("It's a draw!");
 	}
@@ -518,7 +523,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(
 			CenterOfLeft(60),
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 		CDogsTextStringAt(
 			CenterOfLeft(TextGetStringWidth(IS_WINNER)),
@@ -530,7 +535,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 		DisplayPlayer(
 			CenterOfRight(60),
 			gPlayer2Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER2],
+			&gCampaign.Setting.characters.players[1],
 			0);
 		CDogsTextStringAt(
 			CenterOfRight(TextGetStringWidth(IS_WINNER)),
@@ -585,12 +590,12 @@ void Victory(GraphicsDevice *graphics)
 		DisplayPlayer(
 			50,
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 		DisplayPlayer(
 			200,
 			gPlayer2Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER2],
+			&gCampaign.Setting.characters.players[1],
 			0);
 		if (gPlayer1Data.survived)
 			gPlayer1Data.missions++;
@@ -603,7 +608,7 @@ void Victory(GraphicsDevice *graphics)
 		DisplayPlayer(
 			125,
 			gPlayer1Data.name,
-			&gCharacterDesc[CHARACTER_PLAYER1],
+			&gCampaign.Setting.characters.players[0],
 			0);
 		gPlayer1Data.missions++;
 	}
@@ -663,7 +668,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 	gPlayer1Data.kills = gPlayer1Data.friendlies = 0;
 	gPlayer1Data.allTime = gPlayer1Data.today = -1;
 	gPlayer1Data.lastMission = mission;
-	gPlayer1 = AddActor(&gCharacterDesc[CHARACTER_PLAYER1]);
+	gPlayer1 = AddActor(&gCampaign.Setting.characters.players[0]);
 	gPlayer1->weapon = WeaponCreate(gPlayer1Data.weapons[0]);
 	gPlayer1->flags = FLAGS_PLAYER1;
 	PlaceActor(gPlayer1);
@@ -675,7 +680,7 @@ static void InitPlayers(int twoPlayers, int maxHealth, int mission)
 		gPlayer2Data.kills = gPlayer2Data.friendlies = 0;
 		gPlayer2Data.allTime = gPlayer2Data.today = -1;
 		gPlayer2Data.lastMission = mission;
-		gPlayer2 = AddActor(&gCharacterDesc[CHARACTER_PLAYER2]);
+		gPlayer2 = AddActor(&gCampaign.Setting.characters.players[1]);
 		gPlayer2->weapon = WeaponCreate(gPlayer2Data.weapons[0]);
 		gPlayer2->flags = FLAGS_PLAYER2;
 		PlaceActor(gPlayer2);
@@ -1081,7 +1086,6 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	InitializeTranslationTables();
 
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 

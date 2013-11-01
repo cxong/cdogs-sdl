@@ -354,8 +354,7 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 	}
 }
 
-void DisplayPlayer(
-	int x, const char *name, CharacterDescription *cd, int editingName)
+void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 {
 	TOffsetPic body, head;
 	char s[22];
@@ -375,25 +374,25 @@ void DisplayPlayer(
 		CDogsTextStringAt(x, y, name);
 	}
 
-	body.dx = cBodyOffset[cd->looks.unarmedBody][dir].dx;
-	body.dy = cBodyOffset[cd->looks.unarmedBody][dir].dy;
+	body.dx = cBodyOffset[c->looks.unarmedBody][dir].dx;
+	body.dy = cBodyOffset[c->looks.unarmedBody][dir].dy;
 	body.picIndex =
-		cBodyPic[cd->looks.unarmedBody][dir][state];
+		cBodyPic[c->looks.unarmedBody][dir][state];
 
 	head.dx =
-		cNeckOffset[cd->looks.unarmedBody][dir].dx +
-		cHeadOffset[cd->looks.face][dir].dx;
+		cNeckOffset[c->looks.unarmedBody][dir].dx +
+		cHeadOffset[c->looks.face][dir].dx;
 	head.dy =
-		cNeckOffset[cd->looks.unarmedBody][dir].dy +
-		cHeadOffset[cd->looks.face][dir].dy;
-	head.picIndex = cHeadPic[cd->looks.face][dir][state];
+		cNeckOffset[c->looks.unarmedBody][dir].dy +
+		cHeadOffset[c->looks.face][dir].dy;
+	head.picIndex = cHeadPic[c->looks.face][dir][state];
 
 	DrawTTPic(
 		x + 20 + body.dx, y + 36 + body.dy,
 		PicManagerGetOldPic(&gPicManager, body.picIndex),
-		cd->table);
+		c->table);
 	DrawTTPic(
 		x + 20 + head.dx, y + 36 + head.dy,
 		PicManagerGetOldPic(&gPicManager, head.picIndex),
-		cd->table);
+		c->table);
 }
