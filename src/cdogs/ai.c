@@ -307,7 +307,7 @@ static int DirectionOK(TActor * actor, int dir)
 static int BrightWalk(TActor * actor, int roll)
 {
 	if (!!(actor->flags & FLAGS_VISIBLE) &&
-		roll < actor->character->bot->probabilityToTrack)
+		roll < actor->character->bot.probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
 		return Hunt(actor);
@@ -351,7 +351,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
 		WeaponCanFire(&actor->weapon) &&
-		roll < actor->character->bot->probabilityToShoot)
+		roll < actor->character->bot.probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
@@ -511,7 +511,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = Follow(actor);
 					}
-					actor->delay = actor->character->bot->actionDelay;
+					actor->delay = actor->character->bot.actionDelay;
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
 					!!(actor->flags & FLAGS_VISIBLE) &&
@@ -532,11 +532,11 @@ void CommandBadGuys(int ticks)
 				}
 				else
 				{
-					if (roll < actor->character->bot->probabilityToTrack)
+					if (roll < actor->character->bot.probabilityToTrack)
 					{
 						cmd = Hunt(actor);
 					}
-					else if (roll < actor->character->bot->probabilityToMove)
+					else if (roll < actor->character->bot.probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
 					}
@@ -544,7 +544,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = 0;
 					}
-					actor->delay = actor->character->bot->actionDelay * delayModifier;
+					actor->delay = actor->character->bot.actionDelay * delayModifier;
 				}
 				if (!bypass)
 				{

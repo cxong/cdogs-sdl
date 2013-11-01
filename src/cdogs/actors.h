@@ -56,11 +56,6 @@
 #include "weapon.h"
 
 
-#define CHARACTER_PLAYER1                 0
-#define CHARACTER_PLAYER2                 1
-#define CHARACTER_PRISONER                2
-#define CHARACTER_OTHERS                  3
-
 #define FLAGS_PLAYER1       (1 << 0)
 #define FLAGS_PLAYER2       (1 << 1)
 #define FLAGS_PLAYERS       (FLAGS_PLAYER1 | FLAGS_PLAYER2)

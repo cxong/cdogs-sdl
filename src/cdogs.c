@@ -98,8 +98,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	switch (mission->objectives[idx].type)
 	{
 	case OBJECTIVE_KILL:
-		cd = CharacterStoreGetOther(
-			&gCampaign.Setting.characters, mission->baddieCount);
+		cd = CharacterStoreGetSpecial(&gCampaign.Setting.characters, 0);
 		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];

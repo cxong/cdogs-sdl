@@ -98,22 +98,10 @@ void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
 	store->playerCount = CHARACTER_PLAYER_COUNT;
-	CCALLOC(store->players, sizeof *store->players * store->playerCount);
 }
 
 void CharacterStoreTerminate(CharacterStore *store)
 {
-	int i;
-	for (i = 0; i < store->playerCount; i++)
-	{
-		CFREE(store->players[i].bot);
-	}
-	CFREE(store->players);
-	for (i = 0; i < store->otherCount; i++)
-	{
-		CFREE(store->others[i].bot);
-	}
-	CFREE(store->others);
 	CFREE(store->prisoners);
 	CFREE(store->baddies);
 	CFREE(store->specials);
@@ -135,10 +123,35 @@ void CharacterStoreResetOthers(CharacterStore *store)
 
 Character *CharacterStoreAddOther(CharacterStore *store)
 {
-	assert(!store->hasGet);
+	return CharacterStoreInsertOther(store, store->otherCount);
+}
+Character *CharacterStoreInsertOther(CharacterStore *store, int idx)
+{
+	int i;
+	for (i = store->otherCount; i > idx; i--)
+	{
+		memcpy(
+			&store->others[i], &store->others[i - 1], sizeof store->others[i]);
+	}
 	store->otherCount++;
-	CREALLOC(store->others, store->otherCount * sizeof *store->others);
-	return &store->others[store->otherCount - 1];
+	return &store->others[idx];
+}
+void CharacterStoreDeleteOther(CharacterStore *store, int idx)
+{
+	int i;
+	if (store->otherCount == 0)
+	{
+		return;
+	}
+	store->otherCount--;
+	memset(&store->others[idx], 0, sizeof store->others[idx]);
+	for (i = idx; i < store->otherCount; i++)
+	{
+		memcpy(
+			&store->others[i],
+			&store->others[i + 1],
+			sizeof store->others[i]);
+	}
 }
 
 void CharacterStoreAddPrisoner(CharacterStore *store, int character)
@@ -163,22 +176,18 @@ void CharacterStoreAddSpecial(CharacterStore *store, int character)
 
 Character *CharacterStoreGetPrisoner(CharacterStore *store, int i)
 {
-	store->hasGet = 1;
 	return store->prisoners[i];
 }
 
-Character *CharacterStoreGetOther(CharacterStore *store, int i)
+Character *CharacterStoreGetSpecial(CharacterStore *store, int i)
 {
-	store->hasGet = 1;
-	return &store->others[i];
+	return store->specials[i];
 }
 Character *CharacterStoreGetRandomBaddie(CharacterStore *store)
 {
-	store->hasGet = 1;
 	return store->baddies[rand() % store->baddieCount];
 }
 Character *CharacterStoreGetRandomSpecial(CharacterStore *store)
 {
-	store->hasGet = 1;
 	return store->specials[rand() % store->specialCount];
 }

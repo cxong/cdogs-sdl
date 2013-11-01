@@ -354,25 +354,11 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 	}
 }
 
-void DisplayPlayer(int x, const char *name, Character *c, int editingName)
+static void DrawCharacter(Character *c, Vec2i pos)
 {
 	TOffsetPic body, head;
-	char s[22];
 	direction_e dir = DIRECTION_DOWN;
 	int state = STATE_IDLE;
-	int y;
-
-	y = gGraphicsDevice.cachedConfig.ResolutionHeight / 10;
-
-	if (editingName)
-	{
-		sprintf(s, "%c%s%c", '\020', name, '\021');
-		CDogsTextStringAt(x, y, s);
-	}
-	else
-	{
-		CDogsTextStringAt(x, y, name);
-	}
 
 	body.dx = cBodyOffset[c->looks.unarmedBody][dir].dx;
 	body.dy = cBodyOffset[c->looks.unarmedBody][dir].dy;
@@ -388,11 +374,46 @@ void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 	head.picIndex = cHeadPic[c->looks.face][dir][state];
 
 	DrawTTPic(
-		x + 20 + body.dx, y + 36 + body.dy,
+		pos.x + body.dx, pos.y + body.dy,
 		PicManagerGetOldPic(&gPicManager, body.picIndex),
 		c->table);
 	DrawTTPic(
-		x + 20 + head.dx, y + 36 + head.dy,
+		pos.x + head.dx, pos.y + head.dy,
 		PicManagerGetOldPic(&gPicManager, head.picIndex),
 		c->table);
+}
+
+void DisplayPlayer(int x, const char *name, Character *c, int editingName)
+{
+	Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.ResolutionHeight / 10);
+	Vec2i playerPos = Vec2iAdd(pos, Vec2iNew(20, 36));
+
+	if (editingName)
+	{
+		char s[22];
+		sprintf(s, "%c%s%c", '\020', name, '\021');
+		CDogsTextStringAt(pos.x, pos.y, s);
+	}
+	else
+	{
+		CDogsTextStringAt(pos.x, pos.y, name);
+	}
+
+	DrawCharacter(c, playerPos);
+}
+
+void DisplayCharacter(int x, int y, int character, int hilite, int showGun)
+{
+	Character *c = &gCampaign.Setting.characters.others[character];
+	DrawCharacter(c, Vec2iNew(x, y));
+	if (hilite)
+	{
+		CDogsTextGoto(x - 8, y - 16);
+		CDogsTextChar('\020');
+		if (showGun)
+		{
+			CDogsTextGoto(x - 8, y + 8);
+			CDogsTextString(gGunDescriptions[c->gun].gunName);
+		}
+	}
 }

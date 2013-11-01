@@ -635,33 +635,32 @@ static void SetupQuickPlayEnemy(
 	enemy->gun = gun;
 	enemy->speed =
 		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
-	CMALLOC(enemy->bot, sizeof *enemy->bot);
 	if (IsShortRange(enemy->gun))
 	{
 		enemy->speed = enemy->speed * 4 / 3;
 	}
 	if (IsShortRange(enemy->gun))
 	{
-		enemy->bot->probabilityToMove = 35 + (rand() % 35);
+		enemy->bot.probabilityToMove = 35 + (rand() % 35);
 	}
 	else
 	{
-		enemy->bot->probabilityToMove = 30 + (rand() % 30);
+		enemy->bot.probabilityToMove = 30 + (rand() % 30);
 	}
-	enemy->bot->probabilityToTrack = 10 + (rand() % 60);
+	enemy->bot.probabilityToTrack = 10 + (rand() % 60);
 	if (enemy->gun == GUN_KNIFE)
 	{
-		enemy->bot->probabilityToShoot = 0;
+		enemy->bot.probabilityToShoot = 0;
 	}
 	else if (IsHighDPS(enemy->gun))
 	{
-		enemy->bot->probabilityToShoot = 2 + (rand() % 10);
+		enemy->bot.probabilityToShoot = 2 + (rand() % 10);
 	}
 	else
 	{
-		enemy->bot->probabilityToShoot = 15 + (rand() % 30);
+		enemy->bot.probabilityToShoot = 15 + (rand() % 30);
 	}
-	enemy->bot->actionDelay = rand() % (50 + 1);
+	enemy->bot.actionDelay = rand() % (50 + 1);
 	enemy->looks.skin = rand() % SHADE_COUNT;
 	enemy->looks.arm = rand() % SHADE_COUNT;
 	enemy->looks.body = rand() % SHADE_COUNT;

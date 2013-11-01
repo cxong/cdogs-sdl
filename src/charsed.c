@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
+#include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
@@ -183,40 +184,6 @@ static int PosToCharacterIndex(Vec2i pos, int *idx)
 	return 1;
 }
 
-static void DisplayCharacter(int x, int y, const CharEnemy *data, int hilite)
-{
-	CharacterDescription *cd;
-	TOffsetPic body, head;
-
-	cd = &gCharacterDesc[0];
-	SetCharacterLooks(&gCharacterDesc[0], &data->looks);
-
-	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
-	body.picIndex =
-		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
-
-	head.dx =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
-	head.dy =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
-
-	DrawTTPic(
-		x + body.dx, y + body.dy,
-		PicManagerGetOldPic(&gPicManager, body.picIndex), cd->table);
-	DrawTTPic(
-		x + head.dx, y + head.dy,
-		PicManagerGetOldPic(&gPicManager, head.picIndex), cd->table);
-
-	if (hilite) {
-		CDogsTextGoto(x - 8, y - 16);
-		CDogsTextChar('\020');
-	}
-}
-
 static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 {
 	if (hilite)
@@ -301,7 +268,7 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
-	const CharEnemy *b;
+	const Character *b;
 	int i;
 	int tag;
 
@@ -310,12 +277,12 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		gGraphicsDevice.buf[i] = LookupPalette(74);
 	}
 
-	sprintf(s, "%d", setting->characterCount);
+	sprintf(s, "%d", setting->characters.otherCount);
 	CDogsTextStringAt(10, 190, s);
 
-	if (idx >= 0 && idx < setting->characterCount)
+	if (idx >= 0 && idx < setting->characters.otherCount)
 	{
-		b = &setting->characters[idx];
+		b = &setting->characters.others[idx];
 		DisplayCDogsText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
 		DisplayCDogsText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
 		DisplayCDogsText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
@@ -328,13 +295,13 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
 		sprintf(s, "Hp: %d", b->maxHealth);
 		DisplayCDogsText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
-		sprintf(s, "Move: %d%%", b->probabilityToMove);
+		sprintf(s, "Move: %d%%", b->bot.probabilityToMove);
 		DisplayCDogsText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
-		sprintf(s, "Track: %d%%", b->probabilityToTrack);
+		sprintf(s, "Track: %d%%", b->bot.probabilityToTrack);
 		DisplayCDogsText(170, y, s, yc == YC_ATTRIBUTES && xc == XC_TRACK);
-		sprintf(s, "Shoot: %d%%", b->probabilityToShoot);
+		sprintf(s, "Shoot: %d%%", b->bot.probabilityToShoot);
 		DisplayCDogsText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
-		sprintf(s, "Delay: %d", b->actionDelay);
+		sprintf(s, "Delay: %d", b->bot.actionDelay);
 		DisplayCDogsText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
 		y += CDogsTextHeight();
 
@@ -385,9 +352,9 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		y += CDogsTextHeight() + 5;
 
 		x = 10;
-		for (i = 0; i < setting->characterCount; i++)
+		for (i = 0; i < setting->characters.otherCount; i++)
 		{
-			DisplayCharacter(x, y + 20, &setting->characters[i], idx == i);
+			DisplayCharacter(x, y + 20, i, idx == i, 0);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
 			{
@@ -411,19 +378,19 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 }
 
 static void Change(
-	CampaignSettingNew *setting,
+	CharacterStore *store,
 	int idx,
 	int yc, int xc,
 	int d)
 {
-	CharEnemy *b;
+	Character *b;
 
-	if (idx < 0 || idx >= setting->characterCount)
+	if (idx < 0 || idx >= store->otherCount)
 	{
 		return;
 	}
 
-	b = &setting->characters[idx];
+	b = &store->others[idx];
 	switch (yc)
 	{
 	case YC_APPEARANCE:
@@ -465,19 +432,22 @@ static void Change(
 			break;
 
 		case XC_MOVE:
-			b->probabilityToMove = CLAMP(b->probabilityToMove + d * 5, 0, 100);
+			b->bot.probabilityToMove =
+				CLAMP(b->bot.probabilityToMove + d * 5, 0, 100);
 			break;
 
 		case XC_TRACK:
-			b->probabilityToTrack = CLAMP(b->probabilityToTrack + d * 5, 0, 100);
+			b->bot.probabilityToTrack =
+				CLAMP(b->bot.probabilityToTrack + d * 5, 0, 100);
 			break;
 
 		case XC_SHOOT:
-			b->probabilityToShoot = CLAMP(b->probabilityToShoot + d * 5, 0, 100);
+			b->bot.probabilityToShoot =
+				CLAMP(b->bot.probabilityToShoot + d * 5, 0, 100);
 			break;
 
 		case XC_DELAY:
-			b->actionDelay = CLAMP(b->actionDelay + d, 0, 50);
+			b->bot.actionDelay = CLAMP(b->bot.actionDelay + d, 0, 50);
 			break;
 		}
 		break;
@@ -549,45 +519,41 @@ static void Change(
 }
 
 
-static CharEnemy characterTemplate = {
-	{
-		BODY_ARMED, BODY_UNARMED, FACE_OGRE,
-		SHADE_GREEN, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_DKGRAY, SHADE_BLACK
-	},
-	256, 50, 25, 2, 15, GUN_MG, 40, FLAGS_IMMUNITY
-};
-
-static void InsertCharacter(CampaignSettingNew *setting, int idx, CharEnemy *data)
+static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 {
-	int i;
-	CREALLOC(
-		setting->characters,
-		sizeof *setting->characters * (setting->characterCount + 1));
-	for (i = setting->characterCount; i > idx; i--)
-	{
-		setting->characters[i] = setting->characters[i - 1];
-	}
+	Character *c = CharacterStoreInsertOther(store, idx);
 	if (data)
 	{
-		setting->characters[idx] = *data;
+		memcpy(&c, data, sizeof *c);
 	}
 	else
 	{
-		setting->characters[idx] = characterTemplate;
+		// set up character template
+		c->looks.armedBody = BODY_ARMED;
+		c->looks.unarmedBody = BODY_UNARMED;
+		c->looks.face = FACE_OGRE;
+		c->looks.skin = SHADE_GREEN;
+		c->looks.arm = SHADE_DKGRAY;
+		c->looks.body = SHADE_DKGRAY;
+		c->looks.leg = SHADE_DKGRAY;
+		c->looks.hair = SHADE_BLACK;
+		c->speed = 256;
+		c->gun = GUN_MG;
+		c->maxHealth = 40;
+		c->flags = FLAGS_IMMUNITY;
+		memset(c->table, 0, sizeof c->table);
+		c->bot.probabilityToMove = 50;
+		c->bot.probabilityToTrack = 25;
+		c->bot.probabilityToShoot = 2;
+		c->bot.actionDelay = 15;
+		CharacterSetLooks(c, &c->looks);
 	}
-	setting->characterCount++;
 }
 
-static void DeleteCharacter(CampaignSettingNew *setting, int *idx)
+static void DeleteCharacter(CharacterStore *store, int *idx)
 {
-	int i;
-
-	setting->characterCount = CLAMP(setting->characterCount - 1, 0, 1000);
-	for (i = *idx; i < setting->characterCount; i++)
-	{
-		setting->characters[i] = setting->characters[i + 1];
-	}
-	if (*idx > 0 && *idx >= setting->characterCount - 1)
+	CharacterStoreDeleteOther(store, *idx);
+	if (*idx > 0 && *idx >= store->otherCount - 1)
 	{
 		(*idx)--;
 	}
@@ -651,30 +617,30 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 
 static void HandleInput(
 	int c, int *xc, int *yc,
-	int *idx, CampaignSettingNew *setting, CharEnemy *scrap, int *done)
+	int *idx, CharacterStore *store, Character *scrap, int *done)
 {
 	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
 		{
 		case 'x':
-			*scrap = setting->characters[*idx];
-			DeleteCharacter(setting, idx);
+			*scrap = store->others[*idx];
+			DeleteCharacter(store, idx);
 			fileChanged = 1;
 			break;
 
 		case 'c':
-			*scrap = setting->characters[*idx];
+			*scrap = store->others[*idx];
 			break;
 
 		case 'v':
-			InsertCharacter(setting, *idx, scrap);
+			InsertCharacter(store, *idx, scrap);
 			fileChanged = 1;
 			break;
 
 		case 'n':
-			InsertCharacter(setting, setting->characterCount, NULL);
-			*idx = setting->characterCount - 1;
+			InsertCharacter(store, store->otherCount, NULL);
+			*idx = store->otherCount - 1;
 			fileChanged = 1;
 			break;
 		}
@@ -691,19 +657,19 @@ static void HandleInput(
 			break;
 
 		case SDLK_END:
-			if (*idx < setting->characterCount - 1)
+			if (*idx < store->otherCount - 1)
 			{
 				(*idx)++;
 			}
 			break;
 
 		case SDLK_INSERT:
-			InsertCharacter(setting, *idx, NULL);
+			InsertCharacter(store, *idx, NULL);
 			fileChanged = 1;
 			break;
 
 		case SDLK_DELETE:
-			DeleteCharacter(setting, idx);
+			DeleteCharacter(store, idx);
 			fileChanged = 1;
 			break;
 
@@ -730,12 +696,12 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEUP:
-			Change(setting, *idx, *yc, *xc, 1);
+			Change(store, *idx, *yc, *xc, 1);
 			fileChanged = 1;
 			break;
 
 		case SDLK_PAGEDOWN:
-			Change(setting, *idx, *yc, *xc, -1);
+			Change(store, *idx, *yc, *xc, -1);
 			fileChanged = 1;
 			break;
 
@@ -752,7 +718,7 @@ void EditCharacters(CampaignSettingNew *setting)
 	int idx = 0;
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
-	CharEnemy scrap;
+	Character scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
 	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
@@ -772,7 +738,7 @@ void EditCharacters(CampaignSettingNew *setting)
 			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
 				PosToCharacterIndex(gInputDevices.mouse.currentPos, &tag))
 			{
-				if (tag >= 0 && tag < setting->characterCount)
+				if (tag >= 0 && tag < setting->characters.otherCount)
 				{
 					idx = tag;
 				}
@@ -803,7 +769,7 @@ void EditCharacters(CampaignSettingNew *setting)
 			}
 		}
 
-		HandleInput(c, &xc, &yc, &idx, setting, &scrap, &done);
+		HandleInput(c, &xc, &yc, &idx, &setting->characters, &scrap, &done);
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}

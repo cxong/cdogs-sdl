@@ -73,7 +73,6 @@ typedef struct
 	char description[200];
 	int missionCount;
 	struct Mission *missions;
-	int characterCount;	// note: legacy, only used for editor
 	CharacterStore characters;
 } CampaignSettingNew;
 

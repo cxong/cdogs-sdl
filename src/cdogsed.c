@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
+#include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
@@ -325,14 +326,15 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	int i;
 	const char *typeCDogsText;
 	char s[50];
-	CharacterDescription *cd;
+	Character *cd;
+	CharacterStore *store = &gCampaign.Setting.characters;
 
 	switch (currentMission->objectives[idx].type)
 	{
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
-		cd = &gCharacterDesc[currentMission->baddieCount + CHARACTER_OTHERS];
-		i = cd->character.looks.face;
+		cd = CharacterStoreGetSpecial(store, 0);
+		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -340,8 +342,8 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		break;
 	case OBJECTIVE_RESCUE:
 		typeCDogsText = "Rescue";
-		cd = &gCharacterDesc[CHARACTER_PRISONER];
-		i = cd->character.looks.face;
+		cd = CharacterStoreGetPrisoner(store, 0);
+		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -456,41 +458,6 @@ static int MissionDescription(
 	pos = DrawTextCharMasked('\021', &gGraphicsDevice, pos, bracketMask);
 
 	return lines;
-}
-
-void DisplayCharacter(int x, int y, int character, int hilite)
-{
-	CharacterDescription *cd;
-	TOffsetPic body, head;
-
-	cd = &gCharacterDesc[character];
-
-	body.dx = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx;
-	body.dy = cBodyOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy;
-	body.picIndex =
-		cBodyPic[cd->character.looks.unarmedBody][DIRECTION_DOWN][STATE_IDLE];
-
-	head.dx =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dx +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dx;
-	head.dy =
-		cNeckOffset[cd->character.looks.unarmedBody][DIRECTION_DOWN].dy +
-		cHeadOffset[cd->character.looks.face][DIRECTION_DOWN].dy;
-	head.picIndex = cHeadPic[cd->character.looks.face][DIRECTION_DOWN][STATE_IDLE];
-
-	DrawTTPic(
-		x + body.dx, y + body.dy,
-		PicManagerGetOldPic(&gPicManager, body.picIndex), cd->table);
-	DrawTTPic(
-		x + head.dx, y + head.dy,
-		PicManagerGetOldPic(&gPicManager, head.picIndex), cd->table);
-
-	if (hilite) {
-		CDogsTextGoto(x - 8, y - 16);
-		CDogsTextChar('\020');
-		CDogsTextGoto(x - 8, y + 8);
-		CDogsTextString(gGunDescriptions[cd->character.gun].gunName);
-	}
 }
 
 static void ShowWeaponStatus(int x, int y, int weapon, int xc)
@@ -847,7 +814,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		}
 		for (i = 0; i < currentMission->baddieCount; i++)
 		{
-			DisplayCharacter(20 + 20 * i, y, CHARACTER_OTHERS + i, xc == i);
+			DisplayCharacter(20 + 20 * i, y, i, xc == i, 1);
 		}
 		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
 		break;
@@ -862,8 +829,9 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			DisplayCharacter(
 				20 + 20 * i, y,
-				CHARACTER_OTHERS + currentMission->baddieCount + i,
-				xc == i);
+				currentMission->baddieCount + i,
+				xc == i,
+				1);
 		}
 		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
 		break;
@@ -1016,7 +984,7 @@ static int Change(int yc, int xc, int d, int *mission)
 		currentMission->baddies[xc] = CLAMP_OPPOSITE(
 			currentMission->baddies[xc] + d,
 			0,
-			gCampaign.Setting.characterCount - 1);
+			gCampaign.Setting.characters.otherCount - 1);
 		isChanged = 1;
 		break;
 
@@ -1024,7 +992,7 @@ static int Change(int yc, int xc, int d, int *mission)
 		currentMission->specials[xc] = CLAMP_OPPOSITE(
 			currentMission->specials[xc] + d,
 			0,
-			gCampaign.Setting.characterCount - 1);
+			gCampaign.Setting.characters.otherCount - 1);
 		isChanged = 1;
 		break;
 
@@ -1074,7 +1042,7 @@ static int Change(int yc, int xc, int d, int *mission)
 					limit = 0;
 					break;
 				case OBJECTIVE_RESCUE:
-					limit = gCampaign.Setting.characterCount - 1;
+					limit = gCampaign.Setting.characters.otherCount - 1;
 					break;
 				default:
 					// should never get here
@@ -1856,8 +1824,7 @@ int main(int argc, char *argv[])
 	{
 		exit(0);
 	}
-	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	InitializeTranslationTables();
+	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
@@ -1897,9 +1864,10 @@ int main(int argc, char *argv[])
 	if (!loaded)
 	{
 		// Reset campaign (graphics init may have created dummy campaigns)
+		CharacterStoreTerminate(&gCampaign.Setting.characters);
 		memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
+		CharacterStoreInit(&gCampaign.Setting.characters);
 		gCampaign.Setting.missions = NULL;
-		gCampaign.Setting.characters = NULL;
 	}
 	currentMission = NULL;
 

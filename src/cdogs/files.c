@@ -276,11 +276,10 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->looks.unarmedBody = b->unarmedBodyPic;
 	c->looks.face = b->facePic;
 	c->speed = b->speed;
-	CMALLOC(c->bot, sizeof *c->bot);
-	c->bot->probabilityToMove = b->probabilityToMove;
-	c->bot->probabilityToTrack = b->probabilityToTrack;
-	c->bot->probabilityToShoot = b->probabilityToShoot;
-	c->bot->actionDelay = b->actionDelay;
+	c->bot.probabilityToMove = b->probabilityToMove;
+	c->bot.probabilityToTrack = b->probabilityToTrack;
+	c->bot.probabilityToShoot = b->probabilityToShoot;
+	c->bot.actionDelay = b->actionDelay;
 	c->gun = (gun_e)b->gun;
 	c->looks.skin = b->skinColor;
 	c->looks.arm = b->armColor;
@@ -297,10 +296,10 @@ TBadGuy ConvertTBadGuy(Character *e)
 	b.unarmedBodyPic = e->looks.unarmedBody;
 	b.facePic = e->looks.face;
 	b.speed = e->speed;
-	b.probabilityToMove = e->bot->probabilityToMove;
-	b.probabilityToTrack = e->bot->probabilityToTrack;
-	b.probabilityToShoot = e->bot->probabilityToShoot;
-	b.actionDelay = e->bot->actionDelay;
+	b.probabilityToMove = e->bot.probabilityToMove;
+	b.probabilityToTrack = e->bot.probabilityToTrack;
+	b.probabilityToShoot = e->bot.probabilityToShoot;
+	b.actionDelay = e->bot.actionDelay;
 	b.gun = e->gun;
 	b.skinColor = e->looks.skin;
 	b.armColor = e->looks.arm;
@@ -446,9 +445,9 @@ int SaveCampaign(const char *filename, CampaignSettingNew *setting)
 		CHECK_WRITE(fwrite(&setting->missions[i], sizeof(struct Mission), 1, f) == 1)
 	}
 
-	i = setting->characterCount;
+	i = setting->characters.otherCount;
 	CHECK_WRITE(fwrite32(f, &i))
-	for (i = 0; i < setting->characterCount; i++)
+	for (i = 0; i < setting->characters.otherCount; i++)
 	{
 		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
 		CHECK_WRITE(fwrite(&b, sizeof(TBadGuy), 1, f) == 1)
@@ -503,8 +502,8 @@ void SaveCampaignAsC(
 		return;
 	}
 	fprintf(f, "TBadGuy %s_badguys[ %d] =\n{\n", name,
-		setting->characterCount);
-	for (i = 0; i < setting->characterCount; i++)
+		setting->characters.otherCount);
+	for (i = 0; i < setting->characters.otherCount; i++)
 	{
 		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
 		fprintf(f,
@@ -525,7 +524,7 @@ void SaveCampaignAsC(
 			b.hairColor,
 			b.health,
 			b.flags,
-			i < setting->characterCount - 1 ? "," : "");
+			i < setting->characters.otherCount - 1 ? "," : "");
 	}
 	fprintf(f, "};\n\n");
 
@@ -649,7 +648,7 @@ void SaveCampaignAsC(
 	fprintf(f, ",\n");
 	fprintf(f, "  %d, %s_missions, %d, %s_badguys\n};\n",
 		setting->missionCount, name,
-		setting->characterCount, name);
+		setting->characters.otherCount, name);
 
 	printf("Saved to %s\n", filename);
 	fclose(f);
