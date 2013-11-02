@@ -111,8 +111,9 @@ static int delayTable[STATE_COUNT] = {
 
 void DrawCharacter(int x, int y, TActor * actor)
 {
-	int dir = actor->direction, state = actor->state;
-	int headDir = dir;
+	direction_e dir = actor->direction;
+	direction_e headDir = dir;
+	int state = actor->state;
 	int headState = state;
 
 	Character *c = actor->character;
@@ -215,7 +216,8 @@ void DrawCharacter(int x, int y, TActor * actor)
 	} else
 		gun.picIndex = -1;
 
-	switch (actor->direction) {
+	switch (dir)
+	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
 		pic1 = gun;
@@ -239,7 +241,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 		pic3 = head;
 		break;
 	default:
-		// should never get here
+		assert(0 && "invalid direction");
 		return;
 	}
 

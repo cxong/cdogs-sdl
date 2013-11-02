@@ -46,7 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -354,33 +354,108 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 	}
 }
 
-static void DrawCharacter(Character *c, Vec2i pos)
+static void DrawCharacter(
+	Character *c, Vec2i pos,
+	direction_e dir, int state,
+	int gunPic, gunstate_e gunState, TranslationTable *table)
 {
-	TOffsetPic body, head;
-	direction_e dir = DIRECTION_DOWN;
-	int state = STATE_IDLE;
+	TOffsetPic body, head, gun;
+	TOffsetPic pic1, pic2, pic3;
+	direction_e headDir = dir;
+	int headState = state;
+	int bodyType = c->looks.armedBody;
+	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
+	{
+		headState = STATE_COUNT + gunState - GUNSTATE_FIRING;
+	}
+	if (state == STATE_IDLELEFT)
+	{
+		headDir = (direction_e)((dir + 7) % 8);
+	}
+	else if (state == STATE_IDLERIGHT)
+	{
+		headDir = (direction_e)((dir + 1) % 8);
+	}
 
-	body.dx = cBodyOffset[c->looks.unarmedBody][dir].dx;
-	body.dy = cBodyOffset[c->looks.unarmedBody][dir].dy;
-	body.picIndex =
-		cBodyPic[c->looks.unarmedBody][dir][state];
+	if (gunPic < 0)
+	{
+		bodyType = c->looks.unarmedBody;
+	}
+
+	body.dx = cBodyOffset[bodyType][dir].dx;
+	body.dy = cBodyOffset[bodyType][dir].dy;
+	body.picIndex = cBodyPic[bodyType][dir][state];
 
 	head.dx =
-		cNeckOffset[c->looks.unarmedBody][dir].dx +
+		cNeckOffset[bodyType][dir].dx +
 		cHeadOffset[c->looks.face][dir].dx;
 	head.dy =
-		cNeckOffset[c->looks.unarmedBody][dir].dy +
+		cNeckOffset[bodyType][dir].dy +
 		cHeadOffset[c->looks.face][dir].dy;
 	head.picIndex = cHeadPic[c->looks.face][dir][state];
 
-	DrawTTPic(
-		pos.x + body.dx, pos.y + body.dy,
-		PicManagerGetOldPic(&gPicManager, body.picIndex),
-		c->table);
-	DrawTTPic(
-		pos.x + head.dx, pos.y + head.dy,
-		PicManagerGetOldPic(&gPicManager, head.picIndex),
-		c->table);
+	gun.picIndex = -1;
+	if (gunPic >= 0)
+	{
+		gun.dx =
+		    cGunHandOffset[bodyType][dir].dx +
+		    cGunPics[gunPic][dir][gunState].dx;
+		gun.dy =
+		    cGunHandOffset[bodyType][dir].dy +
+		    cGunPics[gunPic][dir][gunState].dy;
+		gun.picIndex = cGunPics[gunPic][dir][gunState].picIndex;
+	}
+
+	switch (dir)
+	{
+	case DIRECTION_UP:
+	case DIRECTION_UPRIGHT:
+		pic1 = gun;
+		pic2 = head;
+		pic3 = body;
+		break;
+
+	case DIRECTION_RIGHT:
+	case DIRECTION_DOWNRIGHT:
+	case DIRECTION_DOWN:
+	case DIRECTION_DOWNLEFT:
+		pic1 = body;
+		pic2 = head;
+		pic3 = gun;
+		break;
+
+	case DIRECTION_LEFT:
+	case DIRECTION_UPLEFT:
+		pic1 = gun;
+		pic2 = body;
+		pic3 = head;
+		break;
+	default:
+		assert(0 && "invalid direction");
+		return;
+	}
+
+	if (pic1.picIndex >= 0)
+	{
+		Blit(
+			pos.x + pic1.dx, pos.y + pic1.dy,
+			PicManagerGetOldPic(&gPicManager, pic1.picIndex),
+			table, BLIT_TRANSPARENT);
+	}
+	if (pic2.picIndex >= 0)
+	{
+		Blit(
+			pos.x + pic2.dx, pos.y + pic2.dy,
+			PicManagerGetOldPic(&gPicManager, pic2.picIndex),
+			table, BLIT_TRANSPARENT);
+	}
+	if (pic3.picIndex >= 0)
+	{
+		Blit(
+			pos.x + pic3.dx, pos.y + pic3.dy,
+			PicManagerGetOldPic(&gPicManager, pic3.picIndex),
+			table, BLIT_TRANSPARENT);
+	}
 }
 
 void DisplayPlayer(int x, const char *name, Character *c, int editingName)
@@ -399,13 +474,17 @@ void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 		CDogsTextStringAt(pos.x, pos.y, name);
 	}
 
-	DrawCharacter(c, playerPos);
+	DrawCharacter(
+		c, playerPos,
+		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 }
 
 void DisplayCharacter(int x, int y, int character, int hilite, int showGun)
 {
 	Character *c = &gCampaign.Setting.characters.others[character];
-	DrawCharacter(c, Vec2iNew(x, y));
+	DrawCharacter(
+		c, Vec2iNew(x, y),
+		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 	if (hilite)
 	{
 		CDogsTextGoto(x - 8, y - 16);
