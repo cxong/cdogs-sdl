@@ -336,3 +336,16 @@ void ConfigLoadDefault(Config *config)
 	config->QuickPlay.EnemiesWithExplosives = 1;
 	config->QuickPlay.ItemCount = QUICKPLAY_QUANTITY_ANY;
 }
+
+int ConfigIsMouseUsed(InputConfig *config)
+{
+	int i;
+	for (i = 0; i < 2; i++)
+	{
+		if (config->PlayerKeys[i].Device == INPUT_DEVICE_MOUSE)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}

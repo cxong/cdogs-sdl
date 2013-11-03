@@ -64,6 +64,7 @@
 #include "music.h"
 #include "objs.h"
 #include "palette.h"
+#include "pic_manager.h"
 #include "actors.h"
 #include "pics.h"
 #include "text.h"
@@ -496,7 +497,7 @@ int gameloop(void)
 	}
 
 	missionTime = 0;
-	InputInit(&gInputDevices, NULL);
+	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 340));
 	while (!isDone)
 	{
 		int cmd1 = 0, cmd2 = 0;
@@ -584,6 +585,10 @@ int gameloop(void)
 
 		HUDUpdate(&hud, ticks_now - ticks_then);
 		HUDDraw(&hud, isPaused);
+		if (ConfigIsMouseUsed(&gConfig.Input))
+		{
+			MouseDraw(&gInputDevices.mouse);
+		}
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 

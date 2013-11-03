@@ -80,7 +80,7 @@ typedef struct
 {
 	int SwapButtonsJoystick1;
 	int SwapButtonsJoystick2;
-	KeyConfig PlayerKeys[2];
+	KeyConfig PlayerKeys[2];	// TODO: more characters
 } InputConfig;
 
 typedef struct
@@ -151,5 +151,6 @@ void ConfigSave(Config *config, const char *filename);
 int ConfigApply(Config *config);
 void ConfigLoadDefault(Config *config);
 int ConfigGetVersion(FILE *f);
+int ConfigIsMouseUsed(InputConfig *config);
 
 #endif

@@ -120,8 +120,11 @@ double ToDegrees(double radians);
 typedef enum
 {
 	INPUT_DEVICE_KEYBOARD,
+	INPUT_DEVICE_MOUSE,
 	INPUT_DEVICE_JOYSTICK_1,
-	INPUT_DEVICE_JOYSTICK_2
+	INPUT_DEVICE_JOYSTICK_2,
+	
+	INPUT_DEVICE_COUNT
 } input_device_e;
 char *InputDeviceStr(int d);
 input_device_e StrInputDevice(const char *str);

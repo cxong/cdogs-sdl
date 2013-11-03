@@ -90,7 +90,7 @@ typedef struct
 extern InputDevices gInputDevices;
 
 void InputChangeDevice(
-	input_device_e *d, input_device_e *dOther, int numJoysticks);
+	InputDevices *devices, input_device_e *d, input_device_e *dOther);
 
 void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
 int GetMenuCmd(void);

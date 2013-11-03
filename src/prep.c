@@ -268,6 +268,11 @@ static void ShowPlayerControls(int x, KeyConfig *config)
 			CDogsTextStringAt(x, y, s);
 		}
 	}
+	else if (config->Device == INPUT_DEVICE_MOUSE)
+	{
+		sprintf(s, "(mouse wheel to scroll, left and right click)");
+		CDogsTextStringAt(x, y, s);
+	}
 	else
 	{
 		sprintf(s, "(%s)", InputDeviceName(config->Device));

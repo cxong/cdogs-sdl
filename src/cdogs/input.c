@@ -61,36 +61,33 @@
 InputDevices gInputDevices;
 
 
-// TODO: simplify into an iterate over struct controls_available
 void InputChangeDevice(
-	input_device_e *d, input_device_e *dOther, int numJoysticks)
+	InputDevices *devices, input_device_e *d, input_device_e *dOther)
 {
-	if (*d == INPUT_DEVICE_JOYSTICK_1)
+	int numJoys = devices->joysticks.numJoys;
+	int available[INPUT_DEVICE_COUNT];
+	available[INPUT_DEVICE_KEYBOARD] = 1;
+	available[INPUT_DEVICE_MOUSE] = *dOther != INPUT_DEVICE_MOUSE;
+	available[INPUT_DEVICE_JOYSTICK_1] =
+		numJoys >= 1 && *dOther != INPUT_DEVICE_JOYSTICK_1;
+	available[INPUT_DEVICE_JOYSTICK_2] =
+		numJoys >= 2 && *dOther != INPUT_DEVICE_JOYSTICK_2;
+	input_device_e newDevice;
+	int isFirst = 1;
+	for (newDevice = *d; isFirst || newDevice != *d;)
 	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_2 && numJoysticks >= 2)
+		if (!isFirst && available[newDevice])
 		{
-			*d = INPUT_DEVICE_JOYSTICK_2;
+			break;
 		}
-		else
+		isFirst = 0;
+		newDevice++;
+		if (newDevice == INPUT_DEVICE_COUNT)
 		{
-			*d = INPUT_DEVICE_KEYBOARD;
+			newDevice = INPUT_DEVICE_KEYBOARD;
 		}
 	}
-	else if (*d == INPUT_DEVICE_JOYSTICK_2)
-	{
-		*d = INPUT_DEVICE_KEYBOARD;
-	}
-	else
-	{
-		if (*dOther != INPUT_DEVICE_JOYSTICK_1 && numJoysticks >= 1)
-		{
-			*d = INPUT_DEVICE_JOYSTICK_1;
-		}
-		else if (numJoysticks >= 2)
-		{
-			*d = INPUT_DEVICE_JOYSTICK_2;
-		}
-	}
+	*d = newDevice;
 	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
 }
 
@@ -107,6 +104,7 @@ static int SwapButtons(int cmd)
 int GetOnePlayerCmd(
 	KeyConfig *config,
 	int (*keyFunc)(keyboard_t *, int),
+	int (*mouseFunc)(Mouse *, int),
 	int (*joyFunc)(joystick_t *, int))
 {
 	int cmd = 0;
@@ -138,6 +136,32 @@ int GetOnePlayerCmd(
 		if (keyFunc(&gInputDevices.keyboard, config->Keys.button2))
 		{
 			cmd |= CMD_BUTTON2;
+		}
+	}
+	else if (config->Device == INPUT_DEVICE_MOUSE)
+	{
+		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_WHEELUP))
+		{
+			cmd |= CMD_UP;
+		}
+		else if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_WHEELDOWN))
+		{
+			cmd |= CMD_DOWN;
+		}
+		
+		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_LEFT))
+		{
+			cmd |= CMD_BUTTON1;
+		}
+		
+		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_RIGHT))
+		{
+			cmd |= CMD_BUTTON2;
+		}
+		
+		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_MIDDLE))
+		{
+			cmd |= CMD_BUTTON3;
 		}
 	}
 	else
@@ -203,15 +227,18 @@ int GetOnePlayerCmd(
 void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 {
 	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
+	int (*mouseFunc)(Mouse *, int) = isPressed ? MouseIsPressed : MouseIsDown;
 	int (*joyFunc)(joystick_t *, int) = isPressed ? JoyIsPressed : JoyIsDown;
 
 	if (cmd1 != NULL)
 	{
-		*cmd1 = GetOnePlayerCmd(&gConfig.Input.PlayerKeys[0], keyFunc, joyFunc);
+		*cmd1 = GetOnePlayerCmd(
+			&gConfig.Input.PlayerKeys[0], keyFunc, mouseFunc, joyFunc);
 	}
 	if (cmd2 != NULL)
 	{
-		*cmd2 = GetOnePlayerCmd(&gConfig.Input.PlayerKeys[1], keyFunc, joyFunc);
+		*cmd2 = GetOnePlayerCmd(
+			&gConfig.Input.PlayerKeys[1], keyFunc, mouseFunc, joyFunc);
 	}
 }
 
@@ -360,6 +387,8 @@ const char *InputDeviceName(int d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		return "Keyboard";
+	case INPUT_DEVICE_MOUSE:
+		return "Mouse";
 	case INPUT_DEVICE_JOYSTICK_1:
 		return SDL_JoystickName(0);
 	case INPUT_DEVICE_JOYSTICK_2:

@@ -63,6 +63,8 @@ void MouseOnButtonUp(Mouse *mouse, Uint8 button);
 void MousePostPoll(Mouse *mouse, Uint32 ticks);
 int MouseHasMoved(Mouse *mouse);
 int MouseGetPressed(Mouse *mouse);
+int MouseIsDown(Mouse *mouse, int button);
+int MouseIsPressed(Mouse *mouse, int button);
 void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2);
 void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects);
 int MouseTryGetRectTag(Mouse *mouse, int *tag);

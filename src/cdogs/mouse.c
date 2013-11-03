@@ -157,6 +157,16 @@ int MouseGetPressed(Mouse *mouse)
 	return 0;
 }
 
+int MouseIsPressed(Mouse *mouse, int button)
+{
+	return mouse->pressedButtons[button];
+}
+
+int MouseIsDown(Mouse *mouse, int button)
+{
+	return mouse->currentButtons[button];
+}
+
 void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2)
 {
 	mouse->rects = rects;

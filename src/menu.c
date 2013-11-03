@@ -1009,9 +1009,9 @@ void MenuActivate(menu_t *menu, int cmd)
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
 		InputChangeDevice(
+			&gInputDevices,
 			menu->u.option.uHook.changeControl.device0,
-			menu->u.option.uHook.changeControl.device1,
-			gInputDevices.joysticks.numJoys);
+			menu->u.option.uHook.changeControl.device1);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
 		menu->u.option.uHook.toggleFuncs.toggle();
