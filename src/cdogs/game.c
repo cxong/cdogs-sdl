@@ -205,13 +205,14 @@ static void Ticks_FrameEnd(void)
 }
 
 
-void DoBuffer(DrawBuffer *b, Vec2i center, int dx, int w, Vec2i noise)
+void DoBuffer(
+	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
 	DrawBufferSetFromMap(
 		b, gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
 	LineOfSight(center, b, MAPTILE_IS_SHADOW);
 	FixBuffer(b, MAPTILE_IS_SHADOW);
-	DrawBufferDraw(b, dx);
+	DrawBufferDraw(b, offset);
 }
 
 void ShakeScreen(int amount)
@@ -242,6 +243,7 @@ Vec2i DrawScreen(
 	DrawBuffer *b, TActor *player1, TActor *player2, Vec2i lastPosition)
 {
 	Vec2i noise = Vec2iZero();
+	Vec2i centerOffset = Vec2iNew(-TILE_WIDTH / 2 - 8, -TILE_HEIGHT / 2 - 4);
 	int i;
 
 	if (screenShaking)
@@ -280,11 +282,12 @@ Vec2i DrawScreen(
 				b,
 				MAPTILE_IS_SHADOW2);
 			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
-			DrawBufferDraw(b, 0);
+			DrawBufferDraw(b, centerOffset);
 			SoundSetEars(lastPosition);
 		}
 		else
 		{
+			Vec2i center = Vec2iNew(player1->tileItem.x, player1->tileItem.y);
 			GraphicsSetBlitClip(
 				&gGraphicsDevice,
 				0,
@@ -293,26 +296,30 @@ Vec2i DrawScreen(
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
 			DoBuffer(
 				b,
-				Vec2iNew(player1->tileItem.x, player1->tileItem.y),
-				0,
+				center,
 				X_TILES_HALF,
-				noise);
-			SoundSetLeftEar(
-				Vec2iNew(player1->tileItem.x, player1->tileItem.y));
+				noise,
+				centerOffset);
+			SoundSetLeftEar(center);
+
+			center = Vec2iAdd(
+				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
+				centerOffset);
 			GraphicsSetBlitClip(
 				&gGraphicsDevice,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
 				0,
 				gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
 				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+			centerOffset.x +=
+				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1;
 			DoBuffer(
 				b,
-				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
-				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
+				center,
 				X_TILES_HALF,
-				noise);
-			SoundSetRightEar(
-				Vec2iNew(player2->tileItem.x, player2->tileItem.y));
+				noise,
+				centerOffset);
+			SoundSetRightEar(center);
 			lastPosition.x = player1->tileItem.x;
 			lastPosition.y = player1->tileItem.y;
 			BlackLine();
@@ -320,31 +327,23 @@ Vec2i DrawScreen(
 	}
 	else if (player1)
 	{
-		DoBuffer(
-			b,
-			Vec2iNew(player1->tileItem.x, player1->tileItem.y),
-			0,
-			X_TILES,
-			noise);
-		SoundSetEars(Vec2iNew(player1->tileItem.x, player1->tileItem.y));
+		Vec2i center = Vec2iNew(player1->tileItem.x, player1->tileItem.y);
+		DoBuffer(b, center, X_TILES, noise, centerOffset);
+		SoundSetEars(center);
 		lastPosition.x = player1->tileItem.x;
 		lastPosition.y = player1->tileItem.y;
 	}
 	else if (player2)
 	{
-		DoBuffer(
-			b,
-			Vec2iNew(player2->tileItem.x, player2->tileItem.y),
-			0,
-			X_TILES,
-			noise);
-		SoundSetEars(Vec2iNew(player2->tileItem.x, player2->tileItem.y));
+		Vec2i center = Vec2iNew(player2->tileItem.x, player2->tileItem.y);
+		DoBuffer(b, center, X_TILES, noise, centerOffset);
+		SoundSetEars(center);
 		lastPosition.x = player2->tileItem.x;
 		lastPosition.y = player2->tileItem.y;
 	}
 	else
 	{
-		DoBuffer(b, lastPosition, 0, X_TILES, noise);
+		DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	return lastPosition;

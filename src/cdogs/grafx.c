@@ -391,7 +391,7 @@ void GrafxMakeBackground(
 		Vec2iNew(1024, 768),
 		X_TILES,
 		Vec2iNew(X_TILES, Y_TILES));
-	DrawBufferDraw(&buffer, 0);
+	DrawBufferDraw(&buffer, Vec2iZero());
 	DrawBufferTerminate(&buffer);
 	KillAllObjects();
 	FreeTriggersAndWatches();

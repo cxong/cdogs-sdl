@@ -58,7 +58,7 @@
 #include "sounds.h"
 #include "gamedata.h"
 
-#define MOUSE_MOVE_DEAD_ZONE 8
+#define MOUSE_MOVE_DEAD_ZONE 12
 
 InputDevices gInputDevices;
 

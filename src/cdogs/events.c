@@ -74,6 +74,10 @@ void WaitForAnyKeyOrButton(InputDevices *devices)
 		{
 			return;
 		}
+		if (MouseGetPressed(&devices->mouse))
+		{
+			return;
+		}
 		for (i = 0; i < devices->joysticks.numJoys; i++)
 		{
 			if (JoyIsAnyPressed(&devices->joysticks.joys[i]))

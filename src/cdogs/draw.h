@@ -54,7 +54,7 @@
 
 void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag);
 void FixBuffer(DrawBuffer *b, int isShadow);
-void DrawBufferDraw(DrawBuffer *b, int xOffset);
+void DrawBufferDraw(DrawBuffer *b, Vec2i offset);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(int x, int y, int character, int hilite, int showGun);
 
