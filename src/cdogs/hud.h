@@ -73,5 +73,6 @@ void HUDInit(
 void HUDDisplayMessage(HUD *hud, const char *msg);
 void HUDUpdate(HUD *hud, int ms);
 void HUDDraw(HUD *hud, int isPaused);
+Vec2i HUDGetPlayerCenter(HUD *hud, int player);
 
 #endif

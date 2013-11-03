@@ -68,6 +68,19 @@ typedef struct
 	int map;
 } input_keys_t;
 
+typedef struct
+{
+	input_device_e Device;
+	input_keys_t Keys;
+} KeyConfig;
+
+typedef struct
+{
+	int SwapButtonsJoystick1;
+	int SwapButtonsJoystick2;
+	KeyConfig PlayerKeys[2];	// TODO: more characters
+} InputConfig;
+
 typedef enum
 {
 	KEY_CODE_LEFT,
@@ -92,11 +105,13 @@ extern InputDevices gInputDevices;
 void InputChangeDevice(
 	InputDevices *devices, input_device_e *d, input_device_e *dOther);
 
-void GetPlayerCmd(int *cmd1, int *cmd2, int is_press);
+void GetPlayerCmd(int *cmd1, int *cmd2);
 int GetMenuCmd(void);
 
 void InputInit(InputDevices *devices, PicPaletted *mouseCursor);
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
+int InputGetGameCmd(
+	InputDevices *devices, InputConfig *config, int player, Vec2i playerPos);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
 void InputPoll(InputDevices *devices, Uint32 ticks);
 void InputTerminate(InputDevices *devices);

@@ -58,6 +58,8 @@
 #include "sounds.h"
 #include "gamedata.h"
 
+#define MOUSE_MOVE_DEAD_ZONE 8
+
 InputDevices gInputDevices;
 
 
@@ -101,6 +103,88 @@ static int SwapButtons(int cmd)
 	return c;
 }
 
+int GetKeyboardCmd(
+	keyboard_t *keyboard, input_keys_t *keys,
+	int (*keyFunc)(keyboard_t *, int))
+{
+	int cmd = 0;
+	
+	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
+	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
+	
+	if (keyFunc(keyboard, keys->up))			cmd |= CMD_UP;
+	else if (keyFunc(keyboard, keys->down))		cmd |= CMD_DOWN;
+	
+	if (keyFunc(keyboard, keys->button1))		cmd |= CMD_BUTTON1;
+
+	if (keyFunc(keyboard, keys->button2))		cmd |= CMD_BUTTON2;
+
+	return cmd;
+}
+
+int GetMouseCmd(
+	Mouse *mouse, int (*mouseFunc)(Mouse *, int), int useMouseMove, Vec2i pos)
+{
+	int cmd = 0;
+	
+	if (useMouseMove)
+	{
+		int dx = abs(mouse->currentPos.x - pos.x);
+		int dy = abs(mouse->currentPos.y - pos.y);
+		if (dx > MOUSE_MOVE_DEAD_ZONE || dy > MOUSE_MOVE_DEAD_ZONE)
+		{
+			if (2 * dx > dy)
+			{
+				if (pos.x < mouse->currentPos.x)			cmd |= CMD_RIGHT;
+				else if (pos.x > mouse->currentPos.x)		cmd |= CMD_LEFT;
+			}
+			if (2 * dy > dx)
+			{
+				if (pos.y < mouse->currentPos.y)			cmd |= CMD_DOWN;
+				else if (pos.y > mouse->currentPos.y)		cmd |= CMD_UP;
+			}
+		}
+	}
+	else
+	{
+		if (mouseFunc(mouse, SDL_BUTTON_WHEELUP))			cmd |= CMD_UP;
+		else if (mouseFunc(mouse, SDL_BUTTON_WHEELDOWN))	cmd |= CMD_DOWN;
+	}
+
+	if (mouseFunc(mouse, SDL_BUTTON_LEFT))					cmd |= CMD_BUTTON1;
+	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))					cmd |= CMD_BUTTON2;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_BUTTON3;
+	
+	return cmd;
+}
+
+int GetJoystickCmd(
+	joystick_t *joystick, int (*joyFunc)(joystick_t *, int), int swapButtons)
+{
+	int cmd = 0;
+
+	if (joyFunc(joystick, CMD_LEFT))		cmd |= CMD_LEFT;
+	else if (joyFunc(joystick, CMD_RIGHT))	cmd |= CMD_RIGHT;
+
+	if (joyFunc(joystick, CMD_UP))			cmd |= CMD_UP;
+	else if (joyFunc(joystick, CMD_DOWN))	cmd |= CMD_DOWN;
+	
+	if (joyFunc(joystick, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
+
+	if (joyFunc(joystick, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
+	
+	if (joyFunc(joystick, CMD_BUTTON3))		cmd |= CMD_BUTTON3;
+
+	if (joyFunc(joystick, CMD_BUTTON4))		cmd |= CMD_BUTTON4;
+	
+	if (swapButtons)
+	{
+		cmd = SwapButtons(cmd);
+	}
+	
+	return cmd;
+}
+
 int GetOnePlayerCmd(
 	KeyConfig *config,
 	int (*keyFunc)(keyboard_t *, int),
@@ -110,59 +194,11 @@ int GetOnePlayerCmd(
 	int cmd = 0;
 	if (config->Device == INPUT_DEVICE_KEYBOARD)
 	{
-		if (keyFunc(&gInputDevices.keyboard, config->Keys.left))
-		{
-			cmd |= CMD_LEFT;
-		}
-		else if (keyFunc(&gInputDevices.keyboard, config->Keys.right))
-		{
-			cmd |= CMD_RIGHT;
-		}
-
-		if (keyFunc(&gInputDevices.keyboard, config->Keys.up))
-		{
-			cmd |= CMD_UP;
-		}
-		else if (keyFunc(&gInputDevices.keyboard, config->Keys.down))
-		{
-			cmd |= CMD_DOWN;
-		}
-
-		if (keyFunc(&gInputDevices.keyboard, config->Keys.button1))
-		{
-			cmd |= CMD_BUTTON1;
-		}
-
-		if (keyFunc(&gInputDevices.keyboard, config->Keys.button2))
-		{
-			cmd |= CMD_BUTTON2;
-		}
+		cmd = GetKeyboardCmd(&gInputDevices.keyboard, &config->Keys, keyFunc);
 	}
 	else if (config->Device == INPUT_DEVICE_MOUSE)
 	{
-		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_WHEELUP))
-		{
-			cmd |= CMD_UP;
-		}
-		else if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_WHEELDOWN))
-		{
-			cmd |= CMD_DOWN;
-		}
-		
-		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_LEFT))
-		{
-			cmd |= CMD_BUTTON1;
-		}
-		
-		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_RIGHT))
-		{
-			cmd |= CMD_BUTTON2;
-		}
-		
-		if (mouseFunc(&gInputDevices.mouse, SDL_BUTTON_MIDDLE))
-		{
-			cmd |= CMD_BUTTON3;
-		}
+		cmd = GetMouseCmd(&gInputDevices.mouse, mouseFunc, 0, Vec2iZero());
 	}
 	else
 	{
@@ -180,55 +216,17 @@ int GetOnePlayerCmd(
 			swapButtons = gConfig.Input.SwapButtonsJoystick2;
 		}
 
-		if (joyFunc(joystick, CMD_LEFT))
-		{
-			cmd |= CMD_LEFT;
-		}
-		else if (joyFunc(joystick, CMD_RIGHT))
-		{
-			cmd |= CMD_RIGHT;
-		}
-
-		if (joyFunc(joystick, CMD_UP))
-		{
-			cmd |= CMD_UP;
-		}
-		else if (joyFunc(joystick, CMD_DOWN))
-		{
-			cmd |= CMD_DOWN;
-		}
-
-		if (joyFunc(joystick, CMD_BUTTON1))
-		{
-			cmd |= CMD_BUTTON1;
-		}
-		if (joyFunc(joystick, CMD_BUTTON2))
-		{
-			cmd |= CMD_BUTTON2;
-		}
-		if (joyFunc(joystick, CMD_BUTTON3))
-		{
-			cmd |= CMD_BUTTON3;
-		}
-		if (joyFunc(joystick, CMD_BUTTON4))
-		{
-			cmd |= CMD_BUTTON4;
-		}
-
-		if (swapButtons)
-		{
-			cmd = SwapButtons(cmd);
-		}
+		cmd = GetJoystickCmd(joystick, joyFunc, swapButtons);
 	}
 	return cmd;
 }
 
 
-void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
+void GetPlayerCmd(int *cmd1, int *cmd2)
 {
-	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
-	int (*mouseFunc)(Mouse *, int) = isPressed ? MouseIsPressed : MouseIsDown;
-	int (*joyFunc)(joystick_t *, int) = isPressed ? JoyIsPressed : JoyIsDown;
+	int (*keyFunc)(keyboard_t *, int) = KeyIsPressed;
+	int (*mouseFunc)(Mouse *, int) = MouseIsPressed;
+	int (*joyFunc)(joystick_t *, int) = JoyIsPressed;
 
 	if (cmd1 != NULL)
 	{
@@ -242,6 +240,42 @@ void GetPlayerCmd(int *cmd1, int *cmd2, int isPressed)
 	}
 }
 
+int InputGetGameCmd(
+	InputDevices *devices, InputConfig *config, int player, Vec2i playerPos)
+{
+	int cmd = 0;
+	int swapButtons = 0;
+	joystick_t *joystick = &devices->joysticks.joys[0];
+	
+	switch (config->PlayerKeys[player].Device)
+	{
+		case INPUT_DEVICE_KEYBOARD:
+			cmd = GetKeyboardCmd(
+				&devices->keyboard,
+				&config->PlayerKeys[player].Keys,
+				KeyIsDown);
+			break;
+		case INPUT_DEVICE_MOUSE:
+			cmd = GetMouseCmd(&devices->mouse, MouseIsDown, 1, playerPos);
+			break;
+		case INPUT_DEVICE_JOYSTICK_1:
+			joystick = &devices->joysticks.joys[0];
+			swapButtons = config->SwapButtonsJoystick1;
+			cmd = GetJoystickCmd(joystick, JoyIsDown, swapButtons);
+			break;
+		case INPUT_DEVICE_JOYSTICK_2:
+			joystick = &devices->joysticks.joys[1];
+			swapButtons = config->SwapButtonsJoystick2;
+			cmd = GetJoystickCmd(joystick, JoyIsDown, swapButtons);
+			break;
+		default:
+			assert(0 && "unknown input device");
+			break;
+	}
+	
+	return cmd;
+}
+
 int GetMenuCmd(void)
 {
 	int cmd = 0;
@@ -250,7 +284,7 @@ int GetMenuCmd(void)
 		return CMD_ESC;
 	}
 
-	GetPlayerCmd(&cmd, NULL, 1);
+	GetPlayerCmd(&cmd, NULL);
 	if (!cmd)
 	{
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_LEFT))

@@ -72,19 +72,6 @@ ScaleMode StrScaleMode(const char *str);
 
 typedef struct
 {
-	input_device_e Device;
-	input_keys_t Keys;
-} KeyConfig;
-
-typedef struct
-{
-	int SwapButtonsJoystick1;
-	int SwapButtonsJoystick2;
-	KeyConfig PlayerKeys[2];	// TODO: more characters
-} InputConfig;
-
-typedef struct
-{
 	int FriendlyFire;
 	unsigned int RandomSeed;
 	difficulty_e Difficulty;

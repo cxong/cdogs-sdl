@@ -423,11 +423,6 @@ static void MissionUpdateObjectives(void)
 	}
 }
 
-void GetPlayerInput(int *cmd1, int *cmd2)
-{
-	GetPlayerCmd(gPlayer1 ? cmd1 : NULL, gPlayer2 ? cmd2 : NULL, 0);
-}
-
 int HandleKey(int cmd, int *isPaused)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
@@ -446,7 +441,10 @@ int HandleKey(int cmd, int *isPaused)
 			}
 			SDL_Delay(10);
 			InputPoll(&gInputDevices, SDL_GetTicks());
-			GetPlayerInput(&cmd1, &cmd2);
+			cmd1 = InputGetGameCmd(
+				&gInputDevices, &gConfig.Input, 0, Vec2iZero());
+			cmd2 = InputGetGameCmd(
+				&gInputDevices, &gConfig.Input, 1, Vec2iZero());
 			cmd = cmd1 | cmd2;
 		}
 	}
@@ -506,7 +504,16 @@ int gameloop(void)
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
-		GetPlayerInput(&cmd1, &cmd2);
+		if (gPlayer1)
+		{
+			cmd1 = InputGetGameCmd(
+				&gInputDevices, &gConfig.Input, 0, HUDGetPlayerCenter(&hud, 0));
+		}
+		if (gPlayer2)
+		{
+			cmd2 = InputGetGameCmd(
+				&gInputDevices, &gConfig.Input, 0, HUDGetPlayerCenter(&hud, 1));
+		}
 		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
 		if (is_esc_pressed && isPaused)
 		{

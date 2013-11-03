@@ -1038,7 +1038,7 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 		int cmd2 = 0;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		GetPlayerCmd(&cmd1, &cmd2, 1);
+		GetPlayerCmd(&cmd1, &cmd2);
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
@@ -1075,7 +1075,7 @@ int PlayerEquip(GraphicsDevice *graphics)
 		int cmd2 = 0;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		GetPlayerCmd(&cmd1, &cmd2, 1);
+		GetPlayerCmd(&cmd1, &cmd2);
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
