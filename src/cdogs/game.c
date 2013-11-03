@@ -511,7 +511,7 @@ int gameloop(void)
 		if (gPlayer2)
 		{
 			cmd2 = InputGetGameCmd(
-				&gInputDevices, &gConfig.Input, 0, HUDGetPlayerCenter(&hud, 1));
+				&gInputDevices, &gConfig.Input, 1, HUDGetPlayerCenter(&hud, 1));
 		}
 		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
 		if (is_esc_pressed && isPaused)
