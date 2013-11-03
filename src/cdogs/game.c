@@ -302,9 +302,7 @@ Vec2i DrawScreen(
 				centerOffset);
 			SoundSetLeftEar(center);
 
-			center = Vec2iAdd(
-				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
-				centerOffset);
+			center = Vec2iNew(player2->tileItem.x, player2->tileItem.y);
 			GraphicsSetBlitClip(
 				&gGraphicsDevice,
 				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
