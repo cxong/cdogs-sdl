@@ -239,6 +239,13 @@ void BlackLine(void)
 	}
 }
 
+int IsSingleScreen(TTileItem *p1, TTileItem *p2, int splitScreenAlways)
+{
+	return
+		!splitScreenAlways &&
+		abs(p1->x - p2->x) < SPLIT_X && abs(p1->y - p2->y) < SPLIT_Y;
+}
+
 Vec2i DrawScreen(
 	DrawBuffer *b, TActor *player1, TActor *player2, Vec2i lastPosition)
 {
@@ -260,9 +267,9 @@ Vec2i DrawScreen(
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (player1 && player2)
 	{
-		if (!gConfig.Interface.SplitscreenAlways &&
-			abs(player1->tileItem.x - player2->tileItem.x) < SPLIT_X &&
-			abs(player1->tileItem.y - player2->tileItem.y) < SPLIT_Y)
+		if (IsSingleScreen(
+				&player1->tileItem, &player2->tileItem,
+				gConfig.Interface.SplitscreenAlways))
 		{
 			// One screen
 			lastPosition.x = (player1->tileItem.x + player2->tileItem.x) / 2;
@@ -474,6 +481,61 @@ int HandleKey(int cmd, int *isPaused)
 	return 0;
 }
 
+Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
+{
+	Vec2i center;
+	int players = 1;
+	int screenW = device->cachedConfig.ResolutionWidth;
+	if (gOptions.twoPlayers && gPlayer1 && gPlayer2)
+	{
+		players = 2;
+	}
+	
+	if (players == 2 &&
+		IsSingleScreen(
+			&gPlayer1->tileItem, &gPlayer2->tileItem,
+			gConfig.Interface.SplitscreenAlways))
+	{
+		Vec2i pCenter = Vec2iNew(
+			(gPlayer1->tileItem.x + gPlayer2->tileItem.x) / 2,
+			(gPlayer1->tileItem.y + gPlayer2->tileItem.y) / 2);
+		Vec2i screenCenter = Vec2iNew(
+			screenW / 2,
+			device->cachedConfig.ResolutionHeight / 2);
+		int factor = 1;
+		TTileItem *pTileItem =
+			player == 0 ? &gPlayer1->tileItem : &gPlayer2->tileItem;
+		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
+		assert((player == 0 || player == 1) && "invalid player index");
+		center = Vec2iAdd(
+			Vec2iScaleDiv(Vec2iAdd(p, Vec2iScale(pCenter, -1)), factor),
+			screenCenter);
+		printf("%d,%d\n", center.x, center.y);
+	}
+	else
+	{
+		center.y = device->cachedConfig.ResolutionHeight / 2;
+		if (players == 1)
+		{
+			center.x = screenW / 2;
+		}
+		else
+		{
+			assert(players == 2 && "invalid number of players");
+			if (player == 0)
+			{
+				center.x = screenW / 4;
+			}
+			else
+			{
+				assert(player == 1 && "invalid player");
+				center.x = screenW * 3 / 4;
+			}
+		}
+	}
+	return center;
+}
+
 int gameloop(void)
 {
 	DrawBuffer buffer;
@@ -501,15 +563,21 @@ int gameloop(void)
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
-		if (gPlayer1)
+		if (gPlayer1 && !gPlayer2->dead)
 		{
 			cmd1 = InputGetGameCmd(
-				&gInputDevices, &gConfig.Input, 0, HUDGetPlayerCenter(&hud, 0));
+				&gInputDevices,
+				&gConfig.Input,
+				0,
+				GetPlayerCenter(&gGraphicsDevice, 0));
 		}
-		if (gPlayer2)
+		if (gPlayer2 && !gPlayer2->dead)
 		{
 			cmd2 = InputGetGameCmd(
-				&gInputDevices, &gConfig.Input, 1, HUDGetPlayerCenter(&hud, 1));
+				&gInputDevices,
+				&gConfig.Input,
+				1,
+				GetPlayerCenter(&gGraphicsDevice, 1));
 		}
 		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
 		if (is_esc_pressed && isPaused)

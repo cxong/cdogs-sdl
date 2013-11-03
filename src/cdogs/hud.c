@@ -440,34 +440,3 @@ void HUDDraw(HUD *hud, int isPaused)
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
 }
-
-Vec2i HUDGetPlayerCenter(HUD *hud, int player)
-{
-	Vec2i center;
-	int players = 1;
-	int screenW = hud->device->cachedConfig.ResolutionWidth;
-	if (gOptions.twoPlayers && gPlayer1 && gPlayer2)
-	{
-		players = 2;
-	}
-	center.y = hud->device->cachedConfig.ResolutionHeight / 2;
-	if (players == 1)
-	{
-		assert(player == 0 && "1 player only");
-		center.x = screenW / 2;
-	}
-	else
-	{
-		assert(players == 2 && "invalid number of players");
-		if (player == 0)
-		{
-			center.x = screenW / 4;
-		}
-		else
-		{
-			assert(player == 1 && "invalid player");
-			center.x = screenW * 3 / 4;
-		}
-	}
-	return center;
-}

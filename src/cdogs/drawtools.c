@@ -191,10 +191,8 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 		device->cachedConfig.ResolutionWidth,
 		device->cachedConfig.ResolutionHeight);
 	color_t c;
-	if (pos.x < gGraphicsDevice.clipping.left ||
-		pos.x > gGraphicsDevice.clipping.right ||
-		pos.y < gGraphicsDevice.clipping.top ||
-		pos.y > gGraphicsDevice.clipping.bottom)
+	if (pos.x < device->clipping.left || pos.x > device->clipping.right ||
+		pos.y < device->clipping.top || pos.y > device->clipping.bottom)
 	{
 		return;
 	}
