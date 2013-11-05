@@ -67,6 +67,8 @@ void InputChangeDevice(
 	InputDevices *devices, input_device_e *d, input_device_e *dOther)
 {
 	int numJoys = devices->joysticks.numJoys;
+	input_device_e newDevice;
+	int isFirst = 1;
 	int available[INPUT_DEVICE_COUNT];
 	available[INPUT_DEVICE_KEYBOARD] = 1;
 	available[INPUT_DEVICE_MOUSE] = *dOther != INPUT_DEVICE_MOUSE;
@@ -74,8 +76,6 @@ void InputChangeDevice(
 		numJoys >= 1 && *dOther != INPUT_DEVICE_JOYSTICK_1;
 	available[INPUT_DEVICE_JOYSTICK_2] =
 		numJoys >= 2 && *dOther != INPUT_DEVICE_JOYSTICK_2;
-	input_device_e newDevice;
-	int isFirst = 1;
 	for (newDevice = *d; isFirst || newDevice != *d;)
 	{
 		if (!isFirst && available[newDevice])
