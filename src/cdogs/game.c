@@ -563,7 +563,7 @@ int gameloop(void)
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
-		if (gPlayer1 && !gPlayer2->dead)
+		if (gPlayer1 && !gPlayer1->dead)
 		{
 			cmd1 = InputGetGameCmd(
 				&gInputDevices,
