@@ -265,6 +265,19 @@ a.windows span {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
+a.osx,
+a.osx span {
+  background: transparent url(../images/osx.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  display: inline-block;
+  text-indent: -10000px;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  -webkit-transition: opacity ease-in-out 0.3s;
+}
+
 a.android,
 a.android span {
   background: transparent url(../images/android.png) no-repeat 0 0;
@@ -281,6 +294,19 @@ a.android span {
 a.tgz,
 a.tgz span {
   background: transparent url(../images/tgz.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  display: inline-block;
+  text-indent: -10000px;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  -webkit-transition: opacity ease-in-out 0.3s;
+}
+
+a.haiku,
+a.haiku span {
+  background: transparent url(../images/haiku.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
   opacity: 0.8;

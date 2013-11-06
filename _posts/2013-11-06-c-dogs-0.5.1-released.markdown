@@ -1,0 +1,12 @@
+---
+layout: post
+title:  "C-Dogs 0.5.1 Released!"
+date:   2013-11-06
+categories: release
+---
+
+Get the release here: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+This release includes OSX, Haiku ports, new campaigns by sauer2, new music tracks, and more!
+
+See the full release notes here: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.1>
