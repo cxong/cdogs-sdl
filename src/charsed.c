@@ -513,7 +513,7 @@ static void Change(
 		break;
 
 	case YC_WEAPON:
-		b->gun = (gun_e)CLAMP_OPPOSITE(b->gun + d, 0, GUN_COUNT - 1);
+		b->gun = (gun_e)CLAMP_OPPOSITE((int)b->gun + d, 0, GUN_COUNT - 1);
 		break;
 	}
 }

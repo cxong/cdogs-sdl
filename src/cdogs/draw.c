@@ -391,12 +391,12 @@ static void DrawCharacter(
 	body.picIndex = cBodyPic[bodyType][dir][state];
 
 	head.dx =
-		cNeckOffset[bodyType][dir].dx +
-		cHeadOffset[c->looks.face][dir].dx;
+		cNeckOffset[bodyType][headDir].dx +
+		cHeadOffset[c->looks.face][headDir].dx;
 	head.dy =
-		cNeckOffset[bodyType][dir].dy +
-		cHeadOffset[c->looks.face][dir].dy;
-	head.picIndex = cHeadPic[c->looks.face][dir][state];
+		cNeckOffset[bodyType][headDir].dy +
+		cHeadOffset[c->looks.face][headDir].dy;
+	head.picIndex = cHeadPic[c->looks.face][headDir][headState];
 
 	gun.picIndex = -1;
 	if (gunPic >= 0)

@@ -740,7 +740,7 @@ static int WeaponSelection(
 		{
 			for (i = 0; i < data->weaponCount; i++)
 			{
-				if (data->weapons[i] ==
+				if ((int)data->weapons[i] ==
 						gMission.availableWeapons[selection[idx]])
 				{
 					return 1;
