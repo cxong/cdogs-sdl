@@ -524,7 +524,7 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	Character *c = CharacterStoreInsertOther(store, idx);
 	if (data)
 	{
-		memcpy(&c, data, sizeof *c);
+		memcpy(c, data, sizeof *c);
 	}
 	else
 	{
