@@ -462,10 +462,6 @@ int HandleKey(int cmd, int *isPaused)
 		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4) ||
 		JoyIsPressed(&gInputDevices.joysticks.joys[1], CMD_BUTTON4))
 	{
-		if (!*isPaused)
-		{
-			*isPaused = 1;
-		}
 		return 1;
 	}
 	else if (KeyGetPressed(&gInputDevices.keyboard))
@@ -580,9 +576,16 @@ int gameloop(void)
 				GetPlayerCenter(&gGraphicsDevice, 1));
 		}
 		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
-		if (is_esc_pressed && isPaused)
+		if (is_esc_pressed)
 		{
-			isDone = 1;
+			if (isPaused)
+			{
+				isDone = 1;
+			}
+			else
+			{
+				isPaused = 1;
+			}
 		}
 
 		if (!isPaused)
