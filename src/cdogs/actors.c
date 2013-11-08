@@ -73,8 +73,7 @@
 #define REPEL_STRENGTH 20
 
 
-TActor *gPlayer1 = NULL;
-TActor *gPlayer2 = NULL;
+TActor *gPlayers[MAX_PLAYERS];
 
 TranslationTable tableFlamed;
 TranslationTable tableGreen;
@@ -108,6 +107,33 @@ static int delayTable[STATE_COUNT] = {
 	8,
 };
 
+
+int GetNumPlayersAlive(void)
+{
+	int numPlayers = 0;
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayers[i] && !gPlayers[i]->dead)
+		{
+			numPlayers++;
+		}
+	}
+	return numPlayers;
+}
+
+TActor *GetFirstAlivePlayer(void)
+{
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayers[i] && !gPlayers[i]->dead)
+		{
+			return gPlayers[i];
+		}
+	}
+	return NULL;
+}
 
 void DrawCharacter(int x, int y, TActor * actor)
 {
@@ -324,13 +350,19 @@ TActor *RemoveActor(TActor * actor)
 
 	while (*h && *h != actor)
 		h = &((*h)->next);
-	if (*h) {
+	if (*h)
+	{
+		int i;
 		*h = actor->next;
 		RemoveTileItem(&actor->tileItem);
-		if (actor == gPlayer1)
-			gPlayer1 = NULL;
-		else if (actor == gPlayer2)
-			gPlayer2 = NULL;
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (actor == gPlayers[i])
+			{
+				gPlayers[i] = NULL;
+				break;
+			}
+		}
 		CFREE(actor);
 		return *h;
 	}
@@ -613,12 +645,15 @@ void InjureActor(TActor * actor, int injury)
 
 void Score(int flags, int points)
 {
-	if (flags & FLAGS_PLAYER1) {
-		gPlayer1Data.score += points;
-		gPlayer1Data.totalScore += points;
-	} else if (flags & FLAGS_PLAYER2) {
-		gPlayer2Data.score += points;
-		gPlayer2Data.totalScore += points;
+	if (flags & FLAGS_PLAYER1)
+	{
+		gPlayerDatas[0].score += points;
+		gPlayerDatas[0].totalScore += points;
+	}
+	else if (flags & FLAGS_PLAYER2)
+	{
+		gPlayerDatas[1].score += points;
+		gPlayerDatas[1].totalScore += points;
 	}
 }
 

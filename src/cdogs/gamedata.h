@@ -78,11 +78,11 @@ struct PlayerData
 	int friendlies;
 };
 
-extern struct PlayerData gPlayer1Data;
-extern struct PlayerData gPlayer2Data;
+#define MAX_PLAYERS 4
+extern struct PlayerData gPlayerDatas[MAX_PLAYERS];
 
 struct GameOptions {
-	int twoPlayers;
+	int numPlayers;
 	int badGuys;
 };
 
@@ -272,6 +272,8 @@ void AddSong(struct SongDef **songList, const char *path);
 void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
+
+void PlayerDataInitialize(void);
 
 int IsIntroNeeded(campaign_mode_e mode);
 int IsScoreNeeded(campaign_mode_e mode);

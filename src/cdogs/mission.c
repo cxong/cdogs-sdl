@@ -826,8 +826,10 @@ static void SetupWeapons(int weapons)
 			gMission.weaponCount++;
 		}
 	// Now remove unavailable weapons from players inventories
-	CleanupPlayerInventory(&gPlayer1Data, weapons);
-	CleanupPlayerInventory(&gPlayer2Data, weapons);
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		CleanupPlayerInventory(&gPlayerDatas[i], weapons);
+	}
 }
 
 void SetRange(int start, int range)
@@ -924,11 +926,11 @@ int CanCompleteMission(struct MissionOptions *options)
 	// Death is the only escape from dogfights and quick play
 	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
-		return !(gPlayer1 && gPlayer2);
+		return GetNumPlayersAlive() <= 1;
 	}
 	else if (gCampaign.Entry.mode == CAMPAIGN_MODE_QUICK_PLAY)
 	{
-		return !gPlayer1;
+		return GetNumPlayersAlive() == 0;
 	}
 
 	// Check all objective counts are enough
@@ -955,20 +957,20 @@ int IsMissionComplete(struct MissionOptions *options)
 
 	// Check if dogfight is complete
 	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT &&
-		!(gPlayer1 && gPlayer2))
+		GetNumPlayersAlive() <= 1)
 	{
 		return 1;
 	}
 
-	// Check that all players are in exit zone
-	if (gPlayer1 && !IsTileInExit(&gPlayer1->tileItem, options))
+	// Check that all surviving players are in exit zone
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		return 0;
+		if (gPlayers[i] && !IsTileInExit(&gPlayers[i]->tileItem, options))
+		{
+			return 0;
+		}
 	}
-	if (gPlayer2 && !IsTileInExit(&gPlayer2->tileItem, options))
-	{
-		return 0;
-	}
+
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)

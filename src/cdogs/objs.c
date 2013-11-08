@@ -279,20 +279,27 @@ TMobileObject *AddFireBall(int flags);
 
 static void TrackKills(TActor * victim, int flags)
 {
-	if (flags & FLAGS_PLAYER1) {
-		if ((victim->
-		     flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY |
-			      FLAGS_PENALTY)) != 0)
-			gPlayer1Data.friendlies++;
+	if (flags & FLAGS_PLAYER1)
+	{
+		if (victim->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY | FLAGS_PENALTY))
+		{
+			gPlayerDatas[0].friendlies++;
+		}
 		else
-			gPlayer1Data.kills++;
-	} else if (flags & FLAGS_PLAYER2) {
-		if ((victim->
-		     flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY |
-			      FLAGS_PENALTY)) != 0)
-			gPlayer2Data.friendlies++;
+		{
+			gPlayerDatas[0].kills++;
+		}
+	}
+	else if (flags & FLAGS_PLAYER2)
+	{
+		if (victim->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY | FLAGS_PENALTY))
+		{
+			gPlayerDatas[1].friendlies++;
+		}
 		else
-			gPlayer2Data.kills++;
+		{
+			gPlayerDatas[1].kills++;
+		}
 	}
 }
 

@@ -80,7 +80,7 @@ const char *MakePassword(int mission)
 	size_t i, x;
 	static char *alphabet1 = "0123456789abcdefghijklmnopqrstuvwxyz";
 	static char *alphabet2 = "9876543210kjihgfedcbazyxwvutsrqponml";
-	char *alphabet = (gOptions.twoPlayers ? alphabet2 : alphabet1);
+	char *alphabet = (gOptions.numPlayers & 1) ? alphabet1 : alphabet2;
 	size_t base = strlen(alphabet);
 
 	sum1 = sum2 = 0;

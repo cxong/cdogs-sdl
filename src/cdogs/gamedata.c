@@ -48,6 +48,7 @@
 */
 #include "gamedata.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -65,25 +66,7 @@
 #include "utils.h"
 
 
-struct PlayerData gPlayer1Data = {
-	"Player 1",
-	{
-		BODY_ARMED, BODY_UNARMED,
-		FACE_JONES, SHADE_SKIN, SHADE_BLUE, SHADE_BLUE, SHADE_BLUE, SHADE_RED
-	},
-	3, {GUN_SHOTGUN, GUN_MG, GUN_FRAGGRENADE},
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-struct PlayerData gPlayer2Data = {
-	"Player 2",
-	{
-		BODY_ARMED, BODY_UNARMED,
-		FACE_ICE, SHADE_DARKSKIN, SHADE_RED, SHADE_RED, SHADE_RED, SHADE_RED
-	},
-	3, {GUN_POWERGUN, GUN_FLAMER, GUN_GRENADE},
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
+struct PlayerData gPlayerDatas[MAX_PLAYERS];
 
 struct GameOptions gOptions = {
 	0,	// twoPlayers
@@ -98,6 +81,73 @@ struct MissionOptions gMission;
 struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
+
+void PlayerDataInitialize(void)
+{
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		struct PlayerData *d = &gPlayerDatas[i];
+		memset(d, 0, sizeof *d);
+		switch (i)
+		{
+			case 0:
+				strcpy(d->name, "Jones");
+				d->looks.face = FACE_JONES;
+				d->looks.skin = SHADE_SKIN;
+				d->looks.arm = SHADE_BLUE;
+				d->looks.body = SHADE_BLUE;
+				d->looks.leg = SHADE_BLUE;
+				d->looks.hair = SHADE_RED;
+				d->weapons[0] = GUN_SHOTGUN;
+				d->weapons[1] = GUN_MG;
+				d->weapons[2] = GUN_FRAGGRENADE;
+				break;
+			case 1:
+				strcpy(d->name, "Ice");
+				d->looks.face = FACE_ICE;
+				d->looks.skin = SHADE_DARKSKIN;
+				d->looks.arm = SHADE_RED;
+				d->looks.body = SHADE_RED;
+				d->looks.leg = SHADE_RED;
+				d->looks.hair = SHADE_RED;
+				d->weapons[0] = GUN_POWERGUN;
+				d->weapons[1] = GUN_FLAMER;
+				d->weapons[2] = GUN_GRENADE;
+				break;
+			case 2:
+				strcpy(d->name, "Delta");
+				d->looks.face = FACE_WARBABY;
+				d->looks.skin = SHADE_SKIN;
+				d->looks.arm = SHADE_GREEN;
+				d->looks.body = SHADE_GREEN;
+				d->looks.leg = SHADE_GREEN;
+				d->looks.hair = SHADE_RED;
+				d->weapons[0] = GUN_SNIPER;
+				d->weapons[1] = GUN_KNIFE;
+				d->weapons[2] = GUN_MOLOTOV;
+				break;
+			case 3:
+				strcpy(d->name, "Hans");
+				d->looks.face = FACE_HAN;
+				d->looks.skin = SHADE_ASIANSKIN;
+				d->looks.arm = SHADE_YELLOW;
+				d->looks.body = SHADE_YELLOW;
+				d->looks.leg = SHADE_YELLOW;
+				d->looks.hair = SHADE_GOLDEN;
+				d->weapons[0] = GUN_MG;
+				d->weapons[1] = GUN_FLAMER;
+				d->weapons[2] = GUN_DYNAMITE;
+				break;
+			default:
+				assert(0 && "unsupported");
+				break;
+		}
+		d->looks.armedBody = BODY_ARMED;
+		d->looks.unarmedBody = BODY_UNARMED;
+		d->weaponCount = 3;
+	}
+}
 
 void LoadSongList(struct SongDef **songList, const char *dirPath);
 

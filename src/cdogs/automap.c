@@ -353,6 +353,7 @@ static void DrawObjectivesAndKeys(
 void AutomapDraw(int flags)
 {
 	int x, y;
+	int i;
 	color_t mask = { 0, 128, 0, 255 };
 	Vec2i mapCenter = Vec2iNew(
 		gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
@@ -379,13 +380,12 @@ void AutomapDraw(int flags)
 
 	DrawObjectivesAndKeys(gMap, pos, MAP_FACTOR, flags);
 
-	if (gPlayer1)
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		DisplayPlayer(gPlayer1, pos, MAP_FACTOR);
-	}
-	if (gPlayer2)
-	{
-		DisplayPlayer(gPlayer2, pos, MAP_FACTOR);
+		if (gPlayers[i])
+		{
+			DisplayPlayer(gPlayers[i], pos, MAP_FACTOR);
+		}
 	}
 
 	DisplayExit(pos, MAP_FACTOR, flags);

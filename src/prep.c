@@ -48,6 +48,7 @@
 */
 #include "prep.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -403,7 +404,8 @@ static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 
 	y = (int)CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 
-	if (gOptions.twoPlayers && idx == CHARACTER_PLAYER1)
+	// TODO: support up to 4 player screens
+	if (gOptions.numPlayers == 2 && idx == CHARACTER_PLAYER1)
 	{
 		x = CenterOf(
 			0,
@@ -411,7 +413,7 @@ static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 			,
 			(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
 	}
-	else if (gOptions.twoPlayers && idx == CHARACTER_PLAYER2)
+	else if (gOptions.numPlayers == 2 && idx == CHARACTER_PLAYER2)
 	{
 		x = CenterOf(
 			gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
@@ -1021,21 +1023,33 @@ static int MakeSelection(int mode, int x, int character,
 	return mode;
 }
 
-int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
+int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
-	int mode1, mode2;
+	int modes[MAX_PLAYERS];
+	int i;
 
-	mode1 = MODE_MAIN;
-	mode2 = twoPlayers ? MODE_MAIN : MODE_DONE;
-
-	SetPlayer(&gCampaign.Setting.characters.players[0], &gPlayer1Data);
-	SetPlayer(&gCampaign.Setting.characters.players[1], &gPlayer2Data);
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (i < numPlayers)
+		{
+			modes[i] = MODE_MAIN;
+		}
+		else
+		{
+			modes[i] = MODE_DONE;
+		}
+	}
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		SetPlayer(&gCampaign.Setting.characters.players[i], &gPlayerDatas[i]);
+	}
 
 	KeyInit(&gInputDevices.keyboard);
-	while (mode1 != MODE_DONE || mode2 != MODE_DONE)
+	for (;;)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
+		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2);
@@ -1045,14 +1059,30 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 			return 0; // hack to allow exit
 		}
 
-		if (twoPlayers)
+		switch (numPlayers)
 		{
-			mode1 = MakeSelection(mode1, CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
-			mode2 = MakeSelection(mode2, CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2);
+			case 1:
+				modes[0] = MakeSelection(modes[0], CenterX(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1);
+				break;
+			case 2:
+				modes[0] = MakeSelection(modes[0], CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1);
+				modes[1] = MakeSelection(modes[1], CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmd2);
+				break;
+			default:
+				assert(0 && "not implemented");
+				break;
 		}
-		else
+		
+		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			mode1 = MakeSelection(mode1, CenterX(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1);
+			if (modes[i] != MODE_DONE)
+			{
+				isDone = 0;
+			}
+		}
+		if (isDone)
+		{
+			break;
 		}
 
 		BlitFlip(graphics, &gConfig.Graphics);
@@ -1064,15 +1094,28 @@ int PlayerSelection(int twoPlayers, GraphicsDevice *graphics)
 
 int PlayerEquip(GraphicsDevice *graphics)
 {
-	int done1 = 0, done2;
+	int dones[MAX_PLAYERS];
+	int i;
 
 	debug(D_NORMAL, "\n");
 
-	done2 = gOptions.twoPlayers ? 0 : 1;
-	while (!done1 || !done2)
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (i < gOptions.numPlayers)
+		{
+			dones[i] = 0;
+		}
+		else
+		{
+			dones[i] = 1;
+		}
+	}
+
+	for (;;)
 	{
 		int cmd1 = 0;
 		int cmd2 = 0;
+		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2);
@@ -1082,30 +1125,46 @@ int PlayerEquip(GraphicsDevice *graphics)
 			return 0; // hack to exit from menu
 		}
 
-		if (gOptions.twoPlayers)
+		switch (gOptions.numPlayers)
 		{
-			done1 = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
-			ShowSelection(
-				CenterOfLeft(50),
-				&gPlayer1Data,
-				&gCampaign.Setting.characters.players[0]);
-			ShowPlayerControls(CenterOfLeft(100), &gConfig.Input.PlayerKeys[0]);
+			case 1:
+				dones[0] = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1, dones[0]);
+				ShowSelection(
+					CenterX(80),
+					&gPlayerDatas[0],
+					&gCampaign.Setting.characters.players[0]);
+				ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
+				break;
+			case 2:
+				dones[0] = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1, dones[0]);
+				ShowSelection(
+					CenterOfLeft(50),
+					&gPlayerDatas[0],
+					&gCampaign.Setting.characters.players[0]);
+				ShowPlayerControls(CenterOfLeft(100), &gConfig.Input.PlayerKeys[0]);
 
-			done2 = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayer2Data, cmd2, done2);
-			ShowSelection(
-				CenterOfRight(50),
-				&gPlayer2Data,
-				&gCampaign.Setting.characters.players[1]);
-			ShowPlayerControls(CenterOfRight(100), &gConfig.Input.PlayerKeys[1]);
+				dones[1] = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmd2, dones[1]);
+				ShowSelection(
+					CenterOfRight(50),
+					&gPlayerDatas[1],
+					&gCampaign.Setting.characters.players[1]);
+				ShowPlayerControls(CenterOfRight(100), &gConfig.Input.PlayerKeys[1]);
+				break;
+			default:
+				assert(0 && "not implemented");
+				break;
 		}
-		else
+
+		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			done1 = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayer1Data, cmd1, done1);
-			ShowSelection(
-				CenterX(80),
-				&gPlayer1Data,
-				&gCampaign.Setting.characters.players[0]);
-			ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
+			if (!dones[i])
+			{
+				isDone = 0;
+			}
+		}
+		if (isDone)
+		{
+			break;
 		}
 
 		BlitFlip(graphics, &gConfig.Graphics);

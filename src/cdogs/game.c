@@ -90,8 +90,7 @@
 
 #define PICKUP_LIMIT         350
 
-#define SPLIT_X  300
-#define SPLIT_Y  180
+#define SPLIT_PADDING 40
 
 static Uint32 ticks_now;
 static Uint32 ticks_then;
@@ -239,19 +238,62 @@ void BlackLine(void)
 	}
 }
 
-int IsSingleScreen(TTileItem *p1, TTileItem *p2, int splitScreenAlways)
+void GetBoundingRectangle(Vec2i *min, Vec2i *max)
 {
-	return
-		!splitScreenAlways &&
-		abs(p1->x - p2->x) < SPLIT_X && abs(p1->y - p2->y) < SPLIT_Y;
+	int isFirst = 1;
+	int i;
+	*min = Vec2iZero();
+	*max = Vec2iZero();
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayers[i] && !gPlayers[i]->dead)
+		{
+			TTileItem *p = &gPlayers[i]->tileItem;
+			if (isFirst)
+			{
+				*min = *max = Vec2iNew(p->x, p->y);
+			}
+			else
+			{
+				if (p->x < min->x)	min->x = p->x;
+				if (p->y < min->y)	min->y = p->y;
+				if (p->x > max->x)	max->x = p->x;
+				if (p->y > max->y)	max->y = p->y;
+			}
+			isFirst = 0;
+		}
+	}
 }
 
-Vec2i DrawScreen(
-	DrawBuffer *b, TActor *player1, TActor *player2, Vec2i lastPosition)
+int IsSingleScreen(GraphicsConfig *config, int splitScreenAlways)
+{
+	Vec2i min;
+	Vec2i max;
+	if (splitScreenAlways)
+	{
+		return 0;
+	}
+	GetBoundingRectangle(&min, &max);
+	return
+		max.x - min.x < config->ResolutionWidth - SPLIT_PADDING &&
+		max.y - min.y < config->ResolutionHeight - SPLIT_PADDING;
+}
+
+static Vec2i GetPlayersMidpoint(void)
+{
+	// for all surviving players, find bounding rectangle, and get center
+	Vec2i min;
+	Vec2i max;
+	GetBoundingRectangle(&min, &max);
+	return Vec2iNew((min.x + max.x) / 2, (min.y + max.y) / 2);
+}
+
+Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition)
 {
 	Vec2i noise = Vec2iZero();
 	Vec2i centerOffset = Vec2iNew(-TILE_WIDTH / 2 - 8, -TILE_HEIGHT / 2 - 4);
 	int i;
+	int numPlayersAlive = GetNumPlayersAlive();
 
 	if (screenShaking)
 	{
@@ -265,90 +307,84 @@ Vec2i DrawScreen(
 	}
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (player1 && player2)
+	if (numPlayersAlive == 0)
 	{
-		if (IsSingleScreen(
-				&player1->tileItem, &player2->tileItem,
+		DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
+	}
+	else
+	{
+		if (numPlayersAlive == 1)
+		{
+			TActor *p = GetFirstAlivePlayer();
+			Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
+			DoBuffer(b, center, X_TILES, noise, centerOffset);
+			SoundSetEars(center);
+			lastPosition = center;
+		}
+		else if (IsSingleScreen(
+				&gGraphicsDevice.cachedConfig,
 				gConfig.Interface.SplitscreenAlways))
 		{
 			// One screen
-			lastPosition.x = (player1->tileItem.x + player2->tileItem.x) / 2;
-			lastPosition.y = (player1->tileItem.y + player2->tileItem.y) / 2;
+			lastPosition = GetPlayersMidpoint();
 
 			DrawBufferSetFromMap(
 				b, gMap,
 				Vec2iAdd(lastPosition, noise),
 				X_TILES,
 				Vec2iNew(X_TILES, Y_TILES));
-			LineOfSight(
-				Vec2iNew(player1->tileItem.x, player1->tileItem.y),
-				b,
-				MAPTILE_IS_SHADOW);
-			LineOfSight(
-				Vec2iNew(player2->tileItem.x, player2->tileItem.y),
-				b,
-				MAPTILE_IS_SHADOW2);
+			for (i = 0; i < MAX_PLAYERS; i++)
+			{
+				if (gPlayers[i] && !gPlayers[i]->dead)
+				{
+					int shadowFlag =
+						i == 0 ? MAPTILE_IS_SHADOW : MAPTILE_IS_SHADOW2;
+					LineOfSight(
+						Vec2iNew(
+							gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y),
+						b,
+						shadowFlag);
+				}
+			}
 			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
 			DrawBufferDraw(b, centerOffset);
 			SoundSetEars(lastPosition);
 		}
-		else
+		else if (numPlayersAlive == 2 && gOptions.numPlayers == 2)
 		{
-			Vec2i center = Vec2iNew(player1->tileItem.x, player1->tileItem.y);
-			GraphicsSetBlitClip(
-				&gGraphicsDevice,
-				0,
-				0,
-				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1,
-				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
-			DoBuffer(
-				b,
-				center,
-				X_TILES_HALF,
-				noise,
-				centerOffset);
-			SoundSetLeftEar(center);
-
-			center = Vec2iNew(player2->tileItem.x, player2->tileItem.y);
-			GraphicsSetBlitClip(
-				&gGraphicsDevice,
-				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1,
-				0,
-				gGraphicsDevice.cachedConfig.ResolutionWidth - 1,
-				gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
-			centerOffset.x +=
-				(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1;
-			DoBuffer(
-				b,
-				center,
-				X_TILES_HALF,
-				noise,
-				centerOffset);
-			SoundSetRightEar(center);
-			lastPosition.x = player1->tileItem.x;
-			lastPosition.y = player1->tileItem.y;
+			// side-by-side split
+			for (i = 0; i < 2; i++)
+			{
+				Vec2i center = Vec2iNew(
+					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
+				int clipLeft = i == 0 ? 0 :
+					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1;
+				int clipRight = i == 0 ?
+					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1 : 0;
+				GraphicsSetBlitClip(
+					&gGraphicsDevice,
+					clipLeft,
+					0,
+					clipRight,
+					gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+				DoBuffer(b, center, X_TILES_HALF, noise, centerOffset);
+				if (i == 0)
+				{
+					SoundSetLeftEar(center);
+					lastPosition = center;
+				}
+				else
+				{
+					SoundSetRightEar(center);
+				}
+			}
 			BlackLine();
 		}
-	}
-	else if (player1)
-	{
-		Vec2i center = Vec2iNew(player1->tileItem.x, player1->tileItem.y);
-		DoBuffer(b, center, X_TILES, noise, centerOffset);
-		SoundSetEars(center);
-		lastPosition.x = player1->tileItem.x;
-		lastPosition.y = player1->tileItem.y;
-	}
-	else if (player2)
-	{
-		Vec2i center = Vec2iNew(player2->tileItem.x, player2->tileItem.y);
-		DoBuffer(b, center, X_TILES, noise, centerOffset);
-		SoundSetEars(center);
-		lastPosition.x = player2->tileItem.x;
-		lastPosition.y = player2->tileItem.y;
-	}
-	else
-	{
-		DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
+		else
+		{
+			// 4 player split screen
+			assert(0 && "not implemented yet");
+		}
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	return lastPosition;
@@ -480,33 +516,32 @@ int HandleKey(int cmd, int *isPaused)
 Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 {
 	Vec2i center;
-	int players = 1;
+	int players = 0;
 	int screenW = device->cachedConfig.ResolutionWidth;
-	if (gOptions.twoPlayers && gPlayer1 && gPlayer2)
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		players = 2;
+		if (gPlayers[i] && !gPlayers[i]->dead)
+		{
+			players++;
+		}
 	}
 	
-	if (players == 2 &&
-		IsSingleScreen(
-			&gPlayer1->tileItem, &gPlayer2->tileItem,
+	if (IsSingleScreen(
+			&device->cachedConfig,
 			gConfig.Interface.SplitscreenAlways))
 	{
-		Vec2i pCenter = Vec2iNew(
-			(gPlayer1->tileItem.x + gPlayer2->tileItem.x) / 2,
-			(gPlayer1->tileItem.y + gPlayer2->tileItem.y) / 2);
+		Vec2i pCenter = GetPlayersMidpoint();
 		Vec2i screenCenter = Vec2iNew(
 			screenW / 2,
 			device->cachedConfig.ResolutionHeight / 2);
 		int factor = 1;
-		TTileItem *pTileItem =
-			player == 0 ? &gPlayer1->tileItem : &gPlayer2->tileItem;
+		TTileItem *pTileItem = &gPlayers[player]->tileItem;
 		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
 		assert((player == 0 || player == 1) && "invalid player index");
 		center = Vec2iAdd(
 			Vec2iScaleDiv(Vec2iAdd(p, Vec2iScale(pCenter, -1)), factor),
 			screenCenter);
-		printf("%d,%d\n", center.x, center.y);
 	}
 	else
 	{
@@ -553,29 +588,27 @@ int gameloop(void)
 	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 340));
 	while (!isDone)
 	{
-		int cmd1 = 0, cmd2 = 0;
+		int cmds[MAX_PLAYERS];
+		int cmdAll = 0;
 		int ticks = 1;
+		int i;
 		Ticks_Update();
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		InputPoll(&gInputDevices, ticks_now);
-		if (gPlayer1 && !gPlayer1->dead)
+		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			cmd1 = InputGetGameCmd(
-				&gInputDevices,
-				&gConfig.Input,
-				0,
-				GetPlayerCenter(&gGraphicsDevice, 0));
+			if (gPlayers[i] && !gPlayers[i]->dead)
+			{
+				cmds[i] = InputGetGameCmd(
+					&gInputDevices,
+					&gConfig.Input,
+					i,
+					GetPlayerCenter(&gGraphicsDevice, i));
+				cmdAll |= cmds[i];
+			}
 		}
-		if (gPlayer2 && !gPlayer2->dead)
-		{
-			cmd2 = InputGetGameCmd(
-				&gInputDevices,
-				&gConfig.Input,
-				1,
-				GetPlayerCenter(&gGraphicsDevice, 1));
-		}
-		is_esc_pressed = HandleKey(cmd1 | cmd2, &isPaused);
+		is_esc_pressed = HandleKey(cmdAll, &isPaused);
 		if (is_esc_pressed)
 		{
 			if (isPaused)
@@ -595,15 +628,14 @@ int gameloop(void)
 				UpdateAllActors(ticks);
 				UpdateMobileObjects(&gMobObjList, ticks);
 
-				if (gPlayer1)
+				for (i = 0; i < MAX_PLAYERS; i++)
 				{
-					PlayerSpecialCommands(gPlayer1, cmd1, &gPlayer1Data);
-					CommandActor(gPlayer1, cmd1, ticks);
-				}
-				if (gPlayer2)
-				{
-					PlayerSpecialCommands(gPlayer2, cmd2, &gPlayer2Data);
-					CommandActor(gPlayer2, cmd2, ticks);
+					if (gPlayers[i])
+					{
+						PlayerSpecialCommands(
+							gPlayers[i], cmds[i], &gPlayerDatas[i]);
+						CommandActor(gPlayers[i], cmds[i], ticks);
+					}
 				}
 
 				if (gOptions.badGuys)
@@ -615,7 +647,7 @@ int gameloop(void)
 			}
 
 			missionTime += ticks;
-			if ((gPlayer1 || gPlayer2) && IsMissionComplete(&gMission))
+			if (GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission))
 			{
 				if (gMission.pickupTime == PICKUP_LIMIT)
 				{
@@ -638,12 +670,12 @@ int gameloop(void)
 			MissionUpdateObjectives();
 		}
 
-		if (!gPlayer1 && !gPlayer2)
+		if (GetNumPlayersAlive() == 0)
 		{
 			isDone = 1;
 		}
 
-		lastPosition = DrawScreen(&buffer, gPlayer1, gPlayer2, lastPosition);
+		lastPosition = DrawScreen(&buffer, lastPosition);
 
 		if (screenShaking) {
 			screenShaking -= ticks;

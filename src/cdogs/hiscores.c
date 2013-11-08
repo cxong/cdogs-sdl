@@ -150,7 +150,7 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 }
 
 static int DisplayPage(
-	const char *title, int idx, struct Entry *e, int hilite1, int hilite2)
+	const char *title, int idx, struct Entry *e, int highlights[MAX_PLAYERS])
 {
 	int x = 80;
 	int y = 5;
@@ -158,8 +158,17 @@ static int DisplayPage(
 	CDogsTextStringAt(5, 5, title);
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
-		y += DisplayEntry(
-			x, y, idx, &e[idx], idx == hilite1 || idx == hilite2);
+		int isHighlighted = 0;
+		int i;
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (idx == highlights[i])
+			{
+				isHighlighted = 1;
+				break;
+			}
+		}
+		y += DisplayEntry(x, y, idx, &e[idx], isHighlighted);
 		if (y > 198 - CDogsTextHeight())
 		{
 			y = 20;
@@ -174,14 +183,18 @@ static int DisplayPage(
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
 	int idx = 0;
+	int highlights[MAX_PLAYERS];
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		highlights[i] = gPlayerDatas[i].allTime;
+	}
 
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
 		idx = DisplayPage(
-			"All time high scores:", idx, allTimeHigh,
-			gPlayer1Data.allTime,
-			gOptions.twoPlayers ? gPlayer2Data.allTime : -1);
+			"All time high scores:", idx, allTimeHigh, highlights);
 		WaitForAnyKeyOrButton(&gInputDevices);
 	}
 }
@@ -189,14 +202,18 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
 	int idx = 0;
+	int highlights[MAX_PLAYERS];
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		highlights[i] = gPlayerDatas[i].today;
+	}
 
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
-		idx = DisplayPage("Today's highest score:", idx, todaysHigh,
-			gPlayer1Data.today,
-			gOptions.twoPlayers ? gPlayer2Data.
-			today : -1);
+		idx = DisplayPage(
+			"Today's highest score:", idx, todaysHigh, highlights);
 		WaitForAnyKeyOrButton(&gInputDevices);
 	}
 }

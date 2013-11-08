@@ -24,7 +24,7 @@
 
 #include <cdogs/grafx.h>
 
-int PlayerSelection(int twoPlayers, GraphicsDevice *graphics);
+int PlayerSelection(int numPlayers, GraphicsDevice *graphics);
 int PlayerEquip(GraphicsDevice *graphics);
 void LoadTemplates(void);
 void SaveTemplates(void);

@@ -46,6 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -354,6 +355,19 @@ void Summary(int x, struct PlayerData *data, int character)
 	}
 }
 
+static int AreAnySurvived(void)
+{
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayerDatas[i].survived)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 void Bonuses(void)
 {
 	int i;
@@ -363,6 +377,7 @@ void Bonuses(void)
 	int access_bonus = 0;
 	int idx = 1;
 	char s[100];
+	int bonus = 0;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
@@ -383,20 +398,22 @@ void Bonuses(void)
 						TEXT_LEFT | TEXT_TOP | TEXT_PURPLE,
 						x, y);
 			if (done < req)
-				CDogsTextStringSpecial("Failed",
-						TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
-			else if (done == total && done > req
-					&& (gPlayer1Data.survived
-					 || gPlayer2Data.survived)) {
-				CDogsTextStringSpecial("Perfect: 500",
-						TEXT_RIGHT | TEXT_TOP, x, y);
-				if (gPlayer1Data.survived)
-					gPlayer1Data.totalScore += 500;
-				if (gPlayer2Data.survived)
-					gPlayer2Data.totalScore += 500;
-			} else if (req > 0)
+			{
+				CDogsTextStringSpecial(
+					"Failed", TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
+			}
+			else if (done == total && done > req && AreAnySurvived())
+			{
+				CDogsTextStringSpecial(
+					"Perfect: 500", TEXT_RIGHT | TEXT_TOP, x, y);
+				bonus += 500;
+			}
+			else if (req > 0)
+			{
 				CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
-			else {
+			}
+			else
+			{
 				CDogsTextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
 			}
 
@@ -409,30 +426,31 @@ void Bonuses(void)
 	if (gMission.flags & FLAGS_KEYCARD_GREEN)	access_bonus += 100;
 	if (gMission.flags & FLAGS_KEYCARD_BLUE)	access_bonus += 150;
 	if (gMission.flags & FLAGS_KEYCARD_RED)		access_bonus += 200;
-	if (access_bonus > 0 && (gPlayer1Data.survived || gPlayer2Data.survived))
+	if (access_bonus > 0 && AreAnySurvived())
 	{
 		sprintf(s, "Access bonus: %d", access_bonus);
 		CDogsTextStringAt(x, y, s);
 		y += CDogsTextHeight() + 1;
-		if (gPlayer1Data.survived)
-		{
-			gPlayer1Data.totalScore += access_bonus;
-		}
-		if (gPlayer2Data.survived)
-		{
-			gPlayer2Data.totalScore += access_bonus;
-		}
+		bonus += access_bonus;
 	}
 
 	i = 60 + gMission.missionData->objectiveCount * 30 - missionTime / 70;
 
-	if (i > 0 && (gPlayer1Data.survived || gPlayer2Data.survived)) {
-		sprintf(s, "Time bonus: %d secs x 25 = %d", i, i * 25);
+	if (i > 0 && AreAnySurvived())
+	{
+		int timeBonus = i * 25;
+		sprintf(s, "Time bonus: %d secs x 25 = %d", i, timeBonus);
 		CDogsTextStringAt(x, y, s);
-		if (gPlayer1Data.survived)
-			gPlayer1Data.totalScore += i * 25;
-		if (gPlayer2Data.survived)
-			gPlayer2Data.totalScore += i * 25;
+		bonus += timeBonus;
+	}
+
+	// only survivors get the spoils!
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayerDatas[i].survived)
+		{
+			gPlayerDatas[i].totalScore += bonus;
+		}
 	}
 }
 
@@ -442,17 +460,25 @@ void MissionSummary(GraphicsDevice *device)
 
 	Bonuses();
 
-	if (gOptions.twoPlayers) {
-		Summary(CenterOfLeft(60), &gPlayer1Data, CHARACTER_PLAYER1);
-		Summary(CenterOfRight(60), &gPlayer2Data, CHARACTER_PLAYER2);
-	} else
-		Summary(CenterX(60), &gPlayer1Data, CHARACTER_PLAYER1);
+	switch (gOptions.numPlayers)
+	{
+		case 1:
+			Summary(CenterX(60), &gPlayerDatas[0], CHARACTER_PLAYER1);
+			break;
+		case 2:
+			Summary(CenterOfLeft(60), &gPlayerDatas[0], CHARACTER_PLAYER1);
+			Summary(CenterOfRight(60), &gPlayerDatas[1], CHARACTER_PLAYER2);
+			break;
+		default:
+			assert(0 && "not implemented");
+			break;
+	}
 
 	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
-void ShowScore(GraphicsDevice *device, int score1, int score2)
+void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 {
 	char s[10];
 
@@ -460,68 +486,86 @@ void ShowScore(GraphicsDevice *device, int score1, int score2)
 
 	debug(D_NORMAL, "\n");
 
-	if (gOptions.twoPlayers)
+	switch (gOptions.numPlayers)
 	{
-		DisplayPlayer(
-			CenterOfLeft(60),
-			gPlayer1Data.name,
-			&gCampaign.Setting.characters.players[0],
-			0);
-		sprintf(s, "Score: %d", score1);
-		CDogsTextStringAt(
-			CenterOfLeft(TextGetStringWidth(s)),
-			device->cachedConfig.ResolutionWidth / 3,
-			s);
+		case 1:
+			DisplayPlayer(
+				CenterX(TextGetStringWidth(s)),
+				gPlayerDatas[0].name,
+				&gCampaign.Setting.characters.players[0],
+				0);
+			break;
+		case 2:
+			DisplayPlayer(
+				CenterOfLeft(60),
+				gPlayerDatas[0].name,
+				&gCampaign.Setting.characters.players[0],
+				0);
+			sprintf(s, "Score: %d", scores[0]);
+			CDogsTextStringAt(
+				CenterOfLeft(TextGetStringWidth(s)),
+				device->cachedConfig.ResolutionWidth / 3,
+				s);
 
-		DisplayPlayer(
-			CenterOfRight(60), gPlayer2Data.name,
-			&gCampaign.Setting.characters.players[1],
-			0);
-		sprintf(s, "Score: %d", score2);
-		CDogsTextStringAt(
-			CenterOfRight(TextGetStringWidth(s)),
-			device->cachedConfig.ResolutionWidth / 3,
-			s);
-	}
-	else
-	{
-		DisplayPlayer(
-			CenterX(TextGetStringWidth(s)),
-			gPlayer1Data.name,
-			&gCampaign.Setting.characters.players[0],
-			0);
+			DisplayPlayer(
+				CenterOfRight(60), gPlayerDatas[1].name,
+				&gCampaign.Setting.characters.players[1],
+				0);
+			sprintf(s, "Score: %d", scores[1]);
+			CDogsTextStringAt(
+				CenterOfRight(TextGetStringWidth(s)),
+				device->cachedConfig.ResolutionWidth / 3,
+				s);
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
-void FinalScore(GraphicsDevice *device, int score1, int score2)
+void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 {
+	int i;
+	int isTie = 0;
+	int maxScore = 0;
+	int maxScorePlayer = 0;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (scores[i] > maxScore)
+		{
+			maxScore = scores[i];
+			maxScorePlayer = i;
+		}
+		else if (scores[i] == maxScore)
+		{
+			isTie = 1;
+		}
+	}
+
 	GraphicsBlitBkg(device);
 
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
 
-	if (score1 == score2)
+	if (isTie)
 	{
+		// TODO: more players
 		DisplayPlayer(
 			CenterOfLeft(60),
-			gPlayer1Data.name,
+			gPlayerDatas[0].name,
 			&gCampaign.Setting.characters.players[0],
 			0);
 		DisplayPlayer(
 			CenterOfRight(60),
-			gPlayer2Data.name,
+			gPlayerDatas[1].name,
 			&gCampaign.Setting.characters.players[1],
 			0);
 		CDogsTextStringAtCenter("It's a draw!");
 	}
-	else if (score1 > score2)
+	else if (maxScorePlayer == 0)	// TODO: more players
 	{
 		DisplayPlayer(
 			CenterOfLeft(60),
-			gPlayer1Data.name,
+			gPlayerDatas[0].name,
 			&gCampaign.Setting.characters.players[0],
 			0);
 		CDogsTextStringAt(
@@ -533,7 +577,7 @@ void FinalScore(GraphicsDevice *device, int score1, int score2)
 	{
 		DisplayPlayer(
 			CenterOfRight(60),
-			gPlayer2Data.name,
+			gPlayerDatas[1].name,
 			&gCampaign.Setting.characters.players[1],
 			0);
 		CDogsTextStringAt(
@@ -582,34 +626,43 @@ void Victory(GraphicsDevice *graphics)
 	x = 160 - TextGetStringWidth(gCampaign.Setting.title) / 2;
 	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.title, &tableFlamed);
 
-	if (gOptions.twoPlayers) {
-		i = sizeof(finalWords2P) / sizeof(char *);
-		i = rand() % i;
-		s = finalWords2P[i];
-		DisplayPlayer(
-			50,
-			gPlayer1Data.name,
-			&gCampaign.Setting.characters.players[0],
-			0);
-		DisplayPlayer(
-			200,
-			gPlayer2Data.name,
-			&gCampaign.Setting.characters.players[1],
-			0);
-		if (gPlayer1Data.survived)
-			gPlayer1Data.missions++;
-		if (gPlayer2Data.survived)
-			gPlayer2Data.missions++;
-	} else {
-		i = sizeof(finalWords1P) / sizeof(char *);
-		i = rand() % i;
-		s = finalWords1P[i];
-		DisplayPlayer(
-			125,
-			gPlayer1Data.name,
-			&gCampaign.Setting.characters.players[0],
-			0);
-		gPlayer1Data.missions++;
+	switch (gOptions.numPlayers)
+	{
+		case 1:
+			i = sizeof(finalWords1P) / sizeof(char *);
+			i = rand() % i;
+			s = finalWords1P[i];
+			DisplayPlayer(
+				125,
+				gPlayerDatas[0].name,
+				&gCampaign.Setting.characters.players[0],
+				0);
+			break;
+		case 2:
+			i = sizeof(finalWords2P) / sizeof(char *);
+			i = rand() % i;
+			s = finalWords2P[i];
+			DisplayPlayer(
+				50,
+				gPlayerDatas[0].name,
+				&gCampaign.Setting.characters.players[0],
+				0);
+			DisplayPlayer(
+				200,
+				gPlayerDatas[1].name,
+				&gCampaign.Setting.characters.players[1],
+				0);
+			break;
+		default:
+			assert(0 && "not implemented");
+			break;
+	}
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayerDatas[i].survived)
+		{
+			gPlayerDatas[i].missions++;
+		}
 	}
 
 	x = 160 - TextGetStringWidth(s) / 2;
@@ -654,37 +707,35 @@ void DataUpdate(int mission, struct PlayerData *data)
 
 static void CleanupMission(void)
 {
+	int i;
 	KillAllActors();
 	KillAllMobileObjects(&gMobObjList);
 	KillAllObjects();
 	FreeTriggersAndWatches();
-	gPlayer1 = gPlayer2 = NULL;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		gPlayers[i] = NULL;
+	}
 }
 
-static void InitPlayers(int twoPlayers, int maxHealth, int mission)
+static void InitPlayers(int numPlayers, int maxHealth, int mission)
 {
-	gPlayer1Data.score = 0;
-	gPlayer1Data.kills = gPlayer1Data.friendlies = 0;
-	gPlayer1Data.allTime = gPlayer1Data.today = -1;
-	gPlayer1Data.lastMission = mission;
-	gPlayer1 = AddActor(&gCampaign.Setting.characters.players[0]);
-	gPlayer1->weapon = WeaponCreate(gPlayer1Data.weapons[0]);
-	gPlayer1->flags = FLAGS_PLAYER1;
-	PlaceActor(gPlayer1);
-	gPlayer1->health = maxHealth;
-	gPlayer1->character->maxHealth = maxHealth;
-
-	if (twoPlayers) {
-		gPlayer2Data.score = 0;
-		gPlayer2Data.kills = gPlayer2Data.friendlies = 0;
-		gPlayer2Data.allTime = gPlayer2Data.today = -1;
-		gPlayer2Data.lastMission = mission;
-		gPlayer2 = AddActor(&gCampaign.Setting.characters.players[1]);
-		gPlayer2->weapon = WeaponCreate(gPlayer2Data.weapons[0]);
-		gPlayer2->flags = FLAGS_PLAYER2;
-		PlaceActor(gPlayer2);
-		gPlayer2->health = maxHealth;
-		gPlayer2->character->maxHealth = maxHealth;
+	int i;
+	for (i = 0; i < numPlayers; i++)
+	{
+		gPlayerDatas[i].score = 0;
+		gPlayerDatas[i].kills = 0;
+		gPlayerDatas[i].friendlies = 0;
+		gPlayerDatas[i].allTime = -1;
+		gPlayerDatas[i].today = -1;
+		gPlayerDatas[i].lastMission = mission;
+		gPlayers[i] = AddActor(&gCampaign.Setting.characters.players[i]);
+		gPlayers[i]->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
+		// TODO: more players
+		gPlayers[i]->flags = i == 0 ? FLAGS_PLAYER1 : FLAGS_PLAYER2;
+		gPlayers[i]->health = maxHealth;
+		gPlayers[i]->character->maxHealth = maxHealth;
+		PlaceActor(gPlayers[i]);
 	}
 }
 
@@ -736,6 +787,7 @@ int Game(GraphicsDevice *graphics, int mission)
 
 	do
 	{
+		int i;
 		SetupMission(mission, 1, &gCampaign);
 
 		SetupMap();
@@ -748,7 +800,7 @@ int Game(GraphicsDevice *graphics, int mission)
 		}
 		PlayerEquip(graphics);
 
-		InitPlayers(gOptions.twoPlayers, maxHealth, mission);
+		InitPlayers(gOptions.numPlayers, maxHealth, mission);
 
 		CreateEnemies();
 
@@ -756,16 +808,17 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		run = gameloop();
 
-		gameOver =
-			(!gPlayer1 && !gPlayer2) ||
+		gameOver = GetNumPlayersAlive()	== 0 ||
 			mission == gCampaign.Setting.missionCount - 1;
 
-		gPlayer1Data.survived = gPlayer1 != NULL;
-		if (gPlayer1)
-			gPlayer1Data.hp = gPlayer1->health;
-		gPlayer2Data.survived = gPlayer2 != NULL;
-		if (gPlayer2)
-			gPlayer2Data.hp = gPlayer2->health;
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			gPlayerDatas[i].survived = gPlayers[i] != NULL;
+			if (gPlayers[i])
+			{
+				gPlayerDatas[i].hp = gPlayers[i]->health;
+			}
+		}
 
 		CleanupMission();
 
@@ -775,31 +828,22 @@ int Game(GraphicsDevice *graphics, int mission)
 		if (run)
 		{
 			MissionSummary(graphics);
-			if (gameOver && (gPlayer1Data.survived || gPlayer2Data.survived))
+			if (gameOver && GetNumPlayersAlive() > 0)
 			{
 				Victory(graphics);
 			}
 		}
 
 		allTime = todays = 0;
-		if ((run && !gPlayer1Data.survived) || gameOver) {
-			EnterHighScore(&gPlayer1Data);
-			allTime = gPlayer1Data.allTime >= 0;
-			todays = gPlayer1Data.today >= 0;
-		}
-		if (run && gOptions.twoPlayers
-		    && (!gPlayer2Data.survived || gameOver)) {
-			EnterHighScore(&gPlayer2Data);
-			allTime = gPlayer2Data.allTime >= 0;
-			todays = gPlayer2Data.today >= 0;
-
-			// Check if player 1's position(s) in the list(s) need adjustment...
-			if (gPlayer2Data.allTime >= 0 &&
-			    gPlayer2Data.allTime <= gPlayer1Data.allTime)
-				gPlayer1Data.allTime++;
-			if (gPlayer2Data.today >= 0 &&
-			    gPlayer2Data.today <= gPlayer1Data.today)
-				gPlayer1Data.today++;
+		for (i = 0; i < gOptions.numPlayers; i++)
+		{
+			if ((run && !gPlayerDatas[i].survived) || gameOver)
+			{
+				EnterHighScore(&gPlayerDatas[i]);
+				allTime = gPlayerDatas[i].allTime >= 0;
+				todays = gPlayerDatas[i].today >= 0;
+			}
+			DataUpdate(mission, &gPlayerDatas[i]);
 		}
 		if (allTime && !gameOver)
 		{
@@ -811,10 +855,6 @@ int Game(GraphicsDevice *graphics, int mission)
 		}
 
 		mission++;
-
-		DataUpdate(mission, &gPlayer1Data);
-		if (gOptions.twoPlayers)
-			DataUpdate(mission, &gPlayer2Data);
 	}
 	while (run && !gameOver);
 	return run;
@@ -823,9 +863,11 @@ int Game(GraphicsDevice *graphics, int mission)
 int Campaign(GraphicsDevice *graphics)
 {
 	int mission = 0;
-
-	InitData(&gPlayer1Data);
-	InitData(&gPlayer2Data);
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		InitData(&gPlayerDatas[i]);
+	}
 
 	if (IsPasswordAllowed(gCampaign.Entry.mode))
 	{
@@ -840,14 +882,20 @@ int Campaign(GraphicsDevice *graphics)
 void DogFight(GraphicsDevice *graphicsDevice)
 {
 	int run;
-	int score1 = 0, score2 = 0;
-	int twoPlayers = gOptions.twoPlayers;
+	int scores[MAX_PLAYERS];
+	int maxScore = 0;
+	int numPlayers = gOptions.numPlayers;
+	int i;
+	// TODO: seems like something is doing naughty things to our state
 
-	InitData(&gPlayer1Data);
-	InitData(&gPlayer2Data);
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		scores[i] = 0;
+		InitData(&gPlayerDatas[i]);
+	}
 
 	gOptions.badGuys = 0;
-	gOptions.twoPlayers = 1;
+	gOptions.numPlayers = 2;	// TODO: more players
 
 	do
 	{
@@ -857,7 +905,7 @@ void DogFight(GraphicsDevice *graphicsDevice)
 		if (PlayerEquip(graphicsDevice))
 		{
 			srand((unsigned int)time(NULL));
-			InitPlayers(YES, 500, 0);
+			InitPlayers(gOptions.numPlayers, 500, 0);
 			PlayGameSong();
 			run = gameloop();
 		}
@@ -866,27 +914,34 @@ void DogFight(GraphicsDevice *graphicsDevice)
 			run = 0;
 		}
 
-		if (gPlayer1 != NULL)
-			score1++;
-		if (gPlayer2 != NULL)
-			score2++;
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (gPlayers[i])
+			{
+				scores[i]++;
+				if (scores[i] > maxScore)
+				{
+					maxScore = scores[i];
+				}
+			}
+		}
 
 		CleanupMission();
 		PlayMenuSong();
 
 		if (run)
 		{
-			ShowScore(graphicsDevice, score1, score2);
+			ShowScore(graphicsDevice, scores);
 		}
 
-	} while (run && score1 < 5 && score2 < 5);
+	} while (run && maxScore < 5);
 
 	gOptions.badGuys = 1;
-	gOptions.twoPlayers = twoPlayers;
+	gOptions.numPlayers = numPlayers;
 
 	if (run)
 	{
-		FinalScore(graphicsDevice, score1, score2);
+		FinalScore(graphicsDevice, scores);
 	}
 }
 
@@ -901,7 +956,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection(gOptions.twoPlayers, &gGraphicsDevice))
+		if (!PlayerSelection(gOptions.numPlayers, &gGraphicsDevice))
 		{
 			continue;
 		}
@@ -1115,6 +1170,7 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
+	PlayerDataInitialize();
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,

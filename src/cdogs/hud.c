@@ -373,22 +373,26 @@ void HUDDraw(HUD *hud, int isPaused)
 	static time_t t = 0;
 	static time_t td = 0;
 	int flags = 0;
-	if (gOptions.twoPlayers && gPlayer1 && gPlayer2)
+	if (gOptions.numPlayers == 2 && gPlayers[0] && gPlayers[1])
 	{
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
+	else if (gOptions.numPlayers == 3 || gOptions.numPlayers == 4)
+	{
+		assert(0 && "not implemented");
+	}
 
-	DrawPlayerStatus(hud->device, &gPlayer1Data, gPlayer1, flags);
-	if (gOptions.twoPlayers)
+	DrawPlayerStatus(hud->device, &gPlayerDatas[0], gPlayers[0], flags);
+	if (gOptions.numPlayers >= 2)
 	{
 		DrawPlayerStatus(
 			hud->device,
-			&gPlayer2Data,
-			gPlayer2,
+			&gPlayerDatas[1],
+			gPlayers[1],
 			flags | HUDFLAGS_PLACE_RIGHT);
 	}
 
-	if (!gPlayer1 && !gPlayer2)
+	if (GetNumPlayersAlive() == 0)
 	{
 		if (gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 		{

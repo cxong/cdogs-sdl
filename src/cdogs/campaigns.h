@@ -47,7 +47,7 @@ typedef struct
 	int isBuiltin;
 	campaign_mode_e mode;
 	int builtinIndex;
-	int is_two_player;
+	int is_two_player;	// TODO: more players
 } campaign_entry_t;
 
 typedef struct campaign_list

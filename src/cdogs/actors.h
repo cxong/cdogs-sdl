@@ -56,6 +56,7 @@
 #include "weapon.h"
 
 
+// TODO: more players
 #define FLAGS_PLAYER1       (1 << 0)
 #define FLAGS_PLAYER2       (1 << 1)
 #define FLAGS_PLAYERS       (FLAGS_PLAYER1 | FLAGS_PLAYER2)
@@ -109,6 +110,7 @@
 #define SHADE_COUNT         14
 
 
+// TODO: add ptr to PlayerData
 struct Actor {
 	int x, y;		// These are the full coordinates, including fractions
 	direction_e direction;
@@ -137,8 +139,7 @@ struct Actor {
 typedef struct Actor TActor;
 
 
-extern TActor *gPlayer1;
-extern TActor *gPlayer2;
+extern TActor *gPlayers[MAX_PLAYERS];
 
 extern TranslationTable tableFlamed;
 extern TranslationTable tableGreen;
@@ -148,6 +149,8 @@ extern TranslationTable tableBlack;
 extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
+int GetNumPlayersAlive(void);
+TActor *GetFirstAlivePlayer(void);
 void DrawCharacter(int x, int y, TActor * actor);
 
 void SetStateForActor(TActor * actor, int state);
