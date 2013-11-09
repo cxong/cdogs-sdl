@@ -721,13 +721,16 @@ static void CleanupMission(void)
 static void InitPlayers(int numPlayers, int maxHealth, int mission)
 {
 	int i;
-	for (i = 0; i < numPlayers; i++)
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		gPlayerDatas[i].score = 0;
 		gPlayerDatas[i].kills = 0;
 		gPlayerDatas[i].friendlies = 0;
 		gPlayerDatas[i].allTime = -1;
 		gPlayerDatas[i].today = -1;
+	}
+	for (i = 0; i < numPlayers; i++)
+	{
 		gPlayerDatas[i].lastMission = mission;
 		gPlayers[i] = AddActor(&gCampaign.Setting.characters.players[i]);
 		gPlayers[i]->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
@@ -813,7 +816,8 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			gPlayerDatas[i].survived = gPlayers[i] != NULL;
+			gPlayerDatas[i].survived =
+				gPlayers[i] != NULL && !gPlayers[i]->dead;
 			if (gPlayers[i])
 			{
 				gPlayerDatas[i].hp = gPlayers[i]->health;
