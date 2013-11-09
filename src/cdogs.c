@@ -617,7 +617,7 @@ static const char *finalWords2P[] = {
 void Victory(GraphicsDevice *graphics)
 {
 	int x, i;
-	const char *s;
+	const char *s = NULL;
 
 	GraphicsBlitBkg(graphics);
 

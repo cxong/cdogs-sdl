@@ -97,7 +97,7 @@ void CharacterSetLooks(Character *c, const CharLooks *l)
 void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
-	store->playerCount = CHARACTER_PLAYER_COUNT;
+	store->playerCount = MAX_PLAYERS;
 }
 
 void CharacterStoreTerminate(CharacterStore *store)

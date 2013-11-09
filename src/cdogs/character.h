@@ -62,14 +62,14 @@ typedef struct
 	CharBot bot;
 } Character;
 
-#define CHARACTER_PLAYER_COUNT 2
+#define MAX_PLAYERS 4
 #define CHARACTER_OTHER_COUNT 64
 #define CHARACTER_PLAYER1 0
 #define CHARACTER_PLAYER2 1
 typedef struct
 {
 	int playerCount;
-	Character players[CHARACTER_PLAYER_COUNT];	// human players
+	Character players[MAX_PLAYERS];	// human players
 	int otherCount;
 	Character others[CHARACTER_OTHER_COUNT];	// both normal baddies and special chars
 

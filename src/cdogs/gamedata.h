@@ -78,7 +78,6 @@ struct PlayerData
 	int friendlies;
 };
 
-#define MAX_PLAYERS 4
 extern struct PlayerData gPlayerDatas[MAX_PLAYERS];
 
 struct GameOptions {
