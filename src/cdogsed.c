@@ -1842,6 +1842,12 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	// Reset campaign (graphics init may have created dummy campaigns)
+	CharacterStoreTerminate(&gCampaign.Setting.characters);
+	memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
+	CharacterStoreInit(&gCampaign.Setting.characters);
+	gCampaign.Setting.missions = NULL;
+
 	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 145));
 
 	for (i = 1; i < argc; i++)
@@ -1862,14 +1868,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!loaded)
-	{
-		// Reset campaign (graphics init may have created dummy campaigns)
-		CharacterStoreTerminate(&gCampaign.Setting.characters);
-		memset(&gCampaign.Setting, 0, sizeof gCampaign.Setting);
-		CharacterStoreInit(&gCampaign.Setting.characters);
-		gCampaign.Setting.missions = NULL;
-	}
 	currentMission = NULL;
 
 	EditCampaign();
