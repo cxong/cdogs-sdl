@@ -516,6 +516,8 @@ static void Change(
 		b->gun = (gun_e)CLAMP_OPPOSITE((int)b->gun + d, 0, GUN_COUNT - 1);
 		break;
 	}
+
+	CharacterSetLooks(b, &b->looks);
 }
 
 
