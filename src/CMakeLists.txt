@@ -8,6 +8,7 @@ set(CDOGS_SDL_SOURCES
 	autosave.c
 	cdogs.c
 	credits.c
+	game.c
 	mainmenu.c
 	menu.c
 	password.c
@@ -16,6 +17,7 @@ set(CDOGS_SDL_SOURCES
 set(CDOGS_SDL_HEADERS
 	autosave.h
 	credits.h
+	game.h
 	mainmenu.h
 	menu.h
 	password.h

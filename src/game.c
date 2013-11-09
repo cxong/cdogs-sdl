@@ -57,29 +57,24 @@
 #include <SDL.h>
 #include "SDL_mutex.h"
 
-#include "config.h"
-#include "draw.h"
-#include "hud.h"
-#include "joystick.h"
-#include "music.h"
-#include "objs.h"
-#include "palette.h"
-#include "pic_manager.h"
-#include "actors.h"
-#include "pics.h"
-#include "text.h"
-#include "gamedata.h"
-#include "ai.h"
-#include "input.h"
-#include "automap.h"
-#include "mission.h"
-#include "sounds.h"
-#include "triggers.h"
-#include "keyboard.h"
-#include "blit.h"
-#include "utils.h"
+#include <cdogs/actors.h>
+#include <cdogs/ai.h>
+#include <cdogs/automap.h>
+#include <cdogs/config.h>
+#include <cdogs/draw.h>
+#include <cdogs/game_events.h>
+#include <cdogs/hud.h>
+#include <cdogs/joystick.h>
+#include <cdogs/mission.h>
+#include <cdogs/music.h>
+#include <cdogs/objs.h>
+#include <cdogs/palette.h>
+#include <cdogs/pic_manager.h>
+#include <cdogs/pics.h>
+#include <cdogs/text.h>
+#include <cdogs/triggers.h>
 
-#include "drawtools.h" /* for Draw_Box and Draw_Point */
+#include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */
 
 #define FPS_FRAMELIMIT       70
 #define CLOCK_LIMIT       2100
@@ -96,8 +91,6 @@ static Uint32 ticks_now;
 static Uint32 ticks_then;
 
 static int frames = 0;
-
-static int screenShaking = 0;
 
 long oldtime;
 
@@ -214,13 +207,17 @@ void DoBuffer(
 	DrawBufferDraw(b, offset);
 }
 
-void ShakeScreen(int amount)
+int GetShakeAmount(int oldShake, int amount)
 {
-	screenShaking = (screenShaking + amount) * gConfig.Graphics.ShakeMultiplier;
+	int shake = (oldShake + amount) * gConfig.Graphics.ShakeMultiplier;
 
 	/* So we don't shake too much :) */
-	if (screenShaking > 100)
-		screenShaking = 100;
+	if (shake > 100)
+	{
+		shake = 100;
+	}
+
+	return shake;
 }
 
 void BlackLine(void)
@@ -288,14 +285,14 @@ static Vec2i GetPlayersMidpoint(void)
 	return Vec2iNew((min.x + max.x) / 2, (min.y + max.y) / 2);
 }
 
-Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition)
+Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 {
 	Vec2i noise = Vec2iZero();
 	Vec2i centerOffset = Vec2iNew(-TILE_WIDTH / 2 - 8, -TILE_HEIGHT / 2 - 4);
 	int i;
 	int numPlayersAlive = GetNumPlayersAlive();
 
-	if (screenShaking)
+	if (shakeAmount)
 	{
 		noise.x = rand() & 7;
 		noise.y = rand() & 7;
@@ -567,6 +564,25 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 	return center;
 }
 
+void HandleGameEvents(GameEventStore *store, int *shakeAmount)
+{
+	int i;
+	for (i = 0; i < store->count; i++)
+	{
+		switch (store->events[i].Type)
+		{
+		case GAME_EVENT_SCREEN_SHAKE:
+			*shakeAmount = GetShakeAmount(
+				*shakeAmount, store->events[i].u.ShakeAmount);
+			break;
+		default:
+			assert(0 && "unknown game event");
+			break;
+		}
+	}
+	GameEventsClear(store);
+}
+
 int gameloop(void)
 {
 	DrawBuffer buffer;
@@ -578,6 +594,7 @@ int gameloop(void)
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
+	GameEventsInit(&gGameEvents);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
@@ -592,6 +609,7 @@ int gameloop(void)
 		int cmdAll = 0;
 		int ticks = 1;
 		int i;
+		int shakeAmount = 0;
 		Ticks_Update();
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
@@ -625,6 +643,7 @@ int gameloop(void)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
+				HandleGameEvents(&gGameEvents, &shakeAmount);
 				UpdateAllActors(ticks);
 				UpdateMobileObjects(&gMobObjList, ticks);
 
@@ -675,12 +694,12 @@ int gameloop(void)
 			isDone = 1;
 		}
 
-		lastPosition = DrawScreen(&buffer, lastPosition);
+		lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
 
-		if (screenShaking) {
-			screenShaking -= ticks;
-			if (screenShaking < 0)
-				screenShaking = 0;
+		shakeAmount -= ticks;
+		if (shakeAmount < 0)
+		{
+			shakeAmount = 0;
 		}
 
 		debug(D_VERBOSE, "frames... %d\n", frames);
@@ -701,6 +720,7 @@ int gameloop(void)
 
 		Ticks_FrameEnd();
 	}
+	GameEventsTerminate(&gGameEvents);
 	DrawBufferTerminate(&buffer);
 
 	return !is_esc_pressed;

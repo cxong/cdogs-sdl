@@ -62,7 +62,6 @@
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
-#include <cdogs/game.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/hiscores.h>
@@ -82,6 +81,7 @@
 
 #include "autosave.h"
 #include "credits.h"
+#include "game.h"
 #include "mainmenu.h"
 #include "password.h"
 #include "prep.h"

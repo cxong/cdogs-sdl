@@ -20,7 +20,7 @@ set(CDOGS_SOURCES
 	drawtools.c
 	events.c
 	files.c
-	game.c
+	game_events.c
 	gamedata.c
 	grafx.c
 	hiscores.c
@@ -63,7 +63,7 @@ set(CDOGS_HEADERS
 	drawtools.h
 	events.h
 	files.h
-	game.h
+	game_events.h
 	gamedata.h
 	grafx.h
 	hiscores.h

@@ -54,6 +54,7 @@
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
+#include "game_events.h"
 #include "map.h"
 #include "blit.h"
 #include "pic_manager.h"
@@ -397,7 +398,10 @@ void DamageObject(
 		}
 		if (object->flags & OBJFLAG_QUAKE)
 		{
-			ShakeScreen(70);
+			GameEvent shake;
+			shake.Type = GAME_EVENT_SCREEN_SHAKE;
+			shake.u.ShakeAmount = 70;
+			GameEventsEnqueue(&gGameEvents, shake);
 		}
 		if (object->flags & OBJFLAG_EXPLOSIVE)
 		{
@@ -1266,6 +1270,11 @@ void AddExplosion(int x, int y, int flags)
 	TMobileObject *obj;
 	int i;
 
+	GameEvent shake;
+	shake.Type = GAME_EVENT_SCREEN_SHAKE;
+	shake.u.ShakeAmount = 15;
+	GameEventsEnqueue(&gGameEvents, shake);
+
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 8; i++) {
 		obj = AddFireBall(flags);
@@ -1297,7 +1306,7 @@ void AddExplosion(int x, int y, int flags)
 		obj->dz = 11;
 		obj->count = -16;
 	}
-	ShakeScreen(15);
+
 	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, Vec2iNew(x >> 8, y >> 8));
 }
 
