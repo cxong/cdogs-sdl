@@ -93,6 +93,8 @@ void CharacterStoreDeleteOther(CharacterStore *store, int idx);
 void CharacterStoreAddPrisoner(CharacterStore *store, int character);
 void CharacterStoreAddBaddie(CharacterStore *store, int character);
 void CharacterStoreAddSpecial(CharacterStore *store, int character);
+void CharacterStoreDeleteBaddie(CharacterStore *store, int idx);
+void CharacterStoreDeleteSpecial(CharacterStore *store, int idx);
 Character *CharacterStoreGetPrisoner(CharacterStore *store, int i);
 Character *CharacterStoreGetSpecial(CharacterStore *store, int i);
 Character *CharacterStoreGetRandomBaddie(CharacterStore *store);

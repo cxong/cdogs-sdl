@@ -483,9 +483,8 @@ void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 }
 
-void DisplayCharacter(int x, int y, int character, int hilite, int showGun)
+void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun)
 {
-	Character *c = &gCampaign.Setting.characters.others[character];
 	DrawCharacter(
 		c, Vec2iNew(x, y),
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);

@@ -354,7 +354,8 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		x = 10;
 		for (i = 0; i < setting->characters.otherCount; i++)
 		{
-			DisplayCharacter(x, y + 20, i, idx == i, 0);
+			DisplayCharacter(
+				x, y + 20, &setting->characters.others[i], idx == i, 0);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
 			{

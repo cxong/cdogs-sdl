@@ -180,14 +180,18 @@ typedef struct
 	credits_displayer_t *creditsDisplayer;
 	InputDevices *inputDevices;
 	GraphicsDevice *graphics;
+	Vec2i pos;
+	Vec2i size;
 } MenuSystem;
 
 
+void MenuSystemInit(
+	MenuSystem *ms,
+	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
-void MenuSetInputDevices(MenuSystem *menu, InputDevices *devices);
-void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuLoop(MenuSystem *menu);
+void MenuDisplay(MenuSystem *ms);
 void MenuReset(MenuSystem *menu);
 
 void ShowControls(void);

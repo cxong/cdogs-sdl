@@ -35,7 +35,10 @@
 #include "menu.h"
 
 
-MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns);
+MenuSystem *MenuCreateAll(
+	custom_campaigns_t *campaigns,
+	InputDevices *input,
+	GraphicsDevice *graphics);
 
 int MainMenu(
 	GraphicsDevice *graphics,
@@ -43,10 +46,8 @@ int MainMenu(
 	custom_campaigns_t *campaigns)
 {
 	int doPlay = 0;
-	MenuSystem *menu = MenuCreateAll(campaigns);
+	MenuSystem *menu = MenuCreateAll(campaigns, &gInputDevices, graphics);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
-	MenuSetInputDevices(menu, &gInputDevices);
-	MenuSetGraphicsDevice(menu, graphics);
 	MenuLoop(menu);
 	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
 
@@ -64,10 +65,20 @@ menu_t *MenuCreateCampaigns(
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateQuit(const char *name);
 
-MenuSystem *MenuCreateAll(custom_campaigns_t *campaigns)
+MenuSystem *MenuCreateAll(
+	custom_campaigns_t *campaigns,
+	InputDevices *input,
+	GraphicsDevice *graphics)
 {
 	MenuSystem *ms;
 	CCALLOC(ms, sizeof *ms);
+	MenuSystemInit(
+		ms,
+		input, graphics,
+		Vec2iZero(),
+		Vec2iNew(
+			graphics->cachedConfig.ResolutionWidth,
+			graphics->cachedConfig.ResolutionHeight));
 	ms->root = ms->current = MenuCreateNormal(
 		"",
 		"",

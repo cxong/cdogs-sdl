@@ -173,6 +173,24 @@ void CharacterStoreAddSpecial(CharacterStore *store, int character)
 	CREALLOC(store->specials, store->specialCount * sizeof *store->specials);
 	store->specials[store->specialCount - 1] = &store->others[character];
 }
+void CharacterStoreDeleteBaddie(CharacterStore *store, int idx)
+{
+	int i;
+	for (i = idx; i < store->baddieCount - 1; i++)
+	{
+		store->baddies[i] = store->baddies[i + 1];
+	}
+	store->baddieCount--;
+}
+void CharacterStoreDeleteSpecial(CharacterStore *store, int idx)
+{
+	int i;
+	for (i = idx; i < store->specialCount - 1; i++)
+	{
+		store->specials[i] = store->specials[i + 1];
+	}
+	store->specialCount--;
+}
 
 Character *CharacterStoreGetPrisoner(CharacterStore *store, int i)
 {

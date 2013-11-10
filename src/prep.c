@@ -961,8 +961,8 @@ static int MainMenu(int x, int idx, int cmd)
 	return MODE_MAIN;
 }
 
-static int MakeSelection(int mode, int x, int character,
-			 struct PlayerData *data, int cmd)
+static int MakeSelection(
+	int mode, int x, int character, struct PlayerData *data, int cmd)
 {
 	switch (mode) {
 		case MODE_MAIN:
@@ -1023,10 +1023,60 @@ static int MakeSelection(int mode, int x, int character,
 	return mode;
 }
 
+static menu_t *MenuCreateName(const char *name)
+{
+	menu_t *menu = MenuCreateNormal(
+		name,
+		"",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddSubmenu(menu, MenuCreateBack("(End)"));
+	return menu;
+}
+
+static void MenuCreatePlayerSelection(
+	MenuSystem *ms,
+	int numPlayers, int player, InputDevices *input, GraphicsDevice *graphics)
+{
+	Vec2i pos = Vec2iZero();
+	Vec2i size = Vec2iZero();
+	int w = graphics->cachedConfig.ResolutionWidth;
+	int h = graphics->cachedConfig.ResolutionHeight;
+	switch (numPlayers)
+	{
+	case 1:
+		// Single menu, entire screen
+		pos = Vec2iNew(w / 2, 0);
+		size = Vec2iNew(w / 2, h);
+		break;
+	case 2:
+		// Two menus, side by side
+		pos = Vec2iNew(player * w / 2 + w / 4, 0);
+		size = Vec2iNew(w / 4, h);
+		break;
+	default:
+		assert(0 && "not implemented");
+		break;
+	}
+	MenuSystemInit(ms, input, graphics, pos, size);
+	ms->root = ms->current = MenuCreateNormal(
+		"",
+		"",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddSubmenu(
+		ms->root,
+		MenuCreateName("Name"));
+	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms->root, MenuCreateBack("Done"));
+}
+
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
 	int modes[MAX_PLAYERS];
 	int i;
+	MenuSystem ms;
+	MenuCreatePlayerSelection(&ms, numPlayers, 0, &gInputDevices, graphics);
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -1053,6 +1103,8 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmd(&cmd1, &cmd2);
+
+		//MenuDisplay(&ms);
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{

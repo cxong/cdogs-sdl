@@ -333,7 +333,14 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	{
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
-		cd = CharacterStoreGetSpecial(store, 0);
+		if (store->specialCount == 0)
+		{
+			cd = &store->players[0];
+		}
+		else
+		{
+			cd = CharacterStoreGetSpecial(store, 0);
+		}
 		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -342,7 +349,14 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		break;
 	case OBJECTIVE_RESCUE:
 		typeCDogsText = "Rescue";
-		cd = CharacterStoreGetPrisoner(store, 0);
+		if (store->prisonerCount == 0)
+		{
+			cd = &store->players[0];
+		}
+		else
+		{
+			cd = CharacterStoreGetPrisoner(store, 0);
+		}
 		i = cd->looks.face;
 		table = &cd->table;
 		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -814,7 +828,9 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		}
 		for (i = 0; i < currentMission->baddieCount; i++)
 		{
-			DisplayCharacter(20 + 20 * i, y, i, xc == i, 1);
+			DisplayCharacter(
+				20 + 20 * i, y,
+				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
 		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
 		break;
@@ -829,7 +845,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			DisplayCharacter(
 				20 + 20 * i, y,
-				currentMission->baddieCount + i,
+				gCampaign.Setting.characters.specials[i],
 				xc == i,
 				1);
 		}
@@ -985,6 +1001,8 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->baddies[xc] + d,
 			0,
 			gCampaign.Setting.characters.otherCount - 1);
+		gCampaign.Setting.characters.baddies[xc] =
+			&gCampaign.Setting.characters.others[currentMission->baddies[xc]];
 		isChanged = 1;
 		break;
 
@@ -993,6 +1011,8 @@ static int Change(int yc, int xc, int d, int *mission)
 			currentMission->specials[xc] + d,
 			0,
 			gCampaign.Setting.characters.otherCount - 1);
+		gCampaign.Setting.characters.specials[xc] =
+			&gCampaign.Setting.characters.others[currentMission->specials[xc]];
 		isChanged = 1;
 		break;
 
@@ -1149,6 +1169,7 @@ void DeleteCharacter(int idx)
 	{
 		currentMission->baddies[i] = currentMission->baddies[i + 1];
 	}
+	CharacterStoreDeleteBaddie(&gCampaign.Setting.characters, idx);
 }
 
 void DeleteSpecial(int idx)
@@ -1161,6 +1182,7 @@ void DeleteSpecial(int idx)
 	{
 		currentMission->specials[i] = currentMission->specials[i + 1];
 	}
+	CharacterStoreDeleteSpecial(&gCampaign.Setting.characters, idx);
 }
 
 void DeleteItem(int idx)
@@ -1660,15 +1682,23 @@ static void HandleInput(
 			switch (*yc)
 			{
 			case YC_CHARACTERS:
-				currentMission->baddieCount =
-					CLAMP(currentMission->baddieCount + 1, 0, BADDIE_MAX);
-				*xc = currentMission->baddieCount - 1;
+				if (gCampaign.Setting.characters.otherCount > 0)
+				{
+					currentMission->baddieCount =
+						CLAMP(currentMission->baddieCount + 1, 0, BADDIE_MAX);
+					CharacterStoreAddBaddie(&gCampaign.Setting.characters, 0);
+					*xc = currentMission->baddieCount - 1;
+				}
 				break;
 
 			case YC_SPECIALS:
-				currentMission->specialCount =
-					CLAMP(currentMission->specialCount + 1, 0, SPECIAL_MAX);
-				*xc = currentMission->specialCount - 1;
+				if (gCampaign.Setting.characters.otherCount > 0)
+				{
+					currentMission->specialCount =
+						CLAMP(currentMission->specialCount + 1, 0, SPECIAL_MAX);
+					CharacterStoreAddSpecial(&gCampaign.Setting.characters, 0);
+					*xc = currentMission->specialCount - 1;
+				}
 				break;
 
 			case YC_ITEMS:

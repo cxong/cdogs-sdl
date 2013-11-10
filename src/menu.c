@@ -72,19 +72,25 @@
 #include "autosave.h"
 
 
+#define MS_CENTER_X(ms, w) ((ms).pos.x + ((ms).size.x - (w)) / 2)
+#define MS_CENTER_Y(ms, h) ((ms).pos.y + ((ms).size.y - (h)) / 2)
+
+
+void MenuSystemInit(
+	MenuSystem *ms,
+	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size)
+{
+	memset(ms, 0, sizeof *ms);
+	ms->root = ms->current = NULL;
+	ms->inputDevices = input;
+	ms->graphics = graphics;
+	ms->pos = pos;
+	ms->size = size;
+}
+
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer)
 {
 	menu->creditsDisplayer = creditsDisplayer;
-}
-
-void MenuSetInputDevices(MenuSystem *menu, InputDevices *devices)
-{
-	menu->inputDevices = devices;
-}
-
-void MenuSetGraphicsDevice(MenuSystem *menu, GraphicsDevice *graphics)
-{
-	menu->graphics = graphics;
 }
 
 int MenuHasExitType(MenuSystem *menu, menu_type_e exitType)
@@ -114,7 +120,6 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
 
 void MenuProcessChangeKey(menu_t *menu);
 menu_t *MenuProcessCmd(menu_t *menu, int cmd);
-void MenuDisplay(MenuSystem *menu);
 
 void MenuLoop(MenuSystem *menu)
 {
@@ -362,51 +367,56 @@ menu_t *MenuCreateOptionChangeControl(
 }
 
 
-void MenuDisplayItems(MenuSystem *menu);
-void MenuDisplaySubmenus(menu_t *menu);
+void MenuDisplayItems(MenuSystem *ms);
+void MenuDisplaySubmenus(MenuSystem *ms);
 
-void MenuDisplay(MenuSystem *menu)
+void MenuDisplay(MenuSystem *ms)
 {
-	MenuDisplayItems(menu);
+	MenuDisplayItems(ms);
 
-	if (strlen(menu->current->u.normal.title) != 0)
+	if (strlen(ms->current->u.normal.title) != 0)
 	{
-		CDogsTextStringSpecial(
-			menu->current->u.normal.title,
+		DrawTextStringSpecial(
+			ms->current->u.normal.title,
 			TEXT_XCENTER | TEXT_TOP,
-			0,
-			gGraphicsDevice.cachedConfig.ResolutionWidth / 12);
+			ms->pos,
+			ms->size,
+			Vec2iNew(ms->size.y / 12, 0));
 	}
 
-	MenuDisplaySubmenus(menu->current);
+	MenuDisplaySubmenus(ms);
 }
 
-void MenuDisplayItems(MenuSystem *menu)
+void MenuDisplayItems(MenuSystem *ms)
 {
-	int d = menu->current->u.normal.displayItems;
-	if ((d & MENU_DISPLAY_ITEMS_CREDITS) && menu->creditsDisplayer != NULL)
+	int d = ms->current->u.normal.displayItems;
+	if ((d & MENU_DISPLAY_ITEMS_CREDITS) && ms->creditsDisplayer != NULL)
 	{
-		ShowCredits(menu->creditsDisplayer);
+		ShowCredits(ms->creditsDisplayer);
 	}
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		PicPaletted *logo = PicManagerGetOldPic(&gPicManager, PIC_LOGO);
 		DrawTPic(
-			(gGraphicsDevice.cachedConfig.ResolutionWidth - logo->w) / 2,
-			gGraphicsDevice.cachedConfig.ResolutionHeight / 12,
+			MS_CENTER_X(*ms, logo->w),
+			ms->pos.y + ms->size.y / 12,
 			logo);
-		CDogsTextStringSpecial(
-			"Version: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT, 20, 20);
+		DrawTextStringSpecial(
+			"Version: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT,
+			ms->pos,
+			ms->size,
+			Vec2iNew(20, 20));
 	}
 }
 
 int MenuOptionGetIntValue(menu_t *menu);
 
-void MenuDisplaySubmenus(menu_t *menu)
+void MenuDisplaySubmenus(MenuSystem *ms)
 {
 	int i;
 	int x = 0, yStart = 0;
 	int maxWidth = 0;
+	menu_t *menu = ms->current;
 
 	switch (menu->type)
 	{
@@ -424,12 +434,13 @@ void MenuDisplaySubmenus(menu_t *menu)
 					maxWidth = width;
 				}
 			}
-			x = CenterX(maxWidth);
+			x = MS_CENTER_X(*ms, maxWidth);
 			if (!isCentered)
 			{
 				x -= 20;
 			}
-			yStart = CenterY(menu->u.normal.numSubMenus * CDogsTextHeight());
+			yStart = MS_CENTER_Y(
+				*ms, menu->u.normal.numSubMenus * CDogsTextHeight());
 			xOptions = x + maxWidth + 10;
 
 			// Display normal menu items
@@ -485,7 +496,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 		break;
 	case MENU_TYPE_CAMPAIGNS:
 		{
-			int y = CenterY(12 * CDogsTextHeight());
+			int y = MS_CENTER_Y(*ms, 12 * CDogsTextHeight());
 
 		#define ARROW_UP	"\036"
 		#define ARROW_DOWN	"\037"
@@ -493,7 +504,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			if (menu->u.normal.scroll != 0)
 			{
 				DisplayMenuItem(
-					CenterX(TextGetStringWidth(ARROW_UP)),
+					MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
 					y - 2 - CDogsTextHeight(),
 					ARROW_UP,
 					0);
@@ -508,7 +519,10 @@ void MenuDisplaySubmenus(menu_t *menu)
 				const char *name = subMenu->name;
 				// TODO: display subfolders
 				DisplayMenuItem(
-					CenterX(TextGetStringWidth(name)), y, name, isSelected);
+					MS_CENTER_X(*ms, TextGetStringWidth(name)),
+					y,
+					name,
+					isSelected);
 
 				if (isSelected)
 				{
@@ -516,11 +530,12 @@ void MenuDisplaySubmenus(menu_t *menu)
 					const char *filename = subMenu->u.campaign.filename;
 					int isBuiltin = subMenu->u.campaign.isBuiltin;
 					sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
-					CDogsTextStringSpecial(
+					DrawTextStringSpecial(
 						s,
 						TEXT_XCENTER | TEXT_BOTTOM,
-						0,
-						gGraphicsDevice.cachedConfig.ResolutionWidth / 12);
+						ms->pos,
+						ms->size,
+						Vec2iNew(ms->size.x / 12, 0));
 				}
 
 				y += CDogsTextHeight();
@@ -529,7 +544,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 			if (i < menu->u.normal.numSubMenus - 1)
 			{
 				DisplayMenuItem(
-					CenterX(TextGetStringWidth(ARROW_DOWN)),
+					MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
 					y + 2,
 					ARROW_DOWN,
 					0);
@@ -539,7 +554,7 @@ void MenuDisplaySubmenus(menu_t *menu)
 	case MENU_TYPE_KEYS:
 		{
 			int xKeys;
-			x = CenterX((CDogsTextCharWidth('a') * 10)) / 2;
+			x = MS_CENTER_X(*ms, (CDogsTextCharWidth('a') * 10)) / 2;
 			xKeys = x * 3;
 			yStart = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) - (CDogsTextHeight() * 10);
 

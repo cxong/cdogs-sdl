@@ -276,32 +276,43 @@ int TextGetStringWidth(const char *s)
 
 #define FLAG_SET(a, b)	((a & b) != 0)
 
+void DrawTextStringSpecial(
+	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding)
+{
+	int x = 0;
+	int y = 0;
+	int w = TextGetStringWidth(s);
+	int h = CDogsTextHeight();
+
+	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = pos.x + (size.x - w) / 2; }
+	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = pos.y + (size.y - h) / 2; }
+
+	if (FLAG_SET(opts, TEXT_LEFT))		{ x = pos.x + padding.x; }
+	if (FLAG_SET(opts, TEXT_RIGHT))		{ x = pos.x + size.x - w - padding.x; }
+
+	if (FLAG_SET(opts, TEXT_TOP))		{ y = pos.y + padding.y; }
+	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = pos.y + size.y - h - padding.y; }
+
+	if (FLAG_SET(opts, TEXT_FLAMED))
+	{
+		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
+	}
+	else if (FLAG_SET(opts, TEXT_PURPLE))
+	{
+		CDogsTextStringWithTableAt(x, y, s, &tablePurple);
+	}
+	else
+	{
+		CDogsTextStringAt(x, y, s);
+	}
+}
+
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
 {
 	int scrw = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int scrh = gGraphicsDevice.cachedConfig.ResolutionHeight;
-	int x, y, w, h;
-
-	x = y = w = h = 0;
-	w = TextGetStringWidth(s);
-	h = CDogsTextHeight();
-
-	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = (scrw - w) / 2; }
-	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = (scrh - h) / 2; }
-
-	if (FLAG_SET(opts, TEXT_LEFT))		{ x = 0 + xpad; }
-	if (FLAG_SET(opts, TEXT_RIGHT))		{ x = scrw - w - xpad; }
-
-	if (FLAG_SET(opts, TEXT_TOP))		{ y = 0 + ypad; }
-	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = scrh - h - ypad; }
-
-	if (FLAG_SET(opts, TEXT_FLAMED)) {
-		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
-	} else if (FLAG_SET(opts, TEXT_PURPLE)) {
-		CDogsTextStringWithTableAt(x, y, s, &tablePurple);
-	} else {
-		CDogsTextStringAt(x, y, s);
-	}
+	DrawTextStringSpecial(
+		s, opts, Vec2iZero(), Vec2iNew(scrw, scrh), Vec2iNew(xpad, ypad));
 }
 
 int CDogsTextHeight(void)

@@ -87,6 +87,8 @@ Vec2i TextGetSize(const char *s);
 #define TEXT_FLAMED		64
 #define TEXT_PURPLE		128
 
+void DrawTextStringSpecial(
+	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding);
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
 #define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
 

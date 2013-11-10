@@ -285,21 +285,25 @@ typedef enum
 	RETURN_CODE_ENTER_CODE
 } ReturnCode;
 
-MenuSystem *MenuCreateStart(
-	int hasPassword, GraphicsDevice *graphics, InputDevices *inputDevices);
+static void MenuCreateStart(MenuSystem *ms, int hasPassword);
 
 int EnterPassword(GraphicsDevice *graphics, const char *password)
 {
-	MenuSystem *startMenu;
+	MenuSystem startMenu;
 	int mission = TestPassword(password);
 	int hasPassword = mission > 0;
-	startMenu = MenuCreateStart(hasPassword, graphics, &gInputDevices);
+	MenuSystemInit(
+		&startMenu, &gInputDevices, graphics, Vec2iZero(),
+		Vec2iNew(
+			graphics->cachedConfig.ResolutionWidth,
+			graphics->cachedConfig.ResolutionHeight));
+	MenuCreateStart(&startMenu, hasPassword);
 	for (;;)
 	{
 		int returnCode;
-		MenuLoop(startMenu);
-		assert(startMenu->current->type == MENU_TYPE_RETURN);
-		returnCode = startMenu->current->u.returnCode;
+		MenuLoop(&startMenu);
+		assert(startMenu.current->type == MENU_TYPE_RETURN);
+		returnCode = startMenu.current->u.returnCode;
 		if (returnCode == RETURN_CODE_CONTINUE)
 		{
 			return mission;
@@ -315,18 +319,13 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 			{
 				return enteredMission;
 			}
-			MenuReset(startMenu);
+			MenuReset(&startMenu);
 		}
 	}
 }
 
-MenuSystem *MenuCreateStart(
-	int hasPassword, GraphicsDevice *graphics, InputDevices *inputDevices)
+static void MenuCreateStart(MenuSystem *ms, int hasPassword)
 {
-	MenuSystem *ms;
-	CCALLOC(ms, sizeof *ms);
-	MenuSetInputDevices(ms, inputDevices);
-	MenuSetGraphicsDevice(ms, graphics);
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	if (hasPassword)
 	{
@@ -335,5 +334,4 @@ MenuSystem *MenuCreateStart(
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Start campaign", RETURN_CODE_START));
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Enter code...", RETURN_CODE_ENTER_CODE));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
-	return ms;
 }
