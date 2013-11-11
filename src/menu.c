@@ -119,7 +119,6 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
 }
 
 void MenuProcessChangeKey(menu_t *menu);
-menu_t *MenuProcessCmd(menu_t *menu, int cmd);
 
 void MenuLoop(MenuSystem *menu)
 {
@@ -138,7 +137,7 @@ void MenuLoop(MenuSystem *menu)
 		else
 		{
 			int cmd = GetMenuCmd();
-			menu->current = MenuProcessCmd(menu->current, cmd);
+			MenuProcessCmd(menu, cmd);
 		}
 		if (MenuHasExitType(menu, menu->current->type))
 		{
@@ -381,7 +380,7 @@ void MenuDisplay(MenuSystem *ms)
 			TEXT_XCENTER | TEXT_TOP,
 			ms->pos,
 			ms->size,
-			Vec2iNew(ms->size.y / 12, 0));
+			Vec2iNew(0, ms->size.y / 12));
 	}
 
 	MenuDisplaySubmenus(ms);
@@ -662,11 +661,12 @@ int MenuOptionGetIntValue(menu_t *menu)
 
 // returns menu to change to, NULL if no change
 menu_t *MenuProcessEscCmd(menu_t *menu);
-menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd);
+menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd);
 void MenuChangeIndex(menu_t *menu, int cmd);
 
-menu_t *MenuProcessCmd(menu_t *menu, int cmd)
+void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
+	menu_t *menu = ms->current;
 	menu_t *menuToChange = NULL;
 	if (cmd == CMD_ESC)
 	{
@@ -674,10 +674,11 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 		if (menuToChange != NULL)
 		{
 			SoundPlay(&gSoundDevice, SND_PICKUP);
-			return menuToChange;
+			ms->current = menuToChange;
+			return;
 		}
 	}
-	menuToChange = MenuProcessButtonCmd(menu, cmd);
+	menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
 	if (menuToChange != NULL)
 	{
 		debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
@@ -690,10 +691,10 @@ menu_t *MenuProcessCmd(menu_t *menu, int cmd)
 		{
 			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
 		}
-		return menuToChange;
+		ms->current = menuToChange;
+		return;
 	}
 	MenuChangeIndex(menu, cmd);
-	return menu;
 }
 
 menu_t *MenuProcessEscCmd(menu_t *menu)
@@ -761,9 +762,9 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	printf(">> Loading campaign/dogfight\n");
 }
 
-void MenuActivate(menu_t *menu, int cmd);
+void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd);
 
-menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
+menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 {
 	if (AnyButton(cmd) ||
 		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
@@ -786,7 +787,7 @@ menu_t *MenuProcessButtonCmd(menu_t *menu, int cmd)
 		case MENU_TYPE_RETURN:
 			return subMenu;
 		default:
-			MenuActivate(subMenu, cmd);
+			MenuActivate(ms, subMenu, cmd);
 			break;
 		}
 	}
@@ -898,7 +899,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 }
 
 
-void MenuActivate(menu_t *menu, int cmd)
+void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 {
 	Config lastConfig = gConfig;
 	SoundPlay(&gSoundDevice, SND_SWITCH);
@@ -1049,4 +1050,10 @@ void MenuActivate(menu_t *menu, int cmd)
 			exit(1);
 		}
 	}
+	// Update menu system
+	// Note: only for the main menu system!
+	ms->pos = Vec2iZero();
+	ms->size = Vec2iNew(
+		ms->graphics->cachedConfig.ResolutionWidth,
+		ms->graphics->cachedConfig.ResolutionHeight);
 }

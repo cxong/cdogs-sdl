@@ -571,7 +571,8 @@ void CommandBadGuys(int ticks)
 					if (WillFire(actor, roll))
 					{
 						cmd |= CMD_BUTTON1;
-						if (actor->flags & FLAGS_FOLLOWER)
+						if (!!(actor->flags & FLAGS_FOLLOWER) &&
+							(actor->flags & FLAGS_GOOD_GUY))
 						{
 							// Shoot in a random direction away
 							int i;

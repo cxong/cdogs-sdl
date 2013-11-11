@@ -564,7 +564,6 @@ static int AppearanceSelection(
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
-		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
 		return 0;
 	}
 	else if (cmd & (CMD_LEFT | CMD_UP))
@@ -573,13 +572,11 @@ static int AppearanceSelection(
 		{
 			selection[idx]--;
 			*property = func(selection[idx]);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == 0)
 		{
 			selection[idx] = menuCount - 1;
 			*property = func(selection[idx]);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		hasChanged = 1;
 	}
@@ -589,13 +586,11 @@ static int AppearanceSelection(
 		{
 			selection[idx]++;
 			*property = func(selection[idx]);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == menuCount - 1)
 		{
 			selection[idx] = 0;
 			*property = func(selection[idx]);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		hasChanged = 1;
 	}
@@ -653,31 +648,26 @@ static int BodyPartSelection(
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
-		SoundPlay(&gSoundDevice, SND_POWERGUN);
 		return 0;
 	} else if (cmd & (CMD_LEFT | CMD_UP)) {
 		if (*selection > 0) {
 			(*selection)--;
 			*property = IndexToShade(*selection);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (*selection == 0)
 		{
 			(*selection) = PLAYER_BODY_COUNT - 1;
 			*property = IndexToShade(*selection);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	} else if (cmd & (CMD_RIGHT | CMD_DOWN)) {
 		if (*selection < PLAYER_BODY_COUNT - 1) {
 			(*selection)++;
 			*property = IndexToShade(*selection);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (*selection == PLAYER_BODY_COUNT - 1)
 		{
 			(*selection) = 0;
 			*property = IndexToShade(*selection);
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 
@@ -920,7 +910,6 @@ static int MainMenu(int x, int idx, int cmd)
 
 	if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
-		SoundPlay(&gSoundDevice, SND_BANG);
 		return selection[idx];
 	}
 	else if (cmd & (CMD_LEFT | CMD_UP))
@@ -928,12 +917,10 @@ static int MainMenu(int x, int idx, int cmd)
 		if (selection[idx] > MODE_SELECTNAME)
 		{
 			selection[idx]--;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == MODE_SELECTNAME)
 		{
 			selection[idx] = MODE_DONE;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 	else if (cmd & (CMD_RIGHT | CMD_DOWN))
@@ -941,12 +928,10 @@ static int MainMenu(int x, int idx, int cmd)
 		if (selection[idx] < MODE_DONE)
 		{
 			selection[idx]++;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 		else if (selection[idx] == MODE_DONE)
 		{
 			selection[idx] = MODE_SELECTNAME;
-			SoundPlay(&gSoundDevice, SND_SWITCH);
 		}
 	}
 
@@ -1075,8 +1060,11 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
 	int modes[MAX_PLAYERS];
 	int i;
-	MenuSystem ms;
-	MenuCreatePlayerSelection(&ms, numPlayers, 0, &gInputDevices, graphics);
+	MenuSystem ms[MAX_PLAYERS];
+	for (i = 0; i < numPlayers; i++)
+	{
+		MenuCreatePlayerSelection(&ms[i], numPlayers, i, &gInputDevices, graphics);
+	}
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -1097,28 +1085,35 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	KeyInit(&gInputDevices.keyboard);
 	for (;;)
 	{
-		int cmd1 = 0;
-		int cmd2 = 0;
+		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		GetPlayerCmd(&cmd1, &cmd2);
+		GetPlayerCmds(&cmds);
 
-		//MenuDisplay(&ms);
+		/*for (i = 0; i < numPlayers; i++)
+		{
+			MenuDisplay(&ms[i]);
+		}*/
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
 			return 0; // hack to allow exit
 		}
 
+		for (i = 0; i < numPlayers; i++)
+		{
+			MenuProcessCmd(&ms[i], cmds[i]);
+		}
+
 		switch (numPlayers)
 		{
 			case 1:
-				modes[0] = MakeSelection(modes[0], CenterX(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1);
+				modes[0] = MakeSelection(modes[0], CenterX(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmds[0]);
 				break;
 			case 2:
-				modes[0] = MakeSelection(modes[0], CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1);
-				modes[1] = MakeSelection(modes[1], CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmd2);
+				modes[0] = MakeSelection(modes[0], CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmds[0]);
+				modes[1] = MakeSelection(modes[1], CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmds[1]);
 				break;
 			default:
 				assert(0 && "not implemented");
@@ -1165,12 +1160,11 @@ int PlayerEquip(GraphicsDevice *graphics)
 
 	for (;;)
 	{
-		int cmd1 = 0;
-		int cmd2 = 0;
+		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		GetPlayerCmd(&cmd1, &cmd2);
+		GetPlayerCmds(&cmds);
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
@@ -1180,7 +1174,7 @@ int PlayerEquip(GraphicsDevice *graphics)
 		switch (gOptions.numPlayers)
 		{
 			case 1:
-				dones[0] = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1, dones[0]);
+				dones[0] = !WeaponSelection(CenterX(80), CHARACTER_PLAYER1, &gPlayerDatas[0], cmds[0], dones[0]);
 				ShowSelection(
 					CenterX(80),
 					&gPlayerDatas[0],
@@ -1188,14 +1182,14 @@ int PlayerEquip(GraphicsDevice *graphics)
 				ShowPlayerControls(CenterX(100), &gConfig.Input.PlayerKeys[0]);
 				break;
 			case 2:
-				dones[0] = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmd1, dones[0]);
+				dones[0] = !WeaponSelection(CenterOfLeft(50), CHARACTER_PLAYER1, &gPlayerDatas[0], cmds[0], dones[0]);
 				ShowSelection(
 					CenterOfLeft(50),
 					&gPlayerDatas[0],
 					&gCampaign.Setting.characters.players[0]);
 				ShowPlayerControls(CenterOfLeft(100), &gConfig.Input.PlayerKeys[0]);
 
-				dones[1] = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmd2, dones[1]);
+				dones[1] = !WeaponSelection(CenterOfRight(50), CHARACTER_PLAYER2, &gPlayerDatas[1], cmds[1], dones[1]);
 				ShowSelection(
 					CenterOfRight(50),
 					&gPlayerDatas[1],

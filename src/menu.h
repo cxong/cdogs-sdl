@@ -192,6 +192,7 @@ void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDispl
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuLoop(MenuSystem *menu);
 void MenuDisplay(MenuSystem *ms);
+void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
 
 void ShowControls(void);

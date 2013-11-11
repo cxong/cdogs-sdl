@@ -781,7 +781,13 @@ void EditCharacters(CampaignSettingNew *setting)
 void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)
 {
 	Vec2i bgSize = TextGetSize(s);
-	color_t bgColor = { 64, 64, 64, 196 };
-	DrawRectangle(device, pos, bgSize, bgColor, 0);
+	int padding = 4;
+	color_t bgColor = { 32, 32, 64, 255 };
+	DrawRectangle(
+		device,
+		Vec2iAdd(pos, Vec2iNew(-padding, -padding)),
+		Vec2iAdd(bgSize, Vec2iNew(2*padding, 2*padding)),
+		bgColor,
+		0);
 	DrawTextString(s, device, pos);
 }

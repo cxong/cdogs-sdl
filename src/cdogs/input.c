@@ -222,21 +222,16 @@ int GetOnePlayerCmd(
 }
 
 
-void GetPlayerCmd(int *cmd1, int *cmd2)
+void GetPlayerCmds(int (*cmds)[MAX_PLAYERS])
 {
 	int (*keyFunc)(keyboard_t *, int) = KeyIsPressed;
 	int (*mouseFunc)(Mouse *, int) = MouseIsPressed;
 	int (*joyFunc)(joystick_t *, int) = JoyIsPressed;
-
-	if (cmd1 != NULL)
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		*cmd1 = GetOnePlayerCmd(
-			&gConfig.Input.PlayerKeys[0], keyFunc, mouseFunc, joyFunc);
-	}
-	if (cmd2 != NULL)
-	{
-		*cmd2 = GetOnePlayerCmd(
-			&gConfig.Input.PlayerKeys[1], keyFunc, mouseFunc, joyFunc);
+		(*cmds)[i] = GetOnePlayerCmd(
+			&gConfig.Input.PlayerKeys[i], keyFunc, mouseFunc, joyFunc);
 	}
 }
 
@@ -278,42 +273,28 @@ int InputGetGameCmd(
 
 int GetMenuCmd(void)
 {
-	int cmd = 0;
-	if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
+	int cmds[MAX_PLAYERS];
+	keyboard_t *kb = &gInputDevices.keyboard;
+	if (KeyIsPressed(kb, SDLK_ESCAPE))
 	{
 		return CMD_ESC;
 	}
 
-	GetPlayerCmd(&cmd, NULL);
-	if (!cmd)
+	GetPlayerCmds(&cmds);
+	if (!cmds[0])
 	{
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_LEFT))
-		{
-			cmd |= CMD_LEFT;
-		}
-		else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_RIGHT))
-		{
-			cmd |= CMD_RIGHT;
-		}
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_UP))
-		{
-			cmd |= CMD_UP;
-		}
-		else if (KeyIsPressed(&gInputDevices.keyboard, SDLK_DOWN))
-		{
-			cmd |= CMD_DOWN;
-		}
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_RETURN))
-		{
-			cmd |= CMD_BUTTON1;
-		}
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_BACKSPACE))
-		{
-			cmd |= CMD_BUTTON2;
-		}
+		if (KeyIsPressed(kb, SDLK_LEFT))		cmds[0] |= CMD_LEFT;
+		else if (KeyIsPressed(kb, SDLK_RIGHT))	cmds[0] |= CMD_RIGHT;
+
+		if (KeyIsPressed(kb, SDLK_UP))			cmds[0] |= CMD_UP;
+		else if (KeyIsPressed(kb, SDLK_DOWN))	cmds[0] |= CMD_DOWN;
+
+		if (KeyIsPressed(kb, SDLK_RETURN))		cmds[0] |= CMD_BUTTON1;
+
+		if (KeyIsPressed(kb, SDLK_BACKSPACE))	cmds[0] |= CMD_BUTTON2;
 	}
 
-	return cmd;
+	return cmds[0];
 }
 
 void InputInit(InputDevices *devices, PicPaletted *mouseCursor)

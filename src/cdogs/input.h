@@ -51,6 +51,7 @@
 
 #include <string.h>
 
+#include "character.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -105,7 +106,7 @@ extern InputDevices gInputDevices;
 void InputChangeDevice(
 	InputDevices *devices, input_device_e *d, input_device_e *dOther);
 
-void GetPlayerCmd(int *cmd1, int *cmd2);
+void GetPlayerCmds(int (*cmds)[MAX_PLAYERS]);
 int GetMenuCmd(void);
 
 void InputInit(InputDevices *devices, PicPaletted *mouseCursor);
