@@ -1,4 +1,3 @@
-
 C-Dogs SDL Port v@VERSION@
 ========================
 
@@ -112,3 +111,5 @@ better) or anything else related to C-Dogs SDL, check out the mailing list:
 Or email:
 
 > Cong <congusbongus@gmail.com>
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/cxong/cdogs-sdl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
