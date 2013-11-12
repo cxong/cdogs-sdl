@@ -117,6 +117,11 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
 	menu->exitTypes[menu->numExitTypes - 1] = exitType;
 }
 
+int MenuIsExit(MenuSystem *ms)
+{
+	return MenuHasExitType(ms, ms->current->type);
+}
+
 void MenuProcessChangeKey(menu_t *menu);
 
 void MenuLoop(MenuSystem *menu)
@@ -138,7 +143,7 @@ void MenuLoop(MenuSystem *menu)
 			int cmd = GetMenuCmd();
 			MenuProcessCmd(menu, cmd);
 		}
-		if (MenuHasExitType(menu, menu->current->type))
+		if (MenuIsExit(menu))
 		{
 			break;
 		}
@@ -353,6 +358,19 @@ menu_t *MenuCreateReturn(const char *name, int returnCode)
 	return menu;
 }
 
+menu_t *MenuCreateCustom(
+	const char *name,
+	void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *),
+	int (*inputFunc)(int, void *),
+	void *data)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_CUSTOM);
+	menu->u.customData.displayFunc = displayFunc;
+	menu->u.customData.inputFunc = inputFunc;
+	menu->u.customData.data = data;
+	return menu;
+}
+
 menu_t *MenuCreateOptionChangeControl(
 	const char *name, input_device_e *device0, input_device_e *device1)
 {
@@ -370,19 +388,28 @@ void MenuDisplaySubmenus(MenuSystem *ms);
 
 void MenuDisplay(MenuSystem *ms)
 {
-	MenuDisplayItems(ms);
-
-	if (strlen(ms->current->u.normal.title) != 0)
+	menu_t *menu = ms->current;
+	if (menu->type == MENU_TYPE_CUSTOM)
 	{
-		DrawTextStringSpecial(
-			ms->current->u.normal.title,
-			TEXT_XCENTER | TEXT_TOP,
-			ms->pos,
-			ms->size,
-			Vec2iNew(0, ms->size.y / 12));
+		menu->u.customData.displayFunc(
+			ms->graphics, ms->pos, ms->size, menu->u.customData.data);
 	}
+	else
+	{
+		MenuDisplayItems(ms);
 
-	MenuDisplaySubmenus(ms);
+		if (strlen(menu->u.normal.title) != 0)
+		{
+			DrawTextStringSpecial(
+				menu->u.normal.title,
+				TEXT_XCENTER | TEXT_TOP,
+				ms->pos,
+				ms->size,
+				Vec2iNew(0, ms->size.y / 12));
+		}
+
+		MenuDisplaySubmenus(ms);
+	}
 }
 
 void MenuDisplayItems(MenuSystem *ms)
@@ -602,6 +629,31 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 }
 
 
+void MenuPlaySound(MenuSound s)
+{
+	switch (s)
+	{
+	case MENU_SOUND_ENTER:
+		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+		break;
+	case MENU_SOUND_BACK:
+		SoundPlay(&gSoundDevice, SND_PICKUP);
+		break;
+	case MENU_SOUND_SWITCH:
+		SoundPlay(&gSoundDevice, SND_DOOR);
+		break;
+	case MENU_SOUND_START:
+		SoundPlay(&gSoundDevice, SND_HAHAHA);
+		break;
+	case MENU_SOUND_ERROR:
+		SoundPlay(&gSoundDevice, SND_KILL4);
+		break;
+	default:
+		break;
+	}
+}
+
+
 void MenuDestroySubmenus(menu_t *menu);
 
 void MenuDestroy(MenuSystem *menu)
@@ -672,28 +724,39 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		menuToChange = MenuProcessEscCmd(menu);
 		if (menuToChange != NULL)
 		{
-			SoundPlay(&gSoundDevice, SND_PICKUP);
+			MenuPlaySound(MENU_SOUND_BACK);
 			ms->current = menuToChange;
 			return;
 		}
 	}
-	menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
-	if (menuToChange != NULL)
+	if (menu->type == MENU_TYPE_CUSTOM)
 	{
-		debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
-		// TODO: refactor menu change sound
-		if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
+		if (menu->u.customData.inputFunc(cmd, menu->u.customData.data))
 		{
-			SoundPlay(&gSoundDevice, SND_HAHAHA);
+			ms->current = menu->parentMenu;
+			return;
 		}
-		else
-		{
-			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
-		}
-		ms->current = menuToChange;
-		return;
 	}
-	MenuChangeIndex(menu, cmd);
+	else
+	{
+		menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
+		if (menuToChange != NULL)
+		{
+			debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
+			// TODO: refactor menu change sound
+			if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
+			{
+				MenuPlaySound(MENU_SOUND_START);
+			}
+			else
+			{
+				MenuPlaySound(MENU_SOUND_ENTER);
+			}
+			ms->current = menuToChange;
+			return;
+		}
+		MenuChangeIndex(menu, cmd);
+	}
 }
 
 menu_t *MenuProcessEscCmd(menu_t *menu)
@@ -704,7 +767,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 	{
 		if (menu->u.normal.index != quitMenuIndex)
 		{
-			SoundPlay(&gSoundDevice, SND_DOOR);
+			MenuPlaySound(MENU_SOUND_SWITCH);
 			menu->u.normal.index = quitMenuIndex;
 		}
 		else
@@ -775,6 +838,7 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_CAMPAIGNS:
 		case MENU_TYPE_KEYS:
+		case MENU_TYPE_CUSTOM:
 			return subMenu;
 		case MENU_TYPE_CAMPAIGN_ITEM:
 			MenuLoadCampaign(&subMenu->u.campaign);
@@ -829,7 +893,7 @@ void MenuProcessChangeKey(menu_t *menu)
 
 	if (key == SDLK_ESCAPE)
 	{
-		SoundPlay(&gSoundDevice, SND_PICKUP);
+		MenuPlaySound(MENU_SOUND_BACK);
 	}
 	else if (KeyAvailable(
 		key,
@@ -848,11 +912,11 @@ void MenuProcessChangeKey(menu_t *menu)
 		{
 			gConfig.Input.PlayerKeys[0].Keys.map = key;
 		}
-		SoundPlay(&gSoundDevice, SND_EXPLOSION);
+		MenuPlaySound(MENU_SOUND_ENTER);
 	}
 	else
 	{
-		SoundPlay(&gSoundDevice, SND_KILL4);
+		MenuPlaySound(MENU_SOUND_ERROR);
 	}
 	menu->u.normal.changeKeyMenu = NULL;
 }
@@ -872,7 +936,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			}
 		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
 			MENU_TYPE_SEPARATOR);
-		SoundPlay(&gSoundDevice, SND_DOOR);
+		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
@@ -885,7 +949,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			}
 		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
 			MENU_TYPE_SEPARATOR);
-		SoundPlay(&gSoundDevice, SND_DOOR);
+		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	menu->u.normal.scroll =
 		CLAMP(menu->u.normal.scroll,
@@ -901,7 +965,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 {
 	Config lastConfig = gConfig;
-	SoundPlay(&gSoundDevice, SND_SWITCH);
+	MenuPlaySound(MENU_SOUND_SWITCH);
 	switch (menu->type)
 	{
 	case MENU_TYPE_SET_OPTION_TOGGLE:

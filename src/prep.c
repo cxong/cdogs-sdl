@@ -94,7 +94,7 @@
 
 #define AVAILABLE_FACES PLAYER_FACE_COUNT
 
-//#define NEW_MENU 1
+#define NEW_MENU 1
 
 
 static const char *faceNames[PLAYER_FACE_COUNT] = {
@@ -459,12 +459,14 @@ static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 #ifdef NEW_MENU
 typedef struct
 {
-	int idx;
-} DrawNameMenuData;
+	int selection;
+	struct PlayerData *pData;
+} NameMenuData;
+
 static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	int i;
-	DrawNameMenuData *
+	NameMenuData *d = data;
 
 #define ENTRY_COLS	10
 #define	ENTRY_SPACING	12
@@ -476,28 +478,111 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 		pos, size,
 		CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS));
 
+	UNUSED(g);
+
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
 		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			 y + (i / ENTRY_COLS) * CDogsTextHeight());
 
-		if (i == selection[idx])
+		if (i == d->selection)
 		{
 			CDogsTextCharWithTable(letters[i], &tableFlamed);
 		}
 		else
+		{
 			CDogsTextChar(letters[i]);
-/*
-		DisplayMenuItem(x + (i % 10) * 12,
-				80 + (i / 10) * CDogsTextHeight(), s,
-				i == selection[idx]);
-*/
+		}
 	}
 
 	DisplayMenuItem(
 		x + (i % ENTRY_COLS) * ENTRY_SPACING,
 		y + (i / ENTRY_COLS) * CDogsTextHeight(),
-		endChoice, i == selection[idx]);
+		endChoice, i == d->selection);
+}
+
+static int HandleInputDrawMenu(int cmd, void *data)
+{
+	NameMenuData *d = data;
+
+	if (cmd & CMD_BUTTON1)
+	{
+		if (d->selection == (int)strlen(letters))
+		{
+			MenuPlaySound(MENU_SOUND_ENTER);
+			return 1;
+		}
+
+		if (strlen(d->pData->name) < sizeof(d->pData->name) - 1)
+		{
+			size_t l = strlen(d->pData->name);
+			d->pData->name[l + 1] = 0;
+			if (l > 0 && d->pData->name[l - 1] != ' ')
+			{
+				d->pData->name[l] = smallLetters[d->selection];
+			}
+			else
+			{
+				d->pData->name[l] = letters[d->selection];
+			}
+			MenuPlaySound(MENU_SOUND_ENTER);
+		}
+		else
+		{
+			MenuPlaySound(MENU_SOUND_ERROR);
+		}
+	}
+	else if (cmd & CMD_BUTTON2)
+	{
+		if (d->pData->name[0])
+		{
+			d->pData->name[strlen(d->pData->name) - 1] = 0;
+			MenuPlaySound(MENU_SOUND_BACK);
+		}
+		else
+		{
+			MenuPlaySound(MENU_SOUND_ERROR);
+		}
+	}
+	else if (cmd & CMD_LEFT)
+	{
+		if (d->selection > 0)
+		{
+			d->selection--;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_RIGHT)
+	{
+		if (d->selection < (int)strlen(letters))
+		{
+			d->selection++;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_UP)
+	{
+		if (d->selection > 9)
+		{
+			d->selection -= 10;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_DOWN)
+	{
+		if (d->selection < (int)strlen(letters) - 9)
+		{
+			d->selection += 10;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+		else if (d->selection < (int)strlen(letters))
+		{
+			d->selection = (int)strlen(letters);
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+
+	return 0;
 }
 #endif
 
@@ -1066,7 +1151,8 @@ static menu_t *MenuCreateName(const char *name)
 
 static void MenuCreatePlayerSelection(
 	MenuSystem *ms,
-	int numPlayers, int player, InputDevices *input, GraphicsDevice *graphics)
+	int numPlayers, int player, InputDevices *input, GraphicsDevice *graphics,
+	NameMenuData *nameMenuData)
 {
 	Vec2i pos = Vec2iZero();
 	Vec2i size = Vec2iZero();
@@ -1096,9 +1182,11 @@ static void MenuCreatePlayerSelection(
 		0);
 	MenuAddSubmenu(
 		ms->root,
-		MenuCreateName("Name"));
+		MenuCreateCustom(
+			"Name", DrawNameMenu, HandleInputDrawMenu, nameMenuData));
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms->root, MenuCreateBack("Done"));
+	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
 }
 
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
@@ -1106,9 +1194,13 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	int modes[MAX_PLAYERS];
 	int i;
 	MenuSystem ms[MAX_PLAYERS];
+	NameMenuData nameMenuDatas[MAX_PLAYERS];
 	for (i = 0; i < numPlayers; i++)
 	{
-		MenuCreatePlayerSelection(&ms[i], numPlayers, i, &gInputDevices, graphics);
+		nameMenuDatas[i].selection = (int)strlen(letters);
+		nameMenuDatas[i].pData = &gPlayerDatas[i];
+		MenuCreatePlayerSelection(
+			&ms[i], numPlayers, i, &gInputDevices, graphics, &nameMenuDatas[i]);
 	}
 
 	for (i = 0; i < MAX_PLAYERS; i++)
@@ -1153,6 +1245,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			MenuProcessCmd(&ms[i], cmds[i]);
 		}
 
+#ifndef NEW_MENU
 		switch (numPlayers)
 		{
 			case 1:
@@ -1166,10 +1259,17 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 				assert(0 && "not implemented");
 				break;
 		}
+#endif
 		
-		for (i = 0; i < MAX_PLAYERS; i++)
+		for (i = 0; i < numPlayers; i++)
 		{
-			if (modes[i] != MODE_DONE)
+			if (
+#ifdef NEW_MENU
+				!MenuIsExit(&ms[i])
+#else
+				modes[i] != MODE_DONE
+#endif
+				)
 			{
 				isDone = 0;
 			}

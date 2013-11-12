@@ -74,7 +74,8 @@ typedef enum
 	MENU_TYPE_BACK,
 	MENU_TYPE_QUIT,
 	MENU_TYPE_RETURN,	// Return with a code
-	MENU_TYPE_SEPARATOR
+	MENU_TYPE_SEPARATOR,
+	MENU_TYPE_CUSTOM				// use custom callbacks for input and drawing
 } menu_type_e;
 
 typedef enum
@@ -168,6 +169,17 @@ typedef struct menu
 			input_keys_t *keysOther;
 		} changeKey;
 		int returnCode;
+		struct
+		{
+			// Callback for drawing custom menu
+			// graphics, pos, size, data
+			void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
+			// Callback for handling user input
+			// cmd, data
+			// returns: 0 if stay on menu, 1 if exit from menu
+			int (*inputFunc)(int, void *);
+			void *data;
+		} customData;
 	} u;
 } menu_t;
 
@@ -184,12 +196,22 @@ typedef struct
 	Vec2i size;
 } MenuSystem;
 
+typedef enum
+{
+	MENU_SOUND_ENTER,
+	MENU_SOUND_BACK,
+	MENU_SOUND_SWITCH,
+	MENU_SOUND_START,
+	MENU_SOUND_ERROR
+} MenuSound;
+
 
 void MenuSystemInit(
 	MenuSystem *ms,
 	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
+int MenuIsExit(MenuSystem *ms);
 void MenuLoop(MenuSystem *menu);
 void MenuDisplay(MenuSystem *ms);
 void MenuProcessCmd(MenuSystem *ms, int cmd);
@@ -230,6 +252,13 @@ menu_t *MenuCreateOptionRangeGetSet(
 menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
 menu_t *MenuCreateReturn(const char *name, int returnCode);
+menu_t *MenuCreateCustom(
+	const char *name,
+	void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *),
+	int (*inputFunc)(int, void *),
+	void *data);
+
+void MenuPlaySound(MenuSound s);
 
 void MenuDestroy(MenuSystem *menu);
 
