@@ -141,7 +141,7 @@ else()
 	set(LIB_EXTENSION ".so")
 endif()
 install(
-	PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION} src/libhqx${LIB_EXTENSION}
+	PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION}
 	DESTINATION ${INSTALL_PREFIX}/bin)
 
 # Installation
