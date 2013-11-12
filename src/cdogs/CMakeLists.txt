@@ -1,6 +1,6 @@
 add_subdirectory(hqx/src)
 include_directories(hqx/src)
-
+add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actors.c
 	ai.c
@@ -90,4 +90,13 @@ set(CDOGS_HEADERS
 	utils.h
 	vector.h
 	weapon.h)
-add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS})
+set(HQX_SOURCES
+	hqx/src/common.c
+	hqx/src/hq2x.c
+	hqx/src/hq3x.c
+	hqx/src/hq4x.c
+	hqx/src/init.c)
+set(HQX_HEADERS
+	hqx/src/common.h
+	hqx/src/hqx.h)
+add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})

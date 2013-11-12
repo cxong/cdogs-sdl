@@ -233,4 +233,8 @@ menu_t *MenuCreateReturn(const char *name, int returnCode);
 
 void MenuDestroy(MenuSystem *menu);
 
+// Helper macros for positioning
+#define CENTER_X(pos, size, w) ((pos).x + ((size).x - (w)) / 2)
+#define CENTER_Y(pos, size, h) ((pos).y + ((size).y - (h)) / 2)
+
 #endif

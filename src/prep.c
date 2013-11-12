@@ -94,6 +94,8 @@
 
 #define AVAILABLE_FACES PLAYER_FACE_COUNT
 
+//#define NEW_MENU 1
+
 
 static const char *faceNames[PLAYER_FACE_COUNT] = {
 	"Jones",
@@ -305,16 +307,14 @@ static void ShowSelection(int x, struct PlayerData *data, Character *ch)
 	}
 }
 
+static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
+static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 {
 	int i;
 	int y;
 
 	//char s[2];
-	static char letters[] =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
-	static char smallLetters[] =
-		"abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 	static int selection[2] = { -1, -1 };
 
 	// Kludge since Watcom won't let me initialize selection with a strlen()
@@ -455,6 +455,51 @@ static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 
 	return 1;
 }
+
+#ifdef NEW_MENU
+typedef struct
+{
+	int idx;
+} DrawNameMenuData;
+static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+{
+	int i;
+	DrawNameMenuData *
+
+#define ENTRY_COLS	10
+#define	ENTRY_SPACING	12
+
+	int x = CENTER_X(
+		pos, size,
+		(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
+	int y = CENTER_Y(
+		pos, size,
+		CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS));
+
+	for (i = 0; i < (int)strlen(letters); i++)
+	{
+		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			 y + (i / ENTRY_COLS) * CDogsTextHeight());
+
+		if (i == selection[idx])
+		{
+			CDogsTextCharWithTable(letters[i], &tableFlamed);
+		}
+		else
+			CDogsTextChar(letters[i]);
+/*
+		DisplayMenuItem(x + (i % 10) * 12,
+				80 + (i / 10) * CDogsTextHeight(), s,
+				i == selection[idx]);
+*/
+	}
+
+	DisplayMenuItem(
+		x + (i % ENTRY_COLS) * ENTRY_SPACING,
+		y + (i / ENTRY_COLS) * CDogsTextHeight(),
+		endChoice, i == selection[idx]);
+}
+#endif
 
 static int IndexToHead(int idx)
 {
@@ -1091,10 +1136,12 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		GraphicsBlitBkg(graphics);
 		GetPlayerCmds(&cmds);
 
-		/*for (i = 0; i < numPlayers; i++)
+#ifdef NEW_MENU
+		for (i = 0; i < numPlayers; i++)
 		{
 			MenuDisplay(&ms[i]);
-		}*/
+		}
+#endif
 
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{

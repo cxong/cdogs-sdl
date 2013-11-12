@@ -72,9 +72,8 @@
 #include "autosave.h"
 
 
-#define MS_CENTER_X(ms, w) ((ms).pos.x + ((ms).size.x - (w)) / 2)
-#define MS_CENTER_Y(ms, h) ((ms).pos.y + ((ms).size.y - (h)) / 2)
-
+#define MS_CENTER_X(ms, w) CENTER_X((ms).pos, (ms).size, w)
+#define MS_CENTER_Y(ms, h) CENTER_Y((ms).pos, (ms).size, h)
 
 void MenuSystemInit(
 	MenuSystem *ms,

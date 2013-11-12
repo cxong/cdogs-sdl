@@ -58,7 +58,6 @@
 
 #include "config.h"
 #include "grafx.h"
-#include "events.h"
 #include "palette.h"
 #include "utils.h" /* for debug() */
 
