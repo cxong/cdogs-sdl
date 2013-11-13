@@ -58,6 +58,7 @@
 #include <SDL_mouse.h>
 
 #include "actors.h"
+#include "ai.h"
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
@@ -385,6 +386,8 @@ void GrafxMakeBackground(
 	DrawBufferInit(&buffer, Vec2iNew(128, 128));
 	SetupMission(missionIdx, 1, &gCampaign);
 	SetupMap();
+	InitializeBadGuys();
+	CreateEnemies();
 	MapMarkAllAsVisited();
 	DrawBufferSetFromMap(
 		&buffer, gMap,
@@ -393,6 +396,7 @@ void GrafxMakeBackground(
 		Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero());
 	DrawBufferTerminate(&buffer);
+	KillAllActors();
 	KillAllObjects();
 	FreeTriggersAndWatches();
 
