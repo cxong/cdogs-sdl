@@ -94,7 +94,7 @@
 
 #define AVAILABLE_FACES PLAYER_FACE_COUNT
 
-#define NEW_MENU 1
+//#define NEW_MENU 1
 
 
 static const char *faceNames[PLAYER_FACE_COUNT] = {
@@ -456,7 +456,6 @@ static int NameSelection(int x, int idx, struct PlayerData *data, int cmd)
 	return 1;
 }
 
-#ifdef NEW_MENU
 typedef struct
 {
 	int selection;
@@ -584,7 +583,6 @@ static int HandleInputDrawMenu(int cmd, void *data)
 
 	return 0;
 }
-#endif
 
 static int IndexToHead(int idx)
 {

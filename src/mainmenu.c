@@ -339,12 +339,14 @@ menu_t *MenuCreateOptionsGraphics(const char *name)
 			"Splitscreen always",
 			&gConfig.Interface.SplitscreenAlways,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+#ifndef __ANDROID__
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
-			"Video fullscreen",
+			"Fullscreen",
 			&gConfig.Graphics.Fullscreen,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+#endif
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
@@ -395,7 +397,9 @@ menu_t *MenuCreateOptionsControls(const char *name)
 			"Swap buttons joystick 2",
 			&gConfig.Input.SwapButtonsJoystick2,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+#ifndef __ANDROID__
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
+#endif
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionFunc(
