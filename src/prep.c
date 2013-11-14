@@ -1008,17 +1008,6 @@ static int MakeSelection(
 	return mode;
 }
 
-static menu_t *MenuCreateName(const char *name)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"",
-		MENU_TYPE_NORMAL,
-		0);
-	MenuAddSubmenu(menu, MenuCreateBack("(End)"));
-	return menu;
-}
-
 typedef struct
 {
 	Character *c;
