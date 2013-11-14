@@ -94,6 +94,14 @@ typedef enum
 	MENU_DISPLAY_ITEMS_AUTHORS	= 0x02
 } menu_display_items_e;
 
+// Callback for drawing custom menu
+			// graphics, pos, size, data
+typedef void (*MenuDisplayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
+// Callback for handling user input
+// cmd, data
+// returns: 0 if stay on menu, 1 if exit from menu
+typedef int (*MenuInputFunc)(int, void *);
+
 typedef struct menu
 {
 	char name[64];
@@ -171,17 +179,18 @@ typedef struct menu
 		int returnCode;
 		struct
 		{
-			// Callback for drawing custom menu
-			// graphics, pos, size, data
-			void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
-			// Callback for handling user input
-			// cmd, data
-			// returns: 0 if stay on menu, 1 if exit from menu
-			int (*inputFunc)(int, void *);
+			MenuDisplayFunc displayFunc;
+			MenuInputFunc inputFunc;
 			void *data;
 		} customData;
 	} u;
 } menu_t;
+
+typedef enum
+{
+	MENU_ALIGN_CENTER,
+	MENU_ALIGN_LEFT
+} MenuAlignStyle;
 
 typedef struct
 {
@@ -194,6 +203,10 @@ typedef struct
 	GraphicsDevice *graphics;
 	Vec2i pos;
 	Vec2i size;
+	MenuAlignStyle align;
+	MenuDisplayFunc *customDisplayFuncs;
+	void **customDisplayDatas;
+	int numCustomDisplayFuncs;
 } MenuSystem;
 
 typedef enum
@@ -209,8 +222,11 @@ typedef enum
 void MenuSystemInit(
 	MenuSystem *ms,
 	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
+void MenuSystemTerminate(MenuSystem *ms);
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
+void MenuSystemAddCustomDisplay(
+	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
 void MenuLoop(MenuSystem *menu);
 void MenuDisplay(MenuSystem *ms);
@@ -254,8 +270,7 @@ menu_t *MenuCreateBack(const char *name);
 menu_t *MenuCreateReturn(const char *name, int returnCode);
 menu_t *MenuCreateCustom(
 	const char *name,
-	void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *),
-	int (*inputFunc)(int, void *),
+	MenuDisplayFunc displayFunc, MenuInputFunc inputFunc,
 	void *data);
 
 void MenuPlaySound(MenuSound s);
@@ -263,7 +278,7 @@ void MenuPlaySound(MenuSound s);
 void MenuDestroy(MenuSystem *menu);
 
 // Helper macros for positioning
-#define CENTER_X(pos, size, w) ((pos).x + ((size).x - (w)) / 2)
-#define CENTER_Y(pos, size, h) ((pos).y + ((size).y - (h)) / 2)
+#define CENTER_X(_pos, _size, _w) ((_pos).x + ((_size).x - (_w)) / 2)
+#define CENTER_Y(_pos, _size, _h) ((_pos).y + ((_size).y - (_h)) / 2)
 
 #endif

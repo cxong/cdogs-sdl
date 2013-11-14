@@ -57,5 +57,9 @@ void FixBuffer(DrawBuffer *b, int isShadow);
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun);
+void DrawCharacterSimple(
+	Character *c, Vec2i pos,
+	direction_e dir, int state,
+	int gunPic, gunstate_e gunState, TranslationTable *table);
 
 #endif

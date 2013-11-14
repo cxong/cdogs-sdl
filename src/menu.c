@@ -85,6 +85,18 @@ void MenuSystemInit(
 	ms->graphics = graphics;
 	ms->pos = pos;
 	ms->size = size;
+	ms->align = MENU_ALIGN_CENTER;
+}
+
+void MenuDestroySubmenus(menu_t *menu);
+
+void MenuSystemTerminate(MenuSystem *ms)
+{
+	MenuDestroySubmenus(ms->root);
+	CFREE(ms->root);
+	CFREE(ms->customDisplayFuncs);
+	CFREE(ms->customDisplayDatas);
+	memset(ms, 0, sizeof *ms);
 }
 
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer)
@@ -115,6 +127,20 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
 	menu->numExitTypes++;
 	CREALLOC(menu->exitTypes, menu->numExitTypes * sizeof *menu->exitTypes);
 	menu->exitTypes[menu->numExitTypes - 1] = exitType;
+}
+
+void MenuSystemAddCustomDisplay(
+	MenuSystem *ms, MenuDisplayFunc func, void *data)
+{
+	ms->numCustomDisplayFuncs++;
+	CREALLOC(
+		ms->customDisplayFuncs,
+		ms->numCustomDisplayFuncs * sizeof *ms->customDisplayFuncs);
+	ms->customDisplayFuncs[ms->numCustomDisplayFuncs - 1] = func;
+	CREALLOC(
+		ms->customDisplayDatas,
+		ms->numCustomDisplayFuncs * sizeof *ms->customDisplayDatas);
+	ms->customDisplayDatas[ms->numCustomDisplayFuncs - 1] = data;
 }
 
 int MenuIsExit(MenuSystem *ms)
@@ -389,6 +415,7 @@ void MenuDisplaySubmenus(MenuSystem *ms);
 void MenuDisplay(MenuSystem *ms)
 {
 	menu_t *menu = ms->current;
+	int i;
 	if (menu->type == MENU_TYPE_CUSTOM)
 	{
 		menu->u.customData.displayFunc(
@@ -410,6 +437,11 @@ void MenuDisplay(MenuSystem *ms)
 
 		MenuDisplaySubmenus(ms);
 	}
+	for (i = 0; i < ms->numCustomDisplayFuncs; i++)
+	{
+		ms->customDisplayFuncs[i](
+			ms->graphics, ms->pos, ms->size, ms->customDisplayDatas[i]);
+	} 
 }
 
 void MenuDisplayItems(MenuSystem *ms)
@@ -459,10 +491,21 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					maxWidth = width;
 				}
 			}
-			x = MS_CENTER_X(*ms, maxWidth);
-			if (!isCentered)
+			switch (ms->align)
 			{
-				x -= 20;
+			case MENU_ALIGN_CENTER:
+				x = MS_CENTER_X(*ms, maxWidth);
+				if (!isCentered)
+				{
+					x -= 20;
+				}
+				break;
+			case MENU_ALIGN_LEFT:
+				x = ms->pos.x;
+				break;
+			default:
+				assert(0 && "unknown alignment");
+				break;
 			}
 			yStart = MS_CENTER_Y(
 				*ms, menu->u.normal.numSubMenus * CDogsTextHeight());
@@ -654,16 +697,13 @@ void MenuPlaySound(MenuSound s)
 }
 
 
-void MenuDestroySubmenus(menu_t *menu);
-
 void MenuDestroy(MenuSystem *menu)
 {
 	if (menu == NULL || menu->root == NULL)
 	{
 		return;
 	}
-	MenuDestroySubmenus(menu->root);
-	CFREE(menu->root);
+	MenuSystemTerminate(menu);
 	CFREE(menu);
 }
 

@@ -358,7 +358,7 @@ void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 	}
 }
 
-static void DrawCharacter(
+void DrawCharacterSimple(
 	Character *c, Vec2i pos,
 	direction_e dir, int state,
 	int gunPic, gunstate_e gunState, TranslationTable *table)
@@ -478,14 +478,14 @@ void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 		CDogsTextStringAt(pos.x, pos.y, name);
 	}
 
-	DrawCharacter(
+	DrawCharacterSimple(
 		c, playerPos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 }
 
 void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun)
 {
-	DrawCharacter(
+	DrawCharacterSimple(
 		c, Vec2iNew(x, y),
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 	if (hilite)

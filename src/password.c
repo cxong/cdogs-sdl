@@ -292,6 +292,7 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 	MenuSystem startMenu;
 	int mission = TestPassword(password);
 	int hasPassword = mission > 0;
+	int res = 0;
 	MenuSystemInit(
 		&startMenu, &gInputDevices, graphics, Vec2iZero(),
 		Vec2iNew(
@@ -306,22 +307,28 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 		returnCode = startMenu.current->u.returnCode;
 		if (returnCode == RETURN_CODE_CONTINUE)
 		{
-			return mission;
+			res = mission;
+			goto bail;
 		}
 		else if (returnCode == RETURN_CODE_START)
 		{
-			return 0;
+			goto bail;
 		}
 		else if (returnCode == RETURN_CODE_ENTER_CODE)
 		{
 			int enteredMission = EnterCode(graphics, password);
 			if (enteredMission > 0)
 			{
-				return enteredMission;
+				res = enteredMission;
+				goto bail;
 			}
 			MenuReset(&startMenu);
 		}
 	}
+
+bail:
+	MenuSystemTerminate(&startMenu);
+	return res;
 }
 
 static void MenuCreateStart(MenuSystem *ms, int hasPassword)
