@@ -94,6 +94,8 @@ typedef enum
 	MENU_DISPLAY_ITEMS_AUTHORS	= 0x02
 } menu_display_items_e;
 
+typedef struct menu menu_t;
+
 // Callback for drawing custom menu
 			// graphics, pos, size, data
 typedef void (*MenuDisplayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
@@ -101,12 +103,18 @@ typedef void (*MenuDisplayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
 // cmd, data
 // returns: 0 if stay on menu, 1 if exit from menu
 typedef int (*MenuInputFunc)(int, void *);
+// Callback for processing custom menu function post input
+// menu, cmd, data
+typedef void(*MenuPostInputFunc)(menu_t *, int cmd, void *);
 
-typedef struct menu
+struct menu
 {
 	char name[64];
 	menu_type_e type;
 	struct menu *parentMenu;
+	MenuPostInputFunc *customPostInputFuncs;
+	void **customPostInputDatas;
+	int numCustomPostInputs;
 	union
 	{
 		// normal menu, with sub menus
@@ -184,7 +192,7 @@ typedef struct menu
 			void *data;
 		} customData;
 	} u;
-} menu_t;
+};
 
 typedef enum
 {
@@ -243,6 +251,7 @@ menu_t *MenuCreateNormal(
 	menu_type_e type,
 	int displayItems);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
+void MenuAddPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 
 menu_t *MenuCreateOptionToggle(
 	const char *name, int *config, menu_option_display_style_e style);

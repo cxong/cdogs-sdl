@@ -94,7 +94,7 @@
 
 #define AVAILABLE_FACES PLAYER_FACE_COUNT
 
-//#define NEW_MENU 1
+#define NEW_MENU 1
 
 
 static const char *faceNames[PLAYER_FACE_COUNT] = {
@@ -1010,10 +1010,20 @@ static int MakeSelection(
 
 typedef struct
 {
+	int *property;
+	const char **menu;
+	int menuCount;
+	int (*func)(int);
+	Character *c;
+	struct PlayerData *pData;
+} AppearanceMenuData;
+typedef struct
+{
 	Character *c;
 	struct PlayerData *pData;
 	menu_t **currentMenu;
 	int nameMenuSelection;
+	AppearanceMenuData faceData;
 } PlayerSelectMenuData;
 
 static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
@@ -1146,7 +1156,7 @@ static void MenuDisplayPlayer(
 	Vec2i namePos;
 	pos.x -= size.x;	// move to left half of screen
 	playerPos = Vec2iNew(
-		pos.x + size.x * 3 / 4 - 16 / 2, CENTER_Y(pos, size, 0));
+		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
 	namePos = Vec2iAdd(playerPos, Vec2iNew(-20, -36));
 
 	UNUSED(g);
@@ -1165,6 +1175,27 @@ static void MenuDisplayPlayer(
 	DrawCharacterSimple(
 		d->c, playerPos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &d->c->table);
+}
+
+static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
+{
+	AppearanceMenuData *d = data;
+	UNUSED(cmd);
+	*d->property = d->func(menu->u.normal.index);
+	SetPlayer(d->c, d->pData);
+}
+
+static menu_t *MenuCreateAppearance(
+	const char *name, AppearanceMenuData *faceData)
+{
+	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
+	int i;
+	for (i = 0; i < faceData->menuCount; i++)
+	{
+		MenuAddSubmenu(menu, MenuCreateBack(faceData->menu[i]));
+	}
+	MenuAddPostInputFunc(menu, PostInputAppearanceMenu, faceData);
+	return menu;
 }
 
 static void MenuCreatePlayerSelection(
@@ -1203,6 +1234,15 @@ static void MenuCreatePlayerSelection(
 		ms->root,
 		MenuCreateCustom(
 			"Name", DrawNameMenu, HandleInputDrawMenu, data));
+
+	data->faceData.c = data->c;
+	data->faceData.pData = data->pData;
+	data->faceData.menu = faceNames;
+	data->faceData.menuCount = AVAILABLE_FACES;
+	data->faceData.property = &data->pData->looks.face;
+	data->faceData.func = IndexToHead;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Face", &data->faceData));
+
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);

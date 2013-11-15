@@ -225,7 +225,7 @@ int MenuTypeLeftRightMoves(menu_type_e type)
 menu_t *MenuCreate(const char *name, menu_type_e type)
 {
 	menu_t *menu;
-	CMALLOC(menu, sizeof(menu_t));
+	CCALLOC(menu, sizeof(menu_t));
 	strcpy(menu->name, name);
 	menu->type = type;
 	menu->parentMenu = NULL;
@@ -288,6 +288,19 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	{
 		menu->u.normal.index++;
 	}
+}
+
+void MenuAddPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
+{
+	menu->numCustomPostInputs++;
+	CREALLOC(
+		menu->customPostInputFuncs,
+		menu->numCustomPostInputs * sizeof *menu->customPostInputFuncs);
+	menu->customPostInputFuncs[menu->numCustomPostInputs - 1] = func;
+	CREALLOC(
+		menu->customPostInputDatas,
+		menu->numCustomPostInputs * sizeof *menu->customPostInputDatas);
+	menu->customPostInputDatas[menu->numCustomPostInputs - 1] = data;
 }
 
 menu_t *MenuCreateOptionRange(
@@ -720,6 +733,8 @@ void MenuDestroySubmenus(menu_t *menu)
 		{
 			menu_t *subMenu = &menu->u.normal.subMenus[i];
 			MenuDestroySubmenus(subMenu);
+			CFREE(subMenu->customPostInputFuncs);
+			CFREE(subMenu->customPostInputDatas);
 		}
 		CFREE(menu->u.normal.subMenus);
 	}
@@ -759,6 +774,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
 	menu_t *menu = ms->current;
 	menu_t *menuToChange = NULL;
+	int i;
 	if (cmd == CMD_ESC)
 	{
 		menuToChange = MenuProcessEscCmd(menu);
@@ -766,7 +782,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		{
 			MenuPlaySound(MENU_SOUND_BACK);
 			ms->current = menuToChange;
-			return;
+			goto bail;
 		}
 	}
 	if (menu->type == MENU_TYPE_CUSTOM)
@@ -774,7 +790,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		if (menu->u.customData.inputFunc(cmd, menu->u.customData.data))
 		{
 			ms->current = menu->parentMenu;
-			return;
+			goto bail;
 		}
 	}
 	else
@@ -793,9 +809,16 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 				MenuPlaySound(MENU_SOUND_ENTER);
 			}
 			ms->current = menuToChange;
-			return;
+			goto bail;
 		}
 		MenuChangeIndex(menu, cmd);
+	}
+
+bail:
+	for (i = 0; i < menu->numCustomPostInputs; i++)
+	{
+		menu->customPostInputFuncs[i](
+			menu, cmd, menu->customPostInputDatas[i]);
 	}
 }
 
