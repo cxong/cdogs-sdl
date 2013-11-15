@@ -92,8 +92,6 @@
 #define PLAYER_HAIR_COUNT   8
 
 
-#define AVAILABLE_FACES PLAYER_FACE_COUNT
-
 #define NEW_MENU 1
 
 
@@ -617,7 +615,7 @@ static int FaceSelection(int x, int idx, struct PlayerData *data, int cmd)
 
 	return AppearanceSelection(
 		faceNames,
-		AVAILABLE_FACES,
+		PLAYER_FACE_COUNT,
 		x, idx, data, &data->looks.face, IndexToHead, cmd, selection);
 }
 
@@ -809,7 +807,7 @@ void UseTemplate(int character, struct PlayerData *data,
 	memset(data->name, 0, sizeof(data->name));
 	strncpy(data->name, t->name, sizeof(data->name) - 1);
 
-	data->looks.face = IndexToHead(t->head < AVAILABLE_FACES ? t->head : 0);
+	data->looks.face = IndexToHead(t->head < PLAYER_FACE_COUNT ? t->head : 0);
 	data->looks.body = t->body;
 	data->looks.arm = t->arms;
 	data->looks.leg = t->legs;
@@ -1024,6 +1022,11 @@ typedef struct
 	menu_t **currentMenu;
 	int nameMenuSelection;
 	AppearanceMenuData faceData;
+	AppearanceMenuData skinData;
+	AppearanceMenuData hairData;
+	AppearanceMenuData armsData;
+	AppearanceMenuData bodyData;
+	AppearanceMenuData legsData;
 } PlayerSelectMenuData;
 
 static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
@@ -1064,7 +1067,7 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 		endChoice, i == d->nameMenuSelection);
 }
 
-static int HandleInputDrawMenu(int cmd, void *data)
+static int HandleInputNameMenu(int cmd, void *data)
 {
 	PlayerSelectMenuData *d = data;
 
@@ -1233,15 +1236,55 @@ static void MenuCreatePlayerSelection(
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCustom(
-			"Name", DrawNameMenu, HandleInputDrawMenu, data));
+			"Name", DrawNameMenu, HandleInputNameMenu, data));
 
 	data->faceData.c = data->c;
 	data->faceData.pData = data->pData;
 	data->faceData.menu = faceNames;
-	data->faceData.menuCount = AVAILABLE_FACES;
+	data->faceData.menuCount = PLAYER_FACE_COUNT;
 	data->faceData.property = &data->pData->looks.face;
 	data->faceData.func = IndexToHead;
 	MenuAddSubmenu(ms->root, MenuCreateAppearance("Face", &data->faceData));
+
+	data->skinData.c = data->c;
+	data->skinData.pData = data->pData;
+	data->skinData.menu = skinNames;
+	data->skinData.menuCount = PLAYER_SKIN_COUNT;
+	data->skinData.property = &data->pData->looks.skin;
+	data->skinData.func = IndexToSkin;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Skin", &data->skinData));
+
+	data->hairData.c = data->c;
+	data->hairData.pData = data->pData;
+	data->hairData.menu = hairNames;
+	data->hairData.menuCount = PLAYER_HAIR_COUNT;
+	data->hairData.property = &data->pData->looks.hair;
+	data->hairData.func = IndexToHair;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Hair", &data->hairData));
+
+	data->armsData.c = data->c;
+	data->armsData.pData = data->pData;
+	data->armsData.menu = shadeNames;
+	data->armsData.menuCount = PLAYER_BODY_COUNT;
+	data->armsData.property = &data->pData->looks.arm;
+	data->armsData.func = IndexToShade;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Arms", &data->armsData));
+
+	data->bodyData.c = data->c;
+	data->bodyData.pData = data->pData;
+	data->bodyData.menu = shadeNames;
+	data->bodyData.menuCount = PLAYER_BODY_COUNT;
+	data->bodyData.property = &data->pData->looks.body;
+	data->bodyData.func = IndexToShade;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Body", &data->bodyData));
+
+	data->legsData.c = data->c;
+	data->legsData.pData = data->pData;
+	data->legsData.menu = shadeNames;
+	data->legsData.menuCount = PLAYER_BODY_COUNT;
+	data->legsData.property = &data->pData->looks.leg;
+	data->legsData.func = IndexToShade;
+	MenuAddSubmenu(ms->root, MenuCreateAppearance("Legs", &data->legsData));
 
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
