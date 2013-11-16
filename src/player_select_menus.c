@@ -267,12 +267,10 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 	int i;
 	PlayerSelectMenuData *d = data;
 
-#define ENTRY_COLS	10
-#define	ENTRY_SPACING	12
+#define ENTRY_COLS	8
+#define	ENTRY_SPACING	7
 
-	int x = CENTER_X(
-		pos, size,
-		(ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a'));
+	int x = pos.x;
 	int y = CENTER_Y(
 		pos, size,
 		CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS));
@@ -360,17 +358,17 @@ static int HandleInputNameMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_UP)
 	{
-		if (d->nameMenuSelection > 9)
+		if (d->nameMenuSelection >= ENTRY_COLS)
 		{
-			d->nameMenuSelection -= 10;
+			d->nameMenuSelection -= ENTRY_COLS;
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (d->nameMenuSelection < (int)strlen(letters) - 9)
+		if (d->nameMenuSelection <= (int)strlen(letters) - ENTRY_COLS)
 		{
-			d->nameMenuSelection += 10;
+			d->nameMenuSelection += ENTRY_COLS;
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 		else if (d->nameMenuSelection < (int)strlen(letters))
