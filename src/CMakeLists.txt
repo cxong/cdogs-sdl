@@ -12,6 +12,7 @@ set(CDOGS_SDL_SOURCES
 	mainmenu.c
 	menu.c
 	password.c
+	player_select_menus.c
 	prep.c
 	XGetopt.c)
 set(CDOGS_SDL_HEADERS
@@ -21,6 +22,7 @@ set(CDOGS_SDL_HEADERS
 	mainmenu.h
 	menu.h
 	password.h
+	player_select_menus.h
 	prep.h
 	XGetopt.h
 	missions/bem.h
