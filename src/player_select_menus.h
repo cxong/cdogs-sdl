@@ -55,10 +55,35 @@ typedef struct
 	AppearanceMenuData bodyData;
 	AppearanceMenuData legsData;
 } PlayerSelectMenuData;
+typedef struct
+{
+	MenuSystem ms;
+	PlayerSelectMenuData data;
+} PlayerSelectMenu;
 
 void PlayerSelectMenusCreate(
-	MenuSystem *ms,
-	int numPlayers, int player, InputDevices *input, GraphicsDevice *graphics,
-	PlayerSelectMenuData *data);
+	PlayerSelectMenu *menu,
+	int numPlayers, int player, Character *c, struct PlayerData *pData,
+	InputDevices *input, GraphicsDevice *graphics);
+
+// TODO: load templates from file
+typedef struct
+{
+	char name[20];
+	int head;
+	int body;
+	int arms;
+	int legs;
+	int skin;
+	int hair;
+} PlayerTemplate;
+
+#define MAX_TEMPLATE  10
+extern PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
+
+#define PLAYER_TEMPLATE_FILENAME "players.cnf"
+
+void LoadPlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE]);
+void SavePlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE]);
 
 #endif

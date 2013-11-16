@@ -290,17 +290,22 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	}
 }
 
-void MenuAddPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
+void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
 {
-	menu->numCustomPostInputs++;
-	CREALLOC(
-		menu->customPostInputFuncs,
-		menu->numCustomPostInputs * sizeof *menu->customPostInputFuncs);
-	menu->customPostInputFuncs[menu->numCustomPostInputs - 1] = func;
-	CREALLOC(
-		menu->customPostInputDatas,
-		menu->numCustomPostInputs * sizeof *menu->customPostInputDatas);
-	menu->customPostInputDatas[menu->numCustomPostInputs - 1] = data;
+	menu->customPostInputFunc = func;
+	menu->customPostInputData = data;
+}
+
+void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data)
+{
+	menu->customPostEnterFunc = func;
+	menu->customPostEnterData = data;
+}
+
+void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data)
+{
+	menu->customDisplayFunc = func;
+	menu->customDisplayData = data;
 }
 
 menu_t *MenuCreateOptionRange(
@@ -454,7 +459,12 @@ void MenuDisplay(MenuSystem *ms)
 	{
 		ms->customDisplayFuncs[i](
 			ms->graphics, ms->pos, ms->size, ms->customDisplayDatas[i]);
-	} 
+	}
+	if (menu->customDisplayFunc)
+	{
+		menu->customDisplayFunc(
+			ms->graphics, ms->pos, ms->size, menu->customDisplayData);
+	}
 }
 
 void MenuDisplayItems(MenuSystem *ms)
@@ -733,8 +743,6 @@ void MenuDestroySubmenus(menu_t *menu)
 		{
 			menu_t *subMenu = &menu->u.normal.subMenus[i];
 			MenuDestroySubmenus(subMenu);
-			CFREE(subMenu->customPostInputFuncs);
-			CFREE(subMenu->customPostInputDatas);
 		}
 		CFREE(menu->u.normal.subMenus);
 	}
@@ -774,7 +782,6 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
 	menu_t *menu = ms->current;
 	menu_t *menuToChange = NULL;
-	int i;
 	if (cmd == CMD_ESC)
 	{
 		menuToChange = MenuProcessEscCmd(menu);
@@ -815,10 +822,14 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 	}
 
 bail:
-	for (i = 0; i < menu->numCustomPostInputs; i++)
+	if (menu->customPostInputFunc)
 	{
-		menu->customPostInputFuncs[i](
-			menu, cmd, menu->customPostInputDatas[i]);
+		menu->customPostInputFunc(menu, cmd, menu->customPostInputData);
+	}
+	if (menuToChange && menuToChange->customPostEnterFunc)
+	{
+		menuToChange->customPostEnterFunc(
+			menuToChange, menuToChange->customPostEnterData);
 	}
 }
 

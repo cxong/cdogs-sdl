@@ -32,6 +32,7 @@
 
 #include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
+#include <cdogs/files.h>
 #include <cdogs/text.h>
 
 
@@ -83,19 +84,7 @@ static const char *hairNames[PLAYER_HAIR_COUNT] = {
 	"Black"
 };
 
-// TODO: load templates from file
-struct PlayerTemplate {
-	char name[20];
-	int head;
-	int body;
-	int arms;
-	int legs;
-	int skin;
-	int hair;
-};
-
-#define MAX_TEMPLATE  10
-static struct PlayerTemplate templates[MAX_TEMPLATE] =
+PlayerTemplate gPlayerTemplates[MAX_TEMPLATE] =
 {
 	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
 	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
@@ -108,6 +97,73 @@ static struct PlayerTemplate templates[MAX_TEMPLATE] =
 	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
 	{ "-- empty --", 0, 0, 0, 0, 0, 0 }
 };
+
+void LoadPlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE])
+{
+	int i, count;
+	int fscanfres;
+	FILE *f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILENAME), "r");
+	if (!f)
+	{
+		return;
+	}
+	i = 0;
+	fscanfres = fscanf(f, "%d\n", &count);
+	if (fscanfres < 1)
+	{
+		printf("Error reading " PLAYER_TEMPLATE_FILENAME " count\n");
+		fclose(f);
+		return;
+	}
+	while (i < MAX_TEMPLATE && i < count)
+	{
+		fscanfres = fscanf(f, "[%[^]]] %d %d %d %d %d %d\n",
+			templates[i].name,
+			&templates[i].head,
+			&templates[i].body,
+			&templates[i].arms,
+			&templates[i].legs,
+			&templates[i].skin,
+			&templates[i].hair);
+		if (fscanfres < 7)
+		{
+			printf("Error reading player %d\n", i);
+			fclose(f);
+			return;
+		}
+		i++;
+	}
+	fclose(f);
+}
+
+void SavePlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE])
+{
+	FILE *f;
+	int i;
+
+	debug(D_NORMAL, "begin\n");
+
+	f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILENAME), "w");
+	if (!f)
+	{
+		return;
+	}
+
+	fprintf(f, "%d\n", MAX_TEMPLATE);
+	for (i = 0; i < MAX_TEMPLATE; i++)
+	{
+		fprintf(f, "[%s] %d %d %d %d %d %d\n",
+			templates[i].name,
+			templates[i].head,
+			templates[i].body,
+			templates[i].arms,
+			templates[i].legs,
+			templates[i].skin, templates[i].hair);
+	}
+	fclose(f);
+
+	debug(D_NORMAL, "saved templates\n");
+}
 
 
 static int IndexToHead(int idx)
@@ -373,7 +429,7 @@ static menu_t *CreateAppearanceMenu(
 	{
 		MenuAddSubmenu(menu, MenuCreateBack(faceData->menu[i]));
 	}
-	MenuAddPostInputFunc(menu, PostInputAppearanceMenu, faceData);
+	MenuSetPostInputFunc(menu, PostInputAppearanceMenu, faceData);
 	return menu;
 }
 
@@ -382,19 +438,29 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		PlayerSelectMenuData *d = data;
-		struct PlayerTemplate *t = &templates[menu->u.normal.index];
+		PlayerTemplate *t = &gPlayerTemplates[menu->u.normal.index];
 		memset(d->pData->name, 0, sizeof d->pData->name);
 		strncpy(d->pData->name, t->name, sizeof d->pData->name - 1);
 
-		d->pData->looks.face =
-			IndexToHead(t->head < PLAYER_FACE_COUNT ? t->head : 0);
+		d->pData->looks.face = t->head;
 		d->pData->looks.body = t->body;
 		d->pData->looks.arm = t->arms;
 		d->pData->looks.leg = t->legs;
-		d->pData->looks.skin = IndexToSkin(t->skin);
-		d->pData->looks.hair = IndexToHair(t->hair);
+		d->pData->looks.skin = t->skin;
+		d->pData->looks.hair = t->hair;
 
 		SetPlayer(d->c, d->pData);
+	}
+}
+
+// Load all the template names to the menu entries
+static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
+{
+	int i;
+	UNUSED(data);
+	for (i = 0; i < MAX_TEMPLATE; i++)
+	{
+		strcpy(menu->u.normal.subMenus[i].name, gPlayerTemplates[i].name);
 	}
 }
 
@@ -405,21 +471,76 @@ static menu_t *CreateUseTemplateMenu(
 	int i;
 	for (i = 0; i < MAX_TEMPLATE; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateBack(templates[i].name));
+		MenuAddSubmenu(menu, MenuCreateBack(""));
 	}
-	MenuAddPostInputFunc(menu, PostInputLoadTemplate, data);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, data);
+	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
+	return menu;
+}
+
+static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
+{
+	if (cmd & CMD_BUTTON1)
+	{
+		PlayerSelectMenuData *d = data;
+		PlayerTemplate *t = &gPlayerTemplates[menu->u.normal.index];
+		memset(t->name, 0, sizeof t->name);
+		strncpy(t->name, d->pData->name, sizeof t->name - 1);
+
+		t->head = d->pData->looks.face;
+		t->body = d->pData->looks.body;
+		t->arms = d->pData->looks.arm;
+		t->legs = d->pData->looks.leg;
+		t->skin = d->pData->looks.skin;
+		t->hair = d->pData->looks.hair;
+	}
+}
+
+static void SaveTemplateDisplayTitle(
+	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+{
+	PlayerSelectMenuData *d = data;
+	char buf[256];
+
+	UNUSED(size);
+
+	// Display "Save <template>..." title
+	sprintf(buf, "Save %s...", d->pData->name);
+	DrawTextString(buf, g, Vec2iAdd(pos, Vec2iNew(0, 0)));
+}
+
+static menu_t *CreateSaveTemplateMenu(
+	const char *name, PlayerSelectMenuData *data)
+{
+	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
+	int i;
+	for (i = 0; i < MAX_TEMPLATE; i++)
+	{
+		MenuAddSubmenu(menu, MenuCreateBack(""));
+	}
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, data);
+	MenuSetPostInputFunc(menu, PostInputSaveTemplate, data);
+	MenuSetCustomDisplay(menu, SaveTemplateDisplayTitle, data);
 	return menu;
 }
 
 void PlayerSelectMenusCreate(
-	MenuSystem *ms,
-	int numPlayers, int player, InputDevices *input, GraphicsDevice *graphics,
-	PlayerSelectMenuData *data)
+	PlayerSelectMenu *menu,
+	int numPlayers, int player, Character *c, struct PlayerData *pData,
+	InputDevices *input, GraphicsDevice *graphics)
 {
+	MenuSystem *ms = &menu->ms;
+	PlayerSelectMenuData *data = &menu->data;
 	Vec2i pos = Vec2iZero();
 	Vec2i size = Vec2iZero();
 	int w = graphics->cachedConfig.ResolutionWidth;
 	int h = graphics->cachedConfig.ResolutionHeight;
+
+	data->nameMenuSelection = (int)strlen(letters);
+	data->c = c;
+	data->currentMenu = &ms->current;
+	data->pData = pData;
+
 	switch (numPlayers)
 	{
 	case 1:
@@ -497,9 +618,12 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Legs", &data->legsData));
 
 	MenuAddSubmenu(ms->root, CreateUseTemplateMenu("Load", data));
+	MenuAddSubmenu(ms->root, CreateSaveTemplateMenu("Save", data));
 
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
+
+	SetPlayer(c, pData);
 }

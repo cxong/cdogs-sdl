@@ -103,6 +103,8 @@ typedef void (*MenuDisplayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
 // cmd, data
 // returns: 0 if stay on menu, 1 if exit from menu
 typedef int (*MenuInputFunc)(int, void *);
+// Callback for processing custom function on menu
+typedef void(*MenuFunc)(menu_t *, void *);
 // Callback for processing custom menu function post input
 // menu, cmd, data
 typedef void(*MenuPostInputFunc)(menu_t *, int cmd, void *);
@@ -112,9 +114,12 @@ struct menu
 	char name[64];
 	menu_type_e type;
 	struct menu *parentMenu;
-	MenuPostInputFunc *customPostInputFuncs;
-	void **customPostInputDatas;
-	int numCustomPostInputs;
+	MenuFunc customPostEnterFunc;
+	void *customPostEnterData;
+	MenuPostInputFunc customPostInputFunc;
+	void *customPostInputData;
+	MenuDisplayFunc customDisplayFunc;
+	void *customDisplayData;
 	union
 	{
 		// normal menu, with sub menus
@@ -251,7 +256,9 @@ menu_t *MenuCreateNormal(
 	menu_type_e type,
 	int displayItems);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
-void MenuAddPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
+void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data);
+void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
+void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data);
 
 menu_t *MenuCreateOptionToggle(
 	const char *name, int *config, menu_option_display_style_e style);

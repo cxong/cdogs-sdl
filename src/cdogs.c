@@ -84,6 +84,7 @@
 #include "game.h"
 #include "mainmenu.h"
 #include "password.h"
+#include "player_select_menus.h"
 #include "prep.h"
 #include "XGetopt.h"
 
@@ -1160,7 +1161,7 @@ int main(int argc, char *argv[])
 
 	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs();
-	LoadTemplates();
+	LoadPlayerTemplates(gPlayerTemplates);
 
 	PlayMenuSong();
 
@@ -1206,7 +1207,7 @@ int main(int argc, char *argv[])
 	PicManagerTerminate(&gPicManager);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	SaveTemplates();
+	SavePlayerTemplates(gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
