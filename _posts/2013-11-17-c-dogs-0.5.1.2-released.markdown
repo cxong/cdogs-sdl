@@ -1,0 +1,11 @@
+---
+layout: post
+title:  "C-Dogs 0.5.1.2 Released!"
+date:   2013-11-17
+categories: release
+---
+
+This release fixes serious bugs introduced in 0.5.1.1, and includes a new campaign!
+
+Get the release here: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+See the full release notes here: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.1.2>
