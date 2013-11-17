@@ -56,7 +56,6 @@ static void LoadCampaignNode(campaign_entry_t *c, json_t *node)
 	LoadBool(&c->isBuiltin, node, "IsBuiltin");
 	c->mode = CAMPAIGN_MODE_NORMAL;
 	c->builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
-	LoadBool(&c->is_two_player, node, "IsTwoPlayer");
 }
 static void AddCampaignNode(campaign_entry_t *c, json_t *root)
 {
@@ -64,7 +63,6 @@ static void AddCampaignNode(campaign_entry_t *c, json_t *root)
 	json_insert_pair_into_object(subConfig, "Path", json_new_string(c->path));
 	json_insert_pair_into_object(subConfig, "IsBuiltin", json_new_bool(c->isBuiltin));
 	AddIntPair(subConfig, "BuiltinIndex", c->builtinIndex);
-	json_insert_pair_into_object(subConfig, "IsTwoPlayer", json_new_bool(c->is_two_player));
 	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 
@@ -156,7 +154,7 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	setlocale(LC_ALL, "");
 	
 	root = json_new_object();
-	json_insert_pair_into_object(root, "Version", json_new_number("1"));
+	json_insert_pair_into_object(root, "Version", json_new_number("2"));
 	json_insert_pair_into_object(
 		root, "LastMission", CreateMissionNode(&autosave->LastMission));
 	AddMissionNodes(autosave, root, "Missions");

@@ -49,8 +49,13 @@
 #ifndef __PREP
 #define __PREP
 
+#include <cdogs/campaigns.h>
 #include <cdogs/grafx.h>
+#include <cdogs/input.h>
 
+int NumPlayersSelection(
+	int *numPlayers, campaign_mode_e mode,
+	GraphicsDevice *graphics, InputDevices *input);
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics);
 int PlayerEquip(int numPlayers, GraphicsDevice *graphics);
 

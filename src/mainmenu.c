@@ -60,8 +60,7 @@ menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry);
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
-	campaign_list_t *list,
-	int is_two_player);
+	campaign_list_t *list);
 menu_t *MenuCreateOptions(const char *name);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -97,24 +96,15 @@ MenuSystem *MenuCreateAll(
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
-			"1 player",
+			"Campaign",
 			"Select a campaign:",
-			&campaigns->campaignList,
-			0));
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCampaigns(
-			"2 players",
-			"Select a campaign:",
-			&campaigns->campaignList,
-			1));
+			&campaigns->campaignList));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
 			"Dogfight",
 			"Select a dogfight scenario:",
-			&campaigns->dogfightList,
-			1));
+			&campaigns->dogfightList));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options..."));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
@@ -137,14 +127,12 @@ menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 	return menu;
 }
 
-menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, int is_two_player);
+menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
 
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
-	campaign_list_t *list,
-	int is_two_player)
+	campaign_list_t *list)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -161,23 +149,19 @@ menu_t *MenuCreateCampaigns(
 			MenuCreateCampaigns(
 				folderName,
 				title,
-				&list->subFolders[i],
-				is_two_player));
+				&list->subFolders[i]));
 	}
 	for (i = 0; i < list->num; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateCampaignItem(
-			&list->list[i], is_two_player));
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(&list->list[i]));
 	}
 	return menu;
 }
 
-menu_t *MenuCreateCampaignItem(
-	campaign_entry_t *entry, int is_two_player)
+menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
-	menu->u.campaign.is_two_player = is_two_player;
 	return menu;
 }
 

@@ -155,7 +155,6 @@ void LoadQuickPlayEntry(campaign_entry_t *entry)
 	entry->isBuiltin = 1;
 	entry->mode = CAMPAIGN_MODE_QUICK_PLAY;
 	entry->builtinIndex = 0;
-	entry->is_two_player = 0;
 }
 
 int IsCampaignOK(const char *path, char *title);

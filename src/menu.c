@@ -859,7 +859,6 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 
 void MenuLoadCampaign(campaign_entry_t *entry)
 {
-	gOptions.numPlayers = entry->is_two_player ? 2 : 1;
 	gCampaign.Entry = *entry;
 	CampaignSettingTerminate(&gCampaign.Setting);
 	if (entry->isBuiltin)

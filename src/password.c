@@ -73,14 +73,14 @@
 #define DONE          "Done"
 
 
-const char *MakePassword(int mission)
+const char *MakePassword(int mission, int isTwoPlayers)
 {
 	static char s[PASSWORD_MAX + 1];
 	int sum1, sum2, count;
 	size_t i, x;
 	static char *alphabet1 = "0123456789abcdefghijklmnopqrstuvwxyz";
 	static char *alphabet2 = "9876543210kjihgfedcbazyxwvutsrqponml";
-	char *alphabet = (gOptions.numPlayers & 1) ? alphabet1 : alphabet2;
+	char *alphabet = isTwoPlayers ? alphabet2 : alphabet1;
 	size_t base = strlen(alphabet);
 
 	sum1 = sum2 = 0;
@@ -107,7 +107,9 @@ static int TestPassword(const char *password)
 
 	for (i = 0; i < gCampaign.Setting.missionCount; i++)
 	{
-		if (strcmp(password, MakePassword(i)) == 0)
+		// For legacy passwords, try both one and two players
+		if (strcmp(password, MakePassword(i, 0)) == 0 ||
+			strcmp(password, MakePassword(i, 1)) == 0)
 		{
 			return i;
 		}

@@ -24,7 +24,7 @@
 
 #include <cdogs/grafx.h>
 
-const char *MakePassword(int mission);
+const char *MakePassword(int mission, int isTwoPlayers);
 int EnterPassword(GraphicsDevice *graphics, const char *password);
 
 #endif

@@ -73,6 +73,65 @@
 #include "weapon_menu.h"
 
 
+int NumPlayersSelection(
+	int *numPlayers, campaign_mode_e mode,
+	GraphicsDevice *graphics, InputDevices *input)
+{
+	MenuSystem ms;
+	int i;
+	int res = 0;
+	MenuSystemInit(
+		&ms, input, graphics,
+		Vec2iZero(),
+		Vec2iNew(
+			graphics->cachedConfig.ResolutionWidth,
+			graphics->cachedConfig.ResolutionHeight));
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"Select number of players",
+		MENU_TYPE_NORMAL,
+		0);
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (mode == CAMPAIGN_MODE_DOGFIGHT && i == 0)
+		{
+			// At least two players for dogfights
+			continue;
+		}
+		char buf[2];
+		sprintf(buf, "%d", i + 1);
+		MenuAddSubmenu(ms.current, MenuCreateReturn(buf, i + 1));
+	}
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+
+	for (;;)
+	{
+		int cmd;
+		InputPoll(&gInputDevices, SDL_GetTicks());
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
+		{
+			res = 0;
+			break;	// hack to allow exit
+		}
+		cmd = GetMenuCmd();
+		MenuProcessCmd(&ms, cmd);
+		if (MenuIsExit(&ms))
+		{
+			*numPlayers = ms.current->u.returnCode;
+			res = 1;
+			break;
+		}
+
+		GraphicsBlitBkg(graphics);
+		MenuDisplay(&ms);
+		BlitFlip(graphics, &gConfig.Graphics);
+		SDL_Delay(10);
+	}
+
+	MenuSystemTerminate(&ms);
+	return res;
+}
+
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
 	int i;
@@ -91,25 +150,16 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
-		GraphicsBlitBkg(graphics);
-		GetPlayerCmds(&cmds);
-
-		for (i = 0; i < numPlayers; i++)
-		{
-			MenuDisplay(&menus[i].ms);
-		}
-
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
 			// TODO: destroy menus
 			return 0; // hack to allow exit
 		}
-
+		GetPlayerCmds(&cmds);
 		for (i = 0; i < numPlayers; i++)
 		{
 			MenuProcessCmd(&menus[i].ms, cmds[i]);
 		}
-
 		for (i = 0; i < numPlayers; i++)
 		{
 			if (!MenuIsExit(&menus[i].ms))
@@ -122,6 +172,11 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			break;
 		}
 
+		GraphicsBlitBkg(graphics);
+		for (i = 0; i < numPlayers; i++)
+		{
+			MenuDisplay(&menus[i].ms);
+		}
 		BlitFlip(graphics, &gConfig.Graphics);
 		SDL_Delay(10);
 	}
@@ -152,24 +207,15 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
-		GraphicsBlitBkg(graphics);
-		GetPlayerCmds(&cmds);
-
-		for (i = 0; i < numPlayers; i++)
-		{
-			MenuDisplay(&menus[i].ms);
-		}
-
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
 			return 0; // hack to exit from menu
 		}
-
+		GetPlayerCmds(&cmds);
 		for (i = 0; i < numPlayers; i++)
 		{
 			MenuProcessCmd(&menus[i].ms, cmds[i]);
 		}
-
 		for (i = 0; i < numPlayers; i++)
 		{
 			if (!MenuIsExit(&menus[i].ms) || gPlayerDatas[i].weaponCount == 0)
@@ -182,6 +228,11 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 			break;
 		}
 
+		GraphicsBlitBkg(graphics);
+		for (i = 0; i < numPlayers; i++)
+		{
+			MenuDisplay(&menus[i].ms);
+		}
 		BlitFlip(graphics, &gConfig.Graphics);
 		SDL_Delay(10);
 	}

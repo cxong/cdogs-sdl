@@ -237,7 +237,7 @@ void MissionBriefing(GraphicsDevice *device)
 		char str[512];
 		MissionSave ms;
 		ms.Campaign = gCampaign.Entry;
-		strcpy(ms.Password, MakePassword(gMission.index));
+		strcpy(ms.Password, MakePassword(gMission.index, 0));
 		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
@@ -958,6 +958,14 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		if (IsIntroNeeded(gCampaign.Entry.mode))
 		{
 			CampaignIntro(&gGraphicsDevice);
+		}
+
+		debug(D_NORMAL, ">> Select number of players\n");
+		if (!NumPlayersSelection(
+				&gOptions.numPlayers, gCampaign.Entry.mode,
+				&gGraphicsDevice, &gInputDevices))
+		{
+			continue;
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
