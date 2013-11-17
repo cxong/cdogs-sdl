@@ -11,9 +11,11 @@ set(CDOGS_SDL_SOURCES
 	game.c
 	mainmenu.c
 	menu.c
+	menu_utils.c
 	password.c
 	player_select_menus.c
 	prep.c
+	weapon_menu.c
 	XGetopt.c)
 set(CDOGS_SDL_HEADERS
 	autosave.h
@@ -21,9 +23,11 @@ set(CDOGS_SDL_HEADERS
 	game.h
 	mainmenu.h
 	menu.h
+	menu_utils.h
 	password.h
 	player_select_menus.h
 	prep.h
+	weapon_menu.h
 	XGetopt.h
 	missions/bem.h
 	missions/ogre.h)

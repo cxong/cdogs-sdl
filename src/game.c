@@ -354,17 +354,24 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			{
 				Vec2i center = Vec2iNew(
 					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
+				Vec2i centerOffsetPlayer = centerOffset;
 				int clipLeft = i == 0 ? 0 :
-					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) + 1;
+					gGraphicsDevice.cachedConfig.ResolutionWidth / 2;
 				int clipRight = i == 0 ?
-					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1 : 0;
+					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1 :
+					gGraphicsDevice.cachedConfig.ResolutionWidth - 1;
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft,
 					0,
 					clipRight,
 					gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
-				DoBuffer(b, center, X_TILES_HALF, noise, centerOffset);
+				if (i == 1)
+				{
+					centerOffsetPlayer.x +=
+						gGraphicsDevice.cachedConfig.ResolutionWidth / 2;
+				}
+				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 				if (i == 0)
 				{
 					SoundSetLeftEar(center);

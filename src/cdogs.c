@@ -802,7 +802,7 @@ int Game(GraphicsDevice *graphics, int mission)
 		{
 			MissionBriefing(graphics);
 		}
-		PlayerEquip(graphics);
+		PlayerEquip(gOptions.numPlayers, graphics);
 
 		InitPlayers(gOptions.numPlayers, maxHealth, mission);
 
@@ -907,7 +907,7 @@ void DogFight(GraphicsDevice *graphicsDevice)
 		SetupMission(0, 1, &gCampaign);
 		SetupMap();
 
-		if (PlayerEquip(graphicsDevice))
+		if (PlayerEquip(gOptions.numPlayers, graphicsDevice))
 		{
 			srand((unsigned int)time(NULL));
 			InitPlayers(gOptions.numPlayers, 500, 0);

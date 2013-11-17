@@ -26,63 +26,23 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PLAYER_SELECT_MENUS
-#define __PLAYER_SELECT_MENUS
+#ifndef __MENU_UTILS
+#define __MENU_UTILS
 
 #include <cdogs/character.h>
 
 #include "menu.h"
-#include "menu_utils.h"
 
 typedef struct
 {
-	int *property;
-	const char **menu;
-	int menuCount;
-	int(*func)(int);
 	Character *c;
 	struct PlayerData *pData;
-} AppearanceMenuData;
-typedef struct
-{
-	MenuDisplayPlayerData display;
-	int nameMenuSelection;
-	AppearanceMenuData faceData;
-	AppearanceMenuData skinData;
-	AppearanceMenuData hairData;
-	AppearanceMenuData armsData;
-	AppearanceMenuData bodyData;
-	AppearanceMenuData legsData;
-} PlayerSelectMenuData;
-typedef struct
-{
-	MenuSystem ms;
-	PlayerSelectMenuData data;
-} PlayerSelectMenu;
+	menu_t **currentMenu;
+} MenuDisplayPlayerData;
+void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
-void PlayerSelectMenusCreate(
-	PlayerSelectMenu *menu,
-	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, KeyConfig *key);
-
-// TODO: load templates from file
-typedef struct
-{
-	char name[20];
-	int head;
-	int body;
-	int arms;
-	int legs;
-	int skin;
-	int hair;
-} PlayerTemplate;
-
-#define MAX_TEMPLATE  10
-extern PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
-
-#define PLAYER_TEMPLATE_FILENAME "players.cnf"
-
-void LoadPlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE]);
-void SavePlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE]);
+// data is of type KeyConfig *
+void MenuDisplayPlayerControls(
+	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
 #endif

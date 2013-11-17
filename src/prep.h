@@ -52,6 +52,6 @@
 #include <cdogs/grafx.h>
 
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics);
-int PlayerEquip(GraphicsDevice *graphics);
+int PlayerEquip(int numPlayers, GraphicsDevice *graphics);
 
 #endif

@@ -689,7 +689,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 		}
 		break;
 	default:
-		assert(0);
+		// No submenus, don't display anything
 		break;
 	}
 }
@@ -1042,6 +1042,10 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 	MenuPlaySound(MENU_SOUND_SWITCH);
 	switch (menu->type)
 	{
+	case MENU_TYPE_BASIC:
+		// do nothing
+		// TODO: change ConfigApply to a custom hook
+		return;
 	case MENU_TYPE_SET_OPTION_TOGGLE:
 		*menu->u.option.uHook.optionToggle = !*menu->u.option.uHook.optionToggle;
 		break;

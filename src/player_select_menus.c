@@ -300,6 +300,7 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 static int HandleInputNameMenu(int cmd, void *data)
 {
 	PlayerSelectMenuData *d = data;
+	struct PlayerData *p = d->display.pData;
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -309,17 +310,17 @@ static int HandleInputNameMenu(int cmd, void *data)
 			return 1;
 		}
 
-		if (strlen(d->pData->name) < sizeof(d->pData->name) - 1)
+		if (strlen(p->name) < sizeof p->name - 1)
 		{
-			size_t l = strlen(d->pData->name);
-			d->pData->name[l + 1] = 0;
-			if (l > 0 && d->pData->name[l - 1] != ' ')
+			size_t l = strlen(p->name);
+			p->name[l + 1] = 0;
+			if (l > 0 && p->name[l - 1] != ' ')
 			{
-				d->pData->name[l] = smallLetters[d->nameMenuSelection];
+				p->name[l] = smallLetters[d->nameMenuSelection];
 			}
 			else
 			{
-				d->pData->name[l] = letters[d->nameMenuSelection];
+				p->name[l] = letters[d->nameMenuSelection];
 			}
 			MenuPlaySound(MENU_SOUND_ENTER);
 		}
@@ -330,9 +331,9 @@ static int HandleInputNameMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
-		if (d->pData->name[0])
+		if (p->name[0])
 		{
-			d->pData->name[strlen(d->pData->name) - 1] = 0;
+			p->name[strlen(p->name) - 1] = 0;
 			MenuPlaySound(MENU_SOUND_BACK);
 		}
 		else
@@ -381,35 +382,6 @@ static int HandleInputNameMenu(int cmd, void *data)
 	return 0;
 }
 
-static void MenuDisplayPlayer(
-	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
-{
-	PlayerSelectMenuData *d = data;
-	Vec2i playerPos;
-	Vec2i namePos;
-	pos.x -= size.x;	// move to left half of screen
-	playerPos = Vec2iNew(
-		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
-	namePos = Vec2iAdd(playerPos, Vec2iNew(-20, -36));
-
-	UNUSED(g);
-
-	if (strcmp((*d->currentMenu)->name, "Name") == 0)
-	{
-		char s[22];
-		sprintf(s, "%c%s%c", '\020', d->pData->name, '\021');
-		CDogsTextStringAt(namePos.x, namePos.y, s);
-	}
-	else
-	{
-		CDogsTextStringAt(namePos.x, namePos.y, d->pData->name);
-	}
-
-	DrawCharacterSimple(
-		d->c, playerPos,
-		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &d->c->table);
-}
-
 static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
 {
 	AppearanceMenuData *d = data;
@@ -436,18 +408,19 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		PlayerSelectMenuData *d = data;
+		struct PlayerData *p = d->display.pData;
 		PlayerTemplate *t = &gPlayerTemplates[menu->u.normal.index];
-		memset(d->pData->name, 0, sizeof d->pData->name);
-		strncpy(d->pData->name, t->name, sizeof d->pData->name - 1);
+		memset(p->name, 0, sizeof p->name);
+		strncpy(p->name, t->name, sizeof p->name - 1);
 
-		d->pData->looks.face = t->head;
-		d->pData->looks.body = t->body;
-		d->pData->looks.arm = t->arms;
-		d->pData->looks.leg = t->legs;
-		d->pData->looks.skin = t->skin;
-		d->pData->looks.hair = t->hair;
+		p->looks.face = t->head;
+		p->looks.body = t->body;
+		p->looks.arm = t->arms;
+		p->looks.leg = t->legs;
+		p->looks.skin = t->skin;
+		p->looks.hair = t->hair;
 
-		SetPlayer(d->c, d->pData);
+		SetPlayer(d->display.c, p);
 	}
 }
 
@@ -481,16 +454,17 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		PlayerSelectMenuData *d = data;
+		struct PlayerData *p = d->display.pData;
 		PlayerTemplate *t = &gPlayerTemplates[menu->u.normal.index];
 		memset(t->name, 0, sizeof t->name);
-		strncpy(t->name, d->pData->name, sizeof t->name - 1);
+		strncpy(t->name, p->name, sizeof t->name - 1);
 
-		t->head = d->pData->looks.face;
-		t->body = d->pData->looks.body;
-		t->arms = d->pData->looks.arm;
-		t->legs = d->pData->looks.leg;
-		t->skin = d->pData->looks.skin;
-		t->hair = d->pData->looks.hair;
+		t->head = p->looks.face;
+		t->body = p->looks.body;
+		t->arms = p->looks.arm;
+		t->legs = p->looks.leg;
+		t->skin = p->looks.skin;
+		t->hair = p->looks.hair;
 	}
 }
 
@@ -503,7 +477,7 @@ static void SaveTemplateDisplayTitle(
 	UNUSED(size);
 
 	// Display "Save <template>..." title
-	sprintf(buf, "Save %s...", d->pData->name);
+	sprintf(buf, "Save %s...", d->display.pData->name);
 	DrawTextString(buf, g, Vec2iAdd(pos, Vec2iNew(0, 0)));
 }
 
@@ -525,19 +499,20 @@ static menu_t *CreateSaveTemplateMenu(
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics)
+	InputDevices *input, GraphicsDevice *graphics, KeyConfig *key)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
+	struct PlayerData *p = data->display.pData;
 	Vec2i pos = Vec2iZero();
 	Vec2i size = Vec2iZero();
 	int w = graphics->cachedConfig.ResolutionWidth;
 	int h = graphics->cachedConfig.ResolutionHeight;
 
 	data->nameMenuSelection = (int)strlen(letters);
-	data->c = c;
-	data->currentMenu = &ms->current;
-	data->pData = pData;
+	data->display.c = c;
+	data->display.currentMenu = &ms->current;
+	data->display.pData = pData;
 
 	switch (numPlayers)
 	{
@@ -567,51 +542,51 @@ void PlayerSelectMenusCreate(
 		MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	data->faceData.c = data->c;
-	data->faceData.pData = data->pData;
+	data->faceData.c = c;
+	data->faceData.pData = p;
 	data->faceData.menu = faceNames;
 	data->faceData.menuCount = PLAYER_FACE_COUNT;
-	data->faceData.property = &data->pData->looks.face;
+	data->faceData.property = &p->looks.face;
 	data->faceData.func = IndexToHead;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Face", &data->faceData));
 
-	data->skinData.c = data->c;
-	data->skinData.pData = data->pData;
+	data->skinData.c = c;
+	data->skinData.pData = p;
 	data->skinData.menu = skinNames;
 	data->skinData.menuCount = PLAYER_SKIN_COUNT;
-	data->skinData.property = &data->pData->looks.skin;
+	data->skinData.property = &p->looks.skin;
 	data->skinData.func = IndexToSkin;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Skin", &data->skinData));
 
-	data->hairData.c = data->c;
-	data->hairData.pData = data->pData;
+	data->hairData.c = c;
+	data->hairData.pData = p;
 	data->hairData.menu = hairNames;
 	data->hairData.menuCount = PLAYER_HAIR_COUNT;
-	data->hairData.property = &data->pData->looks.hair;
+	data->hairData.property = &p->looks.hair;
 	data->hairData.func = IndexToHair;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Hair", &data->hairData));
 
-	data->armsData.c = data->c;
-	data->armsData.pData = data->pData;
+	data->armsData.c = c;
+	data->armsData.pData = p;
 	data->armsData.menu = shadeNames;
 	data->armsData.menuCount = PLAYER_BODY_COUNT;
-	data->armsData.property = &data->pData->looks.arm;
+	data->armsData.property = &p->looks.arm;
 	data->armsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Arms", &data->armsData));
 
-	data->bodyData.c = data->c;
-	data->bodyData.pData = data->pData;
+	data->bodyData.c = c;
+	data->bodyData.pData = p;
 	data->bodyData.menu = shadeNames;
 	data->bodyData.menuCount = PLAYER_BODY_COUNT;
-	data->bodyData.property = &data->pData->looks.body;
+	data->bodyData.property = &p->looks.body;
 	data->bodyData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Body", &data->bodyData));
 
-	data->legsData.c = data->c;
-	data->legsData.pData = data->pData;
+	data->legsData.c = c;
+	data->legsData.pData = p;
 	data->legsData.menu = shadeNames;
 	data->legsData.menuCount = PLAYER_BODY_COUNT;
-	data->legsData.property = &data->pData->looks.leg;
+	data->legsData.property = &p->looks.leg;
 	data->legsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Legs", &data->legsData));
 
@@ -622,6 +597,7 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, key);
 
 	SetPlayer(c, pData);
 }
