@@ -277,17 +277,17 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
-		Vec2i pos = Vec2iNew(
+		Vec2i menuPos = Vec2iNew(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * CDogsTextHeight());
 
 		if (i == d->nameMenuSelection)
 		{
-			DrawTextCharMasked(letters[i], g, pos, colorRed);
+			DrawTextCharMasked(letters[i], g, menuPos, colorRed);
 		}
 		else
 		{
-			DrawTextCharMasked(letters[i], g, pos, colorWhite);
+			DrawTextCharMasked(letters[i], g, menuPos, colorWhite);
 		}
 	}
 

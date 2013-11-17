@@ -43,7 +43,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// Add the selected weapon
 
 		// Check that the weapn hasn't been chosen yet
-		int selectedWeapon = gMission.availableWeapons[menu->u.normal.index];
+		gun_e selectedWeapon = gMission.availableWeapons[menu->u.normal.index];
 		int i;
 		for (i = 0; i < p->weaponCount; i++)
 		{
