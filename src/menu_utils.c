@@ -73,37 +73,41 @@ void MenuDisplayPlayerControls(
 	switch (d->pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			SDL_GetKeyName(d->keys->Keys.left),
-			SDL_GetKeyName(d->keys->Keys.right),
-			SDL_GetKeyName(d->keys->Keys.up),
-			SDL_GetKeyName(d->keys->Keys.down),
-			SDL_GetKeyName(d->keys->Keys.button1),
-			SDL_GetKeyName(d->keys->Keys.button2));
-		textWidth = TextGetStringWidth(s);
-		if (textWidth < 125)
 		{
-			textPos.x = pos.x - textWidth / 2;
-			DrawTextString(s, g, textPos);
-		}
-		else
-		{
-			sprintf(s, "(%s, %s, %s,",
-				SDL_GetKeyName(d->keys->Keys.left),
-				SDL_GetKeyName(d->keys->Keys.right),
-				SDL_GetKeyName(d->keys->Keys.up));
+			input_keys_t *keys =
+				&d->inputConfig->PlayerKeys[d->pData->deviceIndex].Keys;
+			sprintf(s, "(%s, %s, %s, %s, %s and %s)",
+				SDL_GetKeyName(keys->left),
+				SDL_GetKeyName(keys->right),
+				SDL_GetKeyName(keys->up),
+				SDL_GetKeyName(keys->down),
+				SDL_GetKeyName(keys->button1),
+				SDL_GetKeyName(keys->button2));
 			textWidth = TextGetStringWidth(s);
-			textPos.x = pos.x - textWidth / 2;
-			textPos.y -= 10;
-			DrawTextString(s, g, textPos);
-			sprintf(s, "%s, %s and %s)",
-				SDL_GetKeyName(d->keys->Keys.down),
-				SDL_GetKeyName(d->keys->Keys.button1),
-				SDL_GetKeyName(d->keys->Keys.button2));
-			textWidth = TextGetStringWidth(s);
-			textPos.x = pos.x - textWidth / 2;
-			textPos.y += 10;
-			DrawTextString(s, g, textPos);
+			if (textWidth < 125)
+			{
+				textPos.x = pos.x - textWidth / 2;
+				DrawTextString(s, g, textPos);
+			}
+			else
+			{
+				sprintf(s, "(%s, %s, %s,",
+					SDL_GetKeyName(keys->left),
+					SDL_GetKeyName(keys->right),
+					SDL_GetKeyName(keys->up));
+				textWidth = TextGetStringWidth(s);
+				textPos.x = pos.x - textWidth / 2;
+				textPos.y -= 10;
+				DrawTextString(s, g, textPos);
+				sprintf(s, "%s, %s and %s)",
+					SDL_GetKeyName(keys->down),
+					SDL_GetKeyName(keys->button1),
+					SDL_GetKeyName(keys->button2));
+				textWidth = TextGetStringWidth(s);
+				textPos.x = pos.x - textWidth / 2;
+				textPos.y += 10;
+				DrawTextString(s, g, textPos);
+			}
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:

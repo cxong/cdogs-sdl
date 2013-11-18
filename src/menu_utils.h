@@ -44,7 +44,7 @@ void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 typedef struct
 {
 	struct PlayerData *pData;
-	KeyConfig *keys;
+	InputConfig *inputConfig;
 } MenuDisplayPlayerControlsData;
 void MenuDisplayPlayerControls(
 	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);

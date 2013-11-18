@@ -64,7 +64,7 @@ typedef struct
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, KeyConfig *key);
+	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig);
 
 // TODO: load templates from file
 typedef struct

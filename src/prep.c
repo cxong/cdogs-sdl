@@ -132,16 +132,93 @@ int NumPlayersSelection(
 	return res;
 }
 
+
+static void AssignPlayerInputDevices(
+	int hasInputDevice[MAX_PLAYERS], int numPlayers,
+	struct PlayerData playerDatas[MAX_PLAYERS],
+	InputDevices *inputDevices, InputConfig *inputConfig)
+{
+	int i;
+	int assignedKeyboards[MAX_KEYBOARD_CONFIGS];
+	int assignedMouse = 0;
+	int assignedJoysticks[MAX_JOYSTICKS];
+	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
+	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
+
+	for (i = 0; i < numPlayers; i++)
+	{
+		int j;
+		if (hasInputDevice[i])
+		{
+			// Find all the assigned devices
+			switch (playerDatas[i].inputDevice)
+			{
+			case INPUT_DEVICE_KEYBOARD:
+				assignedKeyboards[playerDatas[i].deviceIndex] = 1;
+				break;
+			case INPUT_DEVICE_MOUSE:
+				assignedMouse = 1;
+				break;
+			case INPUT_DEVICE_JOYSTICK:
+				assignedJoysticks[playerDatas[i].deviceIndex] = 1;
+				break;
+			}
+			continue;
+		}
+
+		// Try to assign devices to players
+		// For each unassigned player, check if any device has button 1 pressed
+		for (j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
+		{
+			if (KeyIsPressed(
+				&inputDevices->keyboard,
+				inputConfig->PlayerKeys[j].Keys.button1) &&
+				!assignedKeyboards[j])
+			{
+				hasInputDevice[i] = 1;
+				playerDatas[i].inputDevice = INPUT_DEVICE_KEYBOARD;
+				playerDatas[i].deviceIndex = j;
+				assignedKeyboards[j] = 1;
+				continue;
+			}
+		}
+		if (MouseIsPressed(&inputDevices->mouse, SDL_BUTTON_LEFT) &&
+			!assignedMouse)
+		{
+			hasInputDevice[i] = 1;
+			playerDatas[i].inputDevice = INPUT_DEVICE_MOUSE;
+			playerDatas[i].deviceIndex = 0;
+			assignedMouse = 1;
+			continue;
+		}
+		for (j = 0; j < inputDevices->joysticks.numJoys; j++)
+		{
+			if (JoyIsPressed(
+				&inputDevices->joysticks.joys[j], CMD_BUTTON1) &&
+				!assignedJoysticks[j])
+			{
+				hasInputDevice[i] = 1;
+				playerDatas[i].inputDevice = INPUT_DEVICE_JOYSTICK;
+				playerDatas[i].deviceIndex = j;
+				assignedJoysticks[j] = 1;
+				continue;
+			}
+		}
+	}
+}
+
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
 	int i;
+	int hasInputDevice[MAX_PLAYERS];
 	PlayerSelectMenu menus[MAX_PLAYERS];
 	for (i = 0; i < numPlayers; i++)
 	{
 		PlayerSelectMenusCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gInputDevices, graphics, &gConfig.Input.PlayerKeys[i]);
+			&gInputDevices, graphics, &gConfig.Input);
+		hasInputDevice[i] = 0;
 	}
 
 	KeyInit(&gInputDevices.keyboard);
@@ -158,7 +235,10 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
-			MenuProcessCmd(&menus[i].ms, cmds[i]);
+			if (hasInputDevice[i])
+			{
+				MenuProcessCmd(&menus[i].ms, cmds[i]);
+			}
 		}
 		for (i = 0; i < numPlayers; i++)
 		{
@@ -172,10 +252,40 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			break;
 		}
 
+		AssignPlayerInputDevices(
+			hasInputDevice, numPlayers,
+			gPlayerDatas, &gInputDevices, &gConfig.Input);
+
 		GraphicsBlitBkg(graphics);
 		for (i = 0; i < numPlayers; i++)
 		{
-			MenuDisplay(&menus[i].ms);
+			if (hasInputDevice[i])
+			{
+				MenuDisplay(&menus[i].ms);
+			}
+			else
+			{
+				Vec2i center;
+				const char *prompt = "Press Fire to join...";
+				Vec2i offset = Vec2iScaleDiv(TextGetSize(prompt), -2);
+				int w = graphics->cachedConfig.ResolutionWidth;
+				int h = graphics->cachedConfig.ResolutionHeight;
+				switch (numPlayers)
+				{
+				case 1:
+					// Center of screen
+					center = Vec2iNew(w / 2, h / 2);
+					break;
+				case 2:
+					// Side by side
+					center = Vec2iNew(i * w / 2 + w / 4, h / 2);
+					break;
+				default:
+					assert(0 && "not implemented");
+					break;
+				}
+				DrawTextString(prompt, graphics, Vec2iAdd(center, offset));
+			}
 		}
 		BlitFlip(graphics, &gConfig.Graphics);
 		SDL_Delay(10);
@@ -197,7 +307,7 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		WeaponMenuCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gInputDevices, graphics, &gConfig.Input.PlayerKeys[i]);
+			&gInputDevices, graphics, &gConfig.Input);
 	}
 
 	debug(D_NORMAL, "\n");
@@ -214,11 +324,20 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
-			MenuProcessCmd(&menus[i].ms, cmds[i]);
+			if (!MenuIsExit(&menus[i].ms))
+			{
+				MenuProcessCmd(&menus[i].ms, cmds[i]);
+			}
+			else if (gPlayerDatas[i].weaponCount == 0)
+			{
+				// Check exit condition; must have selected at least one weapon
+				// Otherwise reset the current menu
+				menus[i].ms.current = menus[i].ms.root;
+			}
 		}
 		for (i = 0; i < numPlayers; i++)
 		{
-			if (!MenuIsExit(&menus[i].ms) || gPlayerDatas[i].weaponCount == 0)
+			if (!MenuIsExit(&menus[i].ms))
 			{
 				isDone = 0;
 			}

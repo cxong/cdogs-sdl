@@ -490,7 +490,7 @@ int HandleKey(int cmd, int *isPaused)
 			{
 				cmd |= GetGameCmd(
 					&gInputDevices, &gConfig.Input,
-					i, &gPlayerDatas[i], Vec2iZero());
+					&gPlayerDatas[i], Vec2iZero());
 			}
 		}
 	}
@@ -630,7 +630,6 @@ int gameloop(void)
 				cmds[i] = GetGameCmd(
 					&gInputDevices,
 					&gConfig.Input,
-					i,
 					&gPlayerDatas[i],
 					GetPlayerCenter(&gGraphicsDevice, i));
 				cmdAll |= cmds[i];

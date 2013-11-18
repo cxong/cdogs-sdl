@@ -409,8 +409,13 @@ void GetPlayerCmds(
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (playerDatas[i].inputDevice == INPUT_DEVICE_UNSET)
+		{
+			continue;
+		}
 		(*cmds)[i] = GetOnePlayerCmd(
-			&gConfig.Input.PlayerKeys[i], keyFunc, mouseFunc, joyFunc,
+			&gConfig.Input.PlayerKeys[playerDatas[i].deviceIndex],
+			keyFunc, mouseFunc, joyFunc,
 			playerDatas[i].inputDevice, playerDatas[i].deviceIndex);
 	}
 }
@@ -446,7 +451,7 @@ int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS])
 
 int GetGameCmd(
 	InputDevices *devices, InputConfig *config,
-	int player, struct PlayerData *playerData, Vec2i playerPos)
+	struct PlayerData *playerData, Vec2i playerPos)
 {
 	int cmd = 0;
 	joystick_t *joystick = &devices->joysticks.joys[0];
@@ -456,7 +461,7 @@ int GetGameCmd(
 	case INPUT_DEVICE_KEYBOARD:
 		cmd = GetKeyboardCmd(
 			&devices->keyboard,
-			&config->PlayerKeys[player].Keys,
+			&config->PlayerKeys[playerData->deviceIndex].Keys,
 			KeyIsDown);
 		break;
 	case INPUT_DEVICE_MOUSE:

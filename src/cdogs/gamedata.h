@@ -292,7 +292,7 @@ void GetPlayerCmds(
 int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS]);
 int GetGameCmd(
 	InputDevices *devices, InputConfig *config,
-	int player, struct PlayerData *playerData, Vec2i playerPos);
+	struct PlayerData *playerData, Vec2i playerPos);
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
 
 #endif

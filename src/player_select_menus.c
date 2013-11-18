@@ -499,7 +499,7 @@ static menu_t *CreateSaveTemplateMenu(
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, KeyConfig *key)
+	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
@@ -513,7 +513,7 @@ void PlayerSelectMenusCreate(
 	data->display.c = c;
 	data->display.currentMenu = &ms->current;
 	data->display.pData = pData;
-	data->controls.keys = key;
+	data->controls.inputConfig = inputConfig;
 	data->controls.pData = pData;
 
 	switch (numPlayers)
