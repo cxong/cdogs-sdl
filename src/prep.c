@@ -235,7 +235,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
-			if (hasInputDevice[i])
+			if (hasInputDevice[i] && !MenuIsExit(&menus[i].ms))
 			{
 				MenuProcessCmd(&menus[i].ms, cmds[i]);
 			}
