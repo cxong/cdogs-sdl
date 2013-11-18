@@ -166,7 +166,7 @@ void MenuLoop(MenuSystem *menu)
 		}
 		else
 		{
-			int cmd = GetMenuCmd();
+			int cmd = GetMenuCmd(gPlayerDatas);
 			MenuProcessCmd(menu, cmd);
 		}
 		if (MenuIsExit(menu))
@@ -415,17 +415,6 @@ menu_t *MenuCreateCustom(
 	return menu;
 }
 
-menu_t *MenuCreateOptionChangeControl(
-	const char *name, input_device_e *device0, input_device_e *device1)
-{
-	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_CHANGE_CONTROL);
-	menu->u.option.uHook.changeControl.device0 = device0;
-	menu->u.option.uHook.changeControl.device1 = device1;
-	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC;
-	menu->u.option.uFunc.intToStr = InputDeviceName;
-	return menu;
-}
-
 
 void MenuDisplayItems(MenuSystem *ms);
 void MenuDisplaySubmenus(MenuSystem *ms);
@@ -557,7 +546,6 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
 					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
 					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET ||
-					subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_CONTROL ||
 					subMenu->type == MENU_TYPE_VOID_FUNC_VOID)
 				{
 					int optionInt = MenuOptionGetIntValue(subMenu);
@@ -760,8 +748,6 @@ int MenuOptionGetIntValue(menu_t *menu)
 		return (int)*menu->u.option.uHook.seed;
 	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
 		return menu->u.option.uHook.optionRangeGetSet.getFunc();
-	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
-		return *menu->u.option.uHook.changeControl.device0;
 	case MENU_TYPE_VOID_FUNC_VOID:
 		if (menu->u.option.uHook.toggleFuncs.get)
 		{
@@ -1162,12 +1148,6 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 			}
 			menu->u.option.uHook.optionRangeGetSet.setFunc(option);
 		}
-		break;
-	case MENU_TYPE_SET_OPTION_CHANGE_CONTROL:
-		InputChangeDevice(
-			&gInputDevices,
-			menu->u.option.uHook.changeControl.device0,
-			menu->u.option.uHook.changeControl.device1);
 		break;
 	case MENU_TYPE_VOID_FUNC_VOID:
 		menu->u.option.uHook.toggleFuncs.toggle();

@@ -59,6 +59,7 @@
 #include <tinydir/tinydir.h>
 
 #include "actors.h"
+#include "config.h"
 #include "defs.h"
 #include "keyboard.h"
 #include "input.h"
@@ -89,6 +90,14 @@ void PlayerDataInitialize(void)
 	{
 		struct PlayerData *d = &gPlayerDatas[i];
 		memset(d, 0, sizeof *d);
+
+		// Set default player 1 controls, as it's used in menus
+		if (i == 0)
+		{
+			d->inputDevice = INPUT_DEVICE_KEYBOARD;
+			d->deviceIndex = 0;
+		}
+
 		switch (i)
 		{
 			case 0:
@@ -279,4 +288,202 @@ int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
 		tile->x <= options->exitRight &&
 		tile->y >= options->exitTop &&
 		tile->y <= options->exitBottom;
+}
+
+
+static int GetKeyboardCmd(
+	keyboard_t *keyboard, input_keys_t *keys,
+	int(*keyFunc)(keyboard_t *, int))
+{
+	int cmd = 0;
+
+	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
+	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
+
+	if (keyFunc(keyboard, keys->up))			cmd |= CMD_UP;
+	else if (keyFunc(keyboard, keys->down))		cmd |= CMD_DOWN;
+
+	if (keyFunc(keyboard, keys->button1))		cmd |= CMD_BUTTON1;
+
+	if (keyFunc(keyboard, keys->button2))		cmd |= CMD_BUTTON2;
+
+	return cmd;
+}
+
+#define MOUSE_MOVE_DEAD_ZONE 12
+static int GetMouseCmd(
+	Mouse *mouse, int(*mouseFunc)(Mouse *, int), int useMouseMove, Vec2i pos)
+{
+	int cmd = 0;
+
+	if (useMouseMove)
+	{
+		int dx = abs(mouse->currentPos.x - pos.x);
+		int dy = abs(mouse->currentPos.y - pos.y);
+		if (dx > MOUSE_MOVE_DEAD_ZONE || dy > MOUSE_MOVE_DEAD_ZONE)
+		{
+			if (2 * dx > dy)
+			{
+				if (pos.x < mouse->currentPos.x)			cmd |= CMD_RIGHT;
+				else if (pos.x > mouse->currentPos.x)		cmd |= CMD_LEFT;
+			}
+			if (2 * dy > dx)
+			{
+				if (pos.y < mouse->currentPos.y)			cmd |= CMD_DOWN;
+				else if (pos.y > mouse->currentPos.y)		cmd |= CMD_UP;
+			}
+		}
+	}
+	else
+	{
+		if (mouseFunc(mouse, SDL_BUTTON_WHEELUP))			cmd |= CMD_UP;
+		else if (mouseFunc(mouse, SDL_BUTTON_WHEELDOWN))	cmd |= CMD_DOWN;
+	}
+
+	if (mouseFunc(mouse, SDL_BUTTON_LEFT))					cmd |= CMD_BUTTON1;
+	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))					cmd |= CMD_BUTTON2;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_BUTTON3;
+
+	return cmd;
+}
+
+static int GetJoystickCmd(
+	joystick_t *joystick, int(*joyFunc)(joystick_t *, int))
+{
+	int cmd = 0;
+
+	if (joyFunc(joystick, CMD_LEFT))		cmd |= CMD_LEFT;
+	else if (joyFunc(joystick, CMD_RIGHT))	cmd |= CMD_RIGHT;
+
+	if (joyFunc(joystick, CMD_UP))			cmd |= CMD_UP;
+	else if (joyFunc(joystick, CMD_DOWN))	cmd |= CMD_DOWN;
+
+	if (joyFunc(joystick, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
+
+	if (joyFunc(joystick, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
+
+	if (joyFunc(joystick, CMD_BUTTON3))		cmd |= CMD_BUTTON3;
+
+	if (joyFunc(joystick, CMD_BUTTON4))		cmd |= CMD_BUTTON4;
+
+	return cmd;
+}
+
+static int GetOnePlayerCmd(
+	KeyConfig *config,
+	int(*keyFunc)(keyboard_t *, int),
+	int(*mouseFunc)(Mouse *, int),
+	int(*joyFunc)(joystick_t *, int),
+	input_device_e device,
+	int deviceIndex)
+{
+	int cmd = 0;
+	switch (device)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		cmd = GetKeyboardCmd(
+			&gInputDevices.keyboard, &config->Keys, keyFunc);
+		break;
+	case INPUT_DEVICE_MOUSE:
+		cmd = GetMouseCmd(&gInputDevices.mouse, mouseFunc, 0, Vec2iZero());
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		{
+			joystick_t *joystick = &gInputDevices.joysticks.joys[deviceIndex];
+			cmd = GetJoystickCmd(joystick, joyFunc);
+		}
+		break;
+	default:
+		assert(0 && "unknown input device");
+		break;
+	}
+	return cmd;
+}
+
+void GetPlayerCmds(
+	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS])
+{
+	int(*keyFunc)(keyboard_t *, int) = KeyIsPressed;
+	int(*mouseFunc)(Mouse *, int) = MouseIsPressed;
+	int(*joyFunc)(joystick_t *, int) = JoyIsPressed;
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		(*cmds)[i] = GetOnePlayerCmd(
+			&gConfig.Input.PlayerKeys[i], keyFunc, mouseFunc, joyFunc,
+			playerDatas[i].inputDevice, playerDatas[i].deviceIndex);
+	}
+}
+
+int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS])
+{
+	int cmd;
+	keyboard_t *kb = &gInputDevices.keyboard;
+	if (KeyIsPressed(kb, SDLK_ESCAPE))
+	{
+		return CMD_ESC;
+	}
+
+	cmd = GetOnePlayerCmd(
+		&gConfig.Input.PlayerKeys[0],
+		KeyIsPressed, MouseIsPressed, JoyIsPressed,
+		playerDatas[0].inputDevice, playerDatas[0].deviceIndex);
+	if (!cmd)
+	{
+		if (KeyIsPressed(kb, SDLK_LEFT))		cmd |= CMD_LEFT;
+		else if (KeyIsPressed(kb, SDLK_RIGHT))	cmd |= CMD_RIGHT;
+
+		if (KeyIsPressed(kb, SDLK_UP))			cmd |= CMD_UP;
+		else if (KeyIsPressed(kb, SDLK_DOWN))	cmd |= CMD_DOWN;
+
+		if (KeyIsPressed(kb, SDLK_RETURN))		cmd |= CMD_BUTTON1;
+
+		if (KeyIsPressed(kb, SDLK_BACKSPACE))	cmd |= CMD_BUTTON2;
+	}
+
+	return cmd;
+}
+
+int GetGameCmd(
+	InputDevices *devices, InputConfig *config,
+	int player, struct PlayerData *playerData, Vec2i playerPos)
+{
+	int cmd = 0;
+	joystick_t *joystick = &devices->joysticks.joys[0];
+
+	switch (playerData->inputDevice)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		cmd = GetKeyboardCmd(
+			&devices->keyboard,
+			&config->PlayerKeys[player].Keys,
+			KeyIsDown);
+		break;
+	case INPUT_DEVICE_MOUSE:
+		cmd = GetMouseCmd(&devices->mouse, MouseIsDown, 1, playerPos);
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		joystick =
+			&devices->joysticks.joys[playerData->deviceIndex];
+		cmd = GetJoystickCmd(joystick, JoyIsDown);
+		break;
+	default:
+		assert(0 && "unknown input device");
+		break;
+	}
+
+	return cmd;
+}
+
+int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS])
+{
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (playerDatas[i].inputDevice == INPUT_DEVICE_MOUSE)
+		{
+			return 1;
+		}
+	}
+	return 0;
 }

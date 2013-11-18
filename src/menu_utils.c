@@ -28,6 +28,8 @@
 */
 #include "menu_utils.h"
 
+#include <assert.h>
+
 #include <cdogs/draw.h>
 #include <cdogs/text.h>
 
@@ -64,19 +66,20 @@ void MenuDisplayPlayerControls(
 	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	char s[256];
-	KeyConfig *config = data;
+	MenuDisplayPlayerControlsData *d = data;
 	Vec2i textPos = Vec2iNew(0, pos.y + size.y - (size.y / 6));
 	int textWidth = 0;
 
-	if (config->Device == INPUT_DEVICE_KEYBOARD)
+	switch (d->pData->inputDevice)
 	{
+	case INPUT_DEVICE_KEYBOARD:
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			SDL_GetKeyName(config->Keys.left),
-			SDL_GetKeyName(config->Keys.right),
-			SDL_GetKeyName(config->Keys.up),
-			SDL_GetKeyName(config->Keys.down),
-			SDL_GetKeyName(config->Keys.button1),
-			SDL_GetKeyName(config->Keys.button2));
+			SDL_GetKeyName(d->keys->Keys.left),
+			SDL_GetKeyName(d->keys->Keys.right),
+			SDL_GetKeyName(d->keys->Keys.up),
+			SDL_GetKeyName(d->keys->Keys.down),
+			SDL_GetKeyName(d->keys->Keys.button1),
+			SDL_GetKeyName(d->keys->Keys.button2));
 		textWidth = TextGetStringWidth(s);
 		if (textWidth < 125)
 		{
@@ -86,35 +89,38 @@ void MenuDisplayPlayerControls(
 		else
 		{
 			sprintf(s, "(%s, %s, %s,",
-				SDL_GetKeyName(config->Keys.left),
-				SDL_GetKeyName(config->Keys.right),
-				SDL_GetKeyName(config->Keys.up));
+				SDL_GetKeyName(d->keys->Keys.left),
+				SDL_GetKeyName(d->keys->Keys.right),
+				SDL_GetKeyName(d->keys->Keys.up));
 			textWidth = TextGetStringWidth(s);
 			textPos.x = pos.x - textWidth / 2;
 			textPos.y -= 10;
 			DrawTextString(s, g, textPos);
 			sprintf(s, "%s, %s and %s)",
-				SDL_GetKeyName(config->Keys.down),
-				SDL_GetKeyName(config->Keys.button1),
-				SDL_GetKeyName(config->Keys.button2));
+				SDL_GetKeyName(d->keys->Keys.down),
+				SDL_GetKeyName(d->keys->Keys.button1),
+				SDL_GetKeyName(d->keys->Keys.button2));
 			textWidth = TextGetStringWidth(s);
 			textPos.x = pos.x - textWidth / 2;
 			textPos.y += 10;
 			DrawTextString(s, g, textPos);
 		}
-	}
-	else if (config->Device == INPUT_DEVICE_MOUSE)
-	{
+		break;
+	case INPUT_DEVICE_MOUSE:
 		sprintf(s, "(mouse wheel to scroll, left and right click)");
 		textWidth = TextGetStringWidth(s);
 		textPos.x = pos.x - textWidth / 2;
 		DrawTextString(s, g, textPos);
-	}
-	else
-	{
-		sprintf(s, "(%s)", InputDeviceName(config->Device));
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		sprintf(s, "(%s)",
+			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
 		textWidth = TextGetStringWidth(s);
 		textPos.x = pos.x - textWidth / 2;
 		DrawTextString(s, g, textPos);
+		break;
+	default:
+		assert(0 && "unknown device");
+		break;
 	}
 }

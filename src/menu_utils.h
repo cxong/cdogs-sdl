@@ -41,7 +41,11 @@ typedef struct
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
-// data is of type KeyConfig *
+typedef struct
+{
+	struct PlayerData *pData;
+	KeyConfig *keys;
+} MenuDisplayPlayerControlsData;
 void MenuDisplayPlayerControls(
 	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 

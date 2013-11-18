@@ -70,7 +70,7 @@ void ConfigLoadOld(Config *config, const char *filename)
 	for (i = 0; i < 2; i++)
 	{
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
-			(int *)&config->Input.PlayerKeys[i].Device,
+			&dummy,
 			&config->Input.PlayerKeys[i].Keys.left,
 			&config->Input.PlayerKeys[i].Keys.right,
 			&config->Input.PlayerKeys[i].Keys.up,
@@ -143,7 +143,7 @@ void ConfigSaveOld(Config *config, const char *filename)
 	for (i = 0; i < 2; i++)
 	{
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",
-			config->Input.PlayerKeys[i].Device,
+			INPUT_DEVICE_KEYBOARD,
 			config->Input.PlayerKeys[i].Keys.left,
 			config->Input.PlayerKeys[i].Keys.right,
 			config->Input.PlayerKeys[i].Keys.up,

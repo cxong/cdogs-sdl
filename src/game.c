@@ -476,7 +476,7 @@ int HandleKey(int cmd, int *isPaused)
 			&gInputDevices.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
-			int cmd1 = 0, cmd2 = 0;
+			int i;
 			if (!hasDisplayedAutomap)
 			{
 				AutomapDraw(0);
@@ -485,11 +485,13 @@ int HandleKey(int cmd, int *isPaused)
 			}
 			SDL_Delay(10);
 			InputPoll(&gInputDevices, SDL_GetTicks());
-			cmd1 = InputGetGameCmd(
-				&gInputDevices, &gConfig.Input, 0, Vec2iZero());
-			cmd2 = InputGetGameCmd(
-				&gInputDevices, &gConfig.Input, 1, Vec2iZero());
-			cmd = cmd1 | cmd2;
+			cmd = 0;
+			for (i = 0; i < MAX_PLAYERS; i++)
+			{
+				cmd |= GetGameCmd(
+					&gInputDevices, &gConfig.Input,
+					i, &gPlayerDatas[i], Vec2iZero());
+			}
 		}
 	}
 
@@ -625,10 +627,11 @@ int gameloop(void)
 		{
 			if (gPlayers[i] && !gPlayers[i]->dead)
 			{
-				cmds[i] = InputGetGameCmd(
+				cmds[i] = GetGameCmd(
 					&gInputDevices,
 					&gConfig.Input,
 					i,
+					&gPlayerDatas[i],
 					GetPlayerCenter(&gGraphicsDevice, i));
 				cmdAll |= cmds[i];
 			}
@@ -718,7 +721,7 @@ int gameloop(void)
 
 		HUDUpdate(&hud, ticks_now - ticks_then);
 		HUDDraw(&hud, isPaused);
-		if (ConfigIsMouseUsed(&gConfig.Input))
+		if (GameIsMouseUsed(gPlayerDatas))
 		{
 			MouseDraw(&gInputDevices.mouse);
 		}

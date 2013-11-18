@@ -113,7 +113,7 @@ int NumPlayersSelection(
 			res = 0;
 			break;	// hack to allow exit
 		}
-		cmd = GetMenuCmd();
+		cmd = GetMenuCmd(gPlayerDatas);
 		MenuProcessCmd(&ms, cmd);
 		if (MenuIsExit(&ms))
 		{
@@ -155,7 +155,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			// TODO: destroy menus
 			return 0; // hack to allow exit
 		}
-		GetPlayerCmds(&cmds);
+		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
 			MenuProcessCmd(&menus[i].ms, cmds[i]);
@@ -211,7 +211,7 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		{
 			return 0; // hack to exit from menu
 		}
-		GetPlayerCmds(&cmds);
+		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
 			MenuProcessCmd(&menus[i].ms, cmds[i]);

@@ -35,6 +35,7 @@
 typedef struct
 {
 	MenuDisplayPlayerData display;
+	MenuDisplayPlayerControlsData controls;
 } WeaponMenuData;
 typedef struct
 {

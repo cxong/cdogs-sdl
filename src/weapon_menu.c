@@ -115,6 +115,8 @@ void WeaponMenuCreate(
 	data->display.c = c;
 	data->display.currentMenu = &ms->current;
 	data->display.pData = pData;
+	data->controls.keys = key;
+	data->controls.pData = pData;
 
 	switch (numPlayers)
 	{
@@ -152,5 +154,5 @@ void WeaponMenuCreate(
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, key);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);
 }

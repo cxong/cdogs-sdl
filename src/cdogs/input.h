@@ -71,7 +71,6 @@ typedef struct
 
 typedef struct
 {
-	input_device_e Device;
 	input_keys_t Keys;
 } KeyConfig;
 
@@ -102,20 +101,12 @@ typedef struct
 
 extern InputDevices gInputDevices;
 
-void InputChangeDevice(
-	InputDevices *devices, input_device_e *d, input_device_e *dOther);
-
-void GetPlayerCmds(int (*cmds)[MAX_PLAYERS]);
-int GetMenuCmd(void);
-
 void InputInit(InputDevices *devices, PicPaletted *mouseCursor);
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
-int InputGetGameCmd(
-	InputDevices *devices, InputConfig *config, int player, Vec2i playerPos);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
 void InputPoll(InputDevices *devices, Uint32 ticks);
 void InputTerminate(InputDevices *devices);
 
-const char *InputDeviceName(int d);
+const char *InputDeviceName(int d, int deviceIndex);
 
 #endif

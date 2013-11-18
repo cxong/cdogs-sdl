@@ -350,8 +350,6 @@ menu_t *MenuCreateOptionsGraphics(const char *name)
 	return menu;
 }
 
-menu_t *MenuCreateOptionChangeControl(
-	const char *name, input_device_e *device0, input_device_e *device1);
 menu_t *MenuCreateKeys(const char *name);
 
 menu_t *MenuCreateOptionsControls(const char *name)
@@ -361,26 +359,6 @@ menu_t *MenuCreateOptionsControls(const char *name)
 		"Configure Controls:",
 		MENU_TYPE_OPTIONS,
 		0);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeControl(
-			"Player 1", &gConfig.Input.PlayerKeys[0].Device, &gConfig.Input.PlayerKeys[1].Device));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeControl(
-			"Player 2", &gConfig.Input.PlayerKeys[1].Device, &gConfig.Input.PlayerKeys[0].Device));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Swap buttons joystick 1",
-			&gConfig.Input.SwapButtonsJoystick1,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Swap buttons joystick 2",
-			&gConfig.Input.SwapButtonsJoystick2,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 #ifndef __ANDROID__
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
 #endif
@@ -548,10 +526,10 @@ menu_t *MenuCreateKeys(const char *name)
 		MENU_TYPE_KEYS,
 		0);
 	MenuCreateKeysSingleSection(
-		menu, "Player 1",
+		menu, "Keyboard 1",
 		&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys);
 	MenuCreateKeysSingleSection(
-		menu, "Player 2",
+		menu, "Keyboard 2",
 		&gConfig.Input.PlayerKeys[1].Keys, &gConfig.Input.PlayerKeys[0].Keys);
 	MenuAddSubmenu(
 		menu,

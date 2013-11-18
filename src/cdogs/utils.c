@@ -100,10 +100,8 @@ char *InputDeviceStr(int d)
 		return "Keyboard";
 	case INPUT_DEVICE_MOUSE:
 		return "Mouse";
-	case INPUT_DEVICE_JOYSTICK_1:
-		return "Joystick 1";
-	case INPUT_DEVICE_JOYSTICK_2:
-		return "Joystick 2";
+	case INPUT_DEVICE_JOYSTICK:
+		return "Joystick";
 	default:
 		return "";
 	}
@@ -118,13 +116,9 @@ input_device_e StrInputDevice(const char *str)
 	{
 		return INPUT_DEVICE_MOUSE;
 	}
-	else if (strcmp(str, "Joystick 1") == 0)
+	else if (strcmp(str, "Joystick") == 0)
 	{
-		return INPUT_DEVICE_JOYSTICK_1;
-	}
-	else if (strcmp(str, "Joystick 1") == 0)
-	{
-		return INPUT_DEVICE_JOYSTICK_2;
+		return INPUT_DEVICE_JOYSTICK;
 	}
 	else
 	{

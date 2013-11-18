@@ -155,14 +155,11 @@ static void AddKeysNode(input_keys_t *keys, json_t *parent)
 
 static void LoadKeyConfigNode(KeyConfig *config, json_t *node)
 {
-	config->Device = StrInputDevice(json_find_first_label(node, "Device")->child->text);
 	LoadKeysNode(&config->Keys, json_find_first_label(node, "Keys"));
 }
 static void AddKeyConfigNode(KeyConfig *config, json_t *parent)
 {
 	json_t *subConfig = json_new_object();
-	json_insert_pair_into_object(
-		subConfig, "Device", json_new_string(InputDeviceStr(config->Device)));
 	AddKeysNode(&config->Keys, subConfig);
 	json_insert_child(parent, subConfig);
 }

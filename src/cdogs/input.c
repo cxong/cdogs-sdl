@@ -58,223 +58,8 @@
 #include "sounds.h"
 #include "gamedata.h"
 
-#define MOUSE_MOVE_DEAD_ZONE 12
-
 InputDevices gInputDevices;
 
-
-void InputChangeDevice(
-	InputDevices *devices, input_device_e *d, input_device_e *dOther)
-{
-	int numJoys = devices->joysticks.numJoys;
-	input_device_e newDevice;
-	int isFirst = 1;
-	int available[INPUT_DEVICE_COUNT];
-	available[INPUT_DEVICE_KEYBOARD] = 1;
-	available[INPUT_DEVICE_MOUSE] = *dOther != INPUT_DEVICE_MOUSE;
-	available[INPUT_DEVICE_JOYSTICK_1] =
-		numJoys >= 1 && *dOther != INPUT_DEVICE_JOYSTICK_1;
-	available[INPUT_DEVICE_JOYSTICK_2] =
-		numJoys >= 2 && *dOther != INPUT_DEVICE_JOYSTICK_2;
-	for (newDevice = *d; isFirst || newDevice != *d;)
-	{
-		if (!isFirst && available[newDevice])
-		{
-			break;
-		}
-		isFirst = 0;
-		newDevice++;
-		if (newDevice == INPUT_DEVICE_COUNT)
-		{
-			newDevice = INPUT_DEVICE_KEYBOARD;
-		}
-	}
-	*d = newDevice;
-	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
-}
-
-int GetKeyboardCmd(
-	keyboard_t *keyboard, input_keys_t *keys,
-	int (*keyFunc)(keyboard_t *, int))
-{
-	int cmd = 0;
-	
-	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
-	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
-	
-	if (keyFunc(keyboard, keys->up))			cmd |= CMD_UP;
-	else if (keyFunc(keyboard, keys->down))		cmd |= CMD_DOWN;
-	
-	if (keyFunc(keyboard, keys->button1))		cmd |= CMD_BUTTON1;
-
-	if (keyFunc(keyboard, keys->button2))		cmd |= CMD_BUTTON2;
-
-	return cmd;
-}
-
-int GetMouseCmd(
-	Mouse *mouse, int (*mouseFunc)(Mouse *, int), int useMouseMove, Vec2i pos)
-{
-	int cmd = 0;
-	
-	if (useMouseMove)
-	{
-		int dx = abs(mouse->currentPos.x - pos.x);
-		int dy = abs(mouse->currentPos.y - pos.y);
-		if (dx > MOUSE_MOVE_DEAD_ZONE || dy > MOUSE_MOVE_DEAD_ZONE)
-		{
-			if (2 * dx > dy)
-			{
-				if (pos.x < mouse->currentPos.x)			cmd |= CMD_RIGHT;
-				else if (pos.x > mouse->currentPos.x)		cmd |= CMD_LEFT;
-			}
-			if (2 * dy > dx)
-			{
-				if (pos.y < mouse->currentPos.y)			cmd |= CMD_DOWN;
-				else if (pos.y > mouse->currentPos.y)		cmd |= CMD_UP;
-			}
-		}
-	}
-	else
-	{
-		if (mouseFunc(mouse, SDL_BUTTON_WHEELUP))			cmd |= CMD_UP;
-		else if (mouseFunc(mouse, SDL_BUTTON_WHEELDOWN))	cmd |= CMD_DOWN;
-	}
-
-	if (mouseFunc(mouse, SDL_BUTTON_LEFT))					cmd |= CMD_BUTTON1;
-	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))					cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_BUTTON3;
-	
-	return cmd;
-}
-
-int GetJoystickCmd(
-	joystick_t *joystick, int (*joyFunc)(joystick_t *, int))
-{
-	int cmd = 0;
-
-	if (joyFunc(joystick, CMD_LEFT))		cmd |= CMD_LEFT;
-	else if (joyFunc(joystick, CMD_RIGHT))	cmd |= CMD_RIGHT;
-
-	if (joyFunc(joystick, CMD_UP))			cmd |= CMD_UP;
-	else if (joyFunc(joystick, CMD_DOWN))	cmd |= CMD_DOWN;
-	
-	if (joyFunc(joystick, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
-
-	if (joyFunc(joystick, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
-	
-	if (joyFunc(joystick, CMD_BUTTON3))		cmd |= CMD_BUTTON3;
-
-	if (joyFunc(joystick, CMD_BUTTON4))		cmd |= CMD_BUTTON4;
-
-	return cmd;
-}
-
-int GetOnePlayerCmd(
-	KeyConfig *config,
-	int (*keyFunc)(keyboard_t *, int),
-	int (*mouseFunc)(Mouse *, int),
-	int (*joyFunc)(joystick_t *, int))
-{
-	int cmd = 0;
-	if (config->Device == INPUT_DEVICE_KEYBOARD)
-	{
-		cmd = GetKeyboardCmd(&gInputDevices.keyboard, &config->Keys, keyFunc);
-	}
-	else if (config->Device == INPUT_DEVICE_MOUSE)
-	{
-		cmd = GetMouseCmd(&gInputDevices.mouse, mouseFunc, 0, Vec2iZero());
-	}
-	else
-	{
-		joystick_t *joystick = &gInputDevices.joysticks.joys[0];
-
-		if (config->Device == INPUT_DEVICE_JOYSTICK_1)
-		{
-			joystick = &gInputDevices.joysticks.joys[0];
-		}
-		else if (config->Device == INPUT_DEVICE_JOYSTICK_2)
-		{
-			joystick = &gInputDevices.joysticks.joys[1];
-		}
-
-		cmd = GetJoystickCmd(joystick, joyFunc);
-	}
-	return cmd;
-}
-
-
-void GetPlayerCmds(int (*cmds)[MAX_PLAYERS])
-{
-	int (*keyFunc)(keyboard_t *, int) = KeyIsPressed;
-	int (*mouseFunc)(Mouse *, int) = MouseIsPressed;
-	int (*joyFunc)(joystick_t *, int) = JoyIsPressed;
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		(*cmds)[i] = GetOnePlayerCmd(
-			&gConfig.Input.PlayerKeys[i], keyFunc, mouseFunc, joyFunc);
-	}
-}
-
-int InputGetGameCmd(
-	InputDevices *devices, InputConfig *config, int player, Vec2i playerPos)
-{
-	int cmd = 0;
-	joystick_t *joystick = &devices->joysticks.joys[0];
-	
-	switch (config->PlayerKeys[player].Device)
-	{
-		case INPUT_DEVICE_KEYBOARD:
-			cmd = GetKeyboardCmd(
-				&devices->keyboard,
-				&config->PlayerKeys[player].Keys,
-				KeyIsDown);
-			break;
-		case INPUT_DEVICE_MOUSE:
-			cmd = GetMouseCmd(&devices->mouse, MouseIsDown, 1, playerPos);
-			break;
-		case INPUT_DEVICE_JOYSTICK_1:
-			joystick = &devices->joysticks.joys[0];
-			cmd = GetJoystickCmd(joystick, JoyIsDown);
-			break;
-		case INPUT_DEVICE_JOYSTICK_2:
-			joystick = &devices->joysticks.joys[1];
-			cmd = GetJoystickCmd(joystick, JoyIsDown);
-			break;
-		default:
-			assert(0 && "unknown input device");
-			break;
-	}
-	
-	return cmd;
-}
-
-int GetMenuCmd(void)
-{
-	int cmds[MAX_PLAYERS];
-	keyboard_t *kb = &gInputDevices.keyboard;
-	if (KeyIsPressed(kb, SDLK_ESCAPE))
-	{
-		return CMD_ESC;
-	}
-
-	GetPlayerCmds(&cmds);
-	if (!cmds[0])
-	{
-		if (KeyIsPressed(kb, SDLK_LEFT))		cmds[0] |= CMD_LEFT;
-		else if (KeyIsPressed(kb, SDLK_RIGHT))	cmds[0] |= CMD_RIGHT;
-
-		if (KeyIsPressed(kb, SDLK_UP))			cmds[0] |= CMD_UP;
-		else if (KeyIsPressed(kb, SDLK_DOWN))	cmds[0] |= CMD_DOWN;
-
-		if (KeyIsPressed(kb, SDLK_RETURN))		cmds[0] |= CMD_BUTTON1;
-
-		if (KeyIsPressed(kb, SDLK_BACKSPACE))	cmds[0] |= CMD_BUTTON2;
-	}
-
-	return cmds[0];
-}
 
 void InputInit(InputDevices *devices, PicPaletted *mouseCursor)
 {
@@ -375,7 +160,7 @@ void InputTerminate(InputDevices *devices)
 	JoyTerminate(&devices->joysticks);
 }
 
-const char *InputDeviceName(int d)
+const char *InputDeviceName(int d, int deviceIndex)
 {
 	switch (d)
 	{
@@ -383,10 +168,8 @@ const char *InputDeviceName(int d)
 		return "Keyboard";
 	case INPUT_DEVICE_MOUSE:
 		return "Mouse";
-	case INPUT_DEVICE_JOYSTICK_1:
-		return SDL_JoystickName(0);
-	case INPUT_DEVICE_JOYSTICK_2:
-		return SDL_JoystickName(1);
+	case INPUT_DEVICE_JOYSTICK:
+		return SDL_JoystickName(deviceIndex);
 	default:
 		return "";
 	}

@@ -513,6 +513,8 @@ void PlayerSelectMenusCreate(
 	data->display.c = c;
 	data->display.currentMenu = &ms->current;
 	data->display.pData = pData;
+	data->controls.keys = key;
+	data->controls.pData = pData;
 
 	switch (numPlayers)
 	{
@@ -597,7 +599,7 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, key);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);
 
 	SetPlayer(c, pData);
 }

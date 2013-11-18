@@ -234,7 +234,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 		int cmd;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		cmd = GetMenuCmd();
+		cmd = GetMenuCmd(gPlayerDatas);
 		if (!PasswordEntry(cmd, buffer))
 		{
 			if (!buffer[0])

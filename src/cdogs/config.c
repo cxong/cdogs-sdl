@@ -295,14 +295,12 @@ void ConfigLoadDefault(Config *config)
 	config->Graphics.ScaleFactor = 1;
 	config->Graphics.ShakeMultiplier = 1;
 	config->Graphics.ScaleMode = SCALE_MODE_NN;
-	config->Input.PlayerKeys[0].Device = INPUT_DEVICE_KEYBOARD;
 	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;
 	config->Input.PlayerKeys[0].Keys.up = SDLK_UP;
 	config->Input.PlayerKeys[0].Keys.down = SDLK_DOWN;
 	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RSHIFT;
 	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RETURN;
-	config->Input.PlayerKeys[1].Device = INPUT_DEVICE_KEYBOARD;
 	config->Input.PlayerKeys[1].Keys.left = SDLK_KP4;
 	config->Input.PlayerKeys[1].Keys.right = SDLK_KP6;
 	config->Input.PlayerKeys[1].Keys.up = SDLK_KP8;
@@ -333,17 +331,4 @@ void ConfigLoadDefault(Config *config)
 	config->QuickPlay.EnemyHealth = QUICKPLAY_QUANTITY_ANY;
 	config->QuickPlay.EnemiesWithExplosives = 1;
 	config->QuickPlay.ItemCount = QUICKPLAY_QUANTITY_ANY;
-}
-
-int ConfigIsMouseUsed(InputConfig *config)
-{
-	int i;
-	for (i = 0; i < 2; i++)
-	{
-		if (config->PlayerKeys[i].Device == INPUT_DEVICE_MOUSE)
-		{
-			return 1;
-		}
-	}
-	return 0;
 }

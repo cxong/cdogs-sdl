@@ -68,7 +68,6 @@ typedef enum
 	MENU_TYPE_SET_OPTION_SEED,		// set random seed
 	MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID,	// set option using up/down functions
 	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
-	MENU_TYPE_SET_OPTION_CHANGE_CONTROL,	// change control device
 	MENU_TYPE_SET_OPTION_CHANGE_KEY,	// redefine key
 	MENU_TYPE_VOID_FUNC_VOID,		// call a void(*f)(void) function
 	MENU_TYPE_CAMPAIGN_ITEM,

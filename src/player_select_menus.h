@@ -46,6 +46,7 @@ typedef struct
 typedef struct
 {
 	MenuDisplayPlayerData display;
+	MenuDisplayPlayerControlsData controls;
 	int nameMenuSelection;
 	AppearanceMenuData faceData;
 	AppearanceMenuData skinData;
