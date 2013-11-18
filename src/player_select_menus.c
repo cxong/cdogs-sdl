@@ -503,7 +503,7 @@ void PlayerSelectMenusCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
-	struct PlayerData *p = data->display.pData;
+	struct PlayerData *p = pData;
 	Vec2i pos = Vec2iZero();
 	Vec2i size = Vec2iZero();
 	int w = graphics->cachedConfig.ResolutionWidth;
