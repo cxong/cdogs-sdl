@@ -63,8 +63,8 @@ void ConfigLoadOld(Config *config, const char *filename)
 		&config->Interface.ShowTime,
 		&config->Game.FriendlyFire,
 		&config->Graphics.Brightness,
-		&config->Input.SwapButtonsJoystick1,
-		&config->Input.SwapButtonsJoystick2,
+		&dummy,
+		&dummy,
 		&config->Interface.SplitscreenAlways);
 	CHECK_FSCANF(7);
 	for (i = 0; i < 2; i++)
@@ -137,8 +137,8 @@ void ConfigSaveOld(Config *config, const char *filename)
 		config->Interface.ShowTime,
 		config->Game.FriendlyFire,
 		config->Graphics.Brightness,
-		config->Input.SwapButtonsJoystick1,
-		config->Input.SwapButtonsJoystick2,
+		0,
+		0,
 		config->Interface.SplitscreenAlways);
 	for (i = 0; i < 2; i++)
 	{

@@ -309,12 +309,10 @@ void ConfigLoadDefault(Config *config)
 	config->Input.PlayerKeys[1].Keys.down = SDLK_KP2;
 	config->Input.PlayerKeys[1].Keys.button1 = SDLK_KP0;
 	config->Input.PlayerKeys[1].Keys.button2 = SDLK_KP_ENTER;
-	for (i = 0; i < 2; i++)
+	for (i = 0; i < MAX_KEYBOARD_CONFIGS; i++)
 	{
 		config->Input.PlayerKeys[i].Keys.map = SDLK_TAB;
 	}
-	config->Input.SwapButtonsJoystick1 = 0;
-	config->Input.SwapButtonsJoystick2 = 0;
 	config->Interface.ShowFPS = 0;
 	config->Interface.ShowTime = 0;
 	config->Interface.SplitscreenAlways = 0;

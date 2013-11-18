@@ -37,7 +37,7 @@
 #include "json_utils.h"
 #include "keyboard.h"
 
-#define VERSION "3"
+#define VERSION "4"
 
 
 static void LoadGameConfigNode(GameConfig *config, json_t *node)
@@ -176,8 +176,6 @@ static void LoadInputConfigNode(InputConfig *config, json_t *node)
 		return;
 	}
 	node = node->child;
-	LoadBool(&config->SwapButtonsJoystick1, node, "SwapButtonsJoystick1");
-	LoadBool(&config->SwapButtonsJoystick2, node, "SwapButtonsJoystick2");
 	keyNode = json_find_first_label(node, "Keys")->child->child;
 	for (i = 0; i < 2 && keyNode != NULL; i++)
 	{
@@ -190,10 +188,6 @@ static void AddInputConfigNode(InputConfig *config, json_t *root)
 	int i;
 	json_t *subConfig = json_new_object();
 	json_t *keyConfigs = json_new_array();
-	json_insert_pair_into_object(
-		subConfig, "SwapButtonsJoystick1", json_new_bool(config->SwapButtonsJoystick1));
-	json_insert_pair_into_object(
-		subConfig, "SwapButtonsJoystick2", json_new_bool(config->SwapButtonsJoystick2));
 	for (i = 0; i < 2; i++)
 	{
 		AddKeyConfigNode(&config->PlayerKeys[i], keyConfigs);

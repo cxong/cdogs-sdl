@@ -900,7 +900,6 @@ void DogFight(GraphicsDevice *graphicsDevice)
 	}
 
 	gOptions.badGuys = 0;
-	gOptions.numPlayers = 2;	// TODO: more players
 
 	do
 	{

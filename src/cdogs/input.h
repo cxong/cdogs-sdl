@@ -75,11 +75,10 @@ typedef struct
 	input_keys_t Keys;
 } KeyConfig;
 
+#define MAX_KEYBOARD_CONFIGS 2
 typedef struct
 {
-	int SwapButtonsJoystick1;
-	int SwapButtonsJoystick2;
-	KeyConfig PlayerKeys[2];	// TODO: more characters
+	KeyConfig PlayerKeys[MAX_KEYBOARD_CONFIGS];
 } InputConfig;
 
 typedef enum

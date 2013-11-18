@@ -93,16 +93,6 @@ void InputChangeDevice(
 	debug(D_NORMAL, "change control to: %s\n", InputDeviceStr(*d));
 }
 
-static int SwapButtons(int cmd)
-{
-	int c = (cmd & ~(CMD_BUTTON1 | CMD_BUTTON2));
-	if (cmd & CMD_BUTTON1)
-		c |= CMD_BUTTON2;
-	if (cmd & CMD_BUTTON2)
-		c |= CMD_BUTTON1;
-	return c;
-}
-
 int GetKeyboardCmd(
 	keyboard_t *keyboard, input_keys_t *keys,
 	int (*keyFunc)(keyboard_t *, int))
@@ -159,7 +149,7 @@ int GetMouseCmd(
 }
 
 int GetJoystickCmd(
-	joystick_t *joystick, int (*joyFunc)(joystick_t *, int), int swapButtons)
+	joystick_t *joystick, int (*joyFunc)(joystick_t *, int))
 {
 	int cmd = 0;
 
@@ -176,12 +166,7 @@ int GetJoystickCmd(
 	if (joyFunc(joystick, CMD_BUTTON3))		cmd |= CMD_BUTTON3;
 
 	if (joyFunc(joystick, CMD_BUTTON4))		cmd |= CMD_BUTTON4;
-	
-	if (swapButtons)
-	{
-		cmd = SwapButtons(cmd);
-	}
-	
+
 	return cmd;
 }
 
@@ -202,21 +187,18 @@ int GetOnePlayerCmd(
 	}
 	else
 	{
-		int swapButtons = 0;
 		joystick_t *joystick = &gInputDevices.joysticks.joys[0];
 
 		if (config->Device == INPUT_DEVICE_JOYSTICK_1)
 		{
 			joystick = &gInputDevices.joysticks.joys[0];
-			swapButtons = gConfig.Input.SwapButtonsJoystick1;
 		}
 		else if (config->Device == INPUT_DEVICE_JOYSTICK_2)
 		{
 			joystick = &gInputDevices.joysticks.joys[1];
-			swapButtons = gConfig.Input.SwapButtonsJoystick2;
 		}
 
-		cmd = GetJoystickCmd(joystick, joyFunc, swapButtons);
+		cmd = GetJoystickCmd(joystick, joyFunc);
 	}
 	return cmd;
 }
@@ -239,7 +221,6 @@ int InputGetGameCmd(
 	InputDevices *devices, InputConfig *config, int player, Vec2i playerPos)
 {
 	int cmd = 0;
-	int swapButtons = 0;
 	joystick_t *joystick = &devices->joysticks.joys[0];
 	
 	switch (config->PlayerKeys[player].Device)
@@ -255,13 +236,11 @@ int InputGetGameCmd(
 			break;
 		case INPUT_DEVICE_JOYSTICK_1:
 			joystick = &devices->joysticks.joys[0];
-			swapButtons = config->SwapButtonsJoystick1;
-			cmd = GetJoystickCmd(joystick, JoyIsDown, swapButtons);
+			cmd = GetJoystickCmd(joystick, JoyIsDown);
 			break;
 		case INPUT_DEVICE_JOYSTICK_2:
 			joystick = &devices->joysticks.joys[1];
-			swapButtons = config->SwapButtonsJoystick2;
-			cmd = GetJoystickCmd(joystick, JoyIsDown, swapButtons);
+			cmd = GetJoystickCmd(joystick, JoyIsDown);
 			break;
 		default:
 			assert(0 && "unknown input device");
