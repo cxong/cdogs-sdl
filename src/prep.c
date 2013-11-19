@@ -280,6 +280,12 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 					// Side by side
 					center = Vec2iNew(i * w / 2 + w / 4, h / 2);
 					break;
+				case 3:
+				case 4:
+					// Four corners
+					center = Vec2iNew(
+						(i & 1) * w / 2 + w / 4, (i / 2) * h / 2 + h / 4);
+					break;
 				default:
 					assert(0 && "not implemented");
 					break;

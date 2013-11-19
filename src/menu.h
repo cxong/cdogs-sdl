@@ -73,8 +73,7 @@ typedef enum
 	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
 	MENU_TYPE_QUIT,
-	MENU_TYPE_RETURN,	// Return with a code
-	MENU_TYPE_SEPARATOR,
+	MENU_TYPE_RETURN,				// Return with a code
 	MENU_TYPE_CUSTOM				// use custom callbacks for input and drawing
 } menu_type_e;
 
@@ -114,6 +113,7 @@ struct menu
 	char name[64];
 	menu_type_e type;
 	struct menu *parentMenu;
+	int isDisabled;
 	MenuFunc customPostEnterFunc;
 	void *customPostEnterData;
 	MenuPostInputFunc customPostInputFunc;
@@ -245,6 +245,8 @@ void MenuLoop(MenuSystem *menu);
 void MenuDisplay(MenuSystem *ms);
 void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
+void MenuDisableSubmenu(menu_t *menu, int index);
+void MenuEnableSubmenu(menu_t *menu, int index);
 
 void ShowControls(void);
 void DisplayMenuItem(int x, int y, const char *s, int selected);

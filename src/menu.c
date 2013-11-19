@@ -186,6 +186,21 @@ void MenuReset(MenuSystem *menu)
 	menu->current = menu->root;
 }
 
+void MenuDisableSubmenu(menu_t *menu, int index)
+{
+	menu->u.normal.subMenus[index].isDisabled = 1;
+	// Move the selection to the next non-disabled submenu
+	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
+		menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
+	{
+		menu->u.normal.index++;
+	}
+}
+void MenuEnableSubmenu(menu_t *menu, int index)
+{
+	menu->u.normal.subMenus[index].isDisabled = 0;
+}
+
 void ShowControls(void)
 {
 	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
@@ -282,9 +297,9 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 		}
 	}
 
-	// move cursor in case first menu item(s) are separators
+	// move cursor in case first menu item(s) are disabled
 	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
-		menu->u.normal.subMenus[menu->u.normal.index].type == MENU_TYPE_SEPARATOR)
+		menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
 	{
 		menu->u.normal.index++;
 	}
@@ -387,7 +402,9 @@ menu_t *MenuCreateOptionRangeGetSet(
 
 menu_t *MenuCreateSeparator(const char *name)
 {
-	return MenuCreate(name, MENU_TYPE_SEPARATOR);
+	menu_t *menu = MenuCreate(name, MENU_TYPE_NORMAL);
+	menu->isDisabled = 1;
+	return menu;
 }
 
 menu_t *MenuCreateBack(const char *name)
@@ -533,11 +550,16 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				const char *name = subMenu->name;
 				if (i == menu->u.normal.index)
 				{
-					CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+					DrawTextStringMasked(name, ms->graphics, Vec2iNew(x, y), colorRed);
+				}
+				else if (subMenu->isDisabled)
+				{
+					color_t dark = { 64, 64, 64, 255 };
+					DrawTextStringMasked(name, ms->graphics, Vec2iNew(x, y), dark);
 				}
 				else
 				{
-					CDogsTextStringAt(x, y, name);
+					DrawTextString(name, ms->graphics, Vec2iNew(x, y));
 				}
 
 				// display option value
@@ -603,7 +625,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					name,
 					isSelected);
 
-				if (isSelected)
+				if (isSelected && subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
 				{
 					char s[255];
 					const char *filename = subMenu->u.campaign.filename;
@@ -891,6 +913,9 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
 	{
 		menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+
+		// Only allow menu switching on button 1
+
 		switch (subMenu->type)
 		{
 		case MENU_TYPE_NORMAL:
@@ -898,16 +923,36 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_CAMPAIGNS:
 		case MENU_TYPE_KEYS:
 		case MENU_TYPE_CUSTOM:
-			return subMenu;
+			if (cmd & CMD_BUTTON1)
+			{
+				return subMenu;
+			}
+			break;
 		case MENU_TYPE_CAMPAIGN_ITEM:
-			MenuLoadCampaign(&subMenu->u.campaign);
-			return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
+			if (cmd & CMD_BUTTON1)
+			{
+				MenuLoadCampaign(&subMenu->u.campaign);
+				return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
+			}
+			break;
 		case MENU_TYPE_BACK:
-			return menu->parentMenu;
+			if (cmd & CMD_BUTTON1)
+			{
+				return menu->parentMenu;
+			}
+			break;
 		case MENU_TYPE_QUIT:
-			return subMenu;	// caller will check if subMenu type is QUIT
+			if (cmd & CMD_BUTTON1)
+			{
+				return subMenu;	// caller will check if subMenu type is QUIT
+			}
+			break;
 		case MENU_TYPE_RETURN:
-			return subMenu;
+			if (cmd & CMD_BUTTON1)
+			{
+				return subMenu;
+			}
+			break;
 		default:
 			MenuActivate(ms, subMenu, cmd);
 			break;
@@ -993,8 +1038,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			{
 				menu->u.normal.index = menu->u.normal.numSubMenus - 1;
 			}
-		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
-			MENU_TYPE_SEPARATOR);
+		} while (menu->u.normal.subMenus[menu->u.normal.index].isDisabled);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
@@ -1006,8 +1050,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 			{
 				menu->u.normal.index = 0;
 			}
-		} while (menu->u.normal.subMenus[menu->u.normal.index].type ==
-			MENU_TYPE_SEPARATOR);
+		} while (menu->u.normal.subMenus[menu->u.normal.index].isDisabled);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	menu->u.normal.scroll =

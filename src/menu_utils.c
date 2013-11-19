@@ -42,7 +42,7 @@ void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 	pos.x -= size.x;	// move to left half of screen
 	playerPos = Vec2iNew(
 		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
-	namePos = Vec2iAdd(playerPos, Vec2iNew(-20, -36));
+	namePos = Vec2iAdd(playerPos, Vec2iNew(-30, -36));
 
 	UNUSED(g);
 
@@ -67,7 +67,7 @@ void MenuDisplayPlayerControls(
 {
 	char s[256];
 	MenuDisplayPlayerControlsData *d = data;
-	Vec2i textPos = Vec2iNew(0, pos.y + size.y - (size.y / 6));
+	Vec2i textPos = Vec2iNew(0, pos.y + size.y - (size.y / 10));
 	int textWidth = 0;
 
 	switch (d->pData->inputDevice)

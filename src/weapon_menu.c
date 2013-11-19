@@ -37,12 +37,16 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	struct PlayerData *p = d->display.pData;
-	if (!!(cmd & CMD_BUTTON1) &&
-		menu->u.normal.index < gMission.weaponCount)
+	if (menu->u.normal.index >= gMission.weaponCount)
+	{
+		// Don't process if we're not selecting a weapon
+		return;
+	}
+	if (cmd & CMD_BUTTON1)
 	{
 		// Add the selected weapon
 
-		// Check that the weapn hasn't been chosen yet
+		// Check that the weapon hasn't been chosen yet
 		gun_e selectedWeapon = gMission.availableWeapons[menu->u.normal.index];
 		int i;
 		for (i = 0; i < p->weaponCount; i++)
@@ -61,6 +65,12 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 		p->weapons[p->weaponCount] = selectedWeapon;
 		p->weaponCount++;
+
+		// Disable this menu entry
+		MenuDisableSubmenu(menu, menu->u.normal.index);
+
+		// Enable "Done" menu item
+		MenuEnableSubmenu(menu, menu->u.normal.numSubMenus - 1);
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
@@ -68,6 +78,15 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		if (p->weaponCount > 0)
 		{
 			p->weaponCount--;
+		}
+
+		// Re-enable the menu entry for this weapon
+		MenuEnableSubmenu(menu, p->weapons[p->weaponCount]);
+
+		// Disable "Done" if no weapons selected
+		if (p->weaponCount == 0)
+		{
+			MenuDisableSubmenu(menu, menu->u.normal.numSubMenus - 1);
 		}
 	}
 }
@@ -130,6 +149,12 @@ void WeaponMenuCreate(
 		pos = Vec2iNew(player * w / 2 + w / 4, 0);
 		size = Vec2iNew(w / 4, h);
 		break;
+	case 3:
+	case 4:
+		// Four corners
+		pos = Vec2iNew((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
+		size = Vec2iNew(w / 4, h / 2);
+		break;
 	default:
 		assert(0 && "not implemented");
 		break;
@@ -148,6 +173,16 @@ void WeaponMenuCreate(
 		MenuAddSubmenu(ms->root, MenuCreate(gunName, MENU_TYPE_BASIC));
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
+	// Disable menu items where the player already has the weapon
+	for (i = 0; i < pData->weaponCount; i++)
+	{
+		MenuDisableSubmenu(ms->root, pData->weapons[i]);
+	}
+	// Disable "Done" if no weapons selected
+	if (pData->weaponCount == 0)
+	{
+		MenuDisableSubmenu(ms->root, ms->root->u.normal.numSubMenus - 1);
+	}
 
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(ms->root, MenuCreateReturn("(End)", 0));

@@ -528,6 +528,12 @@ void PlayerSelectMenusCreate(
 		pos = Vec2iNew(player * w / 2 + w / 4, 0);
 		size = Vec2iNew(w / 4, h);
 		break;
+	case 3:
+	case 4:
+		// Four corners
+		pos = Vec2iNew((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
+		size = Vec2iNew(w / 4, h / 2);
+		break;
 	default:
 		assert(0 && "not implemented");
 		break;
