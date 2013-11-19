@@ -37,18 +37,15 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	struct PlayerData *p = d->display.pData;
-	if (menu->u.normal.index >= gMission.weaponCount)
-	{
-		// Don't process if we're not selecting a weapon
-		return;
-	}
-	if (cmd & CMD_BUTTON1)
+	int i;
+
+	// Don't process if we're not selecting a weapon
+	if ((cmd & CMD_BUTTON1) && menu->u.normal.index < gMission.weaponCount)
 	{
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
 		gun_e selectedWeapon = gMission.availableWeapons[menu->u.normal.index];
-		int i;
 		for (i = 0; i < p->weaponCount; i++)
 		{
 			if (p->weapons[i] == selectedWeapon)
@@ -66,22 +63,34 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		p->weapons[p->weaponCount] = selectedWeapon;
 		p->weaponCount++;
 
-		// Disable this menu entry
-		MenuDisableSubmenu(menu, menu->u.normal.index);
+		// Note: need to enable before disabling otherwise
+		// menu index is not updated properly
 
 		// Enable "Done" menu item
 		MenuEnableSubmenu(menu, menu->u.normal.numSubMenus - 1);
+
+		// Disable this menu entry
+		MenuDisableSubmenu(menu, menu->u.normal.index);
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
 		// Remove a weapon
 		if (p->weaponCount > 0)
 		{
+			gun_e removedWeapon;
 			p->weaponCount--;
-		}
 
-		// Re-enable the menu entry for this weapon
-		MenuEnableSubmenu(menu, p->weapons[p->weaponCount]);
+			// Re-enable the menu entry for this weapon
+			removedWeapon = p->weapons[p->weaponCount];
+			for (i = 0; i < gMission.weaponCount; i++)
+			{
+				if (gMission.availableWeapons[i] == removedWeapon)
+				{
+					MenuEnableSubmenu(menu, i);
+					break;
+				}
+			}
+		}
 
 		// Disable "Done" if no weapons selected
 		if (p->weaponCount == 0)
@@ -176,16 +185,24 @@ void WeaponMenuCreate(
 	// Disable menu items where the player already has the weapon
 	for (i = 0; i < pData->weaponCount; i++)
 	{
-		MenuDisableSubmenu(ms->root, pData->weapons[i]);
+		int j;
+		for (j = 0; j < gMission.weaponCount; j++)
+		{
+			if (pData->weapons[i] == gMission.availableWeapons[j])
+			{
+				MenuDisableSubmenu(ms->root, j);
+			}
+		}
 	}
+	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms->root, MenuCreateReturn("(End)", 0));
+
 	// Disable "Done" if no weapons selected
 	if (pData->weaponCount == 0)
 	{
 		MenuDisableSubmenu(ms->root, ms->root->u.normal.numSubMenus - 1);
 	}
 
-	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms->root, MenuCreateReturn("(End)", 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);

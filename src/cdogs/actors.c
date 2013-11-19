@@ -114,7 +114,7 @@ int GetNumPlayersAlive(void)
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !gPlayers[i]->dead)
+		if (IsPlayerAlive(i))
 		{
 			numPlayers++;
 		}
@@ -127,12 +127,17 @@ TActor *GetFirstAlivePlayer(void)
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !gPlayers[i]->dead)
+		if (IsPlayerAlive(i))
 		{
 			return gPlayers[i];
 		}
 	}
 	return NULL;
+}
+
+int IsPlayerAlive(int player)
+{
+	return gPlayers[player] && !gPlayers[player]->dead;
 }
 
 void DrawCharacter(int x, int y, TActor * actor)

@@ -402,7 +402,7 @@ menu_t *MenuCreateOptionRangeGetSet(
 
 menu_t *MenuCreateSeparator(const char *name)
 {
-	menu_t *menu = MenuCreate(name, MENU_TYPE_NORMAL);
+	menu_t *menu = MenuCreate(name, MENU_TYPE_BASIC);
 	menu->isDisabled = 1;
 	return menu;
 }

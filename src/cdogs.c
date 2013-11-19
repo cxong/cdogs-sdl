@@ -817,8 +817,7 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			gPlayerDatas[i].survived =
-				gPlayers[i] != NULL && !gPlayers[i]->dead;
+			gPlayerDatas[i].survived = IsPlayerAlive(i);
 			if (gPlayers[i])
 			{
 				gPlayerDatas[i].hp = gPlayers[i]->health;

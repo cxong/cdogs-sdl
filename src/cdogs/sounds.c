@@ -66,8 +66,10 @@ SoundDevice gSoundDevice =
 	NULL,
 	MUSIC_OK,
 	"",
-	{0, 0},
-	{0, 0},
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
 	{
 		{"sounds/booom.wav",		0,	NULL},
 		{"sounds/launch.wav",		0,	NULL},
@@ -253,20 +255,38 @@ void SoundPlay(SoundDevice *device, sound_e sound)
 }
 
 
-void SoundSetLeftEar(Vec2i pos)
+void SoundSetLeftEar1(Vec2i pos)
 {
-	gSoundDevice.earLeft = pos;
+	gSoundDevice.earLeft1 = pos;
+}
+void SoundSetLeftEar2(Vec2i pos)
+{
+	gSoundDevice.earLeft2 = pos;
+}
+void SoundSetRightEar1(Vec2i pos)
+{
+	gSoundDevice.earRight1 = pos;
+}
+void SoundSetRightEar2(Vec2i pos)
+{
+	gSoundDevice.earRight2 = pos;
 }
 
-void SoundSetRightEar(Vec2i pos)
+void SoundSetLeftEars(Vec2i pos)
 {
-	gSoundDevice.earRight = pos;
+	SoundSetLeftEar1(pos);
+	SoundSetLeftEar2(pos);
+}
+void SoundSetRightEars(Vec2i pos)
+{
+	SoundSetRightEar1(pos);
+	SoundSetRightEar2(pos);
 }
 
 void SoundSetEars(Vec2i pos)
 {
-	SoundSetLeftEar(pos);
-	SoundSetRightEar(pos);
+	SoundSetLeftEars(pos);
+	SoundSetRightEars(pos);
 }
 
 void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos)
@@ -278,8 +298,35 @@ void SoundPlayAtPlusDistance(
 	SoundDevice *device, sound_e sound, Vec2i pos, int plusDistance)
 {
 	int distance, bearing;
-	Vec2i origin = CalcClosestPointOnLineSegmentToPoint(
-		device->earLeft, device->earRight, pos);
+	Vec2i closestLeftEar, closestRightEar;
+	Vec2i origin;
+
+	// Find closest set of ears to the sound
+	if (CHEBYSHEV_DISTANCE(
+		pos.x, pos.y, device->earLeft1.x, device->earLeft1.y) <
+		CHEBYSHEV_DISTANCE(
+		pos.x, pos.y, device->earLeft2.x, device->earLeft2.y))
+	{
+		closestLeftEar = device->earLeft1;
+	}
+	else
+	{
+		closestLeftEar = device->earLeft2;
+	}
+	if (CHEBYSHEV_DISTANCE(
+		pos.x, pos.y, device->earRight1.x, device->earRight1.y) <
+		CHEBYSHEV_DISTANCE(
+		pos.x, pos.y, device->earRight2.x, device->earRight2.y))
+	{
+		closestRightEar = device->earRight1;
+	}
+	else
+	{
+		closestRightEar = device->earRight2;
+	}
+
+	origin = CalcClosestPointOnLineSegmentToPoint(
+		closestLeftEar, closestRightEar, pos);
 	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
 }

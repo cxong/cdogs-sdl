@@ -224,8 +224,10 @@ static void DrawHealth(
 }
 
 #define HUDFLAGS_PLACE_RIGHT	0x01
-#define HUDFLAGS_HALF_SCREEN	0x02
-#define HUDFLAGS_SHARE_SCREEN	0x04
+#define HUDFLAGS_PLACE_BOTTOM	0x02
+#define HUDFLAGS_HALF_SCREEN	0x04
+#define HUDFLAGS_QUARTER_SCREEN	0x08
+#define HUDFLAGS_SHARE_SCREEN	0x10	// TODO: use share screen
 
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
@@ -233,51 +235,87 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 {
 	Vec2i automapSize = Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE);
 	Vec2i pos = Vec2iZero();
-	// Five possible map positions:
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
+	// Possible map positions:
 	// top-right (player 1 only)
 	// top-left (player 2 only)
+	// bottom-right (player 3 only)
+	// bottom-left (player 4 only)
 	// top-left-of-middle (player 1 when two players)
 	// top-right-of-middle (player 2 when two players)
-	// top (two player shared screen)
-	if (!(flags & HUDFLAGS_PLACE_RIGHT) &&
-		!(flags & HUDFLAGS_HALF_SCREEN))
+	// bottom-left-of-middle (player 3)
+	// bottom-right-of-middle (player 4)
+	// top (shared screen)
+	if (flags & HUDFLAGS_HALF_SCREEN)
 	{
-		// player 1 only
-		pos = Vec2iNew(
-			device->cachedConfig.ResolutionWidth - AUTOMAP_SIZE - AUTOMAP_PADDING,
-			AUTOMAP_PADDING);
+		// two players
+		pos.y = AUTOMAP_PADDING;
+		if (flags & HUDFLAGS_PLACE_RIGHT)
+		{
+			// player 2
+			pos.x = w / 2 + AUTOMAP_PADDING;
+		}
+		else
+		{
+			// player 1
+			pos.x = w / 2 - automapSize.x - AUTOMAP_PADDING;
+		}
 	}
-	else if (
-		(flags & HUDFLAGS_PLACE_RIGHT) &&
-		!(flags & HUDFLAGS_HALF_SCREEN))
+	else if (flags & HUDFLAGS_QUARTER_SCREEN)
 	{
-		// player 2 only
-		pos = Vec2iNew(AUTOMAP_PADDING, AUTOMAP_PADDING);
-	}
-	else if (
-		!(flags & HUDFLAGS_PLACE_RIGHT) &&
-		(flags & HUDFLAGS_HALF_SCREEN))
-	{
-		// player 1 when two players
-		pos = Vec2iNew(
-			device->cachedConfig.ResolutionWidth / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING,
-			AUTOMAP_PADDING);
-	}
-	else if (
-		(flags & HUDFLAGS_PLACE_RIGHT) &&
-		(flags & HUDFLAGS_HALF_SCREEN))
-	{
-		// player 2 when two players
-		pos = Vec2iNew(
-			device->cachedConfig.ResolutionWidth / 2 + AUTOMAP_PADDING,
-			AUTOMAP_PADDING);
+		// four players
+		if (flags & HUDFLAGS_PLACE_RIGHT)
+		{
+			// player 2 or 4
+			pos.x = w / 2 + AUTOMAP_PADDING;
+		}
+		else
+		{
+			// player 1 or 3
+			pos.x = w / 2 - automapSize.x - AUTOMAP_PADDING;
+		}
+
+		if (flags & HUDFLAGS_PLACE_BOTTOM)
+		{
+			// player 3 or 4
+			pos.y = h - automapSize.y - AUTOMAP_PADDING;
+		}
+		else
+		{
+			// player 1 or 2
+			pos.y = AUTOMAP_PADDING;
+		}
 	}
 	else if (flags & HUDFLAGS_SHARE_SCREEN)
 	{
 		// share screen
-		pos = Vec2iNew(
-			device->cachedConfig.ResolutionWidth / 2 - automapSize.x / 2,
-			AUTOMAP_PADDING);
+		pos = Vec2iNew(w / 2 - automapSize.x / 2, AUTOMAP_PADDING);
+	}
+	else
+	{
+		// one player
+		if (flags & HUDFLAGS_PLACE_RIGHT)
+		{
+			// player 2 or 4
+			pos.x = AUTOMAP_PADDING;
+		}
+		else
+		{
+			// player 1 or 3
+			pos.x = w - automapSize.x - AUTOMAP_PADDING;
+		}
+
+		if (flags & HUDFLAGS_PLACE_BOTTOM)
+		{
+			// player 3 or 4
+			pos.y = h - automapSize.y - AUTOMAP_PADDING;
+		}
+		else
+		{
+			// player 1 or 2
+			pos.y = AUTOMAP_PADDING;
+		}
 	}
 
 	if (!Vec2iEqual(pos, Vec2iZero()))
@@ -301,6 +339,10 @@ static void DrawPlayerStatus(
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		textFlags |= TEXT_RIGHT;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		textFlags |= TEXT_BOTTOM;
 	}
 
 	CDogsTextStringSpecial(data->name, textFlags, 5, 5);
@@ -373,26 +415,42 @@ void HUDDraw(HUD *hud, int isPaused)
 	static time_t t = 0;
 	static time_t td = 0;
 	int flags = 0;
-	if (gOptions.numPlayers == 2 && gPlayers[0] && gPlayers[1])
+	int numPlayersAlive = GetNumPlayersAlive();
+	int i;
+
+	if (numPlayersAlive == 1)
+	{
+		flags = 0;
+	}
+	else if (gOptions.numPlayers == 2)
 	{
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
 	else if (gOptions.numPlayers == 3 || gOptions.numPlayers == 4)
 	{
+		flags |= HUDFLAGS_QUARTER_SCREEN;
+	}
+	else
+	{
 		assert(0 && "not implemented");
 	}
 
-	DrawPlayerStatus(hud->device, &gPlayerDatas[0], gPlayers[0], flags);
-	if (gOptions.numPlayers >= 2)
+	for (i = 0; i < gOptions.numPlayers; i++)
 	{
+		int drawFlags = flags;
+		if (i & 1)
+		{
+			drawFlags |= HUDFLAGS_PLACE_RIGHT;
+		}
+		if (i >= 2)
+		{
+			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
+		}
 		DrawPlayerStatus(
-			hud->device,
-			&gPlayerDatas[1],
-			gPlayers[1],
-			flags | HUDFLAGS_PLACE_RIGHT);
+			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags);
 	}
 
-	if (GetNumPlayersAlive() == 0)
+	if (numPlayersAlive == 0)
 	{
 		if (gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 		{

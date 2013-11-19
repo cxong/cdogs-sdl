@@ -110,8 +110,13 @@ typedef struct
 	Mix_Music *music;
 	music_status_e musicStatus;
 	char musicErrorMessage[128];
-	Vec2i earLeft;
-	Vec2i earRight;
+
+	// Two sets of ears for 4-player split screen
+	Vec2i earLeft1;
+	Vec2i earLeft2;
+	Vec2i earRight1;
+	Vec2i earRight2;
+
 	SoundData sounds[SND_COUNT];
 } SoundDevice;
 
@@ -131,8 +136,12 @@ void SoundInitialize(SoundDevice *device, SoundConfig *config);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
 void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete);
 void SoundPlay(SoundDevice *device, sound_e sound);
-void SoundSetLeftEar(Vec2i pos);
-void SoundSetRightEar(Vec2i pos);
+void SoundSetLeftEars(Vec2i pos);
+void SoundSetRightEars(Vec2i pos);
+void SoundSetLeftEar1(Vec2i pos);
+void SoundSetLeftEar2(Vec2i pos);
+void SoundSetRightEar1(Vec2i pos);
+void SoundSetRightEar2(Vec2i pos);
 void SoundSetEars(Vec2i pos);
 void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos);
 

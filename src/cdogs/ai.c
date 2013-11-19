@@ -98,8 +98,7 @@ static int IsFacingPlayer(TActor *actor, direction_e d)
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !gPlayers[i]->dead &&
-			IsFacing(actor, gPlayers[i], d))
+		if (IsPlayerAlive(i) && IsFacing(actor, gPlayers[i], d))
 		{
 			return 1;
 		}
@@ -141,7 +140,7 @@ static TActor *GetClosestPlayer(Vec2i pos)
 	TActor *closestPlayer = NULL;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !gPlayers[i]->dead)
+		if (IsPlayerAlive(i))
 		{
 			TActor *p = gPlayers[i];
 			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, p->x, p->y);

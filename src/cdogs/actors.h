@@ -151,6 +151,7 @@ extern TranslationTable tablePurple;
 
 int GetNumPlayersAlive(void);
 TActor *GetFirstAlivePlayer(void);
+int IsPlayerAlive(int player);
 void DrawCharacter(int x, int y, TActor * actor);
 
 void SetStateForActor(TActor * actor, int state);

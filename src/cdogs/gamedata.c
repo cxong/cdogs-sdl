@@ -473,7 +473,7 @@ int GetGameCmd(
 		cmd = GetJoystickCmd(joystick, JoyIsDown);
 		break;
 	default:
-		assert(0 && "unknown input device");
+		// do nothing
 		break;
 	}
 

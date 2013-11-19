@@ -220,21 +220,6 @@ int GetShakeAmount(int oldShake, int amount)
 	return shake;
 }
 
-void BlackLine(void)
-{
-	int i;
-	Uint32 *p = gGraphicsDevice.buf;
-	Uint32 black = PixelFromColor(&gGraphicsDevice, colorBlack);
-
-	p += (gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1;
-	for (i = 0; i < gGraphicsDevice.cachedConfig.ResolutionHeight; i++)
-	{
-		*p++ = black;
-		*p = black;
-		p += gGraphicsDevice.cachedConfig.ResolutionWidth - 1;
-	}
-}
-
 void GetBoundingRectangle(Vec2i *min, Vec2i *max)
 {
 	int isFirst = 1;
@@ -243,7 +228,7 @@ void GetBoundingRectangle(Vec2i *min, Vec2i *max)
 	*max = Vec2iZero();
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !gPlayers[i]->dead)
+		if (IsPlayerAlive(i))
 		{
 			TTileItem *p = &gPlayers[i]->tileItem;
 			if (isFirst)
@@ -291,6 +276,8 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 	Vec2i centerOffset = Vec2iNew(-TILE_WIDTH / 2 - 8, -TILE_HEIGHT / 2 - 4);
 	int i;
 	int numPlayersAlive = GetNumPlayersAlive();
+	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 
 	if (shakeAmount)
 	{
@@ -332,7 +319,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 				Vec2iNew(X_TILES, Y_TILES));
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
-				if (gPlayers[i] && !gPlayers[i]->dead)
+				if (IsPlayerAlive(i))
 				{
 					int shadowFlag =
 						i == 0 ? MAPTILE_IS_SHADOW : MAPTILE_IS_SHADOW2;
@@ -347,46 +334,150 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			DrawBufferDraw(b, centerOffset);
 			SoundSetEars(lastPosition);
 		}
-		else if (numPlayersAlive == 2 && gOptions.numPlayers == 2)
+		else if (gOptions.numPlayers == 2)
 		{
+			assert(numPlayersAlive == 2);
 			// side-by-side split
 			for (i = 0; i < 2; i++)
 			{
 				Vec2i center = Vec2iNew(
 					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
-				int clipLeft = i == 0 ? 0 :
-					gGraphicsDevice.cachedConfig.ResolutionWidth / 2;
-				int clipRight = i == 0 ?
-					(gGraphicsDevice.cachedConfig.ResolutionWidth / 2) - 1 :
-					gGraphicsDevice.cachedConfig.ResolutionWidth - 1;
+				int clipLeft = (i & 1) ? w / 2 : 0;
+				int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
 				GraphicsSetBlitClip(
-					&gGraphicsDevice,
-					clipLeft,
-					0,
-					clipRight,
-					gGraphicsDevice.cachedConfig.ResolutionHeight - 1);
+					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
 				if (i == 1)
 				{
-					centerOffsetPlayer.x +=
-						gGraphicsDevice.cachedConfig.ResolutionWidth / 2;
+					centerOffsetPlayer.x += w / 2;
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 				if (i == 0)
 				{
-					SoundSetLeftEar(center);
+					SoundSetLeftEars(center);
 					lastPosition = center;
 				}
 				else
 				{
-					SoundSetRightEar(center);
+					SoundSetRightEars(center);
 				}
 			}
-			BlackLine();
+			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
+			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
+		}
+		else if (gOptions.numPlayers >= 3 && gOptions.numPlayers <= 4)
+		{
+			// 4 player split screen
+			for (i = 0; i < 4; i++)
+			{
+				Vec2i center;
+				Vec2i centerOffsetPlayer = centerOffset;
+				int clipLeft = (i & 1) ? w / 2 : 0;
+				int clipTop = (i < 2) ? 0 : h / 2 - 1;
+				int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
+				int clipBottom = (i < 2) ? h / 2 : h - 1;
+				if (!IsPlayerAlive(i))
+				{
+					continue;
+				}
+				center = Vec2iNew(
+					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
+				GraphicsSetBlitClip(
+					&gGraphicsDevice,
+					clipLeft, clipTop, clipRight, clipBottom);
+				if (i & 1)
+				{
+					centerOffsetPlayer.x += w / 2;
+				}
+				if (i < 2)
+				{
+					centerOffsetPlayer.y -= h / 4;
+				}
+				else
+				{
+					centerOffsetPlayer.y += h / 4;
+				}
+				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
+
+				// Set the sound "ears"
+				// If any player is dead, that ear reverts to the other ear
+				// of the same side of the remaining player
+				// If both players of one side are dead, those ears revert
+				// to any of the other remaining players
+				switch (i)
+				{
+				case 0:
+					if (IsPlayerAlive(0))
+					{
+						SoundSetLeftEar1(center);
+						if (!IsPlayerAlive(2))
+						{
+							SoundSetLeftEar2(center);
+						}
+						else if (!IsPlayerAlive(1) && !IsPlayerAlive(3))
+						{
+							SoundSetRightEars(center);
+						}
+					}
+					break;
+				case 1:
+					if (IsPlayerAlive(1))
+					{
+						SoundSetRightEar1(center);
+						if (!IsPlayerAlive(3))
+						{
+							SoundSetRightEar2(center);
+						}
+						else if (!IsPlayerAlive(0) && !IsPlayerAlive(2))
+						{
+							SoundSetLeftEars(center);
+						}
+					}
+					break;
+				case 2:
+					if (IsPlayerAlive(2))
+					{
+						SoundSetLeftEar2(center);
+						if (!IsPlayerAlive(0))
+						{
+							SoundSetLeftEar1(center);
+						}
+						else if (!IsPlayerAlive(1) && !IsPlayerAlive(3))
+						{
+							SoundSetRightEars(center);
+						}
+					}
+					break;
+				case 3:
+					if (IsPlayerAlive(3))
+					{
+						SoundSetRightEar2(center);
+						if (!IsPlayerAlive(1))
+						{
+							SoundSetRightEar1(center);
+						}
+						else if (!IsPlayerAlive(0) && !IsPlayerAlive(2))
+						{
+							SoundSetLeftEars(center);
+						}
+					}
+					break;
+				default:
+					assert(0 && "unknown error");
+					break;
+				}
+				if (IsPlayerAlive(i))
+				{
+					lastPosition = center;
+				}
+			}
+			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
+			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
+			Draw_Line(0, h / 2 - 1, w - 1, h / 2 - 1, colorBlack);
+			Draw_Line(0, h / 2, w - 1, h / 2, colorBlack);
 		}
 		else
 		{
-			// 4 player split screen
 			assert(0 && "not implemented yet");
 		}
 	}
@@ -521,53 +612,38 @@ int HandleKey(int cmd, int *isPaused)
 
 Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 {
-	Vec2i center;
-	int players = 0;
-	int screenW = device->cachedConfig.ResolutionWidth;
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (gPlayers[i] && !gPlayers[i]->dead)
-		{
-			players++;
-		}
-	}
-	
+	Vec2i center = Vec2iZero();
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
+
 	if (IsSingleScreen(
 			&device->cachedConfig,
 			gConfig.Interface.SplitscreenAlways))
 	{
 		Vec2i pCenter = GetPlayersMidpoint();
 		Vec2i screenCenter = Vec2iNew(
-			screenW / 2,
+			w / 2,
 			device->cachedConfig.ResolutionHeight / 2);
-		int factor = 1;
 		TTileItem *pTileItem = &gPlayers[player]->tileItem;
 		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
-		assert((player == 0 || player == 1) && "invalid player index");
 		center = Vec2iAdd(
-			Vec2iScaleDiv(Vec2iAdd(p, Vec2iScale(pCenter, -1)), factor),
-			screenCenter);
+			Vec2iAdd(p, Vec2iScale(pCenter, -1)), screenCenter);
 	}
 	else
 	{
-		center.y = device->cachedConfig.ResolutionHeight / 2;
-		if (players == 1)
+		if (gOptions.numPlayers == 2)
 		{
-			center.x = screenW / 2;
+			center.x = player == 0 ? w / 4 : w * 3 / 4;
+			center.y = h / 2;
+		}
+		else if (gOptions.numPlayers >= 3 && gOptions.numPlayers <= 4)
+		{
+			center.x = (player & 1) ? w * 3 / 4 : w / 4;
+			center.y = (player >= 2) ? h * 3 / 4 : h / 4;
 		}
 		else
 		{
-			assert(players == 2 && "invalid number of players");
-			if (player == 0)
-			{
-				center.x = screenW / 4;
-			}
-			else
-			{
-				assert(player == 1 && "invalid player");
-				center.x = screenW * 3 / 4;
-			}
+			assert(0 && "invalid number of players");
 		}
 	}
 	return center;
@@ -625,7 +701,7 @@ int gameloop(void)
 		InputPoll(&gInputDevices, ticks_now);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			if (gPlayers[i] && !gPlayers[i]->dead)
+			if (IsPlayerAlive(i))
 			{
 				cmds[i] = GetGameCmd(
 					&gInputDevices,
