@@ -733,10 +733,10 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 	for (i = 0; i < numPlayers; i++)
 	{
 		gPlayerDatas[i].lastMission = mission;
-		gPlayers[i] = AddActor(&gCampaign.Setting.characters.players[i]);
+		gPlayers[i] = AddActor(
+			&gCampaign.Setting.characters.players[i],
+			&gPlayerDatas[i]);
 		gPlayers[i]->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
-		// TODO: more players
-		gPlayers[i]->flags = i == 0 ? FLAGS_PLAYER1 : FLAGS_PLAYER2;
 		gPlayers[i]->health = maxHealth;
 		gPlayers[i]->character->maxHealth = maxHealth;
 		PlaceActor(gPlayers[i]);

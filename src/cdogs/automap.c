@@ -56,6 +56,7 @@
 #include "drawtools.h"
 #include "map.h"
 #include "mission.h"
+#include "objs.h"
 #include "pic_manager.h"
 #include "text.h"
 

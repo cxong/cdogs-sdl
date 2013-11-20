@@ -65,6 +65,7 @@
 #include "draw.h"
 #include "drawtools.h"
 #include "mission.h"
+#include "objs.h"
 #include "palette.h"
 #include "files.h"
 #include "triggers.h"

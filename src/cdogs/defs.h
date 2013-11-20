@@ -91,6 +91,17 @@ typedef enum
 	DIRECTION_COUNT
 } direction_e;
 
+typedef enum
+{
+	SPECIAL_NONE,
+	SPECIAL_FLAME,
+	SPECIAL_POISON,
+	SPECIAL_PETRIFY,
+	SPECIAL_CONFUSE,
+	SPECIAL_KNIFE,
+	SPECIAL_EXPLOSION
+} special_damage_e;
+
 // States
 #define STATE_IDLE          0
 #define STATE_IDLELEFT      1

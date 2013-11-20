@@ -51,16 +51,16 @@
 #include "actors.h"
 #include "config.h"
 
-CollisionTeam CalcCollisionTeam(int isActor, int actorFlags)
+CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
 {
 	// Need to have prisoners collide with everything otherwise they will not
 	// be "rescued"
-	if (!isActor || (actorFlags & FLAGS_PRISONER) ||
+	if (!isActor || (actor->flags & FLAGS_PRISONER) ||
 		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return COLLISIONTEAM_NONE;
 	}
-	if (actorFlags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY))
+	if (actor->pData || (actor->flags & FLAGS_GOOD_GUY))
 	{
 		return COLLISIONTEAM_GOOD;
 	}
@@ -111,7 +111,7 @@ static int IsOnSameTeam(TTileItem *i, CollisionTeam team)
 		if (i->kind == KIND_CHARACTER)
 		{
 			TActor *a = i->actor;
-			itemTeam = CalcCollisionTeam(1, a->flags);
+			itemTeam = CalcCollisionTeam(1, a);
 		}
 		return
 			team != COLLISIONTEAM_NONE &&

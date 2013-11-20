@@ -52,14 +52,9 @@
 #include "gamedata.h"
 #include "grafx.h"
 #include "map.h"
-#include "objs.h"
 #include "weapon.h"
 
 
-// TODO: more players
-#define FLAGS_PLAYER1       (1 << 0)
-#define FLAGS_PLAYER2       (1 << 1)
-#define FLAGS_PLAYERS       (FLAGS_PLAYER1 | FLAGS_PLAYER2)
 #define FLAGS_HURTALWAYS    (1 << 2)
 
 // Players only
@@ -119,6 +114,7 @@ struct Actor {
 	int lastCmd;
 	int soundLock;
 	Character *character;
+	struct PlayerData *pData;	// NULL unless a human player
 	Weapon weapon;
 	int dx, dy;
 
@@ -159,12 +155,12 @@ void UpdateActorState(TActor * actor, int ticks);
 int MoveActor(TActor * actor, int x, int y);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
-TActor *AddActor(Character *c);
+TActor *AddActor(Character *c, struct PlayerData *p);
 TActor *RemoveActor(TActor *actor);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
-void Score(int flags, int points);
+void Score(struct PlayerData *p, int points);
 void InjureActor(TActor * actor, int injury);
 void KillAllActors(void);
 
@@ -178,6 +174,7 @@ void ActorTakeHit(
 	int isHitSoundEnabled,
 	int isInvulnerable,
 	Vec2i hitLocation);
-int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode);
+int ActorIsInvulnerable(
+	TActor *actor, int flags, int player, campaign_mode_e mode);
 
 #endif

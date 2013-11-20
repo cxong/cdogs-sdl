@@ -49,6 +49,7 @@
 #ifndef __OBJSH
 #define __OBJSH
 
+#include "actors.h"
 #include "map.h"
 #include "pics.h"
 #include "vector.h"
@@ -118,17 +119,6 @@
 
 #define OBJFLAG_DANGEROUS   31
 
-typedef enum
-{
-	SPECIAL_NONE,
-	SPECIAL_FLAME,
-	SPECIAL_POISON,
-	SPECIAL_PETRIFY,
-	SPECIAL_CONFUSE,
-	SPECIAL_KNIFE,
-	SPECIAL_EXPLOSION
-} special_damage_e;
-
 
 struct Object {
 	const TOffsetPic *pic;
@@ -142,7 +132,9 @@ struct Object {
 typedef struct Object TObject;
 
 
-struct MobileObject {
+struct MobileObject
+{
+	int player;	// -1 if not owned by any player
 	int kind;
 	int x, y, z;
 	int dx, dy, dz;
@@ -165,6 +157,7 @@ int DamageSomething(
 	Vec2i hitVector,
 	int power,
 	int flags,
+	int player,
 	TTileItem *target,
 	special_damage_e damage,
 	int isHitSoundEnabled);
@@ -179,25 +172,30 @@ void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
-void AddGrenade(int x, int y, int angle, int flags, int kind);
-void AddBullet(int x, int y, int angle, int speed, int range, int power,
-	       int flags);
-void AddRapidBullet(int x, int y, int angle, int speed, int range,
-		    int power, int flags);
-void AddSniperBullet(int x, int y, int direction, int flags);
-void AddBrownBullet(int x, int y, int angle, int speed, int range,
-		    int power, int flags);
-void AddFlame(int x, int y, int angle, int flags);
-void AddLaserBolt(int x, int y, int direction, int flags);
-void AddExplosion(int x, int y, int flags);
-void AddGasCloud(int x, int y, int angle, int speed, int range, int flags,
-		 int special);
-void AddPetrifierBullet(int x, int y, int angle, int speed, int range,
-			int flags);
-void AddHeatseeker(int x, int y, int angle, int speed, int range,
-		   int power, int flags);
-void AddProximityMine(int x, int y, int flags);
-void AddDynamite(int x, int y, int flags);
+void AddGrenade(int x, int y, int angle, int flags, int kind, int player);
+void AddBullet(
+	int x, int y, int angle, int speed, int range, int power,
+	int flags, int player);
+void AddRapidBullet(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player);
+void AddSniperBullet(int x, int y, int direction, int flags, int player);
+void AddBrownBullet(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player);
+void AddFlame(int x, int y, int angle, int flags, int player);
+void AddLaserBolt(int x, int y, int direction, int flags, int player);
+void AddGasCloud(
+	int x, int y, int angle, int speed, int range, int flags,
+	int special, int player);
+void AddPetrifierBullet(
+	int x, int y, int angle, int speed, int range,
+	int flags, int player);
+void AddHeatseeker(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player);
+void AddProximityMine(int x, int y, int flags, int player);
+void AddDynamite(int x, int y, int flags, int player);
 void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif

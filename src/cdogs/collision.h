@@ -49,6 +49,7 @@
 #ifndef __COLLISION
 #define __COLLISION
 
+#include "actors.h"
 #include "map.h"
 
 #define HitWall(x, y) (gMap[(y)/TILE_HEIGHT][(x)/TILE_WIDTH].flags & MAPTILE_NO_WALK)
@@ -62,7 +63,7 @@ typedef enum
 	COLLISIONTEAM_BAD
 } CollisionTeam;
 
-CollisionTeam CalcCollisionTeam(int isActor, int actorFlags);
+CollisionTeam CalcCollisionTeam(int isActor, TActor *actor);
 
 int IsCollisionWithWall(Vec2i pos, Vec2i size);
 TTileItem *GetItemOnTileInCollision(

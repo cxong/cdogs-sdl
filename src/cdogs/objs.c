@@ -72,8 +72,8 @@
 TMobileObject *gMobObjList = NULL;
 static TObject *objList = NULL;
 
-void Fire(int x, int y, int flags);
-void Gas(int x, int y, int flags, int special);
+static void Fire(int x, int y, int flags, int player);
+static void Gas(int x, int y, int flags, int special, int player);
 int HitItem(TMobileObject * obj, int x, int y, special_damage_e special);
 
 
@@ -275,31 +275,21 @@ void BogusDraw(int x, int y, void *data)
 
 
 // Prototype this as it is used by DamageSomething()
-TMobileObject *AddFireBall(int flags);
+static TMobileObject *AddFireBall(int flags, int player);
 
 
-static void TrackKills(TActor * victim, int flags)
+static void TrackKills(int player, TActor *victim)
 {
-	if (flags & FLAGS_PLAYER1)
+	if (player >= 0)
 	{
-		if (victim->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY | FLAGS_PENALTY))
+		if (victim->pData ||
+			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY)))
 		{
-			gPlayerDatas[0].friendlies++;
+			gPlayerDatas[player].friendlies++;
 		}
 		else
 		{
-			gPlayerDatas[0].kills++;
-		}
-	}
-	else if (flags & FLAGS_PLAYER2)
-	{
-		if (victim->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY | FLAGS_PENALTY))
-		{
-			gPlayerDatas[1].friendlies++;
-		}
-		else
-		{
-			gPlayerDatas[1].kills++;
+			gPlayerDatas[player].kills++;
 		}
 	}
 }
@@ -310,6 +300,7 @@ int DamageCharacter(
 	Vec2i hitVector,
 	int power,
 	int flags,
+	int player,
 	TTileItem *target,
 	special_damage_e damage,
 	campaign_mode_e mode,
@@ -318,9 +309,7 @@ int DamageCharacter(
 	TActor *actor = (TActor *)target->data;
 	int isInvulnerable;
 
-	if (!(flags & FLAGS_HURTALWAYS) &&
-		(flags & FLAGS_PLAYERS) &&
-		(flags & FLAGS_PLAYERS) == (actor->flags & FLAGS_PLAYERS))
+	if (!(flags & FLAGS_HURTALWAYS) && player >= 0 && actor->pData)
 	{
 		return 0;
 	}
@@ -329,7 +318,7 @@ int DamageCharacter(
 	{
 		return 1;
 	}
-	isInvulnerable = ActorIsInvulnerable(actor, flags, mode);
+	isInvulnerable = ActorIsInvulnerable(actor, flags, player, mode);
 	ActorTakeHit(
 		actor,
 		hitVector,
@@ -345,29 +334,78 @@ int DamageCharacter(
 	InjureActor(actor, power);
 	if (actor->health <= 0)
 	{
-		TrackKills(actor, flags);
+		TrackKills(player, actor);
 	}
 	// If a good guy hurt a non-good guy
-	if ((flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
-		!(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+	if ((player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
+		!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 	{
 		// Calculate score
 		if (actor->flags & FLAGS_PENALTY)
 		{
-			Score(flags, -3 * power);
+			Score(&gPlayerDatas[player], -3 * power);
 		}
 		else
 		{
-			Score(flags, power);
+			Score(&gPlayerDatas[player], power);
 		}
 	}
 
 	return 1;
 }
 
-void DamageObject(
+static void AddExplosion(int x, int y, int flags, int player)
+{
+	TMobileObject *obj;
+	int i;
+
+	GameEvent shake;
+	shake.Type = GAME_EVENT_SCREEN_SHAKE;
+	shake.u.ShakeAmount = 15;
+	GameEventsEnqueue(&gGameEvents, shake);
+
+	flags |= FLAGS_HURTALWAYS;
+	for (i = 0; i < 8; i++)
+	{
+		obj = AddFireBall(flags, player);
+		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
+		obj->x = x + 2 * obj->dx;
+		obj->y = y + 2 * obj->dy;
+		obj->dz = 0;
+	}
+	for (i = 0; i < 8; i++)
+	{
+		obj = AddFireBall(flags, player);
+		GetVectorsForAngle(i * 32 + 16, &obj->dx, &obj->dy);
+		obj->x = x + obj->dx;
+		obj->y = y + obj->dy;
+		obj->dx *= 3;
+		obj->dy *= 3;
+		obj->dx /= 4;
+		obj->dy /= 4;
+		obj->dz = 8;
+		obj->count = -8;
+	}
+	for (i = 0; i < 8; i++)
+	{
+		obj = AddFireBall(flags, player);
+		obj->x = x;
+		obj->y = y;
+		obj->z = 0;
+		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
+		obj->dx /= 2;
+		obj->dy /= 2;
+		obj->dz = 11;
+		obj->count = -16;
+	}
+
+	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, Vec2iNew(x >> 8, y >> 8));
+}
+
+static void DamageObject(
 	int power,
 	int flags,
+	int player,
 	TTileItem *target,
 	special_damage_e damage,
 	int isHitSoundEnabled)
@@ -394,7 +432,10 @@ void DamageObject(
 		object->structure = 0;
 		if (CheckMissionObjective(object->tileItem.flags))
 		{
-			Score(flags, 50);
+			if (player >= 0)
+			{
+				Score(&gPlayerDatas[player], 50);
+			}
 		}
 		if (object->flags & OBJFLAG_QUAKE)
 		{
@@ -405,29 +446,36 @@ void DamageObject(
 		}
 		if (object->flags & OBJFLAG_EXPLOSIVE)
 		{
-			AddExplosion(object->tileItem.x << 8, object->tileItem.y << 8, flags);
+			AddExplosion(
+				object->tileItem.x << 8, object->tileItem.y << 8,
+				flags, player);
 		}
 		else if (object->flags & OBJFLAG_FLAMMABLE)
 		{
-			Fire(object->tileItem.x << 8, object->tileItem.y << 8, flags);
+			Fire(
+				object->tileItem.x << 8, object->tileItem.y << 8,
+				flags, player);
 		}
 		else if (object->flags & OBJFLAG_POISONOUS)
 		{
 			Gas(object->tileItem.x << 8,
 				object->tileItem.y << 8,
 				flags,
-				SPECIAL_POISON);
+				SPECIAL_POISON,
+				player);
 		}
 		else if (object->flags & OBJFLAG_CONFUSING)
 		{
 			Gas(object->tileItem.x << 8,
 				object->tileItem.y << 8,
 				flags,
-				SPECIAL_CONFUSE);
+				SPECIAL_CONFUSE,
+				player);
 		}
 		else
 		{
-			TMobileObject *obj = AddFireBall(0);
+			// A wreck left after the destruction of this object
+			TMobileObject *obj = AddFireBall(0, -1);
 			obj->count = 10;
 			obj->power = 0;
 			obj->x = object->tileItem.x << 8;
@@ -453,6 +501,7 @@ int DamageSomething(
 	Vec2i hitVector,
 	int power,
 	int flags,
+	int player,
 	TTileItem *target,
 	special_damage_e damage,
 	int isHitSoundEnabled)
@@ -469,13 +518,16 @@ int DamageSomething(
 			hitVector,
 			power,
 			flags,
+			player,
 			target,
 			damage,
 			gCampaign.Entry.mode,
 			gConfig.Sound.Hits && isHitSoundEnabled);
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, target, damage, gConfig.Sound.Hits && isHitSoundEnabled);
+		DamageObject(
+			power, flags, player, target, damage,
+			gConfig.Sound.Hits && isHitSoundEnabled);
 		break;
 
 	case KIND_PIC:
@@ -504,14 +556,15 @@ int UpdateMobileObject(TMobileObject *obj, int ticks)
 	return 1;
 }
 
-void Frag(int x, int y, int flags)
+static void Frag(int x, int y, int flags, int player)
 {
 	int i;
 
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 16; i++)
 	{
-		AddBullet(x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40, flags);
+		AddBullet(
+			x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40, flags, player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
@@ -586,11 +639,12 @@ int UpdateMolotovFlame(TMobileObject *obj, int ticks)
 		return 1;
 }
 
-TMobileObject *AddMobileObject(TMobileObject **mobObjList)
+TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 {
 	TMobileObject *obj;
 	CCALLOC(obj, sizeof(TMobileObject));
 
+	obj->player = player;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.data = obj;
 	obj->soundLock = 0;
@@ -601,9 +655,9 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList)
 	return obj;
 }
 
-TMobileObject *AddMolotovFlame(int x, int y, int flags)
+TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateMolotovFlame;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
 	obj->tileItem.w = 5;
@@ -620,14 +674,14 @@ TMobileObject *AddMolotovFlame(int x, int y, int flags)
 	return obj;
 }
 
-void Fire(int x, int y, int flags)
+static void Fire(int x, int y, int flags, int player)
 {
 	int i;
 
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 16; i++)
 	{
-		AddMolotovFlame(x, y, flags);
+		AddMolotovFlame(x, y, flags, player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
@@ -657,10 +711,11 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 		return 1;
 }
 
-void AddGasCloud(int x, int y, int angle, int speed, int range, int flags,
-		 int special)
+void AddGasCloud(
+	int x, int y, int angle, int speed, int range,
+	int flags, int special, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateGasCloud;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
 	obj->tileItem.w = 10;
@@ -677,7 +732,7 @@ void AddGasCloud(int x, int y, int angle, int speed, int range, int flags,
 	obj->y = y + 6 * obj->dy;
 }
 
-void Gas(int x, int y, int flags, int special)
+static void Gas(int x, int y, int flags, int special, int player)
 {
 	int i;
 
@@ -690,7 +745,8 @@ void Gas(int x, int y, int flags, int special)
 			(256 + rand()) & 255,
 			(48 - (rand() % 8)) * 4 - 1,
 			flags,
-			special);
+			special,
+			player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
@@ -706,23 +762,23 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 		switch (obj->kind)
 		{
 		case MOBOBJ_GRENADE:
-			AddExplosion(obj->x, obj->y, obj->flags);
+			AddExplosion(obj->x, obj->y, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_FRAGGRENADE:
-			Frag(obj->x, obj->y, obj->flags);
+			Frag(obj->x, obj->y, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_MOLOTOV:
-			Fire(obj->x, obj->y, obj->flags);
+			Fire(obj->x, obj->y, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_GASBOMB:
-			Gas(obj->x, obj->y, obj->flags, SPECIAL_POISON);
+			Gas(obj->x, obj->y, obj->flags, SPECIAL_POISON, obj->player);
 			break;
 
 		case MOBOBJ_GASBOMB2:
-			Gas(obj->x, obj->y, obj->flags, SPECIAL_CONFUSE);
+			Gas(obj->x, obj->y, obj->flags, SPECIAL_CONFUSE, obj->player);
 			break;
 		}
 		return 0;
@@ -770,7 +826,7 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
-		Fire(obj->x, obj->y, obj->flags);
+		Fire(obj->x, obj->y, obj->flags, obj->player);
 		return 0;
 	}
 
@@ -780,7 +836,7 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	obj->z += obj->dz * ticks;
 	if (obj->z <= 0)
 	{
-		Fire(obj->x, obj->y, obj->flags);
+		Fire(obj->x, obj->y, obj->flags, obj->player);
 		return 0;
 	}
 	else
@@ -791,8 +847,10 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
 		obj->y = y;
-	} else {
-		Fire(obj->x, obj->y, obj->flags);
+	}
+	else
+	{
+		Fire(obj->x, obj->y, obj->flags, obj->player);
 		return 0;
 	}
 	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
@@ -826,6 +884,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 		Vec2iNew(obj->dx, obj->dy),
 		obj->power,
 		obj->flags,
+		obj->player,
 		item,
 		special,
 		obj->soundLock <= 0);
@@ -903,7 +962,7 @@ int UpdateTriggeredMine(TMobileObject *obj, int ticks)
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count >= obj->range)
 	{
-		AddExplosion(obj->x, obj->y, obj->flags);
+		AddExplosion(obj->x, obj->y, obj->flags, obj->player);
 		return 0;
 	}
 	return 1;
@@ -1050,9 +1109,9 @@ void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
 	}
 }
 
-void AddGrenade(int x, int y, int angle, int flags, int kind)
+void AddGrenade(int x, int y, int angle, int flags, int kind, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	if (kind == MOBOBJ_MOLOTOV)
 	{
 		obj->updateFunc = UpdateMolotov;
@@ -1073,10 +1132,11 @@ void AddGrenade(int x, int y, int angle, int flags, int kind)
 	obj->flags = flags;
 }
 
-void AddBullet(int x, int y, int angle, int speed, int range, int power,
-	       int flags)
+void AddBullet(
+	int x, int y, int angle, int speed, int range, int power,
+	int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1091,10 +1151,11 @@ void AddBullet(int x, int y, int angle, int speed, int range, int power,
 	obj->flags = flags;
 }
 
-void AddRapidBullet(int x, int y, int angle, int speed, int range,
-		    int power, int flags)
+void AddRapidBullet(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1109,9 +1170,9 @@ void AddRapidBullet(int x, int y, int angle, int speed, int range,
 	obj->flags = flags;
 }
 
-void AddSniperBullet(int x, int y, int direction, int flags)
+void AddSniperBullet(int x, int y, int direction, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc =  (TileItemDrawFunc)DrawBrightBolt;
 	obj->kind = MOBOBJ_BULLET;
@@ -1127,10 +1188,11 @@ void AddSniperBullet(int x, int y, int direction, int flags)
 	obj->flags = flags;
 }
 
-void AddBrownBullet(int x, int y, int angle, int speed, int range,
-		    int power, int flags)
+void AddBrownBullet(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateBrownBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	obj->kind = MOBOBJ_BULLET;
@@ -1145,9 +1207,9 @@ void AddBrownBullet(int x, int y, int angle, int speed, int range,
 	obj->flags = flags;
 }
 
-void AddFlame(int x, int y, int angle, int flags)
+void AddFlame(int x, int y, int angle, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateFlame;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
 	obj->tileItem.w = 5;
@@ -1164,9 +1226,9 @@ void AddFlame(int x, int y, int angle, int flags)
 	obj->flags = flags;
 }
 
-void AddLaserBolt(int x, int y, int direction, int flags)
+void AddLaserBolt(int x, int y, int direction, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawLaserBolt;
 	obj->tileItem.w = 2;
@@ -1184,10 +1246,11 @@ void AddLaserBolt(int x, int y, int direction, int flags)
 	obj->power = LASER_POWER;
 }
 
-void AddPetrifierBullet(int x, int y, int angle, int speed, int range,
-			int flags)
+void AddPetrifierBullet(
+	int x, int y, int angle, int speed, int range,
+	int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdatePetrifierBullet;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawPetrifierBullet;
 	obj->tileItem.w = 5;
@@ -1204,10 +1267,11 @@ void AddPetrifierBullet(int x, int y, int angle, int speed, int range,
 	obj->power = 0;
 }
 
-void AddHeatseeker(int x, int y, int angle, int speed, int range,
-		   int power, int flags)
+void AddHeatseeker(
+	int x, int y, int angle, int speed, int range,
+	int power, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateSeeker;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSeeker;
 	obj->tileItem.w = 3;
@@ -1225,9 +1289,9 @@ void AddHeatseeker(int x, int y, int angle, int speed, int range,
 	obj->power = power;
 }
 
-void AddProximityMine(int x, int y, int flags)
+void AddProximityMine(int x, int y, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateDroppedMine;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMine;
 	obj->kind = MOBOBJ_BULLET;
@@ -1238,9 +1302,9 @@ void AddProximityMine(int x, int y, int flags)
 	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
 }
 
-void AddDynamite(int x, int y, int flags)
+void AddDynamite(int x, int y, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateTriggeredMine;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawDynamite;
 	obj->kind = MOBOBJ_BULLET;
@@ -1251,9 +1315,9 @@ void AddDynamite(int x, int y, int flags)
 	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
 }
 
-TMobileObject *AddFireBall(int flags)
+static TMobileObject *AddFireBall(int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList);
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateExplosion;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
 	obj->tileItem.w = 7;
@@ -1263,51 +1327,6 @@ TMobileObject *AddFireBall(int flags)
 	obj->flags = flags;
 	obj->power = FIREBALL_POWER;
 	return obj;
-}
-
-void AddExplosion(int x, int y, int flags)
-{
-	TMobileObject *obj;
-	int i;
-
-	GameEvent shake;
-	shake.Type = GAME_EVENT_SCREEN_SHAKE;
-	shake.u.ShakeAmount = 15;
-	GameEventsEnqueue(&gGameEvents, shake);
-
-	flags |= FLAGS_HURTALWAYS;
-	for (i = 0; i < 8; i++) {
-		obj = AddFireBall(flags);
-		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
-		obj->x = x + 2 * obj->dx;
-		obj->y = y + 2 * obj->dy;
-		obj->dz = 0;
-	}
-	for (i = 0; i < 8; i++) {
-		obj = AddFireBall(flags);
-		GetVectorsForAngle(i * 32 + 16, &obj->dx, &obj->dy);
-		obj->x = x + obj->dx;
-		obj->y = y + obj->dy;
-		obj->dx *= 3;
-		obj->dy *= 3;
-		obj->dx /= 4;
-		obj->dy /= 4;
-		obj->dz = 8;
-		obj->count = -8;
-	}
-	for (i = 0; i < 8; i++) {
-		obj = AddFireBall(flags);
-		obj->x = x;
-		obj->y = y;
-		obj->z = 0;
-		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
-		obj->dx /= 2;
-		obj->dy /= 2;
-		obj->dz = 11;
-		obj->count = -16;
-	}
-
-	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, Vec2iNew(x >> 8, y >> 8));
 }
 
 void KillAllMobileObjects(TMobileObject **mobObjList)

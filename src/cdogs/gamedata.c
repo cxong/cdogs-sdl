@@ -155,6 +155,7 @@ void PlayerDataInitialize(void)
 		d->looks.armedBody = BODY_ARMED;
 		d->looks.unarmedBody = BODY_UNARMED;
 		d->weaponCount = 3;
+		d->playerIndex = i;
 	}
 }
 

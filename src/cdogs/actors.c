@@ -325,7 +325,7 @@ void DrawCharacter(int x, int y, TActor * actor)
 }
 
 
-TActor *AddActor(Character *c)
+TActor *AddActor(Character *c, struct PlayerData *p)
 {
 	TActor *actor;
 	CCALLOC(actor, sizeof(TActor));
@@ -344,6 +344,7 @@ TActor *AddActor(Character *c)
 	actorList = actor;
 	actor->flags = FLAGS_SLEEPING | c->flags;
 	actor->character = c;
+	actor->pData = p;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
 	return actor;
@@ -460,7 +461,7 @@ static void PickupObject(TActor * actor, TObject * object)
 {
 	switch (object->objectIndex) {
 	case OBJ_JEWEL:
-		Score(actor->flags, 10);
+		Score(actor->pData, 10);
 		break;
 
 	case OBJ_KEYCARD_RED:
@@ -492,7 +493,7 @@ static void PickupObject(TActor * actor, TObject * object)
       gCampaign.puzzleCount++;
       gCampaign.puzzle |= (1 << (object->objectIndex - OBJ_PUZZLE_1));
       DisplayMessage( gCampaign.setting->puzzle->puzzleMsg);
-      Score( actor->flags, 200);
+      Score(actor->pData, 200);
       break;
 */
 	}
@@ -535,13 +536,12 @@ int MoveActor(TActor * actor, int x, int y)
 	realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 	target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor->flags));
+		CalcCollisionTeam(1, actor));
 	if (target)
 	{
 		Vec2i realXPos, realYPos;
 
-		if ((actor->flags & FLAGS_PLAYERS) != 0 &&
-			target->kind == KIND_CHARACTER)
+		if (actor->pData && target->kind == KIND_CHARACTER)
 		{
 			otherCharacter = target->data;
 			if (otherCharacter
@@ -562,6 +562,7 @@ int MoveActor(TActor * actor, int x, int y)
 					Vec2iZero(),
 					2,
 					actor->flags,
+					actor->pData ? actor->pData->playerIndex : -1,
 					target,
 					SPECIAL_KNIFE,
 					actor->weapon.soundLock <= 0);
@@ -577,14 +578,14 @@ int MoveActor(TActor * actor, int x, int y)
 		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor->flags)))
+			CalcCollisionTeam(1, actor)))
 		{
 			y = actor->y;
 		}
 		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor->flags)))
+			CalcCollisionTeam(1, actor)))
 		{
 			x = actor->x;
 		}
@@ -599,12 +600,12 @@ int MoveActor(TActor * actor, int x, int y)
 
 	CheckTrigger(actor, x >> 8, y >> 8);
 
-	if (actor->flags & FLAGS_PLAYERS)
+	if (actor->pData)
 	{
 		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
-			CalcCollisionTeam(1, actor->flags));
+			CalcCollisionTeam(1, actor));
 		if (target && target->kind == KIND_OBJECT)
 		{
 			PickupObject(actor, target->data);
@@ -637,7 +638,7 @@ void InjureActor(TActor * actor, int injury)
 	if (actor->health <= 0) {
 		actor->stateCounter = 0;
 		PlayRandomScreamAt(Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-		if ((actor->flags & FLAGS_PLAYERS) != 0)
+		if (actor->pData)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
@@ -648,17 +649,12 @@ void InjureActor(TActor * actor, int injury)
 	}
 }
 
-void Score(int flags, int points)
+void Score(struct PlayerData *p, int points)
 {
-	if (flags & FLAGS_PLAYER1)
+	if (p)
 	{
-		gPlayerDatas[0].score += points;
-		gPlayerDatas[0].totalScore += points;
-	}
-	else if (flags & FLAGS_PLAYER2)
-	{
-		gPlayerDatas[1].score += points;
-		gPlayerDatas[1].totalScore += points;
+		p->score += points;
+		p->totalScore += points;
 	}
 }
 
@@ -693,8 +689,13 @@ void Shoot(TActor *actor)
 		muzzlePosition = Vec2iAdd(muzzlePosition, GetMuzzleOffset(actor));
 	}
 	WeaponFire(
-		&actor->weapon, actor->direction, muzzlePosition, tilePosition, actor->flags);
-	Score(actor->flags, -GunGetScore(actor->weapon.gun));
+		&actor->weapon,
+		actor->direction,
+		muzzlePosition,
+		tilePosition,
+		actor->flags,
+		actor->pData ? actor->pData->playerIndex : -1);
+	Score(actor->pData, -GunGetScore(actor->weapon.gun));
 }
 
 int ActorTryChangeDirection(TActor *actor, int cmd)
@@ -908,8 +909,8 @@ void UpdateAllActors(int ticks)
 				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
 					TActor *collidingActor = collidingItem->actor;
-					if (CalcCollisionTeam(1, collidingActor->flags) ==
-						CalcCollisionTeam(1, actor->flags))
+					if (CalcCollisionTeam(1, collidingActor) ==
+						CalcCollisionTeam(1, actor))
 					{
 						Vec2i v = Vec2iNew(
 							actor->x - collidingActor->x,
@@ -1115,7 +1116,8 @@ void ActorTakeHit(
 	}
 }
 
-int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode)
+int ActorIsInvulnerable(
+	TActor *actor, int flags, int player, campaign_mode_e mode)
 {
 	if (actor->flags & FLAGS_INVULNERABLE)
 	{
@@ -1125,21 +1127,21 @@ int ActorIsInvulnerable(TActor *actor, int flags, campaign_mode_e mode)
 	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
 	{
 		// Player to player hits
-		if (flags & FLAGS_PLAYERS & actor->flags)
+		if (player >= 0 && actor->pData)
 		{
 			return 1;
 		}
 		// Friendly fire (NPCs)
 		if (mode != CAMPAIGN_MODE_DOGFIGHT &&
 			!gConfig.Game.FriendlyFire &&
-			(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
-			(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+			(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
+			(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 		{
 			return 1;
 		}
 		// Enemies don't hurt each other
-		if (!(flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) &&
-			!(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+		if (!(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
+			!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 		{
 			return 1;
 		}

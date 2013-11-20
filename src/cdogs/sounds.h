@@ -51,8 +51,9 @@
 
 #include <SDL_mixer.h>
 
-#include "objs.h"
+#include "defs.h"
 #include "utils.h"
+#include "vector.h"
 
 typedef enum
 {

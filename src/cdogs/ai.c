@@ -213,7 +213,7 @@ static int Hunt(TActor * actor)
 	int cmd = 0;
 	int dx, dy;
 	Vec2i targetPos = Vec2iNew(actor->x, actor->y);
-	if (!(actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)))
+	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 	{
 		targetPos = GetClosestPlayerPos(Vec2iNew(actor->x, actor->y));
 	}
@@ -263,7 +263,7 @@ static int PositionOK(TActor * actor, int x, int y)
 	}
 	if (GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor->flags)))
+		CalcCollisionTeam(1, actor)))
 	{
 		return 0;
 	}
@@ -510,7 +510,7 @@ void CommandBadGuys(int ticks)
 	actor = ActorList();
 	while (actor != NULL)
 	{
-		if ((actor->flags & (FLAGS_PLAYERS | FLAGS_PRISONER)) == 0)
+		if (!(actor->pData || (actor->flags & FLAGS_PRISONER)))
 		{
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 			{
@@ -626,7 +626,7 @@ void CommandBadGuys(int ticks)
 	{
 		Character *character = CharacterStoreGetRandomBaddie(
 			&gCampaign.Setting.characters);
-		TActor *baddie = AddActor(character);
+		TActor *baddie = AddActor(character, NULL);
 		PlaceBaddie(baddie);
 		gBaddieCount++;
 	}
@@ -646,7 +646,7 @@ void InitializeBadGuys(void)
 				for (j = 0; j < gMission.objectives[i].count; j++)
 				{
 					actor = AddActor(CharacterStoreGetRandomSpecial(
-						&gCampaign.Setting.characters));
+						&gCampaign.Setting.characters), NULL);
 					actor->tileItem.flags |= ObjectiveToTileItem(i);
 					PlaceBaddie(actor);
 				}
@@ -661,7 +661,7 @@ void InitializeBadGuys(void)
 			for (j = 0; j < gMission.objectives[i].count; j++)
 			{
 				actor = AddActor(CharacterStoreGetPrisoner(
-					&gCampaign.Setting.characters, 0));
+					&gCampaign.Setting.characters, 0), NULL);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (HasLockedRooms())
 				{
@@ -690,7 +690,7 @@ void CreateEnemies(void)
 		i++)
 	{
 		TActor *enemy = AddActor(CharacterStoreGetRandomBaddie(
-			&gCampaign.Setting.characters));
+			&gCampaign.Setting.characters), NULL);
 		PlaceBaddie(enemy);
 		gBaddieCount++;
 	}

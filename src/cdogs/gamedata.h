@@ -79,6 +79,7 @@ struct PlayerData
 
 	input_device_e inputDevice;
 	int deviceIndex;
+	int playerIndex;
 };
 
 extern struct PlayerData gPlayerDatas[MAX_PLAYERS];

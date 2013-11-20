@@ -214,7 +214,7 @@ int WeaponCanFire(Weapon *w)
 	return w->lock <= 0;
 }
 
-void MachineGun(Vec2i muzzlePosition, int angle, int flags)
+void MachineGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
 	angle += (rand() & 7) - 4;
 	if (angle < 0)
@@ -222,20 +222,22 @@ void MachineGun(Vec2i muzzlePosition, int angle, int flags)
 
 	AddBullet(
 		muzzlePosition.x, muzzlePosition.y, angle,
-		MG_SPEED, MG_RANGE, MG_POWER, flags);
+		MG_SPEED, MG_RANGE, MG_POWER, flags, player);
 }
 
-void LaunchGrenade(Vec2i muzzlePosition, int angle, int flags)
+void LaunchGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GRENADE);
+	AddGrenade(
+		muzzlePosition.x, muzzlePosition.y, angle,
+		flags, MOBOBJ_GRENADE, player);
 }
 
-void Flamer(Vec2i muzzlePosition, int angle, int flags)
+void Flamer(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddFlame(muzzlePosition.x, muzzlePosition.y, angle, flags);
+	AddFlame(muzzlePosition.x, muzzlePosition.y, angle, flags, player);
 }
 
-void ShotGun(Vec2i muzzlePosition, int angle, int flags)
+void ShotGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
 	int i;
 	angle -= 16;
@@ -245,63 +247,77 @@ void ShotGun(Vec2i muzzlePosition, int angle, int flags)
 			muzzlePosition.x, muzzlePosition.y,
 			angle > 0 ? angle : angle + 256,
 			SHOTGUN_SPEED, SHOTGUN_RANGE, SHOTGUN_POWER,
-			flags);
+			flags, player);
 	}
 }
 
-void PowerGun(Vec2i muzzlePosition, direction_e d, int flags)
+void PowerGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
 {
-	AddLaserBolt(muzzlePosition.x, muzzlePosition.y, d, flags);
+	AddLaserBolt(muzzlePosition.x, muzzlePosition.y, d, flags, player);
 }
 
-void LaunchFragGrenade(Vec2i muzzlePosition, int angle, int flags)
+void LaunchFragGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_FRAGGRENADE);
+	AddGrenade(
+		muzzlePosition.x, muzzlePosition.y, angle,
+		flags, MOBOBJ_FRAGGRENADE, player);
 }
 
-void LaunchMolotov(Vec2i muzzlePosition, int angle, int flags)
+void LaunchMolotov(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_MOLOTOV);
+	AddGrenade(
+		muzzlePosition.x, muzzlePosition.y, angle,
+		flags, MOBOBJ_MOLOTOV, player);
 }
 
-void SniperGun(Vec2i muzzlePosition, direction_e d, int flags)
+void SniperGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
 {
-	AddSniperBullet(muzzlePosition.x, muzzlePosition.y, d, flags);
+	AddSniperBullet(
+		muzzlePosition.x, muzzlePosition.y, d,
+		flags, player);
 }
 
-void LaunchGasBomb(Vec2i muzzlePosition, int angle, int flags)
+void LaunchGasBomb(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GASBOMB);
+	AddGrenade(
+		muzzlePosition.x, muzzlePosition.y, angle,
+		flags, MOBOBJ_GASBOMB, player);
 }
 
-void Petrifier(Vec2i muzzlePosition, int angle, int flags)
+void Petrifier(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddPetrifierBullet(muzzlePosition.x, muzzlePosition.y, angle, 768, 45, flags);
+	AddPetrifierBullet(
+		muzzlePosition.x, muzzlePosition.y, angle, 768, 45, flags, player);
 }
 
-void BrownGun(Vec2i muzzlePosition, int angle, int flags)
+void BrownGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddBrownBullet(muzzlePosition.x, muzzlePosition.y, angle, 768, 45, 15, flags);
+	AddBrownBullet(
+		muzzlePosition.x, muzzlePosition.y, angle, 768, 45, 15, flags, player);
 }
 
-void ConfuseBomb(Vec2i muzzlePosition, int angle, int flags)
+void ConfuseBomb(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition.x, muzzlePosition.y, angle, flags, MOBOBJ_GASBOMB2);
+	AddGrenade(
+		muzzlePosition.x, muzzlePosition.y, angle,
+		flags, MOBOBJ_GASBOMB2, player);
 }
 
-void GasGun(Vec2i muzzlePosition, int angle, int flags)
+void GasGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGasCloud(muzzlePosition.x, muzzlePosition.y, angle, 384, 35, flags, SPECIAL_POISON);
+	AddGasCloud(
+		muzzlePosition.x, muzzlePosition.y, angle, 384, 35,
+		flags, SPECIAL_POISON, player);
 }
 
-void Mine(Vec2i muzzlePosition, int flags)
+void Mine(Vec2i muzzlePosition, int flags, int player)
 {
-	AddProximityMine(muzzlePosition.x, muzzlePosition.y, flags);
+	AddProximityMine(muzzlePosition.x, muzzlePosition.y, flags, player);
 }
 
-void Dynamite(Vec2i muzzlePosition, int flags)
+void Dynamite(Vec2i muzzlePosition, int flags, int player)
 {
-	AddDynamite(muzzlePosition.x, muzzlePosition.y, flags);
+	AddDynamite(muzzlePosition.x, muzzlePosition.y, flags, player);
 }
 
 /*
@@ -353,7 +369,8 @@ void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 }
 
 void WeaponFire(
-	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition, int flags)
+	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition,
+	int flags, int player)
 {
 	int angle = dir2angle[d];
 	assert(WeaponCanFire(w));
@@ -364,63 +381,63 @@ void WeaponFire(
 			break;
 
 		case GUN_MG:
-			MachineGun(muzzlePosition, angle, flags);
+			MachineGun(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_GRENADE:
-			LaunchGrenade(muzzlePosition, angle, flags);
+			LaunchGrenade(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_FLAMER:
-			Flamer(muzzlePosition, angle, flags);
+			Flamer(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_SHOTGUN:
-			ShotGun(muzzlePosition, angle, flags);
+			ShotGun(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_POWERGUN:
-			PowerGun(muzzlePosition, d, flags);
+			PowerGun(muzzlePosition, d, flags, player);
 			break;
 
 		case GUN_FRAGGRENADE:
-			LaunchFragGrenade(muzzlePosition, angle, flags);
+			LaunchFragGrenade(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_MOLOTOV:
-			LaunchMolotov(muzzlePosition, angle, flags);
+			LaunchMolotov(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_SNIPER:
-			SniperGun(muzzlePosition, d, flags);
+			SniperGun(muzzlePosition, d, flags, player);
 			break;
 
 		case GUN_GASBOMB:
-			LaunchGasBomb(muzzlePosition, angle, flags);
+			LaunchGasBomb(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_PETRIFY:
-			Petrifier(muzzlePosition, angle, flags);
+			Petrifier(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_BROWN:
-			BrownGun(muzzlePosition, angle, flags);
+			BrownGun(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_CONFUSEBOMB:
-			ConfuseBomb(muzzlePosition, angle, flags);
+			ConfuseBomb(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_GASGUN:
-			GasGun(muzzlePosition, angle, flags);
+			GasGun(muzzlePosition, angle, flags, player);
 			break;
 
 		case GUN_MINE:
-			Mine(muzzlePosition, flags);
+			Mine(muzzlePosition, flags, player);
 			break;
 
 		case GUN_DYNAMITE:
-			Dynamite(muzzlePosition, flags);
+			Dynamite(muzzlePosition, flags, player);
 			break;
 
 		default:
