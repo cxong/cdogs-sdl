@@ -319,10 +319,11 @@ menu_t *MenuCreateOptionsGraphics(const char *name)
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionToggle(
-			"Splitscreen always",
-			&gConfig.Interface.SplitscreenAlways,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+		MenuCreateOptionRange(
+			"Splitscreen", (int *)&gConfig.Interface.Splitscreen,
+			SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))SplitscreenStyleStr));
 #ifndef __ANDROID__
 	MenuAddSubmenu(
 		menu,

@@ -185,6 +185,39 @@ ScaleMode StrScaleMode(const char *str)
 		return SCALE_MODE_NN;
 	}
 }
+const char *SplitscreenStyleStr(SplitscreenStyle s)
+{
+	switch (s)
+	{
+		case SPLITSCREEN_NORMAL:
+			return "Normal";
+		case SPLITSCREEN_ALWAYS:
+			return "Always";
+		case SPLITSCREEN_NEVER:
+			return "Never";
+		default:
+			return "";
+	}
+}
+SplitscreenStyle StrSplitscreenStyle(const char *str)
+{
+	if (strcmp(str, "Normal") == 0)
+	{
+		return SPLITSCREEN_NORMAL;
+	}
+	else if (strcmp(str, "Always") == 0)
+	{
+		return SPLITSCREEN_ALWAYS;
+	}
+	else if (strcmp(str, "Never") == 0)
+	{
+		return SPLITSCREEN_NEVER;
+	}
+	else
+	{
+		return SPLITSCREEN_NORMAL;
+	}
+}
 const char *QuickPlayQuantityStr(QuickPlayQuantity q)
 {
 	switch (q)
@@ -300,8 +333,8 @@ void ConfigLoadDefault(Config *config)
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;
 	config->Input.PlayerKeys[0].Keys.up = SDLK_UP;
 	config->Input.PlayerKeys[0].Keys.down = SDLK_DOWN;
-	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RSHIFT;
-	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RETURN;
+	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RETURN;
+	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RSHIFT;
 	config->Input.PlayerKeys[1].Keys.left = SDLK_KP4;
 	config->Input.PlayerKeys[1].Keys.right = SDLK_KP6;
 	config->Input.PlayerKeys[1].Keys.up = SDLK_KP8;
@@ -314,7 +347,7 @@ void ConfigLoadDefault(Config *config)
 	}
 	config->Interface.ShowFPS = 0;
 	config->Interface.ShowTime = 0;
-	config->Interface.SplitscreenAlways = 0;
+	config->Interface.Splitscreen = SPLITSCREEN_NORMAL;
 	config->Interface.ShowHUDMap = 1;
 	config->Sound.MusicVolume = 64;
 	config->Sound.SoundChannels = 8;

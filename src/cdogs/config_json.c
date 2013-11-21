@@ -193,7 +193,8 @@ static void AddInputConfigNode(InputConfig *config, json_t *root)
 	json_insert_pair_into_object(root, "Input", subConfig);
 }
 
-static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
+static void LoadInterfaceConfigNode(
+	InterfaceConfig *config, json_t *node, int version)
 {
 	if (node == NULL)
 	{
@@ -202,7 +203,18 @@ static void LoadInterfaceConfigNode(InterfaceConfig *config, json_t *node)
 	node = node->child;
 	LoadBool(&config->ShowFPS, node, "ShowFPS");
 	LoadBool(&config->ShowTime, node, "ShowTime");
-	LoadBool(&config->SplitscreenAlways, node, "SplitscreenAlways");
+	if (version < 4)
+	{
+		int splitscreenAlways;
+		LoadBool(&splitscreenAlways, node, "SplitscreenAlways");
+		config->Splitscreen =
+			splitscreenAlways ? SPLITSCREEN_ALWAYS : SPLITSCREEN_NORMAL;
+	}
+	else
+	{
+		config->Splitscreen = StrSplitscreenStyle(
+			json_find_first_label(node, "Splitscreen")->child->text);
+	}
 	LoadBool(&config->ShowHUDMap, node, "ShowHUDMap");
 }
 static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
@@ -213,7 +225,8 @@ static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 	json_insert_pair_into_object(
 		subConfig, "ShowTime", json_new_bool(config->ShowTime));
 	json_insert_pair_into_object(
-		subConfig, "SplitscreenAlways", json_new_bool(config->SplitscreenAlways));
+		subConfig, "Splitscreen",
+		json_new_string(SplitscreenStyleStr(config->Splitscreen)));
 	json_insert_pair_into_object(
 		subConfig, "ShowHUDMap", json_new_bool(config->ShowHUDMap));
 	json_insert_pair_into_object(root, "Interface", subConfig);
@@ -297,6 +310,7 @@ void ConfigLoadJSON(Config *config, const char *filename)
 {
 	FILE *f = fopen(filename, "r");
 	json_t *root = NULL;
+	int version;
 
 	if (f == NULL)
 	{
@@ -309,10 +323,14 @@ void ConfigLoadJSON(Config *config, const char *filename)
 		printf("Error parsing config '%s'\n", filename);
 		goto bail;
 	}
+	LoadInt(&version, root, "Version");
 	LoadGameConfigNode(&config->Game, json_find_first_label(root, "Game"));
 	LoadGraphicsConfigNode(&config->Graphics, json_find_first_label(root, "Graphics"));
 	LoadInputConfigNode(&config->Input, json_find_first_label(root, "Input"));
-	LoadInterfaceConfigNode(&config->Interface, json_find_first_label(root, "Interface"));
+	LoadInterfaceConfigNode(
+		&config->Interface,
+		json_find_first_label(root, "Interface"),
+		version);
 	LoadSoundConfigNode(&config->Sound, json_find_first_label(root, "Sound"));
 	LoadQuickPlayConfigNode(&config->QuickPlay, json_find_first_label(root, "QuickPlay"));
 

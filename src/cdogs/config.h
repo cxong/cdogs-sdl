@@ -88,11 +88,21 @@ typedef struct
 	AllyCollision AllyCollision;
 } GameConfig;
 
+typedef enum
+{
+	SPLITSCREEN_NORMAL,
+	SPLITSCREEN_ALWAYS,
+	SPLITSCREEN_NEVER
+} SplitscreenStyle;
+
+const char *SplitscreenStyleStr(SplitscreenStyle s);
+SplitscreenStyle StrSplitscreenStyle(const char *str);
+
 typedef struct
 {
 	int ShowFPS;
 	int ShowTime;
-	int SplitscreenAlways;
+	SplitscreenStyle Splitscreen;
 	int ShowHUDMap;
 } InterfaceConfig;
 

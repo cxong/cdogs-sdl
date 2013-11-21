@@ -43,6 +43,7 @@ void ConfigLoadOld(Config *config, const char *filename)
 	int dummy;
 	int fscanfres;
 	int i;
+	int splitscreenAlways;
 
 	ConfigLoadDefault(config);
 	if (f == NULL)
@@ -65,8 +66,10 @@ void ConfigLoadOld(Config *config, const char *filename)
 		&config->Graphics.Brightness,
 		&dummy,
 		&dummy,
-		&config->Interface.SplitscreenAlways);
+		&splitscreenAlways);
 	CHECK_FSCANF(7);
+	config->Interface.Splitscreen =
+		splitscreenAlways ? SPLITSCREEN_ALWAYS : SPLITSCREEN_NORMAL;
 	for (i = 0; i < 2; i++)
 	{
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
@@ -139,7 +142,7 @@ void ConfigSaveOld(Config *config, const char *filename)
 		config->Graphics.Brightness,
 		0,
 		0,
-		config->Interface.SplitscreenAlways);
+		config->Interface.Splitscreen == SPLITSCREEN_ALWAYS);
 	for (i = 0; i < 2; i++)
 	{
 		fprintf(f, "%d\n%d %d %d %d %d %d\n",

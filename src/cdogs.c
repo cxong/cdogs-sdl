@@ -689,6 +689,48 @@ static void PlaceActor(TActor * actor)
 	}
 	while (!OKforPlayer(x, y) || !MoveActor(actor, x, y));
 }
+static void PlaceActorNear(TActor *actor, Vec2i near)
+{
+	// Try a concentric rhombus pattern, clockwise from right
+	// That is, start by checking right, below, left, above,
+	// then continue with radius 2 right, below-right, below, below-left...
+	// (start from S:)
+	//      4
+	//  9 3 S 1 5
+	//    8 2 6
+	//      7
+#define TRY_LOCATION()\
+if (OKforPlayer(near.x + dx, near.y + dy) &&\
+MoveActor(actor, near.x + dx, near.y + dy))\
+{\
+	return;\
+}
+	int radius;
+	for (radius = 1; 1; radius++)
+	{
+		int dx, dy;
+		// Going from right to below
+		for (dx = radius, dy = 0; dy < radius; dx--, dy++)
+		{
+			TRY_LOCATION();
+		}
+		// below to left
+		for (dx = 0, dy = radius; dy > 0; dx--, dy--)
+		{
+			TRY_LOCATION();
+		}
+		// left to above
+		for (dx = -radius, dy = 0; dx < 0; dx++, dy--)
+		{
+			TRY_LOCATION();
+		}
+		// above to right
+		for (dx = 0, dy = -radius; dy < 0; dx++, dy++)
+		{
+			TRY_LOCATION();
+		}
+	}
+}
 
 void InitData(struct PlayerData *data)
 {
@@ -739,7 +781,18 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		gPlayers[i]->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
 		gPlayers[i]->health = maxHealth;
 		gPlayers[i]->character->maxHealth = maxHealth;
-		PlaceActor(gPlayers[i]);
+		
+		// If never split screen, try to place players near the first player
+		if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+			i > 0)
+		{
+			PlaceActorNear(
+				gPlayers[i], Vec2iNew(gPlayers[0]->x, gPlayers[0]->y));
+		}
+		else
+		{
+			PlaceActor(gPlayers[i]);
+		}
 	}
 }
 

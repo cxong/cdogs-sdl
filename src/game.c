@@ -247,11 +247,11 @@ void GetBoundingRectangle(Vec2i *min, Vec2i *max)
 	}
 }
 
-int IsSingleScreen(GraphicsConfig *config, int splitScreenAlways)
+int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 {
 	Vec2i min;
 	Vec2i max;
-	if (splitScreenAlways)
+	if (splitscreenStyle == SPLITSCREEN_ALWAYS)
 	{
 		return 0;
 	}
@@ -307,7 +307,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 		}
 		else if (IsSingleScreen(
 				&gGraphicsDevice.cachedConfig,
-				gConfig.Interface.SplitscreenAlways))
+				gConfig.Interface.Splitscreen))
 		{
 			// One screen
 			lastPosition = GetPlayersMidpoint();
@@ -615,7 +615,7 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 
 	if (IsSingleScreen(
 			&device->cachedConfig,
-			gConfig.Interface.SplitscreenAlways))
+			gConfig.Interface.Splitscreen))
 	{
 		Vec2i pCenter = GetPlayersMidpoint();
 		Vec2i screenCenter = Vec2iNew(
@@ -726,8 +726,6 @@ int gameloop(void)
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
 				HandleGameEvents(&gGameEvents, &shakeAmount);
-				UpdateAllActors(ticks);
-				UpdateMobileObjects(&gMobObjList, ticks);
 
 				for (i = 0; i < MAX_PLAYERS; i++)
 				{
@@ -743,6 +741,47 @@ int gameloop(void)
 				{
 					CommandBadGuys(ticks);
 				}
+				
+				// If split screen never and players are too close to the
+				// edge of the screen, forcefully pull them towards the center
+				if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+					IsSingleScreen(
+						&gGraphicsDevice.cachedConfig,
+						gConfig.Interface.Splitscreen))
+				{
+					int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+					int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+					Vec2i screen = Vec2iAdd(
+						GetPlayersMidpoint(), Vec2iNew(-w / 2, -h / 2));
+					for (i = 0; i < gOptions.numPlayers; i++)
+					{
+						TActor *p = gPlayers[i];
+						int pad = SPLIT_PADDING;
+						if (!IsPlayerAlive(i))
+						{
+							break;
+						}
+						if (screen.x + pad > p->tileItem.x)
+						{
+							p->dx = MAX(p->dx, 256);
+						}
+						if (screen.x + w - pad < p->tileItem.x)
+						{
+							p->dx = MIN(p->dx, -256);
+						}
+						if (screen.y + pad > p->tileItem.y)
+						{
+							p->dy = MAX(p->dy, 256);
+						}
+						if (screen.y + h - pad < p->tileItem.y)
+						{
+							p->dy = MIN(p->dy, -256);
+						}
+					}
+				}
+				
+				UpdateAllActors(ticks);
+				UpdateMobileObjects(&gMobObjList, ticks);
 
 				UpdateWatches();
 			}
