@@ -158,8 +158,15 @@ static void DrawGauge(
 	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
 	if (textFlags & TEXT_RIGHT)
 	{
-		pos.x = device->cachedConfig.ResolutionWidth - pos.x - size.x;
-		barPos.x = device->cachedConfig.ResolutionWidth - barPos.x - barSize.x;
+		int w = device->cachedConfig.ResolutionWidth;
+		pos.x = w - pos.x - size.x;
+		barPos.x = w - barPos.x - barSize.x;
+	}
+	if (textFlags & TEXT_BOTTOM)
+	{
+		int y = device->cachedConfig.ResolutionHeight;
+		pos.y = h - pos.y - size.y;
+		barPos.y = h - barPos.y - barSize.y;
 	}
 	DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
 	DrawRectangle(device, barPos, barSize, barColor, 0);
