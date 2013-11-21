@@ -162,6 +162,9 @@ static void AssignPlayerInputDevices(
 			case INPUT_DEVICE_JOYSTICK:
 				assignedJoysticks[playerDatas[i].deviceIndex] = 1;
 				break;
+			default:
+				// do nothing
+				break;
 			}
 			continue;
 		}

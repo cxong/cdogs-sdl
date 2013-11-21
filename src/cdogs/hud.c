@@ -154,19 +154,20 @@ static void DrawGauge(
 	color_t barColor, color_t backColor,
 	int textFlags)
 {
-	Vec2i barPos = Vec2iAdd(pos, Vec2iNew(1, 1));
+	Vec2i offset = Vec2iNew(1, 1);
+	Vec2i barPos = Vec2iAdd(pos, offset);
 	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
 	if (textFlags & TEXT_RIGHT)
 	{
 		int w = device->cachedConfig.ResolutionWidth;
-		pos.x = w - pos.x - size.x;
-		barPos.x = w - barPos.x - barSize.x;
+		pos.x = w - pos.x - size.x - offset.x;
+		barPos.x = w - barPos.x - barSize.x - offset.x;
 	}
 	if (textFlags & TEXT_BOTTOM)
 	{
-		int y = device->cachedConfig.ResolutionHeight;
-		pos.y = h - pos.y - size.y;
-		barPos.y = h - barPos.y - barSize.y;
+		int h = device->cachedConfig.ResolutionHeight;
+		pos.y = h - pos.y - size.y - offset.y;
+		barPos.y = h - barPos.y - barSize.y - offset.y;
 	}
 	DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
 	DrawRectangle(device, barPos, barSize, barColor, 0);
