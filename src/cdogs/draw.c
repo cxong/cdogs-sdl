@@ -58,7 +58,7 @@
 #include "text.h"
 
 
-void FixBuffer(DrawBuffer *buffer, int isShadow)
+void FixBuffer(DrawBuffer *buffer)
 {
 	int x, y;
 	Tile *tile, *tileBelow;
@@ -85,9 +85,12 @@ void FixBuffer(DrawBuffer *buffer, int isShadow)
 	}
 
 	tile = &buffer->tiles[0][0];
-	for (y = 0; y < Y_TILES; y++) {
-		for (x = 0; x < buffer->width; x++, tile++) {
-			if ((tile->flags & isShadow) == isShadow) {
+	for (y = 0; y < Y_TILES; y++)
+	{
+		for (x = 0; x < buffer->width; x++, tile++)
+		{
+			if (!(tile->flags & MAPTILE_IS_VISIBLE))
+			{
 				tile->things = NULL;
 				tile->flags |= MAPTILE_OUT_OF_SIGHT;
 			}
@@ -103,72 +106,134 @@ void FixBuffer(DrawBuffer *buffer, int isShadow)
 	}
 }
 
-void SetLineOfSight(
-	DrawBuffer *buffer, int x, int y, int dx, int dy, int shadowFlag)
+static void SetVisible(DrawBuffer *buffer, int x, int y)
+{
+	Tile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
+	tile->flags |= MAPTILE_IS_VISIBLE;
+}
+
+// Set current tile to visible if the last tile is visible and
+// is not an obstruction
+static void SetLineOfSight(
+	DrawBuffer *buffer, int x, int y, int dx, int dy)
 {
 	Tile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
-	if (dTile->flags & (MAPTILE_NO_SEE | shadowFlag))
+	if ((dTile->flags & MAPTILE_IS_VISIBLE) &&
+		!(dTile->flags & MAPTILE_NO_SEE))
 	{
-		Tile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
-		tile->flags |= shadowFlag;
+		SetVisible(buffer, x, y);
 	}
 }
 
-void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag)
+// Calculate line of sight using raycasting
+// Start from tiles that are sources of light (i.e. visible)
+// Then going outwards, mark tiles as visible unless obstructions
+// e.g. walls are encountered, and leave the rest unlit
+void LineOfSight(Vec2i center, DrawBuffer *buffer)
 {
 	int x, y;
 	Vec2i centerTile;
+	int sightRange2 = 0;
+	
+	if (gConfig.Game.SightRange > 0)
+	{
+		sightRange2 = gConfig.Game.SightRange * gConfig.Game.SightRange;
+	}
 
 	centerTile.x = center.x / TILE_WIDTH - buffer->xStart;
 	centerTile.y = center.y / TILE_HEIGHT - buffer->yStart;
+	
+	// First mark center tile and all adjacent tiles as visible
+	// +-+-+-+
+	// |V|V|V|
+	// +-+-+-+
+	// |V|C|V|
+	// +-+-+-+
+	// |V|V|V|  (C=center, V=visible)
+	// +-+-+-+
+	for (x = centerTile.x - 1; x < centerTile.x + 2; x++)
+	{
+		for (y = centerTile.y - 1; y < centerTile.y + 2; y++)
+		{
+			SetVisible(buffer, x, y);
+		}
+	}
 
+	// Going outwards, mark tiles as visible if the inner tile
+	// is visible and is not an obstruction
+	y = centerTile.y;
 	for (x = centerTile.x - 2; x >= 0; x--)
 	{
-		SetLineOfSight(buffer, x, centerTile.y, 1, 0, shadowFlag);
+		if (sightRange2 > 0 &&
+			DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+		{
+			break;
+		}
+		SetLineOfSight(buffer, x, y, 1, 0);
 	}
 	for (x = centerTile.x + 2; x < buffer->width; x++)
 	{
-		SetLineOfSight(buffer, x, centerTile.y, -1, 0, shadowFlag);
+		if (sightRange2 > 0 &&
+			DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+		{
+			break;
+		}
+		SetLineOfSight(buffer, x, y, -1, 0);
 	}
 	for (y = centerTile.y - 1; y >= 0; y--)
 	{
-		SetLineOfSight(buffer, centerTile.x, y, 0, 1, shadowFlag);
+		x = centerTile.x;
+		if (sightRange2 > 0 &&
+			DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+		{
+			break;
+		}
+		SetLineOfSight(buffer, x, y, 0, 1);
 		for (x = centerTile.x - 1; x >= 0; x--)
 		{
-			SetLineOfSight(buffer, x, y, 1, 1, shadowFlag);
+			if (sightRange2 > 0 &&
+				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+			{
+				break;
+			}
+			SetLineOfSight(buffer, x, y, 1, 1);
 		}
 		for (x = centerTile.x + 1; x < buffer->width; x++)
 		{
-			SetLineOfSight(buffer, x, y, -1, 1, shadowFlag);
+			if (sightRange2 > 0 &&
+				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+			{
+				break;
+			}
+			SetLineOfSight(buffer, x, y, -1, 1);
 		}
 	}
 	for (y = centerTile.y + 1; y < Y_TILES; y++)
 	{
-		SetLineOfSight(buffer, centerTile.x, y, 0, -1, shadowFlag);
+		x = centerTile.x;
+		if (sightRange2 > 0 &&
+			DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+		{
+			break;
+		}
+		SetLineOfSight(buffer, x, y, 0, -1);
 		for (x = centerTile.x - 1; x >= 0; x--)
 		{
-			SetLineOfSight(buffer, x, y, 1, -1, shadowFlag);
+			if (sightRange2 > 0 &&
+				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
+			{
+				break;
+			}
+			SetLineOfSight(buffer, x, y, 1, -1);
 		}
 		for (x = centerTile.x + 1; x < buffer->width; x++)
 		{
-			SetLineOfSight(buffer, x, y, -1, -1, shadowFlag);
-		}
-	}
-	
-	if (gConfig.Game.SightRange > 0)
-	{
-		int distanceSquared = gConfig.Game.SightRange * gConfig.Game.SightRange;
-		for (y = 0; y < Y_TILES; y++)
-		{
-			for (x = 0; x < buffer->width; x++)
+			if (sightRange2 > 0 &&
+				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
 			{
-				if (DistanceSquared(centerTile, Vec2iNew(x, y)) >=
-					distanceSquared)
-				{
-					Tile *tile = &buffer->tiles[0][0] + y*X_TILES + x;
-					tile->flags |= shadowFlag;
-				}
+				break;
 			}
+			SetLineOfSight(buffer, x, y, -1, -1);
 		}
 	}
 }

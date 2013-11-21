@@ -202,8 +202,8 @@ void DoBuffer(
 {
 	DrawBufferSetFromMap(
 		b, gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
-	LineOfSight(center, b, MAPTILE_IS_SHADOW);
-	FixBuffer(b, MAPTILE_IS_SHADOW);
+	LineOfSight(center, b);
+	FixBuffer(b);
 	DrawBufferDraw(b, offset);
 }
 
@@ -321,16 +321,13 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			{
 				if (IsPlayerAlive(i))
 				{
-					int shadowFlag =
-						i == 0 ? MAPTILE_IS_SHADOW : MAPTILE_IS_SHADOW2;
 					LineOfSight(
 						Vec2iNew(
 							gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y),
-						b,
-						shadowFlag);
+						b);
 				}
 			}
-			FixBuffer(b, MAPTILE_IS_SHADOW | MAPTILE_IS_SHADOW2);
+			FixBuffer(b);
 			DrawBufferDraw(b, centerOffset);
 			SoundSetEars(lastPosition);
 		}

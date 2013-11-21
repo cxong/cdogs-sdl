@@ -52,8 +52,8 @@
 #include "draw_buffer.h"
 #include "gamedata.h"
 
-void LineOfSight(Vec2i center, DrawBuffer *buffer, int shadowFlag);
-void FixBuffer(DrawBuffer *b, int isShadow);
+void LineOfSight(Vec2i center, DrawBuffer *buffer);
+void FixBuffer(DrawBuffer *b);
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun);
