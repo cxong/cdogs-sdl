@@ -426,7 +426,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	int numPlayersAlive = GetNumPlayersAlive();
 	int i;
 
-	if (numPlayersAlive == 1)
+	if (numPlayersAlive <= 1)
 	{
 		flags = 0;
 	}

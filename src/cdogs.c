@@ -706,7 +706,7 @@ MoveActor(actor, near.x + dx, near.y + dy))\
 	return;\
 }
 	int radius;
-	for (radius = 1; 1; radius++)
+	for (radius = 1; ; radius++)
 	{
 		int dx, dy;
 		// Going from right to below
