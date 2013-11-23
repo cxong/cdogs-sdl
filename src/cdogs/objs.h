@@ -141,6 +141,10 @@ typedef enum
 	BULLET_SNIPER,
 	BULLET_FRAG,
 	BULLET_GRENADE,
+	BULLET_SHRAPNELBOMB,
+	BULLET_MOLOTOV,
+	BULLET_GASBOMB,
+	BULLET_CONFUSEBOMB,
 	BULLET_RAPID,
 	BULLET_BROWN,
 	BULLET_PETRIFIER,
@@ -158,13 +162,14 @@ typedef struct
 	int Range;
 	int Power;
 	int Size;
-	int Flags;
+	color_t GrenadeColor;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
 struct MobileObject
 {
 	int player;	// -1 if not owned by any player
+	BulletClass bulletClass;
 	int kind;
 	int x, y, z;
 	int dx, dy, dz;
@@ -203,7 +208,7 @@ void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
-void AddGrenade(Vec2i pos, int angle, int flags, int kind, int player);
+void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player);
 void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player);
 void AddBulletDirectional(
 	Vec2i pos, direction_e dir, BulletType type, int flags, int player);

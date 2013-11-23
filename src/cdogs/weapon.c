@@ -365,7 +365,7 @@ void MachineGun(Vec2i muzzlePosition, int angle, int flags, int player)
 
 void LaunchGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition, angle, flags, MOBOBJ_GRENADE, player);
+	AddGrenade(muzzlePosition, angle, BULLET_GRENADE, flags, player);
 }
 
 void Flamer(Vec2i muzzlePosition, int angle, int flags, int player)
@@ -385,12 +385,12 @@ void PowerGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
 
 void LaunchFragGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition, angle, flags, MOBOBJ_FRAGGRENADE, player);
+	AddGrenade(muzzlePosition, angle, BULLET_SHRAPNELBOMB, flags, player);
 }
 
 void LaunchMolotov(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition, angle, flags, MOBOBJ_MOLOTOV, player);
+	AddGrenade(muzzlePosition, angle, BULLET_MOLOTOV, flags, player);
 }
 
 void SniperGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
@@ -400,7 +400,7 @@ void SniperGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
 
 void LaunchGasBomb(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition, angle, flags, MOBOBJ_GASBOMB, player);
+	AddGrenade(muzzlePosition, angle, BULLET_GASBOMB, flags, player);
 }
 
 void Petrifier(Vec2i muzzlePosition, int angle, int flags, int player)
@@ -415,7 +415,7 @@ void BrownGun(Vec2i muzzlePosition, int angle, int flags, int player)
 
 void ConfuseBomb(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	AddGrenade(muzzlePosition, angle, flags, MOBOBJ_GASBOMB2, player);
+	AddGrenade(muzzlePosition, angle, BULLET_CONFUSEBOMB, flags, player);
 }
 
 void GasGun(Vec2i muzzlePosition, int angle, int flags, int player)

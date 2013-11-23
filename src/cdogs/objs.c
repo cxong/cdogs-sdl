@@ -48,6 +48,7 @@
 */
 #include "objs.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -226,17 +227,17 @@ void DrawSpark(int x, int y, const TMobileObject * obj)
 void DrawGrenade(int x, int y, const TMobileObject * obj)
 {
 	const TOffsetPic *pic;
-
+	color_t grenadeColor = obj->bulletClass.GrenadeColor;
 	pic = &cGrenadePics[(obj->count / 2) & 3];
 	if (obj->z > 0)
 	{
 		DrawGrenadeShadow(&gGraphicsDevice, Vec2iNew(x, y));
 		y -= obj->z / 16;
 	}
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	BlitMasked(
+		&gGraphicsDevice,
+		PicManagerGetFromOld(&gPicManager, pic->picIndex),
+		Vec2iNew(x + pic->dx, y + pic->dy), grenadeColor, 1);
 }
 
 void DrawGasCloud(int x, int y, const TMobileObject * obj)
@@ -1120,7 +1121,7 @@ void BulletInitialize(void)
 		b = &gBulletClasses[i];
 		b->UpdateFunc = UpdateBullet;
 		b->Size = 0;
-		b->Flags = 0;
+		b->GrenadeColor = colorWhite;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -1162,12 +1163,47 @@ void BulletInitialize(void)
 	b->Range = 50;
 	b->Power = 40;
 
+
+	// Grenades
+
 	b = &gBulletClasses[BULLET_GRENADE];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
+	b->UpdateFunc = UpdateGrenade;
+	b->DrawFunc = DrawGrenade;
+	b->Speed = 384;
+	b->Range = 100;
+	b->Power = 0;
+	b->GrenadeColor = colorGray;
+
+	b = &gBulletClasses[BULLET_MOLOTOV];
+	b->UpdateFunc = UpdateGrenade;
+	b->DrawFunc = DrawGrenade;
+	b->Speed = 384;
+	b->Range = 100;
+	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_GASBOMB];
+	b->UpdateFunc = UpdateGrenade;
+	b->DrawFunc = DrawGrenade;
+	b->Speed = 384;
+	b->Range = 100;
+	b->Power = 0;
+	b->GrenadeColor = colorGreen;
+
+	b = &gBulletClasses[BULLET_CONFUSEBOMB];
+	b->UpdateFunc = UpdateGrenade;
+	b->DrawFunc = DrawGrenade;
+	b->Speed = 384;
+	b->Range = 100;
+	b->Power = 0;
+	b->GrenadeColor = colorPurple;
+
 
 	b = &gBulletClasses[BULLET_RAPID];
 	b->DrawFunc = DrawBrownBullet;
@@ -1210,6 +1246,7 @@ static void SetBulletProps(
 	TMobileObject *obj, Vec2i pos, BulletType type, int flags)
 {
 	BulletClass *b = &gBulletClasses[type];
+	obj->bulletClass = *b;
 	obj->updateFunc = b->UpdateFunc;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->kind = MOBOBJ_BULLET;
@@ -1225,19 +1262,36 @@ static void SetBulletProps(
 	obj->tileItem.h = b->Size;
 }
 
-void AddGrenade(Vec2i pos, int angle, int flags, int kind, int player)
+void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
 	obj->dz = 24;
-	SetBulletProps(obj, pos, BULLET_GRENADE, flags);
-	obj->kind = kind;
-	obj->z = 0;
-	if (kind == MOBOBJ_MOLOTOV)
+	SetBulletProps(obj, pos, type, flags);
+	switch (type)
 	{
+	case BULLET_GRENADE:
+		obj->kind = MOBOBJ_GRENADE;
+		break;
+	case BULLET_SHRAPNELBOMB:
+		obj->kind = MOBOBJ_FRAGGRENADE;
+		break;
+	case BULLET_MOLOTOV:
+		obj->kind = MOBOBJ_MOLOTOV;
 		obj->updateFunc = UpdateMolotov;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
+		break;
+	case BULLET_GASBOMB:
+		obj->kind = MOBOBJ_GASBOMB;
+		break;
+	case BULLET_CONFUSEBOMB:
+		obj->kind = MOBOBJ_GASBOMB2;
+		break;
+	default:
+		assert(0 && "invalid grenade type");
+		break;
 	}
+	obj->z = 0;
 }
 
 void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player)
