@@ -282,7 +282,7 @@ void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 			{
 				break;
 			}
-			if (drawPos.y < device->clipping.left)
+			if (drawPos.x < device->clipping.left)
 			{
 				continue;
 			}
