@@ -52,6 +52,8 @@
 
 #include <SDL_timer.h>
 
+#include "gamedata.h"
+
 
 int GetKey(InputDevices *devices)
 {
@@ -66,21 +68,18 @@ int GetKey(InputDevices *devices)
 
 void WaitForAnyKeyOrButton(InputDevices *devices)
 {
+	// Re-initialise to prevent held down keys repeating
+	InputInit(devices, devices->mouse.cursor);
 	for (;;)
 	{
 		int i;
+		int cmds[MAX_PLAYERS];
+		memset(cmds, 0, sizeof cmds);
 		InputPoll(devices, SDL_GetTicks());
-		if (KeyGetPressed(&devices->keyboard))
+		GetPlayerCmds(&cmds, gPlayerDatas);
+		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			return;
-		}
-		if (MouseGetPressed(&devices->mouse))
-		{
-			return;
-		}
-		for (i = 0; i < devices->joysticks.numJoys; i++)
-		{
-			if (JoyIsAnyPressed(&devices->joysticks.joys[i]))
+			if (AnyButton(cmds[i]))
 			{
 				return;
 			}
