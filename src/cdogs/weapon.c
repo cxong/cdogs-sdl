@@ -107,6 +107,9 @@ void WeaponInitialize(void)
 		g = &gGunDescriptions[i];
 		g->pic = GUNPIC_BLASTER;
 		g->SoundLockLength = 0;
+		g->Recoil = 0;
+		g->Spread.Count = 1;
+		g->Spread.Width = 0;
 	}
 
 	g = &gGunDescriptions[GUN_KNIFE];
@@ -126,6 +129,7 @@ void WeaponInitialize(void)
 	g->ReloadLead = -1;
 	g->Sound = SND_MACHINEGUN;
 	g->ReloadSound = -1;
+	g->Recoil = 7;
 
 	g = &gGunDescriptions[GUN_GRENADE];
 	g->pic = -1;
@@ -152,6 +156,8 @@ void WeaponInitialize(void)
 	g->ReloadLead = 10;
 	g->Sound = SND_SHOTGUN;
 	g->ReloadSound = SND_SHOTGUN_R;
+	g->Spread.Count = 5;
+	g->Spread.Width = 8;
 
 	g = &gGunDescriptions[GUN_POWERGUN];
 	strcpy(g->name, "Powergun");
@@ -345,10 +351,6 @@ int WeaponCanFire(Weapon *w)
 
 void MachineGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	angle += (rand() & 7) - 4;
-	if (angle < 0)
-		angle += 256;
-
 	AddBullet(
 		muzzlePosition.x, muzzlePosition.y, angle,
 		MG_SPEED, MG_RANGE, MG_POWER, flags, player);
@@ -368,16 +370,11 @@ void Flamer(Vec2i muzzlePosition, int angle, int flags, int player)
 
 void ShotGun(Vec2i muzzlePosition, int angle, int flags, int player)
 {
-	int i;
-	angle -= 16;
-	for (i = 0; i <= 32; i += 8, angle += 8)
-	{
-		AddBullet(
-			muzzlePosition.x, muzzlePosition.y,
-			angle > 0 ? angle : angle + 256,
-			SHOTGUN_SPEED, SHOTGUN_RANGE, SHOTGUN_POWER,
-			flags, player);
-	}
+	AddBullet(
+		muzzlePosition.x, muzzlePosition.y,
+		angle,
+		SHOTGUN_SPEED, SHOTGUN_RANGE, SHOTGUN_POWER,
+		flags, player);
 }
 
 void PowerGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
@@ -502,27 +499,53 @@ void WeaponFire(
 	int flags, int player)
 {
 	int angle = dir2angle[d];
-	assert(WeaponCanFire(w));
-	switch (w->gun)
+	int i;
+	GunDescription *desc = &gGunDescriptions[w->gun];
+	int spreadCount = desc->Spread.Count;
+	int spreadStartAngle = 0;
+	int spreadWidth = desc->Spread.Width;
+	if (spreadCount > 1)
 	{
+		// Find the starting angle of the spread (clockwise)
+		// Keep in mind the fencepost problem, i.e. spread of 3 means a
+		// total spread angle of 2x width
+		spreadStartAngle = -(spreadCount - 1) * spreadWidth / 2;
+	}
+	
+	assert(WeaponCanFire(w));
+	for (i = 0; i < spreadCount; i++)
+	{
+		int spreadAngle = spreadStartAngle + i * spreadWidth;
+		int recoil = 0;
+		if (desc->Recoil > 0)
+		{
+			recoil = (rand() % desc->Recoil) - (desc->Recoil + 1) / 2;
+		}
+		int finalAngle = angle + spreadAngle + recoil;
+		if (finalAngle < 0)
+		{
+			finalAngle += 256;
+		}
+		switch (w->gun)
+		{
 		case GUN_KNIFE:
 			// Do nothing
 			break;
 
 		case GUN_MG:
-			MachineGun(muzzlePosition, angle, flags, player);
+			MachineGun(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_GRENADE:
-			LaunchGrenade(muzzlePosition, angle, flags, player);
+			LaunchGrenade(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_FLAMER:
-			Flamer(muzzlePosition, angle, flags, player);
+			Flamer(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_SHOTGUN:
-			ShotGun(muzzlePosition, angle, flags, player);
+			ShotGun(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_POWERGUN:
@@ -530,11 +553,11 @@ void WeaponFire(
 			break;
 
 		case GUN_FRAGGRENADE:
-			LaunchFragGrenade(muzzlePosition, angle, flags, player);
+			LaunchFragGrenade(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_MOLOTOV:
-			LaunchMolotov(muzzlePosition, angle, flags, player);
+			LaunchMolotov(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_SNIPER:
@@ -542,23 +565,23 @@ void WeaponFire(
 			break;
 
 		case GUN_GASBOMB:
-			LaunchGasBomb(muzzlePosition, angle, flags, player);
+			LaunchGasBomb(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_PETRIFY:
-			Petrifier(muzzlePosition, angle, flags, player);
+			Petrifier(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_BROWN:
-			BrownGun(muzzlePosition, angle, flags, player);
+			BrownGun(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_CONFUSEBOMB:
-			ConfuseBomb(muzzlePosition, angle, flags, player);
+			ConfuseBomb(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_GASGUN:
-			GasGun(muzzlePosition, angle, flags, player);
+			GasGun(muzzlePosition, finalAngle, flags, player);
 			break;
 
 		case GUN_MINE:
@@ -573,6 +596,7 @@ void WeaponFire(
 			// unknown gun?
 			assert(0);
 			break;
+		}
 	}
 
 	w->lock = gGunDescriptions[w->gun].Lock;

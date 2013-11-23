@@ -656,6 +656,7 @@ int gameloop(void)
 		int ticks = 1;
 		int i;
 		int shakeAmount = 0;
+		int allPlayersDestroyed = 1;
 		Ticks_Update();
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
@@ -775,7 +776,18 @@ int gameloop(void)
 			MissionUpdateObjectives();
 		}
 
-		if (GetNumPlayersAlive() == 0)
+		// Check that all players have been destroyed
+		// Note: there's a period of time where players are dying
+		// Wait until after this period before ending the game
+		for (i = 0; i < gOptions.numPlayers; i++)
+		{
+			if (gPlayers[i])
+			{
+				allPlayersDestroyed = 0;
+				break;
+			}
+		}
+		if (allPlayersDestroyed)
 		{
 			isDone = 1;
 		}

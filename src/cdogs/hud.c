@@ -244,6 +244,12 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 	Vec2i pos = Vec2iZero();
 	int w = device->cachedConfig.ResolutionWidth;
 	int h = device->cachedConfig.ResolutionHeight;
+
+	if (!p)
+	{
+		return;
+	}
+
 	// Possible map positions:
 	// top-right (player 1 only)
 	// top-left (player 2 only)
