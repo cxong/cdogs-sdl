@@ -253,6 +253,15 @@ void WeaponInitialize(void)
 	g->Sound = SND_FLAMER;
 	g->ReloadSound = -1;
 	g->SoundLockLength = 36;
+
+	g = &gGunDescriptions[GUN_PULSERIFLE];
+	strcpy(g->name, "Pulse Rifle");
+	g->Cost = 1;
+	g->Lock = 4;
+	g->ReloadLead = -1;
+	g->Sound = SND_MINIGUN;
+	g->ReloadSound = -1;
+	g->Recoil = 7;
 }
 
 Weapon WeaponCreate(gun_e gun)
@@ -461,26 +470,13 @@ void Heatseeker(TActor * actor)
 	Score(actor->flags, -7);
 	SoundPlayAt(&gSoundDevice, SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
 }
-
-void PulseRifle(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	angle += (rand() & 7) - 4;
-	if (angle < 0)
-		angle += 256;
-
-	GetMuzzle(actor, &dx, &dy);
-	AddRapidBullet(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		       1280, 25, 7, actor->flags);
-	actor->gunLock = 4;
-	Score(actor->flags, -1);
-	SoundPlayAt(&gSoundDevice, SND_MINIGUN, actor->tileItem.x, actor->tileItem.y);
-}
 */
+
+void PulseRifle(Vec2i muzzlePosition, int angle, int flags, int player)
+{
+	AddRapidBullet(
+		muzzlePosition.x, muzzlePosition.y, angle, 1280, 25, 7, flags, player);
+}
 
 void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 {
@@ -592,6 +588,10 @@ void WeaponFire(
 			Dynamite(muzzlePosition, flags, player);
 			break;
 
+		case GUN_PULSERIFLE:
+			PulseRifle(muzzlePosition, finalAngle, flags, player);
+			break;
+
 		default:
 			// unknown gun?
 			assert(0);
@@ -644,20 +644,7 @@ int GunIsStatic(gun_e gun)
 }
 int GunHasMuzzle(gun_e gun)
 {
-	switch (gun)
-	{
-	case GUN_MG:
-	case GUN_FLAMER:
-	case GUN_SHOTGUN:
-	case GUN_POWERGUN:
-	case GUN_SNIPER:
-	case GUN_PETRIFY:
-	case GUN_BROWN:
-	case GUN_GASGUN:
-		return 1;
-	default:
-		return 0;
-	}
+	return gGunDescriptions[gun].pic == GUNPIC_BLASTER;
 }
 int IsHighDPS(gun_e gun)
 {

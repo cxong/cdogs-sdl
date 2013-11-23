@@ -47,6 +47,7 @@ typedef struct
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 	int isFirstRepeat;
+	int pressedKeysBuffer[8];
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);

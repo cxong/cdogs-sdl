@@ -65,6 +65,10 @@ void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s)
 	{
 		keyboard->currentKeys[s.sym].unicode = 0;
 	}
+	memmove(
+		keyboard->pressedKeysBuffer + 1, keyboard->pressedKeysBuffer,
+		sizeof *keyboard->pressedKeysBuffer * (8 - 1));
+	keyboard->pressedKeysBuffer[0] = s.sym;
 }
 void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s)
 {

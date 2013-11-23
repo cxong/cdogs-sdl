@@ -72,6 +72,7 @@ typedef enum
 	GUN_BROWN,
 	GUN_CONFUSEBOMB,
 	GUN_GASGUN,
+	GUN_PULSERIFLE,
 	GUN_COUNT
 } gun_e;
 
