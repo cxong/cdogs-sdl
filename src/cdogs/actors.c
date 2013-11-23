@@ -695,24 +695,6 @@ void Score(struct PlayerData *p, int points)
 	}
 }
 
-Vec2i GetMuzzleOffset(TActor *actor)
-{
-	int b, g, d = actor->direction;
-	Vec2i position;
-
-	b = actor->character->looks.armedBody;
-	g = GunGetPic(actor->weapon.gun);
-	position.x =
-		cGunHandOffset[b][d].dx +
-		cGunPics[g][d][GUNSTATE_FIRING].dx +
-		cMuzzleOffset[g][d].dx;
-	position.y =
-		cGunHandOffset[b][d].dy +
-		cGunPics[g][d][GUNSTATE_FIRING].dy +
-		cMuzzleOffset[g][d].dy + BULLET_Z;
-	return Vec2iScale(position, 256);
-}
-
 void Shoot(TActor *actor)
 {
 	Vec2i muzzlePosition = Vec2iNew(actor->x, actor->y);
@@ -723,7 +705,11 @@ void Shoot(TActor *actor)
 	}
 	if (GunHasMuzzle(actor->weapon.gun))
 	{
-		muzzlePosition = Vec2iAdd(muzzlePosition, GetMuzzleOffset(actor));
+		Vec2i muzzleOffset = GunGetMuzzleOffset(
+			actor->weapon.gun,
+			actor->direction,
+			actor->character->looks.armedBody);
+		muzzlePosition = Vec2iAdd(muzzlePosition, muzzleOffset);
 	}
 	WeaponFire(
 		&actor->weapon,
@@ -732,7 +718,7 @@ void Shoot(TActor *actor)
 		tilePosition,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1);
-	Score(actor->pData, -GunGetScore(actor->weapon.gun));
+	Score(actor->pData, -GunGetCost(actor->weapon.gun));
 }
 
 int ActorTryChangeDirection(TActor *actor, int cmd)

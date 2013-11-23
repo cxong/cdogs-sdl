@@ -120,7 +120,7 @@ static void DisplayEquippedWeapons(
 		for (i = 0; i < d->display.pData->weaponCount; i++)
 		{
 			DrawTextString(
-				gGunDescriptions[d->display.pData->weapons[i]].gunName,
+				gGunDescriptions[d->display.pData->weapons[i]].name,
 				g,
 				Vec2iAdd(weaponsPos, Vec2iNew(0, i * CDogsTextHeight())));
 		}
@@ -178,7 +178,7 @@ void WeaponMenuCreate(
 	for (i = 0; i < gMission.weaponCount; i++)
 	{
 		const char *gunName =
-			gGunDescriptions[gMission.availableWeapons[i]].gunName;
+			gGunDescriptions[gMission.availableWeapons[i]].name;
 		MenuAddSubmenu(ms->root, MenuCreate(gunName, MENU_TYPE_BASIC));
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);

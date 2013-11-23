@@ -94,8 +94,9 @@ typedef enum
 
 typedef struct
 {
-	gunpic_e gunPic;
-	char *gunName;
+	gunpic_e pic;
+	char name[32];
+	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;
 	sound_e Sound;
@@ -116,10 +117,12 @@ extern GunDescription gGunDescriptions[GUN_COUNT];
 extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 
+void WeaponInitialize(void);
 Weapon WeaponCreate(gun_e gun);
 gunpic_e GunGetPic(gun_e gun);
 const char *GunGetName(gun_e gun);
-int GunGetScore(gun_e gun);
+int GunGetCost(gun_e gun);
+Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed);
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(

@@ -560,7 +560,7 @@ void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun)
 		if (showGun)
 		{
 			CDogsTextGoto(x - 8, y + 8);
-			CDogsTextString(gGunDescriptions[c->gun].gunName);
+			CDogsTextString(gGunDescriptions[c->gun].name);
 		}
 	}
 }

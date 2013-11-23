@@ -54,27 +54,7 @@
 #include "objs.h"
 #include "sounds.h"
 
-
-GunDescription gGunDescriptions[] =
-{
-	// Gun picture		Name				Lock	ReloadLead	Sound			Reload sound	SoundLockLength
-	{GUNPIC_KNIFE,		"Knife",			0,		-1,			-1,				-1,				10},
-	{GUNPIC_BLASTER,	"Machine gun",		6,		-1,			SND_MACHINEGUN,	-1,				0},
-	{-1,				"Grenades",			30,		-1,			SND_LAUNCH,		-1,				0},
-	{GUNPIC_BLASTER,	"Flamer",			6,		-1,			SND_FLAMER,		-1,				36},
-	{GUNPIC_BLASTER,	"Shotgun",			50,		10,			SND_SHOTGUN,	SND_SHOTGUN_R,	0},
-	{GUNPIC_BLASTER,	"Powergun",			20,		-1,			SND_POWERGUN,	-1,				0},
-	{-1,				"Shrapnel bombs",	30,		-1,			SND_LAUNCH,		-1,				0},
-	{-1,				"Molotovs",			30,		-1,			SND_LAUNCH,		-1,				0},
-	{GUNPIC_BLASTER,	"Sniper rifle",		100,	15,			SND_LASER,		SND_LASER_R,	0},
-	{-1,				"Prox. mine",		100,	15,			SND_HAHAHA,		SND_PACKAGE_R,	0},
-	{-1,				"Dynamite",			100,	15,			SND_HAHAHA,		SND_PACKAGE_R,	0},
-	{-1,				"Chemo bombs",		30,		-1,			SND_LAUNCH,		-1,				0},
-	{GUNPIC_BLASTER,	"Petrify gun",		100,	15,			SND_LASER,		SND_LASER_R,	0},
-	{GUNPIC_BLASTER,	"Browny gun",		30,		-1,			SND_POWERGUN,	-1,				0},
-	{-1,				"Confusion bombs",	30,		-1,			SND_LAUNCH,		-1,				0},
-	{GUNPIC_BLASTER,	"Chemo gun",		6,		-1,			SND_FLAMER,		-1,				36}
-};
+GunDescription gGunDescriptions[GUN_COUNT];
 
 #define RELOAD_DISTANCE_PLUS 300
 
@@ -114,6 +94,160 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 	 }
 };
 
+// Initialise all the static weapon data
+// TODO: load from data file
+void WeaponInitialize(void)
+{
+	GunDescription *g;
+	int i;
+
+	// Load defaults
+	for (i = 0; i < GUN_COUNT; i++)
+	{
+		g = &gGunDescriptions[i];
+		g->pic = GUNPIC_BLASTER;
+		g->SoundLockLength = 0;
+	}
+
+	g = &gGunDescriptions[GUN_KNIFE];
+	g->pic = GUNPIC_KNIFE;
+	strcpy(g->name, "Knife");
+	g->Cost = 0;
+	g->Lock = 0;
+	g->ReloadLead = -1;
+	g->Sound = -1;
+	g->ReloadSound = -1;
+	g->SoundLockLength = 10;
+
+	g = &gGunDescriptions[GUN_MG];
+	strcpy(g->name, "Machine gun");
+	g->Cost = 1;
+	g->Lock = 6;
+	g->ReloadLead = -1;
+	g->Sound = SND_MACHINEGUN;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_GRENADE];
+	g->pic = -1;
+	strcpy(g->name, "Grenades");
+	g->Cost = 20;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_LAUNCH;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_FLAMER];
+	strcpy(g->name, "Flamer");
+	g->Cost = 1;
+	g->Lock = 6;
+	g->ReloadLead = -1;
+	g->Sound = SND_FLAMER;
+	g->ReloadSound = -1;
+	g->SoundLockLength = 36;
+
+	g = &gGunDescriptions[GUN_SHOTGUN];
+	strcpy(g->name, "Shotgun");
+	g->Cost = 5;
+	g->Lock = 50;
+	g->ReloadLead = 10;
+	g->Sound = SND_SHOTGUN;
+	g->ReloadSound = SND_SHOTGUN_R;
+
+	g = &gGunDescriptions[GUN_POWERGUN];
+	strcpy(g->name, "Powergun");
+	g->Cost = 2;
+	g->Lock = 20;
+	g->ReloadLead = -1;
+	g->Sound = SND_POWERGUN;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_FRAGGRENADE];
+	g->pic = -1;
+	strcpy(g->name, "Shrapnel bombs");
+	g->Cost = 20;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_LAUNCH;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_MOLOTOV];
+	g->pic = -1;
+	strcpy(g->name, "Molotovs");
+	g->Cost = 20;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_LAUNCH;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_SNIPER];
+	strcpy(g->name, "Sniper rifle");
+	g->Cost = 5;
+	g->Lock = 100;
+	g->ReloadLead = 15;
+	g->Sound = SND_LASER;
+	g->ReloadSound = SND_LASER_R;
+
+	g = &gGunDescriptions[GUN_MINE];
+	g->pic = -1;
+	strcpy(g->name, "Prox. mine");
+	g->Cost = 10;
+	g->Lock = 100;
+	g->ReloadLead = 15;
+	g->Sound = SND_HAHAHA;
+	g->ReloadSound = SND_PACKAGE_R;
+
+	g = &gGunDescriptions[GUN_DYNAMITE];
+	g->pic = -1;
+	strcpy(g->name, "Dynamite");
+	g->Cost = 7;
+	g->Lock = 100;
+	g->ReloadLead = 15;
+	g->Sound = SND_HAHAHA;
+	g->ReloadSound = SND_PACKAGE_R;
+
+	g = &gGunDescriptions[GUN_GASBOMB];
+	g->pic = -1;
+	strcpy(g->name, "Chemo bombs");
+	g->Cost = 7;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_LAUNCH;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_PETRIFY];
+	strcpy(g->name, "Petrify gun");
+	g->Cost = 10;
+	g->Lock = 100;
+	g->ReloadLead = 15;
+	g->Sound = SND_LASER;
+	g->ReloadSound = SND_LASER_R;
+
+	g = &gGunDescriptions[GUN_BROWN];
+	strcpy(g->name, "Browny gun");
+	g->Cost = 5;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_POWERGUN;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_CONFUSEBOMB];
+	g->pic = -1;
+	strcpy(g->name, "Confusion bombs");
+	g->Cost = 10;
+	g->Lock = 30;
+	g->ReloadLead = -1;
+	g->Sound = SND_LAUNCH;
+	g->ReloadSound = -1;
+
+	g = &gGunDescriptions[GUN_GASGUN];
+	strcpy(g->name, "Chemo gun");
+	g->Cost = 1;
+	g->Lock = 6;
+	g->ReloadLead = -1;
+	g->Sound = SND_FLAMER;
+	g->ReloadSound = -1;
+	g->SoundLockLength = 36;
+}
 
 Weapon WeaponCreate(gun_e gun)
 {
@@ -128,12 +262,27 @@ Weapon WeaponCreate(gun_e gun)
 
 gunpic_e GunGetPic(gun_e gun)
 {
-	return gGunDescriptions[gun].gunPic;
+	return gGunDescriptions[gun].pic;
 }
 
 const char *GunGetName(gun_e gun)
 {
-	return gGunDescriptions[gun].gunName;
+	return gGunDescriptions[gun].name;
+}
+
+Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed)
+{
+	Vec2i position;
+	gunpic_e g = GunGetPic(gun);
+	position.x =
+		cGunHandOffset[isArmed][dir].dx +
+		cGunPics[g][dir][GUNSTATE_FIRING].dx +
+		cMuzzleOffset[g][dir].dx;
+	position.y =
+		cGunHandOffset[isArmed][dir].dy +
+		cGunPics[g][dir][GUNSTATE_FIRING].dy +
+		cMuzzleOffset[g][dir].dy + BULLET_Z;
+	return Vec2iScale(position, 256);
 }
 
 void WeaponSetState(Weapon *w, gunstate_e state);
@@ -184,29 +333,9 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 	}
 }
 
-int cGunScores[GUN_COUNT] =
+int GunGetCost(gun_e gun)
 {
-	0,
-	1,
-	20,
-	1,
-	5,
-	2,
-	20,
-	20,
-	5,
-	10,
-	7,
-	7,
-	10,
-	1,
-	10,
-	5
-};
-
-int GunGetScore(gun_e gun)
-{
-	return cGunScores[gun];
+	return gGunDescriptions[gun].Cost;
 }
 
 int WeaponCanFire(Weapon *w)
