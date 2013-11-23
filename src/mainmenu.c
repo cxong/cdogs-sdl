@@ -70,6 +70,7 @@ MenuSystem *MenuCreateAll(
 	GraphicsDevice *graphics)
 {
 	MenuSystem *ms;
+	int menuContinueIndex;
 	CCALLOC(ms, sizeof *ms);
 	MenuSystemInit(
 		ms,
@@ -83,13 +84,10 @@ MenuSystem *MenuCreateAll(
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	if (strlen(gAutosave.LastMission.Password) > 0 &&
-		gAutosave.LastMission.IsValid)
-	{
-		MenuAddSubmenu(
-			ms->root,
-			MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-	}
+	MenuAddSubmenu(
+		ms->root,
+		MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
+	menuContinueIndex = ms->root->u.normal.numSubMenus - 1;
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
@@ -109,6 +107,13 @@ MenuSystem *MenuCreateAll(
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
 	MenuAddExitType(ms, MENU_TYPE_CAMPAIGN_ITEM);
+
+	if (strlen(gAutosave.LastMission.Password) == 0 ||
+		!gAutosave.LastMission.IsValid)
+	{
+		MenuDisableSubmenu(ms->root, menuContinueIndex);
+	}
+
 	return ms;
 }
 

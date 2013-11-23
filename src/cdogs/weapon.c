@@ -261,7 +261,7 @@ void WeaponInitialize(void)
 	g->ReloadLead = -1;
 	g->Sound = SND_MINIGUN;
 	g->ReloadSound = -1;
-	g->Recoil = 7;
+	g->Recoil = 15;
 }
 
 Weapon WeaponCreate(gun_e gun)

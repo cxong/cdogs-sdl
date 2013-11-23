@@ -128,7 +128,12 @@ void AutosaveLoad(Autosave *autosave, const char *filename)
 		printf("Error parsing autosave '%s'\n", filename);
 		goto bail;
 	}
-	LoadMissionNode(&autosave->LastMission, json_find_first_label(root, "LastMission")->child);
+	if (json_find_first_label(root, "LastMission"))
+	{
+		LoadMissionNode(
+			&autosave->LastMission,
+			json_find_first_label(root, "LastMission")->child);
+	}
 	LoadMissionNodes(autosave, root, "Missions");
 
 bail:

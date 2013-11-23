@@ -1209,7 +1209,7 @@ void BulletInitialize(void)
 	b->DrawFunc = DrawBrownBullet;
 	b->Speed = 1280;
 	b->Range = 25;
-	b->Power = 25;
+	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;

@@ -577,7 +577,8 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 	int w = device->cachedConfig.ResolutionWidth;
 	int h = device->cachedConfig.ResolutionHeight;
 
-	if (IsSingleScreen(
+	if (GetNumPlayersAlive() == 1 ||
+		IsSingleScreen(
 			&device->cachedConfig,
 			gConfig.Interface.Splitscreen))
 	{
