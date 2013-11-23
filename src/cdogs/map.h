@@ -62,6 +62,7 @@
 
 #define X_TILES_HALF    ((X_TILES / 2) + 1)
 #define Y_TILES			(gGraphicsDevice.cachedConfig.ResolutionHeight / TILE_HEIGHT + 3)
+#define Y_TILES_HALF    ((Y_TILES / 2) + 1)
 
 typedef enum
 {

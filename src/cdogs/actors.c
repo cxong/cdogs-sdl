@@ -140,6 +140,43 @@ int IsPlayerAlive(int player)
 	return gPlayers[player] && !gPlayers[player]->dead;
 }
 
+Vec2i PlayersGetMidpoint(TActor *players[MAX_PLAYERS])
+{
+	// for all surviving players, find bounding rectangle, and get center
+	Vec2i min;
+	Vec2i max;
+	PlayersGetBoundingRectangle(players, &min, &max);
+	return Vec2iNew((min.x + max.x) / 2, (min.y + max.y) / 2);
+}
+
+void PlayersGetBoundingRectangle(
+	TActor *players[MAX_PLAYERS], Vec2i *min, Vec2i *max)
+{
+	int isFirst = 1;
+	int i;
+	*min = Vec2iZero();
+	*max = Vec2iZero();
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (IsPlayerAlive(i))
+		{
+			TTileItem *p = &players[i]->tileItem;
+			if (isFirst)
+			{
+				*min = *max = Vec2iNew(p->x, p->y);
+			}
+			else
+			{
+				if (p->x < min->x)	min->x = p->x;
+				if (p->y < min->y)	min->y = p->y;
+				if (p->x > max->x)	max->x = p->x;
+				if (p->y > max->y)	max->y = p->y;
+			}
+			isFirst = 0;
+		}
+	}
+}
+
 void DrawCharacter(int x, int y, TActor * actor)
 {
 	direction_e dir = actor->direction;

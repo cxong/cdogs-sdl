@@ -197,7 +197,7 @@ static void Ticks_FrameEnd(void)
 }
 
 
-void DoBuffer(
+static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
 	DrawBufferSetFromMap(
@@ -220,33 +220,6 @@ int GetShakeAmount(int oldShake, int amount)
 	return shake;
 }
 
-void GetBoundingRectangle(Vec2i *min, Vec2i *max)
-{
-	int isFirst = 1;
-	int i;
-	*min = Vec2iZero();
-	*max = Vec2iZero();
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerAlive(i))
-		{
-			TTileItem *p = &gPlayers[i]->tileItem;
-			if (isFirst)
-			{
-				*min = *max = Vec2iNew(p->x, p->y);
-			}
-			else
-			{
-				if (p->x < min->x)	min->x = p->x;
-				if (p->y < min->y)	min->y = p->y;
-				if (p->x > max->x)	max->x = p->x;
-				if (p->y > max->y)	max->y = p->y;
-			}
-			isFirst = 0;
-		}
-	}
-}
-
 int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 {
 	Vec2i min;
@@ -255,19 +228,10 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 	{
 		return 0;
 	}
-	GetBoundingRectangle(&min, &max);
+	PlayersGetBoundingRectangle(gPlayers, &min, &max);
 	return
 		max.x - min.x < config->ResolutionWidth - SPLIT_PADDING &&
 		max.y - min.y < config->ResolutionHeight - SPLIT_PADDING;
-}
-
-static Vec2i GetPlayersMidpoint(void)
-{
-	// for all surviving players, find bounding rectangle, and get center
-	Vec2i min;
-	Vec2i max;
-	GetBoundingRectangle(&min, &max);
-	return Vec2iNew((min.x + max.x) / 2, (min.y + max.y) / 2);
 }
 
 Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
@@ -310,7 +274,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 				gConfig.Interface.Splitscreen))
 		{
 			// One screen
-			lastPosition = GetPlayersMidpoint();
+			lastPosition = PlayersGetMidpoint(gPlayers);
 
 			DrawBufferSetFromMap(
 				b, gMap,
@@ -617,7 +581,7 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 			&device->cachedConfig,
 			gConfig.Interface.Splitscreen))
 	{
-		Vec2i pCenter = GetPlayersMidpoint();
+		Vec2i pCenter = PlayersGetMidpoint(gPlayers);
 		Vec2i screenCenter = Vec2iNew(
 			w / 2,
 			device->cachedConfig.ResolutionHeight / 2);
@@ -752,7 +716,8 @@ int gameloop(void)
 					int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 					int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 					Vec2i screen = Vec2iAdd(
-						GetPlayersMidpoint(), Vec2iNew(-w / 2, -h / 2));
+						PlayersGetMidpoint(gPlayers),
+						Vec2iNew(-w / 2, -h / 2));
 					for (i = 0; i < gOptions.numPlayers; i++)
 					{
 						TActor *p = gPlayers[i];

@@ -395,26 +395,26 @@ void AutomapDraw(int flags)
 
 void AutomapDrawRegion(
 	Tile map[YMAX][XMAX],
-	Vec2i pos, Vec2i size,
-	TActor *player,
+	Vec2i pos, Vec2i size, Vec2i mapCenter,
 	int scale, int flags)
 {
-	Vec2i playerPos;
 	Vec2i centerOn;
 	BlitClipping oldClip = gGraphicsDevice.clipping;
-	if (!player)
-	{
-		return;
-	}
+	int i;
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,
 		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
 	pos = Vec2iAdd(pos, Vec2iScaleDiv(size, 2));
-	playerPos = Vec2iNew(
-		player->tileItem.x / TILE_WIDTH, player->tileItem.y / TILE_HEIGHT);
-	DrawMap(map, pos, playerPos, size, scale, flags);
-	centerOn = Vec2iAdd(pos, Vec2iScale(playerPos, -scale));
-	DisplayPlayer(player, centerOn, scale);
+	DrawMap(map, pos, mapCenter, size, scale, flags);
+	centerOn = Vec2iAdd(pos, Vec2iScale(mapCenter, -scale));
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (IsPlayerAlive(i))
+		{
+			TActor *player = gPlayers[i];
+			DisplayPlayer(player, centerOn, scale);
+		}
+	}
 	DrawObjectivesAndKeys(gMap, centerOn, scale, flags);
 	DisplayExit(centerOn, scale, flags);
 	GraphicsSetBlitClip(

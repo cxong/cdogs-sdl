@@ -235,13 +235,12 @@ static void DrawHealth(
 #define HUDFLAGS_PLACE_BOTTOM	0x02
 #define HUDFLAGS_HALF_SCREEN	0x04
 #define HUDFLAGS_QUARTER_SCREEN	0x08
-#define HUDFLAGS_SHARE_SCREEN	0x10	// TODO: use share screen
+#define HUDFLAGS_SHARE_SCREEN	0x10
 
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
 static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 {
-	Vec2i automapSize = Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE);
 	Vec2i pos = Vec2iZero();
 	int w = device->cachedConfig.ResolutionWidth;
 	int h = device->cachedConfig.ResolutionHeight;
@@ -267,7 +266,7 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 		else
 		{
 			// player 1
-			pos.x = w / 2 - automapSize.x - AUTOMAP_PADDING;
+			pos.x = w / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING;
 		}
 	}
 	else if (flags & HUDFLAGS_QUARTER_SCREEN)
@@ -281,24 +280,19 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 		else
 		{
 			// player 1 or 3
-			pos.x = w / 2 - automapSize.x - AUTOMAP_PADDING;
+			pos.x = w / 2 - AUTOMAP_SIZE - AUTOMAP_PADDING;
 		}
 
 		if (flags & HUDFLAGS_PLACE_BOTTOM)
 		{
 			// player 3 or 4
-			pos.y = h - automapSize.y - AUTOMAP_PADDING;
+			pos.y = h - AUTOMAP_SIZE - AUTOMAP_PADDING;
 		}
 		else
 		{
 			// player 1 or 2
 			pos.y = AUTOMAP_PADDING;
 		}
-	}
-	else if (flags & HUDFLAGS_SHARE_SCREEN)
-	{
-		// share screen
-		pos = Vec2iNew(w / 2 - automapSize.x / 2, AUTOMAP_PADDING);
 	}
 	else
 	{
@@ -311,13 +305,13 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 		else
 		{
 			// player 1 or 3
-			pos.x = w - automapSize.x - AUTOMAP_PADDING;
+			pos.x = w - AUTOMAP_SIZE - AUTOMAP_PADDING;
 		}
 
 		if (flags & HUDFLAGS_PLACE_BOTTOM)
 		{
 			// player 3 or 4
-			pos.y = h - automapSize.y - AUTOMAP_PADDING;
+			pos.y = h - AUTOMAP_SIZE - AUTOMAP_PADDING;
 		}
 		else
 		{
@@ -328,15 +322,36 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 
 	if (!Vec2iEqual(pos, Vec2iZero()))
 	{
+		Vec2i playerPos = Vec2iNew(
+			p->tileItem.x / TILE_WIDTH, p->tileItem.y / TILE_HEIGHT);
 		AutomapDrawRegion(
 			gMap,
 			pos,
-			automapSize,
-			p,
+			Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
+			playerPos,
 			scale,
 			AUTOMAP_FLAGS_MASK);
 	}
 }
+
+static void DrawSharedRadar(
+	GraphicsDevice *device, TActor *players[MAX_PLAYERS], int scale)
+{
+	int w = device->cachedConfig.ResolutionWidth;
+	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
+	Vec2i playerMidpoint = PlayersGetMidpoint(players);
+	playerMidpoint.x /= TILE_WIDTH;
+	playerMidpoint.y /= TILE_HEIGHT;
+	AutomapDrawRegion(
+		gMap,
+		pos,
+		Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
+		playerMidpoint,
+		scale,
+		AUTOMAP_FLAGS_MASK);
+}
+
+#define RADAR_SCALE 1
 
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
@@ -377,9 +392,9 @@ static void DrawPlayerStatus(
 		CDogsTextStringSpecial(s, textFlags, 5, 5 + 1 * CDogsTextHeight());
 	}
 
-	if (gConfig.Interface.ShowHUDMap)
+	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN))
 	{
-		DrawRadar(device, p, 1, flags);
+		DrawRadar(device, p, RADAR_SCALE, flags);
 	}
 }
 
@@ -430,6 +445,10 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		flags = 0;
 	}
+	else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER)
+	{
+		flags |= HUDFLAGS_SHARE_SCREEN;
+	}
 	else if (gOptions.numPlayers == 2)
 	{
 		flags |= HUDFLAGS_HALF_SCREEN;
@@ -456,6 +475,11 @@ void HUDDraw(HUD *hud, int isPaused)
 		}
 		DrawPlayerStatus(
 			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags);
+	}
+	// Only draw radar once if shared
+	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN))
+	{
+		DrawSharedRadar(hud->device, gPlayers, RADAR_SCALE);
 	}
 
 	if (numPlayersAlive == 0)

@@ -38,8 +38,7 @@
 void AutomapDraw(int flags);
 void AutomapDrawRegion(
 	Tile map[YMAX][XMAX],
-	Vec2i pos, Vec2i size,
-	TActor *player,
+	Vec2i pos, Vec2i size, Vec2i mapCenter,
 	int scale, int flags);
 
 #endif
