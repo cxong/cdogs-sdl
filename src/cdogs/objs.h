@@ -131,6 +131,36 @@ struct Object {
 };
 typedef struct Object TObject;
 
+typedef struct MobileObject TMobileObject;
+typedef enum
+{
+	BULLET_MG,
+	BULLET_SHOTGUN,
+	BULLET_FLAME,
+	BULLET_LASER,
+	BULLET_SNIPER,
+	BULLET_FRAG,
+	BULLET_GRENADE,
+	BULLET_RAPID,
+	BULLET_BROWN,
+	BULLET_PETRIFIER,
+	BULLET_PROXMINE,
+	BULLET_DYNAMITE,
+
+	BULLET_COUNT
+} BulletType;
+typedef int(*BulletUpdateFunc)(struct MobileObject *, int);
+typedef struct
+{
+	BulletUpdateFunc UpdateFunc;
+	TileItemDrawFunc DrawFunc;
+	int Speed;
+	int Range;
+	int Power;
+	int Size;
+	int Flags;
+} BulletClass;
+extern BulletClass gBulletClasses[BULLET_COUNT];
 
 struct MobileObject
 {
@@ -145,13 +175,14 @@ struct MobileObject
 	int flags;
 	int soundLock;
 	TTileItem tileItem;
-	int (*updateFunc)(struct MobileObject *, int);
+	BulletUpdateFunc updateFunc;
 	struct MobileObject *next;
 };
-typedef struct MobileObject TMobileObject;
 typedef int (*MobObjUpdateFunc)(struct MobileObject *, int);
 extern TMobileObject *gMobObjList;
 
+
+void BulletInitialize(void);
 
 int DamageSomething(
 	Vec2i hitVector,
@@ -172,30 +203,20 @@ void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
-void AddGrenade(int x, int y, int angle, int flags, int kind, int player);
-void AddBullet(
-	int x, int y, int angle, int speed, int range, int power,
-	int flags, int player);
-void AddRapidBullet(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player);
-void AddSniperBullet(int x, int y, int direction, int flags, int player);
-void AddBrownBullet(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player);
-void AddFlame(int x, int y, int angle, int flags, int player);
-void AddLaserBolt(int x, int y, int direction, int flags, int player);
+void AddGrenade(Vec2i pos, int angle, int flags, int kind, int player);
+void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player);
+void AddBulletDirectional(
+	Vec2i pos, direction_e dir, BulletType type, int flags, int player);
+void AddBulletBig(
+	Vec2i pos, int angle, BulletType type, int flags, int player);
 void AddGasCloud(
 	int x, int y, int angle, int speed, int range, int flags,
 	int special, int player);
-void AddPetrifierBullet(
-	int x, int y, int angle, int speed, int range,
-	int flags, int player);
 void AddHeatseeker(
 	int x, int y, int angle, int speed, int range,
 	int power, int flags, int player);
-void AddProximityMine(int x, int y, int flags, int player);
-void AddDynamite(int x, int y, int flags, int player);
+void AddBulletGround(
+	Vec2i pos, int angle, BulletType type, int flags, int player);
 void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif

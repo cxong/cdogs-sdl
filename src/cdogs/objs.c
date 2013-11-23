@@ -68,6 +68,7 @@
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
 
+BulletClass gBulletClasses[BULLET_COUNT];
 
 TMobileObject *gMobObjList = NULL;
 static TObject *objList = NULL;
@@ -563,8 +564,7 @@ static void Frag(int x, int y, int flags, int player)
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 16; i++)
 	{
-		AddBullet(
-			x, y, i * 16, SHOTGUN_SPEED, SHOTGUN_RANGE, 40, flags, player);
+		AddBullet(Vec2iNew(x, y), i * 16, BULLET_FRAG, flags, player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
@@ -1109,162 +1109,161 @@ void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
 	}
 }
 
-void AddGrenade(int x, int y, int angle, int flags, int kind, int player)
+
+void BulletInitialize(void)
+{
+	// Defaults
+	int i;
+	BulletClass *b;
+	for (i = 0; i < BULLET_COUNT; i++)
+	{
+		b = &gBulletClasses[i];
+		b->UpdateFunc = UpdateBullet;
+		b->Size = 0;
+		b->Flags = 0;
+	}
+
+	b = &gBulletClasses[BULLET_MG];
+	b->DrawFunc = DrawBullet;
+	b->Speed = 768;
+	b->Range = 60;
+	b->Power = 10;
+
+	b = &gBulletClasses[BULLET_SHOTGUN];
+	b->DrawFunc = DrawBullet;
+	b->Speed = 640;
+	b->Range = 50;
+	b->Power = 15;
+
+	b = &gBulletClasses[BULLET_FLAME];
+	b->UpdateFunc = UpdateFlame;
+	b->DrawFunc = DrawFlame;
+	b->Speed = 384;
+	b->Range = 30;
+	b->Power = 12;
+	b->Size = 5;
+
+	b = &gBulletClasses[BULLET_LASER];
+	b->DrawFunc = DrawLaserBolt;
+	b->Speed = 1024;
+	b->Range = 90;
+	b->Power = 20;
+	b->Size = 2;
+
+	b = &gBulletClasses[BULLET_SNIPER];
+	b->DrawFunc = DrawBrightBolt;
+	b->Speed = 1024;
+	b->Range = 90;
+	b->Power = 50;
+
+	b = &gBulletClasses[BULLET_FRAG];
+	b->DrawFunc = DrawBullet;
+	b->Speed = 640;
+	b->Range = 50;
+	b->Power = 40;
+
+	b = &gBulletClasses[BULLET_GRENADE];
+	b->UpdateFunc = UpdateGrenade;
+	b->DrawFunc = DrawGrenade;
+	b->Speed = 384;
+	b->Range = 100;
+	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_RAPID];
+	b->DrawFunc = DrawBrownBullet;
+	b->Speed = 1280;
+	b->Range = 25;
+	b->Power = 25;
+
+	b = &gBulletClasses[BULLET_BROWN];
+	b->UpdateFunc = UpdateBrownBullet;
+	b->DrawFunc = DrawBrownBullet;
+	b->Speed = 768;
+	b->Range = 45;
+	b->Power = 15;
+
+	b = &gBulletClasses[BULLET_PETRIFIER];
+	b->UpdateFunc = UpdatePetrifierBullet;
+	b->DrawFunc = DrawPetrifierBullet;
+	b->Speed = 768;
+	b->Range = 45;
+	b->Power = 0;
+	b->Size = 5;
+
+	b = &gBulletClasses[BULLET_PROXMINE];
+	b->UpdateFunc = UpdateDroppedMine;
+	b->DrawFunc = DrawMine;
+	b->Speed = 0;
+	b->Range = 140;
+	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_DYNAMITE];
+	b->UpdateFunc = UpdateTriggeredMine;
+	b->DrawFunc = DrawDynamite;
+	b->Speed = 0;
+	b->Range = 210;
+	b->Power = 0;
+}
+
+
+static void SetBulletProps(
+	TMobileObject *obj, Vec2i pos, BulletType type, int flags)
+{
+	BulletClass *b = &gBulletClasses[type];
+	obj->updateFunc = b->UpdateFunc;
+	obj->tileItem.drawFunc = b->DrawFunc;
+	obj->kind = MOBOBJ_BULLET;
+	obj->z = BULLET_Z;
+	obj->flags = flags;
+	obj->x = pos.x;
+	obj->y = pos.y;
+	obj->dx = (b->Speed * obj->dx) / 256;
+	obj->dy = (b->Speed * obj->dy) / 256;
+	obj->range = b->Range;
+	obj->power = b->Power;
+	obj->tileItem.w = b->Size;
+	obj->tileItem.h = b->Size;
+}
+
+void AddGrenade(Vec2i pos, int angle, int flags, int kind, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	obj->dz = 24;
+	SetBulletProps(obj, pos, BULLET_GRENADE, flags);
+	obj->kind = kind;
+	obj->z = 0;
 	if (kind == MOBOBJ_MOLOTOV)
 	{
 		obj->updateFunc = UpdateMolotov;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
-	} else {
-		obj->updateFunc = UpdateGrenade;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGrenade;
 	}
-	obj->kind = kind;
-	obj->x = x;
-	obj->y = y;
-	obj->z = 0;
+}
+
+void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player)
+{
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (GRENADE_SPEED * obj->dx) / 256;
-	obj->dy = (GRENADE_SPEED * obj->dy) / 256;
-	obj->dz = 24;
-	obj->range = 100;
-	obj->flags = flags;
+	SetBulletProps(obj, pos, type, flags);
 }
 
-void AddBullet(
-	int x, int y, int angle, int speed, int range, int power,
-	int flags, int player)
+void AddBulletDirectional(
+	Vec2i pos, direction_e dir, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
+	GetVectorsForAngle(dir2angle[dir], &obj->dx, &obj->dy);
+	obj->state = dir;
+	SetBulletProps(obj, pos, type, flags);
+}
+
+void AddBulletBig(
+	Vec2i pos, int angle, BulletType type, int flags, int player)
+{
+	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->x = x;
-	obj->y = y;
-	obj->range = range;
-	obj->power = power;
-	obj->flags = flags;
-}
-
-void AddRapidBullet(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->x = x;
-	obj->y = y;
-	obj->range = range;
-	obj->power = power;
-	obj->flags = flags;
-}
-
-void AddSniperBullet(int x, int y, int direction, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc =  (TileItemDrawFunc)DrawBrightBolt;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(dir2angle[direction], &obj->dx, &obj->dy);
-	obj->dx = (SNIPER_SPEED * obj->dx) / 256;
-	obj->dy = (SNIPER_SPEED * obj->dy) / 256;
-	obj->x = x;
-	obj->y = y;
-	obj->state = direction;
-	obj->range = SNIPER_RANGE;
-	obj->power = SNIPER_POWER;
-	obj->flags = flags;
-}
-
-void AddBrownBullet(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateBrownBullet;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBrownBullet;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->x = x;
-	obj->y = y;
-	obj->range = range;
-	obj->power = power;
-	obj->flags = flags;
-}
-
-void AddFlame(int x, int y, int angle, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateFlame;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
-	obj->tileItem.w = 5;
-	obj->tileItem.h = 5;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->x = x + 4 * obj->dx;
-	obj->y = y + 7 * obj->dy;
-	obj->dx = (FLAME_SPEED * obj->dx) / 256;
-	obj->dy = (FLAME_SPEED * obj->dy) / 256;
-	obj->range = FLAME_RANGE;
-	obj->power = FLAME_POWER;
-	obj->flags = flags;
-}
-
-void AddLaserBolt(int x, int y, int direction, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawLaserBolt;
-	obj->tileItem.w = 2;
-	obj->tileItem.h = 2;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(dir2angle[direction], &obj->dx, &obj->dy);
-	obj->dx = (LASER_SPEED * obj->dx) / 256;
-	obj->dy = (LASER_SPEED * obj->dy) / 256;
-	obj->x = x;
-	obj->y = y;
-	obj->range = LASER_RANGE;
-	obj->state = direction;
-	obj->flags = flags;
-	obj->power = LASER_POWER;
-}
-
-void AddPetrifierBullet(
-	int x, int y, int angle, int speed, int range,
-	int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdatePetrifierBullet;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawPetrifierBullet;
-	obj->tileItem.w = 5;
-	obj->tileItem.h = 5;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->x = x + 4 * obj->dx;
-	obj->y = y + 7 * obj->dy;
-	obj->range = range;
-	obj->flags = flags;
-	obj->power = 0;
+	SetBulletProps(obj, pos, type, flags);
+	obj->x = obj->x + 4 * obj->dx;
+	obj->y = obj->y + 7 * obj->dy;
 }
 
 void AddHeatseeker(
@@ -1289,29 +1288,13 @@ void AddHeatseeker(
 	obj->power = power;
 }
 
-void AddProximityMine(int x, int y, int flags, int player)
+void AddBulletGround(
+	Vec2i pos, int angle, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateDroppedMine;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMine;
-	obj->kind = MOBOBJ_BULLET;
-	obj->x = x;
-	obj->y = y;
-	obj->range = 140;
-	obj->flags = flags;
-	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
-}
-
-void AddDynamite(int x, int y, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateTriggeredMine;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawDynamite;
-	obj->kind = MOBOBJ_BULLET;
-	obj->x = x;
-	obj->y = y;
-	obj->range = 210;
-	obj->flags = flags;
+	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	SetBulletProps(obj, pos, type, flags);
+	obj->z = 0;
 	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
 }
 
