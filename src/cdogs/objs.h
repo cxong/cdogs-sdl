@@ -146,6 +146,7 @@ typedef enum
 	BULLET_GASBOMB,
 	BULLET_CONFUSEBOMB,
 	BULLET_RAPID,
+	BULLET_HEATSEEKER,
 	BULLET_BROWN,
 	BULLET_PETRIFIER,
 	BULLET_PROXMINE,
@@ -217,9 +218,6 @@ void AddBulletBig(
 void AddGasCloud(
 	int x, int y, int angle, int speed, int range, int flags,
 	int special, int player);
-void AddHeatseeker(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player);
 void AddBulletGround(
 	Vec2i pos, int angle, BulletType type, int flags, int player);
 void KillAllMobileObjects(TMobileObject **mobObjList);

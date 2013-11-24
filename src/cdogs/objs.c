@@ -49,9 +49,11 @@
 #include "objs.h"
 
 #include <assert.h>
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 
+#include "ai.h"
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
@@ -940,7 +942,38 @@ int UpdatePetrifierBullet(TMobileObject *obj, int ticks)
 
 int UpdateSeeker(TMobileObject * obj, int ticks)
 {
-	return InternalUpdateBullet(obj, 0, ticks);
+	TActor *target;
+	if (!InternalUpdateBullet(obj, 0, ticks))
+	{
+		return 0;
+	}
+	// Find the closest target to this bullet and steer towards it
+	// Compensate for the bullet's velocity
+	target = GetClosestEnemy(
+		Vec2iNew(obj->x, obj->y), obj->flags, obj->player >= 0);
+	if (target)
+	{
+		double magnitude;
+		int seekSpeed = 50;
+		Vec2i impulse = Vec2iNew(
+			target->x - obj->x - obj->dx * 2,
+			target->y - obj->y - obj->dy * 2);
+		// Don't seek if the coordinates are too big
+		if (abs(impulse.x) < 10000 && abs(impulse.y) < 10000 &&
+			(impulse.x != 0 || impulse.y != 0))
+		{
+			magnitude = sqrt(impulse.x*impulse.x + impulse.y*impulse.y);
+			impulse.x = (int)floor(impulse.x * seekSpeed / magnitude);
+			impulse.y = (int)floor(impulse.y * seekSpeed / magnitude);
+		}
+		else
+		{
+			impulse = Vec2iZero();
+		}
+		obj->dx += impulse.x;
+		obj->dy += impulse.y;
+	}
+	return 1;
 }
 
 int UpdateBrownBullet(TMobileObject *obj, int ticks)
@@ -1211,6 +1244,14 @@ void BulletInitialize(void)
 	b->Range = 25;
 	b->Power = 6;
 
+	b = &gBulletClasses[BULLET_HEATSEEKER];
+	b->UpdateFunc = UpdateSeeker;
+	b->DrawFunc = DrawSeeker;
+	b->Speed = 512;
+	b->Range = 60;
+	b->Power = 20;
+	b->Size = 3;
+
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;
 	b->DrawFunc = DrawBrownBullet;
@@ -1318,28 +1359,6 @@ void AddBulletBig(
 	SetBulletProps(obj, pos, type, flags);
 	obj->x = obj->x + 4 * obj->dx;
 	obj->y = obj->y + 7 * obj->dy;
-}
-
-void AddHeatseeker(
-	int x, int y, int angle, int speed, int range,
-	int power, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->updateFunc = UpdateSeeker;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSeeker;
-	obj->tileItem.w = 3;
-	obj->tileItem.h = 3;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->dz = speed;
-	obj->x = x;
-	obj->y = y;
-	obj->range = range;
-	obj->flags = flags;
-	obj->power = power;
 }
 
 void AddBulletGround(

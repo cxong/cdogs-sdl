@@ -109,29 +109,49 @@ static int IsFacingPlayer(TActor *actor, direction_e d)
 
 #define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
-/*
-TActor *TrackOtherAICharacter( TActor *actor )
+TActor *GetClosestEnemy(Vec2i from, int flags, int isPlayer)
 {
-  TActor *a;
-
-  a = ActorList();
-  while (a)
-  {
-    if (a != actor && a->health > 0 &&
-        Distance( a, actor) < 100 << 8)
-    {
-      if ((a->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0 &&
-          (actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) == 0)
-        return a;
-      if ((a->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) == 0 &&
-          (actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
-        return a;
-    }
-    a = a->next;
-  }
-  return NULL;
+	// Search all the actors and find the closest one that is an enemy
+	TActor *a;
+	TActor *closestEnemy = NULL;
+	int minDistance = -1;
+	for (a = ActorList(); a; a = a->next)
+	{
+		int isEnemy = 0;
+		int distance;
+		// Never target invulnerables or victims
+		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_VICTIM))
+		{
+			continue;
+		}
+		if (a->pData || (a->flags & FLAGS_GOOD_GUY))
+		{
+			// target is good guy / player, check if we are bad
+			if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+			{
+				isEnemy = 1;
+			}
+		}
+		else
+		{
+			// target is bad guy, check if we are good
+			if (isPlayer || (flags & FLAGS_GOOD_GUY))
+			{
+				isEnemy = 1;
+			}
+		}
+		if (isEnemy)
+		{
+			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->x, a->y);
+			if (!closestEnemy || distance < minDistance)
+			{
+				minDistance = distance;
+				closestEnemy = a;
+			}
+		}
+	}
+	return closestEnemy;
 }
-*/
 
 static TActor *GetClosestPlayer(Vec2i pos)
 {
@@ -218,17 +238,16 @@ static int Hunt(TActor * actor)
 		targetPos = GetClosestPlayerPos(Vec2iNew(actor->x, actor->y));
 	}
 
-/*
-  if ((actor->flags & FLAGS_VISIBLE) != 0)
-  {
-    a = TrackOtherAICharacter( actor);
-    if (a)
-    {
-      x = a->x;
-      y = a->y;
-    }
-  }
-*/
+	if (actor->flags & FLAGS_VISIBLE)
+	{
+		TActor *a = GetClosestEnemy(
+			Vec2iNew(actor->x, actor->y), actor->flags, !!actor->pData);
+		if (a)
+		{
+			targetPos.x = a->x;
+			targetPos.y = a->y;
+		}
+	}
 
 	dx = abs(targetPos.x - actor->x);
 	dy = abs(targetPos.y - actor->y);

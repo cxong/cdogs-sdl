@@ -107,6 +107,15 @@ static void RemoveItemFromTile(TTileItem * t, Tile * tile)
 	}
 }
 
+Tile *MapGetTileOfItem(TTileItem *t)
+{
+	Tile *tile;
+	int x = t->x / TILE_WIDTH;
+	int y = t->y / TILE_HEIGHT;
+	tile = &gMap[y][x];
+	return tile;
+}
+
 void MoveTileItem(TTileItem * t, int x, int y)
 {
 	Tile *tile;
@@ -128,11 +137,7 @@ void MoveTileItem(TTileItem * t, int x, int y)
 
 void RemoveTileItem(TTileItem * t)
 {
-	Tile *tile;
-	int x = t->x / TILE_WIDTH;
-	int y = t->y / TILE_HEIGHT;
-
-	tile = &Map(x, y);
+	Tile *tile = MapGetTileOfItem(t);
 	RemoveItemFromTile(t, tile);
 }
 

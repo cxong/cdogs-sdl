@@ -106,6 +106,8 @@ void WeaponInitialize(void)
 	{
 		g = &gGunDescriptions[i];
 		g->pic = GUNPIC_BLASTER;
+		g->ReloadLead = -1;
+		g->ReloadSound = -1;
 		g->SoundLockLength = 0;
 		g->Recoil = 0;
 		g->Spread.Count = 1;
@@ -117,18 +119,14 @@ void WeaponInitialize(void)
 	strcpy(g->name, "Knife");
 	g->Cost = 0;
 	g->Lock = 0;
-	g->ReloadLead = -1;
 	g->Sound = -1;
-	g->ReloadSound = -1;
 	g->SoundLockLength = 10;
 
 	g = &gGunDescriptions[GUN_MG];
 	strcpy(g->name, "Machine gun");
 	g->Cost = 1;
 	g->Lock = 6;
-	g->ReloadLead = -1;
 	g->Sound = SND_MACHINEGUN;
-	g->ReloadSound = -1;
 	g->Recoil = 7;
 
 	g = &gGunDescriptions[GUN_GRENADE];
@@ -136,17 +134,13 @@ void WeaponInitialize(void)
 	strcpy(g->name, "Grenades");
 	g->Cost = 20;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_LAUNCH;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_FLAMER];
 	strcpy(g->name, "Flamer");
 	g->Cost = 1;
 	g->Lock = 6;
-	g->ReloadLead = -1;
 	g->Sound = SND_FLAMER;
-	g->ReloadSound = -1;
 	g->SoundLockLength = 36;
 
 	g = &gGunDescriptions[GUN_SHOTGUN];
@@ -163,27 +157,21 @@ void WeaponInitialize(void)
 	strcpy(g->name, "Powergun");
 	g->Cost = 2;
 	g->Lock = 20;
-	g->ReloadLead = -1;
 	g->Sound = SND_POWERGUN;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_FRAGGRENADE];
 	g->pic = -1;
 	strcpy(g->name, "Shrapnel bombs");
 	g->Cost = 20;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_LAUNCH;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_MOLOTOV];
 	g->pic = -1;
 	strcpy(g->name, "Molotovs");
 	g->Cost = 20;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_LAUNCH;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_SNIPER];
 	strcpy(g->name, "Sniper rifle");
@@ -216,9 +204,7 @@ void WeaponInitialize(void)
 	strcpy(g->name, "Chemo bombs");
 	g->Cost = 7;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_LAUNCH;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_PETRIFY];
 	strcpy(g->name, "Petrify gun");
@@ -232,36 +218,34 @@ void WeaponInitialize(void)
 	strcpy(g->name, "Browny gun");
 	g->Cost = 5;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_POWERGUN;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_CONFUSEBOMB];
 	g->pic = -1;
 	strcpy(g->name, "Confusion bombs");
 	g->Cost = 10;
 	g->Lock = 30;
-	g->ReloadLead = -1;
 	g->Sound = SND_LAUNCH;
-	g->ReloadSound = -1;
 
 	g = &gGunDescriptions[GUN_GASGUN];
 	strcpy(g->name, "Chemo gun");
 	g->Cost = 1;
 	g->Lock = 6;
-	g->ReloadLead = -1;
 	g->Sound = SND_FLAMER;
-	g->ReloadSound = -1;
 	g->SoundLockLength = 36;
 
 	g = &gGunDescriptions[GUN_PULSERIFLE];
 	strcpy(g->name, "Pulse Rifle");
 	g->Cost = 1;
 	g->Lock = 4;
-	g->ReloadLead = -1;
 	g->Sound = SND_MINIGUN;
-	g->ReloadSound = -1;
 	g->Recoil = 15;
+
+	g = &gGunDescriptions[GUN_HEATSEEKER];
+	strcpy(g->name, "Heatseeker");
+	g->Cost = 7;
+	g->Lock = 30;
+	g->Sound = SND_LAUNCH;
 }
 
 Weapon WeaponCreate(gun_e gun)
@@ -358,105 +342,6 @@ int WeaponCanFire(Weapon *w)
 	return w->lock <= 0;
 }
 
-void MachineGun(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBullet(muzzlePosition, angle, BULLET_MG, flags, player);
-}
-
-void LaunchGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGrenade(muzzlePosition, angle, BULLET_GRENADE, flags, player);
-}
-
-void Flamer(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBulletBig(muzzlePosition, angle, BULLET_FLAME, flags, player);
-}
-
-void ShotGun(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBullet(muzzlePosition, angle, BULLET_SHOTGUN, flags, player);
-}
-
-void PowerGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
-{
-	AddBulletDirectional(muzzlePosition, d, BULLET_LASER, flags, player);
-}
-
-void LaunchFragGrenade(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGrenade(muzzlePosition, angle, BULLET_SHRAPNELBOMB, flags, player);
-}
-
-void LaunchMolotov(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGrenade(muzzlePosition, angle, BULLET_MOLOTOV, flags, player);
-}
-
-void SniperGun(Vec2i muzzlePosition, direction_e d, int flags, int player)
-{
-	AddBulletDirectional(muzzlePosition, d, BULLET_SNIPER, flags, player);
-}
-
-void LaunchGasBomb(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGrenade(muzzlePosition, angle, BULLET_GASBOMB, flags, player);
-}
-
-void Petrifier(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBulletBig(muzzlePosition, angle, BULLET_PETRIFIER, flags, player);
-}
-
-void BrownGun(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBullet(muzzlePosition, angle, BULLET_BROWN, flags, player);
-}
-
-void ConfuseBomb(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGrenade(muzzlePosition, angle, BULLET_CONFUSEBOMB, flags, player);
-}
-
-void GasGun(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddGasCloud(
-		muzzlePosition.x, muzzlePosition.y, angle, 384, 35,
-		flags, SPECIAL_POISON, player);
-}
-
-void Mine(Vec2i muzzlePosition, int flags, int player)
-{
-	AddBulletGround(muzzlePosition, 0, BULLET_PROXMINE, flags, player);
-}
-
-void Dynamite(Vec2i muzzlePosition, int flags, int player)
-{
-	AddBulletGround(muzzlePosition, 0, BULLET_DYNAMITE, flags, player);
-}
-
-/*
-void Heatseeker(TActor * actor)
-{
-	int angle;
-	int d = actor->direction;
-	int dx, dy;
-
-	angle = dir2angle[d];
-	GetMuzzle(actor, &dx, &dy);
-	AddHeatseeker(actor->x + 256 * dx, actor->y + 256 * dy, angle,
-		      512, 60, 20, actor->flags);
-	actor->gunLock = 30;
-	Score(actor->flags, -7);
-	SoundPlayAt(&gSoundDevice, SND_LAUNCH, actor->tileItem.x, actor->tileItem.y);
-}
-*/
-
-void PulseRifle(Vec2i muzzlePosition, int angle, int flags, int player)
-{
-	AddBullet(muzzlePosition, angle, BULLET_RAPID, flags, player);
-}
-
 void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 {
 	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
@@ -508,67 +393,85 @@ void WeaponFire(
 			break;
 
 		case GUN_MG:
-			MachineGun(muzzlePosition, finalAngle, flags, player);
+			AddBullet(muzzlePosition, finalAngle, BULLET_MG, flags, player);
 			break;
 
 		case GUN_GRENADE:
-			LaunchGrenade(muzzlePosition, finalAngle, flags, player);
+			AddGrenade(
+				muzzlePosition, finalAngle, BULLET_GRENADE, flags, player);
 			break;
 
 		case GUN_FLAMER:
-			Flamer(muzzlePosition, finalAngle, flags, player);
+			AddBulletBig(
+				muzzlePosition, finalAngle, BULLET_FLAME, flags, player);
 			break;
 
 		case GUN_SHOTGUN:
-			ShotGun(muzzlePosition, finalAngle, flags, player);
+			AddBullet(
+				muzzlePosition, finalAngle, BULLET_SHOTGUN, flags, player);
 			break;
 
 		case GUN_POWERGUN:
-			PowerGun(muzzlePosition, d, flags, player);
+			AddBulletDirectional(
+				muzzlePosition, d, BULLET_LASER, flags, player);
 			break;
 
 		case GUN_FRAGGRENADE:
-			LaunchFragGrenade(muzzlePosition, finalAngle, flags, player);
+			AddGrenade(
+				muzzlePosition, finalAngle,
+				BULLET_SHRAPNELBOMB, flags, player);
 			break;
 
 		case GUN_MOLOTOV:
-			LaunchMolotov(muzzlePosition, finalAngle, flags, player);
+			AddGrenade(
+				muzzlePosition, finalAngle, BULLET_MOLOTOV, flags, player);
 			break;
 
 		case GUN_SNIPER:
-			SniperGun(muzzlePosition, d, flags, player);
+			AddBulletDirectional(
+				muzzlePosition, d, BULLET_SNIPER, flags, player);
 			break;
 
 		case GUN_GASBOMB:
-			LaunchGasBomb(muzzlePosition, finalAngle, flags, player);
+			AddGrenade(
+				muzzlePosition, finalAngle, BULLET_GASBOMB, flags, player);
 			break;
 
 		case GUN_PETRIFY:
-			Petrifier(muzzlePosition, finalAngle, flags, player);
+			AddBulletBig(
+				muzzlePosition, finalAngle, BULLET_PETRIFIER, flags, player);
 			break;
 
 		case GUN_BROWN:
-			BrownGun(muzzlePosition, finalAngle, flags, player);
+			AddBullet(muzzlePosition, finalAngle, BULLET_BROWN, flags, player);
 			break;
 
 		case GUN_CONFUSEBOMB:
-			ConfuseBomb(muzzlePosition, finalAngle, flags, player);
+			AddGrenade(
+				muzzlePosition, finalAngle, BULLET_CONFUSEBOMB, flags, player);
 			break;
 
 		case GUN_GASGUN:
-			GasGun(muzzlePosition, finalAngle, flags, player);
+			AddGasCloud(
+				muzzlePosition.x, muzzlePosition.y, finalAngle, 384, 35,
+				flags, SPECIAL_POISON, player);
 			break;
 
 		case GUN_MINE:
-			Mine(muzzlePosition, flags, player);
+			AddBulletGround(muzzlePosition, 0, BULLET_PROXMINE, flags, player);
 			break;
 
 		case GUN_DYNAMITE:
-			Dynamite(muzzlePosition, flags, player);
+			AddBulletGround(muzzlePosition, 0, BULLET_DYNAMITE, flags, player);
 			break;
 
 		case GUN_PULSERIFLE:
-			PulseRifle(muzzlePosition, finalAngle, flags, player);
+			AddBullet(muzzlePosition, finalAngle, BULLET_RAPID, flags, player);
+			break;
+
+		case GUN_HEATSEEKER:
+			AddBullet(
+				muzzlePosition, finalAngle, BULLET_HEATSEEKER, flags, player);
 			break;
 
 		default:

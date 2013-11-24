@@ -136,5 +136,7 @@ void ChangeFloor(int x, int y, int normal, int shadow);
 void MapMarkAsVisited(Vec2i pos);
 void MapMarkAllAsVisited(void);
 int ExploredPercentage(void);
+TTileItem *MapGetClosestEnemy(
+	TTileItem *from, Vec2i offset, int flags, int player, int maxRadius);
 
 #endif

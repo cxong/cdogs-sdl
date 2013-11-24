@@ -686,14 +686,16 @@ int gameloop(void)
 				isPaused = 1;
 			}
 		}
-		// Cheat: pulse rifle activation
+		// Cheat: special weapon activation
 		if (IsPlayerAlive(0))
 		{
-			const char *code = "sgodc";
+			const char *pulserifle = "sgodc";
+			const char *heatseeker = "miaon";
 			int isMatch = 1;
-			for (i = 0; i < (int)strlen(code); i++)
+			for (i = 0; i < (int)strlen(pulserifle); i++)
 			{
-				if (gInputDevices.keyboard.pressedKeysBuffer[i] != code[i])
+				if (gInputDevices.keyboard.pressedKeysBuffer[i] !=
+					pulserifle[i])
 				{
 					isMatch = 0;
 					break;
@@ -702,6 +704,26 @@ int gameloop(void)
 			if (isMatch)
 			{
 				gPlayers[0]->weapon = WeaponCreate(GUN_PULSERIFLE);
+				SoundPlay(&gSoundDevice, SND_HAHAHA);
+				// Reset to prevent last key from being processed as
+				// normal player commands
+				KeyInit(&gInputDevices.keyboard);
+				cmdAll = 0;
+				memset(cmds, 0, sizeof cmds);
+			}
+			isMatch = 1;
+			for (i = 0; i < (int)strlen(heatseeker); i++)
+			{
+				if (gInputDevices.keyboard.pressedKeysBuffer[i] !=
+					heatseeker[i])
+				{
+					isMatch = 0;
+					break;
+				}
+			}
+			if (isMatch)
+			{
+				gPlayers[0]->weapon = WeaponCreate(GUN_HEATSEEKER);
 				SoundPlay(&gSoundDevice, SND_HAHAHA);
 				// Reset to prevent last key from being processed as
 				// normal player commands

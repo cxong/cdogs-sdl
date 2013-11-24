@@ -479,7 +479,7 @@ static void ShowWeaponStatus(int x, int y, int weapon, int xc)
 	DisplayFlag(
 		x,
 		y,
-		gGunDescriptions[weapon].gunName,
+		gGunDescriptions[weapon].name,
 		(currentMission->weaponSelection & (1 << weapon)) != 0,
 		xc == weapon);
 }
