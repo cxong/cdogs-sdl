@@ -642,6 +642,7 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 }
 
 
+// TODO: move these words into an external file
 static const char *finalWords1P[] = {
 	"Ha, next time I'll use my good hand",
 	"Over already? I was just warming up...",
@@ -666,10 +667,16 @@ static const char *finalWords2P[] = {
 
 #define CONGRATULATIONS "Congratulations, you have completed "
 
+// TODO: MenuDisplayPlayer is not a suitable function to use
 void Victory(GraphicsDevice *graphics)
 {
 	int x, i;
 	const char *s = NULL;
+	int w = graphics->cachedConfig.ResolutionWidth;
+	int h = graphics->cachedConfig.ResolutionHeight;
+	Vec2i size;
+	MenuDisplayPlayerData dpData;
+	dpData.currentMenu = NULL;
 
 	GraphicsBlitBkg(graphics);
 
@@ -684,26 +691,49 @@ void Victory(GraphicsDevice *graphics)
 			i = sizeof(finalWords1P) / sizeof(char *);
 			i = rand() % i;
 			s = finalWords1P[i];
-			DisplayPlayer(
-				125,
-				gPlayerDatas[0].name,
-				&gCampaign.Setting.characters.players[0],
-				0);
+			size = Vec2iNew(w / 2, h / 2);
+			dpData.c = &gCampaign.Setting.characters.players[0];
+			dpData.pData = &gPlayerDatas[0];
+			MenuDisplayPlayer(graphics, Vec2iNew(w / 2, 0), size, &dpData);
 			break;
 		case 2:
 			i = sizeof(finalWords2P) / sizeof(char *);
 			i = rand() % i;
 			s = finalWords2P[i];
-			DisplayPlayer(
-				50,
-				gPlayerDatas[0].name,
-				&gCampaign.Setting.characters.players[0],
-				0);
-			DisplayPlayer(
-				200,
-				gPlayerDatas[1].name,
-				&gCampaign.Setting.characters.players[1],
-				0);
+			// side by side
+			size = Vec2iNew(w / 4, h / 2);
+			dpData.c = &gCampaign.Setting.characters.players[0];
+			dpData.pData = &gPlayerDatas[0];
+			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, 0), size, &dpData);
+			dpData.c = &gCampaign.Setting.characters.players[1];
+			dpData.pData = &gPlayerDatas[1];
+			MenuDisplayPlayer(
+				graphics, Vec2iNew(w / 4 + w / 2, 0), size, &dpData);
+			break;
+		case 3:	// fallthrough
+		case 4:
+			i = sizeof(finalWords2P) / sizeof(char *);
+			i = rand() % i;
+			s = finalWords2P[i];
+			// 2x2
+			size = Vec2iNew(w / 4, h / 4);
+			dpData.c = &gCampaign.Setting.characters.players[0];
+			dpData.pData = &gPlayerDatas[0];
+			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, 0), size, &dpData);
+			dpData.c = &gCampaign.Setting.characters.players[1];
+			dpData.pData = &gPlayerDatas[1];
+			MenuDisplayPlayer(
+				graphics, Vec2iNew(w / 4 + w / 2, 0), size, &dpData);
+			dpData.c = &gCampaign.Setting.characters.players[2];
+			dpData.pData = &gPlayerDatas[2];
+			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, h / 4), size, &dpData);
+			if (gOptions.numPlayers == 4)
+			{
+				dpData.c = &gCampaign.Setting.characters.players[3];
+				dpData.pData = &gPlayerDatas[3];
+				MenuDisplayPlayer(
+					graphics, Vec2iNew(w / 4 + w / 2, h / 4), size, &dpData);
+			}
 			break;
 		default:
 			assert(0 && "not implemented");
