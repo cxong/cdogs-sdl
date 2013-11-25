@@ -46,7 +46,7 @@ void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 
 	UNUSED(g);
 
-	if (strcmp((*d->currentMenu)->name, "Name") == 0)
+	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
 		char s[22];
 		sprintf(s, "%c%s%c", '\020', d->pData->name, '\021');

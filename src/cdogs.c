@@ -270,60 +270,43 @@ void MissionBriefing(GraphicsDevice *device)
 	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
-void Summary(int x, struct PlayerData *data, int character)
+// Display compact player summary, with player on left half and score summaries
+// on right half
+void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 {
 	char s[50];
-	int y = gGraphicsDevice.cachedConfig.ResolutionHeight / 3;
+	MenuDisplayPlayerData dpData;
+	int totalTextHeight = CDogsTextHeight() * 7;
+	// display text on right half
+	Vec2i textPos = Vec2iNew(
+		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
 
-	if (strlen(gAutosave.LastMission.Password) > 0)
-	{
-		char s1[512];
-		sprintf(s1, "Last password: %s", gAutosave.LastMission.Password);
-		CDogsTextStringSpecial(
-			s1,
-			TEXT_BOTTOM | TEXT_XCENTER,
-			0,
-			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
-	}
-
-	if (data->survived) {
-		if (data->hp > 150)
-			data->totalScore += (data->hp - 150) * 10;
-		else if (data->hp <= 0)
-			data->totalScore -= 500;
-
-		if (data->friendlies > 5
-		    && data->friendlies > data->kills / 2)
-			data->totalScore -= 100 * data->friendlies;
-		else if (data->weaponCount == 1 &&
-			 data->weapons[0] == GUN_KNIFE &&
-			 data->friendlies == 0 && data->kills > 5)
-			data->totalScore += 50 * data->kills;
-		else if (data->kills == 0 && data->friendlies == 0)
-			data->totalScore += 500;
-	}
+	dpData.c = &gCampaign.Setting.characters.players[character];
+	dpData.currentMenu = NULL;
+	dpData.pData = data;
+	MenuDisplayPlayer(
+		&gGraphicsDevice, textPos, Vec2iNew(size.x / 2, size.y), &dpData);
 
 	if (data->survived)
-		CDogsTextStringAt(x, y, "Completed mission");
+	{
+		DrawTextString("Completed mission", &gGraphicsDevice, textPos);
+	}
 	else
-		CDogsTextStringWithTableAt(x, y, "Failed mission", &tableFlamed);
+	{
+		DrawTextStringMasked(
+			"Failed mission", &gGraphicsDevice, textPos, colorRed);
+	}
 
-	y += 2 * CDogsTextHeight();
-	DisplayPlayer(
-		x,
-		data->name,
-		&gCampaign.Setting.characters.players[character],
-		0);
+	textPos.y += 2 * CDogsTextHeight();
 	sprintf(s, "Score: %d", data->score);
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
+	DrawTextString(s, &gGraphicsDevice, textPos);
+	textPos.y += CDogsTextHeight();
 	sprintf(s, "Total: %d", data->totalScore);
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
-	sprintf(s, "Missions: %d",
-		data->missions + (data->survived ? 1 : 0));
-	CDogsTextStringAt(x, y, s);
-	y += CDogsTextHeight();
+	DrawTextString(s, &gGraphicsDevice, textPos);
+	textPos.y += CDogsTextHeight();
+	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));
+	DrawTextString(s, &gGraphicsDevice, textPos);
+	textPos.y += CDogsTextHeight();
 
 	if (data->survived && (data->hp > 150 || data->hp <= 0))
 	{
@@ -336,23 +319,28 @@ void Summary(int x, struct PlayerData *data, int character)
 		{
 			sprintf(s, "Resurrection fee: %d", -500);
 		}
-		CDogsTextStringAt(x, y, s);
-		y += CDogsTextHeight();
+		DrawTextString(s, &gGraphicsDevice, textPos);
+		textPos.y += CDogsTextHeight();
 	}
 
-	if (data->friendlies > 0 && data->friendlies > data->kills / 2) {
+	if (data->friendlies > 0 && data->friendlies > data->kills / 2)
+	{
 		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
-		CDogsTextStringAt(x, y, s);
-		y += CDogsTextHeight();
-	} else if (data->weaponCount == 1 &&
-			data->weapons[0] == GUN_KNIFE && data->kills > 0) {
+		DrawTextString(s, &gGraphicsDevice, textPos);
+		textPos.y += CDogsTextHeight();
+	}
+	else if (data->weaponCount == 1 &&
+		data->weapons[0] == GUN_KNIFE && data->kills > 0)
+	{
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
-		CDogsTextStringAt(x, y, s);
-		y += CDogsTextHeight();
-	} else if (data->kills == 0 && data->friendlies == 0) {
+		DrawTextString(s, &gGraphicsDevice, textPos);
+		textPos.y += CDogsTextHeight();
+	}
+	else if (data->kills == 0 && data->friendlies == 0)
+	{
 		sprintf(s, "Friendly bonus: %d", 500);
-		CDogsTextStringAt(x, y, s);
-		y += CDogsTextHeight();
+		DrawTextString(s, &gGraphicsDevice, textPos);
+		textPos.y += CDogsTextHeight();
 	}
 }
 
@@ -451,24 +439,87 @@ void Bonuses(void)
 		if (gPlayerDatas[i].survived)
 		{
 			gPlayerDatas[i].totalScore += bonus;
+
+			// Other per-player bonuses
+
+			if (gPlayerDatas[i].hp > 150)
+			{
+				// health bonus
+				gPlayerDatas[i].totalScore += (gPlayerDatas[i].hp - 150) * 10;
+			}
+			else if (gPlayerDatas[i].hp <= 0)
+			{
+				// resurrection fee
+				gPlayerDatas[i].totalScore -= 500;
+			}
+
+			if (gPlayerDatas[i].friendlies > 5 &&
+				gPlayerDatas[i].friendlies > gPlayerDatas[i].kills / 2)
+			{
+				// butcher penalty
+				gPlayerDatas[i].totalScore -= 100 * gPlayerDatas[i].friendlies;
+			}
+			else if (gPlayerDatas[i].weaponCount == 1 &&
+				gPlayerDatas[i].weapons[0] == GUN_KNIFE &&
+				gPlayerDatas[i].friendlies == 0 &&
+				gPlayerDatas[i].kills > 5)
+			{
+				// Ninja bonus
+				gPlayerDatas[i].totalScore += 50 * gPlayerDatas[i].kills;
+			}
+			else if (gPlayerDatas[i].kills == 0 &&
+				gPlayerDatas[i].friendlies == 0)
+			{
+				// friendly bonus
+				gPlayerDatas[i].totalScore += 500;
+			}
 		}
 	}
 }
 
 void MissionSummary(GraphicsDevice *device)
 {
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
+	Vec2i size;
 	GraphicsBlitBkg(device);
 
 	Bonuses();
 
+	if (strlen(gAutosave.LastMission.Password) > 0)
+	{
+		char s1[512];
+		sprintf(s1, "Last password: %s", gAutosave.LastMission.Password);
+		CDogsTextStringSpecial(
+			s1,
+			TEXT_BOTTOM | TEXT_XCENTER,
+			0,
+			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
+	}
+
 	switch (gOptions.numPlayers)
 	{
 		case 1:
-			Summary(CenterX(60), &gPlayerDatas[0], CHARACTER_PLAYER1);
+			size = Vec2iNew(w, h / 2);
+			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
 			break;
 		case 2:
-			Summary(CenterOfLeft(60), &gPlayerDatas[0], CHARACTER_PLAYER1);
-			Summary(CenterOfRight(60), &gPlayerDatas[1], CHARACTER_PLAYER2);
+			// side by side
+			size = Vec2iNew(w / 2, h / 2);
+			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
+			Summary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
+			break;
+		case 3:	// fallthrough
+		case 4:
+			// 2x2
+			size = Vec2iNew(w / 2, h / 4);
+			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
+			Summary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
+			Summary(Vec2iNew(0, h / 4), size, &gPlayerDatas[2], 2);
+			if (gOptions.numPlayers == 4)
+			{
+				Summary(Vec2iNew(w / 2, h / 4), size, &gPlayerDatas[3], 3);
+			}
 			break;
 		default:
 			assert(0 && "not implemented");
@@ -845,6 +896,7 @@ int Game(GraphicsDevice *graphics, int mission)
 	do
 	{
 		int i;
+		int survivingPlayers;
 		SetupMission(mission, 1, &gCampaign);
 
 		SetupMap();
@@ -865,7 +917,8 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		run = gameloop();
 
-		gameOver = GetNumPlayersAlive()	== 0 ||
+		survivingPlayers = GetNumPlayersAlive();
+		gameOver = survivingPlayers == 0 ||
 			mission == gCampaign.Setting.missionCount - 1;
 
 		for (i = 0; i < MAX_PLAYERS; i++)
@@ -885,7 +938,9 @@ int Game(GraphicsDevice *graphics, int mission)
 		if (run)
 		{
 			MissionSummary(graphics);
-			if (gameOver && GetNumPlayersAlive() > 0)
+			// Note: must use cached value because players get cleaned up
+			// in CleanupMission()
+			if (gameOver && survivingPlayers > 0)
 			{
 				Victory(graphics);
 			}

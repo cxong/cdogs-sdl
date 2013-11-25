@@ -64,8 +64,6 @@ typedef struct
 
 #define MAX_PLAYERS 4
 #define CHARACTER_OTHER_COUNT 64
-#define CHARACTER_PLAYER1 0
-#define CHARACTER_PLAYER2 1
 typedef struct
 {
 	int playerCount;
