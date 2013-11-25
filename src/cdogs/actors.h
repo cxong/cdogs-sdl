@@ -105,8 +105,8 @@
 #define SHADE_COUNT         14
 
 
-// TODO: add ptr to PlayerData
-struct Actor {
+typedef struct Actor
+{
 	int x, y;		// These are the full coordinates, including fractions
 	direction_e direction;
 	int state;
@@ -131,8 +131,7 @@ struct Actor {
 
 	TTileItem tileItem;
 	struct Actor *next;
-};
-typedef struct Actor TActor;
+} TActor;
 
 
 extern TActor *gPlayers[MAX_PLAYERS];

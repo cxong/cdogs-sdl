@@ -649,6 +649,7 @@ int gameloop(void)
 	}
 
 	missionTime = 0;
+	gMission.pickupTime = PICKUP_LIMIT;
 	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 340));
 	while (!isDone)
 	{

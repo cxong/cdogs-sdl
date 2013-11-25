@@ -814,7 +814,6 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		if (menuToChange != NULL)
 		{
 			debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
-			// TODO: refactor menu change sound
 			if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
 			{
 				MenuPlaySound(MENU_SOUND_START);
