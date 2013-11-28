@@ -67,7 +67,7 @@ void MenuDisplayPlayerControls(
 {
 	char s[256];
 	MenuDisplayPlayerControlsData *d = data;
-	Vec2i textPos = Vec2iNew(0, pos.y + size.y - (size.y / 10));
+	Vec2i textPos = Vec2iNew(0, pos.y + size.y - CDogsTextHeight());
 	int textWidth = 0;
 
 	switch (d->pData->inputDevice)
@@ -84,47 +84,48 @@ void MenuDisplayPlayerControls(
 				SDL_GetKeyName(keys->button1),
 				SDL_GetKeyName(keys->button2));
 			textWidth = TextGetStringWidth(s);
-			if (textWidth < 125)
-			{
-				textPos.x = pos.x - textWidth / 2;
-				DrawTextString(s, g, textPos);
-			}
-			else
-			{
-				sprintf(s, "(%s, %s, %s,",
-					SDL_GetKeyName(keys->left),
-					SDL_GetKeyName(keys->right),
-					SDL_GetKeyName(keys->up));
-				textWidth = TextGetStringWidth(s);
-				textPos.x = pos.x - textWidth / 2;
-				textPos.y -= 10;
-				DrawTextString(s, g, textPos);
-				sprintf(s, "%s, %s and %s)",
-					SDL_GetKeyName(keys->down),
-					SDL_GetKeyName(keys->button1),
-					SDL_GetKeyName(keys->button2));
-				textWidth = TextGetStringWidth(s);
-				textPos.x = pos.x - textWidth / 2;
-				textPos.y += 10;
-				DrawTextString(s, g, textPos);
-			}
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:
 		sprintf(s, "(mouse wheel to scroll, left and right click)");
-		textWidth = TextGetStringWidth(s);
-		textPos.x = pos.x - textWidth / 2;
-		DrawTextString(s, g, textPos);
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		sprintf(s, "(%s)",
 			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
-		textWidth = TextGetStringWidth(s);
-		textPos.x = pos.x - textWidth / 2;
-		DrawTextString(s, g, textPos);
 		break;
 	default:
 		assert(0 && "unknown device");
 		break;
+	}
+
+	// If the text is too long, split the text with a newline
+	textWidth = TextGetStringWidth(s);
+	if (textWidth < 125)
+	{
+		textPos.x = pos.x - textWidth / 2;
+		DrawTextString(s, g, textPos);
+	}
+	else
+	{
+		// find the first whitespace before half of the string, split there,
+		// and print two lines
+		char *secondLine;
+		for (secondLine = &s[strlen(s) / 2]; secondLine > s; secondLine--)
+		{
+			if (isspace(*secondLine))
+			{
+				*secondLine = '\0';
+				secondLine++;
+				break;
+			}
+		}
+		textWidth = TextGetStringWidth(s);
+		textPos.x = pos.x - textWidth / 2;
+		textPos.y -= CDogsTextHeight();
+		DrawTextString(s, g, textPos);
+		textWidth = TextGetStringWidth(secondLine);
+		textPos.x = pos.x - textWidth / 2;
+		textPos.y += CDogsTextHeight();
+		DrawTextString(secondLine, g, textPos);
 	}
 }
