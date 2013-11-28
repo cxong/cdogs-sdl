@@ -1158,40 +1158,40 @@ void BulletInitialize(void)
 	}
 
 	b = &gBulletClasses[BULLET_MG];
-	b->DrawFunc = DrawBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->Speed = 768;
 	b->Range = 60;
 	b->Power = 10;
 
 	b = &gBulletClasses[BULLET_SHOTGUN];
-	b->DrawFunc = DrawBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->Speed = 640;
 	b->Range = 50;
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_FLAME];
 	b->UpdateFunc = UpdateFlame;
-	b->DrawFunc = DrawFlame;
+	b->DrawFunc = (TileItemDrawFunc)DrawFlame;
 	b->Speed = 384;
 	b->Range = 30;
 	b->Power = 12;
 	b->Size = 5;
 
 	b = &gBulletClasses[BULLET_LASER];
-	b->DrawFunc = DrawLaserBolt;
+	b->DrawFunc = (TileItemDrawFunc)DrawLaserBolt;
 	b->Speed = 1024;
 	b->Range = 90;
 	b->Power = 20;
 	b->Size = 2;
 
 	b = &gBulletClasses[BULLET_SNIPER];
-	b->DrawFunc = DrawBrightBolt;
+	b->DrawFunc = (TileItemDrawFunc)DrawBrightBolt;
 	b->Speed = 1024;
 	b->Range = 90;
 	b->Power = 50;
 
 	b = &gBulletClasses[BULLET_FRAG];
-	b->DrawFunc = DrawBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->Speed = 640;
 	b->Range = 50;
 	b->Power = 40;
@@ -1201,14 +1201,14 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_GRENADE];
 	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = DrawGrenade;
+	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
 	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = DrawGrenade;
+	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
@@ -1216,14 +1216,14 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
 	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = DrawGrenade;
+	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = DrawGrenade;
+	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
@@ -1231,7 +1231,7 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
 	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = DrawGrenade;
+	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
@@ -1239,14 +1239,14 @@ void BulletInitialize(void)
 
 
 	b = &gBulletClasses[BULLET_RAPID];
-	b->DrawFunc = DrawBrownBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	b->Speed = 1280;
 	b->Range = 25;
 	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
 	b->UpdateFunc = UpdateSeeker;
-	b->DrawFunc = DrawSeeker;
+	b->DrawFunc = (TileItemDrawFunc)DrawSeeker;
 	b->Speed = 512;
 	b->Range = 60;
 	b->Power = 20;
@@ -1254,14 +1254,14 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;
-	b->DrawFunc = DrawBrownBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBrownBullet;
 	b->Speed = 768;
 	b->Range = 45;
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
 	b->UpdateFunc = UpdatePetrifierBullet;
-	b->DrawFunc = DrawPetrifierBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawPetrifierBullet;
 	b->Speed = 768;
 	b->Range = 45;
 	b->Power = 0;
@@ -1269,14 +1269,14 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_PROXMINE];
 	b->UpdateFunc = UpdateDroppedMine;
-	b->DrawFunc = DrawMine;
+	b->DrawFunc = (TileItemDrawFunc)DrawMine;
 	b->Speed = 0;
 	b->Range = 140;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->UpdateFunc = UpdateTriggeredMine;
-	b->DrawFunc = DrawDynamite;
+	b->DrawFunc = (TileItemDrawFunc)DrawDynamite;
 	b->Speed = 0;
 	b->Range = 210;
 	b->Power = 0;

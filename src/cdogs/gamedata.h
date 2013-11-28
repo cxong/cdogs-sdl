@@ -257,7 +257,7 @@ struct MissionOptions {
 	int exitPic, exitShadow;
 
 	int weaponCount;
-	int availableWeapons[WEAPON_MAX];
+	gun_e availableWeapons[WEAPON_MAX];
 };
 
 extern struct GameOptions gOptions;
