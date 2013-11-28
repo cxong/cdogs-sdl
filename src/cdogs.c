@@ -275,17 +275,16 @@ void MissionBriefing(GraphicsDevice *device)
 void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 {
 	char s[50];
-	MenuDisplayPlayerData dpData;
 	int totalTextHeight = CDogsTextHeight() * 7;
 	// display text on right half
 	Vec2i textPos = Vec2iNew(
 		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
 
-	dpData.c = &gCampaign.Setting.characters.players[character];
-	dpData.currentMenu = NULL;
-	dpData.pData = data;
-	MenuDisplayPlayer(
-		&gGraphicsDevice, textPos, Vec2iNew(size.x / 2, size.y), &dpData);
+	DisplayCharacterAndName(
+		&gGraphicsDevice,
+		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
+		&gCampaign.Setting.characters.players[character],
+		data->name);
 
 	if (data->survived)
 	{
@@ -667,16 +666,12 @@ static const char *finalWords2P[] = {
 
 #define CONGRATULATIONS "Congratulations, you have completed "
 
-// TODO: MenuDisplayPlayer is not a suitable function to use
 void Victory(GraphicsDevice *graphics)
 {
 	int x, i;
 	const char *s = NULL;
 	int w = graphics->cachedConfig.ResolutionWidth;
 	int h = graphics->cachedConfig.ResolutionHeight;
-	Vec2i size;
-	MenuDisplayPlayerData dpData;
-	dpData.currentMenu = NULL;
 
 	GraphicsBlitBkg(graphics);
 
@@ -691,24 +686,24 @@ void Victory(GraphicsDevice *graphics)
 			i = sizeof(finalWords1P) / sizeof(char *);
 			i = rand() % i;
 			s = finalWords1P[i];
-			size = Vec2iNew(w / 2, h / 2);
-			dpData.c = &gCampaign.Setting.characters.players[0];
-			dpData.pData = &gPlayerDatas[0];
-			MenuDisplayPlayer(graphics, Vec2iNew(w / 2, 0), size, &dpData);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 4, h / 4),
+				&gCampaign.Setting.characters.players[0],
+				gPlayerDatas[0].name);
 			break;
 		case 2:
 			i = sizeof(finalWords2P) / sizeof(char *);
 			i = rand() % i;
 			s = finalWords2P[i];
 			// side by side
-			size = Vec2iNew(w / 4, h / 2);
-			dpData.c = &gCampaign.Setting.characters.players[0];
-			dpData.pData = &gPlayerDatas[0];
-			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, 0), size, &dpData);
-			dpData.c = &gCampaign.Setting.characters.players[1];
-			dpData.pData = &gPlayerDatas[1];
-			MenuDisplayPlayer(
-				graphics, Vec2iNew(w / 4 + w / 2, 0), size, &dpData);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 8, h / 4),
+				&gCampaign.Setting.characters.players[0],
+				gPlayerDatas[0].name);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 8 + w / 2, h / 4),
+				&gCampaign.Setting.characters.players[1],
+				gPlayerDatas[1].name);
 			break;
 		case 3:	// fallthrough
 		case 4:
@@ -716,23 +711,24 @@ void Victory(GraphicsDevice *graphics)
 			i = rand() % i;
 			s = finalWords2P[i];
 			// 2x2
-			size = Vec2iNew(w / 4, h / 4);
-			dpData.c = &gCampaign.Setting.characters.players[0];
-			dpData.pData = &gPlayerDatas[0];
-			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, 0), size, &dpData);
-			dpData.c = &gCampaign.Setting.characters.players[1];
-			dpData.pData = &gPlayerDatas[1];
-			MenuDisplayPlayer(
-				graphics, Vec2iNew(w / 4 + w / 2, 0), size, &dpData);
-			dpData.c = &gCampaign.Setting.characters.players[2];
-			dpData.pData = &gPlayerDatas[2];
-			MenuDisplayPlayer(graphics, Vec2iNew(w / 4, h / 4), size, &dpData);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 8, h / 8),
+				&gCampaign.Setting.characters.players[0],
+				gPlayerDatas[0].name);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 8 + w / 2, h / 8),
+				&gCampaign.Setting.characters.players[1],
+				gPlayerDatas[1].name);
+			DisplayCharacterAndName(
+				graphics, Vec2iNew(w / 8, h / 8 + h / 4),
+				&gCampaign.Setting.characters.players[2],
+				gPlayerDatas[2].name);
 			if (gOptions.numPlayers == 4)
 			{
-				dpData.c = &gCampaign.Setting.characters.players[3];
-				dpData.pData = &gPlayerDatas[3];
-				MenuDisplayPlayer(
-					graphics, Vec2iNew(w / 4 + w / 2, h / 4), size, &dpData);
+				DisplayCharacterAndName(
+					graphics, Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
+					&gCampaign.Setting.characters.players[3],
+					gPlayerDatas[3].name);
 			}
 			break;
 		default:

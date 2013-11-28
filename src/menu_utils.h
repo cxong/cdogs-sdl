@@ -49,4 +49,7 @@ typedef struct
 void MenuDisplayPlayerControls(
 	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
+void DisplayCharacterAndName(
+	GraphicsDevice *g, Vec2i pos, Character *c, char *name);
+
 #endif

@@ -34,32 +34,41 @@
 #include <cdogs/text.h>
 
 
+// Display a character and the player name above it, with the character
+// centered around the target position
+void DisplayCharacterAndName(
+	GraphicsDevice *g, Vec2i pos, Character *c, char *name)
+{
+	Vec2i namePos;
+	// Move the point down a bit since the default character draw point is at
+	// its feet
+	pos.y += 8;
+	namePos = Vec2iAdd(pos, Vec2iNew(-TextGetStringWidth(name) / 2, -30));
+	DrawCharacterSimple(
+		c, pos,
+		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
+	DrawTextString(name, g, namePos);
+}
+
 void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	MenuDisplayPlayerData *d = data;
 	Vec2i playerPos;
-	Vec2i namePos;
+	char s[22];
 	pos.x -= size.x;	// move to left half of screen
 	playerPos = Vec2iNew(
 		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
-	namePos = Vec2iAdd(playerPos, Vec2iNew(-30, -36));
-
-	UNUSED(g);
 
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
-		char s[22];
 		sprintf(s, "%c%s%c", '\020', d->pData->name, '\021');
-		CDogsTextStringAt(namePos.x, namePos.y, s);
 	}
 	else
 	{
-		CDogsTextStringAt(namePos.x, namePos.y, d->pData->name);
+		strcpy(s, d->pData->name);
 	}
 
-	DrawCharacterSimple(
-		d->c, playerPos,
-		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &d->c->table);
+	DisplayCharacterAndName(g, playerPos, d->c, s);
 }
 
 void MenuDisplayPlayerControls(
