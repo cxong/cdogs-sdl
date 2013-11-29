@@ -549,6 +549,7 @@ int MoveActor(TActor * actor, int x, int y)
 	TActor *otherCharacter;
 	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
+	int isDogfight = gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT;
 
 	// Check collision with wall; try to limit x and y movement if still in
 	// collision in those axes
@@ -573,7 +574,8 @@ int MoveActor(TActor * actor, int x, int y)
 	realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 	target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor));
+		CalcCollisionTeam(1, actor),
+		isDogfight);
 	if (target)
 	{
 		Vec2i realXPos, realYPos;
@@ -615,14 +617,16 @@ int MoveActor(TActor * actor, int x, int y)
 		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor)))
+			CalcCollisionTeam(1, actor),
+			isDogfight))
 		{
 			y = actor->y;
 		}
 		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor)))
+			CalcCollisionTeam(1, actor),
+			isDogfight))
 		{
 			x = actor->x;
 		}
@@ -642,7 +646,8 @@ int MoveActor(TActor * actor, int x, int y)
 		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
-			CalcCollisionTeam(1, actor));
+			CalcCollisionTeam(1, actor),
+			isDogfight);
 		if (target && target->kind == KIND_OBJECT)
 		{
 			PickupObject(actor, target->data);
@@ -928,7 +933,8 @@ void UpdateAllActors(int ticks)
 					Vec2iNew(actor->x, actor->y), 256);
 				TTileItem *collidingItem = GetItemOnTileInCollision(
 					&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-					COLLISIONTEAM_NONE);
+					COLLISIONTEAM_NONE,
+					gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
 				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
 					TActor *collidingActor = collidingItem->actor;
@@ -1149,8 +1155,9 @@ int ActorIsInvulnerable(
 
 	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
 	{
-		// Player to player hits
-		if (player >= 0 && actor->pData)
+		// Same player hits
+		if (player >= 0 && actor->pData &&
+			&gPlayerDatas[player] == actor->pData)
 		{
 			return 1;
 		}

@@ -313,7 +313,9 @@ int DamageCharacter(
 	TActor *actor = (TActor *)target->data;
 	int isInvulnerable;
 
-	if (!(flags & FLAGS_HURTALWAYS) && player >= 0 && actor->pData)
+	// Don't let players hurt themselves
+	if (!(flags & FLAGS_HURTALWAYS) && player >= 0 && actor->pData &&
+		&gPlayerDatas[player] == actor->pData)
 	{
 		return 0;
 	}
@@ -882,7 +884,8 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 	}
 
 	item = GetItemOnTileInCollision(
-		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE);
+		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
+		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
 	hasHit = DamageSomething(
 		Vec2iNew(obj->dx, obj->dy),
 		obj->power,

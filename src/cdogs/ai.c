@@ -282,7 +282,8 @@ static int PositionOK(TActor * actor, int x, int y)
 	}
 	if (GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor)))
+		CalcCollisionTeam(1, actor),
+		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT))
 	{
 		return 0;
 	}

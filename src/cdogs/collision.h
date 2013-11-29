@@ -67,6 +67,6 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor);
 
 int IsCollisionWithWall(Vec2i pos, Vec2i size);
 TTileItem *GetItemOnTileInCollision(
-	TTileItem *item, Vec2i pos, int mask, CollisionTeam team);
+	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight);
 
 #endif
