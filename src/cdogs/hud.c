@@ -398,7 +398,8 @@ static void DrawPlayerStatus(
 		CDogsTextStringSpecial(s, textFlags, 5, 5 + 1 * CDogsTextHeight());
 	}
 
-	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN))
+	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
+		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		DrawRadar(device, p, RADAR_SCALE, flags);
 	}
@@ -483,7 +484,8 @@ void HUDDraw(HUD *hud, int isPaused)
 			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags);
 	}
 	// Only draw radar once if shared
-	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN))
+	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
+		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		DrawSharedRadar(hud->device, gPlayers, RADAR_SCALE);
 	}

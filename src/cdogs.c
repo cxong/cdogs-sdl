@@ -529,44 +529,39 @@ void MissionSummary(GraphicsDevice *device)
 	WaitForAnyKeyOrButton(&gInputDevices);
 }
 
+static void ShowPlayerScore(
+	GraphicsDevice *g, Vec2i pos, Character *c, char *name, int score)
+{
+	Vec2i scorePos;
+	char s[10];
+	DisplayCharacterAndName(g, pos, c, name);
+	sprintf(s, "Score: %d", score);
+	scorePos = Vec2iNew(pos.x - TextGetStringWidth(s) / 2, pos.y + 20);
+	DrawTextString(s, g, scorePos);
+}
+
 void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 {
-	char s[10];
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
+	int i;
 
 	GraphicsBlitBkg(device);
 
 	debug(D_NORMAL, "\n");
 
-	switch (gOptions.numPlayers)
+	assert(gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4 &&
+		"Invalid number of players for dogfight");
+	for (i = 0; i < gOptions.numPlayers; i++)
 	{
-		case 1:
-			DisplayPlayer(
-				CenterX(TextGetStringWidth(s)),
-				gPlayerDatas[0].name,
-				&gCampaign.Setting.characters.players[0],
-				0);
-			break;
-		case 2:
-			DisplayPlayer(
-				CenterOfLeft(60),
-				gPlayerDatas[0].name,
-				&gCampaign.Setting.characters.players[0],
-				0);
-			sprintf(s, "Score: %d", scores[0]);
-			CDogsTextStringAt(
-				CenterOfLeft(TextGetStringWidth(s)),
-				device->cachedConfig.ResolutionWidth / 3,
-				s);
-
-			DisplayPlayer(
-				CenterOfRight(60), gPlayerDatas[1].name,
-				&gCampaign.Setting.characters.players[1],
-				0);
-			sprintf(s, "Score: %d", scores[1]);
-			CDogsTextStringAt(
-				CenterOfRight(TextGetStringWidth(s)),
-				device->cachedConfig.ResolutionWidth / 3,
-				s);
+		Vec2i pos = Vec2iZero();
+		pos.x = w / 4 + (i & 1) * w / 2;
+		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
+		ShowPlayerScore(
+			device, pos,
+			&gCampaign.Setting.characters.players[i],
+			gPlayerDatas[i].name,
+			scores[i]);
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
@@ -579,12 +574,15 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 	int isTie = 0;
 	int maxScore = 0;
 	int maxScorePlayer = 0;
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (scores[i] > maxScore)
 		{
 			maxScore = scores[i];
 			maxScorePlayer = i;
+			isTie = 0;
 		}
 		else if (scores[i] == maxScore)
 		{
@@ -594,47 +592,33 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 
 	GraphicsBlitBkg(device);
 
+	// Draw players and their names spread evenly around the screen.
+	// If it's a tie, display the message in the centre,
+	// otherwise display the winner just below the winning player
 #define IS_DRAW		"It's a draw!"
 #define IS_WINNER	"Winner!"
 
+	assert(gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4 &&
+		"Invalid number of players for dogfight");
+	for (i = 0; i < gOptions.numPlayers; i++)
+	{
+		Vec2i pos = Vec2iZero();
+		pos.x = w / 4 + (i & 1) * w / 2;
+		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
+		DisplayCharacterAndName(
+			device, pos,
+			&gCampaign.Setting.characters.players[i],
+			gPlayerDatas[i].name);
+		if (!isTie && maxScorePlayer == i)
+		{
+			Vec2i msgPos = Vec2iNew(
+				pos.x - TextGetStringWidth(IS_WINNER) / 2, pos.y + 20);
+			DrawTextString(IS_WINNER, device, msgPos);
+		}
+	}
 	if (isTie)
 	{
-		// TODO: more players
-		DisplayPlayer(
-			CenterOfLeft(60),
-			gPlayerDatas[0].name,
-			&gCampaign.Setting.characters.players[0],
-			0);
-		DisplayPlayer(
-			CenterOfRight(60),
-			gPlayerDatas[1].name,
-			&gCampaign.Setting.characters.players[1],
-			0);
 		CDogsTextStringAtCenter("It's a draw!");
-	}
-	else if (maxScorePlayer == 0)	// TODO: more players
-	{
-		DisplayPlayer(
-			CenterOfLeft(60),
-			gPlayerDatas[0].name,
-			&gCampaign.Setting.characters.players[0],
-			0);
-		CDogsTextStringAt(
-			CenterOfLeft(TextGetStringWidth(IS_WINNER)),
-			device->cachedConfig.ResolutionWidth / 2,
-			IS_WINNER);
-	}
-	else
-	{
-		DisplayPlayer(
-			CenterOfRight(60),
-			gPlayerDatas[1].name,
-			&gCampaign.Setting.characters.players[1],
-			0);
-		CDogsTextStringAt(
-			CenterOfRight(TextGetStringWidth(IS_WINNER)),
-			device->cachedConfig.ResolutionWidth / 2,
-			IS_WINNER);
 	}
 	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gInputDevices);
@@ -1017,6 +1001,8 @@ int Campaign(GraphicsDevice *graphics)
 	return Game(graphics, mission);
 }
 
+#define DOGFIGHT_MAX_SCORE 5
+
 void DogFight(GraphicsDevice *graphicsDevice)
 {
 	int run;
@@ -1071,7 +1057,7 @@ void DogFight(GraphicsDevice *graphicsDevice)
 			ShowScore(graphicsDevice, scores);
 		}
 
-	} while (run && maxScore < 5);
+	} while (run && maxScore < DOGFIGHT_MAX_SCORE);
 
 	gOptions.badGuys = 1;
 	gOptions.numPlayers = numPlayers;
