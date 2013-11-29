@@ -1,0 +1,18 @@
+---
+layout: post
+title:  "C-Dogs 0.5.2 Released!"
+date:   2013-11-29
+categories: release
+---
+
+This release adds support for 3 and 4-players for all the game modes - campaign, dogfight and quickplay!
+
+![](https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/4p.png)
+
+There's also two secret weapons; just type "cdogs" or "noaim" in-game and try them out!
+
+![](https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/heatseeker.gif) 
+
+Get the release here: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+See the full release notes here: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.2>
