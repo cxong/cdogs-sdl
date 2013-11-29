@@ -93,12 +93,12 @@ int NumPlayersSelection(
 		0);
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
+		char buf[2];
 		if (mode == CAMPAIGN_MODE_DOGFIGHT && i == 0)
 		{
 			// At least two players for dogfights
 			continue;
 		}
-		char buf[2];
 		sprintf(buf, "%d", i + 1);
 		MenuAddSubmenu(ms.current, MenuCreateReturn(buf, i + 1));
 	}

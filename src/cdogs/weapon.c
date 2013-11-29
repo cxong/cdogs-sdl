@@ -377,11 +377,12 @@ void WeaponFire(
 	{
 		int spreadAngle = spreadStartAngle + i * spreadWidth;
 		int recoil = 0;
+		int finalAngle;
 		if (desc->Recoil > 0)
 		{
 			recoil = (rand() % desc->Recoil) - (desc->Recoil + 1) / 2;
 		}
-		int finalAngle = angle + spreadAngle + recoil;
+		finalAngle = angle + spreadAngle + recoil;
 		if (finalAngle < 0)
 		{
 			finalAngle += 256;
