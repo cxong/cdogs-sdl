@@ -35,13 +35,16 @@ build/windows/cdogs.rc
 Debug/
 Release/
 Win32/
+*.dir/
 *.opensdf
 *.sdf
 *.suo
 *.vcxproj.user
 *.dll
+*.psess
 *.vcxproj
 *.vcxproj.filters
+*.vspx
 *.sln
 
 # MinGW
