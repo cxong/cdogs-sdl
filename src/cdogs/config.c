@@ -347,7 +347,7 @@ void ConfigLoadDefault(Config *config)
 	}
 	config->Interface.ShowFPS = 0;
 	config->Interface.ShowTime = 0;
-	config->Interface.Splitscreen = SPLITSCREEN_NORMAL;
+	config->Interface.Splitscreen = SPLITSCREEN_NEVER;
 	config->Interface.ShowHUDMap = 1;
 	config->Sound.MusicVolume = 64;
 	config->Sound.SoundChannels = 8;
