@@ -53,7 +53,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ai.h"
+#include "ai_utils.h"
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
@@ -952,7 +952,7 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 	}
 	// Find the closest target to this bullet and steer towards it
 	// Compensate for the bullet's velocity
-	target = GetClosestEnemy(
+	target = AIGetClosestEnemy(
 		Vec2iNew(obj->x, obj->y), obj->flags, obj->player >= 0);
 	if (target)
 	{

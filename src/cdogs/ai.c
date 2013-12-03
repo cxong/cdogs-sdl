@@ -51,6 +51,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "ai_utils.h"
 #include "collision.h"
 #include "config.h"
 #include "defs.h"
@@ -109,166 +110,15 @@ static int IsFacingPlayer(TActor *actor, direction_e d)
 
 #define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
-TActor *GetClosestEnemy(Vec2i from, int flags, int isPlayer)
-{
-	// Search all the actors and find the closest one that is an enemy
-	TActor *a;
-	TActor *closestEnemy = NULL;
-	int minDistance = -1;
-	for (a = ActorList(); a; a = a->next)
-	{
-		int isEnemy = 0;
-		int distance;
-		// Never target invulnerables or victims
-		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_VICTIM))
-		{
-			continue;
-		}
-		if (a->pData || (a->flags & FLAGS_GOOD_GUY))
-		{
-			// target is good guy / player, check if we are bad
-			if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
-			{
-				isEnemy = 1;
-			}
-		}
-		else
-		{
-			// target is bad guy, check if we are good
-			if (isPlayer || (flags & FLAGS_GOOD_GUY))
-			{
-				isEnemy = 1;
-			}
-		}
-		if (isEnemy)
-		{
-			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->x, a->y);
-			if (!closestEnemy || distance < minDistance)
-			{
-				minDistance = distance;
-				closestEnemy = a;
-			}
-		}
-	}
-	return closestEnemy;
-}
-
-static TActor *GetClosestPlayer(Vec2i pos)
-{
-	int i;
-	int minDistance = -1;
-	TActor *closestPlayer = NULL;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerAlive(i))
-		{
-			TActor *p = gPlayers[i];
-			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, p->x, p->y);
-			if (!closestPlayer || distance < minDistance)
-			{
-				closestPlayer = p;
-				minDistance = distance;
-			}
-		}
-	}
-	return closestPlayer;
-}
-
-static Vec2i GetClosestPlayerPos(Vec2i pos)
-{
-	TActor *closestPlayer = GetClosestPlayer(pos);
-	if (closestPlayer)
-	{
-		return Vec2iNew(closestPlayer->x, closestPlayer->y);
-	}
-	else
-	{
-		return pos;
-	}
-}
-
 static int IsCloseToPlayer(Vec2i pos)
 {
-	TActor *closestPlayer = GetClosestPlayer(pos);
+	TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if (closestPlayer && CHEBYSHEV_DISTANCE(
 			pos.x, pos.y, closestPlayer->x, closestPlayer->y) < (32 << 8))
 	{
 		return 1;
 	}
 	return 0;
-}
-
-static int Follow(TActor * actor)
-{
-	int cmd = 0;
-	Vec2i p = GetClosestPlayerPos(Vec2iNew(actor->x, actor->y));
-	p.x >>= 8;
-	p.y >>= 8;
-
-	if ((actor->x >> 8) < p.x - 1)		cmd |= CMD_RIGHT;
-	else if ((actor->x >> 8) > p.x + 1)	cmd |= CMD_LEFT;
-
-	if ((actor->y >> 8) < p.y - 1)		cmd |= CMD_DOWN;
-	else if ((actor->y >> 8) > p.y + 1)	cmd |= CMD_UP;
-
-	return cmd;
-}
-
-
-static int ReverseDirection(int cmd)
-{
-	if (cmd & (CMD_LEFT | CMD_RIGHT))
-	{
-		cmd ^= CMD_LEFT | CMD_RIGHT;
-	}
-	if (cmd & (CMD_UP | CMD_DOWN))
-	{
-		cmd ^= CMD_UP | CMD_DOWN;
-	}
-	return cmd;
-}
-
-static int Hunt(TActor * actor)
-{
-	int cmd = 0;
-	int dx, dy;
-	Vec2i targetPos = Vec2iNew(actor->x, actor->y);
-	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
-	{
-		targetPos = GetClosestPlayerPos(Vec2iNew(actor->x, actor->y));
-	}
-
-	if (actor->flags & FLAGS_VISIBLE)
-	{
-		TActor *a = GetClosestEnemy(
-			Vec2iNew(actor->x, actor->y), actor->flags, !!actor->pData);
-		if (a)
-		{
-			targetPos.x = a->x;
-			targetPos.y = a->y;
-		}
-	}
-
-	dx = abs(targetPos.x - actor->x);
-	dy = abs(targetPos.y - actor->y);
-
-	if (2 * dx > dy)
-	{
-		if (actor->x < targetPos.x)			cmd |= CMD_RIGHT;
-		else if (actor->x > targetPos.x)	cmd |= CMD_LEFT;
-	}
-	if (2 * dy > dx)
-	{
-		if (actor->y < targetPos.y)			cmd |= CMD_DOWN;
-		else if (actor->y > targetPos.y)	cmd |= CMD_UP;
-	}
-	// If it's a coward, reverse directions...
-	if (actor->flags & FLAGS_RUNS_AWAY)
-	{
-		cmd = ReverseDirection(cmd);
-	}
-
-	return cmd;
 }
 
 
@@ -334,7 +184,7 @@ static int BrightWalk(TActor * actor, int roll)
 		roll < actor->character->bot.probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
-		return Hunt(actor);
+		return AIHunt(actor);
 	}
 
 	if (actor->flags & FLAGS_TRYRIGHT) {
@@ -422,7 +272,7 @@ static void PlaceBaddie(TActor *actor)
 		{
 			actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
 			actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
-			closestPlayer = GetClosestPlayer(Vec2iNew(actor->x, actor->y));
+			closestPlayer = AIGetClosestPlayer(Vec2iNew(actor->x, actor->y));
 		}
 		while (closestPlayer && CHEBYSHEV_DISTANCE(
 			actor->x, actor->y, closestPlayer->x, closestPlayer->y) <
@@ -551,7 +401,8 @@ void CommandBadGuys(int ticks)
 					}
 					else
 					{
-						cmd = Follow(actor);
+						cmd = AIGoto(actor, AIGetClosestPlayerPos(
+							Vec2iNew(actor->x, actor->y)));
 					}
 					actor->delay = actor->character->bot.actionDelay;
 				}
@@ -559,7 +410,7 @@ void CommandBadGuys(int ticks)
 					!!(actor->flags & FLAGS_VISIBLE) &&
 					DidPlayerShoot())
 				{
-					cmd = Hunt(actor) | CMD_BUTTON1;
+					cmd = AIHunt(actor) | CMD_BUTTON1;
 					bypass = 1;
 				}
 				else if (actor->flags & FLAGS_DETOURING)
@@ -575,7 +426,7 @@ void CommandBadGuys(int ticks)
 				{
 					if (roll < actor->character->bot.probabilityToTrack)
 					{
-						cmd = Hunt(actor);
+						cmd = AIHunt(actor);
 					}
 					else if (roll < actor->character->bot.probabilityToMove)
 					{
@@ -611,7 +462,7 @@ void CommandBadGuys(int ticks)
 						if (actor->flags & FLAGS_RUNS_AWAY)
 						{
 							// Turn back and shoot for running away characters
-							cmd |= ReverseDirection(Hunt(actor));
+							cmd |= AIReverseDirection(AIHunt(actor));
 						}
 					}
 					else

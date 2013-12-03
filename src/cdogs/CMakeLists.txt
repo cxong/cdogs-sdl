@@ -4,6 +4,8 @@ add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actors.c
 	ai.c
+	ai_coop.c
+	ai_utils.c
 	automap.c
 	blit.c
 	campaigns.c
@@ -48,6 +50,8 @@ set(CDOGS_SOURCES
 set(CDOGS_HEADERS
 	actors.h
 	ai.h
+	ai_coop.h
+	ai_utils.h
 	automap.h
 	blit.h
 	campaigns.h

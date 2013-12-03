@@ -59,6 +59,7 @@
 
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
+#include <cdogs/ai_coop.h>
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
@@ -740,10 +741,14 @@ int gameloop(void)
 			{
 				HandleGameEvents(&gGameEvents, &shakeAmount);
 
-				for (i = 0; i < MAX_PLAYERS; i++)
+				for (i = 0; i < gOptions.numPlayers; i++)
 				{
 					if (gPlayers[i])
 					{
+						if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+						{
+							cmds[i] = AICoopGetCmd(gPlayers[i]);
+						}
 						PlayerSpecialCommands(
 							gPlayers[i], cmds[i], &gPlayerDatas[i]);
 						CommandActor(gPlayers[i], cmds[i], ticks);

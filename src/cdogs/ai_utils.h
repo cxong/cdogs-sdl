@@ -46,13 +46,19 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI
-#define __AI
+#ifndef __AI_UTILS
+#define __AI_UTILS
+
+// Utility functions for AIs; contains basic behaviour
 
 #include "actors.h"
 
-void InitializeBadGuys(void);
-void CreateEnemies(void);
-void CommandBadGuys(int ticks);
+TActor *AIGetClosestPlayer(Vec2i pos);
+TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
+Vec2i AIGetClosestPlayerPos(Vec2i pos);
+int AIReverseDirection(int cmd);
+
+int AIGoto(TActor *actor, Vec2i target);
+int AIHunt(TActor *actor);
 
 #endif
