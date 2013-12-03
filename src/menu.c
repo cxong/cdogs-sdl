@@ -790,7 +790,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
 	menu_t *menu = ms->current;
 	menu_t *menuToChange = NULL;
-	if (cmd == CMD_ESC)
+	if (cmd == CMD_ESC || (cmd & CMD_BUTTON2))
 	{
 		menuToChange = MenuProcessEscCmd(menu);
 		if (menuToChange != NULL)
