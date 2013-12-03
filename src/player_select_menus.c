@@ -602,7 +602,8 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, CreateSaveTemplateMenu("Save", data));
 
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
+	MenuAddSubmenu(
+		ms->root, MenuCreateNormal("Done", "", MENU_TYPE_NORMAL, 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);

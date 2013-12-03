@@ -911,7 +911,13 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 	if (AnyButton(cmd) ||
 		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
 	{
-		menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+		menu_t *subMenu;
+		// Ignore if menu contains no submenus
+		if (menu->u.normal.numSubMenus == 0)
+		{
+			return NULL;
+		}
+		subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
 
 		// Only allow menu switching on button 1
 
@@ -1028,6 +1034,13 @@ void MenuProcessChangeKey(menu_t *menu)
 void MenuChangeIndex(menu_t *menu, int cmd)
 {
 	int leftRightMoves = MenuTypeLeftRightMoves(menu->type);
+
+	// Ignore if no submenus
+	if (menu->u.normal.numSubMenus == 0)
+	{
+		return;
+	}
+
 	if (Up(cmd) || (leftRightMoves && Left(cmd)))
 	{
 		do

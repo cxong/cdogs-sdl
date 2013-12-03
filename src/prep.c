@@ -245,7 +245,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		}
 		for (i = 0; i < numPlayers; i++)
 		{
-			if (!MenuIsExit(&menus[i].ms))
+			if (strcmp(menus[i].ms.current->name, "Done") != 0)
 			{
 				isDone = 0;
 			}
