@@ -65,28 +65,41 @@ int AICoopGetCmd(TActor *actor)
 	}
 	if (closestPlayer && minDistance > ((4 * 16) << 8))
 	{
-		return AIGoto(
+		int cmd = AIGoto(
 			actor,
 			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
+		// Try to slide if there is a clear path and we are far enough away
+		if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+			AIHasClearLine(
+			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
+			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y))) &&
+			minDistance > ((7 * 16) << 8))
+		{
+			cmd |= CMD_BUTTON2;
+		}
+		return cmd;
 	}
 
 	// Check if closest enemy is close enough
 	closestEnemy = AIGetClosestEnemy(
 		Vec2iNew(actor->x, actor->y), actor->flags, 1);
-	minEnemyDistance = CHEBYSHEV_DISTANCE(
-		actor->x, actor->y, closestEnemy->x, closestEnemy->y);
-	// Also only engage if there's a clear shot
-	if (minEnemyDistance > 0 && minEnemyDistance < ((8 * 16) << 8) &&
-		AIHasClearLine(
+	if (closestEnemy)
+	{
+		minEnemyDistance = CHEBYSHEV_DISTANCE(
+			actor->x, actor->y, closestEnemy->x, closestEnemy->y);
+		// Also only engage if there's a clear shot
+		if (minEnemyDistance > 0 && minEnemyDistance < ((8 * 16) << 8) &&
+			AIHasClearLine(
 			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
 			Vec2iFull2Real(Vec2iNew(closestEnemy->x, closestEnemy->y))))
-	{
-		return AIHunt(actor) | CMD_BUTTON1;
+		{
+			return AIHunt(actor) | CMD_BUTTON1;
+		}
 	}
 
 	// Otherwise, just go towards the closest player as long as we don't
 	// run into them
-	if (closestPlayer && minDistance > ((1 * 16) << 8))
+	if (closestPlayer && minDistance > ((2 * 16) << 8))
 	{
 		return AIGoto(
 			actor,
