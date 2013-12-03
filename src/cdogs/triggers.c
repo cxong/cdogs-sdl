@@ -264,25 +264,32 @@ static int ConditionMet(TCondition *c)
 	}
 }
 
-static TTrigger *FindTrigger(TTrigger * t, int x, int y)
+static TTrigger *FindTrigger(TTrigger *t, Vec2i pos)
 {
 	if (!t)
 		return NULL;
 
-	if (t->x == x && t->y == y)
+	if (t->x == pos.x && t->y == pos.y)
+	{
 		return t;
-	if (y > t->y || (y == t->y && x > t->x))
-		return FindTrigger(t->right, x, y);
-	return FindTrigger(t->left, x, y);
+	}
+	if (pos.y > t->y || (pos.y == t->y && pos.x > t->x))
+	{
+		return FindTrigger(t->right, pos);
+	}
+	return FindTrigger(t->left, pos);
 }
 
-void TriggerAt(int x, int y, int flags)
+void TriggerAt(Vec2i pos, int flags)
 {
-	TTrigger *t = FindTrigger(root, x, y);
-	while (t) {
-		if (t->flags == 0 || (t->flags & flags) != 0)
+	TTrigger *t = FindTrigger(root, pos);
+	while (t)
+	{
+		if (t->flags == 0 || (t->flags & flags))
+		{
 			Action(t->actions);
-		t = FindTrigger(t->left, x, y);
+		}
+		t = FindTrigger(t->left, pos);
 	}
 }
 

@@ -48,6 +48,12 @@
 */
 #include "ai_utils.h"
 
+#include <assert.h>
+#include <math.h>
+
+#include "map.h"
+
+
 TActor *AIGetClosestPlayer(Vec2i pos)
 {
 	int i;
@@ -139,17 +145,113 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
+int AIHasClearLine(Vec2i from, Vec2i to)
+{
+	// Find all tiles that overlap with the line (from, to)
+	// Loop and work along the line, and find the tile that the current
+	// segment is in, then advance to the next segment and repeat
+	int signY;
+	double slope;
+	Vec2i tilePosStart;
+	Vec2i tilePosEnd;
+	Vec2i delta;
+	Vec2i max;
+
+	// swap if necessary so we always go left to right
+	if (from.x > to.x)
+	{
+		Vec2i temp = to;
+		to = from;
+		from = temp;
+	}
+
+	tilePosStart = Vec2iToTile(from);
+	tilePosEnd = Vec2iToTile(to);
+
+	// Special case for vertical lines
+	if (tilePosStart.x == tilePosEnd.x)
+	{
+		// Swap if necessary so we always go top to bottom
+		if (tilePosStart.y > tilePosEnd.y)
+		{
+			int tempY = tilePosEnd.y;
+			tilePosEnd.y = tilePosStart.y;
+			tilePosStart.y = tempY;
+		}
+		for (; tilePosStart.y <= tilePosEnd.y; tilePosStart.y++)
+		{
+			if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	// Special case for horizontal lines
+	if (tilePosStart.y == tilePosEnd.y)
+	{
+		assert(tilePosStart.x <= tilePosEnd.x);
+		for (; tilePosStart.x <= tilePosEnd.x; tilePosStart.x++)
+		{
+			if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	signY = 1;
+	if (from.y > to.y)
+	{
+		signY = -1;
+	}
+	slope = (double)(to.y - from.y) / (to.x - from.x);
+	delta.x = (tilePosStart.x + 1) * TILE_WIDTH - from.x;
+	delta.y = (tilePosStart.y + signY) * TILE_HEIGHT - from.y;
+	max.x = (int)floor(slope * delta.x + 0.5);
+	max.y = (int)floor(1.0 / slope * delta.y + 0.5);
+
+	while (!Vec2iEqual(tilePosStart, tilePosEnd))
+	{
+		// Check the current tile
+		if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
+		{
+			return 0;
+		}
+
+		// Advance to next tile
+		if (max.x < max.y)
+		{
+			max.x += delta.x;
+			tilePosStart.x++;
+		}
+		else
+		{
+			max.y += delta.y;
+			tilePosStart.y += signY;
+		}
+	}
+	// Check final tile
+	if (gMap[tilePosEnd.y][tilePosEnd.x].flags & MAPTILE_IS_WALL)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+
 int AIGoto(TActor *actor, Vec2i p)
 {
 	int cmd = 0;
-	p.x >>= 8;
-	p.y >>= 8;
+	Vec2i a = Vec2iFull2Real(Vec2iNew(actor->x, actor->y));
 
-	if ((actor->x >> 8) < p.x - 1)		cmd |= CMD_RIGHT;
-	else if ((actor->x >> 8) > p.x + 1)	cmd |= CMD_LEFT;
+	if (a.x < p.x - 1)		cmd |= CMD_RIGHT;
+	else if (a.x > p.x + 1)	cmd |= CMD_LEFT;
 
-	if ((actor->y >> 8) < p.y - 1)		cmd |= CMD_DOWN;
-	else if ((actor->y >> 8) > p.y + 1)	cmd |= CMD_UP;
+	if (a.y < p.y - 1)		cmd |= CMD_DOWN;
+	else if (a.y > p.y + 1)	cmd |= CMD_UP;
 
 	return cmd;
 }

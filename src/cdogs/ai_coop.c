@@ -65,7 +65,9 @@ int AICoopGetCmd(TActor *actor)
 	}
 	if (closestPlayer && minDistance > ((4 * 16) << 8))
 	{
-		return AIGoto(actor, Vec2iNew(closestPlayer->x, closestPlayer->y));
+		return AIGoto(
+			actor,
+			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
 	}
 
 	// Check if closest enemy is close enough
@@ -73,7 +75,11 @@ int AICoopGetCmd(TActor *actor)
 		Vec2iNew(actor->x, actor->y), actor->flags, 1);
 	minEnemyDistance = CHEBYSHEV_DISTANCE(
 		actor->x, actor->y, closestEnemy->x, closestEnemy->y);
-	if (minEnemyDistance > 0 && minEnemyDistance < ((8 * 16) << 8))
+	// Also only engage if there's a clear shot
+	if (minEnemyDistance > 0 && minEnemyDistance < ((8 * 16) << 8) &&
+		AIHasClearLine(
+			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
+			Vec2iFull2Real(Vec2iNew(closestEnemy->x, closestEnemy->y))))
 	{
 		return AIHunt(actor) | CMD_BUTTON1;
 	}
@@ -82,7 +88,9 @@ int AICoopGetCmd(TActor *actor)
 	// run into them
 	if (closestPlayer && minDistance > ((1 * 16) << 8))
 	{
-		return AIGoto(actor, Vec2iNew(closestPlayer->x, closestPlayer->y));
+		return AIGoto(
+			actor,
+			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
 	}
 
 	return 0;

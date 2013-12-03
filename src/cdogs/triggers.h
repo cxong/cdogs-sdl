@@ -100,7 +100,7 @@ struct Watch {
 typedef struct Watch TWatch;
 
 
-void TriggerAt(int x, int y, int flags);
+void TriggerAt(Vec2i pos, int flags);
 void UpdateWatches(void);
 TTrigger *AddTrigger(int x, int y, int actionCount);
 TWatch *AddWatch(int conditionCount, int actionCount);

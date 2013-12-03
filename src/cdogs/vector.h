@@ -44,6 +44,12 @@ Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 Vec2i Vec2iNorm(Vec2i v);
 int Vec2iEqual(Vec2i a, Vec2i b);
 
+// Convert to and from real (i.e. integral) coordinates and full (fractional)
+Vec2i Vec2iFull2Real(Vec2i v);
+Vec2i Vec2iReal2Full(Vec2i v);
+
+Vec2i Vec2iToTile(Vec2i v);
+
 int DistanceSquared(Vec2i a, Vec2i b);
 void CalcChebyshevDistanceAndBearing(
 	Vec2i origin, Vec2i target, int *distance, int *bearing);

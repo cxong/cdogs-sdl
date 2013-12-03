@@ -27,6 +27,8 @@
 
 #include <math.h>
 
+#include "map.h"
+
 Vec2i Vec2iNew(int x, int y)
 {
 	Vec2i v;
@@ -77,6 +79,20 @@ Vec2i Vec2iNorm(Vec2i v)
 int Vec2iEqual(Vec2i a, Vec2i b)
 {
 	return a.x == b.x && a.y == b.y;
+}
+
+Vec2i Vec2iFull2Real(Vec2i v)
+{
+	return Vec2iScaleDiv(v, 256);
+}
+Vec2i Vec2iReal2Full(Vec2i v)
+{
+	return Vec2iScale(v, 256);
+}
+
+Vec2i Vec2iToTile(Vec2i v)
+{
+	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
 }
 
 void CalcChebyshevDistanceAndBearing(

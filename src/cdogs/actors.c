@@ -481,16 +481,12 @@ void UpdateActorState(TActor * actor, int ticks)
 }
 
 
-static void CheckTrigger(TActor * actor, int x, int y)
+static void CheckTrigger(TActor *actor, Vec2i pos)
 {
-	x /= TILE_WIDTH;
-	y /= TILE_HEIGHT;
-	if ((Map(x, y).flags & MAPTILE_TILE_TRIGGER))
+	pos = Vec2iToTile(pos);
+	if ((gMap[pos.y][pos.x].flags & MAPTILE_TILE_TRIGGER))
 	{
-//  if ((actor->flags & (FLAGS_PLAYERS | FLAGS_GOOD_GUY)) != 0)
-		TriggerAt(x, y, actor->flags | gMission.flags);
-//  else
-//    TriggerAt( x, y, actor->flags);
+		TriggerAt(pos, actor->flags | gMission.flags);
 	}
 }
 
@@ -639,7 +635,7 @@ int MoveActor(TActor * actor, int x, int y)
 		}
 	}
 
-	CheckTrigger(actor, x >> 8, y >> 8);
+	CheckTrigger(actor, Vec2iFull2Real(Vec2iNew(x, y)));
 
 	if (actor->pData)
 	{
