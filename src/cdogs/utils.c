@@ -91,37 +91,3 @@ double ToDegrees(double radians)
 {
 	return radians * 180.0 / PI;
 }
-
-char *InputDeviceStr(int d)
-{
-	switch (d)
-	{
-	case INPUT_DEVICE_KEYBOARD:
-		return "Keyboard";
-	case INPUT_DEVICE_MOUSE:
-		return "Mouse";
-	case INPUT_DEVICE_JOYSTICK:
-		return "Joystick";
-	default:
-		return "";
-	}
-}
-input_device_e StrInputDevice(const char *str)
-{
-	if (strcmp(str, "Keyboard") == 0)
-	{
-		return INPUT_DEVICE_KEYBOARD;
-	}
-	else if (strcmp(str, "Mouse") == 0)
-	{
-		return INPUT_DEVICE_MOUSE;
-	}
-	else if (strcmp(str, "Joystick") == 0)
-	{
-		return INPUT_DEVICE_JOYSTICK;
-	}
-	else
-	{
-		return INPUT_DEVICE_KEYBOARD;
-	}
-}

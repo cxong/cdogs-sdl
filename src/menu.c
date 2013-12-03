@@ -186,15 +186,45 @@ void MenuReset(MenuSystem *menu)
 	menu->current = menu->root;
 }
 
+static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
+{
+	int firstIndex = menu->u.normal.index;
+	int isFirst = 1;
+	// Move the selection to the next non-disabled submenu
+	for (;;)
+	{
+		if (!menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
+		{
+			break;
+		}
+		if (menu->u.normal.index == firstIndex && !isFirst)
+		{
+			break;
+		}
+		isFirst = 0;
+		if (isDown)
+		{
+			menu->u.normal.index++;
+			if (menu->u.normal.index == menu->u.normal.numSubMenus)
+			{
+				menu->u.normal.index = 0;
+			}
+		}
+		else
+		{
+			menu->u.normal.index--;
+			if (menu->u.normal.index == -1)
+			{
+				menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+			}
+		}
+	}
+}
+
 void MenuDisableSubmenu(menu_t *menu, int index)
 {
 	menu->u.normal.subMenus[index].isDisabled = 1;
-	// Move the selection to the next non-disabled submenu
-	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
-		menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
-	{
-		menu->u.normal.index++;
-	}
+	MoveIndexToNextEnabledSubmenu(menu, 1);
 }
 void MenuEnableSubmenu(menu_t *menu, int index)
 {
@@ -298,11 +328,7 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	}
 
 	// move cursor in case first menu item(s) are disabled
-	while (menu->u.normal.index < menu->u.normal.numSubMenus &&
-		menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
-	{
-		menu->u.normal.index++;
-	}
+	MoveIndexToNextEnabledSubmenu(menu, 1);
 }
 
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
@@ -1043,26 +1069,18 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 
 	if (Up(cmd) || (leftRightMoves && Left(cmd)))
 	{
-		do
+		menu->u.normal.index--;
+		if (menu->u.normal.index == -1)
 		{
-			menu->u.normal.index--;
-			if (menu->u.normal.index < 0)
-			{
-				menu->u.normal.index = menu->u.normal.numSubMenus - 1;
-			}
-		} while (menu->u.normal.subMenus[menu->u.normal.index].isDisabled);
+			menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+		}
+		MoveIndexToNextEnabledSubmenu(menu, 0);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
-		do
-		{
-			menu->u.normal.index++;
-			if (menu->u.normal.index >= menu->u.normal.numSubMenus)
-			{
-				menu->u.normal.index = 0;
-			}
-		} while (menu->u.normal.subMenus[menu->u.normal.index].isDisabled);
+		menu->u.normal.index++;
+		MoveIndexToNextEnabledSubmenu(menu, 1);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	menu->u.normal.scroll =

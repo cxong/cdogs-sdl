@@ -133,6 +133,13 @@ int NumPlayersSelection(
 }
 
 
+static void AssignPlayerInputDevice(
+	struct PlayerData *pData, input_device_e d, int index)
+{
+	pData->inputDevice = d;
+	pData->deviceIndex = index;
+}
+
 static void AssignPlayerInputDevices(
 	int hasInputDevice[MAX_PLAYERS], int numPlayers,
 	struct PlayerData playerDatas[MAX_PLAYERS],
@@ -179,8 +186,8 @@ static void AssignPlayerInputDevices(
 				!assignedKeyboards[j])
 			{
 				hasInputDevice[i] = 1;
-				playerDatas[i].inputDevice = INPUT_DEVICE_KEYBOARD;
-				playerDatas[i].deviceIndex = j;
+				AssignPlayerInputDevice(
+					&playerDatas[i], INPUT_DEVICE_KEYBOARD, j);
 				assignedKeyboards[j] = 1;
 				continue;
 			}
@@ -189,8 +196,7 @@ static void AssignPlayerInputDevices(
 			!assignedMouse)
 		{
 			hasInputDevice[i] = 1;
-			playerDatas[i].inputDevice = INPUT_DEVICE_MOUSE;
-			playerDatas[i].deviceIndex = 0;
+			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_MOUSE, 0);
 			assignedMouse = 1;
 			continue;
 		}
@@ -201,8 +207,8 @@ static void AssignPlayerInputDevices(
 				!assignedJoysticks[j])
 			{
 				hasInputDevice[i] = 1;
-				playerDatas[i].inputDevice = INPUT_DEVICE_JOYSTICK;
-				playerDatas[i].deviceIndex = j;
+				AssignPlayerInputDevice(
+					&playerDatas[i], INPUT_DEVICE_JOYSTICK, j);
 				assignedJoysticks[j] = 1;
 				continue;
 			}
@@ -229,6 +235,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	{
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
+		int hasAtLeastOneInput = 0;
 		InputPoll(&gInputDevices, SDL_GetTicks());
 		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
 		{
@@ -243,14 +250,23 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 				MenuProcessCmd(&menus[i].ms, cmds[i]);
 			}
 		}
+
+		// Conditions for exit: at least one player has selected "Done",
+		// and no other players, if any, are still selecting their player
+		// The "players" with no input device are turned into AIs
 		for (i = 0; i < numPlayers; i++)
 		{
-			if (strcmp(menus[i].ms.current->name, "Done") != 0)
+			if (hasInputDevice[i])
+			{
+				hasAtLeastOneInput = 1;
+			}
+			if (strcmp(menus[i].ms.current->name, "Done") != 0 &&
+				hasInputDevice[i])
 			{
 				isDone = 0;
 			}
 		}
-		if (isDone)
+		if (isDone && hasAtLeastOneInput)
 		{
 			break;
 		}
@@ -300,6 +316,15 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		SDL_Delay(10);
 	}
 
+	// For any player slots not picked, turn them into AIs
+	for (i = 0; i < numPlayers; i++)
+	{
+		if (!hasInputDevice[i])
+		{
+			AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
+		}
+	}
+
 	for (i = 0; i < numPlayers; i++)
 	{
 		MenuSystemTerminate(&menus[i].ms);
@@ -317,6 +342,16 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
 			&gInputDevices, graphics, &gConfig.Input);
+		// For AI players, pre-pick their weapons and go straight to menu end
+		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+		{
+			int lastMenuIndex = menus[i].ms.root->u.normal.numSubMenus - 1;
+			menus[i].ms.current =
+				&menus[i].ms.root->u.normal.subMenus[lastMenuIndex];
+			gPlayerDatas[i].weapons[0] = GUN_MG;
+			gPlayerDatas[i].weaponCount = 1;
+			// TODO: select more weapons, or select weapons based on mission
+		}
 	}
 
 	debug(D_NORMAL, "\n");

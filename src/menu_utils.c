@@ -102,6 +102,9 @@ void MenuDisplayPlayerControls(
 		sprintf(s, "(%s)",
 			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
 		break;
+	case INPUT_DEVICE_AI:
+		sprintf(s, "(Computer)");
+		break;
 	default:
 		assert(0 && "unknown device");
 		break;

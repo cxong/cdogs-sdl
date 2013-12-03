@@ -394,6 +394,9 @@ static int GetOnePlayerCmd(
 			cmd = GetJoystickCmd(joystick, joyFunc);
 		}
 		break;
+	case INPUT_DEVICE_AI:
+		// Do nothing; AI input is handled separately
+		break;
 	default:
 		assert(0 && "unknown input device");
 		break;
