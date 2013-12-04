@@ -75,48 +75,76 @@ TActor *AIGetClosestPlayer(Vec2i pos)
 	return closestPlayer;
 }
 
-TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer)
+static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 {
-	// Search all the actors and find the closest one that is an enemy
+	// Search all the actors and find the closest one that
+	// satisfies the condition
 	TActor *a;
-	TActor *closestEnemy = NULL;
+	TActor *closest = NULL;
 	int minDistance = -1;
 	for (a = ActorList(); a; a = a->next)
 	{
-		int isEnemy = 0;
 		int distance;
 		// Never target invulnerables or victims
 		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_VICTIM))
 		{
 			continue;
 		}
-		if (a->pData || (a->flags & FLAGS_GOOD_GUY))
-		{
-			// target is good guy / player, check if we are bad
-			if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
-			{
-				isEnemy = 1;
-			}
-		}
-		else
-		{
-			// target is bad guy, check if we are good
-			if (isPlayer || (flags & FLAGS_GOOD_GUY))
-			{
-				isEnemy = 1;
-			}
-		}
-		if (isEnemy)
+		if (compFunc(a))
 		{
 			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->x, a->y);
-			if (!closestEnemy || distance < minDistance)
+			if (!closest || distance < minDistance)
 			{
 				minDistance = distance;
-				closestEnemy = a;
+				closest = a;
 			}
 		}
 	}
-	return closestEnemy;
+	return closest;
+}
+
+static int IsGood(TActor *a)
+{
+	return a->pData || (a->flags & FLAGS_GOOD_GUY);
+}
+static int IsBad(TActor *a)
+{
+	return !IsGood(a);
+}
+TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer)
+{
+	if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+	{
+		// we are bad; look for good guys
+		return AIGetClosestActor(from, IsGood);
+	}
+	else
+	{
+		// we are good; look for bad guys
+		return AIGetClosestActor(from, IsBad);
+	}
+}
+
+static int IsGoodAndVisible(TActor *a)
+{
+	return IsGood(a) && (a->flags & FLAGS_VISIBLE);
+}
+static int IsBadAndVisible(TActor *a)
+{
+	return IsBad(a) && (a->flags & FLAGS_VISIBLE);
+}
+TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer)
+{
+	if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+	{
+		// we are bad; look for good guys
+		return AIGetClosestActor(from, IsGoodAndVisible);
+	}
+	else
+	{
+		// we are good; look for bad guys
+		return AIGetClosestActor(from, IsBadAndVisible);
+	}
 }
 
 Vec2i AIGetClosestPlayerPos(Vec2i pos)
@@ -145,99 +173,151 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
+static void Swap(int *x, int *y)
+{
+	int temp = *x;
+	*x = *y;
+	*y = temp;
+}
+
+// Floating point part of a number
+static double FPart(double x)
+{
+	return x - floor(x);
+}
+
+// Reciprocal of the floating point part of a number
+static double RFPart(double x)
+{
+	return 1 - FPart(x);
+}
+
+static int IsTileBlocked(int x, int y, double factor)
+{
+	if (factor > 0.4)
+	{
+		return gMap[y][x].flags & MAPTILE_IS_WALL;
+	}
+	return 0;
+}
+
 int AIHasClearLine(Vec2i from, Vec2i to)
 {
 	// Find all tiles that overlap with the line (from, to)
-	// Loop and work along the line, and find the tile that the current
-	// segment is in, then advance to the next segment and repeat
-	int signY;
-	double slope;
-	Vec2i tilePosStart;
-	Vec2i tilePosEnd;
+	// Uses a modified version of Xiaolin Wu's algorithm
 	Vec2i delta;
-	Vec2i max;
-
-	// swap if necessary so we always go left to right
+	double gradient;
+	Vec2i end;
+	double xGap;
+	Vec2i tileStart, tileEnd;
+	double yIntercept;
+	int x;
+	int isSteep = abs(to.y - from.y) > abs(to.x - from.x);
+	if (isSteep)
+	{
+		// Swap x and y
+		// Note that this prevents the vertical line special case
+		Swap(&from.x, &from.y);
+		Swap(&to.x, &to.y);
+	}
 	if (from.x > to.x)
 	{
-		Vec2i temp = to;
-		to = from;
-		from = temp;
+		// swap to make sure we always go left to right
+		Swap(&from.x, &to.x);
+		Swap(&from.y, &to.y);
 	}
 
-	tilePosStart = Vec2iToTile(from);
-	tilePosEnd = Vec2iToTile(to);
+	delta.x = to.x - from.x;
+	delta.y = to.y - from.y;
+	gradient = (double)delta.y / delta.x;
 
-	// Special case for vertical lines
-	if (tilePosStart.x == tilePosEnd.x)
+	// handle first endpoint
+	end.x = from.x / TILE_WIDTH;
+	end.y = (int)((from.y + gradient * (end.x * TILE_WIDTH - from.x)) / TILE_HEIGHT);
+	xGap = RFPart(from.x + 0.5);
+	tileStart.x = end.x;
+	tileStart.y = end.y;
+	if (isSteep)
 	{
-		// Swap if necessary so we always go top to bottom
-		if (tilePosStart.y > tilePosEnd.y)
-		{
-			int tempY = tilePosEnd.y;
-			tilePosEnd.y = tilePosStart.y;
-			tilePosStart.y = tempY;
-		}
-		for (; tilePosStart.y <= tilePosEnd.y; tilePosStart.y++)
-		{
-			if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
-
-	// Special case for horizontal lines
-	if (tilePosStart.y == tilePosEnd.y)
-	{
-		assert(tilePosStart.x <= tilePosEnd.x);
-		for (; tilePosStart.x <= tilePosEnd.x; tilePosStart.x++)
-		{
-			if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
-			{
-				return 0;
-			}
-		}
-		return 1;
-	}
-
-	signY = 1;
-	if (from.y > to.y)
-	{
-		signY = -1;
-	}
-	slope = (double)(to.y - from.y) / (to.x - from.x);
-	delta.x = (tilePosStart.x + 1) * TILE_WIDTH - from.x;
-	delta.y = (tilePosStart.y + signY) * TILE_HEIGHT - from.y;
-	max.x = (int)floor(slope * delta.x + 0.5);
-	max.y = (int)floor(1.0 / slope * delta.y + 0.5);
-
-	while (!Vec2iEqual(tilePosStart, tilePosEnd))
-	{
-		// Check the current tile
-		if (gMap[tilePosStart.y][tilePosStart.x].flags & MAPTILE_IS_WALL)
+		if (IsTileBlocked(tileStart.y, tileStart.x, RFPart(end.y) * xGap))
 		{
 			return 0;
 		}
-
-		// Advance to next tile
-		if (max.x < max.y)
+		if (IsTileBlocked(tileStart.y + 1, tileStart.x, FPart(end.y) * xGap))
 		{
-			max.x += delta.x;
-			tilePosStart.x++;
+			return 0;
+		}
+	}
+	else
+	{
+		if (IsTileBlocked(tileStart.x, tileStart.y, RFPart(end.y) * xGap))
+		{
+			return 0;
+		}
+		if (IsTileBlocked(tileStart.x, tileStart.y + 1, FPart(end.y) * xGap))
+		{
+			return 0;
+		}
+	}
+	yIntercept = end.y + gradient;
+
+	// handle second endpoint
+	end.x = to.x / TILE_WIDTH;
+	end.y = (int)((to.y + gradient * (end.x * TILE_WIDTH - to.x)) / TILE_HEIGHT);
+	xGap = FPart(to.x + 0.5);
+	tileEnd.x = end.x;
+	tileEnd.y = end.y;
+	if (isSteep)
+	{
+		if (IsTileBlocked(tileEnd.y, tileEnd.x, RFPart(end.y) * xGap))
+		{
+			return 0;
+		}
+		if (IsTileBlocked(tileEnd.y + 1, tileEnd.x, FPart(end.y) * xGap))
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (IsTileBlocked(tileEnd.x, tileEnd.y, RFPart(end.y) * xGap))
+		{
+			return 0;
+		}
+		if (IsTileBlocked(tileEnd.x, tileEnd.y + 1, FPart(end.y) * xGap))
+		{
+			return 0;
+		}
+	}
+
+	// main loop
+	for (x = tileStart.x + 1; x < tileEnd.x; x++)
+	{
+		if (isSteep)
+		{
+			if (IsTileBlocked((int)yIntercept, x, RFPart(yIntercept)))
+			{
+				return 0;
+			}
+			if (IsTileBlocked((int)yIntercept + 1, x, FPart(yIntercept)))
+			{
+				return 0;
+			}
 		}
 		else
 		{
-			max.y += delta.y;
-			tilePosStart.y += signY;
+			if (IsTileBlocked(x, (int)yIntercept, RFPart(yIntercept)))
+			{
+				return 0;
+			}
+			if (IsTileBlocked(x, (int)yIntercept + 1, FPart(yIntercept)))
+			{
+				return 0;
+			}
 		}
+		yIntercept += gradient;
 	}
-	// Check final tile
-	if (gMap[tilePosEnd.y][tilePosEnd.x].flags & MAPTILE_IS_WALL)
-	{
-		return 0;
-	}
+
 	return 1;
 }
 

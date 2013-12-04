@@ -55,6 +55,7 @@
 
 TActor *AIGetClosestPlayer(Vec2i pos);
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
+TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
 int AIHasClearLine(Vec2i from, Vec2i to);

@@ -63,7 +63,7 @@ int AICoopGetCmd(TActor *actor)
 			}
 		}
 	}
-	if (closestPlayer && minDistance > ((4 * 16) << 8))
+	if (closestPlayer && minDistance > ((8 * 16) << 8))
 	{
 		int cmd = AIGoto(
 			actor,
@@ -80,20 +80,26 @@ int AICoopGetCmd(TActor *actor)
 		return cmd;
 	}
 
-	// Check if closest enemy is close enough
-	closestEnemy = AIGetClosestEnemy(
+	// Check if closest enemy is close enough, and visible
+	closestEnemy = AIGetClosestVisibleEnemy(
 		Vec2iNew(actor->x, actor->y), actor->flags, 1);
 	if (closestEnemy)
 	{
 		minEnemyDistance = CHEBYSHEV_DISTANCE(
 			actor->x, actor->y, closestEnemy->x, closestEnemy->y);
 		// Also only engage if there's a clear shot
-		if (minEnemyDistance > 0 && minEnemyDistance < ((8 * 16) << 8) &&
+		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
 			AIHasClearLine(
 			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
 			Vec2iFull2Real(Vec2iNew(closestEnemy->x, closestEnemy->y))))
 		{
-			return AIHunt(actor) | CMD_BUTTON1;
+			int cmd = AIHunt(actor);
+			// only fire if gun is ready
+			if (actor->weapon.lock <= 0)
+			{
+				cmd |= CMD_BUTTON1;
+			}
+			return cmd;
 		}
 	}
 

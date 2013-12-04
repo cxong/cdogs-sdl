@@ -1080,6 +1080,10 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
 		menu->u.normal.index++;
+		if (menu->u.normal.index == menu->u.normal.numSubMenus)
+		{
+			menu->u.normal.index = 0;
+		}
 		MoveIndexToNextEnabledSubmenu(menu, 1);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
