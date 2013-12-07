@@ -166,6 +166,17 @@ menu_t *MenuCreateCampaigns(
 menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 {
 	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
+	// Special colors:
+	// - Green for new campaigns
+	// - White (normal) for in-progress campaigns
+	// - Grey for complete campaigns
+	MissionSave m;
+	AutosaveLoadMission(&gAutosave, &m, entry->path);
+	if (!m.IsValid)
+	{
+		// New campaign
+		menu->color = colorGreen;
+	}
 	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
 	return menu;
 }

@@ -236,15 +236,19 @@ void ShowControls(void)
 	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
 }
 
-void DisplayMenuItem(int x, int y, const char *s, int selected)
+void DisplayMenuItem(Vec2i pos, const char *s, int selected, color_t color)
 {
 	if (selected)
 	{
-		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
+		DrawTextStringMasked(s, &gGraphicsDevice, pos, colorRed);
+	}
+	else if (!ColorEquals(color, colorBlack))
+	{
+		DrawTextStringMasked(s, &gGraphicsDevice, pos, color);
 	}
 	else
 	{
-		CDogsTextStringAt(x, y, s);
+		DrawTextString(s, &gGraphicsDevice, pos);
 	}
 }
 
@@ -631,10 +635,12 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			if (menu->u.normal.scroll != 0)
 			{
 				DisplayMenuItem(
-					MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
-					y - 2 - CDogsTextHeight(),
+					Vec2iNew(
+						MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
+						y - 2 - CDogsTextHeight()),
 					ARROW_UP,
-					0);
+					0,
+					colorBlack);
 			}
 
 			for (i = menu->u.normal.scroll;
@@ -646,10 +652,10 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				const char *name = subMenu->name;
 				// TODO: display subfolders
 				DisplayMenuItem(
-					MS_CENTER_X(*ms, TextGetStringWidth(name)),
-					y,
+					Vec2iNew(MS_CENTER_X(*ms, TextGetStringWidth(name)), y),
 					name,
-					isSelected);
+					isSelected,
+					subMenu->color);
 
 				if (isSelected && subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
 				{
@@ -671,10 +677,12 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			if (i < menu->u.normal.numSubMenus - 1)
 			{
 				DisplayMenuItem(
-					MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
-					y + 2,
+					Vec2iNew(
+						MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
+						y + 2),
 					ARROW_DOWN,
-					0);
+					0,
+					colorBlack);
 			}
 		}
 		break;
@@ -719,7 +727,8 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 							subMenu->u.changeKey.keys,
 							subMenu->u.changeKey.code));
 					}
-					DisplayMenuItem(xKeys, y, keyName, isSelected);
+					DisplayMenuItem(
+						Vec2iNew(xKeys, y), keyName, isSelected, colorBlack);
 				}
 			}
 		}

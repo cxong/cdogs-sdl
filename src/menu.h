@@ -114,6 +114,7 @@ struct menu
 	menu_type_e type;
 	struct menu *parentMenu;
 	int isDisabled;
+	color_t color;
 	MenuFunc customPostEnterFunc;
 	void *customPostEnterData;
 	MenuPostInputFunc customPostInputFunc;
@@ -249,7 +250,7 @@ void MenuDisableSubmenu(menu_t *menu, int index);
 void MenuEnableSubmenu(menu_t *menu, int index);
 
 void ShowControls(void);
-void DisplayMenuItem(int x, int y, const char *s, int selected);
+void DisplayMenuItem(Vec2i pos, const char *s, int selected, color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(

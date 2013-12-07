@@ -292,9 +292,10 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 	}
 
 	DisplayMenuItem(
-		x + (i % ENTRY_COLS) * ENTRY_SPACING,
-		y + (i / ENTRY_COLS) * CDogsTextHeight(),
-		"(End)", i == d->nameMenuSelection);
+		Vec2iNew(
+			x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			y + (i / ENTRY_COLS) * CDogsTextHeight()),
+		"(End)", i == d->nameMenuSelection, colorBlack);
 }
 
 static int HandleInputNameMenu(int cmd, void *data)
