@@ -973,8 +973,8 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 		{
 			impulse = Vec2iZero();
 		}
-		obj->dx += impulse.x;
-		obj->dy += impulse.y;
+		obj->dx += impulse.x * ticks;
+		obj->dy += impulse.y * ticks;
 	}
 	return 1;
 }
