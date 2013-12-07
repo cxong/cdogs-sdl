@@ -157,13 +157,14 @@ void LoadQuickPlayEntry(campaign_entry_t *entry)
 	entry->builtinIndex = 0;
 }
 
-int IsCampaignOK(const char *path, char *title);
+int IsCampaignOK(const char *path, char *buf, int *numMissions);
 void AddCustomCampaignEntry(
 	campaign_list_t *list,
 	const char *filename,
 	const char *path,
 	const char *title,
-	campaign_mode_e mode);
+	campaign_mode_e mode,
+	int numMissions);
 
 void LoadCampaignsFromFolder(
 	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode)
@@ -196,9 +197,13 @@ void LoadCampaignsFromFolder(
 		else if (file.is_reg)
 		{
 			char title[256];
-			if (IsCampaignOK(file.path, title))
+			char buf[256];
+			int numMissions;
+			if (IsCampaignOK(file.path, buf, &numMissions))
 			{
-				AddCustomCampaignEntry(list, file.name, file.path, title, mode);
+				sprintf(title, "%s (%d)", buf, numMissions);
+				AddCustomCampaignEntry(
+					list, file.name, file.path, title, mode, numMissions);
 			}
 		}
 	}
@@ -206,16 +211,9 @@ void LoadCampaignsFromFolder(
 	tinydir_close(&dir);
 }
 
-int IsCampaignOK(const char *path, char *title)
+int IsCampaignOK(const char *path, char *buf, int *numMissions)
 {
-	char buf[256];
-	int numMissions;
-	if (ScanCampaign(path, buf, &numMissions) == CAMPAIGN_OK)
-	{
-		sprintf(title, "%s (%d)", buf, numMissions);
-		return 1;
-	}
-	return 0;
+	return ScanCampaign(path, buf, numMissions) == CAMPAIGN_OK;
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
@@ -233,12 +231,14 @@ void AddCustomCampaignEntry(
 	const char *filename,
 	const char *path,
 	const char *title,
-	campaign_mode_e mode)
+	campaign_mode_e mode,
+	int numMissions)
 {
 	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
 	strcpy(entry->filename, filename);
 	strcpy(entry->path, path);
 	entry->isBuiltin = 0;
+	entry->numMissions = numMissions;
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(

@@ -70,6 +70,7 @@ static void LoadMissionNode(MissionSave *m, json_t *node)
 {
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
+	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
 	m->IsValid = 1;
 	// If the campaign is from a file, check that file exists
 	if (!m->Campaign.isBuiltin)
@@ -82,6 +83,7 @@ static json_t *CreateMissionNode(MissionSave *m)
 	json_t *subConfig = json_new_object();
 	AddCampaignNode(&m->Campaign, subConfig);
 	json_insert_pair_into_object(subConfig, "Password", json_new_string(m->Password));
+	AddIntPair(subConfig, "MissionsCompleted", m->MissionsCompleted);
 	return subConfig;
 }
 

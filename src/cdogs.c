@@ -240,6 +240,7 @@ void MissionBriefing(GraphicsDevice *device)
 		MissionSave ms;
 		ms.Campaign = gCampaign.Entry;
 		strcpy(ms.Password, MakePassword(gMission.index, 0));
+		ms.MissionsCompleted = gMission.index;
 		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
@@ -656,6 +657,7 @@ void Victory(GraphicsDevice *graphics)
 	const char *s = NULL;
 	int w = graphics->cachedConfig.ResolutionWidth;
 	int h = graphics->cachedConfig.ResolutionHeight;
+	MissionSave ms;
 
 	GraphicsBlitBkg(graphics);
 
@@ -726,6 +728,13 @@ void Victory(GraphicsDevice *graphics)
 			gPlayerDatas[i].missions++;
 		}
 	}
+	
+	// Save that this mission has been completed
+	ms.Campaign = gCampaign.Entry;
+	strcpy(ms.Password, MakePassword(gMission.index, 0));
+	ms.MissionsCompleted = gMission.index + 1;
+	AutosaveAddMission(&gAutosave, &ms);
+	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	x = 160 - TextGetStringWidth(s) / 2;
 	CDogsTextGoto(x, 140);

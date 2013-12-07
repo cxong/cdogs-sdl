@@ -42,6 +42,7 @@ typedef struct
 	campaign_entry_t Campaign;
 	char Password[PASSWORD_MAX + 1];
 	int IsValid;
+	int MissionsCompleted;
 } MissionSave;
 
 typedef struct
