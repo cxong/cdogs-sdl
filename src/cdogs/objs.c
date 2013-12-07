@@ -436,7 +436,7 @@ static void DamageObject(
 	if (object->structure <= 0)
 	{
 		object->structure = 0;
-		if (CheckMissionObjective(object->tileItem.flags))
+		if (CheckMissionObjective(object->tileItem.flags, OBJECTIVE_DESTROY))
 		{
 			if (player >= 0)
 			{

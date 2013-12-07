@@ -1413,6 +1413,70 @@ static void Setup(int idx, int buildTables)
 	GrafxMakeBackground(&gGraphicsDevice, &gConfig.Graphics, tintDarker, idx);
 }
 
+static void Open(void)
+{
+	char filename[CDOGS_FILENAME_MAX];
+	int c;
+	
+	strcpy(filename, lastFile);
+	for (;;)
+	{
+		int i;
+		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+		{
+			gGraphicsDevice.buf[i] = LookupPalette(58);
+		}
+		CDogsTextStringAt(125, 50, "Open file:");
+		CDogsTextGoto(125, 50 + CDogsTextHeight());
+		CDogsTextChar('\020');
+		CDogsTextString(filename);
+		CDogsTextChar('\021');
+		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+		
+		c = GetKey(&gInputDevices);
+		switch (c)
+		{
+			case SDLK_RETURN:
+			case SDLK_KP_ENTER:
+				if (!filename[0])
+					break;
+				if (LoadCampaign(filename, &gCampaign.Setting) != CAMPAIGN_OK)
+				{
+					printf("Error: cannot load %s\n", lastFile);
+					continue;
+				}
+				fileChanged = 0;
+				strcpy(lastFile, filename);
+				return;
+				
+			case SDLK_ESCAPE:
+				return;
+				
+			case SDLK_BACKSPACE:
+				if (filename[0])
+					filename[strlen(filename) - 1] = 0;
+				break;
+				
+			default:
+				if (strlen(filename) == sizeof(filename) - 1)
+				{
+					break;
+				}
+				c = KeyGetTyped(&gInputDevices.keyboard);
+				if (c && c != '*' &&
+					(strlen(filename) > 1 || c != '-') &&
+					c != ':' && c != '<' && c != '>' && c != '?' &&
+					c != '|')
+				{
+					size_t si = strlen(filename);
+					filename[si + 1] = 0;
+					filename[si] = (char)c;
+				}
+		}
+		SDL_Delay(10);
+	}
+}
+
 static void Save(int asCode)
 {
 	char filename[CDOGS_FILENAME_MAX];
@@ -1518,6 +1582,7 @@ static void HelpScreen(void)
 		"Escape:                         Back or quit\n"
 		"Ctrl+E:                         Go to character editor\n"
 		"Ctrl+N:                         New mission or character\n"
+		"Ctrl+O:                         Open file\n"
 		"Ctrl+S:                         Save file\n"
 		"Ctrl+X, C, V:                   Cut/copy/paste\n"
 		"Ctrl+M:                         Preview automap\n"
@@ -1633,6 +1698,10 @@ static void HandleInput(
 			*mission = gCampaign.Setting.missionCount - 1;
 			fileChanged = 1;
 			Setup(*mission, 0);
+			break;
+				
+		case 'o':
+			Open();
 			break;
 
 		case 's':

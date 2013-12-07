@@ -906,17 +906,20 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
 }
 
-int CheckMissionObjective(int flags)
+int CheckMissionObjective(int flags, ObjectiveType type)
 {
 	int idx;
-
-	if (TileItemIsObjective(flags))
+	if (!TileItemIsObjective(flags))
 	{
-		idx = ObjectiveFromTileItem(flags);
-		gMission.objectives[idx].done++;
-		return 1;
+		return 0;
 	}
-	return 0;
+	idx = ObjectiveFromTileItem(flags);
+	if (gMission.missionData->objectives[idx].type != type)
+	{
+		return 0;
+	}
+	gMission.objectives[idx].done++;
+	return 1;
 }
 
 int CanCompleteMission(struct MissionOptions *options)

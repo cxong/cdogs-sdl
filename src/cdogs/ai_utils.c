@@ -64,7 +64,8 @@ TActor *AIGetClosestPlayer(Vec2i pos)
 		if (IsPlayerAlive(i))
 		{
 			TActor *p = gPlayers[i];
-			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, p->x, p->y);
+			Vec2i pPos = Vec2iFull2Real(Vec2iNew(p->x, p->y));
+			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, pPos.x, pPos.y);
 			if (!closestPlayer || distance < minDistance)
 			{
 				closestPlayer = p;
@@ -152,7 +153,7 @@ Vec2i AIGetClosestPlayerPos(Vec2i pos)
 	TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if (closestPlayer)
 	{
-		return Vec2iNew(closestPlayer->x, closestPlayer->y);
+		return Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y));
 	}
 	else
 	{

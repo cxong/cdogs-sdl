@@ -472,41 +472,56 @@ static void DrawExitArea(void)
 
 static void MissionUpdateObjectives(void)
 {
-	int i, left;
-	char s[4];
+	int i;
 	int allDone = 1;
 	static int completed = 0;
 	int x, y;
 
 	x = 5;
 	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
-	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
-		if (gMission.missionData->objectives[i].type ==
-		    OBJECTIVE_INVESTIGATE)
-			gMission.objectives[i].done = ExploredPercentage();
-
-		if (gMission.missionData->objectives[i].required > 0)
+	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	{
+		struct MissionObjective *mo = &gMission.missionData->objectives[i];
+		struct Objective *o = &gMission.objectives[i];
+		int itemsLeft;
+		
+		if (mo->type == OBJECTIVE_INVESTIGATE)
 		{
-			y += 3;
-			// Objective color dot
-			Draw_Rect(x, y, 2, 2, gMission.objectives[i].color);
-			y -= 3;
-
-			left = gMission.objectives[i].required - gMission.objectives[i].done;
-
-			if (left > 0) {
-				if ((gMission.missionData->objectives[i].flags & OBJECTIVE_UNKNOWNCOUNT) == 0) {
-					sprintf(s, "%d", left);
-				} else {
-					strcpy(s, "?");
-				}
-				CDogsTextStringAt(x + 5, y, s);
-				allDone = 0;
-			} else {
-				CDogsTextStringAt(x + 5, y, "Done");
-			}
-			x += 30;
+			o->done = ExploredPercentage();
 		}
+
+		// Don't draw anything else for optional objectives
+		if (mo->required == 0)
+		{
+			continue;
+		}
+		
+		y += 3;
+		// Objective color dot
+		Draw_Rect(x, y, 2, 2, o->color);
+		y -= 3;
+
+		itemsLeft = o->required - o->done;
+
+		if (itemsLeft > 0)
+		{
+			char s[4];
+			if (!(mo->flags & OBJECTIVE_UNKNOWNCOUNT))
+			{
+				sprintf(s, "%d", itemsLeft);
+			}
+			else
+			{
+				strcpy(s, "?");
+			}
+			CDogsTextStringAt(x + 5, y, s);
+			allDone = 0;
+		}
+		else
+		{
+			CDogsTextStringAt(x + 5, y, "Done");
+		}
+		x += 30;
 	}
 
 	if (allDone && !completed)

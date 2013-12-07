@@ -223,10 +223,12 @@ void MissionBriefing(GraphicsDevice *device)
 {
 	char s[512];
 	int i, y;
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
 
 	GraphicsBlitBkg(device);
 
-	y = device->cachedConfig.ResolutionWidth / 4;
+	y = h / 4;
 
 	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
@@ -246,24 +248,19 @@ void MissionBriefing(GraphicsDevice *device)
 
 	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
 
-	y += device->cachedConfig.ResolutionHeight / 10;
+	y += h / 10;
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
-		if (gMission.missionData->objectives[i].required > 0)
+		struct MissionObjective *o = &gMission.missionData->objectives[i];
+		// Do not brief optional objectives
+		if (o->required == 0)
 		{
-			CDogsTextStringAt(
-				device->cachedConfig.ResolutionWidth / 6,
-				y,
-				gMission.missionData->objectives[i].description);
-			DrawObjectiveInfo(
-				i,
-				device->cachedConfig.ResolutionWidth - (device->cachedConfig.ResolutionWidth / 6),
-				y + 8,
-				gMission.missionData);
-
-			y += device->cachedConfig.ResolutionHeight / 12;
+			continue;
 		}
+		CDogsTextStringAt(w / 6, y, o->description);
+		DrawObjectiveInfo(i, w - (w / 6), y + 8, gMission.missionData);
+		y += h / 12;
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
@@ -361,7 +358,6 @@ void Bonuses(void)
 	int i;
 	int y = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) + (gGraphicsDevice.cachedConfig.ResolutionHeight / 10);
 	int x = gGraphicsDevice.cachedConfig.ResolutionWidth / 6;
-	int done, req, total;
 	int access_bonus = 0;
 	int idx = 1;
 	char s[100];
@@ -369,45 +365,49 @@ void Bonuses(void)
 
 	for (i = 0; i < gMission.missionData->objectiveCount; i++)
 	{
-		done = gMission.objectives[i].done;
-		req = gMission.objectives[i].required;
-		total = gMission.objectives[i].count;
+		struct Objective *o = &gMission.objectives[i];
 
-		if (done > 0 || req > 0) {
-			DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
-			sprintf(s, "Objective %d: %d of %d, %d required",
-				idx, done, total, req);
-			if (req > 0)
-			{
-				CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_TOP, x, y);
-			}
-			else
-				CDogsTextStringSpecial(s,
-						TEXT_LEFT | TEXT_TOP | TEXT_PURPLE,
-						x, y);
-			if (done < req)
-			{
-				CDogsTextStringSpecial(
-					"Failed", TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
-			}
-			else if (done == total && done > req && AreAnySurvived())
-			{
-				CDogsTextStringSpecial(
-					"Perfect: 500", TEXT_RIGHT | TEXT_TOP, x, y);
-				bonus += 500;
-			}
-			else if (req > 0)
-			{
-				CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
-			}
-			else
-			{
-				CDogsTextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
-			}
-
-			y += 15;
-			idx++;
+		// Do not mention optional objectives with none completed
+		if (o->done == 0 && o->required == 0)
+		{
+			continue;
 		}
+		
+		DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
+		sprintf(s, "Objective %d: %d of %d, %d required",
+			idx, o->done, o->count, o->required);
+		if (o->required > 0)
+		{
+			CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_TOP, x, y);
+		}
+		else
+		{
+			CDogsTextStringSpecial(
+				s, TEXT_LEFT | TEXT_TOP | TEXT_PURPLE, x, y);
+		}
+		if (o->done < o->required)
+		{
+			CDogsTextStringSpecial(
+				"Failed", TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
+		}
+		else if (
+			o->done == o->count && o->done > o->required && AreAnySurvived())
+		{
+			CDogsTextStringSpecial(
+				"Perfect: 500", TEXT_RIGHT | TEXT_TOP, x, y);
+			bonus += 500;
+		}
+		else if (o->required > 0)
+		{
+			CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
+		}
+		else
+		{
+			CDogsTextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
+		}
+
+		y += 15;
+		idx++;
 	}
 
 	if (gMission.flags & FLAGS_KEYCARD_YELLOW)	access_bonus += 50;

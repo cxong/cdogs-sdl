@@ -142,7 +142,7 @@ typedef enum {
 	OBJECTIVE_RESCUE,
 	OBJECTIVE_INVESTIGATE,
 	OBJECTIVE_MAX
-} Objective;
+} ObjectiveType;
 
 #define OBJECTIVE_HIDDEN        1
 #define OBJECTIVE_POSKNOWN      2
