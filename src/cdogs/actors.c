@@ -71,7 +71,7 @@
 #define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
 #define REPEL_STRENGTH 18
-#define SLIDE_LOCK 6;
+#define SLIDE_LOCK 50
 
 
 TActor *gPlayers[MAX_PLAYERS];
@@ -441,6 +441,8 @@ void UpdateActorState(TActor * actor, int ticks)
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
 	}
+	
+	actor->slideLock = MAX(0, actor->slideLock - ticks);
 
 	actor->stateCounter = MAX(0, actor->stateCounter - ticks);
 	if (actor->stateCounter > 0)
@@ -480,8 +482,6 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Sound lock
 	actor->soundLock = MAX(0, actor->soundLock - ticks);
-	
-	actor->slideLock = MAX(0, actor->slideLock - ticks);
 }
 
 
