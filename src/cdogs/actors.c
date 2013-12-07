@@ -70,7 +70,8 @@
 
 #define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
-#define REPEL_STRENGTH 20
+#define REPEL_STRENGTH 18
+#define SLIDE_LOCK 6;
 
 
 TActor *gPlayers[MAX_PLAYERS];
@@ -384,6 +385,7 @@ TActor *AddActor(Character *c, struct PlayerData *p)
 	actor->pData = p;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
+	actor->slideLock = 0;
 	return actor;
 }
 
@@ -478,6 +480,8 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Sound lock
 	actor->soundLock = MAX(0, actor->soundLock - ticks);
+	
+	actor->slideLock = MAX(0, actor->slideLock - ticks);
 }
 
 
@@ -871,6 +875,12 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 void SlideActor(TActor *actor, int cmd)
 {
 	int dx, dy;
+	
+	// Check that actor can slide
+	if (actor->slideLock > 0)
+	{
+		return;
+	}
 
 	if (actor->petrified)
 		return;
@@ -902,6 +912,8 @@ void SlideActor(TActor *actor, int cmd)
 			SND_SLIDE,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
+	
+	actor->slideLock = SLIDE_LOCK;
 }
 
 void UpdateAllActors(int ticks)

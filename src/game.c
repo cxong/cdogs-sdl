@@ -110,9 +110,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		actor->flags &= ~FLAGS_SPECIAL_USED;
 	}
 
-	if ((cmd & CMD_BUTTON2) &&
-		isDirectionCmd &&
-		actor->dx == 0 && actor->dy == 0)
+	if ((cmd & CMD_BUTTON2) && isDirectionCmd)
 	{
 		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
 		{

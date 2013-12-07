@@ -128,6 +128,8 @@ typedef struct Actor
 
 	int turns;
 	int delay;
+	
+	int slideLock;
 
 	TTileItem tileItem;
 	struct Actor *next;
