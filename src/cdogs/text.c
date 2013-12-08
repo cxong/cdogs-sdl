@@ -369,6 +369,7 @@ void TextSplitLines(const char *text, char *buf, int width)
 			x += CDogsTextCharWidth(*p);
 		}
 	}
+	*buf = '\0';
 }
 
 char *PercentStr(int p)
