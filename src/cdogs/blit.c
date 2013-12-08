@@ -129,6 +129,62 @@ void Blit(int x, int y, PicPaletted *pic, void *table, int mode)
 	}
 }
 
+void BlitPicHighlight(
+	GraphicsDevice *g, PicPaletted *pic, Vec2i pos, color_t color)
+{
+	// Draw highlight around the picture
+	int i;
+	for (i = -1; i < pic->h + 1; i++)
+	{
+		int j;
+		int yoff = i + pos.y;
+		if (yoff > g->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < g->clipping.top)
+		{
+			continue;
+		}
+		yoff *= g->cachedConfig.ResolutionWidth;
+		for (j = -1; j < pic->w + 1; j++)
+		{
+			int isPixelEmpty;
+			int xoff = j + pos.x;
+			if (xoff < g->clipping.left)
+			{
+				continue;
+			}
+			if (xoff > g->clipping.right)
+			{
+				break;
+			}
+			// Draw highlight if current pixel is empty,
+			// and is next to a picture edge
+			isPixelEmpty =
+				i == -1 || j == -1 || i == pic->h || j == pic->w ||
+				!*(pic->data + j + i * pic->w);
+			if (isPixelEmpty)
+			{
+				int isLeft = j > 0 && *(pic->data + j - 1 + i * pic->w);
+				int isRight =
+					j < pic->w - 1 && *(pic->data + j + 1 + i * pic->w);
+				int isAbove =
+					i > 0 && *(pic->data + j + (i - 1) * pic->w);
+				int isBelow =
+					i < pic->h - 1 && *(pic->data + j + (i + 1) * pic->w);
+				if (isLeft || isRight || isAbove || isBelow)
+				{
+					Uint32 *target = g->buf + yoff + xoff;
+					color_t targetColor = PixelToColor(g, *target);
+					color_t blendedColor = ColorMult(targetColor, color);
+					*target = PixelFromColor(g, blendedColor);
+				}
+			}
+		}
+	}
+}
+
 void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 {
 	int yoff, xoff;

@@ -264,10 +264,12 @@ void DrawFireball(int x, int y, const TMobileObject * obj)
 	{
 		y -= obj->z / 4;
 	}
-	DrawTPic(
+	Blit(
 		x + pic->dx,
 		y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+		PicManagerGetOldPic(&gPicManager, pic->picIndex),
+		NULL,
+		BLIT_TRANSPARENT);
 }
 
 void BogusDraw(int x, int y, void *data)
