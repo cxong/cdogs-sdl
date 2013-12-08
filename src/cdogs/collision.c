@@ -55,7 +55,8 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
 {
 	// Need to have prisoners collide with everything otherwise they will not
 	// be "rescued"
-	if (!isActor || (actor->flags & FLAGS_PRISONER) ||
+	// Also need victims to collide with everyone
+	if (!isActor || (actor->flags & (FLAGS_PRISONER | FLAGS_VICTIM)) ||
 		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return COLLISIONTEAM_NONE;

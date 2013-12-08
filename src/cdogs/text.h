@@ -92,6 +92,8 @@ void DrawTextStringSpecial(
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
 #define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
 
+void TextSplitLines(const char *text, char *buf, int width);
+
 char *PercentStr(int p);
 char *Div8Str(int i);
 

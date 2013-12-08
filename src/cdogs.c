@@ -149,71 +149,26 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	}
 }
 
-int MissionDescription(int y, const char *description)
-{
-	int w, ix, x, lines;
-	const char *ws, *word, *p, *s;
-
-#define MAX_BOX_WIDTH (gGraphicsDevice.cachedConfig.ResolutionWidth - (gGraphicsDevice.cachedConfig.ResolutionWidth / 6))
-
-	ix = x = CenterX((MAX_BOX_WIDTH));
-	lines = 1;
-	CDogsTextGoto(x, y);
-
-	s = ws = word = description;
-
-	while (*s) {
-		// Find word
-		ws = s;
-
-		while (*s == ' ' || *s == '\n')
-			s++;
-
-		word = s;
-
-		while (*s != 0 && *s != ' ' && *s != '\n')
-			s++;
-
-		for (w = 0, p = ws; p < s; p++)
-			w += CDogsTextCharWidth(*p);
-
-		//if (x + w > MAX_BOX_WIDTH && w < (MAX_BOX_WIDTH - 20)) {
-		if (x + w > (MAX_BOX_WIDTH + ix) && w < MAX_BOX_WIDTH) {
-			y += CDogsTextHeight();
-			x = ix;
-			lines++;
-			ws = word;
-		}
-
-		for (p = ws; p < word; p++)
-			x += CDogsTextCharWidth(*p);
-
-		CDogsTextGoto(x, y);
-
-		for (p = word; p < s; p++) {
-			CDogsTextChar(*p);
-			x += CDogsTextCharWidth(*p);
-		}
-	}
-
-	return lines;
-}
-
 void CampaignIntro(GraphicsDevice *device)
 {
+	int x;
 	int y;
 	char s[1024];
+	int w = device->cachedConfig.ResolutionWidth;
+	int h = device->cachedConfig.ResolutionHeight;
 
 	debug(D_NORMAL, "\n");
 
 	GraphicsBlitBkg(device);
 
-	y = device->cachedConfig.ResolutionWidth / 4;
+	y = h / 4;
 
 	sprintf(s, "%s by %s", gCampaign.Setting.title, gCampaign.Setting.author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	MissionDescription(y, gCampaign.Setting.description);
+	TextSplitLines(gCampaign.Setting.description, s, w * 5 / 6);
+	x = w / 6 / 2;
+	DrawTextString(s, device, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gInputDevices);
@@ -222,49 +177,94 @@ void CampaignIntro(GraphicsDevice *device)
 void MissionBriefing(GraphicsDevice *device)
 {
 	char s[512];
-	int i, y;
+	int y;
 	int w = device->cachedConfig.ResolutionWidth;
 	int h = device->cachedConfig.ResolutionHeight;
-
-	GraphicsBlitBkg(device);
-
-	y = h / 4;
-
-	sprintf(s, "Mission %d: %s", gMission.index + 1, gMission.missionData->title);
-	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
-
+	int typewriterCount;
+	char description[1024];
+	char typewriterBuf[1024];
+	int descriptionHeight;
+	
+	TextSplitLines(gMission.missionData->description, description, w * 5 / 6);
+	descriptionHeight = TextGetSize(description).y;
+	
 	// Save password if we're not on the first mission
 	if (gMission.index > 0)
 	{
-		char str[512];
 		MissionSave ms;
 		ms.Campaign = gCampaign.Entry;
 		strcpy(ms.Password, MakePassword(gMission.index, 0));
 		ms.MissionsCompleted = gMission.index;
 		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-		sprintf(str, "Password: %s", gAutosave.LastMission.Password);
-		CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
 	}
+	
+	InputInit(&gInputDevices, gInputDevices.mouse.cursor);
 
-	y += CDogsTextHeight() * MissionDescription(y, gMission.missionData->description);
-
-	y += h / 10;
-
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	for (typewriterCount = 0;
+		typewriterCount <= (int)strlen(description);
+		typewriterCount++)
 	{
-		struct MissionObjective *o = &gMission.missionData->objectives[i];
-		// Do not brief optional objectives
-		if (o->required == 0)
+		Vec2i pos;
+		int i;
+		int cmds[MAX_PLAYERS];
+		
+		// Check for player input; if any then skip to the end of the briefing
+		memset(cmds, 0, sizeof cmds);
+		InputPoll(&gInputDevices, SDL_GetTicks());
+		GetPlayerCmds(&cmds, gPlayerDatas);
+		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			continue;
+			if (AnyButton(cmds[i]))
+			{
+				typewriterCount = (int)strlen(description);
+				break;
+			}
 		}
-		CDogsTextStringAt(w / 6, y, o->description);
-		DrawObjectiveInfo(i, w - (w / 6), y + 8, gMission.missionData);
-		y += h / 12;
-	}
+		
+		GraphicsBlitBkg(device);
 
-	BlitFlip(device, &gConfig.Graphics);
+		// Mission title
+		y = h / 4;
+		sprintf(s, "Mission %d: %s",
+			gMission.index + 1, gMission.missionData->title);
+		CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+
+		// Display password
+		if (gMission.index > 0)
+		{
+			char str[512];
+			sprintf(str, "Password: %s", gAutosave.LastMission.Password);
+			CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
+		}
+
+		// Display description with typewriter effect
+		pos = Vec2iNew(w / 6 / 2, y);
+		strncpy(typewriterBuf, description, typewriterCount);
+		typewriterBuf[typewriterCount] = '\0';
+		DrawTextString(typewriterBuf, device, pos);
+		y += descriptionHeight;
+
+		y += h / 10;
+
+		// Display objectives
+		for (i = 0; i < gMission.missionData->objectiveCount; i++)
+		{
+			struct MissionObjective *o = &gMission.missionData->objectives[i];
+			// Do not brief optional objectives
+			if (o->required == 0)
+			{
+				continue;
+			}
+			CDogsTextStringAt(w / 6, y, o->description);
+			DrawObjectiveInfo(i, w - (w / 6), y + 8, gMission.missionData);
+			y += h / 12;
+		}
+
+		BlitFlip(device, &gConfig.Graphics);
+		
+		SDL_Delay(10);
+	}
 	WaitForAnyKeyOrButton(&gInputDevices);
 }
 

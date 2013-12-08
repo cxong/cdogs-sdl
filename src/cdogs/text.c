@@ -320,6 +320,57 @@ int CDogsTextHeight(void)
 	return hCDogsText;
 }
 
+void TextSplitLines(const char *text, char *buf, int width)
+{
+	int w, ix, x;
+	const char *ws, *word, *p, *s;
+
+	ix = x = CenterX(width);
+	s = ws = word = text;
+	
+	while (*s)
+	{
+		// Skip spaces
+		ws = s;
+		while (*s == ' ' || *s == '\n')
+		{
+			s++;
+			*buf++ = ' ';
+		}
+
+		// Find word
+		word = s;
+		while (*s != 0 && *s != ' ' && *s != '\n')
+		{
+			s++;
+		}
+		// Calculate width of word
+		for (w = 0, p = ws; p < s; p++)
+		{
+			w += CDogsTextCharWidth(*p);
+		}
+
+		// Create new line if text too wide
+		if (x + w > width + ix && w < width)
+		{
+			x = ix;
+			ws = word;
+			*buf++ = '\n';
+		}
+		
+		for (p = ws; p < word; p++)
+		{
+			x += CDogsTextCharWidth(*p);
+		}
+
+		for (p = word; p < s; p++)
+		{
+			*buf++ = *p;
+			x += CDogsTextCharWidth(*p);
+		}
+	}
+}
+
 char *PercentStr(int p)
 {
 	static char buf[8];
