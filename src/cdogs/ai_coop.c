@@ -114,3 +114,36 @@ int AICoopGetCmd(TActor *actor)
 
 	return 0;
 }
+
+gun_e AICoopSelectWeapon(
+	int player, gun_e *availableWeapons, int numAvailableWeapons)
+{
+	// Weapon preferences, for different player indices
+#define NUM_PREFERRED_WEAPONS 5
+	gun_e preferredWeapons[][NUM_PREFERRED_WEAPONS] =
+	{
+		{ GUN_MG, GUN_SHOTGUN, GUN_POWERGUN, GUN_SNIPER, GUN_FLAMER },
+		{ GUN_FLAMER, GUN_SHOTGUN, GUN_MG, GUN_POWERGUN, GUN_SNIPER },
+		{ GUN_SHOTGUN, GUN_MG, GUN_POWERGUN, GUN_FLAMER, GUN_SNIPER },
+		{ GUN_POWERGUN, GUN_SNIPER, GUN_MG, GUN_SHOTGUN, GUN_FLAMER }
+	};
+	int i;
+
+	// First try to select an available weapon
+	for (i = 0; i < NUM_PREFERRED_WEAPONS; i++)
+	{
+		gun_e preferredWeapon = preferredWeapons[player][i];
+		int j;
+		for (j = 0; j < numAvailableWeapons; j++)
+		{
+			if (preferredWeapon == availableWeapons[j])
+			{
+				return preferredWeapon;
+			}
+		}
+	}
+
+	// Preferred weapons unavailable;
+	// give up and select most preferred weapon anway
+	return preferredWeapons[player][0];
+}

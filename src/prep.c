@@ -55,6 +55,7 @@
 
 #include <SDL_timer.h>
 
+#include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
@@ -348,7 +349,8 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 			int lastMenuIndex = menus[i].ms.root->u.normal.numSubMenus - 1;
 			menus[i].ms.current =
 				&menus[i].ms.root->u.normal.subMenus[lastMenuIndex];
-			gPlayerDatas[i].weapons[0] = GUN_MG;
+			gPlayerDatas[i].weapons[0] = AICoopSelectWeapon(
+				i, gMission.availableWeapons, gMission.weaponCount);
 			gPlayerDatas[i].weaponCount = 1;
 			// TODO: select more weapons, or select weapons based on mission
 		}

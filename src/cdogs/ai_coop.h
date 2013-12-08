@@ -32,5 +32,7 @@
 #include "actors.h"
 
 int AICoopGetCmd(TActor *actor);
+gun_e AICoopSelectWeapon(
+	int player, gun_e *availableWeapons, int numAvailableWeapons);
 
 #endif
