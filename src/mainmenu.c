@@ -175,7 +175,7 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 	if (m.MissionsCompleted == entry->numMissions)
 	{
 		// Completed campaign
-		menu->color = colorDarker;
+		menu->color = colorGray;
 	}
 	else if (m.MissionsCompleted > 0)
 	{

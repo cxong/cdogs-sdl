@@ -126,7 +126,11 @@ void CampaignListInit(campaign_list_t *list)
 }
 
 void AddBuiltinCampaignEntry(
-	campaign_list_t *list, const char *title, campaign_mode_e mode, int builtinIndex);
+	campaign_list_t *list,
+	const char *title,
+	campaign_mode_e mode,
+	int numMissions,
+	int builtinIndex);
 
 void LoadBuiltinCampaigns(campaign_list_t *list)
 {
@@ -134,7 +138,11 @@ void LoadBuiltinCampaigns(campaign_list_t *list)
 	for (i = 0; SetupBuiltinCampaign(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.Setting.title, CAMPAIGN_MODE_NORMAL, i);
+			list,
+			gCampaign.Setting.title,
+			CAMPAIGN_MODE_NORMAL,
+			gCampaign.Setting.missionCount,
+			i);
 	}
 }
 void LoadBuiltinDogfights(campaign_list_t *list)
@@ -143,7 +151,7 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.Setting.title, CAMPAIGN_MODE_DOGFIGHT, i);
+			list, gCampaign.Setting.title, CAMPAIGN_MODE_DOGFIGHT, 1, i);
 	}
 }
 
@@ -220,11 +228,16 @@ campaign_entry_t *AddAndGetCampaignEntry(
 	campaign_list_t *list, const char *title, campaign_mode_e mode);
 
 void AddBuiltinCampaignEntry(
-	campaign_list_t *list, const char *title, campaign_mode_e mode, int builtinIndex)
+	campaign_list_t *list,
+	const char *title,
+	campaign_mode_e mode,
+	int numMissions,
+	int builtinIndex)
 {
 	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
 	entry->isBuiltin = 1;
 	entry->builtinIndex = builtinIndex;
+	entry->numMissions = numMissions;
 }
 void AddCustomCampaignEntry(
 	campaign_list_t *list,
