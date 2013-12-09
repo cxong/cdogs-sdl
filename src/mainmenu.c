@@ -172,15 +172,15 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 	// - Grey for complete campaigns
 	MissionSave m;
 	AutosaveLoadMission(&gAutosave, &m, entry->path);
-	if (m.MissionsCompleted == 0)
-	{
-		// New campaign
-		menu->color = colorGreen;
-	}
-	else if (m.MissionsCompleted == entry->numMissions)
+	if (m.MissionsCompleted == entry->numMissions)
 	{
 		// Completed campaign
-		menu->color = colorGray;
+		menu->color = colorDarker;
+	}
+	else if (m.MissionsCompleted > 0)
+	{
+		// Campaign in progress
+		menu->color = colorYellow;
 	}
 	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
 	return menu;
