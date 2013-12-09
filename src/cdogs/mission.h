@@ -52,7 +52,6 @@
 #include "config.h"
 #include "gamedata.h"
 
-#define TileItemIsObjective(f)   (((f) & TILEITEM_OBJECTIVE) != 0)
 #define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
 #define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
 

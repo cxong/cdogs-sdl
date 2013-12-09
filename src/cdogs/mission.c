@@ -909,7 +909,7 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 int CheckMissionObjective(int flags, ObjectiveType type)
 {
 	int idx;
-	if (!TileItemIsObjective(flags))
+	if (!(flags & TILEITEM_OBJECTIVE))
 	{
 		return 0;
 	}
