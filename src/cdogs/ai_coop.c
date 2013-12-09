@@ -77,6 +77,11 @@ int AICoopGetCmd(TActor *actor)
 		{
 			cmd |= CMD_BUTTON2;
 		}
+		// If running into safe object, shoot at it
+		if (AIIsRunningIntoObject(actor, cmd))
+		{
+			cmd |= CMD_BUTTON1;
+		}
 		return cmd;
 	}
 
@@ -107,9 +112,15 @@ int AICoopGetCmd(TActor *actor)
 	// run into them
 	if (closestPlayer && minDistance > ((2 * 16) << 8))
 	{
-		return AIGoto(
+		int cmd = AIGoto(
 			actor,
 			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
+		// If running into safe object, shoot at it
+		if (AIIsRunningIntoObject(actor, cmd))
+		{
+			cmd |= CMD_BUTTON1;
+		}
+		return cmd;
 	}
 
 	return 0;

@@ -51,7 +51,9 @@
 #include <assert.h>
 #include <math.h>
 
+#include "collision.h"
 #include "map.h"
+#include "objs.h"
 
 
 TActor *AIGetClosestPlayer(Vec2i pos)
@@ -320,6 +322,43 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	}
 
 	return 1;
+}
+
+int AIIsRunningIntoObject(TActor *a, int cmd)
+{
+	// Check the position just in front of the character;
+	// check if there's a (non-dangerous) object in front of it
+	Vec2i frontPos = Vec2iFull2Real(Vec2iNew(a->x, a->y));
+	TTileItem *item;
+	TObject *object;
+	if (cmd & CMD_LEFT)
+	{
+		frontPos.x--;
+	}
+	else if (cmd & CMD_RIGHT)
+	{
+		frontPos.x++;
+	}
+	if (cmd & CMD_UP)
+	{
+		frontPos.y--;
+	}
+	else if (cmd & CMD_DOWN)
+	{
+		frontPos.y++;
+	}
+	item = GetItemOnTileInCollision(
+		&a->tileItem,
+		frontPos,
+		TILEITEM_IMPASSABLE,
+		CalcCollisionTeam(1, a),
+		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
+	if (!item || item->kind != KIND_OBJECT)
+	{
+		return 0;
+	}
+	object = item->data;
+	return !(object->flags & OBJFLAG_DANGEROUS);
 }
 
 

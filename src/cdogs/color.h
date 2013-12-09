@@ -48,6 +48,7 @@ extern color_t colorBlack;
 extern color_t colorDarker;
 extern color_t colorPurple;
 extern color_t colorGray;
+extern color_t colorYellow;
 
 color_t ColorMult(color_t c, color_t m);
 color_t ColorAlphaBlend(color_t a, color_t b);

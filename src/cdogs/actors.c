@@ -547,7 +547,7 @@ int MoveActor(TActor * actor, int x, int y)
 	TTileItem *target;
 	TObject *object;
 	TActor *otherCharacter;
-	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	Vec2i realPos = Vec2iFull2Real(Vec2iNew(x, y));
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 	int isDogfight = gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT;
 
@@ -556,12 +556,12 @@ int MoveActor(TActor * actor, int x, int y)
 	if (IsCollisionWithWall(realPos, size))
 	{
 		Vec2i realXPos, realYPos;
-		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
+		realYPos = Vec2iFull2Real(Vec2iNew(actor->x, y));
 		if (IsCollisionWithWall(realYPos, size))
 		{
 			y = actor->y;
 		}
-		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
+		realXPos = Vec2iFull2Real(Vec2iNew(x, actor->y));
 		if (IsCollisionWithWall(realXPos, size))
 		{
 			x = actor->x;
@@ -571,7 +571,7 @@ int MoveActor(TActor * actor, int x, int y)
 			return 0;
 	}
 
-	realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	realPos = Vec2iFull2Real(Vec2iNew(x, y));
 	target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
@@ -614,7 +614,7 @@ int MoveActor(TActor * actor, int x, int y)
 			}
 		}
 
-		realYPos = Vec2iScaleDiv(Vec2iNew(actor->x, y), 256);
+		realYPos = Vec2iFull2Real(Vec2iNew(actor->x, y));
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
@@ -622,7 +622,7 @@ int MoveActor(TActor * actor, int x, int y)
 		{
 			y = actor->y;
 		}
-		realXPos = Vec2iScaleDiv(Vec2iNew(x, actor->y), 256);
+		realXPos = Vec2iFull2Real(Vec2iNew(x, actor->y));
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
@@ -630,7 +630,7 @@ int MoveActor(TActor * actor, int x, int y)
 		{
 			x = actor->x;
 		}
-		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+		realPos = Vec2iFull2Real(Vec2iNew(x, y));
 		if ((x == actor->x && y == actor->y) ||
 			(x != actor->x && y != actor->y) ||
 			IsCollisionWithWall(realPos, size))
@@ -643,7 +643,7 @@ int MoveActor(TActor * actor, int x, int y)
 
 	if (actor->pData)
 	{
-		realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+		realPos = Vec2iFull2Real(Vec2iNew(x, y));
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
 			CalcCollisionTeam(1, actor),
