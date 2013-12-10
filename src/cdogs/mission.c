@@ -51,6 +51,8 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include "game_events.h"
 #include "gamedata.h"
 #include "map.h"
 #include "palette.h"
@@ -906,7 +908,8 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
 }
 
-int CheckMissionObjective(int flags, ObjectiveType type)
+int CheckMissionObjective(
+	struct MissionOptions *options, int flags, ObjectiveType type)
 {
 	int idx;
 	if (!(flags & TILEITEM_OBJECTIVE))
@@ -914,11 +917,19 @@ int CheckMissionObjective(int flags, ObjectiveType type)
 		return 0;
 	}
 	idx = ObjectiveFromTileItem(flags);
-	if (gMission.missionData->objectives[idx].type != type)
+	if (options->missionData->objectives[idx].type != type)
 	{
 		return 0;
 	}
 	gMission.objectives[idx].done++;
+	if (CanCompleteMission(options))
+	{
+		GameEvent msg;
+		msg.Type = GAME_EVENT_SET_MESSAGE;
+		strcpy(msg.u.SetMessage.Message, "Mission Complete");
+		msg.u.SetMessage.Ticks = -1;
+		GameEventsEnqueue(&gGameEvents, msg);
+	}
 	return 1;
 }
 

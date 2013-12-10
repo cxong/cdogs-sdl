@@ -126,18 +126,21 @@ void HUDInit(
 	WallClockInit(&hud->clock);
 }
 
-void HUDDisplayMessage(HUD *hud, const char *msg)
+void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 {
 	strcpy(hud->message, msg);
-	hud->messageTicks = 140;
+	hud->messageTicks = ticks;
 }
 
 void HUDUpdate(HUD *hud, int ms)
 {
-	hud->messageTicks -= ms;
-	if (hud->messageTicks < 0)
+	if (hud->messageTicks >= 0)
 	{
-		hud->messageTicks = 0;
+		hud->messageTicks -= ms;
+		if (hud->messageTicks < 0)
+		{
+			hud->messageTicks = 0;
+		}
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
@@ -513,9 +516,14 @@ void HUDDraw(HUD *hud, int isPaused)
 		CDogsTextStringAtCenter("Press Esc again to quit");
 	}
 
-	if (hud->messageTicks > 0)
+	if (hud->messageTicks > 0 || hud->messageTicks == -1)
 	{
-		CDogsTextStringSpecial(hud->message, TEXT_XCENTER | TEXT_TOP, 0, 20);
+		// Draw the message centered, and just below the automap
+		Vec2i pos = Vec2iNew(
+			(hud->device->cachedConfig.ResolutionWidth -
+			TextGetStringWidth(hud->message)) / 2,
+			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
+		DrawTextStringMasked(hud->message, hud->device, pos, colorCyan);
 	}
 
 	if (hud->config->ShowFPS)

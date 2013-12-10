@@ -131,13 +131,16 @@ void AutosaveLoad(Autosave *autosave, const char *filename)
 		printf("Error parsing autosave '%s'\n", filename);
 		goto bail;
 	}
+	// Note: need to load missions before LastMission because the former
+	// will overwrite the latter, since AutosaveAddMission also
+	// writes to LastMission
+	LoadMissionNodes(autosave, root, "Missions");
 	if (json_find_first_label(root, "LastMission"))
 	{
 		LoadMissionNode(
 			&autosave->LastMission,
 			json_find_first_label(root, "LastMission")->child);
 	}
-	LoadMissionNodes(autosave, root, "Missions");
 
 bail:
 	json_free_value(&root);

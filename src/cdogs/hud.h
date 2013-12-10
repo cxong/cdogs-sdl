@@ -70,7 +70,10 @@ void HUDInit(
 	InterfaceConfig *config,
 	GraphicsDevice *device,
 	struct MissionOptions *mission);
-void HUDDisplayMessage(HUD *hud, const char *msg);
+
+// Set ticks to -1 to display a message indefinitely
+void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
+
 void HUDUpdate(HUD *hud, int ms);
 void HUDDraw(HUD *hud, int isPaused);
 

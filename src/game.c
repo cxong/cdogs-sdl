@@ -625,16 +625,20 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 	return center;
 }
 
-void HandleGameEvents(GameEventStore *store, int *shakeAmount)
+void HandleGameEvents(GameEventStore *store, HUD *hud, int *shakeAmount)
 {
 	int i;
 	for (i = 0; i < store->count; i++)
 	{
-		switch (store->events[i].Type)
+		GameEvent *e = &store->events[i];
+		switch (e->Type)
 		{
 		case GAME_EVENT_SCREEN_SHAKE:
-			*shakeAmount = GetShakeAmount(
-				*shakeAmount, store->events[i].u.ShakeAmount);
+			*shakeAmount = GetShakeAmount(*shakeAmount, e->u.ShakeAmount);
+			break;
+		case GAME_EVENT_SET_MESSAGE:
+			HUDDisplayMessage(
+				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
 			break;
 		default:
 			assert(0 && "unknown game event");
@@ -659,7 +663,7 @@ int gameloop(void)
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
-		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice));
+		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
 	missionTime = 0;
@@ -752,7 +756,7 @@ int gameloop(void)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
-				HandleGameEvents(&gGameEvents, &shakeAmount);
+				HandleGameEvents(&gGameEvents, &hud, &shakeAmount);
 
 				for (i = 0; i < gOptions.numPlayers; i++)
 				{

@@ -35,7 +35,8 @@
 
 typedef enum
 {
-	GAME_EVENT_SCREEN_SHAKE
+	GAME_EVENT_SCREEN_SHAKE,
+	GAME_EVENT_SET_MESSAGE
 } GameEventType;
 
 typedef struct
@@ -44,6 +45,11 @@ typedef struct
 	union
 	{
 		int ShakeAmount;
+		struct
+		{
+			char Message[256];
+			int Ticks;
+		} SetMessage;
 	} u;
 } GameEvent;
 

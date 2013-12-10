@@ -534,7 +534,8 @@ static void PickupObject(TActor * actor, TObject * object)
       break;
 */
 	}
-	CheckMissionObjective(object->tileItem.flags, OBJECTIVE_COLLECT);
+	CheckMissionObjective(
+		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT);
 	RemoveObject(object);
 	SoundPlayAt(
 		&gSoundDevice,
@@ -588,7 +589,9 @@ int MoveActor(TActor * actor, int x, int y)
 			    0) {
 				otherCharacter->flags &= ~FLAGS_PRISONER;
 				CheckMissionObjective(
-					otherCharacter->tileItem.flags, OBJECTIVE_RESCUE);
+					&gMission,
+					otherCharacter->tileItem.flags,
+					OBJECTIVE_RESCUE);
 			}
 		}
 
@@ -687,7 +690,8 @@ void InjureActor(TActor * actor, int injury)
 				SND_HAHAHA,
 				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
-		CheckMissionObjective(actor->tileItem.flags, OBJECTIVE_KILL);
+		CheckMissionObjective(
+			&gMission, actor->tileItem.flags, OBJECTIVE_KILL);
 	}
 }
 

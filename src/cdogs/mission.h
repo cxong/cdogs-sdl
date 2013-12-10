@@ -72,7 +72,8 @@ void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 
 // If object is a mission objective, complete it and return true
-int CheckMissionObjective(int flags, ObjectiveType type);
+int CheckMissionObjective(
+	struct MissionOptions *options, int flags, ObjectiveType type);
 int CanCompleteMission(struct MissionOptions *options);
 int IsMissionComplete(struct MissionOptions *options);
 
