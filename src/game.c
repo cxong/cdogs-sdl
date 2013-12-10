@@ -486,6 +486,7 @@ static void MissionUpdateObjectives(void)
 		if (mo->type == OBJECTIVE_INVESTIGATE)
 		{
 			o->done = ExploredPercentage();
+			MissionSetMessageIfComplete(&gMission);
 		}
 
 		// Don't draw anything else for optional objectives

@@ -71,6 +71,7 @@ void SetupQuickPlayCampaign(
 void SetupMission(int index, int buildTables, CampaignOptions *campaign);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 
+void MissionSetMessageIfComplete(struct MissionOptions *options);
 // If object is a mission objective, complete it and return true
 int CheckMissionObjective(
 	struct MissionOptions *options, int flags, ObjectiveType type);

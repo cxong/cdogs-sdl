@@ -908,6 +908,18 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
 }
 
+void MissionSetMessageIfComplete(struct MissionOptions *options)
+{
+	if (CanCompleteMission(options))
+	{
+		GameEvent msg;
+		msg.Type = GAME_EVENT_SET_MESSAGE;
+		strcpy(msg.u.SetMessage.Message, "Mission Complete");
+		msg.u.SetMessage.Ticks = -1;
+		GameEventsEnqueue(&gGameEvents, msg);
+	}
+}
+
 int CheckMissionObjective(
 	struct MissionOptions *options, int flags, ObjectiveType type)
 {
@@ -922,14 +934,7 @@ int CheckMissionObjective(
 		return 0;
 	}
 	gMission.objectives[idx].done++;
-	if (CanCompleteMission(options))
-	{
-		GameEvent msg;
-		msg.Type = GAME_EVENT_SET_MESSAGE;
-		strcpy(msg.u.SetMessage.Message, "Mission Complete");
-		msg.u.SetMessage.Ticks = -1;
-		GameEventsEnqueue(&gGameEvents, msg);
-	}
+	MissionSetMessageIfComplete(options);
 	return 1;
 }
 
