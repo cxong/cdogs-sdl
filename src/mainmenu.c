@@ -171,7 +171,7 @@ menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
 	// - White (normal) for in-progress campaigns
 	// - Grey for complete campaigns
 	MissionSave m;
-	AutosaveLoadMission(&gAutosave, &m, entry->path);
+	AutosaveLoadMission(&gAutosave, &m, entry->path, entry->builtinIndex);
 	if (m.MissionsCompleted == entry->numMissions)
 	{
 		// Completed campaign

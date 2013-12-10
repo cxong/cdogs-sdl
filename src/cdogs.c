@@ -195,7 +195,7 @@ void MissionBriefing(GraphicsDevice *device)
 		ms.Campaign = gCampaign.Entry;
 		strcpy(ms.Password, MakePassword(gMission.index, 0));
 		ms.MissionsCompleted = gMission.index;
-		AutosaveAddMission(&gAutosave, &ms);
+		AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 	
@@ -733,7 +733,7 @@ void Victory(GraphicsDevice *graphics)
 	ms.Campaign = gCampaign.Entry;
 	strcpy(ms.Password, MakePassword(gMission.index, 0));
 	ms.MissionsCompleted = gMission.index + 1;
-	AutosaveAddMission(&gAutosave, &ms);
+	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	x = 160 - TextGetStringWidth(s) / 2;
@@ -1003,7 +1003,8 @@ int Campaign(GraphicsDevice *graphics)
 	if (IsPasswordAllowed(gCampaign.Entry.mode))
 	{
 		MissionSave m;
-		AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.path);
+		AutosaveLoadMission(
+			&gAutosave, &m, gCampaign.Entry.path, gCampaign.Entry.builtinIndex);
 		mission = EnterPassword(graphics, m.Password);
 	}
 

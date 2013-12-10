@@ -62,6 +62,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 		p->weapons[p->weaponCount] = selectedWeapon;
 		p->weaponCount++;
+		MenuPlaySound(MENU_SOUND_ENTER);
 
 		// Note: need to enable before disabling otherwise
 		// menu index is not updated properly
@@ -79,6 +80,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		{
 			gun_e removedWeapon;
 			p->weaponCount--;
+			MenuPlaySound(MENU_SOUND_BACK);
 
 			// Re-enable the menu entry for this weapon
 			removedWeapon = p->weapons[p->weaponCount];
@@ -204,7 +206,6 @@ void WeaponMenuCreate(
 		MenuDisableSubmenu(ms->root, ms->root->u.normal.numSubMenus - 1);
 	}
 
-	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);

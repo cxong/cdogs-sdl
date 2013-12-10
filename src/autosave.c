@@ -68,6 +68,7 @@ static void AddCampaignNode(campaign_entry_t *c, json_t *root)
 
 static void LoadMissionNode(MissionSave *m, json_t *node)
 {
+	memset(m, 0, sizeof *m);
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
 	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
@@ -99,7 +100,7 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 	{
 		MissionSave m;
 		LoadMissionNode(&m, child);
-		AutosaveAddMission(a, &m);
+		AutosaveAddMission(a, &m, m.Campaign.builtinIndex);
 		child = child->next;
 	}
 }
@@ -176,22 +177,30 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	fclose(f);
 }
 
-MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)
+MissionSave *AutosaveFindMission(
+	Autosave *autosave, const char *path, int builtinIndex)
 {
 	size_t i;
 	for (i = 0; i < autosave->NumMissions; i++)
 	{
 		if (strcmp(autosave->Missions[i].Campaign.path, path) == 0)
 		{
-			return &autosave->Missions[i];
+			// If path is empty, need to look at all the builtin campaigns
+			if (!autosave->Missions[i].Campaign.isBuiltin ||
+				autosave->Missions[i].Campaign.builtinIndex == builtinIndex)
+			{
+				return &autosave->Missions[i];
+			}
 		}
 	}
 	return NULL;
 }
 
-void AutosaveAddMission(Autosave *autosave, MissionSave *mission)
+void AutosaveAddMission(
+	Autosave *autosave, MissionSave *mission, int builtinIndex)
 {
-	MissionSave *existingMission = AutosaveFindMission(autosave, mission->Campaign.path);
+	MissionSave *existingMission = AutosaveFindMission(
+		autosave, mission->Campaign.path, builtinIndex);
 	if (existingMission != NULL)
 	{
 		memcpy(existingMission, mission, sizeof *existingMission);
@@ -209,9 +218,11 @@ void AutosaveAddMission(Autosave *autosave, MissionSave *mission)
 	memcpy(&autosave->LastMission, mission, sizeof autosave->LastMission);
 }
 
-void AutosaveLoadMission(Autosave *autosave, MissionSave *mission, const char *path)
+void AutosaveLoadMission(
+	Autosave *autosave, MissionSave *mission, const char *path, int builtinIndex)
 {
-	MissionSave *existingMission = AutosaveFindMission(autosave, path);
+	MissionSave *existingMission = AutosaveFindMission(
+		autosave, path, builtinIndex);
 	if (existingMission != NULL)
 	{
 		memcpy(mission, existingMission, sizeof *mission);

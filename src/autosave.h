@@ -57,7 +57,9 @@ extern Autosave gAutosave;
 void AutosaveInit(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
-void AutosaveAddMission(Autosave *autosave, MissionSave *mission);
-void AutosaveLoadMission(Autosave *autosave, MissionSave *mission, const char *path);
+void AutosaveAddMission(
+	Autosave *autosave, MissionSave *mission, int builtinIndex);
+void AutosaveLoadMission(
+	Autosave *autosave, MissionSave *mission, const char *path, int builtinIndex);
 
 #endif
