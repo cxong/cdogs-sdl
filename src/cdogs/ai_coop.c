@@ -68,6 +68,7 @@ int AICoopGetCmd(TActor *actor)
 		int cmd = AIGoto(
 			actor,
 			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
+		TObject *o;
 		// Try to slide if there is a clear path and we are far enough away
 		if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
 			AIHasClearLine(
@@ -78,9 +79,11 @@ int AICoopGetCmd(TActor *actor)
 			cmd |= CMD_BUTTON2;
 		}
 		// If running into safe object, shoot at it
-		if (AIIsRunningIntoObject(actor, cmd))
+		o = AIGetObjectRunningInto(actor, cmd);
+		if (o && !(o->flags & OBJFLAG_DANGEROUS))
 		{
-			cmd |= CMD_BUTTON1;
+			cmd = AIGoto(actor, Vec2iNew(o->tileItem.x, o->tileItem.y)) |
+				CMD_BUTTON1;
 		}
 		return cmd;
 	}
@@ -116,9 +119,11 @@ int AICoopGetCmd(TActor *actor)
 			actor,
 			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
 		// If running into safe object, shoot at it
-		if (AIIsRunningIntoObject(actor, cmd))
+		TObject *o = AIGetObjectRunningInto(actor, cmd);
+		if (o && !(o->flags & OBJFLAG_DANGEROUS))
 		{
-			cmd |= CMD_BUTTON1;
+			cmd = AIGoto(actor, Vec2iNew(o->tileItem.x, o->tileItem.y)) |
+				CMD_BUTTON1;
 		}
 		return cmd;
 	}

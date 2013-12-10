@@ -324,13 +324,12 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	return 1;
 }
 
-int AIIsRunningIntoObject(TActor *a, int cmd)
+TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 {
 	// Check the position just in front of the character;
 	// check if there's a (non-dangerous) object in front of it
 	Vec2i frontPos = Vec2iFull2Real(Vec2iNew(a->x, a->y));
 	TTileItem *item;
-	TObject *object;
 	if (cmd & CMD_LEFT)
 	{
 		frontPos.x--;
@@ -355,10 +354,9 @@ int AIIsRunningIntoObject(TActor *a, int cmd)
 		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
 	if (!item || item->kind != KIND_OBJECT)
 	{
-		return 0;
+		return NULL;
 	}
-	object = item->data;
-	return !(object->flags & OBJFLAG_DANGEROUS);
+	return item->data;
 }
 
 

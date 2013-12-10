@@ -52,6 +52,7 @@
 // Utility functions for AIs; contains basic behaviour
 
 #include "actors.h"
+#include "objs.h"
 
 TActor *AIGetClosestPlayer(Vec2i pos);
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
@@ -59,7 +60,7 @@ TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
 int AIHasClearLine(Vec2i from, Vec2i to);
-int AIIsRunningIntoObject(TActor *a, int cmd);
+TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 
 int AIGoto(TActor *actor, Vec2i target);
 int AIHunt(TActor *actor);
