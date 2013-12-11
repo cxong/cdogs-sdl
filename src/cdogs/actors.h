@@ -131,6 +131,7 @@ typedef struct Actor
 	
 	int slideLock;
 
+	void *aiContext;
 	TTileItem tileItem;
 	struct Actor *next;
 } TActor;

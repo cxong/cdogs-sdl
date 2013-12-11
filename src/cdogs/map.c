@@ -1112,9 +1112,23 @@ static int AccessCodeToFlags(int code)
 	return 0;
 }
 
-int MapAccessLevel(int x, int y)
+static int MapAccessLevel(int x, int y)
 {
 	return AccessCodeToFlags(iMap(x, y));
+}
+
+// Need to check the flags around the door tile because it's the
+// triggers that contain the right flags
+// TODO: refactor door
+int MapGetDoorKeycardFlag(Vec2i pos)
+{
+	int l = MapAccessLevel(pos.x - 1, pos.y);
+	if (l) return l;
+	l = MapAccessLevel(pos.x + 1, pos.y);
+	if (l) return l;
+	l = MapAccessLevel(pos.x, pos.y - 1);
+	if (l) return l;
+	return MapAccessLevel(pos.x, pos.y + 1);
 }
 
 static int Access(int x, int y)
@@ -1319,4 +1333,14 @@ void MapMarkAllAsVisited(void)
 int ExploredPercentage(void)
 {
 	return (100 * tilesSeen) / tilesTotal;
+}
+
+
+int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
+{
+	return
+		i->x - i->w >= tilePos.x * TILE_WIDTH &&
+		i->x + i->w < (tilePos.x + 1) * TILE_WIDTH &&
+		i->y - i->h >= tilePos.y * TILE_HEIGHT &&
+		i->y + i->h < (tilePos.y + 1) * TILE_HEIGHT;
 }

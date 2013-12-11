@@ -49,6 +49,7 @@ Vec2i Vec2iFull2Real(Vec2i v);
 Vec2i Vec2iReal2Full(Vec2i v);
 
 Vec2i Vec2iToTile(Vec2i v);
+Vec2i Vec2iCenterOfTile(Vec2i v);
 
 int DistanceSquared(Vec2i a, Vec2i b);
 void CalcChebyshevDistanceAndBearing(

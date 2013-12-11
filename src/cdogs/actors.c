@@ -408,6 +408,7 @@ TActor *RemoveActor(TActor * actor)
 				break;
 			}
 		}
+		CFREE(actor->aiContext);
 		CFREE(actor);
 		return *h;
 	}

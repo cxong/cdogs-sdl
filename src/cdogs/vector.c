@@ -94,6 +94,12 @@ Vec2i Vec2iToTile(Vec2i v)
 {
 	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
 }
+Vec2i Vec2iCenterOfTile(Vec2i v)
+{
+	return Vec2iNew(
+		v.x * TILE_WIDTH + TILE_WIDTH / 2,
+		v.y * TILE_HEIGHT + TILE_HEIGHT / 2);
+}
 
 void CalcChebyshevDistanceAndBearing(
 	Vec2i origin, Vec2i target, int *distance, int *bearing)

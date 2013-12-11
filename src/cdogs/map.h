@@ -125,7 +125,7 @@ extern Tile gMap[YMAX][XMAX];
 
 int HasLockedRooms(void);
 int IsHighAccess(int x, int y);
-int MapAccessLevel(int x, int y);
+int MapGetDoorKeycardFlag(Vec2i pos);
 
 void MoveTileItem(TTileItem * t, int x, int y);
 void RemoveTileItem(TTileItem * t);
@@ -138,5 +138,7 @@ void MapMarkAllAsVisited(void);
 int ExploredPercentage(void);
 TTileItem *MapGetClosestEnemy(
 	TTileItem *from, Vec2i offset, int flags, int player, int maxRadius);
+
+int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
 
 #endif

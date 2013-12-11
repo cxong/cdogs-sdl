@@ -51,6 +51,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "AStar.h"
 #include "collision.h"
 #include "map.h"
 #include "objs.h"
@@ -215,6 +216,8 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	Vec2i tileStart, tileEnd;
 	double yIntercept;
 	int x;
+	int w = TILE_WIDTH;
+	int h = TILE_HEIGHT;
 	int isSteep = abs(to.y - from.y) > abs(to.x - from.x);
 	if (isSteep)
 	{
@@ -222,6 +225,7 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 		// Note that this prevents the vertical line special case
 		Swap(&from.x, &from.y);
 		Swap(&to.x, &to.y);
+		Swap(&w, &h);
 	}
 	if (from.x > to.x)
 	{
@@ -235,8 +239,8 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	gradient = (double)delta.y / delta.x;
 
 	// handle first endpoint
-	end.x = from.x / TILE_WIDTH;
-	end.y = (int)((from.y + gradient * (end.x * TILE_WIDTH - from.x)) / TILE_HEIGHT);
+	end.x = from.x / w;
+	end.y = (int)((from.y + gradient * (end.x * w - from.x)) / h);
 	xGap = RFPart(from.x + 0.5);
 	tileStart.x = end.x;
 	tileStart.y = end.y;
@@ -265,8 +269,8 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	yIntercept = end.y + gradient;
 
 	// handle second endpoint
-	end.x = to.x / TILE_WIDTH;
-	end.y = (int)((to.y + gradient * (end.x * TILE_WIDTH - to.x)) / TILE_HEIGHT);
+	end.x = to.x / w;
+	end.y = (int)((to.y + gradient * (end.x * w - to.x)) / h);
 	xGap = FPart(to.x + 0.5);
 	tileEnd.x = end.x;
 	tileEnd.y = end.y;
@@ -360,18 +364,189 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 }
 
 
-int AIGoto(TActor *actor, Vec2i p)
+typedef struct
+{
+	Vec2i Goal;
+	ASPath Path;
+	int PathIndex;
+	int IsFollowing;
+} AIGotoContext;
+typedef struct
+{
+	Tile (*Map)[YMAX][XMAX];
+} AStarContext;
+static int IsWallOrLockedDoor(Tile(*map)[YMAX][XMAX], Vec2i pos)
+{
+	int tileFlags = (*map)[pos.y][pos.x].flags;
+	if (tileFlags & MAPTILE_IS_WALL)
+	{
+		return 1;
+	}
+	else if (tileFlags & MAPTILE_NO_WALK)
+	{
+		return !!(MapGetDoorKeycardFlag(pos) & ~gMission.flags);
+	}
+	return 0;
+}
+static void AddTileNeighbors(
+	ASNeighborList neighbors, void *node, void *context)
+{
+	Vec2i *v = node;
+	int y;
+	AStarContext *c = context;
+	for (y = v->y - 1; y <= v->y + 1; y++)
+	{
+		int x;
+		if (y < 0 || y >= YMAX)
+		{
+			continue;
+		}
+		for (x = v->x - 1; x <= v->x + 1; x++)
+		{
+			float cost = 1;
+			Vec2i neighbor;
+			neighbor.x = x;
+			neighbor.y = y;
+			if (x < 0 || x >= XMAX)
+			{
+				continue;
+			}
+			if (x == v->x && y == v->y)
+			{
+				continue;
+			}
+			if (IsWallOrLockedDoor(c->Map, Vec2iNew(x, y)))
+			{
+				continue;
+			}
+			// if we're moving diagonally,
+			// need to check the axis-aligned neighbours are also clear
+			if (IsWallOrLockedDoor(c->Map, Vec2iNew(v->x, y)) ||
+				IsWallOrLockedDoor(c->Map, Vec2iNew(x, v->y)))
+			{
+				continue;
+			}
+			// slightly prefer axes instead of diagonals
+			if (x != v->x && y != v->y)
+			{
+				cost = 1.1f;
+			}
+			ASNeighborListAdd(neighbors, &neighbor, cost);
+		}
+	}
+}
+static float AStarHeuristic(void *fromNode, void *toNode, void *context)
+{
+	// Simple Euclidean
+	Vec2i *v1 = fromNode;
+	Vec2i *v2 = toNode;
+	UNUSED(context);
+	return (float)sqrt(DistanceSquared(*v1, *v2));
+}
+static ASPathNodeSource cPathNodeSource =
+{
+	sizeof(Vec2i), AddTileNeighbors, AStarHeuristic, NULL, NULL
+};
+static int AIGotoDirect(Vec2i a, Vec2i p)
 {
 	int cmd = 0;
-	Vec2i a = Vec2iFull2Real(Vec2iNew(actor->x, actor->y));
 
-	if (a.x < p.x - 1)		cmd |= CMD_RIGHT;
-	else if (a.x > p.x + 1)	cmd |= CMD_LEFT;
+	if (a.x < p.x)		cmd |= CMD_RIGHT;
+	else if (a.x > p.x)	cmd |= CMD_LEFT;
 
-	if (a.y < p.y - 1)		cmd |= CMD_DOWN;
-	else if (a.y > p.y + 1)	cmd |= CMD_UP;
+	if (a.y < p.y)		cmd |= CMD_DOWN;
+	else if (a.y > p.y)	cmd |= CMD_UP;
 
 	return cmd;
+}
+// Follow the current A* path
+static int AStarFollow(
+	AIGotoContext *c, Vec2i currentTile, TTileItem *i, Vec2i a)
+{
+	Vec2i *pathTile = ASPathGetNode(c->Path, c->PathIndex);
+	c->IsFollowing = 1;
+	// Check if we need to follow the next step in the path
+	// Note: need to make sure the actor is fully within the current tile
+	// otherwise it may get stuck at corners
+	if (Vec2iEqual(currentTile, *pathTile) &&
+		IsTileItemInsideTile(i, currentTile))
+	{
+		c->PathIndex++;
+		pathTile = ASPathGetNode(c->Path, c->PathIndex);
+		c->IsFollowing = 0;
+	}
+	// Go directly to the center of the next tile
+	return AIGotoDirect(a, Vec2iCenterOfTile(*pathTile));
+}
+int AIGoto(TActor *actor, Vec2i p)
+{
+	Vec2i a = Vec2iFull2Real(Vec2iNew(actor->x, actor->y));
+	Vec2i currentTile = Vec2iToTile(a);
+	AIGotoContext *c = actor->aiContext;
+
+	// If we are currently following an A* path, always follow it until
+	// we have reached a new tile
+	if (c && c->IsFollowing)
+	{
+		return AStarFollow(c, currentTile, &actor->tileItem, a);
+	}
+	else if (AIHasClearLine(a, p))
+	{
+		// Simple case: if there's a clear line between AI and target,
+		// walk straight towards it
+		return AIGotoDirect(a, p);
+	}
+	else
+	{
+		Vec2i goalTile = Vec2iToTile(p);
+
+		// Need to calculate A*
+		// First, check if we have a valid path already
+		int hasValidPath = 0;
+		if (c && c->PathIndex < (int)ASPathGetCount(c->Path) - 1)
+		{
+			// Check that the path destination is
+			// reasonably close to where we want to go
+			Vec2i *pathEnd = ASPathGetNode(
+				c->Path, ASPathGetCount(c->Path) - 1);
+			if (CHEBYSHEV_DISTANCE(
+				goalTile.x, goalTile.y, pathEnd->x, pathEnd->y) <= 2)
+			{
+				hasValidPath = 1;
+			}
+		}
+
+		if (!hasValidPath)
+		{
+			// We need to recalculate A*
+			AStarContext ac;
+			ac.Map = &gMap;
+			if (!c)
+			{
+				CCALLOC(actor->aiContext, sizeof(AIGotoContext));
+				c = actor->aiContext;
+			}
+			c->Goal = goalTile;
+			c->PathIndex = 1;	// start navigating to the next path node
+			c->Path = ASPathCreate(
+				&cPathNodeSource, &ac, &currentTile, &c->Goal);
+
+			// In case we can't calculate A* for some reason,
+			// try simple navigation again
+			if (ASPathGetCount(c->Path) <= 1)
+			{
+				debug(
+					D_MAX,
+					"Error: can't calculate path from {%d, %d} to {%d, %d}",
+					currentTile.x, currentTile.y,
+					goalTile.x, goalTile.y);
+				assert(0);
+				return AIGotoDirect(a, p);
+			}
+		}
+
+		return AStarFollow(c, currentTile, &actor->tileItem, a);
+	}
 }
 
 int AIHunt(TActor *actor)

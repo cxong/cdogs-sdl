@@ -6,6 +6,7 @@ set(CDOGS_SOURCES
 	ai.c
 	ai_coop.c
 	ai_utils.c
+	AStar.c
 	automap.c
 	blit.c
 	campaigns.c
@@ -52,6 +53,7 @@ set(CDOGS_HEADERS
 	ai.h
 	ai_coop.h
 	ai_utils.h
+	AStar.h
 	automap.h
 	blit.h
 	campaigns.h

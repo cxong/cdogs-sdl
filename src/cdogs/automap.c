@@ -188,25 +188,9 @@ static void DisplaySummary(void)
 	}
 }
 
-static int MapLevel(int x, int y)
-{
-	int l;
-
-	l = MapAccessLevel(x - 1, y);
-	if (l)
-		return l;
-	l = MapAccessLevel(x + 1, y);
-	if (l)
-		return l;
-	l = MapAccessLevel(x, y - 1);
-	if (l)
-		return l;
-	return MapAccessLevel(x, y + 1);
-}
-
 color_t DoorColor(int x, int y)
 {
-	int l = MapLevel(x, y);
+	int l = MapGetDoorKeycardFlag(Vec2iNew(x, y));
 
 	switch (l) {
 	case FLAGS_KEYCARD_YELLOW:
