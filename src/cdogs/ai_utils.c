@@ -89,8 +89,8 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 	for (a = ActorList(); a; a = a->next)
 	{
 		int distance;
-		// Never target invulnerables or victims
-		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_VICTIM))
+		// Never target invulnerables or civilians
+		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_PENALTY))
 		{
 			continue;
 		}
@@ -478,15 +478,45 @@ static int AStarFollow(
 	// Go directly to the center of the next tile
 	return AIGotoDirect(a, Vec2iCenterOfTile(*pathTile));
 }
+// Check that we are still close to the start of the A* path,
+// and the end of the path is close to our goal
+static int AStarCloseToPath(
+	AIGotoContext *c, Vec2i currentTile, Vec2i goalTile)
+{
+	Vec2i *pathTile;
+	Vec2i *pathEnd;
+	if (!c ||
+		c->PathIndex >= (int)ASPathGetCount(c->Path) - 1) // at end of path
+	{
+		return 0;
+	}
+	// Check if we're too far from the current start of the path
+	pathTile = ASPathGetNode(c->Path, c->PathIndex);
+	if (CHEBYSHEV_DISTANCE(
+		currentTile.x, currentTile.y, pathTile->x, pathTile->y) > 2)
+	{
+		return 0;
+	}
+	// Check if we're too far from the end of the path
+	pathEnd = ASPathGetNode(c->Path, ASPathGetCount(c->Path) - 1);
+	if (CHEBYSHEV_DISTANCE(
+		goalTile.x, goalTile.y, pathEnd->x, pathEnd->y) > 0)
+	{
+		return 0;
+	}
+	return 1;
+}
 int AIGoto(TActor *actor, Vec2i p)
 {
 	Vec2i a = Vec2iFull2Real(Vec2iNew(actor->x, actor->y));
 	Vec2i currentTile = Vec2iToTile(a);
+	Vec2i goalTile = Vec2iToTile(p);
 	AIGotoContext *c = actor->aiContext;
 
-	// If we are currently following an A* path, always follow it until
+	// If we are currently following an A* path,
+	// and it is still valid, keep following it until
 	// we have reached a new tile
-	if (c && c->IsFollowing)
+	if (c && c->IsFollowing && AStarCloseToPath(c, currentTile, goalTile))
 	{
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
 	}
@@ -498,51 +528,30 @@ int AIGoto(TActor *actor, Vec2i p)
 	}
 	else
 	{
-		Vec2i goalTile = Vec2iToTile(p);
-
-		// Need to calculate A*
-		// First, check if we have a valid path already
-		int hasValidPath = 0;
-		if (c && c->PathIndex < (int)ASPathGetCount(c->Path) - 1)
+		// We need to recalculate A*
+		AStarContext ac;
+		ac.Map = &gMap;
+		if (!c)
 		{
-			// Check that the path destination is
-			// reasonably close to where we want to go
-			Vec2i *pathEnd = ASPathGetNode(
-				c->Path, ASPathGetCount(c->Path) - 1);
-			if (CHEBYSHEV_DISTANCE(
-				goalTile.x, goalTile.y, pathEnd->x, pathEnd->y) <= 2)
-			{
-				hasValidPath = 1;
-			}
+			CCALLOC(actor->aiContext, sizeof(AIGotoContext));
+			c = actor->aiContext;
 		}
+		c->Goal = goalTile;
+		c->PathIndex = 1;	// start navigating to the next path node
+		c->Path = ASPathCreate(
+			&cPathNodeSource, &ac, &currentTile, &c->Goal);
 
-		if (!hasValidPath)
+		// In case we can't calculate A* for some reason,
+		// try simple navigation again
+		if (ASPathGetCount(c->Path) <= 1)
 		{
-			// We need to recalculate A*
-			AStarContext ac;
-			ac.Map = &gMap;
-			if (!c)
-			{
-				CCALLOC(actor->aiContext, sizeof(AIGotoContext));
-				c = actor->aiContext;
-			}
-			c->Goal = goalTile;
-			c->PathIndex = 1;	// start navigating to the next path node
-			c->Path = ASPathCreate(
-				&cPathNodeSource, &ac, &currentTile, &c->Goal);
-
-			// In case we can't calculate A* for some reason,
-			// try simple navigation again
-			if (ASPathGetCount(c->Path) <= 1)
-			{
-				debug(
-					D_MAX,
-					"Error: can't calculate path from {%d, %d} to {%d, %d}",
-					currentTile.x, currentTile.y,
-					goalTile.x, goalTile.y);
-				assert(0);
-				return AIGotoDirect(a, p);
-			}
+			debug(
+				D_MAX,
+				"Error: can't calculate path from {%d, %d} to {%d, %d}",
+				currentTile.x, currentTile.y,
+				goalTile.x, goalTile.y);
+			assert(0);
+			return AIGotoDirect(a, p);
 		}
 
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
