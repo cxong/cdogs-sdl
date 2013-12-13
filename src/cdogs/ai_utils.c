@@ -403,7 +403,7 @@ static void AddTileNeighbors(
 		}
 		for (x = v->x - 1; x <= v->x + 1; x++)
 		{
-			float cost = 1;
+			float cost;
 			Vec2i neighbor;
 			neighbor.x = x;
 			neighbor.y = y;
@@ -426,10 +426,21 @@ static void AddTileNeighbors(
 			{
 				continue;
 			}
-			// slightly prefer axes instead of diagonals
+			// Calculate cost of direction
+			// Note that there are different horizontal and vertical costs,
+			// due to the tiles being non-square
+			// Slightly prefer axes instead of diagonals
 			if (x != v->x && y != v->y)
 			{
-				cost = 1.1f;
+				cost = TILE_WIDTH * 1.1f;
+			}
+			else if (x != v->x)
+			{
+				cost = TILE_WIDTH;
+			}
+			else
+			{
+				cost = TILE_HEIGHT;
 			}
 			ASNeighborListAdd(neighbors, &neighbor, cost);
 		}
