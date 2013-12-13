@@ -452,7 +452,8 @@ static float AStarHeuristic(void *fromNode, void *toNode, void *context)
 	Vec2i *v1 = fromNode;
 	Vec2i *v2 = toNode;
 	UNUSED(context);
-	return (float)sqrt(DistanceSquared(*v1, *v2));
+	return (float)sqrt(DistanceSquared(
+		Vec2iCenterOfTile(*v1), Vec2iCenterOfTile(*v2)));
 }
 static ASPathNodeSource cPathNodeSource =
 {
