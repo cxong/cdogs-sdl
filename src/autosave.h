@@ -45,6 +45,8 @@ typedef struct
 	int MissionsCompleted;
 } MissionSave;
 
+void MissionSaveInit(MissionSave *ms);
+
 typedef struct
 {
 	MissionSave LastMission;

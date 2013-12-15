@@ -192,6 +192,7 @@ void MissionBriefing(GraphicsDevice *device)
 	if (gMission.index > 0)
 	{
 		MissionSave ms;
+		MissionSaveInit(&ms);
 		ms.Campaign = gCampaign.Entry;
 		strcpy(ms.Password, MakePassword(gMission.index, 0));
 		ms.MissionsCompleted = gMission.index;
@@ -730,6 +731,7 @@ void Victory(GraphicsDevice *graphics)
 	}
 	
 	// Save that this mission has been completed
+	MissionSaveInit(&ms);
 	ms.Campaign = gCampaign.Entry;
 	strcpy(ms.Password, MakePassword(gMission.index, 0));
 	ms.MissionsCompleted = gMission.index + 1;

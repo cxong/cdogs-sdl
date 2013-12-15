@@ -41,6 +41,12 @@
 Autosave gAutosave;
 
 
+void MissionSaveInit(MissionSave *ms)
+{
+	memset(ms, 0, sizeof *ms);
+}
+
+
 void AutosaveInit(Autosave *autosave)
 {
 	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
@@ -68,7 +74,7 @@ static void AddCampaignNode(campaign_entry_t *c, json_t *root)
 
 static void LoadMissionNode(MissionSave *m, json_t *node)
 {
-	memset(m, 0, sizeof *m);
+	MissionSaveInit(m);
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
 	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
@@ -226,12 +232,9 @@ void AutosaveLoadMission(
 {
 	MissionSave *existingMission = AutosaveFindMission(
 		autosave, path, builtinIndex);
+	MissionSaveInit(mission);
 	if (existingMission != NULL)
 	{
 		memcpy(mission, existingMission, sizeof *mission);
-	}
-	else
-	{
-		memset(mission, 0, sizeof *mission);
 	}
 }

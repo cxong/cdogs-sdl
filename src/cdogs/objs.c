@@ -348,14 +348,17 @@ int DamageCharacter(
 	if ((player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
 		!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 	{
-		// Calculate score
-		if (actor->flags & FLAGS_PENALTY)
+		if (player >= 0)
 		{
-			Score(&gPlayerDatas[player], -3 * power);
-		}
-		else
-		{
-			Score(&gPlayerDatas[player], power);
+			// Calculate score
+			if (actor->flags & FLAGS_PENALTY)
+			{
+				Score(&gPlayerDatas[player], -3 * power);
+			}
+			else
+			{
+				Score(&gPlayerDatas[player], power);
+			}
 		}
 	}
 
