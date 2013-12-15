@@ -102,10 +102,10 @@ static int delayTable[STATE_COUNT] = {
 	90,
 	60,
 	60,
-	8,
-	8,
-	8,
-	8,
+	4,
+	4,
+	4,
+	4,
 };
 
 
