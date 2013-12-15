@@ -39,7 +39,8 @@ typedef struct
 	struct PlayerData *pData;
 	menu_t **currentMenu;
 } MenuDisplayPlayerData;
-void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
+void MenuDisplayPlayer(
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
 typedef struct
 {
@@ -47,7 +48,7 @@ typedef struct
 	InputConfig *inputConfig;
 } MenuDisplayPlayerControlsData;
 void MenuDisplayPlayerControls(
-	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
 void DisplayCharacterAndName(
 	GraphicsDevice *g, Vec2i pos, Character *c, char *name);

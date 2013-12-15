@@ -134,17 +134,35 @@ menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
 
 menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
 
+static void CampaignsDisplayFilename(
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+{
+	menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+	UNUSED(g);
+	UNUSED(data);
+	if (subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
+	{
+		char s[255];
+		const char *filename = subMenu->u.campaign.filename;
+		int isBuiltin = subMenu->u.campaign.isBuiltin;
+		sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
+		DrawTextStringSpecial(
+			s,
+			TEXT_XCENTER | TEXT_BOTTOM,
+			pos,
+			size,
+			Vec2iNew(size.x / 12, 0));
+	}
+}
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list)
 {
-	menu_t *menu = MenuCreateNormal(
-		name,
-		title,
-		MENU_TYPE_CAMPAIGNS,
-		0);
+	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	int i;
+	menu->u.normal.maxItems = 20;
+	menu->u.normal.align = MENU_ALIGN_CENTER;
 	for (i = 0; i < list->numSubFolders; i++)
 	{
 		char folderName[CDOGS_FILENAME_MAX];
@@ -160,6 +178,7 @@ menu_t *MenuCreateCampaigns(
 	{
 		MenuAddSubmenu(menu, MenuCreateCampaignItem(&list->list[i]));
 	}
+	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
 	return menu;
 }
 

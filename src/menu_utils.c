@@ -50,11 +50,13 @@ void DisplayCharacterAndName(
 	DrawTextString(name, g, namePos);
 }
 
-void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+void MenuDisplayPlayer(
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	MenuDisplayPlayerData *d = data;
 	Vec2i playerPos;
 	char s[22];
+	UNUSED(menu);
 	pos.x -= size.x;	// move to left half of screen
 	playerPos = Vec2iNew(
 		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
@@ -72,12 +74,14 @@ void MenuDisplayPlayer(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 }
 
 void MenuDisplayPlayerControls(
-	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	char s[256];
 	MenuDisplayPlayerControlsData *d = data;
 	Vec2i textPos = Vec2iNew(0, pos.y + size.y - CDogsTextHeight());
 	int textWidth = 0;
+
+	UNUSED(menu);
 
 	switch (d->pData->inputDevice)
 	{

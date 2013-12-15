@@ -39,19 +39,29 @@
 static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
 static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 
-#define PLAYER_FACE_COUNT   7
 #define PLAYER_BODY_COUNT   9
 #define PLAYER_SKIN_COUNT   3
 #define PLAYER_HAIR_COUNT   8
 
-static const char *faceNames[PLAYER_FACE_COUNT] = {
+static const char *faceNames[] =
+{
 	"Jones",
 	"Ice",
-	"WarBaby",
+	"Ogre",
 	"Dragon",
+	"WarBaby",
+	"Bug-eye",
 	"Smith",
-	"Lady",
-	"Wolf"
+	"Ogre Boss",
+	"Grunt",
+	"Professor",
+	"Snake",
+	"Wolf",
+	"Bob",
+	"Mad bug-eye",
+	"Cyborg",
+	"Robot",
+	"Lady"
 };
 
 
@@ -165,28 +175,7 @@ void SavePlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE])
 	debug(D_NORMAL, "saved templates\n");
 }
 
-
-static int IndexToHead(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		return FACE_JONES;
-	case 1:
-		return FACE_ICE;
-	case 2:
-		return FACE_WARBABY;
-	case 3:
-		return FACE_HAN;
-	case 4:
-		return FACE_BLONDIE;
-	case 5:
-		return FACE_LADY;
-	case 6:
-		return FACE_PIRAT2;
-	}
-	return FACE_BLONDIE;
-}
+static int IndexSelf(int idx) { return idx;  }
 
 static int IndexToSkin(int idx)
 {
@@ -262,10 +251,13 @@ static void SetPlayer(Character *c, struct PlayerData *data)
 }
 
 
-static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+static void DrawNameMenu(
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	int i;
 	PlayerSelectMenuData *d = data;
+
+	UNUSED(menu);
 
 #define ENTRY_COLS	8
 #define	ENTRY_SPACING	7
@@ -295,7 +287,7 @@ static void DrawNameMenu(GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 		Vec2iNew(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * CDogsTextHeight()),
-		"(End)", i == d->nameMenuSelection, colorBlack);
+		"(End)", i == d->nameMenuSelection, 0, colorBlack);
 }
 
 static int HandleInputNameMenu(int cmd, void *data)
@@ -396,6 +388,7 @@ static menu_t *CreateAppearanceMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	int i;
+	menu->u.normal.maxItems = 11;
 	for (i = 0; i < faceData->menuCount; i++)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack(faceData->menu[i]));
@@ -470,11 +463,12 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 }
 
 static void SaveTemplateDisplayTitle(
-	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	PlayerSelectMenuData *d = data;
 	char buf[256];
 
+	UNUSED(menu);
 	UNUSED(size);
 
 	// Display "Save <template>..." title
@@ -554,9 +548,9 @@ void PlayerSelectMenusCreate(
 	data->faceData.c = c;
 	data->faceData.pData = p;
 	data->faceData.menu = faceNames;
-	data->faceData.menuCount = PLAYER_FACE_COUNT;
+	data->faceData.menuCount = FACE_COUNT;
 	data->faceData.property = &p->looks.face;
-	data->faceData.func = IndexToHead;
+	data->faceData.func = IndexSelf;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Face", &data->faceData));
 
 	data->skinData.c = c;

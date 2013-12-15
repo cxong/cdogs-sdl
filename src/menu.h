@@ -60,7 +60,6 @@ typedef enum
 {
 	MENU_TYPE_NORMAL,				// normal menu with items, up/down/left/right moves cursor
 	MENU_TYPE_OPTIONS,				// menu with items, only up/down moves
-	MENU_TYPE_CAMPAIGNS,			// menu that scrolls, with items centred
 	MENU_TYPE_KEYS,					// extra wide option menu
 	MENU_TYPE_BASIC,				// no items, does nothing (use custom callbacks)
 	MENU_TYPE_SET_OPTION_TOGGLE,	// no items, sets option on/off
@@ -96,8 +95,9 @@ typedef enum
 typedef struct menu menu_t;
 
 // Callback for drawing custom menu
-			// graphics, pos, size, data
-typedef void (*MenuDisplayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *);
+// menu, graphics, pos, size, data
+typedef void (*MenuDisplayFunc)(
+	menu_t *, GraphicsDevice *, Vec2i, Vec2i, void *);
 // Callback for handling user input
 // cmd, data
 // returns: 0 if stay on menu, 1 if exit from menu
@@ -107,6 +107,12 @@ typedef void(*MenuFunc)(menu_t *, void *);
 // Callback for processing custom menu function post input
 // menu, cmd, data
 typedef void(*MenuPostInputFunc)(menu_t *, int cmd, void *);
+
+typedef enum
+{
+	MENU_ALIGN_CENTER,
+	MENU_ALIGN_LEFT
+} MenuAlignStyle;
 
 struct menu
 {
@@ -131,6 +137,8 @@ struct menu
 			int numSubMenus;
 			int index;
 			int scroll;
+			int maxItems;	// 0 means unlimited
+			MenuAlignStyle align;
 			int quitMenuIndex;
 			int displayItems;
 			int setOptions;
@@ -200,12 +208,6 @@ struct menu
 	} u;
 };
 
-typedef enum
-{
-	MENU_ALIGN_CENTER,
-	MENU_ALIGN_LEFT
-} MenuAlignStyle;
-
 typedef struct
 {
 	menu_t *root;
@@ -250,7 +252,8 @@ void MenuDisableSubmenu(menu_t *menu, int index);
 void MenuEnableSubmenu(menu_t *menu, int index);
 
 void ShowControls(void);
-void DisplayMenuItem(Vec2i pos, const char *s, int selected, color_t color);
+void DisplayMenuItem(
+	Vec2i pos, const char *s, int selected, int isDisabled, color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(

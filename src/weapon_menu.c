@@ -103,11 +103,12 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 }
 
 static void DisplayEquippedWeapons(
-	GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
 	WeaponMenuData *d = data;
 	Vec2i weaponsPos;
 	Vec2i maxTextSize = TextGetSize("LongestWeaponName");
+	UNUSED(menu);
 	pos.x -= size.x;	// move to left half of screen
 	weaponsPos = Vec2iNew(
 		pos.x + size.x * 3 / 4 - maxTextSize.x / 2,

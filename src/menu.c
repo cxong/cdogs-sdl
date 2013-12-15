@@ -236,11 +236,17 @@ void ShowControls(void)
 	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
 }
 
-void DisplayMenuItem(Vec2i pos, const char *s, int selected, color_t color)
+void DisplayMenuItem(
+	Vec2i pos, const char *s, int selected, int isDisabled, color_t color)
 {
 	if (selected)
 	{
 		DrawTextStringMasked(s, &gGraphicsDevice, pos, colorRed);
+	}
+	else if (isDisabled)
+	{
+		color_t dark = { 64, 64, 64, 255 };
+		DrawTextStringMasked(s, &gGraphicsDevice, pos, dark);
 	}
 	else if (!ColorEquals(color, colorBlack))
 	{
@@ -258,7 +264,6 @@ int MenuTypeHasSubMenus(menu_type_e type)
 	return
 		type == MENU_TYPE_NORMAL ||
 		type == MENU_TYPE_OPTIONS ||
-		type == MENU_TYPE_CAMPAIGNS ||
 		type == MENU_TYPE_KEYS;
 }
 
@@ -266,7 +271,6 @@ int MenuTypeLeftRightMoves(menu_type_e type)
 {
 	return
 		type == MENU_TYPE_NORMAL ||
-		type == MENU_TYPE_CAMPAIGNS ||
 		type == MENU_TYPE_KEYS;
 }
 
@@ -293,6 +297,8 @@ menu_t *MenuCreateNormal(
 	menu->u.normal.changeKeyMenu = NULL;
 	menu->u.normal.index = 0;
 	menu->u.normal.scroll = 0;
+	menu->u.normal.maxItems = 0;
+	menu->u.normal.align = MENU_ALIGN_LEFT;
 	menu->u.normal.quitMenuIndex = -1;
 	menu->u.normal.subMenus = NULL;
 	menu->u.normal.numSubMenus = 0;
@@ -451,8 +457,7 @@ menu_t *MenuCreateReturn(const char *name, int returnCode)
 
 menu_t *MenuCreateCustom(
 	const char *name,
-	void (*displayFunc)(GraphicsDevice *, Vec2i, Vec2i, void *),
-	int (*inputFunc)(int, void *),
+	MenuDisplayFunc displayFunc, MenuInputFunc inputFunc,
 	void *data)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CUSTOM);
@@ -473,7 +478,7 @@ void MenuDisplay(MenuSystem *ms)
 	if (menu->type == MENU_TYPE_CUSTOM)
 	{
 		menu->u.customData.displayFunc(
-			ms->graphics, ms->pos, ms->size, menu->u.customData.data);
+			menu, ms->graphics, ms->pos, ms->size, menu->u.customData.data);
 	}
 	else
 	{
@@ -494,12 +499,12 @@ void MenuDisplay(MenuSystem *ms)
 	for (i = 0; i < ms->numCustomDisplayFuncs; i++)
 	{
 		ms->customDisplayFuncs[i](
-			ms->graphics, ms->pos, ms->size, ms->customDisplayDatas[i]);
+			NULL, ms->graphics, ms->pos, ms->size, ms->customDisplayDatas[i]);
 	}
 	if (menu->customDisplayFunc)
 	{
 		menu->customDisplayFunc(
-			ms->graphics, ms->pos, ms->size, menu->customDisplayData);
+			menu, ms->graphics, ms->pos, ms->size, menu->customDisplayData);
 	}
 }
 
@@ -534,6 +539,9 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 	int maxWidth = 0;
 	menu_t *menu = ms->current;
 
+#define ARROW_UP	"\036"
+#define ARROW_DOWN	"\037"
+
 	switch (menu->type)
 	{
 	// TODO: refactor the three menu types (normal, options, campaign) into one
@@ -542,6 +550,8 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 		{
 			int isCentered = menu->type == MENU_TYPE_NORMAL;
 			int xOptions;
+			int iStart = 0;
+			int iEnd = menu->u.normal.numSubMenus;
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
 				int width = TextGetStringWidth(menu->u.normal.subMenus[i].name);
@@ -566,31 +576,73 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				assert(0 && "unknown alignment");
 				break;
 			}
-			yStart = MS_CENTER_Y(
-				*ms, menu->u.normal.numSubMenus * CDogsTextHeight());
+
+			if (menu->u.normal.maxItems > 0)
+			{
+				// Calculate first/last indices
+				if (menu->u.normal.scroll != 0)
+				{
+					iStart = menu->u.normal.scroll;
+				}
+				iEnd = MIN(
+					iStart + menu->u.normal.maxItems,
+					menu->u.normal.numSubMenus);
+			}
+
+			yStart = MS_CENTER_Y(*ms, (iEnd - iStart) * CDogsTextHeight());
+			if (menu->u.normal.maxItems > 0)
+			{
+				// Display scroll arrows
+				if (menu->u.normal.scroll != 0)
+				{
+					DisplayMenuItem(
+						Vec2iNew(
+							MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
+							yStart - 2 - CDogsTextHeight()),
+						ARROW_UP,
+						0, 0,
+						colorBlack);
+				}
+				if (iEnd < menu->u.normal.numSubMenus - 1)
+				{
+					DisplayMenuItem(
+						Vec2iNew(
+							MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
+							yStart + menu->u.normal.maxItems*CDogsTextHeight() + 2),
+						ARROW_DOWN,
+						0, 0,
+						colorBlack);
+				}
+			}
 			xOptions = x + maxWidth + 10;
 
 			// Display normal menu items
-			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			for (i = iStart; i < iEnd; i++)
 			{
-				int y = yStart + i * CDogsTextHeight();
+				int y = yStart + (i - iStart) * CDogsTextHeight();
 				menu_t *subMenu = &menu->u.normal.subMenus[i];
+				Vec2i pos = Vec2iNew(x, y);
 
-				// Display menu item
-				const char *name = subMenu->name;
-				if (i == menu->u.normal.index)
+				switch (menu->u.normal.align)
 				{
-					DrawTextStringMasked(name, ms->graphics, Vec2iNew(x, y), colorRed);
+				case MENU_ALIGN_CENTER:
+					pos.x = MS_CENTER_X(
+						*ms, TextGetStringWidth(subMenu->name));
+					break;
+				case MENU_ALIGN_LEFT:
+					// Do nothing
+					break;
+				default:
+					assert(0 && "unknown alignment");
+					break;
 				}
-				else if (subMenu->isDisabled)
-				{
-					color_t dark = { 64, 64, 64, 255 };
-					DrawTextStringMasked(name, ms->graphics, Vec2iNew(x, y), dark);
-				}
-				else
-				{
-					DrawTextString(name, ms->graphics, Vec2iNew(x, y));
-				}
+
+				DisplayMenuItem(
+					pos,
+					subMenu->name,
+					i == menu->u.normal.index,
+					subMenu->isDisabled,
+					colorBlack);
 
 				// display option value
 				if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE ||
@@ -622,67 +674,6 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 						break;
 					}
 				}
-			}
-		}
-		break;
-	case MENU_TYPE_CAMPAIGNS:
-		{
-			int y = MS_CENTER_Y(*ms, 12 * CDogsTextHeight());
-
-		#define ARROW_UP	"\036"
-		#define ARROW_DOWN	"\037"
-
-			if (menu->u.normal.scroll != 0)
-			{
-				DisplayMenuItem(
-					Vec2iNew(
-						MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
-						y - 2 - CDogsTextHeight()),
-					ARROW_UP,
-					0,
-					colorBlack);
-			}
-
-			for (i = menu->u.normal.scroll;
-				i < MIN(menu->u.normal.scroll + 12, menu->u.normal.numSubMenus);
-				i++)
-			{
-				int isSelected = i == menu->u.normal.index;
-				menu_t *subMenu = &menu->u.normal.subMenus[i];
-				const char *name = subMenu->name;
-				// TODO: display subfolders
-				DisplayMenuItem(
-					Vec2iNew(MS_CENTER_X(*ms, TextGetStringWidth(name)), y),
-					name,
-					isSelected,
-					subMenu->color);
-
-				if (isSelected && subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
-				{
-					char s[255];
-					const char *filename = subMenu->u.campaign.filename;
-					int isBuiltin = subMenu->u.campaign.isBuiltin;
-					sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
-					DrawTextStringSpecial(
-						s,
-						TEXT_XCENTER | TEXT_BOTTOM,
-						ms->pos,
-						ms->size,
-						Vec2iNew(ms->size.x / 12, 0));
-				}
-
-				y += CDogsTextHeight();
-			}
-
-			if (i < menu->u.normal.numSubMenus - 1)
-			{
-				DisplayMenuItem(
-					Vec2iNew(
-						MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
-						y + 2),
-					ARROW_DOWN,
-					0,
-					colorBlack);
 			}
 		}
 		break;
@@ -728,7 +719,11 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 							subMenu->u.changeKey.code));
 					}
 					DisplayMenuItem(
-						Vec2iNew(xKeys, y), keyName, isSelected, colorBlack);
+						Vec2iNew(xKeys, y),
+						keyName,
+						isSelected,
+						0,
+						colorBlack);
 				}
 			}
 		}
@@ -960,7 +955,6 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		{
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
-		case MENU_TYPE_CAMPAIGNS:
 		case MENU_TYPE_KEYS:
 		case MENU_TYPE_CUSTOM:
 			if (cmd & CMD_BUTTON1)
@@ -1098,8 +1092,8 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	}
 	menu->u.normal.scroll =
 		CLAMP(menu->u.normal.scroll,
-			MAX(0, menu->u.normal.index - 11),
-			MIN(menu->u.normal.numSubMenus - 1, menu->u.normal.index + 11));
+			MAX(0, menu->u.normal.index - menu->u.normal.maxItems + 1),
+			MIN(menu->u.normal.numSubMenus - 1, menu->u.normal.index + menu->u.normal.maxItems - 1));
 	if (menu->u.normal.index < menu->u.normal.scroll)
 	{
 		menu->u.normal.scroll = menu->u.normal.index;
