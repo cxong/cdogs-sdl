@@ -40,129 +40,31 @@
 static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
 static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 
-#define PLAYER_BODY_COUNT   9
-#define PLAYER_SKIN_COUNT   3
-#define PLAYER_HAIR_COUNT   8
 
-
-static const char *shadeNames[PLAYER_BODY_COUNT] = {
+static const char *shadeNames[] = {
 	"Blue",
-	"Green",
-	"Red",
-	"Silver",
+	"Skin",
 	"Brown",
-	"Purple",
-	"Black",
+	"Green",
 	"Yellow",
-	"White"
+	"Purple",
+	"Red",
+	"Light Gray",
+	"Gray",
+	"Dark Gray",
+	"Asian",
+	"Dark Skin",
+	"Black",
+	"Golden"
 };
 const char *IndexToShadeStr(int idx)
 {
-	if (idx >= 0 && idx < PLAYER_BODY_COUNT)
+	if (idx >= 0 && idx < SHADE_COUNT)
 	{
 		return shadeNames[idx];
 	}
 	return shadeNames[0];
 }
-
-static const char *skinNames[PLAYER_SKIN_COUNT] = {
-	"Caucasian",
-	"Asian",
-	"Black"
-};
-const char *IndexToSkinStr(int idx)
-{
-	if (idx >= 0 && idx < PLAYER_SKIN_COUNT)
-	{
-		return skinNames[idx];
-	}
-	return skinNames[0];
-}
-
-static const char *hairNames[PLAYER_HAIR_COUNT] = {
-	"Red",
-	"Silver",
-	"Brown",
-	"Gray",
-	"Blonde",
-	"White",
-	"Golden",
-	"Black"
-};
-const char *IndexToHairStr(int idx)
-{
-	if (idx >= 0 && idx < PLAYER_HAIR_COUNT)
-	{
-		return hairNames[idx];
-	}
-	return hairNames[0];
-}
-
-static int IndexSelf(int idx) { return idx;  }
-
-static int IndexToSkin(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		return SHADE_SKIN;
-	case 1:
-		return SHADE_ASIANSKIN;
-	case 2:
-		return SHADE_DARKSKIN;
-	}
-	return SHADE_SKIN;
-}
-
-static int IndexToHair(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		return SHADE_RED;
-	case 1:
-		return SHADE_GRAY;
-	case 2:
-		return SHADE_BROWN;
-	case 3:
-		return SHADE_DKGRAY;
-	case 4:
-		return SHADE_YELLOW;
-	case 5:
-		return SHADE_LTGRAY;
-	case 6:
-		return SHADE_GOLDEN;
-	case 7:
-		return SHADE_BLACK;
-	}
-	return SHADE_SKIN;
-}
-
-static int IndexToShade(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		return SHADE_BLUE;
-	case 1:
-		return SHADE_GREEN;
-	case 2:
-		return SHADE_RED;
-	case 3:
-		return SHADE_GRAY;
-	case 4:
-		return SHADE_BROWN;
-	case 5:
-		return SHADE_PURPLE;
-	case 6:
-		return SHADE_DKGRAY;
-	case 7:
-		return SHADE_YELLOW;
-	case 8:
-		return SHADE_LTGRAY;
-	}
-	return SHADE_BLUE;
-};
 
 static void SetPlayer(Character *c, struct PlayerData *data)
 {
@@ -302,7 +204,7 @@ static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
 {
 	AppearanceMenuData *d = data;
 	UNUSED(cmd);
-	*d->property = d->func(menu->u.normal.index);
+	*d->property = menu->u.normal.index;
 	SetPlayer(d->c, d->pData);
 }
 
@@ -482,47 +384,41 @@ void PlayerSelectMenusCreate(
 	data->faceData.menuCount = FACE_COUNT;
 	data->faceData.strFunc = IndexToFaceStr;
 	data->faceData.property = &p->looks.face;
-	data->faceData.func = IndexSelf;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Face", &data->faceData));
 
 	data->skinData.c = c;
 	data->skinData.pData = p;
-	data->skinData.menuCount = PLAYER_SKIN_COUNT;
-	data->skinData.strFunc = IndexToSkinStr;
+	data->skinData.menuCount = SHADE_COUNT;
+	data->skinData.strFunc = IndexToShadeStr;
 	data->skinData.property = &p->looks.skin;
-	data->skinData.func = IndexToSkin;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Skin", &data->skinData));
 
 	data->hairData.c = c;
 	data->hairData.pData = p;
-	data->hairData.menuCount = PLAYER_HAIR_COUNT;
-	data->hairData.strFunc = IndexToHairStr;
+	data->hairData.menuCount = SHADE_COUNT;
+	data->hairData.strFunc = IndexToShadeStr;
 	data->hairData.property = &p->looks.hair;
-	data->hairData.func = IndexToHair;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Hair", &data->hairData));
 
 	data->armsData.c = c;
 	data->armsData.pData = p;
-	data->armsData.menuCount = PLAYER_BODY_COUNT;
+	data->armsData.menuCount = SHADE_COUNT;
 	data->armsData.strFunc = IndexToShadeStr;
 	data->armsData.property = &p->looks.arm;
-	data->armsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Arms", &data->armsData));
 
 	data->bodyData.c = c;
 	data->bodyData.pData = p;
-	data->bodyData.menuCount = PLAYER_BODY_COUNT;
+	data->bodyData.menuCount = SHADE_COUNT;
 	data->bodyData.strFunc = IndexToShadeStr;
 	data->bodyData.property = &p->looks.body;
-	data->bodyData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Body", &data->bodyData));
 
 	data->legsData.c = c;
 	data->legsData.pData = p;
-	data->legsData.menuCount = PLAYER_BODY_COUNT;
+	data->legsData.menuCount = SHADE_COUNT;
 	data->legsData.strFunc = IndexToShadeStr;
 	data->legsData.property = &p->looks.leg;
-	data->legsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Legs", &data->legsData));
 
 	MenuAddSubmenu(ms->root, CreateUseTemplateMenu("Load", data));

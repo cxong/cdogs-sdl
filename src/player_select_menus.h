@@ -40,7 +40,6 @@ typedef struct
 	const char **menu;
 	int menuCount;
 	const char *(*strFunc)(int);
-	int (*func)(int);
 	Character *c;
 	struct PlayerData *pData;
 } AppearanceMenuData;
