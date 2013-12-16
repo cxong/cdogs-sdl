@@ -26,45 +26,31 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PLAYER_SELECT_MENUS
-#define __PLAYER_SELECT_MENUS
-
-#include <cdogs/character.h>
-
-#include "menu.h"
-#include "menu_utils.h"
+#ifndef __PLAYER_TEMPLATE
+#define __PLAYER_TEMPLATE
 
 typedef struct
 {
-	int *property;
-	const char **menu;
-	int menuCount;
-	const char *(*strFunc)(int);
-	int (*func)(int);
-	Character *c;
-	struct PlayerData *pData;
-} AppearanceMenuData;
-typedef struct
-{
-	MenuDisplayPlayerData display;
-	MenuDisplayPlayerControlsData controls;
-	int nameMenuSelection;
-	AppearanceMenuData faceData;
-	AppearanceMenuData skinData;
-	AppearanceMenuData hairData;
-	AppearanceMenuData armsData;
-	AppearanceMenuData bodyData;
-	AppearanceMenuData legsData;
-} PlayerSelectMenuData;
-typedef struct
-{
-	MenuSystem ms;
-	PlayerSelectMenuData data;
-} PlayerSelectMenu;
+	char name[20];
+	int face;
+	int body;
+	int arms;
+	int legs;
+	int skin;
+	int hair;
+} PlayerTemplate;
 
-void PlayerSelectMenusCreate(
-	PlayerSelectMenu *menu,
-	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig);
+#define MAX_TEMPLATE  100
+extern PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
+
+#define PLAYER_TEMPLATE_FILE "players.cnf"
+
+void LoadPlayerTemplates(
+	PlayerTemplate templates[MAX_TEMPLATE], const char *filename);
+void SavePlayerTemplates(
+	PlayerTemplate templates[MAX_TEMPLATE], const char *filename);
+int PlayerTemplatesGetCount(PlayerTemplate templates[MAX_TEMPLATE]);
+
+const char *IndexToFaceStr(int idx);
 
 #endif

@@ -164,7 +164,7 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	
 	if (f == NULL)
 	{
-		printf("Error saving config '%s'\n", filename);
+		printf("Error saving autosave '%s'\n", filename);
 		return;
 	}
 	

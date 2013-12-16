@@ -250,6 +250,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
 void MenuDisableSubmenu(menu_t *menu, int index);
 void MenuEnableSubmenu(menu_t *menu, int index);
+menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name);
 
 void ShowControls(void);
 void DisplayMenuItem(

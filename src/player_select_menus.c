@@ -32,8 +32,9 @@
 
 #include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
-#include <cdogs/files.h>
 #include <cdogs/text.h>
+
+#include "player_template.h"
 
 
 static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
@@ -42,27 +43,6 @@ static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
 #define PLAYER_BODY_COUNT   9
 #define PLAYER_SKIN_COUNT   3
 #define PLAYER_HAIR_COUNT   8
-
-static const char *faceNames[] =
-{
-	"Jones",
-	"Ice",
-	"Ogre",
-	"Dragon",
-	"WarBaby",
-	"Bug-eye",
-	"Smith",
-	"Ogre Boss",
-	"Grunt",
-	"Professor",
-	"Snake",
-	"Wolf",
-	"Bob",
-	"Mad bug-eye",
-	"Cyborg",
-	"Robot",
-	"Lady"
-};
 
 
 static const char *shadeNames[PLAYER_BODY_COUNT] = {
@@ -76,12 +56,28 @@ static const char *shadeNames[PLAYER_BODY_COUNT] = {
 	"Yellow",
 	"White"
 };
+const char *IndexToShadeStr(int idx)
+{
+	if (idx >= 0 && idx < PLAYER_BODY_COUNT)
+	{
+		return shadeNames[idx];
+	}
+	return shadeNames[0];
+}
 
 static const char *skinNames[PLAYER_SKIN_COUNT] = {
 	"Caucasian",
 	"Asian",
 	"Black"
 };
+const char *IndexToSkinStr(int idx)
+{
+	if (idx >= 0 && idx < PLAYER_SKIN_COUNT)
+	{
+		return skinNames[idx];
+	}
+	return skinNames[0];
+}
 
 static const char *hairNames[PLAYER_HAIR_COUNT] = {
 	"Red",
@@ -93,86 +89,13 @@ static const char *hairNames[PLAYER_HAIR_COUNT] = {
 	"Golden",
 	"Black"
 };
-
-PlayerTemplate gPlayerTemplates[MAX_TEMPLATE] =
+const char *IndexToHairStr(int idx)
 {
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 },
-	{ "-- empty --", 0, 0, 0, 0, 0, 0 }
-};
-
-void LoadPlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE])
-{
-	int i, count;
-	int fscanfres;
-	FILE *f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILENAME), "r");
-	if (!f)
+	if (idx >= 0 && idx < PLAYER_HAIR_COUNT)
 	{
-		return;
+		return hairNames[idx];
 	}
-	i = 0;
-	fscanfres = fscanf(f, "%d\n", &count);
-	if (fscanfres < 1)
-	{
-		printf("Error reading " PLAYER_TEMPLATE_FILENAME " count\n");
-		fclose(f);
-		return;
-	}
-	while (i < MAX_TEMPLATE && i < count)
-	{
-		fscanfres = fscanf(f, "[%[^]]] %d %d %d %d %d %d\n",
-			templates[i].name,
-			&templates[i].head,
-			&templates[i].body,
-			&templates[i].arms,
-			&templates[i].legs,
-			&templates[i].skin,
-			&templates[i].hair);
-		if (fscanfres < 7)
-		{
-			printf("Error reading player %d\n", i);
-			fclose(f);
-			return;
-		}
-		i++;
-	}
-	fclose(f);
-}
-
-void SavePlayerTemplates(PlayerTemplate templates[MAX_TEMPLATE])
-{
-	FILE *f;
-	int i;
-
-	debug(D_NORMAL, "begin\n");
-
-	f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILENAME), "w");
-	if (!f)
-	{
-		return;
-	}
-
-	fprintf(f, "%d\n", MAX_TEMPLATE);
-	for (i = 0; i < MAX_TEMPLATE; i++)
-	{
-		fprintf(f, "[%s] %d %d %d %d %d %d\n",
-			templates[i].name,
-			templates[i].head,
-			templates[i].body,
-			templates[i].arms,
-			templates[i].legs,
-			templates[i].skin, templates[i].hair);
-	}
-	fclose(f);
-
-	debug(D_NORMAL, "saved templates\n");
+	return hairNames[0];
 }
 
 static int IndexSelf(int idx) { return idx;  }
@@ -384,16 +307,16 @@ static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
 }
 
 static menu_t *CreateAppearanceMenu(
-	const char *name, AppearanceMenuData *faceData)
+	const char *name, AppearanceMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	int i;
 	menu->u.normal.maxItems = 11;
-	for (i = 0; i < faceData->menuCount; i++)
+	for (i = 0; i < data->menuCount; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateBack(faceData->menu[i]));
+		MenuAddSubmenu(menu, MenuCreateBack(data->strFunc(i)));
 	}
-	MenuSetPostInputFunc(menu, PostInputAppearanceMenu, faceData);
+	MenuSetPostInputFunc(menu, PostInputAppearanceMenu, data);
 	return menu;
 }
 
@@ -407,7 +330,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
 
-		p->looks.face = t->head;
+		p->looks.face = t->face;
 		p->looks.body = t->body;
 		p->looks.arm = t->arms;
 		p->looks.leg = t->legs;
@@ -422,10 +345,20 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
 	int i;
-	UNUSED(data);
-	for (i = 0; i < MAX_TEMPLATE; i++)
+	int isSave = (int)data;
+	int numTemplates = PlayerTemplatesGetCount(gPlayerTemplates);
+	for (i = 0; i < numTemplates; i++)
 	{
+		// Add menu if necessary
+		if (i == menu->u.normal.numSubMenus)
+		{
+			MenuAddSubmenu(menu, MenuCreateBack(""));
+		}
 		strcpy(menu->u.normal.subMenus[i].name, gPlayerTemplates[i].name);
+	}
+	if (isSave && menu->u.normal.numSubMenus == numTemplates)
+	{
+		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}
 }
 
@@ -433,12 +366,8 @@ static menu_t *CreateUseTemplateMenu(
 	const char *name, PlayerSelectMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
-	int i;
-	for (i = 0; i < MAX_TEMPLATE; i++)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack(""));
-	}
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, data);
+	menu->u.normal.maxItems = 11;
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, 0);
 	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
 	return menu;
 }
@@ -453,7 +382,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 		memset(t->name, 0, sizeof t->name);
 		strncpy(t->name, p->name, sizeof t->name - 1);
 
-		t->head = p->looks.face;
+		t->face = p->looks.face;
 		t->body = p->looks.body;
 		t->arms = p->looks.arm;
 		t->legs = p->looks.leg;
@@ -480,17 +409,20 @@ static menu_t *CreateSaveTemplateMenu(
 	const char *name, PlayerSelectMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
-	int i;
-	for (i = 0; i < MAX_TEMPLATE; i++)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack(""));
-	}
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, data);
+	menu->u.normal.maxItems = 11;
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, (void *)1);
 	MenuSetPostInputFunc(menu, PostInputSaveTemplate, data);
 	MenuSetCustomDisplay(menu, SaveTemplateDisplayTitle, data);
 	return menu;
 }
 
+static void CheckReenableLoadMenu(menu_t *menu, void *data)
+{
+	menu_t *loadMenu = MenuGetSubmenuByName(menu, "Load");
+	UNUSED(data);
+	assert(loadMenu);
+	loadMenu->isDisabled = PlayerTemplatesGetCount(gPlayerTemplates) == 0;
+}
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
@@ -547,48 +479,48 @@ void PlayerSelectMenusCreate(
 
 	data->faceData.c = c;
 	data->faceData.pData = p;
-	data->faceData.menu = faceNames;
 	data->faceData.menuCount = FACE_COUNT;
+	data->faceData.strFunc = IndexToFaceStr;
 	data->faceData.property = &p->looks.face;
 	data->faceData.func = IndexSelf;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Face", &data->faceData));
 
 	data->skinData.c = c;
 	data->skinData.pData = p;
-	data->skinData.menu = skinNames;
 	data->skinData.menuCount = PLAYER_SKIN_COUNT;
+	data->skinData.strFunc = IndexToSkinStr;
 	data->skinData.property = &p->looks.skin;
 	data->skinData.func = IndexToSkin;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Skin", &data->skinData));
 
 	data->hairData.c = c;
 	data->hairData.pData = p;
-	data->hairData.menu = hairNames;
 	data->hairData.menuCount = PLAYER_HAIR_COUNT;
+	data->hairData.strFunc = IndexToHairStr;
 	data->hairData.property = &p->looks.hair;
 	data->hairData.func = IndexToHair;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Hair", &data->hairData));
 
 	data->armsData.c = c;
 	data->armsData.pData = p;
-	data->armsData.menu = shadeNames;
 	data->armsData.menuCount = PLAYER_BODY_COUNT;
+	data->armsData.strFunc = IndexToShadeStr;
 	data->armsData.property = &p->looks.arm;
 	data->armsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Arms", &data->armsData));
 
 	data->bodyData.c = c;
 	data->bodyData.pData = p;
-	data->bodyData.menu = shadeNames;
 	data->bodyData.menuCount = PLAYER_BODY_COUNT;
+	data->bodyData.strFunc = IndexToShadeStr;
 	data->bodyData.property = &p->looks.body;
 	data->bodyData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Body", &data->bodyData));
 
 	data->legsData.c = c;
 	data->legsData.pData = p;
-	data->legsData.menu = shadeNames;
 	data->legsData.menuCount = PLAYER_BODY_COUNT;
+	data->legsData.strFunc = IndexToShadeStr;
 	data->legsData.property = &p->looks.leg;
 	data->legsData.func = IndexToShade;
 	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Legs", &data->legsData));
@@ -602,6 +534,11 @@ void PlayerSelectMenusCreate(
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);
+
+	// Detect when there have been new player templates created,
+	// to re-enable the load menu
+	CheckReenableLoadMenu(ms->root, NULL);
+	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL);
 
 	SetPlayer(c, pData);
 }

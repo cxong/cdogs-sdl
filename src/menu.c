@@ -231,6 +231,20 @@ void MenuEnableSubmenu(menu_t *menu, int index)
 	menu->u.normal.subMenus[index].isDisabled = 0;
 }
 
+menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
+{
+	int i;
+	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	{
+		menu_t *subMenu = &menu->u.normal.subMenus[i];
+		if (strcmp(subMenu->name, name) == 0)
+		{
+			return subMenu;
+		}
+	}
+	return NULL;
+}
+
 void ShowControls(void)
 {
 	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);

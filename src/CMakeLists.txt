@@ -14,6 +14,7 @@ set(CDOGS_SDL_SOURCES
 	menu_utils.c
 	password.c
 	player_select_menus.c
+	player_template.c
 	prep.c
 	weapon_menu.c
 	XGetopt.c)
@@ -26,6 +27,7 @@ set(CDOGS_SDL_HEADERS
 	menu_utils.h
 	password.h
 	player_select_menus.h
+	player_template.h
 	prep.h
 	weapon_menu.h
 	XGetopt.h
