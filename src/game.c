@@ -670,6 +670,8 @@ int gameloop(void)
 	missionTime = 0;
 	gMission.pickupTime = PICKUP_LIMIT;
 	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 340));
+	// Check if mission is done already
+	MissionSetMessageIfComplete(&gMission);
 	while (!isDone)
 	{
 		int cmds[MAX_PLAYERS];
