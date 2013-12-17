@@ -44,6 +44,7 @@ Autosave gAutosave;
 void MissionSaveInit(MissionSave *ms)
 {
 	memset(ms, 0, sizeof *ms);
+	ms->IsValid = 1;
 }
 
 
