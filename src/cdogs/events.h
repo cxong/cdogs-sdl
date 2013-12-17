@@ -52,6 +52,6 @@
 #include "input.h"
 
 int GetKey(InputDevices *devices);
-void WaitForAnyKeyOrButton(InputDevices *devices);
+int WaitForAnyKeyOrButton(InputDevices *devices);
 
 #endif

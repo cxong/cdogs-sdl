@@ -150,7 +150,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 	}
 }
 
-void CampaignIntro(GraphicsDevice *device)
+int CampaignIntro(GraphicsDevice *device)
 {
 	int x;
 	int y;
@@ -172,7 +172,7 @@ void CampaignIntro(GraphicsDevice *device)
 	DrawTextString(s, device, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gInputDevices);
+	return WaitForAnyKeyOrButton(&gInputDevices);
 }
 
 void MissionBriefing(GraphicsDevice *device)
@@ -1038,17 +1038,11 @@ void DogFight(GraphicsDevice *graphicsDevice)
 		SetupMission(0, 1, &gCampaign);
 		SetupMap();
 
-		if (PlayerEquip(gOptions.numPlayers, graphicsDevice))
-		{
-			srand((unsigned int)time(NULL));
-			InitPlayers(gOptions.numPlayers, 500, 0);
-			PlayGameSong();
-			run = gameloop();
-		}
-		else
-		{
-			run = 0;
-		}
+		PlayerEquip(gOptions.numPlayers, graphicsDevice);
+		srand((unsigned int)time(NULL));
+		InitPlayers(gOptions.numPlayers, 500, 0);
+		PlayGameSong();
+		run = gameloop();
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
@@ -1088,7 +1082,10 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Entering campaign\n");
 		if (IsIntroNeeded(gCampaign.Entry.mode))
 		{
-			CampaignIntro(&gGraphicsDevice);
+			if (!CampaignIntro(&gGraphicsDevice))
+			{
+				continue;
+			}
 		}
 
 		debug(D_NORMAL, ">> Select number of players\n");

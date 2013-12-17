@@ -66,7 +66,7 @@ int GetKey(InputDevices *devices)
 	return key_pressed;
 }
 
-void WaitForAnyKeyOrButton(InputDevices *devices)
+int WaitForAnyKeyOrButton(InputDevices *devices)
 {
 	// Re-initialise to prevent held down keys repeating
 	InputInit(devices, devices->mouse.cursor);
@@ -79,10 +79,37 @@ void WaitForAnyKeyOrButton(InputDevices *devices)
 		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			if (AnyButton(cmds[i]))
+			if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
 			{
-				return;
+				return 1;
+			}
+			if (cmds[i] & CMD_BUTTON4)
+			{
+				return 0;
 			}
 		}
+
+		// Check keyboard escape
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
+		{
+			return 0;
+		}
+
+		if (gInputDevices.joysticks.numJoys > 0)
+		{
+			// Check joystick 1
+			joystick_t *j = &gInputDevices.joysticks.joys[0];
+			int cmd = JoyGetPressed(j);
+			if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
+			{
+				return 1;
+			}
+			if (cmd & CMD_BUTTON4)
+			{
+				return 0;
+			}
+		}
+		SDL_Delay(10);
 	}
+	// should never reach here
 }

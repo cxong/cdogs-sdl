@@ -77,9 +77,8 @@ color_t colorExit = { 255, 255, 255, 255 };
 
 static void DisplayPlayer(TActor *player, Vec2i pos, int scale)
 {
-	Vec2i playerPos = Vec2iNew(
-		player->tileItem.x / TILE_WIDTH,
-		player->tileItem.y / TILE_HEIGHT);
+	Vec2i playerPos = Vec2iToTile(
+		Vec2iNew(player->tileItem.x, player->tileItem.y));
 	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
 	if (scale >= 2)
 	{

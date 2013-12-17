@@ -203,16 +203,17 @@ int JoyIsPressed(joystick_t *joystick, int button)
 	return JoyIsDown(joystick, button) && !(joystick->previousButtonsField & button);
 }
 
-int JoyIsAnyPressed(joystick_t *joystick)
+int JoyGetPressed(joystick_t *joystick)
 {
+	int cmd = 0;
 	int i;
 	for (i = 0; i < joystick->numButtons; i++)
 	{
 		int mask = 1 << i;
 		if (JoyIsPressed(joystick, mask))
 		{
-			return 1;
+			cmd |= mask;
 		}
 	}
-	return 0;
+	return cmd;
 }

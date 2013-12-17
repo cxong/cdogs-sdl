@@ -247,7 +247,7 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 
 void ShowControls(void)
 {
-	CDogsTextStringSpecial("(use player 1 controls or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
+	CDogsTextStringSpecial("(use joystick 1 or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
 }
 
 void DisplayMenuItem(

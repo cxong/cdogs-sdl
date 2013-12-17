@@ -568,12 +568,12 @@ int HandleKey(int cmd, int *isPaused)
 	}
 
 	if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4) ||
-		JoyIsPressed(&gInputDevices.joysticks.joys[1], CMD_BUTTON4))
+		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
 	{
 		return 1;
 	}
-	else if (KeyGetPressed(&gInputDevices.keyboard))
+	else if (KeyGetPressed(&gInputDevices.keyboard) ||
+		JoyGetPressed(&gInputDevices.joysticks.joys[0]))
 	{
 		*isPaused = 0;
 	}

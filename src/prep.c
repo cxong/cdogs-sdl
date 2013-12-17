@@ -109,7 +109,8 @@ int NumPlayersSelection(
 	{
 		int cmd;
 		InputPoll(&gInputDevices, SDL_GetTicks());
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
+			JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
 		{
 			res = 0;
 			break;	// hack to allow exit
@@ -238,7 +239,8 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		int isDone = 1;
 		int hasAtLeastOneInput = 0;
 		InputPoll(&gInputDevices, SDL_GetTicks());
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
+		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
+			JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
 		{
 			// TODO: destroy menus
 			return 0; // hack to allow exit
@@ -333,7 +335,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	return 1;
 }
 
-int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
+void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 {
 	int i;
 	WeaponMenu menus[MAX_PLAYERS];
@@ -363,10 +365,6 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		InputPoll(&gInputDevices, SDL_GetTicks());
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE))
-		{
-			return 0; // hack to exit from menu
-		}
 		GetPlayerCmds(&cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
@@ -406,5 +404,4 @@ int PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 	{
 		MenuSystemTerminate(&menus[i].ms);
 	}
-	return 1;
 }

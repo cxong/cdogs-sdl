@@ -428,7 +428,8 @@ int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS])
 {
 	int cmd;
 	keyboard_t *kb = &gInputDevices.keyboard;
-	if (KeyIsPressed(kb, SDLK_ESCAPE))
+	if (KeyIsPressed(kb, SDLK_ESCAPE) ||
+		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
 	{
 		return CMD_ESC;
 	}
@@ -439,6 +440,7 @@ int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS])
 		playerDatas[0].inputDevice, playerDatas[0].deviceIndex);
 	if (!cmd)
 	{
+		// Check keyboard
 		if (KeyIsPressed(kb, SDLK_LEFT))		cmd |= CMD_LEFT;
 		else if (KeyIsPressed(kb, SDLK_RIGHT))	cmd |= CMD_RIGHT;
 
@@ -448,6 +450,20 @@ int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS])
 		if (KeyIsPressed(kb, SDLK_RETURN))		cmd |= CMD_BUTTON1;
 
 		if (KeyIsPressed(kb, SDLK_BACKSPACE))	cmd |= CMD_BUTTON2;
+	}
+	if (!cmd && gInputDevices.joysticks.numJoys > 0)
+	{
+		// Check joystick 1
+		joystick_t *j = &gInputDevices.joysticks.joys[0];
+		if (JoyIsPressed(j, CMD_LEFT))			cmd |= CMD_LEFT;
+		else if (JoyIsPressed(j, CMD_RIGHT))	cmd |= CMD_RIGHT;
+
+		if (JoyIsPressed(j, CMD_UP))			cmd |= CMD_UP;
+		else if (JoyIsPressed(j, CMD_DOWN))		cmd |= CMD_DOWN;
+
+		if (JoyIsPressed(j, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
+
+		if (JoyIsPressed(j, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
 	}
 
 	return cmd;
