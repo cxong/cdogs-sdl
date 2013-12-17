@@ -45,14 +45,21 @@ int AICoopGetCmd(TActor *actor)
 	// Ambitious goal: AI able to complete mission on its own?
 
 	// Check if closest player is too far away, and follow him/her if so
+	// Also calculate the squad number, so we have a formation
+	// i.e. bigger squad number members follow at a further distance
 	TActor *closestPlayer = NULL;
 	TActor *closestEnemy;
 	int minDistance = -1;
 	int minEnemyDistance;
 	int i;
+	int squadNumber = 0;
 	for (i = 0; i < gOptions.numPlayers; i++)
 	{
-		if (IsPlayerAlive(i) && gPlayerDatas[i].inputDevice != INPUT_DEVICE_AI)
+		if (!IsPlayerAlive(i))
+		{
+			continue;
+		}
+		if (gPlayerDatas[i].inputDevice != INPUT_DEVICE_AI)
 		{
 			TActor *p = gPlayers[i];
 			int distance = CHEBYSHEV_DISTANCE(actor->x, actor->y, p->x, p->y);
@@ -61,6 +68,10 @@ int AICoopGetCmd(TActor *actor)
 				minDistance = distance;
 				closestPlayer = p;
 			}
+		}
+		else if (actor->pData->playerIndex > i)
+		{
+			squadNumber++;
 		}
 	}
 	if (closestPlayer && minDistance > ((8 * 16) << 8))
@@ -113,7 +124,7 @@ int AICoopGetCmd(TActor *actor)
 
 	// Otherwise, just go towards the closest player as long as we don't
 	// run into them
-	if (closestPlayer && minDistance > ((2 * 16) << 8))
+	if (closestPlayer && minDistance > ((4 * 16 / 3) << 8) * (squadNumber + 1))
 	{
 		int cmd = AIGoto(
 			actor,
