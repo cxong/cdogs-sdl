@@ -49,7 +49,7 @@ int AICoopGetCmd(TActor *actor)
 	// i.e. bigger squad number members follow at a further distance
 	TActor *closestPlayer = NULL;
 	TActor *closestEnemy;
-	int minDistance = -1;
+	int minDistance2 = -1;
 	int minEnemyDistance;
 	int i;
 	int squadNumber = 0;
@@ -62,10 +62,12 @@ int AICoopGetCmd(TActor *actor)
 		if (gPlayerDatas[i].inputDevice != INPUT_DEVICE_AI)
 		{
 			TActor *p = gPlayers[i];
-			int distance = CHEBYSHEV_DISTANCE(actor->x, actor->y, p->x, p->y);
-			if (!closestPlayer || distance < minDistance)
+			int distance2 = DistanceSquared(
+				Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
+				Vec2iFull2Real(Vec2iNew(p->x, p->y)));
+			if (!closestPlayer || distance2 < minDistance2)
 			{
-				minDistance = distance;
+				minDistance2 = distance2;
 				closestPlayer = p;
 			}
 		}
@@ -74,7 +76,7 @@ int AICoopGetCmd(TActor *actor)
 			squadNumber++;
 		}
 	}
-	if (closestPlayer && minDistance > ((8 * 16) << 8))
+	if (closestPlayer && minDistance2 > 8*8*16*16)
 	{
 		int cmd = AIGoto(
 			actor,
@@ -85,7 +87,7 @@ int AICoopGetCmd(TActor *actor)
 			AIHasClearLine(
 			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
 			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y))) &&
-			minDistance > ((7 * 16) << 8))
+			minDistance2 > 7*7*16*16)
 		{
 			cmd |= CMD_BUTTON2;
 		}
@@ -124,7 +126,8 @@ int AICoopGetCmd(TActor *actor)
 
 	// Otherwise, just go towards the closest player as long as we don't
 	// run into them
-	if (closestPlayer && minDistance > ((4 * 16 / 3) << 8) * (squadNumber + 1))
+	if (closestPlayer &&
+		minDistance2 > 4*4*16*16/3/3*(squadNumber+1)*(squadNumber+1))
 	{
 		int cmd = AIGoto(
 			actor,
