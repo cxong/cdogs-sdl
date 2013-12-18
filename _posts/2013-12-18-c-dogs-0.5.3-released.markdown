@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 0.5.3 Released!"
+date:   2013-12-18
+categories: release
+---
+
+This release adds co-op AI, and other enhancements! To play with co-op AI players, just pick your character without having other human players join, and the unchosen players will be replaced with AIs. Check out this gameplay video:
+
+[![](http://img.youtube.com/vi/DysXfUyw58M/0.jpg)](http://www.youtube.com/watch?v=DysXfUyw58M)
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.3>
