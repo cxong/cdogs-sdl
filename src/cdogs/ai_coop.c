@@ -41,15 +41,13 @@ int AICoopGetCmd(TActor *actor)
 	//   - else
 	//     - Go to nearest player
 
-	// TODO: this means that AI is helpless when human players dead
-	// Ambitious goal: AI able to complete mission on its own?
-
 	// Check if closest player is too far away, and follow him/her if so
 	// Also calculate the squad number, so we have a formation
 	// i.e. bigger squad number members follow at a further distance
 	TActor *closestPlayer = NULL;
 	TActor *closestEnemy;
 	int minDistance2 = -1;
+	int distanceTooFarFromPlayer = 8;
 	int minEnemyDistance;
 	int i;
 	int squadNumber = 0;
@@ -76,7 +74,13 @@ int AICoopGetCmd(TActor *actor)
 			squadNumber++;
 		}
 	}
-	if (closestPlayer && minDistance2 > 8*8*16*16)
+	// If player is exiting, we want to be very close to the player
+	if (closestPlayer && closestPlayer->action == ACTORACTION_EXITING)
+	{
+		distanceTooFarFromPlayer = 2;
+	}
+	if (closestPlayer &&
+		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
 		int cmd = AIGoto(
 			actor,

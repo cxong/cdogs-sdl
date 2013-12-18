@@ -105,6 +105,12 @@
 #define SHADE_COUNT         14
 
 
+typedef enum
+{
+	ACTORACTION_MOVING,
+	ACTORACTION_EXITING
+} ActorAction;
+
 typedef struct Actor
 {
 	int x, y;		// These are the full coordinates, including fractions
@@ -131,6 +137,8 @@ typedef struct Actor
 	
 	int slideLock;
 
+	// Signals to other AIs what this actor is doing
+	ActorAction action;
 	void *aiContext;
 	TTileItem tileItem;
 	struct Actor *next;

@@ -371,6 +371,7 @@ TActor *AddActor(Character *c, struct PlayerData *p)
 	actor->soundLock = 0;
 	actor->weapon = WeaponCreate(c->gun);
 	actor->health = c->maxHealth;
+	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
 	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
@@ -661,6 +662,16 @@ int MoveActor(TActor * actor, int x, int y)
 	actor->x = x;
 	actor->y = y;
 	MoveTileItem(&actor->tileItem, x >> 8, y >> 8);
+
+	if (IsTileInExit(&actor->tileItem, &gMission))
+	{
+		actor->action = ACTORACTION_EXITING;
+	}
+	else
+	{
+		actor->action = ACTORACTION_MOVING;
+	}
+
 	return 1;
 }
 
