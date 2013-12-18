@@ -82,15 +82,15 @@ static void DrawNameMenu(
 	int i;
 	PlayerSelectMenuData *d = data;
 
+#define ENTRY_COLS	8
+#define	ENTRY_SPACING	7
+
 	int x = pos.x;
 	int y = CENTER_Y(
 		pos, size,
 		CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS));
 
 	UNUSED(menu);
-
-#define ENTRY_COLS	8
-#define	ENTRY_SPACING	7
 
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
