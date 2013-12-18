@@ -37,13 +37,6 @@
 #include <cdogs/json_utils.h>
 
 
-static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
-static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
-
-#define PLAYER_BODY_COUNT   9
-#define PLAYER_SKIN_COUNT   3
-#define PLAYER_HAIR_COUNT   8
-
 static const char *faceNames[] =
 {
 	"Jones",
@@ -84,36 +77,6 @@ const char *IndexToFaceStr(int idx)
 	}
 	return faceNames[0];
 }
-
-
-static const char *shadeNames[PLAYER_BODY_COUNT] = {
-	"Blue",
-	"Green",
-	"Red",
-	"Silver",
-	"Brown",
-	"Purple",
-	"Black",
-	"Yellow",
-	"White"
-};
-
-static const char *skinNames[PLAYER_SKIN_COUNT] = {
-	"Caucasian",
-	"Asian",
-	"Black"
-};
-
-static const char *hairNames[PLAYER_HAIR_COUNT] = {
-	"Red",
-	"Silver",
-	"Brown",
-	"Gray",
-	"Blonde",
-	"White",
-	"Golden",
-	"Black"
-};
 
 PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
 

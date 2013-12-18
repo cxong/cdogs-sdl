@@ -929,7 +929,7 @@ int CheckMissionObjective(
 		return 0;
 	}
 	idx = ObjectiveFromTileItem(flags);
-	if (options->missionData->objectives[idx].type != type)
+	if (options->missionData->objectives[idx].type != (int)type)
 	{
 		return 0;
 	}
