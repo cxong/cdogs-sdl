@@ -1,8 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
     Copyright (C) 2003-2007 Lucas Martin-King 
 
     This program is free software; you can redistribute it and/or modify
@@ -19,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-	This file incorporates work covered by the following copyright and
+    This file incorporates work covered by the following copyright and
     permission notice:
 
     Copyright (c) 2013, Cong Xu
