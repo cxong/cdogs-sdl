@@ -100,7 +100,7 @@ void LoadPlayerTemplates(
 
 	// initialise templates
 	// templates are zero-delimited
-	memset(templates, 0, sizeof templates);
+	memset(templates, 0, sizeof &templates[0] * MAX_TEMPLATE);
 	if (!f)
 	{
 		printf("Error loading player templates '%s'\n", filename);
