@@ -329,6 +329,7 @@ void ConfigLoadDefault(Config *config)
 	config->Graphics.ScaleFactor = 2;
 	config->Graphics.ShakeMultiplier = 1;
 	config->Graphics.ScaleMode = SCALE_MODE_HQX;
+	config->Graphics.IsEditor = 0;
 	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;
 	config->Input.PlayerKeys[0].Keys.up = SDLK_UP;

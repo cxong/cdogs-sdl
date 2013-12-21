@@ -37,7 +37,7 @@
 
 MenuSystem *MenuCreateAll(
 	custom_campaigns_t *campaigns,
-	InputDevices *input,
+	EventHandlers *handlers,
 	GraphicsDevice *graphics);
 
 int MainMenu(
@@ -46,7 +46,7 @@ int MainMenu(
 	custom_campaigns_t *campaigns)
 {
 	int doPlay = 0;
-	MenuSystem *menu = MenuCreateAll(campaigns, &gInputDevices, graphics);
+	MenuSystem *menu = MenuCreateAll(campaigns, &gEventHandlers, graphics);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	MenuLoop(menu);
 	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
@@ -66,7 +66,7 @@ menu_t *MenuCreateQuit(const char *name);
 
 MenuSystem *MenuCreateAll(
 	custom_campaigns_t *campaigns,
-	InputDevices *input,
+	EventHandlers *handlers,
 	GraphicsDevice *graphics)
 {
 	MenuSystem *ms;
@@ -74,7 +74,7 @@ MenuSystem *MenuCreateAll(
 	CCALLOC(ms, sizeof *ms);
 	MenuSystemInit(
 		ms,
-		input, graphics,
+		handlers, graphics,
 		Vec2iZero(),
 		Vec2iNew(
 			graphics->cachedConfig.ResolutionWidth,

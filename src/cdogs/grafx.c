@@ -267,7 +267,8 @@ static void MakeRandomBackground(
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
 void GraphicsInitialize(
-	GraphicsDevice *device, GraphicsConfig *config, TPalette palette, int force)
+	GraphicsDevice *device, GraphicsConfig *config, TPalette palette,
+	int force)
 {
 	int sdl_flags = 0;
 	unsigned int w, h = 0;
@@ -293,7 +294,7 @@ void GraphicsInitialize(
 	device->IsInitialized = 0;
 
 	sdl_flags |= SDL_SWSURFACE;
-
+	sdl_flags |= config->IsEditor ? SDL_RESIZABLE : 0;
 	if (config->Fullscreen)
 	{
 		sdl_flags |= SDL_FULLSCREEN;
@@ -308,7 +309,7 @@ void GraphicsInitialize(
 		rh *= config->ScaleFactor;
 	}
 
-	if (!force)
+	if (!force && !config->IsEditor)
 	{
 		device->modeIndex = FindValidMode(device, w, h, config->ScaleFactor);
 		if (device->modeIndex == -1)
@@ -356,7 +357,10 @@ void GraphicsInitialize(
 	device->cachedConfig.ResolutionHeight = h;
 	CDogsSetPalette(palette);
 	// Need to make background here since dimensions use cached config
-	MakeRandomBackground(device, config);
+	if (!config->IsEditor)
+	{
+		MakeRandomBackground(device, config);
+	}
 }
 
 void GraphicsTerminate(GraphicsDevice *device)
@@ -384,7 +388,7 @@ void GrafxMakeBackground(
 	DrawBuffer buffer;
 	Vec2i v;
 
-	DrawBufferInit(&buffer, Vec2iNew(128, 128));
+	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	SetupMission(missionIdx, 1, &gCampaign);
 	SetupMap();
 	InitializeBadGuys();

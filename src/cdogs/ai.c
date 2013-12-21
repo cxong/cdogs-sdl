@@ -553,8 +553,10 @@ void InitializeBadGuys(void)
 void CreateEnemies(void)
 {
 	int i;
-	if (gMission.missionData->baddieCount <= 0)
+	if (gCampaign.Setting.characters.baddieCount <= 0)
+	{
 		return;
+	}
 
 	for (i = 0;
 		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);

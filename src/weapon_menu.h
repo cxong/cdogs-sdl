@@ -46,6 +46,7 @@ typedef struct
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig);
+	EventHandlers *handlers, GraphicsDevice *graphics,
+	InputConfig *inputConfig);
 
 #endif

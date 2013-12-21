@@ -58,15 +58,6 @@
 #include "sounds.h"
 #include "gamedata.h"
 
-InputDevices gInputDevices;
-
-
-void InputInit(InputDevices *devices, PicPaletted *mouseCursor)
-{
-	KeyInit(&devices->keyboard);
-	JoyInit(&devices->joysticks);
-	MouseInit(&devices->mouse, mouseCursor);
-}
 
 int InputGetKey(input_keys_t *keys, key_code_e keyCode)
 {
@@ -123,41 +114,6 @@ void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode)
 		assert(0);
 		break;
 	}
-}
-
-void InputPoll(InputDevices *devices, Uint32 ticks)
-{
-	SDL_Event e;
-	KeyPrePoll(&devices->keyboard);
-	JoyPoll(&devices->joysticks);
-	MousePrePoll(&devices->mouse);
-	while (SDL_PollEvent(&e))
-	{
-		switch(e.type)
-		{
-		case SDL_KEYDOWN:
-			KeyOnKeyDown(&devices->keyboard, e.key.keysym);
-			break;
-		case SDL_KEYUP:
-			KeyOnKeyUp(&devices->keyboard, e.key.keysym);
-			break;
-		case SDL_MOUSEBUTTONDOWN:
-			MouseOnButtonDown(&devices->mouse, e.button.button);
-			break;
-		case SDL_MOUSEBUTTONUP:
-			MouseOnButtonUp(&devices->mouse, e.button.button);
-			break;
-		default:
-			break;
-		}
-	}
-	KeyPostPoll(&devices->keyboard, ticks);
-	MousePostPoll(&devices->mouse, ticks);
-}
-
-void InputTerminate(InputDevices *devices)
-{
-	JoyTerminate(&devices->joysticks);
 }
 
 const char *InputDeviceName(int d, int deviceIndex)

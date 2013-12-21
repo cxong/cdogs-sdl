@@ -50,12 +50,12 @@
 #define __PREP
 
 #include <cdogs/campaigns.h>
+#include <cdogs/events.h>
 #include <cdogs/grafx.h>
-#include <cdogs/input.h>
 
 int NumPlayersSelection(
 	int *numPlayers, campaign_mode_e mode,
-	GraphicsDevice *graphics, InputDevices *input);
+	GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance

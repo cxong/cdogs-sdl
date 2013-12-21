@@ -50,6 +50,7 @@
 #define __MENU
 
 #include <cdogs/campaigns.h>
+#include <cdogs/events.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
@@ -215,7 +216,7 @@ typedef struct
 	menu_type_e *exitTypes;
 	int numExitTypes;
 	credits_displayer_t *creditsDisplayer;
-	InputDevices *inputDevices;
+	EventHandlers *handlers;
 	GraphicsDevice *graphics;
 	Vec2i pos;
 	Vec2i size;
@@ -237,7 +238,7 @@ typedef enum
 
 void MenuSystemInit(
 	MenuSystem *ms,
-	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
+	EventHandlers *handlers, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
 void MenuSystemTerminate(MenuSystem *ms);
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);

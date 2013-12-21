@@ -195,7 +195,7 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 		GraphicsBlitBkg(graphics);
 		idx = DisplayPage(
 			"All time high scores:", idx, allTimeHigh, highlights);
-		WaitForAnyKeyOrButton(&gInputDevices);
+		WaitForAnyKeyOrButton(&gEventHandlers);
 	}
 }
 
@@ -214,7 +214,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 		GraphicsBlitBkg(graphics);
 		idx = DisplayPage(
 			"Today's highest score:", idx, todaysHigh, highlights);
-		WaitForAnyKeyOrButton(&gInputDevices);
+		WaitForAnyKeyOrButton(&gEventHandlers);
 	}
 }
 

@@ -288,12 +288,6 @@ int AreKeysAllowed(campaign_mode_e mode);
 
 int IsTileInExit(TTileItem *tile, struct MissionOptions *options);
 
-void GetPlayerCmds(
-	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS]);
-int GetMenuCmd(struct PlayerData playerDatas[MAX_PLAYERS]);
-int GetGameCmd(
-	InputDevices *devices, InputConfig *config,
-	struct PlayerData *playerData, Vec2i playerPos);
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
 
 #endif

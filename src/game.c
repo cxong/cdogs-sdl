@@ -63,6 +63,7 @@
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
+#include <cdogs/events.h>
 #include <cdogs/game_events.h>
 #include <cdogs/hud.h>
 #include <cdogs/joystick.h>
@@ -540,7 +541,7 @@ int HandleKey(int cmd, int *isPaused)
 	{
 		int hasDisplayedAutomap = 0;
 		while (KeyIsDown(
-			&gInputDevices.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
+			&gEventHandlers.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
 			(cmd & CMD_BUTTON3) != 0)
 		{
 			int i;
@@ -551,12 +552,12 @@ int HandleKey(int cmd, int *isPaused)
 				hasDisplayedAutomap = 1;
 			}
 			SDL_Delay(10);
-			InputPoll(&gInputDevices, SDL_GetTicks());
+			EventPoll(&gEventHandlers, SDL_GetTicks());
 			cmd = 0;
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
 				cmd |= GetGameCmd(
-					&gInputDevices, &gConfig.Input,
+					&gEventHandlers, &gConfig.Input,
 					&gPlayerDatas[i], Vec2iZero());
 			}
 		}
@@ -567,13 +568,13 @@ int HandleKey(int cmd, int *isPaused)
 		*isPaused = 0;
 	}
 
-	if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
+	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
+		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
 	{
 		return 1;
 	}
-	else if (KeyGetPressed(&gInputDevices.keyboard) ||
-		JoyGetPressed(&gInputDevices.joysticks.joys[0]))
+	else if (KeyGetPressed(&gEventHandlers.keyboard) ||
+		JoyGetPressed(&gEventHandlers.joysticks.joys[0]))
 	{
 		*isPaused = 0;
 	}
@@ -669,7 +670,7 @@ int gameloop(void)
 
 	missionTime = 0;
 	gMission.pickupTime = PICKUP_LIMIT;
-	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 340));
+	EventInit(&gEventHandlers, PicManagerGetOldPic(&gPicManager, 340));
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
 	while (!isDone)
@@ -683,13 +684,13 @@ int gameloop(void)
 		Ticks_Update();
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-		InputPoll(&gInputDevices, ticks_now);
+		EventPoll(&gEventHandlers, ticks_now);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
 			if (IsPlayerAlive(i))
 			{
 				cmds[i] = GetGameCmd(
-					&gInputDevices,
+					&gEventHandlers,
 					&gConfig.Input,
 					&gPlayerDatas[i],
 					GetPlayerCenter(&gGraphicsDevice, i));
@@ -716,7 +717,7 @@ int gameloop(void)
 			int isMatch = 1;
 			for (i = 0; i < (int)strlen(pulserifle); i++)
 			{
-				if (gInputDevices.keyboard.pressedKeysBuffer[i] !=
+				if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
 					pulserifle[i])
 				{
 					isMatch = 0;
@@ -729,14 +730,14 @@ int gameloop(void)
 				SoundPlay(&gSoundDevice, SND_HAHAHA);
 				// Reset to prevent last key from being processed as
 				// normal player commands
-				KeyInit(&gInputDevices.keyboard);
+				KeyInit(&gEventHandlers.keyboard);
 				cmdAll = 0;
 				memset(cmds, 0, sizeof cmds);
 			}
 			isMatch = 1;
 			for (i = 0; i < (int)strlen(heatseeker); i++)
 			{
-				if (gInputDevices.keyboard.pressedKeysBuffer[i] !=
+				if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
 					heatseeker[i])
 				{
 					isMatch = 0;
@@ -749,7 +750,7 @@ int gameloop(void)
 				SoundPlay(&gSoundDevice, SND_HAHAHA);
 				// Reset to prevent last key from being processed as
 				// normal player commands
-				KeyInit(&gInputDevices.keyboard);
+				KeyInit(&gEventHandlers.keyboard);
 				cmdAll = 0;
 				memset(cmds, 0, sizeof cmds);
 			}
@@ -884,7 +885,7 @@ int gameloop(void)
 		HUDDraw(&hud, isPaused);
 		if (GameIsMouseUsed(gPlayerDatas))
 		{
-			MouseDraw(&gInputDevices.mouse);
+			MouseDraw(&gEventHandlers.mouse);
 		}
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);

@@ -407,7 +407,7 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
 	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
 
-	MouseSetSecondaryRects(&gInputDevices.mouse, localObjectiveClicks);
+	MouseSetSecondaryRects(&gEventHandlers.mouse, localObjectiveClicks);
 }
 
 static int MissionDescription(
@@ -500,7 +500,7 @@ void ListWeapons(int y, int xc)
 	ShowWeaponStatus(190, y + TH, 9, xc);
 	ShowWeaponStatus(190, y + 2 * TH, 10, xc);
 
-	MouseSetSecondaryRects(&gInputDevices.mouse, localWeaponClicks);
+	MouseSetSecondaryRects(&gEventHandlers.mouse, localWeaponClicks);
 }
 
 static void DrawEditableTextWithEmptyHint(
@@ -535,7 +535,7 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	CDogsTextGoto(x - 8, y + 5);
 	CDogsTextString(s);
 
-	MouseSetSecondaryRects(&gInputDevices.mouse, localMapItemClicks);
+	MouseSetSecondaryRects(&gEventHandlers.mouse, localMapItemClicks);
 }
 
 static void DrawStyleArea(
@@ -750,15 +750,32 @@ static void DrawTooltips(
 	}
 }
 
+static void MakeBackground(
+	GraphicsDevice *g, GraphicsConfig *config, int mission)
+{
+	int i;
+	// Clear background first
+	for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+	{
+		g->buf[i] = PixelFromColor(g, colorBlack);
+	}
+	GrafxMakeBackground(g, config, tintDarker, mission);
+}
+
 static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 {
 	char s[128];
 	int y = 5;
 	int i;
 
-	MouseSetSecondaryRects(&gInputDevices.mouse, NULL);
+	MouseSetSecondaryRects(&gEventHandlers.mouse, NULL);
 	if (currentMission)
 	{
+		// Re-make the background if the resolution has changed
+		if (&gEventHandlers.HasResolutionChanged)
+		{
+			MakeBackground(&gGraphicsDevice, &gConfig.Graphics, mission);
+		}
 		GraphicsBlitBkg(&gGraphicsDevice);
 	}
 	else
@@ -802,7 +819,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		MissionDescription(
 			150 + TH, gCampaign.Setting.description, "(Campaign description)",
 			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
-		MouseSetSecondaryRects(&gInputDevices.mouse, localCampaignClicks);
+		MouseSetSecondaryRects(&gEventHandlers.mouse, localCampaignClicks);
 		break;
 
 	case YC_MISSIONTITLE:
@@ -810,7 +827,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			Vec2iNew(20, 150),
 			currentMission->song, "(Mission song)",
 			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
-		MouseSetSecondaryRects(&gInputDevices.mouse, localMissionClicks);
+		MouseSetSecondaryRects(&gEventHandlers.mouse, localMissionClicks);
 		break;
 
 	case YC_MISSIONDESC:
@@ -832,7 +849,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				20 + 20 * i, y,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
-		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
+		MouseSetSecondaryRects(&gEventHandlers.mouse, localCharacterClicks);
 		break;
 
 	case YC_SPECIALS:
@@ -849,7 +866,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				xc == i,
 				1);
 		}
-		MouseSetSecondaryRects(&gInputDevices.mouse, localCharacterClicks);
+		MouseSetSecondaryRects(&gEventHandlers.mouse, localCharacterClicks);
 		break;
 
 	case YC_ITEMS:
@@ -889,16 +906,16 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	else
 	{
 		int tag;
-		if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+		if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
 		{
 			int mouseYc = tag & 0xFF;
 			int mouseXc = (tag & 0xFF00) >> 8;
 			Vec2i tooltipPos = Vec2iAdd(
-				gInputDevices.mouse.currentPos, Vec2iNew(10, 10));
+				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
 			DrawTooltips(
 				&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
 		}
-		MouseDraw(&gInputDevices.mouse);
+		MouseDraw(&gEventHandlers.mouse);
 	}
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
@@ -1022,7 +1039,7 @@ static int Change(int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_ITEMS:
-		if (gInputDevices.keyboard.modState & KMOD_SHIFT)
+		if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 		{
 			currentMission->itemDensity[xc] =
 				CLAMP(currentMission->itemDensity[xc] +  5 * d, 0, 512);
@@ -1397,7 +1414,6 @@ static void MoveSelection(int isForward, int *y, int *x)
 
 static void Setup(int idx, int buildTables)
 {
-	int i;
 	if (idx >= gCampaign.Setting.missionCount)
 	{
 		currentMission = NULL;
@@ -1405,12 +1421,7 @@ static void Setup(int idx, int buildTables)
 	}
 	currentMission = &gCampaign.Setting.missions[idx];
 	SetupMission(idx, buildTables, &gCampaign);
-	// Clear background first
-	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-	{
-		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
-	}
-	GrafxMakeBackground(&gGraphicsDevice, &gConfig.Graphics, tintDarker, idx);
+	MakeBackground(&gGraphicsDevice, &gConfig.Graphics, idx);
 }
 
 static void Open(void)
@@ -1433,7 +1444,7 @@ static void Open(void)
 		CDogsTextChar('\021');
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 		
-		c = GetKey(&gInputDevices);
+		c = GetKey(&gEventHandlers);
 		switch (c)
 		{
 			case SDLK_RETURN:
@@ -1462,7 +1473,7 @@ static void Open(void)
 				{
 					break;
 				}
-				c = KeyGetTyped(&gInputDevices.keyboard);
+				c = KeyGetTyped(&gEventHandlers.keyboard);
 				if (c && c != '*' &&
 					(strlen(filename) > 1 || c != '-') &&
 					c != ':' && c != '<' && c != '>' && c != '?' &&
@@ -1498,7 +1509,7 @@ static void Save(int asCode)
 		CDogsTextChar('\021');
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-		c = GetKey(&gInputDevices);
+		c = GetKey(&gEventHandlers);
 		switch (c)
 		{
 		case SDLK_RETURN:
@@ -1530,7 +1541,7 @@ static void Save(int asCode)
 			{
 				break;
 			}
-			c = KeyGetTyped(&gInputDevices.keyboard);
+			c = KeyGetTyped(&gEventHandlers.keyboard);
 			if (c && c != '*' &&
 				(strlen(filename) > 1 || c != '-') &&
 				c != ':' && c != '<' && c != '>' && c != '?' &&
@@ -1557,7 +1568,7 @@ static int ConfirmQuit(void)
 	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-	c = GetKey(&gInputDevices);
+	c = GetKey(&gEventHandlers);
 	return (c == 'Y' || c == 'y');
 }
 
@@ -1594,7 +1605,7 @@ static void HelpScreen(void)
 	}
 	DrawTextString(helpText, &gGraphicsDevice, pos);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-	GetKey(&gInputDevices);
+	GetKey(&gEventHandlers);
 }
 
 static void Delete(int xc, int yc, int *mission)
@@ -1636,7 +1647,7 @@ static void HandleInput(
 	int *willDisplayAutomap, int *done)
 {
 	int mouseTag;
-	if (m && MouseTryGetRectTag(&gInputDevices.mouse, &mouseTag))
+	if (m && MouseTryGetRectTag(&gEventHandlers.mouse, &mouseTag))
 	{
 		*xcOld = *xc;
 		*ycOld = *yc;
@@ -1667,7 +1678,7 @@ static void HandleInput(
 			}
 		}
 	}
-	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
 		{
@@ -1719,7 +1730,7 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
+			MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
 			break;
 		}
 	}
@@ -1805,7 +1816,7 @@ static void HandleInput(
 
 		case SDLK_TAB:
 			MoveSelection(
-				!(gInputDevices.keyboard.modState & KMOD_SHIFT), yc, xc);
+				!(gEventHandlers.keyboard.modState & KMOD_SHIFT), yc, xc);
 			break;
 
 		case SDLK_LEFT:
@@ -1847,7 +1858,7 @@ static void HandleInput(
 			break;
 
 		default:
-			c = KeyGetTyped(&gInputDevices.keyboard);
+			c = KeyGetTyped(&gEventHandlers.keyboard);
 			if (c)
 			{
 				fileChanged = 1;
@@ -1870,7 +1881,7 @@ static void EditCampaign(void)
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
+	MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
 
 	gCampaign.seed = 0;
 	Setup(mission, 1);
@@ -1880,9 +1891,9 @@ static void EditCampaign(void)
 	{
 		int willDisplayAutomap = 0;
 		int c, m;
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		c = KeyGetPressed(&gInputDevices.keyboard);
-		m = MouseGetPressed(&gInputDevices.mouse);
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		c = KeyGetPressed(&gEventHandlers.keyboard);
+		m = MouseGetPressed(&gEventHandlers.mouse);
 
 		HandleInput(
 			c, m,
@@ -1892,7 +1903,7 @@ static void EditCampaign(void)
 		Display(mission, xc, yc, willDisplayAutomap);
 		if (willDisplayAutomap)
 		{
-			GetKey(&gInputDevices);
+			GetKey(&gEventHandlers);
 		}
 		SDL_Delay(10);
 	}
@@ -1931,6 +1942,7 @@ int main(int argc, char *argv[])
 
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	gConfig.Graphics.IsEditor = 1;
 	BulletInitialize();
 	WeaponInitialize();
 	PlayerDataInitialize();
@@ -1949,7 +1961,7 @@ int main(int argc, char *argv[])
 	CharacterStoreInit(&gCampaign.Setting.characters);
 	gCampaign.Setting.missions = NULL;
 
-	InputInit(&gInputDevices, PicManagerGetOldPic(&gPicManager, 145));
+	EventInit(&gEventHandlers, PicManagerGetOldPic(&gPicManager, 145));
 
 	for (i = 1; i < argc; i++)
 	{

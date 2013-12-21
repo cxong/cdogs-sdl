@@ -77,11 +77,11 @@
 
 void MenuSystemInit(
 	MenuSystem *ms,
-	InputDevices *input, GraphicsDevice *graphics, Vec2i pos, Vec2i size)
+	EventHandlers *handlers, GraphicsDevice *graphics, Vec2i pos, Vec2i size)
 {
 	memset(ms, 0, sizeof *ms);
 	ms->root = ms->current = NULL;
-	ms->inputDevices = input;
+	ms->handlers = handlers;
 	ms->graphics = graphics;
 	ms->pos = pos;
 	ms->size = size;
@@ -157,7 +157,7 @@ void MenuLoop(MenuSystem *menu)
 	{
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		// Input
-		InputPoll(menu->inputDevices, SDL_GetTicks());
+		EventPoll(menu->handlers, SDL_GetTicks());
 		// Update
 		if (menu->current->type == MENU_TYPE_KEYS &&
 			menu->current->u.normal.changeKeyMenu != NULL)
@@ -166,7 +166,7 @@ void MenuLoop(MenuSystem *menu)
 		}
 		else
 		{
-			int cmd = GetMenuCmd(gPlayerDatas);
+			int cmd = GetMenuCmd(menu->handlers, gPlayerDatas);
 			MenuProcessCmd(menu, cmd);
 		}
 		if (MenuIsExit(menu))
@@ -1041,7 +1041,7 @@ int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 
 void MenuProcessChangeKey(menu_t *menu)
 {
-	int key = GetKey(&gInputDevices);	// wait until user has pressed a new button
+	int key = GetKey(&gEventHandlers);	// wait until user has pressed a new button
 
 	if (key == SDLK_ESCAPE)
 	{

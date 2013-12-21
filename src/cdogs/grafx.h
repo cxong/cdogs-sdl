@@ -71,6 +71,8 @@ typedef struct
 	int ScaleFactor;
 	int ShakeMultiplier;
 	ScaleMode ScaleMode;
+
+	int IsEditor;
 } GraphicsConfig;
 
 typedef struct
@@ -106,7 +108,8 @@ extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device);
 void GraphicsInitialize(
-	GraphicsDevice *device, GraphicsConfig *config, TPalette palette, int force);
+	GraphicsDevice *device, GraphicsConfig *config, TPalette palette,
+	int force);
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);

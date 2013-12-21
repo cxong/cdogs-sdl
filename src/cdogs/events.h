@@ -49,9 +49,33 @@
 #ifndef __EVENTS
 #define __EVENTS
 
+#include "gamedata.h"
 #include "input.h"
 
-int GetKey(InputDevices *devices);
-int WaitForAnyKeyOrButton(InputDevices *devices);
+typedef struct
+{
+	keyboard_t keyboard;
+	joysticks_t joysticks;
+	Mouse mouse;
+
+	int HasResolutionChanged;
+} EventHandlers;
+
+extern EventHandlers gEventHandlers;
+
+void EventInit(EventHandlers *handlers, PicPaletted *mouseCursor);
+void EventPoll(EventHandlers *handlers, Uint32 ticks);
+void EventTerminate(EventHandlers *handlers);
+
+int GetGameCmd(
+	EventHandlers *handlers, InputConfig *config,
+	struct PlayerData *playerData, Vec2i playerPos);
+int GetKey(EventHandlers *handlers);
+int WaitForAnyKeyOrButton(EventHandlers *handlers);
+void GetPlayerCmds(
+	EventHandlers *handlers,
+	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS]);
+int GetMenuCmd(
+	EventHandlers *handlers, struct PlayerData playerDatas[MAX_PLAYERS]);
 
 #endif

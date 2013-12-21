@@ -133,7 +133,8 @@ static void DisplayEquippedWeapons(
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig)
+	EventHandlers *handlers, GraphicsDevice *graphics,
+	InputConfig *inputConfig)
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
@@ -171,7 +172,7 @@ void WeaponMenuCreate(
 		assert(0 && "not implemented");
 		break;
 	}
-	MenuSystemInit(ms, input, graphics, pos, size);
+	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	ms->root = ms->current = MenuCreateNormal(
 		"",

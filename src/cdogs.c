@@ -172,7 +172,7 @@ int CampaignIntro(GraphicsDevice *device)
 	DrawTextString(s, device, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
-	return WaitForAnyKeyOrButton(&gInputDevices);
+	return WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 void MissionBriefing(GraphicsDevice *device)
@@ -201,7 +201,7 @@ void MissionBriefing(GraphicsDevice *device)
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 	
-	InputInit(&gInputDevices, gInputDevices.mouse.cursor);
+	EventInit(&gEventHandlers, gEventHandlers.mouse.cursor);
 
 	for (typewriterCount = 0;
 		typewriterCount <= (int)strlen(description);
@@ -213,8 +213,8 @@ void MissionBriefing(GraphicsDevice *device)
 		
 		// Check for player input; if any then skip to the end of the briefing
 		memset(cmds, 0, sizeof cmds);
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		GetPlayerCmds(&cmds, gPlayerDatas);
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
 			if (AnyButton(cmds[i]))
@@ -267,7 +267,7 @@ void MissionBriefing(GraphicsDevice *device)
 		
 		SDL_Delay(10);
 	}
-	WaitForAnyKeyOrButton(&gInputDevices);
+	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 // Display compact player summary, with player on left half and score summaries
@@ -529,7 +529,7 @@ void MissionSummary(GraphicsDevice *device)
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gInputDevices);
+	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 static void ShowPlayerScore(
@@ -568,7 +568,7 @@ void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gInputDevices);
+	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
@@ -624,7 +624,7 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 		CDogsTextStringAtCenter("It's a draw!");
 	}
 	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gInputDevices);
+	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 
@@ -748,7 +748,7 @@ void Victory(GraphicsDevice *graphics)
 	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
 	BlitFlip(graphics, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gInputDevices);
+	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
 
@@ -1091,7 +1091,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Select number of players\n");
 		if (!NumPlayersSelection(
 				&gOptions.numPlayers, gCampaign.Entry.mode,
-				&gGraphicsDevice, &gInputDevices))
+				&gGraphicsDevice, &gEventHandlers))
 		{
 			continue;
 		}
@@ -1303,7 +1303,7 @@ int main(int argc, char *argv[])
 
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
-	InputInit(&gInputDevices, NULL);
+	EventInit(&gEventHandlers, NULL);
 
 	if (wait)
 	{
@@ -1339,7 +1339,7 @@ int main(int argc, char *argv[])
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
-	InputTerminate(&gInputDevices);
+	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 
 	PicManagerTerminate(&gPicManager);

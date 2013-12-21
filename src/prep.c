@@ -76,13 +76,13 @@
 
 int NumPlayersSelection(
 	int *numPlayers, campaign_mode_e mode,
-	GraphicsDevice *graphics, InputDevices *input)
+	GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem ms;
 	int i;
 	int res = 0;
 	MenuSystemInit(
-		&ms, input, graphics,
+		&ms, handlers, graphics,
 		Vec2iZero(),
 		Vec2iNew(
 			graphics->cachedConfig.ResolutionWidth,
@@ -108,14 +108,14 @@ int NumPlayersSelection(
 	for (;;)
 	{
 		int cmd;
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
+			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
 		{
 			res = 0;
 			break;	// hack to allow exit
 		}
-		cmd = GetMenuCmd(gPlayerDatas);
+		cmd = GetMenuCmd(handlers, gPlayerDatas);
 		MenuProcessCmd(&ms, cmd);
 		if (MenuIsExit(&ms))
 		{
@@ -145,7 +145,7 @@ static void AssignPlayerInputDevice(
 static void AssignPlayerInputDevices(
 	int hasInputDevice[MAX_PLAYERS], int numPlayers,
 	struct PlayerData playerDatas[MAX_PLAYERS],
-	InputDevices *inputDevices, InputConfig *inputConfig)
+	EventHandlers *handlers, InputConfig *inputConfig)
 {
 	int i;
 	int assignedKeyboards[MAX_KEYBOARD_CONFIGS];
@@ -183,7 +183,7 @@ static void AssignPlayerInputDevices(
 		for (j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
 		{
 			if (KeyIsPressed(
-				&inputDevices->keyboard,
+				&handlers->keyboard,
 				inputConfig->PlayerKeys[j].Keys.button1) &&
 				!assignedKeyboards[j])
 			{
@@ -194,7 +194,7 @@ static void AssignPlayerInputDevices(
 				continue;
 			}
 		}
-		if (MouseIsPressed(&inputDevices->mouse, SDL_BUTTON_LEFT) &&
+		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
 			!assignedMouse)
 		{
 			hasInputDevice[i] = 1;
@@ -202,10 +202,10 @@ static void AssignPlayerInputDevices(
 			assignedMouse = 1;
 			continue;
 		}
-		for (j = 0; j < inputDevices->joysticks.numJoys; j++)
+		for (j = 0; j < handlers->joysticks.numJoys; j++)
 		{
 			if (JoyIsPressed(
-				&inputDevices->joysticks.joys[j], CMD_BUTTON1) &&
+				&handlers->joysticks.joys[j], CMD_BUTTON1) &&
 				!assignedJoysticks[j])
 			{
 				hasInputDevice[i] = 1;
@@ -228,24 +228,24 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		PlayerSelectMenusCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gInputDevices, graphics, &gConfig.Input);
+			&gEventHandlers, graphics, &gConfig.Input);
 		hasInputDevice[i] = 0;
 	}
 
-	KeyInit(&gInputDevices.keyboard);
+	KeyInit(&gEventHandlers.keyboard);
 	for (;;)
 	{
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		int hasAtLeastOneInput = 0;
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		if (KeyIsPressed(&gInputDevices.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gInputDevices.joysticks.joys[0], CMD_BUTTON4))
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
+			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
 		{
 			// TODO: destroy menus
 			return 0; // hack to allow exit
 		}
-		GetPlayerCmds(&cmds, gPlayerDatas);
+		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
 			if (hasInputDevice[i] && !MenuIsExit(&menus[i].ms))
@@ -276,7 +276,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 
 		AssignPlayerInputDevices(
 			hasInputDevice, numPlayers,
-			gPlayerDatas, &gInputDevices, &gConfig.Input);
+			gPlayerDatas, &gEventHandlers, &gConfig.Input);
 
 		GraphicsBlitBkg(graphics);
 		for (i = 0; i < numPlayers; i++)
@@ -344,7 +344,7 @@ void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		WeaponMenuCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gInputDevices, graphics, &gConfig.Input);
+			&gEventHandlers, graphics, &gConfig.Input);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
 		{
@@ -364,8 +364,8 @@ void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 	{
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		GetPlayerCmds(&cmds, gPlayerDatas);
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
 			if (!MenuIsExit(&menus[i].ms))

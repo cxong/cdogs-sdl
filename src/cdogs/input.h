@@ -92,20 +92,8 @@ typedef enum
 	KEY_CODE_MAP
 } key_code_e;
 
-typedef struct
-{
-	keyboard_t keyboard;
-	joysticks_t joysticks;
-	Mouse mouse;
-} InputDevices;
-
-extern InputDevices gInputDevices;
-
-void InputInit(InputDevices *devices, PicPaletted *mouseCursor);
 int InputGetKey(input_keys_t *keys, key_code_e keyCode);
 void InputSetKey(input_keys_t *keys, int key, key_code_e keyCode);
-void InputPoll(InputDevices *devices, Uint32 ticks);
-void InputTerminate(InputDevices *devices);
 
 const char *InputDeviceName(int d, int deviceIndex);
 

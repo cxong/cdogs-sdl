@@ -59,6 +59,7 @@
 #include <cdogs/defs.h>
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
+#include <cdogs/events.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
@@ -365,15 +366,15 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		}
 	}
 
-	if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+	if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
 	{
 		int mouseYc = tag & 0xFF;
 		int mouseXc = (tag & 0xFF00) >> 8;
 		Vec2i tooltipPos = Vec2iAdd(
-			gInputDevices.mouse.currentPos, Vec2iNew(10, 10));
+			gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
 		DrawTooltips(&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
 	}
-	MouseDraw(&gInputDevices.mouse);
+	MouseDraw(&gEventHandlers.mouse);
 
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
@@ -622,7 +623,7 @@ static void HandleInput(
 	int c, int *xc, int *yc,
 	int *idx, CharacterStore *store, Character *scrap, int *done)
 {
-	if (gInputDevices.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
 		{
@@ -724,29 +725,29 @@ void EditCharacters(CampaignSettingNew *setting)
 	Character scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gInputDevices.mouse, localClicks, NULL);
+	MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
 
 	while (!done)
 	{
 		int tag;
 		int c, m;
-		InputPoll(&gInputDevices, SDL_GetTicks());
-		c = KeyGetPressed(&gInputDevices.keyboard);
-		m = MouseGetPressed(&gInputDevices.mouse);
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		c = KeyGetPressed(&gEventHandlers.keyboard);
+		m = MouseGetPressed(&gEventHandlers.mouse);
 		if (m)
 		{
 			xcOld = xc;
 			ycOld = yc;
 			// Only change selection on left/right click
 			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
-				PosToCharacterIndex(gInputDevices.mouse.currentPos, &tag))
+				PosToCharacterIndex(gEventHandlers.mouse.currentPos, &tag))
 			{
 				if (tag >= 0 && tag < setting->characters.otherCount)
 				{
 					idx = tag;
 				}
 			}
-			else if (MouseTryGetRectTag(&gInputDevices.mouse, &tag))
+			else if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
 			{
 				int isSameSelection;
 				xcOld = xc;

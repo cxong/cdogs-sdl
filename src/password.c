@@ -232,9 +232,9 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 	while (!done)
 	{
 		int cmd;
-		InputPoll(&gInputDevices, SDL_GetTicks());
+		EventPoll(&gEventHandlers, SDL_GetTicks());
 		GraphicsBlitBkg(graphics);
-		cmd = GetMenuCmd(gPlayerDatas);
+		cmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
 		if (!PasswordEntry(cmd, buffer))
 		{
 			if (!buffer[0])
@@ -296,7 +296,7 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 	int hasPassword = mission > 0;
 	int res = 0;
 	MenuSystemInit(
-		&startMenu, &gInputDevices, graphics, Vec2iZero(),
+		&startMenu, &gEventHandlers, graphics, Vec2iZero(),
 		Vec2iNew(
 			graphics->cachedConfig.ResolutionWidth,
 			graphics->cachedConfig.ResolutionHeight));

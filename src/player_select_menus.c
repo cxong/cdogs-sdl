@@ -328,7 +328,8 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
-	InputDevices *input, GraphicsDevice *graphics, InputConfig *inputConfig)
+	EventHandlers *handlers, GraphicsDevice *graphics,
+	InputConfig *inputConfig)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
@@ -367,7 +368,7 @@ void PlayerSelectMenusCreate(
 		assert(0 && "not implemented");
 		break;
 	}
-	MenuSystemInit(ms, input, graphics, pos, size);
+	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	ms->root = ms->current = MenuCreateNormal(
 		"",

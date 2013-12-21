@@ -32,6 +32,7 @@
 #include <stdio.h>
 
 #include "defs.h"
+#include "events.h"
 #include "input.h"
 
 
@@ -78,7 +79,7 @@ void JoyReset(joysticks_t *joys)
 
 void GJoyReset(void)
 {
-	JoyReset(&gInputDevices.joysticks);
+	JoyReset(&gEventHandlers.joysticks);
 }
 
 void JoyTerminate(joysticks_t *joys)
