@@ -773,12 +773,3 @@ void SetupConfigDir(void)
 
 	return;
 }
-
-char dir_buf[512];
-char * GetPWD(void)
-{
-	if (getcwd(dir_buf, 511) == NULL) {
-		printf("Error getting PWD\n");
-	}
-	return dir_buf;
-}
