@@ -167,68 +167,6 @@ int MouseIsDown(Mouse *mouse, int button)
 	return mouse->currentButtons[button];
 }
 
-void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2)
-{
-	mouse->rects = rects;
-	mouse->rects2 = rects2;
-}
-
-void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects)
-{
-	mouse->rects2 = rects;
-}
-
-static int TryGetRectTag(MouseRect *rects, Vec2i pos, int *tag)
-{
-	while (rects && rects->right > 0)
-	{
-		if (pos.y >= rects->top && pos.y <= rects->bottom &&
-			pos.x >= rects->left && pos.x <= rects->right)
-		{
-			*tag = rects->tag;
-			return 1;
-		}
-		rects++;
-	}
-	return 0;
-}
-
-int MouseTryGetRectTag(Mouse *mouse, int *tag)
-{
-	if (TryGetRectTag(mouse->rects, mouse->currentPos, tag))
-	{
-		return 1;
-	}
-	if (TryGetRectTag(mouse->rects2, mouse->currentPos, tag))
-	{
-		return 1;
-	}
-	return 0;
-}
-
-MouseRect *MouseGetRectByTag(Mouse *mouse, int tag)
-{
-	MouseRect *rects = mouse->rects;
-	while (rects && rects->right > 0)
-	{
-		if (rects->tag == tag)
-		{
-			return rects;
-		}
-		rects++;
-	}
-	rects = mouse->rects2;
-	while (rects && rects->right > 0)
-	{
-		if (rects->tag == tag)
-		{
-			return rects;
-		}
-		rects++;
-	}
-	return NULL;
-}
-
 void MouseDraw(Mouse *mouse)
 {
 	DrawTPic(mouse->currentPos.x, mouse->currentPos.y, mouse->cursor);

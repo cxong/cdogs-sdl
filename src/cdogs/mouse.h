@@ -36,12 +36,6 @@
 
 typedef struct
 {
-	int left, top, right, bottom;
-	int tag;
-} MouseRect;
-
-typedef struct
-{
 	char previousButtons[8];
 	char currentButtons[8];
 	char pressedButtons[8];
@@ -50,10 +44,6 @@ typedef struct
 	PicPaletted *cursor;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
-	// C-Dogs editor uses rectangles to detect mouse presses on key areas
-	// TODO: redesign this, is there a light-weight mouse-GUI framework?
-	MouseRect *rects;
-	MouseRect *rects2;
 } Mouse;
 
 void MouseInit(Mouse *mouse, PicPaletted *cursor);
@@ -65,10 +55,6 @@ int MouseHasMoved(Mouse *mouse);
 int MouseGetPressed(Mouse *mouse);
 int MouseIsDown(Mouse *mouse, int button);
 int MouseIsPressed(Mouse *mouse, int button);
-void MouseSetRects(Mouse *mouse, MouseRect *rects, MouseRect *rects2);
-void MouseSetSecondaryRects(Mouse *mouse, MouseRect *rects);
-int MouseTryGetRectTag(Mouse *mouse, int *tag);
-MouseRect *MouseGetRectByTag(Mouse *mouse, int tag);
 void MouseDraw(Mouse *mouse);
 
 #endif

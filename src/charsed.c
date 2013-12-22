@@ -68,6 +68,8 @@
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
 
+#include "ui_object.h"
+
 
 #define YC_APPEARANCE 0
 #define YC_ATTRIBUTES 1
@@ -114,59 +116,40 @@ int fileChanged = 0;
 extern void *myScreen;
 
 
-static MouseRect localClicks[] =
+static UIObject localClicks[] =
 {
-	{30, 10, 55, 10 + TH - 1, YC_APPEARANCE + (XC_FACE << 8)},
-	{60, 10, 85, 10 + TH - 1, YC_APPEARANCE + (XC_SKIN << 8)},
-	{90, 10, 115, 10 + TH - 1, YC_APPEARANCE + (XC_HAIR << 8)},
-	{120, 10, 145, 10 + TH - 1, YC_APPEARANCE + (XC_BODY << 8)},
-	{150, 10, 175, 10 + TH - 1, YC_APPEARANCE + (XC_ARMS << 8)},
-	{180, 10, 205, 10 + TH - 1, YC_APPEARANCE + (XC_LEGS << 8)},
+	{ YC_APPEARANCE, XC_FACE, 0, { 30, 10 }, { 25, TH } },
+	{ YC_APPEARANCE, XC_SKIN, 0, { 60, 10 }, { 25, TH } },
+	{ YC_APPEARANCE, XC_HAIR, 0, { 90, 10 }, { 25, TH } },
+	{ YC_APPEARANCE, XC_BODY, 0, { 120, 10 }, { 25, TH } },
+	{ YC_APPEARANCE, XC_ARMS, 0, { 150, 10 }, { 25, TH } },
+	{ YC_APPEARANCE, XC_LEGS, 0, { 180, 10 }, { 25, TH } },
 
-	{20, 10 + TH, 60, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_SPEED << 8)},
-	{70, 10 + TH, 110, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_HEALTH << 8)},
-	{120, 10 + TH, 160, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_MOVE << 8)},
-	{170, 10 + TH, 210, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_TRACK << 8)},
-	{220, 10 + TH, 260, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_SHOOT << 8)},
-	{270, 10 + TH, 310, 10 + 2 * TH - 1,
-	 YC_ATTRIBUTES + (XC_DELAY << 8)},
+	{ YC_ATTRIBUTES, XC_SPEED, 0, { 20, 10 + TH }, { 40, TH } },
+	{ YC_ATTRIBUTES, XC_HEALTH, 0, { 70, 10 + TH }, { 40, TH } },
+	{ YC_ATTRIBUTES, XC_MOVE, 0, { 120, 10 + TH }, { 40, TH } },
+	{ YC_ATTRIBUTES, XC_TRACK, 0, { 170, 10 + TH }, { 40, TH } },
+	{ YC_ATTRIBUTES, XC_SHOOT, 0, { 220, 10 + TH }, { 40, TH } },
+	{ YC_ATTRIBUTES, XC_DELAY, 0, { 270, 10 + TH }, { 40, TH } },
 
-	{5, 10 + 2 * TH, 45, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_ASBESTOS << 8)},
-	{50, 10 + 2 * TH, 90, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_IMMUNITY << 8)},
-	{95, 10 + 2 * TH, 135, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_SEETHROUGH << 8)},
-	{140, 10 + 2 * TH, 180, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_RUNS_AWAY << 8)},
-	{185, 10 + 2 * TH, 225, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_SNEAKY << 8)},
-	{230, 10 + 2 * TH, 270, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_GOOD_GUY << 8)},
-	{275, 10 + 2 * TH, 315, 10 + 3 * TH - 1,
-	 YC_FLAGS + (XC_SLEEPING << 8)},
+	{ YC_FLAGS, XC_ASBESTOS, 0, { 5, 10 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_IMMUNITY, 0, { 50, 10 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_SEETHROUGH, 0, { 95, 10 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_RUNS_AWAY, 0, { 140, 10 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_SNEAKY, 0, { 50, 185 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_GOOD_GUY, 0, { 230, 10 + 2 * TH }, { 40, TH } },
+	{ YC_FLAGS, XC_SLEEPING, 0, { 275, 10 + 2 * TH }, { 40, TH } },
 
-	{5, 10 + 3 * TH, 45, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_PRISONER << 8)},
-	{50, 10 + 3 * TH, 90, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_INVULNERABLE << 8)},
-	{95, 10 + 3 * TH, 135, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_FOLLOWER << 8)},
-	{140, 10 + 3 * TH, 180, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_PENALTY << 8)},
-	{185, 10 + 3 * TH, 225, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_VICTIM << 8)},
-	{230, 10 + 3 * TH, 270, 10 + 4 * TH - 1,
-	 YC_FLAGS2 + (XC_AWAKE << 8)},
+	{ YC_FLAGS2, XC_PRISONER, 0, { 5, 10 + 3 * TH }, { 40, TH } },
+	{ YC_FLAGS2, XC_INVULNERABLE, 0, { 50, 10 + 3 * TH }, { 40, TH } },
+	{ YC_FLAGS2, XC_FOLLOWER, 0, { 95, 10 + 3 * TH }, { 40, TH } },
+	{ YC_FLAGS2, XC_PENALTY, 0, { 140, 10 + 3 * TH }, { 40, TH } },
+	{ YC_FLAGS2, XC_VICTIM, 0, { 185, 10 + 3 * TH }, { 40, TH } },
+	{ YC_FLAGS2, XC_AWAKE, 0, { 230, 10 + 3 * TH }, { 40, TH } },
 
-	{50, 10 + 4 * TH, 260, 10 + 5 * TH - 1, YC_WEAPON},
+	{ YC_WEAPON, 0, 0, { 50, 10 + 4 * TH }, { 210, TH } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
 
@@ -271,7 +254,7 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 	char s[50];
 	const Character *b;
 	int i;
-	int tag;
+	UIObject *o;
 
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
@@ -366,13 +349,11 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		}
 	}
 
-	if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
+	if (UITryGetObject(localClicks, gEventHandlers.mouse.currentPos, &o))
 	{
-		int mouseYc = tag & 0xFF;
-		int mouseXc = (tag & 0xFF00) >> 8;
 		Vec2i tooltipPos = Vec2iAdd(
 			gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-		DrawTooltips(&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
+		DrawTooltips(&gGraphicsDevice, tooltipPos, yc, xc, o->Id, o->Id2);
 	}
 	MouseDraw(&gEventHandlers.mouse);
 
@@ -725,37 +706,38 @@ void EditCharacters(CampaignSettingNew *setting)
 	Character scrap;
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
 
 	while (!done)
 	{
-		int tag;
 		int c, m;
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		c = KeyGetPressed(&gEventHandlers.keyboard);
 		m = MouseGetPressed(&gEventHandlers.mouse);
 		if (m)
 		{
+			UIObject *o;
+			int charIdx;
 			xcOld = xc;
 			ycOld = yc;
 			// Only change selection on left/right click
 			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
-				PosToCharacterIndex(gEventHandlers.mouse.currentPos, &tag))
+				PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
 			{
-				if (tag >= 0 && tag < setting->characters.otherCount)
+				if (charIdx >= 0 && charIdx < setting->characters.otherCount)
 				{
-					idx = tag;
+					idx = charIdx;
 				}
 			}
-			else if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
+			else if (UITryGetObject(
+				localClicks, gEventHandlers.mouse.currentPos, &o))
 			{
 				int isSameSelection;
 				xcOld = xc;
 				ycOld = yc;
 				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
 				{
-					xc = (tag >> 8);
-					yc = (tag & 0xFF);
+					xc = o->Id2;
+					yc = o->Id;
 					AdjustYC(&yc);
 					AdjustXC(yc, &xc);
 				}

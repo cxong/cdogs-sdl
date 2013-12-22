@@ -72,6 +72,7 @@
 #include <cdogs/utils.h>
 
 #include "charsed.h"
+#include "ui_object.h"
 
 
 #define YC_CAMPAIGNTITLE    0
@@ -122,168 +123,147 @@
 
 
 #define TH  8
-#define SELECT_ONLY        (1 << 16)
-#define LEAVE_YC           (1 << 17)
-#define LEAVE_XC           (1 << 18)
-#define SELECT_ONLY_FIRST  (1 << 19)
 
 
 // Mouse click areas:
 
-static MouseRect localClicks[] =
+static UIObject localClicks[] =
 {
-	{25, 5, 265, 5 + TH - 1, YC_CAMPAIGNTITLE + SELECT_ONLY_FIRST},
-	{270, 5, 319, 5 + TH - 1, YC_MISSIONINDEX},
-	{25, 8 + TH, 200, 8 + 2 * TH - 1, YC_MISSIONTITLE + SELECT_ONLY},
+	{ YC_CAMPAIGNTITLE, 0, UI_SELECT_ONLY_FIRST, { 25, 5 }, { 240, TH } },
+	{ YC_MISSIONINDEX, 0, 0, { 270, 5 }, { 49, TH } },
+	{ YC_MISSIONTITLE, 0, UI_SELECT_ONLY, { 25, 8 + TH }, { 175, TH } },
 
-	{20, 10 + 2 * TH, 55, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_WIDTH << 8)},
-	{60, 10 + 2 * TH, 95, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_HEIGHT << 8)},
-	{100, 10 + 2 * TH, 135, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_WALLCOUNT << 8)},
-	{140, 10 + 2 * TH, 175, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_WALLLENGTH << 8)},
-	{180, 10 + 2 * TH, 215, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_ROOMCOUNT << 8)},
-	{220, 10 + 2 * TH, 255, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_SQRCOUNT << 8)},
-	{260, 10 + 2 * TH, 295, 10 + 3 * TH - 1,
-	 YC_MISSIONPROPS + (XC_DENSITY << 8)},
+	{ YC_MISSIONPROPS, XC_WIDTH, 0, { 20, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_HEIGHT, 0, { 60, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_WALLCOUNT, 0, { 100, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_WALLLENGTH, 0, { 140, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_ROOMCOUNT, 0, { 180, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_SQRCOUNT, 0, { 220, 10 + 2 * TH }, { 35, TH } },
+	{ YC_MISSIONPROPS, XC_DENSITY, 0, { 260, 10 + 2 * TH }, { 35, TH } },
 
-	{20, 10 + 3 * TH, 45, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_WALL << 8)},
-	{50, 10 + 3 * TH, 75, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_FLOOR << 8)},
-	{80, 10 + 3 * TH, 105, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_ROOM << 8)},
-	{110, 10 + 3 * TH, 135, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_DOORS << 8)},
-	{140, 10 + 3 * TH, 165, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_KEYS << 8)},
-	{170, 10 + 3 * TH, 195, 35 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_EXIT << 8)},
+	{ YC_MISSIONLOOKS, XC_WALL, 0, { 20, 10 + 3 * TH }, { 25, 25 + TH } },
+	{ YC_MISSIONLOOKS, XC_FLOOR, 0, { 50, 10 + 3 * TH }, { 25, 25 + TH } },
+	{ YC_MISSIONLOOKS, XC_ROOM, 0, { 80, 10 + 3 * TH }, { 25, 25 + TH } },
+	{ YC_MISSIONLOOKS, XC_DOORS, 0, { 110, 10 + 3 * TH }, { 25, 25 + TH } },
+	{ YC_MISSIONLOOKS, XC_KEYS, 0, { 140, 10 + 3 * TH }, { 25, 25 + TH } },
+	{ YC_MISSIONLOOKS, XC_EXIT, 0, { 170, 10 + 3 * TH }, { 25, 25 + TH } },
 
-	{200, 10 + 3 * TH, 300, 10 + 4 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_COLOR1 << 8)},
-	{200, 10 + 4 * TH, 300, 10 + 5 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_COLOR2 << 8)},
-	{200, 10 + 5 * TH, 300, 10 + 6 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_COLOR3 << 8)},
-	{200, 10 + 6 * TH, 300, 10 + 7 * TH - 1,
-	 YC_MISSIONLOOKS + (XC_COLOR4 << 8)},
+	{ YC_MISSIONLOOKS, XC_COLOR1, 0, { 200, 10 + 3 * TH }, { 100, TH } },
+	{ YC_MISSIONLOOKS, XC_COLOR2, 0, { 200, 10 + 4 * TH }, { 100, TH } },
+	{ YC_MISSIONLOOKS, XC_COLOR3, 0, { 200, 10 + 5 * TH }, { 100, TH } },
+	{ YC_MISSIONLOOKS, XC_COLOR4, 0, { 200, 10 + 6 * TH }, { 100, TH } },
 
-	{10, 35 + 4 * TH, 199, 35 + 5 * TH - 1,
-	 YC_MISSIONDESC + SELECT_ONLY},
-	{10, 35 + 5 * TH, 199, 35 + 6 * TH - 1,
-	 YC_CHARACTERS + SELECT_ONLY},
-	{10, 35 + 6 * TH, 199, 35 + 7 * TH - 1, YC_SPECIALS + SELECT_ONLY},
-	{10, 35 + 7 * TH, 199, 35 + 8 * TH - 1, YC_WEAPONS + SELECT_ONLY},
-	{10, 35 + 8 * TH, 199, 35 + 9 * TH - 1, YC_ITEMS + SELECT_ONLY},
-	{10, 37 + 9 * TH, 199, 37 + 10 * TH - 1,
-	 YC_OBJECTIVES + SELECT_ONLY},
-	{10, 37 + 10 * TH, 199, 37 + 11 * TH - 1,
-	 YC_OBJECTIVES + 1 + SELECT_ONLY},
-	{10, 37 + 11 * TH, 199, 37 + 12 * TH - 1,
-	 YC_OBJECTIVES + 2 + SELECT_ONLY},
-	{10, 37 + 12 * TH, 199, 37 + 13 * TH - 1,
-	 YC_OBJECTIVES + 3 + SELECT_ONLY},
-	{10, 37 + 13 * TH, 199, 37 + 14 * TH - 1,
-	 YC_OBJECTIVES + 4 + SELECT_ONLY},
+	{ YC_MISSIONDESC, 0, UI_SELECT_ONLY, { 10, 35 + 4 * TH }, { 189, TH } },
+	{ YC_CHARACTERS, 0, UI_SELECT_ONLY, { 10, 35 + 5 * TH }, { 189, TH } },
+	{ YC_SPECIALS, 0, UI_SELECT_ONLY, { 10, 35 + 6 * TH }, { 189, TH } },
+	{ YC_WEAPONS, 0, UI_SELECT_ONLY, { 10, 35 + 7 * TH }, { 189, TH } },
+	{ YC_ITEMS, 0, UI_SELECT_ONLY, { 10, 35 + 8 * TH }, { 189, TH } },
+	{ YC_OBJECTIVES, 0, UI_SELECT_ONLY, { 10, 37 + 9 * TH }, { 189, TH } },
+	{ YC_OBJECTIVES + 1, 0, UI_SELECT_ONLY, { 10, 37 + 10 * TH }, { 189, TH } },
+	{ YC_OBJECTIVES + 2, 0, UI_SELECT_ONLY, { 10, 37 + 11 * TH }, { 189, TH } },
+	{ YC_OBJECTIVES + 3, 0, UI_SELECT_ONLY, { 10, 37 + 12 * TH }, { 189, TH } },
+	{ YC_OBJECTIVES + 4, 0, UI_SELECT_ONLY, { 10, 37 + 13 * TH }, { 189, TH } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localCampaignClicks[] =
+static UIObject localCampaignClicks[] =
 {
-	{0, 150, 319, 150 + TH - 1,
-	 YC_CAMPAIGNTITLE + (XC_AUTHOR << 8) + SELECT_ONLY},
-	{0, 150 + TH, 319, 190,
-	 YC_CAMPAIGNTITLE + (XC_CAMPAIGNDESC << 8) + SELECT_ONLY},
+	{ YC_CAMPAIGNTITLE, XC_AUTHOR, UI_SELECT_ONLY, { 0, 150 }, { 319, TH } },
+	{ YC_CAMPAIGNTITLE, XC_CAMPAIGNDESC, UI_SELECT_ONLY, { 0, 150 + TH }, { 319, 40 } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localMissionClicks[] =
+static UIObject localMissionClicks[] =
 {
-	{0, 150, 319, 160,
-	 YC_MISSIONTITLE + (XC_MUSICFILE << 8) + SELECT_ONLY},
+	{ YC_MISSIONTITLE, XC_MUSICFILE, UI_SELECT_ONLY, { 0, 150 }, { 319, 10 } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localWeaponClicks[] =
+static UIObject localWeaponClicks[] =
 {
-	{10, 150, 90, 150 + TH - 1, LEAVE_YC + (0 << 8)},
-	{10, 150 + TH, 90, 150 + 2 * TH - 1, LEAVE_YC + (1 << 8)},
-	{10, 150 + 2 * TH, 90, 150 + 3 * TH - 1, LEAVE_YC + (2 << 8)},
-	{10, 150 + 3 * TH, 90, 150 + 4 * TH - 1, LEAVE_YC + (3 << 8)},
+	{ 0, 0, UI_LEAVE_YC,{ 10, 150 }, { 80, TH } },
+	{ 0, 1, UI_LEAVE_YC, { 10, 150 + TH }, { 80, TH } },
+	{ 0, 2, UI_LEAVE_YC, { 10, 150 + 2 * TH }, { 80, TH } },
+	{ 0, 3, UI_LEAVE_YC, { 10, 150 + 3 * TH }, { 80, TH } },
 
-	{100, 150, 180, 150 + TH - 1, LEAVE_YC + (4 << 8)},
-	{100, 150 + TH, 180, 150 + 2 * TH - 1, LEAVE_YC + (5 << 8)},
-	{100, 150 + 2 * TH, 180, 150 + 3 * TH - 1, LEAVE_YC + (6 << 8)},
-	{100, 150 + 3 * TH, 180, 150 + 4 * TH - 1, LEAVE_YC + (7 << 8)},
+	{ 0, 4, UI_LEAVE_YC, { 100, 150 }, { 80, TH } },
+	{ 0, 5, UI_LEAVE_YC, { 100, 150 + TH }, { 80, TH } },
+	{ 0, 6, UI_LEAVE_YC, { 100, 150 + 2 * TH }, { 80, TH } },
+	{ 0, 7, UI_LEAVE_YC, { 100, 150 + 3 * TH }, { 80, TH } },
 
-	{190, 150, 270, 150 + TH - 1, LEAVE_YC + (8 << 8)},
-	{190, 150 + TH, 270, 150 + 2 * TH - 1, LEAVE_YC + (9 << 8)},
-	{190, 150 + 2 * TH, 270, 150 + 3 * TH - 1, LEAVE_YC + (10 << 8)},
+	{ 0, 8, UI_LEAVE_YC, { 190, 150 }, { 80, TH } },
+	{ 0, 9, UI_LEAVE_YC, { 190, 150 + TH }, { 80, TH } },
+	{ 0, 10, UI_LEAVE_YC, { 190, 150 + 2 * TH }, { 80, TH } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localMapItemClicks[] =
+static UIObject localMapItemClicks[] =
 {
-	{0, 150, 19, 190, LEAVE_YC + (0 << 8)},
-	{20, 150, 39, 190, LEAVE_YC + (1 << 8)},
-	{40, 150, 59, 190, LEAVE_YC + (2 << 8)},
-	{60, 150, 79, 190, LEAVE_YC + (3 << 8)},
-	{80, 150, 99, 190, LEAVE_YC + (4 << 8)},
-	{100, 150, 119, 190, LEAVE_YC + (5 << 8)},
-	{120, 150, 139, 190, LEAVE_YC + (6 << 8)},
-	{140, 150, 159, 190, LEAVE_YC + (7 << 8)},
-	{160, 150, 179, 190, LEAVE_YC + (8 << 8)},
-	{180, 150, 199, 190, LEAVE_YC + (9 << 8)},
-	{200, 150, 219, 190, LEAVE_YC + (10 << 8)},
-	{220, 150, 239, 190, LEAVE_YC + (11 << 8)},
-	{240, 150, 259, 190, LEAVE_YC + (12 << 8)},
-	{260, 150, 279, 190, LEAVE_YC + (13 << 8)},
-	{280, 150, 299, 190, LEAVE_YC + (14 << 8)},
-	{300, 150, 319, 190, LEAVE_YC + (15 << 8)},
+	{ 0, 0, UI_LEAVE_YC, { 0, 150 }, { 19, 40 } },
+	{ 0, 1, UI_LEAVE_YC, { 20, 150 }, { 19, 40 } },
+	{ 0, 2, UI_LEAVE_YC, { 40, 150 }, { 19, 40 } },
+	{ 0, 3, UI_LEAVE_YC, { 60, 150 }, { 19, 40 } },
+	{ 0, 4, UI_LEAVE_YC, { 80, 150 }, { 19, 40 } },
+	{ 0, 5, UI_LEAVE_YC, { 100, 150 }, { 19, 40 } },
+	{ 0, 6, UI_LEAVE_YC, { 120, 150 }, { 19, 40 } },
+	{ 0, 7, UI_LEAVE_YC, { 140, 150 }, { 19, 40 } },
+	{ 0, 8, UI_LEAVE_YC, { 160, 150 }, { 19, 40 } },
+	{ 0, 9, UI_LEAVE_YC, { 180, 150 }, { 19, 40 } },
+	{ 0, 10, UI_LEAVE_YC, { 200, 150 }, { 19, 40 } },
+	{ 0, 11, UI_LEAVE_YC, { 220, 150 }, { 19, 40 } },
+	{ 0, 12, UI_LEAVE_YC, { 240, 150 }, { 19, 40 } },
+	{ 0, 13, UI_LEAVE_YC, { 260, 150 }, { 19, 40 } },
+	{ 0, 14, UI_LEAVE_YC, { 280, 150 }, { 19, 40 } },
+	{ 0, 15, UI_LEAVE_YC, { 300, 150 }, { 19, 40 } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localObjectiveClicks[] =
+static UIObject localObjectiveClicks[] =
 {
-	{20, 150, 55, 190, LEAVE_YC + (XC_TYPE << 8)},
-	{60, 150, 85, 190, LEAVE_YC + (XC_INDEX << 8)},
-	{90, 150, 105, 190, LEAVE_YC + (XC_REQUIRED << 8)},
-	{110, 150, 145, 190, LEAVE_YC + (XC_TOTAL << 8)},
-	{150, 150, 195, 190, LEAVE_YC + (XC_FLAGS << 8)},
+	{ 0, XC_TYPE, UI_LEAVE_YC, { 20, 150 }, { 35, 40 } },
+	{ 0, XC_INDEX, UI_LEAVE_YC, { 60, 150 }, { 35, 40 } },
+	{ 0, XC_REQUIRED, UI_LEAVE_YC, { 90, 150 }, { 35, 40 } },
+	{ 0, XC_TOTAL, UI_LEAVE_YC, { 110, 150 }, { 35, 40 } },
+	{ 0, XC_FLAGS, UI_LEAVE_YC, { 150, 150 }, { 35, 40 } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
 
-static MouseRect localCharacterClicks[] =
+static UIObject localCharacterClicks[] =
 {
-	{10, 150, 29, 190, LEAVE_YC + (0 << 8) + SELECT_ONLY_FIRST},
-	{30, 150, 49, 190, LEAVE_YC + (1 << 8) + SELECT_ONLY_FIRST},
-	{50, 150, 69, 190, LEAVE_YC + (2 << 8) + SELECT_ONLY_FIRST},
-	{70, 150, 89, 190, LEAVE_YC + (3 << 8) + SELECT_ONLY_FIRST},
-	{90, 150, 109, 190, LEAVE_YC + (4 << 8) + SELECT_ONLY_FIRST},
-	{110, 150, 129, 190, LEAVE_YC + (5 << 8) + SELECT_ONLY_FIRST},
-	{130, 150, 149, 190, LEAVE_YC + (6 << 8) + SELECT_ONLY_FIRST},
-	{150, 150, 169, 190, LEAVE_YC + (7 << 8) + SELECT_ONLY_FIRST},
-	{170, 150, 189, 190, LEAVE_YC + (8 << 8) + SELECT_ONLY_FIRST},
-	{190, 150, 209, 190, LEAVE_YC + (9 << 8) + SELECT_ONLY_FIRST},
-	{210, 150, 229, 190, LEAVE_YC + (10 << 8) + SELECT_ONLY_FIRST},
-	{230, 150, 249, 190, LEAVE_YC + (11 << 8) + SELECT_ONLY_FIRST},
-	{250, 150, 269, 190, LEAVE_YC + (12 << 8) + SELECT_ONLY_FIRST},
-	{270, 150, 289, 190, LEAVE_YC + (13 << 8) + SELECT_ONLY_FIRST},
-	{290, 150, 309, 190, LEAVE_YC + (14 << 8) + SELECT_ONLY_FIRST},
+	{ 0, 0, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 10, 150 }, { 19, 40 } },
+	{ 0, 1, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 30, 150 }, { 19, 40 } },
+	{ 0, 2, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 50, 150 }, { 19, 40 } },
+	{ 0, 3, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 70, 150 }, { 19, 40 } },
+	{ 0, 4, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 90, 150 }, { 19, 40 } },
+	{ 0, 5, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 110, 150 }, { 19, 40 } },
+	{ 0, 6, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 130, 150 }, { 19, 40 } },
+	{ 0, 7, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 150, 150 }, { 19, 40 } },
+	{ 0, 8, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 170, 150 }, { 19, 40 } },
+	{ 0, 9, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 190, 150 }, { 19, 40 } },
+	{ 0, 10, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 210, 150 }, { 19, 40 } },
+	{ 0, 11, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 230, 150 }, { 19, 40 } },
+	{ 0, 12, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 250, 150 }, { 19, 40 } },
+	{ 0, 13, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 270, 150 }, { 19, 40 } },
+	{ 0, 14, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 290, 150 }, { 19, 40 } },
 
-	{0, 0, 0, 0, 0}
+	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
 };
+
+// zero-terminated list of UI objects to detect clicks for
+static UIObject *sObjs1 = NULL;
+static UIObject *sObjs2 = NULL;
+
+int TryGetClickObj(Vec2i pos, UIObject **out)
+{
+	return
+		UITryGetObject(sObjs1, pos, out) || UITryGetObject(sObjs2, pos, out);
+}
 
 
 
@@ -406,8 +386,6 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		(currentMission->objectives[idx].flags & OBJECTIVE_UNKNOWNCOUNT) != 0 ? "no-count" : "",
 		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
 	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
-
-	MouseSetSecondaryRects(&gEventHandlers.mouse, localObjectiveClicks);
 }
 
 static int MissionDescription(
@@ -484,7 +462,7 @@ static void ShowWeaponStatus(int x, int y, int weapon, int xc)
 		xc == weapon);
 }
 
-void ListWeapons(int y, int xc)
+static void ListWeapons(int y, int xc)
 {
 	ShowWeaponStatus(10, y, 0, xc);
 	ShowWeaponStatus(10, y + TH, 1, xc);
@@ -499,8 +477,6 @@ void ListWeapons(int y, int xc)
 	ShowWeaponStatus(190, y, 8, xc);
 	ShowWeaponStatus(190, y + TH, 9, xc);
 	ShowWeaponStatus(190, y + 2 * TH, 10, xc);
-
-	MouseSetSecondaryRects(&gEventHandlers.mouse, localWeaponClicks);
 }
 
 static void DrawEditableTextWithEmptyHint(
@@ -518,7 +494,7 @@ static void DrawEditableTextWithEmptyHint(
 	pos = DrawTextCharMasked('\021', &gGraphicsDevice, pos, bracketMask);
 }
 
-void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
+static void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 {
 	char s[10];
 
@@ -534,8 +510,6 @@ void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
 	sprintf(s, "%d", density);
 	CDogsTextGoto(x - 8, y + 5);
 	CDogsTextString(s);
-
-	MouseSetSecondaryRects(&gEventHandlers.mouse, localMapItemClicks);
 }
 
 static void DrawStyleArea(
@@ -768,7 +742,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	int y = 5;
 	int i;
 
-	MouseSetSecondaryRects(&gEventHandlers.mouse, NULL);
+	sObjs2 = NULL;
 	if (currentMission)
 	{
 		// Re-make the background if the resolution has changed
@@ -819,7 +793,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		MissionDescription(
 			150 + TH, gCampaign.Setting.description, "(Campaign description)",
 			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
-		MouseSetSecondaryRects(&gEventHandlers.mouse, localCampaignClicks);
+		sObjs2 = localCampaignClicks;
 		break;
 
 	case YC_MISSIONTITLE:
@@ -827,7 +801,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			Vec2iNew(20, 150),
 			currentMission->song, "(Mission song)",
 			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
-		MouseSetSecondaryRects(&gEventHandlers.mouse, localMissionClicks);
+		sObjs2 = localMissionClicks;
 		break;
 
 	case YC_MISSIONDESC:
@@ -849,7 +823,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				20 + 20 * i, y,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
-		MouseSetSecondaryRects(&gEventHandlers.mouse, localCharacterClicks);
+		sObjs2 = localCharacterClicks;
 		break;
 
 	case YC_SPECIALS:
@@ -866,34 +840,43 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				xc == i,
 				1);
 		}
-		MouseSetSecondaryRects(&gEventHandlers.mouse, localCharacterClicks);
+		sObjs2 = localCharacterClicks;
 		break;
 
 	case YC_ITEMS:
-		CDogsTextStringAt(5, 190,
-			     "Use Insert, Delete and PageUp/PageDown");
+		CDogsTextStringAt(
+			5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
+		{
 			break;
+		}
+		sObjs2 = localMapItemClicks;
 		for (i = 0; i < currentMission->itemCount; i++)
-			DisplayMapItem(10 + 20 * i, y,
-				       gMission.mapObjects[i],
-				       currentMission->itemDensity[i],
-				       xc == i);
+		{
+			DisplayMapItem(
+				10 + 20 * i, y,
+				gMission.mapObjects[i],
+				currentMission->itemDensity[i],
+				xc == i);
+		}
 		break;
 
 	case YC_WEAPONS:
 		if (!currentMission)
+		{
 			break;
+		}
+		sObjs2 = localWeaponClicks;
 		ListWeapons(150, xc);
 		break;
 
 	default:
-		if (currentMission &&
-		    yc >= YC_OBJECTIVES
-		    && yc - YC_OBJECTIVES <
-		    currentMission->objectiveCount) {
-			CDogsTextStringAt(5, 190,
-				     "Use Insert, Delete and PageUp/PageDown");
+		if (currentMission && yc >= YC_OBJECTIVES &&
+			yc - YC_OBJECTIVES < currentMission->objectiveCount)
+		{
+			CDogsTextStringAt(
+				5, 190, "Use Insert, Delete and PageUp/PageDown");
+			sObjs2 = localObjectiveClicks;
 			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
 		}
 		break;
@@ -905,15 +888,13 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	}
 	else
 	{
-		int tag;
-		if (MouseTryGetRectTag(&gEventHandlers.mouse, &tag))
+		UIObject *o;
+		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 		{
-			int mouseYc = tag & 0xFF;
-			int mouseXc = (tag & 0xFF00) >> 8;
 			Vec2i tooltipPos = Vec2iAdd(
 				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
 			DrawTooltips(
-				&gGraphicsDevice, tooltipPos, yc, xc, mouseYc, mouseXc);
+				&gGraphicsDevice, tooltipPos, yc, xc, o->Id, o->Id2);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
@@ -1646,27 +1627,27 @@ static void HandleInput(
 	int *mission, struct Mission *scrap,
 	int *willDisplayAutomap, int *done)
 {
-	int mouseTag;
-	if (m && MouseTryGetRectTag(&gEventHandlers.mouse, &mouseTag))
+	UIObject *o;
+	if (m && TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 	{
 		*xcOld = *xc;
 		*ycOld = *yc;
 		// Only change selection on left/right click
 		if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
 		{
-			if ((mouseTag & LEAVE_YC) == 0)
+			if (!(o->Flags & UI_LEAVE_YC))
 			{
-				*yc = (mouseTag & 0xFF);
+				*yc = o->Id;
 				AdjustYC(yc);
 			}
-			if ((mouseTag & LEAVE_XC) == 0)
+			if (!(o->Flags & UI_LEAVE_YC))
 			{
-				*xc = ((mouseTag >> 8) & 0xFF);
+				*xc = o->Id2;
 				AdjustXC(*yc, xc);
 			}
 		}
-		if (!(mouseTag & SELECT_ONLY) &&
-			(!(mouseTag & SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+		if (!(o->Flags & UI_SELECT_ONLY) &&
+			(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
 		{
 			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
 			{
@@ -1730,7 +1711,8 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
+			sObjs1 = localClicks;
+			sObjs2 = NULL;
 			break;
 		}
 	}
@@ -1881,7 +1863,8 @@ static void EditCampaign(void)
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	MouseSetRects(&gEventHandlers.mouse, localClicks, NULL);
+	sObjs1 = localClicks;
+	sObjs2 = NULL;
 
 	gCampaign.seed = 0;
 	Setup(mission, 1);
