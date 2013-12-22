@@ -137,7 +137,6 @@ const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);
 char *GetDataFilePath(const char *path);
 
-char * GetPWD(void);
 void SetupConfigDir(void);
 
 size_t f_read(FILE *f, void *buf, size_t size);
