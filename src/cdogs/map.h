@@ -58,11 +58,13 @@
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
 
-#define X_TILES			(gGraphicsDevice.cachedConfig.ResolutionWidth / TILE_WIDTH + 2)
+#define X_TILES			((gGraphicsDevice.cachedConfig.ResolutionWidth + TILE_WIDTH - 1) / TILE_WIDTH)
 
-#define X_TILES_HALF    ((X_TILES / 2) + 1)
-#define Y_TILES			(gGraphicsDevice.cachedConfig.ResolutionHeight / TILE_HEIGHT + 3)
-#define Y_TILES_HALF    ((Y_TILES / 2) + 1)
+#define X_TILES_HALF    ((X_TILES + 1) / 2)
+
+// + 1 because walls from bottom row show up one row above
+#define Y_TILES			((gGraphicsDevice.cachedConfig.ResolutionHeight + TILE_HEIGHT - 1) / TILE_HEIGHT + 1)
+#define Y_TILES_HALF    ((Y_TILES + 1 / 2)
 
 typedef enum
 {

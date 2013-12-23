@@ -534,12 +534,10 @@ static void DrawStyleArea(
 		colorGray);
 }
 
-static void DisplayMission(int idx, int xc, int yc, int y)
+static void DisplayMission(int xc, int yc, int y)
 {
 	char s[128];
 	struct EditorInfo ei;
-	sprintf(s, "Mission %d/%d", idx + 1, gCampaign.Setting.missionCount);
-	DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
 
 	y += CDogsTextHeight() + 3;
 	DrawEditableTextWithEmptyHint(
@@ -672,6 +670,20 @@ static void DisplayMission(int idx, int xc, int yc, int y)
 		DisplayCDogsText(
 			20, y, "-- mission objectives --", yc == YC_OBJECTIVES, 0);
 	}
+
+	{
+		int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+		int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+		Vec2i mapSize = Vec2iNew(
+			currentMission->mapWidth * TILE_WIDTH,
+			currentMission->mapHeight * TILE_HEIGHT);
+		Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
+		Vec2i mouseTile = Vec2iNew(
+			(gEventHandlers.mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
+			(gEventHandlers.mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
+		sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);
+		DrawTextString(s, &gGraphicsDevice, Vec2iNew(w - 40, h - 16));
+	}
 }
 
 static void DrawTooltips(
@@ -741,12 +753,14 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	char s[128];
 	int y = 5;
 	int i;
+	//int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 
 	sObjs2 = NULL;
 	if (currentMission)
 	{
 		// Re-make the background if the resolution has changed
-		if (&gEventHandlers.HasResolutionChanged)
+		if (gEventHandlers.HasResolutionChanged)
 		{
 			MakeBackground(&gGraphicsDevice, &gConfig.Graphics, mission);
 		}
@@ -770,16 +784,25 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
 	}
 
-	DrawTextString("Press F1 for help", &gGraphicsDevice, Vec2iNew(20, 200));
+	DrawTextString(
+		"Press F1 for help",
+		&gGraphicsDevice,
+		Vec2iNew(20, h - 20 - CDogsTextHeight()));
 
 	if (currentMission)
 	{
-		DisplayMission(mission, xc, yc, y);
+		sprintf(s, "Mission %d/%d", mission + 1, gCampaign.Setting.missionCount);
+		DrawTextStringMasked(
+			s, &gGraphicsDevice, Vec2iNew(270, y),
+			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
+		DisplayMission(xc, yc, y);
 	}
 	else if (gCampaign.Setting.missionCount)
 	{
 		sprintf(s, "End/%d", gCampaign.Setting.missionCount);
-		DisplayCDogsText(270, y, s, yc == YC_MISSIONINDEX, 0);
+		DrawTextStringMasked(
+			s, &gGraphicsDevice, Vec2iNew(270, y),
+			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 	}
 
 	y = 170;
@@ -1541,12 +1564,22 @@ static int ConfirmQuit(void)
 {
 	int c;
 	int i;
+	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	const char *s1 = "Campaign has been modified, but not saved";
+	const char *s2 = "Quit anyway? (Y/N)";
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
 	}
-	CDogsTextStringAt(80, 50, "Campaign has been modified, but not saved");
-	CDogsTextStringAt(110, 50 + TH, "Quit anyway? (Y/N)");
+	DrawTextString(
+		s1,
+		&gGraphicsDevice,
+		Vec2iNew((w - TextGetStringWidth(s1)) / 2, (h - CDogsTextHeight()) / 2));
+	DrawTextString(
+		s2,
+		&gGraphicsDevice,
+		Vec2iNew((w - TextGetStringWidth(s2)) / 2, (h + CDogsTextHeight()) / 2));
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 	c = GetKey(&gEventHandlers);

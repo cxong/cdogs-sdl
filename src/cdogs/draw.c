@@ -399,6 +399,7 @@ void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 	}
 }
 
+// Add to list to sort by Y and draw in that order
 void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 {
 	TTileItem *l;

@@ -57,4 +57,8 @@ void CalcChebyshevDistanceAndBearing(
 Vec2i CalcClosestPointOnLineSegmentToPoint(
 	Vec2i l1, Vec2i l2, Vec2i p);
 
+// Helper macros for positioning
+#define CENTER_X(_pos, _size, _w) ((_pos).x + ((_size).x - (_w)) / 2)
+#define CENTER_Y(_pos, _size, _h) ((_pos).y + ((_size).y - (_h)) / 2)
+
 #endif

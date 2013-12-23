@@ -237,7 +237,7 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 {
 	Vec2i noise = Vec2iZero();
-	Vec2i centerOffset = Vec2iNew(-TILE_WIDTH / 2 - 8, -TILE_HEIGHT / 2 - 4);
+	Vec2i centerOffset = Vec2iZero();
 	int i;
 	int numPlayersAlive = GetNumPlayersAlive();
 	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
