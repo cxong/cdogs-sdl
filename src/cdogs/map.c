@@ -1167,30 +1167,22 @@ void SetupPerimeter(int w, int h)
 	if (h && h < YMAX)
 		dy = (YMAX - h) / 2;
 
-	for (x = 0; x < dx; x++)
-		for (y = 0; y < YMAX; y++)
-			iMap(x, y) = MAP_NOTHING;
-	for (x = XMAX - dx; x < XMAX; x++)
-		for (y = 0; y < YMAX; y++)
-			iMap(x, y) = MAP_NOTHING;
-
-	for (x = 0; x < XMAX; x++)
-		for (y = 0; y < dy; y++)
-			iMap(x, y) = MAP_NOTHING;
-	for (x = 0; x < XMAX; x++)
-		for (y = YMAX - dy; y < YMAX; y++)
-			iMap(x, y) = MAP_NOTHING;
-
-	for (x = dx; x < XMAX - dx; x++) {
-		iMap(x, dy) = MAP_WALL;
-		iMap(x, YMAX - 1 - dy) = MAP_WALL;
+	for (y = 0; y < YMAX; y++)
+	{
+		for (x = 0; x < XMAX; x++)
+		{
+			if (y < dy || y > dy + h - 1 ||
+				x < dx || x > dx + w - 1)
+			{
+				iMap(x, y) = MAP_NOTHING;
+			}
+			else if (y == dy || y == dy + h - 1 ||
+				x == dx || x == dx + w - 1)
+			{
+				iMap(x, y) = MAP_WALL;
+			}
+		}
 	}
-
-	for (y = dy; y < YMAX - 1 - dy; y++) {
-		iMap(dx, y) = MAP_WALL;
-		iMap(XMAX - 1 - dx, y) = MAP_WALL;
-	}
-
 }
 
 void SetupMap(void)

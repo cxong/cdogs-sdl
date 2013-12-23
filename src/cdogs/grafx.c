@@ -396,7 +396,7 @@ void GrafxMakeBackground(
 	MapMarkAllAsVisited();
 	DrawBufferSetFromMap(
 		&buffer, gMap,
-		Vec2iNew(1024, 768),
+		Vec2iNew(XMAX * TILE_WIDTH / 2, YMAX * TILE_HEIGHT / 2),
 		X_TILES,
 		Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero());
