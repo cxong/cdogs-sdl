@@ -113,6 +113,8 @@ void GraphicsInitialize(
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
+void GrafxDrawBackground(
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint);
 void GrafxMakeBackground(
 	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx);
 void GraphicsBlitBkg(GraphicsDevice *device);

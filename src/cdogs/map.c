@@ -1201,7 +1201,7 @@ void SetupMap(void)
 		for (x = 0; x < XMAX; x++)
 		{
 			Map(x, y).pic = &picNone;
-			memcpy(&Map(x, y).picAlt, &picNone, sizeof picNone);
+			Map(x, y).picAlt = picNone;
 		}
 	}
 	memset(internalMap, 0, sizeof(internalMap));

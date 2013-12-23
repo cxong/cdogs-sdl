@@ -382,18 +382,17 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 	return GraphicsGetScreenSize(config) * sizeof(Uint32);
 }
 
-void GrafxMakeBackground(
-	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
+void GrafxDrawBackground(
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint)
 {
 	DrawBuffer buffer;
 	Vec2i v;
 
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
-	SetupMission(missionIdx, 1, &gCampaign);
-	SetupMap();
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited();
+
+	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferSetFromMap(
 		&buffer, gMap,
 		Vec2iNew(XMAX * TILE_WIDTH / 2, YMAX * TILE_HEIGHT / 2),
@@ -401,6 +400,7 @@ void GrafxMakeBackground(
 		Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero());
 	DrawBufferTerminate(&buffer);
+
 	KillAllActors();
 	KillAllObjects();
 	FreeTriggersAndWatches();
@@ -414,6 +414,15 @@ void GrafxMakeBackground(
 	}
 	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
 	memset(device->buf, 0, GraphicsGetMemSize(config));
+}
+
+void GrafxMakeBackground(
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
+{
+	SetupMission(missionIdx, 1, &gCampaign);
+	SetupMap();
+
+	GrafxDrawBackground(device, config, tint);
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)

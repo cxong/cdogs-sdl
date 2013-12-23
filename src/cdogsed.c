@@ -534,6 +534,56 @@ static void DrawStyleArea(
 		colorGray);
 }
 
+static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
+{
+	int w = g->cachedConfig.ResolutionWidth;
+	int h = g->cachedConfig.ResolutionHeight;
+	Vec2i mapSize = Vec2iNew(
+		currentMission->mapWidth * TILE_WIDTH,
+		currentMission->mapHeight * TILE_HEIGHT);
+	Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
+	return Vec2iNew(
+		(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
+		(e->mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
+}
+
+static void SwapCursorTile(Vec2i mouseTile)
+{
+	static Vec2i cursorTilePos = { -1, -1 };
+	static Tile cursorTile;
+	Tile *t;
+
+	// Convert the tile coordinates to map tile coordinates
+	// The map is centered, i.e. edges are empty
+	// TODO: refactor map to use clearer coordinates
+	mouseTile.x += (XMAX - currentMission->mapWidth) / 2;
+	mouseTile.y += (YMAX - currentMission->mapHeight) / 2;
+
+	// Draw the cursor tile by replacing it with the map tile at the
+	// cursor position
+	// If moving to a new tile, restore the last tile,
+	// and swap with the new tile
+	if (cursorTilePos.x >= 0 && cursorTilePos.y >= 0)
+	{
+		// restore
+		memcpy(
+			&gMap[cursorTilePos.y][cursorTilePos.x],
+			&cursorTile,
+			sizeof cursorTile);
+	}
+	// swap
+	cursorTilePos = mouseTile;
+	t = &gMap[cursorTilePos.y][cursorTilePos.x];
+	memcpy(&cursorTile, t, sizeof cursorTile);
+	// Set cursor tile properties
+	t->pic = PicManagerGetFromOld(
+		&gPicManager, cWallPics[currentMission->wallStyle][WALL_SINGLE]);
+	t->picAlt = picNone;
+	t->flags = MAPTILE_IS_WALL;
+	t->isVisited = 1;
+	t->things = NULL;
+}
+
 static void DisplayMission(int xc, int yc, int y)
 {
 	char s[128];
@@ -670,20 +720,6 @@ static void DisplayMission(int xc, int yc, int y)
 		DisplayCDogsText(
 			20, y, "-- mission objectives --", yc == YC_OBJECTIVES, 0);
 	}
-
-	{
-		int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-		int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
-		Vec2i mapSize = Vec2iNew(
-			currentMission->mapWidth * TILE_WIDTH,
-			currentMission->mapHeight * TILE_HEIGHT);
-		Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
-		Vec2i mouseTile = Vec2iNew(
-			(gEventHandlers.mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
-			(gEventHandlers.mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
-		sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);
-		DrawTextString(s, &gGraphicsDevice, Vec2iNew(w - 40, h - 16));
-	}
 }
 
 static void DrawTooltips(
@@ -753,24 +789,52 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	char s[128];
 	int y = 5;
 	int i;
-	//int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
+	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 
 	sObjs2 = NULL;
+
 	if (currentMission)
 	{
+		Vec2i mouseTile = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
+		int isMouseTileValid =
+			mouseTile.x >= 0 && mouseTile.x < currentMission->mapWidth &&
+			mouseTile.y >= 0 && mouseTile.y < currentMission->mapHeight;
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
 			MakeBackground(&gGraphicsDevice, &gConfig.Graphics, mission);
 		}
+		if (isMouseTileValid)
+		{
+			SwapCursorTile(mouseTile);
+			GrafxDrawBackground(
+				&gGraphicsDevice, &gConfig.Graphics, tintDarker);
+		}
 		GraphicsBlitBkg(&gGraphicsDevice);
+		sprintf(s, "Mission %d/%d", mission + 1, gCampaign.Setting.missionCount);
+		DrawTextStringMasked(
+			s, &gGraphicsDevice, Vec2iNew(270, y),
+			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
+		DisplayMission(xc, yc, y);
+		if (isMouseTileValid)
+		{
+			sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);
+			DrawTextString(s, &gGraphicsDevice, Vec2iNew(w - 40, h - 16));
+		}
 	}
 	else
 	{
 		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 		{
 			gGraphicsDevice.buf[i] = LookupPalette(58);
+		}
+		if (gCampaign.Setting.missionCount)
+		{
+			sprintf(s, "End/%d", gCampaign.Setting.missionCount);
+			DrawTextStringMasked(
+				s, &gGraphicsDevice, Vec2iNew(270, y),
+				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		}
 	}
 
@@ -788,22 +852,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		"Press F1 for help",
 		&gGraphicsDevice,
 		Vec2iNew(20, h - 20 - CDogsTextHeight()));
-
-	if (currentMission)
-	{
-		sprintf(s, "Mission %d/%d", mission + 1, gCampaign.Setting.missionCount);
-		DrawTextStringMasked(
-			s, &gGraphicsDevice, Vec2iNew(270, y),
-			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-		DisplayMission(xc, yc, y);
-	}
-	else if (gCampaign.Setting.missionCount)
-	{
-		sprintf(s, "End/%d", gCampaign.Setting.missionCount);
-		DrawTextStringMasked(
-			s, &gGraphicsDevice, Vec2iNew(270, y),
-			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-	}
 
 	y = 170;
 
