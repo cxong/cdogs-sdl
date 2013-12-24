@@ -388,10 +388,6 @@ void GrafxDrawBackground(
 	DrawBuffer buffer;
 	Vec2i v;
 
-	InitializeBadGuys();
-	CreateEnemies();
-	MapMarkAllAsVisited();
-
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferSetFromMap(
 		&buffer, gMap,
@@ -400,10 +396,6 @@ void GrafxDrawBackground(
 		Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero());
 	DrawBufferTerminate(&buffer);
-
-	KillAllActors();
-	KillAllObjects();
-	FreeTriggersAndWatches();
 
 	for (v.y = 0; v.y < config->ResolutionHeight; v.y++)
 	{
@@ -421,8 +413,15 @@ void GrafxMakeBackground(
 {
 	SetupMission(missionIdx, 1, &gCampaign);
 	SetupMap();
+	InitializeBadGuys();
+	CreateEnemies();
+	MapMarkAllAsVisited();
 
 	GrafxDrawBackground(device, config, tint);
+
+	KillAllActors();
+	KillAllObjects();
+	FreeTriggersAndWatches();
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)
