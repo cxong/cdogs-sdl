@@ -63,6 +63,7 @@
 #include "defs.h"
 #include "keyboard.h"
 #include "input.h"
+#include "player_template.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -98,8 +99,22 @@ void PlayerDataInitialize(void)
 			d->deviceIndex = 0;
 		}
 
-		switch (i)
+		// load from template if available
+		if (PlayerTemplatesGetCount(gPlayerTemplates) > i)
 		{
+			PlayerTemplate *t = &gPlayerTemplates[i];
+			strcpy(d->name, t->name);
+			d->looks.face = t->face;
+			d->looks.skin = t->skin;
+			d->looks.arm = t->arms;
+			d->looks.body = t->body;
+			d->looks.leg = t->legs;
+			d->looks.hair = t->hair;
+		}
+		else
+		{
+			switch (i)
+			{
 			case 0:
 				strcpy(d->name, "Jones");
 				d->looks.face = FACE_JONES;
@@ -108,9 +123,6 @@ void PlayerDataInitialize(void)
 				d->looks.body = SHADE_BLUE;
 				d->looks.leg = SHADE_BLUE;
 				d->looks.hair = SHADE_RED;
-				d->weapons[0] = GUN_SHOTGUN;
-				d->weapons[1] = GUN_MG;
-				d->weapons[2] = GUN_FRAGGRENADE;
 				break;
 			case 1:
 				strcpy(d->name, "Ice");
@@ -120,9 +132,6 @@ void PlayerDataInitialize(void)
 				d->looks.body = SHADE_RED;
 				d->looks.leg = SHADE_RED;
 				d->looks.hair = SHADE_RED;
-				d->weapons[0] = GUN_POWERGUN;
-				d->weapons[1] = GUN_FLAMER;
-				d->weapons[2] = GUN_GRENADE;
 				break;
 			case 2:
 				strcpy(d->name, "Delta");
@@ -132,9 +141,6 @@ void PlayerDataInitialize(void)
 				d->looks.body = SHADE_GREEN;
 				d->looks.leg = SHADE_GREEN;
 				d->looks.hair = SHADE_RED;
-				d->weapons[0] = GUN_SNIPER;
-				d->weapons[1] = GUN_KNIFE;
-				d->weapons[2] = GUN_MOLOTOV;
 				break;
 			case 3:
 				strcpy(d->name, "Hans");
@@ -144,6 +150,32 @@ void PlayerDataInitialize(void)
 				d->looks.body = SHADE_YELLOW;
 				d->looks.leg = SHADE_YELLOW;
 				d->looks.hair = SHADE_GOLDEN;
+				break;
+			default:
+				assert(0 && "unsupported");
+				break;
+			}
+		}
+
+		// weapons
+		switch (i)
+		{
+			case 0:
+				d->weapons[0] = GUN_SHOTGUN;
+				d->weapons[1] = GUN_MG;
+				d->weapons[2] = GUN_FRAGGRENADE;
+				break;
+			case 1:
+				d->weapons[0] = GUN_POWERGUN;
+				d->weapons[1] = GUN_FLAMER;
+				d->weapons[2] = GUN_GRENADE;
+				break;
+			case 2:
+				d->weapons[0] = GUN_SNIPER;
+				d->weapons[1] = GUN_KNIFE;
+				d->weapons[2] = GUN_MOLOTOV;
+				break;
+			case 3:
 				d->weapons[0] = GUN_MG;
 				d->weapons[1] = GUN_FLAMER;
 				d->weapons[2] = GUN_DYNAMITE;

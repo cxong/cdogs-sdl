@@ -26,8 +26,8 @@ C-Dogs SDL Port v0.5.3
 ---------------
 
 C-Dogs SDL is a classic overhead run-and-gun game, supporting up to 4 players
-in co-op and 1v1 modes. Customize your player, choose from up to 11 weapons,
-and try the dozens of user-created campaigns. Have fun!
+in co-op and deathmatch modes. Customize your player, choose from up to 11 weapons,
+and try over 100 user-created campaigns. Have fun!
 
 For the latest release notes please see https://github.com/cxong/cdogs-sdl/wiki/Release-Notes
 
