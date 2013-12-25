@@ -42,6 +42,7 @@ set(CDOGS_SOURCES
 	pic_file.c
 	pic_manager.c
 	pics.c
+	player_template.c
 	sounds.c
 	text.c
 	tile.c
@@ -89,6 +90,7 @@ set(CDOGS_HEADERS
 	pic_file.h
 	pic_manager.h
 	pics.h
+	player_template.h
 	sounds.h
 	sys_config.h
 	sys_specifics.h

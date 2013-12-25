@@ -567,13 +567,13 @@ static void SwapCursorTile(Vec2i mouseTile)
 	{
 		// restore
 		memcpy(
-			&gMap[cursorTilePos.y][cursorTilePos.x],
+			MapGetTile(&gMap, cursorTilePos),
 			&cursorTile,
 			sizeof cursorTile);
 	}
 	// swap
 	cursorTilePos = mouseTile;
-	t = &gMap[cursorTilePos.y][cursorTilePos.x];
+	t = MapGetTile(&gMap, cursorTilePos);
 	memcpy(&cursorTile, t, sizeof cursorTile);
 	// Set cursor tile properties
 	t->pic = PicManagerGetFromOld(
