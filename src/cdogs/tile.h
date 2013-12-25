@@ -46,67 +46,86 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TRIGGERS
-#define __TRIGGERS
+#ifndef __TILE
+#define __TILE
 
 #include "pic.h"
+#include "vector.h"
 
-#define ACTION_NULL             0
-#define ACTION_SETTRIGGER       1
-#define ACTION_CLEARTRIGGER     2
-#define ACTION_CHANGETILE       3
-#define ACTION_ACTIVATEWATCH    4
-#define ACTION_DEACTIVATEWATCH  5
-#define ACTION_SOUND            6
+#define TILE_WIDTH      16
+#define TILE_HEIGHT     12
 
-#define CONDITION_NULL          0
-#define CONDITION_TILECLEAR     1
+#define X_TILES			((gGraphicsDevice.cachedConfig.ResolutionWidth + TILE_WIDTH - 1) / TILE_WIDTH)
 
+#define X_TILES_HALF    ((X_TILES + 1) / 2)
 
-typedef struct
+// + 1 because walls from bottom row show up one row above
+#define Y_TILES			((gGraphicsDevice.cachedConfig.ResolutionHeight + TILE_HEIGHT - 1) / TILE_HEIGHT + 1)
+#define Y_TILES_HALF    ((Y_TILES + 1 / 2)
+
+typedef enum
 {
-	int action;
-	union
-	{
-		Vec2i pos;
-		int index;
-	} u;
-	Pic *tilePic;
-	Pic tilePicAlt;
-	int tileFlags;
-} Action;
+	MAPTILE_NO_WALK			= 0x0001,
+	MAPTILE_NO_SEE			= 0x0002,
+	MAPTILE_NO_SHOOT		= 0x0004,
+	MAPTILE_IS_VISIBLE		= 0x0008,
+	MAPTILE_IS_WALL			= 0x0010,
+	MAPTILE_IS_NOTHING		= 0x0020,
+	MAPTILE_IS_NORMAL_FLOOR	= 0x0040,
+	MAPTILE_IS_DRAINAGE		= 0x0080,
+	MAPTILE_OFFSET_PIC		= 0x0100,
+	MAPTILE_TILE_TRIGGER	= 0x0200,
+// These constants are used internally in draw, it is never set in the map
+	MAPTILE_DELAY_DRAW		= 0x0400,
+	MAPTILE_OUT_OF_SIGHT	= 0x0800
+} MapTileFlags;
+
+#define KIND_CHARACTER      0
+#define KIND_PIC            1
+#define KIND_MOBILEOBJECT   2
+#define KIND_OBJECT         3
+
+#define TILEITEM_IMPASSABLE     1
+#define TILEITEM_CAN_BE_SHOT    2
+#define TILEITEM_CAN_BE_TAKEN   4
+#define TILEITEM_OBJECTIVE      (8 + 16 + 32 + 64 + 128)
+#define TILEITEM_IS_WRECK		256
+#define OBJECTIVE_SHIFT         3
 
 
-typedef struct TTrigger
-{
-	Vec2i pos;
+typedef void (*TileItemDrawFunc) (int, int, void *);
+
+struct TileItem {
+	int x, y;
+	int w, h;
+	int kind;
 	int flags;
-	Action *actions;
-	struct TTrigger *left, *right;
-} Trigger;
+	void *data;
+	TileItemDrawFunc drawFunc;
+	void *actor;
+	struct TileItem *next;
+	struct TileItem *nextToDisplay;
+};
+typedef struct TileItem TTileItem;
 
 
 typedef struct
 {
-	int condition;
-	Vec2i pos;
-} Condition;
+	Pic *pic;
+	Pic picAlt;
+	int flags;
+	int isVisited;
+	TTileItem *things;
+} Tile;
 
+extern Tile tileNone;
 
-struct Watch {
-	int index;
-	Condition *conditions;
-	Action *actions;
-	struct Watch *next;
-};
-typedef struct Watch TWatch;
-
-
-void TriggerAt(Vec2i pos, int flags);
-void UpdateWatches(void);
-Trigger *AddTrigger(Vec2i pos, int actionCount);
-TWatch *AddWatch(int conditionCount, int actionCount);
-void FreeTriggersAndWatches(void);
-
+int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
+int TileCanSee(Tile *t);
+int TileCanWalk(Tile *t);
+int TileIsNormalFloor(Tile *t);
+int TileIsClear(Tile *t);
+int TileHasCharacter(Tile *t);
+void TileSetAlternateFloor(Tile *t, Pic *p);
 
 #endif

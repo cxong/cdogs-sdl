@@ -52,8 +52,8 @@
 #include "campaigns.h"
 #include "character.h"
 #include "input.h"
-#include "map.h"
 #include "pics.h"
+#include "tile.h"
 #include "weapon.h"
 #include "sys_config.h"
 
@@ -113,8 +113,9 @@ struct GameOptions {
                         MAPOBJ_NOTINROOM | MAPOBJ_NOWALLS)
 #define MAPOBJ_INSIDE (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | MAPOBJ_ROOMONLY)
 
-// A map object
-struct MapObject {
+// A static map object, taking up an entire tile
+struct MapObject
+{
 	int pic, wreckedPic;
 	int width, height;
 	int structure;

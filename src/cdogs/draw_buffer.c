@@ -65,7 +65,7 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Tile map[YMAX][XMAX], Vec2i origin,
+	DrawBuffer *buffer, Map *map, Vec2i origin,
 	int width, Vec2i tilesXY)
 {
 	int x, y;
@@ -100,7 +100,7 @@ void DrawBufferSetFromMap(
 		{
 			if (x >= 0 && x < XMAX && y >= 0 && y < YMAX)
 			{
-				*bufTile = map[y][x];
+				*bufTile = *MapGetTile(map, Vec2iNew(x, y));
 			}
 			else
 			{

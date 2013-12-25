@@ -28,11 +28,6 @@
 #ifndef __DEFS
 #define __DEFS
 
-#ifndef YES
-#define YES            -1
-#define NO             0
-#endif
-
 // Defines
 #define BODY_UNARMED        0
 #define BODY_ARMED          1

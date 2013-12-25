@@ -52,7 +52,7 @@
 #include "actors.h"
 #include "map.h"
 
-#define HitWall(x, y) (gMap[(y)/TILE_HEIGHT][(x)/TILE_WIDTH].flags & MAPTILE_NO_WALK)
+#define HitWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_WALK)
 
 // Which "team" the actor's on, for collision
 // Actors on the same team don't have to collide

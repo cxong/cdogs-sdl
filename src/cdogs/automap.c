@@ -189,7 +189,7 @@ static void DisplaySummary(void)
 
 color_t DoorColor(int x, int y)
 {
-	int l = MapGetDoorKeycardFlag(Vec2iNew(x, y));
+	int l = MapGetDoorKeycardFlag(&gMap, Vec2iNew(x, y));
 
 	switch (l) {
 	case FLAGS_KEYCARD_YELLOW:
@@ -213,7 +213,7 @@ void DrawDot(TTileItem *t, color_t color, Vec2i pos, int scale)
 }
 
 static void DrawMap(
-	Tile map[YMAX][XMAX],
+	Map *map,
 	Vec2i center, Vec2i centerOn, Vec2i size,
 	int scale, int flags)
 {
@@ -226,7 +226,7 @@ static void DrawMap(
 		{
 			for (x = 0; x < XMAX; x++)
 			{
-				Tile *tile = &map[y][x];
+				Tile *tile = MapGetTile(map, Vec2iNew(x, y));
 				if (!(tile->flags & MAPTILE_IS_NOTHING) &&
 					(tile->isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
 				{
@@ -273,8 +273,7 @@ static void DrawMap(
 	}
 }
 
-static void DrawObjectivesAndKeys(
-	Tile map[YMAX][XMAX], Vec2i pos, int scale, int flags)
+static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 {
 	int y;
 	for (y = 0; y < YMAX; y++)
@@ -282,7 +281,8 @@ static void DrawObjectivesAndKeys(
 		int x;
 		for (x = 0; x < XMAX; x++)
 		{
-			TTileItem *t = map[y][x].things;
+			Tile *tile = MapGetTile(map, Vec2iNew(x, y));
+			TTileItem *t = tile->things;
 			while (t)
 			{
 				if ((t->flags & TILEITEM_OBJECTIVE) != 0)
@@ -293,16 +293,14 @@ static void DrawObjectivesAndKeys(
 						(flags & AUTOMAP_FLAGS_SHOWALL))
 					{
 						if ((objFlags & OBJECTIVE_POSKNOWN) ||
-							map[y][x].isVisited ||
+							tile->isVisited ||
 							(flags & AUTOMAP_FLAGS_SHOWALL))
 						{
 							DisplayObjective(t, obj, pos, scale, flags);
 						}
 					}
 				}
-				else if (t->kind == KIND_OBJECT &&
-					t->data &&
-					map[y][x].isVisited)
+				else if (t->kind == KIND_OBJECT && t->data && tile->isVisited)
 				{
 					color_t dotColor = colorBlack;
 					switch (((TObject *)t->data)->objectIndex)
@@ -355,14 +353,14 @@ void AutomapDraw(int flags)
 	}
 
 	DrawMap(
-		gMap,
+		&gMap,
 		mapCenter,
 		centerOn,
 		Vec2iNew(XMAX, YMAX),
 		MAP_FACTOR,
 		flags);
 
-	DrawObjectivesAndKeys(gMap, pos, MAP_FACTOR, flags);
+	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -377,7 +375,7 @@ void AutomapDraw(int flags)
 }
 
 void AutomapDrawRegion(
-	Tile map[YMAX][XMAX],
+	Map *map,
 	Vec2i pos, Vec2i size, Vec2i mapCenter,
 	int scale, int flags)
 {
@@ -398,7 +396,7 @@ void AutomapDrawRegion(
 			DisplayPlayer(player, centerOn, scale);
 		}
 	}
-	DrawObjectivesAndKeys(gMap, centerOn, scale, flags);
+	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
 	DisplayExit(centerOn, scale, flags);
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,

@@ -400,7 +400,7 @@ TActor *RemoveActor(TActor * actor)
 	{
 		int i;
 		*h = actor->next;
-		RemoveTileItem(&actor->tileItem);
+		MapRemoveTileItem(&gMap, &actor->tileItem);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
 			if (actor == gPlayers[i])
@@ -490,7 +490,7 @@ void UpdateActorState(TActor * actor, int ticks)
 static void CheckTrigger(TActor *actor, Vec2i pos)
 {
 	pos = Vec2iToTile(pos);
-	if ((gMap[pos.y][pos.x].flags & MAPTILE_TILE_TRIGGER))
+	if (MapGetTile(&gMap, pos)->flags & MAPTILE_TILE_TRIGGER)
 	{
 		TriggerAt(pos, actor->flags | gMission.flags);
 	}
@@ -661,7 +661,7 @@ int MoveActor(TActor * actor, int x, int y)
 
 	actor->x = x;
 	actor->y = y;
-	MoveTileItem(&actor->tileItem, x >> 8, y >> 8);
+	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 
 	if (IsTileInExit(&actor->tileItem, &gMission))
 	{
@@ -824,7 +824,7 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 void CommandActor(TActor * actor, int cmd, int ticks)
 {
 	Vec2i movePos = Vec2iNew(actor->x, actor->y);
-	int shallMove = NO;
+	int shallMove = 0;
 
 	if (actor->dx || actor->dy)
 	{
@@ -941,7 +941,7 @@ void UpdateAllActors(int ticks)
 		{
 			AddObject(
 				actor->x, actor->y,
-				0, 0,
+				Vec2iZero(),
 				&cBloodPics[rand() % BLOOD_MAX],
 				0,
 				TILEITEM_IS_WRECK);

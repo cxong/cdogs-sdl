@@ -201,7 +201,7 @@ static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
 	DrawBufferSetFromMap(
-		b, gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
+		b, &gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
 	LineOfSight(center, b);
 	FixBuffer(b);
 	DrawBufferDraw(b, offset);
@@ -277,7 +277,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			lastPosition = PlayersGetMidpoint(gPlayers);
 
 			DrawBufferSetFromMap(
-				b, gMap,
+				b, &gMap,
 				Vec2iAdd(lastPosition, noise),
 				X_TILES,
 				Vec2iNew(X_TILES, Y_TILES));
@@ -446,29 +446,6 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 	return lastPosition;
 }
 
-static void DrawExitArea(void)
-{
-	int left, right, top, bottom;
-	int x, y;
-
-	left = gMission.exitLeft / TILE_WIDTH;
-	right = gMission.exitRight / TILE_WIDTH;
-	top = gMission.exitTop / TILE_HEIGHT;
-	bottom = gMission.exitBottom / TILE_HEIGHT;
-
-	for (x = left; x <= right; x++)
-		ChangeFloor(x, top, gMission.exitPic, gMission.exitShadow);
-	for (x = left; x <= right; x++)
-		ChangeFloor(x, bottom, gMission.exitPic,
-			    gMission.exitShadow);
-	for (y = top + 1; y < bottom; y++)
-		ChangeFloor(left, y, gMission.exitPic,
-			    gMission.exitShadow);
-	for (y = top + 1; y < bottom; y++)
-		ChangeFloor(right, y, gMission.exitPic,
-			    gMission.exitShadow);
-}
-
 static void MissionUpdateObjectives(void)
 {
 	int i;
@@ -486,7 +463,7 @@ static void MissionUpdateObjectives(void)
 		
 		if (mo->type == OBJECTIVE_INVESTIGATE)
 		{
-			o->done = ExploredPercentage();
+			o->done = MapGetExploredPercentage(&gMap);
 			MissionSetMessageIfComplete(&gMission);
 		}
 
@@ -527,7 +504,7 @@ static void MissionUpdateObjectives(void)
 	if (allDone && !completed)
 	{
 		completed = 1;
-		DrawExitArea();
+		MapShowExitArea(&gMap);
 	}
 	else if (!allDone)
 	{

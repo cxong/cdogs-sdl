@@ -37,41 +37,46 @@
 #include "sounds.h"
 #include "utils.h"
 
-static TTrigger *root = NULL;
+static Trigger *root = NULL;
 static TWatch *activeWatches = NULL;
 static TWatch *inactiveWatches = NULL;
 static int watchIndex = 1;
 
 
-static TAction *AddActions(int count)
+static Action *AddActions(int count)
 {
-	TAction *a;
-	CCALLOC(a, sizeof(TAction) * (count + 1));
+	Action *a;
+	CCALLOC(a, sizeof *a * (count + 1));
 	return a;
 }
 
-TTrigger *AddTrigger(int x, int y, int actionCount)
+Trigger *AddTrigger(Vec2i pos, int actionCount)
 {
-	TTrigger *t;
-	TTrigger **h;
+	Trigger *t;
+	Trigger **h;
 
-	CCALLOC(t, sizeof(TTrigger));
-	t->x = x;
-	t->y = y;
+	CCALLOC(t, sizeof *t);
+	t->pos = pos;
 
 	h = &root;
-	while (*h) {
-		if ((*h)->y < y || ((*h)->y == y && (*h)->x < x))
+	while (*h)
+	{
+		if ((*h)->pos.y < pos.y ||
+			((*h)->pos.y == pos.y && (*h)->pos.x < pos.x))
+		{
 			h = &((*h)->right);
+		}
 		else
+		{
 			h = &((*h)->left);
+		}
 	}
 	*h = t;
 	t->actions = AddActions(actionCount);
 	return t;
 }
 
-void FreeTrigger(TTrigger * t)
+void FreeTrigger(Trigger * t)
 {
 	if (!t)
 		return;
@@ -90,10 +95,10 @@ static int RemoveAllTriggers(void)
 	return 0;
 }
 
-static TCondition *AddConditions(int count)
+static Condition *AddConditions(int count)
 {
-	TCondition *a;
-	CCALLOC(a, sizeof(TCondition) * (count + 1));
+	Condition *a;
+	CCALLOC(a, sizeof *a * (count + 1));
 	return a;
 }
 
@@ -182,65 +187,48 @@ void FreeTriggersAndWatches(void)
 	RemoveAllWatches();
 }
 
-static void Action(TAction * a)
+static void ActionRun(Action * a)
 {
-	TWatch *t;
-	TCondition *c;
-
 	for (;;)
 	{
+		Tile *t;
 		switch (a->action)
 		{
 		case ACTION_NULL:
 			return;
 
 		case ACTION_SOUND:
-			SoundPlayAt(&gSoundDevice, a->tileFlags, Vec2iNew(a->x, a->y));
+			SoundPlayAt(&gSoundDevice, a->tileFlags, a->u.pos);
 			break;
 
 		case ACTION_SETTRIGGER:
-			Map(a->x, a->y).flags |= MAPTILE_TILE_TRIGGER;
+			MapGetTile(&gMap, a->u.pos)->flags |= MAPTILE_TILE_TRIGGER;
 			break;
 
 		case ACTION_CLEARTRIGGER:
-			Map(a->x, a->y).flags &= ~MAPTILE_TILE_TRIGGER;
+			MapGetTile(&gMap, a->u.pos)->flags &= ~MAPTILE_TILE_TRIGGER;
 			break;
 
 		case ACTION_CHANGETILE:
-			Map(a->x, a->y).flags = a->tileFlags;
-			Map(a->x, a->y).pic = a->tilePic;
-			Map(a->x, a->y).picAlt = a->tilePicAlt;
-			break;
-
-		case ACTION_SETTIMEDWATCH:
-			t = FindWatch(a->x);
-			if (t) {
-				c = t->conditions;
-				while (c && c->condition != CONDITION_NULL) {
-					if (c->condition ==
-					    CONDITION_TIMEDDELAY) {
-						c->x = a->y;
-						break;
-					}
-					c++;
-				}
-				ActivateWatch(t->index);
-			}
+			t = MapGetTile(&gMap, a->u.pos);
+			t->flags = a->tileFlags;
+			t->pic = a->tilePic;
+			t->picAlt = a->tilePicAlt;
 			break;
 
 		case ACTION_ACTIVATEWATCH:
-			ActivateWatch(a->x);
+			ActivateWatch(a->u.index);
 			break;
 
 		case ACTION_DEACTIVATEWATCH:
-			DeactivateWatch(a->x);
+			DeactivateWatch(a->u.index);
 			break;
 		}
 		a++;
 	}
 }
 
-static int ConditionMet(TCondition *c)
+static int ConditionMet(Condition *c)
 {
 	for (;;)
 	{
@@ -249,31 +237,29 @@ static int ConditionMet(TCondition *c)
 		case CONDITION_NULL:
 			return 1;
 
-		case CONDITION_TIMEDDELAY:
-			c->x--;
-			if (c->x > 0)
-				return 0;
-			break;
-
 		case CONDITION_TILECLEAR:
-			if (Map(c->x, c->y).things != NULL)
+			if (!TileIsClear(MapGetTile(&gMap, c->pos)))
+			{
 				return 0;
+			}
 			break;
 		}
 		c++;
 	}
 }
 
-static TTrigger *FindTrigger(TTrigger *t, Vec2i pos)
+static Trigger *FindTrigger(Trigger *t, Vec2i pos)
 {
 	if (!t)
+	{
 		return NULL;
+	}
 
-	if (t->x == pos.x && t->y == pos.y)
+	if (Vec2iEqual(t->pos, pos))
 	{
 		return t;
 	}
-	if (pos.y > t->y || (pos.y == t->y && pos.x > t->x))
+	if (pos.y > t->pos.y || (pos.y == t->pos.y && pos.x > t->pos.x))
 	{
 		return FindTrigger(t->right, pos);
 	}
@@ -282,12 +268,12 @@ static TTrigger *FindTrigger(TTrigger *t, Vec2i pos)
 
 void TriggerAt(Vec2i pos, int flags)
 {
-	TTrigger *t = FindTrigger(root, pos);
+	Trigger *t = FindTrigger(root, pos);
 	while (t)
 	{
 		if (t->flags == 0 || (t->flags & flags))
 		{
-			Action(t->actions);
+			ActionRun(t->actions);
 		}
 		t = FindTrigger(t->left, pos);
 	}
@@ -302,6 +288,8 @@ void UpdateWatches(void)
 		current = a;
 		a = a->next;
 		if (ConditionMet(current->conditions))
-			Action(current->actions);
+		{
+			ActionRun(current->actions);
+		}
 	}
 }

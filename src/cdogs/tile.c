@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,67 +46,52 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TRIGGERS
-#define __TRIGGERS
-
-#include "pic.h"
-
-#define ACTION_NULL             0
-#define ACTION_SETTRIGGER       1
-#define ACTION_CLEARTRIGGER     2
-#define ACTION_CHANGETILE       3
-#define ACTION_ACTIVATEWATCH    4
-#define ACTION_DEACTIVATEWATCH  5
-#define ACTION_SOUND            6
-
-#define CONDITION_NULL          0
-#define CONDITION_TILECLEAR     1
+#include "tile.h"
 
 
-typedef struct
+Tile tileNone = { NULL, { { 0, 0 }, { 0, 0 }, NULL }, 0, 0, NULL };
+
+int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
 {
-	int action;
-	union
+	return
+		i->x - i->w >= tilePos.x * TILE_WIDTH &&
+		i->x + i->w < (tilePos.x + 1) * TILE_WIDTH &&
+		i->y - i->h >= tilePos.y * TILE_HEIGHT &&
+		i->y + i->h < (tilePos.y + 1) * TILE_HEIGHT;
+}
+
+int TileCanSee(Tile *t)
+{
+	return !(t->flags & MAPTILE_NO_SEE);
+}
+int TileCanWalk(Tile *t)
+{
+	return !(t->flags & MAPTILE_NO_WALK);
+}
+int TileIsNormalFloor(Tile *t)
+{
+	return t->flags & MAPTILE_IS_NORMAL_FLOOR;
+}
+int TileIsClear(Tile *t)
+{
+	return t->things == NULL;
+}
+int TileHasCharacter(Tile *t)
+{
+	TTileItem *item = t->things;
+	while (item)
 	{
-		Vec2i pos;
-		int index;
-	} u;
-	Pic *tilePic;
-	Pic tilePicAlt;
-	int tileFlags;
-} Action;
+		if (item->kind == KIND_CHARACTER)
+		{
+			return 1;
+		}
+		item = item->next;
+	}
+	return 0;
+}
 
-
-typedef struct TTrigger
+void TileSetAlternateFloor(Tile *t, Pic *p)
 {
-	Vec2i pos;
-	int flags;
-	Action *actions;
-	struct TTrigger *left, *right;
-} Trigger;
-
-
-typedef struct
-{
-	int condition;
-	Vec2i pos;
-} Condition;
-
-
-struct Watch {
-	int index;
-	Condition *conditions;
-	Action *actions;
-	struct Watch *next;
-};
-typedef struct Watch TWatch;
-
-
-void TriggerAt(Vec2i pos, int flags);
-void UpdateWatches(void);
-Trigger *AddTrigger(Vec2i pos, int actionCount);
-TWatch *AddWatch(int conditionCount, int actionCount);
-void FreeTriggersAndWatches(void);
-
-
-#endif
+	t->pic = p;
+	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+}

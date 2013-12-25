@@ -48,6 +48,7 @@
 */
 #include "map.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -78,16 +79,14 @@
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00
 
+#define KEY_W 9
+#define KEY_H 5
+#define COLLECTABLE_W 4
+#define COLLECTABLE_H 3
 
-Tile tileNone = { NULL, { { 0, 0 }, { 0, 0 }, NULL }, 0, 0, NULL };
-Tile gMap[YMAX][XMAX];
 
+Map gMap;
 
-static int gKeyAccessCount;
-static unsigned short internalMap[YMAX][XMAX];
-static int tilesSeen = 0;
-static int tilesTotal = XMAX * YMAX;
-#define iMap( x, y) internalMap[y][x]
 
 static void AddItemToTile(TTileItem * t, Tile * tile)
 {
@@ -107,37 +106,49 @@ static void RemoveItemFromTile(TTileItem * t, Tile * tile)
 	}
 }
 
-Tile *MapGetTileOfItem(TTileItem *t)
+Tile *MapGetTile(Map *map, Vec2i pos)
 {
-	Tile *tile;
-	int x = t->x / TILE_WIDTH;
-	int y = t->y / TILE_HEIGHT;
-	tile = &gMap[y][x];
-	return tile;
+	return &map->tiles[pos.y][pos.x];
 }
 
-void MoveTileItem(TTileItem * t, int x, int y)
+int MapIsTileIn(Map *map, Vec2i pos)
 {
-	Tile *tile;
-	int x1 = t->x / TILE_WIDTH;
-	int y1 = t->y / TILE_HEIGHT;
-	int x2 = x / TILE_WIDTH;
-	int y2 = y / TILE_HEIGHT;
+	UNUSED(map);
+	// Check that the tile pos is within the interior of the map
+	// Note that the map always has a 1-wide perimeter
+	// TODO: factor in different map sizes
+	if (pos.x <= 0 || pos.y <= 0 || pos.x >= XMAX - 1 || pos.y >= YMAX - 1)
+	{
+		return 0;
+	}
+	return 1;
+}
 
-	t->x = x;
-	t->y = y;
-	if (x1 == x2 && y1 == y2)
+static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
+{
+	Vec2i pos = Vec2iToTile(Vec2iNew(t->x, t->y));
+	return MapGetTile(map, pos);
+}
+
+void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
+{
+	Vec2i t1 = Vec2iToTile(Vec2iNew(t->x, t->y));
+	Vec2i t2 = Vec2iToTile(pos);
+
+	t->x = pos.x;
+	t->y = pos.y;
+	if (Vec2iEqual(t1, t2))
+	{
 		return;
+	}
 
-	tile = &Map(x1, y1);
-	RemoveItemFromTile(t, tile);
-	tile = &Map(x2, y2);
-	AddItemToTile(t, tile);
+	RemoveItemFromTile(t, MapGetTile(map, t1));
+	AddItemToTile(t, MapGetTile(map, t2));
 }
 
-void RemoveTileItem(TTileItem * t)
+void MapRemoveTileItem(Map *map, TTileItem *t)
 {
-	Tile *tile = MapGetTileOfItem(t);
+	Tile *tile = MapGetTileOfItem(map, t);
 	RemoveItemFromTile(t, tile);
 }
 
@@ -181,7 +192,16 @@ void GuessPixelCoords(int *x, int *y)
 		*y = rand() % (YMAX * TILE_HEIGHT);
 }
 
-static void Grow(int x, int y, int d, int length)
+static unsigned short IMapGet(Map *map, Vec2i pos)
+{
+	return map->iMap[pos.y][pos.x];
+}
+static void IMapSet(Map *map, Vec2i pos, unsigned short v)
+{
+	map->iMap[pos.y][pos.x] = v;
+}
+
+static void MapGrow(Map *map, int x, int y, int d, int length)
 {
 	int l;
 
@@ -191,121 +211,162 @@ static void Grow(int x, int y, int d, int length)
 	switch (d) {
 	case 0:
 		if (y < 3 ||
-		    iMap(x - 1, y - 1) != 0 ||
-		    iMap(x + 1, y - 1) != 0 ||
-		    iMap(x - 1, y - 2) != 0 ||
-		    iMap(x, y - 2) != 0 || iMap(x + 1, y - 2) != 0)
+			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
+			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
+			IMapGet(map, Vec2iNew(x - 1, y - 2)) ||
+			IMapGet(map, Vec2iNew(x, y - 2)) ||
+			IMapGet(map, Vec2iNew(x + 1, y - 2)))
+		{
 			return;
+		}
 		y--;
 		break;
 	case 1:
 		if (x > XMAX - 3 ||
-		    iMap(x + 1, y - 1) != 0 ||
-		    iMap(x + 1, y + 1) != 0 ||
-		    iMap(x + 2, y - 1) != 0 ||
-		    iMap(x + 2, y) != 0 || iMap(x + 2, y + 1) != 0)
+			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
+			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
+			IMapGet(map, Vec2iNew(x + 2, y - 1)) ||
+			IMapGet(map, Vec2iNew(x + 2, y)) ||
+			IMapGet(map, Vec2iNew(x + 2, y + 1)))
+		{
 			return;
+		}
 		x++;
 		break;
 	case 2:
 		if (y > YMAX - 3 ||
-		    iMap(x - 1, y + 1) != 0 ||
-		    iMap(x + 1, y + 1) != 0 ||
-		    iMap(x - 1, y + 2) != 0 ||
-		    iMap(x, y + 2) != 0 || iMap(x + 1, y + 2) != 0)
+			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
+			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
+			IMapGet(map, Vec2iNew(x - 1, y + 2)) ||
+			IMapGet(map, Vec2iNew(x, y + 2)) ||
+			IMapGet(map, Vec2iNew(x + 1, y + 2)))
+		{
 			return;
+		}
 		y++;
 		break;
 	case 4:
 		if (x < 3 ||
-		    iMap(x - 1, y - 1) != 0 ||
-		    iMap(x - 1, y + 1) != 0 ||
-		    iMap(x - 2, y - 1) != 0 ||
-		    iMap(x - 2, y) != 0 || iMap(x - 2, y + 1) != 0)
+			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
+			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
+			IMapGet(map, Vec2iNew(x - 2, y - 1)) ||
+			IMapGet(map, Vec2iNew(x - 2, y)) ||
+			IMapGet(map, Vec2iNew(x - 2, y + 1)))
+		{
 			return;
+		}
 		x--;
 		break;
 	}
-	iMap(x, y) = MAP_WALL;
+	IMapSet(map, Vec2iNew(x, y), MAP_WALL);
 	length--;
 	if (length > 0 && (rand() & 3) == 0) {
 		l = rand() % length;
-		Grow(x, y, rand() & 3, l);
+		MapGrow(map, x, y, rand() & 3, l);
 		length -= l;
 	}
-	Grow(x, y, d, length);
+	MapGrow(map, x, y, d, length);
 }
 
-static int ValidStart(int x, int y)
+static int MapIsValidStartForWall(Map *map, int x, int y)
 {
 	if (x == 0 || y == 0 || x == XMAX - 1 || y == YMAX - 1)
-		return YES;
-	if (iMap(x - 1, y - 1) == 0 &&
-	    iMap(x, y - 1) == 0 &&
-	    iMap(x + 1, y - 1) == 0 &&
-	    iMap(x - 1, y) == 0 &&
-	    iMap(x, y) == 0 &&
-	    iMap(x + 1, y) == 0 &&
-	    iMap(x - 1, y + 1) == 0 &&
-	    iMap(x, y + 1) == 0 && iMap(x + 1, y + 1) == 0)
-		return YES;
-	return NO;
-}
-
-static int BuildWall(int wallLength)
-{
-	int x, y;
-
-	GuessCoords(&x, &y);
-	if (ValidStart(x, y)) {
-		iMap(x, y) = MAP_WALL;
-		Grow(x, y, rand() & 3, wallLength);
+	{
+		return 1;
+	}
+	if (IMapGet(map, Vec2iNew(x - 1, y - 1)) == 0 &&
+		IMapGet(map, Vec2iNew(x, y - 1)) == 0 &&
+		IMapGet(map, Vec2iNew(x + 1, y - 1)) == 0 &&
+		IMapGet(map, Vec2iNew(x - 1, y)) == 0 &&
+		IMapGet(map, Vec2iNew(x, y)) == 0 &&
+		IMapGet(map, Vec2iNew(x + 1, y)) == 0 &&
+		IMapGet(map, Vec2iNew(x - 1, y + 1)) == 0 &&
+		IMapGet(map, Vec2iNew(x, y + 1)) == 0 &&
+		IMapGet(map, Vec2iNew(x + 1, y + 1)) == 0)
+	{
 		return 1;
 	}
 	return 0;
 }
 
-void MakeRoom(
+static int MapTryBuildWall(Map *map, int wallLength)
+{
+	Vec2i v;
+
+	GuessCoords(&v.x, &v.y);
+	if (MapIsValidStartForWall(map, v.x, v.y))
+	{
+		IMapSet(map, v, MAP_WALL);
+		MapGrow(map, v.x, v.y, rand() & 3, wallLength);
+		return 1;
+	}
+	return 0;
+}
+
+static void MapMakeRoom(
+	Map *map,
 	int xOrigin, int yOrigin, int width, int height, int doors,
 	unsigned short access_mask)
 {
 	int x, y;
 
-	for (y = yOrigin; y <= yOrigin + height; y++) {
-		iMap(xOrigin, y) = MAP_WALL;
-		iMap(xOrigin + width, y) = MAP_WALL;
+	// Set the perimeter walls and interior
+	for (y = yOrigin; y <= yOrigin + height; y++)
+	{
+		IMapSet(map, Vec2iNew(xOrigin, y), MAP_WALL);
+		IMapSet(map, Vec2iNew(xOrigin + width, y), MAP_WALL);
 	}
-	for (x = xOrigin + 1; x < xOrigin + width; x++) {
-		iMap(x, yOrigin) = MAP_WALL;
-		iMap(x, yOrigin + height) = MAP_WALL;
+	for (x = xOrigin + 1; x < xOrigin + width; x++)
+	{
+		IMapSet(map, Vec2iNew(x, yOrigin), MAP_WALL);
+		IMapSet(map, Vec2iNew(x, yOrigin + height), MAP_WALL);
 		for (y = yOrigin + 1; y < yOrigin + height; y++)
 		{
-			iMap(x, y) = MAP_ROOM | access_mask;
+			IMapSet(map, Vec2iNew(x, y), MAP_ROOM | access_mask);
 		}
 	}
+
+	// Set the doors
 	if (doors & 1)
-		iMap(xOrigin, yOrigin + height / 2) = MAP_DOOR;
+	{
+		IMapSet(map, Vec2iNew(xOrigin, yOrigin + height / 2), MAP_DOOR);
+	}
 	if (doors & 2)
-		iMap(xOrigin + width, yOrigin + height / 2) = MAP_DOOR;
+	{
+		IMapSet(map, Vec2iNew(xOrigin + width, yOrigin + height / 2), MAP_DOOR);
+	}
 	if (doors & 4)
-		iMap(xOrigin + width / 2, yOrigin) = MAP_DOOR;
+	{
+		IMapSet(map, Vec2iNew(xOrigin + width / 2, yOrigin), MAP_DOOR);
+	}
 	if (doors & 8)
-		iMap(xOrigin + width / 2, yOrigin + height) = MAP_DOOR;
+	{
+		IMapSet(map, Vec2iNew(xOrigin + width / 2, yOrigin + height), MAP_DOOR);
+	}
 }
 
-int AreaClear(int xOrigin, int yOrigin, int width, int height)
+static int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
 {
-	int x, y;
+	Vec2i v;
 
-	if (xOrigin < 0 || yOrigin < 0 ||
-	    xOrigin + width >= XMAX || yOrigin + height >= YMAX)
-		return NO;
+	if (pos.x < 0 || pos.y < 0 ||
+		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+	{
+		return 0;
+	}
 
-	for (y = yOrigin; y <= yOrigin + height; y++)
-		for (x = xOrigin; x <= xOrigin + width; x++)
-			if (iMap(x, y) != MAP_FLOOR)
-				return NO;
-	return YES;
+	for (v.y = pos.y; v.y <= pos.y + size.y; v.y++)
+	{
+		for (v.x = pos.x; v.x <= pos.x + size.x; v.x++)
+		{
+			if (IMapGet(map, v) != MAP_FLOOR)
+			{
+				return 0;
+			}
+		}
+	}
+
+	return 1;
 }
 
 unsigned short GenerateAccessMask(int *accessLevel)
@@ -360,7 +421,7 @@ unsigned short GenerateAccessMask(int *accessLevel)
 	return accessMask;
 }
 
-static int BuildRoom(int hasKeys)
+static int MapBuildRoom(Map *map, int hasKeys)
 {
 	int x, y, w, h;
 
@@ -368,19 +429,19 @@ static int BuildRoom(int hasKeys)
 	w = rand() % 6 + 5;
 	h = rand() % 6 + 5;
 
-	if (AreaClear(x - 1, y - 1, w + 2, h + 2))
+	if (MapIsAreaClear(map, Vec2iNew(x - 1, y - 1), Vec2iNew(w + 2, h + 2)))
 	{
 		unsigned short accessMask = 0;
 		if (hasKeys)
 		{
-			accessMask = GenerateAccessMask(&gKeyAccessCount);
+			accessMask = GenerateAccessMask(&map->keyAccessCount);
 		}
-		MakeRoom(x, y, w, h, rand() % 15 + 1, accessMask);
+		MapMakeRoom(map, x, y, w, h, rand() % 15 + 1, accessMask);
 		if (hasKeys)
 		{
-			if (gKeyAccessCount < 1)
+			if (map->keyAccessCount < 1)
 			{
-				gKeyAccessCount = 1;
+				map->keyAccessCount = 1;
 			}
 		}
 		return 1;
@@ -388,69 +449,104 @@ static int BuildRoom(int hasKeys)
 	return 0;
 }
 
-static void MakeSquare(int xOrigin, int yOrigin, int width, int height)
+static void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 {
-	int x, y;
-
-	for (x = xOrigin; x <= xOrigin + width; x++) {
-		for (y = yOrigin; y <= yOrigin + height; y++)
-			iMap(x, y) = MAP_SQUARE;
+	Vec2i v;
+	for (v.y = pos.y; v.y <= pos.y + size.y; v.y++)
+	{
+		for (v.x = pos.x; v.x <= pos.x + size.x; v.x++)
+		{
+			IMapSet(map, v, MAP_SQUARE);
+		}
 	}
 }
 
-static int BuildSquare(void)
+static int MapTryBuildSquare(Map *map)
 {
-	int x, y, w, h;
+	Vec2i v;
+	Vec2i size;
 
-	GuessCoords(&x, &y);
-	w = rand() % 9 + 7;
-	h = rand() % 9 + 7;
+	GuessCoords(&v.x, &v.y);
+	size.x = rand() % 9 + 7;
+	size.y = rand() % 9 + 7;
 
-	if (AreaClear(x - 1, y - 1, w + 2, h + 2)) {
-		MakeSquare(x, y, w, h);
+	if (MapIsAreaClear(
+			map, Vec2iNew(v.x - 1, v.y - 1), Vec2iNew(size.x + 2, size.y + 2)))
+	{
+		MapMakeSquare(map, v, size);
 		return 1;
 	}
 	return 0;
 }
 
-static int W(int x, int y)
+static int W(Map *map, int x, int y)
 {
-	return (x >= 0 && y >= 0 && x < XMAX && y < YMAX &&
-		iMap(x, y) == MAP_WALL);
+	return x >= 0 && y >= 0 && x < XMAX && y < YMAX &&
+		IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
 }
 
-static int GetWallPic(int x, int y)
+static int MapGetWallPic(Map *m, int x, int y)
 {
-	if (W(x - 1, y) && W(x + 1, y) && W(x, y + 1) && W(x, y - 1))
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
 		return WALL_CROSS;
-	if (W(x - 1, y) && W(x + 1, y) && W(x, y + 1))
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1))
+	{
 		return WALL_TOP_T;
-	if (W(x - 1, y) && W(x + 1, y) && W(x, y - 1))
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y - 1))
+	{
 		return WALL_BOTTOM_T;
-	if (W(x - 1, y) && W(x, y + 1) && W(x, y - 1))
+	}
+	if (W(m, x - 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
 		return WALL_RIGHT_T;
-	if (W(x + 1, y) && W(x, y + 1) && W(x, y - 1))
+	}
+	if (W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
 		return WALL_LEFT_T;
-	if (W(x + 1, y) && W(x, y + 1))
+	}
+	if (W(m, x + 1, y) && W(m, x, y + 1))
+	{
 		return WALL_TOPLEFT;
-	if (W(x + 1, y) && W(x, y - 1))
+	}
+	if (W(m, x + 1, y) && W(m, x, y - 1))
+	{
 		return WALL_BOTTOMLEFT;
-	if (W(x - 1, y) && W(x, y + 1))
+	}
+	if (W(m, x - 1, y) && W(m, x, y + 1))
+	{
 		return WALL_TOPRIGHT;
-	if (W(x - 1, y) && W(x, y - 1))
+	}
+	if (W(m, x - 1, y) && W(m, x, y - 1))
+	{
 		return WALL_BOTTOMRIGHT;
-	if (W(x - 1, y) && W(x + 1, y))
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y))
+	{
 		return WALL_HORIZONTAL;
-	if (W(x, y + 1) && W(x, y - 1))
+	}
+	if (W(m, x, y + 1) && W(m, x, y - 1))
+	{
 		return WALL_VERTICAL;
-	if (W(x, y + 1))
+	}
+	if (W(m, x, y + 1))
+	{
 		return WALL_TOP;
-	if (W(x, y - 1))
+	}
+	if (W(m, x, y - 1))
+	{
 		return WALL_BOTTOM;
-	if (W(x + 1, y))
+	}
+	if (W(m, x + 1, y))
+	{
 		return WALL_LEFT;
-	if (W(x - 1, y))
+	}
+	if (W(m, x - 1, y))
+	{
 		return WALL_RIGHT;
+	}
 	return WALL_SINGLE;
 }
 
@@ -463,299 +559,358 @@ static void PicLoadOffset(Pic **pic, Pic *picAlt, int idx)
 		&cGeneralPics[idx]);
 }
 
-static void FixMap(int floor, int room, int wall)
+static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 {
-	int x, y, i;
+	Vec2i v;
+	int i;
 
-	for (x = 0; x < XMAX; x++)
-		for (y = 0; y < YMAX; y++) {
-			switch (iMap(x, y) & MAP_MASKACCESS) {
+	for (v.x = 0; v.x < XMAX; v.x++)
+	{
+		for (v.y = 0; v.y < YMAX; v.y++)
+		{
+			Tile *tAbove = MapGetTile(map, Vec2iNew(v.x, v.y - 1));
+			int canSeeTileAbove = !(v.y > 0 && !TileCanSee(tAbove));
+			Tile *t = MapGetTile(map, v);
+			switch (IMapGet(map, v) & MAP_MASKACCESS)
+			{
 			case MAP_FLOOR:
 			case MAP_SQUARE:
-				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
+				if (!canSeeTileAbove)
 				{
-					Map(x, y).pic = PicManagerGetFromOld(
+					t->pic = PicManagerGetFromOld(
 						&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 				}
 				else
 				{
-					Map(x, y).pic = PicManagerGetFromOld(
+					t->pic = PicManagerGetFromOld(
 						&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
 					// Normal floor tiles can be replaced randomly with
 					// special floor tiles such as drainage
-					Map(x, y).flags |= MAPTILE_IS_NORMAL_FLOOR;
+					t->flags |= MAPTILE_IS_NORMAL_FLOOR;
 				}
 				break;
 
 			case MAP_ROOM:
 			case MAP_DOOR:
-				if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
+				if (!canSeeTileAbove)
 				{
-					Map(x, y).pic = PicManagerGetFromOld(
+					t->pic = PicManagerGetFromOld(
 						&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 				}
 				else
 				{
-					Map(x, y).pic = PicManagerGetFromOld(
+					t->pic = PicManagerGetFromOld(
 						&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
 				}
 				break;
 
 			case MAP_WALL:
-				Map(x, y).pic = PicManagerGetFromOld(
-					&gPicManager, cWallPics[wall][GetWallPic(x, y)]);
-				Map(x, y).flags =
-				    MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
+				t->pic = PicManagerGetFromOld(
+					&gPicManager,
+					cWallPics[wall][MapGetWallPic(map, v.x, v.y)]);
+				t->flags =
+					MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 				break;
 
 			case MAP_NOTHING:
-				Map(x, y).flags =
+				t->flags =
 					MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_NOTHING;
 				break;
 			}
 		}
+	}
 
-	for (i = 0; i < 50; i++) {
-		x = (rand() % XMAX) & 0xFFFFFE;
-		y = (rand() % YMAX) & 0xFFFFFE;
-		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
+	// Randomly change normal floor tiles to drainage tiles
+	for (i = 0; i < 50; i++)
+	{
+		// Make sure drain tiles aren't next to each other
+		Tile *t = MapGetTile(map, Vec2iNew(
+			(rand() % XMAX) & 0xFFFFFE, (rand() % YMAX) & 0xFFFFFE));
+		if (TileIsNormalFloor(t))
 		{
-			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, PIC_DRAINAGE);
-			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
-			Map(x, y).flags |= MAPTILE_IS_DRAINAGE;
+			TileSetAlternateFloor(t, PicManagerGetFromOld(
+				&gPicManager, PIC_DRAINAGE));
+			t->flags |= MAPTILE_IS_DRAINAGE;
 		}
 	}
-	for (i = 0; i < 100; i++) {
-		x = rand() % XMAX;
-		y = rand() % YMAX;
-		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
+
+	// Randomly change normal floor tiles to alternative floor tiles
+	for (i = 0; i < 100; i++)
+	{
+		Tile *t = MapGetTile(map, Vec2iNew(rand() % XMAX, rand() % YMAX));
+		if (TileIsNormalFloor(t))
 		{
-			Map(x, y).pic = PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_1]);
-			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+			TileSetAlternateFloor(t, PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_1]));
 		}
 	}
-	for (i = 0; i < 150; i++) {
-		x = rand() % XMAX;
-		y = rand() % YMAX;
-		if (Map(x, y).flags & MAPTILE_IS_NORMAL_FLOOR)
+	for (i = 0; i < 150; i++)
+	{
+		Tile *t = MapGetTile(map, Vec2iNew(rand() % XMAX, rand() % YMAX));
+		if (TileIsNormalFloor(t))
 		{
-			Map(x, y).pic = PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_2]);
-			Map(x, y).flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+			TileSetAlternateFloor(t, PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_2]));
 		}
 	}
 }
 
-void ChangeFloor(int x, int y, int normal, int shadow)
+void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow)
 {
-	switch (iMap(x, y) & MAP_MASKACCESS) {
+	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
+	int canSeeTileAbove = !(pos.y > 0 && !TileCanSee(tAbove));
+	Tile *t = MapGetTile(map, pos);
+	if (t->flags & MAPTILE_IS_DRAINAGE)
+	{
+		return;
+	}
+	switch (IMapGet(map, pos) & MAP_MASKACCESS)
+	{
 	case MAP_FLOOR:
 	case MAP_SQUARE:
 	case MAP_ROOM:
-		if (Map(x, y).flags & MAPTILE_IS_DRAINAGE)
+		if (!canSeeTileAbove)
 		{
-			return;
-		}
-		if (y > 0 && (Map(x, y - 1).flags & MAPTILE_NO_SEE))
-		{
-			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, shadow);
+			t->pic = shadow;
 		}
 		else
 		{
-			Map(x, y).pic = PicManagerGetFromOld(&gPicManager, normal);
+			t->pic = normal;
 		}
+		break;
+	default:
+		// do nothing
 		break;
 	}
 }
 
-static int OneWall(int x, int y)
+void MapShowExitArea(Map *map)
+{
+	int left, right, top, bottom;
+	Vec2i v;
+	Pic *exitPic = PicManagerGetFromOld(&gPicManager, gMission.exitPic);
+	Pic *shadowPic = PicManagerGetFromOld(&gPicManager, gMission.exitShadow);
+
+	left = gMission.exitLeft / TILE_WIDTH;
+	right = gMission.exitRight / TILE_WIDTH;
+	top = gMission.exitTop / TILE_HEIGHT;
+	bottom = gMission.exitBottom / TILE_HEIGHT;
+
+	v.y = top;
+	for (v.x = left; v.x <= right; v.x++)
+	{
+		MapChangeFloor(map, v, exitPic, shadowPic);
+	}
+	v.y = bottom;
+	for (v.x = left; v.x <= right; v.x++)
+	{
+		MapChangeFloor(map, v, exitPic, shadowPic);
+	}
+	v.x = left;
+	for (v.y = top + 1; v.y < bottom; v.y++)
+	{
+		MapChangeFloor(map, v, exitPic, shadowPic);
+	}
+	v.x = right;
+	for (v.y = top + 1; v.y < bottom; v.y++)
+	{
+		MapChangeFloor(map, v, exitPic, shadowPic);
+	}
+}
+
+// Adjacent means to the left, right, above or below
+static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
 {
 	int count = 0;
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
+	if (MapIsTileIn(map, v))
 	{
-		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y))))
 		{
 			count++;
 		}
-		if ((Map(x + 1, y).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y))))
 		{
 			count++;
 		}
-		if ((Map(x, y - 1).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x, v.y - 1))))
 		{
 			count++;
 		}
-		if ((Map(x, y + 1).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x, v.y + 1))))
 		{
 			count++;
 		}
 	}
-	return (count == 1);
+	return count;
 }
 
-static int OneWallOrMore(int x, int y)
+// Around means the 8 tiles surrounding the tile
+static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
 {
-	int count = 0;
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
+	int count = MapGetNumWallsAdjacentTile(map, v);
+	if (MapIsTileIn(map, v))
 	{
-		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK))
+		// Having checked the adjacencies, check the diagonals
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y - 1))))
 		{
 			count++;
 		}
-		if ((Map(x + 1, y).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y + 1))))
 		{
 			count++;
 		}
-		if ((Map(x, y - 1).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y - 1))))
 		{
 			count++;
 		}
-		if ((Map(x, y + 1).flags & MAPTILE_NO_WALK))
+		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y + 1))))
 		{
 			count++;
 		}
 	}
-	return (count >= 1);
+	return count;
 }
 
-static int NoWalls(int x, int y)
-{
-	if (x > 0 && y > 0 && x < XMAX - 1 && y < YMAX - 1)
-	{
-		if ((Map(x - 1, y).flags & MAPTILE_NO_WALK) ||
-			(Map(x + 1, y).flags & MAPTILE_NO_WALK) ||
-			(Map(x, y - 1).flags & MAPTILE_NO_WALK) ||
-			(Map(x, y + 1).flags & MAPTILE_NO_WALK) ||
-			(Map(x - 1, y - 1).flags & MAPTILE_NO_WALK) ||
-			(Map(x + 1, y + 1).flags & MAPTILE_NO_WALK) ||
-			(Map(x + 1, y - 1).flags & MAPTILE_NO_WALK) ||
-			(Map(x - 1, y + 1).flags & MAPTILE_NO_WALK))
-		{
-			return 0;
-		}
-		return 1;
-	}
-	return 0;
-}
-
-static int PlaceOneObject(int x, int y, TMapObject * mo, int extraFlags)
+static int MapPlaceOneObject(
+	Map *map, Vec2i v, TMapObject * mo, int extraFlags)
 {
 	int f = mo->flags;
 	int oFlags = 0;
-	int yCoord;
+	Vec2i realPos = Vec2iCenterOfTile(v);
 	int tileFlags = 0;
+	Tile *t = MapGetTile(map, v);
+	unsigned short iMap = IMapGet(map, v);
+	unsigned short iMapAccess = iMap & MAP_MASKACCESS;
 
-	if ((Map(x, y).flags & ~MAPTILE_IS_NORMAL_FLOOR) ||
-		Map(x, y).things != NULL ||
-		(iMap(x, y) & MAP_LEAVEFREE))
+	if ((t->flags & ~MAPTILE_IS_NORMAL_FLOOR) ||
+		t->things != NULL ||
+		(iMap & MAP_LEAVEFREE))
 	{
 		return 0;
 	}
 
-	if ((f & MAPOBJ_ROOMONLY) != 0 &&
-	    (iMap(x, y) & MAP_MASKACCESS) != MAP_ROOM)
+	if ((f & MAPOBJ_ROOMONLY) && iMapAccess != MAP_ROOM)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_NOTINROOM) != 0 &&
-	    (iMap(x, y) & MAP_MASKACCESS) == MAP_ROOM)
+	if ((f & MAPOBJ_NOTINROOM) && iMapAccess == MAP_ROOM)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_ON_WALL) != 0 &&
-	    (iMap(x, y - 1) & MAP_MASKACCESS) != MAP_WALL)
+	if ((f & MAPOBJ_ON_WALL) &&
+		(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_WALL)
+	{
 		return 0;
+	}
 
 	if ((f & MAPOBJ_FREEINFRONT) != 0 &&
-	    (iMap(x, y + 1) & MAP_MASKACCESS) != MAP_ROOM &&
-	    (iMap(x, y + 1) & MAP_MASKACCESS) != MAP_FLOOR)
+		(IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) != MAP_ROOM &&
+		(IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) != MAP_FLOOR)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_ONEWALL) != 0 && !OneWall(x, y))
+	if ((f & MAPOBJ_ONEWALL) && MapGetNumWallsAdjacentTile(map, v) != 1)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_ONEWALLPLUS) != 0 && !OneWallOrMore(x, y))
+	if ((f & MAPOBJ_ONEWALLPLUS) && MapGetNumWallsAdjacentTile(map, v) < 1)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_NOWALLS) != 0 && !NoWalls(x, y))
+	if ((f & MAPOBJ_NOWALLS) && MapGetNumWallsAroundTile(map, v) != 0)
+	{
 		return 0;
+	}
 
-	if ((f & MAPOBJ_FREEINFRONT) != 0)
-		iMap(x, y) |= MAP_LEAVEFREE;
+	if (f & MAPOBJ_FREEINFRONT)
+	{
+		IMapSet(map, v, iMap | MAP_LEAVEFREE);
+	}
 
-	if ((f & MAPOBJ_EXPLOSIVE) != 0)
+	if (f & MAPOBJ_EXPLOSIVE)
+	{
 		oFlags |= OBJFLAG_EXPLOSIVE;
-	if ((f & MAPOBJ_FLAMMABLE) != 0)
+	}
+	if (f & MAPOBJ_FLAMMABLE)
+	{
 		oFlags |= OBJFLAG_FLAMMABLE;
-	if ((f & MAPOBJ_POISONOUS) != 0)
+	}
+	if (f & MAPOBJ_POISONOUS)
+	{
 		oFlags |= OBJFLAG_POISONOUS;
-	if ((f & MAPOBJ_QUAKE) != 0)
+	}
+	if (f & MAPOBJ_QUAKE)
+	{
 		oFlags |= OBJFLAG_QUAKE;
+	}
 
-	yCoord = y * TILE_HEIGHT;
-	if ((f & MAPOBJ_ON_WALL) != 0)
-		yCoord--;
-	else
-		yCoord += TILE_HEIGHT / 2;
+	if (f & MAPOBJ_ON_WALL)
+	{
+		realPos.y -= TILE_HEIGHT / 2 + 1;
+	}
 
-	if ((f & MAPOBJ_IMPASSABLE) != 0)
+	if (f & MAPOBJ_IMPASSABLE)
+	{
 		tileFlags |= TILEITEM_IMPASSABLE;
+	}
 
-	if ((f & MAPOBJ_CANBESHOT) != 0)
+	if (f & MAPOBJ_CANBESHOT)
+	{
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
+	}
 
-	AddDestructibleObject((x * TILE_WIDTH + TILE_WIDTH / 2) << 8,
-			      yCoord << 8,
-			      mo->width, mo->height,
-			      &cGeneralPics[mo->pic],
-			      &cGeneralPics[mo->wreckedPic],
-			      (int)(mo->structure),
-			      oFlags, tileFlags | extraFlags);
+	AddDestructibleObject(
+		realPos,
+		mo->width, mo->height,
+		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic],
+		mo->structure,
+		oFlags, tileFlags | extraFlags);
 	return 1;
 }
 
-int HasLockedRooms(void)
+int MapHasLockedRooms(Map *map)
 {
-	return gKeyAccessCount > 1;
+	return map->keyAccessCount > 1;
 }
 
 // TODO: rename this function
-int IsHighAccess(int x, int y)
+int MapPosIsHighAccess(Map *map, int x, int y)
 {
-	return (iMap(x / TILE_WIDTH, y / TILE_HEIGHT) & MAP_ACCESSBITS) != 0;
+	Vec2i tilePos = Vec2iToTile(Vec2iNew(x, y));
+	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
-static void PlaceObject(int x, int y, int idx)
-{
-	TMapObject *mo = gMission.mapObjects[idx];
-	PlaceOneObject(x, y, mo, 0);
-}
-
-static int PlaceCollectible(int objective)
+static int MapTryPlaceCollectible(
+	Map *map,
+	struct Mission *mission, struct MissionOptions *mo, int objective)
 {
 	int hasLockedRooms =
-		(gMission.missionData->objectives[objective].flags & OBJECTIVE_HIACCESS) != 0 &&
-		HasLockedRooms();
-	int noaccess =
-		(gMission.missionData->objectives[objective].flags & OBJECTIVE_NOACCESS) != 0;
+		(mission->objectives[objective].flags & OBJECTIVE_HIACCESS) &&
+		MapHasLockedRooms(map);
+	int noaccess = (mission->objectives[objective].flags & OBJECTIVE_NOACCESS);
 	int x, y;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
-	while (i) {
+	while (i)
+	{
+		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
 		GuessPixelCoords(&x, &y);
 		// Collectibles all have size 4x3
-		if (!IsCollisionWithWall(Vec2iNew(x, y), Vec2iNew(4, 3)))
+		if (!IsCollisionWithWall(Vec2iNew(x, y), size))
 		{
-			if ((!hasLockedRooms || IsHighAccess(x, y)) &&
-				(!noaccess || !IsHighAccess(x, y)))
+			if ((!hasLockedRooms || MapPosIsHighAccess(map, x, y)) &&
+				(!noaccess || !MapPosIsHighAccess(map, x, y)))
 			{
-				AddObject(x << 8, y << 8, 3, 2,
-					  &cGeneralPics[gMission.
-							objectives
-							[objective].
-							pickupItem],
-					  OBJ_JEWEL,
-					  TILEITEM_CAN_BE_TAKEN |
-					  (int)ObjectiveToTileItem(objective));
+				AddObject(
+					x << 8, y << 8, size,
+					&cGeneralPics[mo->objectives[objective].pickupItem],
+					OBJ_JEWEL,
+					TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
 				return 1;
 			}
 		}
@@ -764,51 +919,60 @@ static int PlaceCollectible(int objective)
 	return 0;
 }
 
-static int PlaceBlowup(int objective)
+static int MapTryPlaceBlowup(
+	Map *map,
+	struct Mission *mission, struct MissionOptions *mo, int objective)
 {
 	int hasLockedRooms =
-		(gMission.missionData->objectives[objective].flags & OBJECTIVE_HIACCESS) != 0 &&
-		HasLockedRooms();
-	int noaccess =
-	    (gMission.missionData->objectives[objective].
-	     flags & OBJECTIVE_NOACCESS) != 0;
+		(mission->objectives[objective].flags & OBJECTIVE_HIACCESS) &&
+		MapHasLockedRooms(map);
+	int noaccess = (mission->objectives[objective].flags & OBJECTIVE_NOACCESS);
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
-	int x, y;
 
-	while (i > 0) {
-		GuessCoords(&x, &y);
-		if ((!hasLockedRooms || (iMap(x, y) >> 8) != 0) &&
-		    (!noaccess || (iMap(x, y) >> 8) == 0)) {
-			if (PlaceOneObject(x, y,
-					   gMission.objectives[objective].
-					   blowupObject,
-					   ObjectiveToTileItem(objective)))
+	while (i > 0)
+	{
+		Vec2i v;
+		GuessCoords(&v.x, &v.y);
+		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
+			(!noaccess || (IMapGet(map, v) >> 8) == 0))
+		{
+			if (MapPlaceOneObject(
+					map,
+					v,
+					mo->objectives[objective].blowupObject,
+					ObjectiveToTileItem(objective)))
+			{
 				return 1;
+			}
 		}
 		i--;
 	}
 	return 0;
 }
 
-static void PlaceCard(int pic, int card, int map_access)
+static void MapPlaceCard(Map *map, int pic, int card, int map_access)
 {
-	int x, y;
-
 	for (;;)
 	{
-		GuessCoords(&x, &y);
-		if (y < YMAX - 1 &&
-			!(Map(x, y).flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
-			Map(x, y).things == NULL &&
-			(iMap(x, y) & 0xF00) == map_access &&
-			(iMap(x, y) & MAP_MASKACCESS) == MAP_ROOM &&
-			!(Map(x, y + 1).flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
-			Map(x, y + 1).things == NULL)
+		Vec2i v;
+		Tile *t;
+		Tile *tBelow;
+		unsigned short iMap;
+		GuessCoords(&v.x, &v.y);
+		t = MapGetTile(map, v);
+		iMap = IMapGet(map, v);
+		tBelow = MapGetTile(map, Vec2iNew(v.x, v.y + 1));
+		if (!(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
+			t->things == NULL &&
+			(iMap & 0xF00) == map_access &&
+			(iMap & MAP_MASKACCESS) == MAP_ROOM &&
+			!(tBelow->flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
+			tBelow->things == NULL)
 		{
+			Vec2i full = Vec2iReal2Full(Vec2iCenterOfTile(v));
 			AddObject(
-				(x * TILE_WIDTH + TILE_WIDTH / 2) << 8,
-				(y * TILE_HEIGHT + TILE_HEIGHT / 2) << 8,
-				9, 5,
+				full.x, full.y,
+				Vec2iNew(KEY_W, KEY_H),
 				&cGeneralPics[gMission.keyPics[pic]],
 				card,
 				(int)TILEITEM_CAN_BE_TAKEN);
@@ -817,39 +981,88 @@ static void PlaceCard(int pic, int card, int map_access)
 	}
 }
 
-static void VertDoor(int x, int y, int flags)
+static void MapAddDoor(Map *map, Vec2i v, int floor, int room, int flags)
 {
-	TTrigger *t;
+	Trigger *t;
 	TWatch *w;
-	TCondition *c;
-	TAction *a;
+	Condition *c;
+	Action *a;
 	int pic;
+	int openDoorPic;
 	int tileFlags =
 		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
 		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	Tile *tile = MapGetTile(map, v);
+	struct DoorPic *dp;
+	int isHorizontal = IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_WALL;
 
-	switch (flags) {
+	// Tiles to either side of the door
+	Tile *tileA;
+	Tile *tileB;
+	Vec2i vA;
+	Vec2i vB;
+	if (isHorizontal)
+	{
+		vA = Vec2iNew(v.x, v.y - 1);
+		vB = Vec2iNew(v.x, v.y + 1);
+	}
+	else
+	{
+		vA = Vec2iNew(v.x - 1, v.y);
+		vB = Vec2iNew(v.x + 1, v.y);
+	}
+	tileA = MapGetTile(map, vA);
+	tileB = MapGetTile(map, vB);
+	assert(TileCanWalk(tileA) && "map gen error: entrance should be clear");
+	assert(TileCanWalk(tileB) && "map gen error: entrance should be clear");
+
+	switch (flags)
+	{
 	case FLAGS_KEYCARD_RED:
-		pic = gMission.doorPics[4].vertPic;
+		dp = &gMission.doorPics[4];
 		break;
 	case FLAGS_KEYCARD_BLUE:
-		pic = gMission.doorPics[3].vertPic;
+		dp = &gMission.doorPics[3];
 		break;
 	case FLAGS_KEYCARD_GREEN:
-		pic = gMission.doorPics[2].vertPic;
+		dp = &gMission.doorPics[2];
 		break;
 	case FLAGS_KEYCARD_YELLOW:
-		pic = gMission.doorPics[1].vertPic;
+		dp = &gMission.doorPics[1];
 		break;
 	default:
-		pic = gMission.doorPics[0].vertPic;
+		dp = &gMission.doorPics[0];
 		break;
 	}
+	if (isHorizontal)
+	{
+		pic = dp->horzPic;
+		openDoorPic = gMission.doorPics[5].horzPic;
+	}
+	else
+	{
+		pic = dp->vertPic;
+		openDoorPic = gMission.doorPics[5].vertPic;
+	}
 
-	PicLoadOffset(&Map(x, y).pic, &Map(x, y).picAlt, pic);
-	Map(x, y).flags = tileFlags;
-	Map(x - 1, y).flags |= MAPTILE_TILE_TRIGGER;
-	Map(x + 1, y).flags |= MAPTILE_TILE_TRIGGER;
+	PicLoadOffset(&tile->pic, &tile->picAlt, pic);
+	tile->flags = tileFlags;
+	tileA->flags |= MAPTILE_TILE_TRIGGER;
+	tileB->flags |= MAPTILE_TILE_TRIGGER;
+	if (isHorizontal)
+	{
+		// Change the tile below to shadow, cast by this door
+		if (IMapGet(map, vB) == MAP_FLOOR)
+		{
+			tileB->pic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
+		}
+		else
+		{
+			tileB->pic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+	}
 
 	// Create the watch responsible for closing the door
 	w = AddWatch(3, 5);
@@ -857,31 +1070,26 @@ static void VertDoor(int x, int y, int flags)
 	// The conditions are that the tile above, at and below the door are empty
 	c = w->conditions;
 	c[0].condition = CONDITION_TILECLEAR;
-	c[0].x = x - 1;
-	c[0].y = y;
+	c[0].pos = vA;
 	c[1].condition = CONDITION_TILECLEAR;
-	c[1].x = x;
-	c[1].y = y;
+	c[1].pos = v;
 	c[2].condition = CONDITION_TILECLEAR;
-	c[2].x = x + 1;
-	c[2].y = y;
+	c[2].pos = vB;
 
 	// Now the actions of the watch once it's triggered
 	a = w->actions;
 
 	// Deactivate itself
 	a[0].action = ACTION_DEACTIVATEWATCH;
-	a[0].x = w->index;
+	a[0].u.index = w->index;
 
 	// Reenable trigger to the left of the door
 	a[1].action = ACTION_SETTRIGGER;
-	a[1].x = x - 1;
-	a[1].y = y;
+	a[1].u.pos = vA;
 
 	// Close door
 	a[2].action = ACTION_CHANGETILE;
-	a[2].x = x;
-	a[2].y = y;
+	a[2].u.pos = v;
 	a[2].tilePic = PicManagerGetFromOld(&gPicManager, pic);
 	if (tileFlags & MAPTILE_OFFSET_PIC)
 	{
@@ -889,214 +1097,93 @@ static void VertDoor(int x, int y, int flags)
 	}
 	a[2].tileFlags = tileFlags;
 
-	// Reenable trigger to the right of the door
-	a[3].action = ACTION_SETTRIGGER;
-	a[3].x = x + 1;
-	a[3].y = y;
+	if (isHorizontal)
+	{
+		// Add shadow below door (also reenables trigger)
+		a[3].action = ACTION_CHANGETILE;
+		a[3].u.pos = vB;
+		if (IMapGet(map, vB) == MAP_FLOOR)
+		{
+			a[3].tilePic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
+		}
+		else
+		{
+			a[3].tilePic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+		a[3].tileFlags = MAPTILE_TILE_TRIGGER;
+	}
+	else
+	{
+		// Reenable trigger to the right of the door
+		a[3].action = ACTION_SETTRIGGER;
+		a[3].u.pos = vB;
+	}
 
 	a[4].action = ACTION_SOUND;
-	a[4].x = x * TILE_WIDTH;
-	a[4].y = y * TILE_HEIGHT;
+	a[4].u.pos = Vec2iCenterOfTile(v);
 	a[4].tileFlags = SND_DOOR;
 
 	// Add trigger to the left of the door
-	t = AddTrigger(x - 1, y, 5);
+	t = AddTrigger(vA, 5);
 	t->flags = flags;
 
 	a = t->actions;
 
 	// Enable the watch to close the door
 	a[0].action = ACTION_ACTIVATEWATCH;
-	a[0].x = w->index;
+	a[0].u.index = w->index;
 
 	// Deactivate itself
 	a[1].action = ACTION_CLEARTRIGGER;
-	a[1].x = t->x;
-	a[1].y = t->y;
+	a[1].u.pos = t->pos;
 
 	// Open door
 	a[2].action = ACTION_CHANGETILE;
-	a[2].x = x;
-	a[2].y = y;
-	PicLoadOffset(
-		&a[2].tilePic, &a[2].tilePicAlt, gMission.doorPics[5].vertPic);
-	a[2].tileFlags = MAPTILE_OFFSET_PIC;
+	a[2].u.pos = v;
+	if (isHorizontal)
+	{
+		a[2].tilePic = PicManagerGetFromOld(&gPicManager, openDoorPic);
+	}
+	else
+	{
+		PicLoadOffset(&a[2].tilePic, &a[2].tilePicAlt, openDoorPic);
+	}
+	a[2].tileFlags = isHorizontal ? 0 : MAPTILE_OFFSET_PIC;
 
-	// Deactivate other trigger
-	a[3].action = ACTION_CLEARTRIGGER;
-	a[3].x = x + 1;
-	a[3].y = y;
+	if (isHorizontal)
+	{
+		// Remove shadow below door (also clears trigger)
+		a[3].action = ACTION_CHANGETILE;
+		a[3].u.pos = vB;
+		if (IMapGet(map, vB) == MAP_FLOOR)
+		{
+			a[3].tilePic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
+		}
+		else
+		{
+			a[3].tilePic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+		a[3].tileFlags = 0;
+	}
+	else
+	{
+		// Deactivate other trigger
+		a[3].action = ACTION_CLEARTRIGGER;
+		a[3].u.pos = vB;
+	}
 
 	a[4].action = ACTION_SOUND;
-	a[4].x = x * TILE_WIDTH;
-	a[4].y = y * TILE_HEIGHT;
+	a[4].u.pos = Vec2iCenterOfTile(v);
 	a[4].tileFlags = SND_DOOR;
 
 	// Add trigger to the right of the door with identical actions as this one
-	t = AddTrigger(x + 1, y, 5);
+	t = AddTrigger(vB, 5);
 	t->flags = flags;
-	memcpy(t->actions, a, sizeof(TAction) * 5);
-}
-
-static void HorzDoor(int x, int y, int floor, int room, int flags)
-{
-	TTrigger *t;
-	TWatch *w;
-	TCondition *c;
-	TAction *a;
-	int pic;
-	int tileFlags =
-		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
-		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
-
-	switch (flags) {
-	case FLAGS_KEYCARD_RED:
-		pic = gMission.doorPics[4].horzPic;
-		break;
-	case FLAGS_KEYCARD_BLUE:
-		pic = gMission.doorPics[3].horzPic;
-		break;
-	case FLAGS_KEYCARD_GREEN:
-		pic = gMission.doorPics[2].horzPic;
-		break;
-	case FLAGS_KEYCARD_YELLOW:
-		pic = gMission.doorPics[1].horzPic;
-		break;
-	default:
-		pic = gMission.doorPics[0].horzPic;
-		break;
-	}
-
-	PicLoadOffset(&Map(x, y).pic, &Map(x, y).picAlt, pic);
-	Map(x, y).flags = tileFlags;
-	Map(x, y - 1).flags |= MAPTILE_TILE_TRIGGER;
-	Map(x, y + 1).flags |= MAPTILE_TILE_TRIGGER;
-	if (iMap(x, y + 1) == MAP_FLOOR)
-	{
-		Map(x, y + 1).pic = PicManagerGetFromOld(
-			&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-	}
-	else
-	{
-		Map(x, y + 1).pic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-	}
-
-	// Create the watch responsible for closing the door
-	w = AddWatch(3, 5);
-
-	// The conditions are that the tile above, at and below the door are empty
-	c = w->conditions;
-	c[0].condition = CONDITION_TILECLEAR;
-	c[0].x = x;
-	c[0].y = y - 1;
-	c[1].condition = CONDITION_TILECLEAR;
-	c[1].x = x;
-	c[1].y = y;
-	c[2].condition = CONDITION_TILECLEAR;
-	c[2].x = x;
-	c[2].y = y + 1;
-
-	// Now the actions of the watch once it's triggered
-	a = w->actions;
-
-	// Deactivate itself
-	a[0].action = ACTION_DEACTIVATEWATCH;
-	a[0].x = w->index;
-
-	// Reenable trigger above door
-	a[1].action = ACTION_SETTRIGGER;
-	a[1].x = x;
-	a[1].y = y - 1;
-
-	// Close door
-	a[2].action = ACTION_CHANGETILE;
-	a[2].x = x;
-	a[2].y = y;
-	a[2].tilePic = PicManagerGetFromOld(&gPicManager, pic);
-	if (tileFlags & MAPTILE_OFFSET_PIC)
-	{
-		PicLoadOffset(&a[2].tilePic, &a[2].tilePicAlt, pic);
-	}
-	a[2].tileFlags = tileFlags;
-
-	// Add shadow below door (also reenables trigger)
-	a[3].action = ACTION_CHANGETILE;
-	a[3].x = x;
-	a[3].y = y + 1;
-	if (iMap(x, y + 1) == MAP_FLOOR)
-	{
-		a[3].tilePic = PicManagerGetFromOld(
-			&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-	}
-	else
-	{
-		a[3].tilePic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-	}
-	a[3].tileFlags = MAPTILE_TILE_TRIGGER;
-
-	a[4].action = ACTION_SOUND;
-	a[4].x = x * TILE_WIDTH;
-	a[4].y = y * TILE_HEIGHT;
-	a[4].tileFlags = SND_DOOR;
-
-	// Add trigger above door
-	t = AddTrigger(x, y - 1, 5);
-	t->flags = flags;
-
-	a = t->actions;
-
-	// Enable the watch to close the door
-	a[0].action = ACTION_ACTIVATEWATCH;
-	a[0].x = w->index;
-
-	// Deactivate itself
-	a[1].action = ACTION_CLEARTRIGGER;
-	a[1].x = x;
-	a[1].y = y - 1;
-
-	// Open door
-	a[2].action = ACTION_CHANGETILE;
-	a[2].x = x;
-	a[2].y = y;
-	a[2].tilePic = PicManagerGetFromOld(
-		&gPicManager, gMission.doorPics[5].horzPic);
-	a[2].tileFlags = 0;
-
-	// Remove shadow below door (also clears trigger)
-	a[3].action = ACTION_CHANGETILE;
-	a[3].x = x;
-	a[3].y = y + 1;
-	if (iMap(x, y + 1) == MAP_FLOOR)
-	{
-		a[3].tilePic = PicManagerGetFromOld(
-			&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
-	}
-	else
-	{
-		a[3].tilePic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-	}
-	a[3].tileFlags = 0;
-
-	a[4].action = ACTION_SOUND;
-	a[4].x = x * TILE_WIDTH;
-	a[4].y = y * TILE_HEIGHT;
-	a[4].tileFlags = SND_DOOR;
-
-	// Add trigger below door with identical actions as the one above
-	t = AddTrigger(x, y + 1, 5);
-	t->flags = flags;
-	memcpy(t->actions, a, sizeof(TAction) * 5);
-}
-
-static void CreateDoor(int x, int y, int floor, int room, int flags)
-{
-	if (iMap(x - 1, y) == MAP_WALL)
-		HorzDoor(x, y, floor, room, flags);
-	else
-		VertDoor(x, y, flags);
+	memcpy(t->actions, a, sizeof *t->actions * 5);
 }
 
 static int AccessCodeToFlags(int code)
@@ -1112,125 +1199,133 @@ static int AccessCodeToFlags(int code)
 	return 0;
 }
 
-static int MapAccessLevel(int x, int y)
+static int MapGetAccessLevel(Map *map, int x, int y)
 {
-	return AccessCodeToFlags(iMap(x, y));
+	return AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y)));
 }
 
 // Need to check the flags around the door tile because it's the
 // triggers that contain the right flags
 // TODO: refactor door
-int MapGetDoorKeycardFlag(Vec2i pos)
+int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
 {
-	int l = MapAccessLevel(pos.x - 1, pos.y);
+	int l = MapGetAccessLevel(map, pos.x - 1, pos.y);
 	if (l) return l;
-	l = MapAccessLevel(pos.x + 1, pos.y);
+	l = MapGetAccessLevel(map, pos.x + 1, pos.y);
 	if (l) return l;
-	l = MapAccessLevel(pos.x, pos.y - 1);
+	l = MapGetAccessLevel(map, pos.x, pos.y - 1);
 	if (l) return l;
-	return MapAccessLevel(pos.x, pos.y + 1);
+	return MapGetAccessLevel(map, pos.x, pos.y + 1);
 }
 
-static int Access(int x, int y)
+static int MapGetAccessFlags(Map *map, int x, int y)
 {
 	int flags;
-
-	if ((flags = AccessCodeToFlags(iMap(x - 1, y))) != 0)
-		return flags;
-	if ((flags = AccessCodeToFlags(iMap(x + 1, y))) != 0)
-		return flags;
-	if ((flags = AccessCodeToFlags(iMap(x, y - 1))) != 0)
-		return flags;
-	if ((flags = AccessCodeToFlags(iMap(x, y + 1))) != 0)
-		return flags;
+	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x - 1, y)));
+	if (flags) return flags;
+	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x + 1, y)));
+	if (flags) return flags;
+	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y - 1)));
+	if (flags) return flags;
+	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y + 1)));
+	if (flags) return flags;
 	return 0;
 }
 
-static void FixDoors(int floor, int room)
+static void MapSetupDoors(Map *map, int floor, int room)
 {
-	int x, y;
-
-	for (x = 0; x < XMAX; x++)
-		for (y = 0; y < YMAX; y++)
-			if (iMap(x, y) == MAP_DOOR) {
-				CreateDoor(x, y, floor, room,
-					   Access(x, y));
+	Vec2i v;
+	for (v.x = 0; v.x < XMAX; v.x++)
+	{
+		for (v.y = 0; v.y < YMAX; v.y++)
+		{
+			if (IMapGet(map, v) == MAP_DOOR)
+			{
+				MapAddDoor(
+					map, v, floor, room, MapGetAccessFlags(map, v.x, v.y));
 			}
+		}
+	}
 }
 
-void SetupPerimeter(int w, int h)
+static void MapSetupPerimeter(Map *map, int w, int h)
 {
-	int x, y, dx = 0, dy = 0;
+	Vec2i v;
+	int dx = 0, dy = 0;
 
 	if (w && w < XMAX)
 		dx = (XMAX - w) / 2;
 	if (h && h < YMAX)
 		dy = (YMAX - h) / 2;
 
-	for (y = 0; y < YMAX; y++)
+	for (v.y = 0; v.y < YMAX; v.y++)
 	{
-		for (x = 0; x < XMAX; x++)
+		for (v.x = 0; v.x < XMAX; v.x++)
 		{
-			if (y < dy || y > dy + h - 1 ||
-				x < dx || x > dx + w - 1)
+			if (v.y < dy || v.y > dy + h - 1 ||
+				v.x < dx || v.x > dx + w - 1)
 			{
-				iMap(x, y) = MAP_NOTHING;
+				IMapSet(map, v, MAP_NOTHING);
 			}
-			else if (y == dy || y == dy + h - 1 ||
-				x == dx || x == dx + w - 1)
+			else if (v.y == dy || v.y == dy + h - 1 ||
+				v.x == dx || v.x == dx + w - 1)
 			{
-				iMap(x, y) = MAP_WALL;
+				IMapSet(map, v, MAP_WALL);
 			}
 		}
 	}
 }
 
-void SetupMap(void)
+void MapLoad(Map *map, struct MissionOptions *mo)
 {
 	int i, j, count;
-	struct Mission *mission = gMission.missionData;
+	struct Mission *mission = mo->missionData;
 	int floor = mission->floorStyle % FLOOR_STYLE_COUNT;
 	int wall = mission->wallStyle % WALL_STYLE_COUNT;
 	int room = mission->roomStyle % ROOMFLOOR_COUNT;
 	int x, y, w, h;
+	Vec2i v;
 
 	PicManagerGenerateOldPics(&gPicManager);
-	memset(gMap, 0, sizeof(gMap));
-	for (y = 0; y < YMAX; y++)
+	memset(map, 0, sizeof *map);
+	for (v.y = 0; v.y < YMAX; v.y++)
 	{
-		for (x = 0; x < XMAX; x++)
+		for (v.x = 0; v.x < XMAX; v.x++)
 		{
-			Map(x, y).pic = &picNone;
-			Map(x, y).picAlt = picNone;
+			Tile *t = MapGetTile(map, v);
+			t->pic = &picNone;
+			t->picAlt = picNone;
 		}
 	}
-	memset(internalMap, 0, sizeof(internalMap));
-	tilesSeen = 0;
+	map->tilesSeen = 0;
 
-	w = mission->mapWidth
-	    && mission->mapWidth < XMAX ? mission->mapWidth : XMAX;
-	h = mission->mapHeight
-	    && mission->mapHeight < YMAX ? mission->mapHeight : YMAX;
+	w = mission->mapWidth &&
+		mission->mapWidth < XMAX ? mission->mapWidth : XMAX;
+	h = mission->mapHeight &&
+		mission->mapHeight < YMAX ? mission->mapHeight : YMAX;
 	x = (XMAX - w) / 2;
 	y = (YMAX - h) / 2;
-	tilesTotal = w * h;
+	map->tilesTotal = w * h;
 
-	SetupPerimeter(mission->mapWidth, mission->mapHeight);
+	MapSetupPerimeter(map, mission->mapWidth, mission->mapHeight);
 
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->squareCount) {
-		if (BuildSquare())
+	while (i < 1000 && count < mission->squareCount)
+	{
+		if (MapTryBuildSquare(map))
+		{
 			count++;
+		}
 		i++;
 	}
 
-	gKeyAccessCount = 0;
+	map->keyAccessCount = 0;
 	count = 0;
 	i = 0;
 	while (i < 1000 && count < mission->roomCount)
 	{
-		if (BuildRoom(AreKeysAllowed(gCampaign.Entry.mode)))
+		if (MapBuildRoom(map, AreKeysAllowed(gCampaign.Entry.mode)))
 		{
 			count++;
 		}
@@ -1239,100 +1334,115 @@ void SetupMap(void)
 
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->wallCount) {
-		if (BuildWall(mission->wallLength))
+	while (i < 1000 && count < mission->wallCount)
+	{
+		if (MapTryBuildWall(map, mission->wallLength))
+		{
 			count++;
+		}
 		i++;
 	}
 
-	FixMap(floor, room, wall);
-	FixDoors(floor, room);
+	MapSetupTilesAndWalls(map, floor, room, wall);
+	MapSetupDoors(map, floor, room);
 
-	for (i = 0; i < gMission.objectCount; i++)
+	for (i = 0; i < mo->objectCount; i++)
+	{
 		for (j = 0;
-		     j < (mission->itemDensity[i] * tilesTotal) / 1000;
-		     j++)
-			PlaceObject(x + rand() % w, y + rand() % h, i);
-
-	for (i = 0, j = 0; i < mission->objectiveCount; i++)
-		if (mission->objectives[i].type == OBJECTIVE_COLLECT) {
-			for (j = 0, count = 0;
-			     j < gMission.objectives[i].count; j++)
-				if (PlaceCollectible(i))
-					count++;
-			gMission.objectives[i].count = count;
-			if (gMission.objectives[i].count <
-			    gMission.objectives[i].required)
-				gMission.objectives[i].required =
-				    gMission.objectives[i].count;
-		} else if (mission->objectives[i].type ==
-			   OBJECTIVE_DESTROY) {
-			for (j = 0, count = 0;
-			     j < gMission.objectives[i].count; j++)
-				if (PlaceBlowup(i))
-					count++;
-			gMission.objectives[i].count = count;
-			if (gMission.objectives[i].count <
-			    gMission.objectives[i].required)
-				gMission.objectives[i].required =
-				    gMission.objectives[i].count;
+			j < (mission->itemDensity[i] * map->tilesTotal) / 1000;
+			j++)
+		{
+			TMapObject *mapObj = mo->mapObjects[i];
+			MapPlaceOneObject(
+				map, Vec2iNew(x + rand() % w, y + rand() % h), mapObj, 0);
 		}
+	}
 
-	if (gKeyAccessCount >= 5)
+	// Try to add the objectives
+	// If we are unable to place them all, make sure to reduce the totals
+	// in case we create missions that are impossible to complete
+	for (i = 0, j = 0; i < mission->objectiveCount; i++)
 	{
-		PlaceCard(3, OBJ_KEYCARD_RED, MAP_ACCESS_BLUE);
+		if (mission->objectives[i].type != OBJECTIVE_COLLECT &&
+			mission->objectives[i].type != OBJECTIVE_DESTROY)
+		{
+			continue;
+		}
+		count = 0;
+		if (mission->objectives[i].type == OBJECTIVE_COLLECT)
+		{
+			for (j = 0; j < mo->objectives[i].count; j++)
+			{
+				if (MapTryPlaceCollectible(map, mission, mo, i))
+				{
+					count++;
+				}
+			}
+		}
+		else if (mission->objectives[i].type == OBJECTIVE_DESTROY)
+		{
+			for (j = 0; j < mo->objectives[i].count; j++)
+			{
+				if (MapTryPlaceBlowup(map, mission, mo, i))
+				{
+					count++;
+				}
+			}
+		}
+		mo->objectives[i].count = count;
+		if (mo->objectives[i].count < mo->objectives[i].required)
+		{
+			mo->objectives[i].required = mo->objectives[i].count;
+		}
 	}
-	if (gKeyAccessCount >= 4)
+
+	if (map->keyAccessCount >= 5)
 	{
-		PlaceCard(2, OBJ_KEYCARD_BLUE, MAP_ACCESS_GREEN);
+		MapPlaceCard(map, 3, OBJ_KEYCARD_RED, MAP_ACCESS_BLUE);
 	}
-	if (gKeyAccessCount >= 3)
+	if (map->keyAccessCount >= 4)
 	{
-		PlaceCard(1, OBJ_KEYCARD_GREEN, MAP_ACCESS_YELLOW);
+		MapPlaceCard(map, 2, OBJ_KEYCARD_BLUE, MAP_ACCESS_GREEN);
 	}
-	if (gKeyAccessCount >= 2)
+	if (map->keyAccessCount >= 3)
 	{
-		PlaceCard(0, OBJ_KEYCARD_YELLOW, 0);
+		MapPlaceCard(map, 1, OBJ_KEYCARD_GREEN, MAP_ACCESS_YELLOW);
+	}
+	if (map->keyAccessCount >= 2)
+	{
+		MapPlaceCard(map, 0, OBJ_KEYCARD_YELLOW, 0);
 	}
 }
 
-int OKforPlayer(int x, int y)
+int MapIsFullPosOKforPlayer(Map *map, int x, int y)
 {
-	return (iMap((x >> 8) / TILE_WIDTH, (y >> 8) / TILE_HEIGHT) == 0);
+	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(Vec2iNew(x, y)));
+	return IMapGet(map, tilePos) == 0;
 }
 
-void MapMarkAsVisited(Vec2i pos)
+void MapMarkAsVisited(Map *map, Vec2i pos)
 {
-	if (!Map(pos.x, pos.y).isVisited)
+	Tile *t = MapGetTile(map, pos);
+	if (!t->isVisited)
 	{
-		tilesSeen++;
-		Map(pos.x, pos.y).isVisited = 1;
+		map->tilesSeen++;
+		t->isVisited = 1;
 	}
 }
 
-void MapMarkAllAsVisited(void)
+void MapMarkAllAsVisited(Map *map)
 {
 	Vec2i pos;
 	for (pos.y = 0; pos.y < YMAX; pos.y++)
 	{
 		for (pos.x = 0; pos.x < XMAX; pos.x++)
 		{
-			Map(pos.x, pos.y).isVisited = 1;
+			MapGetTile(map, pos)->isVisited = 1;
 		}
 	}
 }
 
-int ExploredPercentage(void)
+int MapGetExploredPercentage(Map *map)
 {
-	return (100 * tilesSeen) / tilesTotal;
-}
-
-
-int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
-{
-	return
-		i->x - i->w >= tilePos.x * TILE_WIDTH &&
-		i->x + i->w < (tilePos.x + 1) * TILE_WIDTH &&
-		i->y - i->h >= tilePos.y * TILE_HEIGHT &&
-		i->y + i->h < (tilePos.y + 1) * TILE_HEIGHT;
+	return (100 * map->tilesSeen) / map->tilesTotal;
 }

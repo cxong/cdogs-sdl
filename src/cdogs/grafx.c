@@ -390,7 +390,7 @@ void GrafxDrawBackground(
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferSetFromMap(
-		&buffer, gMap,
+		&buffer, &gMap,
 		Vec2iNew(XMAX * TILE_WIDTH / 2, YMAX * TILE_HEIGHT / 2),
 		X_TILES,
 		Vec2iNew(X_TILES, Y_TILES));
@@ -412,10 +412,10 @@ void GrafxMakeBackground(
 	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
 {
 	SetupMission(missionIdx, 1, &gCampaign);
-	SetupMap();
+	MapLoad(&gMap, &gMission);
 	InitializeBadGuys();
 	CreateEnemies();
-	MapMarkAllAsVisited();
+	MapMarkAllAsVisited(&gMap);
 
 	GrafxDrawBackground(device, config, tint);
 

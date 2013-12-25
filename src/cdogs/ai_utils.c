@@ -200,7 +200,7 @@ static int IsTileBlocked(int x, int y, double factor)
 {
 	if (factor > 0.4)
 	{
-		return gMap[y][x].flags & MAPTILE_IS_WALL;
+		return MapGetTile(&gMap, Vec2iNew(x, y))->flags & MAPTILE_IS_WALL;
 	}
 	return 0;
 }
@@ -373,18 +373,18 @@ typedef struct
 } AIGotoContext;
 typedef struct
 {
-	Tile (*Map)[YMAX][XMAX];
+	Map *Map;
 } AStarContext;
-static int IsWallOrLockedDoor(Tile(*map)[YMAX][XMAX], Vec2i pos)
+static int IsWallOrLockedDoor(Map *map, Vec2i pos)
 {
-	int tileFlags = (*map)[pos.y][pos.x].flags;
+	int tileFlags = MapGetTile(map, pos)->flags;
 	if (tileFlags & MAPTILE_IS_WALL)
 	{
 		return 1;
 	}
 	else if (tileFlags & MAPTILE_NO_WALK)
 	{
-		return !!(MapGetDoorKeycardFlag(pos) & ~gMission.flags);
+		return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
 	}
 	return 0;
 }

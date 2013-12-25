@@ -90,7 +90,7 @@ static int IsFacing(TActor *a, TActor *a2, direction_e d)
 		assert(0);
 		break;
 	}
-	return NO;
+	return 0;
 }
 
 
@@ -174,7 +174,7 @@ static int DirectionOK(TActor * actor, int dir)
 		    || PositionOK(actor, actor->x + STEPSIZE, actor->y)
 		    || PositionOK(actor, actor->x, actor->y - STEPSIZE);
 	}
-	return NO;
+	return 0;
 }
 
 
@@ -322,7 +322,7 @@ static void PlacePrisoner(TActor * actor)
 			actor->x = ((rand() % (XMAX * TILE_WIDTH)) << 8);
 			actor->y = ((rand() % (YMAX * TILE_HEIGHT)) << 8);
 		}
-		while (!IsHighAccess(actor->x >> 8, actor->y >> 8));
+		while (!MapPosIsHighAccess(&gMap, actor->x >> 8, actor->y >> 8));
 		x = actor->x;
 		y = actor->y;
 		actor->x = actor->y = 0;
@@ -534,7 +534,7 @@ void InitializeBadGuys(void)
 				actor = AddActor(CharacterStoreGetPrisoner(
 					&gCampaign.Setting.characters, 0), NULL);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
-				if (HasLockedRooms())
+				if (MapHasLockedRooms(&gMap))
 				{
 					PlacePrisoner(actor);
 				}

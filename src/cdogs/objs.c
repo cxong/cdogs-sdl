@@ -644,7 +644,7 @@ int UpdateMolotovFlame(TMobileObject *obj, int ticks)
 	{
 		obj->x = pos.x;
 		obj->y = pos.y;
-		MoveTileItem(&obj->tileItem, pos.x >> 8, pos.y >> 8);
+		MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
 		return 1;
 	} else
 		return 1;
@@ -716,7 +716,7 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 	{
 		obj->x = pos.x;
 		obj->y = pos.y;
-		MoveTileItem(&obj->tileItem, pos.x >> 8, pos.y >> 8);
+		MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
 		return 1;
 	} else
 		return 1;
@@ -826,7 +826,8 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 		obj->dy = -obj->dy;
 		return 1;
 	}
-	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
+	MapMoveTileItem(
+		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
 	return 1;
 }
 
@@ -864,7 +865,8 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 		Fire(obj->x, obj->y, obj->flags, obj->player);
 		return 0;
 	}
-	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
+	MapMoveTileItem(
+		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
 	return 1;
 }
 
@@ -928,7 +930,8 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
 		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+		MapMoveTileItem(
+			&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 		return 1;
 	} else {
 		obj->count = 0;
@@ -1013,41 +1016,37 @@ int UpdateTriggeredMine(TMobileObject *obj, int ticks)
 
 int UpdateActiveMine(TMobileObject *obj, int ticks)
 {
-	int tx, ty, dx, dy;
+	Vec2i tv = Vec2iToTile(Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
+	Vec2i dv;
 
 	MobileObjectUpdate(obj, ticks);
+
+	// Check if the mine is still arming
 	if (obj->count & 3)
 	{
 		return 1;
 	}
 
-	tx = (obj->x >> 8) / TILE_WIDTH;
-	ty = (obj->y >> 8) / TILE_HEIGHT;
-
-	if (tx == 0 || ty == 0 || tx >= XMAX - 1 || ty >= YMAX - 1)
+	if (!MapIsTileIn(&gMap, tv))
 	{
 		return 0;
 	}
 
-	for (dy = -1; dy <= 1; dy++)
+	// Detonate the mine if there are characters in the tiles around it
+	for (dv.y = -1; dv.y <= 1; dv.y++)
 	{
-		for (dx = -1; dx <= 1; dx++)
+		for (dv.x = -1; dv.x <= 1; dv.x++)
 		{
-			TTileItem *item = Map(tx + dx, ty + dy).things;
-			while (item)
+			if (TileHasCharacter(MapGetTile(&gMap, Vec2iAdd(tv, dv))))
 			{
-				if (item->kind == KIND_CHARACTER)
-				{
-					obj->updateFunc = UpdateTriggeredMine;
-					obj->count = 0;
-					obj->range = 5;
-					SoundPlayAt(
-						&gSoundDevice,
-						SND_HAHAHA,
-						Vec2iNew(obj->tileItem.x, obj->tileItem.y));
-					return 1;
-				}
-				item = item->next;
+				obj->updateFunc = UpdateTriggeredMine;
+				obj->count = 0;
+				obj->range = 5;
+				SoundPlayAt(
+					&gSoundDevice,
+					SND_HAHAHA,
+					Vec2iNew(obj->tileItem.x, obj->tileItem.y));
+				return 1;
 			}
 		}
 	}
@@ -1080,14 +1079,16 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 		obj->count = obj->range;
 		obj->x = x;
 		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+		MapMoveTileItem(
+			&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 		return 1;
 	}
 
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
 		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+		MapMoveTileItem(
+			&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 		return 1;
 	} else
 		return 0;
@@ -1113,7 +1114,8 @@ int UpdateExplosion(TMobileObject *obj, int ticks)
 	if (!HitWall(x >> 8, y >> 8)) {
 		obj->x = x;
 		obj->y = y;
-		MoveTileItem(&obj->tileItem, x >> 8, y >> 8);
+		MapMoveTileItem(
+			&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 		return 1;
 	}
 	return 0;
@@ -1141,7 +1143,7 @@ void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
 			{
 				obj = *mobObjList;
 				*mobObjList = obj->next;
-				RemoveTileItem(&obj->tileItem);
+				MapRemoveTileItem(&gMap, &obj->tileItem);
 				CFREE(obj);
 			}
 			else
@@ -1377,7 +1379,8 @@ void AddBulletGround(
 	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
 	SetBulletProps(obj, pos, type, flags);
 	obj->z = 0;
-	MoveTileItem(&obj->tileItem, obj->x >> 8, obj->y >> 8);
+	MapMoveTileItem(
+		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
 }
 
 static TMobileObject *AddFireBall(int flags, int player)
@@ -1400,7 +1403,7 @@ void KillAllMobileObjects(TMobileObject **mobObjList)
 	{
 		TMobileObject *o = *mobObjList;
 		*mobObjList = (*mobObjList)->next;
-		RemoveTileItem(&o->tileItem);
+		MapRemoveTileItem(&gMap, &o->tileItem);
 		CFREE(o);
 	}
 }
@@ -1424,24 +1427,26 @@ void InternalAddObject(
 	o->tileItem.w = w;
 	o->tileItem.h = h;
 	o->tileItem.actor = NULL;
-	MoveTileItem(&o->tileItem, x >> 8, y >> 8);
+	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 	o->next = objList;
 	objList = o;
 }
 
 void AddObject(
-	int x, int y, int w, int h, const TOffsetPic * pic, int idx, int tileFlags)
+	int x, int y, Vec2i size, const TOffsetPic * pic, int idx, int tileFlags)
 {
-	InternalAddObject(x, y, w, h, pic, NULL, 0, idx, 0, tileFlags);
+	InternalAddObject(x, y, size.x, size.y, pic, NULL, 0, idx, 0, tileFlags);
 }
 
-void AddDestructibleObject(int x, int y, int w, int h,
-			   const TOffsetPic * pic,
-			   const TOffsetPic * wreckedPic,
-			   int structure, int objFlags, int tileFlags)
+void AddDestructibleObject(
+	Vec2i pos, int w, int h,
+	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	int structure, int objFlags, int tileFlags)
 {
-	InternalAddObject(x, y, w, h, pic, wreckedPic, structure, 0,
-			  objFlags, tileFlags);
+	Vec2i fullPos = Vec2iReal2Full(pos);
+	InternalAddObject(
+		fullPos.x, fullPos.y, w, h, pic, wreckedPic, structure, 0,
+		objFlags, tileFlags);
 }
 
 void RemoveObject(TObject * obj)
@@ -1452,7 +1457,7 @@ void RemoveObject(TObject * obj)
 		h = &((*h)->next);
 	if (*h) {
 		*h = obj->next;
-		RemoveTileItem(&obj->tileItem);
+		MapRemoveTileItem(&gMap, &obj->tileItem);
 		CFREE(obj);
 	}
 }
@@ -1464,7 +1469,7 @@ void KillAllObjects(void)
 	while (objList) {
 		o = objList;
 		objList = objList->next;
-		RemoveTileItem(&o->tileItem);
+		MapRemoveTileItem(&gMap, &o->tileItem);
 		CFREE(o);
 	}
 }

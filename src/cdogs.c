@@ -760,7 +760,7 @@ static void PlaceActor(TActor * actor)
 		x = ((rand() % (XMAX * TILE_WIDTH)) << 8);
 		y = ((rand() % (YMAX * TILE_HEIGHT)) << 8);
 	}
-	while (!OKforPlayer(x, y) || !MoveActor(actor, x, y));
+	while (!MapIsFullPosOKforPlayer(&gMap, x, y) || !MoveActor(actor, x, y));
 }
 static void PlaceActorNear(TActor *actor, Vec2i near)
 {
@@ -773,11 +773,11 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 	//    8 2 6
 	//      7
 #define TRY_LOCATION()\
-if (OKforPlayer(near.x + dx, near.y + dy) &&\
-MoveActor(actor, near.x + dx, near.y + dy))\
-{\
-	return;\
-}
+	if (MapIsFullPosOKforPlayer(&gMap, near.x + dx, near.y + dy) && \
+		MoveActor(actor, near.x + dx, near.y + dy))\
+	{\
+		return;\
+	}
 	int radius;
 	for (radius = 1; ; radius++)
 	{
@@ -921,7 +921,7 @@ int Game(GraphicsDevice *graphics, int mission)
 		int survivingPlayers;
 		SetupMission(mission, 1, &gCampaign);
 
-		SetupMap();
+		MapLoad(&gMap, &gMission);
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
@@ -1036,7 +1036,7 @@ void DogFight(GraphicsDevice *graphicsDevice)
 	do
 	{
 		SetupMission(0, 1, &gCampaign);
-		SetupMap();
+		MapLoad(&gMap, &gMission);
 
 		PlayerEquip(gOptions.numPlayers, graphicsDevice);
 		srand((unsigned int)time(NULL));

@@ -199,12 +199,13 @@ int DamageSomething(
 	special_damage_e damage,
 	int isHitSoundEnabled);
 
-void AddObject(int x, int y, int w, int h,
-	       const TOffsetPic * pic, int index, int tileFlags);
-void AddDestructibleObject(int x, int y, int w, int h,
-			   const TOffsetPic * pic,
-			   const TOffsetPic * wreckedPic,
-			   int structure, int objFlags, int tileFlags);
+void AddObject(
+	int x, int y, Vec2i size,
+	const TOffsetPic * pic, int index, int tileFlags);
+void AddDestructibleObject(
+	Vec2i pos, int w, int h,
+	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	int structure, int objFlags, int tileFlags);
 void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 

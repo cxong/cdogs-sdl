@@ -44,6 +44,7 @@ set(CDOGS_SOURCES
 	pics.c
 	sounds.c
 	text.c
+	tile.c
 	triggers.c
 	utils.c
 	vector.c
@@ -92,6 +93,7 @@ set(CDOGS_HEADERS
 	sys_config.h
 	sys_specifics.h
 	text.h
+	tile.h
 	triggers.h
 	utils.h
 	vector.h

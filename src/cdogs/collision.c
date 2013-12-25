@@ -126,21 +126,19 @@ static int IsOnSameTeam(TTileItem *i, CollisionTeam team, int isDogfight)
 TTileItem *GetItemOnTileInCollision(
 	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight)
 {
-	int dy;
-	int tx = pos.x / TILE_WIDTH;
-	int ty = pos.y / TILE_HEIGHT;
-	if (tx == 0 || ty == 0 || tx >= XMAX - 1 || ty >= YMAX - 1)
+	Vec2i tv = Vec2iToTile(pos);
+	Vec2i dv;
+	if (!MapIsTileIn(&gMap, tv))
 	{
 		return NULL;
 	}
 
 	// Check collisions with all other items on this tile, in all 8 directions
-	for (dy = -1; dy <= 1; dy++)
+	for (dv.y = -1; dv.y <= 1; dv.y++)
 	{
-		int dx;
-		for (dx = -1; dx <= 1; dx++)
+		for (dv.x = -1; dv.x <= 1; dv.x++)
 		{
-			TTileItem *i = Map(tx + dx, ty + dy).things;
+			TTileItem *i = MapGetTile(&gMap, Vec2iAdd(tv, dv))->things;
 			while (i)
 			{
 				// Don't collide if items are on the same team

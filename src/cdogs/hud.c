@@ -334,7 +334,7 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 		Vec2i playerPos = Vec2iNew(
 			p->tileItem.x / TILE_WIDTH, p->tileItem.y / TILE_HEIGHT);
 		AutomapDrawRegion(
-			gMap,
+			&gMap,
 			pos,
 			Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 			playerPos,
@@ -352,7 +352,7 @@ static void DrawSharedRadar(
 	playerMidpoint.x /= TILE_WIDTH;
 	playerMidpoint.y /= TILE_HEIGHT;
 	AutomapDrawRegion(
-		gMap,
+		&gMap,
 		pos,
 		Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 		playerMidpoint,

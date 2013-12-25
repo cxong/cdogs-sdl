@@ -97,6 +97,7 @@ void FixBuffer(DrawBuffer *buffer)
 			else
 			{
 				MapMarkAsVisited(
+					&gMap,
 					Vec2iNew(x + buffer->xStart, y + buffer->yStart));
 				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
 				tile->isVisited = 1;
