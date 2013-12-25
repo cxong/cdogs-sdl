@@ -656,7 +656,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					subMenu->name,
 					i == menu->u.normal.index,
 					subMenu->isDisabled,
-					colorBlack);
+					subMenu->color);
 
 				// display option value
 				if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE ||
