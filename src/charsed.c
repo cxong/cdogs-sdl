@@ -79,7 +79,7 @@ int fileChanged = 0;
 extern void *myScreen;
 
 
-CArray sCharEditorObjs;
+UICollection sCharEditorObjs;
 
 
 static int PosToCharacterIndex(Vec2i pos, int *idx)
@@ -119,57 +119,6 @@ void DisplayFlag(int x, int y, const char *s, int on, int hilite)
 		CDogsTextStringWithTable("On", &tablePurple);
 	else
 		CDogsTextString("Off");
-}
-
-static void DrawTooltips(
-	GraphicsDevice *device, Vec2i pos, int yc, int xc, int mouseYc, int mouseXc)
-{
-	UNUSED(yc);
-	UNUSED(xc);
-	switch (mouseYc)
-	{
-		case YC_ATTRIBUTES:
-			switch (mouseXc)
-			{
-				case XC_TRACK:
-					DrawTooltip(device, pos,
-						"Looking towards the player\n"
-						"Useless for friendly characters");
-					break;
-				case XC_DELAY:
-					DrawTooltip(device, pos,
-						"Frames before making another decision");
-					break;
-			}
-			break;
-		case YC_FLAGS:
-			switch (mouseXc)
-			{
-				case XC_IMMUNITY:
-					DrawTooltip(device, pos, "Immune to poison");
-					break;
-				case XC_RUNS_AWAY:
-					DrawTooltip(device, pos, "Runs away from player");
-					break;
-				case XC_SNEAKY:
-					DrawTooltip(device, pos, "Shoots back when player shoots");
-					break;
-				case XC_SLEEPING:
-					DrawTooltip(device, pos, "Doesn't move unless seen");
-					break;
-				case XC_PRISONER:
-					DrawTooltip(device, pos, "Doesn't move until touched");
-					break;
-				case XC_PENALTY:
-					DrawTooltip(device, pos, "Large score penalty when shot");
-					break;
-				case XC_VICTIM:
-					DrawTooltip(device, pos, "Takes damage from everyone");
-					break;
-			}
-		default:
-			break;
-	}
 }
 
 static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
@@ -273,13 +222,12 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		}
 	}
 
-	if (UITryGetObject(
-		sCharEditorObjs.data, sCharEditorObjs.size,
-		gEventHandlers.mouse.currentPos, &o))
+	if (UITryGetObject(&sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&
+		o->Tooltip)
 	{
 		Vec2i tooltipPos = Vec2iAdd(
 			gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-		DrawTooltips(&gGraphicsDevice, tooltipPos, yc, xc, o->Id, o->Id2);
+		DrawTooltip(&gGraphicsDevice, tooltipPos, o->Tooltip);
 	}
 	MouseDraw(&gEventHandlers.mouse);
 
@@ -650,8 +598,7 @@ void EditCharacters(CampaignSettingNew *setting)
 				}
 			}
 			else if (UITryGetObject(
-				sCharEditorObjs.data, sCharEditorObjs.size,
-				gEventHandlers.mouse.currentPos, &o))
+				&sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
 			{
 				int isSameSelection;
 				xcOld = xc;
@@ -682,7 +629,7 @@ void EditCharacters(CampaignSettingNew *setting)
 		SDL_Delay(10);
 	}
 
-	CArrayTerminate(&sCharEditorObjs);
+	UICollectionTerminate(&sCharEditorObjs);
 }
 
 void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)

@@ -28,6 +28,20 @@
  */
 #include "ui_object.h"
 
+#include <string.h>
+
+
+void UICollectionTerminate(UICollection *c)
+{
+	size_t i;
+	UIObject *objs = c->Objs.data;
+	for (i = 0; i < c->Objs.size; i++, objs++)
+	{
+		CFREE(objs->Tooltip);
+	}
+	CArrayTerminate(&c->Objs);
+	memset(c, 0, sizeof *c);
+}
 
 static int IsZeroUIObject(UIObject *o)
 {
@@ -45,10 +59,11 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
-int UITryGetObject(UIObject *objs, size_t count, Vec2i pos, UIObject **out)
+int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out)
 {
 	size_t i;
-	for (i = 0; i < count; i++, objs++)
+	UIObject *objs = c->Objs.data;
+	for (i = 0; i < c->Objs.size; i++, objs++)
 	{
 		if (IsInside(pos, objs->Pos, objs->Size))
 		{

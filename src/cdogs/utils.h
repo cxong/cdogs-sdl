@@ -90,6 +90,11 @@ extern int debug_level;
 	_var = realloc(_var, _size);\
 	_CCHECKALLOC("CREALLOC", _var, (_size))\
 }
+#define CSTRDUP(_var, _str)\
+{\
+	_var = strdup(_str); \
+	_CCHECKALLOC("CSTRDUP", _var, (strlen(_str) + 1))\
+}
 
 #define CFREE(_var)\
 {\

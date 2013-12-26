@@ -80,23 +80,23 @@
 
 
 // Mouse click areas:
-CArray sMainObjs;
-CArray sCampaignObjs;
-CArray sMissionObjs;
-CArray sWeaponObjs;
-CArray sMapItemObjs;
-CArray sObjectiveObjs;
-CArray sCharacterObjs;
+UICollection sMainObjs;
+UICollection sCampaignObjs;
+UICollection sMissionObjs;
+UICollection sWeaponObjs;
+UICollection sMapItemObjs;
+UICollection sObjectiveObjs;
+UICollection sCharacterObjs;
 
 // zero-terminated list of UI objects to detect clicks for
-static CArray *sObjs1 = NULL;
-static CArray *sObjs2 = NULL;
+static UICollection *sObjs1 = NULL;
+static UICollection *sObjs2 = NULL;
 
 int TryGetClickObj(Vec2i pos, UIObject **out)
 {
 	return
-		(sObjs1 && UITryGetObject(sObjs1->data, sObjs1->size, pos, out)) ||
-		(sObjs2 && UITryGetObject(sObjs2->data, sObjs2->size, pos, out));
+		(sObjs1 && UITryGetObject(sObjs1, pos, out)) ||
+		(sObjs2 && UITryGetObject(sObjs2, pos, out));
 }
 
 
@@ -567,56 +567,6 @@ static void DisplayMission(int xc, int yc, int y)
 	}
 }
 
-static void DrawTooltips(
-	GraphicsDevice *device, Vec2i pos, int yc, int xc, int mouseYc, int mouseXc)
-{
-	UNUSED(xc);
-	switch (mouseYc)
-	{
-		case YC_CAMPAIGNTITLE:
-			switch (yc)
-			{
-				case YC_ITEMS:
-					DrawTooltip(device, pos, "Shift+click to change amounts");
-					break;
-				case YC_OBJECTIVES:
-					switch (mouseXc)
-					{
-						case XC_REQUIRED:
-							DrawTooltip(device, pos, "0: optional objective");
-							break;
-						case XC_FLAGS:
-							DrawTooltip(device, pos,
-								"hidden: not shown on map\n"
-								"pos.known: always shown on map\n"
-								"access: in locked room\n"
-								"no-count: don't show completed count");
-							break;
-					}
-					break;
-			}
-			break;
-		case YC_MISSIONPROPS:
-			switch (mouseXc)
-			{
-				case XC_DENSITY:
-					DrawTooltip(
-						device, pos, "Number of non-objective characters");
-					break;
-			}
-			break;
-		case YC_OBJECTIVES:
-		case YC_OBJECTIVES + 1:
-		case YC_OBJECTIVES + 2:
-		case YC_OBJECTIVES + 3:
-		case YC_OBJECTIVES + 4:
-			DrawTooltip(device, pos, "insert/delete: add/remove objective");
-			break;
-		default:
-			break;
-	}
-}
-
 static void MakeBackground(
 	GraphicsDevice *g, GraphicsConfig *config, int mission)
 {
@@ -805,12 +755,11 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	else
 	{
 		UIObject *o;
-		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
+		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o) && o->Tooltip)
 		{
 			Vec2i tooltipPos = Vec2iAdd(
 				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-			DrawTooltips(
-				&gGraphicsDevice, tooltipPos, yc, xc, o->Id, o->Id2);
+			DrawTooltip(&gGraphicsDevice, tooltipPos, o->Tooltip);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
@@ -1908,13 +1857,13 @@ int main(int argc, char *argv[])
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
 
-	CArrayTerminate(&sMainObjs);
-	CArrayTerminate(&sCampaignObjs);
-	CArrayTerminate(&sMissionObjs);
-	CArrayTerminate(&sWeaponObjs);
-	CArrayTerminate(&sMapItemObjs);
-	CArrayTerminate(&sObjectiveObjs);
-	CArrayTerminate(&sCharacterObjs);
+	UICollectionTerminate(&sMainObjs);
+	UICollectionTerminate(&sCampaignObjs);
+	UICollectionTerminate(&sMissionObjs);
+	UICollectionTerminate(&sWeaponObjs);
+	UICollectionTerminate(&sMapItemObjs);
+	UICollectionTerminate(&sObjectiveObjs);
+	UICollectionTerminate(&sCharacterObjs);
 
 	exit(EXIT_SUCCESS);
 }

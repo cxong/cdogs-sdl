@@ -52,14 +52,14 @@
 #include <cdogs/text.h>
 
 
-CArray CreateMainObjs(void)
+UICollection CreateMainObjs(void)
 {
 	int th = CDogsTextHeight();
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int x;
 	int y;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	// Titles
 
@@ -70,13 +70,13 @@ CArray CreateMainObjs(void)
 	o.Flags = UI_SELECT_ONLY_FIRST;
 	o.Pos = Vec2iNew(25, y);
 	o.Size = Vec2iNew(240, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = YC_MISSIONINDEX;
 	o.Pos = Vec2iNew(270, y);
 	o.Size = Vec2iNew(49, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	y = 2 * th;
 
@@ -85,7 +85,7 @@ CArray CreateMainObjs(void)
 	o.Flags = UI_SELECT_ONLY;
 	o.Pos = Vec2iNew(25, y);
 	o.Size = Vec2iNew(175, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	// mission properties
 	// size, walls, rooms etc.
@@ -99,31 +99,32 @@ CArray CreateMainObjs(void)
 	x = 20;
 	o.Id2 = XC_WIDTH;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_HEIGHT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_WALLCOUNT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_WALLLENGTH;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_ROOMCOUNT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_SQRCOUNT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_DENSITY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Number of non-objective characters");
+	CArrayPushBack(&c.Objs, &o);
 
 	// Mission looks
 	// wall/floor styles etc.
@@ -137,27 +138,27 @@ CArray CreateMainObjs(void)
 	x = 20;
 	o.Id2 = XC_WALL;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_FLOOR;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_ROOM;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_DOORS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_KEYS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_EXIT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	// colours
 
@@ -169,19 +170,19 @@ CArray CreateMainObjs(void)
 
 	o.Id2 = XC_COLOR1;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id2 = XC_COLOR2;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id2 = XC_COLOR3;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id2 = XC_COLOR4;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	// mission data
 
@@ -194,23 +195,24 @@ CArray CreateMainObjs(void)
 
 	o.Id = YC_MISSIONDESC;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_CHARACTERS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_SPECIALS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_WEAPONS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_ITEMS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Shift+click to change amounts");
+	CArrayPushBack(&c.Objs, &o);
 
 	// objectives
 	y += 2;
@@ -218,34 +220,39 @@ CArray CreateMainObjs(void)
 	y += th;
 	o.Id = YC_OBJECTIVES;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "insert/delete: add/remove objective");
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_OBJECTIVES + 1;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "insert/delete: add/remove objective");
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_OBJECTIVES + 2;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "insert/delete: add/remove objective");
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_OBJECTIVES + 3;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "insert/delete: add/remove objective");
+	CArrayPushBack(&c.Objs, &o);
 	y += th;
 	o.Id = YC_OBJECTIVES + 4;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "insert/delete: add/remove objective");
+	CArrayPushBack(&c.Objs, &o);
 
-	return a;
+	return c;
 }
-CArray CreateCampaignObjs(void)
+UICollection CreateCampaignObjs(void)
 {
 	int th = CDogsTextHeight();
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int x;
 	int y;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	x = 0;
 	y = 150;
@@ -257,22 +264,22 @@ CArray CreateCampaignObjs(void)
 	o.Id2 = XC_AUTHOR;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(319, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	y += th;
 	o.Id2 = XC_CAMPAIGNDESC;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(319, 5 * th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
-	return a;
+	return c;
 }
-CArray CreateMissionObjs(void)
+UICollection CreateMissionObjs(void)
 {
 	int th = CDogsTextHeight();
-	CArray a;
+	UICollection c;
 	UIObject o;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = YC_MISSIONTITLE;
@@ -280,17 +287,17 @@ CArray CreateMissionObjs(void)
 	o.Flags = UI_SELECT_ONLY;
 	o.Pos = Vec2iNew(0, 150);
 	o.Size = Vec2iNew(319, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
-	return a;
+	return c;
 }
-CArray CreateWeaponObjs(void)
+UICollection CreateWeaponObjs(void)
 {
 	int th = CDogsTextHeight();
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int i;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = 0;
@@ -302,17 +309,17 @@ CArray CreateWeaponObjs(void)
 		int y = 150 + (i % 4) * th;
 		o.Id2 = i;
 		o.Pos = Vec2iNew(x, y);
-		CArrayPushBack(&a, &o);
+		CArrayPushBack(&c.Objs, &o);
 	}
 
-	return a;
+	return c;
 }
-CArray CreateMapItemObjs(void)
+UICollection CreateMapItemObjs(void)
 {
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int i;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = 0;
@@ -323,18 +330,18 @@ CArray CreateMapItemObjs(void)
 		int x = 10 + i * 20;
 		o.Id2 = i;
 		o.Pos = Vec2iNew(x, 150);
-		CArrayPushBack(&a, &o);
+		CArrayPushBack(&c.Objs, &o);
 	}
 
-	return a;
+	return c;
 }
-CArray CreateObjectiveObjs(void)
+UICollection CreateObjectiveObjs(void)
 {
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int x;
 	int y;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = 0;
@@ -345,36 +352,43 @@ CArray CreateObjectiveObjs(void)
 	o.Id2 = XC_TYPE;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(35, 40);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_INDEX;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(30, 40);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_REQUIRED;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(20, 40);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "0: optional objective");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 20;
 	o.Id2 = XC_TOTAL;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(35, 40);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 40;
 	o.Id2 = XC_FLAGS;
 	o.Pos = Vec2iNew(x, y);
 	o.Size = Vec2iNew(100, 40);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip,
+		"hidden: not shown on map\n"
+		"pos.known: always shown on map\n"
+		"access: in locked room\n"
+		"no-count: don't show completed count");
+	CArrayPushBack(&c.Objs, &o);
 
-	return a;
+	return c;
 }
-CArray CreateCharacterObjs(void)
+UICollection CreateCharacterObjs(void)
 {
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int i;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	memset(&o, 0, sizeof o);
 	o.Id = 0;
@@ -385,20 +399,20 @@ CArray CreateCharacterObjs(void)
 		int x = 10 + i * 20;
 		o.Id2 = i;
 		o.Pos = Vec2iNew(x, 150);
-		CArrayPushBack(&a, &o);
+		CArrayPushBack(&c.Objs, &o);
 	}
 
-	return a;
+	return c;
 }
 
-CArray CreateCharEditorObjs(void)
+UICollection CreateCharEditorObjs(void)
 {
 	int th = CDogsTextHeight();
-	CArray a;
+	UICollection c;
 	UIObject o;
 	int x;
 	int y;
-	CArrayInit(&a, sizeof o);
+	CArrayInit(&c.Objs, sizeof o);
 
 	// Appearance
 
@@ -410,27 +424,27 @@ CArray CreateCharEditorObjs(void)
 	x = 30;
 	o.Id2 = XC_FACE;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_SKIN;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_HAIR;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_BODY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_ARMS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 30;
 	o.Id2 = XC_LEGS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	// Character attributes
 
@@ -442,27 +456,32 @@ CArray CreateCharEditorObjs(void)
 	x = 20;
 	o.Id2 = XC_SPEED;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 50;
 	o.Id2 = XC_HEALTH;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 50;
 	o.Id2 = XC_MOVE;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 50;
 	o.Id2 = XC_TRACK;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip,
+		"Looking towards the player\n"
+		"Useless for friendly characters");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 50;
 	o.Id2 = XC_SHOOT;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 50;
 	o.Id2 = XC_DELAY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Frames before making another decision");
+	CArrayPushBack(&c.Objs, &o);
 
 	// Character flags
 
@@ -474,57 +493,71 @@ CArray CreateCharEditorObjs(void)
 	x = 5;
 	o.Id2 = XC_ASBESTOS;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 45;
 	o.Id2 = XC_IMMUNITY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Immune to poison");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_SEETHROUGH;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 45;
 	o.Id2 = XC_RUNS_AWAY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Runs away from player");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_SNEAKY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Shoots back when player shoots");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_GOOD_GUY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 45;
 	o.Id2 = XC_SLEEPING;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Doesn't move unless seen");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 
 	y += th;
 	x = 5;
 	o.Id2 = XC_PRISONER;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Doesn't move until touched");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_INVULNERABLE;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 45;
 	o.Id2 = XC_FOLLOWER;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 	x += 45;
 	o.Id2 = XC_PENALTY;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Large score penalty when shot");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_VICTIM;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CSTRDUP(o.Tooltip, "Takes damage from everyone");
+	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 	x += 45;
 	o.Id2 = XC_AWAKE;
 	o.Pos = Vec2iNew(x, y);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
 	// Weapon
 
@@ -533,7 +566,7 @@ CArray CreateCharEditorObjs(void)
 	o.Id = YC_WEAPON;
 	o.Pos = Vec2iNew(50, y);
 	o.Size = Vec2iNew(210, th);
-	CArrayPushBack(&a, &o);
+	CArrayPushBack(&c.Objs, &o);
 
-	return a;
+	return c;
 }

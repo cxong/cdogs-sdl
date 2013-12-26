@@ -49,8 +49,6 @@
 #ifndef __EDITOR_UI
 #define __EDITOR_UI
 
-#include <cdogs/c_array.h>
-
 #include "ui_object.h"
 
 
@@ -135,15 +133,14 @@
 #define XC_AWAKE         12
 
 
-// All functions populate array of UIObjects
-CArray CreateMainObjs(void);
-CArray CreateCampaignObjs(void);
-CArray CreateMissionObjs(void);
-CArray CreateWeaponObjs(void);
-CArray CreateMapItemObjs(void);
-CArray CreateObjectiveObjs(void);
-CArray CreateCharacterObjs(void);
+UICollection CreateMainObjs(void);
+UICollection CreateCampaignObjs(void);
+UICollection CreateMissionObjs(void);
+UICollection CreateWeaponObjs(void);
+UICollection CreateMapItemObjs(void);
+UICollection CreateObjectiveObjs(void);
+UICollection CreateCharacterObjs(void);
 
-CArray CreateCharEditorObjs(void);
+UICollection CreateCharEditorObjs(void);
 
 #endif

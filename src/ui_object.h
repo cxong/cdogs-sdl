@@ -29,6 +29,7 @@
 #ifndef __UI_OBJECT
 #define __UI_OBJECT
 
+#include <cdogs/c_array.h>
 #include <cdogs/vector.h>
 
 #define UI_SELECT_ONLY			1
@@ -43,9 +44,17 @@ typedef struct
 	int Flags;
 	Vec2i Pos;
 	Vec2i Size;
+	char *Tooltip;
 } UIObject;
 
+typedef struct
+{
+	CArray Objs;
+} UICollection;
+
+void UICollectionTerminate(UICollection *c);
+
 // Get the UIObject that is at pos (e.g. for mouse clicks)
-int UITryGetObject(UIObject *objs, size_t count, Vec2i pos, UIObject **out);
+int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out);
 
 #endif
