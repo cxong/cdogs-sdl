@@ -213,6 +213,7 @@ UICollection CreateMainObjs(void)
 	o.Pos = Vec2iNew(x, y);
 	CSTRDUP(o.Tooltip, "Shift+click to change amounts");
 	CArrayPushBack(&c.Objs, &o);
+	o.Tooltip = NULL;
 
 	// objectives
 	y += 2;

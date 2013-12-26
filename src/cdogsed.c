@@ -1515,7 +1515,7 @@ static void HandleInput(
 				*yc = o->Id;
 				AdjustYC(yc);
 			}
-			if (!(o->Flags & UI_LEAVE_YC))
+			if (!(o->Flags & UI_LEAVE_XC))
 			{
 				*xc = o->Id2;
 				AdjustXC(*yc, xc);
