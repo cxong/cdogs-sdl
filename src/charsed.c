@@ -68,89 +68,18 @@
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
 
+#include "editor_ui.h"
 #include "ui_object.h"
 
 
-#define YC_APPEARANCE 0
-#define YC_ATTRIBUTES 1
-#define YC_FLAGS      2
-#define YC_FLAGS2     3
-#define YC_WEAPON     4
-
-#define XC_FACE       0
-#define XC_SKIN       1
-#define XC_HAIR       2
-#define XC_BODY       3
-#define XC_ARMS       4
-#define XC_LEGS       5
-
-#define XC_SPEED      0
-#define XC_HEALTH     1
-#define XC_MOVE       2
-#define XC_TRACK      3
-#define XC_SHOOT      4
-#define XC_DELAY      5
-
-#define XC_ASBESTOS      0
-#define XC_IMMUNITY      1
-#define XC_SEETHROUGH    2
-#define XC_RUNS_AWAY     3
-#define XC_SNEAKY        4
-#define XC_GOOD_GUY      5
-#define XC_SLEEPING      6
-
-#define XC_PRISONER      0
-#define XC_INVULNERABLE  1
-#define XC_FOLLOWER      2
-#define XC_PENALTY       3
-#define XC_VICTIM        4
-#define XC_AWAKE         5
-
-
-#define TH  9
-
-// Mouse click areas:
+#define TH  8
 
 
 int fileChanged = 0;
 extern void *myScreen;
 
 
-static UIObject localClicks[] =
-{
-	{ YC_APPEARANCE, XC_FACE, 0, { 30, 10 }, { 25, TH } },
-	{ YC_APPEARANCE, XC_SKIN, 0, { 60, 10 }, { 25, TH } },
-	{ YC_APPEARANCE, XC_HAIR, 0, { 90, 10 }, { 25, TH } },
-	{ YC_APPEARANCE, XC_BODY, 0, { 120, 10 }, { 25, TH } },
-	{ YC_APPEARANCE, XC_ARMS, 0, { 150, 10 }, { 25, TH } },
-	{ YC_APPEARANCE, XC_LEGS, 0, { 180, 10 }, { 25, TH } },
-
-	{ YC_ATTRIBUTES, XC_SPEED, 0, { 20, 10 + TH }, { 40, TH } },
-	{ YC_ATTRIBUTES, XC_HEALTH, 0, { 70, 10 + TH }, { 40, TH } },
-	{ YC_ATTRIBUTES, XC_MOVE, 0, { 120, 10 + TH }, { 40, TH } },
-	{ YC_ATTRIBUTES, XC_TRACK, 0, { 170, 10 + TH }, { 40, TH } },
-	{ YC_ATTRIBUTES, XC_SHOOT, 0, { 220, 10 + TH }, { 40, TH } },
-	{ YC_ATTRIBUTES, XC_DELAY, 0, { 270, 10 + TH }, { 40, TH } },
-
-	{ YC_FLAGS, XC_ASBESTOS, 0, { 5, 10 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_IMMUNITY, 0, { 50, 10 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_SEETHROUGH, 0, { 95, 10 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_RUNS_AWAY, 0, { 140, 10 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_SNEAKY, 0, { 50, 185 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_GOOD_GUY, 0, { 230, 10 + 2 * TH }, { 40, TH } },
-	{ YC_FLAGS, XC_SLEEPING, 0, { 275, 10 + 2 * TH }, { 40, TH } },
-
-	{ YC_FLAGS2, XC_PRISONER, 0, { 5, 10 + 3 * TH }, { 40, TH } },
-	{ YC_FLAGS2, XC_INVULNERABLE, 0, { 50, 10 + 3 * TH }, { 40, TH } },
-	{ YC_FLAGS2, XC_FOLLOWER, 0, { 95, 10 + 3 * TH }, { 40, TH } },
-	{ YC_FLAGS2, XC_PENALTY, 0, { 140, 10 + 3 * TH }, { 40, TH } },
-	{ YC_FLAGS2, XC_VICTIM, 0, { 185, 10 + 3 * TH }, { 40, TH } },
-	{ YC_FLAGS2, XC_AWAKE, 0, { 230, 10 + 3 * TH }, { 40, TH } },
-
-	{ YC_WEAPON, 0, 0, { 50, 10 + 4 * TH }, { 210, TH } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
+CArray sCharEditorObjs;
 
 
 static int PosToCharacterIndex(Vec2i pos, int *idx)
@@ -228,11 +157,6 @@ static void DrawTooltips(
 				case XC_SLEEPING:
 					DrawTooltip(device, pos, "Doesn't move unless seen");
 					break;
-			}
-			break;
-		case YC_FLAGS2:
-			switch (mouseXc)
-			{
 				case XC_PRISONER:
 					DrawTooltip(device, pos, "Doesn't move until touched");
 					break;
@@ -314,22 +238,22 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 
 		DisplayFlag(5, y, "Prisoner",
 			    (b->flags & FLAGS_PRISONER) != 0,
-			    yc == YC_FLAGS2 && xc == XC_PRISONER);
+			    yc == YC_FLAGS && xc == XC_PRISONER);
 		DisplayFlag(50, y, "Invuln.",
 			    (b->flags & FLAGS_INVULNERABLE) != 0,
-			    yc == YC_FLAGS2 && xc == XC_INVULNERABLE);
+			    yc == YC_FLAGS && xc == XC_INVULNERABLE);
 		DisplayFlag(95, y, "Follower",
 			    (b->flags & FLAGS_FOLLOWER) != 0,
-			    yc == YC_FLAGS2 && xc == XC_FOLLOWER);
+			    yc == YC_FLAGS && xc == XC_FOLLOWER);
 		DisplayFlag(140, y, "Penalty",
 			    (b->flags & FLAGS_PENALTY) != 0,
-			    yc == YC_FLAGS2 && xc == XC_PENALTY);
+			    yc == YC_FLAGS && xc == XC_PENALTY);
 		DisplayFlag(185, y, "Victim",
-			    (b->flags & FLAGS_VICTIM) != 0, yc == YC_FLAGS2
-			    && xc == XC_VICTIM);
+			    (b->flags & FLAGS_VICTIM) != 0,
+				yc == YC_FLAGS && xc == XC_VICTIM);
 		DisplayFlag(230, y, "Awake",
 			    (b->flags & FLAGS_AWAKEALWAYS) != 0,
-			    yc == YC_FLAGS2 && xc == XC_AWAKE);
+			    yc == YC_FLAGS && xc == XC_AWAKE);
 		y += CDogsTextHeight();
 
 		DisplayCDogsText(50, y, GunGetName(b->gun), yc == YC_WEAPON);
@@ -349,7 +273,9 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		}
 	}
 
-	if (UITryGetObject(localClicks, gEventHandlers.mouse.currentPos, &o))
+	if (UITryGetObject(
+		sCharEditorObjs.data, sCharEditorObjs.size,
+		gEventHandlers.mouse.currentPos, &o))
 	{
 		Vec2i tooltipPos = Vec2iAdd(
 			gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
@@ -464,11 +390,7 @@ static void Change(
 		case XC_SLEEPING:
 			b->flags ^= FLAGS_SLEEPALWAYS;
 			break;
-		}
-		break;
 
-	case YC_FLAGS2:
-		switch (xc) {
 		case XC_PRISONER:
 			b->flags ^= FLAGS_PRISONER;
 			break;
@@ -561,10 +483,6 @@ static void AdjustXC(int yc, int *xc)
 		break;
 
 	case YC_FLAGS:
-		*xc = CLAMP_OPPOSITE(*xc, 0, XC_SLEEPING);
-		break;
-
-	case YC_FLAGS2:
 		*xc = CLAMP_OPPOSITE(*xc, 0, XC_AWAKE);
 		break;
 	}
@@ -707,6 +625,9 @@ void EditCharacters(CampaignSettingNew *setting)
 
 	memset(&scrap, 0, sizeof(scrap));
 
+	// Initialise UI elements
+	sCharEditorObjs = CreateCharEditorObjs();
+
 	while (!done)
 	{
 		int c, m;
@@ -729,7 +650,8 @@ void EditCharacters(CampaignSettingNew *setting)
 				}
 			}
 			else if (UITryGetObject(
-				localClicks, gEventHandlers.mouse.currentPos, &o))
+				sCharEditorObjs.data, sCharEditorObjs.size,
+				gEventHandlers.mouse.currentPos, &o))
 			{
 				int isSameSelection;
 				xcOld = xc;
@@ -759,6 +681,8 @@ void EditCharacters(CampaignSettingNew *setting)
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}
+
+	CArrayTerminate(&sCharEditorObjs);
 }
 
 void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)

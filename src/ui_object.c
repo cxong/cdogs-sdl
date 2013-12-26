@@ -45,16 +45,16 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
-int UITryGetObject(UIObject *objs, Vec2i pos, UIObject **out)
+int UITryGetObject(UIObject *objs, size_t count, Vec2i pos, UIObject **out)
 {
-	while (objs && !IsZeroUIObject(objs))
+	size_t i;
+	for (i = 0; i < count; i++, objs++)
 	{
 		if (IsInside(pos, objs->Pos, objs->Size))
 		{
 			*out = objs;
 			return 1;
 		}
-		objs++;
 	}
 	return 0;
 }

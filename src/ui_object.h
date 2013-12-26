@@ -46,6 +46,6 @@ typedef struct
 } UIObject;
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
-int UITryGetObject(UIObject *objs, Vec2i pos, UIObject **out);
+int UITryGetObject(UIObject *objs, size_t count, Vec2i pos, UIObject **out);
 
 #endif

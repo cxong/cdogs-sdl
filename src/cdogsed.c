@@ -72,197 +72,31 @@
 #include <cdogs/utils.h>
 
 #include "charsed.h"
+#include "editor_ui.h"
 #include "ui_object.h"
-
-
-#define YC_CAMPAIGNTITLE    0
-#define YC_MISSIONINDEX     1
-#define YC_MISSIONTITLE     2
-#define YC_MISSIONPROPS     3
-#define YC_MISSIONLOOKS     4
-#define YC_MISSIONDESC      5
-#define YC_CHARACTERS       6
-#define YC_SPECIALS         7
-#define YC_WEAPONS          8
-#define YC_ITEMS            9
-#define YC_OBJECTIVES       10
-
-#define XC_CAMPAIGNTITLE    0
-#define XC_AUTHOR           1
-#define XC_CAMPAIGNDESC     2
-
-#define XC_MISSIONTITLE     0
-#define XC_MUSICFILE        1
-
-#define XC_WIDTH            0
-#define XC_HEIGHT           1
-#define XC_WALLCOUNT        2
-#define XC_WALLLENGTH       3
-#define XC_ROOMCOUNT        4
-#define XC_SQRCOUNT         5
-#define XC_DENSITY          6
-
-#define XC_WALL             0
-#define XC_FLOOR            1
-#define XC_ROOM             2
-#define XC_DOORS            3
-#define XC_KEYS             4
-#define XC_EXIT             5
-#define XC_COLOR1           6
-#define XC_COLOR2           7
-#define XC_COLOR3           8
-#define XC_COLOR4           9
-
-#define XC_TYPE             0
-#define XC_INDEX            1
-#define XC_REQUIRED         2
-#define XC_TOTAL            3
-#define XC_FLAGS            4
-
-#define XC_MAXWEAPONS      10
 
 
 #define TH  8
 
 
 // Mouse click areas:
-
-static UIObject localClicks[] =
-{
-	{ YC_CAMPAIGNTITLE, 0, UI_SELECT_ONLY_FIRST, { 25, 5 }, { 240, TH } },
-	{ YC_MISSIONINDEX, 0, 0, { 270, 5 }, { 49, TH } },
-	{ YC_MISSIONTITLE, 0, UI_SELECT_ONLY, { 25, 8 + TH }, { 175, TH } },
-
-	{ YC_MISSIONPROPS, XC_WIDTH, 0, { 20, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_HEIGHT, 0, { 60, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_WALLCOUNT, 0, { 100, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_WALLLENGTH, 0, { 140, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_ROOMCOUNT, 0, { 180, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_SQRCOUNT, 0, { 220, 10 + 2 * TH }, { 35, TH } },
-	{ YC_MISSIONPROPS, XC_DENSITY, 0, { 260, 10 + 2 * TH }, { 35, TH } },
-
-	{ YC_MISSIONLOOKS, XC_WALL, 0, { 20, 10 + 3 * TH }, { 25, 25 + TH } },
-	{ YC_MISSIONLOOKS, XC_FLOOR, 0, { 50, 10 + 3 * TH }, { 25, 25 + TH } },
-	{ YC_MISSIONLOOKS, XC_ROOM, 0, { 80, 10 + 3 * TH }, { 25, 25 + TH } },
-	{ YC_MISSIONLOOKS, XC_DOORS, 0, { 110, 10 + 3 * TH }, { 25, 25 + TH } },
-	{ YC_MISSIONLOOKS, XC_KEYS, 0, { 140, 10 + 3 * TH }, { 25, 25 + TH } },
-	{ YC_MISSIONLOOKS, XC_EXIT, 0, { 170, 10 + 3 * TH }, { 25, 25 + TH } },
-
-	{ YC_MISSIONLOOKS, XC_COLOR1, 0, { 200, 10 + 3 * TH }, { 100, TH } },
-	{ YC_MISSIONLOOKS, XC_COLOR2, 0, { 200, 10 + 4 * TH }, { 100, TH } },
-	{ YC_MISSIONLOOKS, XC_COLOR3, 0, { 200, 10 + 5 * TH }, { 100, TH } },
-	{ YC_MISSIONLOOKS, XC_COLOR4, 0, { 200, 10 + 6 * TH }, { 100, TH } },
-
-	{ YC_MISSIONDESC, 0, UI_SELECT_ONLY, { 10, 35 + 4 * TH }, { 189, TH } },
-	{ YC_CHARACTERS, 0, UI_SELECT_ONLY, { 10, 35 + 5 * TH }, { 189, TH } },
-	{ YC_SPECIALS, 0, UI_SELECT_ONLY, { 10, 35 + 6 * TH }, { 189, TH } },
-	{ YC_WEAPONS, 0, UI_SELECT_ONLY, { 10, 35 + 7 * TH }, { 189, TH } },
-	{ YC_ITEMS, 0, UI_SELECT_ONLY, { 10, 35 + 8 * TH }, { 189, TH } },
-	{ YC_OBJECTIVES, 0, UI_SELECT_ONLY, { 10, 37 + 9 * TH }, { 189, TH } },
-	{ YC_OBJECTIVES + 1, 0, UI_SELECT_ONLY, { 10, 37 + 10 * TH }, { 189, TH } },
-	{ YC_OBJECTIVES + 2, 0, UI_SELECT_ONLY, { 10, 37 + 11 * TH }, { 189, TH } },
-	{ YC_OBJECTIVES + 3, 0, UI_SELECT_ONLY, { 10, 37 + 12 * TH }, { 189, TH } },
-	{ YC_OBJECTIVES + 4, 0, UI_SELECT_ONLY, { 10, 37 + 13 * TH }, { 189, TH } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localCampaignClicks[] =
-{
-	{ YC_CAMPAIGNTITLE, XC_AUTHOR, UI_SELECT_ONLY, { 0, 150 }, { 319, TH } },
-	{ YC_CAMPAIGNTITLE, XC_CAMPAIGNDESC, UI_SELECT_ONLY, { 0, 150 + TH }, { 319, 40 } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localMissionClicks[] =
-{
-	{ YC_MISSIONTITLE, XC_MUSICFILE, UI_SELECT_ONLY, { 0, 150 }, { 319, 10 } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localWeaponClicks[] =
-{
-	{ 0, 0, UI_LEAVE_YC,{ 10, 150 }, { 80, TH } },
-	{ 0, 1, UI_LEAVE_YC, { 10, 150 + TH }, { 80, TH } },
-	{ 0, 2, UI_LEAVE_YC, { 10, 150 + 2 * TH }, { 80, TH } },
-	{ 0, 3, UI_LEAVE_YC, { 10, 150 + 3 * TH }, { 80, TH } },
-
-	{ 0, 4, UI_LEAVE_YC, { 100, 150 }, { 80, TH } },
-	{ 0, 5, UI_LEAVE_YC, { 100, 150 + TH }, { 80, TH } },
-	{ 0, 6, UI_LEAVE_YC, { 100, 150 + 2 * TH }, { 80, TH } },
-	{ 0, 7, UI_LEAVE_YC, { 100, 150 + 3 * TH }, { 80, TH } },
-
-	{ 0, 8, UI_LEAVE_YC, { 190, 150 }, { 80, TH } },
-	{ 0, 9, UI_LEAVE_YC, { 190, 150 + TH }, { 80, TH } },
-	{ 0, 10, UI_LEAVE_YC, { 190, 150 + 2 * TH }, { 80, TH } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localMapItemClicks[] =
-{
-	{ 0, 0, UI_LEAVE_YC, { 0, 150 }, { 19, 40 } },
-	{ 0, 1, UI_LEAVE_YC, { 20, 150 }, { 19, 40 } },
-	{ 0, 2, UI_LEAVE_YC, { 40, 150 }, { 19, 40 } },
-	{ 0, 3, UI_LEAVE_YC, { 60, 150 }, { 19, 40 } },
-	{ 0, 4, UI_LEAVE_YC, { 80, 150 }, { 19, 40 } },
-	{ 0, 5, UI_LEAVE_YC, { 100, 150 }, { 19, 40 } },
-	{ 0, 6, UI_LEAVE_YC, { 120, 150 }, { 19, 40 } },
-	{ 0, 7, UI_LEAVE_YC, { 140, 150 }, { 19, 40 } },
-	{ 0, 8, UI_LEAVE_YC, { 160, 150 }, { 19, 40 } },
-	{ 0, 9, UI_LEAVE_YC, { 180, 150 }, { 19, 40 } },
-	{ 0, 10, UI_LEAVE_YC, { 200, 150 }, { 19, 40 } },
-	{ 0, 11, UI_LEAVE_YC, { 220, 150 }, { 19, 40 } },
-	{ 0, 12, UI_LEAVE_YC, { 240, 150 }, { 19, 40 } },
-	{ 0, 13, UI_LEAVE_YC, { 260, 150 }, { 19, 40 } },
-	{ 0, 14, UI_LEAVE_YC, { 280, 150 }, { 19, 40 } },
-	{ 0, 15, UI_LEAVE_YC, { 300, 150 }, { 19, 40 } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localObjectiveClicks[] =
-{
-	{ 0, XC_TYPE, UI_LEAVE_YC, { 20, 150 }, { 35, 40 } },
-	{ 0, XC_INDEX, UI_LEAVE_YC, { 60, 150 }, { 35, 40 } },
-	{ 0, XC_REQUIRED, UI_LEAVE_YC, { 90, 150 }, { 35, 40 } },
-	{ 0, XC_TOTAL, UI_LEAVE_YC, { 110, 150 }, { 35, 40 } },
-	{ 0, XC_FLAGS, UI_LEAVE_YC, { 150, 150 }, { 35, 40 } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
-
-static UIObject localCharacterClicks[] =
-{
-	{ 0, 0, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 10, 150 }, { 19, 40 } },
-	{ 0, 1, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 30, 150 }, { 19, 40 } },
-	{ 0, 2, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 50, 150 }, { 19, 40 } },
-	{ 0, 3, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 70, 150 }, { 19, 40 } },
-	{ 0, 4, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 90, 150 }, { 19, 40 } },
-	{ 0, 5, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 110, 150 }, { 19, 40 } },
-	{ 0, 6, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 130, 150 }, { 19, 40 } },
-	{ 0, 7, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 150, 150 }, { 19, 40 } },
-	{ 0, 8, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 170, 150 }, { 19, 40 } },
-	{ 0, 9, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 190, 150 }, { 19, 40 } },
-	{ 0, 10, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 210, 150 }, { 19, 40 } },
-	{ 0, 11, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 230, 150 }, { 19, 40 } },
-	{ 0, 12, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 250, 150 }, { 19, 40 } },
-	{ 0, 13, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 270, 150 }, { 19, 40 } },
-	{ 0, 14, UI_LEAVE_YC | UI_SELECT_ONLY_FIRST, { 290, 150 }, { 19, 40 } },
-
-	{ 0, 0, 0, { 0, 0 }, { 0, 0 } }
-};
+CArray sMainObjs;
+CArray sCampaignObjs;
+CArray sMissionObjs;
+CArray sWeaponObjs;
+CArray sMapItemObjs;
+CArray sObjectiveObjs;
+CArray sCharacterObjs;
 
 // zero-terminated list of UI objects to detect clicks for
-static UIObject *sObjs1 = NULL;
-static UIObject *sObjs2 = NULL;
+static CArray *sObjs1 = NULL;
+static CArray *sObjs2 = NULL;
 
 int TryGetClickObj(Vec2i pos, UIObject **out)
 {
 	return
-		UITryGetObject(sObjs1, pos, out) || UITryGetObject(sObjs2, pos, out);
+		(sObjs1 && UITryGetObject(sObjs1->data, sObjs1->size, pos, out)) ||
+		(sObjs2 && UITryGetObject(sObjs2->data, sObjs2->size, pos, out));
 }
 
 
@@ -308,8 +142,9 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	char s[50];
 	Character *cd;
 	CharacterStore *store = &gCampaign.Setting.characters;
+	struct MissionObjective *mo = &currentMission->objectives[idx];
 
-	switch (currentMission->objectives[idx].type)
+	switch (mo->type)
 	{
 	case OBJECTIVE_KILL:
 		typeCDogsText = "Kill";
@@ -370,22 +205,32 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	if (pic.picIndex >= 0)
 	{
 		DrawTTPic(
-			60 + pic.dx, y + 8 + pic.dy,
+			75 + pic.dx, y + 8 + pic.dy,
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 
-	sprintf(s, "%d", currentMission->objectives[idx].required);
+	sprintf(s, "%d", mo->required);
 	DisplayCDogsText(90, y, s, xc == XC_REQUIRED, 0);
-	sprintf(s, "out of %d", currentMission->objectives[idx].count);
+	sprintf(s, "out of %d", mo->count);
 	DisplayCDogsText(110, y, s, xc == XC_TOTAL, 0);
 
-	sprintf(s, "%s %s %s %s %s",
-		(currentMission->objectives[idx].flags & OBJECTIVE_HIDDEN) != 0 ? "hidden" : "",
-		(currentMission->objectives[idx].flags & OBJECTIVE_POSKNOWN) != 0 ? "pos.known" : "",
-		(currentMission->objectives[idx].flags & OBJECTIVE_HIACCESS) != 0 ? "access" : "",
-		(currentMission->objectives[idx].flags & OBJECTIVE_UNKNOWNCOUNT) != 0 ? "no-count" : "",
-		(currentMission->objectives[idx].flags & OBJECTIVE_NOACCESS) != 0 ? "no-access" : "");
-	DisplayCDogsText(150, y, s, xc == XC_FLAGS, 0);
+	if (!mo->flags)
+	{
+		DrawTextStringMasked(
+			"normal", &gGraphicsDevice, Vec2iNew(150, y), colorGray);
+	}
+	else
+	{
+		sprintf(s, "%s %s %s %s %s",
+			(mo->flags & OBJECTIVE_HIDDEN) ? "hidden" : "",
+			(mo->flags & OBJECTIVE_POSKNOWN) ? "pos.known" : "",
+			(mo->flags & OBJECTIVE_HIACCESS) ? "access" : "",
+			(mo->flags & OBJECTIVE_UNKNOWNCOUNT) ? "no-count" : "",
+			(mo->flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
+		DrawTextStringMasked(
+			s, &gGraphicsDevice, Vec2iNew(150, y),
+			xc == XC_FLAGS ? colorRed : colorWhite);
+	}
 }
 
 static int MissionDescription(
@@ -864,7 +709,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		MissionDescription(
 			150 + TH, gCampaign.Setting.description, "(Campaign description)",
 			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
-		sObjs2 = localCampaignClicks;
+		sObjs2 = &sCampaignObjs;
 		break;
 
 	case YC_MISSIONTITLE:
@@ -872,7 +717,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			Vec2iNew(20, 150),
 			currentMission->song, "(Mission song)",
 			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
-		sObjs2 = localMissionClicks;
+		sObjs2 = &sMissionObjs;
 		break;
 
 	case YC_MISSIONDESC:
@@ -894,7 +739,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				20 + 20 * i, y,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
-		sObjs2 = localCharacterClicks;
+		sObjs2 = &sCharacterObjs;
 		break;
 
 	case YC_SPECIALS:
@@ -911,7 +756,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				xc == i,
 				1);
 		}
-		sObjs2 = localCharacterClicks;
+		sObjs2 = &sCharacterObjs;
 		break;
 
 	case YC_ITEMS:
@@ -921,7 +766,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		sObjs2 = localMapItemClicks;
+		sObjs2 = &sMapItemObjs;
 		for (i = 0; i < currentMission->itemCount; i++)
 		{
 			DisplayMapItem(
@@ -937,7 +782,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		sObjs2 = localWeaponClicks;
+		sObjs2 = &sWeaponObjs;
 		ListWeapons(150, xc);
 		break;
 
@@ -947,7 +792,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			CDogsTextStringAt(
 				5, 190, "Use Insert, Delete and PageUp/PageDown");
-			sObjs2 = localObjectiveClicks;
+			sObjs2 = &sObjectiveObjs;
 			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
 		}
 		break;
@@ -1792,7 +1637,7 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			sObjs1 = localClicks;
+			sObjs1 = &sMainObjs;
 			sObjs2 = NULL;
 			break;
 		}
@@ -1944,7 +1789,7 @@ static void EditCampaign(void)
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	sObjs1 = localClicks;
+	sObjs1 = &sMainObjs;
 	sObjs2 = NULL;
 
 	gCampaign.seed = 0;
@@ -1979,8 +1824,7 @@ int main(int argc, char *argv[])
 	int i;
 	int loaded = 0;
 
-	printf("C-Dogs Editor v0.8\n");
-	printf("Copyright Ronny Wester 1996\n");
+	printf("C-Dogs SDL Editor\n");
 
 	debug(D_NORMAL, "Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
@@ -2001,6 +1845,16 @@ int main(int argc, char *argv[])
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
+
+	// initialise UI collections
+	// Note: must do this after text init since positions depend on text height
+	sMainObjs = CreateMainObjs();
+	sCampaignObjs = CreateCampaignObjs();
+	sMissionObjs = CreateMissionObjs();
+	sWeaponObjs = CreateWeaponObjs();
+	sMapItemObjs = CreateMapItemObjs();
+	sObjectiveObjs = CreateObjectiveObjs();
+	sCharacterObjs = CreateCharacterObjs();
 
 	CampaignInit(&gCampaign);
 
@@ -2053,5 +1907,14 @@ int main(int argc, char *argv[])
 
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
+
+	CArrayTerminate(&sMainObjs);
+	CArrayTerminate(&sCampaignObjs);
+	CArrayTerminate(&sMissionObjs);
+	CArrayTerminate(&sWeaponObjs);
+	CArrayTerminate(&sMapItemObjs);
+	CArrayTerminate(&sObjectiveObjs);
+	CArrayTerminate(&sCharacterObjs);
+
 	exit(EXIT_SUCCESS);
 }

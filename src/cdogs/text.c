@@ -317,6 +317,7 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 
 int CDogsTextHeight(void)
 {
+	assert(hCDogsText && "text not initialised");
 	return hCDogsText;
 }
 
