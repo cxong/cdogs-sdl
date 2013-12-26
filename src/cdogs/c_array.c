@@ -51,6 +51,10 @@ void CArrayPushBack(CArray *a, void *elem)
 
 void CArrayTerminate(CArray *a)
 {
+	if (!a)
+	{
+		return;
+	}
 	CFREE(a->data);
 	memset(a, 0, sizeof *a);
 }

@@ -30,6 +30,8 @@
 
 #include <string.h>
 
+#include <cdogs/text.h>
+
 
 void UICollectionTerminate(UICollection *c)
 {
@@ -37,10 +39,52 @@ void UICollectionTerminate(UICollection *c)
 	UIObject *objs = c->Objs.data;
 	for (i = 0; i < c->Objs.size; i++, objs++)
 	{
+		UICollectionTerminate(&objs->Children);
 		CFREE(objs->Tooltip);
 	}
 	CArrayTerminate(&c->Objs);
 	memset(c, 0, sizeof *c);
+}
+
+void UICollectionDraw(UICollection *c, GraphicsDevice *g)
+{
+	size_t i;
+	UIObject *objs;
+	if (!c)
+	{
+		return;
+	}
+	objs = c->Objs.data;
+	for (i = 0; i < c->Objs.size; i++, objs++)
+	{
+		switch (objs->Type)
+		{
+		case UITYPE_TEXTBOX:
+			{
+				int isText = !!objs->u.Textbox.TextLinkFunc;
+				char *text = isText ? objs->u.Textbox.TextLinkFunc(
+					objs->u.Textbox.TextLinkData) : NULL;
+				int isEmptyText = !isText || !text || strlen(text) == 0;
+				int isHighlighted = c->Highlighted == objs;
+				color_t bracketMask = isHighlighted ? colorRed : colorWhite;
+				color_t textMask = isEmptyText ? colorGray : colorWhite;
+				Vec2i pos = objs->Pos;
+				if (isEmptyText)
+				{
+					text = objs->u.Textbox.Hint;
+				}
+				pos = DrawTextCharMasked('\020', g, pos, bracketMask);
+				pos = DrawTextStringMaskedWrapped(
+					text, g, pos, textMask, objs->Pos.x + objs->Size.x - pos.x);
+				pos = DrawTextCharMasked('\021', g, pos, bracketMask);
+			}
+			break;
+		}
+		if (c->Highlighted == objs)
+		{
+			UICollectionDraw(&objs->Children, g);
+		}
+	}
 }
 
 static int IsZeroUIObject(UIObject *o)
@@ -68,6 +112,11 @@ int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out)
 		if (IsInside(pos, objs->Pos, objs->Size))
 		{
 			*out = objs;
+			return 1;
+		}
+		if (c->Highlighted == objs &&
+			UITryGetObject(&objs->Children, pos, out))
+		{
 			return 1;
 		}
 	}

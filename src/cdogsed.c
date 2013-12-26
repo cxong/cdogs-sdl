@@ -233,70 +233,6 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	}
 }
 
-static int MissionDescription(
-	int y, const char *description, const char *hint, int hilite)
-{
-	int lines;
-	const char *p, *s;
-	int isEmptyText = strlen(description) == 0;
-	color_t bracketMask = hilite ? colorRed : colorWhite;
-	color_t textMask = isEmptyText ? colorGray : colorWhite;
-	Vec2i pos;
-	if (isEmptyText)
-	{
-		description = hint;
-	}
-
-	pos = Vec2iNew(20 - CDogsTextCharWidth('\020'), y);
-	pos = DrawTextCharMasked('\020', &gGraphicsDevice, pos, bracketMask);
-
-	pos.x = 20;
-	lines = 1;
-
-	s = description;
-	while (*s) {
-		// Find word
-		// First find spaces before a word, then find the word
-		// e.g.: "       abc123  def"
-		//        ^      ^     ^
-		//        |      |     |
-		//     wordSpace word end
-		const char *wordSpace = s;
-		const char *word;
-		int wordSpaceWidth;
-		int wordWidth;
-		while (*s == ' ' || *s == '\n')
-			s++;
-		word = s;
-		while (*s != 0 && *s != ' ' && *s != '\n')
-			s++;
-
-		wordSpaceWidth = TextGetSubstringWidth(wordSpace, word - wordSpace);
-		wordWidth = TextGetSubstringWidth(word, s - word);
-
-		if (pos.x + wordSpaceWidth + wordWidth > 300 &&
-			wordSpaceWidth + wordWidth < 280)
-		{
-			pos.y += CDogsTextHeight();
-			pos.x = 20;
-			lines++;
-			wordSpace = word;
-			wordSpaceWidth = 0;
-		}
-
-		pos.x += wordSpaceWidth;
-
-		for (p = word; p < s; p++)
-		{
-			pos = DrawTextCharMasked(*p, &gGraphicsDevice, pos, textMask);
-		}
-	}
-
-	pos = DrawTextCharMasked('\021', &gGraphicsDevice, pos, bracketMask);
-
-	return lines;
-}
-
 static void ShowWeaponStatus(int x, int y, int weapon, int xc)
 {
 	DisplayFlag(
@@ -633,11 +569,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		}
 	}
 
-	DrawEditableTextWithEmptyHint(
-		Vec2iNew(25, y),
-		gCampaign.Setting.title, "(Campaign title)",
-		yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNTITLE);
-
 	if (fileChanged)
 	{
 		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
@@ -650,15 +581,9 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 
 	y = 170;
 
-	switch (yc) {
+	switch (yc)
+	{
 	case YC_CAMPAIGNTITLE:
-		DrawEditableTextWithEmptyHint(
-			Vec2iNew(25, 150),
-			gCampaign.Setting.author, "(Campaign author)",
-			yc == YC_CAMPAIGNTITLE && xc == XC_AUTHOR);
-		MissionDescription(
-			150 + TH, gCampaign.Setting.description, "(Campaign description)",
-			yc == YC_CAMPAIGNTITLE && xc == XC_CAMPAIGNDESC);
 		sObjs2 = &sCampaignObjs;
 		break;
 
@@ -671,10 +596,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		break;
 
 	case YC_MISSIONDESC:
-		MissionDescription(
-			150,
-			currentMission->description, "(Mission description)",
-			yc == YC_MISSIONDESC);
 		break;
 
 	case YC_CHARACTERS:
@@ -747,6 +668,9 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		}
 		break;
 	}
+
+	UICollectionDraw(sObjs1, &gGraphicsDevice);
+	UICollectionDraw(sObjs2, &gGraphicsDevice);
 
 	if (willDisplayAutomap)
 	{
@@ -1502,36 +1426,49 @@ static void HandleInput(
 	int *mission, struct Mission *scrap,
 	int *willDisplayAutomap, int *done)
 {
-	UIObject *o;
-	if (m && TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
+	if (m)
 	{
-		*xcOld = *xc;
-		*ycOld = *yc;
-		// Only change selection on left/right click
-		if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+		UIObject *o;
+		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 		{
-			if (!(o->Flags & UI_LEAVE_YC))
+			if (!(o->Flags & UI_IGNORE))
 			{
-				*yc = o->Id;
-				AdjustYC(yc);
-			}
-			if (!(o->Flags & UI_LEAVE_XC))
-			{
-				*xc = o->Id2;
-				AdjustXC(*yc, xc);
+				if (sObjs1) sObjs1->Highlighted = o;
+				if (sObjs2) sObjs2->Highlighted = o;
+				*xcOld = *xc;
+				*ycOld = *yc;
+				// Only change selection on left/right click
+				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+				{
+					if (!(o->Flags & UI_LEAVE_YC))
+					{
+						*yc = o->Id;
+						AdjustYC(yc);
+					}
+					if (!(o->Flags & UI_LEAVE_XC))
+					{
+						*xc = o->Id2;
+						AdjustXC(*yc, xc);
+					}
+				}
+				if (!(o->Flags & UI_SELECT_ONLY) &&
+					(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+				{
+					if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
+					{
+						c = SDLK_PAGEUP;
+					}
+					else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
+					{
+						c = SDLK_PAGEDOWN;
+					}
+				}
 			}
 		}
-		if (!(o->Flags & UI_SELECT_ONLY) &&
-			(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+		else
 		{
-			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
-			{
-				c = SDLK_PAGEUP;
-			}
-			else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
-			{
-				c = SDLK_PAGEDOWN;
-			}
+			if (sObjs1) sObjs1->Highlighted = NULL;
+			if (sObjs2) sObjs2->Highlighted = NULL;
 		}
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
@@ -1797,7 +1734,7 @@ int main(int argc, char *argv[])
 
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sMainObjs = CreateMainObjs();
+	sMainObjs = CreateMainObjs(&currentMission);
 	sCampaignObjs = CreateCampaignObjs();
 	sMissionObjs = CreateMissionObjs();
 	sWeaponObjs = CreateWeaponObjs();

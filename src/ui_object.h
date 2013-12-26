@@ -30,29 +30,52 @@
 #define __UI_OBJECT
 
 #include <cdogs/c_array.h>
+#include <cdogs/grafx.h>
 #include <cdogs/vector.h>
+
+typedef enum
+{
+	UITYPE_NONE,
+	UITYPE_TEXTBOX
+} UIType;
 
 #define UI_SELECT_ONLY			1
 #define UI_LEAVE_YC				2
 #define UI_LEAVE_XC				4
 #define UI_SELECT_ONLY_FIRST	8
+#define UI_IGNORE				16
+
+typedef struct _UIObject UIObject;
 
 typedef struct
 {
+	CArray Objs;
+	UIObject *Highlighted;
+} UICollection;
+
+struct _UIObject
+{
+	UIType Type;
 	int Id;
 	int Id2;
 	int Flags;
 	Vec2i Pos;
 	Vec2i Size;
 	char *Tooltip;
-} UIObject;
-
-typedef struct
-{
-	CArray Objs;
-} UICollection;
+	UICollection Children;
+	union
+	{
+		struct
+		{
+			char *(*TextLinkFunc)(void *);
+			void *TextLinkData;
+			char *Hint;
+		} Textbox;
+	} u;
+};
 
 void UICollectionTerminate(UICollection *c);
+void UICollectionDraw(UICollection *c, GraphicsDevice *g);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
 int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out);

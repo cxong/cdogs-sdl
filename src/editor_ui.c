@@ -48,15 +48,36 @@
 */
 #include "editor_ui.h"
 
-#include <cdogs/gamedata.h>
 #include <cdogs/text.h>
 
 
-UICollection CreateMainObjs(void)
+static char *CampaignGetTitle(CampaignOptions *c)
+{
+	return c->Setting.title;
+}
+static char *CampaignGetAuthor(CampaignOptions *c)
+{
+	return c->Setting.author;
+}
+static char *CampaignGetDescription(CampaignOptions *c)
+{
+	return c->Setting.description;
+}
+static char *MissionGetDescription(struct Mission **missionPtr)
+{
+	if (!*missionPtr)
+	{
+		return NULL;
+	}
+	return (*missionPtr)->description;
+}
+
+UICollection CreateMainObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UICollection c;
 	UIObject o;
+	UIObject o2;
 	int x;
 	int y;
 	CArrayInit(&c.Objs, sizeof o);
@@ -66,6 +87,10 @@ UICollection CreateMainObjs(void)
 	y = 5;
 
 	memset(&o, 0, sizeof o);
+	o.Type = UITYPE_TEXTBOX;
+	o.u.Textbox.TextLinkFunc = CampaignGetTitle;
+	o.u.Textbox.TextLinkData = &gCampaign;
+	CSTRDUP(o.u.Textbox.Hint, "(Campaign title)");
 	o.Id = YC_CAMPAIGNTITLE;
 	o.Flags = UI_SELECT_ONLY_FIRST;
 	o.Pos = Vec2iNew(25, y);
@@ -195,7 +220,19 @@ UICollection CreateMainObjs(void)
 
 	o.Id = YC_MISSIONDESC;
 	o.Pos = Vec2iNew(x, y);
+	memset(&o2, 0, sizeof o2);
+	o2.Type = UITYPE_TEXTBOX;
+	o2.u.Textbox.TextLinkFunc = MissionGetDescription;
+	o2.u.Textbox.TextLinkData = missionPtr;
+	CSTRDUP(o2.u.Textbox.Hint, "(Mission description)");
+	o2.Flags = UI_IGNORE;
+	o2.Pos = Vec2iNew(25, 150);
+	o2.Size = Vec2iNew(295, 5 * th);
+	CArrayInit(&o.Children.Objs, sizeof o);
+	CArrayPushBack(&o.Children.Objs, &o2);
 	CArrayPushBack(&c.Objs, &o);
+
+	memset(&o.Children.Objs, 0, sizeof o.Children.Objs);
 	y += th;
 	o.Id = YC_CHARACTERS;
 	o.Pos = Vec2iNew(x, y);
@@ -255,22 +292,30 @@ UICollection CreateCampaignObjs(void)
 	int y;
 	CArrayInit(&c.Objs, sizeof o);
 
-	x = 0;
+	x = 25;
 	y = 150;
 
 	memset(&o, 0, sizeof o);
 	o.Id = YC_CAMPAIGNTITLE;
 	o.Flags = UI_SELECT_ONLY;
 
+	o.Type = UITYPE_TEXTBOX;
+	o.u.Textbox.TextLinkFunc = CampaignGetAuthor;
+	o.u.Textbox.TextLinkData = &gCampaign;
+	CSTRDUP(o.u.Textbox.Hint, "(Campaign author)");
 	o.Id2 = XC_AUTHOR;
 	o.Pos = Vec2iNew(x, y);
-	o.Size = Vec2iNew(319, th);
+	o.Size = Vec2iNew(295, th);
 	CArrayPushBack(&c.Objs, &o);
 
 	y += th;
+	o.Type = UITYPE_TEXTBOX;
+	o.u.Textbox.TextLinkFunc = CampaignGetDescription;
+	o.u.Textbox.TextLinkData = &gCampaign;
+	CSTRDUP(o.u.Textbox.Hint, "(Campaign description)");
 	o.Id2 = XC_CAMPAIGNDESC;
 	o.Pos = Vec2iNew(x, y);
-	o.Size = Vec2iNew(319, 5 * th);
+	o.Size = Vec2iNew(295, 5 * th);
 	CArrayPushBack(&c.Objs, &o);
 
 	return c;

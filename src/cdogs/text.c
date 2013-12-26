@@ -183,6 +183,15 @@ Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos)
 	return DrawTextStringMasked(s, device, pos, colorWhite);
 }
 
+Vec2i DrawTextStringMaskedWrapped(
+	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask, int width)
+{
+	char buf[1024];
+	assert(strlen(s) < 1024);
+	TextSplitLines(s, buf, width);
+	return DrawTextStringMasked(buf, device, pos, mask);
+}
+
 Vec2i TextGetSize(const char *s)
 {
 	Vec2i size = Vec2iZero();

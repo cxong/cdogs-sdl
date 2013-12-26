@@ -51,6 +51,8 @@
 
 #include "ui_object.h"
 
+#include <cdogs/gamedata.h>
+
 
 #define YC_CAMPAIGNTITLE    0
 #define YC_MISSIONINDEX     1
@@ -133,7 +135,7 @@
 #define XC_AWAKE         12
 
 
-UICollection CreateMainObjs(void);
+UICollection CreateMainObjs(struct Mission **missionPtr);
 UICollection CreateCampaignObjs(void);
 UICollection CreateMissionObjs(void);
 UICollection CreateWeaponObjs(void);
