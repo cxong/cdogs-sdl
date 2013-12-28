@@ -32,9 +32,8 @@
 
 #include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
+#include <cdogs/player_template.h>
 #include <cdogs/text.h>
-
-#include "player_template.h"
 
 
 static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";

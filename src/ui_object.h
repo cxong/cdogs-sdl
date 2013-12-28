@@ -43,13 +43,12 @@ typedef enum
 #define UI_LEAVE_YC				2
 #define UI_LEAVE_XC				4
 #define UI_SELECT_ONLY_FIRST	8
-#define UI_IGNORE				16
 
 typedef struct _UIObject UIObject;
 
 typedef struct
 {
-	CArray Objs;
+	CArray Objs;	// elements held by pointer
 	UIObject *Highlighted;
 } UICollection;
 
@@ -62,6 +61,7 @@ struct _UIObject
 	Vec2i Pos;
 	Vec2i Size;
 	char *Tooltip;
+	struct _UIObject *Parent;
 	UICollection Children;
 	union
 	{
@@ -74,6 +74,11 @@ struct _UIObject
 	} u;
 };
 
+UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size);
+UIObject *UIObjectCopy(UIObject *o);
+void UIObjectDestroy(UIObject *o);
+
+void UICollectionInitialise(UICollection *c);
 void UICollectionTerminate(UICollection *c);
 void UICollectionDraw(UICollection *c, GraphicsDevice *g);
 

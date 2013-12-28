@@ -33,14 +33,54 @@
 #include <cdogs/text.h>
 
 
+UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size)
+{
+	UIObject *o;
+	CCALLOC(o, sizeof *o);
+	o->Id = id;
+	o->Pos = pos;
+	o->Size = size;
+	return o;
+}
+
+UIObject *UIObjectCopy(UIObject *o)
+{
+	UIObject *res = UIObjectCreate(o->Id, o->Pos, o->Size);
+	res->Type = o->Type;
+	res->Id2 = o->Id2;
+	res->Flags = o->Flags;
+	res->Tooltip = o->Tooltip;
+	res->Parent = o->Parent;
+	// do not copy children
+	switch (o->Type)
+	{
+	case UITYPE_TEXTBOX:
+		res->u.Textbox = o->u.Textbox;
+		break;
+	}
+	return res;
+}
+
+void UIObjectDestroy(UIObject *o)
+{
+	CFREE(o->Tooltip);
+	UICollectionTerminate(&o->Children);
+	switch (o->Type)
+	{
+	case UITYPE_TEXTBOX:
+		CFREE(o->u.Textbox.Hint);
+		break;
+	}
+	CFREE(o);
+}
+
 void UICollectionTerminate(UICollection *c)
 {
 	size_t i;
-	UIObject *objs = c->Objs.data;
+	UIObject **objs = c->Objs.data;
 	for (i = 0; i < c->Objs.size; i++, objs++)
 	{
-		UICollectionTerminate(&objs->Children);
-		CFREE(objs->Tooltip);
+		UIObjectDestroy(*objs);
 	}
 	CArrayTerminate(&c->Objs);
 	memset(c, 0, sizeof *c);
@@ -49,7 +89,7 @@ void UICollectionTerminate(UICollection *c)
 void UICollectionDraw(UICollection *c, GraphicsDevice *g)
 {
 	size_t i;
-	UIObject *objs;
+	UIObject **objs;
 	if (!c)
 	{
 		return;
@@ -57,32 +97,33 @@ void UICollectionDraw(UICollection *c, GraphicsDevice *g)
 	objs = c->Objs.data;
 	for (i = 0; i < c->Objs.size; i++, objs++)
 	{
-		switch (objs->Type)
+		switch ((*objs)->Type)
 		{
 		case UITYPE_TEXTBOX:
 			{
-				int isText = !!objs->u.Textbox.TextLinkFunc;
-				char *text = isText ? objs->u.Textbox.TextLinkFunc(
-					objs->u.Textbox.TextLinkData) : NULL;
+				int isText = !!(*objs)->u.Textbox.TextLinkFunc;
+				char *text = isText ? (*objs)->u.Textbox.TextLinkFunc(
+					(*objs)->u.Textbox.TextLinkData) : NULL;
 				int isEmptyText = !isText || !text || strlen(text) == 0;
-				int isHighlighted = c->Highlighted == objs;
+				int isHighlighted = c->Highlighted == *objs;
 				color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 				color_t textMask = isEmptyText ? colorGray : colorWhite;
-				Vec2i pos = objs->Pos;
+				Vec2i pos = (*objs)->Pos;
 				if (isEmptyText)
 				{
-					text = objs->u.Textbox.Hint;
+					text = (*objs)->u.Textbox.Hint;
 				}
 				pos = DrawTextCharMasked('\020', g, pos, bracketMask);
 				pos = DrawTextStringMaskedWrapped(
-					text, g, pos, textMask, objs->Pos.x + objs->Size.x - pos.x);
+					text, g, pos, textMask,
+					(*objs)->Pos.x + (*objs)->Size.x - pos.x);
 				pos = DrawTextCharMasked('\021', g, pos, bracketMask);
 			}
 			break;
 		}
-		if (c->Highlighted == objs)
+		if (c->Highlighted == *objs)
 		{
-			UICollectionDraw(&objs->Children, g);
+			UICollectionDraw(&(*objs)->Children, g);
 		}
 	}
 }
@@ -106,16 +147,16 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out)
 {
 	size_t i;
-	UIObject *objs = c->Objs.data;
+	UIObject **objs = c->Objs.data;
 	for (i = 0; i < c->Objs.size; i++, objs++)
 	{
-		if (IsInside(pos, objs->Pos, objs->Size))
+		if (IsInside(pos, (*objs)->Pos, (*objs)->Size))
 		{
-			*out = objs;
+			*out = *objs;
 			return 1;
 		}
-		if (c->Highlighted == objs &&
-			UITryGetObject(&objs->Children, pos, out))
+		if (c->Highlighted == *objs &&
+			UITryGetObject(&(*objs)->Children, pos, out))
 		{
 			return 1;
 		}

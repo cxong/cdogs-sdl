@@ -124,12 +124,6 @@ struct MapObject
 typedef struct MapObject TMapObject;
 
 
-#define BADGUYS_OGRES    0
-#define BADGUYS_BEMS     1
-
-#define BADGUY_COMMANDER    1
-
-
 struct DoorPic {
 	int horzPic;
 	int vertPic;
@@ -143,6 +137,7 @@ typedef enum {
 	OBJECTIVE_RESCUE,
 	OBJECTIVE_INVESTIGATE,
 	OBJECTIVE_MAX
+	// TODO: this also means there can only be one of each objective type
 } ObjectiveType;
 
 #define OBJECTIVE_HIDDEN        1

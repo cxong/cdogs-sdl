@@ -260,6 +260,9 @@ static void MakeRandomBackground(
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
 	GrafxMakeBackground(device, config, tint, 0);
+	KillAllActors();
+	KillAllObjects();
+	FreeTriggersAndWatches();
 	gCampaign.seed = gConfig.Game.RandomSeed;
 }
 
@@ -418,10 +421,6 @@ void GrafxMakeBackground(
 	MapMarkAllAsVisited(&gMap);
 
 	GrafxDrawBackground(device, config, tint);
-
-	KillAllActors();
-	KillAllObjects();
-	FreeTriggersAndWatches();
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)

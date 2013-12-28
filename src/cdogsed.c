@@ -607,7 +607,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->baddieCount; i++)
 		{
 			DisplayCharacter(
-				20 + 20 * i, y,
+				10 + 20 * i, y,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
 		sObjs2 = &sCharacterObjs;
@@ -641,7 +641,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->itemCount; i++)
 		{
 			DisplayMapItem(
-				10 + 20 * i, y,
+				10 + 10 + 20 * i, y,
 				gMission.mapObjects[i],
 				currentMission->itemDensity[i],
 				xc == i);
@@ -1431,37 +1431,34 @@ static void HandleInput(
 		UIObject *o;
 		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 		{
-			if (!(o->Flags & UI_IGNORE))
+			if (sObjs1) sObjs1->Highlighted = o;
+			if (sObjs2) sObjs2->Highlighted = o;
+			*xcOld = *xc;
+			*ycOld = *yc;
+			// Only change selection on left/right click
+			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
 			{
-				if (sObjs1) sObjs1->Highlighted = o;
-				if (sObjs2) sObjs2->Highlighted = o;
-				*xcOld = *xc;
-				*ycOld = *yc;
-				// Only change selection on left/right click
-				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+				if (!(o->Flags & UI_LEAVE_YC))
 				{
-					if (!(o->Flags & UI_LEAVE_YC))
-					{
-						*yc = o->Id;
-						AdjustYC(yc);
-					}
-					if (!(o->Flags & UI_LEAVE_XC))
-					{
-						*xc = o->Id2;
-						AdjustXC(*yc, xc);
-					}
+					*yc = o->Id;
+					AdjustYC(yc);
 				}
-				if (!(o->Flags & UI_SELECT_ONLY) &&
-					(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+				if (!(o->Flags & UI_LEAVE_XC))
 				{
-					if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
-					{
-						c = SDLK_PAGEUP;
-					}
-					else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
-					{
-						c = SDLK_PAGEDOWN;
-					}
+					*xc = o->Id2;
+					AdjustXC(*yc, xc);
+				}
+			}
+			if (!(o->Flags & UI_SELECT_ONLY) &&
+				(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+			{
+				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
+				{
+					c = SDLK_PAGEUP;
+				}
+				else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
+				{
+					c = SDLK_PAGEDOWN;
 				}
 			}
 		}

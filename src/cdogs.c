@@ -74,6 +74,7 @@
 #include <cdogs/palette.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
+#include <cdogs/player_template.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 #include <cdogs/triggers.h>
@@ -85,7 +86,6 @@
 #include "mainmenu.h"
 #include "password.h"
 #include "player_select_menus.h"
-#include "player_template.h"
 #include "prep.h"
 #include "XGetopt.h"
 
