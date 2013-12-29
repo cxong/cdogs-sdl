@@ -72,17 +72,17 @@ static char *MissionGetDescription(struct Mission **missionPtr)
 	return (*missionPtr)->description;
 }
 
-UICollection CreateMainObjs(struct Mission **missionPtr)
+UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	UIObject *oc;
 	int i;
 	int x;
 	int y;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	// Titles
 
@@ -94,15 +94,15 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 	o->u.Textbox.TextLinkData = &gCampaign;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
 	o->Flags = UI_SELECT_ONLY_FIRST;
-	CArrayPushBack(&c.Objs, &o);
+	UIObjectAddChild(c, o);
 
 	o = UIObjectCreate(YC_MISSIONINDEX, Vec2iNew(270, y), Vec2iNew(49, th));
-	CArrayPushBack(&c.Objs, &o);
+	UIObjectAddChild(c, o);
 
 	y = 2 * th;
 
 	o = UIObjectCreate(YC_MISSIONTITLE, Vec2iNew(25, y), Vec2iNew(175, th));
-	CArrayPushBack(&c.Objs, &o);
+	UIObjectAddChild(c, o);
 
 	// mission properties
 	// size, walls, rooms etc.
@@ -115,38 +115,38 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WIDTH;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_HEIGHT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WALLCOUNT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WALLLENGTH;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_ROOMCOUNT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SQRCOUNT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_DENSITY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// Mission looks
 	// wall/floor styles etc.
@@ -160,32 +160,32 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WALL;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLOOR;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_ROOM;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_DOORS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_KEYS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_EXIT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// colours
 
@@ -197,22 +197,22 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR1;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR2;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR3;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR4;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// mission data
 
@@ -226,36 +226,36 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_MISSIONDESC;
 	o2->Pos = Vec2iNew(x, y);
-	oc = UIObjectCreate(0, Vec2iNew(25, 150), Vec2iNew(295, 5 * th));
+	oc = UIObjectCreate(YC_MISSIONDESC, Vec2iNew(25, 150), Vec2iNew(295, 5 * th));
 	oc->Type = UITYPE_TEXTBOX;
+	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
 	oc->u.Textbox.TextLinkData = missionPtr;
 	CSTRDUP(oc->u.Textbox.Hint, "(Mission description)");
-	CArrayInit(&o2->Children.Objs, sizeof o);
-	CArrayPushBack(&o2->Children.Objs, &oc);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(o2, oc);
+	UIObjectAddChild(c, o2);
 
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_SPECIALS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_WEAPONS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_ITEMS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Shift+click to change amounts");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// objectives
 	y += 2;
@@ -267,21 +267,21 @@ UICollection CreateMainObjs(struct Mission **missionPtr)
 		o2->Id = YC_OBJECTIVES + i;
 		o2->Pos = Vec2iNew(x, y);
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
-		CArrayPushBack(&c.Objs, &o2);
+		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
-UICollection CreateCampaignObjs(void)
+UIObject *CreateCampaignObjs(void)
 {
 	int th = CDogsTextHeight();
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int x;
 	int y;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	x = 25;
 	y = 150;
@@ -297,7 +297,7 @@ UICollection CreateCampaignObjs(void)
 	o2->Id2 = XC_AUTHOR;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(295, th);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	y += th;
 	o2 = UIObjectCopy(o);
@@ -308,33 +308,33 @@ UICollection CreateCampaignObjs(void)
 	o2->Id2 = XC_CAMPAIGNDESC;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(295, 5 * th);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
 	return c;
 }
-UICollection CreateMissionObjs(void)
+UIObject *CreateMissionObjs(void)
 {
 	int th = CDogsTextHeight();
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(YC_MISSIONTITLE, Vec2iNew(0, 150), Vec2iNew(319, th));
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
-	CArrayPushBack(&c.Objs, &o);
+	UIObjectAddChild(c, o);
 
 	return c;
 }
-UICollection CreateWeaponObjs(void)
+UIObject *CreateWeaponObjs(void)
 {
 	int th = CDogsTextHeight();
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(0, Vec2iZero(), Vec2iNew(80, th));
 	o->Flags = UI_LEAVE_YC;
@@ -345,19 +345,19 @@ UICollection CreateWeaponObjs(void)
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		o2->Pos = Vec2iNew(x, y);
-		CArrayPushBack(&c.Objs, &o2);
+		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
-UICollection CreateMapItemObjs(void)
+UIObject *CreateMapItemObjs(void)
 {
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(0, Vec2iZero(), Vec2iNew(19, 40));
 	o->Flags = UI_LEAVE_YC;
@@ -367,20 +367,20 @@ UICollection CreateMapItemObjs(void)
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		o2->Pos = Vec2iNew(x, 150);
-		CArrayPushBack(&c.Objs, &o2);
+		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
-UICollection CreateObjectiveObjs(void)
+UIObject *CreateObjectiveObjs(void)
 {
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int x;
 	int y;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 	o->Flags = UI_LEAVE_YC;
@@ -391,26 +391,26 @@ UICollection CreateObjectiveObjs(void)
 	o2->Id2 = XC_TYPE;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, 40);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INDEX;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(30, 40);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_REQUIRED;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(20, 40);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TOTAL;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, 40);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLAGS;
@@ -421,18 +421,18 @@ UICollection CreateObjectiveObjs(void)
 		"pos.known: always shown on map\n"
 		"access: in locked room\n"
 		"no-count: don't show completed count");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
 	return c;
 }
-UICollection CreateCharacterObjs(void)
+UIObject *CreateCharacterObjs(void)
 {
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(0, Vec2iZero(), Vec2iNew(19, 40));
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
@@ -442,22 +442,22 @@ UICollection CreateCharacterObjs(void)
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		o2->Pos = Vec2iNew(x, 150);
-		CArrayPushBack(&c.Objs, &o2);
+		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
 
-UICollection CreateCharEditorObjs(void)
+UIObject *CreateCharEditorObjs(void)
 {
 	int th = CDogsTextHeight();
-	UICollection c;
+	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int x;
 	int y;
-	CArrayInit(&c.Objs, sizeof o);
+	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
 	// Appearance
 
@@ -468,32 +468,32 @@ UICollection CreateCharEditorObjs(void)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FACE;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SKIN;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_HAIR;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_BODY;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_ARMS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_LEGS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// Character attributes
 
@@ -505,17 +505,17 @@ UICollection CreateCharEditorObjs(void)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SPEED;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 50;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_HEALTH;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 50;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_MOVE;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 50;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TRACK;
@@ -523,18 +523,18 @@ UICollection CreateCharEditorObjs(void)
 	CSTRDUP(o2->Tooltip,
 		"Looking towards the player\n"
 		"Useless for friendly characters");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 50;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SHOOT;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 50;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_DELAY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Frames before making another decision");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// Character flags
 
@@ -546,41 +546,41 @@ UICollection CreateCharEditorObjs(void)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_ASBESTOS;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_IMMUNITY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Immune to poison");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SEETHROUGH;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_RUNS_AWAY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Runs away from player");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SNEAKY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Shoots back when player shoots");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_GOOD_GUY;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_SLEEPING;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Doesn't move unless seen");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	y += th;
 	x = 5;
@@ -588,41 +588,41 @@ UICollection CreateCharEditorObjs(void)
 	o2->Id2 = XC_PRISONER;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Doesn't move until touched");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INVULNERABLE;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FOLLOWER;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_PENALTY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Large score penalty when shot");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_VICTIM;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Takes damage from everyone");
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 	x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_AWAKE;
 	o2->Pos = Vec2iNew(x, y);
-	CArrayPushBack(&c.Objs, &o2);
+	UIObjectAddChild(c, o2);
 
 	// Weapon
 
 	y += th;
 	UIObjectDestroy(o);
 	o = UIObjectCreate(YC_WEAPON, Vec2iNew(50, y), Vec2iNew(210, th));
-	CArrayPushBack(&c.Objs, &o);
+	UIObjectAddChild(c, o);
 
 	return c;
 }

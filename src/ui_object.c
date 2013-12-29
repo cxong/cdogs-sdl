@@ -40,6 +40,7 @@ UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size)
 	o->Id = id;
 	o->Pos = pos;
 	o->Size = size;
+	CArrayInit(&o->Children, sizeof o);
 	return o;
 }
 
@@ -63,8 +64,14 @@ UIObject *UIObjectCopy(UIObject *o)
 
 void UIObjectDestroy(UIObject *o)
 {
+	size_t i;
+	UIObject **objs = o->Children.data;
 	CFREE(o->Tooltip);
-	UICollectionTerminate(&o->Children);
+	for (i = 0; i < o->Children.size; i++, objs++)
+	{
+		UIObjectDestroy(*objs);
+	}
+	CArrayTerminate(&o->Children);
 	switch (o->Type)
 	{
 	case UITYPE_TEXTBOX:
@@ -74,56 +81,70 @@ void UIObjectDestroy(UIObject *o)
 	CFREE(o);
 }
 
-void UICollectionTerminate(UICollection *c)
+void UIObjectAddChild(UIObject *o, UIObject *c)
 {
-	size_t i;
-	UIObject **objs = c->Objs.data;
-	for (i = 0; i < c->Objs.size; i++, objs++)
-	{
-		UIObjectDestroy(*objs);
-	}
-	CArrayTerminate(&c->Objs);
-	memset(c, 0, sizeof *c);
+	CArrayPushBack(&o->Children, &c);
+	c->Parent = o;
 }
 
-void UICollectionDraw(UICollection *c, GraphicsDevice *g)
+void UIObjectHighlight(UIObject *o)
+{
+	if (o->Parent)
+	{
+		o->Parent->Highlighted = o;
+		UIObjectHighlight(o->Parent);
+	}
+}
+
+void UIObjectUnhighlight(UIObject *o)
+{
+	if (o->Highlighted)
+	{
+		UIObjectUnhighlight(o->Highlighted);
+	}
+	o->Highlighted = NULL;
+}
+
+void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 {
 	size_t i;
 	UIObject **objs;
-	if (!c)
+	int isHighlighted;
+	if (!o)
 	{
 		return;
 	}
-	objs = c->Objs.data;
-	for (i = 0; i < c->Objs.size; i++, objs++)
+	isHighlighted = o->Parent && o->Parent->Highlighted == o;
+	switch (o->Type)
 	{
-		switch ((*objs)->Type)
+	case UITYPE_TEXTBOX:
 		{
-		case UITYPE_TEXTBOX:
+			int isText = !!o->u.Textbox.TextLinkFunc;
+			char *text = isText ? o->u.Textbox.TextLinkFunc(
+			o->u.Textbox.TextLinkData) : NULL;
+			int isEmptyText = !isText || !text || strlen(text) == 0;
+			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
+			color_t textMask = isEmptyText ? colorGray : colorWhite;
+			Vec2i pos = o->Pos;
+			if (isEmptyText)
 			{
-				int isText = !!(*objs)->u.Textbox.TextLinkFunc;
-				char *text = isText ? (*objs)->u.Textbox.TextLinkFunc(
-					(*objs)->u.Textbox.TextLinkData) : NULL;
-				int isEmptyText = !isText || !text || strlen(text) == 0;
-				int isHighlighted = c->Highlighted == *objs;
-				color_t bracketMask = isHighlighted ? colorRed : colorWhite;
-				color_t textMask = isEmptyText ? colorGray : colorWhite;
-				Vec2i pos = (*objs)->Pos;
-				if (isEmptyText)
-				{
-					text = (*objs)->u.Textbox.Hint;
-				}
-				pos = DrawTextCharMasked('\020', g, pos, bracketMask);
-				pos = DrawTextStringMaskedWrapped(
-					text, g, pos, textMask,
-					(*objs)->Pos.x + (*objs)->Size.x - pos.x);
-				pos = DrawTextCharMasked('\021', g, pos, bracketMask);
+				text = o->u.Textbox.Hint;
 			}
-			break;
+			pos = DrawTextCharMasked('\020', g, pos, bracketMask);
+			pos = DrawTextStringMaskedWrapped(
+				text, g, pos, textMask,
+				o->Pos.x + o->Size.x - pos.x);
+			pos = DrawTextCharMasked('\021', g, pos, bracketMask);
 		}
-		if (c->Highlighted == *objs)
+		break;
+	}
+	objs = o->Children.data;
+	for (i = 0; i < o->Children.size; i++, objs++)
+	{
+		if (!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+			isHighlighted)
 		{
-			UICollectionDraw(&(*objs)->Children, g);
+			UIObjectDraw(*objs, g);
 		}
 	}
 }
@@ -144,19 +165,21 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
-int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out)
+int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 {
 	size_t i;
-	UIObject **objs = c->Objs.data;
-	for (i = 0; i < c->Objs.size; i++, objs++)
+	UIObject **objs = o->Children.data;
+	int isHighlighted = o->Parent && o->Parent->Highlighted == o;
+	if (IsInside(pos, o->Pos, o->Size))
 	{
-		if (IsInside(pos, (*objs)->Pos, (*objs)->Size))
-		{
-			*out = *objs;
-			return 1;
-		}
-		if (c->Highlighted == *objs &&
-			UITryGetObject(&(*objs)->Children, pos, out))
+		*out = o;
+		return 1;
+	}
+	for (i = 0; i < o->Children.size; i++, objs++)
+	{
+		if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+			isHighlighted) &&
+			UITryGetObject(*objs, pos, out))
 		{
 			return 1;
 		}

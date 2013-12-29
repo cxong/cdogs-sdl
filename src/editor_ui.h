@@ -135,14 +135,14 @@
 #define XC_AWAKE         12
 
 
-UICollection CreateMainObjs(struct Mission **missionPtr);
-UICollection CreateCampaignObjs(void);
-UICollection CreateMissionObjs(void);
-UICollection CreateWeaponObjs(void);
-UICollection CreateMapItemObjs(void);
-UICollection CreateObjectiveObjs(void);
-UICollection CreateCharacterObjs(void);
+UIObject *CreateMainObjs(struct Mission **missionPtr);
+UIObject *CreateCampaignObjs(void);
+UIObject *CreateMissionObjs(void);
+UIObject *CreateWeaponObjs(void);
+UIObject *CreateMapItemObjs(void);
+UIObject *CreateObjectiveObjs(void);
+UIObject *CreateCharacterObjs(void);
 
-UICollection CreateCharEditorObjs(void);
+UIObject *CreateCharEditorObjs(void);
 
 #endif

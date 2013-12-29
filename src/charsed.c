@@ -79,7 +79,7 @@ int fileChanged = 0;
 extern void *myScreen;
 
 
-UICollection sCharEditorObjs;
+UIObject *sCharEditorObjs;
 
 
 static int PosToCharacterIndex(Vec2i pos, int *idx)
@@ -222,7 +222,7 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		}
 	}
 
-	if (UITryGetObject(&sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&
+	if (UITryGetObject(sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&
 		o->Tooltip)
 	{
 		Vec2i tooltipPos = Vec2iAdd(
@@ -598,7 +598,7 @@ void EditCharacters(CampaignSettingNew *setting)
 				}
 			}
 			else if (UITryGetObject(
-				&sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
+				sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
 			{
 				int isSameSelection;
 				xcOld = xc;
@@ -629,7 +629,7 @@ void EditCharacters(CampaignSettingNew *setting)
 		SDL_Delay(10);
 	}
 
-	UICollectionTerminate(&sCharEditorObjs);
+	UIObjectDestroy(sCharEditorObjs);
 }
 
 void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)

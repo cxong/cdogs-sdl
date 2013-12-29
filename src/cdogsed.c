@@ -80,17 +80,16 @@
 
 
 // Mouse click areas:
-UICollection sMainObjs;
-UICollection sCampaignObjs;
-UICollection sMissionObjs;
-UICollection sWeaponObjs;
-UICollection sMapItemObjs;
-UICollection sObjectiveObjs;
-UICollection sCharacterObjs;
+UIObject *sMainObjs;
+UIObject *sCampaignObjs;
+UIObject *sMissionObjs;
+UIObject *sWeaponObjs;
+UIObject *sMapItemObjs;
+UIObject *sObjectiveObjs;
+UIObject *sCharacterObjs;
 
-// zero-terminated list of UI objects to detect clicks for
-static UICollection *sObjs1 = NULL;
-static UICollection *sObjs2 = NULL;
+static UIObject *sObjs1 = NULL;
+static UIObject *sObjs2 = NULL;
 
 int TryGetClickObj(Vec2i pos, UIObject **out)
 {
@@ -584,7 +583,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 	switch (yc)
 	{
 	case YC_CAMPAIGNTITLE:
-		sObjs2 = &sCampaignObjs;
+		sObjs2 = sCampaignObjs;
 		break;
 
 	case YC_MISSIONTITLE:
@@ -592,7 +591,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			Vec2iNew(20, 150),
 			currentMission->song, "(Mission song)",
 			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
-		sObjs2 = &sMissionObjs;
+		sObjs2 = sMissionObjs;
 		break;
 
 	case YC_MISSIONDESC:
@@ -607,10 +606,10 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->baddieCount; i++)
 		{
 			DisplayCharacter(
-				10 + 20 * i, y,
+				10 + 10 + 20 * i, y,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
-		sObjs2 = &sCharacterObjs;
+		sObjs2 = sCharacterObjs;
 		break;
 
 	case YC_SPECIALS:
@@ -627,7 +626,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 				xc == i,
 				1);
 		}
-		sObjs2 = &sCharacterObjs;
+		sObjs2 = sCharacterObjs;
 		break;
 
 	case YC_ITEMS:
@@ -637,7 +636,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		sObjs2 = &sMapItemObjs;
+		sObjs2 = sMapItemObjs;
 		for (i = 0; i < currentMission->itemCount; i++)
 		{
 			DisplayMapItem(
@@ -653,7 +652,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		sObjs2 = &sWeaponObjs;
+		sObjs2 = sWeaponObjs;
 		ListWeapons(150, xc);
 		break;
 
@@ -663,14 +662,14 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			CDogsTextStringAt(
 				5, 190, "Use Insert, Delete and PageUp/PageDown");
-			sObjs2 = &sObjectiveObjs;
+			sObjs2 = sObjectiveObjs;
 			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
 		}
 		break;
 	}
 
-	UICollectionDraw(sObjs1, &gGraphicsDevice);
-	UICollectionDraw(sObjs2, &gGraphicsDevice);
+	UIObjectDraw(sObjs1, &gGraphicsDevice);
+	UIObjectDraw(sObjs2, &gGraphicsDevice);
 
 	if (willDisplayAutomap)
 	{
@@ -1431,8 +1430,7 @@ static void HandleInput(
 		UIObject *o;
 		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 		{
-			if (sObjs1) sObjs1->Highlighted = o;
-			if (sObjs2) sObjs2->Highlighted = o;
+			UIObjectHighlight(o);
 			*xcOld = *xc;
 			*ycOld = *yc;
 			// Only change selection on left/right click
@@ -1464,8 +1462,8 @@ static void HandleInput(
 		}
 		else
 		{
-			if (sObjs1) sObjs1->Highlighted = NULL;
-			if (sObjs2) sObjs2->Highlighted = NULL;
+			if (sObjs1) UIObjectUnhighlight(sObjs1);
+			if (sObjs2) UIObjectUnhighlight(sObjs2);
 		}
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
@@ -1520,7 +1518,7 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			sObjs1 = &sMainObjs;
+			sObjs1 = sMainObjs;
 			sObjs2 = NULL;
 			break;
 		}
@@ -1672,7 +1670,7 @@ static void EditCampaign(void)
 	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
-	sObjs1 = &sMainObjs;
+	sObjs1 = sMainObjs;
 	sObjs2 = NULL;
 
 	gCampaign.seed = 0;
@@ -1791,13 +1789,13 @@ int main(int argc, char *argv[])
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
 
-	UICollectionTerminate(&sMainObjs);
-	UICollectionTerminate(&sCampaignObjs);
-	UICollectionTerminate(&sMissionObjs);
-	UICollectionTerminate(&sWeaponObjs);
-	UICollectionTerminate(&sMapItemObjs);
-	UICollectionTerminate(&sObjectiveObjs);
-	UICollectionTerminate(&sCharacterObjs);
+	UIObjectDestroy(sMainObjs);
+	UIObjectDestroy(sCampaignObjs);
+	UIObjectDestroy(sMissionObjs);
+	UIObjectDestroy(sWeaponObjs);
+	UIObjectDestroy(sMapItemObjs);
+	UIObjectDestroy(sObjectiveObjs);
+	UIObjectDestroy(sCharacterObjs);
 
 	exit(EXIT_SUCCESS);
 }

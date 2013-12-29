@@ -39,20 +39,13 @@ typedef enum
 	UITYPE_TEXTBOX
 } UIType;
 
-#define UI_SELECT_ONLY			1
-#define UI_LEAVE_YC				2
-#define UI_LEAVE_XC				4
-#define UI_SELECT_ONLY_FIRST	8
+#define UI_SELECT_ONLY							1
+#define UI_LEAVE_YC								2
+#define UI_LEAVE_XC								4
+#define UI_SELECT_ONLY_FIRST					8
+#define UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY	16
 
-typedef struct _UIObject UIObject;
-
-typedef struct
-{
-	CArray Objs;	// elements held by pointer
-	UIObject *Highlighted;
-} UICollection;
-
-struct _UIObject
+typedef struct _UIObject
 {
 	UIType Type;
 	int Id;
@@ -62,7 +55,8 @@ struct _UIObject
 	Vec2i Size;
 	char *Tooltip;
 	struct _UIObject *Parent;
-	UICollection Children;
+	CArray Children;	// elements held by pointer
+	struct _UIObject *Highlighted;
 	union
 	{
 		struct
@@ -72,17 +66,17 @@ struct _UIObject
 			char *Hint;
 		} Textbox;
 	} u;
-};
+} UIObject;
 
 UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size);
 UIObject *UIObjectCopy(UIObject *o);
 void UIObjectDestroy(UIObject *o);
-
-void UICollectionInitialise(UICollection *c);
-void UICollectionTerminate(UICollection *c);
-void UICollectionDraw(UICollection *c, GraphicsDevice *g);
+void UIObjectAddChild(UIObject *o, UIObject *c);
+void UIObjectHighlight(UIObject *o);
+void UIObjectUnhighlight(UIObject *o);
+void UIObjectDraw(UIObject *o, GraphicsDevice *g);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
-int UITryGetObject(UICollection *c, Vec2i pos, UIObject **out);
+int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
 
 #endif
