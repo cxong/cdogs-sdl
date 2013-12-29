@@ -137,7 +137,7 @@
 
 UIObject *CreateMainObjs(struct Mission **missionPtr);
 UIObject *CreateCampaignObjs(void);
-UIObject *CreateMissionObjs(void);
+UIObject *CreateMissionObjs(struct Mission **missionPtr);
 UIObject *CreateWeaponObjs(void);
 UIObject *CreateMapItemObjs(void);
 UIObject *CreateObjectiveObjs(void);

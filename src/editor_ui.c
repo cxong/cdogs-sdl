@@ -71,6 +71,14 @@ static char *MissionGetDescription(struct Mission **missionPtr)
 	}
 	return (*missionPtr)->description;
 }
+static char *MissionGetSong(struct Mission **missionPtr)
+{
+	if (!*missionPtr)
+	{
+		return NULL;
+	}
+	return (*missionPtr)->song;
+}
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
@@ -239,11 +247,13 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = Vec2iNew(x, y);
+	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_SPECIALS;
 	o2->Pos = Vec2iNew(x, y);
+	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
@@ -254,7 +264,9 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->Id = YC_ITEMS;
 	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Shift+click to change amounts");
+	CSTRDUP(o2->Tooltip,
+		"Use Insert, Delete and PageUp/PageDown\n"
+		"Shift+click to change amounts");
 	UIObjectAddChild(c, o2);
 
 	// objectives
@@ -313,14 +325,18 @@ UIObject *CreateCampaignObjs(void)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateMissionObjs(void)
+UIObject *CreateMissionObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
 	UIObject *o;
 	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
-	o = UIObjectCreate(YC_MISSIONTITLE, Vec2iNew(0, 150), Vec2iNew(319, th));
+	o = UIObjectCreate(YC_MISSIONTITLE, Vec2iNew(20, 150), Vec2iNew(319, th));
+	o->Type = UITYPE_TEXTBOX;
+	o->u.Textbox.TextLinkFunc = MissionGetSong;
+	o->u.Textbox.TextLinkData = missionPtr;
+	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
 	UIObjectAddChild(c, o);
@@ -434,7 +450,7 @@ UIObject *CreateCharacterObjs(void)
 	int i;
 	c = UIObjectCreate(0, Vec2iZero(), Vec2iZero());
 
-	o = UIObjectCreate(0, Vec2iZero(), Vec2iNew(19, 40));
+	o = UIObjectCreate(0, Vec2iZero(), Vec2iNew(20, 40));
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{

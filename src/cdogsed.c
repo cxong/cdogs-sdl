@@ -199,6 +199,8 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 		break;
 	}
 
+	y += 20;
+
 	DisplayCDogsText(20, y, typeCDogsText, xc == XC_TYPE, 0);
 
 	if (pic.picIndex >= 0)
@@ -578,7 +580,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		&gGraphicsDevice,
 		Vec2iNew(20, h - 20 - CDogsTextHeight()));
 
-	y = 170;
+	y = 150;
 
 	switch (yc)
 	{
@@ -587,18 +589,10 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		break;
 
 	case YC_MISSIONTITLE:
-		DrawEditableTextWithEmptyHint(
-			Vec2iNew(20, 150),
-			currentMission->song, "(Mission song)",
-			yc == YC_MISSIONTITLE && xc == XC_MUSICFILE);
 		sObjs2 = sMissionObjs;
 		break;
 
-	case YC_MISSIONDESC:
-		break;
-
 	case YC_CHARACTERS:
-		CDogsTextStringAt(5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 		{
 			break;
@@ -606,14 +600,13 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->baddieCount; i++)
 		{
 			DisplayCharacter(
-				10 + 10 + 20 * i, y,
+				10 + 10 + 20 * i, y + 20,
 				gCampaign.Setting.characters.baddies[i], xc == i, 1);
 		}
 		sObjs2 = sCharacterObjs;
 		break;
 
 	case YC_SPECIALS:
-		CDogsTextStringAt(5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 		{
 			break;
@@ -621,7 +614,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->specialCount; i++)
 		{
 			DisplayCharacter(
-				20 + 20 * i, y,
+				10 + 10 + 20 * i, y + 20,
 				gCampaign.Setting.characters.specials[i],
 				xc == i,
 				1);
@@ -630,8 +623,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		break;
 
 	case YC_ITEMS:
-		CDogsTextStringAt(
-			5, 190, "Use Insert, Delete and PageUp/PageDown");
 		if (!currentMission)
 		{
 			break;
@@ -640,7 +631,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		for (i = 0; i < currentMission->itemCount; i++)
 		{
 			DisplayMapItem(
-				10 + 10 + 20 * i, y,
+				10 + 10 + 20 * i, y + 20,
 				gMission.mapObjects[i],
 				currentMission->itemDensity[i],
 				xc == i);
@@ -660,8 +651,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		if (currentMission && yc >= YC_OBJECTIVES &&
 			yc - YC_OBJECTIVES < currentMission->objectiveCount)
 		{
-			CDogsTextStringAt(
-				5, 190, "Use Insert, Delete and PageUp/PageDown");
 			sObjs2 = sObjectiveObjs;
 			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
 		}
@@ -1731,7 +1720,7 @@ int main(int argc, char *argv[])
 	// Note: must do this after text init since positions depend on text height
 	sMainObjs = CreateMainObjs(&currentMission);
 	sCampaignObjs = CreateCampaignObjs();
-	sMissionObjs = CreateMissionObjs();
+	sMissionObjs = CreateMissionObjs(&currentMission);
 	sWeaponObjs = CreateWeaponObjs();
 	sMapItemObjs = CreateMapItemObjs();
 	sObjectiveObjs = CreateObjectiveObjs();
