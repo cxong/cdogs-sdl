@@ -48,9 +48,14 @@
 */
 #include "editor_ui.h"
 
+#include <cdogs/mission.h>
 #include <cdogs/text.h>
 
 
+static char *CStr(char *s)
+{
+	return s;
+}
 static char *CampaignGetTitle(CampaignOptions *c)
 {
 	return c->Setting.title;
@@ -63,21 +68,127 @@ static char *CampaignGetDescription(CampaignOptions *c)
 {
 	return c->Setting.description;
 }
+static char *MissionGetTitle(struct Mission **missionPtr)
+{
+	if (!*missionPtr) return NULL;
+	return (*missionPtr)->title;
+}
 static char *MissionGetDescription(struct Mission **missionPtr)
 {
-	if (!*missionPtr)
-	{
-		return NULL;
-	}
+	if (!*missionPtr) return NULL;
 	return (*missionPtr)->description;
 }
 static char *MissionGetSong(struct Mission **missionPtr)
 {
-	if (!*missionPtr)
-	{
-		return NULL;
-	}
+	if (!*missionPtr) return NULL;
 	return (*missionPtr)->song;
+}
+static char *MissionGetWidthStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Width: %d", (*missionPtr)->mapWidth);
+	return s;
+}
+static char *MissionGetHeightStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Height: %d", (*missionPtr)->mapHeight);
+	return s;
+}
+static char *MissionGetWallCountStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Walls: %d", (*missionPtr)->wallCount);
+	return s;
+}
+static char *MissionGetWallLengthStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Len: %d", (*missionPtr)->wallLength);
+	return s;
+}
+static char *MissionGetRoomCountStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Rooms: %d", (*missionPtr)->roomCount);
+	return s;
+}
+static char *MissionGetSquareCountStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Sqr: %d", (*missionPtr)->squareCount);
+	return s;
+}
+static char *MissionGetDensityStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Dens: %d", (*missionPtr)->baddieDensity);
+	return s;
+}
+static char *MissionGetWallColorStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Walls: %s", RangeName((*missionPtr)->wallRange));
+	return s;
+}
+static char *MissionGetFloorColorStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Floor: %s", RangeName((*missionPtr)->floorRange));
+	return s;
+}
+static char *MissionGeRoomColorStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Rooms: %s", RangeName((*missionPtr)->roomRange));
+	return s;
+}
+static char *MissionGeExtraColorStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Extra: %s", RangeName((*missionPtr)->altRange));
+	return s;
+}
+static char *MissionGetCharacterCountStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Characters (%d/%d)", (*missionPtr)->baddieCount, BADDIE_MAX);
+	return s;
+}
+static char *MissionGetSpecialCountStr(struct Mission **missionPtr)
+{
+	static char s[128];
+	if (!*missionPtr) return NULL;
+	sprintf(
+		s, "Mission objective characters (%d/%d)",
+		(*missionPtr)->specialCount, SPECIAL_MAX);
+	return s;
+}
+static char *GetWeaponCountStr(void *v)
+{
+	static char s[128];
+	UNUSED(v);
+	sprintf(s, "Available weapons (%d/%d)", gMission.weaponCount, WEAPON_MAX);
+	return s;
+}
+static char *GetObjectCountStr(void *v)
+{
+	static char s[128];
+	UNUSED(v);
+	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
+	return s;
 }
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
@@ -110,6 +221,11 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	y = 2 * th;
 
 	o = UIObjectCreate(YC_MISSIONTITLE, Vec2iNew(25, y), Vec2iNew(175, th));
+	o->Id2 = XC_MISSIONTITLE;
+	o->Type = UITYPE_TEXTBOX;
+	o->u.Textbox.TextLinkFunc = MissionGetTitle;
+	o->u.Textbox.TextLinkData = missionPtr;
+	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
 	UIObjectAddChild(c, o);
 
 	// mission properties
@@ -121,36 +237,57 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	x = 20;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetWidthStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_WIDTH;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetHeightStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_HEIGHT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetWallCountStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_WALLCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetWallLengthStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_WALLLENGTH;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetRoomCountStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_ROOMCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetSquareCountStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_SQRCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetDensityStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_DENSITY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
@@ -203,28 +340,40 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o = UIObjectCreate(YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
 
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetWallColorStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR1;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetFloorColorStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR2;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGeRoomColorStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR3;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGeExtraColorStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR4;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 
 	// mission data
 
-	x = 10;
+	x = 20;
 	y += th;
 
 	UIObjectDestroy(o);
@@ -232,8 +381,12 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o->Flags = UI_SELECT_ONLY;
 
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = CStr;
+	o2->u.Label.TextLinkData = "Mission description";
 	o2->Id = YC_MISSIONDESC;
 	o2->Pos = Vec2iNew(x, y);
+	o2->Size = TextGetSize(o2->u.Label.TextLinkData);
 	oc = UIObjectCreate(YC_MISSIONDESC, Vec2iNew(25, 150), Vec2iNew(295, 5 * th));
 	oc->Type = UITYPE_TEXTBOX;
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
@@ -245,23 +398,35 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetCharacterCountStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetSpecialCountStr;
+	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id = YC_SPECIALS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = GetWeaponCountStr;
+	o2->u.Label.TextLinkData = NULL;
 	o2->Id = YC_WEAPONS;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = GetObjectCountStr;
+	o2->u.Label.TextLinkData = NULL;
 	o2->Id = YC_ITEMS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip,

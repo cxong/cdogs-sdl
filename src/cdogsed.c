@@ -368,38 +368,10 @@ static void SwapCursorTile(Vec2i mouseTile)
 
 static void DisplayMission(int xc, int yc, int y)
 {
-	char s[128];
 	struct EditorInfo ei;
 
 	y += CDogsTextHeight() + 3;
-	DrawEditableTextWithEmptyHint(
-		Vec2iNew(25, y),
-		currentMission->title, "(Mission title)",
-		yc == YC_MISSIONTITLE && xc == XC_MISSIONTITLE);
-
 	y += CDogsTextHeight() + 2;
-
-	sprintf(s, "Width: %d", currentMission->mapWidth);
-	DisplayCDogsText(20, y, s, yc == YC_MISSIONPROPS && xc == XC_WIDTH, 0);
-
-	sprintf(s, "Height: %d", currentMission->mapHeight);
-	DisplayCDogsText(60, y, s, yc == YC_MISSIONPROPS && xc == XC_HEIGHT, 0);
-
-	sprintf(s, "Walls: %d", currentMission->wallCount);
-	DisplayCDogsText(100, y, s, yc == YC_MISSIONPROPS && xc == XC_WALLCOUNT, 0);
-
-	sprintf(s, "Len: %d", currentMission->wallLength);
-	DisplayCDogsText(140, y, s, yc == YC_MISSIONPROPS && xc == XC_WALLLENGTH, 0);
-
-	sprintf(s, "Rooms: %d", currentMission->roomCount);
-	DisplayCDogsText(180, y, s, yc == YC_MISSIONPROPS && xc == XC_ROOMCOUNT, 0);
-
-	sprintf(s, "Sqr: %d", currentMission->squareCount);
-	DisplayCDogsText(220, y, s, yc == YC_MISSIONPROPS && xc == XC_SQRCOUNT, 0);
-
-	sprintf(s, "Dens: %d", currentMission->baddieDensity);
-	DisplayCDogsText(260, y, s, yc == YC_MISSIONPROPS && xc == XC_DENSITY, 0);
-
 	y += CDogsTextHeight();
 
 	DrawStyleArea(
@@ -446,42 +418,12 @@ static void DisplayMission(int xc, int yc, int y)
 		currentMission->exitStyle, ei.exitCount,
 		yc == YC_MISSIONLOOKS && xc == XC_EXIT);
 
-	sprintf(s, "Walls: %s", RangeName(currentMission->wallRange));
-	DisplayCDogsText(
-		200, y, s, yc == YC_MISSIONLOOKS && xc == XC_COLOR1, 0);
-	sprintf(s, "Floor: %s", RangeName(currentMission->floorRange));
-	DisplayCDogsText(
-		200, y + TH, s, yc == YC_MISSIONLOOKS && xc == XC_COLOR2, 0);
-	sprintf(s, "Rooms: %s", RangeName(currentMission->roomRange));
-	DisplayCDogsText(
-		200, y + 2 * TH, s, yc == YC_MISSIONLOOKS && xc == XC_COLOR3, 0);
-	sprintf(s, "Extra: %s", RangeName(currentMission->altRange));
-	DisplayCDogsText(
-		200, y + 3 * TH, s, yc == YC_MISSIONLOOKS && xc == XC_COLOR4, 0);
-
 	y += TH + 25;
-
-	DisplayCDogsText(20, y, "Mission description", yc == YC_MISSIONDESC, 0);
 	y += CDogsTextHeight();
 
-	sprintf(s, "Characters (%d/%d)", currentMission->baddieCount, BADDIE_MAX);
-	DisplayCDogsText(20, y, s, yc == YC_CHARACTERS, 0);
 	y += CDogsTextHeight();
-
-	sprintf(
-		s,
-		"Mission objective characters (%d/%d)",
-		currentMission->specialCount,
-		SPECIAL_MAX);
-	DisplayCDogsText(20, y, s, yc == YC_SPECIALS, 0);
 	y += CDogsTextHeight();
-
-	sprintf(s, "Available weapons (%d/%d)", gMission.weaponCount, WEAPON_MAX);
-	DisplayCDogsText(20, y, s, yc == YC_WEAPONS, 0);
 	y += CDogsTextHeight();
-
-	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
-	DisplayCDogsText(20, y, s, yc == YC_ITEMS, 0);
 	y += CDogsTextHeight() + 2;
 
 	if (currentMission->objectiveCount)

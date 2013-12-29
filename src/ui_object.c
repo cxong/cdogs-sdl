@@ -55,6 +55,9 @@ UIObject *UIObjectCopy(UIObject *o)
 	// do not copy children
 	switch (o->Type)
 	{
+	case UITYPE_LABEL:
+		res->u.Label = o->u.Label;
+		break;
 	case UITYPE_TEXTBOX:
 		res->u.Textbox = o->u.Textbox;
 		break;
@@ -117,6 +120,21 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	isHighlighted = o->Parent && o->Parent->Highlighted == o;
 	switch (o->Type)
 	{
+	case UITYPE_LABEL:
+		{
+			int isText = !!o->u.Label.TextLinkFunc;
+			char *text = isText ? o->u.Label.TextLinkFunc(
+				o->u.Label.TextLinkData) : NULL;
+			color_t textMask = isHighlighted ? colorRed : colorWhite;
+			Vec2i pos = o->Pos;
+			if (!text)
+			{
+				break;
+			}
+			pos = DrawTextStringMaskedWrapped(
+				text, g, pos, textMask, o->Pos.x + o->Size.x - pos.x);
+		}
+		break;
 	case UITYPE_TEXTBOX:
 		{
 			int isText = !!o->u.Textbox.TextLinkFunc;

@@ -36,6 +36,7 @@
 typedef enum
 {
 	UITYPE_NONE,
+	UITYPE_LABEL,
 	UITYPE_TEXTBOX
 } UIType;
 
@@ -59,6 +60,11 @@ typedef struct _UIObject
 	struct _UIObject *Highlighted;
 	union
 	{
+		struct
+		{
+			char *(*TextLinkFunc)(void *);
+			void *TextLinkData;
+		} Label;
 		struct
 		{
 			char *(*TextLinkFunc)(void *);
