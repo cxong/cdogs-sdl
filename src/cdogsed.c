@@ -344,39 +344,6 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t->things = NULL;
 }
 
-static void DisplayMission(int yc, int y)
-{
-	y += CDogsTextHeight() + 3;
-	y += CDogsTextHeight() + 2;
-	y += CDogsTextHeight();
-	y += TH + 25;
-	y += CDogsTextHeight();
-
-	y += CDogsTextHeight();
-	y += CDogsTextHeight();
-	y += CDogsTextHeight();
-	y += CDogsTextHeight() + 2;
-
-	if (currentMission->objectiveCount)
-	{
-		int i;
-		for (i = 0; i < currentMission->objectiveCount; i++)
-		{
-			DrawEditableTextWithEmptyHint(
-				Vec2iNew(20, y),
-				currentMission->objectives[i].description,
-				"(Objective description)",
-				yc - YC_OBJECTIVES == i);
-			y += CDogsTextHeight();
-		}
-	}
-	else
-	{
-		DisplayCDogsText(
-			20, y, "-- mission objectives --", yc == YC_OBJECTIVES, 0);
-	}
-}
-
 static void MakeBackground(
 	GraphicsDevice *g, GraphicsConfig *config, int mission)
 {
@@ -421,7 +388,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		DrawTextStringMasked(
 			s, &gGraphicsDevice, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-		DisplayMission(yc, y);
 		if (isMouseTileValid)
 		{
 			sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);

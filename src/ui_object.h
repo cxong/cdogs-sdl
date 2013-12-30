@@ -55,6 +55,7 @@ typedef struct _UIObject
 	int Flags;
 	Vec2i Pos;
 	Vec2i Size;
+	int IsVisible;	// this is modified by get text methods, bit of a hack
 	char *Tooltip;
 	struct _UIObject *Parent;
 	CArray Children;	// elements held by pointer
@@ -68,8 +69,9 @@ typedef struct _UIObject
 		} Label;
 		struct
 		{
-			char *(*TextLinkFunc)(void *);
+			char *(*TextLinkFunc)(struct _UIObject *, void *);
 			void *TextLinkData;
+			int IsEditable;
 			char *Hint;
 		} Textbox;
 		struct
@@ -80,7 +82,7 @@ typedef struct _UIObject
 	} u;
 } UIObject;
 
-UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size);
+UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
 UIObject *UIObjectCopy(UIObject *o);
 void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);

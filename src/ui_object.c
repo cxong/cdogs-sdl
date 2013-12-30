@@ -33,21 +33,29 @@
 #include <cdogs/text.h>
 
 
-UIObject *UIObjectCreate(int id, Vec2i pos, Vec2i size)
+UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 {
 	UIObject *o;
 	CCALLOC(o, sizeof *o);
+	o->Type = type;
 	o->Id = id;
 	o->Pos = pos;
 	o->Size = size;
+	o->IsVisible = 1;
+	switch (type)
+	{
+	case UITYPE_TEXTBOX:
+		o->u.Textbox.IsEditable = 1;
+		break;
+	}
 	CArrayInit(&o->Children, sizeof o);
 	return o;
 }
 
 UIObject *UIObjectCopy(UIObject *o)
 {
-	UIObject *res = UIObjectCreate(o->Id, o->Pos, o->Size);
-	res->Type = o->Type;
+	UIObject *res = UIObjectCreate(o->Type, o->Id, o->Pos, o->Size);
+	res->IsVisible = o->IsVisible;
 	res->Id2 = o->Id2;
 	res->Flags = o->Flags;
 	res->Tooltip = o->Tooltip;
@@ -135,6 +143,10 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 				o->u.Label.TextLinkData) : NULL;
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			Vec2i pos = o->Pos;
+			if (!o->IsVisible)
+			{
+				return;
+			}
 			if (!text)
 			{
 				break;
@@ -147,23 +159,42 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 		{
 			int isText = !!o->u.Textbox.TextLinkFunc;
 			char *text = isText ? o->u.Textbox.TextLinkFunc(
-			o->u.Textbox.TextLinkData) : NULL;
+				o, o->u.Textbox.TextLinkData) : NULL;
 			int isEmptyText = !isText || !text || strlen(text) == 0;
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;
 			Vec2i pos = o->Pos;
+			if (!o->IsVisible)
+			{
+				return;
+			}
 			if (isEmptyText)
 			{
 				text = o->u.Textbox.Hint;
 			}
-			pos = DrawTextCharMasked('\020', g, pos, bracketMask);
+			if (!o->u.Textbox.IsEditable)
+			{
+				textMask = bracketMask;
+			}
+			if (o->u.Textbox.IsEditable)
+			{
+				pos = DrawTextCharMasked('\020', g, pos, bracketMask);
+			}
 			pos = DrawTextStringMaskedWrapped(
 				text, g, pos, textMask,
 				o->Pos.x + o->Size.x - pos.x);
-			pos = DrawTextCharMasked('\021', g, pos, bracketMask);
+			if (o->u.Textbox.IsEditable)
+			{
+				pos = DrawTextCharMasked('\021', g, pos, bracketMask);
+			}
 		}
+		break;
 	case UITYPE_CUSTOM:
 		o->u.CustomDraw.DrawFunc(o, g, o->u.CustomDraw.DrawData);
+		if (!o->IsVisible)
+		{
+			return;
+		}
 		break;
 	}
 	objs = o->Children.data;
