@@ -37,7 +37,8 @@ typedef enum
 {
 	UITYPE_NONE,
 	UITYPE_LABEL,
-	UITYPE_TEXTBOX
+	UITYPE_TEXTBOX,
+	UITYPE_CUSTOM
 } UIType;
 
 #define UI_SELECT_ONLY							1
@@ -71,6 +72,11 @@ typedef struct _UIObject
 			void *TextLinkData;
 			char *Hint;
 		} Textbox;
+		struct
+		{
+			void (*DrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
+			void *DrawData;
+		} CustomDraw;
 	} u;
 } UIObject;
 
@@ -80,6 +86,7 @@ void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);
 void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
+int UIObjectIsHighlighted(UIObject *o);
 void UIObjectDraw(UIObject *o, GraphicsDevice *g);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)

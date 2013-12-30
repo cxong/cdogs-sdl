@@ -294,28 +294,6 @@ static void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilit
 	CDogsTextString(s);
 }
 
-static void DrawStyleArea(
-	Vec2i pos,
-	const char *name,
-	GraphicsDevice *device,
-	PicPaletted *pic,
-	int index, int count,
-	int isHighlighted)
-{
-	char buf[16];
-	DisplayCDogsText(pos.x, pos.y, name, isHighlighted, 0);
-	DrawPic(
-		pos.x, pos.y + TH,
-		pic);
-	// Display style index and count, right aligned
-	sprintf(buf, "%d/%d", index + 1, count);
-	DrawTextStringMasked(
-		buf,
-		device,
-		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 25),
-		colorGray);
-}
-
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 {
 	int w = g->cachedConfig.ResolutionWidth;
@@ -366,58 +344,11 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t->things = NULL;
 }
 
-static void DisplayMission(int xc, int yc, int y)
+static void DisplayMission(int yc, int y)
 {
-	struct EditorInfo ei;
-
 	y += CDogsTextHeight() + 3;
 	y += CDogsTextHeight() + 2;
 	y += CDogsTextHeight();
-
-	DrawStyleArea(
-		Vec2iNew(20, y),
-		"Wall",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, cWallPics[currentMission->wallStyle % WALL_STYLE_COUNT][WALL_SINGLE]),
-		currentMission->wallStyle, WALL_STYLE_COUNT,
-		yc == YC_MISSIONLOOKS && xc == XC_WALL);
-	DrawStyleArea(
-		Vec2iNew(50, y),
-		"Floor",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, cFloorPics[currentMission->floorStyle % FLOOR_STYLE_COUNT][FLOOR_NORMAL]),
-		currentMission->floorStyle, FLOOR_STYLE_COUNT,
-		yc == YC_MISSIONLOOKS && xc == XC_FLOOR);
-	DrawStyleArea(
-		Vec2iNew(80, y),
-		"Rooms",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, cRoomPics[currentMission->roomStyle % ROOMFLOOR_COUNT][ROOMFLOOR_NORMAL]),
-		currentMission->roomStyle, ROOMFLOOR_COUNT,
-		yc == YC_MISSIONLOOKS && xc == XC_ROOM);
-	GetEditorInfo(&ei);
-	DrawStyleArea(
-		Vec2iNew(110, y),
-		"Doors",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
-		currentMission->doorStyle, ei.doorCount,
-		yc == YC_MISSIONLOOKS && xc == XC_DOORS);
-	DrawStyleArea(
-		Vec2iNew(140, y),
-		"Keys",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
-		currentMission->keyStyle, ei.keyCount,
-		yc == YC_MISSIONLOOKS && xc == XC_KEYS);
-	DrawStyleArea(
-		Vec2iNew(170, y),
-		"Exit",
-		&gGraphicsDevice,
-		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
-		currentMission->exitStyle, ei.exitCount,
-		yc == YC_MISSIONLOOKS && xc == XC_EXIT);
-
 	y += TH + 25;
 	y += CDogsTextHeight();
 
@@ -490,7 +421,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		DrawTextStringMasked(
 			s, &gGraphicsDevice, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-		DisplayMission(xc, yc, y);
+		DisplayMission(yc, y);
 		if (isMouseTileValid)
 		{
 			sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);
@@ -622,7 +553,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 
 static int Change(int yc, int xc, int d, int *mission)
 {
-	struct EditorInfo edInfo;
+	struct EditorInfo edInfo = GetEditorInfo();
 	int limit;
 	int isChanged = 0;
 
@@ -634,8 +565,6 @@ static int Change(int yc, int xc, int d, int *mission)
 
 	if (!currentMission)
 		return 0;
-
-	GetEditorInfo(&edInfo);
 
 	switch (yc) {
 	case YC_MISSIONPROPS:
@@ -1596,9 +1525,6 @@ static void EditCampaign(void)
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
 	struct Mission scrap;
-	struct EditorInfo edInfo;
-
-	GetEditorInfo(&edInfo);
 
 	memset(&scrap, 0, sizeof(scrap));
 	sObjs1 = sMainObjs;

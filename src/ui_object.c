@@ -61,6 +61,9 @@ UIObject *UIObjectCopy(UIObject *o)
 	case UITYPE_TEXTBOX:
 		res->u.Textbox = o->u.Textbox;
 		break;
+	case UITYPE_CUSTOM:
+		res->u.CustomDraw = o->u.CustomDraw;
+		break;
 	}
 	return res;
 }
@@ -99,6 +102,11 @@ void UIObjectHighlight(UIObject *o)
 	}
 }
 
+int UIObjectIsHighlighted(UIObject *o)
+{
+	return o->Parent && o->Parent->Highlighted == o;
+}
+
 void UIObjectUnhighlight(UIObject *o)
 {
 	if (o->Highlighted)
@@ -117,7 +125,7 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	{
 		return;
 	}
-	isHighlighted = o->Parent && o->Parent->Highlighted == o;
+	isHighlighted = UIObjectIsHighlighted(o);
 	switch (o->Type)
 	{
 	case UITYPE_LABEL:
@@ -154,6 +162,8 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 				o->Pos.x + o->Size.x - pos.x);
 			pos = DrawTextCharMasked('\021', g, pos, bracketMask);
 		}
+	case UITYPE_CUSTOM:
+		o->u.CustomDraw.DrawFunc(o, g, o->u.CustomDraw.DrawData);
 		break;
 	}
 	objs = o->Children.data;

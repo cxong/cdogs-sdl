@@ -28,8 +28,17 @@
 #include "editor_ui.h"
 
 #include <cdogs/mission.h>
+#include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
 
+
+static void DrawStyleArea(
+	Vec2i pos,
+	const char *name,
+	GraphicsDevice *device,
+	PicPaletted *pic,
+	int index, int count,
+	int isHighlighted);
 
 static char *CStr(char *s)
 {
@@ -111,6 +120,96 @@ static char *MissionGetDensityStr(struct Mission **missionPtr)
 	sprintf(s, "Dens: %d", (*missionPtr)->baddieDensity);
 	return s;
 }
+static void MissionDrawWallStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = WALL_STYLE_COUNT;
+	if (!*missionPtr) return; 
+	index = (*missionPtr)->wallStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Wall",
+		g,
+		PicManagerGetOldPic(&gPicManager, cWallPics[index % count][WALL_SINGLE]),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
+static void MissionDrawFloorStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = FLOOR_STYLE_COUNT;
+	if (!*missionPtr) return;
+	index = (*missionPtr)->floorStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Floor",
+		g,
+		PicManagerGetOldPic(&gPicManager, cFloorPics[index % count][FLOOR_NORMAL]),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
+static void MissionDrawRoomStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = ROOMFLOOR_COUNT;
+	if (!*missionPtr) return;
+	index = (*missionPtr)->roomStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Rooms",
+		g,
+		PicManagerGetOldPic(&gPicManager, cRoomPics[index % count][ROOMFLOOR_NORMAL]),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
+static void MissionDrawDoorStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = GetEditorInfo().doorCount;
+	if (!*missionPtr) return;
+	index = (*missionPtr)->doorStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Doors",
+		g,
+		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
+static void MissionDrawKeyStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = GetEditorInfo().keyCount;
+	if (!*missionPtr) return;
+	index = (*missionPtr)->keyStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Keys",
+		g,
+		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
+static void MissionDrawExitStyle(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	int index;
+	int count = GetEditorInfo().exitCount;
+	if (!*missionPtr) return;
+	index = (*missionPtr)->exitStyle;
+	DrawStyleArea(
+		o->Pos,
+		"Exit",
+		g,
+		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
+		index, count,
+		UIObjectIsHighlighted(o));
+}
 static char *MissionGetWallColorStr(struct Mission **missionPtr)
 {
 	static char s[128];
@@ -169,6 +268,28 @@ static char *GetObjectCountStr(void *v)
 	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
 	return s;
 }
+
+static void DrawStyleArea(
+	Vec2i pos,
+	const char *name,
+	GraphicsDevice *g,
+	PicPaletted *pic,
+	int index, int count,
+	int isHighlighted)
+{
+	char buf[16];
+	DrawTextStringMasked(name, g, pos, isHighlighted ? colorRed : colorWhite);
+	pos.y += CDogsTextHeight();
+	DrawPic(pos.x, pos.y, pic);
+	// Display style index and count, right aligned
+	sprintf(buf, "%d/%d", index + 1, count);
+	DrawTextStringMasked(
+		buf,
+		g,
+		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
+		colorGray);
+}
+
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
@@ -282,31 +403,49 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	x = 20;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawWallStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_WALL;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawFloorStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_FLOOR;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawRoomStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_ROOM;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawDoorStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_DOORS;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawKeyStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_KEYS;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawExitStyle;
+	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_EXIT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);

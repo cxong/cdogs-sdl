@@ -1024,14 +1024,16 @@ int IsMissionComplete(struct MissionOptions *options)
 	return 1;
 }
 
-void GetEditorInfo(struct EditorInfo *info)
+struct EditorInfo GetEditorInfo(void)
 {
-	info->itemCount = ITEMS_COUNT;
-	info->pickupCount = PICKUPS_COUNT;
-	info->keyCount = KEYSTYLE_COUNT;
-	info->doorCount = DOORSTYLE_COUNT;
-	info->exitCount = EXIT_COUNT;
-	info->rangeCount = COLORRANGE_COUNT;
+	struct EditorInfo ei;
+	ei.itemCount = ITEMS_COUNT;
+	ei.pickupCount = PICKUPS_COUNT;
+	ei.keyCount = KEYSTYLE_COUNT;
+	ei.doorCount = DOORSTYLE_COUNT;
+	ei.exitCount = EXIT_COUNT;
+	ei.rangeCount = COLORRANGE_COUNT;
+	return ei;
 }
 
 const char *RangeName(int idx)

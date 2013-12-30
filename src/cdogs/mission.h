@@ -81,7 +81,7 @@ int IsMissionComplete(struct MissionOptions *options);
 
 // Intended for use with the editor only
 
-void GetEditorInfo(struct EditorInfo *info);
+struct EditorInfo GetEditorInfo(void);
 const char *RangeName(int index);
 
 #endif
