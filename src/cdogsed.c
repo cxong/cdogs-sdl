@@ -1051,6 +1051,7 @@ static void Open(void)
 					printf("Error: cannot load %s\n", lastFile);
 					continue;
 				}
+				Setup(0, 1);
 				fileChanged = 0;
 				strcpy(lastFile, filename);
 				return;
@@ -1327,6 +1328,7 @@ static void HandleInput(
 				
 		case 'o':
 			Open();
+			*mission = 0;
 			break;
 
 		case 's':
