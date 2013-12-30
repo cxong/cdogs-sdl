@@ -87,6 +87,7 @@ UIObject *sWeaponObjs;
 UIObject *sMapItemObjs;
 UIObject *sObjectiveObjs;
 UIObject *sCharacterObjs;
+UIObject *sSpecialCharacterObjs;
 
 static UIObject *sObjs1 = NULL;
 static UIObject *sObjs2 = NULL;
@@ -436,12 +437,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		for (i = 0; i < currentMission->baddieCount; i++)
-		{
-			DisplayCharacter(
-				10 + 10 + 20 * i, y + 20,
-				gCampaign.Setting.characters.baddies[i], xc == i, 1);
-		}
 		sObjs2 = sCharacterObjs;
 		break;
 
@@ -450,15 +445,7 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		{
 			break;
 		}
-		for (i = 0; i < currentMission->specialCount; i++)
-		{
-			DisplayCharacter(
-				10 + 10 + 20 * i, y + 20,
-				gCampaign.Setting.characters.specials[i],
-				xc == i,
-				1);
-		}
-		sObjs2 = sCharacterObjs;
+		sObjs2 = sSpecialCharacterObjs;
 		break;
 
 	case YC_ITEMS:
@@ -1560,7 +1547,8 @@ int main(int argc, char *argv[])
 	sWeaponObjs = CreateWeaponObjs();
 	sMapItemObjs = CreateMapItemObjs();
 	sObjectiveObjs = CreateObjectiveObjs();
-	sCharacterObjs = CreateCharacterObjs();
+	sCharacterObjs = CreateCharacterObjs(&currentMission);
+	sSpecialCharacterObjs = CreateSpecialCharacterObjs(&currentMission);
 
 	CampaignInit(&gCampaign);
 
@@ -1621,6 +1609,7 @@ int main(int argc, char *argv[])
 	UIObjectDestroy(sMapItemObjs);
 	UIObjectDestroy(sObjectiveObjs);
 	UIObjectDestroy(sCharacterObjs);
+	UIObjectDestroy(sSpecialCharacterObjs);
 
 	exit(EXIT_SUCCESS);
 }

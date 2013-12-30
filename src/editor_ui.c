@@ -27,6 +27,7 @@
 */
 #include "editor_ui.h"
 
+#include <cdogs/draw.h>
 #include <cdogs/mission.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
@@ -351,6 +352,28 @@ static char *GetObjectCountStr(void *v)
 	UNUSED(v);
 	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
 	return s;
+}
+static void MissionDrawEnemy(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	UNUSED(g);
+	if (!*missionPtr) return;
+	if (o->Id2 >= (*missionPtr)->baddieCount) return;
+	DisplayCharacter(
+		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		gCampaign.Setting.characters.baddies[o->Id2],
+		UIObjectIsHighlighted(o), 1);
+}
+static void MissionDrawSpecialChar(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	UNUSED(g);
+	if (!*missionPtr) return;
+	if (o->Id2 >= (*missionPtr)->specialCount) return;
+	DisplayCharacter(
+		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		gCampaign.Setting.characters.specials[o->Id2],
+		UIObjectIsHighlighted(o), 1);
 }
 
 static void DrawStyleArea(
@@ -806,7 +829,7 @@ UIObject *CreateObjectiveObjs(void)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateCharacterObjs(void)
+UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
@@ -814,7 +837,33 @@ UIObject *CreateCharacterObjs(void)
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
-	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o->u.CustomDraw.DrawFunc = MissionDrawEnemy;
+	o->u.CustomDraw.DrawData = missionPtr;
+	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
+	for (i = 0; i < 15; i++)
+	{
+		int x = 10 + i * 20;
+		o2 = UIObjectCopy(o);
+		o2->Id2 = i;
+		o2->Pos = Vec2iNew(x, 150);
+		UIObjectAddChild(c, o2);
+	}
+
+	UIObjectDestroy(o);
+	return c;
+}
+UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
+{
+	UIObject *c;
+	UIObject *o;
+	UIObject *o2;
+	int i;
+	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o->u.CustomDraw.DrawFunc = MissionDrawSpecialChar;
+	o->u.CustomDraw.DrawData = missionPtr;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{

@@ -550,18 +550,18 @@ void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 }
 
-void DisplayCharacter(int x, int y, Character *c, int hilite, int showGun)
+void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 {
 	DrawCharacterSimple(
-		c, Vec2iNew(x, y),
+		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 	if (hilite)
 	{
-		CDogsTextGoto(x - 8, y - 16);
+		CDogsTextGoto(pos.x - 8, pos.y - 16);
 		CDogsTextChar('\020');
 		if (showGun)
 		{
-			CDogsTextGoto(x - 8, y + 8);
+			CDogsTextGoto(pos.x - 8, pos.y + 8);
 			CDogsTextString(gGunDescriptions[c->gun].name);
 		}
 	}
