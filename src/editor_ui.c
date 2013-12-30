@@ -59,6 +59,17 @@ static char *CampaignGetDescription(UIObject *o, CampaignOptions *c)
 	UNUSED(o);
 	return c->Setting.description;
 }
+static void CheckMission(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	UNUSED(g);
+	if (!*missionPtr)
+	{
+		o->IsVisible = 0;
+		return;
+	}
+	o->IsVisible = 1;
+}
 static char *MissionGetTitle(UIObject *o, struct Mission **missionPtr)
 {
 	UNUSED(o);
@@ -367,6 +378,7 @@ static void DrawStyleArea(
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
+	UIObject *cc;
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
@@ -374,7 +386,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	int i;
 	int x;
 	int y;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	// Titles
 
@@ -386,13 +398,20 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o->u.Textbox.TextLinkData = &gCampaign;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
 	o->Flags = UI_SELECT_ONLY_FIRST;
-	UIObjectAddChild(c, o);
+	UIObjectAddChild(cc, o);
 
 	o = UIObjectCreate(
 		UITYPE_NONE, YC_MISSIONINDEX, Vec2iNew(270, y), Vec2iNew(49, th));
-	UIObjectAddChild(c, o);
+	UIObjectAddChild(cc, o);
 
 	y = 2 * th;
+
+	// Mission-only controls
+	// Only visible if the current mission is valid
+	c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
+	c->u.CustomDraw.DrawFunc = CheckMission;
+	c->u.CustomDraw.DrawData = missionPtr;
+	UIObjectAddChild(cc, c);
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(25, y), Vec2iNew(175, th));
@@ -629,7 +648,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	}
 
 	UIObjectDestroy(o);
-	return c;
+	return cc;
 }
 UIObject *CreateCampaignObjs(void)
 {

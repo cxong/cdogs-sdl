@@ -238,6 +238,7 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 	{
 		if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 			isHighlighted) &&
+			(*objs)->IsVisible &&
 			UITryGetObject(*objs, pos, out))
 		{
 			return 1;
