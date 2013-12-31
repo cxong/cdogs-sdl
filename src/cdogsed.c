@@ -1085,14 +1085,13 @@ static void Save(int asCode)
 	}
 }
 
-static int ConfirmQuit(void)
+static int ConfirmClose(char *msg)
 {
 	int c;
 	int i;
 	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 	const char *s1 = "Campaign has been modified, but not saved";
-	const char *s2 = "Quit anyway? (Y/N)";
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
@@ -1102,9 +1101,9 @@ static int ConfirmQuit(void)
 		&gGraphicsDevice,
 		Vec2iNew((w - TextGetStringWidth(s1)) / 2, (h - CDogsTextHeight()) / 2));
 	DrawTextString(
-		s2,
+		msg,
 		&gGraphicsDevice,
-		Vec2iNew((w - TextGetStringWidth(s2)) / 2, (h + CDogsTextHeight()) / 2));
+		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + CDogsTextHeight()) / 2));
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 	c = GetKey(&gEventHandlers);
@@ -1246,7 +1245,7 @@ static void HandleInput(
 			break;
 
 		case 'q':
-			if (!fileChanged || ConfirmQuit())
+			if (!fileChanged || ConfirmClose("Quit anyway? (Y/N)"))
 			{
 				*done = 1;
 			}
@@ -1260,8 +1259,11 @@ static void HandleInput(
 			break;
 				
 		case 'o':
-			Open();
-			*mission = 0;
+			if (ConfirmClose("Open anyway? (Y/N)"))
+			{
+				Open();
+				*mission = 0;
+			}
 			break;
 
 		case 's':
@@ -1396,7 +1398,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_ESCAPE:
-			if (!fileChanged || ConfirmQuit())
+			if (!fileChanged || ConfirmClose("Quit anyway? (Y/N)"))
 			{
 				*done = 1;
 			}
