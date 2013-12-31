@@ -116,7 +116,8 @@ int GraphicsGetMemSize(GraphicsConfig *config);
 void GrafxDrawBackground(
 	GraphicsDevice *device, GraphicsConfig *config, HSV tint);
 void GrafxMakeBackground(
-	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx);
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint,
+	int missionIdx, int isEditor);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

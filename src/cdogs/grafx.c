@@ -259,7 +259,7 @@ static void MakeRandomBackground(
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	GrafxMakeBackground(device, config, tint, 0);
+	GrafxMakeBackground(device, config, tint, 0, 0);
 	KillAllActors();
 	KillAllObjects();
 	FreeTriggersAndWatches();
@@ -412,13 +412,18 @@ void GrafxDrawBackground(
 }
 
 void GrafxMakeBackground(
-	GraphicsDevice *device, GraphicsConfig *config, HSV tint, int missionIdx)
+	GraphicsDevice *device, GraphicsConfig *config, HSV tint,
+	int missionIdx, int isEditor)
 {
 	SetupMission(missionIdx, 1, &gCampaign);
 	MapLoad(&gMap, &gMission);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(&gMap);
+	if (isEditor)
+	{
+		MapShowExitArea(&gMap);
+	}
 
 	GrafxDrawBackground(device, config, tint);
 }

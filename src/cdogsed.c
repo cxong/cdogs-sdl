@@ -309,7 +309,7 @@ static void MakeBackground(
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, config, tintDarker, mission);
+	GrafxMakeBackground(g, config, tintDarker, mission, 1);
 }
 
 static void Display(int mission, int xc, int yc, int willDisplayAutomap)
