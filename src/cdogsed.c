@@ -277,24 +277,6 @@ static void DrawEditableTextWithEmptyHint(
 	pos = DrawTextCharMasked('\021', &gGraphicsDevice, pos, bracketMask);
 }
 
-static void DisplayMapItem(int x, int y, TMapObject * mo, int density, int hilite)
-{
-	char s[10];
-
-	const TOffsetPic *pic = &cGeneralPics[mo->pic];
-	DrawTPic(
-		x + pic->dx, y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-
-	if (hilite) {
-		CDogsTextGoto(x - 8, y - 4);
-		CDogsTextChar('\020');
-	}
-	sprintf(s, "%d", density);
-	CDogsTextGoto(x - 8, y + 5);
-	CDogsTextString(s);
-}
-
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 {
 	int w = g->cachedConfig.ResolutionWidth;
@@ -454,14 +436,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			break;
 		}
 		sObjs2 = sMapItemObjs;
-		for (i = 0; i < currentMission->itemCount; i++)
-		{
-			DisplayMapItem(
-				10 + 10 + 20 * i, y + 20,
-				gMission.mapObjects[i],
-				currentMission->itemDensity[i],
-				xc == i);
-		}
 		break;
 
 	case YC_WEAPONS:
@@ -1545,7 +1519,7 @@ int main(int argc, char *argv[])
 	sCampaignObjs = CreateCampaignObjs();
 	sMissionObjs = CreateMissionObjs(&currentMission);
 	sWeaponObjs = CreateWeaponObjs();
-	sMapItemObjs = CreateMapItemObjs();
+	sMapItemObjs = CreateMapItemObjs(&currentMission);
 	sObjectiveObjs = CreateObjectiveObjs();
 	sCharacterObjs = CreateCharacterObjs(&currentMission);
 	sSpecialCharacterObjs = CreateSpecialCharacterObjs(&currentMission);

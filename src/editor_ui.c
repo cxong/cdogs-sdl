@@ -375,6 +375,21 @@ static void MissionDrawSpecialChar(
 		gCampaign.Setting.characters.specials[o->Id2],
 		UIObjectIsHighlighted(o), 1);
 }
+static void DisplayMapItem(
+	GraphicsDevice *g,
+	Vec2i pos, TMapObject *mo, int density, int isHighlighted);
+static void MissionDrawMapItem(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	if (!*missionPtr) return;
+	if (o->Id2 >= (*missionPtr)->itemCount) return;
+	DisplayMapItem(
+		g,
+		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		gMission.mapObjects[o->Id2],
+		(*missionPtr)->itemDensity[o->Id2],
+		UIObjectIsHighlighted(o));
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -387,7 +402,7 @@ static void DrawStyleArea(
 	char buf[16];
 	DrawTextStringMasked(name, g, pos, isHighlighted ? colorRed : colorWhite);
 	pos.y += CDogsTextHeight();
-	DrawPic(pos.x, pos.y, pic);
+	DrawTPic(pos.x, pos.y, pic);
 	// Display style index and count, right aligned
 	sprintf(buf, "%d/%d", index + 1, count);
 	DrawTextStringMasked(
@@ -395,6 +410,25 @@ static void DrawStyleArea(
 		g,
 		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
 		colorGray);
+}
+static void DisplayMapItem(
+	GraphicsDevice *g,
+	Vec2i pos, TMapObject *mo, int density, int isHighlighted)
+{
+	char s[10];
+
+	const TOffsetPic *pic = &cGeneralPics[mo->pic];
+	DrawTPic(
+		pos.x + pic->dx, pos.y + pic->dy,
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+
+	if (isHighlighted)
+	{
+		DrawTextCharMasked(
+			'\020', g, Vec2iAdd(pos, Vec2iNew(-8, -4)), colorWhite);
+	}
+	sprintf(s, "%d", density);
+	DrawTextString(s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
 }
 
 
@@ -754,7 +788,7 @@ UIObject *CreateWeaponObjs(void)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateMapItemObjs(void)
+UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
@@ -762,7 +796,9 @@ UIObject *CreateMapItemObjs(void)
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
-	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iNew(19, 40));
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o->u.CustomDraw.DrawFunc = MissionDrawMapItem;
+	o->u.CustomDraw.DrawData = missionPtr;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < ITEMS_MAX; i++)
 	{
