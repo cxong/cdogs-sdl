@@ -105,22 +105,6 @@ static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 		CDogsTextStringAt(x, y, text);
 }
 
-void DisplayFlag(int x, int y, const char *s, int on, int hilite)
-{
-	CDogsTextGoto(x, y);
-	if (hilite) {
-		CDogsTextStringWithTable(s, &tableFlamed);
-		CDogsTextCharWithTable(':', &tableFlamed);
-	} else {
-		CDogsTextString(s);
-		CDogsTextChar(':');
-	}
-	if (on)
-		CDogsTextStringWithTable("On", &tablePurple);
-	else
-		CDogsTextString("Off");
-}
-
 static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
@@ -162,45 +146,58 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		DisplayCDogsText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
 		y += CDogsTextHeight();
 
-		DisplayFlag(5, y, "Asbestos",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(5, y), "Asbestos",
 			    (b->flags & FLAGS_ASBESTOS) != 0,
 			    yc == YC_FLAGS && xc == XC_ASBESTOS);
-		DisplayFlag(50, y, "Immunity",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(50, y), "Immunity",
 			    (b->flags & FLAGS_IMMUNITY) != 0,
 			    yc == YC_FLAGS && xc == XC_IMMUNITY);
-		DisplayFlag(95, y, "C-thru",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(95, y), "C-thru",
 			    (b->flags & FLAGS_SEETHROUGH) != 0,
 			    yc == YC_FLAGS && xc == XC_SEETHROUGH);
-		DisplayFlag(140, y, "Run-away",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(140, y), "Run-away",
 			    (b->flags & FLAGS_RUNS_AWAY) != 0,
 			    yc == YC_FLAGS && xc == XC_RUNS_AWAY);
-		DisplayFlag(185, y, "Sneaky",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(185, y), "Sneaky",
 			    (b->flags & FLAGS_SNEAKY) != 0, yc == YC_FLAGS
 			    && xc == XC_SNEAKY);
-		DisplayFlag(230, y, "Good guy",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(230, y), "Good guy",
 			    (b->flags & FLAGS_GOOD_GUY) != 0,
 			    yc == YC_FLAGS && xc == XC_GOOD_GUY);
-		DisplayFlag(275, y, "Asleep",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(275, y), "Asleep",
 			    (b->flags & FLAGS_SLEEPALWAYS) != 0,
 			    yc == YC_FLAGS && xc == XC_SLEEPING);
 		y += CDogsTextHeight();
 
-		DisplayFlag(5, y, "Prisoner",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(5, y), "Prisoner",
 			    (b->flags & FLAGS_PRISONER) != 0,
 			    yc == YC_FLAGS && xc == XC_PRISONER);
-		DisplayFlag(50, y, "Invuln.",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(50, y), "Invuln.",
 			    (b->flags & FLAGS_INVULNERABLE) != 0,
 			    yc == YC_FLAGS && xc == XC_INVULNERABLE);
-		DisplayFlag(95, y, "Follower",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(95, y), "Follower",
 			    (b->flags & FLAGS_FOLLOWER) != 0,
 			    yc == YC_FLAGS && xc == XC_FOLLOWER);
-		DisplayFlag(140, y, "Penalty",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(140, y), "Penalty",
 			    (b->flags & FLAGS_PENALTY) != 0,
 			    yc == YC_FLAGS && xc == XC_PENALTY);
-		DisplayFlag(185, y, "Victim",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(185, y), "Victim",
 			    (b->flags & FLAGS_VICTIM) != 0,
 				yc == YC_FLAGS && xc == XC_VICTIM);
-		DisplayFlag(230, y, "Awake",
+		DisplayFlag(
+			&gGraphicsDevice, Vec2iNew(230, y), "Awake",
 			    (b->flags & FLAGS_AWAKEALWAYS) != 0,
 			    yc == YC_FLAGS && xc == XC_AWAKE);
 		y += CDogsTextHeight();

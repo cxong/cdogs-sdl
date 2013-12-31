@@ -135,10 +135,13 @@
 #define XC_AWAKE         12
 
 
+void DisplayFlag(
+	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
+
 UIObject *CreateMainObjs(struct Mission **missionPtr);
 UIObject *CreateCampaignObjs(void);
 UIObject *CreateMissionObjs(struct Mission **missionPtr);
-UIObject *CreateWeaponObjs(void);
+UIObject *CreateWeaponObjs(struct Mission **missionPtr);
 UIObject *CreateMapItemObjs(struct Mission **missionPtr);
 UIObject *CreateObjectiveObjs(void);
 UIObject *CreateCharacterObjs(struct Mission **missionPtr);

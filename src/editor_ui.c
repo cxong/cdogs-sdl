@@ -390,6 +390,17 @@ static void MissionDrawMapItem(
 		(*missionPtr)->itemDensity[o->Id2],
 		UIObjectIsHighlighted(o));
 }
+static void MissionDrawWeaponStatus(
+	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+{
+	if (!*missionPtr) return;
+	DisplayFlag(
+		g,
+		o->Pos,
+		gGunDescriptions[o->Id2].name,
+		(*missionPtr)->weaponSelection & (1 << o->Id2),
+		UIObjectIsHighlighted(o));
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -429,6 +440,22 @@ static void DisplayMapItem(
 	}
 	sprintf(s, "%d", density);
 	DrawTextString(s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+}
+
+void DisplayFlag(
+	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
+{
+	color_t labelMask = isHighlighted ? colorRed : colorWhite;
+	pos = DrawTextStringMasked(s, g, pos, labelMask);
+	pos = DrawTextCharMasked(':', g, pos, labelMask);
+	if (isOn)
+	{
+		DrawTextStringMasked("On", g, pos, colorPurple);
+	}
+	else
+	{
+		DrawTextStringMasked("Off", g, pos, colorWhite);
+	}
 }
 
 
@@ -764,7 +791,7 @@ UIObject *CreateMissionObjs(struct Mission **missionPtr)
 
 	return c;
 }
-UIObject *CreateWeaponObjs(void)
+UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -773,7 +800,9 @@ UIObject *CreateWeaponObjs(void)
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
-	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iNew(80, th));
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
+	o->u.CustomDraw.DrawFunc = MissionDrawWeaponStatus;
+	o->u.CustomDraw.DrawData = missionPtr;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < WEAPON_MAX; i++)
 	{

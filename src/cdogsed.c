@@ -235,33 +235,6 @@ void DrawObjectiveInfo(int idx, int y, int xc)
 	}
 }
 
-static void ShowWeaponStatus(int x, int y, int weapon, int xc)
-{
-	DisplayFlag(
-		x,
-		y,
-		gGunDescriptions[weapon].name,
-		(currentMission->weaponSelection & (1 << weapon)) != 0,
-		xc == weapon);
-}
-
-static void ListWeapons(int y, int xc)
-{
-	ShowWeaponStatus(10, y, 0, xc);
-	ShowWeaponStatus(10, y + TH, 1, xc);
-	ShowWeaponStatus(10, y + 2 * TH, 2, xc);
-	ShowWeaponStatus(10, y + 3 * TH, 3, xc);
-
-	ShowWeaponStatus(100, y, 4, xc);
-	ShowWeaponStatus(100, y + TH, 5, xc);
-	ShowWeaponStatus(100, y + 2 * TH, 6, xc);
-	ShowWeaponStatus(100, y + 3 * TH, 7, xc);
-
-	ShowWeaponStatus(190, y, 8, xc);
-	ShowWeaponStatus(190, y + TH, 9, xc);
-	ShowWeaponStatus(190, y + 2 * TH, 10, xc);
-}
-
 static void DrawEditableTextWithEmptyHint(
 	Vec2i pos, char *text, char *hint, int isHighlighted)
 {
@@ -444,7 +417,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 			break;
 		}
 		sObjs2 = sWeaponObjs;
-		ListWeapons(150, xc);
 		break;
 
 	default:
@@ -1518,7 +1490,7 @@ int main(int argc, char *argv[])
 	sMainObjs = CreateMainObjs(&currentMission);
 	sCampaignObjs = CreateCampaignObjs();
 	sMissionObjs = CreateMissionObjs(&currentMission);
-	sWeaponObjs = CreateWeaponObjs();
+	sWeaponObjs = CreateWeaponObjs(&currentMission);
 	sMapItemObjs = CreateMapItemObjs(&currentMission);
 	sObjectiveObjs = CreateObjectiveObjs();
 	sCharacterObjs = CreateCharacterObjs(&currentMission);
