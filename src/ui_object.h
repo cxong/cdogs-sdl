@@ -67,6 +67,7 @@ typedef struct _UIObject
 			char *(*TextLinkFunc)(struct _UIObject *, void *);
 			void *TextLinkData;
 			int IsDynamicData;
+			void (*ChangeFunc)(void *, int d);
 		} Label;
 		struct
 		{

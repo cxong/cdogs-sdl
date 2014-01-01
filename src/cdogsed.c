@@ -217,8 +217,6 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 
-	sObjs2 = NULL;
-
 	if (currentMission)
 	{
 		Vec2i mouseTile = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
@@ -274,52 +272,6 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 
 	y = 150;
 
-	switch (yc)
-	{
-	case YC_CAMPAIGNTITLE:
-		sObjs2 = sCampaignObjs;
-		break;
-
-	case YC_MISSIONTITLE:
-		sObjs2 = sMissionObjs;
-		break;
-
-	case YC_CHARACTERS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sCharacterObjs;
-		break;
-
-	case YC_SPECIALS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sSpecialCharacterObjs;
-		break;
-
-	case YC_ITEMS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sMapItemObjs;
-		break;
-
-	case YC_WEAPONS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sWeaponObjs;
-		break;
-
-	default:
-		break;
-	}
-
 	UIObjectDraw(sObjs1, &gGraphicsDevice);
 	UIObjectDraw(sObjs2, &gGraphicsDevice);
 
@@ -341,7 +293,7 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
-static int Change(int yc, int xc, int d, int *mission)
+static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 {
 	struct EditorInfo edInfo = GetEditorInfo();
 	int limit;
@@ -356,31 +308,21 @@ static int Change(int yc, int xc, int d, int *mission)
 	if (!currentMission)
 		return 0;
 
-	switch (yc) {
-	case YC_MISSIONPROPS:
-		switch (xc) {
-		case XC_WIDTH:
-			currentMission->mapWidth = CLAMP(currentMission->mapWidth + d, 16, XMAX);
-			break;
-		case XC_HEIGHT:
-			currentMission->mapHeight = CLAMP(currentMission->mapHeight + d, 16, YMAX);
-			break;
-		case XC_WALLCOUNT:
-			currentMission->wallCount = CLAMP(currentMission->wallCount + d, 0, 200);
-			break;
-		case XC_WALLLENGTH:
-			currentMission->wallLength = CLAMP(currentMission->wallLength + d, 1, 100);
-			break;
-		case XC_ROOMCOUNT:
-			currentMission->roomCount = CLAMP(currentMission->roomCount + d, 0, 100);
-			break;
-		case XC_SQRCOUNT:
-			currentMission->squareCount = CLAMP(currentMission->squareCount + d, 0, 100);
-			break;
-		case XC_DENSITY:
-			currentMission->baddieDensity = CLAMP(currentMission->baddieDensity + d, 0, 100);
+	if (o)
+	{
+		switch (o->Type)
+		{
+		case UITYPE_LABEL:
+			if (o->u.Label.ChangeFunc)
+			{
+				o->u.Label.ChangeFunc(o->u.Label.TextLinkData, d);
+			}
 			break;
 		}
+	}
+
+	switch (yc) {
+	case YC_MISSIONPROPS:
 		isChanged = 1;
 		break;
 
@@ -1075,9 +1017,9 @@ static void HandleInput(
 	int *mission, struct Mission *scrap,
 	int *willDisplayAutomap, int *done)
 {
+	UIObject *o = NULL;
 	if (m)
 	{
-		UIObject *o;
 		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
 		{
 			UIObjectHighlight(o);
@@ -1273,7 +1215,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEUP:
-			if (Change(*yc, *xc, 1, mission))
+			if (Change(o, *yc, *xc, 1, mission))
 			{
 				fileChanged = 1;
 			}
@@ -1281,7 +1223,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEDOWN:
-			if (Change(*yc, *xc, -1, mission))
+			if (Change(o, *yc, *xc, -1, mission))
 			{
 				fileChanged = 1;
 			}
@@ -1310,6 +1252,53 @@ static void HandleInput(
 			break;
 		}
 	}
+
+	// Update UI
+	switch (*yc)
+	{
+	case YC_CAMPAIGNTITLE:
+		sObjs2 = sCampaignObjs;
+		break;
+
+	case YC_MISSIONTITLE:
+		sObjs2 = sMissionObjs;
+		break;
+
+	case YC_CHARACTERS:
+		if (!currentMission)
+		{
+			break;
+		}
+		sObjs2 = sCharacterObjs;
+		break;
+
+	case YC_SPECIALS:
+		if (!currentMission)
+		{
+			break;
+		}
+		sObjs2 = sSpecialCharacterObjs;
+		break;
+
+	case YC_ITEMS:
+		if (!currentMission)
+		{
+			break;
+		}
+		sObjs2 = sMapItemObjs;
+		break;
+
+	case YC_WEAPONS:
+		if (!currentMission)
+		{
+			break;
+		}
+		sObjs2 = sWeaponObjs;
+		break;
+
+	default:
+		break;
+	}
 }
 
 static void EditCampaign(void)
@@ -1319,6 +1308,7 @@ static void EditCampaign(void)
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
 	struct Mission scrap;
+
 
 	memset(&scrap, 0, sizeof(scrap));
 	sObjs1 = sMainObjs;

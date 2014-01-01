@@ -611,6 +611,36 @@ void DisplayFlag(
 }
 
 
+static void MissionChangeWidth(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->mapWidth = CLAMP((*missionPtr)->mapWidth + d, 16, XMAX);
+}
+static void MissionChangeHeight(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->mapHeight = CLAMP((*missionPtr)->mapHeight + d, 16, XMAX);
+}
+static void MissionChangeWallCount(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->wallCount = CLAMP((*missionPtr)->wallCount + d, 0, 200);
+}
+static void MissionChangeWallLength(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->wallLength = CLAMP((*missionPtr)->wallLength + d, 1, 100);
+}
+static void MissionChangeRoomCount(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->roomCount = CLAMP((*missionPtr)->roomCount + d, 0, 100);
+}
+static void MissionChangeSquareCount(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->squareCount = CLAMP((*missionPtr)->squareCount + d, 0, 100);
+}
+static void MissionChangeDensity(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->baddieDensity = CLAMP((*missionPtr)->baddieDensity + d, 0, 100);
+}
+
+
 UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
@@ -669,22 +699,25 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	x = 20;
 	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_WIDTH;
 	o2->u.Label.TextLinkFunc = MissionGetWidthStr;
 	o2->u.Label.TextLinkData = missionPtr;
-	o2->Id2 = XC_WIDTH;
+	o2->u.Label.ChangeFunc = MissionChangeWidth;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_HEIGHT;
 	o2->u.Label.TextLinkFunc = MissionGetHeightStr;
 	o2->u.Label.TextLinkData = missionPtr;
-	o2->Id2 = XC_HEIGHT;
+	o2->u.Label.ChangeFunc = MissionChangeHeight;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->u.Label.TextLinkFunc = MissionGetWallCountStr;
 	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.Label.ChangeFunc = MissionChangeWallCount;
 	o2->Id2 = XC_WALLCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
@@ -692,6 +725,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->u.Label.TextLinkFunc = MissionGetWallLengthStr;
 	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.Label.ChangeFunc = MissionChangeWallLength;
 	o2->Id2 = XC_WALLLENGTH;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
@@ -699,6 +733,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->u.Label.TextLinkFunc = MissionGetRoomCountStr;
 	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.Label.ChangeFunc = MissionChangeRoomCount;
 	o2->Id2 = XC_ROOMCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
@@ -706,6 +741,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->u.Label.TextLinkFunc = MissionGetSquareCountStr;
 	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.Label.ChangeFunc = MissionChangeSquareCount;
 	o2->Id2 = XC_SQRCOUNT;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
@@ -713,6 +749,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2 = UIObjectCopy(o);
 	o2->u.Label.TextLinkFunc = MissionGetDensityStr;
 	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.Label.ChangeFunc = MissionChangeDensity;
 	o2->Id2 = XC_DENSITY;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
