@@ -28,6 +28,7 @@
  */
 #include "ui_object.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include <cdogs/text.h>
@@ -60,17 +61,21 @@ UIObject *UIObjectCopy(UIObject *o)
 	res->Flags = o->Flags;
 	res->Tooltip = o->Tooltip;
 	res->Parent = o->Parent;
+	res->Data = o->Data;
+	assert(!o->IsDynamicData && "Cannot copy unknown dynamic data size");
+	res->IsDynamicData = 0;
+	res->ChangeFunc = o->ChangeFunc;
 	// do not copy children
 	switch (o->Type)
 	{
 	case UITYPE_LABEL:
-		res->u.Label = o->u.Label;
+		res->u.LabelFunc = o->u.LabelFunc;
 		break;
 	case UITYPE_TEXTBOX:
 		res->u.Textbox = o->u.Textbox;
 		break;
 	case UITYPE_CUSTOM:
-		res->u.CustomDraw = o->u.CustomDraw;
+		res->u.CustomDrawFunc = o->u.CustomDrawFunc;
 		break;
 	}
 	return res;
@@ -86,22 +91,14 @@ void UIObjectDestroy(UIObject *o)
 		UIObjectDestroy(*objs);
 	}
 	CArrayTerminate(&o->Children);
+	if (o->IsDynamicData)
+	{
+		CFREE(o->Data);
+	}
 	switch (o->Type)
 	{
-	case UITYPE_LABEL:
-		if (o->u.Label.IsDynamicData)
-		{
-			CFREE(o->u.Label.TextLinkData);
-		}
-		break;
 	case UITYPE_TEXTBOX:
 		CFREE(o->u.Textbox.Hint);
-		break;
-	case UITYPE_CUSTOM:
-		if (o->u.CustomDraw.IsDynamicData)
-		{
-			CFREE(o->u.CustomDraw.DrawData);
-		}
 		break;
 	}
 	CFREE(o);
@@ -150,9 +147,8 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	{
 	case UITYPE_LABEL:
 		{
-			int isText = !!o->u.Label.TextLinkFunc;
-			char *text = isText ? o->u.Label.TextLinkFunc(
-				o, o->u.Label.TextLinkData) : NULL;
+			int isText = !!o->u.LabelFunc;
+			char *text = isText ? o->u.LabelFunc(o, o->Data) : NULL;
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			Vec2i pos = o->Pos;
 			if (!o->IsVisible)
@@ -170,8 +166,7 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	case UITYPE_TEXTBOX:
 		{
 			int isText = !!o->u.Textbox.TextLinkFunc;
-			char *text = isText ? o->u.Textbox.TextLinkFunc(
-				o, o->u.Textbox.TextLinkData) : NULL;
+			char *text = isText ? o->u.Textbox.TextLinkFunc(o, o->Data) : NULL;
 			int isEmptyText = !isText || !text || strlen(text) == 0;
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;
@@ -202,7 +197,7 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 		}
 		break;
 	case UITYPE_CUSTOM:
-		o->u.CustomDraw.DrawFunc(o, g, o->u.CustomDraw.DrawData);
+		o->u.CustomDrawFunc(o, g, o->Data);
 		if (!o->IsVisible)
 		{
 			return;

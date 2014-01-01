@@ -639,6 +639,56 @@ static void MissionChangeDensity(struct Mission **missionPtr, int d)
 {
 	(*missionPtr)->baddieDensity = CLAMP((*missionPtr)->baddieDensity + d, 0, 100);
 }
+static void MissionChangeWallStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->wallStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->wallStyle + d, 0, WALL_STYLE_COUNT - 1);
+}
+static void MissionChangeFloorStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->floorStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->floorStyle + d, 0, FLOOR_STYLE_COUNT - 1);
+}
+static void MissionChangeRoomStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->roomStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->roomStyle + d, 0, ROOMFLOOR_COUNT - 1);
+}
+static void MissionChangeDoorStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->doorStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->doorStyle + d, 0, GetEditorInfo().doorCount - 1);
+}
+static void MissionChangeKeyStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->keyStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->keyStyle + d, 0, GetEditorInfo().keyCount - 1);
+}
+static void MissionChangeExitStyle(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->exitStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->exitStyle + d, 0, GetEditorInfo().exitCount - 1);
+}
+static void MissionChangeWallColor(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->wallRange = CLAMP_OPPOSITE(
+		(*missionPtr)->wallRange + d, 0, GetEditorInfo().rangeCount - 1);
+}
+static void MissionChangeFloorColor(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->floorRange = CLAMP_OPPOSITE(
+		(*missionPtr)->floorRange + d, 0, GetEditorInfo().rangeCount - 1);
+}
+static void MissionChangeRoomColor(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->roomRange = CLAMP_OPPOSITE(
+		(*missionPtr)->roomRange + d, 0, GetEditorInfo().rangeCount - 1);
+}
+static void MissionChangeExtraColor(struct Mission **missionPtr, int d)
+{
+	(*missionPtr)->altRange = CLAMP_OPPOSITE(
+		(*missionPtr)->altRange + d, 0, GetEditorInfo().rangeCount - 1);
+}
 
 
 UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
@@ -663,7 +713,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, Vec2iNew(25, y), Vec2iNew(240, th));
 	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
-	o->u.Textbox.TextLinkData = &gCampaign;
+	o->Data = &gCampaign;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
 	o->Flags = UI_SELECT_ONLY_FIRST;
 	UIObjectAddChild(cc, o);
@@ -677,15 +727,15 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	// Mission-only controls
 	// Only visible if the current mission is valid
 	c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
-	c->u.CustomDraw.DrawFunc = CheckMission;
-	c->u.CustomDraw.DrawData = missionPtr;
+	c->u.CustomDrawFunc = CheckMission;
+	c->Data = missionPtr;
 	UIObjectAddChild(cc, c);
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(25, y), Vec2iNew(175, th));
 	o->Id2 = XC_MISSIONTITLE;
 	o->u.Textbox.TextLinkFunc = MissionGetTitle;
-	o->u.Textbox.TextLinkData = missionPtr;
+	o->Data = missionPtr;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
 	UIObjectAddChild(c, o);
 
@@ -700,57 +750,57 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	x = 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WIDTH;
-	o2->u.Label.TextLinkFunc = MissionGetWidthStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeWidth;
+	o2->u.LabelFunc = MissionGetWidthStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWidth;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_HEIGHT;
-	o2->u.Label.TextLinkFunc = MissionGetHeightStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeHeight;
+	o2->u.LabelFunc = MissionGetHeightStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeHeight;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetWallCountStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeWallCount;
 	o2->Id2 = XC_WALLCOUNT;
+	o2->u.LabelFunc = MissionGetWallCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallCount;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetWallLengthStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeWallLength;
 	o2->Id2 = XC_WALLLENGTH;
+	o2->u.LabelFunc = MissionGetWallLengthStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallLength;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetRoomCountStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeRoomCount;
 	o2->Id2 = XC_ROOMCOUNT;
+	o2->u.LabelFunc = MissionGetRoomCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomCount;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetSquareCountStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeSquareCount;
 	o2->Id2 = XC_SQRCOUNT;
+	o2->u.LabelFunc = MissionGetSquareCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeSquareCount;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetDensityStr;
-	o2->u.Label.TextLinkData = missionPtr;
-	o2->u.Label.ChangeFunc = MissionChangeDensity;
 	o2->Id2 = XC_DENSITY;
+	o2->u.LabelFunc = MissionGetDensityStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDensity;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
 	UIObjectAddChild(c, o2);
@@ -766,44 +816,50 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	x = 20;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawWallStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_WALL;
+	o2->u.CustomDrawFunc = MissionDrawWallStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawFloorStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_FLOOR;
+	o2->u.CustomDrawFunc = MissionDrawFloorStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeFloorStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawRoomStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_ROOM;
+	o2->u.CustomDrawFunc = MissionDrawRoomStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawDoorStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_DOORS;
+	o2->u.CustomDrawFunc = MissionDrawDoorStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDoorStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawKeyStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_KEYS;
+	o2->u.CustomDrawFunc = MissionDrawKeyStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeKeyStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDraw.DrawFunc = MissionDrawExitStyle;
-	o2->u.CustomDraw.DrawData = missionPtr;
 	o2->Id2 = XC_EXIT;
+	o2->u.CustomDrawFunc = MissionDrawExitStyle;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeExitStyle;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 
@@ -816,30 +872,34 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
 
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetWallColorStr;
-	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR1;
+	o2->u.LabelFunc = MissionGetWallColorStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallColor;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetFloorColorStr;
-	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR2;
+	o2->u.LabelFunc = MissionGetFloorColorStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeFloorColor;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGeRoomColorStr;
-	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR3;
+	o2->u.LabelFunc = MissionGeRoomColorStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomColor;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGeExtraColorStr;
-	o2->u.Label.TextLinkData = missionPtr;
 	o2->Id2 = XC_COLOR4;
+	o2->u.LabelFunc = MissionGeExtraColorStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeExtraColor;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 
@@ -853,48 +913,48 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o->Flags = UI_SELECT_ONLY;
 
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = CStr;
-	o2->u.Label.TextLinkData = "Mission description";
+	o2->u.LabelFunc = CStr;
+	o2->Data = "Mission description";
 	o2->Id = YC_MISSIONDESC;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = TextGetSize(o2->u.Label.TextLinkData);
+	o2->Size = TextGetSize(o2->Data);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
 		Vec2iNew(25, 150), Vec2iNew(295, 5 * th));
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
-	oc->u.Textbox.TextLinkData = missionPtr;
+	oc->Data = missionPtr;
 	CSTRDUP(oc->u.Textbox.Hint, "(Mission description)");
 	UIObjectAddChild(o2, oc);
 	UIObjectAddChild(c, o2);
 
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetCharacterCountStr;
-	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.LabelFunc = MissionGetCharacterCountStr;
+	o2->Data = missionPtr;
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = MissionGetSpecialCountStr;
-	o2->u.Label.TextLinkData = missionPtr;
+	o2->u.LabelFunc = MissionGetSpecialCountStr;
+	o2->Data = missionPtr;
 	o2->Id = YC_SPECIALS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = GetWeaponCountStr;
-	o2->u.Label.TextLinkData = NULL;
+	o2->u.LabelFunc = GetWeaponCountStr;
+	o2->Data = NULL;
 	o2->Id = YC_WEAPONS;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.Label.TextLinkFunc = GetObjectCountStr;
-	o2->u.Label.TextLinkData = NULL;
+	o2->u.LabelFunc = GetObjectCountStr;
+	o2->Data = NULL;
 	o2->Id = YC_ITEMS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip,
@@ -915,7 +975,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 		o2->Id = YC_OBJECTIVES + i;
 		o2->Type = UITYPE_TEXTBOX;
 		o2->u.Textbox.TextLinkFunc = MissionGetObjectiveDescription;
-		o2->u.Textbox.TextLinkData = missionPtr;
+		o2->Data = missionPtr;
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = Vec2iNew(x, y);
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
@@ -945,7 +1005,7 @@ UIObject *CreateCampaignObjs(void)
 
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = CampaignGetAuthor;
-	o2->u.Textbox.TextLinkData = &gCampaign;
+	o2->Data = &gCampaign;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign author)");
 	o2->Id2 = XC_AUTHOR;
 	o2->Pos = Vec2iNew(x, y);
@@ -955,7 +1015,7 @@ UIObject *CreateCampaignObjs(void)
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = CampaignGetDescription;
-	o2->u.Textbox.TextLinkData = &gCampaign;
+	o2->Data = &gCampaign;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign description)");
 	o2->Id2 = XC_CAMPAIGNDESC;
 	o2->Pos = Vec2iNew(x, y);
@@ -975,7 +1035,7 @@ UIObject *CreateMissionObjs(struct Mission **missionPtr)
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(20, 150), Vec2iNew(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
-	o->u.Textbox.TextLinkData = missionPtr;
+	o->Data = missionPtr;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
@@ -993,8 +1053,8 @@ UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
-	o->u.CustomDraw.DrawFunc = MissionDrawWeaponStatus;
-	o->u.CustomDraw.DrawData = missionPtr;
+	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
+	o->Data = missionPtr;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
@@ -1018,8 +1078,8 @@ UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
-	o->u.CustomDraw.DrawFunc = MissionDrawMapItem;
-	o->u.CustomDraw.DrawData = missionPtr;
+	o->u.CustomDrawFunc = MissionDrawMapItem;
+	o->Data = missionPtr;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < ITEMS_MAX; i++)
 	{
@@ -1052,11 +1112,11 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TYPE;
 	o2->Type = UITYPE_LABEL;
-	o2->u.Label.TextLinkFunc = MissionGetObjectiveStr;
-	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
-	o2->u.Label.IsDynamicData = 1;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
+	o2->u.LabelFunc = MissionGetObjectiveStr;
+	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	o2->IsDynamicData = 1;
+	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1064,11 +1124,11 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;
-	o2->u.CustomDraw.DrawFunc = MissionDrawObjective;
-	CMALLOC(o2->u.CustomDraw.DrawData, sizeof(ObjectiveObjData));
-	o2->u.CustomDraw.IsDynamicData = 1;
-	((ObjectiveObjData *)o2->u.CustomDraw.DrawData)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->u.CustomDraw.DrawData)->index = index;
+	o2->u.CustomDrawFunc = MissionDrawObjective;
+	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	o2->IsDynamicData = 1;
+	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(30, th);
 	UIObjectAddChild(c, o2);
@@ -1076,11 +1136,11 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_REQUIRED;
 	o2->Type = UITYPE_LABEL;
-	o2->u.Label.TextLinkFunc = MissionGetObjectiveRequired;
-	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
-	o2->u.Label.IsDynamicData = 1;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
+	o2->u.LabelFunc = MissionGetObjectiveRequired;
+	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	o2->IsDynamicData = 1;
+	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
@@ -1089,11 +1149,11 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TOTAL;
 	o2->Type = UITYPE_LABEL;
-	o2->u.Label.TextLinkFunc = MissionGetObjectiveTotal;
-	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
-	o2->u.Label.IsDynamicData = 1;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
+	o2->u.LabelFunc = MissionGetObjectiveTotal;
+	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	o2->IsDynamicData = 1;
+	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1101,11 +1161,11 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLAGS;
 	o2->Type = UITYPE_LABEL;
-	o2->u.Label.TextLinkFunc = MissionGetObjectiveFlags;
-	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
-	o2->u.Label.IsDynamicData = 1;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
+	o2->u.LabelFunc = MissionGetObjectiveFlags;
+	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	o2->IsDynamicData = 1;
+	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(100, th);
 	CSTRDUP(o2->Tooltip,
@@ -1127,8 +1187,8 @@ UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
-	o->u.CustomDraw.DrawFunc = MissionDrawEnemy;
-	o->u.CustomDraw.DrawData = missionPtr;
+	o->u.CustomDrawFunc = MissionDrawEnemy;
+	o->Data = missionPtr;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{
@@ -1151,8 +1211,8 @@ UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
-	o->u.CustomDraw.DrawFunc = MissionDrawSpecialChar;
-	o->u.CustomDraw.DrawData = missionPtr;
+	o->u.CustomDrawFunc = MissionDrawSpecialChar;
+	o->Data = missionPtr;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{

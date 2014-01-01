@@ -62,27 +62,21 @@ typedef struct _UIObject
 	struct _UIObject *Highlighted;
 	union
 	{
+		// Labels
+		char *(*LabelFunc)(struct _UIObject *, void *);
+		// Text boxes
 		struct
 		{
 			char *(*TextLinkFunc)(struct _UIObject *, void *);
-			void *TextLinkData;
-			int IsDynamicData;
-			void (*ChangeFunc)(void *, int d);
-		} Label;
-		struct
-		{
-			char *(*TextLinkFunc)(struct _UIObject *, void *);
-			void *TextLinkData;
 			int IsEditable;
 			char *Hint;
 		} Textbox;
-		struct
-		{
-			void (*DrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
-			void *DrawData;
-			int IsDynamicData;
-		} CustomDraw;
+		// Custom
+		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
 	} u;
+	void *Data;
+	int IsDynamicData;
+	void (*ChangeFunc)(void *, int d);
 } UIObject;
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);

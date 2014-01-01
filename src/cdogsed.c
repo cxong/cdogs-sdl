@@ -308,17 +308,9 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 	if (!currentMission)
 		return 0;
 
-	if (o)
+	if (o && o->ChangeFunc)
 	{
-		switch (o->Type)
-		{
-		case UITYPE_LABEL:
-			if (o->u.Label.ChangeFunc)
-			{
-				o->u.Label.ChangeFunc(o->u.Label.TextLinkData, d);
-			}
-			break;
-		}
+		o->ChangeFunc(o->Data, d);
 	}
 
 	switch (yc) {
@@ -327,50 +319,6 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_MISSIONLOOKS:
-		switch (xc) {
-		case XC_WALL:
-			currentMission->wallStyle = CLAMP_OPPOSITE(
-				(int)(currentMission->wallStyle + d), 0, WALL_STYLE_COUNT - 1);
-			break;
-		case XC_FLOOR:
-			currentMission->floorStyle = CLAMP_OPPOSITE(
-				(int)(currentMission->floorStyle + d),
-				0,
-				FLOOR_STYLE_COUNT - 1);
-			break;
-		case XC_ROOM:
-			currentMission->roomStyle = CLAMP_OPPOSITE(
-				(int)(currentMission->roomStyle + d), 0, ROOMFLOOR_COUNT - 1);
-			break;
-		case XC_DOORS:
-			currentMission->doorStyle =
-				CLAMP_OPPOSITE(currentMission->doorStyle + d, 0, edInfo.doorCount - 1);
-			break;
-		case XC_KEYS:
-			currentMission->keyStyle = CLAMP_OPPOSITE(
-				currentMission->keyStyle + d, 0, edInfo.keyCount - 1);
-			break;
-		case XC_EXIT:
-			currentMission->exitStyle = CLAMP_OPPOSITE(
-				currentMission->exitStyle + d, 0, edInfo.exitCount - 1);
-			break;
-		case XC_COLOR1:
-			currentMission->wallRange = CLAMP_OPPOSITE(
-				currentMission->wallRange + d, 0, edInfo.rangeCount - 1);
-			break;
-		case XC_COLOR2:
-			currentMission->floorRange = CLAMP_OPPOSITE(
-				currentMission->floorRange + d, 0, edInfo.rangeCount - 1);
-			break;
-		case XC_COLOR3:
-			currentMission->roomRange = CLAMP_OPPOSITE(
-				currentMission->roomRange + d, 0, edInfo.rangeCount - 1);
-			break;
-		case XC_COLOR4:
-			currentMission->altRange = CLAMP_OPPOSITE(
-				currentMission->altRange + d, 0, edInfo.rangeCount - 1);
-			break;
-		}
 		isChanged = 1;
 		break;
 
