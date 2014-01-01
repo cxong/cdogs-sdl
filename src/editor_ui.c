@@ -371,23 +371,28 @@ static char *GetObjectCountStr(UIObject *o, void *v)
 	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
 	return s;
 }
+typedef struct
+{
+	struct Mission **missionPtr;
+	int index;
+} MissionIndexData;
 static void MissionDrawEnemy(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
 	UNUSED(g);
-	if (!*missionPtr) return;
-	if (o->Id2 >= (*missionPtr)->baddieCount) return;
+	if (!*data->missionPtr) return;
+	if (o->Id2 >= (*data->missionPtr)->baddieCount) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
 		gCampaign.Setting.characters.baddies[o->Id2],
 		UIObjectIsHighlighted(o), 1);
 }
 static void MissionDrawSpecialChar(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
 	UNUSED(g);
-	if (!*missionPtr) return;
-	if (o->Id2 >= (*missionPtr)->specialCount) return;
+	if (!*data->missionPtr) return;
+	if (o->Id2 >= (*data->missionPtr)->specialCount) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
 		gCampaign.Setting.characters.specials[o->Id2],
@@ -419,12 +424,7 @@ static void MissionDrawWeaponStatus(
 		(*missionPtr)->weaponSelection & (1 << o->Id2),
 		UIObjectIsHighlighted(o));
 }
-typedef struct
-{
-	struct Mission **missionPtr;
-	int index;
-} ObjectiveObjData;
-static char *MissionGetObjectiveStr(UIObject *o, ObjectiveObjData *data)
+static char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
 {
 	UNUSED(o);
 	if (!*data->missionPtr) return NULL;
@@ -449,7 +449,7 @@ static char *MissionGetObjectiveStr(UIObject *o, ObjectiveObjData *data)
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t);
 static void MissionDrawObjective(
-	UIObject *o, GraphicsDevice *g, ObjectiveObjData *data)
+	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
 	CharacterStore *store = &gCampaign.Setting.characters;
 	Character *c;
@@ -505,7 +505,7 @@ static void MissionDrawObjective(
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 }
-static char *MissionGetObjectiveRequired(UIObject *o, ObjectiveObjData *data)
+static char *MissionGetObjectiveRequired(UIObject *o, MissionIndexData *data)
 {
 	static char s[128];
 	UNUSED(o);
@@ -514,7 +514,7 @@ static char *MissionGetObjectiveRequired(UIObject *o, ObjectiveObjData *data)
 	sprintf(s, "%d", (*data->missionPtr)->objectives[data->index].required);
 	return s;
 }
-static char *MissionGetObjectiveTotal(UIObject *o, ObjectiveObjData *data)
+static char *MissionGetObjectiveTotal(UIObject *o, MissionIndexData *data)
 {
 	static char s[128];
 	UNUSED(o);
@@ -524,7 +524,7 @@ static char *MissionGetObjectiveTotal(UIObject *o, ObjectiveObjData *data)
 		s, "out of %d", (*data->missionPtr)->objectives[data->index].count);
 	return s;
 }
-static char *MissionGetObjectiveFlags(UIObject *o, ObjectiveObjData *data)
+static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 {
 	int flags;
 	static char s[128];
@@ -688,6 +688,24 @@ static void MissionChangeExtraColor(struct Mission **missionPtr, int d)
 {
 	(*missionPtr)->altRange = CLAMP_OPPOSITE(
 		(*missionPtr)->altRange + d, 0, GetEditorInfo().rangeCount - 1);
+}
+static void MissionChangeEnemy(MissionIndexData *data, int d)
+{
+	(*data->missionPtr)->baddies[data->index] = CLAMP_OPPOSITE(
+		(*data->missionPtr)->baddies[data->index] + d,
+		0,
+		gCampaign.Setting.characters.otherCount - 1);
+	gCampaign.Setting.characters.baddies[data->index] =
+		&gCampaign.Setting.characters.others[(*data->missionPtr)->baddies[data->index]];
+}
+static void MissionChangeSpecialChar(MissionIndexData *data, int d)
+{
+	(*data->missionPtr)->specials[data->index] = CLAMP_OPPOSITE(
+		(*data->missionPtr)->specials[data->index] + d,
+		0,
+		gCampaign.Setting.characters.otherCount - 1);
+	gCampaign.Setting.characters.specials[data->index] =
+		&gCampaign.Setting.characters.others[(*data->missionPtr)->specials[data->index]];
 }
 
 
@@ -1113,10 +1131,10 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_TYPE;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveStr;
-	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
-	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+	((MissionIndexData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1125,10 +1143,10 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;
 	o2->u.CustomDrawFunc = MissionDrawObjective;
-	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
-	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+	((MissionIndexData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(30, th);
 	UIObjectAddChild(c, o2);
@@ -1137,10 +1155,10 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_REQUIRED;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveRequired;
-	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
-	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+	((MissionIndexData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
@@ -1150,10 +1168,10 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_TOTAL;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveTotal;
-	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
-	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+	((MissionIndexData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1162,10 +1180,10 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_FLAGS;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveFlags;
-	CMALLOC(o2->Data, sizeof(ObjectiveObjData));
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
-	((ObjectiveObjData *)o2->Data)->missionPtr = missionPtr;
-	((ObjectiveObjData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+	((MissionIndexData *)o2->Data)->index = index;
 	o2->Pos = Vec2iNew(x, y);
 	o2->Size = Vec2iNew(100, th);
 	CSTRDUP(o2->Tooltip,
@@ -1188,13 +1206,17 @@ UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawEnemy;
-	o->Data = missionPtr;
+	o->ChangeFunc = MissionChangeEnemy;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{
 		int x = 10 + i * 20;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+		((MissionIndexData *)o2->Data)->index = i;
 		o2->Pos = Vec2iNew(x, 150);
 		UIObjectAddChild(c, o2);
 	}
@@ -1212,13 +1234,17 @@ UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawSpecialChar;
-	o->Data = missionPtr;
+	o->ChangeFunc = MissionChangeSpecialChar;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
 	for (i = 0; i < 15; i++)
 	{
 		int x = 10 + i * 20;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+		((MissionIndexData *)o2->Data)->index = i;
 		o2->Pos = Vec2iNew(x, 150);
 		UIObjectAddChild(c, o2);
 	}

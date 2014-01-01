@@ -323,22 +323,10 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_CHARACTERS:
-		currentMission->baddies[xc] = CLAMP_OPPOSITE(
-			currentMission->baddies[xc] + d,
-			0,
-			gCampaign.Setting.characters.otherCount - 1);
-		gCampaign.Setting.characters.baddies[xc] =
-			&gCampaign.Setting.characters.others[currentMission->baddies[xc]];
 		isChanged = 1;
 		break;
 
 	case YC_SPECIALS:
-		currentMission->specials[xc] = CLAMP_OPPOSITE(
-			currentMission->specials[xc] + d,
-			0,
-			gCampaign.Setting.characters.otherCount - 1);
-		gCampaign.Setting.characters.specials[xc] =
-			&gCampaign.Setting.characters.others[currentMission->specials[xc]];
 		isChanged = 1;
 		break;
 
