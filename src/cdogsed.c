@@ -331,7 +331,6 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_WEAPONS:
-		currentMission->weaponSelection ^= (1 << xc);
 		isChanged = 1;
 		break;
 

@@ -414,14 +414,14 @@ static void MissionDrawMapItem(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawWeaponStatus(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
-	if (!*missionPtr) return;
+	if (!*data->missionPtr) return;
 	DisplayFlag(
 		g,
 		o->Pos,
 		gGunDescriptions[o->Id2].name,
-		(*missionPtr)->weaponSelection & (1 << o->Id2),
+		(*data->missionPtr)->weaponSelection & (1 << o->Id2),
 		UIObjectIsHighlighted(o));
 }
 static char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
@@ -706,6 +706,11 @@ static void MissionChangeSpecialChar(MissionIndexData *data, int d)
 		gCampaign.Setting.characters.otherCount - 1);
 	gCampaign.Setting.characters.specials[data->index] =
 		&gCampaign.Setting.characters.others[(*data->missionPtr)->specials[data->index]];
+}
+static void MissionChangeWeapon(MissionIndexData *data, int d)
+{
+	UNUSED(d);
+	(*data->missionPtr)->weaponSelection ^= (1 << data->index);
 }
 
 
@@ -1072,7 +1077,7 @@ UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
-	o->Data = missionPtr;
+	o->ChangeFunc = MissionChangeWeapon;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
@@ -1080,6 +1085,10 @@ UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 		int y = 150 + (i % 4) * th;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
+		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		o2->IsDynamicData = 1;
+		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+		((MissionIndexData *)o2->Data)->index = i;
 		o2->Pos = Vec2iNew(x, y);
 		UIObjectAddChild(c, o2);
 	}
