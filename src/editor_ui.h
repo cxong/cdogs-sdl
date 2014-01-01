@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -143,7 +143,6 @@ UIObject *CreateCampaignObjs(void);
 UIObject *CreateMissionObjs(struct Mission **missionPtr);
 UIObject *CreateWeaponObjs(struct Mission **missionPtr);
 UIObject *CreateMapItemObjs(struct Mission **missionPtr);
-UIObject *CreateObjectiveObjs(void);
 UIObject *CreateCharacterObjs(struct Mission **missionPtr);
 UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr);
 

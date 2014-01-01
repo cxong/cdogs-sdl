@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@
 */
 #include "editor_ui.h"
 
+#include <assert.h>
+
 #include <cdogs/draw.h>
 #include <cdogs/mission.h>
 #include <cdogs/pic_manager.h>
@@ -41,8 +43,9 @@ static void DrawStyleArea(
 	int index, int count,
 	int isHighlighted);
 
-static char *CStr(char *s)
+static char *CStr(UIObject *o, char *s)
 {
+	UNUSED(o);
 	return s;
 }
 static char *CampaignGetTitle(UIObject *o, CampaignOptions *c)
@@ -104,51 +107,58 @@ static char *MissionGetSong(UIObject *o, struct Mission **missionPtr)
 	o->IsVisible = 1;
 	return (*missionPtr)->song;
 }
-static char *MissionGetWidthStr(struct Mission **missionPtr)
+static char *MissionGetWidthStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Width: %d", (*missionPtr)->mapWidth);
 	return s;
 }
-static char *MissionGetHeightStr(struct Mission **missionPtr)
+static char *MissionGetHeightStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Height: %d", (*missionPtr)->mapHeight);
 	return s;
 }
-static char *MissionGetWallCountStr(struct Mission **missionPtr)
+static char *MissionGetWallCountStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Walls: %d", (*missionPtr)->wallCount);
 	return s;
 }
-static char *MissionGetWallLengthStr(struct Mission **missionPtr)
+static char *MissionGetWallLengthStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Len: %d", (*missionPtr)->wallLength);
 	return s;
 }
-static char *MissionGetRoomCountStr(struct Mission **missionPtr)
+static char *MissionGetRoomCountStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Rooms: %d", (*missionPtr)->roomCount);
 	return s;
 }
-static char *MissionGetSquareCountStr(struct Mission **missionPtr)
+static char *MissionGetSquareCountStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Sqr: %d", (*missionPtr)->squareCount);
 	return s;
 }
-static char *MissionGetDensityStr(struct Mission **missionPtr)
+static char *MissionGetDensityStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Dens: %d", (*missionPtr)->baddieDensity);
 	return s;
@@ -268,44 +278,50 @@ static void MissionDrawExitStyle(
 		index, count,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetWallColorStr(struct Mission **missionPtr)
+static char *MissionGetWallColorStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Walls: %s", RangeName((*missionPtr)->wallRange));
 	return s;
 }
-static char *MissionGetFloorColorStr(struct Mission **missionPtr)
+static char *MissionGetFloorColorStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Floor: %s", RangeName((*missionPtr)->floorRange));
 	return s;
 }
-static char *MissionGeRoomColorStr(struct Mission **missionPtr)
+static char *MissionGeRoomColorStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Rooms: %s", RangeName((*missionPtr)->roomRange));
 	return s;
 }
-static char *MissionGeExtraColorStr(struct Mission **missionPtr)
+static char *MissionGeExtraColorStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Extra: %s", RangeName((*missionPtr)->altRange));
 	return s;
 }
-static char *MissionGetCharacterCountStr(struct Mission **missionPtr)
+static char *MissionGetCharacterCountStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Characters (%d/%d)", (*missionPtr)->baddieCount, BADDIE_MAX);
 	return s;
 }
-static char *MissionGetSpecialCountStr(struct Mission **missionPtr)
+static char *MissionGetSpecialCountStr(UIObject *o, struct Mission **missionPtr)
 {
 	static char s[128];
+	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(
 		s, "Mission objective characters (%d/%d)",
@@ -339,16 +355,18 @@ static char *MissionGetObjectiveDescription(
 	o->u.Textbox.IsEditable = 1;
 	return (*missionPtr)->objectives[i].description;
 }
-static char *GetWeaponCountStr(void *v)
+static char *GetWeaponCountStr(UIObject *o, void *v)
 {
 	static char s[128];
+	UNUSED(o);
 	UNUSED(v);
 	sprintf(s, "Available weapons (%d/%d)", gMission.weaponCount, WEAPON_MAX);
 	return s;
 }
-static char *GetObjectCountStr(void *v)
+static char *GetObjectCountStr(UIObject *o, void *v)
 {
 	static char s[128];
+	UNUSED(o);
 	UNUSED(v);
 	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
 	return s;
@@ -401,6 +419,131 @@ static void MissionDrawWeaponStatus(
 		(*missionPtr)->weaponSelection & (1 << o->Id2),
 		UIObjectIsHighlighted(o));
 }
+typedef struct
+{
+	struct Mission **missionPtr;
+	int index;
+} ObjectiveObjData;
+static char *MissionGetObjectiveStr(UIObject *o, ObjectiveObjData *data)
+{
+	UNUSED(o);
+	if (!*data->missionPtr) return NULL;
+	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
+	switch ((*data->missionPtr)->objectives[data->index].type)
+	{
+	case OBJECTIVE_KILL:
+		return "Kill";
+	case OBJECTIVE_RESCUE:
+		return "Rescue";
+	case OBJECTIVE_COLLECT:
+		return "Collect";
+	case OBJECTIVE_DESTROY:
+		return "Destroy";
+	case OBJECTIVE_INVESTIGATE:
+		return "Explore";
+	default:
+		assert(0 && "Unknown objective type");
+		return "???";
+	}
+}
+static void GetCharacterHeadPic(
+	Character *c, TOffsetPic *pic, TranslationTable **t);
+static void MissionDrawObjective(
+	UIObject *o, GraphicsDevice *g, ObjectiveObjData *data)
+{
+	CharacterStore *store = &gCampaign.Setting.characters;
+	Character *c;
+	TOffsetPic pic;
+	TranslationTable *table = NULL;
+	UNUSED(g);
+	if (!*data->missionPtr) return;
+	if ((*data->missionPtr)->objectiveCount <= data->index) return;
+	// TODO: only one kill and rescue objective allowed
+	switch ((*data->missionPtr)->objectives[data->index].type)
+	{
+	case OBJECTIVE_KILL:
+		if (store->specialCount == 0)
+		{
+			c = &store->players[0];
+		}
+		else
+		{
+			c = CharacterStoreGetSpecial(store, 0);
+		}
+		GetCharacterHeadPic(c, &pic, &table);
+		break;
+	case OBJECTIVE_RESCUE:
+		if (store->prisonerCount == 0)
+		{
+			c = &store->players[0];
+		}
+		else
+		{
+			c = CharacterStoreGetPrisoner(store, 0);
+		}
+		GetCharacterHeadPic(c, &pic, &table);
+		break;
+	case OBJECTIVE_COLLECT:
+		pic = cGeneralPics[gMission.objectives[data->index].pickupItem];
+		break;
+	case OBJECTIVE_DESTROY:
+		pic = cGeneralPics[gMission.objectives[data->index].blowupObject->pic];
+		break;
+	case OBJECTIVE_INVESTIGATE:
+		pic.dx = pic.dy = 0;
+		pic.picIndex = -1;
+		break;
+	default:
+		assert(0 && "Unknown objective type");
+		return;
+	}
+	if (pic.picIndex >= 0)
+	{
+		DrawTTPic(
+			o->Pos.x + o->Size.x / 2 + pic.dx,
+			o->Pos.y + o->Size.y / 2 + pic.dy,
+			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
+	}
+}
+static char *MissionGetObjectiveRequired(UIObject *o, ObjectiveObjData *data)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*data->missionPtr) return NULL;
+	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
+	sprintf(s, "%d", (*data->missionPtr)->objectives[data->index].required);
+	return s;
+}
+static char *MissionGetObjectiveTotal(UIObject *o, ObjectiveObjData *data)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*data->missionPtr) return NULL;
+	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
+	sprintf(
+		s, "out of %d", (*data->missionPtr)->objectives[data->index].count);
+	return s;
+}
+static char *MissionGetObjectiveFlags(UIObject *o, ObjectiveObjData *data)
+{
+	int flags;
+	static char s[128];
+	UNUSED(o);
+	if (!*data->missionPtr) return NULL;
+	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
+	flags = (*data->missionPtr)->objectives[data->index].flags;
+	if (!flags)
+	{
+		return "(normal)";
+	}
+	sprintf(s, "%s %s %s %s %s",
+		(flags & OBJECTIVE_HIDDEN) ? "hidden" : "",
+		(flags & OBJECTIVE_POSKNOWN) ? "pos.known" : "",
+		(flags & OBJECTIVE_HIACCESS) ? "access" : "",
+		(flags & OBJECTIVE_UNKNOWNCOUNT) ? "no-count" : "",
+		(flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
+	return s;
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -441,6 +584,15 @@ static void DisplayMapItem(
 	sprintf(s, "%d", density);
 	DrawTextString(s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
 }
+static void GetCharacterHeadPic(
+	Character *c, TOffsetPic *pic, TranslationTable **t)
+{
+	int i = c->looks.face;
+	*t = &c->table;
+	pic->picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
+	pic->dx = cHeadOffset[i][DIRECTION_DOWN].dx;
+	pic->dy = cHeadOffset[i][DIRECTION_DOWN].dy;
+}
 
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
@@ -458,6 +610,8 @@ void DisplayFlag(
 	}
 }
 
+
+UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
@@ -728,6 +882,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = Vec2iNew(x, y);
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
+		UIObjectAddChild(o2, CreateObjectiveObjs(missionPtr, i));
 		UIObjectAddChild(c, o2);
 	}
 
@@ -841,14 +996,16 @@ UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateObjectiveObjs(void)
+UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 {
+	int th = CDogsTextHeight();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int x;
 	int y;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	o->Flags = UI_LEAVE_YC;
@@ -857,33 +1014,63 @@ UIObject *CreateObjectiveObjs(void)
 	x = 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TYPE;
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetObjectiveStr;
+	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
+	o2->u.Label.IsDynamicData = 1;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(35, 40);
+	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INDEX;
+	o2->Type = UITYPE_CUSTOM;
+	o2->u.CustomDraw.DrawFunc = MissionDrawObjective;
+	CMALLOC(o2->u.CustomDraw.DrawData, sizeof(ObjectiveObjData));
+	o2->u.CustomDraw.IsDynamicData = 1;
+	((ObjectiveObjData *)o2->u.CustomDraw.DrawData)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->u.CustomDraw.DrawData)->index = index;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(30, 40);
+	o2->Size = Vec2iNew(30, th);
 	UIObjectAddChild(c, o2);
 	x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_REQUIRED;
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetObjectiveRequired;
+	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
+	o2->u.Label.IsDynamicData = 1;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(20, 40);
+	o2->Size = Vec2iNew(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
 	UIObjectAddChild(c, o2);
 	x += 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TOTAL;
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetObjectiveTotal;
+	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
+	o2->u.Label.IsDynamicData = 1;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(35, 40);
+	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
 	x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLAGS;
+	o2->Type = UITYPE_LABEL;
+	o2->u.Label.TextLinkFunc = MissionGetObjectiveFlags;
+	CMALLOC(o2->u.Label.TextLinkData, sizeof(ObjectiveObjData));
+	o2->u.Label.IsDynamicData = 1;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->missionPtr = missionPtr;
+	((ObjectiveObjData *)o2->u.Label.TextLinkData)->index = index;
 	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(100, 40);
+	o2->Size = Vec2iNew(100, th);
 	CSTRDUP(o2->Tooltip,
 		"hidden: not shown on map\n"
 		"pos.known: always shown on map\n"

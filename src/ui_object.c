@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013, Cong Xu
+ Copyright (c) 2013-2014, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -88,8 +88,20 @@ void UIObjectDestroy(UIObject *o)
 	CArrayTerminate(&o->Children);
 	switch (o->Type)
 	{
+	case UITYPE_LABEL:
+		if (o->u.Label.IsDynamicData)
+		{
+			CFREE(o->u.Label.TextLinkData);
+		}
+		break;
 	case UITYPE_TEXTBOX:
 		CFREE(o->u.Textbox.Hint);
+		break;
+	case UITYPE_CUSTOM:
+		if (o->u.CustomDraw.IsDynamicData)
+		{
+			CFREE(o->u.CustomDraw.DrawData);
+		}
 		break;
 	}
 	CFREE(o);
@@ -140,7 +152,7 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 		{
 			int isText = !!o->u.Label.TextLinkFunc;
 			char *text = isText ? o->u.Label.TextLinkFunc(
-				o->u.Label.TextLinkData) : NULL;
+				o, o->u.Label.TextLinkData) : NULL;
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			Vec2i pos = o->Pos;
 			if (!o->IsVisible)

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,6 @@ UIObject *sCampaignObjs;
 UIObject *sMissionObjs;
 UIObject *sWeaponObjs;
 UIObject *sMapItemObjs;
-UIObject *sObjectiveObjs;
 UIObject *sCharacterObjs;
 UIObject *sSpecialCharacterObjs;
 
@@ -130,108 +129,6 @@ void DisplayCDogsText(int x, int y, const char *text, int hilite, int editable)
 			CDogsTextCharWithTable('\021', &tableFlamed);
 		else
 			CDogsTextChar('\021');
-	}
-}
-
-void DrawObjectiveInfo(int idx, int y, int xc)
-{
-	TOffsetPic pic;
-	TranslationTable *table = NULL;
-	int i;
-	const char *typeCDogsText;
-	char s[50];
-	Character *cd;
-	CharacterStore *store = &gCampaign.Setting.characters;
-	struct MissionObjective *mo = &currentMission->objectives[idx];
-
-	switch (mo->type)
-	{
-	case OBJECTIVE_KILL:
-		typeCDogsText = "Kill";
-		if (store->specialCount == 0)
-		{
-			cd = &store->players[0];
-		}
-		else
-		{
-			cd = CharacterStoreGetSpecial(store, 0);
-		}
-		i = cd->looks.face;
-		table = &cd->table;
-		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-		break;
-	case OBJECTIVE_RESCUE:
-		typeCDogsText = "Rescue";
-		if (store->prisonerCount == 0)
-		{
-			cd = &store->players[0];
-		}
-		else
-		{
-			cd = CharacterStoreGetPrisoner(store, 0);
-		}
-		i = cd->looks.face;
-		table = &cd->table;
-		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-		break;
-	case OBJECTIVE_COLLECT:
-		typeCDogsText = "Collect";
-		i = gMission.objectives[idx].pickupItem;
-		pic = cGeneralPics[i];
-		break;
-	case OBJECTIVE_DESTROY:
-		typeCDogsText = "Destroy";
-		i = gMission.objectives[idx].blowupObject->pic;
-		pic = cGeneralPics[i];
-		break;
-	case OBJECTIVE_INVESTIGATE:
-		typeCDogsText = "Explore";
-		pic.dx = pic.dy = 0;
-		pic.picIndex = -1;
-		break;
-	default:
-		typeCDogsText = "???";
-		i = gMission.objectives[idx].pickupItem;
-		pic = cGeneralPics[i];
-		break;
-	}
-
-	y += 20;
-
-	DisplayCDogsText(20, y, typeCDogsText, xc == XC_TYPE, 0);
-
-	if (pic.picIndex >= 0)
-	{
-		DrawTTPic(
-			75 + pic.dx, y + 8 + pic.dy,
-			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
-	}
-
-	sprintf(s, "%d", mo->required);
-	DisplayCDogsText(90, y, s, xc == XC_REQUIRED, 0);
-	sprintf(s, "out of %d", mo->count);
-	DisplayCDogsText(110, y, s, xc == XC_TOTAL, 0);
-
-	if (!mo->flags)
-	{
-		DrawTextStringMasked(
-			"normal", &gGraphicsDevice, Vec2iNew(150, y), colorGray);
-	}
-	else
-	{
-		sprintf(s, "%s %s %s %s %s",
-			(mo->flags & OBJECTIVE_HIDDEN) ? "hidden" : "",
-			(mo->flags & OBJECTIVE_POSKNOWN) ? "pos.known" : "",
-			(mo->flags & OBJECTIVE_HIACCESS) ? "access" : "",
-			(mo->flags & OBJECTIVE_UNKNOWNCOUNT) ? "no-count" : "",
-			(mo->flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
-		DrawTextStringMasked(
-			s, &gGraphicsDevice, Vec2iNew(150, y),
-			xc == XC_FLAGS ? colorRed : colorWhite);
 	}
 }
 
@@ -312,7 +209,7 @@ static void MakeBackground(
 	GrafxMakeBackground(g, config, tintDarker, mission, 1);
 }
 
-static void Display(int mission, int xc, int yc, int willDisplayAutomap)
+static void Display(int mission, int yc, int willDisplayAutomap)
 {
 	char s[128];
 	int y = 5;
@@ -420,12 +317,6 @@ static void Display(int mission, int xc, int yc, int willDisplayAutomap)
 		break;
 
 	default:
-		if (currentMission && yc >= YC_OBJECTIVES &&
-			yc - YC_OBJECTIVES < currentMission->objectiveCount)
-		{
-			sObjs2 = sObjectiveObjs;
-			DrawObjectiveInfo(yc - YC_OBJECTIVES, y, xc);
-		}
 		break;
 	}
 
@@ -1259,7 +1150,7 @@ static void HandleInput(
 			break;
 				
 		case 'o':
-			if (ConfirmClose("Open anyway? (Y/N)"))
+			if (!fileChanged || ConfirmClose("Open anyway? (Y/N)"))
 			{
 				Open();
 				*mission = 0;
@@ -1450,7 +1341,7 @@ static void EditCampaign(void)
 			&xc, &yc, &xcOld, &ycOld,
 			&mission, &scrap,
 			&willDisplayAutomap, &done);
-		Display(mission, xc, yc, willDisplayAutomap);
+		Display(mission, yc, willDisplayAutomap);
 		if (willDisplayAutomap)
 		{
 			GetKey(&gEventHandlers);
@@ -1494,7 +1385,6 @@ int main(int argc, char *argv[])
 	sMissionObjs = CreateMissionObjs(&currentMission);
 	sWeaponObjs = CreateWeaponObjs(&currentMission);
 	sMapItemObjs = CreateMapItemObjs(&currentMission);
-	sObjectiveObjs = CreateObjectiveObjs();
 	sCharacterObjs = CreateCharacterObjs(&currentMission);
 	sSpecialCharacterObjs = CreateSpecialCharacterObjs(&currentMission);
 
@@ -1555,7 +1445,6 @@ int main(int argc, char *argv[])
 	UIObjectDestroy(sMissionObjs);
 	UIObjectDestroy(sWeaponObjs);
 	UIObjectDestroy(sMapItemObjs);
-	UIObjectDestroy(sObjectiveObjs);
 	UIObjectDestroy(sCharacterObjs);
 	UIObjectDestroy(sSpecialCharacterObjs);
 
