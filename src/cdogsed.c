@@ -335,16 +335,6 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 		break;
 
 	case YC_ITEMS:
-		if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
-		{
-			currentMission->itemDensity[xc] =
-				CLAMP(currentMission->itemDensity[xc] +  5 * d, 0, 512);
-		}
-		else
-		{
-			currentMission->items[xc] = CLAMP_OPPOSITE(
-				currentMission->items[xc] + d, 0, edInfo.itemCount - 1);
-		}
 		isChanged = 1;
 		break;
 

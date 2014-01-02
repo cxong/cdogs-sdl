@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include <cdogs/draw.h>
+#include <cdogs/events.h>
 #include <cdogs/mission.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
@@ -381,10 +382,10 @@ static void MissionDrawEnemy(
 {
 	UNUSED(g);
 	if (!*data->missionPtr) return;
-	if (o->Id2 >= (*data->missionPtr)->baddieCount) return;
+	if (data->index >= (*data->missionPtr)->baddieCount) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
-		gCampaign.Setting.characters.baddies[o->Id2],
+		gCampaign.Setting.characters.baddies[data->index],
 		UIObjectIsHighlighted(o), 1);
 }
 static void MissionDrawSpecialChar(
@@ -392,25 +393,25 @@ static void MissionDrawSpecialChar(
 {
 	UNUSED(g);
 	if (!*data->missionPtr) return;
-	if (o->Id2 >= (*data->missionPtr)->specialCount) return;
+	if (data->index >= (*data->missionPtr)->specialCount) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
-		gCampaign.Setting.characters.specials[o->Id2],
+		gCampaign.Setting.characters.specials[data->index],
 		UIObjectIsHighlighted(o), 1);
 }
 static void DisplayMapItem(
 	GraphicsDevice *g,
 	Vec2i pos, TMapObject *mo, int density, int isHighlighted);
 static void MissionDrawMapItem(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
-	if (!*missionPtr) return;
-	if (o->Id2 >= (*missionPtr)->itemCount) return;
+	if (!*data->missionPtr) return;
+	if (data->index >= (*data->missionPtr)->itemCount) return;
 	DisplayMapItem(
 		g,
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
-		gMission.mapObjects[o->Id2],
-		(*missionPtr)->itemDensity[o->Id2],
+		gMission.mapObjects[data->index],
+		(*data->missionPtr)->itemDensity[data->index],
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawWeaponStatus(
@@ -420,8 +421,8 @@ static void MissionDrawWeaponStatus(
 	DisplayFlag(
 		g,
 		o->Pos,
-		gGunDescriptions[o->Id2].name,
-		(*data->missionPtr)->weaponSelection & (1 << o->Id2),
+		gGunDescriptions[data->index].name,
+		(*data->missionPtr)->weaponSelection & (1 << data->index),
 		UIObjectIsHighlighted(o));
 }
 static char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
@@ -711,6 +712,23 @@ static void MissionChangeWeapon(MissionIndexData *data, int d)
 {
 	UNUSED(d);
 	(*data->missionPtr)->weaponSelection ^= (1 << data->index);
+}
+static void MissionChangeMapItem(MissionIndexData *data, int d)
+{
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		(*data->missionPtr)->itemDensity[data->index] =
+			CLAMP((*data->missionPtr)->itemDensity[data->index] + 5 * d,
+			0,
+			512);
+	}
+	else
+	{
+		(*data->missionPtr)->items[data->index] = CLAMP_OPPOSITE(
+			(*data->missionPtr)->items[data->index] + d,
+			0,
+			GetEditorInfo().itemCount - 1);
+	}
 }
 
 
@@ -1106,13 +1124,17 @@ UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawMapItem;
-	o->Data = missionPtr;
+	o->ChangeFunc = MissionChangeMapItem;
 	o->Flags = UI_LEAVE_YC;
 	for (i = 0; i < ITEMS_MAX; i++)
 	{
 		int x = 10 + i * 20;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
+		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		o2->IsDynamicData = 1;
+		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
+		((MissionIndexData *)o2->Data)->index = i;
 		o2->Pos = Vec2iNew(x, 150);
 		UIObjectAddChild(c, o2);
 	}
