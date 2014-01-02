@@ -730,6 +730,64 @@ static void MissionChangeMapItem(MissionIndexData *data, int d)
 			GetEditorInfo().itemCount - 1);
 	}
 }
+static void MissionChangeObjectiveIndex(MissionIndexData *data, int d);
+static void MissionChangeObjectiveType(MissionIndexData *data, int d)
+{
+	struct MissionObjective *objective =
+		&(*data->missionPtr)->objectives[data->index];
+	objective->type = CLAMP_OPPOSITE(
+		objective->type + d, 0, OBJECTIVE_INVESTIGATE);
+	// Initialise the index of the objective
+	MissionChangeObjectiveIndex(data, 0);
+}
+static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
+{
+	struct MissionObjective *objective =
+		&(*data->missionPtr)->objectives[data->index];
+	int limit;
+	switch (objective->type)
+	{
+	case OBJECTIVE_COLLECT:
+		limit = GetEditorInfo().pickupCount - 1;
+		break;
+	case OBJECTIVE_DESTROY:
+		limit = GetEditorInfo().itemCount - 1;
+		break;
+	case OBJECTIVE_KILL:
+	case OBJECTIVE_INVESTIGATE:
+		limit = 0;
+		break;
+	case OBJECTIVE_RESCUE:
+		limit = gCampaign.Setting.characters.otherCount - 1;
+		break;
+	default:
+		assert(0 && "Unknown objective type");
+		return;
+	}
+	objective->index = CLAMP_OPPOSITE(objective->index + d, 0, limit);
+}
+static void MissionChangeObjectiveRequired(MissionIndexData *data, int d)
+{
+	struct MissionObjective *objective =
+		&(*data->missionPtr)->objectives[data->index];
+	objective->required = CLAMP_OPPOSITE(
+		objective->required + d, 0, MIN(100, objective->count));
+}
+static void MissionChangeObjectiveTotal(MissionIndexData *data, int d)
+{
+	struct MissionObjective *objective =
+		&(*data->missionPtr)->objectives[data->index];
+	objective->count = CLAMP_OPPOSITE(
+		objective->count + d, objective->required, 100);
+}
+static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
+{
+	struct MissionObjective *objective =
+		&(*data->missionPtr)->objectives[data->index];
+	// Max is combination of all flags, i.e. largest flag doubled less one
+	objective->flags = CLAMP_OPPOSITE(
+		objective->flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
+}
 
 
 UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
@@ -1162,6 +1220,7 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_TYPE;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveStr;
+	o2->ChangeFunc = MissionChangeObjectiveType;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
@@ -1174,6 +1233,7 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;
 	o2->u.CustomDrawFunc = MissionDrawObjective;
+	o2->ChangeFunc = MissionChangeObjectiveIndex;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
@@ -1186,6 +1246,7 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_REQUIRED;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveRequired;
+	o2->ChangeFunc = MissionChangeObjectiveRequired;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
@@ -1199,6 +1260,7 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_TOTAL;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveTotal;
+	o2->ChangeFunc = MissionChangeObjectiveTotal;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
@@ -1211,6 +1273,7 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->Id2 = XC_FLAGS;
 	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveFlags;
+	o2->ChangeFunc = MissionChangeObjectiveFlags;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
@@ -1221,7 +1284,8 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 		"hidden: not shown on map\n"
 		"pos.known: always shown on map\n"
 		"access: in locked room\n"
-		"no-count: don't show completed count");
+		"no-count: don't show completed count\n"
+		"no-access: not in locked rooms");
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);

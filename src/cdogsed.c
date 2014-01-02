@@ -293,10 +293,8 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
-static int Change(UIObject *o, int yc, int xc, int d, int *mission)
+static int Change(UIObject *o, int yc, int d, int *mission)
 {
-	struct EditorInfo edInfo = GetEditorInfo();
-	int limit;
 	int isChanged = 0;
 
 	if (yc == YC_MISSIONINDEX) {
@@ -313,27 +311,13 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 		o->ChangeFunc(o->Data, d);
 	}
 
-	switch (yc) {
+	switch (yc)
+	{
 	case YC_MISSIONPROPS:
-		isChanged = 1;
-		break;
-
 	case YC_MISSIONLOOKS:
-		isChanged = 1;
-		break;
-
 	case YC_CHARACTERS:
-		isChanged = 1;
-		break;
-
 	case YC_SPECIALS:
-		isChanged = 1;
-		break;
-
 	case YC_WEAPONS:
-		isChanged = 1;
-		break;
-
 	case YC_ITEMS:
 		isChanged = 1;
 		break;
@@ -341,58 +325,7 @@ static int Change(UIObject *o, int yc, int xc, int d, int *mission)
 	default:
 		if (yc >= YC_OBJECTIVES)
 		{
-			struct MissionObjective *objective =
-				&currentMission->objectives[yc - YC_OBJECTIVES];
-			switch (xc)
-			{
-			case XC_TYPE:
-				objective->type = CLAMP_OPPOSITE(
-						objective->type + d, 0, OBJECTIVE_INVESTIGATE);
-				d = 0;
-				// fallthrough
-
-			case XC_INDEX:
-				switch (objective->type)
-				{
-				case OBJECTIVE_COLLECT:
-					limit = edInfo.pickupCount - 1;
-					break;
-				case OBJECTIVE_DESTROY:
-					limit = edInfo.itemCount - 1;
-					break;
-				case OBJECTIVE_KILL:
-				case OBJECTIVE_INVESTIGATE:
-					limit = 0;
-					break;
-				case OBJECTIVE_RESCUE:
-					limit = gCampaign.Setting.characters.otherCount - 1;
-					break;
-				default:
-					// should never get here
-					return 0;
-				}
-				objective->index =
-					CLAMP_OPPOSITE(objective->index + d, 0, limit);
-				isChanged = 1;
-				break;
-
-			case XC_REQUIRED:
-				objective->required = CLAMP_OPPOSITE(
-					objective->required + d, 0, MIN(100, objective->count));
-				isChanged = 1;
-				break;
-
-			case XC_TOTAL:
-				objective->count = CLAMP_OPPOSITE(
-					objective->count + d, objective->required, 100);
-				isChanged = 1;
-				break;
-
-			case XC_FLAGS:
-				objective->flags = CLAMP_OPPOSITE(objective->flags + d, 0, 15);
-				isChanged = 1;
-				break;
-			}
+			isChanged = 1;
 		}
 		break;
 	}
@@ -1140,7 +1073,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEUP:
-			if (Change(o, *yc, *xc, 1, mission))
+			if (Change(o, *yc, 1, mission))
 			{
 				fileChanged = 1;
 			}
@@ -1148,7 +1081,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEDOWN:
-			if (Change(o, *yc, *xc, -1, mission))
+			if (Change(o, *yc, -1, mission))
 			{
 				fileChanged = 1;
 			}
