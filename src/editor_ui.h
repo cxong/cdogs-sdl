@@ -139,12 +139,6 @@ void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
 
 UIObject *CreateMainObjs(struct Mission **missionPtr);
-UIObject *CreateCampaignObjs(void);
-UIObject *CreateMissionObjs(struct Mission **missionPtr);
-UIObject *CreateWeaponObjs(struct Mission **missionPtr);
-UIObject *CreateMapItemObjs(struct Mission **missionPtr);
-UIObject *CreateCharacterObjs(struct Mission **missionPtr);
-UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr);
 
 UIObject *CreateCharEditorObjs(void);
 

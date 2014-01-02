@@ -80,24 +80,7 @@
 
 
 // Mouse click areas:
-UIObject *sMainObjs;
-UIObject *sCampaignObjs;
-UIObject *sMissionObjs;
-UIObject *sWeaponObjs;
-UIObject *sMapItemObjs;
-UIObject *sCharacterObjs;
-UIObject *sSpecialCharacterObjs;
-
-static UIObject *sObjs1 = NULL;
-static UIObject *sObjs2 = NULL;
-
-int TryGetClickObj(Vec2i pos, UIObject **out)
-{
-	return
-		(sObjs1 && UITryGetObject(sObjs1, pos, out)) ||
-		(sObjs2 && UITryGetObject(sObjs2, pos, out));
-}
-
+static UIObject *sObjs;
 
 
 // Globals
@@ -272,8 +255,7 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 
 	y = 150;
 
-	UIObjectDraw(sObjs1, &gGraphicsDevice);
-	UIObjectDraw(sObjs2, &gGraphicsDevice);
+	UIObjectDraw(sObjs, &gGraphicsDevice);
 
 	if (willDisplayAutomap)
 	{
@@ -282,7 +264,8 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 	else
 	{
 		UIObject *o;
-		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o) && o->Tooltip)
+		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o) &&
+			o->Tooltip)
 		{
 			Vec2i tooltipPos = Vec2iAdd(
 				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
@@ -309,25 +292,7 @@ static int Change(UIObject *o, int yc, int d, int *mission)
 	if (o && o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
-	}
-
-	switch (yc)
-	{
-	case YC_MISSIONPROPS:
-	case YC_MISSIONLOOKS:
-	case YC_CHARACTERS:
-	case YC_SPECIALS:
-	case YC_WEAPONS:
-	case YC_ITEMS:
 		isChanged = 1;
-		break;
-
-	default:
-		if (yc >= YC_OBJECTIVES)
-		{
-			isChanged = 1;
-		}
-		break;
 	}
 	return isChanged;
 }
@@ -878,7 +843,7 @@ static void HandleInput(
 	UIObject *o = NULL;
 	if (m)
 	{
-		if (TryGetClickObj(gEventHandlers.mouse.currentPos, &o))
+		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
 		{
 			UIObjectHighlight(o);
 			*xcOld = *xc;
@@ -912,8 +877,7 @@ static void HandleInput(
 		}
 		else
 		{
-			if (sObjs1) UIObjectUnhighlight(sObjs1);
-			if (sObjs2) UIObjectUnhighlight(sObjs2);
+			UIObjectUnhighlight(sObjs);
 		}
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
@@ -972,8 +936,7 @@ static void HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(*mission, 0);
-			sObjs1 = sMainObjs;
-			sObjs2 = NULL;
+			UIObjectUnhighlight(sObjs);
 			break;
 		}
 	}
@@ -1110,53 +1073,6 @@ static void HandleInput(
 			break;
 		}
 	}
-
-	// Update UI
-	switch (*yc)
-	{
-	case YC_CAMPAIGNTITLE:
-		sObjs2 = sCampaignObjs;
-		break;
-
-	case YC_MISSIONTITLE:
-		sObjs2 = sMissionObjs;
-		break;
-
-	case YC_CHARACTERS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sCharacterObjs;
-		break;
-
-	case YC_SPECIALS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sSpecialCharacterObjs;
-		break;
-
-	case YC_ITEMS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sMapItemObjs;
-		break;
-
-	case YC_WEAPONS:
-		if (!currentMission)
-		{
-			break;
-		}
-		sObjs2 = sWeaponObjs;
-		break;
-
-	default:
-		break;
-	}
 }
 
 static void EditCampaign(void)
@@ -1169,8 +1085,6 @@ static void EditCampaign(void)
 
 
 	memset(&scrap, 0, sizeof(scrap));
-	sObjs1 = sMainObjs;
-	sObjs2 = NULL;
 
 	gCampaign.seed = 0;
 	Setup(mission, 1);
@@ -1228,13 +1142,7 @@ int main(int argc, char *argv[])
 
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sMainObjs = CreateMainObjs(&currentMission);
-	sCampaignObjs = CreateCampaignObjs();
-	sMissionObjs = CreateMissionObjs(&currentMission);
-	sWeaponObjs = CreateWeaponObjs(&currentMission);
-	sMapItemObjs = CreateMapItemObjs(&currentMission);
-	sCharacterObjs = CreateCharacterObjs(&currentMission);
-	sSpecialCharacterObjs = CreateSpecialCharacterObjs(&currentMission);
+	sObjs = CreateMainObjs(&currentMission);
 
 	CampaignInit(&gCampaign);
 
@@ -1288,13 +1196,7 @@ int main(int argc, char *argv[])
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
 
-	UIObjectDestroy(sMainObjs);
-	UIObjectDestroy(sCampaignObjs);
-	UIObjectDestroy(sMissionObjs);
-	UIObjectDestroy(sWeaponObjs);
-	UIObjectDestroy(sMapItemObjs);
-	UIObjectDestroy(sCharacterObjs);
-	UIObjectDestroy(sSpecialCharacterObjs);
+	UIObjectDestroy(sObjs);
 
 	exit(EXIT_SUCCESS);
 }

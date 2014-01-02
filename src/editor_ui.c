@@ -71,6 +71,8 @@ static void CheckMission(
 	if (!*missionPtr)
 	{
 		o->IsVisible = 0;
+		// Need to unhighlight to prevent children being drawn
+		UIObjectUnhighlight(o);
 		return;
 	}
 	o->IsVisible = 1;
@@ -790,7 +792,13 @@ static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 }
 
 
-UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
+static UIObject *CreateCampaignObjs(void);
+static UIObject *CreateMissionObjs(struct Mission **missionPtr);
+static UIObject *CreateWeaponObjs(struct Mission **missionPtr);
+static UIObject *CreateMapItemObjs(struct Mission **missionPtr);
+static UIObject *CreateCharacterObjs(struct Mission **missionPtr);
+static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr);
+static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
@@ -815,6 +823,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o->Data = &gCampaign;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
 	o->Flags = UI_SELECT_ONLY_FIRST;
+	UIObjectAddChild(o, CreateCampaignObjs());
 	UIObjectAddChild(cc, o);
 
 	o = UIObjectCreate(
@@ -836,6 +845,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o->u.Textbox.TextLinkFunc = MissionGetTitle;
 	o->Data = missionPtr;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
+	UIObjectAddChild(o, CreateMissionObjs(missionPtr));
 	UIObjectAddChild(c, o);
 
 	// mission properties
@@ -1034,6 +1044,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
+	UIObjectAddChild(o2, CreateCharacterObjs(missionPtr));
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
@@ -1042,6 +1053,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->Id = YC_SPECIALS;
 	o2->Pos = Vec2iNew(x, y);
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
+	UIObjectAddChild(o2, CreateSpecialCharacterObjs(missionPtr));
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
@@ -1049,6 +1061,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->Data = NULL;
 	o2->Id = YC_WEAPONS;
 	o2->Pos = Vec2iNew(x, y);
+	UIObjectAddChild(o2, CreateWeaponObjs(missionPtr));
 	UIObjectAddChild(c, o2);
 	y += th;
 	o2 = UIObjectCopy(o);
@@ -1059,6 +1072,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	CSTRDUP(o2->Tooltip,
 		"Use Insert, Delete and PageUp/PageDown\n"
 		"Shift+click to change amounts");
+	UIObjectAddChild(o2, CreateMapItemObjs(missionPtr));
 	UIObjectAddChild(c, o2);
 
 	// objectives
@@ -1085,7 +1099,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return cc;
 }
-UIObject *CreateCampaignObjs(void)
+static UIObject *CreateCampaignObjs(void)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1094,6 +1108,7 @@ UIObject *CreateCampaignObjs(void)
 	int x;
 	int y;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	x = 25;
 	y = 150;
@@ -1124,12 +1139,13 @@ UIObject *CreateCampaignObjs(void)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateMissionObjs(struct Mission **missionPtr)
+static UIObject *CreateMissionObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
 	UIObject *o;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(20, 150), Vec2iNew(319, th));
@@ -1142,7 +1158,7 @@ UIObject *CreateMissionObjs(struct Mission **missionPtr)
 
 	return c;
 }
-UIObject *CreateWeaponObjs(struct Mission **missionPtr)
+static UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1150,6 +1166,7 @@ UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 	UIObject *o2;
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
@@ -1172,13 +1189,14 @@ UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateMapItemObjs(struct Mission **missionPtr)
+static UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawMapItem;
@@ -1200,7 +1218,7 @@ UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
+static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1291,13 +1309,14 @@ UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateCharacterObjs(struct Mission **missionPtr)
+static UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawEnemy;
@@ -1319,13 +1338,14 @@ UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
+static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
 	int i;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawSpecialChar;
