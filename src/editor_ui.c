@@ -794,11 +794,13 @@ static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 
 static UIObject *CreateCampaignObjs(void);
 static UIObject *CreateMissionObjs(struct Mission **missionPtr);
+static UIObject *CreateClassicMapObjs(Vec2i pos, struct Mission **missionPtr);
 static UIObject *CreateWeaponObjs(struct Mission **missionPtr);
 static UIObject *CreateMapItemObjs(struct Mission **missionPtr);
 static UIObject *CreateCharacterObjs(struct Mission **missionPtr);
 static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr);
-static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index);
+static UIObject *CreateObjectiveObjs(
+	Vec2i pos, struct Mission **missionPtr, int index);
 
 UIObject *CreateMainObjs(struct Mission **missionPtr)
 {
@@ -811,6 +813,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	int i;
 	int x;
 	int y;
+	Vec2i objectivesPos;
 	cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	// Titles
@@ -872,47 +875,11 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->ChangeFunc = MissionChangeHeight;
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
-	x += 40;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_WALLCOUNT;
-	o2->u.LabelFunc = MissionGetWallCountStr;
-	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeWallCount;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 40;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_WALLLENGTH;
-	o2->u.LabelFunc = MissionGetWallLengthStr;
-	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeWallLength;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 40;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_ROOMCOUNT;
-	o2->u.LabelFunc = MissionGetRoomCountStr;
-	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeRoomCount;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 40;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SQRCOUNT;
-	o2->u.LabelFunc = MissionGetSquareCountStr;
-	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeSquareCount;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 40;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_DENSITY;
-	o2->u.LabelFunc = MissionGetDensityStr;
-	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeDensity;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
-	UIObjectAddChild(c, o2);
+
+	// Properties for classic C-Dogs maps
+	x = 20;
+	y += th;
+	UIObjectAddChild(c, CreateClassicMapObjs(Vec2iNew(x, y), missionPtr));
 
 	// Mission looks
 	// wall/floor styles etc.
@@ -1029,7 +996,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->Size = TextGetSize(o2->Data);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
-		Vec2iNew(25, 150), Vec2iNew(295, 5 * th));
+		Vec2iNew(25, 170), Vec2iNew(295, 5 * th));
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
 	oc->Data = missionPtr;
@@ -1077,6 +1044,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 
 	// objectives
 	y += 2;
+	objectivesPos = Vec2iNew(x, y + 8 * th);
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
 	o->Flags = UI_SELECT_ONLY;
@@ -1092,7 +1060,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = Vec2iNew(x, y);
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
-		UIObjectAddChild(o2, CreateObjectiveObjs(missionPtr, i));
+		UIObjectAddChild(o2, CreateObjectiveObjs(objectivesPos, missionPtr, i));
 		UIObjectAddChild(c, o2);
 	}
 
@@ -1111,7 +1079,7 @@ static UIObject *CreateCampaignObjs(void)
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	x = 25;
-	y = 150;
+	y = 170;
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, Vec2iZero(), Vec2iZero());
@@ -1148,13 +1116,63 @@ static UIObject *CreateMissionObjs(struct Mission **missionPtr)
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(20, 150), Vec2iNew(319, th));
+		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(20, 170), Vec2iNew(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
 	o->Data = missionPtr;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
 	UIObjectAddChild(c, o);
+
+	return c;
+}
+static UIObject *CreateClassicMapObjs(Vec2i pos, struct Mission **missionPtr)
+{
+	int th = CDogsTextHeight();
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *o = UIObjectCreate(
+		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(35, th));
+
+	UIObject *o2 = UIObjectCopy(o);
+	o2->Id2 = XC_WALLCOUNT;
+	o2->u.LabelFunc = MissionGetWallCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_WALLLENGTH;
+	o2->u.LabelFunc = MissionGetWallLengthStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeWallLength;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_ROOMCOUNT;
+	o2->u.LabelFunc = MissionGetRoomCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_SQRCOUNT;
+	o2->u.LabelFunc = MissionGetSquareCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeSquareCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->Id2 = XC_DENSITY;
+	o2->u.LabelFunc = MissionGetDensityStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDensity;
+	o2->Pos = pos;
+	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
+	UIObjectAddChild(c, o2);
 
 	return c;
 }
@@ -1175,7 +1193,7 @@ static UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
 		int x = 10 + i / 4 * 90;
-		int y = 150 + (i % 4) * th;
+		int y = 170 + (i % 4) * th;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -1211,29 +1229,26 @@ static UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 		o2->IsDynamicData = 1;
 		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 150);
+		o2->Pos = Vec2iNew(x, 170);
 		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
+static UIObject *CreateObjectiveObjs(
+	Vec2i pos, struct Mission **missionPtr, int index)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
-	int x;
-	int y;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	o->Flags = UI_LEAVE_YC;
-	y = 150;
 
-	x = 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TYPE;
 	o2->Type = UITYPE_LABEL;
@@ -1243,10 +1258,10 @@ static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 	((MissionIndexData *)o2->Data)->index = index;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
-	x += 40;
+	pos.x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;
@@ -1256,10 +1271,10 @@ static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 	((MissionIndexData *)o2->Data)->index = index;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = Vec2iNew(30, th);
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_REQUIRED;
 	o2->Type = UITYPE_LABEL;
@@ -1269,11 +1284,11 @@ static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 	((MissionIndexData *)o2->Data)->index = index;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = Vec2iNew(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
 	UIObjectAddChild(c, o2);
-	x += 20;
+	pos.x += 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TOTAL;
 	o2->Type = UITYPE_LABEL;
@@ -1283,10 +1298,10 @@ static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 	((MissionIndexData *)o2->Data)->index = index;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
-	x += 40;
+	pos.x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLAGS;
 	o2->Type = UITYPE_LABEL;
@@ -1296,7 +1311,7 @@ static UIObject *CreateObjectiveObjs(struct Mission **missionPtr, int index)
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 	((MissionIndexData *)o2->Data)->index = index;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = Vec2iNew(100, th);
 	CSTRDUP(o2->Tooltip,
 		"hidden: not shown on map\n"
@@ -1331,7 +1346,7 @@ static UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 150);
+		o2->Pos = Vec2iNew(x, 170);
 		UIObjectAddChild(c, o2);
 	}
 
@@ -1360,7 +1375,7 @@ static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->missionPtr = missionPtr;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 150);
+		o2->Pos = Vec2iNew(x, 170);
 		UIObjectAddChild(c, o2);
 	}
 
