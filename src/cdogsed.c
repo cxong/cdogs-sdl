@@ -257,7 +257,7 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 
 	UIObjectDraw(sObjs, &gGraphicsDevice);
 
-	if (willDisplayAutomap)
+	if (willDisplayAutomap && currentMission)
 	{
 		AutomapDraw(AUTOMAP_FLAGS_SHOWALL);
 	}

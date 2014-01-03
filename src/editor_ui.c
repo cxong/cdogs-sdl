@@ -811,17 +811,17 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObject *o2;
 	UIObject *oc;
 	int i;
-	int x;
-	int y;
+	Vec2i pos;
 	Vec2i objectivesPos;
 	cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	// Titles
 
-	y = 5;
+	pos.y = 5;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, Vec2iNew(25, y), Vec2iNew(240, th));
+		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE,
+		Vec2iNew(25, pos.y), Vec2iNew(240, th));
 	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
 	o->Data = &gCampaign;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
@@ -830,10 +830,10 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObjectAddChild(cc, o);
 
 	o = UIObjectCreate(
-		UITYPE_NONE, YC_MISSIONINDEX, Vec2iNew(270, y), Vec2iNew(49, th));
+		UITYPE_NONE, YC_MISSIONINDEX, Vec2iNew(270, pos.y), Vec2iNew(49, th));
 	UIObjectAddChild(cc, o);
 
-	y = 2 * th;
+	pos.y = 2 * th;
 
 	// Mission-only controls
 	// Only visible if the current mission is valid
@@ -843,7 +843,8 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObjectAddChild(cc, c);
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(25, y), Vec2iNew(175, th));
+		UITYPE_TEXTBOX, YC_MISSIONTITLE,
+		Vec2iNew(25, pos.y), Vec2iNew(175, th));
 	o->Id2 = XC_MISSIONTITLE;
 	o->u.Textbox.TextLinkFunc = MissionGetTitle;
 	o->Data = missionPtr;
@@ -854,94 +855,97 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	// mission properties
 	// size, walls, rooms etc.
 
-	y = 10 + 2 * th;
+	pos.y = 10 + 2 * th;
 
 	o = UIObjectCreate(
 		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(35, th));
 
-	x = 20;
+	pos.x = 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WIDTH;
 	o2->u.LabelFunc = MissionGetWidthStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWidth;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 40;
+	pos.x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_HEIGHT;
 	o2->u.LabelFunc = MissionGetHeightStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeHeight;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
+	pos.x += 40;
+	o2 = UIObjectCreate(UITYPE_TAB, 0, pos, Vec2iNew(50, 25 + th));
 	// Properties for classic C-Dogs maps
-	x = 20;
-	y += th;
-	UIObjectAddChild(c, CreateClassicMapObjs(Vec2iNew(x, y), missionPtr));
+	pos.x = 20;
+	pos.y += th;
+	UITabAddChild(o2, CreateClassicMapObjs(pos, missionPtr), "Type: Classic");
+	UIObjectAddChild(c, o2);
 
 	// Mission looks
 	// wall/floor styles etc.
 
-	y += th;
+	pos.y += th;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
 		UITYPE_CUSTOM, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(25, 25 + th));
 
-	x = 20;
+	pos.x = 20;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_WALL;
 	o2->u.CustomDrawFunc = MissionDrawWallStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLOOR;
 	o2->u.CustomDrawFunc = MissionDrawFloorStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeFloorStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_ROOM;
 	o2->u.CustomDrawFunc = MissionDrawRoomStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_DOORS;
 	o2->u.CustomDrawFunc = MissionDrawDoorStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeDoorStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_KEYS;
 	o2->u.CustomDrawFunc = MissionDrawKeyStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeKeyStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	x += 30;
+	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_EXIT;
 	o2->u.CustomDrawFunc = MissionDrawExitStyle;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeExitStyle;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
 	// colours
 
-	x = 200;
+	pos.x = 200;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
@@ -952,37 +956,37 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->u.LabelFunc = MissionGetWallColorStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallColor;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR2;
 	o2->u.LabelFunc = MissionGetFloorColorStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeFloorColor;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR3;
 	o2->u.LabelFunc = MissionGeRoomColorStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomColor;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR4;
 	o2->u.LabelFunc = MissionGeExtraColorStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeExtraColor;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
 	// mission data
 
-	x = 20;
-	y += th;
+	pos.x = 20;
+	pos.y += th;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(189, th));
@@ -992,7 +996,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o2->u.LabelFunc = CStr;
 	o2->Data = "Mission description";
 	o2->Id = YC_MISSIONDESC;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	o2->Size = TextGetSize(o2->Data);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
@@ -1004,38 +1008,38 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObjectAddChild(o2, oc);
 	UIObjectAddChild(c, o2);
 
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetCharacterCountStr;
 	o2->Data = missionPtr;
 	o2->Id = YC_CHARACTERS;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateCharacterObjs(missionPtr));
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetSpecialCountStr;
 	o2->Data = missionPtr;
 	o2->Id = YC_SPECIALS;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateSpecialCharacterObjs(missionPtr));
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = GetWeaponCountStr;
 	o2->Data = NULL;
 	o2->Id = YC_WEAPONS;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateWeaponObjs(missionPtr));
 	UIObjectAddChild(c, o2);
-	y += th;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = GetObjectCountStr;
 	o2->Data = NULL;
 	o2->Id = YC_ITEMS;
-	o2->Pos = Vec2iNew(x, y);
+	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip,
 		"Use Insert, Delete and PageUp/PageDown\n"
 		"Shift+click to change amounts");
@@ -1043,22 +1047,22 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 
 	// objectives
-	y += 2;
-	objectivesPos = Vec2iNew(x, y + 8 * th);
+	pos.y += 2;
+	objectivesPos = Vec2iNew(pos.x, pos.y + 8 * th);
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
 	o->Flags = UI_SELECT_ONLY;
 
 	for (i = 0; i < OBJECTIVE_MAX; i++)
 	{
-		y += th;
+		pos.y += th;
 		o2 = UIObjectCopy(o);
 		o2->Id = YC_OBJECTIVES + i;
 		o2->Type = UITYPE_TEXTBOX;
 		o2->u.Textbox.TextLinkFunc = MissionGetObjectiveDescription;
 		o2->Data = missionPtr;
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
-		o2->Pos = Vec2iNew(x, y);
+		o2->Pos = pos;
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
 		UIObjectAddChild(o2, CreateObjectiveObjs(objectivesPos, missionPtr, i));
 		UIObjectAddChild(c, o2);

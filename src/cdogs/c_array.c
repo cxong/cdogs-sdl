@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,13 @@ void CArrayPushBack(CArray *a, void *elem)
 		a->capacity *= 2;
 		CREALLOC(a->data, a->capacity * a->elemSize);
 	}
-	memcpy(&((char *)a->data)[a->size * a->elemSize], elem, a->elemSize);
+	memcpy(CArrayGet(a, a->size), elem, a->elemSize);
 	a->size++;
+}
+
+void *CArrayGet(CArray *a, int index)
+{
+	return &((char *)a->data)[index * a->elemSize];
 }
 
 void CArrayTerminate(CArray *a)

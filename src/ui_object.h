@@ -38,6 +38,7 @@ typedef enum
 	UITYPE_NONE,
 	UITYPE_LABEL,
 	UITYPE_TEXTBOX,
+	UITYPE_TAB,	// like label but when clicked displays a different child
 	UITYPE_CUSTOM
 } UIType;
 
@@ -71,6 +72,12 @@ typedef struct _UIObject
 			int IsEditable;
 			char *Hint;
 		} Textbox;
+		// Tab
+		struct
+		{
+			CArray Labels;	// of char *, one per child
+			int Index;
+		} Tab;
 		// Custom
 		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
 	} u;
@@ -83,6 +90,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
 UIObject *UIObjectCopy(UIObject *o);
 void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);
+void UITabAddChild(UIObject *o, UIObject *c, char *label);
 void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);

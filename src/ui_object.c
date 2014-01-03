@@ -48,6 +48,10 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	case UITYPE_TEXTBOX:
 		o->u.Textbox.IsEditable = 1;
 		break;
+	case UITYPE_TAB:
+		CArrayInit(&o->u.Tab.Labels, sizeof(char *));
+		o->u.Tab.Index = 0;
+		break;
 	}
 	CArrayInit(&o->Children, sizeof o);
 	return o;
@@ -73,6 +77,9 @@ UIObject *UIObjectCopy(UIObject *o)
 		break;
 	case UITYPE_TEXTBOX:
 		res->u.Textbox = o->u.Textbox;
+		break;
+	case UITYPE_TAB:
+		// do nothing; since we cannot copy children
 		break;
 	case UITYPE_CUSTOM:
 		res->u.CustomDrawFunc = o->u.CustomDrawFunc;
@@ -100,6 +107,9 @@ void UIObjectDestroy(UIObject *o)
 	case UITYPE_TEXTBOX:
 		CFREE(o->u.Textbox.Hint);
 		break;
+	case UITYPE_TAB:
+		CArrayTerminate(&o->u.Tab.Labels);
+		break;
 	}
 	CFREE(o);
 }
@@ -108,6 +118,13 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 {
 	CArrayPushBack(&o->Children, &c);
 	c->Parent = o;
+	assert(o->Type != UITYPE_TAB && "need special add child for TAB type");
+}
+void UITabAddChild(UIObject *o, UIObject *c, char *label)
+{
+	CArrayPushBack(&o->Children, &c);
+	c->Parent = o;
+	CArrayPushBack(&o->u.Tab.Labels, &label);
 }
 
 void UIObjectHighlight(UIObject *o)
@@ -135,8 +152,6 @@ void UIObjectUnhighlight(UIObject *o)
 
 void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 {
-	size_t i;
-	UIObject **objs;
 	int isHighlighted;
 	if (!o)
 	{
@@ -196,6 +211,25 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 			}
 		}
 		break;
+	case UITYPE_TAB:
+		if (o->Children.size > 0)
+		{
+			color_t textMask = isHighlighted ? colorRed : colorWhite;
+			char **labelp = CArrayGet(&o->u.Tab.Labels, o->u.Tab.Index);
+			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
+			if (!o->IsVisible)
+			{
+				return;
+			}
+			DrawTextStringMaskedWrapped(
+				*labelp, g, o->Pos, textMask, o->Pos.x + o->Size.x - o->Pos.x);
+			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+				isHighlighted)
+			{
+				UIObjectDraw(*objp, g);
+			}
+		}
+		break;
 	case UITYPE_CUSTOM:
 		o->u.CustomDrawFunc(o, g, o->Data);
 		if (!o->IsVisible)
@@ -204,13 +238,20 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 		}
 		break;
 	}
-	objs = o->Children.data;
-	for (i = 0; i < o->Children.size; i++, objs++)
+
+	// draw children
+	// Note: tab type draws its own children (one)
+	if (o->Type != UITYPE_TAB)
 	{
-		if (!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-			isHighlighted)
+		size_t i;
+		UIObject **objs = o->Children.data;
+		for (i = 0; i < o->Children.size; i++, objs++)
 		{
-			UIObjectDraw(*objs, g);
+			if (!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+				isHighlighted)
+			{
+				UIObjectDraw(*objs, g);
+			}
 		}
 	}
 }
@@ -233,22 +274,40 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 {
-	size_t i;
-	UIObject **objs = o->Children.data;
 	int isHighlighted = o->Parent && o->Parent->Highlighted == o;
 	if (IsInside(pos, o->Pos, o->Size))
 	{
 		*out = o;
 		return 1;
 	}
-	for (i = 0; i < o->Children.size; i++, objs++)
+	if (o->Type == UITYPE_TAB)
 	{
-		if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-			isHighlighted) &&
-			(*objs)->IsVisible &&
-			UITryGetObject(*objs, pos, out))
+		// only recurse to the chosen child
+		if (o->Children.size > 0)
 		{
-			return 1;
+			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
+			if ((!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+				isHighlighted) &&
+				(*objp)->IsVisible &&
+				UITryGetObject(*objp, pos, out))
+			{
+				return 1;
+			}
+		}
+	}
+	else
+	{
+		size_t i;
+		UIObject **objs = o->Children.data;
+		for (i = 0; i < o->Children.size; i++, objs++)
+		{
+			if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+				isHighlighted) &&
+				(*objs)->IsVisible &&
+				UITryGetObject(*objs, pos, out))
+			{
+				return 1;
+			}
 		}
 	}
 	return 0;
