@@ -91,16 +91,16 @@
 
 
 
-static void DrawObjectiveInfo(int idx, int x, int y, Mission *mission)
+static void DrawObjectiveInfo(int idx, int x, int y, struct MissionOptions *mo)
 {
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i = 0;
 	Character *cd;
-	MissionObjective *mo = CArrayGet(&mission->Objectives, idx);
-	struct Objective *o = CArrayGet(&gMission.Objectives, idx);
+	MissionObjective *mobj = CArrayGet(&mission->mssionData->Objectives, idx);
+	struct Objective *o = CArrayGet(&mission->Objectives, idx);
 
-	switch (mo->Type)
+	switch (mobj->Type)
 	{
 	case OBJECTIVE_KILL:
 		cd = CharacterStoreGetSpecial(&gCampaign.Setting.characters, 0);
@@ -262,7 +262,7 @@ void MissionBriefing(GraphicsDevice *device)
 				continue;
 			}
 			CDogsTextStringAt(w / 6, y, o->Description);
-			DrawObjectiveInfo(i, w - (w / 6), y + 8, gMission.missionData);
+			DrawObjectiveInfo(i, w - (w / 6), y + 8, &gMission);
 			y += h / 12;
 		}
 
@@ -380,7 +380,7 @@ void Bonuses(void)
 			continue;
 		}
 		
-		DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
+		DrawObjectiveInfo(i, x - 26, y + 8, &gMission);
 		sprintf(s, "Objective %d: %d of %d, %d required",
 			idx, o->done, mo->Count, mo->Required);
 		if (mo->Required > 0)
