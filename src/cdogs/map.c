@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -152,44 +152,54 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	RemoveItemFromTile(t, tile);
 }
 
-void GuessCoords(int *x, int *y)
+static Vec2i GuessCoords(struct MissionOptions *mo)
 {
-	if (gMission.missionData->mapWidth)
-		*x = (rand() % gMission.missionData->mapWidth) + (XMAX -
-								  gMission.
-								  missionData->
-								  mapWidth)
-		    / 2;
+	Vec2i v;
+	if (mo->missionData->Size.x)
+	{
+		v.x = (rand() % mo->missionData->Size.x) +
+			(XMAX - mo->missionData->Size.x) / 2;
+	}
 	else
-		*x = rand() % XMAX;
+	{
+		v.x = rand() % XMAX;
+	}
 
-	if (gMission.missionData->mapHeight)
-		*y = (rand() % gMission.missionData->mapHeight) + (YMAX -
-								   gMission.
-								   missionData->
-								   mapHeight)
-		    / 2;
+	if (mo->missionData->Size.y)
+	{
+		v.y = (rand() % mo->missionData->Size.y) +
+			(YMAX - mo->missionData->Size.y) / 2;
+	}
 	else
-		*y = rand() % YMAX;
+	{
+		v.y = rand() % YMAX;
+	}
+	return v;
 }
 
-void GuessPixelCoords(int *x, int *y)
+static Vec2i GuessPixelCoords(struct MissionOptions *mo)
 {
-	if (gMission.missionData->mapWidth)
-		*x = (rand() %
-		      (gMission.missionData->mapWidth * TILE_WIDTH)) +
-		    (XMAX -
-		     gMission.missionData->mapWidth) * TILE_WIDTH / 2;
+	Vec2i v;
+	if (mo->missionData->Size.x)
+	{
+		v.x = (rand() % (mo->missionData->Size.x * TILE_WIDTH)) +
+			(XMAX - mo->missionData->Size.x) * TILE_WIDTH / 2;
+	}
 	else
-		*x = rand() % (XMAX * TILE_WIDTH);
+	{
+		v.x = rand() % (XMAX * TILE_WIDTH);
+	}
 
-	if (gMission.missionData->mapHeight)
-		*y = (rand() %
-		      (gMission.missionData->mapHeight * TILE_HEIGHT)) +
-		    (YMAX -
-		     gMission.missionData->mapHeight) * TILE_HEIGHT / 2;
+	if (mo->missionData->Size.y)
+	{
+		v.y = (rand() % (mo->missionData->Size.y * TILE_HEIGHT)) +
+			(YMAX - mo->missionData->Size.y) * TILE_HEIGHT / 2;
+	}
 	else
-		*y = rand() % (YMAX * TILE_HEIGHT);
+	{
+		v.y = rand() % (YMAX * TILE_HEIGHT);
+	}
+	return v;
 }
 
 static unsigned short IMapGet(Map *map, Vec2i pos)
@@ -291,9 +301,7 @@ static int MapIsValidStartForWall(Map *map, int x, int y)
 
 static int MapTryBuildWall(Map *map, int wallLength)
 {
-	Vec2i v;
-
-	GuessCoords(&v.x, &v.y);
+	Vec2i v = GuessCoords(&gMission);
 	if (MapIsValidStartForWall(map, v.x, v.y))
 	{
 		IMapSet(map, v, MAP_WALL);
@@ -423,20 +431,19 @@ unsigned short GenerateAccessMask(int *accessLevel)
 
 static int MapBuildRoom(Map *map, int hasKeys)
 {
-	int x, y, w, h;
-
-	GuessCoords(&x, &y);
+	int w, h;
+	Vec2i pos = GuessCoords(&gMission);
 	w = rand() % 6 + 5;
 	h = rand() % 6 + 5;
 
-	if (MapIsAreaClear(map, Vec2iNew(x - 1, y - 1), Vec2iNew(w + 2, h + 2)))
+	if (MapIsAreaClear(map, Vec2iNew(pos.x - 1, pos.y - 1), Vec2iNew(w + 2, h + 2)))
 	{
 		unsigned short accessMask = 0;
 		if (hasKeys)
 		{
 			accessMask = GenerateAccessMask(&map->keyAccessCount);
 		}
-		MapMakeRoom(map, x, y, w, h, rand() % 15 + 1, accessMask);
+		MapMakeRoom(map, pos.x, pos.y, w, h, rand() % 15 + 1, accessMask);
 		if (hasKeys)
 		{
 			if (map->keyAccessCount < 1)
@@ -463,10 +470,8 @@ static void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 
 static int MapTryBuildSquare(Map *map)
 {
-	Vec2i v;
+	Vec2i v = GuessCoords(&gMission);
 	Vec2i size;
-
-	GuessCoords(&v.x, &v.y);
 	size.x = rand() % 9 + 7;
 	size.y = rand() % 9 + 7;
 
@@ -691,10 +696,10 @@ void MapShowExitArea(Map *map)
 	Pic *exitPic = PicManagerGetFromOld(&gPicManager, gMission.exitPic);
 	Pic *shadowPic = PicManagerGetFromOld(&gPicManager, gMission.exitShadow);
 
-	left = gMission.exitLeft / TILE_WIDTH;
-	right = gMission.exitRight / TILE_WIDTH;
-	top = gMission.exitTop / TILE_HEIGHT;
-	bottom = gMission.exitBottom / TILE_HEIGHT;
+	left = gMission.exitLeft;
+	right = gMission.exitRight;
+	top = gMission.exitTop;
+	bottom = gMission.exitBottom;
 
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)
@@ -886,29 +891,28 @@ int MapPosIsHighAccess(Map *map, int x, int y)
 }
 
 static int MapTryPlaceCollectible(
-	Map *map,
-	struct Mission *mission, struct MissionOptions *mo, int objective)
+	Map *map, Mission *mission, struct MissionOptions *mo, int objective)
 {
+	MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
 	int hasLockedRooms =
-		(mission->objectives[objective].flags & OBJECTIVE_HIACCESS) &&
-		MapHasLockedRooms(map);
-	int noaccess = (mission->objectives[objective].flags & OBJECTIVE_NOACCESS);
-	int x, y;
+		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
+	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
 	while (i)
 	{
 		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-		GuessPixelCoords(&x, &y);
+		Vec2i v = GuessPixelCoords(mo);
 		// Collectibles all have size 4x3
-		if (!IsCollisionWithWall(Vec2iNew(x, y), size))
+		if (!IsCollisionWithWall(v, size))
 		{
-			if ((!hasLockedRooms || MapPosIsHighAccess(map, x, y)) &&
-				(!noaccess || !MapPosIsHighAccess(map, x, y)))
+			if ((!hasLockedRooms || MapPosIsHighAccess(map, v.x, v.y)) &&
+				(!noaccess || !MapPosIsHighAccess(map, v.x, v.y)))
 			{
+				struct Objective *o = CArrayGet(&mo->Objectives, objective);
 				AddObject(
-					x << 8, y << 8, size,
-					&cGeneralPics[mo->objectives[objective].pickupItem],
+					v.x << 8, v.y << 8, size,
+					&cGeneralPics[o->pickupItem],
 					OBJ_JEWEL,
 					TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
 				return 1;
@@ -920,26 +924,25 @@ static int MapTryPlaceCollectible(
 }
 
 static int MapTryPlaceBlowup(
-	Map *map,
-	struct Mission *mission, struct MissionOptions *mo, int objective)
+	Map *map, Mission *mission, struct MissionOptions *mo, int objective)
 {
+	MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
 	int hasLockedRooms =
-		(mission->objectives[objective].flags & OBJECTIVE_HIACCESS) &&
-		MapHasLockedRooms(map);
-	int noaccess = (mission->objectives[objective].flags & OBJECTIVE_NOACCESS);
+		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
+	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
 	while (i > 0)
 	{
-		Vec2i v;
-		GuessCoords(&v.x, &v.y);
+		Vec2i v = GuessCoords(&gMission);
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
+			struct Objective *o = CArrayGet(&mo->Objectives, objective);
 			if (MapPlaceOneObject(
 					map,
 					v,
-					mo->objectives[objective].blowupObject,
+					o->blowupObject,
 					ObjectiveToTileItem(objective)))
 			{
 				return 1;
@@ -954,11 +957,10 @@ static void MapPlaceCard(Map *map, int pic, int card, int map_access)
 {
 	for (;;)
 	{
-		Vec2i v;
+		Vec2i v = GuessCoords(&gMission);
 		Tile *t;
 		Tile *tBelow;
 		unsigned short iMap;
-		GuessCoords(&v.x, &v.y);
 		t = MapGetTile(map, v);
 		iMap = IMapGet(map, v);
 		tBelow = MapGetTile(map, Vec2iNew(v.x, v.y + 1));
@@ -1279,10 +1281,10 @@ static void MapSetupPerimeter(Map *map, int w, int h)
 void MapLoad(Map *map, struct MissionOptions *mo)
 {
 	int i, j, count;
-	struct Mission *mission = mo->missionData;
-	int floor = mission->floorStyle % FLOOR_STYLE_COUNT;
-	int wall = mission->wallStyle % WALL_STYLE_COUNT;
-	int room = mission->roomStyle % ROOMFLOOR_COUNT;
+	Mission *mission = mo->missionData;
+	int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
+	int wall = mission->WallStyle % WALL_STYLE_COUNT;
+	int room = mission->RoomStyle % ROOMFLOOR_COUNT;
 	int x, y, w, h;
 	Vec2i v;
 
@@ -1299,60 +1301,64 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	}
 	map->tilesSeen = 0;
 
-	w = mission->mapWidth &&
-		mission->mapWidth < XMAX ? mission->mapWidth : XMAX;
-	h = mission->mapHeight &&
-		mission->mapHeight < YMAX ? mission->mapHeight : YMAX;
+	w = mission->Size.x && mission->Size.x < XMAX ? mission->Size.x : XMAX;
+	h = mission->Size.y && mission->Size.y < YMAX ? mission->Size.y : YMAX;
 	x = (XMAX - w) / 2;
 	y = (YMAX - h) / 2;
 	map->tilesTotal = w * h;
 
-	MapSetupPerimeter(map, mission->mapWidth, mission->mapHeight);
+	MapSetupPerimeter(map, mission->Size.x, mission->Size.y);
 
-	count = 0;
-	i = 0;
-	while (i < 1000 && count < mission->squareCount)
+	if (mission->Type == MAPTYPE_CLASSIC)
 	{
-		if (MapTryBuildSquare(map))
+		count = 0;
+		i = 0;
+		while (i < 1000 && count < mission->u.Classic.Squares)
 		{
-			count++;
+			if (MapTryBuildSquare(map))
+			{
+				count++;
+			}
+			i++;
 		}
-		i++;
+
+		map->keyAccessCount = 0;
+		count = 0;
+		i = 0;
+		while (i < 1000 && count < mission->u.Classic.Rooms)
+		{
+			if (MapBuildRoom(map, AreKeysAllowed(gCampaign.Entry.mode)))
+			{
+				count++;
+			}
+			i++;
+		}
+
+		count = 0;
+		i = 0;
+		while (i < 1000 && count < mission->u.Classic.Walls)
+		{
+			if (MapTryBuildWall(map, mission->u.Classic.WallLength))
+			{
+				count++;
+			}
+			i++;
+		}
 	}
-
-	map->keyAccessCount = 0;
-	count = 0;
-	i = 0;
-	while (i < 1000 && count < mission->roomCount)
+	else
 	{
-		if (MapBuildRoom(map, AreKeysAllowed(gCampaign.Entry.mode)))
-		{
-			count++;
-		}
-		i++;
-	}
-
-	count = 0;
-	i = 0;
-	while (i < 1000 && count < mission->wallCount)
-	{
-		if (MapTryBuildWall(map, mission->wallLength))
-		{
-			count++;
-		}
-		i++;
+		assert(0 && "not implemented");
 	}
 
 	MapSetupTilesAndWalls(map, floor, room, wall);
 	MapSetupDoors(map, floor, room);
 
-	for (i = 0; i < mo->objectCount; i++)
+	for (i = 0; i < (int)mo->MapObjects.size; i++)
 	{
-		for (j = 0;
-			j < (mission->itemDensity[i] * map->tilesTotal) / 1000;
-			j++)
+		int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
+		for (j = 0; j < (itemDensity * map->tilesTotal) / 1000; j++)
 		{
-			TMapObject *mapObj = mo->mapObjects[i];
+			TMapObject *mapObj = CArrayGet(&mo->MapObjects, i);
 			MapPlaceOneObject(
 				map, Vec2iNew(x + rand() % w, y + rand() % h), mapObj, 0);
 		}
@@ -1361,17 +1367,17 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	// Try to add the objectives
 	// If we are unable to place them all, make sure to reduce the totals
 	// in case we create missions that are impossible to complete
-	for (i = 0, j = 0; i < mission->objectiveCount; i++)
+	for (i = 0, j = 0; i < (int)mission->Objectives.size; i++)
 	{
-		if (mission->objectives[i].type != OBJECTIVE_COLLECT &&
-			mission->objectives[i].type != OBJECTIVE_DESTROY)
+		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
+		if (mobj->Type != OBJECTIVE_COLLECT && mobj->Type != OBJECTIVE_DESTROY)
 		{
 			continue;
 		}
 		count = 0;
-		if (mission->objectives[i].type == OBJECTIVE_COLLECT)
+		if (mobj->Type == OBJECTIVE_COLLECT)
 		{
-			for (j = 0; j < mo->objectives[i].count; j++)
+			for (j = 0; j < mobj->Count; j++)
 			{
 				if (MapTryPlaceCollectible(map, mission, mo, i))
 				{
@@ -1379,9 +1385,9 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 				}
 			}
 		}
-		else if (mission->objectives[i].type == OBJECTIVE_DESTROY)
+		else if (mobj->Type == OBJECTIVE_DESTROY)
 		{
-			for (j = 0; j < mo->objectives[i].count; j++)
+			for (j = 0; j < mobj->Count; j++)
 			{
 				if (MapTryPlaceBlowup(map, mission, mo, i))
 				{
@@ -1389,10 +1395,10 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 				}
 			}
 		}
-		mo->objectives[i].count = count;
-		if (mo->objectives[i].count < mo->objectives[i].required)
+		mobj->Count = count;
+		if (mobj->Count < mobj->Required)
 		{
-			mo->objectives[i].required = mo->objectives[i].count;
+			mobj->Required = mobj->Count;
 		}
 	}
 

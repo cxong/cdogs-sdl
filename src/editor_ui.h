@@ -138,7 +138,7 @@
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
 
-UIObject *CreateMainObjs(struct Mission **missionPtr);
+UIObject *CreateMainObjs(Mission **missionPtr);
 
 UIObject *CreateCharEditorObjs(void);
 

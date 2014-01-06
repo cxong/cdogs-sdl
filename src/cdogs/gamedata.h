@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@
 #include "campaigns.h"
 #include "character.h"
 #include "input.h"
+#include "map_new.h"
 #include "pics.h"
 #include "tile.h"
 #include "weapon.h"
@@ -130,16 +131,6 @@ struct DoorPic {
 };
 
 
-typedef enum {
-	OBJECTIVE_KILL,
-	OBJECTIVE_COLLECT,
-	OBJECTIVE_DESTROY,
-	OBJECTIVE_RESCUE,
-	OBJECTIVE_INVESTIGATE,
-	OBJECTIVE_MAX
-	// TODO: this also means there can only be one of each objective type
-} ObjectiveType;
-
 #define OBJECTIVE_HIDDEN        1
 #define OBJECTIVE_POSKNOWN      2
 #define OBJECTIVE_HIACCESS      4
@@ -150,7 +141,8 @@ typedef enum {
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif
-struct MissionObjective {
+struct MissionObjectiveOld
+{
 	char description[60];
 	int32_t type;
 	int32_t index;
@@ -179,7 +171,8 @@ __attribute__((packed))
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif
-struct Mission {
+struct MissionOld
+{
 	char title[60];
 	char description[400];
 	int32_t wallStyle;
@@ -197,7 +190,7 @@ struct Mission {
 	int32_t exitLeft, exitTop, exitRight, exitBottom;
 
 	int32_t objectiveCount;
-	struct MissionObjective objectives[OBJECTIVE_MAX];
+	struct MissionObjectiveOld objectives[OBJECTIVE_MAX_OLD];
 
 	int32_t baddieCount;
 	int32_t baddies[BADDIE_MAX];
@@ -230,9 +223,7 @@ __attribute__((packed))
 struct Objective
 {
 	color_t color;
-	int count;
 	int done;
-	int required;
 	TMapObject *blowupObject;
 	int pickupItem;
 };
@@ -241,19 +232,17 @@ struct MissionOptions {
 	int index;
 	int flags;
 
-	struct Mission *missionData;
-	struct Objective objectives[OBJECTIVE_MAX];
+	Mission *missionData;
+	CArray Objectives;	// of struct Objective
 	int exitLeft, exitTop, exitRight, exitBottom;
 	int pickupTime;
 
-	int objectCount;
-	TMapObject *mapObjects[ITEMS_MAX];
+	CArray MapObjects;	// of TMapObject
 	int *keyPics;
 	struct DoorPic *doorPics;
 	int exitPic, exitShadow;
 
-	int weaponCount;
-	gun_e availableWeapons[WEAPON_MAX];
+	CArray AvailableWeapons;	// of int
 };
 
 extern struct GameOptions gOptions;
@@ -273,6 +262,9 @@ void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
 
 void PlayerDataInitialize(void);
+
+void MissionOptionsInit(struct MissionOptions *mo);
+void MissionOptionsTerminate(struct MissionOptions *mo);
 
 int IsIntroNeeded(campaign_mode_e mode);
 int IsScoreNeeded(campaign_mode_e mode);

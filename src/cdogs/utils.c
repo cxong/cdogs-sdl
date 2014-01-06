@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 */
 #include "utils.h"
 
+#include <assert.h>
 #include <math.h>
 #include <string.h>
 
@@ -90,4 +91,48 @@ double Round(double x)
 double ToDegrees(double radians)
 {
 	return radians * 180.0 / PI;
+}
+
+const char *ObjectiveTypeStr(ObjectiveType t)
+{
+	switch (t)
+	{
+	case OBJECTIVE_KILL:
+		return "Kill";
+	case OBJECTIVE_COLLECT:
+		return "Collect";
+	case OBJECTIVE_DESTROY:
+		return "Destroy";
+	case OBJECTIVE_RESCUE:
+		return "Rescue";
+	case OBJECTIVE_INVESTIGATE:
+		return "Explore";
+	default:
+		return "";
+	}
+}
+ObjectiveType StrObjectiveType(const char *s)
+{
+	if (strcmp(s, "Kill") == 0)
+	{
+		return OBJECTIVE_KILL;
+	}
+	else if (strcmp(s, "Collect") == 0)
+	{
+		return OBJECTIVE_COLLECT;
+	}
+	else if (strcmp(s, "Destroy") == 0)
+	{
+		return OBJECTIVE_DESTROY;
+	}
+	else if (strcmp(s, "Rescue") == 0)
+	{
+		return OBJECTIVE_RESCUE;
+	}
+	else if (strcmp(s, "Explore") == 0)
+	{
+		return OBJECTIVE_INVESTIGATE;
+	}
+	assert(0 && "unknown objective name");
+	return OBJECTIVE_KILL;
 }

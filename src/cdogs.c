@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -91,14 +91,16 @@
 
 
 
-void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
+static void DrawObjectiveInfo(int idx, int x, int y, Mission *mission)
 {
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	int i = 0;
 	Character *cd;
+	MissionObjective *mo = CArrayGet(&mission->Objectives, idx);
+	struct Objective *o = CArrayGet(&gMission.Objectives, idx);
 
-	switch (mission->objectives[idx].type)
+	switch (mo->Type)
 	{
 	case OBJECTIVE_KILL:
 		cd = CharacterStoreGetSpecial(&gCampaign.Setting.characters, 0);
@@ -117,11 +119,11 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 		break;
 	case OBJECTIVE_COLLECT:
-		i = gMission.objectives[idx].pickupItem;
+		i = o->pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_DESTROY:
-		i = gMission.objectives[idx].blowupObject->pic;
+		i = o->blowupObject->pic;
 		pic = cGeneralPics[i];
 		break;
 	case OBJECTIVE_INVESTIGATE:
@@ -129,7 +131,7 @@ void DrawObjectiveInfo(int idx, int x, int y, struct Mission *mission)
 		pic.picIndex = -1;
 		return;
 	default:
-		i = gMission.objectives[i].pickupItem;
+		i = o->pickupItem;
 		pic = cGeneralPics[i];
 		break;
 	}
@@ -164,10 +166,10 @@ int CampaignIntro(GraphicsDevice *device)
 
 	y = h / 4;
 
-	sprintf(s, "%s by %s", gCampaign.Setting.title, gCampaign.Setting.author);
+	sprintf(s, "%s by %s", gCampaign.Setting.Title, gCampaign.Setting.Author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	TextSplitLines(gCampaign.Setting.description, s, w * 5 / 6);
+	TextSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
 	x = w / 6 / 2;
 	DrawTextString(s, device, Vec2iNew(x, y));
 
@@ -186,7 +188,7 @@ void MissionBriefing(GraphicsDevice *device)
 	char typewriterBuf[1024];
 	int descriptionHeight;
 	
-	TextSplitLines(gMission.missionData->description, description, w * 5 / 6);
+	TextSplitLines(gMission.missionData->Description, description, w * 5 / 6);
 	descriptionHeight = TextGetSize(description).y;
 	
 	// Save password if we're not on the first mission
@@ -229,7 +231,7 @@ void MissionBriefing(GraphicsDevice *device)
 		// Mission title
 		y = h / 4;
 		sprintf(s, "Mission %d: %s",
-			gMission.index + 1, gMission.missionData->title);
+			gMission.index + 1, gMission.missionData->Title);
 		CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
 		// Display password
@@ -250,15 +252,16 @@ void MissionBriefing(GraphicsDevice *device)
 		y += h / 10;
 
 		// Display objectives
-		for (i = 0; i < gMission.missionData->objectiveCount; i++)
+		for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 		{
-			struct MissionObjective *o = &gMission.missionData->objectives[i];
+			MissionObjective *o =
+				CArrayGet(&gMission.missionData->Objectives, i);
 			// Do not brief optional objectives
-			if (o->required == 0)
+			if (o->Required == 0)
 			{
 				continue;
 			}
-			CDogsTextStringAt(w / 6, y, o->description);
+			CDogsTextStringAt(w / 6, y, o->Description);
 			DrawObjectiveInfo(i, w - (w / 6), y + 8, gMission.missionData);
 			y += h / 12;
 		}
@@ -366,20 +369,21 @@ void Bonuses(void)
 	char s[100];
 	int bonus = 0;
 
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
-		struct Objective *o = &gMission.objectives[i];
+		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
 
 		// Do not mention optional objectives with none completed
-		if (o->done == 0 && o->required == 0)
+		if (o->done == 0 && mo->Required == 0)
 		{
 			continue;
 		}
 		
 		DrawObjectiveInfo(i, x - 26, y + 8, gMission.missionData);
 		sprintf(s, "Objective %d: %d of %d, %d required",
-			idx, o->done, o->count, o->required);
-		if (o->required > 0)
+			idx, o->done, mo->Count, mo->Required);
+		if (mo->Required > 0)
 		{
 			CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_TOP, x, y);
 		}
@@ -388,19 +392,19 @@ void Bonuses(void)
 			CDogsTextStringSpecial(
 				s, TEXT_LEFT | TEXT_TOP | TEXT_PURPLE, x, y);
 		}
-		if (o->done < o->required)
+		if (o->done < mo->Required)
 		{
 			CDogsTextStringSpecial(
 				"Failed", TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
 		}
 		else if (
-			o->done == o->count && o->done > o->required && AreAnySurvived())
+			o->done == mo->Count && o->done > mo->Required && AreAnySurvived())
 		{
 			CDogsTextStringSpecial(
 				"Perfect: 500", TEXT_RIGHT | TEXT_TOP, x, y);
 			bonus += 500;
 		}
-		else if (o->required > 0)
+		else if (mo->Required > 0)
 		{
 			CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
 		}
@@ -425,7 +429,7 @@ void Bonuses(void)
 		bonus += access_bonus;
 	}
 
-	i = 60 + gMission.missionData->objectiveCount * 30 - missionTime / 70;
+	i = 60 + (int)gMission.missionData->Objectives.size * 30 - missionTime / 70;
 
 	if (i > 0 && AreAnySurvived())
 	{
@@ -665,8 +669,8 @@ void Victory(GraphicsDevice *graphics)
 
 	x = 160 - TextGetStringWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
-	x = 160 - TextGetStringWidth(gCampaign.Setting.title) / 2;
-	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.title, &tableFlamed);
+	x = 160 - TextGetStringWidth(gCampaign.Setting.Title) / 2;
+	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.Title, &tableFlamed);
 
 	switch (gOptions.numPlayers)
 	{
@@ -876,7 +880,7 @@ static void PlayGameSong(void)
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
 	MusicStop(&gSoundDevice);
-	if (strlen(gMission.missionData->song) > 0)
+	if (strlen(gMission.missionData->Song) > 0)
 	{
 		char buf[CDOGS_PATH_MAX];
 		size_t pathLen = MAX(
@@ -886,7 +890,7 @@ static void PlayGameSong(void)
 		buf[pathLen] = '\0';
 
 		strcat(buf, "/");
-		strcat(buf, gMission.missionData->song);
+		strcat(buf, gMission.missionData->Song);
 		success = !MusicPlay(&gSoundDevice, buf);
 	}
 	if (!success && gGameSongs != NULL)
@@ -941,7 +945,7 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		survivingPlayers = GetNumPlayersAlive();
 		gameOver = survivingPlayers == 0 ||
-			mission == gCampaign.Setting.missionCount - 1;
+			mission == (int)gCampaign.Setting.Missions.size - 1;
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
@@ -987,6 +991,9 @@ int Game(GraphicsDevice *graphics, int mission)
 		{
 			DisplayTodaysHighScores(graphics);
 		}
+
+		// Need to terminate the mission later as it is used in calculating scores
+		MissionOptionsTerminate(&gMission);
 
 		mission++;
 	}
@@ -1064,6 +1071,8 @@ void DogFight(GraphicsDevice *graphicsDevice)
 			ShowScore(graphicsDevice, scores);
 		}
 
+		// Need to terminate the mission later as it is used in calculating scores
+		MissionOptionsTerminate(&gMission);
 	} while (run && maxScore < DOGFIGHT_MAX_SCORE);
 
 	gOptions.badGuys = 1;
@@ -1314,6 +1323,7 @@ int main(int argc, char *argv[])
 	BulletInitialize();
 	WeaponInitialize();
 	PlayerDataInitialize();
+	CampaignSettingInit(&gCampaign.Setting);
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,

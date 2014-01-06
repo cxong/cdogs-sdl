@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include <tinydir/tinydir.h>
 
 #include <cdogs/files.h>
+#include <cdogs/map_new.h>
 #include <cdogs/mission.h>
 #include <cdogs/utils.h>
 
@@ -40,22 +41,22 @@
 void CampaignInit(CampaignOptions *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
+	CampaignSettingInit(&campaign->Setting);
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
 	CampaignSettingTerminate(&campaign->Setting);
-	memset(campaign, 0, sizeof *campaign);
 }
-void CampaignSettingInit(CampaignSettingNew *setting)
+void CampaignSettingInit(CampaignSetting *setting)
 {
 	memset(setting, 0, sizeof *setting);
+	CArrayInit(&setting->Missions, sizeof(Mission));
 	CharacterStoreInit(&setting->characters);
 }
-void CampaignSettingTerminate(CampaignSettingNew *setting)
+void CampaignSettingTerminate(CampaignSetting *setting)
 {
-	CFREE(setting->missions);
+	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
-	memset(setting, 0, sizeof *setting);
 }
 
 void CampaignListInit(campaign_list_t *list);
@@ -139,9 +140,9 @@ void LoadBuiltinCampaigns(campaign_list_t *list)
 	{
 		AddBuiltinCampaignEntry(
 			list,
-			gCampaign.Setting.title,
+			gCampaign.Setting.Title,
 			CAMPAIGN_MODE_NORMAL,
-			gCampaign.Setting.missionCount,
+			gCampaign.Setting.Missions.size,
 			i);
 	}
 }
@@ -151,7 +152,7 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.Setting.title, CAMPAIGN_MODE_DOGFIGHT, 1, i);
+			list, gCampaign.Setting.Title, CAMPAIGN_MODE_DOGFIGHT, 1, i);
 	}
 }
 

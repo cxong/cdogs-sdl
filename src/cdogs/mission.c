@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "map.h"
+#include "map_new.h"
 #include "palette.h"
 #include "defs.h"
 #include "pic_manager.h"
@@ -369,7 +370,7 @@ static int exitPics[] = {
 // +----------------+
 
 
-struct Mission dogFight1 = {
+struct MissionOld dogFight1 = {
 	"",
 	"",
 	WALL_STYLE_STONE, FLOOR_STYLE_STONE, FLOOR_STYLE_WOOD, 0, 1, 1,
@@ -393,7 +394,7 @@ struct Mission dogFight1 = {
 	14, 13, 22, 1
 };
 
-struct Mission dogFight2 = {
+struct MissionOld dogFight2 = {
 	"",
 	"",
 	WALL_STYLE_STEEL, FLOOR_STYLE_BLUE, FLOOR_STYLE_WHITE, 0, 0, 0,
@@ -417,8 +418,6 @@ struct Mission dogFight2 = {
 	5, 2, 9, 4
 };
 
-struct Mission gQuickPlayMission;
-
 
 // +-----------------+
 // |  Campaign info  |
@@ -429,7 +428,7 @@ struct Mission gQuickPlayMission;
 #include <missions/ogre.h>
 
 
-static CampaignSetting df1 =
+static CampaignSettingOld df1 =
 {
 	"Dogfight in the dungeon",
 	"", "",
@@ -437,7 +436,7 @@ static CampaignSetting df1 =
 	0, NULL
 };
 
-static CampaignSetting df2 =
+static CampaignSettingOld df2 =
 {
 	"Cubicle wars",
 	"", "",
@@ -451,7 +450,8 @@ static CampaignSetting df2 =
 // +---------------------------------------------------+
 
 
-color_t objectiveColors[OBJECTIVE_MAX] =
+// TODO: no limit to objective colours
+color_t objectiveColors[OBJECTIVE_MAX_OLD] =
 {
 	{ 0, 252, 252, 255 },
 	{ 252, 224, 0, 255 },
@@ -465,36 +465,37 @@ color_t objectiveColors[OBJECTIVE_MAX] =
 // |  And now the code...  |
 // +-----------------------+
 
-static void SetupBadguysForMission(struct Mission *mission)
+static void SetupBadguysForMission(Mission *mission)
 {
 	int i;
 	CharacterStore *s = &gCampaign.Setting.characters;
 
 	CharacterStoreResetOthers(s);
 
-	if (s->otherCount <= 0)
+	if (s->OtherChars.size == 0)
 	{
 		return;
 	}
 
-	for (i = 0; i < mission->objectiveCount; i++)
+	for (i = 0; i < (int)mission->Objectives.size; i++)
 	{
-		if (mission->objectives[i].type == OBJECTIVE_RESCUE)
+		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
+		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
-			CharacterStoreAddPrisoner(
-				s, mission->objectives[i].index);
+			CharacterStoreAddPrisoner(s, mobj->Index);
 			break;	// TODO: multiple prisoners
 		}
 	}
 
-	for (i = 0; i < mission->baddieCount; i++)
+	for (i = 0; i < (int)mission->Enemies.size; i++)
 	{
-		CharacterStoreAddBaddie(s, mission->baddies[i]);
+		CharacterStoreAddBaddie(s, *(int *)CArrayGet(&mission->Enemies, i));
 	}
 
-	for (i = 0; i < mission->specialCount; i++)
+	for (i = 0; i < (int)mission->SpecialChars.size; i++)
 	{
-		CharacterStoreAddSpecial(s, mission->specials[i]);
+		CharacterStoreAddSpecial(
+			s, *(int *)CArrayGet(&mission->SpecialChars, i));
 	}
 }
 
@@ -535,9 +536,10 @@ int SetupBuiltinDogfight(int idx)
 // Generate a random partition of an integer `total` into a pair of ints x, y
 // With the restrictions that neither x, y are less than min, and
 // neither x, y are greater than max
-static void GenerateRandomPairPartitionWithRestrictions(
-	int *x, int *y, int total, int min, int max)
+static Vec2i GenerateRandomPairPartitionWithRestrictions(
+	int total, int min, int max)
 {
+	Vec2i v;
 	int xLow, xHigh;
 
 	// Check for invalid input
@@ -545,10 +547,8 @@ static void GenerateRandomPairPartitionWithRestrictions(
 	// or if total less than min
 	if ((total + 1) / 2 > max || total < min)
 	{
-		assert(0);
-		*x = total / 2;
-		*y = total - *x;
-		return;
+		assert(0 && "invalid random pair partition input");
+		return Vec2iNew(total / 2, total - (total / 2));
 	}
 
 	// Find range of x first
@@ -556,16 +556,16 @@ static void GenerateRandomPairPartitionWithRestrictions(
 	// Must be at most max, or total - min
 	xLow = MAX(min, total - max);
 	xHigh = MIN(max, total - min);
-	*x = xLow + (rand() % (xHigh - xLow + 1));
-	*y = total - *x;
-	assert(*x >= min);
-	assert(*y >= min);
-	assert(*x <= max);
-	assert(*y <= max);
+	v.x = xLow + (rand() % (xHigh - xLow + 1));
+	v.y = total - v.x;
+	assert(v.x >= min);
+	assert(v.y >= min);
+	assert(v.x <= max);
+	assert(v.y <= max);
+	return v;
 }
 
-static void SetupQuickPlayMapSize(
-	QuickPlayQuantity size, int *width, int *height)
+static Vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
 {
 	const int minMapDim = 16;
 	const int maxMapDim = 64;
@@ -577,32 +577,24 @@ static void SetupQuickPlayMapSize(
 	switch (size)
 	{
 	case QUICKPLAY_QUANTITY_ANY:
-		GenerateRandomPairPartitionWithRestrictions(
-			width, height,
+		return GenerateRandomPairPartitionWithRestrictions(
 			32 + (rand() % (128 - 32 + 1)),
 			minMapDim, maxMapDim);
-		break;
 	case QUICKPLAY_QUANTITY_SMALL:
-		GenerateRandomPairPartitionWithRestrictions(
-			width, height,
+		return GenerateRandomPairPartitionWithRestrictions(
 			32 + (rand() % (64 - 32 + 1)),
 			minMapDim, maxMapDim);
-		break;
 	case QUICKPLAY_QUANTITY_MEDIUM:
-		GenerateRandomPairPartitionWithRestrictions(
-			width, height,
+		return GenerateRandomPairPartitionWithRestrictions(
 			64 + (rand() % (96 - 64 + 1)),
 			minMapDim, maxMapDim);
-		break;
 	case QUICKPLAY_QUANTITY_LARGE:
-		GenerateRandomPairPartitionWithRestrictions(
-			width, height,
+		return GenerateRandomPairPartitionWithRestrictions(
 			96 + (rand() % (128 - 96 + 1)),
 			minMapDim, maxMapDim);
-		break;
 	default:
-		assert(0);
-		break;
+		assert(0 && "invalid quick play map size config");
+		return Vec2iZero();
 	}
 }
 
@@ -674,16 +666,17 @@ static void SetupQuickPlayEnemy(
 }
 
 static void SetupQuickPlayEnemies(
-	struct Mission *mission,
+	Mission *mission,
+	int numEnemies,
 	CharacterStore *store,
 	const QuickPlayConfig *config)
 {
 	int i;
-	for (i = 0; i < mission->baddieCount; i++)
+	for (i = 0; i < numEnemies; i++)
 	{
 		Character *ch;
 		gun_e gun;
-		mission->baddies[i] = i;
+		CArrayPushBack(&mission->Enemies, &i);
 
 		for (;;)
 		{
@@ -718,115 +711,117 @@ static void SetupQuickPlayEnemies(
 }
 
 void SetupQuickPlayCampaign(
-	CampaignSettingNew *setting, const QuickPlayConfig *config)
+	CampaignSetting *setting, const QuickPlayConfig *config)
 {
 	int i;
-	strcpy(gQuickPlayMission.title, "");
-	strcpy(gQuickPlayMission.description, "");
-	gQuickPlayMission.wallStyle = rand() % WALL_STYLE_COUNT;
-	gQuickPlayMission.floorStyle = rand() % FLOOR_STYLE_COUNT;
-	gQuickPlayMission.roomStyle = rand() % FLOOR_STYLE_COUNT;
-	gQuickPlayMission.exitStyle = rand() % EXIT_COUNT;
-	gQuickPlayMission.keyStyle = rand() % KEYSTYLE_COUNT;
-	gQuickPlayMission.doorStyle = rand() % DOORSTYLE_COUNT;
-	SetupQuickPlayMapSize(
-		config->MapSize,
-		&gQuickPlayMission.mapWidth, &gQuickPlayMission.mapHeight);
-	gQuickPlayMission.wallCount =
-		GenerateQuickPlayParam(config->WallCount, 0, 5, 15, 30);
-	gQuickPlayMission.wallLength =
-		GenerateQuickPlayParam(config->WallLength, 1, 3, 6, 12);
-	gQuickPlayMission.roomCount =
-		GenerateQuickPlayParam(config->RoomCount, 0, 2, 5, 12);
-	gQuickPlayMission.squareCount =
-		GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
-	gQuickPlayMission.exitLeft = 0;
-	gQuickPlayMission.exitTop = 0;
-	gQuickPlayMission.exitRight = 0;
-	gQuickPlayMission.exitBottom = 0;
-	gQuickPlayMission.objectiveCount = 0;
-	gQuickPlayMission.baddieCount =
-		GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
-
-	gQuickPlayMission.specialCount = 0;
-	gQuickPlayMission.itemCount =
-		GenerateQuickPlayParam(config->SquareCount, 0, 2, 5, 10);
-	for (i = 0; i < gQuickPlayMission.itemCount; i++)
+	Mission *m;
+	int c;
+	CMALLOC(m, sizeof *m);
+	MissionInit(m);
+	m->WallStyle = rand() % WALL_STYLE_COUNT;
+	m->FloorStyle = rand() % FLOOR_STYLE_COUNT;
+	m->RoomStyle = rand() % FLOOR_STYLE_COUNT;
+	m->ExitStyle = rand() % EXIT_COUNT;
+	m->KeyStyle = rand() % KEYSTYLE_COUNT;
+	m->DoorStyle = rand() % DOORSTYLE_COUNT;
+	m->Size = GenerateQuickPlayMapSize(config->MapSize);
+	m->Type = MAPTYPE_CLASSIC;	// TODO: generate different map types
+	switch (m->Type)
 	{
-		gQuickPlayMission.items[i] = i;
-		gQuickPlayMission.itemDensity[i] =
-			GenerateQuickPlayParam(config->SquareCount, 0, 5, 10, 20);
+	case MAPTYPE_CLASSIC:
+		m->u.Classic.Walls =
+			GenerateQuickPlayParam(config->WallCount, 0, 5, 15, 30);
+		m->u.Classic.WallLength =
+			GenerateQuickPlayParam(config->WallLength, 1, 3, 6, 12);
+		m->u.Classic.Rooms =
+			GenerateQuickPlayParam(config->RoomCount, 0, 2, 5, 12);
+		m->u.Classic.Squares =
+			GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
+		break;
+	default:
+		assert(0 && "unknown map type");
+		break;
 	}
-	gQuickPlayMission.baddieDensity =
-		(40 + (rand() % 20)) / gQuickPlayMission.baddieCount;
-	gQuickPlayMission.weaponSelection = 0;
-	strcpy(gQuickPlayMission.song, "");
-	strcpy(gQuickPlayMission.map, "");
-	gQuickPlayMission.wallRange = rand() % (COLORRANGE_COUNT - 1 + 1);
-	gQuickPlayMission.floorRange = rand() % (COLORRANGE_COUNT - 1 + 1);
-	gQuickPlayMission.roomRange = rand() % (COLORRANGE_COUNT - 1 + 1);
-	gQuickPlayMission.altRange = rand() % (COLORRANGE_COUNT - 1 + 1);
-
-	strcpy(setting->title, "Quick play");
-	strcpy(setting->author, "");
-	strcpy(setting->description, "");
-	setting->missionCount = 1;
-	CMALLOC(setting->missions, sizeof *setting->missions);
-	memcpy(
-		setting->missions,
-		&gQuickPlayMission,
-		sizeof *setting->missions * setting->missionCount);
 	CharacterStoreInit(&setting->characters);
-	SetupQuickPlayEnemies(&gQuickPlayMission, &setting->characters, config);
+	c = GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
+	SetupQuickPlayEnemies(m, c, &setting->characters, config);
+
+	c = GenerateQuickPlayParam(config->ItemCount, 0, 2, 5, 10);
+	for (i = 0; i < c; i++)
+	{
+		int n = rand() % (ITEMS_MAX - 1 + 1);
+		CArrayPushBack(&m->Items, &n);
+		n = GenerateQuickPlayParam(config->ItemCount, 0, 5, 10, 20);
+		CArrayPushBack(&m->ItemDensities, &n);
+	}
+	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
+	for (i = 0; i < WEAPON_MAX; i++)
+	{
+		CArrayPushBack(&m->Weapons, &i);
+	}
+	m->WallColor = rand() % (COLORRANGE_COUNT - 1 + 1);
+	m->FloorColor = rand() % (COLORRANGE_COUNT - 1 + 1);
+	m->RoomColor = rand() % (COLORRANGE_COUNT - 1 + 1);
+	m->AltColor = rand() % (COLORRANGE_COUNT - 1 + 1);
+
+	CFREE(setting->Title);
+	CSTRDUP(setting->Title, "Quick play");
+	CFREE(setting->Author);
+	CSTRDUP(setting->Author, "");
+	CFREE(setting->Description);
+	CSTRDUP(setting->Description, "");
+	CArrayPushBack(&setting->Missions, m);
 }
 
-static void SetupObjective(int o, struct Mission *mission)
-{
-	gMission.objectives[o].done = 0;
-	gMission.objectives[o].required = mission->objectives[o].required;
-	gMission.objectives[o].count = mission->objectives[o].count;
-	gMission.objectives[o].color = objectiveColors[o];
-	gMission.objectives[o].blowupObject =
-	    &mapItems[mission->objectives[o].index % ITEMS_COUNT];
-	gMission.objectives[o].pickupItem =
-	    pickupItems[mission->objectives[o].index % PICKUPS_COUNT];
-}
-
-static void SetupObjectives(struct Mission *mission)
+static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 {
 	int i;
-
-	for (i = 0; i < mission->objectiveCount; i++)
-		SetupObjective(i, mission);
+	for (i = 0; i < (int)mission->Objectives.size; i++)
+	{
+		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
+		struct Objective o;
+		memset(&o, 0, sizeof o);
+		assert(i < OBJECTIVE_MAX_OLD);
+		o.color = objectiveColors[i];
+		o.blowupObject = &mapItems[mobj->Index % ITEMS_COUNT];
+		o.pickupItem = pickupItems[mobj->Index % PICKUPS_COUNT];
+		CArrayPushBack(&mo->Objectives, &o);
+	}
 }
 
-static void CleanupPlayerInventory(struct PlayerData *data, int weapons)
+static void CleanupPlayerInventory(struct PlayerData *data, CArray *weapons)
 {
-	int i, j;
-
+	int i;
 	for (i = data->weaponCount - 1; i >= 0; i--)
-		if ((weapons & (1 << data->weapons[i])) == 0) {
+	{
+		int j;
+		int hasWeapon = 0;
+		for (j = 0; j < (int)weapons->size; j++)
+		{
+			if (data->weapons[i] == *(int *)CArrayGet(weapons, j))
+			{
+				hasWeapon = 1;
+				break;
+			}
+		}
+		if (!hasWeapon)
+		{
 			for (j = i + 1; j < data->weaponCount; j++)
+			{
 				data->weapons[j - 1] = data->weapons[j];
+			}
 			data->weaponCount--;
 		}
+	}
 }
 
-static void SetupWeapons(int weapons)
+static void SetupWeapons(struct MissionOptions *mo, CArray *weapons)
 {
 	int i;
-
-	if (!weapons)
-		weapons = -1;
-
-	gMission.weaponCount = 0;
-	for (i = 0; i < GUN_COUNT && gMission.weaponCount < WEAPON_MAX;
-	     i++)
-		if ((weapons & (1 << i)) != 0) {
-			gMission.availableWeapons[gMission.weaponCount] =
-			    i;
-			gMission.weaponCount++;
-		}
+	for (i = 0; i < (int)weapons->size; i++)
+	{
+		CArrayPushBack(&mo->AvailableWeapons, CArrayGet(weapons, i));
+	}
 	// Now remove unavailable weapons from players inventories
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -849,51 +844,55 @@ void SetupMission(int idx, int buildTables, CampaignOptions *campaign)
 {
 	int i;
 	int x, y;
-	struct Mission *m;
+	Mission *m;
 
-	memset(&gMission, 0, sizeof(gMission));
+	MissionOptionsInit(&gMission);
 	gMission.index = idx;
-	m = &campaign->Setting.missions[abs(idx) % campaign->Setting.missionCount];
+	m = CArrayGet(&campaign->Setting.Missions, idx);
 	gMission.missionData = m;
 	gMission.doorPics =
-	    doorStyles[abs(m->doorStyle) % DOORSTYLE_COUNT];
-	gMission.keyPics = keyStyles[abs(m->keyStyle) % KEYSTYLE_COUNT];
-	gMission.objectCount = m->itemCount;
-
-	for (i = 0; i < m->itemCount; i++)
-		gMission.mapObjects[i] =
-		    &mapItems[abs(m->items[i]) % ITEMS_COUNT];
+	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
+	gMission.keyPics = keyStyles[abs(m->KeyStyle) % KEYSTYLE_COUNT];
+	for (i = 0; i < (int)m->Items.size; i++)
+	{
+		CArrayPushBack(
+			&gMission.MapObjects,
+			&mapItems[*(int32_t *)CArrayGet(&m->Items, i)]);
+	}
 
 	srand(10 * idx + campaign->seed);
 
-	gMission.exitPic = exitPics[2 * (abs(m->exitStyle) % EXIT_COUNT)];
+	gMission.exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
 	gMission.exitShadow =
-	    exitPics[2 * (abs(m->exitStyle) % EXIT_COUNT) + 1];
-	if (m->exitLeft > 0) {
-		gMission.exitLeft = m->exitLeft * TILE_WIDTH;
-		gMission.exitRight = m->exitRight * TILE_WIDTH;
-		gMission.exitTop = m->exitTop * TILE_HEIGHT;
-		gMission.exitBottom = m->exitBottom * TILE_HEIGHT;
-	} else {
-		if (m->mapWidth)
-			x = (rand() % (abs(m->mapWidth) - EXIT_WIDTH)) +
-			    (XMAX - abs(m->mapWidth)) / 2;
-		else
-			x = rand() % (XMAX - EXIT_WIDTH);
-		if (m->mapHeight)
-			y = (rand() % (abs(m->mapHeight) - EXIT_HEIGHT)) +
-			    (YMAX - abs(m->mapHeight)) / 2;
-		else
-			y = rand() % (YMAX - EXIT_HEIGHT);
-		gMission.exitLeft = x * TILE_WIDTH;
-		gMission.exitRight = (x + EXIT_WIDTH + 1) * TILE_WIDTH;
-		gMission.exitTop = y * TILE_HEIGHT;
-		gMission.exitBottom = (y + EXIT_HEIGHT + 1) * TILE_HEIGHT;
+	    exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
+
+	if (m->Size.x)
+	{
+		x = (rand() % (abs(m->Size.x) - EXIT_WIDTH)) +
+			(XMAX - abs(m->Size.x)) / 2;
 	}
-	SetupObjectives(m);
+	else
+	{
+		x = rand() % (XMAX - EXIT_WIDTH);
+	}
+	if (m->Size.y)
+	{
+		y = (rand() % (abs(m->Size.y) - EXIT_HEIGHT)) +
+			(YMAX - abs(m->Size.y)) / 2;
+	}
+	else
+	{
+		y = rand() % (YMAX - EXIT_HEIGHT);
+	}
+	gMission.exitLeft = x;
+	gMission.exitRight = x + EXIT_WIDTH + 1;
+	gMission.exitTop = y;
+	gMission.exitBottom = y + EXIT_HEIGHT + 1;
+
+	SetupObjectives(&gMission, m);
 	SetupBadguysForMission(m);
-	SetupWeapons(m->weaponSelection);
-	SetPaletteRanges(m->wallRange, m->floorRange, m->roomRange, m->altRange);
+	SetupWeapons(&gMission, &m->Weapons);
+	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
 	if (buildTables)
 	{
 		BuildTranslationTables(gPicManager.palette);
@@ -924,16 +923,20 @@ int CheckMissionObjective(
 	struct MissionOptions *options, int flags, ObjectiveType type)
 {
 	int idx;
+	MissionObjective *mobj;
+	struct Objective *o;
 	if (!(flags & TILEITEM_OBJECTIVE))
 	{
 		return 0;
 	}
 	idx = ObjectiveFromTileItem(flags);
-	if (options->missionData->objectives[idx].type != (int)type)
+	mobj = CArrayGet(&options->missionData->Objectives, idx);
+	if (mobj->Type != type)
 	{
 		return 0;
 	}
-	gMission.objectives[idx].done++;
+	o = CArrayGet(&options->Objectives, idx);
+	o->done++;
 	MissionSetMessageIfComplete(options);
 	return 1;
 }
@@ -953,9 +956,12 @@ int CanCompleteMission(struct MissionOptions *options)
 	}
 
 	// Check all objective counts are enough
-	for (i = 0; i < options->missionData->objectiveCount; i++)
+	for (i = 0; i < (int)options->Objectives.size; i++)
 	{
-		if (options->objectives[i].done < options->objectives[i].required)
+		struct Objective *o = CArrayGet(&options->Objectives, i);
+		MissionObjective *mobj =
+			CArrayGet(&options->missionData->Objectives, i);
+		if (o->done < mobj->Required)
 		{
 			return 0;
 		}
@@ -992,11 +998,13 @@ int IsMissionComplete(struct MissionOptions *options)
 
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	for (i = 0; i < (int)options->missionData->Objectives.size; i++)
 	{
-		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		MissionObjective *mobj =
+			CArrayGet(&options->missionData->Objectives, i);
+		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
-			rescuesRequired = gMission.objectives[i].required;
+			rescuesRequired = mobj->Required;
 			break;
 		}
 	}

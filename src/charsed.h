@@ -27,7 +27,7 @@
 extern int fileChanged;
 
 
-void EditCharacters(CampaignSettingNew *setting);
+void EditCharacters(CampaignSetting *setting);
 void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s);
 
 #endif

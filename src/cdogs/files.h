@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,10 +61,10 @@ Sizes in bytes unless otherwise stated
 
 Priviledged types (types that are used directly in the file format)
 Changing these types will break the game!
-- CampaignSetting
-- struct Mission
+- CampaignSettingOld
+- struct MissionOld
 - TBadGuy
-- struct MissionObjective
+- struct MissionObjectiveOld
 
 Campaign:
 - CAMPAIGN_MAGIC (4)
@@ -73,7 +73,7 @@ Campaign:
 - Author (40, char *)
 - Description (200, char *)
 - MissionCount (4)
-- <Missions> (MissionCount * sizeof(struct Mission))
+- <Missions> (MissionCount * sizeof(struct MissionOld))
 - CharacterCount (4)
 - <Characters> (CharacterCount * sizeof(TBadGuy))
 */
@@ -114,12 +114,12 @@ typedef struct
 	char author[40];
 	char description[200];
 	int missionCount;
-	struct Mission *missions;
+	struct MissionOld *missions;
 	int characterCount;
 	TBadGuy *characters;
-} CampaignSetting;
+} CampaignSettingOld;
 
-void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src);
+void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src);
 
 #define CAMPAIGN_OK                0
 #define CAMPAIGN_BADFILE          -1
@@ -127,11 +127,7 @@ void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src);
 #define CAMPAIGN_BADPATH          -3
 
 int ScanCampaign(const char *filename, char *title, int *missions);
-int LoadCampaign(const char *filename, CampaignSettingNew *setting);
-int SaveCampaign(const char *filename, CampaignSettingNew *setting);
-void SaveCampaignAsC(
-	const char *filename, const char *name,
-	CampaignSettingNew *setting);
+int LoadCampaignOld(const char *filename, CampaignSetting *setting);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);

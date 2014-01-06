@@ -52,20 +52,20 @@ static char *CStr(UIObject *o, char *s)
 static char *CampaignGetTitle(UIObject *o, CampaignOptions *c)
 {
 	UNUSED(o);
-	return c->Setting.title;
+	return c->Setting.Title;
 }
 static char *CampaignGetAuthor(UIObject *o, CampaignOptions *c)
 {
 	UNUSED(o);
-	return c->Setting.author;
+	return c->Setting.Author;
 }
 static char *CampaignGetDescription(UIObject *o, CampaignOptions *c)
 {
 	UNUSED(o);
-	return c->Setting.description;
+	return c->Setting.Description;
 }
 static void CheckMission(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	UNUSED(g);
 	if (!*missionPtr)
@@ -77,7 +77,7 @@ static void CheckMission(
 	}
 	o->IsVisible = 1;
 }
-static char *MissionGetTitle(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetTitle(UIObject *o, Mission **missionPtr)
 {
 	UNUSED(o);
 	if (!*missionPtr)
@@ -86,9 +86,9 @@ static char *MissionGetTitle(UIObject *o, struct Mission **missionPtr)
 		return NULL;
 	}
 	o->IsVisible = 1;
-	return (*missionPtr)->title;
+	return (*missionPtr)->Title;
 }
-static char *MissionGetDescription(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetDescription(UIObject *o, Mission **missionPtr)
 {
 	UNUSED(o);
 	if (!*missionPtr)
@@ -97,9 +97,9 @@ static char *MissionGetDescription(UIObject *o, struct Mission **missionPtr)
 		return NULL;
 	}
 	o->IsVisible = 1;
-	return (*missionPtr)->description;
+	return (*missionPtr)->Description;
 }
-static char *MissionGetSong(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetSong(UIObject *o, Mission **missionPtr)
 {
 	UNUSED(o);
 	if (!*missionPtr)
@@ -108,71 +108,71 @@ static char *MissionGetSong(UIObject *o, struct Mission **missionPtr)
 		return NULL;
 	}
 	o->IsVisible = 1;
-	return (*missionPtr)->song;
+	return (*missionPtr)->Song;
 }
-static char *MissionGetWidthStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetWidthStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Width: %d", (*missionPtr)->mapWidth);
+	sprintf(s, "Width: %d", (*missionPtr)->Size.x);
 	return s;
 }
-static char *MissionGetHeightStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetHeightStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Height: %d", (*missionPtr)->mapHeight);
+	sprintf(s, "Height: %d", (*missionPtr)->Size.y);
 	return s;
 }
-static char *MissionGetWallCountStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetWallCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Walls: %d", (*missionPtr)->wallCount);
+	sprintf(s, "Walls: %d", (*missionPtr)->u.Classic.Walls);
 	return s;
 }
-static char *MissionGetWallLengthStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetWallLengthStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Len: %d", (*missionPtr)->wallLength);
+	sprintf(s, "Len: %d", (*missionPtr)->u.Classic.WallLength);
 	return s;
 }
-static char *MissionGetRoomCountStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetRoomCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Rooms: %d", (*missionPtr)->roomCount);
+	sprintf(s, "Rooms: %d", (*missionPtr)->u.Classic.Rooms);
 	return s;
 }
-static char *MissionGetSquareCountStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Sqr: %d", (*missionPtr)->squareCount);
+	sprintf(s, "Sqr: %d", (*missionPtr)->u.Classic.Squares);
 	return s;
 }
-static char *MissionGetDensityStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetDensityStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Dens: %d", (*missionPtr)->baddieDensity);
+	sprintf(s, "Dens: %d", (*missionPtr)->EnemyDensity);
 	return s;
 }
 static void MissionDrawWallStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = WALL_STYLE_COUNT;
 	if (!*missionPtr) return; 
-	index = (*missionPtr)->wallStyle;
+	index = (*missionPtr)->WallStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Wall",
@@ -182,7 +182,7 @@ static void MissionDrawWallStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = FLOOR_STYLE_COUNT;
@@ -192,7 +192,7 @@ static void MissionDrawFloorStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = (*missionPtr)->floorStyle;
+	index = (*missionPtr)->FloorStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Floor",
@@ -202,7 +202,7 @@ static void MissionDrawFloorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = ROOMFLOOR_COUNT;
@@ -212,7 +212,7 @@ static void MissionDrawRoomStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = (*missionPtr)->roomStyle;
+	index = (*missionPtr)->RoomStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Rooms",
@@ -222,7 +222,7 @@ static void MissionDrawRoomStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = GetEditorInfo().doorCount;
@@ -232,7 +232,7 @@ static void MissionDrawDoorStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = (*missionPtr)->doorStyle;
+	index = (*missionPtr)->DoorStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Doors",
@@ -242,7 +242,7 @@ static void MissionDrawDoorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = GetEditorInfo().keyCount;
@@ -252,7 +252,7 @@ static void MissionDrawKeyStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = (*missionPtr)->keyStyle;
+	index = (*missionPtr)->KeyStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Keys",
@@ -262,7 +262,7 @@ static void MissionDrawKeyStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
-	UIObject *o, GraphicsDevice *g, struct Mission **missionPtr)
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
 	int index;
 	int count = GetEditorInfo().exitCount;
@@ -272,7 +272,7 @@ static void MissionDrawExitStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = (*missionPtr)->exitStyle;
+	index = (*missionPtr)->ExitStyle;
 	DrawStyleArea(
 		o->Pos,
 		"Exit",
@@ -281,58 +281,58 @@ static void MissionDrawExitStyle(
 		index, count,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetWallColorStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetWallColorStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Walls: %s", RangeName((*missionPtr)->wallRange));
+	sprintf(s, "Walls: %s", RangeName((*missionPtr)->WallColor));
 	return s;
 }
-static char *MissionGetFloorColorStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetFloorColorStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Floor: %s", RangeName((*missionPtr)->floorRange));
+	sprintf(s, "Floor: %s", RangeName((*missionPtr)->FloorColor));
 	return s;
 }
-static char *MissionGeRoomColorStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGeRoomColorStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Rooms: %s", RangeName((*missionPtr)->roomRange));
+	sprintf(s, "Rooms: %s", RangeName((*missionPtr)->RoomColor));
 	return s;
 }
-static char *MissionGeExtraColorStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGeExtraColorStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Extra: %s", RangeName((*missionPtr)->altRange));
+	sprintf(s, "Extra: %s", RangeName((*missionPtr)->AltColor));
 	return s;
 }
-static char *MissionGetCharacterCountStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetCharacterCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Characters (%d/%d)", (*missionPtr)->baddieCount, BADDIE_MAX);
+	sprintf(s, "Characters (%d/%d)", (*missionPtr)->Enemies.size, BADDIE_MAX);
 	return s;
 }
-static char *MissionGetSpecialCountStr(UIObject *o, struct Mission **missionPtr)
+static char *MissionGetSpecialCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(
 		s, "Mission objective characters (%d/%d)",
-		(*missionPtr)->specialCount, SPECIAL_MAX);
+		(*missionPtr)->SpecialChars.size, SPECIAL_MAX);
 	return s;
 }
 static char *MissionGetObjectiveDescription(
-	UIObject *o, struct Mission **missionPtr)
+	UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	int i;
@@ -342,7 +342,7 @@ static char *MissionGetObjectiveDescription(
 		return NULL;
 	}
 	i = o->Id - YC_OBJECTIVES;
-	if ((*missionPtr)->objectiveCount <= i)
+	if ((int)(*missionPtr)->Objectives.size <= i)
 	{
 		if (i == 0)
 		{
@@ -356,14 +356,16 @@ static char *MissionGetObjectiveDescription(
 	}
 	o->IsVisible = 1;
 	o->u.Textbox.IsEditable = 1;
-	return (*missionPtr)->objectives[i].description;
+	return ((MissionObjective *)CArrayGet(&(*missionPtr)->Objectives, i))->Description;
 }
 static char *GetWeaponCountStr(UIObject *o, void *v)
 {
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
-	sprintf(s, "Available weapons (%d/%d)", gMission.weaponCount, WEAPON_MAX);
+	sprintf(
+		s, "Available weapons (%d/%d)",
+		gMission.AvailableWeapons.size, WEAPON_MAX);
 	return s;
 }
 static char *GetObjectCountStr(UIObject *o, void *v)
@@ -371,12 +373,12 @@ static char *GetObjectCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
-	sprintf(s, "Map items (%d/%d)", gMission.objectCount, ITEMS_MAX);
+	sprintf(s, "Map items (%d/%d)", gMission.MapObjects.size, ITEMS_MAX);
 	return s;
 }
 typedef struct
 {
-	struct Mission **missionPtr;
+	Mission **missionPtr;
 	int index;
 } MissionIndexData;
 static void MissionDrawEnemy(
@@ -384,7 +386,7 @@ static void MissionDrawEnemy(
 {
 	UNUSED(g);
 	if (!*data->missionPtr) return;
-	if (data->index >= (*data->missionPtr)->baddieCount) return;
+	if (data->index >= (int)(*data->missionPtr)->Enemies.size) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
 		gCampaign.Setting.characters.baddies[data->index],
@@ -395,7 +397,7 @@ static void MissionDrawSpecialChar(
 {
 	UNUSED(g);
 	if (!*data->missionPtr) return;
-	if (data->index >= (*data->missionPtr)->specialCount) return;
+	if (data->index >= (int)(*data->missionPtr)->SpecialChars.size) return;
 	DisplayCharacter(
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
 		gCampaign.Setting.characters.specials[data->index],
@@ -408,46 +410,42 @@ static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
 	if (!*data->missionPtr) return;
-	if (data->index >= (*data->missionPtr)->itemCount) return;
+	if (data->index >= (int)(*data->missionPtr)->Items.size) return;
 	DisplayMapItem(
 		g,
 		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
-		gMission.mapObjects[data->index],
-		(*data->missionPtr)->itemDensity[data->index],
+		CArrayGet(&gMission.MapObjects, data->index),
+		*(int *)CArrayGet(&(*data->missionPtr)->ItemDensities, data->index),
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawWeaponStatus(
 	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
+	int hasWeapon = 0;
+	int i;
 	if (!*data->missionPtr) return;
+	for (i = 0; i < (int)(*data->missionPtr)->Weapons.size; i++)
+	{
+		if (*(int *)CArrayGet(&(*data->missionPtr)->Weapons, i) == data->index)
+		{
+			hasWeapon = 1;
+			break;
+		}
+	}
 	DisplayFlag(
 		g,
 		o->Pos,
 		gGunDescriptions[data->index].name,
-		(*data->missionPtr)->weaponSelection & (1 << data->index),
+		hasWeapon,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
+static const char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
 {
 	UNUSED(o);
 	if (!*data->missionPtr) return NULL;
-	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
-	switch ((*data->missionPtr)->objectives[data->index].type)
-	{
-	case OBJECTIVE_KILL:
-		return "Kill";
-	case OBJECTIVE_RESCUE:
-		return "Rescue";
-	case OBJECTIVE_COLLECT:
-		return "Collect";
-	case OBJECTIVE_DESTROY:
-		return "Destroy";
-	case OBJECTIVE_INVESTIGATE:
-		return "Explore";
-	default:
-		assert(0 && "Unknown objective type");
-		return "???";
-	}
+	if ((int)(*data->missionPtr)->Objectives.size <= data->index) return NULL;
+	return ObjectiveTypeStr(((MissionObjective *)CArrayGet(
+		&(*data->missionPtr)->Objectives, data->index))->Type);
 }
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t);
@@ -458,11 +456,14 @@ static void MissionDrawObjective(
 	Character *c;
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
+	struct Objective *obj;
 	UNUSED(g);
 	if (!*data->missionPtr) return;
-	if ((*data->missionPtr)->objectiveCount <= data->index) return;
+	if ((int)(*data->missionPtr)->Objectives.size <= data->index) return;
 	// TODO: only one kill and rescue objective allowed
-	switch ((*data->missionPtr)->objectives[data->index].type)
+	obj = CArrayGet(&gMission.Objectives, data->index);
+	switch (((MissionObjective *)CArrayGet(
+		&(*data->missionPtr)->Objectives, data->index))->Type)
 	{
 	case OBJECTIVE_KILL:
 		if (store->specialCount == 0)
@@ -487,10 +488,10 @@ static void MissionDrawObjective(
 		GetCharacterHeadPic(c, &pic, &table);
 		break;
 	case OBJECTIVE_COLLECT:
-		pic = cGeneralPics[gMission.objectives[data->index].pickupItem];
+		pic = cGeneralPics[obj->pickupItem];
 		break;
 	case OBJECTIVE_DESTROY:
-		pic = cGeneralPics[gMission.objectives[data->index].blowupObject->pic];
+		pic = cGeneralPics[obj->blowupObject->pic];
 		break;
 	case OBJECTIVE_INVESTIGATE:
 		pic.dx = pic.dy = 0;
@@ -508,13 +509,18 @@ static void MissionDrawObjective(
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 }
+static MissionObjective *GetMissionObjective(Mission *m, int index)
+{
+	return CArrayGet(&m->Objectives, index);
+}
 static char *MissionGetObjectiveRequired(UIObject *o, MissionIndexData *data)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*data->missionPtr) return NULL;
-	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
-	sprintf(s, "%d", (*data->missionPtr)->objectives[data->index].required);
+	if ((int)(*data->missionPtr)->Objectives.size <= data->index) return NULL;
+	sprintf(s, "%d",
+		GetMissionObjective(*data->missionPtr, data->index)->Required);
 	return s;
 }
 static char *MissionGetObjectiveTotal(UIObject *o, MissionIndexData *data)
@@ -522,9 +528,9 @@ static char *MissionGetObjectiveTotal(UIObject *o, MissionIndexData *data)
 	static char s[128];
 	UNUSED(o);
 	if (!*data->missionPtr) return NULL;
-	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
-	sprintf(
-		s, "out of %d", (*data->missionPtr)->objectives[data->index].count);
+	if ((int)(*data->missionPtr)->Objectives.size <= data->index) return NULL;
+	sprintf(s, "out of %d",
+		GetMissionObjective(*data->missionPtr, data->index)->Count);
 	return s;
 }
 static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
@@ -533,8 +539,8 @@ static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 	static char s[128];
 	UNUSED(o);
 	if (!*data->missionPtr) return NULL;
-	if ((*data->missionPtr)->objectiveCount <= data->index) return NULL;
-	flags = (*data->missionPtr)->objectives[data->index].flags;
+	if ((int)(*data->missionPtr)->Objectives.size <= data->index) return NULL;
+	flags = GetMissionObjective(*data->missionPtr, data->index)->Flags;
 	if (!flags)
 	{
 		return "(normal)";
@@ -614,140 +620,155 @@ void DisplayFlag(
 }
 
 
-static void MissionChangeWidth(struct Mission **missionPtr, int d)
+static void MissionChangeWidth(Mission **missionPtr, int d)
 {
-	(*missionPtr)->mapWidth = CLAMP((*missionPtr)->mapWidth + d, 16, XMAX);
+	(*missionPtr)->Size.x = CLAMP((*missionPtr)->Size.x + d, 16, XMAX);
 }
-static void MissionChangeHeight(struct Mission **missionPtr, int d)
+static void MissionChangeHeight(Mission **missionPtr, int d)
 {
-	(*missionPtr)->mapHeight = CLAMP((*missionPtr)->mapHeight + d, 16, XMAX);
+	(*missionPtr)->Size.y = CLAMP((*missionPtr)->Size.y + d, 16, XMAX);
 }
-static void MissionChangeWallCount(struct Mission **missionPtr, int d)
+static void MissionChangeWallCount(Mission **missionPtr, int d)
 {
-	(*missionPtr)->wallCount = CLAMP((*missionPtr)->wallCount + d, 0, 200);
+	(*missionPtr)->u.Classic.Walls =
+		CLAMP((*missionPtr)->u.Classic.Walls + d, 0, 200);
 }
-static void MissionChangeWallLength(struct Mission **missionPtr, int d)
+static void MissionChangeWallLength(Mission **missionPtr, int d)
 {
-	(*missionPtr)->wallLength = CLAMP((*missionPtr)->wallLength + d, 1, 100);
+	(*missionPtr)->u.Classic.WallLength =
+		CLAMP((*missionPtr)->u.Classic.WallLength + d, 1, 100);
 }
-static void MissionChangeRoomCount(struct Mission **missionPtr, int d)
+static void MissionChangeRoomCount(Mission **missionPtr, int d)
 {
-	(*missionPtr)->roomCount = CLAMP((*missionPtr)->roomCount + d, 0, 100);
+	(*missionPtr)->u.Classic.Rooms =
+		CLAMP((*missionPtr)->u.Classic.Rooms + d, 0, 100);
 }
-static void MissionChangeSquareCount(struct Mission **missionPtr, int d)
+static void MissionChangeSquareCount(Mission **missionPtr, int d)
 {
-	(*missionPtr)->squareCount = CLAMP((*missionPtr)->squareCount + d, 0, 100);
+	(*missionPtr)->u.Classic.Squares =
+		CLAMP((*missionPtr)->u.Classic.Squares + d, 0, 100);
 }
-static void MissionChangeDensity(struct Mission **missionPtr, int d)
+static void MissionChangeDensity(Mission **missionPtr, int d)
 {
-	(*missionPtr)->baddieDensity = CLAMP((*missionPtr)->baddieDensity + d, 0, 100);
+	(*missionPtr)->EnemyDensity = CLAMP((*missionPtr)->EnemyDensity + d, 0, 100);
 }
-static void MissionChangeWallStyle(struct Mission **missionPtr, int d)
+static void MissionChangeWallStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->wallStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->wallStyle + d, 0, WALL_STYLE_COUNT - 1);
+	(*missionPtr)->WallStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->WallStyle + d, 0, WALL_STYLE_COUNT - 1);
 }
-static void MissionChangeFloorStyle(struct Mission **missionPtr, int d)
+static void MissionChangeFloorStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->floorStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->floorStyle + d, 0, FLOOR_STYLE_COUNT - 1);
+	(*missionPtr)->FloorStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->FloorStyle + d, 0, FLOOR_STYLE_COUNT - 1);
 }
-static void MissionChangeRoomStyle(struct Mission **missionPtr, int d)
+static void MissionChangeRoomStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->roomStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->roomStyle + d, 0, ROOMFLOOR_COUNT - 1);
+	(*missionPtr)->RoomStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->RoomStyle + d, 0, ROOMFLOOR_COUNT - 1);
 }
-static void MissionChangeDoorStyle(struct Mission **missionPtr, int d)
+static void MissionChangeDoorStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->doorStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->doorStyle + d, 0, GetEditorInfo().doorCount - 1);
+	(*missionPtr)->DoorStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->DoorStyle + d, 0, GetEditorInfo().doorCount - 1);
 }
-static void MissionChangeKeyStyle(struct Mission **missionPtr, int d)
+static void MissionChangeKeyStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->keyStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->keyStyle + d, 0, GetEditorInfo().keyCount - 1);
+	(*missionPtr)->KeyStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->KeyStyle + d, 0, GetEditorInfo().keyCount - 1);
 }
-static void MissionChangeExitStyle(struct Mission **missionPtr, int d)
+static void MissionChangeExitStyle(Mission **missionPtr, int d)
 {
-	(*missionPtr)->exitStyle = CLAMP_OPPOSITE(
-		(*missionPtr)->exitStyle + d, 0, GetEditorInfo().exitCount - 1);
+	(*missionPtr)->ExitStyle = CLAMP_OPPOSITE(
+		(*missionPtr)->ExitStyle + d, 0, GetEditorInfo().exitCount - 1);
 }
-static void MissionChangeWallColor(struct Mission **missionPtr, int d)
+static void MissionChangeWallColor(Mission **missionPtr, int d)
 {
-	(*missionPtr)->wallRange = CLAMP_OPPOSITE(
-		(*missionPtr)->wallRange + d, 0, GetEditorInfo().rangeCount - 1);
+	(*missionPtr)->WallColor = CLAMP_OPPOSITE(
+		(*missionPtr)->WallColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeFloorColor(struct Mission **missionPtr, int d)
+static void MissionChangeFloorColor(Mission **missionPtr, int d)
 {
-	(*missionPtr)->floorRange = CLAMP_OPPOSITE(
-		(*missionPtr)->floorRange + d, 0, GetEditorInfo().rangeCount - 1);
+	(*missionPtr)->FloorColor = CLAMP_OPPOSITE(
+		(*missionPtr)->FloorColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeRoomColor(struct Mission **missionPtr, int d)
+static void MissionChangeRoomColor(Mission **missionPtr, int d)
 {
-	(*missionPtr)->roomRange = CLAMP_OPPOSITE(
-		(*missionPtr)->roomRange + d, 0, GetEditorInfo().rangeCount - 1);
+	(*missionPtr)->RoomColor = CLAMP_OPPOSITE(
+		(*missionPtr)->RoomColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeExtraColor(struct Mission **missionPtr, int d)
+static void MissionChangeExtraColor(Mission **missionPtr, int d)
 {
-	(*missionPtr)->altRange = CLAMP_OPPOSITE(
-		(*missionPtr)->altRange + d, 0, GetEditorInfo().rangeCount - 1);
+	(*missionPtr)->AltColor = CLAMP_OPPOSITE(
+		(*missionPtr)->AltColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
 static void MissionChangeEnemy(MissionIndexData *data, int d)
 {
-	(*data->missionPtr)->baddies[data->index] = CLAMP_OPPOSITE(
-		(*data->missionPtr)->baddies[data->index] + d,
-		0,
-		gCampaign.Setting.characters.otherCount - 1);
+	int enemy = *(int *)CArrayGet(&(*data->missionPtr)->Enemies, data->index);
+	enemy = CLAMP_OPPOSITE(
+		enemy + d, 0, (int)gCampaign.Setting.characters.OtherChars.size - 1);
+	*(int *)CArrayGet(&(*data->missionPtr)->Enemies, data->index) = enemy;
 	gCampaign.Setting.characters.baddies[data->index] =
-		&gCampaign.Setting.characters.others[(*data->missionPtr)->baddies[data->index]];
+		CArrayGet(&gCampaign.Setting.characters.OtherChars, enemy);
 }
 static void MissionChangeSpecialChar(MissionIndexData *data, int d)
 {
-	(*data->missionPtr)->specials[data->index] = CLAMP_OPPOSITE(
-		(*data->missionPtr)->specials[data->index] + d,
-		0,
-		gCampaign.Setting.characters.otherCount - 1);
+	int c = *(int *)CArrayGet(&(*data->missionPtr)->SpecialChars, data->index);
+	c = CLAMP_OPPOSITE(
+		c + d, 0, (int)gCampaign.Setting.characters.OtherChars.size - 1);
+	*(int *)CArrayGet(&(*data->missionPtr)->SpecialChars, data->index) = c;
 	gCampaign.Setting.characters.specials[data->index] =
-		&gCampaign.Setting.characters.others[(*data->missionPtr)->specials[data->index]];
+		CArrayGet(&gCampaign.Setting.characters.OtherChars, c);
 }
 static void MissionChangeWeapon(MissionIndexData *data, int d)
 {
+	int hasWeapon = 0;
+	int i;
 	UNUSED(d);
-	(*data->missionPtr)->weaponSelection ^= (1 << data->index);
+	for (i = 0; i < (int)(*data->missionPtr)->Weapons.size; i++)
+	{
+		if (*(int *)CArrayGet(&(*data->missionPtr)->Weapons, i) == data->index)
+		{
+			hasWeapon = 1;
+			CArrayDelete(&(*data->missionPtr)->Weapons, i);
+			break;
+		}
+	}
+	if (!hasWeapon)
+	{
+		CArrayPushBack(&(*data->missionPtr)->Weapons, &data->index);
+	}
 }
 static void MissionChangeMapItem(MissionIndexData *data, int d)
 {
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
-		(*data->missionPtr)->itemDensity[data->index] =
-			CLAMP((*data->missionPtr)->itemDensity[data->index] + 5 * d,
-			0,
-			512);
+		int density = *(int *)CArrayGet(
+			&(*data->missionPtr)->ItemDensities, data->index);
+		density = CLAMP(density + 5 * d, 0, 512);
+		*(int *)CArrayGet(&(*data->missionPtr)->ItemDensities, data->index) = density;
 	}
 	else
 	{
-		(*data->missionPtr)->items[data->index] = CLAMP_OPPOSITE(
-			(*data->missionPtr)->items[data->index] + d,
-			0,
-			GetEditorInfo().itemCount - 1);
+		int i = *(int *)CArrayGet(
+			&(*data->missionPtr)->Items, data->index);
+		i = CLAMP_OPPOSITE(i + d, 0, GetEditorInfo().itemCount - 1);
+		*(int *)CArrayGet(&(*data->missionPtr)->Items, data->index) = i;
 	}
 }
 static void MissionChangeObjectiveIndex(MissionIndexData *data, int d);
 static void MissionChangeObjectiveType(MissionIndexData *data, int d)
 {
-	struct MissionObjective *objective =
-		&(*data->missionPtr)->objectives[data->index];
-	objective->type = CLAMP_OPPOSITE(
-		objective->type + d, 0, OBJECTIVE_INVESTIGATE);
+	MissionObjective *mobj = GetMissionObjective(*data->missionPtr, data->index);
+	mobj->Type = CLAMP_OPPOSITE(mobj->Type + d, 0, OBJECTIVE_INVESTIGATE);
 	// Initialise the index of the objective
 	MissionChangeObjectiveIndex(data, 0);
 }
 static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
 {
-	struct MissionObjective *objective =
-		&(*data->missionPtr)->objectives[data->index];
+	MissionObjective *mobj = GetMissionObjective(*data->missionPtr, data->index);
 	int limit;
-	switch (objective->type)
+	switch (mobj->Type)
 	{
 	case OBJECTIVE_COLLECT:
 		limit = GetEditorInfo().pickupCount - 1;
@@ -760,49 +781,45 @@ static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
 		limit = 0;
 		break;
 	case OBJECTIVE_RESCUE:
-		limit = gCampaign.Setting.characters.otherCount - 1;
+		limit = gCampaign.Setting.characters.OtherChars.size - 1;
 		break;
 	default:
 		assert(0 && "Unknown objective type");
 		return;
 	}
-	objective->index = CLAMP_OPPOSITE(objective->index + d, 0, limit);
+	mobj->Index = CLAMP_OPPOSITE(mobj->Index + d, 0, limit);
 }
 static void MissionChangeObjectiveRequired(MissionIndexData *data, int d)
 {
-	struct MissionObjective *objective =
-		&(*data->missionPtr)->objectives[data->index];
-	objective->required = CLAMP_OPPOSITE(
-		objective->required + d, 0, MIN(100, objective->count));
+	MissionObjective *mobj = GetMissionObjective(*data->missionPtr, data->index);
+	mobj->Required = CLAMP_OPPOSITE(
+		mobj->Required + d, 0, MIN(100, mobj->Count));
 }
 static void MissionChangeObjectiveTotal(MissionIndexData *data, int d)
 {
-	struct MissionObjective *objective =
-		&(*data->missionPtr)->objectives[data->index];
-	objective->count = CLAMP_OPPOSITE(
-		objective->count + d, objective->required, 100);
+	MissionObjective *mobj = GetMissionObjective(*data->missionPtr, data->index);
+	mobj->Count = CLAMP_OPPOSITE(mobj->Count + d, mobj->Required, 100);
 }
 static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 {
-	struct MissionObjective *objective =
-		&(*data->missionPtr)->objectives[data->index];
+	MissionObjective *mobj = GetMissionObjective(*data->missionPtr, data->index);
 	// Max is combination of all flags, i.e. largest flag doubled less one
-	objective->flags = CLAMP_OPPOSITE(
-		objective->flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
+	mobj->Flags = CLAMP_OPPOSITE(
+		mobj->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
 }
 
 
 static UIObject *CreateCampaignObjs(void);
-static UIObject *CreateMissionObjs(struct Mission **missionPtr);
-static UIObject *CreateClassicMapObjs(Vec2i pos, struct Mission **missionPtr);
-static UIObject *CreateWeaponObjs(struct Mission **missionPtr);
-static UIObject *CreateMapItemObjs(struct Mission **missionPtr);
-static UIObject *CreateCharacterObjs(struct Mission **missionPtr);
-static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr);
+static UIObject *CreateMissionObjs(Mission **missionPtr);
+static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr);
+static UIObject *CreateWeaponObjs(Mission **missionPtr);
+static UIObject *CreateMapItemObjs(Mission **missionPtr);
+static UIObject *CreateCharacterObjs(Mission **missionPtr);
+static UIObject *CreateSpecialCharacterObjs(Mission **missionPtr);
 static UIObject *CreateObjectiveObjs(
-	Vec2i pos, struct Mission **missionPtr, int index);
+	Vec2i pos, Mission **missionPtr, int index);
 
-UIObject *CreateMainObjs(struct Mission **missionPtr)
+UIObject *CreateMainObjs(Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *cc;
@@ -1053,7 +1070,7 @@ UIObject *CreateMainObjs(struct Mission **missionPtr)
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
 	o->Flags = UI_SELECT_ONLY;
 
-	for (i = 0; i < OBJECTIVE_MAX; i++)
+	for (i = 0; i < OBJECTIVE_MAX_OLD; i++)
 	{
 		pos.y += th;
 		o2 = UIObjectCopy(o);
@@ -1111,7 +1128,7 @@ static UIObject *CreateCampaignObjs(void)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateMissionObjs(struct Mission **missionPtr)
+static UIObject *CreateMissionObjs(Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1130,7 +1147,7 @@ static UIObject *CreateMissionObjs(struct Mission **missionPtr)
 
 	return c;
 }
-static UIObject *CreateClassicMapObjs(Vec2i pos, struct Mission **missionPtr)
+static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
@@ -1180,7 +1197,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, struct Mission **missionPtr)
 
 	return c;
 }
-static UIObject *CreateWeaponObjs(struct Mission **missionPtr)
+static UIObject *CreateWeaponObjs(Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1211,7 +1228,7 @@ static UIObject *CreateWeaponObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateMapItemObjs(struct Mission **missionPtr)
+static UIObject *CreateMapItemObjs(Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
@@ -1241,7 +1258,7 @@ static UIObject *CreateMapItemObjs(struct Mission **missionPtr)
 	return c;
 }
 static UIObject *CreateObjectiveObjs(
-	Vec2i pos, struct Mission **missionPtr, int index)
+	Vec2i pos, Mission **missionPtr, int index)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1328,7 +1345,7 @@ static UIObject *CreateObjectiveObjs(
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateCharacterObjs(struct Mission **missionPtr)
+static UIObject *CreateCharacterObjs(Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;
@@ -1357,7 +1374,7 @@ static UIObject *CreateCharacterObjs(struct Mission **missionPtr)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateSpecialCharacterObjs(struct Mission **missionPtr)
+static UIObject *CreateSpecialCharacterObjs(Mission **missionPtr)
 {
 	UIObject *c;
 	UIObject *o;

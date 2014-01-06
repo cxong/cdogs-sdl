@@ -97,7 +97,7 @@ TBadGuy OGRE_badguys[42] = {
 	{1, 0, 7, 256, 75, 50, 10, 5, 4, 9, 9, 3, 9, 13, 200, 0x800600}
 };
 
-struct Mission OGRE_missions[16] = {
+struct MissionOld OGRE_missions[16] = {
 	{
 	 "Maintain integrity",
 	 "We were taken completely by surprise and Ogre troops have overrun severa"
@@ -697,7 +697,7 @@ struct Mission OGRE_missions[16] = {
 	 14, 13, 5, 0},
 };
 
-CampaignSetting OGRE_campaign = {
+CampaignSettingOld OGRE_campaign = {
 	"Ogre Rampage",
 	"Ronny Wester",
 	"Suddenly, Confederate installations come under sudden, and most unexpected"

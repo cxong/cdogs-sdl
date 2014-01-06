@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 #ifndef __CHARACTER
 #define __CHARACTER
 
+#include "c_array.h"
 #include "weapon.h"
 
 typedef struct
@@ -63,13 +64,11 @@ typedef struct
 } Character;
 
 #define MAX_PLAYERS 4
-#define CHARACTER_OTHER_COUNT 64
 typedef struct
 {
 	int playerCount;
 	Character players[MAX_PLAYERS];	// human players
-	int otherCount;
-	Character others[CHARACTER_OTHER_COUNT];	// both normal baddies and special chars
+	CArray OtherChars;	// of Character, both normal baddies and special chars
 
 	// References only
 	int prisonerCount;

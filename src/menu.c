@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -912,6 +912,7 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 {
 	gCampaign.Entry = *entry;
 	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingInit(&gCampaign.Setting);
 	if (entry->isBuiltin)
 	{
 		if (entry->mode == CAMPAIGN_MODE_NORMAL)
@@ -934,10 +935,10 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 	}
 	else
 	{
-		CampaignSettingNew customSetting;
+		CampaignSetting customSetting;
 		CampaignSettingInit(&customSetting);
 
-		if (LoadCampaign(entry->path, &customSetting) != CAMPAIGN_OK)
+		if (LoadCampaignOld(entry->path, &customSetting))
 		{
 			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);

@@ -25,6 +25,7 @@
 */
 #include "c_array.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "utils.h"
@@ -37,6 +38,16 @@ void CArrayInit(CArray *a, size_t elemSize)
 	a->capacity = 1;
 	CMALLOC(a->data, a->capacity * a->elemSize);
 }
+void CArrayCopy(CArray *dst, CArray *src)
+{
+	int i;
+	assert(dst->size == 0);
+	dst->elemSize = src->elemSize;
+	for (i = 0; i < (int)src->size; i++)
+	{
+		CArrayPushBack(dst, CArrayGet(src, i));
+	}
+}
 
 void CArrayPushBack(CArray *a, void *elem)
 {
@@ -47,6 +58,35 @@ void CArrayPushBack(CArray *a, void *elem)
 	}
 	memcpy(CArrayGet(a, a->size), elem, a->elemSize);
 	a->size++;
+}
+void CArrayInsert(CArray *a, int index, void *elem)
+{
+	int i;
+	if (a->size == a->capacity)
+	{
+		a->capacity *= 2;
+		CREALLOC(a->data, a->capacity * a->elemSize);
+	}
+	for (i = a->size; i > index; i--)
+	{
+		memcpy(CArrayGet(a, i), CArrayGet(a, i - 1), a->elemSize);
+	}
+	memcpy(CArrayGet(a, index), elem, a->elemSize);
+	a->size++;
+}
+void CArrayDelete(CArray *a, int index)
+{
+	int i;
+	if (a->size == 0)
+	{
+		return;
+	}
+	a->size--;
+	memset(CArrayGet(a, index), 0, a->elemSize);
+	for (i = index; i < (int)a->size; i++)
+	{
+		memcpy(CArrayGet(a, i), CArrayGet(a, i + 1), a->elemSize);
+	}
 }
 
 void *CArrayGet(CArray *a, int index)

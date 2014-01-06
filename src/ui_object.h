@@ -64,11 +64,11 @@ typedef struct _UIObject
 	union
 	{
 		// Labels
-		char *(*LabelFunc)(struct _UIObject *, void *);
+		const char *(*LabelFunc)(struct _UIObject *, void *);
 		// Text boxes
 		struct
 		{
-			char *(*TextLinkFunc)(struct _UIObject *, void *);
+			const char *(*TextLinkFunc)(struct _UIObject *, void *);
 			int IsEditable;
 			char *Hint;
 		} Textbox;

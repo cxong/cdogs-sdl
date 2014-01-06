@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -191,6 +191,22 @@ void PlayerDataInitialize(void)
 	}
 }
 
+void MissionOptionsInit(struct MissionOptions *mo)
+{
+	memset(mo, 0, sizeof *mo);
+	CArrayInit(&mo->Objectives, sizeof(struct Objective));
+	CArrayInit(&mo->MapObjects, sizeof(TMapObject));
+	CArrayInit(&mo->AvailableWeapons, sizeof(int));
+}
+void MissionOptionsTerminate(struct MissionOptions *mo)
+{
+	CArrayTerminate(&mo->Objectives);
+	CArrayTerminate(&mo->MapObjects);
+	CArrayTerminate(&mo->AvailableWeapons);
+	memset(mo, 0, sizeof *mo);
+}
+
+
 void LoadSongList(struct SongDef **songList, const char *dirPath);
 
 
@@ -317,10 +333,10 @@ int AreKeysAllowed(campaign_mode_e mode)
 int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
 {
 	return
-		tile->x >= options->exitLeft &&
-		tile->x <= options->exitRight &&
-		tile->y >= options->exitTop &&
-		tile->y <= options->exitBottom;
+		tile->x / TILE_WIDTH >= options->exitLeft &&
+		tile->x / TILE_WIDTH <= options->exitRight &&
+		tile->y / TILE_HEIGHT >= options->exitTop &&
+		tile->y / TILE_HEIGHT <= options->exitBottom;
 }
 
 

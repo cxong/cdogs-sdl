@@ -38,8 +38,11 @@ typedef struct
 } CArray;
 
 void CArrayInit(CArray *a, size_t elemSize);
-void CArrayPushBack(CArray *a, void *elem);
-void *CArrayGet(CArray *a, int index);
+void CArrayCopy(CArray *dst, CArray *src);
+void CArrayPushBack(CArray *a, void *elem);	// insert address
+void CArrayInsert(CArray *a, int index, void *elem);
+void CArrayDelete(CArray *a, int index);
+void *CArrayGet(CArray *a, int index);	// gets address
 void CArrayTerminate(CArray *a);
 
 #endif

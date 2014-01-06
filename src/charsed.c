@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -105,11 +105,10 @@ static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 		CDogsTextStringAt(x, y, text);
 }
 
-static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
+static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 {
 	int x, y = 10;
 	char s[50];
-	const Character *b;
 	int i;
 	UIObject *o;
 
@@ -118,12 +117,12 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		gGraphicsDevice.buf[i] = LookupPalette(74);
 	}
 
-	sprintf(s, "%d", setting->characters.otherCount);
+	sprintf(s, "%d", setting->characters.OtherChars.size);
 	CDogsTextStringAt(10, 190, s);
 
-	if (idx >= 0 && idx < setting->characters.otherCount)
+	if (idx >= 0 && idx < (int)setting->characters.OtherChars.size)
 	{
-		b = &setting->characters.others[idx];
+		const Character *b = CArrayGet(&setting->characters.OtherChars, idx);
 		DisplayCDogsText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
 		DisplayCDogsText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
 		DisplayCDogsText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
@@ -206,11 +205,11 @@ static void Display(CampaignSettingNew *setting, int idx, int xc, int yc)
 		y += CDogsTextHeight() + 5;
 
 		x = 10;
-		for (i = 0; i < setting->characters.otherCount; i++)
+		for (i = 0; i < (int)setting->characters.OtherChars.size; i++)
 		{
 			DisplayCharacter(
 				Vec2iNew(x, y + 20),
-				&setting->characters.others[i], idx == i, 0);
+				CArrayGet(&setting->characters.OtherChars, i), idx == i, 0);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
 			{
@@ -240,12 +239,12 @@ static void Change(
 {
 	Character *b;
 
-	if (idx < 0 || idx >= store->otherCount)
+	if (idx < 0 || idx >= (int)store->OtherChars.size)
 	{
 		return;
 	}
 
-	b = &store->others[idx];
+	b = CArrayGet(&store->OtherChars, idx);
 	switch (yc)
 	{
 	case YC_APPEARANCE:
@@ -406,7 +405,7 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 static void DeleteCharacter(CharacterStore *store, int *idx)
 {
 	CharacterStoreDeleteOther(store, *idx);
-	if (*idx > 0 && *idx >= store->otherCount - 1)
+	if (*idx > 0 && *idx >= (int)store->OtherChars.size - 1)
 	{
 		(*idx)--;
 	}
@@ -473,13 +472,13 @@ static void HandleInput(
 		switch (c)
 		{
 		case 'x':
-			*scrap = store->others[*idx];
+			*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
 			DeleteCharacter(store, idx);
 			fileChanged = 1;
 			break;
 
 		case 'c':
-			*scrap = store->others[*idx];
+			*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
 			break;
 
 		case 'v':
@@ -488,8 +487,8 @@ static void HandleInput(
 			break;
 
 		case 'n':
-			InsertCharacter(store, store->otherCount, NULL);
-			*idx = store->otherCount - 1;
+			InsertCharacter(store, store->OtherChars.size, NULL);
+			*idx = store->OtherChars.size - 1;
 			fileChanged = 1;
 			break;
 		}
@@ -506,7 +505,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_END:
-			if (*idx < store->otherCount - 1)
+			if (*idx < (int)store->OtherChars.size - 1)
 			{
 				(*idx)++;
 			}
@@ -561,7 +560,7 @@ static void HandleInput(
 	}
 }
 
-void EditCharacters(CampaignSettingNew *setting)
+void EditCharacters(CampaignSetting *setting)
 {
 	int done = 0;
 	int idx = 0;
@@ -590,7 +589,8 @@ void EditCharacters(CampaignSettingNew *setting)
 			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
 				PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
 			{
-				if (charIdx >= 0 && charIdx < setting->characters.otherCount)
+				if (charIdx >= 0 &&
+					charIdx < (int)setting->characters.OtherChars.size)
 				{
 					idx = charIdx;
 				}

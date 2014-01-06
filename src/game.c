@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -77,13 +77,6 @@
 #include <cdogs/triggers.h>
 
 #include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */
-
-#define FPS_FRAMELIMIT       70
-#define CLOCK_LIMIT       2100
-
-#define FPS_TARGET	30
-
-#define SWITCH_TURNLIMIT     10
 
 #define PICKUP_LIMIT         350
 
@@ -187,7 +180,7 @@ static void Ticks_FrameEnd(void)
 {
 	Uint32 now = SDL_GetTicks();
 	Uint32 ticksSpent = now - ticks_now;
-	Uint32 ticksIdeal = 16;
+	Uint32 ticksIdeal = 1000 / FPS_FRAMELIMIT;
 	if (ticksSpent < ticksIdeal)
 	{
 		Uint32 ticksToDelay = ticksIdeal - ticksSpent;
@@ -455,20 +448,20 @@ static void MissionUpdateObjectives(void)
 
 	x = 5;
 	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
+	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
-		struct MissionObjective *mo = &gMission.missionData->objectives[i];
-		struct Objective *o = &gMission.objectives[i];
+		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
+		struct Objective *o = CArrayGet(&gMission.Objectives, i);
 		int itemsLeft;
 		
-		if (mo->type == OBJECTIVE_INVESTIGATE)
+		if (mo->Type == OBJECTIVE_INVESTIGATE)
 		{
 			o->done = MapGetExploredPercentage(&gMap);
 			MissionSetMessageIfComplete(&gMission);
 		}
 
 		// Don't draw anything else for optional objectives
-		if (mo->required == 0)
+		if (mo->Required == 0)
 		{
 			continue;
 		}
@@ -478,12 +471,12 @@ static void MissionUpdateObjectives(void)
 		Draw_Rect(x, y, 2, 2, o->color);
 		y -= 3;
 
-		itemsLeft = o->required - o->done;
+		itemsLeft = mo->Required - o->done;
 
 		if (itemsLeft > 0)
 		{
 			char s[4];
-			if (!(mo->flags & OBJECTIVE_UNKNOWNCOUNT))
+			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
 			{
 				sprintf(s, "%d", itemsLeft);
 			}

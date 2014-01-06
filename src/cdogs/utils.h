@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -134,5 +134,27 @@ typedef enum
 	
 	INPUT_DEVICE_COUNT
 } input_device_e;
+
+typedef enum
+{
+	CAMPAIGN_MODE_NORMAL,
+	CAMPAIGN_MODE_DOGFIGHT,
+	CAMPAIGN_MODE_QUICK_PLAY
+} campaign_mode_e;
+
+// Warning: only add to the back of this enum;
+// Used by classic maps
+typedef enum
+{
+	OBJECTIVE_KILL,
+	OBJECTIVE_COLLECT,
+	OBJECTIVE_DESTROY,
+	OBJECTIVE_RESCUE,
+	OBJECTIVE_INVESTIGATE,
+	OBJECTIVE_MAX
+} ObjectiveType;
+#define OBJECTIVE_MAX_OLD 5
+const char *ObjectiveTypeStr(ObjectiveType t);
+ObjectiveType StrObjectiveType(const char *s);
 
 #endif

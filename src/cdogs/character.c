@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -98,10 +98,12 @@ void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
 	store->playerCount = MAX_PLAYERS;
+	CArrayInit(&store->OtherChars, sizeof(Character));
 }
 
 void CharacterStoreTerminate(CharacterStore *store)
 {
+	CArrayTerminate(&store->OtherChars);
 	CFREE(store->prisoners);
 	CFREE(store->baddies);
 	CFREE(store->specials);
@@ -123,59 +125,49 @@ void CharacterStoreResetOthers(CharacterStore *store)
 
 Character *CharacterStoreAddOther(CharacterStore *store)
 {
-	return CharacterStoreInsertOther(store, store->otherCount);
+	return CharacterStoreInsertOther(store, store->OtherChars.size);
 }
 Character *CharacterStoreInsertOther(CharacterStore *store, int idx)
 {
-	int i;
-	for (i = store->otherCount; i > idx; i--)
-	{
-		memcpy(
-			&store->others[i], &store->others[i - 1], sizeof store->others[i]);
-	}
-	store->otherCount++;
-	return &store->others[idx];
+	Character newChar;
+	memset(&newChar, 0, sizeof newChar);
+	CArrayInsert(&store->OtherChars, idx, &newChar);
+	return CArrayGet(&store->OtherChars, idx);
 }
 void CharacterStoreDeleteOther(CharacterStore *store, int idx)
 {
-	int i;
-	if (store->otherCount == 0)
-	{
-		return;
-	}
-	store->otherCount--;
-	memset(&store->others[idx], 0, sizeof store->others[idx]);
-	for (i = idx; i < store->otherCount; i++)
-	{
-		memcpy(
-			&store->others[i],
-			&store->others[i + 1],
-			sizeof store->others[i]);
-	}
+	CArrayDelete(&store->OtherChars, idx);
 }
 
 void CharacterStoreAddPrisoner(CharacterStore *store, int character)
 {
 	store->prisonerCount++;
 	CREALLOC(store->prisoners, store->prisonerCount * sizeof *store->prisoners);
-	store->prisoners[store->prisonerCount - 1] = &store->others[character];
+	store->prisoners[store->prisonerCount - 1] =
+		CArrayGet(&store->OtherChars, character);
 }
 
 void CharacterStoreAddBaddie(CharacterStore *store, int character)
 {
 	store->baddieCount++;
 	CREALLOC(store->baddies, store->baddieCount * sizeof *store->baddies);
-	store->baddies[store->baddieCount - 1] = &store->others[character];
+	store->baddies[store->baddieCount - 1] =
+		CArrayGet(&store->OtherChars, character);
 }
 void CharacterStoreAddSpecial(CharacterStore *store, int character)
 {
 	store->specialCount++;
 	CREALLOC(store->specials, store->specialCount * sizeof *store->specials);
-	store->specials[store->specialCount - 1] = &store->others[character];
+	store->specials[store->specialCount - 1] =
+		CArrayGet(&store->OtherChars, character);
 }
 void CharacterStoreDeleteBaddie(CharacterStore *store, int idx)
 {
 	int i;
+	if (store->baddieCount == 0)
+	{
+		return;
+	}
 	for (i = idx; i < store->baddieCount - 1; i++)
 	{
 		store->baddies[i] = store->baddies[i + 1];
@@ -185,6 +177,10 @@ void CharacterStoreDeleteBaddie(CharacterStore *store, int idx)
 void CharacterStoreDeleteSpecial(CharacterStore *store, int idx)
 {
 	int i;
+	if (store->specialCount == 0)
+	{
+		return;
+	}
 	for (i = idx; i < store->specialCount - 1; i++)
 	{
 		store->specials[i] = store->specials[i + 1];

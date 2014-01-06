@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,15 +29,9 @@
 #ifndef __CAMPAIGNS
 #define __CAMPAIGNS
 
+#include "c_array.h"
 #include "character.h"
 #include "sys_config.h"
-
-typedef enum
-{
-	CAMPAIGN_MODE_NORMAL,
-	CAMPAIGN_MODE_DOGFIGHT,
-	CAMPAIGN_MODE_QUICK_PLAY
-} campaign_mode_e;
 
 typedef struct
 {
@@ -68,17 +62,16 @@ typedef struct
 
 typedef struct
 {
-	char title[40];
-	char author[40];
-	char description[200];
-	int missionCount;
-	struct Mission *missions;
+	char *Title;
+	char *Author;
+	char *Description;
+	CArray Missions;	// of Mission
 	CharacterStore characters;
-} CampaignSettingNew;
+} CampaignSetting;
 
 typedef struct
 {
-	CampaignSettingNew Setting;
+	CampaignSetting Setting;
 	campaign_entry_t Entry;
 	unsigned int seed;
 } CampaignOptions;
@@ -86,8 +79,8 @@ extern CampaignOptions gCampaign;
 
 void CampaignInit(CampaignOptions *campaign);
 void CampaignTerminate(CampaignOptions *campaign);
-void CampaignSettingInit(CampaignSettingNew *setting);
-void CampaignSettingTerminate(CampaignSettingNew *setting);
+void CampaignSettingInit(CampaignSetting *setting);
+void CampaignSettingTerminate(CampaignSetting *setting);
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
 

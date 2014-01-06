@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -99,7 +99,8 @@ static void DisplayObjective(
 	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
 {
 	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
-	color_t color = gMission.objectives[objectiveIndex].color;
+	struct Objective *o = CArrayGet(&gMission.Objectives, objectiveIndex);
+	color_t color = o->color;
 	pos = Vec2iAdd(pos, Vec2iScale(objectivePos, scale));
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
@@ -135,10 +136,6 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 	
 	exitPos = Vec2iScale(exitPos, scale);
 	exitSize = Vec2iScale(exitSize, scale);
-	exitPos.x /= TILE_WIDTH;
-	exitSize.x /= TILE_WIDTH;
-	exitPos.y /= TILE_HEIGHT;
-	exitSize.y /= TILE_HEIGHT;
 	exitPos = Vec2iAdd(exitPos, pos);
 
 	if (flags & AUTOMAP_FLAGS_MASK)
@@ -150,39 +147,39 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 
 static void DisplaySummary(void)
 {
-	int i, y, x, x2;
+	int i;
 	char sScore[20];
+	Vec2i pos;
+	pos.y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight(); // 10 pixels from bottom
 
-	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight(); // 10 pixels from bottom
-
-	for (i = 0; i < gMission.missionData->objectiveCount; i++) {
-		if (gMission.objectives[i].required > 0 ||
-			gMission.objectives[i].done > 0)
+	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+	{
+		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
+		if (mo->Required > 0 || o->done > 0)
 		{
-			x = 5;
+			color_t textColor = colorWhite;
+			pos.x = 5;
 			// Objective color dot
-			Draw_Rect(x, (y + 3), 2, 2, gMission.objectives[i].color);
+			Draw_Rect(pos.x, (pos.y + 3), 2, 2, o->color);
 
-			x += 5;
-			x2 = x + TextGetStringWidth(gMission.missionData->objectives[i].description) + 5;
+			pos.x += 5;
 
-			sprintf(sScore, "(%d)", gMission.objectives[i].done);
+			sprintf(sScore, "(%d)", o->done);
 
-			if (gMission.objectives[i].required <= 0) {
-				CDogsTextStringWithTableAt(x, y,
-						      gMission.missionData->objectives[i].description,
-						      &tablePurple);
-				CDogsTextStringWithTableAt(x2, y, sScore, &tablePurple);
-			} else if (gMission.objectives[i].done >= gMission.objectives[i].required) {
-				CDogsTextStringWithTableAt(x, y,
-						      gMission.missionData->objectives[i].description,
-						      &tableFlamed);
-				CDogsTextStringWithTableAt(x2, y, sScore, &tableFlamed);
-			} else {
-				CDogsTextStringAt(x, y, gMission.missionData->objectives[i].description);
-				CDogsTextStringAt(x2, y, sScore);
+			if (mo->Required <= 0)
+			{
+				textColor = colorPurple;
 			}
-			y -= (CDogsTextHeight() + 1);
+			else if (o->done >= mo->Required)
+			{
+				textColor = colorRed;
+			}
+			pos = DrawTextStringMasked(
+				mo->Description, &gGraphicsDevice, pos, textColor);
+			pos.x += 5;
+			DrawTextStringMasked(sScore, &gGraphicsDevice, pos, textColor);
+			pos.y -= (CDogsTextHeight() + 1);
 		}
 	}
 }
@@ -288,7 +285,9 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 				if ((t->flags & TILEITEM_OBJECTIVE) != 0)
 				{
 					int obj = ObjectiveFromTileItem(t->flags);
-					int objFlags = gMission.missionData->objectives[obj].flags;
+					MissionObjective *mobj =
+						CArrayGet(&gMission.missionData->Objectives, obj);
+					int objFlags = mobj->Flags;
 					if (!(objFlags & OBJECTIVE_HIDDEN) ||
 						(flags & AUTOMAP_FLAGS_SHOWALL))
 					{

@@ -84,10 +84,10 @@ const char *MakePassword(int mission, int isTwoPlayers)
 	size_t base = strlen(alphabet);
 
 	sum1 = sum2 = 0;
-	for (i = 0; i < strlen(gCampaign.Setting.title); i++)
+	for (i = 0; i < strlen(gCampaign.Setting.Title); i++)
 	{
-		sum1 += gCampaign.Setting.title[i];
-		sum2 ^= gCampaign.Setting.title[i];
+		sum1 += gCampaign.Setting.Title[i];
+		sum2 ^= gCampaign.Setting.Title[i];
 	}
 
 	x = ((sum2 << 23) | (mission << 16) | sum1) ^ gCampaign.seed;
@@ -105,7 +105,7 @@ static int TestPassword(const char *password)
 {
 	int i;
 
-	for (i = 0; i < gCampaign.Setting.missionCount; i++)
+	for (i = 0; i < (int)gCampaign.Setting.Missions.size; i++)
 	{
 		// For legacy passwords, try both one and two players
 		if (strcmp(password, MakePassword(i, 0)) == 0 ||

@@ -369,7 +369,7 @@ void ConfigSaveJSON(Config *config, const char *filename)
 	fputs(json_format_string(text), f);
 
 	// clean up
-	free(text);
+	CFREE(text);
 	json_free_value(&root);
 
 	fclose(f);

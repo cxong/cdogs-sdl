@@ -163,7 +163,7 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	case UITYPE_LABEL:
 		{
 			int isText = !!o->u.LabelFunc;
-			char *text = isText ? o->u.LabelFunc(o, o->Data) : NULL;
+			const char *text = isText ? o->u.LabelFunc(o, o->Data) : NULL;
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			Vec2i pos = o->Pos;
 			if (!o->IsVisible)
@@ -181,7 +181,8 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	case UITYPE_TEXTBOX:
 		{
 			int isText = !!o->u.Textbox.TextLinkFunc;
-			char *text = isText ? o->u.Textbox.TextLinkFunc(o, o->Data) : NULL;
+			const char *text =
+				isText ? o->u.Textbox.TextLinkFunc(o, o->Data) : NULL;
 			int isEmptyText = !isText || !text || strlen(text) == 0;
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;

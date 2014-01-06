@@ -71,7 +71,7 @@ TBadGuy BEM_badguys[29] = {
 	 0x2800600}
 };
 
-struct Mission BEM_missions[9] = {
+struct MissionOld BEM_missions[9] = {
 	{
 	 "They are destroying our base!",
 	 "All of a sudden aliens started popping out of nowhere all over the place"
@@ -403,7 +403,7 @@ struct Mission BEM_missions[9] = {
 	 18, 3, 0, 24},
 };
 
-CampaignSetting BEM_campaign = {
+CampaignSettingOld BEM_campaign = {
 	"Bug-Eyed Monsters",
 	"Ronny Wester",
 	"These irrational foes pop up now and again. Unpredictable and vicious, the"

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -491,9 +491,9 @@ void CommandBadGuys(int ticks)
 
 		actor = actor->next;
 	}
-	if (gMission.missionData->baddieCount > 0 &&
-		gMission.missionData->baddieDensity > 0 &&
-		count < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100))
+	if (gMission.missionData->Enemies.size > 0 &&
+		gMission.missionData->EnemyDensity > 0 &&
+		count < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100))
 	{
 		Character *character = CharacterStoreGetRandomBaddie(
 			&gCampaign.Setting.characters);
@@ -505,31 +505,27 @@ void CommandBadGuys(int ticks)
 
 void InitializeBadGuys(void)
 {
-	int i, j;
+	int i;
 	TActor *actor;
-
-	if (gMission.missionData->specialCount > 0)
+	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
-		for (i = 0; i < gMission.missionData->objectiveCount; i++)
+		int j;
+		MissionObjective *mobj =
+			CArrayGet(&gMission.missionData->Objectives, i);
+		if (mobj->Type == OBJECTIVE_KILL &&
+			gMission.missionData->SpecialChars.size > 0)
 		{
-			if (gMission.missionData->objectives[i].type == OBJECTIVE_KILL)
+			for (j = 0; j < mobj->Count; j++)
 			{
-				for (j = 0; j < gMission.objectives[i].count; j++)
-				{
-					actor = AddActor(CharacterStoreGetRandomSpecial(
-						&gCampaign.Setting.characters), NULL);
-					actor->tileItem.flags |= ObjectiveToTileItem(i);
-					PlaceBaddie(actor);
-				}
+				actor = AddActor(CharacterStoreGetRandomSpecial(
+					&gCampaign.Setting.characters), NULL);
+				actor->tileItem.flags |= ObjectiveToTileItem(i);
+				PlaceBaddie(actor);
 			}
 		}
-	}
-
-	for (i = 0; i < gMission.missionData->objectiveCount; i++)
-	{
-		if (gMission.missionData->objectives[i].type == OBJECTIVE_RESCUE)
+		else if (mobj->Type == OBJECTIVE_RESCUE)
 		{
-			for (j = 0; j < gMission.objectives[i].count; j++)
+			for (j = 0; j < mobj->Count; j++)
 			{
 				actor = AddActor(CharacterStoreGetPrisoner(
 					&gCampaign.Setting.characters, 0), NULL);
@@ -559,7 +555,7 @@ void CreateEnemies(void)
 	}
 
 	for (i = 0;
-		i < MAX(1, (gMission.missionData->baddieDensity * gConfig.Game.EnemyDensity) / 100);
+		i < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
 		TActor *enemy = AddActor(CharacterStoreGetRandomBaddie(

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <SDL.h>
 
+#include "map_new.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -128,7 +129,7 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 {
 	FILE *f;
 	int i;
-	CampaignSetting setting;
+	CampaignSettingOld setting;
 
 	debug(D_NORMAL, "filename: %s\n", filename);
 
@@ -170,105 +171,158 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 	return CAMPAIGN_BADPATH;
 }
 
-void load_mission_objective(FILE *f, struct MissionObjective *o)
+#define R32(v) { int32_t _n; f_read32(f, &_n, sizeof _n); (v) = _n; }
+
+static void load_mission_objective(FILE *f, MissionObjective *o)
 {
-		int offset = 0;
-		f_read(f, o->description, sizeof(o->description)); offset += sizeof(o->description);
-		f_read32(f, &o->type, sizeof(o->type));
-		f_read32(f, &o->index, sizeof(o->index));
-		f_read32(f, &o->count, sizeof(o->count));
-		f_read32(f, &o->required, sizeof(o->required));
-		f_read32(f, &o->flags, sizeof(o->flags));
-		debug(D_VERBOSE, " >> Objective: %s data: %d %d %d %d %d\n",
-		o->description, o->type, o->index, o->count, o->required, o->flags);
+	char buf[128];
+	f_read(f, buf, sizeof(((struct MissionObjectiveOld *)0)->description));
+	CFREE(o->Description);
+	CSTRDUP(o->Description, buf);
+	R32(o->Type);
+	R32(o->Index);
+	R32(o->Count);
+	R32(o->Required);
+	R32(o->Flags);
+	debug(D_VERBOSE, " >> Objective: %s data: %d %d %d %d %d\n",
+		o->Description, o->Type, o->Index, o->Count, o->Required, o->Flags);
 }
 
-#define R32(s,e)	f_read32(f, &(s)->e, sizeof((s)->e))
-
-void load_mission(FILE *f, struct Mission *m)
+static void load_mission(FILE *f, Mission *m)
 {
 	int i;
+	char buf[512];
+	int32_t c;
 
-	f_read(f, m->title, sizeof(m->title));
-	f_read(f, m->description, sizeof(m->description));
+	f_read(f, buf, sizeof(((struct MissionOld *)0)->title));
+	CFREE(m->Title);
+	CSTRDUP(m->Title, buf);
+	f_read(f, buf, sizeof(((struct MissionOld *)0)->description));
+	CFREE(m->Description);
+	CSTRDUP(m->Description, buf);
+
+	m->Type = MAPTYPE_CLASSIC;
 
 	debug(D_NORMAL, "== MISSION ==\n");
-	debug(D_NORMAL, "t: %s\n", m->title);
-	debug(D_NORMAL, "d: %s\n", m->description);
+	debug(D_NORMAL, "t: %s\n", m->Title);
+	debug(D_NORMAL, "d: %s\n", m->Description);
 
-	R32(m,  wallStyle);
-	R32(m,  floorStyle);
-	R32(m,  roomStyle);
-	R32(m,  exitStyle);
-	R32(m,  keyStyle);
-	R32(m,  doorStyle);
+	R32(m->WallStyle);
+	R32(m->FloorStyle);
+	R32(m->RoomStyle);
+	R32(m->ExitStyle);
+	R32(m->KeyStyle);
+	R32(m->DoorStyle);
 
-	R32(m,  mapWidth); R32(m, mapHeight);
-	R32(m,  wallCount); R32(m, wallLength);
-	R32(m,  roomCount);
-	R32(m,  squareCount);
+	R32(m->Size.x); R32(m->Size.y);
+	R32(m->u.Classic.Walls); R32(m->u.Classic.WallLength);
+	R32(m->u.Classic.Rooms);
+	R32(m->u.Classic.Squares);
 
-	R32(m,  exitLeft); R32(m, exitTop); R32(m, exitRight); R32(m, exitBottom);
+	// Read exit fields
+	R32(c); R32(c); R32(c); R32(c);
 
-	R32(m, objectiveCount);
-
-	debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);
- 	for (i = 0; i < OBJECTIVE_MAX; i++) {
-		load_mission_objective(f, &m->objectives[i]);
+	R32(c);
+	debug(D_NORMAL, "number of objectives: %d\n", c);
+	for (i = 0; i < OBJECTIVE_MAX_OLD; i++)
+	{
+		MissionObjective mo;
+		memset(&mo, 0, sizeof mo);
+		load_mission_objective(f, &mo);
+		if (i >= c)
+		{
+			continue;
+		}
+		CArrayPushBack(&m->Objectives, &mo);
 	}
 
-	R32(m, baddieCount);
-	for (i = 0; i < BADDIE_MAX; i++) {
-		f_read32(f, &m->baddies[i], sizeof(int));
+	R32(c);
+	debug(D_VERBOSE, "number of baddies: %d\n", c);
+	for (i = 0; i < BADDIE_MAX; i++)
+	{
+		int idx;
+		R32(idx);
+		if (i >= c)
+		{
+			continue;
+		}
+		CArrayPushBack(&m->Enemies, &idx);
 	}
 
-	R32(m, specialCount);
-	for (i = 0; i < SPECIAL_MAX; i++) {
-		f_read32(f, &m->specials[i], sizeof(int));
+	R32(c);
+	for (i = 0; i < SPECIAL_MAX; i++)
+	{
+		int idx;
+		R32(idx);
+		if (i >= c)
+		{
+			continue;
+		}
+		CArrayPushBack(&m->SpecialChars, &idx);
 	}
 
-	R32(m, itemCount);
-	for (i = 0; i < ITEMS_MAX; i++) {
-		f_read32(f, &m->items[i], sizeof(int));
+	R32(c);
+	for (i = 0; i < ITEMS_MAX; i++)
+	{
+		int idx;
+		R32(idx);
+		if (i >= c)
+		{
+			continue;
+		}
+		CArrayPushBack(&m->Items, &idx);
 	}
-	for (i = 0; i < ITEMS_MAX; i++) {
-		f_read32(f, &m->itemDensity[i], sizeof(int));
+	for (i = 0; i < ITEMS_MAX; i++)
+	{
+		int idx;
+		R32(idx);
+		if (i >= c)
+		{
+			continue;
+		}
+		CArrayPushBack(&m->ItemDensities, &idx);
 	}
 
-	R32(m, baddieDensity);
-	R32(m, weaponSelection);
+	R32(m->EnemyDensity);
+	R32(c);
+	for (i = 0; i < WEAPON_MAX; i++)
+	{
+		if ((c & (1 << i)) || !c)
+		{
+			CArrayPushBack(&m->Weapons, &i);
+		}
+	}
 
-	f_read(f, m->song, sizeof(m->song));
-	f_read(f, m->map, sizeof(m->map));
+	f_read(f, buf, sizeof(((struct MissionOld *)0)->song));
+	strcpy(m->Song, buf);
+	f_read(f, buf, sizeof(((struct MissionOld *)0)->map));
 
-	R32(m, wallRange);
-	R32(m, floorRange);
-	R32(m, roomRange);
-	R32(m, altRange);
-
-	debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);
+	R32(m->WallColor);
+	R32(m->FloorColor);
+	R32(m->RoomColor);
+	R32(m->AltColor);
 }
 
 
 
 void load_character(FILE *f, TBadGuy *b)
 {
-	R32(b, armedBodyPic);
-	R32(b, unarmedBodyPic);
-	R32(b, facePic);
-	R32(b, speed);
-	R32(b, probabilityToMove);
-	R32(b, probabilityToTrack);
-	R32(b, probabilityToShoot);
-	R32(b, actionDelay);
-	R32(b, gun);
-	R32(b, skinColor);
-	R32(b, armColor);
-	R32(b, bodyColor);
-	R32(b, legColor);
-	R32(b, hairColor);
-	R32(b, health);
-	R32(b, flags);
+	R32(b->armedBodyPic);
+	R32(b->unarmedBodyPic);
+	R32(b->facePic);
+	R32(b->speed);
+	R32(b->probabilityToMove);
+	R32(b->probabilityToTrack);
+	R32(b->probabilityToShoot);
+	R32(b->actionDelay);
+	R32(b->gun);
+	R32(b->skinColor);
+	R32(b->armColor);
+	R32(b->bodyColor);
+	R32(b->legColor);
+	R32(b->hairColor);
+	R32(b->health);
+	R32(b->flags);
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
@@ -310,19 +364,94 @@ TBadGuy ConvertTBadGuy(Character *e)
 	b.flags = e->flags;
 	return b;
 }
-
-void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src)
+static void ConvertMissionObjective(
+	MissionObjective *dest, struct MissionObjectiveOld *src)
+{
+	CFREE(dest->Description);
+	CSTRDUP(dest->Description, src->description);
+	dest->Type = src->type;
+	dest->Index = src->index;
+	dest->Count = src->count;
+	dest->Required = src->required;
+	dest->Flags = src->flags;
+}
+static void ConvertMission(Mission *dest, struct MissionOld *src)
 {
 	int i;
-	strcpy(dest->title, src->title);
-	strcpy(dest->author, src->author);
-	strcpy(dest->description, src->description);
-	dest->missionCount = src->missionCount;
-	CFREE(dest->missions);
-	CMALLOC(dest->missions, sizeof *dest->missions * dest->missionCount);
-	for (i = 0; i < dest->missionCount; i++)
+	CFREE(dest->Title);
+	CSTRDUP(dest->Title, src->title);
+	CFREE(dest->Description);
+	CSTRDUP(dest->Title, src->title);
+	dest->Type = MAPTYPE_CLASSIC;
+	dest->Size = Vec2iNew(src->mapWidth, src->mapHeight);
+	dest->WallStyle = src->wallStyle;
+	dest->FloorStyle = src->floorStyle;
+	dest->RoomStyle = src->roomStyle;
+	dest->ExitStyle = src->exitStyle;
+	dest->KeyStyle = src->keyStyle;
+	dest->DoorStyle = src->doorStyle;
+	for (i = 0; i < src->objectiveCount; i++)
 	{
-		memcpy(&dest->missions[i], &src->missions[i], sizeof dest->missions[i]);
+		MissionObjective mo;
+		memset(&mo, 0, sizeof mo);
+		ConvertMissionObjective(&mo, &src->objectives[i]);
+		CArrayPushBack(&dest->Objectives, &mo);
+	}
+	for (i = 0; i < src->baddieCount; i++)
+	{
+		int n = src->baddies[i];
+		CArrayPushBack(&dest->Enemies, &n);
+	}
+	for (i = 0; i < src->specialCount; i++)
+	{
+		int n = src->specials[i];
+		CArrayPushBack(&dest->SpecialChars, &n);
+	}
+	for (i = 0; i < src->itemCount; i++)
+	{
+		int n = src->items[i];
+		CArrayPushBack(&dest->Items, &n);
+	}
+	for (i = 0; i < src->itemCount; i++)
+	{
+		int n = src->itemDensity[i];
+		CArrayPushBack(&dest->ItemDensities, &n);
+	}
+	dest->EnemyDensity = src->baddieDensity;
+	for (i = 0; i < WEAPON_MAX; i++)
+	{
+		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
+		{
+			CArrayPushBack(&dest->Weapons, &i);
+		}
+	}
+	strcpy(dest->Song, src->song);
+	dest->WallColor = src->wallRange;
+	dest->FloorColor = src->floorRange;
+	dest->RoomColor = src->roomRange;
+	dest->AltColor = src->altRange;
+
+	dest->u.Classic.Walls = src->wallCount;
+	dest->u.Classic.WallLength = src->wallLength;
+	dest->u.Classic.Rooms = src->roomCount;
+	dest->u.Classic.Squares = src->squareCount;
+}
+
+void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src)
+{
+	int i;
+	CFREE(dest->Title);
+	CSTRDUP(dest->Title, src->title);
+	CFREE(dest->Author);
+	CSTRDUP(dest->Author, src->author);
+	CFREE(dest->Description);
+	CSTRDUP(dest->Description, src->description);
+	for (i = 0; i < src->missionCount; i++)
+	{
+		Mission m;
+		MissionInit(&m);
+		ConvertMission(&m, &src->missions[i]);
+		CArrayPushBack(&dest->Missions, &m);
 	}
 	CharacterStoreTerminate(&dest->characters);
 	CharacterStoreInit(&dest->characters);
@@ -334,13 +463,14 @@ void ConvertCampaignSetting(CampaignSettingNew *dest, CampaignSetting *src)
 	}
 }
 
-int LoadCampaign(const char *filename, CampaignSettingNew *setting)
+int LoadCampaignOld(const char *filename, CampaignSetting *setting)
 {
 	FILE *f = NULL;
 	int32_t i;
-	int err = CAMPAIGN_OK;
-	int numMissions;
+	int err = 0;
+	int32_t numMissions;
 	int numCharacters;
+	char buf[256];
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
@@ -353,7 +483,7 @@ int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 	f_read32(f, &i, sizeof(i));
 	if (i != CAMPAIGN_MAGIC)
 	{
-		debug(D_NORMAL, "LoadCampaign - bad file!\n");
+		debug(D_NORMAL, "LoadCampaignOld - bad file!\n");
 		err = CAMPAIGN_BADFILE;
 		goto bail;
 	}
@@ -361,27 +491,32 @@ int LoadCampaign(const char *filename, CampaignSettingNew *setting)
 	f_read32(f, &i, sizeof(i));
 	if (i != CAMPAIGN_VERSION)
 	{
-		debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
+		debug(D_NORMAL, "LoadCampaignOld - version mismatch!\n");
 		err = CAMPAIGN_VERSIONMISMATCH;
 		goto bail;
 	}
 
-	f_read(f, setting->title, sizeof(setting->title));
-	f_read(f, setting->author, sizeof(setting->author));
-	f_read(f, setting->description, sizeof(setting->description));
+	f_read(f, buf, sizeof(((CampaignSettingOld *)0)->title));
+	CFREE(setting->Title);
+	CSTRDUP(setting->Title, buf);
+	f_read(f, buf, sizeof(((CampaignSettingOld *)0)->author));
+	CFREE(setting->Author);
+	CSTRDUP(setting->Author, buf);
+	f_read(f, buf, sizeof(((CampaignSettingOld *)0)->description));
+	CFREE(setting->Description);
+	CSTRDUP(setting->Description, buf);
 
-	f_read32(f, &setting->missionCount, sizeof(int32_t));
-	CCALLOC(
-		setting->missions,
-		setting->missionCount * sizeof *setting->missions);
-	numMissions = setting->missionCount;
+	R32(numMissions);
 	debug(D_NORMAL, "No. missions: %d\n", numMissions);
 	for (i = 0; i < numMissions; i++)
 	{
-		load_mission(f, &setting->missions[i]);
+		Mission m;
+		MissionInit(&m);
+		load_mission(f, &m);
+		CArrayPushBack(&setting->Missions, &m);
 	}
 
-	f_read32(f, &numCharacters, sizeof(int32_t));
+	R32(numCharacters);
 	debug(D_NORMAL, "No. characters: %d\n", numCharacters);
 	for (i = 0; i < numCharacters; i++)
 	{
@@ -400,259 +535,6 @@ bail:
 	}
 	return err;
 }
-
-int SaveCampaign(const char *filename, CampaignSettingNew *setting)
-{
-	FILE *f;
-	int32_t i;
-	char buf[CDOGS_FILENAME_MAX];
-
-	if (SDL_strcasecmp(StrGetFileExt(filename), "cpn") == 0)
-	{
-		strcpy(buf, filename);
-	}
-	else
-	{
-		sprintf(buf, "%s.cpn", filename);
-	}
-	f = fopen(buf, "wb");
-	if (f == NULL)
-	{
-		perror("SaveCampaign - couldn't write to file: ");
-		return CAMPAIGN_BADFILE;
-	}
-#define CHECK_WRITE(res)\
-	if (!(res))\
-	{\
-		perror("SaveCampaign - couldn't write to file: ");\
-		fclose(f);\
-		return CAMPAIGN_BADFILE;\
-	}
-	i = CAMPAIGN_MAGIC;
-	CHECK_WRITE(fwrite32(f, &i))
-
-	i = CAMPAIGN_VERSION;
-	CHECK_WRITE(fwrite32(f, &i))
-
-	CHECK_WRITE(fwrite(setting->title, sizeof setting->title, 1, f) == 1)
-	CHECK_WRITE(fwrite(setting->author, sizeof setting->author, 1, f) == 1)
-	CHECK_WRITE(fwrite(setting->description, sizeof setting->description, 1, f) == 1)
-
-	i = setting->missionCount;
-	CHECK_WRITE(fwrite32(f, &i))
-	for (i = 0; i < setting->missionCount; i++)
-	{
-		CHECK_WRITE(fwrite(&setting->missions[i], sizeof(struct Mission), 1, f) == 1)
-	}
-
-	i = setting->characters.otherCount;
-	CHECK_WRITE(fwrite32(f, &i))
-	for (i = 0; i < setting->characters.otherCount; i++)
-	{
-		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
-		CHECK_WRITE(fwrite(&b, sizeof(TBadGuy), 1, f) == 1)
-	}
-
-#undef CHECK_WRITE
-	printf("Saved to %s\n", filename);
-	fclose(f);
-	return CAMPAIGN_OK;
-}
-
-static void OutputCString(FILE * f, const char *s, int indentLevel)
-{
-	int length;
-
-	for (length = 0; length < indentLevel; length++)
-		fputc(' ', f);
-
-	fputc('\"', f);
-	while (*s) {
-		switch (*s) {
-		case '\"':
-		case '\\':
-			fputc('\\', f);
-		default:
-			fputc(*s, f);
-		}
-		s++;
-		length++;
-		if (length > 75) {
-			fputs("\"\n", f);
-			length = 0;
-			for (length = 0; length < indentLevel; length++)
-				fputc(' ', f);
-			fputc('\"', f);
-		}
-	}
-	fputc('\"', f);
-}
-
-void SaveCampaignAsC(
-	const char *filename, const char *name,
-	CampaignSettingNew* setting)
-{
-	FILE *f;
-	int i, j;
-
-	f = fopen(filename, "w");
-	if (!f)
-	{
-		printf("Failed to save to C\n");
-		return;
-	}
-	fprintf(f, "TBadGuy %s_badguys[ %d] =\n{\n", name,
-		setting->characters.otherCount);
-	for (i = 0; i < setting->characters.otherCount; i++)
-	{
-		TBadGuy b = ConvertTBadGuy(&setting->characters.others[i]);
-		fprintf(f,
-			"  {%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,0x%x}%s\n",
-			b.armedBodyPic,
-			b.unarmedBodyPic,
-			b.facePic,
-			b.speed,
-			b.probabilityToMove,
-			b.probabilityToTrack,
-			b.probabilityToShoot,
-			b.actionDelay,
-			b.gun,
-			b.skinColor,
-			b.armColor,
-			b.bodyColor,
-			b.legColor,
-			b.hairColor,
-			b.health,
-			b.flags,
-			i < setting->characters.otherCount - 1 ? "," : "");
-	}
-	fprintf(f, "};\n\n");
-
-	fprintf(f, "struct Mission %s_missions[ %d] =\n{\n", name,
-		setting->missionCount);
-	for (i = 0; i < setting->missionCount; i++) {
-		fprintf(f, "  {\n");
-		OutputCString(f, setting->missions[i].title, 4);
-		fprintf(f, ",\n");
-		OutputCString(f, setting->missions[i].description,
-				    4);
-		fprintf(f, ",\n");
-		fprintf(f,
-			"    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\n",
-			setting->missions[i].wallStyle,
-			setting->missions[i].floorStyle,
-			setting->missions[i].roomStyle,
-			setting->missions[i].exitStyle,
-			setting->missions[i].keyStyle,
-			setting->missions[i].doorStyle,
-			setting->missions[i].mapWidth,
-			setting->missions[i].mapHeight,
-			setting->missions[i].wallCount,
-			setting->missions[i].wallLength,
-			setting->missions[i].roomCount,
-			setting->missions[i].squareCount);
-		fprintf(f, "    %d,%d,%d,%d,\n",
-			setting->missions[i].exitLeft,
-			setting->missions[i].exitTop,
-			setting->missions[i].exitRight,
-			setting->missions[i].exitBottom);
-		fprintf(f, "    %d,\n",
-			setting->missions[i].objectiveCount);
-		fprintf(f, "    {\n");
-		for (j = 0; j < OBJECTIVE_MAX; j++) {
-			fprintf(f, "      {\n");
-			OutputCString(f,
-					    setting->missions[i].
-					    objectives[j].description,
-					    8);
-			fprintf(f, ",\n");
-			fprintf(f, "        %d,%d,%d,%d,0x%x\n",
-				setting->missions[i].objectives[j].
-				type,
-				setting->missions[i].objectives[j].
-				index,
-				setting->missions[i].objectives[j].
-				count,
-				setting->missions[i].objectives[j].
-				required,
-				setting->missions[i].objectives[j].
-				flags);
-			fprintf(f, "      }%s\n",
-				j < OBJECTIVE_MAX - 1 ? "," : "");
-		}
-		fprintf(f, "    },\n");
-
-		fprintf(f, "    %d,\n",
-			setting->missions[i].baddieCount);
-		fprintf(f, "    {");
-		for (j = 0; j < BADDIE_MAX; j++) {
-			fprintf(f, "%d%s",
-				setting->missions[i].baddies[j],
-				j < BADDIE_MAX - 1 ? "," : "");
-		}
-		fprintf(f, "},\n");
-
-		fprintf(f, "    %d,\n",
-			setting->missions[i].specialCount);
-		fprintf(f, "    {");
-		for (j = 0; j < SPECIAL_MAX; j++) {
-			fprintf(f, "%d%s",
-				setting->missions[i].specials[j],
-				j < SPECIAL_MAX - 1 ? "," : "");
-		}
-		fprintf(f, "},\n");
-
-		fprintf(f, "    %d,\n",
-			setting->missions[i].itemCount);
-		fprintf(f, "    {");
-		for (j = 0; j < ITEMS_MAX; j++) {
-			fprintf(f, "%d%s",
-				setting->missions[i].items[j],
-				j < ITEMS_MAX - 1 ? "," : "");
-		}
-		fprintf(f, "},\n");
-
-		fprintf(f, "    {");
-		for (j = 0; j < ITEMS_MAX; j++) {
-			fprintf(f, "%d%s",
-				setting->missions[i].
-				itemDensity[j],
-				j < ITEMS_MAX - 1 ? "," : "");
-		}
-		fprintf(f, "},\n");
-
-		fprintf(f, "    %d,0x%x,\n",
-			setting->missions[i].baddieDensity,
-			setting->missions[i].weaponSelection);
-		OutputCString(f, setting->missions[i].song, 4);
-		fprintf(f, ",\n");
-		OutputCString(f, setting->missions[i].map, 4);
-		fprintf(f, ",\n");
-		fprintf(f, "    %d,%d,%d,%d\n",
-			setting->missions[i].wallRange,
-			setting->missions[i].floorRange,
-			setting->missions[i].roomRange,
-			setting->missions[i].altRange);
-		fprintf(f, "  }%s\n",
-			i < setting->missionCount ? "," : "");
-	}
-	fprintf(f, "};\n\n");
-
-	fprintf(f, "struct CampaignSetting %s_campaign =\n{\n",
-		name);
-	OutputCString(f, setting->title, 2);
-	fprintf(f, ",\n");
-	OutputCString(f, setting->author, 2);
-	fprintf(f, ",\n");
-	OutputCString(f, setting->description, 2);
-	fprintf(f, ",\n");
-	fprintf(f, "  %d, %s_missions, %d, %s_badguys\n};\n",
-		setting->missionCount, name,
-		setting->characters.otherCount, name);
-
-	printf("Saved to %s\n", filename);
-	fclose(f);
-};
 
 /* GetHomeDirectory ()
  *

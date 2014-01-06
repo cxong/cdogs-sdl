@@ -1,8 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,26 +25,79 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SYS_CONFIG
-#define __SYS_CONFIG
+#ifndef __MAP_NEW
+#define __MAP_NEW
 
-#define CDOGS_SDL_VERSION "v@VERSION@"
+#include "c_array.h"
+#include "campaigns.h"
 
-/* where to look for the cdogs data files */
-#define CDOGS_DATA_DIR "@CDOGS_DATA_DIR@"
+typedef enum
+{
+	MAPTYPE_CLASSIC
+} MapType;
+const char *MapTypeStr(MapType t);
+MapType StrMapType(const char *s);
 
-#define CDOGS_CFG_DIR "@CDOGS_CFG_DIR@"
+typedef struct
+{
+	char *Description;
+	ObjectiveType Type;
+	int Index;
+	int Count;
+	int Required;
+	int Flags;
+} MissionObjective;
 
-#define CDOGS_MUSIC_DIR "@CDOGS_DATA_DIR@music"
-#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "/game"
-#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "/menu"
+typedef struct
+{
+	char *Title;
+	char *Description;
+	MapType Type;
+	Vec2i Size;
 
-#define CDOGS_CAMPAIGN_DIR "missions"
-#define CDOGS_DOGFIGHT_DIR "dogfights"
+	// styles
+	int WallStyle;
+	int FloorStyle;
+	int RoomStyle;
+	int ExitStyle;
+	int KeyStyle;
+	int DoorStyle;
 
-#define CDOGS_FILENAME_MAX 256
-#define CDOGS_PATH_MAX 4096
+	CArray Objectives;		// of MissionObjective
+	CArray Enemies;			// of int (character index)
+	CArray SpecialChars;	// of int
+	CArray Items;			// of int
+	CArray ItemDensities;	// of int
 
-#define FPS_FRAMELIMIT 70
+	int EnemyDensity;
+	CArray Weapons;			// of int
+	// TODO: string names
+
+	char Song[CDOGS_PATH_MAX];
+
+	// Colour ranges
+	int WallColor;
+	int FloorColor;
+	int RoomColor;
+	int AltColor;
+
+	union
+	{
+		// Classic
+		struct
+		{
+			int Walls;
+			int WallLength;
+			int Rooms;
+			int Squares;
+		} Classic;
+	} u;
+} Mission;
+
+void MissionInit(Mission *m);
+void MissionCopy(Mission *dst, Mission *src);
+void MissionTerminate(Mission *m);
+
+int MapNewSave(const char *filename, CampaignSetting *c);
 
 #endif

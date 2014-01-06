@@ -415,6 +415,7 @@ void GrafxMakeBackground(
 	GraphicsDevice *device, GraphicsConfig *config, HSV tint,
 	int missionIdx, int isEditor)
 {
+	MissionOptionsTerminate(&gMission);
 	SetupMission(missionIdx, 1, &gCampaign);
 	MapLoad(&gMap, &gMission);
 	InitializeBadGuys();
