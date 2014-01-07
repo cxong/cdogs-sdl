@@ -608,7 +608,7 @@ static void Open(void)
 					break;
 				CampaignSettingTerminate(&gCampaign.Setting);
 				CampaignSettingInit(&gCampaign.Setting);
-				if (LoadCampaignOld(filename, &gCampaign.Setting))
+				if (MapNewLoad(filename, &gCampaign.Setting))
 				{
 					printf("Error: cannot load %s\n", lastFile);
 					continue;
@@ -1144,7 +1144,7 @@ int main(int argc, char *argv[])
 			{
 				strcat(lastFile, ".CPN");
 			}
-			if (LoadCampaignOld(lastFile, &gCampaign.Setting) == 0)
+			if (MapNewLoad(lastFile, &gCampaign.Setting) == 0)
 			{
 				loaded = 1;
 			}

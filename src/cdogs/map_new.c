@@ -33,6 +33,7 @@
 
 #include <json/json.h>
 
+#include "files.h"
 #include "json_utils.h"
 
 #define VERSION 1
@@ -150,6 +151,48 @@ gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index)
 	}
 	assert(0 && "cannot find available weapon");
 	return GUN_KNIFE;
+}
+
+
+int MapNewLoad(const char *filename, CampaignSetting *c)
+{
+	int32_t i;
+	FILE *f = fopen(filename, "rb");
+	int err = 0;
+	if (f == NULL)
+	{
+		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
+		err = -1;
+		goto bail;
+	}
+	f_read32(f, &i, sizeof i);
+	if (i == CAMPAIGN_MAGIC)
+	{
+		CampaignSettingOld cOld;
+		fclose(f);
+		f = NULL;
+		memset(&cOld, 0, sizeof cOld);
+		err = LoadCampaignOld(filename, &cOld);
+		if (!err)
+		{
+			ConvertCampaignSetting(c, &cOld);
+		}
+		return err;
+	}
+	else
+	{
+		// not implemented
+		assert(0 && "not implemented or unknown campaign");
+		err = -1;
+		goto bail;
+	}
+
+bail:
+	if (f != NULL)
+	{
+		fclose(f);
+	}
+	return err;
 }
 
 static json_t *SaveMissions(CArray *a);

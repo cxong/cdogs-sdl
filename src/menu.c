@@ -938,7 +938,7 @@ void MenuLoadCampaign(campaign_entry_t *entry)
 		CampaignSetting customSetting;
 		CampaignSettingInit(&customSetting);
 
-		if (LoadCampaignOld(entry->path, &customSetting))
+		if (MapNewLoad(entry->path, &customSetting))
 		{
 			printf("Failed to load campaign %s!\n", entry->path);
 			assert(0);
