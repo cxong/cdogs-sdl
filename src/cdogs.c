@@ -97,8 +97,8 @@ static void DrawObjectiveInfo(int idx, int x, int y, struct MissionOptions *mo)
 	TranslationTable *table = NULL;
 	int i = 0;
 	Character *cd;
-	MissionObjective *mobj = CArrayGet(&mission->mssionData->Objectives, idx);
-	struct Objective *o = CArrayGet(&mission->Objectives, idx);
+	MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, idx);
+	struct Objective *o = CArrayGet(&mo->Objectives, idx);
 
 	switch (mobj->Type)
 	{
