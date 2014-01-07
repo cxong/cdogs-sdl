@@ -411,6 +411,11 @@ void CommandBadGuys(int ticks)
 					DidPlayerShoot())
 				{
 					cmd = AIHunt(actor) | CMD_BUTTON1;
+					if (actor->flags & FLAGS_RUNS_AWAY)
+					{
+						// Turn back and shoot for running away characters
+						cmd = AIReverseDirection(cmd);
+					}
 					bypass = 1;
 				}
 				else if (actor->flags & FLAGS_DETOURING)
