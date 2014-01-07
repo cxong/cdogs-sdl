@@ -934,7 +934,7 @@ static int MapTryPlaceBlowup(
 
 	while (i > 0)
 	{
-		Vec2i v = GuessCoords(&gMission);
+		Vec2i v = GuessCoords(mo);
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
