@@ -150,7 +150,7 @@ static void DisplaySummary(void)
 	int i;
 	char sScore[20];
 	Vec2i pos;
-	pos.y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight(); // 10 pixels from bottom
+	pos.y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
 
 	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
