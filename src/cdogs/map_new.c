@@ -128,7 +128,7 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 {
 	FILE *f;
 	char *text = NULL;
-	char buf[CDOGS_FILENAME_MAX];
+	char buf[CDOGS_PATH_MAX];
 	json_t *root;
 	if (SDL_strcasecmp(StrGetFileExt(filename), "cpn") == 0)
 	{
