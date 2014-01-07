@@ -86,7 +86,7 @@ static UIObject *sObjs;
 // Globals
 
 Mission *currentMission;
-static char lastFile[CDOGS_FILENAME_MAX];
+static char lastFile[CDOGS_PATH_MAX];
 
 
 
@@ -581,7 +581,7 @@ static void Setup(int idx, int buildTables)
 
 static void Open(void)
 {
-	char filename[CDOGS_FILENAME_MAX];
+	char filename[CDOGS_PATH_MAX];
 	int c;
 	
 	strcpy(filename, lastFile);
@@ -648,7 +648,7 @@ static void Open(void)
 
 static void Save(void)
 {
-	char filename[CDOGS_FILENAME_MAX];
+	char filename[CDOGS_PATH_MAX];
 	int c;
 
 	strcpy(filename, lastFile);
