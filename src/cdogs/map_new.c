@@ -76,7 +76,6 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->Items, sizeof(int));
 	CArrayInit(&m->ItemDensities, sizeof(int));
-	CArrayInit(&m->Weapons, sizeof(int));
 }
 void MissionCopy(Mission *dst, Mission *src)
 {
@@ -99,7 +98,7 @@ void MissionCopy(Mission *dst, Mission *src)
 	CArrayCopy(&dst->ItemDensities, &src->ItemDensities);
 
 	dst->EnemyDensity = src->EnemyDensity;
-	CArrayCopy(&dst->Weapons, &src->Weapons);
+	memcpy(dst->Weapons, src->Weapons, sizeof dst->Weapons);
 
 	memcpy(dst->Song, src->Song, sizeof dst->Song);
 
@@ -119,7 +118,38 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->SpecialChars);
 	CArrayTerminate(&m->Items);
 	CArrayTerminate(&m->ItemDensities);
-	CArrayTerminate(&m->Weapons);
+}
+
+int GetNumWeapons(int weapons[GUN_COUNT])
+{
+	int i;
+	int num = 0;
+	for (i = 0; i < GUN_COUNT; i++)
+	{
+		if (weapons[i])
+		{
+			num++;
+		}
+	}
+	return num;
+}
+gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index)
+{
+	int i;
+	int n = 0;
+	for (i = 0; i < GUN_COUNT; i++)
+	{
+		if (weapons[i])
+		{
+			if (index == n)
+			{
+				return i;
+			}
+			n++;
+		}
+	}
+	assert(0 && "cannot find available weapon");
+	return GUN_KNIFE;
 }
 
 static json_t *SaveMissions(CArray *a);
@@ -175,6 +205,7 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 
 static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
+static json_t *SaveWeapons(int weapons[GUN_COUNT]);
 static json_t *SaveMissions(CArray *a)
 {
 	json_t *missionsNode = json_new_array();
@@ -212,7 +243,7 @@ static json_t *SaveMissions(CArray *a)
 
 		AddIntPair(node, "EnemyDensity", mission->EnemyDensity);
 		json_insert_pair_into_object(
-			node, "Weapons", SaveIntArray(&mission->Weapons));
+			node, "Weapons", SaveWeapons(mission->Weapons));
 
 		json_insert_pair_into_object(
 			node, "Song", json_new_string(mission->Song));
@@ -297,6 +328,20 @@ static json_t *SaveIntArray(CArray *a)
 		char buf[32];
 		sprintf(buf, "%d", *(int *)CArrayGet(a, i));
 		json_insert_child(node, json_new_number(buf));
+	}
+	return node;
+}
+
+static json_t *SaveWeapons(int weapons[GUN_COUNT])
+{
+	json_t *node = json_new_array();
+	int i;
+	for (i = 0; i < GUN_COUNT; i++)
+	{
+		if (weapons[i])
+		{
+			json_insert_child(node, json_new_string(GunGetName(i)));
+		}
 	}
 	return node;
 }

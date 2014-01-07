@@ -149,7 +149,7 @@ int AICoopGetCmd(TActor *actor)
 	return 0;
 }
 
-gun_e AICoopSelectWeapon(int player, CArray *availableWeapons)
+gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT])
 {
 	// Weapon preferences, for different player indices
 #define NUM_PREFERRED_WEAPONS 5
@@ -166,17 +166,13 @@ gun_e AICoopSelectWeapon(int player, CArray *availableWeapons)
 	for (i = 0; i < NUM_PREFERRED_WEAPONS; i++)
 	{
 		gun_e preferredWeapon = preferredWeapons[player][i];
-		int j;
-		for (j = 0; j < (int)availableWeapons->size; j++)
+		if (weapons[preferredWeapon])
 		{
-			if (preferredWeapon == *(int *)CArrayGet(availableWeapons, j))
-			{
-				return preferredWeapon;
-			}
+			return preferredWeapon;
 		}
 	}
 
 	// Preferred weapons unavailable;
-	// give up and select most preferred weapon anway
+	// give up and select most preferred weapon anyway
 	return preferredWeapons[player][0];
 }

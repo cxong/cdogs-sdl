@@ -52,6 +52,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "files.h"
 #include "game_events.h"
 #include "gamedata.h"
 #include "map.h"
@@ -755,9 +756,9 @@ void SetupQuickPlayCampaign(
 		CArrayPushBack(&m->ItemDensities, &n);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
-	for (i = 0; i < WEAPON_MAX; i++)
+	for (i = 0; i < GUN_COUNT; i++)
 	{
-		CArrayPushBack(&m->Weapons, &i);
+		m->Weapons[i] = 1;
 	}
 	m->WallColor = rand() % (COLORRANGE_COUNT - 1 + 1);
 	m->FloorColor = rand() % (COLORRANGE_COUNT - 1 + 1);
@@ -789,23 +790,15 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 	}
 }
 
-static void CleanupPlayerInventory(struct PlayerData *data, CArray *weapons)
+static void CleanupPlayerInventory(
+	struct PlayerData *data, int weapons[GUN_COUNT])
 {
 	int i;
 	for (i = data->weaponCount - 1; i >= 0; i--)
 	{
-		int j;
-		int hasWeapon = 0;
-		for (j = 0; j < (int)weapons->size; j++)
+		if (!weapons[data->weapons[i]])
 		{
-			if (data->weapons[i] == *(int *)CArrayGet(weapons, j))
-			{
-				hasWeapon = 1;
-				break;
-			}
-		}
-		if (!hasWeapon)
-		{
+			int j;
 			for (j = i + 1; j < data->weaponCount; j++)
 			{
 				data->weapons[j - 1] = data->weapons[j];
@@ -815,17 +808,14 @@ static void CleanupPlayerInventory(struct PlayerData *data, CArray *weapons)
 	}
 }
 
-static void SetupWeapons(struct MissionOptions *mo, CArray *weapons)
+static void SetupWeapons(
+	struct PlayerData playerDatas[MAX_PLAYERS], int weapons[GUN_COUNT])
 {
 	int i;
-	for (i = 0; i < (int)weapons->size; i++)
-	{
-		CArrayPushBack(&mo->AvailableWeapons, CArrayGet(weapons, i));
-	}
-	// Now remove unavailable weapons from players inventories
+	// Remove unavailable weapons from players inventories
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		CleanupPlayerInventory(&gPlayerDatas[i], weapons);
+		CleanupPlayerInventory(&playerDatas[i], weapons);
 	}
 }
 
@@ -891,7 +881,7 @@ void SetupMission(int idx, int buildTables, CampaignOptions *campaign)
 
 	SetupObjectives(&gMission, m);
 	SetupBadguysForMission(m);
-	SetupWeapons(&gMission, &m->Weapons);
+	SetupWeapons(gPlayerDatas, m->Weapons);
 	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
 	if (buildTables)
 	{

@@ -137,88 +137,6 @@ struct DoorPic {
 #define OBJECTIVE_UNKNOWNCOUNT	8
 #define OBJECTIVE_NOACCESS		16
 
-// WARNING: written as-is to file
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
-struct MissionObjectiveOld
-{
-	char description[60];
-	int32_t type;
-	int32_t index;
-	int32_t count;
-	int32_t required;
-	int32_t flags;
-}
-#ifndef _MSC_VER
-__attribute__((packed))
-#endif
-;
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
-
-// WARNING: affects file format
-#define BADDIE_MAX  12
-#define SPECIAL_MAX 6
-#define ITEMS_MAX   16
-
-#define WEAPON_MAX  11
-
-
-// WARNING: written as-is to file
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
-struct MissionOld
-{
-	char title[60];
-	char description[400];
-	int32_t wallStyle;
-	int32_t floorStyle;
-	int32_t roomStyle;
-	int32_t exitStyle;
-	int32_t keyStyle;
-	int32_t doorStyle;
-
-	int32_t mapWidth, mapHeight;
-	int32_t wallCount, wallLength;
-	int32_t roomCount;
-	int32_t squareCount;
-
-	int32_t exitLeft, exitTop, exitRight, exitBottom;
-
-	int32_t objectiveCount;
-	struct MissionObjectiveOld objectives[OBJECTIVE_MAX_OLD];
-
-	int32_t baddieCount;
-	int32_t baddies[BADDIE_MAX];
-	int32_t specialCount;
-	int32_t specials[SPECIAL_MAX];
-	int32_t itemCount;
-	int32_t items[ITEMS_MAX];
-	int32_t itemDensity[ITEMS_MAX];
-
-	int32_t baddieDensity;
-	int32_t weaponSelection;
-
-	char song[80];
-	char map[80];
-
-	int32_t wallRange;
-	int32_t floorRange;
-	int32_t roomRange;
-	int32_t altRange;
-}
-#ifndef _MSC_VER
-__attribute__((packed))
-#endif
-;
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
 
 struct Objective
 {
@@ -241,8 +159,6 @@ struct MissionOptions {
 	int *keyPics;
 	struct DoorPic *doorPics;
 	int exitPic, exitShadow;
-
-	CArray AvailableWeapons;	// of int
 };
 
 extern struct GameOptions gOptions;

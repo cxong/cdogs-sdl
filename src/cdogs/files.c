@@ -285,11 +285,12 @@ static void load_mission(FILE *f, Mission *m)
 
 	R32(m->EnemyDensity);
 	R32(c);
+	memset(&m->Weapons, 0, sizeof m->Weapons);
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
 		if ((c & (1 << i)) || !c)
 		{
-			CArrayPushBack(&m->Weapons, &i);
+			m->Weapons[i] = 1;
 		}
 	}
 
@@ -418,11 +419,12 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 		CArrayPushBack(&dest->ItemDensities, &n);
 	}
 	dest->EnemyDensity = src->baddieDensity;
+	memset(&dest->Weapons, 0, sizeof dest->Weapons);
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
 		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
 		{
-			CArrayPushBack(&dest->Weapons, &i);
+			dest->Weapons[i] = 1;
 		}
 	}
 	strcpy(dest->Song, src->song);

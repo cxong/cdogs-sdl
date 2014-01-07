@@ -70,8 +70,7 @@ typedef struct
 	CArray ItemDensities;	// of int
 
 	int EnemyDensity;
-	CArray Weapons;			// of int
-	// TODO: string names
+	int Weapons[GUN_COUNT];
 
 	char Song[CDOGS_PATH_MAX];
 
@@ -97,6 +96,9 @@ typedef struct
 void MissionInit(Mission *m);
 void MissionCopy(Mission *dst, Mission *src);
 void MissionTerminate(Mission *m);
+
+int GetNumWeapons(int weapons[GUN_COUNT]);
+gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
 
 int MapNewSave(const char *filename, CampaignSetting *c);
 

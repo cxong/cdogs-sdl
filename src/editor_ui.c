@@ -365,7 +365,7 @@ static char *GetWeaponCountStr(UIObject *o, void *v)
 	UNUSED(v);
 	sprintf(
 		s, "Available weapons (%d/%d)",
-		gMission.AvailableWeapons.size, WEAPON_MAX);
+		gMission.AvailableWeapons.size, GUN_COUNT);
 	return s;
 }
 static char *GetObjectCountStr(UIObject *o, void *v)
@@ -1211,7 +1211,7 @@ static UIObject *CreateWeaponObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
 	o->ChangeFunc = MissionChangeWeapon;
 	o->Flags = UI_LEAVE_YC;
-	for (i = 0; i < WEAPON_MAX; i++)
+	for (i = 0; i < GUN_COUNT; i++)
 	{
 		int x = 10 + i / 4 * 90;
 		int y = 170 + (i % 4) * th;

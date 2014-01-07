@@ -41,13 +41,13 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 	// Don't process if we're not selecting a weapon
 	if ((cmd & CMD_BUTTON1) &&
-		menu->u.normal.index < (int)gMission.AvailableWeapons.size)
+		menu->u.normal.index < GetNumWeapons(gMission.missionData->Weapons))
 	{
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
-		gun_e selectedWeapon = *(int *)CArrayGet(
-			&gMission.AvailableWeapons, menu->u.normal.index);
+		gun_e selectedWeapon = GetNthAvailableWeapon(
+			gMission.missionData->Weapons, menu->u.normal.index);
 		for (i = 0; i < p->weaponCount; i++)
 		{
 			if (p->weapons[i] == selectedWeapon)
@@ -86,9 +86,9 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 			// Re-enable the menu entry for this weapon
 			removedWeapon = p->weapons[p->weaponCount];
-			for (i = 0; i < (int)gMission.AvailableWeapons.size; i++)
+			for (i = 0; i < GetNumWeapons(gMission.missionData->Weapons); i++)
 			{
-				if (*(int *)CArrayGet(&gMission.AvailableWeapons, i) ==
+				if (GetNthAvailableWeapon(gMission.missionData->Weapons, i) ==
 					removedWeapon)
 				{
 					MenuEnableSubmenu(menu, i);
@@ -182,10 +182,10 @@ void WeaponMenuCreate(
 		"",
 		MENU_TYPE_NORMAL,
 		0);
-	for (i = 0; i < (int)gMission.AvailableWeapons.size; i++)
+	for (i = 0; i < GetNumWeapons(gMission.missionData->Weapons); i++)
 	{
 		const char *gunName = gGunDescriptions[
-			*(int *)CArrayGet(&gMission.AvailableWeapons, i)].name;
+			GetNthAvailableWeapon(gMission.missionData->Weapons, i)].name;
 		MenuAddSubmenu(ms->root, MenuCreate(gunName, MENU_TYPE_BASIC));
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
@@ -193,10 +193,10 @@ void WeaponMenuCreate(
 	for (i = 0; i < pData->weaponCount; i++)
 	{
 		int j;
-		for (j = 0; j < (int)gMission.AvailableWeapons.size; j++)
+		for (j = 0; j < GetNumWeapons(gMission.missionData->Weapons); j++)
 		{
 			if (pData->weapons[i] ==
-				*(int *)CArrayGet(&gMission.AvailableWeapons, j))
+				GetNthAvailableWeapon(gMission.missionData->Weapons, j))
 			{
 				MenuDisableSubmenu(ms->root, j);
 			}

@@ -196,13 +196,11 @@ void MissionOptionsInit(struct MissionOptions *mo)
 	memset(mo, 0, sizeof *mo);
 	CArrayInit(&mo->Objectives, sizeof(struct Objective));
 	CArrayInit(&mo->MapObjects, sizeof(TMapObject));
-	CArrayInit(&mo->AvailableWeapons, sizeof(int));
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {
 	CArrayTerminate(&mo->Objectives);
 	CArrayTerminate(&mo->MapObjects);
-	CArrayTerminate(&mo->AvailableWeapons);
 	memset(mo, 0, sizeof *mo);
 }
 
