@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -97,12 +97,14 @@ MenuSystem *MenuCreateAll(
 			"Campaign",
 			"Select a campaign:",
 			&campaigns->campaignList));
+#ifndef __ANDROID__
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
 			"Dogfight",
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList));
+#endif
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options..."));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
