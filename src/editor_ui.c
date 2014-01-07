@@ -318,7 +318,7 @@ static char *MissionGetCharacterCountStr(UIObject *o, Mission **missionPtr)
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "Characters (%d/%d)", (*missionPtr)->Enemies.size, BADDIE_MAX);
+	sprintf(s, "Characters (%d)", (*missionPtr)->Enemies.size);
 	return s;
 }
 static char *MissionGetSpecialCountStr(UIObject *o, Mission **missionPtr)
@@ -327,8 +327,8 @@ static char *MissionGetSpecialCountStr(UIObject *o, Mission **missionPtr)
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(
-		s, "Mission objective characters (%d/%d)",
-		(*missionPtr)->SpecialChars.size, SPECIAL_MAX);
+		s, "Mission objective characters (%d)",
+		(*missionPtr)->SpecialChars.size);
 	return s;
 }
 static char *MissionGetObjectiveDescription(
@@ -365,7 +365,7 @@ static char *GetWeaponCountStr(UIObject *o, void *v)
 	UNUSED(v);
 	sprintf(
 		s, "Available weapons (%d/%d)",
-		gMission.AvailableWeapons.size, GUN_COUNT);
+		GetNumWeapons(gMission.missionData->Weapons), GUN_COUNT);
 	return s;
 }
 static char *GetObjectCountStr(UIObject *o, void *v)
@@ -373,7 +373,7 @@ static char *GetObjectCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
-	sprintf(s, "Map items (%d/%d)", gMission.MapObjects.size, ITEMS_MAX);
+	sprintf(s, "Map items (%d)", gMission.MapObjects.size);
 	return s;
 }
 typedef struct
@@ -421,17 +421,9 @@ static void MissionDrawMapItem(
 static void MissionDrawWeaponStatus(
 	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
 {
-	int hasWeapon = 0;
-	int i;
+	int hasWeapon;
 	if (!*data->missionPtr) return;
-	for (i = 0; i < (int)(*data->missionPtr)->Weapons.size; i++)
-	{
-		if (*(int *)CArrayGet(&(*data->missionPtr)->Weapons, i) == data->index)
-		{
-			hasWeapon = 1;
-			break;
-		}
-	}
+	hasWeapon = (*data->missionPtr)->Weapons[data->index];
 	DisplayFlag(
 		g,
 		o->Pos,
@@ -722,22 +714,10 @@ static void MissionChangeSpecialChar(MissionIndexData *data, int d)
 }
 static void MissionChangeWeapon(MissionIndexData *data, int d)
 {
-	int hasWeapon = 0;
-	int i;
+	int hasWeapon;
 	UNUSED(d);
-	for (i = 0; i < (int)(*data->missionPtr)->Weapons.size; i++)
-	{
-		if (*(int *)CArrayGet(&(*data->missionPtr)->Weapons, i) == data->index)
-		{
-			hasWeapon = 1;
-			CArrayDelete(&(*data->missionPtr)->Weapons, i);
-			break;
-		}
-	}
-	if (!hasWeapon)
-	{
-		CArrayPushBack(&(*data->missionPtr)->Weapons, &data->index);
-	}
+	hasWeapon = (*data->missionPtr)->Weapons[data->index];
+	(*data->missionPtr)->Weapons[data->index] = !hasWeapon;
 }
 static void MissionChangeMapItem(MissionIndexData *data, int d)
 {
@@ -1241,7 +1221,7 @@ static UIObject *CreateMapItemObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawMapItem;
 	o->ChangeFunc = MissionChangeMapItem;
 	o->Flags = UI_LEAVE_YC;
-	for (i = 0; i < ITEMS_MAX; i++)
+	for (i = 0; i < 32; i++)	// TODO: no limit to objects
 	{
 		int x = 10 + i * 20;
 		o2 = UIObjectCopy(o);
