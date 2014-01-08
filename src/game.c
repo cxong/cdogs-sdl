@@ -82,11 +82,6 @@
 
 #define SPLIT_PADDING 40
 
-static Uint32 ticks_now;
-static Uint32 ticks_then;
-
-static int frames = 0;
-
 long oldtime;
 
 // This is referenced from CDOGS.C to determine time bonus
@@ -140,52 +135,6 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 			&gSoundDevice,
 			SND_SWITCH,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-	}
-}
-
-static void Ticks_Update(void)
-{
-	static int init = 0;
-
-	if (init == 0) {
-		ticks_then = SDL_GetTicks();
-		ticks_now = SDL_GetTicks();
-		init = 1;
-	} else {
-		ticks_then = ticks_now;
-		ticks_now = SDL_GetTicks();
-	}
-
-	return;
-}
-
-static int Ticks_TimeElapsed(Uint32 msec)
-{
-	static Uint32 old_ticks = 0;
-
-	if (old_ticks == 0) {
-		old_ticks = ticks_now;
-		return 0;
-	} else {
-		if (ticks_now - old_ticks > msec) {
-			old_ticks = ticks_now;
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-}
-
-static void Ticks_FrameEnd(void)
-{
-	Uint32 now = SDL_GetTicks();
-	Uint32 ticksSpent = now - ticks_now;
-	Uint32 ticksIdeal = 1000 / FPS_FRAMELIMIT;
-	if (ticksSpent < ticksIdeal)
-	{
-		Uint32 ticksToDelay = ticksIdeal - ticksSpent;
-		SDL_Delay(ticksToDelay);
-		debug(D_VERBOSE, "Delaying %u ticks_now %u now %u\n", ticksToDelay, ticks_now, now);
 	}
 }
 
@@ -628,6 +577,10 @@ int gameloop(void)
 	int isPaused = 0;
 	HUD hud;
 	Vec2i lastPosition = Vec2iZero();
+	Uint32 ticksNow;
+	Uint32 ticksThen;
+	Uint32 ticksElapsed = 0;
+	int frames = 0;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
@@ -643,6 +596,7 @@ int gameloop(void)
 	EventInit(&gEventHandlers, PicManagerGetOldPic(&gPicManager, 340));
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
+	ticksNow = SDL_GetTicks();
 	while (!isDone)
 	{
 		int cmds[MAX_PLAYERS];
@@ -651,10 +605,18 @@ int gameloop(void)
 		int i;
 		int shakeAmount = 0;
 		int allPlayersDestroyed = 1;
-		Ticks_Update();
+		ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		ticksElapsed += ticksNow - ticksThen;
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
+		{
+			SDL_Delay(1);
+			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			continue;
+		}
 
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-		EventPoll(&gEventHandlers, ticks_now);
+		EventPoll(&gEventHandlers, ticksNow);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
 			if (IsPlayerAlive(i))
@@ -815,6 +777,13 @@ int gameloop(void)
 			}
 		}
 
+		ticksElapsed = 0;
+		frames++;
+		if (frames > FPS_FRAMELIMIT)
+		{
+			frames = 0;
+		}
+
 		if (HasObjectives(gCampaign.Entry.mode))
 		{
 			MissionUpdateObjectives();
@@ -846,12 +815,7 @@ int gameloop(void)
 
 		debug(D_VERBOSE, "frames... %d\n", frames);
 
-		if (Ticks_TimeElapsed(MILLISECS_PER_SEC))
-		{
-			frames = 0;
-		}
-
-		HUDUpdate(&hud, ticks_now - ticks_then);
+		HUDUpdate(&hud, ticksElapsed);
 		HUDDraw(&hud, isPaused);
 		if (GameIsMouseUsed(gPlayerDatas))
 		{
@@ -859,8 +823,6 @@ int gameloop(void)
 		}
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-
-		Ticks_FrameEnd();
 	}
 	GameEventsTerminate(&gGameEvents);
 	DrawBufferTerminate(&buffer);
