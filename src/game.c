@@ -78,11 +78,10 @@
 
 #include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */
 
-#define PICKUP_LIMIT         350
+#define MAX_FRAMESKIP	(FPS_FRAMELIMIT / 5)
+#define PICKUP_LIMIT	(FPS_FRAMELIMIT * 5)
 
 #define SPLIT_PADDING 40
-
-long oldtime;
 
 // This is referenced from CDOGS.C to determine time bonus
 int missionTime;
@@ -580,7 +579,9 @@ int gameloop(void)
 	Uint32 ticksNow;
 	Uint32 ticksThen;
 	Uint32 ticksElapsed = 0;
+	Uint32 ticksElapsedDraw = 0;
 	int frames = 0;
+	int framesSkipped = 0;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
@@ -608,6 +609,7 @@ int gameloop(void)
 		ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
 		ticksElapsed += ticksNow - ticksThen;
+		ticksElapsedDraw += ticksNow - ticksThen;
 		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
 		{
 			SDL_Delay(1);
@@ -777,13 +779,6 @@ int gameloop(void)
 			}
 		}
 
-		ticksElapsed = 0;
-		frames++;
-		if (frames > FPS_FRAMELIMIT)
-		{
-			frames = 0;
-		}
-
 		if (HasObjectives(gCampaign.Entry.mode))
 		{
 			MissionUpdateObjectives();
@@ -805,6 +800,21 @@ int gameloop(void)
 			isDone = 1;
 		}
 
+		ticksElapsed -= 1000 / FPS_FRAMELIMIT;
+		frames++;
+		if (frames > FPS_FRAMELIMIT)
+		{
+			frames = 0;
+		}
+		// frame skip
+		if (ticksElapsed > 1000 / FPS_FRAMELIMIT &&
+			framesSkipped < MAX_FRAMESKIP)
+		{
+			framesSkipped++;
+			continue;
+		}
+		framesSkipped = 0;
+
 		lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
 
 		shakeAmount -= ticks;
@@ -815,7 +825,7 @@ int gameloop(void)
 
 		debug(D_VERBOSE, "frames... %d\n", frames);
 
-		HUDUpdate(&hud, ticksElapsed);
+		HUDUpdate(&hud, ticksElapsedDraw);
 		HUDDraw(&hud, isPaused);
 		if (GameIsMouseUsed(gPlayerDatas))
 		{
@@ -823,6 +833,8 @@ int gameloop(void)
 		}
 
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+
+		ticksElapsedDraw = 0;
 	}
 	GameEventsTerminate(&gGameEvents);
 	DrawBufferTerminate(&buffer);

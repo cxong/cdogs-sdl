@@ -254,6 +254,8 @@ static void MakeRandomBackground(
 	GraphicsDevice *device, GraphicsConfig *config)
 {
 	HSV tint;
+	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingInit(&gCampaign.Setting);
 	SetupQuickPlayCampaign(&gCampaign.Setting, &gConfig.QuickPlay);
 	gCampaign.seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
