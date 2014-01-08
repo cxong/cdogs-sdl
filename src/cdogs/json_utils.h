@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013, Cong Xu
+ Copyright (c) 2013-2014, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,10 @@
 #include <json/json.h>
 
 void AddIntPair(json_t *parent, const char *name, int number);
+void AddStringPair(json_t *parent, const char *name, const char *s);
 void LoadBool(int *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
+char *GetString(json_t *node, const char *name);	// remember to free
 
 #define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\
 	json_insert_pair_into_object(\

@@ -268,6 +268,19 @@ const char *GunGetName(gun_e gun)
 {
 	return gGunDescriptions[gun].name;
 }
+gun_e StrGunName(const char *s)
+{
+	gun_e i;
+	for (i = 0; i < GUN_COUNT; i++)
+	{
+		if (strcmp(s, GunGetName(i)) == 0)
+		{
+			return i;
+		}
+	}
+	assert(0 && "cannot parse gun name");
+	return GUN_KNIFE;
+}
 
 Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed)
 {

@@ -154,23 +154,64 @@ gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index)
 }
 
 
-int MapNewLoad(const char *filename, CampaignSetting *c)
+int MapNewScan(const char *filename, char **title, int *numMissions)
 {
-	int32_t i;
-	FILE *f = fopen(filename, "rb");
 	int err = 0;
+	int version;
+	json_t *root = NULL;
+	json_t *missionNode;
+	FILE *f = NULL;
+	if (IsCampaignOldFile(filename))
+	{
+		return ScanCampaignOld(filename, title, numMissions);
+	}
+	f = fopen(filename, "r");
 	if (f == NULL)
 	{
 		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
 		err = -1;
 		goto bail;
 	}
-	f_read32(f, &i, sizeof i);
-	if (i == CAMPAIGN_MAGIC)
+	if (json_stream_parse(f, &root) != JSON_OK)
+	{
+		err = -1;
+		goto bail;
+	}
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		err = -1;
+		goto bail;
+	}
+	*title = GetString(root, "Title");
+	*numMissions = 0;
+	for (missionNode = json_find_first_label(root, "Missions")->child->child;
+		missionNode;
+		missionNode = missionNode->next)
+	{
+		(*numMissions)++;
+	}
+
+bail:
+	if (f)
+	{
+		fclose(f);
+	}
+	return err;
+}
+
+static void LoadMissions(CArray *missions, json_t *missionsNode);
+static void LoadCharacters(CharacterStore *c, json_t *charactersNode);
+int MapNewLoad(const char *filename, CampaignSetting *c)
+{
+	FILE *f = NULL;
+	int err = 0;
+	json_t *root = NULL;
+	int version;
+
+	if (IsCampaignOldFile(filename))
 	{
 		CampaignSettingOld cOld;
-		fclose(f);
-		f = NULL;
 		memset(&cOld, 0, sizeof cOld);
 		err = LoadCampaignOld(filename, &cOld);
 		if (!err)
@@ -179,20 +220,156 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		}
 		return err;
 	}
-	else
+
+	// try to load the new map format
+	f = fopen(filename, "r");
+	if (f == NULL)
 	{
-		// not implemented
+		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
+		err = -1;
+		goto bail;
+	}
+	if (json_stream_parse(f, &root) != JSON_OK)
+	{
+		printf("Error parsing campaign '%s'\n", filename);
+		err = -1;
+		goto bail;
+	}
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
 		assert(0 && "not implemented or unknown campaign");
 		err = -1;
 		goto bail;
 	}
+	CFREE(c->Title);
+	c->Title = GetString(root, "Title");
+	CFREE(c->Author);
+	c->Author = GetString(root, "Author");
+	CFREE(c->Description);
+	c->Description = GetString(root, "Description");
+	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child);
+	LoadCharacters(&c->characters, json_find_first_label(root, "Characters")->child);
 
 bail:
+	json_free_value(&root);
 	if (f != NULL)
 	{
 		fclose(f);
 	}
 	return err;
+}
+
+static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
+static void LoadIntArray(CArray *a, json_t *node);
+static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
+static void LoadMissions(CArray *missions, json_t *missionsNode)
+{
+	json_t *child;
+	for (child = missionsNode->child; child; child = child->next)
+	{
+		Mission m;
+		MissionInit(&m);
+		m.Title = GetString(child, "Title");
+		m.Description = GetString(child, "Description");
+		JSON_UTILS_LOAD_ENUM(m.Type, child, "Type", StrMapType);
+		LoadInt(&m.Size.x, child, "Width");
+		LoadInt(&m.Size.y, child, "Height");
+		LoadInt(&m.WallStyle, child, "WallStyle");
+		LoadInt(&m.FloorStyle, child, "FloorStyle");
+		LoadInt(&m.RoomStyle, child, "RoomStyle");
+		LoadInt(&m.ExitStyle, child, "ExitStyle");
+		LoadInt(&m.KeyStyle, child, "KeyStyle");
+		LoadInt(&m.DoorStyle, child, "DoorStyle");
+		LoadMissionObjectives(&m.Objectives, json_find_first_label(child, "Objectives")->child);
+		LoadIntArray(&m.Enemies, json_find_first_label(child, "Enemies")->child);
+		LoadIntArray(&m.SpecialChars, json_find_first_label(child, "SpecialChars")->child);
+		LoadIntArray(&m.Items, json_find_first_label(child, "Items")->child);
+		LoadIntArray(&m.ItemDensities, json_find_first_label(child, "ItemDensities")->child);
+		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
+		LoadWeapons(m.Weapons, json_find_first_label(child, "Weapons")->child);
+		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
+		LoadInt(&m.WallColor, child, "WallColor");
+		LoadInt(&m.FloorColor, child, "FloorColor");
+		LoadInt(&m.RoomColor, child, "RoomColor");
+		LoadInt(&m.AltColor, child, "AltColor");
+		switch (m.Type)
+		{
+		case MAPTYPE_CLASSIC:
+			LoadInt(&m.u.Classic.Walls, child, "Walls");
+			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
+			LoadInt(&m.u.Classic.Rooms, child, "Rooms");
+			LoadInt(&m.u.Classic.Squares, child, "Squares");
+			break;
+		default:
+			assert(0 && "unknown map type");
+			continue;
+		}
+		CArrayPushBack(missions, &m);
+	}
+}
+static void LoadCharacters(CharacterStore *c, json_t *charactersNode)
+{
+	json_t *child = charactersNode->child;
+	CharacterStoreTerminate(c);
+	CharacterStoreInit(c);
+	while (child)
+	{
+		Character *ch = CharacterStoreAddOther(c);
+		LoadInt(&ch->looks.armedBody, child, "armedBody");
+		LoadInt(&ch->looks.unarmedBody, child, "unarmedBody");
+		LoadInt(&ch->looks.face, child, "face");
+		LoadInt(&ch->looks.skin, child, "skin");
+		LoadInt(&ch->looks.arm, child, "arm");
+		LoadInt(&ch->looks.body, child, "body");
+		LoadInt(&ch->looks.leg, child, "leg");
+		LoadInt(&ch->looks.hair, child, "hair");
+		LoadInt(&ch->speed, child, "speed");
+		JSON_UTILS_LOAD_ENUM(ch->gun, child, "Gun", StrGunName);
+		LoadInt(&ch->maxHealth, child, "maxHealth");
+		LoadInt(&ch->flags, child, "flags");
+		LoadInt(&ch->bot.probabilityToMove, child, "probabilityToMove");
+		LoadInt(&ch->bot.probabilityToTrack, child, "probabilityToTrack");
+		LoadInt(&ch->bot.probabilityToShoot, child, "probabilityToShoot");
+		LoadInt(&ch->bot.actionDelay, child, "actionDelay");
+		CharacterSetLooks(ch, &ch->looks);
+		child = child->next;
+	}
+}
+
+static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode)
+{
+	json_t *child;
+	for (child = objectivesNode->child; child; child = child->next)
+	{
+		MissionObjective mo;
+		memset(&mo, 0, sizeof mo);
+		mo.Description = GetString(child, "Description");
+		JSON_UTILS_LOAD_ENUM(mo.Type, child, "Type", StrObjectiveType);
+		LoadInt(&mo.Index, child, "Index");
+		LoadInt(&mo.Count, child, "Count");
+		LoadInt(&mo.Required, child, "Required");
+		LoadInt(&mo.Flags, child, "Flags");
+		CArrayPushBack(objectives, &mo);
+	}
+}
+static void LoadIntArray(CArray *a, json_t *node)
+{
+	json_t *child;
+	for (child = node->child; child; child = child->next)
+	{
+		int n = atoi(child->text);
+		CArrayPushBack(a, &n);
+	}
+}
+static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode)
+{
+	json_t *child;
+	for (child = weaponsNode->child; child; child = child->next)
+	{
+		gun_e gun = StrGunName(child->text);
+		weapons[gun] = 1;
+	}
 }
 
 static json_t *SaveMissions(CArray *a);
@@ -223,12 +400,9 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 
 	// Common fields
 	AddIntPair(root, "Version", VERSION);
-	json_insert_pair_into_object(
-		root, "Title", json_new_string(c->Title));
-	json_insert_pair_into_object(
-		root, "Author", json_new_string(c->Author));
-	json_insert_pair_into_object(
-		root, "Description", json_new_string(c->Description));
+	AddStringPair(root, "Title", c->Title);
+	AddStringPair(root, "Author", c->Author);
+	AddStringPair(root, "Description", c->Description);
 
 	json_insert_pair_into_object(root, "Missions", SaveMissions(&c->Missions));
 	json_insert_pair_into_object(
@@ -257,12 +431,9 @@ static json_t *SaveMissions(CArray *a)
 	{
 		json_t *node = json_new_object();
 		Mission *mission = CArrayGet(a, i);
-		json_insert_pair_into_object(
-			node, "Title", json_new_string(mission->Title));
-		json_insert_pair_into_object(
-			node, "Description", json_new_string(mission->Description));
-		json_insert_pair_into_object(
-			node, "Type", json_new_string(MapTypeStr(mission->Type)));
+		AddStringPair(node, "Title", mission->Title);
+		AddStringPair(node, "Description", mission->Description);
+		AddStringPair(node, "Type", MapTypeStr(mission->Type));
 		AddIntPair(node, "Width", mission->Size.x);
 		AddIntPair(node, "Height", mission->Size.y);
 
@@ -328,8 +499,10 @@ static json_t *SaveCharacters(CharacterStore *s)
 		AddIntPair(node, "arm", c->looks.arm);
 		AddIntPair(node, "body", c->looks.body);
 		AddIntPair(node, "leg", c->looks.leg);
+		AddIntPair(node, "hair", c->looks.hair);
 		AddIntPair(node, "speed", c->speed);
-		AddIntPair(node, "gun", c->gun);
+		json_insert_pair_into_object(
+			node, "Gun", json_new_string(GunGetName(c->gun)));
 		AddIntPair(node, "maxHealth", c->maxHealth);
 		AddIntPair(node, "flags", c->flags);
 		AddIntPair(node, "probabilityToMove", c->bot.probabilityToMove);
@@ -349,10 +522,8 @@ static json_t *SaveObjectives(CArray *a)
 	{
 		json_t *objNode = json_new_object();
 		MissionObjective *mo = CArrayGet(a, i);
-		json_insert_pair_into_object(
-			objNode, "Description", json_new_string(mo->Description));
-		json_insert_pair_into_object(
-			objNode, "Type", json_new_string(ObjectiveTypeStr(mo->Type)));
+		AddStringPair(objNode, "Description", mo->Description);
+		AddStringPair(objNode, "Type", ObjectiveTypeStr(mo->Type));
 		AddIntPair(objNode, "Index", mo->Index);
 		AddIntPair(objNode, "Count", mo->Count);
 		AddIntPair(objNode, "Required", mo->Required);

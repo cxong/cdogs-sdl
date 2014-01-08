@@ -100,6 +100,8 @@ void MissionTerminate(Mission *m);
 int GetNumWeapons(int weapons[GUN_COUNT]);
 gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
 
+// allocates title
+int MapNewScan(const char *filename, char **title, int *numMissions);
 int MapNewLoad(const char *filename, CampaignSetting *c);
 int MapNewSave(const char *filename, CampaignSetting *c);
 

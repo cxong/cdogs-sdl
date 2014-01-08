@@ -63,6 +63,7 @@
 
 #define MAX_STRING_LEN 1000
 
+#define CAMPAIGN_MAGIC    690304
 #define CAMPAIGN_VERSION  6
 
 #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
@@ -124,7 +125,20 @@ int fwrite32(FILE *f, void *buf)
 }
 
 
-int ScanCampaign(const char *filename, char *title, int *missions)
+int IsCampaignOldFile(const char *filename)
+{
+	int32_t i;
+	FILE *f = fopen(filename, "rb");
+	if (f == NULL)
+	{
+		return 0;
+	}
+	f_read32(f, &i, sizeof i);
+	fclose(f);
+	return i == CAMPAIGN_MAGIC;
+}
+
+int ScanCampaignOld(const char *filename, char **title, int *missions)
 {
 	FILE *f;
 	int i;
@@ -141,8 +155,8 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 			fclose(f);
 			debug(D_NORMAL, "Filename: %s\n", filename);
 			debug(D_NORMAL, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
-			debug(D_NORMAL, "ScanCampaign - bad file!\n");
-			return CAMPAIGN_BADFILE;
+			debug(D_NORMAL, "ScanCampaignOld - bad file!\n");
+			return -1;
 		}
 
 		f_read32(f, &i, sizeof(i));
@@ -150,24 +164,24 @@ int ScanCampaign(const char *filename, char *title, int *missions)
 			fclose(f);
 			debug(
 				D_NORMAL,
-				"ScanCampaign - version mismatch (expected %d, read %d)\n",
+				"ScanCampaignOld - version mismatch (expected %d, read %d)\n",
 				CAMPAIGN_VERSION, i);
-			return CAMPAIGN_VERSIONMISMATCH;
+			return -1;
 		}
 
 		f_read(f, setting.title, sizeof(setting.title));
 		f_read(f, setting.author, sizeof(setting.author));
 		f_read(f, setting.description, sizeof(setting.description));
 		f_read32(f, &setting.missionCount, sizeof(setting.missionCount));
-		strcpy(title, setting.title);
+		CSTRDUP(*title, setting.title);
 		*missions = setting.missionCount;
 
 		fclose(f);
 
-		return CAMPAIGN_OK;
+		return 0;
 	}
-	perror("ScanCampaign - couldn't read file:");
-	return CAMPAIGN_BADPATH;
+	perror("ScanCampaignOld - couldn't read file:");
+	return -1;
 }
 
 #define R32(v) { int32_t _n; f_read32(f, &_n, sizeof _n); (v) = _n; }
@@ -413,13 +427,13 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 {
 	FILE *f = NULL;
 	int32_t i;
-	int err = CAMPAIGN_OK;
+	int err = 0;
 
 	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
 	if (f == NULL)
 	{
-		err = CAMPAIGN_BADPATH;
+		err = -1;
 		goto bail;
 	}
 
@@ -427,7 +441,7 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	if (i != CAMPAIGN_MAGIC)
 	{
 		debug(D_NORMAL, "LoadCampaign - bad file!\n");
-		err = CAMPAIGN_BADFILE;
+		err = -1;
 		goto bail;
 	}
 
@@ -435,7 +449,7 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	if (i != CAMPAIGN_VERSION)
 	{
 		debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
-		err = CAMPAIGN_VERSIONMISMATCH;
+		err = -1;
 		goto bail;
 	}
 

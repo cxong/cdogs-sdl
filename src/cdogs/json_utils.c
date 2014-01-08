@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013, Cong Xu
+ Copyright (c) 2013-2014, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,11 @@ void AddIntPair(json_t *parent, const char *name, int number)
 	char buf[32];
 	sprintf(buf, "%d", number);
 	json_insert_pair_into_object(parent, name, json_new_number(buf));
+}
+void AddStringPair(json_t *parent, const char *name, const char *s)
+{
+	json_insert_pair_into_object(
+		parent, name, json_new_string(json_escape(s)));
 }
 
 int TryLoadValue(json_t **node, const char *name)
@@ -70,4 +75,8 @@ void LoadInt(int *value, json_t *node, const char *name)
 		return;
 	}
 	*value = atoi(node->text);
+}
+char *GetString(json_t *node, const char *name)
+{
+	return json_unescape(json_find_first_label(node, name)->child->text);
 }

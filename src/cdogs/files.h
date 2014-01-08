@@ -55,8 +55,6 @@
 #include "gamedata.h"
 #include "sys_specifics.h"
 
-#define CAMPAIGN_MAGIC    690304
-
 /*
 C-Dogs (classic) file format:
 Sizes in bytes unless otherwise stated
@@ -205,12 +203,8 @@ __attribute__((packed))
 
 void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src);
 
-#define CAMPAIGN_OK                0
-#define CAMPAIGN_BADFILE          -1
-#define CAMPAIGN_VERSIONMISMATCH  -2
-#define CAMPAIGN_BADPATH          -3
-
-int ScanCampaign(const char *filename, char *title, int *missions);
+int ScanCampaignOld(const char *filename, char **title, int *missions);
+int IsCampaignOldFile(const char *filename);
 int LoadCampaignOld(const char *filename, CampaignSettingOld *setting);
 
 const char *GetHomeDirectory(void);

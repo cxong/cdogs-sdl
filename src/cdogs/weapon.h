@@ -129,6 +129,7 @@ void WeaponInitialize(void);
 Weapon WeaponCreate(gun_e gun);
 gunpic_e GunGetPic(gun_e gun);
 const char *GunGetName(gun_e gun);
+gun_e StrGunName(const char *s);
 int GunGetCost(gun_e gun);
 Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed);
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);

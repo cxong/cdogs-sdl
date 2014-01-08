@@ -166,7 +166,7 @@ void LoadQuickPlayEntry(campaign_entry_t *entry)
 	entry->builtinIndex = 0;
 }
 
-int IsCampaignOK(const char *path, char *buf, int *numMissions);
+int IsCampaignOK(const char *path, char **buf, int *numMissions);
 void AddCustomCampaignEntry(
 	campaign_list_t *list,
 	const char *filename,
@@ -206,13 +206,20 @@ void LoadCampaignsFromFolder(
 		else if (file.is_reg)
 		{
 			char title[256];
-			char buf[256];
+			char *buf;
 			int numMissions;
-			if (IsCampaignOK(file.path, buf, &numMissions))
+			if (IsCampaignOK(file.path, &buf, &numMissions))
 			{
+				// cap length of title
+				size_t maxLen = sizeof ((campaign_entry_t *)0)->info - 10;
+				if (strlen(buf) > maxLen)
+				{
+					buf[maxLen] = '\0';
+				}
 				sprintf(title, "%s (%d)", buf, numMissions);
 				AddCustomCampaignEntry(
 					list, file.name, file.path, title, mode, numMissions);
+				CFREE(buf);
 			}
 		}
 	}
@@ -220,9 +227,9 @@ void LoadCampaignsFromFolder(
 	tinydir_close(&dir);
 }
 
-int IsCampaignOK(const char *path, char *buf, int *numMissions)
+int IsCampaignOK(const char *path, char **buf, int *numMissions)
 {
-	return ScanCampaign(path, buf, numMissions) == CAMPAIGN_OK;
+	return MapNewScan(path, buf, numMissions) == 0;
 }
 
 campaign_entry_t *AddAndGetCampaignEntry(
@@ -263,7 +270,8 @@ campaign_entry_t *AddAndGetCampaignEntry(
 	CREALLOC(list->list, sizeof(campaign_entry_t)*list->num);
 	entry = &list->list[list->num-1];
 	memset(entry, 0, sizeof *entry);
-	strcpy(entry->info, title);
+	strncpy(entry->info, title, sizeof entry->info - 1);
+	entry->info[sizeof entry->info - 1] = '\0';
 	entry->mode = mode;
 	return entry;
 }
