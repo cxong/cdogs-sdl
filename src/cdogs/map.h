@@ -99,7 +99,7 @@ TTileItem *MapGetClosestEnemy(
 // Map construction functions
 unsigned short IMapGet(Map *map, Vec2i pos);
 int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
-int MapIsValidStartForWall(Map *map, int x, int y);
+int MapIsValidStartForWall(Map *map, int x, int y, int pad);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
 void MapMakeRoom(
 	Map *map,

@@ -52,15 +52,17 @@
 
 static int MapTryBuildSquare(Map *map);
 static int MapTryBuildRoom(
-	Map *map, Vec2i mapSize,
+	Map *map, Vec2i mapSize, int pad,
 	int hasDoors, int doorMin, int doorMax, int hasKeys,
 	int roomMinP, int roomMaxP, int edgeRooms);
 static int MapTryBuildPillar(
-	Map *map, Vec2i mapSize, int pillarMin, int pillarMax);
-static int MapTryBuildWall(Map *map, Vec2i mapSize, int wallLength);
+	Map *map, Vec2i mapSize, int pad, int pillarMin, int pillarMax);
+static int MapTryBuildWall(
+	Map *map, Vec2i mapSize, int pad, int wallLength);
 void MapClassicLoad(Map *map, Mission *mission)
 {
 	// place squares
+	int pad = MAX(mission->u.Classic.CorridorWidth, 1);
 	int count = 0;
 	int i = 0;
 	while (i < 1000 && count < mission->u.Classic.Squares)
@@ -81,7 +83,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 		int doorMin = CLAMP(mission->u.Classic.Doors.Min, 1, 6);
 		int doorMax = CLAMP(mission->u.Classic.Doors.Max, doorMin, 6);
 		if (MapTryBuildRoom(
-			map, mission->Size,
+			map, mission->Size, pad,
 			mission->u.Classic.Doors.Enabled,
 			doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode),
 			mission->u.Classic.Rooms.Min,
@@ -99,7 +101,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 	while (i < 1000 && count < mission->u.Classic.Pillars.Count)
 	{
 		if (MapTryBuildPillar(
-			map, mission->Size,
+			map, mission->Size, pad,
 			mission->u.Classic.Pillars.Min,
 			mission->u.Classic.Pillars.Max))
 		{
@@ -114,7 +116,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 	while (i < 1000 && count < mission->u.Classic.Walls)
 	{
 		if (MapTryBuildWall(
-			map, mission->Size, mission->u.Classic.WallLength))
+			map, mission->Size, pad, mission->u.Classic.WallLength))
 		{
 			count++;
 		}
@@ -141,7 +143,7 @@ static int MapTryBuildSquare(Map *map)
 }
 static unsigned short GenerateAccessMask(int *accessLevel);
 static int MapTryBuildRoom(
-	Map *map, Vec2i mapSize,
+	Map *map, Vec2i mapSize, int pad,
 	int hasDoors, int doorMin, int doorMax, int hasKeys,
 	int roomMinP, int roomMaxP, int edgeRooms)
 {
@@ -151,8 +153,8 @@ static int MapTryBuildRoom(
 	int w = rand() % (roomMax - roomMin + 1) + roomMin;
 	int h = rand() % (roomMax - roomMin + 1) + roomMin;
 	Vec2i pos = GuessCoords(mapSize);
-	Vec2i clearPos = Vec2iNew(pos.x - 1, pos.y - 1);
-	Vec2i clearSize = Vec2iNew(w + 2, h + 2);
+	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
+	Vec2i clearSize = Vec2iNew(w + 2 * pad, h + 2 * pad);
 	int doors[4];
 
 	// left, right, top, bottom
@@ -236,14 +238,14 @@ static int MapTryBuildRoom(
 	return 0;
 }
 static int MapTryBuildPillar(
-	Map *map, Vec2i mapSize, int pillarMin, int pillarMax)
+	Map *map, Vec2i mapSize, int pad, int pillarMin, int pillarMax)
 {
 	Vec2i size = Vec2iNew(
 		rand() % (pillarMax - pillarMin + 1) + pillarMin,
 		rand() % (pillarMax - pillarMin + 1) + pillarMin);
 	Vec2i pos = GuessCoords(mapSize);
-	Vec2i clearPos = Vec2iNew(pos.x - 1, pos.y - 1);
-	Vec2i clearSize = Vec2iNew(size.x + 2, size.y + 2);
+	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
+	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
 
 	// Check if pillar is at edge; if so only check if clear inside edge
 	if (pos.x == (XMAX - mapSize.x) / 2 ||
@@ -274,71 +276,116 @@ static int MapTryBuildPillar(
 	}
 	return 0;
 }
-static void MapGrowWall(Map *map, int x, int y, int d, int length);
-static int MapTryBuildWall(Map *map, Vec2i mapSize, int wallLength)
+static void MapGrowWall(Map *map, int x, int y, int pad, int d, int length);
+static int MapTryBuildWall(Map *map, Vec2i mapSize, int pad, int wallLength)
 {
 	Vec2i v = GuessCoords(mapSize);
-	if (MapIsValidStartForWall(map, v.x, v.y))
+	if (MapIsValidStartForWall(map, v.x, v.y, pad))
 	{
 		MapMakeWall(map, v);
-		MapGrowWall(map, v.x, v.y, rand() & 3, wallLength);
+		MapGrowWall(map, v.x, v.y, pad, rand() & 3, wallLength);
 		return 1;
 	}
 	return 0;
 }
-static void MapGrowWall(Map *map, int x, int y, int d, int length)
+static void MapGrowWall(Map *map, int x, int y, int pad, int d, int length)
 {
 	int l;
+	Vec2i v;
 
 	if (length <= 0)
 		return;
 
 	switch (d) {
 	case 0:
-		if (y < 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y - 2)) ||
-			IMapGet(map, Vec2iNew(x, y - 2)) ||
-			IMapGet(map, Vec2iNew(x + 1, y - 2)))
+		if (y < 2 + pad)
 		{
 			return;
+		}
+		// Check tiles above
+		// xxxxx
+		//  xxx
+		//   o
+		for (v.y = y - 2; v.y > y - 2 - pad; v.y--)
+		{
+			int level = v.y - (y - 2);
+			for (v.x = x - 1 - level; v.x <= x + 1 + level; v.x++)
+			{
+				if (IMapGet(map, v))
+				{
+					return;
+				}
+			}
 		}
 		y--;
 		break;
 	case 1:
-		if (x > XMAX - 3 ||
-			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x + 2, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 2, y)) ||
-			IMapGet(map, Vec2iNew(x + 2, y + 1)))
+		if (x > XMAX - 2 - pad)
 		{
 			return;
+		}
+		// Check tiles to the right
+		//   x
+		//  xx
+		// oxx
+		//  xx
+		//   x
+		for (v.x = x + 2; v.x < x + 2 + pad; v.x++)
+		{
+			int level = v.x - (x + 2);
+			for (v.y = y - 1 - level; v.y <= y + 1 + level; v.y++)
+			{
+				if (IMapGet(map, v))
+				{
+					return;
+				}
+			}
 		}
 		x++;
 		break;
 	case 2:
-		if (y > YMAX - 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y + 2)) ||
-			IMapGet(map, Vec2iNew(x, y + 2)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 2)))
+		if (y > YMAX - 2 - pad)
 		{
 			return;
+		}
+		// Check tiles below
+		//   o
+		//  xxx
+		// xxxxx
+		for (v.y = y + 2; v.y < y + 2 + pad; v.y++)
+		{
+			int level = v.y - (y + 2);
+			for (v.x = x - 1 - level; v.x <= x + 1 + level; v.x++)
+			{
+				if (IMapGet(map, v))
+				{
+					return;
+				}
+			}
 		}
 		y++;
 		break;
 	case 4:
-		if (x < 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x - 2, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 2, y)) ||
-			IMapGet(map, Vec2iNew(x - 2, y + 1)))
+		if (x < 2 + pad)
 		{
 			return;
+		}
+		// Check tiles to the left
+		// x
+		// xx
+		// xxo
+		// xx
+		// x
+		for (v.x = x - 2; v.x > x - 2 - pad; v.x--)
+		{
+			int level = v.x - (x - 2);
+			for (v.y = y - 1 - level; v.y <= y + 1 + level; v.y++)
+			{
+				if (IMapGet(map, v))
+				{
+					return;
+				}
+			}
 		}
 		x--;
 		break;
@@ -348,10 +395,10 @@ static void MapGrowWall(Map *map, int x, int y, int d, int length)
 	if (length > 0 && (rand() & 3) == 0)
 	{
 		l = rand() % length;
-		MapGrowWall(map, x, y, rand() & 3, l);
+		MapGrowWall(map, x, y, pad, rand() & 3, l);
 		length -= l;
 	}
-	MapGrowWall(map, x, y, d, length);
+	MapGrowWall(map, x, y, pad, d, length);
 }
 
 static Vec2i GuessCoords(Vec2i mapSize)

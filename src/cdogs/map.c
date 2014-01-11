@@ -210,25 +210,24 @@ void MapMakeWall(Map *map, Vec2i pos)
 	map->iMap[pos.y][pos.x] = MAP_WALL;
 }
 
-int MapIsValidStartForWall(Map *map, int x, int y)
+int MapIsValidStartForWall(Map *map, int x, int y, int pad)
 {
+	Vec2i d;
 	if (x == 0 || y == 0 || x == XMAX - 1 || y == YMAX - 1)
 	{
 		return 0;
 	}
-	if (IMapGet(map, Vec2iNew(x - 1, y - 1)) == 0 &&
-		IMapGet(map, Vec2iNew(x, y - 1)) == 0 &&
-		IMapGet(map, Vec2iNew(x + 1, y - 1)) == 0 &&
-		IMapGet(map, Vec2iNew(x - 1, y)) == 0 &&
-		IMapGet(map, Vec2iNew(x, y)) == 0 &&
-		IMapGet(map, Vec2iNew(x + 1, y)) == 0 &&
-		IMapGet(map, Vec2iNew(x - 1, y + 1)) == 0 &&
-		IMapGet(map, Vec2iNew(x, y + 1)) == 0 &&
-		IMapGet(map, Vec2iNew(x + 1, y + 1)) == 0)
+	for (d.x = x - pad; d.x <= x + pad; d.x++)
 	{
-		return 1;
+		for (d.y = y - pad; d.y <= y + pad; d.y++)
+		{
+			if (IMapGet(map, d) != 0)
+			{
+				return 0;
+			}
+		}
 	}
-	return 0;
+	return 1;
 }
 
 void MapMakeRoom(

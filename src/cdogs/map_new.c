@@ -301,6 +301,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 		case MAPTYPE_CLASSIC:
 			LoadInt(&m.u.Classic.Walls, child, "Walls");
 			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
+			LoadInt(&m.u.Classic.CorridorWidth, child, "CorridorWidth");
 			LoadClassicRooms(
 				&m, json_find_first_label(child, "Rooms")->child);
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
@@ -512,6 +513,8 @@ static json_t *SaveMissions(CArray *a)
 		case MAPTYPE_CLASSIC:
 			AddIntPair(node, "Walls", mission->u.Classic.Walls);
 			AddIntPair(node, "WallLength", mission->u.Classic.WallLength);
+			AddIntPair(
+				node, "CorridorWidth", mission->u.Classic.CorridorWidth);
 			json_insert_pair_into_object(
 				node, "Rooms", SaveClassicRooms(mission));
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);

@@ -52,6 +52,7 @@
 		"AltColor": 0,
 		"Walls": 86,
 		"WallLength": 27,
+		"CorridorWidth": 0,
 		"Rooms": {
 			"Count": 0,
 			"Min": 0,
@@ -136,6 +137,7 @@
 		"AltColor": 2,
 		"Walls": 0,
 		"WallLength": 1,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 14,
 			"Min": 6,
@@ -210,6 +212,7 @@
 		"AltColor": 2,
 		"Walls": 9,
 		"WallLength": 11,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 20,
 			"Min": 7,
@@ -276,6 +279,7 @@
 		"AltColor": 0,
 		"Walls": 60,
 		"WallLength": 16,
+		"CorridorWidth": 0,
 		"Rooms": {
 			"Count": 7,
 			"Min": 5,
@@ -339,6 +343,7 @@
 		"AltColor": 0,
 		"Walls": 32,
 		"WallLength": 17,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 0,
 			"Min": 0,
@@ -396,6 +401,7 @@
 		"AltColor": 0,
 		"Walls": 27,
 		"WallLength": 22,
+		"CorridorWidth": 3,
 		"Rooms": {
 			"Count": 0,
 			"Min": 0,
@@ -464,6 +470,7 @@
 		"AltColor": 0,
 		"Walls": 23,
 		"WallLength": 15,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 0,
 			"Min": 0,
@@ -546,6 +553,7 @@
 		"AltColor": 0,
 		"Walls": 18,
 		"WallLength": 7,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 9,
 			"Min": 5,
@@ -620,6 +628,7 @@
 		"AltColor": 0,
 		"Walls": 11,
 		"WallLength": 9,
+		"CorridorWidth": 1,
 		"Rooms": {
 			"Count": 9,
 			"Min": 7,
@@ -699,6 +708,7 @@
 		"AltColor": 0,
 		"Walls": 0,
 		"WallLength": 1,
+		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 7,
 			"Min": 9,

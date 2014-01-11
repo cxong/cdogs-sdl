@@ -149,6 +149,14 @@ static char *MissionGetWallLengthStr(UIObject *o, Mission **missionPtr)
 	sprintf(s, "Len: %d", (*missionPtr)->u.Classic.WallLength);
 	return s;
 }
+static char *MissionGetCorridorWidthStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "CorridorWidth: %d", (*missionPtr)->u.Classic.CorridorWidth);
+	return s;
+}
 static char *MissionGetRoomCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
@@ -728,6 +736,11 @@ static void MissionChangeWallLength(Mission **missionPtr, int d)
 	(*missionPtr)->u.Classic.WallLength =
 		CLAMP((*missionPtr)->u.Classic.WallLength + d, 1, 100);
 }
+static void MissionChangeCorridorWidth(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.CorridorWidth =
+		CLAMP((*missionPtr)->u.Classic.CorridorWidth + d, 1, 5);
+}
 static void MissionChangeRoomCount(Mission **missionPtr, int d)
 {
 	(*missionPtr)->u.Classic.Rooms.Count =
@@ -1054,7 +1067,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	// Mission looks
 	// wall/floor styles etc.
 
-	pos.y += th * 3;
+	pos.y += th * 4;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
@@ -1301,7 +1314,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(45, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	int x = pos.x;
 
 	UIObject *o2 = UIObjectCopy(o);
@@ -1326,6 +1339,16 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetCorridorWidthStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeCorridorWidth;
+	o2->Pos = pos;
+	o2->Size.x = 60;
+	UIObjectAddChild(c, o2);
+	
+	pos.x = x;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetRoomCountStr;
 	o2->Data = missionPtr;

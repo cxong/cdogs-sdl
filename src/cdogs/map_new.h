@@ -87,6 +87,7 @@ typedef struct
 		{
 			int Walls;
 			int WallLength;
+			int CorridorWidth;
 			struct
 			{
 				int Count;
