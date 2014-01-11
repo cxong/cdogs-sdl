@@ -59,8 +59,11 @@
 			"Edge": 0
 		},
 		"Squares": 5,
-		"DoorMin": 1,
-		"DoorMax": 1,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 0,
+			"Max": 0
+		},
 		"Pillars": {
 			"Count": 9,
 			"Min": 1,
@@ -140,8 +143,11 @@
 			"Edge": 0
 		},
 		"Squares": 0,
-		"DoorMin": 2,
-		"DoorMax": 2,
+		"Doors": {
+			"Enabled": 1,
+			"Min": 2,
+			"Max": 2
+		},
 		"Pillars": {
 			"Count": 12,
 			"Min": 2,
@@ -211,8 +217,11 @@
 			"Edge": 0
 		},
 		"Squares": 3,
-		"DoorMin": 2,
-		"DoorMax": 2,
+		"Doors": {
+			"Enabled": 1,
+			"Min": 2,
+			"Max": 2
+		},
 		"Pillars": {
 			"Count": 13,
 			"Min": 2,
@@ -227,7 +236,7 @@
 		"Height": 50,
 		"WallStyle": 6,
 		"FloorStyle": 2,
-		"RoomStyle": 0,
+		"RoomStyle": 2,
 		"ExitStyle": 0,
 		"KeyStyle": 0,
 		"DoorStyle": 0,
@@ -263,19 +272,22 @@
 		"Song": "",
 		"WallColor": 22,
 		"FloorColor": 22,
-		"RoomColor": 0,
+		"RoomColor": 21,
 		"AltColor": 0,
 		"Walls": 60,
 		"WallLength": 16,
 		"Rooms": {
-			"Count": 0,
-			"Min": 0,
-			"Max": 0,
+			"Count": 7,
+			"Min": 5,
+			"Max": 5,
 			"Edge": 0
 		},
 		"Squares": 0,
-		"DoorMin": 1,
-		"DoorMax": 1,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 1,
+			"Max": 2
+		},
 		"Pillars": {
 			"Count": 30,
 			"Min": 1,
@@ -334,8 +346,11 @@
 			"Edge": 0
 		},
 		"Squares": 2,
-		"DoorMin": 1,
-		"DoorMax": 1,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 0,
+			"Max": 0
+		},
 		"Pillars": {
 			"Count": 2,
 			"Min": 3,
@@ -388,8 +403,11 @@
 			"Edge": 0
 		},
 		"Squares": 0,
-		"DoorMin": 1,
-		"DoorMax": 1,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 0,
+			"Max": 0
+		},
 		"Pillars": {
 			"Count": 10,
 			"Min": 4,
@@ -453,8 +471,11 @@
 			"Edge": 0
 		},
 		"Squares": 0,
-		"DoorMin": 1,
-		"DoorMax": 1,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 0,
+			"Max": 0
+		},
 		"Pillars": {
 			"Count": 6,
 			"Min": 2,
@@ -532,8 +553,11 @@
 			"Edge": 1
 		},
 		"Squares": 0,
-		"DoorMin": 1,
-		"DoorMax": 2,
+		"Doors": {
+			"Enabled": 1,
+			"Min": 1,
+			"Max": 2
+		},
 		"Pillars": {
 			"Count": 19,
 			"Min": 1,
@@ -603,8 +627,11 @@
 			"Edge": 1
 		},
 		"Squares": 0,
-		"DoorMin": 1,
-		"DoorMax": 2,
+		"Doors": {
+			"Enabled": 1,
+			"Min": 1,
+			"Max": 2
+		},
 		"Pillars": {
 			"Count": 13,
 			"Min": 1,
@@ -679,8 +706,11 @@
 			"Edge": 1
 		},
 		"Squares": 0,
-		"DoorMin": 2,
-		"DoorMax": 3,
+		"Doors": {
+			"Enabled": 0,
+			"Min": 2,
+			"Max": 3
+		},
 		"Pillars": {
 			"Count": 3,
 			"Min": 3,

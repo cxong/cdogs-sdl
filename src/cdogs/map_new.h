@@ -95,8 +95,12 @@ typedef struct
 				int Edge;
 			} Rooms;
 			int Squares;
-			int DoorMin;
-			int DoorMax;
+			struct
+			{
+				int Enabled;
+				int Min;
+				int Max;
+			} Doors;
 			struct
 			{
 				int Count;

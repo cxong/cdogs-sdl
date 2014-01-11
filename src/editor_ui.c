@@ -191,20 +191,30 @@ static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
 	sprintf(s, "Sqr: %d", (*missionPtr)->u.Classic.Squares);
 	return s;
 }
-static char *MissionGetDoorSizeMinStr(UIObject *o, Mission **missionPtr)
+static void MissionDrawDoorEnabled(
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return;
+	DisplayFlag(
+		g, o->Pos, "Doors", (*missionPtr)->u.Classic.Doors.Enabled,
+		UIObjectIsHighlighted(o));
+}
+static char *MissionGetDoorMinStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "DoorMin: %d", (*missionPtr)->u.Classic.DoorMin);
+	sprintf(s, "DoorMin: %d", (*missionPtr)->u.Classic.Doors.Min);
 	return s;
 }
-static char *MissionGetDoorSizeMaxStr(UIObject *o, Mission **missionPtr)
+static char *MissionGetDoorMaxStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
-	sprintf(s, "DoorMax: %d", (*missionPtr)->u.Classic.DoorMax);
+	sprintf(s, "DoorMax: %d", (*missionPtr)->u.Classic.Doors.Max);
 	return s;
 }
 static char *MissionGetPillarCountStr(UIObject *o, Mission **missionPtr)
@@ -750,19 +760,27 @@ static void MissionChangeSquareCount(Mission **missionPtr, int d)
 	(*missionPtr)->u.Classic.Squares =
 		CLAMP((*missionPtr)->u.Classic.Squares + d, 0, 100);
 }
-static void MissionChangeDoorSizeMin(Mission **missionPtr, int d)
+static void MissionChangeDoorEnabled(Mission **missionPtr, int d)
 {
-	(*missionPtr)->u.Classic.DoorMin =
-		CLAMP((*missionPtr)->u.Classic.DoorMin + d, 1, 6);
-	(*missionPtr)->u.Classic.DoorMax =
-		MAX((*missionPtr)->u.Classic.DoorMin, (*missionPtr)->u.Classic.DoorMax);
+	UNUSED(d);
+	(*missionPtr)->u.Classic.Doors.Enabled =
+		!(*missionPtr)->u.Classic.Doors.Enabled;
 }
-static void MissionChangeDoorSizeMax(Mission **missionPtr, int d)
+static void MissionChangeDoorMin(Mission **missionPtr, int d)
 {
-	(*missionPtr)->u.Classic.DoorMax =
-		CLAMP((*missionPtr)->u.Classic.DoorMax + d, 1, 6);
-	(*missionPtr)->u.Classic.DoorMin =
-		MIN((*missionPtr)->u.Classic.DoorMin, (*missionPtr)->u.Classic.DoorMax);
+	(*missionPtr)->u.Classic.Doors.Min =
+		CLAMP((*missionPtr)->u.Classic.Doors.Min + d, 1, 6);
+	(*missionPtr)->u.Classic.Doors.Max = MAX(
+		(*missionPtr)->u.Classic.Doors.Min,
+		(*missionPtr)->u.Classic.Doors.Max);
+}
+static void MissionChangeDoorMax(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Doors.Max =
+		CLAMP((*missionPtr)->u.Classic.Doors.Max + d, 1, 6);
+	(*missionPtr)->u.Classic.Doors.Min = MIN(
+		(*missionPtr)->u.Classic.Doors.Min,
+		(*missionPtr)->u.Classic.Doors.Max);
 }
 static void MissionChangePillarCount(Mission **missionPtr, int d)
 {
@@ -1344,17 +1362,24 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 
 	pos.x = x;
 	pos.y += th;
-	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = MissionGetDoorSizeMinStr;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
 	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeDoorSizeMin;
+	o2->ChangeFunc = MissionChangeDoorEnabled;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = MissionGetDoorSizeMaxStr;
+	o2->u.LabelFunc = MissionGetDoorMinStr;
 	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeDoorSizeMax;
+	o2->ChangeFunc = MissionChangeDoorMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetDoorMaxStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDoorMax;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

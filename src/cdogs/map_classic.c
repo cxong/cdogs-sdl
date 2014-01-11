@@ -53,7 +53,7 @@
 static int MapTryBuildSquare(Map *map);
 static int MapTryBuildRoom(
 	Map *map, Vec2i mapSize,
-	int doorMin, int doorMax, int hasKeys,
+	int hasDoors, int doorMin, int doorMax, int hasKeys,
 	int roomMinP, int roomMaxP, int edgeRooms);
 static int MapTryBuildPillar(
 	Map *map, Vec2i mapSize, int pillarMin, int pillarMax);
@@ -78,10 +78,11 @@ void MapClassicLoad(Map *map, Mission *mission)
 	i = 0;
 	while (i < 1000 && count < mission->u.Classic.Rooms.Count)
 	{
-		int doorMin = CLAMP(mission->u.Classic.DoorMin, 1, 6);
-		int doorMax = CLAMP(mission->u.Classic.DoorMax, doorMin, 6);
+		int doorMin = CLAMP(mission->u.Classic.Doors.Min, 1, 6);
+		int doorMax = CLAMP(mission->u.Classic.Doors.Max, doorMin, 6);
 		if (MapTryBuildRoom(
 			map, mission->Size,
+			mission->u.Classic.Doors.Enabled,
 			doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode),
 			mission->u.Classic.Rooms.Min,
 			mission->u.Classic.Rooms.Max,
@@ -141,7 +142,7 @@ static int MapTryBuildSquare(Map *map)
 static unsigned short GenerateAccessMask(int *accessLevel);
 static int MapTryBuildRoom(
 	Map *map, Vec2i mapSize,
-	int doorMin, int doorMax, int hasKeys,
+	int hasDoors, int doorMin, int doorMax, int hasKeys,
 	int roomMinP, int roomMaxP, int edgeRooms)
 {
 	// make sure rooms are large enough to accomodate doors
@@ -191,7 +192,7 @@ static int MapTryBuildRoom(
 		int doorsUnplaced = 0;
 		int i;
 		unsigned short accessMask = 0;
-		if (hasKeys)
+		if (hasKeys && hasDoors)
 		{
 			accessMask = GenerateAccessMask(&map->keyAccessCount);
 		}
@@ -222,7 +223,7 @@ static int MapTryBuildRoom(
 		}
 		MapMakeRoom(
 			map, pos.x, pos.y, w, h,
-			doors, doorMin, doorMax, accessMask);
+			hasDoors, doors, doorMin, doorMax, accessMask);
 		if (hasKeys)
 		{
 			if (map->keyAccessCount < 1)

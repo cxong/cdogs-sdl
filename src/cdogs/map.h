@@ -103,8 +103,8 @@ int MapIsValidStartForWall(Map *map, int x, int y);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
 void MapMakeRoom(
 	Map *map,
-	int xOrigin, int yOrigin, int width, int height, int doors[4],
-	int doorMin, int doorMax,
+	int xOrigin, int yOrigin, int width, int height,
+	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short access_mask);
 void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
 void MapMakeWall(Map *map, Vec2i pos);

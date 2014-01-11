@@ -233,12 +233,17 @@ int MapIsValidStartForWall(Map *map, int x, int y)
 
 void MapMakeRoom(
 	Map *map,
-	int xOrigin, int yOrigin, int width, int height, int doors[4],
-	int doorMin, int doorMax,
+	int xOrigin, int yOrigin, int width, int height,
+	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short access_mask)
 {
 	int x, y;
 	int i;
+	unsigned short doorTile = hasDoors ? MAP_DOOR : MAP_ROOM;
+	if (!hasDoors)
+	{
+		access_mask = 0;
+	}
 
 	// Set the perimeter walls and interior
 	for (y = yOrigin; y <= yOrigin + height; y++)
@@ -265,7 +270,7 @@ void MapMakeRoom(
 		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
 		{
 			IMapSet(
-				map, Vec2iNew(xOrigin, yOrigin + height / 2 + i), MAP_DOOR);
+				map, Vec2iNew(xOrigin, yOrigin + height / 2 + i), doorTile);
 		}
 	}
 	if (doors[1])
@@ -278,7 +283,7 @@ void MapMakeRoom(
 			IMapSet(
 				map,
 				Vec2iNew(xOrigin + width, yOrigin + height / 2 + i),
-				MAP_DOOR);
+				doorTile);
 		}
 	}
 	if (doors[2])
@@ -288,7 +293,7 @@ void MapMakeRoom(
 			width - 4);
 		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
 		{
-			IMapSet(map, Vec2iNew(xOrigin + width / 2 + i, yOrigin), MAP_DOOR);
+			IMapSet(map, Vec2iNew(xOrigin + width / 2 + i, yOrigin), doorTile);
 		}
 	}
 	if (doors[3])
@@ -301,7 +306,7 @@ void MapMakeRoom(
 			IMapSet(
 				map,
 				Vec2iNew(xOrigin + width / 2 + i, yOrigin + height),
-				MAP_DOOR);
+				doorTile);
 		}
 	}
 }
