@@ -106,6 +106,7 @@ void MapMakeRoom(
 	int xOrigin, int yOrigin, int width, int height, int doors[4],
 	int doorMin, int doorMax,
 	unsigned short access_mask);
+void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
 void MapMakeWall(Map *map, Vec2i pos);
 
 #endif

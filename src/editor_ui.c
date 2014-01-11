@@ -207,6 +207,30 @@ static char *MissionGetDoorSizeMaxStr(UIObject *o, Mission **missionPtr)
 	sprintf(s, "DoorMax: %d", (*missionPtr)->u.Classic.DoorMax);
 	return s;
 }
+static char *MissionGetPillarCountStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "Pillars: %d", (*missionPtr)->u.Classic.Pillars.Count);
+	return s;
+}
+static char *MissionGetPillarMinStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "PillarMin: %d", (*missionPtr)->u.Classic.Pillars.Min);
+	return s;
+}
+static char *MissionGetPillarMaxStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "PillarMax: %d", (*missionPtr)->u.Classic.Pillars.Max);
+	return s;
+}
 static char *MissionGetDensityStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
@@ -740,6 +764,27 @@ static void MissionChangeDoorSizeMax(Mission **missionPtr, int d)
 	(*missionPtr)->u.Classic.DoorMin =
 		MIN((*missionPtr)->u.Classic.DoorMin, (*missionPtr)->u.Classic.DoorMax);
 }
+static void MissionChangePillarCount(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Pillars.Count =
+		CLAMP((*missionPtr)->u.Classic.Pillars.Count + d, 0, 50);
+}
+static void MissionChangePillarMin(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Pillars.Min =
+		CLAMP((*missionPtr)->u.Classic.Pillars.Min + d, 1, 50);
+	(*missionPtr)->u.Classic.Pillars.Max = MAX(
+		(*missionPtr)->u.Classic.Pillars.Min,
+		(*missionPtr)->u.Classic.Pillars.Max);
+}
+static void MissionChangePillarMax(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Pillars.Max =
+		CLAMP((*missionPtr)->u.Classic.Pillars.Max + d, 1, 50);
+	(*missionPtr)->u.Classic.Pillars.Min = MIN(
+		(*missionPtr)->u.Classic.Pillars.Min,
+		(*missionPtr)->u.Classic.Pillars.Max);
+}
 static void MissionChangeDensity(Mission **missionPtr, int d)
 {
 	(*missionPtr)->EnemyDensity = CLAMP((*missionPtr)->EnemyDensity + d, 0, 100);
@@ -991,7 +1036,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	// Mission looks
 	// wall/floor styles etc.
 
-	pos.y += th * 2;
+	pos.y += th * 3;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
@@ -1310,6 +1355,29 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->u.LabelFunc = MissionGetDoorSizeMaxStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeDoorSizeMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetPillarCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangePillarCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetPillarMinStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangePillarMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetPillarMaxStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangePillarMax;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

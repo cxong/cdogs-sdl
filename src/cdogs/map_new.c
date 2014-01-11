@@ -264,6 +264,7 @@ static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
 static void LoadIntArray(CArray *a, json_t *node);
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
+static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static void LoadMissions(CArray *missions, json_t *missionsNode)
 {
 	json_t *child;
@@ -304,6 +305,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
 			LoadInt(&m.u.Classic.DoorMin, child, "DoorMin");
 			LoadInt(&m.u.Classic.DoorMax, child, "DoorMax");
+			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -382,6 +384,18 @@ static void LoadClassicRooms(Mission *m, json_t *roomsNode)
 	LoadInt(&m->u.Classic.Rooms.Max, roomsNode, "Max");
 	LoadInt(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
 }
+static void LoadClassicPillars(Mission *m, json_t *node, char *name)
+{
+	json_t *child = json_find_first_label(node, name);
+	if (!child || !child->child)
+	{
+		return;
+	}
+	child = child->child;
+	LoadInt(&m->u.Classic.Pillars.Count, child, "Count");
+	LoadInt(&m->u.Classic.Pillars.Min, child, "Min");
+	LoadInt(&m->u.Classic.Pillars.Max, child, "Max");
+}
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
@@ -435,6 +449,7 @@ static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
 static json_t *SaveWeapons(int weapons[GUN_COUNT]);
 static json_t *SaveClassicRooms(Mission *m);
+static json_t *SaveClassicPillars(Mission *m);
 static json_t *SaveMissions(CArray *a)
 {
 	json_t *missionsNode = json_new_array();
@@ -489,6 +504,8 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
 			AddIntPair(node, "DoorMin", mission->u.Classic.DoorMin);
 			AddIntPair(node, "DoorMax", mission->u.Classic.DoorMax);
+			json_insert_pair_into_object(
+				node, "Pillars", SaveClassicPillars(mission));
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -535,6 +552,14 @@ static json_t *SaveClassicRooms(Mission *m)
 	AddIntPair(node, "Min", m->u.Classic.Rooms.Min);
 	AddIntPair(node, "Max", m->u.Classic.Rooms.Max);
 	AddIntPair(node, "Edge", m->u.Classic.Rooms.Edge);
+	return node;
+}
+static json_t *SaveClassicPillars(Mission *m)
+{
+	json_t *node = json_new_object();
+	AddIntPair(node, "Count", m->u.Classic.Pillars.Count);
+	AddIntPair(node, "Min", m->u.Classic.Pillars.Min);
+	AddIntPair(node, "Max", m->u.Classic.Pillars.Max);
 	return node;
 }
 

@@ -60,14 +60,19 @@
 		},
 		"Squares": 5,
 		"DoorMin": 1,
-		"DoorMax": 1
+		"DoorMax": 1,
+		"Pillars": {
+			"Count": 9,
+			"Min": 1,
+			"Max": 5
+		}
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
 		"Description": "The foolish Tantalus know nothing, and are walking into our trap. Sabotage their Clan shields! Find their armory, rumored to house secret \"stranging modules\", and destroy them as well.",
 		"Type": "Classic",
-		"Width": 43,
-		"Height": 42,
+		"Width": 45,
+		"Height": 44,
 		"WallStyle": 3,
 		"FloorStyle": 0,
 		"RoomStyle": 5,
@@ -136,14 +141,19 @@
 		},
 		"Squares": 0,
 		"DoorMin": 2,
-		"DoorMax": 2
+		"DoorMax": 2,
+		"Pillars": {
+			"Count": 12,
+			"Min": 2,
+			"Max": 2
+		}
 	},
 	{
 		"Title": "Fortress Raid",
 		"Description": "The time has come to annihilate Clan Tantalus! Our armies have gathered, ready to crush the defenseless fortress. Spearhead the charge, and leave none alive.",
 		"Type": "Classic",
-		"Width": 56,
-		"Height": 51,
+		"Width": 57,
+		"Height": 53,
 		"WallStyle": 3,
 		"FloorStyle": 0,
 		"RoomStyle": 5,
@@ -202,14 +212,19 @@
 		},
 		"Squares": 3,
 		"DoorMin": 2,
-		"DoorMax": 2
+		"DoorMax": 2,
+		"Pillars": {
+			"Count": 13,
+			"Min": 2,
+			"Max": 3
+		}
 	},
 	{
 		"Title": "Extermination",
 		"Description": "We have taken the Tantalus stronghold and are wiping out the remnants. Some have take refuge in the nearby caves; enter them and exterminate all that you find.",
 		"Type": "Classic",
-		"Width": 48,
-		"Height": 48,
+		"Width": 50,
+		"Height": 50,
 		"WallStyle": 6,
 		"FloorStyle": 2,
 		"RoomStyle": 0,
@@ -260,7 +275,12 @@
 		},
 		"Squares": 0,
 		"DoorMin": 1,
-		"DoorMax": 1
+		"DoorMax": 1,
+		"Pillars": {
+			"Count": 30,
+			"Min": 1,
+			"Max": 2
+		}
 	},
 	{
 		"Title": "The Duel",
@@ -315,13 +335,18 @@
 		},
 		"Squares": 2,
 		"DoorMin": 1,
-		"DoorMax": 1
+		"DoorMax": 1,
+		"Pillars": {
+			"Count": 2,
+			"Min": 3,
+			"Max": 3
+		}
 	},
 	{
 		"Title": "The Search",
 		"Description": "The Tantalus heir, Saul, is escaping into the deep desert! He must be found and eliminated. Be wary of the natives, who are rumored to be formidable fighters.",
 		"Type": "Classic",
-		"Width": 64,
+		"Width": 70,
 		"Height": 64,
 		"WallStyle": 6,
 		"FloorStyle": 2,
@@ -364,14 +389,19 @@
 		},
 		"Squares": 0,
 		"DoorMin": 1,
-		"DoorMax": 1
+		"DoorMax": 1,
+		"Pillars": {
+			"Count": 10,
+			"Min": 4,
+			"Max": 7
+		}
 	},
 	{
 		"Title": "Miner Escort",
 		"Description": "It has been a full year since the annihilation of Clan Tantalus. Saul Tantalus is presumed dead. Yet the natives have been growing restless and raiding cinnamon mining operations. You are tasked with protecting one of these missions.",
 		"Type": "Classic",
-		"Width": 61,
-		"Height": 51,
+		"Width": 63,
+		"Height": 53,
 		"WallStyle": 6,
 		"FloorStyle": 2,
 		"RoomStyle": 0,
@@ -424,14 +454,19 @@
 		},
 		"Squares": 0,
 		"DoorMin": 1,
-		"DoorMax": 1
+		"DoorMax": 1,
+		"Pillars": {
+			"Count": 6,
+			"Min": 2,
+			"Max": 6
+		}
 	},
 	{
 		"Title": "Deep Desert Raid",
 		"Description": "We have finally pinpointed a secret native settlement. Conduct a quick and merciless raid, and exact revenge for their foolish audacity.",
 		"Type": "Classic",
-		"Width": 50,
-		"Height": 40,
+		"Width": 52,
+		"Height": 42,
 		"WallStyle": 4,
 		"FloorStyle": 2,
 		"RoomStyle": 6,
@@ -498,14 +533,19 @@
 		},
 		"Squares": 0,
 		"DoorMin": 1,
-		"DoorMax": 2
+		"DoorMax": 2,
+		"Pillars": {
+			"Count": 19,
+			"Min": 1,
+			"Max": 1
+		}
 	},
 	{
 		"Title": "Captured",
 		"Description": "The raid was a trap! Your troop have been captured and taken to a secret location. Worse, it appears that Saul is still alive and leading the native attacks. Find the rest of your troop and escape immediately!",
 		"Type": "Classic",
-		"Width": 44,
-		"Height": 39,
+		"Width": 48,
+		"Height": 42,
 		"WallStyle": 4,
 		"FloorStyle": 2,
 		"RoomStyle": 6,
@@ -564,14 +604,19 @@
 		},
 		"Squares": 0,
 		"DoorMin": 1,
-		"DoorMax": 2
+		"DoorMax": 2,
+		"Pillars": {
+			"Count": 13,
+			"Min": 1,
+			"Max": 2
+		}
 	},
 	{
 		"Title": "Sabotage",
 		"Description": "Clan Tantalus are massing for battle! Thanks to intelligence you have brought back, we know their plan is to create a massive breach using fusion devices. Destroy these devices, and kill their general, Trolley Hollyoak!",
 		"Type": "Classic",
-		"Width": 64,
-		"Height": 28,
+		"Width": 66,
+		"Height": 30,
 		"WallStyle": 1,
 		"FloorStyle": 3,
 		"RoomStyle": 5,
@@ -635,7 +680,12 @@
 		},
 		"Squares": 0,
 		"DoorMin": 2,
-		"DoorMax": 3
+		"DoorMax": 3,
+		"Pillars": {
+			"Count": 3,
+			"Min": 3,
+			"Max": 3
+		}
 	}],
 	"Characters": [{
 		"armedBody": 1,

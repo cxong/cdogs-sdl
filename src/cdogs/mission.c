@@ -743,6 +743,9 @@ void SetupQuickPlayCampaign(
 			GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
 		m->u.Classic.DoorMin = 1;
 		m->u.Classic.DoorMax = 6;
+		m->u.Classic.Pillars.Count = rand() % 5;
+		m->u.Classic.Pillars.Min = rand() % 3 + 1;
+		m->u.Classic.Pillars.Max = rand() % 3 + m->u.Classic.Pillars.Min;
 		break;
 	default:
 		assert(0 && "unknown map type");

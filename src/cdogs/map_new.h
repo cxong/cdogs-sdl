@@ -97,6 +97,12 @@ typedef struct
 			int Squares;
 			int DoorMin;
 			int DoorMax;
+			struct
+			{
+				int Count;
+				int Min;
+				int Max;
+			} Pillars;
 		} Classic;
 	} u;
 } Mission;

@@ -55,9 +55,12 @@ static int MapTryBuildRoom(
 	Map *map, Vec2i mapSize,
 	int doorMin, int doorMax, int hasKeys,
 	int roomMinP, int roomMaxP, int edgeRooms);
+static int MapTryBuildPillar(
+	Map *map, Vec2i mapSize, int pillarMin, int pillarMax);
 static int MapTryBuildWall(Map *map, Vec2i mapSize, int wallLength);
 void MapClassicLoad(Map *map, Mission *mission)
 {
+	// place squares
 	int count = 0;
 	int i = 0;
 	while (i < 1000 && count < mission->u.Classic.Squares)
@@ -69,6 +72,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 		i++;
 	}
 
+	// place rooms
 	map->keyAccessCount = 0;
 	count = 0;
 	i = 0;
@@ -88,6 +92,22 @@ void MapClassicLoad(Map *map, Mission *mission)
 		i++;
 	}
 
+	// place pillars
+	count = 0;
+	i = 0;
+	while (i < 1000 && count < mission->u.Classic.Pillars.Count)
+	{
+		if (MapTryBuildPillar(
+			map, mission->Size,
+			mission->u.Classic.Pillars.Min,
+			mission->u.Classic.Pillars.Max))
+		{
+			count++;
+		}
+		i++;
+	}
+
+	// place walls
 	count = 0;
 	i = 0;
 	while (i < 1000 && count < mission->u.Classic.Walls)
@@ -210,6 +230,45 @@ static int MapTryBuildRoom(
 				map->keyAccessCount = 1;
 			}
 		}
+		return 1;
+	}
+	return 0;
+}
+static int MapTryBuildPillar(
+	Map *map, Vec2i mapSize, int pillarMin, int pillarMax)
+{
+	Vec2i size = Vec2iNew(
+		rand() % (pillarMax - pillarMin + 1) + pillarMin,
+		rand() % (pillarMax - pillarMin + 1) + pillarMin);
+	Vec2i pos = GuessCoords(mapSize);
+	Vec2i clearPos = Vec2iNew(pos.x - 1, pos.y - 1);
+	Vec2i clearSize = Vec2iNew(size.x + 2, size.y + 2);
+
+	// Check if pillar is at edge; if so only check if clear inside edge
+	if (pos.x == (XMAX - mapSize.x) / 2 ||
+		pos.x == (XMAX - mapSize.x) / 2 + 1)
+	{
+		clearPos.x = (XMAX - mapSize.x) / 2 + 1;
+	}
+	else if (pos.x + size.x == (XMAX + mapSize.x) / 2 - 2 ||
+		pos.x + size.x == (XMAX + mapSize.x) / 2 - 1)
+	{
+		clearSize.x = (XMAX + mapSize.x) / 2 - 2 - pos.x;
+	}
+	if (pos.y == (YMAX - mapSize.y) / 2 ||
+		pos.y == (YMAX - mapSize.y) / 2 + 1)
+	{
+		clearPos.y = (YMAX - mapSize.y) / 2 + 1;
+	}
+	else if (pos.y + size.y == (YMAX + mapSize.y) / 2 - 2 ||
+		pos.y + size.y == (YMAX + mapSize.y) / 2 - 1)
+	{
+		clearSize.y = (YMAX + mapSize.y) / 2 - 2 - pos.y;
+	}
+
+	if (MapIsAreaClear(map, clearPos, clearSize))
+	{
+		MapMakePillar(map, pos, size);
 		return 1;
 	}
 	return 0;

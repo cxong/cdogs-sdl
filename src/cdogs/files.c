@@ -399,6 +399,7 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 	dest->u.Classic.Rooms.Edge = 0;
 	dest->u.Classic.Squares = src->squareCount;
 	dest->u.Classic.DoorMin = dest->u.Classic.DoorMax = 1;
+	dest->u.Classic.Pillars.Count = 0;
 }
 
 void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src)

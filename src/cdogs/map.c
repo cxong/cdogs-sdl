@@ -341,6 +341,17 @@ void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 		}
 	}
 }
+void MapMakePillar(Map *map, Vec2i pos, Vec2i size)
+{
+	Vec2i v;
+	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
+	{
+		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+		{
+			IMapSet(map, v, MAP_WALL);
+		}
+	}
+}
 
 static int W(Map *map, int x, int y)
 {
