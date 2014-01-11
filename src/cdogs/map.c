@@ -54,6 +54,7 @@
 
 #include "collision.h"
 #include "config.h"
+#include "map_classic.h"
 #include "pic_manager.h"
 #include "objs.h"
 #include "triggers.h"
@@ -71,10 +72,6 @@
 #define MAP_SQUARE          4
 #define MAP_NOTHING         6
 
-#define MAP_ACCESS_RED      256
-#define MAP_ACCESS_BLUE     512
-#define MAP_ACCESS_GREEN    1024
-#define MAP_ACCESS_YELLOW   2048
 #define MAP_LEAVEFREE       4096
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00
@@ -200,7 +197,7 @@ static Vec2i GuessPixelCoords(struct MissionOptions *mo)
 	return v;
 }
 
-static unsigned short IMapGet(Map *map, Vec2i pos)
+unsigned short IMapGet(Map *map, Vec2i pos)
 {
 	return map->iMap[pos.y][pos.x];
 }
@@ -208,79 +205,16 @@ static void IMapSet(Map *map, Vec2i pos, unsigned short v)
 {
 	map->iMap[pos.y][pos.x] = v;
 }
-
-static void MapGrow(Map *map, int x, int y, int d, int length)
+void MapMakeWall(Map *map, Vec2i pos)
 {
-	int l;
-
-	if (length <= 0)
-		return;
-
-	switch (d) {
-	case 0:
-		if (y < 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y - 2)) ||
-			IMapGet(map, Vec2iNew(x, y - 2)) ||
-			IMapGet(map, Vec2iNew(x + 1, y - 2)))
-		{
-			return;
-		}
-		y--;
-		break;
-	case 1:
-		if (x > XMAX - 3 ||
-			IMapGet(map, Vec2iNew(x + 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x + 2, y - 1)) ||
-			IMapGet(map, Vec2iNew(x + 2, y)) ||
-			IMapGet(map, Vec2iNew(x + 2, y + 1)))
-		{
-			return;
-		}
-		x++;
-		break;
-	case 2:
-		if (y > YMAX - 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y + 2)) ||
-			IMapGet(map, Vec2iNew(x, y + 2)) ||
-			IMapGet(map, Vec2iNew(x + 1, y + 2)))
-		{
-			return;
-		}
-		y++;
-		break;
-	case 4:
-		if (x < 3 ||
-			IMapGet(map, Vec2iNew(x - 1, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 1, y + 1)) ||
-			IMapGet(map, Vec2iNew(x - 2, y - 1)) ||
-			IMapGet(map, Vec2iNew(x - 2, y)) ||
-			IMapGet(map, Vec2iNew(x - 2, y + 1)))
-		{
-			return;
-		}
-		x--;
-		break;
-	}
-	IMapSet(map, Vec2iNew(x, y), MAP_WALL);
-	length--;
-	if (length > 0 && (rand() & 3) == 0) {
-		l = rand() % length;
-		MapGrow(map, x, y, rand() & 3, l);
-		length -= l;
-	}
-	MapGrow(map, x, y, d, length);
+	map->iMap[pos.y][pos.x] = MAP_WALL;
 }
 
-static int MapIsValidStartForWall(Map *map, int x, int y)
+int MapIsValidStartForWall(Map *map, int x, int y)
 {
 	if (x == 0 || y == 0 || x == XMAX - 1 || y == YMAX - 1)
 	{
-		return 1;
+		return 0;
 	}
 	if (IMapGet(map, Vec2iNew(x - 1, y - 1)) == 0 &&
 		IMapGet(map, Vec2iNew(x, y - 1)) == 0 &&
@@ -297,19 +231,7 @@ static int MapIsValidStartForWall(Map *map, int x, int y)
 	return 0;
 }
 
-static int MapTryBuildWall(Map *map, int wallLength)
-{
-	Vec2i v = GuessCoords(gMission.missionData->Size);
-	if (MapIsValidStartForWall(map, v.x, v.y))
-	{
-		IMapSet(map, v, MAP_WALL);
-		MapGrow(map, v.x, v.y, rand() & 3, wallLength);
-		return 1;
-	}
-	return 0;
-}
-
-static void MapMakeRoom(
+void MapMakeRoom(
 	Map *map,
 	int xOrigin, int yOrigin, int width, int height, int doors[4],
 	int doorMin, int doorMax,
@@ -384,7 +306,7 @@ static void MapMakeRoom(
 	}
 }
 
-static int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
+int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
 {
 	Vec2i v;
 
@@ -408,155 +330,7 @@ static int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
 	return 1;
 }
 
-unsigned short GenerateAccessMask(int *accessLevel)
-{
-	unsigned short accessMask = 0;
-	switch (rand() % 20)
-	{
-		case 0:
-			if (*accessLevel >= 4)
-			{
-				accessMask = MAP_ACCESS_RED;
-				*accessLevel = 5;
-			}
-			break;
-		case 1:
-		case 2:
-			if (*accessLevel >= 3)
-			{
-				accessMask = MAP_ACCESS_BLUE;
-				if (*accessLevel < 4)
-				{
-					*accessLevel = 4;
-				}
-			}
-			break;
-		case 3:
-		case 4:
-		case 5:
-			if (*accessLevel >= 2)
-			{
-				accessMask = MAP_ACCESS_GREEN;
-				if (*accessLevel < 3)
-				{
-					*accessLevel = 3;
-				}
-			}
-			break;
-		case 6:
-		case 7:
-		case 8:
-		case 9:
-			if (*accessLevel >= 1)
-			{
-				accessMask = MAP_ACCESS_YELLOW;
-				if (*accessLevel < 2)
-				{
-					*accessLevel = 2;
-				}
-			}
-			break;
-	}
-	return accessMask;
-}
-
-static int MapBuildRoom(
-	Map *map, Vec2i mapSize,
-	int doorMin, int doorMax, int hasKeys,
-	int roomMinP, int roomMaxP, int edgeRooms)
-{
-	// make sure rooms are large enough to accomodate doors
-	int roomMin = MAX(roomMinP, doorMin + 4);
-	int roomMax = MAX(roomMaxP, doorMin + 4);
-	int w = rand() % (roomMax - roomMin + 1) + roomMin;
-	int h = rand() % (roomMax - roomMin + 1) + roomMin;
-	Vec2i pos = GuessCoords(mapSize);
-	Vec2i clearPos = Vec2iNew(pos.x - 1, pos.y - 1);
-	Vec2i clearSize = Vec2iNew(w + 2, h + 2);
-	int doors[4];
-
-	// left, right, top, bottom
-	doors[0] = doors[1] = doors[2] = doors[3] = 1;
-	if (edgeRooms)
-	{
-		// Check if room is at edge; if so only check if clear inside edge
-		if (pos.x == (XMAX - mapSize.x) / 2 ||
-			pos.x == (XMAX - mapSize.x) / 2 + 1)
-		{
-			clearPos.x = (XMAX - mapSize.x) / 2 + 1;
-			doors[0] = 0;
-		}
-		else if (pos.x + w == (XMAX + mapSize.x) / 2 - 2 ||
-			pos.x + w == (XMAX + mapSize.x) / 2 - 1)
-		{
-			clearSize.x = (XMAX + mapSize.x) / 2 - 2 - pos.x;
-			doors[1] = 0;
-		}
-		if (pos.y == (YMAX - mapSize.y) / 2 ||
-			pos.y == (YMAX - mapSize.y) / 2 + 1)
-		{
-			clearPos.y = (YMAX - mapSize.y) / 2 + 1;
-			doors[2] = 0;
-		}
-		else if (pos.y + h == (YMAX + mapSize.y) / 2 - 2 ||
-			pos.y + h == (YMAX + mapSize.y) / 2 - 1)
-		{
-			clearSize.y = (YMAX + mapSize.y) / 2 - 2 - pos.y;
-			doors[3] = 0;
-		}
-	}
-
-	if (MapIsAreaClear(map, clearPos, clearSize))
-	{
-		int doormask = rand() % 15 + 1;
-		int doorsUnplaced = 0;
-		int i;
-		unsigned short accessMask = 0;
-		if (hasKeys)
-		{
-			accessMask = GenerateAccessMask(&map->keyAccessCount);
-		}
-
-		// Try to place doors according to the random mask
-		// If we cannot place a door, remember this and try to place it
-		// on the next door
-		for (i = 0; i < 4; i++)
-		{
-			if ((doormask & (1 << i)) && !doors[i])
-			{
-				doorsUnplaced++;
-			}
-		}
-		for (i = 0; i < 4; i++)
-		{
-			if (!(doormask & (1 << i)))
-			{
-				if (doorsUnplaced == 0)
-				{
-					doors[i] = 0;
-				}
-				else
-				{
-					doorsUnplaced--;
-				}
-			}
-		}
-		MapMakeRoom(
-			map, pos.x, pos.y, w, h,
-			doors, doorMin, doorMax, accessMask);
-		if (hasKeys)
-		{
-			if (map->keyAccessCount < 1)
-			{
-				map->keyAccessCount = 1;
-			}
-		}
-		return 1;
-	}
-	return 0;
-}
-
-static void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
+void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 {
 	Vec2i v;
 	for (v.y = pos.y; v.y <= pos.y + size.y; v.y++)
@@ -566,22 +340,6 @@ static void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 			IMapSet(map, v, MAP_SQUARE);
 		}
 	}
-}
-
-static int MapTryBuildSquare(Map *map)
-{
-	Vec2i v = GuessCoords(gMission.missionData->Size);
-	Vec2i size;
-	size.x = rand() % 9 + 7;
-	size.y = rand() % 9 + 7;
-
-	if (MapIsAreaClear(
-			map, Vec2iNew(v.x - 1, v.y - 1), Vec2iNew(size.x + 2, size.y + 2)))
-	{
-		MapMakeSquare(map, v, size);
-		return 1;
-	}
-	return 0;
 }
 
 static int W(Map *map, int x, int y)
@@ -1520,46 +1278,7 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 
 	if (mission->Type == MAPTYPE_CLASSIC)
 	{
-		count = 0;
-		i = 0;
-		while (i < 1000 && count < mission->u.Classic.Squares)
-		{
-			if (MapTryBuildSquare(map))
-			{
-				count++;
-			}
-			i++;
-		}
-
-		map->keyAccessCount = 0;
-		count = 0;
-		i = 0;
-		while (i < 1000 && count < mission->u.Classic.Rooms.Count)
-		{
-			int doorMin = CLAMP(mission->u.Classic.DoorMin, 1, 6);
-			int doorMax = CLAMP(mission->u.Classic.DoorMax, doorMin, 6);
-			if (MapBuildRoom(
-				map, mission->Size,
-				doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode),
-				mission->u.Classic.Rooms.Min,
-				mission->u.Classic.Rooms.Max,
-				mission->u.Classic.Rooms.Edge))
-			{
-				count++;
-			}
-			i++;
-		}
-
-		count = 0;
-		i = 0;
-		while (i < 1000 && count < mission->u.Classic.Walls)
-		{
-			if (MapTryBuildWall(map, mission->u.Classic.WallLength))
-			{
-				count++;
-			}
-			i++;
-		}
+		MapClassicLoad(map, mission);
 	}
 	else
 	{

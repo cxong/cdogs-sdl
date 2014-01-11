@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,66 +46,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP
-#define __MAP
+#ifndef __MAP_CLASSIC
+#define __MAP_CLASSIC
 
-#include "gamedata.h"
-#include "pic.h"
-#include "tile.h"
-#include "vector.h"
+#include "map.h"
 
-#define YMAX    128
-#define XMAX    128
-
-#define MAP_ACCESS_RED      256
-#define MAP_ACCESS_BLUE     512
-#define MAP_ACCESS_GREEN    1024
-#define MAP_ACCESS_YELLOW   2048
-
-typedef struct
-{
-	Tile tiles[YMAX][XMAX];
-
-	// internal data structure to help build the map
-	unsigned short iMap[YMAX][XMAX];
-
-	int tilesSeen;
-	int tilesTotal;
-	int keyAccessCount;
-} Map;
-
-extern Map gMap;
-
-Tile *MapGetTile(Map *map, Vec2i pos);
-int MapIsTileIn(Map *map, Vec2i pos);
-
-int MapHasLockedRooms(Map *map);
-int MapPosIsHighAccess(Map *map, int x, int y);
-int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
-
-void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
-void MapRemoveTileItem(Map *map, TTileItem *t);
-
-void MapLoad(Map *map, struct MissionOptions *mo);
-int MapIsFullPosOKforPlayer(Map *map, int x, int y);
-void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
-void MapShowExitArea(Map *map);
-void MapMarkAsVisited(Map *map, Vec2i pos);
-void MapMarkAllAsVisited(Map *map);
-int MapGetExploredPercentage(Map *map);
-TTileItem *MapGetClosestEnemy(
-	TTileItem *from, Vec2i offset, int flags, int player, int maxRadius);
-
-// Map construction functions
-unsigned short IMapGet(Map *map, Vec2i pos);
-int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
-int MapIsValidStartForWall(Map *map, int x, int y);
-void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
-void MapMakeRoom(
-	Map *map,
-	int xOrigin, int yOrigin, int width, int height, int doors[4],
-	int doorMin, int doorMax,
-	unsigned short access_mask);
-void MapMakeWall(Map *map, Vec2i pos);
+void MapClassicLoad(Map *map, Mission *mission);
 
 #endif

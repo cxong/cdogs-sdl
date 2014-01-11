@@ -34,6 +34,7 @@ set(CDOGS_SOURCES
 	json_utils.c
 	keyboard.c
 	map.c
+	map_classic.c
 	map_new.c
 	mission.c
 	mouse.c
@@ -84,6 +85,7 @@ set(CDOGS_HEADERS
 	json_utils.h
 	keyboard.h
 	map.h
+	map_classic.h
 	map_new.h
 	mission.h
 	mouse.h
