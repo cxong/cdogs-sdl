@@ -453,7 +453,7 @@ static void MissionUpdateObjectives(void)
 	}
 }
 
-int HandleKey(int cmd, int *isPaused)
+int HandleKey(int cmd, int *isPaused, int *hasUsedMap)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
 	{
@@ -463,6 +463,7 @@ int HandleKey(int cmd, int *isPaused)
 			(cmd & CMD_BUTTON3) != 0)
 		{
 			int i;
+			*hasUsedMap = 1;
 			if (!hasDisplayedAutomap)
 			{
 				AutomapDraw(0);
@@ -606,6 +607,8 @@ int gameloop(void)
 		int i;
 		int shakeAmount = 0;
 		int allPlayersDestroyed = 1;
+		int hasUsedMap = 0;
+		Uint32 ticksBeforeMap;
 		ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
 		ticksElapsed += ticksNow - ticksThen;
@@ -631,7 +634,8 @@ int gameloop(void)
 				cmdAll |= cmds[i];
 			}
 		}
-		is_esc_pressed = HandleKey(cmdAll, &isPaused);
+		ticksBeforeMap = SDL_GetTicks();
+		is_esc_pressed = HandleKey(cmdAll, &isPaused, &hasUsedMap);
 		if (is_esc_pressed)
 		{
 			if (isPaused)
@@ -642,6 +646,11 @@ int gameloop(void)
 			{
 				isPaused = 1;
 			}
+		}
+		if (hasUsedMap)
+		{
+			// Map keeps the game paused, reset the time elapsed counter
+			ticksNow += SDL_GetTicks() - ticksBeforeMap;
 		}
 		// Cheat: special weapon activation
 		if (IsPlayerAlive(0))
