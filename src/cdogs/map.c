@@ -152,23 +152,21 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	RemoveItemFromTile(t, tile);
 }
 
-static Vec2i GuessCoords(struct MissionOptions *mo)
+static Vec2i GuessCoords(Vec2i mapSize)
 {
 	Vec2i v;
-	if (mo->missionData->Size.x)
+	if (mapSize.x)
 	{
-		v.x = (rand() % mo->missionData->Size.x) +
-			(XMAX - mo->missionData->Size.x) / 2;
+		v.x = (rand() % mapSize.x) + (XMAX - mapSize.x) / 2;
 	}
 	else
 	{
 		v.x = rand() % XMAX;
 	}
 
-	if (mo->missionData->Size.y)
+	if (mapSize.y)
 	{
-		v.y = (rand() % mo->missionData->Size.y) +
-			(YMAX - mo->missionData->Size.y) / 2;
+		v.y = (rand() % mapSize.y) + (YMAX - mapSize.y) / 2;
 	}
 	else
 	{
@@ -301,7 +299,7 @@ static int MapIsValidStartForWall(Map *map, int x, int y)
 
 static int MapTryBuildWall(Map *map, int wallLength)
 {
-	Vec2i v = GuessCoords(&gMission);
+	Vec2i v = GuessCoords(gMission.missionData->Size);
 	if (MapIsValidStartForWall(map, v.x, v.y))
 	{
 		IMapSet(map, v, MAP_WALL);
@@ -313,7 +311,7 @@ static int MapTryBuildWall(Map *map, int wallLength)
 
 static void MapMakeRoom(
 	Map *map,
-	int xOrigin, int yOrigin, int width, int height, int doors,
+	int xOrigin, int yOrigin, int width, int height, int doors[4],
 	int doorMin, int doorMax,
 	unsigned short access_mask)
 {
@@ -337,7 +335,7 @@ static void MapMakeRoom(
 	}
 
 	// Set the doors
-	if (doors & 1)
+	if (doors[0])
 	{
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
@@ -348,7 +346,7 @@ static void MapMakeRoom(
 				map, Vec2iNew(xOrigin, yOrigin + height / 2 + i), MAP_DOOR);
 		}
 	}
-	if (doors & 2)
+	if (doors[1])
 	{
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
@@ -361,7 +359,7 @@ static void MapMakeRoom(
 				MAP_DOOR);
 		}
 	}
-	if (doors & 4)
+	if (doors[2])
 	{
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
@@ -371,7 +369,7 @@ static void MapMakeRoom(
 			IMapSet(map, Vec2iNew(xOrigin + width / 2 + i, yOrigin), MAP_DOOR);
 		}
 	}
-	if (doors & 8)
+	if (doors[3])
 	{
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
@@ -462,26 +460,89 @@ unsigned short GenerateAccessMask(int *accessLevel)
 	return accessMask;
 }
 
-static int MapBuildRoom(Map *map, int doorMin, int doorMax, int hasKeys)
+static int MapBuildRoom(
+	Map *map, Vec2i mapSize,
+	int doorMin, int doorMax, int hasKeys, int edgeRooms)
 {
-	int w, h;
-	Vec2i pos = GuessCoords(&gMission);
 	// make sure rooms are large enough to accomodate doors
 	int roomMin = MAX(5, doorMin + 4);
 	int roomMax = 10;
-	w = rand() % (roomMax - roomMin + 1) + roomMin;
-	h = rand() % (roomMax - roomMin + 1) + roomMin;
+	int w = rand() % (roomMax - roomMin + 1) + roomMin;
+	int h = rand() % (roomMax - roomMin + 1) + roomMin;
+	Vec2i pos = GuessCoords(mapSize);
+	Vec2i clearPos = Vec2iNew(pos.x - 1, pos.y - 1);
+	Vec2i clearSize = Vec2iNew(w + 2, h + 2);
+	int doors[4];
 
-	if (MapIsAreaClear(map, Vec2iNew(pos.x - 1, pos.y - 1), Vec2iNew(w + 2, h + 2)))
+	// left, right, top, bottom
+	doors[0] = doors[1] = doors[2] = doors[3] = 1;
+	if (edgeRooms)
 	{
+		// Check if room is at edge; if so only check if clear inside edge
+		if (pos.x == (XMAX - mapSize.x) / 2 ||
+			pos.x == (XMAX - mapSize.x) / 2 + 1)
+		{
+			clearPos.x = (XMAX - mapSize.x) / 2 + 1;
+			doors[0] = 0;
+		}
+		else if (pos.x + w == (XMAX + mapSize.x) / 2 - 2 ||
+			pos.x + w == (XMAX + mapSize.x) / 2 - 1)
+		{
+			clearSize.x = (XMAX + mapSize.x) / 2 - 2 - pos.x;
+			doors[1] = 0;
+		}
+		if (pos.y == (YMAX - mapSize.y) / 2 ||
+			pos.y == (YMAX - mapSize.y) / 2 + 1)
+		{
+			clearPos.y = (YMAX - mapSize.y) / 2 + 1;
+			doors[2] = 0;
+		}
+		else if (pos.y + h == (YMAX + mapSize.y) / 2 - 2 ||
+			pos.y + h == (YMAX + mapSize.y) / 2 - 1)
+		{
+			clearSize.y = (YMAX + mapSize.y) / 2 - 2 - pos.y;
+			doors[3] = 0;
+		}
+	}
+
+	if (MapIsAreaClear(map, clearPos, clearSize))
+	{
+		int doormask = rand() % 15 + 1;
+		int doorsUnplaced = 0;
+		int i;
 		unsigned short accessMask = 0;
 		if (hasKeys)
 		{
 			accessMask = GenerateAccessMask(&map->keyAccessCount);
 		}
+
+		// Try to place doors according to the random mask
+		// If we cannot place a door, remember this and try to place it
+		// on the next door
+		for (i = 0; i < 4; i++)
+		{
+			if ((doormask & (1 << i)) && !doors[i])
+			{
+				doorsUnplaced++;
+			}
+		}
+		for (i = 0; i < 4; i++)
+		{
+			if (!(doormask & (1 << i)))
+			{
+				if (doorsUnplaced == 0)
+				{
+					doors[i] = 0;
+				}
+				else
+				{
+					doorsUnplaced--;
+				}
+			}
+		}
 		MapMakeRoom(
 			map, pos.x, pos.y, w, h,
-			rand() % 15 + 1, doorMin, doorMax, accessMask);
+			doors, doorMin, doorMax, accessMask);
 		if (hasKeys)
 		{
 			if (map->keyAccessCount < 1)
@@ -508,7 +569,7 @@ static void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 
 static int MapTryBuildSquare(Map *map)
 {
-	Vec2i v = GuessCoords(&gMission);
+	Vec2i v = GuessCoords(gMission.missionData->Size);
 	Vec2i size;
 	size.x = rand() % 9 + 7;
 	size.y = rand() % 9 + 7;
@@ -971,7 +1032,7 @@ static int MapTryPlaceBlowup(
 
 	while (i > 0)
 	{
-		Vec2i v = GuessCoords(mo);
+		Vec2i v = GuessCoords(mission->Size);
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
@@ -994,7 +1055,7 @@ static void MapPlaceCard(Map *map, int pic, int card, int map_access)
 {
 	for (;;)
 	{
-		Vec2i v = GuessCoords(&gMission);
+		Vec2i v = GuessCoords(gMission.missionData->Size);
 		Tile *t;
 		Tile *tBelow;
 		unsigned short iMap;
@@ -1477,7 +1538,9 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 			int doorMin = CLAMP(mission->u.Classic.DoorMin, 1, 6);
 			int doorMax = CLAMP(mission->u.Classic.DoorMax, doorMin, 6);
 			if (MapBuildRoom(
-				map, doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode)))
+				map, mission->Size,
+				doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode),
+				mission->u.Classic.EdgeRooms))
 			{
 				count++;
 			}

@@ -157,6 +157,16 @@ static char *MissionGetRoomCountStr(UIObject *o, Mission **missionPtr)
 	sprintf(s, "Rooms: %d", (*missionPtr)->u.Classic.Rooms);
 	return s;
 }
+static void MissionDrawEdgeRooms(
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return;
+	DisplayFlag(
+		g, o->Pos, "Edge rooms", (*missionPtr)->u.Classic.EdgeRooms,
+		UIObjectIsHighlighted(o));
+}
 static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
@@ -672,6 +682,11 @@ static void MissionChangeRoomCount(Mission **missionPtr, int d)
 {
 	(*missionPtr)->u.Classic.Rooms =
 		CLAMP((*missionPtr)->u.Classic.Rooms + d, 0, 100);
+}static void MissionChangeEdgeRooms(Mission **missionPtr, int d)
+{
+	UNUSED(d);
+	(*missionPtr)->u.Classic.EdgeRooms =
+		!(*missionPtr)->u.Classic.EdgeRooms;
 }
 static void MissionChangeSquareCount(Mission **missionPtr, int d)
 {
@@ -907,7 +922,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	pos.y = 10 + 2 * th;
 
 	o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(35, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(35, th));
 
 	pos.x = 20;
 	o2 = UIObjectCopy(o);
@@ -933,7 +948,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 
 	pos.x += 40;
-	o2 = UIObjectCreate(UITYPE_TAB, 0, pos, Vec2iNew(50, 25 + th));
+	o2 = UIObjectCreate(UITYPE_TAB, 0, pos, Vec2iNew(50, th));
 	// Properties for classic C-Dogs maps
 	pos.x = 20;
 	pos.y += th;
@@ -1190,7 +1205,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(40, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
 
 	UIObject *o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = CampaignGetSeedStr;
@@ -1199,42 +1214,48 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	CSTRDUP(o2->Tooltip, "Preview with different random seed");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetWallCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallCount;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetWallLengthStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallLength;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetRoomCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomCount;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2->u.CustomDrawFunc = MissionDrawEdgeRooms;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeEdgeRooms;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeSquareCount;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetDoorSizeMinStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeDoorSizeMin;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetDoorSizeMaxStr;
 	o2->Data = missionPtr;

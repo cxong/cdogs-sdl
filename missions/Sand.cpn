@@ -53,6 +53,7 @@
 		"Walls": 86,
 		"WallLength": 27,
 		"Rooms": 0,
+		"EdgeRooms": 0,
 		"Squares": 5,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -124,6 +125,7 @@
 		"Walls": 0,
 		"WallLength": 1,
 		"Rooms": 10,
+		"EdgeRooms": 0,
 		"Squares": 0,
 		"DoorMin": 2,
 		"DoorMax": 2
@@ -185,6 +187,7 @@
 		"Walls": 9,
 		"WallLength": 11,
 		"Rooms": 12,
+		"EdgeRooms": 0,
 		"Squares": 3,
 		"DoorMin": 2,
 		"DoorMax": 2
@@ -238,6 +241,7 @@
 		"Walls": 60,
 		"WallLength": 16,
 		"Rooms": 0,
+		"EdgeRooms": 0,
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -288,6 +292,7 @@
 		"Walls": 32,
 		"WallLength": 17,
 		"Rooms": 0,
+		"EdgeRooms": 0,
 		"Squares": 2,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -332,6 +337,7 @@
 		"Walls": 27,
 		"WallLength": 22,
 		"Rooms": 0,
+		"EdgeRooms": 0,
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -387,6 +393,7 @@
 		"Walls": 23,
 		"WallLength": 15,
 		"Rooms": 0,
+		"EdgeRooms": 0,
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -455,7 +462,8 @@
 		"AltColor": 0,
 		"Walls": 18,
 		"WallLength": 7,
-		"Rooms": 6,
+		"Rooms": 7,
+		"EdgeRooms": 1,
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 2
@@ -516,7 +524,8 @@
 		"AltColor": 0,
 		"Walls": 11,
 		"WallLength": 9,
-		"Rooms": 7,
+		"Rooms": 9,
+		"EdgeRooms": 1,
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 2
@@ -582,7 +591,8 @@
 		"AltColor": 0,
 		"Walls": 0,
 		"WallLength": 1,
-		"Rooms": 6,
+		"Rooms": 7,
+		"EdgeRooms": 1,
 		"Squares": 0,
 		"DoorMin": 2,
 		"DoorMax": 3
