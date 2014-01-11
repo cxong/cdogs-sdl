@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2014, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -182,6 +182,7 @@ void WeaponMenuCreate(
 		"",
 		MENU_TYPE_NORMAL,
 		0);
+	ms->root->u.normal.maxItems = 11;
 	for (i = 0; i < GetNumWeapons(gMission.missionData->Weapons); i++)
 	{
 		const char *gunName = gGunDescriptions[
