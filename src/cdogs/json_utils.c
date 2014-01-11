@@ -44,7 +44,7 @@ void AddStringPair(json_t *parent, const char *name, const char *s)
 
 int TryLoadValue(json_t **node, const char *name)
 {
-	if (*node == NULL)
+	if (*node == NULL || (*node)->type != JSON_OBJECT)
 	{
 		return 0;
 	}

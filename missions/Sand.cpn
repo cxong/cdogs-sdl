@@ -52,8 +52,12 @@
 		"AltColor": 0,
 		"Walls": 86,
 		"WallLength": 27,
-		"Rooms": 0,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": 0
+		},
 		"Squares": 5,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -84,7 +88,7 @@
 			"Index": 23,
 			"Count": 3,
 			"Required": 2,
-			"Flags": 0
+			"Flags": 4
 		}],
 		"Enemies": [2,
 		3,
@@ -124,8 +128,12 @@
 		"AltColor": 2,
 		"Walls": 0,
 		"WallLength": 1,
-		"Rooms": 10,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 14,
+			"Min": 6,
+			"Max": 6,
+			"Edge": 0
+		},
 		"Squares": 0,
 		"DoorMin": 2,
 		"DoorMax": 2
@@ -186,8 +194,12 @@
 		"AltColor": 2,
 		"Walls": 9,
 		"WallLength": 11,
-		"Rooms": 12,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 20,
+			"Min": 7,
+			"Max": 7,
+			"Edge": 0
+		},
 		"Squares": 3,
 		"DoorMin": 2,
 		"DoorMax": 2
@@ -240,8 +252,12 @@
 		"AltColor": 0,
 		"Walls": 60,
 		"WallLength": 16,
-		"Rooms": 0,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": 0
+		},
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -291,8 +307,12 @@
 		"AltColor": 0,
 		"Walls": 32,
 		"WallLength": 17,
-		"Rooms": 0,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": 0
+		},
 		"Squares": 2,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -336,8 +356,12 @@
 		"AltColor": 0,
 		"Walls": 27,
 		"WallLength": 22,
-		"Rooms": 0,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": 0
+		},
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -392,8 +416,12 @@
 		"AltColor": 0,
 		"Walls": 23,
 		"WallLength": 15,
-		"Rooms": 0,
-		"EdgeRooms": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": 0
+		},
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 1
@@ -424,7 +452,7 @@
 			"Index": 23,
 			"Count": 4,
 			"Required": 0,
-			"Flags": 0
+			"Flags": 4
 		},
 		{
 			"Description": "Cinnamon tea!",
@@ -462,8 +490,12 @@
 		"AltColor": 0,
 		"Walls": 18,
 		"WallLength": 7,
-		"Rooms": 7,
-		"EdgeRooms": 1,
+		"Rooms": {
+			"Count": 9,
+			"Min": 5,
+			"Max": 7,
+			"Edge": 1
+		},
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 2
@@ -486,7 +518,7 @@
 			"Index": 14,
 			"Count": 1,
 			"Required": 1,
-			"Flags": 0
+			"Flags": 4
 		},
 		{
 			"Description": "Collect any intelligence",
@@ -524,8 +556,12 @@
 		"AltColor": 0,
 		"Walls": 11,
 		"WallLength": 9,
-		"Rooms": 9,
-		"EdgeRooms": 1,
+		"Rooms": {
+			"Count": 9,
+			"Min": 7,
+			"Max": 9,
+			"Edge": 1
+		},
 		"Squares": 0,
 		"DoorMin": 1,
 		"DoorMax": 2
@@ -591,8 +627,12 @@
 		"AltColor": 0,
 		"Walls": 0,
 		"WallLength": 1,
-		"Rooms": 7,
-		"EdgeRooms": 1,
+		"Rooms": {
+			"Count": 7,
+			"Min": 9,
+			"Max": 14,
+			"Edge": 1
+		},
 		"Squares": 0,
 		"DoorMin": 2,
 		"DoorMax": 3

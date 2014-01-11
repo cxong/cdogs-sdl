@@ -263,6 +263,7 @@ bail:
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
 static void LoadIntArray(CArray *a, json_t *node);
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
+static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadMissions(CArray *missions, json_t *missionsNode)
 {
 	json_t *child;
@@ -298,8 +299,8 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 		case MAPTYPE_CLASSIC:
 			LoadInt(&m.u.Classic.Walls, child, "Walls");
 			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
-			LoadInt(&m.u.Classic.Rooms, child, "Rooms");
-			LoadInt(&m.u.Classic.EdgeRooms, child, "EdgeRooms");
+			LoadClassicRooms(
+				&m, json_find_first_label(child, "Rooms")->child);
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
 			LoadInt(&m.u.Classic.DoorMin, child, "DoorMin");
 			LoadInt(&m.u.Classic.DoorMax, child, "DoorMax");
@@ -374,6 +375,13 @@ static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode)
 		weapons[gun] = 1;
 	}
 }
+static void LoadClassicRooms(Mission *m, json_t *roomsNode)
+{
+	LoadInt(&m->u.Classic.Rooms.Count, roomsNode, "Count");
+	LoadInt(&m->u.Classic.Rooms.Min, roomsNode, "Min");
+	LoadInt(&m->u.Classic.Rooms.Max, roomsNode, "Max");
+	LoadInt(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
+}
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
@@ -426,6 +434,7 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
 static json_t *SaveWeapons(int weapons[GUN_COUNT]);
+static json_t *SaveClassicRooms(Mission *m);
 static json_t *SaveMissions(CArray *a)
 {
 	json_t *missionsNode = json_new_array();
@@ -475,8 +484,8 @@ static json_t *SaveMissions(CArray *a)
 		case MAPTYPE_CLASSIC:
 			AddIntPair(node, "Walls", mission->u.Classic.Walls);
 			AddIntPair(node, "WallLength", mission->u.Classic.WallLength);
-			AddIntPair(node, "Rooms", mission->u.Classic.Rooms);
-			AddIntPair(node, "EdgeRooms", mission->u.Classic.EdgeRooms);
+			json_insert_pair_into_object(
+				node, "Rooms", SaveClassicRooms(mission));
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
 			AddIntPair(node, "DoorMin", mission->u.Classic.DoorMin);
 			AddIntPair(node, "DoorMax", mission->u.Classic.DoorMax);
@@ -518,6 +527,15 @@ static json_t *SaveCharacters(CharacterStore *s)
 		json_insert_child(charNode, node);
 	}
 	return charNode;
+}
+static json_t *SaveClassicRooms(Mission *m)
+{
+	json_t *node = json_new_object();
+	AddIntPair(node, "Count", m->u.Classic.Rooms.Count);
+	AddIntPair(node, "Min", m->u.Classic.Rooms.Min);
+	AddIntPair(node, "Max", m->u.Classic.Rooms.Max);
+	AddIntPair(node, "Edge", m->u.Classic.Rooms.Edge);
+	return node;
 }
 
 static json_t *SaveObjectives(CArray *a)

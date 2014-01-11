@@ -157,6 +157,22 @@ static char *MissionGetRoomCountStr(UIObject *o, Mission **missionPtr)
 	sprintf(s, "Rooms: %d", (*missionPtr)->u.Classic.Rooms);
 	return s;
 }
+static char *MissionGetRoomMinStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "RoomMin: %d", (*missionPtr)->u.Classic.Rooms.Min);
+	return s;
+}
+static char *MissionGetRoomMaxStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "RoomMax: %d", (*missionPtr)->u.Classic.Rooms.Max);
+	return s;
+}
 static void MissionDrawEdgeRooms(
 	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
@@ -164,7 +180,7 @@ static void MissionDrawEdgeRooms(
 	UNUSED(o);
 	if (!*missionPtr) return;
 	DisplayFlag(
-		g, o->Pos, "Edge rooms", (*missionPtr)->u.Classic.EdgeRooms,
+		g, o->Pos, "Edge rooms", (*missionPtr)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
 static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
@@ -680,13 +696,30 @@ static void MissionChangeWallLength(Mission **missionPtr, int d)
 }
 static void MissionChangeRoomCount(Mission **missionPtr, int d)
 {
-	(*missionPtr)->u.Classic.Rooms =
-		CLAMP((*missionPtr)->u.Classic.Rooms + d, 0, 100);
-}static void MissionChangeEdgeRooms(Mission **missionPtr, int d)
+	(*missionPtr)->u.Classic.Rooms.Count =
+		CLAMP((*missionPtr)->u.Classic.Rooms.Count + d, 0, 100);
+}
+static void MissionChangeRoomMin(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Rooms.Min =
+		CLAMP((*missionPtr)->u.Classic.Rooms.Min + d, 5, 50);
+	(*missionPtr)->u.Classic.Rooms.Max = MAX(
+		(*missionPtr)->u.Classic.Rooms.Min,
+		(*missionPtr)->u.Classic.Rooms.Max);
+}
+static void MissionChangeRoomMax(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Rooms.Max =
+		CLAMP((*missionPtr)->u.Classic.Rooms.Max + d, 5, 50);
+	(*missionPtr)->u.Classic.Rooms.Min = MIN(
+		(*missionPtr)->u.Classic.Rooms.Min,
+		(*missionPtr)->u.Classic.Rooms.Max);
+}
+static void MissionChangeEdgeRooms(Mission **missionPtr, int d)
 {
 	UNUSED(d);
-	(*missionPtr)->u.Classic.EdgeRooms =
-		!(*missionPtr)->u.Classic.EdgeRooms;
+	(*missionPtr)->u.Classic.Rooms.Edge =
+		!(*missionPtr)->u.Classic.Rooms.Edge;
 }
 static void MissionChangeSquareCount(Mission **missionPtr, int d)
 {
@@ -958,7 +991,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	// Mission looks
 	// wall/floor styles etc.
 
-	pos.y += th;
+	pos.y += th * 2;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
@@ -1205,7 +1238,8 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(45, th));
+	int x = pos.x;
 
 	UIObject *o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = CampaignGetSeedStr;
@@ -1236,6 +1270,20 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomMinStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomMaxStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
 	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
 	o2->u.CustomDrawFunc = MissionDrawEdgeRooms;
 	o2->Data = missionPtr;
@@ -1248,7 +1296,9 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->ChangeFunc = MissionChangeSquareCount;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += o2->Size.x;
+
+	pos.x = x;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetDoorSizeMinStr;
 	o2->Data = missionPtr;

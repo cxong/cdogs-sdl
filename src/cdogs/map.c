@@ -462,11 +462,12 @@ unsigned short GenerateAccessMask(int *accessLevel)
 
 static int MapBuildRoom(
 	Map *map, Vec2i mapSize,
-	int doorMin, int doorMax, int hasKeys, int edgeRooms)
+	int doorMin, int doorMax, int hasKeys,
+	int roomMinP, int roomMaxP, int edgeRooms)
 {
 	// make sure rooms are large enough to accomodate doors
-	int roomMin = MAX(5, doorMin + 4);
-	int roomMax = 10;
+	int roomMin = MAX(roomMinP, doorMin + 4);
+	int roomMax = MAX(roomMaxP, doorMin + 4);
 	int w = rand() % (roomMax - roomMin + 1) + roomMin;
 	int h = rand() % (roomMax - roomMin + 1) + roomMin;
 	Vec2i pos = GuessCoords(mapSize);
@@ -1533,14 +1534,16 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 		map->keyAccessCount = 0;
 		count = 0;
 		i = 0;
-		while (i < 1000 && count < mission->u.Classic.Rooms)
+		while (i < 1000 && count < mission->u.Classic.Rooms.Count)
 		{
 			int doorMin = CLAMP(mission->u.Classic.DoorMin, 1, 6);
 			int doorMax = CLAMP(mission->u.Classic.DoorMax, doorMin, 6);
 			if (MapBuildRoom(
 				map, mission->Size,
 				doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode),
-				mission->u.Classic.EdgeRooms))
+				mission->u.Classic.Rooms.Min,
+				mission->u.Classic.Rooms.Max,
+				mission->u.Classic.Rooms.Edge))
 			{
 				count++;
 			}

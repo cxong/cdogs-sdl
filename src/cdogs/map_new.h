@@ -87,8 +87,13 @@ typedef struct
 		{
 			int Walls;
 			int WallLength;
-			int Rooms;
-			int EdgeRooms;
+			struct
+			{
+				int Count;
+				int Min;
+				int Max;
+				int Edge;
+			} Rooms;
 			int Squares;
 			int DoorMin;
 			int DoorMax;
