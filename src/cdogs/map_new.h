@@ -89,6 +89,8 @@ typedef struct
 			int WallLength;
 			int Rooms;
 			int Squares;
+			int DoorMin;
+			int DoorMax;
 		} Classic;
 	} u;
 } Mission;

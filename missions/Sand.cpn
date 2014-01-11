@@ -53,7 +53,9 @@
 		"Walls": 86,
 		"WallLength": 27,
 		"Rooms": 0,
-		"Squares": 5
+		"Squares": 5,
+		"DoorMin": 1,
+		"DoorMax": 1
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
@@ -97,14 +99,16 @@
 		4,
 		5,
 		6,
-		14],
-		"ItemDensities": [5,
-		5,
-		5,
-		5,
-		5,
-		5,
-		5],
+		14,
+		19],
+		"ItemDensities": [10,
+		20,
+		10,
+		20,
+		25,
+		20,
+		20,
+		20],
 		"EnemyDensity": 11,
 		"Weapons": ["Knife",
 		"Machine gun",
@@ -120,7 +124,9 @@
 		"Walls": 0,
 		"WallLength": 1,
 		"Rooms": 10,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 2,
+		"DoorMax": 2
 	},
 	{
 		"Title": "Fortress Raid",
@@ -153,15 +159,19 @@
 		2,
 		8,
 		17,
-		22],
-		"ItemDensities": [15,
-		10,
-		5,
-		5,
-		5,
-		5,
+		22,
+		4,
 		5],
-		"EnemyDensity": 17,
+		"ItemDensities": [25,
+		25,
+		15,
+		15,
+		10,
+		15,
+		10,
+		40,
+		40],
+		"EnemyDensity": 12,
 		"Weapons": ["Knife",
 		"Machine gun",
 		"Flamer",
@@ -175,7 +185,9 @@
 		"Walls": 9,
 		"WallLength": 11,
 		"Rooms": 12,
-		"Squares": 3
+		"Squares": 3,
+		"DoorMin": 2,
+		"DoorMax": 2
 	},
 	{
 		"Title": "Extermination",
@@ -226,7 +238,9 @@
 		"Walls": 60,
 		"WallLength": 16,
 		"Rooms": 0,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 1,
+		"DoorMax": 1
 	},
 	{
 		"Title": "The Duel",
@@ -274,7 +288,9 @@
 		"Walls": 32,
 		"WallLength": 17,
 		"Rooms": 0,
-		"Squares": 2
+		"Squares": 2,
+		"DoorMin": 1,
+		"DoorMax": 1
 	},
 	{
 		"Title": "The Search",
@@ -316,7 +332,9 @@
 		"Walls": 27,
 		"WallLength": 22,
 		"Rooms": 0,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 1,
+		"DoorMax": 1
 	},
 	{
 		"Title": "Miner Escort",
@@ -353,7 +371,7 @@
 		36],
 		"ItemDensities": [5,
 		10],
-		"EnemyDensity": 15,
+		"EnemyDensity": 12,
 		"Weapons": ["Knife",
 		"Machine gun",
 		"Grenades",
@@ -369,7 +387,9 @@
 		"Walls": 23,
 		"WallLength": 15,
 		"Rooms": 0,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 1,
+		"DoorMax": 1
 	},
 	{
 		"Title": "Deep Desert Raid",
@@ -416,10 +436,10 @@
 		10,
 		37],
 		"ItemDensities": [10,
-		10,
-		10,
-		5],
-		"EnemyDensity": 22,
+		25,
+		30,
+		20],
+		"EnemyDensity": 9,
 		"Weapons": ["Knife",
 		"Machine gun",
 		"Grenades",
@@ -436,7 +456,9 @@
 		"Walls": 18,
 		"WallLength": 7,
 		"Rooms": 6,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 1,
+		"DoorMax": 2
 	},
 	{
 		"Title": "Captured",
@@ -477,10 +499,10 @@
 		10,
 		4],
 		"ItemDensities": [10,
+		20,
 		15,
 		10,
-		5,
-		5,
+		15,
 		10],
 		"EnemyDensity": 13,
 		"Weapons": ["Knife",
@@ -495,7 +517,9 @@
 		"Walls": 11,
 		"WallLength": 9,
 		"Rooms": 7,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 1,
+		"DoorMax": 2
 	},
 	{
 		"Title": "Sabotage",
@@ -533,12 +557,12 @@
 		2,
 		1,
 		7],
-		"ItemDensities": [10,
-		10,
-		5,
-		5,
-		5,
-		5],
+		"ItemDensities": [20,
+		20,
+		15,
+		15,
+		15,
+		10],
 		"EnemyDensity": 9,
 		"Weapons": ["Knife",
 		"Machine gun",
@@ -559,7 +583,9 @@
 		"Walls": 0,
 		"WallLength": 1,
 		"Rooms": 6,
-		"Squares": 0
+		"Squares": 0,
+		"DoorMin": 2,
+		"DoorMax": 3
 	}],
 	"Characters": [{
 		"armedBody": 1,

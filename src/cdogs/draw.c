@@ -69,7 +69,7 @@ void FixBuffer(DrawBuffer *buffer)
 	{
 		for (x = 0; x < buffer->width; x++, tile++, tileBelow++)
 		{
-			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
+			if (!(tile->flags & (MAPTILE_IS_WALL |MAPTILE_OFFSET_PIC)) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
 				tile->pic = &picNone;
@@ -310,7 +310,7 @@ void DrawFloor(DrawBuffer *b, Vec2i offset)
 			 x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->pic != NULL && PicIsNotNone(tile->pic) &&
-				!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)))
+				!(tile->flags & MAPTILE_IS_WALL))
 			{
 				BlitMasked(
 					&gGraphicsDevice,

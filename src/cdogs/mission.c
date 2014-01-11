@@ -738,6 +738,8 @@ void SetupQuickPlayCampaign(
 			GenerateQuickPlayParam(config->RoomCount, 0, 2, 5, 12);
 		m->u.Classic.Squares =
 			GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
+		m->u.Classic.DoorMin = 1;
+		m->u.Classic.DoorMax = 6;
 		break;
 	default:
 		assert(0 && "unknown map type");

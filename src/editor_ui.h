@@ -73,14 +73,6 @@
 #define XC_MISSIONTITLE     0
 #define XC_MUSICFILE        1
 
-#define XC_WIDTH            0
-#define XC_HEIGHT           1
-#define XC_WALLCOUNT        2
-#define XC_WALLLENGTH       3
-#define XC_ROOMCOUNT        4
-#define XC_SQRCOUNT         5
-#define XC_DENSITY          6
-
 #define XC_WALL             0
 #define XC_FLOOR            1
 #define XC_ROOM             2

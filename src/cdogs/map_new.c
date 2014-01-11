@@ -300,6 +300,8 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
 			LoadInt(&m.u.Classic.Rooms, child, "Rooms");
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
+			LoadInt(&m.u.Classic.DoorMin, child, "DoorMin");
+			LoadInt(&m.u.Classic.DoorMax, child, "DoorMax");
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -474,6 +476,8 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(node, "WallLength", mission->u.Classic.WallLength);
 			AddIntPair(node, "Rooms", mission->u.Classic.Rooms);
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
+			AddIntPair(node, "DoorMin", mission->u.Classic.DoorMin);
+			AddIntPair(node, "DoorMax", mission->u.Classic.DoorMax);
 			break;
 		default:
 			assert(0 && "unknown map type");

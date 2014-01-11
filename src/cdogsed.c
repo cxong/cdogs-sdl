@@ -510,10 +510,6 @@ static void AdjustXC(int yc, int *xc)
 		*xc = CLAMP_OPPOSITE(*xc, 0, XC_MUSICFILE);
 		break;
 
-	case YC_MISSIONPROPS:
-		*xc = CLAMP_OPPOSITE(*xc, 0, XC_DENSITY);
-		break;
-
 	case YC_MISSIONLOOKS:
 		*xc = CLAMP_OPPOSITE(*xc, 0, XC_COLOR4);
 		break;

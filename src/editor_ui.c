@@ -64,6 +64,13 @@ static char *CampaignGetDescription(UIObject *o, CampaignOptions *c)
 	UNUSED(o);
 	return c->Setting.Description;
 }
+static char *CampaignGetSeedStr(UIObject *o, CampaignOptions *c)
+{
+	static char s[128];
+	UNUSED(o);
+	sprintf(s, "Seed: %u", c->seed);
+	return s;
+}
 static void CheckMission(
 	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
 {
@@ -156,6 +163,22 @@ static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
 	UNUSED(o);
 	if (!*missionPtr) return NULL;
 	sprintf(s, "Sqr: %d", (*missionPtr)->u.Classic.Squares);
+	return s;
+}
+static char *MissionGetDoorSizeMinStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "DoorMin: %d", (*missionPtr)->u.Classic.DoorMin);
+	return s;
+}
+static char *MissionGetDoorSizeMaxStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "DoorMax: %d", (*missionPtr)->u.Classic.DoorMax);
 	return s;
 }
 static char *MissionGetDensityStr(UIObject *o, Mission **missionPtr)
@@ -612,6 +635,21 @@ void DisplayFlag(
 }
 
 
+static void CampaignChangeSeed(CampaignOptions *c, int d)
+{
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
+	if (d < 0 && c->seed < (unsigned)-d)
+	{
+		c->seed = 0;
+	}
+	else
+	{
+		c->seed += d;
+	}
+}
 static void MissionChangeWidth(Mission **missionPtr, int d)
 {
 	(*missionPtr)->Size.x = CLAMP((*missionPtr)->Size.x + d, 16, XMAX);
@@ -639,6 +677,20 @@ static void MissionChangeSquareCount(Mission **missionPtr, int d)
 {
 	(*missionPtr)->u.Classic.Squares =
 		CLAMP((*missionPtr)->u.Classic.Squares + d, 0, 100);
+}
+static void MissionChangeDoorSizeMin(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.DoorMin =
+		CLAMP((*missionPtr)->u.Classic.DoorMin + d, 1, 6);
+	(*missionPtr)->u.Classic.DoorMax =
+		MAX((*missionPtr)->u.Classic.DoorMin, (*missionPtr)->u.Classic.DoorMax);
+}
+static void MissionChangeDoorSizeMax(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.DoorMax =
+		CLAMP((*missionPtr)->u.Classic.DoorMax + d, 1, 6);
+	(*missionPtr)->u.Classic.DoorMin =
+		MIN((*missionPtr)->u.Classic.DoorMin, (*missionPtr)->u.Classic.DoorMax);
 }
 static void MissionChangeDensity(Mission **missionPtr, int d)
 {
@@ -859,7 +911,6 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 
 	pos.x = 20;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_WIDTH;
 	o2->u.LabelFunc = MissionGetWidthStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWidth;
@@ -867,11 +918,18 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_HEIGHT;
 	o2->u.LabelFunc = MissionGetHeightStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeHeight;
 	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetDensityStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDensity;
+	o2->Pos = pos;
+	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
 	UIObjectAddChild(c, o2);
 
 	pos.x += 40;
@@ -879,7 +937,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	// Properties for classic C-Dogs maps
 	pos.x = 20;
 	pos.y += th;
-	UITabAddChild(o2, CreateClassicMapObjs(pos, missionPtr), "Type: Classic");
+	UITabAddChild(o2, CreateClassicMapObjs(pos, missionPtr), "Type: Classic+");
 	UIObjectAddChild(c, o2);
 
 	// Mission looks
@@ -1132,10 +1190,17 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(35, th));
+		UITYPE_LABEL, YC_MISSIONPROPS, Vec2iZero(), Vec2iNew(40, th));
 
 	UIObject *o2 = UIObjectCopy(o);
-	o2->Id2 = XC_WALLCOUNT;
+	o2->u.LabelFunc = CampaignGetSeedStr;
+	o2->Data = &gCampaign;
+	o2->ChangeFunc = CampaignChangeSeed;
+	CSTRDUP(o2->Tooltip, "Preview with different random seed");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetWallCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallCount;
@@ -1143,7 +1208,6 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_WALLLENGTH;
 	o2->u.LabelFunc = MissionGetWallLengthStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeWallLength;
@@ -1151,7 +1215,6 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_ROOMCOUNT;
 	o2->u.LabelFunc = MissionGetRoomCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomCount;
@@ -1159,7 +1222,6 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SQRCOUNT;
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeSquareCount;
@@ -1167,12 +1229,17 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_DENSITY;
-	o2->u.LabelFunc = MissionGetDensityStr;
+	o2->u.LabelFunc = MissionGetDoorSizeMinStr;
 	o2->Data = missionPtr;
-	o2->ChangeFunc = MissionChangeDensity;
+	o2->ChangeFunc = MissionChangeDoorSizeMin;
 	o2->Pos = pos;
-	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
+	UIObjectAddChild(c, o2);
+	pos.x += 40;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetDoorSizeMaxStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeDoorSizeMax;
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
 	return c;
