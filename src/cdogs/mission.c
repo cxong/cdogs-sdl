@@ -740,6 +740,7 @@ void SetupQuickPlayCampaign(
 		m->u.Classic.Rooms.Min = rand() % 10 + 5;
 		m->u.Classic.Rooms.Max = rand() % 10 + m->u.Classic.Rooms.Min;
 		m->u.Classic.Rooms.Edge = 1;
+		m->u.Classic.Rooms.Overlap = 1;
 		m->u.Classic.Rooms.Walls = rand() % 5;
 		m->u.Classic.Rooms.WallLength = rand() % 6 + 1;
 		m->u.Classic.Rooms.WallPad = rand() % 4 + 2;

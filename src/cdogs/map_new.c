@@ -383,7 +383,8 @@ static void LoadClassicRooms(Mission *m, json_t *roomsNode)
 	LoadInt(&m->u.Classic.Rooms.Count, roomsNode, "Count");
 	LoadInt(&m->u.Classic.Rooms.Min, roomsNode, "Min");
 	LoadInt(&m->u.Classic.Rooms.Max, roomsNode, "Max");
-	LoadInt(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
+	LoadBool(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
+	LoadBool(&m->u.Classic.Rooms.Overlap, roomsNode, "Overlap");
 	LoadInt(&m->u.Classic.Rooms.Walls, roomsNode, "Walls");
 	LoadInt(&m->u.Classic.Rooms.WallLength, roomsNode, "WallLength");
 	LoadInt(&m->u.Classic.Rooms.WallPad, roomsNode, "WallPad");
@@ -408,7 +409,7 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name)
 		return;
 	}
 	child = child->child;
-	LoadInt(&m->u.Classic.Doors.Enabled, child, "Enabled");
+	LoadBool(&m->u.Classic.Doors.Enabled, child, "Enabled");
 	LoadInt(&m->u.Classic.Doors.Min, child, "Min");
 	LoadInt(&m->u.Classic.Doors.Max, child, "Max");
 }
@@ -570,7 +571,8 @@ static json_t *SaveClassicRooms(Mission *m)
 	AddIntPair(node, "Count", m->u.Classic.Rooms.Count);
 	AddIntPair(node, "Min", m->u.Classic.Rooms.Min);
 	AddIntPair(node, "Max", m->u.Classic.Rooms.Max);
-	AddIntPair(node, "Edge", m->u.Classic.Rooms.Edge);
+	AddBoolPair(node, "Edge", m->u.Classic.Rooms.Edge);
+	AddBoolPair(node, "Overlap", m->u.Classic.Rooms.Overlap);
 	AddIntPair(node, "Walls", m->u.Classic.Rooms.Walls);
 	AddIntPair(node, "WallLength", m->u.Classic.Rooms.WallLength);
 	AddIntPair(node, "WallPad", m->u.Classic.Rooms.WallPad);
@@ -587,7 +589,7 @@ static json_t *SaveClassicPillars(Mission *m)
 static json_t *SaveClassicDoors(Mission *m)
 {
 	json_t *node = json_new_object();
-	AddIntPair(node, "Enabled", m->u.Classic.Doors.Enabled);
+	AddBoolPair(node, "Enabled", m->u.Classic.Doors.Enabled);
 	AddIntPair(node, "Min", m->u.Classic.Doors.Min);
 	AddIntPair(node, "Max", m->u.Classic.Doors.Max);
 	return node;

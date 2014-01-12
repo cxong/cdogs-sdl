@@ -57,14 +57,15 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0,
+			"Edge": false,
+			"Overlap": false,
 			"Walls": 0,
 			"WallLength": 0,
 			"WallPad": 0
 		},
 		"Squares": 5,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 0,
 			"Max": 0
 		},
@@ -144,15 +145,16 @@
 		"Rooms": {
 			"Count": 14,
 			"Min": 7,
-			"Max": 17,
-			"Edge": 0,
+			"Max": 9,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 5,
 			"WallLength": 10,
 			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 1,
+			"Enabled": true,
 			"Min": 2,
 			"Max": 2
 		},
@@ -222,15 +224,16 @@
 		"Rooms": {
 			"Count": 20,
 			"Min": 7,
-			"Max": 13,
-			"Edge": 0,
+			"Max": 10,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 3,
 			"WallLength": 6,
 			"WallPad": 2
 		},
 		"Squares": 3,
 		"Doors": {
-			"Enabled": 1,
+			"Enabled": true,
 			"Min": 2,
 			"Max": 2
 		},
@@ -290,17 +293,18 @@
 		"WallLength": 16,
 		"CorridorWidth": 0,
 		"Rooms": {
-			"Count": 7,
+			"Count": 17,
 			"Min": 6,
 			"Max": 6,
-			"Edge": 0,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 1,
 			"WallLength": 1,
 			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 1,
 			"Max": 2
 		},
@@ -360,14 +364,15 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0,
+			"Edge": false,
+			"Overlap": false,
 			"Walls": 0,
 			"WallLength": 0,
 			"WallPad": 0
 		},
 		"Squares": 1,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 0,
 			"Max": 0
 		},
@@ -421,14 +426,15 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0,
+			"Edge": false,
+			"Overlap": false,
 			"Walls": 0,
 			"WallLength": 0,
 			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 0,
 			"Max": 0
 		},
@@ -493,14 +499,15 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0,
+			"Edge": false,
+			"Overlap": false,
 			"Walls": 0,
 			"WallLength": 0,
 			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 0,
 			"Max": 0
 		},
@@ -576,17 +583,18 @@
 		"WallLength": 7,
 		"CorridorWidth": 2,
 		"Rooms": {
-			"Count": 9,
+			"Count": 14,
 			"Min": 5,
 			"Max": 7,
-			"Edge": 1,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 0,
 			"WallLength": 0,
 			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 1,
+			"Enabled": true,
 			"Min": 1,
 			"Max": 2
 		},
@@ -654,17 +662,18 @@
 		"WallLength": 9,
 		"CorridorWidth": 1,
 		"Rooms": {
-			"Count": 9,
+			"Count": 10,
 			"Min": 7,
 			"Max": 9,
-			"Edge": 1,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 2,
 			"WallLength": 2,
 			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 1,
+			"Enabled": true,
 			"Min": 1,
 			"Max": 2
 		},
@@ -740,14 +749,15 @@
 			"Count": 7,
 			"Min": 9,
 			"Max": 14,
-			"Edge": 1,
+			"Edge": true,
+			"Overlap": true,
 			"Walls": 3,
 			"WallLength": 1,
 			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
-			"Enabled": 0,
+			"Enabled": false,
 			"Min": 2,
 			"Max": 3
 		},

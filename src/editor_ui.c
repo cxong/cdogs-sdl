@@ -191,6 +191,16 @@ static void MissionDrawEdgeRooms(
 		g, o->Pos, "Edge rooms", (*missionPtr)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
+static void MissionDrawRoomsOverlap(
+	UIObject *o, GraphicsDevice *g, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return;
+	DisplayFlag(
+		g, o->Pos, "Room overlap", (*missionPtr)->u.Classic.Rooms.Overlap,
+		UIObjectIsHighlighted(o));
+}
 static char *MissionGetRoomWallCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
@@ -791,6 +801,12 @@ static void MissionChangeEdgeRooms(Mission **missionPtr, int d)
 	UNUSED(d);
 	(*missionPtr)->u.Classic.Rooms.Edge =
 		!(*missionPtr)->u.Classic.Rooms.Edge;
+}
+static void MissionChangeRoomsOverlap(Mission **missionPtr, int d)
+{
+	UNUSED(d);
+	(*missionPtr)->u.Classic.Rooms.Overlap =
+		!(*missionPtr)->u.Classic.Rooms.Overlap;
 }
 static void MissionChangeRoomWallCount(Mission **missionPtr, int d)
 {
@@ -1413,6 +1429,12 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->u.CustomDrawFunc = MissionDrawEdgeRooms;
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeEdgeRooms;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomsOverlap;
 	UIObjectAddChild(c, o2);
 
 	pos.x = x;

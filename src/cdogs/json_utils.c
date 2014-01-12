@@ -36,6 +36,10 @@ void AddIntPair(json_t *parent, const char *name, int number)
 	sprintf(buf, "%d", number);
 	json_insert_pair_into_object(parent, name, json_new_number(buf));
 }
+void AddBoolPair(json_t *parent, const char *name, int value)
+{
+	json_insert_pair_into_object(parent, name, json_new_bool(value));
+}
 void AddStringPair(json_t *parent, const char *name, const char *s)
 {
 	json_insert_pair_into_object(

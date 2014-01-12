@@ -422,7 +422,8 @@ static void AddChar(int xc, int yc, char c)
 		break;
 
 	default:
-		if (yc - YC_OBJECTIVES < (int)currentMission->Objectives.size)
+		if (yc >= YC_OBJECTIVES &&
+			yc - YC_OBJECTIVES < (int)currentMission->Objectives.size)
 		{
 			MissionObjective *mobj =
 				CArrayGet(&currentMission->Objectives, yc - YC_OBJECTIVES);

@@ -50,6 +50,9 @@
 
 #include <assert.h>
 
+#include "map_build.h"
+
+
 static int MapTryBuildSquare(Map *map, Mission *m);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
@@ -127,8 +130,8 @@ static int MapTryBuildSquare(Map *map, Mission *m)
 		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2),
 		m->Size);
 	Vec2i size;
-	size.x = rand() % 9 + 7;
-	size.y = rand() % 9 + 7;
+	size.x = rand() % 9 + 8;
+	size.y = rand() % 9 + 8;
 
 	if (MapIsAreaClear(
 		map, Vec2iNew(v.x - 1, v.y - 1), Vec2iNew(size.x + 2, size.y + 2)))
@@ -138,6 +141,8 @@ static int MapTryBuildSquare(Map *map, Mission *m)
 	}
 	return 0;
 }
+static void MapFindAvailableDoors(
+	Map *map, Mission *m, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
 static unsigned short GenerateAccessMask(int *accessLevel);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
@@ -152,10 +157,11 @@ static int MapTryBuildRoom(
 		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2), m->Size);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(w + 2 * pad, h + 2 * pad);
-	int doors[4];
+	int isClear = 0;
+	int isEdgeRoom = 0;
+	int isOverlapRoom = 0;
+	unsigned short overlapAccess = 0;
 
-	// left, right, top, bottom
-	doors[0] = doors[1] = doors[2] = doors[3] = 1;
 	if (m->u.Classic.Rooms.Edge)
 	{
 		// Check if room is at edge; if so only check if clear inside edge
@@ -163,40 +169,57 @@ static int MapTryBuildRoom(
 			pos.x == (XMAX - m->Size.x) / 2 + 1)
 		{
 			clearPos.x = (XMAX - m->Size.x) / 2 + 1;
-			doors[0] = 0;
+			isEdgeRoom = 1;
 		}
 		else if (pos.x + w == (XMAX + m->Size.x) / 2 - 2 ||
 			pos.x + w == (XMAX + m->Size.x) / 2 - 1)
 		{
 			clearSize.x = (XMAX + m->Size.x) / 2 - 2 - pos.x;
-			doors[1] = 0;
+			isEdgeRoom = 1;
 		}
 		if (pos.y == (YMAX - m->Size.y) / 2 ||
 			pos.y == (YMAX - m->Size.y) / 2 + 1)
 		{
 			clearPos.y = (YMAX - m->Size.y) / 2 + 1;
-			doors[2] = 0;
+			isEdgeRoom = 1;
 		}
 		else if (pos.y + h == (YMAX + m->Size.y) / 2 - 2 ||
 			pos.y + h == (YMAX + m->Size.y) / 2 - 1)
 		{
 			clearSize.y = (YMAX + m->Size.y) / 2 - 2 - pos.y;
-			doors[3] = 0;
+			isEdgeRoom = 1;
 		}
 	}
-
-	if (MapIsAreaClear(map, clearPos, clearSize))
+	isClear = MapIsAreaClear(map, clearPos, clearSize);
+	// Don't let rooms be both edge rooms and overlap rooms
+	// Otherwise dead pockets will be created
+	if (!isClear && !isEdgeRoom)
+	{
+		// If room overlap is enabled, check if it overlaps with a room
+		int isOverlap = m->u.Classic.Rooms.Overlap &&
+			MapIsAreaClearOrRoom(map, clearPos, clearSize);
+		// Now check if the overlapping rooms will create a passage
+		// large enough
+		int roomOverlapSize = MapGetRoomOverlapSize(
+			map, pos, Vec2iNew(w, h), &overlapAccess);
+		isClear = isOverlap && roomOverlapSize >= m->u.Classic.CorridorWidth;
+		isOverlapRoom = 1;
+	}
+	if (isClear)
 	{
 		int doormask = rand() % 15 + 1;
+		int doors[4];
 		int doorsUnplaced = 0;
 		int i;
 		unsigned short accessMask = 0;
 		int count;
-		if (hasKeys && m->u.Classic.Doors.Enabled)
-		{
-			accessMask = GenerateAccessMask(&map->keyAccessCount);
-		}
 
+		MapMakeRoom(map, pos.x, pos.y, w, h);
+		// Check which walls we can place doors
+		// If we cannot place doors, remember this and try to place them
+		// on other walls
+		// We cannot place doors on: the perimeter, and on overlaps
+		MapFindAvailableDoors(map, m, pos, Vec2iNew(w, h), doorMin, doors);
 		// Try to place doors according to the random mask
 		// If we cannot place a door, remember this and try to place it
 		// on the next door
@@ -221,17 +244,23 @@ static int MapTryBuildRoom(
 				}
 			}
 		}
-		MapMakeRoom(
-			map, pos.x, pos.y, w, h,
-			m->u.Classic.Doors.Enabled,
-			doors, doorMin, doorMax, accessMask);
-		if (hasKeys)
+		if (hasKeys && m->u.Classic.Doors.Enabled)
 		{
-			if (map->keyAccessCount < 1)
+			if (isOverlapRoom)
 			{
-				map->keyAccessCount = 1;
+				accessMask = overlapAccess;
+			}
+			else
+			{
+				accessMask = GenerateAccessMask(&map->keyAccessCount);
+				if (map->keyAccessCount < 1)
+				{
+					map->keyAccessCount = 1;
+				}
 			}
 		}
+		MapPlaceDoors(map, pos, Vec2iNew(w, h),
+			m->u.Classic.Doors.Enabled, doors, doorMin, doorMax, accessMask);
 
 		// Try to place room walls
 		count = 0;
@@ -286,7 +315,7 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 		clearSize.y = (YMAX + m->Size.y) / 2 - 2 - pos.y;
 	}
 
-	if (MapIsAreaClear(map, clearPos, clearSize))
+	if (MapIsAreaClearOrWall(map, clearPos, clearSize))
 	{
 		MapMakePillar(map, pos, size);
 		return 1;
@@ -480,4 +509,84 @@ static unsigned short GenerateAccessMask(int *accessLevel)
 		break;
 	}
 	return accessMask;
+}
+
+static int MapFindWallRun(Map *map, Vec2i start, Vec2i d, int len)
+{
+	int wallRun = 0;
+	Vec2i v;
+	int i;
+	for (i = 0, v = start; i < len; i++, v = Vec2iAdd(v, d))
+	{
+		// Check if this is a wall so we can add a door here
+		// Also check if the two tiles aside are not walls
+		if (IMapGet(map, v) == MAP_WALL &&
+			IMapGet(map, Vec2iNew(v.x + d.y, v.y + d.x)) != MAP_WALL &&
+			IMapGet(map, Vec2iNew(v.x - d.y, v.y - d.x)) != MAP_WALL)
+		{
+			wallRun++;
+		}
+	}
+	return wallRun;
+}
+static void MapFindAvailableDoors(
+	Map *map, Mission *m, Vec2i pos, Vec2i size, int doorMin, int doors[4])
+{
+	int i;
+	for (i = 0; i < 4; i++)
+	{
+		doors[i] = 1;
+	}
+	// left
+	if (pos.x <= (XMAX - m->Size.x) / 2 + 1)
+	{
+		doors[0] = 0;
+	}
+	if (MapFindWallRun(
+		map,
+		Vec2iNew(pos.x, pos.y + 1),
+		Vec2iNew(0, 1),
+		size.y - 2) < doorMin)
+	{
+		doors[0] = 0;
+	}
+	// right
+	if (pos.x + size.x >= (XMAX + m->Size.x) / 2 - 2)
+	{
+		doors[1] = 0;
+	}
+	if (MapFindWallRun(
+		map,
+		Vec2iNew(pos.x + size.x - 1, pos.y + 1),
+		Vec2iNew(0, 1),
+		size.y - 2) < doorMin)
+	{
+		doors[1] = 0;
+	}
+	// top
+	if (pos.y <= (YMAX - m->Size.y) / 2 + 1)
+	{
+		doors[2] = 0;
+	}
+	if (MapFindWallRun(
+		map,
+		Vec2iNew(pos.x + 1, pos.y),
+		Vec2iNew(1, 0),
+		size.x - 2) < doorMin)
+	{
+		doors[2] = 0;
+	}
+	// bottom
+	if (pos.y >= (YMAX + m->Size.y) / 2 - 2)
+	{
+		doors[3] = 0;
+	}
+	if (MapFindWallRun(
+		map,
+		Vec2iNew(pos.x + size.x - 1, pos.y),
+		Vec2iNew(1, 0),
+		size.x - 2) < doorMin)
+	{
+		doors[3] = 0;
+	}
 }

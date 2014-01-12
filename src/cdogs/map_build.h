@@ -46,69 +46,25 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP
-#define __MAP
+#ifndef __MAP_BUILD
+#define __MAP_BUILD
 
-#include "gamedata.h"
-#include "pic.h"
-#include "tile.h"
-#include "vector.h"
+#include "map.h"
 
-#define YMAX    128
-#define XMAX    128
-
-// Values for internal map
-#define MAP_FLOOR           0
-#define MAP_WALL            1
-#define MAP_DOOR            2
-#define MAP_ROOM            3
-#define MAP_SQUARE          4
-#define MAP_NOTHING         6
-
-#define MAP_ACCESS_RED      256
-#define MAP_ACCESS_BLUE     512
-#define MAP_ACCESS_GREEN    1024
-#define MAP_ACCESS_YELLOW   2048
-
-#define MAP_MASKACCESS      0xFF
-#define MAP_ACCESSBITS      0x0F00
-
-typedef struct
-{
-	Tile tiles[YMAX][XMAX];
-
-	// internal data structure to help build the map
-	unsigned short iMap[YMAX][XMAX];
-
-	int tilesSeen;
-	int tilesTotal;
-	int keyAccessCount;
-} Map;
-
-extern Map gMap;
-
-Tile *MapGetTile(Map *map, Vec2i pos);
-int MapIsTileIn(Map *map, Vec2i pos);
-
-int MapHasLockedRooms(Map *map);
-int MapPosIsHighAccess(Map *map, int x, int y);
-int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
-
-void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
-void MapRemoveTileItem(Map *map, TTileItem *t);
-
-void MapLoad(Map *map, struct MissionOptions *mo);
-int MapIsFullPosOKforPlayer(Map *map, int x, int y);
-void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
-void MapShowExitArea(Map *map);
-void MapMarkAsVisited(Map *map, Vec2i pos);
-void MapMarkAllAsVisited(Map *map);
-int MapGetExploredPercentage(Map *map);
-TTileItem *MapGetClosestEnemy(
-	TTileItem *from, Vec2i offset, int flags, int player, int maxRadius);
-
-// Map construction functions
-unsigned short IMapGet(Map *map, Vec2i pos);
-void IMapSet(Map *map, Vec2i pos, unsigned short v);
+int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
+int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size);
+int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size);
+int MapGetRoomOverlapSize(
+	Map *map, Vec2i pos, Vec2i size, unsigned short *overlapAccess);
+int MapIsValidStartForWall(
+	Map *map, int x, int y, unsigned short tileType, int pad);
+void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
+void MapMakeRoom(Map *map, int xOrigin, int yOrigin, int width, int height);
+void MapPlaceDoors(
+	Map *map, Vec2i pos, Vec2i size,
+	int hasDoors, int doors[4], int doorMin, int doorMax,
+	unsigned short accessMask);
+void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
+void MapMakeWall(Map *map, Vec2i pos);
 
 #endif
