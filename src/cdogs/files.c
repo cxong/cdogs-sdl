@@ -395,7 +395,7 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 	dest->u.Classic.WallLength = src->wallLength;
 	dest->u.Classic.CorridorWidth = 1;
 	dest->u.Classic.Rooms.Count = src->roomCount;
-	dest->u.Classic.Rooms.Min = 5;
+	dest->u.Classic.Rooms.Min = 6;
 	dest->u.Classic.Rooms.Max = 10;
 	dest->u.Classic.Rooms.Edge = 0;
 	dest->u.Classic.Rooms.Walls = 0;
