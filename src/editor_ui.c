@@ -1429,6 +1429,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomWallLen;
 	o2->Pos = pos;
+	o2->Size.x = 60;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
@@ -1436,6 +1437,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeRoomWallPad;
 	o2->Pos = pos;
+	o2->Size.x = 60;
 	UIObjectAddChild(c, o2);
 
 	pos.x = x;
