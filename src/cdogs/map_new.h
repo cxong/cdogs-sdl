@@ -94,6 +94,9 @@ typedef struct
 				int Min;
 				int Max;
 				int Edge;
+				int Walls;
+				int WallLength;
+				int WallPad;
 			} Rooms;
 			int Squares;
 			struct

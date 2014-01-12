@@ -384,6 +384,9 @@ static void LoadClassicRooms(Mission *m, json_t *roomsNode)
 	LoadInt(&m->u.Classic.Rooms.Min, roomsNode, "Min");
 	LoadInt(&m->u.Classic.Rooms.Max, roomsNode, "Max");
 	LoadInt(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
+	LoadInt(&m->u.Classic.Rooms.Walls, roomsNode, "Walls");
+	LoadInt(&m->u.Classic.Rooms.WallLength, roomsNode, "WallLength");
+	LoadInt(&m->u.Classic.Rooms.WallPad, roomsNode, "WallPad");
 }
 static void LoadClassicPillars(Mission *m, json_t *node, char *name)
 {
@@ -568,6 +571,9 @@ static json_t *SaveClassicRooms(Mission *m)
 	AddIntPair(node, "Min", m->u.Classic.Rooms.Min);
 	AddIntPair(node, "Max", m->u.Classic.Rooms.Max);
 	AddIntPair(node, "Edge", m->u.Classic.Rooms.Edge);
+	AddIntPair(node, "Walls", m->u.Classic.Rooms.Walls);
+	AddIntPair(node, "WallLength", m->u.Classic.Rooms.WallLength);
+	AddIntPair(node, "WallPad", m->u.Classic.Rooms.WallPad);
 	return node;
 }
 static json_t *SaveClassicPillars(Mission *m)

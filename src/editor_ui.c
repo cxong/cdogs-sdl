@@ -191,6 +191,30 @@ static void MissionDrawEdgeRooms(
 		g, o->Pos, "Edge rooms", (*missionPtr)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
+static char *MissionGetRoomWallCountStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "RoomWalls: %d", (*missionPtr)->u.Classic.Rooms.Walls);
+	return s;
+}
+static char *MissionGetRoomWallLenStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "RoomWallLen: %d", (*missionPtr)->u.Classic.Rooms.WallLength);
+	return s;
+}
+static char *MissionGetRoomWallPadStr(UIObject *o, Mission **missionPtr)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!*missionPtr) return NULL;
+	sprintf(s, "RoomWallPad: %d", (*missionPtr)->u.Classic.Rooms.WallPad);
+	return s;
+}
 static char *MissionGetSquareCountStr(UIObject *o, Mission **missionPtr)
 {
 	static char s[128];
@@ -768,6 +792,21 @@ static void MissionChangeEdgeRooms(Mission **missionPtr, int d)
 	(*missionPtr)->u.Classic.Rooms.Edge =
 		!(*missionPtr)->u.Classic.Rooms.Edge;
 }
+static void MissionChangeRoomWallCount(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Rooms.Walls =
+		CLAMP((*missionPtr)->u.Classic.Rooms.Walls + d, 0, 50);
+}
+static void MissionChangeRoomWallLen(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Rooms.WallLength =
+		CLAMP((*missionPtr)->u.Classic.Rooms.WallLength + d, 1, 50);
+}
+static void MissionChangeRoomWallPad(Mission **missionPtr, int d)
+{
+	(*missionPtr)->u.Classic.Rooms.WallPad =
+		CLAMP((*missionPtr)->u.Classic.Rooms.WallPad + d, 2, 10);
+}
 static void MissionChangeSquareCount(Mission **missionPtr, int d)
 {
 	(*missionPtr)->u.Classic.Squares =
@@ -1067,7 +1106,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	// Mission looks
 	// wall/floor styles etc.
 
-	pos.y += th * 4;
+	pos.y += th * 6;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
@@ -1375,7 +1414,32 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	o2->Data = missionPtr;
 	o2->ChangeFunc = MissionChangeEdgeRooms;
 	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallCountStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomWallCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallLenStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomWallLen;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallPadStr;
+	o2->Data = missionPtr;
+	o2->ChangeFunc = MissionChangeRoomWallPad;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = missionPtr;

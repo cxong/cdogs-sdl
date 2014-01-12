@@ -740,6 +740,9 @@ void SetupQuickPlayCampaign(
 		m->u.Classic.Rooms.Min = rand() % 10 + 5;
 		m->u.Classic.Rooms.Max = rand() % 10 + m->u.Classic.Rooms.Min;
 		m->u.Classic.Rooms.Edge = 1;
+		m->u.Classic.Rooms.Walls = rand() % 5;
+		m->u.Classic.Rooms.WallLength = rand() % 6 + 1;
+		m->u.Classic.Rooms.WallPad = rand() % 4 + 2;
 		m->u.Classic.Squares =
 			GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
 		m->u.Classic.Doors.Enabled = rand() % 2;

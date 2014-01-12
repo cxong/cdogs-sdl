@@ -57,6 +57,14 @@
 #define YMAX    128
 #define XMAX    128
 
+// Values for internal map
+#define MAP_FLOOR           0
+#define MAP_WALL            1
+#define MAP_DOOR            2
+#define MAP_ROOM            3
+#define MAP_SQUARE          4
+#define MAP_NOTHING         6
+
 #define MAP_ACCESS_RED      256
 #define MAP_ACCESS_BLUE     512
 #define MAP_ACCESS_GREEN    1024
@@ -99,7 +107,8 @@ TTileItem *MapGetClosestEnemy(
 // Map construction functions
 unsigned short IMapGet(Map *map, Vec2i pos);
 int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
-int MapIsValidStartForWall(Map *map, int x, int y, int pad);
+int MapIsValidStartForWall(
+	Map *map, int x, int y, unsigned short tileType, int pad);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
 void MapMakeRoom(
 	Map *map,

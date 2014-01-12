@@ -64,14 +64,6 @@
 #include "mission.h"
 #include "utils.h"
 
-// Values for internal map
-#define MAP_FLOOR           0
-#define MAP_WALL            1
-#define MAP_DOOR            2
-#define MAP_ROOM            3
-#define MAP_SQUARE          4
-#define MAP_NOTHING         6
-
 #define MAP_LEAVEFREE       4096
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00
@@ -210,7 +202,8 @@ void MapMakeWall(Map *map, Vec2i pos)
 	map->iMap[pos.y][pos.x] = MAP_WALL;
 }
 
-int MapIsValidStartForWall(Map *map, int x, int y, int pad)
+int MapIsValidStartForWall(
+	Map *map, int x, int y, unsigned short tileType, int pad)
 {
 	Vec2i d;
 	if (x == 0 || y == 0 || x == XMAX - 1 || y == YMAX - 1)
@@ -221,7 +214,7 @@ int MapIsValidStartForWall(Map *map, int x, int y, int pad)
 	{
 		for (d.y = y - pad; d.y <= y + pad; d.y++)
 		{
-			if (IMapGet(map, d) != 0)
+			if (IMapGet(map, d) != tileType)
 			{
 				return 0;
 			}

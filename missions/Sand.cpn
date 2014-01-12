@@ -57,7 +57,10 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0
+			"Edge": 0,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
 		},
 		"Squares": 5,
 		"Doors": {
@@ -140,9 +143,12 @@
 		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 14,
-			"Min": 6,
-			"Max": 6,
-			"Edge": 0
+			"Min": 7,
+			"Max": 17,
+			"Edge": 0,
+			"Walls": 5,
+			"WallLength": 10,
+			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
@@ -216,8 +222,11 @@
 		"Rooms": {
 			"Count": 20,
 			"Min": 7,
-			"Max": 7,
-			"Edge": 0
+			"Max": 13,
+			"Edge": 0,
+			"Walls": 3,
+			"WallLength": 6,
+			"WallPad": 2
 		},
 		"Squares": 3,
 		"Doors": {
@@ -282,9 +291,12 @@
 		"CorridorWidth": 0,
 		"Rooms": {
 			"Count": 7,
-			"Min": 5,
-			"Max": 5,
-			"Edge": 0
+			"Min": 6,
+			"Max": 6,
+			"Edge": 0,
+			"Walls": 1,
+			"WallLength": 1,
+			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
@@ -348,9 +360,12 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0
+			"Edge": 0,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
 		},
-		"Squares": 2,
+		"Squares": 1,
 		"Doors": {
 			"Enabled": 0,
 			"Min": 0,
@@ -406,7 +421,10 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0
+			"Edge": 0,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
@@ -475,7 +493,10 @@
 			"Count": 0,
 			"Min": 0,
 			"Max": 0,
-			"Edge": 0
+			"Edge": 0,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
@@ -558,7 +579,10 @@
 			"Count": 9,
 			"Min": 5,
 			"Max": 7,
-			"Edge": 1
+			"Edge": 1,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
 		},
 		"Squares": 0,
 		"Doors": {
@@ -633,7 +657,10 @@
 			"Count": 9,
 			"Min": 7,
 			"Max": 9,
-			"Edge": 1
+			"Edge": 1,
+			"Walls": 2,
+			"WallLength": 2,
+			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
@@ -713,7 +740,10 @@
 			"Count": 7,
 			"Min": 9,
 			"Max": 14,
-			"Edge": 1
+			"Edge": 1,
+			"Walls": 3,
+			"WallLength": 1,
+			"WallPad": 2
 		},
 		"Squares": 0,
 		"Doors": {
