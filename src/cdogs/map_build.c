@@ -345,8 +345,8 @@ int MapGetRoomOverlapSize(
 {
 	Vec2i v;
 	int numOverlaps = 0;
-	Vec2i overlap1 = Vec2iZero();
-	Vec2i overlap2 = Vec2iZero();
+	Vec2i overlapMin = Vec2iZero();
+	Vec2i overlapMax = Vec2iZero();
 
 	if (pos.x < 0 || pos.y < 0 ||
 		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
@@ -386,11 +386,14 @@ int MapGetRoomOverlapSize(
 					}
 					if (numOverlaps == 0)
 					{
-						overlap1 = v;
+						overlapMin = overlapMax = v;
 					}
 					else
 					{
-						overlap2 = v;
+						overlapMin.x = MIN(overlapMin.x, v.x);
+						overlapMin.y = MIN(overlapMin.y, v.y);
+						overlapMax.x = MAX(overlapMax.x, v.x);
+						overlapMax.y = MAX(overlapMax.y, v.y);
 					}
 					numOverlaps++;
 				}
@@ -407,22 +410,9 @@ int MapGetRoomOverlapSize(
 
 	// Now check that all tiles between the first and last tiles are room or
 	// perimeter tiles
-	// Swap the x/y for convenience; this shouldn't change the overlap area
-	if (overlap1.x > overlap2.x)
+	for (v.y = overlapMin.y; v.y <= overlapMax.y; v.y++)
 	{
-		int temp = overlap1.x;
-		overlap1.x = overlap2.x;
-		overlap2.x = temp;
-	}
-	if (overlap1.y > overlap2.y)
-	{
-		int temp = overlap1.y;
-		overlap1.y = overlap2.y;
-		overlap2.y = temp;
-	}
-	for (v.y = overlap1.y; v.y <= overlap2.y; v.y++)
-	{
-		for (v.x = overlap1.x; v.x <= overlap2.x; v.x++)
+		for (v.x = overlapMin.x; v.x <= overlapMax.x; v.x++)
 		{
 			switch (IMapGet(map, v) & MAP_MASKACCESS)
 			{
@@ -442,7 +432,7 @@ int MapGetRoomOverlapSize(
 		}
 	}
 
-	return MAX(overlap2.x - overlap1.x, overlap2.y - overlap1.y) - 1;
+	return MAX(overlapMin.x - overlapMin.x, overlapMin.y - overlapMin.y) - 1;
 }
 
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
