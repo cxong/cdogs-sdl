@@ -487,7 +487,6 @@ void CommandBadGuys(int ticks)
 				}
 			}
 			CommandActor(actor, cmd, ticks);
-			actor->flags &= ~FLAGS_VISIBLE;
 		}
 		else if ((actor->flags & FLAGS_PRISONER) != 0)
 		{
