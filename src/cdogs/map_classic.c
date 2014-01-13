@@ -296,6 +296,7 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2), m->Size);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
+	int isEdge = 0;
 
 	// Check if pillar is at edge; if so only check if clear inside edge
 	if (pos.x == (XMAX - m->Size.x) / 2 ||
@@ -304,11 +305,13 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 		int dx = (XMAX - m->Size.x) / 2 + 1 - clearPos.x;
 		clearPos.x += dx;
 		clearSize.x -= dx;
+		isEdge = 1;
 	}
 	else if (pos.x + size.x == (XMAX + m->Size.x) / 2 - 2 ||
 		pos.x + size.x == (XMAX + m->Size.x) / 2 - 1)
 	{
 		clearSize.x = (XMAX + m->Size.x) / 2 - 1 - pos.x;
+		isEdge = 1;
 	}
 	if (pos.y == (YMAX - m->Size.y) / 2 ||
 		pos.y == (YMAX - m->Size.y) / 2 + 1)
@@ -316,14 +319,17 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 		int dy = (YMAX - m->Size.y) / 2 + 1 - clearPos.y;
 		clearPos.y += dy;
 		clearSize.y -= dy;
+		isEdge = 1;
 	}
 	else if (pos.y + size.y == (YMAX + m->Size.y) / 2 - 2 ||
 		pos.y + size.y == (YMAX + m->Size.y) / 2 - 1)
 	{
 		clearSize.y = (YMAX + m->Size.y) / 2 - 1 - pos.y;
+		isEdge = 1;
 	}
 
-	if (MapIsAreaClearOrWall(map, clearPos, clearSize))
+	if (MapIsAreaClear(map, clearPos, clearSize) ||
+		(!isEdge && MapIsAreaClearOrWall(map, clearPos, clearSize)))
 	{
 		MapMakePillar(map, pos, size);
 		return 1;
