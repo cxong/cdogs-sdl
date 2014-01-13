@@ -267,9 +267,10 @@ static int MapGetWallPic(Map *m, int x, int y)
 	return WALL_SINGLE;
 }
 
-static void PicLoadOffset(Pic *picAlt, int idx)
+static void PicLoadOffset(GraphicsDevice *g, Pic *picAlt, int idx)
 {
 	PicFromPicPalettedOffset(
+		g,
 		picAlt,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[idx].picIndex),
 		&cGeneralPics[idx]);
@@ -775,7 +776,7 @@ static TWatch *CreateCloseDoorWatch(
 		a[ai].tilePic = PicManagerGetFromOld(&gPicManager, pic);
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
-			PicLoadOffset(&a[ai].tilePicAlt, pic);
+			PicLoadOffset(&gGraphicsDevice, &a[ai].tilePicAlt, pic);
 			a[ai].tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
@@ -868,7 +869,7 @@ static void CreateOpenDoorTriggers(
 			else if (j == 0)
 			{
 				// special door cavity picture
-				PicLoadOffset(&a[aj].tilePicAlt, openDoorPic);
+				PicLoadOffset(&gGraphicsDevice, &a[aj].tilePicAlt, openDoorPic);
 				a[aj].tilePic = PicManagerGetFromOld(
 					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 			}
@@ -976,7 +977,7 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		Tile *tileB = MapGetTile(map, vB);
 		assert(TileCanWalk(tileA) && "map gen error: entrance should be clear");
 		assert(TileCanWalk(tileB) && "map gen error: entrance should be clear");
-		PicLoadOffset(&tile->picAlt, pic);
+		PicLoadOffset(&gGraphicsDevice, &tile->picAlt, pic);
 		tile->pic = PicManagerGetFromOld(
 			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		tile->flags = tileFlags;
@@ -1109,7 +1110,7 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	int x, y, w, h;
 	Vec2i v;
 
-	PicManagerGenerateOldPics(&gPicManager);
+	PicManagerGenerateOldPics(&gPicManager, &gGraphicsDevice);
 	memset(map, 0, sizeof *map);
 	for (v.y = 0; v.y < YMAX; v.y++)
 	{

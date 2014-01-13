@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,35 +27,36 @@
 */
 #include "pic.h"
 
+#include "blit.h"
 #include "palette.h"
 #include "utils.h"
 
 Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
 
-void PicFromPicPaletted(Pic *pic, PicPaletted *picP)
+void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 {
 	int i;
 	pic->size = Vec2iNew(picP->w, picP->h);
 	pic->offset = Vec2iZero();
-	CMALLOC(pic->data, pic->size.x * pic->size.y * sizeof *pic->data);
+	CMALLOC(pic->Data, pic->size.x * pic->size.y * sizeof *pic->Data);
 	for (i = 0; i < pic->size.x * pic->size.y; i++)
 	{
-		pic->data[i] = PaletteToColor(*(picP->data + i));
+		pic->Data[i] = PixelFromColor(g, PaletteToColor(*(picP->data + i)));
 	}
 }
 void PicFromPicPalettedOffset(
-	Pic *pic, PicPaletted *picP, const TOffsetPic *picOff)
+	GraphicsDevice *g, Pic *pic, PicPaletted *picP, const TOffsetPic *picOff)
 {
-	PicFromPicPaletted(pic, picP);
+	PicFromPicPaletted(g, pic, picP);
 	pic->offset = Vec2iNew(picOff->dx, picOff->dy);
 }
 
 void PicFree(Pic *pic)
 {
-	CFREE(pic->data);
+	CFREE(pic->Data);
 }
 
 int PicIsNotNone(Pic *pic)
 {
-	return pic->size.x > 0 && pic->size.y > 0 && pic->data != NULL;
+	return pic->size.x > 0 && pic->size.y > 0 && pic->Data != NULL;
 }

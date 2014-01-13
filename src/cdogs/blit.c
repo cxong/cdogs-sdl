@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,8 @@ color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
 }
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
 {
-	return SDL_MapRGB(device->screen->format, color.r, color.g, color.b);
+	return SDL_MapRGBA(
+		device->screen->format, color.r, color.g, color.b, color.a);
 }
 
 void Blit(int x, int y, PicPaletted *pic, void *table, int mode)
@@ -242,6 +243,14 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 	}
 }
 
+Uint32 PixelMult(Uint32 p, Uint32 m)
+{
+	return
+		((p & 0xFF) * (m & 0xFF) / 0xFF) |
+		((((p & 0xFF00) >> 8) * ((m & 0xFF00) >> 8) / 0xFF) << 8) |
+		((((p & 0xFF0000) >> 16) * ((m & 0xFF0000) >> 16) / 0xFF) << 16) |
+		((((p & 0xFF000000) >> 24) * ((m & 0xFF000000) >> 24) / 0xFF) << 24);
+}
 void BlitMasked(
 	GraphicsDevice *device,
 	Pic *pic,
@@ -249,7 +258,8 @@ void BlitMasked(
 	color_t mask,
 	int isTransparent)
 {
-	color_t *current = pic->data;
+	Uint32 *current = pic->Data;
+	Uint32 maskPixel = PixelFromColor(device, mask);
 	int i;
 	pos = Vec2iAdd(pos, pic->offset);
 	for (i = 0; i < pic->size.y; i++)
@@ -269,7 +279,6 @@ void BlitMasked(
 		for (j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
-			color_t c;
 			int xoff = j + pos.x;
 			if (xoff < device->clipping.left)
 			{
@@ -281,14 +290,13 @@ void BlitMasked(
 				current += pic->size.x - j;
 				break;
 			}
-			if (isTransparent && ColorEquals(*current, colorBlack))
+			if (isTransparent && *current == 0)
 			{
 				current++;
 				continue;
 			}
 			target = device->buf + yoff + xoff;
-			c = ColorMult(*current, mask);
-			*target = PixelFromColor(device, c);
+			*target = PixelMult(*current, maskPixel);
 			current++;
 		}
 	}

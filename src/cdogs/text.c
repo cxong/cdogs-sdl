@@ -150,7 +150,7 @@ Vec2i DrawTextCharMasked(
 {
 	PicPaletted *font = GetgFontPic(c);
 	Pic pic;
-	PicFromPicPaletted(&pic, font);
+	PicFromPicPaletted(device, &pic, font);
 	BlitMasked(device, &pic, pos, mask, 1);
 	pos.x += 1 + font->w + dxCDogsText;
 	CDogsTextGoto(pos.x, pos.y);

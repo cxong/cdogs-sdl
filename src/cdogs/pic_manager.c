@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ int PicManagerTryInit(
 	return 1;
 }
 
-void PicManagerGenerateOldPics(PicManager *pm)
+void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
 	int i;
 	// Convert old pics into new format ones
@@ -71,7 +71,7 @@ void PicManagerGenerateOldPics(PicManager *pm)
 		}
 		else
 		{
-			PicFromPicPaletted(&pm->picsFromOld[i], oldPic);
+			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,9 @@
 #ifndef __PIC
 #define __PIC
 
+#include <SDL_stdinc.h>
+
+#include "grafx.h"
 #include "pic_file.h"
 #include "vector.h"
 
@@ -35,14 +38,14 @@ typedef struct
 {
 	Vec2i size;
 	Vec2i offset;
-	color_t *data;
+	Uint32 *Data;
 } Pic;
 
 extern Pic picNone;
 
-void PicFromPicPaletted(Pic *pic, PicPaletted *picP);
+void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
 void PicFromPicPalettedOffset(
-	Pic *pic, PicPaletted *picP, const TOffsetPic *picOff);
+	GraphicsDevice *g, Pic *pic, PicPaletted *picP, const TOffsetPic *picOff);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ extern PicManager gPicManager;
 int PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
 // Old paletted pics need the palette to be set before using
-void PicManagerGenerateOldPics(PicManager *pm);
+void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g);
 void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
