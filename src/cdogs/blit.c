@@ -522,6 +522,7 @@ static void Bilinear(
 static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 {
 	double f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
+	int m = (int)(0xFF * f);
 	int y;
 	for (y = 0; y < screenSize.y; y++)
 	{
@@ -529,11 +530,17 @@ static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 		for (x = 0; x < screenSize.x; x++)
 		{
 			int idx = x + y * screenSize.x;
-			color_t color = PixelToColor(&gGraphicsDevice, screen[idx]);
-			color.r = (uint8_t)CLAMP(f * color.r, 0, 255);
-			color.g = (uint8_t)CLAMP(f * color.g, 0, 255);
-			color.b = (uint8_t)CLAMP(f * color.b, 0, 255);
-			screen[idx] = PixelFromColor(&gGraphicsDevice, color);
+			Uint32 p = screen[idx];
+			Uint32 pp;
+			screen[idx] = 0;
+			pp = ((p & 0xFF) * m / 0xFF);
+			screen[idx] |= (pp | -!!(pp >> 8)) & 0xFF;
+			pp = (((p >> 8) & 0xFF) * m / 0xFF);
+			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 8;
+			pp = (((p >> 16) & 0xFF) * m / 0xFF);
+			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 16;
+			pp = (((p >> 24) & 0xFF) * m / 0xFF);
+			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 24;
 		}
 	}
 }
