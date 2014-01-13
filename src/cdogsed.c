@@ -180,8 +180,7 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t->things = NULL;
 }
 
-static void MakeBackground(
-	GraphicsDevice *g, GraphicsConfig *config, int mission)
+static void MakeBackground(GraphicsDevice *g, int mission)
 {
 	int i;
 	// Clear background first
@@ -189,7 +188,7 @@ static void MakeBackground(
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, config, tintDarker, mission, 1);
+	GrafxMakeBackground(g, tintDarker, mission, 1);
 }
 
 static void Display(int mission, int yc, int willDisplayAutomap)
@@ -209,13 +208,12 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(&gGraphicsDevice, &gConfig.Graphics, mission);
+			MakeBackground(&gGraphicsDevice, mission);
 		}
 		if (isMouseTileValid)
 		{
 			SwapCursorTile(mouseTile);
-			GrafxDrawBackground(
-				&gGraphicsDevice, &gConfig.Graphics, tintDarker);
+			GrafxDrawBackground(&gGraphicsDevice, tintDarker);
 		}
 		GraphicsBlitBkg(&gGraphicsDevice);
 		sprintf(
@@ -573,7 +571,7 @@ static void Setup(int idx, int buildTables)
 	MissionOptionsTerminate(&gMission);
 	currentMission = CArrayGet(&gCampaign.Setting.Missions, idx);
 	SetupMission(idx, buildTables, &gCampaign);
-	MakeBackground(&gGraphicsDevice, &gConfig.Graphics, idx);
+	MakeBackground(&gGraphicsDevice, idx);
 }
 
 static void Open(void)
@@ -1116,6 +1114,9 @@ int main(int argc, char *argv[])
 	WeaponInitialize();
 	PlayerDataInitialize();
 	GraphicsInit(&gGraphicsDevice);
+	// Hardcode config settings
+	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
+	gConfig.Graphics.ScaleFactor = 2;
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)

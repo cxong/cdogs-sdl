@@ -250,8 +250,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 	AddSupportedModesForBPP(device, 32);
 }
 
-static void MakeRandomBackground(
-	GraphicsDevice *device, GraphicsConfig *config)
+static void MakeRandomBackground(GraphicsDevice *device)
 {
 	HSV tint;
 	CampaignSettingTerminate(&gCampaign.Setting);
@@ -261,7 +260,7 @@ static void MakeRandomBackground(
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	GrafxMakeBackground(device, config, tint, 0, 0);
+	GrafxMakeBackground(device, tint, 0, 0);
 	KillAllActors();
 	KillAllObjects();
 	FreeTriggersAndWatches();
@@ -364,7 +363,7 @@ void GraphicsInitialize(
 	// Need to make background here since dimensions use cached config
 	if (!config->IsEditor)
 	{
-		MakeRandomBackground(device, config);
+		MakeRandomBackground(device);
 	}
 }
 
@@ -387,8 +386,7 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 	return GraphicsGetScreenSize(config) * sizeof(Uint32);
 }
 
-void GrafxDrawBackground(
-	GraphicsDevice *device, GraphicsConfig *config, HSV tint)
+void GrafxDrawBackground(GraphicsDevice *g, HSV tint)
 {
 	DrawBuffer buffer;
 	Vec2i v;
@@ -402,20 +400,19 @@ void GrafxDrawBackground(
 	DrawBufferDraw(&buffer, Vec2iZero());
 	DrawBufferTerminate(&buffer);
 
-	for (v.y = 0; v.y < config->ResolutionHeight; v.y++)
+	for (v.y = 0; v.y < g->cachedConfig.ResolutionHeight; v.y++)
 	{
-		for (v.x = 0; v.x < config->ResolutionWidth; v.x++)
+		for (v.x = 0; v.x < g->cachedConfig.ResolutionWidth; v.x++)
 		{
-			DrawPointTint(device, v, tint);
+			DrawPointTint(g, v, tint);
 		}
 	}
-	memcpy(device->bkg, device->buf, GraphicsGetMemSize(config));
-	memset(device->buf, 0, GraphicsGetMemSize(config));
+	memcpy(g->bkg, g->buf, GraphicsGetMemSize(&g->cachedConfig));
+	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 }
 
 void GrafxMakeBackground(
-	GraphicsDevice *device, GraphicsConfig *config, HSV tint,
-	int missionIdx, int isEditor)
+	GraphicsDevice *device, HSV tint, int missionIdx, int isEditor)
 {
 	MissionOptionsTerminate(&gMission);
 	SetupMission(missionIdx, 1, &gCampaign);
@@ -428,7 +425,7 @@ void GrafxMakeBackground(
 		MapShowExitArea(&gMap);
 	}
 
-	GrafxDrawBackground(device, config, tint);
+	GrafxDrawBackground(device, tint);
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)
