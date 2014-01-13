@@ -168,7 +168,9 @@ static int MapTryBuildRoom(
 		if (pos.x == (XMAX - m->Size.x) / 2 ||
 			pos.x == (XMAX - m->Size.x) / 2 + 1)
 		{
-			clearPos.x = (XMAX - m->Size.x) / 2 + 1;
+			int dx = (XMAX - m->Size.x) / 2 + 1 - clearPos.x;
+			clearPos.x += dx;
+			clearSize.x -= dx;
 			isEdgeRoom = 1;
 		}
 		else if (pos.x + w == (XMAX + m->Size.x) / 2 - 2 ||
@@ -180,7 +182,9 @@ static int MapTryBuildRoom(
 		if (pos.y == (YMAX - m->Size.y) / 2 ||
 			pos.y == (YMAX - m->Size.y) / 2 + 1)
 		{
-			clearPos.y = (YMAX - m->Size.y) / 2 + 1;
+			int dy = (XMAX - m->Size.y) / 2 + 1 - clearPos.y;
+			clearPos.y += dy;
+			clearSize.y -= dy;
 			isEdgeRoom = 1;
 		}
 		else if (pos.y + h == (YMAX + m->Size.y) / 2 - 2 ||
@@ -297,7 +301,9 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 	if (pos.x == (XMAX - m->Size.x) / 2 ||
 		pos.x == (XMAX - m->Size.x) / 2 + 1)
 	{
-		clearPos.x = (XMAX - m->Size.x) / 2 + 1;
+		int dx = (XMAX - m->Size.x) / 2 + 1 - clearPos.x;
+		clearPos.x += dx;
+		clearSize.x -= dx;
 	}
 	else if (pos.x + size.x == (XMAX + m->Size.x) / 2 - 2 ||
 		pos.x + size.x == (XMAX + m->Size.x) / 2 - 1)
@@ -307,7 +313,9 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 	if (pos.y == (YMAX - m->Size.y) / 2 ||
 		pos.y == (YMAX - m->Size.y) / 2 + 1)
 	{
-		clearPos.y = (YMAX - m->Size.y) / 2 + 1;
+		int dy = (XMAX - m->Size.y) / 2 + 1 - clearPos.y;
+		clearPos.y += dy;
+		clearSize.y -= dy;
 	}
 	else if (pos.y + size.y == (YMAX + m->Size.y) / 2 - 2 ||
 		pos.y + size.y == (YMAX + m->Size.y) / 2 - 1)
