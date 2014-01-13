@@ -242,7 +242,7 @@ static int MapTryBuildRoom(
 				{
 					doors[i] = 0;
 				}
-				else
+				else if (doors[i])
 				{
 					doorsUnplaced--;
 				}
