@@ -529,6 +529,12 @@ static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 		int x;
 		for (x = 0; x < screenSize.x; x++)
 		{
+			// Semi-optimised pixel multiplcation routine
+			// Multiply each 8-bit component with the gamma mask
+			// Detect overflows by checking if there are bits above 255
+			// If so, turning into boolean (!!) and negation will create
+			// a -1 (i.e. FFFFFFFF) mask which fills all the bits with 1
+			// i.e. saturated multiply
 			int idx = x + y * screenSize.x;
 			Uint32 p = screen[idx];
 			Uint32 pp;
