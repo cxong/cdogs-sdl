@@ -434,6 +434,84 @@ int MapGetRoomOverlapSize(
 
 	return MAX(overlapMin.x - overlapMin.x, overlapMin.y - overlapMin.y) - 1;
 }
+// Check that this area does not overlap two or more "walls"
+int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
+{
+	Vec2i v;
+	int numOverlaps = 0;
+	Vec2i overlapMin = Vec2iZero();
+	Vec2i overlapMax = Vec2iZero();
+
+	if (pos.x < 0 || pos.y < 0 ||
+		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+	{
+		return 0;
+	}
+
+	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
+	{
+		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+		{
+			// only check perimeter
+			if (v.x != pos.x && v.x != pos.x + size.x - 1 &&
+				v.y != pos.y && v.y != pos.y + size.y - 1)
+			{
+				continue;
+			}
+			switch (IMapGet(map, v))
+			{
+			case MAP_WALL:
+				// Check if this wall is part of a room
+				if (!MapTileIsPartOfRoom(map, v))
+				{
+					if (numOverlaps == 0)
+					{
+						overlapMin = overlapMax = v;
+					}
+					else
+					{
+						overlapMin.x = MIN(overlapMin.x, v.x);
+						overlapMin.y = MIN(overlapMin.y, v.y);
+						overlapMax.x = MAX(overlapMax.x, v.x);
+						overlapMax.y = MAX(overlapMax.y, v.y);
+					}
+					numOverlaps++;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	if (numOverlaps < 2)
+	{
+		return 1;
+	}
+
+	// Now check that all tiles between the first and last tiles are
+	// pillar tiles
+	for (v.y = overlapMin.y; v.y <= overlapMax.y; v.y++)
+	{
+		for (v.x = overlapMin.x; v.x <= overlapMax.x; v.x++)
+		{
+			switch (IMapGet(map, v) & MAP_MASKACCESS)
+			{
+			case MAP_WALL:
+				// Check if this wall is not part of a room
+				if (MapTileIsPartOfRoom(map, v))
+				{
+					return 0;
+				}
+				break;
+			default:
+				// invalid tile type
+				return 0;
+			}
+		}
+	}
+
+	return 1;
+}
 
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 {

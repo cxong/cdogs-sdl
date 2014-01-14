@@ -56,6 +56,7 @@ int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size);
 int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size);
 int MapGetRoomOverlapSize(
 	Map *map, Vec2i pos, Vec2i size, unsigned short *overlapAccess);
+int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size);
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);

@@ -320,6 +320,7 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
 	int isEdge = 0;
+	int isClear = 0;
 
 	// Check if pillar is at edge; if so only check if clear inside edge
 	if (pos.x == (XMAX - m->Size.x) / 2 ||
@@ -355,8 +356,13 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 	// or if the pillar only overlaps one of the edge or another
 	// non-room wall
 	// This is to prevent dead pockets
-	if (MapIsAreaClear(map, clearPos, clearSize) ||
-		(!isEdge && MapIsAreaClearOrWall(map, clearPos, clearSize)))
+	isClear = MapIsAreaClear(map, clearPos, clearSize);
+	if (!isClear && !isEdge && MapIsAreaClearOrWall(map, clearPos, clearSize))
+	{
+		// Also check that the pillar does not overlap two pillars
+		isClear = MapIsLessThanTwoWallOverlaps(map, clearPos, clearSize);
+	}
+	if (isClear)
 	{
 		MapMakePillar(map, pos, size);
 		return 1;
