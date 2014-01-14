@@ -63,6 +63,23 @@ static int MapTryBuildWall(
 	unsigned short tileType, int pad, int wallLength);
 void MapClassicLoad(Map *map, Mission *mission)
 {
+	// The classic random map generator randomly attempts to place
+	// a configured number of features on the map, in order:
+	// 1. "Squares", almost-square areas of empty floor
+	// 2. Rooms, rectangles of "room" squares surrounded by walls,
+	//    some of which have doors
+	// 3. "Pillars", or rectangles of solid wall
+	// 4. Walls, single-thickness walls that sometimes bend and
+	//    split
+	// All features are placed by randomly picking a position in
+	// the map and checking to see if it's possible to place the
+	// feature at that point, and repeating this process until
+	// either all features are placed or too many attempts have
+	// been done.
+	// Sometimes it's impossible to place features, either because
+	// they overlap with other incompatible features, or it may
+	// create inaccessible areas on the map.
+
 	// place squares
 	int pad = MAX(mission->u.Classic.CorridorWidth, 1);
 	int count = 0;
@@ -129,12 +146,8 @@ static int MapTryBuildSquare(Map *map, Mission *m)
 	Vec2i v = GuessCoords(
 		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2),
 		m->Size);
-	Vec2i size;
-	size.x = rand() % 9 + 8;
-	size.y = rand() % 9 + 8;
-
-	if (MapIsAreaClear(
-		map, Vec2iNew(v.x - 1, v.y - 1), Vec2iNew(size.x + 2, size.y + 2)))
+	Vec2i size = Vec2iNew(rand() % 9 + 8, rand() % 9 + 8);
+	if (MapIsAreaClear(map, v, size))
 	{
 		MapMakeSquare(map, v, size);
 		return 1;
@@ -148,7 +161,8 @@ static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
 	int doorMin, int doorMax, int hasKeys)
 {
-	// make sure rooms are large enough to accomodate doors
+	// Work out dimensions of room
+	// make sure room is large enough to accommodate doors
 	int roomMin = MAX(m->u.Classic.Rooms.Min, doorMin + 4);
 	int roomMax = MAX(m->u.Classic.Rooms.Max, doorMin + 4);
 	int w = rand() % (roomMax - roomMin + 1) + roomMin;
@@ -226,7 +240,7 @@ static int MapTryBuildRoom(
 		MapFindAvailableDoors(map, m, pos, Vec2iNew(w, h), doorMin, doors);
 		// Try to place doors according to the random mask
 		// If we cannot place a door, remember this and try to place it
-		// on the next door
+		// on other doors
 		for (i = 0; i < 4; i++)
 		{
 			if ((doormask & (1 << i)) && !doors[i])
@@ -240,22 +254,31 @@ static int MapTryBuildRoom(
 			{
 				if (doorsUnplaced == 0)
 				{
+					// If we don't need to place any doors,
+					// set this door to unavailable
 					doors[i] = 0;
 				}
 				else if (doors[i])
 				{
+					// Otherwise, if it's possible to place a door here
+					// and we need to place doors, do so
 					doorsUnplaced--;
 				}
 			}
 		}
+
+		// Work out what access level (i.e. key) this room has
 		if (hasKeys && m->u.Classic.Doors.Enabled)
 		{
+			// If this room has overlapped another room, use the same
+			// access level as that room
 			if (isOverlapRoom)
 			{
 				accessMask = overlapAccess;
 			}
 			else
 			{
+				// Otherwise, generate an access level for this room
 				accessMask = GenerateAccessMask(&map->keyAccessCount);
 				if (map->keyAccessCount < 1)
 				{
@@ -328,6 +351,10 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 		isEdge = 1;
 	}
 
+	// Only place pillars if the area is totally clear,
+	// or if the pillar only overlaps one of the edge or another
+	// non-room wall
+	// This is to prevent dead pockets
 	if (MapIsAreaClear(map, clearPos, clearSize) ||
 		(!isEdge && MapIsAreaClearOrWall(map, clearPos, clearSize)))
 	{
@@ -460,10 +487,12 @@ static void MapGrowWall(
 	length--;
 	if (length > 0 && (rand() & 3) == 0)
 	{
+		// Randomly try to grow the wall in a different direction
 		l = rand() % length;
 		MapGrowWall(map, x, y, tileType, pad, rand() & 3, l);
 		length -= l;
 	}
+	// Keep growing wall in same direction
 	MapGrowWall(map, x, y, tileType, pad, d, length);
 }
 
