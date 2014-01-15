@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,30 @@
 */
 #include "tile.h"
 
+#include "triggers.h"
 
-Tile tileNone = { NULL, { { 0, 0 }, { 0, 0 }, NULL }, 0, 0, NULL };
+
+Tile TileNone(void)
+{
+	Tile t;
+	memset(&t, 0, sizeof t);
+	return t;
+}
+void TileInit(Tile *t)
+{
+	memset(t, 0, sizeof *t);
+	// lazy initialise the arrays of triggers
+	// it's very slow to do 128x128 mallocs!
+	t->pic = &picNone;
+	t->picAlt = picNone;
+}
+void TileDestroy(Tile *t)
+{
+	if (t->triggers.elemSize > 0)
+	{
+		CArrayTerminate(&t->triggers);
+	}
+}
 
 int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
 {

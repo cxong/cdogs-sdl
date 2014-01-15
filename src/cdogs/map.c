@@ -725,204 +725,193 @@ static TWatch *CreateCloseDoorWatch(
 	int pic, int floor, int room)
 {
 	Action *a;
-	TWatch *w = AddWatch(3 * doorGroupCount, 2 + 3 * doorGroupCount);
+	TWatch *w = WatchNew();
 	int i;
-	int ai;
 	Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	Vec2i dAside = Vec2iNew(dv.y, dv.x);
 
 	// The conditions are that the tile above, at and below the doors are empty
-	Condition *c = w->conditions;
 	for (i = 0; i < doorGroupCount; i++)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
-		c[i * 3].condition = CONDITION_TILECLEAR;
-		c[i * 3].pos = Vec2iNew(vI.x - dAside.x, vI.y - dAside.y);
-		c[i * 3 + 1].condition = CONDITION_TILECLEAR;
-		c[i * 3 + 1].pos = vI;
-		c[i * 3 + 2].condition = CONDITION_TILECLEAR;
-		c[i * 3 + 2].pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+		Condition *c = WatchAddCondition(w);
+		c->condition = CONDITION_TILECLEAR;
+		c->pos = Vec2iNew(vI.x - dAside.x, vI.y - dAside.y);
+		c = WatchAddCondition(w);
+		c->condition = CONDITION_TILECLEAR;
+		c->pos = vI;
+		c = WatchAddCondition(w);
+		c->condition = CONDITION_TILECLEAR;
+		c->pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
 	}
 
 	// Now the actions of the watch once it's triggered
-	a = w->actions;
 
 	// Deactivate itself
-	a[0].action = ACTION_DEACTIVATEWATCH;
-	a[0].u.index = w->index;
+	a = WatchAddAction(w);
+	a->action = ACTION_DEACTIVATEWATCH;
+	a->u.index = w->index;
 	// play sound at the center of the door group
-	a[1].action = ACTION_SOUND;
-	a[1].u.pos = Vec2iCenterOfTile(Vec2iNew(
+	a = WatchAddAction(w);
+	a->action = ACTION_SOUND;
+	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
 		v.x + dv.x * doorGroupCount / 2,
 		v.y + dv.y * doorGroupCount / 2));
-	a[1].tileFlags = SND_DOOR;
-
-	ai = 2;
-	// Reenable trigger to the left/above of the doors
-	for (i = 0; i < doorGroupCount; i++)
-	{
-		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
-		a[ai].action = ACTION_SETTRIGGER;
-		a[ai].u.pos = Vec2iNew(vI.x - dAside.x, vI.y - dAside.y);
-		ai++;
-	}
+	a->tileFlags = SND_DOOR;
 
 	// Close doors
 	for (i = 0; i < doorGroupCount; i++)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
-		a[ai].action = ACTION_CHANGETILE;
-		a[ai].u.pos = vI;
-		a[ai].tilePic = PicManagerGetFromOld(&gPicManager, pic);
+		a = WatchAddAction(w);
+		a->action = ACTION_CHANGETILE;
+		a->u.pos = vI;
+		a->tilePic = PicManagerGetFromOld(&gPicManager, pic);
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
-			PicLoadOffset(&gGraphicsDevice, &a[ai].tilePicAlt, pic);
-			a[ai].tilePic = PicManagerGetFromOld(
+			PicLoadOffset(&gGraphicsDevice, &a->tilePicAlt, pic);
+			a->tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
-		a[ai].tileFlags = tileFlags;
-		ai++;
+		a->tileFlags = tileFlags;
 	}
 
 	for (i = 0; i < doorGroupCount; i++)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
+		a = WatchAddAction(w);
 		if (isHorizontal)
 		{
-			// Add shadows below doors (also reenables trigger)
-			a[ai].action = ACTION_CHANGETILE;
-			a[ai].u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-			if (IMapGet(map, a[ai].u.pos) == MAP_FLOOR)
+			// Add shadows below doors
+			a->action = ACTION_CHANGETILE;
+			a->u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+			if (IMapGet(map, a->u.pos) == MAP_FLOOR)
 			{
-				a[ai].tilePic = PicManagerGetFromOld(
+				a->tilePic = PicManagerGetFromOld(
 					&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 			}
 			else
 			{
-				a[ai].tilePic = PicManagerGetFromOld(
+				a->tilePic = PicManagerGetFromOld(
 					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 			}
-			a[ai].tileFlags = MAPTILE_TILE_TRIGGER;
 		}
-		else
-		{
-			// Reenable trigger to the right of the doors
-			a[ai].action = ACTION_SETTRIGGER;
-			a[ai].u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-		}
-		ai++;
 	}
 
 	return w;
 }
-static void CreateOpenDoorTriggers(
-	Map *map, Vec2i v, TWatch *w,
+// Only creates the trigger, but does not place it
+static Trigger *MapNewTrigger(Map *map)
+{
+	Trigger *t = TriggerNew();
+	CArrayPushBack(&map->triggers, &t);
+	t->id = map->triggerId++;
+	return t;
+}
+static void TileAddTrigger(Tile *t, Trigger *tr)
+{
+	if (t->triggers.elemSize == 0)
+	{
+		CArrayInit(&t->triggers, sizeof(Trigger *));
+	}
+	CArrayPushBack(&t->triggers, &tr);
+}
+static Trigger *CreateOpenDoorTrigger(
+	Map *map, Vec2i v,
 	int isHorizontal, int doorGroupCount, int flags,
 	int openDoorPic, int floor, int room)
 {
+	// Only add the trigger on the first tile
+	// Subsequent tiles reference the trigger
 	Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	Vec2i dAside = Vec2iNew(dv.y, dv.x);
+	Trigger *t = MapNewTrigger(map);
 	int i;
+	Action *a;
 
+	t->flags = flags;
+
+	/// play sound at the center of the door group
+	a = TriggerAddAction(t);
+	a->action = ACTION_SOUND;
+	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
+		v.x + dv.x * doorGroupCount / 2,
+		v.y + dv.y * doorGroupCount / 2));
+	a->tileFlags = SND_DOOR;
+
+	// Deactivate itself
+	a = TriggerAddAction(t);
+	a->action = ACTION_CLEARTRIGGER;
+	a->u.index = t->id;
+
+	// Open doors
+	for (i = 0; i < doorGroupCount; i++)
+	{
+		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
+		a = TriggerAddAction(t);
+		a->action = ACTION_CHANGETILE;
+		a->u.pos = vI;
+		if (isHorizontal)
+		{
+			a->tilePic = PicManagerGetFromOld(&gPicManager, openDoorPic);
+		}
+		else if (i == 0)
+		{
+			// special door cavity picture
+			PicLoadOffset(&gGraphicsDevice, &a->tilePicAlt, openDoorPic);
+			a->tilePic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+		else
+		{
+			// room floor pic
+			a->tilePic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+		a->tileFlags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
+	}
+
+	// Change tiles below the doors
+	if (isHorizontal)
+	{
+		for (i = 0; i < doorGroupCount; i++)
+		{
+			Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
+			Vec2i vIAside = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+			a = TriggerAddAction(t);
+			// Remove shadows below doors
+			a->action = ACTION_CHANGETILE;
+			a->u.pos = vIAside;
+			if (IMapGet(map, vIAside) == MAP_FLOOR)
+			{
+				a->tilePic = PicManagerGetFromOld(
+					&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
+			}
+			else
+			{
+				a->tilePic = PicManagerGetFromOld(
+					&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
+			}
+		}
+	}
+
+	// Now place the two triggers on the tiles along either side of the doors
 	for (i = 0; i < doorGroupCount; i++)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		Vec2i vAside = Vec2iNew(vI.x - dAside.x, vI.y - dAside.y);
-		// Add triggers to the left/above of the doors
-		Trigger *t = AddTrigger(vAside, 2 + 3 * doorGroupCount);
-		Action *a = t->actions;
-		int aj;
-		int j;
-		t->flags = flags;
-
-		// Enable the watch to close the door
-		a[0].action = ACTION_ACTIVATEWATCH;
-		a[0].u.index = w->index;
-		/// play sound at the center of the door group
-		a[1].action = ACTION_SOUND;
-		a[1].u.pos = Vec2iCenterOfTile(Vec2iNew(
-			v.x + dv.x * doorGroupCount / 2,
-			v.y + dv.y * doorGroupCount / 2));
-		a[1].tileFlags = SND_DOOR;
-
-		// Deactivate itself and all other like triggers
-		aj = 2;
-		for (j = 0; j < doorGroupCount; j++)
-		{
-			Vec2i vJ = Vec2iNew(v.x + dv.x * j, v.y + dv.y * j);
-			Vec2i vJAside = Vec2iNew(vJ.x - dAside.x, vJ.y - dAside.y);
-			a[aj].action = ACTION_CLEARTRIGGER;
-			a[aj].u.pos = vJAside;
-			aj++;
-		}
-
-		// Open doors
-		for (j = 0; j < doorGroupCount; j++)
-		{
-			Vec2i vJ = Vec2iNew(v.x + dv.x * j, v.y + dv.y * j);
-			a[aj].action = ACTION_CHANGETILE;
-			a[aj].u.pos = vJ;
-			if (isHorizontal)
-			{
-				a[aj].tilePic = PicManagerGetFromOld(&gPicManager, openDoorPic);
-			}
-			else if (j == 0)
-			{
-				// special door cavity picture
-				PicLoadOffset(&gGraphicsDevice, &a[aj].tilePicAlt, openDoorPic);
-				a[aj].tilePic = PicManagerGetFromOld(
-					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-			}
-			else
-			{
-				// room floor pic
-				a[aj].tilePic = PicManagerGetFromOld(
-					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-			}
-			a[aj].tileFlags = (isHorizontal || j > 0) ? 0 : MAPTILE_OFFSET_PIC;
-			aj++;
-		}
-
-		for (j = 0; j < doorGroupCount; j++)
-		{
-			Vec2i vJ = Vec2iNew(v.x + dv.x * j, v.y + dv.y * j);
-			Vec2i vJAside = Vec2iNew(vJ.x + dAside.x, vJ.y + dAside.y);
-			if (isHorizontal)
-			{
-				// Remove shadows below doors (also clears triggers)
-				a[aj].action = ACTION_CHANGETILE;
-				a[aj].u.pos = vJAside;
-				if (IMapGet(map, vJAside) == MAP_FLOOR)
-				{
-					a[aj].tilePic = PicManagerGetFromOld(
-						&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
-				}
-				else
-				{
-					a[aj].tilePic = PicManagerGetFromOld(
-						&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
-				}
-				a[aj].tileFlags = 0;
-			}
-			else
-			{
-				// Deactivate other triggers
-				a[aj].action = ACTION_CLEARTRIGGER;
-				a[aj].u.pos = vJAside;
-			}
-			aj++;
-		}
-
-		// Add trigger to the right of the door with identical actions as this one
+		TileAddTrigger(MapGetTile(map, vAside), t);
 		vAside = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-		t = AddTrigger(vAside, 2 + 3 * doorGroupCount);
-		t->flags = flags;
-		memcpy(t->actions, a, sizeof *t->actions * (2 + 3 * doorGroupCount));
+		TileAddTrigger(MapGetTile(map, vAside), t);
 	}
+
+	return t;
 }
 static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 {
 	TWatch *w;
+	Trigger *t;
+	Action *a;
 	int i;
 	int pic;
 	int openDoorPic;
@@ -970,21 +959,19 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		Tile *tile = MapGetTile(map, vI);
-		// Tiles to either side of the door
-		Vec2i vB = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-		Tile *tileA =
-			MapGetTile(map, Vec2iNew(vI.x - dAside.x, vI.y - dAside.y));
-		Tile *tileB = MapGetTile(map, vB);
-		assert(TileCanWalk(tileA) && "map gen error: entrance should be clear");
-		assert(TileCanWalk(tileB) && "map gen error: entrance should be clear");
 		PicLoadOffset(&gGraphicsDevice, &tile->picAlt, pic);
 		tile->pic = PicManagerGetFromOld(
 			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		tile->flags = tileFlags;
-		tileA->flags |= MAPTILE_TILE_TRIGGER;
-		tileB->flags |= MAPTILE_TILE_TRIGGER;
 		if (isHorizontal)
 		{
+			Vec2i vB = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+			Tile *tileB = MapGetTile(map, vB);
+			assert(TileCanWalk(MapGetTile(
+				map, Vec2iNew(vI.x - dAside.x, vI.y - dAside.y))) &&
+				"map gen error: entrance should be clear");
+			assert(TileCanWalk(tileB) &&
+				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
 			if (IMapGet(map, vB) == MAP_FLOOR)
 			{
@@ -1001,9 +988,16 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 
 	w = CreateCloseDoorWatch(
 		map, v, tileFlags, isHorizontal, doorGroupCount, pic, floor, room);
-	CreateOpenDoorTriggers(
-		map, v, w,
+	t = CreateOpenDoorTrigger(
+		map, v,
 		isHorizontal, doorGroupCount, flags, openDoorPic, floor, room);
+	// Connect trigger and watch up
+	a = TriggerAddAction(t);
+	a->action = ACTION_ACTIVATEWATCH;
+	a->u.index = w->index;
+	a = WatchAddAction(w);
+	a->action = ACTION_SETTRIGGER;
+	a->u.index = t->id;
 }
 
 static int AccessCodeToFlags(int code)
@@ -1100,6 +1094,38 @@ static void MapSetupPerimeter(Map *map, int w, int h)
 	}
 }
 
+void MapInit(Map *map)
+{
+	Vec2i v;
+	memset(map, 0, sizeof *map);
+	CArrayInit(&map->triggers, sizeof(Trigger *));
+	for (v.y = 0; v.y < YMAX; v.y++)
+	{
+		for (v.x = 0; v.x < XMAX; v.x++)
+		{
+			Tile *t = MapGetTile(map, v);
+			TileInit(t);
+		}
+	}
+}
+void MapTerminate(Map *map)
+{
+	Vec2i v;
+	int i;
+	for (i = 0; i < (int)map->triggers.size; i++)
+	{
+		TriggerTerminate(*(Trigger **)CArrayGet(&map->triggers, i));
+	}
+	CArrayTerminate(&map->triggers);
+	for (v.y = 0; v.y < YMAX; v.y++)
+	{
+		for (v.x = 0; v.x < XMAX; v.x++)
+		{
+			Tile *t = MapGetTile(map, v);
+			TileDestroy(t);
+		}
+	}
+}
 void MapLoad(Map *map, struct MissionOptions *mo)
 {
 	int i, j, count;
@@ -1108,20 +1134,10 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	int wall = mission->WallStyle % WALL_STYLE_COUNT;
 	int room = mission->RoomStyle % ROOMFLOOR_COUNT;
 	int x, y, w, h;
-	Vec2i v;
 
 	PicManagerGenerateOldPics(&gPicManager, &gGraphicsDevice);
-	memset(map, 0, sizeof *map);
-	for (v.y = 0; v.y < YMAX; v.y++)
-	{
-		for (v.x = 0; v.x < XMAX; v.x++)
-		{
-			Tile *t = MapGetTile(map, v);
-			t->pic = &picNone;
-			t->picAlt = picNone;
-		}
-	}
-	map->tilesSeen = 0;
+	MapTerminate(map);
+	MapInit(map);
 
 	w = mission->Size.x && mission->Size.x < XMAX ? mission->Size.x : XMAX;
 	h = mission->Size.y && mission->Size.y < YMAX ? mission->Size.y : YMAX;

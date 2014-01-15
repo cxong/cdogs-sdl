@@ -80,6 +80,9 @@ typedef struct
 	// internal data structure to help build the map
 	unsigned short iMap[YMAX][XMAX];
 
+	CArray triggers;	// of Trigger *; owner
+	int triggerId;
+
 	int tilesSeen;
 	int tilesTotal;
 	int keyAccessCount;
@@ -97,6 +100,8 @@ int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
 void MapRemoveTileItem(Map *map, TTileItem *t);
 
+void MapInit(Map *map);
+void MapTerminate(Map *map);
 void MapLoad(Map *map, struct MissionOptions *mo);
 int MapIsFullPosOKforPlayer(Map *map, int x, int y);
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);

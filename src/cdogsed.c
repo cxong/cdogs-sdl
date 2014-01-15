@@ -1113,6 +1113,7 @@ int main(int argc, char *argv[])
 	BulletInitialize();
 	WeaponInitialize();
 	PlayerDataInitialize();
+	MapInit(&gMap);
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
@@ -1153,6 +1154,7 @@ int main(int argc, char *argv[])
 
 	EditCampaign();
 
+	MapTerminate(&gMap);
 	CampaignTerminate(&gCampaign);
 
 	GraphicsTerminate(&gGraphicsDevice);

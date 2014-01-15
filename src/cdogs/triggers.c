@@ -19,15 +19,32 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
--------------------------------------------------------------------------------
+    This file incorporates work covered by the following copyright and
+    permission notice:
 
- triggers.c - trigger related functions
+    Copyright (c) 2014, Cong Xu
+    All rights reserved.
 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
@@ -37,7 +54,6 @@
 #include "sounds.h"
 #include "utils.h"
 
-static Trigger *root = NULL;
 static TWatch *activeWatches = NULL;
 static TWatch *inactiveWatches = NULL;
 static int watchIndex = 1;
@@ -50,79 +66,51 @@ static Action *AddActions(int count)
 	return a;
 }
 
-Trigger *AddTrigger(Vec2i pos, int actionCount)
+Trigger *TriggerNew(void)
 {
 	Trigger *t;
-	Trigger **h;
-
 	CCALLOC(t, sizeof *t);
-	t->pos = pos;
-
-	h = &root;
-	while (*h)
-	{
-		if ((*h)->pos.y < pos.y ||
-			((*h)->pos.y == pos.y && (*h)->pos.x < pos.x))
-		{
-			h = &((*h)->right);
-		}
-		else
-		{
-			h = &((*h)->left);
-		}
-	}
-	*h = t;
-	t->actions = AddActions(actionCount);
+	t->isActive = 1;
+	CArrayInit(&t->actions, sizeof(Action));
 	return t;
 }
-
-void FreeTrigger(Trigger * t)
+void TriggerTerminate(Trigger *t)
 {
-	if (!t)
-		return;
-
-	FreeTrigger(t->left);
-	FreeTrigger(t->right);
-	CFREE(t->actions);
+	CArrayTerminate(&t->actions);
 	CFREE(t);
 }
-
-static int RemoveAllTriggers(void)
+Action *TriggerAddAction(Trigger *t)
 {
-	FreeTrigger(root);
-	root = NULL;
-
-	return 0;
+	Action a;
+	memset(&a, 0, sizeof a);
+	CArrayPushBack(&t->actions, &a);
+	return CArrayGet(&t->actions, t->actions.size - 1);
 }
 
-static Condition *AddConditions(int count)
-{
-	Condition *a;
-	CCALLOC(a, sizeof *a * (count + 1));
-	return a;
-}
-
-TWatch *AddWatch(int conditionCount, int actionCount)
+TWatch *WatchNew(void)
 {
 	TWatch *t;
 	CCALLOC(t, sizeof(TWatch));
 	t->index = watchIndex++;
 	t->next = inactiveWatches;
 	inactiveWatches = t;
-	t->actions = AddActions(actionCount);
-	t->conditions = AddConditions(conditionCount);
+	CArrayInit(&t->actions, sizeof(Action));
+	CArrayInit(&t->conditions, sizeof(Condition));
 	return t;
 }
-
-static TWatch *FindWatch(int idx)
+Condition *WatchAddCondition(TWatch *w)
 {
-	TWatch *t = inactiveWatches;
-
-	while (t && t->index != idx)
-	{
-		t = t->next;
-	}
-	return t;
+	Condition c;
+	memset(&c, 0, sizeof c);
+	CArrayPushBack(&w->conditions, &c);
+	return CArrayGet(&w->conditions, w->conditions.size - 1);
+}
+Action *WatchAddAction(TWatch *w)
+{
+	Action a;
+	memset(&a, 0, sizeof a);
+	CArrayPushBack(&w->actions, &a);
+	return CArrayGet(&w->actions, w->actions.size - 1);
 }
 
 static void ActivateWatch(int idx)
@@ -161,82 +149,89 @@ static void DeactivateWatch(int idx)
 	}
 }
 
-static void RemoveAllWatches(void)
+void RemoveAllWatches(void)
 {
 	TWatch *t;
 
 	while (activeWatches) {
 		t = activeWatches;
 		activeWatches = t->next;
-		CFREE(t->conditions);
-		CFREE(t->actions);
+		CArrayTerminate(&t->conditions);
+		CArrayTerminate(&t->actions);
 		CFREE(t);
 	}
 	while (inactiveWatches) {
 		t = inactiveWatches;
 		inactiveWatches = t->next;
-		CFREE(t->conditions);
-		CFREE(t->actions);
+		CArrayTerminate(&t->conditions);
+		CArrayTerminate(&t->actions);
 		CFREE(t);
 	}
 }
 
-void FreeTriggersAndWatches(void)
+static void ActionRun(Action *a, CArray *mapTriggers)
 {
-	RemoveAllTriggers();
-	RemoveAllWatches();
-}
-
-static void ActionRun(Action * a)
-{
-	for (;;)
+	int i;
+	switch (a->action)
 	{
-		Tile *t;
-		switch (a->action)
+	case ACTION_NULL:
+		return;
+
+	case ACTION_SOUND:
+		SoundPlayAt(&gSoundDevice, a->tileFlags, a->u.pos);
+		break;
+
+	case ACTION_SETTRIGGER:
+		for (i = 0; i < (int)mapTriggers->size; i++)
 		{
-		case ACTION_NULL:
-			return;
+			Trigger *tr = *(Trigger **)CArrayGet(mapTriggers, i);
+			if (tr->id == a->u.index)
+			{
+				tr->isActive = 1;
+				break;
+			}
+		}
+		break;
 
-		case ACTION_SOUND:
-			SoundPlayAt(&gSoundDevice, a->tileFlags, a->u.pos);
-			break;
+	case ACTION_CLEARTRIGGER:
+		for (i = 0; i < (int)mapTriggers->size; i++)
+		{
+			Trigger *tr = *(Trigger **)CArrayGet(mapTriggers, i);
+			if (tr->id == a->u.index)
+			{
+				tr->isActive = 0;
+				break;
+			}
+		}
+		break;
 
-		case ACTION_SETTRIGGER:
-			MapGetTile(&gMap, a->u.pos)->flags |= MAPTILE_TILE_TRIGGER;
-			break;
-
-		case ACTION_CLEARTRIGGER:
-			MapGetTile(&gMap, a->u.pos)->flags &= ~MAPTILE_TILE_TRIGGER;
-			break;
-
-		case ACTION_CHANGETILE:
-			t = MapGetTile(&gMap, a->u.pos);
+	case ACTION_CHANGETILE:
+		{
+			Tile *t= MapGetTile(&gMap, a->u.pos);
 			t->flags = a->tileFlags;
 			t->pic = a->tilePic;
 			t->picAlt = a->tilePicAlt;
-			break;
-
-		case ACTION_ACTIVATEWATCH:
-			ActivateWatch(a->u.index);
-			break;
-
-		case ACTION_DEACTIVATEWATCH:
-			DeactivateWatch(a->u.index);
-			break;
 		}
-		a++;
+		break;
+
+	case ACTION_ACTIVATEWATCH:
+		ActivateWatch(a->u.index);
+		break;
+
+	case ACTION_DEACTIVATEWATCH:
+		DeactivateWatch(a->u.index);
+		break;
 	}
 }
 
-static int ConditionMet(Condition *c)
+static int ConditionsMet(CArray *conditions)
 {
-	for (;;)
+	int i;
+	for (i = 0; i < (int)conditions->size; i++)
 	{
+		Condition *c = CArrayGet(conditions, i);
 		switch (c->condition)
 		{
-		case CONDITION_NULL:
-			return 1;
-
 		case CONDITION_TILECLEAR:
 			if (!TileIsClear(MapGetTile(&gMap, c->pos)))
 			{
@@ -244,42 +239,24 @@ static int ConditionMet(Condition *c)
 			}
 			break;
 		}
-		c++;
 	}
+	return 1;
 }
 
-static Trigger *FindTrigger(Trigger *t, Vec2i pos)
+void TriggerActivate(Trigger *t, int flags, CArray *mapTriggers)
 {
-	if (!t)
+	int i;
+	if (!t->isActive || (t->flags != 0 && !(t->flags & flags)))
 	{
-		return NULL;
+		return;
 	}
-
-	if (Vec2iEqual(t->pos, pos))
+	for (i = 0; i < (int)t->actions.size; i++)
 	{
-		return t;
-	}
-	if (pos.y > t->pos.y || (pos.y == t->pos.y && pos.x > t->pos.x))
-	{
-		return FindTrigger(t->right, pos);
-	}
-	return FindTrigger(t->left, pos);
-}
-
-void TriggerAt(Vec2i pos, int flags)
-{
-	Trigger *t = FindTrigger(root, pos);
-	while (t)
-	{
-		if (t->flags == 0 || (t->flags & flags))
-		{
-			ActionRun(t->actions);
-		}
-		t = FindTrigger(t->left, pos);
+		ActionRun(CArrayGet(&t->actions, i), mapTriggers);
 	}
 }
 
-void UpdateWatches(void)
+void UpdateWatches(CArray *mapTriggers)
 {
 	TWatch *a = activeWatches;
 	TWatch *current;
@@ -287,9 +264,13 @@ void UpdateWatches(void)
 	while (a) {
 		current = a;
 		a = a->next;
-		if (ConditionMet(current->conditions))
+		if (ConditionsMet(&current->conditions))
 		{
-			ActionRun(current->actions);
+			int i;
+			for (i = 0; i < (int)current->actions.size; i++)
+			{
+				ActionRun(CArrayGet(&current->actions, i), mapTriggers);
+			}
 		}
 	}
 }

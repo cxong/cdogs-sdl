@@ -489,10 +489,14 @@ void UpdateActorState(TActor * actor, int ticks)
 
 static void CheckTrigger(TActor *actor, Vec2i pos)
 {
-	pos = Vec2iToTile(pos);
-	if (MapGetTile(&gMap, pos)->flags & MAPTILE_TILE_TRIGGER)
+	Tile *t = MapGetTile(&gMap, Vec2iToTile(pos));
+	int i;
+	for (i = 0; i < (int)t->triggers.size; i++)
 	{
-		TriggerAt(pos, actor->flags | gMission.flags);
+		TriggerActivate(
+			*(Trigger **)CArrayGet(&t->triggers, i),
+			actor->flags | gMission.flags,
+			&gMap.triggers);
 	}
 }
 

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #ifndef __TILE
 #define __TILE
 
+#include "c_array.h"
 #include "pic.h"
 #include "vector.h"
 
@@ -74,10 +75,9 @@ typedef enum
 	MAPTILE_IS_NORMAL_FLOOR	= 0x0040,
 	MAPTILE_IS_DRAINAGE		= 0x0080,
 	MAPTILE_OFFSET_PIC		= 0x0100,
-	MAPTILE_TILE_TRIGGER	= 0x0200,
 // These constants are used internally in draw, it is never set in the map
-	MAPTILE_DELAY_DRAW		= 0x0400,
-	MAPTILE_OUT_OF_SIGHT	= 0x0800
+	MAPTILE_DELAY_DRAW		= 0x0200,
+	MAPTILE_OUT_OF_SIGHT	= 0x0400
 } MapTileFlags;
 
 #define KIND_CHARACTER      0
@@ -115,11 +115,14 @@ typedef struct
 	Pic picAlt;
 	int flags;
 	int isVisited;
+	CArray triggers;	// of Trigger *
 	TTileItem *things;
 } Tile;
 
-extern Tile tileNone;
 
+Tile TileNone(void);
+void TileInit(Tile *t);
+void TileDestroy(Tile *t);
 int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
 int TileCanSee(Tile *t);
 int TileCanWalk(Tile *t);

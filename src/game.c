@@ -766,7 +766,7 @@ int gameloop(void)
 				UpdateAllActors(ticks);
 				UpdateMobileObjects(&gMobObjList, ticks);
 
-				UpdateWatches();
+				UpdateWatches(&gMap.triggers);
 			}
 
 			missionTime += ticks;

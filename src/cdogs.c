@@ -831,7 +831,7 @@ static void CleanupMission(void)
 	KillAllActors();
 	KillAllMobileObjects(&gMobObjList);
 	KillAllObjects();
-	FreeTriggersAndWatches();
+	RemoveAllWatches();
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		gPlayers[i] = NULL;
@@ -1324,6 +1324,7 @@ int main(int argc, char *argv[])
 	WeaponInitialize();
 	PlayerDataInitialize();
 	CampaignSettingInit(&gCampaign.Setting);
+	MapInit(&gMap);
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
@@ -1349,6 +1350,7 @@ int main(int argc, char *argv[])
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 	debug(D_NORMAL, ">> Shutting down...\n");
+	MapTerminate(&gMap);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 

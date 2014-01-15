@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #ifndef __TRIGGERS
 #define __TRIGGERS
 
+#include "c_array.h"
 #include "pic.h"
 
 #define ACTION_NULL             0
@@ -59,7 +60,6 @@
 #define ACTION_DEACTIVATEWATCH  5
 #define ACTION_SOUND            6
 
-#define CONDITION_NULL          0
 #define CONDITION_TILECLEAR     1
 
 
@@ -77,12 +77,12 @@ typedef struct
 } Action;
 
 
-typedef struct TTrigger
+typedef struct
 {
-	Vec2i pos;
+	int id;
 	int flags;
-	Action *actions;
-	struct TTrigger *left, *right;
+	int isActive;
+	CArray actions;	// of Action
 } Trigger;
 
 
@@ -95,18 +95,22 @@ typedef struct
 
 struct Watch {
 	int index;
-	Condition *conditions;
-	Action *actions;
+	CArray conditions;	// of Condition
+	CArray actions;		// of Action
 	struct Watch *next;
 };
 typedef struct Watch TWatch;
 
 
-void TriggerAt(Vec2i pos, int flags);
-void UpdateWatches(void);
-Trigger *AddTrigger(Vec2i pos, int actionCount);
-TWatch *AddWatch(int conditionCount, int actionCount);
-void FreeTriggersAndWatches(void);
+void TriggerActivate(Trigger *t, int flags, CArray *mapTriggers);
+void UpdateWatches(CArray *mapTriggers);
+Trigger *TriggerNew(void);
+void TriggerTerminate(Trigger *t);
+Action *TriggerAddAction(Trigger *t);
+TWatch *WatchNew(void);
+Condition *WatchAddCondition(TWatch *w);
+Action *WatchAddAction(TWatch *w);
+void RemoveAllWatches(void);
 
 
 #endif

@@ -263,7 +263,7 @@ static void MakeRandomBackground(GraphicsDevice *device)
 	GrafxMakeBackground(device, tint, 0, 0);
 	KillAllActors();
 	KillAllObjects();
-	FreeTriggersAndWatches();
+	RemoveAllWatches();
 	gCampaign.seed = gConfig.Game.RandomSeed;
 }
 
