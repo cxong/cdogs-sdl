@@ -147,7 +147,7 @@ void MapPlaceDoors(
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
 			size.y - 4);
-		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
+		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x, pos.y + size.y / 2 + i);
 			if (IMapGet(map, Vec2iNew(v.x + 1, v.y)) != MAP_WALL &&
@@ -162,7 +162,7 @@ void MapPlaceDoors(
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
 			size.y - 4);
-		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
+		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x - 1, pos.y + size.y / 2 + i);
 			if (IMapGet(map, Vec2iNew(v.x + 1, v.y)) != MAP_WALL &&
@@ -177,7 +177,7 @@ void MapPlaceDoors(
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
 			size.x - 4);
-		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
+		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y);
 			if (IMapGet(map, Vec2iNew(v.x, v.y + 1)) != MAP_WALL &&
@@ -192,7 +192,7 @@ void MapPlaceDoors(
 		int doorSize = MIN(
 			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
 			size.x - 4);
-		for (i = -(doorSize - 1) / 2; i < (doorSize + 2) / 2; i++)
+		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y + size.y - 1);
 			if (IMapGet(map, Vec2iNew(v.x, v.y + 1)) != MAP_WALL &&
