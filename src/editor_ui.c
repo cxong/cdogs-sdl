@@ -670,6 +670,32 @@ static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 		(flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
 	return s;
 }
+static char *GetBrushStr(UIObject *o, EditorBrush *brush)
+{
+	static char s[128];
+	char *brushStr = "";
+	UNUSED(o);
+	switch (brush->brushType)
+	{
+	case MAP_FLOOR:
+		brushStr = "Floor";
+		break;
+	case MAP_WALL:
+		brushStr = "Wall";
+		break;
+	case MAP_DOOR:
+		brushStr = "Door";
+		break;
+	case MAP_ROOM:
+		brushStr = "Room";
+		break;
+	default:
+		assert(0 && "invalid brush type");
+		return "";
+	}
+	sprintf(s, "Brush: %s", brushStr);
+	return s;
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -1018,11 +1044,35 @@ static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 	mobj->Flags = CLAMP_OPPOSITE(
 		mobj->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
 }
+static void ChangeBrush(EditorBrush *brush, int d)
+{
+	if (brush->brushType == 0 && d < 0)
+	{
+		brush->brushType = MAP_ROOM;
+	}
+	else if (brush->brushType == MAP_ROOM && d > 0)
+	{
+		brush->brushType = MAP_FLOOR;
+	}
+	else
+	{
+		brush->brushType = (unsigned short)(brush->brushType + d);
+	}
+}
+static void ActivateBrush(EditorBrush *brush)
+{
+	brush->IsActive = 1;
+}
+static void DeactivateBrush(EditorBrush *brush)
+{
+	brush->IsActive = 0;
+}
 
 
 static UIObject *CreateCampaignObjs(void);
 static UIObject *CreateMissionObjs(Mission **missionPtr);
 static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr);
+static UIObject *CreateStaticMapObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateWeaponObjs(Mission **missionPtr);
 static UIObject *CreateMapItemObjs(Mission **missionPtr);
 static UIObject *CreateCharacterObjs(Mission **missionPtr);
@@ -1030,7 +1080,7 @@ static UIObject *CreateSpecialCharacterObjs(Mission **missionPtr);
 static UIObject *CreateObjectiveObjs(
 	Vec2i pos, Mission **missionPtr, int index);
 
-UIObject *CreateMainObjs(Mission **missionPtr)
+UIObject *CreateMainObjs(Mission **missionPtr, EditorBrush *brush)
 {
 	int th = CDogsTextHeight();
 	UIObject *cc;
@@ -1087,6 +1137,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(35, th));
+	o->ChangesData = 1;
 
 	pos.x = 20;
 	o2 = UIObjectCopy(o);
@@ -1117,6 +1168,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	pos.x = 20;
 	pos.y += th;
 	UITabAddChild(o2, CreateClassicMapObjs(pos, missionPtr), "Type: Classic+");
+	UITabAddChild(o2, CreateStaticMapObjs(pos, brush), "Type: Static");
 	UIObjectAddChild(c, o2);
 
 	// Mission looks
@@ -1127,6 +1179,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
 		UITYPE_CUSTOM, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(25, 25 + th));
+	o->ChangesData = 1;
 
 	pos.x = 20;
 	o2 = UIObjectCopy(o);
@@ -1184,6 +1237,7 @@ UIObject *CreateMainObjs(Mission **missionPtr)
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
 		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
+	o->ChangesData = 1;
 
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_COLOR1;
@@ -1371,6 +1425,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	int x = pos.x;
+	o->ChangesData = 1;
 
 	UIObject *o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = CampaignGetSeedStr;
@@ -1519,6 +1574,26 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, Mission **missionPtr)
 
 	return c;
 }
+static UIObject *CreateStaticMapObjs(Vec2i pos, EditorBrush *brush)
+{
+	int th = CDogsTextHeight();
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+	UIObject *o2;
+
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = GetBrushStr;
+	o2->Data = brush;
+	o2->ChangeFunc = ChangeBrush;
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
+	CSTRDUP(o2->Tooltip, "Paint the map with this tile type");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	return c;
+}
 static UIObject *CreateWeaponObjs(Mission **missionPtr)
 {
 	int th = CDogsTextHeight();
@@ -1533,6 +1608,7 @@ static UIObject *CreateWeaponObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
 	o->ChangeFunc = MissionChangeWeapon;
 	o->Flags = UI_LEAVE_YC;
+	o->ChangesData = 1;
 	for (i = 0; i < GUN_COUNT; i++)
 	{
 		int x = 10 + i / 4 * 90;
@@ -1563,6 +1639,7 @@ static UIObject *CreateMapItemObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawMapItem;
 	o->ChangeFunc = MissionChangeMapItem;
 	o->Flags = UI_LEAVE_YC;
+	o->ChangesData = 1;
 	for (i = 0; i < 32; i++)	// TODO: no limit to objects
 	{
 		int x = 10 + i * 20;
@@ -1591,6 +1668,7 @@ static UIObject *CreateObjectiveObjs(
 
 	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	o->Flags = UI_LEAVE_YC;
+	o->ChangesData = 1;
 
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TYPE;
@@ -1680,6 +1758,7 @@ static UIObject *CreateCharacterObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawEnemy;
 	o->ChangeFunc = MissionChangeEnemy;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
+	o->ChangesData = 1;
 	for (i = 0; i < 15; i++)
 	{
 		int x = 10 + i * 20;
@@ -1709,6 +1788,7 @@ static UIObject *CreateSpecialCharacterObjs(Mission **missionPtr)
 	o->u.CustomDrawFunc = MissionDrawSpecialChar;
 	o->ChangeFunc = MissionChangeSpecialChar;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
+	o->ChangesData = 1;
 	for (i = 0; i < 15; i++)
 	{
 		int x = 10 + i * 20;

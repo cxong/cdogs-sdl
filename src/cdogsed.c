@@ -46,7 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -87,48 +87,8 @@ static UIObject *sObjs;
 
 Mission *currentMission;
 static char lastFile[CDOGS_PATH_MAX];
+static EditorBrush brush = { MAP_FLOOR, 0 };
 
-
-
-// Code...
-
-void DisplayCDogsText(int x, int y, const char *text, int hilite, int editable)
-{
-	CDogsTextGoto(x, y);
-	if (editable) {
-		if (hilite)
-			CDogsTextCharWithTable('\020', &tableFlamed);
-		else
-			CDogsTextChar('\020');
-	}
-
-	if (hilite && !editable)
-		CDogsTextStringWithTable(text, &tableFlamed);
-	else
-		CDogsTextString(text);
-
-	if (editable) {
-		if (hilite)
-			CDogsTextCharWithTable('\021', &tableFlamed);
-		else
-			CDogsTextChar('\021');
-	}
-}
-
-static void DrawEditableTextWithEmptyHint(
-	Vec2i pos, char *text, char *hint, int isHighlighted)
-{
-	int isEmptyText = strlen(text) == 0;
-	color_t bracketMask = isHighlighted ? colorRed : colorWhite;
-	color_t textMask = isEmptyText ? colorGray : colorWhite;
-	if (isEmptyText)
-	{
-		text = hint;
-	}
-	pos = DrawTextCharMasked('\020', &gGraphicsDevice, pos, bracketMask);
-	pos = DrawTextStringMasked(text, &gGraphicsDevice, pos, textMask);
-	pos = DrawTextCharMasked('\021', &gGraphicsDevice, pos, bracketMask);
-}
 
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 {
@@ -172,10 +132,42 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t = MapGetTile(&gMap, cursorTilePos);
 	memcpy(&cursorTile, t, sizeof cursorTile);
 	// Set cursor tile properties
-	t->pic = PicManagerGetFromOld(
-		&gPicManager, cWallPics[currentMission->WallStyle][WALL_SINGLE]);
-	t->picAlt = picNone;
-	t->flags = MAPTILE_IS_WALL;
+	switch (brush.brushType)
+	{
+	case MAP_FLOOR:
+		t->pic = PicManagerGetFromOld(
+			&gPicManager,
+			cFloorPics[currentMission->FloorStyle][FLOOR_NORMAL]);
+		t->picAlt = picNone;
+		break;
+	case MAP_WALL:
+		t->pic = PicManagerGetFromOld(
+			&gPicManager, cWallPics[currentMission->WallStyle][WALL_SINGLE]);
+		t->picAlt = picNone;
+		t->flags = MAPTILE_IS_WALL;
+		break;
+	case MAP_DOOR:
+		t->pic = PicManagerGetFromOld(
+			&gPicManager,
+			cRoomPics[currentMission->RoomStyle][ROOMFLOOR_NORMAL]);
+		PicFromPicPalettedOffset(
+			&gGraphicsDevice,
+			&t->picAlt,
+			PicManagerGetOldPic(
+			&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
+			&cGeneralPics[gMission.doorPics[0].horzPic]);
+		t->flags = MAPTILE_OFFSET_PIC;
+		break;
+	case MAP_ROOM:
+		t->pic = PicManagerGetFromOld(
+			&gPicManager,
+			cRoomPics[currentMission->RoomStyle][ROOMFLOOR_NORMAL]);
+		t->picAlt = picNone;
+		break;
+	default:
+		assert(0 && "invalid brush type");
+		break;
+	}
 	t->isVisited = 1;
 	t->things = NULL;
 }
@@ -210,7 +202,7 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 		{
 			MakeBackground(&gGraphicsDevice, mission);
 		}
-		if (isMouseTileValid)
+		if (brush.IsActive && isMouseTileValid)
 		{
 			SwapCursorTile(mouseTile);
 			GrafxDrawBackground(&gGraphicsDevice, tintDarker);
@@ -288,10 +280,9 @@ static int Change(UIObject *o, int yc, int d, int *mission)
 	if (!currentMission)
 		return 0;
 
-	if (o && o->ChangeFunc)
+	if (o)
 	{
-		o->ChangeFunc(o->Data, d);
-		isChanged = 1;
+		isChanged = UIObjectChange(o, d);
 	}
 	return isChanged;
 }
@@ -1103,7 +1094,7 @@ int main(int argc, char *argv[])
 
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sObjs = CreateMainObjs(&currentMission);
+	sObjs = CreateMainObjs(&currentMission, &brush);
 
 	CampaignInit(&gCampaign);
 

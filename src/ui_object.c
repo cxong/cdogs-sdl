@@ -69,6 +69,9 @@ UIObject *UIObjectCopy(UIObject *o)
 	assert(!o->IsDynamicData && "Cannot copy unknown dynamic data size");
 	res->IsDynamicData = 0;
 	res->ChangeFunc = o->ChangeFunc;
+	res->ChangesData = o->ChangesData;
+	res->OnFocusFunc = o->OnFocusFunc;
+	res->OnUnfocusFunc = o->OnUnfocusFunc;
 	// do not copy children
 	switch (o->Type)
 	{
@@ -134,6 +137,10 @@ void UIObjectHighlight(UIObject *o)
 		o->Parent->Highlighted = o;
 		UIObjectHighlight(o->Parent);
 	}
+	if (o->OnFocusFunc)
+	{
+		o->OnFocusFunc(o->Data);
+	}
 }
 
 int UIObjectIsHighlighted(UIObject *o)
@@ -148,6 +155,29 @@ void UIObjectUnhighlight(UIObject *o)
 		UIObjectUnhighlight(o->Highlighted);
 	}
 	o->Highlighted = NULL;
+	if (o->OnUnfocusFunc)
+	{
+		o->OnUnfocusFunc(o->Data);
+	}
+}
+
+int UIObjectChange(UIObject *o, int d)
+{
+	switch (o->Type)
+	{
+	case UITYPE_TAB:
+		// switch child
+		o->u.Tab.Index = CLAMP_OPPOSITE(
+			o->u.Tab.Index + d, 0, (int)o->u.Tab.Labels.size - 1);
+		return 0;
+	default:
+		if (o->ChangeFunc)
+		{
+			o->ChangeFunc(o->Data, d);
+			return o->ChangesData;
+		}
+		return 0;
+	}
 }
 
 void UIObjectDraw(UIObject *o, GraphicsDevice *g)

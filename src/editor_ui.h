@@ -125,11 +125,17 @@
 #define XC_VICTIM        11
 #define XC_AWAKE         12
 
+typedef struct
+{
+	unsigned short brushType;
+	int IsActive;
+} EditorBrush;
+
 
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
 
-UIObject *CreateMainObjs(Mission **missionPtr);
+UIObject *CreateMainObjs(Mission **missionPtr, EditorBrush *brush);
 
 UIObject *CreateCharEditorObjs(void);
 

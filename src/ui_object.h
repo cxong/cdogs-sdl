@@ -84,6 +84,9 @@ typedef struct _UIObject
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
+	int ChangesData;
+	void (*OnFocusFunc)(void *);
+	void (*OnUnfocusFunc)(void *);
 } UIObject;
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
@@ -94,6 +97,7 @@ void UITabAddChild(UIObject *o, UIObject *c, char *label);
 void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
+int UIObjectChange(UIObject *o, int d);
 void UIObjectDraw(UIObject *o, GraphicsDevice *g);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
