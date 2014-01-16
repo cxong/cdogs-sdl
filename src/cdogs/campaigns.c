@@ -188,7 +188,7 @@ void LoadCampaignsFromFolder(
 		return;
 	}
 
-	for (i = 0; i < dir.n_files; i++)
+	for (i = 0; i < (int)dir.n_files; i++)
 	{
 		tinydir_file file;
 		tinydir_readfile_n(&dir, &file, i);
