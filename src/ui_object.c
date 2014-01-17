@@ -169,15 +169,14 @@ int UIObjectChange(UIObject *o, int d)
 		// switch child
 		o->u.Tab.Index = CLAMP_OPPOSITE(
 			o->u.Tab.Index + d, 0, (int)o->u.Tab.Labels.size - 1);
-		return 0;
-	default:
-		if (o->ChangeFunc)
-		{
-			o->ChangeFunc(o->Data, d);
-			return o->ChangesData;
-		}
-		return 0;
+		break;
 	}
+	if (o->ChangeFunc)
+	{
+		o->ChangeFunc(o->Data, d);
+		return o->ChangesData;
+	}
+	return 0;
 }
 
 void UIObjectDraw(UIObject *o, GraphicsDevice *g)

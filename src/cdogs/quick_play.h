@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,18 +25,12 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#ifndef __QUICK_PLAY
+#define __QUICK_PLAY
 
-#include "c_array.h"
 #include "campaigns.h"
 
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
-
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-int MapNewSave(const char *filename, CampaignSetting *c);
+void SetupQuickPlayCampaign(
+	CampaignSetting *setting, const QuickPlayConfig *config);
 
 #endif

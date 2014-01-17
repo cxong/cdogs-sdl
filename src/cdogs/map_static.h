@@ -25,18 +25,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#ifndef __MAP_STATIC
+#define __MAP_STATIC
 
-#include "c_array.h"
-#include "campaigns.h"
+#include "map.h"
 
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
-
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-int MapNewSave(const char *filename, CampaignSetting *c);
+void MapStaticLoad(Map *map, Mission *m);
 
 #endif

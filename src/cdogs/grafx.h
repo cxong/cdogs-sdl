@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -114,8 +114,7 @@ void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GrafxDrawBackground(GraphicsDevice *device, HSV tint);
-void GrafxMakeBackground(
-	GraphicsDevice *device, HSV tint, int missionIdx, int isEditor);
+void GrafxMakeBackground(GraphicsDevice *device, HSV tint, int isEditor);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

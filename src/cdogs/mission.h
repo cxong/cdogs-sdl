@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,10 +50,15 @@
 #define __MISSION
 
 #include "config.h"
-#include "gamedata.h"
+#include "sys_config.h"
 
 #define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
 #define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
+
+int GetExitCount(void);
+int GetKeystyleCount(void);
+int GetDoorstyleCount(void);
+int GetColorrangeCount(void);
 
 struct EditorInfo {
 	int itemCount;
@@ -64,11 +69,118 @@ struct EditorInfo {
 	int rangeCount;
 };
 
+typedef enum
+{
+	MAPTYPE_CLASSIC,
+	MAPTYPE_STATIC
+} MapType;
+const char *MapTypeStr(MapType t);
+MapType StrMapType(const char *s);
+
+typedef struct
+{
+	char *Description;
+	ObjectiveType Type;
+	int Index;
+	int Count;
+	int Required;
+	int Flags;
+} MissionObjective;
+
+typedef struct
+{
+	char *Title;
+	char *Description;
+	MapType Type;
+	Vec2i Size;
+
+	// styles
+	int WallStyle;
+	int FloorStyle;
+	int RoomStyle;
+	int ExitStyle;
+	int KeyStyle;
+	int DoorStyle;
+
+	CArray Objectives;		// of MissionObjective
+	CArray Enemies;			// of int (character index)
+	CArray SpecialChars;	// of int
+	CArray Items;			// of int
+	CArray ItemDensities;	// of int
+
+	int EnemyDensity;
+	int Weapons[GUN_COUNT];
+
+	char Song[CDOGS_PATH_MAX];
+
+	// Colour ranges
+	int WallColor;
+	int FloorColor;
+	int RoomColor;
+	int AltColor;
+
+	union
+	{
+		// Classic
+		struct
+		{
+			int Walls;
+			int WallLength;
+			int CorridorWidth;
+			struct
+			{
+				int Count;
+				int Min;
+				int Max;
+				int Edge;
+				int Overlap;
+				int Walls;
+				int WallLength;
+				int WallPad;
+			} Rooms;
+			int Squares;
+			struct
+			{
+				int Enabled;
+				int Min;
+				int Max;
+			} Doors;
+			struct
+			{
+				int Count;
+				int Min;
+				int Max;
+			} Pillars;
+		} Classic;
+		// Static
+		CArray StaticTiles;	// of unsigned short (map tile)
+	} u;
+} Mission;
+
+struct MissionOptions
+{
+	int index;
+	int flags;
+
+	Mission *missionData;
+	CArray Objectives;	// of struct Objective
+	int exitLeft, exitTop, exitRight, exitBottom;
+	int pickupTime;
+
+	CArray MapObjects;	// of TMapObject
+	int *keyPics;
+	struct DoorPic *doorPics;
+	int exitPic, exitShadow;
+};
+
+void MissionInit(Mission *m);
+void MissionCopy(Mission *dst, Mission *src);
+void MissionTerminate(Mission *m);
+
 int SetupBuiltinCampaign(int index);
 int SetupBuiltinDogfight(int index);
-void SetupQuickPlayCampaign(
-	CampaignSetting *setting, const QuickPlayConfig *config);
-void SetupMission(int index, int buildTables, CampaignOptions *campaign);
+void SetupMission(
+	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex);
 void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 
 void MissionSetMessageIfComplete(struct MissionOptions *options);

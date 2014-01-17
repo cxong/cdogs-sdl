@@ -25,18 +25,13 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#ifndef __MISSION_CONVERT
+#define __MISSION_CONVERT
 
-#include "c_array.h"
-#include "campaigns.h"
+#include "mission.h"
+#include "map.h"
 
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
-
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-int MapNewSave(const char *filename, CampaignSetting *c);
+void MissionConvertToType(Mission *m, Map *map, MapType type);
+void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile);
 
 #endif

@@ -25,18 +25,42 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#include "mission_convert.h"
 
-#include "c_array.h"
-#include "campaigns.h"
+#include <assert.h>
 
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
 
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-int MapNewSave(const char *filename, CampaignSetting *c);
+void MissionConvertToType(Mission *m, Map *map, MapType type)
+{
+	memset(&m->u, 0, sizeof m->u);
+	switch (type)
+	{
+	case MAPTYPE_STATIC:
+		{
+			Vec2i v;
+			// Take all the tiles from the current map
+			// and save them in the static map
+			CArrayInit(&m->u.StaticTiles, sizeof(unsigned short));
+			for (v.y = 0; v.y < m->Size.y; v.y++)
+			{
+				for (v.x = 0; v.x < m->Size.x; v.x++)
+				{
+					Vec2i mapPos = Vec2iNew(
+						v.x + (XMAX - m->Size.x) / 2,
+						v.y + (YMAX - m->Size.y) / 2);
+					unsigned short tile = IMapGet(map, mapPos);
+					CArrayPushBack(&m->u.StaticTiles, &tile);
+				}
+			}
+		}
+		break;
+	}
+	m->Type = type;
+}
 
-#endif
+void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
+{
+	int index = pos.y * m->Size.x + pos.x;
+	assert(m->Type == MAPTYPE_STATIC && "cannot set tile for map type");
+	*(unsigned short *)CArrayGet(&m->u.StaticTiles, index) = tile;
+}

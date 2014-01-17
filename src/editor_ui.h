@@ -135,7 +135,7 @@ typedef struct
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
 
-UIObject *CreateMainObjs(Mission **missionPtr, EditorBrush *brush);
+UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush);
 
 UIObject *CreateCharEditorObjs(void);
 

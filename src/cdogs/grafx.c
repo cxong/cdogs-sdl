@@ -64,9 +64,9 @@
 #include "defs.h"
 #include "draw.h"
 #include "drawtools.h"
-#include "mission.h"
 #include "objs.h"
 #include "palette.h"
+#include "quick_play.h"
 #include "files.h"
 #include "triggers.h"
 #include "utils.h"
@@ -260,7 +260,7 @@ static void MakeRandomBackground(GraphicsDevice *device)
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	GrafxMakeBackground(device, tint, 0, 0);
+	GrafxMakeBackground(device, tint, 0);
 	KillAllActors();
 	KillAllObjects();
 	RemoveAllWatches();
@@ -411,11 +411,10 @@ void GrafxDrawBackground(GraphicsDevice *g, HSV tint)
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 }
 
-void GrafxMakeBackground(
-	GraphicsDevice *device, HSV tint, int missionIdx, int isEditor)
+void GrafxMakeBackground(GraphicsDevice *device, HSV tint, int isEditor)
 {
 	MissionOptionsTerminate(&gMission);
-	SetupMission(missionIdx, 1, &gCampaign);
+	CampaignAndMissionSetup(1, &gCampaign, &gMission);
 	MapLoad(&gMap, &gMission);
 	InitializeBadGuys();
 	CreateEnemies();

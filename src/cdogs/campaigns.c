@@ -275,3 +275,27 @@ campaign_entry_t *AddAndGetCampaignEntry(
 	entry->mode = mode;
 	return entry;
 }
+
+Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
+{
+	if (campaign->MissionIndex >= (int)campaign->Setting.Missions.size)
+	{
+		return NULL;
+	}
+	return CArrayGet(&campaign->Setting.Missions, campaign->MissionIndex);
+}
+
+void CampaignSeedRandom(CampaignOptions *campaign)
+{
+	srand(10 * campaign->MissionIndex + campaign->seed);
+}
+
+void CampaignAndMissionSetup(
+	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo)
+{
+	CampaignSeedRandom(campaign);
+	SetupMission(
+		buildTables,
+		CampaignGetCurrentMission(campaign), mo,
+		campaign->MissionIndex);
+}

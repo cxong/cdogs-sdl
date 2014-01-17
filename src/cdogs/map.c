@@ -55,6 +55,7 @@
 #include "collision.h"
 #include "config.h"
 #include "map_classic.h"
+#include "map_static.h"
 #include "pic_manager.h"
 #include "objs.h"
 #include "triggers.h"
@@ -1153,7 +1154,7 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	}
 	else
 	{
-		assert(0 && "not implemented");
+		MapStaticLoad(map, mission);
 	}
 
 	MapSetupTilesAndWalls(map, floor, room, wall);

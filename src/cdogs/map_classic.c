@@ -50,6 +50,7 @@
 
 #include <assert.h>
 
+#include "gamedata.h"
 #include "map_build.h"
 
 

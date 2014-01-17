@@ -146,21 +146,6 @@ struct Objective
 	int pickupItem;
 };
 
-struct MissionOptions {
-	int index;
-	int flags;
-
-	Mission *missionData;
-	CArray Objectives;	// of struct Objective
-	int exitLeft, exitTop, exitRight, exitBottom;
-	int pickupTime;
-
-	CArray MapObjects;	// of TMapObject
-	int *keyPics;
-	struct DoorPic *doorPics;
-	int exitPic, exitShadow;
-};
-
 extern struct GameOptions gOptions;
 extern struct MissionOptions gMission;
 

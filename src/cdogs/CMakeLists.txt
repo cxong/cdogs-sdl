@@ -37,7 +37,9 @@ set(CDOGS_SOURCES
 	map_build.c
 	map_classic.c
 	map_new.c
+	map_static.c
 	mission.c
+	mission_convert.c
 	mouse.c
 	music.c
 	objs.c
@@ -47,6 +49,7 @@ set(CDOGS_SOURCES
 	pic_manager.c
 	pics.c
 	player_template.c
+	quick_play.c
 	sounds.c
 	text.c
 	tile.c
@@ -89,7 +92,9 @@ set(CDOGS_HEADERS
 	map_build.h
 	map_classic.h
 	map_new.h
+	map_static.h
 	mission.h
+	mission_convert.h
 	mouse.h
 	music.h
 	objs.h
@@ -99,6 +104,7 @@ set(CDOGS_HEADERS
 	pic_manager.h
 	pics.h
 	player_template.h
+	quick_play.h
 	sounds.h
 	sys_config.h
 	sys_specifics.h

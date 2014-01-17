@@ -31,6 +31,7 @@
 
 #include "c_array.h"
 #include "character.h"
+#include "mission.h"
 #include "sys_config.h"
 
 typedef struct
@@ -74,6 +75,7 @@ typedef struct
 	CampaignSetting Setting;
 	campaign_entry_t Entry;
 	unsigned int seed;
+	int MissionIndex;
 } CampaignOptions;
 extern CampaignOptions gCampaign;
 
@@ -81,7 +83,14 @@ void CampaignInit(CampaignOptions *campaign);
 void CampaignTerminate(CampaignOptions *campaign);
 void CampaignSettingInit(CampaignSetting *setting);
 void CampaignSettingTerminate(CampaignSetting *setting);
+
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
+
+Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
+void CampaignSeedRandom(CampaignOptions *campaign);
+
+void CampaignAndMissionSetup(
+	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo);
 
 #endif

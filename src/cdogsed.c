@@ -64,6 +64,7 @@
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
+#include <cdogs/mission_convert.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
 #include <cdogs/pic_manager.h>
@@ -85,9 +86,10 @@ static UIObject *sObjs;
 
 // Globals
 
-Mission *currentMission;
 static char lastFile[CDOGS_PATH_MAX];
 static EditorBrush brush = { MAP_FLOOR, 0 };
+static Vec2i sCursorTilePos = { -1, -1 };
+static Tile sCursorTile;
 
 
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
@@ -95,8 +97,8 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 	int w = g->cachedConfig.ResolutionWidth;
 	int h = g->cachedConfig.ResolutionHeight;
 	Vec2i mapSize = Vec2iNew(
-		currentMission->Size.x * TILE_WIDTH,
-		currentMission->Size.y * TILE_HEIGHT);
+		CampaignGetCurrentMission(&gCampaign)->Size.x * TILE_WIDTH,
+		CampaignGetCurrentMission(&gCampaign)->Size.y * TILE_HEIGHT);
 	Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
 	return Vec2iNew(
 		(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
@@ -105,51 +107,48 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 
 static void SwapCursorTile(Vec2i mouseTile)
 {
-	static Vec2i cursorTilePos = { -1, -1 };
-	static Tile cursorTile;
 	Tile *t;
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
 	// Convert the tile coordinates to map tile coordinates
 	// The map is centered, i.e. edges are empty
 	// TODO: refactor map to use clearer coordinates
-	mouseTile.x += (XMAX - currentMission->Size.x) / 2;
-	mouseTile.y += (YMAX - currentMission->Size.y) / 2;
+	mouseTile.x += (XMAX - mission->Size.x) / 2;
+	mouseTile.y += (YMAX - mission->Size.y) / 2;
 
 	// Draw the cursor tile by replacing it with the map tile at the
 	// cursor position
 	// If moving to a new tile, restore the last tile,
 	// and swap with the new tile
-	if (cursorTilePos.x >= 0 && cursorTilePos.y >= 0)
+	if (sCursorTilePos.x >= 0 && sCursorTilePos.y >= 0)
 	{
 		// restore
 		memcpy(
-			MapGetTile(&gMap, cursorTilePos),
-			&cursorTile,
-			sizeof cursorTile);
+			MapGetTile(&gMap, sCursorTilePos),
+			&sCursorTile,
+			sizeof sCursorTile);
 	}
 	// swap
-	cursorTilePos = mouseTile;
-	t = MapGetTile(&gMap, cursorTilePos);
-	memcpy(&cursorTile, t, sizeof cursorTile);
+	sCursorTilePos = mouseTile;
+	t = MapGetTile(&gMap, sCursorTilePos);
+	memcpy(&sCursorTile, t, sizeof sCursorTile);
 	// Set cursor tile properties
 	switch (brush.brushType)
 	{
 	case MAP_FLOOR:
 		t->pic = PicManagerGetFromOld(
-			&gPicManager,
-			cFloorPics[currentMission->FloorStyle][FLOOR_NORMAL]);
+			&gPicManager, cFloorPics[mission->FloorStyle][FLOOR_NORMAL]);
 		t->picAlt = picNone;
 		break;
 	case MAP_WALL:
 		t->pic = PicManagerGetFromOld(
-			&gPicManager, cWallPics[currentMission->WallStyle][WALL_SINGLE]);
+			&gPicManager, cWallPics[mission->WallStyle][WALL_SINGLE]);
 		t->picAlt = picNone;
 		t->flags = MAPTILE_IS_WALL;
 		break;
 	case MAP_DOOR:
 		t->pic = PicManagerGetFromOld(
-			&gPicManager,
-			cRoomPics[currentMission->RoomStyle][ROOMFLOOR_NORMAL]);
+			&gPicManager, cRoomPics[mission->RoomStyle][ROOMFLOOR_NORMAL]);
 		PicFromPicPalettedOffset(
 			&gGraphicsDevice,
 			&t->picAlt,
@@ -160,8 +159,7 @@ static void SwapCursorTile(Vec2i mouseTile)
 		break;
 	case MAP_ROOM:
 		t->pic = PicManagerGetFromOld(
-			&gPicManager,
-			cRoomPics[currentMission->RoomStyle][ROOMFLOOR_NORMAL]);
+			&gPicManager, cRoomPics[mission->RoomStyle][ROOMFLOOR_NORMAL]);
 		t->picAlt = picNone;
 		break;
 	default:
@@ -172,7 +170,7 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t->things = NULL;
 }
 
-static void MakeBackground(GraphicsDevice *g, int mission)
+static void MakeBackground(GraphicsDevice *g)
 {
 	int i;
 	// Clear background first
@@ -180,27 +178,28 @@ static void MakeBackground(GraphicsDevice *g, int mission)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, tintDarker, mission, 1);
+	GrafxMakeBackground(g, tintDarker, 1);
 }
 
-static void Display(int mission, int yc, int willDisplayAutomap)
+static void Display(int yc, int willDisplayAutomap)
 {
 	char s[128];
 	int y = 5;
 	int i;
 	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
-	if (currentMission)
+	if (mission)
 	{
 		Vec2i mouseTile = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
 		int isMouseTileValid =
-			mouseTile.x >= 0 && mouseTile.x < currentMission->Size.x &&
-			mouseTile.y >= 0 && mouseTile.y < currentMission->Size.y;
+			mouseTile.x >= 0 && mouseTile.x < mission->Size.x &&
+			mouseTile.y >= 0 && mouseTile.y < mission->Size.y;
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(&gGraphicsDevice, mission);
+			MakeBackground(&gGraphicsDevice);
 		}
 		if (brush.IsActive && isMouseTileValid)
 		{
@@ -209,7 +208,8 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 		}
 		GraphicsBlitBkg(&gGraphicsDevice);
 		sprintf(
-			s, "Mission %d/%d", mission + 1, gCampaign.Setting.Missions.size);
+			s, "Mission %d/%d",
+			gCampaign.MissionIndex + 1, gCampaign.Setting.Missions.size);
 		DrawTextStringMasked(
 			s, &gGraphicsDevice, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
@@ -248,7 +248,7 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 
 	UIObjectDraw(sObjs, &gGraphicsDevice);
 
-	if (willDisplayAutomap && currentMission)
+	if (willDisplayAutomap && mission)
 	{
 		AutomapDraw(AUTOMAP_FLAGS_SHOWALL);
 	}
@@ -267,18 +267,23 @@ static void Display(int mission, int yc, int willDisplayAutomap)
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
-static int Change(UIObject *o, int yc, int d, int *mission)
+static int Change(UIObject *o, int yc, int d)
 {
 	int isChanged = 0;
 
-	if (yc == YC_MISSIONINDEX) {
-		*mission += d;
-		*mission = CLAMP(*mission, 0, (int)gCampaign.Setting.Missions.size);
+	if (yc == YC_MISSIONINDEX)
+	{
+		gCampaign.MissionIndex = CLAMP(
+			gCampaign.MissionIndex + d,
+			0,
+			(int)gCampaign.Setting.Missions.size);
 		return 0;
 	}
 
-	if (!currentMission)
+	if (!CampaignGetCurrentMission(&gCampaign))
+	{
 		return 0;
+	}
 
 	if (o)
 	{
@@ -287,33 +292,37 @@ static int Change(UIObject *o, int yc, int d, int *mission)
 	return isChanged;
 }
 
-static void InsertMission(int idx, Mission *mission)
+static void InsertMission(Mission *mission)
 {
 	if (mission)
 	{
-		CArrayInsert(&gCampaign.Setting.Missions, idx, mission);
+		CArrayInsert(
+			&gCampaign.Setting.Missions, gCampaign.MissionIndex, mission);
 	}
 	else
 	{
 		Mission defaultMission;
 		MissionInit(&defaultMission);
 		defaultMission.Size = Vec2iNew(48, 48);
-		CArrayInsert(&gCampaign.Setting.Missions, idx, &defaultMission);
+		CArrayInsert(
+			&gCampaign.Setting.Missions,
+			gCampaign.MissionIndex,
+			&defaultMission);
 	}
 }
 
-static void DeleteMission(int *idx)
+static void DeleteMission(void)
 {
-	if (*idx >= (int)gCampaign.Setting.Missions.size)
+	if (gCampaign.MissionIndex >= (int)gCampaign.Setting.Missions.size)
 	{
 		return;
 	}
-	MissionTerminate(CArrayGet(&gCampaign.Setting.Missions, *idx));
-	CArrayDelete(&gCampaign.Setting.Missions, *idx);
+	MissionTerminate(CampaignGetCurrentMission(&gCampaign));
+	CArrayDelete(&gCampaign.Setting.Missions, gCampaign.MissionIndex);
 	if (gCampaign.Setting.Missions.size > 0 &&
-		*idx >= (int)gCampaign.Setting.Missions.size)
+		gCampaign.MissionIndex >= (int)gCampaign.Setting.Missions.size)
 	{
-		*idx = gCampaign.Setting.Missions.size - 1;
+		gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
 	}
 }
 
@@ -377,8 +386,11 @@ static void Backspace(char *s)
 
 static void AddChar(int xc, int yc, char c)
 {
-	if (yc == YC_CAMPAIGNTITLE) {
-		switch (xc) {
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
+	if (yc == YC_CAMPAIGNTITLE)
+	{
+		switch (xc)
+		{
 		case XC_CAMPAIGNTITLE:
 			Expand(gCampaign.Setting.Title, c);
 			break;
@@ -391,31 +403,33 @@ static void AddChar(int xc, int yc, char c)
 		}
 	}
 
-	if (!currentMission)
+	if (!mission)
+	{
 		return;
+	}
 
 	switch (yc) {
 	case YC_MISSIONTITLE:
 		if (xc == XC_MUSICFILE)
 		{
-			Append(currentMission->Song, sizeof currentMission->Song - 1, c);
+			Append(mission->Song, sizeof mission->Song - 1, c);
 		}
 		else
 		{
-			Expand(currentMission->Title, c);
+			Expand(mission->Title, c);
 		}
 		break;
 
 	case YC_MISSIONDESC:
-		Expand(currentMission->Description, c);
+		Expand(mission->Description, c);
 		break;
 
 	default:
 		if (yc >= YC_OBJECTIVES &&
-			yc - YC_OBJECTIVES < (int)currentMission->Objectives.size)
+			yc - YC_OBJECTIVES < (int)mission->Objectives.size)
 		{
 			MissionObjective *mobj =
-				CArrayGet(&currentMission->Objectives, yc - YC_OBJECTIVES);
+				CArrayGet(&mission->Objectives, yc - YC_OBJECTIVES);
 			Expand(mobj->Description, c);
 		}
 		break;
@@ -424,8 +438,11 @@ static void AddChar(int xc, int yc, char c)
 
 static void DelChar(int xc, int yc)
 {
-	if (yc == YC_CAMPAIGNTITLE) {
-		switch (xc) {
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
+	if (yc == YC_CAMPAIGNTITLE)
+	{
+		switch (xc)
+		{
 		case XC_CAMPAIGNTITLE:
 			Backspace(gCampaign.Setting.Title);
 			break;
@@ -438,30 +455,32 @@ static void DelChar(int xc, int yc)
 		}
 	}
 
-	if (!currentMission)
+	if (!mission)
+	{
 		return;
+	}
 
 	switch (yc) {
 	case YC_MISSIONTITLE:
 		if (xc == XC_MUSICFILE)
 		{
-			Backspace(currentMission->Song);
+			Backspace(mission->Song);
 		}
 		else
 		{
-			Backspace(currentMission->Title);
+			Backspace(mission->Title);
 		}
 		break;
 
 	case YC_MISSIONDESC:
-		Backspace(currentMission->Description);
+		Backspace(mission->Description);
 		break;
 
 	default:
-		if (yc - YC_OBJECTIVES < (int)currentMission->Objectives.size)
+		if (yc - YC_OBJECTIVES < (int)mission->Objectives.size)
 		{
 			MissionObjective *mobj =
-				CArrayGet(&currentMission->Objectives, yc - YC_OBJECTIVES);
+				CArrayGet(&mission->Objectives, yc - YC_OBJECTIVES);
 			Backspace(mobj->Description);
 		}
 		break;
@@ -470,12 +489,13 @@ static void DelChar(int xc, int yc)
 
 static void AdjustYC(int *yc)
 {
-	if (currentMission != NULL)
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
+	if (mission)
 	{
-		if (currentMission->Objectives.size)
+		if (mission->Objectives.size)
 		{
 			*yc = CLAMP_OPPOSITE(
-				*yc, 0, YC_OBJECTIVES + (int)currentMission->Objectives.size - 1);
+				*yc, 0, YC_OBJECTIVES + (int)mission->Objectives.size - 1);
 		}
 		else
 		{
@@ -490,6 +510,7 @@ static void AdjustYC(int *yc)
 
 static void AdjustXC(int yc, int *xc)
 {
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	switch (yc)
 	{
 	case YC_CAMPAIGNTITLE:
@@ -505,23 +526,23 @@ static void AdjustXC(int yc, int *xc)
 		break;
 
 	case YC_CHARACTERS:
-		if (currentMission && currentMission->Enemies.size > 0)
+		if (mission && mission->Enemies.size > 0)
 		{
-			*xc = CLAMP_OPPOSITE(*xc, 0, (int)currentMission->Enemies.size - 1);
+			*xc = CLAMP_OPPOSITE(*xc, 0, (int)mission->Enemies.size - 1);
 		}
 		break;
 
 	case YC_SPECIALS:
-		if (currentMission && currentMission->SpecialChars.size > 0)
+		if (mission && mission->SpecialChars.size > 0)
 		{
-			*xc = CLAMP_OPPOSITE(*xc, 0, (int)currentMission->SpecialChars.size - 1);
+			*xc = CLAMP_OPPOSITE(*xc, 0, (int)mission->SpecialChars.size - 1);
 		}
 		break;
 
 	case YC_ITEMS:
-		if (currentMission && currentMission->Items.size > 0)
+		if (mission && mission->Items.size > 0)
 		{
-			*xc = CLAMP_OPPOSITE(*xc, 0, (int)currentMission->Items.size - 1);
+			*xc = CLAMP_OPPOSITE(*xc, 0, (int)mission->Items.size - 1);
 		}
 		break;
 
@@ -552,17 +573,17 @@ static void MoveSelection(int isForward, int *y, int *x)
 	AdjustXC(*y, x);
 }
 
-static void Setup(int idx, int buildTables)
+static void Setup(int buildTables)
 {
-	if (idx >= (int)gCampaign.Setting.Missions.size)
+	if (!CampaignGetCurrentMission(&gCampaign))
 	{
-		currentMission = NULL;
 		return;
 	}
 	MissionOptionsTerminate(&gMission);
-	currentMission = CArrayGet(&gCampaign.Setting.Missions, idx);
-	SetupMission(idx, buildTables, &gCampaign);
-	MakeBackground(&gGraphicsDevice, idx);
+	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
+	MakeBackground(&gGraphicsDevice);
+	sCursorTilePos = Vec2iNew(-1, -1);
+	sCursorTile = TileNone();
 }
 
 static void Open(void)
@@ -599,7 +620,7 @@ static void Open(void)
 					printf("Error: cannot load %s\n", lastFile);
 					continue;
 				}
-				Setup(0, 1);
+				Setup(1);
 				fileChanged = 0;
 				strcpy(lastFile, filename);
 				return;
@@ -755,44 +776,45 @@ static void HelpScreen(void)
 	GetKey(&gEventHandlers);
 }
 
-static void Delete(int xc, int yc, int *mission)
+static void Delete(int xc, int yc)
 {
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	switch (yc)
 	{
 	case YC_CHARACTERS:
-		DeleteCharacter(currentMission, xc);
+		DeleteCharacter(mission, xc);
 		break;
 
 	case YC_SPECIALS:
-		DeleteSpecial(currentMission, xc);
+		DeleteSpecial(mission, xc);
 		break;
 
 	case YC_ITEMS:
-		DeleteItem(currentMission, xc);
+		DeleteItem(mission, xc);
 		break;
 
 	default:
 		if (yc >= YC_OBJECTIVES)
 		{
-			DeleteObjective(currentMission, yc - YC_OBJECTIVES);
+			DeleteObjective(mission, yc - YC_OBJECTIVES);
 		}
 		else
 		{
-			DeleteMission(mission);
+			DeleteMission();
 		}
 		AdjustYC(&yc);
 		break;
 	}
 	fileChanged = 1;
-	Setup(*mission, 0);
+	Setup(0);
 }
 
 static void HandleInput(
 	int c, int m,
 	int *xc, int *yc, int *xcOld, int *ycOld,
-	int *mission, Mission *scrap,
-	int *willDisplayAutomap, int *done)
+	Mission *scrap, int *willDisplayAutomap, int *done)
 {
+	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	if (m)
 	{
@@ -830,7 +852,34 @@ static void HandleInput(
 		}
 		else
 		{
-			UIObjectUnhighlight(sObjs);
+			if (brush.IsActive && mission)
+			{
+				// Draw a tile
+				Vec2i mouseTile = GetMouseTile(
+					&gGraphicsDevice, &gEventHandlers);
+				int isMouseTileValid =
+					mouseTile.x >= 0 && mouseTile.x < mission->Size.x &&
+					mouseTile.y >= 0 && mouseTile.y < mission->Size.y;
+				if (isMouseTileValid)
+				{
+					assert(CampaignGetCurrentMission(&gCampaign)->Type ==
+						MAPTYPE_STATIC && "Invalid map type");
+					MissionSetTile(
+						CampaignGetCurrentMission(&gCampaign),
+						mouseTile,
+						brush.brushType);
+					fileChanged = 1;
+					Setup(0);
+				}
+				else
+				{
+					UIObjectUnhighlight(sObjs);
+				}
+			}
+			else
+			{
+				UIObjectUnhighlight(sObjs);
+			}
 		}
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
@@ -839,19 +888,19 @@ static void HandleInput(
 		{
 		case 'x':
 			MissionTerminate(scrap);
-			MissionCopy(scrap, CArrayGet(&gCampaign.Setting.Missions, *mission));
-			Delete(*xc, *yc, mission);
+			MissionCopy(scrap, mission);
+			Delete(*xc, *yc);
 			break;
 
 		case 'c':
 			MissionTerminate(scrap);
-			MissionCopy(scrap, CArrayGet(&gCampaign.Setting.Missions, *mission));
+			MissionCopy(scrap, mission);
 			break;
 
 		case 'v':
-			InsertMission(*mission, scrap);
+			InsertMission(scrap);
 			fileChanged = 1;
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case 'q':
@@ -862,17 +911,17 @@ static void HandleInput(
 			break;
 
 		case 'n':
-			InsertMission(gCampaign.Setting.Missions.size, NULL);
-			*mission = gCampaign.Setting.Missions.size - 1;
+			gCampaign.MissionIndex = gCampaign.Setting.Missions.size;
+			InsertMission(NULL);
+			gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
 			fileChanged = 1;
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 				
 		case 'o':
 			if (!fileChanged || ConfirmClose("Open anyway? (Y/N)"))
 			{
 				Open();
-				*mission = 0;
 			}
 			break;
 
@@ -886,7 +935,7 @@ static void HandleInput(
 
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
-			Setup(*mission, 0);
+			Setup(0);
 			UIObjectUnhighlight(sObjs);
 			break;
 		}
@@ -900,19 +949,19 @@ static void HandleInput(
 			break;
 
 		case SDLK_HOME:
-			if (*mission > 0)
+			if (gCampaign.MissionIndex > 0)
 			{
-				(*mission)--;
+				gCampaign.MissionIndex--;
 			}
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case SDLK_END:
-			if (*mission < (int)gCampaign.Setting.Missions.size)
+			if (gCampaign.MissionIndex < (int)gCampaign.Setting.Missions.size)
 			{
-				(*mission)++;
+				gCampaign.MissionIndex++;
 			}
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case SDLK_INSERT:
@@ -922,9 +971,9 @@ static void HandleInput(
 				if (gCampaign.Setting.characters.OtherChars.size > 0)
 				{
 					int c = 0;
-					CArrayPushBack(&currentMission->Enemies, &c);
+					CArrayPushBack(&mission->Enemies, &c);
 					CharacterStoreAddBaddie(&gCampaign.Setting.characters, c);
-					*xc = currentMission->Enemies.size - 1;
+					*xc = mission->Enemies.size - 1;
 				}
 				break;
 
@@ -932,38 +981,38 @@ static void HandleInput(
 				if (gCampaign.Setting.characters.OtherChars.size > 0)
 				{
 					int c = 0;
-					CArrayPushBack(&currentMission->SpecialChars, &c);
+					CArrayPushBack(&mission->SpecialChars, &c);
 					CharacterStoreAddSpecial(&gCampaign.Setting.characters, c);
-					*xc = currentMission->SpecialChars.size - 1;
+					*xc = mission->SpecialChars.size - 1;
 				}
 				break;
 
 			case YC_ITEMS:
 				{
 					int item = 0;
-					CArrayPushBack(&currentMission->Items, &item);
-					CArrayPushBack(&currentMission->ItemDensities, &item);
-					*xc = currentMission->Items.size - 1;
+					CArrayPushBack(&mission->Items, &item);
+					CArrayPushBack(&mission->ItemDensities, &item);
+					*xc = mission->Items.size - 1;
 				}
 				break;
 
 			default:
 				if (*yc >= YC_OBJECTIVES)
 				{
-					AddObjective(currentMission);
+					AddObjective(mission);
 				}
 				else
 				{
-					InsertMission(*mission, NULL);
+					InsertMission(NULL);
 				}
 				break;
 			}
 			fileChanged = 1;
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case SDLK_DELETE:
-			Delete(*xc, *yc, mission);
+			Delete(*xc, *yc);
 			break;
 
 		case SDLK_UP:
@@ -990,19 +1039,19 @@ static void HandleInput(
 			break;
 
 		case SDLK_PAGEUP:
-			if (Change(o, *yc, 1, mission))
+			if (Change(o, *yc, 1))
 			{
 				fileChanged = 1;
 			}
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case SDLK_PAGEDOWN:
-			if (Change(o, *yc, -1, mission))
+			if (Change(o, *yc, -1))
 			{
 				fileChanged = 1;
 			}
-			Setup(*mission, 0);
+			Setup(0);
 			break;
 
 		case SDLK_ESCAPE:
@@ -1032,14 +1081,13 @@ static void HandleInput(
 static void EditCampaign(void)
 {
 	int done = 0;
-	int mission = 0;
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
 	Mission scrap;
 	memset(&scrap, 0, sizeof scrap);
 
 	gCampaign.seed = 0;
-	Setup(mission, 1);
+	Setup(1);
 
 	SDL_EnableKeyRepeat(0, 0);
 	while (!done)
@@ -1053,9 +1101,8 @@ static void EditCampaign(void)
 		HandleInput(
 			c, m,
 			&xc, &yc, &xcOld, &ycOld,
-			&mission, &scrap,
-			&willDisplayAutomap, &done);
-		Display(mission, yc, willDisplayAutomap);
+			&scrap, &willDisplayAutomap, &done);
+		Display(yc, willDisplayAutomap);
 		if (willDisplayAutomap)
 		{
 			GetKey(&gEventHandlers);
@@ -1094,7 +1141,7 @@ int main(int argc, char *argv[])
 
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sObjs = CreateMainObjs(&currentMission, &brush);
+	sObjs = CreateMainObjs(&gCampaign, &brush);
 
 	CampaignInit(&gCampaign);
 
@@ -1140,8 +1187,6 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
-	currentMission = NULL;
 
 	EditCampaign();
 

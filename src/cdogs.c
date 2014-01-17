@@ -911,7 +911,7 @@ static void PlayMenuSong(void)
 }
 
 
-int Game(GraphicsDevice *graphics, int mission)
+int Game(GraphicsDevice *graphics, CampaignOptions *co)
 {
 	int run, gameOver;
 	int allTime, todays;
@@ -923,19 +923,18 @@ int Game(GraphicsDevice *graphics, int mission)
 	{
 		int i;
 		int survivingPlayers;
-		SetupMission(mission, 1, &gCampaign);
-
+		CampaignAndMissionSetup(1, co, &gMission);
 		MapLoad(&gMap, &gMission);
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
-		if (IsMissionBriefingNeeded(gCampaign.Entry.mode))
+		if (IsMissionBriefingNeeded(co->Entry.mode))
 		{
 			MissionBriefing(graphics);
 		}
 		PlayerEquip(gOptions.numPlayers, graphics);
 
-		InitPlayers(gOptions.numPlayers, maxHealth, mission);
+		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
 
 		CreateEnemies();
 
@@ -945,7 +944,7 @@ int Game(GraphicsDevice *graphics, int mission)
 
 		survivingPlayers = GetNumPlayersAlive();
 		gameOver = survivingPlayers == 0 ||
-			mission == (int)gCampaign.Setting.Missions.size - 1;
+			co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
@@ -981,7 +980,7 @@ int Game(GraphicsDevice *graphics, int mission)
 				allTime = gPlayerDatas[i].allTime >= 0;
 				todays = gPlayerDatas[i].today >= 0;
 			}
-			DataUpdate(mission, &gPlayerDatas[i]);
+			DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
 		}
 		if (allTime && !gameOver)
 		{
@@ -995,35 +994,34 @@ int Game(GraphicsDevice *graphics, int mission)
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
 
-		mission++;
+		co->MissionIndex++;
 	}
 	while (run && !gameOver);
 	return run;
 }
 
-int Campaign(GraphicsDevice *graphics)
+int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	int mission = 0;
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		InitData(&gPlayerDatas[i]);
 	}
 
-	if (IsPasswordAllowed(gCampaign.Entry.mode))
+	if (IsPasswordAllowed(co->Entry.mode))
 	{
 		MissionSave m;
 		AutosaveLoadMission(
-			&gAutosave, &m, gCampaign.Entry.path, gCampaign.Entry.builtinIndex);
-		mission = EnterPassword(graphics, m.Password);
+			&gAutosave, &m, co->Entry.path, co->Entry.builtinIndex);
+		co->MissionIndex = EnterPassword(graphics, m.Password);
 	}
 
-	return Game(graphics, mission);
+	return Game(graphics, co);
 }
 
 #define DOGFIGHT_MAX_SCORE 5
 
-void DogFight(GraphicsDevice *graphicsDevice)
+void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 {
 	int run;
 	int scores[MAX_PLAYERS];
@@ -1042,7 +1040,7 @@ void DogFight(GraphicsDevice *graphicsDevice)
 
 	do
 	{
-		SetupMission(0, 1, &gCampaign);
+		CampaignAndMissionSetup(1, co, &gMission);
 		MapLoad(&gMap, &gMission);
 
 		PlayerEquip(gOptions.numPlayers, graphicsDevice);
@@ -1114,9 +1112,9 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			DogFight(&gGraphicsDevice);
+			DogFight(&gGraphicsDevice, &gCampaign);
 		}
-		else if (Campaign(&gGraphicsDevice))
+		else if (Campaign(&gGraphicsDevice, &gCampaign))
 		{
 			DisplayAllTimeHighScores(&gGraphicsDevice);
 			DisplayTodaysHighScores(&gGraphicsDevice);

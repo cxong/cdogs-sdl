@@ -25,18 +25,20 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#include "map_static.h"
 
-#include "c_array.h"
-#include "campaigns.h"
-
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
-
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-int MapNewSave(const char *filename, CampaignSetting *c);
-
-#endif
+void MapStaticLoad(Map *map, Mission *m)
+{
+	Vec2i v;
+	for (v.y = 0; v.y < m->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < m->Size.x; v.x++)
+		{
+			Vec2i pos = Vec2iNew(
+				v.x + (XMAX - m->Size.x) / 2, v.y + (YMAX - m->Size.y) / 2);
+			int index = v.y * m->Size.x + v.x;
+			unsigned short *tile = CArrayGet(&m->u.StaticTiles, index);
+			IMapSet(map, pos, *tile);
+		}
+	}
+}

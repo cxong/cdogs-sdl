@@ -49,7 +49,7 @@
 #ifndef __MAP
 #define __MAP
 
-#include "gamedata.h"
+#include "mission.h"
 #include "pic.h"
 #include "tile.h"
 #include "vector.h"
