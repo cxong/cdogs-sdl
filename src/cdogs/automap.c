@@ -216,12 +216,12 @@ static void DrawMap(
 {
 	int x, y;
 	Vec2i mapPos = Vec2iAdd(center, Vec2iScale(centerOn, -scale));
-	for (y = 0; y < YMAX; y++)
+	for (y = 0; y < gMap.Size.y; y++)
 	{
 		int i;
 		for (i = 0; i < scale; i++)
 		{
-			for (x = 0; x < XMAX; x++)
+			for (x = 0; x < gMap.Size.x; x++)
 			{
 				Tile *tile = MapGetTile(map, Vec2iNew(x, y));
 				if (!(tile->flags & MAPTILE_IS_NOTHING) &&
@@ -273,10 +273,10 @@ static void DrawMap(
 static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 {
 	int y;
-	for (y = 0; y < YMAX; y++)
+	for (y = 0; y < gMap.Size.y; y++)
 	{
 		int x;
-		for (x = 0; x < XMAX; x++)
+		for (x = 0; x < gMap.Size.x; x++)
 		{
 			Tile *tile = MapGetTile(map, Vec2iNew(x, y));
 			TTileItem *t = tile->things;
@@ -339,7 +339,7 @@ void AutomapDraw(int flags)
 	Vec2i mapCenter = Vec2iNew(
 		gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
 		gGraphicsDevice.cachedConfig.ResolutionHeight / 2);
-	Vec2i centerOn = Vec2iNew(XMAX / 2, YMAX / 2);
+	Vec2i centerOn = Vec2iNew(gMap.Size.x / 2, gMap.Size.y / 2);
 	Vec2i pos = Vec2iAdd(mapCenter, Vec2iScale(centerOn, -MAP_FACTOR));
 
 	// Draw faded green overlay
@@ -351,14 +351,7 @@ void AutomapDraw(int flags)
 		}
 	}
 
-	DrawMap(
-		&gMap,
-		mapCenter,
-		centerOn,
-		Vec2iNew(XMAX, YMAX),
-		MAP_FACTOR,
-		flags);
-
+	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
 	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
 
 	for (i = 0; i < MAX_PLAYERS; i++)

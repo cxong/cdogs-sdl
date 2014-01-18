@@ -394,7 +394,7 @@ void GrafxDrawBackground(GraphicsDevice *g, HSV tint)
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferSetFromMap(
 		&buffer, &gMap,
-		Vec2iNew(XMAX * TILE_WIDTH / 2, YMAX * TILE_HEIGHT / 2),
+		Vec2iNew(gMap.Size.x * TILE_WIDTH / 2, gMap.Size.y * TILE_HEIGHT / 2),
 		X_TILES,
 		Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero());

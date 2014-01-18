@@ -98,7 +98,7 @@ void DrawBufferSetFromMap(
 			x < buffer->xStart + buffer->width;
 			x++, bufTile++)
 		{
-			if (x >= 0 && x < XMAX && y >= 0 && y < YMAX)
+			if (x >= 0 && x < gMap.Size.x && y >= 0 && y < gMap.Size.y)
 			{
 				*bufTile = *MapGetTile(map, Vec2iNew(x, y));
 			}

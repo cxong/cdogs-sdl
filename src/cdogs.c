@@ -760,9 +760,10 @@ static void PlaceActor(TActor * actor)
 {
 	int x, y;
 
-	do {
-		x = ((rand() % (XMAX * TILE_WIDTH)) << 8);
-		y = ((rand() % (YMAX * TILE_HEIGHT)) << 8);
+	do
+	{
+		x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
+		y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 	}
 	while (!MapIsFullPosOKforPlayer(&gMap, x, y) || !MoveActor(actor, x, y));
 }

@@ -51,14 +51,14 @@
 
 void MapMakeWall(Map *map, Vec2i pos)
 {
-	map->iMap[pos.y][pos.x] = MAP_WALL;
+	IMapSet(map, pos, MAP_WALL);
 }
 
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad)
 {
 	Vec2i d;
-	if (x == 0 || y == 0 || x == XMAX - 1 || y == YMAX - 1)
+	if (x == 0 || y == 0 || x == map->Size.x - 1 || y == map->Size.y - 1)
 	{
 		return 0;
 	}
@@ -209,7 +209,7 @@ int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
 	Vec2i v;
 
 	if (pos.x < 0 || pos.y < 0 ||
-		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
 	{
 		return 0;
 	}
@@ -256,7 +256,7 @@ int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size)
 	Vec2i v;
 
 	if (pos.x < 0 || pos.y < 0 ||
-		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
 	{
 		return 0;
 	}
@@ -290,7 +290,7 @@ int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size)
 	Vec2i v;
 
 	if (pos.x < 0 || pos.y < 0 ||
-		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
 	{
 		return 0;
 	}
@@ -349,7 +349,7 @@ int MapGetRoomOverlapSize(
 	Vec2i overlapMax = Vec2iZero();
 
 	if (pos.x < 0 || pos.y < 0 ||
-		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
 	{
 		return 0;
 	}
@@ -443,7 +443,7 @@ int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
 	Vec2i overlapMax = Vec2iZero();
 
 	if (pos.x < 0 || pos.y < 0 ||
-		pos.x + size.x >= XMAX || pos.y + size.y >= YMAX)
+		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
 	{
 		return 0;
 	}

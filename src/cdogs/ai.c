@@ -270,8 +270,8 @@ static void PlaceBaddie(TActor *actor)
 		TActor *closestPlayer = NULL;
 		do
 		{
-			actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
-			actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
+			actor->x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+			actor->y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
 			closestPlayer = AIGetClosestPlayer(Vec2iNew(actor->x, actor->y));
 		}
 		while (closestPlayer && CHEBYSHEV_DISTANCE(
@@ -286,8 +286,8 @@ static void PlaceBaddie(TActor *actor)
 	// Keep trying, but this time try spawning anywhere, even close to player
 	while (!hasPlaced)
 	{
-		actor->x = (rand() % (XMAX * TILE_WIDTH)) << 8;
-		actor->y = (rand() % (YMAX * TILE_HEIGHT)) << 8;
+		actor->x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+		actor->y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
 		if (IsActorPositionValid(actor))
 		{
 			hasPlaced = 1;
@@ -319,8 +319,8 @@ static void PlacePrisoner(TActor * actor)
 
 	do {
 		do {
-			actor->x = ((rand() % (XMAX * TILE_WIDTH)) << 8);
-			actor->y = ((rand() % (YMAX * TILE_HEIGHT)) << 8);
+			actor->x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
+			actor->y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 		}
 		while (!MapPosIsHighAccess(&gMap, actor->x >> 8, actor->y >> 8));
 		x = actor->x;

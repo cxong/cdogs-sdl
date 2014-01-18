@@ -96,7 +96,7 @@ static void RemoveItemFromTile(TTileItem * t, Tile * tile)
 
 Tile *MapGetTile(Map *map, Vec2i pos)
 {
-	return &map->tiles[pos.y][pos.x];
+	return CArrayGet(&map->Tiles, pos.y * map->Size.x + pos.x);
 }
 
 int MapIsTileIn(Map *map, Vec2i pos)
@@ -104,8 +104,8 @@ int MapIsTileIn(Map *map, Vec2i pos)
 	UNUSED(map);
 	// Check that the tile pos is within the interior of the map
 	// Note that the map always has a 1-wide perimeter
-	// TODO: factor in different map sizes
-	if (pos.x <= 0 || pos.y <= 0 || pos.x >= XMAX - 1 || pos.y >= YMAX - 1)
+	if (pos.x <= 0 || pos.y <= 0 ||
+		pos.x >= map->Size.x - 1 || pos.y >= map->Size.y - 1)
 	{
 		return 0;
 	}
@@ -140,71 +140,35 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	RemoveItemFromTile(t, tile);
 }
 
-static Vec2i GuessCoords(Vec2i mapSize)
+static Vec2i GuessCoords(Map *map)
 {
-	Vec2i v;
-	if (mapSize.x)
-	{
-		v.x = (rand() % mapSize.x) + (XMAX - mapSize.x) / 2;
-	}
-	else
-	{
-		v.x = rand() % XMAX;
-	}
-
-	if (mapSize.y)
-	{
-		v.y = (rand() % mapSize.y) + (YMAX - mapSize.y) / 2;
-	}
-	else
-	{
-		v.y = rand() % YMAX;
-	}
-	return v;
+	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
 }
 
-static Vec2i GuessPixelCoords(struct MissionOptions *mo)
+static Vec2i GuessPixelCoords(Map *map)
 {
-	Vec2i v;
-	if (mo->missionData->Size.x)
-	{
-		v.x = (rand() % (mo->missionData->Size.x * TILE_WIDTH)) +
-			(XMAX - mo->missionData->Size.x) * TILE_WIDTH / 2;
-	}
-	else
-	{
-		v.x = rand() % (XMAX * TILE_WIDTH);
-	}
-
-	if (mo->missionData->Size.y)
-	{
-		v.y = (rand() % (mo->missionData->Size.y * TILE_HEIGHT)) +
-			(YMAX - mo->missionData->Size.y) * TILE_HEIGHT / 2;
-	}
-	else
-	{
-		v.y = rand() % (YMAX * TILE_HEIGHT);
-	}
-	return v;
+	return Vec2iNew(
+		rand() % (map->Size.x * TILE_WIDTH),
+		rand() % (map->Size.y * TILE_HEIGHT));
 }
 
 unsigned short IMapGet(Map *map, Vec2i pos)
 {
-	if (pos.x < 0 || pos.x >= XMAX || pos.y < 0 || pos.y >= YMAX)
+	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
 	{
 		return MAP_NOTHING;
 	}
-	return map->iMap[pos.y][pos.x];
+	return *(unsigned short *)CArrayGet(
+		&map->iMap, pos.y * map->Size.x + pos.x);
 }
 void IMapSet(Map *map, Vec2i pos, unsigned short v)
 {
-	map->iMap[pos.y][pos.x] = v;
+	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
 static int W(Map *map, int x, int y)
 {
-	return x >= 0 && y >= 0 && x < XMAX && y < YMAX &&
-		IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
+	return IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
 }
 
 static int MapGetWallPic(Map *m, int x, int y)
@@ -286,9 +250,9 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 	Vec2i v;
 	int i;
 
-	for (v.x = 0; v.x < XMAX; v.x++)
+	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
-		for (v.y = 0; v.y < YMAX; v.y++)
+		for (v.y = 0; v.y < map->Size.y; v.y++)
 		{
 			Tile *tAbove = MapGetTile(map, Vec2iNew(v.x, v.y - 1));
 			int canSeeTileAbove = !(v.y > 0 && !TileCanSee(tAbove));
@@ -347,7 +311,8 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 	{
 		// Make sure drain tiles aren't next to each other
 		Tile *t = MapGetTile(map, Vec2iNew(
-			(rand() % XMAX) & 0xFFFFFE, (rand() % YMAX) & 0xFFFFFE));
+			(rand() % map->Size.x) & 0xFFFFFE,
+			(rand() % map->Size.y) & 0xFFFFFE));
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetFromOld(
@@ -359,7 +324,8 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 	// Randomly change normal floor tiles to alternative floor tiles
 	for (i = 0; i < 100; i++)
 	{
-		Tile *t = MapGetTile(map, Vec2iNew(rand() % XMAX, rand() % YMAX));
+		Tile *t = MapGetTile(
+			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetFromOld(
@@ -368,7 +334,8 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 	}
 	for (i = 0; i < 150; i++)
 	{
-		Tile *t = MapGetTile(map, Vec2iNew(rand() % XMAX, rand() % YMAX));
+		Tile *t = MapGetTile(
+			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetFromOld(
@@ -619,7 +586,7 @@ static int MapTryPlaceCollectible(
 	while (i)
 	{
 		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-		Vec2i v = GuessPixelCoords(mo);
+		Vec2i v = GuessPixelCoords(map);
 		// Collectibles all have size 4x3
 		if (!IsCollisionWithWall(v, size))
 		{
@@ -651,7 +618,7 @@ static int MapTryPlaceBlowup(
 
 	while (i > 0)
 	{
-		Vec2i v = GuessCoords(mission->Size);
+		Vec2i v = GuessCoords(map);
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
@@ -674,7 +641,7 @@ static void MapPlaceCard(Map *map, int pic, int card, int map_access)
 {
 	for (;;)
 	{
-		Vec2i v = GuessCoords(gMission.missionData->Size);
+		Vec2i v = GuessCoords(map);
 		Tile *t;
 		Tile *tBelow;
 		unsigned short iMap;
@@ -1057,9 +1024,9 @@ static int MapGetAccessFlags(Map *map, int x, int y)
 static void MapSetupDoors(Map *map, int floor, int room)
 {
 	Vec2i v;
-	for (v.x = 0; v.x < XMAX; v.x++)
+	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
-		for (v.y = 0; v.y < YMAX; v.y++)
+		for (v.y = 0; v.y < map->Size.y; v.y++)
 		{
 			// Check if this is the start of a door group
 			// Top or left-most door
@@ -1074,27 +1041,15 @@ static void MapSetupDoors(Map *map, int floor, int room)
 	}
 }
 
-static void MapSetupPerimeter(Map *map, int w, int h)
+static void MapSetupPerimeter(Map *map)
 {
 	Vec2i v;
-	int dx = 0, dy = 0;
-
-	if (w && w < XMAX)
-		dx = (XMAX - w) / 2;
-	if (h && h < YMAX)
-		dy = (YMAX - h) / 2;
-
-	for (v.y = 0; v.y < YMAX; v.y++)
+	for (v.y = 0; v.y < map->Size.x; v.y++)
 	{
-		for (v.x = 0; v.x < XMAX; v.x++)
+		for (v.x = 0; v.x < map->Size.y; v.x++)
 		{
-			if (v.y < dy || v.y > dy + h - 1 ||
-				v.x < dx || v.x > dx + w - 1)
-			{
-				IMapSet(map, v, MAP_NOTHING);
-			}
-			else if (v.y == dy || v.y == dy + h - 1 ||
-				v.x == dx || v.x == dx + w - 1)
+			if (v.y == 0 || v.y == map->Size.y - 1 ||
+				v.x == 0 || v.x == map->Size.x - 1)
 			{
 				IMapSet(map, v, MAP_WALL);
 			}
@@ -1104,17 +1059,10 @@ static void MapSetupPerimeter(Map *map, int w, int h)
 
 void MapInit(Map *map)
 {
-	Vec2i v;
 	memset(map, 0, sizeof *map);
+	CArrayInit(&map->Tiles, sizeof(Tile));
+	CArrayInit(&map->iMap, sizeof(unsigned short));
 	CArrayInit(&map->triggers, sizeof(Trigger *));
-	for (v.y = 0; v.y < YMAX; v.y++)
-	{
-		for (v.x = 0; v.x < XMAX; v.x++)
-		{
-			Tile *t = MapGetTile(map, v);
-			TileInit(t);
-		}
-	}
 }
 void MapTerminate(Map *map)
 {
@@ -1125,14 +1073,16 @@ void MapTerminate(Map *map)
 		TriggerTerminate(*(Trigger **)CArrayGet(&map->triggers, i));
 	}
 	CArrayTerminate(&map->triggers);
-	for (v.y = 0; v.y < YMAX; v.y++)
+	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
-		for (v.x = 0; v.x < XMAX; v.x++)
+		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
 			Tile *t = MapGetTile(map, v);
 			TileDestroy(t);
 		}
 	}
+	CArrayTerminate(&map->Tiles);
+	CArrayTerminate(&map->iMap);
 }
 void MapLoad(Map *map, struct MissionOptions *mo)
 {
@@ -1141,19 +1091,25 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
 	int wall = mission->WallStyle % WALL_STYLE_COUNT;
 	int room = mission->RoomStyle % ROOMFLOOR_COUNT;
-	int x, y, w, h;
+	Vec2i v;
 
 	PicManagerGenerateOldPics(&gPicManager, &gGraphicsDevice);
 	MapTerminate(map);
 	MapInit(map);
+	map->Size = mission->Size;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < map->Size.x; v.x++)
+		{
+			Tile t;
+			unsigned short tI = MAP_FLOOR;
+			TileInit(&t);
+			CArrayPushBack(&map->Tiles, &t);
+			CArrayPushBack(&map->iMap, &tI);
+		}
+	}
 
-	w = mission->Size.x && mission->Size.x < XMAX ? mission->Size.x : XMAX;
-	h = mission->Size.y && mission->Size.y < YMAX ? mission->Size.y : YMAX;
-	x = (XMAX - w) / 2;
-	y = (YMAX - h) / 2;
-	map->tilesTotal = w * h;
-
-	MapSetupPerimeter(map, mission->Size.x, mission->Size.y);
+	MapSetupPerimeter(map);
 
 	if (mission->Type == MAPTYPE_CLASSIC)
 	{
@@ -1170,11 +1126,11 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	for (i = 0; i < (int)mo->MapObjects.size; i++)
 	{
 		int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
-		for (j = 0; j < (itemDensity * map->tilesTotal) / 1000; j++)
+		for (j = 0; j < (itemDensity * map->Size.x * map->Size.y) / 1000; j++)
 		{
 			TMapObject *mapObj = CArrayGet(&mo->MapObjects, i);
-			MapPlaceOneObject(
-				map, Vec2iNew(x + rand() % w, y + rand() % h), mapObj, 0);
+			MapPlaceOneObject(map, Vec2iNew(
+				rand() % map->Size.x, rand() % map->Size.y), mapObj, 0);
 		}
 	}
 
@@ -1253,9 +1209,9 @@ void MapMarkAsVisited(Map *map, Vec2i pos)
 void MapMarkAllAsVisited(Map *map)
 {
 	Vec2i pos;
-	for (pos.y = 0; pos.y < YMAX; pos.y++)
+	for (pos.y = 0; pos.y < map->Size.y; pos.y++)
 	{
-		for (pos.x = 0; pos.x < XMAX; pos.x++)
+		for (pos.x = 0; pos.x < map->Size.x; pos.x++)
 		{
 			MapGetTile(map, pos)->isVisited = 1;
 		}
@@ -1264,5 +1220,5 @@ void MapMarkAllAsVisited(Map *map)
 
 int MapGetExploredPercentage(Map *map)
 {
-	return (100 * map->tilesSeen) / map->tilesTotal;
+	return (100 * map->tilesSeen) / (map->Size.x * map->Size.y);
 }

@@ -45,10 +45,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 			{
 				for (v.x = 0; v.x < m->Size.x; v.x++)
 				{
-					Vec2i mapPos = Vec2iNew(
-						v.x + (XMAX - m->Size.x) / 2,
-						v.y + (YMAX - m->Size.y) / 2);
-					unsigned short tile = IMapGet(map, mapPos);
+					unsigned short tile = IMapGet(map, v);
 					CArrayPushBack(&m->u.StaticTiles, &tile);
 				}
 			}

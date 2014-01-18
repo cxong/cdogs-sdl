@@ -54,14 +54,13 @@
 #include "map_build.h"
 
 
-static int MapTryBuildSquare(Map *map, Mission *m);
+static int MapTryBuildSquare(Map *map);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
 	int doorMin, int doorMax, int hasKeys);
 static int MapTryBuildPillar(Map *map, Mission *m, int pad);
 static int MapTryBuildWall(
-	Map *map, Vec2i pos, Vec2i size,
-	unsigned short tileType, int pad, int wallLength);
+	Map *map, unsigned short tileType, int pad, int wallLength);
 void MapClassicLoad(Map *map, Mission *mission)
 {
 	// The classic random map generator randomly attempts to place
@@ -87,7 +86,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 	int i = 0;
 	while (i < 1000 && count < mission->u.Classic.Squares)
 	{
-		if (MapTryBuildSquare(map, mission))
+		if (MapTryBuildSquare(map))
 		{
 			count++;
 		}
@@ -129,10 +128,7 @@ void MapClassicLoad(Map *map, Mission *mission)
 	while (i < 1000 && count < mission->u.Classic.Walls)
 	{
 		if (MapTryBuildWall(
-			map,
-			Vec2iNew((XMAX - mission->Size.x) / 2, (YMAX - mission->Size.y) / 2),
-			mission->Size, MAP_FLOOR,
-			pad, mission->u.Classic.WallLength))
+			map, MAP_FLOOR, pad, mission->u.Classic.WallLength))
 		{
 			count++;
 		}
@@ -140,13 +136,11 @@ void MapClassicLoad(Map *map, Mission *mission)
 	}
 }
 
-static Vec2i GuessCoords(Vec2i pos, Vec2i size);
+static Vec2i GuessCoords(Map *map);
 
-static int MapTryBuildSquare(Map *map, Mission *m)
+static int MapTryBuildSquare(Map *map)
 {
-	Vec2i v = GuessCoords(
-		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2),
-		m->Size);
+	Vec2i v = GuessCoords(map);
 	Vec2i size = Vec2iNew(rand() % 9 + 8, rand() % 9 + 8);
 	if (MapIsAreaClear(map, v, size))
 	{
@@ -156,7 +150,7 @@ static int MapTryBuildSquare(Map *map, Mission *m)
 	return 0;
 }
 static void MapFindAvailableDoors(
-	Map *map, Mission *m, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
+	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
 static unsigned short GenerateAccessMask(int *accessLevel);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
@@ -168,8 +162,7 @@ static int MapTryBuildRoom(
 	int roomMax = MAX(m->u.Classic.Rooms.Max, doorMin + 4);
 	int w = rand() % (roomMax - roomMin + 1) + roomMin;
 	int h = rand() % (roomMax - roomMin + 1) + roomMin;
-	Vec2i pos = GuessCoords(
-		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2), m->Size);
+	Vec2i pos = GuessCoords(map);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(w + 2 * pad, h + 2 * pad);
 	int isClear = 0;
@@ -180,32 +173,28 @@ static int MapTryBuildRoom(
 	if (m->u.Classic.Rooms.Edge)
 	{
 		// Check if room is at edge; if so only check if clear inside edge
-		if (pos.x == (XMAX - m->Size.x) / 2 ||
-			pos.x == (XMAX - m->Size.x) / 2 + 1)
+		if (pos.x == 0 || pos.x == 1)
 		{
-			int dx = (XMAX - m->Size.x) / 2 + 1 - clearPos.x;
+			int dx = 1 - clearPos.x;
 			clearPos.x += dx;
 			clearSize.x -= dx;
 			isEdgeRoom = 1;
 		}
-		else if (pos.x + w == (XMAX + m->Size.x) / 2 - 2 ||
-			pos.x + w == (XMAX + m->Size.x) / 2 - 1)
+		else if (pos.x + w == map->Size.x - 2 || pos.x + w == map->Size.x - 1)
 		{
-			clearSize.x = (XMAX + m->Size.x) / 2 - 1 - pos.x;
+			clearSize.x = map->Size.x - 1 - pos.x;
 			isEdgeRoom = 1;
 		}
-		if (pos.y == (YMAX - m->Size.y) / 2 ||
-			pos.y == (YMAX - m->Size.y) / 2 + 1)
+		if (pos.y == 0 || pos.y == 1)
 		{
-			int dy = (YMAX - m->Size.y) / 2 + 1 - clearPos.y;
+			int dy = 1 - clearPos.y;
 			clearPos.y += dy;
 			clearSize.y -= dy;
 			isEdgeRoom = 1;
 		}
-		else if (pos.y + h == (YMAX + m->Size.y) / 2 - 2 ||
-			pos.y + h == (YMAX + m->Size.y) / 2 - 1)
+		else if (pos.y + h == map->Size.y - 2 || pos.y + h == map->Size.y - 1)
 		{
-			clearSize.y = (YMAX + m->Size.y) / 2 - 1 - pos.y;
+			clearSize.y = map->Size.y - 1 - pos.y;
 			isEdgeRoom = 1;
 		}
 	}
@@ -238,7 +227,7 @@ static int MapTryBuildRoom(
 		// If we cannot place doors, remember this and try to place them
 		// on other walls
 		// We cannot place doors on: the perimeter, and on overlaps
-		MapFindAvailableDoors(map, m, pos, Vec2iNew(w, h), doorMin, doors);
+		MapFindAvailableDoors(map, pos, Vec2iNew(w, h), doorMin, doors);
 		// Try to place doors according to the random mask
 		// If we cannot place a door, remember this and try to place it
 		// on other doors
@@ -296,8 +285,7 @@ static int MapTryBuildRoom(
 		while (i < 100 && count < m->u.Classic.Rooms.Walls)
 		{
 			if (MapTryBuildWall(
-				map, pos, Vec2iNew(w, h),
-				MAP_ROOM, MAX(m->u.Classic.Rooms.WallPad, 2),
+				map, MAP_ROOM, MAX(m->u.Classic.Rooms.WallPad, 2),
 				m->u.Classic.Rooms.WallLength))
 			{
 				count++;
@@ -316,40 +304,37 @@ static int MapTryBuildPillar(Map *map, Mission *m, int pad)
 	Vec2i size = Vec2iNew(
 		rand() % (pillarMax - pillarMin + 1) + pillarMin,
 		rand() % (pillarMax - pillarMin + 1) + pillarMin);
-	Vec2i pos = GuessCoords(
-		Vec2iNew((XMAX - m->Size.x) / 2, (YMAX - m->Size.y) / 2), m->Size);
+	Vec2i pos = GuessCoords(map);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
 	int isEdge = 0;
 	int isClear = 0;
 
 	// Check if pillar is at edge; if so only check if clear inside edge
-	if (pos.x == (XMAX - m->Size.x) / 2 ||
-		pos.x == (XMAX - m->Size.x) / 2 + 1)
+	if (pos.x == 0 || pos.x == 1)
 	{
-		int dx = (XMAX - m->Size.x) / 2 + 1 - clearPos.x;
+		int dx = 1 - clearPos.x;
 		clearPos.x += dx;
 		clearSize.x -= dx;
 		isEdge = 1;
 	}
-	else if (pos.x + size.x == (XMAX + m->Size.x) / 2 - 2 ||
-		pos.x + size.x == (XMAX + m->Size.x) / 2 - 1)
+	else if (pos.x + size.x == map->Size.x - 2 ||
+		pos.x + size.x == map->Size.x - 1)
 	{
-		clearSize.x = (XMAX + m->Size.x) / 2 - 1 - pos.x;
+		clearSize.x = map->Size.x - 1 - pos.x;
 		isEdge = 1;
 	}
-	if (pos.y == (YMAX - m->Size.y) / 2 ||
-		pos.y == (YMAX - m->Size.y) / 2 + 1)
+	if (pos.y == 0 || pos.y == 1)
 	{
-		int dy = (YMAX - m->Size.y) / 2 + 1 - clearPos.y;
+		int dy = 1 - clearPos.y;
 		clearPos.y += dy;
 		clearSize.y -= dy;
 		isEdge = 1;
 	}
-	else if (pos.y + size.y == (YMAX + m->Size.y) / 2 - 2 ||
-		pos.y + size.y == (YMAX + m->Size.y) / 2 - 1)
+	else if (pos.y + size.y == map->Size.y - 2 ||
+		pos.y + size.y == map->Size.y - 1)
 	{
-		clearSize.y = (YMAX + m->Size.y) / 2 - 1 - pos.y;
+		clearSize.y = map->Size.y - 1 - pos.y;
 		isEdge = 1;
 	}
 
@@ -374,10 +359,9 @@ static void MapGrowWall(
 	Map *map, int x, int y,
 	unsigned short tileType, int pad, int d, int length);
 static int MapTryBuildWall(
-	Map *map, Vec2i pos, Vec2i size,
-	unsigned short tileType, int pad, int wallLength)
+	Map *map, unsigned short tileType, int pad, int wallLength)
 {
-	Vec2i v = GuessCoords(pos, size);
+	Vec2i v = GuessCoords(map);
 	if (MapIsValidStartForWall(map, v.x, v.y, tileType, pad))
 	{
 		MapMakeWall(map, v);
@@ -420,10 +404,6 @@ static void MapGrowWall(
 		y--;
 		break;
 	case 1:
-		if (x > XMAX - 2 - pad)
-		{
-			return;
-		}
 		// Check tiles to the right
 		//   x
 		//  xx
@@ -444,10 +424,6 @@ static void MapGrowWall(
 		x++;
 		break;
 	case 2:
-		if (y > YMAX - 2 - pad)
-		{
-			return;
-		}
 		// Check tiles below
 		//   o
 		//  xxx
@@ -503,10 +479,9 @@ static void MapGrowWall(
 	MapGrowWall(map, x, y, tileType, pad, d, length);
 }
 
-static Vec2i GuessCoords(Vec2i pos, Vec2i size)
+static Vec2i GuessCoords(Map *map)
 {
-	return Vec2iNew(
-		pos.x + (rand() % size.x), pos.y + (rand() % size.y));
+	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
 }
 
 static unsigned short GenerateAccessMask(int *accessLevel)
@@ -580,7 +555,7 @@ static int MapFindWallRun(Map *map, Vec2i start, Vec2i d, int len)
 	return wallRun;
 }
 static void MapFindAvailableDoors(
-	Map *map, Mission *m, Vec2i pos, Vec2i size, int doorMin, int doors[4])
+	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4])
 {
 	int i;
 	for (i = 0; i < 4; i++)
@@ -588,7 +563,7 @@ static void MapFindAvailableDoors(
 		doors[i] = 1;
 	}
 	// left
-	if (pos.x <= (XMAX - m->Size.x) / 2 + 1)
+	if (pos.x <= 1)
 	{
 		doors[0] = 0;
 	}
@@ -601,7 +576,7 @@ static void MapFindAvailableDoors(
 		doors[0] = 0;
 	}
 	// right
-	if (pos.x + size.x >= (XMAX + m->Size.x) / 2 - 2)
+	if (pos.x + size.x >= map->Size.x - 2)
 	{
 		doors[1] = 0;
 	}
@@ -614,7 +589,7 @@ static void MapFindAvailableDoors(
 		doors[1] = 0;
 	}
 	// top
-	if (pos.y <= (YMAX - m->Size.y) / 2 + 1)
+	if (pos.y <= 1)
 	{
 		doors[2] = 0;
 	}
@@ -627,7 +602,7 @@ static void MapFindAvailableDoors(
 		doors[2] = 0;
 	}
 	// bottom
-	if (pos.y >= (YMAX + m->Size.y) / 2 - 2)
+	if (pos.y >= map->Size.y - 2)
 	{
 		doors[3] = 0;
 	}

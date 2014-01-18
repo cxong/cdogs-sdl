@@ -35,11 +35,9 @@ void MapStaticLoad(Map *map, Mission *m)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
 		{
-			Vec2i pos = Vec2iNew(
-				v.x + (XMAX - m->Size.x) / 2, v.y + (YMAX - m->Size.y) / 2);
 			int index = v.y * m->Size.x + v.x;
 			unsigned short *tile = CArrayGet(&m->u.StaticTiles, index);
-			IMapSet(map, pos, *tile);
+			IMapSet(map, v, *tile);
 		}
 	}
 }

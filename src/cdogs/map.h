@@ -54,9 +54,6 @@
 #include "tile.h"
 #include "vector.h"
 
-#define YMAX    128
-#define XMAX    128
-
 // Values for internal map
 #define MAP_FLOOR           0
 #define MAP_WALL            1
@@ -75,16 +72,16 @@
 
 typedef struct
 {
-	Tile tiles[YMAX][XMAX];
+	CArray Tiles;	// of Tile
+	Vec2i Size;
 
 	// internal data structure to help build the map
-	unsigned short iMap[YMAX][XMAX];
+	CArray iMap;	// of unsigned short
 
 	CArray triggers;	// of Trigger *; owner
 	int triggerId;
 
 	int tilesSeen;
-	int tilesTotal;
 	int keyAccessCount;
 } Map;
 

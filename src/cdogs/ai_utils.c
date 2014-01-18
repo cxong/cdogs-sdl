@@ -397,7 +397,7 @@ static void AddTileNeighbors(
 	for (y = v->y - 1; y <= v->y + 1; y++)
 	{
 		int x;
-		if (y < 0 || y >= YMAX)
+		if (y < 0 || y >= gMap.Size.y)
 		{
 			continue;
 		}
@@ -407,7 +407,7 @@ static void AddTileNeighbors(
 			Vec2i neighbor;
 			neighbor.x = x;
 			neighbor.y = y;
-			if (x < 0 || x >= XMAX)
+			if (x < 0 || x >= gMap.Size.x)
 			{
 				continue;
 			}

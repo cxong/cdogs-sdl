@@ -705,24 +705,9 @@ void SetupMission(
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
 	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
 
-	if (m->Size.x)
-	{
-		x = (rand() % (abs(m->Size.x) - EXIT_WIDTH)) +
-			(XMAX - abs(m->Size.x)) / 2;
-	}
-	else
-	{
-		x = rand() % (XMAX - EXIT_WIDTH);
-	}
-	if (m->Size.y)
-	{
-		y = (rand() % (abs(m->Size.y) - EXIT_HEIGHT)) +
-			(YMAX - abs(m->Size.y)) / 2;
-	}
-	else
-	{
-		y = rand() % (YMAX - EXIT_HEIGHT);
-	}
+	assert(m->Size.x > 0 && m->Size.y > 0 && "invalid map size");
+	x = (rand() % (abs(m->Size.x) - EXIT_WIDTH));
+	y = (rand() % (abs(m->Size.y) - EXIT_HEIGHT));
 	mo->exitLeft = x;
 	mo->exitRight = x + EXIT_WIDTH + 1;
 	mo->exitTop = y;
