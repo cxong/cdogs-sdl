@@ -147,3 +147,46 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 	}
 	*(unsigned short *)CArrayGet(&m->u.StaticTiles, index) = tile;
 }
+
+void MissionStaticLayout(Mission *m, Vec2i oldSize)
+{
+	// re-layout the static map after a resize
+	// The mission contains the new size; the old dimensions are oldSize
+	// Simply try to "paint" the old tiles to the new mission
+	Vec2i v;
+	CArray oldTiles;
+	CArrayInit(&oldTiles, m->u.StaticTiles.elemSize);
+	CArrayCopy(&oldTiles, &m->u.StaticTiles);
+
+	// Clear the tiles first
+	CArrayTerminate(&m->u.StaticTiles);
+	CArrayInit(&m->u.StaticTiles, oldTiles.elemSize);
+	for (v.y = 0; v.y < m->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < m->Size.x; v.x++)
+		{
+			unsigned short tile = MAP_NOTHING;
+			CArrayPushBack(&m->u.StaticTiles, &tile);
+		}
+	}
+
+	// Paint the old tiles back
+	for (v.y = 0; v.y < m->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < m->Size.x; v.x++)
+		{
+			if (v.x >= oldSize.x || v.y >= oldSize.y)
+			{
+				MissionSetTile(m, v, MAP_NOTHING);
+			}
+			else
+			{
+				int index = v.y * oldSize.x + v.x;
+				unsigned short *tile = CArrayGet(&oldTiles, index);
+				MissionSetTile(m, v, *tile);
+			}
+		}
+	}
+
+	CArrayTerminate(&oldTiles);
+}

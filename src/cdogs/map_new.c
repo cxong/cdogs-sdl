@@ -179,7 +179,7 @@ bail:
 }
 
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
-static void LoadIntArray(CArray *a, json_t *node);
+static void LoadIntArray(CArray *a, json_t *node, char *name);
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
@@ -203,10 +203,10 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 		LoadInt(&m.KeyStyle, child, "KeyStyle");
 		LoadInt(&m.DoorStyle, child, "DoorStyle");
 		LoadMissionObjectives(&m.Objectives, json_find_first_label(child, "Objectives")->child);
-		LoadIntArray(&m.Enemies, json_find_first_label(child, "Enemies")->child);
-		LoadIntArray(&m.SpecialChars, json_find_first_label(child, "SpecialChars")->child);
-		LoadIntArray(&m.Items, json_find_first_label(child, "Items")->child);
-		LoadIntArray(&m.ItemDensities, json_find_first_label(child, "ItemDensities")->child);
+		LoadIntArray(&m.Enemies, child, "Enemies");
+		LoadIntArray(&m.SpecialChars, child, "SpecialChars");
+		LoadIntArray(&m.Items, child, "Items");
+		LoadIntArray(&m.ItemDensities, child, "ItemDensities");
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
 		LoadWeapons(m.Weapons, json_find_first_label(child, "Weapons")->child);
 		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
@@ -225,6 +225,22 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
 			LoadClassicDoors(&m, child, "Doors");
 			LoadClassicPillars(&m, child, "Pillars");
+			break;
+		case MAPTYPE_STATIC:
+			{
+				json_t *tiles = json_find_first_label(child, "Tiles");
+				if (!tiles || !tiles->child)
+				{
+					return;
+				}
+				tiles = tiles->child;
+				CArrayInit(&m.u.StaticTiles, sizeof(unsigned short));
+				for (tiles = tiles->child; tiles; tiles = tiles->next)
+				{
+					unsigned short n = (unsigned short)atoi(tiles->text);
+					CArrayPushBack(&m.u.StaticTiles, &n);
+				}
+			}
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -278,9 +294,14 @@ static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode)
 		CArrayPushBack(objectives, &mo);
 	}
 }
-static void LoadIntArray(CArray *a, json_t *node)
+static void LoadIntArray(CArray *a, json_t *node, char *name)
 {
-	json_t *child;
+	json_t *child = json_find_first_label(node, name);
+	if (!child || !child->child)
+	{
+		return;
+	}
+	child = child->child;
 	for (child = node->child; child; child = child->next)
 	{
 		int n = atoi(child->text);
@@ -289,11 +310,23 @@ static void LoadIntArray(CArray *a, json_t *node)
 }
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode)
 {
-	json_t *child;
-	for (child = weaponsNode->child; child; child = child->next)
+	if (!weaponsNode->child)
 	{
-		gun_e gun = StrGunName(child->text);
-		weapons[gun] = 1;
+		// enable all weapons
+		int i;
+		for (i = 0; i < GUN_COUNT; i++)
+		{
+			weapons[i] = 1;
+		}
+	}
+	else
+	{
+		json_t *child;
+		for (child = weaponsNode->child; child; child = child->next)
+		{
+			gun_e gun = StrGunName(child->text);
+			weapons[gun] = 1;
+		}
 	}
 }
 static void LoadClassicRooms(Mission *m, json_t *roomsNode)
@@ -444,6 +477,20 @@ static json_t *SaveMissions(CArray *a)
 				node, "Doors", SaveClassicDoors(mission));
 			json_insert_pair_into_object(
 				node, "Pillars", SaveClassicPillars(mission));
+			break;
+		case MAPTYPE_STATIC:
+			{
+				json_t *tiles = json_new_array();
+				int i;
+				for (i = 0; i < (int)mission->u.StaticTiles.size; i++)
+				{
+					char buf[32];
+					sprintf(buf, "%d", *(unsigned short *)CArrayGet(
+						&mission->u.StaticTiles, i));
+					json_insert_child(tiles, json_new_number(buf));
+				}
+				json_insert_pair_into_object(node, "Tiles", tiles);
+			}
 			break;
 		default:
 			assert(0 && "unknown map type");

@@ -27,6 +27,7 @@
 */
 #include "map_static.h"
 
+
 void MapStaticLoad(Map *map, Mission *m)
 {
 	Vec2i v;

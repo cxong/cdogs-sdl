@@ -69,6 +69,8 @@ const char *MapTypeStr(MapType t)
 	{
 	case MAPTYPE_CLASSIC:
 		return "Classic";
+	case MAPTYPE_STATIC:
+		return "Static";
 	default:
 		return "";
 	}
@@ -78,6 +80,10 @@ MapType StrMapType(const char *s)
 	if (strcmp(s, "Classic") == 0)
 	{
 		return MAPTYPE_CLASSIC;
+	}
+	else if (strcmp(s, "Static") == 0)
+	{
+		return MAPTYPE_STATIC;
 	}
 	return MAPTYPE_CLASSIC;
 }

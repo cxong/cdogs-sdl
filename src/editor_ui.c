@@ -801,11 +801,31 @@ static void CampaignChangeSeed(CampaignOptions *c, int d)
 }
 static void MissionChangeWidth(CampaignOptions *co, int d)
 {
-	CampaignGetCurrentMission(co)->Size.x = CLAMP(CampaignGetCurrentMission(co)->Size.x + d, 16, XMAX);
+	Mission *m = CampaignGetCurrentMission(co);
+	int old = m->Size.x;
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
+	m->Size.x = CLAMP(m->Size.x + d, 16, XMAX);
+	if (m->Type == MAPTYPE_STATIC)
+	{
+		MissionStaticLayout(m, Vec2iNew(old, m->Size.y));
+	}
 }
 static void MissionChangeHeight(CampaignOptions *co, int d)
 {
-	CampaignGetCurrentMission(co)->Size.y = CLAMP(CampaignGetCurrentMission(co)->Size.y + d, 16, XMAX);
+	Mission *m = CampaignGetCurrentMission(co);
+	int old = m->Size.y;
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
+	m->Size.y = CLAMP(m->Size.y + d, 16, XMAX);
+	if (m->Type == MAPTYPE_STATIC)
+	{
+		MissionStaticLayout(m, Vec2iNew(m->Size.x, old));
+	}
 }
 static void MissionChangeWallCount(CampaignOptions *co, int d)
 {

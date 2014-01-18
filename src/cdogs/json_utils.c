@@ -42,8 +42,15 @@ void AddBoolPair(json_t *parent, const char *name, int value)
 }
 void AddStringPair(json_t *parent, const char *name, const char *s)
 {
-	json_insert_pair_into_object(
-		parent, name, json_new_string(json_escape(s)));
+	if (!s)
+	{
+		json_insert_pair_into_object(parent, name, json_new_string(""));
+	}
+	else
+	{
+		json_insert_pair_into_object(
+			parent, name, json_new_string(json_escape(s)));
+	}
 }
 
 int TryLoadValue(json_t **node, const char *name)

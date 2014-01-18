@@ -370,18 +370,20 @@ static void Append(char *s, int maxlen, char c)
 		s[l] = c;
 	}
 }
-static void Expand(char *s, char c)
+static void Expand(char **s, char c)
 {
-	size_t l = strlen(s);
-	CREALLOC(s, l + 1);
-	s[l + 1] = 0;
-	s[l] = c;
+	size_t l = *s ? strlen(*s) : 0;
+	CREALLOC(*s, l + 2);
+	(*s)[l + 1] = 0;
+	(*s)[l] = c;
 }
 
 static void Backspace(char *s)
 {
-	if (s[0])
+	if (s && s[0])
+	{
 		s[strlen(s) - 1] = 0;
+	}
 }
 
 static void AddChar(int xc, int yc, char c)
@@ -392,13 +394,13 @@ static void AddChar(int xc, int yc, char c)
 		switch (xc)
 		{
 		case XC_CAMPAIGNTITLE:
-			Expand(gCampaign.Setting.Title, c);
+			Expand(&gCampaign.Setting.Title, c);
 			break;
 		case XC_AUTHOR:
-			Expand(gCampaign.Setting.Author, c);
+			Expand(&gCampaign.Setting.Author, c);
 			break;
 		case XC_CAMPAIGNDESC:
-			Expand(gCampaign.Setting.Description, c);
+			Expand(&gCampaign.Setting.Description, c);
 			break;
 		}
 	}
@@ -416,12 +418,12 @@ static void AddChar(int xc, int yc, char c)
 		}
 		else
 		{
-			Expand(mission->Title, c);
+			Expand(&mission->Title, c);
 		}
 		break;
 
 	case YC_MISSIONDESC:
-		Expand(mission->Description, c);
+		Expand(&mission->Description, c);
 		break;
 
 	default:
@@ -430,7 +432,7 @@ static void AddChar(int xc, int yc, char c)
 		{
 			MissionObjective *mobj =
 				CArrayGet(&mission->Objectives, yc - YC_OBJECTIVES);
-			Expand(mobj->Description, c);
+			Expand(&mobj->Description, c);
 		}
 		break;
 	}

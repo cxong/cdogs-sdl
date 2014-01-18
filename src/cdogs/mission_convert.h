@@ -33,5 +33,6 @@
 
 void MissionConvertToType(Mission *m, Map *map, MapType type);
 void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile);
+void MissionStaticLayout(Mission *m, Vec2i oldSize);
 
 #endif
