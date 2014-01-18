@@ -691,12 +691,17 @@ static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 		(flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
 	return s;
 }
-static char *GetBrushStr(UIObject *o, EditorBrush *brush)
+typedef struct
+{
+	EditorBrush *brush;
+	int IsMain;
+} BrushData;
+static char *GetBrushStr(UIObject *o, BrushData *data)
 {
 	static char s[128];
 	char *brushStr = "";
 	UNUSED(o);
-	switch (brush->brushType)
+	switch (data->IsMain ? data->brush->MainType : data->brush->SecondaryType)
 	{
 	case MAP_FLOOR:
 		brushStr = "Floor";
@@ -714,7 +719,7 @@ static char *GetBrushStr(UIObject *o, EditorBrush *brush)
 		assert(0 && "invalid brush type");
 		return "";
 	}
-	sprintf(s, "Brush: %s", brushStr);
+	sprintf(s, "Brush %d: %s", data->IsMain ? 1 : 2, brushStr);
 	return s;
 }
 
@@ -807,7 +812,7 @@ static void MissionChangeWidth(CampaignOptions *co, int d)
 	{
 		d *= 10;
 	}
-	m->Size.x = CLAMP(m->Size.x + d, 16, XMAX);
+	m->Size.x = CLAMP(m->Size.x + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
 		MissionStaticLayout(m, Vec2iNew(old, m->Size.y));
@@ -821,7 +826,7 @@ static void MissionChangeHeight(CampaignOptions *co, int d)
 	{
 		d *= 10;
 	}
-	m->Size.y = CLAMP(m->Size.y + d, 16, XMAX);
+	m->Size.y = CLAMP(m->Size.y + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
 		MissionStaticLayout(m, Vec2iNew(m->Size.x, old));
@@ -1107,28 +1112,38 @@ static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 	mobj->Flags = CLAMP_OPPOSITE(
 		mobj->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
 }
-static void ChangeBrush(EditorBrush *brush, int d)
+static void ChangeBrush(BrushData *data, int d)
 {
-	if (brush->brushType == 0 && d < 0)
+	unsigned short brushType =
+		data->IsMain ? data->brush->MainType : data->brush->SecondaryType;
+	if (brushType == 0 && d < 0)
 	{
-		brush->brushType = MAP_ROOM;
+		brushType = MAP_ROOM;
 	}
-	else if (brush->brushType == MAP_ROOM && d > 0)
+	else if (brushType == MAP_ROOM && d > 0)
 	{
-		brush->brushType = MAP_FLOOR;
+		brushType = MAP_FLOOR;
 	}
 	else
 	{
-		brush->brushType = (unsigned short)(brush->brushType + d);
+		brushType = (unsigned short)(brushType + d);
+	}
+	if (data->IsMain)
+	{
+		data->brush->MainType = brushType;
+	}
+	else
+	{
+		data->brush->SecondaryType = brushType;
 	}
 }
-static void ActivateBrush(EditorBrush *brush)
+static void ActivateBrush(BrushData *data)
 {
-	brush->IsActive = 1;
+	data->brush->IsActive = 1;
 }
-static void DeactivateBrush(EditorBrush *brush)
+static void DeactivateBrush(BrushData *data)
 {
-	brush->IsActive = 0;
+	data->brush->IsActive = 0;
 }
 
 
@@ -1649,11 +1664,27 @@ static UIObject *CreateStaticMapObjs(Vec2i pos, EditorBrush *brush)
 
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = GetBrushStr;
-	o2->Data = brush;
+	CMALLOC(o2->Data, sizeof(BrushData));
+	((BrushData *)o2->Data)->brush = brush;
+	((BrushData *)o2->Data)->IsMain = 1;
+	o2->IsDynamicData = 1;
 	o2->ChangeFunc = ChangeBrush;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
-	CSTRDUP(o2->Tooltip, "Paint the map with this tile type");
+	CSTRDUP(o2->Tooltip, "Left click to paint the map with this tile type");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = GetBrushStr;
+	CMALLOC(o2->Data, sizeof(BrushData));
+	((BrushData *)o2->Data)->brush = brush;
+	((BrushData *)o2->Data)->IsMain = 0;
+	o2->IsDynamicData = 1;
+	o2->ChangeFunc = ChangeBrush;
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
+	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

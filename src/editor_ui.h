@@ -127,7 +127,8 @@
 
 typedef struct
 {
-	unsigned short brushType;
+	unsigned short MainType;
+	unsigned short SecondaryType;
 	int IsActive;
 } EditorBrush;
 

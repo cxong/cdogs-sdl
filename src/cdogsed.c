@@ -87,7 +87,7 @@ static UIObject *sObjs;
 // Globals
 
 static char lastFile[CDOGS_PATH_MAX];
-static EditorBrush brush = { MAP_FLOOR, 0 };
+static EditorBrush brush = { MAP_WALL, MAP_FLOOR, 0 };
 static Vec2i sCursorTilePos = { -1, -1 };
 static Tile sCursorTile;
 
@@ -110,12 +110,6 @@ static void SwapCursorTile(Vec2i mouseTile)
 	Tile *t;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
-	// Convert the tile coordinates to map tile coordinates
-	// The map is centered, i.e. edges are empty
-	// TODO: refactor map to use clearer coordinates
-	mouseTile.x += (XMAX - mission->Size.x) / 2;
-	mouseTile.y += (YMAX - mission->Size.y) / 2;
-
 	// Draw the cursor tile by replacing it with the map tile at the
 	// cursor position
 	// If moving to a new tile, restore the last tile,
@@ -133,7 +127,7 @@ static void SwapCursorTile(Vec2i mouseTile)
 	t = MapGetTile(&gMap, sCursorTilePos);
 	memcpy(&sCursorTile, t, sizeof sCursorTile);
 	// Set cursor tile properties
-	switch (brush.brushType)
+	switch (brush.MainType)
 	{
 	case MAP_FLOOR:
 		t->pic = PicManagerGetFromOld(
@@ -864,12 +858,14 @@ static void HandleInput(
 					mouseTile.y >= 0 && mouseTile.y < mission->Size.y;
 				if (isMouseTileValid)
 				{
+					unsigned short brushType = m == SDL_BUTTON_LEFT ?
+						brush.MainType : brush.SecondaryType;
 					assert(CampaignGetCurrentMission(&gCampaign)->Type ==
 						MAPTYPE_STATIC && "Invalid map type");
 					MissionSetTile(
 						CampaignGetCurrentMission(&gCampaign),
 						mouseTile,
-						brush.brushType);
+						brushType);
 					fileChanged = 1;
 					Setup(0);
 				}
