@@ -58,9 +58,92 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	m->Type = type;
 }
 
+static int IsClear(unsigned short tile)
+{
+	return tile == MAP_FLOOR || tile == MAP_ROOM || tile == MAP_SQUARE;
+}
+static unsigned short GetTileAt(Mission *m, Vec2i pos)
+{
+	int index = pos.y * m->Size.x + pos.x;
+	// check for out-of-bounds
+	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
+	{
+		return MAP_NOTHING;
+	}
+	return *(unsigned short *)CArrayGet(&m->u.StaticTiles, index);
+}
+// See if the tile located at a position is a door and also needs
+// to be oriented in a certain way
+// If there are walls or doors in the neighbourhood, they can force a certain
+// orientation of the door
+static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
+{
+	unsigned short tile = GetTileAt(m, pos);
+	if (tile != MAP_DOOR)
+	{
+		return 0;
+	}
+	// Check for walls and doors that force the orientation of the door
+	if (GetTileAt(m, Vec2iNew(pos.x - 1, pos.y)) == MAP_WALL ||
+		GetTileAt(m, Vec2iNew(pos.x - 1, pos.y)) == MAP_DOOR ||
+		GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)) == MAP_WALL ||
+		GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)) == MAP_DOOR)
+	{
+		// There is a horizontal door
+		return isHorizontal;
+	}
+	else if (GetTileAt(m, Vec2iNew(pos.x, pos.y - 1)) == MAP_WALL ||
+		GetTileAt(m, Vec2iNew(pos.x, pos.y - 1)) == MAP_DOOR ||
+		GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)) == MAP_WALL ||
+		GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)) == MAP_DOOR)
+	{
+		// There is a vertical door
+		return !isHorizontal;
+	}
+	// There is a door but it is free to be oriented in any way
+	return 0;
+}
 void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 {
 	int index = pos.y * m->Size.x + pos.x;
 	assert(m->Type == MAPTYPE_STATIC && "cannot set tile for map type");
+	switch (tile)
+	{
+	case MAP_WALL:
+		// Check that there are no incompatible doors
+		if (HasDoorOrientedAt(m, Vec2iNew(pos.x - 1, pos.y), 0) ||
+			HasDoorOrientedAt(m, Vec2iNew(pos.x + 1, pos.y), 0) ||
+			HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y - 1), 1) ||
+			HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
+		{
+			// Can't place this wall
+			return;
+		}
+		break;
+	case MAP_DOOR:
+		{
+			// Check that there is a clear passage through this door
+			int isHClear =
+				IsClear(GetTileAt(m, Vec2iNew(pos.x - 1, pos.y))) &&
+				IsClear(GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)));
+			int isVClear =
+				IsClear(GetTileAt(m, Vec2iNew(pos.x, pos.y - 1))) &&
+				IsClear(GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)));
+			if (!isHClear && !isVClear)
+			{
+				return;
+			}
+			// Check that there are no incompatible doors
+			if (HasDoorOrientedAt(m, Vec2iNew(pos.x - 1, pos.y), 0) ||
+				HasDoorOrientedAt(m, Vec2iNew(pos.x + 1, pos.y), 0) ||
+				HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y - 1), 1) ||
+				HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
+			{
+				// Can't place this door
+				return;
+			}
+		}
+		break;
+	}
 	*(unsigned short *)CArrayGet(&m->u.StaticTiles, index) = tile;
 }

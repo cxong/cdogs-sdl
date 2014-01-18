@@ -190,6 +190,10 @@ static Vec2i GuessPixelCoords(struct MissionOptions *mo)
 
 unsigned short IMapGet(Map *map, Vec2i pos)
 {
+	if (pos.x < 0 || pos.x >= XMAX || pos.y < 0 || pos.y >= YMAX)
+	{
+		return MAP_NOTHING;
+	}
 	return map->iMap[pos.y][pos.x];
 }
 void IMapSet(Map *map, Vec2i pos, unsigned short v)
@@ -920,8 +924,11 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
 		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 	struct DoorPic *dp;
-	unsigned short neighbourTile = IMapGet(map, Vec2iNew(v.x - 1, v.y));
-	int isHorizontal = neighbourTile == MAP_WALL;
+	int isHorizontal =
+		IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_WALL ||
+		IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_DOOR ||
+		IMapGet(map, Vec2iNew(v.x + 1, v.y)) == MAP_WALL ||
+		IMapGet(map, Vec2iNew(v.x + 1, v.y)) == MAP_DOOR;
 	int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
 	Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	Vec2i dAside = Vec2iNew(dv.y, dv.x);
