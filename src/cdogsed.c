@@ -82,6 +82,7 @@
 
 // Mouse click areas:
 static UIObject *sObjs;
+Vec2i sUIOverlaySize = { 320, 240 };
 
 
 // Globals
@@ -189,7 +190,7 @@ static void MakeBackground(GraphicsDevice *g)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, tintDarker, 1);
+	GrafxMakeBackground(g, tintNone, 1);
 }
 
 static void Display(int yc, int willDisplayAutomap)
@@ -203,6 +204,7 @@ static void Display(int yc, int willDisplayAutomap)
 
 	if (mission)
 	{
+		Vec2i v;
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
@@ -211,9 +213,20 @@ static void Display(int yc, int willDisplayAutomap)
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
 		{
 			SwapCursorTile();
-			GrafxDrawBackground(&gGraphicsDevice, tintDarker);
+			GrafxDrawBackground(&gGraphicsDevice, tintNone);
 		}
 		GraphicsBlitBkg(&gGraphicsDevice);
+		// Draw overlay
+		for (v.y = 0; v.y < sUIOverlaySize.y; v.y++)
+		{
+			for (v.x = 0; v.x < sUIOverlaySize.x; v.x++)
+			{
+				if (v.x < w && v.y < h)
+				{
+					DrawPointTint(&gGraphicsDevice, v, tintDarker);
+				}
+			}
+		}
 		sprintf(
 			s, "Mission %d/%d",
 			gCampaign.MissionIndex + 1, gCampaign.Setting.Missions.size);
@@ -867,10 +880,14 @@ static void HandleInput(
 			}
 		}
 	}
-	if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
-		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT))
+	if (!o &&
+		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
+		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)))
 	{
-		if (brush.IsActive && mission && mission->Type == MAPTYPE_STATIC)
+		if (brush.IsActive &&
+			(gEventHandlers.mouse.currentPos.x >= sUIOverlaySize.x ||
+			gEventHandlers.mouse.currentPos.y >= sUIOverlaySize.y) &&
+			mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
 			if (IsBrushPosValid(brush.Pos, mission))

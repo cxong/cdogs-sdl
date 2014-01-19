@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@ color_t ColorAlphaBlend(color_t a, color_t b)
 	return a;
 }
 
+HSV tintNone = { -1.0, 1.0, 1.0 };
 HSV tintRed = { 0.0, 1.0, 1.0 };
 HSV tintGreen = { 120.0, 1.0, 1.0 };
 HSV tintPoison = { 120.0, 0.33, 2.0 };
