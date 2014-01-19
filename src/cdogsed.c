@@ -87,8 +87,7 @@ static UIObject *sObjs;
 // Globals
 
 static char lastFile[CDOGS_PATH_MAX];
-static EditorBrush brush = { MAP_WALL, MAP_FLOOR, 0 };
-static Vec2i sCursorTilePos = { -1, -1 };
+static EditorBrush brush = { MAP_WALL, MAP_FLOOR, 0, 0, { -1, -1 }, { -1, -1 } };
 static Tile sCursorTile;
 
 
@@ -96,35 +95,53 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 {
 	int w = g->cachedConfig.ResolutionWidth;
 	int h = g->cachedConfig.ResolutionHeight;
-	Vec2i mapSize = Vec2iNew(
-		CampaignGetCurrentMission(&gCampaign)->Size.x * TILE_WIDTH,
-		CampaignGetCurrentMission(&gCampaign)->Size.y * TILE_HEIGHT);
-	Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
-	return Vec2iNew(
-		(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
-		(e->mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
+	Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (!m)
+	{
+		return Vec2iNew(-1, -1);
+	}
+	else
+	{
+		Vec2i mapSize = Vec2iNew(
+			m->Size.x * TILE_WIDTH, m->Size.y * TILE_HEIGHT);
+		Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
+		return Vec2iNew(
+			(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
+			(e->mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
+	}
 }
 
-static void SwapCursorTile(Vec2i mouseTile)
+static int IsBrushPosValid(Vec2i pos, Mission *m)
+{
+	return pos.x >= 0 && pos.x < m->Size.x &&
+		pos.y >= 0 && pos.y < m->Size.y;
+}
+
+static void SwapCursorTile(void)
 {
 	Tile *t;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
+	static Vec2i lastSwapPos = { -1, -1 };
 
 	// Draw the cursor tile by replacing it with the map tile at the
 	// cursor position
 	// If moving to a new tile, restore the last tile,
 	// and swap with the new tile
-	if (sCursorTilePos.x >= 0 && sCursorTilePos.y >= 0)
+	if (IsBrushPosValid(lastSwapPos, mission))
 	{
 		// restore
 		memcpy(
-			MapGetTile(&gMap, sCursorTilePos),
+			MapGetTile(&gMap, lastSwapPos),
 			&sCursorTile,
 			sizeof sCursorTile);
 	}
 	// swap
-	sCursorTilePos = mouseTile;
-	t = MapGetTile(&gMap, sCursorTilePos);
+	if (!IsBrushPosValid(brush.Pos, mission))
+	{
+		return;
+	}
+	lastSwapPos = brush.Pos;
+	t = MapGetTile(&gMap, lastSwapPos);
 	memcpy(&sCursorTile, t, sizeof sCursorTile);
 	// Set cursor tile properties
 	switch (brush.MainType)
@@ -186,18 +203,14 @@ static void Display(int yc, int willDisplayAutomap)
 
 	if (mission)
 	{
-		Vec2i mouseTile = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
-		int isMouseTileValid =
-			mouseTile.x >= 0 && mouseTile.x < mission->Size.x &&
-			mouseTile.y >= 0 && mouseTile.y < mission->Size.y;
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
 			MakeBackground(&gGraphicsDevice);
 		}
-		if (brush.IsActive && isMouseTileValid)
+		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
 		{
-			SwapCursorTile(mouseTile);
+			SwapCursorTile();
 			GrafxDrawBackground(&gGraphicsDevice, tintDarker);
 		}
 		GraphicsBlitBkg(&gGraphicsDevice);
@@ -207,9 +220,9 @@ static void Display(int yc, int willDisplayAutomap)
 		DrawTextStringMasked(
 			s, &gGraphicsDevice, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-		if (isMouseTileValid)
+		if (brush.LastPos.x)
 		{
-			sprintf(s, "(%d, %d)", mouseTile.x, mouseTile.y);
+			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
 			DrawTextString(s, &gGraphicsDevice, Vec2iNew(w - 40, h - 16));
 		}
 	}
@@ -578,7 +591,6 @@ static void Setup(int buildTables)
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
 	MakeBackground(&gGraphicsDevice);
-	sCursorTilePos = Vec2iNew(-1, -1);
 	sCursorTile = TileNone();
 }
 
@@ -812,6 +824,7 @@ static void HandleInput(
 {
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
+	brush.Pos = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
 	if (m)
 	{
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
@@ -848,37 +861,70 @@ static void HandleInput(
 		}
 		else
 		{
-			if (brush.IsActive && mission)
-			{
-				// Draw a tile
-				Vec2i mouseTile = GetMouseTile(
-					&gGraphicsDevice, &gEventHandlers);
-				int isMouseTileValid =
-					mouseTile.x >= 0 && mouseTile.x < mission->Size.x &&
-					mouseTile.y >= 0 && mouseTile.y < mission->Size.y;
-				if (isMouseTileValid)
-				{
-					unsigned short brushType = m == SDL_BUTTON_LEFT ?
-						brush.MainType : brush.SecondaryType;
-					assert(CampaignGetCurrentMission(&gCampaign)->Type ==
-						MAPTYPE_STATIC && "Invalid map type");
-					MissionSetTile(
-						CampaignGetCurrentMission(&gCampaign),
-						mouseTile,
-						brushType);
-					fileChanged = 1;
-					Setup(0);
-				}
-				else
-				{
-					UIObjectUnhighlight(sObjs);
-				}
-			}
-			else
+			if (!(brush.IsActive && mission))
 			{
 				UIObjectUnhighlight(sObjs);
 			}
 		}
+	}
+	if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
+		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT))
+	{
+		if (brush.IsActive && mission && mission->Type == MAPTYPE_STATIC)
+		{
+			// Draw a tile
+			if (IsBrushPosValid(brush.Pos, mission))
+			{
+				unsigned short brushType =
+					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ?
+					brush.MainType : brush.SecondaryType;
+				// Draw tiles between the last point and the current point
+				if (brush.IsPainting)
+				{
+					// Bresenham's line algorithm
+					Vec2i d = Vec2iNew(
+						abs(brush.Pos.x - brush.LastPos.x),
+						abs(brush.Pos.y - brush.LastPos.y));
+					Vec2i s = Vec2iNew(
+						brush.LastPos.x < brush.Pos.x ? 1 : -1,
+						brush.LastPos.y < brush.Pos.y ? 1 : -1);
+					int err = d.x - d.y;
+					Vec2i v = brush.LastPos;
+					for (;;)
+					{
+						int e2 = 2 * err;
+						if (Vec2iEqual(v, brush.Pos))
+						{
+							break;
+						}
+						MissionSetTile(mission, v, brushType);
+						if (e2 > -d.y)
+						{
+							err -= d.y;
+							v.x += s.x;
+						}
+						if (Vec2iEqual(v, brush.Pos))
+						{
+							break;
+						}
+						if (e2 < d.x)
+						{
+							err += d.x;
+							v.y += s.y;
+						}
+					}
+				}
+				MissionSetTile(mission, brush.Pos, brushType);
+				brush.IsPainting = 1;
+				brush.LastPos = brush.Pos;
+				fileChanged = 1;
+				Setup(0);
+			}
+		}
+	}
+	else
+	{
+		brush.IsPainting = 0;
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{

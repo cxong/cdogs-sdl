@@ -85,6 +85,34 @@ static void CheckMission(
 	}
 	o->IsVisible = 1;
 }
+static void MissionCheckTypeClassic(
+	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+{
+	Mission *m = CampaignGetCurrentMission(co);
+	UNUSED(g);
+	if (!m || m->Type != MAPTYPE_CLASSIC)
+	{
+		o->IsVisible = 0;
+		// Need to unhighlight to prevent children being drawn
+		UIObjectUnhighlight(o);
+		return;
+	}
+	o->IsVisible = 1;
+}
+static void MissionCheckTypeStatic(
+	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+{
+	Mission *m = CampaignGetCurrentMission(co);
+	UNUSED(g);
+	if (!m || m->Type != MAPTYPE_STATIC)
+	{
+		o->IsVisible = 0;
+		// Need to unhighlight to prevent children being drawn
+		UIObjectUnhighlight(o);
+		return;
+	}
+	o->IsVisible = 1;
+}
 static char *MissionGetTitle(UIObject *o, CampaignOptions *co)
 {
 	UNUSED(o);
@@ -290,6 +318,14 @@ static char *MissionGetDensityStr(UIObject *o, CampaignOptions *co)
 	UNUSED(o);
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Dens: %d", CampaignGetCurrentMission(co)->EnemyDensity);
+	return s;
+}
+static char *MissionGetTypeStr(UIObject *o, CampaignOptions *co)
+{
+	static char s[128];
+	UNUSED(o);
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "Type: %s", MapTypeStr(CampaignGetCurrentMission(co)->Type));
 	return s;
 }
 static void MissionDrawWallStyle(
@@ -1150,7 +1186,8 @@ static void DeactivateBrush(BrushData *data)
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
 static UIObject *CreateMissionObjs(CampaignOptions *co);
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co);
-static UIObject *CreateStaticMapObjs(Vec2i pos, EditorBrush *brush);
+static UIObject *CreateStaticMapObjs(
+	Vec2i pos, CampaignOptions *co, EditorBrush *brush);
 static UIObject *CreateWeaponObjs(CampaignOptions *co);
 static UIObject *CreateMapItemObjs(CampaignOptions *co);
 static UIObject *CreateCharacterObjs(CampaignOptions *co);
@@ -1241,15 +1278,17 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	UIObjectAddChild(c, o2);
 
 	pos.x += 40;
-	o2 = UIObjectCreate(UITYPE_TAB, 0, pos, Vec2iNew(50, th));
-	// Properties for classic C-Dogs maps
-	pos.x = 20;
-	pos.y += th;
-	UITabAddChild(o2, CreateClassicMapObjs(pos, co), "Type: Classic+");
-	UITabAddChild(o2, CreateStaticMapObjs(pos, brush), "Type: Static");
+	o2 = UIObjectCopy(o);
+	o2->Size.x = 50;
+	o2->u.LabelFunc = MissionGetTypeStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeType;
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
+	pos.x = 20;
+	pos.y += th;
+	UIObjectAddChild(c, CreateClassicMapObjs(pos, co));
+	UIObjectAddChild(c, CreateStaticMapObjs(pos, co, brush));
 
 	// Mission looks
 	// wall/floor styles etc.
@@ -1501,13 +1540,18 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 {
 	int th = CDogsTextHeight();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	int x = pos.x;
+	UIObject *o2;
 	o->ChangesData = 1;
+	// Use a custom UIObject to check whether the map type matches,
+	// and set visibility
+	c->u.CustomDrawFunc = MissionCheckTypeClassic;
+	c->Data = co;
 
-	UIObject *o2 = UIObjectCopy(o);
+	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = CampaignGetSeedStr;
 	o2->Data = co;
 	o2->ChangeFunc = CampaignChangeSeed;
@@ -1654,13 +1698,18 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 
 	return c;
 }
-static UIObject *CreateStaticMapObjs(Vec2i pos, EditorBrush *brush)
+static UIObject *CreateStaticMapObjs(
+	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
 	int th = CDogsTextHeight();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	UIObject *o2;
+	// Use a custom UIObject to check whether the map type matches,
+	// and set visibility
+	c->u.CustomDrawFunc = MissionCheckTypeStatic;
+	c->Data = co;
 
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = GetBrushStr;

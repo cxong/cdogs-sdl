@@ -130,6 +130,9 @@ typedef struct
 	unsigned short MainType;
 	unsigned short SecondaryType;
 	int IsActive;
+	int IsPainting;
+	Vec2i LastPos;
+	Vec2i Pos;
 } EditorBrush;
 
 
