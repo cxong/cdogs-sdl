@@ -831,15 +831,21 @@ static void HandleInput(
 			{
 				int isMain =
 					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT);
-				EditorBrushPaintTiles(&brush, mission, isMain);
-				fileChanged = 1;
-				Setup(0);
+				if (EditorBrushStartPainting(&brush, mission, isMain))
+				{
+					fileChanged = 1;
+					Setup(0);
+				}
 			}
 		}
 	}
 	else
 	{
-		brush.IsPainting = 0;
+		if (EditorBrushStopPainting(&brush, mission))
+		{
+			fileChanged = 1;
+			Setup(0);
+		}
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{

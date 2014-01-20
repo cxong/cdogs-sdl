@@ -32,10 +32,20 @@
 #include <cdogs/mission.h>
 #include <cdogs/vector.h>
 
+typedef enum
+{
+	BRUSHTYPE_POINT,
+	BRUSHTYPE_LINE
+} BrushType;
+const char *BrushTypeStr(BrushType t);
+BrushType StrBrushType(const char *s);
+
 typedef struct
 {
+	BrushType Type;
 	unsigned short MainType;
 	unsigned short SecondaryType;
+	unsigned short PaintType;
 	int IsActive;
 	int IsPainting;
 	int BrushSize;
@@ -48,6 +58,7 @@ void EditorBrushInit(EditorBrush *b);
 void EditorBrushTerminate(EditorBrush *b);
 
 void EditorBrushSetHighlightedTiles(EditorBrush *b);
-void EditorBrushPaintTiles(EditorBrush *b, Mission *m, int isMain);
+int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
+int EditorBrushStopPainting(EditorBrush *b, Mission *m);
 
 #endif

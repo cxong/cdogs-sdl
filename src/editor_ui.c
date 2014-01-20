@@ -769,6 +769,13 @@ static char *BrushGetSizeStr(UIObject *o, EditorBrush *brush)
 	sprintf(s, "Brush Size: %d", brush->BrushSize);
 	return s;
 }
+static char *BrushGetBrushTypeStr(UIObject *o, EditorBrush *brush)
+{
+	static char s[128];
+	UNUSED(o);
+	sprintf(s, "Brush Type: %s", BrushTypeStr(brush->Type));
+	return s;
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -1194,6 +1201,10 @@ static void BrushChangeSecondaryType(EditorBrush *b, int d)
 static void BrushChangeSize(EditorBrush *b, int d)
 {
 	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
+}
+static void BrushChangeBrushType(EditorBrush *b, int d)
+{
+	b->Type = CLAMP_OPPOSITE(b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_LINE);
 }
 static void ActivateBrush(EditorBrush *b)
 {
@@ -1727,7 +1738,7 @@ static UIObject *CreateStaticMapObjs(
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(70, th));
 	UIObject *o2;
 	// Use a custom UIObject to check whether the map type matches,
 	// and set visibility
@@ -1762,7 +1773,15 @@ static UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeSize;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
-	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = BrushGetBrushTypeStr;
+	o2->Data = brush;
+	o2->ChangeFunc = BrushChangeBrushType;
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

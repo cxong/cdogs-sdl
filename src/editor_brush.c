@@ -27,14 +27,49 @@
 */
 #include "editor_brush.h"
 
+#include <assert.h>
+
 #include <cdogs/map.h>
 #include <cdogs/mission_convert.h>
 
 
+const char *BrushTypeStr(BrushType t)
+{
+	switch (t)
+	{
+	case BRUSHTYPE_POINT:
+		return "Point";
+	case BRUSHTYPE_LINE:
+		return "Line";
+	default:
+		assert(0 && "unknown brush type");
+		return "";
+	}
+}
+BrushType StrBrushType(const char *s)
+{
+	if (strcmp(s, "Point") == 0)
+	{
+		return BRUSHTYPE_POINT;
+	}
+	else if (strcmp(s, "Line") == 0)
+	{
+		return BRUSHTYPE_LINE;
+	}
+	else
+	{
+		assert(0 && "unknown brush type");
+		return BRUSHTYPE_POINT;
+	}
+}
+
+
 void EditorBrushInit(EditorBrush *b)
 {
+	b->Type = BRUSHTYPE_POINT;
 	b->MainType = MAP_WALL;
 	b->SecondaryType = MAP_FLOOR;
+	b->PaintType = b->MainType;
 	b->IsActive = 0;
 	b->IsPainting = 0;
 	b->BrushSize = 1;
@@ -47,22 +82,82 @@ void EditorBrushTerminate(EditorBrush *b)
 	CArrayTerminate(&b->HighlightedTiles);
 }
 
-void EditorBrushSetHighlightedTiles(EditorBrush *b)
+static void BresenhamLine(
+	EditorBrush *b, Vec2i start, Vec2i end,
+	void (*func)(EditorBrush *, Vec2i, void *), void *data)
+{
+	// Bresenham's line algorithm
+	Vec2i d = Vec2iNew(abs(end.x - start.x), abs(end.y - start.y));
+	Vec2i s = Vec2iNew(start.x < end.x ? 1 : -1, start.y < end.y ? 1 : -1);
+	int err = d.x - d.y;
+	Vec2i v = start;
+	for (;;)
+	{
+		int e2 = 2 * err;
+		if (Vec2iEqual(v, end))
+		{
+			break;
+		}
+		func(b, v, data);
+		if (e2 > -d.y)
+		{
+			err -= d.y;
+			v.x += s.x;
+		}
+		if (Vec2iEqual(v, end))
+		{
+			break;
+		}
+		if (e2 < d.x)
+		{
+			err += d.x;
+			v.y += s.y;
+		}
+	}
+	func(b, end, data);
+}
+
+static void EditorBrushHighlightPoint(EditorBrush *b, Vec2i p, void *data)
 {
 	Vec2i v;
-	CArrayClear(&b->HighlightedTiles);
+	UNUSED(data);
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
-			Vec2i pos = Vec2iAdd(b->Pos, v);
+			Vec2i pos = Vec2iAdd(p, v);
 			CArrayPushBack(&b->HighlightedTiles, &pos);
 		}
 	}
 }
+void EditorBrushSetHighlightedTiles(EditorBrush *b)
+{
+	int useSimpleHighlight = 1;
+	switch (b->Type)
+	{
+	case BRUSHTYPE_POINT:
+		useSimpleHighlight = 1;
+		break;
+	case BRUSHTYPE_LINE:
+		if (b->IsPainting)
+		{
+			useSimpleHighlight = 0;
+			// highlight a line
+			CArrayClear(&b->HighlightedTiles);
+			BresenhamLine(
+				b, b->LastPos, b->Pos, EditorBrushHighlightPoint, NULL);
+		}
+		break;
+	}
+	if (useSimpleHighlight)
+	{
+		// Simple highlight at brush tip based on brush size
+		CArrayClear(&b->HighlightedTiles);
+		EditorBrushHighlightPoint(b, b->Pos, NULL);
+	}
+}
 
-static void EditorBrushPaintTilesAt(
-	EditorBrush *b, Mission *m, Vec2i pos, unsigned short tileType)
+static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, Mission *m)
 {
 	Vec2i v;
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
@@ -70,49 +165,56 @@ static void EditorBrushPaintTilesAt(
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
 			Vec2i paintPos = Vec2iAdd(pos, v);
-			MissionSetTile(m, paintPos, tileType);
+			MissionSetTile(m, paintPos, b->PaintType);
 		}
 	}
 }
-void EditorBrushPaintTiles(EditorBrush *b, Mission *m, int isMain)
+static void EditorBrushPaintTiles(EditorBrush *b, Mission *m)
 {
-	unsigned short tileType = isMain ? b->MainType : b->SecondaryType;
 	// Draw tiles between the last point and the current point
 	if (b->IsPainting)
 	{
-		// Bresenham's line algorithm
-		Vec2i d = Vec2iNew(
-			abs(b->Pos.x - b->LastPos.x), abs(b->Pos.y - b->LastPos.y));
-		Vec2i s = Vec2iNew(
-			b->LastPos.x < b->Pos.x ? 1 : -1,
-			b->LastPos.y < b->Pos.y ? 1 : -1);
-		int err = d.x - d.y;
-		Vec2i v = b->LastPos;
-		for (;;)
-		{
-			int e2 = 2 * err;
-			if (Vec2iEqual(v, b->Pos))
-			{
-				break;
-			}
-			EditorBrushPaintTilesAt(b, m, v, tileType);
-			if (e2 > -d.y)
-			{
-				err -= d.y;
-				v.x += s.x;
-			}
-			if (Vec2iEqual(v, b->Pos))
-			{
-				break;
-			}
-			if (e2 < d.x)
-			{
-				err += d.x;
-				v.y += s.y;
-			}
-		}
+		BresenhamLine(b, b->LastPos, b->Pos, EditorBrushPaintTilesAt, m);
 	}
-	EditorBrushPaintTilesAt(b, m, b->Pos, tileType);
+	EditorBrushPaintTilesAt(b, b->Pos, m);
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
+}
+int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
+{
+	if (!b->IsPainting)
+	{
+		b->LastPos = b->Pos;
+	}
+	b->IsPainting = 1;
+	b->PaintType = isMain ? b->MainType : b->SecondaryType;
+	switch (b->Type)
+	{
+	case BRUSHTYPE_POINT:
+		EditorBrushPaintTiles(b, m);
+		return 1;
+	case BRUSHTYPE_LINE:
+		// don't paint until the end
+		break;
+	default:
+		assert(0 && "unknown brush type");
+		break;
+	}
+	return 0;
+}
+int EditorBrushStopPainting(EditorBrush *b, Mission *m)
+{
+	int hasPainted = 0;
+	if (b->IsPainting)
+	{
+		switch (b->Type)
+		{
+		case BRUSHTYPE_LINE:
+			EditorBrushPaintTiles(b, m);
+			hasPainted = 1;
+			break;
+		}
+	}
+	b->IsPainting = 0;
+	return hasPainted;
 }
