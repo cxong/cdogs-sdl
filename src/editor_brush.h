@@ -35,7 +35,9 @@
 typedef enum
 {
 	BRUSHTYPE_POINT,
-	BRUSHTYPE_LINE
+	BRUSHTYPE_LINE,
+	BRUSHTYPE_BOX,
+	BRUSHTYPE_BOX_FILLED
 } BrushType;
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);

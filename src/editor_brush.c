@@ -41,6 +41,10 @@ const char *BrushTypeStr(BrushType t)
 		return "Point";
 	case BRUSHTYPE_LINE:
 		return "Line";
+	case BRUSHTYPE_BOX:
+		return "Box";
+	case BRUSHTYPE_BOX_FILLED:
+		return "Box Filled";
 	default:
 		assert(0 && "unknown brush type");
 		return "";
@@ -55,6 +59,14 @@ BrushType StrBrushType(const char *s)
 	else if (strcmp(s, "Line") == 0)
 	{
 		return BRUSHTYPE_LINE;
+	}
+	else if (strcmp(s, "Box") == 0)
+	{
+		return BRUSHTYPE_BOX;
+	}
+	else if (strcmp(s, "Box Filled") == 0)
+	{
+		return BRUSHTYPE_BOX_FILLED;
 	}
 	else
 	{
@@ -148,6 +160,46 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				b, b->LastPos, b->Pos, EditorBrushHighlightPoint, NULL);
 		}
 		break;
+	case BRUSHTYPE_BOX:
+		if (b->IsPainting)
+		{
+			Vec2i v;
+			Vec2i d = Vec2iNew(
+				b->Pos.x > b->LastPos.x ? 1 : -1,
+				b->Pos.y > b->LastPos.y ? 1 : -1);
+			useSimpleHighlight = 0;
+			CArrayClear(&b->HighlightedTiles);
+			for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+			{
+				for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+				{
+					if (v.x == b->LastPos.x || v.x == b->Pos.x ||
+						v.y == b->LastPos.y || v.y == b->Pos.y)
+					{
+						EditorBrushHighlightPoint(b, v, NULL);
+					}
+				}
+			}
+		}
+		break;
+	case BRUSHTYPE_BOX_FILLED:
+		if (b->IsPainting)
+		{
+			Vec2i v;
+			Vec2i d = Vec2iNew(
+				b->Pos.x > b->LastPos.x ? 1 : -1,
+				b->Pos.y > b->LastPos.y ? 1 : -1);
+			useSimpleHighlight = 0;
+			CArrayClear(&b->HighlightedTiles);
+			for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+			{
+				for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+				{
+					EditorBrushHighlightPoint(b, v, NULL);
+				}
+			}
+		}
+		break;
 	}
 	if (useSimpleHighlight)
 	{
@@ -169,7 +221,7 @@ static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, Mission *m)
 		}
 	}
 }
-static void EditorBrushPaintTiles(EditorBrush *b, Mission *m)
+static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 {
 	// Draw tiles between the last point and the current point
 	if (b->IsPainting)
@@ -191,9 +243,11 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	switch (b->Type)
 	{
 	case BRUSHTYPE_POINT:
-		EditorBrushPaintTiles(b, m);
+		EditorBrushPaintLine(b, m);
 		return 1;
-	case BRUSHTYPE_LINE:
+	case BRUSHTYPE_LINE:	// fallthrough
+	case BRUSHTYPE_BOX:	// fallthrough
+	case BRUSHTYPE_BOX_FILLED:
 		// don't paint until the end
 		break;
 	default:
@@ -210,11 +264,48 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 		switch (b->Type)
 		{
 		case BRUSHTYPE_LINE:
-			EditorBrushPaintTiles(b, m);
+			EditorBrushPaintLine(b, m);
 			hasPainted = 1;
+			break;
+		case BRUSHTYPE_BOX:
+			{
+				Vec2i v;
+				Vec2i d = Vec2iNew(
+					b->Pos.x > b->LastPos.x ? 1 : -1,
+					b->Pos.y > b->LastPos.y ? 1 : -1);
+				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+				{
+					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+					{
+						if (v.x == b->LastPos.x || v.x == b->Pos.x ||
+							v.y == b->LastPos.y || v.y == b->Pos.y)
+						{
+							EditorBrushPaintTilesAt(b, v, m);
+						}
+					}
+				}
+				hasPainted = 1;
+			}
+			break;
+		case BRUSHTYPE_BOX_FILLED:
+			{
+				Vec2i v;
+				Vec2i d = Vec2iNew(
+					b->Pos.x > b->LastPos.x ? 1 : -1,
+					b->Pos.y > b->LastPos.y ? 1 : -1);
+				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+				{
+					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+					{
+						EditorBrushPaintTilesAt(b, v, m);
+					}
+				}
+				hasPainted = 1;
+			}
 			break;
 		}
 	}
 	b->IsPainting = 0;
+	CArrayClear(&b->HighlightedTiles);
 	return hasPainted;
 }

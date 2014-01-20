@@ -1204,7 +1204,8 @@ static void BrushChangeSize(EditorBrush *b, int d)
 }
 static void BrushChangeBrushType(EditorBrush *b, int d)
 {
-	b->Type = CLAMP_OPPOSITE(b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_LINE);
+	b->Type = CLAMP_OPPOSITE(
+		b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_BOX_FILLED);
 }
 static void ActivateBrush(EditorBrush *b)
 {
@@ -1738,7 +1739,7 @@ static UIObject *CreateStaticMapObjs(
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(70, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
 	UIObject *o2;
 	// Use a custom UIObject to check whether the map type matches,
 	// and set visibility
@@ -1783,6 +1784,7 @@ static UIObject *CreateStaticMapObjs(
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
 	o2->Pos = pos;
+	o2->Size.x = 100;
 	UIObjectAddChild(c, o2);
 
 	return c;
