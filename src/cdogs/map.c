@@ -1044,9 +1044,9 @@ static void MapSetupDoors(Map *map, int floor, int room)
 static void MapSetupPerimeter(Map *map)
 {
 	Vec2i v;
-	for (v.y = 0; v.y < map->Size.x; v.y++)
+	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
-		for (v.x = 0; v.x < map->Size.y; v.x++)
+		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
 			if (v.y == 0 || v.y == map->Size.y - 1 ||
 				v.x == 0 || v.x == map->Size.x - 1)
