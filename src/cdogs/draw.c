@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "drawtools.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
@@ -67,7 +68,7 @@ void FixBuffer(DrawBuffer *buffer)
 	tileBelow = &buffer->tiles[0][0] + X_TILES;
 	for (y = 0; y < Y_TILES - 1; y++)
 	{
-		for (x = 0; x < buffer->width; x++, tile++, tileBelow++)
+		for (x = 0; x < buffer->Size.x; x++, tile++, tileBelow++)
 		{
 			if (!(tile->flags & (MAPTILE_IS_WALL |MAPTILE_OFFSET_PIC)) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
@@ -80,14 +81,14 @@ void FixBuffer(DrawBuffer *buffer)
 				tile->flags |= MAPTILE_DELAY_DRAW;
 			}
 		}
-		tile += X_TILES - buffer->width;
-		tileBelow += X_TILES - buffer->width;
+		tile += X_TILES - buffer->Size.x;
+		tileBelow += X_TILES - buffer->Size.x;
 	}
 
 	tile = &buffer->tiles[0][0];
 	for (y = 0; y < Y_TILES; y++)
 	{
-		for (x = 0; x < buffer->width; x++, tile++)
+		for (x = 0; x < buffer->Size.x; x++, tile++)
 		{
 			if (!(tile->flags & MAPTILE_IS_VISIBLE))
 			{
@@ -103,7 +104,7 @@ void FixBuffer(DrawBuffer *buffer)
 				tile->isVisited = 1;
 			}
 		}
-		tile += X_TILES - buffer->width;
+		tile += X_TILES - buffer->Size.x;
 	}
 }
 
@@ -172,7 +173,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 		}
 		SetLineOfSight(buffer, x, y, 1, 0);
 	}
-	for (x = centerTile.x + 2; x < buffer->width; x++)
+	for (x = centerTile.x + 2; x < buffer->Size.x; x++)
 	{
 		if (sightRange2 > 0 &&
 			DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
@@ -199,7 +200,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			}
 			SetLineOfSight(buffer, x, y, 1, 1);
 		}
-		for (x = centerTile.x + 1; x < buffer->width; x++)
+		for (x = centerTile.x + 1; x < buffer->Size.x; x++)
 		{
 			if (sightRange2 > 0 &&
 				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
@@ -227,7 +228,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			}
 			SetLineOfSight(buffer, x, y, 1, -1);
 		}
-		for (x = centerTile.x + 1; x < buffer->width; x++)
+		for (x = centerTile.x + 1; x < buffer->Size.x; x++)
 		{
 			if (sightRange2 > 0 &&
 				DistanceSquared(centerTile, Vec2iNew(x, y)) >= sightRange2)
@@ -282,11 +283,13 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 }
 
 
-void DrawFloor(DrawBuffer *b, Vec2i offset);
-void DrawDebris(DrawBuffer *b, Vec2i offset);
-void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
+static void DrawFloor(DrawBuffer *b, Vec2i offset);
+static void DrawDebris(DrawBuffer *b, Vec2i offset);
+static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
+static void DrawHighlightedTiles(
+	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
 
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset)
+void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawFloor(b, offset);
@@ -294,9 +297,14 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset)
 	DrawDebris(b, offset);
 	// Now draw walls and (non-wreck) things in proper order
 	DrawWallsAndThings(b, offset);
+	// Draw highlight tiles if any
+	if (highlightedTiles)
+	{
+		DrawHighlightedTiles(b, offset, highlightedTiles);
+	}
 }
 
-void DrawFloor(DrawBuffer *b, Vec2i offset)
+static void DrawFloor(DrawBuffer *b, Vec2i offset)
 {
 	int x, y;
 	Vec2i pos;
@@ -306,8 +314,8 @@ void DrawFloor(DrawBuffer *b, Vec2i offset)
 		 y++, pos.y += TILE_HEIGHT)
 	{
 		for (x = 0, pos.x = b->dx + offset.x;
-			 x < b->width;
-			 x++, tile++, pos.x += TILE_WIDTH)
+			x < b->Size.x;
+			x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->pic != NULL && PicIsNotNone(tile->pic) &&
 				!(tile->flags & MAPTILE_IS_WALL))
@@ -320,13 +328,13 @@ void DrawFloor(DrawBuffer *b, Vec2i offset)
 					0);
 			}
 		}
-		tile += X_TILES - b->width;
+		tile += X_TILES - b->Size.x;
 	}
 }
 
-void AddItemToDisplayList(TTileItem * t, TTileItem **list);
+static void AddItemToDisplayList(TTileItem * t, TTileItem **list);
 
-void DrawDebris(DrawBuffer *b, Vec2i offset)
+static void DrawDebris(DrawBuffer *b, Vec2i offset)
 {
 	int x, y;
 	Tile *tile = &b->tiles[0][0];
@@ -334,7 +342,7 @@ void DrawDebris(DrawBuffer *b, Vec2i offset)
 	{
 		TTileItem *displayList = NULL;
 		TTileItem *t;
-		for (x = 0; x < b->width; x++, tile++)
+		for (x = 0; x < b->Size.x; x++, tile++)
 		{
 			for (t = tile->things; t; t = t->next)
 			{
@@ -349,11 +357,11 @@ void DrawDebris(DrawBuffer *b, Vec2i offset)
 			(*(t->drawFunc))(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
 		}
-		tile += X_TILES - b->width;
+		tile += X_TILES - b->Size.x;
 	}
 }
 
-void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
+static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
 	int x, y;
 	Vec2i pos;
@@ -364,7 +372,7 @@ void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		TTileItem *displayList = NULL;
 		TTileItem *t;
 		pos.x = b->dx + cWallOffset.dx + offset.x;
-		for (x = 0; x < b->width; x++, tile++, pos.x += TILE_WIDTH)
+		for (x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->flags & MAPTILE_IS_WALL)
 			{
@@ -396,12 +404,33 @@ void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			(*(t->drawFunc))(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
 		}
-		tile += X_TILES - b->width;
+		tile += X_TILES - b->Size.x;
+	}
+}
+
+static void DrawHighlightedTiles(
+	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
+{
+	int i;
+	for (i = 0; i < (int)highlightedTiles->size; i++)
+	{
+		Vec2i *pos = CArrayGet(highlightedTiles, i);
+		if (pos->x >= b->xStart - 1 && pos->x < b->xStart + b->Size.x &&
+			pos->y >= b->yStart - 1 && pos->y < b->yStart + b->Size.y)
+		{
+			Vec2i drawpos = Vec2iNew(
+				b->dx + offset.x + (pos->x - b->xStart) * TILE_WIDTH,
+				b->dy + offset.y + (pos->y - b->yStart) * TILE_HEIGHT);
+			DrawRectangle(
+				&gGraphicsDevice,
+				drawpos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
+				colorWhite, DRAW_FLAG_LINE);
+		}
 	}
 }
 
 // Add to list to sort by Y and draw in that order
-void AddItemToDisplayList(TTileItem * t, TTileItem **list)
+static void AddItemToDisplayList(TTileItem * t, TTileItem **list)
 {
 	TTileItem *l;
 	TTileItem *lPrev;

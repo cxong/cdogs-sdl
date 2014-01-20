@@ -51,6 +51,7 @@
 
 #include <SDL_video.h>
 
+#include "c_array.h"
 #include "color.h"
 #include "pic_file.h"
 #include "sys_specifics.h"
@@ -113,9 +114,11 @@ void GraphicsInitialize(
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
-void GrafxDrawBackground(GraphicsDevice *device, HSV tint);
+void GrafxDrawBackground(
+	GraphicsDevice *g, HSV tint, CArray *highlightedTiles);
 void GrafxMakeBackground(
-	GraphicsDevice *device, HSV tint, int isEditor, int buildTables);
+	GraphicsDevice *device, HSV tint,
+	int isEditor, int buildTables, CArray *highlightedTiles);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

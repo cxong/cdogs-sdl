@@ -94,6 +94,11 @@ void *CArrayGet(CArray *a, int index)
 	return &((char *)a->data)[index * a->elemSize];
 }
 
+void CArrayClear(CArray *a)
+{
+	a->size = 0;
+}
+
 void CArrayTerminate(CArray *a)
 {
 	if (!a)

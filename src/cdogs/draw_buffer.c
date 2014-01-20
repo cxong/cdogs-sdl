@@ -71,7 +71,7 @@ void DrawBufferSetFromMap(
 	int x, y;
 	Tile *bufTile;
 
-	buffer->width = width;
+	buffer->Size = Vec2iNew(width, tilesXY.y);
 
 	buffer->xTop = origin.x - TILE_WIDTH * width / 2;
 	//buffer->yTop = y_origin - 100;
@@ -92,10 +92,10 @@ void DrawBufferSetFromMap(
 	buffer->dy = buffer->yStart * TILE_HEIGHT - buffer->yTop;
 
 	bufTile = &buffer->tiles[0][0];
-	for (y = buffer->yStart; y < buffer->yStart + tilesXY.y; y++)
+	for (y = buffer->yStart; y < buffer->yStart + buffer->Size.y; y++)
 	{
 		for (x = buffer->xStart;
-			x < buffer->xStart + buffer->width;
+			x < buffer->xStart + buffer->Size.x;
 			x++, bufTile++)
 		{
 			if (x >= 0 && x < gMap.Size.x && y >= 0 && y < gMap.Size.y)
@@ -107,6 +107,6 @@ void DrawBufferSetFromMap(
 				*bufTile = TileNone();
 			}
 		}
-		bufTile += tilesXY.x - buffer->width;
+		bufTile += tilesXY.x - buffer->Size.x;
 	}
 }

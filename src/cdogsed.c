@@ -88,7 +88,7 @@ Vec2i sUIOverlaySize = { 320, 240 };
 // Globals
 
 static char lastFile[CDOGS_PATH_MAX];
-static EditorBrush brush = { MAP_WALL, MAP_FLOOR, 0, 0, { -1, -1 }, { -1, -1 } };
+static EditorBrush brush;
 static Tile sCursorTile;
 
 
@@ -118,70 +118,6 @@ static int IsBrushPosValid(Vec2i pos, Mission *m)
 		pos.y >= 0 && pos.y < m->Size.y;
 }
 
-static void SwapCursorTile(void)
-{
-	Tile *t;
-	Mission *mission = CampaignGetCurrentMission(&gCampaign);
-	static Vec2i lastSwapPos = { -1, -1 };
-
-	// Draw the cursor tile by replacing it with the map tile at the
-	// cursor position
-	// If moving to a new tile, restore the last tile,
-	// and swap with the new tile
-	if (IsBrushPosValid(lastSwapPos, mission))
-	{
-		// restore
-		memcpy(
-			MapGetTile(&gMap, lastSwapPos),
-			&sCursorTile,
-			sizeof sCursorTile);
-	}
-	// swap
-	if (!IsBrushPosValid(brush.Pos, mission))
-	{
-		return;
-	}
-	lastSwapPos = brush.Pos;
-	t = MapGetTile(&gMap, lastSwapPos);
-	memcpy(&sCursorTile, t, sizeof sCursorTile);
-	// Set cursor tile properties
-	switch (brush.MainType)
-	{
-	case MAP_FLOOR:
-		t->pic = PicManagerGetFromOld(
-			&gPicManager, cFloorPics[mission->FloorStyle][FLOOR_NORMAL]);
-		t->picAlt = picNone;
-		break;
-	case MAP_WALL:
-		t->pic = PicManagerGetFromOld(
-			&gPicManager, cWallPics[mission->WallStyle][WALL_SINGLE]);
-		t->picAlt = picNone;
-		t->flags = MAPTILE_IS_WALL;
-		break;
-	case MAP_DOOR:
-		t->pic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[mission->RoomStyle][ROOMFLOOR_NORMAL]);
-		PicFromPicPalettedOffset(
-			&gGraphicsDevice,
-			&t->picAlt,
-			PicManagerGetOldPic(
-			&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
-			&cGeneralPics[gMission.doorPics[0].horzPic]);
-		t->flags = MAPTILE_OFFSET_PIC;
-		break;
-	case MAP_ROOM:
-		t->pic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[mission->RoomStyle][ROOMFLOOR_NORMAL]);
-		t->picAlt = picNone;
-		break;
-	default:
-		assert(0 && "invalid brush type");
-		break;
-	}
-	t->isVisited = 1;
-	t->things = NULL;
-}
-
 static void MakeBackground(GraphicsDevice *g, int buildTables)
 {
 	int i;
@@ -190,7 +126,7 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, tintNone, 1, buildTables);
+	GrafxMakeBackground(g, tintNone, 1, buildTables, &brush.HighlightedTiles);
 }
 
 static void Display(int yc, int willDisplayAutomap)
@@ -212,8 +148,9 @@ static void Display(int yc, int willDisplayAutomap)
 		}
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
 		{
-			SwapCursorTile();
-			GrafxDrawBackground(&gGraphicsDevice, tintNone);
+			EditorBrushSetHighlightedTiles(&brush);
+			GrafxDrawBackground(
+				&gGraphicsDevice, tintNone, &brush.HighlightedTiles);
 		}
 		GraphicsBlitBkg(&gGraphicsDevice);
 		// Draw overlay
@@ -892,48 +829,9 @@ static void HandleInput(
 			// Draw a tile
 			if (IsBrushPosValid(brush.Pos, mission))
 			{
-				unsigned short brushType =
-					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ?
-					brush.MainType : brush.SecondaryType;
-				// Draw tiles between the last point and the current point
-				if (brush.IsPainting)
-				{
-					// Bresenham's line algorithm
-					Vec2i d = Vec2iNew(
-						abs(brush.Pos.x - brush.LastPos.x),
-						abs(brush.Pos.y - brush.LastPos.y));
-					Vec2i s = Vec2iNew(
-						brush.LastPos.x < brush.Pos.x ? 1 : -1,
-						brush.LastPos.y < brush.Pos.y ? 1 : -1);
-					int err = d.x - d.y;
-					Vec2i v = brush.LastPos;
-					for (;;)
-					{
-						int e2 = 2 * err;
-						if (Vec2iEqual(v, brush.Pos))
-						{
-							break;
-						}
-						MissionSetTile(mission, v, brushType);
-						if (e2 > -d.y)
-						{
-							err -= d.y;
-							v.x += s.x;
-						}
-						if (Vec2iEqual(v, brush.Pos))
-						{
-							break;
-						}
-						if (e2 < d.x)
-						{
-							err += d.x;
-							v.y += s.y;
-						}
-					}
-				}
-				MissionSetTile(mission, brush.Pos, brushType);
-				brush.IsPainting = 1;
-				brush.LastPos = brush.Pos;
+				int isMain =
+					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT);
+				EditorBrushPaintTiles(&brush, mission, isMain);
 				fileChanged = 1;
 				Setup(0);
 			}
@@ -1200,6 +1098,7 @@ int main(int argc, char *argv[])
 	BuildTranslationTables(gPicManager.palette);
 	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 
+	EditorBrushInit(&brush);
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush);
@@ -1258,6 +1157,7 @@ int main(int argc, char *argv[])
 	PicManagerTerminate(&gPicManager);
 
 	UIObjectDestroy(sObjs);
+	EditorBrushTerminate(&brush);
 
 	exit(EXIT_SUCCESS);
 }

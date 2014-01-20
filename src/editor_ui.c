@@ -727,17 +727,11 @@ static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 		(flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
 	return s;
 }
-typedef struct
-{
-	EditorBrush *brush;
-	int IsMain;
-} BrushData;
-static char *GetBrushStr(UIObject *o, BrushData *data)
+static char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
 	static char s[128];
 	char *brushStr = "";
-	UNUSED(o);
-	switch (data->IsMain ? data->brush->MainType : data->brush->SecondaryType)
+	switch (isMain ? brush->MainType : brush->SecondaryType)
 	{
 	case MAP_FLOOR:
 		brushStr = "Floor";
@@ -755,7 +749,24 @@ static char *GetBrushStr(UIObject *o, BrushData *data)
 		assert(0 && "invalid brush type");
 		return "";
 	}
-	sprintf(s, "Brush %d: %s", data->IsMain ? 1 : 2, brushStr);
+	sprintf(s, "Brush %d: %s", isMain ? 1 : 2, brushStr);
+	return s;
+}
+static char *BrushGetMainTypeStr(UIObject *o, EditorBrush *brush)
+{
+	UNUSED(o);
+	return BrushGetTypeStr(brush, 1);
+}
+static char *BrushGetSecondaryTypeStr(UIObject *o, EditorBrush *brush)
+{
+	UNUSED(o);
+	return BrushGetTypeStr(brush, 0);
+}
+static char *BrushGetSizeStr(UIObject *o, EditorBrush *brush)
+{
+	static char s[128];
+	UNUSED(o);
+	sprintf(s, "Brush Size: %d", brush->BrushSize);
 	return s;
 }
 
@@ -1148,10 +1159,9 @@ static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
 	mobj->Flags = CLAMP_OPPOSITE(
 		mobj->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
 }
-static void ChangeBrush(BrushData *data, int d)
+static void BrushChangeType(EditorBrush *b, int d, int isMain)
 {
-	unsigned short brushType =
-		data->IsMain ? data->brush->MainType : data->brush->SecondaryType;
+	unsigned short brushType = isMain ? b->MainType : b->SecondaryType;
 	if (brushType == 0 && d < 0)
 	{
 		brushType = MAP_ROOM;
@@ -1164,22 +1174,34 @@ static void ChangeBrush(BrushData *data, int d)
 	{
 		brushType = (unsigned short)(brushType + d);
 	}
-	if (data->IsMain)
+	if (isMain)
 	{
-		data->brush->MainType = brushType;
+		b->MainType = brushType;
 	}
 	else
 	{
-		data->brush->SecondaryType = brushType;
+		b->SecondaryType = brushType;
 	}
 }
-static void ActivateBrush(BrushData *data)
+static void BrushChangeMainType(EditorBrush *b, int d)
 {
-	data->brush->IsActive = 1;
+	BrushChangeType(b, d, 1);
 }
-static void DeactivateBrush(BrushData *data)
+static void BrushChangeSecondaryType(EditorBrush *b, int d)
 {
-	data->brush->IsActive = 0;
+	BrushChangeType(b, d, 0);
+}
+static void BrushChangeSize(EditorBrush *b, int d)
+{
+	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
+}
+static void ActivateBrush(EditorBrush *b)
+{
+	b->IsActive = 1;
+}
+static void DeactivateBrush(EditorBrush *b)
+{
+	b->IsActive = 0;
 }
 
 
@@ -1701,6 +1723,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 static UIObject *CreateStaticMapObjs(
 	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
+	int x = pos.x;
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
@@ -1712,25 +1735,31 @@ static UIObject *CreateStaticMapObjs(
 	c->Data = co;
 
 	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = GetBrushStr;
-	CMALLOC(o2->Data, sizeof(BrushData));
-	((BrushData *)o2->Data)->brush = brush;
-	((BrushData *)o2->Data)->IsMain = 1;
-	o2->IsDynamicData = 1;
-	o2->ChangeFunc = ChangeBrush;
+	o2->u.LabelFunc = BrushGetMainTypeStr;
+	o2->Data = brush;
+	o2->ChangeFunc = BrushChangeMainType;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
 	CSTRDUP(o2->Tooltip, "Left click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = BrushGetSecondaryTypeStr;
+	o2->Data = brush;
+	o2->ChangeFunc = BrushChangeSecondaryType;
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
+	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = GetBrushStr;
-	CMALLOC(o2->Data, sizeof(BrushData));
-	((BrushData *)o2->Data)->brush = brush;
-	((BrushData *)o2->Data)->IsMain = 0;
-	o2->IsDynamicData = 1;
-	o2->ChangeFunc = ChangeBrush;
+	o2->u.LabelFunc = BrushGetSizeStr;
+	o2->Data = brush;
+	o2->ChangeFunc = BrushChangeSize;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
 	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");

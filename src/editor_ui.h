@@ -53,6 +53,8 @@
 
 #include <cdogs/gamedata.h>
 
+#include "editor_brush.h"
+
 
 #define YC_CAMPAIGNTITLE    0
 #define YC_MISSIONINDEX     1
@@ -124,16 +126,6 @@
 #define XC_PENALTY       10
 #define XC_VICTIM        11
 #define XC_AWAKE         12
-
-typedef struct
-{
-	unsigned short MainType;
-	unsigned short SecondaryType;
-	int IsActive;
-	int IsPainting;
-	Vec2i LastPos;
-	Vec2i Pos;
-} EditorBrush;
 
 
 void DisplayFlag(

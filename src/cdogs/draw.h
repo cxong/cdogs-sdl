@@ -54,7 +54,7 @@
 
 void LineOfSight(Vec2i center, DrawBuffer *buffer);
 void FixBuffer(DrawBuffer *b);
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset);
+void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun);
 void DrawCharacterSimple(

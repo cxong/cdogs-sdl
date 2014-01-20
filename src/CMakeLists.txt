@@ -48,10 +48,12 @@ target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${
 SET(CDOGS_SDL_EDITOR_SOURCES
 	cdogsed.c
 	charsed.c
+	editor_brush.c
 	editor_ui.c
 	ui_object.c)
 SET(CDOGS_SDL_EDITOR_HEADERS
 	charsed.h
+	editor_brush.h
 	editor_ui.h
 	ui_object.h)
 add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS} ${CDOGS_SDL_EXTRA})
