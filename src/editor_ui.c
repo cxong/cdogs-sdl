@@ -1205,7 +1205,7 @@ static void BrushChangeSize(EditorBrush *b, int d)
 static void BrushChangeBrushType(EditorBrush *b, int d)
 {
 	b->Type = CLAMP_OPPOSITE(
-		b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_BOX_FILLED);
+		b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_ROOM);
 }
 static void ActivateBrush(EditorBrush *b)
 {

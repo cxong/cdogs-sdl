@@ -45,6 +45,8 @@ const char *BrushTypeStr(BrushType t)
 		return "Box";
 	case BRUSHTYPE_BOX_FILLED:
 		return "Box Filled";
+	case BRUSHTYPE_ROOM:
+		return "Room";
 	default:
 		assert(0 && "unknown brush type");
 		return "";
@@ -67,6 +69,10 @@ BrushType StrBrushType(const char *s)
 	else if (strcmp(s, "Box Filled") == 0)
 	{
 		return BRUSHTYPE_BOX_FILLED;
+	}
+	else if (strcmp(s, "Room") == 0)
+	{
+		return BRUSHTYPE_ROOM;
 	}
 	else
 	{
@@ -160,7 +166,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				b, b->LastPos, b->Pos, EditorBrushHighlightPoint, NULL);
 		}
 		break;
-	case BRUSHTYPE_BOX:
+	case BRUSHTYPE_BOX:	// fallthrough
+	case BRUSHTYPE_ROOM:
 		if (b->IsPainting)
 		{
 			Vec2i v;
@@ -247,7 +254,8 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		return 1;
 	case BRUSHTYPE_LINE:	// fallthrough
 	case BRUSHTYPE_BOX:	// fallthrough
-	case BRUSHTYPE_BOX_FILLED:
+	case BRUSHTYPE_BOX_FILLED:	// fallthrough
+	case BRUSHTYPE_ROOM:
 		// don't paint until the end
 		break;
 	default:
@@ -298,6 +306,34 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
 					{
 						EditorBrushPaintTilesAt(b, v, m);
+					}
+				}
+				hasPainted = 1;
+			}
+			break;
+		case BRUSHTYPE_ROOM:
+			{
+				Vec2i v;
+				Vec2i d = Vec2iNew(
+					b->Pos.x > b->LastPos.x ? 1 : -1,
+					b->Pos.y > b->LastPos.y ? 1 : -1);
+				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+				{
+					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+					{
+						if (v.x == b->LastPos.x || v.x == b->Pos.x ||
+							v.y == b->LastPos.y || v.y == b->Pos.y)
+						{
+							// Boundary
+							b->PaintType = MAP_WALL;
+							EditorBrushPaintTilesAt(b, v, m);
+						}
+						else
+						{
+							// Interior
+							b->PaintType = MAP_ROOM;
+							EditorBrushPaintTilesAt(b, v, m);
+						}
 					}
 				}
 				hasPainted = 1;
