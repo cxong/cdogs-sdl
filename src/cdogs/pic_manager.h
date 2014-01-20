@@ -36,6 +36,7 @@ typedef struct
 	PicPaletted *oldPics[PIC_MAX];
 	Pic picsFromOld[PIC_MAX];
 	TPalette palette;
+	int IsLoaded;
 } PicManager;
 
 extern PicManager gPicManager;

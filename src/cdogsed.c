@@ -182,7 +182,7 @@ static void SwapCursorTile(void)
 	t->things = NULL;
 }
 
-static void MakeBackground(GraphicsDevice *g)
+static void MakeBackground(GraphicsDevice *g, int buildTables)
 {
 	int i;
 	// Clear background first
@@ -190,7 +190,7 @@ static void MakeBackground(GraphicsDevice *g)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, tintNone, 1);
+	GrafxMakeBackground(g, tintNone, 1, buildTables);
 }
 
 static void Display(int yc, int willDisplayAutomap)
@@ -208,7 +208,7 @@ static void Display(int yc, int willDisplayAutomap)
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(&gGraphicsDevice);
+			MakeBackground(&gGraphicsDevice, 0);
 		}
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
 		{
@@ -603,7 +603,7 @@ static void Setup(int buildTables)
 	}
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
-	MakeBackground(&gGraphicsDevice);
+	MakeBackground(&gGraphicsDevice, buildTables);
 	sCursorTile = TileNone();
 }
 

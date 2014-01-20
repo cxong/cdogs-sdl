@@ -58,6 +58,10 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 	int i;
 	// Convert old pics into new format ones
 	// TODO: this is wasteful; better to eliminate old pics altogether
+	if (pm->IsLoaded)
+	{
+		return;
+	}
 	for (i = 0; i < PIC_MAX; i++)
 	{
 		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
@@ -74,6 +78,7 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
 		}
 	}
+	pm->IsLoaded = 1;
 }
 
 void PicManagerTerminate(PicManager *pm)
