@@ -302,7 +302,7 @@ static void LoadIntArray(CArray *a, json_t *node, char *name)
 		return;
 	}
 	child = child->child;
-	for (child = node->child; child; child = child->next)
+	for (child = child->child; child; child = child->next)
 	{
 		int n = atoi(child->text);
 		CArrayPushBack(a, &n);

@@ -111,6 +111,7 @@ void MissionInit(Mission *m)
 void MissionCopy(Mission *dst, Mission *src)
 {
 	MissionTerminate(dst);
+	MissionInit(dst);
 	if (src->Title)
 	{
 		CSTRDUP(dst->Title, src->Title);

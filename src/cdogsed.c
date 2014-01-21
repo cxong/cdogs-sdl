@@ -95,6 +95,8 @@ Vec2i camera = { 0, 0 };
 int hasCameraMoved = 0;
 Mission currentMission;
 Mission lastMission;
+#define AUTOSAVE_INTERVAL 10
+int numChanges = 0;
 
 
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
@@ -528,13 +530,18 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
+static void Autosave(int index)
+{
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "%s~%d", lastFile, index);
+	MapNewSave(buf, &gCampaign.Setting);
+}
+
 static void Setup(int buildTables)
 {
 	Mission *m = CampaignGetCurrentMission(&gCampaign);
 	if (!m)
 	{
-		MissionInit(&lastMission);
-		MissionInit(&currentMission);
 		return;
 	}
 	MissionCopy(&lastMission, &currentMission);
@@ -543,6 +550,13 @@ static void Setup(int buildTables)
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
 	MakeBackground(&gGraphicsDevice, buildTables);
 	sCursorTile = TileNone();
+
+	numChanges++;
+	if ((numChanges % AUTOSAVE_INTERVAL) == 0)
+	{
+		int autosaveIndex = numChanges / AUTOSAVE_INTERVAL;
+		Autosave(autosaveIndex);
+	}
 }
 
 static void Open(void)
@@ -1140,6 +1154,8 @@ int main(int argc, char *argv[])
 	sObjs = CreateMainObjs(&gCampaign, &brush);
 
 	CampaignInit(&gCampaign);
+	MissionInit(&lastMission);
+	MissionInit(&currentMission);
 
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
