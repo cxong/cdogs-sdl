@@ -32,6 +32,13 @@
 #include <cdogs/mission.h>
 #include <cdogs/vector.h>
 
+// Point: draw as long as mouse is down; to smooth input draws a line from
+//        last known position to current position
+// Line: draw line from mouse down position to mouse up position
+// Box: draw box outline from mouse down position to mouse up position
+// Box filled: like box but with filled interior
+// Room: special type of box; the outline is always wall and the interior is
+//       always room
 typedef enum
 {
 	BRUSHTYPE_POINT,
@@ -43,6 +50,11 @@ typedef enum
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);
 
+// Encapsulates the drawing brushes and draws tiles to a static mission
+// There are main and secondary types corresponding to mouse left and right
+// BrushSize is the size of the stroke
+// HighlightedTiles are the tiles that are highlighted to show the brush
+// stroke
 typedef struct
 {
 	BrushType Type;
