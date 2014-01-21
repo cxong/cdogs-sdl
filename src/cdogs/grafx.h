@@ -54,6 +54,7 @@
 #include "c_array.h"
 #include "color.h"
 #include "pic_file.h"
+#include "vector.h"
 #include "sys_specifics.h"
 
 typedef enum
@@ -115,10 +116,10 @@ void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GrafxDrawBackground(
-	GraphicsDevice *g, HSV tint, CArray *highlightedTiles);
+	GraphicsDevice *g, HSV tint, CArray *highlightedTiles, Vec2i pos);
 void GrafxMakeBackground(
 	GraphicsDevice *device, HSV tint,
-	int isEditor, int buildTables, CArray *highlightedTiles);
+	int isEditor, int buildTables, CArray *highlightedTiles, Vec2i pos);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

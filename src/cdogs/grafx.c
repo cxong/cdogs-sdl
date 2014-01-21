@@ -260,7 +260,8 @@ static void MakeRandomBackground(GraphicsDevice *device)
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
 	tint.v = 0.5;
-	GrafxMakeBackground(device, tint, 0, 1, NULL);
+	GrafxMakeBackground(
+		device, tint, 0, 1, NULL, Vec2iCenterOfTile(gMap.Size));
 	KillAllActors();
 	KillAllObjects();
 	RemoveAllWatches();
@@ -387,17 +388,14 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 }
 
 void GrafxDrawBackground(
-	GraphicsDevice *g, HSV tint, CArray *highlightedTiles)
+	GraphicsDevice *g, HSV tint, CArray *highlightedTiles, Vec2i pos)
 {
 	DrawBuffer buffer;
 	Vec2i v;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferSetFromMap(
-		&buffer, &gMap,
-		Vec2iNew(gMap.Size.x * TILE_WIDTH / 2, gMap.Size.y * TILE_HEIGHT / 2),
-		X_TILES,
-		Vec2iNew(X_TILES, Y_TILES));
+		&buffer, &gMap, pos, X_TILES, Vec2iNew(X_TILES, Y_TILES));
 	DrawBufferDraw(&buffer, Vec2iZero(), highlightedTiles);
 	DrawBufferTerminate(&buffer);
 
@@ -414,7 +412,7 @@ void GrafxDrawBackground(
 
 void GrafxMakeBackground(
 	GraphicsDevice *device, HSV tint,
-	int isEditor, int buildTables, CArray *highlightedTiles)
+	int isEditor, int buildTables, CArray *highlightedTiles, Vec2i pos)
 {
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
@@ -427,7 +425,7 @@ void GrafxMakeBackground(
 		MapShowExitArea(&gMap);
 	}
 
-	GrafxDrawBackground(device, tint, highlightedTiles);
+	GrafxDrawBackground(device, tint, highlightedTiles, pos);
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)

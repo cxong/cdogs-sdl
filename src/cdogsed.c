@@ -90,6 +90,9 @@ Vec2i sUIOverlaySize = { 320, 240 };
 static char lastFile[CDOGS_PATH_MAX];
 static EditorBrush brush;
 static Tile sCursorTile;
+Vec2i camera = { 0, 0 };
+#define CAMERA_PAN_SPEED 8
+int hasCameraMoved = 0;
 
 
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
@@ -103,9 +106,7 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 	}
 	else
 	{
-		Vec2i mapSize = Vec2iNew(
-			m->Size.x * TILE_WIDTH, m->Size.y * TILE_HEIGHT);
-		Vec2i mapPos = Vec2iNew((w - mapSize.x) / 2, (h - mapSize.y) / 2);
+		Vec2i mapPos = Vec2iNew(w / 2 - camera.x, h / 2 - camera.y);
 		return Vec2iNew(
 			(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
 			(e->mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
@@ -126,16 +127,17 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(g, tintNone, 1, buildTables, &brush.HighlightedTiles);
+	GrafxMakeBackground(
+		g, tintNone, 1, buildTables, &brush.HighlightedTiles, camera);
 }
 
-static void Display(int yc, int willDisplayAutomap)
+static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 {
 	char s[128];
 	int y = 5;
 	int i;
-	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	int w = g->cachedConfig.ResolutionWidth;
+	int h = g->cachedConfig.ResolutionHeight;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
 	if (mission)
@@ -144,15 +146,23 @@ static void Display(int yc, int willDisplayAutomap)
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(&gGraphicsDevice, 0);
+			MakeBackground(g, 0);
 		}
-		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
+		if ((brush.IsActive && IsBrushPosValid(brush.Pos, mission)) ||
+			hasCameraMoved)
 		{
-			EditorBrushSetHighlightedTiles(&brush);
-			GrafxDrawBackground(
-				&gGraphicsDevice, tintNone, &brush.HighlightedTiles);
+			if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
+			{
+				EditorBrushSetHighlightedTiles(&brush);
+			}
+			// Clear background first
+			for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+			{
+				g->buf[i] = PixelFromColor(g, colorBlack);
+			}
+			GrafxDrawBackground(g, tintNone, &brush.HighlightedTiles, camera);
 		}
-		GraphicsBlitBkg(&gGraphicsDevice);
+		GraphicsBlitBkg(g);
 		// Draw overlay
 		for (v.y = 0; v.y < sUIOverlaySize.y; v.y++)
 		{
@@ -160,7 +170,7 @@ static void Display(int yc, int willDisplayAutomap)
 			{
 				if (v.x < w && v.y < h)
 				{
-					DrawPointTint(&gGraphicsDevice, v, tintDarker);
+					DrawPointTint(g, v, tintDarker);
 				}
 			}
 		}
@@ -168,25 +178,25 @@ static void Display(int yc, int willDisplayAutomap)
 			s, "Mission %d/%d",
 			gCampaign.MissionIndex + 1, gCampaign.Setting.Missions.size);
 		DrawTextStringMasked(
-			s, &gGraphicsDevice, Vec2iNew(270, y),
+			s, g, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		if (brush.LastPos.x)
 		{
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
-			DrawTextString(s, &gGraphicsDevice, Vec2iNew(w - 40, h - 16));
+			DrawTextString(s, g, Vec2iNew(w - 40, h - 16));
 		}
 	}
 	else
 	{
-		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+		for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 		{
-			gGraphicsDevice.buf[i] = LookupPalette(58);
+			g->buf[i] = LookupPalette(58);
 		}
 		if (gCampaign.Setting.Missions.size)
 		{
 			sprintf(s, "End/%d", gCampaign.Setting.Missions.size);
 			DrawTextStringMasked(
-				s, &gGraphicsDevice, Vec2iNew(270, y),
+				s, g, Vec2iNew(270, y),
 				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		}
 	}
@@ -197,13 +207,11 @@ static void Display(int yc, int willDisplayAutomap)
 	}
 
 	DrawTextString(
-		"Press F1 for help",
-		&gGraphicsDevice,
-		Vec2iNew(20, h - 20 - CDogsTextHeight()));
+		"Press F1 for help", g, Vec2iNew(20, h - 20 - CDogsTextHeight()));
 
 	y = 150;
 
-	UIObjectDraw(sObjs, &gGraphicsDevice);
+	UIObjectDraw(sObjs, g);
 
 	if (willDisplayAutomap && mission)
 	{
@@ -217,11 +225,11 @@ static void Display(int yc, int willDisplayAutomap)
 		{
 			Vec2i tooltipPos = Vec2iAdd(
 				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-			DrawTooltip(&gGraphicsDevice, tooltipPos, o->Tooltip);
+			DrawTooltip(g, tooltipPos, o->Tooltip);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+	BlitFlip(g, &gConfig.Graphics);
 }
 
 static int Change(UIObject *o, int yc, int d)
@@ -518,20 +526,6 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-static void MoveSelection(int isForward, int *y, int *x)
-{
-	if (isForward)
-	{
-		(*y)++;
-	}
-	else
-	{
-		(*y)--;
-	}
-	AdjustYC(y);
-	AdjustXC(*y, x);
-}
-
 static void Setup(int buildTables)
 {
 	if (!CampaignGetCurrentMission(&gCampaign))
@@ -713,6 +707,7 @@ static void HelpScreen(void)
 		"shift + left/right click:       Increase/decrease number of items\n"
 		"insert:                         Add new item\n"
 		"delete:                         Delete selected item\n"
+		"arrow keys:                     Move camera\n"
 		"\n"
 		"Other commands\n"
 		"==============\n"
@@ -847,6 +842,33 @@ static void HandleInput(
 			Setup(0);
 		}
 	}
+	// Pan the camera based on keyboard cursor keys
+	hasCameraMoved = 0;
+	if (mission)
+	{
+		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_LEFT))
+		{
+			camera.x -= CAMERA_PAN_SPEED;
+			hasCameraMoved = 1;
+		}
+		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_RIGHT))
+		{
+			camera.x += CAMERA_PAN_SPEED;
+			hasCameraMoved = 1;
+		}
+		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_UP))
+		{
+			camera.y -= CAMERA_PAN_SPEED;
+			hasCameraMoved = 1;
+		}
+		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_DOWN))
+		{
+			camera.y += CAMERA_PAN_SPEED;
+			hasCameraMoved = 1;
+		}
+		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
+		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
+	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
@@ -980,29 +1002,6 @@ static void HandleInput(
 			Delete(*xc, *yc);
 			break;
 
-		case SDLK_UP:
-			MoveSelection(0, yc, xc);
-			break;
-
-		case SDLK_DOWN:
-			MoveSelection(1, yc, xc);
-			break;
-
-		case SDLK_TAB:
-			MoveSelection(
-				!(gEventHandlers.keyboard.modState & KMOD_SHIFT), yc, xc);
-			break;
-
-		case SDLK_LEFT:
-			(*xc)--;
-			AdjustXC(*yc, xc);
-			break;
-
-		case SDLK_RIGHT:
-			(*xc)++;
-			AdjustXC(*yc, xc);
-			break;
-
 		case SDLK_PAGEUP:
 			if (Change(o, *yc, 1))
 			{
@@ -1067,7 +1066,7 @@ static void EditCampaign(void)
 			c, m,
 			&xc, &yc, &xcOld, &ycOld,
 			&scrap, &willDisplayAutomap, &done);
-		Display(yc, willDisplayAutomap);
+		Display(&gGraphicsDevice, yc, willDisplayAutomap);
 		if (willDisplayAutomap)
 		{
 			GetKey(&gEventHandlers);
