@@ -93,6 +93,8 @@ static Tile sCursorTile;
 Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 8
 int hasCameraMoved = 0;
+Mission currentMission;
+Mission lastMission;
 
 
 static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
@@ -528,10 +530,15 @@ static void AdjustXC(int yc, int *xc)
 
 static void Setup(int buildTables)
 {
-	if (!CampaignGetCurrentMission(&gCampaign))
+	Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (!m)
 	{
+		MissionInit(&lastMission);
+		MissionInit(&currentMission);
 		return;
 	}
+	MissionCopy(&lastMission, &currentMission);
+	MissionCopy(&currentMission, m);
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
 	MakeBackground(&gGraphicsDevice, buildTables);
@@ -873,6 +880,24 @@ static void HandleInput(
 	{
 		switch (c)
 		{
+		case 'z':
+			// Undo
+			// Do this by swapping the current mission with the last mission
+			// This requires a bit of copy-acrobatics; because missions
+			// are saved in Setup(), but by this stage the mission has already
+			// changed, _two_ mission caches are used, copied in sequence.
+			// That is, if the current mission is at state B, the first cache
+			// is still at state B (copied after the mission has changed
+			// already), and the second cache is at state A.
+			// If we were to perform an undo and still maintain functionality,
+			// we need to copy such that the states change from B,B,A to
+			// A,A,B.
+			MissionCopy(mission, &lastMission);	// B,B,A -> A,B,A
+			MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
+			fileChanged = 1;
+			Setup(0);	// A,B,B -> A,A,B
+			break;
+
 		case 'x':
 			MissionTerminate(scrap);
 			MissionCopy(scrap, mission);
@@ -1157,6 +1182,8 @@ int main(int argc, char *argv[])
 
 	MapTerminate(&gMap);
 	CampaignTerminate(&gCampaign);
+	MissionTerminate(&lastMission);
+	MissionTerminate(&currentMission);
 
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);

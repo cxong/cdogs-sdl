@@ -110,8 +110,15 @@ void MissionInit(Mission *m)
 }
 void MissionCopy(Mission *dst, Mission *src)
 {
-	CSTRDUP(dst->Title, src->Title);
-	CSTRDUP(dst->Description, src->Description);
+	MissionTerminate(dst);
+	if (src->Title)
+	{
+		CSTRDUP(dst->Title, src->Title);
+	}
+	if (src->Description)
+	{
+		CSTRDUP(dst->Description, src->Description);
+	}
 	dst->Type = src->Type;
 	dst->Size = src->Size;
 
@@ -138,7 +145,16 @@ void MissionCopy(Mission *dst, Mission *src)
 	dst->RoomColor = src->RoomColor;
 	dst->AltColor = src->AltColor;
 
-	memcpy(&dst->u, &src->u, sizeof dst->u);
+	switch (dst->Type)
+	{
+	case MAPTYPE_STATIC:
+		CArrayInit(&dst->u.StaticTiles, src->u.StaticTiles.elemSize);
+		CArrayCopy(&dst->u.StaticTiles, &src->u.StaticTiles);
+		break;
+	default:
+		memcpy(&dst->u, &src->u, sizeof dst->u);
+		break;
+	}
 }
 void MissionTerminate(Mission *m)
 {
@@ -149,6 +165,12 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->SpecialChars);
 	CArrayTerminate(&m->Items);
 	CArrayTerminate(&m->ItemDensities);
+	switch (m->Type)
+	{
+	case MAPTYPE_STATIC:
+		CArrayTerminate(&m->u.StaticTiles);
+		break;
+	}
 }
 
 
