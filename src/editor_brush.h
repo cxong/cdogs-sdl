@@ -45,7 +45,8 @@ typedef enum
 	BRUSHTYPE_LINE,
 	BRUSHTYPE_BOX,
 	BRUSHTYPE_BOX_FILLED,
-	BRUSHTYPE_ROOM
+	BRUSHTYPE_ROOM,
+	BRUSHTYPE_SELECT
 } BrushType;
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);
@@ -67,6 +68,10 @@ typedef struct
 	Vec2i LastPos;
 	Vec2i Pos;
 	CArray HighlightedTiles;	// of Vec2i
+	Vec2i SelectionStart;
+	Vec2i SelectionSize;
+	int IsMoving;	// for the select tool, whether selecting or moving
+	Vec2i DragPos;	// when moving, location that the drag started
 } EditorBrush;
 
 void EditorBrushInit(EditorBrush *b);

@@ -843,10 +843,16 @@ static void HandleInput(
 	}
 	else
 	{
-		if (EditorBrushStopPainting(&brush, mission))
+		if (mission)
 		{
-			fileChanged = 1;
-			Setup(0);
+			// Clamp brush position
+			brush.Pos.x = CLAMP(brush.Pos.x, 0, mission->Size.x - 1);
+			brush.Pos.y = CLAMP(brush.Pos.y, 0, mission->Size.y - 1);
+			if (EditorBrushStopPainting(&brush, mission))
+			{
+				fileChanged = 1;
+				Setup(0);
+			}
 		}
 	}
 	// Pan the camera based on keyboard cursor keys
