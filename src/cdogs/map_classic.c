@@ -94,7 +94,6 @@ void MapClassicLoad(Map *map, Mission *mission)
 	}
 
 	// place rooms
-	map->keyAccessCount = 0;
 	count = 0;
 	i = 0;
 	while (i < 1000 && count < mission->u.Classic.Rooms.Count)
@@ -151,7 +150,6 @@ static int MapTryBuildSquare(Map *map)
 }
 static void MapFindAvailableDoors(
 	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
-static unsigned short GenerateAccessMask(int *accessLevel);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
 	int doorMin, int doorMax, int hasKeys)
@@ -482,58 +480,6 @@ static void MapGrowWall(
 static Vec2i GuessCoords(Map *map)
 {
 	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
-}
-
-static unsigned short GenerateAccessMask(int *accessLevel)
-{
-	unsigned short accessMask = 0;
-	switch (rand() % 20)
-	{
-	case 0:
-		if (*accessLevel >= 4)
-		{
-			accessMask = MAP_ACCESS_RED;
-			*accessLevel = 5;
-		}
-		break;
-	case 1:
-	case 2:
-		if (*accessLevel >= 3)
-		{
-			accessMask = MAP_ACCESS_BLUE;
-			if (*accessLevel < 4)
-			{
-				*accessLevel = 4;
-			}
-		}
-		break;
-	case 3:
-	case 4:
-	case 5:
-		if (*accessLevel >= 2)
-		{
-			accessMask = MAP_ACCESS_GREEN;
-			if (*accessLevel < 3)
-			{
-				*accessLevel = 3;
-			}
-		}
-		break;
-	case 6:
-	case 7:
-	case 8:
-	case 9:
-		if (*accessLevel >= 1)
-		{
-			accessMask = MAP_ACCESS_YELLOW;
-			if (*accessLevel < 2)
-			{
-				*accessLevel = 2;
-			}
-		}
-		break;
-	}
-	return accessMask;
 }
 
 static int MapFindWallRun(Map *map, Vec2i start, Vec2i d, int len)

@@ -535,3 +535,55 @@ void MapMakePillar(Map *map, Vec2i pos, Vec2i size)
 		}
 	}
 }
+
+unsigned short GenerateAccessMask(int *accessLevel)
+{
+	unsigned short accessMask = 0;
+	switch (rand() % 20)
+	{
+	case 0:
+		if (*accessLevel >= 4)
+		{
+			accessMask = MAP_ACCESS_RED;
+			*accessLevel = 5;
+		}
+		break;
+	case 1:
+	case 2:
+		if (*accessLevel >= 3)
+		{
+			accessMask = MAP_ACCESS_BLUE;
+			if (*accessLevel < 4)
+			{
+				*accessLevel = 4;
+			}
+		}
+		break;
+	case 3:
+	case 4:
+	case 5:
+		if (*accessLevel >= 2)
+		{
+			accessMask = MAP_ACCESS_GREEN;
+			if (*accessLevel < 3)
+			{
+				*accessLevel = 3;
+			}
+		}
+		break;
+	case 6:
+	case 7:
+	case 8:
+	case 9:
+		if (*accessLevel >= 1)
+		{
+			accessMask = MAP_ACCESS_YELLOW;
+			if (*accessLevel < 2)
+			{
+				*accessLevel = 2;
+			}
+		}
+		break;
+	}
+	return accessMask;
+}
