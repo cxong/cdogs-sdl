@@ -264,6 +264,50 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	}
 	return 0;
 }
+static void EditorBrushPaintBox(
+	EditorBrush *b, Mission *m,
+	unsigned short lineType, unsigned short fillType)
+{
+	// Draw the fill first, then the line
+	// This will create the expected results when brush size is
+	// greater than one, without having the box drawing routine made
+	// aware of brush sizes
+	Vec2i v;
+	Vec2i d = Vec2iNew(
+		b->Pos.x > b->LastPos.x ? 1 : -1,
+		b->Pos.y > b->LastPos.y ? 1 : -1);
+	// Draw fill
+	if (fillType != MAP_NOTHING)
+	{
+		b->PaintType = fillType;
+		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+		{
+			for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+			{
+				if (v.x != b->LastPos.x && v.x != b->Pos.x &&
+					v.y != b->LastPos.y && v.y != b->Pos.y)
+				{
+					EditorBrushPaintTilesAt(b, v, m);
+				}
+			}
+		}
+	}
+	if (lineType != MAP_NOTHING)
+	{
+		b->PaintType = lineType;
+		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
+		{
+			for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
+			{
+				if (v.x == b->LastPos.x || v.x == b->Pos.x ||
+					v.y == b->LastPos.y || v.y == b->Pos.y)
+				{
+					EditorBrushPaintTilesAt(b, v, m);
+				}
+			}
+		}
+	}
+}
 int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 {
 	int hasPainted = 0;
@@ -276,68 +320,16 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			hasPainted = 1;
 			break;
 		case BRUSHTYPE_BOX:
-			{
-				Vec2i v;
-				Vec2i d = Vec2iNew(
-					b->Pos.x > b->LastPos.x ? 1 : -1,
-					b->Pos.y > b->LastPos.y ? 1 : -1);
-				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
-				{
-					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
-					{
-						if (v.x == b->LastPos.x || v.x == b->Pos.x ||
-							v.y == b->LastPos.y || v.y == b->Pos.y)
-						{
-							EditorBrushPaintTilesAt(b, v, m);
-						}
-					}
-				}
-				hasPainted = 1;
-			}
+			EditorBrushPaintBox(b, m, b->PaintType, MAP_NOTHING);
+			hasPainted = 1;
 			break;
 		case BRUSHTYPE_BOX_FILLED:
-			{
-				Vec2i v;
-				Vec2i d = Vec2iNew(
-					b->Pos.x > b->LastPos.x ? 1 : -1,
-					b->Pos.y > b->LastPos.y ? 1 : -1);
-				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
-				{
-					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
-					{
-						EditorBrushPaintTilesAt(b, v, m);
-					}
-				}
-				hasPainted = 1;
-			}
+			EditorBrushPaintBox(b, m, b->PaintType, b->PaintType);
+			hasPainted = 1;
 			break;
 		case BRUSHTYPE_ROOM:
-			{
-				Vec2i v;
-				Vec2i d = Vec2iNew(
-					b->Pos.x > b->LastPos.x ? 1 : -1,
-					b->Pos.y > b->LastPos.y ? 1 : -1);
-				for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
-				{
-					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
-					{
-						if (v.x == b->LastPos.x || v.x == b->Pos.x ||
-							v.y == b->LastPos.y || v.y == b->Pos.y)
-						{
-							// Boundary
-							b->PaintType = MAP_WALL;
-							EditorBrushPaintTilesAt(b, v, m);
-						}
-						else
-						{
-							// Interior
-							b->PaintType = MAP_ROOM;
-							EditorBrushPaintTilesAt(b, v, m);
-						}
-					}
-				}
-				hasPainted = 1;
-			}
+			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
+			hasPainted = 1;
 			break;
 		}
 	}
