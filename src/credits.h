@@ -34,6 +34,22 @@
 #include <cdogs/pic_file.h>
 
 
+/*
+credits_displayer_t is a module that loads a number of credit_t entries from a
+CREDITS file, and displays each for a fixed amount of time.
+This is used to show the credits (name + description) in the game's main menu.
+The credit entries are in a file with alternating lines of name and
+description, as so:
+
+<name1>
+<description1>
+<name2>
+<description2>
+
+Empty lines are ignored
+For more details see /doc/CREDITS
+*/
+
 typedef struct
 {
 	char *name;
