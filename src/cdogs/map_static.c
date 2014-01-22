@@ -44,7 +44,10 @@ void MapStaticLoad(Map *map, Mission *m)
 		}
 	}
 
-	SetAccessLevels(map);
+	if (AreKeysAllowed(gCampaign.Entry.mode))
+	{
+		SetAccessLevels(map);
+	}
 }
 
 static int FloodFill(
