@@ -162,7 +162,7 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
 		{
-			unsigned short tile = MAP_NOTHING;
+			unsigned short tile = MAP_FLOOR;
 			CArrayPushBack(&m->u.StaticTiles, &tile);
 		}
 	}
