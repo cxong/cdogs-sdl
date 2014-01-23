@@ -27,6 +27,8 @@
 */
 #include "map_static.h"
 
+#include "campaigns.h"
+#include "gamedata.h"
 #include "map_build.h"
 
 
@@ -50,6 +52,10 @@ void MapStaticLoad(Map *map, Mission *m)
 	}
 }
 
+// Results used by FloodFill
+#define FLOOD_FILL_HAS_ROOMS 1
+#define FLOOD_FILL_HAS_FLOORS 2
+#define FLOOD_FILL_HAS_DOORS 4
 static int FloodFill(
 	Map *map, CArray *tileRoomNumbers, Vec2i v, int roomNumberCounter);
 static void SetAccessLevels(Map *map)
@@ -72,15 +78,27 @@ static void SetAccessLevels(Map *map)
 
 	// Use flood fill to find all the rooms,
 	// record room numbers per tile
+	// To keep track of invalid rooms (rooms surrounded by walls and at least
+	// one door) use the special room number -1 to denote invalid rooms
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
 			// Perform a flood fill from this tile,
 			// setting the room number
-			if (FloodFill(map, &tileRoomNumbers, v, roomNumberCounter))
+			int fillResult =
+				FloodFill(map, &tileRoomNumbers, v, roomNumberCounter);
+			if (fillResult & FLOOD_FILL_HAS_ROOMS)
 			{
-				roomNumberCounter++;
+				if (fillResult == (FLOOD_FILL_HAS_ROOMS | FLOOD_FILL_HAS_DOORS))
+				{
+					roomNumberCounter++;
+				}
+				else
+				{
+					// this is an invalid room; refill with -1
+					FloodFill(map, &tileRoomNumbers, v, -1);
+				}
 			}
 		}
 	}
@@ -132,18 +150,36 @@ static int FloodFill(
 {
 	int index = v.y * map->Size.x + v.x;
 	int *roomNumber = CArrayGet(tileRoomNumbers, index);
-	if (IMapGet(map, v) == MAP_ROOM && *roomNumber == 0)
+	unsigned short tile = IMapGet(map, v);
+	int result = 0;
+	int doFillAnyway = roomNumberCounter == -1 && *roomNumber != -1;
+	if (tile == MAP_ROOM && (*roomNumber == 0 || doFillAnyway))
 	{
+		result |= FLOOD_FILL_HAS_ROOMS;
 		*roomNumber = roomNumberCounter;
-		FloodFill(
+		result |= FloodFill(
 			map, tileRoomNumbers, Vec2iNew(v.x - 1, v.y), roomNumberCounter);
-		FloodFill(
+		result |= FloodFill(
 			map, tileRoomNumbers, Vec2iNew(v.x + 1, v.y), roomNumberCounter);
-		FloodFill(
+		result |= FloodFill(
 			map, tileRoomNumbers, Vec2iNew(v.x, v.y - 1), roomNumberCounter);
-		FloodFill(
+		result |= FloodFill(
 			map, tileRoomNumbers, Vec2iNew(v.x, v.y + 1), roomNumberCounter);
-		return 1;
 	}
-	return 0;
+	else if (tile == MAP_FLOOR)
+	{
+		result |= FLOOD_FILL_HAS_FLOORS;
+	}
+	else if (tile == MAP_DOOR)
+	{
+		// Check that the door leads to floor
+		if (IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_FLOOR ||
+			IMapGet(map, Vec2iNew(v.x + 1, v.y)) == MAP_FLOOR ||
+			IMapGet(map, Vec2iNew(v.x, v.y - 1)) == MAP_FLOOR ||
+			IMapGet(map, Vec2iNew(v.x, v.y + 1)) == MAP_FLOOR)
+		{
+			result |= FLOOD_FILL_HAS_DOORS;
+		}
+	}
+	return result;
 }

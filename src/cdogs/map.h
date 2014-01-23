@@ -62,10 +62,10 @@
 #define MAP_SQUARE          4
 #define MAP_NOTHING         6
 
-#define MAP_ACCESS_RED      256
-#define MAP_ACCESS_BLUE     512
-#define MAP_ACCESS_GREEN    1024
-#define MAP_ACCESS_YELLOW   2048
+#define MAP_ACCESS_RED      0x800
+#define MAP_ACCESS_BLUE     0x400
+#define MAP_ACCESS_GREEN    0x200
+#define MAP_ACCESS_YELLOW   0x100
 
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00

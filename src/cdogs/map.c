@@ -1009,16 +1009,12 @@ int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
 
 static int MapGetAccessFlags(Map *map, int x, int y)
 {
-	int flags;
-	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x - 1, y)));
-	if (flags) return flags;
-	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x + 1, y)));
-	if (flags) return flags;
-	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y - 1)));
-	if (flags) return flags;
-	flags = AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y + 1)));
-	if (flags) return flags;
-	return 0;
+	int flags = 0;
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x - 1, y))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x + 1, y))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y - 1))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y + 1))));
+	return flags;
 }
 
 static void MapSetupDoors(Map *map, int floor, int room)
