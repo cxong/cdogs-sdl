@@ -1152,6 +1152,14 @@ int main(int argc, char *argv[])
 	WeaponInitialize();
 	PlayerDataInitialize();
 	MapInit(&gMap);
+	if (!PicManagerTryInit(
+		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+	{
+		exit(0);
+	}
+	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
+	BuildTranslationTables(gPicManager.palette);
+	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
@@ -1163,15 +1171,7 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
-	if (!PicManagerTryInit(
-		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-	{
-		exit(0);
-	}
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
-	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
-	BuildTranslationTables(gPicManager.palette);
-	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush);
