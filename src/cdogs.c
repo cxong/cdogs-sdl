@@ -1283,15 +1283,6 @@ int main(int argc, char *argv[])
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
-	if (!PicManagerTryInit(
-		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-	{
-		exit(0);
-	}
-	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-
-	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
-
 	if (isSoundEnabled)
 	{
 		SoundInitialize(&gSoundDevice, &gConfig.Sound);
@@ -1345,6 +1336,14 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		if (!PicManagerTryInit(
+			&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+		{
+			exit(0);
+		}
+		PicManagerLoadDir(&gPicManager, "graphics");
+		memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
+		CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop(&creditsDisplayer, &campaigns);
 	}

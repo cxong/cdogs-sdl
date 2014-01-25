@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 
 #include <SDL_stdinc.h>
 
-#include "pic_file.h"
+#include "pic.h"
 #include "vector.h"
 
 typedef struct
@@ -41,12 +41,12 @@ typedef struct
 	char pressedButtons[8];
 	Vec2i previousPos;
 	Vec2i currentPos;
-	PicPaletted *cursor;
+	Pic *cursor;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 } Mouse;
 
-void MouseInit(Mouse *mouse, PicPaletted *cursor);
+void MouseInit(Mouse *mouse, Pic *cursor);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);

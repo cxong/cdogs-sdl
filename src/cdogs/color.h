@@ -43,6 +43,7 @@ typedef struct
 extern color_t colorWhite;
 extern color_t colorRed;
 extern color_t colorGreen;
+extern color_t colorBlue;
 extern color_t colorPoison;
 extern color_t colorBlack;
 extern color_t colorDarker;

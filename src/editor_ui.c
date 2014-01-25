@@ -1202,10 +1202,59 @@ static void BrushChangeSize(EditorBrush *b, int d)
 {
 	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
 }
-static void BrushChangeBrushType(EditorBrush *b, int d)
+static int BrushIsBrushTypePoint(EditorBrush *b)
 {
-	b->Type = CLAMP_OPPOSITE(
-		b->Type + d, BRUSHTYPE_POINT, BRUSHTYPE_SELECT);
+	return b->Type == BRUSHTYPE_POINT;
+}
+static int BrushIsBrushTypeLine(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_LINE;
+}
+static int BrushIsBrushTypeBox(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_BOX;
+}
+static int BrushIsBrushTypeBoxFilled(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_BOX_FILLED;
+}
+static int BrushIsBrushTypeRoom(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_ROOM;
+}
+static int BrushIsBrushTypeSelect(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_SELECT;
+}
+static void BrushSetBrushTypePoint(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_POINT;
+}
+static void BrushSetBrushTypeLine(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_LINE;
+}
+static void BrushSetBrushTypeBox(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_BOX;
+}
+static void BrushSetBrushTypeBoxFilled(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_BOX_FILLED;
+}
+static void BrushSetBrushTypeRoom(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_ROOM;
+}
+static void BrushSetBrushTypeSelect(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_SELECT;
 }
 static void ActivateBrush(EditorBrush *b)
 {
@@ -1730,6 +1779,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
+	UIObjectDestroy(o);
 	return c;
 }
 static UIObject *CreateStaticMapObjs(
@@ -1738,14 +1788,69 @@ static UIObject *CreateStaticMapObjs(
 	int x = pos.x;
 	int th = CDogsTextHeight();
 	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
-	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
 	UIObject *o2;
 	// Use a custom UIObject to check whether the map type matches,
 	// and set visibility
 	c->u.CustomDrawFunc = MissionCheckTypeStatic;
 	c->Data = co;
 
+	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, Vec2iZero(), Vec2iZero());
+	o->Data = brush;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "pencil"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypePoint;
+	o2->ChangeFunc = BrushSetBrushTypePoint;
+	CSTRDUP(o2->Tooltip, "Point");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "line"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeLine;
+	o2->ChangeFunc = BrushSetBrushTypeLine;
+	CSTRDUP(o2->Tooltip, "Line");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "box"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeBox;
+	o2->ChangeFunc = BrushSetBrushTypeBox;
+	CSTRDUP(o2->Tooltip, "Box");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "box_filled"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeBoxFilled;
+	o2->ChangeFunc = BrushSetBrushTypeBoxFilled;
+	CSTRDUP(o2->Tooltip, "Box filled");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "room"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeRoom;
+	o2->ChangeFunc = BrushSetBrushTypeRoom;
+	CSTRDUP(o2->Tooltip, "Room");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "select"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeSelect;
+	o2->ChangeFunc = BrushSetBrushTypeSelect;
+	CSTRDUP(o2->Tooltip, "Select and move");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	UIObjectDestroy(o);
+	o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
+	pos.x = x;
+	pos.y += o2->Size.y;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = BrushGetMainTypeStr;
 	o2->Data = brush;
@@ -1776,17 +1881,8 @@ static UIObject *CreateStaticMapObjs(
 	o2->OnUnfocusFunc = DeactivateBrush;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
-	pos.x += o2->Size.x;
-	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = BrushGetBrushTypeStr;
-	o2->Data = brush;
-	o2->ChangeFunc = BrushChangeBrushType;
-	o2->OnFocusFunc = ActivateBrush;
-	o2->OnUnfocusFunc = DeactivateBrush;
-	o2->Pos = pos;
-	o2->Size.x = 100;
-	UIObjectAddChild(c, o2);
 
+	UIObjectDestroy(o);
 	return c;
 }
 static UIObject *CreateWeaponObjs(CampaignOptions *co)

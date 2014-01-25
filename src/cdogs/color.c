@@ -35,6 +35,7 @@
 color_t colorWhite = { 255, 255, 255, 255 };
 color_t colorRed = { 255, 0, 0, 255 };
 color_t colorGreen = { 0, 255, 0, 255 };
+color_t colorBlue = { 0, 0, 255, 255 };
 color_t colorPoison = { 64, 192, 64, 255 };
 color_t colorBlack = { 0, 0, 0, 255 };
 color_t colorDarker = { 192, 192, 192, 255 };

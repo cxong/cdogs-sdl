@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include <cdogs/blit.h>
 #include <cdogs/text.h>
 
 
@@ -56,6 +57,15 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	CArrayInit(&o->Children, sizeof o);
 	return o;
 }
+void UIButtonSetPic(UIObject *o, Pic *pic)
+{
+	assert(o->Type == UITYPE_BUTTON && "invalid UI type");
+	o->u.Button.Pic = pic;
+	if (Vec2iEqual(o->Size, Vec2iZero()))
+	{
+		o->Size = o->u.Button.Pic->size;
+	}
+}
 
 UIObject *UIObjectCopy(UIObject *o)
 {
@@ -72,22 +82,7 @@ UIObject *UIObjectCopy(UIObject *o)
 	res->ChangesData = o->ChangesData;
 	res->OnFocusFunc = o->OnFocusFunc;
 	res->OnUnfocusFunc = o->OnUnfocusFunc;
-	// do not copy children
-	switch (o->Type)
-	{
-	case UITYPE_LABEL:
-		res->u.LabelFunc = o->u.LabelFunc;
-		break;
-	case UITYPE_TEXTBOX:
-		res->u.Textbox = o->u.Textbox;
-		break;
-	case UITYPE_TAB:
-		// do nothing; since we cannot copy children
-		break;
-	case UITYPE_CUSTOM:
-		res->u.CustomDrawFunc = o->u.CustomDrawFunc;
-		break;
-	}
+	memcpy(&res->u, &o->u, sizeof res->u);
 	return res;
 }
 
@@ -257,6 +252,20 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 				isHighlighted)
 			{
 				UIObjectDraw(*objp, g);
+			}
+		}
+		break;
+	case UITYPE_BUTTON:
+		{
+			int isDown =
+				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
+			if (isDown)
+			{
+				BlitMasked(g, o->u.Button.Pic, o->Pos, colorGray, 1);
+			}
+			else
+			{
+				BlitMasked(g, o->u.Button.Pic, o->Pos, colorWhite, 1);
 			}
 		}
 		break;

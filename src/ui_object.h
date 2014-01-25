@@ -31,6 +31,7 @@
 
 #include <cdogs/c_array.h>
 #include <cdogs/grafx.h>
+#include <cdogs/pic.h>
 #include <cdogs/vector.h>
 
 typedef enum
@@ -39,6 +40,7 @@ typedef enum
 	UITYPE_LABEL,
 	UITYPE_TEXTBOX,
 	UITYPE_TAB,	// like label but when clicked displays a different child
+	UITYPE_BUTTON,	// click button with picture
 	UITYPE_CUSTOM
 } UIType;
 
@@ -78,6 +80,12 @@ typedef struct _UIObject
 			CArray Labels;	// of char *, one per child
 			int Index;
 		} Tab;
+		// Button
+		struct
+		{
+			Pic *Pic;
+			int (*IsDownFunc)(void *);	// whether the button is down
+		} Button;
 		// Custom
 		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
 	} u;
@@ -90,6 +98,7 @@ typedef struct _UIObject
 } UIObject;
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
+void UIButtonSetPic(UIObject *o, Pic *pic);
 UIObject *UIObjectCopy(UIObject *o);
 void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);

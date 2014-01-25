@@ -32,6 +32,7 @@ endif()
 
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
+find_package(SDL_image REQUIRED)
 
 
 execute_process(

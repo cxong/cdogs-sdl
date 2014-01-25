@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ typedef struct
 
 extern EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, PicPaletted *mouseCursor);
+void EventInit(EventHandlers *handlers, Pic *mouseCursor);
 void EventPoll(EventHandlers *handlers, Uint32 ticks);
 void EventTerminate(EventHandlers *handlers);
 

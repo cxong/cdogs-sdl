@@ -1139,19 +1139,7 @@ int main(int argc, char *argv[])
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
-	if (!PicManagerTryInit(
-		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-	{
-		exit(0);
-	}
-	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
-	BuildTranslationTables(gPicManager.palette);
-	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
-
 	EditorBrushInit(&brush);
-	// initialise UI collections
-	// Note: must do this after text init since positions depend on text height
-	sObjs = CreateMainObjs(&gCampaign, &brush);
 
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
@@ -1175,12 +1163,24 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
+	if (!PicManagerTryInit(
+		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+	{
+		exit(0);
+	}
+	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
+	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
+	BuildTranslationTables(gPicManager.palette);
+	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
+	// initialise UI collections
+	// Note: must do this after text init since positions depend on text height
+	sObjs = CreateMainObjs(&gCampaign, &brush);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
-	EventInit(&gEventHandlers, PicManagerGetOldPic(&gPicManager, 145));
+	EventInit(&gEventHandlers, PicManagerGetPic(&gPicManager, "arrow"));
 
 	for (i = 1; i < argc; i++)
 	{

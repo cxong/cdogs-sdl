@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@
 
 #define MOUSE_REPEAT_TICKS 150
 
-void MouseInit(Mouse *mouse, PicPaletted *cursor)
+void MouseInit(Mouse *mouse, Pic *cursor)
 {
 	memset(mouse, 0, sizeof *mouse);
 	mouse->cursor = cursor;
@@ -169,5 +169,6 @@ int MouseIsDown(Mouse *mouse, int button)
 
 void MouseDraw(Mouse *mouse)
 {
-	DrawTPic(mouse->currentPos.x, mouse->currentPos.y, mouse->cursor);
+	BlitMasked(
+		&gGraphicsDevice, mouse->cursor, mouse->currentPos, colorWhite, 1);
 }

@@ -27,6 +27,10 @@
 */
 #include "pic_manager.h"
 
+#include <SDL_image.h>
+
+#include <tinydir/tinydir.h>
+
 #include "files.h"
 
 PicManager gPicManager;
@@ -36,6 +40,7 @@ int PicManagerTryInit(
 {
 	int i;
 	memset(pm, 0, sizeof *pm);
+	CArrayInit(&pm->pics, sizeof(NamedPic));
 	i = ReadPics(
 		GetDataFilePath(oldGfxFile1), pm->oldPics, PIC_COUNT1, pm->palette);
 	if (!i)
@@ -51,6 +56,82 @@ int PicManagerTryInit(
 	}
 	pm->palette[0].r = pm->palette[0].g = pm->palette[0].b = 0;
 	return 1;
+}
+static void AddPic(PicManager *pm, const char *name, const char *path)
+{
+	SDL_Surface *image = IMG_Load(path);
+	if (!image)
+	{
+		perror("Cannot load image");
+		fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
+	}
+	char buf[CDOGS_FILENAME_MAX];
+	const char *dot = strrchr(name, '.');
+	if (dot)
+	{
+		strncpy(buf, name, dot - name);
+		buf[dot - name] = '\0';
+	}
+	else
+	{
+		strcpy(buf, name);
+	}
+	// TODO: check if name already exists
+	// TODO: use efficient data structure like trie
+	NamedPic n;
+	CSTRDUP(n.name, buf);
+	n.pic.size = Vec2iNew(image->w, image->h);
+	n.pic.offset = Vec2iZero();
+	SDL_Surface *s = SDL_ConvertSurface(
+		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
+	int picSize = n.pic.size.x * n.pic.size.y * sizeof *n.pic.Data;
+	CMALLOC(n.pic.Data, picSize);
+	SDL_LockSurface(s);
+	memcpy(n.pic.Data, s->pixels, picSize);
+	SDL_UnlockSurface(s);
+	SDL_FreeSurface(s);
+	SDL_FreeSurface(image);
+	CArrayPushBack(&pm->pics, &n);
+}
+static void PicManagerLoadDirImpl(PicManager *pm, const char *path)
+{
+	tinydir_dir dir;
+	if (tinydir_open(&dir, path) == -1)
+	{
+		perror("Cannot open image dir");
+		goto bail;
+	}
+
+	for (; dir.has_next; tinydir_next(&dir))
+	{
+		tinydir_file file;
+		if (tinydir_readfile(&dir, &file) == -1)
+		{
+			perror("Cannot read image file");
+			goto bail;
+		}
+		if (file.is_reg &&
+			SDL_strcasecmp(StrGetFileExt(file.name), "png") == 0)
+		{
+			AddPic(pm, file.name, file.path);
+		}
+		else if (file.is_dir && file.name[0] != '.')
+		{
+			PicManagerLoadDirImpl(pm, file.path);
+		}
+	}
+
+bail:
+	tinydir_close(&dir);
+}
+void PicManagerLoadDir(PicManager *pm, const char *path)
+{
+	if (!IMG_Init(IMG_INIT_PNG))
+	{
+		perror("Cannot initialise SDL_Image");
+		return;
+	}
+	PicManagerLoadDirImpl(pm, path);
 }
 
 void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
@@ -80,8 +161,7 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 
 void PicManagerTerminate(PicManager *pm)
 {
-	int i;
-	for (i = 0; i < PIC_MAX; i++)
+	for (int i = 0; i < PIC_MAX; i++)
 	{
 		if (pm->oldPics[i] != NULL)
 		{
@@ -92,6 +172,14 @@ void PicManagerTerminate(PicManager *pm)
 			PicFree(&pm->picsFromOld[i]);
 		}
 	}
+	for (int i = 0; i < (int)pm->pics.size; i++)
+	{
+		NamedPic *n = CArrayGet(&pm->pics, i);
+		CFREE(n->name);
+		PicFree(&n->pic);
+	}
+	CArrayTerminate(&pm->pics);
+	IMG_Quit();
 }
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
@@ -101,4 +189,16 @@ PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
 Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 {
 	return &pm->picsFromOld[idx];
+}
+Pic *PicManagerGetPic(PicManager *pm, const char *name)
+{
+	for (int i = 0; i < (int)pm->pics.size; i++)
+	{
+		NamedPic *n = CArrayGet(&pm->pics, i);
+		if (strcmp(n->name, name) == 0)
+		{
+			return &n->pic;
+		}
+	}
+	return NULL;
 }
