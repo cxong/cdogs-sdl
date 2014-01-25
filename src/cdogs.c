@@ -1315,6 +1315,13 @@ int main(int argc, char *argv[])
 	PlayerDataInitialize();
 	CampaignSettingInit(&gCampaign.Setting);
 	MapInit(&gMap);
+	if (!PicManagerTryInit(
+		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
+	{
+		exit(0);
+	}
+	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
+	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
@@ -1336,14 +1343,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		if (!PicManagerTryInit(
-			&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-		{
-			exit(0);
-		}
-		PicManagerLoadDir(&gPicManager, "graphics");
-		memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-		CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
+		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop(&creditsDisplayer, &campaigns);
 	}

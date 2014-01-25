@@ -595,7 +595,10 @@ int gameloop(void)
 
 	missionTime = 0;
 	gMission.pickupTime = PICKUP_LIMIT;
-	EventInit(&gEventHandlers, PicManagerGetOldPic(&gPicManager, 340));
+	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
+	crosshair->offset.x = -crosshair->size.x / 2;
+	crosshair->offset.y = -crosshair->size.y / 2;
+	EventInit(&gEventHandlers, crosshair);
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
 	ticksNow = SDL_GetTicks();
