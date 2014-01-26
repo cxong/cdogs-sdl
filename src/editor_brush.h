@@ -39,6 +39,8 @@
 // Box filled: like box but with filled interior
 // Room: special type of box; the outline is always wall and the interior is
 //       always room
+// Select: draw outline and drag contents to another location
+// Add item: add items to the map
 typedef enum
 {
 	BRUSHTYPE_POINT,
@@ -46,7 +48,8 @@ typedef enum
 	BRUSHTYPE_BOX,
 	BRUSHTYPE_BOX_FILLED,
 	BRUSHTYPE_ROOM,
-	BRUSHTYPE_SELECT
+	BRUSHTYPE_SELECT,
+	BRUSHTYPE_ADD_ITEM
 } BrushType;
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);

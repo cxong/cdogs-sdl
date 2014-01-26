@@ -286,6 +286,7 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
+static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
 static void DrawHighlightedTiles(
 	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
 
@@ -297,9 +298,11 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
 	DrawDebris(b, offset);
 	// Now draw walls and (non-wreck) things in proper order
 	DrawWallsAndThings(b, offset);
-	// Draw highlight tiles if any
+	// Draw editor-only things
 	if (highlightedTiles)
 	{
+		DrawEditorTiles(b, offset);
+		// Draw highlight tiles if any
 		DrawHighlightedTiles(b, offset, highlightedTiles);
 	}
 }
@@ -403,6 +406,34 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		{
 			(*(t->drawFunc))(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+
+static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
+{
+	Vec2i pos;
+	Tile *tile = &b->tiles[0][0];
+	pos.y = b->dy + offset.y;
+	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	{
+		pos.x = b->dx + offset.x;
+		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
+		{
+			if (gMission.missionData->Type == MAPTYPE_STATIC)
+			{
+				Vec2i start = gMission.missionData->u.Static.Start;
+				if (!Vec2iEqual(start, Vec2iZero()) &&
+					Vec2iEqual(start, Vec2iNew(x + b->xStart, y + b->yStart)))
+				{
+					// mission start
+					BlitMasked(
+						&gGraphicsDevice,
+						PicManagerGetPic(&gPicManager, "start"),
+						pos, colorWhite, 1);
+				}
+			}
 		}
 		tile += X_TILES - b->Size.x;
 	}

@@ -153,7 +153,11 @@ typedef struct
 			} Pillars;
 		} Classic;
 		// Static
-		CArray StaticTiles;	// of unsigned short (map tile)
+		struct
+		{
+			CArray Tiles;	// of unsigned short (map tile)
+			Vec2i Start;
+		} Static;
 	} u;
 } Mission;
 

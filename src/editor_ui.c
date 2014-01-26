@@ -1226,6 +1226,10 @@ static int BrushIsBrushTypeSelect(EditorBrush *b)
 {
 	return b->Type == BRUSHTYPE_SELECT;
 }
+static int BrushIsBrushTypeAddItem(EditorBrush *b)
+{
+	return b->Type == BRUSHTYPE_ADD_ITEM;
+}
 static void BrushSetBrushTypePoint(EditorBrush *b, int d)
 {
 	UNUSED(d);
@@ -1255,6 +1259,11 @@ static void BrushSetBrushTypeSelect(EditorBrush *b, int d)
 {
 	UNUSED(d);
 	b->Type = BRUSHTYPE_SELECT;
+}
+static void BrushSetBrushTypeAddItem(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_ADD_ITEM;
 }
 static void ActivateBrush(EditorBrush *b)
 {
@@ -1843,6 +1852,14 @@ static UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSelect;
 	o2->ChangeFunc = BrushSetBrushTypeSelect;
 	CSTRDUP(o2->Tooltip, "Select and move");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "add"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
+	o2->ChangeFunc = BrushSetBrushTypeAddItem;
+	CSTRDUP(o2->Tooltip, "Add item");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

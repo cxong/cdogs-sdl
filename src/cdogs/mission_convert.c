@@ -40,13 +40,13 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 			Vec2i v;
 			// Take all the tiles from the current map
 			// and save them in the static map
-			CArrayInit(&m->u.StaticTiles, sizeof(unsigned short));
+			CArrayInit(&m->u.Static.Tiles, sizeof(unsigned short));
 			for (v.y = 0; v.y < m->Size.y; v.y++)
 			{
 				for (v.x = 0; v.x < m->Size.x; v.x++)
 				{
 					unsigned short tile = IMapGet(map, v);
-					CArrayPushBack(&m->u.StaticTiles, &tile);
+					CArrayPushBack(&m->u.Static.Tiles, &tile);
 				}
 			}
 		}
@@ -67,7 +67,7 @@ static unsigned short GetTileAt(Mission *m, Vec2i pos)
 	{
 		return MAP_NOTHING;
 	}
-	return *(unsigned short *)CArrayGet(&m->u.StaticTiles, index);
+	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
 }
 // See if the tile located at a position is a door and also needs
 // to be oriented in a certain way
@@ -142,7 +142,13 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 		}
 		break;
 	}
-	*(unsigned short *)CArrayGet(&m->u.StaticTiles, index) = tile;
+	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, index) = tile;
+}
+
+unsigned short MissionGetTile(Mission *m, Vec2i pos)
+{
+	int index = pos.y * m->Size.x + pos.x;
+	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
 }
 
 void MissionStaticLayout(Mission *m, Vec2i oldSize)
@@ -152,18 +158,18 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	// Simply try to "paint" the old tiles to the new mission
 	Vec2i v;
 	CArray oldTiles;
-	CArrayInit(&oldTiles, m->u.StaticTiles.elemSize);
-	CArrayCopy(&oldTiles, &m->u.StaticTiles);
+	CArrayInit(&oldTiles, m->u.Static.Tiles.elemSize);
+	CArrayCopy(&oldTiles, &m->u.Static.Tiles);
 
 	// Clear the tiles first
-	CArrayTerminate(&m->u.StaticTiles);
-	CArrayInit(&m->u.StaticTiles, oldTiles.elemSize);
+	CArrayTerminate(&m->u.Static.Tiles);
+	CArrayInit(&m->u.Static.Tiles, oldTiles.elemSize);
 	for (v.y = 0; v.y < m->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
 		{
 			unsigned short tile = MAP_FLOOR;
-			CArrayPushBack(&m->u.StaticTiles, &tile);
+			CArrayPushBack(&m->u.Static.Tiles, &tile);
 		}
 	}
 
@@ -186,4 +192,9 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	}
 
 	CArrayTerminate(&oldTiles);
+
+	if (m->u.Static.Start.x >= m->Size.x || m->u.Static.Start.y >= m->Size.y)
+	{
+		m->u.Static.Start = Vec2iZero();
+	}
 }

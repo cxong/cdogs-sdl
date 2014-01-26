@@ -180,6 +180,7 @@ bail:
 
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
 static void LoadIntArray(CArray *a, json_t *node, char *name);
+static void LoadVec2i(Vec2i *v, json_t *node, char *name);
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
@@ -234,12 +235,13 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 					return;
 				}
 				tiles = tiles->child;
-				CArrayInit(&m.u.StaticTiles, sizeof(unsigned short));
+				CArrayInit(&m.u.Static.Tiles, sizeof(unsigned short));
 				for (tiles = tiles->child; tiles; tiles = tiles->next)
 				{
 					unsigned short n = (unsigned short)atoi(tiles->text);
-					CArrayPushBack(&m.u.StaticTiles, &n);
+					CArrayPushBack(&m.u.Static.Tiles, &n);
 				}
+				LoadVec2i(&m.u.Static.Start, child, "Start");
 			}
 			break;
 		default:
@@ -307,6 +309,19 @@ static void LoadIntArray(CArray *a, json_t *node, char *name)
 		int n = atoi(child->text);
 		CArrayPushBack(a, &n);
 	}
+}
+static void LoadVec2i(Vec2i *v, json_t *node, char *name)
+{
+	json_t *child = json_find_first_label(node, name);
+	if (!child || !child->child)
+	{
+		return;
+	}
+	child = child->child;
+	child = child->child;
+	v->x = atoi(child->text);
+	child = child->next;
+	v->y = atoi(child->text);
 }
 static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode)
 {
@@ -415,6 +430,7 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 
 static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
+static json_t *SaveVec2i(Vec2i v);
 static json_t *SaveWeapons(int weapons[GUN_COUNT]);
 static json_t *SaveClassicRooms(Mission *m);
 static json_t *SaveClassicDoors(Mission *m);
@@ -482,14 +498,17 @@ static json_t *SaveMissions(CArray *a)
 			{
 				json_t *tiles = json_new_array();
 				int i;
-				for (i = 0; i < (int)mission->u.StaticTiles.size; i++)
+				for (i = 0; i < (int)mission->u.Static.Tiles.size; i++)
 				{
 					char buf[32];
 					sprintf(buf, "%d", *(unsigned short *)CArrayGet(
-						&mission->u.StaticTiles, i));
+						&mission->u.Static.Tiles, i));
 					json_insert_child(tiles, json_new_number(buf));
 				}
 				json_insert_pair_into_object(node, "Tiles", tiles);
+
+				json_insert_pair_into_object(
+					node, "Start", SaveVec2i(mission->u.Static.Start));
 			}
 			break;
 		default:
@@ -589,6 +608,16 @@ static json_t *SaveIntArray(CArray *a)
 		sprintf(buf, "%d", *(int *)CArrayGet(a, i));
 		json_insert_child(node, json_new_number(buf));
 	}
+	return node;
+}
+static json_t *SaveVec2i(Vec2i v)
+{
+	json_t *node = json_new_array();
+	char buf[32];
+	sprintf(buf, "%d", v.x);
+	json_insert_child(node, json_new_number(buf));
+	sprintf(buf, "%d", v.y);
+	json_insert_child(node, json_new_number(buf));
 	return node;
 }
 

@@ -149,8 +149,10 @@ void MissionCopy(Mission *dst, Mission *src)
 	switch (dst->Type)
 	{
 	case MAPTYPE_STATIC:
-		CArrayInit(&dst->u.StaticTiles, src->u.StaticTiles.elemSize);
-		CArrayCopy(&dst->u.StaticTiles, &src->u.StaticTiles);
+		CArrayInit(&dst->u.Static.Tiles, src->u.Static.Tiles.elemSize);
+		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
+
+		dst->u.Static.Start = src->u.Static.Start;
 		break;
 	default:
 		memcpy(&dst->u, &src->u, sizeof dst->u);
@@ -169,7 +171,7 @@ void MissionTerminate(Mission *m)
 	switch (m->Type)
 	{
 	case MAPTYPE_STATIC:
-		CArrayTerminate(&m->u.StaticTiles);
+		CArrayTerminate(&m->u.Static.Tiles);
 		break;
 	}
 }

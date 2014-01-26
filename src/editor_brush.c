@@ -339,6 +339,14 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_ADD_ITEM:
+		// TODO: other items
+		if (MissionGetTile(m, b->Pos) == MAP_ROOM ||
+			MissionGetTile(m, b->Pos) == MAP_FLOOR)
+		{
+			m->u.Static.Start = b->Pos;
+		}
+		break;
 	default:
 		assert(0 && "unknown brush type");
 		break;
@@ -433,7 +441,7 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
 						int index = vOffset.y * m->Size.x + vOffset.x;
 						unsigned short *tile = CArrayGet(
-							&m->u.StaticTiles, index);
+							&m->u.Static.Tiles, index);
 						CArrayPushBack(&movedTiles, tile);
 						*tile = MAP_FLOOR;
 					}
@@ -456,7 +464,7 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 							unsigned short *tileFrom =
 								CArrayGet(&movedTiles, i);
 							unsigned short *tileTo = CArrayGet(
-								&m->u.StaticTiles, index);
+								&m->u.Static.Tiles, index);
 							*tileTo = *tileFrom;
 							hasPainted = 1;
 						}

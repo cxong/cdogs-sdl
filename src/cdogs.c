@@ -784,7 +784,7 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 		return;\
 	}
 	int radius;
-	for (radius = 1; ; radius++)
+	for (radius = (12 << 8); ; radius += 12 << 8)
 	{
 		int dx, dy;
 		// Going from right to below
@@ -860,10 +860,18 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		gPlayers[i]->health = maxHealth;
 		gPlayers[i]->character->maxHealth = maxHealth;
 		
-		// If never split screen, try to place players near the first player
-		if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+		if (gMission.missionData->Type == MAPTYPE_STATIC &&
+			!Vec2iEqual(gMission.missionData->u.Static.Start, Vec2iZero()))
+		{
+			// place players near the start point
+			Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
+				gMission.missionData->u.Static.Start));
+			PlaceActorNear(gPlayers[i], startPoint);
+		}
+		else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
 			i > 0)
 		{
+			// If never split screen, try to place players near the first player
 			PlaceActorNear(
 				gPlayers[i], Vec2iNew(gPlayers[0]->x, gPlayers[0]->y));
 		}
