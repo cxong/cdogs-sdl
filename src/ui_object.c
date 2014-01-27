@@ -382,7 +382,8 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 {
 	int isHighlighted = o->Parent && o->Parent->Highlighted == o;
-	if (IsInside(pos, o->Pos, o->Size))
+	if (IsInside(pos, o->Pos, o->Size) &&
+		o->Type != UITYPE_CONTEXT_MENU)
 	{
 		*out = o;
 		return 1;

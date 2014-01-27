@@ -301,7 +301,7 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
-int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
+EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 {
 	if (!b->IsPainting)
 	{
@@ -313,7 +313,7 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_POINT:
 		b->IsPainting = 1;
 		EditorBrushPaintLine(b, m);
-		return 1;
+		return EDITOR_RESULT_CHANGED_AND_RELOAD;
 	case BRUSHTYPE_LINE:	// fallthrough
 	case BRUSHTYPE_BOX:	// fallthrough
 	case BRUSHTYPE_BOX_FILLED:	// fallthrough
@@ -345,6 +345,7 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			MissionGetTile(m, b->Pos) == MAP_FLOOR)
 		{
 			m->u.Static.Start = b->Pos;
+			return EDITOR_RESULT_CHANGED;
 		}
 		break;
 	default:
@@ -352,7 +353,7 @@ int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		break;
 	}
 	b->IsPainting = 1;
-	return 0;
+	return EDITOR_RESULT_NONE;
 }
 static void EditorBrushPaintBox(
 	EditorBrush *b, Mission *m,

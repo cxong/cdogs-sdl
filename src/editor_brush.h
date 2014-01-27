@@ -81,7 +81,13 @@ void EditorBrushInit(EditorBrush *b);
 void EditorBrushTerminate(EditorBrush *b);
 
 void EditorBrushSetHighlightedTiles(EditorBrush *b);
-int EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
+typedef enum
+{
+	EDITOR_RESULT_NONE,
+	EDITOR_RESULT_CHANGED,
+	EDITOR_RESULT_CHANGED_AND_RELOAD
+} EditorResult;
+EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
 int EditorBrushStopPainting(EditorBrush *b, Mission *m);
 
 #endif

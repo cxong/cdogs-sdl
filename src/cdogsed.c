@@ -845,9 +845,15 @@ static void HandleInput(
 			{
 				int isMain =
 					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT);
-				if (EditorBrushStartPainting(&brush, mission, isMain))
+				EditorResult r =
+					EditorBrushStartPainting(&brush, mission, isMain);
+				if (r == EDITOR_RESULT_CHANGED ||
+					r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
 					fileChanged = 1;
+				}
+				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+				{
 					Setup(0);
 				}
 			}
