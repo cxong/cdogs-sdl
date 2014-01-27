@@ -50,7 +50,6 @@ typedef enum
 #define UI_LEAVE_XC								4
 #define UI_SELECT_ONLY_FIRST					8
 #define UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY	16
-#define UI_UNHIGHLIGHT_PARENT_ON_CHANGE			32
 
 typedef struct _UIObject
 {
@@ -63,7 +62,7 @@ typedef struct _UIObject
 	int IsVisible;	// this is modified by get text methods, bit of a hack
 	char *Tooltip;
 	struct _UIObject *Parent;
-	CArray Children;	// elements held by pointer
+	CArray Children;	// of UIObject *
 	struct _UIObject *Highlighted;
 	union
 	{
@@ -110,7 +109,7 @@ void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
 int UIObjectChange(UIObject *o, int d);
-void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos);
+void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);

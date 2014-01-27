@@ -47,6 +47,7 @@ Vec2i Vec2iNorm(Vec2i v);
 int Vec2iEqual(Vec2i a, Vec2i b);
 Vec2i Vec2iMin(Vec2i a, Vec2i b);	// Get min x and y of both vectors
 Vec2i Vec2iMax(Vec2i a, Vec2i b);	// Get max x and y of both vectors
+Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi);
 
 // Convert to and from real (i.e. integral) coordinates and full (fractional)
 Vec2i Vec2iFull2Real(Vec2i v);

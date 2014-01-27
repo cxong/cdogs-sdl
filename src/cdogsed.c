@@ -215,7 +215,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 
 	y = 150;
 
-	UIObjectDraw(sObjs, g, Vec2iZero());
+	UIObjectDraw(sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos);
 
 	if (willDisplayAutomap && mission)
 	{
@@ -864,11 +864,17 @@ static void HandleInput(
 		if (mission)
 		{
 			// Clamp brush position
-			brush.Pos.x = CLAMP(brush.Pos.x, 0, mission->Size.x - 1);
-			brush.Pos.y = CLAMP(brush.Pos.y, 0, mission->Size.y - 1);
-			if (EditorBrushStopPainting(&brush, mission))
+			brush.Pos = Vec2iClamp(
+				brush.Pos,
+				Vec2iZero(), Vec2iMinus(mission->Size, Vec2iUnit()));
+			EditorResult r = EditorBrushStopPainting(&brush, mission);
+			if (r == EDITOR_RESULT_CHANGED ||
+				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
 				fileChanged = 1;
+			}
+			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+			{
 				Setup(0);
 			}
 		}

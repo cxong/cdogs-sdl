@@ -399,28 +399,28 @@ static void EditorBrushPaintBox(
 		}
 	}
 }
-int EditorBrushStopPainting(EditorBrush *b, Mission *m)
+EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 {
-	int hasPainted = 0;
+	EditorResult result = EDITOR_RESULT_NONE;
 	if (b->IsPainting)
 	{
 		switch (b->Type)
 		{
 		case BRUSHTYPE_LINE:
 			EditorBrushPaintLine(b, m);
-			hasPainted = 1;
+			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_BOX:
 			EditorBrushPaintBox(b, m, b->PaintType, MAP_NOTHING);
-			hasPainted = 1;
+			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_BOX_FILLED:
 			EditorBrushPaintBox(b, m, b->PaintType, b->PaintType);
-			hasPainted = 1;
+			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_ROOM:
 			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
-			hasPainted = 1;
+			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_SELECT:
 			if (b->IsMoving)
@@ -467,7 +467,7 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 							unsigned short *tileTo = CArrayGet(
 								&m->u.Static.Tiles, index);
 							*tileTo = *tileFrom;
-							hasPainted = 1;
+							result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 						}
 						i++;
 					}
@@ -519,5 +519,5 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 	}
 	b->IsPainting = 0;
 	CArrayClear(&b->HighlightedTiles);
-	return hasPainted;
+	return result;
 }

@@ -36,6 +36,7 @@
 #include <cdogs/text.h>
 
 color_t bgColor = { 32, 32, 64, 255 };
+color_t hiliteColor = { 64, 64, 128, 255 };
 #define TOOLTIP_PADDING 4
 
 
@@ -129,8 +130,6 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 	{
 		// Resize context menu based on children
 		o->Size = Vec2iMax(o->Size, Vec2iAdd(c->Pos, c->Size));
-		// Unhighlight context menu when children activated
-		c->Flags |= UI_UNHIGHLIGHT_PARENT_ON_CHANGE;
 	}
 }
 void UITabAddChild(UIObject *o, UIObject *c, char *label)
@@ -184,14 +183,17 @@ int UIObjectChange(UIObject *o, int d)
 	if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
-		if (o->Flags & UI_UNHIGHLIGHT_PARENT_ON_CHANGE)
+		if (o->Parent && o->Parent->Type == UITYPE_CONTEXT_MENU)
 		{
-			UIObjectUnhighlight(o->Parent);
+			// Must unhighlight parent of context menu
+			UIObjectUnhighlight(o->Parent->Parent);
 		}
 		return o->ChangesData;
 	}
 	return 0;
 }
+
+static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);
 
 static const char *LabelGetText(UIObject *o)
 {
@@ -212,7 +214,7 @@ typedef struct
 	Vec2i pos;
 } UIObjectDrawContext;
 static void UIObjectDrawAndAddChildren(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CArray *objs)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *objs)
 {
 	int isHighlighted;
 	if (!o)
@@ -220,6 +222,7 @@ static void UIObjectDrawAndAddChildren(
 		return;
 	}
 	isHighlighted = UIObjectIsHighlighted(o);
+	Vec2i oPos = Vec2iAdd(pos, o->Pos);
 	switch (o->Type)
 	{
 	case UITYPE_LABEL:
@@ -235,7 +238,7 @@ static void UIObjectDrawAndAddChildren(
 			}
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			DrawTextStringMaskedWrapped(
-				text, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
+				text, g, oPos, textMask, o->Size.x);
 		}
 		break;
 	case UITYPE_TEXTBOX:
@@ -246,7 +249,6 @@ static void UIObjectDrawAndAddChildren(
 			int isEmptyText = !isText || !text || strlen(text) == 0;
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;
-			Vec2i oPos = Vec2iAdd(pos, o->Pos);
 			int oPosX = oPos.x;
 			if (!o->IsVisible)
 			{
@@ -288,7 +290,7 @@ static void UIObjectDrawAndAddChildren(
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
-				UIObjectDraw(*objp, g, Vec2iAdd(pos, o->Pos));
+				UIObjectDraw(*objp, g, oPos, mouse);
 			}
 		}
 		break;
@@ -298,24 +300,38 @@ static void UIObjectDrawAndAddChildren(
 				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
 			if (isDown)
 			{
-				BlitMasked(
-					g, o->u.Button.Pic, Vec2iAdd(pos, o->Pos), colorGray, 1);
+				BlitMasked(g, o->u.Button.Pic, oPos, colorGray, 1);
 			}
 			else
 			{
-				BlitMasked(
-					g, o->u.Button.Pic, Vec2iAdd(pos, o->Pos), colorWhite, 1);
+				BlitMasked(g, o->u.Button.Pic, oPos, colorWhite, 1);
 			}
 		}
 		break;
 	case UITYPE_CONTEXT_MENU:
-		// Draw background
-		DrawRectangle(
-			g,
-			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
-			Vec2iAdd(o->Size, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
-			bgColor,
-			0);
+		{
+			// Draw background
+			DrawRectangle(
+				g,
+				Vec2iAdd(oPos, Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
+				Vec2iAdd(o->Size, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+				bgColor,
+				0);
+			// Find if mouse over any children, and draw highlight
+			for (int i = 0; i < (int)o->Children.size; i++)
+			{
+				UIObject *child = *(UIObject **)CArrayGet(&o->Children, i);
+				if (IsInside(mouse, Vec2iAdd(oPos, child->Pos), child->Size))
+				{
+					DrawRectangle(
+						g,
+						Vec2iAdd(oPos, child->Pos),
+						child->Size,
+						hiliteColor,
+						0);
+				}
+			}
+		}
 		break;
 	case UITYPE_CUSTOM:
 		o->u.CustomDrawFunc(o, g, pos, o->Data);
@@ -339,13 +355,13 @@ static void UIObjectDrawAndAddChildren(
 			{
 				UIObjectDrawContext c;
 				c.obj = *childPtr;
-				c.pos = Vec2iAdd(pos, o->Pos);
+				c.pos = oPos;
 				CArrayPushBack(objs, &c);
 			}
 		}
 	}
 }
-void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos)
+void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse)
 {
 	// Draw this UIObject and its children in BFS order
 	// Maintain a queue of UIObjects to draw
@@ -358,7 +374,8 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos)
 	for (int i = 0; i < (int)objs.size; i++)
 	{
 		UIObjectDrawContext *cPtr = CArrayGet(&objs, i);
-		UIObjectDrawAndAddChildren(cPtr->obj, g, cPtr->pos, &objs);
+		UIObjectDrawAndAddChildren(
+			cPtr->obj, g, cPtr->pos, mouse, &objs);
 	}
 	CArrayTerminate(&objs);
 }

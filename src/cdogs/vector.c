@@ -99,6 +99,12 @@ Vec2i Vec2iMax(Vec2i a, Vec2i b)
 {
 	return Vec2iNew(MAX(a.x, b.x), MAX(a.y, b.y));
 }
+Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi)
+{
+	v.x = CLAMP(v.x, lo.x, hi.x);
+	v.y = CLAMP(v.y, lo.y, hi.x);
+	return v;
+}
 
 Vec2i Vec2iFull2Real(Vec2i v)
 {

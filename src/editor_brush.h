@@ -88,6 +88,6 @@ typedef enum
 	EDITOR_RESULT_CHANGED_AND_RELOAD
 } EditorResult;
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
-int EditorBrushStopPainting(EditorBrush *b, Mission *m);
+EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m);
 
 #endif
