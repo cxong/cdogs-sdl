@@ -37,6 +37,7 @@ set(CDOGS_SOURCES
 	map_build.c
 	map_classic.c
 	map_new.c
+	map_object.c
 	map_static.c
 	mission.c
 	mission_convert.c
@@ -92,6 +93,7 @@ set(CDOGS_HEADERS
 	map_build.h
 	map_classic.h
 	map_new.h
+	map_object.h
 	map_static.h
 	mission.h
 	mission_convert.h

@@ -195,7 +195,7 @@ void MissionOptionsInit(struct MissionOptions *mo)
 {
 	memset(mo, 0, sizeof *mo);
 	CArrayInit(&mo->Objectives, sizeof(struct Objective));
-	CArrayInit(&mo->MapObjects, sizeof(TMapObject));
+	CArrayInit(&mo->MapObjects, sizeof(MapObject));
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {

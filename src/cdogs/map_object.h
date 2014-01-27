@@ -46,103 +46,49 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAMEDATA
-#define __GAMEDATA
+#ifndef __MAP_OBJECT
+#define __MAP_OBJECT
 
-#include "campaigns.h"
-#include "character.h"
-#include "input.h"
-#include "map_new.h"
-#include "map_object.h"
-#include "pics.h"
-#include "tile.h"
-#include "weapon.h"
-#include "sys_config.h"
+#define MAPOBJ_EXPLOSIVE    (1 << 0)
+#define MAPOBJ_IMPASSABLE   (1 << 1)
+#define MAPOBJ_CANBESHOT    (1 << 2)
+#define MAPOBJ_CANBETAKEN   (1 << 3)
+#define MAPOBJ_ROOMONLY     (1 << 4)
+#define MAPOBJ_NOTINROOM    (1 << 5)
+#define MAPOBJ_FREEINFRONT  (1 << 6)
+#define MAPOBJ_ONEWALL      (1 << 7)
+#define MAPOBJ_ONEWALLPLUS  (1 << 8)
+#define MAPOBJ_NOWALLS      (1 << 9)
+#define MAPOBJ_HIDEINSIDE   (1 << 10)
+#define MAPOBJ_INTERIOR     (1 << 11)
+#define MAPOBJ_FLAMMABLE    (1 << 12)
+#define MAPOBJ_POISONOUS    (1 << 13)
+#define MAPOBJ_QUAKE        (1 << 14)
+#define MAPOBJ_ON_WALL      (1 << 15)
 
-#define MAX_WEAPONS 3
+#define MAPOBJ_OUTSIDE (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | \
+                        MAPOBJ_NOTINROOM | MAPOBJ_ONEWALL)
+#define MAPOBJ_INOPEN (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | \
+                        MAPOBJ_NOTINROOM | MAPOBJ_NOWALLS)
+#define MAPOBJ_INSIDE (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | MAPOBJ_ROOMONLY)
 
-
-struct PlayerData
+// A static map object, taking up an entire tile
+typedef struct
 {
-	char name[20];
-	CharLooks looks;
-	int weaponCount;
-	gun_e weapons[MAX_WEAPONS];
+	int pic, wreckedPic;
+	int width, height;
+	int structure;
+	int flags;
+} MapObject;
 
-	int score;
-	int totalScore;
-	int survived;
-	int hp;
-	int missions;
-	int lastMission;
-	int allTime, today;
-	int kills;
-	int friendlies;
+MapObject *MapObjectGet(int item);
+int MapObjectGetCount(void);
 
-	input_device_e inputDevice;
-	int deviceIndex;
-	int playerIndex;
-};
-
-extern struct PlayerData gPlayerDatas[MAX_PLAYERS];
-
-struct GameOptions {
-	int numPlayers;
-	int badGuys;
-};
-
-struct DoorPic {
-	int horzPic;
-	int vertPic;
-};
-
-
-#define OBJECTIVE_HIDDEN        1
-#define OBJECTIVE_POSKNOWN      2
-#define OBJECTIVE_HIACCESS      4
-#define OBJECTIVE_UNKNOWNCOUNT	8
-#define OBJECTIVE_NOACCESS		16
-
-
-struct Objective
-{
-	color_t color;
-	int done;
-	MapObject *blowupObject;
-	int pickupItem;
-};
-
-extern struct GameOptions gOptions;
-extern struct MissionOptions gMission;
-
-struct SongDef {
-	char path[255];
-	struct SongDef *next;
-};
-
-extern struct SongDef *gGameSongs;
-extern struct SongDef *gMenuSongs;
-
-void AddSong(struct SongDef **songList, const char *path);
-void ShiftSongs(struct SongDef **songList);
-void FreeSongs(struct SongDef **songList);
-void LoadSongs(void);
-
-void PlayerDataInitialize(void);
-
-void MissionOptionsInit(struct MissionOptions *mo);
-void MissionOptionsTerminate(struct MissionOptions *mo);
-
-int IsIntroNeeded(campaign_mode_e mode);
-int IsScoreNeeded(campaign_mode_e mode);
-int HasObjectives(campaign_mode_e mode);
-int IsAutoMapEnabled(campaign_mode_e mode);
-int IsPasswordAllowed(campaign_mode_e mode);
-int IsMissionBriefingNeeded(campaign_mode_e mode);
-int AreKeysAllowed(campaign_mode_e mode);
-
-int IsTileInExit(TTileItem *tile, struct MissionOptions *options);
-
-int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
+int MapObjectIsTileOK(
+	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove);
+int MapObjectIsTileOKStrict(
+	MapObject *obj, unsigned short tile, int isEmpty,
+	unsigned short tileAbove, unsigned short tileBelow,
+	int numWallsAdjacent, int numWallsAround);
 
 #endif

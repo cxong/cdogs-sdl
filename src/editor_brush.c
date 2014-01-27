@@ -339,13 +339,19 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
-	case BRUSHTYPE_ADD_ITEM:
+	case BRUSHTYPE_SET_PLAYER_START:
 		// TODO: other items
 		if (MissionGetTile(m, b->Pos) == MAP_ROOM ||
 			MissionGetTile(m, b->Pos) == MAP_FLOOR)
 		{
 			m->u.Static.Start = b->Pos;
 			return EDITOR_RESULT_CHANGED;
+		}
+		break;
+	case BRUSHTYPE_ADD_ITEM:
+		if (MissionStaticAddItem(m, b->ItemIndex, b->Pos))
+		{
+			return EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		break;
 	default:

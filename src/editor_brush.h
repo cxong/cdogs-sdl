@@ -49,6 +49,7 @@ typedef enum
 	BRUSHTYPE_BOX_FILLED,
 	BRUSHTYPE_ROOM,
 	BRUSHTYPE_SELECT,
+	BRUSHTYPE_SET_PLAYER_START,
 	BRUSHTYPE_ADD_ITEM
 } BrushType;
 const char *BrushTypeStr(BrushType t);
@@ -62,6 +63,7 @@ BrushType StrBrushType(const char *s);
 typedef struct
 {
 	BrushType Type;
+	int ItemIndex;
 	unsigned short MainType;
 	unsigned short SecondaryType;
 	unsigned short PaintType;

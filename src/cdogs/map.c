@@ -65,8 +65,6 @@
 #include "mission.h"
 #include "utils.h"
 
-#define MAP_LEAVEFREE       4096
-
 #define KEY_W 9
 #define KEY_H 5
 #define COLLECTABLE_W 4
@@ -460,8 +458,8 @@ static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
 	return count;
 }
 
-static int MapPlaceOneObject(
-	Map *map, Vec2i v, TMapObject * mo, int extraFlags)
+int MapTryPlaceOneObject(
+	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode)
 {
 	int f = mo->flags;
 	int oFlags = 0;
@@ -469,49 +467,19 @@ static int MapPlaceOneObject(
 	int tileFlags = 0;
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
-	unsigned short iMapAccess = iMap & MAP_MASKACCESS;
 
-	if ((t->flags & ~MAPTILE_IS_NORMAL_FLOOR) ||
-		t->things != NULL ||
-		(iMap & MAP_LEAVEFREE))
+	int isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && t->things == NULL;
+	if (isStrictMode && !MapObjectIsTileOKStrict(
+			mo, iMap, isEmpty,
+			IMapGet(map, Vec2iNew(v.x, v.y - 1)),
+			IMapGet(map, Vec2iNew(v.x, v.y + 1)),
+			MapGetNumWallsAdjacentTile(map, v),
+			MapGetNumWallsAroundTile(map, v)))
 	{
 		return 0;
 	}
-
-	if ((f & MAPOBJ_ROOMONLY) && iMapAccess != MAP_ROOM)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_NOTINROOM) && iMapAccess == MAP_ROOM)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_ON_WALL) &&
-		(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_WALL)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_FREEINFRONT) != 0 &&
-		(IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) != MAP_ROOM &&
-		(IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) != MAP_FLOOR)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_ONEWALL) && MapGetNumWallsAdjacentTile(map, v) != 1)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_ONEWALLPLUS) && MapGetNumWallsAdjacentTile(map, v) < 1)
-	{
-		return 0;
-	}
-
-	if ((f & MAPOBJ_NOWALLS) && MapGetNumWallsAroundTile(map, v) != 0)
+	else if (!MapObjectIsTileOK(
+		mo, iMap, isEmpty, IMapGet(map, Vec2iNew(v.x, v.y - 1))))
 	{
 		return 0;
 	}
@@ -623,11 +591,11 @@ static int MapTryPlaceBlowup(
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
 			struct Objective *o = CArrayGet(&mo->Objectives, objective);
-			if (MapPlaceOneObject(
+			if (MapTryPlaceOneObject(
 					map,
 					v,
 					o->blowupObject,
-					ObjectiveToTileItem(objective)))
+					ObjectiveToTileItem(objective), 1))
 			{
 				return 1;
 			}
@@ -1124,9 +1092,9 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 		int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
 		for (j = 0; j < (itemDensity * map->Size.x * map->Size.y) / 1000; j++)
 		{
-			TMapObject *mapObj = CArrayGet(&mo->MapObjects, i);
-			MapPlaceOneObject(map, Vec2iNew(
-				rand() % map->Size.x, rand() % map->Size.y), mapObj, 0);
+			MapObject *mapObj = CArrayGet(&mo->MapObjects, i);
+			MapTryPlaceOneObject(map, Vec2iNew(
+				rand() % map->Size.x, rand() % map->Size.y), mapObj, 0, 1);
 		}
 	}
 

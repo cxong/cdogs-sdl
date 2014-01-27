@@ -49,6 +49,7 @@
 #ifndef __MAP
 #define __MAP
 
+#include "map_object.h"
 #include "mission.h"
 #include "pic.h"
 #include "tile.h"
@@ -69,6 +70,8 @@
 
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00
+
+#define MAP_LEAVEFREE       4096
 
 typedef struct
 {
@@ -112,5 +115,7 @@ TTileItem *MapGetClosestEnemy(
 // Map construction functions
 unsigned short IMapGet(Map *map, Vec2i pos);
 void IMapSet(Map *map, Vec2i pos, unsigned short v);
+int MapTryPlaceOneObject(
+	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode);
 
 #endif

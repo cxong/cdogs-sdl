@@ -241,6 +241,22 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 					unsigned short n = (unsigned short)atoi(tiles->text);
 					CArrayPushBack(&m.u.Static.Tiles, &n);
 				}
+
+				json_t *items = json_find_first_label(child, "Items");
+				if (!items || !items->child)
+				{
+					return;
+				}
+				items = items->child;
+				CArrayInit(&m.u.Static.Items, sizeof(MapObjectPos));
+				for (items = items->child; items; items = items->next)
+				{
+					MapObjectPos mop;
+					LoadVec2i(&mop.Pos, items, "Pos");
+					LoadInt(&mop.Index, items, "Index");
+					CArrayPushBack(&m.u.Static.Items, &mop);
+				}
+
 				LoadVec2i(&m.u.Static.Start, child, "Start");
 			}
 			break;
@@ -497,8 +513,7 @@ static json_t *SaveMissions(CArray *a)
 		case MAPTYPE_STATIC:
 			{
 				json_t *tiles = json_new_array();
-				int i;
-				for (i = 0; i < (int)mission->u.Static.Tiles.size; i++)
+				for (int i = 0; i < (int)mission->u.Static.Tiles.size; i++)
 				{
 					char buf[32];
 					sprintf(buf, "%d", *(unsigned short *)CArrayGet(
@@ -506,6 +521,18 @@ static json_t *SaveMissions(CArray *a)
 					json_insert_child(tiles, json_new_number(buf));
 				}
 				json_insert_pair_into_object(node, "Tiles", tiles);
+
+				json_t *items = json_new_array();
+				for (int i = 0; i < (int)mission->u.Static.Items.size; i++)
+				{
+					MapObjectPos *mop = CArrayGet(&mission->u.Static.Items, i);
+					json_t *itemNode = json_new_object();
+					json_insert_pair_into_object(
+						itemNode, "Pos", SaveVec2i(mop->Pos));
+					AddIntPair(itemNode, "Index", mop->Index);
+					json_insert_child(items, itemNode);
+				}
+				json_insert_pair_into_object(node, "Items", items);
 
 				json_insert_pair_into_object(
 					node, "Start", SaveVec2i(mission->u.Static.Start));

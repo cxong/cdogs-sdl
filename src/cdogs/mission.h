@@ -60,8 +60,8 @@ int GetKeystyleCount(void);
 int GetDoorstyleCount(void);
 int GetColorrangeCount(void);
 
-struct EditorInfo {
-	int itemCount;
+struct EditorInfo
+{
 	int pickupCount;
 	int keyCount;
 	int doorCount;
@@ -87,6 +87,11 @@ typedef struct
 	int Flags;
 } MissionObjective;
 
+typedef struct
+{
+	Vec2i Pos;
+	int Index;
+} MapObjectPos;
 typedef struct
 {
 	char *Title;
@@ -156,6 +161,7 @@ typedef struct
 		struct
 		{
 			CArray Tiles;	// of unsigned short (map tile)
+			CArray Items;	// of MapObjectPos
 			Vec2i Start;
 		} Static;
 	} u;
@@ -171,7 +177,7 @@ struct MissionOptions
 	int exitLeft, exitTop, exitRight, exitBottom;
 	int pickupTime;
 
-	CArray MapObjects;	// of TMapObject
+	CArray MapObjects;	// of MapObject
 	int *keyPics;
 	struct DoorPic *doorPics;
 	int exitPic, exitShadow;

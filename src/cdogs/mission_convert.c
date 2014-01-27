@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+#include "map_object.h"
+
 
 void MissionConvertToType(Mission *m, Map *map, MapType type)
 {
@@ -49,6 +51,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 					CArrayPushBack(&m->u.Static.Tiles, &tile);
 				}
 			}
+			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPos));
 		}
 		break;
 	}
@@ -57,6 +60,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 
 static int IsClear(unsigned short tile)
 {
+	tile &= MAP_MASKACCESS;
 	return tile == MAP_FLOOR || tile == MAP_ROOM || tile == MAP_SQUARE;
 }
 static unsigned short GetTileAt(Mission *m, Vec2i pos)
@@ -147,12 +151,17 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 
 unsigned short MissionGetTile(Mission *m, Vec2i pos)
 {
+	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
+	{
+		return MAP_NOTHING;
+	}
 	int index = pos.y * m->Size.x + pos.x;
 	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
 }
 
 void MissionStaticLayout(Mission *m, Vec2i oldSize)
 {
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	// re-layout the static map after a resize
 	// The mission contains the new size; the old dimensions are oldSize
 	// Simply try to "paint" the old tiles to the new mission
@@ -197,4 +206,34 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	{
 		m->u.Static.Start = Vec2iZero();
 	}
+}
+
+int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short tile = MissionGetTile(m, pos);
+	MapObject *obj = MapObjectGet(item);
+
+	// Find if the tile already contains items
+	int isEmpty = 1;
+	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+	{
+		MapObjectPos *mop = CArrayGet(&m->u.Static.Items, i);
+		if (Vec2iEqual(mop->Pos, pos))
+		{
+			isEmpty = 0;
+			break;
+		}
+	}
+
+	if (MapObjectIsTileOK(
+		obj, tile, isEmpty, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
+	{
+		MapObjectPos mop;
+		mop.Pos = pos;
+		mop.Index = item;
+		CArrayPushBack(&m->u.Static.Items, &mop);
+		return 1;
+	}
+	return 0;
 }

@@ -151,6 +151,8 @@ void MissionCopy(Mission *dst, Mission *src)
 	case MAPTYPE_STATIC:
 		CArrayInit(&dst->u.Static.Tiles, src->u.Static.Tiles.elemSize);
 		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
+		CArrayInit(&dst->u.Static.Items, src->u.Static.Items.elemSize);
+		CArrayCopy(&dst->u.Static.Items, &src->u.Static.Items);
 
 		dst->u.Static.Start = src->u.Static.Start;
 		break;
@@ -172,6 +174,7 @@ void MissionTerminate(Mission *m)
 	{
 	case MAPTYPE_STATIC:
 		CArrayTerminate(&m->u.Static.Tiles);
+		CArrayTerminate(&m->u.Static.Items);
 		break;
 	}
 }
@@ -229,136 +232,6 @@ static struct ColorRange cColorRanges[] =
 };
 #define COLORRANGE_COUNT (sizeof cColorRanges / sizeof(struct ColorRange))
 int GetColorrangeCount(void) { return COLORRANGE_COUNT; }
-
-
-// +--------------------+
-// |  Map objects info  |
-// +--------------------+
-
-
-static TMapObject mapItems[] = {
-	{OFSPIC_BARREL2, OFSPIC_WRECKEDBARREL2, 8, 6, 40,
-	 MAPOBJ_OUTSIDE},
-
-	{OFSPIC_BOX, OFSPIC_WRECKEDBOX, 8, 6, 20,
-	 MAPOBJ_INOPEN},
-
-	{OFSPIC_BOX2, OFSPIC_WRECKEDBOX, 8, 6, 20,
-	 MAPOBJ_INOPEN},
-
-	{OFSPIC_CABINET, OFSPIC_WRECKEDCABINET, 8, 6, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR |
-	 MAPOBJ_FREEINFRONT},
-
-	{OFSPIC_PLANT, OFSPIC_WRECKEDPLANT, 4, 3, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS},
-
-	{OFSPIC_TABLE, OFSPIC_WRECKEDTABLE, 8, 6, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_CHAIR, OFSPIC_WRECKEDCHAIR, 4, 3, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_ROD, OFSPIC_WRECKEDCHAIR, 4, 3, 60,
-	 MAPOBJ_INOPEN},
-
-	{OFSPIC_SKULLBARREL_WOOD, OFSPIC_WRECKEDBARREL_WOOD, 8, 6, 40,
-	 MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE},
-
-	{OFSPIC_BARREL_WOOD, OFSPIC_WRECKEDBARREL_WOOD, 8, 6, 40,
-	 MAPOBJ_OUTSIDE},
-
-	{OFSPIC_GRAYBOX, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 20,
-	 MAPOBJ_OUTSIDE},
-
-	{OFSPIC_GREENBOX, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 20,
-	 MAPOBJ_OUTSIDE},
-
-	{OFSPIC_OGRESTATUE, OFSPIC_WRECKEDSAFE, 8, 6, 80,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR |
-	 MAPOBJ_FREEINFRONT},
-
-	{OFSPIC_WOODTABLE_CANDLE, OFSPIC_WRECKEDTABLE, 8, 6, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_WOODTABLE, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_TREE, OFSPIC_TREE_REMAINS, 4, 3, 40,
-	 MAPOBJ_INOPEN},
-
-	{OFSPIC_BOOKSHELF, OFSPIC_WRECKEDBOX_WOOD, 8, 3, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR |
-	 MAPOBJ_FREEINFRONT},
-
-	{OFSPIC_WOODENBOX, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 20,
-	 MAPOBJ_OUTSIDE},
-
-	{OFSPIC_CLOTHEDTABLE, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 20,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_STEELTABLE, OFSPIC_WRECKEDSAFE, 8, 6, 30,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_AUTUMNTREE, OFSPIC_AUTUMNTREE_REMAINS, 4, 3, 40,
-	 MAPOBJ_INOPEN},
-
-	{OFSPIC_GREENTREE, OFSPIC_GREENTREE_REMAINS, 8, 6, 40,
-	 MAPOBJ_INOPEN},
-
-// Used-to-be blow-ups
-
-	{OFSPIC_BOX3, OFSPIC_WRECKEDBOX3, 8, 6, 40,
-	 MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE | MAPOBJ_QUAKE},
-
-	{OFSPIC_SAFE, OFSPIC_WRECKEDSAFE, 8, 6, 100,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR |
-	 MAPOBJ_FREEINFRONT},
-
-	{OFSPIC_REDBOX, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 40,
-	 MAPOBJ_OUTSIDE | MAPOBJ_FLAMMABLE},
-
-	{OFSPIC_LABTABLE, OFSPIC_WRECKEDSAFE, 8, 6, 60,
-	 MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR |
-	 MAPOBJ_FREEINFRONT | MAPOBJ_POISONOUS},
-
-	{OFSPIC_TERMINAL, OFSPIC_WRECKEDBOX_WOOD, 8, 6, 40,
-	 MAPOBJ_INSIDE | MAPOBJ_NOWALLS},
-
-	{OFSPIC_BARREL, OFSPIC_WRECKEDBARREL, 8, 6, 40,
-	 MAPOBJ_OUTSIDE | MAPOBJ_FLAMMABLE},
-
-	{OFSPIC_ROCKET, OFSPIC_BURN, 8, 6, 40,
-	 MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE | MAPOBJ_QUAKE},
-
-	{OFSPIC_EGG, OFSPIC_EGG_REMAINS, 8, 6, 30,
-	 (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT)},
-
-	{OFSPIC_BLOODSTAIN, 0, 0, 0, 0,
-	 MAPOBJ_ON_WALL},
-
-	{OFSPIC_WALL_SKULL, 0, 0, 0, 0,
-	 MAPOBJ_ON_WALL},
-
-	{OFSPIC_BONE_N_BLOOD, 0, 0, 0, 0, 0},
-
-	{OFSPIC_BULLET_MARKS, 0, 0, 0, 0,
-	 MAPOBJ_ON_WALL},
-
-	{OFSPIC_SKULL, 0, 0, 0, 0, 0},
-
-	{OFSPIC_BLOOD, 0, 0, 0, 0, 0},
-
-	{OFSPIC_SCRATCH, 0, 0, 0, 0, MAPOBJ_ON_WALL},
-
-	{OFSPIC_WALL_STUFF, 0, 0, 0, 0, MAPOBJ_ON_WALL},
-
-	{OFSPIC_WALL_GOO, 0, 0, 0, 0, MAPOBJ_ON_WALL},
-
-	{OFSPIC_GOO, 0, 0, 0, 0, 0}
-
-};
-#define ITEMS_COUNT (sizeof( mapItems)/sizeof( TMapObject))
 
 
 // +----------------+
@@ -662,7 +535,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 		memset(&o, 0, sizeof o);
 		assert(i < OBJECTIVE_MAX_OLD);
 		o.color = objectiveColors[i];
-		o.blowupObject = &mapItems[mobj->Index % ITEMS_COUNT];
+		o.blowupObject = MapObjectGet(mobj->Index);
 		o.pickupItem = pickupItems[mobj->Index % PICKUPS_COUNT];
 		CArrayPushBack(&mo->Objectives, &o);
 	}
@@ -724,7 +597,7 @@ void SetupMission(
 	{
 		CArrayPushBack(
 			&mo->MapObjects,
-			&mapItems[*(int32_t *)CArrayGet(&m->Items, i)]);
+			MapObjectGet(*(int32_t *)CArrayGet(&m->Items, i)));
 	}
 
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
@@ -884,7 +757,6 @@ int IsMissionComplete(struct MissionOptions *options)
 struct EditorInfo GetEditorInfo(void)
 {
 	struct EditorInfo ei;
-	ei.itemCount = ITEMS_COUNT;
 	ei.pickupCount = PICKUPS_COUNT;
 	ei.keyCount = KEYSTYLE_COUNT;
 	ei.doorCount = DOORSTYLE_COUNT;

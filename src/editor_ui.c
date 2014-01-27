@@ -576,7 +576,7 @@ static void MissionDrawSpecialChar(
 }
 static void DisplayMapItem(
 	GraphicsDevice *g,
-	Vec2i pos, TMapObject *mo, int density, int isHighlighted);
+	Vec2i pos, MapObject *mo, int density, int isHighlighted);
 static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
@@ -801,7 +801,7 @@ static void DrawStyleArea(
 }
 static void DisplayMapItem(
 	GraphicsDevice *g,
-	Vec2i pos, TMapObject *mo, int density, int isHighlighted)
+	Vec2i pos, MapObject *mo, int density, int isHighlighted)
 {
 	char s[10];
 
@@ -1108,7 +1108,7 @@ static void MissionChangeMapItem(MissionIndexData *data, int d)
 	{
 		int i = *(int *)CArrayGet(
 			&CampaignGetCurrentMission(data->co)->Items, data->index);
-		i = CLAMP_OPPOSITE(i + d, 0, GetEditorInfo().itemCount - 1);
+		i = CLAMP_OPPOSITE(i + d, 0, MapObjectGetCount() - 1);
 		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->Items, data->index) = i;
 	}
 }
@@ -1132,7 +1132,7 @@ static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
 		limit = GetEditorInfo().pickupCount - 1;
 		break;
 	case OBJECTIVE_DESTROY:
-		limit = GetEditorInfo().itemCount - 1;
+		limit = MapObjectGetCount() - 1;
 		break;
 	case OBJECTIVE_KILL:
 	case OBJECTIVE_INVESTIGATE:
@@ -1230,7 +1230,8 @@ static int BrushIsBrushTypeSelect(EditorBrush *b)
 }
 static int BrushIsBrushTypeAddItem(EditorBrush *b)
 {
-	return b->Type == BRUSHTYPE_ADD_ITEM;
+	return
+		b->Type == BRUSHTYPE_SET_PLAYER_START || b->Type == BRUSHTYPE_ADD_ITEM;
 }
 static void BrushSetBrushTypePoint(EditorBrush *b, int d)
 {
@@ -1261,6 +1262,11 @@ static void BrushSetBrushTypeSelect(EditorBrush *b, int d)
 {
 	UNUSED(d);
 	b->Type = BRUSHTYPE_SELECT;
+}
+static void BrushSetBrushTypeSetPlayerStart(EditorBrush *b, int d)
+{
+	UNUSED(d);
+	b->Type = BRUSHTYPE_SET_PLAYER_START;
 }
 static void BrushSetBrushTypeAddItem(EditorBrush *b, int d)
 {
@@ -2309,7 +2315,7 @@ static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
 	pos = Vec2iZero();
 	o2 = UIObjectCopy(o);
 	o2->Label = "Player start";
-	o2->ChangeFunc = BrushSetBrushTypeAddItem;
+	o2->ChangeFunc = BrushSetBrushTypeSetPlayerStart;
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Location where players start");
 	UIObjectAddChild(c, o2);

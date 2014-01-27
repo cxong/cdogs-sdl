@@ -46,6 +46,12 @@ void MapStaticLoad(Map *map, Mission *m)
 		}
 	}
 
+	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+	{
+		MapObjectPos *mop = CArrayGet(&m->u.Static.Items, i);
+		MapTryPlaceOneObject(map, mop->Pos, MapObjectGet(mop->Index), 0, 0);
+	}
+
 	if (AreKeysAllowed(gCampaign.Entry.mode))
 	{
 		SetAccessLevels(map);
