@@ -313,7 +313,7 @@ static void UIObjectDrawAndAddChildren(
 		DrawRectangle(
 			g,
 			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
-			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+			Vec2iAdd(o->Size, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
 			bgColor,
 			0);
 		break;
