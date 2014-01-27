@@ -222,9 +222,8 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	if (UITryGetObject(sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&
 		o->Tooltip)
 	{
-		Vec2i tooltipPos = Vec2iAdd(
-			gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-		DrawTooltip(&gGraphicsDevice, tooltipPos, o->Tooltip);
+		UITooltipDraw(
+			&gGraphicsDevice, gEventHandlers.mouse.currentPos, o->Tooltip);
 	}
 	MouseDraw(&gEventHandlers.mouse);
 
@@ -628,18 +627,4 @@ void EditCharacters(CampaignSetting *setting)
 	}
 
 	UIObjectDestroy(sCharEditorObjs);
-}
-
-void DrawTooltip(GraphicsDevice *device, Vec2i pos, const char *s)
-{
-	Vec2i bgSize = TextGetSize(s);
-	int padding = 4;
-	color_t bgColor = { 32, 32, 64, 255 };
-	DrawRectangle(
-		device,
-		Vec2iAdd(pos, Vec2iNew(-padding, -padding)),
-		Vec2iAdd(bgSize, Vec2iNew(2*padding, 2*padding)),
-		bgColor,
-		0);
-	DrawTextString(s, device, pos);
 }

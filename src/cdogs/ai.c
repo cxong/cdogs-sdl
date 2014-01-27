@@ -124,7 +124,7 @@ static int IsCloseToPlayer(Vec2i pos)
 
 static int PositionOK(TActor * actor, int x, int y)
 {
-	Vec2i realPos = Vec2iScaleDiv(Vec2iNew(x, y), 256);
+	Vec2i realPos = Vec2iFull2Real(Vec2iNew(x, y));
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 	if (IsCollisionWithWall(realPos, size))
 	{

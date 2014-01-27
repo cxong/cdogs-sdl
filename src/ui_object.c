@@ -32,7 +32,11 @@
 #include <string.h>
 
 #include <cdogs/blit.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/text.h>
+
+color_t bgColor = { 32, 32, 64, 255 };
+#define TOOLTIP_PADDING 4
 
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
@@ -52,6 +56,10 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	case UITYPE_TAB:
 		CArrayInit(&o->u.Tab.Labels, sizeof(char *));
 		o->u.Tab.Index = 0;
+		break;
+	case UITYPE_CONTEXT_MENU:
+		// Context menu always disabled unless parent highlighted
+		o->Flags |= UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 		break;
 	}
 	CArrayInit(&o->Children, sizeof o);
@@ -117,6 +125,11 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 	CArrayPushBack(&o->Children, &c);
 	c->Parent = o;
 	assert(o->Type != UITYPE_TAB && "need special add child for TAB type");
+	if (o->Type == UITYPE_CONTEXT_MENU)
+	{
+		// Resize context menu based on children
+		o->Size = Vec2iMax(o->Size, Vec2iAdd(c->Pos, c->Size));
+	}
 }
 void UITabAddChild(UIObject *o, UIObject *c, char *label)
 {
@@ -174,7 +187,26 @@ int UIObjectChange(UIObject *o, int d)
 	return 0;
 }
 
-void UIObjectDraw(UIObject *o, GraphicsDevice *g)
+static const char *LabelGetText(UIObject *o)
+{
+	assert(o->Type == UITYPE_LABEL && "invalid UIObject type");
+	if (o->Label)
+	{
+		return o->Label;
+	}
+	else if (o->u.LabelFunc)
+	{
+		return o->u.LabelFunc(o, o->Data);
+	}
+	return NULL;
+}
+typedef struct
+{
+	UIObject *obj;
+	Vec2i pos;
+} UIObjectDrawContext;
+static void UIObjectDrawAndAddChildren(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CArray *objs)
 {
 	int isHighlighted;
 	if (!o)
@@ -186,20 +218,18 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 	{
 	case UITYPE_LABEL:
 		{
-			int isText = !!o->u.LabelFunc;
-			const char *text = isText ? o->u.LabelFunc(o, o->Data) : NULL;
-			color_t textMask = isHighlighted ? colorRed : colorWhite;
-			Vec2i pos = o->Pos;
 			if (!o->IsVisible)
 			{
 				return;
 			}
+			const char *text = LabelGetText(o);
 			if (!text)
 			{
 				break;
 			}
-			pos = DrawTextStringMaskedWrapped(
-				text, g, pos, textMask, o->Pos.x + o->Size.x - pos.x);
+			color_t textMask = isHighlighted ? colorRed : colorWhite;
+			DrawTextStringMaskedWrapped(
+				text, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
 		}
 		break;
 	case UITYPE_TEXTBOX:
@@ -210,7 +240,8 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 			int isEmptyText = !isText || !text || strlen(text) == 0;
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;
-			Vec2i pos = o->Pos;
+			Vec2i oPos = Vec2iAdd(pos, o->Pos);
+			int oPosX = oPos.x;
 			if (!o->IsVisible)
 			{
 				return;
@@ -225,14 +256,14 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 			}
 			if (o->u.Textbox.IsEditable)
 			{
-				pos = DrawTextCharMasked('\020', g, pos, bracketMask);
+				oPos = DrawTextCharMasked('\020', g, oPos, bracketMask);
 			}
-			pos = DrawTextStringMaskedWrapped(
-				text, g, pos, textMask,
-				o->Pos.x + o->Size.x - pos.x);
+			oPos = DrawTextStringMaskedWrapped(
+				text, g, oPos, textMask,
+				o->Pos.x + o->Size.x - oPosX);
 			if (o->u.Textbox.IsEditable)
 			{
-				pos = DrawTextCharMasked('\021', g, pos, bracketMask);
+				oPos = DrawTextCharMasked('\021', g, oPos, bracketMask);
 			}
 		}
 		break;
@@ -247,11 +278,11 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 				return;
 			}
 			DrawTextStringMaskedWrapped(
-				*labelp, g, o->Pos, textMask, o->Pos.x + o->Size.x - o->Pos.x);
+				*labelp, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
-				UIObjectDraw(*objp, g);
+				UIObjectDraw(*objp, g, Vec2iAdd(pos, o->Pos));
 			}
 		}
 		break;
@@ -261,16 +292,27 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
 			if (isDown)
 			{
-				BlitMasked(g, o->u.Button.Pic, o->Pos, colorGray, 1);
+				BlitMasked(
+					g, o->u.Button.Pic, Vec2iAdd(pos, o->Pos), colorGray, 1);
 			}
 			else
 			{
-				BlitMasked(g, o->u.Button.Pic, o->Pos, colorWhite, 1);
+				BlitMasked(
+					g, o->u.Button.Pic, Vec2iAdd(pos, o->Pos), colorWhite, 1);
 			}
 		}
 		break;
+	case UITYPE_CONTEXT_MENU:
+		// Draw background
+		DrawRectangle(
+			g,
+			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
+			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+			bgColor,
+			0);
+		break;
 	case UITYPE_CUSTOM:
-		o->u.CustomDrawFunc(o, g, o->Data);
+		o->u.CustomDrawFunc(o, g, pos, o->Data);
 		if (!o->IsVisible)
 		{
 			return;
@@ -278,21 +320,41 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g)
 		break;
 	}
 
-	// draw children
+	// add children
 	// Note: tab type draws its own children (one)
 	if (o->Type != UITYPE_TAB)
 	{
 		size_t i;
-		UIObject **objs = o->Children.data;
-		for (i = 0; i < o->Children.size; i++, objs++)
+		UIObject **childPtr = o->Children.data;
+		for (i = 0; i < o->Children.size; i++, childPtr++)
 		{
-			if (!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+			if (!((*childPtr)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
-				UIObjectDraw(*objs, g);
+				UIObjectDrawContext c;
+				c.obj = *childPtr;
+				c.pos = Vec2iAdd(pos, o->Pos);
+				CArrayPushBack(objs, &c);
 			}
 		}
 	}
+}
+void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos)
+{
+	// Draw this UIObject and its children in BFS order
+	// Maintain a queue of UIObjects to draw
+	CArray objs;	// of UIObjectDrawContext
+	CArrayInit(&objs, sizeof(UIObjectDrawContext));
+	UIObjectDrawContext c;
+	c.obj = o;
+	c.pos = pos;
+	CArrayPushBack(&objs, &c);
+	for (int i = 0; i < (int)objs.size; i++)
+	{
+		UIObjectDrawContext *cPtr = CArrayGet(&objs, i);
+		UIObjectDrawAndAddChildren(cPtr->obj, g, cPtr->pos, &objs);
+	}
+	CArrayTerminate(&objs);
 }
 
 static int IsZeroUIObject(UIObject *o)
@@ -350,4 +412,17 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 		}
 	}
 	return 0;
+}
+
+void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)
+{
+	Vec2i bgSize = TextGetSize(s);
+	pos = Vec2iAdd(pos, Vec2iNew(10, 10));	// add offset
+	DrawRectangle(
+		device,
+		Vec2iAdd(pos, Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
+		Vec2iAdd(bgSize, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+		bgColor,
+		0);
+	DrawTextString(s, device, pos);
 }

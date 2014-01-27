@@ -390,10 +390,8 @@ int MapGetRoomOverlapSize(
 					}
 					else
 					{
-						overlapMin.x = MIN(overlapMin.x, v.x);
-						overlapMin.y = MIN(overlapMin.y, v.y);
-						overlapMax.x = MAX(overlapMax.x, v.x);
-						overlapMax.y = MAX(overlapMax.y, v.y);
+						overlapMin = Vec2iMin(overlapMin, v);
+						overlapMax = Vec2iMax(overlapMax, v);
 					}
 					numOverlaps++;
 				}
@@ -470,10 +468,8 @@ int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
 					}
 					else
 					{
-						overlapMin.x = MIN(overlapMin.x, v.x);
-						overlapMin.y = MIN(overlapMin.y, v.y);
-						overlapMax.x = MAX(overlapMax.x, v.x);
-						overlapMax.y = MAX(overlapMax.y, v.y);
+						overlapMin = Vec2iMin(overlapMin, v);
+						overlapMax = Vec2iMax(overlapMax, v);
 					}
 					numOverlaps++;
 				}

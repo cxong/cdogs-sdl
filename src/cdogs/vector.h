@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,14 @@ typedef struct
 
 Vec2i Vec2iNew(int x, int y);
 Vec2i Vec2iZero(void);
+Vec2i Vec2iUnit(void);	// (1, 1)
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 Vec2i Vec2iNorm(Vec2i v);
 int Vec2iEqual(Vec2i a, Vec2i b);
+Vec2i Vec2iMin(Vec2i a, Vec2i b);	// Get min x and y of both vectors
+Vec2i Vec2iMax(Vec2i a, Vec2i b);	// Get max x and y of both vectors
 
 // Convert to and from real (i.e. integral) coordinates and full (fractional)
 Vec2i Vec2iFull2Real(Vec2i v);

@@ -215,7 +215,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 
 	y = 150;
 
-	UIObjectDraw(sObjs, g);
+	UIObjectDraw(sObjs, g, Vec2iZero());
 
 	if (willDisplayAutomap && mission)
 	{
@@ -227,9 +227,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o) &&
 			o->Tooltip)
 		{
-			Vec2i tooltipPos = Vec2iAdd(
-				gEventHandlers.mouse.currentPos, Vec2iNew(10, 10));
-			DrawTooltip(g, tooltipPos, o->Tooltip);
+			UITooltipDraw(g, gEventHandlers.mouse.currentPos, o->Tooltip);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}

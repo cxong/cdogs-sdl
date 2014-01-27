@@ -45,11 +45,6 @@ static void DrawStyleArea(
 	int index, int count,
 	int isHighlighted);
 
-static char *CStr(UIObject *o, char *s)
-{
-	UNUSED(o);
-	return s;
-}
 static char *CampaignGetTitle(UIObject *o, CampaignOptions *c)
 {
 	UNUSED(o);
@@ -73,9 +68,10 @@ static char *CampaignGetSeedStr(UIObject *o, CampaignOptions *c)
 	return s;
 }
 static void CheckMission(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	UNUSED(g);
+	UNUSED(pos);
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -86,10 +82,11 @@ static void CheckMission(
 	o->IsVisible = 1;
 }
 static void MissionCheckTypeClassic(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	Mission *m = CampaignGetCurrentMission(co);
 	UNUSED(g);
+	UNUSED(pos);
 	if (!m || m->Type != MAPTYPE_CLASSIC)
 	{
 		o->IsVisible = 0;
@@ -100,10 +97,11 @@ static void MissionCheckTypeClassic(
 	o->IsVisible = 1;
 }
 static void MissionCheckTypeStatic(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	Mission *m = CampaignGetCurrentMission(co);
 	UNUSED(g);
+	UNUSED(pos);
 	if (!m || m->Type != MAPTYPE_STATIC)
 	{
 		o->IsVisible = 0;
@@ -211,23 +209,26 @@ static char *MissionGetRoomMaxStr(UIObject *o, CampaignOptions *co)
 	return s;
 }
 static void MissionDrawEdgeRooms(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, o->Pos, "Edge rooms", CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge,
+		g, Vec2iAdd(pos, o->Pos), "Edge rooms",
+		CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomsOverlap(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	static char s[128];
 	UNUSED(o);
+	UNUSED(pos);
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, o->Pos, "Room overlap", CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap,
+		g, Vec2iAdd(pos, o->Pos), "Room overlap",
+		CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
 static char *MissionGetRoomWallCountStr(UIObject *o, CampaignOptions *co)
@@ -263,13 +264,14 @@ static char *MissionGetSquareCountStr(UIObject *o, CampaignOptions *co)
 	return s;
 }
 static void MissionDrawDoorEnabled(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	static char s[128];
 	UNUSED(o);
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, o->Pos, "Doors", CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
+		g, Vec2iAdd(pos, o->Pos), "Doors",
+		CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
 static char *MissionGetDoorMinStr(UIObject *o, CampaignOptions *co)
@@ -329,14 +331,14 @@ static char *MissionGetTypeStr(UIObject *o, CampaignOptions *co)
 	return s;
 }
 static void MissionDrawWallStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = WALL_STYLE_COUNT;
-	if (!CampaignGetCurrentMission(co)) return; 
+	if (!CampaignGetCurrentMission(co)) return;
 	index = CampaignGetCurrentMission(co)->WallStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Wall",
 		g,
 		PicManagerGetOldPic(&gPicManager, cWallPics[index % count][WALL_SINGLE]),
@@ -344,7 +346,7 @@ static void MissionDrawWallStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = FLOOR_STYLE_COUNT;
@@ -356,7 +358,7 @@ static void MissionDrawFloorStyle(
 	o->IsVisible = 1;
 	index = CampaignGetCurrentMission(co)->FloorStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Floor",
 		g,
 		PicManagerGetOldPic(&gPicManager, cFloorPics[index % count][FLOOR_NORMAL]),
@@ -364,7 +366,7 @@ static void MissionDrawFloorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = ROOMFLOOR_COUNT;
@@ -376,7 +378,7 @@ static void MissionDrawRoomStyle(
 	o->IsVisible = 1;
 	index = CampaignGetCurrentMission(co)->RoomStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Rooms",
 		g,
 		PicManagerGetOldPic(&gPicManager, cRoomPics[index % count][ROOMFLOOR_NORMAL]),
@@ -384,7 +386,7 @@ static void MissionDrawRoomStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = GetEditorInfo().doorCount;
@@ -396,7 +398,7 @@ static void MissionDrawDoorStyle(
 	o->IsVisible = 1;
 	index = CampaignGetCurrentMission(co)->DoorStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Doors",
 		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
@@ -404,7 +406,7 @@ static void MissionDrawDoorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = GetEditorInfo().keyCount;
@@ -416,7 +418,7 @@ static void MissionDrawKeyStyle(
 	o->IsVisible = 1;
 	index = CampaignGetCurrentMission(co)->KeyStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Keys",
 		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
@@ -424,7 +426,7 @@ static void MissionDrawKeyStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
-	UIObject *o, GraphicsDevice *g, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
 {
 	int index;
 	int count = GetEditorInfo().exitCount;
@@ -436,7 +438,7 @@ static void MissionDrawExitStyle(
 	o->IsVisible = 1;
 	index = CampaignGetCurrentMission(co)->ExitStyle;
 	DrawStyleArea(
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		"Exit",
 		g,
 		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
@@ -544,7 +546,7 @@ typedef struct
 	int index;
 } MissionIndexData;
 static void MissionDrawEnemy(
-	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
 	UNUSED(g);
 	if (!CampaignGetCurrentMission(data->co)) return;
@@ -553,12 +555,12 @@ static void MissionDrawEnemy(
 		return;
 	}
 	DisplayCharacter(
-		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		data->co->Setting.characters.baddies[data->index],
 		UIObjectIsHighlighted(o), 1);
 }
 static void MissionDrawSpecialChar(
-	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
 	UNUSED(g);
 	if (!CampaignGetCurrentMission(data->co)) return;
@@ -568,7 +570,7 @@ static void MissionDrawSpecialChar(
 		return;
 	}
 	DisplayCharacter(
-		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		data->co->Setting.characters.specials[data->index],
 		UIObjectIsHighlighted(o), 1);
 }
@@ -576,26 +578,26 @@ static void DisplayMapItem(
 	GraphicsDevice *g,
 	Vec2i pos, TMapObject *mo, int density, int isHighlighted);
 static void MissionDrawMapItem(
-	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if (data->index >= (int)CampaignGetCurrentMission(data->co)->Items.size) return;
 	DisplayMapItem(
 		g,
-		Vec2iAdd(o->Pos, Vec2iScaleDiv(o->Size, 2)),
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		CArrayGet(&gMission.MapObjects, data->index),
 		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->ItemDensities, data->index),
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawWeaponStatus(
-	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
 	int hasWeapon;
 	if (!CampaignGetCurrentMission(data->co)) return;
 	hasWeapon = CampaignGetCurrentMission(data->co)->Weapons[data->index];
 	DisplayFlag(
 		g,
-		o->Pos,
+		Vec2iAdd(pos, o->Pos),
 		gGunDescriptions[data->index].name,
 		hasWeapon,
 		UIObjectIsHighlighted(o));
@@ -611,7 +613,7 @@ static const char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t);
 static void MissionDrawObjective(
-	UIObject *o, GraphicsDevice *g, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
 {
 	CharacterStore *store = &data->co->Setting.characters;
 	Character *c;
@@ -665,8 +667,8 @@ static void MissionDrawObjective(
 	if (pic.picIndex >= 0)
 	{
 		DrawTTPic(
-			o->Pos.x + o->Size.x / 2 + pic.dx,
-			o->Pos.y + o->Size.y / 2 + pic.dy,
+			pos.x + o->Pos.x + o->Size.x / 2 + pic.dx,
+			pos.y + o->Pos.y + o->Size.y / 2 + pic.dy,
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 }
@@ -1492,11 +1494,10 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	o->Flags = UI_SELECT_ONLY;
 
 	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = CStr;
-	o2->Data = "Mission description";
+	o2->Label = "Mission description";
 	o2->Id = YC_MISSIONDESC;
 	o2->Pos = pos;
-	o2->Size = TextGetSize(o2->Data);
+	o2->Size = TextGetSize(o2->Label);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
 		Vec2iNew(25, 170), Vec2iNew(295, 5 * th));
@@ -1547,7 +1548,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 
 	// objectives
 	pos.y += 2;
-	objectivesPos = Vec2iNew(pos.x, pos.y + 8 * th);
+	objectivesPos = Vec2iNew(0, 8 * th);
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
 	o->Flags = UI_SELECT_ONLY;
@@ -1791,6 +1792,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
+static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateStaticMapObjs(
 	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
@@ -1858,9 +1860,9 @@ static UIObject *CreateStaticMapObjs(
 	o2 = UIObjectCopy(o);
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "add"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
-	o2->ChangeFunc = BrushSetBrushTypeAddItem;
 	CSTRDUP(o2->Tooltip, "Add item");
 	o2->Pos = pos;
+	UIObjectAddChild(o2, CreateAddItemObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -2291,5 +2293,33 @@ UIObject *CreateCharEditorObjs(void)
 		UITYPE_NONE, YC_WEAPON, Vec2iNew(50, y), Vec2iNew(210, th));
 	UIObjectAddChild(c, o);
 
+	return c;
+}
+
+static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
+{
+	int th = CDogsTextHeight();
+	UIObject *o2;
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+
+	UIObject *o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
+	o->Data = brush;
+
+	pos = Vec2iZero();
+	o2 = UIObjectCopy(o);
+	o2->Label = "Player start";
+	o2->ChangeFunc = BrushSetBrushTypeAddItem;
+	o2->Pos = pos;
+	CSTRDUP(o2->Tooltip, "Location where players start");
+	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->Label = "Map item";
+	o2->ChangeFunc = BrushSetBrushTypeAddItem;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	UIObjectDestroy(o);
 	return c;
 }

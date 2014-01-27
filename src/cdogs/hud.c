@@ -157,7 +157,7 @@ static void DrawGauge(
 	color_t barColor, color_t backColor,
 	int textFlags)
 {
-	Vec2i offset = Vec2iNew(1, 1);
+	Vec2i offset = Vec2iUnit();
 	Vec2i barPos = Vec2iAdd(pos, offset);
 	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
 	if (textFlags & TEXT_RIGHT)

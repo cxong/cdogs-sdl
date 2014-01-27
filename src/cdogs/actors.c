@@ -147,7 +147,7 @@ Vec2i PlayersGetMidpoint(TActor *players[MAX_PLAYERS])
 	Vec2i min;
 	Vec2i max;
 	PlayersGetBoundingRectangle(players, &min, &max);
-	return Vec2iNew((min.x + max.x) / 2, (min.y + max.y) / 2);
+	return Vec2iScaleDiv(Vec2iAdd(min, max), 2);
 }
 
 void PlayersGetBoundingRectangle(

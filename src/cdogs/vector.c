@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,10 @@ Vec2i Vec2iZero(void)
 {
 	return Vec2iNew(0, 0);
 }
+Vec2i Vec2iUnit(void)
+{
+	return Vec2iNew(1, 1);
+}
 
 Vec2i Vec2iAdd(Vec2i a, Vec2i b)
 {
@@ -79,6 +83,15 @@ Vec2i Vec2iNorm(Vec2i v)
 int Vec2iEqual(Vec2i a, Vec2i b)
 {
 	return a.x == b.x && a.y == b.y;
+}
+
+Vec2i Vec2iMin(Vec2i a, Vec2i b)
+{
+	return Vec2iNew(MIN(a.x, b.x), MIN(a.y, b.y));
+}
+Vec2i Vec2iMax(Vec2i a, Vec2i b)
+{
+	return Vec2iNew(MAX(a.x, b.x), MAX(a.y, b.y));
 }
 
 Vec2i Vec2iFull2Real(Vec2i v)

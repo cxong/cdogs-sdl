@@ -505,8 +505,7 @@ int EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			else
 			{
 				// Record the selection size
-				b->SelectionStart.x = MIN(b->LastPos.x, b->Pos.x);
-				b->SelectionStart.y = MIN(b->LastPos.y, b->Pos.y);
+				b->SelectionStart = Vec2iMin(b->LastPos, b->Pos);
 				b->SelectionSize.x = abs(b->LastPos.x - b->Pos.x) + 1;
 				b->SelectionSize.y = abs(b->LastPos.y - b->Pos.y) + 1;
 				// Disallow 1x1 selection sizes

@@ -41,6 +41,7 @@ typedef enum
 	UITYPE_TEXTBOX,
 	UITYPE_TAB,	// like label but when clicked displays a different child
 	UITYPE_BUTTON,	// click button with picture
+	UITYPE_CONTEXT_MENU,	// appear on mouse click
 	UITYPE_CUSTOM
 } UIType;
 
@@ -87,8 +88,9 @@ typedef struct _UIObject
 			int (*IsDownFunc)(void *);	// whether the button is down
 		} Button;
 		// Custom
-		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, void *);
+		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, Vec2i, void *);
 	} u;
+	char *Label;
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
@@ -107,9 +109,11 @@ void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
 int UIObjectChange(UIObject *o, int d);
-void UIObjectDraw(UIObject *o, GraphicsDevice *g);
+void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
+
+void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s);
 
 #endif
