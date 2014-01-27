@@ -59,8 +59,8 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 		o->u.Tab.Index = 0;
 		break;
 	case UITYPE_CONTEXT_MENU:
-		// Context menu always disabled unless parent highlighted
-		o->Flags |= UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
+		// Context menu always starts as invisible
+		o->IsVisible = 0;
 		break;
 	}
 	CArrayInit(&o->Children, sizeof o);
@@ -150,6 +150,15 @@ void UIObjectHighlight(UIObject *o)
 	{
 		o->OnFocusFunc(o->Data);
 	}
+	// Show any context menu children
+	UIObject **childPtr = o->Children.data;
+	for (int i = 0; i < (int)o->Children.size; i++, childPtr++)
+	{
+		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
+		{
+			(*childPtr)->IsVisible = 1;
+		}
+	}
 }
 
 int UIObjectIsHighlighted(UIObject *o)
@@ -168,6 +177,11 @@ void UIObjectUnhighlight(UIObject *o)
 	{
 		o->OnUnfocusFunc(o->Data);
 	}
+	// Disable any context menu children
+	if (o->Type == UITYPE_CONTEXT_MENU)
+	{
+		o->IsVisible = 0;
+	}
 }
 
 int UIObjectChange(UIObject *o, int d)
@@ -185,8 +199,8 @@ int UIObjectChange(UIObject *o, int d)
 		o->ChangeFunc(o->Data, d);
 		if (o->Parent && o->Parent->Type == UITYPE_CONTEXT_MENU)
 		{
-			// Must unhighlight parent of context menu
-			UIObjectUnhighlight(o->Parent->Parent);
+			// Disable context menu now
+			o->Parent->IsVisible = 0;
 		}
 		return o->ChangesData;
 	}
@@ -216,12 +230,11 @@ typedef struct
 static void UIObjectDrawAndAddChildren(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *objs)
 {
-	int isHighlighted;
 	if (!o)
 	{
 		return;
 	}
-	isHighlighted = UIObjectIsHighlighted(o);
+	int isHighlighted = UIObjectIsHighlighted(o);
 	Vec2i oPos = Vec2iAdd(pos, o->Pos);
 	switch (o->Type)
 	{
@@ -298,18 +311,16 @@ static void UIObjectDrawAndAddChildren(
 		{
 			int isDown =
 				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
-			if (isDown)
-			{
-				BlitMasked(g, o->u.Button.Pic, oPos, colorGray, 1);
-			}
-			else
-			{
-				BlitMasked(g, o->u.Button.Pic, oPos, colorWhite, 1);
-			}
+			BlitMasked(
+				g, o->u.Button.Pic, oPos, isDown ? colorGray : colorWhite, 1);
 		}
 		break;
 	case UITYPE_CONTEXT_MENU:
 		{
+			if (!o->IsVisible)
+			{
+				return;
+			}
 			// Draw background
 			DrawRectangle(
 				g,
@@ -398,9 +409,8 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 {
-	int isHighlighted = o->Parent && o->Parent->Highlighted == o;
-	if (IsInside(pos, o->Pos, o->Size) &&
-		o->Type != UITYPE_CONTEXT_MENU)
+	int isHighlighted = UIObjectIsHighlighted(o);
+	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
 	{
 		*out = o;
 		return 1;
