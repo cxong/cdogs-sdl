@@ -50,6 +50,7 @@ typedef enum
 #define UI_LEAVE_XC								4
 #define UI_SELECT_ONLY_FIRST					8
 #define UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY	16
+#define UI_UNHIGHLIGHT_PARENT_ON_CHANGE			32
 
 typedef struct _UIObject
 {

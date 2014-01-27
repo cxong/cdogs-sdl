@@ -40,6 +40,7 @@ Vec2i Vec2iNew(int x, int y);
 Vec2i Vec2iZero(void);
 Vec2i Vec2iUnit(void);	// (1, 1)
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
+Vec2i Vec2iMinus(Vec2i a, Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 Vec2i Vec2iNorm(Vec2i v);

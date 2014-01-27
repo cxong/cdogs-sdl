@@ -129,6 +129,8 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 	{
 		// Resize context menu based on children
 		o->Size = Vec2iMax(o->Size, Vec2iAdd(c->Pos, c->Size));
+		// Unhighlight context menu when children activated
+		c->Flags |= UI_UNHIGHLIGHT_PARENT_ON_CHANGE;
 	}
 }
 void UITabAddChild(UIObject *o, UIObject *c, char *label)
@@ -182,6 +184,10 @@ int UIObjectChange(UIObject *o, int d)
 	if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
+		if (o->Flags & UI_UNHIGHLIGHT_PARENT_ON_CHANGE)
+		{
+			UIObjectUnhighlight(o->Parent);
+		}
 		return o->ChangesData;
 	}
 	return 0;
@@ -390,7 +396,7 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 			if ((!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted) &&
 				(*objp)->IsVisible &&
-				UITryGetObject(*objp, pos, out))
+				UITryGetObject(*objp, Vec2iMinus(pos, o->Pos), out))
 			{
 				return 1;
 			}
@@ -405,7 +411,7 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 			if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted) &&
 				(*objs)->IsVisible &&
-				UITryGetObject(*objs, pos, out))
+				UITryGetObject(*objs, Vec2iMinus(pos, o->Pos), out))
 			{
 				return 1;
 			}

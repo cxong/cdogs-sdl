@@ -52,6 +52,12 @@ Vec2i Vec2iAdd(Vec2i a, Vec2i b)
 	a.y += b.y;
 	return a;
 }
+Vec2i Vec2iMinus(Vec2i a, Vec2i b)
+{
+	a.x -= b.x;
+	a.y -= b.y;
+	return a;
+}
 
 Vec2i Vec2iScale(Vec2i v, int scalar)
 {

@@ -2303,7 +2303,7 @@ static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	o->Data = brush;
 
 	pos = Vec2iZero();
