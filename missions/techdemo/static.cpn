@@ -572,7 +572,31 @@
 		1,
 		1,
 		1],
-		"StaticItems": [],
+		"StaticItems": [{
+			"Index": 26,
+			"Positions": [[15,
+			1]]
+		},
+		{
+			"Index": 26,
+			"Positions": [[17,
+			1]]
+		},
+		{
+			"Index": 22,
+			"Positions": [[14,
+			1]]
+		},
+		{
+			"Index": 28,
+			"Positions": [[16,
+			1]]
+		},
+		{
+			"Index": 8,
+			"Positions": [[18,
+			1]]
+		}],
 		"Start": [1,
 		8]
 	},

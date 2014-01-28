@@ -574,7 +574,7 @@ static void MissionDrawSpecialChar(
 		data->co->Setting.characters.specials[data->index],
 		UIObjectIsHighlighted(o), 1);
 }
-static void DisplayMapItem(
+static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
 	Vec2i pos, MapObject *mo, int density, int isHighlighted);
 static void MissionDrawMapItem(
@@ -582,7 +582,7 @@ static void MissionDrawMapItem(
 {
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if (data->index >= (int)CampaignGetCurrentMission(data->co)->Items.size) return;
-	DisplayMapItem(
+	DisplayMapItemWithDensity(
 		g,
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		CArrayGet(&gMission.MapObjects, data->index),
@@ -778,6 +778,20 @@ static char *BrushGetBrushTypeStr(UIObject *o, EditorBrush *brush)
 	sprintf(s, "Brush Type: %s", BrushTypeStr(brush->Type));
 	return s;
 }
+typedef struct
+{
+	EditorBrush *Brush;
+	int ItemIndex;
+} IndexedEditorBrush;
+static void DisplayMapItem(Vec2i pos, MapObject *mo);
+static void DrawMapItem(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, IndexedEditorBrush *data)
+{
+	UNUSED(g);
+	MapObject *mo = MapObjectGet(data->ItemIndex);
+	DisplayMapItem(
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -799,24 +813,26 @@ static void DrawStyleArea(
 		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
 		colorGray);
 }
-static void DisplayMapItem(
+static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
 	Vec2i pos, MapObject *mo, int density, int isHighlighted)
 {
-	char s[10];
-
-	const TOffsetPic *pic = &cGeneralPics[mo->pic];
-	DrawTPic(
-		pos.x + pic->dx, pos.y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-
+	DisplayMapItem(pos, mo);
 	if (isHighlighted)
 	{
 		DrawTextCharMasked(
 			'\020', g, Vec2iAdd(pos, Vec2iNew(-8, -4)), colorWhite);
 	}
+	char s[10];
 	sprintf(s, "%d", density);
 	DrawTextString(s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+}
+static void DisplayMapItem(Vec2i pos, MapObject *mo)
+{
+	const TOffsetPic *pic = &cGeneralPics[mo->pic];
+	DrawTPic(
+		pos.x + pic->dx, pos.y + pic->dy,
+		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t)
@@ -1268,10 +1284,11 @@ static void BrushSetBrushTypeSetPlayerStart(EditorBrush *b, int d)
 	UNUSED(d);
 	b->Type = BRUSHTYPE_SET_PLAYER_START;
 }
-static void BrushSetBrushTypeAddItem(EditorBrush *b, int d)
+static void BrushSetBrushTypeAddMapItem(IndexedEditorBrush *b, int d)
 {
 	UNUSED(d);
-	b->Type = BRUSHTYPE_ADD_ITEM;
+	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
+	b->Brush->ItemIndex = b->ItemIndex;
 }
 static void ActivateBrush(EditorBrush *b)
 {
@@ -2302,6 +2319,7 @@ UIObject *CreateCharEditorObjs(void)
 	return c;
 }
 
+static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
 {
 	int th = CDogsTextHeight();
@@ -2322,9 +2340,41 @@ static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
 	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->Label = "Map item";
-	o2->ChangeFunc = BrushSetBrushTypeAddItem;
 	o2->Pos = pos;
+	UIObjectAddChild(o2, CreateAddMapItemObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
+
+	UIObjectDestroy(o);
+	return c;
+}
+static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
+{
+	UIObject *o2;
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0,
+		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2));
+	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
+	o->u.CustomDrawFunc = DrawMapItem;
+	pos = Vec2iZero();
+	int width = 8;
+	for (int i = 0; i < MapObjectGetCount(); i++)
+	{
+		o2 = UIObjectCopy(o);
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
+		((IndexedEditorBrush *)o2->Data)->Brush = brush;
+		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((i + 1) % width) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+	}
 
 	UIObjectDestroy(o);
 	return c;

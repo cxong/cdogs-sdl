@@ -184,6 +184,7 @@ void UIObjectUnhighlight(UIObject *o)
 	}
 }
 
+static void DisableContextMenuParents(UIObject *o);
 int UIObjectChange(UIObject *o, int d)
 {
 	switch (o->Type)
@@ -197,14 +198,22 @@ int UIObjectChange(UIObject *o, int d)
 	if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
-		if (o->Parent && o->Parent->Type == UITYPE_CONTEXT_MENU)
-		{
-			// Disable context menu now
-			o->Parent->IsVisible = 0;
-		}
+		DisableContextMenuParents(o);
 		return o->ChangesData;
 	}
 	return 0;
+}
+// Disable all parent context menus once the child is clicked
+static void DisableContextMenuParents(UIObject *o)
+{
+	if (o->Parent)
+	{
+		if (o->Parent->Type == UITYPE_CONTEXT_MENU)
+		{
+			o->Parent->IsVisible = 0;
+		}
+		DisableContextMenuParents(o->Parent);
+	}
 }
 
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);
