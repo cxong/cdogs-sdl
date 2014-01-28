@@ -1907,7 +1907,7 @@ static UIObject *CreateStaticMapObjs(
 	o2 = UIObjectCopy(o);
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "add"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
-	CSTRDUP(o2->Tooltip, "Add item");
+	CSTRDUP(o2->Tooltip, "Add items\nRight click to remove");
 	o2->Pos = pos;
 	UIObjectAddChild(o2,
 		CreateAddItemObjs(o2->Size, brush, &co->Setting.characters));

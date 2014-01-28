@@ -259,3 +259,21 @@ int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
 	}
 	return 0;
 }
+
+int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
+{
+	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+	{
+		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+		for (int j = 0; j < (int)mop->Positions.size; j++)
+		{
+			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
+			if (Vec2iEqual(*mopPos, pos))
+			{
+				CArrayDelete(&mop->Positions, j);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
