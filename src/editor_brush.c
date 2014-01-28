@@ -350,7 +350,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_ITEM:
 		if (isMain)
 		{
-			if (MissionStaticAddItem(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTryAddItem(m, b->ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -358,6 +358,22 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		else
 		{
 			if (MissionStaticTryRemoveItemAt(m, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		break;
+	case BRUSHTYPE_ADD_CHARACTER:
+		if (isMain)
+		{
+			if (MissionStaticTryAddCharacter(m, b->ItemIndex, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		else
+		{
+			if (MissionStaticTryRemoveCharacterAt(m, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}

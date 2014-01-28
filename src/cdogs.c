@@ -933,7 +933,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		int i;
 		int survivingPlayers;
 		CampaignAndMissionSetup(1, co, &gMission);
-		MapLoad(&gMap, &gMission);
+		MapLoad(&gMap, &gMission, &co->Setting.characters);
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
@@ -1050,7 +1050,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 	do
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
-		MapLoad(&gMap, &gMission);
+		MapLoad(&gMap, &gMission, &co->Setting.characters);
 
 		PlayerEquip(gOptions.numPlayers, graphicsDevice);
 		srand((unsigned int)time(NULL));

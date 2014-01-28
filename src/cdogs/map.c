@@ -1048,7 +1048,7 @@ void MapTerminate(Map *map)
 	CArrayTerminate(&map->Tiles);
 	CArrayTerminate(&map->iMap);
 }
-void MapLoad(Map *map, struct MissionOptions *mo)
+void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 {
 	int i, j, count;
 	Mission *mission = mo->missionData;
@@ -1081,7 +1081,7 @@ void MapLoad(Map *map, struct MissionOptions *mo)
 	}
 	else
 	{
-		MapStaticLoad(map, mission);
+		MapStaticLoad(map, mission, store);
 	}
 
 	MapSetupTilesAndWalls(map, floor, room, wall);

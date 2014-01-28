@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -108,6 +108,22 @@ static int delayTable[STATE_COUNT] = {
 	4,
 };
 
+
+// Initialise the actor post-placement
+void ActorInit(TActor *actor)
+{
+	actor->direction = rand() % DIRECTION_COUNT;
+
+	actor->health = (actor->health * gConfig.Game.NonPlayerHP) / 100;
+	if (actor->health <= 0)
+	{
+		actor->health = 1;
+	}
+	if (actor->flags & FLAGS_AWAKEALWAYS)
+	{
+		actor->flags &= ~FLAGS_SLEEPING;
+	}
+}
 
 int GetNumPlayersAlive(void)
 {

@@ -208,7 +208,7 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	}
 }
 
-int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
+int MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -246,7 +246,6 @@ int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
 	}
 	return 0;
 }
-
 int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 {
 	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
@@ -258,6 +257,60 @@ int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*mopPos, pos))
 			{
 				CArrayDelete(&mop->Positions, j);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short tile = MissionGetTile(m, pos);
+
+	// Remove any characters already there
+	MissionStaticTryRemoveCharacterAt(m, pos);
+
+	if (IsClear(tile))
+	{
+		// Check if the character already has an entry, and add to its list
+		// of positions
+		int hasAdded = 0;
+		for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
+		{
+			CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+			if (i == ch)
+			{
+				CArrayPushBack(&cp->Positions, &pos);
+				hasAdded = 1;
+				break;
+			}
+		}
+		// If not, create a new entry
+		if (!hasAdded)
+		{
+			CharacterPositions cp;
+			cp.Index = ch;
+			CArrayInit(&cp.Positions, sizeof(Vec2i));
+			CArrayPushBack(&cp.Positions, &pos);
+			CArrayPushBack(&m->u.Static.Characters, &cp);
+		}
+		return 1;
+	}
+	return 0;
+}
+int MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
+{
+	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
+	{
+		CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+		for (int j = 0; j < (int)cp->Positions.size; j++)
+		{
+			Vec2i *cpPos = CArrayGet(&cp->Positions, j);
+			if (Vec2iEqual(*cpPos, pos))
+			{
+				CArrayDelete(&cp->Positions, j);
 				return 1;
 			}
 		}

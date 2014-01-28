@@ -295,18 +295,8 @@ static void PlaceBaddie(TActor *actor)
 		}
 	}
 
-	actor->direction = rand() % DIRECTION_COUNT;
-
-	actor->health = (actor->health * gConfig.Game.NonPlayerHP) / 100;
-	if (actor->health <= 0)
-	{
-		actor->health = 1;
-	}
-	if (actor->flags & FLAGS_AWAKEALWAYS)
-	{
-		actor->flags &= ~FLAGS_SLEEPING;
-	}
-	else if (!(actor->flags & FLAGS_SLEEPALWAYS) &&
+	ActorInit(actor);
+	if (!(actor->flags & FLAGS_SLEEPALWAYS) &&
 		rand() % 100 < gBaddieCount)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;

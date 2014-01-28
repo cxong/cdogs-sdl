@@ -597,6 +597,17 @@
 			"Positions": [[18,
 			1]]
 		}],
+		"StaticCharacters": [{
+			"Index": 0,
+			"Positions": [[25,
+			2],
+			[26,
+			2],
+			[26,
+			3],
+			[25,
+			3]]
+		}],
 		"Start": [1,
 		8]
 	},
@@ -1665,8 +1676,26 @@
 			[18,
 			25]]
 		}],
+		"StaticCharacters": [],
 		"Start": [0,
 		0]
 	}],
-	"Characters": []
+	"Characters": [{
+		"armedBody": 1,
+		"unarmedBody": 0,
+		"face": 2,
+		"skin": 3,
+		"arm": 9,
+		"body": 9,
+		"leg": 9,
+		"hair": 12,
+		"speed": 0,
+		"Gun": "Confusion bombs",
+		"maxHealth": 40,
+		"flags": 8389632,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 0,
+		"actionDelay": 15
+	}]
 }

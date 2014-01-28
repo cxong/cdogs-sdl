@@ -277,7 +277,7 @@ static void Change(
 	case YC_ATTRIBUTES:
 		switch (xc) {
 		case XC_SPEED:
-			b->speed = CLAMP(b->speed + d * 64, 128, 512);
+			b->speed = CLAMP(b->speed + d * 64, 0, 512);
 			break;
 
 		case XC_HEALTH:

@@ -416,7 +416,7 @@ void GrafxMakeBackground(
 {
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
-	MapLoad(&gMap, &gMission);
+	MapLoad(&gMap, &gMission, &gCampaign.Setting.characters);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(&gMap);

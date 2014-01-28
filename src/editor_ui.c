@@ -1043,7 +1043,7 @@ static void MissionChangeType(CampaignOptions *co, int d)
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(1, co, &gMission);
 	memset(&map, 0, sizeof map);
-	MapLoad(&map, &gMission);
+	MapLoad(&map, &gMission, &co->Setting.characters);
 	MissionConvertToType(gMission.missionData, &map, type);
 }
 static void MissionChangeWallStyle(CampaignOptions *co, int d)

@@ -27,13 +27,14 @@
 */
 #include "map_static.h"
 
+#include "actors.h"
 #include "campaigns.h"
 #include "gamedata.h"
 #include "map_build.h"
 
 
 static void SetAccessLevels(Map *map);
-void MapStaticLoad(Map *map, Mission *m)
+void MapStaticLoad(Map *map, Mission *m, CharacterStore *store)
 {
 	Vec2i v;
 	for (v.y = 0; v.y < m->Size.y; v.y++)
@@ -53,6 +54,20 @@ void MapStaticLoad(Map *map, Mission *m)
 		{
 			Vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapTryPlaceOneObject(map, *pos, MapObjectGet(mop->Index), 0, 0);
+		}
+	}
+
+	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
+	{
+		CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+		for (int j = 0; j < (int)cp->Positions.size; j++)
+		{
+			Vec2i *pos = CArrayGet(&cp->Positions, j);
+			Character *c = CArrayGet(&store->OtherChars, cp->Index);
+			TActor *a = AddActor(c, NULL);
+			Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
+			MoveActor(a, fullPos.x, fullPos.y);
+			ActorInit(a);
 		}
 	}
 
