@@ -214,24 +214,11 @@ int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
 	unsigned short tile = MissionGetTile(m, pos);
 	MapObject *obj = MapObjectGet(item);
 
-	// Find if the tile already contains items
-	int isEmpty = 1;
-	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
-	{
-		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
-			if (Vec2iEqual(*mopPos, pos))
-			{
-				isEmpty = 0;
-				break;
-			}
-		}
-	}
+	// Remove any items already there
+	MissionStaticTryRemoveItemAt(m, pos);
 
 	if (MapObjectIsTileOK(
-		obj, tile, isEmpty, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
+		obj, tile, 1, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
 	{
 		// Check if the item already has an entry, and add to its list
 		// of positions
