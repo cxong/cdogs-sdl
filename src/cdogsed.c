@@ -82,6 +82,7 @@
 
 // Mouse click areas:
 static UIObject *sObjs;
+static UIObject *sLastHighlightedObj = NULL;
 Vec2i sUIOverlaySize = { 320, 240 };
 
 
@@ -793,6 +794,11 @@ static void HandleInput(
 	{
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
 		{
+			if (sLastHighlightedObj)
+			{
+				UIObjectUnhighlight(sLastHighlightedObj);
+			}
+			sLastHighlightedObj = o;
 			UIObjectHighlight(o);
 			*xcOld = *xc;
 			*ycOld = *yc;
@@ -828,6 +834,7 @@ static void HandleInput(
 			if (!(brush.IsActive && mission))
 			{
 				UIObjectUnhighlight(sObjs);
+				sLastHighlightedObj = NULL;
 			}
 		}
 	}

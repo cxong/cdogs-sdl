@@ -792,6 +792,20 @@ static void DrawMapItem(
 	DisplayMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
 }
+typedef struct
+{
+	IndexedEditorBrush Brush;
+	CharacterStore *Store;
+} EditorBrushAndCampaign;
+static void DrawCharacter(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, EditorBrushAndCampaign *data)
+{
+	UNUSED(g);
+	Character *c = CArrayGet(&data->Store->OtherChars, data->Brush.ItemIndex);
+	DisplayCharacter(
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		c, 0, 0);
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -1247,7 +1261,9 @@ static int BrushIsBrushTypeSelect(EditorBrush *b)
 static int BrushIsBrushTypeAddItem(EditorBrush *b)
 {
 	return
-		b->Type == BRUSHTYPE_SET_PLAYER_START || b->Type == BRUSHTYPE_ADD_ITEM;
+		b->Type == BRUSHTYPE_SET_PLAYER_START ||
+		b->Type == BRUSHTYPE_ADD_ITEM ||
+		b->Type == BRUSHTYPE_ADD_CHARACTER;
 }
 static void BrushSetBrushTypePoint(EditorBrush *b, int d)
 {
@@ -1290,8 +1306,15 @@ static void BrushSetBrushTypeAddMapItem(IndexedEditorBrush *b, int d)
 	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
 	b->Brush->ItemIndex = b->ItemIndex;
 }
-static void ActivateBrush(EditorBrush *b)
+static void BrushSetBrushTypeAddCharacter(IndexedEditorBrush *b, int d)
 {
+	UNUSED(d);
+	b->Brush->Type = BRUSHTYPE_ADD_CHARACTER;
+	b->Brush->ItemIndex = b->ItemIndex;
+}
+static void ActivateBrush(UIObject *o, EditorBrush *b)
+{
+	UNUSED(o);
 	b->IsActive = 1;
 }
 static void DeactivateBrush(EditorBrush *b)
@@ -1815,7 +1838,8 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush);
+static UIObject *CreateAddItemObjs(
+	Vec2i pos, EditorBrush *brush, CharacterStore *store);
 static UIObject *CreateStaticMapObjs(
 	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
@@ -1885,7 +1909,8 @@ static UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
 	CSTRDUP(o2->Tooltip, "Add item");
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateAddItemObjs(o2->Size, brush));
+	UIObjectAddChild(o2,
+		CreateAddItemObjs(o2->Size, brush, &co->Setting.characters));
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -2320,7 +2345,10 @@ UIObject *CreateCharEditorObjs(void)
 }
 
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
-static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
+static UIObject *CreateAddCharacterObjs(
+	Vec2i pos, EditorBrush *brush, CharacterStore *store);
+static UIObject *CreateAddItemObjs(
+	Vec2i pos, EditorBrush *brush, CharacterStore *store)
 {
 	int th = CDogsTextHeight();
 	UIObject *o2;
@@ -2343,6 +2371,12 @@ static UIObject *CreateAddItemObjs(Vec2i pos, EditorBrush *brush)
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddMapItemObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->Label = "Character";
+	o2->Pos = pos;
+	UIObjectAddChild(o2, CreateAddCharacterObjs(o2->Size, brush, store));
+	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
 	return c;
@@ -2354,7 +2388,7 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2));
+		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
 	o->u.CustomDrawFunc = DrawMapItem;
 	pos = Vec2iZero();
@@ -2378,4 +2412,62 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 
 	UIObjectDestroy(o);
 	return c;
+}
+static void CreateAddCharacterSubObjs(
+	UIObject *c, EditorBrushAndCampaign *data);
+static UIObject *CreateAddCharacterObjs(
+	Vec2i pos, EditorBrush *brush, CharacterStore *store)
+{
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	// Need to update UI objects dynamically as new characters can be
+	// added and removed
+	c->OnFocusFunc = CreateAddCharacterSubObjs;
+	c->IsDynamicData = 1;
+	CMALLOC(c->Data, sizeof(EditorBrushAndCampaign));
+	((EditorBrushAndCampaign *)c->Data)->Brush.Brush = brush;
+	((EditorBrushAndCampaign *)c->Data)->Store = store;
+
+	return c;
+}
+static void CreateAddCharacterSubObjs(
+	UIObject *c, EditorBrushAndCampaign *data)
+{
+	if (c->Children.size == data->Store->OtherChars.size)
+	{
+		return;
+	}
+	// Recreate the child UI objects
+	UIObject **objs = c->Children.data;
+	for (int i = 0; i < (int)c->Children.size; i++, objs++)
+	{
+		UIObjectDestroy(*objs);
+	}
+	CArrayTerminate(&c->Children);
+	CArrayInit(&c->Children, sizeof c);
+
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0,
+		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+	o->ChangeFunc = BrushSetBrushTypeAddCharacter;
+	o->u.CustomDrawFunc = DrawCharacter;
+	Vec2i pos = Vec2iZero();
+	int width = 8;
+	for (int i = 0; i < (int)data->Store->OtherChars.size; i++)
+	{
+		UIObject *o2 = UIObjectCopy(o);
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
+		((EditorBrushAndCampaign *)o2->Data)->Brush.Brush = data->Brush.Brush;
+		((EditorBrushAndCampaign *)o2->Data)->Store = data->Store;
+		((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex = i;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((i + 1) % width) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+	}
+	UIObjectDestroy(o);
 }

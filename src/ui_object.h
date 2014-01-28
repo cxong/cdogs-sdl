@@ -95,7 +95,7 @@ typedef struct _UIObject
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
 	int ChangesData;
-	void (*OnFocusFunc)(void *);
+	void (*OnFocusFunc)(struct _UIObject *, void *);
 	void (*OnUnfocusFunc)(void *);
 } UIObject;
 

@@ -148,7 +148,7 @@ void UIObjectHighlight(UIObject *o)
 	}
 	if (o->OnFocusFunc)
 	{
-		o->OnFocusFunc(o->Data);
+		o->OnFocusFunc(o, o->Data);
 	}
 	// Show any context menu children
 	UIObject **childPtr = o->Children.data;
@@ -157,6 +157,10 @@ void UIObjectHighlight(UIObject *o)
 		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
 		{
 			(*childPtr)->IsVisible = 1;
+			if ((*childPtr)->OnFocusFunc)
+			{
+				(*childPtr)->OnFocusFunc(*childPtr, (*childPtr)->Data);
+			}
 		}
 	}
 }
@@ -181,6 +185,18 @@ void UIObjectUnhighlight(UIObject *o)
 	if (o->Type == UITYPE_CONTEXT_MENU)
 	{
 		o->IsVisible = 0;
+	}
+	UIObject **childPtr = o->Children.data;
+	for (int i = 0; i < (int)o->Children.size; i++, childPtr++)
+	{
+		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
+		{
+			(*childPtr)->IsVisible = 0;
+			if ((*childPtr)->OnUnfocusFunc)
+			{
+				(*childPtr)->OnUnfocusFunc((*childPtr)->Data);
+			}
+		}
 	}
 }
 
