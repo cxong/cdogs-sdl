@@ -51,7 +51,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 					CArrayPushBack(&m->u.Static.Tiles, &tile);
 				}
 			}
-			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPos));
+			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
 		}
 		break;
 	}
@@ -218,21 +218,43 @@ int MissionStaticAddItem(Mission *m, int item, Vec2i pos)
 	int isEmpty = 1;
 	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
 	{
-		MapObjectPos *mop = CArrayGet(&m->u.Static.Items, i);
-		if (Vec2iEqual(mop->Pos, pos))
+		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			isEmpty = 0;
-			break;
+			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
+			if (Vec2iEqual(*mopPos, pos))
+			{
+				isEmpty = 0;
+				break;
+			}
 		}
 	}
 
 	if (MapObjectIsTileOK(
 		obj, tile, isEmpty, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
 	{
-		MapObjectPos mop;
-		mop.Pos = pos;
-		mop.Index = item;
-		CArrayPushBack(&m->u.Static.Items, &mop);
+		// Check if the item already has an entry, and add to its list
+		// of positions
+		int hasAdded = 0;
+		for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+		{
+			MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+			if (i == item)
+			{
+				CArrayPushBack(&mop->Positions, &pos);
+				hasAdded = 1;
+				break;
+			}
+		}
+		// If not, create a new entry
+		if (!hasAdded)
+		{
+			MapObjectPositions mop;
+			mop.Index = item;
+			CArrayInit(&mop.Positions, sizeof(Vec2i));
+			CArrayPushBack(&mop.Positions, &pos);
+			CArrayPushBack(&m->u.Static.Items, &mop);
+		}
 		return 1;
 	}
 	return 0;

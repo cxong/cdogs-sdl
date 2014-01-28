@@ -89,9 +89,9 @@ typedef struct
 
 typedef struct
 {
-	Vec2i Pos;
 	int Index;
-} MapObjectPos;
+	CArray Positions;	// of Vec2i
+} MapObjectPositions;
 typedef struct
 {
 	char *Title;
@@ -161,7 +161,7 @@ typedef struct
 		struct
 		{
 			CArray Tiles;	// of unsigned short (map tile)
-			CArray Items;	// of MapObjectPos
+			CArray Items;	// of MapObjectPositions
 			Vec2i Start;
 		} Static;
 	} u;
