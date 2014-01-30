@@ -51,7 +51,8 @@ typedef enum
 	BRUSHTYPE_SELECT,
 	BRUSHTYPE_SET_PLAYER_START,
 	BRUSHTYPE_ADD_ITEM,
-	BRUSHTYPE_ADD_CHARACTER
+	BRUSHTYPE_ADD_CHARACTER,
+	BRUSHTYPE_ADD_KEY
 } BrushType;
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);

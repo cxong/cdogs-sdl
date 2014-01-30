@@ -383,6 +383,22 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_ADD_KEY:
+		if (isMain)
+		{
+			if (MissionStaticTryAddKey(m, b->ItemIndex, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		else
+		{
+			if (MissionStaticTryRemoveKeyAt(m, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		break;
 	default:
 		assert(0 && "unknown brush type");
 		break;

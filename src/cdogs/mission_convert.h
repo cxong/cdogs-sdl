@@ -36,9 +36,11 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile);
 unsigned short MissionGetTile(Mission *m, Vec2i pos);
 
 void MissionStaticLayout(Mission *m, Vec2i oldSize);
-int MissionStaticTryAddItem(Mission *m, int item, Vec2i pos);
-int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos);
-int MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
-int MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
+bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos);
+bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos);
+bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
+bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
+bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos);
+bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos);
 
 #endif

@@ -117,5 +117,6 @@ unsigned short IMapGet(Map *map, Vec2i pos);
 void IMapSet(Map *map, Vec2i pos, unsigned short v);
 int MapTryPlaceOneObject(
 	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode);
+void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex);
 
 #endif

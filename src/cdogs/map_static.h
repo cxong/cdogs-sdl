@@ -30,6 +30,6 @@
 
 #include "map.h"
 
-void MapStaticLoad(Map *map, Mission *m, CharacterStore *store);
+void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store);
 
 #endif

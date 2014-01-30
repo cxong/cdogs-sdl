@@ -187,6 +187,7 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static void LoadStaticItems(Mission *m, json_t *node, char *name);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
+static void LoadStaticKeys(Mission *m, json_t *node, char *name);
 static void LoadMissions(CArray *missions, json_t *missionsNode)
 {
 	json_t *child;
@@ -246,6 +247,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 
 				LoadStaticItems(&m, child, "StaticItems");
 				LoadStaticCharacters(&m, child, "StaticCharacters");
+				LoadStaticKeys(&m, child, "StaticKeys");
 
 				LoadVec2i(&m.u.Static.Start, child, "Start");
 			}
@@ -455,6 +457,41 @@ static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
 		CArrayPushBack(&m->u.Static.Characters, &cp);
 	}
 }
+static void LoadStaticKeys(Mission *m, json_t *node, char *name)
+{
+	CArrayInit(&m->u.Static.Keys, sizeof(KeyPositions));
+	
+	json_t *keys = json_find_first_label(node, name);
+	if (!keys || !keys->child)
+	{
+		return;
+	}
+	keys = keys->child;
+	for (keys = keys->child; keys; keys = keys->next)
+	{
+		KeyPositions kp;
+		LoadInt(&kp.Index, keys, "Index");
+		CArrayInit(&kp.Positions, sizeof(Vec2i));
+		json_t *positions = json_find_first_label(keys, "Positions");
+		if (!positions || !positions->child)
+		{
+			continue;
+		}
+		positions = positions->child;
+		for (positions = positions->child;
+			 positions;
+			 positions = positions->next)
+		{
+			Vec2i pos;
+			json_t *position = positions->child;
+			pos.x = atoi(position->text);
+			position = position->next;
+			pos.y = atoi(position->text);
+			CArrayPushBack(&kp.Positions, &pos);
+		}
+		CArrayPushBack(&m->u.Static.Keys, &kp);
+	}
+}
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
@@ -619,6 +656,25 @@ static json_t *SaveMissions(CArray *a)
 					json_insert_child(chars, charNode);
 				}
 				json_insert_pair_into_object(node, "StaticCharacters", chars);
+				
+				json_t *keys = json_new_array();
+				for (int i = 0; i < (int)mission->u.Static.Keys.size; i++)
+				{
+					KeyPositions *kp =
+					CArrayGet(&mission->u.Static.Keys, i);
+					json_t *keyNode = json_new_object();
+					AddIntPair(keyNode, "Index", kp->Index);
+					json_t *positions = json_new_array();
+					for (int j = 0; j < (int)kp->Positions.size; j++)
+					{
+						Vec2i *pos = CArrayGet(&kp->Positions, j);
+						json_insert_child(positions, SaveVec2i(*pos));
+					}
+					json_insert_pair_into_object(
+						keyNode, "Positions", positions);
+					json_insert_child(keys, keyNode);
+				}
+				json_insert_pair_into_object(node, "StaticKeys", keys);
 
 				json_insert_pair_into_object(
 					node, "Start", SaveVec2i(mission->u.Static.Start));

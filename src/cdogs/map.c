@@ -605,7 +605,20 @@ static int MapTryPlaceBlowup(
 	return 0;
 }
 
-static void MapPlaceCard(Map *map, int pic, int card, int map_access)
+void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex)
+{
+	UNUSED(map);
+	int card = keyIndex + 1;
+	Vec2i full = Vec2iReal2Full(Vec2iCenterOfTile(pos));
+	AddObject(
+		full.x, full.y,
+		Vec2iNew(KEY_W, KEY_H),
+		&cGeneralPics[mo->keyPics[keyIndex]],
+		card,
+		(int)TILEITEM_CAN_BE_TAKEN);
+}
+
+static void MapPlaceCard(Map *map, int keyIndex, int map_access)
 {
 	for (;;)
 	{
@@ -623,13 +636,7 @@ static void MapPlaceCard(Map *map, int pic, int card, int map_access)
 			!(tBelow->flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
 			tBelow->things == NULL)
 		{
-			Vec2i full = Vec2iReal2Full(Vec2iCenterOfTile(v));
-			AddObject(
-				full.x, full.y,
-				Vec2iNew(KEY_W, KEY_H),
-				&cGeneralPics[gMission.keyPics[pic]],
-				card,
-				(int)TILEITEM_CAN_BE_TAKEN);
+			MapPlaceKey(map, &gMission, v, keyIndex);
 			return;
 		}
 	}
@@ -1081,7 +1088,7 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	}
 	else
 	{
-		MapStaticLoad(map, mission, store);
+		MapStaticLoad(map, mo, store);
 	}
 
 	MapSetupTilesAndWalls(map, floor, room, wall);
@@ -1138,19 +1145,19 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 
 	if (map->keyAccessCount >= 5)
 	{
-		MapPlaceCard(map, 3, OBJ_KEYCARD_RED, MAP_ACCESS_BLUE);
+		MapPlaceCard(map, 3, MAP_ACCESS_BLUE);
 	}
 	if (map->keyAccessCount >= 4)
 	{
-		MapPlaceCard(map, 2, OBJ_KEYCARD_BLUE, MAP_ACCESS_GREEN);
+		MapPlaceCard(map, 2, MAP_ACCESS_GREEN);
 	}
 	if (map->keyAccessCount >= 3)
 	{
-		MapPlaceCard(map, 1, OBJ_KEYCARD_GREEN, MAP_ACCESS_YELLOW);
+		MapPlaceCard(map, 1, MAP_ACCESS_YELLOW);
 	}
 	if (map->keyAccessCount >= 2)
 	{
-		MapPlaceCard(map, 0, OBJ_KEYCARD_YELLOW, 0);
+		MapPlaceCard(map, 0, 0);
 	}
 }
 

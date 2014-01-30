@@ -210,7 +210,7 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 	}
 }
 
-int MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
+bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -244,11 +244,11 @@ int MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
 			CArrayPushBack(&mop.Positions, &pos);
 			CArrayPushBack(&m->u.Static.Items, &mop);
 		}
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
-int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
+bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 {
 	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
 	{
@@ -259,14 +259,14 @@ int MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*mopPos, pos))
 			{
 				CArrayDelete(&mop->Positions, j);
-				return 1;
+				return true;
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
-int MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
+bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -298,11 +298,11 @@ int MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 			CArrayPushBack(&cp.Positions, &pos);
 			CArrayPushBack(&m->u.Static.Characters, &cp);
 		}
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
-int MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
+bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 {
 	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
 	{
@@ -313,9 +313,63 @@ int MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*cpPos, pos))
 			{
 				CArrayDelete(&cp->Positions, j);
-				return 1;
+				return true;
 			}
 		}
 	}
-	return 0;
+	return false;
+}
+
+bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short tile = MissionGetTile(m, pos);
+	
+	// Remove any keys already there
+	MissionStaticTryRemoveKeyAt(m, pos);
+	
+	if (IsClear(tile))
+	{
+		// Check if the item already has an entry, and add to its list
+		// of positions
+		bool hasAdded = false;
+		for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
+		{
+			KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+			if (i == k)
+			{
+				CArrayPushBack(&kp->Positions, &pos);
+				hasAdded = true;
+				break;
+			}
+		}
+		// If not, create a new entry
+		if (!hasAdded)
+		{
+			KeyPositions kp;
+			kp.Index = k;
+			CArrayInit(&kp.Positions, sizeof(Vec2i));
+			CArrayPushBack(&kp.Positions, &pos);
+			CArrayPushBack(&m->u.Static.Keys, &kp);
+		}
+		return true;
+	}
+	return false;
+}
+bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
+{
+	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+	{
+		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+		for (int j = 0; j < (int)mop->Positions.size; j++)
+		{
+			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
+			if (Vec2iEqual(*mopPos, pos))
+			{
+				CArrayDelete(&mop->Positions, j);
+				return true;
+			}
+		}
+	}
+	return false;
 }

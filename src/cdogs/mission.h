@@ -55,6 +55,8 @@
 #define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
 #define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
 
+#define KEY_COUNT 4
+
 int GetExitCount(void);
 int GetKeystyleCount(void);
 int GetDoorstyleCount(void);
@@ -97,6 +99,11 @@ typedef struct
 	int Index;
 	CArray Positions;	// of Vec2i
 } CharacterPositions;
+typedef struct
+{
+	int Index;
+	CArray Positions;	// of Vec2i
+} KeyPositions;
 typedef struct
 {
 	char *Title;
@@ -168,6 +175,7 @@ typedef struct
 			CArray Tiles;	// of unsigned short (map tile)
 			CArray Items;	// of MapObjectPositions
 			CArray Characters;	// of CharacterPositions
+			CArray Keys;	// of KeyPositions
 			Vec2i Start;
 		} Static;
 	} u;

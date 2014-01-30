@@ -253,22 +253,22 @@ static int pickupItems[] = {
 // +-------------+
 
 
-static int officeKeys[4] =
+static int officeKeys[KEY_COUNT] =
     { OFSPIC_KEYCARD_YELLOW, OFSPIC_KEYCARD_GREEN, OFSPIC_KEYCARD_BLUE,
 	OFSPIC_KEYCARD_RED
 };
 
-static int dungeonKeys[4] =
+static int dungeonKeys[KEY_COUNT] =
     { OFSPIC_KEY_YELLOW, OFSPIC_KEY_GREEN, OFSPIC_KEY_BLUE,
 	OFSPIC_KEY_RED
 };
 
-static int plainKeys[4] =
+static int plainKeys[KEY_COUNT] =
     { OFSPIC_KEY3_YELLOW, OFSPIC_KEY3_GREEN, OFSPIC_KEY3_BLUE,
 	OFSPIC_KEY3_RED
 };
 
-static int cubeKeys[4] =
+static int cubeKeys[KEY_COUNT] =
     { OFSPIC_KEY4_YELLOW, OFSPIC_KEY4_GREEN, OFSPIC_KEY4_BLUE,
 	OFSPIC_KEY4_RED
 };

@@ -94,10 +94,10 @@
 
 // Indices for "pick up" objects
 #define OBJ_JEWEL           0
-#define OBJ_KEYCARD_RED     1
-#define OBJ_KEYCARD_BLUE    2
-#define OBJ_KEYCARD_GREEN   3
-#define OBJ_KEYCARD_YELLOW  4
+#define OBJ_KEYCARD_YELLOW  1
+#define OBJ_KEYCARD_GREEN   2
+#define OBJ_KEYCARD_BLUE    3
+#define OBJ_KEYCARD_RED     4
 #define OBJ_PUZZLE_1        5
 #define OBJ_PUZZLE_2        6
 #define OBJ_PUZZLE_3        7

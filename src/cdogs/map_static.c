@@ -34,8 +34,9 @@
 
 
 static void SetAccessLevels(Map *map);
-void MapStaticLoad(Map *map, Mission *m, CharacterStore *store)
+void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 {
+	Mission *m = mo->missionData;
 	Vec2i v;
 	for (v.y = 0; v.y < m->Size.y; v.y++)
 	{
@@ -68,6 +69,16 @@ void MapStaticLoad(Map *map, Mission *m, CharacterStore *store)
 			Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
 			MoveActor(a, fullPos.x, fullPos.y);
 			ActorInit(a);
+		}
+	}
+	
+	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
+	{
+		KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+		for (int j = 0; j < (int)kp->Positions.size; j++)
+		{
+			Vec2i *pos = CArrayGet(&kp->Positions, j);
+			MapPlaceKey(map, mo, *pos, kp->Index);
 		}
 	}
 

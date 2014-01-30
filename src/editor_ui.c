@@ -855,6 +855,16 @@ static void DrawCharacter(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		c, 0, 0);
 }
+static void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	UNUSED(g);
+	EditorBrushAndCampaign *data = vData;
+	PicPaletted *keyPic = PicManagerGetOldPic(
+		&gPicManager,
+		cGeneralPics[gMission.keyPics[data->Brush.ItemIndex]].picIndex);
+	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	DrawTPic(pos.x, pos.y, keyPic);
+}
 
 static void DrawStyleArea(
 	Vec2i pos,
@@ -1362,7 +1372,8 @@ static int BrushIsBrushTypeAddItem(void *data)
 	return
 		b->Type == BRUSHTYPE_SET_PLAYER_START ||
 		b->Type == BRUSHTYPE_ADD_ITEM ||
-		b->Type == BRUSHTYPE_ADD_CHARACTER;
+		b->Type == BRUSHTYPE_ADD_CHARACTER ||
+		b->Type == BRUSHTYPE_ADD_KEY;
 }
 static void BrushSetBrushTypePoint(void *data, int d)
 {
@@ -1418,6 +1429,13 @@ static void BrushSetBrushTypeAddCharacter(void *data, int d)
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_CHARACTER;
+	b->Brush->ItemIndex = b->ItemIndex;
+}
+static void BrushSetBrushTypeAddKey(void *data, int d)
+{
+	UNUSED(d);
+	IndexedEditorBrush *b = data;
+	b->Brush->Type = BRUSHTYPE_ADD_KEY;
 	b->Brush->ItemIndex = b->ItemIndex;
 }
 static void ActivateBrush(UIObject *o, void *data)
@@ -2457,6 +2475,7 @@ UIObject *CreateCharEditorObjs(void)
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateAddCharacterObjs(
 	Vec2i pos, EditorBrush *brush, CharacterStore *store);
+static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateAddItemObjs(
 	Vec2i pos, EditorBrush *brush, CharacterStore *store)
 {
@@ -2486,6 +2505,12 @@ static UIObject *CreateAddItemObjs(
 	o2->Label = "Character";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddCharacterObjs(o2->Size, brush, store));
+	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->Label = "Key";
+	o2->Pos = pos;
+	UIObjectAddChild(o2, CreateAddKeyObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -2579,4 +2604,36 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 		}
 	}
 	UIObjectDestroy(o);
+}
+static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)
+{
+	UIObject *o2;
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0,
+		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+	o->ChangeFunc = BrushSetBrushTypeAddKey;
+	o->u.CustomDrawFunc = DrawKey;
+	pos = Vec2iZero();
+	int width = 4;
+	for (int i = 0; i < KEY_COUNT; i++)
+	{
+		o2 = UIObjectCopy(o);
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
+		((IndexedEditorBrush *)o2->Data)->Brush = brush;
+		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((i + 1) % width) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+	}
+	
+	UIObjectDestroy(o);
+	return c;
 }
