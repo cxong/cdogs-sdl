@@ -180,7 +180,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			}
 		}
 		sprintf(
-			s, "Mission %d/%d",
+			s, "Mission %d/%zu",
 			gCampaign.MissionIndex + 1, gCampaign.Setting.Missions.size);
 		DrawTextStringMasked(
 			s, g, Vec2iNew(270, y),
@@ -199,7 +199,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		}
 		if (gCampaign.Setting.Missions.size)
 		{
-			sprintf(s, "End/%d", gCampaign.Setting.Missions.size);
+			sprintf(s, "End/%zu", gCampaign.Setting.Missions.size);
 			DrawTextStringMasked(
 				s, g, Vec2iNew(270, y),
 				yc == YC_MISSIONINDEX ? colorRed : colorWhite);

@@ -45,33 +45,38 @@ static void DrawStyleArea(
 	int index, int count,
 	int isHighlighted);
 
-static char *CampaignGetTitle(UIObject *o, CampaignOptions *c)
+static const char *CampaignGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
-	return c->Setting.Title;
+	CampaignOptions *co = data;
+	return co->Setting.Title;
 }
-static char *CampaignGetAuthor(UIObject *o, CampaignOptions *c)
+static const char *CampaignGetAuthor(UIObject *o, void *data)
 {
 	UNUSED(o);
-	return c->Setting.Author;
+	CampaignOptions *co = data;
+	return co->Setting.Author;
 }
-static char *CampaignGetDescription(UIObject *o, CampaignOptions *c)
+static const char *CampaignGetDescription(UIObject *o, void *data)
 {
 	UNUSED(o);
-	return c->Setting.Description;
+	CampaignOptions *co = data;
+	return co->Setting.Description;
 }
-static char *CampaignGetSeedStr(UIObject *o, CampaignOptions *c)
+static const char *CampaignGetSeedStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	sprintf(s, "Seed: %u", c->seed);
+	CampaignOptions *co = data;
+	sprintf(s, "Seed: %u", co->seed);
 	return s;
 }
 static void CheckMission(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
 	UNUSED(pos);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -82,8 +87,9 @@ static void CheckMission(
 	o->IsVisible = 1;
 }
 static void MissionCheckTypeClassic(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	UNUSED(g);
 	UNUSED(pos);
@@ -97,8 +103,9 @@ static void MissionCheckTypeClassic(
 	o->IsVisible = 1;
 }
 static void MissionCheckTypeStatic(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	UNUSED(g);
 	UNUSED(pos);
@@ -111,9 +118,10 @@ static void MissionCheckTypeStatic(
 	}
 	o->IsVisible = 1;
 }
-static char *MissionGetTitle(UIObject *o, CampaignOptions *co)
+static const char *MissionGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -122,9 +130,10 @@ static char *MissionGetTitle(UIObject *o, CampaignOptions *co)
 	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Title;
 }
-static char *MissionGetDescription(UIObject *o, CampaignOptions *co)
+static const char *MissionGetDescription(UIObject *o, void *data)
 {
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -133,9 +142,10 @@ static char *MissionGetDescription(UIObject *o, CampaignOptions *co)
 	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Description;
 }
-static char *MissionGetSong(UIObject *o, CampaignOptions *co)
+static const char *MissionGetSong(UIObject *o, void *data)
 {
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -144,75 +154,84 @@ static char *MissionGetSong(UIObject *o, CampaignOptions *co)
 	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Song;
 }
-static char *MissionGetWidthStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetWidthStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Width: %d", CampaignGetCurrentMission(co)->Size.x);
 	return s;
 }
-static char *MissionGetHeightStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetHeightStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Height: %d", CampaignGetCurrentMission(co)->Size.y);
 	return s;
 }
-static char *MissionGetWallCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetWallCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Walls: %d", CampaignGetCurrentMission(co)->u.Classic.Walls);
 	return s;
 }
-static char *MissionGetWallLengthStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetWallLengthStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Len: %d", CampaignGetCurrentMission(co)->u.Classic.WallLength);
 	return s;
 }
-static char *MissionGetCorridorWidthStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "CorridorWidth: %d", CampaignGetCurrentMission(co)->u.Classic.CorridorWidth);
 	return s;
 }
-static char *MissionGetRoomCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Rooms: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms);
+	sprintf(
+		s, "Rooms: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.Count);
 	return s;
 }
-static char *MissionGetRoomMinStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomMinStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomMin: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.Min);
 	return s;
 }
-static char *MissionGetRoomMaxStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomMax: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.Max);
 	return s;
 }
 static void MissionDrawEdgeRooms(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
 		g, Vec2iAdd(pos, o->Pos), "Edge rooms",
@@ -220,121 +239,133 @@ static void MissionDrawEdgeRooms(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomsOverlap(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	static char s[128];
 	UNUSED(o);
 	UNUSED(pos);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
 		g, Vec2iAdd(pos, o->Pos), "Room overlap",
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetRoomWallCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWalls: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.Walls);
 	return s;
 }
-static char *MissionGetRoomWallLenStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomWallLenStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWallLen: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.WallLength);
 	return s;
 }
-static char *MissionGetRoomWallPadStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWallPad: %d", CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad);
 	return s;
 }
-static char *MissionGetSquareCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Sqr: %d", CampaignGetCurrentMission(co)->u.Classic.Squares);
 	return s;
 }
 static void MissionDrawDoorEnabled(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
 		g, Vec2iAdd(pos, o->Pos), "Doors",
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetDoorMinStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetDoorMinStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "DoorMin: %d", CampaignGetCurrentMission(co)->u.Classic.Doors.Min);
 	return s;
 }
-static char *MissionGetDoorMaxStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetDoorMaxStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "DoorMax: %d", CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
 	return s;
 }
-static char *MissionGetPillarCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetPillarCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Pillars: %d", CampaignGetCurrentMission(co)->u.Classic.Pillars.Count);
 	return s;
 }
-static char *MissionGetPillarMinStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetPillarMinStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "PillarMin: %d", CampaignGetCurrentMission(co)->u.Classic.Pillars.Min);
 	return s;
 }
-static char *MissionGetPillarMaxStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetPillarMaxStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "PillarMax: %d", CampaignGetCurrentMission(co)->u.Classic.Pillars.Max);
 	return s;
 }
-static char *MissionGetDensityStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetDensityStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Dens: %d", CampaignGetCurrentMission(co)->EnemyDensity);
 	return s;
 }
-static char *MissionGetTypeStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetTypeStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Type: %s", MapTypeStr(CampaignGetCurrentMission(co)->Type));
 	return s;
 }
 static void MissionDrawWallStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = WALL_STYLE_COUNT;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	index = CampaignGetCurrentMission(co)->WallStyle;
 	DrawStyleArea(
@@ -346,10 +377,11 @@ static void MissionDrawWallStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = FLOOR_STYLE_COUNT;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -366,10 +398,11 @@ static void MissionDrawFloorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = ROOMFLOOR_COUNT;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -386,10 +419,11 @@ static void MissionDrawRoomStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = GetEditorInfo().doorCount;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -406,10 +440,11 @@ static void MissionDrawDoorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = GetEditorInfo().keyCount;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -426,10 +461,11 @@ static void MissionDrawKeyStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, CampaignOptions *co)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	int index;
 	int count = GetEditorInfo().exitCount;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -445,61 +481,67 @@ static void MissionDrawExitStyle(
 		index, count,
 		UIObjectIsHighlighted(o));
 }
-static char *MissionGetWallColorStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetWallColorStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Walls: %s", RangeName(CampaignGetCurrentMission(co)->WallColor));
 	return s;
 }
-static char *MissionGetFloorColorStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetFloorColorStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Floor: %s", RangeName(CampaignGetCurrentMission(co)->FloorColor));
 	return s;
 }
-static char *MissionGeRoomColorStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGeRoomColorStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Rooms: %s", RangeName(CampaignGetCurrentMission(co)->RoomColor));
 	return s;
 }
-static char *MissionGeExtraColorStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGeExtraColorStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Extra: %s", RangeName(CampaignGetCurrentMission(co)->AltColor));
 	return s;
 }
-static char *MissionGetCharacterCountStr(UIObject *o, CampaignOptions *co)
+static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Characters (%d)", CampaignGetCurrentMission(co)->Enemies.size);
-	return s;
-}
-static char *MissionGetSpecialCountStr(UIObject *o, CampaignOptions *co)
-{
-	static char s[128];
-	UNUSED(o);
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(
-		s, "Mission objective characters (%d)",
+		s, "Characters (%zu)", CampaignGetCurrentMission(co)->Enemies.size);
+	return s;
+}
+static const char *MissionGetSpecialCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(
+		s, "Mission objective characters (%zu)",
 		CampaignGetCurrentMission(co)->SpecialChars.size);
 	return s;
 }
-static char *MissionGetObjectiveDescription(
-	UIObject *o, CampaignOptions *co)
+static const char *MissionGetObjectiveDescription(UIObject *o, void *data)
 {
-	static char s[128];
 	int i;
+	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		o->IsVisible = 0;
@@ -522,7 +564,7 @@ static char *MissionGetObjectiveDescription(
 	o->u.Textbox.IsEditable = 1;
 	return ((MissionObjective *)CArrayGet(&CampaignGetCurrentMission(co)->Objectives, i))->Description;
 }
-static char *GetWeaponCountStr(UIObject *o, void *v)
+static const char *GetWeaponCountStr(UIObject *o, void *v)
 {
 	static char s[128];
 	UNUSED(o);
@@ -532,12 +574,12 @@ static char *GetWeaponCountStr(UIObject *o, void *v)
 		GetNumWeapons(gMission.missionData->Weapons), GUN_COUNT);
 	return s;
 }
-static char *GetObjectCountStr(UIObject *o, void *v)
+static const char *GetObjectCountStr(UIObject *o, void *v)
 {
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
-	sprintf(s, "Map items (%d)", gMission.MapObjects.size);
+	sprintf(s, "Map items (%zu)", gMission.MapObjects.size);
 	return s;
 }
 typedef struct
@@ -546,9 +588,10 @@ typedef struct
 	int index;
 } MissionIndexData;
 static void MissionDrawEnemy(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if (data->index >= (int)CampaignGetCurrentMission(data->co)->Enemies.size)
 	{
@@ -560,9 +603,10 @@ static void MissionDrawEnemy(
 		UIObjectIsHighlighted(o), 1);
 }
 static void MissionDrawSpecialChar(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if (data->index >=
 		(int)CampaignGetCurrentMission(data->co)->SpecialChars.size)
@@ -578,8 +622,9 @@ static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
 	Vec2i pos, MapObject *mo, int density, int isHighlighted);
 static void MissionDrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if (data->index >= (int)CampaignGetCurrentMission(data->co)->Items.size) return;
 	DisplayMapItemWithDensity(
@@ -590,9 +635,10 @@ static void MissionDrawMapItem(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawWeaponStatus(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	int hasWeapon;
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return;
 	hasWeapon = CampaignGetCurrentMission(data->co)->Weapons[data->index];
 	DisplayFlag(
@@ -602,9 +648,10 @@ static void MissionDrawWeaponStatus(
 		hasWeapon,
 		UIObjectIsHighlighted(o));
 }
-static const char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
+static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
 {
 	UNUSED(o);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return NULL;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <= data->index) return NULL;
 	return ObjectiveTypeStr(((MissionObjective *)CArrayGet(
@@ -613,8 +660,9 @@ static const char *MissionGetObjectiveStr(UIObject *o, MissionIndexData *data)
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t);
 static void MissionDrawObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, MissionIndexData *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
+	MissionIndexData *data = vData;
 	CharacterStore *store = &data->co->Setting.characters;
 	Character *c;
 	TOffsetPic pic;
@@ -676,10 +724,11 @@ static MissionObjective *GetMissionObjective(Mission *m, int index)
 {
 	return CArrayGet(&m->Objectives, index);
 }
-static char *MissionGetObjectiveRequired(UIObject *o, MissionIndexData *data)
+static const char *MissionGetObjectiveRequired(UIObject *o, void *vData)
 {
 	static char s[128];
 	UNUSED(o);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return NULL;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <=
 		data->index)
@@ -690,10 +739,11 @@ static char *MissionGetObjectiveRequired(UIObject *o, MissionIndexData *data)
 		CampaignGetCurrentMission(data->co), data->index)->Required);
 	return s;
 }
-static char *MissionGetObjectiveTotal(UIObject *o, MissionIndexData *data)
+static const char *MissionGetObjectiveTotal(UIObject *o, void *vData)
 {
 	static char s[128];
 	UNUSED(o);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return NULL;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <=
 		data->index)
@@ -704,11 +754,12 @@ static char *MissionGetObjectiveTotal(UIObject *o, MissionIndexData *data)
 		CampaignGetCurrentMission(data->co), data->index)->Count);
 	return s;
 }
-static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
+static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 {
 	int flags;
 	static char s[128];
 	UNUSED(o);
+	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return NULL;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <=
 		data->index)
@@ -729,7 +780,7 @@ static char *MissionGetObjectiveFlags(UIObject *o, MissionIndexData *data)
 		(flags & OBJECTIVE_NOACCESS) ? "no-access" : "");
 	return s;
 }
-static char *BrushGetTypeStr(EditorBrush *brush, int isMain)
+static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
 	static char s[128];
 	char *brushStr = "";
@@ -754,28 +805,24 @@ static char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 	sprintf(s, "Brush %d: %s", isMain ? 1 : 2, brushStr);
 	return s;
 }
-static char *BrushGetMainTypeStr(UIObject *o, EditorBrush *brush)
+static const char *BrushGetMainTypeStr(UIObject *o, void *data)
 {
 	UNUSED(o);
+	EditorBrush *brush = data;
 	return BrushGetTypeStr(brush, 1);
 }
-static char *BrushGetSecondaryTypeStr(UIObject *o, EditorBrush *brush)
+static const char *BrushGetSecondaryTypeStr(UIObject *o, void *data)
 {
 	UNUSED(o);
+	EditorBrush *brush = data;
 	return BrushGetTypeStr(brush, 0);
 }
-static char *BrushGetSizeStr(UIObject *o, EditorBrush *brush)
+static const char *BrushGetSizeStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
+	EditorBrush *brush = data;
 	sprintf(s, "Brush Size: %d", brush->BrushSize);
-	return s;
-}
-static char *BrushGetBrushTypeStr(UIObject *o, EditorBrush *brush)
-{
-	static char s[128];
-	UNUSED(o);
-	sprintf(s, "Brush Type: %s", BrushTypeStr(brush->Type));
 	return s;
 }
 typedef struct
@@ -785,9 +832,10 @@ typedef struct
 } IndexedEditorBrush;
 static void DisplayMapItem(Vec2i pos, MapObject *mo);
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, IndexedEditorBrush *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
+	IndexedEditorBrush *data = vData;
 	MapObject *mo = MapObjectGet(data->ItemIndex);
 	DisplayMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
@@ -798,9 +846,10 @@ typedef struct
 	CharacterStore *Store;
 } EditorBrushAndCampaign;
 static void DrawCharacter(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, EditorBrushAndCampaign *data)
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
+	EditorBrushAndCampaign *data = vData;
 	Character *c = CArrayGet(&data->Store->OtherChars, data->Brush.ItemIndex);
 	DisplayCharacter(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
@@ -875,23 +924,25 @@ void DisplayFlag(
 }
 
 
-static void CampaignChangeSeed(CampaignOptions *c, int d)
+static void CampaignChangeSeed(void *data, int d)
 {
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
 		d *= 10;
 	}
-	if (d < 0 && c->seed < (unsigned)-d)
+	CampaignOptions *co = data;
+	if (d < 0 && co->seed < (unsigned)-d)
 	{
-		c->seed = 0;
+		co->seed = 0;
 	}
 	else
 	{
-		c->seed += d;
+		co->seed += d;
 	}
 }
-static void MissionChangeWidth(CampaignOptions *co, int d)
+static void MissionChangeWidth(void *data, int d)
 {
+	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	int old = m->Size.x;
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
@@ -904,8 +955,9 @@ static void MissionChangeWidth(CampaignOptions *co, int d)
 		MissionStaticLayout(m, Vec2iNew(old, m->Size.y));
 	}
 }
-static void MissionChangeHeight(CampaignOptions *co, int d)
+static void MissionChangeHeight(void *data, int d)
 {
+	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	int old = m->Size.y;
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
@@ -918,123 +970,143 @@ static void MissionChangeHeight(CampaignOptions *co, int d)
 		MissionStaticLayout(m, Vec2iNew(m->Size.x, old));
 	}
 }
-static void MissionChangeWallCount(CampaignOptions *co, int d)
+static void MissionChangeWallCount(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Walls =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Walls + d, 0, 200);
 }
-static void MissionChangeWallLength(CampaignOptions *co, int d)
+static void MissionChangeWallLength(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.WallLength =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.WallLength + d, 1, 100);
 }
-static void MissionChangeCorridorWidth(CampaignOptions *co, int d)
+static void MissionChangeCorridorWidth(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.CorridorWidth =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.CorridorWidth + d, 1, 5);
 }
-static void MissionChangeRoomCount(CampaignOptions *co, int d)
+static void MissionChangeRoomCount(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Count =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.Count + d, 0, 100);
 }
-static void MissionChangeRoomMin(CampaignOptions *co, int d)
+static void MissionChangeRoomMin(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Min =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.Min + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Max = MAX(
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Max);
 }
-static void MissionChangeRoomMax(CampaignOptions *co, int d)
+static void MissionChangeRoomMax(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Max =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.Max + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Min = MIN(
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Max);
 }
-static void MissionChangeEdgeRooms(CampaignOptions *co, int d)
+static void MissionChangeEdgeRooms(void *data, int d)
 {
 	UNUSED(d);
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge =
 		!CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge;
 }
-static void MissionChangeRoomsOverlap(CampaignOptions *co, int d)
+static void MissionChangeRoomsOverlap(void *data, int d)
 {
 	UNUSED(d);
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap =
 		!CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap;
 }
-static void MissionChangeRoomWallCount(CampaignOptions *co, int d)
+static void MissionChangeRoomWallCount(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.Walls =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.Walls + d, 0, 50);
 }
-static void MissionChangeRoomWallLen(CampaignOptions *co, int d)
+static void MissionChangeRoomWallLen(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.WallLength =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.WallLength + d, 1, 50);
 }
-static void MissionChangeRoomWallPad(CampaignOptions *co, int d)
+static void MissionChangeRoomWallPad(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad + d, 2, 10);
 }
-static void MissionChangeSquareCount(CampaignOptions *co, int d)
+static void MissionChangeSquareCount(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Squares + d, 0, 100);
 }
-static void MissionChangeDoorEnabled(CampaignOptions *co, int d)
+static void MissionChangeDoorEnabled(void *data, int d)
 {
 	UNUSED(d);
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled =
 		!CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled;
 }
-static void MissionChangeDoorMin(CampaignOptions *co, int d)
+static void MissionChangeDoorMin(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Doors.Min =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Doors.Min + d, 1, 6);
 	CampaignGetCurrentMission(co)->u.Classic.Doors.Max = MAX(
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
 }
-static void MissionChangeDoorMax(CampaignOptions *co, int d)
+static void MissionChangeDoorMax(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Doors.Max =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Doors.Max + d, 1, 6);
 	CampaignGetCurrentMission(co)->u.Classic.Doors.Min = MIN(
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
 }
-static void MissionChangePillarCount(CampaignOptions *co, int d)
+static void MissionChangePillarCount(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Count =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Pillars.Count + d, 0, 50);
 }
-static void MissionChangePillarMin(CampaignOptions *co, int d)
+static void MissionChangePillarMin(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Min =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Pillars.Min + d, 1, 50);
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Max = MAX(
 		CampaignGetCurrentMission(co)->u.Classic.Pillars.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Pillars.Max);
 }
-static void MissionChangePillarMax(CampaignOptions *co, int d)
+static void MissionChangePillarMax(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Max =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Pillars.Max + d, 1, 50);
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Min = MIN(
 		CampaignGetCurrentMission(co)->u.Classic.Pillars.Min,
 		CampaignGetCurrentMission(co)->u.Classic.Pillars.Max);
 }
-static void MissionChangeDensity(CampaignOptions *co, int d)
+static void MissionChangeDensity(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->EnemyDensity = CLAMP(CampaignGetCurrentMission(co)->EnemyDensity + d, 0, 100);
 }
-static void MissionChangeType(CampaignOptions *co, int d)
+static void MissionChangeType(void *data, int d)
 {
+	CampaignOptions *co = data;
 	MapType type = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->Type + d,
 		MAPTYPE_CLASSIC,
@@ -1046,58 +1118,69 @@ static void MissionChangeType(CampaignOptions *co, int d)
 	MapLoad(&map, &gMission, &co->Setting.characters);
 	MissionConvertToType(gMission.missionData, &map, type);
 }
-static void MissionChangeWallStyle(CampaignOptions *co, int d)
+static void MissionChangeWallStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->WallStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->WallStyle + d, 0, WALL_STYLE_COUNT - 1);
 }
-static void MissionChangeFloorStyle(CampaignOptions *co, int d)
+static void MissionChangeFloorStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->FloorStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->FloorStyle + d, 0, FLOOR_STYLE_COUNT - 1);
 }
-static void MissionChangeRoomStyle(CampaignOptions *co, int d)
+static void MissionChangeRoomStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->RoomStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->RoomStyle + d, 0, ROOMFLOOR_COUNT - 1);
 }
-static void MissionChangeDoorStyle(CampaignOptions *co, int d)
+static void MissionChangeDoorStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->DoorStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->DoorStyle + d, 0, GetEditorInfo().doorCount - 1);
 }
-static void MissionChangeKeyStyle(CampaignOptions *co, int d)
+static void MissionChangeKeyStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->KeyStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->KeyStyle + d, 0, GetEditorInfo().keyCount - 1);
 }
-static void MissionChangeExitStyle(CampaignOptions *co, int d)
+static void MissionChangeExitStyle(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->ExitStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->ExitStyle + d, 0, GetEditorInfo().exitCount - 1);
 }
-static void MissionChangeWallColor(CampaignOptions *co, int d)
+static void MissionChangeWallColor(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->WallColor = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->WallColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeFloorColor(CampaignOptions *co, int d)
+static void MissionChangeFloorColor(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->FloorColor = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->FloorColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeRoomColor(CampaignOptions *co, int d)
+static void MissionChangeRoomColor(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->RoomColor = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->RoomColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeExtraColor(CampaignOptions *co, int d)
+static void MissionChangeExtraColor(void *data, int d)
 {
+	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->AltColor = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->AltColor + d, 0, GetEditorInfo().rangeCount - 1);
 }
-static void MissionChangeEnemy(MissionIndexData *data, int d)
+static void MissionChangeEnemy(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	int enemy = *(int *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Enemies, data->index);
 	enemy = CLAMP_OPPOSITE(
@@ -1107,8 +1190,9 @@ static void MissionChangeEnemy(MissionIndexData *data, int d)
 	data->co->Setting.characters.baddies[data->index] =
 		CArrayGet(&data->co->Setting.characters.OtherChars, enemy);
 }
-static void MissionChangeSpecialChar(MissionIndexData *data, int d)
+static void MissionChangeSpecialChar(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	int c = *(int *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->SpecialChars, data->index);
 	c = CLAMP_OPPOSITE(
@@ -1118,15 +1202,17 @@ static void MissionChangeSpecialChar(MissionIndexData *data, int d)
 	data->co->Setting.characters.specials[data->index] =
 		CArrayGet(&data->co->Setting.characters.OtherChars, c);
 }
-static void MissionChangeWeapon(MissionIndexData *data, int d)
+static void MissionChangeWeapon(void *vData, int d)
 {
 	int hasWeapon;
 	UNUSED(d);
+	MissionIndexData *data = vData;
 	hasWeapon = CampaignGetCurrentMission(data->co)->Weapons[data->index];
 	CampaignGetCurrentMission(data->co)->Weapons[data->index] = !hasWeapon;
 }
-static void MissionChangeMapItem(MissionIndexData *data, int d)
+static void MissionChangeMapItem(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
 		int density = *(int *)CArrayGet(
@@ -1142,17 +1228,19 @@ static void MissionChangeMapItem(MissionIndexData *data, int d)
 		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->Items, data->index) = i;
 	}
 }
-static void MissionChangeObjectiveIndex(MissionIndexData *data, int d);
-static void MissionChangeObjectiveType(MissionIndexData *data, int d)
+static void MissionChangeObjectiveIndex(void *vData, int d);
+static void MissionChangeObjectiveType(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	mobj->Type = CLAMP_OPPOSITE(mobj->Type + d, 0, OBJECTIVE_INVESTIGATE);
 	// Initialise the index of the objective
 	MissionChangeObjectiveIndex(data, 0);
 }
-static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
+static void MissionChangeObjectiveIndex(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	int limit;
@@ -1177,21 +1265,24 @@ static void MissionChangeObjectiveIndex(MissionIndexData *data, int d)
 	}
 	mobj->Index = CLAMP_OPPOSITE(mobj->Index + d, 0, limit);
 }
-static void MissionChangeObjectiveRequired(MissionIndexData *data, int d)
+static void MissionChangeObjectiveRequired(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	mobj->Required = CLAMP_OPPOSITE(
 		mobj->Required + d, 0, MIN(100, mobj->Count));
 }
-static void MissionChangeObjectiveTotal(MissionIndexData *data, int d)
+static void MissionChangeObjectiveTotal(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	mobj->Count = CLAMP_OPPOSITE(mobj->Count + d, mobj->Required, 100);
 }
-static void MissionChangeObjectiveFlags(MissionIndexData *data, int d)
+static void MissionChangeObjectiveFlags(void *vData, int d)
 {
+	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	// Max is combination of all flags, i.e. largest flag doubled less one
@@ -1222,103 +1313,122 @@ static void BrushChangeType(EditorBrush *b, int d, int isMain)
 		b->SecondaryType = brushType;
 	}
 }
-static void BrushChangeMainType(EditorBrush *b, int d)
+static void BrushChangeMainType(void *data, int d)
 {
-	BrushChangeType(b, d, 1);
+	BrushChangeType(data, d, 1);
 }
-static void BrushChangeSecondaryType(EditorBrush *b, int d)
+static void BrushChangeSecondaryType(void *data, int d)
 {
-	BrushChangeType(b, d, 0);
+	BrushChangeType(data, d, 0);
 }
-static void BrushChangeSize(EditorBrush *b, int d)
+static void BrushChangeSize(void *data, int d)
 {
+	EditorBrush *b = data;
 	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
 }
-static int BrushIsBrushTypePoint(EditorBrush *b)
+static int BrushIsBrushTypePoint(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_POINT;
 }
-static int BrushIsBrushTypeLine(EditorBrush *b)
+static int BrushIsBrushTypeLine(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_LINE;
 }
-static int BrushIsBrushTypeBox(EditorBrush *b)
+static int BrushIsBrushTypeBox(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_BOX;
 }
-static int BrushIsBrushTypeBoxFilled(EditorBrush *b)
+static int BrushIsBrushTypeBoxFilled(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_BOX_FILLED;
 }
-static int BrushIsBrushTypeRoom(EditorBrush *b)
+static int BrushIsBrushTypeRoom(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_ROOM;
 }
-static int BrushIsBrushTypeSelect(EditorBrush *b)
+static int BrushIsBrushTypeSelect(void *data)
 {
+	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_SELECT;
 }
-static int BrushIsBrushTypeAddItem(EditorBrush *b)
+static int BrushIsBrushTypeAddItem(void *data)
 {
+	EditorBrush *b = data;
 	return
 		b->Type == BRUSHTYPE_SET_PLAYER_START ||
 		b->Type == BRUSHTYPE_ADD_ITEM ||
 		b->Type == BRUSHTYPE_ADD_CHARACTER;
 }
-static void BrushSetBrushTypePoint(EditorBrush *b, int d)
+static void BrushSetBrushTypePoint(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_POINT;
 }
-static void BrushSetBrushTypeLine(EditorBrush *b, int d)
+static void BrushSetBrushTypeLine(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_LINE;
 }
-static void BrushSetBrushTypeBox(EditorBrush *b, int d)
+static void BrushSetBrushTypeBox(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX;
 }
-static void BrushSetBrushTypeBoxFilled(EditorBrush *b, int d)
+static void BrushSetBrushTypeBoxFilled(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_FILLED;
 }
-static void BrushSetBrushTypeRoom(EditorBrush *b, int d)
+static void BrushSetBrushTypeRoom(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_ROOM;
 }
-static void BrushSetBrushTypeSelect(EditorBrush *b, int d)
+static void BrushSetBrushTypeSelect(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SELECT;
 }
-static void BrushSetBrushTypeSetPlayerStart(EditorBrush *b, int d)
+static void BrushSetBrushTypeSetPlayerStart(void *data, int d)
 {
 	UNUSED(d);
+	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SET_PLAYER_START;
 }
-static void BrushSetBrushTypeAddMapItem(IndexedEditorBrush *b, int d)
+static void BrushSetBrushTypeAddMapItem(void *data, int d)
 {
 	UNUSED(d);
+	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
 	b->Brush->ItemIndex = b->ItemIndex;
 }
-static void BrushSetBrushTypeAddCharacter(IndexedEditorBrush *b, int d)
+static void BrushSetBrushTypeAddCharacter(void *data, int d)
 {
 	UNUSED(d);
+	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_CHARACTER;
 	b->Brush->ItemIndex = b->ItemIndex;
 }
-static void ActivateBrush(UIObject *o, EditorBrush *b)
+static void ActivateBrush(UIObject *o, void *data)
 {
 	UNUSED(o);
+	EditorBrush *b = data;
 	b->IsActive = 1;
 }
-static void DeactivateBrush(EditorBrush *b)
+static void DeactivateBrush(void *data)
 {
+	EditorBrush *b = data;
 	b->IsActive = 0;
 }
 
@@ -2413,8 +2523,7 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 	UIObjectDestroy(o);
 	return c;
 }
-static void CreateAddCharacterSubObjs(
-	UIObject *c, EditorBrushAndCampaign *data);
+static void CreateAddCharacterSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddCharacterObjs(
 	Vec2i pos, EditorBrush *brush, CharacterStore *store)
 {
@@ -2429,9 +2538,9 @@ static UIObject *CreateAddCharacterObjs(
 
 	return c;
 }
-static void CreateAddCharacterSubObjs(
-	UIObject *c, EditorBrushAndCampaign *data)
+static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 {
+	EditorBrushAndCampaign *data = vData;
 	if (c->Children.size == data->Store->OtherChars.size)
 	{
 		return;

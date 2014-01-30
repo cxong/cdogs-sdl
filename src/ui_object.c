@@ -62,6 +62,9 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 		// Context menu always starts as invisible
 		o->IsVisible = 0;
 		break;
+	default:
+		// do nothing
+		break;
 	}
 	CArrayInit(&o->Children, sizeof o);
 	return o;
@@ -116,6 +119,9 @@ void UIObjectDestroy(UIObject *o)
 		break;
 	case UITYPE_TAB:
 		CArrayTerminate(&o->u.Tab.Labels);
+		break;
+	default:
+		// do nothing
 		break;
 	}
 	CFREE(o);
@@ -209,6 +215,9 @@ int UIObjectChange(UIObject *o, int d)
 		// switch child
 		o->u.Tab.Index = CLAMP_OPPOSITE(
 			o->u.Tab.Index + d, 0, (int)o->u.Tab.Labels.size - 1);
+		break;
+	default:
+		// do nothing
 		break;
 	}
 	if (o->ChangeFunc)
@@ -376,6 +385,9 @@ static void UIObjectDrawAndAddChildren(
 			return;
 		}
 		break;
+	default:
+		// do nothing
+		break;
 	}
 
 	// add children
@@ -414,13 +426,6 @@ void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse)
 			cPtr->obj, g, cPtr->pos, mouse, &objs);
 	}
 	CArrayTerminate(&objs);
-}
-
-static int IsZeroUIObject(UIObject *o)
-{
-	return
-		o->Id == 0 && o->Flags == 0 &&
-		Vec2iEqual(o->Pos, Vec2iZero()) && Vec2iEqual(o->Size, Vec2iZero());
 }
 
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)

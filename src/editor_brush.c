@@ -269,6 +269,9 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				}
 			}
 		}
+	default:
+		// do nothing
+		break;
 	}
 	if (useSimpleHighlight)
 	{
@@ -278,9 +281,10 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	}
 }
 
-static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, Mission *m)
+static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, void *data)
 {
 	Vec2i v;
+	Mission *m = data;
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
@@ -546,6 +550,9 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 					b->SelectionSize = Vec2iZero();
 				}
 			}
+		default:
+			// do nothing
+			break;
 		}
 	}
 	b->IsPainting = 0;
