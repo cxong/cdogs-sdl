@@ -37,6 +37,8 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	memset(&m->u, 0, sizeof m->u);
 	switch (type)
 	{
+	case MAPTYPE_CLASSIC:
+		break;
 	case MAPTYPE_STATIC:
 		{
 			Vec2i v;

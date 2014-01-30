@@ -59,13 +59,6 @@ static TWatch *inactiveWatches = NULL;
 static int watchIndex = 1;
 
 
-static Action *AddActions(int count)
-{
-	Action *a;
-	CCALLOC(a, sizeof *a * (count + 1));
-	return a;
-}
-
 Trigger *TriggerNew(void)
 {
 	Trigger *t;

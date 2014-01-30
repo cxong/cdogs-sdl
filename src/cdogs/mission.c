@@ -87,16 +87,6 @@ MapType StrMapType(const char *s)
 	}
 	return MAPTYPE_CLASSIC;
 }
-static int GetMapTypeVersion(MapType t)
-{
-	switch (t)
-	{
-	case MAPTYPE_CLASSIC:
-		return 1;
-	default:
-		return 1;
-	}
-}
 
 
 void MissionInit(Mission *m)
@@ -172,6 +162,8 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->ItemDensities);
 	switch (m->Type)
 	{
+	case MAPTYPE_CLASSIC:
+		break;
 	case MAPTYPE_STATIC:
 		CArrayTerminate(&m->u.Static.Tiles);
 		CArrayTerminate(&m->u.Static.Items);
