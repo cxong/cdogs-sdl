@@ -188,6 +188,7 @@ static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static void LoadStaticItems(Mission *m, json_t *node, char *name);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
+static void LoadStaticExit(Mission *m, json_t *node, char *name);
 static void LoadMissions(CArray *missions, json_t *missionsNode)
 {
 	json_t *child;
@@ -250,6 +251,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 				LoadStaticKeys(&m, child, "StaticKeys");
 
 				LoadVec2i(&m.u.Static.Start, child, "Start");
+				LoadStaticExit(&m, child, "Exit");
 			}
 			break;
 		default:
@@ -492,6 +494,17 @@ static void LoadStaticKeys(Mission *m, json_t *node, char *name)
 		CArrayPushBack(&m->u.Static.Keys, &kp);
 	}
 }
+static void LoadStaticExit(Mission *m, json_t *node, char *name)
+{
+	json_t *exitNode = json_find_first_label(node, name);
+	if (!exitNode || !exitNode->child)
+	{
+		return;
+	}
+	exitNode = exitNode->child;
+	LoadVec2i(&m->u.Static.Exit.Start, exitNode, "Start");
+	LoadVec2i(&m->u.Static.Exit.End, exitNode, "End");
+}
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
@@ -678,6 +691,14 @@ static json_t *SaveMissions(CArray *a)
 
 				json_insert_pair_into_object(
 					node, "Start", SaveVec2i(mission->u.Static.Start));
+				json_t *exitNode = json_new_object();
+				json_insert_pair_into_object(
+					exitNode, "Start",
+					SaveVec2i(mission->u.Static.Exit.Start));
+				json_insert_pair_into_object(
+					exitNode, "End",
+					SaveVec2i(mission->u.Static.Exit.End));
+				json_insert_pair_into_object(node, "Exit", exitNode);
 			}
 			break;
 		default:

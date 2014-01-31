@@ -173,7 +173,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 		}
 		break;
 	case BRUSHTYPE_BOX:	// fallthrough
-	case BRUSHTYPE_ROOM:
+	case BRUSHTYPE_ROOM:	// fallthrough
+	case BRUSHTYPE_SET_EXIT:
 		if (b->IsPainting)
 		{
 			Vec2i v;
@@ -322,6 +323,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_BOX:	// fallthrough
 	case BRUSHTYPE_BOX_FILLED:	// fallthrough
 	case BRUSHTYPE_ROOM:	// fallthrough
+	case BRUSHTYPE_SET_EXIT:
 		// don't paint until the end
 		break;
 	case BRUSHTYPE_SELECT:
@@ -582,6 +584,32 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 					b->SelectionSize = Vec2iZero();
 				}
 			}
+			break;
+		case BRUSHTYPE_SET_EXIT:
+			{
+				Vec2i exitStart = Vec2iMin(b->LastPos, b->Pos);
+				Vec2i exitEnd = Vec2iMax(b->LastPos, b->Pos);
+				// Clamp within map boundaries
+				exitStart = Vec2iClamp(
+					exitStart, Vec2iZero(), Vec2iMinus(m->Size, Vec2iUnit()));
+				exitEnd = Vec2iClamp(
+					exitEnd, Vec2iZero(), Vec2iMinus(m->Size, Vec2iUnit()));
+				// Check that size is big enough
+				Vec2i size =
+					Vec2iAdd(Vec2iMinus(exitEnd, exitStart), Vec2iUnit());
+				if (size.x >= 3 && size.y >= 3)
+				{
+					// Check that exit area has changed
+					if (!Vec2iEqual(exitStart, m->u.Static.Exit.Start) ||
+						!Vec2iEqual(exitEnd, m->u.Static.Exit.End))
+					{
+						m->u.Static.Exit.Start = exitStart;
+						m->u.Static.Exit.End = exitEnd;
+						result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+					}
+				}
+			}
+			break;
 		default:
 			// do nothing
 			break;

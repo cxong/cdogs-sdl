@@ -610,7 +610,13 @@
 		}],
 		"StaticKeys": [],
 		"Start": [1,
-		8]
+		8],
+		"Exit": {
+			"Start": [12,
+			0],
+			"End": [20,
+			3]
+		}
 	},
 	{
 		"Title": "Lots of rooms",
@@ -1715,7 +1721,13 @@
 			23]]
 		}],
 		"Start": [23,
-		29]
+		29],
+		"Exit": {
+			"Start": [14,
+			0],
+			"End": [19,
+			6]
+		}
 	}],
 	"Characters": [{
 		"armedBody": 1,

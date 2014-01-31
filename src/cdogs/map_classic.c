@@ -61,7 +61,7 @@ static int MapTryBuildRoom(
 static int MapTryBuildPillar(Map *map, Mission *m, int pad);
 static int MapTryBuildWall(
 	Map *map, unsigned short tileType, int pad, int wallLength);
-void MapClassicLoad(Map *map, Mission *mission)
+void MapClassicLoad(Map *map, Mission *m)
 {
 	// The classic random map generator randomly attempts to place
 	// a configured number of features on the map, in order:
@@ -79,12 +79,12 @@ void MapClassicLoad(Map *map, Mission *mission)
 	// Sometimes it's impossible to place features, either because
 	// they overlap with other incompatible features, or it may
 	// create inaccessible areas on the map.
-
+	
 	// place squares
-	int pad = MAX(mission->u.Classic.CorridorWidth, 1);
+	int pad = MAX(m->u.Classic.CorridorWidth, 1);
 	int count = 0;
 	int i = 0;
-	while (i < 1000 && count < mission->u.Classic.Squares)
+	while (i < 1000 && count < m->u.Classic.Squares)
 	{
 		if (MapTryBuildSquare(map))
 		{
@@ -96,12 +96,12 @@ void MapClassicLoad(Map *map, Mission *mission)
 	// place rooms
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->u.Classic.Rooms.Count)
+	while (i < 1000 && count < m->u.Classic.Rooms.Count)
 	{
-		int doorMin = CLAMP(mission->u.Classic.Doors.Min, 1, 6);
-		int doorMax = CLAMP(mission->u.Classic.Doors.Max, doorMin, 6);
+		int doorMin = CLAMP(m->u.Classic.Doors.Min, 1, 6);
+		int doorMax = CLAMP(m->u.Classic.Doors.Max, doorMin, 6);
 		if (MapTryBuildRoom(
-			map, mission, pad,
+			map, m, pad,
 			doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode)))
 		{
 			count++;
@@ -112,9 +112,9 @@ void MapClassicLoad(Map *map, Mission *mission)
 	// place pillars
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->u.Classic.Pillars.Count)
+	while (i < 1000 && count < m->u.Classic.Pillars.Count)
 	{
-		if (MapTryBuildPillar(map, mission, pad))
+		if (MapTryBuildPillar(map, m, pad))
 		{
 			count++;
 		}
@@ -124,15 +124,17 @@ void MapClassicLoad(Map *map, Mission *mission)
 	// place walls
 	count = 0;
 	i = 0;
-	while (i < 1000 && count < mission->u.Classic.Walls)
+	while (i < 1000 && count < m->u.Classic.Walls)
 	{
 		if (MapTryBuildWall(
-			map, MAP_FLOOR, pad, mission->u.Classic.WallLength))
+			map, MAP_FLOOR, pad, m->u.Classic.WallLength))
 		{
 			count++;
 		}
 		i++;
 	}
+	
+	GenerateRandomExitArea(map->Size, &map->ExitStart, &map->ExitEnd);
 }
 
 static Vec2i GuessCoords(Map *map);

@@ -69,5 +69,6 @@ void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
 void MapMakeWall(Map *map, Vec2i pos);
 
 unsigned short GenerateAccessMask(int *accessLevel);
+void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end);
 
 #endif

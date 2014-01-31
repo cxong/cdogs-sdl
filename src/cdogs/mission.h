@@ -177,6 +177,11 @@ typedef struct
 			CArray Characters;	// of CharacterPositions
 			CArray Keys;	// of KeyPositions
 			Vec2i Start;
+			struct
+			{
+				Vec2i Start;
+				Vec2i End;
+			} Exit;
 		} Static;
 	} u;
 } Mission;
@@ -188,7 +193,6 @@ struct MissionOptions
 
 	Mission *missionData;
 	CArray Objectives;	// of struct Objective
-	int exitLeft, exitTop, exitRight, exitBottom;
 	int pickupTime;
 
 	CArray MapObjects;	// of MapObject

@@ -86,6 +86,9 @@ typedef struct
 
 	int tilesSeen;
 	int keyAccessCount;
+	
+	Vec2i ExitStart;
+	Vec2i ExitEnd;
 } Map;
 
 extern Map gMap;
@@ -94,6 +97,7 @@ unsigned short GetAccessMask(int k);
 
 Tile *MapGetTile(Map *map, Vec2i pos);
 int MapIsTileIn(Map *map, Vec2i pos);
+bool MapIsTileInExit(Map *map, TTileItem *t);
 
 int MapHasLockedRooms(Map *map);
 int MapPosIsHighAccess(Map *map, int x, int y);

@@ -53,7 +53,8 @@ typedef enum
 	BRUSHTYPE_ADD_ITEM,
 	BRUSHTYPE_ADD_CHARACTER,
 	BRUSHTYPE_ADD_KEY,
-	BRUSHTYPE_SET_KEY
+	BRUSHTYPE_SET_KEY,
+	BRUSHTYPE_SET_EXIT
 } BrushType;
 const char *BrushTypeStr(BrushType t);
 BrushType StrBrushType(const char *s);

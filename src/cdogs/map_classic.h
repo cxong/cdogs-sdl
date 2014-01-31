@@ -51,6 +51,6 @@
 
 #include "map.h"
 
-void MapClassicLoad(Map *map, Mission *mission);
+void MapClassicLoad(Map *map, Mission *m);
 
 #endif

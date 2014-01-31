@@ -1380,6 +1380,11 @@ static int BrushIsBrushTypeSetKey(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_SET_KEY;
 }
+static int BrushIsBrushTypeSetExit(void *data)
+{
+	EditorBrush *b = data;
+	return b->Type == BRUSHTYPE_SET_EXIT;
+}
 static void BrushSetBrushTypePoint(void *data, int d)
 {
 	UNUSED(d);
@@ -1449,6 +1454,12 @@ static void BrushSetBrushTypeSetKey(void *data, int d)
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_SET_KEY;
 	b->Brush->ItemIndex = b->ItemIndex;
+}
+static void BrushSetBrushTypeSetExit(void *data, int d)
+{
+	UNUSED(d);
+	EditorBrush *b = data;
+	b->Type = BRUSHTYPE_SET_EXIT;
 }
 static void ActivateBrush(UIObject *o, void *data)
 {
@@ -2060,6 +2071,14 @@ static UIObject *CreateStaticMapObjs(
 	CSTRDUP(o2->Tooltip, "Set key required for door");
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateSetKeyObjs(o2->Size, brush));
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "set_exit"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetExit;
+	o2->ChangeFunc = BrushSetBrushTypeSetExit;
+	CSTRDUP(o2->Tooltip, "Set exit area (box drag)");
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);

@@ -683,7 +683,7 @@ int MoveActor(TActor * actor, int x, int y)
 	actor->y = y;
 	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 
-	if (IsTileInExit(&actor->tileItem, &gMission))
+	if (MapIsTileInExit(&gMap, &actor->tileItem))
 	{
 		actor->action = ACTORACTION_EXITING;
 	}

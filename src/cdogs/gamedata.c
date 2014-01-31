@@ -328,15 +328,6 @@ int AreKeysAllowed(campaign_mode_e mode)
 	return mode == CAMPAIGN_MODE_NORMAL;
 }
 
-int IsTileInExit(TTileItem *tile, struct MissionOptions *options)
-{
-	return
-		tile->x / TILE_WIDTH >= options->exitLeft &&
-		tile->x / TILE_WIDTH <= options->exitRight &&
-		tile->y / TILE_HEIGHT >= options->exitTop &&
-		tile->y / TILE_HEIGHT <= options->exitBottom;
-}
-
 
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS])
 {

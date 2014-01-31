@@ -119,6 +119,15 @@ int MapIsTileIn(Map *map, Vec2i pos)
 	return 1;
 }
 
+bool MapIsTileInExit(Map *map, TTileItem *tile)
+{
+	return
+		tile->x / TILE_WIDTH >= map->ExitStart.x &&
+		tile->x / TILE_WIDTH <= map->ExitEnd.x &&
+		tile->y / TILE_HEIGHT >= map->ExitStart.y &&
+		tile->y / TILE_HEIGHT <= map->ExitEnd.y;
+}
+
 static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
 {
 	Vec2i pos = Vec2iToTile(Vec2iNew(t->x, t->y));
@@ -387,10 +396,10 @@ void MapShowExitArea(Map *map)
 	Pic *exitPic = PicManagerGetFromOld(&gPicManager, gMission.exitPic);
 	Pic *shadowPic = PicManagerGetFromOld(&gPicManager, gMission.exitShadow);
 
-	left = gMission.exitLeft;
-	right = gMission.exitRight;
-	top = gMission.exitTop;
-	bottom = gMission.exitBottom;
+	left = map->ExitStart.x;
+	right = map->ExitEnd.x;
+	top = map->ExitStart.y;
+	bottom = map->ExitEnd.y;
 
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)

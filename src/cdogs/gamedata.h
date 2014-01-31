@@ -141,8 +141,6 @@ int IsPasswordAllowed(campaign_mode_e mode);
 int IsMissionBriefingNeeded(campaign_mode_e mode);
 int AreKeysAllowed(campaign_mode_e mode);
 
-int IsTileInExit(TTileItem *tile, struct MissionOptions *options);
-
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
 
 #endif

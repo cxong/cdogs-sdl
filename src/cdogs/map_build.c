@@ -49,6 +49,9 @@
 #include "map_build.h"
 
 
+#define EXIT_WIDTH  8
+#define EXIT_HEIGHT 8
+
 void MapMakeWall(Map *map, Vec2i pos)
 {
 	IMapSet(map, pos, MAP_WALL);
@@ -582,4 +585,12 @@ unsigned short GenerateAccessMask(int *accessLevel)
 		break;
 	}
 	return accessMask;
+}
+
+void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end)
+{
+	start->x = (rand() % (abs(size.x) - EXIT_WIDTH));
+	end->x = start->x + EXIT_WIDTH + 1;
+	start->y = (rand() % (abs(size.y) - EXIT_HEIGHT));
+	end->y = start->y + EXIT_HEIGHT + 1;
 }

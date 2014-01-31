@@ -172,9 +172,6 @@ void MissionTerminate(Mission *m)
 }
 
 
-#define EXIT_WIDTH  8
-#define EXIT_HEIGHT 8
-
 
 // +--------------------+
 // |  Color range info  |
@@ -577,7 +574,6 @@ void SetupMission(
 	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex)
 {
 	int i;
-	int x, y;
 
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
@@ -594,14 +590,6 @@ void SetupMission(
 
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
 	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
-
-	assert(m->Size.x > 0 && m->Size.y > 0 && "invalid map size");
-	x = (rand() % (abs(m->Size.x) - EXIT_WIDTH));
-	y = (rand() % (abs(m->Size.y) - EXIT_HEIGHT));
-	mo->exitLeft = x;
-	mo->exitRight = x + EXIT_WIDTH + 1;
-	mo->exitTop = y;
-	mo->exitBottom = y + EXIT_HEIGHT + 1;
 
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
@@ -704,7 +692,7 @@ int IsMissionComplete(struct MissionOptions *options)
 	// Check that all surviving players are in exit zone
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !IsTileInExit(&gPlayers[i]->tileItem, options))
+		if (gPlayers[i] && !MapIsTileInExit(&gMap, &gPlayers[i]->tileItem))
 		{
 			return 0;
 		}
@@ -731,7 +719,7 @@ int IsMissionComplete(struct MissionOptions *options)
 		{
 			if (a->character == CharacterStoreGetPrisoner(
 				&gCampaign.Setting.characters, 0) &&
-				IsTileInExit(&a->tileItem, options))
+				MapIsTileInExit(&gMap, &a->tileItem))
 			{
 				prisonersRescued++;
 			}
