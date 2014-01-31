@@ -42,5 +42,7 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos);
 bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos);
+bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos);
+bool MissionStaticTryUnsetKeyAt(Mission *m, Vec2i pos);
 
 #endif

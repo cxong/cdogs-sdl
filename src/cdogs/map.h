@@ -90,6 +90,8 @@ typedef struct
 
 extern Map gMap;
 
+unsigned short GetAccessMask(int k);
+
 Tile *MapGetTile(Map *map, Vec2i pos);
 int MapIsTileIn(Map *map, Vec2i pos);
 

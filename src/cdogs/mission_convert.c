@@ -373,3 +373,33 @@ bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
 	}
 	return false;
 }
+
+static bool FloodFill(Mission *m, Vec2i v, unsigned short mask);
+bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short mask = GetAccessMask(k);
+	return FloodFill(m, pos, mask);
+}
+bool MissionStaticTryUnsetKeyAt(Mission *m, Vec2i pos)
+{
+	// -1 for no access level
+	return MissionStaticTrySetKey(m, -1, pos);
+}
+// Use flood fill to set access levels for doors
+// Set access level for all contiguous door tiles
+static bool FloodFill(Mission *m, Vec2i v, unsigned short mask)
+{
+	unsigned short tile = MissionGetTile(m, v);
+	if ((tile & MAP_MASKACCESS) == MAP_DOOR &&
+		(tile & MAP_ACCESSBITS) != mask)
+	{
+		MissionSetTile(m, v, MAP_DOOR | mask);
+		FloodFill(m, Vec2iNew(v.x - 1, v.y), mask);
+		FloodFill(m, Vec2iNew(v.x + 1, v.y), mask);
+		FloodFill(m, Vec2iNew(v.x, v.y - 1), mask);
+		FloodFill(m, Vec2iNew(v.x, v.y + 1), mask);
+		return true;
+	}
+	return false;
+}

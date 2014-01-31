@@ -73,6 +73,15 @@
 
 Map gMap;
 
+unsigned short GetAccessMask(int k)
+{
+	if (k == -1)
+	{
+		return 0;
+	}
+	return MAP_ACCESS_YELLOW << k;
+}
+
 
 static void AddItemToTile(TTileItem * t, Tile * tile)
 {
@@ -654,7 +663,7 @@ static int GetDoorCountInGroup(Map *map, Vec2i v, int isHorizontal)
 	for (;;)
 	{
 		vNext = Vec2iNew(vNext.x + dx, vNext.y + dy);
-		if (IMapGet(map, vNext) == MAP_DOOR)
+		if ((IMapGet(map, vNext) & MAP_MASKACCESS) == MAP_DOOR)
 		{
 			count++;
 		}
@@ -867,10 +876,10 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
 	struct DoorPic *dp;
 	int isHorizontal =
-		IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_WALL ||
-		IMapGet(map, Vec2iNew(v.x - 1, v.y)) == MAP_DOOR ||
-		IMapGet(map, Vec2iNew(v.x + 1, v.y)) == MAP_WALL ||
-		IMapGet(map, Vec2iNew(v.x + 1, v.y)) == MAP_DOOR;
+		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
+		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR ||
+		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
+		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR;
 	int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
 	Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	Vec2i dAside = Vec2iNew(dv.y, dv.x);
@@ -985,6 +994,7 @@ int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
 static int MapGetAccessFlags(Map *map, int x, int y)
 {
 	int flags = 0;
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y))));
 	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x - 1, y))));
 	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x + 1, y))));
 	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y - 1))));
@@ -1001,9 +1011,9 @@ static void MapSetupDoors(Map *map, int floor, int room)
 		{
 			// Check if this is the start of a door group
 			// Top or left-most door
-			if (IMapGet(map, v) == MAP_DOOR &&
-				IMapGet(map, Vec2iNew(v.x - 1, v.y)) != MAP_DOOR &&
-				IMapGet(map, Vec2iNew(v.x, v.y - 1)) != MAP_DOOR)
+			if ((IMapGet(map, v) & MAP_MASKACCESS) == MAP_DOOR &&
+				(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) != MAP_DOOR &&
+				(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
 			{
 				MapAddDoorGroup(
 					map, v, floor, room, MapGetAccessFlags(map, v.x, v.y));

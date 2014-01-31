@@ -1375,6 +1375,11 @@ static int BrushIsBrushTypeAddItem(void *data)
 		b->Type == BRUSHTYPE_ADD_CHARACTER ||
 		b->Type == BRUSHTYPE_ADD_KEY;
 }
+static int BrushIsBrushTypeSetKey(void *data)
+{
+	EditorBrush *b = data;
+	return b->Type == BRUSHTYPE_SET_KEY;
+}
 static void BrushSetBrushTypePoint(void *data, int d)
 {
 	UNUSED(d);
@@ -1436,6 +1441,13 @@ static void BrushSetBrushTypeAddKey(void *data, int d)
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_KEY;
+	b->Brush->ItemIndex = b->ItemIndex;
+}
+static void BrushSetBrushTypeSetKey(void *data, int d)
+{
+	UNUSED(d);
+	IndexedEditorBrush *b = data;
+	b->Brush->Type = BRUSHTYPE_SET_KEY;
 	b->Brush->ItemIndex = b->ItemIndex;
 }
 static void ActivateBrush(UIObject *o, void *data)
@@ -1968,6 +1980,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 }
 static UIObject *CreateAddItemObjs(
 	Vec2i pos, EditorBrush *brush, CharacterStore *store);
+static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateStaticMapObjs(
 	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
@@ -2039,6 +2052,14 @@ static UIObject *CreateStaticMapObjs(
 	o2->Pos = pos;
 	UIObjectAddChild(o2,
 		CreateAddItemObjs(o2->Size, brush, &co->Setting.characters));
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "set_key"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetKey;
+	CSTRDUP(o2->Tooltip, "Set key required for door");
+	o2->Pos = pos;
+	UIObjectAddChild(o2, CreateSetKeyObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -2614,6 +2635,39 @@ static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)
 		UITYPE_CUSTOM, 0,
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddKey;
+	o->u.CustomDrawFunc = DrawKey;
+	pos = Vec2iZero();
+	int width = 4;
+	for (int i = 0; i < KEY_COUNT; i++)
+	{
+		o2 = UIObjectCopy(o);
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
+		((IndexedEditorBrush *)o2->Data)->Brush = brush;
+		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((i + 1) % width) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+	}
+	
+	UIObjectDestroy(o);
+	return c;
+}
+
+static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
+{
+	UIObject *o2;
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0,
+		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+	o->ChangeFunc = BrushSetBrushTypeSetKey;
 	o->u.CustomDrawFunc = DrawKey;
 	pos = Vec2iZero();
 	int width = 4;
