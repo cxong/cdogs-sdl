@@ -548,6 +548,23 @@ int MapTryPlaceOneObject(
 	return 1;
 }
 
+void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo)
+{
+	Tile *t = MapGetTile(map, v);
+	unsigned short iMap = IMapGet(map, v);
+	int isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && t->things == NULL;
+	if (!MapObjectIsTileOK(
+		mo, iMap, isEmpty, IMapGet(map, Vec2iNew(v.x, v.y - 1))))
+	{
+		return;
+	}
+	AddDestructibleObject(
+		Vec2iCenterOfTile(v),
+		mo->width, mo->height,
+		&cGeneralPics[mo->wreckedPic], &cGeneralPics[mo->wreckedPic],
+		0, 0, TILEITEM_IS_WRECK);
+}
+
 int MapHasLockedRooms(Map *map)
 {
 	return map->keyAccessCount > 1;

@@ -186,6 +186,7 @@ static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static void LoadStaticItems(Mission *m, json_t *node, char *name);
+static void LoadStaticWrecks(Mission *m, json_t *node, char *name);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
 static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
@@ -248,6 +249,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 				}
 
 				LoadStaticItems(&m, child, "StaticItems");
+				LoadStaticWrecks(&m, child, "StaticWrecks");
 				LoadStaticCharacters(&m, child, "StaticCharacters");
 				LoadStaticObjectives(&m, child, "StaticObjectives");
 				LoadStaticKeys(&m, child, "StaticKeys");
@@ -424,6 +426,41 @@ static void LoadStaticItems(Mission *m, json_t *node, char *name)
 			CArrayPushBack(&mop.Positions, &pos);
 		}
 		CArrayPushBack(&m->u.Static.Items, &mop);
+	}
+}
+static void LoadStaticWrecks(Mission *m, json_t *node, char *name)
+{
+	CArrayInit(&m->u.Static.Wrecks, sizeof(MapObjectPositions));
+	
+	json_t *wrecks = json_find_first_label(node, name);
+	if (!wrecks || !wrecks->child)
+	{
+		return;
+	}
+	wrecks = wrecks->child;
+	for (wrecks = wrecks->child; wrecks; wrecks = wrecks->next)
+	{
+		MapObjectPositions mop;
+		LoadInt(&mop.Index, wrecks, "Index");
+		CArrayInit(&mop.Positions, sizeof(Vec2i));
+		json_t *positions = json_find_first_label(wrecks, "Positions");
+		if (!positions || !positions->child)
+		{
+			continue;
+		}
+		positions = positions->child;
+		for (positions = positions->child;
+			 positions;
+			 positions = positions->next)
+		{
+			Vec2i pos;
+			json_t *position = positions->child;
+			pos.x = atoi(position->text);
+			position = position->next;
+			pos.y = atoi(position->text);
+			CArrayPushBack(&mop.Positions, &pos);
+		}
+		CArrayPushBack(&m->u.Static.Wrecks, &mop);
 	}
 }
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
@@ -689,6 +726,25 @@ static json_t *SaveMissions(CArray *a)
 					json_insert_child(items, itemNode);
 				}
 				json_insert_pair_into_object(node, "StaticItems", items);
+				
+				json_t *wrecks = json_new_array();
+				for (int i = 0; i < (int)mission->u.Static.Wrecks.size; i++)
+				{
+					MapObjectPositions *mop =
+						CArrayGet(&mission->u.Static.Wrecks, i);
+					json_t *wreckNode = json_new_object();
+					AddIntPair(wreckNode, "Index", mop->Index);
+					json_t *positions = json_new_array();
+					for (int j = 0; j < (int)mop->Positions.size; j++)
+					{
+						Vec2i *pos = CArrayGet(&mop->Positions, j);
+						json_insert_child(positions, SaveVec2i(*pos));
+					}
+					json_insert_pair_into_object(
+						wreckNode, "Positions", positions);
+					json_insert_child(wrecks, wreckNode);
+				}
+				json_insert_pair_into_object(node, "StaticWrecks", wrecks);
 
 				json_t *chars = json_new_array();
 				for (int i = 0; i < (int)mission->u.Static.Characters.size; i++)

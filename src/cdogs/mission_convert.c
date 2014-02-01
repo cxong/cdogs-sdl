@@ -266,6 +266,62 @@ bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 	return false;
 }
 
+bool MissionStaticTryAddWreck(Mission *m, int wreck, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short tile = MissionGetTile(m, pos);
+	MapObject *obj = MapObjectGet(wreck);
+	
+	// Remove any items already there
+	MissionStaticTryRemoveWreckAt(m, pos);
+	
+	if (MapObjectIsTileOK(
+		obj, tile, 1, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
+	{
+		// Check if the item already has an entry, and add to its list
+		// of positions
+		int hasAdded = 0;
+		for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
+		{
+			MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
+			if (i == wreck)
+			{
+				CArrayPushBack(&mop->Positions, &pos);
+				hasAdded = 1;
+				break;
+			}
+		}
+		// If not, create a new entry
+		if (!hasAdded)
+		{
+			MapObjectPositions mop;
+			mop.Index = wreck;
+			CArrayInit(&mop.Positions, sizeof(Vec2i));
+			CArrayPushBack(&mop.Positions, &pos);
+			CArrayPushBack(&m->u.Static.Wrecks, &mop);
+		}
+		return true;
+	}
+	return false;
+}
+bool MissionStaticTryRemoveWreckAt(Mission *m, Vec2i pos)
+{
+	for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
+	{
+		MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
+		for (int j = 0; j < (int)mop->Positions.size; j++)
+		{
+			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
+			if (Vec2iEqual(*mopPos, pos))
+			{
+				CArrayDelete(&mop->Positions, j);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");

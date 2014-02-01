@@ -61,6 +61,16 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 			MapTryPlaceOneObject(map, *pos, MapObjectGet(mop->Index), 0, 0);
 		}
 	}
+	
+	for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
+	{
+		MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
+		for (int j = 0; j < (int)mop->Positions.size; j++)
+		{
+			Vec2i *pos = CArrayGet(&mop->Positions, j);
+			MapPlaceWreck(map, *pos, MapObjectGet(mop->Index));
+		}
+	}
 
 	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
 	{

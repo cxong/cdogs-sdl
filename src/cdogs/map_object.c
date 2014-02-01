@@ -193,9 +193,8 @@ int MapObjectGetCount(void)
 int MapObjectIsTileOK(
 	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove)
 {
-	if ((tile & MAP_MASKACCESS) != MAP_FLOOR &&
-		(tile & MAP_MASKACCESS) != MAP_SQUARE &&
-		(tile & MAP_MASKACCESS) != MAP_ROOM)
+	tile &= MAP_MASKACCESS;
+	if (tile != MAP_FLOOR && tile != MAP_SQUARE && tile != MAP_ROOM)
 	{
 		return 0;
 	}
@@ -203,8 +202,8 @@ int MapObjectIsTileOK(
 	{
 		return 0;
 	}
-	if ((obj->flags & MAPOBJ_ON_WALL) &&
-		(tileAbove & MAP_MASKACCESS) != MAP_WALL)
+	tileAbove &= MAP_MASKACCESS;
+	if ((obj->flags & MAPOBJ_ON_WALL) && tileAbove != MAP_WALL)
 	{
 		return 0;
 	}

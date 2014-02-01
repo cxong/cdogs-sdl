@@ -38,6 +38,8 @@ unsigned short MissionGetTile(Mission *m, Vec2i pos);
 void MissionStaticLayout(Mission *m, Vec2i oldSize);
 bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos);
 bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos);
+bool MissionStaticTryAddWreck(Mission *m, int wreck, Vec2i pos);
+bool MissionStaticTryRemoveWreckAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos);

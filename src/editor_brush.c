@@ -369,6 +369,22 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_ADD_WRECK:
+		if (isMain)
+		{
+			if (MissionStaticTryAddWreck(m, b->ItemIndex, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		else
+		{
+			if (MissionStaticTryRemoveWreckAt(m, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		break;
 	case BRUSHTYPE_ADD_CHARACTER:
 		if (isMain)
 		{
