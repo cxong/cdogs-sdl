@@ -320,6 +320,7 @@ static void UIObjectDrawAndAddChildren(
 			{
 				oPos = DrawTextCharMasked('\021', g, oPos, bracketMask);
 			}
+			oPos.x = oPosX;
 		}
 		break;
 	case UITYPE_TAB:
