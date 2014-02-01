@@ -447,10 +447,10 @@ static void DelChar(int xc, int yc)
 		break;
 
 	default:
-		if (yc - YC_OBJECTIVES < (int)mission->Objectives.size)
+		yc -= YC_OBJECTIVES;
+		if (yc >= 0 && yc < (int)mission->Objectives.size)
 		{
-			MissionObjective *mobj =
-				CArrayGet(&mission->Objectives, yc - YC_OBJECTIVES);
+			MissionObjective *mobj = CArrayGet(&mission->Objectives, yc);
 			Backspace(mobj->Description);
 		}
 		break;
