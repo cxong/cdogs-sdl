@@ -103,6 +103,12 @@ typedef struct
 {
 	int Index;
 	CArray Positions;	// of Vec2i
+	CArray Indices;		// of int
+} ObjectivePositions;
+typedef struct
+{
+	int Index;
+	CArray Positions;	// of Vec2i
 } KeyPositions;
 typedef struct
 {
@@ -175,6 +181,7 @@ typedef struct
 			CArray Tiles;	// of unsigned short (map tile)
 			CArray Items;	// of MapObjectPositions
 			CArray Characters;	// of CharacterPositions
+			CArray Objectives;	// of ObjectivePositions
 			CArray Keys;	// of KeyPositions
 			Vec2i Start;
 			struct

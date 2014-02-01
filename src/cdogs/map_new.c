@@ -187,6 +187,7 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static void LoadStaticItems(Mission *m, json_t *node, char *name);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
+static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
 static void LoadStaticExit(Mission *m, json_t *node, char *name);
 static void LoadMissions(CArray *missions, json_t *missionsNode)
@@ -248,6 +249,7 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 
 				LoadStaticItems(&m, child, "StaticItems");
 				LoadStaticCharacters(&m, child, "StaticCharacters");
+				LoadStaticObjectives(&m, child, "StaticObjectives");
 				LoadStaticKeys(&m, child, "StaticKeys");
 
 				LoadVec2i(&m.u.Static.Start, child, "Start");
@@ -457,6 +459,43 @@ static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
 			CArrayPushBack(&cp.Positions, &pos);
 		}
 		CArrayPushBack(&m->u.Static.Characters, &cp);
+	}
+}
+static void LoadStaticObjectives(Mission *m, json_t *node, char *name)
+{
+	CArrayInit(&m->u.Static.Objectives, sizeof(ObjectivePositions));
+	
+	json_t *objs = json_find_first_label(node, name);
+	if (!objs || !objs->child)
+	{
+		return;
+	}
+	objs = objs->child;
+	for (objs = objs->child; objs; objs = objs->next)
+	{
+		ObjectivePositions op;
+		LoadInt(&op.Index, objs, "Index");
+		CArrayInit(&op.Positions, sizeof(Vec2i));
+		CArrayInit(&op.Indices, sizeof(int));
+		json_t *positions = json_find_first_label(objs, "Positions");
+		if (!positions || !positions->child)
+		{
+			continue;
+		}
+		positions = positions->child;
+		for (positions = positions->child;
+			 positions;
+			 positions = positions->next)
+		{
+			Vec2i pos;
+			json_t *position = positions->child;
+			pos.x = atoi(position->text);
+			position = position->next;
+			pos.y = atoi(position->text);
+			CArrayPushBack(&op.Positions, &pos);
+		}
+		LoadIntArray(&op.Indices, objs, "Indices");
+		CArrayPushBack(&m->u.Static.Objectives, &op);
 	}
 }
 static void LoadStaticKeys(Mission *m, json_t *node, char *name)
@@ -669,6 +708,27 @@ static json_t *SaveMissions(CArray *a)
 					json_insert_child(chars, charNode);
 				}
 				json_insert_pair_into_object(node, "StaticCharacters", chars);
+				
+				json_t *objs = json_new_array();
+				for (int i = 0; i < (int)mission->u.Static.Objectives.size; i++)
+				{
+					ObjectivePositions *op =
+					CArrayGet(&mission->u.Static.Objectives, i);
+					json_t *objNode = json_new_object();
+					AddIntPair(objNode, "Index", op->Index);
+					json_t *positions = json_new_array();
+					for (int j = 0; j < (int)op->Positions.size; j++)
+					{
+						Vec2i *pos = CArrayGet(&op->Positions, j);
+						json_insert_child(positions, SaveVec2i(*pos));
+					}
+					json_insert_pair_into_object(
+						objNode, "Positions", positions);
+					json_insert_pair_into_object(
+						objNode, "Indices", SaveIntArray(&op->Indices));
+					json_insert_child(objs, objNode);
+				}
+				json_insert_pair_into_object(node, "StaticObjectives", objs);
 				
 				json_t *keys = json_new_array();
 				for (int i = 0; i < (int)mission->u.Static.Keys.size; i++)

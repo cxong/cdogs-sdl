@@ -107,6 +107,7 @@ struct DoorPic {
 struct Objective
 {
 	color_t color;
+	int placed;
 	int done;
 	MapObject *blowupObject;
 	int pickupItem;

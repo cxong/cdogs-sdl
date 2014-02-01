@@ -385,6 +385,23 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_ADD_OBJECTIVE:
+		if (isMain)
+		{
+			if (MissionStaticTryAddObjective(
+				m, b->ItemIndex, b->Index2, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		else
+		{
+			if (MissionStaticTryRemoveObjectiveAt(m, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		break;
 	case BRUSHTYPE_ADD_KEY:
 		if (isMain)
 		{

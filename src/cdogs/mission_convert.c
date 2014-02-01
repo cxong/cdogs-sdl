@@ -320,6 +320,76 @@ bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 	return false;
 }
 
+bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
+{
+	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
+	unsigned short tile = MissionGetTile(m, pos);
+	
+	// Remove any objectives already there
+	MissionStaticTryRemoveObjectiveAt(m, pos);
+	
+	if (IsClear(tile))
+	{
+		// Check if the objective already has an entry, and add to its list
+		// of positions
+		int hasAdded = 0;
+		int objectiveIndex = -1;
+		ObjectivePositions *op = NULL;
+		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
+		{
+			op = CArrayGet(&m->u.Static.Objectives, i);
+			if (i == idx)
+			{
+				CArrayPushBack(&op->Positions, &pos);
+				CArrayPushBack(&op->Indices, &idx2);
+				objectiveIndex = i;
+				hasAdded = 1;
+				break;
+			}
+		}
+		// If not, create a new entry
+		if (!hasAdded)
+		{
+			ObjectivePositions newOp;
+			newOp.Index = idx;
+			CArrayInit(&newOp.Positions, sizeof(Vec2i));
+			CArrayInit(&newOp.Indices, sizeof(int));
+			objectiveIndex = (int)newOp.Positions.size;
+			CArrayPushBack(&newOp.Positions, &pos);
+			CArrayPushBack(&newOp.Indices, &idx2);
+			CArrayPushBack(&m->u.Static.Objectives, &newOp);
+			op = CArrayGet(&m->u.Static.Objectives, objectiveIndex);
+		}
+		// If we've added too many, remove the first entry
+		MissionObjective *mobj = CArrayGet(&m->Objectives, objectiveIndex);
+		while (mobj->Count < (int)op->Positions.size)
+		{
+			CArrayDelete(&op->Positions, 0);
+			CArrayDelete(&op->Indices, 0);
+		}
+		return true;
+	}
+	return false;
+}
+bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
+{
+	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
+	{
+		ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
+		for (int j = 0; j < (int)op->Positions.size; j++)
+		{
+			Vec2i *opPos = CArrayGet(&op->Positions, j);
+			if (Vec2iEqual(*opPos, pos))
+			{
+				CArrayDelete(&op->Positions, j);
+				CArrayDelete(&op->Indices, j);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");

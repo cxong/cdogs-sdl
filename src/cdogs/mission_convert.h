@@ -40,6 +40,8 @@ bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos);
 bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
+bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos);
+bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos);
 bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos);
 bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos);

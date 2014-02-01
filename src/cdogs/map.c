@@ -560,6 +560,18 @@ int MapPosIsHighAccess(Map *map, int x, int y)
 	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
+void MapPlaceCollectible(
+	struct MissionOptions *mo, int objective, Vec2i realPos)
+{
+	struct Objective *o = CArrayGet(&mo->Objectives, objective);
+	Vec2i fullPos = Vec2iReal2Full(realPos);
+	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
+	AddObject(
+		fullPos.x, fullPos.y, size,
+		&cGeneralPics[o->pickupItem],
+		OBJ_JEWEL,
+		TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
+}
 static int MapTryPlaceCollectible(
 	Map *map, Mission *mission, struct MissionOptions *mo, int objective)
 {
@@ -571,20 +583,14 @@ static int MapTryPlaceCollectible(
 
 	while (i)
 	{
-		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
 		Vec2i v = GuessPixelCoords(map);
-		// Collectibles all have size 4x3
+		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
 		if (!IsCollisionWithWall(v, size))
 		{
 			if ((!hasLockedRooms || MapPosIsHighAccess(map, v.x, v.y)) &&
 				(!noaccess || !MapPosIsHighAccess(map, v.x, v.y)))
 			{
-				struct Objective *o = CArrayGet(&mo->Objectives, objective);
-				AddObject(
-					v.x << 8, v.y << 8, size,
-					&cGeneralPics[o->pickupItem],
-					OBJ_JEWEL,
-					TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
+				MapPlaceCollectible(mo, objective, v);
 				return 1;
 			}
 		}
@@ -1076,7 +1082,7 @@ void MapTerminate(Map *map)
 }
 void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 {
-	int i, j, count;
+	int i, j;
 	Mission *mission = mo->missionData;
 	int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
 	int wall = mission->WallStyle % WALL_STYLE_COUNT;
@@ -1134,28 +1140,28 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		{
 			continue;
 		}
-		count = 0;
+		struct Objective *obj = CArrayGet(&mo->Objectives, i);
 		if (mobj->Type == OBJECTIVE_COLLECT)
 		{
-			for (j = 0; j < mobj->Count; j++)
+			for (j = obj->placed; j < mobj->Count; j++)
 			{
 				if (MapTryPlaceCollectible(map, mission, mo, i))
 				{
-					count++;
+					obj->placed++;
 				}
 			}
 		}
 		else if (mobj->Type == OBJECTIVE_DESTROY)
 		{
-			for (j = 0; j < mobj->Count; j++)
+			for (j = obj->placed; j < mobj->Count; j++)
 			{
 				if (MapTryPlaceBlowup(map, mission, mo, i))
 				{
-					count++;
+					obj->placed++;
 				}
 			}
 		}
-		mobj->Count = count;
+		mobj->Count = obj->placed;
 		if (mobj->Count < mobj->Required)
 		{
 			mobj->Required = mobj->Count;

@@ -503,13 +503,13 @@ void InitializeBadGuys(void)
 	TActor *actor;
 	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
-		int j;
 		MissionObjective *mobj =
 			CArrayGet(&gMission.missionData->Objectives, i);
+		struct Objective *obj = CArrayGet(&gMission.Objectives, i);
 		if (mobj->Type == OBJECTIVE_KILL &&
 			gMission.missionData->SpecialChars.size > 0)
 		{
-			for (j = 0; j < mobj->Count; j++)
+			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				actor = AddActor(CharacterStoreGetRandomSpecial(
 					&gCampaign.Setting.characters), NULL);
@@ -519,7 +519,7 @@ void InitializeBadGuys(void)
 		}
 		else if (mobj->Type == OBJECTIVE_RESCUE)
 		{
-			for (j = 0; j < mobj->Count; j++)
+			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				actor = AddActor(CharacterStoreGetPrisoner(
 					&gCampaign.Setting.characters, 0), NULL);

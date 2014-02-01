@@ -52,6 +52,7 @@ typedef enum
 	BRUSHTYPE_SET_PLAYER_START,
 	BRUSHTYPE_ADD_ITEM,
 	BRUSHTYPE_ADD_CHARACTER,
+	BRUSHTYPE_ADD_OBJECTIVE,
 	BRUSHTYPE_ADD_KEY,
 	BRUSHTYPE_SET_KEY,
 	BRUSHTYPE_SET_EXIT
@@ -68,6 +69,7 @@ typedef struct
 {
 	BrushType Type;
 	int ItemIndex;
+	int Index2;
 	unsigned short MainType;
 	unsigned short SecondaryType;
 	unsigned short PaintType;

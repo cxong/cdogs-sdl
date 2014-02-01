@@ -608,6 +608,7 @@
 			[25,
 			3]]
 		}],
+		"StaticObjectives": [],
 		"StaticKeys": [],
 		"Start": [1,
 		8],
@@ -1684,6 +1685,27 @@
 			25]]
 		}],
 		"StaticCharacters": [],
+		"StaticObjectives": [{
+			"Index": 0,
+			"Positions": [[22,
+			22],
+			[22,
+			23],
+			[22,
+			24],
+			[21,
+			24],
+			[21,
+			23],
+			[21,
+			22]],
+			"Indices": [0,
+			0,
+			0,
+			0,
+			0,
+			0]
+		}],
 		"StaticKeys": [{
 			"Index": 0,
 			"Positions": [[17,
