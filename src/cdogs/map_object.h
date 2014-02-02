@@ -49,6 +49,8 @@
 #ifndef __MAP_OBJECT
 #define __MAP_OBJECT
 
+#include "pic_manager.h"
+
 #define MAPOBJ_EXPLOSIVE    (1 << 0)
 #define MAPOBJ_IMPASSABLE   (1 << 1)
 #define MAPOBJ_CANBESHOT    (1 << 2)
@@ -76,6 +78,7 @@
 typedef struct
 {
 	int pic, wreckedPic;
+	const char *picName;
 	int width, height;
 	int structure;
 	int flags;
@@ -83,6 +86,7 @@ typedef struct
 
 MapObject *MapObjectGet(int item);
 int MapObjectGetCount(void);
+Pic *MapObjectGetPic(MapObject *mo, PicManager *pm);
 
 int MapObjectIsTileOK(
 	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove);

@@ -542,7 +542,7 @@ int MapTryPlaceOneObject(
 	AddDestructibleObject(
 		realPos,
 		mo->width, mo->height,
-		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic],
+		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic], mo->picName,
 		mo->structure,
 		oFlags, tileFlags | extraFlags);
 	return 1;
@@ -562,6 +562,7 @@ void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo)
 		Vec2iCenterOfTile(v),
 		mo->width, mo->height,
 		&cGeneralPics[mo->wreckedPic], &cGeneralPics[mo->wreckedPic],
+		mo->picName,
 		0, 0, TILEITEM_IS_WRECK);
 }
 

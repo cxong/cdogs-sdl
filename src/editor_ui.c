@@ -956,10 +956,8 @@ static void DisplayMapItemWithDensity(
 }
 static void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
-	const TOffsetPic *pic = &cGeneralPics[mo->pic];
-	DrawTPic(
-		pos.x + pic->dx, pos.y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	Pic *pic = MapObjectGetPic(mo, &gPicManager);
+	BlitMasked(&gGraphicsDevice, pic, pos, colorWhite, 1);
 }
 static void DisplayWreck(Vec2i pos, MapObject *mo)
 {

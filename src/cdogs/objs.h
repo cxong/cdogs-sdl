@@ -123,6 +123,7 @@
 struct Object {
 	const TOffsetPic *pic;
 	const TOffsetPic *wreckedPic;
+	const char *picName;
 	int objectIndex;
 	int structure;
 	int flags;
@@ -205,6 +206,7 @@ void AddObject(
 void AddDestructibleObject(
 	Vec2i pos, int w, int h,
 	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	const char *picName,
 	int structure, int objFlags, int tileFlags);
 void RemoveObject(TObject * obj);
 void KillAllObjects(void);

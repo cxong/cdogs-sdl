@@ -85,14 +85,23 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special);
 
 void DrawObject(int x, int y, const TObject * obj)
 {
-	const TOffsetPic *pic = obj->pic;
-
-	if (pic)
+	const TOffsetPic *ofpic = obj->pic;
+	if (!ofpic)
+	{
+		return;
+	}
+	if (obj->picName && obj->picName[0] != '\0')
+	{
+		Pic *pic = PicManagerGetPic(&gPicManager, obj->picName);
+		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+		BlitMasked(&gGraphicsDevice, pic, Vec2iNew(x, y), colorWhite, 1);
+	}
+	else
 	{
 		DrawTPic(
-			x + pic->dx,
-			y + pic->dy,
-			PicManagerGetOldPic(&gPicManager, pic->picIndex));
+			x + ofpic->dx,
+			y + ofpic->dy,
+			PicManagerGetOldPic(&gPicManager, ofpic->picIndex));
 	}
 }
 
@@ -501,6 +510,7 @@ static void DamageObject(
 		{
 			object->tileItem.flags = TILEITEM_IS_WRECK;
 			object->pic = object->wreckedPic;
+			object->picName = "";
 		}
 		else
 		{
@@ -1408,15 +1418,17 @@ void KillAllMobileObjects(TMobileObject **mobObjList)
 	}
 }
 
-void InternalAddObject(
+static void InternalAddObject(
 	int x, int y, int w, int h,
 	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	const char *picName,
 	int structure, int idx, int objFlags, int tileFlags)
 {
 	TObject *o;
 	CCALLOC(o, sizeof(TObject));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
+	o->picName = picName;
 	o->objectIndex = idx;
 	o->structure = structure;
 	o->flags = objFlags;
@@ -1435,17 +1447,19 @@ void InternalAddObject(
 void AddObject(
 	int x, int y, Vec2i size, const TOffsetPic * pic, int idx, int tileFlags)
 {
-	InternalAddObject(x, y, size.x, size.y, pic, NULL, 0, idx, 0, tileFlags);
+	InternalAddObject(
+		x, y, size.x, size.y, pic, NULL, NULL, 0, idx, 0, tileFlags);
 }
 
 void AddDestructibleObject(
 	Vec2i pos, int w, int h,
 	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+	const char *picName,
 	int structure, int objFlags, int tileFlags)
 {
 	Vec2i fullPos = Vec2iReal2Full(pos);
 	InternalAddObject(
-		fullPos.x, fullPos.y, w, h, pic, wreckedPic, structure, 0,
+		fullPos.x, fullPos.y, w, h, pic, wreckedPic, picName, structure, 0,
 		objFlags, tileFlags);
 }
 
