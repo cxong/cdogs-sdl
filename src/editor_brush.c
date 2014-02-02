@@ -29,6 +29,7 @@
 
 #include <assert.h>
 
+#include <cdogs/algorithms.h>
 #include <cdogs/map.h>
 #include <cdogs/mission_convert.h>
 
@@ -106,45 +107,10 @@ void EditorBrushTerminate(EditorBrush *b)
 	CArrayTerminate(&b->HighlightedTiles);
 }
 
-static void BresenhamLine(
-	EditorBrush *b, Vec2i start, Vec2i end,
-	void (*func)(EditorBrush *, Vec2i, void *), void *data)
+static void EditorBrushHighlightPoint(void *data, Vec2i p)
 {
-	// Bresenham's line algorithm
-	Vec2i d = Vec2iNew(abs(end.x - start.x), abs(end.y - start.y));
-	Vec2i s = Vec2iNew(start.x < end.x ? 1 : -1, start.y < end.y ? 1 : -1);
-	int err = d.x - d.y;
-	Vec2i v = start;
-	for (;;)
-	{
-		int e2 = 2 * err;
-		if (Vec2iEqual(v, end))
-		{
-			break;
-		}
-		func(b, v, data);
-		if (e2 > -d.y)
-		{
-			err -= d.y;
-			v.x += s.x;
-		}
-		if (Vec2iEqual(v, end))
-		{
-			break;
-		}
-		if (e2 < d.x)
-		{
-			err += d.x;
-			v.y += s.y;
-		}
-	}
-	func(b, end, data);
-}
-
-static void EditorBrushHighlightPoint(EditorBrush *b, Vec2i p, void *data)
-{
+	EditorBrush *b = data;
 	Vec2i v;
-	UNUSED(data);
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
@@ -168,8 +134,10 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			useSimpleHighlight = 0;
 			// highlight a line
 			CArrayClear(&b->HighlightedTiles);
-			BresenhamLine(
-				b, b->LastPos, b->Pos, EditorBrushHighlightPoint, NULL);
+			BresenhamLineData data;
+			data.Draw = EditorBrushHighlightPoint;
+			data.data = b;
+			BresenhamLine(b->LastPos, b->Pos, &data);
 		}
 		break;
 	case BRUSHTYPE_BOX:	// fallthrough
@@ -190,7 +158,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 					if (v.x == b->LastPos.x || v.x == b->Pos.x ||
 						v.y == b->LastPos.y || v.y == b->Pos.y)
 					{
-						EditorBrushHighlightPoint(b, v, NULL);
+						EditorBrushHighlightPoint(b, v);
 					}
 				}
 			}
@@ -209,7 +177,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			{
 				for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
 				{
-					EditorBrushHighlightPoint(b, v, NULL);
+					EditorBrushHighlightPoint(b, v);
 				}
 			}
 		}
@@ -230,7 +198,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 					{
 						Vec2i vOffset = Vec2iAdd(
 							Vec2iAdd(v, b->SelectionStart), offset);
-						EditorBrushHighlightPoint(b, vOffset, NULL);
+						EditorBrushHighlightPoint(b, vOffset);
 					}
 				}
 			}
@@ -247,7 +215,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				{
 					for (v.x = b->LastPos.x; v.x != b->Pos.x + d.x; v.x += d.x)
 					{
-						EditorBrushHighlightPoint(b, v, NULL);
+						EditorBrushHighlightPoint(b, v);
 					}
 				}
 			}
@@ -265,7 +233,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
 						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
-						EditorBrushHighlightPoint(b, vOffset, NULL);
+						EditorBrushHighlightPoint(b, vOffset);
 					}
 				}
 			}
@@ -278,14 +246,21 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	{
 		// Simple highlight at brush tip based on brush size
 		CArrayClear(&b->HighlightedTiles);
-		EditorBrushHighlightPoint(b, b->Pos, NULL);
+		EditorBrushHighlightPoint(b, b->Pos);
 	}
 }
 
-static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, void *data)
+typedef struct
+{
+	EditorBrush *brush;
+	Mission *mission;
+} EditorBrushPaintTilesAtData;
+static void EditorBrushPaintTilesAt(void *data, Vec2i pos)
 {
 	Vec2i v;
-	Mission *m = data;
+	EditorBrushPaintTilesAtData *paintData = data;
+	EditorBrush *b = paintData->brush;
+	Mission *m = paintData->mission;
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
@@ -298,11 +273,17 @@ static void EditorBrushPaintTilesAt(EditorBrush *b, Vec2i pos, void *data)
 static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 {
 	// Draw tiles between the last point and the current point
+	EditorBrushPaintTilesAtData paintData;
+	paintData.brush = b;
+	paintData.mission = m;
 	if (b->IsPainting)
 	{
-		BresenhamLine(b, b->LastPos, b->Pos, EditorBrushPaintTilesAt, m);
+		BresenhamLineData data;
+		data.Draw = EditorBrushPaintTilesAt;
+		data.data = &paintData;
+		BresenhamLine(b->LastPos, b->Pos, &data);
 	}
-	EditorBrushPaintTilesAt(b, b->Pos, m);
+	EditorBrushPaintTilesAt(&paintData, b->Pos);
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
@@ -469,6 +450,9 @@ static void EditorBrushPaintBox(
 	Vec2i d = Vec2iNew(
 		b->Pos.x > b->LastPos.x ? 1 : -1,
 		b->Pos.y > b->LastPos.y ? 1 : -1);
+	EditorBrushPaintTilesAtData paintData;
+	paintData.brush = b;
+	paintData.mission = m;
 	// Draw fill
 	if (fillType != MAP_NOTHING)
 	{
@@ -480,7 +464,7 @@ static void EditorBrushPaintBox(
 				if (v.x != b->LastPos.x && v.x != b->Pos.x &&
 					v.y != b->LastPos.y && v.y != b->Pos.y)
 				{
-					EditorBrushPaintTilesAt(b, v, m);
+					EditorBrushPaintTilesAt(&paintData, v);
 				}
 			}
 		}
@@ -495,7 +479,7 @@ static void EditorBrushPaintBox(
 				if (v.x == b->LastPos.x || v.x == b->Pos.x ||
 					v.y == b->LastPos.y || v.y == b->Pos.y)
 				{
-					EditorBrushPaintTilesAt(b, v, m);
+					EditorBrushPaintTilesAt(&paintData, v);
 				}
 			}
 		}

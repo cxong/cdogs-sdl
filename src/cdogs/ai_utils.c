@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "algorithms.h"
 #include "AStar.h"
 #include "collision.h"
 #include "map.h"
@@ -177,155 +178,20 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
-static void Swap(int *x, int *y)
+static bool IsBlocked(void *data, Vec2i pos)
 {
-	int temp = *x;
-	*x = *y;
-	*y = temp;
+	return MapGetTile(data, pos)->flags & MAPTILE_IS_WALL;
 }
-
-// Floating point part of a number
-static double FPart(double x)
-{
-	return x - floor(x);
-}
-
-// Reciprocal of the floating point part of a number
-static double RFPart(double x)
-{
-	return 1 - FPart(x);
-}
-
-static int IsTileBlocked(int x, int y, double factor)
-{
-	if (factor > 0.4)
-	{
-		return MapGetTile(&gMap, Vec2iNew(x, y))->flags & MAPTILE_IS_WALL;
-	}
-	return 0;
-}
-
 int AIHasClearLine(Vec2i from, Vec2i to)
 {
 	// Find all tiles that overlap with the line (from, to)
 	// Uses a modified version of Xiaolin Wu's algorithm
-	Vec2i delta;
-	double gradient;
-	Vec2i end;
-	double xGap;
-	Vec2i tileStart, tileEnd;
-	double yIntercept;
-	int x;
-	int w = TILE_WIDTH;
-	int h = TILE_HEIGHT;
-	int isSteep = abs(to.y - from.y) > abs(to.x - from.x);
-	if (isSteep)
-	{
-		// Swap x and y
-		// Note that this prevents the vertical line special case
-		Swap(&from.x, &from.y);
-		Swap(&to.x, &to.y);
-		Swap(&w, &h);
-	}
-	if (from.x > to.x)
-	{
-		// swap to make sure we always go left to right
-		Swap(&from.x, &to.x);
-		Swap(&from.y, &to.y);
-	}
-
-	delta.x = to.x - from.x;
-	delta.y = to.y - from.y;
-	gradient = (double)delta.y / delta.x;
-
-	// handle first endpoint
-	end.x = from.x / w;
-	end.y = (int)((from.y + gradient * (end.x * w - from.x)) / h);
-	xGap = RFPart(from.x + 0.5);
-	tileStart.x = end.x;
-	tileStart.y = end.y;
-	if (isSteep)
-	{
-		if (IsTileBlocked(tileStart.y, tileStart.x, RFPart(end.y) * xGap))
-		{
-			return 0;
-		}
-		if (IsTileBlocked(tileStart.y + 1, tileStart.x, FPart(end.y) * xGap))
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		if (IsTileBlocked(tileStart.x, tileStart.y, RFPart(end.y) * xGap))
-		{
-			return 0;
-		}
-		if (IsTileBlocked(tileStart.x, tileStart.y + 1, FPart(end.y) * xGap))
-		{
-			return 0;
-		}
-	}
-	yIntercept = end.y + gradient;
-
-	// handle second endpoint
-	end.x = to.x / w;
-	end.y = (int)((to.y + gradient * (end.x * w - to.x)) / h);
-	xGap = FPart(to.x + 0.5);
-	tileEnd.x = end.x;
-	tileEnd.y = end.y;
-	if (isSteep)
-	{
-		if (IsTileBlocked(tileEnd.y, tileEnd.x, RFPart(end.y) * xGap))
-		{
-			return 0;
-		}
-		if (IsTileBlocked(tileEnd.y + 1, tileEnd.x, FPart(end.y) * xGap))
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		if (IsTileBlocked(tileEnd.x, tileEnd.y, RFPart(end.y) * xGap))
-		{
-			return 0;
-		}
-		if (IsTileBlocked(tileEnd.x, tileEnd.y + 1, FPart(end.y) * xGap))
-		{
-			return 0;
-		}
-	}
-
-	// main loop
-	for (x = tileStart.x + 1; x < tileEnd.x; x++)
-	{
-		if (isSteep)
-		{
-			if (IsTileBlocked((int)yIntercept, x, RFPart(yIntercept)))
-			{
-				return 0;
-			}
-			if (IsTileBlocked((int)yIntercept + 1, x, FPart(yIntercept)))
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			if (IsTileBlocked(x, (int)yIntercept, RFPart(yIntercept)))
-			{
-				return 0;
-			}
-			if (IsTileBlocked(x, (int)yIntercept + 1, FPart(yIntercept)))
-			{
-				return 0;
-			}
-		}
-		yIntercept += gradient;
-	}
-
-	return 1;
+	HasClearLineData data;
+	data.IsBlocked = IsBlocked;
+	data.size = gMap.Size;
+	data.tileSize = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+	data.data = &gMap;
+	return HasClearLine(from, to, &data);
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)
