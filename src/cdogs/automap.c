@@ -119,7 +119,7 @@ static void DisplayObjective(
 static void DisplayExit(Vec2i pos, int scale, int flags)
 {
 	Vec2i exitPos = gMap.ExitStart;
-	Vec2i exitSize = Vec2iMinus(gMap.ExitEnd, exitPos);
+	Vec2i exitSize = Vec2iAdd(Vec2iMinus(gMap.ExitEnd, exitPos), Vec2iUnit());
 	color_t color = colorExit;
 
 	if (!CanCompleteMission(&gMission))

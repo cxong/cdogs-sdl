@@ -49,6 +49,8 @@
 #ifndef __MAP
 #define __MAP
 
+#include <stdbool.h>
+
 #include "map_object.h"
 #include "mission.h"
 #include "pic.h"
