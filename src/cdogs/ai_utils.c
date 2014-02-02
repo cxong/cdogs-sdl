@@ -191,7 +191,12 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	data.size = gMap.Size;
 	data.tileSize = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	data.data = &gMap;
-	return HasClearLine(from, to, &data);
+	
+	// Hack: since HasClearLine() is buggy, double-check with
+	// Bresenham line algorithm
+	return
+		HasClearLine(from, to, &data) &&
+		HasClearLineBresenham(from, to, &data);
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)

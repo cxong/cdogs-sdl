@@ -181,27 +181,45 @@ bool HasClearLine(Vec2i from, Vec2i to, HasClearLineData *data)
 	return true;
 }
 
-void BresenhamLine(Vec2i start, Vec2i end, BresenhamLineData *data)
+typedef struct
 {
-	// Bresenham's line algorithm
-	Vec2i d = Vec2iNew(abs(end.x - start.x), abs(end.y - start.y));
-	Vec2i s = Vec2iNew(start.x < end.x ? 1 : -1, start.y < end.y ? 1 : -1);
+	// Whether to use the IsBlocked func to check visibility,
+	// and also whether to early-terminate if the line is blocked
+	bool CheckBlockedAndEarlyTerminate;
+	bool (*IsBlocked)(void *, Vec2i);
+	void (*Draw)(void *, Vec2i);
+	void *data;
+} BresenhamLineData;
+static bool BresenhamLine(Vec2i from, Vec2i to, BresenhamLineData *data)
+{
+	Vec2i d = Vec2iNew(abs(to.x - from.x), abs(to.y - from.y));
+	Vec2i s = Vec2iNew(from.x < to.x ? 1 : -1, from.y < to.y ? 1 : -1);
 	int err = d.x - d.y;
-	Vec2i v = start;
+	Vec2i v = from;
 	for (;;)
 	{
 		int e2 = 2 * err;
-		if (Vec2iEqual(v, end))
+		if (Vec2iEqual(v, to))
 		{
 			break;
 		}
-		data->Draw(data->data, v);
+		if (data->CheckBlockedAndEarlyTerminate)
+		{
+			if (data->IsBlocked(data->data, v))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			data->Draw(data->data, v);
+		}
 		if (e2 > -d.y)
 		{
 			err -= d.y;
 			v.x += s.x;
 		}
-		if (Vec2iEqual(v, end))
+		if (Vec2iEqual(v, to))
 		{
 			break;
 		}
@@ -211,5 +229,31 @@ void BresenhamLine(Vec2i start, Vec2i end, BresenhamLineData *data)
 			v.y += s.y;
 		}
 	}
-	data->Draw(data->data, v);
+	if (data->CheckBlockedAndEarlyTerminate)
+	{
+		return !data->IsBlocked(data->data, v);
+	}
+	else
+	{
+		data->Draw(data->data, v);
+	}
+	return true;
+}
+
+bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data)
+{
+	BresenhamLineData bData;
+	bData.CheckBlockedAndEarlyTerminate = true;
+	bData.IsBlocked = data->IsBlocked;
+	bData.data = data->data;
+	return BresenhamLine(Vec2iToTile(from), Vec2iToTile(to), &bData);
+}
+
+void BresenhamLineDraw(Vec2i from, Vec2i to, BresenhamLineDrawData *data)
+{
+	BresenhamLineData bData;
+	bData.CheckBlockedAndEarlyTerminate = false;
+	bData.Draw = data->Draw;
+	bData.data = data->data;
+	BresenhamLine(from, to, &bData);
 }

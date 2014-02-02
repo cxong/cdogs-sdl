@@ -40,12 +40,14 @@ typedef struct
 	void *data;
 } HasClearLineData;
 bool HasClearLine(Vec2i from, Vec2i to, HasClearLineData *data);
+// Use Bresenham line algorithm to determine whether line is clear
+bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data);
 
 typedef struct
 {
 	void (*Draw)(void *, Vec2i);
 	void *data;
-} BresenhamLineData;
-void BresenhamLine(Vec2i start, Vec2i end, BresenhamLineData *data);
+} BresenhamLineDrawData;
+void BresenhamLineDraw(Vec2i from, Vec2i to, BresenhamLineDrawData *data);
 
 #endif

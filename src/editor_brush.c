@@ -134,10 +134,10 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			useSimpleHighlight = 0;
 			// highlight a line
 			CArrayClear(&b->HighlightedTiles);
-			BresenhamLineData data;
+			BresenhamLineDrawData data;
 			data.Draw = EditorBrushHighlightPoint;
 			data.data = b;
-			BresenhamLine(b->LastPos, b->Pos, &data);
+			BresenhamLineDraw(b->LastPos, b->Pos, &data);
 		}
 		break;
 	case BRUSHTYPE_BOX:	// fallthrough
@@ -278,10 +278,10 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	paintData.mission = m;
 	if (b->IsPainting)
 	{
-		BresenhamLineData data;
+		BresenhamLineDrawData data;
 		data.Draw = EditorBrushPaintTilesAt;
 		data.data = &paintData;
-		BresenhamLine(b->LastPos, b->Pos, &data);
+		BresenhamLineDraw(b->LastPos, b->Pos, &data);
 	}
 	EditorBrushPaintTilesAt(&paintData, b->Pos);
 	b->IsPainting = 1;
