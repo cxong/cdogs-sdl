@@ -584,7 +584,7 @@ int gameloop(void)
 	int frames = 0;
 	int framesSkipped = 0;
 
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES));
+	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
 	GameEventsInit(&gGameEvents);
 

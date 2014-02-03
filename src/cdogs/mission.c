@@ -143,6 +143,14 @@ void MissionCopy(Mission *dst, Mission *src)
 		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
 		CArrayInit(&dst->u.Static.Items, src->u.Static.Items.elemSize);
 		CArrayCopy(&dst->u.Static.Items, &src->u.Static.Items);
+		CArrayInit(&dst->u.Static.Wrecks, src->u.Static.Wrecks.elemSize);
+		CArrayCopy(&dst->u.Static.Wrecks, &src->u.Static.Wrecks);
+		CArrayInit(&dst->u.Static.Characters, src->u.Static.Characters.elemSize);
+		CArrayCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
+		CArrayInit(&dst->u.Static.Objectives, src->u.Static.Objectives.elemSize);
+		CArrayCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
+		CArrayInit(&dst->u.Static.Keys, src->u.Static.Keys.elemSize);
+		CArrayCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
 
 		dst->u.Static.Start = src->u.Static.Start;
 		break;
@@ -167,6 +175,10 @@ void MissionTerminate(Mission *m)
 	case MAPTYPE_STATIC:
 		CArrayTerminate(&m->u.Static.Tiles);
 		CArrayTerminate(&m->u.Static.Items);
+		CArrayTerminate(&m->u.Static.Wrecks);
+		CArrayTerminate(&m->u.Static.Characters);
+		CArrayTerminate(&m->u.Static.Objectives);
+		CArrayTerminate(&m->u.Static.Keys);
 		break;
 	}
 }

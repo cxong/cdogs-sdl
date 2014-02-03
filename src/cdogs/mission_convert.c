@@ -54,6 +54,10 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 				}
 			}
 			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
+			CArrayInit(&m->u.Static.Wrecks, sizeof(MapObjectPositions));
+			CArrayInit(&m->u.Static.Characters, sizeof(CharacterPositions));
+			CArrayInit(&m->u.Static.Objectives, sizeof(ObjectivePositions));
+			CArrayInit(&m->u.Static.Keys, sizeof(KeyPositions));
 		}
 		break;
 	}
@@ -228,7 +232,7 @@ bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
 		for (int i = 0; i < (int)m->u.Static.Items.size; i++)
 		{
 			MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
-			if (i == item)
+			if (mop->Index == item)
 			{
 				CArrayPushBack(&mop->Positions, &pos);
 				hasAdded = 1;
@@ -259,6 +263,11 @@ bool MissionStaticTryRemoveItemAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*mopPos, pos))
 			{
 				CArrayDelete(&mop->Positions, j);
+				if (mop->Positions.size == 0)
+				{
+					CArrayTerminate(&mop->Positions);
+					CArrayDelete(&m->u.Static.Items, i);
+				}
 				return true;
 			}
 		}
@@ -284,7 +293,7 @@ bool MissionStaticTryAddWreck(Mission *m, int wreck, Vec2i pos)
 		for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
 		{
 			MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
-			if (i == wreck)
+			if (mop->Index == wreck)
 			{
 				CArrayPushBack(&mop->Positions, &pos);
 				hasAdded = 1;
@@ -315,6 +324,11 @@ bool MissionStaticTryRemoveWreckAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*mopPos, pos))
 			{
 				CArrayDelete(&mop->Positions, j);
+				if (mop->Positions.size == 0)
+				{
+					CArrayTerminate(&mop->Positions);
+					CArrayDelete(&m->u.Static.Wrecks, i);
+				}
 				return true;
 			}
 		}
@@ -338,7 +352,7 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 		for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
 		{
 			CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
-			if (i == ch)
+			if (cp->Index == ch)
 			{
 				CArrayPushBack(&cp->Positions, &pos);
 				hasAdded = 1;
@@ -369,6 +383,11 @@ bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 			if (Vec2iEqual(*cpPos, pos))
 			{
 				CArrayDelete(&cp->Positions, j);
+				if (cp->Positions.size == 0)
+				{
+					CArrayTerminate(&cp->Positions);
+					CArrayDelete(&m->u.Static.Characters, i);
+				}
 				return true;
 			}
 		}
@@ -394,7 +413,7 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
 		{
 			op = CArrayGet(&m->u.Static.Objectives, i);
-			if (i == idx)
+			if (op->Index == idx)
 			{
 				CArrayPushBack(&op->Positions, &pos);
 				CArrayPushBack(&op->Indices, &idx2);
@@ -439,6 +458,12 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 			{
 				CArrayDelete(&op->Positions, j);
 				CArrayDelete(&op->Indices, j);
+				if (op->Positions.size == 0)
+				{
+					CArrayTerminate(&op->Positions);
+					CArrayTerminate(&op->Indices);
+					CArrayDelete(&m->u.Static.Objectives, i);
+				}
 				return true;
 			}
 		}
@@ -462,7 +487,7 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 		for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
 		{
 			KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
-			if (i == k)
+			if (kp->Index == k)
 			{
 				CArrayPushBack(&kp->Positions, &pos);
 				hasAdded = true;
@@ -484,15 +509,20 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 }
 bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
 {
-	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
+	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
 	{
-		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
-		for (int j = 0; j < (int)mop->Positions.size; j++)
+		KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
-			Vec2i *mopPos = CArrayGet(&mop->Positions, j);
-			if (Vec2iEqual(*mopPos, pos))
+			Vec2i *kpPos = CArrayGet(&kp->Positions, j);
+			if (Vec2iEqual(*kpPos, pos))
 			{
-				CArrayDelete(&mop->Positions, j);
+				CArrayDelete(&kp->Positions, j);
+				if (kp->Positions.size == 0)
+				{
+					CArrayTerminate(&kp->Positions);
+					CArrayDelete(&m->u.Static.Keys, i);
+				}
 				return true;
 			}
 		}
