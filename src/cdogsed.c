@@ -180,8 +180,8 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			}
 		}
 		sprintf(
-			s, "Mission %d/%zu",
-			gCampaign.MissionIndex + 1, gCampaign.Setting.Missions.size);
+			s, "Mission %d/%d",
+			gCampaign.MissionIndex + 1, (int)gCampaign.Setting.Missions.size);
 		DrawTextStringMasked(
 			s, g, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
@@ -199,7 +199,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		}
 		if (gCampaign.Setting.Missions.size)
 		{
-			sprintf(s, "End/%zu", gCampaign.Setting.Missions.size);
+			sprintf(s, "End/%d", (int)gCampaign.Setting.Missions.size);
 			DrawTextStringMasked(
 				s, g, Vec2iNew(270, y),
 				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
@@ -326,135 +326,6 @@ static void DeleteItem(Mission *m, int idx)
 {
 	CArrayDelete(&m->Items, idx);
 	CArrayDelete(&m->ItemDensities, idx);
-}
-
-static void Append(char *s, int maxlen, char c)
-{
-	size_t l = strlen(s);
-
-	if ((int)l < maxlen)
-	{
-		s[l + 1] = 0;
-		s[l] = c;
-	}
-}
-static void Expand(char **s, char c)
-{
-	size_t l = *s ? strlen(*s) : 0;
-	CREALLOC(*s, l + 2);
-	(*s)[l + 1] = 0;
-	(*s)[l] = c;
-}
-
-static void Backspace(char *s)
-{
-	if (s && s[0])
-	{
-		s[strlen(s) - 1] = 0;
-	}
-}
-
-static void AddChar(int xc, int yc, char c)
-{
-	Mission *mission = CampaignGetCurrentMission(&gCampaign);
-	if (yc == YC_CAMPAIGNTITLE)
-	{
-		switch (xc)
-		{
-		case XC_CAMPAIGNTITLE:
-			Expand(&gCampaign.Setting.Title, c);
-			break;
-		case XC_AUTHOR:
-			Expand(&gCampaign.Setting.Author, c);
-			break;
-		case XC_CAMPAIGNDESC:
-			Expand(&gCampaign.Setting.Description, c);
-			break;
-		}
-	}
-
-	if (!mission)
-	{
-		return;
-	}
-
-	switch (yc) {
-	case YC_MISSIONTITLE:
-		if (xc == XC_MUSICFILE)
-		{
-			Append(mission->Song, sizeof mission->Song - 1, c);
-		}
-		else
-		{
-			Expand(&mission->Title, c);
-		}
-		break;
-
-	case YC_MISSIONDESC:
-		Expand(&mission->Description, c);
-		break;
-
-	default:
-		if (yc >= YC_OBJECTIVES &&
-			yc - YC_OBJECTIVES < (int)mission->Objectives.size)
-		{
-			MissionObjective *mobj =
-				CArrayGet(&mission->Objectives, yc - YC_OBJECTIVES);
-			Expand(&mobj->Description, c);
-		}
-		break;
-	}
-}
-
-static void DelChar(int xc, int yc)
-{
-	Mission *mission = CampaignGetCurrentMission(&gCampaign);
-	if (yc == YC_CAMPAIGNTITLE)
-	{
-		switch (xc)
-		{
-		case XC_CAMPAIGNTITLE:
-			Backspace(gCampaign.Setting.Title);
-			break;
-		case XC_AUTHOR:
-			Backspace(gCampaign.Setting.Author);
-			break;
-		case XC_CAMPAIGNDESC:
-			Backspace(gCampaign.Setting.Description);
-			break;
-		}
-	}
-
-	if (!mission)
-	{
-		return;
-	}
-
-	switch (yc) {
-	case YC_MISSIONTITLE:
-		if (xc == XC_MUSICFILE)
-		{
-			Backspace(mission->Song);
-		}
-		else
-		{
-			Backspace(mission->Title);
-		}
-		break;
-
-	case YC_MISSIONDESC:
-		Backspace(mission->Description);
-		break;
-
-	default:
-		yc -= YC_OBJECTIVES;
-		if (yc >= 0 && yc < (int)mission->Objectives.size)
-		{
-			MissionObjective *mobj = CArrayGet(&mission->Objectives, yc);
-			Backspace(mobj->Description);
-		}
-		break;
-	}
 }
 
 static void AdjustYC(int *yc)
@@ -1088,16 +959,14 @@ static void HandleInput(
 			break;
 
 		case SDLK_BACKSPACE:
-			DelChar(*xc, *yc);
-			fileChanged = 1;
+			fileChanged = UIObjectDelChar(sObjs);
 			break;
 
 		default:
 			c = KeyGetTyped(&gEventHandlers.keyboard);
 			if (c)
 			{
-				fileChanged = 1;
-				AddChar(*xc, *yc, (char)c);
+				fileChanged = UIObjectAddChar(sObjs, (char)c);
 			}
 			break;
 		}

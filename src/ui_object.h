@@ -29,6 +29,8 @@
 #ifndef __UI_OBJECT
 #define __UI_OBJECT
 
+#include <stdbool.h>
+
 #include <cdogs/c_array.h>
 #include <cdogs/grafx.h>
 #include <cdogs/pic.h>
@@ -71,7 +73,8 @@ typedef struct _UIObject
 		// Text boxes
 		struct
 		{
-			const char *(*TextLinkFunc)(struct _UIObject *, void *);
+			char *(*TextLinkFunc)(struct _UIObject *, void *);
+			char **(*TextSourceFunc)(void *);
 			int IsEditable;
 			char *Hint;
 		} Textbox;
@@ -109,6 +112,12 @@ void UIObjectHighlight(UIObject *o);
 void UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
 int UIObjectChange(UIObject *o, int d);
+
+// Add and delete chars from the highlighted text box
+// Returns whether a change has been made
+bool UIObjectAddChar(UIObject *o, char c);
+bool UIObjectDelChar(UIObject *o);
+
 void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)

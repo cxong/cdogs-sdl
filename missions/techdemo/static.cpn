@@ -5,7 +5,7 @@
 	"Description": "A demo of a static map, not randomly generated",
 	"Missions": [{
 		"Title": "Mission 1",
-		"Description": "",
+		"Description": "Blah blah blah",
 		"Type": "Static",
 		"Width": 33,
 		"Height": 16,
@@ -802,7 +802,7 @@
 		"KeyStyle": 0,
 		"DoorStyle": 0,
 		"Objectives": [{
-			"Description": "Get goodies",
+			"Description": "Get the goodies",
 			"Type": "Collect",
 			"Index": 5,
 			"Count": 10,

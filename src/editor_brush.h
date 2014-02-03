@@ -84,6 +84,7 @@ typedef struct
 	Vec2i SelectionSize;
 	int IsMoving;	// for the select tool, whether selecting or moving
 	Vec2i DragPos;	// when moving, location that the drag started
+	char GuideImage[CDOGS_PATH_MAX];
 } EditorBrush;
 
 void EditorBrushInit(EditorBrush *b);

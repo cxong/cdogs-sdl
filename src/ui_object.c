@@ -241,6 +241,62 @@ static void DisableContextMenuParents(UIObject *o)
 	}
 }
 
+bool UIObjectAddChar(UIObject *o, char c)
+{
+	if (!o)
+	{
+		return false;
+	}
+	if (o->Type != UITYPE_TEXTBOX)
+	{
+		return UIObjectAddChar(o->Highlighted, c);
+	}
+	if (o->u.Textbox.TextSourceFunc)
+	{
+		// Dynamically-allocated char buf, expand
+		char **s = o->u.Textbox.TextSourceFunc(o->Data);
+		if (!s)
+		{
+			return false;
+		}
+		size_t l = *s ? strlen(*s) : 0;
+		CREALLOC(*s, l + 2);
+		(*s)[l + 1] = 0;
+		(*s)[l] = c;
+	}
+	else
+	{
+		// Static char buf, simply append
+		// TODO: char buf limits?
+		char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
+		size_t l = strlen(s);
+		if ((int)l >= 4096 - 1)
+		{
+			return false;
+		}
+		s[l + 1] = 0;
+		s[l] = c;
+	}
+	return true;
+}
+bool UIObjectDelChar(UIObject *o)
+{
+	if (!o)
+	{
+		return false;
+	}
+	if (o->Type != UITYPE_TEXTBOX)
+	{
+		return UIObjectDelChar(o->Highlighted);
+	}
+	char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
+	if (s && s[0])
+	{
+		s[strlen(s) - 1] = 0;
+	}
+	return true;
+}
+
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);
 
 static const char *LabelGetText(UIObject *o)

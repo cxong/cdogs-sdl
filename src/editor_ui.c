@@ -45,23 +45,38 @@ static void DrawStyleArea(
 	int index, int count,
 	int isHighlighted);
 
-static const char *CampaignGetTitle(UIObject *o, void *data)
+static char *CampaignGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
 	return co->Setting.Title;
 }
-static const char *CampaignGetAuthor(UIObject *o, void *data)
+static char **CampaignGetTitleSrc(void *data)
+{
+	CampaignOptions *co = data;
+	return &co->Setting.Title;
+}
+static char *CampaignGetAuthor(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
 	return co->Setting.Author;
 }
-static const char *CampaignGetDescription(UIObject *o, void *data)
+static char **CampaignGetAuthorSrc(void *data)
+{
+	CampaignOptions *co = data;
+	return &co->Setting.Author;
+}
+static char *CampaignGetDescription(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
 	return co->Setting.Description;
+}
+static char **CampaignGetDescriptionSrc(void *data)
+{
+	CampaignOptions *co = data;
+	return &co->Setting.Description;
 }
 static const char *CampaignGetSeedStr(UIObject *o, void *data)
 {
@@ -118,7 +133,7 @@ static void MissionCheckTypeStatic(
 	}
 	o->IsVisible = 1;
 }
-static const char *MissionGetTitle(UIObject *o, void *data)
+static char *MissionGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
@@ -130,7 +145,16 @@ static const char *MissionGetTitle(UIObject *o, void *data)
 	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Title;
 }
-static const char *MissionGetDescription(UIObject *o, void *data)
+static char **MissionGetTitleSrc(void *data)
+{
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co))
+	{
+		return NULL;
+	}
+	return &CampaignGetCurrentMission(co)->Title;
+}
+static char *MissionGetDescription(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
@@ -142,7 +166,16 @@ static const char *MissionGetDescription(UIObject *o, void *data)
 	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Description;
 }
-static const char *MissionGetSong(UIObject *o, void *data)
+static char **MissionGetDescriptionSrc(void *data)
+{
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co))
+	{
+		return NULL;
+	}
+	return &CampaignGetCurrentMission(co)->Description;
+}
+static char *MissionGetSong(UIObject *o, void *data)
 {
 	UNUSED(o);
 	CampaignOptions *co = data;
@@ -524,7 +557,7 @@ static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(
-		s, "Characters (%zu)", CampaignGetCurrentMission(co)->Enemies.size);
+		s, "Characters (%d)", (int)CampaignGetCurrentMission(co)->Enemies.size);
 	return s;
 }
 static const char *MissionGetSpecialCountStr(UIObject *o, void *data)
@@ -534,21 +567,26 @@ static const char *MissionGetSpecialCountStr(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(
-		s, "Mission objective characters (%zu)",
-		CampaignGetCurrentMission(co)->SpecialChars.size);
+		s, "Mission objective characters (%d)",
+		(int)CampaignGetCurrentMission(co)->SpecialChars.size);
 	return s;
 }
-static const char *MissionGetObjectiveDescription(UIObject *o, void *data)
+typedef struct
 {
-	int i;
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
+	CampaignOptions *Campaign;
+	int MissionObjectiveIndex;
+} MissionObjectiveData;
+static char *MissionGetObjectiveDescription(UIObject *o, void *data)
+{
+	MissionObjectiveData *mData = data;
+	Mission *m = CampaignGetCurrentMission(mData->Campaign);
+	if (!m)
 	{
 		o->IsVisible = 0;
 		return NULL;
 	}
-	i = o->Id - YC_OBJECTIVES;
-	if ((int)CampaignGetCurrentMission(co)->Objectives.size <= i)
+	int i = mData->MissionObjectiveIndex;
+	if ((int)m->Objectives.size <= i)
 	{
 		if (i == 0)
 		{
@@ -562,7 +600,22 @@ static const char *MissionGetObjectiveDescription(UIObject *o, void *data)
 	}
 	o->IsVisible = 1;
 	o->u.Textbox.IsEditable = 1;
-	return ((MissionObjective *)CArrayGet(&CampaignGetCurrentMission(co)->Objectives, i))->Description;
+	return ((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
+}
+static char **MissionGetObjectiveDescriptionSrc(void *data)
+{
+	MissionObjectiveData *mData = data;
+	Mission *m = CampaignGetCurrentMission(mData->Campaign);
+	if (!m)
+	{
+		return NULL;
+	}
+	int i = mData->MissionObjectiveIndex;
+	if ((int)m->Objectives.size <= i)
+	{
+		return NULL;
+	}
+	return &((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
 }
 static const char *GetWeaponCountStr(UIObject *o, void *v)
 {
@@ -579,7 +632,7 @@ static const char *GetObjectCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
-	sprintf(s, "Map items (%zu)", gMission.MapObjects.size);
+	sprintf(s, "Map items (%d)", (int)gMission.MapObjects.size);
 	return s;
 }
 typedef struct
@@ -824,6 +877,12 @@ static const char *BrushGetSizeStr(UIObject *o, void *data)
 	EditorBrush *brush = data;
 	sprintf(s, "Brush Size: %d", brush->BrushSize);
 	return s;
+}
+static char *BrushGetGuideImageStr(UIObject *o, void *data)
+{
+	UNUSED(o);
+	EditorBrush *brush = data;
+	return brush->GuideImage;
 }
 typedef struct
 {
@@ -1589,6 +1648,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE,
 		Vec2iNew(25, pos.y), Vec2iNew(240, th));
 	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
+	o->u.Textbox.TextSourceFunc = CampaignGetTitleSrc;
 	o->Data = co;
 	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
 	o->Flags = UI_SELECT_ONLY_FIRST;
@@ -1613,6 +1673,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 		Vec2iNew(25, pos.y), Vec2iNew(175, th));
 	o->Id2 = XC_MISSIONTITLE;
 	o->u.Textbox.TextLinkFunc = MissionGetTitle;
+	o->u.Textbox.TextSourceFunc = MissionGetTitleSrc;
 	o->Data = co;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
 	UIObjectAddChild(o, CreateMissionObjs(co));
@@ -1782,6 +1843,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 		Vec2iNew(25, 170), Vec2iNew(295, 5 * th));
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
+	oc->u.Textbox.TextSourceFunc = MissionGetDescriptionSrc;
 	oc->Data = co;
 	CSTRDUP(oc->u.Textbox.Hint, "(Mission description)");
 	UIObjectAddChild(o2, oc);
@@ -1836,10 +1898,13 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	{
 		pos.y += th;
 		o2 = UIObjectCopy(o);
-		o2->Id = YC_OBJECTIVES + i;
 		o2->Type = UITYPE_TEXTBOX;
 		o2->u.Textbox.TextLinkFunc = MissionGetObjectiveDescription;
-		o2->Data = co;
+		o2->u.Textbox.TextSourceFunc = MissionGetObjectiveDescriptionSrc;
+		o2->IsDynamicData = 1;
+		CMALLOC(o2->Data, sizeof(MissionObjectiveData));
+		((MissionObjectiveData *)o2->Data)->Campaign = co;
+		((MissionObjectiveData *)o2->Data)->MissionObjectiveIndex = i;
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = pos;
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
@@ -1870,6 +1935,7 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = CampaignGetAuthor;
+	o2->u.Textbox.TextSourceFunc = CampaignGetAuthorSrc;
 	o2->Data = co;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign author)");
 	o2->Id2 = XC_AUTHOR;
@@ -1880,6 +1946,7 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 	y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = CampaignGetDescription;
+	o2->u.Textbox.TextSourceFunc = CampaignGetDescriptionSrc;
 	o2->Data = co;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign description)");
 	o2->Id2 = XC_CAMPAIGNDESC;
@@ -2195,6 +2262,18 @@ static UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeSize;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	UIObjectDestroy(o);
+	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(100, th));
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.Textbox.TextLinkFunc = BrushGetGuideImageStr;
+	o2->Data = brush;
+	o2->ChangesData = 1;
+	CSTRDUP(o2->u.Textbox.Hint, "(Tracing guide image)");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

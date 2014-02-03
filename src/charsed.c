@@ -117,7 +117,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		gGraphicsDevice.buf[i] = LookupPalette(74);
 	}
 
-	sprintf(s, "%zu", setting->characters.OtherChars.size);
+	sprintf(s, "%d", (int)setting->characters.OtherChars.size);
 	CDogsTextStringAt(10, 190, s);
 
 	if (idx >= 0 && idx < (int)setting->characters.OtherChars.size)
