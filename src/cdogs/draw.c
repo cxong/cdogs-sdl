@@ -47,6 +47,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 #include <assert.h>
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -311,12 +312,16 @@ void DrawBufferDraw(
 	if (guideImage)
 	{
 		SDL_LockSurface(guideImage);
+		// Scale based on ratio between map size and guide image size,
+		// so that the guide image stretches to the map size
+		double xScale = (double)guideImage->w / (gMap.Size.x * TILE_WIDTH);
+		double yScale = (double)guideImage->h / (gMap.Size.y * TILE_HEIGHT);
 		for (int j = 0; j < b->g->cachedConfig.ResolutionHeight; j++)
 		{
-			int y = j + b->yTop;
+			int y = (int)round((j + b->yTop) * yScale);
 			for (int i = 0; i < b->g->cachedConfig.ResolutionWidth; i++)
 			{
-				int x = i + b->xTop;
+				int x = (int)round((i + b->xTop) * xScale);
 				if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)
 				{
 					int imgIndex = y * guideImage->w + x;
