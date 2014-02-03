@@ -2272,7 +2272,7 @@ static UIObject *CreateStaticMapObjs(
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = BrushGetGuideImageStr;
 	o2->Data = brush;
-	o2->ChangesData = 1;
+	o2->ChangesData = 0;
 	CSTRDUP(o2->u.Textbox.Hint, "(Tracing guide image)");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);

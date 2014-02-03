@@ -53,6 +53,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	{
 	case UITYPE_TEXTBOX:
 		o->u.Textbox.IsEditable = 1;
+		o->ChangesData = 1;
 		break;
 	case UITYPE_TAB:
 		CArrayInit(&o->u.Tab.Labels, sizeof(char *));
@@ -277,7 +278,7 @@ bool UIObjectAddChar(UIObject *o, char c)
 		s[l + 1] = 0;
 		s[l] = c;
 	}
-	return true;
+	return o->ChangesData;
 }
 bool UIObjectDelChar(UIObject *o)
 {
@@ -294,7 +295,7 @@ bool UIObjectDelChar(UIObject *o)
 	{
 		s[strlen(s) - 1] = 0;
 	}
-	return true;
+	return o->ChangesData;
 }
 
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);
