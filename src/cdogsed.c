@@ -133,7 +133,8 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
 	GrafxMakeBackground(
-		g, tintNone, 1, buildTables, &brush.HighlightedTiles, camera);
+		g, tintNone, 1, buildTables,
+		&brush.HighlightedTiles, brush.GuideImageSurface, camera);
 }
 
 static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
@@ -154,7 +155,8 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			MakeBackground(g, 0);
 		}
 		if ((brush.IsActive && IsBrushPosValid(brush.Pos, mission)) ||
-			hasCameraMoved)
+			hasCameraMoved ||
+			brush.IsGuideImageNew)
 		{
 			if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
 			{
@@ -165,7 +167,10 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			{
 				g->buf[i] = PixelFromColor(g, colorBlack);
 			}
-			GrafxDrawBackground(g, tintNone, &brush.HighlightedTiles, camera);
+			brush.IsGuideImageNew = false;
+			GrafxDrawBackground(
+				g, tintNone,
+				&brush.HighlightedTiles, brush.GuideImageSurface, camera);
 		}
 		GraphicsBlitBkg(g);
 		// Draw overlay

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 */
 #include "draw_buffer.h"
 
-void DrawBufferInit(DrawBuffer *b, Vec2i size)
+void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 {
 	int i;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
@@ -57,6 +57,7 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size)
 	{
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
+	b->g = g;
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {

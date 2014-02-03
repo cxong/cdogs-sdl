@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+#include <SDL_image.h>
+
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/mission.h>
@@ -1461,6 +1463,31 @@ static void BrushChangeSize(void *data, int d)
 	EditorBrush *b = data;
 	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
 }
+static void BrushLoadGuideImage(void *data, int d)
+{
+	UNUSED(d);
+	EditorBrush *b = data;
+	b->IsGuideImageNew = true;
+	SDL_Surface *image = IMG_Load(b->GuideImage);
+	if (!image)
+	{
+		// If new guide image is empty, unload last image anyway
+		if (strlen(b->GuideImage) == 0)
+		{
+			SDL_FreeSurface(b->GuideImageSurface);
+			b->GuideImageSurface = NULL;
+		}
+		return;
+	}
+	if (b->GuideImageSurface)
+	{
+		SDL_FreeSurface(b->GuideImageSurface);
+		b->GuideImageSurface = NULL;
+	}
+	b->GuideImageSurface = SDL_ConvertSurface(
+		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
+	SDL_FreeSurface(image);
+}
 static int BrushIsBrushTypePoint(void *data)
 {
 	EditorBrush *b = data;
@@ -2273,6 +2300,7 @@ static UIObject *CreateStaticMapObjs(
 	o2->u.Textbox.TextLinkFunc = BrushGetGuideImageStr;
 	o2->Data = brush;
 	o2->ChangesData = 0;
+	o2->ChangeFunc = BrushLoadGuideImage;
 	CSTRDUP(o2->u.Textbox.Hint, "(Tracing guide image)");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);

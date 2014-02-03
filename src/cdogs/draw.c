@@ -290,7 +290,9 @@ static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
 static void DrawHighlightedTiles(
 	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
 
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
+void DrawBufferDraw(
+	DrawBuffer *b, Vec2i offset,
+	CArray *highlightedTiles, SDL_Surface *guideImage)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawFloor(b, offset);
@@ -304,6 +306,28 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
 		DrawEditorTiles(b, offset);
 		// Draw highlight tiles if any
 		DrawHighlightedTiles(b, offset, highlightedTiles);
+	}
+	// Draw guide image
+	if (guideImage)
+	{
+		SDL_LockSurface(guideImage);
+		for (int j = 0; j < b->g->cachedConfig.ResolutionHeight; j++)
+		{
+			int y = j + b->yTop;
+			for (int i = 0; i < b->g->cachedConfig.ResolutionWidth; i++)
+			{
+				int x = i + b->xTop;
+				if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)
+				{
+					int imgIndex = y * guideImage->w + x;
+					Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
+					color_t c = PixelToColor(b->g, p);
+					c.a = 50;
+					Draw_Point(i, j, c);
+				}
+			}
+		}
+		SDL_UnlockSurface(guideImage);
 	}
 }
 

@@ -27,6 +27,8 @@
 */
 #include "pic_manager.h"
 
+#include <assert.h>
+
 #include <SDL_image.h>
 
 #include <tinydir/tinydir.h>
@@ -64,6 +66,7 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	{
 		perror("Cannot load image");
 		fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
+		return;
 	}
 	char buf[CDOGS_FILENAME_MAX];
 	const char *dot = strrchr(name, '.');
@@ -84,6 +87,11 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	n.pic.offset = Vec2iZero();
 	SDL_Surface *s = SDL_ConvertSurface(
 		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
+	if (!s)
+	{
+		assert(0 && "image convert failed");
+		return;
+	}
 	int picSize = n.pic.size.x * n.pic.size.y * sizeof *n.pic.Data;
 	CMALLOC(n.pic.Data, picSize);
 	SDL_LockSurface(s);

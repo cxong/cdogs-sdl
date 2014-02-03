@@ -278,6 +278,10 @@ bool UIObjectAddChar(UIObject *o, char c)
 		s[l + 1] = 0;
 		s[l] = c;
 	}
+	if (o->ChangeFunc)
+	{
+		o->ChangeFunc(o->Data, 1);
+	}
 	return o->ChangesData;
 }
 bool UIObjectDelChar(UIObject *o)
@@ -291,9 +295,14 @@ bool UIObjectDelChar(UIObject *o)
 		return UIObjectDelChar(o->Highlighted);
 	}
 	char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
-	if (s && s[0])
+	if (!s || s[0] == '\0')
 	{
-		s[strlen(s) - 1] = 0;
+		return false;
+	}
+	s[strlen(s) - 1] = 0;
+	if (o->ChangeFunc)
+	{
+		o->ChangeFunc(o->Data, -1);
 	}
 	return o->ChangesData;
 }

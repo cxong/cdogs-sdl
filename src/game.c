@@ -145,7 +145,7 @@ static void DoBuffer(
 		b, &gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
 	LineOfSight(center, b);
 	FixBuffer(b);
-	DrawBufferDraw(b, offset, NULL);
+	DrawBufferDraw(b, offset, NULL, NULL);
 }
 
 int GetShakeAmount(int oldShake, int amount)
@@ -233,7 +233,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 				}
 			}
 			FixBuffer(b);
-			DrawBufferDraw(b, centerOffset, NULL);
+			DrawBufferDraw(b, centerOffset, NULL, NULL);
 			SoundSetEars(lastPosition);
 		}
 		else if (gOptions.numPlayers == 2)

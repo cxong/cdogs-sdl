@@ -91,6 +91,7 @@ BrushType StrBrushType(const char *s)
 
 void EditorBrushInit(EditorBrush *b)
 {
+	memset(b, 0, sizeof *b);
 	b->Type = BRUSHTYPE_POINT;
 	b->MainType = MAP_WALL;
 	b->SecondaryType = MAP_FLOOR;
@@ -105,6 +106,7 @@ void EditorBrushInit(EditorBrush *b)
 void EditorBrushTerminate(EditorBrush *b)
 {
 	CArrayTerminate(&b->HighlightedTiles);
+	SDL_FreeSurface(b->GuideImageSurface);
 }
 
 static void EditorBrushHighlightPoint(void *data, Vec2i p)

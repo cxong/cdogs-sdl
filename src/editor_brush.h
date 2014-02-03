@@ -28,6 +28,8 @@
 #ifndef __EDITOR_BRUSH
 #define __EDITOR_BRUSH
 
+#include <stdbool.h>
+
 #include <cdogs/c_array.h>
 #include <cdogs/mission.h>
 #include <cdogs/vector.h>
@@ -84,7 +86,10 @@ typedef struct
 	Vec2i SelectionSize;
 	int IsMoving;	// for the select tool, whether selecting or moving
 	Vec2i DragPos;	// when moving, location that the drag started
+
 	char GuideImage[CDOGS_PATH_MAX];
+	bool IsGuideImageNew;
+	SDL_Surface *GuideImageSurface;
 } EditorBrush;
 
 void EditorBrushInit(EditorBrush *b);

@@ -116,10 +116,12 @@ void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GrafxDrawBackground(
-	GraphicsDevice *g, HSV tint, CArray *highlightedTiles, Vec2i pos);
+	GraphicsDevice *g, HSV tint,
+	CArray *highlightedTiles, SDL_Surface *guideImage, Vec2i pos);
 void GrafxMakeBackground(
 	GraphicsDevice *device, HSV tint,
-	int isEditor, int buildTables, CArray *highlightedTiles, Vec2i pos);
+	int isEditor, int buildTables,
+	CArray *highlightedTiles, SDL_Surface *guideImage, Vec2i pos);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

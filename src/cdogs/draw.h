@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,9 @@
 
 void LineOfSight(Vec2i center, DrawBuffer *buffer);
 void FixBuffer(DrawBuffer *b);
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
+void DrawBufferDraw(
+	DrawBuffer *b, Vec2i offset,
+	CArray *highlightedTiles, SDL_Surface *guideImage);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun);
 void DrawCharacterSimple(
