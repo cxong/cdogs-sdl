@@ -41,7 +41,13 @@ void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 	CMALLOC(pic->Data, pic->size.x * pic->size.y * sizeof *pic->Data);
 	for (i = 0; i < pic->size.x * pic->size.y; i++)
 	{
-		pic->Data[i] = PixelFromColor(g, PaletteToColor(*(picP->data + i)));
+		unsigned char palette = *(picP->data + i);
+		pic->Data[i] = PixelFromColor(g, PaletteToColor(palette));
+		// Special case: if the palette colour is 0, it's transparent
+		if (palette == 0)
+		{
+			pic->Data[i] = 0;
+		}
 	}
 }
 void PicFromPicPalettedOffset(
