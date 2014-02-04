@@ -62,8 +62,9 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
-void Blit(int x, int y, PicPaletted *pic, void *table, int mode);
+void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode);
 void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode);
+void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,
 	Pic *pic,
@@ -76,12 +77,12 @@ void BlitPicHighlight(
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
  */
-#define DrawPic(x, y, pic) (Blit(x, y, pic, NULL, 0))
+#define DrawPic(x, y, pic) (BlitOld(x, y, pic, NULL, 0))
 /* 
  * DrawTPic - I think the T here stands for transparent, ie ignore zero
  * source pixels when copying data.
  */
-#define DrawTPic(x, y, pic) (Blit(x, y, pic, NULL, BLIT_TRANSPARENT))
+#define DrawTPic(x, y, pic) (BlitOld(x, y, pic, NULL, BLIT_TRANSPARENT))
 /*
  * DrawTTPic - I think this stands for translated transparent. What this
  * does is that for each source pixel that would be copied it will first
@@ -89,7 +90,7 @@ void BlitPicHighlight(
  * that you can provide a 256 byte table to change any or all colors of
  * the source image. This feature is used heavily in the game.
  */
-#define DrawTTPic(x, y, pic, table) (Blit(x, y, pic, table, BLIT_TRANSPARENT))
+#define DrawTTPic(x, y, pic, table) (BlitOld(x, y, pic, table, BLIT_TRANSPARENT))
 /* 
  * DrawBTPic - I think the B stands for background here. If I remember
  * correctly this one uses the sourc eimage only as a mask. If a pixel in

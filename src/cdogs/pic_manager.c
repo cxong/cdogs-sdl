@@ -95,7 +95,15 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	int picSize = n.pic.size.x * n.pic.size.y * sizeof *n.pic.Data;
 	CMALLOC(n.pic.Data, picSize);
 	SDL_LockSurface(s);
-	memcpy(n.pic.Data, s->pixels, picSize);
+	// Manually copy the pixels and replace the alpha component,
+	// since our gfx device format has no alpha
+	for (int i = 0; i < n.pic.size.x * n.pic.size.y; i++)
+	{
+		Uint32 pixel = ((Uint32 *)s->pixels)[i];
+		Uint32 alpha = ((Uint32 *)image->pixels)[i] >> image->format->Ashift;
+		Uint32 rgbMask = s->format->Rmask | s->format->Gmask | s->format->Bmask;
+		n.pic.Data[i] = (pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+	}
 	SDL_UnlockSurface(s);
 	SDL_FreeSurface(s);
 	SDL_FreeSurface(image);

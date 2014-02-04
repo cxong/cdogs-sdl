@@ -97,6 +97,8 @@ typedef struct
 	int IsInitialized;
 	int IsWindowInitialized;
 	SDL_Surface *screen;
+	Uint32 Amask;
+	int Ashift;
 	GraphicsConfig cachedConfig;
 	GraphicsMode *validModes;
 	BlitClipping clipping;

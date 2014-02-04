@@ -71,11 +71,13 @@ color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
 }
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
 {
-	return SDL_MapRGBA(
-		device->screen->format, color.r, color.g, color.b, color.a);
+	SDL_PixelFormat *f = device->screen->format;
+	Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
+	// Manually apply the alpha as SDL seems to always set it to 0
+	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << device->Ashift);
 }
 
-void Blit(int x, int y, PicPaletted *pic, void *table, int mode)
+void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
@@ -238,6 +240,49 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 					*target = LookupPalette(*current);
 				}
 			}
+			current++;
+		}
+	}
+}
+
+void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
+{
+	Uint32 *current = pic->Data;
+	pos = Vec2iAdd(pos, pic->offset);
+	for (int i = 0; i < pic->size.y; i++)
+	{
+		int yoff = i + pos.y;
+		if (yoff > device->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < device->clipping.top)
+		{
+			current += pic->size.x;
+			continue;
+		}
+		yoff *= device->cachedConfig.ResolutionWidth;
+		for (int j = 0; j < pic->size.x; j++)
+		{
+			Uint32 *target;
+			int xoff = j + pos.x;
+			if (xoff < device->clipping.left)
+			{
+				current++;
+				continue;
+			}
+			if (xoff > device->clipping.right)
+			{
+				current += pic->size.x - j;
+				break;
+			}
+			if ((*current & device->Amask) == 0)
+			{
+				current++;
+				continue;
+			}
+			target = device->buf + yoff + xoff;
+			*target = *current;
 			current++;
 		}
 	}

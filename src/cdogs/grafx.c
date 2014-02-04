@@ -343,6 +343,15 @@ void GraphicsInitialize(
 		printf("ERROR: InitVideo: %s\n", SDL_GetError());
 		return;
 	}
+	SDL_PixelFormat *f = device->screen->format;
+	device->Amask = -1 & ~(f->Rmask | f->Gmask | f->Bmask);
+	Uint32 aMask = device->Amask;
+	device->Ashift = 0;
+	while (aMask != 0xff)
+	{
+		device->Ashift += 8;
+		aMask >>= 8;
+	}
 
 	CFREE(device->buf);
 	CCALLOC(device->buf, GraphicsGetMemSize(config));

@@ -597,21 +597,21 @@ void DrawCharacterSimple(
 
 	if (pic1.picIndex >= 0)
 	{
-		Blit(
+		BlitOld(
 			pos.x + pic1.dx, pos.y + pic1.dy,
 			PicManagerGetOldPic(&gPicManager, pic1.picIndex),
 			table, BLIT_TRANSPARENT);
 	}
 	if (pic2.picIndex >= 0)
 	{
-		Blit(
+		BlitOld(
 			pos.x + pic2.dx, pos.y + pic2.dy,
 			PicManagerGetOldPic(&gPicManager, pic2.picIndex),
 			table, BLIT_TRANSPARENT);
 	}
 	if (pic3.picIndex >= 0)
 	{
-		Blit(
+		BlitOld(
 			pos.x + pic3.dx, pos.y + pic3.dy,
 			PicManagerGetOldPic(&gPicManager, pic3.picIndex),
 			table, BLIT_TRANSPARENT);

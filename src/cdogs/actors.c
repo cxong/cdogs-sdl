@@ -356,21 +356,21 @@ void DrawCharacter(int x, int y, TActor * actor)
 		DrawShadow(&gGraphicsDevice, Vec2iNew(x, y), Vec2iNew(8, 6));
 		if (pic1.picIndex >= 0)
 		{
-			Blit(
+			BlitOld(
 				x + pic1.dx, y + pic1.dy,
 				PicManagerGetOldPic(&gPicManager, pic1.picIndex),
 				table, BLIT_TRANSPARENT);
 		}
 		if (pic2.picIndex >= 0)
 		{
-			Blit(
+			BlitOld(
 				x + pic2.dx, y + pic2.dy,
 				PicManagerGetOldPic(&gPicManager, pic2.picIndex),
 				table, BLIT_TRANSPARENT);
 		}
 		if (pic3.picIndex >= 0)
 		{
-			Blit(
+			BlitOld(
 				x + pic3.dx, y + pic3.dy,
 				PicManagerGetOldPic(&gPicManager, pic3.picIndex),
 				table, BLIT_TRANSPARENT);

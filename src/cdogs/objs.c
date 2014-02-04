@@ -273,7 +273,7 @@ void DrawFireball(int x, int y, const TMobileObject * obj)
 	{
 		y -= obj->z / 4;
 	}
-	Blit(
+	BlitOld(
 		x + pic->dx,
 		y + pic->dy,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex),

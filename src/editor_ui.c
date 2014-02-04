@@ -1018,7 +1018,7 @@ static void DisplayMapItemWithDensity(
 static void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
 	Pic *pic = MapObjectGetPic(mo, &gPicManager);
-	BlitMasked(&gGraphicsDevice, pic, pos, colorWhite, 1);
+	Blit(&gGraphicsDevice, pic, pos);
 }
 static void DisplayWreck(Vec2i pos, MapObject *mo)
 {
