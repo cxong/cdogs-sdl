@@ -278,6 +278,11 @@ void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
 			}
 			if ((*current & device->Amask) == 0)
 			{
+				/*
+				// hack to blit transparent background as hot pink
+				target = device->buf + yoff + xoff;
+				*target = PixelFromColor(device, colorMagenta);
+				*/
 				current++;
 				continue;
 			}
@@ -286,6 +291,46 @@ void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
 			current++;
 		}
 	}
+	/*
+	// hack to blit boundary
+	for (int i = -1; i < pic->size.y + 1; i++)
+	{
+		int yoff = i + pos.y;
+		if (yoff > device->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < device->clipping.top)
+		{
+			current += pic->size.x;
+			continue;
+		}
+		yoff *= device->cachedConfig.ResolutionWidth;
+		for (int j = -1; j < pic->size.x + 1; j++)
+		{
+			Uint32 *target;
+			int xoff = j + pos.x;
+			if (xoff < device->clipping.left)
+			{
+				current++;
+				continue;
+			}
+			if (xoff > device->clipping.right)
+			{
+				current += pic->size.x - j;
+				break;
+			}
+			if (i != -1 && i != pic->size.y && j != -1 && j != pic->size.x)
+			{
+				current++;
+				continue;
+			}
+			target = device->buf + yoff + xoff;
+			*target = PixelFromColor(device, colorWhite);
+			current++;
+		}
+	}
+	*/
 }
 
 Uint32 PixelMult(Uint32 p, Uint32 m)

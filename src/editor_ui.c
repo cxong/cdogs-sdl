@@ -2766,7 +2766,7 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+		Vec2iZero(), Vec2iNew(TILE_WIDTH/* * 2*/ + 4, TILE_HEIGHT * /*3*/2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
 	o->u.CustomDrawFunc = DrawMapItem;
 	pos = Vec2iZero();
