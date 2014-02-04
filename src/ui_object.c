@@ -252,6 +252,12 @@ bool UIObjectAddChar(UIObject *o, char c)
 	{
 		return UIObjectAddChar(o->Highlighted, c);
 	}
+	else if (UIObjectAddChar(o->Highlighted, c))
+	{
+		// See if there are highlighted textbox children;
+		// if so activate them instead
+		return true;
+	}
 	if (o->u.Textbox.TextSourceFunc)
 	{
 		// Dynamically-allocated char buf, expand
@@ -293,6 +299,12 @@ bool UIObjectDelChar(UIObject *o)
 	if (o->Type != UITYPE_TEXTBOX)
 	{
 		return UIObjectDelChar(o->Highlighted);
+	}
+	else if (UIObjectDelChar(o->Highlighted))
+	{
+		// See if there are highlighted textbox children;
+		// if so activate them instead
+		return true;
 	}
 	char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
 	if (!s || s[0] == '\0')
