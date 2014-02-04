@@ -90,19 +90,24 @@ void DrawObject(int x, int y, const TObject * obj)
 	{
 		return;
 	}
-	if (obj->picName && obj->picName[0] != '\0')
+	if (!obj->picName || obj->picName[0] == '\0')
 	{
-		Pic *pic = PicManagerGetPic(&gPicManager, obj->picName);
-		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
-		BlitMasked(&gGraphicsDevice, pic, Vec2iNew(x, y), colorWhite, 1);
+		goto defaultDraw;
 	}
-	else
+	Pic *pic = PicManagerGetPic(&gPicManager, obj->picName);
+	if (!pic)
 	{
-		DrawTPic(
-			x + ofpic->dx,
-			y + ofpic->dy,
-			PicManagerGetOldPic(&gPicManager, ofpic->picIndex));
+		goto defaultDraw;
 	}
+	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+	Blit(&gGraphicsDevice, pic, Vec2iNew(x, y));
+	return;
+
+defaultDraw:
+	DrawTPic(
+		x + ofpic->dx,
+		y + ofpic->dy,
+		PicManagerGetOldPic(&gPicManager, ofpic->picIndex));
 }
 
 void DrawBullet(int x, int y, const TMobileObject * obj)
