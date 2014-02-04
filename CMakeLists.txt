@@ -73,7 +73,8 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
-		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
+		-Wstrict-prototypes -Wpointer-arith -Wcast-qual
+		-std=c99)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)

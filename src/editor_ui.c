@@ -1245,7 +1245,7 @@ static void MissionChangeType(void *data, int d)
 {
 	CampaignOptions *co = data;
 	MapType type = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->Type + d,
+		(int)CampaignGetCurrentMission(co)->Type + d,
 		MAPTYPE_CLASSIC,
 		MAPTYPE_STATIC);
 	Map map;
@@ -1371,7 +1371,7 @@ static void MissionChangeObjectiveType(void *vData, int d)
 	MissionIndexData *data = vData;
 	MissionObjective *mobj = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
-	mobj->Type = CLAMP_OPPOSITE(mobj->Type + d, 0, OBJECTIVE_INVESTIGATE);
+	mobj->Type = CLAMP_OPPOSITE((int)mobj->Type + d, 0, OBJECTIVE_INVESTIGATE);
 	// Initialise the index of the objective
 	MissionChangeObjectiveIndex(data, 0);
 }

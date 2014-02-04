@@ -895,9 +895,9 @@ static void HandleInput(
 			case YC_CHARACTERS:
 				if (gCampaign.Setting.characters.OtherChars.size > 0)
 				{
-					int c = 0;
-					CArrayPushBack(&mission->Enemies, &c);
-					CharacterStoreAddBaddie(&gCampaign.Setting.characters, c);
+					int ch = 0;
+					CArrayPushBack(&mission->Enemies, &ch);
+					CharacterStoreAddBaddie(&gCampaign.Setting.characters, ch);
 					*xc = mission->Enemies.size - 1;
 				}
 				break;
@@ -905,9 +905,9 @@ static void HandleInput(
 			case YC_SPECIALS:
 				if (gCampaign.Setting.characters.OtherChars.size > 0)
 				{
-					int c = 0;
-					CArrayPushBack(&mission->SpecialChars, &c);
-					CharacterStoreAddSpecial(&gCampaign.Setting.characters, c);
+					int ch = 0;
+					CArrayPushBack(&mission->SpecialChars, &ch);
+					CharacterStoreAddSpecial(&gCampaign.Setting.characters, ch);
 					*xc = mission->SpecialChars.size - 1;
 				}
 				break;
