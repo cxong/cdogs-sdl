@@ -589,9 +589,17 @@ int MoveActor(TActor * actor, int x, int y)
 		{
 			x = actor->x;
 		}
-		if ((x == actor->x && y == actor->y) ||
-		    (x != actor->x && y != actor->y))
+		if (x != actor->x && y != actor->y)
+		{
+			// Both x-only or y-only movement are viable,
+			// i.e. we are colliding corner vs corner
+			// Arbitrarily choose x-only movement
+			y = actor->y;
+		}
+		else if (x == actor->x && y == actor->y)
+		{
 			return 0;
+		}
 	}
 
 	realPos = Vec2iFull2Real(Vec2iNew(x, y));
@@ -656,8 +664,14 @@ int MoveActor(TActor * actor, int x, int y)
 			x = actor->x;
 		}
 		realPos = Vec2iFull2Real(Vec2iNew(x, y));
-		if ((x == actor->x && y == actor->y) ||
-			(x != actor->x && y != actor->y) ||
+		if (x != actor->x && y != actor->y)
+		{
+			// Both x-only or y-only movement are viable,
+			// i.e. we are colliding corner vs corner
+			// Arbitrarily choose x-only movement
+			y = actor->y;
+		}
+		else if ((x == actor->x && y == actor->y) ||
 			IsCollisionWithWall(realPos, size))
 		{
 			return 0;
