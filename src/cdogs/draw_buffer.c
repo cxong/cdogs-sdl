@@ -119,14 +119,12 @@ void DrawBufferSetFromMap(
 
 static Tile *GetTile(DrawBuffer *buffer, Vec2i pos)
 {
-	assert(pos.x >= 0 && pos.x < buffer->Size.x &&
-		pos.y >= 0 && pos.y < buffer->Size.y);
+	if (pos.x < 0 || pos.x >= buffer->Size.x ||
+		pos.y < 0 || pos.y >= buffer->Size.y)
+	{
+		return NULL;
+	}
 	return &buffer->tiles[0][0] + pos.y * buffer->Size.x + pos.x;
-}
-
-static void SetVisible(DrawBuffer *buffer, Vec2i pos)
-{
-	GetTile(buffer, pos)->flags |= MAPTILE_IS_VISIBLE;
 }
 
 typedef struct
@@ -145,14 +143,41 @@ static bool IsNextTilBlockedAndSetVisibility(void *data, Vec2i pos)
 		return true;
 	}
 	// Check buffer range
-	if (pos.x < 0 || pos.x >= lData->b->Size.x ||
-		pos.y < 0 || pos.y >= lData->b->Size.y)
+	Tile *tile = GetTile(lData->b, pos);
+	if (!tile)
 	{
 		return true;
 	}
-	SetVisible(lData->b, pos);
+	tile->flags |= MAPTILE_IS_VISIBLE;
 	// Check if this tile is an obstruction
-	return GetTile(lData->b, pos)->flags & MAPTILE_NO_SEE;
+	return tile->flags & MAPTILE_NO_SEE;
+}
+
+static bool IsTileVisibleNonObstruction(DrawBuffer *buffer, Vec2i pos)
+{
+	Tile *tile = GetTile(buffer, pos);
+	if (!tile)
+	{
+		return false;
+	}
+	return !(tile->flags & MAPTILE_NO_SEE) &&
+		(tile->flags & MAPTILE_IS_VISIBLE);
+}
+
+static void SetObstructionVisible(DrawBuffer *buffer, Vec2i pos, Tile *tile)
+{
+	Vec2i d;
+	for (d.x = -1; d.x < 2; d.x++)
+	{
+		for (d.y = -1; d.y < 2; d.y++)
+		{
+			if (IsTileVisibleNonObstruction(buffer, Vec2iAdd(pos, d)))
+			{
+				tile->flags |= MAPTILE_IS_VISIBLE;
+				return;
+			}
+		}
+	}
 }
 
 // Perform LOS by casting rays from the centre to the edges, terminating
@@ -179,7 +204,11 @@ void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 	{
 		for (end.y = data.center.y - 1; end.y < data.center.y + 2; end.y++)
 		{
-			SetVisible(buffer, end);
+			Tile *tile = GetTile(buffer, end);
+			if (tile)
+			{
+				tile->flags |= MAPTILE_IS_VISIBLE;
+			}
 		}
 	}
 
@@ -217,5 +246,27 @@ void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 	for (; end.y > origin.y; end.y--)
 	{
 		HasClearLineBresenham(data.center, end, &lineData);
+	}
+
+	// Second pass: make any non-visible obstructions that are adjacent to
+	// visible non-obstructions visible too
+	// This is to ensure runs of walls stay visible
+	for (end.y = origin.y; end.y < origin.y + perimSize.y; end.y++)
+	{
+		for (end.x = origin.x; end.x < origin.x + perimSize.x; end.x++)
+		{
+			Tile *tile = GetTile(buffer, end);
+			if (!tile || !(tile->flags & MAPTILE_NO_SEE))
+			{
+				continue;
+			}
+			// Check sight range
+			if (data.sightRange2 > 0 &&
+				DistanceSquared(data.center, end) >= data.sightRange2)
+			{
+				continue;
+			}
+			SetObstructionVisible(buffer, end, tile);
+		}
 	}
 }
