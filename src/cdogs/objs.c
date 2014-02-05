@@ -983,8 +983,8 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 		double magnitude;
 		int seekSpeed = 50;
 		Vec2i impulse = Vec2iNew(
-			target->x - obj->x - obj->dx * 2,
-			target->y - obj->y - obj->dy * 2);
+			target->Pos.x - obj->x - obj->dx * 2,
+			target->Pos.y - obj->y - obj->dy * 2);
 		// Don't seek if the coordinates are too big
 		if (abs(impulse.x) < 10000 && abs(impulse.y) < 10000 &&
 			(impulse.x != 0 || impulse.y != 0))

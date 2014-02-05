@@ -70,21 +70,21 @@ static int IsFacing(TActor *a, TActor *a2, direction_e d)
 	switch (d)
 	{
 	case DIRECTION_UP:
-		return (a->y > a2->y);
+		return (a->Pos.y > a2->Pos.y);
 	case DIRECTION_UPLEFT:
-		return (a->y > a2->y && a->x > a2->x);
+		return (a->Pos.y > a2->Pos.y && a->Pos.x > a2->Pos.x);
 	case DIRECTION_LEFT:
-		return a->x > a2->x;
+		return a->Pos.x > a2->Pos.x;
 	case DIRECTION_DOWNLEFT:
-		return (a->y < a2->y && a->x > a2->x);
+		return (a->Pos.y < a2->Pos.y && a->Pos.x > a2->Pos.x);
 	case DIRECTION_DOWN:
-		return a->y < a2->y;
+		return a->Pos.y < a2->Pos.y;
 	case DIRECTION_DOWNRIGHT:
-		return (a->y < a2->y && a->x < a2->x);
+		return (a->Pos.y < a2->Pos.y && a->Pos.x < a2->Pos.x);
 	case DIRECTION_RIGHT:
-		return a->x < a2->x;
+		return a->Pos.x < a2->Pos.x;
 	case DIRECTION_UPRIGHT:
-		return (a->y > a2->y && a->x < a2->x);
+		return (a->Pos.y > a2->Pos.y && a->Pos.x < a2->Pos.x);
 	default:
 		// should nver get here
 		assert(0);
@@ -114,7 +114,7 @@ static int IsCloseToPlayer(Vec2i pos)
 {
 	TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if (closestPlayer && CHEBYSHEV_DISTANCE(
-			pos.x, pos.y, closestPlayer->x, closestPlayer->y) < (32 << 8))
+		pos.x, pos.y, closestPlayer->Pos.x, closestPlayer->Pos.y) < (32 << 8))
 	{
 		return 1;
 	}
@@ -122,9 +122,9 @@ static int IsCloseToPlayer(Vec2i pos)
 }
 
 
-static int PositionOK(TActor * actor, int x, int y)
+static bool IsPosOK(TActor *actor, Vec2i pos)
 {
-	Vec2i realPos = Vec2iFull2Real(Vec2iNew(x, y));
+	Vec2i realPos = Vec2iFull2Real(pos);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 	if (IsCollisionWithWall(realPos, size))
 	{
@@ -142,37 +142,37 @@ static int PositionOK(TActor * actor, int x, int y)
 
 #define STEPSIZE    1024
 
-static int DirectionOK(TActor * actor, int dir)
+static bool IsDirectionOK(TActor *a, int dir)
 {
 	switch (dir) {
 	case DIRECTION_UP:
-		return PositionOK(actor, actor->x, actor->y - STEPSIZE);
+		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
 	case DIRECTION_UPLEFT:
-		return PositionOK(actor, actor->x - STEPSIZE,
-				  actor->y - STEPSIZE)
-		    || PositionOK(actor, actor->x - STEPSIZE, actor->y)
-		    || PositionOK(actor, actor->x, actor->y - STEPSIZE);
+		return
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
 	case DIRECTION_LEFT:
-		return PositionOK(actor, actor->x - STEPSIZE, actor->y);
+		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0)));
 	case DIRECTION_DOWNLEFT:
-		return PositionOK(actor, actor->x - STEPSIZE,
-				  actor->y + STEPSIZE)
-		    || PositionOK(actor, actor->x - STEPSIZE, actor->y)
-		    || PositionOK(actor, actor->x, actor->y + STEPSIZE);
+		return
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
 	case DIRECTION_DOWN:
-		return PositionOK(actor, actor->x, actor->y + STEPSIZE);
+		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
 	case DIRECTION_DOWNRIGHT:
-		return PositionOK(actor, actor->x + STEPSIZE,
-				  actor->y + STEPSIZE)
-		    || PositionOK(actor, actor->x + STEPSIZE, actor->y)
-		    || PositionOK(actor, actor->x, actor->y + STEPSIZE);
+		return
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
 	case DIRECTION_RIGHT:
-		return PositionOK(actor, actor->x + STEPSIZE, actor->y);
+		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0)));
 	case DIRECTION_UPRIGHT:
-		return PositionOK(actor, actor->x + STEPSIZE,
-				  actor->y - STEPSIZE)
-		    || PositionOK(actor, actor->x + STEPSIZE, actor->y)
-		    || PositionOK(actor, actor->x, actor->y - STEPSIZE);
+		return
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0))) ||
+			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
 	}
 	return 0;
 }
@@ -187,13 +187,19 @@ static int BrightWalk(TActor * actor, int roll)
 		return AIHunt(actor);
 	}
 
-	if (actor->flags & FLAGS_TRYRIGHT) {
-		if (DirectionOK(actor, (actor->direction + 7) % 8)) {
+	if (actor->flags & FLAGS_TRYRIGHT)
+	{
+		if (IsDirectionOK(actor, (actor->direction + 7) % 8))
+		{
 			actor->direction = (actor->direction + 7) % 8;
 			actor->turns--;
 			if (actor->turns == 0)
+			{
 				actor->flags &= ~FLAGS_DETOURING;
-		} else if (!DirectionOK(actor, actor->direction)) {
+			}
+		}
+		else if (!IsDirectionOK(actor, actor->direction))
+		{
 			actor->direction = (actor->direction + 1) % 8;
 			actor->turns++;
 			if (actor->turns == 4) {
@@ -202,13 +208,18 @@ static int BrightWalk(TActor * actor, int roll)
 				actor->turns = 0;
 			}
 		}
-	} else {
-		if (DirectionOK(actor, (actor->direction + 1) % 8)) {
+	}
+	else
+	{
+		if (IsDirectionOK(actor, (actor->direction + 1) % 8))
+		{
 			actor->direction = (actor->direction + 1) % 8;
 			actor->turns--;
 			if (actor->turns == 0)
 				actor->flags &= ~FLAGS_DETOURING;
-		} else if (!DirectionOK(actor, actor->direction)) {
+		}
+		else if (!IsDirectionOK(actor, actor->direction))
+		{
 			actor->direction = (actor->direction + 7) % 8;
 			actor->turns++;
 			if (actor->turns == 4) {
@@ -253,11 +264,11 @@ void Detour(TActor * actor)
 		    (CmdToDirection(actor->lastCmd) + 7) % 8;
 }
 
-static int IsActorPositionValid(TActor *actor)
+static bool IsActorPositionValid(TActor *actor)
 {
-	Vec2i pos = Vec2iNew(actor->x, actor->y);
-	actor->x = actor->y = 0;
-	return MoveActor(actor, pos.x, pos.y);
+	Vec2i pos = actor->Pos;
+	actor->Pos = Vec2iZero();
+	return TryMoveActor(actor, pos);
 }
 
 static void PlaceBaddie(TActor *actor)
@@ -270,13 +281,13 @@ static void PlaceBaddie(TActor *actor)
 		TActor *closestPlayer = NULL;
 		do
 		{
-			actor->x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-			actor->y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
-			closestPlayer = AIGetClosestPlayer(Vec2iNew(actor->x, actor->y));
+			actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+			actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
+			closestPlayer = AIGetClosestPlayer(actor->Pos);
 		}
 		while (closestPlayer && CHEBYSHEV_DISTANCE(
-			actor->x, actor->y, closestPlayer->x, closestPlayer->y) <
-			256 * 150);
+			actor->Pos.x, actor->Pos.y,
+			closestPlayer->Pos.x, closestPlayer->Pos.y) < 256 * 150);
 		if (IsActorPositionValid(actor))
 		{
 			hasPlaced = 1;
@@ -286,8 +297,8 @@ static void PlaceBaddie(TActor *actor)
 	// Keep trying, but this time try spawning anywhere, even close to player
 	while (!hasPlaced)
 	{
-		actor->x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-		actor->y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
+		actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+		actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
 		if (IsActorPositionValid(actor))
 		{
 			hasPlaced = 1;
@@ -303,21 +314,19 @@ static void PlaceBaddie(TActor *actor)
 	}
 }
 
-static void PlacePrisoner(TActor * actor)
+static void PlacePrisoner(TActor *actor)
 {
-	int x, y;
-
-	do {
-		do {
-			actor->x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
-			actor->y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+	do
+	{
+		do
+		{
+			actor->Pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
+			actor->Pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 		}
-		while (!MapPosIsHighAccess(&gMap, actor->x >> 8, actor->y >> 8));
-		x = actor->x;
-		y = actor->y;
-		actor->x = actor->y = 0;
+		while (!MapPosIsHighAccess(
+			&gMap, actor->Pos.x >> 8, actor->Pos.y >> 8));
 	}
-	while (!MoveActor(actor, x, y));
+	while (!IsActorPositionValid(actor));
 }
 
 
@@ -385,14 +394,14 @@ void CommandBadGuys(int ticks)
 				roll = rand() % rollLimit;
 				if (!!(actor->flags & FLAGS_FOLLOWER))
 				{
-					if (IsCloseToPlayer(Vec2iNew(actor->x, actor->y)))
+					if (IsCloseToPlayer(actor->Pos))
 					{
 						cmd = 0;
 					}
 					else
 					{
 						cmd = AIGoto(actor, AIGetClosestPlayerPos(
-							Vec2iFull2Real(Vec2iNew(actor->x, actor->y))));
+							Vec2iFull2Real(actor->Pos)));
 					}
 					actor->delay = actor->character->bot.actionDelay;
 				}
@@ -467,7 +476,7 @@ void CommandBadGuys(int ticks)
 							// I think this is some hack to make sure invisible enemies don't fire so much
 							actor->weapon.lock = 40;
 						}
-						if (cmd && !DirectionOK(actor, CmdToDirection(cmd)) &&
+						if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
 							(actor->flags & FLAGS_DETOURING) == 0)
 						{
 							Detour(actor);

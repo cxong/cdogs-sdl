@@ -113,7 +113,8 @@ typedef enum
 
 typedef struct Actor
 {
-	int x, y;		// These are the full coordinates, including fractions
+	Vec2i Pos;		// These are the full coordinates, including fractions
+	Vec2i LastPos;
 	direction_e direction;
 	int state;
 	int stateCounter;
@@ -166,7 +167,7 @@ void DrawCharacter(int x, int y, TActor * actor);
 
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);
-int MoveActor(TActor * actor, int x, int y);
+bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 TActor *AddActor(Character *c, struct PlayerData *p);

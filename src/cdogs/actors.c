@@ -565,12 +565,12 @@ static void PickupObject(TActor * actor, TObject * object)
 		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 }
 
-int MoveActor(TActor * actor, int x, int y)
+bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	TTileItem *target;
 	TObject *object;
 	TActor *otherCharacter;
-	Vec2i realPos = Vec2iFull2Real(Vec2iNew(x, y));
+	Vec2i realPos = Vec2iFull2Real(pos);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 	int isDogfight = gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT;
 
@@ -579,30 +579,30 @@ int MoveActor(TActor * actor, int x, int y)
 	if (IsCollisionWithWall(realPos, size))
 	{
 		Vec2i realXPos, realYPos;
-		realYPos = Vec2iFull2Real(Vec2iNew(actor->x, y));
+		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
 		if (IsCollisionWithWall(realYPos, size))
 		{
-			y = actor->y;
+			pos.y = actor->Pos.y;
 		}
-		realXPos = Vec2iFull2Real(Vec2iNew(x, actor->y));
+		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
 		if (IsCollisionWithWall(realXPos, size))
 		{
-			x = actor->x;
+			pos.x = actor->Pos.x;
 		}
-		if (x != actor->x && y != actor->y)
+		if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
 		{
 			// Both x-only or y-only movement are viable,
 			// i.e. we are colliding corner vs corner
 			// Arbitrarily choose x-only movement
-			y = actor->y;
+			pos.y = actor->Pos.y;
 		}
-		else if (x == actor->x && y == actor->y)
+		else if (pos.x == actor->Pos.x && pos.y == actor->Pos.y)
 		{
 			return 0;
 		}
 	}
 
-	realPos = Vec2iFull2Real(Vec2iNew(x, y));
+	realPos = Vec2iFull2Real(pos);
 	target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
@@ -647,42 +647,41 @@ int MoveActor(TActor * actor, int x, int y)
 			}
 		}
 
-		realYPos = Vec2iFull2Real(Vec2iNew(actor->x, y));
+		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
 			isDogfight))
 		{
-			y = actor->y;
+			pos.y = actor->Pos.y;
 		}
-		realXPos = Vec2iFull2Real(Vec2iNew(x, actor->y));
+		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
 			isDogfight))
 		{
-			x = actor->x;
+			pos.x = actor->Pos.x;
 		}
-		realPos = Vec2iFull2Real(Vec2iNew(x, y));
-		if (x != actor->x && y != actor->y)
+		if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
 		{
 			// Both x-only or y-only movement are viable,
 			// i.e. we are colliding corner vs corner
 			// Arbitrarily choose x-only movement
-			y = actor->y;
+			pos.y = actor->Pos.y;
 		}
-		else if ((x == actor->x && y == actor->y) ||
+		realPos = Vec2iFull2Real(pos);
+		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
 			IsCollisionWithWall(realPos, size))
 		{
 			return 0;
 		}
 	}
 
-	CheckTrigger(actor, Vec2iFull2Real(Vec2iNew(x, y)));
+	CheckTrigger(actor, realPos);
 
 	if (actor->pData)
 	{
-		realPos = Vec2iFull2Real(Vec2iNew(x, y));
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
 			CalcCollisionTeam(1, actor),
@@ -693,9 +692,9 @@ int MoveActor(TActor * actor, int x, int y)
 		}
 	}
 
-	actor->x = x;
-	actor->y = y;
-	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
+	actor->LastPos = actor->Pos;
+	actor->Pos = pos;
+	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(actor->Pos));
 
 	if (MapIsTileInExit(&gMap, &actor->tileItem))
 	{
@@ -752,7 +751,7 @@ void Score(struct PlayerData *p, int points)
 
 void Shoot(TActor *actor)
 {
-	Vec2i muzzlePosition = Vec2iNew(actor->x, actor->y);
+	Vec2i muzzlePosition = actor->Pos;
 	Vec2i tilePosition = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 	if (!WeaponCanFire(&actor->weapon))
 	{
@@ -857,7 +856,7 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 
 void CommandActor(TActor * actor, int cmd, int ticks)
 {
-	Vec2i movePos = Vec2iNew(actor->x, actor->y);
+	Vec2i movePos = actor->Pos;
 	int shallMove = 0;
 
 	if (actor->dx || actor->dy)
@@ -918,7 +917,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 
 	if (shallMove)
 	{
-		MoveActor(actor, movePos.x, movePos.y);
+		TryMoveActor(actor, movePos);
 	}
 }
 
@@ -974,7 +973,7 @@ void UpdateAllActors(int ticks)
 		if (actor->dead > DEATH_MAX)
 		{
 			AddObject(
-				actor->x, actor->y,
+				actor->Pos.x, actor->Pos.y,
 				Vec2iZero(),
 				&cBloodPics[rand() % BLOOD_MAX],
 				0,
@@ -987,8 +986,7 @@ void UpdateAllActors(int ticks)
 			// and repel them
 			if (gConfig.Game.AllyCollision == ALLYCOLLISION_REPEL)
 			{
-				Vec2i realPos = Vec2iScaleDiv(
-					Vec2iNew(actor->x, actor->y), 256);
+				Vec2i realPos = Vec2iFull2Real(actor->Pos);
 				TTileItem *collidingItem = GetItemOnTileInCollision(
 					&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 					COLLISIONTEAM_NONE,
@@ -999,9 +997,7 @@ void UpdateAllActors(int ticks)
 					if (CalcCollisionTeam(1, collidingActor) ==
 						CalcCollisionTeam(1, actor))
 					{
-						Vec2i v = Vec2iNew(
-							actor->x - collidingActor->x,
-							actor->y - collidingActor->y);
+						Vec2i v = Vec2iMinus(actor->Pos, collidingActor->Pos);
 						if (Vec2iEqual(v, Vec2iZero()))
 						{
 							v = Vec2iNew(1, 0);

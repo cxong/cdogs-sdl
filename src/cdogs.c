@@ -758,14 +758,14 @@ void Victory(GraphicsDevice *graphics)
 
 static void PlaceActor(TActor * actor)
 {
-	int x, y;
-
+	Vec2i pos;
 	do
 	{
-		x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
-		y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+		pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
+		pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 	}
-	while (!MapIsFullPosOKforPlayer(&gMap, x, y) || !MoveActor(actor, x, y));
+	while (!MapIsFullPosOKforPlayer(&gMap, pos.x, pos.y) ||
+		!TryMoveActor(actor, pos));
 }
 static void PlaceActorNear(TActor *actor, Vec2i near)
 {
@@ -779,7 +779,7 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 	//      7
 #define TRY_LOCATION()\
 	if (MapIsFullPosOKforPlayer(&gMap, near.x + dx, near.y + dy) && \
-		MoveActor(actor, near.x + dx, near.y + dy))\
+		TryMoveActor(actor, Vec2iAdd(near, Vec2iNew(dx, dy))))\
 	{\
 		return;\
 	}
@@ -872,8 +872,7 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 			i > 0)
 		{
 			// If never split screen, try to place players near the first player
-			PlaceActorNear(
-				gPlayers[i], Vec2iNew(gPlayers[0]->x, gPlayers[0]->y));
+			PlaceActorNear(gPlayers[i], gPlayers[0]->Pos);
 		}
 		else
 		{

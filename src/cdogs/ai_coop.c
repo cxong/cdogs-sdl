@@ -61,8 +61,7 @@ int AICoopGetCmd(TActor *actor)
 		{
 			TActor *p = gPlayers[i];
 			int distance2 = DistanceSquared(
-				Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
-				Vec2iFull2Real(Vec2iNew(p->x, p->y)));
+				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(p->Pos));
 			if (!closestPlayer || distance2 < minDistance2)
 			{
 				minDistance2 = distance2;
@@ -82,22 +81,20 @@ int AICoopGetCmd(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
-		int cmd = AIGoto(
-			actor,
-			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
+		int cmd = AIGoto(actor, Vec2iFull2Real(closestPlayer->Pos));
 		TObject *o;
 		// Try to slide if there is a clear path and we are far enough away
 		if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
 			AIHasClearLine(
-			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
-			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y))) &&
+			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestPlayer->Pos)) &&
 			minDistance2 > 7*7*16*16)
 		{
 			cmd |= CMD_BUTTON2;
 		}
-		// If running into safe object, shoot at it
+		// If running into safe object, and we're being blocked, shoot at it
 		o = AIGetObjectRunningInto(actor, cmd);
-		if (o && !(o->flags & OBJFLAG_DANGEROUS))
+		if (o && !(o->flags & OBJFLAG_DANGEROUS) &&
+			Vec2iEqual(actor->Pos, actor->LastPos))
 		{
 			cmd = AIGoto(actor, Vec2iNew(o->tileItem.x, o->tileItem.y)) |
 				CMD_BUTTON1;
@@ -106,17 +103,16 @@ int AICoopGetCmd(TActor *actor)
 	}
 
 	// Check if closest enemy is close enough, and visible
-	closestEnemy = AIGetClosestVisibleEnemy(
-		Vec2iNew(actor->x, actor->y), actor->flags, 1);
+	closestEnemy = AIGetClosestVisibleEnemy(actor->Pos, actor->flags, 1);
 	if (closestEnemy)
 	{
 		minEnemyDistance = CHEBYSHEV_DISTANCE(
-			actor->x, actor->y, closestEnemy->x, closestEnemy->y);
+			actor->Pos.x, actor->Pos.y,
+			closestEnemy->Pos.x, closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
 		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
 			AIHasClearLine(
-			Vec2iFull2Real(Vec2iNew(actor->x, actor->y)),
-			Vec2iFull2Real(Vec2iNew(closestEnemy->x, closestEnemy->y))))
+			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos)))
 		{
 			int cmd = AIHunt(actor);
 			// only fire if gun is ready
@@ -133,9 +129,7 @@ int AICoopGetCmd(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > 4*4*16*16/3/3*(squadNumber+1)*(squadNumber+1))
 	{
-		int cmd = AIGoto(
-			actor,
-			Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y)));
+		int cmd = AIGoto(actor, Vec2iFull2Real(closestPlayer->Pos));
 		// If running into safe object, shoot at it
 		TObject *o = AIGetObjectRunningInto(actor, cmd);
 		if (o && !(o->flags & OBJFLAG_DANGEROUS))

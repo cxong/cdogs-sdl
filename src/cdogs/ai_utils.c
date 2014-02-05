@@ -68,7 +68,7 @@ TActor *AIGetClosestPlayer(Vec2i pos)
 		if (IsPlayerAlive(i))
 		{
 			TActor *p = gPlayers[i];
-			Vec2i pPos = Vec2iFull2Real(Vec2iNew(p->x, p->y));
+			Vec2i pPos = Vec2iFull2Real(p->Pos);
 			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, pPos.x, pPos.y);
 			if (!closestPlayer || distance < minDistance)
 			{
@@ -97,7 +97,7 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 		}
 		if (compFunc(a))
 		{
-			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->x, a->y);
+			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->Pos.x, a->Pos.y);
 			if (!closest || distance < minDistance)
 			{
 				minDistance = distance;
@@ -157,7 +157,7 @@ Vec2i AIGetClosestPlayerPos(Vec2i pos)
 	TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if (closestPlayer)
 	{
-		return Vec2iFull2Real(Vec2iNew(closestPlayer->x, closestPlayer->y));
+		return Vec2iFull2Real(closestPlayer->Pos);
 	}
 	else
 	{
@@ -203,7 +203,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 {
 	// Check the position just in front of the character;
 	// check if there's a (non-dangerous) object in front of it
-	Vec2i frontPos = Vec2iFull2Real(Vec2iNew(a->x, a->y));
+	Vec2i frontPos = Vec2iFull2Real(a->Pos);
 	TTileItem *item;
 	if (cmd & CMD_LEFT)
 	{
@@ -391,7 +391,7 @@ static int AStarCloseToPath(
 }
 int AIGoto(TActor *actor, Vec2i p)
 {
-	Vec2i a = Vec2iFull2Real(Vec2iNew(actor->x, actor->y));
+	Vec2i a = Vec2iFull2Real(actor->Pos);
 	Vec2i currentTile = Vec2iToTile(a);
 	Vec2i goalTile = Vec2iToTile(p);
 	AIGotoContext *c = actor->aiContext;
@@ -445,35 +445,34 @@ int AIHunt(TActor *actor)
 {
 	int cmd = 0;
 	int dx, dy;
-	Vec2i targetPos = Vec2iNew(actor->x, actor->y);
+	Vec2i targetPos = actor->Pos;
 	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 	{
-		targetPos = AIGetClosestPlayerPos(Vec2iNew(actor->x, actor->y));
+		targetPos = AIGetClosestPlayerPos(actor->Pos);
 	}
 
 	if (actor->flags & FLAGS_VISIBLE)
 	{
 		TActor *a = AIGetClosestEnemy(
-			Vec2iNew(actor->x, actor->y), actor->flags, !!actor->pData);
+			actor->Pos, actor->flags, !!actor->pData);
 		if (a)
 		{
-			targetPos.x = a->x;
-			targetPos.y = a->y;
+			targetPos = a->Pos;
 		}
 	}
 
-	dx = abs(targetPos.x - actor->x);
-	dy = abs(targetPos.y - actor->y);
+	dx = abs(targetPos.x - actor->Pos.x);
+	dy = abs(targetPos.y - actor->Pos.y);
 
 	if (2 * dx > dy)
 	{
-		if (actor->x < targetPos.x)			cmd |= CMD_RIGHT;
-		else if (actor->x > targetPos.x)	cmd |= CMD_LEFT;
+		if (actor->Pos.x < targetPos.x)			cmd |= CMD_RIGHT;
+		else if (actor->Pos.x > targetPos.x)	cmd |= CMD_LEFT;
 	}
 	if (2 * dy > dx)
 	{
-		if (actor->y < targetPos.y)			cmd |= CMD_DOWN;
-		else if (actor->y > targetPos.y)	cmd |= CMD_UP;
+		if (actor->Pos.y < targetPos.y)			cmd |= CMD_DOWN;
+		else if (actor->Pos.y > targetPos.y)	cmd |= CMD_UP;
 	}
 	// If it's a coward, reverse directions...
 	if (actor->flags & FLAGS_RUNS_AWAY)
