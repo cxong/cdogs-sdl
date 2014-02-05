@@ -55,6 +55,8 @@ Tile TileNone(void)
 {
 	Tile t;
 	memset(&t, 0, sizeof t);
+	t.pic = &picNone;
+	t.flags = MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
 	return t;
 }
 void TileInit(Tile *t)

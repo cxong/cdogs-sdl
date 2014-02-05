@@ -98,11 +98,15 @@ void FixBuffer(DrawBuffer *buffer)
 			}
 			else
 			{
-				MapMarkAsVisited(
-					&gMap,
-					Vec2iNew(x + buffer->xStart, y + buffer->yStart));
-				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
-				tile->isVisited = 1;
+				Vec2i mapTile =
+					Vec2iNew(x + buffer->xStart, y + buffer->yStart);
+				if (mapTile.x >= 0 && mapTile.x < gMap.Size.x &&
+					mapTile.y >= 0 && mapTile.y < gMap.Size.y)
+				{
+					MapMarkAsVisited(&gMap, mapTile);
+					tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
+					tile->isVisited = 1;
+				}
 			}
 		}
 		tile += X_TILES - buffer->Size.x;
@@ -120,6 +124,11 @@ static void SetVisible(DrawBuffer *buffer, int x, int y)
 static void SetLineOfSight(
 	DrawBuffer *buffer, int x, int y, int dx, int dy)
 {
+	if (MIN(x, x + dx) < 0 || MAX(x, x + dx) >= buffer->Size.x ||
+		MIN(y, y + dy) < 0 || MAX(y, y + dy) >= buffer->Size.y)
+	{
+		return;
+	}
 	Tile *dTile = &buffer->tiles[0][0] + (y+dy)*X_TILES + (x+dx);
 	if ((dTile->flags & MAPTILE_IS_VISIBLE) &&
 		!(dTile->flags & MAPTILE_NO_SEE))
@@ -165,6 +174,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 	// Going outwards, mark tiles as visible if the inner tile
 	// is visible and is not an obstruction
 	y = centerTile.y;
+	// left
 	for (x = centerTile.x - 2; x >= 0; x--)
 	{
 		if (sightRange2 > 0 &&
@@ -174,6 +184,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 		}
 		SetLineOfSight(buffer, x, y, 1, 0);
 	}
+	// right
 	for (x = centerTile.x + 2; x < buffer->Size.x; x++)
 	{
 		if (sightRange2 > 0 &&
@@ -183,6 +194,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 		}
 		SetLineOfSight(buffer, x, y, -1, 0);
 	}
+	// up
 	for (y = centerTile.y - 1; y >= 0; y--)
 	{
 		x = centerTile.x;
@@ -192,6 +204,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			break;
 		}
 		SetLineOfSight(buffer, x, y, 0, 1);
+		// up-left
 		for (x = centerTile.x - 1; x >= 0; x--)
 		{
 			if (sightRange2 > 0 &&
@@ -201,6 +214,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			}
 			SetLineOfSight(buffer, x, y, 1, 1);
 		}
+		// up-right
 		for (x = centerTile.x + 1; x < buffer->Size.x; x++)
 		{
 			if (sightRange2 > 0 &&
@@ -211,6 +225,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			SetLineOfSight(buffer, x, y, -1, 1);
 		}
 	}
+	// down
 	for (y = centerTile.y + 1; y < Y_TILES; y++)
 	{
 		x = centerTile.x;
@@ -220,6 +235,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			break;
 		}
 		SetLineOfSight(buffer, x, y, 0, -1);
+		// down-left
 		for (x = centerTile.x - 1; x >= 0; x--)
 		{
 			if (sightRange2 > 0 &&
@@ -229,6 +245,7 @@ void LineOfSight(Vec2i center, DrawBuffer *buffer)
 			}
 			SetLineOfSight(buffer, x, y, 1, -1);
 		}
+		// down-right
 		for (x = centerTile.x + 1; x < buffer->Size.x; x++)
 		{
 			if (sightRange2 > 0 &&

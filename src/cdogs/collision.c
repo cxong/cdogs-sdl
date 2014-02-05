@@ -68,7 +68,7 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
 	return COLLISIONTEAM_BAD;
 }
 
-int IsCollisionWithWall(Vec2i pos, Vec2i size)
+bool IsCollisionWithWall(Vec2i pos, Vec2i size)
 {
 	if (HitWall(pos.x - size.x,	pos.y - size.y) ||
 		HitWall(pos.x - size.x,	pos.y) ||
@@ -79,9 +79,21 @@ int IsCollisionWithWall(Vec2i pos, Vec2i size)
 		HitWall(pos.x + size.x,	pos.y - size.y) ||
 		HitWall(pos.x,			pos.y - size.y))
 	{
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
+}
+
+bool IsCollisionWallOrEdge(Map *map, Vec2i pos, Vec2i size)
+{
+	Vec2i mapSize =
+		Vec2iNew(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
+	if (pos.x < 0 || pos.x + size.x >= mapSize.x ||
+		pos.y < 0 || pos.y + size.y >= mapSize.y)
+	{
+		return true;
+	}
+	return IsCollisionWithWall(pos, size);
 }
 
 int ItemsCollide(TTileItem *item1, TTileItem *item2, Vec2i pos)

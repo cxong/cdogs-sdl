@@ -576,16 +576,16 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 
 	// Check collision with wall; try to limit x and y movement if still in
 	// collision in those axes
-	if (IsCollisionWithWall(realPos, size))
+	if (IsCollisionWallOrEdge(&gMap, realPos, size))
 	{
 		Vec2i realXPos, realYPos;
 		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-		if (IsCollisionWithWall(realYPos, size))
+		if (IsCollisionWallOrEdge(&gMap, realYPos, size))
 		{
 			pos.y = actor->Pos.y;
 		}
 		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-		if (IsCollisionWithWall(realXPos, size))
+		if (IsCollisionWallOrEdge(&gMap, realXPos, size))
 		{
 			pos.x = actor->Pos.x;
 		}
@@ -672,7 +672,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 		realPos = Vec2iFull2Real(pos);
 		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-			IsCollisionWithWall(realPos, size))
+			IsCollisionWallOrEdge(&gMap, realPos, size))
 		{
 			return 0;
 		}

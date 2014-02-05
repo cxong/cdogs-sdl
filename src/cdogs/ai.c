@@ -126,7 +126,7 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 {
 	Vec2i realPos = Vec2iFull2Real(pos);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
-	if (IsCollisionWithWall(realPos, size))
+	if (IsCollisionWallOrEdge(&gMap, realPos, size))
 	{
 		return 0;
 	}
