@@ -52,7 +52,6 @@
 #include "draw_buffer.h"
 #include "gamedata.h"
 
-void LineOfSight(Vec2i center, DrawBuffer *buffer);
 void FixBuffer(DrawBuffer *b);
 void DrawBufferDraw(
 	DrawBuffer *b, Vec2i offset,

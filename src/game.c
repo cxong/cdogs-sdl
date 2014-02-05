@@ -143,7 +143,7 @@ static void DoBuffer(
 {
 	DrawBufferSetFromMap(
 		b, &gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
-	LineOfSight(center, b);
+	DrawBufferLOS(b, center);
 	FixBuffer(b);
 	DrawBufferDraw(b, offset, NULL, NULL);
 }
@@ -226,10 +226,10 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			{
 				if (IsPlayerAlive(i))
 				{
-					LineOfSight(
+					DrawBufferLOS(
+						b,
 						Vec2iNew(
-							gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y),
-						b);
+							gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y));
 				}
 			}
 			FixBuffer(b);

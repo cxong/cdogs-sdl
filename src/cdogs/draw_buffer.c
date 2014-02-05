@@ -48,6 +48,11 @@
 */
 #include "draw_buffer.h"
 
+#include <assert.h>
+
+#include "algorithms.h"
+
+
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 {
 	int i;
@@ -99,7 +104,7 @@ void DrawBufferSetFromMap(
 			x < buffer->xStart + buffer->Size.x;
 			x++, bufTile++)
 		{
-			if (x >= 0 && x < gMap.Size.x && y >= 0 && y < gMap.Size.y)
+			if (x >= 0 && x < map->Size.x && y >= 0 && y < map->Size.y)
 			{
 				*bufTile = *MapGetTile(map, Vec2iNew(x, y));
 			}
@@ -109,5 +114,108 @@ void DrawBufferSetFromMap(
 			}
 		}
 		bufTile += tilesXY.x - buffer->Size.x;
+	}
+}
+
+static Tile *GetTile(DrawBuffer *buffer, Vec2i pos)
+{
+	assert(pos.x >= 0 && pos.x < buffer->Size.x &&
+		pos.y >= 0 && pos.y < buffer->Size.y);
+	return &buffer->tiles[0][0] + pos.y * buffer->Size.x + pos.x;
+}
+
+static void SetVisible(DrawBuffer *buffer, Vec2i pos)
+{
+	GetTile(buffer, pos)->flags |= MAPTILE_IS_VISIBLE;
+}
+
+typedef struct
+{
+	DrawBuffer *b;
+	Vec2i center;
+	int sightRange2;
+} LOSData;
+static bool IsNextTilBlockedAndSetVisibility(void *data, Vec2i pos)
+{
+	LOSData *lData = data;
+	// Check sight range
+	if (lData->sightRange2 > 0 &&
+		DistanceSquared(lData->center, pos) >= lData->sightRange2)
+	{
+		return true;
+	}
+	// Check buffer range
+	if (pos.x < 0 || pos.x >= lData->b->Size.x ||
+		pos.y < 0 || pos.y >= lData->b->Size.y)
+	{
+		return true;
+	}
+	SetVisible(lData->b, pos);
+	// Check if this tile is an obstruction
+	return GetTile(lData->b, pos)->flags & MAPTILE_NO_SEE;
+}
+
+// Perform LOS by casting rays from the centre to the edges, terminating
+// whenever an obstruction or out-of-range is reached.
+void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
+{
+	int sightRange = gConfig.Game.SightRange;	// Note: can be zero
+	LOSData data;
+	data.b = buffer;
+	data.center.x = center.x / TILE_WIDTH - buffer->xStart;
+	data.center.y = center.y / TILE_HEIGHT - buffer->yStart;
+	data.sightRange2 = sightRange * sightRange;
+
+	// First mark center tile and all adjacent tiles as visible
+	// +-+-+-+
+	// |V|V|V|
+	// +-+-+-+
+	// |V|C|V|
+	// +-+-+-+
+	// |V|V|V|  (C=center, V=visible)
+	// +-+-+-+
+	Vec2i end;
+	for (end.x = data.center.x - 1; end.x < data.center.x + 2; end.x++)
+	{
+		for (end.y = data.center.y - 1; end.y < data.center.y + 2; end.y++)
+		{
+			SetVisible(buffer, end);
+		}
+	}
+
+	// Work out the perimeter of the LOS casts
+	Vec2i origin = Vec2iZero();
+	if (sightRange > 0)
+	{
+		// Limit the perimeter to the sight range
+		origin.x = MAX(origin.x, data.center.x - sightRange);
+		origin.y = MAX(origin.y, data.center.y - sightRange);
+	}
+	Vec2i perimSize = Vec2iScale(Vec2iMinus(data.center, origin), 2);
+
+	// Start from the top-left cell, and proceed clockwise around
+	end = origin;
+	HasClearLineData lineData;
+	lineData.IsBlocked = IsNextTilBlockedAndSetVisibility;
+	lineData.data = &data;
+	// Top edge
+	for (; end.x < origin.x + perimSize.x; end.x++)
+	{
+		HasClearLineBresenham(data.center, end, &lineData);
+	}
+	// right edge
+	for (; end.y < origin.y + perimSize.y; end.y++)
+	{
+		HasClearLineBresenham(data.center, end, &lineData);
+	}
+	// bottom edge
+	for (; end.x > origin.x; end.x--)
+	{
+		HasClearLineBresenham(data.center, end, &lineData);
+	}
+	// left edge
+	for (; end.y > origin.y; end.y--)
+	{
+		HasClearLineBresenham(data.center, end, &lineData);
 	}
 }

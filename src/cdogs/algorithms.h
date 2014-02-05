@@ -35,7 +35,6 @@
 typedef struct
 {
 	bool (*IsBlocked)(void *, Vec2i);
-	Vec2i size;
 	Vec2i tileSize;
 	void *data;
 } HasClearLineData;

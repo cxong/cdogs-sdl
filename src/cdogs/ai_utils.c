@@ -188,7 +188,6 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	// Uses a modified version of Xiaolin Wu's algorithm
 	HasClearLineData data;
 	data.IsBlocked = IsBlocked;
-	data.size = gMap.Size;
 	data.tileSize = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	data.data = &gMap;
 	
@@ -196,7 +195,7 @@ int AIHasClearLine(Vec2i from, Vec2i to)
 	// Bresenham line algorithm
 	return
 		HasClearLine(from, to, &data) &&
-		HasClearLineBresenham(from, to, &data);
+		HasClearLineBresenham(Vec2iToTile(from), Vec2iToTile(to), &data);
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)

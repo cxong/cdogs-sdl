@@ -67,5 +67,6 @@ void DrawBufferTerminate(DrawBuffer *b);
 void DrawBufferSetFromMap(
 	DrawBuffer *buffer, Map *map, Vec2i origin,
 	int width, Vec2i tilesXY);
+void DrawBufferLOS(DrawBuffer *buffer, Vec2i center);
 
 #endif

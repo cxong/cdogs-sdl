@@ -246,7 +246,7 @@ bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data)
 	bData.CheckBlockedAndEarlyTerminate = true;
 	bData.IsBlocked = data->IsBlocked;
 	bData.data = data->data;
-	return BresenhamLine(Vec2iToTile(from), Vec2iToTile(to), &bData);
+	return BresenhamLine(from, to, &bData);
 }
 
 void BresenhamLineDraw(Vec2i from, Vec2i to, BresenhamLineDrawData *data)
