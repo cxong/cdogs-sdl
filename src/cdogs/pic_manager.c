@@ -109,7 +109,8 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	SDL_FreeSurface(image);
 	CArrayPushBack(&pm->pics, &n);
 }
-static void PicManagerLoadDirImpl(PicManager *pm, const char *path)
+static void PicManagerLoadDirImpl(
+	PicManager *pm, const char *path, const char *prefix)
 {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
@@ -129,11 +130,29 @@ static void PicManagerLoadDirImpl(PicManager *pm, const char *path)
 		if (file.is_reg &&
 			SDL_strcasecmp(StrGetFileExt(file.name), "png") == 0)
 		{
-			AddPic(pm, file.name, file.path);
+			if (prefix)
+			{
+				char buf[CDOGS_PATH_MAX];
+				sprintf(buf, "%s/%s", prefix, file.name);
+				AddPic(pm, buf, file.path);
+			}
+			else
+			{
+				AddPic(pm, file.name, file.path);
+			}
 		}
 		else if (file.is_dir && file.name[0] != '.')
 		{
-			PicManagerLoadDirImpl(pm, file.path);
+			if (prefix)
+			{
+				char buf[CDOGS_PATH_MAX];
+				sprintf(buf, "%s/%s", prefix, file.name);
+				PicManagerLoadDirImpl(pm, file.path, buf);
+			}
+			else
+			{
+				PicManagerLoadDirImpl(pm, file.path, file.name);
+			}
 		}
 	}
 
@@ -147,7 +166,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		perror("Cannot initialise SDL_Image");
 		return;
 	}
-	PicManagerLoadDirImpl(pm, path);
+	PicManagerLoadDirImpl(pm, path, NULL);
 }
 
 void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)

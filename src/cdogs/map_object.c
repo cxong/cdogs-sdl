@@ -115,18 +115,23 @@ int MapObjectGetCount(void)
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm)
 {
 	const TOffsetPic *ofpic = &cGeneralPics[mo->pic];
-	if (mo->picName && mo->picName[0] != '\0')
+	Pic *pic;
+	if (!mo->picName || mo->picName[0] == '\0')
 	{
-		Pic *pic = PicManagerGetPic(pm, mo->picName);
-		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
-		return pic;
+		goto defaultPic;
 	}
-	else
+	pic = PicManagerGetPic(pm, mo->picName);
+	if (!pic)
 	{
-		Pic *pic = PicManagerGetFromOld(pm, ofpic->picIndex);
-		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
-		return pic;
+		goto defaultPic;
 	}
+	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+	return pic;
+
+defaultPic:
+	pic = PicManagerGetFromOld(pm, ofpic->picIndex);
+	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+	return pic;
 }
 
 int MapObjectIsTileOK(

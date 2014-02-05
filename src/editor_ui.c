@@ -2185,7 +2185,7 @@ static UIObject *CreateStaticMapObjs(
 	o->OnFocusFunc = ActivateBrush;
 	o->OnUnfocusFunc = DeactivateBrush;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "pencil"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/pencil"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypePoint;
 	o2->ChangeFunc = BrushSetBrushTypePoint;
 	CSTRDUP(o2->Tooltip, "Point");
@@ -2193,7 +2193,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "line"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/line"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeLine;
 	o2->ChangeFunc = BrushSetBrushTypeLine;
 	CSTRDUP(o2->Tooltip, "Line");
@@ -2201,7 +2201,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "box"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/box"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeBox;
 	o2->ChangeFunc = BrushSetBrushTypeBox;
 	CSTRDUP(o2->Tooltip, "Box");
@@ -2209,7 +2209,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "box_filled"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/box_filled"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeBoxFilled;
 	o2->ChangeFunc = BrushSetBrushTypeBoxFilled;
 	CSTRDUP(o2->Tooltip, "Box filled");
@@ -2217,7 +2217,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "room"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/room"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeRoom;
 	o2->ChangeFunc = BrushSetBrushTypeRoom;
 	CSTRDUP(o2->Tooltip, "Room");
@@ -2225,7 +2225,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "select"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/select"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSelect;
 	o2->ChangeFunc = BrushSetBrushTypeSelect;
 	CSTRDUP(o2->Tooltip, "Select and move");
@@ -2233,7 +2233,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "add"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/add"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
 	CSTRDUP(o2->Tooltip, "Add items\nRight click to remove");
 	o2->Pos = pos;
@@ -2241,7 +2241,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "set_key"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/set_key"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetKey;
 	CSTRDUP(o2->Tooltip, "Set key required for door");
 	o2->Pos = pos;
@@ -2249,7 +2249,7 @@ static UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "set_exit"));
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/set_exit"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetExit;
 	o2->ChangeFunc = BrushSetBrushTypeSetExit;
 	CSTRDUP(o2->Tooltip, "Set exit area (box drag)");

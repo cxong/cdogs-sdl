@@ -1071,7 +1071,7 @@ int main(int argc, char *argv[])
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
-	EventInit(&gEventHandlers, PicManagerGetPic(&gPicManager, "arrow"));
+	EventInit(&gEventHandlers, PicManagerGetPic(&gPicManager, "editor/arrow"));
 
 	for (i = 1; i < argc; i++)
 	{

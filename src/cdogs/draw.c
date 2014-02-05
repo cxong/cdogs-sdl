@@ -459,7 +459,7 @@ static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
 					// mission start
 					BlitMasked(
 						&gGraphicsDevice,
-						PicManagerGetPic(&gPicManager, "start"),
+						PicManagerGetPic(&gPicManager, "editor/start"),
 						pos, colorWhite, 1);
 				}
 			}
