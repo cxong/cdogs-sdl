@@ -1023,6 +1023,10 @@ int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			&gAutosave, &m, co->Entry.path, co->Entry.builtinIndex);
 		co->MissionIndex = EnterPassword(graphics, m.Password);
 	}
+	else
+	{
+		co->MissionIndex = 0;
+	}
 
 	return Game(graphics, co);
 }
