@@ -55,10 +55,10 @@
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 {
-	int i;
+	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
 	CMALLOC(b->tiles[0], size.x * size.y * sizeof *b->tiles[0]);
-	for(i = 1; i < size.x; i++)
+	for (int i = 1; i < b->Size.x; i++)
 	{
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
@@ -71,17 +71,16 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Map *map, Vec2i origin,
-	int width, Vec2i tilesXY)
+	DrawBuffer *buffer, Map *map, Vec2i origin, int width)
 {
 	int x, y;
 	Tile *bufTile;
 
-	buffer->Size = Vec2iNew(width, tilesXY.y);
+	buffer->Size = Vec2iNew(width, buffer->OrigSize.y);
 
 	buffer->xTop = origin.x - TILE_WIDTH * width / 2;
 	//buffer->yTop = y_origin - 100;
-	buffer->yTop = origin.y - TILE_HEIGHT * tilesXY.y / 2;
+	buffer->yTop = origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
 
 	buffer->xStart = buffer->xTop / TILE_WIDTH;
 	buffer->yStart = buffer->yTop / TILE_HEIGHT;
@@ -113,7 +112,7 @@ void DrawBufferSetFromMap(
 				*bufTile = TileNone();
 			}
 		}
-		bufTile += tilesXY.x - buffer->Size.x;
+		bufTile += buffer->OrigSize.x - buffer->Size.x;
 	}
 }
 

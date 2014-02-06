@@ -406,8 +406,7 @@ void GrafxDrawBackground(
 	Vec2i v;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), g);
-	DrawBufferSetFromMap(
-		&buffer, &gMap, pos, X_TILES, Vec2iNew(X_TILES, Y_TILES));
+	DrawBufferSetFromMap(&buffer, &gMap, pos, X_TILES);
 	DrawBufferDraw(&buffer, Vec2iZero(), highlightedTiles, guideImage);
 	DrawBufferTerminate(&buffer);
 

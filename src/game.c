@@ -141,8 +141,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
-	DrawBufferSetFromMap(
-		b, &gMap, Vec2iAdd(center, noise), w, Vec2iNew(X_TILES, Y_TILES));
+	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
 	DrawBufferLOS(b, center);
 	FixBuffer(b);
 	DrawBufferDraw(b, offset, NULL, NULL);
@@ -218,10 +217,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 			lastPosition = PlayersGetMidpoint(gPlayers);
 
 			DrawBufferSetFromMap(
-				b, &gMap,
-				Vec2iAdd(lastPosition, noise),
-				X_TILES,
-				Vec2iNew(X_TILES, Y_TILES));
+				b, &gMap, Vec2iAdd(lastPosition, noise), X_TILES);
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
 				if (IsPlayerAlive(i))
@@ -506,7 +502,7 @@ int HandleKey(int cmd, int *isPaused, int *hasUsedMap)
 	return 0;
 }
 
-Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
+Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 {
 	Vec2i center = Vec2iZero();
 	int w = device->cachedConfig.ResolutionWidth;
@@ -543,6 +539,8 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, int player)
 			assert(0 && "invalid number of players");
 		}
 	}
+	// Add draw buffer offset
+	center = Vec2iMinus(center, Vec2iNew(b->dx, b->dy));
 	return center;
 }
 
@@ -633,7 +631,7 @@ int gameloop(void)
 					&gEventHandlers,
 					&gConfig.Input,
 					&gPlayerDatas[i],
-					GetPlayerCenter(&gGraphicsDevice, i));
+					GetPlayerCenter(&gGraphicsDevice, &buffer, i));
 				cmdAll |= cmds[i];
 			}
 		}

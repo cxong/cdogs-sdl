@@ -57,6 +57,7 @@ typedef struct
 	int xTop, yTop;	// offset from top/left in pixels
 	int xStart, yStart;	// starting tile of buffer
 	int dx, dy;	// remainder pixel offset from starting tile
+	Vec2i OrigSize;
 	Vec2i Size;	// size in tiles
 	Tile **tiles;
 } DrawBuffer;
@@ -65,8 +66,7 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g);
 void DrawBufferTerminate(DrawBuffer *b);
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Map *map, Vec2i origin,
-	int width, Vec2i tilesXY);
+	DrawBuffer *buffer, Map *map, Vec2i origin, int width);
 void DrawBufferLOS(DrawBuffer *buffer, Vec2i center);
 
 #endif
