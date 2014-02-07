@@ -132,9 +132,11 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
-	GrafxMakeBackground(
-		g, tintNone, 1, buildTables,
-		&brush.HighlightedTiles, brush.GuideImageSurface, camera);
+	GrafxDrawExtra extra;
+	extra.highlightedTiles = &brush.HighlightedTiles;
+	extra.guideImage = brush.GuideImageSurface;
+	extra.guideImageAlpha = brush.GuideImageAlpha;
+	GrafxMakeBackground(g, tintNone, 1, buildTables, camera, &extra);
 }
 
 static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
@@ -168,9 +170,11 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 				g->buf[i] = PixelFromColor(g, colorBlack);
 			}
 			brush.IsGuideImageNew = false;
-			GrafxDrawBackground(
-				g, tintNone,
-				&brush.HighlightedTiles, brush.GuideImageSurface, camera);
+			GrafxDrawExtra extra;
+			extra.highlightedTiles = &brush.HighlightedTiles;
+			extra.guideImage = brush.GuideImageSurface;
+			extra.guideImageAlpha = brush.GuideImageAlpha;
+			GrafxDrawBackground(g, tintNone, camera, &extra);
 		}
 		GraphicsBlitBkg(g);
 		// Draw overlay

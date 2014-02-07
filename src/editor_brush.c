@@ -101,6 +101,7 @@ void EditorBrushInit(EditorBrush *b)
 	b->BrushSize = 1;
 	b->LastPos = Vec2iNew(-1, -1);
 	b->Pos = Vec2iNew(-1, -1);
+	b->GuideImageAlpha = 64;
 	CArrayInit(&b->HighlightedTiles, sizeof(Vec2i));
 }
 void EditorBrushTerminate(EditorBrush *b)

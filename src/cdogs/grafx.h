@@ -117,13 +117,18 @@ void GraphicsInitialize(
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
+
+typedef struct
+{
+	CArray *highlightedTiles;
+	SDL_Surface *guideImage;
+	Uint8 guideImageAlpha;
+} GrafxDrawExtra;
 void GrafxDrawBackground(
-	GraphicsDevice *g, HSV tint,
-	CArray *highlightedTiles, SDL_Surface *guideImage, Vec2i pos);
+	GraphicsDevice *g, HSV tint, Vec2i pos, GrafxDrawExtra *extra);
 void GrafxMakeBackground(
 	GraphicsDevice *device, HSV tint,
-	int isEditor, int buildTables,
-	CArray *highlightedTiles, SDL_Surface *guideImage, Vec2i pos);
+	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void Gfx_ModePrev(void);

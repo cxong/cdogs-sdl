@@ -886,6 +886,14 @@ static char *BrushGetGuideImageStr(UIObject *o, void *data)
 	EditorBrush *brush = data;
 	return brush->GuideImage;
 }
+static const char *BrushGetGuideImageAlphaStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	EditorBrush *brush = data;
+	sprintf(s, "Guide Alpha: %d%%", (int)brush->GuideImageAlpha * 100 / 255);
+	return s;
+}
 typedef struct
 {
 	EditorBrush *Brush;
@@ -1487,6 +1495,17 @@ static void BrushLoadGuideImage(void *data, int d)
 	b->GuideImageSurface = SDL_ConvertSurface(
 		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
 	SDL_FreeSurface(image);
+}
+static void BrushChangeGuideImageAlpha(void *data, int d)
+{
+	EditorBrush *b = data;
+	b->IsGuideImageNew = true;
+	d *= 4;
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 8;
+	}
+	b->GuideImageAlpha = (Uint8)CLAMP((int)b->GuideImageAlpha + d, 0, 255);
 }
 static int BrushIsBrushTypePoint(void *data)
 {
@@ -2302,6 +2321,17 @@ static UIObject *CreateStaticMapObjs(
 	o2->ChangesData = 0;
 	o2->ChangeFunc = BrushLoadGuideImage;
 	CSTRDUP(o2->u.Textbox.Hint, "(Tracing guide image)");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	UIObjectDestroy(o);
+	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(100, th));
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = BrushGetGuideImageAlphaStr;
+	o2->Data = brush;
+	o2->ChangeFunc = BrushChangeGuideImageAlpha;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

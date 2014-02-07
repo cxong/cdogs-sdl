@@ -90,6 +90,7 @@ typedef struct
 	char GuideImage[CDOGS_PATH_MAX];
 	bool IsGuideImageNew;
 	SDL_Surface *GuideImageSurface;
+	Uint8 GuideImageAlpha;
 } EditorBrush;
 
 void EditorBrushInit(EditorBrush *b);

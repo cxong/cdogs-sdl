@@ -159,13 +159,9 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
-static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
-static void DrawHighlightedTiles(
-	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
+static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
-void DrawBufferDraw(
-	DrawBuffer *b, Vec2i offset,
-	CArray *highlightedTiles, SDL_Surface *guideImage)
+void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawFloor(b, offset);
@@ -174,37 +170,9 @@ void DrawBufferDraw(
 	// Now draw walls and (non-wreck) things in proper order
 	DrawWallsAndThings(b, offset);
 	// Draw editor-only things
-	if (highlightedTiles)
+	if (extra)
 	{
-		DrawEditorTiles(b, offset);
-		// Draw highlight tiles if any
-		DrawHighlightedTiles(b, offset, highlightedTiles);
-	}
-	// Draw guide image
-	if (guideImage)
-	{
-		SDL_LockSurface(guideImage);
-		// Scale based on ratio between map size and guide image size,
-		// so that the guide image stretches to the map size
-		double xScale = (double)guideImage->w / (gMap.Size.x * TILE_WIDTH);
-		double yScale = (double)guideImage->h / (gMap.Size.y * TILE_HEIGHT);
-		for (int j = 0; j < b->g->cachedConfig.ResolutionHeight; j++)
-		{
-			int y = (int)round((j + b->yTop) * yScale);
-			for (int i = 0; i < b->g->cachedConfig.ResolutionWidth; i++)
-			{
-				int x = (int)round((i + b->xTop) * xScale);
-				if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)
-				{
-					int imgIndex = y * guideImage->w + x;
-					Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
-					color_t c = PixelToColor(b->g, p);
-					c.a = 50;
-					Draw_Point(i, j, c);
-				}
-			}
-		}
-		SDL_UnlockSurface(guideImage);
+		DrawExtra(b, offset, extra);
 	}
 }
 
@@ -309,55 +277,6 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
 		}
 		tile += X_TILES - b->Size.x;
-	}
-}
-
-static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
-{
-	Vec2i pos;
-	Tile *tile = &b->tiles[0][0];
-	pos.y = b->dy + offset.y;
-	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
-	{
-		pos.x = b->dx + offset.x;
-		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
-		{
-			if (gMission.missionData->Type == MAPTYPE_STATIC)
-			{
-				Vec2i start = gMission.missionData->u.Static.Start;
-				if (!Vec2iEqual(start, Vec2iZero()) &&
-					Vec2iEqual(start, Vec2iNew(x + b->xStart, y + b->yStart)))
-				{
-					// mission start
-					BlitMasked(
-						&gGraphicsDevice,
-						PicManagerGetPic(&gPicManager, "editor/start"),
-						pos, colorWhite, 1);
-				}
-			}
-		}
-		tile += X_TILES - b->Size.x;
-	}
-}
-
-static void DrawHighlightedTiles(
-	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
-{
-	int i;
-	for (i = 0; i < (int)highlightedTiles->size; i++)
-	{
-		Vec2i *pos = CArrayGet(highlightedTiles, i);
-		if (pos->x >= b->xStart - 1 && pos->x < b->xStart + b->Size.x &&
-			pos->y >= b->yStart - 1 && pos->y < b->yStart + b->Size.y)
-		{
-			Vec2i drawpos = Vec2iNew(
-				b->dx + offset.x + (pos->x - b->xStart) * TILE_WIDTH,
-				b->dy + offset.y + (pos->y - b->yStart) * TILE_HEIGHT);
-			DrawRectangle(
-				&gGraphicsDevice,
-				drawpos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
-				colorWhite, DRAW_FLAG_LINE);
-		}
 	}
 }
 
@@ -526,4 +445,98 @@ void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 			CDogsTextString(gGunDescriptions[c->gun].name);
 		}
 	}
+}
+
+
+static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
+static void DrawHighlightedTiles(
+	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
+static void DrawGuideImage(
+	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha);
+static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
+{
+	DrawEditorTiles(b, offset);
+	// Draw highlight tiles if any
+	DrawHighlightedTiles(b, offset, extra->highlightedTiles);
+	// Draw guide image
+	if (extra->guideImage)
+	{
+		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
+	}
+}
+
+static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
+{
+	Vec2i pos;
+	Tile *tile = &b->tiles[0][0];
+	pos.y = b->dy + offset.y;
+	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	{
+		pos.x = b->dx + offset.x;
+		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
+		{
+			if (gMission.missionData->Type == MAPTYPE_STATIC)
+			{
+				Vec2i start = gMission.missionData->u.Static.Start;
+				if (!Vec2iEqual(start, Vec2iZero()) &&
+					Vec2iEqual(start, Vec2iNew(x + b->xStart, y + b->yStart)))
+				{
+					// mission start
+					BlitMasked(
+						&gGraphicsDevice,
+						PicManagerGetPic(&gPicManager, "editor/start"),
+						pos, colorWhite, 1);
+				}
+			}
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+
+static void DrawHighlightedTiles(
+	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
+{
+	int i;
+	for (i = 0; i < (int)highlightedTiles->size; i++)
+	{
+		Vec2i *pos = CArrayGet(highlightedTiles, i);
+		if (pos->x >= b->xStart - 1 && pos->x < b->xStart + b->Size.x &&
+			pos->y >= b->yStart - 1 && pos->y < b->yStart + b->Size.y)
+		{
+			Vec2i drawpos = Vec2iNew(
+				b->dx + offset.x + (pos->x - b->xStart) * TILE_WIDTH,
+				b->dy + offset.y + (pos->y - b->yStart) * TILE_HEIGHT);
+			DrawRectangle(
+				&gGraphicsDevice,
+				drawpos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
+				colorWhite, DRAW_FLAG_LINE);
+		}
+	}
+}
+
+static void DrawGuideImage(
+	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha)
+{
+	SDL_LockSurface(guideImage);
+	// Scale based on ratio between map size and guide image size,
+	// so that the guide image stretches to the map size
+	double xScale = (double)guideImage->w / (gMap.Size.x * TILE_WIDTH);
+	double yScale = (double)guideImage->h / (gMap.Size.y * TILE_HEIGHT);
+	for (int j = 0; j < b->g->cachedConfig.ResolutionHeight; j++)
+	{
+		int y = (int)round((j + b->yTop) * yScale);
+		for (int i = 0; i < b->g->cachedConfig.ResolutionWidth; i++)
+		{
+			int x = (int)round((i + b->xTop) * xScale);
+			if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)
+			{
+				int imgIndex = y * guideImage->w + x;
+				Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
+				color_t c = PixelToColor(b->g, p);
+				c.a = alpha;
+				Draw_Point(i, j, c);
+			}
+		}
+	}
+	SDL_UnlockSurface(guideImage);
 }
