@@ -97,42 +97,22 @@ const char *ObjectiveTypeStr(ObjectiveType t)
 {
 	switch (t)
 	{
-	case OBJECTIVE_KILL:
-		return "Kill";
-	case OBJECTIVE_COLLECT:
-		return "Collect";
-	case OBJECTIVE_DESTROY:
-		return "Destroy";
-	case OBJECTIVE_RESCUE:
-		return "Rescue";
-	case OBJECTIVE_INVESTIGATE:
-		return "Explore";
+		T2S(OBJECTIVE_KILL, "Kill");
+		T2S(OBJECTIVE_COLLECT, "Collect");
+		T2S(OBJECTIVE_DESTROY, "Destroy");
+		T2S(OBJECTIVE_RESCUE, "Rescue");
+		T2S(OBJECTIVE_INVESTIGATE, "Explore");
 	default:
 		return "";
 	}
 }
 ObjectiveType StrObjectiveType(const char *s)
 {
-	if (strcmp(s, "Kill") == 0)
-	{
-		return OBJECTIVE_KILL;
-	}
-	else if (strcmp(s, "Collect") == 0)
-	{
-		return OBJECTIVE_COLLECT;
-	}
-	else if (strcmp(s, "Destroy") == 0)
-	{
-		return OBJECTIVE_DESTROY;
-	}
-	else if (strcmp(s, "Rescue") == 0)
-	{
-		return OBJECTIVE_RESCUE;
-	}
-	else if (strcmp(s, "Explore") == 0)
-	{
-		return OBJECTIVE_INVESTIGATE;
-	}
+	S2T(OBJECTIVE_KILL, "Kill");
+	S2T(OBJECTIVE_COLLECT, "Collect");
+	S2T(OBJECTIVE_DESTROY, "Destroy");
+	S2T(OBJECTIVE_RESCUE, "Rescue");
+	S2T(OBJECTIVE_INVESTIGATE, "Explore");
 	assert(0 && "unknown objective name");
 	return OBJECTIVE_KILL;
 }

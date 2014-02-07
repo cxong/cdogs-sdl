@@ -838,26 +838,9 @@ static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
 	static char s[128];
-	char *brushStr = "";
-	switch (isMain ? brush->MainType : brush->SecondaryType)
-	{
-	case MAP_FLOOR:
-		brushStr = "Floor";
-		break;
-	case MAP_WALL:
-		brushStr = "Wall";
-		break;
-	case MAP_DOOR:
-		brushStr = "Door";
-		break;
-	case MAP_ROOM:
-		brushStr = "Room";
-		break;
-	default:
-		assert(0 && "invalid brush type");
-		return "";
-	}
-	sprintf(s, "Brush %d: %s", isMain ? 1 : 2, brushStr);
+	sprintf(s, "Brush %d: %s",
+		isMain ? 1 : 2,
+		IMapTypeStr(isMain ? brush->MainType : brush->SecondaryType));
 	return s;
 }
 static const char *BrushGetMainTypeStr(UIObject *o, void *data)
@@ -1437,18 +1420,8 @@ static void MissionChangeObjectiveFlags(void *vData, int d)
 static void BrushChangeType(EditorBrush *b, int d, int isMain)
 {
 	unsigned short brushType = isMain ? b->MainType : b->SecondaryType;
-	if (brushType == 0 && d < 0)
-	{
-		brushType = MAP_ROOM;
-	}
-	else if (brushType == MAP_ROOM && d > 0)
-	{
-		brushType = MAP_FLOOR;
-	}
-	else
-	{
-		brushType = (unsigned short)(brushType + d);
-	}
+	brushType = (unsigned short)CLAMP_OPPOSITE(
+		(int)brushType + d, MAP_FLOOR, MAP_NOTHING);
 	if (isMain)
 	{
 		b->MainType = brushType;

@@ -73,6 +73,33 @@
 
 Map gMap;
 
+
+const char *IMapTypeStr(IMapType t)
+{
+	switch (t)
+	{
+		T2S(MAP_FLOOR, "Floor");
+		T2S(MAP_WALL, "Wall");
+		T2S(MAP_DOOR, "Door");
+		T2S(MAP_ROOM, "Room");
+		T2S(MAP_NOTHING, "Nothing");
+		T2S(MAP_SQUARE, "Square");
+	default:
+		return "";
+	}
+}
+IMapType StrIMapType(const char *s)
+{
+	S2T(MAP_FLOOR, "Floor");
+	S2T(MAP_WALL, "Wall");
+	S2T(MAP_DOOR, "Door");
+	S2T(MAP_ROOM, "Room");
+	S2T(MAP_NOTHING, "Nothing");
+	S2T(MAP_SQUARE, "Square");
+	return MAP_FLOOR;
+}
+
+
 unsigned short GetAccessMask(int k)
 {
 	if (k == -1)

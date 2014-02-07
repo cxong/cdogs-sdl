@@ -58,12 +58,18 @@
 #include "vector.h"
 
 // Values for internal map
-#define MAP_FLOOR           0
-#define MAP_WALL            1
-#define MAP_DOOR            2
-#define MAP_ROOM            3
-#define MAP_SQUARE          4
-#define MAP_NOTHING         6
+typedef enum
+{
+	MAP_FLOOR,
+	MAP_WALL,
+	MAP_DOOR,
+	MAP_ROOM,
+	MAP_NOTHING,
+	MAP_SQUARE,
+	MAP_UNSET	// internal use by editor
+} IMapType;
+const char *IMapTypeStr(IMapType t);
+IMapType StrIMapType(const char *s);
 
 #define MAP_ACCESS_RED      0x800
 #define MAP_ACCESS_BLUE     0x400

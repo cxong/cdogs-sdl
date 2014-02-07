@@ -157,4 +157,8 @@ typedef enum
 const char *ObjectiveTypeStr(ObjectiveType t);
 ObjectiveType StrObjectiveType(const char *s);
 
+// Helper macros for defining type/str conversion funcs
+#define T2S(_type, _str) case _type: return _str;
+#define S2T(_type, _str) if (strcmp(s, _str) == 0) { return _type; }
+
 #endif

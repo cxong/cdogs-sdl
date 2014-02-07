@@ -457,7 +457,7 @@ static void EditorBrushPaintBox(
 	paintData.brush = b;
 	paintData.mission = m;
 	// Draw fill
-	if (fillType != MAP_NOTHING)
+	if (fillType != MAP_UNSET)
 	{
 		b->PaintType = fillType;
 		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
@@ -472,7 +472,8 @@ static void EditorBrushPaintBox(
 			}
 		}
 	}
-	if (lineType != MAP_NOTHING)
+	// Draw edge
+	if (lineType != MAP_UNSET)
 	{
 		b->PaintType = lineType;
 		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
@@ -500,7 +501,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_BOX:
-			EditorBrushPaintBox(b, m, b->PaintType, MAP_NOTHING);
+			EditorBrushPaintBox(b, m, b->PaintType, MAP_UNSET);
 			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 			break;
 		case BRUSHTYPE_BOX_FILLED:
