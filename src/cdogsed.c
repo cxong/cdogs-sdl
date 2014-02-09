@@ -72,9 +72,9 @@
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
-#include "charsed.h"
-#include "editor_ui.h"
-#include "ui_object.h"
+#include <cdogsed/charsed.h>
+#include <cdogsed/editor_ui.h>
+#include <cdogsed/ui_object.h>
 
 
 #define TH  8

@@ -1,6 +1,7 @@
 include_directories(.)
 
 add_subdirectory(cdogs)
+add_subdirectory(cdogsed)
 add_subdirectory(json)
 add_subdirectory(tests)
 
@@ -45,16 +46,5 @@ endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
 
-SET(CDOGS_SDL_EDITOR_SOURCES
-	cdogsed.c
-	charsed.c
-	editor_brush.c
-	editor_ui.c
-	ui_object.c)
-SET(CDOGS_SDL_EDITOR_HEADERS
-	charsed.h
-	editor_brush.h
-	editor_ui.h
-	ui_object.h)
-add_executable(cdogs-sdl-editor ${CDOGS_SDL_EDITOR_SOURCES} ${CDOGS_SDL_EDITOR_HEADERS} ${CDOGS_SDL_EXTRA})
-target_link_libraries(cdogs-sdl-editor cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
+add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
+target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${EXTRA_LIBRARIES})
