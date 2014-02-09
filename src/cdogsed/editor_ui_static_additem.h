@@ -25,29 +25,15 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EDITOR_UI_COMMON
-#define __EDITOR_UI_COMMON
+#ifndef __EDITOR_UI_STATIC_ADDITEM
+#define __EDITOR_UI_STATIC_ADDITEM
 
 #include <cdogs/campaigns.h>
-#include <cdogs/map_object.h>
-#include <cdogs/vector.h>
 
 #include "editor_brush.h"
 #include "ui_object.h"
 
-typedef struct
-{
-	EditorBrush *Brush;
-	int ItemIndex;
-	int Index2;
-} IndexedEditorBrush;
-typedef struct
-{
-	IndexedEditorBrush Brush;
-	CampaignOptions *Campaign;
-} EditorBrushAndCampaign;
-
-void DisplayMapItem(Vec2i pos, MapObject *mo);
-void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+UIObject *CreateAddItemObjs(
+	Vec2i pos, EditorBrush *brush, CampaignOptions *co);
 
 #endif

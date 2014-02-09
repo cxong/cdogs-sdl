@@ -4,6 +4,7 @@ set(CDOGSED_SOURCES
 	editor_ui.c
 	editor_ui_common.c
 	editor_ui_static.c
+	editor_ui_static_additem.c
 	ui_object.c)
 set(CDOGSED_HEADERS
 	charsed.h
@@ -11,5 +12,6 @@ set(CDOGSED_HEADERS
 	editor_ui.h
 	editor_ui_common.h
 	editor_ui_static.h
+	editor_ui_static_additem.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})

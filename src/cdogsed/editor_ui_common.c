@@ -27,8 +27,21 @@
 */
 #include "editor_ui_common.h"
 
+#include <cdogs/gamedata.h>
+
 void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
 	Pic *pic = MapObjectGetPic(mo, &gPicManager);
 	Blit(&gGraphicsDevice, pic, pos);
+}
+
+void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	UNUSED(g);
+	EditorBrushAndCampaign *data = vData;
+	PicPaletted *keyPic = PicManagerGetOldPic(
+		&gPicManager,
+		cGeneralPics[gMission.keyPics[data->Brush.ItemIndex]].picIndex);
+	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	DrawTPic(pos.x, pos.y, keyPic);
 }
