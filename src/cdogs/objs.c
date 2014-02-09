@@ -655,7 +655,7 @@ int UpdateMolotovFlame(TMobileObject *obj, int ticks)
 
 	HitItem(obj, pos.x, pos.y, SPECIAL_FLAME);
 
-	if (!HitWall(pos.x >> 8, pos.y >> 8))
+	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
 		obj->x = pos.x;
 		obj->y = pos.y;
@@ -727,7 +727,7 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 
 	HitItem(obj, pos.x, pos.y, obj->z ? SPECIAL_CONFUSE : SPECIAL_POISON);
 
-	if (!HitWall(pos.x >> 8, pos.y >> 8))
+	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
 		obj->x = pos.x;
 		obj->y = pos.y;
@@ -827,13 +827,18 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 		}
 	}
 
-	if (!HitWall(x >> 8, y >> 8)) {
+	if (!ShootWall(x >> 8, y >> 8))
+	{
 		obj->x = x;
 		obj->y = y;
-	} else if (!HitWall(obj->x >> 8, y >> 8)) {
+	}
+	else if (!ShootWall(obj->x >> 8, y >> 8))
+	{
 		obj->y = y;
 		obj->dx = -obj->dx;
-	} else if (!HitWall(x >> 8, obj->y >> 8)) {
+	}
+	else if (!ShootWall(x >> 8, obj->y >> 8))
+	{
 		obj->x = x;
 		obj->dy = -obj->dy;
 	} else {
@@ -871,7 +876,8 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 		obj->dz -= ticks;
 	}
 
-	if (!HitWall(x >> 8, y >> 8)) {
+	if (!ShootWall(x >> 8, y >> 8))
+	{
 		obj->x = x;
 		obj->y = y;
 	}
@@ -942,7 +948,8 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->updateFunc = UpdateSpark;
 		return 1;
 	}
-	if (!HitWall(x >> 8, y >> 8)) {
+	if (!ShootWall(x >> 8, y >> 8))
+	{
 		obj->x = x;
 		obj->y = y;
 		MapMoveTileItem(
@@ -1099,7 +1106,8 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 		return 1;
 	}
 
-	if (!HitWall(x >> 8, y >> 8)) {
+	if (!ShootWall(x >> 8, y >> 8))
+	{
 		obj->x = x;
 		obj->y = y;
 		MapMoveTileItem(
@@ -1126,7 +1134,8 @@ int UpdateExplosion(TMobileObject *obj, int ticks)
 
 	HitItem(obj, x, y, SPECIAL_EXPLOSION);
 
-	if (!HitWall(x >> 8, y >> 8)) {
+	if (!ShootWall(x >> 8, y >> 8))
+	{
 		obj->x = x;
 		obj->y = y;
 		MapMoveTileItem(

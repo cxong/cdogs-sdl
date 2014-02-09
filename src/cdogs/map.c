@@ -338,7 +338,8 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 					&gPicManager,
 					cWallPics[wall][MapGetWallPic(map, v.x, v.y)]);
 				t->flags =
-					MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_WALL;
+					MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
+					MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 				break;
 
 			case MAP_NOTHING:
