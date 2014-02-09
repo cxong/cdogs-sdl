@@ -998,19 +998,23 @@ static void EditCampaign(void)
 	{
 		int willDisplayAutomap = 0;
 		int c, m;
+		debug(D_MAX, "Polling for input\n");
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		c = KeyGetPressed(&gEventHandlers.keyboard);
 		m = MouseGetPressed(&gEventHandlers.mouse);
 
+		debug(D_MAX, "Handling input\n");
 		HandleInput(
 			c, m,
 			&xc, &yc, &xcOld, &ycOld,
 			&scrap, &willDisplayAutomap, &done);
+		debug(D_MAX, "Drawing UI\n");
 		Display(&gGraphicsDevice, yc, willDisplayAutomap);
 		if (willDisplayAutomap)
 		{
 			GetKey(&gEventHandlers);
 		}
+		debug(D_MAX, "End loop\n");
 		SDL_Delay(10);
 	}
 }
@@ -1081,6 +1085,7 @@ int main(int argc, char *argv[])
 	{
 		if (!loaded)
 		{
+			debug(D_NORMAL, "Loading map %s\n", argv[i]);
 			memset(lastFile, 0, sizeof(lastFile));
 			strncpy(lastFile, argv[i], sizeof(lastFile) - 1);
 			if (strchr(lastFile, '.') == NULL &&
@@ -1092,9 +1097,11 @@ int main(int argc, char *argv[])
 			{
 				loaded = 1;
 			}
+			debug(D_NORMAL, "Loaded map %s\n", argv[i]);
 		}
 	}
 
+	debug(D_NORMAL, "Starting editor\n");
 	EditCampaign();
 
 	MapTerminate(&gMap);

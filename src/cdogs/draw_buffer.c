@@ -55,14 +55,16 @@
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 {
+	debug(D_MAX, "Initialising draw buffer %dx%d\n", size.x, size.y);
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
 	CMALLOC(b->tiles[0], size.x * size.y * sizeof *b->tiles[0]);
-	for (int i = 1; i < b->Size.x; i++)
+	for (int i = 1; i < size.x; i++)
 	{
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
 	b->g = g;
+	debug(D_MAX, "Initialised draw buffer %dx%d\n", size.x, size.y);
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
