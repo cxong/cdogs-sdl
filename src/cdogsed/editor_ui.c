@@ -1530,6 +1530,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	{
 		pos.y += th;
 		o2 = UIObjectCopy(o);
+		o2->Id = YC_OBJECTIVES + i;
 		o2->Type = UITYPE_TEXTBOX;
 		o2->u.Textbox.TextLinkFunc = MissionGetObjectiveDescription;
 		o2->u.Textbox.TextSourceFunc = MissionGetObjectiveDescriptionSrc;
