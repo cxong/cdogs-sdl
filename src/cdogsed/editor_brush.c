@@ -290,6 +290,14 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
+typedef struct
+{
+	Mission *m;
+	unsigned short fromType;
+	unsigned short toType;
+} PaintFloodFillData;
+static void MissionFillTile(void *data, Vec2i v);
+static bool MissionIsTileSame(void *data, Vec2i v);
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 {
 	if (!b->IsPainting)
@@ -329,6 +337,26 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_FILL:
+		// Use flood fill to change all the tiles of the same type to
+		// another type
+		// Don't paint if target already same type
+		if ((MissionGetTile(m, b->Pos) & MAP_MASKACCESS) != b->PaintType)
+		{
+			FloodFillData data;
+			data.Fill = MissionFillTile;
+			data.IsSame = MissionIsTileSame;
+			PaintFloodFillData pData;
+			pData.m = m;
+			pData.fromType = MissionGetTile(m, b->Pos) & MAP_MASKACCESS;
+			pData.toType = b->PaintType;
+			data.data = &pData;
+			if (FloodFill(b->Pos, &data))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		return EDITOR_RESULT_NONE;
 	case BRUSHTYPE_SET_PLAYER_START:
 		if (MissionGetTile(m, b->Pos) == MAP_ROOM ||
 			MissionGetTile(m, b->Pos) == MAP_FLOOR)
@@ -440,6 +468,16 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	}
 	b->IsPainting = 1;
 	return EDITOR_RESULT_NONE;
+}
+static void MissionFillTile(void *data, Vec2i v)
+{
+	PaintFloodFillData *pData = data;
+	MissionSetTile(pData->m, v, pData->toType);
+}
+static bool MissionIsTileSame(void *data, Vec2i v)
+{
+	PaintFloodFillData *pData = data;
+	return (MissionGetTile(pData->m, v) & MAP_MASKACCESS) == pData->fromType;
 }
 static void EditorBrushPaintBox(
 	EditorBrush *b, Mission *m,

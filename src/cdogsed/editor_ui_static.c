@@ -194,6 +194,11 @@ static int BrushIsBrushTypeSelect(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_SELECT;
 }
+static int BrushIsBrushTypeFill(void *data)
+{
+	EditorBrush *b = data;
+	return b->Type == BRUSHTYPE_FILL;
+}
 static int BrushIsBrushTypeAddItem(void *data)
 {
 	EditorBrush *b = data;
@@ -249,6 +254,12 @@ static void BrushSetBrushTypeSelect(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SELECT;
+}
+static void BrushSetBrushTypeFill(void *data, int d)
+{
+	UNUSED(d);
+	EditorBrush *b = data;
+	b->Type = BRUSHTYPE_FILL;
 }
 static void BrushSetBrushTypeSetExit(void *data, int d)
 {
@@ -338,6 +349,13 @@ UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSelect;
 	o2->ChangeFunc = BrushSetBrushTypeSelect;
 	CSTRDUP(o2->Tooltip, "Select and move");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/bucket"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeFill;
+	o2->ChangeFunc = BrushSetBrushTypeFill;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;

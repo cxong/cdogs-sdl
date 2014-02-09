@@ -49,4 +49,12 @@ typedef struct
 } BresenhamLineDrawData;
 void BresenhamLineDraw(Vec2i from, Vec2i to, BresenhamLineDrawData *data);
 
+typedef struct
+{
+	void (*Fill)(void *, Vec2i);
+	bool (*IsSame)(void *, Vec2i);
+	void *data;
+} FloodFillData;
+bool FloodFill(Vec2i v, FloodFillData *data);
+
 #endif
