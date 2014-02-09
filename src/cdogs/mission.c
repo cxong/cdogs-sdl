@@ -153,6 +153,7 @@ void MissionCopy(Mission *dst, Mission *src)
 		CArrayCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
 
 		dst->u.Static.Start = src->u.Static.Start;
+		dst->u.Static.Exit = src->u.Static.Exit;
 		break;
 	default:
 		memcpy(&dst->u, &src->u, sizeof dst->u);

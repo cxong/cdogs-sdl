@@ -319,6 +319,7 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 		return;
 	}
 	// Recreate the child UI objects
+	c->Highlighted = NULL;
 	UIObject **objs = c->Children.data;
 	for (int i = 0; i < (int)c->Children.size; i++, objs++)
 	{
@@ -374,6 +375,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 {
 	EditorBrushAndCampaign *data = vData;
 	// Recreate the child UI objects
+	c->Highlighted = NULL;
 	UIObject **objs = c->Children.data;
 	for (int i = 0; i < (int)c->Children.size; i++, objs++)
 	{

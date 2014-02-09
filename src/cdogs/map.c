@@ -343,7 +343,7 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 
 			case MAP_NOTHING:
 				t->flags =
-					MAPTILE_NO_WALK | MAPTILE_NO_SEE | MAPTILE_IS_NOTHING;
+					MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
 				break;
 			}
 		}

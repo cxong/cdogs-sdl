@@ -783,10 +783,12 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 	{\
 		return;\
 	}
+	int dx = 0;
+	int dy = 0;
+	TRY_LOCATION();
 	int radius;
 	for (radius = (12 << 8); ; radius += 12 << 8)
 	{
-		int dx, dy;
 		// Going from right to below
 		for (dx = radius, dy = 0; dy < radius; dx--, dy++)
 		{
