@@ -459,7 +459,7 @@ static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	// Draw highlight tiles if any
 	DrawHighlightedTiles(b, offset, extra->highlightedTiles);
 	// Draw guide image
-	if (extra->guideImage)
+	if (extra->guideImage && extra->guideImageAlpha > 0)
 	{
 		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
 	}
