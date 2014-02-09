@@ -117,7 +117,7 @@ void MapRemoveTileItem(Map *map, TTileItem *t);
 void MapInit(Map *map);
 void MapTerminate(Map *map);
 void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store);
-int MapIsFullPosOKforPlayer(Map *map, int x, int y);
+bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles);
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
 void MapShowExitArea(Map *map);
 void MapMarkAsVisited(Map *map, Vec2i pos);

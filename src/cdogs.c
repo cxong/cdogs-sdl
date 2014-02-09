@@ -764,10 +764,10 @@ static void PlaceActor(TActor * actor)
 		pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
 		pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 	}
-	while (!MapIsFullPosOKforPlayer(&gMap, pos.x, pos.y) ||
+	while (!MapIsFullPosOKforPlayer(&gMap, pos, false) ||
 		!TryMoveActor(actor, pos));
 }
-static void PlaceActorNear(TActor *actor, Vec2i near)
+static void PlaceActorNear(TActor *actor, Vec2i near, bool allowAllTiles)
 {
 	// Try a concentric rhombus pattern, clockwise from right
 	// That is, start by checking right, below, left, above,
@@ -778,7 +778,8 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 	//    8 2 6
 	//      7
 #define TRY_LOCATION()\
-	if (MapIsFullPosOKforPlayer(&gMap, near.x + dx, near.y + dy) && \
+	if (MapIsFullPosOKforPlayer(\
+		&gMap, Vec2iAdd(near, Vec2iNew(dx, dy)), allowAllTiles) && \
 		TryMoveActor(actor, Vec2iAdd(near, Vec2iNew(dx, dy))))\
 	{\
 		return;\
@@ -786,26 +787,26 @@ static void PlaceActorNear(TActor *actor, Vec2i near)
 	int dx = 0;
 	int dy = 0;
 	TRY_LOCATION();
-	int radius;
-	for (radius = (12 << 8); ; radius += 12 << 8)
+	int inc = 1 << 8;
+	for (int radius = 12 << 8;; radius += 12 << 8)
 	{
 		// Going from right to below
-		for (dx = radius, dy = 0; dy < radius; dx--, dy++)
+		for (dx = radius, dy = 0; dy < radius; dx -= inc, dy += inc)
 		{
 			TRY_LOCATION();
 		}
 		// below to left
-		for (dx = 0, dy = radius; dy > 0; dx--, dy--)
+		for (dx = 0, dy = radius; dy > 0; dx -= inc, dy -= inc)
 		{
 			TRY_LOCATION();
 		}
 		// left to above
-		for (dx = -radius, dy = 0; dx < 0; dx++, dy--)
+		for (dx = -radius, dy = 0; dx < 0; dx += inc, dy -= inc)
 		{
 			TRY_LOCATION();
 		}
 		// above to right
-		for (dx = 0, dy = -radius; dy < 0; dx++, dy++)
+		for (dx = 0, dy = -radius; dy < 0; dx += inc, dy += inc)
 		{
 			TRY_LOCATION();
 		}
@@ -868,13 +869,13 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 			// place players near the start point
 			Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
 				gMission.missionData->u.Static.Start));
-			PlaceActorNear(gPlayers[i], startPoint);
+			PlaceActorNear(gPlayers[i], startPoint, true);
 		}
 		else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
 			i > 0)
 		{
 			// If never split screen, try to place players near the first player
-			PlaceActorNear(gPlayers[i], gPlayers[0]->Pos);
+			PlaceActorNear(gPlayers[i], gPlayers[0]->Pos, true);
 		}
 		else
 		{

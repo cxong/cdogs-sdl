@@ -1232,10 +1232,19 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	}
 }
 
-int MapIsFullPosOKforPlayer(Map *map, int x, int y)
+bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles)
 {
-	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(Vec2iNew(x, y)));
-	return IMapGet(map, tilePos) == 0;
+	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(pos));
+	unsigned short tile = IMapGet(map, tilePos);
+	if (tile == MAP_FLOOR)
+	{
+		return true;
+	}
+	else if (allowAllTiles)
+	{
+		return tile == MAP_SQUARE || tile == MAP_ROOM;
+	}
+	return false;
 }
 
 void MapMarkAsVisited(Map *map, Vec2i pos)
