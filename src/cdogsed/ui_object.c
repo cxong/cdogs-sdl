@@ -416,7 +416,7 @@ static void UIObjectDrawAndAddChildren(
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
-				UIObjectDraw(*objp, g, oPos, mouse);
+				UIObjectDrawAndAddChildren(*objp, g, oPos, mouse, objs);
 			}
 		}
 		break;
@@ -471,7 +471,7 @@ static void UIObjectDrawAndAddChildren(
 
 	// add children
 	// Note: tab type draws its own children (one)
-	if (o->Type != UITYPE_TAB)
+	if (o->Type != UITYPE_TAB && objs != NULL)
 	{
 		size_t i;
 		UIObject **childPtr = o->Children.data;
@@ -488,23 +488,34 @@ static void UIObjectDrawAndAddChildren(
 		}
 	}
 }
-void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse)
+void UIObjectDraw(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs)
 {
 	// Draw this UIObject and its children in BFS order
 	// Maintain a queue of UIObjects to draw
-	CArray objs;	// of UIObjectDrawContext
-	CArrayInit(&objs, sizeof(UIObjectDrawContext));
-	UIObjectDrawContext c;
-	c.obj = o;
-	c.pos = pos;
-	CArrayPushBack(&objs, &c);
-	for (int i = 0; i < (int)objs.size; i++)
+	if (drawObjs->elemSize == 0)
 	{
-		UIObjectDrawContext *cPtr = CArrayGet(&objs, i);
-		UIObjectDrawAndAddChildren(
-			cPtr->obj, g, cPtr->pos, mouse, &objs);
+		CArrayInit(drawObjs, sizeof(UIObjectDrawContext));
+		UIObjectDrawContext c;
+		c.obj = o;
+		c.pos = pos;
+		CArrayPushBack(drawObjs, &c);
+		for (int i = 0; i < (int)drawObjs->size; i++)
+		{
+			UIObjectDrawContext *cPtr = CArrayGet(drawObjs, i);
+			UIObjectDrawAndAddChildren(
+				cPtr->obj, g, cPtr->pos, mouse, drawObjs);
+		}
 	}
-	CArrayTerminate(&objs);
+	else
+	{
+		for (int i = 0; i < (int)drawObjs->size; i++)
+		{
+			UIObjectDrawContext *cPtr = CArrayGet(drawObjs, i);
+			UIObjectDrawAndAddChildren(
+				cPtr->obj, g, cPtr->pos, mouse, NULL);
+		}
+	}
 }
 
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)

@@ -118,7 +118,8 @@ int UIObjectChange(UIObject *o, int d);
 bool UIObjectAddChar(UIObject *o, char c);
 bool UIObjectDelChar(UIObject *o);
 
-void UIObjectDraw(UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse);
+void UIObjectDraw(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
 int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);

@@ -82,6 +82,7 @@
 
 // Mouse click areas:
 static UIObject *sObjs;
+static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
 static UIObject *sLastHighlightedObj = NULL;
 Vec2i sUIOverlaySize = { 320, 240 };
 
@@ -225,7 +226,8 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 
 	y = 150;
 
-	UIObjectDraw(sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos);
+	UIObjectDraw(
+		sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
 
 	if (willDisplayAutomap && mission)
 	{
@@ -680,6 +682,7 @@ static void HandleInput(
 			}
 			sLastHighlightedObj = o;
 			UIObjectHighlight(o);
+			CArrayTerminate(&sDrawObjs);
 			*xcOld = *xc;
 			*ycOld = *yc;
 			// Only change selection on left/right click
@@ -714,6 +717,7 @@ static void HandleInput(
 			if (!(brush.IsActive && mission))
 			{
 				UIObjectUnhighlight(sObjs);
+				CArrayTerminate(&sDrawObjs);
 				sLastHighlightedObj = NULL;
 			}
 		}
@@ -866,6 +870,7 @@ static void HandleInput(
 			EditCharacters(&gCampaign.Setting);
 			Setup(0);
 			UIObjectUnhighlight(sObjs);
+			CArrayTerminate(&sDrawObjs);
 			break;
 		}
 	}
@@ -1075,6 +1080,7 @@ int main(int argc, char *argv[])
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush);
+	memset(&sDrawObjs, 0, sizeof sDrawObjs);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);
@@ -1115,6 +1121,7 @@ int main(int argc, char *argv[])
 	TextManagerTerminate(&gTextManager);
 
 	UIObjectDestroy(sObjs);
+	CArrayTerminate(&sDrawObjs);
 	EditorBrushTerminate(&brush);
 
 	exit(EXIT_SUCCESS);
