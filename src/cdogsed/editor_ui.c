@@ -830,12 +830,12 @@ static void DrawStyleArea(
 	int isHighlighted)
 {
 	char buf[16];
-	DrawTextStringMasked(name, g, pos, isHighlighted ? colorRed : colorWhite);
+	TextStringMasked(&gTextManager, name, g, pos, isHighlighted ? colorRed : colorWhite);
 	pos.y += CDogsTextHeight();
 	DrawTPic(pos.x, pos.y, pic);
 	// Display style index and count, right aligned
 	sprintf(buf, "%d/%d", index + 1, count);
-	DrawTextStringMasked(
+	TextStringMasked(&gTextManager, 
 		buf,
 		g,
 		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
@@ -848,12 +848,12 @@ static void DisplayMapItemWithDensity(
 	DisplayMapItem(pos, mo);
 	if (isHighlighted)
 	{
-		DrawTextCharMasked(
+		TextCharMasked(&gTextManager, 
 			'\020', g, Vec2iAdd(pos, Vec2iNew(-8, -4)), colorWhite);
 	}
 	char s[10];
 	sprintf(s, "%d", density);
-	DrawTextString(s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+	TextString(&gTextManager, s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
 }
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t)
@@ -869,15 +869,15 @@ void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
 {
 	color_t labelMask = isHighlighted ? colorRed : colorWhite;
-	pos = DrawTextStringMasked(s, g, pos, labelMask);
-	pos = DrawTextCharMasked(':', g, pos, labelMask);
+	pos = TextStringMasked(&gTextManager, s, g, pos, labelMask);
+	pos = TextCharMasked(&gTextManager, ':', g, pos, labelMask);
 	if (isOn)
 	{
-		DrawTextStringMasked("On", g, pos, colorPurple);
+		TextStringMasked(&gTextManager, "On", g, pos, colorPurple);
 	}
 	else
 	{
-		DrawTextStringMasked("Off", g, pos, colorWhite);
+		TextStringMasked(&gTextManager, "Off", g, pos, colorWhite);
 	}
 }
 

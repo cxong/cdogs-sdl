@@ -362,7 +362,7 @@ static void UIObjectDrawAndAddChildren(
 				break;
 			}
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
-			DrawTextStringMaskedWrapped(
+			TextStringMaskedWrapped(&gTextManager, 
 				text, g, oPos, textMask, o->Size.x);
 		}
 		break;
@@ -389,14 +389,14 @@ static void UIObjectDrawAndAddChildren(
 			}
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = DrawTextCharMasked('\020', g, oPos, bracketMask);
+				oPos = TextCharMasked(&gTextManager, '\020', g, oPos, bracketMask);
 			}
-			oPos = DrawTextStringMaskedWrapped(
+			oPos = TextStringMaskedWrapped(&gTextManager, 
 				text, g, oPos, textMask,
 				o->Pos.x + o->Size.x - oPosX);
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = DrawTextCharMasked('\021', g, oPos, bracketMask);
+				oPos = TextCharMasked(&gTextManager, '\021', g, oPos, bracketMask);
 			}
 			oPos.x = oPosX;
 		}
@@ -411,7 +411,7 @@ static void UIObjectDrawAndAddChildren(
 			{
 				return;
 			}
-			DrawTextStringMaskedWrapped(
+			TextStringMaskedWrapped(&gTextManager, 
 				*labelp, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
@@ -567,5 +567,5 @@ void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)
 		Vec2iAdd(bgSize, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
 		bgColor,
 		0);
-	DrawTextString(s, device, pos);
+	TextString(&gTextManager, s, device, pos);
 }

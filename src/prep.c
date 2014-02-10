@@ -312,7 +312,8 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 					assert(0 && "not implemented");
 					break;
 				}
-				DrawTextString(prompt, graphics, Vec2iAdd(center, offset));
+				TextString(
+					&gTextManager, prompt, graphics, Vec2iAdd(center, offset));
 			}
 		}
 		BlitFlip(graphics, &gConfig.Graphics);

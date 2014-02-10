@@ -59,10 +59,6 @@
 #include "blit.h"
 #include "actors.h" /* for tableFlamed */
 
-#define FIRST_CHAR      0
-#define LAST_CHAR       153
-#define CHARS_IN_FONT   (LAST_CHAR - FIRST_CHAR + 1)
-
 #define CHAR_INDEX(c) ((int)c - FIRST_CHAR)
 
 
@@ -70,22 +66,59 @@ static int dxCDogsText = 0;
 static int xCDogsText = 0;
 static int yCDogsText = 0;
 static int hCDogsText = 0;
-static PicPaletted *gFont[CHARS_IN_FONT];
+
+TextManager gTextManager;
 
 
-void CDogsTextInit(const char *filename, int offset)
+void TextManagerInit(TextManager *tm, const char *filename)
 {
-	int i;
+	memset(tm, 0, sizeof *tm);
+	dxCDogsText = -2;
+	ReadPics(filename, tm->oldPics, CHARS_IN_FONT, NULL);
 
-	dxCDogsText = offset;
-	memset(gFont, 0, sizeof(gFont));
-	ReadPics(filename, gFont, CHARS_IN_FONT, NULL);
-
-	for (i = 0; i < CHARS_IN_FONT; i++)
+	for (int i = 0; i < CHARS_IN_FONT; i++)
 	{
-		if (gFont[i] != NULL)
+		if (tm->oldPics[i] != NULL)
 		{
-			hCDogsText = MAX(hCDogsText, gFont[i]->h);
+			hCDogsText = MAX(hCDogsText, tm->oldPics[i]->h);
+		}
+	}
+}
+void TextManagerGenerateOldPics(TextManager *tm, GraphicsDevice *g)
+{
+	// Convert old pics into new format ones
+	// TODO: this is wasteful; better to eliminate old pics altogether
+	// Note: always need to reload in editor since colours could change,
+	// requiring an updating of palettes
+	for (int i = 0; i < CHARS_IN_FONT; i++)
+	{
+		PicPaletted *oldPic = tm->oldPics[i];
+		if (PicIsNotNone(&tm->picsFromOld[i]))
+		{
+			PicFree(&tm->picsFromOld[i]);
+		}
+		if (oldPic == NULL)
+		{
+			memcpy(&tm->picsFromOld[i], &picNone, sizeof picNone);
+		}
+		else
+		{
+			PicFromPicPaletted(g, &tm->picsFromOld[i], oldPic);
+		}
+	}
+}
+
+void TextManagerTerminate(TextManager *tm)
+{
+	for (int i = 0; i < CHARS_IN_FONT; i++)
+	{
+		if (tm->oldPics[i] != NULL)
+		{
+			CFREE(tm->oldPics[i]);
+		}
+		if (PicIsNotNone(&tm->picsFromOld[i]))
+		{
+			PicFree(&tm->picsFromOld[i]);
 		}
 	}
 }
@@ -93,32 +126,32 @@ void CDogsTextInit(const char *filename, int offset)
 void CDogsTextChar(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && gFont[i])
+	if (i >= 0 && i <= CHARS_IN_FONT && gTextManager.oldPics[i])
 	{
-		DrawTPic(xCDogsText, yCDogsText, gFont[i]);
-		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
+		DrawTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i]);
+		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTPic(xCDogsText, yCDogsText, gFont[i]);
-		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
+		DrawTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i]);
+		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
 	}
 }
 
 void CDogsTextCharWithTable(char c, TranslationTable * table)
 {
 	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && gFont[i])
+	if (i >= 0 && i <= CHARS_IN_FONT && gTextManager.oldPics[i])
 	{
-		DrawTTPic(xCDogsText, yCDogsText, gFont[i], table);
-		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
+		DrawTTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i], table);
+		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
 	}
 	else
 	{
 		i = CHAR_INDEX('.');
-		DrawTTPic(xCDogsText, yCDogsText, gFont[i], table);
-		xCDogsText += 1 + gFont[i]->w + dxCDogsText;
+		DrawTTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i], table);
+		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
 	}
 }
 
@@ -137,29 +170,36 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 static PicPaletted *GetgFontPic(char c)
 {
 	int i = CHAR_INDEX(c);
-	if (i < 0 || i > CHARS_IN_FONT || !gFont[i])
+	if (i < 0 || i > CHARS_IN_FONT || !gTextManager.oldPics[i])
 	{
 		i = CHAR_INDEX('.');
 	}
-	assert(gFont[i]);
-	return gFont[i];
+	assert(gTextManager.oldPics[i]);
+	return gTextManager.oldPics[i];
 }
-
-Vec2i DrawTextCharMasked(
-	char c, GraphicsDevice *device, Vec2i pos, color_t mask)
+static int GetFontPicIndex(char c)
 {
-	PicPaletted *font = GetgFontPic(c);
-	Pic pic;
-	PicFromPicPaletted(device, &pic, font);
-	BlitMasked(device, &pic, pos, mask, 1);
-	pos.x += 1 + font->w + dxCDogsText;
+	int i = CHAR_INDEX(c);
+	if (i < 0 || i > CHARS_IN_FONT || !gTextManager.oldPics[i])
+	{
+		i = CHAR_INDEX('.');
+	}
+	assert(gTextManager.oldPics[i]);
+	return i;
+}
+Vec2i TextCharMasked(
+	TextManager *tm, char c, GraphicsDevice *device, Vec2i pos, color_t mask)
+{
+	Pic *fontPic = &tm->picsFromOld[GetFontPicIndex(c)];
+	BlitMasked(device, fontPic, pos, mask, 1);
+	pos.x += 1 + fontPic->size.x + dxCDogsText;
 	CDogsTextGoto(pos.x, pos.y);
-	PicFree(&pic);
 	return pos;
 }
 
-Vec2i DrawTextStringMasked(
-	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask)
+Vec2i TextStringMasked(
+	TextManager *tm, const char *s,
+	GraphicsDevice *device, Vec2i pos, color_t mask)
 {
 	int left = pos.x;
 	while (*s)
@@ -171,25 +211,27 @@ Vec2i DrawTextStringMasked(
 		}
 		else
 		{
-			pos = DrawTextCharMasked(*s, device, pos, mask);
+			pos = TextCharMasked(tm, *s, device, pos, mask);
 		}
 		s++;
 	}
 	return pos;
 }
 
-Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos)
+Vec2i TextString(
+	TextManager *tm, const char *s, GraphicsDevice *device, Vec2i pos)
 {
-	return DrawTextStringMasked(s, device, pos, colorWhite);
+	return TextStringMasked(tm, s, device, pos, colorWhite);
 }
 
-Vec2i DrawTextStringMaskedWrapped(
-	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask, int width)
+Vec2i TextStringMaskedWrapped(
+	TextManager *tm, const char *s,
+	GraphicsDevice *device, Vec2i pos, color_t mask, int width)
 {
 	char buf[1024];
 	assert(strlen(s) < 1024);
 	TextSplitLines(s, buf, width);
-	return DrawTextStringMasked(buf, device, pos, mask);
+	return TextStringMasked(tm, buf, device, pos, mask);
 }
 
 Vec2i TextGetSize(const char *s)
@@ -253,13 +295,13 @@ void CDogsTextStringWithTableAt(int x, int y, const char *s,
 
 int CDogsTextCharWidth(int c)
 {
-	if (c >= FIRST_CHAR && c <= LAST_CHAR && gFont[CHAR_INDEX(c)])
+	if (c >= FIRST_CHAR && c <= LAST_CHAR && gTextManager.oldPics[CHAR_INDEX(c)])
 	{
-		return 1 + gFont[CHAR_INDEX(c)]->w + dxCDogsText;
+		return 1 + gTextManager.oldPics[CHAR_INDEX(c)]->w + dxCDogsText;
 	}
 	else
 	{
-		return 1 + gFont[CHAR_INDEX('.')]->w + dxCDogsText;
+		return 1 + gTextManager.oldPics[CHAR_INDEX('.')]->w + dxCDogsText;
 	}
 }
 

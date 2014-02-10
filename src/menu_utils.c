@@ -47,7 +47,7 @@ void DisplayCharacterAndName(
 	DrawCharacterSimple(
 		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
-	DrawTextString(name, g, namePos);
+	TextString(&gTextManager, name, g, namePos);
 }
 
 void MenuDisplayPlayer(
@@ -119,7 +119,7 @@ void MenuDisplayPlayerControls(
 	if (textWidth < 125)
 	{
 		textPos.x = pos.x - textWidth / 2;
-		DrawTextString(s, g, textPos);
+		TextString(&gTextManager, s, g, textPos);
 	}
 	else
 	{
@@ -138,10 +138,10 @@ void MenuDisplayPlayerControls(
 		textWidth = TextGetStringWidth(s);
 		textPos.x = pos.x - textWidth / 2;
 		textPos.y -= CDogsTextHeight();
-		DrawTextString(s, g, textPos);
+		TextString(&gTextManager, s, g, textPos);
 		textWidth = TextGetStringWidth(secondLine);
 		textPos.x = pos.x - textWidth / 2;
 		textPos.y += CDogsTextHeight();
-		DrawTextString(secondLine, g, textPos);
+		TextString(&gTextManager, secondLine, g, textPos);
 	}
 }

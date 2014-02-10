@@ -172,10 +172,12 @@ static void DisplaySummary(void)
 			{
 				textColor = colorRed;
 			}
-			pos = DrawTextStringMasked(
-				mo->Description, &gGraphicsDevice, pos, textColor);
+			pos = TextStringMasked(
+				&gTextManager, mo->Description,
+				&gGraphicsDevice, pos, textColor);
 			pos.x += 5;
-			DrawTextStringMasked(sScore, &gGraphicsDevice, pos, textColor);
+			TextStringMasked(
+				&gTextManager, sScore, &gGraphicsDevice, pos, textColor);
 			pos.y -= (CDogsTextHeight() + 1);
 		}
 	}

@@ -191,13 +191,13 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		sprintf(
 			s, "Mission %d/%d",
 			gCampaign.MissionIndex + 1, (int)gCampaign.Setting.Missions.size);
-		DrawTextStringMasked(
+		TextStringMasked(&gTextManager, 
 			s, g, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		if (brush.LastPos.x)
 		{
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
-			DrawTextString(s, g, Vec2iNew(w - 40, h - 16));
+			TextString(&gTextManager, s, g, Vec2iNew(w - 40, h - 16));
 		}
 	}
 	else
@@ -209,7 +209,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		if (gCampaign.Setting.Missions.size)
 		{
 			sprintf(s, "End/%d", (int)gCampaign.Setting.Missions.size);
-			DrawTextStringMasked(
+			TextStringMasked(&gTextManager, 
 				s, g, Vec2iNew(270, y),
 				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		}
@@ -220,7 +220,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
 	}
 
-	DrawTextString(
+	TextString(&gTextManager, 
 		"Press F1 for help", g, Vec2iNew(20, h - 20 - CDogsTextHeight()));
 
 	y = 150;
@@ -578,11 +578,11 @@ static int ConfirmClose(char *msg)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
 	}
-	DrawTextString(
+	TextString(&gTextManager, 
 		s1,
 		&gGraphicsDevice,
 		Vec2iNew((w - TextGetStringWidth(s1)) / 2, (h - CDogsTextHeight()) / 2));
-	DrawTextString(
+	TextString(&gTextManager, 
 		msg,
 		&gGraphicsDevice,
 		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + CDogsTextHeight()) / 2));
@@ -624,7 +624,7 @@ static void HelpScreen(void)
 	{
 		gGraphicsDevice.buf[i] = LookupPalette(58);
 	}
-	DrawTextString(helpText, &gGraphicsDevice, pos);
+	TextString(&gTextManager, helpText, &gGraphicsDevice, pos);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	GetKey(&gEventHandlers);
 }
@@ -1058,7 +1058,7 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
-	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
+	TextManagerInit(&gTextManager, GetDataFilePath("graphics/font.px"));
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
@@ -1070,6 +1070,7 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
+	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
@@ -1111,6 +1112,7 @@ int main(int argc, char *argv[])
 
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
+	TextManagerTerminate(&gTextManager);
 
 	UIObjectDestroy(sObjs);
 	EditorBrushTerminate(&brush);

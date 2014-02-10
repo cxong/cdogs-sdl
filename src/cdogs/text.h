@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,10 +50,26 @@
 #define __TEXT
 
 #include "grafx.h"
+#include "pic.h"
 #include "pic_file.h"
 #include "vector.h"
 
-void CDogsTextInit(const char *filename, int offset);
+#define FIRST_CHAR      0
+#define LAST_CHAR       153
+#define CHARS_IN_FONT   (LAST_CHAR - FIRST_CHAR + 1)
+
+typedef struct
+{
+	PicPaletted *oldPics[CHARS_IN_FONT];
+	Pic picsFromOld[CHARS_IN_FONT];
+} TextManager;
+
+extern TextManager gTextManager;
+
+void TextManagerInit(TextManager *tm, const char *filename);
+// Old paletted pics need the palette to be set before using
+void TextManagerGenerateOldPics(TextManager *tm, GraphicsDevice *g);
+void TextManagerTerminate(TextManager *tm);
 void CDogsTextChar(char c);
 void CDogsTextString(const char *s);
 void CDogsTextGoto(int x, int y);
@@ -71,13 +87,16 @@ void CDogsTextStringWithTableAt(int x, int y, const char *s,
 
 // Draw character/string with a color mask
 // Returns updated cursor position
-Vec2i DrawTextCharMasked(
-	char c, GraphicsDevice *device, Vec2i pos, color_t mask);
-Vec2i DrawTextStringMasked(
-	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask);
-Vec2i DrawTextString(const char *s, GraphicsDevice *device, Vec2i pos);
-Vec2i DrawTextStringMaskedWrapped(
-	const char *s, GraphicsDevice *device, Vec2i pos, color_t mask, int width);
+Vec2i TextCharMasked(
+	TextManager *tm, char c, GraphicsDevice *device, Vec2i pos, color_t mask);
+Vec2i TextStringMasked(
+	TextManager *tm, const char *s,
+	GraphicsDevice *device, Vec2i pos, color_t mask);
+Vec2i TextString(
+	TextManager *tm, const char *s, GraphicsDevice *device, Vec2i pos);
+Vec2i TextStringMaskedWrapped(
+	TextManager *tm, const char *s, GraphicsDevice *device,
+	Vec2i pos, color_t mask, int width);
 Vec2i TextGetSize(const char *s);
 
 #define TEXT_XCENTER		1

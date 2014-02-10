@@ -118,14 +118,15 @@ static void DisplayEquippedWeapons(
 		CENTER_Y(pos, size, 0) + 14);
 	if (d->display.pData->weaponCount == 0)
 	{
-		DrawTextString("None selected...", g, weaponsPos);
+		TextString(&gTextManager, "None selected...", g, weaponsPos);
 	}
 	else
 	{
 		int i;
 		for (i = 0; i < d->display.pData->weaponCount; i++)
 		{
-			DrawTextString(
+			TextString(
+				&gTextManager,
 				gGunDescriptions[d->display.pData->weapons[i]].name,
 				g,
 				Vec2iAdd(weaponsPos, Vec2iNew(0, i * CDogsTextHeight())));

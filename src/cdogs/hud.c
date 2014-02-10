@@ -523,7 +523,8 @@ void HUDDraw(HUD *hud, int isPaused)
 			(hud->device->cachedConfig.ResolutionWidth -
 			TextGetStringWidth(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
-		DrawTextStringMasked(hud->message, hud->device, pos, colorCyan);
+		TextStringMasked(
+			&gTextManager, hud->message, hud->device, pos, colorCyan);
 	}
 
 	if (hud->config->ShowFPS)

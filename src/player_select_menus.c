@@ -99,11 +99,11 @@ static void DrawNameMenu(
 
 		if (i == d->nameMenuSelection)
 		{
-			DrawTextCharMasked(letters[i], g, menuPos, colorRed);
+			TextCharMasked(&gTextManager, letters[i], g, menuPos, colorRed);
 		}
 		else
 		{
-			DrawTextCharMasked(letters[i], g, menuPos, colorWhite);
+			TextCharMasked(&gTextManager, letters[i], g, menuPos, colorWhite);
 		}
 	}
 
@@ -303,7 +303,7 @@ static void SaveTemplateDisplayTitle(
 
 	// Display "Save <template>..." title
 	sprintf(buf, "Save %s...", d->display.pData->name);
-	DrawTextString(buf, g, Vec2iAdd(pos, Vec2iNew(0, 0)));
+	TextString(&gTextManager, buf, g, Vec2iAdd(pos, Vec2iNew(0, 0)));
 }
 
 static menu_t *CreateSaveTemplateMenu(

@@ -171,7 +171,7 @@ int CampaignIntro(GraphicsDevice *device)
 
 	TextSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
 	x = w / 6 / 2;
-	DrawTextString(s, device, Vec2iNew(x, y));
+	TextString(&gTextManager, s, device, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
 	return WaitForAnyKeyOrButton(&gEventHandlers);
@@ -246,7 +246,7 @@ void MissionBriefing(GraphicsDevice *device)
 		pos = Vec2iNew(w / 6 / 2, y);
 		strncpy(typewriterBuf, description, typewriterCount);
 		typewriterBuf[typewriterCount] = '\0';
-		DrawTextString(typewriterBuf, device, pos);
+		TextString(&gTextManager, typewriterBuf, device, pos);
 		y += descriptionHeight;
 
 		y += h / 10;
@@ -291,23 +291,25 @@ void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 
 	if (data->survived)
 	{
-		DrawTextString("Completed mission", &gGraphicsDevice, textPos);
+		TextString(
+			&gTextManager, "Completed mission", &gGraphicsDevice, textPos);
 	}
 	else
 	{
-		DrawTextStringMasked(
-			"Failed mission", &gGraphicsDevice, textPos, colorRed);
+		TextStringMasked(
+			&gTextManager, "Failed mission",
+			&gGraphicsDevice, textPos, colorRed);
 	}
 
 	textPos.y += 2 * CDogsTextHeight();
 	sprintf(s, "Score: %d", data->score);
-	DrawTextString(s, &gGraphicsDevice, textPos);
+	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 	textPos.y += CDogsTextHeight();
 	sprintf(s, "Total: %d", data->totalScore);
-	DrawTextString(s, &gGraphicsDevice, textPos);
+	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 	textPos.y += CDogsTextHeight();
 	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));
-	DrawTextString(s, &gGraphicsDevice, textPos);
+	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 	textPos.y += CDogsTextHeight();
 
 	if (data->survived && (data->hp > 150 || data->hp <= 0))
@@ -321,27 +323,27 @@ void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 		{
 			sprintf(s, "Resurrection fee: %d", -500);
 		}
-		DrawTextString(s, &gGraphicsDevice, textPos);
+		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 		textPos.y += CDogsTextHeight();
 	}
 
 	if (data->friendlies > 0 && data->friendlies > data->kills / 2)
 	{
 		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
-		DrawTextString(s, &gGraphicsDevice, textPos);
+		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 		textPos.y += CDogsTextHeight();
 	}
 	else if (data->weaponCount == 1 &&
 		data->weapons[0] == GUN_KNIFE && data->kills > 0)
 	{
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
-		DrawTextString(s, &gGraphicsDevice, textPos);
+		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 		textPos.y += CDogsTextHeight();
 	}
 	else if (data->kills == 0 && data->friendlies == 0)
 	{
 		sprintf(s, "Friendly bonus: %d", 500);
-		DrawTextString(s, &gGraphicsDevice, textPos);
+		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
 		textPos.y += CDogsTextHeight();
 	}
 }
@@ -544,7 +546,7 @@ static void ShowPlayerScore(
 	DisplayCharacterAndName(g, pos, c, name);
 	sprintf(s, "Score: %d", score);
 	scorePos = Vec2iNew(pos.x - TextGetStringWidth(s) / 2, pos.y + 20);
-	DrawTextString(s, g, scorePos);
+	TextString(&gTextManager, s, g, scorePos);
 }
 
 void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
@@ -620,7 +622,7 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 		{
 			Vec2i msgPos = Vec2iNew(
 				pos.x - TextGetStringWidth(IS_WINNER) / 2, pos.y + 20);
-			DrawTextString(IS_WINNER, device, msgPos);
+			TextString(&gTextManager, IS_WINNER, device, msgPos);
 		}
 	}
 	if (isTie)
@@ -1335,7 +1337,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	CDogsTextInit(GetDataFilePath("graphics/font.px"), -2);
+	TextManagerInit(&gTextManager, GetDataFilePath("graphics/font.px"));
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
@@ -1357,6 +1359,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop(&creditsDisplayer, &campaigns);
@@ -1367,6 +1370,7 @@ int main(int argc, char *argv[])
 	GraphicsTerminate(&gGraphicsDevice);
 
 	PicManagerTerminate(&gPicManager);
+	TextManagerTerminate(&gTextManager);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	SavePlayerTemplates(gPlayerTemplates, PLAYER_TEMPLATE_FILE);

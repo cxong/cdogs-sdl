@@ -256,20 +256,20 @@ void DisplayMenuItem(
 {
 	if (selected)
 	{
-		DrawTextStringMasked(s, &gGraphicsDevice, pos, colorRed);
+		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, colorRed);
 	}
 	else if (isDisabled)
 	{
 		color_t dark = { 64, 64, 64, 255 };
-		DrawTextStringMasked(s, &gGraphicsDevice, pos, dark);
+		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, dark);
 	}
 	else if (!ColorEquals(color, colorBlack))
 	{
-		DrawTextStringMasked(s, &gGraphicsDevice, pos, color);
+		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, color);
 	}
 	else
 	{
-		DrawTextString(s, &gGraphicsDevice, pos);
+		TextString(&gTextManager, s, &gGraphicsDevice, pos);
 	}
 }
 
