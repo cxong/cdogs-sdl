@@ -148,11 +148,11 @@ static void SetupQuickPlayEnemy(
 	}
 	else if (IsHighDPS(enemy->gun))
 	{
-		enemy->bot.probabilityToShoot = 2 + (rand() % 10);
+		enemy->bot.probabilityToShoot = 1 + (rand() % 3);
 	}
 	else
 	{
-		enemy->bot.probabilityToShoot = 15 + (rand() % 30);
+		enemy->bot.probabilityToShoot = 1 + (rand() % 6);
 	}
 	enemy->bot.actionDelay = rand() % (50 + 1);
 	enemy->looks.skin = rand() % SHADE_COUNT;
