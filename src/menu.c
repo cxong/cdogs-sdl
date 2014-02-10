@@ -62,6 +62,7 @@
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/gamedata.h>
+#include <cdogs/grafx_bg.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/pic_manager.h>

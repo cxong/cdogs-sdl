@@ -61,6 +61,7 @@
 #include <cdogs/defs.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
+#include <cdogs/grafx_bg.h>
 #include <cdogs/input.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
