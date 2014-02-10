@@ -1,27 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
     Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
@@ -46,20 +25,30 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __DRAW
-#define __DRAW
+#ifndef __GRAFX_BG
+#define __GRAFX_BG
 
+#include "campaigns.h"
 #include "draw_buffer.h"
-#include "gamedata.h"
-#include "grafx_bg.h"
+#include "grafx.h"
 
-void FixBuffer(DrawBuffer *b);
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
-void DisplayPlayer(int x, const char *name, Character *c, int editingName);
-void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun);
-void DrawCharacterSimple(
-	Character *c, Vec2i pos,
-	direction_e dir, int state,
-	int gunPic, gunstate_e gunState, TranslationTable *table);
+typedef struct
+{
+	CArray *highlightedTiles;
+	SDL_Surface *guideImage;
+	Uint8 guideImageAlpha;
+} GrafxDrawExtra;
+void GrafxDrawBackground(
+	GraphicsDevice *g, DrawBuffer *buffer,
+	HSV tint, Vec2i pos, GrafxDrawExtra *extra);
+void GrafxMakeBackground(
+	GraphicsDevice *device, DrawBuffer *buffer,
+	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
+	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra);
+void GraphicsBlitBkg(GraphicsDevice *device);
+
+void GrafxMakeRandomBackground(
+	GraphicsDevice *device,
+	CampaignOptions *co, struct MissionOptions *mo, Map *map);
 
 #endif

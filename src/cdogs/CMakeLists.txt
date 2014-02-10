@@ -28,6 +28,7 @@ set(CDOGS_SOURCES
 	game_events.c
 	gamedata.c
 	grafx.c
+	grafx_bg.c
 	hiscores.c
 	hud.c
 	input.c
@@ -85,6 +86,7 @@ set(CDOGS_HEADERS
 	game_events.h
 	gamedata.h
 	grafx.h
+	grafx_bg.h
 	hiscores.h
 	hud.h
 	input.h

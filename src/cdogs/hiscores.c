@@ -60,6 +60,7 @@
 #include "config.h"
 #include "gamedata.h"
 #include "grafx.h"
+#include "grafx_bg.h"
 #include "blit.h"
 #include "actors.h"
 #include "events.h"

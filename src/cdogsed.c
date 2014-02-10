@@ -85,6 +85,7 @@ static UIObject *sObjs;
 static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
 static UIObject *sLastHighlightedObj = NULL;
 Vec2i sUIOverlaySize = { 320, 240 };
+static DrawBuffer sDrawBuffer;
 
 
 // Globals
@@ -137,7 +138,12 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	extra.highlightedTiles = &brush.HighlightedTiles;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
-	GrafxMakeBackground(g, tintNone, 1, buildTables, camera, &extra);
+
+	DrawBufferTerminate(&sDrawBuffer);
+	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
+	GrafxMakeBackground(
+		g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
+		tintNone, 1, buildTables, camera, &extra);
 }
 
 static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
@@ -175,7 +181,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			extra.highlightedTiles = &brush.HighlightedTiles;
 			extra.guideImage = brush.GuideImageSurface;
 			extra.guideImageAlpha = brush.GuideImageAlpha;
-			GrafxDrawBackground(g, tintNone, camera, &extra);
+			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
 		}
 		GraphicsBlitBkg(g);
 		// Draw overlay
@@ -1081,6 +1087,7 @@ int main(int argc, char *argv[])
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush);
 	memset(&sDrawObjs, 0, sizeof sDrawObjs);
+	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);
@@ -1116,6 +1123,7 @@ int main(int argc, char *argv[])
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);
 
+	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
 	TextManagerTerminate(&gTextManager);

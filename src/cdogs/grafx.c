@@ -57,18 +57,12 @@
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
-#include "actors.h"
-#include "ai.h"
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
-#include "draw.h"
-#include "drawtools.h"
-#include "objs.h"
+#include "grafx_bg.h"
 #include "palette.h"
-#include "quick_play.h"
 #include "files.h"
-#include "triggers.h"
 #include "utils.h"
 
 
@@ -250,24 +244,6 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 	AddSupportedModesForBPP(device, 32);
 }
 
-static void MakeRandomBackground(GraphicsDevice *device)
-{
-	HSV tint;
-	CampaignSettingTerminate(&gCampaign.Setting);
-	CampaignSettingInit(&gCampaign.Setting);
-	SetupQuickPlayCampaign(&gCampaign.Setting, &gConfig.QuickPlay);
-	gCampaign.seed = rand();
-	tint.h = rand() * 360.0 / RAND_MAX;
-	tint.s = rand() * 1.0 / RAND_MAX;
-	tint.v = 0.5;
-	GrafxMakeBackground(
-		device, tint, 0, 1, Vec2iCenterOfTile(gMap.Size), NULL);
-	KillAllActors();
-	KillAllObjects();
-	RemoveAllWatches();
-	gCampaign.seed = gConfig.Game.RandomSeed;
-}
-
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
@@ -375,7 +351,7 @@ void GraphicsInitialize(
 	// Need to make background here since dimensions use cached config
 	if (!config->IsEditor)
 	{
-		MakeRandomBackground(device);
+		GrafxMakeRandomBackground(device, &gCampaign, &gMission, &gMap);
 	}
 }
 
@@ -396,51 +372,6 @@ int GraphicsGetScreenSize(GraphicsConfig *config)
 int GraphicsGetMemSize(GraphicsConfig *config)
 {
 	return GraphicsGetScreenSize(config) * sizeof(Uint32);
-}
-
-void GrafxDrawBackground(
-	GraphicsDevice *g, HSV tint, Vec2i pos, GrafxDrawExtra *extra)
-{
-	DrawBuffer buffer;
-	Vec2i v;
-
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), g);
-	DrawBufferSetFromMap(&buffer, &gMap, pos, X_TILES);
-	DrawBufferDraw(&buffer, Vec2iZero(), extra);
-	DrawBufferTerminate(&buffer);
-
-	for (v.y = 0; v.y < g->cachedConfig.ResolutionHeight; v.y++)
-	{
-		for (v.x = 0; v.x < g->cachedConfig.ResolutionWidth; v.x++)
-		{
-			DrawPointTint(g, v, tint);
-		}
-	}
-	memcpy(g->bkg, g->buf, GraphicsGetMemSize(&g->cachedConfig));
-	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
-}
-
-void GrafxMakeBackground(
-	GraphicsDevice *device, HSV tint,
-	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
-{
-	MissionOptionsTerminate(&gMission);
-	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
-	MapLoad(&gMap, &gMission, &gCampaign.Setting.characters);
-	InitializeBadGuys();
-	CreateEnemies();
-	MapMarkAllAsVisited(&gMap);
-	if (isEditor)
-	{
-		MapShowExitArea(&gMap);
-	}
-
-	GrafxDrawBackground(device, tint, pos, extra);
-}
-
-void GraphicsBlitBkg(GraphicsDevice *device)
-{
-	memcpy(device->buf, device->bkg, GraphicsGetMemSize(&device->cachedConfig));
 }
 
 char *GrafxGetModeStr(void)
