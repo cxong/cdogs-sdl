@@ -128,7 +128,7 @@ static void PicManagerLoadDirImpl(
 			goto bail;
 		}
 		if (file.is_reg &&
-			SDL_strcasecmp(StrGetFileExt(file.name), "png") == 0)
+			IMG_isPNG(SDL_RWFromFile(file.path, "rb")))
 		{
 			if (prefix)
 			{

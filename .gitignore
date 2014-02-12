@@ -7,6 +7,7 @@ cdogs-sdl
 *.tar.gz
 cdogs-sdl-editor
 libcdogs.a
+libcdogsedlib.a
 autosave_test
 color_test
 config_test

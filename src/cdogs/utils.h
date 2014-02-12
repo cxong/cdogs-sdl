@@ -92,8 +92,8 @@ extern int debug_level;
 }
 #define CSTRDUP(_var, _str)\
 {\
-	_var = strdup(_str); \
-	_CCHECKALLOC("CSTRDUP", _var, (strlen(_str) + 1))\
+	CMALLOC(_var, strlen(_str) + 1);\
+	strcpy(_var, _str);\
 }
 
 #define CFREE(_var)\

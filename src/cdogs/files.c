@@ -513,14 +513,14 @@ const char *GetHomeDirectory(void)
 	p = getenv("CDOGS_CONFIG_DIR");
 	if (p != NULL && strlen(p) != 0)
 	{
-		cdogs_homepath = strdup(p);
+		CSTRDUP(cdogs_homepath, p);
 		return cdogs_homepath;
 	}
 
 	p = getenv(HOME_DIR_ENV);
 	if (p != NULL && strlen(p) != 0)
 	{
-		cdogs_homepath = calloc(strlen(p) + 1, sizeof(char));
+		CCALLOC(cdogs_homepath, strlen(p) + 1);
 		strncpy(cdogs_homepath, p, strlen(p));
 		strncat(cdogs_homepath, "/", 1);
 		return cdogs_homepath;

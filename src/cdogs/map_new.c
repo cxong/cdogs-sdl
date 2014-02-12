@@ -590,7 +590,8 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 	char *text = NULL;
 	char buf[CDOGS_PATH_MAX];
 	json_t *root;
-	if (SDL_strcasecmp(StrGetFileExt(filename), "cpn") == 0)
+	if (strcmp(StrGetFileExt(filename), "cpn") == 0 ||
+		strcmp(StrGetFileExt(filename), "CPN") == 0)
 	{
 		strcpy(buf, filename);
 	}
