@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 0.5.4 Released!"
+date:   2014-02-12
+categories: release
+---
+
+This release adds static maps, enhanced "classic" maps, and a big frame rate improvement!
+
+This release has been a long time in the making, so there's a long laundry list of enhancements. Check it out!
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.4>
