@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -167,16 +167,6 @@ void CDogsTextStringWithTable(const char *s, TranslationTable * table)
 		CDogsTextCharWithTable(*s++, table);
 }
 
-static PicPaletted *GetgFontPic(char c)
-{
-	int i = CHAR_INDEX(c);
-	if (i < 0 || i > CHARS_IN_FONT || !gTextManager.oldPics[i])
-	{
-		i = CHAR_INDEX('.');
-	}
-	assert(gTextManager.oldPics[i]);
-	return gTextManager.oldPics[i];
-}
 static int GetFontPicIndex(char c)
 {
 	int i = CHAR_INDEX(c);
