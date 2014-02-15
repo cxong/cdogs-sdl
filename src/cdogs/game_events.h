@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,12 +29,16 @@
 #ifndef __GAME_EVENTS
 #define __GAME_EVENTS
 
+#include "c_array.h"
+#include "gamedata.h"
+
 // Game events represent anything that is created within the game but is
 // required by outside systems, e.g. sound events
 // This is to prevent the game from depending on these external systems
 
 typedef enum
 {
+	GAME_EVENT_SCORE,
 	GAME_EVENT_SCREEN_SHAKE,
 	GAME_EVENT_SET_MESSAGE
 } GameEventType;
@@ -44,6 +48,11 @@ typedef struct
 	GameEventType Type;
 	union
 	{
+		struct
+		{
+			int PlayerIndex;
+			int Score;
+		} Score;
 		int ShakeAmount;
 		struct
 		{
@@ -53,18 +62,11 @@ typedef struct
 	} u;
 } GameEvent;
 
-typedef struct
-{
-	GameEvent *events;
-	int count;
-	int max;
-} GameEventStore;
+extern CArray gGameEvents;	// of GameEvent
 
-extern GameEventStore gGameEvents;
-
-void GameEventsInit(GameEventStore *store);
-void GameEventsTerminate(GameEventStore *store);
-void GameEventsEnqueue(GameEventStore *store, GameEvent e);
-void GameEventsClear(GameEventStore *store);
+void GameEventsInit(CArray *store);
+void GameEventsTerminate(CArray *store);
+void GameEventsEnqueue(CArray *store, GameEvent e);
+void GameEventsClear(CArray *store);
 
 #endif

@@ -55,9 +55,22 @@
 #include "automap.h"
 #include "drawtools.h"
 #include "game.h"
+#include "game_events.h"
 #include "mission.h"
 #include "pic_manager.h"
 #include "text.h"
+
+typedef struct
+{
+	int PlayerIndex;
+	int Score;
+	// Number of milliseconds that this score update will last
+	int Timer;
+} HUDScore;
+
+// Total number of milliseconds that the score lasts for
+#define SCORE_TIMER_MS 500
+
 
 void FPSCounterInit(FPSCounter *counter)
 {
@@ -124,12 +137,26 @@ void HUDInit(
 	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
+	CArrayInit(&hud->scoreUpdates, sizeof(HUDScore));
+}
+void HUDTerminate(HUD *hud)
+{
+	CArrayTerminate(&hud->scoreUpdates);
 }
 
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 {
 	strcpy(hud->message, msg);
 	hud->messageTicks = ticks;
+}
+
+void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
+{
+	HUDScore s;
+	s.PlayerIndex = playerIndex;
+	s.Score = score;
+	s.Timer = SCORE_TIMER_MS;
+	CArrayPushBack(&hud->scoreUpdates, &s);
 }
 
 void HUDUpdate(HUD *hud, int ms)
@@ -144,6 +171,16 @@ void HUDUpdate(HUD *hud, int ms)
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
+	for (int i = 0; i < (int)hud->scoreUpdates.size; i++)
+	{
+		HUDScore *score = CArrayGet(&hud->scoreUpdates, i);
+		score->Timer -= ms;
+		if (score->Timer <= 0)
+		{
+			CArrayDelete(&hud->scoreUpdates, i);
+			i--;
+		}
+	}
 }
 
 
@@ -441,6 +478,7 @@ void DrawKeycards(HUD *hud)
 	}
 }
 
+static void DrawScoreUpdate(HUDScore *score, int flags);
 void HUDDraw(HUD *hud, int isPaused)
 {
 	char s[50];
@@ -485,6 +523,14 @@ void HUDDraw(HUD *hud, int isPaused)
 		}
 		DrawPlayerStatus(
 			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags);
+		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
+		{
+			HUDScore *score = CArrayGet(&hud->scoreUpdates, j);
+			if (score->PlayerIndex == i)
+			{
+				DrawScoreUpdate(score, drawFlags);
+			}
+		}
 	}
 	// Only draw radar once if shared
 	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
@@ -550,4 +596,76 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
+}
+
+// Parameters that define how the score update is animated
+// The score update animates in the following phases:
+// 1. Pop up from score position to slightly above
+// 2. Fall down from slightly above back to score position
+// 3. Persist over score position
+#define SCORE_POP_UP_DURATION_MS 100
+#define SCORE_FALL_DOWN_DURATION_MS 100
+#define SCORE_POP_UP_HEIGHT 5
+
+static void DrawScoreUpdate(HUDScore *score, int flags)
+{
+	if (!IsScoreNeeded(gCampaign.Entry.mode))
+	{
+		return;
+	}
+	assert(score->Score != 0);
+	color_t color = score->Score > 0 ? colorGreen : colorRed;
+	
+	// Find the right position to draw the score update
+	// Make sure the score is displayed lined up with the lowest digits
+	const int rowHeight = 1 + CDogsTextHeight();
+	Vec2i pos = Vec2iNew(5, 5 + 1 + CDogsTextHeight() + rowHeight);
+	// Find the position of where the normal score is displayed,
+	// and move to its right
+	char s[50];
+	sprintf(s, "Score: %d", gPlayerDatas[score->PlayerIndex].score);
+	pos.x += TextGetSize(s).x;
+	// Then find the size of the score update, and move left
+	sprintf(s, "%s%d", score->Score > 0 ? "+" : "", score->Score);
+	pos.x -= TextGetSize(s).x;
+	// The final position should ensure the score update's lowest digit
+	// lines up with the normal score's lowest digit
+
+	// Now animate the score update based on its stage
+	int timer = SCORE_TIMER_MS - score->Timer;
+	if (timer < SCORE_POP_UP_DURATION_MS)
+	{
+		// score is still popping up
+		// calculate height
+		int popupHeight =
+			timer * SCORE_POP_UP_HEIGHT / SCORE_POP_UP_DURATION_MS;
+		pos.y -= popupHeight;
+	}
+	else if (timer < SCORE_POP_UP_DURATION_MS + SCORE_FALL_DOWN_DURATION_MS)
+	{
+		// score is falling down
+		// calculate height
+		timer -= SCORE_POP_UP_DURATION_MS;
+		timer = SCORE_FALL_DOWN_DURATION_MS - timer;
+		int popupHeight =
+			timer * SCORE_POP_UP_HEIGHT / SCORE_FALL_DOWN_DURATION_MS;
+		pos.y -= popupHeight;
+	}
+	
+	int textFlags = TEXT_TOP | TEXT_LEFT;
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		textFlags |= TEXT_RIGHT;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		textFlags |= TEXT_BOTTOM;
+	}
+
+	Vec2i screenSize = Vec2iNew(
+		gGraphicsDevice.cachedConfig.ResolutionWidth,
+		gGraphicsDevice.cachedConfig.ResolutionHeight);
+	DrawTextStringSpecialMasked(
+		&gTextManager, s, &gGraphicsDevice, textFlags, Vec2iZero(),
+		screenSize, pos, color);
 }

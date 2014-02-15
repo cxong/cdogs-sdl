@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,21 @@
 
 #include "utils.h"
 
-GameEventStore gGameEvents;
+CArray gGameEvents;
 
-void GameEventsInit(GameEventStore *store)
+void GameEventsInit(CArray *store)
 {
-	memset(store, 0, sizeof *store);
+	CArrayInit(store, sizeof(GameEvent));
 }
-void GameEventsTerminate(GameEventStore *store)
+void GameEventsTerminate(CArray *store)
 {
-	CFREE(store->events);
-	memset(store, 0, sizeof *store);
+	CArrayTerminate(store);
 }
-void GameEventsEnqueue(GameEventStore *store, GameEvent e)
+void GameEventsEnqueue(CArray *store, GameEvent e)
 {
-	if (store->count == store->max)
-	{
-		if (store->max == 0)
-		{
-			store->max = 2;
-		}
-		else
-		{
-			store->max *= 2;
-		}
-		CREALLOC(store->events, store->max * sizeof *store->events);
-	}
-	store->events[store->count] = e;
-	store->count++;
+	CArrayPushBack(store, &e);
 }
-void GameEventsClear(GameEventStore *store)
+void GameEventsClear(CArray *store)
 {
-	store->count = 0;
+	CArrayClear(store);
 }

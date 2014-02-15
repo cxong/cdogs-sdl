@@ -544,14 +544,17 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 	return center;
 }
 
-void HandleGameEvents(GameEventStore *store, HUD *hud, int *shakeAmount)
+void HandleGameEvents(CArray *store, HUD *hud, int *shakeAmount)
 {
-	int i;
-	for (i = 0; i < store->count; i++)
+	for (int i = 0; i < (int)store->size; i++)
 	{
-		GameEvent *e = &store->events[i];
+		GameEvent *e = CArrayGet(store, i);
 		switch (e->Type)
 		{
+		case GAME_EVENT_SCORE:
+			Score(&gPlayerDatas[e->u.Score.PlayerIndex], e->u.Score.Score);
+			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
+			break;
 		case GAME_EVENT_SCREEN_SHAKE:
 			*shakeAmount = GetShakeAmount(*shakeAmount, e->u.ShakeAmount);
 			break;
@@ -847,6 +850,7 @@ int gameloop(void)
 		ticksElapsedDraw = 0;
 	}
 	GameEventsTerminate(&gGameEvents);
+	HUDTerminate(&hud);
 	DrawBufferTerminate(&buffer);
 
 	return !is_esc_pressed;

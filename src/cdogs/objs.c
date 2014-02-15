@@ -364,15 +364,19 @@ int DamageCharacter(
 	{
 		if (player >= 0)
 		{
-			// Calculate score
+			// Calculate score based on if they hit a penalty character
+			GameEvent e;
+			e.Type = GAME_EVENT_SCORE;
+			e.u.Score.PlayerIndex = player;
 			if (actor->flags & FLAGS_PENALTY)
 			{
-				Score(&gPlayerDatas[player], -3 * power);
+				e.u.Score.Score = PENALTY_MULTIPLIER * power;
 			}
 			else
 			{
-				Score(&gPlayerDatas[player], power);
+				e.u.Score.Score = power;
 			}
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 
@@ -460,7 +464,11 @@ static void DamageObject(
 		{
 			if (player >= 0)
 			{
-				Score(&gPlayerDatas[player], 50);
+				GameEvent e;
+				e.Type = GAME_EVENT_SCORE;
+				e.u.Score.PlayerIndex = player;
+				e.u.Score.Score = OBJECT_SCORE;
+				GameEventsEnqueue(&gGameEvents, e);
 			}
 		}
 		if (object->flags & OBJFLAG_QUAKE)

@@ -57,6 +57,7 @@
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
+#include "game_events.h"
 #include "pic_manager.h"
 #include "sounds.h"
 #include "defs.h"
@@ -520,7 +521,13 @@ static void PickupObject(TActor * actor, TObject * object)
 {
 	switch (object->objectIndex) {
 	case OBJ_JEWEL:
-		Score(actor->pData, 10);
+		{
+			GameEvent e;
+			e.Type = GAME_EVENT_SCORE;
+			e.u.Score.PlayerIndex = actor->pData->playerIndex;
+			e.u.Score.Score = PICKUP_SCORE;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 		break;
 
 	case OBJ_KEYCARD_RED:
@@ -772,7 +779,14 @@ void Shoot(TActor *actor)
 		tilePosition,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1);
-	Score(actor->pData, -GunGetCost(actor->weapon.gun));
+	if (actor->pData)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_SCORE;
+		e.u.Score.PlayerIndex = actor->pData->playerIndex;
+		e.u.Score.Score = -GunGetCost(actor->weapon.gun);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 }
 
 int ActorTryChangeDirection(TActor *actor, int cmd)

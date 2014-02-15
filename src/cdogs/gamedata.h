@@ -103,6 +103,15 @@ struct DoorPic {
 #define OBJECTIVE_UNKNOWNCOUNT	8
 #define OBJECTIVE_NOACCESS		16
 
+// Score penalty for killing a penalty character
+#define PENALTY_MULTIPLIER (-3)
+
+// Score for destroying an objective object
+#define OBJECT_SCORE 50
+
+// Score for picking up an objective
+#define PICKUP_SCORE 10
+
 
 struct Objective
 {

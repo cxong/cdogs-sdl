@@ -63,6 +63,7 @@ typedef struct
 	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
+	CArray scoreUpdates;	// of HUDScore
 } HUD;
 
 void HUDInit(
@@ -70,9 +71,11 @@ void HUDInit(
 	InterfaceConfig *config,
 	GraphicsDevice *device,
 	struct MissionOptions *mission);
+void HUDTerminate(HUD *hud);
 
 // Set ticks to -1 to display a message indefinitely
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
+void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score);
 
 void HUDUpdate(HUD *hud, int ms);
 void HUDDraw(HUD *hud, int isPaused);

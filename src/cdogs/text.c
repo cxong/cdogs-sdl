@@ -317,34 +317,49 @@ int TextGetStringWidth(const char *s)
 
 #define FLAG_SET(a, b)	((a & b) != 0)
 
-void DrawTextStringSpecial(
-	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding)
+void DrawTextStringSpecialMasked(
+	TextManager *tm, const char *s,
+	GraphicsDevice *device, unsigned int opts,
+	Vec2i pos, Vec2i size, Vec2i padding,
+	color_t mask)
 {
 	int x = 0;
 	int y = 0;
 	int w = TextGetStringWidth(s);
 	int h = CDogsTextHeight();
-
+	
 	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = pos.x + (size.x - w) / 2; }
 	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = pos.y + (size.y - h) / 2; }
-
+	
 	if (FLAG_SET(opts, TEXT_LEFT))		{ x = pos.x + padding.x; }
 	if (FLAG_SET(opts, TEXT_RIGHT))		{ x = pos.x + size.x - w - padding.x; }
-
+	
 	if (FLAG_SET(opts, TEXT_TOP))		{ y = pos.y + padding.y; }
 	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = pos.y + size.y - h - padding.y; }
 
+	pos = TextStringMasked(tm, s, device, Vec2iNew(x, y), mask);
+	CDogsTextGoto(pos.x, pos.y);
+}
+void DrawTextStringSpecial(
+	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding)
+{
 	if (FLAG_SET(opts, TEXT_FLAMED))
 	{
-		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
+		DrawTextStringSpecialMasked(
+			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
+			colorRed);
 	}
 	else if (FLAG_SET(opts, TEXT_PURPLE))
 	{
-		CDogsTextStringWithTableAt(x, y, s, &tablePurple);
+		DrawTextStringSpecialMasked(
+			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
+			colorPurple);
 	}
 	else
 	{
-		CDogsTextStringAt(x, y, s);
+		DrawTextStringSpecialMasked(
+			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
+			colorWhite);
 	}
 }
 
