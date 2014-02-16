@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
+#include "game.h"
 #include "game_events.h"
 #include "map.h"
 #include "blit.h"
@@ -90,24 +91,38 @@ void DrawObject(int x, int y, const TObject * obj)
 	{
 		return;
 	}
-	if (!obj->picName || obj->picName[0] == '\0')
+
+	// Default old pic
+	Pic *pic = PicManagerGetFromOld(&gPicManager, ofpic->picIndex);
+
+	// Try to get new pic if available
+	if (obj->picName && obj->picName[0] != '\0')
 	{
-		goto defaultDraw;
-	}
-	Pic *pic = PicManagerGetPic(&gPicManager, obj->picName);
-	if (!pic)
-	{
-		goto defaultDraw;
+		Pic *newPic = PicManagerGetPic(&gPicManager, obj->picName);
+		if (newPic)
+		{
+			pic = newPic;
+		}
 	}
 	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	Blit(&gGraphicsDevice, pic, Vec2iNew(x, y));
-	return;
 
-defaultDraw:
-	DrawTPic(
-		x + ofpic->dx,
-		y + ofpic->dy,
-		PicManagerGetOldPic(&gPicManager, ofpic->picIndex));
+	// Draw objective highlight
+	if (obj->tileItem.flags & TILEITEM_OBJECTIVE)
+	{
+		int objective = ObjectiveFromTileItem(obj->tileItem.flags);
+		struct Objective *o = CArrayGet(&gMission.Objectives, objective);
+		color_t color = o->color;
+		int pulsePeriod = FPS_FRAMELIMIT;
+		int alphaUnscaled =
+			(missionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
+		if (alphaUnscaled > 255)
+		{
+			alphaUnscaled = 255 * 2 - alphaUnscaled;
+		}
+		color.a = alphaUnscaled;
+		BlitPicHighlight(&gGraphicsDevice, pic, Vec2iNew(x, y), color);
+	}
 }
 
 void DrawBullet(int x, int y, const TMobileObject * obj)

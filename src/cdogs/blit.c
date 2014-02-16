@@ -64,9 +64,11 @@
 
 color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
 {
+	SDL_PixelFormat *f = device->screen->format;
 	color_t c;
-	SDL_GetRGB(pixel, device->screen->format, &c.r, &c.g, &c.b);
-	c.a = 255;
+	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);
+	// Manually apply the alpha as SDL seems to always set it to 0
+	c.a = (pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> device->Ashift;
 	return c;
 }
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
@@ -132,15 +134,14 @@ void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode)
 	}
 }
 
-void BlitPicHighlight(
-	GraphicsDevice *g, PicPaletted *pic, Vec2i pos, color_t color)
+void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color)
 {
 	// Draw highlight around the picture
 	int i;
-	for (i = -1; i < pic->h + 1; i++)
+	for (i = -1; i < pic->size.y + 1; i++)
 	{
 		int j;
-		int yoff = i + pos.y;
+		int yoff = i + pos.y + pic->offset.y;
 		if (yoff > g->clipping.bottom)
 		{
 			break;
@@ -150,10 +151,9 @@ void BlitPicHighlight(
 			continue;
 		}
 		yoff *= g->cachedConfig.ResolutionWidth;
-		for (j = -1; j < pic->w + 1; j++)
+		for (j = -1; j < pic->size.x + 1; j++)
 		{
-			int isPixelEmpty;
-			int xoff = j + pos.x;
+			int xoff = j + pos.x + pic->offset.x;
 			if (xoff < g->clipping.left)
 			{
 				continue;
@@ -164,23 +164,31 @@ void BlitPicHighlight(
 			}
 			// Draw highlight if current pixel is empty,
 			// and is next to a picture edge
-			isPixelEmpty =
-				i == -1 || j == -1 || i == pic->h || j == pic->w ||
-				!*(pic->data + j + i * pic->w);
+			bool isTopOrBottomEdge = i == -1 || i == pic->size.y;
+			bool isLeftOrRightEdge = j == -1 || j == pic->size.x;
+			bool isPixelEmpty =
+				isTopOrBottomEdge || isLeftOrRightEdge ||
+				!PixelToColor(g, *(pic->Data + j + i * pic->size.x)).a;
 			if (isPixelEmpty)
 			{
-				int isLeft = j > 0 && *(pic->data + j - 1 + i * pic->w);
-				int isRight =
-					j < pic->w - 1 && *(pic->data + j + 1 + i * pic->w);
-				int isAbove =
-					i > 0 && *(pic->data + j + (i - 1) * pic->w);
-				int isBelow =
-					i < pic->h - 1 && *(pic->data + j + (i + 1) * pic->w);
+				bool isLeft =
+					j > 0 && !isTopOrBottomEdge &&
+					PixelToColor(g, *(pic->Data + j - 1 + i * pic->size.x)).a;
+				bool isRight =
+					j < pic->size.x - 1 && !isTopOrBottomEdge &&
+					PixelToColor(g, *(pic->Data + j + 1 + i * pic->size.x)).a;
+				bool isAbove =
+					i > 0 && !isLeftOrRightEdge &&
+					PixelToColor(g, *(pic->Data + j + (i - 1) * pic->size.x)).a;
+				bool isBelow =
+					i < pic->size.y - 1 && !isLeftOrRightEdge &&
+					PixelToColor(g, *(pic->Data + j + (i + 1) * pic->size.x)).a;
 				if (isLeft || isRight || isAbove || isBelow)
 				{
 					Uint32 *target = g->buf + yoff + xoff;
 					color_t targetColor = PixelToColor(g, *target);
-					color_t blendedColor = ColorMult(targetColor, color);
+					color_t blendedColor = ColorAlphaBlend(
+						targetColor, color);
 					*target = PixelFromColor(g, blendedColor);
 				}
 			}

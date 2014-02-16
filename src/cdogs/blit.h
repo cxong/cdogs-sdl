@@ -71,8 +71,7 @@ void BlitMasked(
 	Vec2i pos,
 	color_t mask,
 	int isTransparent);
-void BlitPicHighlight(
-	GraphicsDevice *g, PicPaletted *pic, Vec2i pos, color_t color);
+void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.
