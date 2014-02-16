@@ -268,12 +268,14 @@ int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size)
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
-			switch (IMapGet(map, v) & MAP_MASKACCESS)
+			unsigned short tile = IMapGet(map, v) & MAP_MASKACCESS;
+			switch (tile)
 			{
 			case MAP_FLOOR:	// fallthrough
 			case MAP_ROOM:
 				break;
-			case MAP_WALL:
+			case MAP_WALL:	// fallthrough
+			case MAP_DOOR:
 				// Check if this wall is part of a room
 				if (!MapTileIsPartOfRoom(map, v))
 				{
@@ -370,7 +372,8 @@ int MapGetRoomOverlapSize(
 			}
 			switch (IMapGet(map, v))
 			{
-			case MAP_WALL:
+			case MAP_WALL:	// fallthrough
+			case MAP_DOOR:
 				// Check if this wall is part of a room
 				if (MapTileIsPartOfRoom(map, v))
 				{
@@ -419,7 +422,8 @@ int MapGetRoomOverlapSize(
 			{
 			case MAP_ROOM:
 				break;
-			case MAP_WALL:
+			case MAP_WALL:	// fallthrough
+			case MAP_DOOR:
 				// Check if this wall is part of a room
 				if (!MapTileIsPartOfRoom(map, v))
 				{
@@ -433,7 +437,7 @@ int MapGetRoomOverlapSize(
 		}
 	}
 
-	return MAX(overlapMin.x - overlapMin.x, overlapMin.y - overlapMin.y) - 1;
+	return MAX(overlapMax.x - overlapMin.x, overlapMax.y - overlapMin.y) - 1;
 }
 // Check that this area does not overlap two or more "walls"
 int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
