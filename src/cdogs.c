@@ -431,7 +431,9 @@ void Bonuses(void)
 		bonus += access_bonus;
 	}
 
-	i = 60 + (int)gMission.missionData->Objectives.size * 30 - missionTime / FPS_FRAMELIMIT;
+	i = 60 +
+		(int)gMission.missionData->Objectives.size * 30 -
+		gMissionTime / FPS_FRAMELIMIT;
 
 	if (i > 0 && AreAnySurvived())
 	{

@@ -54,7 +54,6 @@
 #include "actors.h"
 #include "automap.h"
 #include "drawtools.h"
-#include "game.h"
 #include "game_events.h"
 #include "mission.h"
 #include "pic_manager.h"
@@ -584,8 +583,10 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	DrawKeycards(hud);
 
-	if (ot == -1 || missionTime == 0) /* set the original time properly */
+	if (ot == -1 || gMissionTime == 0)
+	{
 		ot = time(NULL);
+	}
 
 	t = time(NULL);
 

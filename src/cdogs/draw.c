@@ -53,7 +53,6 @@
 
 #include "config.h"
 #include "drawtools.h"
-#include "game.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
@@ -345,7 +344,7 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 				color_t color = o->color;
 				int pulsePeriod = FPS_FRAMELIMIT;
 				int alphaUnscaled =
-					(missionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
+					(gMissionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
 				if (alphaUnscaled > 255)
 				{
 					alphaUnscaled = 255 * 2 - alphaUnscaled;

@@ -27,6 +27,4 @@
 
 int gameloop(void);
 
-extern int missionTime;
-
 #endif

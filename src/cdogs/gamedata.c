@@ -83,6 +83,8 @@ struct MissionOptions gMission;
 struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
+int gMissionTime;
+
 
 void PlayerDataInitialize(void)
 {

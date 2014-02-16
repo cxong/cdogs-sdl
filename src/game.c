@@ -83,8 +83,6 @@
 
 #define SPLIT_PADDING 40
 
-// This is referenced from CDOGS.C to determine time bonus
-int missionTime;
 
 #define MICROSECS_PER_SEC 1000000
 #define MILLISECS_PER_SEC 1000
@@ -594,7 +592,7 @@ int gameloop(void)
 		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
-	missionTime = 0;
+	gMissionTime = 0;
 	gMission.pickupTime = PICKUP_LIMIT;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
@@ -773,7 +771,7 @@ int gameloop(void)
 				UpdateWatches(&gMap.triggers);
 			}
 
-			missionTime += ticks;
+			gMissionTime += ticks;
 			if (GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission))
 			{
 				if (gMission.pickupTime == PICKUP_LIMIT)
