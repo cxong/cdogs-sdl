@@ -350,7 +350,7 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 				{
 					alphaUnscaled = 255 * 2 - alphaUnscaled;
 				}
-				color.a = alphaUnscaled;
+				color.a = (Uint8)alphaUnscaled;
 				BlitPicHighlight(&gGraphicsDevice, pic, pos, color);
 			}
 		}

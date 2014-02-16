@@ -49,6 +49,7 @@
 #include "blit.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -68,7 +69,7 @@ color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
 	color_t c;
 	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);
 	// Manually apply the alpha as SDL seems to always set it to 0
-	c.a = (pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> device->Ashift;
+	c.a = (Uint8)((pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> device->Ashift);
 	return c;
 }
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
