@@ -96,13 +96,6 @@ struct DoorPic {
 	int vertPic;
 };
 
-
-#define OBJECTIVE_HIDDEN        1
-#define OBJECTIVE_POSKNOWN      2
-#define OBJECTIVE_HIACCESS      4
-#define OBJECTIVE_UNKNOWNCOUNT	8
-#define OBJECTIVE_NOACCESS		16
-
 // Score penalty for killing a penalty character
 #define PENALTY_MULTIPLIER (-3)
 

@@ -159,6 +159,7 @@ typedef int(*BulletUpdateFunc)(struct MobileObject *, int);
 typedef struct
 {
 	BulletUpdateFunc UpdateFunc;
+	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	int Speed;
 	int Range;

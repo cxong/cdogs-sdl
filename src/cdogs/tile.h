@@ -93,6 +93,7 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
+typedef Pic *(*TileItemGetPicFunc)(void *);
 typedef void (*TileItemDrawFunc) (int, int, void *);
 
 struct TileItem {
@@ -101,6 +102,7 @@ struct TileItem {
 	int kind;
 	int flags;
 	void *data;
+	TileItemGetPicFunc getPicFunc;
 	TileItemDrawFunc drawFunc;
 	void *actor;
 	struct TileItem *next;

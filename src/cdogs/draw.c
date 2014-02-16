@@ -53,6 +53,7 @@
 
 #include "config.h"
 #include "drawtools.h"
+#include "game.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
@@ -93,7 +94,6 @@ void FixBuffer(DrawBuffer *buffer)
 		{
 			if (!(tile->flags & MAPTILE_IS_VISIBLE))
 			{
-				tile->things = NULL;
 				tile->flags |= MAPTILE_OUT_OF_SIGHT;
 			}
 			else
@@ -159,6 +159,7 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
+static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
@@ -169,6 +170,8 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	DrawDebris(b, offset);
 	// Now draw walls and (non-wreck) things in proper order
 	DrawWallsAndThings(b, offset);
+	// Draw objective highlights, for visible and always-visible objectives
+	DrawObjectiveHighlights(b, offset);
 	// Draw editor-only things
 	if (extra)
 	{
@@ -208,15 +211,17 @@ static void AddItemToDisplayList(TTileItem * t, TTileItem **list);
 
 static void DrawDebris(DrawBuffer *b, Vec2i offset)
 {
-	int x, y;
 	Tile *tile = &b->tiles[0][0];
-	for (y = 0; y < Y_TILES; y++)
+	for (int y = 0; y < Y_TILES; y++)
 	{
 		TTileItem *displayList = NULL;
-		TTileItem *t;
-		for (x = 0; x < b->Size.x; x++, tile++)
+		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
-			for (t = tile->things; t; t = t->next)
+			if (tile->flags & MAPTILE_OUT_OF_SIGHT)
+			{
+				continue;
+			}
+			for (TTileItem *t = tile->things; t; t = t->next)
 			{
 				if (t->flags & TILEITEM_IS_WRECK)
 				{
@@ -224,10 +229,18 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 				}
 			}
 		}
-		for (t = displayList; t; t = t->nextToDisplay)
+		for (TTileItem *t = displayList; t; t = t->nextToDisplay)
 		{
-			(*(t->drawFunc))(
-				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
+			Vec2i pos = Vec2iNew(
+				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+			if (t->getPicFunc)
+			{
+				Blit(&gGraphicsDevice, t->getPicFunc(t->data), pos);
+			}
+			else
+			{
+				(*(t->drawFunc))(pos.x, pos.y, t->data);
+			}
 		}
 		tile += X_TILES - b->Size.x;
 	}
@@ -235,16 +248,14 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
-	int x, y;
 	Vec2i pos;
 	Tile *tile = &b->tiles[0][0];
 	pos.y = b->dy + cWallOffset.dy + offset.y;
-	for (y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		TTileItem *displayList = NULL;
-		TTileItem *t;
 		pos.x = b->dx + cWallOffset.dx + offset.x;
-		for (x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
+		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->flags & MAPTILE_IS_WALL)
 			{
@@ -263,18 +274,85 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 					GetTileLOSMask(tile),
 					0);
 			}
-			for (t = tile->things; t; t = t->next)
+			if (!(tile->flags & MAPTILE_OUT_OF_SIGHT))
 			{
-				if (!(t->flags & TILEITEM_IS_WRECK))
+				// Draw the items that are in LOS
+				for (TTileItem *t = tile->things; t; t = t->next)
 				{
-					AddItemToDisplayList(t, &displayList);
+					if (!(t->flags & TILEITEM_IS_WRECK))
+					{
+						AddItemToDisplayList(t, &displayList);
+					}
 				}
 			}
 		}
-		for (t = displayList; t; t = t->nextToDisplay)
+		for (TTileItem *t = displayList; t; t = t->nextToDisplay)
 		{
-			(*(t->drawFunc))(
-				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y, t->data);
+			Vec2i pos = Vec2iNew(
+				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+			if (t->getPicFunc)
+			{
+				Blit(&gGraphicsDevice, t->getPicFunc(t->data), pos);
+			}
+			else
+			{
+				(*(t->drawFunc))(pos.x, pos.y, t->data);
+			}
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+
+static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
+{
+	Tile *tile = &b->tiles[0][0];
+	for (int y = 0; y < Y_TILES; y++)
+	{
+		for (int x = 0; x < b->Size.x; x++, tile++)
+		{
+			// Draw the items that are in LOS
+			for (TTileItem *t = tile->things; t; t = t->next)
+			{
+				if (!(t->flags & TILEITEM_OBJECTIVE))
+				{
+					continue;
+				}
+				int objective = ObjectiveFromTileItem(t->flags);
+				MissionObjective *mo =
+					CArrayGet(&gMission.missionData->Objectives, objective);
+				if (mo->Flags & OBJECTIVE_HIDDEN)
+				{
+					continue;
+				}
+				if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
+					(tile->flags & MAPTILE_OUT_OF_SIGHT))
+				{
+					continue;
+				}
+				if (t->getPicFunc == NULL)
+				{
+					continue;
+				}
+				Pic *pic = t->getPicFunc(t->data);
+				if (!pic)
+				{
+					continue;
+				}
+				Vec2i pos = Vec2iNew(
+					t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+				struct Objective *o =
+					CArrayGet(&gMission.Objectives, objective);
+				color_t color = o->color;
+				int pulsePeriod = FPS_FRAMELIMIT;
+				int alphaUnscaled =
+					(missionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
+				if (alphaUnscaled > 255)
+				{
+					alphaUnscaled = 255 * 2 - alphaUnscaled;
+				}
+				color.a = alphaUnscaled;
+				BlitPicHighlight(&gGraphicsDevice, pic, pos, color);
+			}
 		}
 		tile += X_TILES - b->Size.x;
 	}

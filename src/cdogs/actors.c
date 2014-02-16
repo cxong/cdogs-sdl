@@ -391,6 +391,7 @@ TActor *AddActor(Character *c, struct PlayerData *p)
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
+	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
 	actor->tileItem.w = 7;
 	actor->tileItem.h = 5;

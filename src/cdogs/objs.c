@@ -57,7 +57,6 @@
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
-#include "game.h"
 #include "game_events.h"
 #include "map.h"
 #include "blit.h"
@@ -84,12 +83,13 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special);
 
 // Draw functions
 
-void DrawObject(int x, int y, const TObject * obj)
+Pic *GetObjectPic(void *data)
 {
+	const TObject * obj = data;
 	const TOffsetPic *ofpic = obj->pic;
 	if (!ofpic)
 	{
-		return;
+		return NULL;
 	}
 
 	// Default old pic
@@ -105,24 +105,7 @@ void DrawObject(int x, int y, const TObject * obj)
 		}
 	}
 	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
-	Blit(&gGraphicsDevice, pic, Vec2iNew(x, y));
-
-	// Draw objective highlight
-	if (obj->tileItem.flags & TILEITEM_OBJECTIVE)
-	{
-		int objective = ObjectiveFromTileItem(obj->tileItem.flags);
-		struct Objective *o = CArrayGet(&gMission.Objectives, objective);
-		color_t color = o->color;
-		int pulsePeriod = FPS_FRAMELIMIT;
-		int alphaUnscaled =
-			(missionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
-		if (alphaUnscaled > 255)
-		{
-			alphaUnscaled = 255 * 2 - alphaUnscaled;
-		}
-		color.a = alphaUnscaled;
-		BlitPicHighlight(&gGraphicsDevice, pic, Vec2iNew(x, y), color);
-	}
+	return pic;
 }
 
 void DrawBullet(int x, int y, const TMobileObject * obj)
@@ -211,15 +194,14 @@ void DrawMolotov(int x, int y, const TMobileObject * obj)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-void DrawFlame(int x, int y, const TMobileObject * obj)
+Pic *GetFlame(void *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cFlamePics[obj->state & 3];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	const TMobileObject *obj = data;
+	const TOffsetPic *pic = &cFlamePics[obj->state & 3];
+	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
+	p->offset.x = pic->dx;
+	p->offset.y = pic->dy - obj->z;
+	return p;
 }
 
 void DrawLaserBolt(int x, int y, const TMobileObject * obj)
@@ -698,6 +680,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 	obj->tileItem.data = obj;
 	obj->soundLock = 0;
 	obj->next = *mobObjList;
+	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
 	obj->updateFunc = UpdateMobileObject;
 	*mobObjList = obj;
@@ -708,7 +691,7 @@ TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateMolotovFlame;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFlame;
+	obj->tileItem.getPicFunc = GetFlame;
 	obj->tileItem.w = 5;
 	obj->tileItem.h = 5;
 	obj->kind = MOBOBJ_FIREBALL;
@@ -766,6 +749,7 @@ void AddGasCloud(
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateGasCloud;
+	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
 	obj->tileItem.w = 10;
 	obj->tileItem.h = 10;
@@ -967,6 +951,7 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 	if (HitItem(obj, x, y, special)) {
 		obj->count = 0;
 		obj->range = 0;
+		obj->tileItem.getPicFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
 		obj->updateFunc = UpdateSpark;
 		return 1;
@@ -981,6 +966,7 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 	} else {
 		obj->count = 0;
 		obj->range = 0;
+		obj->tileItem.getPicFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
 		obj->updateFunc = UpdateSpark;
 		return 1;
@@ -1211,6 +1197,8 @@ void BulletInitialize(void)
 	{
 		b = &gBulletClasses[i];
 		b->UpdateFunc = UpdateBullet;
+		b->GetPicFunc = NULL;
+		b->DrawFunc = NULL;
 		b->Size = 0;
 		b->GrenadeColor = colorWhite;
 	}
@@ -1229,7 +1217,7 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_FLAME];
 	b->UpdateFunc = UpdateFlame;
-	b->DrawFunc = (TileItemDrawFunc)DrawFlame;
+	b->GetPicFunc = GetFlame;
 	b->Speed = 384;
 	b->Range = 30;
 	b->Power = 12;
@@ -1347,6 +1335,7 @@ static void SetBulletProps(
 	BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = *b;
 	obj->updateFunc = b->UpdateFunc;
+	obj->tileItem.getPicFunc = b->GetPicFunc;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->kind = MOBOBJ_BULLET;
 	obj->z = BULLET_Z;
@@ -1378,6 +1367,7 @@ void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player)
 	case BULLET_MOLOTOV:
 		obj->kind = MOBOBJ_MOLOTOV;
 		obj->updateFunc = UpdateMolotov;
+		obj->tileItem.getPicFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
 		break;
 	case BULLET_GASBOMB:
@@ -1434,6 +1424,7 @@ static TMobileObject *AddFireBall(int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateExplosion;
+	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
 	obj->tileItem.w = 7;
 	obj->tileItem.h = 5;
@@ -1472,7 +1463,7 @@ static void InternalAddObject(
 	o->tileItem.flags = tileFlags;
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.data = o;
-	o->tileItem.drawFunc = (TileItemDrawFunc)DrawObject;
+	o->tileItem.getPicFunc = GetObjectPic;
 	o->tileItem.w = w;
 	o->tileItem.h = h;
 	o->tileItem.actor = NULL;
