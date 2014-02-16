@@ -274,8 +274,7 @@ int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size)
 			case MAP_FLOOR:	// fallthrough
 			case MAP_ROOM:
 				break;
-			case MAP_WALL:	// fallthrough
-			case MAP_DOOR:
+			case MAP_WALL:
 				// Check if this wall is part of a room
 				if (!MapTileIsPartOfRoom(map, v))
 				{
@@ -372,8 +371,7 @@ int MapGetRoomOverlapSize(
 			}
 			switch (IMapGet(map, v))
 			{
-			case MAP_WALL:	// fallthrough
-			case MAP_DOOR:
+			case MAP_WALL:
 				// Check if this wall is part of a room
 				if (MapTileIsPartOfRoom(map, v))
 				{
@@ -422,8 +420,7 @@ int MapGetRoomOverlapSize(
 			{
 			case MAP_ROOM:
 				break;
-			case MAP_WALL:	// fallthrough
-			case MAP_DOOR:
+			case MAP_WALL:
 				// Check if this wall is part of a room
 				if (!MapTileIsPartOfRoom(map, v))
 				{
