@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,7 @@ void BlitMasked(
 	Vec2i pos,
 	color_t mask,
 	int isTransparent);
+void BlitBlend(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t blend);
 void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but

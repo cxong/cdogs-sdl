@@ -400,6 +400,53 @@ void BlitMasked(
 		}
 	}
 }
+void BlitBlend(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t blend)
+{
+	Uint32 *current = pic->Data;
+	pos = Vec2iAdd(pos, pic->offset);
+	for (int i = 0; i < pic->size.y; i++)
+	{
+		int yoff = i + pos.y;
+		if (yoff > g->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < g->clipping.top)
+		{
+			current += pic->size.x;
+			continue;
+		}
+		yoff *= g->cachedConfig.ResolutionWidth;
+		for (int j = 0; j < pic->size.x; j++)
+		{
+			int xoff = j + pos.x;
+			if (xoff < g->clipping.left)
+			{
+				current++;
+				continue;
+			}
+			if (xoff > g->clipping.right)
+			{
+				current += pic->size.x - j;
+				break;
+			}
+			if (*current == 0)
+			{
+				current++;
+				continue;
+			}
+			Uint32 *target = g->buf + yoff + xoff;
+			color_t currentColor = PixelToColor(g, *current);
+			color_t blendedColor = ColorMult(
+				currentColor, blend);
+			blendedColor.a = blend.a;
+			color_t targetColor = PixelToColor(g, *target);
+			blendedColor = ColorAlphaBlend(targetColor, blendedColor);
+			*target = PixelFromColor(g, blendedColor);
+			current++;
+		}
+	}
+}
 
 #define PixelIndex(x, y, w)		(y * w + x)
 

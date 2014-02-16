@@ -108,6 +108,11 @@ Vec2i TextGetSize(const char *s);
 #define TEXT_FLAMED		64
 #define TEXT_PURPLE		128
 
+void DrawTextStringSpecialBlend(
+	TextManager *tm, const char *s,
+	GraphicsDevice *device, unsigned int opts,
+	Vec2i pos, Vec2i size, Vec2i padding,
+	color_t blend);
 void DrawTextStringSpecialMasked(
 	TextManager *tm, const char *s,
 	GraphicsDevice *device, unsigned int opts,

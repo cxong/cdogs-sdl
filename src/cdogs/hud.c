@@ -651,6 +651,11 @@ static void DrawScoreUpdate(HUDScore *score, int flags)
 			timer * SCORE_POP_UP_HEIGHT / SCORE_FALL_DOWN_DURATION_MS;
 		pos.y -= popupHeight;
 	}
+	else
+	{
+		// Change alpha so that the score fades away
+		color.a = (Uint8)(score->Timer * 255 / SCORE_TIMER_MS);
+	}
 	
 	int textFlags = TEXT_TOP | TEXT_LEFT;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -665,7 +670,7 @@ static void DrawScoreUpdate(HUDScore *score, int flags)
 	Vec2i screenSize = Vec2iNew(
 		gGraphicsDevice.cachedConfig.ResolutionWidth,
 		gGraphicsDevice.cachedConfig.ResolutionHeight);
-	DrawTextStringSpecialMasked(
+	DrawTextStringSpecialBlend(
 		&gTextManager, s, &gGraphicsDevice, textFlags, Vec2iZero(),
 		screenSize, pos, color);
 }
