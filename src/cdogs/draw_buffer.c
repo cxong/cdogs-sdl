@@ -134,7 +134,7 @@ typedef struct
 	Vec2i center;
 	int sightRange2;
 } LOSData;
-static bool IsNextTilBlockedAndSetVisibility(void *data, Vec2i pos)
+static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
 {
 	LOSData *lData = data;
 	// Check sight range
@@ -226,7 +226,7 @@ void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 	// Start from the top-left cell, and proceed clockwise around
 	end = origin;
 	HasClearLineData lineData;
-	lineData.IsBlocked = IsNextTilBlockedAndSetVisibility;
+	lineData.IsBlocked = IsNextTileBlockedAndSetVisibility;
 	lineData.data = &data;
 	// Top edge
 	for (; end.x < origin.x + perimSize.x; end.x++)
