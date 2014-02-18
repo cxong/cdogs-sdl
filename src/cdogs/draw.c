@@ -293,6 +293,68 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			{
 				Blit(&gGraphicsDevice, t->getPicFunc(t->data), pos);
 			}
+			else if (t->getActorPicsFunc)
+			{
+				ActorPics pics = t->getActorPicsFunc(t->data);
+				if (pics.IsDead)
+				{
+					if (pics.IsDying)
+					{
+						PicPaletted *bodyPic = pics.OldPics[0];
+						if (bodyPic == NULL)
+						{
+							continue;
+						}
+						if (pics.IsTransparent)
+						{
+							DrawBTPic(
+								pos.x + pics.Pics[0].offset.x,
+								pos.y + pics.Pics[0].offset.y,
+								bodyPic, pics.Tint);
+						}
+						else
+						{
+							DrawTTPic(
+								pos.x + pics.Pics[0].offset.x,
+								pos.y + pics.Pics[0].offset.y,
+								bodyPic, pics.Table);
+						}
+					}
+				}
+				else if (pics.IsTransparent)
+				{
+					for (int i = 0; i < 3; i++)
+					{
+						PicPaletted *oldPic = pics.OldPics[i];
+						if (oldPic == NULL)
+						{
+							continue;
+						}
+						DrawBTPic(
+							pos.x + pics.Pics[i].offset.x,
+							pos.y + pics.Pics[i].offset.y,
+							oldPic,
+							pics.Tint);
+					}
+				}
+				else
+				{
+					DrawShadow(&gGraphicsDevice, pos, Vec2iNew(8, 6));
+					for (int i = 0; i < 3; i++)
+					{
+						PicPaletted *oldPic = pics.OldPics[i];
+						if (oldPic == NULL)
+						{
+							continue;
+						}
+						BlitOld(
+							pos.x + pics.Pics[i].offset.x,
+							pos.y + pics.Pics[i].offset.y,
+							oldPic,
+							pics.Table, BLIT_TRANSPARENT);
+					}
+				}
+			}
 			else
 			{
 				(*(t->drawFunc))(pos.x, pos.y, t->data);
@@ -328,15 +390,6 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 				{
 					continue;
 				}
-				if (t->getPicFunc == NULL)
-				{
-					continue;
-				}
-				Pic *pic = t->getPicFunc(t->data);
-				if (!pic)
-				{
-					continue;
-				}
 				Vec2i pos = Vec2iNew(
 					t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 				struct Objective *o =
@@ -350,7 +403,28 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 					alphaUnscaled = 255 * 2 - alphaUnscaled;
 				}
 				color.a = (Uint8)alphaUnscaled;
-				BlitPicHighlight(&gGraphicsDevice, pic, pos, color);
+				if (t->getPicFunc != NULL)
+				{
+					BlitPicHighlight(
+						&gGraphicsDevice, t->getPicFunc(t->data), pos, color);
+				}
+				else if (t->getActorPicsFunc != NULL)
+				{
+					ActorPics pics = t->getActorPicsFunc(t->data);
+					// Do not highlight dead, dying or transparent characters
+					if (!pics.IsDead && !pics.IsTransparent)
+					{
+						for (int i = 0; i < 3; i++)
+						{
+							if (PicIsNotNone(&pics.Pics[i]))
+							{
+								BlitPicHighlight(
+									&gGraphicsDevice,
+									&pics.Pics[i], pos, color);
+							}
+						}
+					}
+				}
 			}
 		}
 		tile += X_TILES - b->Size.x;

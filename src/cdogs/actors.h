@@ -163,7 +163,6 @@ int IsPlayerAlive(int player);
 Vec2i PlayersGetMidpoint(TActor *players[MAX_PLAYERS]);
 void PlayersGetBoundingRectangle(
 	TActor *players[MAX_PLAYERS], Vec2i *min, Vec2i *max);
-void DrawCharacter(int x, int y, TActor * actor);
 
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);

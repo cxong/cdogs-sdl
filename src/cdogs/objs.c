@@ -681,6 +681,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 	obj->soundLock = 0;
 	obj->next = *mobObjList;
 	obj->tileItem.getPicFunc = NULL;
+	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
 	obj->updateFunc = UpdateMobileObject;
 	*mobObjList = obj;
@@ -749,7 +750,6 @@ void AddGasCloud(
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateGasCloud;
-	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
 	obj->tileItem.w = 10;
 	obj->tileItem.h = 10;
@@ -952,6 +952,7 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->count = 0;
 		obj->range = 0;
 		obj->tileItem.getPicFunc = NULL;
+		obj->tileItem.getActorPicsFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
 		obj->updateFunc = UpdateSpark;
 		return 1;
@@ -967,6 +968,7 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->count = 0;
 		obj->range = 0;
 		obj->tileItem.getPicFunc = NULL;
+		obj->tileItem.getActorPicsFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
 		obj->updateFunc = UpdateSpark;
 		return 1;
@@ -1336,6 +1338,7 @@ static void SetBulletProps(
 	obj->bulletClass = *b;
 	obj->updateFunc = b->UpdateFunc;
 	obj->tileItem.getPicFunc = b->GetPicFunc;
+	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->kind = MOBOBJ_BULLET;
 	obj->z = BULLET_Z;
@@ -1368,6 +1371,7 @@ void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player)
 		obj->kind = MOBOBJ_MOLOTOV;
 		obj->updateFunc = UpdateMolotov;
 		obj->tileItem.getPicFunc = NULL;
+		obj->tileItem.getActorPicsFunc = NULL;
 		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
 		break;
 	case BULLET_GASBOMB:
@@ -1424,7 +1428,6 @@ static TMobileObject *AddFireBall(int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateExplosion;
-	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
 	obj->tileItem.w = 7;
 	obj->tileItem.h = 5;
@@ -1464,6 +1467,7 @@ static void InternalAddObject(
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.data = o;
 	o->tileItem.getPicFunc = GetObjectPic;
+	o->tileItem.getActorPicsFunc = NULL;
 	o->tileItem.w = w;
 	o->tileItem.h = h;
 	o->tileItem.actor = NULL;

@@ -219,10 +219,18 @@ void PicManagerTerminate(PicManager *pm)
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
 {
+	if (idx < 0)
+	{
+		return NULL;
+	}
 	return pm->oldPics[idx];
 }
 Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 {
+	if (idx < 0)
+	{
+		return NULL;
+	}
 	return &pm->picsFromOld[idx];
 }
 Pic *PicManagerGetPic(PicManager *pm, const char *name)
@@ -236,4 +244,19 @@ Pic *PicManagerGetPic(PicManager *pm, const char *name)
 		}
 	}
 	return NULL;
+}
+
+
+Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op)
+{
+	Pic *opPic = PicManagerGetFromOld(pm, op.picIndex);
+	Pic pic;
+	if (opPic == NULL)
+	{
+		return picNone;
+	}
+	pic.size = opPic->size;
+	pic.offset = Vec2iNew(op.dx, op.dy);
+	pic.Data = opPic->Data;
+	return pic;
 }

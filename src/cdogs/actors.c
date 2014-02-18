@@ -195,25 +195,26 @@ void PlayersGetBoundingRectangle(
 	}
 }
 
-void DrawCharacter(int x, int y, TActor * actor)
+ActorPics GetCharacterPics(void *data)
 {
+	ActorPics pics;
+	memset(&pics, 0, sizeof pics);
+	TActor *actor = data;
 	direction_e dir = actor->direction;
 	direction_e headDir = dir;
 	int state = actor->state;
 	int headState = state;
 
 	Character *c = actor->character;
-	TranslationTable *table = (TranslationTable *) c->table;
-	HSV *tint = NULL;
+	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
 	int b;
 	int g = GunGetPic(actor->weapon.gun);
 	gunstate_e gunState = actor->weapon.state;
 
 	TOffsetPic body, head, gun;
-	TOffsetPic pic1, pic2, pic3;
 
-	int transparent = (actor->flags & FLAGS_SEETHROUGH) != 0;
+	pics.IsTransparent = !!(actor->flags & FLAGS_SEETHROUGH);
 
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
 	{
@@ -222,47 +223,28 @@ void DrawCharacter(int x, int y, TActor * actor)
 
 	if (actor->flamed)
 	{
-		table = &tableFlamed;
-		tint = &tintRed;
+		pics.Table = &tableFlamed;
+		pics.Tint = &tintRed;
 	}
 	else if (actor->poisoned)
 	{
-		table = &tableGreen;
-		tint = &tintPoison;
+		pics.Table = &tableGreen;
+		pics.Tint = &tintPoison;
 	}
 	else if (actor->petrified)
 	{
-		table = &tableGray;
-		tint = &tintGray;
+		pics.Table = &tableGray;
+		pics.Tint = &tintGray;
 	}
 	else if (actor->confused)
 	{
-		table = &tablePurple;
-		tint = &tintPurple;
+		pics.Table = &tablePurple;
+		pics.Tint = &tintPurple;
 	}
-	else if (transparent)
+	else if (pics.IsTransparent)
 	{
-		table = &tableDarker;
-		tint = &tintDarker;
-	}
-
-	if (actor->dead) {
-		if (actor->dead <= DEATH_MAX) {
-			body = cDeathPics[actor->dead - 1];
-			if (transparent)
-			{
-				DrawBTPic(
-					x + body.dx, y + body.dy,
-					PicManagerGetOldPic(&gPicManager, body.picIndex), tint);
-			}
-			else
-			{
-				DrawTTPic(
-					x + body.dx, y + body.dy,
-					PicManagerGetOldPic(&gPicManager, body.picIndex), table);
-			}
-		}
-		return;
+		pics.Table = &tableDarker;
+		pics.Tint = &tintDarker;
 	}
 
 	actor->flags |= FLAGS_VISIBLE;
@@ -287,6 +269,19 @@ void DrawCharacter(int x, int y, TActor * actor)
 	body.dy = cBodyOffset[b][dir].dy;
 	body.picIndex = cBodyPic[b][dir][state];
 
+	if (actor->dead)
+	{
+		pics.IsDead = true;
+		if (actor->dead <= DEATH_MAX)
+		{
+			pics.IsDying = true;
+			body = cDeathPics[actor->dead - 1];
+			pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
+			pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, body.picIndex);
+		}
+		goto bail;
+	}
+
 	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
 	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
 	head.picIndex = cHeadPic[f][headDir][headState];
@@ -306,77 +301,42 @@ void DrawCharacter(int x, int y, TActor * actor)
 	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
-		pic1 = gun;
-		pic2 = head;
-		pic3 = body;
+		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, body);
+		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
+		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, head.picIndex);
+		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, body.picIndex);
 		break;
 
 	case DIRECTION_RIGHT:
 	case DIRECTION_DOWNRIGHT:
 	case DIRECTION_DOWN:
 	case DIRECTION_DOWNLEFT:
-		pic1 = body;
-		pic2 = head;
-		pic3 = gun;
+		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
+		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, body.picIndex);
+		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, head.picIndex);
+		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
-		pic1 = gun;
-		pic2 = body;
-		pic3 = head;
+		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, body);
+		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, head);
+		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
+		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, body.picIndex);
+		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, head.picIndex);
 		break;
 	default:
 		assert(0 && "invalid direction");
-		return;
+		goto bail;
 	}
 
-	if (transparent)
-	{
-		if (pic1.picIndex >= 0)
-		{
-			DrawBTPic(
-				x + pic1.dx, y + pic1.dy,
-				PicManagerGetOldPic(&gPicManager, pic1.picIndex), tint);
-		}
-		if (pic2.picIndex >= 0)
-		{
-			DrawBTPic(
-				x + pic2.dx, y + pic2.dy,
-				PicManagerGetOldPic(&gPicManager, pic2.picIndex), tint);
-		}
-		if (pic3.picIndex >= 0)
-		{
-			DrawBTPic(
-				x + pic3.dx, y + pic3.dy,
-				PicManagerGetOldPic(&gPicManager, pic3.picIndex), tint);
-		}
-	}
-	else
-	{
-		DrawShadow(&gGraphicsDevice, Vec2iNew(x, y), Vec2iNew(8, 6));
-		if (pic1.picIndex >= 0)
-		{
-			BlitOld(
-				x + pic1.dx, y + pic1.dy,
-				PicManagerGetOldPic(&gPicManager, pic1.picIndex),
-				table, BLIT_TRANSPARENT);
-		}
-		if (pic2.picIndex >= 0)
-		{
-			BlitOld(
-				x + pic2.dx, y + pic2.dy,
-				PicManagerGetOldPic(&gPicManager, pic2.picIndex),
-				table, BLIT_TRANSPARENT);
-		}
-		if (pic3.picIndex >= 0)
-		{
-			BlitOld(
-				x + pic3.dx, y + pic3.dy,
-				PicManagerGetOldPic(&gPicManager, pic3.picIndex),
-				table, BLIT_TRANSPARENT);
-		}
-	}
+bail:
+	return pics;
 }
 
 
@@ -392,7 +352,8 @@ TActor *AddActor(Character *c, struct PlayerData *p)
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.data = actor;
 	actor->tileItem.getPicFunc = NULL;
-	actor->tileItem.drawFunc = (TileItemDrawFunc) DrawCharacter;
+	actor->tileItem.getActorPicsFunc = GetCharacterPics;
+	actor->tileItem.drawFunc = NULL;
 	actor->tileItem.w = 7;
 	actor->tileItem.h = 5;
 	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;

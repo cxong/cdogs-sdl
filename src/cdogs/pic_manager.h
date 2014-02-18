@@ -57,4 +57,8 @@ PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
 Pic *PicManagerGetFromOld(PicManager *pm, int idx);
 Pic *PicManagerGetPic(PicManager *pm, const char *name);
 
+
+// Conversion
+Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);
+
 #endif

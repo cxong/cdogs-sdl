@@ -49,6 +49,8 @@
 #ifndef __TILE
 #define __TILE
 
+#include <stdbool.h>
+
 #include "c_array.h"
 #include "pic.h"
 #include "vector.h"
@@ -94,6 +96,20 @@ typedef enum
 
 
 typedef Pic *(*TileItemGetPicFunc)(void *);
+
+// For actor drawing
+typedef struct
+{
+	Pic Pics[3];	// TODO: only used for offsets and highlights for now
+	PicPaletted *OldPics[3];
+	bool IsDead;
+	bool IsDying;
+	bool IsTransparent;
+	TranslationTable *Table;
+	HSV *Tint;
+} ActorPics;
+typedef ActorPics (*TileItemGetPic3Func)(void *);
+
 typedef void (*TileItemDrawFunc) (int, int, void *);
 
 struct TileItem {
@@ -103,6 +119,7 @@ struct TileItem {
 	int flags;
 	void *data;
 	TileItemGetPicFunc getPicFunc;
+	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
 	void *actor;
 	struct TileItem *next;
