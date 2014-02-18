@@ -395,6 +395,14 @@ int AIGoto(TActor *actor, Vec2i p)
 	Vec2i goalTile = Vec2iToTile(p);
 	AIGotoContext *c = actor->aiContext;
 
+	// If we are already there, bail
+	// This can happen if AI is trying to track the player,
+	// but the player has died, for example.
+	if (Vec2iEqual(currentTile, goalTile))
+	{
+		return 0;
+	}
+
 	// If we are currently following an A* path,
 	// and it is still valid, keep following it until
 	// we have reached a new tile
