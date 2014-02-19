@@ -49,6 +49,7 @@ void GrafxMakeRandomBackground(
 	tint.v = 0.5;
 	DrawBuffer buffer;
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
+	co->MissionIndex = 0;
 	GrafxMakeBackground(
 		device, &buffer, co, mo, map,
 		tint, 0, 1, Vec2iCenterOfTile(map->Size), NULL);
