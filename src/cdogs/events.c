@@ -66,6 +66,12 @@ void EventInit(EventHandlers *handlers, Pic *mouseCursor)
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
 	MouseInit(&handlers->mouse, mouseCursor);
+	NetInputInit(&handlers->netInput);
+}
+void EventTerminate(EventHandlers *handlers)
+{
+	JoyTerminate(&handlers->joysticks);
+	NetInputTerminate(&handlers->netInput);
 }
 
 void EventPoll(EventHandlers *handlers, Uint32 ticks)
@@ -110,18 +116,16 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	}
 	KeyPostPoll(&handlers->keyboard, ticks);
 	MousePostPoll(&handlers->mouse, ticks);
-}
 
-void EventTerminate(EventHandlers *handlers)
-{
-	JoyTerminate(&handlers->joysticks);
+	NetInputPoll(&handlers->netInput);
 }
 
 static int GetKeyboardCmd(
 	keyboard_t *keyboard, input_keys_t *keys,
-	int(*keyFunc)(keyboard_t *, int))
+	bool isPressed)
 {
 	int cmd = 0;
+	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
 
 	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
 	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
@@ -137,9 +141,10 @@ static int GetKeyboardCmd(
 }
 #define MOUSE_MOVE_DEAD_ZONE 12
 static int GetMouseCmd(
-	Mouse *mouse, int(*mouseFunc)(Mouse *, int), int useMouseMove, Vec2i pos)
+	Mouse *mouse, bool isPressed, int useMouseMove, Vec2i pos)
 {
 	int cmd = 0;
+	int (*mouseFunc)(Mouse *, int) = isPressed ? MouseIsPressed : MouseIsDown;
 
 	if (useMouseMove)
 	{
@@ -172,10 +177,10 @@ static int GetMouseCmd(
 	return cmd;
 }
 
-static int GetJoystickCmd(
-	joystick_t *joystick, int(*joyFunc)(joystick_t *, int))
+static int GetJoystickCmd(joystick_t *joystick, bool isPressed)
 {
 	int cmd = 0;
+	int (*joyFunc)(joystick_t *, int) = isPressed ? JoyIsPressed : JoyIsDown;
 
 	if (joyFunc(joystick, CMD_LEFT))		cmd |= CMD_LEFT;
 	else if (joyFunc(joystick, CMD_RIGHT))	cmd |= CMD_RIGHT;
@@ -207,15 +212,18 @@ int GetGameCmd(
 		cmd = GetKeyboardCmd(
 			&handlers->keyboard,
 			&config->PlayerKeys[playerData->deviceIndex].Keys,
-			KeyIsDown);
+			false);
 		break;
 	case INPUT_DEVICE_MOUSE:
-		cmd = GetMouseCmd(&handlers->mouse, MouseIsDown, 1, playerPos);
+		cmd = GetMouseCmd(&handlers->mouse, false, 1, playerPos);
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		joystick =
 			&handlers->joysticks.joys[playerData->deviceIndex];
-		cmd = GetJoystickCmd(joystick, JoyIsDown);
+		cmd = GetJoystickCmd(joystick, false);
+		break;
+	case INPUT_DEVICE_NET:
+		cmd = handlers->netInput.Cmd;
 		break;
 	default:
 		// do nothing
@@ -228,9 +236,7 @@ int GetGameCmd(
 static int GetOnePlayerCmd(
 	EventHandlers *handlers,
 	KeyConfig *config,
-	int(*keyFunc)(keyboard_t *, int),
-	int(*mouseFunc)(Mouse *, int),
-	int(*joyFunc)(joystick_t *, int),
+	bool isPressed,
 	input_device_e device,
 	int deviceIndex)
 {
@@ -238,16 +244,22 @@ static int GetOnePlayerCmd(
 	switch (device)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		cmd = GetKeyboardCmd(
-			&handlers->keyboard, &config->Keys, keyFunc);
+		cmd = GetKeyboardCmd(&handlers->keyboard, &config->Keys, isPressed);
 		break;
 	case INPUT_DEVICE_MOUSE:
-		cmd = GetMouseCmd(&handlers->mouse, mouseFunc, 0, Vec2iZero());
+		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, Vec2iZero());
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		{
 			joystick_t *joystick = &handlers->joysticks.joys[deviceIndex];
-			cmd = GetJoystickCmd(joystick, joyFunc);
+			cmd = GetJoystickCmd(joystick, isPressed);
+		}
+		break;
+	case INPUT_DEVICE_NET:
+		cmd = handlers->netInput.Cmd;
+		if (isPressed)
+		{
+			cmd &= ~handlers->netInput.PrevCmd;
 		}
 		break;
 	case INPUT_DEVICE_AI:
@@ -264,11 +276,7 @@ void GetPlayerCmds(
 	EventHandlers *handlers,
 	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS])
 {
-	int(*keyFunc)(keyboard_t *, int) = KeyIsPressed;
-	int(*mouseFunc)(Mouse *, int) = MouseIsPressed;
-	int(*joyFunc)(joystick_t *, int) = JoyIsPressed;
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (playerDatas[i].inputDevice == INPUT_DEVICE_UNSET)
 		{
@@ -277,7 +285,7 @@ void GetPlayerCmds(
 		(*cmds)[i] = GetOnePlayerCmd(
 			handlers,
 			&gConfig.Input.PlayerKeys[playerDatas[i].deviceIndex],
-			keyFunc, mouseFunc, joyFunc,
+			true,
 			playerDatas[i].inputDevice, playerDatas[i].deviceIndex);
 	}
 }
@@ -296,7 +304,7 @@ int GetMenuCmd(
 	cmd = GetOnePlayerCmd(
 		handlers,
 		&gConfig.Input.PlayerKeys[0],
-		KeyIsPressed, MouseIsPressed, JoyIsPressed,
+		true,
 		playerDatas[0].inputDevice, playerDatas[0].deviceIndex);
 	if (!cmd)
 	{
@@ -314,16 +322,17 @@ int GetMenuCmd(
 	if (!cmd && handlers->joysticks.numJoys > 0)
 	{
 		// Check joystick 1
-		joystick_t *j = &handlers->joysticks.joys[0];
-		if (JoyIsPressed(j, CMD_LEFT))			cmd |= CMD_LEFT;
-		else if (JoyIsPressed(j, CMD_RIGHT))	cmd |= CMD_RIGHT;
-
-		if (JoyIsPressed(j, CMD_UP))			cmd |= CMD_UP;
-		else if (JoyIsPressed(j, CMD_DOWN))		cmd |= CMD_DOWN;
-
-		if (JoyIsPressed(j, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
-
-		if (JoyIsPressed(j, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
+		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_JOYSTICK, 0);
+	}
+	if (!cmd)
+	{
+		// Check mouse
+		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_MOUSE, 0);
+	}
+	if (!cmd)
+	{
+		// Check net device
+		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_NET, 0);
 	}
 
 	return cmd;

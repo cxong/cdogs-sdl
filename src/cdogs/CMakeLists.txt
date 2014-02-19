@@ -45,6 +45,7 @@ set(CDOGS_SOURCES
 	mission_convert.c
 	mouse.c
 	music.c
+	net_input.c
 	objs.c
 	palette.c
 	pic.c
@@ -103,6 +104,7 @@ set(CDOGS_HEADERS
 	mission_convert.h
 	mouse.h
 	music.h
+	net_input.h
 	objs.h
 	palette.h
 	pic.h

@@ -51,12 +51,14 @@
 
 #include "gamedata.h"
 #include "input.h"
+#include "net_input.h"
 
 typedef struct
 {
 	keyboard_t keyboard;
 	joysticks_t joysticks;
 	Mouse mouse;
+	NetInput netInput;
 
 	int HasResolutionChanged;
 } EventHandlers;
@@ -64,8 +66,8 @@ typedef struct
 extern EventHandlers gEventHandlers;
 
 void EventInit(EventHandlers *handlers, Pic *mouseCursor);
-void EventPoll(EventHandlers *handlers, Uint32 ticks);
 void EventTerminate(EventHandlers *handlers);
+void EventPoll(EventHandlers *handlers, Uint32 ticks);
 
 int GetGameCmd(
 	EventHandlers *handlers, InputConfig *config,
