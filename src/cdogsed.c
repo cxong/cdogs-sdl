@@ -1132,5 +1132,7 @@ int main(int argc, char *argv[])
 	CArrayTerminate(&sDrawObjs);
 	EditorBrushTerminate(&brush);
 
+	SDL_Quit();
+
 	exit(EXIT_SUCCESS);
 }

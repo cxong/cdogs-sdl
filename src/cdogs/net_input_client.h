@@ -26,31 +26,26 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#ifndef __NET_INPUT_CLIENT
+#define __NET_INPUT_CLIENT
 
 #include <stdbool.h>
 
 #include <SDL_net.h>
 
-#define NET_INPUT_UDP_PORT 34219
-#define NET_INPUT_MAX_PACKET_LEN 1024
-
 typedef struct
 {
-	int PrevCmd;
-	int Cmd;
 	UDPsocket sock;
-	Uint8 buf[NET_INPUT_MAX_PACKET_LEN];
-} NetInput;
+	bool isActive;
+	Uint32 serverHost;
+} NetInputClient;
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+void NetInputClientInit(NetInputClient *n);
+void NetInputClientTerminate(NetInputClient *n);
 
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
+// Attempt to connect to a server
+void NetInputClientConnect(NetInputClient *n, Uint32 host);
+// Send a command to the server
+void NetInputClientSend(NetInputClient *n, int cmd);
 
 #endif

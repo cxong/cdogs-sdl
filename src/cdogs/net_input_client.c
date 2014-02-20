@@ -26,31 +26,50 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#include "net_input_client.h"
 
-#include <stdbool.h>
+#include "net_input.h"
+#include "utils.h"
 
-#include <SDL_net.h>
 
-#define NET_INPUT_UDP_PORT 34219
-#define NET_INPUT_MAX_PACKET_LEN 1024
-
-typedef struct
+void NetInputClientInit(NetInputClient *n)
 {
-	int PrevCmd;
-	int Cmd;
-	UDPsocket sock;
-	Uint8 buf[NET_INPUT_MAX_PACKET_LEN];
-} NetInput;
+	memset(n, 0, sizeof *n);
+}
+void NetInputClientTerminate(NetInputClient *n)
+{
+	SDLNet_UDP_Close(n->sock);
+	n->sock = NULL;
+}
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+void NetInputClientConnect(NetInputClient *n, Uint32 host)
+{
+	n->sock = SDLNet_UDP_Open(0);
+	if (n->sock == NULL)
+	{
+		printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		return;
+	}
+	n->isActive = true;
+	n->serverHost = host;
+}
+void NetInputClientSend(NetInputClient *n, int cmd)
+{
+	if (n->sock == NULL || !n->isActive)
+	{
+		return;
+	}
 
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
-
-#endif
+	UDPpacket packet;
+	SDLNet_Write32(n->serverHost, &packet.address.host);
+	SDLNet_Write16(NET_INPUT_UDP_PORT, &packet.address.port);
+	packet.maxlen = packet.len = sizeof(Uint32);
+	CMALLOC(packet.data, sizeof(Uint32));
+	SDLNet_Write32(cmd, packet.data);
+	int numsent = SDLNet_UDP_Send(n->sock, -1, &packet);
+	if (numsent == 0)
+	{
+		printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+		n->isActive = false;
+	}
+}

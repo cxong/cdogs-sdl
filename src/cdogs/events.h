@@ -67,8 +67,16 @@ extern EventHandlers gEventHandlers;
 
 void EventInit(EventHandlers *handlers, Pic *mouseCursor);
 void EventTerminate(EventHandlers *handlers);
+void EventReset(EventHandlers *handlers, Pic *mouseCursor);
+
 void EventPoll(EventHandlers *handlers, Uint32 ticks);
 
+int GetOnePlayerCmd(
+	EventHandlers *handlers,
+	KeyConfig *config,
+	bool isPressed,
+	input_device_e device,
+	int deviceIndex);
 int GetGameCmd(
 	EventHandlers *handlers, InputConfig *config,
 	struct PlayerData *playerData, Vec2i playerPos);

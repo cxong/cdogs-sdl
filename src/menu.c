@@ -157,7 +157,9 @@ void MenuLoop(MenuSystem *menu)
 	assert(menu->numExitTypes > 0);
 	for (;; SDL_Delay(10))
 	{
+#ifndef RUN_WITHOUT_APP_FOCUS
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+#endif
 		// Input
 		EventPoll(menu->handlers, SDL_GetTicks());
 		// Update

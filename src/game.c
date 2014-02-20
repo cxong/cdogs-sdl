@@ -492,10 +492,12 @@ int HandleKey(int cmd, int *isPaused, int *hasUsedMap)
 		*isPaused = 0;
 	}
 
+#ifndef RUN_WITHOUT_APP_FOCUS
 	if (!*isPaused && !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
 	{
 		*isPaused = 1;
-	}
+	}	
+#endif
 
 	return 0;
 }
@@ -597,7 +599,7 @@ int gameloop(void)
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
-	EventInit(&gEventHandlers, crosshair);
+	EventReset(&gEventHandlers, crosshair);
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
 	ticksNow = SDL_GetTicks();
@@ -622,7 +624,9 @@ int gameloop(void)
 			continue;
 		}
 
+#ifndef RUN_WITHOUT_APP_FOCUS
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+#endif
 		EventPoll(&gEventHandlers, ticksNow);
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{

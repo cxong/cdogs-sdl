@@ -203,7 +203,7 @@ void MissionBriefing(GraphicsDevice *device)
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 	
-	EventInit(&gEventHandlers, gEventHandlers.mouse.cursor);
+	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
 
 	for (typewriterCount = 0;
 		typewriterCount <= (int)strlen(description);
@@ -1293,9 +1293,15 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0) {
-		printf("Failed to start SDL!\n");
-		return -1;
+	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0)
+	{
+		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+	if (SDLNet_Init() == -1)
+	{
+		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
 	}
 
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
@@ -1390,6 +1396,7 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "SDL_Quit()\n");
+	SDLNet_Quit();
 	SDL_Quit();
 
 	printf("Bye :)\n");

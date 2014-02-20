@@ -106,6 +106,9 @@ void MenuDisplayPlayerControls(
 		sprintf(s, "(%s)",
 			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
 		break;
+	case INPUT_DEVICE_NET:
+		sprintf(s, "(Network)");
+		break;
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(Computer)");
 		break;

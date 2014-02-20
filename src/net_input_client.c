@@ -26,31 +26,69 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#include <cdogs/config.h>
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/net_input_client.h>
 
-#include <stdbool.h>
-
-#include <SDL_net.h>
-
-#define NET_INPUT_UDP_PORT 34219
-#define NET_INPUT_MAX_PACKET_LEN 1024
-
-typedef struct
+int main(int argc, char *argv[])
 {
-	int PrevCmd;
-	int Cmd;
-	UDPsocket sock;
-	Uint8 buf[NET_INPUT_MAX_PACKET_LEN];
-} NetInput;
+	UNUSED(argc);
+	UNUSED(argv);
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
+	{
+		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
+		return -1;
+	}
+	if (SDLNet_Init() == -1)
+	{
+		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+	if (!SDL_SetVideoMode(320, 200, 0, 0))
+	{
+		fprintf(stderr, "Could not set video mode: %s\n", SDL_GetError());
+		SDL_Quit();
+		exit(-1);
+	}
 
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
+	ConfigLoadDefault(&gConfig);
+	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	EventInit(&gEventHandlers, NULL);
 
-#endif
+	NetInputClient client;
+	NetInputClientInit(&client);
+	NetInputClientConnect(&client, 0x7F000001);	// localhost
+
+	printf("Press esc to exit\n");
+
+	for (;;)
+	{
+		EventPoll(&gEventHandlers, SDL_GetTicks());
+		int cmd = GetOnePlayerCmd(
+			&gEventHandlers,
+			&gConfig.Input.PlayerKeys[0],
+			false,
+			INPUT_DEVICE_KEYBOARD,
+			0);
+		if (cmd)
+		{
+			printf("Sending %d\n", cmd);
+			NetInputClientSend(&client, cmd);
+		}
+
+		// Check keyboard escape
+		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE))
+		{
+			break;
+		}
+		SDL_Delay(1000 / FPS_FRAMELIMIT);
+	}
+
+	NetInputClientTerminate(&client);
+	EventTerminate(&gEventHandlers);
+	SDLNet_Quit();
+	SDL_Quit();
+	return 0;
+}

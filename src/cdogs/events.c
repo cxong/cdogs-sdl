@@ -73,6 +73,14 @@ void EventTerminate(EventHandlers *handlers)
 	JoyTerminate(&handlers->joysticks);
 	NetInputTerminate(&handlers->netInput);
 }
+void EventReset(EventHandlers *handlers, Pic *mouseCursor)
+{
+	handlers->HasResolutionChanged = 0;
+	KeyInit(&handlers->keyboard);
+	JoyInit(&handlers->joysticks);
+	MouseInit(&handlers->mouse, mouseCursor);
+	NetInputReset(&handlers->netInput);
+}
 
 void EventPoll(EventHandlers *handlers, Uint32 ticks)
 {
@@ -233,7 +241,7 @@ int GetGameCmd(
 	return cmd;
 }
 
-static int GetOnePlayerCmd(
+int GetOnePlayerCmd(
 	EventHandlers *handlers,
 	KeyConfig *config,
 	bool isPressed,
@@ -351,8 +359,8 @@ int GetKey(EventHandlers *handlers)
 
 int WaitForAnyKeyOrButton(EventHandlers *handlers)
 {
-	// Re-initialise to prevent held down keys repeating
-	EventInit(handlers, handlers->mouse.cursor);
+	// Reset to prevent held down keys repeating
+	EventReset(handlers, handlers->mouse.cursor);
 	for (;;)
 	{
 		int i;

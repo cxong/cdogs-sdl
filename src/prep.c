@@ -143,20 +143,19 @@ static void AssignPlayerInputDevice(
 }
 
 static void AssignPlayerInputDevices(
-	int hasInputDevice[MAX_PLAYERS], int numPlayers,
+	bool hasInputDevice[MAX_PLAYERS], int numPlayers,
 	struct PlayerData playerDatas[MAX_PLAYERS],
 	EventHandlers *handlers, InputConfig *inputConfig)
 {
-	int i;
-	int assignedKeyboards[MAX_KEYBOARD_CONFIGS];
-	int assignedMouse = 0;
-	int assignedJoysticks[MAX_JOYSTICKS];
+	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
+	bool assignedMouse = false;
+	bool assignedJoysticks[MAX_JOYSTICKS];
+	bool assignedNet = false;
 	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
 	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
 
-	for (i = 0; i < numPlayers; i++)
+	for (int i = 0; i < numPlayers; i++)
 	{
-		int j;
 		if (hasInputDevice[i])
 		{
 			// Find all the assigned devices
@@ -166,10 +165,13 @@ static void AssignPlayerInputDevices(
 				assignedKeyboards[playerDatas[i].deviceIndex] = 1;
 				break;
 			case INPUT_DEVICE_MOUSE:
-				assignedMouse = 1;
+				assignedMouse = true;
 				break;
 			case INPUT_DEVICE_JOYSTICK:
 				assignedJoysticks[playerDatas[i].deviceIndex] = 1;
+				break;
+			case INPUT_DEVICE_NET:
+				assignedNet = true;
 				break;
 			default:
 				// do nothing
@@ -180,7 +182,7 @@ static void AssignPlayerInputDevices(
 
 		// Try to assign devices to players
 		// For each unassigned player, check if any device has button 1 pressed
-		for (j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
+		for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
 		{
 			if (KeyIsPressed(
 				&handlers->keyboard,
@@ -202,7 +204,7 @@ static void AssignPlayerInputDevices(
 			assignedMouse = 1;
 			continue;
 		}
-		for (j = 0; j < handlers->joysticks.numJoys; j++)
+		for (int j = 0; j < handlers->joysticks.numJoys; j++)
 		{
 			if (JoyIsPressed(
 				&handlers->joysticks.joys[j], CMD_BUTTON1) &&
@@ -215,24 +217,32 @@ static void AssignPlayerInputDevices(
 				continue;
 			}
 		}
+		if ((handlers->netInput.Cmd & CMD_BUTTON1 & ~handlers->netInput.PrevCmd) &&
+			!assignedNet)
+		{
+			hasInputDevice[i] = 1;
+			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
+			assignedNet = 1;
+			continue;
+		}
 	}
 }
 
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
-	int i;
-	int hasInputDevice[MAX_PLAYERS];
+	bool hasInputDevice[MAX_PLAYERS];
 	PlayerSelectMenu menus[MAX_PLAYERS];
-	for (i = 0; i < numPlayers; i++)
+	for (int i = 0; i < numPlayers; i++)
 	{
 		PlayerSelectMenusCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
 			&gEventHandlers, graphics, &gConfig.Input);
-		hasInputDevice[i] = 0;
+		hasInputDevice[i] = false;
 	}
 
 	KeyInit(&gEventHandlers.keyboard);
+	NetInputOpen(&gEventHandlers.netInput);
 	for (;;)
 	{
 		int cmds[MAX_PLAYERS];
@@ -246,7 +256,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			return 0; // hack to allow exit
 		}
 		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-		for (i = 0; i < numPlayers; i++)
+		for (int i = 0; i < numPlayers; i++)
 		{
 			if (hasInputDevice[i] && !MenuIsExit(&menus[i].ms))
 			{
@@ -257,7 +267,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		// Conditions for exit: at least one player has selected "Done",
 		// and no other players, if any, are still selecting their player
 		// The "players" with no input device are turned into AIs
-		for (i = 0; i < numPlayers; i++)
+		for (int i = 0; i < numPlayers; i++)
 		{
 			if (hasInputDevice[i])
 			{
@@ -279,7 +289,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			gPlayerDatas, &gEventHandlers, &gConfig.Input);
 
 		GraphicsBlitBkg(graphics);
-		for (i = 0; i < numPlayers; i++)
+		for (int i = 0; i < numPlayers; i++)
 		{
 			if (hasInputDevice[i])
 			{
@@ -320,8 +330,24 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		SDL_Delay(10);
 	}
 
+	// If no net input devices selected, close the connection
+	bool hasNetInput = false;
+	for (int i = 0; i < numPlayers; i++)
+	{
+		if (hasInputDevice[i] &&
+			gPlayerDatas[i].inputDevice == INPUT_DEVICE_NET)
+		{
+			hasNetInput = true;
+			break;
+		}
+	}
+	if (!hasNetInput)
+	{
+		NetInputTerminate(&gEventHandlers.netInput);
+	}
+
 	// For any player slots not picked, turn them into AIs
-	for (i = 0; i < numPlayers; i++)
+	for (int i = 0; i < numPlayers; i++)
 	{
 		if (!hasInputDevice[i])
 		{
@@ -329,7 +355,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		}
 	}
 
-	for (i = 0; i < numPlayers; i++)
+	for (int i = 0; i < numPlayers; i++)
 	{
 		MenuSystemTerminate(&menus[i].ms);
 	}

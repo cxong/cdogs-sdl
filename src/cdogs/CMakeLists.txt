@@ -46,6 +46,7 @@ set(CDOGS_SOURCES
 	mouse.c
 	music.c
 	net_input.c
+	net_input_client.c
 	objs.c
 	palette.c
 	pic.c
@@ -105,6 +106,7 @@ set(CDOGS_HEADERS
 	mouse.h
 	music.h
 	net_input.h
+	net_input_client.h
 	objs.h
 	palette.h
 	pic.h

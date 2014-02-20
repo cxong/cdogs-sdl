@@ -28,8 +28,6 @@
 */
 #include "net_input.h"
 
-#define NET_INPUT_UDP_PORT 34219
-
 
 void NetInputInit(NetInput *n)
 {
@@ -39,6 +37,10 @@ void NetInputTerminate(NetInput *n)
 {
 	SDLNet_UDP_Close(n->sock);
 	n->sock = NULL;
+}
+void NetInputReset(NetInput *n)
+{
+	n->PrevCmd = n->Cmd = 0;
 }
 
 void NetInputOpen(NetInput *n)
@@ -60,24 +62,28 @@ void NetInputPoll(NetInput *n)
 	n->Cmd = 0;
 
 	UDPpacket packet;
-	int numrecv = SDLNet_UDP_Recv(n->sock, &packet);
-	if (numrecv < 0)
+	packet.data = n->buf;
+	packet.maxlen = NET_INPUT_MAX_PACKET_LEN;
+	int numrecv;
+	do
 	{
-		printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
-		n->isActive = false;
-		return;
-	}
-	else if (numrecv > 0)
-	{
-		// trivial protocol for now: 32-bit int for input cmd
-		size_t readlen = sizeof(uint32_t);
-		while (packet.len >= (int)readlen)
+		numrecv = SDLNet_UDP_Recv(n->sock, &packet);
+		if (numrecv < 0)
 		{
-			Uint32 cmd = SDLNet_Read32(packet.data);
-			n->Cmd |= cmd;
-			packet.len -= readlen;
-			packet.data += readlen;
-			n->isActive = true;
+			printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
+			return;
 		}
-	}
+		else if (numrecv > 0)
+		{
+			// trivial protocol for now: 32-bit int for input cmd
+			size_t readlen = sizeof(uint32_t);
+			while (packet.len >= (int)readlen)
+			{
+				Uint32 cmd = SDLNet_Read32(packet.data);
+				n->Cmd |= cmd;
+				packet.len -= readlen;
+				packet.data += readlen;
+			}
+		}
+	} while (numrecv > 0);
 }
