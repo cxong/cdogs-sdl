@@ -394,21 +394,18 @@ static void AddExplosion(int x, int y, int flags, int player)
 	for (i = 0; i < 8; i++)
 	{
 		obj = AddFireBall(flags, player);
-		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
-		obj->x = x + 2 * obj->dx;
-		obj->y = y + 2 * obj->dy;
+		obj->vel = GetFullVectorsForRadians(i * 0.25 * PI);
+		obj->x = x + 2 * obj->vel.x;
+		obj->y = y + 2 * obj->vel.y;
 		obj->dz = 0;
 	}
 	for (i = 0; i < 8; i++)
 	{
 		obj = AddFireBall(flags, player);
-		GetVectorsForAngle(i * 32 + 16, &obj->dx, &obj->dy);
-		obj->x = x + obj->dx;
-		obj->y = y + obj->dy;
-		obj->dx *= 3;
-		obj->dy *= 3;
-		obj->dx /= 4;
-		obj->dy /= 4;
+		obj->vel = GetFullVectorsForRadians((i * 0.25 + 0.125) * PI);
+		obj->x = x + obj->vel.x;
+		obj->y = y + obj->vel.y;
+		obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, 3), 4);
 		obj->dz = 8;
 		obj->count = -8;
 	}
@@ -418,9 +415,8 @@ static void AddExplosion(int x, int y, int flags, int player)
 		obj->x = x;
 		obj->y = y;
 		obj->z = 0;
-		GetVectorsForAngle(i * 32, &obj->dx, &obj->dy);
-		obj->dx /= 2;
-		obj->dy /= 2;
+		obj->vel = GetFullVectorsForRadians(i * 0.25 * PI);
+		obj->vel = Vec2iScaleDiv(obj->vel, 2);
 		obj->dz = 11;
 		obj->count = -16;
 	}
@@ -590,42 +586,38 @@ int UpdateMobileObject(TMobileObject *obj, int ticks)
 
 static void Frag(int x, int y, int flags, int player)
 {
-	int i;
-
 	flags |= FLAGS_HURTALWAYS;
-	for (i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++)
 	{
-		AddBullet(Vec2iNew(x, y), i * 16, BULLET_FRAG, flags, player);
+		AddBullet(
+			Vec2iNew(x, y), i / 16.0 * 2 * PI, BULLET_FRAG, flags, player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
 
 Vec2i UpdateAndGetCloudPosition(TMobileObject *obj, int ticks)
 {
-	Vec2i pos;
-	int i;
-
-	pos.x = obj->x + obj->dx * ticks;
-	pos.y = obj->y + obj->dy * ticks;
-
-	for (i = 0; i < ticks; i++)
+	Vec2i pos = Vec2iScale(obj->vel, ticks);
+	pos.x += obj->x;
+	pos.y += obj->y;
+	for (int i = 0; i < ticks; i++)
 	{
-		if (obj->dx > 0)
+		if (obj->vel.x > 0)
 		{
-			obj->dx -= 4;
+			obj->vel.x -= 4;
 		}
-		else if (obj->dx < 0)
+		else if (obj->vel.x < 0)
 		{
-			obj->dx += 4;
+			obj->vel.x += 4;
 		}
 
-		if (obj->dy > 0)
+		if (obj->vel.y > 0)
 		{
-			obj->dy -= 3;
+			obj->vel.y -= 3;
 		}
-		else if (obj->dy < 0)
+		else if (obj->vel.y < 0)
 		{
-			obj->dy += 3;
+			obj->vel.y += 3;
 		}
 	}
 
@@ -701,8 +693,8 @@ TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
 	obj->power = 2;
 	obj->x = x;
 	obj->y = y;
-	obj->dx = 16 * (rand() % 32) - 256;
-	obj->dy = 12 * (rand() % 32) - 192;
+	obj->vel.x = 16 * (rand() % 32) - 256;
+	obj->vel.y = 12 * (rand() % 32) - 192;
 	obj->dz = 4 + rand() % 4;
 	return obj;
 }
@@ -745,7 +737,7 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 }
 
 void AddGasCloud(
-	int x, int y, int angle, int speed, int range,
+	int x, int y, double radians, int speed, int range,
 	int flags, int special, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
@@ -758,11 +750,10 @@ void AddGasCloud(
 	obj->flags = flags;
 	obj->power = 0;
 	obj->z = (special == SPECIAL_CONFUSE);
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
-	obj->dx = (speed * obj->dx) / 256;
-	obj->dy = (speed * obj->dy) / 256;
-	obj->x = x + 6 * obj->dx;
-	obj->y = y + 6 * obj->dy;
+	obj->vel = GetFullVectorsForRadians(radians);
+	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, speed), 256);
+	obj->x = x + 6 * obj->vel.x;
+	obj->y = y + 6 * obj->vel.y;
 }
 
 static void Gas(int x, int y, int flags, int special, int player)
@@ -774,7 +765,7 @@ static void Gas(int x, int y, int flags, int special, int player)
 	{
 		AddGasCloud(
 			x, y,
-			rand() & 255,
+			(double)rand() / RAND_MAX * 2 * PI,
 			(256 + rand()) & 255,
 			(48 - (rand() % 8)) * 4 - 1,
 			flags,
@@ -786,9 +777,6 @@ static void Gas(int x, int y, int flags, int special, int player)
 
 int UpdateGrenade(TMobileObject *obj, int ticks)
 {
-	int x, y;
-	int i;
-
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
@@ -817,10 +805,10 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 		return 0;
 	}
 
-	x = obj->x + obj->dx * ticks;
-	y = obj->y + obj->dy * ticks;
+	int x = obj->x + obj->vel.x * ticks;
+	int y = obj->y + obj->vel.y * ticks;
 
-	for (i = 0; i < ticks; i++)
+	for (int i = 0; i < ticks; i++)
 	{
 		obj->z += obj->dz;
 		if (obj->z <= 0)
@@ -842,15 +830,17 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 	else if (!ShootWall(obj->x >> 8, y >> 8))
 	{
 		obj->y = y;
-		obj->dx = -obj->dx;
+		obj->vel.x = -obj->vel.x;
 	}
 	else if (!ShootWall(x >> 8, obj->y >> 8))
 	{
 		obj->x = x;
-		obj->dy = -obj->dy;
-	} else {
-		obj->dx = -obj->dx;
-		obj->dy = -obj->dy;
+		obj->vel.y = -obj->vel.y;
+	}
+	else
+	{
+		obj->vel.x = -obj->vel.x;
+		obj->vel.y = -obj->vel.y;
 		return 1;
 	}
 	MapMoveTileItem(
@@ -860,8 +850,6 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 
 int UpdateMolotov(TMobileObject *obj, int ticks)
 {
-	int x, y;
-
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
@@ -869,8 +857,8 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 		return 0;
 	}
 
-	x = obj->x + obj->dx * ticks;
-	y = obj->y + obj->dy * ticks;
+	int x = obj->x + obj->vel.x * ticks;
+	int y = obj->y + obj->vel.y * ticks;
 
 	obj->z += obj->dz * ticks;
 	if (obj->z <= 0)
@@ -923,10 +911,7 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
 		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
 	hasHit = DamageSomething(
-		Vec2iNew(obj->dx, obj->dy),
-		obj->power,
-		obj->flags,
-		obj->player,
+		obj->vel, obj->power, obj->flags, obj->player,
 		item,
 		special,
 		obj->soundLock <= 0);
@@ -939,14 +924,12 @@ int HitItem(TMobileObject * obj, int x, int y, special_damage_e special)
 
 int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 {
-	int x, y;
-
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
 
-	x = obj->x + obj->dx * ticks;
-	y = obj->y + obj->dy * ticks;
+	int x = obj->x + obj->vel.x * ticks;
+	int y = obj->y + obj->vel.y * ticks;
 
 	if (HitItem(obj, x, y, special)) {
 		obj->count = 0;
@@ -1001,8 +984,8 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 		double magnitude;
 		int seekSpeed = 50;
 		Vec2i impulse = Vec2iNew(
-			target->Pos.x - obj->x - obj->dx * 2,
-			target->Pos.y - obj->y - obj->dy * 2);
+			target->Pos.x - obj->x - obj->vel.x * 2,
+			target->Pos.y - obj->y - obj->vel.y * 2);
 		// Don't seek if the coordinates are too big
 		if (abs(impulse.x) < 10000 && abs(impulse.y) < 10000 &&
 			(impulse.x != 0 || impulse.y != 0))
@@ -1015,8 +998,7 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 		{
 			impulse = Vec2iZero();
 		}
-		obj->dx += impulse.x * ticks;
-		obj->dy += impulse.y * ticks;
+		obj->vel = Vec2iAdd(obj->vel, Vec2iScale(impulse, ticks));
 	}
 	return 1;
 }
@@ -1028,8 +1010,8 @@ int UpdateBrownBullet(TMobileObject *obj, int ticks)
 		int i;
 		for (i = 0; i < ticks; i++)
 		{
-			obj->dx += ((rand() % 3) - 1) * 128;
-			obj->dy += ((rand() % 3) - 1) * 128;
+			obj->vel.x += ((rand() % 3) - 1) * 128;
+			obj->vel.y += ((rand() % 3) - 1) * 128;
 		}
 		return 1;
 	}
@@ -1096,8 +1078,6 @@ int UpdateDroppedMine(TMobileObject *obj, int ticks)
 
 int UpdateFlame(TMobileObject *obj, int ticks)
 {
-	int x, y;
-
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 		return 0;
@@ -1105,8 +1085,8 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 	if ((obj->count & 3) == 0)
 		obj->state = rand();
 
-	x = obj->x + obj->dx * ticks;
-	y = obj->y + obj->dy * ticks;
+	int x = obj->x + obj->vel.x * ticks;
+	int y = obj->y + obj->vel.y * ticks;
 
 	if (HitItem(obj, x, y, SPECIAL_FLAME)) {
 		obj->count = obj->range;
@@ -1130,16 +1110,14 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 
 int UpdateExplosion(TMobileObject *obj, int ticks)
 {
-	int x, y;
-
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count < 0)
 		return 1;
 	if (obj->count > obj->range)
 		return 0;
 
-	x = obj->x + obj->dx * ticks;
-	y = obj->y + obj->dy * ticks;
+	int x = obj->x + obj->vel.x * ticks;
+	int y = obj->y + obj->vel.y * ticks;
 	obj->z += obj->dz * ticks;
 	obj->dz = MAX(0, obj->dz - ticks);
 
@@ -1345,18 +1323,17 @@ static void SetBulletProps(
 	obj->flags = flags;
 	obj->x = pos.x;
 	obj->y = pos.y;
-	obj->dx = (b->Speed * obj->dx) / 256;
-	obj->dy = (b->Speed * obj->dy) / 256;
+	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, b->Speed), 256);
 	obj->range = b->Range;
 	obj->power = b->Power;
 	obj->tileItem.w = b->Size;
 	obj->tileItem.h = b->Size;
 }
 
-void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player)
+void AddGrenade(Vec2i pos, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	obj->vel = GetFullVectorsForRadians(radians);
 	obj->dz = 24;
 	SetBulletProps(obj, pos, type, flags);
 	switch (type)
@@ -1387,10 +1364,10 @@ void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player)
 	obj->z = 0;
 }
 
-void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player)
+void AddBullet(Vec2i pos, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	obj->vel = GetFullVectorsForRadians(radians);
 	SetBulletProps(obj, pos, type, flags);
 }
 
@@ -1398,26 +1375,26 @@ void AddBulletDirectional(
 	Vec2i pos, direction_e dir, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	GetVectorsForAngle(dir2angle[dir], &obj->dx, &obj->dy);
+	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
 	obj->state = dir;
 	SetBulletProps(obj, pos, type, flags);
 }
 
 void AddBulletBig(
-	Vec2i pos, int angle, BulletType type, int flags, int player)
+	Vec2i pos, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	obj->vel = GetFullVectorsForRadians(radians);
 	SetBulletProps(obj, pos, type, flags);
-	obj->x = obj->x + 4 * obj->dx;
-	obj->y = obj->y + 7 * obj->dy;
+	obj->x = obj->x + 4 * obj->vel.x;
+	obj->y = obj->y + 7 * obj->vel.y;
 }
 
 void AddBulletGround(
-	Vec2i pos, int angle, BulletType type, int flags, int player)
+	Vec2i pos, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	GetVectorsForAngle(angle, &obj->dx, &obj->dy);
+	obj->vel = GetFullVectorsForRadians(radians);
 	SetBulletProps(obj, pos, type, flags);
 	obj->z = 0;
 	MapMoveTileItem(

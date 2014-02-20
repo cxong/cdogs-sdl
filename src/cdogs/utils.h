@@ -121,6 +121,7 @@ const char *StrGetFileExt(const char *filename);
 double Round(double x);
 
 double ToDegrees(double radians);
+double ToRadians(double degrees);
 
 typedef enum
 {

@@ -104,11 +104,11 @@ typedef struct
 	sound_e Sound;
 	sound_e ReloadSound;
 	int SoundLockLength;
-	int Recoil;			// Random recoil for inaccurate weapons
+	double Recoil;		// Random recoil for inaccurate weapons, in radians
 	struct
 	{
 		int Count;		// Number of bullets in spread
-		int Width;		// Width of individual spread
+		double Width;	// Width of individual spread, in radians
 	} Spread;
 } GunDescription;
 

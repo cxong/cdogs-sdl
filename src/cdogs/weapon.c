@@ -127,7 +127,7 @@ void WeaponInitialize(void)
 	g->Cost = 1;
 	g->Lock = 6;
 	g->Sound = SND_MACHINEGUN;
-	g->Recoil = 7;
+	g->Recoil = 7.0 / 256 * 2 * PI;
 
 	g = &gGunDescriptions[GUN_GRENADE];
 	g->pic = -1;
@@ -151,7 +151,7 @@ void WeaponInitialize(void)
 	g->Sound = SND_SHOTGUN;
 	g->ReloadSound = SND_SHOTGUN_R;
 	g->Spread.Count = 5;
-	g->Spread.Width = 8;
+	g->Spread.Width = 2 * PI / 32;
 
 	g = &gGunDescriptions[GUN_POWERGUN];
 	strcpy(g->name, "Powergun");
@@ -239,7 +239,7 @@ void WeaponInitialize(void)
 	g->Cost = 1;
 	g->Lock = 4;
 	g->Sound = SND_MINIGUN;
-	g->Recoil = 15;
+	g->Recoil = 15.0 / 256 * 2 * PI;
 
 	g = &gGunDescriptions[GUN_HEATSEEKER];
 	strcpy(g->name, "Heatseeker");
@@ -371,12 +371,11 @@ void WeaponFire(
 	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition,
 	int flags, int player)
 {
-	int angle = dir2angle[d];
-	int i;
+	double radians = dir2radians[d];
 	GunDescription *desc = &gGunDescriptions[w->gun];
 	int spreadCount = desc->Spread.Count;
-	int spreadStartAngle = 0;
-	int spreadWidth = desc->Spread.Width;
+	double spreadStartAngle = 0;
+	double spreadWidth = desc->Spread.Width;
 	if (spreadCount > 1)
 	{
 		// Find the starting angle of the spread (clockwise)
@@ -386,20 +385,16 @@ void WeaponFire(
 	}
 	
 	assert(WeaponCanFire(w));
-	for (i = 0; i < spreadCount; i++)
+	for (int i = 0; i < spreadCount; i++)
 	{
-		int spreadAngle = spreadStartAngle + i * spreadWidth;
-		int recoil = 0;
-		int finalAngle;
+		double spreadAngle = spreadStartAngle + i * spreadWidth;
+		double recoil = 0;
 		if (desc->Recoil > 0)
 		{
-			recoil = (rand() % desc->Recoil) - (desc->Recoil + 1) / 2;
+			recoil =
+				((double)rand() / RAND_MAX * desc->Recoil) - desc->Recoil / 2;
 		}
-		finalAngle = angle + spreadAngle + recoil;
-		if (finalAngle < 0)
-		{
-			finalAngle += 256;
-		}
+		double finalAngle = radians + spreadAngle + recoil;
 		switch (w->gun)
 		{
 		case GUN_KNIFE:

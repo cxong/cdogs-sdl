@@ -175,7 +175,8 @@ struct MobileObject
 	BulletClass bulletClass;
 	int kind;
 	int x, y, z;
-	int dx, dy, dz;
+	Vec2i vel;
+	int dz;
 	int count;
 	int state;
 	int range;
@@ -213,17 +214,19 @@ void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
-void AddGrenade(Vec2i pos, int angle, BulletType type, int flags, int player);
-void AddBullet(Vec2i pos, int angle, BulletType type, int flags, int player);
+void AddGrenade(
+	Vec2i pos, double radians, BulletType type, int flags, int player);
+void AddBullet(
+	Vec2i pos, double radians, BulletType type, int flags, int player);
 void AddBulletDirectional(
 	Vec2i pos, direction_e dir, BulletType type, int flags, int player);
 void AddBulletBig(
-	Vec2i pos, int angle, BulletType type, int flags, int player);
+	Vec2i pos, double radians, BulletType type, int flags, int player);
 void AddGasCloud(
-	int x, int y, int angle, int speed, int range, int flags,
+	int x, int y, double radians, int speed, int range, int flags,
 	int special, int player);
 void AddBulletGround(
-	Vec2i pos, int angle, BulletType type, int flags, int player);
+	Vec2i pos, double radians, BulletType type, int flags, int player);
 void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif

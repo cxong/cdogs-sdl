@@ -92,6 +92,10 @@ double ToDegrees(double radians)
 {
 	return radians * 180.0 / PI;
 }
+double ToRadians(double degrees)
+{
+	return degrees * PI / 180.0;
+}
 
 const char *ObjectiveTypeStr(ObjectiveType t)
 {

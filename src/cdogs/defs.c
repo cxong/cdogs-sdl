@@ -19,18 +19,38 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
--------------------------------------------------------------------------------
+    This file incorporates work covered by the following copyright and
+    permission notice:
 
- defs.c - definitions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
+    Copyright (c) 2014, Cong Xu
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
-
 #include "defs.h"
+
+#include <math.h>
+
+#include "tile.h"
 
 
 int cmd2dir[16] = {
@@ -63,45 +83,24 @@ int dir2cmd[8] = {
 	CMD_UP + CMD_LEFT
 };
 
-int dir2angle[8] = {
-	192,
-	224,
-	0,
-	32,
-	64,
-	96,
-	128,
-	160
-};
-
-static int cSinus[65] = {
-	0, 6, 12, 18, 25, 31, 37, 43,
-	49, 56, 62, 68, 74, 80, 86, 92,
-	97, 103, 109, 115, 120, 126, 131, 136,
-	142, 147, 152, 157, 162, 167, 171, 176,
-	181, 185, 189, 193, 197, 201, 205, 209,
-	212, 216, 219, 222, 225, 228, 231, 234,
-	236, 238, 241, 243, 244, 246, 248, 249,
-	251, 252, 253, 254, 254, 255, 255, 255,
-	256
-};
-
-
-void GetVectorsForAngle(int angle, int *dx, int *dy)
+double dir2radians[8] =
 {
-	if (angle <= 64) {
-		*dx = cSinus[64 - angle];
-		*dy = cSinus[angle];
-	} else if (angle <= 128) {
-		*dx = -cSinus[angle - 64];
-		*dy = cSinus[128 - angle];
-	} else if (angle <= 192) {
-		*dx = -cSinus[192 - angle];
-		*dy = -cSinus[angle - 128];
-	} else {
-		*dx = cSinus[angle - 192];
-		*dy = -cSinus[256 - angle];
-	}
-	*dy *= 3;
-	*dy /= 4;
+	PI * 1.5,
+	PI * 1.75,
+	0,
+	PI * 0.25,
+	PI * 0.5,
+	PI * 0.75,
+	PI,
+	PI * 1.25
+};
+
+
+Vec2i GetFullVectorsForRadians(double radians)
+{
+	int scalar = 256;
+	// Scale Y so that they match the tile ratios
+	return Vec2iNew(
+		(int)(cos(radians) * scalar),
+		(int)(sin(radians) * scalar * TILE_HEIGHT / TILE_WIDTH));
 }
