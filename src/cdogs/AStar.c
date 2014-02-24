@@ -108,12 +108,12 @@ static INLINE int NodeIsNull(Node n)
     return (n.nodes == NodeNull.nodes) && (n.index == NodeNull.index);
 }
 
-static INLINE Node NodeMake(VisitedNodes nodes, size_t index)
+static INLINE Node NodeMake(VisitedNodes nodes, size_t idx)
 {
     Node n;
     memset(&n, 0, sizeof n);
     n.nodes = nodes;
-    n.index = index;
+    n.index = idx;
     return n;
 }
 
@@ -294,20 +294,22 @@ static INLINE void SwapOpenSetNodesAtIndexes(VisitedNodes nodes, size_t index1, 
     }
 }
 
-static INLINE void DidRemoveFromOpenSetAtIndex(VisitedNodes nodes, size_t index)
+static INLINE void DidRemoveFromOpenSetAtIndex(
+    VisitedNodes nodes, size_t idx)
 {
-    size_t smallestIndex = index;
+    size_t smallestIndex = idx;
     
     do {
         size_t leftIndex;
         size_t rightIndex;
-        if (smallestIndex != index) {
-            SwapOpenSetNodesAtIndexes(nodes, smallestIndex, index);
-            index = smallestIndex;
+        if (smallestIndex != idx)
+	{
+            SwapOpenSetNodesAtIndexes(nodes, smallestIndex, idx);
+            idx = smallestIndex;
         }
 
-        leftIndex = (2 * index) + 1;
-        rightIndex = (2 * index) + 2;
+        leftIndex = (2 * idx) + 1;
+        rightIndex = (2 * idx) + 2;
         
         if (leftIndex < nodes->openNodesCount && NodeRankCompare(NodeMake(nodes, nodes->openNodes[leftIndex]), NodeMake(nodes, nodes->openNodes[smallestIndex])) < 0) {
             smallestIndex = leftIndex;
@@ -316,33 +318,38 @@ static INLINE void DidRemoveFromOpenSetAtIndex(VisitedNodes nodes, size_t index)
         if (rightIndex < nodes->openNodesCount && NodeRankCompare(NodeMake(nodes, nodes->openNodes[rightIndex]), NodeMake(nodes, nodes->openNodes[smallestIndex])) < 0) {
             smallestIndex = rightIndex;
         }
-    } while (smallestIndex != index);
+    } while (smallestIndex != idx);
 }
 
 static INLINE void RemoveNodeFromOpenSet(Node n)
 {
     NodeRecord *record = NodeGetRecord(n);
 
-    if (record->isOpen) {
-        const size_t index = record->openIndex;
+    if (record->isOpen)
+    {
+        const size_t idx = record->openIndex;
         record->isOpen = 0;
         n.nodes->openNodesCount--;
         
-        SwapOpenSetNodesAtIndexes(n.nodes, index, n.nodes->openNodesCount);
-        DidRemoveFromOpenSetAtIndex(n.nodes, index);
+        SwapOpenSetNodesAtIndexes(n.nodes, idx, n.nodes->openNodesCount);
+        DidRemoveFromOpenSetAtIndex(n.nodes, idx);
     }
 }
 
-static INLINE void DidInsertIntoOpenSetAtIndex(VisitedNodes nodes, size_t index)
+static INLINE void DidInsertIntoOpenSetAtIndex(VisitedNodes nodes, size_t idx)
 {
-    while (index > 0) {
-        const size_t parentIndex = (size_t)floorf((float)(index-1) / 2);
+    while (idx > 0)
+    {
+        const size_t parentIndex = (size_t)floorf((float)(idx-1) / 2);
         
-        if (NodeRankCompare(NodeMake(nodes, nodes->openNodes[parentIndex]), NodeMake(nodes, nodes->openNodes[index])) < 0) {
+        if (NodeRankCompare(NodeMake(nodes, nodes->openNodes[parentIndex]), NodeMake(nodes, nodes->openNodes[idx])) < 0)
+	{
             break;
-        } else {
-            SwapOpenSetNodesAtIndexes(nodes, parentIndex, index);
-            index = parentIndex;
+        }
+	else
+	{
+            SwapOpenSetNodesAtIndexes(nodes, parentIndex, idx);
+            idx = parentIndex;
         }
     }
 }
@@ -399,14 +406,14 @@ static INLINE void NeighborListDestroy(ASNeighborList list)
 	CFREE(list);
 }
 
-static INLINE float NeighborListGetEdgeCost(ASNeighborList list, size_t index)
+static INLINE float NeighborListGetEdgeCost(ASNeighborList list, size_t idx)
 {
-    return list->costs[index];
+    return list->costs[idx];
 }
 
-static INLINE void *NeighborListGetNodeKey(ASNeighborList list, size_t index)
+static INLINE void *NeighborListGetNodeKey(ASNeighborList list, size_t idx)
 {
-    return (char *)list->nodeKeys + (index * list->source->nodeSize);
+    return (char *)list->nodeKeys + (idx * list->source->nodeSize);
 }
 
 /********************************************/
@@ -543,7 +550,7 @@ size_t ASPathGetCount(ASPath path)
     return path? path->count : 0;
 }
 
-void *ASPathGetNode(ASPath path, size_t index)
+void *ASPathGetNode(ASPath path, size_t idx)
 {
-    return (path && index < path->count)? (path->nodeKeys + (index * path->nodeSize)) : NULL;
+    return (path && idx < path->count)? (path->nodeKeys + (idx * path->nodeSize)) : NULL;
 }

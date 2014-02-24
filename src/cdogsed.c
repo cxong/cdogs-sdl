@@ -417,10 +417,10 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-static void Autosave(int index)
+static void Autosave(int idx)
 {
 	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "%s~%d", lastFile, index);
+	sprintf(buf, "%s~%d", lastFile, idx);
 	MapNewSave(buf, &gCampaign.Setting);
 }
 

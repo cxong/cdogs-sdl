@@ -59,39 +59,37 @@ void CArrayPushBack(CArray *a, void *elem)
 	memcpy(CArrayGet(a, a->size), elem, a->elemSize);
 	a->size++;
 }
-void CArrayInsert(CArray *a, int index, void *elem)
+void CArrayInsert(CArray *a, int idx, void *elem)
 {
-	int i;
 	if (a->size == a->capacity)
 	{
 		a->capacity *= 2;
 		CREALLOC(a->data, a->capacity * a->elemSize);
 	}
-	for (i = a->size; i > index; i--)
+	for (int i = a->size; i > idx; i--)
 	{
 		memcpy(CArrayGet(a, i), CArrayGet(a, i - 1), a->elemSize);
 	}
-	memcpy(CArrayGet(a, index), elem, a->elemSize);
+	memcpy(CArrayGet(a, idx), elem, a->elemSize);
 	a->size++;
 }
-void CArrayDelete(CArray *a, int index)
+void CArrayDelete(CArray *a, int idx)
 {
-	int i;
 	if (a->size == 0)
 	{
 		return;
 	}
 	a->size--;
-	memset(CArrayGet(a, index), 0, a->elemSize);
-	for (i = index; i < (int)a->size; i++)
+	memset(CArrayGet(a, idx), 0, a->elemSize);
+	for (int i = idx; i < (int)a->size; i++)
 	{
 		memcpy(CArrayGet(a, i), CArrayGet(a, i + 1), a->elemSize);
 	}
 }
 
-void *CArrayGet(CArray *a, int index)
+void *CArrayGet(CArray *a, int idx)
 {
-	return &((char *)a->data)[index * a->elemSize];
+	return &((char *)a->data)[idx * a->elemSize];
 }
 
 void CArrayClear(CArray *a)

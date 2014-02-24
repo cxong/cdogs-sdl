@@ -52,15 +52,14 @@ int GetNumWeapons(int weapons[GUN_COUNT])
 	}
 	return num;
 }
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index)
+gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int idx)
 {
-	int i;
 	int n = 0;
-	for (i = 0; i < GUN_COUNT; i++)
+	for (int i = 0; i < GUN_COUNT; i++)
 	{
 		if (weapons[i])
 		{
-			if (index == n)
+			if (idx == n)
 			{
 				return i;
 			}

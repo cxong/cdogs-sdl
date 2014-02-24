@@ -20,7 +20,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@
 void Draw_Point(const int x, const int y, color_t c)
 {
 	Uint32 *screen = gGraphicsDevice.buf;
-	int index = PixelIndex(
+	int idx = PixelIndex(
 		x,
 		y,
 		gGraphicsDevice.cachedConfig.ResolutionWidth,
@@ -72,12 +72,12 @@ void Draw_Point(const int x, const int y, color_t c)
 	}
 	if (c.a == 255)
 	{
-		screen[index] = PixelFromColor(&gGraphicsDevice, c);
+		screen[idx] = PixelFromColor(&gGraphicsDevice, c);
 	}
 	else
 	{
-		color_t existing = PixelToColor(&gGraphicsDevice, screen[index]);
-		screen[index] =
+		color_t existing = PixelToColor(&gGraphicsDevice, screen[idx]);
+		screen[idx] =
 			PixelFromColor(&gGraphicsDevice, ColorAlphaBlend(existing, c));
 	}
 }

@@ -41,9 +41,9 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
 		{
-			int index = v.y * m->Size.x + v.x;
+			int idx = v.y * m->Size.x + v.x;
 			unsigned short tile =
-				*(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
+				*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
 			if (!AreKeysAllowed(gCampaign.Entry.mode))
 			{
 				tile &= MAP_MASKACCESS;
@@ -94,14 +94,14 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
 			Vec2i *pos = CArrayGet(&op->Positions, j);
-			int *index = CArrayGet(&op->Indices, j);
+			int *idx = CArrayGet(&op->Indices, j);
 			Vec2i realPos = Vec2iCenterOfTile(*pos);
 			Vec2i fullPos = Vec2iReal2Full(realPos);
 			switch (mobj->Type)
 			{
 				case OBJECTIVE_KILL:
 				{
-					TActor *a = AddActor(store->specials[*index], NULL);
+					TActor *a = AddActor(store->specials[*idx], NULL);
 					TryMoveActor(a, fullPos);
 					ActorInit(a);
 				}
@@ -118,7 +118,7 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 					break;
 				case OBJECTIVE_RESCUE:
 				{
-					TActor *a = AddActor(store->prisoners[*index], NULL);
+					TActor *a = AddActor(store->prisoners[*idx], NULL);
 					TryMoveActor(a, fullPos);
 					ActorInit(a);
 				}

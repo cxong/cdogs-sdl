@@ -225,14 +225,14 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 	}
 }
 
-void MenuDisableSubmenu(menu_t *menu, int index)
+void MenuDisableSubmenu(menu_t *menu, int idx)
 {
-	menu->u.normal.subMenus[index].isDisabled = 1;
+	menu->u.normal.subMenus[idx].isDisabled = 1;
 	MoveIndexToNextEnabledSubmenu(menu, 1);
 }
-void MenuEnableSubmenu(menu_t *menu, int index)
+void MenuEnableSubmenu(menu_t *menu, int idx)
 {
-	menu->u.normal.subMenus[index].isDisabled = 0;
+	menu->u.normal.subMenus[idx].isDisabled = 0;
 }
 
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)

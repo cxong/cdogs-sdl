@@ -287,11 +287,11 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		}
 		for (TTileItem *t = displayList; t; t = t->nextToDisplay)
 		{
-			Vec2i pos = Vec2iNew(
+			Vec2i picPos = Vec2iNew(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
 			{
-				Blit(&gGraphicsDevice, t->getPicFunc(t->data), pos);
+				Blit(&gGraphicsDevice, t->getPicFunc(t->data), picPos);
 			}
 			else if (t->getActorPicsFunc)
 			{
@@ -308,15 +308,15 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 						if (pics.IsTransparent)
 						{
 							DrawBTPic(
-								pos.x + pics.Pics[0].offset.x,
-								pos.y + pics.Pics[0].offset.y,
+								picPos.x + pics.Pics[0].offset.x,
+								picPos.y + pics.Pics[0].offset.y,
 								bodyPic, pics.Tint);
 						}
 						else
 						{
 							DrawTTPic(
-								pos.x + pics.Pics[0].offset.x,
-								pos.y + pics.Pics[0].offset.y,
+								picPos.x + pics.Pics[0].offset.x,
+								picPos.y + pics.Pics[0].offset.y,
 								bodyPic, pics.Table);
 						}
 					}
@@ -331,15 +331,15 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 							continue;
 						}
 						DrawBTPic(
-							pos.x + pics.Pics[i].offset.x,
-							pos.y + pics.Pics[i].offset.y,
+							picPos.x + pics.Pics[i].offset.x,
+							picPos.y + pics.Pics[i].offset.y,
 							oldPic,
 							pics.Tint);
 					}
 				}
 				else
 				{
-					DrawShadow(&gGraphicsDevice, pos, Vec2iNew(8, 6));
+					DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
 					for (int i = 0; i < 3; i++)
 					{
 						PicPaletted *oldPic = pics.OldPics[i];
@@ -348,8 +348,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 							continue;
 						}
 						BlitOld(
-							pos.x + pics.Pics[i].offset.x,
-							pos.y + pics.Pics[i].offset.y,
+							picPos.x + pics.Pics[i].offset.x,
+							picPos.y + pics.Pics[i].offset.y,
 							oldPic,
 							pics.Table, BLIT_TRANSPARENT);
 					}
@@ -357,7 +357,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			}
 			else
 			{
-				(*(t->drawFunc))(pos.x, pos.y, t->data);
+				(*(t->drawFunc))(picPos.x, picPos.y, t->data);
 			}
 		}
 		tile += X_TILES - b->Size.x;

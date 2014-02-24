@@ -45,7 +45,7 @@ static void DrawStyleArea(
 	const char *name,
 	GraphicsDevice *device,
 	PicPaletted *pic,
-	int index, int count,
+	int idx, int count,
 	int isHighlighted);
 
 static char *CampaignGetTitle(UIObject *o, void *data)
@@ -383,23 +383,21 @@ static const char *MissionGetTypeStr(UIObject *o, void *data)
 static void MissionDrawWallStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = WALL_STYLE_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
-	index = CampaignGetCurrentMission(co)->WallStyle;
+	int idx = CampaignGetCurrentMission(co)->WallStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
 		g,
-		PicManagerGetOldPic(&gPicManager, cWallPics[index % count][WALL_SINGLE]),
-		index, count,
+		PicManagerGetOldPic(&gPicManager, cWallPics[idx % count][WALL_SINGLE]),
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = FLOOR_STYLE_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -408,19 +406,18 @@ static void MissionDrawFloorStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = CampaignGetCurrentMission(co)->FloorStyle;
+	int idx = CampaignGetCurrentMission(co)->FloorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
 		g,
-		PicManagerGetOldPic(&gPicManager, cFloorPics[index % count][FLOOR_NORMAL]),
-		index, count,
+		PicManagerGetOldPic(&gPicManager, cFloorPics[idx % count][FLOOR_NORMAL]),
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = ROOMFLOOR_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -429,19 +426,18 @@ static void MissionDrawRoomStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = CampaignGetCurrentMission(co)->RoomStyle;
+	int idx = CampaignGetCurrentMission(co)->RoomStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
 		g,
-		PicManagerGetOldPic(&gPicManager, cRoomPics[index % count][ROOMFLOOR_NORMAL]),
-		index, count,
+		PicManagerGetOldPic(&gPicManager, cRoomPics[idx % count][ROOMFLOOR_NORMAL]),
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = GetEditorInfo().doorCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -450,19 +446,18 @@ static void MissionDrawDoorStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = CampaignGetCurrentMission(co)->DoorStyle;
+	int idx = CampaignGetCurrentMission(co)->DoorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Doors",
 		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
-		index, count,
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = GetEditorInfo().keyCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -471,19 +466,18 @@ static void MissionDrawKeyStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = CampaignGetCurrentMission(co)->KeyStyle;
+	int idx = CampaignGetCurrentMission(co)->KeyStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Keys",
 		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
-		index, count,
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
-	int index;
 	int count = GetEditorInfo().exitCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -492,13 +486,13 @@ static void MissionDrawExitStyle(
 		return;
 	}
 	o->IsVisible = 1;
-	index = CampaignGetCurrentMission(co)->ExitStyle;
+	int idx = CampaignGetCurrentMission(co)->ExitStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
 		g,
 		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
-		index, count,
+		idx, count,
 		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetWallColorStr(UIObject *o, void *data)
@@ -760,9 +754,9 @@ static void MissionDrawObjective(
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 }
-static MissionObjective *GetMissionObjective(Mission *m, int index)
+static MissionObjective *GetMissionObjective(Mission *m, int idx)
 {
-	return CArrayGet(&m->Objectives, index);
+	return CArrayGet(&m->Objectives, idx);
 }
 static const char *MissionGetObjectiveRequired(UIObject *o, void *vData)
 {
@@ -826,7 +820,7 @@ static void DrawStyleArea(
 	const char *name,
 	GraphicsDevice *g,
 	PicPaletted *pic,
-	int index, int count,
+	int idx, int count,
 	int isHighlighted)
 {
 	char buf[16];
@@ -834,7 +828,7 @@ static void DrawStyleArea(
 	pos.y += CDogsTextHeight();
 	DrawTPic(pos.x, pos.y, pic);
 	// Display style index and count, right aligned
-	sprintf(buf, "%d/%d", index + 1, count);
+	sprintf(buf, "%d/%d", idx + 1, count);
 	TextStringMasked(&gTextManager, 
 		buf,
 		g,
@@ -1257,7 +1251,7 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co);
 static UIObject *CreateCharacterObjs(CampaignOptions *co);
 static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co);
 static UIObject *CreateObjectiveObjs(
-	Vec2i pos, CampaignOptions *co, int index);
+	Vec2i pos, CampaignOptions *co, int idx);
 
 UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 {
@@ -1833,7 +1827,7 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
+static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1854,7 +1848,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1867,7 +1861,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
 	o2->Size = Vec2iNew(30, th);
 	UIObjectAddChild(c, o2);
@@ -1880,7 +1874,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
 	o2->Size = Vec2iNew(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
@@ -1894,7 +1888,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
@@ -1907,7 +1901,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int index)
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = 1;
 	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = index;
+	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
 	o2->Size = Vec2iNew(100, th);
 	CSTRDUP(o2->Tooltip,

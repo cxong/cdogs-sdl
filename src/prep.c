@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -136,10 +136,10 @@ int NumPlayersSelection(
 
 
 static void AssignPlayerInputDevice(
-	struct PlayerData *pData, input_device_e d, int index)
+	struct PlayerData *pData, input_device_e d, int idx)
 {
 	pData->inputDevice = d;
-	pData->deviceIndex = index;
+	pData->deviceIndex = idx;
 }
 
 static void AssignPlayerInputDevices(

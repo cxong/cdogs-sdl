@@ -72,13 +72,13 @@ static int IsClear(unsigned short tile)
 }
 static unsigned short GetTileAt(Mission *m, Vec2i pos)
 {
-	int index = pos.y * m->Size.x + pos.x;
+	int idx = pos.y * m->Size.x + pos.x;
 	// check for out-of-bounds
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
 		return MAP_NOTHING;
 	}
-	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
+	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
 }
 // See if the tile located at a position is a door and also needs
 // to be oriented in a certain way
@@ -113,7 +113,7 @@ static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
 }
 void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 {
-	int index = pos.y * m->Size.x + pos.x;
+	int idx = pos.y * m->Size.x + pos.x;
 	assert(m->Type == MAPTYPE_STATIC && "cannot set tile for map type");
 	switch (tile)
 	{
@@ -153,7 +153,7 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 		}
 		break;
 	}
-	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, index) = tile;
+	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx) = tile;
 }
 
 unsigned short MissionGetTile(Mission *m, Vec2i pos)
@@ -162,8 +162,8 @@ unsigned short MissionGetTile(Mission *m, Vec2i pos)
 	{
 		return MAP_NOTHING;
 	}
-	int index = pos.y * m->Size.x + pos.x;
-	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, index);
+	int idx = pos.y * m->Size.x + pos.x;
+	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
 }
 
 void MissionStaticLayout(Mission *m, Vec2i oldSize)
@@ -200,8 +200,8 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 			}
 			else
 			{
-				int index = v.y * oldSize.x + v.x;
-				unsigned short *tile = CArrayGet(&oldTiles, index);
+				int idx = v.y * oldSize.x + v.x;
+				unsigned short *tile = CArrayGet(&oldTiles, idx);
 				MissionSetTile(m, v, *tile);
 			}
 		}

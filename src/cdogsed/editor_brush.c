@@ -568,9 +568,9 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
 						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
-						int index = vOffset.y * m->Size.x + vOffset.x;
+						int idx = vOffset.y * m->Size.x + vOffset.x;
 						unsigned short *tile = CArrayGet(
-							&m->u.Static.Tiles, index);
+							&m->u.Static.Tiles, idx);
 						CArrayPushBack(&movedTiles, tile);
 						*tile = MAP_FLOOR;
 					}
@@ -589,11 +589,11 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 						if (vOffset.x >= 0 && vOffset.x < m->Size.x &&
 							vOffset.y >= 0 && vOffset.y < m->Size.y)
 						{
-							int index = vOffset.y * m->Size.x + vOffset.x;
+							int idx = vOffset.y * m->Size.x + vOffset.x;
 							unsigned short *tileFrom =
 								CArrayGet(&movedTiles, i);
 							unsigned short *tileTo = CArrayGet(
-								&m->u.Static.Tiles, index);
+								&m->u.Static.Tiles, idx);
 							*tileTo = *tileFrom;
 							result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 						}
