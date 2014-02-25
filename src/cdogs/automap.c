@@ -122,10 +122,6 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 	Vec2i exitSize = Vec2iAdd(Vec2iMinus(gMap.ExitEnd, exitPos), Vec2iUnit());
 	color_t color = colorExit;
 
-	if (!CanCompleteMission(&gMission))
-	{
-		return;
-	}
 	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return;
@@ -330,7 +326,7 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 	}
 }
 
-void AutomapDraw(int flags)
+void AutomapDraw(int flags, bool showExit)
 {
 	int x, y;
 	int i;
@@ -361,14 +357,17 @@ void AutomapDraw(int flags)
 		}
 	}
 
-	DisplayExit(pos, MAP_FACTOR, flags);
+	if (showExit)
+	{
+		DisplayExit(pos, MAP_FACTOR, flags);
+	}
 	DisplaySummary();
 }
 
 void AutomapDrawRegion(
 	Map *map,
 	Vec2i pos, Vec2i size, Vec2i mapCenter,
-	int scale, int flags)
+	int scale, int flags, bool showExit)
 {
 	Vec2i centerOn;
 	BlitClipping oldClip = gGraphicsDevice.clipping;
@@ -388,7 +387,10 @@ void AutomapDrawRegion(
 		}
 	}
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
-	DisplayExit(centerOn, scale, flags);
+	if (showExit)
+	{
+		DisplayExit(centerOn, scale, flags);
+	}
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,
 		oldClip.left, oldClip.top, oldClip.right, oldClip.bottom);

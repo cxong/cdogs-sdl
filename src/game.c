@@ -447,7 +447,7 @@ static void MissionUpdateObjectives(void)
 	}
 }
 
-int HandleKey(int cmd, int *isPaused, int *hasUsedMap)
+static int HandleKey(int cmd, int *isPaused, int *hasUsedMap, bool showExit)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
 	{
@@ -460,7 +460,7 @@ int HandleKey(int cmd, int *isPaused, int *hasUsedMap)
 			*hasUsedMap = 1;
 			if (!hasDisplayedAutomap)
 			{
-				AutomapDraw(0);
+				AutomapDraw(0, showExit);
 				BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 				hasDisplayedAutomap = 1;
 			}
@@ -562,6 +562,10 @@ void HandleGameEvents(CArray *store, HUD *hud, int *shakeAmount)
 			HUDDisplayMessage(
 				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
 			break;
+		case GAME_EVENT_MISSION_COMPLETE:
+			HUDDisplayMessage(hud, "Mission complete", -1);
+			hud->showExit = true;
+			break;
 		default:
 			assert(0 && "unknown game event");
 			break;
@@ -641,7 +645,8 @@ int gameloop(void)
 			}
 		}
 		ticksBeforeMap = SDL_GetTicks();
-		is_esc_pressed = HandleKey(cmdAll, &isPaused, &hasUsedMap);
+		is_esc_pressed = HandleKey(
+			cmdAll, &isPaused, &hasUsedMap, hud.showExit);
 		if (is_esc_pressed)
 		{
 			if (isPaused)

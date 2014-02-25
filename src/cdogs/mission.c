@@ -627,9 +627,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 	if (CanCompleteMission(options))
 	{
 		GameEvent msg;
-		msg.Type = GAME_EVENT_SET_MESSAGE;
-		strcpy(msg.u.SetMessage.Message, "Mission Complete");
-		msg.u.SetMessage.Ticks = -1;
+		msg.Type = GAME_EVENT_MISSION_COMPLETE;
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
 }

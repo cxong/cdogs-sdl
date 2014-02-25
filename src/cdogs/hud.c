@@ -138,6 +138,7 @@ void HUDInit(
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
 	CArrayInit(&hud->scoreUpdates, sizeof(HUDScore));
+	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
 {
@@ -279,7 +280,8 @@ static void DrawHealth(
 
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
-static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
+static void DrawRadar(
+	GraphicsDevice *device, TActor *p, int scale, int flags, bool showExit)
 {
 	Vec2i pos = Vec2iZero();
 	int w = device->cachedConfig.ResolutionWidth;
@@ -376,12 +378,14 @@ static void DrawRadar(GraphicsDevice *device, TActor *p, int scale, int flags)
 			Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 			playerPos,
 			scale,
-			AUTOMAP_FLAGS_MASK);
+			AUTOMAP_FLAGS_MASK,
+			showExit);
 	}
 }
 
 static void DrawSharedRadar(
-	GraphicsDevice *device, TActor *players[MAX_PLAYERS], int scale)
+	GraphicsDevice *device, TActor *players[MAX_PLAYERS], int scale,
+	bool showExit)
 {
 	int w = device->cachedConfig.ResolutionWidth;
 	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
@@ -394,14 +398,16 @@ static void DrawSharedRadar(
 		Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 		playerMidpoint,
 		scale,
-		AUTOMAP_FLAGS_MASK);
+		AUTOMAP_FLAGS_MASK,
+		showExit);
 }
 
 #define RADAR_SCALE 1
 
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	GraphicsDevice *device, struct PlayerData *data, TActor *p, int flags)
+	GraphicsDevice *device, struct PlayerData *data, TActor *p, int flags,
+	bool showExit)
 {
 	char s[50];
 	int textFlags = TEXT_TOP | TEXT_LEFT;
@@ -441,7 +447,7 @@ static void DrawPlayerStatus(
 	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
 		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
-		DrawRadar(device, p, RADAR_SCALE, flags);
+		DrawRadar(device, p, RADAR_SCALE, flags, showExit);
 	}
 }
 
@@ -519,7 +525,8 @@ void HUDDraw(HUD *hud, int isPaused)
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
 		}
 		DrawPlayerStatus(
-			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags);
+			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags,
+			hud->showExit);
 		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
 		{
 			HUDScore *score = CArrayGet(&hud->scoreUpdates, j);
@@ -533,7 +540,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
 		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
-		DrawSharedRadar(hud->device, gPlayers, RADAR_SCALE);
+		DrawSharedRadar(hud->device, gPlayers, RADAR_SCALE, hud->showExit);
 	}
 
 	if (numPlayersAlive == 0)

@@ -64,6 +64,7 @@ typedef struct
 	FPSCounter fpsCounter;
 	WallClock clock;
 	CArray scoreUpdates;	// of HUDScore
+	bool showExit;
 } HUD;
 
 void HUDInit(

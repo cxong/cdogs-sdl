@@ -22,9 +22,6 @@
 #ifndef __GAME
 #define __GAME
 
-#define GAMETICKS_PER_SECOND 100
-#define GAMETICKS_PER_FRAME  3
-
 int gameloop(void);
 
 #endif

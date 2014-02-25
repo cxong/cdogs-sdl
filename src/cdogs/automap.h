@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,10 @@
 #define AUTOMAP_FLAGS_SHOWALL 0x01
 #define AUTOMAP_FLAGS_MASK 0x02
 
-void AutomapDraw(int flags);
+void AutomapDraw(int flags, bool showExit);
 void AutomapDrawRegion(
 	Map *map,
 	Vec2i pos, Vec2i size, Vec2i mapCenter,
-	int scale, int flags);
+	int scale, int flags, bool showExit);
 
 #endif
