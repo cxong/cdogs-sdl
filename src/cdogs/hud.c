@@ -550,7 +550,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	else if (IsMissionComplete(hud->mission))
 	{
 		sprintf(s, "Pickup in %d seconds\n",
-			(gMission.pickupTime + 69) / 70);
+			(gMission.pickupTime + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
 		CDogsTextStringAtCenter(s);
 	}
 
