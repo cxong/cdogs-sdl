@@ -792,27 +792,27 @@ int gameloop(void)
 			{
 				gMission.pickupTime = PICKUP_LIMIT;
 			}
-		}
 
-		if (HasObjectives(gCampaign.Entry.mode))
-		{
-			MissionUpdateObjectives();
-		}
-
-		// Check that all players have been destroyed
-		// Note: there's a period of time where players are dying
-		// Wait until after this period before ending the game
-		for (i = 0; i < gOptions.numPlayers; i++)
-		{
-			if (gPlayers[i])
+			if (HasObjectives(gCampaign.Entry.mode))
 			{
-				allPlayersDestroyed = 0;
-				break;
+				MissionUpdateObjectives();
 			}
-		}
-		if (allPlayersDestroyed)
-		{
-			isDone = 1;
+
+			// Check that all players have been destroyed
+			// Note: there's a period of time where players are dying
+			// Wait until after this period before ending the game
+			for (i = 0; i < gOptions.numPlayers; i++)
+			{
+				if (gPlayers[i])
+				{
+					allPlayersDestroyed = 0;
+					break;
+				}
+			}
+			if (allPlayersDestroyed)
+			{
+				isDone = 1;
+			}
 		}
 
 		ticksElapsed -= 1000 / FPS_FRAMELIMIT;
@@ -830,24 +830,29 @@ int gameloop(void)
 		}
 		framesSkipped = 0;
 
-		lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
-
-		shakeAmount -= ticks;
-		if (shakeAmount < 0)
+		// Don't draw or update HUD if paused
+		if (!isPaused)
 		{
-			shakeAmount = 0;
+			lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
+
+			shakeAmount -= ticks;
+			if (shakeAmount < 0)
+			{
+				shakeAmount = 0;
+			}
+
+			debug(D_VERBOSE, "frames... %d\n", frames);
+
+			printf("%d\n", ticksElapsedDraw);
+			HUDUpdate(&hud, ticksElapsedDraw);
+			HUDDraw(&hud, isPaused);
+			if (GameIsMouseUsed(gPlayerDatas))
+			{
+				MouseDraw(&gEventHandlers.mouse);
+			}
+
+			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 		}
-
-		debug(D_VERBOSE, "frames... %d\n", frames);
-
-		HUDUpdate(&hud, ticksElapsedDraw);
-		HUDDraw(&hud, isPaused);
-		if (GameIsMouseUsed(gPlayerDatas))
-		{
-			MouseDraw(&gEventHandlers.mouse);
-		}
-
-		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		ticksElapsedDraw = 0;
 	}

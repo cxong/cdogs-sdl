@@ -110,10 +110,11 @@ void WallClockInit(WallClock *wc)
 void WallClockUpdate(WallClock *wc, int ms)
 {
 	wc->elapsed += ms;
-	if (wc->elapsed > FPS_FRAMELIMIT*1000)	// update every minute
+	int minuteMs = 60 * 1000;
+	if (wc->elapsed > minuteMs)	// update every minute
 	{
 		WallClockSetTime(wc);
-		wc->elapsed -= 60*1000;
+		wc->elapsed -= minuteMs;
 	}
 }
 void WallClockDraw(WallClock *wc)
@@ -481,9 +482,6 @@ static void DrawScoreUpdate(HUDScore *score, int flags);
 void HUDDraw(HUD *hud, int isPaused)
 {
 	char s[50];
-	static time_t ot = -1;
-	static time_t t = 0;
-	static time_t td = 0;
 	int flags = 0;
 	int numPlayersAlive = GetNumPlayersAlive();
 	int i;
@@ -583,20 +581,16 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	DrawKeycards(hud);
 
-	if (ot == -1 || gMissionTime == 0)
-	{
-		ot = time(NULL);
-	}
-
-	t = time(NULL);
-
-	if (!isPaused)
-	{
-		td = t - ot;
-	}
-
-	sprintf(s, "%d:%02d", (int)(td / 60), (int)(td % 60));
-	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, 5);
+	// Draw elapsed mission time as MM:SS
+	int missionTimeSeconds = gMissionTime / FPS_FRAMELIMIT;
+	sprintf(s, "%d:%02d",
+		missionTimeSeconds / 60, missionTimeSeconds % 60);
+	DrawTextStringSpecial(
+		s, TEXT_TOP | TEXT_XCENTER, Vec2iZero(),
+		Vec2iNew(
+			hud->device->cachedConfig.ResolutionWidth,
+			hud->device->cachedConfig.ResolutionHeight),
+		Vec2iNew(0, 5));
 }
 
 // Parameters that define how the score update is animated
