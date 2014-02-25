@@ -485,6 +485,7 @@ void DrawKeycards(HUD *hud)
 }
 
 static void DrawScoreUpdate(HUDScore *score, int flags);
+static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(HUD *hud, int isPaused)
 {
 	char s[50];
@@ -598,6 +599,11 @@ void HUDDraw(HUD *hud, int isPaused)
 			hud->device->cachedConfig.ResolutionWidth,
 			hud->device->cachedConfig.ResolutionHeight),
 		Vec2iNew(0, 5));
+
+	if (HasObjectives(gCampaign.Entry.mode))
+	{
+		DrawObjectiveCounts(hud);
+	}
 }
 
 // Parameters that define how the score update is animated
@@ -675,4 +681,44 @@ static void DrawScoreUpdate(HUDScore *score, int flags)
 	DrawTextStringSpecialBlend(
 		&gTextManager, s, &gGraphicsDevice, textFlags, Vec2iZero(),
 		screenSize, pos, color);
+}
+
+static void DrawObjectiveCounts(HUD *hud)
+{
+	int x = 5;
+	int y = hud->device->cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
+	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+	{
+		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
+		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+
+		// Don't draw anything for optional objectives
+		if (mo->Required == 0)
+		{
+			continue;
+		}
+
+		// Objective color dot
+		Draw_Rect(x, y + 3, 2, 2, o->color);
+
+		int itemsLeft = mo->Required - o->done;
+		if (itemsLeft > 0)
+		{
+			char s[4];
+			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
+			{
+				sprintf(s, "%d", itemsLeft);
+			}
+			else
+			{
+				strcpy(s, "?");
+			}
+			CDogsTextStringAt(x + 5, y, s);
+		}
+		else
+		{
+			CDogsTextStringAt(x + 5, y, "Done");
+		}
+		x += 30;
+	}
 }

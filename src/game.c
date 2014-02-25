@@ -55,7 +55,6 @@
 #include <time.h>
 
 #include <SDL.h>
-#include "SDL_mutex.h"
 
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
@@ -381,72 +380,6 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
 	return lastPosition;
 }
 
-static void MissionUpdateObjectives(void)
-{
-	int i;
-	int allDone = 1;
-	static int completed = 0;
-	int x, y;
-
-	x = 5;
-	y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
-	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-		struct Objective *o = CArrayGet(&gMission.Objectives, i);
-		int itemsLeft;
-		
-		if (mo->Type == OBJECTIVE_INVESTIGATE)
-		{
-			o->done = MapGetExploredPercentage(&gMap);
-			MissionSetMessageIfComplete(&gMission);
-		}
-
-		// Don't draw anything else for optional objectives
-		if (mo->Required == 0)
-		{
-			continue;
-		}
-		
-		y += 3;
-		// Objective color dot
-		Draw_Rect(x, y, 2, 2, o->color);
-		y -= 3;
-
-		itemsLeft = mo->Required - o->done;
-
-		if (itemsLeft > 0)
-		{
-			char s[4];
-			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
-			{
-				sprintf(s, "%d", itemsLeft);
-			}
-			else
-			{
-				strcpy(s, "?");
-			}
-			CDogsTextStringAt(x + 5, y, s);
-			allDone = 0;
-		}
-		else
-		{
-			CDogsTextStringAt(x + 5, y, "Done");
-		}
-		x += 30;
-	}
-
-	if (allDone && !completed)
-	{
-		completed = 1;
-		MapShowExitArea(&gMap);
-	}
-	else if (!allDone)
-	{
-		completed = 0;
-	}
-}
-
 static int HandleKey(int cmd, int *isPaused, int *hasUsedMap, bool showExit)
 {
 	if (IsAutoMapEnabled(gCampaign.Entry.mode))
@@ -565,6 +498,7 @@ void HandleGameEvents(CArray *store, HUD *hud, int *shakeAmount)
 		case GAME_EVENT_MISSION_COMPLETE:
 			HUDDisplayMessage(hud, "Mission complete", -1);
 			hud->showExit = true;
+			MapShowExitArea(&gMap);
 			break;
 		default:
 			assert(0 && "unknown game event");
@@ -796,11 +730,6 @@ int gameloop(void)
 			else
 			{
 				gMission.pickupTime = PICKUP_LIMIT;
-			}
-
-			if (HasObjectives(gCampaign.Entry.mode))
-			{
-				MissionUpdateObjectives();
 			}
 
 			// Check that all players have been destroyed
