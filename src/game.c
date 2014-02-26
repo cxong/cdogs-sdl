@@ -764,29 +764,29 @@ int gameloop(void)
 		}
 		framesSkipped = 0;
 
-		// Don't draw or update HUD if paused
+		// Don't update HUD if paused, only draw
 		if (!isPaused)
 		{
-			lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
-
 			shakeAmount -= ticks;
 			if (shakeAmount < 0)
 			{
 				shakeAmount = 0;
 			}
 
-			debug(D_VERBOSE, "frames... %d\n", frames);
-
-			printf("%d\n", ticksElapsedDraw);
 			HUDUpdate(&hud, ticksElapsedDraw);
-			HUDDraw(&hud, isPaused);
-			if (GameIsMouseUsed(gPlayerDatas))
-			{
-				MouseDraw(&gEventHandlers.mouse);
-			}
-
-			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 		}
+
+		lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
+
+		debug(D_VERBOSE, "frames... %d\n", frames);
+
+		HUDDraw(&hud, isPaused);
+		if (GameIsMouseUsed(gPlayerDatas))
+		{
+			MouseDraw(&gEventHandlers.mouse);
+		}
+
+		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		ticksElapsedDraw = 0;
 	}
