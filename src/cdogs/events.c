@@ -386,21 +386,17 @@ int WaitForAnyKeyOrButton(EventHandlers *handlers)
 			return 0;
 		}
 
-		if (handlers->joysticks.numJoys > 0)
+		// Check menu commands
+		int cmd = GetMenuCmd(handlers, gPlayerDatas);
+		if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
 		{
-			// Check joystick 1
-			joystick_t *j = &handlers->joysticks.joys[0];
-			int cmd = JoyGetPressed(j);
-			if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
-			{
-				return 1;
-			}
-			if (cmd & CMD_BUTTON4)
-			{
-				return 0;
-			}
+			return 1;
 		}
-		SDL_Delay(10);
+		if (cmd & CMD_BUTTON4)
+		{
+			return 0;
+		}
+		SDL_Delay(33);
 	}
 	// should never reach here
 }
