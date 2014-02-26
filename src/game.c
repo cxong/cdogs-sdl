@@ -72,6 +72,7 @@
 #include <cdogs/palette.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
+#include <cdogs/screen_shake.h>
 #include <cdogs/text.h>
 #include <cdogs/triggers.h>
 
@@ -144,19 +145,6 @@ static void DoBuffer(
 	DrawBufferDraw(b, offset, NULL);
 }
 
-int GetShakeAmount(int oldShake, int amount)
-{
-	int shake = (oldShake + amount) * gConfig.Graphics.ShakeMultiplier * FPS_FRAMELIMIT / 100;
-
-	/* So we don't shake too much :) */
-	if (shake > 100 * FPS_FRAMELIMIT / 70)
-	{
-		shake = 100 * FPS_FRAMELIMIT / 70;
-	}
-
-	return shake;
-}
-
 int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 {
 	Vec2i min;
@@ -171,25 +159,20 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 		max.y - min.y < config->ResolutionHeight - SPLIT_PADDING;
 }
 
-Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, int shakeAmount)
+Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 {
-	Vec2i noise = Vec2iZero();
 	Vec2i centerOffset = Vec2iZero();
 	int i;
 	int numPlayersAlive = GetNumPlayersAlive();
 	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
 	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
 
-	if (shakeAmount)
-	{
-		noise.x = rand() & 7;
-		noise.y = rand() & 7;
-	}
-
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
 	}
+
+	Vec2i noise = ScreenShakeGetDelta(shake);
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (numPlayersAlive == 0)
@@ -477,7 +460,7 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 	return center;
 }
 
-void HandleGameEvents(CArray *store, HUD *hud, int *shakeAmount)
+void HandleGameEvents(CArray *store, HUD *hud, ScreenShake *shake)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
@@ -489,7 +472,8 @@ void HandleGameEvents(CArray *store, HUD *hud, int *shakeAmount)
 			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
 			break;
 		case GAME_EVENT_SCREEN_SHAKE:
-			*shakeAmount = GetShakeAmount(*shakeAmount, e->u.ShakeAmount);
+			*shake = ScreenShakeAdd(
+				*shake, e->u.ShakeAmount, gConfig.Graphics.ShakeMultiplier);
 			break;
 		case GAME_EVENT_SET_MESSAGE:
 			HUDDisplayMessage(
@@ -522,7 +506,7 @@ int gameloop(void)
 	Uint32 ticksElapsedDraw = 0;
 	int frames = 0;
 	int framesSkipped = 0;
-	int shakeAmount = 0;
+	ScreenShake shake = ScreenShakeZero();
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
@@ -648,7 +632,7 @@ int gameloop(void)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
-				HandleGameEvents(&gGameEvents, &hud, &shakeAmount);
+				HandleGameEvents(&gGameEvents, &hud, &shake);
 
 				for (i = 0; i < gOptions.numPlayers; i++)
 				{
@@ -767,16 +751,12 @@ int gameloop(void)
 		// Don't update HUD if paused, only draw
 		if (!isPaused)
 		{
-			shakeAmount -= ticks;
-			if (shakeAmount < 0)
-			{
-				shakeAmount = 0;
-			}
+			shake = ScreenShakeUpdate(shake, ticks);
 
 			HUDUpdate(&hud, ticksElapsedDraw);
 		}
 
-		lastPosition = DrawScreen(&buffer, lastPosition, shakeAmount);
+		lastPosition = DrawScreen(&buffer, lastPosition, shake);
 
 		debug(D_VERBOSE, "frames... %d\n", frames);
 

@@ -55,6 +55,7 @@ set(CDOGS_SOURCES
 	pics.c
 	player_template.c
 	quick_play.c
+	screen_shake.c
 	sounds.c
 	text.c
 	tile.c
@@ -115,6 +116,7 @@ set(CDOGS_HEADERS
 	pics.h
 	player_template.h
 	quick_play.h
+	screen_shake.h
 	sounds.h
 	sys_config.h
 	sys_specifics.h

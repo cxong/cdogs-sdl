@@ -59,6 +59,7 @@
 #include "drawtools.h"
 #include "game_events.h"
 #include "map.h"
+#include "screen_shake.h"
 #include "blit.h"
 #include "pic_manager.h"
 #include "defs.h"
@@ -387,7 +388,7 @@ static void AddExplosion(int x, int y, int flags, int player)
 
 	GameEvent shake;
 	shake.Type = GAME_EVENT_SCREEN_SHAKE;
-	shake.u.ShakeAmount = 15;
+	shake.u.ShakeAmount = SHAKE_SMALL_AMOUNT;
 	GameEventsEnqueue(&gGameEvents, shake);
 
 	flags |= FLAGS_HURTALWAYS;
@@ -468,7 +469,7 @@ static void DamageObject(
 		{
 			GameEvent shake;
 			shake.Type = GAME_EVENT_SCREEN_SHAKE;
-			shake.u.ShakeAmount = 70;
+			shake.u.ShakeAmount = SHAKE_BIG_AMOUNT;
 			GameEventsEnqueue(&gGameEvents, shake);
 		}
 		if (object->flags & OBJFLAG_EXPLOSIVE)
