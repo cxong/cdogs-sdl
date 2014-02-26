@@ -146,12 +146,12 @@ static void DoBuffer(
 
 int GetShakeAmount(int oldShake, int amount)
 {
-	int shake = (oldShake + amount) * gConfig.Graphics.ShakeMultiplier;
+	int shake = (oldShake + amount) * gConfig.Graphics.ShakeMultiplier * FPS_FRAMELIMIT / 100;
 
 	/* So we don't shake too much :) */
-	if (shake > 100)
+	if (shake > 100 * FPS_FRAMELIMIT / 70)
 	{
-		shake = 100;
+		shake = 100 * FPS_FRAMELIMIT / 70;
 	}
 
 	return shake;
@@ -522,6 +522,7 @@ int gameloop(void)
 	Uint32 ticksElapsedDraw = 0;
 	int frames = 0;
 	int framesSkipped = 0;
+	int shakeAmount = 0;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
@@ -547,7 +548,6 @@ int gameloop(void)
 		int cmdAll = 0;
 		int ticks = 1;
 		int i;
-		int shakeAmount = 0;
 		int allPlayersDestroyed = 1;
 		int hasUsedMap = 0;
 		Uint32 ticksBeforeMap;
