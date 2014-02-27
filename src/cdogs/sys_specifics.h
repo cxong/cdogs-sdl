@@ -77,4 +77,8 @@
 #define mkdir(p, a) mkdir(p)
 #endif
 
+#ifndef __func__
+#define __func__ __FUNCTION__
+#endif
+
 #endif

@@ -53,6 +53,8 @@
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 
+#include "sys_specifics.h"
+
 extern int debug;
 extern int debug_level;
 
@@ -62,7 +64,7 @@ extern int debug_level;
 
 #define debug(n,...)	if (debug && (n <= debug_level)) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
 
-#ifdef MSVC
+#ifdef _MSC_VER
 #define CHALT() __debugbreak()
 #else
 #define CHALT()
@@ -70,12 +72,16 @@ extern int debug_level;
 
 #define CASSERT(_x, _errmsg)\
 {\
-	if (!(_x))\
+	volatile bool isOk = _x;\
+	if (!isOk)\
 	{\
 		static char buf[1024];\
-		sprintf("In %s " __FILE__ ":" __LINE__ ": " _errmsg " (" #_x ")", __func__);\
+		sprintf(\
+			buf,\
+			"In %s %s:%d: " _errmsg " (" #_x ")",\
+			__FILE__, __LINE__, __func__);\
 		CHALT();\
-		assert((_x), buf);\
+		assert(_x);\
 	}\
 }
 
