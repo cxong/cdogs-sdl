@@ -73,7 +73,7 @@ extern int debug_level;
 	if (!(_x))\
 	{\
 		static char buf[1024];\
-		sprintf(__FILE__ ":%d: " _errmsg " (" #_x ")", __LINE__);\
+		sprintf("In %s " __FILE__ ":" __LINE__ ": " _errmsg " (" #_x ")", __func__);\
 		CHALT();\
 		assert((_x), buf);\
 	}\
