@@ -49,6 +49,7 @@
 #ifndef __UTILS
 #define __UTILS
 
+#include <assert.h>
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 
@@ -60,6 +61,23 @@ extern int debug_level;
 #define D_MAX		2
 
 #define debug(n,...)	if (debug && (n <= debug_level)) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
+
+#ifdef MSVC
+#define CHALT() __debugbreak()
+#else
+#define CHALT()
+#endif
+
+#define CASSERT(_x, _errmsg)\
+{\
+	if (!(_x))\
+	{\
+		static char buf[1024];\
+		sprintf(__FILE__ ":%d: " _errmsg " (" #_x ")", __LINE__);\
+		CHALT();\
+		assert((_x), buf);\
+	}\
+}
 
 #define _CCHECKALLOC(_func, _var, _size)\
 {\
