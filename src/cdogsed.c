@@ -237,7 +237,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 
 	if (willDisplayAutomap && mission)
 	{
-		AutomapDraw(AUTOMAP_FLAGS_SHOWALL);
+		AutomapDraw(AUTOMAP_FLAGS_SHOWALL, true);
 	}
 	else
 	{
