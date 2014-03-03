@@ -43,6 +43,7 @@ Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iMinus(Vec2i a, Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
+// TODO: due to rounding, this will always return unit component vectors
 Vec2i Vec2iNorm(Vec2i v);
 int Vec2iEqual(Vec2i a, Vec2i b);
 Vec2i Vec2iMin(Vec2i a, Vec2i b);	// Get min x and y of both vectors
@@ -65,5 +66,11 @@ Vec2i CalcClosestPointOnLineSegmentToPoint(
 // Helper macros for positioning
 #define CENTER_X(_pos, _size, _w) ((_pos).x + ((_size).x - (_w)) / 2)
 #define CENTER_Y(_pos, _size, _h) ((_pos).y + ((_size).y - (_h)) / 2)
+
+typedef struct
+{
+	Vec2i Pos;
+	Vec2i Size;
+} Rect2i;
 
 #endif

@@ -451,6 +451,12 @@ void MapShowExitArea(Map *map)
 	}
 }
 
+Vec2i MapGetExitPos(Map *m)
+{
+	return Vec2iCenterOfTile(
+		Vec2iScaleDiv(Vec2iAdd(m->ExitStart, m->ExitEnd), 2));
+}
+
 // Adjacent means to the left, right, above or below
 static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
 {

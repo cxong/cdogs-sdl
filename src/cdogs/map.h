@@ -120,6 +120,9 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store);
 bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles);
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
 void MapShowExitArea(Map *map);
+// Returns the center of the tile that's the middle of the exit area
+// Used for compass arrows
+Vec2i MapGetExitPos(Map *m);
 void MapMarkAsVisited(Map *map, Vec2i pos);
 void MapMarkAllAsVisited(Map *map);
 int MapGetExploredPercentage(Map *map);

@@ -49,6 +49,7 @@
 #include "hud.h"
 
 #include <assert.h>
+#include <math.h>
 #include <time.h>
 
 #include "actors.h"
@@ -404,11 +405,18 @@ static void DrawSharedRadar(
 
 #define RADAR_SCALE 1
 
+static void DrawObjectiveCompass(
+	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	GraphicsDevice *device, struct PlayerData *data, TActor *p, int flags,
-	bool showExit)
+	Rect2i r, bool showExit)
 {
+	if (p != NULL)
+	{
+		DrawObjectiveCompass(device, Vec2iFull2Real(p->Pos), r, showExit);
+	}
+
 	char s[50];
 	int textFlags = TEXT_TOP | TEXT_LEFT;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -448,6 +456,75 @@ static void DrawPlayerStatus(
 		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		DrawRadar(device, p, RADAR_SCALE, flags, showExit);
+	}
+}
+
+static void DrawObjectiveCompass(
+	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
+{
+	// Draw exit position
+	if (showExit)
+	{
+		Vec2i exitPos = MapGetExitPos(&gMap);
+		Vec2i compassV = Vec2iMinus(exitPos, playerPos);
+		// Find which edge of screen is the best
+		bool hasDrawn = false;
+		if (compassV.x != 0)
+		{
+			double sx = r.Size.x / 2.0 / compassV.x;
+			int yInt = (int)floor(fabs(sx) * compassV.y + 0.5);
+			if (yInt >= -r.Size.y / 2 && yInt <= r.Size.y / 2)
+			{
+				// Intercepts either left or right side
+				hasDrawn = true;
+				if (compassV.x > 0)
+				{
+					// right edge
+					Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
+					Vec2i pos = Vec2iNew(
+						r.Pos.x + r.Size.x - p->size.x,
+						r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
+					Blit(g, p, pos);
+				}
+				else if (compassV.x < 0)
+				{
+					// left edge
+					Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
+					Vec2i pos = Vec2iNew(
+						r.Pos.x,
+						r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
+					Blit(g, p, pos);
+				}
+			}
+		}
+		if (!hasDrawn && compassV.y != 0)
+		{
+			double sy = r.Size.y / 2.0 / compassV.y;
+			int xInt = (int)floor(fabs(sy) * compassV.x + 0.5);
+			if (xInt >= -r.Size.x / 2 && xInt <= r.Size.x / 2)
+			{
+				// Intercepts either top or bottom side
+				hasDrawn = true;
+				if (compassV.y > 0)
+				{
+					// bottom edge
+					Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
+					Vec2i pos = Vec2iNew(
+						r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
+						r.Pos.y + r.Size.y - p->size.y);
+					Blit(g, p, pos);
+				}
+				else if (compassV.y < 0)
+				{
+					// top edge
+					Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
+					Vec2i pos = Vec2iNew(
+						r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
+						r.Pos.y);
+					Blit(g, p, pos);
+				}
+			}
+		}
 	}
 }
 
@@ -493,6 +570,10 @@ void HUDDraw(HUD *hud, int isPaused)
 	int numPlayersAlive = GetNumPlayersAlive();
 	int i;
 
+	Rect2i r;
+	r.Size = Vec2iNew(
+		hud->device->cachedConfig.ResolutionWidth,
+		hud->device->cachedConfig.ResolutionHeight);
 	if (numPlayersAlive <= 1)
 	{
 		flags = 0;
@@ -503,10 +584,13 @@ void HUDDraw(HUD *hud, int isPaused)
 	}
 	else if (gOptions.numPlayers == 2)
 	{
+		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
 	else if (gOptions.numPlayers == 3 || gOptions.numPlayers == 4)
 	{
+		r.Size.x /= 2;
+		r.Size.y /= 2;
 		flags |= HUDFLAGS_QUARTER_SCREEN;
 	}
 	else
@@ -517,17 +601,20 @@ void HUDDraw(HUD *hud, int isPaused)
 	for (i = 0; i < gOptions.numPlayers; i++)
 	{
 		int drawFlags = flags;
+		r.Pos = Vec2iZero();
 		if (i & 1)
 		{
+			r.Pos.x = r.Size.x;
 			drawFlags |= HUDFLAGS_PLACE_RIGHT;
 		}
 		if (i >= 2)
 		{
+			r.Pos.y = r.Size.y;
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
 		}
 		DrawPlayerStatus(
 			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags,
-			hud->showExit);
+			r, hud->showExit);
 		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
 		{
 			HUDScore *score = CArrayGet(&hud->scoreUpdates, j);
