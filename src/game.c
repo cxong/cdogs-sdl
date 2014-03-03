@@ -501,6 +501,7 @@ static void HandleGameEvents(
 	GameEventsClear(store);
 }
 
+static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map);
 int gameloop(void)
 {
 	DrawBuffer buffer;
@@ -730,6 +731,11 @@ int gameloop(void)
 				gMission.pickupTime = PICKUP_LIMIT;
 			}
 
+			if (HasObjectives(gCampaign.Entry.mode))
+			{
+				MissionUpdateObjectives(&gMission, &gMap);
+			}
+
 			// Check that all players have been destroyed
 			// Note: there's a period of time where players are dying
 			// Wait until after this period before ending the game
@@ -789,4 +795,18 @@ int gameloop(void)
 	DrawBufferTerminate(&buffer);
 
 	return !is_esc_pressed;
+}
+
+static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
+{
+	for (int i = 0; i < (int)mo->missionData->Objectives.size; i++)
+	{
+		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
+		struct Objective *o = CArrayGet(&mo->Objectives, i);
+		if (mobj->Type == OBJECTIVE_INVESTIGATE)
+		{
+			o->done = MapGetExploredPercentage(map);
+			MissionSetMessageIfComplete(mo);
+		}
+	}
 }
