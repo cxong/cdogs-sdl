@@ -26,32 +26,85 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#ifndef __NET_INPUT_UTIL
+#define __NET_INPUT_UTIL
 
 #include <stdbool.h>
 
 #include <SDL_net.h>
 
-#include "net_input_util.h"
+#define NET_INPUT_UDP_PORT 34219
+#define NET_INPUT_MAX_PACKET_LEN 1024
+
+// Used in printf statements
+#define NET_IP_TO_CIDR_FORMAT(_ip)\
+	((_ip) >> 24) & 0xFF,\
+	((_ip) >> 16) & 0xFF,\
+	((_ip) >> 8) & 0xFF,\
+	(_ip)& 0xFF
+
+// Messages
+
+// 3-way handshake
+typedef struct
+{
+	Uint16 seq;
+} NetMsgSyn;
+typedef struct
+{
+	Uint16 seq;
+	Uint16 ack;
+} NetMsgSynAck;
+typedef struct
+{
+	Uint16 ack;
+} NetMsgAck;
+
+// Commands (client to server)
+typedef struct
+{
+	Uint32 ticks;
+	Uint32 cmd;
+} NetMsgCmd;
+
+// Game events (server to client)
+typedef enum
+{
+	SERVER_MSG_GAME_START
+} ServerMsg;
+
+
+typedef enum
+{
+	CHANNEL_STATE_CLOSED,
+	CHANNEL_STATE_DISCONNECTED,
+	CHANNEL_STATE_WAIT_HANDSHAKE,
+	CHANNEL_STATE_CONNECTED
+} NetInputChannelState;
 
 typedef struct
 {
-	// TODO: one channel per client, with shared socket
-	NetInputChannel channel;
-	int PrevCmd;
-	int Cmd;
-} NetInput;
+	UDPsocket sock;
+	NetInputChannelState state;
+	Uint16 otherPort;
+	Uint32 otherHost;
+	Uint16 seq;
+	Uint16 ack;
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+	Uint8 buf[NET_INPUT_MAX_PACKET_LEN];
+} NetInputChannel;
 
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
+void NetInputChannelTerminate(NetInputChannel *n);
 
-void NetInputSendMsg(NetInput *n, ServerMsg msg);
+bool NetInputChannelTryOpen(NetInputChannel *n, Uint16 port, Uint32 host);
+
+UDPpacket NetInputNewPacket(NetInputChannel *n, size_t len);
+bool NetInputTrySendPacket(NetInputChannel *n, UDPpacket packet);
+bool NetInputRecvBlocking(
+	NetInputChannel *n, bool (*tryParseFunc)(UDPpacket *, void *), void *data);
+
+// Returns true only if successfully received expected packet
+bool NetInputRecvNonBlocking(
+	NetInputChannel *n, bool (*tryParseFunc)(UDPpacket *, void *), void *data);
 
 #endif

@@ -460,7 +460,8 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 	return center;
 }
 
-void HandleGameEvents(CArray *store, HUD *hud, ScreenShake *shake)
+static void HandleGameEvents(
+	CArray *store, HUD *hud, ScreenShake *shake, EventHandlers *eventHandlers)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
@@ -478,6 +479,14 @@ void HandleGameEvents(CArray *store, HUD *hud, ScreenShake *shake)
 		case GAME_EVENT_SET_MESSAGE:
 			HUDDisplayMessage(
 				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
+			break;
+		case GAME_EVENT_GAME_START:
+			if (eventHandlers->netInput.channel.state ==
+				CHANNEL_STATE_CONNECTED)
+			{
+				NetInputSendMsg(
+					&eventHandlers->netInput, SERVER_MSG_GAME_START);
+			}
 			break;
 		case GAME_EVENT_MISSION_COMPLETE:
 			HUDDisplayMessage(hud, "Mission complete", -1);
@@ -523,6 +532,11 @@ int gameloop(void)
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
 	EventReset(&gEventHandlers, crosshair);
+
+	GameEvent start;
+	start.Type = GAME_EVENT_GAME_START;
+	GameEventsEnqueue(&gGameEvents, start);
+
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
 	ticksNow = SDL_GetTicks();
@@ -632,7 +646,7 @@ int gameloop(void)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
-				HandleGameEvents(&gGameEvents, &hud, &shake);
+				HandleGameEvents(&gGameEvents, &hud, &shake, &gEventHandlers);
 
 				for (i = 0; i < gOptions.numPlayers; i++)
 				{

@@ -41,6 +41,11 @@ typedef enum
 	GAME_EVENT_SCORE,
 	GAME_EVENT_SCREEN_SHAKE,
 	GAME_EVENT_SET_MESSAGE,
+
+	// Use to signal start of game; useless for single player,
+	// but for networked games it's used to set game ticks 0
+	GAME_EVENT_GAME_START,
+
 	GAME_EVENT_MISSION_COMPLETE
 } GameEventType;
 

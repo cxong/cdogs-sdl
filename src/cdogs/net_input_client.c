@@ -38,38 +38,93 @@ void NetInputClientInit(NetInputClient *n)
 }
 void NetInputClientTerminate(NetInputClient *n)
 {
-	SDLNet_UDP_Close(n->sock);
-	n->sock = NULL;
+	NetInputChannelTerminate(&n->channel);
 }
 
+static bool TryParseSynAck(UDPpacket *packet, void *data);
 void NetInputClientConnect(NetInputClient *n, Uint32 host)
 {
-	n->sock = SDLNet_UDP_Open(0);
-	if (n->sock == NULL)
+	if (!NetInputChannelTryOpen(&n->channel, 0, host))
 	{
-		printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		printf("Failed to open channel\n");
 		return;
 	}
-	n->isActive = true;
-	n->serverHost = host;
+	n->channel.otherPort = NET_INPUT_UDP_PORT;
+
+	// Handshake
+
+	// Send SYN
+	UDPpacket packet = NetInputNewPacket(&n->channel, sizeof(NetMsgSyn));
+	NetMsgSyn *packetSyn = (NetMsgSyn *)packet.data;
+	n->channel.seq = rand() & (Uint16)-1;
+	SDLNet_Write16(n->channel.seq, &packetSyn->seq);
+	if (!NetInputTrySendPacket(&n->channel, packet))
+	{
+		printf("Failed to send SYN\n");
+		goto bail;
+	}
+	n->channel.seq++;
+
+	// Wait for SYN-ACK
+	// TODO: don't wait forever
+	n->channel.state = CHANNEL_STATE_WAIT_HANDSHAKE;
+	while (!NetInputRecvBlocking(&n->channel, TryParseSynAck, &n->channel));
+
+	// Send ACK
+	CFREE(packet.data);
+	packet = NetInputNewPacket(&n->channel, sizeof(NetMsgAck));
+	NetMsgAck *packetAck = (NetMsgAck *)packet.data;
+	SDLNet_Write16(n->channel.ack, &packetAck->ack);
+	if (!NetInputTrySendPacket(&n->channel, packet))
+	{
+		printf("Failed to send ACK\n");
+		goto bail;
+	}
+
+	n->channel.state = CHANNEL_STATE_CONNECTED;
+	return;
+
+bail:
+	CFREE(packet.data);
 }
+
+static bool TryParseSynAck(UDPpacket *packet, void *data)
+{
+	if (packet->len != sizeof(NetMsgSynAck))
+	{
+		printf("Error: expected SYN-ACK, received packet len %d\n",
+			packet->len);
+		return false;
+	}
+	NetMsgSynAck *msg = (NetMsgSynAck *)packet->data;
+	Uint16 ack = SDLNet_Read16(&msg->ack);
+	NetInputChannel *n = data;
+	if (ack != n->seq)
+	{
+		printf("Error: received invalid ack %d, expected %d\n",
+			ack, n->seq);
+		return false;
+	}
+	n->ack = SDLNet_Read16(&msg->seq) + 1;
+	return true;
+}
+
 void NetInputClientSend(NetInputClient *n, int cmd)
 {
-	if (n->sock == NULL || !n->isActive)
+	if (n->channel.sock == NULL || n->channel.state != CHANNEL_STATE_CONNECTED)
 	{
 		return;
 	}
 
-	UDPpacket packet;
-	SDLNet_Write32(n->serverHost, &packet.address.host);
-	SDLNet_Write16(NET_INPUT_UDP_PORT, &packet.address.port);
-	packet.maxlen = packet.len = sizeof(Uint32);
-	CMALLOC(packet.data, sizeof(Uint32));
-	SDLNet_Write32(cmd, packet.data);
-	int numsent = SDLNet_UDP_Send(n->sock, -1, &packet);
-	if (numsent == 0)
+	UDPpacket packet = NetInputNewPacket(&n->channel, sizeof(NetMsgCmd));
+	NetMsgCmd *packetCmd = (NetMsgCmd *)packet.data;
+	SDLNet_Write32(n->ticks, &packetCmd->ticks);
+	SDLNet_Write32(cmd, &packetCmd->cmd);
+	if (!NetInputTrySendPacket(&n->channel, packet))
 	{
-		printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
-		n->isActive = false;
+		goto bail;
 	}
+
+bail:
+	CFREE(packet.data);
 }

@@ -33,11 +33,13 @@
 
 #include <SDL_net.h>
 
+#include "net_input_util.h"
+
 typedef struct
 {
-	UDPsocket sock;
-	bool isActive;
-	Uint32 serverHost;
+	NetInputChannel channel;
+
+	Uint32 ticks;
 } NetInputClient;
 
 void NetInputClientInit(NetInputClient *n);
