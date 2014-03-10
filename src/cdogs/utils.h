@@ -53,7 +53,7 @@
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 
-#include "color.h
+#include "color.h"
 #include "sys_specifics.h"
 
 extern int debug;
