@@ -439,22 +439,6 @@ static CampaignSettingOld df2 =
 };
 
 
-// +---------------------------------------------------+
-// |  Objective colors (for automap & status display)  |
-// +---------------------------------------------------+
-
-
-// TODO: no limit to objective colours
-color_t objectiveColors[OBJECTIVE_MAX_OLD] =
-{
-	{ 0, 252, 252, 255 },
-	{ 252, 224, 0, 255 },
-	{ 252, 0, 0, 255 },
-	{ 192, 0, 192, 255 },
-	{ 112, 112, 112, 255 }
-};
-
-
 // +-----------------------+
 // |  And now the code...  |
 // +-----------------------+
@@ -529,14 +513,14 @@ int SetupBuiltinDogfight(int idx)
 
 static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 {
-	int i;
-	for (i = 0; i < (int)mission->Objectives.size; i++)
+	for (int i = 0; i < (int)mission->Objectives.size; i++)
 	{
 		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
 		struct Objective o;
 		memset(&o, 0, sizeof o);
 		assert(i < OBJECTIVE_MAX_OLD);
-		o.color = objectiveColors[i];
+		// Set objective colours based on type
+		o.color = ObjectiveTypeColor(mobj->Type);
 		o.blowupObject = MapObjectGet(mobj->Index);
 		o.pickupItem = pickupItems[mobj->Index % PICKUPS_COUNT];
 		CArrayPushBack(&mo->Objectives, &o);
