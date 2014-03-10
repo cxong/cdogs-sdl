@@ -120,3 +120,20 @@ ObjectiveType StrObjectiveType(const char *s)
 	assert(0 && "unknown objective name");
 	return OBJECTIVE_KILL;
 }
+color_t ObjectiveTypeColor(ObjectiveType t)
+{
+	switch (t)
+	{
+		case OBJECTIVE_KILL:	// fallthrough
+		case OBJECTIVE_DESTROY:
+			return colorRed;
+		case OBJECTIVE_COLLECT:	// fallthrough
+		case OBJECTIVE_RESCUE:
+			return colorGreen;
+		case OBJECTIVE_INVESTIGATE:
+			return colorCyan;
+		default:
+			// Shouldn't get here but use a different colour in case
+			return colorYellow;
+	}
+}
