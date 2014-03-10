@@ -53,6 +53,7 @@
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 
+#include "color.h
 #include "sys_specifics.h"
 
 extern int debug;
@@ -182,6 +183,8 @@ typedef enum
 #define OBJECTIVE_MAX_OLD 5
 const char *ObjectiveTypeStr(ObjectiveType t);
 ObjectiveType StrObjectiveType(const char *s);
+// Use specific colours for objective types
+color_t ObjectiveTypeColor(ObjectiveType t);
 
 // Helper macros for defining type/str conversion funcs
 #define T2S(_type, _str) case _type: return _str;
