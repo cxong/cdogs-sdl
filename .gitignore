@@ -58,3 +58,6 @@ CMakeScripts/
 .DS_Store
 *.dmg
 *.dylib
+
+# Other
+*.lnk
