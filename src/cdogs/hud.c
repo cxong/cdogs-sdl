@@ -459,70 +459,78 @@ static void DrawPlayerStatus(
 	}
 }
 
+
+static void DrawCompassArrow(
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos);
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
 {
 	// Draw exit position
 	if (showExit)
 	{
-		Vec2i exitPos = MapGetExitPos(&gMap);
-		Vec2i compassV = Vec2iMinus(exitPos, playerPos);
-		// Find which edge of screen is the best
-		bool hasDrawn = false;
-		if (compassV.x != 0)
+		DrawCompassArrow(g, r, MapGetExitPos(&gMap), playerPos);
+	}
+}
+
+static void DrawCompassArrow(
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos)
+{
+	Vec2i compassV = Vec2iMinus(pos, playerPos);
+	// Find which edge of screen is the best
+	bool hasDrawn = false;
+	if (compassV.x != 0)
+	{
+		double sx = r.Size.x / 2.0 / compassV.x;
+		int yInt = (int)floor(fabs(sx) * compassV.y + 0.5);
+		if (yInt >= -r.Size.y / 2 && yInt <= r.Size.y / 2)
 		{
-			double sx = r.Size.x / 2.0 / compassV.x;
-			int yInt = (int)floor(fabs(sx) * compassV.y + 0.5);
-			if (yInt >= -r.Size.y / 2 && yInt <= r.Size.y / 2)
+			// Intercepts either left or right side
+			hasDrawn = true;
+			if (compassV.x > 0)
 			{
-				// Intercepts either left or right side
-				hasDrawn = true;
-				if (compassV.x > 0)
-				{
-					// right edge
-					Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
-					Vec2i pos = Vec2iNew(
-						r.Pos.x + r.Size.x - p->size.x,
-						r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-					Blit(g, p, pos);
-				}
-				else if (compassV.x < 0)
-				{
-					// left edge
-					Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
-					Vec2i pos = Vec2iNew(
-						r.Pos.x,
-						r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-					Blit(g, p, pos);
-				}
+				// right edge
+				Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
+				Vec2i pos = Vec2iNew(
+					r.Pos.x + r.Size.x - p->size.x,
+					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
+				Blit(g, p, pos);
+			}
+			else if (compassV.x < 0)
+			{
+				// left edge
+				Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
+				Vec2i pos = Vec2iNew(
+					r.Pos.x,
+					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
+				Blit(g, p, pos);
 			}
 		}
-		if (!hasDrawn && compassV.y != 0)
+	}
+	if (!hasDrawn && compassV.y != 0)
+	{
+		double sy = r.Size.y / 2.0 / compassV.y;
+		int xInt = (int)floor(fabs(sy) * compassV.x + 0.5);
+		if (xInt >= -r.Size.x / 2 && xInt <= r.Size.x / 2)
 		{
-			double sy = r.Size.y / 2.0 / compassV.y;
-			int xInt = (int)floor(fabs(sy) * compassV.x + 0.5);
-			if (xInt >= -r.Size.x / 2 && xInt <= r.Size.x / 2)
+			// Intercepts either top or bottom side
+			hasDrawn = true;
+			if (compassV.y > 0)
 			{
-				// Intercepts either top or bottom side
-				hasDrawn = true;
-				if (compassV.y > 0)
-				{
-					// bottom edge
-					Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
-					Vec2i pos = Vec2iNew(
-						r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
-						r.Pos.y + r.Size.y - p->size.y);
-					Blit(g, p, pos);
-				}
-				else if (compassV.y < 0)
-				{
-					// top edge
-					Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
-					Vec2i pos = Vec2iNew(
-						r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
-						r.Pos.y);
-					Blit(g, p, pos);
-				}
+				// bottom edge
+				Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
+				Vec2i pos = Vec2iNew(
+					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
+					r.Pos.y + r.Size.y - p->size.y);
+				Blit(g, p, pos);
+			}
+			else if (compassV.y < 0)
+			{
+				// top edge
+				Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
+				Vec2i pos = Vec2iNew(
+					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
+					r.Pos.y);
+				Blit(g, p, pos);
 			}
 		}
 	}
