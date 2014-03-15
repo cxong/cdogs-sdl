@@ -461,19 +461,19 @@ static void DrawPlayerStatus(
 
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos);
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask);
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
 {
 	// Draw exit position
 	if (showExit)
 	{
-		DrawCompassArrow(g, r, MapGetExitPos(&gMap), playerPos);
+		DrawCompassArrow(g, r, MapGetExitPos(&gMap), playerPos, colorGreen);
 	}
 }
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos)
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask)
 {
 	Vec2i compassV = Vec2iMinus(pos, playerPos);
 	// Don't draw if objective is on screen
@@ -499,7 +499,7 @@ static void DrawCompassArrow(
 				Vec2i pos = Vec2iNew(
 					r.Pos.x + r.Size.x - p->size.x,
 					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-				Blit(g, p, pos);
+				BlitMasked(g, p, pos, mask, true);
 			}
 			else if (compassV.x < 0)
 			{
@@ -508,7 +508,7 @@ static void DrawCompassArrow(
 				Vec2i pos = Vec2iNew(
 					r.Pos.x,
 					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-				Blit(g, p, pos);
+				BlitMasked(g, p, pos, mask, true);
 			}
 		}
 	}
@@ -527,7 +527,7 @@ static void DrawCompassArrow(
 				Vec2i pos = Vec2iNew(
 					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
 					r.Pos.y + r.Size.y - p->size.y);
-				Blit(g, p, pos);
+				BlitMasked(g, p, pos, mask, true);
 			}
 			else if (compassV.y < 0)
 			{
@@ -536,7 +536,7 @@ static void DrawCompassArrow(
 				Vec2i pos = Vec2iNew(
 					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
 					r.Pos.y);
-				Blit(g, p, pos);
+				BlitMasked(g, p, pos, mask, true);
 			}
 		}
 	}
