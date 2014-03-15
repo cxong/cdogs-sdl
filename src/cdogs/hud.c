@@ -472,6 +472,41 @@ static void DrawObjectiveCompass(
 		DrawCompassArrow(
 			g, r, MapGetExitPos(&gMap), playerPos, colorGreen, "Exit");
 	}
+
+	// Draw objectives
+	Map *map = &gMap;
+	Vec2i tilePos;
+	for (tilePos.y = 0; tilePos.y < map->Size.y; tilePos.y++)
+	{
+		for (tilePos.x = 0; tilePos.x < map->Size.x; tilePos.x++)
+		{
+			Tile *tile = MapGetTile(map, tilePos);
+			for (TTileItem *t = tile->things; t; t = t->next)
+			{
+				if (!(t->flags & TILEITEM_OBJECTIVE))
+				{
+					continue;
+				}
+				int objective = ObjectiveFromTileItem(t->flags);
+				MissionObjective *mo =
+					CArrayGet(&gMission.missionData->Objectives, objective);
+				if (mo->Flags & OBJECTIVE_HIDDEN)
+				{
+					continue;
+				}
+				if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
+					!tile->isVisited)
+				{
+					continue;
+				}
+				struct Objective *o =
+					CArrayGet(&gMission.Objectives, objective);
+				color_t color = o->color;
+				DrawCompassArrow(
+					g, r, Vec2iNew(t->x, t->y), playerPos, color, NULL);
+			}
+		}
+	}
 }
 
 static void DrawCompassArrow(
