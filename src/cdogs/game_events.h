@@ -46,6 +46,8 @@ typedef enum
 	// but for networked games it's used to set game ticks 0
 	GAME_EVENT_GAME_START,
 
+	GAME_EVENT_MOBILE_OBJECT_REMOVE,
+
 	GAME_EVENT_MISSION_COMPLETE
 } GameEventType;
 
@@ -65,6 +67,7 @@ typedef struct
 			char Message[256];
 			int Ticks;
 		} SetMessage;
+		int MobileObjectRemoveId;
 	} u;
 } GameEvent;
 

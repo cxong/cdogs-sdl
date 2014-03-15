@@ -171,6 +171,7 @@ extern BulletClass gBulletClasses[BULLET_COUNT];
 
 struct MobileObject
 {
+	int id;
 	int player;	// -1 if not owned by any player
 	BulletClass bulletClass;
 	int kind;
@@ -189,6 +190,7 @@ struct MobileObject
 };
 typedef int (*MobObjUpdateFunc)(struct MobileObject *, int);
 extern TMobileObject *gMobObjList;
+extern int gMobileObjId;
 
 
 void BulletInitialize(void);
@@ -214,6 +216,7 @@ void RemoveObject(TObject * obj);
 void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
+void MobileObjectRemove(TMobileObject **mobObjList, int id);
 void AddGrenade(
 	Vec2i pos, double radians, BulletType type, int flags, int player);
 void AddBullet(

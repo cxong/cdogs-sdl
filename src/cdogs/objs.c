@@ -75,6 +75,7 @@
 BulletClass gBulletClasses[BULLET_COUNT];
 
 TMobileObject *gMobObjList = NULL;
+int gMobileObjId;
 static TObject *objList = NULL;
 
 static void Fire(int x, int y, int flags, int player);
@@ -668,6 +669,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 	TMobileObject *obj;
 	CCALLOC(obj, sizeof(TMobileObject));
 
+	obj->id = gMobileObjId++;
 	obj->player = player;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.data = obj;
@@ -1138,34 +1140,41 @@ int UpdateExplosion(TMobileObject *obj, int ticks)
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
 {
 	TMobileObject *obj = *mobObjList;
-	int do_remove = 0;
-
 	while (obj)
 	{
 		if ((*(obj->updateFunc))(obj, ticks) == 0)
 		{
 			obj->range = 0;
-			do_remove = 1;
+			GameEvent e;
+			e.Type = GAME_EVENT_MOBILE_OBJECT_REMOVE;
+			e.u.MobileObjectRemoveId = obj->id;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 		obj = obj->next;
 	}
-	if (do_remove)
+}
+
+void MobileObjectRemove(TMobileObject **mobObjList, int id)
+{
+	while (*mobObjList)
 	{
-		while (*mobObjList)
+		if ((*mobObjList)->id == id)
 		{
-			if ((*mobObjList)->range == 0)
-			{
-				obj = *mobObjList;
-				*mobObjList = obj->next;
-				MapRemoveTileItem(&gMap, &obj->tileItem);
-				CFREE(obj);
-			}
-			else
-			{
-				mobObjList = &((*mobObjList)->next);
-			}
+			CASSERT(
+				(*mobObjList)->range == 0,
+				"unexpected removal of non-zero range mobobj");
+			TMobileObject *obj = *mobObjList;
+			*mobObjList = obj->next;
+			MapRemoveTileItem(&gMap, &obj->tileItem);
+			CFREE(obj);
+			return;
+		}
+		else
+		{
+			mobObjList = &((*mobObjList)->next);
 		}
 	}
+	CASSERT(false, "failed to remove mobile object");
 }
 
 

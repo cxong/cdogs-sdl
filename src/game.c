@@ -488,6 +488,9 @@ static void HandleGameEvents(
 					&eventHandlers->netInput, SERVER_MSG_GAME_START);
 			}
 			break;
+		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
+			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);
+			break;
 		case GAME_EVENT_MISSION_COMPLETE:
 			HUDDisplayMessage(hud, "Mission complete", -1);
 			hud->showExit = true;
@@ -528,6 +531,7 @@ int gameloop(void)
 	}
 
 	gMissionTime = 0;
+	gMobileObjId = 0;
 	gMission.pickupTime = PICKUP_LIMIT;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
@@ -647,8 +651,6 @@ int gameloop(void)
 		{
 			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
 			{
-				HandleGameEvents(&gGameEvents, &hud, &shake, &gEventHandlers);
-
 				for (i = 0; i < gOptions.numPlayers; i++)
 				{
 					if (gPlayers[i])
@@ -711,6 +713,8 @@ int gameloop(void)
 				UpdateMobileObjects(&gMobObjList, ticks);
 
 				UpdateWatches(&gMap.triggers);
+
+				HandleGameEvents(&gGameEvents, &hud, &shake, &gEventHandlers);
 			}
 
 			gMissionTime += ticks;
