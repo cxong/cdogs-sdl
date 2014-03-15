@@ -461,19 +461,22 @@ static void DrawPlayerStatus(
 
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask);
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
+	const char *label);
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
 {
 	// Draw exit position
 	if (showExit)
 	{
-		DrawCompassArrow(g, r, MapGetExitPos(&gMap), playerPos, colorGreen);
+		DrawCompassArrow(
+			g, r, MapGetExitPos(&gMap), playerPos, colorGreen, "Exit");
 	}
 }
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask)
+	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
+	const char *label)
 {
 	Vec2i compassV = Vec2iMinus(pos, playerPos);
 	// Don't draw if objective is on screen
@@ -482,6 +485,7 @@ static void DrawCompassArrow(
 	{
 		return;
 	}
+	Vec2i textPos = Vec2iZero();
 	// Find which edge of screen is the best
 	bool hasDrawn = false;
 	if (compassV.x != 0)
@@ -495,20 +499,20 @@ static void DrawCompassArrow(
 			if (compassV.x > 0)
 			{
 				// right edge
+				textPos = Vec2iNew(
+					r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
 				Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
-				Vec2i pos = Vec2iNew(
-					r.Pos.x + r.Size.x - p->size.x,
-					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-				BlitMasked(g, p, pos, mask, true);
+				Vec2i drawPos = Vec2iNew(
+					textPos.x - p->size.x, textPos.y - p->size.y / 2);
+				BlitMasked(g, p, drawPos, mask, true);
 			}
 			else if (compassV.x < 0)
 			{
 				// left edge
+				textPos = Vec2iNew(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
 				Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
-				Vec2i pos = Vec2iNew(
-					r.Pos.x,
-					r.Pos.y + r.Size.y / 2 + yInt - p->size.y / 2);
-				BlitMasked(g, p, pos, mask, true);
+				Vec2i drawPos = Vec2iNew(textPos.x, textPos.y - p->size.y / 2);
+				BlitMasked(g, p, drawPos, mask, true);
 			}
 		}
 	}
@@ -523,22 +527,36 @@ static void DrawCompassArrow(
 			if (compassV.y > 0)
 			{
 				// bottom edge
+				textPos = Vec2iNew(
+					r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
 				Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
-				Vec2i pos = Vec2iNew(
-					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
-					r.Pos.y + r.Size.y - p->size.y);
-				BlitMasked(g, p, pos, mask, true);
+				Vec2i drawPos = Vec2iNew(
+					textPos.x - p->size.x / 2, textPos.y - p->size.y);
+				BlitMasked(g, p, drawPos, mask, true);
 			}
 			else if (compassV.y < 0)
 			{
 				// top edge
+				textPos = Vec2iNew(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
 				Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
-				Vec2i pos = Vec2iNew(
-					r.Pos.x + r.Size.x / 2 + xInt - p->size.x / 2,
-					r.Pos.y);
-				BlitMasked(g, p, pos, mask, true);
+				Vec2i drawPos = Vec2iNew(textPos.x - p->size.x / 2, textPos.y);
+				BlitMasked(g, p, drawPos, mask, true);
 			}
 		}
+	}
+	if (label && strlen(label) > 0)
+	{
+		Vec2i textSize = TextGetSize(label);
+		// Center the text around the target position
+		textPos.x -= textSize.x / 2;
+		textPos.y -= textSize.y / 2;
+		// Make sure the text is inside the screen
+		int padding = 4;
+		textPos.x = MAX(textPos.x, r.Pos.x + padding);
+		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
+		textPos.y = MAX(textPos.y, r.Pos.y + padding);
+		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
+		TextStringMasked(&gTextManager, label, g, textPos, mask);
 	}
 }
 
