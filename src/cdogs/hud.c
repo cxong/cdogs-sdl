@@ -551,7 +551,7 @@ static void DrawCompassArrow(
 		textPos.x -= textSize.x / 2;
 		textPos.y -= textSize.y / 2;
 		// Make sure the text is inside the screen
-		int padding = 4;
+		int padding = 8;
 		textPos.x = MAX(textPos.x, r.Pos.x + padding);
 		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
 		textPos.y = MAX(textPos.y, r.Pos.y + padding);
