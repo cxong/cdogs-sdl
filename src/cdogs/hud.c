@@ -476,6 +476,12 @@ static void DrawCompassArrow(
 	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos)
 {
 	Vec2i compassV = Vec2iMinus(pos, playerPos);
+	// Don't draw if objective is on screen
+	if (abs(pos.x - playerPos.x) < r.Size.x / 2 &&
+		abs(pos.y - playerPos.y) < r.Size.y / 2)
+	{
+		return;
+	}
 	// Find which edge of screen is the best
 	bool hasDrawn = false;
 	if (compassV.x != 0)
