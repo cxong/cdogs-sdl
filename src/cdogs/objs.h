@@ -161,11 +161,11 @@ typedef struct
 	BulletUpdateFunc UpdateFunc;
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
+	TileItemDrawFuncData DrawData;
 	int Speed;
 	int Range;
 	int Power;
 	int Size;
-	color_t GrenadeColor;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 

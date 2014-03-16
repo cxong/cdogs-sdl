@@ -53,6 +53,7 @@
 
 #include "c_array.h"
 #include "pic.h"
+#include "pics.h"
 #include "vector.h"
 
 #define TILE_WIDTH      16
@@ -110,9 +111,28 @@ typedef struct
 } ActorPics;
 typedef ActorPics (*TileItemGetPic3Func)(void *);
 
-typedef void (*TileItemDrawFunc) (int, int, void *);
-
-struct TileItem {
+typedef struct
+{
+	void *Obj;
+	union
+	{
+		struct
+		{
+			int Ofspic;
+			bool UseMask;
+			color_t Mask;
+			HSV Tint;
+		} Bullet;
+		// For beam bullets; which beam pic to use
+		BeamPic Beam;
+		color_t GrenadeColor;
+		// For gas clouds; what tint to use
+		HSV Tint;
+	} u;
+} TileItemDrawFuncData;
+typedef void (*TileItemDrawFunc) (Vec2i, TileItemDrawFuncData *);
+typedef struct TileItem
+{
 	int x, y;
 	int w, h;
 	int kind;
@@ -121,11 +141,11 @@ struct TileItem {
 	TileItemGetPicFunc getPicFunc;
 	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
+	TileItemDrawFuncData drawData;
 	void *actor;
 	struct TileItem *next;
 	struct TileItem *nextToDisplay;
-};
-typedef struct TileItem TTileItem;
+} TTileItem;
 
 
 typedef struct

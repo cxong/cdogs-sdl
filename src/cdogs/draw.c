@@ -238,7 +238,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			}
 			else
 			{
-				(*(t->drawFunc))(pos.x, pos.y, t->data);
+				(*(t->drawFunc))(pos, &t->drawData);
 			}
 		}
 		tile += X_TILES - b->Size.x;
@@ -357,7 +357,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			}
 			else
 			{
-				(*(t->drawFunc))(picPos.x, picPos.y, t->data);
+				(*(t->drawFunc))(picPos, &t->drawData);
 			}
 		}
 		tile += X_TILES - b->Size.x;

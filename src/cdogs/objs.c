@@ -110,69 +110,25 @@ Pic *GetObjectPic(void *data)
 	return pic;
 }
 
-void DrawBullet(int x, int y, const TMobileObject * obj)
+static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_BULLET];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
-void DrawBrownBullet(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_SNIPERBULLET];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
-void DrawPetrifierBullet(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic = &cGeneralPics[OFSPIC_MOLOTOV];
-	DrawBTPic(
-		x + pic->dx, y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex),
-		&tintDarker);
-}
-
-void DrawSeeker(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_SNIPERBULLET];
-	DrawTTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex),
-		tableFlamed);
-}
-
-void DrawMine(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_MINE];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
-void DrawDynamite(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_DYNAMITE];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	const TMobileObject *obj = data->Obj;
+	const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
+	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
+	if (data->u.Bullet.UseMask)
+	{
+		BlitMasked(
+			&gGraphicsDevice,
+			PicManagerGetFromOld(&gPicManager, pic->picIndex),
+			pos, data->u.Bullet.Mask, 1);
+	}
+	else
+	{
+		DrawBTPic(
+			pos.x, pos.y,
+			PicManagerGetOldPic(&gPicManager, pic->picIndex),
+			&data->u.Bullet.Tint);
+	}
 }
 
 static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
@@ -180,19 +136,17 @@ static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
 	DrawShadow(device, pos, Vec2iNew(4, 3));
 }
 
-void DrawMolotov(int x, int y, const TMobileObject * obj)
+static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_MOLOTOV];
+	const TMobileObject *obj = data->Obj;
+	const TOffsetPic *pic = &cGeneralPics[OFSPIC_MOLOTOV];
 	if (obj->z > 0)
 	{
-		DrawGrenadeShadow(&gGraphicsDevice, Vec2iNew(x, y));
-		y -= obj->z / 16;
+		DrawGrenadeShadow(&gGraphicsDevice, pos);
+		pos.y -= obj->z / 16;
 	}
 	DrawTPic(
-		x + pic->dx,
-		y + pic->dy,
+		pos.x + pic->dx, pos.y + pic->dy,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
@@ -206,89 +160,62 @@ Pic *GetFlame(void *data)
 	return p;
 }
 
-void DrawLaserBolt(int x, int y, const TMobileObject * obj)
+static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cBeamPics[obj->state];
+	const TMobileObject *obj = data->Obj;
+	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state];
 	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
+		pos.x + pic->dx, pos.y + pic->dy - obj->z,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-void DrawBrightBolt(int x, int y, const TMobileObject * obj)
+static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cBrightBeamPics[obj->state];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
-void DrawSpark(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-
-	pic = &cGeneralPics[OFSPIC_SPARK];
-	DrawTPic(
-		x + pic->dx,
-		y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
-void DrawGrenade(int x, int y, const TMobileObject * obj)
-{
-	const TOffsetPic *pic;
-	color_t grenadeColor = obj->bulletClass.GrenadeColor;
-	pic = &cGrenadePics[(obj->count / 2) & 3];
+	const TMobileObject *obj = data->Obj;
+	const TOffsetPic *pic = &cGrenadePics[(obj->count / 2) & 3];
 	if (obj->z > 0)
 	{
-		DrawGrenadeShadow(&gGraphicsDevice, Vec2iNew(x, y));
-		y -= obj->z / 16;
+		DrawGrenadeShadow(&gGraphicsDevice, pos);
+		pos.y -= obj->z / 16;
 	}
 	BlitMasked(
 		&gGraphicsDevice,
 		PicManagerGetFromOld(&gPicManager, pic->picIndex),
-		Vec2iNew(x + pic->dx, y + pic->dy), grenadeColor, 1);
+		Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy)), data->u.GrenadeColor, 1);
 }
 
-void DrawGasCloud(int x, int y, const TMobileObject * obj)
+void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
-	pic = &cFireBallPics[8 + (obj->state & 3)];
+	const TMobileObject *obj = data->Obj;
+	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state & 3)];
 	DrawBTPic(
-		x + pic->dx, y + pic->dy,
+		pos.x + pic->dx, pos.y + pic->dy,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex),
-		obj->z ? &tintPurple : &tintPoison);
+		&data->u.Tint);
 }
 
-void DrawFireball(int x, int y, const TMobileObject * obj)
+static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TOffsetPic *pic;
-
+	const TMobileObject *obj = data->Obj;
 	if (obj->count < obj->state)
+	{
 		return;
-	pic = &cFireBallPics[(obj->count - obj->state) / 4];
+	}
+	const TOffsetPic *pic = &cFireBallPics[(obj->count - obj->state) / 4];
 	if (obj->z > 0)
 	{
-		y -= obj->z / 4;
+		pos.y -= obj->z / 4;
 	}
 	BlitOld(
-		x + pic->dx,
-		y + pic->dy,
+		pos.x + pic->dx, pos.y + pic->dy,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		NULL,
 		BLIT_TRANSPARENT);
 }
 
-void BogusDraw(int x, int y, void *data)
+void BogusDraw(Vec2i pos, TileItemDrawFuncData *data)
 {
-	UNUSED(x);
-	UNUSED(y);
+	UNUSED(pos);
 	UNUSED(data);
 }
 
@@ -361,7 +288,7 @@ int DamageCharacter(
 	if ((player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
 		!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
 	{
-		if (player >= 0)
+		if (player >= 0 && power != 0)
 		{
 			// Calculate score based on if they hit a penalty character
 			GameEvent e;
@@ -678,6 +605,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
+	obj->tileItem.drawData.Obj = obj;
 	obj->updateFunc = UpdateMobileObject;
 	*mobObjList = obj;
 	return obj;
@@ -746,13 +674,14 @@ void AddGasCloud(
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateGasCloud;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
+	obj->tileItem.drawData.u.Tint =
+		special == SPECIAL_CONFUSE ? tintPurple : tintPoison;
 	obj->tileItem.w = 10;
 	obj->tileItem.h = 10;
 	obj->kind = MOBOBJ_FIREBALL;
 	obj->range = range;
 	obj->flags = flags;
 	obj->power = 0;
-	obj->z = (special == SPECIAL_CONFUSE);
 	obj->vel = GetFullVectorsForRadians(radians);
 	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, speed), 256);
 	obj->x = x + 6 * obj->vel.x;
@@ -939,7 +868,9 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->range = 0;
 		obj->tileItem.getPicFunc = NULL;
 		obj->tileItem.getActorPicsFunc = NULL;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
+		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
+		obj->tileItem.drawData.u.Bullet.Ofspic = OFSPIC_SPARK;
+		obj->tileItem.drawData.u.Bullet.Mask = colorWhite;
 		obj->updateFunc = UpdateSpark;
 		return 1;
 	}
@@ -955,7 +886,9 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->range = 0;
 		obj->tileItem.getPicFunc = NULL;
 		obj->tileItem.getActorPicsFunc = NULL;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawSpark;
+		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
+		obj->tileItem.drawData.u.Bullet.Ofspic = OFSPIC_SPARK;
+		obj->tileItem.drawData.u.Bullet.Mask = colorWhite;
 		obj->updateFunc = UpdateSpark;
 		return 1;
 	}
@@ -1190,17 +1123,22 @@ void BulletInitialize(void)
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
 		b->Size = 0;
-		b->GrenadeColor = colorWhite;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 768;
 	b->Range = 60;
 	b->Power = 10;
 
 	b = &gBulletClasses[BULLET_SHOTGUN];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 640;
 	b->Range = 50;
 	b->Power = 15;
@@ -1214,20 +1152,25 @@ void BulletInitialize(void)
 	b->Size = 5;
 
 	b = &gBulletClasses[BULLET_LASER];
-	b->DrawFunc = (TileItemDrawFunc)DrawLaserBolt;
+	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
+	b->DrawData.u.Beam = BEAM_PIC_BEAM;
 	b->Speed = 1024;
 	b->Range = 90;
 	b->Power = 20;
 	b->Size = 2;
 
 	b = &gBulletClasses[BULLET_SNIPER];
-	b->DrawFunc = (TileItemDrawFunc)DrawBrightBolt;
+	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
+	b->DrawData.u.Beam = BEAM_PIC_BRIGHT;
 	b->Speed = 1024;
 	b->Range = 90;
 	b->Power = 50;
 
 	b = &gBulletClasses[BULLET_FRAG];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 640;
 	b->Range = 50;
 	b->Power = 40;
@@ -1238,6 +1181,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_GRENADE];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->DrawData.u.GrenadeColor = colorWhite;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
@@ -1245,14 +1189,15 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->DrawData.u.GrenadeColor = colorGray;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
-	b->GrenadeColor = colorGray;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->DrawData.u.GrenadeColor = colorWhite;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
@@ -1260,29 +1205,35 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->DrawData.u.GrenadeColor = colorGreen;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
-	b->GrenadeColor = colorGreen;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->DrawData.u.GrenadeColor = colorPurple;
 	b->Speed = 384;
 	b->Range = 100;
 	b->Power = 0;
-	b->GrenadeColor = colorPurple;
 
 
 	b = &gBulletClasses[BULLET_RAPID];
-	b->DrawFunc = (TileItemDrawFunc)DrawBrownBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 1280;
 	b->Range = 25;
 	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
 	b->UpdateFunc = UpdateSeeker;
-	b->DrawFunc = (TileItemDrawFunc)DrawSeeker;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorRed;
 	b->Speed = 512;
 	b->Range = 60;
 	b->Power = 20;
@@ -1290,14 +1241,20 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;
-	b->DrawFunc = (TileItemDrawFunc)DrawBrownBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 768;
 	b->Range = 45;
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
 	b->UpdateFunc = UpdatePetrifierBullet;
-	b->DrawFunc = (TileItemDrawFunc)DrawPetrifierBullet;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
+	b->DrawData.u.Bullet.UseMask = false;
+	b->DrawData.u.Bullet.Tint = tintDarker;
 	b->Speed = 768;
 	b->Range = 45;
 	b->Power = 0;
@@ -1305,14 +1262,20 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_PROXMINE];
 	b->UpdateFunc = UpdateDroppedMine;
-	b->DrawFunc = (TileItemDrawFunc)DrawMine;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 0;
 	b->Range = 140;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->UpdateFunc = UpdateTriggeredMine;
-	b->DrawFunc = (TileItemDrawFunc)DrawDynamite;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->Speed = 0;
 	b->Range = 210;
 	b->Power = 0;
@@ -1328,6 +1291,7 @@ static void SetBulletProps(
 	obj->tileItem.getPicFunc = b->GetPicFunc;
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
+	obj->tileItem.drawData.u = b->DrawData.u;
 	obj->kind = MOBOBJ_BULLET;
 	obj->z = BULLET_Z;
 	obj->flags = flags;

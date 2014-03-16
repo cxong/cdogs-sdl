@@ -741,7 +741,7 @@ void Shoot(TActor *actor)
 		tilePosition,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1);
-	if (actor->pData)
+	if (actor->pData && GunGetCost(actor->weapon.gun) != 0)
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SCORE;
