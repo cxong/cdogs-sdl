@@ -79,7 +79,7 @@ int gMobileObjId;
 static TObject *objList = NULL;
 
 static void Fire(int x, int y, int flags, int player);
-static void Gas(int x, int y, int flags, int special, int player);
+static void Gas(int x, int y, int flags, special_damage_e special, int player);
 int HitItem(TMobileObject * obj, int x, int y, special_damage_e special);
 
 
@@ -164,9 +164,11 @@ static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = data->Obj;
 	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state];
-	DrawTPic(
-		pos.x + pic->dx, pos.y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
+	BlitMasked(
+		&gGraphicsDevice,
+		PicManagerGetFromOld(&gPicManager, pic->picIndex),
+		pos, data->u.Bullet.Mask, 1);
 }
 
 static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
@@ -184,12 +186,12 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 		Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy)), data->u.GrenadeColor, 1);
 }
 
-void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
+static void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = data->Obj;
 	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state & 3)];
 	DrawBTPic(
-		pos.x + pic->dx, pos.y + pic->dy,
+		pos.x + pic->dx, pos.y + pic->dy - obj->z,
 		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		&data->u.Tint);
 }
@@ -600,6 +602,7 @@ TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
 	obj->player = player;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.data = obj;
+	obj->special = SPECIAL_NONE;
 	obj->soundLock = 0;
 	obj->next = *mobObjList;
 	obj->tileItem.getPicFunc = NULL;
@@ -655,7 +658,7 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 
 	pos = UpdateAndGetCloudPosition(obj, ticks);
 
-	HitItem(obj, pos.x, pos.y, obj->z ? SPECIAL_CONFUSE : SPECIAL_POISON);
+	HitItem(obj, pos.x, pos.y, obj->special);
 
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
@@ -668,8 +671,8 @@ int UpdateGasCloud(TMobileObject *obj, int ticks)
 }
 
 void AddGasCloud(
-	int x, int y, double radians, int speed, int range,
-	int flags, int special, int player)
+	Vec2i pos, int z, double radians, int speed, int range,
+	int flags, special_damage_e special, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->updateFunc = UpdateGasCloud;
@@ -682,13 +685,15 @@ void AddGasCloud(
 	obj->range = range;
 	obj->flags = flags;
 	obj->power = 0;
+	obj->special = special;
 	obj->vel = GetFullVectorsForRadians(radians);
 	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, speed), 256);
-	obj->x = x + 6 * obj->vel.x;
-	obj->y = y + 6 * obj->vel.y;
+	obj->x = pos.x + 6 * obj->vel.x;
+	obj->y = pos.y + 6 * obj->vel.y;
+	obj->z = z;
 }
 
-static void Gas(int x, int y, int flags, int special, int player)
+static void Gas(int x, int y, int flags, special_damage_e special, int player)
 {
 	int i;
 
@@ -696,7 +701,7 @@ static void Gas(int x, int y, int flags, int special, int player)
 	for (i = 0; i < 8; i++)
 	{
 		AddGasCloud(
-			x, y,
+			Vec2iNew(x, y), 0,
 			(double)rand() / RAND_MAX * 2 * PI,
 			(256 + rand()) & 255,
 			(48 - (rand() % 8)) * 4 - 1,

@@ -182,6 +182,7 @@ struct MobileObject
 	int state;
 	int range;
 	int power;
+	special_damage_e special;
 	int flags;
 	int soundLock;
 	TTileItem tileItem;
@@ -226,7 +227,7 @@ void AddBulletDirectional(
 void AddBulletBig(
 	Vec2i pos, double radians, BulletType type, int flags, int player);
 void AddGasCloud(
-	int x, int y, double radians, int speed, int range, int flags,
+	Vec2i pos, int z, double radians, int speed, int range, int flags,
 	int special, int player);
 void AddBulletGround(
 	Vec2i pos, double radians, BulletType type, int flags, int player);

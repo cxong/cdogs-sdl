@@ -462,7 +462,7 @@ void WeaponFire(
 
 		case GUN_GASGUN:
 			AddGasCloud(
-				muzzlePosition.x, muzzlePosition.y, finalAngle, 384, 35,
+				muzzlePosition, BULLET_Z, finalAngle, 384, 35,
 				flags, SPECIAL_POISON, player);
 			break;
 
