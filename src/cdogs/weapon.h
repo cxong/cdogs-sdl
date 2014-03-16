@@ -49,6 +49,7 @@
 #ifndef __WEAPON
 #define __WEAPON
 
+#include "bullet_class.h"
 #include "defs.h"
 #include "pics.h"
 #include "sounds.h"
@@ -98,6 +99,7 @@ typedef struct
 {
 	gunpic_e pic;
 	char name[32];
+	BulletType Bullet;
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;
@@ -110,6 +112,7 @@ typedef struct
 		int Count;		// Number of bullets in spread
 		double Width;	// Width of individual spread, in radians
 	} Spread;
+	int MuzzleHeight;
 } GunDescription;
 
 typedef struct

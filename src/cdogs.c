@@ -1148,7 +1148,7 @@ void PrintTitle(void)
 
 	printf("Original Code Copyright Ronny Wester 1995\n");
 	printf("Game Data Copyright Ronny Wester 1995\n");
-	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2013\n\n");
+	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2014\n\n");
 	printf("%s%s%s%s",
 		"C-Dogs SDL comes with ABSOLUTELY NO WARRANTY;\n",
 		"see the file COPYING that came with this distibution...\n",

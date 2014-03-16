@@ -96,17 +96,15 @@ void AddFireExplosion(Vec2i pos, int flags, int player);
 void AddGasExplosion(
 	Vec2i pos, int flags, special_damage_e special, int player);
 void AddGrenade(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
 void AddBullet(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
 void AddBulletDirectional(
-	Vec2i pos, direction_e dir, BulletType type, int flags, int player);
+	Vec2i pos, int z, direction_e dir, BulletType type, int flags, int player);
 void AddBulletBig(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
 void AddGasCloud(
 	Vec2i pos, int z, double radians, int speed, int range, int flags,
 	int special, int player);
-void AddBulletGround(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
 
 #endif

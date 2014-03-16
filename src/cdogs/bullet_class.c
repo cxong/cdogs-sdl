@@ -117,10 +117,10 @@ static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 	const TMobileObject *obj = data->Obj;
 	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state];
 	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
-	BlitMasked(
+	Blit(
 		&gGraphicsDevice,
 		PicManagerGetFromOld(&gPicManager, pic->picIndex),
-		pos, data->u.Bullet.Mask, 1);
+		pos);
 }
 
 static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
@@ -200,7 +200,7 @@ static void Frag(int x, int y, int flags, int player)
 	for (int i = 0; i < 16; i++)
 	{
 		AddBullet(
-			Vec2iNew(x, y), i / 16.0 * 2 * PI, BULLET_FRAG, flags, player);
+			Vec2iNew(x, y), 0, i / 16.0 * 2 * PI, BULLET_FRAG, flags, player);
 	}
 	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
 }
@@ -854,7 +854,7 @@ void BulletInitialize(void)
 
 
 static void SetBulletProps(
-	TMobileObject *obj, Vec2i pos, BulletType type, int flags)
+	TMobileObject *obj, Vec2i pos, int z, BulletType type, int flags)
 {
 	BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = *b;
@@ -864,7 +864,7 @@ static void SetBulletProps(
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->tileItem.drawData.u = b->DrawData.u;
 	obj->kind = MOBOBJ_BULLET;
-	obj->z = BULLET_Z;
+	obj->z = z;
 	obj->flags = flags;
 	obj->x = pos.x;
 	obj->y = pos.y;
@@ -876,12 +876,13 @@ static void SetBulletProps(
 	obj->tileItem.h = b->Size;
 }
 
-void AddGrenade(Vec2i pos, double radians, BulletType type, int flags, int player)
+void AddGrenade(
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->vel = GetFullVectorsForRadians(radians);
 	obj->dz = 24;
-	SetBulletProps(obj, pos, type, flags);
+	SetBulletProps(obj, pos, z, type, flags);
 	switch (type)
 	{
 	case BULLET_GRENADE:
@@ -910,39 +911,31 @@ void AddGrenade(Vec2i pos, double radians, BulletType type, int flags, int playe
 	obj->z = 0;
 }
 
-void AddBullet(Vec2i pos, double radians, BulletType type, int flags, int player)
+void AddBullet(
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, pos, type, flags);
+	SetBulletProps(obj, pos, z, type, flags);
+	MapMoveTileItem(
+		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
 }
 
 void AddBulletDirectional(
-	Vec2i pos, direction_e dir, BulletType type, int flags, int player)
+	Vec2i pos, int z, direction_e dir, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
 	obj->state = dir;
-	SetBulletProps(obj, pos, type, flags);
+	SetBulletProps(obj, pos, z, type, flags);
 }
 
 void AddBulletBig(
-	Vec2i pos, double radians, BulletType type, int flags, int player)
+	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
 	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
 	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, pos, type, flags);
-	obj->x = obj->x + 4 * obj->vel.x;
-	obj->y = obj->y + 7 * obj->vel.y;
-}
-
-void AddBulletGround(
-	Vec2i pos, double radians, BulletType type, int flags, int player)
-{
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
-	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, pos, type, flags);
-	obj->z = 0;
-	MapMoveTileItem(
-		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
+	SetBulletProps(obj, pos, z, type, flags);
+	obj->x += 4 * obj->vel.x;
+	obj->y += 7 * obj->vel.y;
 }
