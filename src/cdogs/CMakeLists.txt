@@ -10,6 +10,7 @@ set(CDOGS_SOURCES
 	AStar.c
 	automap.c
 	blit.c
+	bullet_class.c
 	c_array.c
 	campaigns.c
 	character.c
@@ -73,6 +74,7 @@ set(CDOGS_HEADERS
 	AStar.h
 	automap.h
 	blit.h
+	bullet_class.h
 	c_array.h
 	campaigns.h
 	character.h

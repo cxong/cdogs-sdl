@@ -50,6 +50,7 @@
 #define __OBJSH
 
 #include "actors.h"
+#include "bullet_class.h"
 #include "map.h"
 #include "pics.h"
 #include "vector.h"
@@ -132,44 +133,7 @@ struct Object {
 };
 typedef struct Object TObject;
 
-typedef struct MobileObject TMobileObject;
-typedef enum
-{
-	BULLET_MG,
-	BULLET_SHOTGUN,
-	BULLET_FLAME,
-	BULLET_LASER,
-	BULLET_SNIPER,
-	BULLET_FRAG,
-	BULLET_GRENADE,
-	BULLET_SHRAPNELBOMB,
-	BULLET_MOLOTOV,
-	BULLET_GASBOMB,
-	BULLET_CONFUSEBOMB,
-	BULLET_RAPID,
-	BULLET_HEATSEEKER,
-	BULLET_BROWN,
-	BULLET_PETRIFIER,
-	BULLET_PROXMINE,
-	BULLET_DYNAMITE,
-
-	BULLET_COUNT
-} BulletType;
-typedef int(*BulletUpdateFunc)(struct MobileObject *, int);
-typedef struct
-{
-	BulletUpdateFunc UpdateFunc;
-	TileItemGetPicFunc GetPicFunc;
-	TileItemDrawFunc DrawFunc;
-	TileItemDrawFuncData DrawData;
-	int Speed;
-	int Range;
-	int Power;
-	int Size;
-} BulletClass;
-extern BulletClass gBulletClasses[BULLET_COUNT];
-
-struct MobileObject
+typedef struct MobileObject
 {
 	int id;
 	int player;	// -1 if not owned by any player
@@ -188,13 +152,11 @@ struct MobileObject
 	TTileItem tileItem;
 	BulletUpdateFunc updateFunc;
 	struct MobileObject *next;
-};
-typedef int (*MobObjUpdateFunc)(struct MobileObject *, int);
+} TMobileObject;
+typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
 extern TMobileObject *gMobObjList;
 extern int gMobileObjId;
 
-
-void BulletInitialize(void);
 
 int DamageSomething(
 	Vec2i hitVector,
@@ -218,19 +180,11 @@ void KillAllObjects(void);
 
 void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
 void MobileObjectRemove(TMobileObject **mobObjList, int id);
-void AddGrenade(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
-void AddBullet(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
-void AddBulletDirectional(
-	Vec2i pos, direction_e dir, BulletType type, int flags, int player);
-void AddBulletBig(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
-void AddGasCloud(
-	Vec2i pos, int z, double radians, int speed, int range, int flags,
-	int special, int player);
-void AddBulletGround(
-	Vec2i pos, double radians, BulletType type, int flags, int player);
+TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player);
+TMobileObject *AddFireBall(int flags, int player);
+void MobileObjectUpdate(TMobileObject *obj, int ticks);
+int UpdateExplosion(TMobileObject *obj, int ticks);
+int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special);
 void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif
