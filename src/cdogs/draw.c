@@ -397,7 +397,7 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 				color_t color = o->color;
 				int pulsePeriod = FPS_FRAMELIMIT;
 				int alphaUnscaled =
-					(gMissionTime % pulsePeriod) * 255 / (pulsePeriod / 2);
+					(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
 				if (alphaUnscaled > 255)
 				{
 					alphaUnscaled = 255 * 2 - alphaUnscaled;

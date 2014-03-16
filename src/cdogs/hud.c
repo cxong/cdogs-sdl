@@ -709,10 +709,11 @@ void HUDDraw(HUD *hud, int isPaused)
 			CDogsTextStringAtCenter("Double Kill!");
 		}
 	}
-	else if (IsMissionComplete(hud->mission))
+	else if (hud->mission->state == MISSION_STATE_PICKUP)
 	{
+		int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
 		sprintf(s, "Pickup in %d seconds\n",
-			(gMission.pickupTime + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
+			(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
 		CDogsTextStringAtCenter(s);
 	}
 
@@ -744,7 +745,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	DrawKeycards(hud);
 
 	// Draw elapsed mission time as MM:SS
-	int missionTimeSeconds = gMissionTime / FPS_FRAMELIMIT;
+	int missionTimeSeconds = gMission.time / FPS_FRAMELIMIT;
 	sprintf(s, "%d:%02d",
 		missionTimeSeconds / 60, missionTimeSeconds % 60);
 	DrawTextStringSpecial(

@@ -105,8 +105,6 @@ struct DoorPic {
 // Score for picking up an objective
 #define PICKUP_SCORE 10
 
-extern int gMissionTime;
-
 
 struct Objective
 {

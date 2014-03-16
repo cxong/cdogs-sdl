@@ -78,8 +78,9 @@
 
 #include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */
 
+#include "handle_game_events.h"
+
 #define MAX_FRAMESKIP	(FPS_FRAMELIMIT / 5)
-#define PICKUP_LIMIT	(FPS_FRAMELIMIT * 5)
 
 #define SPLIT_PADDING 40
 
@@ -460,56 +461,11 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 	return center;
 }
 
-static void HandleGameEvents(
-	CArray *store, HUD *hud, ScreenShake *shake, EventHandlers *eventHandlers)
-{
-	for (int i = 0; i < (int)store->size; i++)
-	{
-		GameEvent *e = CArrayGet(store, i);
-		switch (e->Type)
-		{
-		case GAME_EVENT_SCORE:
-			Score(&gPlayerDatas[e->u.Score.PlayerIndex], e->u.Score.Score);
-			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
-			break;
-		case GAME_EVENT_SCREEN_SHAKE:
-			*shake = ScreenShakeAdd(
-				*shake, e->u.ShakeAmount, gConfig.Graphics.ShakeMultiplier);
-			break;
-		case GAME_EVENT_SET_MESSAGE:
-			HUDDisplayMessage(
-				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
-			break;
-		case GAME_EVENT_GAME_START:
-			if (eventHandlers->netInput.channel.state ==
-				CHANNEL_STATE_CONNECTED)
-			{
-				NetInputSendMsg(
-					&eventHandlers->netInput, SERVER_MSG_GAME_START);
-			}
-			break;
-		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
-			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);
-			break;
-		case GAME_EVENT_MISSION_COMPLETE:
-			HUDDisplayMessage(hud, "Mission complete", -1);
-			hud->showExit = true;
-			MapShowExitArea(&gMap);
-			break;
-		default:
-			assert(0 && "unknown game event");
-			break;
-		}
-	}
-	GameEventsClear(store);
-}
-
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map);
 int gameloop(void)
 {
 	DrawBuffer buffer;
 	int is_esc_pressed = 0;
-	int isDone = 0;
 	int isPaused = 0;
 	HUD hud;
 	Vec2i lastPosition = Vec2iZero();
@@ -530,9 +486,11 @@ int gameloop(void)
 		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
-	gMissionTime = 0;
+	gMission.time = 0;
 	gMobileObjId = 0;
-	gMission.pickupTime = PICKUP_LIMIT;
+	gMission.pickupTime = 0;
+	gMission.state = MISSION_STATE_PLAY;
+	gMission.isDone = false;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
@@ -545,7 +503,7 @@ int gameloop(void)
 	// Check if mission is done already
 	MissionSetMessageIfComplete(&gMission);
 	ticksNow = SDL_GetTicks();
-	while (!isDone)
+	while (!gMission.isDone)
 	{
 		int cmds[MAX_PLAYERS];
 		int cmdAll = 0;
@@ -588,7 +546,12 @@ int gameloop(void)
 		{
 			if (isPaused)
 			{
-				isDone = 1;
+				GameEvent e;
+				e.Type = GAME_EVENT_MISSION_END;
+				GameEventsEnqueue(&gGameEvents, e);
+				// Also explicitly set done
+				// otherwise game will not quit immediately
+				gMission.isDone = true;
 			}
 			else
 			{
@@ -714,26 +677,33 @@ int gameloop(void)
 
 				UpdateWatches(&gMap.triggers);
 
+				bool isMissionComplete =
+					GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission);
+				if (gMission.state == MISSION_STATE_PLAY && isMissionComplete)
+				{
+					GameEvent e;
+					e.Type = GAME_EVENT_MISSION_PICKUP;
+					GameEventsEnqueue(&gGameEvents, e);
+				}
+				if (gMission.state == MISSION_STATE_PICKUP &&
+					!isMissionComplete)
+				{
+					GameEvent e;
+					e.Type = GAME_EVENT_MISSION_INCOMPLETE;
+					GameEventsEnqueue(&gGameEvents, e);
+				}
+				if (gMission.state == MISSION_STATE_PICKUP &&
+					gMission.pickupTime + PICKUP_LIMIT <= gMission.time)
+				{
+					GameEvent e;
+					e.Type = GAME_EVENT_MISSION_END;
+					GameEventsEnqueue(&gGameEvents, e);
+				}
+
 				HandleGameEvents(&gGameEvents, &hud, &shake, &gEventHandlers);
 			}
 
-			gMissionTime += ticks;
-			if (GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission))
-			{
-				if (gMission.pickupTime == PICKUP_LIMIT)
-				{
-					SoundPlay(&gSoundDevice, SND_DONE);
-				}
-				gMission.pickupTime -= ticks;
-				if (gMission.pickupTime <= 0)
-				{
-					isDone = 1;
-				}
-			}
-			else
-			{
-				gMission.pickupTime = PICKUP_LIMIT;
-			}
+			gMission.time += ticks;
 
 			if (HasObjectives(gCampaign.Entry.mode))
 			{
@@ -753,7 +723,9 @@ int gameloop(void)
 			}
 			if (allPlayersDestroyed)
 			{
-				isDone = 1;
+				GameEvent e;
+				e.Type = GAME_EVENT_MISSION_END;
+				GameEventsEnqueue(&gGameEvents, e);
 			}
 		}
 
@@ -798,7 +770,9 @@ int gameloop(void)
 	HUDTerminate(&hud);
 	DrawBufferTerminate(&buffer);
 
-	return !is_esc_pressed;
+	return
+		gMission.state == MISSION_STATE_PICKUP &&
+		gMission.pickupTime + PICKUP_LIMIT <= gMission.time;
 }
 
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)

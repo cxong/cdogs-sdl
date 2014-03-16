@@ -1,8 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,63 +25,15 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAME_EVENTS
-#define __GAME_EVENTS
+#ifndef __HANDLE_GAME_EVENTS
+#define __HANDLE_GAME_EVENTS
 
-#include "c_array.h"
-#include "gamedata.h"
+#include <cdogs/c_array.h>
+#include <cdogs/events.h>
+#include <cdogs/hud.h>
+#include <cdogs/screen_shake.h>
 
-// Game events represent anything that is created within the game but is
-// required by outside systems, e.g. sound events
-// This is to prevent the game from depending on these external systems
-
-typedef enum
-{
-	GAME_EVENT_SCORE,
-	GAME_EVENT_SCREEN_SHAKE,
-	GAME_EVENT_SET_MESSAGE,
-
-	// Use to signal start of game; useless for single player,
-	// but for networked games it's used to set game ticks 0
-	GAME_EVENT_GAME_START,
-
-	GAME_EVENT_MOBILE_OBJECT_REMOVE,
-
-	// Can complete mission
-	GAME_EVENT_MISSION_COMPLETE,
-
-	// Left pickup area
-	GAME_EVENT_MISSION_INCOMPLETE,
-	// In pickup area
-	GAME_EVENT_MISSION_PICKUP,
-	GAME_EVENT_MISSION_END
-} GameEventType;
-
-typedef struct
-{
-	GameEventType Type;
-	union
-	{
-		struct
-		{
-			int PlayerIndex;
-			int Score;
-		} Score;
-		int ShakeAmount;
-		struct
-		{
-			char Message[256];
-			int Ticks;
-		} SetMessage;
-		int MobileObjectRemoveId;
-	} u;
-} GameEvent;
-
-extern CArray gGameEvents;	// of GameEvent
-
-void GameEventsInit(CArray *store);
-void GameEventsTerminate(CArray *store);
-void GameEventsEnqueue(CArray *store, GameEvent e);
-void GameEventsClear(CArray *store);
+void HandleGameEvents(
+	CArray *store, HUD *hud, ScreenShake *shake, EventHandlers *eventHandlers);
 
 #endif

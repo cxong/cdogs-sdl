@@ -10,6 +10,7 @@ set(CDOGS_SDL_SOURCES
 	cdogs.c
 	credits.c
 	game.c
+	handle_game_events.c
 	mainmenu.c
 	menu.c
 	menu_utils.c
@@ -22,6 +23,7 @@ set(CDOGS_SDL_HEADERS
 	autosave.h
 	credits.h
 	game.h
+	handle_game_events.h
 	mainmenu.h
 	menu.h
 	menu_utils.h

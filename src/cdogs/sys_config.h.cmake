@@ -47,5 +47,6 @@
 #define CDOGS_PATH_MAX 4096
 
 #define FPS_FRAMELIMIT 70
+#define PICKUP_LIMIT (FPS_FRAMELIMIT * 5)
 
 #endif

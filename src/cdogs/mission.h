@@ -49,6 +49,8 @@
 #ifndef __MISSION
 #define __MISSION
 
+#include <stdbool.h>
+
 #include "config.h"
 #include "sys_config.h"
 
@@ -200,6 +202,12 @@ typedef struct
 	} u;
 } Mission;
 
+typedef enum
+{
+	MISSION_STATE_PLAY,
+	MISSION_STATE_PICKUP
+} MissionState;
+
 struct MissionOptions
 {
 	int index;
@@ -207,7 +215,11 @@ struct MissionOptions
 
 	Mission *missionData;
 	CArray Objectives;	// of struct Objective
+	int time;
+	// Time when players first entered pickup area
 	int pickupTime;
+	MissionState state;
+	bool isDone;
 
 	CArray MapObjects;	// of MapObject
 	int *keyPics;
