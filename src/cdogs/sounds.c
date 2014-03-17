@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,9 @@ SoundDevice gSoundDevice =
 		{"sounds/hit_hard.wav",		0,	NULL},
 		{"sounds/hit_petrify.wav",	0,	NULL},
 		{"sounds/footstep.wav",		0,	NULL},
-		{"sounds/slide.wav",		0,	NULL}
+		{"sounds/slide.wav",		0,	NULL},
+		{"sounds/health.wav",		0,	NULL},
+		{"sounds/key.wav",			0,	NULL}
 	}
 };
 

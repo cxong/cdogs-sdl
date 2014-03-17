@@ -481,6 +481,7 @@ static void CheckTrigger(TActor *actor, Vec2i pos)
 
 static void PickupObject(TActor * actor, TObject * object)
 {
+	bool isKey = false;
 	switch (object->Type)
 	{
 	case OBJ_JEWEL:
@@ -490,6 +491,10 @@ static void PickupObject(TActor * actor, TObject * object)
 			e.u.Score.PlayerIndex = actor->pData->playerIndex;
 			e.u.Score.Score = PICKUP_SCORE;
 			GameEventsEnqueue(&gGameEvents, e);
+			SoundPlayAt(
+				&gSoundDevice,
+				SND_PICKUP,
+				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
 		break;
 
@@ -499,32 +504,38 @@ static void PickupObject(TActor * actor, TObject * object)
 			e.Type = GAME_EVENT_TAKE_HEALTH_PICKUP;
 			e.u.PickupPlayer = actor->pData->playerIndex;
 			GameEventsEnqueue(&gGameEvents, e);
+			SoundPlayAt(
+				&gSoundDevice, SND_HEALTH,
+				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
 		break;
 
 	case OBJ_KEYCARD_RED:
 		gMission.flags |= FLAGS_KEYCARD_RED;
+		isKey = true;
 		break;
-
 	case OBJ_KEYCARD_BLUE:
 		gMission.flags |= FLAGS_KEYCARD_BLUE;
+		isKey = true;
 		break;
-
 	case OBJ_KEYCARD_GREEN:
 		gMission.flags |= FLAGS_KEYCARD_GREEN;
+		isKey = true;
 		break;
-
 	case OBJ_KEYCARD_YELLOW:
 		gMission.flags |= FLAGS_KEYCARD_YELLOW;
+		isKey = true;
 		break;
+	}
+	if (isKey)
+	{
+		SoundPlayAt(
+			&gSoundDevice, SND_KEY,
+			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 	CheckMissionObjective(
 		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT);
 	RemoveObject(object);
-	SoundPlayAt(
-		&gSoundDevice,
-		SND_PICKUP,
-		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 }
 
 bool TryMoveActor(TActor *actor, Vec2i pos)
@@ -688,7 +699,6 @@ void ActorHeal(TActor *actor, int health)
 {
 	actor->health += health;
 	actor->health = MIN(actor->health, 200 * gConfig.Game.PlayerHP / 100);
-	// TODO: play heal sound
 }
 
 void InjureActor(TActor * actor, int injury)

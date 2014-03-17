@@ -30,8 +30,8 @@
 #include "ai_utils.h"
 
 
-#define SPAWN_TIME (30 * FPS_FRAMELIMIT)
-#define TIME_DECAY_EXPONENT 0.97
+#define SPAWN_TIME (20 * FPS_FRAMELIMIT)
+#define TIME_DECAY_EXPONENT 1.04
 #define HEALTH_W 6
 #define HEALTH_H 6
 #define MAX_TILES_PER_PICKUP 625
@@ -71,7 +71,7 @@ void HealthPickupsUpdate(HealthPickups *h, int ticks)
 		}
 	}
 	// Double spawn rate if near 0 health
-	scalar *= maxHealth * 2.0 / (minHealth + maxHealth);
+	scalar *= (minHealth + maxHealth) / (maxHealth * 2.0);
 
 	// Scale down over time
 	scalar *= pow(TIME_DECAY_EXPONENT, h->pickupsSpawned);

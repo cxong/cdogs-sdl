@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,8 @@ typedef enum
 	SND_HIT_PETRIFY,
 	SND_FOOTSTEP,
 	SND_SLIDE,
+	SND_HEALTH,
+	SND_KEY,
 	SND_COUNT
 } sound_e;
 
