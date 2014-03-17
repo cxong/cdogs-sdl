@@ -297,7 +297,7 @@ void AddFireExplosion(Vec2i pos, int flags, int player)
 	{
 		AddMolotovFlame(pos.x, pos.y, flags, player);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iReal2Full(pos));
+	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iFull2Real(pos));
 }
 void AddGasExplosion(
 	Vec2i pos, int flags, special_damage_e special, int player)
@@ -314,7 +314,7 @@ void AddGasExplosion(
 			special,
 			player);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iReal2Full(pos));
+	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iFull2Real(pos));
 }
 
 int UpdateGasCloud(TMobileObject *obj, int ticks)
