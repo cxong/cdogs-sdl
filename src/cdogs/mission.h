@@ -163,8 +163,8 @@ typedef struct
 				int Count;
 				int Min;
 				int Max;
-				int Edge;
-				int Overlap;
+				bool Edge;
+				bool Overlap;
 				int Walls;
 				int WallLength;
 				int WallPad;
@@ -172,7 +172,7 @@ typedef struct
 			int Squares;
 			struct
 			{
-				int Enabled;
+				bool Enabled;
 				int Min;
 				int Max;
 			} Doors;

@@ -312,7 +312,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.EnemyDensity = 100;
 	config->Game.FriendlyFire = 0;
 	config->Game.NonPlayerHP = 100;
-	config->Game.PlayerHP = 100;
+	config->Game.PlayerHP = 50;
 	config->Game.RandomSeed = 0;
 	config->Game.SlowMotion = 0;
 	config->Game.Fog = 1;
@@ -322,6 +322,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
 	config->Game.ShotsPushback = 1;
 	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
+	config->Game.HealthPickups = true;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.ResolutionHeight = 240;

@@ -150,7 +150,7 @@ struct menu
 		{
 			union
 			{
-				int *optionToggle;
+				bool *optionToggle;
 				struct
 				{
 					int *option;
@@ -269,7 +269,7 @@ void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data);
 
 menu_t *MenuCreateOptionToggle(
-	const char *name, int *config, menu_option_display_style_e style);
+	const char *name, bool *config, menu_option_display_style_e style);
 menu_t *MenuCreateOptionRange(
 	const char *name,
 	int *config,

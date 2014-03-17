@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,7 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadBool(&config->ShotsPushback, node, "ShotsPushback");
 	JSON_UTILS_LOAD_ENUM(
 		config->AllyCollision, node, "AllyCollision", StrAllyCollision);
+	LoadBool(&config->HealthPickups, node, "HealthPickups");
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -92,6 +93,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "ShotsPushback", json_new_bool(config->ShotsPushback));
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "AllyCollision", config->AllyCollision, AllyCollisionStr);
+	json_insert_pair_into_object(
+		subConfig, "HealthPickups", json_new_bool(config->HealthPickups));
 	json_insert_pair_into_object(root, "Game", subConfig);
 }
 
@@ -205,7 +208,7 @@ static void LoadInterfaceConfigNode(
 	LoadBool(&config->ShowTime, node, "ShowTime");
 	if (version < 4)
 	{
-		int splitscreenAlways;
+		bool splitscreenAlways;
 		LoadBool(&splitscreenAlways, node, "SplitscreenAlways");
 		config->Splitscreen =
 			splitscreenAlways ? SPLITSCREEN_ALWAYS : SPLITSCREEN_NORMAL;

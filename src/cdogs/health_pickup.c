@@ -53,7 +53,8 @@ static bool TryPlacePickup(HealthPickups *h);
 void HealthPickupsUpdate(HealthPickups *h, int ticks)
 {
 	// Don't spawn pickups if not allowed
-	if (!AreHealthPickupsAllowed(gCampaign.Entry.mode))
+	if (!AreHealthPickupsAllowed(gCampaign.Entry.mode) ||
+		!gConfig.Game.HealthPickups)
 	{
 		return;
 	}

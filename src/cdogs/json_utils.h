@@ -29,12 +29,14 @@
 #ifndef __json_utils
 #define __json_utils
 
+#include <stdbool.h>
+
 #include <json/json.h>
 
 void AddIntPair(json_t *parent, const char *name, int number);
 void AddBoolPair(json_t *parent, const char *name, int value);
 void AddStringPair(json_t *parent, const char *name, const char *s);
-void LoadBool(int *value, json_t *node, const char *name);
+void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
 

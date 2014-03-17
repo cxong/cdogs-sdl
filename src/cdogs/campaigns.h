@@ -39,7 +39,7 @@ typedef struct
 	char filename[CDOGS_FILENAME_MAX];
 	char path[CDOGS_PATH_MAX];
 	char info[80];
-	int isBuiltin;
+	bool isBuiltin;
 	campaign_mode_e mode;
 	int builtinIndex;
 	int numMissions;

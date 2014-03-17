@@ -49,6 +49,8 @@
 #ifndef __SOUNDS
 #define __SOUNDS
 
+#include <stdbool.h>
+
 #include <SDL_mixer.h>
 
 #include "defs.h"
@@ -130,9 +132,9 @@ typedef struct
 	int SoundVolume;
 	int MusicVolume;
 	int SoundChannels;
-	int Footsteps;
-	int Hits;
-	int Reloads;
+	bool Footsteps;
+	bool Hits;
+	bool Reloads;
 } SoundConfig;
 
 void SoundInitialize(SoundDevice *device, SoundConfig *config);

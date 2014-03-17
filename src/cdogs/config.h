@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -72,20 +72,21 @@ ScaleMode StrScaleMode(const char *str);
 
 typedef struct
 {
-	int FriendlyFire;
+	bool FriendlyFire;
 	unsigned int RandomSeed;
 	difficulty_e Difficulty;
-	int SlowMotion;
+	bool SlowMotion;
 	int EnemyDensity;
 	int NonPlayerHP;
 	int PlayerHP;
-	int Fog;
+	bool Fog;
 	int SightRange;
-	int Shadows;
-	int MoveWhenShooting;
+	bool Shadows;
+	bool MoveWhenShooting;
 	SwitchMoveStyle SwitchMoveStyle;
-	int ShotsPushback;
+	bool ShotsPushback;
 	AllyCollision AllyCollision;
+	bool HealthPickups;
 } GameConfig;
 
 typedef enum
@@ -100,10 +101,10 @@ SplitscreenStyle StrSplitscreenStyle(const char *str);
 
 typedef struct
 {
-	int ShowFPS;
-	int ShowTime;
+	bool ShowFPS;
+	bool ShowTime;
 	SplitscreenStyle Splitscreen;
-	int ShowHUDMap;
+	bool ShowHUDMap;
 } InterfaceConfig;
 
 typedef enum
@@ -127,7 +128,7 @@ typedef struct
 	QuickPlayQuantity EnemyCount;
 	QuickPlayQuantity EnemySpeed;
 	QuickPlayQuantity EnemyHealth;
-	int EnemiesWithExplosives;
+	bool EnemiesWithExplosives;
 	QuickPlayQuantity ItemCount;
 } QuickPlayConfig;
 

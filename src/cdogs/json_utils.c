@@ -71,7 +71,7 @@ int TryLoadValue(json_t **node, const char *name)
 	}
 	return 1;
 }
-void LoadBool(int *value, json_t *node, const char *name)
+void LoadBool(bool *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
 	{

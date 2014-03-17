@@ -49,6 +49,8 @@
 #ifndef __GRAFX
 #define __GRAFX
 
+#include <stdbool.h>
+
 #include <SDL_video.h>
 
 #include "c_array.h"
@@ -69,7 +71,7 @@ typedef struct
 	int Brightness;
 	int ResolutionWidth;
 	int ResolutionHeight;
-	int Fullscreen;
+	bool Fullscreen;
 	int ScaleFactor;
 	int ShakeMultiplier;
 	ScaleMode ScaleMode;

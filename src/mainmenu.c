@@ -299,6 +299,12 @@ menu_t *MenuCreateOptionsGame(const char *name)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
+			"Health pickups",
+			&gConfig.Game.HealthPickups,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
 			"Fog",
 			&gConfig.Game.Fog,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
@@ -546,7 +552,7 @@ menu_t *MenuCreateQuit(const char *name)
 
 
 menu_t *MenuCreateOptionToggle(
-	const char *name, int *config, menu_option_display_style_e style)
+	const char *name, bool *config, menu_option_display_style_e style)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_TOGGLE);
 	menu->u.option.uHook.optionToggle = config;
