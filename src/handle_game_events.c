@@ -32,7 +32,11 @@
 
 
 void HandleGameEvents(
-	CArray *store, HUD *hud, ScreenShake *shake, EventHandlers *eventHandlers)
+	CArray *store,
+	HUD *hud,
+	ScreenShake *shake,
+	HealthPickups *hp,
+	EventHandlers *eventHandlers)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
@@ -58,6 +62,13 @@ void HandleGameEvents(
 				NetInputSendMsg(
 					&eventHandlers->netInput, SERVER_MSG_GAME_START);
 			}
+			break;
+		case GAME_EVENT_ADD_HEALTH_PICKUP:
+			MapPlaceHealth(e->u.AddPos);
+			break;
+		case GAME_EVENT_TAKE_HEALTH_PICKUP:
+			ActorHeal(gPlayers[e->u.PickupPlayer], HEALTH_PICKUP_HEAL_AMOUNT);
+			HealthPickupsRemoveOne(hp);
 			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);

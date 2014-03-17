@@ -78,26 +78,34 @@ static TObject *objList = NULL;
 
 Pic *GetObjectPic(void *data)
 {
-	const TObject * obj = data;
-	const TOffsetPic *ofpic = obj->pic;
-	if (!ofpic)
-	{
-		return NULL;
-	}
+	const TObject *obj = data;
 
-	// Default old pic
-	Pic *pic = PicManagerGetFromOld(&gPicManager, ofpic->picIndex);
-
+	Pic *pic = NULL;
 	// Try to get new pic if available
 	if (obj->picName && obj->picName[0] != '\0')
 	{
-		Pic *newPic = PicManagerGetPic(&gPicManager, obj->picName);
-		if (newPic)
-		{
-			pic = newPic;
-		}
+		pic = PicManagerGetPic(&gPicManager, obj->picName);
 	}
-	pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+	// Use new pic offset if old one unavailable
+	const TOffsetPic *ofpic = obj->pic;
+	if (!ofpic)
+	{
+		// If new one also unavailable, bail
+		if (pic == NULL)
+		{
+			return NULL;
+		}
+		pic->offset = Vec2iScaleDiv(pic->size, -2);
+	}
+	else if (pic == NULL)
+	{
+		// Default old pic
+		pic = PicManagerGetFromOld(&gPicManager, ofpic->picIndex);
+	}
+	if (ofpic != NULL)
+	{
+		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+	}
 	return pic;
 }
 
@@ -376,14 +384,14 @@ static void InternalAddObject(
 	int x, int y, int w, int h,
 	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
 	const char *picName,
-	int structure, int idx, int objFlags, int tileFlags)
+	int structure, PickupType type, int objFlags, int tileFlags)
 {
 	TObject *o;
 	CCALLOC(o, sizeof(TObject));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
 	o->picName = picName;
-	o->objectIndex = idx;
+	o->Type = type;
 	o->structure = structure;
 	o->flags = objFlags;
 	o->tileItem.flags = tileFlags;
@@ -399,11 +407,35 @@ static void InternalAddObject(
 	objList = o;
 }
 
-void AddObject(
-	int x, int y, Vec2i size, const TOffsetPic * pic, int idx, int tileFlags)
+void AddObjectOld(
+	int x, int y,
+	Vec2i size, const TOffsetPic * pic, PickupType type, int tileFlags)
 {
 	InternalAddObject(
-		x, y, size.x, size.y, pic, NULL, NULL, 0, idx, 0, tileFlags);
+		x, y, size.x, size.y, pic, NULL, NULL, 0, type, 0, tileFlags);
+}
+void AddObject(
+	Vec2i pos, Vec2i size, const char *picName, PickupType type, int tileFlags)
+{
+	TObject *o;
+	CCALLOC(o, sizeof *o);
+	o->pic = NULL;
+	o->wreckedPic = NULL;
+	o->picName = picName;
+	o->Type = type;
+	o->structure = 0;
+	o->flags = 0;
+	o->tileItem.flags = tileFlags;
+	o->tileItem.kind = KIND_OBJECT;
+	o->tileItem.data = o;
+	o->tileItem.getPicFunc = GetObjectPic;
+	o->tileItem.getActorPicsFunc = NULL;
+	o->tileItem.w = size.x;
+	o->tileItem.h = size.y;
+	o->tileItem.actor = NULL;
+	MapMoveTileItem(&gMap, &o->tileItem, pos);
+	o->next = objList;
+	objList = o;
 }
 
 void AddDestructibleObject(
@@ -414,8 +446,8 @@ void AddDestructibleObject(
 {
 	Vec2i fullPos = Vec2iReal2Full(pos);
 	InternalAddObject(
-		fullPos.x, fullPos.y, w, h, pic, wreckedPic, picName, structure, 0,
-		objFlags, tileFlags);
+		fullPos.x, fullPos.y, w, h, pic, wreckedPic, picName, structure,
+		OBJ_NONE, objFlags, tileFlags);
 }
 
 void RemoveObject(TObject * obj)

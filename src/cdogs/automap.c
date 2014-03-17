@@ -297,7 +297,7 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 				else if (t->kind == KIND_OBJECT && t->data && tile->isVisited)
 				{
 					color_t dotColor = colorBlack;
-					switch (((TObject *)t->data)->objectIndex)
+					switch (((TObject *)t->data)->Type)
 					{
 					case OBJ_KEYCARD_RED:
 						dotColor = colorRedDoor;

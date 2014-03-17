@@ -64,6 +64,7 @@
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
+#include <cdogs/health_pickup.h>
 #include <cdogs/hud.h>
 #include <cdogs/joystick.h>
 #include <cdogs/mission.h>
@@ -476,10 +477,12 @@ int gameloop(void)
 	int frames = 0;
 	int framesSkipped = 0;
 	ScreenShake shake = ScreenShakeZero();
+	HealthPickups hp;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
 	GameEventsInit(&gGameEvents);
+	HealthPickupsInit(&hp, &gMap, gPlayers);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
@@ -677,6 +680,8 @@ int gameloop(void)
 
 				UpdateWatches(&gMap.triggers);
 
+				HealthPickupsUpdate(&hp, ticks);
+
 				bool isMissionComplete =
 					GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission);
 				if (gMission.state == MISSION_STATE_PLAY && isMissionComplete)
@@ -700,7 +705,8 @@ int gameloop(void)
 					GameEventsEnqueue(&gGameEvents, e);
 				}
 
-				HandleGameEvents(&gGameEvents, &hud, &shake, &gEventHandlers);
+				HandleGameEvents(
+					&gGameEvents, &hud, &shake, &hp, &gEventHandlers);
 			}
 
 			gMission.time += ticks;

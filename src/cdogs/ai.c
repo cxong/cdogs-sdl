@@ -278,17 +278,13 @@ static void PlaceBaddie(TActor *actor)
 	for (i = 0; i < 100; i++)	// Don't try forever trying to place baddie
 	{
 		// Try spawning out of players' sights
-		TActor *closestPlayer = NULL;
-		do
-		{
-			actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-			actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
-			closestPlayer = AIGetClosestPlayer(actor->Pos);
-		}
-		while (closestPlayer && CHEBYSHEV_DISTANCE(
+		actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+		actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
+		TActor *closestPlayer = AIGetClosestPlayer(actor->Pos);
+		if (closestPlayer && CHEBYSHEV_DISTANCE(
 			actor->Pos.x, actor->Pos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) < 256 * 150);
-		if (IsActorPositionValid(actor))
+			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
+			IsActorPositionValid(actor))
 		{
 			hasPlaced = 1;
 			break;

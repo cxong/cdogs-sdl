@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -94,21 +94,16 @@
 #define BULLET_Z   10
 
 // Indices for "pick up" objects
-#define OBJ_JEWEL           0
-#define OBJ_KEYCARD_YELLOW  1
-#define OBJ_KEYCARD_GREEN   2
-#define OBJ_KEYCARD_BLUE    3
-#define OBJ_KEYCARD_RED     4
-#define OBJ_PUZZLE_1        5
-#define OBJ_PUZZLE_2        6
-#define OBJ_PUZZLE_3        7
-#define OBJ_PUZZLE_4        8
-#define OBJ_PUZZLE_5        9
-#define OBJ_PUZZLE_6        10
-#define OBJ_PUZZLE_7        11
-#define OBJ_PUZZLE_8        12
-#define OBJ_PUZZLE_9        13
-#define OBJ_PUZZLE_10       14
+typedef enum
+{
+	OBJ_NONE,
+	OBJ_JEWEL,
+	OBJ_HEALTH,
+	OBJ_KEYCARD_YELLOW,
+	OBJ_KEYCARD_GREEN,
+	OBJ_KEYCARD_BLUE,
+	OBJ_KEYCARD_RED
+} PickupType;
 
 
 #define OBJFLAG_EXPLOSIVE   1
@@ -125,7 +120,7 @@ struct Object {
 	const TOffsetPic *pic;
 	const TOffsetPic *wreckedPic;
 	const char *picName;
-	int objectIndex;
+	PickupType Type;
 	int structure;
 	int flags;
 	TTileItem tileItem;
@@ -167,9 +162,11 @@ int DamageSomething(
 	special_damage_e damage,
 	int isHitSoundEnabled);
 
-void AddObject(
+void AddObjectOld(
 	int x, int y, Vec2i size,
-	const TOffsetPic * pic, int index, int tileFlags);
+	const TOffsetPic * pic, PickupType type, int tileFlags);
+void AddObject(
+	Vec2i pos, Vec2i size, const char *picName, PickupType type, int tileFlags);
 void AddDestructibleObject(
 	Vec2i pos, int w, int h,
 	const TOffsetPic * pic, const TOffsetPic * wreckedPic,

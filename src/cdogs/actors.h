@@ -175,6 +175,7 @@ void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
 void Score(struct PlayerData *p, int points);
+void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 void KillAllActors(void);
 

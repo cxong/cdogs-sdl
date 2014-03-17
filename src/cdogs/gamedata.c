@@ -328,6 +328,11 @@ int AreKeysAllowed(campaign_mode_e mode)
 	return mode == CAMPAIGN_MODE_NORMAL;
 }
 
+int AreHealthPickupsAllowed(campaign_mode_e mode)
+{
+	return mode == CAMPAIGN_MODE_NORMAL || mode == CAMPAIGN_MODE_QUICK_PLAY;
+}
+
 
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS])
 {

@@ -58,7 +58,7 @@
 #include "objs.h"
 
 
-TActor *AIGetClosestPlayer(Vec2i pos)
+TActor *AIGetClosestPlayer(Vec2i fullpos)
 {
 	int i;
 	int minDistance = -1;
@@ -69,7 +69,8 @@ TActor *AIGetClosestPlayer(Vec2i pos)
 		{
 			TActor *p = gPlayers[i];
 			Vec2i pPos = Vec2iFull2Real(p->Pos);
-			int distance = CHEBYSHEV_DISTANCE(pos.x, pos.y, pPos.x, pPos.y);
+			int distance = CHEBYSHEV_DISTANCE(
+				fullpos.x, fullpos.y, pPos.x, pPos.y);
 			if (!closestPlayer || distance < minDistance)
 			{
 				closestPlayer = p;

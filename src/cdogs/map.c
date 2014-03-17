@@ -618,7 +618,7 @@ void MapPlaceCollectible(
 	struct Objective *o = CArrayGet(&mo->Objectives, objective);
 	Vec2i fullPos = Vec2iReal2Full(realPos);
 	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-	AddObject(
+	AddObjectOld(
 		fullPos.x, fullPos.y, size,
 		&cGeneralPics[o->pickupItem],
 		OBJ_JEWEL,
@@ -649,6 +649,25 @@ static int MapTryPlaceCollectible(
 		i--;
 	}
 	return 0;
+}
+
+void MapPlaceHealth(Vec2i pos)
+{
+	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
+	AddObject(pos, size, "health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
+}
+
+Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
+{
+	for (int i = 0; i < 100; i++)
+	{
+		Vec2i v = GuessPixelCoords(map);
+		if (!IsCollisionWithWall(v, size))
+		{
+			return v;
+		}
+	}
+	return Vec2iZero();
 }
 
 static int MapTryPlaceBlowup(
@@ -684,9 +703,9 @@ static int MapTryPlaceBlowup(
 void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex)
 {
 	UNUSED(map);
-	int card = keyIndex + 1;
+	PickupType card = keyIndex + OBJ_KEYCARD_YELLOW;
 	Vec2i full = Vec2iReal2Full(Vec2iCenterOfTile(pos));
-	AddObject(
+	AddObjectOld(
 		full.x, full.y,
 		Vec2iNew(KEY_W, KEY_H),
 		&cGeneralPics[mo->keyPics[keyIndex]],
@@ -1236,6 +1255,19 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	{
 		MapPlaceCard(map, 0, 0);
 	}
+
+	// Count total number of reachable tiles, for explored %
+	map->NumExplorableTiles = 0;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < map->Size.x; v.x++)
+		{
+			if (!(MapGetTile(map, v)->flags & MAPTILE_NO_WALK))
+			{
+				map->NumExplorableTiles++;
+			}
+		}
+	}
 }
 
 bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles)
@@ -1256,11 +1288,11 @@ bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles)
 void MapMarkAsVisited(Map *map, Vec2i pos)
 {
 	Tile *t = MapGetTile(map, pos);
-	if (!t->isVisited)
+	if (!t->isVisited && !(t->flags & MAPTILE_NO_WALK))
 	{
 		map->tilesSeen++;
-		t->isVisited = 1;
 	}
+	t->isVisited = 1;
 }
 
 void MapMarkAllAsVisited(Map *map)
@@ -1277,5 +1309,5 @@ void MapMarkAllAsVisited(Map *map)
 
 int MapGetExploredPercentage(Map *map)
 {
-	return (100 * map->tilesSeen) / (map->Size.x * map->Size.y);
+	return (100 * map->tilesSeen) / map->NumExplorableTiles;
 }

@@ -1,6 +1,4 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2014, Cong Xu
     All rights reserved.
 
@@ -25,20 +23,26 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HANDLE_GAME_EVENTS
-#define __HANDLE_GAME_EVENTS
+#ifndef __HEALTH_PICKUP
+#define __HEALTH_PICKUP
 
-#include <cdogs/c_array.h>
-#include <cdogs/events.h>
-#include <cdogs/health_pickup.h>
-#include <cdogs/hud.h>
-#include <cdogs/screen_shake.h>
+#include "actors.h"
 
-void HandleGameEvents(
-	CArray *store,
-	HUD *hud,
-	ScreenShake *shake,
-	HealthPickups *hp,
-	EventHandlers *eventHandlers);
+#define HEALTH_PICKUP_HEAL_AMOUNT 20
+
+typedef struct
+{
+	Map *map;
+	TActor **players;
+	int timeUntilNextSpawn;
+	int timer;
+	int numPickups;
+	int pickupsSpawned;
+} HealthPickups;
+
+void HealthPickupsInit(
+	HealthPickups *h, Map *map, TActor *players[MAX_PLAYERS]);
+void HealthPickupsUpdate(HealthPickups *h, int ticks);
+void HealthPickupsRemoveOne(HealthPickups *h);
 
 #endif

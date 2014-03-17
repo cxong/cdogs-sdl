@@ -30,6 +30,7 @@ set(CDOGS_SOURCES
 	gamedata.c
 	grafx.c
 	grafx_bg.c
+	health_pickup.c
 	hiscores.c
 	hud.c
 	input.c
@@ -93,6 +94,7 @@ set(CDOGS_HEADERS
 	gamedata.h
 	grafx.h
 	grafx_bg.h
+	health_pickup.h
 	hiscores.h
 	hud.h
 	input.h

@@ -97,6 +97,8 @@ typedef struct
 	
 	Vec2i ExitStart;
 	Vec2i ExitEnd;
+
+	int NumExplorableTiles;
 } Map;
 
 extern Map gMap;
@@ -132,11 +134,13 @@ TTileItem *MapGetClosestEnemy(
 // Map construction functions
 unsigned short IMapGet(Map *map, Vec2i pos);
 void IMapSet(Map *map, Vec2i pos, unsigned short v);
+Vec2i MapGenerateFreePosition(Map *map, Vec2i size);
 int MapTryPlaceOneObject(
 	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode);
 void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo);
 void MapPlaceCollectible(
 	struct MissionOptions *mo, int objective, Vec2i realPos);
+void MapPlaceHealth(Vec2i pos);
 void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex);
 
 #endif

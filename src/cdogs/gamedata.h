@@ -143,6 +143,7 @@ int IsAutoMapEnabled(campaign_mode_e mode);
 int IsPasswordAllowed(campaign_mode_e mode);
 int IsMissionBriefingNeeded(campaign_mode_e mode);
 int AreKeysAllowed(campaign_mode_e mode);
+int AreHealthPickupsAllowed(campaign_mode_e mode);
 
 int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
 

@@ -54,7 +54,7 @@
 #include "actors.h"
 #include "objs.h"
 
-TActor *AIGetClosestPlayer(Vec2i pos);
+TActor *AIGetClosestPlayer(Vec2i fullpos);
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
 TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);

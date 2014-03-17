@@ -70,6 +70,13 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
 
 bool IsCollisionWithWall(Vec2i pos, Vec2i size)
 {
+	if (pos.x - size.x < 0 ||
+		pos.y - size.y < 0 ||
+		pos.x + size.x >= gMap.Size.x * TILE_WIDTH ||
+		pos.y + size.y >= gMap.Size.y * TILE_HEIGHT)
+	{
+		return true;
+	}
 	if (HitWall(pos.x - size.x,	pos.y - size.y) ||
 		HitWall(pos.x - size.x,	pos.y) ||
 		HitWall(pos.x - size.x,	pos.y + size.y) ||

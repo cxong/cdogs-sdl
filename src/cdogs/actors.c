@@ -481,13 +481,23 @@ static void CheckTrigger(TActor *actor, Vec2i pos)
 
 static void PickupObject(TActor * actor, TObject * object)
 {
-	switch (object->objectIndex) {
+	switch (object->Type)
+	{
 	case OBJ_JEWEL:
 		{
 			GameEvent e;
 			e.Type = GAME_EVENT_SCORE;
 			e.u.Score.PlayerIndex = actor->pData->playerIndex;
 			e.u.Score.Score = PICKUP_SCORE;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+
+	case OBJ_HEALTH:
+		{
+			GameEvent e;
+			e.Type = GAME_EVENT_TAKE_HEALTH_PICKUP;
+			e.u.PickupPlayer = actor->pData->playerIndex;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
@@ -507,23 +517,6 @@ static void PickupObject(TActor * actor, TObject * object)
 	case OBJ_KEYCARD_YELLOW:
 		gMission.flags |= FLAGS_KEYCARD_YELLOW;
 		break;
-/*
-    case OBJ_PUZZLE_1:
-    case OBJ_PUZZLE_2:
-    case OBJ_PUZZLE_3:
-    case OBJ_PUZZLE_4:
-    case OBJ_PUZZLE_5:
-    case OBJ_PUZZLE_6:
-    case OBJ_PUZZLE_7:
-    case OBJ_PUZZLE_8:
-    case OBJ_PUZZLE_9:
-    case OBJ_PUZZLE_10:
-      gCampaign.puzzleCount++;
-      gCampaign.puzzle |= (1 << (object->objectIndex - OBJ_PUZZLE_1));
-      DisplayMessage( gCampaign.setting->puzzle->puzzleMsg);
-      Score(actor->pData, 200);
-      break;
-*/
 	}
 	CheckMissionObjective(
 		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT);
@@ -689,6 +682,13 @@ void PlayRandomScreamAt(Vec2i pos)
 	{
 		screamIndex = 0;
 	}
+}
+
+void ActorHeal(TActor *actor, int health)
+{
+	actor->health += health;
+	actor->health = MIN(actor->health, 200 * gConfig.Game.PlayerHP / 100);
+	// TODO: play heal sound
 }
 
 void InjureActor(TActor * actor, int injury)
@@ -948,11 +948,11 @@ void UpdateAllActors(int ticks)
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX)
 		{
-			AddObject(
+			AddObjectOld(
 				actor->Pos.x, actor->Pos.y,
 				Vec2iZero(),
 				&cBloodPics[rand() % BLOOD_MAX],
-				0,
+				OBJ_NONE,
 				TILEITEM_IS_WRECK);
 			actor = RemoveActor(actor);
 		}
