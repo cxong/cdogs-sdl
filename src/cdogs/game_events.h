@@ -29,6 +29,7 @@
 #ifndef __GAME_EVENTS
 #define __GAME_EVENTS
 
+#include "actors.h"
 #include "c_array.h"
 #include "gamedata.h"
 
@@ -49,6 +50,8 @@ typedef enum
 	GAME_EVENT_ADD_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
+	GAME_EVENT_HIT_CHARACTER,
+	GAME_EVENT_DAMAGE_CHARACTER,
 
 	// Can complete mission
 	GAME_EVENT_MISSION_COMPLETE,
@@ -79,6 +82,23 @@ typedef struct
 		Vec2i AddPos;
 		int PickupPlayer;
 		int MobileObjectRemoveId;
+		struct
+		{
+			Vec2i HitV;
+			int Power;
+			int Flags;
+			int PlayerIndex;
+			TActor *Target;
+			special_damage_e Special;
+			bool HasHitSound;
+		} HitCharacter;
+		struct
+		{
+			int Power;
+			int PlayerIndex;
+			TActor *Target;
+			int TargetPlayerIndex;
+		} DamageCharacter;
 	} u;
 } GameEvent;
 

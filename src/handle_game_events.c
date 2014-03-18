@@ -27,6 +27,7 @@
 */
 #include "handle_game_events.h"
 
+#include <cdogs/damage.h>
 #include <cdogs/game_events.h>
 #include <cdogs/objs.h>
 
@@ -74,6 +75,29 @@ void HandleGameEvents(
 			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);
+			break;
+		case GAME_EVENT_HIT_CHARACTER:
+			HitCharacter(
+				e->u.HitCharacter.HitV,
+				e->u.HitCharacter.Power,
+				e->u.HitCharacter.Flags,
+				e->u.HitCharacter.PlayerIndex,
+				e->u.HitCharacter.Target,
+				e->u.HitCharacter.Special,
+				e->u.HitCharacter.HasHitSound);
+			break;
+		case GAME_EVENT_DAMAGE_CHARACTER:
+			DamageCharacter(
+				e->u.DamageCharacter.Power,
+				e->u.DamageCharacter.PlayerIndex,
+				e->u.DamageCharacter.Target);
+			if (e->u.DamageCharacter.Power != 0)
+			{
+				HUDAddHealthUpdate(
+					hud,
+					e->u.DamageCharacter.TargetPlayerIndex,
+					-e->u.DamageCharacter.Power);
+			}
 			break;
 		case GAME_EVENT_MISSION_COMPLETE:
 			HUDDisplayMessage(hud, "Mission complete", -1);

@@ -55,6 +55,7 @@
 #include "bullet_class.h"
 #include "collision.h"
 #include "config.h"
+#include "damage.h"
 #include "game_events.h"
 #include "map.h"
 #include "screen_shake.h"
@@ -109,91 +110,6 @@ Pic *GetObjectPic(void *data)
 	return pic;
 }
 
-
-static void TrackKills(int player, TActor *victim)
-{
-	if (player >= 0)
-	{
-		if (victim->pData ||
-			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY)))
-		{
-			gPlayerDatas[player].friendlies++;
-		}
-		else
-		{
-			gPlayerDatas[player].kills++;
-		}
-	}
-}
-
-// The damage function!
-
-int DamageCharacter(
-	Vec2i hitVector,
-	int power,
-	int flags,
-	int player,
-	TTileItem *target,
-	special_damage_e damage,
-	campaign_mode_e mode,
-	int isHitSoundEnabled)
-{
-	TActor *actor = (TActor *)target->data;
-	int isInvulnerable;
-
-	// Don't let players hurt themselves
-	if (!(flags & FLAGS_HURTALWAYS) && player >= 0 && actor->pData &&
-		&gPlayerDatas[player] == actor->pData)
-	{
-		return 0;
-	}
-
-	if (ActorIsImmune(actor, damage))
-	{
-		return 1;
-	}
-	isInvulnerable = ActorIsInvulnerable(actor, flags, player, mode);
-	ActorTakeHit(
-		actor,
-		hitVector,
-		power,
-		damage,
-		isHitSoundEnabled,
-		isInvulnerable,
-		Vec2iNew(target->x, target->y));
-	if (isInvulnerable)
-	{
-		return 1;
-	}
-	InjureActor(actor, power);
-	if (actor->health <= 0)
-	{
-		TrackKills(player, actor);
-	}
-	// If a good guy hurt a non-good guy
-	if ((player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
-		!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
-	{
-		if (player >= 0 && power != 0)
-		{
-			// Calculate score based on if they hit a penalty character
-			GameEvent e;
-			e.Type = GAME_EVENT_SCORE;
-			e.u.Score.PlayerIndex = player;
-			if (actor->flags & FLAGS_PENALTY)
-			{
-				e.u.Score.Score = PENALTY_MULTIPLIER * power;
-			}
-			else
-			{
-				e.u.Score.Score = power;
-			}
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-	}
-
-	return 1;
-}
 
 static void DamageObject(
 	int power,
@@ -292,8 +208,8 @@ int DamageSomething(
 	int flags,
 	int player,
 	TTileItem *target,
-	special_damage_e damage,
-	int isHitSoundEnabled)
+	special_damage_e special,
+	bool hasHitSound)
 {
 	if (!target)
 	{
@@ -303,20 +219,63 @@ int DamageSomething(
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
-		return DamageCharacter(
-			hitVector,
-			power,
-			flags,
-			player,
-			target,
-			damage,
-			gCampaign.Entry.mode,
-			gConfig.Sound.Hits && isHitSoundEnabled);
+		{
+			// Create events: hit, damage, score
+			TActor *actor = (TActor *)target->data;
+			bool canHit = CanHitCharacter(flags, player, actor);
+			if (canHit)
+			{
+				GameEvent e;
+				e.Type = GAME_EVENT_HIT_CHARACTER;
+				e.u.HitCharacter.HitV = hitVector;
+				e.u.HitCharacter.Power = power;
+				e.u.HitCharacter.Flags = flags;
+				e.u.HitCharacter.PlayerIndex = player;
+				e.u.HitCharacter.Target = actor;
+				e.u.HitCharacter.Special = special;
+				e.u.HitCharacter.HasHitSound = gConfig.Sound.Hits && hasHitSound;
+				GameEventsEnqueue(&gGameEvents, e);
+				if (CanDamageCharacter(flags, player, actor, special))
+				{
+					GameEvent e;
+					e.Type = GAME_EVENT_DAMAGE_CHARACTER;
+					e.u.DamageCharacter.Power = power;
+					e.u.DamageCharacter.PlayerIndex = player;
+					e.u.DamageCharacter.Target = actor;
+					e.u.DamageCharacter.TargetPlayerIndex = -1;
+					if (actor->pData)
+					{
+						e.u.DamageCharacter.TargetPlayerIndex =
+							actor->pData->playerIndex;
+					}
+					GameEventsEnqueue(&gGameEvents, e);
+					if (player >= 0 && power != 0)
+					{
+						// Calculate score based on
+						// if they hit a penalty character
+						GameEvent e;
+						e.Type = GAME_EVENT_SCORE;
+						e.u.Score.PlayerIndex = player;
+						if (actor->flags & FLAGS_PENALTY)
+						{
+							e.u.Score.Score = PENALTY_MULTIPLIER * power;
+						}
+						else
+						{
+							e.u.Score.Score = power;
+						}
+						GameEventsEnqueue(&gGameEvents, e);
+					}
+				}
+			}
+			return canHit;
+		}
+		break;
 
 	case KIND_OBJECT:
 		DamageObject(
-			power, flags, player, target, damage,
-			gConfig.Sound.Hits && isHitSoundEnabled);
+			power, flags, player, target, special,
+			gConfig.Sound.Hits && hasHitSound);
 		break;
 
 	case KIND_PIC:

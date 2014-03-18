@@ -20,6 +20,7 @@ set(CDOGS_SOURCES
 	config_apply.c
 	config_json.c
 	config_old.c
+	damage.c
 	defs.c
 	draw.c
 	draw_buffer.c
@@ -84,6 +85,7 @@ set(CDOGS_HEADERS
 	config.h
 	config_json.h
 	config_old.h
+	damage.h
 	defs.h
 	draw.h
 	draw_buffer.h

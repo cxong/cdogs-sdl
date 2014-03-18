@@ -160,7 +160,7 @@ int DamageSomething(
 	int player,
 	TTileItem *target,
 	special_damage_e damage,
-	int isHitSoundEnabled);
+	bool hasHitSound);
 
 void AddObjectOld(
 	int x, int y, Vec2i size,
