@@ -69,6 +69,8 @@ void HandleGameEvents(
 		case GAME_EVENT_TAKE_HEALTH_PICKUP:
 			ActorHeal(gPlayers[e->u.PickupPlayer], HEALTH_PICKUP_HEAL_AMOUNT);
 			HealthPickupsRemoveOne(hp);
+			HUDAddHealthUpdate(
+				hud, e->u.PickupPlayer, HEALTH_PICKUP_HEAL_AMOUNT);
 			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);

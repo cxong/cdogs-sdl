@@ -60,16 +60,18 @@
 #include "pic_manager.h"
 #include "text.h"
 
+// Numeric update for health and score
+// Displays as a small pop-up coloured text overlay
 typedef struct
 {
 	int PlayerIndex;
-	int Score;
-	// Number of milliseconds that this score update will last
+	int Amount;
+	// Number of milliseconds that this update will last
 	int Timer;
-} HUDScore;
+} HUDNumUpdate;
 
-// Total number of milliseconds that the score lasts for
-#define SCORE_TIMER_MS 500
+// Total number of milliseconds that the numeric update lasts for
+#define NUM_UPDATE_TIMER_MS 500
 
 
 void FPSCounterInit(FPSCounter *counter)
@@ -138,7 +140,8 @@ void HUDInit(
 	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
-	CArrayInit(&hud->scoreUpdates, sizeof(HUDScore));
+	CArrayInit(&hud->healthUpdates, sizeof(HUDNumUpdate));
+	CArrayInit(&hud->scoreUpdates, sizeof(HUDNumUpdate));
 	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
@@ -152,12 +155,21 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
+void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
+{
+	HUDNumUpdate s;
+	s.PlayerIndex = playerIndex;
+	s.Amount = health;
+	s.Timer = NUM_UPDATE_TIMER_MS;
+	CArrayPushBack(&hud->scoreUpdates, &s);
+}
+
 void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
 {
-	HUDScore s;
+	HUDNumUpdate s;
 	s.PlayerIndex = playerIndex;
-	s.Score = score;
-	s.Timer = SCORE_TIMER_MS;
+	s.Amount = score;
+	s.Timer = NUM_UPDATE_TIMER_MS;
 	CArrayPushBack(&hud->scoreUpdates, &s);
 }
 
@@ -173,9 +185,19 @@ void HUDUpdate(HUD *hud, int ms)
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
+	for (int i = 0; i < (int)hud->healthUpdates.size; i++)
+	{
+		HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, i);
+		health->Timer -= ms;
+		if (health->Timer <= 0)
+		{
+			CArrayDelete(&hud->healthUpdates, i);
+			i--;
+		}
+	}
 	for (int i = 0; i < (int)hud->scoreUpdates.size; i++)
 	{
-		HUDScore *score = CArrayGet(&hud->scoreUpdates, i);
+		HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, i);
 		score->Timer -= ms;
 		if (score->Timer <= 0)
 		{
@@ -628,7 +650,8 @@ void DrawKeycards(HUD *hud)
 	}
 }
 
-static void DrawScoreUpdate(HUDScore *score, int flags);
+static void DrawHealthUpdate(HUDNumUpdate *health, int flags);
+static void DrawScoreUpdate(HUDNumUpdate *score, int flags);
 static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(HUD *hud, int isPaused)
 {
@@ -682,9 +705,17 @@ void HUDDraw(HUD *hud, int isPaused)
 		DrawPlayerStatus(
 			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags,
 			r, hud->showExit);
+		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
+		{
+			HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, j);
+			if (health->PlayerIndex == i)
+			{
+				DrawHealthUpdate(health, drawFlags);
+			}
+		}
 		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
 		{
-			HUDScore *score = CArrayGet(&hud->scoreUpdates, j);
+			HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, j);
 			if (score->PlayerIndex == i)
 			{
 				DrawScoreUpdate(score, drawFlags);
@@ -761,63 +792,81 @@ void HUDDraw(HUD *hud, int isPaused)
 	}
 }
 
-// Parameters that define how the score update is animated
-// The score update animates in the following phases:
-// 1. Pop up from score position to slightly above
-// 2. Fall down from slightly above back to score position
-// 3. Persist over score position
-#define SCORE_POP_UP_DURATION_MS 100
-#define SCORE_FALL_DOWN_DURATION_MS 100
-#define SCORE_POP_UP_HEIGHT 5
-
-static void DrawScoreUpdate(HUDScore *score, int flags)
+static void DrawNumUpdate(
+	HUDNumUpdate *update,
+	const char *formatText, int currentValue, int y, int flags);
+static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
+{
+	const int rowHeight = 1 + CDogsTextHeight();
+	int y = 5 + 1 + CDogsTextHeight() + rowHeight * 2;
+	DrawNumUpdate(
+		health, "%d", gPlayers[health->PlayerIndex]->health, y, flags);
+}
+static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 {
 	if (!IsScoreNeeded(gCampaign.Entry.mode))
 	{
 		return;
 	}
-	assert(score->Score != 0);
-	color_t color = score->Score > 0 ? colorGreen : colorRed;
-	
-	// Find the right position to draw the score update
-	// Make sure the score is displayed lined up with the lowest digits
 	const int rowHeight = 1 + CDogsTextHeight();
-	Vec2i pos = Vec2iNew(5, 5 + 1 + CDogsTextHeight() + rowHeight);
-	// Find the position of where the normal score is displayed,
+	int y = 5 + 1 + CDogsTextHeight() + rowHeight;
+	DrawNumUpdate(
+		score, "Score: %d", gPlayerDatas[score->PlayerIndex].score, y, flags);
+}
+// Parameters that define how the numeric update is animated
+// The update animates in the following phases:
+// 1. Pop up from text position to slightly above
+// 2. Fall down from slightly above back to text position
+// 3. Persist over text position
+#define NUM_UPDATE_POP_UP_DURATION_MS 100
+#define NUM_UPDATE_FALL_DOWN_DURATION_MS 100
+#define NUM_UPDATE_POP_UP_HEIGHT 5
+static void DrawNumUpdate(
+	HUDNumUpdate *update,
+	const char *formatText, int currentValue, int y, int flags)
+{
+	CASSERT(update->Amount != 0, "num update with zero amount");
+	color_t color = update->Amount > 0 ? colorGreen : colorRed;
+	
+	// Find the right position to draw the update
+	// Make sure the update is displayed lined up with the lowest digits
+	Vec2i pos = Vec2iNew(5, y);
+	// Find the position of where the normal text is displayed,
 	// and move to its right
 	char s[50];
-	sprintf(s, "Score: %d", gPlayerDatas[score->PlayerIndex].score);
+	sprintf(s, formatText, currentValue);
 	pos.x += TextGetSize(s).x;
-	// Then find the size of the score update, and move left
-	sprintf(s, "%s%d", score->Score > 0 ? "+" : "", score->Score);
+	// Then find the size of the update, and move left
+	sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
 	pos.x -= TextGetSize(s).x;
 	// The final position should ensure the score update's lowest digit
 	// lines up with the normal score's lowest digit
 
 	// Now animate the score update based on its stage
-	int timer = SCORE_TIMER_MS - score->Timer;
-	if (timer < SCORE_POP_UP_DURATION_MS)
+	int timer = NUM_UPDATE_TIMER_MS - update->Timer;
+	if (timer < NUM_UPDATE_POP_UP_DURATION_MS)
 	{
-		// score is still popping up
+		// update is still popping up
 		// calculate height
 		int popupHeight =
-			timer * SCORE_POP_UP_HEIGHT / SCORE_POP_UP_DURATION_MS;
+			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_POP_UP_DURATION_MS;
 		pos.y -= popupHeight;
 	}
-	else if (timer < SCORE_POP_UP_DURATION_MS + SCORE_FALL_DOWN_DURATION_MS)
+	else if (timer <
+		NUM_UPDATE_POP_UP_DURATION_MS + NUM_UPDATE_FALL_DOWN_DURATION_MS)
 	{
-		// score is falling down
+		// update is falling down
 		// calculate height
-		timer -= SCORE_POP_UP_DURATION_MS;
-		timer = SCORE_FALL_DOWN_DURATION_MS - timer;
+		timer -= NUM_UPDATE_POP_UP_DURATION_MS;
+		timer = NUM_UPDATE_FALL_DOWN_DURATION_MS - timer;
 		int popupHeight =
-			timer * SCORE_POP_UP_HEIGHT / SCORE_FALL_DOWN_DURATION_MS;
+			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_FALL_DOWN_DURATION_MS;
 		pos.y -= popupHeight;
 	}
 	else
 	{
-		// Change alpha so that the score fades away
-		color.a = (Uint8)(score->Timer * 255 / SCORE_TIMER_MS);
+		// Change alpha so that the update fades away
+		color.a = (Uint8)(update->Timer * 255 / NUM_UPDATE_TIMER_MS);
 	}
 	
 	int textFlags = TEXT_TOP | TEXT_LEFT;
