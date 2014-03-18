@@ -161,7 +161,7 @@ void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 	s.PlayerIndex = playerIndex;
 	s.Amount = health;
 	s.Timer = NUM_UPDATE_TIMER_MS;
-	CArrayPushBack(&hud->scoreUpdates, &s);
+	CArrayPushBack(&hud->healthUpdates, &s);
 }
 
 void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)

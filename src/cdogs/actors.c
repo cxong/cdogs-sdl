@@ -1165,7 +1165,13 @@ void ActorTakeHit(
 	int isInvulnerable,
 	Vec2i hitLocation)
 {
-	assert(!ActorIsImmune(actor, damage));
+	// Check immune again
+	// This can happen if multiple damage events overkill this actor,
+	// need to ignore the overkill scores
+	if (ActorIsImmune(actor, damage))
+	{
+		return;
+	}
 	ActorTakeSpecialDamage(actor, damage);
 
 	if (gConfig.Game.ShotsPushback)
