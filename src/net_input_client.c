@@ -63,8 +63,19 @@ int main(int argc, char *argv[])
 
 	printf("Press esc to exit\n");
 
+	Uint32 ticksNow = SDL_GetTicks();
+	Uint32 ticksElapsed = 0;
 	for (;;)
 	{
+		Uint32 ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		ticksElapsed += ticksNow - ticksThen;
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
+		{
+			SDL_Delay(1);
+			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			continue;
+		}
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		int cmd = GetOnePlayerCmd(
 			&gEventHandlers,
@@ -74,7 +85,9 @@ int main(int argc, char *argv[])
 			0);
 		if (cmd)
 		{
-			printf("Sending %d\n", cmd);
+			printf("Sending %s + %s\n",
+				CmdStr(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)),
+				CmdStr(cmd & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_BUTTON3 | CMD_BUTTON4 | CMD_ESC)));
 			NetInputClientSend(&client, cmd);
 		}
 
@@ -83,7 +96,8 @@ int main(int argc, char *argv[])
 		{
 			break;
 		}
-		SDL_Delay(1000 / FPS_FRAMELIMIT);
+
+		ticksElapsed -= 1000 / FPS_FRAMELIMIT;
 	}
 
 	NetInputClientTerminate(&client);

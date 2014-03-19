@@ -53,6 +53,43 @@
 #include "tile.h"
 
 
+const char *CmdStr(int cmd)
+{
+	switch (cmd)
+	{
+	case 0:
+		return "";
+	case CMD_LEFT:
+		return "LEFT";
+	case CMD_RIGHT:
+		return "RIGHT";
+	case CMD_UP:
+		return "UP";
+	case CMD_LEFT + CMD_UP:
+		return "LEFT+UP";
+	case CMD_RIGHT + CMD_UP:
+		return "RIGHT+UP";
+	case CMD_DOWN:
+		return "DOWN";
+	case CMD_LEFT + CMD_DOWN:
+		return "LEFT+DOWN";
+	case CMD_RIGHT + CMD_DOWN:
+		return "RIGHT+DOWN";
+	case CMD_BUTTON1:
+		return "BUTTON1";
+	case CMD_BUTTON2:
+		return "BUTTON2";
+	case CMD_BUTTON3:
+		return "BUTTON3";
+	case CMD_BUTTON4:
+		return "BUTTON4";
+	case CMD_ESC:
+		return "ESC";
+	default:
+		return "?";
+	}
+}
+
 int cmd2dir[16] = {
 	0,			// Nothing
 	DIRECTION_LEFT,		// CMD_LEFT

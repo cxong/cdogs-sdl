@@ -51,7 +51,7 @@ void NetInputOpen(NetInput *n)
 
 static bool TryRecvSynAndSendSynAck(NetInput *n);
 static bool TryParseAck(UDPpacket *packet, void *data);
-static bool TryRecvCmd(NetInput *n);
+static void RecvCmd(NetInput *n);
 void NetInputPoll(NetInput *n)
 {
 	if (n->channel.sock == NULL)
@@ -83,7 +83,7 @@ void NetInputPoll(NetInput *n)
 		// fallthrough
 
 	case CHANNEL_STATE_CONNECTED:
-		TryRecvCmd(n);
+		RecvCmd(n);
 		break;
 
 	default:
@@ -159,12 +159,12 @@ static bool TryParseAck(UDPpacket *packet, void *data)
 }
 
 static bool TryParseCmd(UDPpacket *packet, void *data);
-static bool TryRecvCmd(NetInput *n)
+static void RecvCmd(NetInput *n)
 {
 	n->PrevCmd = n->Cmd;
 	n->Cmd = 0;
 
-	return NetInputRecvNonBlocking(&n->channel, TryParseCmd, n);
+	while (NetInputRecvNonBlocking(&n->channel, TryParseCmd, n));
 }
 
 static bool TryParseCmd(UDPpacket *packet, void *data)

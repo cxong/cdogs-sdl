@@ -86,6 +86,7 @@
 #define CMD_BUTTON3        64
 #define CMD_BUTTON4       128
 #define CMD_ESC           256
+const char *CmdStr(int cmd);
 
 // Command macros
 #define Left(x)       (((x) & CMD_LEFT) != 0)
