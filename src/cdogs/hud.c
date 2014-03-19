@@ -426,6 +426,9 @@ static void DrawSharedRadar(
 }
 
 #define RADAR_SCALE 1
+// A bit of padding for drawing HUD elements at bottm,
+// so that it doesn't overlap the objective information, clocks etc.
+#define BOTTOM_PADDING 16
 
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
@@ -439,6 +442,7 @@ static void DrawPlayerStatus(
 		DrawObjectiveCompass(device, Vec2iFull2Real(p->Pos), r, showExit);
 	}
 
+	Vec2i pos = Vec2iNew(5, 5);
 	char s[50];
 	int textFlags = TEXT_TOP | TEXT_LEFT;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -448,9 +452,12 @@ static void DrawPlayerStatus(
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		textFlags |= TEXT_BOTTOM;
+		pos.y += BOTTOM_PADDING;
 	}
 
-	CDogsTextStringSpecial(data->name, textFlags, 5, 5);
+	CDogsTextStringSpecial(data->name, textFlags, pos.x, pos.y);
+	const int rowHeight = 1 + CDogsTextHeight();
+	pos.y += rowHeight;
 	if (IsScoreNeeded(gCampaign.Entry.mode))
 	{
 		sprintf(s, "Score: %d", data->score);
@@ -461,8 +468,6 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		Vec2i pos = Vec2iNew(5, 5 + 1 + CDogsTextHeight());
-		const int rowHeight = 1 + CDogsTextHeight();
 		DrawWeaponStatus(device, &p->weapon, pos, textFlags);
 		pos.y += rowHeight;
 		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
@@ -471,7 +476,7 @@ static void DrawPlayerStatus(
 	}
 	else
 	{
-		CDogsTextStringSpecial(s, textFlags, 5, 5 + 1 * CDogsTextHeight());
+		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
 	}
 
 	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
