@@ -514,7 +514,6 @@ int gameloop(void)
 		int i;
 		int allPlayersDestroyed = 1;
 		int hasUsedMap = 0;
-		Uint32 ticksBeforeMap;
 		ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
 		ticksElapsed += ticksNow - ticksThen;
@@ -545,75 +544,75 @@ int gameloop(void)
 					cmdAll |= cmds[i];
 				}
 			}
-		}
-		ticksBeforeMap = SDL_GetTicks();
-		is_esc_pressed = HandleKey(
-			cmdAll, &isPaused, &hasUsedMap, hud.showExit);
-		if (is_esc_pressed)
-		{
-			if (isPaused)
+			Uint32 ticksBeforeMap = SDL_GetTicks();
+			is_esc_pressed = HandleKey(
+				cmdAll, &isPaused, &hasUsedMap, hud.showExit);
+			if (is_esc_pressed)
 			{
-				GameEvent e;
-				e.Type = GAME_EVENT_MISSION_END;
-				GameEventsEnqueue(&gGameEvents, e);
-				// Also explicitly set done
-				// otherwise game will not quit immediately
-				gMission.isDone = true;
-			}
-			else
-			{
-				isPaused = 1;
-			}
-		}
-		if (hasUsedMap)
-		{
-			// Map keeps the game paused, reset the time elapsed counter
-			ticksNow += SDL_GetTicks() - ticksBeforeMap;
-		}
-		// Cheat: special weapon activation
-		if (IsPlayerAlive(0))
-		{
-			const char *pulserifle = "sgodc";
-			const char *heatseeker = "miaon";
-			int isMatch = 1;
-			for (i = 0; i < (int)strlen(pulserifle); i++)
-			{
-				if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
-					pulserifle[i])
+				if (isPaused)
 				{
-					isMatch = 0;
-					break;
+					GameEvent e;
+					e.Type = GAME_EVENT_MISSION_END;
+					GameEventsEnqueue(&gGameEvents, e);
+					// Also explicitly set done
+					// otherwise game will not quit immediately
+					gMission.isDone = true;
+				}
+				else
+				{
+					isPaused = 1;
 				}
 			}
-			if (isMatch)
+			if (hasUsedMap)
 			{
-				gPlayers[0]->weapon = WeaponCreate(GUN_PULSERIFLE);
-				SoundPlay(&gSoundDevice, SND_HAHAHA);
-				// Reset to prevent last key from being processed as
-				// normal player commands
-				KeyInit(&gEventHandlers.keyboard);
-				cmdAll = 0;
-				memset(cmds, 0, sizeof cmds);
+				// Map keeps the game paused, reset the time elapsed counter
+				ticksNow += SDL_GetTicks() - ticksBeforeMap;
 			}
-			isMatch = 1;
-			for (i = 0; i < (int)strlen(heatseeker); i++)
+			// Cheat: special weapon activation
+			if (IsPlayerAlive(0))
 			{
-				if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
-					heatseeker[i])
+				const char *pulserifle = "sgodc";
+				const char *heatseeker = "miaon";
+				int isMatch = 1;
+				for (i = 0; i < (int)strlen(pulserifle); i++)
 				{
-					isMatch = 0;
-					break;
+					if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
+						pulserifle[i])
+					{
+						isMatch = 0;
+						break;
+					}
 				}
-			}
-			if (isMatch)
-			{
-				gPlayers[0]->weapon = WeaponCreate(GUN_HEATSEEKER);
-				SoundPlay(&gSoundDevice, SND_HAHAHA);
-				// Reset to prevent last key from being processed as
-				// normal player commands
-				KeyInit(&gEventHandlers.keyboard);
-				cmdAll = 0;
-				memset(cmds, 0, sizeof cmds);
+				if (isMatch)
+				{
+					gPlayers[0]->weapon = WeaponCreate(GUN_PULSERIFLE);
+					SoundPlay(&gSoundDevice, SND_HAHAHA);
+					// Reset to prevent last key from being processed as
+					// normal player commands
+					KeyInit(&gEventHandlers.keyboard);
+					cmdAll = 0;
+					memset(cmds, 0, sizeof cmds);
+				}
+				isMatch = 1;
+				for (i = 0; i < (int)strlen(heatseeker); i++)
+				{
+					if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
+						heatseeker[i])
+					{
+						isMatch = 0;
+						break;
+					}
+				}
+				if (isMatch)
+				{
+					gPlayers[0]->weapon = WeaponCreate(GUN_HEATSEEKER);
+					SoundPlay(&gSoundDevice, SND_HAHAHA);
+					// Reset to prevent last key from being processed as
+					// normal player commands
+					KeyInit(&gEventHandlers.keyboard);
+					cmdAll = 0;
+					memset(cmds, 0, sizeof cmds);
+				}
 			}
 		}
 
