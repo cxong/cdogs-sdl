@@ -529,17 +529,21 @@ int gameloop(void)
 #ifndef RUN_WITHOUT_APP_FOCUS
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 #endif
-		EventPoll(&gEventHandlers, ticksNow);
-		for (i = 0; i < MAX_PLAYERS; i++)
+		// Only process input every 2 frames
+		if ((frames & 1) == 0)
 		{
-			if (IsPlayerAlive(i))
+			EventPoll(&gEventHandlers, ticksNow);
+			for (i = 0; i < MAX_PLAYERS; i++)
 			{
-				cmds[i] = GetGameCmd(
-					&gEventHandlers,
-					&gConfig.Input,
-					&gPlayerDatas[i],
-					GetPlayerCenter(&gGraphicsDevice, &buffer, i));
-				cmdAll |= cmds[i];
+				if (IsPlayerAlive(i))
+				{
+					cmds[i] = GetGameCmd(
+						&gEventHandlers,
+						&gConfig.Input,
+						&gPlayerDatas[i],
+						GetPlayerCenter(&gGraphicsDevice, &buffer, i));
+					cmdAll |= cmds[i];
+				}
 			}
 		}
 		ticksBeforeMap = SDL_GetTicks();
