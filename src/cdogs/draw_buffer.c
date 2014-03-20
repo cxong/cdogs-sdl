@@ -125,7 +125,7 @@ static Tile *GetTile(DrawBuffer *buffer, Vec2i pos)
 	{
 		return NULL;
 	}
-	return &buffer->tiles[0][0] + pos.y * buffer->Size.x + pos.x;
+	return &buffer->tiles[0][0] + pos.y * buffer->OrigSize.x + pos.x;
 }
 
 typedef struct
