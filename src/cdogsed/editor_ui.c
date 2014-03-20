@@ -40,6 +40,8 @@
 #include "editor_ui_static.h"
 
 
+#define Y_ABS 200
+
 static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
@@ -1202,7 +1204,7 @@ static void MissionChangeObjectiveIndex(void *vData, int d)
 		limit = GetEditorInfo().pickupCount - 1;
 		break;
 	case OBJECTIVE_DESTROY:
-		limit = MapObjectGetCount() - 1;
+		limit = MapObjectGetDestructibleCount() - 1;
 		break;
 	case OBJECTIVE_KILL:
 	case OBJECTIVE_INVESTIGATE:
@@ -1246,10 +1248,10 @@ static void MissionChangeObjectiveFlags(void *vData, int d)
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
 static UIObject *CreateMissionObjs(CampaignOptions *co);
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co);
-static UIObject *CreateWeaponObjs(CampaignOptions *co);
-static UIObject *CreateMapItemObjs(CampaignOptions *co);
-static UIObject *CreateCharacterObjs(CampaignOptions *co);
-static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co);
+static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy);
+static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy);
+static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy);
+static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
 static UIObject *CreateObjectiveObjs(
 	Vec2i pos, CampaignOptions *co, int idx);
 
@@ -1466,7 +1468,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Size = TextGetSize(o2->Label);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
-		Vec2iNew(25, 170), Vec2iNew(295, 5 * th));
+		Vec2iNew(0, Y_ABS - pos.y), Vec2iNew(295, 5 * th));
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
 	oc->u.Textbox.TextSourceFunc = MissionGetDescriptionSrc;
@@ -1482,7 +1484,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
-	UIObjectAddChild(o2, CreateCharacterObjs(co));
+	UIObjectAddChild(o2, CreateCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -1491,7 +1493,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Id = YC_SPECIALS;
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
-	UIObjectAddChild(o2, CreateSpecialCharacterObjs(co));
+	UIObjectAddChild(o2, CreateSpecialCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -1499,7 +1501,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = NULL;
 	o2->Id = YC_WEAPONS;
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateWeaponObjs(co));
+	UIObjectAddChild(o2, CreateWeaponObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -1510,12 +1512,12 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	CSTRDUP(o2->Tooltip,
 		"Use Insert, Delete and PageUp/PageDown\n"
 		"Shift+click to change amounts");
-	UIObjectAddChild(o2, CreateMapItemObjs(co));
+	UIObjectAddChild(o2, CreateMapItemObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 
 	// objectives
 	pos.y += 2;
-	objectivesPos = Vec2iNew(0, 8 * th);
+	objectivesPos = Vec2iNew(0, 7 * th);
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
 	o->Flags = UI_SELECT_ONLY;
@@ -1554,7 +1556,7 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	x = 0;
-	y = 170;
+	y = Y_ABS;
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, Vec2iZero(), Vec2iZero());
@@ -1593,7 +1595,7 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(0, 170), Vec2iNew(319, th));
+		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(0, Y_ABS), Vec2iNew(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
 	o->Data = co;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
@@ -1765,7 +1767,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateWeaponObjs(CampaignOptions *co)
+static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy)
 {
 	int th = CDogsTextHeight();
 	UIObject *c;
@@ -1783,7 +1785,7 @@ static UIObject *CreateWeaponObjs(CampaignOptions *co)
 	for (i = 0; i < GUN_COUNT; i++)
 	{
 		int x = 10 + i / 4 * 90;
-		int y = 170 + (i % 4) * th;
+		int y = Y_ABS - dy + (i % 4) * th;
 		o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -1797,7 +1799,7 @@ static UIObject *CreateWeaponObjs(CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateMapItemObjs(CampaignOptions *co)
+static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 {
 	UIObject *c;
 	UIObject *o;
@@ -1820,7 +1822,7 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co)
 		o2->IsDynamicData = 1;
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 170);
+		o2->Pos = Vec2iNew(x, Y_ABS - dy);
 		UIObjectAddChild(c, o2);
 	}
 
@@ -1840,6 +1842,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = 1;
 
+	pos.y -= idx * th;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_TYPE;
 	o2->Type = UITYPE_LABEL;
@@ -1890,9 +1893,9 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
-	o2->Size = Vec2iNew(35, th);
+	o2->Size = Vec2iNew(40, th);
 	UIObjectAddChild(c, o2);
-	pos.x += 40;
+	pos.x += 45;
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_FLAGS;
 	o2->Type = UITYPE_LABEL;
@@ -1915,7 +1918,7 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateCharacterObjs(CampaignOptions *co)
+static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy)
 {
 	UIObject *c;
 	UIObject *o;
@@ -1938,14 +1941,14 @@ static UIObject *CreateCharacterObjs(CampaignOptions *co)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 170);
+		o2->Pos = Vec2iNew(x, Y_ABS - dy);
 		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co)
+static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy)
 {
 	UIObject *c;
 	UIObject *o;
@@ -1968,7 +1971,7 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, 170);
+		o2->Pos = Vec2iNew(x, Y_ABS - dy);
 		UIObjectAddChild(c, o2);
 	}
 

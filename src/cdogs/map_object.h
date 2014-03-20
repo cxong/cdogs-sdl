@@ -86,6 +86,7 @@ typedef struct
 
 MapObject *MapObjectGet(int item);
 int MapObjectGetCount(void);
+int MapObjectGetDestructibleCount(void);
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm);
 
 int MapObjectIsTileOK(

@@ -111,6 +111,18 @@ int MapObjectGetCount(void)
 {
 	return ITEMS_COUNT;
 }
+int MapObjectGetDestructibleCount(void)
+{
+	int i;
+	for (i = 0; i < ITEMS_COUNT; i++)
+	{
+		if (!(mapItems[i].flags & MAPOBJ_IMPASSABLE))
+		{
+			break;
+		}
+	}
+	return i;
+}
 
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm)
 {
