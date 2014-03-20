@@ -99,6 +99,14 @@ void HandleGameEvents(
 					-e->u.DamageCharacter.Power);
 			}
 			break;
+		case GAME_EVENT_UPDATE_OBJECTIVE:
+			{
+				struct Objective *o = CArrayGet(
+					&gMission.Objectives, e->u.UpdateObjective.ObjectiveIndex);
+				o->done += e->u.UpdateObjective.Update;
+				MissionSetMessageIfComplete(&gMission);
+			}
+			break;
 		case GAME_EVENT_MISSION_COMPLETE:
 			HUDDisplayMessage(hud, "Mission complete", -1);
 			hud->showExit = true;

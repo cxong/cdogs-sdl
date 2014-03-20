@@ -792,8 +792,12 @@ static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
 		struct Objective *o = CArrayGet(&mo->Objectives, i);
 		if (mobj->Type == OBJECTIVE_INVESTIGATE)
 		{
-			o->done = MapGetExploredPercentage(map);
-			MissionSetMessageIfComplete(mo);
+			GameEvent e;
+			e.Type = GAME_EVENT_UPDATE_OBJECTIVE;
+			e.u.UpdateObjective.ObjectiveIndex = i;
+			e.u.UpdateObjective.Update =
+				MapGetExploredPercentage(map) - o->done;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 }

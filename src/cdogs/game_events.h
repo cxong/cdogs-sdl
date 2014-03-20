@@ -52,6 +52,7 @@ typedef enum
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_DAMAGE_CHARACTER,
+	GAME_EVENT_UPDATE_OBJECTIVE,
 
 	// Can complete mission
 	GAME_EVENT_MISSION_COMPLETE,
@@ -99,6 +100,11 @@ typedef struct
 			TActor *Target;
 			int TargetPlayerIndex;
 		} DamageCharacter;
+		struct
+		{
+			int ObjectiveIndex;
+			int Update;
+		} UpdateObjective;
 	} u;
 } GameEvent;
 

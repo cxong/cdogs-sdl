@@ -619,22 +619,21 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 int CheckMissionObjective(
 	struct MissionOptions *options, int flags, ObjectiveType type)
 {
-	int idx;
-	MissionObjective *mobj;
-	struct Objective *o;
 	if (!(flags & TILEITEM_OBJECTIVE))
 	{
 		return 0;
 	}
-	idx = ObjectiveFromTileItem(flags);
-	mobj = CArrayGet(&options->missionData->Objectives, idx);
+	int idx = ObjectiveFromTileItem(flags);
+	MissionObjective *mobj = CArrayGet(&options->missionData->Objectives, idx);
 	if (mobj->Type != type)
 	{
 		return 0;
 	}
-	o = CArrayGet(&options->Objectives, idx);
-	o->done++;
-	MissionSetMessageIfComplete(options);
+	GameEvent e;
+	e.Type = GAME_EVENT_UPDATE_OBJECTIVE;
+	e.u.UpdateObjective.ObjectiveIndex = idx;
+	e.u.UpdateObjective.Update = 1;
+	GameEventsEnqueue(&gGameEvents, e);
 	return 1;
 }
 
