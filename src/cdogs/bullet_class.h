@@ -104,7 +104,7 @@ void AddBulletDirectional(
 void AddBulletBig(
 	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
 void AddGasCloud(
-	Vec2i pos, int z, double radians, int speed, int range, int flags,
-	int special, int player);
+	Vec2i pos, int z, double radians, int speed, int range,
+	int flags, special_damage_e special, int player);
 
 #endif

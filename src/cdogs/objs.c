@@ -226,34 +226,34 @@ int DamageSomething(
 				GameEventsEnqueue(&gGameEvents, e);
 				if (CanDamageCharacter(flags, player, actor, special))
 				{
-					GameEvent e;
-					e.Type = GAME_EVENT_DAMAGE_CHARACTER;
-					e.u.DamageCharacter.Power = power;
-					e.u.DamageCharacter.PlayerIndex = player;
-					e.u.DamageCharacter.Target = actor;
-					e.u.DamageCharacter.TargetPlayerIndex = -1;
+					GameEvent e1;
+					e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
+					e1.u.DamageCharacter.Power = power;
+					e1.u.DamageCharacter.PlayerIndex = player;
+					e1.u.DamageCharacter.Target = actor;
+					e1.u.DamageCharacter.TargetPlayerIndex = -1;
 					if (actor->pData)
 					{
-						e.u.DamageCharacter.TargetPlayerIndex =
+						e1.u.DamageCharacter.TargetPlayerIndex =
 							actor->pData->playerIndex;
 					}
-					GameEventsEnqueue(&gGameEvents, e);
+					GameEventsEnqueue(&gGameEvents, e1);
 					if (player >= 0 && power != 0)
 					{
 						// Calculate score based on
 						// if they hit a penalty character
-						GameEvent e;
-						e.Type = GAME_EVENT_SCORE;
-						e.u.Score.PlayerIndex = player;
+						GameEvent e2;
+						e2.Type = GAME_EVENT_SCORE;
+						e2.u.Score.PlayerIndex = player;
 						if (actor->flags & FLAGS_PENALTY)
 						{
-							e.u.Score.Score = PENALTY_MULTIPLIER * power;
+							e2.u.Score.Score = PENALTY_MULTIPLIER * power;
 						}
 						else
 						{
-							e.u.Score.Score = power;
+							e2.u.Score.Score = power;
 						}
-						GameEventsEnqueue(&gGameEvents, e);
+						GameEventsEnqueue(&gGameEvents, e2);
 					}
 				}
 			}

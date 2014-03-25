@@ -114,7 +114,7 @@ int MapObjectGetCount(void)
 int MapObjectGetDestructibleCount(void)
 {
 	int i;
-	for (i = 0; i < ITEMS_COUNT; i++)
+	for (i = 0; i < (int)ITEMS_COUNT; i++)
 	{
 		if (!(mapItems[i].flags & MAPOBJ_IMPASSABLE))
 		{

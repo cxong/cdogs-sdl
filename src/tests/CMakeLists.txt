@@ -15,6 +15,7 @@ add_executable(autosave_test
 	autosave_test.c
 	../autosave.h
 	../autosave.c
+	../cdogs/color.c
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h
 	../cdogs/utils.c
@@ -29,6 +30,7 @@ target_link_libraries(color_test cbehave ${EXTRA_LIBRARIES})
 
 add_executable(config_test
 	config_test.c
+	../cdogs/color.c
 	../cdogs/config.h
 	../cdogs/config.c
 	../cdogs/config_json.c

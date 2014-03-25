@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@ void ConfigLoadOld(Config *config, const char *filename)
 	FILE *f = fopen(filename, "r");
 	int dummy;
 	int fscanfres;
-	int i;
 	int splitscreenAlways;
+	int i1, i2, i3;	// ints to read using fscanf
 
 	ConfigLoadDefault(config);
 	if (f == NULL)
@@ -60,17 +60,20 @@ void ConfigLoadOld(Config *config, const char *filename)
 		return;\
 	}
 	fscanfres = fscanf(f, "%d %d %d %d %d %d %d\n",
-		&config->Interface.ShowFPS,
-		&config->Interface.ShowTime,
-		&config->Game.FriendlyFire,
+		&i1,
+		&i2,
+		&i3,
 		&config->Graphics.Brightness,
 		&dummy,
 		&dummy,
 		&splitscreenAlways);
 	CHECK_FSCANF(7);
+	config->Interface.ShowFPS = (bool)i1;
+	config->Interface.ShowTime = (bool)i2;
+	config->Game.FriendlyFire = (bool)i3;
 	config->Interface.Splitscreen =
 		splitscreenAlways ? SPLITSCREEN_ALWAYS : SPLITSCREEN_NORMAL;
-	for (i = 0; i < 2; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		fscanfres = fscanf(f, "%d\n%d %d %d %d %d %d\n",
 			&dummy,
@@ -94,8 +97,9 @@ void ConfigLoadOld(Config *config, const char *filename)
 	CHECK_FSCANF(1);
 	fscanfres = fscanf(f, "%d %d\n",
 		(int *)&config->Game.Difficulty,
-		&config->Game.SlowMotion);
+		&i1);
 	CHECK_FSCANF(2);
+	config->Game.SlowMotion = (bool)i1;
 	fscanfres = fscanf(f, "%d\n", &config->Game.EnemyDensity);
 	CHECK_FSCANF(1);
 	if (config->Game.EnemyDensity < 25 || config->Game.EnemyDensity > 200)
@@ -117,9 +121,10 @@ void ConfigLoadOld(Config *config, const char *filename)
 	fscanfres = fscanf(f, "%dx%d:%d:%d\n",
 		&config->Graphics.ResolutionWidth,
 		&config->Graphics.ResolutionHeight,
-		&config->Graphics.Fullscreen,
+		&i1,
 		&config->Graphics.ScaleFactor);
 	CHECK_FSCANF(4);
+	config->Graphics.Fullscreen = (bool)i1;
 
 	fclose(f);
 }

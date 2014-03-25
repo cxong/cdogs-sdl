@@ -526,6 +526,9 @@ static void PickupObject(TActor * actor, TObject * object)
 		gMission.flags |= FLAGS_KEYCARD_YELLOW;
 		isKey = true;
 		break;
+	default:
+		CASSERT(false, "unexpected objective");
+		break;
 	}
 	if (isKey)
 	{
