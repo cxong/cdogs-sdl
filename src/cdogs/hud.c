@@ -237,6 +237,7 @@ static void DrawGauge(
 	DrawRectangle(device, barPos, barSize, barColor, 0);
 }
 
+#define GAUGE_WIDTH 50
 static void DrawWeaponStatus(
 	GraphicsDevice *device, const Weapon *weapon, Vec2i pos, int textFlags)
 {
@@ -244,7 +245,7 @@ static void DrawWeaponStatus(
 	if (weapon->lock > 0)
 	{
 		Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-		Vec2i size = Vec2iNew(50, CDogsTextHeight() + 1);
+		Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
 		color_t barColor = { 0, 0, 255, 255 };
 		int maxLock = gGunDescriptions[weapon->gun].Lock;
 		int innerWidth;
@@ -268,7 +269,7 @@ static void DrawHealth(
 {
 	char s[50];
 	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-	Vec2i size = Vec2iNew(50, CDogsTextHeight() + 1);
+	Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
@@ -894,7 +895,7 @@ static void DrawNumUpdate(
 
 static void DrawObjectiveCounts(HUD *hud)
 {
-	int x = 5;
+	int x = 5 + GAUGE_WIDTH;
 	int y = hud->device->cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
 	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
