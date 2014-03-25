@@ -60,7 +60,8 @@ typedef struct
 	Mouse mouse;
 	NetInput netInput;
 
-	int HasResolutionChanged;
+	bool HasResolutionChanged;
+	bool HasQuit;
 } EventHandlers;
 
 extern EventHandlers gEventHandlers;

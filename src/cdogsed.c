@@ -803,6 +803,7 @@ static void HandleInput(
 		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
 		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
 	}
+	bool hasQuit = false;
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		switch (c)
@@ -843,10 +844,7 @@ static void HandleInput(
 			break;
 
 		case 'q':
-			if (!fileChanged || ConfirmClose("Quit anyway? (Y/N)"))
-			{
-				*done = 1;
-			}
+			hasQuit = true;
 			break;
 
 		case 'n':
@@ -972,10 +970,7 @@ static void HandleInput(
 			break;
 
 		case SDLK_ESCAPE:
-			if (!fileChanged || ConfirmClose("Quit anyway? (Y/N)"))
-			{
-				*done = 1;
-			}
+			hasQuit = true;
 			break;
 
 		case SDLK_BACKSPACE:
@@ -990,6 +985,14 @@ static void HandleInput(
 			}
 			break;
 		}
+	}
+	if (gEventHandlers.HasQuit)
+	{
+		hasQuit = true;
+	}
+	if (hasQuit && (!fileChanged || ConfirmClose("Quit anyway? (Y/N)")))
+	{
+		*done = 1;
 	}
 }
 

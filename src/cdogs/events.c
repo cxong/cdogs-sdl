@@ -118,6 +118,9 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 				handlers->HasResolutionChanged = 1;
 			}
 			break;
+		case SDL_QUIT:
+			handlers->HasQuit = true;
+			break;
 		default:
 			break;
 		}
