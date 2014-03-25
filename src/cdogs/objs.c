@@ -127,30 +127,19 @@ static void DamageObject(
 	}
 
 	object->structure -= power;
+	Vec2i pos = Vec2iNew(target->x, target->y);
 	if (isHitSoundEnabled && power > 0)
 	{
-		SoundPlayAt(
-			&gSoundDevice,
-			SoundGetHit(damage, 0),
-			Vec2iNew(target->x, target->y));
+		SoundPlayAt(&gSoundDevice, SoundGetHit(damage, 0), pos);
 	}
 
 	// Destroying objects and all the wonderful things that happen
 	if (object->structure <= 0)
 	{
 		object->structure = 0;
-		if (CheckMissionObjective(
-				&gMission, object->tileItem.flags, OBJECTIVE_DESTROY))
-		{
-			if (player >= 0)
-			{
-				GameEvent e;
-				e.Type = GAME_EVENT_SCORE;
-				e.u.Score.PlayerIndex = player;
-				e.u.Score.Score = OBJECT_SCORE;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-		}
+		UpdateMissionObjective(
+			&gMission, object->tileItem.flags, OBJECTIVE_DESTROY,
+			player, pos);
 		if (object->flags & OBJFLAG_QUAKE)
 		{
 			GameEvent shake;

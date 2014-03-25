@@ -533,8 +533,10 @@ static void PickupObject(TActor * actor, TObject * object)
 			&gSoundDevice, SND_KEY,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
-	CheckMissionObjective(
-		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT);
+	UpdateMissionObjective(
+		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT,
+		actor->pData->playerIndex,
+		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	RemoveObject(object);
 }
 
@@ -591,10 +593,12 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			    && (otherCharacter->flags & FLAGS_PRISONER) !=
 			    0) {
 				otherCharacter->flags &= ~FLAGS_PRISONER;
-				CheckMissionObjective(
+				UpdateMissionObjective(
 					&gMission,
 					otherCharacter->tileItem.flags,
-					OBJECTIVE_RESCUE);
+					OBJECTIVE_RESCUE,
+					actor->pData->playerIndex,
+					Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 			}
 		}
 
@@ -706,16 +710,18 @@ void InjureActor(TActor * actor, int injury)
 	actor->health -= injury;
 	if (actor->health <= 0) {
 		actor->stateCounter = 0;
-		PlayRandomScreamAt(Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+		Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
+		PlayRandomScreamAt(pos);
 		if (actor->pData)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
 				SND_HAHAHA,
-				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+				pos);
 		}
-		CheckMissionObjective(
-			&gMission, actor->tileItem.flags, OBJECTIVE_KILL);
+		UpdateMissionObjective(
+			&gMission, actor->tileItem.flags, OBJECTIVE_KILL,
+			-1, pos);
 	}
 }
 

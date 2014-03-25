@@ -104,6 +104,8 @@ typedef struct
 		{
 			int ObjectiveIndex;
 			int Update;
+			int PlayerIndex;
+			Vec2i Pos;
 		} UpdateObjective;
 	} u;
 } GameEvent;

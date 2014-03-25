@@ -32,6 +32,12 @@
 #include <cdogs/objs.h>
 
 
+static void HandleGameEvent(
+	GameEvent *e,
+	HUD *hud,
+	ScreenShake *shake,
+	HealthPickups *hp,
+	EventHandlers *eventHandlers);
 void HandleGameEvents(
 	CArray *store,
 	HUD *hud,
@@ -42,8 +48,19 @@ void HandleGameEvents(
 	for (int i = 0; i < (int)store->size; i++)
 	{
 		GameEvent *e = CArrayGet(store, i);
-		switch (e->Type)
-		{
+		HandleGameEvent(e, hud, shake, hp, eventHandlers);
+	}
+	GameEventsClear(store);
+}
+static void HandleGameEvent(
+	GameEvent *e,
+	HUD *hud,
+	ScreenShake *shake,
+	HealthPickups *hp,
+	EventHandlers *eventHandlers)
+{
+	switch (e->Type)
+	{
 		case GAME_EVENT_SCORE:
 			Score(&gPlayerDatas[e->u.Score.PlayerIndex], e->u.Score.Score);
 			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
@@ -104,6 +121,35 @@ void HandleGameEvents(
 				struct Objective *o = CArrayGet(
 					&gMission.Objectives, e->u.UpdateObjective.ObjectiveIndex);
 				o->done += e->u.UpdateObjective.Update;
+				MissionObjective *mo = CArrayGet(
+					&gMission.missionData->Objectives,
+					e->u.UpdateObjective.ObjectiveIndex);
+				switch (mo->Type)
+				{
+				case OBJECTIVE_COLLECT:
+					{
+						GameEvent e1;
+						e1.Type = GAME_EVENT_SCORE;
+						e1.u.Score.PlayerIndex =
+							e->u.UpdateObjective.PlayerIndex;
+						e1.u.Score.Score = PICKUP_SCORE;
+						HandleGameEvent(&e1, hud, shake, hp, eventHandlers);
+					}
+					break;
+				case OBJECTIVE_DESTROY:
+					{
+						GameEvent e1;
+						e1.Type = GAME_EVENT_SCORE;
+						e1.u.Score.PlayerIndex =
+							e->u.UpdateObjective.PlayerIndex;
+						e1.u.Score.Score = OBJECT_SCORE;
+						HandleGameEvent(&e1, hud, shake, hp, eventHandlers);
+					}
+					break;
+				default:
+					// No other special objective handling
+					break;
+				}
 				MissionSetMessageIfComplete(&gMission);
 			}
 			break;
@@ -126,7 +172,5 @@ void HandleGameEvents(
 		default:
 			assert(0 && "unknown game event");
 			break;
-		}
 	}
-	GameEventsClear(store);
 }

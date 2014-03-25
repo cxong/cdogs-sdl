@@ -616,25 +616,27 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 	}
 }
 
-int CheckMissionObjective(
-	struct MissionOptions *options, int flags, ObjectiveType type)
+void UpdateMissionObjective(
+	struct MissionOptions *options, int flags, ObjectiveType type,
+	int player, Vec2i pos)
 {
 	if (!(flags & TILEITEM_OBJECTIVE))
 	{
-		return 0;
+		return;
 	}
 	int idx = ObjectiveFromTileItem(flags);
 	MissionObjective *mobj = CArrayGet(&options->missionData->Objectives, idx);
 	if (mobj->Type != type)
 	{
-		return 0;
+		return;
 	}
 	GameEvent e;
 	e.Type = GAME_EVENT_UPDATE_OBJECTIVE;
 	e.u.UpdateObjective.ObjectiveIndex = idx;
 	e.u.UpdateObjective.Update = 1;
+	e.u.UpdateObjective.PlayerIndex = player;
+	e.u.UpdateObjective.Pos = pos;
 	GameEventsEnqueue(&gGameEvents, e);
-	return 1;
 }
 
 int CanCompleteMission(struct MissionOptions *options)
