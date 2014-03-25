@@ -115,8 +115,8 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 	{
 		Vec2i mapPos = Vec2iNew(w / 2 - camera.x, h / 2 - camera.y);
 		return Vec2iNew(
-			(e->mouse.currentPos.x - mapPos.x) / TILE_WIDTH,
-			(e->mouse.currentPos.y - mapPos.y) / TILE_HEIGHT);
+			(e->mouse.currentPos.x - mapPos.x - 8) / TILE_WIDTH,
+			(e->mouse.currentPos.y - mapPos.y - 12) / TILE_HEIGHT);
 	}
 }
 
