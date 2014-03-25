@@ -64,14 +64,17 @@
 // Displays as a small pop-up coloured text overlay
 typedef struct
 {
-	int PlayerIndex;
+	int Index;	// could be player or objective
 	int Amount;
 	// Number of milliseconds that this update will last
+	int TimerMax;
 	int Timer;
 } HUDNumUpdate;
 
 // Total number of milliseconds that the numeric update lasts for
 #define NUM_UPDATE_TIMER_MS 500
+
+#define NUM_UPDATE_TIMER_OBJECTIVE_MS 1500
 
 
 void FPSCounterInit(FPSCounter *counter)
@@ -142,11 +145,14 @@ void HUDInit(
 	WallClockInit(&hud->clock);
 	CArrayInit(&hud->healthUpdates, sizeof(HUDNumUpdate));
 	CArrayInit(&hud->scoreUpdates, sizeof(HUDNumUpdate));
+	CArrayInit(&hud->objectiveUpdates, sizeof(HUDNumUpdate));
 	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
 {
+	CArrayTerminate(&hud->healthUpdates);
 	CArrayTerminate(&hud->scoreUpdates);
+	CArrayTerminate(&hud->objectiveUpdates);
 }
 
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
@@ -158,19 +164,31 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 {
 	HUDNumUpdate s;
-	s.PlayerIndex = playerIndex;
+	s.Index = playerIndex;
 	s.Amount = health;
 	s.Timer = NUM_UPDATE_TIMER_MS;
+	s.TimerMax = NUM_UPDATE_TIMER_MS;
 	CArrayPushBack(&hud->healthUpdates, &s);
 }
 
 void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
 {
 	HUDNumUpdate s;
-	s.PlayerIndex = playerIndex;
+	s.Index = playerIndex;
 	s.Amount = score;
 	s.Timer = NUM_UPDATE_TIMER_MS;
+	s.TimerMax = NUM_UPDATE_TIMER_MS;
 	CArrayPushBack(&hud->scoreUpdates, &s);
+}
+
+void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update)
+{
+	HUDNumUpdate u;
+	u.Index = objectiveIndex;
+	u.Amount = update;
+	u.Timer = NUM_UPDATE_TIMER_OBJECTIVE_MS;
+	u.TimerMax = NUM_UPDATE_TIMER_OBJECTIVE_MS;
+	CArrayPushBack(&hud->objectiveUpdates, &u);
 }
 
 void HUDUpdate(HUD *hud, int ms)
@@ -202,6 +220,16 @@ void HUDUpdate(HUD *hud, int ms)
 		if (score->Timer <= 0)
 		{
 			CArrayDelete(&hud->scoreUpdates, i);
+			i--;
+		}
+	}
+	for (int i = 0; i < (int)hud->objectiveUpdates.size; i++)
+	{
+		HUDNumUpdate *update = CArrayGet(&hud->objectiveUpdates, i);
+		update->Timer -= ms;
+		if (update->Timer <= 0)
+		{
+			CArrayDelete(&hud->objectiveUpdates, i);
 			i--;
 		}
 	}
@@ -714,7 +742,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
 		{
 			HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, j);
-			if (health->PlayerIndex == i)
+			if (health->Index == i)
 			{
 				DrawHealthUpdate(health, drawFlags);
 			}
@@ -722,7 +750,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
 		{
 			HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, j);
-			if (score->PlayerIndex == i)
+			if (score->Index == i)
 			{
 				DrawScoreUpdate(score, drawFlags);
 			}
@@ -800,13 +828,14 @@ void HUDDraw(HUD *hud, int isPaused)
 
 static void DrawNumUpdate(
 	HUDNumUpdate *update,
-	const char *formatText, int currentValue, int y, int flags);
+	const char *formatText, int currentValue, Vec2i pos, int flags);
 static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + CDogsTextHeight();
 	int y = 5 + 1 + CDogsTextHeight() + rowHeight * 2;
 	DrawNumUpdate(
-		health, "%d", gPlayers[health->PlayerIndex]->health, y, flags);
+		health, "%d", gPlayers[health->Index]->health,
+		Vec2iNew(5, y), flags);
 }
 static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 {
@@ -817,7 +846,8 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 	const int rowHeight = 1 + CDogsTextHeight();
 	int y = 5 + 1 + CDogsTextHeight() + rowHeight;
 	DrawNumUpdate(
-		score, "Score: %d", gPlayerDatas[score->PlayerIndex].score, y, flags);
+		score, "Score: %d", gPlayerDatas[score->Index].score,
+		Vec2iNew(5, y), flags);
 }
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:
@@ -829,14 +859,13 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 #define NUM_UPDATE_POP_UP_HEIGHT 5
 static void DrawNumUpdate(
 	HUDNumUpdate *update,
-	const char *formatText, int currentValue, int y, int flags)
+	const char *formatText, int currentValue, Vec2i pos, int flags)
 {
 	CASSERT(update->Amount != 0, "num update with zero amount");
 	color_t color = update->Amount > 0 ? colorGreen : colorRed;
 	
 	// Find the right position to draw the update
 	// Make sure the update is displayed lined up with the lowest digits
-	Vec2i pos = Vec2iNew(5, y);
 	// Find the position of where the normal text is displayed,
 	// and move to its right
 	char s[50];
@@ -849,7 +878,7 @@ static void DrawNumUpdate(
 	// lines up with the normal score's lowest digit
 
 	// Now animate the score update based on its stage
-	int timer = NUM_UPDATE_TIMER_MS - update->Timer;
+	int timer = update->TimerMax - update->Timer;
 	if (timer < NUM_UPDATE_POP_UP_DURATION_MS)
 	{
 		// update is still popping up
@@ -872,7 +901,7 @@ static void DrawNumUpdate(
 	else
 	{
 		// Change alpha so that the update fades away
-		color.a = (Uint8)(update->Timer * 255 / NUM_UPDATE_TIMER_MS);
+		color.a = (Uint8)(update->Timer * 255 / update->TimerMax);
 	}
 	
 	int textFlags = TEXT_TOP | TEXT_LEFT;
@@ -911,10 +940,11 @@ static void DrawObjectiveCounts(HUD *hud)
 		// Objective color dot
 		Draw_Rect(x, y + 3, 2, 2, o->color);
 
+		x += 5;
+		char s[8];
 		int itemsLeft = mo->Required - o->done;
 		if (itemsLeft > 0)
 		{
-			char s[4];
 			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
 			{
 				sprintf(s, "%d", itemsLeft);
@@ -923,12 +953,22 @@ static void DrawObjectiveCounts(HUD *hud)
 			{
 				strcpy(s, "?");
 			}
-			CDogsTextStringAt(x + 5, y, s);
 		}
 		else
 		{
-			CDogsTextStringAt(x + 5, y, "Done");
+			strcpy(s, "Done");
 		}
-		x += 30;
+		CDogsTextStringAt(x, y, s);
+
+		for (int j = 0; j < (int)hud->objectiveUpdates.size; j++)
+		{
+			HUDNumUpdate *update = CArrayGet(&hud->objectiveUpdates, j);
+			if (update->Index == i)
+			{
+				DrawNumUpdate(update, "%d", o->done, Vec2iNew(x, y), 0);
+			}
+		}
+
+		x += 25;
 	}
 }

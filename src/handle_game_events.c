@@ -150,6 +150,11 @@ static void HandleGameEvent(
 					// No other special objective handling
 					break;
 				}
+				// Display a text update effect for the objective
+				HUDAddObjectiveUpdate(
+					hud,
+					e->u.UpdateObjective.ObjectiveIndex,
+					e->u.UpdateObjective.Update);
 				MissionSetMessageIfComplete(&gMission);
 			}
 			break;
