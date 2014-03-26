@@ -838,9 +838,13 @@ static void HandleInput(
 			break;
 
 		case 'v':
-			InsertMission(scrap);
-			fileChanged = 1;
-			Setup(0);
+			// Use map size as a proxy to whether there's a valid scrap mission
+			if (!Vec2iEqual(scrap->Size, Vec2iZero()))
+			{
+				InsertMission(scrap);
+				fileChanged = 1;
+				Setup(0);
+			}
 			break;
 
 		case 'q':
