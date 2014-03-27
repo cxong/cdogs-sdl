@@ -99,10 +99,9 @@ static int PosToCharacterIndex(Vec2i pos, int *idx)
 
 static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 {
-	if (hilite)
-		CDogsTextStringWithTableAt(x, y, text, &tableFlamed);
-	else
-		CDogsTextStringAt(x, y, text);
+	color_t mask = hilite ? colorRed : colorWhite;
+	TextStringMasked(
+		&gTextManager, text, &gGraphicsDevice, Vec2iNew(x, y), mask);
 }
 
 static void Display(CampaignSetting *setting, int idx, int xc, int yc)

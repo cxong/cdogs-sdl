@@ -200,25 +200,21 @@ static int PasswordEntry(int cmd, char *buffer)
 	y = (int)CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
-	for (i = 0; i < (int)strlen(letters); i++)
+	for (i = 0; i < (int)strlen(letters) + 1; i++)
 	{
-		CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			 y + (i / ENTRY_COLS) * CDogsTextHeight());
-
-		if (i == (int)selection)
+		Vec2i pos = Vec2iNew(
+			x + (i % ENTRY_COLS) * ENTRY_SPACING,
+			y + (i / ENTRY_COLS) * CDogsTextHeight());
+		color_t mask = (i == (int)selection) ? colorRed : colorWhite;
+		if (i < (int)strlen(letters))
 		{
-			CDogsTextCharWithTable(letters[i], &tableFlamed);
+			TextCharMasked(&gTextManager, letters[i], &gGraphicsDevice, pos, mask);
 		}
 		else
-			CDogsTextChar(letters[i]);
+		{
+			TextStringMasked(&gTextManager, DONE, &gGraphicsDevice, pos, mask);
+		}
 	}
-	CDogsTextGoto(x + (i % ENTRY_COLS) * ENTRY_SPACING, y + (i / ENTRY_COLS) * CDogsTextHeight());
-	if (i == (int)selection)
-	{
-		CDogsTextStringWithTable(DONE, &tableFlamed);
-	}
-	else
-		CDogsTextString(DONE);
 
 	return 1;
 }

@@ -139,32 +139,10 @@ void CDogsTextChar(char c)
 	}
 }
 
-void CDogsTextCharWithTable(char c, TranslationTable * table)
-{
-	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && gTextManager.oldPics[i])
-	{
-		DrawTTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i], table);
-		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
-	}
-	else
-	{
-		i = CHAR_INDEX('.');
-		DrawTTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i], table);
-		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
-	}
-}
-
 void CDogsTextString(const char *s)
 {
 	while (*s)
 		CDogsTextChar(*s++);
-}
-
-void CDogsTextStringWithTable(const char *s, TranslationTable * table)
-{
-	while (*s)
-		CDogsTextCharWithTable(*s++, table);
 }
 
 static int GetFontPicIndex(char c)
@@ -297,13 +275,6 @@ void CDogsTextFormatAt(int x, int y, const char *fmt, ...)
 	va_end(argptr);
 	CDogsTextGoto(x, y);
 	CDogsTextString(s);
-}
-
-void CDogsTextStringWithTableAt(int x, int y, const char *s,
-			   TranslationTable * table)
-{
-	CDogsTextGoto(x, y);
-	CDogsTextStringWithTable(s, table);
 }
 
 int CDogsTextCharWidth(int c)

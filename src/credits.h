@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -62,16 +62,14 @@ typedef struct
 	int creditsCount;
 	time_t lastUpdateTime;
 	int creditsIndex;
-	TranslationTable *nameTranslationTable;
-	TranslationTable *textTranslationTable;
+	color_t nameColor;
+	color_t textColor;
 } credits_displayer_t;
 
 #define CREDIT_DISPLAY_PERIOD_SECONDS 10.0
 
 void LoadCredits(
-	credits_displayer_t *displayer,
-	TranslationTable *nameTranslationTable,
-	TranslationTable *textTranslationTable);
+	credits_displayer_t *displayer, color_t nameColor, color_t textColor);
 void UnloadCredits(credits_displayer_t *displayer);
 void ShowCredits(credits_displayer_t *displayer);
 

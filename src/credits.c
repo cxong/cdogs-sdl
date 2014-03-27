@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -39,9 +39,7 @@
 
 
 void LoadCredits(
-	credits_displayer_t *displayer,
-	TranslationTable *nameTranslationTable,
-	TranslationTable *textTranslationTable)
+	credits_displayer_t *displayer, color_t nameColor, color_t textColor)
 {
 	char buf[1024];
 	char nameBuf[256];
@@ -58,15 +56,13 @@ void LoadCredits(
 	}
 
 	assert(displayer != NULL);
-	assert(nameTranslationTable != NULL);
-	assert(textTranslationTable != NULL);
 
 	displayer->credits = NULL;
 	displayer->creditsCount = 0;
 	displayer->lastUpdateTime = time(NULL);
 	displayer->creditsIndex = 0;
-	displayer->nameTranslationTable = nameTranslationTable;
-	displayer->textTranslationTable = textTranslationTable;
+	displayer->nameColor = nameColor;
+	displayer->textColor = textColor;
 	while (fgets(buf, 1024, file) != NULL)
 	{
 		if (strlen(buf) > 0 && buf[strlen(buf) - 1] == '\n')
@@ -125,21 +121,22 @@ void ShowCredits(credits_displayer_t *displayer)
 	{
 		time_t now = time(NULL);
 		credit_t *credits = &displayer->credits[displayer->creditsIndex];
+		int y = gGraphicsDevice.cachedConfig.ResolutionHeight - 50;
 
-		CDogsTextStringWithTableAt(
-			16,
-			gGraphicsDevice.cachedConfig.ResolutionHeight - 50,
-			"Credits:",
-			displayer->textTranslationTable);
-		CDogsTextStringWithTableAt(
-			20,
-			gGraphicsDevice.cachedConfig.ResolutionHeight - 40,
-			credits->name,
-			displayer->nameTranslationTable);
-		CDogsTextStringWithTableAt(
-			20, gGraphicsDevice.cachedConfig.ResolutionHeight - 40 + CDogsTextHeight(),
-			credits->message,
-			displayer->textTranslationTable);
+		TextStringMasked(
+			&gTextManager, "Credits:",
+			&gGraphicsDevice, Vec2iNew(16, y),
+			displayer->textColor);
+		y += 10;
+		TextStringMasked(
+			&gTextManager, credits->name,
+			&gGraphicsDevice, Vec2iNew(20, y),
+			displayer->nameColor);
+		y += CDogsTextHeight();
+		TextStringMasked(
+			&gTextManager, credits->message,
+			&gGraphicsDevice, Vec2iNew(20, y),
+			displayer->textColor);
 
 		if (difftime(now, displayer->lastUpdateTime) > CREDIT_DISPLAY_PERIOD_SECONDS)
 		{

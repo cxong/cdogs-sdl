@@ -667,14 +667,32 @@ void Victory(GraphicsDevice *graphics)
 	const char *s = NULL;
 	int w = graphics->cachedConfig.ResolutionWidth;
 	int h = graphics->cachedConfig.ResolutionHeight;
+
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (gPlayerDatas[i].survived)
+		{
+			gPlayerDatas[i].missions++;
+		}
+	}
+
+	// Save that this mission has been completed
 	MissionSave ms;
+	MissionSaveInit(&ms);
+	ms.Campaign = gCampaign.Entry;
+	strcpy(ms.Password, MakePassword(gMission.index, 0));
+	ms.MissionsCompleted = gMission.index + 1;
+	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
+	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	GraphicsBlitBkg(graphics);
 
 	x = 160 - TextGetStringWidth(CONGRATULATIONS) / 2;
 	CDogsTextStringAt(x, 100, CONGRATULATIONS);
 	x = 160 - TextGetStringWidth(gCampaign.Setting.Title) / 2;
-	CDogsTextStringWithTableAt(x, 115, gCampaign.Setting.Title, &tableFlamed);
+	TextStringMasked(
+		&gTextManager, gCampaign.Setting.Title,
+		graphics, Vec2iNew(x, 115), colorRed);
 
 	switch (gOptions.numPlayers)
 	{
@@ -731,27 +749,11 @@ void Victory(GraphicsDevice *graphics)
 			assert(0 && "not implemented");
 			break;
 	}
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (gPlayerDatas[i].survived)
-		{
-			gPlayerDatas[i].missions++;
-		}
-	}
-	
-	// Save that this mission has been completed
-	MissionSaveInit(&ms);
-	ms.Campaign = gCampaign.Entry;
-	strcpy(ms.Password, MakePassword(gMission.index, 0));
-	ms.MissionsCompleted = gMission.index + 1;
-	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
-	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
-	x = 160 - TextGetStringWidth(s) / 2;
-	CDogsTextGoto(x, 140);
-	CDogsTextCharWithTable('"', &tableDarker);
-	CDogsTextStringWithTable(s, &tablePurple);
-	CDogsTextCharWithTable('"', &tableDarker);
+	Vec2i pos = Vec2iNew(w - TextGetStringWidth(s) / 2, h / 2 + 20);
+	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
+	pos = TextStringMasked(&gTextManager, s, graphics, pos, colorPurple);
+	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
 
 	SoundPlay(&gSoundDevice, SND_HAHAHA);
 
@@ -1219,7 +1221,7 @@ int main(int argc, char *argv[])
 	SetupConfigDir();
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	LoadCredits(&creditsDisplayer, &tablePurple, &tableDarker);
+	LoadCredits(&creditsDisplayer, colorPurple, colorDarker);
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 

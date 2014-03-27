@@ -712,7 +712,9 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				if (isSelected &&
 					subMenu->type != MENU_TYPE_SET_OPTION_CHANGE_KEY)
 				{
-					CDogsTextStringWithTableAt(x, y, name, &tableFlamed);
+					TextStringMasked(
+						&gTextManager, name,
+						ms->graphics, Vec2iNew(x, y), colorRed);
 				}
 				else
 				{

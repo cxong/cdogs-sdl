@@ -80,10 +80,6 @@ int CDogsTextCharWidth(int c);
 int TextGetSubstringWidth(const char *s, int len);
 int TextGetStringWidth(const char *s);
 int CDogsTextHeight(void);
-void CDogsTextCharWithTable(char c, TranslationTable * table);
-void CDogsTextStringWithTable(const char *s, TranslationTable * table);
-void CDogsTextStringWithTableAt(int x, int y, const char *s,
-			   TranslationTable * table);
 
 // Draw character/string with a color mask
 // Returns updated cursor position

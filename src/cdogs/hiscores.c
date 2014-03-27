@@ -121,10 +121,8 @@ void EnterHighScore(struct PlayerData *data)
 
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
-	if (hilite)
-		CDogsTextStringWithTableAt(x, y, s, &tableFlamed);
-	else
-		CDogsTextStringAt(x, y, s);
+	color_t mask = hilite ? colorRed : colorWhite;
+	TextStringMasked(&gTextManager, s, &gGraphicsDevice, Vec2iNew(x, y), mask);
 }
 
 static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
