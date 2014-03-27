@@ -1081,6 +1081,8 @@ int main(int argc, char *argv[])
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
 	gConfig.Graphics.ScaleFactor = 2;
+	gConfig.Graphics.ResolutionWidth = 400;
+	gConfig.Graphics.ResolutionHeight = 300;
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)
