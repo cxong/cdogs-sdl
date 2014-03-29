@@ -61,11 +61,12 @@ typedef struct _UIObject
 	int Flags;
 	Vec2i Pos;
 	Vec2i Size;
-	int IsVisible;	// this is modified by get text methods, bit of a hack
+	bool IsVisible;
 	char *Tooltip;
 	struct _UIObject *Parent;
 	CArray Children;	// of UIObject *
 	struct _UIObject *Highlighted;
+	bool DoNotHighlight;
 	union
 	{
 		// Labels
@@ -100,6 +101,8 @@ typedef struct _UIObject
 	bool ChangesData;
 	void (*OnFocusFunc)(struct _UIObject *, void *);
 	void (*OnUnfocusFunc)(void *);
+	// Optional function to check whether this UI object should be visible
+	void (*CheckVisible)(struct _UIObject *, void *);
 } UIObject;
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
@@ -122,7 +125,7 @@ void UIObjectDraw(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
-int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
+bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
 
 void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s);
 

@@ -40,13 +40,10 @@
 #include "editor_ui_static_additem.h"
 
 
-static void MissionCheckTypeStatic(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+static void MissionCheckTypeStatic(UIObject *o, void *data)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
-	UNUSED(g);
-	UNUSED(pos);
 	if (!m || m->Type != MAPTYPE_STATIC)
 	{
 		o->IsVisible = 0;
@@ -293,11 +290,10 @@ UIObject *CreateStaticMapObjs(
 {
 	int x = pos.x;
 	int th = CDogsTextHeight();
-	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o2;
-	// Use a custom UIObject to check whether the map type matches,
-	// and set visibility
-	c->u.CustomDrawFunc = MissionCheckTypeStatic;
+	// Check whether the map type matches, and set visibility
+	c->CheckVisible = MissionCheckTypeStatic;
 	c->Data = co;
 
 	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, Vec2iZero(), Vec2iZero());

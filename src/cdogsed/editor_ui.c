@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include <cdogs/draw.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/mission.h>
 #include <cdogs/mission_convert.h>
@@ -91,11 +92,8 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 	sprintf(s, "Seed: %u", co->seed);
 	return s;
 }
-static void CheckMission(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+static void CheckMission(UIObject *o, void *data)
 {
-	UNUSED(g);
-	UNUSED(pos);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
@@ -106,13 +104,10 @@ static void CheckMission(
 	}
 	o->IsVisible = 1;
 }
-static void MissionCheckTypeClassic(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+static void MissionCheckTypeClassic(UIObject *o, void *data)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
-	UNUSED(g);
-	UNUSED(pos);
 	if (!m || m->Type != MAPTYPE_CLASSIC)
 	{
 		o->IsVisible = 0;
@@ -1255,10 +1250,96 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
 static UIObject *CreateObjectiveObjs(
 	Vec2i pos, CampaignOptions *co, int idx);
 
-UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
+typedef struct
+{
+	bool IsCollapsed;
+	Vec2i Size;
+	Pic *collapsePic;
+	Pic *expandPic;
+	UIObject *collapseButton;
+	UIObject *child;
+	UIObject *background;
+} CollapsedData;
+static void ToggleCollapse(void *data, int d);
+static void DrawBackground(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush);
+UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size)
+{
+	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	CollapsedData *cData;
+	CMALLOC(cData, sizeof(CollapsedData));
+	cData->IsCollapsed = false;
+	cData->Size = size;
+	cc->Data = cData;
+	cc->IsDynamicData = true;
+
+	// Collapse button
+	cData->collapsePic = PicManagerGetPic(&gPicManager, "editor/collapse");
+	cData->expandPic = PicManagerGetPic(&gPicManager, "editor/expand");
+	UIObject *o = UIObjectCreate(
+		UITYPE_BUTTON, 0,
+		Vec2iMinus(size, cData->collapsePic->size), Vec2iZero());
+	UIButtonSetPic(o, cData->collapsePic);
+	o->DoNotHighlight = true;
+	o->ChangeFunc = ToggleCollapse;
+	o->Data = cData;
+	CSTRDUP(o->Tooltip, "Collapse/expand");
+	UIObjectAddChild(cc, o);
+	cData->collapseButton = o;
+
+	// The rest of the UI
+	o = CreateEditorObjs(co, brush);
+	UIObjectAddChild(cc, o);
+	cData->child = o;
+
+	// Background
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), size);
+	o->DoNotHighlight = true;
+	o->u.CustomDrawFunc = DrawBackground;
+	o->Data = cData;
+	UIObjectAddChild(cc, o);
+	cData->background = o;
+
+	return cc;
+}
+static void ToggleCollapse(void *data, int d)
+{
+	UNUSED(d);
+	CollapsedData *cData = data;
+	cData->IsCollapsed = !cData->IsCollapsed;
+	if (cData->IsCollapsed)
+	{
+		// Change button pic, move button
+		cData->collapseButton->u.Button.Pic = cData->expandPic;
+		cData->collapseButton->Pos = Vec2iZero();
+	}
+	else
+	{
+		// Change button pic, move button
+		cData->collapseButton->u.Button.Pic = cData->collapsePic;
+		cData->collapseButton->Pos = Vec2iMinus(
+			cData->Size, cData->collapsePic->size);
+	}
+	cData->child->IsVisible = !cData->IsCollapsed;
+	cData->background->IsVisible = !cData->IsCollapsed;
+}
+static void DrawBackground(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+{
+	UNUSED(data);
+	Vec2i v;
+	for (v.y = 0; v.y < o->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < o->Size.x; v.x++)
+		{
+			DrawPointTint(g, Vec2iAdd(v, pos), tintDarker);
+		}
+	}
+}
+static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 {
 	int th = CDogsTextHeight();
-	UIObject *cc;
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
@@ -1266,7 +1347,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 	int i;
 	Vec2i pos;
 	Vec2i objectivesPos;
-	cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 
 	// Titles
 
@@ -1291,8 +1372,8 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush)
 
 	// Mission-only controls
 	// Only visible if the current mission is valid
-	c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
-	c->u.CustomDrawFunc = CheckMission;
+	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c->CheckVisible = CheckMission;
 	c->Data = co;
 	UIObjectAddChild(cc, c);
 
@@ -1608,15 +1689,14 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 {
 	int th = CDogsTextHeight();
-	UIObject *c = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 	int x = pos.x;
 	UIObject *o2;
 	o->ChangesData = 1;
-	// Use a custom UIObject to check whether the map type matches,
-	// and set visibility
-	c->u.CustomDrawFunc = MissionCheckTypeClassic;
+	// Check whether the map type matches, and set visibility
+	c->CheckVisible = MissionCheckTypeClassic;
 	c->Data = co;
 
 	o2 = UIObjectCopy(o);

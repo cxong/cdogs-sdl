@@ -157,7 +157,6 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 
 	if (mission)
 	{
-		Vec2i v;
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
@@ -184,17 +183,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
 		}
 		GraphicsBlitBkg(g);
-		// Draw overlay
-		for (v.y = 0; v.y < sUIOverlaySize.y; v.y++)
-		{
-			for (v.x = 0; v.x < sUIOverlaySize.x; v.x++)
-			{
-				if (v.x < w && v.y < h)
-				{
-					DrawPointTint(g, v, tintDarker);
-				}
-			}
-		}
+
 		sprintf(
 			s, "Mission %d/%d",
 			gCampaign.MissionIndex + 1, (int)gCampaign.Setting.Missions.size);
@@ -682,12 +671,15 @@ static void HandleInput(
 	{
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
 		{
-			if (sLastHighlightedObj)
+			if (!o->DoNotHighlight)
 			{
-				UIObjectUnhighlight(sLastHighlightedObj);
+				if (sLastHighlightedObj)
+				{
+					UIObjectUnhighlight(sLastHighlightedObj);
+				}
+				sLastHighlightedObj = o;
+				UIObjectHighlight(o);
 			}
-			sLastHighlightedObj = o;
-			UIObjectHighlight(o);
 			CArrayTerminate(&sDrawObjs);
 			*xcOld = *xc;
 			*ycOld = *yc;
@@ -732,10 +724,7 @@ static void HandleInput(
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
 		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)))
 	{
-		if (brush.IsActive &&
-			(gEventHandlers.mouse.currentPos.x >= sUIOverlaySize.x ||
-			gEventHandlers.mouse.currentPos.y >= sUIOverlaySize.y) &&
-			mission->Type == MAPTYPE_STATIC)
+		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
 			if (IsBrushPosValid(brush.Pos, mission))
@@ -1094,7 +1083,7 @@ int main(int argc, char *argv[])
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sObjs = CreateMainObjs(&gCampaign, &brush);
+	sObjs = CreateMainObjs(&gCampaign, &brush, sUIOverlaySize);
 	memset(&sDrawObjs, 0, sizeof sDrawObjs);
 	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 

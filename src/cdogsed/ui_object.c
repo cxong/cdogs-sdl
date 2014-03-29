@@ -148,6 +148,10 @@ void UITabAddChild(UIObject *o, UIObject *c, char *label)
 
 void UIObjectHighlight(UIObject *o)
 {
+	if (o->DoNotHighlight)
+	{
+		return;
+	}
 	if (o->Parent)
 	{
 		o->Parent->Highlighted = o;
@@ -346,16 +350,20 @@ static void UIObjectDrawAndAddChildren(
 	{
 		return;
 	}
+	if (o->CheckVisible)
+	{
+		o->CheckVisible(o, o->Data);
+	}
+	if (!o->IsVisible)
+	{
+		return;
+	}
 	int isHighlighted = UIObjectIsHighlighted(o);
 	Vec2i oPos = Vec2iAdd(pos, o->Pos);
 	switch (o->Type)
 	{
 	case UITYPE_LABEL:
 		{
-			if (!o->IsVisible)
-			{
-				return;
-			}
 			const char *text = LabelGetText(o);
 			if (!text)
 			{
@@ -375,10 +383,6 @@ static void UIObjectDrawAndAddChildren(
 			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
 			color_t textMask = isEmptyText ? colorGray : colorWhite;
 			int oPosX = oPos.x;
-			if (!o->IsVisible)
-			{
-				return;
-			}
 			if (isEmptyText)
 			{
 				text = o->u.Textbox.Hint;
@@ -407,10 +411,6 @@ static void UIObjectDrawAndAddChildren(
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			char **labelp = CArrayGet(&o->u.Tab.Labels, o->u.Tab.Index);
 			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
-			if (!o->IsVisible)
-			{
-				return;
-			}
 			TextStringMaskedWrapped(&gTextManager, 
 				*labelp, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
@@ -430,10 +430,6 @@ static void UIObjectDrawAndAddChildren(
 		break;
 	case UITYPE_CONTEXT_MENU:
 		{
-			if (!o->IsVisible)
-			{
-				return;
-			}
 			// Draw background
 			DrawRectangle(
 				g,
@@ -459,10 +455,6 @@ static void UIObjectDrawAndAddChildren(
 		break;
 	case UITYPE_CUSTOM:
 		o->u.CustomDrawFunc(o, g, pos, o->Data);
-		if (!o->IsVisible)
-		{
-			return;
-		}
 		break;
 	default:
 		// do nothing
@@ -527,14 +519,18 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
-int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
+bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 {
-	int isHighlighted = UIObjectIsHighlighted(o);
+	if (!o->IsVisible)
+	{
+		return false;
+	}
 	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
 	{
 		*out = o;
-		return 1;
+		return true;
 	}
+	bool isHighlighted = UIObjectIsHighlighted(o);
 	if (o->Type == UITYPE_TAB)
 	{
 		// only recurse to the chosen child
@@ -546,7 +542,7 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 				(*objp)->IsVisible &&
 				UITryGetObject(*objp, Vec2iMinus(pos, o->Pos), out))
 			{
-				return 1;
+				return true;
 			}
 		}
 	}
@@ -561,11 +557,11 @@ int UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 				(*objs)->IsVisible &&
 				UITryGetObject(*objs, Vec2iMinus(pos, o->Pos), out))
 			{
-				return 1;
+				return true;
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
 void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)

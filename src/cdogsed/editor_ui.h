@@ -131,7 +131,7 @@
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
 
-UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush);
+UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size);
 
 UIObject *CreateCharEditorObjs(void);
 
