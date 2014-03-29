@@ -36,7 +36,8 @@
 #include <cdogs/text.h>
 
 color_t bgColor = { 32, 32, 64, 255 };
-color_t hiliteColor = { 64, 64, 128, 255 };
+color_t menuBGColor = { 48, 48, 48, 255 };
+color_t hiliteColor = { 96, 96, 96, 255 };
 #define TOOLTIP_PADDING 4
 
 
@@ -435,7 +436,7 @@ static void UIObjectDrawAndAddChildren(
 				g,
 				Vec2iAdd(oPos, Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
 				Vec2iAdd(o->Size, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
-				bgColor,
+				menuBGColor,
 				0);
 			// Find if mouse over any children, and draw highlight
 			for (int i = 0; i < (int)o->Children.size; i++)
