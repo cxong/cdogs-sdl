@@ -49,4 +49,11 @@
 #define FPS_FRAMELIMIT 70
 #define PICKUP_LIMIT (FPS_FRAMELIMIT * 5)
 
+#define USE_NET @USE_NET@
+// Whether to keep running the game if window lost focus
+// For debugging
+#if USE_NET == 1
+	#define RUN_WITHOUT_APP_FOCUS
+#endif
+
 #endif

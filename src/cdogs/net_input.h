@@ -31,8 +31,6 @@
 
 #include <stdbool.h>
 
-#include <SDL_net.h>
-
 #include "net_input_util.h"
 
 typedef struct

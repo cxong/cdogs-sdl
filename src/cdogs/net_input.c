@@ -46,7 +46,11 @@ void NetInputReset(NetInput *n)
 
 void NetInputOpen(NetInput *n)
 {
+#if USE_NET == 1
 	NetInputChannelTryOpen(&n->channel, NET_INPUT_UDP_PORT, 0);
+#else
+	UNUSED(n);
+#endif
 }
 
 static bool TryRecvSynAndSendSynAck(NetInput *n);

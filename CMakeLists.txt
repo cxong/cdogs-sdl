@@ -34,6 +34,7 @@ endif()
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
 find_package(SDL_image REQUIRED)
+set(USE_NET 0)
 find_package(SDL_net REQUIRED)
 
 

@@ -190,8 +190,4 @@ color_t ObjectiveTypeColor(ObjectiveType t);
 #define T2S(_type, _str) case _type: return _str;
 #define S2T(_type, _str) if (strcmp(s, _str) == 0) { return _type; }
 
-// Whether to keep running the game if window lost focus
-// For debugging
-#define RUN_WITHOUT_APP_FOCUS
-
 #endif
