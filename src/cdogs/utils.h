@@ -79,7 +79,7 @@ extern int debug_level;
 		static char buf[1024];\
 		sprintf(\
 			buf,\
-			"In %s %s:%d: " _errmsg " (" #_x ")",\
+			"In %s %d:%s: " _errmsg " (" #_x ")",\
 			__FILE__, __LINE__, __func__);\
 		CHALT();\
 		assert(_x);\

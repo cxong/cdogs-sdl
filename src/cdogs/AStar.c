@@ -158,11 +158,6 @@ static INLINE float GetNodeCost(Node n)
     return NodeGetRecord(n)->cost;
 }
 
-static INLINE float GetNodeEstimatedCost(Node n)
-{
-    return NodeGetRecord(n)->estimatedCost;
-}
-
 static INLINE void SetNodeEstimatedCost(Node n, float estimatedCost)
 {
     NodeRecord *record = NodeGetRecord(n);
