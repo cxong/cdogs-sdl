@@ -600,15 +600,11 @@ void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 
 
 static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
-static void DrawHighlightedTiles(
-	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles);
 static void DrawGuideImage(
 	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 {
 	DrawEditorTiles(b, offset);
-	// Draw highlight tiles if any
-	DrawHighlightedTiles(b, offset, extra->highlightedTiles);
 	// Draw guide image
 	if (extra->guideImage && extra->guideImageAlpha > 0)
 	{
@@ -641,27 +637,6 @@ static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
 			}
 		}
 		tile += X_TILES - b->Size.x;
-	}
-}
-
-static void DrawHighlightedTiles(
-	DrawBuffer *b, Vec2i offset, CArray *highlightedTiles)
-{
-	int i;
-	for (i = 0; i < (int)highlightedTiles->size; i++)
-	{
-		Vec2i *pos = CArrayGet(highlightedTiles, i);
-		if (pos->x >= b->xStart - 1 && pos->x < b->xStart + b->Size.x &&
-			pos->y >= b->yStart - 1 && pos->y < b->yStart + b->Size.y)
-		{
-			Vec2i drawpos = Vec2iNew(
-				b->dx + offset.x + (pos->x - b->xStart) * TILE_WIDTH,
-				b->dy + offset.y + (pos->y - b->yStart) * TILE_HEIGHT);
-			DrawRectangle(
-				&gGraphicsDevice,
-				drawpos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
-				colorWhite, DRAW_FLAG_LINE);
-		}
 	}
 }
 

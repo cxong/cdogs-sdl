@@ -77,14 +77,10 @@
 #include <cdogsed/ui_object.h>
 
 
-#define TH  8
-
-
 // Mouse click areas:
 static UIObject *sObjs;
 static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
 static UIObject *sLastHighlightedObj = NULL;
-Vec2i sUIOverlaySize = { 320, 240 };
 static DrawBuffer sDrawBuffer;
 
 
@@ -102,10 +98,8 @@ Mission lastMission;
 int numChanges = 0;
 
 
-static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
+static Vec2i GetMouseTile(EventHandlers *e)
 {
-	int w = g->cachedConfig.ResolutionWidth;
-	int h = g->cachedConfig.ResolutionHeight;
 	Mission *m = CampaignGetCurrentMission(&gCampaign);
 	if (!m)
 	{
@@ -113,11 +107,16 @@ static Vec2i GetMouseTile(GraphicsDevice *g, EventHandlers *e)
 	}
 	else
 	{
-		Vec2i mapPos = Vec2iNew(w / 2 - camera.x, h / 2 - camera.y);
 		return Vec2iNew(
-			(e->mouse.currentPos.x - mapPos.x - 8) / TILE_WIDTH,
-			(e->mouse.currentPos.y - mapPos.y - 12) / TILE_HEIGHT);
+			(e->mouse.currentPos.x - sDrawBuffer.dx) / TILE_WIDTH + sDrawBuffer.xStart,
+			(e->mouse.currentPos.y - sDrawBuffer.dy) / TILE_HEIGHT + sDrawBuffer.yStart);
 	}
+}
+static Vec2i GetScreenPos(Vec2i mapTile)
+{
+	return Vec2iNew(
+		(mapTile.x - sDrawBuffer.xStart) * TILE_WIDTH + sDrawBuffer.dx,
+		(mapTile.y - sDrawBuffer.yStart) * TILE_HEIGHT + sDrawBuffer.dy);
 }
 
 static int IsBrushPosValid(Vec2i pos, Mission *m)
@@ -135,7 +134,6 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
 	GrafxDrawExtra extra;
-	extra.highlightedTiles = &brush.HighlightedTiles;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
 
@@ -162,14 +160,8 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		{
 			MakeBackground(g, 0);
 		}
-		if ((brush.IsActive && IsBrushPosValid(brush.Pos, mission)) ||
-			hasCameraMoved ||
-			brush.IsGuideImageNew)
+		if (hasCameraMoved || brush.IsGuideImageNew)
 		{
-			if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
-			{
-				EditorBrushSetHighlightedTiles(&brush);
-			}
 			// Clear background first
 			for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 			{
@@ -177,12 +169,30 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 			}
 			brush.IsGuideImageNew = false;
 			GrafxDrawExtra extra;
-			extra.highlightedTiles = &brush.HighlightedTiles;
 			extra.guideImage = brush.GuideImageSurface;
 			extra.guideImageAlpha = brush.GuideImageAlpha;
 			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
 		}
 		GraphicsBlitBkg(g);
+
+		// Draw brush highlight tiles
+		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
+		{
+			EditorBrushSetHighlightedTiles(&brush);
+		}
+		for (i = 0; i < (int)brush.HighlightedTiles.size; i++)
+		{
+			Vec2i *pos = CArrayGet(&brush.HighlightedTiles, i);
+			Vec2i screenPos = GetScreenPos(*pos);
+			if (screenPos.x >= 0 && screenPos.x < w &&
+				screenPos.y >= 0 && screenPos.y < h)
+			{
+				DrawRectangle(
+					g,
+					screenPos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
+					colorWhite, DRAW_FLAG_LINE);
+			}
+		}
 
 		sprintf(
 			s, "Mission %d/%d",
@@ -666,7 +676,7 @@ static void HandleInput(
 {
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
-	brush.Pos = GetMouseTile(&gGraphicsDevice, &gEventHandlers);
+	brush.Pos = GetMouseTile(&gEventHandlers);
 	if (m)
 	{
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
@@ -1083,7 +1093,7 @@ int main(int argc, char *argv[])
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
-	sObjs = CreateMainObjs(&gCampaign, &brush, sUIOverlaySize);
+	sObjs = CreateMainObjs(&gCampaign, &brush, Vec2iNew(320, 240));
 	memset(&sDrawObjs, 0, sizeof sDrawObjs);
 	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 

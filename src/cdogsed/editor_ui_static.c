@@ -300,6 +300,7 @@ UIObject *CreateStaticMapObjs(
 	o->Data = brush;
 	o->OnFocusFunc = ActivateBrush;
 	o->OnUnfocusFunc = DeactivateBrush;
+	o->ChangesData = false;
 	o2 = UIObjectCopy(o);
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/pencil"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypePoint;

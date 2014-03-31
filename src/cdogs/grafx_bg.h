@@ -34,7 +34,6 @@
 
 typedef struct
 {
-	CArray *highlightedTiles;
 	SDL_Surface *guideImage;
 	Uint8 guideImageAlpha;
 } GrafxDrawExtra;
