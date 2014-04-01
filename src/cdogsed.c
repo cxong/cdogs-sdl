@@ -676,7 +676,7 @@ static void Delete(int xc, int yc)
 static bool HandleInput(
 	int c, int m,
 	int *xc, int *yc, int *xcOld, int *ycOld,
-	Mission *scrap, int *willDisplayAutomap, int *done)
+	Mission *scrap, bool *willDisplayAutomap, int *done)
 {
 	bool redraw = false;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
@@ -1044,9 +1044,21 @@ static void EditCampaign(void)
 	Setup(1);
 
 	SDL_EnableKeyRepeat(0, 0);
+	Uint32 ticksNow = SDL_GetTicks();
+	Uint32 ticksElapsed = 0;
 	while (!done)
 	{
-		int willDisplayAutomap = 0;
+		Uint32 ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		ticksElapsed += ticksNow - ticksThen;
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
+		{
+			SDL_Delay(1);
+			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			continue;
+		}
+
+		bool willDisplayAutomap = 0;
 		int c, m;
 		debug(D_MAX, "Polling for input\n");
 		EventPoll(&gEventHandlers, SDL_GetTicks());
