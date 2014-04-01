@@ -11,7 +11,7 @@ layout: default
 <div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'cdogs-sdl';
-    var disqus_identifier = 'post-{{ page.title | md5 }}';
+    var disqus_identifier = 'post-{{ page.title | handleize }}';
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
