@@ -20,9 +20,9 @@
 	#galleria{height:480px}
   </style>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script type="text/javascript" src="javascripts/script.js"></script>
+  <script type="text/javascript" src="{{ site.baseurl }}/javascripts/script.js"></script>
   <!-- load Galleria -->
-  <script src="javascripts/galleria-1.2.9.min.js"></script>
+  <script src="{{ site.baseurl }}/javascripts/galleria-1.2.9.min.js"></script>
   <script type="text/javascript">
 
     var _gaq = _gaq || [];
@@ -48,7 +48,7 @@
 
   <div class="wrapper">
     <header>
-      <h1 class="title"><a href="{{ site.baseurl }}"><img src="images/title.png"/> SDL</a></h1>
+      <h1 class="title"><a href="{{ site.baseurl }}"><img src="{{ site.baseurl }}/images/title.png"/> SDL</a></h1>
     </header>
     <div id="container">
       <p class="tagline">Open source, classic overhead run-and-gun game</p>
@@ -75,7 +75,7 @@
       <div class="creds">
         <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a><br/>
         Contains icons from <a href="http://icons.yootheme.com">http://icons.yootheme.com</a> and <a href="http://www.fatcow.com/free-icons">http://www.fatcow.com/free-icons</a><br/>
-        Gallery by <a href="http://galleria.io/">Galleria</a>, under the <a href="javascripts/LICENSE.galleria">MIT license</a></small>
+        Gallery by <a href="http://galleria.io/">Galleria</a>, under the <a href="{{ site.baseurl }}/javascripts/LICENSE.galleria">MIT license</a></small>
       </div>
     </footer>
   </div>
@@ -87,7 +87,7 @@
 
   <script>
     // Load the classic theme
-    Galleria.loadTheme('javascripts/galleria.classic.min.js');
+    Galleria.loadTheme('{{ site.baseurl }}/javascripts/galleria.classic.min.js');
     // Initialize Galleria
     Galleria.run('#galleria');
   </script>
