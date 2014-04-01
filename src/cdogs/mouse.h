@@ -44,9 +44,11 @@ typedef struct
 	Pic *cursor;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
+
+	bool hideMouse;
 } Mouse;
 
-void MouseInit(Mouse *mouse, Pic *cursor);
+void MouseInit(Mouse *mouse, Pic *cursor, bool hideMouse);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);

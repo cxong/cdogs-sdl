@@ -66,7 +66,7 @@ typedef struct
 
 extern EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, Pic *mouseCursor);
+void EventInit(EventHandlers *handlers, Pic *mouseCursor, bool hideMouse);
 void EventTerminate(EventHandlers *handlers);
 void EventReset(EventHandlers *handlers, Pic *mouseCursor);
 

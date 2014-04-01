@@ -55,13 +55,17 @@
 
 #define MOUSE_REPEAT_TICKS 150
 
-void MouseInit(Mouse *mouse, Pic *cursor)
+void MouseInit(Mouse *mouse, Pic *cursor, bool hideMouse)
 {
 	memset(mouse, 0, sizeof *mouse);
 	mouse->cursor = cursor;
 	mouse->ticks = 0;
 	mouse->repeatedTicks = 0;
-	SDL_ShowCursor(SDL_DISABLE);
+	mouse->hideMouse = cursor != NULL || hideMouse;
+	if (hideMouse)
+	{
+		SDL_ShowCursor(SDL_DISABLE);
+	}
 }
 
 void MousePrePoll(Mouse *mouse)
@@ -169,6 +173,9 @@ int MouseIsDown(Mouse *mouse, int button)
 
 void MouseDraw(Mouse *mouse)
 {
-	BlitMasked(
-		&gGraphicsDevice, mouse->cursor, mouse->currentPos, colorWhite, 1);
+	if (mouse->cursor)
+	{
+		BlitMasked(
+			&gGraphicsDevice, mouse->cursor, mouse->currentPos, colorWhite, 1);
+	}
 }

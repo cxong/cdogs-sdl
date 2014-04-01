@@ -1328,7 +1328,7 @@ int main(int argc, char *argv[])
 
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
-	EventInit(&gEventHandlers, NULL);
+	EventInit(&gEventHandlers, NULL, true);
 
 	if (wait)
 	{

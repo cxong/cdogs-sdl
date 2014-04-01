@@ -81,7 +81,9 @@
 static UIObject *sObjs;
 static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
 static UIObject *sLastHighlightedObj = NULL;
+static UIObject *sTooltipObj = NULL;
 static DrawBuffer sDrawBuffer;
+static bool sJustLoaded = true;
 
 
 // Globals
@@ -240,11 +242,10 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 	}
 	else
 	{
-		UIObject *o;
-		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o) &&
-			o->Tooltip)
+		if (sTooltipObj && sTooltipObj->Tooltip)
 		{
-			UITooltipDraw(g, gEventHandlers.mouse.currentPos, o->Tooltip);
+			UITooltipDraw(
+				g, gEventHandlers.mouse.currentPos, sTooltipObj->Tooltip);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
@@ -443,6 +444,8 @@ static void Setup(int buildTables)
 		int autosaveIndex = numChanges / AUTOSAVE_INTERVAL;
 		Autosave(autosaveIndex);
 	}
+
+	sJustLoaded = true;
 }
 
 static void Open(void)
@@ -669,16 +672,34 @@ static void Delete(int xc, int yc)
 	Setup(0);
 }
 
-static void HandleInput(
+// Returns whether a redraw is required
+static bool HandleInput(
 	int c, int m,
 	int *xc, int *yc, int *xcOld, int *ycOld,
 	Mission *scrap, int *willDisplayAutomap, int *done)
 {
+	bool redraw = false;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	brush.Pos = GetMouseTile(&gEventHandlers);
+
+	// Find whether the mouse has hovered over a tooltip
+	bool hadTooltip = sTooltipObj != NULL;
+	if (!UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &sTooltipObj) ||
+		!sTooltipObj->Tooltip)
+	{
+		sTooltipObj = NULL;
+	}
+	// Need to redraw if we either had a tooltip (draw to remove) or there's a
+	// tooltip to draw
+	if (hadTooltip || sTooltipObj)
+	{
+		redraw = true;
+	}
+
 	if (m)
 	{
+		redraw = true;
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
 		{
 			if (!o->DoNotHighlight)
@@ -734,6 +755,7 @@ static void HandleInput(
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
 		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)))
 	{
+		redraw = true;
 		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
@@ -767,6 +789,7 @@ static void HandleInput(
 			if (r == EDITOR_RESULT_CHANGED ||
 				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
+				redraw = true;
 				fileChanged = 1;
 			}
 			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
@@ -799,12 +822,17 @@ static void HandleInput(
 			camera.y += CAMERA_PAN_SPEED;
 			hasCameraMoved = 1;
 		}
+		if (hasCameraMoved)
+		{
+			redraw = true;
+		}
 		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
 		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
 	}
 	bool hasQuit = false;
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
+		redraw = true;
 		switch (c)
 		{
 		case 'z':
@@ -883,6 +911,10 @@ static void HandleInput(
 	}
 	else
 	{
+		if (c != 0)
+		{
+			redraw = true;
+		}
 		switch (c)
 		{
 		case SDLK_F1:
@@ -997,6 +1029,7 @@ static void HandleInput(
 	{
 		*done = 1;
 	}
+	return redraw;
 }
 
 static void EditCampaign(void)
@@ -1021,15 +1054,19 @@ static void EditCampaign(void)
 		m = MouseGetPressed(&gEventHandlers.mouse);
 
 		debug(D_MAX, "Handling input\n");
-		HandleInput(
+		bool redraw = HandleInput(
 			c, m,
 			&xc, &yc, &xcOld, &ycOld,
 			&scrap, &willDisplayAutomap, &done);
-		debug(D_MAX, "Drawing UI\n");
-		Display(&gGraphicsDevice, yc, willDisplayAutomap);
-		if (willDisplayAutomap)
+		if (redraw || sJustLoaded)
 		{
-			GetKey(&gEventHandlers);
+			sJustLoaded = false;
+			debug(D_MAX, "Drawing UI\n");
+			Display(&gGraphicsDevice, yc, willDisplayAutomap);
+			if (willDisplayAutomap)
+			{
+				GetKey(&gEventHandlers);
+			}
 		}
 		debug(D_MAX, "End loop\n");
 		SDL_Delay(10);
@@ -1101,7 +1138,7 @@ int main(int argc, char *argv[])
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
-	EventInit(&gEventHandlers, PicManagerGetPic(&gPicManager, "editor/arrow"));
+	EventInit(&gEventHandlers, NULL, false);
 
 	for (i = 1; i < argc; i++)
 	{

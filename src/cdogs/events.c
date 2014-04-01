@@ -60,12 +60,12 @@
 
 EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, Pic *mouseCursor)
+void EventInit(EventHandlers *handlers, Pic *mouseCursor, bool hideMouse)
 {
 	memset(handlers, 0, sizeof *handlers);
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, mouseCursor);
+	MouseInit(&handlers->mouse, mouseCursor, hideMouse);
 	NetInputInit(&handlers->netInput);
 }
 void EventTerminate(EventHandlers *handlers)
@@ -78,7 +78,7 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor)
 	handlers->HasResolutionChanged = 0;
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, mouseCursor);
+	MouseInit(&handlers->mouse, mouseCursor, handlers->mouse.hideMouse);
 	NetInputReset(&handlers->netInput);
 }
 

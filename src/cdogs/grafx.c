@@ -270,7 +270,6 @@ void GraphicsInitialize(
 			CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
-		SDL_ShowCursor(SDL_DISABLE);
 		AddSupportedGraphicsModes(device);
 	}
 
