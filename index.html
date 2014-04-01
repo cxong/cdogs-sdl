@@ -92,7 +92,7 @@ title: C-Dogs SDL
     {% for post in site.posts %}
       <h5><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h5>
       {{ post.content | truncatewords:75}}<br />
-      <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize }}">Read more...</a><br /><br />
+      <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize | remove: ' ' | remove: '.' | remove: '!' }}">Read more...</a><br /><br />
     {% endfor %}
   </ul>
 </div>
