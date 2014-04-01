@@ -76,7 +76,16 @@ title: C-Dogs SDL
     {% for post in site.posts %}
       <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
       {{ post.content | truncatewords:75}}<br />
-      <a href="{{ site.baseurl }}{{ post.url }}">Read more...</a><br /><br />
+      <script type="text/javascript">
+      var disqus_shortname = 'cdogs-sdl{{ post.title }}'.replace(/\W/g, '');
+      (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+      }());
+      </script>
+      <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread">Read more...</a><br /><br />
     {% endfor %}
   </ul>
 </div>
