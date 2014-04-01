@@ -1,0 +1,9 @@
+---
+layout: post
+title:  "Comments"
+date:   2014-04-02
+categories: website
+---
+I've added comment controls on every post via Disqus; please don't hesitate to let me know what you think!
+
+Of course, for suggestions, ideas, bug reports and whatever, you can also try raising an issue on Github, emailing me or using the mailing list.
