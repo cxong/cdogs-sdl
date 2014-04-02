@@ -705,6 +705,12 @@ static bool HandleInput(
 		redraw = true;
 	}
 
+	// Also need to redraw if the brush is active to update the highlight
+	if (brush.IsActive)
+	{
+		redraw = true;
+	}
+
 	if (m)
 	{
 		redraw = true;
