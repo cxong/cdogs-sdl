@@ -697,6 +697,14 @@ static bool HandleInput(
 		redraw = true;
 	}
 
+	// Make sure a redraw is done immediately if the resolution changes
+	// Otherwise the resolution change is ignored and we try to redraw
+	// later, when the draw buffer has not yet been recreated
+	if (gEventHandlers.HasResolutionChanged)
+	{
+		redraw = true;
+	}
+
 	if (m)
 	{
 		redraw = true;
