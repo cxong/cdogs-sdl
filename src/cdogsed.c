@@ -84,6 +84,7 @@ static UIObject *sLastHighlightedObj = NULL;
 static UIObject *sTooltipObj = NULL;
 static DrawBuffer sDrawBuffer;
 static bool sJustLoaded = true;
+static bool sHasUnbakedChanges = false;
 
 
 // Globals
@@ -427,11 +428,16 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-static void Autosave(int idx)
+static void Autosave(void)
 {
-	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "%s~%d", lastFile, idx);
-	MapNewSave(buf, &gCampaign.Setting);
+	numChanges++;
+	if ((numChanges % AUTOSAVE_INTERVAL) == 0)
+	{
+		int autosaveIndex = numChanges / AUTOSAVE_INTERVAL;
+		char buf[CDOGS_PATH_MAX];
+		sprintf(buf, "%s~%d", lastFile, autosaveIndex);
+		MapNewSave(buf, &gCampaign.Setting);
+	}
 }
 
 static void Setup(int buildTables)
@@ -448,14 +454,10 @@ static void Setup(int buildTables)
 	MakeBackground(&gGraphicsDevice, buildTables);
 	sCursorTile = TileNone();
 
-	numChanges++;
-	if ((numChanges % AUTOSAVE_INTERVAL) == 0)
-	{
-		int autosaveIndex = numChanges / AUTOSAVE_INTERVAL;
-		Autosave(autosaveIndex);
-	}
+	Autosave();
 
 	sJustLoaded = true;
+	sHasUnbakedChanges = false;
 }
 
 static void Open(void)
@@ -789,7 +791,9 @@ static HandleInputResult HandleInput(
 				if (r == EDITOR_RESULT_CHANGED ||
 					r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
+					Autosave();
 					result.RemakeBg = true;
+					sHasUnbakedChanges = true;
 					fileChanged = 1;
 				}
 				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
@@ -811,8 +815,10 @@ static HandleInputResult HandleInput(
 			if (r == EDITOR_RESULT_CHANGED ||
 				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
+				Autosave();
 				result.Redraw = true;
 				result.RemakeBg = true;
+				sHasUnbakedChanges = true;
 				fileChanged = 1;
 			}
 			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
@@ -865,8 +871,21 @@ static HandleInputResult HandleInput(
 			// If we were to perform an undo and still maintain functionality,
 			// we need to copy such that the states change from B,B,A to
 			// A,A,B.
-			MissionCopy(mission, &lastMission);	// B,B,A -> A,B,A
-			MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
+
+			// However! The above is true only if we have "baked" changes
+			// The editor has been optimised to perform some changes
+			// without reloading map files; that is, the files are actually
+			// in states C,B,A.
+			// In this case, another set of "acrobatics" is required
+			if (sHasUnbakedChanges)
+			{
+				MissionCopy(&lastMission, mission);	// B,A,Z -> B,A,B
+			}
+			else
+			{
+				MissionCopy(mission, &lastMission);	// B,B,A -> A,B,A
+				MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
+			}
 			fileChanged = 1;
 			Setup(0);	// A,B,B -> A,A,B
 			break;
