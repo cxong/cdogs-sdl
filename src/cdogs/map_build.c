@@ -57,6 +57,151 @@ void MapMakeWall(Map *map, Vec2i pos)
 	IMapSet(map, pos, MAP_WALL);
 }
 
+void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
+{
+	IMapSet(map, pos, tileType);
+	// Update the tile as well, plus neighbours as they may be affected
+	// by shadows etc. especially walls
+	MapSetupTile(map, pos, m);
+	MapSetupTile(map, Vec2iNew(pos.x - 1, pos.y), m);
+	MapSetupTile(map, Vec2iNew(pos.x + 1, pos.y), m);
+	MapSetupTile(map, Vec2iNew(pos.x, pos.y - 1), m);
+	MapSetupTile(map, Vec2iNew(pos.x, pos.y + 1), m);
+}
+
+static int MapGetWallPic(Map *m, Vec2i pos);
+void MapSetupTile(Map *map, Vec2i pos, Mission *m)
+{
+	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
+	int wall = m->WallStyle % WALL_STYLE_COUNT;
+	int room = m->RoomStyle % ROOMFLOOR_COUNT;
+	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
+	bool canSeeTileAbove = !(tAbove != NULL && !TileCanSee(tAbove));
+	Tile *t = MapGetTile(map, pos);
+	if (!t)
+	{
+		return;
+	}
+	switch (IMapGet(map, pos) & MAP_MASKACCESS)
+	{
+	case MAP_FLOOR:
+	case MAP_SQUARE:
+		if (!canSeeTileAbove)
+		{
+			t->pic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
+		}
+		else
+		{
+			t->pic = PicManagerGetFromOld(
+				&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
+			// Normal floor tiles can be replaced randomly with
+			// special floor tiles such as drainage
+			t->flags |= MAPTILE_IS_NORMAL_FLOOR;
+		}
+		break;
+
+	case MAP_ROOM:
+	case MAP_DOOR:
+		if (!canSeeTileAbove)
+		{
+			t->pic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		}
+		else
+		{
+			t->pic = PicManagerGetFromOld(
+				&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
+		}
+		break;
+
+	case MAP_WALL:
+		t->pic = PicManagerGetFromOld(
+			&gPicManager,
+			cWallPics[wall][MapGetWallPic(map, pos)]);
+		t->flags =
+			MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
+			MAPTILE_NO_SEE | MAPTILE_IS_WALL;
+		break;
+
+	case MAP_NOTHING:
+		t->flags =
+			MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
+		break;
+	}
+}
+static int W(Map *map, int x, int y);
+static int MapGetWallPic(Map *m, Vec2i pos)
+{
+	int x = pos.x;
+	int y = pos.y;
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
+		return WALL_CROSS;
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1))
+	{
+		return WALL_TOP_T;
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y - 1))
+	{
+		return WALL_BOTTOM_T;
+	}
+	if (W(m, x - 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
+		return WALL_RIGHT_T;
+	}
+	if (W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
+	{
+		return WALL_LEFT_T;
+	}
+	if (W(m, x + 1, y) && W(m, x, y + 1))
+	{
+		return WALL_TOPLEFT;
+	}
+	if (W(m, x + 1, y) && W(m, x, y - 1))
+	{
+		return WALL_BOTTOMLEFT;
+	}
+	if (W(m, x - 1, y) && W(m, x, y + 1))
+	{
+		return WALL_TOPRIGHT;
+	}
+	if (W(m, x - 1, y) && W(m, x, y - 1))
+	{
+		return WALL_BOTTOMRIGHT;
+	}
+	if (W(m, x - 1, y) && W(m, x + 1, y))
+	{
+		return WALL_HORIZONTAL;
+	}
+	if (W(m, x, y + 1) && W(m, x, y - 1))
+	{
+		return WALL_VERTICAL;
+	}
+	if (W(m, x, y + 1))
+	{
+		return WALL_TOP;
+	}
+	if (W(m, x, y - 1))
+	{
+		return WALL_BOTTOM;
+	}
+	if (W(m, x + 1, y))
+	{
+		return WALL_LEFT;
+	}
+	if (W(m, x - 1, y))
+	{
+		return WALL_RIGHT;
+	}
+	return WALL_SINGLE;
+}
+static int W(Map *map, int x, int y)
+{
+	return IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
+}
+
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad)
 {

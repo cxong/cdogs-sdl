@@ -93,7 +93,6 @@ static EditorBrush brush;
 static Tile sCursorTile;
 Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 8
-int hasCameraMoved = 0;
 Mission currentMission;
 Mission lastMission;
 #define AUTOSAVE_INTERVAL 10
@@ -146,7 +145,18 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 		tintNone, 1, buildTables, camera, &extra);
 }
 
-static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
+// Returns whether a redraw is required
+typedef struct
+{
+	bool Redraw;
+	bool RemakeBg;
+	bool WillDisplayAutomap;
+	bool Done;
+} HandleInputResult;
+static HandleInputResult HandleInput(
+	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap);
+
+static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 {
 	char s[128];
 	int y = 5;
@@ -162,7 +172,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 		{
 			MakeBackground(g, 0);
 		}
-		if (hasCameraMoved || brush.IsGuideImageNew)
+		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
 			// Clear background first
 			for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
@@ -236,7 +246,7 @@ static void Display(GraphicsDevice *g, int yc, int willDisplayAutomap)
 	UIObjectDraw(
 		sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
 
-	if (willDisplayAutomap && mission)
+	if (result.WillDisplayAutomap && mission)
 	{
 		AutomapDraw(AUTOMAP_FLAGS_SHOWALL, true);
 	}
@@ -672,13 +682,10 @@ static void Delete(int xc, int yc)
 	Setup(0);
 }
 
-// Returns whether a redraw is required
-static bool HandleInput(
-	int c, int m,
-	int *xc, int *yc, int *xcOld, int *ycOld,
-	Mission *scrap, bool *willDisplayAutomap, int *done)
+static HandleInputResult HandleInput(
+	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
 {
-	bool redraw = false;
+	HandleInputResult result = { false, false, false, false };
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	brush.Pos = GetMouseTile(&gEventHandlers);
@@ -694,7 +701,7 @@ static bool HandleInput(
 	// tooltip to draw
 	if (hadTooltip || sTooltipObj)
 	{
-		redraw = true;
+		result.Redraw = true;
 	}
 
 	// Make sure a redraw is done immediately if the resolution changes
@@ -702,18 +709,18 @@ static bool HandleInput(
 	// later, when the draw buffer has not yet been recreated
 	if (gEventHandlers.HasResolutionChanged)
 	{
-		redraw = true;
+		result.Redraw = true;
 	}
 
 	// Also need to redraw if the brush is active to update the highlight
 	if (brush.IsActive)
 	{
-		redraw = true;
+		result.Redraw = true;
 	}
 
 	if (m)
 	{
-		redraw = true;
+		result.Redraw = true;
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
 		{
 			if (!o->DoNotHighlight)
@@ -769,7 +776,7 @@ static bool HandleInput(
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
 		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)))
 	{
-		redraw = true;
+		result.Redraw = true;
 		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
@@ -782,6 +789,7 @@ static bool HandleInput(
 				if (r == EDITOR_RESULT_CHANGED ||
 					r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
+					result.RemakeBg = true;
 					fileChanged = 1;
 				}
 				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
@@ -803,7 +811,8 @@ static bool HandleInput(
 			if (r == EDITOR_RESULT_CHANGED ||
 				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
-				redraw = true;
+				result.Redraw = true;
+				result.RemakeBg = true;
 				fileChanged = 1;
 			}
 			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
@@ -813,32 +822,27 @@ static bool HandleInput(
 		}
 	}
 	// Pan the camera based on keyboard cursor keys
-	hasCameraMoved = 0;
 	if (mission)
 	{
 		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_LEFT))
 		{
 			camera.x -= CAMERA_PAN_SPEED;
-			hasCameraMoved = 1;
+			result.Redraw = result.RemakeBg = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_RIGHT))
 		{
 			camera.x += CAMERA_PAN_SPEED;
-			hasCameraMoved = 1;
+			result.Redraw = result.RemakeBg = true;
 		}
 		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_UP))
 		{
 			camera.y -= CAMERA_PAN_SPEED;
-			hasCameraMoved = 1;
+			result.Redraw = result.RemakeBg = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_DOWN))
 		{
 			camera.y += CAMERA_PAN_SPEED;
-			hasCameraMoved = 1;
-		}
-		if (hasCameraMoved)
-		{
-			redraw = true;
+			result.Redraw = result.RemakeBg = true;
 		}
 		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
 		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
@@ -846,7 +850,7 @@ static bool HandleInput(
 	bool hasQuit = false;
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
-		redraw = true;
+		result.Redraw = true;
 		switch (c)
 		{
 		case 'z':
@@ -912,7 +916,7 @@ static bool HandleInput(
 			break;
 
 		case 'm':
-			*willDisplayAutomap = 1;
+			result.WillDisplayAutomap = true;
 			break;
 
 		case 'e':
@@ -927,7 +931,7 @@ static bool HandleInput(
 	{
 		if (c != 0)
 		{
-			redraw = true;
+			result.Redraw = true;
 		}
 		switch (c)
 		{
@@ -1041,14 +1045,13 @@ static bool HandleInput(
 	}
 	if (hasQuit && (!fileChanged || ConfirmClose("Quit anyway? (Y/N)")))
 	{
-		*done = 1;
+		result.Done = true;
 	}
-	return redraw;
+	return result;
 }
 
 static void EditCampaign(void)
 {
-	int done = 0;
 	int xc = 0, yc = 0;
 	int xcOld, ycOld;
 	Mission scrap;
@@ -1060,7 +1063,7 @@ static void EditCampaign(void)
 	SDL_EnableKeyRepeat(0, 0);
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
-	while (!done)
+	for (;;)
 	{
 		Uint32 ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
@@ -1072,24 +1075,24 @@ static void EditCampaign(void)
 			continue;
 		}
 
-		bool willDisplayAutomap = 0;
-		int c, m;
 		debug(D_MAX, "Polling for input\n");
 		EventPoll(&gEventHandlers, SDL_GetTicks());
-		c = KeyGetPressed(&gEventHandlers.keyboard);
-		m = MouseGetPressed(&gEventHandlers.mouse);
+		int c = KeyGetPressed(&gEventHandlers.keyboard);
+		int m = MouseGetPressed(&gEventHandlers.mouse);
 
 		debug(D_MAX, "Handling input\n");
-		bool redraw = HandleInput(
-			c, m,
-			&xc, &yc, &xcOld, &ycOld,
-			&scrap, &willDisplayAutomap, &done);
-		if (redraw || sJustLoaded)
+		HandleInputResult result = HandleInput(
+			c, m, &xc, &yc, &xcOld, &ycOld, &scrap);
+		if (result.Done)
+		{
+			break;
+		}
+		if (result.Redraw || result.RemakeBg || sJustLoaded)
 		{
 			sJustLoaded = false;
 			debug(D_MAX, "Drawing UI\n");
-			Display(&gGraphicsDevice, yc, willDisplayAutomap);
-			if (willDisplayAutomap)
+			Display(&gGraphicsDevice, yc, result);
+			if (result.WillDisplayAutomap)
 			{
 				GetKey(&gEventHandlers);
 			}

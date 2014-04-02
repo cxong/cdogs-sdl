@@ -67,6 +67,10 @@ void MapPlaceDoors(
 	unsigned short accessMask);
 void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
 void MapMakeWall(Map *map, Vec2i pos);
+void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
+
+// Set tile properties for a map tile, such as picture to use
+void MapSetupTile(Map *map, Vec2i pos, Mission *m);
 
 unsigned short GenerateAccessMask(int *accessLevel);
 void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end);

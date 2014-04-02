@@ -111,7 +111,7 @@ static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
 	// There is a door but it is free to be oriented in any way
 	return 0;
 }
-void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
+bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 {
 	int idx = pos.y * m->Size.x + pos.x;
 	assert(m->Type == MAPTYPE_STATIC && "cannot set tile for map type");
@@ -125,7 +125,7 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 			HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
 		{
 			// Can't place this wall
-			return;
+			return false;
 		}
 		break;
 	case MAP_DOOR:
@@ -139,7 +139,7 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 				IsClear(GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)));
 			if (!isHClear && !isVClear)
 			{
-				return;
+				return false;
 			}
 			// Check that there are no incompatible doors
 			if (HasDoorOrientedAt(m, Vec2iNew(pos.x - 1, pos.y), 0) ||
@@ -148,12 +148,13 @@ void MissionSetTile(Mission *m, Vec2i pos, unsigned short tile)
 				HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
 			{
 				// Can't place this door
-				return;
+				return false;
 			}
 		}
 		break;
 	}
 	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx) = tile;
+	return true;
 }
 
 unsigned short MissionGetTile(Mission *m, Vec2i pos)
@@ -196,13 +197,13 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 		{
 			if (v.x >= oldSize.x || v.y >= oldSize.y)
 			{
-				MissionSetTile(m, v, MAP_NOTHING);
+				MissionTrySetTile(m, v, MAP_NOTHING);
 			}
 			else
 			{
 				int idx = v.y * oldSize.x + v.x;
 				unsigned short *tile = CArrayGet(&oldTiles, idx);
-				MissionSetTile(m, v, *tile);
+				MissionTrySetTile(m, v, *tile);
 			}
 		}
 	}
@@ -554,7 +555,7 @@ bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos)
 static void MissionFillTile(void *data, Vec2i v)
 {
 	MissionFloodFillData *mData = data;
-	MissionSetTile(mData->m, v, MAP_DOOR | mData->mask);
+	MissionTrySetTile(mData->m, v, MAP_DOOR | mData->mask);
 }
 static bool MissionIsTileSame(void *data, Vec2i v)
 {

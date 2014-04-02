@@ -54,6 +54,7 @@
 
 #include "collision.h"
 #include "config.h"
+#include "map_build.h"
 #include "map_classic.h"
 #include "map_static.h"
 #include "pic_manager.h"
@@ -130,6 +131,10 @@ static void RemoveItemFromTile(TTileItem * t, Tile * tile)
 
 Tile *MapGetTile(Map *map, Vec2i pos)
 {
+	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
+	{
+		return NULL;
+	}
 	return CArrayGet(&map->Tiles, pos.y * map->Size.x + pos.x);
 }
 
@@ -209,76 +214,6 @@ void IMapSet(Map *map, Vec2i pos, unsigned short v)
 	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
-static int W(Map *map, int x, int y)
-{
-	return IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
-}
-
-static int MapGetWallPic(Map *m, int x, int y)
-{
-	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
-	{
-		return WALL_CROSS;
-	}
-	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1))
-	{
-		return WALL_TOP_T;
-	}
-	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y - 1))
-	{
-		return WALL_BOTTOM_T;
-	}
-	if (W(m, x - 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
-	{
-		return WALL_RIGHT_T;
-	}
-	if (W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
-	{
-		return WALL_LEFT_T;
-	}
-	if (W(m, x + 1, y) && W(m, x, y + 1))
-	{
-		return WALL_TOPLEFT;
-	}
-	if (W(m, x + 1, y) && W(m, x, y - 1))
-	{
-		return WALL_BOTTOMLEFT;
-	}
-	if (W(m, x - 1, y) && W(m, x, y + 1))
-	{
-		return WALL_TOPRIGHT;
-	}
-	if (W(m, x - 1, y) && W(m, x, y - 1))
-	{
-		return WALL_BOTTOMRIGHT;
-	}
-	if (W(m, x - 1, y) && W(m, x + 1, y))
-	{
-		return WALL_HORIZONTAL;
-	}
-	if (W(m, x, y + 1) && W(m, x, y - 1))
-	{
-		return WALL_VERTICAL;
-	}
-	if (W(m, x, y + 1))
-	{
-		return WALL_TOP;
-	}
-	if (W(m, x, y - 1))
-	{
-		return WALL_BOTTOM;
-	}
-	if (W(m, x + 1, y))
-	{
-		return WALL_LEFT;
-	}
-	if (W(m, x - 1, y))
-	{
-		return WALL_RIGHT;
-	}
-	return WALL_SINGLE;
-}
-
 static void PicLoadOffset(GraphicsDevice *g, Pic *picAlt, int idx)
 {
 	PicFromPicPalettedOffset(
@@ -288,70 +223,19 @@ static void PicLoadOffset(GraphicsDevice *g, Pic *picAlt, int idx)
 		&cGeneralPics[idx]);
 }
 
-static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
+static void MapSetupTilesAndWalls(Map *map, Mission *m)
 {
 	Vec2i v;
-	int i;
-
 	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
 		for (v.y = 0; v.y < map->Size.y; v.y++)
 		{
-			Tile *tAbove = MapGetTile(map, Vec2iNew(v.x, v.y - 1));
-			int canSeeTileAbove = !(v.y > 0 && !TileCanSee(tAbove));
-			Tile *t = MapGetTile(map, v);
-			switch (IMapGet(map, v) & MAP_MASKACCESS)
-			{
-			case MAP_FLOOR:
-			case MAP_SQUARE:
-				if (!canSeeTileAbove)
-				{
-					t->pic = PicManagerGetFromOld(
-						&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-				}
-				else
-				{
-					t->pic = PicManagerGetFromOld(
-						&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
-					// Normal floor tiles can be replaced randomly with
-					// special floor tiles such as drainage
-					t->flags |= MAPTILE_IS_NORMAL_FLOOR;
-				}
-				break;
-
-			case MAP_ROOM:
-			case MAP_DOOR:
-				if (!canSeeTileAbove)
-				{
-					t->pic = PicManagerGetFromOld(
-						&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-				}
-				else
-				{
-					t->pic = PicManagerGetFromOld(
-						&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
-				}
-				break;
-
-			case MAP_WALL:
-				t->pic = PicManagerGetFromOld(
-					&gPicManager,
-					cWallPics[wall][MapGetWallPic(map, v.x, v.y)]);
-				t->flags =
-					MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
-					MAPTILE_NO_SEE | MAPTILE_IS_WALL;
-				break;
-
-			case MAP_NOTHING:
-				t->flags =
-					MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
-				break;
-			}
+			MapSetupTile(map, v, m);
 		}
 	}
 
 	// Randomly change normal floor tiles to drainage tiles
-	for (i = 0; i < 50; i++)
+	for (int i = 0; i < 50; i++)
 	{
 		// Make sure drain tiles aren't next to each other
 		Tile *t = MapGetTile(map, Vec2iNew(
@@ -365,8 +249,9 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 		}
 	}
 
+	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
 	// Randomly change normal floor tiles to alternative floor tiles
-	for (i = 0; i < 100; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		Tile *t = MapGetTile(
 			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
@@ -376,7 +261,7 @@ static void MapSetupTilesAndWalls(Map *map, int floor, int room, int wall)
 				&gPicManager, cFloorPics[floor][FLOOR_1]));
 		}
 	}
-	for (i = 0; i < 150; i++)
+	for (int i = 0; i < 150; i++)
 	{
 		Tile *t = MapGetTile(
 			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
@@ -1156,7 +1041,6 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	int i, j;
 	Mission *mission = mo->missionData;
 	int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
-	int wall = mission->WallStyle % WALL_STYLE_COUNT;
 	int room = mission->RoomStyle % ROOMFLOOR_COUNT;
 	Vec2i v;
 
@@ -1187,7 +1071,7 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		MapStaticLoad(map, mo, store);
 	}
 
-	MapSetupTilesAndWalls(map, floor, room, wall);
+	MapSetupTilesAndWalls(map, mission);
 	MapSetupDoors(map, floor, room);
 
 	for (i = 0; i < (int)mo->MapObjects.size; i++)

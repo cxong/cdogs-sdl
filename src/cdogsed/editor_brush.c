@@ -31,6 +31,7 @@
 
 #include <cdogs/algorithms.h>
 #include <cdogs/map.h>
+#include <cdogs/map_build.h>
 #include <cdogs/mission_convert.h>
 
 
@@ -253,6 +254,14 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	}
 }
 
+static void SetTile(Mission *m, Vec2i pos, unsigned short tile)
+{
+	if (MissionTrySetTile(m, pos, tile))
+	{
+		MapSetTile(&gMap, pos, tile, m);
+	}
+}
+
 typedef struct
 {
 	EditorBrush *brush;
@@ -268,8 +277,7 @@ static void EditorBrushPaintTilesAt(void *data, Vec2i pos)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
-			Vec2i paintPos = Vec2iAdd(pos, v);
-			MissionSetTile(m, paintPos, b->PaintType);
+			SetTile(m, Vec2iAdd(pos, v), b->PaintType);
 		}
 	}
 }
@@ -310,7 +318,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_POINT:
 		b->IsPainting = 1;
 		EditorBrushPaintLine(b, m);
-		return EDITOR_RESULT_CHANGED_AND_RELOAD;
+		return EDITOR_RESULT_CHANGED;
 	case BRUSHTYPE_LINE:	// fallthrough
 	case BRUSHTYPE_BOX:	// fallthrough
 	case BRUSHTYPE_BOX_FILLED:	// fallthrough
@@ -353,7 +361,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			data.data = &pData;
 			if (FloodFill(b->Pos, &data))
 			{
-				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+				return EDITOR_RESULT_CHANGED;
 			}
 		}
 		return EDITOR_RESULT_NONE;
@@ -472,7 +480,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 static void MissionFillTile(void *data, Vec2i v)
 {
 	PaintFloodFillData *pData = data;
-	MissionSetTile(pData->m, v, pData->toType);
+	SetTile(pData->m, v, pData->toType);
 }
 static bool MissionIsTileSame(void *data, Vec2i v)
 {
@@ -536,19 +544,19 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 		{
 		case BRUSHTYPE_LINE:
 			EditorBrushPaintLine(b, m);
-			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_BOX:
 			EditorBrushPaintBox(b, m, b->PaintType, MAP_UNSET);
-			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_BOX_FILLED:
 			EditorBrushPaintBox(b, m, b->PaintType, b->PaintType);
-			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_ROOM:
 			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
-			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_SELECT:
 			if (b->IsMoving)
@@ -595,7 +603,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 							unsigned short *tileTo = CArrayGet(
 								&m->u.Static.Tiles, idx);
 							*tileTo = *tileFrom;
-							result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+							result = EDITOR_RESULT_CHANGED;
 						}
 						i++;
 					}
