@@ -1023,14 +1023,14 @@ static bool HandleInput(
 			break;
 
 		case SDLK_BACKSPACE:
-			fileChanged = UIObjectDelChar(sObjs);
+			fileChanged |= UIObjectDelChar(sObjs);
 			break;
 
 		default:
 			c = KeyGetTyped(&gEventHandlers.keyboard);
 			if (c)
 			{
-				fileChanged = UIObjectAddChar(sObjs, (char)c);
+				fileChanged |= UIObjectAddChar(sObjs, (char)c);
 			}
 			break;
 		}
