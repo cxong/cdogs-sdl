@@ -96,8 +96,9 @@ Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 8
 Mission currentMission;
 Mission lastMission;
-#define AUTOSAVE_INTERVAL 10
-int numChanges = 0;
+#define AUTOSAVE_INTERVAL_SECONDS 600
+Uint32 ticksAutosave;
+Uint32 sTicksElapsed;
 
 
 static Vec2i GetMouseTile(EventHandlers *e)
@@ -430,13 +431,15 @@ static void AdjustXC(int yc, int *xc)
 
 static void Autosave(void)
 {
-	numChanges++;
-	if ((numChanges % AUTOSAVE_INTERVAL) == 0)
+	static int autosaveIndex = 1;
+	if (sTicksElapsed > ticksAutosave)
 	{
-		int autosaveIndex = numChanges / AUTOSAVE_INTERVAL;
+		ticksAutosave += AUTOSAVE_INTERVAL_SECONDS * 1000;
 		char buf[CDOGS_PATH_MAX];
 		sprintf(buf, "%s~%d", lastFile, autosaveIndex);
+		fprintf(stderr, "Autosaving...");
 		MapNewSave(buf, &gCampaign.Setting);
+		fprintf(stderr, "done\n");
 	}
 }
 
@@ -1081,16 +1084,17 @@ static void EditCampaign(void)
 
 	SDL_EnableKeyRepeat(0, 0);
 	Uint32 ticksNow = SDL_GetTicks();
-	Uint32 ticksElapsed = 0;
+	Uint32 sTicksElapsed = 0;
+	ticksAutosave = AUTOSAVE_INTERVAL_SECONDS * 1000;
 	for (;;)
 	{
 		Uint32 ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
-		ticksElapsed += ticksNow - ticksThen;
-		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
+		sTicksElapsed += ticksNow - ticksThen;
+		if (sTicksElapsed < 1000 / FPS_FRAMELIMIT * 2)
 		{
 			SDL_Delay(1);
-			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, sTicksElapsed);
 			continue;
 		}
 
