@@ -125,6 +125,7 @@ void MapSetupTile(Map *map, Vec2i pos, Mission *m)
 		break;
 
 	case MAP_NOTHING:
+		t->pic = NULL;
 		t->flags =
 			MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
 		break;
