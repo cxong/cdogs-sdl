@@ -143,7 +143,7 @@ static void DisplaySummary(void)
 	int i;
 	char sScore[20];
 	Vec2i pos;
-	pos.y = gGraphicsDevice.cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
+	pos.y = gGraphicsDevice.cachedConfig.Res.y - 5 - CDogsTextHeight();
 
 	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
@@ -328,19 +328,17 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 
 void AutomapDraw(int flags, bool showExit)
 {
-	int x, y;
-	int i;
 	color_t mask = { 0, 128, 0, 255 };
 	Vec2i mapCenter = Vec2iNew(
-		gGraphicsDevice.cachedConfig.ResolutionWidth / 2,
-		gGraphicsDevice.cachedConfig.ResolutionHeight / 2);
+		gGraphicsDevice.cachedConfig.Res.x / 2,
+		gGraphicsDevice.cachedConfig.Res.y / 2);
 	Vec2i centerOn = Vec2iNew(gMap.Size.x / 2, gMap.Size.y / 2);
 	Vec2i pos = Vec2iAdd(mapCenter, Vec2iScale(centerOn, -MAP_FACTOR));
 
 	// Draw faded green overlay
-	for (y = 0; y < gGraphicsDevice.cachedConfig.ResolutionHeight; y++)
+	for (int y = 0; y < gGraphicsDevice.cachedConfig.Res.y; y++)
 	{
-		for (x = 0; x < gGraphicsDevice.cachedConfig.ResolutionWidth; x++)
+		for (int x = 0; x < gGraphicsDevice.cachedConfig.Res.x; x++)
 		{
 			DrawPointMask(&gGraphicsDevice, Vec2iNew(x, y), mask);
 		}
@@ -349,7 +347,7 @@ void AutomapDraw(int flags, bool showExit)
 	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
 	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
 
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (gPlayers[i])
 		{

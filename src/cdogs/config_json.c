@@ -106,8 +106,8 @@ static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 	}
 	node = node->child;
 	LoadInt(&config->Brightness, node, "Brightness");
-	LoadInt(&config->ResolutionWidth, node, "ResolutionWidth");
-	LoadInt(&config->ResolutionHeight, node, "ResolutionHeight");
+	LoadInt(&config->Res.x, node, "ResolutionWidth");
+	LoadInt(&config->Res.y, node, "ResolutionHeight");
 	LoadBool(&config->Fullscreen, node, "Fullscreen");
 	LoadInt(&config->ScaleFactor, node, "ScaleFactor");
 	LoadInt(&config->ShakeMultiplier, node, "ShakeMultiplier");
@@ -117,8 +117,8 @@ static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 {
 	json_t *subConfig = json_new_object();
 	AddIntPair(subConfig, "Brightness", config->Brightness);
-	AddIntPair(subConfig, "ResolutionWidth", config->ResolutionWidth);
-	AddIntPair(subConfig, "ResolutionHeight", config->ResolutionHeight);
+	AddIntPair(subConfig, "ResolutionWidth", config->Res.x);
+	AddIntPair(subConfig, "ResolutionHeight", config->Res.y);
 	json_insert_pair_into_object(
 		subConfig, "Fullscreen", json_new_bool(config->Fullscreen));
 	AddIntPair(subConfig, "ScaleFactor", config->ScaleFactor);

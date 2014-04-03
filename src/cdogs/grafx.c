@@ -70,8 +70,8 @@ GraphicsDevice gGraphicsDevice;
 
 static void Gfx_ModeSet(GraphicsConfig *config, GraphicsMode *mode)
 {
-	config->ResolutionWidth = mode->Width;
-	config->ResolutionHeight = mode->Height;
+	config->Res.x = mode->Width;
+	config->Res.y = mode->Height;
 	config->ScaleFactor = mode->ScaleFactor;
 }
 
@@ -120,8 +120,8 @@ int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
 	return
 		!device->IsInitialized ||
 		device->cachedConfig.Fullscreen != config->Fullscreen ||
-		device->cachedConfig.ResolutionWidth != config->ResolutionWidth ||
-		device->cachedConfig.ResolutionHeight != config->ResolutionHeight ||
+		device->cachedConfig.Res.x != config->Res.x ||
+		device->cachedConfig.Res.y != config->Res.y ||
 		device->cachedConfig.ScaleFactor != config->ScaleFactor;
 }
 
@@ -282,8 +282,8 @@ void GraphicsInitialize(
 		sdl_flags |= SDL_FULLSCREEN;
 	}
 
-	rw = w = config->ResolutionWidth;
-	rh = h = config->ResolutionHeight;
+	rw = w = config->Res.x;
+	rh = h = config->Res.y;
 
 	if (config->ScaleFactor > 1)
 	{
@@ -337,15 +337,15 @@ void GraphicsInitialize(
 
 	GraphicsSetBlitClip(
 		device,
-		0, 0, config->ResolutionWidth - 1,config->ResolutionHeight - 1);
+		0, 0, config->Res.x - 1,config->Res.y - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
-		config->ResolutionWidth, config->ResolutionHeight);
+		config->Res.x, config->Res.y);
 
 	device->IsInitialized = 1;
 	device->IsWindowInitialized = 1;
 	device->cachedConfig = *config;
-	device->cachedConfig.ResolutionWidth = w;
-	device->cachedConfig.ResolutionHeight = h;
+	device->cachedConfig.Res.x = w;
+	device->cachedConfig.Res.y = h;
 	CDogsSetPalette(palette);
 	// Need to make background here since dimensions use cached config
 	if (!config->IsEditor)
@@ -365,7 +365,7 @@ void GraphicsTerminate(GraphicsDevice *device)
 
 int GraphicsGetScreenSize(GraphicsConfig *config)
 {
-	return config->ResolutionWidth * config->ResolutionHeight;
+	return config->Res.x * config->Res.y;
 }
 
 int GraphicsGetMemSize(GraphicsConfig *config)
@@ -377,8 +377,8 @@ char *GrafxGetModeStr(void)
 {
 	static char buf[16];
 	sprintf(buf, "%dx%d %dx",
-		gConfig.Graphics.ResolutionWidth,
-		gConfig.Graphics.ResolutionHeight,
+		gConfig.Graphics.Res.x,
+		gConfig.Graphics.Res.y,
 		gConfig.Graphics.ScaleFactor);
 	return buf;
 }
@@ -397,6 +397,6 @@ void GraphicsResetBlitClip(GraphicsDevice *device)
 	GraphicsSetBlitClip(
 		device,
 		0, 0,
-		device->cachedConfig.ResolutionWidth - 1,
-		device->cachedConfig.ResolutionHeight - 1);
+		device->cachedConfig.Res.x - 1,
+		device->cachedConfig.Res.y - 1);
 }

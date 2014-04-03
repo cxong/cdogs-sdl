@@ -251,13 +251,13 @@ static void DrawGauge(
 	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
 	if (textFlags & TEXT_RIGHT)
 	{
-		int w = device->cachedConfig.ResolutionWidth;
+		int w = device->cachedConfig.Res.x;
 		pos.x = w - pos.x - size.x - offset.x;
 		barPos.x = w - barPos.x - barSize.x - offset.x;
 	}
 	if (textFlags & TEXT_BOTTOM)
 	{
-		int h = device->cachedConfig.ResolutionHeight;
+		int h = device->cachedConfig.Res.y;
 		pos.y = h - pos.y - size.y - offset.y;
 		barPos.y = h - barPos.y - barSize.y - offset.y;
 	}
@@ -336,8 +336,8 @@ static void DrawRadar(
 	GraphicsDevice *device, TActor *p, int scale, int flags, bool showExit)
 {
 	Vec2i pos = Vec2iZero();
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 
 	if (!p)
 	{
@@ -439,7 +439,7 @@ static void DrawSharedRadar(
 	GraphicsDevice *device, TActor *players[MAX_PLAYERS], int scale,
 	bool showExit)
 {
-	int w = device->cachedConfig.ResolutionWidth;
+	int w = device->cachedConfig.Res.x;
 	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
 	Vec2i playerMidpoint = PlayersGetMidpoint(players);
 	playerMidpoint.x /= TILE_WIDTH;
@@ -696,8 +696,8 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	Rect2i r;
 	r.Size = Vec2iNew(
-		hud->device->cachedConfig.ResolutionWidth,
-		hud->device->cachedConfig.ResolutionHeight);
+		hud->device->cachedConfig.Res.x,
+		hud->device->cachedConfig.Res.y);
 	if (numPlayersAlive <= 1)
 	{
 		flags = 0;
@@ -791,7 +791,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		// Draw the message centered, and just below the automap
 		Vec2i pos = Vec2iNew(
-			(hud->device->cachedConfig.ResolutionWidth -
+			(hud->device->cachedConfig.Res.x -
 			TextGetStringWidth(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
 		TextStringMasked(
@@ -816,8 +816,8 @@ void HUDDraw(HUD *hud, int isPaused)
 	DrawTextStringSpecial(
 		s, TEXT_TOP | TEXT_XCENTER, Vec2iZero(),
 		Vec2iNew(
-			hud->device->cachedConfig.ResolutionWidth,
-			hud->device->cachedConfig.ResolutionHeight),
+			hud->device->cachedConfig.Res.x,
+			hud->device->cachedConfig.Res.y),
 		Vec2iNew(0, 5));
 
 	if (HasObjectives(gCampaign.Entry.mode))
@@ -915,8 +915,8 @@ static void DrawNumUpdate(
 	}
 
 	Vec2i screenSize = Vec2iNew(
-		gGraphicsDevice.cachedConfig.ResolutionWidth,
-		gGraphicsDevice.cachedConfig.ResolutionHeight);
+		gGraphicsDevice.cachedConfig.Res.x,
+		gGraphicsDevice.cachedConfig.Res.y);
 	DrawTextStringSpecialBlend(
 		&gTextManager, s, &gGraphicsDevice, textFlags, Vec2iZero(),
 		screenSize, pos, color);
@@ -925,7 +925,7 @@ static void DrawNumUpdate(
 static void DrawObjectiveCounts(HUD *hud)
 {
 	int x = 5 + GAUGE_WIDTH;
-	int y = hud->device->cachedConfig.ResolutionHeight - 5 - CDogsTextHeight();
+	int y = hud->device->cachedConfig.Res.y - 5 - CDogsTextHeight();
 	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
 		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);

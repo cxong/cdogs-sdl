@@ -257,7 +257,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 				TextGetStringWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
-				graphics->cachedConfig.ResolutionWidth / 4);
+				graphics->cachedConfig.Res.x / 4);
 		CDogsTextChar(SYMBOL_LEFT);
 		CDogsTextString(buffer);
 		CDogsTextChar(SYMBOL_RIGHT);
@@ -266,7 +266,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 			"Enter code",
 			TEXT_XCENTER | TEXT_TOP,
 			0,
-			graphics->cachedConfig.ResolutionHeight / 12);
+			graphics->cachedConfig.Res.y / 12);
 		ShowControls();
 
 		BlitFlip(graphics, &gConfig.Graphics);
@@ -295,8 +295,8 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 	MenuSystemInit(
 		&startMenu, &gEventHandlers, graphics, Vec2iZero(),
 		Vec2iNew(
-			graphics->cachedConfig.ResolutionWidth,
-			graphics->cachedConfig.ResolutionHeight));
+			graphics->cachedConfig.Res.x,
+			graphics->cachedConfig.Res.y));
 	MenuCreateStart(&startMenu, hasPassword);
 	for (;;)
 	{

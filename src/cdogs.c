@@ -157,8 +157,8 @@ int CampaignIntro(GraphicsDevice *device)
 	int x;
 	int y;
 	char s[1024];
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 
 	debug(D_NORMAL, "\n");
 
@@ -181,8 +181,8 @@ void MissionBriefing(GraphicsDevice *device)
 {
 	char s[512];
 	int y;
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 	int typewriterCount;
 	char description[1024];
 	char typewriterBuf[1024];
@@ -364,8 +364,8 @@ static int AreAnySurvived(void)
 void Bonuses(void)
 {
 	int i;
-	int y = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) + (gGraphicsDevice.cachedConfig.ResolutionHeight / 10);
-	int x = gGraphicsDevice.cachedConfig.ResolutionWidth / 6;
+	int y = (gGraphicsDevice.cachedConfig.Res.y / 2) + (gGraphicsDevice.cachedConfig.Res.y / 10);
+	int x = gGraphicsDevice.cachedConfig.Res.x / 6;
 	int access_bonus = 0;
 	int idx = 1;
 	char s[100];
@@ -489,8 +489,8 @@ void Bonuses(void)
 
 void MissionSummary(GraphicsDevice *device)
 {
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 	Vec2i size;
 	GraphicsBlitBkg(device);
 
@@ -504,7 +504,7 @@ void MissionSummary(GraphicsDevice *device)
 			s1,
 			TEXT_BOTTOM | TEXT_XCENTER,
 			0,
-			gGraphicsDevice.cachedConfig.ResolutionHeight / 12);
+			gGraphicsDevice.cachedConfig.Res.y / 12);
 	}
 
 	switch (gOptions.numPlayers)
@@ -553,8 +553,8 @@ static void ShowPlayerScore(
 
 void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 {
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 	int i;
 
 	GraphicsBlitBkg(device);
@@ -585,8 +585,8 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 	int isTie = 0;
 	int maxScore = 0;
 	int maxScorePlayer = 0;
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (scores[i] > maxScore)
@@ -665,8 +665,8 @@ void Victory(GraphicsDevice *graphics)
 {
 	int x, i;
 	const char *s = NULL;
-	int w = graphics->cachedConfig.ResolutionWidth;
-	int h = graphics->cachedConfig.ResolutionHeight;
+	int w = graphics->cachedConfig.Res.x;
+	int h = graphics->cachedConfig.Res.y;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -1253,11 +1253,11 @@ int main(int argc, char *argv[])
 				break;
 			case 'c':
 				sscanf(optarg, "%dx%d",
-					&gConfig.Graphics.ResolutionWidth,
-					&gConfig.Graphics.ResolutionHeight);
+					&gConfig.Graphics.Res.x,
+					&gConfig.Graphics.Res.y);
 				debug(D_NORMAL, "Video mode %dx%d set...\n",
-					gConfig.Graphics.ResolutionWidth,
-					gConfig.Graphics.ResolutionHeight);
+					gConfig.Graphics.Res.x,
+					gConfig.Graphics.Res.y);
 				break;
 			case 'o':
 				forceResolution = 1;

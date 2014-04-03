@@ -119,8 +119,8 @@ void ConfigLoadOld(Config *config, const char *filename)
 		config->Game.PlayerHP = 100;
 	}
 	fscanfres = fscanf(f, "%dx%d:%d:%d\n",
-		&config->Graphics.ResolutionWidth,
-		&config->Graphics.ResolutionHeight,
+		&config->Graphics.Res.x,
+		&config->Graphics.Res.y,
 		&i1,
 		&config->Graphics.ScaleFactor);
 	CHECK_FSCANF(4);
@@ -173,8 +173,8 @@ void ConfigSaveOld(Config *config, const char *filename)
 	fprintf(f, "%d\n", config->Game.NonPlayerHP);
 	fprintf(f, "%d\n", config->Game.PlayerHP);
 	fprintf(f, "%dx%d:%d:%d\n",
-		config->Graphics.ResolutionWidth,
-		config->Graphics.ResolutionHeight,
+		config->Graphics.Res.x,
+		config->Graphics.Res.y,
 		config->Graphics.Fullscreen,
 		config->Graphics.ScaleFactor);
 

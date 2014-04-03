@@ -85,8 +85,8 @@ int NumPlayersSelection(
 		&ms, handlers, graphics,
 		Vec2iZero(),
 		Vec2iNew(
-			graphics->cachedConfig.ResolutionWidth,
-			graphics->cachedConfig.ResolutionHeight));
+			graphics->cachedConfig.Res.x,
+			graphics->cachedConfig.Res.y));
 	ms.root = ms.current = MenuCreateNormal(
 		"",
 		"Select number of players",
@@ -300,8 +300,8 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 				Vec2i center = Vec2iZero();
 				const char *prompt = "Press Fire to join...";
 				Vec2i offset = Vec2iScaleDiv(TextGetSize(prompt), -2);
-				int w = graphics->cachedConfig.ResolutionWidth;
-				int h = graphics->cachedConfig.ResolutionHeight;
+				int w = graphics->cachedConfig.Res.x;
+				int h = graphics->cachedConfig.Res.y;
 				switch (numPlayers)
 				{
 				case 1:

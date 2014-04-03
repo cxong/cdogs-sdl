@@ -108,8 +108,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		case SDL_VIDEORESIZE:
 			{
 				int scale = gConfig.Graphics.ScaleFactor;
-				gConfig.Graphics.ResolutionWidth = e.resize.w / scale;
-				gConfig.Graphics.ResolutionHeight = e.resize.h / scale;
+				gConfig.Graphics.Res.x = e.resize.w / scale;
+				gConfig.Graphics.Res.y = e.resize.h / scale;
 				GraphicsInitialize(
 					&gGraphicsDevice,
 					&gConfig.Graphics,

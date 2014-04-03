@@ -158,13 +158,20 @@ typedef struct
 static HandleInputResult HandleInput(
 	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap);
 
+static void ClearScreen(GraphicsDevice *g)
+{
+	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+	{
+		g->buf[i] = LookupPalette(58);
+	}
+}
 static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 {
 	char s[128];
 	int y = 5;
 	int i;
-	int w = g->cachedConfig.ResolutionWidth;
-	int h = g->cachedConfig.ResolutionHeight;
+	int w = g->cachedConfig.Res.x;
+	int h = g->cachedConfig.Res.y;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
 	if (mission)
@@ -222,10 +229,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 	}
 	else
 	{
-		for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
-		{
-			g->buf[i] = LookupPalette(58);
-		}
+		ClearScreen(g);
 		if (gCampaign.Setting.Missions.size)
 		{
 			sprintf(s, "End/%d", (int)gCampaign.Setting.Missions.size);
@@ -471,11 +475,7 @@ static void Open(void)
 	strcpy(filename, lastFile);
 	for (;;)
 	{
-		int i;
-		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-		{
-			gGraphicsDevice.buf[i] = LookupPalette(58);
-		}
+		ClearScreen(&gGraphicsDevice);
 		CDogsTextStringAt(125, 50, "Open file:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
 		CDogsTextChar('\020');
@@ -533,16 +533,12 @@ static void Open(void)
 static void Save(void)
 {
 	char filename[CDOGS_PATH_MAX];
-	int c;
-
 	strcpy(filename, lastFile);
-	for (;;)
+	bool doSave = false;
+	bool done = false;
+	while (!done)
 	{
-		int i;
-		for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-		{
-			gGraphicsDevice.buf[i] = LookupPalette(58);
-		}
+		ClearScreen(&gGraphicsDevice);
 		CDogsTextStringAt(125, 50, "Save as:");
 		CDogsTextGoto(125, 50 + CDogsTextHeight());
 		CDogsTextChar('\020');
@@ -550,7 +546,7 @@ static void Save(void)
 		CDogsTextChar('\021');
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-		c = GetKey(&gEventHandlers);
+		int c = GetKey(&gEventHandlers);
 		switch (c)
 		{
 		case SDLK_RETURN:
@@ -559,13 +555,12 @@ static void Save(void)
 			{
 				break;
 			}
-			MapNewSave(filename, &gCampaign.Setting);
-			fileChanged = 0;
-			strcpy(lastFile, filename);
-			return;
+			doSave = true;
+			done = true;
+			break;
 
 		case SDLK_ESCAPE:
-			return;
+			break;
 
 		case SDLK_BACKSPACE:
 			if (filename[0])
@@ -590,19 +585,25 @@ static void Save(void)
 		}
 		SDL_Delay(10);
 	}
+	if (doSave)
+	{
+		ClearScreen(&gGraphicsDevice);
+		DrawTextStringSpecial(
+			"Saving...", TEXT_XCENTER | TEXT_YCENTER,
+			Vec2iZero(), gGraphicsDevice.cachedConfig.Res, Vec2iZero());
+		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+		MapNewSave(filename, &gCampaign.Setting);
+		fileChanged = 0;
+		strcpy(lastFile, filename);
+	}
 }
 
 static int ConfirmClose(char *msg)
 {
-	int c;
-	int i;
-	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	int w = gGraphicsDevice.cachedConfig.Res.x;
+	int h = gGraphicsDevice.cachedConfig.Res.y;
 	const char *s1 = "Campaign has been modified, but not saved";
-	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-	{
-		gGraphicsDevice.buf[i] = LookupPalette(58);
-	}
+	ClearScreen(&gGraphicsDevice);
 	TextString(&gTextManager, 
 		s1,
 		&gGraphicsDevice,
@@ -613,7 +614,7 @@ static int ConfirmClose(char *msg)
 		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + CDogsTextHeight()) / 2));
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
-	c = GetKey(&gEventHandlers);
+	int c = GetKey(&gEventHandlers);
 	return (c == 'Y' || c == 'y');
 }
 
@@ -644,11 +645,7 @@ static void HelpScreen(void)
 		"Ctrl+X, C, V:                   Cut/copy/paste\n"
 		"Ctrl+M:                         Preview automap\n"
 		"F1:                             This screen\n";
-	int i;
-	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-	{
-		gGraphicsDevice.buf[i] = LookupPalette(58);
-	}
+	ClearScreen(&gGraphicsDevice);
 	TextString(&gTextManager, helpText, &gGraphicsDevice, pos);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	GetKey(&gEventHandlers);
@@ -1169,8 +1166,8 @@ int main(int argc, char *argv[])
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
 	gConfig.Graphics.ScaleFactor = 2;
-	gConfig.Graphics.ResolutionWidth = 400;
-	gConfig.Graphics.ResolutionHeight = 300;
+	gConfig.Graphics.Res.x = 400;
+	gConfig.Graphics.Res.y = 300;
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)

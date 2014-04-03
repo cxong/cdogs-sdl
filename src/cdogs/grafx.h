@@ -69,8 +69,7 @@ typedef enum
 typedef struct
 {
 	int Brightness;
-	int ResolutionWidth;
-	int ResolutionHeight;
+	Vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
 	int ShakeMultiplier;
@@ -129,12 +128,12 @@ void GraphicsSetBlitClip(
 	GraphicsDevice *device, int left, int top, int right, int bottom);
 void GraphicsResetBlitClip(GraphicsDevice *device);
 
-#define CenterX(w)		((gGraphicsDevice.cachedConfig.ResolutionWidth - w) / 2)
-#define CenterY(h)		((gGraphicsDevice.cachedConfig.ResolutionHeight - h) / 2)
+#define CenterX(w)		((gGraphicsDevice.cachedConfig.Res.x - w) / 2)
+#define CenterY(h)		((gGraphicsDevice.cachedConfig.Res.y - h) / 2)
 
 #define CenterOf(a, b, w)	((a + (((b - a) - w) / 2)))
 
-#define CenterOfRight(w)	CenterOf((gGraphicsDevice.cachedConfig.ResolutionWidth / 2), (gGraphicsDevice.cachedConfig.ResolutionWidth), w)
-#define CenterOfLeft(w)		CenterOf(0, (gGraphicsDevice.cachedConfig.ResolutionWidth / 2), w)
+#define CenterOfRight(w)	CenterOf((gGraphicsDevice.cachedConfig.Res.x / 2), (gGraphicsDevice.cachedConfig.Res.x), w)
+#define CenterOfLeft(w)		CenterOf(0, (gGraphicsDevice.cachedConfig.Res.x / 2), w)
 
 #endif

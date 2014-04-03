@@ -157,8 +157,8 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 	}
 	PlayersGetBoundingRectangle(gPlayers, &min, &max);
 	return
-		max.x - min.x < config->ResolutionWidth - SPLIT_PADDING &&
-		max.y - min.y < config->ResolutionHeight - SPLIT_PADDING;
+		max.x - min.x < config->Res.x - SPLIT_PADDING &&
+		max.y - min.y < config->Res.y - SPLIT_PADDING;
 }
 
 Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
@@ -166,8 +166,8 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	Vec2i centerOffset = Vec2iZero();
 	int i;
 	int numPlayersAlive = GetNumPlayersAlive();
-	int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	int w = gGraphicsDevice.cachedConfig.Res.x;
+	int h = gGraphicsDevice.cachedConfig.Res.y;
 
 	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
@@ -423,8 +423,8 @@ static int HandleKey(int cmd, int *isPaused, int *hasUsedMap, bool showExit)
 Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 {
 	Vec2i center = Vec2iZero();
-	int w = device->cachedConfig.ResolutionWidth;
-	int h = device->cachedConfig.ResolutionHeight;
+	int w = device->cachedConfig.Res.x;
+	int h = device->cachedConfig.Res.y;
 
 	if (GetNumPlayersAlive() == 1 ||
 		IsSingleScreen(
@@ -434,7 +434,7 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 		Vec2i pCenter = PlayersGetMidpoint(gPlayers);
 		Vec2i screenCenter = Vec2iNew(
 			w / 2,
-			device->cachedConfig.ResolutionHeight / 2);
+			device->cachedConfig.Res.y / 2);
 		TTileItem *pTileItem = &gPlayers[player]->tileItem;
 		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
 		center = Vec2iAdd(
@@ -646,8 +646,8 @@ int gameloop(void)
 						&gGraphicsDevice.cachedConfig,
 						gConfig.Interface.Splitscreen))
 				{
-					int w = gGraphicsDevice.cachedConfig.ResolutionWidth;
-					int h = gGraphicsDevice.cachedConfig.ResolutionHeight;
+					int w = gGraphicsDevice.cachedConfig.Res.x;
+					int h = gGraphicsDevice.cachedConfig.Res.y;
 					Vec2i screen = Vec2iAdd(
 						PlayersGetMidpoint(gPlayers),
 						Vec2iNew(-w / 2, -h / 2));

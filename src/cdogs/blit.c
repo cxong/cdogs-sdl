@@ -104,7 +104,7 @@ void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode)
 			current += pic->w;
 			continue;
 		}
-		yoff *= gGraphicsDevice.cachedConfig.ResolutionWidth;
+		yoff *= gGraphicsDevice.cachedConfig.Res.x;
 		for (j = 0; j < pic->w; j++)
 		{
 			xoff = j + x;
@@ -151,7 +151,7 @@ void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color)
 		{
 			continue;
 		}
-		yoff *= g->cachedConfig.ResolutionWidth;
+		yoff *= g->cachedConfig.Res.x;
 		for (j = -1; j < pic->size.x + 1; j++)
 		{
 			int xoff = j + pos.x + pic->offset.x;
@@ -208,8 +208,6 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 
 	for (i = 0; i < pic->h; i++)
 	{
-		int j;
-
 		yoff = i + y;
 		if (yoff > gGraphicsDevice.clipping.bottom)
 		{
@@ -220,8 +218,8 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 			current += pic->w;
 			continue;
 		}
-		yoff *= gGraphicsDevice.cachedConfig.ResolutionWidth;
-		for (j = 0; j < pic->w; j++)
+		yoff *= gGraphicsDevice.cachedConfig.Res.x;
+		for (int j = 0; j < pic->w; j++)
 		{
 			xoff = j + x;
 			if (xoff < gGraphicsDevice.clipping.left)
@@ -270,7 +268,7 @@ void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
 			current += pic->size.x;
 			continue;
 		}
-		yoff *= device->cachedConfig.ResolutionWidth;
+		yoff *= device->cachedConfig.Res.x;
 		for (int j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
@@ -314,7 +312,7 @@ void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
 			current += pic->size.x;
 			continue;
 		}
-		yoff *= device->cachedConfig.ResolutionWidth;
+		yoff *= device->cachedConfig.Res.x;
 		for (int j = -1; j < pic->size.x + 1; j++)
 		{
 			Uint32 *target;
@@ -363,7 +361,6 @@ void BlitMasked(
 	pos = Vec2iAdd(pos, pic->offset);
 	for (i = 0; i < pic->size.y; i++)
 	{
-		int j;
 		int yoff = i + pos.y;
 		if (yoff > device->clipping.bottom)
 		{
@@ -374,8 +371,8 @@ void BlitMasked(
 			current += pic->size.x;
 			continue;
 		}
-		yoff *= device->cachedConfig.ResolutionWidth;
-		for (j = 0; j < pic->size.x; j++)
+		yoff *= device->cachedConfig.Res.x;
+		for (int j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
 			int xoff = j + pos.x;
@@ -416,7 +413,7 @@ void BlitBlend(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t blend)
 			current += pic->size.x;
 			continue;
 		}
-		yoff *= g->cachedConfig.ResolutionWidth;
+		yoff *= g->cachedConfig.Res.x;
 		for (int j = 0; j < pic->size.x; j++)
 		{
 			int xoff = j + pos.x;
@@ -701,8 +698,8 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 {
 	Uint32 *pScreen = (Uint32 *)device->screen->pixels;
 	Vec2i screenSize = Vec2iNew(
-		device->cachedConfig.ResolutionWidth,
-		device->cachedConfig.ResolutionHeight);
+		device->cachedConfig.Res.x,
+		device->cachedConfig.Res.y);
 	int scr_size = screenSize.x * screenSize.y;
 	int scalef = config->ScaleFactor;
 

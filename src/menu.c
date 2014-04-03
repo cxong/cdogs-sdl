@@ -700,7 +700,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			int xKeys;
 			x = MS_CENTER_X(*ms, (CDogsTextCharWidth('a') * 10)) / 2;
 			xKeys = x * 3;
-			yStart = (gGraphicsDevice.cachedConfig.ResolutionHeight / 2) - (CDogsTextHeight() * 10);
+			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (CDogsTextHeight() * 10);
 
 			for (i = 0; i < menu->u.normal.numSubMenus; i++)
 			{
@@ -1275,6 +1275,6 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 	// Note: only for the main menu system!
 	ms->pos = Vec2iZero();
 	ms->size = Vec2iNew(
-		ms->graphics->cachedConfig.ResolutionWidth,
-		ms->graphics->cachedConfig.ResolutionHeight);
+		ms->graphics->cachedConfig.Res.x,
+		ms->graphics->cachedConfig.Res.y);
 }

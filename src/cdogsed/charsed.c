@@ -210,7 +210,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 				Vec2iNew(x, y + 20),
 				CArrayGet(&setting->characters.OtherChars, i), idx == i, 0);
 			x += 20;
-			if (x > gGraphicsDevice.cachedConfig.ResolutionWidth)
+			if (x > gGraphicsDevice.cachedConfig.Res.x)
 			{
 				x = 10;
 				y += 30;

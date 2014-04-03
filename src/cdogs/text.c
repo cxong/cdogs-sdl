@@ -378,8 +378,8 @@ void DrawTextStringSpecial(
 
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
 {
-	int scrw = gGraphicsDevice.cachedConfig.ResolutionWidth;
-	int scrh = gGraphicsDevice.cachedConfig.ResolutionHeight;
+	int scrw = gGraphicsDevice.cachedConfig.Res.x;
+	int scrh = gGraphicsDevice.cachedConfig.Res.y;
 	DrawTextStringSpecial(
 		s, opts, Vec2iZero(), Vec2iNew(scrw, scrh), Vec2iNew(xpad, ypad));
 }

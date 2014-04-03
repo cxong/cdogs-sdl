@@ -121,7 +121,7 @@ void ShowCredits(credits_displayer_t *displayer)
 	{
 		time_t now = time(NULL);
 		credit_t *credits = &displayer->credits[displayer->creditsIndex];
-		int y = gGraphicsDevice.cachedConfig.ResolutionHeight - 50;
+		int y = gGraphicsDevice.cachedConfig.Res.y - 50;
 
 		TextStringMasked(
 			&gTextManager, "Credits:",

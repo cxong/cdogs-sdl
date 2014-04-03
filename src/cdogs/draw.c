@@ -562,7 +562,7 @@ void DrawCharacterSimple(
 
 void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 {
-	Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.ResolutionHeight / 10);
+	Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.Res.y / 10);
 	Vec2i playerPos = Vec2iAdd(pos, Vec2iNew(20, 36));
 
 	if (editingName)
@@ -648,10 +648,10 @@ static void DrawGuideImage(
 	// so that the guide image stretches to the map size
 	double xScale = (double)guideImage->w / (gMap.Size.x * TILE_WIDTH);
 	double yScale = (double)guideImage->h / (gMap.Size.y * TILE_HEIGHT);
-	for (int j = 0; j < b->g->cachedConfig.ResolutionHeight; j++)
+	for (int j = 0; j < b->g->cachedConfig.Res.y; j++)
 	{
 		int y = (int)round((j + b->yTop) * yScale);
-		for (int i = 0; i < b->g->cachedConfig.ResolutionWidth; i++)
+		for (int i = 0; i < b->g->cachedConfig.Res.x; i++)
 		{
 			int x = (int)round((i + b->xTop) * xScale);
 			if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)

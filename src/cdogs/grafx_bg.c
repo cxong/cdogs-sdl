@@ -69,9 +69,9 @@ void GrafxDrawBackground(
 	DrawBufferSetFromMap(buffer, &gMap, pos, X_TILES);
 	DrawBufferDraw(buffer, Vec2iZero(), extra);
 
-	for (v.y = 0; v.y < g->cachedConfig.ResolutionHeight; v.y++)
+	for (v.y = 0; v.y < g->cachedConfig.Res.y; v.y++)
 	{
-		for (v.x = 0; v.x < g->cachedConfig.ResolutionWidth; v.x++)
+		for (v.x = 0; v.x < g->cachedConfig.Res.x; v.x++)
 		{
 			DrawPointTint(g, v, tint);
 		}

@@ -77,8 +77,8 @@ MenuSystem *MenuCreateAll(
 		handlers, graphics,
 		Vec2iZero(),
 		Vec2iNew(
-			graphics->cachedConfig.ResolutionWidth,
-			graphics->cachedConfig.ResolutionHeight));
+			graphics->cachedConfig.Res.x,
+			graphics->cachedConfig.Res.y));
 	ms->root = ms->current = MenuCreateNormal(
 		"",
 		"",

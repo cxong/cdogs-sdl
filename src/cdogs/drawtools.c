@@ -61,8 +61,8 @@ void Draw_Point(const int x, const int y, color_t c)
 	int idx = PixelIndex(
 		x,
 		y,
-		gGraphicsDevice.cachedConfig.ResolutionWidth,
-		gGraphicsDevice.cachedConfig.ResolutionHeight);
+		gGraphicsDevice.cachedConfig.Res.x,
+		gGraphicsDevice.cachedConfig.Res.y);
 	if (x < gGraphicsDevice.clipping.left ||
 		x > gGraphicsDevice.clipping.right ||
 		y < gGraphicsDevice.clipping.top ||
@@ -166,8 +166,8 @@ void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask)
 	Uint32 *screen = device->buf;
 	int idx = PixelIndex(
 		pos.x, pos.y,
-		device->cachedConfig.ResolutionWidth,
-		device->cachedConfig.ResolutionHeight);
+		device->cachedConfig.Res.x,
+		device->cachedConfig.Res.y);
 	color_t c;
 	if (pos.x < gGraphicsDevice.clipping.left ||
 		pos.x > gGraphicsDevice.clipping.right ||
@@ -186,8 +186,8 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 	Uint32 *screen = device->buf;
 	int idx = PixelIndex(
 		pos.x, pos.y,
-		device->cachedConfig.ResolutionWidth,
-		device->cachedConfig.ResolutionHeight);
+		device->cachedConfig.Res.x,
+		device->cachedConfig.Res.y);
 	color_t c;
 	if (pos.x < device->clipping.left || pos.x > device->clipping.right ||
 		pos.y < device->clipping.top || pos.y > device->clipping.bottom)
@@ -245,12 +245,12 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 	Uint32 *screen = device->buf;
 	Uint32 pixel = PixelFromColor(device, color);
 	screen += x;
-	screen += y * gGraphicsDevice.cachedConfig.ResolutionWidth;
+	screen += y * gGraphicsDevice.cachedConfig.Res.x;
 	*screen = pixel;
 	*(screen - 1) = pixel;
 	*(screen + 1) = pixel;
-	*(screen - gGraphicsDevice.cachedConfig.ResolutionWidth) = pixel;
-	*(screen + gGraphicsDevice.cachedConfig.ResolutionWidth) = pixel;
+	*(screen - gGraphicsDevice.cachedConfig.Res.x) = pixel;
+	*(screen + gGraphicsDevice.cachedConfig.Res.x) = pixel;
 }
 
 void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)

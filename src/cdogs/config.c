@@ -325,8 +325,8 @@ void ConfigLoadDefault(Config *config)
 	config->Game.HealthPickups = true;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
-	config->Graphics.ResolutionHeight = 240;
-	config->Graphics.ResolutionWidth = 320;
+	config->Graphics.Res.y = 240;
+	config->Graphics.Res.x = 320;
 	config->Graphics.ScaleFactor = 2;
 	config->Graphics.ShakeMultiplier = 1;
 	config->Graphics.ScaleMode = SCALE_MODE_NN;

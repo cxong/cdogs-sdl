@@ -335,8 +335,8 @@ void PlayerSelectMenusCreate(
 	struct PlayerData *p = pData;
 	Vec2i pos = Vec2iZero();
 	Vec2i size = Vec2iZero();
-	int w = graphics->cachedConfig.ResolutionWidth;
-	int h = graphics->cachedConfig.ResolutionHeight;
+	int w = graphics->cachedConfig.Res.x;
+	int h = graphics->cachedConfig.Res.y;
 
 	data->nameMenuSelection = (int)strlen(letters);
 	data->display.c = c;
