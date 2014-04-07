@@ -560,7 +560,6 @@ static char *MissionGetObjectiveDescription(UIObject *o, void *data)
 	Mission *m = CampaignGetCurrentMission(mData->Campaign);
 	if (!m)
 	{
-		o->IsVisible = 0;
 		return NULL;
 	}
 	int i = mData->MissionObjectiveIndex;
@@ -569,16 +568,36 @@ static char *MissionGetObjectiveDescription(UIObject *o, void *data)
 		if (i == 0)
 		{
 			// first objective and mission has no objectives
-			o->IsVisible = 1;
 			o->u.Textbox.IsEditable = 0;
 			return "-- mission objectives --";
 		}
-		o->IsVisible = 0;
 		return NULL;
 	}
-	o->IsVisible = 1;
 	o->u.Textbox.IsEditable = 1;
 	return ((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
+}
+static void MissionCheckObjectiveDescription(UIObject *o, void *data)
+{
+	MissionObjectiveData *mData = data;
+	Mission *m = CampaignGetCurrentMission(mData->Campaign);
+	if (!m)
+	{
+		o->IsVisible = false;
+		return;
+	}
+	int i = mData->MissionObjectiveIndex;
+	if ((int)m->Objectives.size <= i)
+	{
+		if (i == 0)
+		{
+			// first objective and mission has no objectives
+			o->IsVisible = true;
+			return;
+		}
+		o->IsVisible = false;
+		return;
+	}
+	o->IsVisible = true;
 }
 static char **MissionGetObjectiveDescriptionSrc(void *data)
 {
@@ -1618,6 +1637,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = pos;
 		CSTRDUP(o2->Tooltip, "insert/delete: add/remove objective");
+		o2->CheckVisible = MissionCheckObjectiveDescription;
 		UIObjectAddChild(o2, CreateObjectiveObjs(objectivesPos, co, i));
 		UIObjectAddChild(c, o2);
 	}
