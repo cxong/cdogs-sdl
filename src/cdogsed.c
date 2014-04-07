@@ -734,7 +734,9 @@ static HandleInputResult HandleInput(
 		result.Redraw = true;
 	}
 
-	if (m)
+	if (m &&
+		(m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
+		m == SDL_BUTTON_WHEELUP || m == SDL_BUTTON_WHEELDOWN))
 	{
 		result.Redraw = true;
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
@@ -862,6 +864,14 @@ static HandleInputResult HandleInput(
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_DOWN))
 		{
 			camera.y += CAMERA_PAN_SPEED;
+			result.Redraw = result.RemakeBg = true;
+		}
+		// Also pan the camera based on middle mouse drag
+		if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
+		{
+			camera = Vec2iAdd(camera, Vec2iMinus(
+				gEventHandlers.mouse.previousPos,
+				gEventHandlers.mouse.currentPos));
 			result.Redraw = result.RemakeBg = true;
 		}
 		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
