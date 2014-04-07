@@ -161,7 +161,7 @@ unsigned short MissionGetTile(Mission *m, Vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
-		return MAP_NOTHING;
+		return MAP_UNSET;
 	}
 	int idx = pos.y * m->Size.x + pos.x;
 	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
