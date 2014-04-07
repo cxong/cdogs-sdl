@@ -437,13 +437,9 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
 			op = CArrayGet(&m->u.Static.Objectives, objectiveIndex);
 		}
-		// If we've added too many, remove the first entry
+		// If we've added too many, increase number of objectives
 		MissionObjective *mobj = CArrayGet(&m->Objectives, objectiveIndex);
-		while (mobj->Count < (int)op->Positions.size)
-		{
-			CArrayDelete(&op->Positions, 0);
-			CArrayDelete(&op->Indices, 0);
-		}
+		mobj->Count = MAX(mobj->Count, (int)op->Positions.size);
 		return true;
 	}
 	return false;
