@@ -374,6 +374,60 @@ static UIObject *CreateAddObjectiveObjs(
 static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 {
 	EditorBrushAndCampaign *data = vData;
+	Mission *m = CampaignGetCurrentMission(data->Campaign);
+	// Check if the data is still the same; if so don't recreate the
+	// child UI objects
+	// This is because during the course of UI operations, this element
+	// could be highlighted again; if we recreate then we invalidate
+	// UI pointers.
+	bool needToRecreate = false;
+	int childIndex = 0;
+	for (int i = 0; i < (int)m->Objectives.size; i++)
+	{
+		MissionObjective *mobj = CArrayGet(&m->Objectives, i);
+		int secondaryCount = 1;
+		CharacterStore *store = &data->Campaign->Setting.characters;
+		switch (mobj->Type)
+		{
+		case OBJECTIVE_KILL:
+			secondaryCount = store->specialCount;
+			break;
+		case OBJECTIVE_COLLECT:
+			break;
+		case OBJECTIVE_DESTROY:
+			break;
+		case OBJECTIVE_RESCUE:
+			secondaryCount = store->prisonerCount;
+			break;
+		default:
+			continue;
+		}
+		for (int j = 0; j < (int)secondaryCount; j++)
+		{
+			if ((int)c->Children.size <= childIndex)
+			{
+				needToRecreate = true;
+				break;
+			}
+			UIObject *o2 = *(UIObject **)CArrayGet(&c->Children, childIndex);
+			if (((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex != i ||
+				((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 != j)
+			{
+				needToRecreate = true;
+				break;
+			}
+			childIndex++;
+		}
+		if (needToRecreate)
+		{
+			break;
+		}
+	}
+	if (!needToRecreate)
+	{
+		return;
+	}
+
 	// Recreate the child UI objects
 	c->Highlighted = NULL;
 	UIObject **objs = c->Children.data;
@@ -390,7 +444,6 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	o->ChangeFunc = BrushSetBrushTypeAddObjective;
 	o->u.CustomDrawFunc = DrawObjective;
 	Vec2i pos = Vec2iZero();
-	Mission *m = CampaignGetCurrentMission(data->Campaign);
 	for (int i = 0; i < (int)m->Objectives.size; i++)
 	{
 		MissionObjective *mobj = CArrayGet(&m->Objectives, i);
