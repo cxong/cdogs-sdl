@@ -470,10 +470,9 @@ static void Setup(int buildTables)
 static void Open(void)
 {
 	char filename[CDOGS_PATH_MAX];
-	int c;
-	
 	strcpy(filename, lastFile);
-	for (;;)
+	bool done = false;
+	while (!done)
 	{
 		ClearScreen(&gGraphicsDevice);
 		CDogsTextStringAt(125, 50, "Open file:");
@@ -482,28 +481,23 @@ static void Open(void)
 		CDogsTextString(filename);
 		CDogsTextChar('\021');
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-		
-		c = GetKey(&gEventHandlers);
+
+		bool doOpen = false;
+		int c = GetKey(&gEventHandlers);
 		switch (c)
 		{
 			case SDLK_RETURN:
 			case SDLK_KP_ENTER:
 				if (!filename[0])
-					break;
-				CampaignSettingTerminate(&gCampaign.Setting);
-				CampaignSettingInit(&gCampaign.Setting);
-				if (MapNewLoad(filename, &gCampaign.Setting))
 				{
-					printf("Error: cannot load %s\n", lastFile);
-					continue;
+					break;
 				}
-				Setup(1);
-				fileChanged = 0;
-				strcpy(lastFile, filename);
-				return;
+				doOpen = true;
+				break;
 				
 			case SDLK_ESCAPE:
-				return;
+				done = true;
+				break;
 				
 			case SDLK_BACKSPACE:
 				if (filename[0])
@@ -525,6 +519,26 @@ static void Open(void)
 					filename[si + 1] = 0;
 					filename[si] = (char)c;
 				}
+				break;
+		}
+		if (doOpen)
+		{
+			ClearScreen(&gGraphicsDevice);
+			DrawTextStringSpecial(
+				"Loading...", TEXT_XCENTER | TEXT_YCENTER,
+				Vec2iZero(), gGraphicsDevice.cachedConfig.Res, Vec2iZero());
+			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+			CampaignSettingTerminate(&gCampaign.Setting);
+			CampaignSettingInit(&gCampaign.Setting);
+			if (MapNewLoad(filename, &gCampaign.Setting))
+			{
+				printf("Error: cannot load %s\n", lastFile);
+				continue;
+			}
+			Setup(1);
+			fileChanged = 0;
+			strcpy(lastFile, filename);
+			done = true;
 		}
 		SDL_Delay(10);
 	}
