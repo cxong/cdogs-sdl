@@ -49,7 +49,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	o->Id = id;
 	o->Pos = pos;
 	o->Size = size;
-	o->IsVisible = 1;
+	o->IsVisible = true;
 	switch (type)
 	{
 	case UITYPE_TEXTBOX:
@@ -62,7 +62,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 		break;
 	case UITYPE_CONTEXT_MENU:
 		// Context menu always starts as invisible
-		o->IsVisible = 0;
+		o->IsVisible = false;
 		break;
 	default:
 		// do nothing
@@ -168,7 +168,7 @@ void UIObjectHighlight(UIObject *o)
 	{
 		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
 		{
-			(*childPtr)->IsVisible = 1;
+			(*childPtr)->IsVisible = true;
 			if ((*childPtr)->OnFocusFunc)
 			{
 				(*childPtr)->OnFocusFunc(*childPtr, (*childPtr)->Data);
@@ -196,14 +196,14 @@ void UIObjectUnhighlight(UIObject *o)
 	// Disable any context menu children
 	if (o->Type == UITYPE_CONTEXT_MENU)
 	{
-		o->IsVisible = 0;
+		o->IsVisible = false;
 	}
 	UIObject **childPtr = o->Children.data;
 	for (int i = 0; i < (int)o->Children.size; i++, childPtr++)
 	{
 		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
 		{
-			(*childPtr)->IsVisible = 0;
+			(*childPtr)->IsVisible = false;
 			if ((*childPtr)->OnUnfocusFunc)
 			{
 				(*childPtr)->OnUnfocusFunc((*childPtr)->Data);
@@ -241,7 +241,7 @@ static void DisableContextMenuParents(UIObject *o)
 	{
 		if (o->Parent->Type == UITYPE_CONTEXT_MENU)
 		{
-			o->Parent->IsVisible = 0;
+			o->Parent->IsVisible = false;
 		}
 		DisableContextMenuParents(o->Parent);
 	}

@@ -46,12 +46,12 @@ static void MissionCheckTypeStatic(UIObject *o, void *data)
 	Mission *m = CampaignGetCurrentMission(co);
 	if (!m || m->Type != MAPTYPE_STATIC)
 	{
-		o->IsVisible = 0;
+		o->IsVisible = false;
 		// Need to unhighlight to prevent children being drawn
 		UIObjectUnhighlight(o);
 		return;
 	}
-	o->IsVisible = 1;
+	o->IsVisible = true;
 }
 
 static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)

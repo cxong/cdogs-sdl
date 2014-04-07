@@ -97,12 +97,12 @@ static void CheckMission(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
+		o->IsVisible = false;
 		// Need to unhighlight to prevent children being drawn
 		UIObjectUnhighlight(o);
 		return;
 	}
-	o->IsVisible = 1;
+	o->IsVisible = true;
 }
 static void MissionCheckTypeClassic(UIObject *o, void *data)
 {
@@ -110,12 +110,12 @@ static void MissionCheckTypeClassic(UIObject *o, void *data)
 	Mission *m = CampaignGetCurrentMission(co);
 	if (!m || m->Type != MAPTYPE_CLASSIC)
 	{
-		o->IsVisible = 0;
+		o->IsVisible = false;
 		// Need to unhighlight to prevent children being drawn
 		UIObjectUnhighlight(o);
 		return;
 	}
-	o->IsVisible = 1;
+	o->IsVisible = true;
 }
 static char *MissionGetTitle(UIObject *o, void *data)
 {
@@ -123,11 +123,14 @@ static char *MissionGetTitle(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return NULL;
 	}
-	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Title;
+}
+static void MissionCheckVisible(UIObject *o, void *data)
+{
+	CampaignOptions *co = data;
+	o->IsVisible = CampaignGetCurrentMission(co) != NULL;
 }
 static char **MissionGetTitleSrc(void *data)
 {
@@ -144,10 +147,8 @@ static char *MissionGetDescription(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return NULL;
 	}
-	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Description;
 }
 static char **MissionGetDescriptionSrc(void *data)
@@ -165,10 +166,8 @@ static char *MissionGetSong(UIObject *o, void *data)
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return NULL;
 	}
-	o->IsVisible = 1;
 	return CampaignGetCurrentMission(co)->Song;
 }
 static const char *MissionGetWidthStr(UIObject *o, void *data)
@@ -399,10 +398,8 @@ static void MissionDrawFloorStyle(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return;
 	}
-	o->IsVisible = 1;
 	int idx = CampaignGetCurrentMission(co)->FloorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
@@ -419,10 +416,8 @@ static void MissionDrawRoomStyle(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return;
 	}
-	o->IsVisible = 1;
 	int idx = CampaignGetCurrentMission(co)->RoomStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
@@ -439,10 +434,8 @@ static void MissionDrawDoorStyle(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return;
 	}
-	o->IsVisible = 1;
 	int idx = CampaignGetCurrentMission(co)->DoorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
@@ -459,10 +452,8 @@ static void MissionDrawKeyStyle(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return;
 	}
-	o->IsVisible = 1;
 	int idx = CampaignGetCurrentMission(co)->KeyStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
@@ -479,10 +470,8 @@ static void MissionDrawExitStyle(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
-		o->IsVisible = 0;
 		return;
 	}
-	o->IsVisible = 1;
 	int idx = CampaignGetCurrentMission(co)->ExitStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
@@ -1404,6 +1393,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o->u.Textbox.TextSourceFunc = MissionGetTitleSrc;
 	o->Data = co;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
+	o->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(o, CreateMissionObjs(co));
 	UIObjectAddChild(c, o);
 
@@ -1477,6 +1467,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeFloorStyle;
 	o2->Pos = pos;
+	o2->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o2);
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
@@ -1485,6 +1476,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomStyle;
 	o2->Pos = pos;
+	o2->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o2);
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
@@ -1493,6 +1485,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorStyle;
 	o2->Pos = pos;
+	o2->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o2);
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
@@ -1501,6 +1494,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeKeyStyle;
 	o2->Pos = pos;
+	o2->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o2);
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
@@ -1509,6 +1503,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeExitStyle;
 	o2->Pos = pos;
+	o2->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o2);
 
 	// colours
@@ -1574,6 +1569,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	oc->u.Textbox.TextSourceFunc = MissionGetDescriptionSrc;
 	oc->Data = co;
 	CSTRDUP(oc->u.Textbox.Hint, "(Mission description)");
+	oc->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(o2, oc);
 	UIObjectAddChild(c, o2);
 
@@ -1702,6 +1698,7 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
+	o->CheckVisible = MissionCheckVisible;
 	UIObjectAddChild(c, o);
 
 	return c;
