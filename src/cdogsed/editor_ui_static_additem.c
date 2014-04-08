@@ -338,6 +338,8 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 	for (int i = 0; i < (int)store->OtherChars.size; i++)
 	{
 		UIObject *o2 = UIObjectCopy(o);
+		Character *ch = CArrayGet(&store->OtherChars, i);
+		CSTRDUP(o2->Tooltip, GunGetName(ch->gun));
 		o2->IsDynamicData = 1;
 		CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
 		((EditorBrushAndCampaign *)o2->Data)->Brush.Brush = data->Brush.Brush;
@@ -471,7 +473,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		for (int j = 0; j < (int)secondaryCount; j++)
 		{
 			UIObject *o2 = UIObjectCopy(o);
-			CSTRDUP(c->Tooltip, ObjectiveTypeStr(mobj->Type));
+			CSTRDUP(o2->Tooltip, ObjectiveTypeStr(mobj->Type));
 			o2->IsDynamicData = 1;
 			CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
 			((EditorBrushAndCampaign *)o2->Data)->Brush.Brush =
