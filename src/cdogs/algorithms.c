@@ -71,7 +71,14 @@ bool HasClearLine(Vec2i from, Vec2i to, HasClearLineData *data)
 	int x;
 	int w = data->tileSize.x;
 	int h = data->tileSize.y;
-	int isSteep = abs(to.y - from.y) > abs(to.x - from.x);
+
+	// Sanity check
+	if (Vec2iEqual(from, to))
+	{
+		return true;
+	}
+
+	bool isSteep = abs(to.y - from.y) > abs(to.x - from.x);
 	if (isSteep)
 	{
 		// Swap x and y
