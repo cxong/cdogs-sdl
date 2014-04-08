@@ -96,7 +96,7 @@ Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 8
 Mission currentMission;
 Mission lastMission;
-#define AUTOSAVE_INTERVAL_SECONDS 600
+#define AUTOSAVE_INTERVAL_SECONDS 60
 Uint32 ticksAutosave;
 Uint32 sTicksElapsed;
 
@@ -1105,7 +1105,7 @@ static void EditCampaign(void)
 
 	SDL_EnableKeyRepeat(0, 0);
 	Uint32 ticksNow = SDL_GetTicks();
-	Uint32 sTicksElapsed = 0;
+	sTicksElapsed = 0;
 	ticksAutosave = AUTOSAVE_INTERVAL_SECONDS * 1000;
 	for (;;)
 	{
