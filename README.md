@@ -29,11 +29,11 @@ C-Dogs SDL is a classic overhead run-and-gun game, supporting up to 4 players
 in co-op and deathmatch modes. Customize your player, choose from up to 11 weapons,
 and try over 100 user-created campaigns. Have fun!
 
-For the latest release notes please see https://github.com/cxong/cdogs-sdl/wiki/Release-Notes
+[Releases and release notes](https://github.com/cxong/cdogs-sdl/releases)
 
-For more information about the original C-Dogs read 'original\_readme.txt'.
+For more information about the original C-Dogs read [`original\_readme.txt`](https://raw.githubusercontent.com/cxong/cdogs-sdl/master/doc/original_readme.txt).
 
-Join the C-Dogs SDL mailing list here: https://groups.google.com/forum/#!forum/c-dogs-sdl
+[C-Dogs SDL mailing list](https://groups.google.com/forum/#!forum/c-dogs-sdl)
 
 
 2.Tested Environments
@@ -57,11 +57,7 @@ operating system, platform or toaster please contact us! :-)
 
 Please use the installers for your platform for installing.
 
-To compile C-Dogs SDL you need to have the SDL libraries previously installed,
-the SDL\_mixer libraries also installed if you want better sound (and music),
-and a compiler (gcc recommended) and the appropriate header files.
-
-See the wiki for getting started instructions.
+Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started) to build on your platform. You will need the SDL development libraries installed.
 
 4. Command line options
 -----------------------
@@ -111,5 +107,3 @@ better) or anything else related to C-Dogs SDL, check out the mailing list:
 Or email:
 
 > Cong <congusbongus@gmail.com>
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/cxong/cdogs-sdl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
