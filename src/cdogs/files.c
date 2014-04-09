@@ -520,9 +520,9 @@ const char *GetHomeDirectory(void)
 	p = getenv(HOME_DIR_ENV);
 	if (p != NULL && strlen(p) != 0)
 	{
-		CCALLOC(cdogs_homepath, strlen(p) + 1);
-		strncpy(cdogs_homepath, p, strlen(p));
-		strncat(cdogs_homepath, "/", 1);
+		CCALLOC(cdogs_homepath, strlen(p) + 2);
+		strcpy(cdogs_homepath, p);
+		cdogs_homepath[strlen(p)] = '/';
 		return cdogs_homepath;
 	}
 
@@ -548,7 +548,7 @@ char *GetDataFilePath(const char *path)
  *
  * returns a full path to a data file...
  */
-char cfpath[512];
+char cfpath[CDOGS_PATH_MAX];
 const char *GetConfigFilePath(const char *name)
 {
 	const char *homedir = GetHomeDirectory();

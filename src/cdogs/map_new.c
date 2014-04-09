@@ -114,6 +114,7 @@ bail:
 	{
 		fclose(f);
 	}
+	json_free_value(&root);
 	return err;
 }
 

@@ -211,7 +211,6 @@ void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 			SDL_GetTicks() - waitStart < 1000);
 	}
 	MusicStop(device);
-	Mix_CloseAudio();
 	for (i = 0; i < SND_COUNT; i++)
 	{
 		if (device->sounds[i].isLoaded)
@@ -220,6 +219,11 @@ void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 			device->sounds[i].data = NULL;
 		}
 	}
+	while (Mix_Init(0))
+	{
+		Mix_Quit();
+	}
+	Mix_CloseAudio();
 }
 
 void SoundPlayAtPosition(

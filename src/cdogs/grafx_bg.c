@@ -57,6 +57,7 @@ void GrafxMakeRandomBackground(
 	KillAllActors();
 	KillAllObjects();
 	RemoveAllWatches();
+	CampaignSettingTerminate(&co->Setting);
 	co->seed = gConfig.Game.RandomSeed;
 }
 

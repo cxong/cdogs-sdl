@@ -369,9 +369,11 @@ void ConfigSaveJSON(Config *config, const char *filename)
 	AddQuickPlayConfigNode(&config->QuickPlay, root);
 
 	json_tree_to_string(root, &text);
-	fputs(json_format_string(text), f);
+	char *formatText = json_format_string(text);
+	fputs(formatText, f);
 
 	// clean up
+	CFREE(formatText);
 	CFREE(text);
 	json_free_value(&root);
 

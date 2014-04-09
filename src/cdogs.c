@@ -1203,6 +1203,7 @@ int main(int argc, char *argv[])
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
 	int forceResolution = 0;
+	int err = 0;
 
 	srand((unsigned int)time(NULL));
 
@@ -1286,10 +1287,11 @@ int main(int argc, char *argv[])
 				break;
 			case 'h':
 				PrintHelp();
-				exit(EXIT_SUCCESS);
+				goto bail;
 			default:
 				PrintHelp();
-				exit(EXIT_FAILURE);
+				err = EXIT_FAILURE;
+				goto bail;
 			}
 		}
 	}
@@ -1298,12 +1300,14 @@ int main(int argc, char *argv[])
 	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0)
 	{
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
+		err = EXIT_FAILURE;
+		goto bail;
 	}
 	if (SDLNet_Init() == -1)
 	{
 		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
-		exit(EXIT_FAILURE);
+		err = EXIT_FAILURE;
+		goto bail;
 	}
 
 	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
@@ -1339,12 +1343,12 @@ int main(int argc, char *argv[])
 	BulletInitialize();
 	WeaponInitialize();
 	PlayerDataInitialize();
-	CampaignSettingInit(&gCampaign.Setting);
 	MapInit(&gMap);
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
-		exit(0);
+		err = EXIT_FAILURE;
+		goto bail;
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
 	TextManagerInit(&gTextManager, GetDataFilePath("graphics/font.px"));
@@ -1365,7 +1369,8 @@ int main(int argc, char *argv[])
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");
-		exit(EXIT_FAILURE);
+		err = EXIT_FAILURE;
+		goto bail;
 	}
 	else
 	{
@@ -1374,8 +1379,11 @@ int main(int argc, char *argv[])
 		debug(D_NORMAL, ">> Entering main loop\n");
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
+
+bail:
 	debug(D_NORMAL, ">> Shutting down...\n");
 	MapTerminate(&gMap);
+	MissionOptionsTerminate(&gMission);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 
@@ -1401,8 +1409,6 @@ int main(int argc, char *argv[])
 	SDLNet_Quit();
 	SDL_Quit();
 
-	printf("Bye :)\n");
-
-	exit(EXIT_SUCCESS);
+	exit(err);
 }
 

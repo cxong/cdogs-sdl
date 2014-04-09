@@ -55,6 +55,13 @@ void CampaignSettingInit(CampaignSetting *setting)
 }
 void CampaignSettingTerminate(CampaignSetting *setting)
 {
+	CFREE(setting->Title);
+	CFREE(setting->Author);
+	CFREE(setting->Description);
+	for (int i = 0; i < (int)setting->Missions.size; i++)
+	{
+		MissionTerminate(CArrayGet(&setting->Missions, i));
+	}
 	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
 }

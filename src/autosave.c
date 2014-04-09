@@ -178,9 +178,11 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	AddMissionNodes(autosave, root, "Missions");
 
 	json_tree_to_string(root, &text);
-	fputs(json_format_string(text), f);
+	char *formatText = json_format_string(text);
+	fputs(formatText, f);
 	
 	// clean up
+	free(formatText);
 	free(text);
 	json_free_value(&root);
 	

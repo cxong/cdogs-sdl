@@ -285,4 +285,5 @@ void SetupQuickPlayCampaign(
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
 	CArrayPushBack(&setting->Missions, m);
+	CFREE(m);
 }

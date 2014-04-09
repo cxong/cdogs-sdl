@@ -68,6 +68,13 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 		fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
 		return;
 	}
+	if (image->format->BytesPerPixel != 4)
+	{
+		perror("Cannot load non-32-bit image");
+		fprintf(stderr, "Only 32-bit depth images supported (%s)\n", path);
+		SDL_FreeSurface(image);
+		return;
+	}
 	char buf[CDOGS_FILENAME_MAX];
 	const char *dot = strrchr(name, '.');
 	if (dot)
@@ -85,6 +92,7 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	CSTRDUP(n.name, buf);
 	n.pic.size = Vec2iNew(image->w, image->h);
 	n.pic.offset = Vec2iZero();
+	SDL_LockSurface(image);
 	SDL_Surface *s = SDL_ConvertSurface(
 		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
 	if (!s)
@@ -106,6 +114,7 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	}
 	SDL_UnlockSurface(s);
 	SDL_FreeSurface(s);
+	SDL_UnlockSurface(image);
 	SDL_FreeSurface(image);
 	CArrayPushBack(&pm->pics, &n);
 }
@@ -127,18 +136,23 @@ static void PicManagerLoadDirImpl(
 			perror("Cannot read image file");
 			goto bail;
 		}
-		if (file.is_reg &&
-			IMG_isPNG(SDL_RWFromFile(file.path, "rb")))
+		if (file.is_reg)
 		{
-			if (prefix)
+			SDL_RWops *rwops = SDL_RWFromFile(file.path, "rb");
+			bool isPng = IMG_isPNG(rwops);
+			rwops->close(rwops);
+			if (isPng)
 			{
-				char buf[CDOGS_PATH_MAX];
-				sprintf(buf, "%s/%s", prefix, file.name);
-				AddPic(pm, buf, file.path);
-			}
-			else
-			{
-				AddPic(pm, file.name, file.path);
+				if (prefix)
+				{
+					char buf[CDOGS_PATH_MAX];
+					sprintf(buf, "%s/%s", prefix, file.name);
+					AddPic(pm, buf, file.path);
+				}
+				else
+				{
+					AddPic(pm, file.name, file.path);
+				}
 			}
 		}
 		else if (file.is_dir && file.name[0] != '.')

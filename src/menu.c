@@ -96,6 +96,7 @@ void MenuSystemTerminate(MenuSystem *ms)
 {
 	MenuDestroySubmenus(ms->root);
 	CFREE(ms->root);
+	CFREE(ms->exitTypes);
 	CFREE(ms->customDisplayFuncs);
 	CFREE(ms->customDisplayDatas);
 	memset(ms, 0, sizeof *ms);
@@ -917,7 +918,6 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 void MenuLoadCampaign(campaign_entry_t *entry)
 {
 	gCampaign.Entry = *entry;
-	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 	if (entry->isBuiltin)
 	{

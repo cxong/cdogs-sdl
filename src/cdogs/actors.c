@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ai_utils.h"
 #include "character.h"
 #include "collision.h"
 #include "config.h"
@@ -388,7 +389,7 @@ TActor *RemoveActor(TActor * actor)
 				break;
 			}
 		}
-		CFREE(actor->aiContext);
+		AIContextTerminate(actor->aiContext);
 		CFREE(actor);
 		return *h;
 	}
@@ -1023,6 +1024,7 @@ void KillAllActors(void)
 		actorList = actorList->next;
 		RemoveActor(actor);
 	}
+	CASSERT(actorList == NULL, "failed to kill all actors");
 }
 
 unsigned char BestMatch(const TPalette palette, int r, int g, int b)

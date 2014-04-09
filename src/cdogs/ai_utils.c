@@ -490,3 +490,13 @@ int AIHunt(TActor *actor)
 
 	return cmd;
 }
+
+void AIContextTerminate(void *aiContext)
+{
+	AIGotoContext *c = aiContext;
+	if (c)
+	{
+		CFREE(c->Path);
+	}
+	CFREE(c);
+}

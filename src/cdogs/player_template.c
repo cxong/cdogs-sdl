@@ -115,7 +115,8 @@ void LoadPlayerTemplates(
 
 	if (json_find_first_label(root, "PlayerTemplates") == NULL)
 	{
-		return;
+		printf("Error: unknown player templates format\n");
+		goto bail;
 	}
 	child = json_find_first_label(root, "PlayerTemplates")->child->child;
 	i = 0;
@@ -153,19 +154,19 @@ void SavePlayerTemplates(
 {
 	FILE *f = fopen(GetConfigFilePath(filename), "w");
 	char *text = NULL;
-	json_t *root;
+	char *formatText = NULL;
+	json_t *root = json_new_object();
 
 	if (f == NULL)
 	{
 		printf("Error saving player templates '%s'\n", filename);
-		return;
+		goto bail;
 	}
 
 	debug(D_NORMAL, "begin\n");
 
 	setlocale(LC_ALL, "");
 
-	root = json_new_object();
 	json_insert_pair_into_object(root, "Version", json_new_number("1"));
 	if (PlayerTemplatesGetCount(templates) > 0)
 	{
@@ -180,13 +181,18 @@ void SavePlayerTemplates(
 	}
 
 	json_tree_to_string(root, &text);
-	fputs(json_format_string(text), f);
+	formatText = json_format_string(text);
+	fputs(formatText, f);
 
+bail:
 	// clean up
+	free(formatText);
 	free(text);
 	json_free_value(&root);
-
-	fclose(f);
+	if (f != NULL)
+	{
+		fclose(f);
+	}
 }
 
 int PlayerTemplatesGetCount(PlayerTemplate templates[MAX_TEMPLATE])

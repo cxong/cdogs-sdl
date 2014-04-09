@@ -65,4 +65,6 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 int AIGoto(TActor *actor, Vec2i target);
 int AIHunt(TActor *actor);
 
+void AIContextTerminate(void *aiContext);
+
 #endif
