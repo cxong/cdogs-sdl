@@ -736,8 +736,8 @@ unsigned short GenerateAccessMask(int *accessLevel)
 
 void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end)
 {
-	start->x = (rand() % (abs(size.x) - EXIT_WIDTH));
+	start->x = (rand() % (abs(size.x) - EXIT_WIDTH - 1));
 	end->x = start->x + EXIT_WIDTH + 1;
-	start->y = (rand() % (abs(size.y) - EXIT_HEIGHT));
+	start->y = (rand() % (abs(size.y) - EXIT_HEIGHT - 1));
 	end->y = start->y + EXIT_HEIGHT + 1;
 }
