@@ -52,7 +52,7 @@ void GrafxMakeRandomBackground(
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
 		device, &buffer, co, mo, map,
-		tint, 0, 1, Vec2iCenterOfTile(map->Size), NULL);
+		tint, 0, 1, Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2)), NULL);
 	DrawBufferTerminate(&buffer);
 	KillAllActors();
 	KillAllObjects();

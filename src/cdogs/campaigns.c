@@ -64,6 +64,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	}
 	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
+	memset(setting, 0, sizeof *setting);
 }
 
 void CampaignListInit(campaign_list_t *list);
