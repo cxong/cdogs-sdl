@@ -451,7 +451,7 @@ static void Autosave(void)
 {
 	if (fileChanged && sTicksElapsed > ticksAutosave)
 	{
-		ticksAutosave += AUTOSAVE_INTERVAL_SECONDS * 1000;
+		ticksAutosave = sTicksElapsed + AUTOSAVE_INTERVAL_SECONDS * 1000;
 		char buf[CDOGS_PATH_MAX];
 		sprintf(buf, "%s~%d", lastFile, sAutosaveIndex);
 		fprintf(stderr, "Autosaving...");
