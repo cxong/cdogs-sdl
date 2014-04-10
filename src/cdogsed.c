@@ -85,6 +85,7 @@ static UIObject *sTooltipObj = NULL;
 static DrawBuffer sDrawBuffer;
 static bool sJustLoaded = true;
 static bool sHasUnbakedChanges = false;
+static int sAutosaveIndex = 0;
 
 
 // Globals
@@ -448,15 +449,15 @@ static void AdjustXC(int yc, int *xc)
 
 static void Autosave(void)
 {
-	static int autosaveIndex = 1;
 	if (fileChanged && sTicksElapsed > ticksAutosave)
 	{
 		ticksAutosave += AUTOSAVE_INTERVAL_SECONDS * 1000;
 		char buf[CDOGS_PATH_MAX];
-		sprintf(buf, "%s~%d", lastFile, autosaveIndex);
+		sprintf(buf, "%s~%d", lastFile, sAutosaveIndex);
 		fprintf(stderr, "Autosaving...");
 		MapNewSave(buf, &gCampaign.Setting);
 		fprintf(stderr, "done\n");
+		sAutosaveIndex++;
 	}
 }
 
@@ -552,6 +553,7 @@ static void Open(void)
 			Setup(1);
 			strcpy(lastFile, filename);
 			done = true;
+			sAutosaveIndex = 0;
 		}
 		SDL_Delay(10);
 	}
@@ -622,6 +624,7 @@ static void Save(void)
 		MapNewSave(filename, &gCampaign.Setting);
 		fileChanged = 0;
 		strcpy(lastFile, filename);
+		sAutosaveIndex = 0;
 	}
 }
 
