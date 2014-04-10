@@ -130,9 +130,22 @@ static int IsBrushPosValid(Vec2i pos, Mission *m)
 
 static void MakeBackground(GraphicsDevice *g, int buildTables)
 {
-	int i;
+	if (buildTables)
+	{
+		// Automatically pan camera to middle of screen
+		Mission *m = gMission.missionData;
+		Vec2i focusTile = Vec2iScaleDiv(m->Size, 2);
+		// Better yet, if the map has a known start position, focus on that
+		if (m->Type == MAPTYPE_STATIC &&
+			!Vec2iEqual(m->u.Static.Start, Vec2iZero()))
+		{
+			focusTile = m->u.Static.Start;
+		}
+		camera = Vec2iCenterOfTile(focusTile);
+	}
+
 	// Clear background first
-	for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 	{
 		g->buf[i] = PixelFromColor(g, colorBlack);
 	}
