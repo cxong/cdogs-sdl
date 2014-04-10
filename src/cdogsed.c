@@ -449,7 +449,7 @@ static void AdjustXC(int yc, int *xc)
 static void Autosave(void)
 {
 	static int autosaveIndex = 1;
-	if (sTicksElapsed > ticksAutosave)
+	if (fileChanged && sTicksElapsed > ticksAutosave)
 	{
 		ticksAutosave += AUTOSAVE_INTERVAL_SECONDS * 1000;
 		char buf[CDOGS_PATH_MAX];
@@ -548,8 +548,8 @@ static void Open(void)
 				printf("Error: cannot load %s\n", lastFile);
 				continue;
 			}
-			Setup(1);
 			fileChanged = 0;
+			Setup(1);
 			strcpy(lastFile, filename);
 			done = true;
 		}
@@ -820,10 +820,10 @@ static HandleInputResult HandleInput(
 				if (r == EDITOR_RESULT_CHANGED ||
 					r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
+					fileChanged = 1;
 					Autosave();
 					result.RemakeBg = true;
 					sHasUnbakedChanges = true;
-					fileChanged = 1;
 				}
 				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
@@ -844,11 +844,11 @@ static HandleInputResult HandleInput(
 			if (r == EDITOR_RESULT_CHANGED ||
 				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
+				fileChanged = 1;
 				Autosave();
 				result.Redraw = true;
 				result.RemakeBg = true;
 				sHasUnbakedChanges = true;
-				fileChanged = 1;
 			}
 			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
