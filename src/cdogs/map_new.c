@@ -36,7 +36,7 @@
 #include "files.h"
 #include "json_utils.h"
 
-#define VERSION 1
+#define VERSION 2
 
 
 int GetNumWeapons(int weapons[GUN_COUNT])
@@ -118,7 +118,7 @@ bail:
 	return err;
 }
 
-static void LoadMissions(CArray *missions, json_t *missionsNode);
+static void LoadMissions(CArray *missions, json_t *missionsNode, int version);
 static void LoadCharacters(CharacterStore *c, json_t *charactersNode);
 int MapNewLoad(const char *filename, CampaignSetting *c)
 {
@@ -166,7 +166,7 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	c->Author = GetString(root, "Author");
 	CFREE(c->Description);
 	c->Description = GetString(root, "Description");
-	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child);
+	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child, version);
 	LoadCharacters(&c->characters, json_find_first_label(root, "Characters")->child);
 
 bail:
@@ -185,13 +185,8 @@ static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
-static void LoadStaticItems(Mission *m, json_t *node, char *name);
-static void LoadStaticWrecks(Mission *m, json_t *node, char *name);
-static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
-static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
-static void LoadStaticKeys(Mission *m, json_t *node, char *name);
-static void LoadStaticExit(Mission *m, json_t *node, char *name);
-static void LoadMissions(CArray *missions, json_t *missionsNode)
+static bool TryLoadStaticMap(Mission *m, json_t *node, int version);
+static void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 {
 	json_t *child;
 	for (child = missionsNode->child; child; child = child->next)
@@ -234,28 +229,9 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		case MAPTYPE_STATIC:
+			if (!TryLoadStaticMap(&m, child, version))
 			{
-				json_t *tiles = json_find_first_label(child, "Tiles");
-				if (!tiles || !tiles->child)
-				{
-					continue;
-				}
-				tiles = tiles->child;
-				CArrayInit(&m.u.Static.Tiles, sizeof(unsigned short));
-				for (tiles = tiles->child; tiles; tiles = tiles->next)
-				{
-					unsigned short n = (unsigned short)atoi(tiles->text);
-					CArrayPushBack(&m.u.Static.Tiles, &n);
-				}
-
-				LoadStaticItems(&m, child, "StaticItems");
-				LoadStaticWrecks(&m, child, "StaticWrecks");
-				LoadStaticCharacters(&m, child, "StaticCharacters");
-				LoadStaticObjectives(&m, child, "StaticObjectives");
-				LoadStaticKeys(&m, child, "StaticKeys");
-
-				LoadVec2i(&m.u.Static.Start, child, "Start");
-				LoadStaticExit(&m, child, "Exit");
+				continue;
 			}
 			break;
 		default:
@@ -264,6 +240,54 @@ static void LoadMissions(CArray *missions, json_t *missionsNode)
 		}
 		CArrayPushBack(missions, &m);
 	}
+}
+static void LoadStaticItems(Mission *m, json_t *node, char *name);
+static void LoadStaticWrecks(Mission *m, json_t *node, char *name);
+static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
+static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
+static void LoadStaticKeys(Mission *m, json_t *node, char *name);
+static void LoadStaticExit(Mission *m, json_t *node, char *name);
+static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
+{
+	CArrayInit(&m->u.Static.Tiles, sizeof(unsigned short));
+	if (version == 1)
+	{
+		// JSON array
+		json_t *tiles = json_find_first_label(node, "Tiles");
+		if (!tiles || !tiles->child)
+		{
+			return false;
+		}
+		tiles = tiles->child;
+		for (tiles = tiles->child; tiles; tiles = tiles->next)
+		{
+			unsigned short n = (unsigned short)atoi(tiles->text);
+			CArrayPushBack(&m->u.Static.Tiles, &n);
+		}
+	}
+	else
+	{
+		// CSV string
+		char *tileCSV = GetString(node, "Tiles");
+		char *pch = strtok(tileCSV, ",");
+		while (pch != NULL)
+		{
+			unsigned short n = (unsigned short)atoi(pch);
+			CArrayPushBack(&m->u.Static.Tiles, &n);
+			pch = strtok(NULL, ",");
+		}
+	}
+
+	LoadStaticItems(m, node, "StaticItems");
+	LoadStaticWrecks(m, node, "StaticWrecks");
+	LoadStaticCharacters(m, node, "StaticCharacters");
+	LoadStaticObjectives(m, node, "StaticObjectives");
+	LoadStaticKeys(m, node, "StaticKeys");
+
+	LoadVec2i(&m->u.Static.Start, node, "Start");
+	LoadStaticExit(m, node, "Exit");
+
+	return true;
 }
 static void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 {
@@ -799,15 +823,29 @@ static json_t *SaveClassicDoors(Mission *m)
 
 static json_t *SaveStaticTiles(Mission *m)
 {
-	json_t *tiles = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Tiles.size; i++)
+	// Create a text buffer for CSV
+	// The buffer will contain n*5 chars (tiles, allow 5 chars each),
+	// and n - 1 commas, so 6n total
+	int size = (int)m->u.Static.Tiles.size;
+	char *bigbuf;
+	CCALLOC(bigbuf, size * 6);
+	char *pBuf = bigbuf;
+	for (int i = 0; i < size; i++)
 	{
 		char buf[32];
 		sprintf(buf, "%d", *(unsigned short *)CArrayGet(
 			&m->u.Static.Tiles, i));
-		json_insert_child(tiles, json_new_number(buf));
+		strcpy(pBuf, buf);
+		pBuf += strlen(buf);
+		if (i < size - 1)
+		{
+			*pBuf = ',';
+			pBuf++;
+		}
 	}
-	return tiles;
+	json_t *node = json_new_string(bigbuf);
+	CFREE(bigbuf);
+	return node;
 }
 static json_t *SaveStaticItems(Mission *m)
 {
