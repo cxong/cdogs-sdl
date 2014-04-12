@@ -483,6 +483,7 @@ static void CheckTrigger(TActor *actor, Vec2i pos)
 static void PickupObject(TActor * actor, TObject * object)
 {
 	bool isKey = false;
+	bool canPickup = true;
 	switch (object->Type)
 	{
 	case OBJ_JEWEL:
@@ -500,7 +501,11 @@ static void PickupObject(TActor * actor, TObject * object)
 		break;
 
 	case OBJ_HEALTH:
+		// Don't pick up unless taken damage
+		canPickup = false;
+		if (actor->health < actor->character->maxHealth)
 		{
+			canPickup = true;
 			GameEvent e;
 			e.Type = GAME_EVENT_TAKE_HEALTH_PICKUP;
 			e.u.PickupPlayer = actor->pData->playerIndex;
@@ -541,7 +546,10 @@ static void PickupObject(TActor * actor, TObject * object)
 		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT,
 		actor->pData->playerIndex,
 		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-	RemoveObject(object);
+	if (canPickup)
+	{
+		RemoveObject(object);
+	}
 }
 
 bool TryMoveActor(TActor *actor, Vec2i pos)

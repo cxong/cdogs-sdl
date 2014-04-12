@@ -750,7 +750,7 @@ void Victory(GraphicsDevice *graphics)
 			break;
 	}
 
-	Vec2i pos = Vec2iNew(w - TextGetStringWidth(s) / 2, h / 2 + 20);
+	Vec2i pos = Vec2iNew((w - TextGetStringWidth(s)) / 2, h / 2 + 20);
 	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
 	pos = TextStringMasked(&gTextManager, s, graphics, pos, colorPurple);
 	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
