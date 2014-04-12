@@ -863,19 +863,26 @@ static void DrawNumUpdate(
 {
 	CASSERT(update->Amount != 0, "num update with zero amount");
 	color_t color = update->Amount > 0 ? colorGreen : colorRed;
-	
-	// Find the right position to draw the update
-	// Make sure the update is displayed lined up with the lowest digits
-	// Find the position of where the normal text is displayed,
-	// and move to its right
+
 	char s[50];
-	sprintf(s, formatText, currentValue);
-	pos.x += TextGetSize(s).x;
-	// Then find the size of the update, and move left
-	sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
-	pos.x -= TextGetSize(s).x;
-	// The final position should ensure the score update's lowest digit
-	// lines up with the normal score's lowest digit
+	if (!(flags & HUDFLAGS_PLACE_RIGHT))
+	{
+		// Find the right position to draw the update
+		// Make sure the update is displayed lined up with the lowest digits
+		// Find the position of where the normal text is displayed,
+		// and move to its right
+		sprintf(s, formatText, currentValue);
+		pos.x += TextGetSize(s).x;
+		// Then find the size of the update, and move left
+		sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
+		pos.x -= TextGetSize(s).x;
+		// The final position should ensure the score update's lowest digit
+		// lines up with the normal score's lowest digit
+	}
+	else
+	{
+		sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
+	}
 
 	// Now animate the score update based on its stage
 	int timer = update->TimerMax - update->Timer;
@@ -912,6 +919,7 @@ static void DrawNumUpdate(
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		textFlags |= TEXT_BOTTOM;
+		pos.y += BOTTOM_PADDING;
 	}
 
 	Vec2i screenSize = Vec2iNew(
