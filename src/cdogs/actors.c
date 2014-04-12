@@ -798,14 +798,41 @@ int ActorTryShoot(TActor *actor, int cmd)
 	return willShoot;
 }
 
-int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
+static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
+void CommandActor(TActor * actor, int cmd, int ticks)
+{
+	actor->MovePos = actor->Pos;
+	actor->lastCmd = cmd;
+
+	if (actor->confused)
+		cmd = ((cmd & 5) << 1) | ((cmd & 10) >> 1) | (cmd & 0xF0);
+
+	if (actor->health > 0)
+	{
+		int hasChangedDirection, hasShot, hasMoved;
+		hasChangedDirection = ActorTryChangeDirection(actor, cmd);
+		hasShot = ActorTryShoot(actor, cmd);
+		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
+		if (!hasChangedDirection && !hasShot && !hasMoved)
+		{
+			// Idle if player hasn't done anything
+			if (actor->state != STATE_IDLE &&
+				actor->state != STATE_IDLELEFT &&
+				actor->state != STATE_IDLERIGHT)
+			{
+				SetStateForActor(actor, STATE_IDLE);
+			}
+		}
+	}
+}
+static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 {
 	int canMoveWhenShooting =
 		gConfig.Game.MoveWhenShooting ||
 		!hasShot ||
 		(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_STRAFE &&
 		actor->flags & FLAGS_SPECIAL_USED);
-	int willMove =
+	bool willMove =
 		!actor->petrified &&
 		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
 		canMoveWhenShooting;
@@ -814,19 +841,19 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 		int moveAmount = actor->character->speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
-			pos->x -= moveAmount;
+			actor->MovePos.x -= moveAmount;
 		}
 		else if (cmd & CMD_RIGHT)
 		{
-			pos->x += moveAmount;
+			actor->MovePos.x += moveAmount;
 		}
 		if (cmd & CMD_UP)
 		{
-			pos->y -= moveAmount;
+			actor->MovePos.y -= moveAmount;
 		}
 		else if (cmd & CMD_DOWN)
 		{
-			pos->y += moveAmount;
+			actor->MovePos.y += moveAmount;
 		}
 
 		if (actor->state != STATE_WALKING_1 &&
@@ -848,73 +875,6 @@ int ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks, Vec2i *pos)
 		}
 	}
 	return willMove;
-}
-
-void CommandActor(TActor * actor, int cmd, int ticks)
-{
-	Vec2i movePos = actor->Pos;
-	int shallMove = 0;
-
-	if (actor->dx || actor->dy)
-	{
-		int i;
-		shallMove = 1;
-
-		movePos.x += actor->dx * ticks;
-		movePos.y += actor->dy * ticks;
-
-		for (i = 0; i < ticks; i++)
-		{
-			if (actor->dx > 0)
-			{
-				actor->dx = MAX(0, actor->dx - 32);
-			}
-			else if (actor->dx < 0)
-			{
-				actor->dx = MIN(0, actor->dx + 32);
-			}
-			if (actor->dy > 0)
-			{
-				actor->dy = MAX(0, actor->dy - 32);
-			}
-			else if (actor->dy < 0)
-			{
-				actor->dy = MIN(0, actor->dy + 32);
-			}
-		}
-	}
-
-	actor->lastCmd = cmd;
-
-	if (actor->confused)
-		cmd = ((cmd & 5) << 1) | ((cmd & 10) >> 1) | (cmd & 0xF0);
-
-	if (actor->health > 0)
-	{
-		int hasChangedDirection, hasShot, hasMoved;
-		hasChangedDirection = ActorTryChangeDirection(actor, cmd);
-		hasShot = ActorTryShoot(actor, cmd);
-		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks, &movePos);
-		if (!hasChangedDirection && !hasShot && !hasMoved)
-		{
-			// Idle if player hasn't done anything
-			if (actor->state != STATE_IDLE &&
-				actor->state != STATE_IDLELEFT &&
-				actor->state != STATE_IDLERIGHT)
-			{
-				SetStateForActor(actor, STATE_IDLE);
-			}
-		}
-		if (hasMoved)
-		{
-			shallMove = 1;
-		}
-	}
-
-	if (shallMove)
-	{
-		TryMoveActor(actor, movePos);
-	}
 }
 
 void SlideActor(TActor *actor, int cmd)
@@ -961,10 +921,13 @@ void SlideActor(TActor *actor, int cmd)
 	actor->slideLock = SLIDE_LOCK;
 }
 
+static void ActorUpdatePosition(TActor *actor, int ticks);
 void UpdateAllActors(int ticks)
 {
 	TActor *actor = actorList;
-	while (actor) {
+	while (actor)
+	{
+		ActorUpdatePosition(actor, ticks);
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX)
 		{
@@ -1008,6 +971,40 @@ void UpdateAllActors(int ticks)
 			}
 			actor = actor->next;
 		}
+	}
+}
+static void ActorUpdatePosition(TActor *actor, int ticks)
+{
+	if (actor->dx || actor->dy)
+	{
+		actor->MovePos = Vec2iAdd(
+			actor->MovePos, Vec2iScale(Vec2iNew(actor->dx, actor->dy), ticks));
+
+		for (int i = 0; i < ticks; i++)
+		{
+			if (actor->dx > 0)
+			{
+				actor->dx = MAX(0, actor->dx - 32);
+			}
+			else if (actor->dx < 0)
+			{
+				actor->dx = MIN(0, actor->dx + 32);
+			}
+			if (actor->dy > 0)
+			{
+				actor->dy = MAX(0, actor->dy - 32);
+			}
+			else if (actor->dy < 0)
+			{
+				actor->dy = MIN(0, actor->dy + 32);
+			}
+		}
+	}
+
+	if (!Vec2iEqual(actor->MovePos, Vec2iZero()))
+	{
+		TryMoveActor(actor, actor->MovePos);
+		actor->MovePos = Vec2iZero();
 	}
 }
 
