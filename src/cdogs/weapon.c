@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <assert.h>
 
 #include "config.h"
+#include "game_events.h"
 #include "objs.h"
 #include "sounds.h"
 
@@ -301,21 +302,6 @@ gun_e StrGunName(const char *s)
 	return GUN_KNIFE;
 }
 
-Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed)
-{
-	Vec2i position;
-	gunpic_e g = GunGetPic(gun);
-	position.x =
-		cGunHandOffset[isArmed][dir].dx +
-		cGunPics[g][dir][GUNSTATE_FIRING].dx +
-		cMuzzleOffset[g][dir].dx;
-	position.y =
-		cGunHandOffset[isArmed][dir].dy +
-		cGunPics[g][dir][GUNSTATE_FIRING].dy +
-		cMuzzleOffset[g][dir].dy + BULLET_Z;
-	return Vec2iScale(position, 256);
-}
-
 void WeaponSetState(Weapon *w, gunstate_e state);
 
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
@@ -386,9 +372,8 @@ void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 	}
 }
 
-void WeaponFire(
-	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition,
-	int flags, int player)
+static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir);
+void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
 	double radians = dir2radians[d];
 	GunDescription *desc = &gGunDescriptions[w->gun];
@@ -402,6 +387,8 @@ void WeaponFire(
 		// total spread angle of 2x width
 		spreadStartAngle = -(spreadCount - 1) * spreadWidth / 2;
 	}
+	Vec2i muzzleOffset = GunGetMuzzleOffset(w->gun, d);
+	Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	
 	assert(WeaponCanFire(w));
 	for (int i = 0; i < spreadCount; i++)
@@ -414,66 +401,96 @@ void WeaponFire(
 				((double)rand() / RAND_MAX * desc->Recoil) - desc->Recoil / 2;
 		}
 		double finalAngle = radians + spreadAngle + recoil;
-		switch (w->gun)
-		{
-		case GUN_KNIFE:
-			// Do nothing
-			break;
-
-		case GUN_MG:			// fallthrough
-		case GUN_SHOTGUN:		// fallthrough
-		case GUN_BROWN:			// fallthrough
-		case GUN_MINE:			// fallthrough
-		case GUN_DYNAMITE:		// fallthrough
-		case GUN_PULSERIFLE:	// fallthrough
-		case GUN_HEATSEEKER:
-			AddBullet(
-				muzzlePosition, desc->MuzzleHeight, finalAngle,
-				desc->Bullet, flags, player);
-			break;
-
-		case GUN_GRENADE:		// fallthrough
-		case GUN_FRAGGRENADE:	// fallthrough
-		case GUN_MOLOTOV:		// fallthrough
-		case GUN_GASBOMB:		// fallthrough
-		case GUN_CONFUSEBOMB:
-			AddGrenade(
-				muzzlePosition, desc->MuzzleHeight, finalAngle,
-				desc->Bullet, flags, player);
-			break;
-
-		case GUN_FLAMER:	// fallthrough
-		case GUN_PETRIFY:
-			AddBulletBig(
-				muzzlePosition, desc->MuzzleHeight, finalAngle,
-				desc->Bullet, flags, player);
-			break;
-
-		case GUN_POWERGUN:	// fallthrough
-		case GUN_SNIPER:
-			AddBulletDirectional(
-				muzzlePosition, desc->MuzzleHeight, d,
-				desc->Bullet, flags, player);
-			break;
-
-		case GUN_GASGUN:
-			AddGasCloud(
-				muzzlePosition, desc->MuzzleHeight, finalAngle, 384, 35,
-				flags, SPECIAL_POISON, player);
-			break;
-
-		default:
-			// unknown gun?
-			assert(0);
-			break;
-		}
+		GameEvent e;
+		e.Type = GAME_EVENT_ADD_BULLET;
+		e.u.AddBullet.Gun = w->gun;
+		e.u.AddBullet.Bullet = desc->Bullet;
+		e.u.AddBullet.MuzzlePos = muzzlePosition;
+		e.u.AddBullet.MuzzleHeight = desc->MuzzleHeight;
+		e.u.AddBullet.Angle = finalAngle;
+		e.u.AddBullet.Direction = d;
+		e.u.AddBullet.Flags = flags;
+		e.u.AddBullet.PlayerIndex = player;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 
 	w->lock = gGunDescriptions[w->gun].Lock;
-	WeaponPlaySound(w, tilePosition);
+	WeaponPlaySound(w, Vec2iFull2Real(pos));
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
 	{
 		WeaponSetState(w, GUNSTATE_FIRING);
+	}
+}
+static int GunHasMuzzle(gun_e gun);
+static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
+{
+	if (!GunHasMuzzle(gun))
+	{
+		return Vec2iZero();
+	}
+	gunpic_e g = GunGetPic(gun);
+	int body = g < 0 ? BODY_UNARMED : BODY_ARMED;
+	Vec2i position = Vec2iNew(
+		cGunHandOffset[body][dir].dx +
+		cGunPics[g][dir][GUNSTATE_FIRING].dx +
+		cMuzzleOffset[g][dir].dx,
+		cGunHandOffset[body][dir].dy +
+		cGunPics[g][dir][GUNSTATE_FIRING].dy +
+		cMuzzleOffset[g][dir].dy + BULLET_Z);
+	return Vec2iScale(position, 256);
+}
+
+// TODO: ideally this would not require a gun_e parameter
+void WeaponAddBullet(
+	gun_e gun, BulletType bullet,
+	Vec2i muzzlePos, int muzzleHeight, double angle, direction_e d,
+	int flags, int player)
+{
+	switch (gun)
+	{
+	case GUN_KNIFE:
+		// Do nothing
+		break;
+
+	case GUN_MG:			// fallthrough
+	case GUN_SHOTGUN:		// fallthrough
+	case GUN_BROWN:			// fallthrough
+	case GUN_MINE:			// fallthrough
+	case GUN_DYNAMITE:		// fallthrough
+	case GUN_PULSERIFLE:	// fallthrough
+	case GUN_HEATSEEKER:
+		AddBullet(muzzlePos, muzzleHeight, angle, bullet, flags, player);
+		break;
+
+	case GUN_GRENADE:		// fallthrough
+	case GUN_FRAGGRENADE:	// fallthrough
+	case GUN_MOLOTOV:		// fallthrough
+	case GUN_GASBOMB:		// fallthrough
+	case GUN_CONFUSEBOMB:
+		AddGrenade(muzzlePos, muzzleHeight, angle, bullet, flags, player);
+		break;
+
+	case GUN_FLAMER:	// fallthrough
+	case GUN_PETRIFY:
+		AddBulletBig(muzzlePos, muzzleHeight, angle, bullet, flags, player);
+		break;
+
+	case GUN_POWERGUN:	// fallthrough
+	case GUN_SNIPER:
+		AddBulletDirectional(
+			muzzlePos, muzzleHeight, d, bullet, flags, player);
+		break;
+
+	case GUN_GASGUN:
+		AddGasCloud(
+			muzzlePos, muzzleHeight, angle, 384, 35,
+			flags, SPECIAL_POISON, player);
+		break;
+
+	default:
+		// unknown gun?
+		CASSERT(false, "Unknown gun");
+		break;
 	}
 }
 
@@ -512,7 +529,7 @@ int GunIsStatic(gun_e gun)
 		return 0;
 	}
 }
-int GunHasMuzzle(gun_e gun)
+static int GunHasMuzzle(gun_e gun)
 {
 	return gGunDescriptions[gun].pic == GUNPIC_BLASTER;
 }

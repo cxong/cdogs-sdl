@@ -50,6 +50,7 @@ typedef enum
 	GAME_EVENT_ADD_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
+	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_UPDATE_OBJECTIVE,
@@ -83,6 +84,17 @@ typedef struct
 		Vec2i AddPos;
 		int PickupPlayer;
 		int MobileObjectRemoveId;
+		struct
+		{
+			gun_e Gun;
+			BulletType Bullet;
+			Vec2i MuzzlePos;
+			int MuzzleHeight;
+			double Angle;
+			direction_e Direction;
+			int Flags;
+			int PlayerIndex;
+		} AddBullet;
 		struct
 		{
 			Vec2i HitV;

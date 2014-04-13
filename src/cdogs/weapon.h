@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -134,16 +134,16 @@ gunpic_e GunGetPic(gun_e gun);
 const char *GunGetName(gun_e gun);
 gun_e StrGunName(const char *s);
 int GunGetCost(gun_e gun);
-Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir, int isArmed);
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
-void WeaponFire(
-	Weapon *w, direction_e d, Vec2i muzzlePosition, Vec2i tilePosition,
+void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player);
+void WeaponAddBullet(
+	gun_e gun, BulletType bullet,
+	Vec2i muzzlePos, int muzzleHeight, double angle, direction_e d,
 	int flags, int player);
 void WeaponHoldFire(Weapon *w);
 
 int GunIsStatic(gun_e gun);
-int GunHasMuzzle(gun_e gun);
 int IsHighDPS(gun_e gun);
 int IsLongRange(gun_e gun);
 int IsShortRange(gun_e gun);

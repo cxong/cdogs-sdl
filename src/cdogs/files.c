@@ -285,7 +285,6 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->looks.armedBody = b->armedBodyPic;
 	c->looks.unarmedBody = b->unarmedBodyPic;
 	c->looks.face = b->facePic;
 	c->speed = b->speed;
@@ -305,7 +304,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 TBadGuy ConvertTBadGuy(Character *e)
 {
 	TBadGuy b;
-	b.armedBodyPic = e->looks.armedBody;
+	b.armedBodyPic = BODY_ARMED;
 	b.unarmedBodyPic = e->looks.unarmedBody;
 	b.facePic = e->looks.face;
 	b.speed = e->speed;

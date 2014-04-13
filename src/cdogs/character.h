@@ -34,7 +34,6 @@
 
 typedef struct
 {
-	int armedBody;
 	int unarmedBody;
 	int face;
 	int skin;

@@ -297,7 +297,6 @@ static void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 	while (child)
 	{
 		Character *ch = CharacterStoreAddOther(c);
-		LoadInt(&ch->looks.armedBody, child, "armedBody");
 		LoadInt(&ch->looks.unarmedBody, child, "unarmedBody");
 		LoadInt(&ch->looks.face, child, "face");
 		LoadInt(&ch->looks.skin, child, "skin");
@@ -770,7 +769,6 @@ static json_t *SaveCharacters(CharacterStore *s)
 	{
 		json_t *node = json_new_object();
 		Character *c = CArrayGet(&s->OtherChars, i);
-		AddIntPair(node, "armedBody", c->looks.armedBody);
 		AddIntPair(node, "unarmedBody", c->looks.unarmedBody);
 		AddIntPair(node, "face", c->looks.face);
 		AddIntPair(node, "skin", c->looks.skin);

@@ -379,7 +379,6 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	else
 	{
 		// set up character template
-		c->looks.armedBody = BODY_ARMED;
 		c->looks.unarmedBody = BODY_UNARMED;
 		c->looks.face = FACE_OGRE;
 		c->looks.skin = SHADE_GREEN;

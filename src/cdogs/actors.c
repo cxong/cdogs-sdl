@@ -263,7 +263,7 @@ ActorPics GetCharacterPics(void *data)
 	}
 	else
 	{
-		b = c->looks.armedBody;
+		b = BODY_ARMED;
 	}
 
 	body.dx = cBodyOffset[b][dir].dx;
@@ -748,25 +748,14 @@ void Score(struct PlayerData *p, int points)
 
 void Shoot(TActor *actor)
 {
-	Vec2i muzzlePosition = actor->Pos;
-	Vec2i tilePosition = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 	if (!WeaponCanFire(&actor->weapon))
 	{
 		return;
 	}
-	if (GunHasMuzzle(actor->weapon.gun))
-	{
-		Vec2i muzzleOffset = GunGetMuzzleOffset(
-			actor->weapon.gun,
-			actor->direction,
-			actor->character->looks.armedBody);
-		muzzlePosition = Vec2iAdd(muzzlePosition, muzzleOffset);
-	}
 	WeaponFire(
 		&actor->weapon,
 		actor->direction,
-		muzzlePosition,
-		tilePosition,
+		actor->Pos,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1);
 	if (actor->pData && GunGetCost(actor->weapon.gun) != 0)

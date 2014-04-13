@@ -184,7 +184,6 @@ void PlayerDataInitialize(void)
 				assert(0 && "unsupported");
 				break;
 		}
-		d->looks.armedBody = BODY_ARMED;
 		d->looks.unarmedBody = BODY_UNARMED;
 		d->weaponCount = 3;
 		d->playerIndex = i;

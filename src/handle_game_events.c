@@ -93,6 +93,13 @@ static void HandleGameEvent(
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);
 			break;
+		case GAME_EVENT_ADD_BULLET:
+			WeaponAddBullet(
+				e->u.AddBullet.Gun, e->u.AddBullet.Bullet,
+				e->u.AddBullet.MuzzlePos, e->u.AddBullet.MuzzleHeight,
+				e->u.AddBullet.Angle, e->u.AddBullet.Direction,
+				e->u.AddBullet.Flags, e->u.AddBullet.PlayerIndex);
+			break;
 		case GAME_EVENT_HIT_CHARACTER:
 			HitCharacter(
 				e->u.HitCharacter.HitV,
