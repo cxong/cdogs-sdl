@@ -67,7 +67,7 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 	{
 		if (IsPlayerAlive(i))
 		{
-			TActor *p = gPlayers[i];
+			TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
 			Vec2i pPos = Vec2iFull2Real(p->Pos);
 			int distance = CHEBYSHEV_DISTANCE(
 				fullpos.x, fullpos.y, pPos.x, pPos.y);
@@ -85,12 +85,15 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 {
 	// Search all the actors and find the closest one that
 	// satisfies the condition
-	TActor *a;
 	TActor *closest = NULL;
 	int minDistance = -1;
-	for (a = ActorList(); a; a = a->next)
+	for (int i = 0; i < (int)gActors.size; i++)
 	{
-		int distance;
+		TActor *a = CArrayGet(&gActors, i);
+		if (!a->isInUse || a->dead)
+		{
+			continue;
+		}
 		// Never target invulnerables or civilians
 		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_PENALTY))
 		{
@@ -98,7 +101,8 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 		}
 		if (compFunc(a))
 		{
-			distance = CHEBYSHEV_DISTANCE(from.x, from.y, a->Pos.x, a->Pos.y);
+			int distance =
+				CHEBYSHEV_DISTANCE(from.x, from.y, a->Pos.x, a->Pos.y);
 			if (!closest || distance < minDistance)
 			{
 				minDistance = distance;

@@ -155,7 +155,7 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 	{
 		return 0;
 	}
-	PlayersGetBoundingRectangle(gPlayers, &min, &max);
+	PlayersGetBoundingRectangle(&min, &max);
 	return
 		max.x - min.x < config->Res.x - SPLIT_PADDING &&
 		max.y - min.y < config->Res.y - SPLIT_PADDING;
@@ -196,7 +196,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				gConfig.Interface.Splitscreen))
 		{
 			// One screen
-			lastPosition = PlayersGetMidpoint(gPlayers);
+			lastPosition = PlayersGetMidpoint();
 
 			DrawBufferSetFromMap(
 				b, &gMap, Vec2iAdd(lastPosition, noise), X_TILES);
@@ -204,10 +204,9 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 			{
 				if (IsPlayerAlive(i))
 				{
+					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 					DrawBufferLOS(
-						b,
-						Vec2iNew(
-							gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y));
+						b, Vec2iNew(player->tileItem.x, player->tileItem.y));
 				}
 			}
 			FixBuffer(b);
@@ -220,8 +219,9 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 			// side-by-side split
 			for (i = 0; i < 2; i++)
 			{
+				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 				Vec2i center = Vec2iNew(
-					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
+					player->tileItem.x, player->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
 				int clipLeft = (i & 1) ? w / 2 : 0;
 				int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
@@ -260,8 +260,8 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				{
 					continue;
 				}
-				center = Vec2iNew(
-					gPlayers[i]->tileItem.x, gPlayers[i]->tileItem.y);
+				TActor *player = CArrayGet(&gActors, i);
+				center = Vec2iNew(player->tileItem.x, player->tileItem.y);
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
@@ -431,11 +431,10 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 			&device->cachedConfig,
 			gConfig.Interface.Splitscreen))
 	{
-		Vec2i pCenter = PlayersGetMidpoint(gPlayers);
-		Vec2i screenCenter = Vec2iNew(
-			w / 2,
-			device->cachedConfig.Res.y / 2);
-		TTileItem *pTileItem = &gPlayers[player]->tileItem;
+		Vec2i pCenter = PlayersGetMidpoint();
+		Vec2i screenCenter = Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
+		TActor *actor = CArrayGet(&gActors, gPlayerIds[player]);
+		TTileItem *pTileItem = &actor->tileItem;
 		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
 		center = Vec2iAdd(
 			Vec2iAdd(p, Vec2iScale(pCenter, -1)), screenCenter);
@@ -482,7 +481,7 @@ int gameloop(void)
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
 	GameEventsInit(&gGameEvents);
-	HealthPickupsInit(&hp, &gMap, gPlayers);
+	HealthPickupsInit(&hp, &gMap);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
@@ -512,7 +511,6 @@ int gameloop(void)
 		int cmdAll = 0;
 		int ticks = 1;
 		int i;
-		int allPlayersDestroyed = 1;
 		int hasUsedMap = 0;
 		ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
@@ -585,7 +583,8 @@ int gameloop(void)
 				}
 				if (isMatch)
 				{
-					gPlayers[0]->weapon = WeaponCreate(GUN_PULSERIFLE);
+					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
+					player->weapon = WeaponCreate(GUN_PULSERIFLE);
 					SoundPlay(&gSoundDevice, SND_HAHAHA);
 					// Reset to prevent last key from being processed as
 					// normal player commands
@@ -605,7 +604,8 @@ int gameloop(void)
 				}
 				if (isMatch)
 				{
-					gPlayers[0]->weapon = WeaponCreate(GUN_HEATSEEKER);
+					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
+					player->weapon = WeaponCreate(GUN_HEATSEEKER);
 					SoundPlay(&gSoundDevice, SND_HAHAHA);
 					// Reset to prevent last key from being processed as
 					// normal player commands
@@ -622,16 +622,17 @@ int gameloop(void)
 			{
 				for (i = 0; i < gOptions.numPlayers; i++)
 				{
-					if (gPlayers[i])
+					if (!IsPlayerAlive(i))
 					{
-						if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
-						{
-							cmds[i] = AICoopGetCmd(gPlayers[i]);
-						}
-						PlayerSpecialCommands(
-							gPlayers[i], cmds[i], &gPlayerDatas[i]);
-						CommandActor(gPlayers[i], cmds[i], ticks);
+						continue;
 					}
+					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+					if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+					{
+						cmds[i] = AICoopGetCmd(player);
+					}
+					PlayerSpecialCommands(player, cmds[i], &gPlayerDatas[i]);
+					CommandActor(player, cmds[i], ticks);
 				}
 
 				if (gOptions.badGuys)
@@ -649,16 +650,15 @@ int gameloop(void)
 					int w = gGraphicsDevice.cachedConfig.Res.x;
 					int h = gGraphicsDevice.cachedConfig.Res.y;
 					Vec2i screen = Vec2iAdd(
-						PlayersGetMidpoint(gPlayers),
-						Vec2iNew(-w / 2, -h / 2));
+						PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
 					for (i = 0; i < gOptions.numPlayers; i++)
 					{
-						TActor *p = gPlayers[i];
-						int pad = SPLIT_PADDING;
 						if (!IsPlayerAlive(i))
 						{
-							break;
+							continue;
 						}
+						TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
+						int pad = SPLIT_PADDING;
 						if (screen.x + pad > p->tileItem.x)
 						{
 							p->dx = MAX(p->dx, 256);
@@ -722,11 +722,12 @@ int gameloop(void)
 			// Check that all players have been destroyed
 			// Note: there's a period of time where players are dying
 			// Wait until after this period before ending the game
+			bool allPlayersDestroyed = true;
 			for (i = 0; i < gOptions.numPlayers; i++)
 			{
-				if (gPlayers[i])
+				if (IsPlayerAlive(i))
 				{
-					allPlayersDestroyed = 0;
+					allPlayersDestroyed = false;
 					break;
 				}
 			}

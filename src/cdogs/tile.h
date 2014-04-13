@@ -142,7 +142,7 @@ typedef struct TileItem
 	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
-	void *actor;
+	int actorId;
 	struct TileItem *next;
 	struct TileItem *nextToDisplay;
 } TTileItem;

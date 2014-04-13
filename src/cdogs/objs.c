@@ -349,7 +349,7 @@ static void InternalAddObject(
 	o->tileItem.getActorPicsFunc = NULL;
 	o->tileItem.w = w;
 	o->tileItem.h = h;
-	o->tileItem.actor = NULL;
+	o->tileItem.actorId = -1;
 	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 	o->next = objList;
 	objList = o;
@@ -380,7 +380,7 @@ void AddObject(
 	o->tileItem.getActorPicsFunc = NULL;
 	o->tileItem.w = size.x;
 	o->tileItem.h = size.y;
-	o->tileItem.actor = NULL;
+	o->tileItem.actorId = -1;
 	MapMoveTileItem(&gMap, &o->tileItem, pos);
 	o->next = objList;
 	objList = o;

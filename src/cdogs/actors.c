@@ -76,7 +76,7 @@
 #define SLIDE_LOCK 50
 
 
-TActor *gPlayers[MAX_PLAYERS];
+int gPlayerIds[MAX_PLAYERS];
 
 TranslationTable tableFlamed;
 TranslationTable tableGreen;
@@ -87,8 +87,7 @@ TranslationTable tableDarker;
 TranslationTable tablePurple;
 
 
-static TActor *actorList = NULL;
-
+CArray gActors;
 
 static int transitionTable[STATE_COUNT] = {
 	0,
@@ -130,8 +129,7 @@ void ActorInit(TActor *actor)
 int GetNumPlayersAlive(void)
 {
 	int numPlayers = 0;
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (IsPlayerAlive(i))
 		{
@@ -143,43 +141,46 @@ int GetNumPlayersAlive(void)
 
 TActor *GetFirstAlivePlayer(void)
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (IsPlayerAlive(i))
 		{
-			return gPlayers[i];
+			return CArrayGet(&gActors, gPlayerIds[i]);
 		}
 	}
 	return NULL;
 }
 
-int IsPlayerAlive(int player)
+bool IsPlayerAlive(int player)
 {
-	return gPlayers[player] && !gPlayers[player]->dead;
+	if (gPlayerIds[player] == -1)
+	{
+		return false;
+	}
+	TActor *p = CArrayGet(&gActors, gPlayerIds[player]);
+	return !p->dead;
 }
 
-Vec2i PlayersGetMidpoint(TActor *players[MAX_PLAYERS])
+Vec2i PlayersGetMidpoint(void)
 {
 	// for all surviving players, find bounding rectangle, and get center
 	Vec2i min;
 	Vec2i max;
-	PlayersGetBoundingRectangle(players, &min, &max);
+	PlayersGetBoundingRectangle(&min, &max);
 	return Vec2iScaleDiv(Vec2iAdd(min, max), 2);
 }
 
-void PlayersGetBoundingRectangle(
-	TActor *players[MAX_PLAYERS], Vec2i *min, Vec2i *max)
+void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 {
 	int isFirst = 1;
-	int i;
 	*min = Vec2iZero();
 	*max = Vec2iZero();
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (IsPlayerAlive(i))
 		{
-			TTileItem *p = &players[i]->tileItem;
+			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+			TTileItem *p = &player->tileItem;
 			if (isFirst)
 			{
 				*min = *max = Vec2iNew(p->x, p->y);
@@ -332,61 +333,6 @@ bail:
 	return pics;
 }
 
-
-TActor *AddActor(Character *c, struct PlayerData *p)
-{
-	TActor *actor;
-	CCALLOC(actor, sizeof(TActor));
-
-	actor->soundLock = 0;
-	actor->weapon = WeaponCreate(c->gun);
-	actor->health = c->maxHealth;
-	actor->action = ACTORACTION_MOVING;
-	actor->tileItem.kind = KIND_CHARACTER;
-	actor->tileItem.data = actor;
-	actor->tileItem.getPicFunc = NULL;
-	actor->tileItem.getActorPicsFunc = GetCharacterPics;
-	actor->tileItem.drawFunc = NULL;
-	actor->tileItem.w = 7;
-	actor->tileItem.h = 5;
-	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
-	actor->tileItem.actor = actor;
-	actor->next = actorList;
-	actorList = actor;
-	actor->flags = FLAGS_SLEEPING | c->flags;
-	actor->character = c;
-	actor->pData = p;
-	actor->direction = DIRECTION_DOWN;
-	actor->state = STATE_IDLE;
-	actor->slideLock = 0;
-	return actor;
-}
-
-TActor *RemoveActor(TActor * actor)
-{
-	TActor **h = &actorList;
-
-	while (*h && *h != actor)
-		h = &((*h)->next);
-	if (*h)
-	{
-		int i;
-		*h = actor->next;
-		MapRemoveTileItem(&gMap, &actor->tileItem);
-		for (i = 0; i < MAX_PLAYERS; i++)
-		{
-			if (actor == gPlayers[i])
-			{
-				gPlayers[i] = NULL;
-				break;
-			}
-		}
-		AIContextTerminate(actor->aiContext);
-		CFREE(actor);
-		return *h;
-	}
-	return NULL;
-}
 
 void SetStateForActor(TActor * actor, int state)
 {
@@ -913,9 +859,13 @@ void SlideActor(TActor *actor, int cmd)
 static void ActorUpdatePosition(TActor *actor, int ticks);
 void UpdateAllActors(int ticks)
 {
-	TActor *actor = actorList;
-	while (actor)
+	for (int i = 0; i < (int)gActors.size; i++)
 	{
+		TActor *actor = CArrayGet(&gActors, i);
+		if (!actor->isInUse)
+		{
+			continue;
+		}
 		ActorUpdatePosition(actor, ticks);
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX)
@@ -926,7 +876,7 @@ void UpdateAllActors(int ticks)
 				&cBloodPics[rand() % BLOOD_MAX],
 				OBJ_NONE,
 				TILEITEM_IS_WRECK);
-			actor = RemoveActor(actor);
+			ActorDestroy(i);
 		}
 		else
 		{
@@ -941,7 +891,8 @@ void UpdateAllActors(int ticks)
 					gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
 				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
-					TActor *collidingActor = collidingItem->actor;
+					TActor *collidingActor = CArrayGet(
+						&gActors, collidingItem->actorId);
 					if (CalcCollisionTeam(1, collidingActor) ==
 						CalcCollisionTeam(1, actor))
 					{
@@ -958,7 +909,6 @@ void UpdateAllActors(int ticks)
 					}
 				}
 			}
-			actor = actor->next;
 		}
 	}
 }
@@ -997,20 +947,88 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 	}
 }
 
-TActor *ActorList(void)
+void ActorsInit()
 {
-	return actorList;
-}
-
-void KillAllActors(void)
-{
-	TActor *actor;
-	while (actorList) {
-		actor = actorList;
-		actorList = actorList->next;
-		RemoveActor(actor);
+	CArrayInit(&gActors, sizeof(TActor));
+	// Initialise with a number of empty actors
+	for (int i = 0; i < 256; i++)
+	{
+		TActor a;
+		memset(&a, 0, sizeof a);
+		CArrayPushBack(&gActors, &a);
 	}
-	CASSERT(actorList == NULL, "failed to kill all actors");
+}
+void ActorsTerminate()
+{
+	for (int i = 0; i < (int)gActors.size; i++)
+	{
+		TActor *actor = CArrayGet(&gActors, i);
+		if (actor->isInUse)
+		{
+			ActorDestroy(i);
+		}
+	}
+	CArrayTerminate(&gActors);
+}
+int ActorAdd(Character *c, struct PlayerData *p)
+{
+	// Find an empty slot in actor list
+	TActor *actor = NULL;
+	int i;
+	for (i = 0; i < (int)gActors.size; i++)
+	{
+		TActor *a = CArrayGet(&gActors, i);
+		if (!a->isInUse)
+		{
+			actor = a;
+			break;
+		}
+	}
+	if (actor == NULL)
+	{
+		TActor a;
+		memset(&a, 0, sizeof a);
+		CArrayPushBack(&gActors, &a);
+		i = (int)gActors.size - 1;
+		actor = CArrayGet(&gActors, i);
+	}
+	memset(actor, 0, sizeof *actor);
+	actor->weapon = WeaponCreate(c->gun);
+	actor->health = c->maxHealth;
+	actor->action = ACTORACTION_MOVING;
+	actor->tileItem.kind = KIND_CHARACTER;
+	actor->tileItem.data = actor;
+	actor->tileItem.getPicFunc = NULL;
+	actor->tileItem.getActorPicsFunc = GetCharacterPics;
+	actor->tileItem.drawFunc = NULL;
+	actor->tileItem.w = 7;
+	actor->tileItem.h = 5;
+	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
+	actor->tileItem.actorId = i;
+	actor->isInUse = true;
+	actor->flags = FLAGS_SLEEPING | c->flags;
+	actor->character = c;
+	actor->pData = p;
+	actor->direction = DIRECTION_DOWN;
+	actor->state = STATE_IDLE;
+	actor->slideLock = 0;
+	return i;
+}
+void ActorDestroy(int id)
+{
+	TActor *actor = CArrayGet(&gActors, id);
+	CASSERT(actor->isInUse, "Destroying in-use actor");
+	MapRemoveTileItem(&gMap, &actor->tileItem);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (id == gPlayerIds[i])
+		{
+			gPlayerIds[i] = -1;
+			break;
+		}
+	}
+	AIContextTerminate(actor->aiContext);
+	actor->isInUse = false;
 }
 
 unsigned char BestMatch(const TPalette palette, int r, int g, int b)

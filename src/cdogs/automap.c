@@ -349,9 +349,9 @@ void AutomapDraw(int flags, bool showExit)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i])
+		if (IsPlayerAlive(i))
 		{
-			DisplayPlayer(gPlayers[i], pos, MAP_FACTOR);
+			DisplayPlayer(CArrayGet(&gActors, gPlayerIds[i]), pos, MAP_FACTOR);
 		}
 	}
 
@@ -380,7 +380,7 @@ void AutomapDrawRegion(
 	{
 		if (IsPlayerAlive(i))
 		{
-			TActor *player = gPlayers[i];
+			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 			DisplayPlayer(player, centerOn, scale);
 		}
 	}

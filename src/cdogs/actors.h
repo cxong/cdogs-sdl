@@ -144,11 +144,22 @@ typedef struct Actor
 	ActorAction action;
 	void *aiContext;
 	TTileItem tileItem;
-	struct Actor *next;
+	bool isInUse;
 } TActor;
 
 
-extern TActor *gPlayers[MAX_PLAYERS];
+// -1 if player is dead
+extern int gPlayerIds[MAX_PLAYERS];
+
+// Store all actors in-line in an array
+// Destroying actors does not modify the array, only switches
+// a boolean flag isInUse to denote whether this instance is
+// in use.
+// Actors should be identified by index
+// There is a small chance of invalidating pointers if
+// actors are added and the array must be resized.
+// Therefore do not hold actor pointers and reuse.
+extern CArray gActors;	// of TActor
 
 extern TranslationTable tableFlamed;
 extern TranslationTable tableGreen;
@@ -160,26 +171,27 @@ extern TranslationTable tablePurple;
 
 void ActorInit(TActor *actor);
 int GetNumPlayersAlive(void);
+bool IsPlayerAlive(int player);
 TActor *GetFirstAlivePlayer(void);
-int IsPlayerAlive(int player);
-Vec2i PlayersGetMidpoint(TActor *players[MAX_PLAYERS]);
-void PlayersGetBoundingRectangle(
-	TActor *players[MAX_PLAYERS], Vec2i *min, Vec2i *max);
+Vec2i PlayersGetMidpoint(void);
+void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);
 bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
-TActor *AddActor(Character *c, struct PlayerData *p);
-TActor *RemoveActor(TActor *actor);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
 void Score(struct PlayerData *p, int points);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
-void KillAllActors(void);
+
+void ActorsInit();
+void ActorsTerminate();
+int ActorAdd(Character *c, struct PlayerData *p);	// returns id
+void ActorDestroy(int id);
 
 int ActorIsImmune(TActor *actor, special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect) but deals no damage

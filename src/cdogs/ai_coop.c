@@ -59,7 +59,7 @@ int AICoopGetCmd(TActor *actor)
 		}
 		if (gPlayerDatas[i].inputDevice != INPUT_DEVICE_AI)
 		{
-			TActor *p = gPlayers[i];
+			TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
 			int distance2 = DistanceSquared(
 				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(p->Pos));
 			if (!closestPlayer || distance2 < minDistance2)

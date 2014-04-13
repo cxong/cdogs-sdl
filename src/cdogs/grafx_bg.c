@@ -42,6 +42,7 @@ void GrafxMakeRandomBackground(
 	HSV tint;
 	CampaignSettingTerminate(&co->Setting);
 	CampaignSettingInit(&co->Setting);
+	ActorsInit();
 	SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
 	co->seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
@@ -54,7 +55,7 @@ void GrafxMakeRandomBackground(
 		device, &buffer, co, mo, map,
 		tint, 0, 1, Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2)), NULL);
 	DrawBufferTerminate(&buffer);
-	KillAllActors();
+	ActorsTerminate();
 	KillAllObjects();
 	RemoveAllWatches();
 	CampaignSettingTerminate(&co->Setting);

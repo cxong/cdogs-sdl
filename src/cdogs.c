@@ -837,14 +837,13 @@ void DataUpdate(int mission, struct PlayerData *data)
 
 static void CleanupMission(void)
 {
-	int i;
-	KillAllActors();
+	ActorsTerminate();
 	KillAllMobileObjects(&gMobObjList);
 	KillAllObjects();
 	RemoveAllWatches();
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		gPlayers[i] = NULL;
+		gPlayerIds[i] = -1;
 	}
 }
 
@@ -859,15 +858,16 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		gPlayerDatas[i].allTime = -1;
 		gPlayerDatas[i].today = -1;
 	}
+	TActor *firstPlayer = NULL;
 	for (i = 0; i < numPlayers; i++)
 	{
 		gPlayerDatas[i].lastMission = mission;
-		gPlayers[i] = AddActor(
-			&gCampaign.Setting.characters.players[i],
-			&gPlayerDatas[i]);
-		gPlayers[i]->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
-		gPlayers[i]->health = maxHealth;
-		gPlayers[i]->character->maxHealth = maxHealth;
+		gPlayerIds[i] = ActorAdd(
+			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i]);
+		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		player->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
+		player->health = maxHealth;
+		player->character->maxHealth = maxHealth;
 		
 		if (gMission.missionData->Type == MAPTYPE_STATIC &&
 			!Vec2iEqual(gMission.missionData->u.Static.Start, Vec2iZero()))
@@ -875,18 +875,19 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 			// place players near the start point
 			Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
 				gMission.missionData->u.Static.Start));
-			PlaceActorNear(gPlayers[i], startPoint, true);
+			PlaceActorNear(player, startPoint, true);
 		}
 		else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
-			i > 0)
+			firstPlayer != NULL)
 		{
 			// If never split screen, try to place players near the first player
-			PlaceActorNear(gPlayers[i], gPlayers[0]->Pos, true);
+			PlaceActorNear(player, firstPlayer->Pos, true);
 		}
 		else
 		{
-			PlaceActor(gPlayers[i]);
+			PlaceActor(player);
 		}
+		firstPlayer = player;
 	}
 }
 
@@ -966,9 +967,10 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
 			gPlayerDatas[i].survived = IsPlayerAlive(i);
-			if (gPlayers[i])
+			if (IsPlayerAlive(i))
 			{
-				gPlayerDatas[i].hp = gPlayers[i]->health;
+				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+				gPlayerDatas[i].hp = player->health;
 			}
 		}
 
@@ -1072,7 +1074,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 
 		for (i = 0; i < MAX_PLAYERS; i++)
 		{
-			if (gPlayers[i])
+			if (IsPlayerAlive(i))
 			{
 				scores[i]++;
 				if (scores[i] > maxScore)

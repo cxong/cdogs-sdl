@@ -588,6 +588,7 @@ void SetupMission(
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
 	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
 
+	ActorsInit();
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(gPlayerDatas, m->Weapons);
@@ -688,7 +689,12 @@ int IsMissionComplete(struct MissionOptions *options)
 	// Check that all surviving players are in exit zone
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !MapIsTileInExit(&gMap, &gPlayers[i]->tileItem))
+		if (!IsPlayerAlive(i))
+		{
+			continue;
+		}
+		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		if (!MapIsTileInExit(&gMap, &player->tileItem))
 		{
 			return 0;
 		}
@@ -710,16 +716,19 @@ int IsMissionComplete(struct MissionOptions *options)
 	if (rescuesRequired > 0)
 	{
 		int prisonersRescued = 0;
-		TActor *a = ActorList();
-		while (a != NULL)
+		for (int i = 0; i < (int)gActors.size; i++)
 		{
+			TActor *a = CArrayGet(&gActors, i);
+			if (!a->isInUse)
+			{
+				continue;
+			}
 			if (a->character == CharacterStoreGetPrisoner(
 				&gCampaign.Setting.characters, 0) &&
 				MapIsTileInExit(&gMap, &a->tileItem))
 			{
 				prisonersRescued++;
 			}
-			a = a->next;
 		}
 		if (prisonersRescued < rescuesRequired)
 		{

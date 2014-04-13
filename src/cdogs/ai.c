@@ -99,7 +99,8 @@ static int IsFacingPlayer(TActor *actor, direction_e d)
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (IsPlayerAlive(i) && IsFacing(actor, gPlayers[i], d))
+		if (IsPlayerAlive(i) &&
+			IsFacing(actor, CArrayGet(&gActors, gPlayerIds[i]), d))
 		{
 			return 1;
 		}
@@ -326,14 +327,14 @@ static void PlacePrisoner(TActor *actor)
 }
 
 
-static int DidPlayerShoot(void)
+static bool DidPlayerShoot(void)
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (gPlayers[i] && !!(gPlayers[i]->lastCmd & CMD_BUTTON1))
+		if (IsPlayerAlive(i))
 		{
-			return 1;
+			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+			return player->lastCmd & CMD_BUTTON1;
 		}
 	}
 	return 0;
@@ -341,7 +342,6 @@ static int DidPlayerShoot(void)
 
 void CommandBadGuys(int ticks)
 {
-	TActor *actor;
 	int roll, cmd;
 	int count = 0;
 	int bypass;
@@ -372,9 +372,13 @@ void CommandBadGuys(int ticks)
 		break;
 	}
 
-	actor = ActorList();
-	while (actor != NULL)
+	for (int i = 0; i < (int)gActors.size; i++)
 	{
+		TActor *actor = CArrayGet(&gActors, i);
+		if (!actor->isInUse)
+		{
+			continue;
+		}
 		if (!(actor->pData || (actor->flags & FLAGS_PRISONER)))
 		{
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
@@ -487,8 +491,6 @@ void CommandBadGuys(int ticks)
 		{
 			CommandActor(actor, 0, ticks);
 		}
-
-		actor = actor->next;
 	}
 	if (gMission.missionData->Enemies.size > 0 &&
 		gMission.missionData->EnemyDensity > 0 &&
@@ -496,7 +498,7 @@ void CommandBadGuys(int ticks)
 	{
 		Character *character = CharacterStoreGetRandomBaddie(
 			&gCampaign.Setting.characters);
-		TActor *baddie = AddActor(character, NULL);
+		TActor *baddie = CArrayGet(&gActors, ActorAdd(character, NULL));
 		PlaceBaddie(baddie);
 		gBaddieCount++;
 	}
@@ -516,8 +518,9 @@ void InitializeBadGuys(void)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				actor = AddActor(CharacterStoreGetRandomSpecial(
+				int id = ActorAdd(CharacterStoreGetRandomSpecial(
 					&gCampaign.Setting.characters), NULL);
+				actor = CArrayGet(&gActors, id);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				PlaceBaddie(actor);
 			}
@@ -526,8 +529,9 @@ void InitializeBadGuys(void)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				actor = AddActor(CharacterStoreGetPrisoner(
+				int id = ActorAdd(CharacterStoreGetPrisoner(
 					&gCampaign.Setting.characters, 0), NULL);
+				actor = CArrayGet(&gActors, id);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (MapHasLockedRooms(&gMap))
 				{
@@ -557,8 +561,9 @@ void CreateEnemies(void)
 		i < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
-		TActor *enemy = AddActor(CharacterStoreGetRandomBaddie(
+		int id = ActorAdd(CharacterStoreGetRandomBaddie(
 			&gCampaign.Setting.characters), NULL);
+		TActor *enemy = CArrayGet(&gActors, id);
 		PlaceBaddie(enemy);
 		gBaddieCount++;
 	}

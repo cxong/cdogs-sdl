@@ -435,13 +435,11 @@ static void DrawRadar(
 	}
 }
 
-static void DrawSharedRadar(
-	GraphicsDevice *device, TActor *players[MAX_PLAYERS], int scale,
-	bool showExit)
+static void DrawSharedRadar(GraphicsDevice *device, int scale, bool showExit)
 {
 	int w = device->cachedConfig.Res.x;
 	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
-	Vec2i playerMidpoint = PlayersGetMidpoint(players);
+	Vec2i playerMidpoint = PlayersGetMidpoint();
 	playerMidpoint.x /= TILE_WIDTH;
 	playerMidpoint.y /= TILE_HEIGHT;
 	AutomapDrawRegion(
@@ -736,8 +734,13 @@ void HUDDraw(HUD *hud, int isPaused)
 			r.Pos.y = r.Size.y;
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
 		}
+		TActor *player = NULL;
+		if (IsPlayerAlive(i))
+		{
+			player = CArrayGet(&gActors, gPlayerIds[i]);
+		}
 		DrawPlayerStatus(
-			hud->device, &gPlayerDatas[i], gPlayers[i], drawFlags,
+			hud->device, &gPlayerDatas[i], player, drawFlags,
 			r, hud->showExit);
 		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
 		{
@@ -760,7 +763,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
 		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
-		DrawSharedRadar(hud->device, gPlayers, RADAR_SCALE, hud->showExit);
+		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
 	}
 
 	if (numPlayersAlive == 0)
@@ -833,9 +836,11 @@ static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + CDogsTextHeight();
 	int y = 5 + 1 + CDogsTextHeight() + rowHeight * 2;
-	DrawNumUpdate(
-		health, "%d", gPlayers[health->Index]->health,
-		Vec2iNew(5, y), flags);
+	if (IsPlayerAlive(health->Index))
+	{
+		TActor *player = CArrayGet(&gActors, gPlayerIds[health->Index]);
+		DrawNumUpdate(health, "%d", player->health, Vec2iNew(5, y), flags);
+	}
 }
 static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 {

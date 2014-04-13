@@ -33,15 +33,13 @@
 typedef struct
 {
 	Map *map;
-	TActor **players;
 	int timeUntilNextSpawn;
 	int timer;
 	int numPickups;
 	int pickupsSpawned;
 } HealthPickups;
 
-void HealthPickupsInit(
-	HealthPickups *h, Map *map, TActor *players[MAX_PLAYERS]);
+void HealthPickupsInit(HealthPickups *h, Map *map);
 void HealthPickupsUpdate(HealthPickups *h, int ticks);
 void HealthPickupsRemoveOne(HealthPickups *h);
 

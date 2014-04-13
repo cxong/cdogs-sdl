@@ -130,7 +130,7 @@ static int IsOnSameTeam(TTileItem *i, CollisionTeam team, int isDogfight)
 		CollisionTeam itemTeam = COLLISIONTEAM_NONE;
 		if (i->kind == KIND_CHARACTER)
 		{
-			TActor *a = i->actor;
+			TActor *a = CArrayGet(&gActors, i->actorId);
 			itemTeam = CalcCollisionTeam(1, a);
 		}
 		return

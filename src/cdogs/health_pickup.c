@@ -36,11 +36,9 @@
 #define HEALTH_H 6
 #define MAX_TILES_PER_PICKUP 625
 
-void HealthPickupsInit(
-	HealthPickups *h, Map *map, TActor *players[MAX_PLAYERS])
+void HealthPickupsInit(HealthPickups *h, Map *map)
 {
 	h->map = map;
-	h->players = players;
 	h->timer = 0;
 	h->numPickups = 0;
 	h->pickupsSpawned = 0;
@@ -68,7 +66,8 @@ void HealthPickupsUpdate(HealthPickups *h, int ticks)
 	{
 		if (IsPlayerAlive(i))
 		{
-			minHealth = MIN(minHealth, h->players[i]->health);
+			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+			minHealth = MIN(minHealth, player->health);
 		}
 	}
 	// Double spawn rate if near 0 health
