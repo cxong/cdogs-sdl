@@ -285,7 +285,6 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->looks.unarmedBody = b->unarmedBodyPic;
 	c->looks.face = b->facePic;
 	c->speed = b->speed;
 	c->bot.probabilityToMove = b->probabilityToMove;
@@ -305,7 +304,7 @@ TBadGuy ConvertTBadGuy(Character *e)
 {
 	TBadGuy b;
 	b.armedBodyPic = BODY_ARMED;
-	b.unarmedBodyPic = e->looks.unarmedBody;
+	b.unarmedBodyPic = BODY_UNARMED;
 	b.facePic = e->looks.face;
 	b.speed = e->speed;
 	b.probabilityToMove = e->bot.probabilityToMove;

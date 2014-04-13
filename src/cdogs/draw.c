@@ -465,7 +465,6 @@ void DrawCharacterSimple(
 	TOffsetPic pic1, pic2, pic3;
 	direction_e headDir = dir;
 	int headState = state;
-	int bodyType = BODY_ARMED;
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
 	{
 		headState = STATE_COUNT + gunState - GUNSTATE_FIRING;
@@ -479,10 +478,7 @@ void DrawCharacterSimple(
 		headDir = (direction_e)((dir + 1) % 8);
 	}
 
-	if (gunPic < 0)
-	{
-		bodyType = c->looks.unarmedBody;
-	}
+	int bodyType = gunPic < 0 ? BODY_UNARMED : BODY_ARMED;
 
 	body.dx = cBodyOffset[bodyType][dir].dx;
 	body.dy = cBodyOffset[bodyType][dir].dy;

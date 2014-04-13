@@ -67,7 +67,6 @@ const char *IndexToShadeStr(int idx)
 
 static void SetPlayer(Character *c, struct PlayerData *data)
 {
-	data->looks.unarmedBody = BODY_UNARMED;
 	CharacterSetLooks(c, &data->looks);
 	c->speed = 256;
 	c->maxHealth = 200;

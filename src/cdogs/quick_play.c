@@ -123,7 +123,6 @@ static int GenerateQuickPlayParam(
 static void SetupQuickPlayEnemy(
 	Character *enemy, const QuickPlayConfig *config, gun_e gun)
 {
-	enemy->looks.unarmedBody = BODY_UNARMED;
 	enemy->looks.face = rand() % FACE_COUNT;
 	enemy->gun = gun;
 	enemy->speed =

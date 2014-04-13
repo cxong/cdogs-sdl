@@ -209,7 +209,6 @@ ActorPics GetCharacterPics(void *data)
 	Character *c = actor->character;
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
-	int b;
 	int g = GunGetPic(actor->weapon.gun);
 	gunstate_e gunState = actor->weapon.state;
 
@@ -257,14 +256,7 @@ ActorPics GetCharacterPics(void *data)
 	else if (state == STATE_IDLERIGHT)
 		headDir = (dir + 1) % 8;
 
-	if (g < 0)
-	{
-		b = c->looks.unarmedBody;
-	}
-	else
-	{
-		b = BODY_ARMED;
-	}
+	int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
 
 	body.dx = cBodyOffset[b][dir].dx;
 	body.dy = cBodyOffset[b][dir].dy;
