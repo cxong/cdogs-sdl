@@ -1,3 +1,4 @@
+include_directories(${SDL_INCLUDE_DIR})
 set(CDOGSED_SOURCES
 	charsed.c
 	editor_brush.c

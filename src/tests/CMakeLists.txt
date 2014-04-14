@@ -9,7 +9,7 @@ endif()
 
 add_subdirectory(cbehave)
 
-include_directories(. ../cdogs)
+include_directories(. ../cdogs ${SDL_INCLUDE_DIR})
 
 add_executable(autosave_test
 	autosave_test.c

@@ -947,7 +947,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 	}
 }
 
-void ActorsInit()
+void ActorsInit(void)
 {
 	CArrayInit(&gActors, sizeof(TActor));
 	// Initialise with a number of empty actors
@@ -962,7 +962,7 @@ void ActorsInit()
 		gPlayerIds[i] = -1;
 	}
 }
-void ActorsTerminate()
+void ActorsTerminate(void)
 {
 	for (int i = 0; i < (int)gActors.size; i++)
 	{
