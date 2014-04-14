@@ -25,6 +25,8 @@ RemoteSystemsTempFiles/
 cdogs-sdl.dir/
 CPack*
 _CPack_Packages/
+CTestTestfile.cmake
+Testing/
 
 # Generated files
 src/cdogs/sys_config.h
