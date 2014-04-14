@@ -1,4 +1,4 @@
-include_directories(.)
+include_directories(. ${SDL_INCLUDE_DIR})
 
 add_subdirectory(cdogs)
 add_subdirectory(cdogsed)
@@ -46,13 +46,10 @@ elseif(APPLE)
 		PROPERTIES LANGUAGE C)
 endif()
 add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
-target_include_directories(cdogs-sdl PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
 
 add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
-target_include_directories(cdogs-sdl-editor PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
 
 add_executable(net_input_client net_input_client.c)
-target_include_directories(net_input_client PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(net_input_client cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})

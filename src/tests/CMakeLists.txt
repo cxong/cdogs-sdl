@@ -9,7 +9,7 @@ endif()
 
 add_subdirectory(cbehave)
 
-include_directories(. ../cdogs)
+include_directories(. ../cdogs ${SDL_INCLUDE_DIR})
 
 add_executable(autosave_test
 	autosave_test.c
@@ -20,14 +20,12 @@ add_executable(autosave_test
 	../cdogs/json_utils.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_include_directories(autosave_test PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
 
 add_executable(color_test
 	color_test.c
 	../cdogs/color.c
 	../cdogs/color.h)
-target_include_directories(color_test PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(color_test cbehave ${EXTRA_LIBRARIES})
 
 add_executable(config_test
@@ -43,5 +41,4 @@ add_executable(config_test
 	../cdogs/json_utils.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_include_directories(config_test PUBLIC ${SDL_INCLUDE_DIR})
 target_link_libraries(config_test cbehave json ${EXTRA_LIBRARIES})
