@@ -15,6 +15,8 @@ install:
 before_script:
     # force newer gcc version
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
+    # show which tests failed
+  - export CTEST_OUTPUT_ON_FAILURE=1
     # pull all sub modules recursively
   - git submodule update --init --recursive
     # do not treat warnings as errors
@@ -23,3 +25,4 @@ before_script:
 script:
   - cmake .
   - make -j2
+  - make test
