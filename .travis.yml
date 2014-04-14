@@ -1,0 +1,20 @@
+language: c
+
+compiler: gcc
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install -qq libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-net1.2-dev
+
+before_script:
+    # pull all sub modules recursively
+  - git submodule update --init --recursive
+    # do not treat warnings as errors
+  - sed 's|-Werror||' -i CMakeLists.txt
+
+script:
+  - cmake .
+  - make -j2
