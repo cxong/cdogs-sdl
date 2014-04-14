@@ -1,0 +1,25 @@
+language: c
+
+compiler:
+  - gcc
+  - clang
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install -qq libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-net1.2-dev
+  - if [ "$CC" = "gcc" ]; then sudo apt-get install -qq gcc-4.8; fi
+
+before_script:
+    # force newer gcc version
+  - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
+    # pull all sub modules recursively
+  - git submodule update --init --recursive
+    # do not treat warnings as errors
+  - sed 's|-Werror||' -i CMakeLists.txt
+
+script:
+  - cmake .
+  - make -j2
