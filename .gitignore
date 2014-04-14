@@ -1,25 +1,19 @@
-*.o
-*.swp
-Makefile
-Makefile.*
-cdogs-sdl
+
+# executables
 *.exe
-*.tar.gz
+cdogs-sdl
 cdogs-sdl-editor
-libcdogs.a
-libcdogsedlib.a
+net_input_client
+# tests
 autosave_test
 color_test
 config_test
-tmp
-libjson.a
-.cdogs/
-*.so
 
 # CMake stuff
 *CMakeCache.txt
 CMakeFiles/
 *cmake_install.cmake
+Makefile
 .metadata/
 RemoteSystemsTempFiles/
 cdogs-sdl.dir/
@@ -61,3 +55,11 @@ CMakeScripts/
 
 # Other
 *.lnk
+*.o
+*.a
+*.so
+*.swp
+Makefile.*
+*.tar.gz
+tmp
+.cdogs/
