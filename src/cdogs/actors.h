@@ -188,8 +188,8 @@ void Score(struct PlayerData *p, int points);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
-void ActorsInit();
-void ActorsTerminate();
+void ActorsInit(void);
+void ActorsTerminate(void);
 int ActorAdd(Character *c, struct PlayerData *p);	// returns id
 void ActorDestroy(int id);
 

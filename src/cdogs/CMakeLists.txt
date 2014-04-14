@@ -144,3 +144,4 @@ set(HQX_HEADERS
 	hqx/src/common.h
 	hqx/src/hqx.h)
 add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})
+target_include_directories(cdogs PUBLIC ${SDL_INCLUDE_DIR})
