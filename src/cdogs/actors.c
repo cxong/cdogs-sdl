@@ -957,6 +957,10 @@ void ActorsInit()
 		memset(&a, 0, sizeof a);
 		CArrayPushBack(&gActors, &a);
 	}
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		gPlayerIds[i] = -1;
+	}
 }
 void ActorsTerminate()
 {
