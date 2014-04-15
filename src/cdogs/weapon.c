@@ -429,7 +429,7 @@ static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
 		return Vec2iZero();
 	}
 	gunpic_e g = GunGetPic(gun);
-	int body = g < 0 ? BODY_UNARMED : BODY_ARMED;
+	int body = (int)g < 0 ? BODY_UNARMED : BODY_ARMED;
 	Vec2i position = Vec2iNew(
 		cGunHandOffset[body][dir].dx +
 		cGunPics[g][dir][GUNSTATE_FIRING].dx +
