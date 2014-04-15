@@ -22,6 +22,8 @@ _CPack_Packages/
 CTestTestfile.cmake
 Testing/
 install_manifest_Runtime.txt
+*.deb
+*.rpm
 
 # Generated files
 src/cdogs/sys_config.h
