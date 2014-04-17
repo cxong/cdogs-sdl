@@ -273,6 +273,8 @@ int ConfigGetVersion(FILE *f)
 
 void ConfigLoad(Config *config, const char *filename)
 {
+	// Load default values first
+	ConfigLoadDefault(config);
 	int configVersion = -1;
 	FILE *f = fopen(filename, "r");
 	if (f == NULL)

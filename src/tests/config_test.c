@@ -32,11 +32,11 @@ FEATURE(2, "Save and load")
 			ConfigLoadDefault(&config1);
 			config1.Game.FriendlyFire = 1;
 			config1.Graphics.Brightness = 5;
-			ConfigSaveJSON(&config1, "tmp");
+			ConfigSave(&config1, "tmp");
 		GIVEN_END
 
 		WHEN("I load a second config from that file")
-			ConfigLoadJSON(&config2, "tmp");
+			ConfigLoad(&config2, "tmp");
 		WHEN_END
 
 		THEN("the two configs should be equal")
@@ -56,7 +56,7 @@ FEATURE(3, "Detect config version")
 			ConfigLoadDefault(&config1);
 			config1.Game.FriendlyFire = 1;
 			config1.Graphics.Brightness = 5;
-			ConfigSaveJSON(&config1, "tmp");
+			ConfigSave(&config1, "tmp");
 		GIVEN_END
 
 		WHEN("I detect the version, and load a second config from that file")
