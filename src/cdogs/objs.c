@@ -295,12 +295,12 @@ void UpdateMobileObjects(int ticks)
 }
 
 
-void ObjsInit()
+void ObjsInit(void)
 {
 	CArrayInit(&gObjs, sizeof(TObject));
 	CArrayReserve(&gObjs, 1024);
 }
-void ObjsTerminate()
+void ObjsTerminate(void)
 {
 	for (int i = 0; i < (int)gObjs.size; i++)
 	{

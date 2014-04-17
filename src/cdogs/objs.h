@@ -161,8 +161,8 @@ int DamageSomething(
 	special_damage_e damage,
 	bool hasHitSound);
 
-void ObjsInit();
-void ObjsTerminate();
+void ObjsInit(void);
+void ObjsTerminate(void);
 void AddObjectOld(
 	int x, int y, Vec2i size,
 	const TOffsetPic * pic, PickupType type, int tileFlags);

@@ -223,7 +223,7 @@ static INLINE int NodeKeyCompare(Node node, void *nodeKey)
     }
 }
 
-static INLINE Node GetNode(VisitedNodes nodes, void *nodeKey)
+static Node GetNode(VisitedNodes nodes, void *nodeKey)
 {
     size_t first;
     Node node;

@@ -368,6 +368,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 	}
 }
 
+static void DrawObjectiveHighlight(
+	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset);
 static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 {
 	Tile *tile = &b->tiles[0][0];
@@ -380,60 +382,65 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 			{
 				TTileItem *ti =
 					ThingIdGetTileItem(CArrayGet(&tile->things, i));
-				if (!(ti->flags & TILEITEM_OBJECTIVE))
-				{
-					continue;
-				}
-				int objective = ObjectiveFromTileItem(ti->flags);
-				MissionObjective *mo =
-					CArrayGet(&gMission.missionData->Objectives, objective);
-				if (mo->Flags & OBJECTIVE_HIDDEN)
-				{
-					continue;
-				}
-				if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
-					(tile->flags & MAPTILE_OUT_OF_SIGHT))
-				{
-					continue;
-				}
-				Vec2i pos = Vec2iNew(
-					ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
-				struct Objective *o =
-					CArrayGet(&gMission.Objectives, objective);
-				color_t color = o->color;
-				int pulsePeriod = FPS_FRAMELIMIT;
-				int alphaUnscaled =
-					(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
-				if (alphaUnscaled > 255)
-				{
-					alphaUnscaled = 255 * 2 - alphaUnscaled;
-				}
-				color.a = (Uint8)alphaUnscaled;
-				if (ti->getPicFunc != NULL)
-				{
-					BlitPicHighlight(
-						&gGraphicsDevice, ti->getPicFunc(ti->id), pos, color);
-				}
-				else if (ti->getActorPicsFunc != NULL)
-				{
-					ActorPics pics = ti->getActorPicsFunc(ti->id);
-					// Do not highlight dead, dying or transparent characters
-					if (!pics.IsDead && !pics.IsTransparent)
-					{
-						for (int i = 0; i < 3; i++)
-						{
-							if (PicIsNotNone(&pics.Pics[i]))
-							{
-								BlitPicHighlight(
-									&gGraphicsDevice,
-									&pics.Pics[i], pos, color);
-							}
-						}
-					}
-				}
+				DrawObjectiveHighlight(ti, tile, b, offset);
 			}
 		}
 		tile += X_TILES - b->Size.x;
+	}
+}
+static void DrawObjectiveHighlight(
+	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset)
+{
+	if (!(ti->flags & TILEITEM_OBJECTIVE))
+	{
+		return;
+	}
+	int objective = ObjectiveFromTileItem(ti->flags);
+	MissionObjective *mo =
+		CArrayGet(&gMission.missionData->Objectives, objective);
+	if (mo->Flags & OBJECTIVE_HIDDEN)
+	{
+		return;
+	}
+	if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
+		(tile->flags & MAPTILE_OUT_OF_SIGHT))
+	{
+		return;
+	}
+	Vec2i pos = Vec2iNew(
+		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
+	struct Objective *o =
+		CArrayGet(&gMission.Objectives, objective);
+	color_t color = o->color;
+	int pulsePeriod = FPS_FRAMELIMIT;
+	int alphaUnscaled =
+		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
+	if (alphaUnscaled > 255)
+	{
+		alphaUnscaled = 255 * 2 - alphaUnscaled;
+	}
+	color.a = (Uint8)alphaUnscaled;
+	if (ti->getPicFunc != NULL)
+	{
+		BlitPicHighlight(
+			&gGraphicsDevice, ti->getPicFunc(ti->id), pos, color);
+	}
+	else if (ti->getActorPicsFunc != NULL)
+	{
+		ActorPics pics = ti->getActorPicsFunc(ti->id);
+		// Do not highlight dead, dying or transparent characters
+		if (!pics.IsDead && !pics.IsTransparent)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				if (PicIsNotNone(&pics.Pics[i]))
+				{
+					BlitPicHighlight(
+						&gGraphicsDevice,
+						&pics.Pics[i], pos, color);
+				}
+			}
+		}
 	}
 }
 
