@@ -1,5 +1,5 @@
 add_subdirectory(hqx/src)
-include_directories(hqx/src)
+include_directories(hqx/src ${SDL_INCLUDE_DIR})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actors.c

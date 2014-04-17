@@ -724,7 +724,7 @@ int IsMissionComplete(struct MissionOptions *options)
 	if (rescuesRequired > 0)
 	{
 		int prisonersRescued = 0;
-		for (int i = 0; i < (int)gActors.size; i++)
+		for (i = 0; i < (int)gActors.size; i++)
 		{
 			TActor *a = CArrayGet(&gActors, i);
 			if (!a->isInUse)

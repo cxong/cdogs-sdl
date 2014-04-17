@@ -129,58 +129,6 @@ void ConfigLoadOld(Config *config, const char *filename)
 	fclose(f);
 }
 
-void ConfigSaveOld(Config *config, const char *filename)
-{
-	FILE *f = fopen(filename, "w");
-	int i;
-
-	if (f == NULL)
-	{
-		printf("Error saving config '%s'\n", filename);
-		return;
-	}
-
-	fprintf(f, "%d %d %d %d %d %d %d\n",
-		config->Interface.ShowFPS,
-		config->Interface.ShowTime,
-		config->Game.FriendlyFire,
-		config->Graphics.Brightness,
-		0,
-		0,
-		config->Interface.Splitscreen == SPLITSCREEN_ALWAYS);
-	for (i = 0; i < 2; i++)
-	{
-		fprintf(f, "%d\n%d %d %d %d %d %d\n",
-			INPUT_DEVICE_KEYBOARD,
-			config->Input.PlayerKeys[i].Keys.left,
-			config->Input.PlayerKeys[i].Keys.right,
-			config->Input.PlayerKeys[i].Keys.up,
-			config->Input.PlayerKeys[i].Keys.down,
-			config->Input.PlayerKeys[i].Keys.button1,
-			config->Input.PlayerKeys[i].Keys.button2);
-	}
-	fprintf(f, "%d\n", config->Input.PlayerKeys[0].Keys.map);
-	fprintf(f, "%d %d %d %d\n",
-		config->Sound.SoundVolume,
-		config->Sound.MusicVolume,
-		config->Sound.SoundChannels,
-		0);
-	fprintf(f, "%u\n", config->Game.RandomSeed);
-	fprintf(f, "%d %d\n",
-		config->Game.Difficulty,
-		config->Game.SlowMotion);
-	fprintf(f, "%d\n", config->Game.EnemyDensity);
-	fprintf(f, "%d\n", config->Game.NonPlayerHP);
-	fprintf(f, "%d\n", config->Game.PlayerHP);
-	fprintf(f, "%dx%d:%d:%d\n",
-		config->Graphics.Res.x,
-		config->Graphics.Res.y,
-		config->Graphics.Fullscreen,
-		config->Graphics.ScaleFactor);
-
-	fclose(f);
-}
-
 int ConfigIsOld(FILE *f)
 {
 	int x1, x2, x3, x4, x5, x6, x7;

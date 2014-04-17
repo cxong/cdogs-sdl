@@ -451,8 +451,7 @@ void CommandBadGuys(int ticks)
 							(actor->flags & FLAGS_GOOD_GUY))
 						{
 							// Shoot in a random direction away
-							int i;
-							for (i = 0; i < 10; i++)
+							for (int j = 0; j < 10; j++)
 							{
 								direction_e d =
 									(direction_e)(rand() % DIRECTION_COUNT);

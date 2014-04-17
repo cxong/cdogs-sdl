@@ -68,7 +68,10 @@ void NetInputClientConnect(NetInputClient *n, Uint32 host)
 	// Wait for SYN-ACK
 	// TODO: don't wait forever
 	n->channel.state = CHANNEL_STATE_WAIT_HANDSHAKE;
-	while (!NetInputRecvBlocking(&n->channel, TryParseSynAck, &n->channel));
+	while (!NetInputRecvBlocking(&n->channel, TryParseSynAck, &n->channel))
+	{
+		// Spin
+	}
 
 	// Send ACK
 	CFREE(packet.data);
