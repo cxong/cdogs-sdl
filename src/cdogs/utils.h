@@ -50,6 +50,7 @@
 #define __UTILS
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 

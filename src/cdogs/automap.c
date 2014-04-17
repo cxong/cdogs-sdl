@@ -265,63 +265,67 @@ static void DrawMap(
 	}
 }
 
+static void DrawTileItem(
+	TTileItem *t, Tile *tile, Vec2i pos, int scale, int flags);
 static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 {
-	int y;
-	for (y = 0; y < gMap.Size.y; y++)
+	for (int y = 0; y < map->Size.y; y++)
 	{
-		int x;
-		for (x = 0; x < gMap.Size.x; x++)
+		for (int x = 0; x < map->Size.x; x++)
 		{
 			Tile *tile = MapGetTile(map, Vec2iNew(x, y));
-			TTileItem *t = tile->things;
-			while (t)
+			for (int i = 0; i < (int)tile->things.size; i++)
 			{
-				if ((t->flags & TILEITEM_OBJECTIVE) != 0)
-				{
-					int obj = ObjectiveFromTileItem(t->flags);
-					MissionObjective *mobj =
-						CArrayGet(&gMission.missionData->Objectives, obj);
-					int objFlags = mobj->Flags;
-					if (!(objFlags & OBJECTIVE_HIDDEN) ||
-						(flags & AUTOMAP_FLAGS_SHOWALL))
-					{
-						if ((objFlags & OBJECTIVE_POSKNOWN) ||
-							tile->isVisited ||
-							(flags & AUTOMAP_FLAGS_SHOWALL))
-						{
-							DisplayObjective(t, obj, pos, scale, flags);
-						}
-					}
-				}
-				else if (t->kind == KIND_OBJECT && t->data && tile->isVisited)
-				{
-					color_t dotColor = colorBlack;
-					switch (((TObject *)t->data)->Type)
-					{
-					case OBJ_KEYCARD_RED:
-						dotColor = colorRedDoor;
-						break;
-					case OBJ_KEYCARD_BLUE:
-						dotColor = colorBlueDoor;
-						break;
-					case OBJ_KEYCARD_GREEN:
-						dotColor = colorGreenDoor;
-						break;
-					case OBJ_KEYCARD_YELLOW:
-						dotColor = colorYellowDoor;
-						break;
-					default:
-						break;
-					}
-					if (!ColorEquals(dotColor, colorBlack))
-					{
-						DrawDot(t, dotColor, pos, scale);
-					}
-				}
-
-				t = t->next;
+				ThingId *tid = CArrayGet(&tile->things, i);
+				DrawTileItem(
+					ThingIdGetTileItem(tid), tile, pos, scale, flags);
 			}
+		}
+	}
+}
+static void DrawTileItem(
+	TTileItem *t, Tile *tile, Vec2i pos, int scale, int flags)
+{
+	if ((t->flags & TILEITEM_OBJECTIVE) != 0)
+	{
+		int obj = ObjectiveFromTileItem(t->flags);
+		MissionObjective *mobj =
+			CArrayGet(&gMission.missionData->Objectives, obj);
+		int objFlags = mobj->Flags;
+		if (!(objFlags & OBJECTIVE_HIDDEN) ||
+			(flags & AUTOMAP_FLAGS_SHOWALL))
+		{
+			if ((objFlags & OBJECTIVE_POSKNOWN) ||
+				tile->isVisited ||
+				(flags & AUTOMAP_FLAGS_SHOWALL))
+			{
+				DisplayObjective(t, obj, pos, scale, flags);
+			}
+		}
+	}
+	else if (t->kind == KIND_OBJECT && tile->isVisited)
+	{
+		color_t dotColor = colorBlack;
+		switch (((TObject *)CArrayGet(&gObjs, t->id))->Type)
+		{
+		case OBJ_KEYCARD_RED:
+			dotColor = colorRedDoor;
+			break;
+		case OBJ_KEYCARD_BLUE:
+			dotColor = colorBlueDoor;
+			break;
+		case OBJ_KEYCARD_GREEN:
+			dotColor = colorGreenDoor;
+			break;
+		case OBJ_KEYCARD_YELLOW:
+			dotColor = colorYellowDoor;
+			break;
+		default:
+			break;
+		}
+		if (!ColorEquals(dotColor, colorBlack))
+		{
+			DrawDot(t, dotColor, pos, scale);
 		}
 	}
 }

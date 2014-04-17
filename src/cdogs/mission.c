@@ -57,6 +57,7 @@
 #include "gamedata.h"
 #include "map.h"
 #include "map_new.h"
+#include "objs.h"
 #include "palette.h"
 #include "defs.h"
 #include "pic_manager.h"
@@ -164,6 +165,11 @@ void MissionTerminate(Mission *m)
 {
 	CFREE(m->Title);
 	CFREE(m->Description);
+	for (int i = 0; i < (int)m->Objectives.size; i++)
+	{
+		MissionObjective *mo = CArrayGet(&m->Objectives, i);
+		CFREE(mo->Description);
+	}
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Enemies);
 	CArrayTerminate(&m->SpecialChars);
@@ -589,6 +595,8 @@ void SetupMission(
 	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
 
 	ActorsInit();
+	ObjsInit();
+	MobObjsInit();
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(gPlayerDatas, m->Weapons);

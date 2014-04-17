@@ -181,14 +181,13 @@ static int DisplayPage(
 
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
-	int idx = 0;
 	int highlights[MAX_PLAYERS];
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		highlights[i] = gPlayerDatas[i].allTime;
 	}
-
+	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
+	int idx = 0;
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
@@ -200,14 +199,13 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
-	int idx = 0;
 	int highlights[MAX_PLAYERS];
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		highlights[i] = gPlayerDatas[i].today;
 	}
-
+	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
+	int idx = 0;
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);

@@ -130,7 +130,7 @@ static int IsOnSameTeam(TTileItem *i, CollisionTeam team, int isDogfight)
 		CollisionTeam itemTeam = COLLISIONTEAM_NONE;
 		if (i->kind == KIND_CHARACTER)
 		{
-			TActor *a = CArrayGet(&gActors, i->actorId);
+			TActor *a = CArrayGet(&gActors, i->id);
 			itemTeam = CalcCollisionTeam(1, a);
 		}
 		return
@@ -157,20 +157,20 @@ TTileItem *GetItemOnTileInCollision(
 	{
 		for (dv.x = -1; dv.x <= 1; dv.x++)
 		{
-			TTileItem *i = MapGetTile(&gMap, Vec2iAdd(tv, dv))->things;
-			while (i)
+			CArray *tileThings = &MapGetTile(&gMap, Vec2iAdd(tv, dv))->things;
+			for (int i = 0; i < (int)tileThings->size; i++)
 			{
+				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
 				// Don't collide if items are on the same team
-				if (!IsOnSameTeam(i, team, isDogfight))
+				if (!IsOnSameTeam(ti, team, isDogfight))
 				{
-					if (item != i &&
-					(i->flags & mask) &&
-					ItemsCollide(item, i, pos))
+					if (item != ti &&
+						(ti->flags & mask) &&
+						ItemsCollide(item, ti, pos))
 					{
-						return i;
+						return ti;
 					}
 				}
-				i = i->next;
 			}
 		}
 	}

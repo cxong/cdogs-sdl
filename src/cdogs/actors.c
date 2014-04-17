@@ -197,11 +197,11 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 	}
 }
 
-ActorPics GetCharacterPics(void *data)
+static ActorPics GetCharacterPics(int id)
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
-	TActor *actor = data;
+	TActor *actor = CArrayGet(&gActors, id);
 	direction_e dir = actor->direction;
 	direction_e headDir = dir;
 	int state = actor->state;
@@ -486,7 +486,7 @@ static void PickupObject(TActor * actor, TObject * object)
 		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	if (canPickup)
 	{
-		RemoveObject(object);
+		ObjDestroy(object->tileItem.id);
 	}
 }
 
@@ -494,7 +494,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	TTileItem *target;
 	TObject *object;
-	TActor *otherCharacter;
 	Vec2i realPos = Vec2iFull2Real(pos);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 	int isDogfight = gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT;
@@ -538,7 +537,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 
 		if (actor->pData && target->kind == KIND_CHARACTER)
 		{
-			otherCharacter = target->data;
+			TActor *otherCharacter = CArrayGet(&gActors, target->id);
+			CASSERT(otherCharacter->isInUse, "Cannot find nonexistent player");
 			if (otherCharacter
 			    && (otherCharacter->flags & FLAGS_PRISONER) !=
 			    0) {
@@ -554,7 +554,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 
 		if (actor->weapon.gun == GUN_KNIFE && actor->health > 0)
 		{
-			object = target->kind == KIND_OBJECT ? target->data : NULL;
+			object = target->kind == KIND_OBJECT ?
+				CArrayGet(&gObjs, target->id) : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
 				DamageSomething(
@@ -615,7 +616,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			isDogfight);
 		if (target && target->kind == KIND_OBJECT)
 		{
-			PickupObject(actor, target->data);
+			PickupObject(actor, CArrayGet(&gObjs, target->id));
 		}
 	}
 
@@ -892,7 +893,7 @@ void UpdateAllActors(int ticks)
 				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
 					TActor *collidingActor = CArrayGet(
-						&gActors, collidingItem->actorId);
+						&gActors, collidingItem->id);
 					if (CalcCollisionTeam(1, collidingActor) ==
 						CalcCollisionTeam(1, actor))
 					{
@@ -950,13 +951,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 void ActorsInit()
 {
 	CArrayInit(&gActors, sizeof(TActor));
-	// Initialise with a number of empty actors
-	for (int i = 0; i < 256; i++)
-	{
-		TActor a;
-		memset(&a, 0, sizeof a);
-		CArrayPushBack(&gActors, &a);
-	}
+	CArrayReserve(&gActors, 64);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		gPlayerIds[i] = -1;
@@ -1000,15 +995,15 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	actor->weapon = WeaponCreate(c->gun);
 	actor->health = c->maxHealth;
 	actor->action = ACTORACTION_MOVING;
+	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
-	actor->tileItem.data = actor;
 	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.getActorPicsFunc = GetCharacterPics;
 	actor->tileItem.drawFunc = NULL;
 	actor->tileItem.w = 7;
 	actor->tileItem.h = 5;
 	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
-	actor->tileItem.actorId = i;
+	actor->tileItem.id = i;
 	actor->isInUse = true;
 	actor->flags = FLAGS_SLEEPING | c->flags;
 	actor->character = c;

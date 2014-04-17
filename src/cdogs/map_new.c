@@ -136,6 +136,8 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		{
 			ConvertCampaignSetting(c, &cOld);
 		}
+		CFREE(cOld.missions);
+		CFREE(cOld.characters);
 		return err;
 	}
 

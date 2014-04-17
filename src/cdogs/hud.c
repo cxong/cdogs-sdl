@@ -535,13 +535,15 @@ static void DrawObjectiveCompass(
 		for (tilePos.x = 0; tilePos.x < map->Size.x; tilePos.x++)
 		{
 			Tile *tile = MapGetTile(map, tilePos);
-			for (TTileItem *t = tile->things; t; t = t->next)
+			for (int i = 0; i < (int)tile->things.size; i++)
 			{
-				if (!(t->flags & TILEITEM_OBJECTIVE))
+				TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+				if (!(ti->flags & TILEITEM_OBJECTIVE))
 				{
 					continue;
 				}
-				int objective = ObjectiveFromTileItem(t->flags);
+				int objective = ObjectiveFromTileItem(ti->flags);
 				MissionObjective *mo =
 					CArrayGet(&gMission.missionData->Objectives, objective);
 				if (mo->Flags & OBJECTIVE_HIDDEN)
@@ -557,7 +559,7 @@ static void DrawObjectiveCompass(
 					CArrayGet(&gMission.Objectives, objective);
 				color_t color = o->color;
 				DrawCompassArrow(
-					g, r, Vec2iNew(t->x, t->y), playerPos, color, NULL);
+					g, r, Vec2iNew(ti->x, ti->y), playerPos, color, NULL);
 			}
 		}
 	}

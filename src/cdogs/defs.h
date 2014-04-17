@@ -140,6 +140,7 @@ extern double dir2radians[8];
 #define CmdToDirection(c)   cmd2dir[(c)&15]
 #define DirectionToCmd(d)   dir2cmd[(d)&7]
 
+Vec2i GetVectorsForRadians(double radians);
 Vec2i GetFullVectorsForRadians(double radians);
 
 

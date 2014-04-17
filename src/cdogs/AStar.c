@@ -524,7 +524,7 @@ ASPath ASPathCreate(const ASPathNodeSource *source, void *context, void *startNo
 
 void ASPathDestroy(ASPath path)
 {
-    free(path);
+    CFREE(path);
 }
 
 ASPath ASPathCopy(ASPath path)

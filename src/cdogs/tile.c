@@ -48,6 +48,8 @@
 */
 #include "tile.h"
 
+#include "actors.h"
+#include "objs.h"
 #include "triggers.h"
 
 
@@ -73,9 +75,13 @@ void TileDestroy(Tile *t)
 	{
 		CArrayTerminate(&t->triggers);
 	}
+	if (t->things.elemSize > 0)
+	{
+		CArrayTerminate(&t->things);
+	}
 }
 
-int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
+bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
 {
 	return
 		i->x - i->w >= tilePos.x * TILE_WIDTH &&
@@ -84,38 +90,60 @@ int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
 		i->y + i->h < (tilePos.y + 1) * TILE_HEIGHT;
 }
 
-int TileCanSee(Tile *t)
+bool TileCanSee(Tile *t)
 {
 	return !(t->flags & MAPTILE_NO_SEE);
 }
-int TileCanWalk(Tile *t)
+bool TileCanWalk(Tile *t)
 {
 	return !(t->flags & MAPTILE_NO_WALK);
 }
-int TileIsNormalFloor(Tile *t)
+bool TileIsNormalFloor(Tile *t)
 {
 	return t->flags & MAPTILE_IS_NORMAL_FLOOR;
 }
-int TileIsClear(Tile *t)
+bool TileIsClear(Tile *t)
 {
-	return t->things == NULL;
+	return t->things.size == 0;
 }
-int TileHasCharacter(Tile *t)
+bool TileHasCharacter(Tile *t)
 {
-	TTileItem *item = t->things;
-	while (item)
+	for (int i = 0; i < (int)t->things.size; i++)
 	{
-		if (item->kind == KIND_CHARACTER)
+		ThingId *tid = CArrayGet(&t->things, i);
+		if (tid->Kind == KIND_CHARACTER)
 		{
-			return 1;
+			return true;
 		}
-		item = item->next;
 	}
-	return 0;
+	return false;
 }
 
 void TileSetAlternateFloor(Tile *t, Pic *p)
 {
 	t->pic = p;
 	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+}
+
+
+TTileItem *ThingIdGetTileItem(ThingId *tid)
+{
+	TTileItem *ti = NULL;
+	switch (tid->Kind)
+	{
+	case KIND_CHARACTER:
+		ti = &((TActor *)CArrayGet(&gActors, tid->Id))->tileItem;
+		break;
+	case KIND_MOBILEOBJECT:
+		ti = &((TMobileObject *)CArrayGet(
+			&gMobObjs, tid->Id))->tileItem;
+		break;
+	case KIND_OBJECT:
+		ti = &((TObject *)CArrayGet(&gObjs, tid->Id))->tileItem;
+		break;
+	default:
+		CASSERT(false, "unknown tile item to draw");
+		break;
+	}
+	return ti;
 }

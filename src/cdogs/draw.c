@@ -220,11 +220,13 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			{
 				continue;
 			}
-			for (TTileItem *t = tile->things; t; t = t->next)
+			for (int i = 0; i < (int)tile->things.size; i++)
 			{
-				if (t->flags & TILEITEM_IS_WRECK)
+				TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+				if (ti->flags & TILEITEM_IS_WRECK)
 				{
-					AddItemToDisplayList(t, &displayList);
+					AddItemToDisplayList(ti, &displayList);
 				}
 			}
 		}
@@ -234,7 +236,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
 			{
-				Blit(&gGraphicsDevice, t->getPicFunc(t->data), pos);
+				Blit(&gGraphicsDevice, t->getPicFunc(t->id), pos);
 			}
 			else
 			{
@@ -276,11 +278,13 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			if (!(tile->flags & MAPTILE_OUT_OF_SIGHT))
 			{
 				// Draw the items that are in LOS
-				for (TTileItem *t = tile->things; t; t = t->next)
+				for (int i = 0; i < (int)tile->things.size; i++)
 				{
-					if (!(t->flags & TILEITEM_IS_WRECK))
+					TTileItem *ti =
+						ThingIdGetTileItem(CArrayGet(&tile->things, i));
+					if (!(ti->flags & TILEITEM_IS_WRECK))
 					{
-						AddItemToDisplayList(t, &displayList);
+						AddItemToDisplayList(ti, &displayList);
 					}
 				}
 			}
@@ -291,11 +295,11 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
 			{
-				Blit(&gGraphicsDevice, t->getPicFunc(t->data), picPos);
+				Blit(&gGraphicsDevice, t->getPicFunc(t->id), picPos);
 			}
 			else if (t->getActorPicsFunc)
 			{
-				ActorPics pics = t->getActorPicsFunc(t->data);
+				ActorPics pics = t->getActorPicsFunc(t->id);
 				if (pics.IsDead)
 				{
 					if (pics.IsDying)
@@ -372,13 +376,15 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
 			// Draw the items that are in LOS
-			for (TTileItem *t = tile->things; t; t = t->next)
+			for (int i = 0; i < (int)tile->things.size; i++)
 			{
-				if (!(t->flags & TILEITEM_OBJECTIVE))
+				TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+				if (!(ti->flags & TILEITEM_OBJECTIVE))
 				{
 					continue;
 				}
-				int objective = ObjectiveFromTileItem(t->flags);
+				int objective = ObjectiveFromTileItem(ti->flags);
 				MissionObjective *mo =
 					CArrayGet(&gMission.missionData->Objectives, objective);
 				if (mo->Flags & OBJECTIVE_HIDDEN)
@@ -391,7 +397,7 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 					continue;
 				}
 				Vec2i pos = Vec2iNew(
-					t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+					ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
 				struct Objective *o =
 					CArrayGet(&gMission.Objectives, objective);
 				color_t color = o->color;
@@ -403,14 +409,14 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 					alphaUnscaled = 255 * 2 - alphaUnscaled;
 				}
 				color.a = (Uint8)alphaUnscaled;
-				if (t->getPicFunc != NULL)
+				if (ti->getPicFunc != NULL)
 				{
 					BlitPicHighlight(
-						&gGraphicsDevice, t->getPicFunc(t->data), pos, color);
+						&gGraphicsDevice, ti->getPicFunc(ti->id), pos, color);
 				}
-				else if (t->getActorPicsFunc != NULL)
+				else if (ti->getActorPicsFunc != NULL)
 				{
-					ActorPics pics = t->getActorPicsFunc(t->data);
+					ActorPics pics = ti->getActorPicsFunc(ti->id);
 					// Do not highlight dead, dying or transparent characters
 					if (!pics.IsDead && !pics.IsTransparent)
 					{

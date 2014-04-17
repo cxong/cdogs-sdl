@@ -96,7 +96,7 @@ static void HandleGameEvent(
 			}
 			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
-			MobileObjectRemove(&gMobObjList, e->u.MobileObjectRemoveId);
+			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;
 		case GAME_EVENT_ADD_BULLET:
 			WeaponAddBullet(

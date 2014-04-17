@@ -116,7 +116,8 @@ typedef enum
 #define OBJFLAG_DANGEROUS   31
 
 
-struct Object {
+typedef struct
+{
 	const TOffsetPic *pic;
 	const TOffsetPic *wreckedPic;
 	const char *picName;
@@ -124,13 +125,11 @@ struct Object {
 	int structure;
 	int flags;
 	TTileItem tileItem;
-	struct Object *next;
-};
-typedef struct Object TObject;
+	bool isInUse;
+} TObject;
 
 typedef struct MobileObject
 {
-	int id;
 	int player;	// -1 if not owned by any player
 	BulletClass bulletClass;
 	int kind;
@@ -146,11 +145,11 @@ typedef struct MobileObject
 	int soundLock;
 	TTileItem tileItem;
 	BulletUpdateFunc updateFunc;
-	struct MobileObject *next;
+	bool isInUse;
 } TMobileObject;
 typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
-extern TMobileObject *gMobObjList;
-extern int gMobileObjId;
+extern CArray gMobObjs;	// of TMobileObject
+extern CArray gObjs;	// of TObject
 
 
 int DamageSomething(
@@ -162,26 +161,29 @@ int DamageSomething(
 	special_damage_e damage,
 	bool hasHitSound);
 
+void ObjsInit();
+void ObjsTerminate();
 void AddObjectOld(
 	int x, int y, Vec2i size,
 	const TOffsetPic * pic, PickupType type, int tileFlags);
-void AddObject(
-	Vec2i pos, Vec2i size, const char *picName, PickupType type, int tileFlags);
-void AddDestructibleObject(
-	Vec2i pos, int w, int h,
-	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+int ObjAdd(
+	Vec2i pos, Vec2i size,
+	const char *picName, PickupType type, int tileFlags);
+void ObjAddDestructible(
+	Vec2i pos, Vec2i size,
+	const TOffsetPic *pic, const TOffsetPic *wreckedPic,
 	const char *picName,
 	int structure, int objFlags, int tileFlags);
-void RemoveObject(TObject * obj);
-void KillAllObjects(void);
+void ObjDestroy(int id);
 
-void UpdateMobileObjects(TMobileObject **mobObjList, int ticks);
-void MobileObjectRemove(TMobileObject **mobObjList, int id);
-TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player);
-TMobileObject *AddFireBall(int flags, int player);
+void UpdateMobileObjects(int ticks);
+void MobObjsInit(void);
+void MobObjsTerminate(void);
+int MobObjAdd(Vec2i fullpos, int player);
+void MobObjDestroy(int id);
+TMobileObject *AddFireBall(Vec2i pos, int flags, int player);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int UpdateExplosion(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special);
-void KillAllMobileObjects(TMobileObject **mobObjList);
 
 #endif

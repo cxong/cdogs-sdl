@@ -133,6 +133,11 @@ double dir2radians[8] =
 };
 
 
+Vec2i GetVectorsForRadians(double radians)
+{
+	return Vec2iNew(
+		(int)cos(radians), (int)(sin(radians) * TILE_HEIGHT / TILE_WIDTH));
+}
 Vec2i GetFullVectorsForRadians(double radians)
 {
 	int scalar = 256;

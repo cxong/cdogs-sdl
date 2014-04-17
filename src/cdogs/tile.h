@@ -84,7 +84,7 @@ typedef enum
 } MapTileFlags;
 
 #define KIND_CHARACTER      0
-#define KIND_PIC            1
+#define KIND_PIC            1	// TODO: not used yet
 #define KIND_MOBILEOBJECT   2
 #define KIND_OBJECT         3
 
@@ -96,7 +96,7 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
-typedef Pic *(*TileItemGetPicFunc)(void *);
+typedef Pic *(*TileItemGetPicFunc)(int);
 
 // For actor drawing
 typedef struct
@@ -109,11 +109,11 @@ typedef struct
 	TranslationTable *Table;
 	HSV *Tint;
 } ActorPics;
-typedef ActorPics (*TileItemGetPic3Func)(void *);
+typedef ActorPics (*TileItemGetPic3Func)(int);
 
 typedef struct
 {
-	void *Obj;
+	int MobObjId;
 	union
 	{
 		struct
@@ -136,18 +136,21 @@ typedef struct TileItem
 	int x, y;
 	int w, h;
 	int kind;
+	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
-	void *data;
 	TileItemGetPicFunc getPicFunc;
 	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
-	int actorId;
-	struct TileItem *next;
 	struct TileItem *nextToDisplay;
 } TTileItem;
 
 
+typedef struct
+{
+	int Id;
+	int Kind;
+} ThingId;
 typedef struct
 {
 	Pic *pic;
@@ -155,19 +158,21 @@ typedef struct
 	int flags;
 	int isVisited;
 	CArray triggers;	// of Trigger *
-	TTileItem *things;
+	CArray things;		// of ThingId
 } Tile;
 
 
 Tile TileNone(void);
 void TileInit(Tile *t);
 void TileDestroy(Tile *t);
-int IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
-int TileCanSee(Tile *t);
-int TileCanWalk(Tile *t);
-int TileIsNormalFloor(Tile *t);
-int TileIsClear(Tile *t);
-int TileHasCharacter(Tile *t);
+bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
+bool TileCanSee(Tile *t);
+bool TileCanWalk(Tile *t);
+bool TileIsNormalFloor(Tile *t);
+bool TileIsClear(Tile *t);
+bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, Pic *p);
+
+TTileItem *ThingIdGetTileItem(ThingId *tid);
 
 #endif

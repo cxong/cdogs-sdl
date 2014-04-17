@@ -489,7 +489,6 @@ int gameloop(void)
 	}
 
 	gMission.time = 0;
-	gMobileObjId = 0;
 	gMission.pickupTime = 0;
 	gMission.state = MISSION_STATE_PLAY;
 	gMission.isDone = false;
@@ -679,7 +678,7 @@ int gameloop(void)
 				}
 				
 				UpdateAllActors(ticks);
-				UpdateMobileObjects(&gMobObjList, ticks);
+				UpdateMobileObjects(ticks);
 
 				UpdateWatches(&gMap.triggers);
 

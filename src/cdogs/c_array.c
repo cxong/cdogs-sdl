@@ -35,14 +35,19 @@ void CArrayInit(CArray *a, size_t elemSize)
 	a->data = NULL;
 	a->elemSize = elemSize;
 	a->size = 0;
-	a->capacity = 1;
-	CMALLOC(a->data, a->capacity * a->elemSize);
+	CArrayReserve(a, 1);
+}
+void CArrayReserve(CArray *a, size_t capacity)
+{
+	a->capacity = capacity;
+	CREALLOC(a->data, a->capacity * a->elemSize);
 }
 void CArrayCopy(CArray *dst, CArray *src)
 {
 	int i;
 	assert(dst->size == 0);
 	dst->elemSize = src->elemSize;
+	CArrayReserve(dst, (int)src->size);
 	for (i = 0; i < (int)src->size; i++)
 	{
 		CArrayPushBack(dst, CArrayGet(src, i));
@@ -53,8 +58,7 @@ void CArrayPushBack(CArray *a, void *elem)
 {
 	if (a->size == a->capacity)
 	{
-		a->capacity *= 2;
-		CREALLOC(a->data, a->capacity * a->elemSize);
+		CArrayReserve(a, a->capacity * 2);
 	}
 	memcpy(CArrayGet(a, a->size), elem, a->elemSize);
 	a->size++;
@@ -63,8 +67,7 @@ void CArrayInsert(CArray *a, int idx, void *elem)
 {
 	if (a->size == a->capacity)
 	{
-		a->capacity *= 2;
-		CREALLOC(a->data, a->capacity * a->elemSize);
+		CArrayReserve(a, a->capacity * 2);
 	}
 	for (int i = a->size; i > idx; i--)
 	{
@@ -75,16 +78,12 @@ void CArrayInsert(CArray *a, int idx, void *elem)
 }
 void CArrayDelete(CArray *a, int idx)
 {
-	if (a->size == 0)
-	{
-		return;
-	}
+	CASSERT(a->size != 0, "Cannot delete from empty array");
 	a->size--;
-	memset(CArrayGet(a, idx), 0, a->elemSize);
-	for (int i = idx; i < (int)a->size; i++)
-	{
-		memcpy(CArrayGet(a, i), CArrayGet(a, i + 1), a->elemSize);
-	}
+	memmove(
+		CArrayGet(a, idx),
+		CArrayGet(a, idx + 1),
+		a->elemSize * ((int)a->size - idx));
 }
 
 void *CArrayGet(CArray *a, int idx)

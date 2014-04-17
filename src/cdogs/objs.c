@@ -70,16 +70,15 @@
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
 
-TMobileObject *gMobObjList = NULL;
-int gMobileObjId;
-static TObject *objList = NULL;
+CArray gObjs;
+CArray gMobObjs;
 
 
 // Draw functions
 
-Pic *GetObjectPic(void *data)
+Pic *GetObjectPic(int id)
 {
-	const TObject *obj = data;
+	const TObject *obj = CArrayGet(&gObjs, id);
 
 	Pic *pic = NULL;
 	// Try to get new pic if available
@@ -119,7 +118,7 @@ static void DamageObject(
 	special_damage_e damage,
 	int isHitSoundEnabled)
 {
-	TObject *object = (TObject *)target->data;
+	TObject *object = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
 	if (object->structure <= 0)
 	{
@@ -168,11 +167,9 @@ static void DamageObject(
 		else
 		{
 			// A wreck left after the destruction of this object
-			TMobileObject *obj = AddFireBall(0, -1);
+			TMobileObject *obj = AddFireBall(fullPos, 0, -1);
 			obj->count = 10;
 			obj->power = 0;
-			obj->x = fullPos.x;
-			obj->y = fullPos.y;
 			SoundPlayAt(
 				&gSoundDevice,
 				SND_BANG,
@@ -186,7 +183,7 @@ static void DamageObject(
 		}
 		else
 		{
-			RemoveObject(object);
+			ObjDestroy(object->tileItem.id);
 		}
 	}
 }
@@ -210,7 +207,8 @@ int DamageSomething(
 	case KIND_CHARACTER:
 		{
 			// Create events: hit, damage, score
-			TActor *actor = (TActor *)target->data;
+			TActor *actor = CArrayGet(&gActors, target->id);
+			CASSERT(actor->isInUse, "Cannot damage nonexistent player");
 			bool canHit = CanHitCharacter(flags, player, actor);
 			if (canHit)
 			{
@@ -276,151 +274,119 @@ int DamageSomething(
 }
 
 
-void UpdateMobileObjects(TMobileObject **mobObjList, int ticks)
+void UpdateMobileObjects(int ticks)
 {
-	TMobileObject *obj = *mobObjList;
-	while (obj)
+	for (int i = 0; i < (int)gMobObjs.size; i++)
 	{
+		TMobileObject *obj = CArrayGet(&gMobObjs, i);
+		if (!obj->isInUse)
+		{
+			continue;
+		}
 		if ((*(obj->updateFunc))(obj, ticks) == 0)
 		{
 			obj->range = 0;
 			GameEvent e;
 			e.Type = GAME_EVENT_MOBILE_OBJECT_REMOVE;
-			e.u.MobileObjectRemoveId = obj->id;
+			e.u.MobileObjectRemoveId = i;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-		obj = obj->next;
 	}
 }
 
-void MobileObjectRemove(TMobileObject **mobObjList, int id)
+
+void ObjsInit()
 {
-	while (*mobObjList)
+	CArrayInit(&gObjs, sizeof(TObject));
+	CArrayReserve(&gObjs, 1024);
+}
+void ObjsTerminate()
+{
+	for (int i = 0; i < (int)gObjs.size; i++)
 	{
-		if ((*mobObjList)->id == id)
+		TObject *o = CArrayGet(&gObjs, i);
+		if (o->isInUse)
 		{
-			CASSERT(
-				(*mobObjList)->range == 0,
-				"unexpected removal of non-zero range mobobj");
-			TMobileObject *obj = *mobObjList;
-			*mobObjList = obj->next;
-			MapRemoveTileItem(&gMap, &obj->tileItem);
-			CFREE(obj);
-			return;
-		}
-		else
-		{
-			mobObjList = &((*mobObjList)->next);
+			ObjDestroy(i);
 		}
 	}
-	CASSERT(false, "failed to remove mobile object");
+	CArrayTerminate(&gObjs);
 }
-
-
-void KillAllMobileObjects(TMobileObject **mobObjList)
-{
-	while (*mobObjList)
-	{
-		TMobileObject *o = *mobObjList;
-		*mobObjList = (*mobObjList)->next;
-		MapRemoveTileItem(&gMap, &o->tileItem);
-		CFREE(o);
-	}
-}
-
-static void InternalAddObject(
-	int x, int y, int w, int h,
-	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
-	const char *picName,
-	int structure, PickupType type, int objFlags, int tileFlags)
-{
-	TObject *o;
-	CCALLOC(o, sizeof(TObject));
-	o->pic = pic;
-	o->wreckedPic = wreckedPic;
-	o->picName = picName;
-	o->Type = type;
-	o->structure = structure;
-	o->flags = objFlags;
-	o->tileItem.flags = tileFlags;
-	o->tileItem.kind = KIND_OBJECT;
-	o->tileItem.data = o;
-	o->tileItem.getPicFunc = GetObjectPic;
-	o->tileItem.getActorPicsFunc = NULL;
-	o->tileItem.w = w;
-	o->tileItem.h = h;
-	o->tileItem.actorId = -1;
-	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
-	o->next = objList;
-	objList = o;
-}
-
 void AddObjectOld(
-	int x, int y,
-	Vec2i size, const TOffsetPic * pic, PickupType type, int tileFlags)
+	int x, int y, Vec2i size,
+	const TOffsetPic * pic, PickupType type, int tileFlags)
 {
-	InternalAddObject(
-		x, y, size.x, size.y, pic, NULL, NULL, 0, type, 0, tileFlags);
+	TObject *o = CArrayGet(&gObjs, ObjAdd(
+		Vec2iNew(x, y), size, NULL, type, tileFlags));
+	o->pic = pic;
+	o->wreckedPic = NULL;
+	o->structure = 0;
+	o->flags = 0;
+	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 }
-void AddObject(
-	Vec2i pos, Vec2i size, const char *picName, PickupType type, int tileFlags)
+int ObjAdd(
+	Vec2i pos, Vec2i size,
+	const char *picName, PickupType type, int tileFlags)
 {
-	TObject *o;
-	CCALLOC(o, sizeof *o);
+	// Find an empty slot in actor list
+	TObject *o = NULL;
+	int i;
+	for (i = 0; i < (int)gObjs.size; i++)
+	{
+		TObject *obj = CArrayGet(&gObjs, i);
+		if (!obj->isInUse)
+		{
+			o = obj;
+			break;
+		}
+	}
+	if (o == NULL)
+	{
+		TObject obj;
+		memset(&obj, 0, sizeof obj);
+		CArrayPushBack(&gObjs, &obj);
+		i = (int)gObjs.size - 1;
+		o = CArrayGet(&gObjs, i);
+	}
+	memset(o, 0, sizeof *o);
 	o->pic = NULL;
 	o->wreckedPic = NULL;
 	o->picName = picName;
 	o->Type = type;
 	o->structure = 0;
 	o->flags = 0;
+	o->tileItem.x = o->tileItem.y = -1;
 	o->tileItem.flags = tileFlags;
 	o->tileItem.kind = KIND_OBJECT;
-	o->tileItem.data = o;
 	o->tileItem.getPicFunc = GetObjectPic;
 	o->tileItem.getActorPicsFunc = NULL;
 	o->tileItem.w = size.x;
 	o->tileItem.h = size.y;
-	o->tileItem.actorId = -1;
-	MapMoveTileItem(&gMap, &o->tileItem, pos);
-	o->next = objList;
-	objList = o;
+	o->tileItem.id = i;
+	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
+	o->isInUse = true;
+	return i;
 }
-
-void AddDestructibleObject(
-	Vec2i pos, int w, int h,
-	const TOffsetPic * pic, const TOffsetPic * wreckedPic,
+void ObjAddDestructible(
+	Vec2i pos, Vec2i size,
+	const TOffsetPic *pic, const TOffsetPic *wreckedPic,
 	const char *picName,
 	int structure, int objFlags, int tileFlags)
 {
 	Vec2i fullPos = Vec2iReal2Full(pos);
-	InternalAddObject(
-		fullPos.x, fullPos.y, w, h, pic, wreckedPic, picName, structure,
-		OBJ_NONE, objFlags, tileFlags);
+	TObject *o = CArrayGet(&gObjs, ObjAdd(
+		fullPos, size, picName, OBJ_NONE, tileFlags));
+	o->pic = pic;
+	o->wreckedPic = wreckedPic;
+	o->structure = structure;
+	o->flags = objFlags;
 }
-
-void RemoveObject(TObject * obj)
+void ObjDestroy(int id)
 {
-	TObject **h = &objList;
-
-	while (*h && *h != obj)
-		h = &((*h)->next);
-	if (*h) {
-		*h = obj->next;
-		MapRemoveTileItem(&gMap, &obj->tileItem);
-		CFREE(obj);
-	}
-}
-
-void KillAllObjects(void)
-{
-	TObject *o;
-
-	while (objList) {
-		o = objList;
-		objList = objList->next;
-		MapRemoveTileItem(&gMap, &o->tileItem);
-		CFREE(o);
-	}
+	TObject *o = CArrayGet(&gObjs, id);
+	CASSERT(o->isInUse, "Destroying in-use object");
+	MapRemoveTileItem(&gMap, &o->tileItem);
+	o->isInUse = false;
 }
 
 
@@ -441,30 +407,75 @@ static void BogusDraw(Vec2i pos, TileItemDrawFuncData *data)
 	UNUSED(pos);
 	UNUSED(data);
 }
-TMobileObject *AddMobileObject(TMobileObject **mobObjList, int player)
-{
-	TMobileObject *obj;
-	CCALLOC(obj, sizeof(TMobileObject));
 
-	obj->id = gMobileObjId++;
+void MobObjsInit(void)
+{
+	CArrayInit(&gMobObjs, sizeof(TMobileObject));
+	CArrayReserve(&gMobObjs, 1024);
+}
+void MobObjsTerminate(void)
+{
+	for (int i = 0; i < (int)gMobObjs.size; i++)
+	{
+		TMobileObject *m = CArrayGet(&gMobObjs, i);
+		if (m->isInUse)
+		{
+			MobObjDestroy(i);
+		}
+	}
+	CArrayTerminate(&gMobObjs);
+}
+int MobObjAdd(Vec2i fullpos, int player)
+{
+	// Find an empty slot in mobobj list
+	TMobileObject *obj = NULL;
+	int i;
+	for (i = 0; i < (int)gMobObjs.size; i++)
+	{
+		TMobileObject *m = CArrayGet(&gMobObjs, i);
+		if (!m->isInUse)
+		{
+			obj = m;
+			break;
+		}
+	}
+	if (obj == NULL)
+	{
+		TMobileObject m;
+		memset(&m, 0, sizeof m);
+		CArrayPushBack(&gMobObjs, &m);
+		i = (int)gMobObjs.size - 1;
+		obj = CArrayGet(&gMobObjs, i);
+	}
+	memset(obj, 0, sizeof *obj);
+	obj->x = fullpos.x;
+	obj->y = fullpos.y;
 	obj->player = player;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
-	obj->tileItem.data = obj;
+	obj->tileItem.id = i;
 	obj->special = SPECIAL_NONE;
 	obj->soundLock = 0;
-	obj->next = *mobObjList;
+	obj->isInUse = true;
+	obj->tileItem.x = obj->tileItem.y = -1;
 	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
-	obj->tileItem.drawData.Obj = obj;
+	obj->tileItem.drawData.MobObjId = i;
 	obj->updateFunc = UpdateMobileObject;
-	*mobObjList = obj;
-	return obj;
+	MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(fullpos));
+	return i;
+}
+void MobObjDestroy(int id)
+{
+	TMobileObject *m = CArrayGet(&gMobObjs, id);
+	CASSERT(m->isInUse, "Destroying in-use mobobj");
+	MapRemoveTileItem(&gMap, &m->tileItem);
+	m->isInUse = false;
 }
 
 static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	if (obj->count < obj->state)
 	{
 		return;
@@ -480,9 +491,9 @@ static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 		NULL,
 		BLIT_TRANSPARENT);
 }
-TMobileObject *AddFireBall(int flags, int player)
+TMobileObject *AddFireBall(Vec2i pos, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->updateFunc = UpdateExplosion;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
 	obj->tileItem.w = 7;

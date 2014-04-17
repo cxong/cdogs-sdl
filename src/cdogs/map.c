@@ -110,25 +110,6 @@ unsigned short GetAccessMask(int k)
 	return MAP_ACCESS_YELLOW << k;
 }
 
-
-static void AddItemToTile(TTileItem * t, Tile * tile)
-{
-	t->next = tile->things;
-	tile->things = t;
-}
-
-static void RemoveItemFromTile(TTileItem * t, Tile * tile)
-{
-	TTileItem **h = &tile->things;
-
-	while (*h && *h != t)
-		h = &(*h)->next;
-	if (*h) {
-		*h = t->next;
-		t->next = NULL;
-	}
-}
-
 Tile *MapGetTile(Map *map, Vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
@@ -166,26 +147,53 @@ static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
 	return MapGetTile(map, pos);
 }
 
+static void AddItemToTile(TTileItem *t, Tile *tile);
 void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
 {
+	// When first initialised, position is -1
+	bool doRemove = t->x >= 0 && t->y >= 0;
 	Vec2i t1 = Vec2iToTile(Vec2iNew(t->x, t->y));
 	Vec2i t2 = Vec2iToTile(pos);
-
-	t->x = pos.x;
-	t->y = pos.y;
-	if (Vec2iEqual(t1, t2))
+	if (Vec2iEqual(t1, t2) && doRemove)
 	{
+		t->x = pos.x;
+		t->y = pos.y;
 		return;
 	}
-
-	RemoveItemFromTile(t, MapGetTile(map, t1));
+	if (doRemove)
+	{
+		MapRemoveTileItem(map, t);
+	}
+	t->x = pos.x;
+	t->y = pos.y;
 	AddItemToTile(t, MapGetTile(map, t2));
+}
+static void AddItemToTile(TTileItem *t, Tile *tile)
+{
+	// Lazy initialisation
+	if (tile->things.elemSize == 0)
+	{
+		CArrayInit(&tile->things, sizeof(ThingId));
+	}
+	ThingId tid;
+	tid.Id = t->id;
+	tid.Kind = t->kind;
+	CArrayPushBack(&tile->things, &tid);
 }
 
 void MapRemoveTileItem(Map *map, TTileItem *t)
 {
 	Tile *tile = MapGetTileOfItem(map, t);
-	RemoveItemFromTile(t, tile);
+	for (int i = 0; i < (int)tile->things.size; i++)
+	{
+		ThingId *tid = CArrayGet(&tile->things, i);
+		if (tid->Id == t->id && tid->Kind == t->kind)
+		{
+			CArrayDelete(&tile->things, i);
+			return;
+		}
+	}
+	CASSERT(false, "Did not find element to delete");
 }
 
 static Vec2i GuessCoords(Map *map)
@@ -405,7 +413,7 @@ int MapTryPlaceOneObject(
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
 
-	int isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && t->things == NULL;
+	bool isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t);
 	if (isStrictMode && !MapObjectIsTileOKStrict(
 			mo, iMap, isEmpty,
 			IMapGet(map, Vec2iNew(v.x, v.y - 1)),
@@ -458,9 +466,8 @@ int MapTryPlaceOneObject(
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
 	}
 
-	AddDestructibleObject(
-		realPos,
-		mo->width, mo->height,
+	ObjAddDestructible(
+		realPos, Vec2iNew(mo->width, mo->height),
 		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic], mo->picName,
 		mo->structure,
 		oFlags, tileFlags | extraFlags);
@@ -471,15 +478,14 @@ void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo)
 {
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
-	int isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && t->things == NULL;
+	bool isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t);
 	if (!MapObjectIsTileOK(
 		mo, iMap, isEmpty, IMapGet(map, Vec2iNew(v.x, v.y - 1))))
 	{
 		return;
 	}
-	AddDestructibleObject(
-		Vec2iCenterOfTile(v),
-		mo->width, mo->height,
+	ObjAddDestructible(
+		Vec2iCenterOfTile(v), Vec2iNew(mo->width, mo->height),
 		&cGeneralPics[mo->wreckedPic], &cGeneralPics[mo->wreckedPic],
 		mo->picName,
 		0, 0, TILEITEM_IS_WRECK);
@@ -539,7 +545,7 @@ static int MapTryPlaceCollectible(
 void MapPlaceHealth(Vec2i pos)
 {
 	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-	AddObject(pos, size, "health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
+	ObjAdd(pos, size, "health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
 }
 
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
@@ -609,12 +615,10 @@ static void MapPlaceCard(Map *map, int keyIndex, int map_access)
 		t = MapGetTile(map, v);
 		iMap = IMapGet(map, v);
 		tBelow = MapGetTile(map, Vec2iNew(v.x, v.y + 1));
-		if (!(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
-			t->things == NULL &&
+		if (!(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t) &&
 			(iMap & 0xF00) == map_access &&
 			(iMap & MAP_MASKACCESS) == MAP_ROOM &&
-			!(tBelow->flags & ~MAPTILE_IS_NORMAL_FLOOR) &&
-			tBelow->things == NULL)
+			!(tBelow->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(tBelow))
 		{
 			MapPlaceKey(map, &gMission, v, keyIndex);
 			return;

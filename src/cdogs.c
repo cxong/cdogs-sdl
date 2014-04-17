@@ -838,8 +838,8 @@ void DataUpdate(int mission, struct PlayerData *data)
 static void CleanupMission(void)
 {
 	ActorsTerminate();
-	KillAllMobileObjects(&gMobObjList);
-	KillAllObjects();
+	ObjsTerminate();
+	MobObjsTerminate();
 	RemoveAllWatches();
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -932,7 +932,6 @@ static void PlayMenuSong(void)
 int Game(GraphicsDevice *graphics, CampaignOptions *co)
 {
 	int run, gameOver;
-	int allTime, todays;
 	int maxHealth;
 
 	maxHealth = 200 * gConfig.Game.PlayerHP / 100;
@@ -990,22 +989,23 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 			}
 		}
 
-		allTime = todays = 0;
+		bool allTime = false;
+		bool todays = false;
 		for (i = 0; i < gOptions.numPlayers; i++)
 		{
 			if ((run && !gPlayerDatas[i].survived) || gameOver)
 			{
 				EnterHighScore(&gPlayerDatas[i]);
-				allTime = gPlayerDatas[i].allTime >= 0;
-				todays = gPlayerDatas[i].today >= 0;
+				allTime |= gPlayerDatas[i].allTime >= 0;
+				todays |= gPlayerDatas[i].today >= 0;
 			}
 			DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
 		}
-		if (allTime && !gameOver)
+		if (allTime)
 		{
 			DisplayAllTimeHighScores(graphics);
 		}
-		if (todays && !gameOver)
+		if (todays)
 		{
 			DisplayTodaysHighScores(graphics);
 		}

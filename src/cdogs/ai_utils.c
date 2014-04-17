@@ -235,7 +235,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	{
 		return NULL;
 	}
-	return item->data;
+	return CArrayGet(&gObjs, item->id);
 }
 
 
@@ -433,6 +433,7 @@ int AIGoto(TActor *actor, Vec2i p)
 		}
 		c->Goal = goalTile;
 		c->PathIndex = 1;	// start navigating to the next path node
+		ASPathDestroy(c->Path);
 		c->Path = ASPathCreate(
 			&cPathNodeSource, &ac, &currentTile, &c->Goal);
 
@@ -445,7 +446,6 @@ int AIGoto(TActor *actor, Vec2i p)
 				"Error: can't calculate path from {%d, %d} to {%d, %d}",
 				currentTile.x, currentTile.y,
 				goalTile.x, goalTile.y);
-			assert(0);
 			return AIGotoDirect(a, p);
 		}
 
@@ -500,7 +500,7 @@ void AIContextTerminate(void *aiContext)
 	AIGotoContext *c = aiContext;
 	if (c)
 	{
-		CFREE(c->Path);
+		ASPathDestroy(c->Path);
 	}
 	CFREE(c);
 }

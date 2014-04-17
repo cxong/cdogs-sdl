@@ -64,7 +64,8 @@ BulletClass gBulletClasses[BULLET_COUNT];
 
 static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	CASSERT(obj->isInUse, "Cannot draw non-existent bullet");
 	const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
 	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
 	if (data->u.Bullet.UseMask)
@@ -90,7 +91,8 @@ static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
 
 static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cGeneralPics[OFSPIC_MOLOTOV];
 	if (obj->z > 0)
 	{
@@ -102,9 +104,9 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-Pic *GetFlame(void *data)
+Pic *GetFlame(int id)
 {
-	const TMobileObject *obj = data;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	const TOffsetPic *pic = &cFlamePics[obj->state & 3];
 	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
 	p->offset.x = pic->dx;
@@ -114,7 +116,8 @@ Pic *GetFlame(void *data)
 
 static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state];
 	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
 	Blit(
@@ -125,7 +128,8 @@ static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 
 static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cGrenadePics[(obj->count / 2) & 3];
 	if (obj->z > 0)
 	{
@@ -140,7 +144,8 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 
 static void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 {
-	const TMobileObject *obj = data->Obj;
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state & 3)];
 	DrawBTPic(
 		pos.x + pic->dx, pos.y + pic->dy - obj->z,
@@ -162,7 +167,7 @@ void AddExplosion(Vec2i pos, int flags, int player)
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 8; i++)
 	{
-		obj = AddFireBall(flags, player);
+		obj = AddFireBall(pos, flags, player);
 		obj->vel = GetFullVectorsForRadians(i * 0.25 * PI);
 		obj->x = pos.x + 2 * obj->vel.x;
 		obj->y = pos.y + 2 * obj->vel.y;
@@ -170,7 +175,7 @@ void AddExplosion(Vec2i pos, int flags, int player)
 	}
 	for (i = 0; i < 8; i++)
 	{
-		obj = AddFireBall(flags, player);
+		obj = AddFireBall(pos, flags, player);
 		obj->vel = GetFullVectorsForRadians((i * 0.25 + 0.125) * PI);
 		obj->x = pos.x + obj->vel.x;
 		obj->y = pos.y + obj->vel.y;
@@ -180,7 +185,7 @@ void AddExplosion(Vec2i pos, int flags, int player)
 	}
 	for (i = 0; i < 8; i++)
 	{
-		obj = AddFireBall(flags, player);
+		obj = AddFireBall(pos, flags, player);
 		obj->x = pos.x;
 		obj->y = pos.y;
 		obj->z = 0;
@@ -273,7 +278,8 @@ int UpdateMolotovFlame(TMobileObject *obj, int ticks)
 
 TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	TMobileObject *obj = CArrayGet(&gMobObjs,
+		MobObjAdd(Vec2iNew(x, y), player));
 	obj->updateFunc = UpdateMolotovFlame;
 	obj->tileItem.getPicFunc = GetFlame;
 	obj->tileItem.w = 5;
@@ -282,8 +288,6 @@ TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
 	obj->range = (FLAME_RANGE + rand() % 8) * 4;
 	obj->flags = flags;
 	obj->power = 2;
-	obj->x = x;
-	obj->y = y;
 	obj->vel.x = 16 * (rand() % 32) - 256;
 	obj->vel.y = 12 * (rand() % 32) - 192;
 	obj->dz = 4 + rand() % 4;
@@ -348,7 +352,10 @@ void AddGasCloud(
 	Vec2i pos, int z, double radians, int speed, int range,
 	int flags, special_damage_e special, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	Vec2i vel = Vec2iFull2Real(Vec2iScale(
+		GetFullVectorsForRadians(radians), speed));
+	pos = Vec2iAdd(pos, Vec2iScale(vel, 6));
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->updateFunc = UpdateGasCloud;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
 	obj->tileItem.drawData.u.Tint =
@@ -360,10 +367,7 @@ void AddGasCloud(
 	obj->flags = flags;
 	obj->power = 0;
 	obj->special = special;
-	obj->vel = GetFullVectorsForRadians(radians);
-	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, speed), 256);
-	obj->x = pos.x + 6 * obj->vel.x;
-	obj->y = pos.y + 6 * obj->vel.y;
+	obj->vel = vel;
 	obj->z = z;
 }
 
@@ -854,7 +858,7 @@ void BulletInitialize(void)
 
 
 static void SetBulletProps(
-	TMobileObject *obj, Vec2i pos, int z, BulletType type, int flags)
+	TMobileObject *obj, int z, BulletType type, int flags)
 {
 	BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = *b;
@@ -866,9 +870,7 @@ static void SetBulletProps(
 	obj->kind = MOBOBJ_BULLET;
 	obj->z = z;
 	obj->flags = flags;
-	obj->x = pos.x;
-	obj->y = pos.y;
-	obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, b->Speed), 256);
+	obj->vel = Vec2iFull2Real(Vec2iScale(obj->vel, b->Speed));
 	obj->range = b->Range;
 	obj->power = b->Power;
 	obj->special = b->Special;
@@ -879,10 +881,10 @@ static void SetBulletProps(
 void AddGrenade(
 	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);
 	obj->dz = 24;
-	SetBulletProps(obj, pos, z, type, flags);
+	SetBulletProps(obj, z, type, flags);
 	switch (type)
 	{
 	case BULLET_GRENADE:
@@ -914,28 +916,26 @@ void AddGrenade(
 void AddBullet(
 	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, pos, z, type, flags);
-	MapMoveTileItem(
-		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
+	SetBulletProps(obj, z, type, flags);
 }
 
 void AddBulletDirectional(
 	Vec2i pos, int z, direction_e dir, BulletType type, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
 	obj->state = dir;
-	SetBulletProps(obj, pos, z, type, flags);
+	SetBulletProps(obj, z, type, flags);
 }
 
 void AddBulletBig(
 	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
-	TMobileObject *obj = AddMobileObject(&gMobObjList, player);
+	Vec2i vel = GetVectorsForRadians(radians);
+	pos = Vec2iAdd(pos, Vec2iNew(vel.x * 4, vel.y * 7));
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, pos, z, type, flags);
-	obj->x += 4 * obj->vel.x;
-	obj->y += 7 * obj->vel.y;
+	SetBulletProps(obj, z, type, flags);
 }
