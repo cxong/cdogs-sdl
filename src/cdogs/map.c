@@ -545,7 +545,9 @@ static int MapTryPlaceCollectible(
 void MapPlaceHealth(Vec2i pos)
 {
 	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-	ObjAdd(pos, size, "health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
+	ObjAdd(
+		Vec2iReal2Full(pos), size,
+		"health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
 }
 
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size)

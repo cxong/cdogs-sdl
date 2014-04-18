@@ -55,6 +55,9 @@
 int debug = 0;
 int debug_level = D_NORMAL;
 
+bool gTrue = true;
+bool gFalse = false;
+
 int MemIsZero(const void *buf, size_t len)
 {
 	const char *bytes = (const char *)buf;

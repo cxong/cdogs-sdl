@@ -244,7 +244,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
 	int i;
-	int isSave = (int)data;
+	bool *isSave = (bool *)data;
 	int numTemplates = PlayerTemplatesGetCount(gPlayerTemplates);
 	for (i = 0; i < numTemplates; i++)
 	{
@@ -255,7 +255,7 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 		}
 		strcpy(menu->u.normal.subMenus[i].name, gPlayerTemplates[i].name);
 	}
-	if (isSave && menu->u.normal.numSubMenus == numTemplates)
+	if (*isSave && menu->u.normal.numSubMenus == numTemplates)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}
@@ -266,7 +266,7 @@ static menu_t *CreateUseTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, 0);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gFalse);
 	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
 	return menu;
 }
@@ -309,7 +309,7 @@ static menu_t *CreateSaveTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, (void *)1);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gTrue);
 	MenuSetPostInputFunc(menu, PostInputSaveTemplate, data);
 	MenuSetCustomDisplay(menu, SaveTemplateDisplayTitle, data);
 	return menu;

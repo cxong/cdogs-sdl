@@ -60,6 +60,10 @@
 extern int debug;
 extern int debug_level;
 
+// Global variables so their address can be taken (passed into void * funcs)
+extern bool gTrue;
+extern bool gFalse;
+
 #define D_NORMAL	0
 #define D_VERBOSE	1
 #define D_MAX		2
