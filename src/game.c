@@ -724,7 +724,7 @@ int gameloop(void)
 			bool allPlayersDestroyed = true;
 			for (i = 0; i < gOptions.numPlayers; i++)
 			{
-				if (IsPlayerAlive(i))
+				if (gPlayerIds[i] != -1)
 				{
 					allPlayersDestroyed = false;
 					break;
