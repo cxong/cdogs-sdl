@@ -162,23 +162,19 @@ menu_t *MenuCreateCampaigns(
 	campaign_list_t *list)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
-	int i;
 	menu->u.normal.maxItems = 20;
 	menu->u.normal.align = MENU_ALIGN_CENTER;
-	for (i = 0; i < list->numSubFolders; i++)
+	for (int i = 0; i < (int)list->subFolders.size; i++)
 	{
 		char folderName[CDOGS_FILENAME_MAX];
-		sprintf(folderName, "%s/", list->subFolders[i].name);
-		MenuAddSubmenu(
-			menu,
-			MenuCreateCampaigns(
-				folderName,
-				title,
-				&list->subFolders[i]));
+		campaign_list_t *subList = CArrayGet(&list->subFolders, i);
+		sprintf(folderName, "%s/", subList->name);
+		MenuAddSubmenu(menu, MenuCreateCampaigns(folderName, title, subList));
 	}
-	for (i = 0; i < list->num; i++)
+	for (int i = 0; i < (int)list->list.size; i++)
 	{
-		MenuAddSubmenu(menu, MenuCreateCampaignItem(&list->list[i]));
+		MenuAddSubmenu(
+			menu, MenuCreateCampaignItem(CArrayGet(&list->list, i)));
 	}
 	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
 	return menu;

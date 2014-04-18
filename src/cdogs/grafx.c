@@ -269,7 +269,8 @@ void GraphicsInitialize(
 			config->IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
-		SDL_WM_SetIcon(SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp")), NULL);
+		device->icon = SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp"));
+		SDL_WM_SetIcon(device->icon, NULL);
 		AddSupportedGraphicsModes(device);
 	}
 
@@ -357,6 +358,7 @@ void GraphicsInitialize(
 void GraphicsTerminate(GraphicsDevice *device)
 {
 	debug(D_NORMAL, "Shutting down video...\n");
+	SDL_FreeSurface(device->icon);
 	SDL_FreeSurface(device->screen);
 	SDL_VideoQuit();
 	CFREE(device->buf);

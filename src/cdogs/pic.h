@@ -44,8 +44,6 @@ typedef struct
 extern Pic picNone;
 
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
-void PicFromPicPalettedOffset(
-	GraphicsDevice *g, Pic *pic, PicPaletted *picP, const TOffsetPic *picOff);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 

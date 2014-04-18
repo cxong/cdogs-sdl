@@ -40,7 +40,6 @@ void GrafxMakeRandomBackground(
 	CampaignOptions *co, struct MissionOptions *mo, Map *map)
 {
 	HSV tint;
-	CampaignSettingTerminate(&co->Setting);
 	CampaignSettingInit(&co->Setting);
 	ActorsInit();
 	ObjsInit();
@@ -61,6 +60,7 @@ void GrafxMakeRandomBackground(
 	ObjsTerminate();
 	MobObjsTerminate();
 	RemoveAllWatches();
+	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
 	co->seed = gConfig.Game.RandomSeed;
 }
@@ -90,7 +90,6 @@ void GrafxMakeBackground(
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
 	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
 {
-	MissionOptionsTerminate(mo);
 	CampaignAndMissionSetup(buildTables, co, mo);
 	MapLoad(&gMap, mo, &co->Setting.characters);
 	InitializeBadGuys();

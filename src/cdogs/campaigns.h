@@ -48,10 +48,8 @@ typedef struct
 typedef struct campaign_list
 {
 	char name[CDOGS_FILENAME_MAX];
-	struct campaign_list *subFolders;
-	int numSubFolders;
-	campaign_entry_t *list;
-	int num;
+	CArray subFolders;	// of campaign_list_t
+	CArray list;		// of campaign_entry_t
 } campaign_list_t;
 
 typedef struct

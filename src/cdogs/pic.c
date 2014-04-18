@@ -50,12 +50,6 @@ void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 		}
 	}
 }
-void PicFromPicPalettedOffset(
-	GraphicsDevice *g, Pic *pic, PicPaletted *picP, const TOffsetPic *picOff)
-{
-	PicFromPicPaletted(g, pic, picP);
-	pic->offset = Vec2iNew(picOff->dx, picOff->dy);
-}
 
 void PicFree(Pic *pic)
 {

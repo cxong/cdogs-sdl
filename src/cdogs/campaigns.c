@@ -67,7 +67,8 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	memset(setting, 0, sizeof *setting);
 }
 
-void CampaignListInit(campaign_list_t *list);
+static void CampaignListInit(campaign_list_t *list);
+static void CampaignListTerminate(campaign_list_t *list);
 void LoadBuiltinCampaigns(campaign_list_t *list);
 void LoadBuiltinDogfights(campaign_list_t *list);
 void LoadCampaignsFromFolder(
@@ -106,32 +107,26 @@ void UnloadAllCampaigns(custom_campaigns_t *campaigns)
 {
 	if (campaigns)
 	{
-		if (campaigns->campaignList.subFolders)
-		{
-			CFREE(campaigns->campaignList.subFolders);
-		}
-		if (campaigns->campaignList.list)
-		{
-			CFREE(campaigns->campaignList.list);
-		}
-		if (campaigns->dogfightList.subFolders)
-		{
-			CFREE(campaigns->dogfightList.subFolders);
-		}
-		if (campaigns->dogfightList.list)
-		{
-			CFREE(campaigns->dogfightList.list);
-		}
+		CampaignListTerminate(&campaigns->campaignList);
+		CampaignListTerminate(&campaigns->dogfightList);
 	}
 }
 
-void CampaignListInit(campaign_list_t *list)
+static void CampaignListInit(campaign_list_t *list)
 {
 	strcpy(list->name, "");
-	list->subFolders = NULL;
-	list->list = NULL;
-	list->numSubFolders = 0;
-	list->num = 0;
+	CArrayInit(&list->subFolders, sizeof(campaign_list_t));
+	CArrayInit(&list->list, sizeof(campaign_entry_t));
+}
+static void CampaignListTerminate(campaign_list_t *list)
+{
+	for (int i = 0; i < (int)list->subFolders.size; i++)
+	{
+		campaign_list_t *sublist = CArrayGet(&list->subFolders, i);
+		CampaignListTerminate(sublist);
+	}
+	CArrayTerminate(&list->subFolders);
+	CArrayTerminate(&list->list);
 }
 
 void AddBuiltinCampaignEntry(
@@ -204,12 +199,10 @@ void LoadCampaignsFromFolder(
 		if (file.is_dir &&
 			strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0)
 		{
-			campaign_list_t *subFolder;
-			list->numSubFolders++;
-			CREALLOC(list->subFolders, sizeof(campaign_list_t)*list->numSubFolders);
-			subFolder = &list->subFolders[list->numSubFolders-1];
-			CampaignListInit(subFolder);
-			LoadCampaignsFromFolder(subFolder, file.name, file.path, mode);
+			campaign_list_t subFolder;
+			CampaignListInit(&subFolder);
+			LoadCampaignsFromFolder(&subFolder, file.name, file.path, mode);
+			CArrayPushBack(&list->subFolders, &subFolder);
 		}
 		else if (file.is_reg)
 		{
@@ -273,15 +266,12 @@ void AddCustomCampaignEntry(
 campaign_entry_t *AddAndGetCampaignEntry(
 	campaign_list_t *list, const char *title, campaign_mode_e mode)
 {
-	campaign_entry_t *entry;
-	list->num++;
-	CREALLOC(list->list, sizeof(campaign_entry_t)*list->num);
-	entry = &list->list[list->num-1];
-	memset(entry, 0, sizeof *entry);
-	strncpy(entry->info, title, sizeof entry->info - 1);
-	entry->info[sizeof entry->info - 1] = '\0';
-	entry->mode = mode;
-	return entry;
+	campaign_entry_t entry;
+	memset(&entry, 0, sizeof entry);
+	strncpy(entry.info, title, sizeof entry.info - 1);
+	entry.mode = mode;
+	CArrayPushBack(&list->list, &entry);
+	return CArrayGet(&list->list, (int)list->list.size - 1);
 }
 
 Mission *CampaignGetCurrentMission(CampaignOptions *campaign)

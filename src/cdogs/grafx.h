@@ -97,6 +97,7 @@ typedef struct
 {
 	int IsInitialized;
 	int IsWindowInitialized;
+	SDL_Surface *icon;
 	SDL_Surface *screen;
 	Uint32 Amask;
 	int Ashift;

@@ -222,13 +222,13 @@ void IMapSet(Map *map, Vec2i pos, unsigned short v)
 	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
-static void PicLoadOffset(GraphicsDevice *g, Pic *picAlt, int idx)
+static void PicLoadOffset(Pic *picAlt, int idx)
 {
-	PicFromPicPalettedOffset(
-		g,
-		picAlt,
-		PicManagerGetOldPic(&gPicManager, cGeneralPics[idx].picIndex),
-		&cGeneralPics[idx]);
+	Pic *oldPic =
+		PicManagerGetFromOld(&gPicManager, cGeneralPics[idx].picIndex);
+	picAlt->size = oldPic->size;
+	picAlt->Data = oldPic->Data;
+	picAlt->offset = Vec2iNew(cGeneralPics[idx].dx, cGeneralPics[idx].dy);
 }
 
 static void MapSetupTilesAndWalls(Map *map, Mission *m)
@@ -702,7 +702,7 @@ static TWatch *CreateCloseDoorWatch(
 		a->tilePic = PicManagerGetFromOld(&gPicManager, pic);
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
-			PicLoadOffset(&gGraphicsDevice, &a->tilePicAlt, pic);
+			PicLoadOffset(&a->tilePicAlt, pic);
 			a->tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
@@ -791,7 +791,7 @@ static Trigger *CreateOpenDoorTrigger(
 		else if (i == 0)
 		{
 			// special door cavity picture
-			PicLoadOffset(&gGraphicsDevice, &a->tilePicAlt, openDoorPic);
+			PicLoadOffset(&a->tilePicAlt, openDoorPic);
 			a->tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
@@ -895,7 +895,7 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		Tile *tile = MapGetTile(map, vI);
-		PicLoadOffset(&gGraphicsDevice, &tile->picAlt, pic);
+		PicLoadOffset(&tile->picAlt, pic);
 		tile->pic = PicManagerGetFromOld(
 			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		tile->flags = tileFlags;
