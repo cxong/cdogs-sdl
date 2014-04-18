@@ -1116,6 +1116,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		{
 			if (!CampaignIntro(&gGraphicsDevice))
 			{
+				gCampaign.IsLoaded = false;
 				continue;
 			}
 		}
@@ -1125,12 +1126,14 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 				&gOptions.numPlayers, gCampaign.Entry.mode,
 				&gGraphicsDevice, &gEventHandlers))
 		{
+			gCampaign.IsLoaded = false;
 			continue;
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
 		if (!PlayerSelection(gOptions.numPlayers, &gGraphicsDevice))
 		{
+			gCampaign.IsLoaded = false;
 			continue;
 		}
 
