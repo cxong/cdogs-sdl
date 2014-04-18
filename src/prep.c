@@ -192,7 +192,8 @@ static void AssignPlayerInputDevices(
 				hasInputDevice[i] = 1;
 				AssignPlayerInputDevice(
 					&playerDatas[i], INPUT_DEVICE_KEYBOARD, j);
-				assignedKeyboards[j] = 1;
+				assignedKeyboards[j] = true;
+				SoundPlay(&gSoundDevice, SND_HAHAHA);
 				continue;
 			}
 		}
@@ -201,7 +202,8 @@ static void AssignPlayerInputDevices(
 		{
 			hasInputDevice[i] = 1;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_MOUSE, 0);
-			assignedMouse = 1;
+			assignedMouse = true;
+			SoundPlay(&gSoundDevice, SND_HAHAHA);
 			continue;
 		}
 		for (int j = 0; j < handlers->joysticks.numJoys; j++)
@@ -213,7 +215,8 @@ static void AssignPlayerInputDevices(
 				hasInputDevice[i] = 1;
 				AssignPlayerInputDevice(
 					&playerDatas[i], INPUT_DEVICE_JOYSTICK, j);
-				assignedJoysticks[j] = 1;
+				assignedJoysticks[j] = true;
+				SoundPlay(&gSoundDevice, SND_HAHAHA);
 				continue;
 			}
 		}
@@ -222,7 +225,8 @@ static void AssignPlayerInputDevices(
 		{
 			hasInputDevice[i] = 1;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
-			assignedNet = 1;
+			assignedNet = true;
+			SoundPlay(&gSoundDevice, SND_HAHAHA);
 			continue;
 		}
 	}

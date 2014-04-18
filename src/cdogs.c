@@ -174,7 +174,12 @@ int CampaignIntro(GraphicsDevice *device)
 	TextString(&gTextManager, s, device, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
-	return WaitForAnyKeyOrButton(&gEventHandlers);
+	int result = WaitForAnyKeyOrButton(&gEventHandlers);
+	if (result)
+	{
+		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+	}
+	return result;
 }
 
 void MissionBriefing(GraphicsDevice *device)
