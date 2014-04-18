@@ -74,6 +74,7 @@ typedef struct
 	campaign_entry_t Entry;
 	unsigned int seed;
 	int MissionIndex;
+	bool IsLoaded;
 } CampaignOptions;
 extern CampaignOptions gCampaign;
 
@@ -84,6 +85,9 @@ void CampaignSettingTerminate(CampaignSetting *setting);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
+
+bool CampaignEntryTryLoad(
+	campaign_entry_t *entry, const char *path, campaign_mode_e mode);
 
 Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
 void CampaignSeedRandom(CampaignOptions *campaign);

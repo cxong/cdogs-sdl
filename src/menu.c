@@ -66,7 +66,6 @@
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/pic_manager.h>
-#include <cdogs/quick_play.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
 #include <cdogs/utils.h>
@@ -915,46 +914,6 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 }
 
 
-void MenuLoadCampaign(campaign_entry_t *entry)
-{
-	gCampaign.Entry = *entry;
-	CampaignSettingInit(&gCampaign.Setting);
-	if (entry->isBuiltin)
-	{
-		if (entry->mode == CAMPAIGN_MODE_NORMAL)
-		{
-			SetupBuiltinCampaign(entry->builtinIndex);
-		}
-		else if (entry->mode == CAMPAIGN_MODE_DOGFIGHT)
-		{
-			SetupBuiltinDogfight(entry->builtinIndex);
-		}
-		else if (entry->mode == CAMPAIGN_MODE_QUICK_PLAY)
-		{
-			SetupQuickPlayCampaign(&gCampaign.Setting, &gConfig.QuickPlay);
-		}
-		else
-		{
-			printf("Unknown game mode!\n");
-			assert(0);
-		}
-	}
-	else
-	{
-		CampaignSetting customSetting;
-		CampaignSettingInit(&customSetting);
-
-		if (MapNewLoad(entry->path, &customSetting))
-		{
-			printf("Failed to load campaign %s!\n", entry->path);
-			assert(0);
-		}
-		memcpy(&gCampaign.Setting, &customSetting, sizeof gCampaign.Setting);
-	}
-
-	printf(">> Loading campaign/dogfight\n");
-}
-
 void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd);
 
 menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
@@ -986,7 +945,7 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_CAMPAIGN_ITEM:
 			if (cmd & CMD_BUTTON1)
 			{
-				MenuLoadCampaign(&subMenu->u.campaign);
+				CampaignLoad(&gCampaign, &subMenu->u.campaign);
 				return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 			}
 			break;

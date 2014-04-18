@@ -1107,7 +1107,9 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	while (MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
+	while (
+		gCampaign.IsLoaded ||
+		MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
 		if (IsIntroNeeded(gCampaign.Entry.mode))
@@ -1142,6 +1144,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 			DisplayAllTimeHighScores(&gGraphicsDevice);
 			DisplayTodaysHighScores(&gGraphicsDevice);
 		}
+		gCampaign.IsLoaded = false;
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 }
@@ -1206,6 +1209,7 @@ int main(int argc, char *argv[])
 	custom_campaigns_t campaigns;
 	int forceResolution = 0;
 	int err = 0;
+	const char *loadCampaign = NULL;
 
 	srand((unsigned int)time(NULL));
 
@@ -1296,6 +1300,15 @@ int main(int argc, char *argv[])
 				goto bail;
 			}
 		}
+		if (optind < argc)
+		{
+			// non-option ARGV-elements
+			for (; optind < argc; optind++)
+			{
+				// Load campaign
+				loadCampaign = argv[optind];
+			}
+		}
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
@@ -1379,6 +1392,16 @@ int main(int argc, char *argv[])
 		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 		debug(D_NORMAL, ">> Entering main loop\n");
+		// Attempt to pre-load campaign if requested
+		if (loadCampaign != NULL)
+		{
+			campaign_entry_t entry;
+			if (CampaignEntryTryLoad(
+				&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
+			{
+				CampaignLoad(&gCampaign, &entry);
+			}
+		}
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 

@@ -45,6 +45,7 @@ void CampaignInit(CampaignOptions *campaign)
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
+	campaign->IsLoaded = false;
 	CampaignSettingTerminate(&campaign->Setting);
 }
 void CampaignSettingInit(CampaignSetting *setting)
@@ -87,7 +88,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		&campaigns->campaignList,
 		"",
 		GetDataFilePath(CDOGS_CAMPAIGN_DIR),
-		0);
+		CAMPAIGN_MODE_NORMAL);
 
 	printf("\nDogfights:\n");
 
@@ -96,7 +97,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		&campaigns->dogfightList,
 		"",
 		GetDataFilePath(CDOGS_DOGFIGHT_DIR),
-		1);
+		CAMPAIGN_MODE_DOGFIGHT);
 
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
 
@@ -170,13 +171,6 @@ void LoadQuickPlayEntry(campaign_entry_t *entry)
 }
 
 int IsCampaignOK(const char *path, char **buf, int *numMissions);
-void AddCustomCampaignEntry(
-	campaign_list_t *list,
-	const char *filename,
-	const char *path,
-	const char *title,
-	campaign_mode_e mode,
-	int numMissions);
 
 void LoadCampaignsFromFolder(
 	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode)
@@ -206,21 +200,10 @@ void LoadCampaignsFromFolder(
 		}
 		else if (file.is_reg)
 		{
-			char title[256];
-			char *buf;
-			int numMissions;
-			if (IsCampaignOK(file.path, &buf, &numMissions))
+			campaign_entry_t entry;
+			if (CampaignEntryTryLoad(&entry, file.path, mode))
 			{
-				// cap length of title
-				size_t maxLen = sizeof ((campaign_entry_t *)0)->info - 10;
-				if (strlen(buf) > maxLen)
-				{
-					buf[maxLen] = '\0';
-				}
-				sprintf(title, "%s (%d)", buf, numMissions);
-				AddCustomCampaignEntry(
-					list, file.name, file.path, title, mode, numMissions);
-				CFREE(buf);
+				CArrayPushBack(&list->list, &entry);
 			}
 		}
 	}
@@ -233,8 +216,8 @@ int IsCampaignOK(const char *path, char **buf, int *numMissions)
 	return MapNewScan(path, buf, numMissions) == 0;
 }
 
-campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title, campaign_mode_e mode);
+static void CampaignEntryInit(
+	campaign_entry_t *entry, const char *title, campaign_mode_e mode);
 
 void AddBuiltinCampaignEntry(
 	campaign_list_t *list,
@@ -243,35 +226,58 @@ void AddBuiltinCampaignEntry(
 	int numMissions,
 	int builtinIndex)
 {
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
-	entry->isBuiltin = 1;
-	entry->builtinIndex = builtinIndex;
-	entry->numMissions = numMissions;
-}
-void AddCustomCampaignEntry(
-	campaign_list_t *list,
-	const char *filename,
-	const char *path,
-	const char *title,
-	campaign_mode_e mode,
-	int numMissions)
-{
-	campaign_entry_t *entry = AddAndGetCampaignEntry(list, title, mode);
-	strcpy(entry->filename, filename);
-	strcpy(entry->path, path);
-	entry->isBuiltin = 0;
-	entry->numMissions = numMissions;
+	campaign_entry_t entry;
+	CampaignEntryInit(&entry, title, mode);
+	CArrayPushBack(&list->list, &entry);
+	campaign_entry_t *pEntry =
+		CArrayGet(&list->list, (int)list->list.size - 1);
+	pEntry->isBuiltin = true;
+	pEntry->builtinIndex = builtinIndex;
+	pEntry->numMissions = numMissions;
 }
 
-campaign_entry_t *AddAndGetCampaignEntry(
-	campaign_list_t *list, const char *title, campaign_mode_e mode)
+static void CampaignEntryInit(
+	campaign_entry_t *entry, const char *title, campaign_mode_e mode)
 {
-	campaign_entry_t entry;
-	memset(&entry, 0, sizeof entry);
-	strncpy(entry.info, title, sizeof entry.info - 1);
-	entry.mode = mode;
-	CArrayPushBack(&list->list, &entry);
-	return CArrayGet(&list->list, (int)list->list.size - 1);
+	memset(entry, 0, sizeof *entry);
+	strncpy(entry->info, title, sizeof entry->info - 1);
+	entry->mode = mode;
+}
+
+bool CampaignEntryTryLoad(
+	campaign_entry_t *entry, const char *path, campaign_mode_e mode)
+{
+	char *buf;
+	int numMissions;
+	if (!IsCampaignOK(path, &buf, &numMissions))
+	{
+		return false;
+	}
+	// cap length of title
+	size_t maxLen = sizeof ((campaign_entry_t *)0)->info - 10;
+	if (strlen(buf) > maxLen)
+	{
+		buf[maxLen] = '\0';
+	}
+	char title[256];
+	sprintf(title, "%s (%d)", buf, numMissions);
+	CampaignEntryInit(entry, title, mode);
+	char *fslash = strrchr(path, '/');
+	char *bslash = strrchr(path, '\\');
+	char *slash = fslash ? (bslash ? MAX(fslash, bslash) : fslash) : bslash;
+	if (slash == NULL)
+	{
+		strcpy(entry->filename, path);
+	}
+	else
+	{
+		strcpy(entry->filename, slash + 1);
+	}
+	strcpy(entry->path, path);
+	entry->isBuiltin = false;
+	entry->numMissions = numMissions;
+	CFREE(buf);
+	return true;
 }
 
 Mission *CampaignGetCurrentMission(CampaignOptions *campaign)

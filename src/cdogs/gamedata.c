@@ -64,6 +64,7 @@
 #include "keyboard.h"
 #include "input.h"
 #include "player_template.h"
+#include "quick_play.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -186,6 +187,53 @@ void PlayerDataInitialize(void)
 		}
 		d->weaponCount = 3;
 		d->playerIndex = i;
+	}
+}
+
+void CampaignLoad(CampaignOptions *co, campaign_entry_t *entry)
+{
+	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
+	co->Entry = *entry;
+	CampaignSettingInit(&co->Setting);
+	if (entry->isBuiltin)
+	{
+		if (entry->mode == CAMPAIGN_MODE_NORMAL)
+		{
+			SetupBuiltinCampaign(entry->builtinIndex);
+			co->IsLoaded = true;
+		}
+		else if (entry->mode == CAMPAIGN_MODE_DOGFIGHT)
+		{
+			SetupBuiltinDogfight(entry->builtinIndex);
+			co->IsLoaded = true;
+		}
+		else if (entry->mode == CAMPAIGN_MODE_QUICK_PLAY)
+		{
+			SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
+			co->IsLoaded = true;
+		}
+		else
+		{
+			CASSERT(false, "Unknown game mode");
+		}
+	}
+	else
+	{
+		CampaignSetting customSetting;
+		CampaignSettingInit(&customSetting);
+
+		if (MapNewLoad(entry->path, &customSetting))
+		{
+			printf("Failed to load campaign %s!\n", entry->path);
+			CASSERT(false, "Failed to load campaign");
+		}
+		memcpy(&co->Setting, &customSetting, sizeof co->Setting);
+		co->IsLoaded = true;
+	}
+
+	if (co->IsLoaded)
+	{
+		printf(">> Loaded campaign/dogfight\n");
 	}
 }
 
