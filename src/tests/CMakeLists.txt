@@ -24,6 +24,17 @@ target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
 add_test(NAME autosave_test WORKING_DIRECTORY .
 	COMMAND autosave_test)
 
+add_executable(c_array_test
+	c_array_test.c
+	../cdogs/c_array.h
+	../cdogs/c_array.c
+	../cdogs/color.c
+	../cdogs/utils.c
+	../cdogs/utils.h)
+target_link_libraries(c_array_test cbehave ${EXTRA_LIBRARIES})
+add_test(NAME c_array_test WORKING_DIRECTORY .
+	COMMAND c_array_test)
+
 add_executable(color_test
 	color_test.c
 	../cdogs/color.c

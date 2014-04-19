@@ -69,10 +69,10 @@ void CArrayInsert(CArray *a, int idx, void *elem)
 	{
 		CArrayReserve(a, a->capacity * 2);
 	}
-	for (int i = a->size; i > idx; i--)
-	{
-		memcpy(CArrayGet(a, i), CArrayGet(a, i - 1), a->elemSize);
-	}
+	memmove(
+		CArrayGet(a, idx + 1),
+		CArrayGet(a, idx),
+		a->elemSize * ((int)a->size - idx));
 	memcpy(CArrayGet(a, idx), elem, a->elemSize);
 	a->size++;
 }
