@@ -653,11 +653,11 @@ int CanCompleteMission(struct MissionOptions *options)
 	int i;
 
 	// Death is the only escape from dogfights and quick play
-	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return GetNumPlayersAlive() <= 1;
 	}
-	else if (gCampaign.Entry.mode == CAMPAIGN_MODE_QUICK_PLAY)
+	else if (gCampaign.Entry.Mode == CAMPAIGN_MODE_QUICK_PLAY)
 	{
 		return GetNumPlayersAlive() == 0;
 	}
@@ -688,7 +688,7 @@ int IsMissionComplete(struct MissionOptions *options)
 	}
 
 	// Check if dogfight is complete
-	if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT &&
+	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT &&
 		GetNumPlayersAlive() <= 1)
 	{
 		return 1;

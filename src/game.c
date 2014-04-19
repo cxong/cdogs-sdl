@@ -367,7 +367,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 
 static int HandleKey(int cmd, int *isPaused, int *hasUsedMap, bool showExit)
 {
-	if (IsAutoMapEnabled(gCampaign.Entry.mode))
+	if (IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
 		int hasDisplayedAutomap = 0;
 		while (KeyIsDown(
@@ -713,7 +713,7 @@ int gameloop(void)
 
 			gMission.time += ticks;
 
-			if (HasObjectives(gCampaign.Entry.mode))
+			if (HasObjectives(gCampaign.Entry.Mode))
 			{
 				MissionUpdateObjectives(&gMission, &gMap);
 			}

@@ -26,60 +26,26 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CAMPAIGNS
-#define __CAMPAIGNS
+#ifndef __CAMPAIGN_ENTRY
+#define __CAMPAIGN_ENTRY
 
-#include "c_array.h"
-#include "campaign_entry.h"
-#include "character.h"
-#include "mission.h"
-#include "sys_config.h"
-
-typedef struct campaign_list
-{
-	char *Name;
-	CArray subFolders;	// of campaign_list_t
-	CArray list;		// of campaign_entry_t
-} campaign_list_t;
+#include "utils.h"
 
 typedef struct
 {
-	campaign_list_t campaignList;
-	campaign_list_t dogfightList;
-	CampaignEntry quickPlayEntry;
-} custom_campaigns_t;
+	char *Filename;
+	char *Path;
+	char *Info;
+	bool IsBuiltin;
+	campaign_mode_e Mode;
+	int BuiltinIndex;
+	int NumMissions;
+} CampaignEntry;
 
-typedef struct
-{
-	char *Title;
-	char *Author;
-	char *Description;
-	CArray Missions;	// of Mission
-	CharacterStore characters;
-} CampaignSetting;
-
-typedef struct
-{
-	CampaignSetting Setting;
-	CampaignEntry Entry;
-	unsigned int seed;
-	int MissionIndex;
-	bool IsLoaded;
-} CampaignOptions;
-extern CampaignOptions gCampaign;
-
-void CampaignInit(CampaignOptions *campaign);
-void CampaignTerminate(CampaignOptions *campaign);
-void CampaignSettingInit(CampaignSetting *setting);
-void CampaignSettingTerminate(CampaignSetting *setting);
-
-void LoadAllCampaigns(custom_campaigns_t *campaigns);
-void UnloadAllCampaigns(custom_campaigns_t *campaigns);
-
-Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
-void CampaignSeedRandom(CampaignOptions *campaign);
-
-void CampaignAndMissionSetup(
-	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo);
+void CampaignEntryInit(
+	CampaignEntry *entry, const char *title, campaign_mode_e mode);
+bool CampaignEntryTryLoad(
+	CampaignEntry *entry, const char *path, campaign_mode_e mode);
+void CampaignEntryTerminate(CampaignEntry *entry);
 
 #endif

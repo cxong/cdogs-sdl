@@ -5,6 +5,16 @@
 #include <string.h>
 
 
+// Stub
+int MapNewScan(const char *filename, char **title, int *numMissions)
+{
+	UNUSED(filename);
+	UNUSED(title);
+	UNUSED(numMissions);
+	return 0;
+}
+
+
 FEATURE(1, "Initialise autosave")
 	SCENARIO("Initialise autosave")
 	{
@@ -33,7 +43,7 @@ FEATURE(2, "Save and load")
 		GIVEN("an autosave with some values, and I save it to file")
 			AutosaveInit(&autosave1);
 			memset(&mission1, 0, sizeof mission1);
-			strcpy(mission1.Campaign.path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
 			strcpy(mission1.Password, "password");
 			AutosaveAddMission(&autosave1, &mission1, 0);
 			AutosaveSave(&autosave1, "tmp");
@@ -45,10 +55,16 @@ FEATURE(2, "Save and load")
 		WHEN_END
 		
 		THEN("they should equal each other");
-			SHOULD_STR_EQUAL(autosave2.LastMission.Campaign.path, autosave1.LastMission.Campaign.path);
-			SHOULD_STR_EQUAL(autosave2.LastMission.Password, autosave1.LastMission.Password);
-			AutosaveLoadMission(&autosave2, &mission2, mission1.Campaign.path, 0);
-			SHOULD_STR_EQUAL(mission2.Campaign.path, mission1.Campaign.path);
+			SHOULD_STR_EQUAL(
+				autosave2.LastMission.Campaign.Path,
+				autosave1.LastMission.Campaign.Path);
+			SHOULD_STR_EQUAL(
+				autosave2.LastMission.Password,
+				autosave1.LastMission.Password);
+			AutosaveLoadMission(
+				&autosave2, &mission2, mission1.Campaign.Path, 0);
+			SHOULD_STR_EQUAL(
+				mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
 	}
@@ -69,7 +85,7 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("the mission should be empty");
-			SHOULD_STR_EQUAL(mission.Campaign.path, "");
+			SHOULD_BE_TRUE(mission.Campaign.Path == NULL);
 			SHOULD_STR_EQUAL(mission.Password, "");
 		THEN_END
 	}
@@ -82,7 +98,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission")
 			AutosaveInit(&autosave);
 			memset(&mission1, 0, sizeof mission1);
-			strcpy(mission1.Campaign.path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
 			strcpy(mission1.Password, "password");
 		GIVEN_END
 
@@ -91,8 +107,9 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave");
-			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.path, 0);
-			SHOULD_STR_EQUAL(mission2.Campaign.path, mission1.Campaign.path);
+			AutosaveLoadMission(
+				&autosave, &mission2, mission1.Campaign.Path, 0);
+			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
 	}
@@ -106,9 +123,8 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a builtin mission")
 			AutosaveInit(&autosave);
 			memset(&mission1, 0, sizeof mission1);
-			strcpy(mission1.Campaign.path, "");
-			mission1.Campaign.isBuiltin = 1;
-			mission1.Campaign.builtinIndex = builtinIndex;
+			mission1.Campaign.IsBuiltin = true;
+			mission1.Campaign.BuiltinIndex = builtinIndex;
 			strcpy(mission1.Password, "password");
 		GIVEN_END
 
@@ -118,9 +134,9 @@ FEATURE(3, "Mission autosaves")
 
 		THEN("I should be able to find the mission in the autosave");
 			AutosaveLoadMission(
-				&autosave, &mission2, mission1.Campaign.path, builtinIndex);
-			SHOULD_STR_EQUAL(mission2.Campaign.path, mission1.Campaign.path);
-			SHOULD_INT_EQUAL(mission2.Campaign.builtinIndex, builtinIndex);
+				&autosave, &mission2, mission1.Campaign.Path, builtinIndex);
+			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
+			SHOULD_INT_EQUAL(mission2.Campaign.BuiltinIndex, builtinIndex);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
 	}
@@ -133,7 +149,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission, and I add the mission to the autosave")
 			AutosaveInit(&autosave);
 			memset(&mission1, 0, sizeof mission1);
-			strcpy(mission1.Campaign.path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
 			strcpy(mission1.Password, "password");
 			AutosaveAddMission(&autosave, &mission1, 0);
 		GIVEN_END
@@ -144,8 +160,9 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave, with the new details");
-			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.path, 0);
-			SHOULD_STR_EQUAL(mission2.Campaign.path, mission1.Campaign.path);
+			AutosaveLoadMission(
+				&autosave, &mission2, mission1.Campaign.Path, 0);
+			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
 	}
@@ -158,7 +175,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission")
 			AutosaveInit(&autosave);
 			memset(&mission, 0, sizeof mission);
-			strcpy(mission.Campaign.path, "path/to/mission");
+			CSTRDUP(mission.Campaign.Path, "path/to/mission");
 			strcpy(mission.Password, "password");
 		GIVEN_END
 
@@ -167,7 +184,8 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("the last mission will be the same as the new mission");
-			SHOULD_STR_EQUAL(autosave.LastMission.Campaign.path, mission.Campaign.path);
+			SHOULD_STR_EQUAL(
+				autosave.LastMission.Campaign.Path, mission.Campaign.Path);
 			SHOULD_STR_EQUAL(autosave.LastMission.Password, mission.Password);
 		THEN_END
 	}

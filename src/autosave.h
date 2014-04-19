@@ -39,7 +39,7 @@
 
 typedef struct
 {
-	campaign_entry_t Campaign;
+	CampaignEntry Campaign;
 	char Password[PASSWORD_MAX + 1];
 	int IsValid;
 	int MissionsCompleted;
@@ -57,6 +57,7 @@ typedef struct
 extern Autosave gAutosave;
 
 void AutosaveInit(Autosave *autosave);
+void AutosaveTerminate(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
 void AutosaveAddMission(

@@ -57,7 +57,7 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
 	// be "rescued"
 	// Also need victims to collide with everyone
 	if (!isActor || (actor->flags & (FLAGS_PRISONER | FLAGS_VICTIM)) ||
-		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
+		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
 		return COLLISIONTEAM_NONE;
 	}

@@ -44,7 +44,7 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 			int idx = v.y * m->Size.x + v.x;
 			unsigned short tile =
 				*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
-			if (!AreKeysAllowed(gCampaign.Entry.mode))
+			if (!AreKeysAllowed(gCampaign.Entry.Mode))
 			{
 				tile &= MAP_MASKACCESS;
 			}

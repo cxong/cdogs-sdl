@@ -190,24 +190,24 @@ void PlayerDataInitialize(void)
 	}
 }
 
-void CampaignLoad(CampaignOptions *co, campaign_entry_t *entry)
+void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 {
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	co->Entry = *entry;
 	CampaignSettingInit(&co->Setting);
-	if (entry->isBuiltin)
+	if (entry->IsBuiltin)
 	{
-		if (entry->mode == CAMPAIGN_MODE_NORMAL)
+		if (entry->Mode == CAMPAIGN_MODE_NORMAL)
 		{
-			SetupBuiltinCampaign(entry->builtinIndex);
+			SetupBuiltinCampaign(entry->BuiltinIndex);
 			co->IsLoaded = true;
 		}
-		else if (entry->mode == CAMPAIGN_MODE_DOGFIGHT)
+		else if (entry->Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			SetupBuiltinDogfight(entry->builtinIndex);
+			SetupBuiltinDogfight(entry->BuiltinIndex);
 			co->IsLoaded = true;
 		}
-		else if (entry->mode == CAMPAIGN_MODE_QUICK_PLAY)
+		else if (entry->Mode == CAMPAIGN_MODE_QUICK_PLAY)
 		{
 			SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
 			co->IsLoaded = true;
@@ -222,9 +222,9 @@ void CampaignLoad(CampaignOptions *co, campaign_entry_t *entry)
 		CampaignSetting customSetting;
 		CampaignSettingInit(&customSetting);
 
-		if (MapNewLoad(entry->path, &customSetting))
+		if (MapNewLoad(entry->Path, &customSetting))
 		{
-			printf("Failed to load campaign %s!\n", entry->path);
+			printf("Failed to load campaign %s!\n", entry->Path);
 			CASSERT(false, "Failed to load campaign");
 		}
 		memcpy(&co->Setting, &customSetting, sizeof co->Setting);

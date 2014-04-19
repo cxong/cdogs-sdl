@@ -204,7 +204,7 @@ void MissionBriefing(GraphicsDevice *device)
 		ms.Campaign = gCampaign.Entry;
 		strcpy(ms.Password, MakePassword(gMission.index, 0));
 		ms.MissionsCompleted = gMission.index;
-		AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
+		AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 	
@@ -687,7 +687,7 @@ void Victory(GraphicsDevice *graphics)
 	ms.Campaign = gCampaign.Entry;
 	strcpy(ms.Password, MakePassword(gMission.index, 0));
 	ms.MissionsCompleted = gMission.index + 1;
-	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.builtinIndex);
+	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	GraphicsBlitBkg(graphics);
@@ -907,9 +907,9 @@ static void PlayGameSong(void)
 	{
 		char buf[CDOGS_PATH_MAX];
 		size_t pathLen = MAX(
-			strrchr(gCampaign.Entry.path, '\\'),
-			strrchr(gCampaign.Entry.path, '/')) - gCampaign.Entry.path;
-		strncpy(buf, gCampaign.Entry.path, pathLen);
+			strrchr(gCampaign.Entry.Path, '\\'),
+			strrchr(gCampaign.Entry.Path, '/')) - gCampaign.Entry.Path;
+		strncpy(buf, gCampaign.Entry.Path, pathLen);
 		buf[pathLen] = '\0';
 
 		strcat(buf, "/");
@@ -950,7 +950,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 
 		srand((unsigned int)time(NULL));
 		InitializeBadGuys();
-		if (IsMissionBriefingNeeded(co->Entry.mode))
+		if (IsMissionBriefingNeeded(co->Entry.Mode))
 		{
 			MissionBriefing(graphics);
 		}
@@ -1032,11 +1032,11 @@ int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		InitData(&gPlayerDatas[i]);
 	}
 
-	if (IsPasswordAllowed(co->Entry.mode))
+	if (IsPasswordAllowed(co->Entry.Mode))
 	{
 		MissionSave m;
 		AutosaveLoadMission(
-			&gAutosave, &m, co->Entry.path, co->Entry.builtinIndex);
+			&gAutosave, &m, co->Entry.Path, co->Entry.BuiltinIndex);
 		co->MissionIndex = EnterPassword(graphics, m.Password);
 	}
 	else
@@ -1117,7 +1117,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
 	{
 		debug(D_NORMAL, ">> Entering campaign\n");
-		if (IsIntroNeeded(gCampaign.Entry.mode))
+		if (IsIntroNeeded(gCampaign.Entry.Mode))
 		{
 			if (!CampaignIntro(&gGraphicsDevice))
 			{
@@ -1128,8 +1128,8 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 
 		debug(D_NORMAL, ">> Select number of players\n");
 		if (!NumPlayersSelection(
-				&gOptions.numPlayers, gCampaign.Entry.mode,
-				&gGraphicsDevice, &gEventHandlers))
+			&gOptions.numPlayers, gCampaign.Entry.Mode,
+			&gGraphicsDevice, &gEventHandlers))
 		{
 			gCampaign.IsLoaded = false;
 			continue;
@@ -1143,7 +1143,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 
 		debug(D_NORMAL, ">> Starting campaign\n");
-		if (gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT)
+		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
 			DogFight(&gGraphicsDevice, &gCampaign);
 		}
@@ -1403,7 +1403,7 @@ int main(int argc, char *argv[])
 		// Attempt to pre-load campaign if requested
 		if (loadCampaign != NULL)
 		{
-			campaign_entry_t entry;
+			CampaignEntry entry;
 			if (CampaignEntryTryLoad(
 				&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
 			{
@@ -1423,6 +1423,7 @@ bail:
 	PicManagerTerminate(&gPicManager);
 	TextManagerTerminate(&gTextManager);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+	AutosaveTerminate(&gAutosave);
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	SavePlayerTemplates(gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 	FreeSongs(&gMenuSongs);

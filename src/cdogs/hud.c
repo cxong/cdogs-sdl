@@ -485,7 +485,7 @@ static void DrawPlayerStatus(
 	CDogsTextStringSpecial(data->name, textFlags, pos.x, pos.y);
 	const int rowHeight = 1 + CDogsTextHeight();
 	pos.y += rowHeight;
-	if (IsScoreNeeded(gCampaign.Entry.mode))
+	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
 		sprintf(s, "Score: %d", data->score);
 	}
@@ -507,7 +507,7 @@ static void DrawPlayerStatus(
 	}
 
 	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
-		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
+		gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		DrawRadar(device, p, RADAR_SCALE, flags, showExit);
 	}
@@ -763,14 +763,14 @@ void HUDDraw(HUD *hud, int isPaused)
 	}
 	// Only draw radar once if shared
 	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
-		gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
+		gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
 	}
 
 	if (numPlayersAlive == 0)
 	{
-		if (gCampaign.Entry.mode != CAMPAIGN_MODE_DOGFIGHT)
+		if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 		{
 			CDogsTextStringAtCenter("Game Over!");
 		}
@@ -825,7 +825,7 @@ void HUDDraw(HUD *hud, int isPaused)
 			hud->device->cachedConfig.Res.y),
 		Vec2iNew(0, 5));
 
-	if (HasObjectives(gCampaign.Entry.mode))
+	if (HasObjectives(gCampaign.Entry.Mode))
 	{
 		DrawObjectiveCounts(hud);
 	}
@@ -846,7 +846,7 @@ static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 }
 static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 {
-	if (!IsScoreNeeded(gCampaign.Entry.mode))
+	if (!IsScoreNeeded(gCampaign.Entry.Mode))
 	{
 		return;
 	}

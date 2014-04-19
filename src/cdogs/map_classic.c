@@ -102,7 +102,7 @@ void MapClassicLoad(Map *map, Mission *m)
 		int doorMax = CLAMP(m->u.Classic.Doors.Max, doorMin, 6);
 		if (MapTryBuildRoom(
 			map, m, pad,
-			doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.mode)))
+			doorMin, doorMax, AreKeysAllowed(gCampaign.Entry.Mode)))
 		{
 			count++;
 		}

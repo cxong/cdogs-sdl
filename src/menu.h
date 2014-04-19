@@ -191,7 +191,7 @@ struct menu
 				const char *(*intToStr)(int);
 			} uFunc;
 		} option;
-		campaign_entry_t campaign;
+		CampaignEntry campaign;
 		// change key
 		struct
 		{

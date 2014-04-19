@@ -12,6 +12,7 @@ set(CDOGS_SOURCES
 	blit.c
 	bullet_class.c
 	c_array.c
+	campaign_entry.c
 	campaigns.c
 	character.c
 	collision.c
@@ -78,6 +79,7 @@ set(CDOGS_HEADERS
 	blit.h
 	bullet_class.h
 	c_array.h
+	campaign_entry.h
 	campaigns.h
 	character.h
 	collision.h

@@ -550,7 +550,7 @@ int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special)
 
 	item = GetItemOnTileInCollision(
 		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
-		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
+		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
 	hasHit = DamageSomething(
 		obj->vel, obj->power, obj->flags, obj->player,
 		item,

@@ -26,60 +26,68 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CAMPAIGNS
-#define __CAMPAIGNS
-
-#include "c_array.h"
 #include "campaign_entry.h"
-#include "character.h"
-#include "mission.h"
-#include "sys_config.h"
 
-typedef struct campaign_list
+#include <stdio.h>
+
+#include <tinydir/tinydir.h>
+
+#include <cdogs/files.h>
+#include <cdogs/map_new.h>
+#include <cdogs/mission.h>
+#include <cdogs/utils.h>
+
+
+static bool IsCampaignOK(const char *path, char **buf, int *numMissions)
 {
-	char *Name;
-	CArray subFolders;	// of campaign_list_t
-	CArray list;		// of campaign_entry_t
-} campaign_list_t;
+	return MapNewScan(path, buf, numMissions) == 0;
+}
 
-typedef struct
+void CampaignEntryInit(
+	CampaignEntry *entry, const char *title, campaign_mode_e mode)
 {
-	campaign_list_t campaignList;
-	campaign_list_t dogfightList;
-	CampaignEntry quickPlayEntry;
-} custom_campaigns_t;
-
-typedef struct
+	memset(entry, 0, sizeof *entry);
+	CSTRDUP(entry->Info, title);
+	entry->Mode = mode;
+}
+bool CampaignEntryTryLoad(
+	CampaignEntry *entry, const char *path, campaign_mode_e mode)
 {
-	char *Title;
-	char *Author;
-	char *Description;
-	CArray Missions;	// of Mission
-	CharacterStore characters;
-} CampaignSetting;
-
-typedef struct
+	char *buf;
+	int numMissions;
+	if (!IsCampaignOK(path, &buf, &numMissions))
+	{
+		return false;
+	}
+	// cap length of title
+	size_t maxLen = 70;
+	if (strlen(buf) > maxLen)
+	{
+		buf[maxLen] = '\0';
+	}
+	char title[256];
+	sprintf(title, "%s (%d)", buf, numMissions);
+	CampaignEntryInit(entry, title, mode);
+	char *fslash = strrchr(path, '/');
+	char *bslash = strrchr(path, '\\');
+	char *slash = fslash ? (bslash ? MAX(fslash, bslash) : fslash) : bslash;
+	if (slash == NULL)
+	{
+		CSTRDUP(entry->Filename, path);
+	}
+	else
+	{
+		CSTRDUP(entry->Filename, slash + 1);
+	}
+	CSTRDUP(entry->Path, path);
+	entry->IsBuiltin = false;
+	entry->NumMissions = numMissions;
+	CFREE(buf);
+	return true;
+}
+void CampaignEntryTerminate(CampaignEntry *entry)
 {
-	CampaignSetting Setting;
-	CampaignEntry Entry;
-	unsigned int seed;
-	int MissionIndex;
-	bool IsLoaded;
-} CampaignOptions;
-extern CampaignOptions gCampaign;
-
-void CampaignInit(CampaignOptions *campaign);
-void CampaignTerminate(CampaignOptions *campaign);
-void CampaignSettingInit(CampaignSetting *setting);
-void CampaignSettingTerminate(CampaignSetting *setting);
-
-void LoadAllCampaigns(custom_campaigns_t *campaigns);
-void UnloadAllCampaigns(custom_campaigns_t *campaigns);
-
-Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
-void CampaignSeedRandom(CampaignOptions *campaign);
-
-void CampaignAndMissionSetup(
-	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo);
-
-#endif
+	CFREE(entry->Filename);
+	CFREE(entry->Path);
+	CFREE(entry->Info);
+}

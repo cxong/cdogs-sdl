@@ -34,6 +34,7 @@
 
 #include <json/json.h>
 
+#include <cdogs/campaign_entry.h>
 #include <cdogs/json_utils.h>
 #include <cdogs/utils.h>
 #include <cdogs/sys_specifics.h>
@@ -51,25 +52,34 @@ void MissionSaveInit(MissionSave *ms)
 void AutosaveInit(Autosave *autosave)
 {
 	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
-	autosave->LastMission.Campaign.mode = CAMPAIGN_MODE_NORMAL;
+	autosave->LastMission.Campaign.Mode = CAMPAIGN_MODE_NORMAL;
 	strcpy(autosave->LastMission.Password, "");
 	autosave->Missions = NULL;
 	autosave->NumMissions = 0;
 }
-
-static void LoadCampaignNode(campaign_entry_t *c, json_t *node)
+void AutosaveTerminate(Autosave *autosave)
 {
-	strcpy(c->path, json_find_first_label(node, "Path")->child->text);
-	LoadBool(&c->isBuiltin, node, "IsBuiltin");
-	c->mode = CAMPAIGN_MODE_NORMAL;
-	c->builtinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
+	CampaignEntryTerminate(&autosave->LastMission.Campaign);
+	for (int i = 0; i < (int)autosave->NumMissions; i++)
+	{
+		CampaignEntryTerminate(&(autosave->Missions + i)->Campaign);
+	}
 }
-static void AddCampaignNode(campaign_entry_t *c, json_t *root)
+
+static void LoadCampaignNode(CampaignEntry *c, json_t *node)
+{
+	CSTRDUP(c->Path, json_find_first_label(node, "Path")->child->text);
+	LoadBool(&c->IsBuiltin, node, "IsBuiltin");
+	c->Mode = CAMPAIGN_MODE_NORMAL;
+	c->BuiltinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
+}
+static void AddCampaignNode(CampaignEntry *c, json_t *root)
 {
 	json_t *subConfig = json_new_object();
-	json_insert_pair_into_object(subConfig, "Path", json_new_string(c->path));
-	json_insert_pair_into_object(subConfig, "IsBuiltin", json_new_bool(c->isBuiltin));
-	AddIntPair(subConfig, "BuiltinIndex", c->builtinIndex);
+	json_insert_pair_into_object(subConfig, "Path", json_new_string(c->Path));
+	json_insert_pair_into_object(
+		subConfig, "IsBuiltin", json_new_bool(c->IsBuiltin));
+	AddIntPair(subConfig, "BuiltinIndex", c->BuiltinIndex);
 	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 
@@ -81,9 +91,9 @@ static void LoadMissionNode(MissionSave *m, json_t *node)
 	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
 	m->IsValid = 1;
 	// If the campaign is from a file, check that file exists
-	if (!m->Campaign.isBuiltin)
+	if (!m->Campaign.IsBuiltin)
 	{
-		m->IsValid = access(m->Campaign.path, F_OK | R_OK) != -1;
+		m->IsValid = access(m->Campaign.Path, F_OK | R_OK) != -1;
 	}
 }
 static json_t *CreateMissionNode(MissionSave *m)
@@ -107,7 +117,7 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 	{
 		MissionSave m;
 		LoadMissionNode(&m, child);
-		AutosaveAddMission(a, &m, m.Campaign.builtinIndex);
+		AutosaveAddMission(a, &m, m.Campaign.BuiltinIndex);
 		child = child->next;
 	}
 }
@@ -192,14 +202,20 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 MissionSave *AutosaveFindMission(
 	Autosave *autosave, const char *path, int builtinIndex)
 {
-	size_t i;
-	for (i = 0; i < autosave->NumMissions; i++)
+	for (int i = 0; i < (int)autosave->NumMissions; i++)
 	{
-		if (strcmp(autosave->Missions[i].Campaign.path, path) == 0)
+		if (path == NULL)
 		{
-			// If path is empty, need to look at all the builtin campaigns
-			if (!autosave->Missions[i].Campaign.isBuiltin ||
-				autosave->Missions[i].Campaign.builtinIndex == builtinIndex)
+			// builtin campaign
+			if (autosave->Missions[i].Campaign.IsBuiltin &&
+				autosave->Missions[i].Campaign.BuiltinIndex == builtinIndex)
+			{
+				return &autosave->Missions[i];
+			}
+		}
+		else if (strcmp(autosave->Missions[i].Campaign.Path, path) == 0)
+		{
+			if (!autosave->Missions[i].Campaign.IsBuiltin)
 			{
 				return &autosave->Missions[i];
 			}
@@ -212,7 +228,7 @@ void AutosaveAddMission(
 	Autosave *autosave, MissionSave *mission, int builtinIndex)
 {
 	MissionSave *existingMission = AutosaveFindMission(
-		autosave, mission->Campaign.path, builtinIndex);
+		autosave, mission->Campaign.Path, builtinIndex);
 	if (existingMission != NULL)
 	{
 		memcpy(existingMission, mission, sizeof *existingMission);

@@ -55,8 +55,8 @@ int MainMenu(
 	return doPlay;
 }
 
-menu_t *MenuCreateContinue(const char *name, campaign_entry_t *entry);
-menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry);
+menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
+menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
@@ -120,21 +120,21 @@ MenuSystem *MenuCreateAll(
 }
 
 
-menu_t *MenuCreateContinue(const char *name, campaign_entry_t *entry)
+menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	menu->u.campaign = *entry;
 	return menu;
 }
 
-menu_t *MenuCreateQuickPlay(const char *name, campaign_entry_t *entry)
+menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
 	return menu;
 }
 
-menu_t *MenuCreateCampaignItem(campaign_entry_t *entry);
+menu_t *MenuCreateCampaignItem(CampaignEntry *entry);
 
 static void CampaignsDisplayFilename(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
@@ -145,8 +145,8 @@ static void CampaignsDisplayFilename(
 	if (subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
 	{
 		char s[255];
-		const char *filename = subMenu->u.campaign.filename;
-		int isBuiltin = subMenu->u.campaign.isBuiltin;
+		const char *filename = subMenu->u.campaign.Filename;
+		int isBuiltin = subMenu->u.campaign.IsBuiltin;
 		sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
 		DrawTextStringSpecial(
 			s,
@@ -168,7 +168,7 @@ menu_t *MenuCreateCampaigns(
 	{
 		char folderName[CDOGS_FILENAME_MAX];
 		campaign_list_t *subList = CArrayGet(&list->subFolders, i);
-		sprintf(folderName, "%s/", subList->name);
+		sprintf(folderName, "%s/", subList->Name);
 		MenuAddSubmenu(menu, MenuCreateCampaigns(folderName, title, subList));
 	}
 	for (int i = 0; i < (int)list->list.size; i++)
@@ -180,16 +180,16 @@ menu_t *MenuCreateCampaigns(
 	return menu;
 }
 
-menu_t *MenuCreateCampaignItem(campaign_entry_t *entry)
+menu_t *MenuCreateCampaignItem(CampaignEntry *entry)
 {
-	menu_t *menu = MenuCreate(entry->info, MENU_TYPE_CAMPAIGN_ITEM);
+	menu_t *menu = MenuCreate(entry->Info, MENU_TYPE_CAMPAIGN_ITEM);
 	// Special colors:
 	// - Green for new campaigns
 	// - White (normal) for in-progress campaigns
 	// - Grey for complete campaigns
 	MissionSave m;
-	AutosaveLoadMission(&gAutosave, &m, entry->path, entry->builtinIndex);
-	if (m.MissionsCompleted == entry->numMissions)
+	AutosaveLoadMission(&gAutosave, &m, entry->Path, entry->BuiltinIndex);
+	if (m.MissionsCompleted == entry->NumMissions)
 	{
 		// Completed campaign
 		menu->color = colorGray;

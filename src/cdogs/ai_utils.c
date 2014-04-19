@@ -230,7 +230,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 		frontPos,
 		TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, a),
-		gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
+		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

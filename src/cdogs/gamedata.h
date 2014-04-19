@@ -133,7 +133,7 @@ void LoadSongs(void);
 
 void PlayerDataInitialize(void);
 
-void CampaignLoad(CampaignOptions *co, campaign_entry_t *entry);
+void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
 
 void MissionOptionsInit(struct MissionOptions *mo);
 void MissionOptionsTerminate(struct MissionOptions *mo);

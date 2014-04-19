@@ -496,7 +496,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	TObject *object;
 	Vec2i realPos = Vec2iFull2Real(pos);
 	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
-	int isDogfight = gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT;
+	bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
 
 	// Check collision with wall; try to limit x and y movement if still in
 	// collision in those axes
@@ -889,7 +889,7 @@ void UpdateAllActors(int ticks)
 				TTileItem *collidingItem = GetItemOnTileInCollision(
 					&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 					COLLISIONTEAM_NONE,
-					gCampaign.Entry.mode == CAMPAIGN_MODE_DOGFIGHT);
+					gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
 				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 				{
 					TActor *collidingActor = CArrayGet(

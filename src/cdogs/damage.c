@@ -73,7 +73,7 @@ void HitCharacter(
 	bool hasHitSound)
 {
 	bool isInvulnerable = ActorIsInvulnerable(
-		actor, flags, player, gCampaign.Entry.mode);
+		actor, flags, player, gCampaign.Entry.Mode);
 	ActorTakeHit(
 		actor,
 		hitVector,
@@ -95,7 +95,7 @@ bool CanDamageCharacter(
 	{
 		return false;
 	}
-	return !ActorIsInvulnerable(actor, flags, player, gCampaign.Entry.mode);
+	return !ActorIsInvulnerable(actor, flags, player, gCampaign.Entry.Mode);
 }
 
 static void TrackKills(int player, TActor *victim);
