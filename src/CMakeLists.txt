@@ -51,5 +51,5 @@ target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${
 add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
 target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
 
-add_executable(net_input_client net_input_client.c)
+add_executable(net_input_client net_input_client.c ${CDOGS_SDL_EXTRA})
 target_link_libraries(net_input_client cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
