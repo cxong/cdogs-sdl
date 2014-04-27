@@ -44,11 +44,10 @@ void CArrayReserve(CArray *a, size_t capacity)
 }
 void CArrayCopy(CArray *dst, CArray *src)
 {
-	int i;
-	assert(dst->size == 0);
-	dst->elemSize = src->elemSize;
+	CArrayTerminate(dst);
+	CArrayInit(dst, src->elemSize);
 	CArrayReserve(dst, (int)src->size);
-	for (i = 0; i < (int)src->size; i++)
+	for (int i = 0; i < (int)src->size; i++)
 	{
 		CArrayPushBack(dst, CArrayGet(src, i));
 	}

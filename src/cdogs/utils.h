@@ -93,7 +93,7 @@ extern bool gFalse;
 
 #define _CCHECKALLOC(_func, _var, _size)\
 {\
-	if (_var == NULL)\
+	if (_var == NULL && _size > 0)\
 	{\
 		debug(D_MAX,\
 			_func "(" #_var " size %d) failed\n",\

@@ -122,6 +122,12 @@ void MissionCopy(Mission *dst, Mission *src)
 	dst->DoorStyle = src->DoorStyle;
 
 	CArrayCopy(&dst->Objectives, &src->Objectives);
+	for (int i = 0; i < (int)src->Objectives.size; i++)
+	{
+		MissionObjective *smo = CArrayGet(&src->Objectives, i);
+		MissionObjective *dmo = CArrayGet(&dst->Objectives, i);
+		CSTRDUP(dmo->Description, smo->Description);
+	}
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
 	CArrayCopy(&dst->Items, &src->Items);
@@ -140,17 +146,11 @@ void MissionCopy(Mission *dst, Mission *src)
 	switch (dst->Type)
 	{
 	case MAPTYPE_STATIC:
-		CArrayInit(&dst->u.Static.Tiles, src->u.Static.Tiles.elemSize);
 		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
-		CArrayInit(&dst->u.Static.Items, src->u.Static.Items.elemSize);
 		CArrayCopy(&dst->u.Static.Items, &src->u.Static.Items);
-		CArrayInit(&dst->u.Static.Wrecks, src->u.Static.Wrecks.elemSize);
 		CArrayCopy(&dst->u.Static.Wrecks, &src->u.Static.Wrecks);
-		CArrayInit(&dst->u.Static.Characters, src->u.Static.Characters.elemSize);
 		CArrayCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
-		CArrayInit(&dst->u.Static.Objectives, src->u.Static.Objectives.elemSize);
 		CArrayCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
-		CArrayInit(&dst->u.Static.Keys, src->u.Static.Keys.elemSize);
 		CArrayCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
 
 		dst->u.Static.Start = src->u.Static.Start;
