@@ -19,8 +19,6 @@ before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
     # pull all sub modules recursively
   - git submodule update --init --recursive
-    # do not treat warnings as errors
-  - sed 's|-Werror||' -i CMakeLists.txt
 
 script:
   - cmake .
