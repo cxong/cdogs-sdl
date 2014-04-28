@@ -74,6 +74,7 @@
 
 #include <cdogsed/charsed.h>
 #include <cdogsed/editor_ui.h>
+#include <cdogsed/editor_ui_common.h>
 #include <cdogsed/ui_object.h>
 
 
@@ -172,13 +173,6 @@ typedef struct
 static HandleInputResult HandleInput(
 	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap);
 
-static void ClearScreen(GraphicsDevice *g)
-{
-	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
-	{
-		g->buf[i] = LookupPalette(58);
-	}
-}
 static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 {
 	char s[128];
@@ -305,40 +299,6 @@ static int Change(UIObject *o, int yc, int d)
 		isChanged = UIObjectChange(o, d);
 	}
 	return isChanged;
-}
-
-static void InsertMission(Mission *mission)
-{
-	if (mission)
-	{
-		CArrayInsert(
-			&gCampaign.Setting.Missions, gCampaign.MissionIndex, mission);
-	}
-	else
-	{
-		Mission defaultMission;
-		MissionInit(&defaultMission);
-		defaultMission.Size = Vec2iNew(48, 48);
-		CArrayInsert(
-			&gCampaign.Setting.Missions,
-			gCampaign.MissionIndex,
-			&defaultMission);
-	}
-}
-
-static void DeleteMission(void)
-{
-	if (gCampaign.MissionIndex >= (int)gCampaign.Setting.Missions.size)
-	{
-		return;
-	}
-	MissionTerminate(CampaignGetCurrentMission(&gCampaign));
-	CArrayDelete(&gCampaign.Setting.Missions, gCampaign.MissionIndex);
-	if (gCampaign.Setting.Missions.size > 0 &&
-		gCampaign.MissionIndex >= (int)gCampaign.Setting.Missions.size)
-	{
-		gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
-	}
 }
 
 static void AddObjective(Mission *m)
@@ -628,26 +588,6 @@ static void Save(void)
 	}
 }
 
-static int ConfirmClose(char *msg)
-{
-	int w = gGraphicsDevice.cachedConfig.Res.x;
-	int h = gGraphicsDevice.cachedConfig.Res.y;
-	const char *s1 = "Campaign has been modified, but not saved";
-	ClearScreen(&gGraphicsDevice);
-	TextString(&gTextManager, 
-		s1,
-		&gGraphicsDevice,
-		Vec2iNew((w - TextGetStringWidth(s1)) / 2, (h - CDogsTextHeight()) / 2));
-	TextString(&gTextManager, 
-		msg,
-		&gGraphicsDevice,
-		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + CDogsTextHeight()) / 2));
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-
-	int c = GetKey(&gEventHandlers);
-	return (c == 'Y' || c == 'y');
-}
-
 static void HelpScreen(void)
 {
 	Vec2i pos = Vec2iNew(20, 20);
@@ -705,7 +645,7 @@ static void Delete(int xc, int yc)
 		}
 		else
 		{
-			DeleteMission();
+			DeleteMission(&gCampaign);
 		}
 		AdjustYC(&yc);
 		break;
@@ -945,7 +885,7 @@ static HandleInputResult HandleInput(
 			// Use map size as a proxy to whether there's a valid scrap mission
 			if (!Vec2iEqual(scrap->Size, Vec2iZero()))
 			{
-				InsertMission(scrap);
+				InsertMission(&gCampaign, scrap, gCampaign.MissionIndex);
 				fileChanged = 1;
 				Setup(0);
 			}
@@ -956,15 +896,15 @@ static HandleInputResult HandleInput(
 			break;
 
 		case 'n':
-			gCampaign.MissionIndex = gCampaign.Setting.Missions.size;
-			InsertMission(NULL);
+			InsertMission(&gCampaign, NULL, gCampaign.Setting.Missions.size);
 			gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
 			fileChanged = 1;
 			Setup(0);
 			break;
 				
 		case 'o':
-			if (!fileChanged || ConfirmClose("Open anyway? (Y/N)"))
+			if (!fileChanged || ConfirmScreen(
+				"File has been modified, but not saved", "Open anyway? (Y/N)"))
 			{
 				Open();
 			}
@@ -1053,7 +993,7 @@ static HandleInputResult HandleInput(
 				}
 				else
 				{
-					InsertMission(NULL);
+					InsertMission(&gCampaign, NULL, gCampaign.MissionIndex);
 				}
 				break;
 			}
@@ -1102,7 +1042,8 @@ static HandleInputResult HandleInput(
 	{
 		hasQuit = true;
 	}
-	if (hasQuit && (!fileChanged || ConfirmClose("Quit anyway? (Y/N)")))
+	if (hasQuit && (!fileChanged || ConfirmScreen(
+		"File has been modified, but not saved", "Quit anyway? (Y/N)")))
 	{
 		result.Done = true;
 	}

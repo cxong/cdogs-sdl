@@ -897,6 +897,21 @@ static void CampaignChangeSeed(void *data, int d)
 		co->seed += d;
 	}
 }
+static void MissionInsertNew(void *data, int d)
+{
+	UNUSED(d);
+	CampaignOptions *co = data;
+	InsertMission(co, NULL, co->MissionIndex);
+}
+static void MissionDelete(void *data, int d)
+{
+	UNUSED(d);
+	// TODO: this still means the file is changed if user chooses no
+	if (ConfirmScreen("", "Delete mission? (Y/N)"))
+	{
+		DeleteMission(data);
+	}
+}
 static void MissionChangeWidth(void *data, int d)
 {
 	CampaignOptions *co = data;
@@ -1363,7 +1378,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE,
-		Vec2iNew(25, pos.y), Vec2iNew(240, th));
+		Vec2iNew(25, pos.y), Vec2iNew(140, th));
 	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
 	o->u.Textbox.TextSourceFunc = CampaignGetTitleSrc;
 	o->Data = co;
@@ -1372,8 +1387,28 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	UIObjectAddChild(o, CreateCampaignObjs(co));
 	UIObjectAddChild(cc, o);
 
+	// Mission insert/delete/index
+	// Layout from right to left
 	o = UIObjectCreate(
 		UITYPE_NONE, YC_MISSIONINDEX, Vec2iNew(270, pos.y), Vec2iNew(49, th));
+	UIObjectAddChild(cc, o);
+	o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
+	o->Label = "Insert mission";
+	o->Size.x = TextGetStringWidth(o->Label);
+	o->Pos.x -= o->Size.x + 10;
+	o->ChangeFunc = MissionInsertNew;
+	o->Data = &gCampaign;
+	o->ChangesData = true;
+	UIObjectAddChild(cc, o);
+	o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
+	o->Label = "Delete mission";
+	o->Size.x = TextGetStringWidth(o->Label);
+	o->Pos.x -= o->Size.x + 10;
+	o->ChangeFunc = MissionDelete;
+	o->Data = &gCampaign;
+	o->ChangesData = true;
 	UIObjectAddChild(cc, o);
 
 	pos.y = 2 * th;

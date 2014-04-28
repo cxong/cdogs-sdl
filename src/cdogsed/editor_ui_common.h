@@ -50,4 +50,10 @@ typedef struct
 void DisplayMapItem(Vec2i pos, MapObject *mo);
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
 
+void InsertMission(CampaignOptions *co, Mission *mission, int idx);
+void DeleteMission(CampaignOptions *co);
+
+bool ConfirmScreen(const char *info, const char *msg);
+void ClearScreen(GraphicsDevice *g);
+
 #endif

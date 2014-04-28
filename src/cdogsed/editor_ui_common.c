@@ -27,7 +27,10 @@
 */
 #include "editor_ui_common.h"
 
+#include <cdogs/events.h>
 #include <cdogs/gamedata.h>
+#include <cdogs/palette.h>
+#include <cdogs/text.h>
 
 void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
@@ -44,4 +47,57 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 		cGeneralPics[gMission.keyPics[data->Brush.ItemIndex]].picIndex);
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	DrawTPic(pos.x, pos.y, keyPic);
+}
+
+void InsertMission(CampaignOptions *co, Mission *mission, int idx)
+{
+	if (mission == NULL)
+	{
+		Mission defaultMission;
+		MissionInit(&defaultMission);
+		defaultMission.Size = Vec2iNew(48, 48);
+		mission = &defaultMission;
+	}
+	CArrayInsert(&co->Setting.Missions, idx, mission);
+}
+void DeleteMission(CampaignOptions *co)
+{
+	CASSERT(
+		co->MissionIndex < (int)co->Setting.Missions.size,
+		"invalid mission index");
+	MissionTerminate(CampaignGetCurrentMission(co));
+	CArrayDelete(&co->Setting.Missions, co->MissionIndex);
+	if (co->MissionIndex >= (int)co->Setting.Missions.size)
+	{
+		co->MissionIndex = co->Setting.Missions.size - 1;
+	}
+}
+
+bool ConfirmScreen(const char *info, const char *msg)
+{
+	int w = gGraphicsDevice.cachedConfig.Res.x;
+	int h = gGraphicsDevice.cachedConfig.Res.y;
+	ClearScreen(&gGraphicsDevice);
+	TextString(&gTextManager,
+		info,
+		&gGraphicsDevice,
+		Vec2iNew((w - TextGetStringWidth(info)) / 2, (h - CDogsTextHeight()) / 2));
+	TextString(&gTextManager,
+		msg,
+		&gGraphicsDevice,
+		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + CDogsTextHeight()) / 2));
+	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+
+	int c = GetKey(&gEventHandlers);
+	return (c == 'Y' || c == 'y');
+}
+
+void ClearScreen(GraphicsDevice *g)
+{
+	color_t color = { 32, 32, 60 };
+	Uint32 pixel = PixelFromColor(&gGraphicsDevice, color);
+	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+	{
+		g->buf[i] = pixel;
+	}
 }
