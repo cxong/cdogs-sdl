@@ -94,7 +94,7 @@ bool ConfirmScreen(const char *info, const char *msg)
 
 void ClearScreen(GraphicsDevice *g)
 {
-	color_t color = { 32, 32, 60 };
+	color_t color = { 32, 32, 60, 255 };
 	Uint32 pixel = PixelFromColor(&gGraphicsDevice, color);
 	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 	{
