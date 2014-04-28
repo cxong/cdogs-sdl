@@ -126,7 +126,10 @@ void MissionCopy(Mission *dst, Mission *src)
 	{
 		MissionObjective *smo = CArrayGet(&src->Objectives, i);
 		MissionObjective *dmo = CArrayGet(&dst->Objectives, i);
-		CSTRDUP(dmo->Description, smo->Description);
+		if (smo->Description)
+		{
+			CSTRDUP(dmo->Description, smo->Description);
+		}
 	}
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
