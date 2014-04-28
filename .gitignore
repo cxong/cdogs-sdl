@@ -65,3 +65,4 @@ Makefile.*
 *.tar.gz
 tmp
 .cdogs/
+*~*.cpn
