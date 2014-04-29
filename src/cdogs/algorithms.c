@@ -30,25 +30,6 @@
 #include <math.h>
 
 
-static void Swap(int *x, int *y)
-{
-	int temp = *x;
-	*x = *y;
-	*y = temp;
-}
-
-// Floating point part of a number
-static double FPart(double x)
-{
-	return x - floor(x);
-}
-
-// Reciprocal of the floating point part of a number
-static double RFPart(double x)
-{
-	return 1 - FPart(x);
-}
-
 static bool IsTileBlocked(int x, int y, double factor, HasClearLineData *data)
 {
 	if (factor > 0.4)
