@@ -30,15 +30,6 @@
 #include <math.h>
 
 
-static bool IsTileBlocked(int x, int y, double factor, HasClearLineData *data)
-{
-	if (factor > 0.4)
-	{
-		return data->IsBlocked(data->data, Vec2iNew(x, y));
-	}
-	return false;
-}
-
 typedef struct
 {
 	// Whether to use the IsBlocked func to check visibility,
