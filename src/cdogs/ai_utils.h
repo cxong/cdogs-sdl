@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,8 @@ TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
 TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
-int AIHasClearLine(Vec2i from, Vec2i to);
+bool AIHasClearShot(Vec2i from, Vec2i to);
+bool AIHasClearPath(Vec2i from, Vec2i to);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 
 int AIGoto(TActor *actor, Vec2i target);

@@ -183,24 +183,35 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
-static bool IsBlocked(void *data, Vec2i pos)
-{
-	return MapGetTile(data, pos)->flags & MAPTILE_IS_WALL;
-}
-int AIHasClearLine(Vec2i from, Vec2i to)
+static bool AIHasClearLine(
+	Vec2i from, Vec2i to, bool (*isBlockedFunc)(void *, Vec2i))
 {
 	// Find all tiles that overlap with the line (from, to)
 	// Uses a modified version of Xiaolin Wu's algorithm
 	HasClearLineData data;
-	data.IsBlocked = IsBlocked;
+	data.IsBlocked = isBlockedFunc;
 	data.tileSize = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	data.data = &gMap;
-	
-	// Hack: since HasClearLine() is buggy, double-check with
-	// Bresenham line algorithm
+
+	// TODO: use better algo than bresenham
 	return
-		HasClearLine(from, to, &data) &&
 		HasClearLineBresenham(Vec2iToTile(from), Vec2iToTile(to), &data);
+}
+static bool IsNoWalk(void *data, Vec2i pos)
+{
+	return MapGetTile(data, pos)->flags & MAPTILE_NO_WALK;
+}
+bool AIHasClearPath(Vec2i from, Vec2i to)
+{
+	return AIHasClearLine(from, to, IsNoWalk);
+}
+static bool IsNoSee(void *data, Vec2i pos)
+{
+	return MapGetTile(data, pos)->flags & MAPTILE_NO_SEE;
+}
+bool AIHasClearShot(Vec2i from, Vec2i to)
+{
+	return AIHasClearLine(from, to, IsNoSee);
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)
@@ -250,18 +261,20 @@ typedef struct
 {
 	Map *Map;
 } AStarContext;
-static int IsWallOrLockedDoor(Map *map, Vec2i pos)
+static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
 {
 	int tileFlags = MapGetTile(map, pos)->flags;
-	if (tileFlags & MAPTILE_IS_WALL)
+	if (tileFlags & MAPTILE_NO_WALK)
 	{
-		return 1;
+		if (tileFlags & MAPTILE_OFFSET_PIC)
+		{
+			// A door; check if we can open it
+			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
+		}
+		// Otherwise, we cannot walk over this tile
+		return true;
 	}
-	else if (tileFlags & MAPTILE_NO_WALK)
-	{
-		return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
-	}
-	return 0;
+	return false;
 }
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
@@ -290,14 +303,14 @@ static void AddTileNeighbors(
 			{
 				continue;
 			}
-			if (IsWallOrLockedDoor(c->Map, Vec2iNew(x, y)))
+			if (IsNoWalkOrLockedDoor(c->Map, Vec2iNew(x, y)))
 			{
 				continue;
 			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (IsWallOrLockedDoor(c->Map, Vec2iNew(v->x, y)) ||
-				IsWallOrLockedDoor(c->Map, Vec2iNew(x, v->y)))
+			if (IsNoWalkOrLockedDoor(c->Map, Vec2iNew(v->x, y)) ||
+				IsNoWalkOrLockedDoor(c->Map, Vec2iNew(x, v->y)))
 			{
 				continue;
 			}
@@ -415,7 +428,7 @@ int AIGoto(TActor *actor, Vec2i p)
 	{
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
 	}
-	else if (AIHasClearLine(a, p))
+	else if (AIHasClearPath(a, p))
 	{
 		// Simple case: if there's a clear line between AI and target,
 		// walk straight towards it

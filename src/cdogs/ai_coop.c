@@ -85,7 +85,7 @@ int AICoopGetCmd(TActor *actor)
 		TObject *o;
 		// Try to slide if there is a clear path and we are far enough away
 		if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
-			AIHasClearLine(
+			AIHasClearPath(
 			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestPlayer->Pos)) &&
 			minDistance2 > 7*7*16*16)
 		{
@@ -111,7 +111,7 @@ int AICoopGetCmd(TActor *actor)
 			closestEnemy->Pos.x, closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
 		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
-			AIHasClearLine(
+			AIHasClearShot(
 			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos)))
 		{
 			int cmd = AIHunt(actor);

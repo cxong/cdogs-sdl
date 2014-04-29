@@ -59,7 +59,6 @@ void AutosaveInit(Autosave *autosave)
 }
 void AutosaveTerminate(Autosave *autosave)
 {
-	CampaignEntryTerminate(&autosave->LastMission.Campaign);
 	for (int i = 0; i < (int)autosave->NumMissions; i++)
 	{
 		CampaignEntryTerminate(&(autosave->Missions + i)->Campaign);
