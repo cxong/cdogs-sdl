@@ -45,10 +45,22 @@ elseif(APPLE)
 	set_source_files_properties(../build/macosx/SDLMain.m
 		PROPERTIES LANGUAGE C)
 endif()
-add_executable(cdogs-sdl ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
+add_executable(cdogs-sdl MACOSX_BUNDLE ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
+if(APPLE)
+	set_target_properties(cdogs-sdl PROPERTIES
+		MACOSX_RPATH 1
+		BUILD_WITH_INSTALL_RPATH 1
+		INSTALL_RPATH "@loader_path/../Frameworks")
+endif()
 target_link_libraries(cdogs-sdl cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
 
-add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
+add_executable(cdogs-sdl-editor MACOSX_BUNDLE cdogsed.c ${CDOGS_SDL_EXTRA})
+if(APPLE)
+	set_target_properties(cdogs-sdl-editor PROPERTIES
+		MACOSX_RPATH 1
+		BUILD_WITH_INSTALL_RPATH 1
+		INSTALL_RPATH "@loader_path/../Frameworks")
+endif()
 target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs json ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${EXTRA_LIBRARIES})
 
 add_executable(net_input_client net_input_client.c ${CDOGS_SDL_EXTRA})

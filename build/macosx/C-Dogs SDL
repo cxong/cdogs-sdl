@@ -1,2 +1,0 @@
-#!/bin/sh
-(cd /Applications/cdogs-sdl/bin && exec /Applications/cdogs-sdl/bin/cdogs-sdl)

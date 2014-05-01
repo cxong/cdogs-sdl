@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(cdogs-sdl C)
 
 SET(VERSION "0.5.5")
@@ -98,6 +98,8 @@ else()
 	endif()
 endif()
 
+set(CMAKE_MACOSX_RPATH 1)
+
 set(CDOGS_DATA_DIR "../")
 set(CDOGS_CFG_DIR ".config/cdogs-sdl/")
 SET(SOURCE_DIRECTORY ".")
@@ -134,23 +136,33 @@ set_target_properties(cdogs-sdl-editor PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
+################
+# Installation #
+################
+
+# Executables
 set(INSTALL_PREFIX ".")
 if(WIN32)
 	set(EXE_EXTENSION ".exe")
 	set(LIB_EXTENSION ".dll")
 elseif(APPLE)
-	set(EXE_EXTENSION "")
 	set(LIB_EXTENSION ".dylib")
 	set(INSTALL_PREFIX "cdogs-sdl")
 else()
 	set(EXE_EXTENSION "")
 	set(LIB_EXTENSION ".so")
 endif()
-install(
-	PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION}
-	DESTINATION ${INSTALL_PREFIX}/bin)
+if(APPLE)
+	install(
+		DIRECTORY src/cdogs-sdl.app src/cdogs-sdl-editor.app
+		DESTINATION ${INSTALL_PREFIX}/bin
+		USE_SOURCE_PERMISSIONS)
+else()
+	install(
+		PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION}
+		DESTINATION ${INSTALL_PREFIX}/bin)
+endif()
 
-# Installation
 INSTALL(DIRECTORY
 	${SOURCE_DIRECTORY}/doc
 	${SOURCE_DIRECTORY}/missions
@@ -172,10 +184,6 @@ elseif(MSVC)
 	install(DIRECTORY ${SOURCE_DIRECTORY}/build/licenses DESTINATION ${INSTALL_PREFIX})
 elseif(APPLE)
 	set(CMAKE_INSTALL_PREFIX "/Applications/cdogs-sdl")
-	install(
-		FILES "${SOURCE_DIRECTORY}/build/macosx/C-Dogs SDL"
-		DESTINATION ${INSTALL_PREFIX}
-		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
 
 # Packaging
@@ -206,6 +214,16 @@ elseif(APPLE)
 	set(CPACK_SYSTEM_NAME "OSX")
 	set(CPACK_PACKAGE_ICON
 		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/cdogs-icon.icns")
+
+	# copy SDL frameworks into app bundle for Mac OS X
+	set(APPS cdogs-sdl cdogs-sdl-editor)
+	set(LIBS SDL SDL_image SDL_mixer SDL_net)
+	foreach(APP ${APPS})
+		foreach(LIB ${LIBS})
+			install(DIRECTORY /Library/Frameworks/${LIB}.framework
+				DESTINATION ${INSTALL_PREFIX}/bin/${APP}.app/Contents/Frameworks)
+		endforeach()
+	endforeach()
 elseif(BEOS OR HAIKU)
 	set(CPACK_GENERATOR TGZ)
 	install(
