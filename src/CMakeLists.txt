@@ -42,6 +42,8 @@ elseif(APPLE)
 		../build/macosx/cdogs-icon.icns
 		../build/macosx/SDLMain.m
 		../build/macosx/SDLMain.h)
+	set_source_files_properties(../build/macosx/cdogs-icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+	set(MACOSX_BUNDLE_ICON_FILE cdogs-icon.icns)
 	set_source_files_properties(../build/macosx/SDLMain.m
 		PROPERTIES LANGUAGE C)
 endif()
