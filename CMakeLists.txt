@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 2.8.12)
+if(APPLE)
+	cmake_minimum_required(VERSION 2.8.12)
+else()
+	cmake_minimum_required(VERSION 2.8)
+endif()
 project(cdogs-sdl C)
 
 SET(VERSION "0.5.5")
