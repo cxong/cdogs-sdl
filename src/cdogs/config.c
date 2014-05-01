@@ -314,7 +314,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.EnemyDensity = 100;
 	config->Game.FriendlyFire = 0;
 	config->Game.NonPlayerHP = 100;
-	config->Game.PlayerHP = 50;
+	config->Game.PlayerHP = 100;
 	config->Game.RandomSeed = 0;
 	config->Game.SlowMotion = 0;
 	config->Game.Fog = 1;

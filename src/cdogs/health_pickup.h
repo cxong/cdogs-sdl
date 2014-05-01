@@ -28,7 +28,7 @@
 
 #include "actors.h"
 
-#define HEALTH_PICKUP_HEAL_AMOUNT 20
+#define HEALTH_PICKUP_HEAL_AMOUNT 50
 
 typedef struct
 {
