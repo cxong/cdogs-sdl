@@ -1,0 +1,16 @@
+---
+layout: post
+title:  "C-Dogs 0.5.5 Released!"
+date:   2014-05-02
+categories: release
+---
+
+This release improves editor performance, and contains a nice set of polish!
+
+The OSX package has been improved as well - all required libraries are included, no need to install SDL yourself.
+
+Stay tuned for more posts showcasing new features added in this version, and upcoming releases!
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.5>
