@@ -264,7 +264,10 @@ json_new_string (const char *text)
 	json_t *new_object;
 	size_t length;
 
-	assert (text != NULL);
+	if (text == NULL)
+	{
+		text = "";
+	}
 
 	/* allocate memory for the new object */
 	new_object = malloc (sizeof (json_t));

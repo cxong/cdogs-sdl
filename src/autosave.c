@@ -75,7 +75,8 @@ static void LoadCampaignNode(CampaignEntry *c, json_t *node)
 static void AddCampaignNode(CampaignEntry *c, json_t *root)
 {
 	json_t *subConfig = json_new_object();
-	json_insert_pair_into_object(subConfig, "Path", json_new_string(c->Path));
+	json_insert_pair_into_object(
+		subConfig, "Path", json_new_string(c->Path ? c->Path : ""));
 	json_insert_pair_into_object(
 		subConfig, "IsBuiltin", json_new_bool(c->IsBuiltin));
 	AddIntPair(subConfig, "BuiltinIndex", c->BuiltinIndex);
@@ -203,6 +204,7 @@ MissionSave *AutosaveFindMission(
 {
 	for (int i = 0; i < (int)autosave->NumMissions; i++)
 	{
+		const char *campaignPath = autosave->Missions[i].Campaign.Path;
 		if (path == NULL)
 		{
 			// builtin campaign
@@ -212,7 +214,7 @@ MissionSave *AutosaveFindMission(
 				return &autosave->Missions[i];
 			}
 		}
-		else if (strcmp(autosave->Missions[i].Campaign.Path, path) == 0)
+		else if (campaignPath != NULL && strcmp(campaignPath, path) == 0)
 		{
 			if (!autosave->Missions[i].Campaign.IsBuiltin)
 			{
