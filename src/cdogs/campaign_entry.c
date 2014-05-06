@@ -50,6 +50,13 @@ void CampaignEntryInit(
 	CSTRDUP(entry->Info, title);
 	entry->Mode = mode;
 }
+void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src)
+{
+	memcpy(dst, src, sizeof *dst);
+	if (src->Filename) CSTRDUP(dst->Filename, src->Filename);
+	if (src->Path) CSTRDUP(dst->Path, src->Path);
+	if (src->Info) CSTRDUP(dst->Info, src->Info);
+}
 bool CampaignEntryTryLoad(
 	CampaignEntry *entry, const char *path, campaign_mode_e mode)
 {

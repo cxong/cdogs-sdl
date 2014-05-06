@@ -44,6 +44,7 @@ typedef struct
 
 void CampaignEntryInit(
 	CampaignEntry *entry, const char *title, campaign_mode_e mode);
+void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src);
 bool CampaignEntryTryLoad(
 	CampaignEntry *entry, const char *path, campaign_mode_e mode);
 void CampaignEntryTerminate(CampaignEntry *entry);

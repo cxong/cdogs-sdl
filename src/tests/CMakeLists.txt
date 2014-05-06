@@ -16,6 +16,7 @@ add_executable(autosave_test
 	../autosave.h
 	../autosave.c
 	../cdogs/campaign_entry.c
+	../cdogs/c_array.c
 	../cdogs/color.c
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h

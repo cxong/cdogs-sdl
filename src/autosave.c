@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013, Cong Xu
+ Copyright (c) 2013-2014, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -54,15 +54,16 @@ void AutosaveInit(Autosave *autosave)
 	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
 	autosave->LastMission.Campaign.Mode = CAMPAIGN_MODE_NORMAL;
 	strcpy(autosave->LastMission.Password, "");
-	autosave->Missions = NULL;
-	autosave->NumMissions = 0;
+	CArrayInit(&autosave->Missions, sizeof(MissionSave));
 }
 void AutosaveTerminate(Autosave *autosave)
 {
-	for (int i = 0; i < (int)autosave->NumMissions; i++)
+	for (int i = 0; i < (int)autosave->Missions.size; i++)
 	{
-		CampaignEntryTerminate(&(autosave->Missions + i)->Campaign);
+		MissionSave *m = CArrayGet(&autosave->Missions, i);
+		CampaignEntryTerminate(&m->Campaign);
 	}
+	CArrayTerminate(&autosave->Missions);
 }
 
 static void LoadCampaignNode(CampaignEntry *c, json_t *node)
@@ -124,10 +125,10 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 static void AddMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 {
 	json_t *missions = json_new_array();
-	size_t i;
-	for (i = 0; i < a->NumMissions; i++)
+	for (int i = 0; i < (int)a->Missions.size; i++)
 	{
-		json_insert_child(missions, CreateMissionNode(&a->Missions[i]));
+		json_insert_child(
+			missions, CreateMissionNode(CArrayGet(&a->Missions, i)));
 	}
 	json_insert_pair_into_object(root, nodeName, missions);
 }
@@ -202,23 +203,24 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 MissionSave *AutosaveFindMission(
 	Autosave *autosave, const char *path, int builtinIndex)
 {
-	for (int i = 0; i < (int)autosave->NumMissions; i++)
+	for (int i = 0; i < (int)autosave->Missions.size; i++)
 	{
-		const char *campaignPath = autosave->Missions[i].Campaign.Path;
+		MissionSave *m = CArrayGet(&autosave->Missions, i);
+		const char *campaignPath = m->Campaign.Path;
 		if (path == NULL)
 		{
 			// builtin campaign
-			if (autosave->Missions[i].Campaign.IsBuiltin &&
-				autosave->Missions[i].Campaign.BuiltinIndex == builtinIndex)
+			if (m->Campaign.IsBuiltin &&
+				m->Campaign.BuiltinIndex == builtinIndex)
 			{
-				return &autosave->Missions[i];
+				return m;
 			}
 		}
 		else if (campaignPath != NULL && strcmp(campaignPath, path) == 0)
 		{
-			if (!autosave->Missions[i].Campaign.IsBuiltin)
+			if (!m->Campaign.IsBuiltin)
 			{
-				return &autosave->Missions[i];
+				return m;
 			}
 		}
 	}
@@ -232,18 +234,16 @@ void AutosaveAddMission(
 		autosave, mission->Campaign.Path, builtinIndex);
 	if (existingMission != NULL)
 	{
-		memcpy(existingMission, mission, sizeof *existingMission);
+		CampaignEntryTerminate(&existingMission->Campaign);
 	}
 	else
 	{
-		autosave->NumMissions++;
-		CREALLOC(
-			autosave->Missions, autosave->NumMissions * sizeof *autosave->Missions);
-		memcpy(
-			&autosave->Missions[autosave->NumMissions - 1],
-			mission,
-			sizeof *mission);
+		CArrayPushBack(&autosave->Missions, mission);
+		existingMission =
+			CArrayGet(&autosave->Missions, autosave->Missions.size - 1);
 	}
+	memcpy(existingMission, mission, sizeof *existingMission);
+	CampaignEntryCopy(&existingMission->Campaign, &mission->Campaign);
 	memcpy(&autosave->LastMission, mission, sizeof autosave->LastMission);
 }
 

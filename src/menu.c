@@ -155,7 +155,7 @@ void MenuProcessChangeKey(menu_t *menu);
 void MenuLoop(MenuSystem *menu)
 {
 	assert(menu->numExitTypes > 0);
-	for (;; SDL_Delay(10))
+	for (;; SDL_Delay(33))
 	{
 #ifndef RUN_WITHOUT_APP_FOCUS
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
