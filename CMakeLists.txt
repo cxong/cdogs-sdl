@@ -5,8 +5,8 @@ else()
 endif()
 project(cdogs-sdl C)
 
-SET(VERSION "0.5.5")
-SET(VERSION_RC "0,5,5,0")	# this must be 4 numbers
+SET(VERSION "0.5.5.1")
+SET(VERSION_RC "0,5,5,1")	# this must be 4 numbers
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "5")
 SET(VERSION_PATCH "5")
