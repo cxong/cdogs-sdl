@@ -1,0 +1,12 @@
+---
+layout: post
+title:  "C-Dogs 0.5.5.1 Released!"
+date:   2014-05-06
+categories: release
+---
+
+This release fixes crashes in 0.5.5 when playing the built-in campaigns.
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.5.1>
