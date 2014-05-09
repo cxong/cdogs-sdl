@@ -184,7 +184,14 @@ int AIReverseDirection(int cmd)
 }
 
 static bool AIHasClearLine(
-	Vec2i from, Vec2i to, bool (*isBlockedFunc)(void *, Vec2i))
+	Vec2i from, Vec2i to, bool(*isBlockedFunc)(void *, Vec2i));
+static bool IsNoWalk(void *data, Vec2i pos);
+bool AIHasClearPath(Vec2i from, Vec2i to)
+{
+	return AIHasClearLine(from, to, IsNoWalk);
+}
+static bool AIHasClearLine(
+	Vec2i from, Vec2i to, bool(*isBlockedFunc)(void *, Vec2i))
 {
 	// Find all tiles that overlap with the line (from, to)
 	// Uses a modified version of Xiaolin Wu's algorithm
@@ -197,13 +204,47 @@ static bool AIHasClearLine(
 	return
 		HasClearLineBresenham(Vec2iToTile(from), Vec2iToTile(to), &data);
 }
+static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos);
 static bool IsNoWalk(void *data, Vec2i pos)
 {
-	return MapGetTile(data, pos)->flags & MAPTILE_NO_WALK;
+	Map *map = data;
+	if (IsNoWalkOrLockedDoor(map, pos))
+	{
+		return true;
+	}
+	// Check if tile has a dangerous (explosive) item on it
+	// For AI, we don't want to shoot it, so just walk around
+	Tile *t = MapGetTile(map, pos);
+	for (int i = 0; i < (int)t->things.size; i++)
+	{
+		ThingId *tid = CArrayGet(&t->things, i);
+		// Only look for explosive objects
+		if (tid->Kind != KIND_OBJECT)
+		{
+			continue;
+		}
+		TObject *o = CArrayGet(&gObjs, tid->Id);
+		if (o->flags & OBJFLAG_DANGEROUS)
+		{
+			return true;
+		}
+	}
+	return false;
 }
-bool AIHasClearPath(Vec2i from, Vec2i to)
+static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
 {
-	return AIHasClearLine(from, to, IsNoWalk);
+	int tileFlags = MapGetTile(map, pos)->flags;
+	if (tileFlags & MAPTILE_NO_WALK)
+	{
+		if (tileFlags & MAPTILE_OFFSET_PIC)
+		{
+			// A door; check if we can open it
+			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
+		}
+		// Otherwise, we cannot walk over this tile
+		return true;
+	}
+	return false;
 }
 static bool IsNoSee(void *data, Vec2i pos)
 {
@@ -261,7 +302,6 @@ typedef struct
 {
 	Map *Map;
 } AStarContext;
-static bool CanWalkOnTile(Map *map, Vec2i pos);
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
 {
@@ -291,9 +331,9 @@ static void AddTileNeighbors(
 			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (!CanWalkOnTile(c->Map, Vec2iNew(x, y)) ||
-				!CanWalkOnTile(c->Map, Vec2iNew(v->x, y)) ||
-				!CanWalkOnTile(c->Map, Vec2iNew(x, v->y)))
+			if (IsNoWalk(c->Map, Vec2iNew(x, y)) ||
+				IsNoWalk(c->Map, Vec2iNew(v->x, y)) ||
+				IsNoWalk(c->Map, Vec2iNew(x, v->y)))
 			{
 				continue;
 			}
@@ -316,47 +356,6 @@ static void AddTileNeighbors(
 			ASNeighborListAdd(neighbors, &neighbor, cost);
 		}
 	}
-}
-static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos);
-static bool CanWalkOnTile(Map *map, Vec2i pos)
-{
-	if (IsNoWalkOrLockedDoor(map, pos))
-	{
-		return false;
-	}
-	// Check if tile has a dangerous (explosive) item on it
-	// For AI, we don't want to shoot it, so just walk around
-	Tile *t = MapGetTile(map, pos);
-	for (int i = 0; i < (int)t->things.size; i++)
-	{
-		ThingId *tid = CArrayGet(&t->things, i);
-		// Only look for explosive objects
-		if (tid->Kind != KIND_OBJECT)
-		{
-			continue;
-		}
-		TObject *o = CArrayGet(&gObjs, tid->Id);
-		if (o->flags & OBJFLAG_DANGEROUS)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
-{
-	int tileFlags = MapGetTile(map, pos)->flags;
-	if (tileFlags & MAPTILE_NO_WALK)
-	{
-		if (tileFlags & MAPTILE_OFFSET_PIC)
-		{
-			// A door; check if we can open it
-			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
-		}
-		// Otherwise, we cannot walk over this tile
-		return true;
-	}
-	return false;
 }
 static float AStarHeuristic(void *fromNode, void *toNode, void *context)
 {
