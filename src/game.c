@@ -628,7 +628,7 @@ int gameloop(void)
 					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 					if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
 					{
-						cmds[i] = AICoopGetCmd(player);
+						cmds[i] = AICoopGetCmd(player, ticks);
 					}
 					PlayerSpecialCommands(player, cmds[i], &gPlayerDatas[i]);
 					CommandActor(player, cmds[i], ticks);

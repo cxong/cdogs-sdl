@@ -52,7 +52,6 @@
 #include <math.h>
 
 #include "algorithms.h"
-#include "AStar.h"
 #include "collision.h"
 #include "map.h"
 #include "objs.h"
@@ -293,13 +292,6 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 
 typedef struct
 {
-	Vec2i Goal;
-	ASPath Path;
-	int PathIndex;
-	int IsFollowing;
-} AIGotoContext;
-typedef struct
-{
 	Map *Map;
 } AStarContext;
 static void AddTileNeighbors(
@@ -434,7 +426,7 @@ int AIGoto(TActor *actor, Vec2i p)
 	Vec2i a = Vec2iFull2Real(actor->Pos);
 	Vec2i currentTile = Vec2iToTile(a);
 	Vec2i goalTile = Vec2iToTile(p);
-	AIGotoContext *c = actor->aiContext;
+	AIGotoContext *c = &actor->aiContext->Goto;
 
 	// If we are already there, bail
 	// This can happen if AI is trying to track the player,
@@ -462,11 +454,6 @@ int AIGoto(TActor *actor, Vec2i p)
 		// We need to recalculate A*
 		AStarContext ac;
 		ac.Map = &gMap;
-		if (!c)
-		{
-			CCALLOC(actor->aiContext, sizeof(AIGotoContext));
-			c = actor->aiContext;
-		}
 		c->Goal = goalTile;
 		c->PathIndex = 1;	// start navigating to the next path node
 		ASPathDestroy(c->Path);

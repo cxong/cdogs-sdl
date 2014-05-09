@@ -97,6 +97,9 @@ const char *CmdStr(int cmd);
 #define Button2(x)    (((x) & CMD_BUTTON2) != 0)
 #define AnyButton(x)  (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
 
+// Reverse directions for command
+int CmdGetReverse(int cmd);
+
 // Directions
 typedef enum
 {

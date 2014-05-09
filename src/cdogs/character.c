@@ -103,6 +103,11 @@ void CharacterStoreInit(CharacterStore *store)
 
 void CharacterStoreTerminate(CharacterStore *store)
 {
+	for (int i = 0; i < (int)store->OtherChars.size; i++)
+	{
+		Character *c = CArrayGet(&store->OtherChars, i);
+		CFREE(c->bot);
+	}
 	CArrayTerminate(&store->OtherChars);
 	CFREE(store->prisoners);
 	CFREE(store->baddies);
@@ -131,6 +136,7 @@ Character *CharacterStoreInsertOther(CharacterStore *store, int idx)
 {
 	Character newChar;
 	memset(&newChar, 0, sizeof newChar);
+	CCALLOC(newChar.bot, sizeof *newChar.bot);
 	CArrayInsert(&store->OtherChars, idx, &newChar);
 	return CArrayGet(&store->OtherChars, idx);
 }

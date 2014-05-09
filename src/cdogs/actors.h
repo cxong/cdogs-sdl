@@ -49,6 +49,7 @@
 #ifndef __ACTORS
 #define __ACTORS
 
+#include "ai_context.h"
 #include "gamedata.h"
 #include "grafx.h"
 #include "map.h"
@@ -136,13 +137,12 @@ typedef struct Actor
 	int flags;
 
 	int turns;
-	int delay;
 	
 	int slideLock;
 
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
-	void *aiContext;
+	AIContext *aiContext;
 	TTileItem tileItem;
 	bool isInUse;
 } TActor;

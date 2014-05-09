@@ -309,10 +309,10 @@ static void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 		JSON_UTILS_LOAD_ENUM(ch->gun, child, "Gun", StrGunName);
 		LoadInt(&ch->maxHealth, child, "maxHealth");
 		LoadInt(&ch->flags, child, "flags");
-		LoadInt(&ch->bot.probabilityToMove, child, "probabilityToMove");
-		LoadInt(&ch->bot.probabilityToTrack, child, "probabilityToTrack");
-		LoadInt(&ch->bot.probabilityToShoot, child, "probabilityToShoot");
-		LoadInt(&ch->bot.actionDelay, child, "actionDelay");
+		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
+		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
+		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
+		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
 		CharacterSetLooks(ch, &ch->looks);
 		child = child->next;
 	}
@@ -781,10 +781,10 @@ static json_t *SaveCharacters(CharacterStore *s)
 			node, "Gun", json_new_string(GunGetName(c->gun)));
 		AddIntPair(node, "maxHealth", c->maxHealth);
 		AddIntPair(node, "flags", c->flags);
-		AddIntPair(node, "probabilityToMove", c->bot.probabilityToMove);
-		AddIntPair(node, "probabilityToTrack", c->bot.probabilityToTrack);
-		AddIntPair(node, "probabilityToShoot", c->bot.probabilityToShoot);
-		AddIntPair(node, "actionDelay", c->bot.actionDelay);
+		AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
+		AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
+		AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
+		AddIntPair(node, "actionDelay", c->bot->actionDelay);
 		json_insert_child(charNode, node);
 	}
 	return charNode;

@@ -90,6 +90,16 @@ const char *CmdStr(int cmd)
 	}
 }
 
+int CmdGetReverse(int cmd)
+{
+	int newCmd = cmd & ~(CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN);
+	if (cmd & CMD_LEFT) newCmd |= CMD_RIGHT;
+	if (cmd & CMD_RIGHT) newCmd |= CMD_LEFT;
+	if (cmd & CMD_UP) newCmd |= CMD_DOWN;
+	if (cmd & CMD_DOWN) newCmd |= CMD_UP;
+	return newCmd;
+}
+
 int cmd2dir[16] = {
 	0,			// Nothing
 	DIRECTION_LEFT,		// CMD_LEFT

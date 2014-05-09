@@ -181,8 +181,8 @@ static bool IsDirectionOK(TActor *a, int dir)
 
 static int BrightWalk(TActor * actor, int roll)
 {
-	if (!!(actor->flags & FLAGS_VISIBLE) &&
-		roll < actor->character->bot.probabilityToTrack)
+	const CharBot *bot = actor->character->bot;
+	if (!!(actor->flags & FLAGS_VISIBLE) && roll < bot->probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
 		return AIHunt(actor);
@@ -235,9 +235,10 @@ static int BrightWalk(TActor * actor, int roll)
 
 static int WillFire(TActor * actor, int roll)
 {
+	const CharBot *bot = actor->character->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
 		WeaponCanFire(&actor->weapon) &&
-		roll < actor->character->bot.probabilityToShoot)
+		roll < bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
@@ -379,6 +380,7 @@ void CommandBadGuys(int ticks)
 		{
 			continue;
 		}
+		const CharBot *bot = actor->character->bot;
 		if (!(actor->pData || (actor->flags & FLAGS_PRISONER)))
 		{
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
@@ -403,7 +405,7 @@ void CommandBadGuys(int ticks)
 						cmd = AIGoto(actor, AIGetClosestPlayerPos(
 							Vec2iFull2Real(actor->Pos)));
 					}
-					actor->delay = actor->character->bot.actionDelay;
+					actor->aiContext->Delay = bot->actionDelay;
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
 					!!(actor->flags & FLAGS_VISIBLE) &&
@@ -421,18 +423,19 @@ void CommandBadGuys(int ticks)
 				{
 					cmd = BrightWalk(actor, roll);
 				}
-				else if (actor->delay > 0)
+				else if (actor->aiContext->Delay > 0)
 				{
-					actor->delay = MAX(0, actor->delay - ticks);
+					actor->aiContext->Delay =
+						MAX(0, actor->aiContext->Delay - ticks);
 					cmd = actor->lastCmd & ~CMD_BUTTON1;
 				}
 				else
 				{
-					if (roll < actor->character->bot.probabilityToTrack)
+					if (roll < bot->probabilityToTrack)
 					{
 						cmd = AIHunt(actor);
 					}
-					else if (roll < actor->character->bot.probabilityToMove)
+					else if (roll < bot->probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
 					}
@@ -440,7 +443,7 @@ void CommandBadGuys(int ticks)
 					{
 						cmd = 0;
 					}
-					actor->delay = actor->character->bot.actionDelay * delayModifier;
+					actor->aiContext->Delay = bot->actionDelay * delayModifier;
 				}
 				if (!bypass)
 				{

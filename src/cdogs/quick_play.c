@@ -133,26 +133,26 @@ static void SetupQuickPlayEnemy(
 	}
 	if (IsShortRange(enemy->gun))
 	{
-		enemy->bot.probabilityToMove = 35 + (rand() % 35);
+		enemy->bot->probabilityToMove = 35 + (rand() % 35);
 	}
 	else
 	{
-		enemy->bot.probabilityToMove = 30 + (rand() % 30);
+		enemy->bot->probabilityToMove = 30 + (rand() % 30);
 	}
-	enemy->bot.probabilityToTrack = 10 + (rand() % 60);
+	enemy->bot->probabilityToTrack = 10 + (rand() % 60);
 	if (enemy->gun == GUN_KNIFE)
 	{
-		enemy->bot.probabilityToShoot = 0;
+		enemy->bot->probabilityToShoot = 0;
 	}
 	else if (IsHighDPS(enemy->gun))
 	{
-		enemy->bot.probabilityToShoot = 1 + (rand() % 3);
+		enemy->bot->probabilityToShoot = 1 + (rand() % 3);
 	}
 	else
 	{
-		enemy->bot.probabilityToShoot = 1 + (rand() % 6);
+		enemy->bot->probabilityToShoot = 1 + (rand() % 6);
 	}
-	enemy->bot.actionDelay = rand() % (50 + 1);
+	enemy->bot->actionDelay = rand() % (50 + 1);
 	enemy->looks.skin = rand() % SHADE_COUNT;
 	enemy->looks.arm = rand() % SHADE_COUNT;
 	enemy->looks.body = rand() % SHADE_COUNT;

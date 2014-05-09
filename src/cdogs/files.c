@@ -287,10 +287,10 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 {
 	c->looks.face = b->facePic;
 	c->speed = b->speed;
-	c->bot.probabilityToMove = b->probabilityToMove;
-	c->bot.probabilityToTrack = b->probabilityToTrack;
-	c->bot.probabilityToShoot = b->probabilityToShoot;
-	c->bot.actionDelay = b->actionDelay;
+	c->bot->probabilityToMove = b->probabilityToMove;
+	c->bot->probabilityToTrack = b->probabilityToTrack;
+	c->bot->probabilityToShoot = b->probabilityToShoot;
+	c->bot->actionDelay = b->actionDelay;
 	c->gun = (gun_e)b->gun;
 	c->looks.skin = b->skinColor;
 	c->looks.arm = b->armColor;
@@ -307,10 +307,10 @@ TBadGuy ConvertTBadGuy(Character *e)
 	b.unarmedBodyPic = BODY_UNARMED;
 	b.facePic = e->looks.face;
 	b.speed = e->speed;
-	b.probabilityToMove = e->bot.probabilityToMove;
-	b.probabilityToTrack = e->bot.probabilityToTrack;
-	b.probabilityToShoot = e->bot.probabilityToShoot;
-	b.actionDelay = e->bot.actionDelay;
+	b.probabilityToMove = e->bot->probabilityToMove;
+	b.probabilityToTrack = e->bot->probabilityToTrack;
+	b.probabilityToShoot = e->bot->probabilityToShoot;
+	b.actionDelay = e->bot->actionDelay;
 	b.gun = e->gun;
 	b.skinColor = e->looks.skin;
 	b.armColor = e->looks.arm;

@@ -4,6 +4,7 @@ add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actors.c
 	ai.c
+	ai_context.c
 	ai_coop.c
 	ai_utils.c
 	algorithms.c
@@ -71,6 +72,7 @@ set(CDOGS_SOURCES
 set(CDOGS_HEADERS
 	actors.h
 	ai.h
+	ai_context.h
 	ai_coop.h
 	ai_utils.h
 	algorithms.h

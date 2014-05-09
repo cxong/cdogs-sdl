@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,83 @@
 
 #include "ai_utils.h"
 
-int AICoopGetCmd(TActor *actor)
+// How many ticks to stay in one confusion state
+#define CONFUSION_STATE_TICKS_MIN 25
+#define CONFUSION_STATE_TICKS_RANGE 25
+
+
+static int AICoopGetCmdNormal(TActor *actor);
+int AICoopGetCmd(TActor *actor, const int ticks)
+{
+	// Create AI context if it isn't there already
+	// This is because co-op AIs don't have the character bot property
+	// TODO: don't require this lazy initialisation
+	if (actor->aiContext == NULL)
+	{
+		actor->aiContext = AIContextNew();
+	}
+
+	int cmd = 0;
+
+	// Special decision tree for confusion
+	// - If confused, randomly:
+	//   - Perform the right action (reverse directions)
+	//   - Perform a random command (except for switching weapons)
+	// - And never slide
+	if (actor->confused)
+	{
+		AIConfusionState *s = &actor->aiContext->ConfusionState;
+		// Check delay and change state
+		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
+		if (actor->aiContext->Delay == 0)
+		{
+			actor->aiContext->Delay =
+				CONFUSION_STATE_TICKS_MIN +
+				(rand() % CONFUSION_STATE_TICKS_RANGE);
+			if (s->Type == AI_CONFUSION_CONFUSED)
+			{
+				s->Type = AI_CONFUSION_CORRECT;
+			}
+			else
+			{
+				s->Type = AI_CONFUSION_CONFUSED;
+				// Generate the confused action
+				s->Cmd = rand() &
+					(CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN |
+					CMD_BUTTON1 | CMD_BUTTON2);
+			}
+		}
+		// Choose confusion action based on state
+		switch (s->Type)
+		{
+		case AI_CONFUSION_CONFUSED:
+			// Use canned random command
+			cmd = s->Cmd;
+			break;
+		case AI_CONFUSION_CORRECT:
+			// Reverse directions so they are correct
+			cmd = CmdGetReverse(AICoopGetCmdNormal(actor));
+			break;
+		default:
+			CASSERT(false, "Unknown state");
+			break;
+		}
+		// Don't slide
+		if ((cmd & CMD_BUTTON2) &&
+			(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)))
+		{
+			cmd &= ~CMD_BUTTON2;
+		}
+	}
+	else
+	{
+		// Act normally
+		cmd = AICoopGetCmdNormal(actor);
+	}
+	return cmd;
+}
+
+static int AICoopGetCmdNormal(TActor *actor)
 {
 	// Use decision tree to command the AI
 	// - If too far away from nearest player

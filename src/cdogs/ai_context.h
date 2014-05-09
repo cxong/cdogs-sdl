@@ -1,7 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
     Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
@@ -26,12 +25,42 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI_COOP
-#define __AI_COOP
+#ifndef __AI_CONTEXT
+#define __AI_CONTEXT
 
-#include "actors.h"
+#include "AStar.h"
+#include "vector.h"
 
-int AICoopGetCmd(TActor *actor, const int ticks);
-gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT]);
+// State data for various AI routines
+
+// State for what the AI is doing when confused
+typedef enum
+{
+	AI_CONFUSION_CONFUSED,	// perform a random action
+	AI_CONFUSION_CORRECT	// perform the right action (correct for confusion)
+} AIConfusionType;
+typedef struct
+{
+	AIConfusionType Type;
+	int Cmd;
+} AIConfusionState;
+typedef struct
+{
+	Vec2i Goal;
+	ASPath Path;
+	int PathIndex;
+	bool IsFollowing;
+} AIGotoContext;
+typedef struct
+{
+	// Delay in executing consecutive actions;
+	// Used to let the AI perform one action for a set amount of time
+	int Delay;
+	AIConfusionState ConfusionState;
+	AIGotoContext Goto;
+} AIContext;
+
+AIContext *AIContextNew(void);
+void AIContextDestroy(AIContext *c);
 
 #endif

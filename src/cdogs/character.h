@@ -58,7 +58,7 @@ typedef struct
 	int maxHealth;
 	int flags;
 	TranslationTable table;
-	CharBot bot;
+	CharBot *bot;
 } Character;
 
 #define MAX_PLAYERS 4

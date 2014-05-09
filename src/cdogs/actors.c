@@ -741,7 +741,9 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	actor->lastCmd = cmd;
 
 	if (actor->confused)
-		cmd = ((cmd & 5) << 1) | ((cmd & 10) >> 1) | (cmd & 0xF0);
+	{
+		cmd = CmdGetReverse(cmd);
+	}
 
 	if (actor->health > 0)
 	{
@@ -827,7 +829,9 @@ void SlideActor(TActor *actor, int cmd)
 		return;
 
 	if (actor->confused)
-		cmd = ((cmd & 5) << 1) | ((cmd & 10) >> 1) | (cmd & 0xF0);
+	{
+		cmd = CmdGetReverse(cmd);
+	}
 
 	if ((cmd & CMD_LEFT) != 0)
 		dx = -5 * 256;
@@ -1011,6 +1015,10 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
 	actor->slideLock = 0;
+	if (c->bot)
+	{
+		actor->aiContext = AIContextNew();
+	}
 	return i;
 }
 void ActorDestroy(int id)
@@ -1026,7 +1034,7 @@ void ActorDestroy(int id)
 			break;
 		}
 	}
-	AIContextTerminate(actor->aiContext);
+	AIContextDestroy(actor->aiContext);
 	actor->isInUse = false;
 }
 
