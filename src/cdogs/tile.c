@@ -142,7 +142,7 @@ TTileItem *ThingIdGetTileItem(ThingId *tid)
 		ti = &((TObject *)CArrayGet(&gObjs, tid->Id))->tileItem;
 		break;
 	default:
-		CASSERT(false, "unknown tile item to draw");
+		CASSERT(false, "unknown tile item to get");
 		break;
 	}
 	return ti;

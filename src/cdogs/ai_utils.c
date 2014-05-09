@@ -261,21 +261,7 @@ typedef struct
 {
 	Map *Map;
 } AStarContext;
-static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
-{
-	int tileFlags = MapGetTile(map, pos)->flags;
-	if (tileFlags & MAPTILE_NO_WALK)
-	{
-		if (tileFlags & MAPTILE_OFFSET_PIC)
-		{
-			// A door; check if we can open it
-			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
-		}
-		// Otherwise, we cannot walk over this tile
-		return true;
-	}
-	return false;
-}
+static bool CanWalkOnTile(Map *map, Vec2i pos);
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
 {
@@ -303,14 +289,11 @@ static void AddTileNeighbors(
 			{
 				continue;
 			}
-			if (IsNoWalkOrLockedDoor(c->Map, Vec2iNew(x, y)))
-			{
-				continue;
-			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (IsNoWalkOrLockedDoor(c->Map, Vec2iNew(v->x, y)) ||
-				IsNoWalkOrLockedDoor(c->Map, Vec2iNew(x, v->y)))
+			if (!CanWalkOnTile(c->Map, Vec2iNew(x, y)) ||
+				!CanWalkOnTile(c->Map, Vec2iNew(v->x, y)) ||
+				!CanWalkOnTile(c->Map, Vec2iNew(x, v->y)))
 			{
 				continue;
 			}
@@ -333,6 +316,47 @@ static void AddTileNeighbors(
 			ASNeighborListAdd(neighbors, &neighbor, cost);
 		}
 	}
+}
+static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos);
+static bool CanWalkOnTile(Map *map, Vec2i pos)
+{
+	if (IsNoWalkOrLockedDoor(map, pos))
+	{
+		return false;
+	}
+	// Check if tile has a dangerous (explosive) item on it
+	// For AI, we don't want to shoot it, so just walk around
+	Tile *t = MapGetTile(map, pos);
+	for (int i = 0; i < (int)t->things.size; i++)
+	{
+		ThingId *tid = CArrayGet(&t->things, i);
+		// Only look for explosive objects
+		if (tid->Kind != KIND_OBJECT)
+		{
+			continue;
+		}
+		TObject *o = CArrayGet(&gObjs, tid->Id);
+		if (o->flags & OBJFLAG_DANGEROUS)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
+{
+	int tileFlags = MapGetTile(map, pos)->flags;
+	if (tileFlags & MAPTILE_NO_WALK)
+	{
+		if (tileFlags & MAPTILE_OFFSET_PIC)
+		{
+			// A door; check if we can open it
+			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
+		}
+		// Otherwise, we cannot walk over this tile
+		return true;
+	}
+	return false;
 }
 static float AStarHeuristic(void *fromNode, void *toNode, void *context)
 {

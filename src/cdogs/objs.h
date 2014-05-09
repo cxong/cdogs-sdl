@@ -110,7 +110,7 @@ typedef enum
 #define OBJFLAG_FLAMMABLE   2
 #define OBJFLAG_POISONOUS   4
 #define OBJFLAG_CONFUSING   8
-#define OBJFLAG_PETRIFYING  16
+#define OBJFLAG_PETRIFYING  16	// TODO: not used!
 #define OBJFLAG_QUAKE       32
 
 #define OBJFLAG_DANGEROUS   31
