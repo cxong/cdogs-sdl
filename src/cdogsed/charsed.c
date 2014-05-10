@@ -134,13 +134,13 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
 		sprintf(s, "Hp: %d", b->maxHealth);
 		DisplayCDogsText(70, y, s, yc == YC_ATTRIBUTES && xc == XC_HEALTH);
-		sprintf(s, "Move: %d%%", b->bot.probabilityToMove);
+		sprintf(s, "Move: %d%%", b->bot->probabilityToMove);
 		DisplayCDogsText(120, y, s, yc == YC_ATTRIBUTES && xc == XC_MOVE);
-		sprintf(s, "Track: %d%%", b->bot.probabilityToTrack);
+		sprintf(s, "Track: %d%%", b->bot->probabilityToTrack);
 		DisplayCDogsText(170, y, s, yc == YC_ATTRIBUTES && xc == XC_TRACK);
-		sprintf(s, "Shoot: %d%%", b->bot.probabilityToShoot);
+		sprintf(s, "Shoot: %d%%", b->bot->probabilityToShoot);
 		DisplayCDogsText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
-		sprintf(s, "Delay: %d", b->bot.actionDelay);
+		sprintf(s, "Delay: %d", b->bot->actionDelay);
 		DisplayCDogsText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
 		y += CDogsTextHeight();
 
@@ -284,22 +284,22 @@ static void Change(
 			break;
 
 		case XC_MOVE:
-			b->bot.probabilityToMove =
-				CLAMP(b->bot.probabilityToMove + d * 5, 0, 100);
+			b->bot->probabilityToMove =
+				CLAMP(b->bot->probabilityToMove + d * 5, 0, 100);
 			break;
 
 		case XC_TRACK:
-			b->bot.probabilityToTrack =
-				CLAMP(b->bot.probabilityToTrack + d * 5, 0, 100);
+			b->bot->probabilityToTrack =
+				CLAMP(b->bot->probabilityToTrack + d * 5, 0, 100);
 			break;
 
 		case XC_SHOOT:
-			b->bot.probabilityToShoot =
-				CLAMP(b->bot.probabilityToShoot + d * 5, 0, 100);
+			b->bot->probabilityToShoot =
+				CLAMP(b->bot->probabilityToShoot + d * 5, 0, 100);
 			break;
 
 		case XC_DELAY:
-			b->bot.actionDelay = CLAMP(b->bot.actionDelay + d, 0, 50);
+			b->bot->actionDelay = CLAMP(b->bot->actionDelay + d, 0, 50);
 			break;
 		}
 		break;
@@ -390,10 +390,10 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 		c->maxHealth = 40;
 		c->flags = FLAGS_IMMUNITY;
 		memset(c->table, 0, sizeof c->table);
-		c->bot.probabilityToMove = 50;
-		c->bot.probabilityToTrack = 25;
-		c->bot.probabilityToShoot = 2;
-		c->bot.actionDelay = 15;
+		c->bot->probabilityToMove = 50;
+		c->bot->probabilityToTrack = 25;
+		c->bot->probabilityToShoot = 2;
+		c->bot->actionDelay = 15;
 		CharacterSetLooks(c, &c->looks);
 	}
 }
