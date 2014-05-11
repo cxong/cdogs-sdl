@@ -107,6 +107,9 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 }
 
 static int SmartGoto(TActor *actor, Vec2i pos, int minDistance2);
+static bool TryCompleteNearbyObjective(
+	TActor *actor, const TActor *closestPlayer,
+	const int distanceTooFarFromPlayer, int *cmdOut);
 static int AICoopGetCmdNormal(TActor *actor)
 {
 	// Use decision tree to command the AI
@@ -183,6 +186,14 @@ static int AICoopGetCmdNormal(TActor *actor)
 		}
 	}
 
+	// Look for objectives nearby to complete
+	int cmd;
+	if (TryCompleteNearbyObjective(
+		actor, closestPlayer, distanceTooFarFromPlayer, &cmd))
+	{
+		return cmd;
+	}
+
 	// Otherwise, just go towards the closest player as long as we don't
 	// run into them
 	if (closestPlayer &&
@@ -241,6 +252,63 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 	}
 	actor->aiContext->LastTile = tilePos;
 	return cmd;
+}
+static bool IsPosCloseEnoughToPlayer(
+	const Vec2i realPos, const TActor *player,
+	const int distanceTooFarFromPlayer);
+static bool TryCompleteNearbyObjective(
+	TActor *actor, const TActor *closestPlayer,
+	const int distanceTooFarFromPlayer, int *cmdOut)
+{
+	int closestObjectiveDistance = -1;
+	Vec2i closestObjectivePos = Vec2iZero();
+	for (int i = 0; i < (int)gObjs.size; i++)
+	{
+		const TObject *o = CArrayGet(&gObjs, i);
+		if (!o->isInUse)
+		{
+			continue;
+		}
+		const Vec2i objPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		switch (o->Type)
+		{
+		case OBJ_JEWEL:	// fallthrough
+		case OBJ_KEYCARD_YELLOW:	// fallthrough
+		case OBJ_KEYCARD_GREEN:	// fallthrough
+		case OBJ_KEYCARD_BLUE:	// fallthrough
+		case OBJ_KEYCARD_RED:	// fallthrough
+			if (IsPosCloseEnoughToPlayer(
+				objPos, closestPlayer, distanceTooFarFromPlayer))
+			{
+				const int objDistance = DistanceSquared(
+					Vec2iFull2Real(actor->Pos), objPos);
+				if (closestObjectiveDistance == -1 ||
+					closestObjectiveDistance > objDistance)
+				{
+					closestObjectiveDistance = objDistance;
+					closestObjectivePos = objPos;
+				}
+			}
+		}
+	}
+	if (closestObjectiveDistance != -1)
+	{
+		*cmdOut = SmartGoto(
+			actor, closestObjectivePos, closestObjectiveDistance);
+		return true;
+	}
+	return false;
+}
+static bool IsPosCloseEnoughToPlayer(
+	const Vec2i realPos, const TActor *player,
+	const int distanceTooFarFromPlayer)
+{
+	if (!player)
+	{
+		return true;
+	}
+	return DistanceSquared(realPos, Vec2iFull2Real(player->Pos)) <
+		distanceTooFarFromPlayer*distanceTooFarFromPlayer * 16 * 16;
 }
 
 gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT])
