@@ -33,6 +33,17 @@
 
 // State data for various AI routines
 
+// State for what the AI is currently doing
+// Used for AI chatter
+typedef enum
+{
+	AI_STATE_IDLE,
+	AI_STATE_DIE,
+	AI_STATE_FOLLOW,
+	AI_STATE_HUNT,
+	AI_STATE_TRACK,
+	AI_STATE_FLEE
+} AIState;
 // State for what the AI is doing when confused
 typedef enum
 {
@@ -56,6 +67,7 @@ typedef struct
 	// Delay in executing consecutive actions;
 	// Used to let the AI perform one action for a set amount of time
 	int Delay;
+	AIState State;
 	AIConfusionState ConfusionState;
 	Vec2i LastTile;
 	bool IsStuckTooLong;
@@ -64,5 +76,7 @@ typedef struct
 
 AIContext *AIContextNew(void);
 void AIContextDestroy(AIContext *c);
+
+const char *AIStateGetChatterText(const AIState s);
 
 #endif

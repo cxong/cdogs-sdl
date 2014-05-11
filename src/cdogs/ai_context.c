@@ -41,3 +41,25 @@ void AIContextDestroy(AIContext *c)
 	}
 	CFREE(c);
 }
+
+const char *AIStateGetChatterText(const AIState s)
+{
+	switch (s)
+	{
+	case AI_STATE_IDLE:
+		return "zzz";
+	case AI_STATE_DIE:
+		return "blarg";
+	case AI_STATE_FOLLOW:
+		return "let's go!";
+	case AI_STATE_HUNT:
+		return "!";
+	case AI_STATE_TRACK:
+		return "?";
+	case AI_STATE_FLEE:
+		return "aah!";
+	default:
+		CASSERT(false, "Unknown AI state");
+		return "";
+	}
+}

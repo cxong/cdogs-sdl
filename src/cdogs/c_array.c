@@ -42,7 +42,7 @@ void CArrayReserve(CArray *a, size_t capacity)
 	a->capacity = capacity;
 	CREALLOC(a->data, a->capacity * a->elemSize);
 }
-void CArrayCopy(CArray *dst, CArray *src)
+void CArrayCopy(CArray *dst, const CArray *src)
 {
 	CArrayTerminate(dst);
 	CArrayInit(dst, src->elemSize);
@@ -85,7 +85,7 @@ void CArrayDelete(CArray *a, int idx)
 		a->elemSize * ((int)a->size - idx));
 }
 
-void *CArrayGet(CArray *a, int idx)
+void *CArrayGet(const CArray *a, int idx)
 {
 	return &((char *)a->data)[idx * a->elemSize];
 }

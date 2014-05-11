@@ -39,11 +39,11 @@ typedef struct
 
 void CArrayInit(CArray *a, size_t elemSize);
 void CArrayReserve(CArray *a, size_t capacity);
-void CArrayCopy(CArray *dst, CArray *src);
+void CArrayCopy(CArray *dst, const CArray *src);
 void CArrayPushBack(CArray *a, void *elem);	// insert address
 void CArrayInsert(CArray *a, int index, void *elem);
 void CArrayDelete(CArray *a, int index);
-void *CArrayGet(CArray *a, int index);	// gets address
+void *CArrayGet(const CArray *a, int index);	// gets address
 void CArrayClear(CArray *a);
 void CArrayTerminate(CArray *a);
 
