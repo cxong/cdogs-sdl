@@ -81,6 +81,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 		{
 		case AI_CONFUSION_CONFUSED:
 			// Use canned random command
+			// TODO: add state for this action
 			cmd = s->Cmd;
 			break;
 		case AI_CONFUSION_CORRECT:
@@ -161,6 +162,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
+		actor->aiContext->State = AI_STATE_FOLLOW;
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
@@ -176,6 +178,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			AIHasClearShot(
 			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos)))
 		{
+			actor->aiContext->State = AI_STATE_HUNT;
 			int cmd = AIHunt(actor);
 			// only fire if gun is ready
 			if (actor->weapon.lock <= 0)
@@ -199,9 +202,11 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > 4*4*16*16/3/3*(squadNumber+1)*(squadNumber+1))
 	{
+		actor->aiContext->State = AI_STATE_FOLLOW;
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
+	actor->aiContext->State = AI_STATE_IDLE;
 	return 0;
 }
 // Number of ticks to persist in trying to destroy an obstruction
@@ -262,6 +267,7 @@ static bool TryCompleteNearbyObjective(
 {
 	int closestObjectiveDistance = -1;
 	Vec2i closestObjectivePos = Vec2iZero();
+	AIState objectiveState = AI_STATE_IDLE;
 	for (int i = 0; i < (int)gObjs.size; i++)
 	{
 		const TObject *o = CArrayGet(&gObjs, i);
@@ -285,6 +291,7 @@ static bool TryCompleteNearbyObjective(
 				if (closestObjectiveDistance == -1 ||
 					closestObjectiveDistance > objDistance)
 				{
+					// TODO: have a "going to objective" state
 					closestObjectiveDistance = objDistance;
 					closestObjectivePos = objPos;
 				}
@@ -297,6 +304,7 @@ static bool TryCompleteNearbyObjective(
 	}
 	if (closestObjectiveDistance != -1)
 	{
+		actor->aiContext->State = objectiveState;
 		*cmdOut = SmartGoto(
 			actor, closestObjectivePos, closestObjectiveDistance);
 		return true;
