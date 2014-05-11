@@ -44,6 +44,8 @@ Win32/
 *.vcxproj.filters
 *.vspx
 *.sln
+*.ilk
+*.pdb
 
 # MinGW
 stdout.txt
