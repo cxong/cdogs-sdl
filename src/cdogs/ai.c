@@ -403,7 +403,7 @@ void CommandBadGuys(int ticks)
 					else
 					{
 						cmd = AIGoto(actor, AIGetClosestPlayerPos(
-							Vec2iFull2Real(actor->Pos)));
+							Vec2iFull2Real(actor->Pos)), true);
 					}
 					actor->aiContext->Delay = bot->actionDelay;
 				}

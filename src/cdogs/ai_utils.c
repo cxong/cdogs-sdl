@@ -182,15 +182,18 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
+typedef bool (*IsBlockedFunc)(void *, Vec2i);
 static bool AIHasClearLine(
-	Vec2i from, Vec2i to, bool(*isBlockedFunc)(void *, Vec2i));
+	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
 static bool IsNoWalk(void *data, Vec2i pos);
-bool AIHasClearPath(Vec2i from, Vec2i to)
+static bool IsNoWalkAroundObjects(void *data, Vec2i pos);
+bool AIHasClearPath(Vec2i from, Vec2i to, bool ignoreObjects)
 {
-	return AIHasClearLine(from, to, IsNoWalk);
+	IsBlockedFunc f = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
+	return AIHasClearLine(from, to, f);
 }
 static bool AIHasClearLine(
-	Vec2i from, Vec2i to, bool(*isBlockedFunc)(void *, Vec2i))
+	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc)
 {
 	// Find all tiles that overlap with the line (from, to)
 	// Uses a modified version of Xiaolin Wu's algorithm
@@ -224,6 +227,25 @@ static bool IsNoWalk(void *data, Vec2i pos)
 		}
 		TObject *o = CArrayGet(&gObjs, tid->Id);
 		if (o->flags & OBJFLAG_DANGEROUS)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
+{
+	Map *map = data;
+	if (IsNoWalkOrLockedDoor(map, pos))
+	{
+		return true;
+	}
+	// Check if tile has any item on it
+	Tile *t = MapGetTile(map, pos);
+	for (int i = 0; i < (int)t->things.size; i++)
+	{
+		ThingId *tid = CArrayGet(&t->things, i);
+		if (tid->Kind == KIND_OBJECT)
 		{
 			return true;
 		}
@@ -293,6 +315,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 typedef struct
 {
 	Map *Map;
+	IsBlockedFunc IsBlocked;
 } AStarContext;
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
@@ -323,9 +346,9 @@ static void AddTileNeighbors(
 			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (IsNoWalk(c->Map, Vec2iNew(x, y)) ||
-				IsNoWalk(c->Map, Vec2iNew(v->x, y)) ||
-				IsNoWalk(c->Map, Vec2iNew(x, v->y)))
+			if (c->IsBlocked(c->Map, Vec2iNew(x, y)) ||
+				c->IsBlocked(c->Map, Vec2iNew(v->x, y)) ||
+				c->IsBlocked(c->Map, Vec2iNew(x, v->y)))
 			{
 				continue;
 			}
@@ -421,7 +444,7 @@ static int AStarCloseToPath(
 	}
 	return 1;
 }
-int AIGoto(TActor *actor, Vec2i p)
+int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 {
 	Vec2i a = Vec2iFull2Real(actor->Pos);
 	Vec2i currentTile = Vec2iToTile(a);
@@ -443,7 +466,7 @@ int AIGoto(TActor *actor, Vec2i p)
 	{
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
 	}
-	else if (AIHasClearPath(a, p))
+	else if (AIHasClearPath(a, p, ignoreObjects))
 	{
 		// Simple case: if there's a clear line between AI and target,
 		// walk straight towards it
@@ -454,6 +477,7 @@ int AIGoto(TActor *actor, Vec2i p)
 		// We need to recalculate A*
 		AStarContext ac;
 		ac.Map = &gMap;
+		ac.IsBlocked = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
 		c->Goal = goalTile;
 		c->PathIndex = 1;	// start navigating to the next path node
 		ASPathDestroy(c->Path);

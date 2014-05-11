@@ -60,10 +60,13 @@ TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
 bool AIHasClearShot(Vec2i from, Vec2i to);
-bool AIHasClearPath(Vec2i from, Vec2i to);
+bool AIHasClearPath(Vec2i from, Vec2i to, bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 
-int AIGoto(TActor *actor, Vec2i target);
+// Find path to target
+// destroyObjects - if true, ignore obstructing objects
+//                - if false, will pathfind around them
+int AIGoto(TActor *actor, Vec2i target, bool ignoreObjects);
 int AIHunt(TActor *actor);
 
 void AIContextTerminate(void *aiContext);

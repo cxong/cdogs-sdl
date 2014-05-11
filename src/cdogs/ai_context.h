@@ -57,6 +57,8 @@ typedef struct
 	// Used to let the AI perform one action for a set amount of time
 	int Delay;
 	AIConfusionState ConfusionState;
+	Vec2i LastTile;
+	bool IsStuckTooLong;
 	AIGotoContext Goto;
 } AIContext;
 

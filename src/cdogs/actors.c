@@ -620,7 +620,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	actor->LastPos = actor->Pos;
 	actor->Pos = pos;
 	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(actor->Pos));
 

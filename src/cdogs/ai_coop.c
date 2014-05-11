@@ -106,6 +106,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 	return cmd;
 }
 
+static int SmartGoto(TActor *actor, Vec2i pos, int minDistance2);
 static int AICoopGetCmdNormal(TActor *actor)
 {
 	// Use decision tree to command the AI
@@ -157,25 +158,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
-		int cmd = AIGoto(actor, Vec2iFull2Real(closestPlayer->Pos));
-		TObject *o;
-		// Try to slide if there is a clear path and we are far enough away
-		if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
-			AIHasClearPath(
-			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestPlayer->Pos)) &&
-			minDistance2 > 7*7*16*16)
-		{
-			cmd |= CMD_BUTTON2;
-		}
-		// If running into safe object, and we're being blocked, shoot at it
-		o = AIGetObjectRunningInto(actor, cmd);
-		if (o && !(o->flags & OBJFLAG_DANGEROUS) &&
-			Vec2iEqual(actor->Pos, actor->LastPos))
-		{
-			cmd = AIGoto(actor, Vec2iNew(o->tileItem.x, o->tileItem.y)) |
-				CMD_BUTTON1;
-		}
-		return cmd;
+		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
 	// Check if closest enemy is close enough, and visible
@@ -205,18 +188,59 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > 4*4*16*16/3/3*(squadNumber+1)*(squadNumber+1))
 	{
-		int cmd = AIGoto(actor, Vec2iFull2Real(closestPlayer->Pos));
-		// If running into safe object, shoot at it
-		TObject *o = AIGetObjectRunningInto(actor, cmd);
-		if (o && !(o->flags & OBJFLAG_DANGEROUS))
-		{
-			cmd = AIGoto(actor, Vec2iNew(o->tileItem.x, o->tileItem.y)) |
-				CMD_BUTTON1;
-		}
-		return cmd;
+		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
 	return 0;
+}
+// Number of ticks to persist in trying to destroy an obstruction
+// before giving up and going around
+#define STUCK_TICKS 70
+// Goto with extra smarts:
+// - If clear path, slide
+// - If non-dangerous object blocking, shoot at it
+// - If stuck for a long time, pathfind around obstructing object
+static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
+{
+	int cmd = AIGoto(actor, realPos, true);
+	// Try to slide if there is a clear path and we are far enough away
+	if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		AIHasClearPath(
+			Vec2iFull2Real(actor->Pos),
+			realPos,
+			!actor->aiContext->IsStuckTooLong) &&
+		minDistance2 > 7 * 7 * 16 * 16)
+	{
+		cmd |= CMD_BUTTON2;
+	}
+	// If running into safe object, and we're being blocked, shoot at it
+	TObject *o = AIGetObjectRunningInto(actor, cmd);
+	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(actor->Pos));
+	if (o && !(o->flags & OBJFLAG_DANGEROUS) &&
+		Vec2iEqual(tilePos, actor->aiContext->LastTile))
+	{
+		actor->aiContext->Delay++;
+		if (actor->aiContext->Delay >= STUCK_TICKS)
+		{
+			// We've been stuck for too long
+			// Pathfind around it
+			actor->aiContext->IsStuckTooLong = true;
+			cmd = AIGoto(actor, realPos, !actor->aiContext->IsStuckTooLong);
+		}
+		else
+		{
+			cmd = AIGoto(
+				actor, Vec2iNew(o->tileItem.x, o->tileItem.y), true) |
+				CMD_BUTTON1;
+		}
+	}
+	else if (!Vec2iEqual(tilePos, actor->aiContext->LastTile))
+	{
+		actor->aiContext->Delay = 0;
+		actor->aiContext->IsStuckTooLong = false;
+	}
+	actor->aiContext->LastTile = tilePos;
+	return cmd;
 }
 
 gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT])
