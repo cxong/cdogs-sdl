@@ -289,6 +289,10 @@ static bool TryCompleteNearbyObjective(
 					closestObjectivePos = objPos;
 				}
 			}
+			break;
+		default:
+			// do nothing
+			break;
 		}
 	}
 	if (closestObjectiveDistance != -1)
