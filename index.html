@@ -89,12 +89,27 @@ title: C-Dogs SDL
 <div id="home">
   <h3>News</h3>
   <ul class="posts">
-    {% for post in site.posts %}
+    {% for post in paginator.posts %}
       <h5><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h5>
       {{ post.content | truncatewords:75}}<br />
       <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize | remove: ' ' | remove: '.' | remove: '!' }}">Read more...</a><br /><br />
     {% endfor %}
   </ul>
+  
+  <!-- Pagination links -->
+  <div class="pagination">
+    {% if paginator.previous_page %}
+      <a href="/page{{ paginator.previous_page }}" class="previous">Previous</a>
+    {% else %}
+      <span class="previous">Previous</span>
+    {% endif %}
+    <span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+    {% if paginator.next_page %}
+      <a href="/page{{ paginator.next_page }}" class="next">Next</a>
+    {% else %}
+      <span class="next ">Next</span>
+    {% endif %}
+  </div>
 </div>
 <iframe src="https://www.ohloh.net/p/641180/widgets/project_factoids_stats.html" width="430" height="295" seamless="seamless"></iframe>
 <iframe id="forum_embed"
