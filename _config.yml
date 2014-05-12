@@ -2,3 +2,4 @@ name: C-Dogs SDL
 markdown: redcarpet
 pygments: true
 baseurl: /cdogs-sdl
+paginate: 5
