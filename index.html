@@ -111,7 +111,8 @@ title: C-Dogs SDL
       {% elsif page == 1 %}
         <a href="{{ '/index.html' | prepend: site.baseurl | replace: '//', '/' }}">{{ page }}</a>
       {% else %}
-        <a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
+        {% capture baseurl_slash %}{{ site.baseurl}}/{% endcapture %}
+        <a href="{{ site.paginate_path | prepend: baseurl_slash | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
       {% endif %}
     {% endfor %}
 
