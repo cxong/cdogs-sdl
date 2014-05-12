@@ -187,7 +187,8 @@ static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
 static bool IsNoWalk(void *data, Vec2i pos);
 static bool IsNoWalkAroundObjects(void *data, Vec2i pos);
-bool AIHasClearPath(Vec2i from, Vec2i to, bool ignoreObjects)
+bool AIHasClearPath(
+	const Vec2i from, const Vec2i to, const bool ignoreObjects)
 {
 	IsBlockedFunc f = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
 	return AIHasClearLine(from, to, f);
@@ -245,7 +246,13 @@ static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
 	for (int i = 0; i < (int)t->things.size; i++)
 	{
 		ThingId *tid = CArrayGet(&t->things, i);
-		if (tid->Kind == KIND_OBJECT)
+		if (tid->Kind != KIND_OBJECT)
+		{
+			continue;
+		}
+		// Check that the object is not a pickup type
+		TObject *o = CArrayGet(&gObjs, tid->Id);
+		if (o->Type == OBJ_NONE)
 		{
 			return true;
 		}
@@ -271,7 +278,7 @@ static bool IsNoSee(void *data, Vec2i pos)
 {
 	return MapGetTile(data, pos)->flags & MAPTILE_NO_SEE;
 }
-bool AIHasClearShot(Vec2i from, Vec2i to)
+bool AIHasClearShot(const Vec2i from, const Vec2i to)
 {
 	return AIHasClearLine(from, to, IsNoSee);
 }

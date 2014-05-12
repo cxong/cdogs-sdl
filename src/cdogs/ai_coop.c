@@ -258,17 +258,18 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 	actor->aiContext->LastTile = tilePos;
 	return cmd;
 }
-static bool IsPosCloseEnoughToPlayer(
-	const Vec2i realPos, const TActor *player,
+static bool CanGetObjective(
+	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
 	const int distanceTooFarFromPlayer);
 static bool TryCompleteNearbyObjective(
 	TActor *actor, const TActor *closestPlayer,
 	const int distanceTooFarFromPlayer, int *cmdOut)
 {
+	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 	int closestObjectiveDistance = -1;
 	Vec2i closestObjectivePos = Vec2iZero();
 	bool closestObjectiveDestructible = false;
-	AIState objectiveState = AI_STATE_IDLE;
+	AIState closestObjectiveState = AI_STATE_IDLE;
 	for (int i = 0; i < (int)gObjs.size; i++)
 	{
 		const TObject *o = CArrayGet(&gObjs, i);
@@ -279,6 +280,7 @@ static bool TryCompleteNearbyObjective(
 		const Vec2i objPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
 		bool isObjective = false;
 		bool isDestructible = false;
+		AIState objectiveState = STATE_IDLE;
 		switch (o->Type)
 		{
 		case OBJ_JEWEL:	// fallthrough
@@ -288,6 +290,7 @@ static bool TryCompleteNearbyObjective(
 		case OBJ_KEYCARD_RED:	// fallthrough
 			isObjective = true;
 			isDestructible = false;
+			objectiveState = AI_STATE_COLLECT;
 			break;
 		case OBJ_NONE:
 			if (o->tileItem.flags & TILEITEM_OBJECTIVE)
@@ -295,17 +298,17 @@ static bool TryCompleteNearbyObjective(
 				// Destructible objective; go towards it and fire
 				isObjective = true;
 				isDestructible = true;
+				objectiveState = AI_STATE_DESTROY;
 			}
 			break;
 		default:
 			// do nothing
 			break;
 		}
-		if (isObjective && IsPosCloseEnoughToPlayer(
-			objPos, closestPlayer, distanceTooFarFromPlayer))
+		if (isObjective && CanGetObjective(
+			objPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 		{
-			const int objDistance = DistanceSquared(
-				Vec2iFull2Real(actor->Pos), objPos);
+			const int objDistance = DistanceSquared(actorRealPos, objPos);
 			if (closestObjectiveDistance == -1 ||
 				closestObjectiveDistance > objDistance)
 			{
@@ -313,14 +316,15 @@ static bool TryCompleteNearbyObjective(
 				closestObjectiveDistance = objDistance;
 				closestObjectivePos = objPos;
 				closestObjectiveDestructible = isDestructible;
+				closestObjectiveState = objectiveState;
 			}
 		}
 	}
 	if (closestObjectiveDistance != -1)
 	{
-		actor->aiContext->State = objectiveState;
+		actor->aiContext->State = closestObjectiveState;
 		*cmdOut = SmartGoto(
-			actor, closestObjectivePos, closestObjectiveDistance);
+			actor, closestObjectivePos, closestObjectiveDistance); 
 		if (closestObjectiveDestructible)
 		{
 			*cmdOut |= CMD_BUTTON1;
@@ -328,6 +332,23 @@ static bool TryCompleteNearbyObjective(
 		return true;
 	}
 	return false;
+}
+static bool IsPosCloseEnoughToPlayer(
+	const Vec2i realPos, const TActor *player,
+	const int distanceTooFarFromPlayer);
+static bool CanGetObjective(
+	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
+	const int distanceTooFarFromPlayer)
+{
+	// We can complete an objective if it is both:
+	// - Close enough from the lead player
+	// - In line of sight from us
+	if (!IsPosCloseEnoughToPlayer(
+		objRealPos, player, distanceTooFarFromPlayer))
+	{
+		return false;
+	}
+	return AIHasClearPath(actorRealPos, objRealPos, false);
 }
 static bool IsPosCloseEnoughToPlayer(
 	const Vec2i realPos, const TActor *player,

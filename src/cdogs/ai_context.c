@@ -58,6 +58,10 @@ const char *AIStateGetChatterText(const AIState s)
 		return "?";
 	case AI_STATE_FLEE:
 		return "aah!";
+	case AI_STATE_DESTROY:
+		return "destroying";
+	case AI_STATE_COLLECT:
+		return "collecting";
 	default:
 		CASSERT(false, "Unknown AI state");
 		return "";

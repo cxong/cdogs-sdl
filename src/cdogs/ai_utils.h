@@ -59,8 +59,9 @@ TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
 TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
-bool AIHasClearShot(Vec2i from, Vec2i to);
-bool AIHasClearPath(Vec2i from, Vec2i to, bool ignoreObjects);
+bool AIHasClearShot(const Vec2i from, const Vec2i to);
+bool AIHasClearPath(
+	const Vec2i from, const Vec2i to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 
 // Find path to target

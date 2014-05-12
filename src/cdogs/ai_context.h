@@ -42,7 +42,9 @@ typedef enum
 	AI_STATE_FOLLOW,
 	AI_STATE_HUNT,
 	AI_STATE_TRACK,
-	AI_STATE_FLEE
+	AI_STATE_FLEE,
+	AI_STATE_DESTROY,
+	AI_STATE_COLLECT
 } AIState;
 // State for what the AI is doing when confused
 typedef enum
