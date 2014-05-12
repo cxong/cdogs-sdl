@@ -97,19 +97,31 @@ title: C-Dogs SDL
   </ul>
   
   <!-- Pagination links -->
+  {% if paginator.total_pages > 1 %}
   <div class="pagination">
     {% if paginator.previous_page %}
-      <a href="{{ site.baseurl }}/page{{ paginator.previous_page }}" class="previous">Previous</a>
+      <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&laquo; Prev</a>
     {% else %}
-      <span class="previous">Previous</span>
+      <span>&laquo; Prev</span>
     {% endif %}
-    <span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+
+    {% for page in (1..paginator.total_pages) %}
+      {% if page == paginator.page %}
+        <em>{{ page }}</em>
+      {% elsif page == 1 %}
+        <a href="{{ '/index.html' | prepend: site.baseurl | replace: '//', '/' }}">{{ page }}</a>
+      {% else %}
+        <a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
+      {% endif %}
+    {% endfor %}
+
     {% if paginator.next_page %}
-      <a href="{{ site.baseurl }}/page{{ paginator.next_page }}" class="next">Next</a>
+      <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">Next &raquo;</a>
     {% else %}
-      <span class="next ">Next</span>
+      <span>Next &raquo;</span>
     {% endif %}
   </div>
+  {% endif %}
 </div>
 <iframe src="https://www.ohloh.net/p/641180/widgets/project_factoids_stats.html" width="430" height="295" seamless="seamless"></iframe>
 <iframe id="forum_embed"
