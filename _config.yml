@@ -3,3 +3,4 @@ markdown: redcarpet
 pygments: true
 baseurl: /cdogs-sdl
 paginate: 5
+paginate_path: "cdogs-sdl/page:num"
