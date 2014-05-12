@@ -267,6 +267,7 @@ static bool TryCompleteNearbyObjective(
 {
 	int closestObjectiveDistance = -1;
 	Vec2i closestObjectivePos = Vec2iZero();
+	bool closestObjectiveDestructible = false;
 	AIState objectiveState = AI_STATE_IDLE;
 	for (int i = 0; i < (int)gObjs.size; i++)
 	{
@@ -276,6 +277,8 @@ static bool TryCompleteNearbyObjective(
 			continue;
 		}
 		const Vec2i objPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		bool isObjective = false;
+		bool isDestructible = false;
 		switch (o->Type)
 		{
 		case OBJ_JEWEL:	// fallthrough
@@ -283,23 +286,34 @@ static bool TryCompleteNearbyObjective(
 		case OBJ_KEYCARD_GREEN:	// fallthrough
 		case OBJ_KEYCARD_BLUE:	// fallthrough
 		case OBJ_KEYCARD_RED:	// fallthrough
-			if (IsPosCloseEnoughToPlayer(
-				objPos, closestPlayer, distanceTooFarFromPlayer))
+			isObjective = true;
+			isDestructible = false;
+			break;
+		case OBJ_NONE:
+			if (o->tileItem.flags & TILEITEM_OBJECTIVE)
 			{
-				const int objDistance = DistanceSquared(
-					Vec2iFull2Real(actor->Pos), objPos);
-				if (closestObjectiveDistance == -1 ||
-					closestObjectiveDistance > objDistance)
-				{
-					// TODO: have a "going to objective" state
-					closestObjectiveDistance = objDistance;
-					closestObjectivePos = objPos;
-				}
+				// Destructible objective; go towards it and fire
+				isObjective = true;
+				isDestructible = true;
 			}
 			break;
 		default:
 			// do nothing
 			break;
+		}
+		if (isObjective && IsPosCloseEnoughToPlayer(
+			objPos, closestPlayer, distanceTooFarFromPlayer))
+		{
+			const int objDistance = DistanceSquared(
+				Vec2iFull2Real(actor->Pos), objPos);
+			if (closestObjectiveDistance == -1 ||
+				closestObjectiveDistance > objDistance)
+			{
+				// TODO: have a "going to objective" state
+				closestObjectiveDistance = objDistance;
+				closestObjectivePos = objPos;
+				closestObjectiveDestructible = isDestructible;
+			}
 		}
 	}
 	if (closestObjectiveDistance != -1)
@@ -307,6 +321,10 @@ static bool TryCompleteNearbyObjective(
 		actor->aiContext->State = objectiveState;
 		*cmdOut = SmartGoto(
 			actor, closestObjectivePos, closestObjectiveDistance);
+		if (closestObjectiveDestructible)
+		{
+			*cmdOut |= CMD_BUTTON1;
+		}
 		return true;
 	}
 	return false;
