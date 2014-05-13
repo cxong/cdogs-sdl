@@ -349,7 +349,7 @@ static bool CanGetObjective(
 	{
 		return false;
 	}
-	return AIHasClearPath(actorRealPos, objRealPos, false);
+	return AIHasClearPath(actorRealPos, objRealPos, true);
 }
 static bool IsPosCloseEnoughToPlayer(
 	const Vec2i realPos, const TActor *player,
