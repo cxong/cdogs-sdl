@@ -72,7 +72,7 @@
 
 #define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
-#define REPEL_STRENGTH 18
+#define REPEL_STRENGTH 15
 #define SLIDE_LOCK 50
 
 
@@ -405,7 +405,7 @@ void UpdateActorState(TActor * actor, int ticks)
 }
 
 
-static void CheckTrigger(TActor *actor, Vec2i pos)
+static void CheckTrigger(Vec2i pos)
 {
 	Tile *t = MapGetTile(&gMap, Vec2iToTile(pos));
 	int i;
@@ -413,7 +413,7 @@ static void CheckTrigger(TActor *actor, Vec2i pos)
 	{
 		TriggerActivate(
 			*(Trigger **)CArrayGet(&t->triggers, i),
-			actor->flags | gMission.flags,
+			gMission.flags,
 			&gMap.triggers);
 	}
 }
@@ -606,7 +606,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	CheckTrigger(actor, realPos);
+	CheckTrigger(realPos);
 
 	if (actor->pData)
 	{

@@ -424,10 +424,7 @@ void Bonuses(void)
 		idx++;
 	}
 
-	if (gMission.flags & FLAGS_KEYCARD_YELLOW)	access_bonus += 50;
-	if (gMission.flags & FLAGS_KEYCARD_GREEN)	access_bonus += 100;
-	if (gMission.flags & FLAGS_KEYCARD_BLUE)	access_bonus += 150;
-	if (gMission.flags & FLAGS_KEYCARD_RED)		access_bonus += 200;
+	access_bonus += KeycardCount(gMission.flags) * 50;
 	if (access_bonus > 0 && AreAnySurvived())
 	{
 		sprintf(s, "Access bonus: %d", access_bonus);

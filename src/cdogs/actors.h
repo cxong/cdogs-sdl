@@ -70,12 +70,6 @@
 #define FLAGS_IMMUNITY      (1 << 10)	// Immune to poison
 #define FLAGS_SEETHROUGH    (1 << 11)	// Almost transparent
 
-// All characters - but only set for players
-#define FLAGS_KEYCARD_RED     (1 << 12)
-#define FLAGS_KEYCARD_BLUE    (1 << 13)
-#define FLAGS_KEYCARD_GREEN   (1 << 14)
-#define FLAGS_KEYCARD_YELLOW  (1 << 15)
-
 // Special flags
 #define FLAGS_RUNS_AWAY       (1 << 16)	// Move directly away from player
 #define FLAGS_GOOD_GUY        (1 << 17)	// Shots cannot hurt player

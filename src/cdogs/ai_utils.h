@@ -62,6 +62,7 @@ int AIReverseDirection(int cmd);
 bool AIHasClearShot(const Vec2i from, const Vec2i to);
 bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects);
+bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 
 // Find path to target

@@ -97,6 +97,13 @@ typedef struct
 	int Flags;
 } MissionObjective;
 
+// Keys that have been collected in this level
+// Applies to all players
+#define FLAGS_KEYCARD_RED     0x1
+#define FLAGS_KEYCARD_BLUE    0x2
+#define FLAGS_KEYCARD_GREEN   0x4
+#define FLAGS_KEYCARD_YELLOW  0x8
+
 typedef struct
 {
 	int Index;
@@ -244,6 +251,9 @@ void UpdateMissionObjective(
 	int player, Vec2i pos);
 int CanCompleteMission(struct MissionOptions *options);
 int IsMissionComplete(struct MissionOptions *options);
+
+// Count the number of keys in the flags
+int KeycardCount(int flags);
 
 
 // Intended for use with the editor only

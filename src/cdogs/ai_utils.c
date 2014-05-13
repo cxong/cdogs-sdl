@@ -186,26 +186,25 @@ typedef bool (*IsBlockedFunc)(void *, Vec2i);
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
 static bool IsNoWalk(void *data, Vec2i pos);
+static bool IsPosNoWalk(void *data, Vec2i pos);
 static bool IsNoWalkAroundObjects(void *data, Vec2i pos);
+static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos);
 bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects)
 {
-	IsBlockedFunc f = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
+	IsBlockedFunc f = ignoreObjects ? IsPosNoWalk : IsPosNoWalkAroundObjects;
 	return AIHasClearLine(from, to, f);
 }
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc)
 {
 	// Find all tiles that overlap with the line (from, to)
-	// Uses a modified version of Xiaolin Wu's algorithm
+	// Uses Bresenham that crosses interiors of tiles
 	HasClearLineData data;
 	data.IsBlocked = isBlockedFunc;
-	data.tileSize = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	data.data = &gMap;
 
-	// TODO: use better algo than bresenham
-	return
-		HasClearLineBresenham(Vec2iToTile(from), Vec2iToTile(to), &data);
+	return HasClearLineBresenham(from, to, &data);
 }
 static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos);
 static bool IsNoWalk(void *data, Vec2i pos)
@@ -234,6 +233,10 @@ static bool IsNoWalk(void *data, Vec2i pos)
 	}
 	return false;
 }
+static bool IsPosNoWalk(void *data, Vec2i pos)
+{
+	return IsNoWalk(data, Vec2iToTile(pos));
+}
 static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
 {
 	Map *map = data;
@@ -252,12 +255,16 @@ static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
 		}
 		// Check that the object is not a pickup type
 		TObject *o = CArrayGet(&gObjs, tid->Id);
-		if (o->Type == OBJ_NONE)
+		if (o->Type == OBJ_NONE && !(o->tileItem.flags & TILEITEM_IS_WRECK))
 		{
 			return true;
 		}
 	}
 	return false;
+}
+static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos)
+{
+	return IsNoWalkAroundObjects(data, Vec2iToTile(pos));
 }
 static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
 {
@@ -267,20 +274,27 @@ static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
 			// A door; check if we can open it
-			return !!(MapGetDoorKeycardFlag(map, pos) & ~gMission.flags);
+			int keycard = MapGetDoorKeycardFlag(map, pos);
+			if (!keycard)
+			{
+				// Unlocked door
+				return false;
+			}
+			return !(keycard & gMission.flags);
 		}
 		// Otherwise, we cannot walk over this tile
 		return true;
 	}
 	return false;
 }
-static bool IsNoSee(void *data, Vec2i pos)
-{
-	return MapGetTile(data, pos)->flags & MAPTILE_NO_SEE;
-}
+static bool IsPosNoSee(void *data, Vec2i pos);
 bool AIHasClearShot(const Vec2i from, const Vec2i to)
 {
-	return AIHasClearLine(from, to, IsNoSee);
+	return AIHasClearLine(from, to, IsPosNoSee);
+}
+static bool IsPosNoSee(void *data, Vec2i pos)
+{
+	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)
@@ -392,6 +406,28 @@ static ASPathNodeSource cPathNodeSource =
 {
 	sizeof(Vec2i), AddTileNeighbors, AStarHeuristic, NULL, NULL
 };
+
+// Use pathfinding to check that there is a path between
+// source and destination tiles
+bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
+{
+	// Quick first test: check there is a clear path
+	if (AIHasClearPath(from, to, ignoreObjects))
+	{
+		return true;
+	}
+	// Pathfind
+	AStarContext ac;
+	ac.Map = &gMap;
+	ac.IsBlocked = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
+	Vec2i fromTile = Vec2iToTile(from);
+	Vec2i toTile = Vec2iToTile(to);
+	ASPath path = ASPathCreate(&cPathNodeSource, &ac, &fromTile, &toTile);
+	size_t pathCount = ASPathGetCount(path);
+	ASPathDestroy(path);
+	return pathCount > 1;
+}
+
 static int AIGotoDirect(Vec2i a, Vec2i p)
 {
 	int cmd = 0;

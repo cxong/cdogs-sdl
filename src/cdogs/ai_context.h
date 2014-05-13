@@ -29,6 +29,7 @@
 #define __AI_CONTEXT
 
 #include "AStar.h"
+#include "mission.h"
 #include "vector.h"
 
 // State data for various AI routines
@@ -44,9 +45,8 @@ typedef enum
 	AI_STATE_HUNT,
 	AI_STATE_TRACK,
 	AI_STATE_FLEE,
-	AI_STATE_DESTROY,
-	AI_STATE_COLLECT,
-	AI_STATE_CONFUSED
+	AI_STATE_CONFUSED,
+	AI_STATE_NEXT_OBJECTIVE
 } AIState;
 // State for what the AI is doing when confused
 typedef enum
@@ -59,6 +59,16 @@ typedef struct
 	AIConfusionType Type;
 	int Cmd;
 } AIConfusionState;
+// State for AI attempting to complete an objective
+// This is to prevent excessive pathfinding calls
+typedef struct
+{
+	bool IsKey;
+	bool IsDestructible;
+	const struct Objective *Obj;
+	int LastDone;
+	Vec2i Goal;
+} AIObjectiveState;
 typedef struct
 {
 	Vec2i Goal;
@@ -73,6 +83,7 @@ typedef struct
 	int Delay;
 	AIState State;
 	AIConfusionState ConfusionState;
+	AIObjectiveState ObjectiveState;
 	Vec2i LastTile;
 	bool IsStuckTooLong;
 	AIGotoContext Goto;

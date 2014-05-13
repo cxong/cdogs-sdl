@@ -750,6 +750,17 @@ int IsMissionComplete(struct MissionOptions *options)
 	return 1;
 }
 
+int KeycardCount(int flags)
+{
+	int count = 0;
+	if (flags & FLAGS_KEYCARD_RED) count++;
+	if (flags & FLAGS_KEYCARD_BLUE) count++;
+	if (flags & FLAGS_KEYCARD_GREEN) count++;
+	if (flags & FLAGS_KEYCARD_YELLOW) count++;
+	return count;
+}
+
+
 struct EditorInfo GetEditorInfo(void)
 {
 	struct EditorInfo ei;
