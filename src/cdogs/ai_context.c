@@ -46,6 +46,8 @@ const char *AIStateGetChatterText(const AIState s)
 {
 	switch (s)
 	{
+	case AI_STATE_NONE:
+		return "";
 	case AI_STATE_IDLE:
 		return "zzz";
 	case AI_STATE_DIE:
@@ -62,6 +64,8 @@ const char *AIStateGetChatterText(const AIState s)
 		return "destroying";
 	case AI_STATE_COLLECT:
 		return "collecting";
+	case AI_STATE_CONFUSED:
+		return "???";
 	default:
 		CASSERT(false, "Unknown AI state");
 		return "";

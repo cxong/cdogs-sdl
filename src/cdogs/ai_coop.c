@@ -69,6 +69,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 			}
 			else
 			{
+				actor->aiContext->State = AI_STATE_CONFUSED;
 				s->Type = AI_CONFUSION_CONFUSED;
 				// Generate the confused action
 				s->Cmd = rand() &

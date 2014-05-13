@@ -37,6 +37,7 @@
 // Used for AI chatter
 typedef enum
 {
+	AI_STATE_NONE,
 	AI_STATE_IDLE,
 	AI_STATE_DIE,
 	AI_STATE_FOLLOW,
@@ -44,7 +45,8 @@ typedef enum
 	AI_STATE_TRACK,
 	AI_STATE_FLEE,
 	AI_STATE_DESTROY,
-	AI_STATE_COLLECT
+	AI_STATE_COLLECT,
+	AI_STATE_CONFUSED
 } AIState;
 // State for what the AI is doing when confused
 typedef enum
