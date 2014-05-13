@@ -70,3 +70,4 @@ Makefile.*
 tmp
 .cdogs/
 *~*.cpn
+Thumbs.db
