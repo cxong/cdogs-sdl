@@ -30,8 +30,6 @@
 
 #include <stdio.h>
 
-#include <tinydir/tinydir.h>
-
 #include <cdogs/files.h>
 #include <cdogs/map_new.h>
 #include <cdogs/mission.h>
