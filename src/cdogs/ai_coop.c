@@ -271,6 +271,8 @@ static bool TryCompleteNearbyObjective(
 	Vec2i closestObjectivePos = Vec2iZero();
 	bool closestObjectiveDestructible = false;
 	AIState closestObjectiveState = AI_STATE_IDLE;
+
+	// Look for pickups and destructibles
 	for (int i = 0; i < (int)gObjs.size; i++)
 	{
 		const TObject *o = CArrayGet(&gObjs, i);
@@ -321,6 +323,49 @@ static bool TryCompleteNearbyObjective(
 			}
 		}
 	}
+
+	// Look for rescue objectives
+	for (int i = 0; i < (int)gActors.size; i++)
+	{
+		const TActor *a = CArrayGet(&gActors, i);
+		if (!a->isInUse)
+		{
+			continue;
+		}
+		const TTileItem *ti = &a->tileItem;
+		if (!(ti->flags & TILEITEM_OBJECTIVE))
+		{
+			continue;
+		}
+		int objective = ObjectiveFromTileItem(ti->flags);
+		MissionObjective *mo =
+			CArrayGet(&gMission.missionData->Objectives, objective);
+		if (mo->Type != OBJECTIVE_RESCUE)
+		{
+			continue;
+		}
+		// Only rescue those that need to be rescued
+		if (!(a->flags & FLAGS_PRISONER))
+		{
+			continue;
+		}
+		const Vec2i objPos = Vec2iNew(ti->x, ti->y);
+		if (CanGetObjective(
+			objPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
+		{
+			const int objDistance = DistanceSquared(actorRealPos, objPos);
+			if (closestObjectiveDistance == -1 ||
+				closestObjectiveDistance > objDistance)
+			{
+				// TODO: have a "going to objective" state
+				closestObjectiveDistance = objDistance;
+				closestObjectivePos = objPos;
+				closestObjectiveDestructible = false;
+				closestObjectiveState = AI_STATE_COLLECT;
+			}
+		}
+	}
+
 	if (closestObjectiveDistance != -1)
 	{
 		actor->aiContext->State = closestObjectiveState;
