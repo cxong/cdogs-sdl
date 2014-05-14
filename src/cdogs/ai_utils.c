@@ -487,6 +487,8 @@ static int AStarCloseToPath(
 	}
 	return 1;
 }
+static Vec2i SearchTile(
+	const Vec2i start, IsBlockedFunc isBlocked, void *isBlockedContext);
 int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 {
 	Vec2i a = Vec2iFull2Real(actor->Pos);
@@ -518,10 +520,14 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	else
 	{
 		// We need to recalculate A*
+
 		AStarContext ac;
 		ac.Map = &gMap;
 		ac.IsBlocked = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
-		c->Goal = goalTile;
+		// First, if the goal tile is blocked itself,
+		// find a nearby tile that can be walked to
+		c->Goal = SearchTile(goalTile, ac.IsBlocked, ac.Map);
+
 		c->PathIndex = 1;	// start navigating to the next path node
 		ASPathDestroy(c->Path);
 		c->Path = ASPathCreate(
@@ -541,6 +547,48 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
 	}
+}
+static Vec2i SearchTile(
+	const Vec2i start, IsBlockedFunc isBlocked, void *isBlockedContext)
+{
+	if (!isBlocked(isBlockedContext, start))
+	{
+		return start;
+	}
+	// Search using an expanding box pattern around the goal
+	for (int radius = 1; radius < MAX(gMap.Size.x, gMap.Size.y); radius++)
+	{
+		Vec2i tile;
+		for (tile.x = start.x - radius;
+			tile.x <= start.x + radius;
+			tile.x++)
+		{
+			if (tile.x < 0) continue;
+			if (tile.x >= gMap.Size.x) break;
+			for (tile.y = start.y - radius;
+				tile.y <= start.y + radius;
+				tile.y++)
+			{
+				if (tile.y < 0) continue;
+				if (tile.y >= gMap.Size.y) break;
+				// Check box; don't check inside
+				if (tile.x != start.x - radius &&
+					tile.x != start.x + radius &&
+					tile.y != start.y - radius &&
+					tile.y != start.y + radius)
+				{
+					continue;
+				}
+				if (!isBlocked(isBlockedContext, tile))
+				{
+					return tile;
+				}
+			}
+		}
+	}
+	// Should never reach this point; something is very wrong
+	CASSERT(false, "failed to find non-blocked tile around tile");
+	return Vec2iZero();
 }
 
 int AIHunt(TActor *actor)
