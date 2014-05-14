@@ -277,17 +277,28 @@ static bool TryCompleteNearbyObjective(
 		}
 		if (hasNoUpdates)
 		{
-			*cmdOut = GotoObjective(actor, 0);
-			return true;
+			int cmd = GotoObjective(actor, 0);
+			// If we can't go to the objective,
+			// one possibility is that we've reached where the objective was,
+			// but have nothing to do.
+			// Remember that actor objectives can move around!
+			if (cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
+			{
+				*cmdOut = cmd;
+				return true;
+			}
 		}
 	}
 
-	// First, check if mission complete; if so go to exit
-	if (CanCompleteMission(&gMission))
+	// First, check if mission complete;
+	// if so (and there's a path) go to exit
+	const Vec2i exitPos = MapGetExitPos(&gMap);
+	if (CanCompleteMission(&gMission) && CanGetObjective(
+		exitPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 	{
 		context->State = AI_STATE_NEXT_OBJECTIVE;
 		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
-		objState->Goal = MapGetExitPos(&gMap);
+		objState->Goal = exitPos;
 		*cmdOut = GotoObjective(actor, 0);
 		return true;
 	}
