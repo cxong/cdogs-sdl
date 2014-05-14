@@ -267,11 +267,11 @@ static bool TryCompleteNearbyObjective(
 	if (context->State == AI_STATE_NEXT_OBJECTIVE)
 	{
 		bool hasNoUpdates = true;
-		if (objState->IsKey)
+		if (objState->Type == AI_OBJECTIVE_TYPE_KEY)
 		{
 			hasNoUpdates = objState->LastDone == KeycardCount(gMission.flags);
 		}
-		else
+		else if (objState->Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			hasNoUpdates =
 				objState->Obj && objState->LastDone == objState->Obj->done;
@@ -282,11 +282,22 @@ static bool TryCompleteNearbyObjective(
 			return true;
 		}
 	}
+
+	// First, check if mission complete; if so go to exit
+	if (CanCompleteMission(&gMission))
+	{
+		context->State = AI_STATE_NEXT_OBJECTIVE;
+		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
+		objState->Goal = MapGetExitPos(&gMap);
+		*cmdOut = GotoObjective(actor, 0);
+		return true;
+	}
+
 	int closestObjectiveDistance = -1;
 	const struct Objective *closestObjective = NULL;
 	Vec2i closestObjectivePos = Vec2iZero();
 	bool closestObjectiveDestructible = false;
-	bool closestIsKey = false;
+	AIObjectiveType closestType = AI_OBJECTIVE_TYPE_NORMAL;
 
 	// Look for pickups and destructibles
 	for (int i = 0; i < (int)gObjs.size; i++)
@@ -299,14 +310,14 @@ static bool TryCompleteNearbyObjective(
 		const Vec2i objPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
 		bool isObjective = false;
 		bool isDestructible = false;
-		bool isKey = false;
+		AIObjectiveType type = AI_OBJECTIVE_TYPE_NORMAL;
 		switch (o->Type)
 		{
 		case OBJ_KEYCARD_YELLOW:	// fallthrough
 		case OBJ_KEYCARD_GREEN:	// fallthrough
 		case OBJ_KEYCARD_BLUE:	// fallthrough
 		case OBJ_KEYCARD_RED:	// fallthrough
-			isKey = true;	// fallthrough
+			type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
 		case OBJ_JEWEL:
 			isObjective = true;
 			isDestructible = false;
@@ -331,11 +342,8 @@ static bool TryCompleteNearbyObjective(
 				closestObjectiveDistance > objDistance)
 			{
 				closestObjectiveDistance = objDistance;
-				if (isKey)
-				{
-					closestIsKey = true;
-				}
-				else
+				closestType = type;
+				if (type == AI_OBJECTIVE_TYPE_NORMAL)
 				{
 					int objective = ObjectiveFromTileItem(o->tileItem.flags);
 					closestObjective =
@@ -347,7 +355,7 @@ static bool TryCompleteNearbyObjective(
 		}
 	}
 
-	// Look for rescue objectives
+	// Look for kill or rescue objectives
 	for (int i = 0; i < (int)gActors.size; i++)
 	{
 		const TActor *a = CArrayGet(&gActors, i);
@@ -363,12 +371,13 @@ static bool TryCompleteNearbyObjective(
 		int objective = ObjectiveFromTileItem(ti->flags);
 		MissionObjective *mo =
 			CArrayGet(&gMission.missionData->Objectives, objective);
-		if (mo->Type != OBJECTIVE_RESCUE)
+		if (mo->Type != OBJECTIVE_KILL &&
+			mo->Type != OBJECTIVE_RESCUE)
 		{
 			continue;
 		}
 		// Only rescue those that need to be rescued
-		if (!(a->flags & FLAGS_PRISONER))
+		if (mo->Type == OBJECTIVE_RESCUE && !(a->flags & FLAGS_PRISONER))
 		{
 			continue;
 		}
@@ -381,7 +390,7 @@ static bool TryCompleteNearbyObjective(
 				closestObjectiveDistance > objDistance)
 			{
 				closestObjectiveDistance = objDistance;
-				closestIsKey = false;
+				closestType = AI_OBJECTIVE_TYPE_NORMAL;
 				closestObjective = CArrayGet(&gMission.Objectives, objective);
 				closestObjectivePos = objPos;
 				closestObjectiveDestructible = false;
@@ -389,16 +398,53 @@ static bool TryCompleteNearbyObjective(
 		}
 	}
 
+	// Look for explore objectives
+	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+	{
+		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
+		if (mo->Type != OBJECTIVE_INVESTIGATE)
+		{
+			continue;
+		}
+		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		if (o->done >= mo->Required)
+		{
+			continue;
+		}
+		// Find the nearest unexplored tile
+		// Search using an expanding box pattern
+		const Vec2i actorTile = Vec2iToTile(actorRealPos);
+		for (int radius = 2; ; radius++)
+		{
+			Vec2i tile;
+			for (tile.x = actorTile.x - radius;
+				tile.x <= actorTile.x + radius;
+				tile.x++)
+			{
+				if (tile.x < 0)
+				{
+					continue;
+				}
+				if (tile.x >= gMap.Size.x)
+				{
+					break;
+				}
+				// Check top and bottom of box
+
+			}
+		}
+	}
+
 	if (closestObjectiveDistance != -1)
 	{
 		context->State = AI_STATE_NEXT_OBJECTIVE;
-		objState->IsKey = closestIsKey;
+		objState->Type = closestType;
 		objState->IsDestructible = closestObjectiveDestructible;
-		if (closestIsKey)
+		if (closestType == AI_OBJECTIVE_TYPE_KEY)
 		{
 			objState->LastDone = KeycardCount(gMission.flags);
 		}
-		else
+		else if (closestType == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			objState->Obj = closestObjective;
 			objState->LastDone = closestObjective->done;
@@ -452,7 +498,7 @@ static int GotoObjective(TActor *actor, int objDistance)
 	const AIObjectiveState *objState = &actor->aiContext->ObjectiveState;
 	Vec2i goal = objState->Goal;
 	int cmd = SmartGoto(actor, goal, objDistance);
-	if (!objState->IsKey &&
+	if (objState->Type == AI_OBJECTIVE_TYPE_NORMAL &&
 		objState->IsDestructible &&
 		actor->weapon.lock <= 0 &&
 		AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))

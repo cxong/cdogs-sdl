@@ -59,11 +59,17 @@ typedef struct
 	AIConfusionType Type;
 	int Cmd;
 } AIConfusionState;
+typedef enum
+{
+	AI_OBJECTIVE_TYPE_NORMAL,
+	AI_OBJECTIVE_TYPE_KEY,
+	AI_OBJECTIVE_TYPE_EXIT
+} AIObjectiveType;
 // State for AI attempting to complete an objective
 // This is to prevent excessive pathfinding calls
 typedef struct
 {
-	bool IsKey;
+	AIObjectiveType Type;
 	bool IsDestructible;
 	const struct Objective *Obj;
 	int LastDone;
