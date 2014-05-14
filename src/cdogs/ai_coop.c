@@ -225,8 +225,11 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 		Vec2iEqual(tilePos, actor->aiContext->LastTile))
 	{
 		cmd = AIGoto(
-			actor, Vec2iNew(o->tileItem.x, o->tileItem.y), true) |
-			CMD_BUTTON1;
+			actor, Vec2iNew(o->tileItem.x, o->tileItem.y), true);
+		if (actor->weapon.lock <= 0)
+		{
+			cmd |= CMD_BUTTON1;
+		}
 	}
 	// Check if we are stuck
 	if (Vec2iEqual(tilePos, actor->aiContext->LastTile))
@@ -236,6 +239,12 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 		{
 			// We've been stuck for too long
 			// Pathfind around it
+			// Make sure to reset the A* path if we are first realising
+			// we are stuck
+			if (!actor->aiContext->IsStuckTooLong)
+			{
+				actor->aiContext->Goto.IsFollowing = false;
+			}
 			actor->aiContext->IsStuckTooLong = true;
 			cmd = AIGoto(actor, realPos, !actor->aiContext->IsStuckTooLong);
 		}
