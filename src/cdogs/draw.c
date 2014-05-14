@@ -105,7 +105,7 @@ void FixBuffer(DrawBuffer *buffer)
 				{
 					MapMarkAsVisited(&gMap, mapTile);
 					tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
-					tile->isVisited = 1;
+					tile->isVisited = true;
 				}
 			}
 		}

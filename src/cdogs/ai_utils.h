@@ -69,7 +69,8 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 // destroyObjects - if true, ignore obstructing objects
 //                - if false, will pathfind around them
 int AIGoto(TActor *actor, Vec2i target, bool ignoreObjects);
-int AIHunt(TActor *actor);
+int AIHunt(TActor *actor, Vec2i targetPos);
+int AIHuntClosest(TActor *actor);
 
 void AIContextTerminate(void *aiContext);
 

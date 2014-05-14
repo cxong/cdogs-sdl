@@ -122,6 +122,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//     - Attack enemy
 	//   - else
 	//     - Go to nearest player
+	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
 	// Follow the closest player with a lower ID
 	TActor *closestPlayer = NULL;
@@ -133,8 +134,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			continue;
 		}
 		TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
-		int distance2 = DistanceSquared(
-			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(p->Pos));
+		int distance2 = DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
 		if (!closestPlayer || distance2 < minDistance2)
 		{
 			minDistance2 = distance2;
@@ -166,11 +166,10 @@ static int AICoopGetCmdNormal(TActor *actor)
 			closestEnemy->Pos.x, closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
 		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
-			AIHasClearShot(
-			Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos)))
+			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
 		{
 			actor->aiContext->State = AI_STATE_HUNT;
-			int cmd = AIHunt(actor);
+			int cmd = AIHunt(actor, closestEnemy->Pos);
 			// only fire if gun is ready
 			if (actor->weapon.lock <= 0)
 			{
@@ -412,25 +411,24 @@ static bool TryCompleteNearbyObjective(
 			continue;
 		}
 		// Find the nearest unexplored tile
-		// Search using an expanding box pattern
 		const Vec2i actorTile = Vec2iToTile(actorRealPos);
-		for (int radius = 2; ; radius++)
+		const Vec2i unexploredTile = MapSearchTileAround(
+			&gMap, actorTile, MapTileIsUnexplored);
+		const Vec2i unexploredTilePos = Vec2iCenterOfTile(unexploredTile);
+		if (CanGetObjective(
+			unexploredTilePos, actorRealPos,
+			closestPlayer, distanceTooFarFromPlayer))
 		{
-			Vec2i tile;
-			for (tile.x = actorTile.x - radius;
-				tile.x <= actorTile.x + radius;
-				tile.x++)
+			const int objDistance =
+				DistanceSquared(actorRealPos, unexploredTilePos);
+			if (closestObjectiveDistance == -1 ||
+				closestObjectiveDistance > objDistance)
 			{
-				if (tile.x < 0)
-				{
-					continue;
-				}
-				if (tile.x >= gMap.Size.x)
-				{
-					break;
-				}
-				// Check top and bottom of box
-
+				closestObjectiveDistance = objDistance;
+				closestType = AI_OBJECTIVE_TYPE_NORMAL;
+				closestObjective = o;
+				closestObjectivePos = unexploredTilePos;
+				closestObjectiveDestructible = false;
 			}
 		}
 	}

@@ -128,8 +128,11 @@ Vec2i MapGetExitPos(Map *m);
 void MapMarkAsVisited(Map *map, Vec2i pos);
 void MapMarkAllAsVisited(Map *map);
 int MapGetExploredPercentage(Map *map);
-TTileItem *MapGetClosestEnemy(
-	TTileItem *from, Vec2i offset, int flags, int player, int maxRadius);
+
+typedef bool (*TileSelectFunc)(Map *, Vec2i);
+// Find a tile around the start that satisfies a condition
+Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func);
+bool MapTileIsUnexplored(Map *map, Vec2i tile);
 
 // Map construction functions
 unsigned short IMapGet(Map *map, Vec2i pos);

@@ -185,9 +185,9 @@ int AIReverseDirection(int cmd)
 typedef bool (*IsBlockedFunc)(void *, Vec2i);
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
-static bool IsNoWalk(void *data, Vec2i pos);
+static bool IsTileWalkable(Map *map, Vec2i pos);
 static bool IsPosNoWalk(void *data, Vec2i pos);
-static bool IsNoWalkAroundObjects(void *data, Vec2i pos);
+static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos);
 static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos);
 bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects)
@@ -206,13 +206,12 @@ static bool AIHasClearLine(
 
 	return HasClearLineBresenham(from, to, &data);
 }
-static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos);
-static bool IsNoWalk(void *data, Vec2i pos)
+static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos);
+static bool IsTileWalkable(Map *map, Vec2i pos)
 {
-	Map *map = data;
-	if (IsNoWalkOrLockedDoor(map, pos))
+	if (!IsTileWalkableOrOpenable(map, pos))
 	{
-		return true;
+		return false;
 	}
 	// Check if tile has a dangerous (explosive) item on it
 	// For AI, we don't want to shoot it, so just walk around
@@ -228,21 +227,20 @@ static bool IsNoWalk(void *data, Vec2i pos)
 		TObject *o = CArrayGet(&gObjs, tid->Id);
 		if (o->flags & OBJFLAG_DANGEROUS)
 		{
-			return true;
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
 static bool IsPosNoWalk(void *data, Vec2i pos)
 {
-	return IsNoWalk(data, Vec2iToTile(pos));
+	return !IsTileWalkable(data, Vec2iToTile(pos));
 }
-static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
+static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos)
 {
-	Map *map = data;
-	if (IsNoWalkOrLockedDoor(map, pos))
+	if (!IsTileWalkableOrOpenable(map, pos))
 	{
-		return true;
+		return false;
 	}
 	// Check if tile has any item on it
 	Tile *t = MapGetTile(map, pos);
@@ -257,40 +255,70 @@ static bool IsNoWalkAroundObjects(void *data, Vec2i pos)
 		TObject *o = CArrayGet(&gObjs, tid->Id);
 		if (o->Type == OBJ_NONE && !(o->tileItem.flags & TILEITEM_IS_WRECK))
 		{
-			return true;
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
 static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos)
 {
-	return IsNoWalkAroundObjects(data, Vec2iToTile(pos));
+	return !IsTileWalkableAroundObjects(data, Vec2iToTile(pos));
 }
-static bool IsNoWalkOrLockedDoor(Map *map, Vec2i pos)
+static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
 {
 	int tileFlags = MapGetTile(map, pos)->flags;
-	if (tileFlags & MAPTILE_NO_WALK)
+	if (!(tileFlags & MAPTILE_NO_WALK))
 	{
-		if (tileFlags & MAPTILE_OFFSET_PIC)
-		{
-			// A door; check if we can open it
-			int keycard = MapGetDoorKeycardFlag(map, pos);
-			if (!keycard)
-			{
-				// Unlocked door
-				return false;
-			}
-			return !(keycard & gMission.flags);
-		}
-		// Otherwise, we cannot walk over this tile
 		return true;
 	}
+	if (tileFlags & MAPTILE_OFFSET_PIC)
+	{
+		// A door; check if we can open it
+		int keycard = MapGetDoorKeycardFlag(map, pos);
+		if (!keycard)
+		{
+			// Unlocked door
+			return true;
+		}
+		return !!(keycard & gMission.flags);
+	}
+	// Otherwise, we cannot walk over this tile
 	return false;
 }
 static bool IsPosNoSee(void *data, Vec2i pos);
 bool AIHasClearShot(const Vec2i from, const Vec2i to)
 {
-	return AIHasClearLine(from, to, IsPosNoSee);
+	// Perform 4 line tests - above, below, left and right
+	// This is to account for possible positions for the muzzle
+	Vec2i fromOffset = from;
+
+	const int pad = 2;
+	fromOffset.x = from.x - (ACTOR_W + pad) / 2;
+	if (Vec2iToTile(fromOffset).x >= 0 &&
+		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	{
+		return false;
+	}
+	fromOffset.x = from.x + (ACTOR_W + pad) / 2;
+	if (Vec2iToTile(fromOffset).x < gMap.Size.x &&
+		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	{
+		return false;
+	}
+	fromOffset.x = from.x;
+	fromOffset.y = from.y - (ACTOR_H + pad) / 2;
+	if (Vec2iToTile(fromOffset).y >= 0 &&
+		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	{
+		return false;
+	}
+	fromOffset.y = from.y + (ACTOR_H + pad) / 2;
+	if (Vec2iToTile(fromOffset).y < gMap.Size.y &&
+		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	{
+		return false;
+	}
+	return true;
 }
 static bool IsPosNoSee(void *data, Vec2i pos)
 {
@@ -336,7 +364,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 typedef struct
 {
 	Map *Map;
-	IsBlockedFunc IsBlocked;
+	TileSelectFunc IsTileOk;
 } AStarContext;
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
@@ -347,7 +375,7 @@ static void AddTileNeighbors(
 	for (y = v->y - 1; y <= v->y + 1; y++)
 	{
 		int x;
-		if (y < 0 || y >= gMap.Size.y)
+		if (y < 0 || y >= c->Map->Size.y)
 		{
 			continue;
 		}
@@ -357,7 +385,7 @@ static void AddTileNeighbors(
 			Vec2i neighbor;
 			neighbor.x = x;
 			neighbor.y = y;
-			if (x < 0 || x >= gMap.Size.x)
+			if (x < 0 || x >= c->Map->Size.x)
 			{
 				continue;
 			}
@@ -367,9 +395,9 @@ static void AddTileNeighbors(
 			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (c->IsBlocked(c->Map, Vec2iNew(x, y)) ||
-				c->IsBlocked(c->Map, Vec2iNew(v->x, y)) ||
-				c->IsBlocked(c->Map, Vec2iNew(x, v->y)))
+			if (!c->IsTileOk(c->Map, Vec2iNew(x, y)) ||
+				!c->IsTileOk(c->Map, Vec2iNew(v->x, y)) ||
+				!c->IsTileOk(c->Map, Vec2iNew(x, v->y)))
 			{
 				continue;
 			}
@@ -419,7 +447,7 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 	// Pathfind
 	AStarContext ac;
 	ac.Map = &gMap;
-	ac.IsBlocked = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
+	ac.IsTileOk = ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects;
 	Vec2i fromTile = Vec2iToTile(from);
 	Vec2i toTile = Vec2iToTile(to);
 	ASPath path = ASPathCreate(&cPathNodeSource, &ac, &fromTile, &toTile);
@@ -487,8 +515,6 @@ static int AStarCloseToPath(
 	}
 	return 1;
 }
-static Vec2i SearchTile(
-	const Vec2i start, IsBlockedFunc isBlocked, void *isBlockedContext);
 int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 {
 	Vec2i a = Vec2iFull2Real(actor->Pos);
@@ -523,10 +549,11 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 
 		AStarContext ac;
 		ac.Map = &gMap;
-		ac.IsBlocked = ignoreObjects ? IsNoWalk : IsNoWalkAroundObjects;
+		ac.IsTileOk =
+			ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects;
 		// First, if the goal tile is blocked itself,
 		// find a nearby tile that can be walked to
-		c->Goal = SearchTile(goalTile, ac.IsBlocked, ac.Map);
+		c->Goal = MapSearchTileAround(ac.Map, goalTile, ac.IsTileOk);
 
 		c->PathIndex = 1;	// start navigating to the next path node
 		ASPathDestroy(c->Path);
@@ -548,71 +575,13 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 		return AStarFollow(c, currentTile, &actor->tileItem, a);
 	}
 }
-static Vec2i SearchTile(
-	const Vec2i start, IsBlockedFunc isBlocked, void *isBlockedContext)
-{
-	if (!isBlocked(isBlockedContext, start))
-	{
-		return start;
-	}
-	// Search using an expanding box pattern around the goal
-	for (int radius = 1; radius < MAX(gMap.Size.x, gMap.Size.y); radius++)
-	{
-		Vec2i tile;
-		for (tile.x = start.x - radius;
-			tile.x <= start.x + radius;
-			tile.x++)
-		{
-			if (tile.x < 0) continue;
-			if (tile.x >= gMap.Size.x) break;
-			for (tile.y = start.y - radius;
-				tile.y <= start.y + radius;
-				tile.y++)
-			{
-				if (tile.y < 0) continue;
-				if (tile.y >= gMap.Size.y) break;
-				// Check box; don't check inside
-				if (tile.x != start.x - radius &&
-					tile.x != start.x + radius &&
-					tile.y != start.y - radius &&
-					tile.y != start.y + radius)
-				{
-					continue;
-				}
-				if (!isBlocked(isBlockedContext, tile))
-				{
-					return tile;
-				}
-			}
-		}
-	}
-	// Should never reach this point; something is very wrong
-	CASSERT(false, "failed to find non-blocked tile around tile");
-	return Vec2iZero();
-}
 
-int AIHunt(TActor *actor)
+int AIHunt(TActor *actor, Vec2i targetPos)
 {
 	int cmd = 0;
-	int dx, dy;
-	Vec2i targetPos = actor->Pos;
-	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
-	{
-		targetPos = AIGetClosestPlayerPos(actor->Pos);
-	}
 
-	if (actor->flags & FLAGS_VISIBLE)
-	{
-		TActor *a = AIGetClosestEnemy(
-			actor->Pos, actor->flags, !!actor->pData);
-		if (a)
-		{
-			targetPos = a->Pos;
-		}
-	}
-
-	dx = abs(targetPos.x - actor->Pos.x);
-	dy = abs(targetPos.y - actor->Pos.y);
+	const int dx = abs(targetPos.x - actor->Pos.x);
+	const int dy = abs(targetPos.y - actor->Pos.y);
 
 	if (2 * dx > dy)
 	{
@@ -631,6 +600,25 @@ int AIHunt(TActor *actor)
 	}
 
 	return cmd;
+}
+int AIHuntClosest(TActor *actor)
+{
+	Vec2i targetPos = actor->Pos;
+	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
+	{
+		targetPos = AIGetClosestPlayerPos(actor->Pos);
+	}
+
+	if (actor->flags & FLAGS_VISIBLE)
+	{
+		TActor *a = AIGetClosestEnemy(
+			actor->Pos, actor->flags, !!actor->pData);
+		if (a)
+		{
+			targetPos = a->Pos;
+		}
+	}
+	return AIHunt(actor, targetPos);
 }
 
 void AIContextTerminate(void *aiContext)

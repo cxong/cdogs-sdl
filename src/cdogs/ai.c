@@ -185,7 +185,7 @@ static int BrightWalk(TActor * actor, int roll)
 	if (!!(actor->flags & FLAGS_VISIBLE) && roll < bot->probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
-		return AIHunt(actor);
+		return AIHuntClosest(actor);
 	}
 
 	if (actor->flags & FLAGS_TRYRIGHT)
@@ -411,7 +411,7 @@ void CommandBadGuys(int ticks)
 					!!(actor->flags & FLAGS_VISIBLE) &&
 					DidPlayerShoot())
 				{
-					cmd = AIHunt(actor) | CMD_BUTTON1;
+					cmd = AIHuntClosest(actor) | CMD_BUTTON1;
 					if (actor->flags & FLAGS_RUNS_AWAY)
 					{
 						// Turn back and shoot for running away characters
@@ -433,7 +433,7 @@ void CommandBadGuys(int ticks)
 				{
 					if (roll < bot->probabilityToTrack)
 					{
-						cmd = AIHunt(actor);
+						cmd = AIHuntClosest(actor);
 					}
 					else if (roll < bot->probabilityToMove)
 					{
@@ -468,7 +468,7 @@ void CommandBadGuys(int ticks)
 						if (actor->flags & FLAGS_RUNS_AWAY)
 						{
 							// Turn back and shoot for running away characters
-							cmd |= AIReverseDirection(AIHunt(actor));
+							cmd |= AIReverseDirection(AIHuntClosest(actor));
 						}
 					}
 					else

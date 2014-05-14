@@ -1003,8 +1003,8 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.getActorPicsFunc = GetCharacterPics;
 	actor->tileItem.drawFunc = NULL;
-	actor->tileItem.w = 7;
-	actor->tileItem.h = 5;
+	actor->tileItem.w = ACTOR_W;
+	actor->tileItem.h = ACTOR_H;
 	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
 	actor->tileItem.id = i;
 	actor->isInUse = true;

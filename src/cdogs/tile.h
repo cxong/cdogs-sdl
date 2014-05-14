@@ -156,7 +156,7 @@ typedef struct
 	Pic *pic;
 	Pic picAlt;
 	int flags;
-	int isVisited;
+	bool isVisited;
 	CArray triggers;	// of Trigger *
 	CArray things;		// of ThingId
 } Tile;

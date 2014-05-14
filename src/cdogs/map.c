@@ -1182,7 +1182,7 @@ void MapMarkAsVisited(Map *map, Vec2i pos)
 	{
 		map->tilesSeen++;
 	}
-	t->isVisited = 1;
+	t->isVisited = true;
 }
 
 void MapMarkAllAsVisited(Map *map)
@@ -1192,7 +1192,7 @@ void MapMarkAllAsVisited(Map *map)
 	{
 		for (pos.x = 0; pos.x < map->Size.x; pos.x++)
 		{
-			MapGetTile(map, pos)->isVisited = 1;
+			MapGetTile(map, pos)->isVisited = true;
 		}
 	}
 }
@@ -1200,4 +1200,50 @@ void MapMarkAllAsVisited(Map *map)
 int MapGetExploredPercentage(Map *map)
 {
 	return (100 * map->tilesSeen) / map->NumExplorableTiles;
+}
+
+Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func)
+{
+	if (func(map, start))
+	{
+		return start;
+	}
+	// Search using an expanding box pattern around the goal
+	for (int radius = 1; radius < MAX(map->Size.x, map->Size.y); radius++)
+	{
+		Vec2i tile;
+		for (tile.x = start.x - radius;
+			tile.x <= start.x + radius;
+			tile.x++)
+		{
+			if (tile.x < 0) continue;
+			if (tile.x >= map->Size.x) break;
+			for (tile.y = start.y - radius;
+				tile.y <= start.y + radius;
+				tile.y++)
+			{
+				if (tile.y < 0) continue;
+				if (tile.y >= map->Size.y) break;
+				// Check box; don't check inside
+				if (tile.x != start.x - radius &&
+					tile.x != start.x + radius &&
+					tile.y != start.y - radius &&
+					tile.y != start.y + radius)
+				{
+					continue;
+				}
+				if (func(map, tile))
+				{
+					return tile;
+				}
+			}
+		}
+	}
+	// Should never reach this point; something is very wrong
+	CASSERT(false, "failed to find tile around tile");
+	return Vec2iZero();
+}
+bool MapTileIsUnexplored(Map *map, Vec2i tile)
+{
+	return !MapGetTile(map, tile)->isVisited;
 }
