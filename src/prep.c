@@ -375,7 +375,7 @@ bail:
 	{
 		MenuSystemTerminate(&menus[i].ms);
 	}
-	return 1;
+	return res;
 }
 
 bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)

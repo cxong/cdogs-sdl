@@ -178,6 +178,8 @@ static void AddItemToTile(TTileItem *t, Tile *tile)
 	ThingId tid;
 	tid.Id = t->id;
 	tid.Kind = t->kind;
+	CASSERT(tid.Id >= 0, "invalid ThingId");
+	CASSERT(tid.Kind >= 0 && tid.Kind <= KIND_OBJECT, "unknown thing kind");
 	CArrayPushBack(&tile->things, &tid);
 }
 

@@ -468,7 +468,7 @@ int MobObjAdd(Vec2i fullpos, int player)
 void MobObjDestroy(int id)
 {
 	TMobileObject *m = CArrayGet(&gMobObjs, id);
-	CASSERT(m->isInUse, "Destroying in-use mobobj");
+	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
 	MapRemoveTileItem(&gMap, &m->tileItem);
 	m->isInUse = false;
 }
