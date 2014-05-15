@@ -65,6 +65,7 @@
 #include <cdogs/input.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
+#include <cdogs/music.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/text.h>
@@ -107,10 +108,14 @@ int NumPlayersSelection(
 
 	for (;;)
 	{
+#ifndef RUN_WITHOUT_APP_FOCUS
+		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+#endif
 		int cmd;
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
+			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
+			gEventHandlers.HasQuit)
 		{
 			res = 0;
 			break;	// hack to allow exit
@@ -245,19 +250,24 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		hasInputDevice[i] = false;
 	}
 
+	bool res = true;
 	KeyInit(&gEventHandlers.keyboard);
 	NetInputOpen(&gEventHandlers.netInput);
 	for (;;)
 	{
+#ifndef RUN_WITHOUT_APP_FOCUS
+		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+#endif
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		int hasAtLeastOneInput = 0;
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
+			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
+			gEventHandlers.HasQuit)
 		{
-			// TODO: destroy menus
-			return 0; // hack to allow exit
+			res = false;
+			goto bail;
 		}
 		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
 		for (int i = 0; i < numPlayers; i++)
@@ -334,6 +344,15 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		SDL_Delay(10);
 	}
 
+	// For any player slots not picked, turn them into AIs
+	for (int i = 0; i < numPlayers; i++)
+	{
+		if (!hasInputDevice[i])
+		{
+			AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
+		}
+	}
+
 	// If no net input devices selected, close the connection
 	bool hasNetInput = false;
 	for (int i = 0; i < numPlayers; i++)
@@ -345,18 +364,11 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			break;
 		}
 	}
+
+bail:
 	if (!hasNetInput)
 	{
 		NetInputTerminate(&gEventHandlers.netInput);
-	}
-
-	// For any player slots not picked, turn them into AIs
-	for (int i = 0; i < numPlayers; i++)
-	{
-		if (!hasInputDevice[i])
-		{
-			AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
-		}
 	}
 
 	for (int i = 0; i < numPlayers; i++)
@@ -366,7 +378,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	return 1;
 }
 
-void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
+bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 {
 	int i;
 	WeaponMenu menus[MAX_PLAYERS];
@@ -391,11 +403,23 @@ void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 
 	debug(D_NORMAL, "\n");
 
+	bool res = true;
 	for (;;)
 	{
+#ifndef RUN_WITHOUT_APP_FOCUS
+		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+#endif
 		int cmds[MAX_PLAYERS];
 		int isDone = 1;
 		EventPoll(&gEventHandlers, SDL_GetTicks());
+		// Check exit
+		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
+			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
+			gEventHandlers.HasQuit)
+		{
+			res = false;
+			goto bail;
+		}
 		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
 		for (i = 0; i < numPlayers; i++)
 		{
@@ -431,8 +455,11 @@ void PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		SDL_Delay(10);
 	}
 
+bail:
 	for (i = 0; i < numPlayers; i++)
 	{
 		MenuSystemTerminate(&menus[i].ms);
 	}
+
+	return res;
 }

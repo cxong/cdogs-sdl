@@ -529,6 +529,10 @@ int gameloop(void)
 		if ((frames & 1) == 0)
 		{
 			EventPoll(&gEventHandlers, ticksNow);
+			if (gEventHandlers.HasQuit)
+			{
+				gMission.isDone = true;
+			}
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
 				if (IsPlayerAlive(i))

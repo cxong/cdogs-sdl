@@ -173,7 +173,7 @@ void MenuLoop(MenuSystem *menu)
 			int cmd = GetMenuCmd(menu->handlers, gPlayerDatas);
 			MenuProcessCmd(menu, cmd);
 		}
-		if (MenuIsExit(menu))
+		if (MenuIsExit(menu) || menu->handlers->HasQuit)
 		{
 			break;
 		}

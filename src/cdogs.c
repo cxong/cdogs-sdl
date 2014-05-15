@@ -933,89 +933,81 @@ static void PlayMenuSong(void)
 
 int Game(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	int run, gameOver;
-	int maxHealth;
-
-	maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-
+	bool run = false;
+	bool gameOver = true;
 	do
 	{
-		int i;
-		int survivingPlayers;
 		CampaignAndMissionSetup(1, co, &gMission);
-		MapLoad(&gMap, &gMission, &co->Setting.characters);
-
-		srand((unsigned int)time(NULL));
-		InitializeBadGuys();
 		if (IsMissionBriefingNeeded(co->Entry.Mode))
 		{
 			MissionBriefing(graphics);
 		}
-		PlayerEquip(gOptions.numPlayers, graphics);
-
-		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
-
-		CreateEnemies();
-
-		PlayGameSong();
-
-		run = gameloop();
-
-		survivingPlayers = GetNumPlayersAlive();
-		gameOver = survivingPlayers == 0 ||
-			co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
-
-		for (i = 0; i < MAX_PLAYERS; i++)
+		if (PlayerEquip(gOptions.numPlayers, graphics))
 		{
-			gPlayerDatas[i].survived = IsPlayerAlive(i);
-			if (IsPlayerAlive(i))
+			MapLoad(&gMap, &gMission, &co->Setting.characters);
+			srand((unsigned int)time(NULL));
+			InitializeBadGuys();
+			const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
+			InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
+			CreateEnemies();
+			PlayGameSong();
+			run = gameloop();
+
+			const int survivingPlayers = GetNumPlayersAlive();
+			gameOver = survivingPlayers == 0 ||
+				co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+
+			int i;
+			for (i = 0; i < MAX_PLAYERS; i++)
 			{
-				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-				gPlayerDatas[i].hp = player->health;
+				gPlayerDatas[i].survived = IsPlayerAlive(i);
+				if (IsPlayerAlive(i))
+				{
+					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+					gPlayerDatas[i].hp = player->health;
+				}
 			}
-		}
 
-		CleanupMission();
+			CleanupMission();
+			PlayMenuSong();
 
-		PlayMenuSong();
-		printf(">> Starting\n");
-
-		if (run)
-		{
-			MissionSummary(graphics);
-			// Note: must use cached value because players get cleaned up
-			// in CleanupMission()
-			if (gameOver && survivingPlayers > 0)
+			if (run)
 			{
-				Victory(graphics);
+				MissionSummary(graphics);
+				// Note: must use cached value because players get cleaned up
+				// in CleanupMission()
+				if (gameOver && survivingPlayers > 0)
+				{
+					Victory(graphics);
+				}
 			}
-		}
 
-		bool allTime = false;
-		bool todays = false;
-		for (i = 0; i < gOptions.numPlayers; i++)
-		{
-			if ((run && !gPlayerDatas[i].survived) || gameOver)
+			bool allTime = false;
+			bool todays = false;
+			for (i = 0; i < gOptions.numPlayers; i++)
 			{
-				EnterHighScore(&gPlayerDatas[i]);
-				allTime |= gPlayerDatas[i].allTime >= 0;
-				todays |= gPlayerDatas[i].today >= 0;
+				if ((run && !gPlayerDatas[i].survived) || gameOver)
+				{
+					EnterHighScore(&gPlayerDatas[i]);
+					allTime |= gPlayerDatas[i].allTime >= 0;
+					todays |= gPlayerDatas[i].today >= 0;
+				}
+				DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
 			}
-			DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
-		}
-		if (allTime)
-		{
-			DisplayAllTimeHighScores(graphics);
-		}
-		if (todays)
-		{
-			DisplayTodaysHighScores(graphics);
+			if (allTime)
+			{
+				DisplayAllTimeHighScores(graphics);
+			}
+			if (todays)
+			{
+				DisplayTodaysHighScores(graphics);
+			}
+
+			co->MissionIndex++;
 		}
 
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
-
-		co->MissionIndex++;
 	}
 	while (run && !gameOver);
 	return run;
@@ -1048,7 +1040,6 @@ int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 {
-	int run;
 	int scores[MAX_PLAYERS];
 	int maxScore = 0;
 	int numPlayers = gOptions.numPlayers;
@@ -1063,35 +1054,37 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 
 	gOptions.badGuys = 0;
 
+	bool run = false;
 	do
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
-		MapLoad(&gMap, &gMission, &co->Setting.characters);
-
-		PlayerEquip(gOptions.numPlayers, graphicsDevice);
-		srand((unsigned int)time(NULL));
-		InitPlayers(gOptions.numPlayers, 500, 0);
-		PlayGameSong();
-		run = gameloop();
-
-		for (i = 0; i < MAX_PLAYERS; i++)
+		if (PlayerEquip(gOptions.numPlayers, graphicsDevice))
 		{
-			if (IsPlayerAlive(i))
+			MapLoad(&gMap, &gMission, &co->Setting.characters);
+			srand((unsigned int)time(NULL));
+			InitPlayers(gOptions.numPlayers, 500, 0);
+			PlayGameSong();
+			run = gameloop();
+
+			for (i = 0; i < MAX_PLAYERS; i++)
 			{
-				scores[i]++;
-				if (scores[i] > maxScore)
+				if (IsPlayerAlive(i))
 				{
-					maxScore = scores[i];
+					scores[i]++;
+					if (scores[i] > maxScore)
+					{
+						maxScore = scores[i];
+					}
 				}
 			}
-		}
 
-		CleanupMission();
-		PlayMenuSong();
+			CleanupMission();
+			PlayMenuSong();
 
-		if (run)
-		{
-			ShowScore(graphicsDevice, scores);
+			if (run)
+			{
+				ShowScore(graphicsDevice, scores);
+			}
 		}
 
 		// Need to terminate the mission later as it is used in calculating scores

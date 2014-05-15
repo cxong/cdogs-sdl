@@ -384,7 +384,8 @@ int WaitForAnyKeyOrButton(EventHandlers *handlers)
 		}
 
 		// Check keyboard escape
-		if (KeyIsPressed(&handlers->keyboard, SDLK_ESCAPE))
+		if (KeyIsPressed(&handlers->keyboard, SDLK_ESCAPE) ||
+			handlers->HasQuit)
 		{
 			return 0;
 		}

@@ -61,6 +61,6 @@ int NumPlayersSelection(
 // and select player name and appearance
 int PlayerSelection(int numPlayers, GraphicsDevice *graphics);
 
-void PlayerEquip(int numPlayers, GraphicsDevice *graphics);
+bool PlayerEquip(int numPlayers, GraphicsDevice *graphics);
 
 #endif
