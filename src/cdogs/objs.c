@@ -400,6 +400,11 @@ static int UpdateMobileObject(TMobileObject *obj, int ticks)
 		return 0;
 	return 1;
 }
+int UpdateSpark(TMobileObject *obj, const int ticks)
+{
+	MobileObjectUpdate(obj, ticks);
+	return obj->count <= obj->range;
+}
 static void BogusDraw(Vec2i pos, TileItemDrawFuncData *data)
 {
 	UNUSED(pos);
@@ -577,4 +582,24 @@ int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special)
 		obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
 	}
 	return hasHit;
+}
+
+static void DrawMuzzleFlash(Vec2i pos, TileItemDrawFuncData *data)
+{
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	pos.y -= obj->z;
+	int idx = (int)data->u.Dir;
+	const Pic *p = PicManagerGetSprite(&gPicManager, "muzzle_flash", idx);
+	pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
+	BlitMasked(&gGraphicsDevice, p, pos, colorYellow, 1);
+}
+void AddMuzzleFlash(
+	const Vec2i fullPos, const int muzzleHeight, const direction_e d)
+{
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(fullPos, -1));
+	obj->z = muzzleHeight;
+	obj->range = 3;
+	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMuzzleFlash;
+	obj->tileItem.drawData.u.Dir = d;
+	obj->updateFunc = UpdateSpark;
 }

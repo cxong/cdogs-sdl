@@ -470,14 +470,6 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	return 1;
 }
 
-int UpdateSpark(TMobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
-		return 0;
-	return 1;
-}
-
 int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);

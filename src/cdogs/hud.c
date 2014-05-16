@@ -592,7 +592,7 @@ static void DrawCompassArrow(
 				// right edge
 				textPos = Vec2iNew(
 					r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
-				Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
+				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
 				Vec2i drawPos = Vec2iNew(
 					textPos.x - p->size.x, textPos.y - p->size.y / 2);
 				BlitMasked(g, p, drawPos, mask, true);
@@ -601,7 +601,7 @@ static void DrawCompassArrow(
 			{
 				// left edge
 				textPos = Vec2iNew(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
-				Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
+				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
 				Vec2i drawPos = Vec2iNew(textPos.x, textPos.y - p->size.y / 2);
 				BlitMasked(g, p, drawPos, mask, true);
 			}
@@ -620,7 +620,7 @@ static void DrawCompassArrow(
 				// bottom edge
 				textPos = Vec2iNew(
 					r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
-				Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
+				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
 				Vec2i drawPos = Vec2iNew(
 					textPos.x - p->size.x / 2, textPos.y - p->size.y);
 				BlitMasked(g, p, drawPos, mask, true);
@@ -629,7 +629,7 @@ static void DrawCompassArrow(
 			{
 				// top edge
 				textPos = Vec2iNew(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
-				Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
+				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
 				Vec2i drawPos = Vec2iNew(textPos.x - p->size.x / 2, textPos.y);
 				BlitMasked(g, p, drawPos, mask, true);
 			}

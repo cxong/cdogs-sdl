@@ -420,6 +420,12 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		e.u.AddBullet.Flags = flags;
 		e.u.AddBullet.PlayerIndex = player;
 		GameEventsEnqueue(&gGameEvents, e);
+		GameEvent m;
+		m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
+		m.u.AddMuzzleFlash.FullPos = muzzlePosition;
+		m.u.AddMuzzleFlash.MuzzleHeight = desc->MuzzleHeight;
+		m.u.AddMuzzleFlash.Direction = d;
+		GameEventsEnqueue(&gGameEvents, m);
 	}
 
 	w->lock = gGunDescriptions[w->gun].Lock;

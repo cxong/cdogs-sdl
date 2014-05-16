@@ -203,6 +203,10 @@ void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int UpdateExplosion(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special);
 
+int UpdateSpark(TMobileObject *obj, const int ticks);
 void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);
+
+void AddMuzzleFlash(
+	const Vec2i fullPos, const int muzzleHeight, const direction_e d);
 
 #endif

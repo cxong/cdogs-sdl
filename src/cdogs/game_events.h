@@ -53,6 +53,7 @@ typedef enum
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_ADD_BULLET,
+	GAME_EVENT_ADD_MUZZLE_FLASH,
 	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_DAMAGE_CHARACTER,
@@ -102,6 +103,12 @@ typedef struct
 			int Flags;
 			int PlayerIndex;
 		} AddBullet;
+		struct
+		{
+			Vec2i FullPos;
+			int MuzzleHeight;
+			direction_e Direction;
+		} AddMuzzleFlash;
 		AddFireballEvent AddFireball;
 		struct
 		{

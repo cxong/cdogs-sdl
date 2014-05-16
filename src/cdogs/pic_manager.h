@@ -35,6 +35,7 @@ typedef struct
 {
 	Pic pic;
 	char *name;
+	int idx;
 } NamedPic;
 typedef struct
 {
@@ -42,6 +43,7 @@ typedef struct
 	Pic picsFromOld[PIC_MAX];
 	TPalette palette;
 	CArray pics;	// of NamedPic
+	CArray sprites;	// of NamedPic
 } PicManager;
 
 extern PicManager gPicManager;
@@ -55,7 +57,9 @@ void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
 Pic *PicManagerGetFromOld(PicManager *pm, int idx);
-Pic *PicManagerGetPic(PicManager *pm, const char *name);
+Pic *PicManagerGetPic(const PicManager *pm, const char *name);
+const Pic *PicManagerGetSprite(
+	const PicManager *pm, const char *name, const int idx);
 
 
 // Conversion

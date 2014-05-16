@@ -350,7 +350,7 @@ Uint32 PixelMult(Uint32 p, Uint32 m)
 }
 void BlitMasked(
 	GraphicsDevice *device,
-	Pic *pic,
+	const Pic *pic,
 	Vec2i pos,
 	color_t mask,
 	int isTransparent)

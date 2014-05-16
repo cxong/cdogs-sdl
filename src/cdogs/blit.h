@@ -67,7 +67,7 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode);
 void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,
-	Pic *pic,
+	const Pic *pic,
 	Vec2i pos,
 	color_t mask,
 	int isTransparent);

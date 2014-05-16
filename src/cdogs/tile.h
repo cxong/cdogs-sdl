@@ -128,6 +128,8 @@ typedef struct
 		color_t GrenadeColor;
 		// For gas clouds; what tint to use
 		HSV Tint;
+		// For muzzle flashes; which direction to draw
+		direction_e Dir;
 	} u;
 } TileItemDrawFuncData;
 typedef void (*TileItemDrawFunc) (Vec2i, TileItemDrawFuncData *);
