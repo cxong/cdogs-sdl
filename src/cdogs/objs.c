@@ -167,9 +167,7 @@ static void DamageObject(
 		else
 		{
 			// A wreck left after the destruction of this object
-			TMobileObject *obj = AddFireBall(fullPos, 0, -1);
-			obj->count = 10;
-			obj->power = 0;
+			GameEventAddFireballWreckage(fullPos);
 			SoundPlayAt(
 				&gSoundDevice,
 				SND_BANG,
@@ -473,7 +471,38 @@ void MobObjDestroy(int id)
 	m->isInUse = false;
 }
 
-static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
+void AddFireball(const AddFireballEvent e)
+{
+	TMobileObject *obj =
+		CArrayGet(&gMobObjs, MobObjAdd(e.FullPos, e.PlayerIndex));
+	obj->vel = e.Vel;
+	obj->dz = e.DZ;
+	obj->updateFunc = e.UpdateFunc;
+	obj->tileItem.drawFunc = e.DrawFunc;
+	obj->tileItem.getPicFunc = e.GetPicFunc;
+	switch (e.Special)
+	{
+	case SPECIAL_POISON:
+		obj->tileItem.drawData.u.Tint = tintPoison;
+		break;
+	case SPECIAL_CONFUSE:
+		obj->tileItem.drawData.u.Tint = tintPurple;
+		break;
+	default:
+		// do nothing
+		break;
+	}
+	obj->tileItem.w = e.Size.x;
+	obj->tileItem.h = e.Size.y;
+	obj->kind = MOBOBJ_FIREBALL;
+	obj->range = e.Range;
+	obj->flags = e.Flags;
+	obj->count = e.Count;
+	obj->power = e.Power;
+	obj->special = e.Special;
+}
+
+void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	if (obj->count < obj->state)
@@ -490,19 +519,6 @@ static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex),
 		NULL,
 		BLIT_TRANSPARENT);
-}
-TMobileObject *AddFireBall(Vec2i pos, int flags, int player)
-{
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->updateFunc = UpdateExplosion;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawFireball;
-	obj->tileItem.w = 7;
-	obj->tileItem.h = 5;
-	obj->kind = MOBOBJ_FIREBALL;
-	obj->range = FIREBALL_MAX * 4 - 1;
-	obj->flags = flags;
-	obj->power = FIREBALL_POWER;
-	return obj;
 }
 
 int UpdateExplosion(TMobileObject *obj, int ticks)

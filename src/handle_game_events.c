@@ -65,6 +65,9 @@ static void HandleGameEvent(
 			Score(&gPlayerDatas[e->u.Score.PlayerIndex], e->u.Score.Score);
 			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
 			break;
+		case GAME_EVENT_SOUND_AT:
+			SoundPlayAt(&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
+			break;
 		case GAME_EVENT_SCREEN_SHAKE:
 			*shake = ScreenShakeAdd(
 				*shake, e->u.ShakeAmount, gConfig.Graphics.ShakeMultiplier);
@@ -99,11 +102,14 @@ static void HandleGameEvent(
 			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;
 		case GAME_EVENT_ADD_BULLET:
-			WeaponAddBullet(
-				e->u.AddBullet.Gun, e->u.AddBullet.Bullet,
+			BulletAdd(
+				e->u.AddBullet.Bullet,
 				e->u.AddBullet.MuzzlePos, e->u.AddBullet.MuzzleHeight,
 				e->u.AddBullet.Angle, e->u.AddBullet.Direction,
 				e->u.AddBullet.Flags, e->u.AddBullet.PlayerIndex);
+			break;
+		case GAME_EVENT_ADD_FIREBALL:
+			AddFireball(e->u.AddFireball);
 			break;
 		case GAME_EVENT_HIT_CHARACTER:
 			HitCharacter(

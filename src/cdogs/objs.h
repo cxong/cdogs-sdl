@@ -151,6 +151,23 @@ typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
 extern CArray gMobObjs;	// of TMobileObject
 extern CArray gObjs;	// of TObject
 
+typedef struct
+{
+	Vec2i FullPos;
+	int Flags;
+	int PlayerIndex;
+	BulletUpdateFunc UpdateFunc;
+	TileItemDrawFunc DrawFunc;
+	TileItemGetPicFunc GetPicFunc;
+	Vec2i Size;
+	int Range;
+	Vec2i Vel;
+	int DZ;
+	int Count;
+	int Power;
+	special_damage_e Special;
+} AddFireballEvent;
+
 
 int DamageSomething(
 	Vec2i hitVector,
@@ -181,9 +198,11 @@ void MobObjsInit(void);
 void MobObjsTerminate(void);
 int MobObjAdd(Vec2i fullpos, int player);
 void MobObjDestroy(int id);
-TMobileObject *AddFireBall(Vec2i pos, int flags, int player);
+void AddFireball(const AddFireballEvent e);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int UpdateExplosion(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special);
+
+void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif

@@ -137,10 +137,6 @@ int GunGetCost(gun_e gun);
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player);
-void WeaponAddBullet(
-	gun_e gun, BulletType bullet,
-	Vec2i muzzlePos, int muzzleHeight, double angle, direction_e d,
-	int flags, int player);
 void WeaponHoldFire(Weapon *w);
 
 int GunIsStatic(gun_e gun);

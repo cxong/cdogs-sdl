@@ -142,7 +142,7 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 		Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy)), data->u.GrenadeColor, 1);
 }
 
-static void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
+void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
@@ -156,58 +156,62 @@ static void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 
 void AddExplosion(Vec2i pos, int flags, int player)
 {
-	TMobileObject *obj;
 	int i;
-
+	flags |= FLAGS_HURTALWAYS;
+	for (i = 0; i < 8; i++)
+	{
+		const Vec2i vel = GetFullVectorsForRadians(i * 0.25 * PI);
+		const Vec2i fireballPos = Vec2iAdd(pos, Vec2iScale(vel, 2));
+		GameEventAddFireball(fireballPos, flags, player, vel, 0, 0);
+	}
+	for (i = 0; i < 8; i++)
+	{
+		const Vec2i vel =
+			Vec2iScaleDiv(Vec2iScale(
+			GetFullVectorsForRadians((i * 0.25 + 0.125) * PI), 3), 4);
+		const Vec2i fireballPos = Vec2iAdd(pos, vel);
+		GameEventAddFireball(fireballPos, flags, player, vel, 8, -8);
+	}
+	for (i = 0; i < 8; i++)
+	{
+		const Vec2i vel =
+			Vec2iScaleDiv(GetFullVectorsForRadians(i * 0.25 * PI), 2);
+		GameEventAddFireball(pos, flags, player, vel, 11, -16);
+	}
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_EXPLOSION;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
+	GameEventsEnqueue(&gGameEvents, sound);
 	GameEvent shake;
 	shake.Type = GAME_EVENT_SCREEN_SHAKE;
 	shake.u.ShakeAmount = SHAKE_SMALL_AMOUNT;
 	GameEventsEnqueue(&gGameEvents, shake);
-
-	flags |= FLAGS_HURTALWAYS;
-	for (i = 0; i < 8; i++)
-	{
-		obj = AddFireBall(pos, flags, player);
-		obj->vel = GetFullVectorsForRadians(i * 0.25 * PI);
-		obj->x = pos.x + 2 * obj->vel.x;
-		obj->y = pos.y + 2 * obj->vel.y;
-		obj->dz = 0;
-	}
-	for (i = 0; i < 8; i++)
-	{
-		obj = AddFireBall(pos, flags, player);
-		obj->vel = GetFullVectorsForRadians((i * 0.25 + 0.125) * PI);
-		obj->x = pos.x + obj->vel.x;
-		obj->y = pos.y + obj->vel.y;
-		obj->vel = Vec2iScaleDiv(Vec2iScale(obj->vel, 3), 4);
-		obj->dz = 8;
-		obj->count = -8;
-	}
-	for (i = 0; i < 8; i++)
-	{
-		obj = AddFireBall(pos, flags, player);
-		obj->x = pos.x;
-		obj->y = pos.y;
-		obj->z = 0;
-		obj->vel = GetFullVectorsForRadians(i * 0.25 * PI);
-		obj->vel = Vec2iScaleDiv(obj->vel, 2);
-		obj->dz = 11;
-		obj->count = -16;
-	}
-
-	SoundPlayAt(&gSoundDevice, SND_EXPLOSION, Vec2iFull2Real(pos));
 }
 
 
-static void Frag(int x, int y, int flags, int player)
+static void AddFrag(
+	const Vec2i fullPos, int flags, const int playerIndex)
 {
 	flags |= FLAGS_HURTALWAYS;
+	GameEvent e;
+	e.Type = GAME_EVENT_ADD_BULLET;
+	e.u.AddBullet.Bullet = BULLET_FRAG;
+	e.u.AddBullet.MuzzlePos = fullPos;
+	e.u.AddBullet.MuzzleHeight = 0;
+	e.u.AddBullet.Direction = DIRECTION_UP;	// TODO: accurate direction
+	e.u.AddBullet.Flags = flags;
+	e.u.AddBullet.PlayerIndex = playerIndex;
 	for (int i = 0; i < 16; i++)
 	{
-		AddBullet(
-			Vec2iNew(x, y), 0, i / 16.0 * 2 * PI, BULLET_FRAG, flags, player);
+		e.u.AddBullet.Angle = i / 16.0 * 2 * PI;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iNew(x >> 8, y >> 8));
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(fullPos);
+	GameEventsEnqueue(&gGameEvents, sound);
 }
 
 Vec2i UpdateAndGetCloudPosition(TMobileObject *obj, int ticks)
@@ -239,7 +243,7 @@ Vec2i UpdateAndGetCloudPosition(TMobileObject *obj, int ticks)
 	return pos;
 }
 
-int UpdateMolotovFlame(TMobileObject *obj, int ticks)
+int UpdateMolotovFlame(struct MobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
@@ -276,32 +280,18 @@ int UpdateMolotovFlame(TMobileObject *obj, int ticks)
 		return 1;
 }
 
-TMobileObject *AddMolotovFlame(int x, int y, int flags, int player)
-{
-	TMobileObject *obj = CArrayGet(&gMobObjs,
-		MobObjAdd(Vec2iNew(x, y), player));
-	obj->updateFunc = UpdateMolotovFlame;
-	obj->tileItem.getPicFunc = GetFlame;
-	obj->tileItem.w = 5;
-	obj->tileItem.h = 5;
-	obj->kind = MOBOBJ_FIREBALL;
-	obj->range = (FLAME_RANGE + rand() % 8) * 4;
-	obj->flags = flags;
-	obj->power = 2;
-	obj->vel.x = 16 * (rand() % 32) - 256;
-	obj->vel.y = 12 * (rand() % 32) - 192;
-	obj->dz = 4 + rand() % 4;
-	return obj;
-}
-
 void AddFireExplosion(Vec2i pos, int flags, int player)
 {
 	flags |= FLAGS_HURTALWAYS;
 	for (int i = 0; i < 16; i++)
 	{
-		AddMolotovFlame(pos.x, pos.y, flags, player);
+		GameEventAddMolotovFlame(pos, flags, player);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iFull2Real(pos));
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
+	GameEventsEnqueue(&gGameEvents, sound);
 }
 void AddGasExplosion(
 	Vec2i pos, int flags, special_damage_e special, int player)
@@ -309,19 +299,16 @@ void AddGasExplosion(
 	flags |= FLAGS_HURTALWAYS;
 	for (int i = 0; i < 8; i++)
 	{
-		AddGasCloud(
-			pos, 0,
-			(double)rand() / RAND_MAX * 2 * PI,
-			(256 + rand()) & 255,
-			(48 - (rand() % 8)) * 4 - 1,
-			flags,
-			special,
-			player);
+		GameEventAddGasCloud(pos, flags, player, special);
 	}
-	SoundPlayAt(&gSoundDevice, SND_BANG, Vec2iFull2Real(pos));
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
+	GameEventsEnqueue(&gGameEvents, sound);
 }
 
-int UpdateGasCloud(TMobileObject *obj, int ticks)
+int UpdateGasCloud(struct MobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
@@ -376,27 +363,27 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
-		Vec2i pos = Vec2iNew(obj->x, obj->y);
+		const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
 		switch (obj->kind)
 		{
 		case MOBOBJ_GRENADE:
-			AddExplosion(pos, obj->flags, obj->player);
+			AddExplosion(fullPos, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_FRAGGRENADE:
-			Frag(obj->x, obj->y, obj->flags, obj->player);
+			AddFrag(fullPos, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_MOLOTOV:
-			AddFireExplosion(pos, obj->flags, obj->player);
+			AddFireExplosion(fullPos, obj->flags, obj->player);
 			break;
 
 		case MOBOBJ_GASBOMB:
-			AddGasExplosion(pos, obj->flags, SPECIAL_POISON, obj->player);
+			AddGasExplosion(fullPos, obj->flags, SPECIAL_POISON, obj->player);
 			break;
 
 		case MOBOBJ_GASBOMB2:
-			AddGasExplosion(pos, obj->flags, SPECIAL_CONFUSE, obj->player);
+			AddGasExplosion(fullPos, obj->flags, SPECIAL_CONFUSE, obj->player);
 			break;
 		}
 		return 0;
@@ -452,7 +439,7 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	if (obj->count > obj->range)
 	{
 		AddFireExplosion(pos, obj->flags, obj->player);
-		return 0;
+		return false;
 	}
 
 	int x = obj->x + obj->vel.x * ticks;
@@ -462,7 +449,7 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	if (obj->z <= 0)
 	{
 		AddFireExplosion(pos, obj->flags, obj->player);
-		return 0;
+		return false;
 	}
 	else
 	{
@@ -477,7 +464,7 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	else
 	{
 		AddFireExplosion(pos, obj->flags, obj->player);
-		return 0;
+		return false;
 	}
 	MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
 	return 1;
@@ -631,9 +618,9 @@ int UpdateTriggeredMine(TMobileObject *obj, int ticks)
 	if (obj->count >= obj->range)
 	{
 		AddExplosion(Vec2iNew(obj->x, obj->y), obj->flags, obj->player);
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
 }
 
 int UpdateActiveMine(TMobileObject *obj, int ticks)
@@ -793,6 +780,14 @@ void BulletInitialize(void)
 	b->Power = 0;
 
 
+	b = &gBulletClasses[BULLET_GAS];
+	b->UpdateFunc = UpdateGasCloud;
+	b->DrawFunc = (TileItemDrawFunc)DrawGasCloud;
+	b->Speed = 384;
+	b->Range = 35;
+	b->Power = 0;
+	b->Special = SPECIAL_POISON;
+
 	b = &gBulletClasses[BULLET_RAPID];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
@@ -938,4 +933,55 @@ void AddBulletBig(
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);
 	SetBulletProps(obj, z, type, flags);
+}
+
+void BulletAdd(
+	const BulletType bullet,
+	const Vec2i muzzlePos, const int muzzleHeight,
+	const double angle, const direction_e d,
+	const int flags, const int playerIndex)
+{
+	switch (bullet)
+	{
+	case BULLET_MG:			// fallthrough
+	case BULLET_SHOTGUN:	// fallthrough
+	case BULLET_BROWN:		// fallthrough
+	case BULLET_PROXMINE:	// fallthrough
+	case BULLET_DYNAMITE:	// fallthrough
+	case BULLET_RAPID:		// fallthrough
+	case BULLET_HEATSEEKER:	// fallthrough
+	case BULLET_FRAG:
+		AddBullet(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
+		break;
+
+	case BULLET_GRENADE:		// fallthrough
+	case BULLET_SHRAPNELBOMB:	// fallthrough
+	case BULLET_MOLOTOV:		// fallthrough
+	case BULLET_GASBOMB:		// fallthrough
+	case BULLET_CONFUSEBOMB:
+		AddGrenade(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
+		break;
+
+	case BULLET_FLAME:	// fallthrough
+	case BULLET_PETRIFIER:
+		AddBulletBig(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
+		break;
+
+	case BULLET_LASER:	// fallthrough
+	case BULLET_SNIPER:
+		AddBulletDirectional(
+			muzzlePos, muzzleHeight, d, bullet, flags, playerIndex);
+		break;
+
+	case BULLET_GAS:
+		AddGasCloud(
+			muzzlePos, muzzleHeight, angle, 384, 35,
+			flags, SPECIAL_POISON, playerIndex);
+		break;
+
+	default:
+		// unknown bullet?
+		CASSERT(false, "Unknown bullet");
+		break;
+	}
 }

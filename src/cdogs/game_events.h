@@ -32,6 +32,7 @@
 #include "actors.h"
 #include "c_array.h"
 #include "gamedata.h"
+#include "objs.h"
 
 // Game events represent anything that is created within the game but is
 // required by outside systems, e.g. sound events
@@ -40,6 +41,7 @@
 typedef enum
 {
 	GAME_EVENT_SCORE,
+	GAME_EVENT_SOUND_AT,
 	GAME_EVENT_SCREEN_SHAKE,
 	GAME_EVENT_SET_MESSAGE,
 
@@ -51,6 +53,7 @@ typedef enum
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_ADD_BULLET,
+	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_UPDATE_OBJECTIVE,
@@ -75,6 +78,11 @@ typedef struct
 			int PlayerIndex;
 			int Score;
 		} Score;
+		struct
+		{
+			sound_e Sound;
+			Vec2i Pos;
+		} SoundAt;
 		int ShakeAmount;
 		struct
 		{
@@ -86,7 +94,6 @@ typedef struct
 		int MobileObjectRemoveId;
 		struct
 		{
-			gun_e Gun;
 			BulletType Bullet;
 			Vec2i MuzzlePos;
 			int MuzzleHeight;
@@ -95,6 +102,7 @@ typedef struct
 			int Flags;
 			int PlayerIndex;
 		} AddBullet;
+		AddFireballEvent AddFireball;
 		struct
 		{
 			Vec2i HitV;
@@ -128,5 +136,15 @@ void GameEventsInit(CArray *store);
 void GameEventsTerminate(CArray *store);
 void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
+
+void GameEventAddFireball(
+	const Vec2i fullPos, const int flags, const int playerIndex,
+	const Vec2i vel, const int dz, const int count);
+void GameEventAddFireballWreckage(const Vec2i fullPos);
+void GameEventAddMolotovFlame(
+	const Vec2i fullPos, const int flags, const int playerIndex);
+void GameEventAddGasCloud(
+	const Vec2i fullPos, const int flags, const int playerIndex,
+	special_damage_e special);
 
 #endif

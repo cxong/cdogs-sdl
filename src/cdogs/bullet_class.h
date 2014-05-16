@@ -65,6 +65,7 @@ typedef enum
 	BULLET_MOLOTOV,
 	BULLET_GASBOMB,
 	BULLET_CONFUSEBOMB,
+	BULLET_GAS,
 	BULLET_RAPID,
 	BULLET_HEATSEEKER,
 	BULLET_BROWN,
@@ -95,16 +96,15 @@ void AddExplosion(Vec2i pos, int flags, int player);
 void AddFireExplosion(Vec2i pos, int flags, int player);
 void AddGasExplosion(
 	Vec2i pos, int flags, special_damage_e special, int player);
-void AddGrenade(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
-void AddBullet(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
-void AddBulletDirectional(
-	Vec2i pos, int z, direction_e dir, BulletType type, int flags, int player);
-void AddBulletBig(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player);
-void AddGasCloud(
-	Vec2i pos, int z, double radians, int speed, int range,
-	int flags, special_damage_e special, int player);
+void BulletAdd(
+	const BulletType bullet,
+	const Vec2i muzzlePos, const int muzzleHeight,
+	const double angle, const direction_e d,
+	const int flags, const int playerIndex);
+
+int UpdateMolotovFlame(struct MobileObject *obj, int ticks);
+int UpdateGasCloud(struct MobileObject *obj, int ticks);
+Pic *GetFlame(int id);
+void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif

@@ -247,6 +247,7 @@ void WeaponInitialize(void)
 
 	g = &gGunDescriptions[GUN_GASGUN];
 	strcpy(g->name, "Chemo gun");
+	g->Bullet = BULLET_GAS;
 	g->Cost = 1;
 	g->Lock = 6;
 	g->Sound = SND_FLAMER;
@@ -375,6 +376,14 @@ void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
+	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
+	{
+		WeaponSetState(w, GUNSTATE_FIRING);
+	}
+	if (w->gun == GUN_KNIFE)
+	{
+		return;
+	}
 	double radians = dir2radians[d];
 	GunDescription *desc = &gGunDescriptions[w->gun];
 	int spreadCount = desc->Spread.Count;
@@ -403,7 +412,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		double finalAngle = radians + spreadAngle + recoil;
 		GameEvent e;
 		e.Type = GAME_EVENT_ADD_BULLET;
-		e.u.AddBullet.Gun = w->gun;
 		e.u.AddBullet.Bullet = desc->Bullet;
 		e.u.AddBullet.MuzzlePos = muzzlePosition;
 		e.u.AddBullet.MuzzleHeight = desc->MuzzleHeight;
@@ -416,10 +424,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 
 	w->lock = gGunDescriptions[w->gun].Lock;
 	WeaponPlaySound(w, Vec2iFull2Real(pos));
-	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
-	{
-		WeaponSetState(w, GUNSTATE_FIRING);
-	}
 }
 static int GunHasMuzzle(gun_e gun);
 static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
@@ -438,60 +442,6 @@ static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
 		cGunPics[g][dir][GUNSTATE_FIRING].dy +
 		cMuzzleOffset[g][dir].dy + BULLET_Z);
 	return Vec2iScale(position, 256);
-}
-
-// TODO: ideally this would not require a gun_e parameter
-void WeaponAddBullet(
-	gun_e gun, BulletType bullet,
-	Vec2i muzzlePos, int muzzleHeight, double angle, direction_e d,
-	int flags, int player)
-{
-	switch (gun)
-	{
-	case GUN_KNIFE:
-		// Do nothing
-		break;
-
-	case GUN_MG:			// fallthrough
-	case GUN_SHOTGUN:		// fallthrough
-	case GUN_BROWN:			// fallthrough
-	case GUN_MINE:			// fallthrough
-	case GUN_DYNAMITE:		// fallthrough
-	case GUN_PULSERIFLE:	// fallthrough
-	case GUN_HEATSEEKER:
-		AddBullet(muzzlePos, muzzleHeight, angle, bullet, flags, player);
-		break;
-
-	case GUN_GRENADE:		// fallthrough
-	case GUN_FRAGGRENADE:	// fallthrough
-	case GUN_MOLOTOV:		// fallthrough
-	case GUN_GASBOMB:		// fallthrough
-	case GUN_CONFUSEBOMB:
-		AddGrenade(muzzlePos, muzzleHeight, angle, bullet, flags, player);
-		break;
-
-	case GUN_FLAMER:	// fallthrough
-	case GUN_PETRIFY:
-		AddBulletBig(muzzlePos, muzzleHeight, angle, bullet, flags, player);
-		break;
-
-	case GUN_POWERGUN:	// fallthrough
-	case GUN_SNIPER:
-		AddBulletDirectional(
-			muzzlePos, muzzleHeight, d, bullet, flags, player);
-		break;
-
-	case GUN_GASGUN:
-		AddGasCloud(
-			muzzlePos, muzzleHeight, angle, 384, 35,
-			flags, SPECIAL_POISON, player);
-		break;
-
-	default:
-		// unknown gun?
-		CASSERT(false, "Unknown gun");
-		break;
-	}
 }
 
 void WeaponHoldFire(Weapon *w)
