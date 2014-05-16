@@ -251,6 +251,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	}
 
 	bool res = true;
+	bool hasNetInput = false;
 	KeyInit(&gEventHandlers.keyboard);
 	NetInputOpen(&gEventHandlers.netInput);
 	for (;;)
@@ -354,7 +355,6 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	}
 
 	// If no net input devices selected, close the connection
-	bool hasNetInput = false;
 	for (int i = 0; i < numPlayers; i++)
 	{
 		if (hasInputDevice[i] &&
