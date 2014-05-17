@@ -114,6 +114,7 @@ void WeaponInitialize(void)
 		g->Spread.Count = 1;
 		g->Spread.Width = 0;
 		g->MuzzleHeight = BULLET_Z;
+		g->MuzzleFlashSpriteName = "muzzle_flash";
 		g->MuzzleFlashColor = colorYellow;
 		g->MuzzleFlashDuration = 3;
 	}
@@ -162,7 +163,8 @@ void WeaponInitialize(void)
 	g->ReloadSound = SND_SHOTGUN_R;
 	g->Spread.Count = 5;
 	g->Spread.Width = 2 * PI / 32;
-	g->MuzzleFlashDuration = 5;
+	g->MuzzleFlashSpriteName = "muzzle_flash_big";
+	g->MuzzleFlashDuration = 7;
 
 	g = &gGunDescriptions[GUN_POWERGUN];
 	strcpy(g->name, "Powergun");
@@ -197,6 +199,7 @@ void WeaponInitialize(void)
 	g->ReloadLead = 15;
 	g->Sound = SND_LASER;
 	g->ReloadSound = SND_LASER_R;
+	g->MuzzleFlashSpriteName = "muzzle_flash_big";
 	g->MuzzleFlashColor = colorCyan;
 	g->MuzzleFlashDuration = 10;
 
@@ -238,6 +241,8 @@ void WeaponInitialize(void)
 	g->ReloadLead = 15;
 	g->Sound = SND_LASER;
 	g->ReloadSound = SND_LASER_R;
+	g->MuzzleFlashSpriteName = "muzzle_flash_big";
+	g->MuzzleFlashColor = colorWhite;
 	g->MuzzleFlashDuration = 10;
 
 	g = &gGunDescriptions[GUN_BROWN];
@@ -273,6 +278,7 @@ void WeaponInitialize(void)
 	g->Lock = 4;
 	g->Sound = SND_MINIGUN;
 	g->Recoil = 15.0 / 256 * 2 * PI;
+	g->MuzzleFlashSpriteName = "muzzle_flash_big";
 	g->MuzzleFlashColor = colorCyan;
 	g->MuzzleFlashDuration = 2;
 
@@ -282,6 +288,7 @@ void WeaponInitialize(void)
 	g->Cost = 7;
 	g->Lock = 30;
 	g->Sound = SND_LAUNCH;
+	g->MuzzleFlashSpriteName = "muzzle_flash_big";
 	g->MuzzleFlashColor = colorRed;
 	g->MuzzleFlashDuration = 5;
 }
@@ -444,6 +451,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 			m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
 			m.u.AddMuzzleFlash.FullPos = muzzlePosition;
 			m.u.AddMuzzleFlash.MuzzleHeight = desc->MuzzleHeight;
+			m.u.AddMuzzleFlash.SpriteName = desc->MuzzleFlashSpriteName;
 			m.u.AddMuzzleFlash.Direction = d;
 			m.u.AddMuzzleFlash.Color = desc->MuzzleFlashColor;
 			m.u.AddMuzzleFlash.Duration = desc->MuzzleFlashDuration;

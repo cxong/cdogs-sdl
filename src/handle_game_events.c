@@ -112,6 +112,7 @@ static void HandleGameEvent(
 			AddMuzzleFlash(
 				e->u.AddMuzzleFlash.FullPos,
 				e->u.AddMuzzleFlash.MuzzleHeight,
+				e->u.AddMuzzleFlash.SpriteName,
 				e->u.AddMuzzleFlash.Direction,
 				e->u.AddMuzzleFlash.Color,
 				e->u.AddMuzzleFlash.Duration);

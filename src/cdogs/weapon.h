@@ -113,6 +113,7 @@ typedef struct
 		double Width;	// Width of individual spread, in radians
 	} Spread;
 	int MuzzleHeight;
+	const char *MuzzleFlashSpriteName;
 	color_t MuzzleFlashColor;
 	int MuzzleFlashDuration;
 } GunDescription;

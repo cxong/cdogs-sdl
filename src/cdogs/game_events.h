@@ -107,6 +107,7 @@ typedef struct
 		{
 			Vec2i FullPos;
 			int MuzzleHeight;
+			const char *SpriteName;
 			direction_e Direction;
 			color_t Color;
 			int Duration;

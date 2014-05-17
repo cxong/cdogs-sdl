@@ -130,6 +130,7 @@ typedef struct
 		HSV Tint;
 		struct
 		{
+			const char *SpriteName;
 			direction_e Dir;
 			color_t Color;
 		} MuzzleFlash;
