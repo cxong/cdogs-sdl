@@ -112,7 +112,9 @@ static void HandleGameEvent(
 			AddMuzzleFlash(
 				e->u.AddMuzzleFlash.FullPos,
 				e->u.AddMuzzleFlash.MuzzleHeight,
-				e->u.AddMuzzleFlash.Direction);
+				e->u.AddMuzzleFlash.Direction,
+				e->u.AddMuzzleFlash.Color,
+				e->u.AddMuzzleFlash.Duration);
 			break;
 		case GAME_EVENT_ADD_FIREBALL:
 			AddFireball(e->u.AddFireball);

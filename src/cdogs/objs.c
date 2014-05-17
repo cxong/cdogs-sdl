@@ -588,18 +588,20 @@ static void DrawMuzzleFlash(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	pos.y -= obj->z;
-	int idx = (int)data->u.Dir;
+	int idx = (int)data->u.MuzzleFlash.Dir;
 	const Pic *p = PicManagerGetSprite(&gPicManager, "muzzle_flash", idx);
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
-	BlitMasked(&gGraphicsDevice, p, pos, colorYellow, 1);
+	BlitMasked(&gGraphicsDevice, p, pos, data->u.MuzzleFlash.Color, 1);
 }
 void AddMuzzleFlash(
-	const Vec2i fullPos, const int muzzleHeight, const direction_e d)
+	const Vec2i fullPos, const int muzzleHeight, const direction_e d,
+	const color_t color, const int duration)
 {
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(fullPos, -1));
 	obj->z = muzzleHeight;
-	obj->range = 3;
+	obj->range = duration;
 	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMuzzleFlash;
-	obj->tileItem.drawData.u.Dir = d;
+	obj->tileItem.drawData.u.MuzzleFlash.Color = color;
+	obj->tileItem.drawData.u.MuzzleFlash.Dir = d;
 	obj->updateFunc = UpdateSpark;
 }

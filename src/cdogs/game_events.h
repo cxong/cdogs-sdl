@@ -108,6 +108,8 @@ typedef struct
 			Vec2i FullPos;
 			int MuzzleHeight;
 			direction_e Direction;
+			color_t Color;
+			int Duration;
 		} AddMuzzleFlash;
 		AddFireballEvent AddFireball;
 		struct

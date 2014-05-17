@@ -114,6 +114,8 @@ void WeaponInitialize(void)
 		g->Spread.Count = 1;
 		g->Spread.Width = 0;
 		g->MuzzleHeight = BULLET_Z;
+		g->MuzzleFlashColor = colorYellow;
+		g->MuzzleFlashDuration = 3;
 	}
 
 	g = &gGunDescriptions[GUN_KNIFE];
@@ -131,6 +133,7 @@ void WeaponInitialize(void)
 	g->Lock = 6;
 	g->Sound = SND_MACHINEGUN;
 	g->Recoil = 7.0 / 256 * 2 * PI;
+	g->MuzzleFlashDuration = 1;
 
 	g = &gGunDescriptions[GUN_GRENADE];
 	g->pic = -1;
@@ -147,6 +150,7 @@ void WeaponInitialize(void)
 	g->Lock = 6;
 	g->Sound = SND_FLAMER;
 	g->SoundLockLength = 36;
+	g->MuzzleFlashColor = colorRed;
 
 	g = &gGunDescriptions[GUN_SHOTGUN];
 	strcpy(g->name, "Shotgun");
@@ -158,6 +162,7 @@ void WeaponInitialize(void)
 	g->ReloadSound = SND_SHOTGUN_R;
 	g->Spread.Count = 5;
 	g->Spread.Width = 2 * PI / 32;
+	g->MuzzleFlashDuration = 5;
 
 	g = &gGunDescriptions[GUN_POWERGUN];
 	strcpy(g->name, "Powergun");
@@ -165,6 +170,8 @@ void WeaponInitialize(void)
 	g->Cost = 2;
 	g->Lock = 20;
 	g->Sound = SND_POWERGUN;
+	g->MuzzleFlashColor = colorRed;
+	g->MuzzleFlashDuration = 5;
 
 	g = &gGunDescriptions[GUN_FRAGGRENADE];
 	g->pic = -1;
@@ -190,6 +197,8 @@ void WeaponInitialize(void)
 	g->ReloadLead = 15;
 	g->Sound = SND_LASER;
 	g->ReloadSound = SND_LASER_R;
+	g->MuzzleFlashColor = colorCyan;
+	g->MuzzleFlashDuration = 10;
 
 	g = &gGunDescriptions[GUN_MINE];
 	g->pic = -1;
@@ -229,6 +238,7 @@ void WeaponInitialize(void)
 	g->ReloadLead = 15;
 	g->Sound = SND_LASER;
 	g->ReloadSound = SND_LASER_R;
+	g->MuzzleFlashDuration = 10;
 
 	g = &gGunDescriptions[GUN_BROWN];
 	strcpy(g->name, "Browny gun");
@@ -236,6 +246,8 @@ void WeaponInitialize(void)
 	g->Cost = 5;
 	g->Lock = 30;
 	g->Sound = SND_POWERGUN;
+	g->MuzzleFlashColor = colorCyan;
+	g->MuzzleFlashDuration = 5;
 
 	g = &gGunDescriptions[GUN_CONFUSEBOMB];
 	g->pic = -1;
@@ -252,6 +264,7 @@ void WeaponInitialize(void)
 	g->Lock = 6;
 	g->Sound = SND_FLAMER;
 	g->SoundLockLength = 36;
+	g->MuzzleFlashColor = colorGreen;
 
 	g = &gGunDescriptions[GUN_PULSERIFLE];
 	strcpy(g->name, "Pulse Rifle");
@@ -260,6 +273,8 @@ void WeaponInitialize(void)
 	g->Lock = 4;
 	g->Sound = SND_MINIGUN;
 	g->Recoil = 15.0 / 256 * 2 * PI;
+	g->MuzzleFlashColor = colorCyan;
+	g->MuzzleFlashDuration = 0;
 
 	g = &gGunDescriptions[GUN_HEATSEEKER];
 	strcpy(g->name, "Heatseeker");
@@ -267,6 +282,8 @@ void WeaponInitialize(void)
 	g->Cost = 7;
 	g->Lock = 30;
 	g->Sound = SND_LAUNCH;
+	g->MuzzleFlashColor = colorRed;
+	g->MuzzleFlashDuration = 5;
 }
 
 Weapon WeaponCreate(gun_e gun)
@@ -420,12 +437,17 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		e.u.AddBullet.Flags = flags;
 		e.u.AddBullet.PlayerIndex = player;
 		GameEventsEnqueue(&gGameEvents, e);
-		GameEvent m;
-		m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
-		m.u.AddMuzzleFlash.FullPos = muzzlePosition;
-		m.u.AddMuzzleFlash.MuzzleHeight = desc->MuzzleHeight;
-		m.u.AddMuzzleFlash.Direction = d;
-		GameEventsEnqueue(&gGameEvents, m);
+		if (desc->pic != -1)
+		{
+			GameEvent m;
+			m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
+			m.u.AddMuzzleFlash.FullPos = muzzlePosition;
+			m.u.AddMuzzleFlash.MuzzleHeight = desc->MuzzleHeight;
+			m.u.AddMuzzleFlash.Direction = d;
+			m.u.AddMuzzleFlash.Color = desc->MuzzleFlashColor;
+			m.u.AddMuzzleFlash.Duration = desc->MuzzleFlashDuration;
+			GameEventsEnqueue(&gGameEvents, m);
+		}
 	}
 
 	w->lock = gGunDescriptions[w->gun].Lock;

@@ -207,6 +207,7 @@ int UpdateSpark(TMobileObject *obj, const int ticks);
 void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);
 
 void AddMuzzleFlash(
-	const Vec2i fullPos, const int muzzleHeight, const direction_e d);
+	const Vec2i fullPos, const int muzzleHeight, const direction_e d,
+	const color_t color, const int duration);
 
 #endif
