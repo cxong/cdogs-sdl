@@ -276,7 +276,7 @@ void WeaponInitialize(void)
 	g->Bullet = BULLET_RAPID;
 	g->Cost = 1;
 	g->Lock = 4;
-	g->Sound = SND_MINIGUN;
+	g->Sound = SND_PULSE;
 	g->Recoil = 15.0 / 256 * 2 * PI;
 	g->MuzzleFlashSpriteName = "muzzle_flash_big";
 	g->MuzzleFlashColor = colorCyan;
@@ -287,7 +287,7 @@ void WeaponInitialize(void)
 	g->Bullet = BULLET_HEATSEEKER;
 	g->Cost = 7;
 	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	g->Sound = SND_SWELL;
 	g->MuzzleFlashSpriteName = "muzzle_flash_big";
 	g->MuzzleFlashColor = colorRed;
 	g->MuzzleFlashDuration = 5;
