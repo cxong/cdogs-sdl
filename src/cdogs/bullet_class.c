@@ -78,8 +78,9 @@ static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 	else
 	{
 		DrawBTPic(
-			pos.x, pos.y,
-			PicManagerGetOldPic(&gPicManager, pic->picIndex),
+			&gGraphicsDevice,
+			PicManagerGetFromOld(&gPicManager, pic->picIndex),
+			pos,
 			&data->u.Bullet.Tint);
 	}
 }
@@ -148,8 +149,9 @@ void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state & 3)];
 	DrawBTPic(
-		pos.x + pic->dx, pos.y + pic->dy - obj->z,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex),
+		&gGraphicsDevice,
+		PicManagerGetFromOld(&gPicManager, pic->picIndex),
+		Vec2iNew(pos.x + pic->dx, pos.y + pic->dy - obj->z),
 		&data->u.Tint);
 }
 

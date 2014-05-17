@@ -133,7 +133,7 @@ void WeaponInitialize(void)
 	g->Lock = 6;
 	g->Sound = SND_MACHINEGUN;
 	g->Recoil = 7.0 / 256 * 2 * PI;
-	g->MuzzleFlashDuration = 1;
+	g->MuzzleFlashDuration = 2;
 
 	g = &gGunDescriptions[GUN_GRENADE];
 	g->pic = -1;
@@ -274,7 +274,7 @@ void WeaponInitialize(void)
 	g->Sound = SND_MINIGUN;
 	g->Recoil = 15.0 / 256 * 2 * PI;
 	g->MuzzleFlashColor = colorCyan;
-	g->MuzzleFlashDuration = 0;
+	g->MuzzleFlashDuration = 2;
 
 	g = &gGunDescriptions[GUN_HEATSEEKER];
 	strcpy(g->name, "Heatseeker");
@@ -391,6 +391,7 @@ void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 }
 
 static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir);
+static bool GunHasMuzzle(gun_e gun);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
@@ -437,7 +438,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		e.u.AddBullet.Flags = flags;
 		e.u.AddBullet.PlayerIndex = player;
 		GameEventsEnqueue(&gGameEvents, e);
-		if (desc->pic != -1)
+		if (GunHasMuzzle(w->gun))
 		{
 			GameEvent m;
 			m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
@@ -453,7 +454,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	w->lock = gGunDescriptions[w->gun].Lock;
 	WeaponPlaySound(w, Vec2iFull2Real(pos));
 }
-static int GunHasMuzzle(gun_e gun);
 static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
 {
 	if (!GunHasMuzzle(gun))
@@ -507,7 +507,7 @@ int GunIsStatic(gun_e gun)
 		return 0;
 	}
 }
-static int GunHasMuzzle(gun_e gun)
+static bool GunHasMuzzle(gun_e gun)
 {
 	return gGunDescriptions[gun].pic == GUNPIC_BLASTER;
 }

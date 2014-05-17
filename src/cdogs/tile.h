@@ -102,7 +102,7 @@ typedef Pic *(*TileItemGetPicFunc)(int);
 typedef struct
 {
 	Pic Pics[3];	// TODO: only used for offsets and highlights for now
-	PicPaletted *OldPics[3];
+	int OldPics[3];
 	bool IsDead;
 	bool IsDying;
 	bool IsTransparent;

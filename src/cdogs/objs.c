@@ -591,7 +591,7 @@ static void DrawMuzzleFlash(Vec2i pos, TileItemDrawFuncData *data)
 	int idx = (int)data->u.MuzzleFlash.Dir;
 	const Pic *p = PicManagerGetSprite(&gPicManager, "muzzle_flash", idx);
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
-	BlitMasked(&gGraphicsDevice, p, pos, data->u.MuzzleFlash.Color, 1);
+	BlitBlend(&gGraphicsDevice, p, pos, data->u.MuzzleFlash.Color);
 }
 void AddMuzzleFlash(
 	const Vec2i fullPos, const int muzzleHeight, const direction_e d,

@@ -63,7 +63,9 @@ color_t ColorAlphaBlend(color_t a, color_t b)
 
 HSV tintNone = { -1.0, 1.0, 1.0 };
 HSV tintRed = { 0.0, 1.0, 1.0 };
+HSV tintYellow = { 60.0, 1.0, 1.0 };
 HSV tintGreen = { 120.0, 1.0, 1.0 };
+HSV tintCyan = { 180.0, 1.0, 1.0 };
 HSV tintPoison = { 120.0, 0.33, 2.0 };
 HSV tintGray = { -1.0, 0.0, 1.0 };
 HSV tintPurple = { 300, 1.0, 1.0 };

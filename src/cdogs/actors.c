@@ -271,7 +271,7 @@ static ActorPics GetCharacterPics(int id)
 			pics.IsDying = true;
 			body = cDeathPics[actor->dead - 1];
 			pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-			pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, body.picIndex);
+			pics.OldPics[0] = body.picIndex;
 		}
 		goto bail;
 	}
@@ -298,9 +298,9 @@ static ActorPics GetCharacterPics(int id)
 		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
 		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, body);
-		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
-		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, head.picIndex);
-		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, body.picIndex);
+		pics.OldPics[0] = gun.picIndex;
+		pics.OldPics[1] = head.picIndex;
+		pics.OldPics[2] = body.picIndex;
 		break;
 
 	case DIRECTION_RIGHT:
@@ -310,9 +310,9 @@ static ActorPics GetCharacterPics(int id)
 		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
 		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, gun);
-		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, body.picIndex);
-		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, head.picIndex);
-		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
+		pics.OldPics[0] = body.picIndex;
+		pics.OldPics[1] = head.picIndex;
+		pics.OldPics[2] = gun.picIndex;
 		break;
 
 	case DIRECTION_LEFT:
@@ -320,9 +320,9 @@ static ActorPics GetCharacterPics(int id)
 		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, body);
 		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, head);
-		pics.OldPics[0] = PicManagerGetOldPic(&gPicManager, gun.picIndex);
-		pics.OldPics[1] = PicManagerGetOldPic(&gPicManager, body.picIndex);
-		pics.OldPics[2] = PicManagerGetOldPic(&gPicManager, head.picIndex);
+		pics.OldPics[0] = gun.picIndex;
+		pics.OldPics[1] = body.picIndex;
+		pics.OldPics[2] = head.picIndex;
 		break;
 	default:
 		assert(0 && "invalid direction");

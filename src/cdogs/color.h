@@ -62,7 +62,9 @@ typedef struct
 } HSV;
 extern HSV tintNone;
 extern HSV tintRed;
+extern HSV tintYellow;
 extern HSV tintGreen;
+extern HSV tintCyan;
 extern HSV tintPoison;
 extern HSV tintGray;
 extern HSV tintPurple;

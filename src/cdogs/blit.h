@@ -63,7 +63,9 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 #define BLIT_BACKGROUND 2
 
 void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode);
-void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode);
+void BlitBackground(
+	GraphicsDevice *device,
+	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent);
 void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,
@@ -71,7 +73,8 @@ void BlitMasked(
 	Vec2i pos,
 	color_t mask,
 	int isTransparent);
-void BlitBlend(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t blend);
+void BlitBlend(
+	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend);
 void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
@@ -98,7 +101,7 @@ void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color);
  * translate that value through the table and put it back. This is used to
  * do the "invisible" guys as well as the gas clouds.
  */
-#define DrawBTPic(x, y, pic, tint) (BlitBackground(x, y, pic, tint, BLIT_TRANSPARENT | BLIT_BACKGROUND))
+#define DrawBTPic(g, pic, pos, tint) BlitBackground(g, pic, pos, tint, true)
 
 void BlitFlip(GraphicsDevice *device, GraphicsConfig *config);
 

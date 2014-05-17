@@ -197,42 +197,39 @@ void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color)
 	}
 }
 
-void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
+void BlitBackground(
+	GraphicsDevice *device,
+	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent)
 {
-	int yoff, xoff;
-	unsigned char *current = pic->data;
-
-	int i;
-
-	assert(mode & BLIT_BACKGROUND);
-
-	for (i = 0; i < pic->h; i++)
+	Uint32 *current = pic->Data;
+	pos = Vec2iAdd(pos, pic->offset);
+	for (int i = 0; i < pic->size.y; i++)
 	{
-		yoff = i + y;
-		if (yoff > gGraphicsDevice.clipping.bottom)
+		int yoff = i + pos.y;
+		if (yoff > device->clipping.bottom)
 		{
 			break;
 		}
-		if (yoff < gGraphicsDevice.clipping.top)
+		if (yoff < device->clipping.top)
 		{
-			current += pic->w;
+			current += pic->size.x;
 			continue;
 		}
-		yoff *= gGraphicsDevice.cachedConfig.Res.x;
-		for (int j = 0; j < pic->w; j++)
+		yoff *= device->cachedConfig.Res.x;
+		for (int j = 0; j < pic->size.x; j++)
 		{
-			xoff = j + x;
-			if (xoff < gGraphicsDevice.clipping.left)
+			int xoff = j + pos.x;
+			if (xoff < device->clipping.left)
 			{
 				current++;
 				continue;
 			}
-			if (xoff > gGraphicsDevice.clipping.right)
+			if (xoff > device->clipping.right)
 			{
-				current += pic->w - j;
+				current += pic->size.x - j;
 				break;
 			}
-			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT))
+			if ((isTransparent && *current) ||  !isTransparent)
 			{
 				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
 				if (tint != NULL)
@@ -244,7 +241,7 @@ void BlitBackground(int x, int y, PicPaletted *pic, HSV *tint, int mode)
 				}
 				else
 				{
-					*target = LookupPalette(*current);
+					*target = *current;
 				}
 			}
 			current++;
@@ -298,46 +295,6 @@ void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
 			current++;
 		}
 	}
-	/*
-	// hack to blit boundary
-	for (int i = -1; i < pic->size.y + 1; i++)
-	{
-		int yoff = i + pos.y;
-		if (yoff > device->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < device->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
-		yoff *= device->cachedConfig.Res.x;
-		for (int j = -1; j < pic->size.x + 1; j++)
-		{
-			Uint32 *target;
-			int xoff = j + pos.x;
-			if (xoff < device->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > device->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
-			if (i != -1 && i != pic->size.y && j != -1 && j != pic->size.x)
-			{
-				current++;
-				continue;
-			}
-			target = device->buf + yoff + xoff;
-			*target = PixelFromColor(device, colorWhite);
-			current++;
-		}
-	}
-	*/
 }
 
 Uint32 PixelMult(Uint32 p, Uint32 m)
@@ -397,7 +354,8 @@ void BlitMasked(
 		}
 	}
 }
-void BlitBlend(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t blend)
+void BlitBlend(
+	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend)
 {
 	Uint32 *current = pic->Data;
 	pos = Vec2iAdd(pos, pic->offset);

@@ -311,24 +311,26 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				{
 					if (pics.IsDying)
 					{
-						PicPaletted *bodyPic = pics.OldPics[0];
-						if (bodyPic == NULL)
+						int pic = pics.OldPics[0];
+						if (pic == 0)
 						{
 							continue;
 						}
 						if (pics.IsTransparent)
 						{
 							DrawBTPic(
-								picPos.x + pics.Pics[0].offset.x,
-								picPos.y + pics.Pics[0].offset.y,
-								bodyPic, pics.Tint);
+								&gGraphicsDevice,
+								PicManagerGetFromOld(&gPicManager, pic),
+								Vec2iAdd(picPos, pics.Pics[0].offset),
+								pics.Tint);
 						}
 						else
 						{
 							DrawTTPic(
 								picPos.x + pics.Pics[0].offset.x,
 								picPos.y + pics.Pics[0].offset.y,
-								bodyPic, pics.Table);
+								PicManagerGetOldPic(&gPicManager, pic),
+								pics.Table);
 						}
 					}
 				}
@@ -336,15 +338,16 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				{
 					for (int i = 0; i < 3; i++)
 					{
-						PicPaletted *oldPic = pics.OldPics[i];
+						Pic *oldPic = PicManagerGetFromOld(
+							&gPicManager, pics.OldPics[i]);
 						if (oldPic == NULL)
 						{
 							continue;
 						}
 						DrawBTPic(
-							picPos.x + pics.Pics[i].offset.x,
-							picPos.y + pics.Pics[i].offset.y,
+							&gGraphicsDevice,
 							oldPic,
+							Vec2iAdd(picPos, pics.Pics[i].offset),
 							pics.Tint);
 					}
 				}
@@ -353,7 +356,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 					DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
 					for (int i = 0; i < 3; i++)
 					{
-						PicPaletted *oldPic = pics.OldPics[i];
+						PicPaletted *oldPic = PicManagerGetOldPic(
+							&gPicManager, pics.OldPics[i]);
 						if (oldPic == NULL)
 						{
 							continue;
