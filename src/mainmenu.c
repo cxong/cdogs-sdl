@@ -439,13 +439,6 @@ menu_t *MenuCreateOptionsSound(const char *name)
 			&gConfig.Sound.MusicVolume,
 			0, 64, 8,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"FX channels",
-			&gConfig.Sound.SoundChannels,
-			2, 8, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	return menu;

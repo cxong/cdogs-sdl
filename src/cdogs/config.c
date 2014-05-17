@@ -354,7 +354,6 @@ void ConfigLoadDefault(Config *config)
 	config->Interface.Splitscreen = SPLITSCREEN_NEVER;
 	config->Interface.ShowHUDMap = 1;
 	config->Sound.MusicVolume = 64;
-	config->Sound.SoundChannels = 8;
 	config->Sound.SoundVolume = 64;
 	config->Sound.Footsteps = 1;
 	config->Sound.Hits = 1;

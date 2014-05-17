@@ -117,6 +117,7 @@ typedef struct
 	Mix_Music *music;
 	music_status_e musicStatus;
 	char musicErrorMessage[128];
+	int channels;
 
 	// Two sets of ears for 4-player split screen
 	Vec2i earLeft1;
@@ -133,7 +134,6 @@ typedef struct
 {
 	int SoundVolume;
 	int MusicVolume;
-	int SoundChannels;
 	bool Footsteps;
 	bool Hits;
 	bool Reloads;

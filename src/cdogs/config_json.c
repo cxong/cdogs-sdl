@@ -244,7 +244,6 @@ static void LoadSoundConfigNode(SoundConfig *config, json_t *node)
 	node = node->child;
 	LoadInt(&config->SoundVolume, node, "SoundVolume");
 	LoadInt(&config->MusicVolume, node, "MusicVolume");
-	LoadInt(&config->SoundChannels, node, "SoundChannels");
 	LoadBool(&config->Footsteps, node, "Footsteps");
 	LoadBool(&config->Hits, node, "Hits");
 	LoadBool(&config->Reloads, node, "Reloads");
@@ -254,7 +253,6 @@ static void AddSoundConfigNode(SoundConfig *config, json_t *root)
 	json_t *subConfig = json_new_object();
 	AddIntPair(subConfig, "SoundVolume", config->SoundVolume);
 	AddIntPair(subConfig, "MusicVolume", config->MusicVolume);
-	AddIntPair(subConfig, "SoundChannels", config->SoundChannels);
 	json_insert_pair_into_object(
 		subConfig, "Footsteps", json_new_bool(config->Footsteps));
 	json_insert_pair_into_object(

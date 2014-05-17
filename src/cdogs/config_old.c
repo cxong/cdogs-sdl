@@ -90,7 +90,7 @@ void ConfigLoadOld(Config *config, const char *filename)
 	fscanfres = fscanf(f, "%d %d %d %d\n",
 		&config->Sound.SoundVolume,
 		&config->Sound.MusicVolume,
-		&config->Sound.SoundChannels,
+		&dummy,
 		&dummy);
 	CHECK_FSCANF(4);
 	fscanfres = fscanf(f, "%u\n", &config->Game.RandomSeed);

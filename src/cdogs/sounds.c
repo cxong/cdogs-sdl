@@ -66,6 +66,7 @@ SoundDevice gSoundDevice =
 	NULL,
 	MUSIC_OK,
 	"",
+	64,
 	{ 0, 0 },
 	{ 0, 0 },
 	{ 0, 0 },
@@ -165,6 +166,7 @@ void SoundInitialize(SoundDevice *device, SoundConfig *config)
 		return;
 	}
 
+	device->channels = 64;
 	SoundReconfigure(device, config);
 
 	for (i = 0; i < SND_COUNT; i++)
@@ -177,7 +179,7 @@ void SoundReconfigure(SoundDevice *device, SoundConfig *config)
 {
 	device->isInitialised = 0;
 
-	if (Mix_AllocateChannels(config->SoundChannels) != config->SoundChannels)
+	if (Mix_AllocateChannels(device->channels) != device->channels)
 	{
 		printf("Couldn't allocate channels!\n");
 		return;
@@ -231,7 +233,6 @@ void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 void SoundPlayAtPosition(
 	SoundDevice *device, sound_e sound, int distance, int bearing)
 {
-	int channel;
 	distance /= 2;
 	// Don't play anything if it's too distant
 	// This means we don't waste sound channels
@@ -248,7 +249,22 @@ void SoundPlayAtPosition(
 	debug(D_VERBOSE, "sound: %d distance: %d bearing: %d\n",
 		sound, distance, bearing);
 
-	channel = Mix_PlayChannel(-1, device->sounds[sound].data , 0);
+	int channel;
+	for (;;)
+	{
+		channel = Mix_PlayChannel(-1, device->sounds[sound].data, 0);
+		if (channel >= 0)
+		{
+			break;
+		}
+		// Check if we cannot play the sound; allocate more channels
+		device->channels *= 2;
+		if (Mix_AllocateChannels(device->channels) != device->channels)
+		{
+			printf("Couldn't allocate channels!\n");
+			return;
+		}
+	}
 	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
 }
 
