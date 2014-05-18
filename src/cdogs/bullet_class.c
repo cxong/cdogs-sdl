@@ -495,11 +495,12 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->updateFunc = UpdateSpark;
 		return 1;
 	}
+	const Vec2i realPos = Vec2iFull2Real(pos);
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
 		obj->x = pos.x;
 		obj->y = pos.y;
-		MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
+		MapMoveTileItem(&gMap, &obj->tileItem, realPos);
 		return 1;
 	} else {
 		obj->count = 0;
@@ -510,6 +511,11 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->tileItem.drawData.u.Bullet.Ofspic = OFSPIC_SPARK;
 		obj->tileItem.drawData.u.Bullet.Mask = colorWhite;
 		obj->updateFunc = UpdateSpark;
+		GameEvent e;
+		e.Type = GAME_EVENT_SOUND_AT;
+		e.u.SoundAt.Sound = SND_HIT_WALL;
+		e.u.SoundAt.Pos = realPos;
+		GameEventsEnqueue(&gGameEvents, e);
 		return 1;
 	}
 }

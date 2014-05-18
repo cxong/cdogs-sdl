@@ -97,6 +97,7 @@ SoundDevice gSoundDevice =
 		{"sounds/package_r.wav",	0,	NULL},
 		{"sounds/knife_flesh.wav",	0,	NULL},
 		{"sounds/knife_hard.wav",	0,	NULL},
+		{"sounds/ricochet.wav",		0,	NULL},
 		{"sounds/hit_fire.wav",		0,	NULL},
 		{"sounds/hit_flesh.wav",	0,	NULL},
 		{"sounds/hit_gas.wav",		0,	NULL},
