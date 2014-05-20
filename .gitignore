@@ -1,6 +1,6 @@
 
 # executables
-*.exe
+*.exe*
 cdogs-sdl
 cdogs-sdl-editor
 net_input_client

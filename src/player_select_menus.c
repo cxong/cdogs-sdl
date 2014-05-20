@@ -243,19 +243,19 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 // Load all the template names to the menu entries
 static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
-	int i;
 	bool *isSave = (bool *)data;
 	int numTemplates = PlayerTemplatesGetCount(gPlayerTemplates);
-	for (i = 0; i < numTemplates; i++)
+	for (int i = 0; i < numTemplates; i++)
 	{
 		// Add menu if necessary
-		if (i == menu->u.normal.numSubMenus)
+		if (i == (int)menu->u.normal.subMenus.size)
 		{
 			MenuAddSubmenu(menu, MenuCreateBack(""));
 		}
-		strcpy(menu->u.normal.subMenus[i].name, gPlayerTemplates[i].name);
+		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+		strcpy(subMenu->name, gPlayerTemplates[i].name);
 	}
-	if (*isSave && menu->u.normal.numSubMenus == numTemplates)
+	if (*isSave && (int)menu->u.normal.subMenus.size == numTemplates)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}

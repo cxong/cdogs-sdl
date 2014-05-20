@@ -82,6 +82,8 @@ void MenuSystemInit(
 {
 	memset(ms, 0, sizeof *ms);
 	ms->root = ms->current = NULL;
+	CArrayInit(&ms->exitTypes, sizeof(menu_type_e));
+	CArrayInit(&ms->customDisplayFuncs, sizeof(MenuCustomDisplayFunc));
 	ms->handlers = handlers;
 	ms->graphics = graphics;
 	ms->pos = pos;
@@ -95,9 +97,8 @@ void MenuSystemTerminate(MenuSystem *ms)
 {
 	MenuDestroySubmenus(ms->root);
 	CFREE(ms->root);
-	CFREE(ms->exitTypes);
-	CFREE(ms->customDisplayFuncs);
-	CFREE(ms->customDisplayDatas);
+	CArrayTerminate(&ms->exitTypes);
+	CArrayTerminate(&ms->customDisplayFuncs);
 	memset(ms, 0, sizeof *ms);
 }
 
@@ -108,10 +109,9 @@ void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDispl
 
 int MenuHasExitType(MenuSystem *menu, menu_type_e exitType)
 {
-	int i;
-	for (i = 0; i < menu->numExitTypes; i++)
+	for (int i = 0; i < (int)menu->exitTypes.size; i++)
 	{
-		if (menu->exitTypes[i] == exitType)
+		if (*(menu_type_e *)CArrayGet(&menu->exitTypes, i) == exitType)
 		{
 			return 1;
 		}
@@ -125,24 +125,16 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType)
 	{
 		return;
 	}
-	// Add the new exit type
-	menu->numExitTypes++;
-	CREALLOC(menu->exitTypes, menu->numExitTypes * sizeof *menu->exitTypes);
-	menu->exitTypes[menu->numExitTypes - 1] = exitType;
+	CArrayPushBack(&menu->exitTypes, &exitType);
 }
 
 void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data)
 {
-	ms->numCustomDisplayFuncs++;
-	CREALLOC(
-		ms->customDisplayFuncs,
-		ms->numCustomDisplayFuncs * sizeof *ms->customDisplayFuncs);
-	ms->customDisplayFuncs[ms->numCustomDisplayFuncs - 1] = func;
-	CREALLOC(
-		ms->customDisplayDatas,
-		ms->numCustomDisplayFuncs * sizeof *ms->customDisplayDatas);
-	ms->customDisplayDatas[ms->numCustomDisplayFuncs - 1] = data;
+	MenuCustomDisplayFunc cdf;
+	cdf.Func = func;
+	cdf.Data = data;
+	CArrayPushBack(&ms->customDisplayFuncs, &cdf);
 }
 
 int MenuIsExit(MenuSystem *ms)
@@ -154,7 +146,7 @@ void MenuProcessChangeKey(menu_t *menu);
 
 void MenuLoop(MenuSystem *menu)
 {
-	assert(menu->numExitTypes > 0);
+	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
 	for (;; SDL_Delay(33))
 	{
 #ifndef RUN_WITHOUT_APP_FOCUS
@@ -197,7 +189,9 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 	// Move the selection to the next non-disabled submenu
 	for (;;)
 	{
-		if (!menu->u.normal.subMenus[menu->u.normal.index].isDisabled)
+		menu_t *currentSubmenu =
+			CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+		if (!currentSubmenu->isDisabled)
 		{
 			break;
 		}
@@ -209,7 +203,7 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 		if (isDown)
 		{
 			menu->u.normal.index++;
-			if (menu->u.normal.index == menu->u.normal.numSubMenus)
+			if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
 			{
 				menu->u.normal.index = 0;
 			}
@@ -219,7 +213,7 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 			menu->u.normal.index--;
 			if (menu->u.normal.index == -1)
 			{
-				menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+				menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
 			}
 		}
 	}
@@ -227,20 +221,21 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 
 void MenuDisableSubmenu(menu_t *menu, int idx)
 {
-	menu->u.normal.subMenus[idx].isDisabled = 1;
+	menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
+	subMenu->isDisabled = true;
 	MoveIndexToNextEnabledSubmenu(menu, 1);
 }
 void MenuEnableSubmenu(menu_t *menu, int idx)
 {
-	menu->u.normal.subMenus[idx].isDisabled = 0;
+	menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
+	subMenu->isDisabled = false;
 }
 
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 {
-	int i;
-	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 	{
-		menu_t *subMenu = &menu->u.normal.subMenus[i];
+		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 		if (strcmp(subMenu->name, name) == 0)
 		{
 			return subMenu;
@@ -318,38 +313,30 @@ menu_t *MenuCreateNormal(
 	menu->u.normal.maxItems = 0;
 	menu->u.normal.align = MENU_ALIGN_LEFT;
 	menu->u.normal.quitMenuIndex = -1;
-	menu->u.normal.subMenus = NULL;
-	menu->u.normal.numSubMenus = 0;
+	CArrayInit(&menu->u.normal.subMenus, sizeof(menu_t));
 	return menu;
 }
 
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
-	menu_t *subMenuLoc = NULL;
-	int i;
-
-	menu->u.normal.numSubMenus++;
-	CREALLOC(menu->u.normal.subMenus, menu->u.normal.numSubMenus*sizeof(menu_t));
-	subMenuLoc = &menu->u.normal.subMenus[menu->u.normal.numSubMenus - 1];
-	memcpy(subMenuLoc, subMenu, sizeof(menu_t));
+	CArrayPushBack(&menu->u.normal.subMenus, subMenu);
 	if (subMenu->type == MENU_TYPE_QUIT)
 	{
-		menu->u.normal.quitMenuIndex = menu->u.normal.numSubMenus - 1;
+		menu->u.normal.quitMenuIndex = (int)menu->u.normal.subMenus.size - 1;
 	}
 	CFREE(subMenu);
 
-	// update all parent pointers, in grandchild menus as well
-	for (i = 0; i < menu->u.normal.numSubMenus; i++)
+	// update all parent pointers, in grandchild menus
+	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 	{
-		subMenuLoc = &menu->u.normal.subMenus[i];
+		menu_t *subMenuLoc = CArrayGet(&menu->u.normal.subMenus, i);
 		subMenuLoc->parentMenu = menu;
 		if (MenuTypeHasSubMenus(subMenuLoc->type))
 		{
-			int j;
-
-			for (j = 0; j < subMenuLoc->u.normal.numSubMenus; j++)
+			for (int j = 0; j < (int)subMenuLoc->u.normal.subMenus.size; j++)
 			{
-				menu_t *subSubMenu = &subMenuLoc->u.normal.subMenus[j];
+				menu_t *subSubMenu =
+					CArrayGet(&subMenuLoc->u.normal.subMenus, j);
 				subSubMenu->parentMenu = subMenuLoc;
 			}
 		}
@@ -492,7 +479,6 @@ void MenuDisplaySubmenus(MenuSystem *ms);
 void MenuDisplay(MenuSystem *ms)
 {
 	menu_t *menu = ms->current;
-	int i;
 	if (menu->type == MENU_TYPE_CUSTOM)
 	{
 		menu->u.customData.displayFunc(
@@ -514,10 +500,10 @@ void MenuDisplay(MenuSystem *ms)
 
 		MenuDisplaySubmenus(ms);
 	}
-	for (i = 0; i < ms->numCustomDisplayFuncs; i++)
+	for (int i = 0; i < (int)ms->customDisplayFuncs.size; i++)
 	{
-		ms->customDisplayFuncs[i](
-			NULL, ms->graphics, ms->pos, ms->size, ms->customDisplayDatas[i]);
+		MenuCustomDisplayFunc *cdf = CArrayGet(&ms->customDisplayFuncs, i);
+		cdf->Func(NULL, ms->graphics, ms->pos, ms->size, cdf->Data);
 	}
 	if (menu->customDisplayFunc)
 	{
@@ -552,7 +538,6 @@ int MenuOptionGetIntValue(menu_t *menu);
 
 void MenuDisplaySubmenus(MenuSystem *ms)
 {
-	int i;
 	int x = 0, yStart = 0;
 	int maxWidth = 0;
 	menu_t *menu = ms->current;
@@ -569,10 +554,11 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			int isCentered = menu->type == MENU_TYPE_NORMAL;
 			int xOptions;
 			int iStart = 0;
-			int iEnd = menu->u.normal.numSubMenus;
-			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			int iEnd = (int)menu->u.normal.subMenus.size;
+			for (int i = 0; i < iEnd; i++)
 			{
-				int width = TextGetStringWidth(menu->u.normal.subMenus[i].name);
+				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+				int width = TextGetStringWidth(subMenu->name);
 				if (width > maxWidth)
 				{
 					maxWidth = width;
@@ -604,7 +590,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				}
 				iEnd = MIN(
 					iStart + menu->u.normal.maxItems,
-					menu->u.normal.numSubMenus);
+					(int)menu->u.normal.subMenus.size);
 			}
 
 			yStart = MS_CENTER_Y(*ms, (iEnd - iStart) * CDogsTextHeight());
@@ -621,7 +607,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 						0, 0,
 						colorBlack);
 				}
-				if (iEnd < menu->u.normal.numSubMenus - 1)
+				if (iEnd < (int)menu->u.normal.subMenus.size - 1)
 				{
 					DisplayMenuItem(
 						Vec2iNew(
@@ -635,10 +621,10 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			xOptions = x + maxWidth + 10;
 
 			// Display normal menu items
-			for (i = iStart; i < iEnd; i++)
+			for (int i = iStart; i < iEnd; i++)
 			{
 				int y = yStart + (i - iStart) * CDogsTextHeight();
-				menu_t *subMenu = &menu->u.normal.subMenus[i];
+				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 				Vec2i pos = Vec2iNew(x, y);
 
 				switch (menu->u.normal.align)
@@ -702,11 +688,11 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			xKeys = x * 3;
 			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (CDogsTextHeight() * 10);
 
-			for (i = 0; i < menu->u.normal.numSubMenus; i++)
+			for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 			{
 				int y = yStart + i * CDogsTextHeight();
 				int isSelected = i == menu->u.normal.index;
-				menu_t *subMenu = &menu->u.normal.subMenus[i];
+				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 
 				const char *name = subMenu->name;
 				if (isSelected &&
@@ -796,15 +782,14 @@ void MenuDestroySubmenus(menu_t *menu)
 	{
 		return;
 	}
-	if (MenuTypeHasSubMenus(menu->type) && menu->u.normal.subMenus != NULL)
+	if (MenuTypeHasSubMenus(menu->type))
 	{
-		int i;
-		for (i = 0; i < menu->u.normal.numSubMenus; i++)
+		for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 		{
-			menu_t *subMenu = &menu->u.normal.subMenus[i];
+			menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 			MenuDestroySubmenus(subMenu);
 		}
-		CFREE(menu->u.normal.subMenus);
+		CArrayTerminate(&menu->u.normal.subMenus);
 	}
 }
 
@@ -903,7 +888,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 		}
 		else
 		{
-			menuToChange = &menu->u.normal.subMenus[quitMenuIndex];
+			menuToChange = CArrayGet(&menu->u.normal.subMenus, quitMenuIndex);
 		}
 	}
 	else
@@ -921,13 +906,13 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 	if (AnyButton(cmd) ||
 		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
 	{
-		menu_t *subMenu;
 		// Ignore if menu contains no submenus
-		if (menu->u.normal.numSubMenus == 0)
+		if (menu->u.normal.subMenus.size == 0)
 		{
 			return NULL;
 		}
-		subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+		menu_t *subMenu =
+			CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 
 		// Only allow menu switching on button 1
 
@@ -1045,7 +1030,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	int leftRightMoves = MenuTypeLeftRightMoves(menu->type);
 
 	// Ignore if no submenus
-	if (menu->u.normal.numSubMenus == 0)
+	if (menu->u.normal.subMenus.size == 0)
 	{
 		return;
 	}
@@ -1055,7 +1040,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		menu->u.normal.index--;
 		if (menu->u.normal.index == -1)
 		{
-			menu->u.normal.index = menu->u.normal.numSubMenus - 1;
+			menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
 		}
 		MoveIndexToNextEnabledSubmenu(menu, 0);
 		MenuPlaySound(MENU_SOUND_SWITCH);
@@ -1063,7 +1048,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
 	{
 		menu->u.normal.index++;
-		if (menu->u.normal.index == menu->u.normal.numSubMenus)
+		if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
 		{
 			menu->u.normal.index = 0;
 		}
@@ -1073,7 +1058,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 	menu->u.normal.scroll =
 		CLAMP(menu->u.normal.scroll,
 			MAX(0, menu->u.normal.index - menu->u.normal.maxItems + 1),
-			MIN(menu->u.normal.numSubMenus - 1, menu->u.normal.index + menu->u.normal.maxItems - 1));
+			MIN((int)menu->u.normal.subMenus.size - 1, menu->u.normal.index + menu->u.normal.maxItems - 1));
 	if (menu->u.normal.index < menu->u.normal.scroll)
 	{
 		menu->u.normal.scroll = menu->u.normal.index;

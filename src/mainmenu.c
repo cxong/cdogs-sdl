@@ -70,7 +70,6 @@ MenuSystem *MenuCreateAll(
 	GraphicsDevice *graphics)
 {
 	MenuSystem *ms;
-	int menuContinueIndex;
 	CCALLOC(ms, sizeof *ms);
 	MenuSystemInit(
 		ms,
@@ -87,7 +86,7 @@ MenuSystem *MenuCreateAll(
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-	menuContinueIndex = ms->root->u.normal.numSubMenus - 1;
+	int menuContinueIndex = (int)ms->root->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
@@ -139,7 +138,8 @@ menu_t *MenuCreateCampaignItem(CampaignEntry *entry);
 static void CampaignsDisplayFilename(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
-	menu_t *subMenu = &menu->u.normal.subMenus[menu->u.normal.index];
+	menu_t *subMenu =
+		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 	UNUSED(g);
 	UNUSED(data);
 	if (subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)

@@ -57,8 +57,7 @@ void LoadCredits(
 
 	assert(displayer != NULL);
 
-	displayer->credits = NULL;
-	displayer->creditsCount = 0;
+	CArrayInit(&displayer->credits, sizeof(credit_t));
 	displayer->lastUpdateTime = time(NULL);
 	displayer->creditsIndex = 0;
 	displayer->nameColor = nameColor;
@@ -81,46 +80,42 @@ void LoadCredits(
 		}
 		else
 		{
-			int idx = displayer->creditsCount;
-			displayer->creditsCount++;
-			CREALLOC(displayer->credits, sizeof(credit_t)*displayer->creditsCount);
-			CMALLOC(displayer->credits[idx].name, strlen(nameBuf) + 1);
-			CMALLOC(displayer->credits[idx].message, strlen(buf));
-			strcpy(displayer->credits[idx].name, nameBuf);
-			strcpy(displayer->credits[idx].message, buf + 1);
+			credit_t credit;
+			CSTRDUP(credit.name, nameBuf);
+			CSTRDUP(credit.message, buf + 1);
+			CArrayPushBack(&displayer->credits, &credit);
 			nameOrMessageCounter = 0;
 
-			debug(D_VERBOSE, "Read credits for \"%s\"\n", displayer->credits[idx].name);
+			debug(D_VERBOSE, "Read credits for \"%s\"\n", credit.name);
 		}
 	}
 
-	debug(D_NORMAL, "%d credits read\n", displayer->creditsCount);
+	debug(D_NORMAL, "%d credits read\n", (int)displayer->credits.size);
 
 	fclose(file);
 }
 
 void UnloadCredits(credits_displayer_t *displayer)
 {
-	int i;
-	assert(displayer != NULL);
-	for (i = 0; i < displayer->creditsCount; i++)
+	CASSERT(displayer != NULL, "null pointer");
+	for (int i = 0; i < (int)displayer->credits.size; i++)
 	{
-		CFREE(displayer->credits[i].name);
-		CFREE(displayer->credits[i].message);
+		credit_t *credit = CArrayGet(&displayer->credits, i);
+		CFREE(credit->name);
+		CFREE(credit->message);
 	}
-	CFREE(displayer->credits);
-	displayer->credits = NULL;
-	displayer->creditsCount = 0;
+	CArrayTerminate(&displayer->credits);
 	displayer->creditsIndex = 0;
 }
 
 void ShowCredits(credits_displayer_t *displayer)
 {
-	assert(displayer != NULL);
-	if (displayer->creditsCount > 0)
+	CASSERT(displayer != NULL, "null pointer");
+	if ((int)displayer->credits.size > 0)
 	{
 		time_t now = time(NULL);
-		credit_t *credits = &displayer->credits[displayer->creditsIndex];
+		credit_t *credits =
+			CArrayGet(&displayer->credits, displayer->creditsIndex);
 		int y = gGraphicsDevice.cachedConfig.Res.y - 50;
 
 		TextStringMasked(
@@ -141,7 +136,7 @@ void ShowCredits(credits_displayer_t *displayer)
 		if (difftime(now, displayer->lastUpdateTime) > CREDIT_DISPLAY_PERIOD_SECONDS)
 		{
 			displayer->creditsIndex++;
-			if (displayer->creditsIndex >= displayer->creditsCount)
+			if (displayer->creditsIndex >= (int)displayer->credits.size)
 			{
 				displayer->creditsIndex = 0;
 			}

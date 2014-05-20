@@ -70,7 +70,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// menu index is not updated properly
 
 		// Enable "Done" menu item
-		MenuEnableSubmenu(menu, menu->u.normal.numSubMenus - 1);
+		MenuEnableSubmenu(menu, (int)menu->u.normal.subMenus.size - 1);
 
 		// Disable this menu entry
 		MenuDisableSubmenu(menu, menu->u.normal.index);
@@ -100,7 +100,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// Disable "Done" if no weapons selected
 		if (p->weaponCount == 0)
 		{
-			MenuDisableSubmenu(menu, menu->u.normal.numSubMenus - 1);
+			MenuDisableSubmenu(menu, (int)menu->u.normal.subMenus.size - 1);
 		}
 	}
 }
@@ -211,7 +211,7 @@ void WeaponMenuCreate(
 	// Disable "Done" if no weapons selected
 	if (pData->weaponCount == 0)
 	{
-		MenuDisableSubmenu(ms->root, ms->root->u.normal.numSubMenus - 1);
+		MenuDisableSubmenu(ms->root, (int)ms->root->u.normal.subMenus.size - 1);
 	}
 
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);

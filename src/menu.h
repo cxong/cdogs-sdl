@@ -49,6 +49,7 @@
 #ifndef __MENU
 #define __MENU
 
+#include <cdogs/c_array.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
 #include <cdogs/gamedata.h>
@@ -120,7 +121,7 @@ struct menu
 	char name[64];
 	menu_type_e type;
 	struct menu *parentMenu;
-	int isDisabled;
+	bool isDisabled;
 	color_t color;
 	MenuFunc customPostEnterFunc;
 	void *customPostEnterData;
@@ -134,8 +135,7 @@ struct menu
 		struct
 		{
 			char title[64];
-			struct menu *subMenus;
-			int numSubMenus;
+			CArray subMenus;	// of menu_t
 			int index;
 			int scroll;
 			int maxItems;	// 0 means unlimited
@@ -211,19 +211,21 @@ struct menu
 
 typedef struct
 {
+	MenuDisplayFunc Func;
+	void *Data;
+} MenuCustomDisplayFunc;
+typedef struct
+{
 	menu_t *root;
 	menu_t *current;
-	menu_type_e *exitTypes;
-	int numExitTypes;
+	CArray exitTypes;	// of menu_type_e
 	credits_displayer_t *creditsDisplayer;
 	EventHandlers *handlers;
 	GraphicsDevice *graphics;
 	Vec2i pos;
 	Vec2i size;
 	MenuAlignStyle align;
-	MenuDisplayFunc *customDisplayFuncs;
-	void **customDisplayDatas;
-	int numCustomDisplayFuncs;
+	CArray customDisplayFuncs;	// of MenuCustomDisplayFunc
 } MenuSystem;
 
 typedef enum

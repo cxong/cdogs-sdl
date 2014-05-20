@@ -31,6 +31,7 @@
 
 #include <time.h>
 
+#include <cdogs/c_array.h>
 #include <cdogs/pic_file.h>
 
 
@@ -58,8 +59,7 @@ typedef struct
 
 typedef struct
 {
-	credit_t *credits;
-	int creditsCount;
+	CArray credits;	// of credit_t
 	time_t lastUpdateTime;
 	int creditsIndex;
 	color_t nameColor;

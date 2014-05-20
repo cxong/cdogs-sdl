@@ -391,9 +391,10 @@ bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
 		{
-			int lastMenuIndex = menus[i].ms.root->u.normal.numSubMenus - 1;
+			int lastMenuIndex =
+				(int)menus[i].ms.root->u.normal.subMenus.size - 1;
 			menus[i].ms.current =
-				&menus[i].ms.root->u.normal.subMenus[lastMenuIndex];
+				CArrayGet(&menus[i].ms.root->u.normal.subMenus, lastMenuIndex);
 			gPlayerDatas[i].weapons[0] = AICoopSelectWeapon(
 				i, gMission.missionData->Weapons);
 			gPlayerDatas[i].weaponCount = 1;
