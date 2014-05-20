@@ -961,7 +961,9 @@ static int MapGetAccessLevel(Map *map, int x, int y)
 // TODO: refactor door
 int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
 {
-	int l = MapGetAccessLevel(map, pos.x - 1, pos.y);
+	int l = MapGetAccessLevel(map, pos.x, pos.y);
+	if (l) return l;
+	l = MapGetAccessLevel(map, pos.x - 1, pos.y);
 	if (l) return l;
 	l = MapGetAccessLevel(map, pos.x + 1, pos.y);
 	if (l) return l;

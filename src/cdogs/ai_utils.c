@@ -449,7 +449,7 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 	ac.Map = &gMap;
 	ac.IsTileOk = ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects;
 	Vec2i fromTile = Vec2iToTile(from);
-	Vec2i toTile = Vec2iToTile(to);
+	Vec2i toTile = MapSearchTileAround(ac.Map, Vec2iToTile(to), ac.IsTileOk);
 	ASPath path = ASPathCreate(&cPathNodeSource, &ac, &fromTile, &toTile);
 	size_t pathCount = ASPathGetCount(path);
 	ASPathDestroy(path);
