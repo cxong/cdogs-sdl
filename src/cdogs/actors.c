@@ -74,6 +74,10 @@
 #define FOOTSTEP_DISTANCE_PLUS 380
 #define REPEL_STRENGTH 15
 #define SLIDE_LOCK 50
+#define SLIDE_X (TILE_WIDTH / 3)
+#define SLIDE_Y (TILE_HEIGHT / 3)
+#define VEL_DECAY_X (TILE_WIDTH * 2)
+#define VEL_DECAY_Y (TILE_HEIGHT * 2)
 
 
 int gPlayerIds[MAX_PLAYERS];
@@ -816,8 +820,6 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 
 void SlideActor(TActor *actor, int cmd)
 {
-	int dx, dy;
-	
 	// Check that actor can slide
 	if (actor->slideLock > 0)
 	{
@@ -832,21 +834,11 @@ void SlideActor(TActor *actor, int cmd)
 		cmd = CmdGetReverse(cmd);
 	}
 
-	if ((cmd & CMD_LEFT) != 0)
-		dx = -5 * 256;
-	else if ((cmd & CMD_RIGHT) != 0)
-		dx = 5 * 256;
-	else
-		dx = 0;
-	if ((cmd & CMD_UP) != 0)
-		dy = -4 * 256;
-	else if ((cmd & CMD_DOWN) != 0)
-		dy = 4 * 256;
-	else
-		dy = 0;
-
-	actor->dx = dx;
-	actor->dy = dy;
+	actor->Vel = Vec2iZero();
+	if (cmd & CMD_LEFT)			actor->Vel.x = -SLIDE_X * 256;
+	else if (cmd & CMD_RIGHT)	actor->Vel.x = SLIDE_X * 256;
+	if (cmd & CMD_UP)			actor->Vel.y = -SLIDE_Y * 256;
+	else if (cmd & CMD_DOWN)	actor->Vel.y = SLIDE_Y * 256;
 
 	// Slide sound
 	if (gConfig.Sound.Footsteps)
@@ -906,10 +898,14 @@ void UpdateAllActors(int ticks)
 							v = Vec2iNew(1, 0);
 						}
 						v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
-						actor->dx += v.x;
-						actor->dy += v.y;
-						collidingActor->dx -= v.x;
-						collidingActor->dy -= v.y;
+						GameEvent e;
+						e.Type = GAME_EVENT_ACTOR_IMPULSE;
+						e.u.ActorImpulse.Id = actor->tileItem.id;
+						e.u.ActorImpulse.Vel = v;
+						GameEventsEnqueue(&gGameEvents, e);
+						e.u.ActorImpulse.Id = collidingActor->tileItem.id;
+						e.u.ActorImpulse.Vel = Vec2iScale(v, -1);
+						GameEventsEnqueue(&gGameEvents, e);
 					}
 				}
 			}
@@ -918,28 +914,28 @@ void UpdateAllActors(int ticks)
 }
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
-	if (actor->dx || actor->dy)
+	if (!Vec2iEqual(actor->Vel, Vec2iZero()))
 	{
 		actor->MovePos = Vec2iAdd(
-			actor->MovePos, Vec2iScale(Vec2iNew(actor->dx, actor->dy), ticks));
+			actor->MovePos, Vec2iScale(actor->Vel, ticks));
 
 		for (int i = 0; i < ticks; i++)
 		{
-			if (actor->dx > 0)
+			if (actor->Vel.x > 0)
 			{
-				actor->dx = MAX(0, actor->dx - 32);
+				actor->Vel.x = MAX(0, actor->Vel.x - VEL_DECAY_X);
 			}
-			else if (actor->dx < 0)
+			else
 			{
-				actor->dx = MIN(0, actor->dx + 32);
+				actor->Vel.x = MIN(0, actor->Vel.x + VEL_DECAY_X);
 			}
-			if (actor->dy > 0)
+			if (actor->Vel.y > 0)
 			{
-				actor->dy = MAX(0, actor->dy - 32);
+				actor->Vel.y = MAX(0, actor->Vel.y - VEL_DECAY_Y);
 			}
-			else if (actor->dy < 0)
+			else
 			{
-				actor->dy = MIN(0, actor->dy + 32);
+				actor->Vel.y = MIN(0, actor->Vel.y + VEL_DECAY_Y);
 			}
 		}
 	}
@@ -1179,12 +1175,10 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 
 void ActorTakeHit(
 	TActor *actor,
-	Vec2i hitVector,
-	int power,
-	special_damage_e damage,
-	int isHitSoundEnabled,
-	int isInvulnerable,
-	Vec2i hitLocation)
+	const special_damage_e damage,
+	const bool isHitSoundEnabled,
+	const bool isInvulnerable,
+	const Vec2i hitLocation)
 {
 	// Check immune again
 	// This can happen if multiple damage events overkill this actor,
@@ -1194,12 +1188,6 @@ void ActorTakeHit(
 		return;
 	}
 	ActorTakeSpecialDamage(actor, damage);
-
-	if (gConfig.Game.ShotsPushback)
-	{
-		actor->dx += (power * hitVector.x) / 25;
-		actor->dy += (power * hitVector.y) / 25;
-	}
 
 	// Hit sound
 	if (isHitSoundEnabled)

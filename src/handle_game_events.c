@@ -122,19 +122,23 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_HIT_CHARACTER:
 			HitCharacter(
-				e->u.HitCharacter.HitV,
-				e->u.HitCharacter.Power,
 				e->u.HitCharacter.Flags,
 				e->u.HitCharacter.PlayerIndex,
-				e->u.HitCharacter.Target,
+				CArrayGet(&gActors, e->u.HitCharacter.TargetId),
 				e->u.HitCharacter.Special,
 				e->u.HitCharacter.HasHitSound);
+			break;
+		case GAME_EVENT_ACTOR_IMPULSE:
+			{
+				TActor *a = CArrayGet(&gActors, e->u.ActorImpulse.Id);
+				a->Vel = Vec2iAdd(a->Vel, e->u.ActorImpulse.Vel);
+			}
 			break;
 		case GAME_EVENT_DAMAGE_CHARACTER:
 			DamageCharacter(
 				e->u.DamageCharacter.Power,
 				e->u.DamageCharacter.PlayerIndex,
-				e->u.DamageCharacter.Target);
+				CArrayGet(&gActors, e->u.DamageCharacter.TargetId));
 			if (e->u.DamageCharacter.Power != 0)
 			{
 				HUDAddHealthUpdate(

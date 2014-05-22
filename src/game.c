@@ -662,21 +662,33 @@ int gameloop(void)
 						}
 						TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
 						int pad = SPLIT_PADDING;
-						if (screen.x + pad > p->tileItem.x)
+						GameEvent ei;
+						ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+						ei.u.ActorImpulse.Id = p->tileItem.id;
+						ei.u.ActorImpulse.Vel = p->Vel;
+						if (screen.x + pad > p->tileItem.x &&
+							p->Vel.x < 256)
 						{
-							p->dx = MAX(p->dx, 256);
+							ei.u.ActorImpulse.Vel.x = 256 - p->Vel.x;
 						}
-						if (screen.x + w - pad < p->tileItem.x)
+						else if (screen.x + w - pad < p->tileItem.x &&
+							p->Vel.x > -256)
 						{
-							p->dx = MIN(p->dx, -256);
+							ei.u.ActorImpulse.Vel.x = -256 - p->Vel.x;
 						}
-						if (screen.y + pad > p->tileItem.y)
+						if (screen.y + pad > p->tileItem.y &&
+							p->Vel.y < 256)
 						{
-							p->dy = MAX(p->dy, 256);
+							ei.u.ActorImpulse.Vel.y = 256 - p->Vel.y;
 						}
-						if (screen.y + h - pad < p->tileItem.y)
+						else if (screen.y + h - pad < p->tileItem.y &&
+							p->Vel.y > -256)
 						{
-							p->dy = MIN(p->dy, -256);
+							ei.u.ActorImpulse.Vel.y = -256 - p->Vel.y;
+						}
+						if (!Vec2iEqual(ei.u.ActorImpulse.Vel, p->Vel))
+						{
+							GameEventsEnqueue(&gGameEvents, ei);
 						}
 					}
 				}

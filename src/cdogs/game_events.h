@@ -56,6 +56,7 @@ typedef enum
 	GAME_EVENT_ADD_MUZZLE_FLASH,
 	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
+	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_UPDATE_OBJECTIVE,
 
@@ -115,19 +116,22 @@ typedef struct
 		AddFireballEvent AddFireball;
 		struct
 		{
-			Vec2i HitV;
-			int Power;
 			int Flags;
 			int PlayerIndex;
-			TActor *Target;
+			int TargetId;
 			special_damage_e Special;
 			bool HasHitSound;
 		} HitCharacter;
 		struct
 		{
+			int Id;
+			Vec2i Vel;
+		} ActorImpulse;
+		struct
+		{
 			int Power;
 			int PlayerIndex;
-			TActor *Target;
+			int TargetId;
 			int TargetPlayerIndex;
 		} DamageCharacter;
 		struct

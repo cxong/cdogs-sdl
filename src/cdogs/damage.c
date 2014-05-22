@@ -64,8 +64,6 @@ bool CanHitCharacter(int flags, int player, TActor *actor)
 }
 
 void HitCharacter(
-	Vec2i hitVector,
-	int power,
 	int flags,
 	int player,
 	TActor *actor,
@@ -76,8 +74,6 @@ void HitCharacter(
 		actor, flags, player, gCampaign.Entry.Mode);
 	ActorTakeHit(
 		actor,
-		hitVector,
-		power,
 		special,
 		hasHitSound,
 		isInvulnerable,

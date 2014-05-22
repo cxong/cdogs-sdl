@@ -212,21 +212,29 @@ int DamageSomething(
 			{
 				GameEvent e;
 				e.Type = GAME_EVENT_HIT_CHARACTER;
-				e.u.HitCharacter.HitV = hitVector;
-				e.u.HitCharacter.Power = power;
 				e.u.HitCharacter.Flags = flags;
 				e.u.HitCharacter.PlayerIndex = player;
-				e.u.HitCharacter.Target = actor;
+				e.u.HitCharacter.TargetId = actor->tileItem.id;
 				e.u.HitCharacter.Special = special;
-				e.u.HitCharacter.HasHitSound = gConfig.Sound.Hits && hasHitSound;
+				e.u.HitCharacter.HasHitSound =
+					gConfig.Sound.Hits && hasHitSound;
 				GameEventsEnqueue(&gGameEvents, e);
+				if (gConfig.Game.ShotsPushback)
+				{
+					GameEvent ei;
+					ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+					ei.u.ActorImpulse.Id = actor->tileItem.id;
+					ei.u.ActorImpulse.Vel =
+						Vec2iScaleDiv(Vec2iScale(hitVector, power), 25);
+					GameEventsEnqueue(&gGameEvents, ei);
+				}
 				if (CanDamageCharacter(flags, player, actor, special))
 				{
 					GameEvent e1;
 					e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
 					e1.u.DamageCharacter.Power = power;
 					e1.u.DamageCharacter.PlayerIndex = player;
-					e1.u.DamageCharacter.Target = actor;
+					e1.u.DamageCharacter.TargetId = actor->tileItem.id;
 					e1.u.DamageCharacter.TargetPlayerIndex = -1;
 					if (actor->pData)
 					{

@@ -55,8 +55,6 @@
 
 bool CanHitCharacter(int flags, int player, TActor *actor);
 void HitCharacter(
-	Vec2i hitVector,
-	int power,
 	int flags,
 	int player,
 	TActor *actor,

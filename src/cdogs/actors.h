@@ -114,6 +114,7 @@ typedef struct Actor
 	Vec2i Pos;		// These are the full coordinates, including fractions
 	// Position that the player is attempting to move to, based on input
 	Vec2i MovePos;
+	Vec2i Vel;
 	direction_e direction;
 	int state;
 	int stateCounter;
@@ -122,7 +123,6 @@ typedef struct Actor
 	Character *character;
 	struct PlayerData *pData;	// NULL unless a human player
 	Weapon weapon;
-	int dx, dy;
 
 	int health;
 	int dead;
@@ -193,12 +193,10 @@ int ActorIsImmune(TActor *actor, special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect) but deals no damage
 void ActorTakeHit(
 	TActor *actor,
-	Vec2i hitVector,
-	int power,
-	special_damage_e damage,
-	int isHitSoundEnabled,
-	int isInvulnerable,
-	Vec2i hitLocation);
+	const special_damage_e damage,
+	const bool isHitSoundEnabled,
+	const bool isInvulnerable,
+	const Vec2i hitLocation);
 int ActorIsInvulnerable(
 	TActor *actor, int flags, int player, campaign_mode_e mode);
 
