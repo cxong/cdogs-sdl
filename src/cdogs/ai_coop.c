@@ -352,8 +352,7 @@ static bool TryCompleteNearbyObjective(
 	}
 	return false;
 }
-static int CompareClosestObjective(
-	const ClosestObjective *c1, const ClosestObjective *c2);
+static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const Vec2i actorRealPos)
 {
@@ -477,9 +476,10 @@ static void FindObjectivesSortedByDistance(
 		objectives->data,
 		objectives->size, objectives->elemSize, CompareClosestObjective);
 }
-static int CompareClosestObjective(
-	const ClosestObjective *c1, const ClosestObjective *c2)
+static int CompareClosestObjective(const void *v1, const void *v2)
 {
+	const ClosestObjective *c1 = v1;
+	const ClosestObjective *c2 = v2;
 	if (c1->Distance < c2->Distance)
 	{
 		return -1;
