@@ -257,6 +257,16 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 	actor->aiContext->LastTile = tilePos;
 	return cmd;
 }
+typedef struct
+{
+	int Distance;
+	struct Objective *Objective;
+	Vec2i Pos;
+	bool IsDestructible;
+	AIObjectiveType Type;
+} ClosestObjective;
+static void FindObjectivesSortedByDistance(
+	CArray *objectives, const Vec2i actorRealPos);
 static bool CanGetObjective(
 	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
 	const int distanceTooFarFromPlayer);
@@ -312,11 +322,42 @@ static bool TryCompleteNearbyObjective(
 		return true;
 	}
 
-	int closestObjectiveDistance = -1;
-	const struct Objective *closestObjective = NULL;
-	Vec2i closestObjectivePos = Vec2iZero();
-	bool closestObjectiveDestructible = false;
-	AIObjectiveType closestType = AI_OBJECTIVE_TYPE_NORMAL;
+	// Find all the objective/key locations, sort according to distance
+	CArray objectives;
+	FindObjectivesSortedByDistance(&objectives, actorRealPos);
+
+	// Starting from the closest objectives, find one we can go to
+	for (int i = 0; i < (int)objectives.size; i++)
+	{
+		ClosestObjective *c = CArrayGet(&objectives, i);
+		if (CanGetObjective(
+			c->Pos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
+		{
+			context->State = AI_STATE_NEXT_OBJECTIVE;
+			objState->Type = c->Type;
+			objState->IsDestructible = c->IsDestructible;
+			if (c->Type == AI_OBJECTIVE_TYPE_KEY)
+			{
+				objState->LastDone = KeycardCount(gMission.flags);
+			}
+			else if (c->Type == AI_OBJECTIVE_TYPE_NORMAL)
+			{
+				objState->Obj = c->Objective;
+				objState->LastDone = c->Objective->done;
+			}
+			objState->Goal = c->Pos;
+			*cmdOut = GotoObjective(actor, c->Distance);
+			return true;
+		}
+	}
+	return false;
+}
+static int CompareClosestObjective(
+	const ClosestObjective *c1, const ClosestObjective *c2);
+static void FindObjectivesSortedByDistance(
+	CArray *objectives, const Vec2i actorRealPos)
+{
+	CArrayInit(objectives, sizeof(ClosestObjective));
 
 	// Look for pickups and destructibles
 	for (int i = 0; i < (int)gObjs.size; i++)
@@ -326,52 +367,46 @@ static bool TryCompleteNearbyObjective(
 		{
 			continue;
 		}
-		const Vec2i objPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		ClosestObjective co;
+		memset(&co, 0, sizeof co);
+		co.Pos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		co.IsDestructible = false;
+		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		bool isObjective = false;
-		bool isDestructible = false;
-		AIObjectiveType type = AI_OBJECTIVE_TYPE_NORMAL;
 		switch (o->Type)
 		{
 		case OBJ_KEYCARD_YELLOW:	// fallthrough
 		case OBJ_KEYCARD_GREEN:	// fallthrough
 		case OBJ_KEYCARD_BLUE:	// fallthrough
 		case OBJ_KEYCARD_RED:	// fallthrough
-			type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
+			co.Type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
 		case OBJ_JEWEL:
 			isObjective = true;
-			isDestructible = false;
 			break;
 		case OBJ_NONE:
 			if (o->tileItem.flags & TILEITEM_OBJECTIVE)
 			{
 				// Destructible objective; go towards it and fire
 				isObjective = true;
-				isDestructible = true;
+				co.IsDestructible = true;
 			}
 			break;
 		default:
 			// do nothing
 			break;
 		}
-		if (isObjective && CanGetObjective(
-			objPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
+		if (!isObjective)
 		{
-			const int objDistance = DistanceSquared(actorRealPos, objPos);
-			if (closestObjectiveDistance == -1 ||
-				closestObjectiveDistance > objDistance)
-			{
-				closestObjectiveDistance = objDistance;
-				closestType = type;
-				if (type == AI_OBJECTIVE_TYPE_NORMAL)
-				{
-					int objective = ObjectiveFromTileItem(o->tileItem.flags);
-					closestObjective =
-						CArrayGet(&gMission.Objectives, objective);
-				}
-				closestObjectivePos = objPos;
-				closestObjectiveDestructible = isDestructible;
-			}
+			continue;
 		}
+		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
+		{
+			int objective = ObjectiveFromTileItem(o->tileItem.flags);
+			co.Objective =
+				CArrayGet(&gMission.Objectives, objective);
+		}
+		CArrayPushBack(objectives, &co);
 	}
 
 	// Look for kill or rescue objectives
@@ -400,21 +435,14 @@ static bool TryCompleteNearbyObjective(
 		{
 			continue;
 		}
-		const Vec2i objPos = Vec2iNew(ti->x, ti->y);
-		if (CanGetObjective(
-			objPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
-		{
-			const int objDistance = DistanceSquared(actorRealPos, objPos);
-			if (closestObjectiveDistance == -1 ||
-				closestObjectiveDistance > objDistance)
-			{
-				closestObjectiveDistance = objDistance;
-				closestType = AI_OBJECTIVE_TYPE_NORMAL;
-				closestObjective = CArrayGet(&gMission.Objectives, objective);
-				closestObjectivePos = objPos;
-				closestObjectiveDestructible = false;
-			}
-		}
+		ClosestObjective co;
+		memset(&co, 0, sizeof co);
+		co.Pos = Vec2iNew(ti->x, ti->y);
+		co.IsDestructible = false;
+		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Objective = CArrayGet(&gMission.Objectives, objective);
+		CArrayPushBack(objectives, &co);
 	}
 
 	// Look for explore objectives
@@ -434,44 +462,33 @@ static bool TryCompleteNearbyObjective(
 		const Vec2i actorTile = Vec2iToTile(actorRealPos);
 		const Vec2i unexploredTile = MapSearchTileAround(
 			&gMap, actorTile, MapTileIsUnexplored);
-		const Vec2i unexploredTilePos = Vec2iCenterOfTile(unexploredTile);
-		if (CanGetObjective(
-			unexploredTilePos, actorRealPos,
-			closestPlayer, distanceTooFarFromPlayer))
-		{
-			const int objDistance =
-				DistanceSquared(actorRealPos, unexploredTilePos);
-			if (closestObjectiveDistance == -1 ||
-				closestObjectiveDistance > objDistance)
-			{
-				closestObjectiveDistance = objDistance;
-				closestType = AI_OBJECTIVE_TYPE_NORMAL;
-				closestObjective = o;
-				closestObjectivePos = unexploredTilePos;
-				closestObjectiveDestructible = false;
-			}
-		}
+		ClosestObjective co;
+		memset(&co, 0, sizeof co);
+		co.Pos = Vec2iCenterOfTile(unexploredTile);
+		co.IsDestructible = false;
+		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Objective = o;
+		CArrayPushBack(objectives, &co);
 	}
 
-	if (closestObjectiveDistance != -1)
+	// Sort according to distance
+	qsort(
+		objectives->data,
+		objectives->size, objectives->elemSize, CompareClosestObjective);
+}
+static int CompareClosestObjective(
+	const ClosestObjective *c1, const ClosestObjective *c2)
+{
+	if (c1->Distance < c2->Distance)
 	{
-		context->State = AI_STATE_NEXT_OBJECTIVE;
-		objState->Type = closestType;
-		objState->IsDestructible = closestObjectiveDestructible;
-		if (closestType == AI_OBJECTIVE_TYPE_KEY)
-		{
-			objState->LastDone = KeycardCount(gMission.flags);
-		}
-		else if (closestType == AI_OBJECTIVE_TYPE_NORMAL)
-		{
-			objState->Obj = closestObjective;
-			objState->LastDone = closestObjective->done;
-		}
-		objState->Goal = closestObjectivePos;
-		*cmdOut = GotoObjective(actor, closestObjectiveDistance);
-		return true;
+		return -1;
 	}
-	return false;
+	else if (c1->Distance > c2->Distance)
+	{
+		return 1;
+	}
+	return 0;
 }
 static bool IsPosCloseEnoughToPlayer(
 	const Vec2i realPos, const TActor *player,
