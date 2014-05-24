@@ -936,6 +936,17 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 	a = WatchAddAction(w);
 	a->action = ACTION_SETTRIGGER;
 	a->u.index = t->id;
+
+	// Set tiles on and besides doors free
+	for (int i = 0; i < doorGroupCount; i++)
+	{
+		const Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
+		IMapSet(map, vI, IMapGet(map, vI) | MAP_LEAVEFREE);
+		const Vec2i vI1 = Vec2iAdd(vI, dAside);
+		IMapSet(map, vI1, IMapGet(map, vI1) | MAP_LEAVEFREE);
+		const Vec2i vI2 = Vec2iMinus(vI, dAside);
+		IMapSet(map, vI2, IMapGet(map, vI2) | MAP_LEAVEFREE);
+	}
 }
 
 static int AccessCodeToFlags(int code)

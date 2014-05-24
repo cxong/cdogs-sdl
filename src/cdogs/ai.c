@@ -429,6 +429,17 @@ void CommandBadGuys(int ticks)
 					actor->aiContext->State = AI_STATE_NONE;
 				}
 				actor->aiContext->Delay = bot->actionDelay * delayModifier;
+				// Randomly change direction
+				int newDir = (int)actor->direction + ((rand() % 2) * 2 - 1);
+				if (newDir < (int)DIRECTION_UP)
+				{
+					newDir = (int)DIRECTION_UPLEFT;
+				}
+				if (newDir == (int)DIRECTION_COUNT)
+				{
+					newDir = (int)DIRECTION_UP;
+				}
+				cmd = DirectionToCmd((int)newDir);
 			}
 			// Go to sleep if the player's too far away
 			if (!(actor->flags & FLAGS_SLEEPING) &&

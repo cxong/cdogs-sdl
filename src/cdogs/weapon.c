@@ -397,7 +397,6 @@ void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 	}
 }
 
-static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir);
 static bool GunHasMuzzle(gun_e gun);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
@@ -462,7 +461,8 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	w->lock = gGunDescriptions[w->gun].Lock;
 	WeaponPlaySound(w, Vec2iFull2Real(pos));
 }
-static Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
+
+Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
 {
 	if (!GunHasMuzzle(gun))
 	{

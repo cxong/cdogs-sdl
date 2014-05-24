@@ -55,6 +55,7 @@
 #include "collision.h"
 #include "map.h"
 #include "objs.h"
+#include "weapon.h"
 
 
 TActor *AIGetClosestPlayer(Vec2i fullpos)
@@ -578,20 +579,21 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 
 int AIHunt(TActor *actor, Vec2i targetPos)
 {
+	Vec2i fullPos = Vec2iAdd(
+		actor->Pos, GunGetMuzzleOffset(actor->weapon.gun, actor->direction));
+	const int dx = abs(targetPos.x - fullPos.x);
+	const int dy = abs(targetPos.y - fullPos.y);
+
 	int cmd = 0;
-
-	const int dx = abs(targetPos.x - actor->Pos.x);
-	const int dy = abs(targetPos.y - actor->Pos.y);
-
 	if (2 * dx > dy)
 	{
-		if (actor->Pos.x < targetPos.x)			cmd |= CMD_RIGHT;
-		else if (actor->Pos.x > targetPos.x)	cmd |= CMD_LEFT;
+		if (fullPos.x < targetPos.x)		cmd |= CMD_RIGHT;
+		else if (fullPos.x > targetPos.x)	cmd |= CMD_LEFT;
 	}
 	if (2 * dy > dx)
 	{
-		if (actor->Pos.y < targetPos.y)			cmd |= CMD_DOWN;
-		else if (actor->Pos.y > targetPos.y)	cmd |= CMD_UP;
+		if (fullPos.y < targetPos.y)		cmd |= CMD_DOWN;
+		else if (fullPos.y > targetPos.y)	cmd |= CMD_UP;
 	}
 	// If it's a coward, reverse directions...
 	if (actor->flags & FLAGS_RUNS_AWAY)
