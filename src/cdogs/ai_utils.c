@@ -204,7 +204,7 @@ static bool AIHasClearLine(
 	data.IsBlocked = isBlockedFunc;
 	data.data = &gMap;
 
-	return HasClearLineBresenham(from, to, &data);
+	return HasClearLineXiaolinWu(from, to, &data);
 }
 static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos);
 static bool IsTileWalkable(Map *map, Vec2i pos)

@@ -37,16 +37,17 @@ typedef struct
 	bool (*IsBlocked)(void *, Vec2i);
 	void *data;
 } HasClearLineData;
-bool HasClearLine(Vec2i from, Vec2i to, HasClearLineData *data);
 // Use Bresenham line algorithm to determine whether line is clear
 bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data);
+bool HasClearLineXiaolinWu(Vec2i from, Vec2i to, HasClearLineData *data);
 
 typedef struct
 {
 	void (*Draw)(void *, Vec2i);
 	void *data;
-} BresenhamLineDrawData;
-void BresenhamLineDraw(Vec2i from, Vec2i to, BresenhamLineDrawData *data);
+} AlgoLineDrawData;
+void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data);
+void XiaolinWuLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data);
 
 typedef struct
 {

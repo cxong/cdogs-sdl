@@ -207,7 +207,7 @@ MissionSave *AutosaveFindMission(
 	{
 		MissionSave *m = CArrayGet(&autosave->Missions, i);
 		const char *campaignPath = m->Campaign.Path;
-		if (path == NULL)
+		if (path == NULL || strlen(path) == 0)
 		{
 			// builtin campaign
 			if (m->Campaign.IsBuiltin &&

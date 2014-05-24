@@ -72,12 +72,12 @@
 
 #define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
-#define REPEL_STRENGTH 15
+#define REPEL_STRENGTH 14
 #define SLIDE_LOCK 50
 #define SLIDE_X (TILE_WIDTH / 3)
 #define SLIDE_Y (TILE_HEIGHT / 3)
 #define VEL_DECAY_X (TILE_WIDTH * 2)
-#define VEL_DECAY_Y (TILE_HEIGHT * 2)
+#define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
 
 
 int gPlayerIds[MAX_PLAYERS];

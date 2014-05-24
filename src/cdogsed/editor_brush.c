@@ -138,7 +138,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			useSimpleHighlight = 0;
 			// highlight a line
 			CArrayClear(&b->HighlightedTiles);
-			BresenhamLineDrawData data;
+			AlgoLineDrawData data;
 			data.Draw = EditorBrushHighlightPoint;
 			data.data = b;
 			BresenhamLineDraw(b->LastPos, b->Pos, &data);
@@ -289,7 +289,7 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	paintData.mission = m;
 	if (b->IsPainting)
 	{
-		BresenhamLineDrawData data;
+		AlgoLineDrawData data;
 		data.Draw = EditorBrushPaintTilesAt;
 		data.data = &paintData;
 		BresenhamLineDraw(b->LastPos, b->Pos, &data);

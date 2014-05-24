@@ -231,22 +231,22 @@ void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 	// Top edge
 	for (; end.x < origin.x + perimSize.x; end.x++)
 	{
-		HasClearLineBresenham(data.center, end, &lineData);
+		HasClearLineXiaolinWu(data.center, end, &lineData);
 	}
 	// right edge
 	for (; end.y < origin.y + perimSize.y; end.y++)
 	{
-		HasClearLineBresenham(data.center, end, &lineData);
+		HasClearLineXiaolinWu(data.center, end, &lineData);
 	}
 	// bottom edge
 	for (; end.x > origin.x; end.x--)
 	{
-		HasClearLineBresenham(data.center, end, &lineData);
+		HasClearLineXiaolinWu(data.center, end, &lineData);
 	}
 	// left edge
 	for (; end.y > origin.y; end.y--)
 	{
-		HasClearLineBresenham(data.center, end, &lineData);
+		HasClearLineXiaolinWu(data.center, end, &lineData);
 	}
 
 	// Second pass: make any non-visible obstructions that are adjacent to
