@@ -65,61 +65,91 @@ static int gBaddieCount = 0;
 static int gAreGoodGuysPresent = 0;
 
 
-static int IsFacing(TActor *a, TActor *a2, direction_e d)
+static bool IsFacing(const Vec2i p, const Vec2i target, direction_e d)
 {
+	const bool isUpperOrLowerOctants =
+		abs(p.x - target.x) > abs(p.y - target.y);
+	const bool isRight = p.x < target.x;
+	const bool isAbove = p.y > target.y;
 	switch (d)
 	{
 	case DIRECTION_UP:
-		return (a->Pos.y > a2->Pos.y);
+		return isAbove && isUpperOrLowerOctants;
 	case DIRECTION_UPLEFT:
-		return (a->Pos.y > a2->Pos.y && a->Pos.x > a2->Pos.x);
+		return !isRight && isAbove;
 	case DIRECTION_LEFT:
-		return a->Pos.x > a2->Pos.x;
+		return !isRight && !isUpperOrLowerOctants;
 	case DIRECTION_DOWNLEFT:
-		return (a->Pos.y < a2->Pos.y && a->Pos.x > a2->Pos.x);
+		return !isRight && !isAbove;
 	case DIRECTION_DOWN:
-		return a->Pos.y < a2->Pos.y;
+		return !isAbove && isUpperOrLowerOctants;
 	case DIRECTION_DOWNRIGHT:
-		return (a->Pos.y < a2->Pos.y && a->Pos.x < a2->Pos.x);
+		return isRight && !isAbove;
 	case DIRECTION_RIGHT:
-		return a->Pos.x < a2->Pos.x;
+		return isRight && !isUpperOrLowerOctants;
 	case DIRECTION_UPRIGHT:
-		return (a->Pos.y > a2->Pos.y && a->Pos.x < a2->Pos.x);
+		return isRight && isAbove;
 	default:
-		// should nver get here
-		assert(0);
+		CASSERT(false, "invalid direction");
 		break;
 	}
-	return 0;
+	return false;
 }
 
 
-static int IsFacingPlayer(TActor *actor, direction_e d)
+static bool IsFacingPlayer(TActor *actor, direction_e d)
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (IsPlayerAlive(i) &&
-			IsFacing(actor, CArrayGet(&gActors, gPlayerIds[i]), d))
+		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		if (IsPlayerAlive(i) && IsFacing(actor->Pos, player->Pos, d))
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 
 #define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
-static int IsCloseToPlayer(Vec2i pos)
+static bool IsCloseToPlayer(const Vec2i fullPos, const int fullDistance)
 {
-	TActor *closestPlayer = AIGetClosestPlayer(pos);
-	if (closestPlayer && CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, closestPlayer->Pos.x, closestPlayer->Pos.y) < (32 << 8))
+	TActor *closestPlayer = AIGetClosestPlayer(fullPos);
+	return closestPlayer && CHEBYSHEV_DISTANCE(
+		fullPos.x, fullPos.y,
+		closestPlayer->Pos.x, closestPlayer->Pos.y) < fullDistance;
+}
+
+static bool CanSeeAPlayer(const TActor *a)
+{
+	const Vec2i realPos = Vec2iFull2Real(a->Pos);
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		return 1;
+		if (!IsPlayerAlive(i))
+		{
+			continue;
+		}
+		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		const Vec2i playerRealPos = Vec2iFull2Real(player->Pos);
+		// Can see player if:
+		// - Clear line of sight, and
+		// - If they are close, or if facing and they are not too far
+		if (!AIHasClearShot(realPos, playerRealPos))
+		{
+			continue;
+		}
+		const int distance = CHEBYSHEV_DISTANCE(
+			realPos.x, realPos.y, playerRealPos.x, playerRealPos.y);
+		const bool isClose = distance < 16 * 4;
+		const bool isNotTooFar = distance < 16 * 30;
+		if (isClose ||
+			(isNotTooFar && IsFacing(realPos, playerRealPos, a->direction)))
+		{
+			return true;
+		}
 	}
-	return 0;
+	return false;
 }
 
 
@@ -343,9 +373,7 @@ static bool DidPlayerShoot(void)
 
 void CommandBadGuys(int ticks)
 {
-	int roll, cmd;
 	int count = 0;
-	int bypass;
 	int delayModifier;
 	int rollLimit;
 
@@ -389,23 +417,48 @@ void CommandBadGuys(int ticks)
 			}
 
 			count++;
-			cmd = 0;
-			if (!actor->dead &&
-			    (actor->flags & FLAGS_SLEEPING) == 0) {
-				bypass = 0;
-				roll = rand() % rollLimit;
-				if (!!(actor->flags & FLAGS_FOLLOWER))
+			int cmd = 0;
+
+			// Wake up if it can see a player
+			if ((actor->flags & FLAGS_SLEEPING) &&
+				actor->aiContext->Delay == 0)
+			{
+				if (CanSeeAPlayer(actor))
 				{
-					if (IsCloseToPlayer(actor->Pos))
+					actor->flags &= ~FLAGS_SLEEPING;
+					actor->aiContext->State = AI_STATE_NONE;
+				}
+				actor->aiContext->Delay = bot->actionDelay * delayModifier;
+			}
+			// Go to sleep if the player's too far away
+			if (!(actor->flags & FLAGS_SLEEPING) &&
+				actor->aiContext->Delay == 0 &&
+				!(actor->flags & FLAGS_AWAKEALWAYS))
+			{
+				if (!IsCloseToPlayer(actor->Pos, (40 * 16) << 8))
+				{
+					actor->flags |= FLAGS_SLEEPING;
+					actor->aiContext->State = AI_STATE_IDLE;
+				}
+			}
+
+			if (!actor->dead && !(actor->flags & FLAGS_SLEEPING))
+			{
+				bool bypass = false;
+				const int roll = rand() % rollLimit;
+				if (actor->flags & FLAGS_FOLLOWER)
+				{
+					if (IsCloseToPlayer(actor->Pos, 32 << 8))
 					{
 						cmd = 0;
+						actor->aiContext->State = AI_STATE_IDLE;
 					}
 					else
 					{
-						cmd = AIGoto(actor, AIGetClosestPlayerPos(
-							Vec2iFull2Real(actor->Pos)), true);
+						cmd = AIGoto(
+							actor, AIGetClosestPlayerPos(actor->Pos), true);
+						actor->aiContext->State = AI_STATE_FOLLOW;
 					}
-					actor->aiContext->Delay = bot->actionDelay;
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
 					!!(actor->flags & FLAGS_VISIBLE) &&
@@ -418,15 +471,15 @@ void CommandBadGuys(int ticks)
 						cmd = AIReverseDirection(cmd);
 					}
 					bypass = 1;
+					actor->aiContext->State = AI_STATE_HUNT;
 				}
 				else if (actor->flags & FLAGS_DETOURING)
 				{
 					cmd = BrightWalk(actor, roll);
+					actor->aiContext->State = AI_STATE_TRACK;
 				}
 				else if (actor->aiContext->Delay > 0)
 				{
-					actor->aiContext->Delay =
-						MAX(0, actor->aiContext->Delay - ticks);
 					cmd = actor->lastCmd & ~CMD_BUTTON1;
 				}
 				else
@@ -434,10 +487,12 @@ void CommandBadGuys(int ticks)
 					if (roll < bot->probabilityToTrack)
 					{
 						cmd = AIHuntClosest(actor);
+						actor->aiContext->State = AI_STATE_HUNT;
 					}
 					else if (roll < bot->probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
+						actor->aiContext->State = AI_STATE_TRACK;
 					}
 					else
 					{
@@ -470,6 +525,7 @@ void CommandBadGuys(int ticks)
 							// Turn back and shoot for running away characters
 							cmd |= AIReverseDirection(AIHuntClosest(actor));
 						}
+						actor->aiContext->State = AI_STATE_HUNT;
 					}
 					else
 					{
@@ -483,10 +539,13 @@ void CommandBadGuys(int ticks)
 						{
 							Detour(actor);
 							cmd = 0;
+							actor->aiContext->State = AI_STATE_TRACK;
 						}
 					}
 				}
 			}
+			actor->aiContext->Delay =
+				MAX(0, actor->aiContext->Delay - ticks);
 			CommandActor(actor, cmd, ticks);
 		}
 		else if ((actor->flags & FLAGS_PRISONER) != 0)

@@ -253,8 +253,6 @@ static ActorPics GetCharacterPics(int id)
 	}
 
 	actor->flags |= FLAGS_VISIBLE;
-	// TODO: this means any character wakes up when visible
-	actor->flags &= ~FLAGS_SLEEPING;
 
 	if (state == STATE_IDLELEFT)
 		headDir = (dir + 7) % 8;
@@ -1018,6 +1016,7 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	if (c->bot)
 	{
 		actor->aiContext = AIContextNew();
+		actor->aiContext->State = AI_STATE_IDLE;
 	}
 	return i;
 }
@@ -1185,6 +1184,12 @@ void ActorTakeHit(
 	const bool isInvulnerable,
 	const Vec2i hitLocation)
 {
+	// Wake up if this is an AI
+	if (actor->aiContext)
+	{
+		actor->flags &= ~FLAGS_SLEEPING;
+		actor->aiContext->State = AI_STATE_NONE;
+	}
 	// Check immune again
 	// This can happen if multiple damage events overkill this actor,
 	// need to ignore the overkill scores
