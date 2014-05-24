@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,8 @@ CollisionTeam CalcCollisionTeam(int isActor, TActor *actor);
 bool IsCollisionWithWall(Vec2i pos, Vec2i size);
 // Check if colliding with a wall or the map edge
 bool IsCollisionWallOrEdge(Map *map, Vec2i pos, Vec2i size);
+bool CollisionIsOnSameTeam(
+	const TTileItem *i, const CollisionTeam team, const bool isDogfight);
 TTileItem *GetItemOnTileInCollision(
 	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight);
 

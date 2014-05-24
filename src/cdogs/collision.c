@@ -123,7 +123,8 @@ int ItemsCollide(TTileItem *item1, TTileItem *item2, Vec2i pos)
 	return 0;
 }
 
-static int IsOnSameTeam(TTileItem *i, CollisionTeam team, int isDogfight)
+bool CollisionIsOnSameTeam(
+	const TTileItem *i, const CollisionTeam team, const bool isDogfight)
 {
 	if (gConfig.Game.AllyCollision != ALLYCOLLISION_NORMAL)
 	{
@@ -162,7 +163,7 @@ TTileItem *GetItemOnTileInCollision(
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
 				// Don't collide if items are on the same team
-				if (!IsOnSameTeam(ti, team, isDogfight))
+				if (!CollisionIsOnSameTeam(ti, team, isDogfight))
 				{
 					if (item != ti &&
 						(ti->flags & mask) &&

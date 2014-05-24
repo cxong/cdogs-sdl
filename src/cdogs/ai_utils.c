@@ -248,15 +248,32 @@ static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos)
 	for (int i = 0; i < (int)t->things.size; i++)
 	{
 		ThingId *tid = CArrayGet(&t->things, i);
-		if (tid->Kind != KIND_OBJECT)
+		if (tid->Kind == KIND_OBJECT)
 		{
-			continue;
+			// Check that the object is not a pickup type
+			TObject *o = CArrayGet(&gObjs, tid->Id);
+			if (o->Type == OBJ_NONE && !(o->tileItem.flags & TILEITEM_IS_WRECK))
+			{
+				return false;
+			}
 		}
-		// Check that the object is not a pickup type
-		TObject *o = CArrayGet(&gObjs, tid->Id);
-		if (o->Type == OBJ_NONE && !(o->tileItem.flags & TILEITEM_IS_WRECK))
+		else if (tid->Kind == KIND_CHARACTER)
 		{
-			return false;
+			switch (gConfig.Game.AllyCollision)
+			{
+			case ALLYCOLLISION_NORMAL:
+				return false;
+			case ALLYCOLLISION_REPEL:
+				// TODO: implement
+				// Need to know collision team of player
+				// to know if collision will result in repelling
+				break;
+			case ALLYCOLLISION_NONE:
+				continue;
+			default:
+				CASSERT(false, "unknown collision type");
+				break;
+			}
 		}
 	}
 	return true;
