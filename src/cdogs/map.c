@@ -844,25 +844,19 @@ static Trigger *CreateOpenDoorTrigger(
 }
 static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 {
-	TWatch *w;
-	Trigger *t;
-	Action *a;
-	int i;
-	int pic;
-	int openDoorPic;
-	int tileFlags =
+	const int tileFlags =
 		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
 		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
-	struct DoorPic *dp;
-	int isHorizontal =
+	const bool isHorizontal =
 		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
 		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR ||
 		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
 		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR;
-	int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
-	Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
-	Vec2i dAside = Vec2iNew(dv.y, dv.x);
+	const int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
+	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
+	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
 
+	struct DoorPic *dp;
 	switch (flags)
 	{
 	case FLAGS_KEYCARD_RED:
@@ -881,6 +875,8 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		dp = &gMission.doorPics[0];
 		break;
 	}
+	int pic;
+	int openDoorPic;
 	if (isHorizontal)
 	{
 		pic = dp->horzPic;
@@ -893,7 +889,7 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 	}
 
 	// set up the door pics
-	for (i = 0; i < doorGroupCount; i++)
+	for (int i = 0; i < doorGroupCount; i++)
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		Tile *tile = MapGetTile(map, vI);
@@ -924,13 +920,13 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		}
 	}
 
-	w = CreateCloseDoorWatch(
+	TWatch *w = CreateCloseDoorWatch(
 		map, v, tileFlags, isHorizontal, doorGroupCount, pic, floor, room);
-	t = CreateOpenDoorTrigger(
+	Trigger *t = CreateOpenDoorTrigger(
 		map, v,
 		isHorizontal, doorGroupCount, flags, openDoorPic, floor, room);
 	// Connect trigger and watch up
-	a = TriggerAddAction(t);
+	Action *a = TriggerAddAction(t);
 	a->action = ACTION_ACTIVATEWATCH;
 	a->u.index = w->index;
 	a = WatchAddAction(w);
