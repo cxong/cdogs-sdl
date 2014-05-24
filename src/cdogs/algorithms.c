@@ -227,8 +227,8 @@ static bool XiaolinWuDraw(
 {
 	if (data->CheckBlockedAndEarlyTerminate)
 	{
-		if (RFPART(aa) > AAFACTOR && data->IsBlocked(data->data, a) ||
-			FPART(aa) > AAFACTOR && !isEnd && data->IsBlocked(data->data, b))
+		if ((RFPART(aa) > AAFACTOR && data->IsBlocked(data->data, a)) ||
+			(FPART(aa) > AAFACTOR && !isEnd && data->IsBlocked(data->data, b)))
 		{
 			return false;
 		}
