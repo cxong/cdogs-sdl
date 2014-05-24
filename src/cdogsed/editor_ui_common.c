@@ -69,7 +69,7 @@ void DeleteMission(CampaignOptions *co)
 	CArrayDelete(&co->Setting.Missions, co->MissionIndex);
 	if (co->MissionIndex >= (int)co->Setting.Missions.size)
 	{
-		co->MissionIndex = co->Setting.Missions.size - 1;
+		co->MissionIndex = MAX(0, (int)co->Setting.Missions.size - 1);
 	}
 }
 

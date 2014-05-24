@@ -906,10 +906,12 @@ static void MissionInsertNew(void *data, int d)
 static void MissionDelete(void *data, int d)
 {
 	UNUSED(d);
+	CampaignOptions *co = data;
 	// TODO: this still means the file is changed if user chooses no
-	if (ConfirmScreen("", "Delete mission? (Y/N)"))
+	if (co->Setting.Missions.size > 0 &&
+		ConfirmScreen("", "Delete mission? (Y/N)"))
 	{
-		DeleteMission(data);
+		DeleteMission(co);
 	}
 }
 static void MissionChangeWidth(void *data, int d)

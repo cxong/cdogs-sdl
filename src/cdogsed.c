@@ -289,11 +289,6 @@ static int Change(UIObject *o, int yc, int d)
 		return 0;
 	}
 
-	if (!CampaignGetCurrentMission(&gCampaign))
-	{
-		return 0;
-	}
-
 	if (o)
 	{
 		isChanged = UIObjectChange(o, d);
