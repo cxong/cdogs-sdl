@@ -102,7 +102,8 @@ struct Watch {
 typedef struct Watch TWatch;
 
 
-void TriggerActivate(Trigger *t, int flags, CArray *mapTriggers);
+bool TriggerCanActivate(const Trigger *t, const int flags);
+void TriggerActivate(Trigger *t, CArray *mapTriggers);
 void UpdateWatches(CArray *mapTriggers);
 Trigger *TriggerNew(void);
 void TriggerTerminate(Trigger *t);

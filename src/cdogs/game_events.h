@@ -58,6 +58,7 @@ typedef enum
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_DAMAGE_CHARACTER,
+	GAME_EVENT_TRIGGER,
 	GAME_EVENT_UPDATE_OBJECTIVE,
 
 	// Can complete mission
@@ -134,6 +135,11 @@ typedef struct
 			int TargetId;
 			int TargetPlayerIndex;
 		} DamageCharacter;
+		struct
+		{
+			int Id;
+			Vec2i TilePos;
+		} Trigger;
 		struct
 		{
 			int ObjectiveIndex;

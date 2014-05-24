@@ -30,6 +30,7 @@
 #include <cdogs/damage.h>
 #include <cdogs/game_events.h>
 #include <cdogs/objs.h>
+#include <cdogs/triggers.h>
 
 
 static void HandleGameEvent(
@@ -145,6 +146,20 @@ static void HandleGameEvent(
 					hud,
 					e->u.DamageCharacter.TargetPlayerIndex,
 					-e->u.DamageCharacter.Power);
+			}
+			break;
+		case GAME_EVENT_TRIGGER:
+			{
+				const Tile *t = MapGetTile(&gMap, e->u.Trigger.TilePos);
+				for (int i = 0; i < (int)t->triggers.size; i++)
+				{
+					Trigger **tp = CArrayGet(&t->triggers, i);
+					if ((*tp)->id == e->u.Trigger.Id)
+					{
+						TriggerActivate(*tp, &gMap.triggers);
+						break;
+					}
+				}
 			}
 			break;
 		case GAME_EVENT_UPDATE_OBJECTIVE:

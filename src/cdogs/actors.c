@@ -409,16 +409,21 @@ void UpdateActorState(TActor * actor, int ticks)
 }
 
 
-static void CheckTrigger(Vec2i pos)
+static void CheckTrigger(const Vec2i tilePos)
 {
-	Tile *t = MapGetTile(&gMap, Vec2iToTile(pos));
+	const Tile *t = MapGetTile(&gMap, tilePos);
 	int i;
 	for (i = 0; i < (int)t->triggers.size; i++)
 	{
-		TriggerActivate(
-			*(Trigger **)CArrayGet(&t->triggers, i),
-			gMission.flags,
-			&gMap.triggers);
+		Trigger **tp = CArrayGet(&t->triggers, i);
+		if (TriggerCanActivate(*tp, gMission.flags))
+		{
+			GameEvent e;
+			e.Type = GAME_EVENT_TRIGGER;
+			e.u.Trigger.Id = (*tp)->id;
+			e.u.Trigger.TilePos = tilePos;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 }
 
@@ -610,7 +615,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	CheckTrigger(realPos);
+	CheckTrigger(Vec2iToTile(realPos));
 
 	if (actor->pData)
 	{

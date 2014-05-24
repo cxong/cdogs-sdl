@@ -236,14 +236,14 @@ static int ConditionsMet(CArray *conditions)
 	return 1;
 }
 
-void TriggerActivate(Trigger *t, int flags, CArray *mapTriggers)
+bool TriggerCanActivate(const Trigger *t, const int flags)
 {
-	int i;
-	if (!t->isActive || (t->flags != 0 && !(t->flags & flags)))
-	{
-		return;
-	}
-	for (i = 0; i < (int)t->actions.size; i++)
+	return t->isActive && (t->flags == 0 || (t->flags & flags));
+}
+
+void TriggerActivate(Trigger *t, CArray *mapTriggers)
+{
+	for (int i = 0; i < (int)t->actions.size; i++)
 	{
 		ActionRun(CArrayGet(&t->actions, i), mapTriggers);
 	}
