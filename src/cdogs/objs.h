@@ -131,7 +131,7 @@ typedef struct
 typedef struct MobileObject
 {
 	int player;	// -1 if not owned by any player
-	BulletClass bulletClass;
+	const BulletClass *bulletClass;
 	int kind;
 	int x, y, z;
 	Vec2i vel;

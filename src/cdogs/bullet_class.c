@@ -855,8 +855,8 @@ void BulletInitialize(void)
 static void SetBulletProps(
 	TMobileObject *obj, int z, BulletType type, int flags)
 {
-	BulletClass *b = &gBulletClasses[type];
-	obj->bulletClass = *b;
+	const BulletClass *b = &gBulletClasses[type];
+	obj->bulletClass = b;
 	obj->updateFunc = b->UpdateFunc;
 	obj->tileItem.getPicFunc = b->GetPicFunc;
 	obj->tileItem.getActorPicsFunc = NULL;
