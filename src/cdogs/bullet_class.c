@@ -108,7 +108,7 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 Pic *GetFlame(int id)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
-	const TOffsetPic *pic = &cFlamePics[obj->state & 3];
+	const TOffsetPic *pic = &cFlamePics[obj->state.frame & 3];
 	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
 	p->offset.x = pic->dx;
 	p->offset.y = pic->dy - obj->z;
@@ -119,7 +119,7 @@ static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state];
+	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state.dir];
 	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
 	Blit(
 		&gGraphicsDevice,
@@ -147,7 +147,7 @@ void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state & 3)];
+	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state.frame & 3)];
 	DrawBTPic(
 		&gGraphicsDevice,
 		PicManagerGetFromOld(&gPicManager, pic->picIndex),
@@ -162,23 +162,21 @@ void AddExplosion(Vec2i pos, int flags, int player)
 	flags |= FLAGS_HURTALWAYS;
 	for (i = 0; i < 8; i++)
 	{
-		const Vec2i vel = GetFullVectorsForRadians(i * 0.25 * PI);
-		const Vec2i fireballPos = Vec2iAdd(pos, Vec2iScale(vel, 2));
-		GameEventAddFireball(fireballPos, flags, player, vel, 0, 0);
+		GameEventAddFireball(
+			&gBulletClasses[BULLET_FIREBALL1],
+			pos, flags, player, 0, 0, i * 0.25 * PI);
 	}
 	for (i = 0; i < 8; i++)
 	{
-		const Vec2i vel =
-			Vec2iScaleDiv(Vec2iScale(
-			GetFullVectorsForRadians((i * 0.25 + 0.125) * PI), 3), 4);
-		const Vec2i fireballPos = Vec2iAdd(pos, vel);
-		GameEventAddFireball(fireballPos, flags, player, vel, 8, -8);
+		GameEventAddFireball(
+			&gBulletClasses[BULLET_FIREBALL2],
+			pos, flags, player, 8, -8, (i * 0.25 + 0.125) * PI);
 	}
 	for (i = 0; i < 8; i++)
 	{
-		const Vec2i vel =
-			Vec2iScaleDiv(GetFullVectorsForRadians(i * 0.25 * PI), 2);
-		GameEventAddFireball(pos, flags, player, vel, 11, -16);
+		GameEventAddFireball(
+			&gBulletClasses[BULLET_FIREBALL3],
+			pos, flags, player, 11, -16, i * 0.25 * PI);
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
@@ -254,7 +252,9 @@ int UpdateMolotovFlame(struct MobileObject *obj, int ticks)
 	}
 
 	if ((obj->count & 3) == 0)
-		obj->state = rand();
+	{
+		obj->state.frame = rand();
+	}
 
 	for (int i = 0; i < ticks; i++)
 	{
@@ -270,7 +270,7 @@ int UpdateMolotovFlame(struct MobileObject *obj, int ticks)
 	}
 	Vec2i pos = UpdateAndGetCloudPosition(obj, ticks);
 
-	HitItem(obj, pos, SPECIAL_FLAME);
+	HitItem(obj, pos);
 
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
@@ -280,6 +280,31 @@ int UpdateMolotovFlame(struct MobileObject *obj, int ticks)
 		return 1;
 	} else
 		return 1;
+}
+
+
+static void SetBulletProps(
+	TMobileObject *obj, int z, BulletType type, int flags)
+{
+	const BulletClass *b = &gBulletClasses[type];
+	obj->bulletClass = b;
+	obj->updateFunc = b->UpdateFunc;
+	obj->tileItem.getPicFunc = b->GetPicFunc;
+	obj->tileItem.getActorPicsFunc = NULL;
+	obj->tileItem.drawFunc = b->DrawFunc;
+	obj->tileItem.drawData.u = b->DrawData.u;
+	obj->kind = MOBOBJ_BULLET;
+	obj->z = z;
+	obj->range = RAND_INT(b->RangeLow, b->RangeHigh);
+	obj->flags = flags;
+	obj->vel = Vec2iFull2Real(Vec2iScale(
+		obj->vel, RAND_INT(b->SpeedLow, b->SpeedHigh)));
+	if (b->SpeedScale)
+	{
+		obj->vel.y = obj->vel.y * TILE_HEIGHT / TILE_WIDTH;
+	}
+	obj->tileItem.w = b->Size.x;
+	obj->tileItem.h = b->Size.y;
 }
 
 void AddFireExplosion(Vec2i pos, int flags, int player)
@@ -296,12 +321,12 @@ void AddFireExplosion(Vec2i pos, int flags, int player)
 	GameEventsEnqueue(&gGameEvents, sound);
 }
 void AddGasExplosion(
-	Vec2i pos, int flags, special_damage_e special, int player)
+	Vec2i pos, int flags, const BulletClass *class, int player)
 {
 	flags |= FLAGS_HURTALWAYS;
 	for (int i = 0; i < 8; i++)
 	{
-		GameEventAddGasCloud(pos, flags, player, special);
+		GameEventAddGasCloud(class, pos, flags, player);
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
@@ -320,12 +345,12 @@ int UpdateGasCloud(struct MobileObject *obj, int ticks)
 
 	if ((obj->count & 3) == 0)
 	{
-		obj->state = rand();
+		obj->state.frame = rand();
 	}
 
 	Vec2i pos = UpdateAndGetCloudPosition(obj, ticks);
 
-	HitItem(obj, pos, obj->special);
+	HitItem(obj, pos);
 
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
@@ -338,26 +363,23 @@ int UpdateGasCloud(struct MobileObject *obj, int ticks)
 }
 
 void AddGasCloud(
-	Vec2i pos, int z, double radians, int speed, int range,
-	int flags, special_damage_e special, int player)
+	Vec2i pos, int z, double radians, int flags, int player)
 {
+	const BulletClass *b = &gBulletClasses[BULLET_GAS];
 	Vec2i vel = Vec2iFull2Real(Vec2iScale(
-		GetFullVectorsForRadians(radians), speed));
+		GetFullVectorsForRadians(radians),
+		RAND_INT(b->SpeedLow, b->SpeedHigh)));
+	if (b->SpeedScale)
+	{
+		vel.y = vel.y * TILE_HEIGHT / TILE_WIDTH;
+	}
 	pos = Vec2iAdd(pos, Vec2iScale(vel, 6));
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->updateFunc = UpdateGasCloud;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)DrawGasCloud;
+	SetBulletProps(obj, z, BULLET_GAS, flags);
 	obj->tileItem.drawData.u.Tint =
-		special == SPECIAL_CONFUSE ? tintPurple : tintPoison;
-	obj->tileItem.w = 10;
-	obj->tileItem.h = 10;
+		b->Special == SPECIAL_CONFUSE ? tintPurple : tintPoison;
 	obj->kind = MOBOBJ_FIREBALL;
-	obj->range = range;
-	obj->flags = flags;
-	obj->power = 0;
-	obj->special = special;
 	obj->vel = vel;
-	obj->z = z;
 }
 
 int UpdateGrenade(TMobileObject *obj, int ticks)
@@ -381,11 +403,15 @@ int UpdateGrenade(TMobileObject *obj, int ticks)
 			break;
 
 		case MOBOBJ_GASBOMB:
-			AddGasExplosion(fullPos, obj->flags, SPECIAL_POISON, obj->player);
+			AddGasExplosion(
+				fullPos, obj->flags,
+				&gBulletClasses[BULLET_GAS_CLOUD_POISON], obj->player);
 			break;
 
 		case MOBOBJ_GASBOMB2:
-			AddGasExplosion(fullPos, obj->flags, SPECIAL_CONFUSE, obj->player);
+			AddGasExplosion(
+				fullPos, obj->flags,
+				&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], obj->player);
 			break;
 		}
 		return 0;
@@ -472,7 +498,8 @@ int UpdateMolotov(TMobileObject *obj, int ticks)
 	return 1;
 }
 
-int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
+
+int UpdateBullet(TMobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
@@ -483,17 +510,11 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 	Vec2i pos =
 		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
 
-	if (HitItem(obj, pos, special))
+	if (HitItem(obj, pos))
 	{
+		SetBulletProps(obj, obj->z, BULLET_SPARK, obj->flags);
 		obj->count = 0;
-		obj->range = 0;
-		obj->tileItem.getPicFunc = NULL;
-		obj->tileItem.getActorPicsFunc = NULL;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
-		obj->tileItem.drawData.u.Bullet.Ofspic = OFSPIC_SPARK;
-		obj->tileItem.drawData.u.Bullet.Mask = colorWhite;
-		obj->updateFunc = UpdateSpark;
-		return 1;
+		return true;
 	}
 	const Vec2i realPos = Vec2iFull2Real(pos);
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
@@ -501,16 +522,12 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		obj->x = pos.x;
 		obj->y = pos.y;
 		MapMoveTileItem(&gMap, &obj->tileItem, realPos);
-		return 1;
-	} else {
+		return true;
+	}
+	else
+	{
+		SetBulletProps(obj, obj->z, BULLET_SPARK, obj->flags);
 		obj->count = 0;
-		obj->range = 0;
-		obj->tileItem.getPicFunc = NULL;
-		obj->tileItem.getActorPicsFunc = NULL;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawBullet;
-		obj->tileItem.drawData.u.Bullet.Ofspic = OFSPIC_SPARK;
-		obj->tileItem.drawData.u.Bullet.Mask = colorWhite;
-		obj->updateFunc = UpdateSpark;
 		GameEvent e;
 		e.Type = GAME_EVENT_SOUND_AT;
 		e.u.SoundAt.Sound = SND_HIT_WALL;
@@ -518,10 +535,6 @@ int InternalUpdateBullet(TMobileObject *obj, int special, int ticks)
 		GameEventsEnqueue(&gGameEvents, e);
 		return 1;
 	}
-}
-int UpdateBullet(TMobileObject *obj, int ticks)
-{
-	return InternalUpdateBullet(obj, obj->special, ticks);
 }
 
 int UpdateFlame(TMobileObject *obj, int ticks)
@@ -534,13 +547,13 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 
 	if ((obj->count & 3) == 0)
 	{
-		obj->state = rand();
+		obj->state.frame = rand();
 	}
 
 	Vec2i pos =
 		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
 
-	if (HitItem(obj, pos, SPECIAL_FLAME))
+	if (HitItem(obj, pos))
 	{
 		obj->count = obj->range;
 		obj->x = pos.x;
@@ -564,14 +577,13 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 
 int UpdateSeeker(TMobileObject * obj, int ticks)
 {
-	TActor *target;
-	if (!InternalUpdateBullet(obj, 0, ticks))
+	if (!UpdateBullet(obj, ticks))
 	{
 		return 0;
 	}
 	// Find the closest target to this bullet and steer towards it
 	// Compensate for the bullet's velocity
-	target = AIGetClosestEnemy(
+	TActor *target = AIGetClosestEnemy(
 		Vec2iNew(obj->x, obj->y), obj->flags, obj->player >= 0);
 	if (target)
 	{
@@ -599,7 +611,7 @@ int UpdateSeeker(TMobileObject * obj, int ticks)
 
 int UpdateBrownBullet(TMobileObject *obj, int ticks)
 {
-	if (InternalUpdateBullet(obj, 0, ticks))
+	if (UpdateBullet(obj, ticks))
 	{
 		int i;
 		for (i = 0; i < ticks; i++)
@@ -648,9 +660,8 @@ int UpdateActiveMine(TMobileObject *obj, int ticks)
 		{
 			if (TileHasCharacter(MapGetTile(&gMap, Vec2iAdd(tv, dv))))
 			{
-				obj->updateFunc = UpdateTriggeredMine;
+				SetBulletProps(obj, obj->z, BULLET_TRIGGEREDMINE, obj->flags);
 				obj->count = 0;
-				obj->range = 5;
 				SoundPlayAt(
 					&gSoundDevice,
 					SND_HAHAHA,
@@ -666,7 +677,9 @@ int UpdateDroppedMine(TMobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count >= obj->range)
+	{
 		obj->updateFunc = UpdateActiveMine;
+	}
 	return 1;
 }
 
@@ -682,7 +695,8 @@ void BulletInitialize(void)
 		b->UpdateFunc = UpdateBullet;
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
-		b->Size = 0;
+		b->SpeedScale = false;
+		b->Size = Vec2iZero();
 		b->Special = SPECIAL_NONE;
 	}
 
@@ -691,8 +705,8 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 768;
-	b->Range = 60;
+	b->SpeedLow = b->SpeedHigh = 768;
+	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 10;
 
 	b = &gBulletClasses[BULLET_SHOTGUN];
@@ -700,31 +714,32 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 640;
-	b->Range = 50;
+	b->SpeedLow = b->SpeedHigh = 640;
+	b->RangeLow = b->RangeHigh = 50;
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_FLAME];
 	b->UpdateFunc = UpdateFlame;
 	b->GetPicFunc = GetFlame;
-	b->Speed = 384;
-	b->Range = 30;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 30;
 	b->Power = 12;
-	b->Size = 5;
+	b->Size = Vec2iNew(5, 5);
+	b->Special = SPECIAL_FLAME;
 
 	b = &gBulletClasses[BULLET_LASER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
 	b->DrawData.u.Beam = BEAM_PIC_BEAM;
-	b->Speed = 1024;
-	b->Range = 90;
+	b->SpeedLow = b->SpeedHigh = 1024;
+	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 20;
-	b->Size = 2;
+	b->Size = Vec2iNew(2, 2);
 
 	b = &gBulletClasses[BULLET_SNIPER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
 	b->DrawData.u.Beam = BEAM_PIC_BRIGHT;
-	b->Speed = 1024;
-	b->Range = 90;
+	b->SpeedLow = b->SpeedHigh = 1024;
+	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 50;
 
 	b = &gBulletClasses[BULLET_FRAG];
@@ -732,8 +747,8 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 640;
-	b->Range = 50;
+	b->SpeedLow = b->SpeedHigh = 640;
+	b->RangeLow = b->RangeHigh = 50;
 	b->Power = 40;
 
 
@@ -743,49 +758,49 @@ void BulletInitialize(void)
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorWhite;
-	b->Speed = 384;
-	b->Range = 100;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGray;
-	b->Speed = 384;
-	b->Range = 100;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorWhite;
-	b->Speed = 384;
-	b->Range = 100;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGreen;
-	b->Speed = 384;
-	b->Range = 100;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
 	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorPurple;
-	b->Speed = 384;
-	b->Range = 100;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-
 
 	b = &gBulletClasses[BULLET_GAS];
 	b->UpdateFunc = UpdateGasCloud;
 	b->DrawFunc = (TileItemDrawFunc)DrawGasCloud;
-	b->Speed = 384;
-	b->Range = 35;
+	b->SpeedLow = b->SpeedHigh = 384;
+	b->RangeLow = b->RangeHigh = 35;
 	b->Power = 0;
+	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
 
 	b = &gBulletClasses[BULLET_RAPID];
@@ -793,8 +808,8 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 1280;
-	b->Range = 25;
+	b->SpeedLow = b->SpeedHigh = 1280;
+	b->RangeLow = b->RangeHigh = 25;
 	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
@@ -803,10 +818,10 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorRed;
-	b->Speed = 512;
-	b->Range = 60;
+	b->SpeedLow = b->SpeedHigh = 512;
+	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 20;
-	b->Size = 3;
+	b->Size = Vec2iNew(3, 3);
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;
@@ -814,8 +829,8 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 768;
-	b->Range = 45;
+	b->SpeedLow = b->SpeedHigh = 768;
+	b->RangeLow = b->RangeHigh = 45;
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
@@ -824,10 +839,10 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
 	b->DrawData.u.Bullet.UseMask = false;
 	b->DrawData.u.Bullet.Tint = tintDarker;
-	b->Speed = 768;
-	b->Range = 45;
+	b->SpeedLow = b->SpeedHigh = 768;
+	b->RangeLow = b->RangeHigh = 45;
 	b->Power = 0;
-	b->Size = 5;
+	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_PETRIFY;
 
 	b = &gBulletClasses[BULLET_PROXMINE];
@@ -836,8 +851,8 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 0;
-	b->Range = 140;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = 140;
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
@@ -846,31 +861,111 @@ void BulletInitialize(void)
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->Speed = 0;
-	b->Range = 210;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = 210;
 	b->Power = 0;
-}
 
 
-static void SetBulletProps(
-	TMobileObject *obj, int z, BulletType type, int flags)
-{
-	const BulletClass *b = &gBulletClasses[type];
-	obj->bulletClass = b;
-	obj->updateFunc = b->UpdateFunc;
-	obj->tileItem.getPicFunc = b->GetPicFunc;
-	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = b->DrawFunc;
-	obj->tileItem.drawData.u = b->DrawData.u;
-	obj->kind = MOBOBJ_BULLET;
-	obj->z = z;
-	obj->flags = flags;
-	obj->vel = Vec2iFull2Real(Vec2iScale(obj->vel, b->Speed));
-	obj->range = b->Range;
-	obj->power = b->Power;
-	obj->special = b->Special;
-	obj->tileItem.w = b->Size;
-	obj->tileItem.h = b->Size;
+	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
+	b->UpdateFunc = UpdateExplosion;
+	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->Power = 0;
+	b->Size = Vec2iNew(7, 5);
+	b->Special = SPECIAL_EXPLOSION;
+
+	b = &gBulletClasses[BULLET_FIREBALL1];
+	b->UpdateFunc = UpdateExplosion;
+	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->SpeedLow = b->SpeedHigh = 256;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->Power = FIREBALL_POWER;
+	b->Size = Vec2iNew(7, 5);
+	b->Special = SPECIAL_EXPLOSION;
+
+	b = &gBulletClasses[BULLET_FIREBALL2];
+	b->UpdateFunc = UpdateExplosion;
+	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->SpeedLow = b->SpeedHigh = 192;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->Power = FIREBALL_POWER;
+	b->Size = Vec2iNew(7, 5);
+	b->Special = SPECIAL_EXPLOSION;
+
+	b = &gBulletClasses[BULLET_FIREBALL3];
+	b->UpdateFunc = UpdateExplosion;
+	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->SpeedLow = b->SpeedHigh = 128;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->Power = FIREBALL_POWER;
+	b->Size = Vec2iNew(7, 5);
+	b->Special = SPECIAL_EXPLOSION;
+
+	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
+	b->UpdateFunc = UpdateMolotovFlame;
+	b->GetPicFunc = GetFlame;
+	b->SpeedLow = -256;
+	b->SpeedHigh = 16 * 31 - 256;
+	b->SpeedScale = true;
+	b->RangeLow = FLAME_RANGE * 4;
+	b->RangeHigh = (FLAME_RANGE + 8 - 1) * 4;
+	b->Power = 2;
+	b->Size = Vec2iNew(5, 5);
+	b->Special = SPECIAL_FLAME;
+
+	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
+	b->UpdateFunc = UpdateGasCloud;
+	b->DrawFunc = DrawGasCloud;
+	b->SpeedLow = 0;
+	b->SpeedHigh = 255;
+	b->RangeLow = 48 * 4 - 1;
+	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
+	b->Power = 0;
+	b->Size = Vec2iNew(10, 10);
+	b->Special = SPECIAL_POISON;
+
+	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
+	b->UpdateFunc = UpdateGasCloud;
+	b->DrawFunc = DrawGasCloud;
+	b->SpeedLow = 0;
+	b->SpeedHigh = 255;
+	b->RangeLow = 48 * 4 - 1;
+	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
+	b->Power = 0;
+	b->Size = Vec2iNew(10, 10);
+	b->Special = SPECIAL_CONFUSE;
+
+
+	b = &gBulletClasses[BULLET_SPARK];
+	b->UpdateFunc = UpdateSpark;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_SPARK;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = 0;
+	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_ACTIVEMINE];
+	b->UpdateFunc = UpdateActiveMine;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = 5;
+	b->Power = 0;
+
+	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
+	b->UpdateFunc = UpdateTriggeredMine;
+	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b->DrawData.u.Bullet.UseMask = true;
+	b->DrawData.u.Bullet.Mask = colorWhite;
+	b->SpeedLow = b->SpeedHigh = 0;
+	b->RangeLow = b->RangeHigh = 5;
+	b->Power = 0;
 }
 
 void AddGrenade(
@@ -911,6 +1006,11 @@ void AddGrenade(
 void AddBullet(
 	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
 {
+	if (!Vec2iEqual(gBulletClasses[type].Size, Vec2iZero()))
+	{
+		const Vec2i vel = GetVectorsForRadians(radians);
+		pos = Vec2iAdd(pos, Vec2iNew(vel.x * 4, vel.y * 7));
+	}
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);
 	SetBulletProps(obj, z, type, flags);
@@ -921,17 +1021,7 @@ void AddBulletDirectional(
 {
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
-	obj->state = dir;
-	SetBulletProps(obj, z, type, flags);
-}
-
-void AddBulletBig(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
-{
-	Vec2i vel = GetVectorsForRadians(radians);
-	pos = Vec2iAdd(pos, Vec2iNew(vel.x * 4, vel.y * 7));
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->vel = GetFullVectorsForRadians(radians);
+	obj->state.dir = dir;
 	SetBulletProps(obj, z, type, flags);
 }
 
@@ -945,7 +1035,9 @@ void BulletAdd(
 	{
 	case BULLET_MG:			// fallthrough
 	case BULLET_SHOTGUN:	// fallthrough
+	case BULLET_FLAME:		// fallthrough
 	case BULLET_BROWN:		// fallthrough
+	case BULLET_PETRIFIER:	// fallthrough
 	case BULLET_PROXMINE:	// fallthrough
 	case BULLET_DYNAMITE:	// fallthrough
 	case BULLET_RAPID:		// fallthrough
@@ -962,11 +1054,6 @@ void BulletAdd(
 		AddGrenade(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
 		break;
 
-	case BULLET_FLAME:	// fallthrough
-	case BULLET_PETRIFIER:
-		AddBulletBig(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
-		break;
-
 	case BULLET_LASER:	// fallthrough
 	case BULLET_SNIPER:
 		AddBulletDirectional(
@@ -974,9 +1061,7 @@ void BulletAdd(
 		break;
 
 	case BULLET_GAS:
-		AddGasCloud(
-			muzzlePos, muzzleHeight, angle, 384, 35,
-			flags, SPECIAL_POISON, playerIndex);
+		AddGasCloud(muzzlePos, muzzleHeight, angle, flags, playerIndex);
 		break;
 
 	default:

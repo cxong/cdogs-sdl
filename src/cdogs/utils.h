@@ -195,4 +195,7 @@ color_t ObjectiveTypeColor(ObjectiveType t);
 #define T2S(_type, _str) case _type: return _str;
 #define S2T(_type, _str) if (strcmp(s, _str) == 0) { return _type; }
 
+#define RAND_INT(_low, _high) ((_low) == (_high) ? (_low) : (_low) + (rand() % ((_high) - (_low))))
+#define RAND_DOUBLE(_low, _high) ((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
+
 #endif

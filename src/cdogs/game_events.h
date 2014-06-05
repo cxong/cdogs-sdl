@@ -158,13 +158,14 @@ void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
 
 void GameEventAddFireball(
+	const BulletClass *class,
 	const Vec2i fullPos, const int flags, const int playerIndex,
-	const Vec2i vel, const int dz, const int count);
+	const int dz, const int count, const double angle);
 void GameEventAddFireballWreckage(const Vec2i fullPos);
 void GameEventAddMolotovFlame(
 	const Vec2i fullPos, const int flags, const int playerIndex);
 void GameEventAddGasCloud(
-	const Vec2i fullPos, const int flags, const int playerIndex,
-	special_damage_e special);
+	const BulletClass *class,
+	const Vec2i fullPos, const int flags, const int playerIndex);
 
 #endif

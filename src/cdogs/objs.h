@@ -137,10 +137,12 @@ typedef struct MobileObject
 	Vec2i vel;
 	int dz;
 	int count;
-	int state;
+	union
+	{
+		int frame;
+		direction_e dir;
+	} state;
 	int range;
-	int power;
-	special_damage_e special;
 	int flags;
 	int soundLock;
 	TTileItem tileItem;
@@ -153,19 +155,13 @@ extern CArray gObjs;	// of TObject
 
 typedef struct
 {
+	const BulletClass *Class;
 	Vec2i FullPos;
 	int Flags;
 	int PlayerIndex;
-	BulletUpdateFunc UpdateFunc;
-	TileItemDrawFunc DrawFunc;
-	TileItemGetPicFunc GetPicFunc;
-	Vec2i Size;
-	int Range;
-	Vec2i Vel;
+	double Angle;
 	int DZ;
 	int Count;
-	int Power;
-	special_damage_e Special;
 } AddFireballEvent;
 
 
@@ -201,7 +197,7 @@ void MobObjDestroy(int id);
 void AddFireball(const AddFireballEvent e);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int UpdateExplosion(TMobileObject *obj, int ticks);
-int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special);
+int HitItem(TMobileObject *obj, Vec2i pos);
 
 int UpdateSpark(TMobileObject *obj, const int ticks);
 void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);

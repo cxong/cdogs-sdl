@@ -72,6 +72,20 @@ typedef enum
 	BULLET_PETRIFIER,
 	BULLET_PROXMINE,
 	BULLET_DYNAMITE,
+	
+	// Fireballs, gas etc
+	BULLET_FIREBALL_WRECK,	// no-damage fireball, for effect only
+	BULLET_FIREBALL1,	// fast, short lived fireball
+	BULLET_FIREBALL2,	// mediocre fireball
+	BULLET_FIREBALL3,	// slow, long lived fireball
+	BULLET_MOLOTOV_FLAME,
+	BULLET_GAS_CLOUD_POISON,
+	BULLET_GAS_CLOUD_CONFUSE,
+
+	// Pseudo-bullets
+	BULLET_SPARK,
+	BULLET_ACTIVEMINE,
+	BULLET_TRIGGEREDMINE,
 
 	BULLET_COUNT
 } BulletType;
@@ -82,10 +96,13 @@ typedef struct
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
-	int Speed;
-	int Range;
+	int SpeedLow;
+	int SpeedHigh;
+	bool SpeedScale;	// whether to scale X/Y speed based on perspective
+	int RangeLow;
+	int RangeHigh;
 	int Power;
-	int Size;
+	Vec2i Size;
 	special_damage_e Special;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
@@ -95,7 +112,7 @@ void BulletInitialize(void);
 void AddExplosion(Vec2i pos, int flags, int player);
 void AddFireExplosion(Vec2i pos, int flags, int player);
 void AddGasExplosion(
-	Vec2i pos, int flags, special_damage_e special, int player);
+	Vec2i pos, int flags, const BulletClass *class, int player);
 void BulletAdd(
 	const BulletType bullet,
 	const Vec2i muzzlePos, const int muzzleHeight,

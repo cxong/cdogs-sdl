@@ -158,11 +158,15 @@ static void DamageObject(
 		}
 		else if (object->flags & OBJFLAG_POISONOUS)
 		{
-			AddGasExplosion(fullPos, flags, SPECIAL_POISON, player);
+			AddGasExplosion(
+				fullPos, flags,
+				&gBulletClasses[BULLET_GAS_CLOUD_POISON], player);
 		}
 		else if (object->flags & OBJFLAG_CONFUSING)
 		{
-			AddGasExplosion(fullPos, flags, SPECIAL_CONFUSE, player);
+			AddGasExplosion(
+				fullPos, flags,
+				&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], player);
 		}
 		else
 		{
@@ -291,7 +295,6 @@ void UpdateMobileObjects(int ticks)
 		}
 		if ((*(obj->updateFunc))(obj, ticks) == 0)
 		{
-			obj->range = 0;
 			GameEvent e;
 			e.Type = GAME_EVENT_MOBILE_OBJECT_REMOVE;
 			e.u.MobileObjectRemoveId = i;
@@ -404,9 +407,7 @@ void MobileObjectUpdate(TMobileObject *obj, int ticks)
 static int UpdateMobileObject(TMobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
-		return 0;
-	return 1;
+	return obj->count <= obj->range;
 }
 int UpdateSpark(TMobileObject *obj, const int ticks)
 {
@@ -464,7 +465,6 @@ int MobObjAdd(Vec2i fullpos, int player)
 	obj->player = player;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.id = i;
-	obj->special = SPECIAL_NONE;
 	obj->soundLock = 0;
 	obj->isInUse = true;
 	obj->tileItem.x = obj->tileItem.y = -1;
@@ -488,12 +488,15 @@ void AddFireball(const AddFireballEvent e)
 {
 	TMobileObject *obj =
 		CArrayGet(&gMobObjs, MobObjAdd(e.FullPos, e.PlayerIndex));
-	obj->vel = e.Vel;
+	obj->bulletClass = e.Class;
+	obj->vel = Vec2iFull2Real(Vec2iScale(
+		GetFullVectorsForRadians(e.Angle),
+		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
 	obj->dz = e.DZ;
-	obj->updateFunc = e.UpdateFunc;
-	obj->tileItem.drawFunc = e.DrawFunc;
-	obj->tileItem.getPicFunc = e.GetPicFunc;
-	switch (e.Special)
+	obj->updateFunc = e.Class->UpdateFunc;
+	obj->tileItem.drawFunc = e.Class->DrawFunc;
+	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
+	switch (e.Class->Special)
 	{
 	case SPECIAL_POISON:
 		obj->tileItem.drawData.u.Tint = tintPoison;
@@ -505,24 +508,22 @@ void AddFireball(const AddFireballEvent e)
 		// do nothing
 		break;
 	}
-	obj->tileItem.w = e.Size.x;
-	obj->tileItem.h = e.Size.y;
+	obj->tileItem.w = e.Class->Size.x;
+	obj->tileItem.h = e.Class->Size.y;
 	obj->kind = MOBOBJ_FIREBALL;
-	obj->range = e.Range;
+	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);
 	obj->flags = e.Flags;
 	obj->count = e.Count;
-	obj->power = e.Power;
-	obj->special = e.Special;
 }
 
 void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
-	if (obj->count < obj->state)
+	if (obj->count < obj->state.frame)
 	{
 		return;
 	}
-	const TOffsetPic *pic = &cFireBallPics[(obj->count - obj->state) / 4];
+	const TOffsetPic *pic = &cFireBallPics[(obj->count - obj->state.frame) / 4];
 	if (obj->z > 0)
 	{
 		pos.y -= obj->z / 4;
@@ -551,7 +552,7 @@ int UpdateExplosion(TMobileObject *obj, int ticks)
 	obj->z += obj->dz * ticks;
 	obj->dz = MAX(0, obj->dz - ticks);
 
-	HitItem(obj, pos, SPECIAL_EXPLOSION);
+	HitItem(obj, pos);
 
 	if (!ShootWall(pos.x >> 8, pos.y >> 8))
 	{
@@ -564,7 +565,7 @@ int UpdateExplosion(TMobileObject *obj, int ticks)
 	return 0;
 }
 
-int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special)
+int HitItem(TMobileObject *obj, Vec2i pos)
 {
 	TTileItem *item;
 	int hasHit;
@@ -572,7 +573,9 @@ int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special)
 
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
-	if (obj->power <= 0 && (special == SPECIAL_NONE || special == SPECIAL_EXPLOSION))
+	if (obj->bulletClass->Power <= 0 &&
+		(obj->bulletClass->Special == SPECIAL_NONE ||
+		obj->bulletClass->Special == SPECIAL_EXPLOSION))
 	{
 		return 0;
 	}
@@ -581,9 +584,9 @@ int HitItem(TMobileObject *obj, Vec2i pos, special_damage_e special)
 		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
 		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
 	hasHit = DamageSomething(
-		obj->vel, obj->power, obj->flags, obj->player,
+		obj->vel, obj->bulletClass->Power, obj->flags, obj->player,
 		item,
-		special,
+		obj->bulletClass->Special,
 		obj->soundLock <= 0);
 	if (hasHit && obj->soundLock <= 0)
 	{
