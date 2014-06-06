@@ -107,7 +107,11 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 
 Pic *GetFlame(int id)
 {
-	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
+	TMobileObject *obj = CArrayGet(&gMobObjs, id);
+	if ((obj->count & 3) == 0)
+	{
+		obj->state.frame = rand();
+	}
 	const TOffsetPic *pic = &cFlamePics[obj->state.frame & 3];
 	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
 	p->offset.x = pic->dx;
@@ -545,21 +549,12 @@ int UpdateFlame(TMobileObject *obj, int ticks)
 		return 0;
 	}
 
-	if ((obj->count & 3) == 0)
-	{
-		obj->state.frame = rand();
-	}
-
 	Vec2i pos =
 		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
 
 	if (HitItem(obj, pos))
 	{
 		obj->count = obj->range;
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(
-			&gMap, &obj->tileItem, Vec2iFull2Real(pos));
 		return 1;
 	}
 
