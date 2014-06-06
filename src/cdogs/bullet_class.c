@@ -508,66 +508,36 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
-		return 0;
+		return false;
 	}
-
-	Vec2i pos =
+	const Vec2i pos =
 		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
-
-	if (HitItem(obj, pos))
-	{
-		SetBulletProps(obj, obj->z, BULLET_SPARK, obj->flags);
-		obj->count = 0;
-		return true;
-	}
+	const bool hitItem = HitItem(obj, pos);
 	const Vec2i realPos = Vec2iFull2Real(pos);
-	if (!ShootWall(pos.x >> 8, pos.y >> 8))
+	const bool hitWall = ShootWall(realPos.x, realPos.y);
+	if (hitWall)
 	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(&gMap, &obj->tileItem, realPos);
-		return true;
-	}
-	else
-	{
-		SetBulletProps(obj, obj->z, BULLET_SPARK, obj->flags);
-		obj->count = 0;
 		GameEvent e;
 		e.Type = GAME_EVENT_SOUND_AT;
 		e.u.SoundAt.Sound = SND_HIT_WALL;
 		e.u.SoundAt.Pos = realPos;
 		GameEventsEnqueue(&gGameEvents, e);
-		return 1;
 	}
-}
-
-int UpdateFlame(TMobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
+	if (hitWall || hitItem)
 	{
-		return 0;
+		if (obj->bulletClass->SparkType != BULLET_NONE)
+		{
+			SetBulletProps(
+				obj, obj->z, obj->bulletClass->SparkType, obj->flags);
+			obj->count = 0;
+			return true;
+		}
+		return false;
 	}
-
-	Vec2i pos =
-		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
-
-	if (HitItem(obj, pos))
-	{
-		obj->count = obj->range;
-		return 1;
-	}
-
-	if (!ShootWall(pos.x >> 8, pos.y >> 8))
-	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(
-			&gMap, &obj->tileItem, Vec2iFull2Real(pos));
-		return 1;
-	}
-	else
-		return 0;
+	obj->x = pos.x;
+	obj->y = pos.y;
+	MapMoveTileItem(&gMap, &obj->tileItem, realPos);
+	return true;
 }
 
 int UpdateSeeker(TMobileObject * obj, int ticks)
@@ -693,6 +663,8 @@ void BulletInitialize(void)
 		b->SpeedScale = false;
 		b->Size = Vec2iZero();
 		b->Special = SPECIAL_NONE;
+		b->SparkType = BULLET_SPARK;
+		b->WallHitSound = SND_HIT_WALL;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -714,13 +686,14 @@ void BulletInitialize(void)
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_FLAME];
-	b->UpdateFunc = UpdateFlame;
 	b->GetPicFunc = GetFlame;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 30;
 	b->Power = 12;
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
+	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_HIT_FIRE;
 
 	b = &gBulletClasses[BULLET_LASER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
@@ -756,6 +729,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
 	b->UpdateFunc = UpdateGrenade;
@@ -764,6 +738,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
 	b->UpdateFunc = UpdateGrenade;
@@ -772,6 +747,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->UpdateFunc = UpdateGrenade;
@@ -780,6 +756,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
 	b->UpdateFunc = UpdateGrenade;
@@ -788,6 +765,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_GAS];
 	b->UpdateFunc = UpdateGasCloud;
@@ -797,6 +775,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_RAPID];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
@@ -849,6 +828,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 140;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->UpdateFunc = UpdateTriggeredMine;
@@ -859,6 +839,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 210;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
@@ -869,6 +850,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL1];
 	b->UpdateFunc = UpdateExplosion;
@@ -878,6 +860,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL2];
 	b->UpdateFunc = UpdateExplosion;
@@ -887,6 +870,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL3];
 	b->UpdateFunc = UpdateExplosion;
@@ -896,6 +880,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
 	b->UpdateFunc = UpdateMolotovFlame;
@@ -908,6 +893,7 @@ void BulletInitialize(void)
 	b->Power = 2;
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
 	b->UpdateFunc = UpdateGasCloud;
@@ -919,6 +905,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
 	b->UpdateFunc = UpdateGasCloud;
@@ -930,6 +917,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_CONFUSE;
+	b->SparkType = BULLET_NONE;
 
 
 	b = &gBulletClasses[BULLET_SPARK];
@@ -951,6 +939,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->UpdateFunc = UpdateTriggeredMine;
@@ -961,6 +950,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
+	b->SparkType = BULLET_NONE;
 }
 
 void AddGrenade(

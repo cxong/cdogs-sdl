@@ -49,11 +49,13 @@
 #ifndef __BULLET_CLASS
 #define __BULLET_CLASS
 
+#include "sounds.h"
 #include "tile.h"
 
 struct MobileObject;
 typedef enum
 {
+	BULLET_NONE,
 	BULLET_MG,
 	BULLET_SHOTGUN,
 	BULLET_FLAME,
@@ -104,6 +106,8 @@ typedef struct
 	int Power;
 	Vec2i Size;
 	special_damage_e Special;
+	BulletType SparkType;
+	sound_e WallHitSound;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
