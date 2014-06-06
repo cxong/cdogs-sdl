@@ -108,6 +108,7 @@ typedef struct
 	special_damage_e Special;
 	BulletType SparkType;
 	sound_e WallHitSound;
+	bool Bounces;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
