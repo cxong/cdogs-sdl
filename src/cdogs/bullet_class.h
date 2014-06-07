@@ -119,6 +119,7 @@ typedef struct
 	void (*DropFunc)(const struct MobileObject *);
 	void (*HitFunc)(const struct MobileObject *);
 	bool RandomAnimation;
+	bool Seeking;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 

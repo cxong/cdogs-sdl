@@ -394,6 +394,32 @@ static void GrenadeExplode(const TMobileObject *obj)
 	}
 }
 
+static Vec2i SeekTowards(
+	const Vec2i pos, const Vec2i vel, const double speedMin,
+	const Vec2i targetPos)
+{
+	// Compensate for bullet's velocity
+	const Vec2i targetVel = Vec2iMinus(Vec2iMinus(targetPos, pos), vel);
+	// Don't seek if the coordinates are too big
+	if (abs(targetVel.x) > 10000 || abs(targetVel.y) > 10000 ||
+		Vec2iEqual(targetVel, Vec2iZero()))
+	{
+		return vel;
+	}
+	const double targetMag = sqrt(
+		targetVel.x*targetVel.x + targetVel.y*targetVel.y);
+	const double magnitude = MAX(speedMin,
+		Vec2iEqual(vel, Vec2iZero()) ? speedMin : sqrt(vel.x*vel.x + vel.y*vel.y));
+	const int seekFactor = 20;
+	const double combinedX =
+		vel.x / magnitude * seekFactor + targetVel.x / targetMag;
+	const double combinedY =
+		vel.y / magnitude * seekFactor + targetVel.y / targetMag;
+	return Vec2iNew(
+		(int)round(combinedX * magnitude / (seekFactor + 1)),
+		(int)round(combinedY * magnitude / (seekFactor + 1)));
+}
+
 
 int UpdateBullet(TMobileObject *obj, int ticks)
 {
@@ -417,6 +443,22 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	}
 
 	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
+
+	if (obj->bulletClass->Seeking)
+	{
+		// Find the closest target to this bullet and steer towards it
+		TActor *target = AIGetClosestEnemy(
+			objPos, obj->flags, obj->player >= 0);
+		if (target && !target->dead)
+		{
+			for (int i = 0; i < ticks; i++)
+			{
+				obj->vel = SeekTowards(
+					objPos, obj->vel, obj->bulletClass->SpeedLow, target->Pos);
+			}
+		}
+	}
+
 	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
 	const bool hitItem = HitItem(obj, pos);
 	const Vec2i realPos = Vec2iFull2Real(pos);
@@ -553,40 +595,6 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	return true;
 }
 
-int UpdateSeeker(TMobileObject * obj, int ticks)
-{
-	if (!UpdateBullet(obj, ticks))
-	{
-		return 0;
-	}
-	// Find the closest target to this bullet and steer towards it
-	// Compensate for the bullet's velocity
-	TActor *target = AIGetClosestEnemy(
-		Vec2iNew(obj->x, obj->y), obj->flags, obj->player >= 0);
-	if (target)
-	{
-		double magnitude;
-		int seekSpeed = 50;
-		Vec2i impulse = Vec2iNew(
-			target->Pos.x - obj->x - obj->vel.x * 2,
-			target->Pos.y - obj->y - obj->vel.y * 2);
-		// Don't seek if the coordinates are too big
-		if (abs(impulse.x) < 10000 && abs(impulse.y) < 10000 &&
-			(impulse.x != 0 || impulse.y != 0))
-		{
-			magnitude = sqrt(impulse.x*impulse.x + impulse.y*impulse.y);
-			impulse.x = (int)floor(impulse.x * seekSpeed / magnitude);
-			impulse.y = (int)floor(impulse.y * seekSpeed / magnitude);
-		}
-		else
-		{
-			impulse = Vec2iZero();
-		}
-		obj->vel = Vec2iAdd(obj->vel, Vec2iScale(impulse, ticks));
-	}
-	return 1;
-}
-
 int UpdateBrownBullet(TMobileObject *obj, int ticks)
 {
 	if (UpdateBullet(obj, ticks))
@@ -689,6 +697,7 @@ void BulletInitialize(void)
 		b->DropFunc = NULL;
 		b->HitFunc = NULL;
 		b->RandomAnimation = false;
+		b->Seeking = false;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -840,7 +849,6 @@ void BulletInitialize(void)
 	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
-	b->UpdateFunc = UpdateSeeker;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -849,6 +857,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 20;
 	b->Size = Vec2iNew(3, 3);
+	b->Seeking = true;
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->UpdateFunc = UpdateBrownBullet;
