@@ -59,6 +59,7 @@
 
 typedef enum
 {
+	SND_NONE,
 	SND_EXPLOSION,
 	SND_LAUNCH,
 	SND_MACHINEGUN,

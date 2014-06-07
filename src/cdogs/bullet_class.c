@@ -421,44 +421,6 @@ static void GrenadeExplode(const TMobileObject *obj)
 	}
 }
 
-int UpdateMolotov(TMobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	Vec2i pos = Vec2iNew(obj->x, obj->y);
-	if (obj->count > obj->range)
-	{
-		AddFireExplosion(pos, obj->flags, obj->player);
-		return false;
-	}
-
-	int x = obj->x + obj->vel.x * ticks;
-	int y = obj->y + obj->vel.y * ticks;
-
-	obj->z += obj->dz * ticks;
-	if (obj->z <= 0)
-	{
-		AddFireExplosion(pos, obj->flags, obj->player);
-		return false;
-	}
-	else
-	{
-		obj->dz -= ticks;
-	}
-
-	if (!ShootWall(x >> 8, y >> 8))
-	{
-		obj->x = x;
-		obj->y = y;
-	}
-	else
-	{
-		AddFireExplosion(pos, obj->flags, obj->player);
-		return false;
-	}
-	MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
-	return 1;
-}
-
 
 int UpdateBullet(TMobileObject *obj, int ticks)
 {
@@ -473,6 +435,7 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	}
 
 	// Falling (grenades)
+	bool hasDropped = false;
 	if (obj->bulletClass->Falling)
 	{
 		for (int i = 0; i < ticks; i++)
@@ -480,6 +443,15 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 			obj->z += obj->dz;
 			if (obj->z <= 0)
 			{
+				if (!hasDropped && obj->bulletClass->DropFunc)
+				{
+					obj->bulletClass->DropFunc(obj);
+				}
+				hasDropped = true;
+				if (obj->bulletClass->DestroyOnDrop)
+				{
+					return false;
+				}
 				obj->z = 0;
 				obj->dz = -obj->dz / 2;
 			}
@@ -492,7 +464,7 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 
 	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
 	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
-	const bool hitItem = HitItem(obj, pos);
+	const bool hitItem = obj->bulletClass->HitsObjects && HitItem(obj, pos);
 	const Vec2i realPos = Vec2iFull2Real(pos);
 	const bool hitWall = ShootWall(realPos.x, realPos.y);
 	if (hitWall)
@@ -505,6 +477,10 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	}
 	if ((hitWall && !obj->bulletClass->Bounces) || hitItem)
 	{
+		if (obj->bulletClass->HitFunc)
+		{
+			obj->bulletClass->HitFunc(obj);
+		}
 		if (obj->bulletClass->SparkType != BULLET_NONE)
 		{
 			SetBulletProps(
@@ -683,7 +659,10 @@ void BulletInitialize(void)
 		b->Bounces = false;
 		b->HitsObjects = true;
 		b->Falling = false;
+		b->DestroyOnDrop = false;
 		b->OutOfRangeFunc = NULL;
+		b->DropFunc = NULL;
+		b->HitFunc = NULL;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -767,16 +746,19 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
-	b->UpdateFunc = UpdateMolotov;
 	b->DrawFunc = (TileItemDrawFunc)DrawMolotov;
 	b->DrawData.u.GrenadeColor = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_NONE;
 	b->HitsObjects = false;
 	b->Falling = true;
+	b->DestroyOnDrop = true;
 	b->OutOfRangeFunc = GrenadeExplode;
+	b->DropFunc = GrenadeExplode;
+	b->HitFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;

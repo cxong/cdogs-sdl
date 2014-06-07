@@ -111,7 +111,10 @@ typedef struct
 	bool Bounces;
 	bool HitsObjects;
 	bool Falling;
+	bool DestroyOnDrop;
 	void (*OutOfRangeFunc)(const struct MobileObject *);
+	void (*DropFunc)(const struct MobileObject *);
+	void (*HitFunc)(const struct MobileObject *);
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 

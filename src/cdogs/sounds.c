@@ -72,6 +72,7 @@ SoundDevice gSoundDevice =
 	{ 0, 0 },
 	{ 0, 0 },
 	{
+		{"",						0,	NULL},
 		{"sounds/booom.wav",		0,	NULL},
 		{"sounds/launch.wav",		0,	NULL},
 		{"sounds/mg.wav",			0,	NULL},
@@ -234,6 +235,10 @@ void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 void SoundPlayAtPosition(
 	SoundDevice *device, sound_e sound, int distance, int bearing)
 {
+	if (sound == SND_NONE)
+	{
+		return;
+	}
 	distance /= 2;
 	// Don't play anything if it's too distant
 	// This means we don't waste sound channels
