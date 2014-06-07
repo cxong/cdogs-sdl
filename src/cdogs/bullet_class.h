@@ -101,11 +101,13 @@ typedef struct
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
+	Vec2i Friction;	// Amount to subtract from velocity per tick
 	int RangeLow;
 	int RangeHigh;
 	int Power;
 	Vec2i Size;
 	special_damage_e Special;
+	bool Persists;	// remains even after hitting walls/items
 	BulletType SparkType;
 	sound_e WallHitSound;
 	bool Bounces;
@@ -115,6 +117,7 @@ typedef struct
 	void (*OutOfRangeFunc)(const struct MobileObject *);
 	void (*DropFunc)(const struct MobileObject *);
 	void (*HitFunc)(const struct MobileObject *);
+	bool RandomAnimation;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
@@ -131,7 +134,6 @@ void BulletAdd(
 	const int flags, const int playerIndex);
 
 int UpdateMolotovFlame(struct MobileObject *obj, int ticks);
-int UpdateGasCloud(struct MobileObject *obj, int ticks);
 Pic *GetFlame(int id);
 void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data);
 

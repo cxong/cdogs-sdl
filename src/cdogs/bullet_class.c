@@ -339,33 +339,6 @@ void AddGasExplosion(
 	GameEventsEnqueue(&gGameEvents, sound);
 }
 
-int UpdateGasCloud(struct MobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
-	{
-		return 0;
-	}
-
-	if ((obj->count & 3) == 0)
-	{
-		obj->state.frame = rand();
-	}
-
-	Vec2i pos = UpdateAndGetCloudPosition(obj, ticks);
-
-	HitItem(obj, pos);
-
-	if (!ShootWall(pos.x >> 8, pos.y >> 8))
-	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
-		return 1;
-	} else
-		return 1;
-}
-
 void AddGasCloud(
 	Vec2i pos, int z, double radians, int flags, int player)
 {
@@ -434,6 +407,16 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 		return false;
 	}
 
+	if (obj->bulletClass->RandomAnimation && !(obj->count & 3))
+	{
+		obj->state.frame = rand();
+	}
+
+	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
+	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
+	const bool hitItem = HitItem(obj, pos);
+	const Vec2i realPos = Vec2iFull2Real(pos);
+
 	// Falling (grenades)
 	bool hasDropped = false;
 	if (obj->bulletClass->Falling)
@@ -452,6 +435,11 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 				{
 					return false;
 				}
+				GameEvent e;
+				e.Type = GAME_EVENT_SOUND_AT;
+				e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
+				e.u.SoundAt.Pos = realPos;
+				GameEventsEnqueue(&gGameEvents, e);
 				obj->z = 0;
 				obj->dz = -obj->dz / 2;
 			}
@@ -461,11 +449,29 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 			}
 		}
 	}
+	
+	// Friction
+	for (int i = 0; i < ticks; i++)
+	{
+		if (obj->vel.x > 0)
+		{
+			obj->vel.x -= obj->bulletClass->Friction.x;
+		}
+		else if (obj->vel.x < 0)
+		{
+			obj->vel.x += obj->bulletClass->Friction.x;
+		}
 
-	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
-	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
-	const bool hitItem = obj->bulletClass->HitsObjects && HitItem(obj, pos);
-	const Vec2i realPos = Vec2iFull2Real(pos);
+		if (obj->vel.y > 0)
+		{
+			obj->vel.y -= obj->bulletClass->Friction.y;
+		}
+		else if (obj->vel.y < 0)
+		{
+			obj->vel.y += obj->bulletClass->Friction.y;
+		}
+	}
+
 	const bool hitWall = ShootWall(realPos.x, realPos.y);
 	if (hitWall)
 	{
@@ -475,7 +481,8 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 		e.u.SoundAt.Pos = realPos;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	if ((hitWall && !obj->bulletClass->Bounces) || hitItem)
+	if ((hitWall && !obj->bulletClass->Bounces) ||
+		(hitItem && obj->bulletClass->HitsObjects))
 	{
 		if (obj->bulletClass->HitFunc)
 		{
@@ -488,7 +495,10 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 			obj->count = 0;
 			return true;
 		}
-		return false;
+		if (!obj->bulletClass->Persists)
+		{
+			return false;
+		}
 	}
 	if (hitWall)
 	{
@@ -652,8 +662,10 @@ void BulletInitialize(void)
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
 		b->SpeedScale = false;
+		b->Friction = Vec2iZero();
 		b->Size = Vec2iZero();
 		b->Special = SPECIAL_NONE;
+		b->Persists = false;
 		b->SparkType = BULLET_SPARK;
 		b->WallHitSound = SND_HIT_WALL;
 		b->Bounces = false;
@@ -663,6 +675,7 @@ void BulletInitialize(void)
 		b->OutOfRangeFunc = NULL;
 		b->DropFunc = NULL;
 		b->HitFunc = NULL;
+		b->RandomAnimation = false;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -693,6 +706,7 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_FIRE;
 	b->Bounces = true;
+	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_LASER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
@@ -789,15 +803,18 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GAS];
-	b->UpdateFunc = UpdateGasCloud;
 	b->DrawFunc = (TileItemDrawFunc)DrawGasCloud;
 	b->SpeedLow = b->SpeedHigh = 384;
+	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = b->RangeHigh = 35;
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_HIT_GAS;
 	b->Bounces = true;
+	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_RAPID];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
@@ -850,6 +867,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 140;
 	b->Power = 0;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
 
@@ -862,6 +880,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 210;
 	b->Power = 0;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
 
@@ -874,6 +893,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL1];
@@ -884,6 +904,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
 
@@ -895,6 +916,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
 
@@ -906,6 +928,7 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
 
@@ -915,39 +938,48 @@ void BulletInitialize(void)
 	b->SpeedLow = -256;
 	b->SpeedHigh = 16 * 31 - 256;
 	b->SpeedScale = true;
+	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = FLAME_RANGE * 4;
 	b->RangeHigh = (FLAME_RANGE + 8 - 1) * 4;
 	b->Power = 2;
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
+	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
-	b->UpdateFunc = UpdateGasCloud;
 	b->DrawFunc = DrawGasCloud;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
+	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = 48 * 4 - 1;
 	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_HIT_GAS;
 	b->Bounces = true;
+	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
-	b->UpdateFunc = UpdateGasCloud;
 	b->DrawFunc = DrawGasCloud;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
+	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = 48 * 4 - 1;
 	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_CONFUSE;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_HIT_GAS;
 	b->Bounces = true;
+	b->RandomAnimation = true;
 
 
 	b = &gBulletClasses[BULLET_SPARK];
@@ -969,6 +1001,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
 
@@ -981,6 +1014,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
+	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 }
 
