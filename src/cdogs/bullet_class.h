@@ -109,6 +109,9 @@ typedef struct
 	BulletType SparkType;
 	sound_e WallHitSound;
 	bool Bounces;
+	bool HitsObjects;
+	bool Falling;
+	void (*OutOfRangeFunc)(const struct MobileObject *);
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 

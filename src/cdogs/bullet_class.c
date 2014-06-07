@@ -386,82 +386,39 @@ void AddGasCloud(
 	obj->vel = vel;
 }
 
-int UpdateGrenade(TMobileObject *obj, int ticks)
+static void GrenadeExplode(const TMobileObject *obj)
 {
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
+	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
+	switch (obj->kind)
 	{
-		const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
-		switch (obj->kind)
-		{
-		case MOBOBJ_GRENADE:
-			AddExplosion(fullPos, obj->flags, obj->player);
-			break;
+	case MOBOBJ_GRENADE:
+		AddExplosion(fullPos, obj->flags, obj->player);
+		break;
 
-		case MOBOBJ_FRAGGRENADE:
-			AddFrag(fullPos, obj->flags, obj->player);
-			break;
+	case MOBOBJ_FRAGGRENADE:
+		AddFrag(fullPos, obj->flags, obj->player);
+		break;
 
-		case MOBOBJ_MOLOTOV:
-			AddFireExplosion(fullPos, obj->flags, obj->player);
-			break;
+	case MOBOBJ_MOLOTOV:
+		AddFireExplosion(fullPos, obj->flags, obj->player);
+		break;
 
-		case MOBOBJ_GASBOMB:
-			AddGasExplosion(
-				fullPos, obj->flags,
-				&gBulletClasses[BULLET_GAS_CLOUD_POISON], obj->player);
-			break;
+	case MOBOBJ_GASBOMB:
+		AddGasExplosion(
+			fullPos, obj->flags,
+			&gBulletClasses[BULLET_GAS_CLOUD_POISON], obj->player);
+		break;
 
-		case MOBOBJ_GASBOMB2:
-			AddGasExplosion(
-				fullPos, obj->flags,
-				&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], obj->player);
-			break;
-		}
-		return 0;
+	case MOBOBJ_GASBOMB2:
+		AddGasExplosion(
+			fullPos, obj->flags,
+			&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], obj->player);
+		break;
+
+	default:
+		CASSERT(false, "Unknown grenade kind");
+		break;
 	}
-
-	int x = obj->x + obj->vel.x * ticks;
-	int y = obj->y + obj->vel.y * ticks;
-
-	for (int i = 0; i < ticks; i++)
-	{
-		obj->z += obj->dz;
-		if (obj->z <= 0)
-		{
-			obj->z = 0;
-			obj->dz = -obj->dz / 2;
-		}
-		else
-		{
-			obj->dz--;
-		}
-	}
-
-	if (!ShootWall(x >> 8, y >> 8))
-	{
-		obj->x = x;
-		obj->y = y;
-	}
-	else if (!ShootWall(obj->x >> 8, y >> 8))
-	{
-		obj->y = y;
-		obj->vel.x = -obj->vel.x;
-	}
-	else if (!ShootWall(x >> 8, obj->y >> 8))
-	{
-		obj->x = x;
-		obj->vel.y = -obj->vel.y;
-	}
-	else
-	{
-		obj->vel.x = -obj->vel.x;
-		obj->vel.y = -obj->vel.y;
-		return 1;
-	}
-	MapMoveTileItem(
-		&gMap, &obj->tileItem, Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
-	return 1;
 }
 
 int UpdateMolotov(TMobileObject *obj, int ticks)
@@ -508,8 +465,31 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count > obj->range)
 	{
+		if (obj->bulletClass->OutOfRangeFunc)
+		{
+			obj->bulletClass->OutOfRangeFunc(obj);
+		}
 		return false;
 	}
+
+	// Falling (grenades)
+	if (obj->bulletClass->Falling)
+	{
+		for (int i = 0; i < ticks; i++)
+		{
+			obj->z += obj->dz;
+			if (obj->z <= 0)
+			{
+				obj->z = 0;
+				obj->dz = -obj->dz / 2;
+			}
+			else
+			{
+				obj->dz--;
+			}
+		}
+	}
+
 	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
 	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
 	const bool hitItem = HitItem(obj, pos);
@@ -701,6 +681,9 @@ void BulletInitialize(void)
 		b->SparkType = BULLET_SPARK;
 		b->WallHitSound = SND_HIT_WALL;
 		b->Bounces = false;
+		b->HitsObjects = true;
+		b->Falling = false;
+		b->OutOfRangeFunc = NULL;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -760,7 +743,6 @@ void BulletInitialize(void)
 	// Grenades
 
 	b = &gBulletClasses[BULLET_GRENADE];
-	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -768,9 +750,11 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
+	b->HitsObjects = false;
+	b->Falling = true;
+	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
-	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGray;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -778,18 +762,23 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
+	b->HitsObjects = false;
+	b->Falling = true;
+	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
-	b->UpdateFunc = UpdateGrenade;
-	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b->UpdateFunc = UpdateMolotov;
+	b->DrawFunc = (TileItemDrawFunc)DrawMolotov;
 	b->DrawData.u.GrenadeColor = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->HitsObjects = false;
+	b->Falling = true;
+	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
-	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGreen;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -797,9 +786,11 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
+	b->HitsObjects = false;
+	b->Falling = true;
+	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
-	b->UpdateFunc = UpdateGrenade;
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorPurple;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -807,6 +798,9 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->Bounces = true;
+	b->HitsObjects = false;
+	b->Falling = true;
+	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GAS];
 	b->UpdateFunc = UpdateGasCloud;
@@ -871,6 +865,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 140;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->HitsObjects = false;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->UpdateFunc = UpdateTriggeredMine;
@@ -882,6 +877,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 210;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->HitsObjects = false;
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
@@ -988,6 +984,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->HitsObjects = false;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->UpdateFunc = UpdateTriggeredMine;
@@ -1018,10 +1015,6 @@ void AddGrenade(
 		break;
 	case BULLET_MOLOTOV:
 		obj->kind = MOBOBJ_MOLOTOV;
-		obj->updateFunc = UpdateMolotov;
-		obj->tileItem.getPicFunc = NULL;
-		obj->tileItem.getActorPicsFunc = NULL;
-		obj->tileItem.drawFunc = (TileItemDrawFunc)DrawMolotov;
 		break;
 	case BULLET_GASBOMB:
 		obj->kind = MOBOBJ_GASBOMB;
