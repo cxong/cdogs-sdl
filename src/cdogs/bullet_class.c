@@ -730,6 +730,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_FLAME;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_FIRE;
+	b->Bounces = true;
 
 	b = &gBulletClasses[BULLET_LASER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
