@@ -398,6 +398,10 @@ static void GrenadeExplode(const TMobileObject *obj)
 int UpdateBullet(TMobileObject *obj, int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
+	if (obj->count < 0)
+	{
+		return true;
+	}
 	if (obj->count > obj->range)
 	{
 		if (obj->bulletClass->OutOfRangeFunc)
@@ -421,32 +425,40 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	bool hasDropped = false;
 	if (obj->bulletClass->Falling)
 	{
-		for (int i = 0; i < ticks; i++)
+		if (obj->bulletClass->Bounces)
 		{
-			obj->z += obj->dz;
-			if (obj->z <= 0)
+			for (int i = 0; i < ticks; i++)
 			{
-				if (!hasDropped && obj->bulletClass->DropFunc)
+				obj->z += obj->dz;
+				if (obj->z <= 0)
 				{
-					obj->bulletClass->DropFunc(obj);
+					if (!hasDropped && obj->bulletClass->DropFunc)
+					{
+						obj->bulletClass->DropFunc(obj);
+					}
+					hasDropped = true;
+					if (obj->bulletClass->DestroyOnDrop)
+					{
+						return false;
+					}
+					GameEvent e;
+					e.Type = GAME_EVENT_SOUND_AT;
+					e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
+					e.u.SoundAt.Pos = realPos;
+					GameEventsEnqueue(&gGameEvents, e);
+					obj->z = 0;
+					obj->dz = -obj->dz / 2;
 				}
-				hasDropped = true;
-				if (obj->bulletClass->DestroyOnDrop)
+				else
 				{
-					return false;
+					obj->dz--;
 				}
-				GameEvent e;
-				e.Type = GAME_EVENT_SOUND_AT;
-				e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
-				e.u.SoundAt.Pos = realPos;
-				GameEventsEnqueue(&gGameEvents, e);
-				obj->z = 0;
-				obj->dz = -obj->dz / 2;
 			}
-			else
-			{
-				obj->dz--;
-			}
+		}
+		else
+		{
+			obj->z += obj->dz * ticks;
+			obj->dz = MAX(0, obj->dz - ticks);
 		}
 	}
 	
@@ -481,7 +493,7 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 		e.u.SoundAt.Pos = realPos;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	if ((hitWall && !obj->bulletClass->Bounces) ||
+	if ((hitWall && !obj->bulletClass->WallBounces) ||
 		(hitItem && obj->bulletClass->HitsObjects))
 	{
 		if (obj->bulletClass->HitFunc)
@@ -495,7 +507,7 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 			obj->count = 0;
 			return true;
 		}
-		if (!obj->bulletClass->Persists)
+		if (hitWall || !obj->bulletClass->Persists)
 		{
 			return false;
 		}
@@ -668,9 +680,10 @@ void BulletInitialize(void)
 		b->Persists = false;
 		b->SparkType = BULLET_SPARK;
 		b->WallHitSound = SND_HIT_WALL;
-		b->Bounces = false;
+		b->WallBounces = false;
 		b->HitsObjects = true;
 		b->Falling = false;
+		b->Bounces = true;
 		b->DestroyOnDrop = false;
 		b->OutOfRangeFunc = NULL;
 		b->DropFunc = NULL;
@@ -705,7 +718,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_FLAME;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_FIRE;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_LASER];
@@ -743,7 +756,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_BOUNCE;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
 	b->OutOfRangeFunc = GrenadeExplode;
@@ -756,7 +769,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_BOUNCE;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
 	b->OutOfRangeFunc = GrenadeExplode;
@@ -771,6 +784,7 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_NONE;
 	b->HitsObjects = false;
 	b->Falling = true;
+	b->Bounces = false;
 	b->DestroyOnDrop = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 	b->DropFunc = GrenadeExplode;
@@ -784,7 +798,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_BOUNCE;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
 	b->OutOfRangeFunc = GrenadeExplode;
@@ -797,7 +811,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_BOUNCE;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
 	b->OutOfRangeFunc = GrenadeExplode;
@@ -813,7 +827,7 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_GAS;
-	b->Bounces = true;
+	b->WallBounces = true;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_RAPID];
@@ -847,7 +861,6 @@ void BulletInitialize(void)
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
-	b->UpdateFunc = UpdateBullet;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
 	b->DrawData.u.Bullet.UseMask = false;
@@ -886,7 +899,6 @@ void BulletInitialize(void)
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
-	b->UpdateFunc = UpdateExplosion;
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -897,7 +909,6 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL1];
-	b->UpdateFunc = UpdateExplosion;
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 256;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -906,10 +917,11 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->Bounces = true;
+	b->WallHitSound = SND_NONE;
+	b->Falling = true;
+	b->Bounces = false;
 
 	b = &gBulletClasses[BULLET_FIREBALL2];
-	b->UpdateFunc = UpdateExplosion;
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 192;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -918,10 +930,11 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->Bounces = true;
+	b->WallHitSound = SND_NONE;
+	b->Falling = true;
+	b->Bounces = false;
 
 	b = &gBulletClasses[BULLET_FIREBALL3];
-	b->UpdateFunc = UpdateExplosion;
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 128;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -930,7 +943,9 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->Bounces = true;
+	b->WallHitSound = SND_NONE;
+	b->Falling = true;
+	b->Bounces = false;
 
 	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
 	b->UpdateFunc = UpdateMolotovFlame;
@@ -946,7 +961,9 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_FLAME;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->Bounces = true;
+	b->WallBounces = true;
+	b->Falling = true;
+	b->Bounces = false;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
@@ -962,7 +979,8 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_GAS;
-	b->Bounces = true;
+	b->WallBounces = true;
+	b->Bounces = false;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
@@ -978,7 +996,8 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_GAS;
-	b->Bounces = true;
+	b->WallBounces = true;
+	b->Bounces = false;
 	b->RandomAnimation = true;
 
 

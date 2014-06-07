@@ -110,9 +110,10 @@ typedef struct
 	bool Persists;	// remains even after hitting walls/items
 	BulletType SparkType;
 	sound_e WallHitSound;
-	bool Bounces;
+	bool WallBounces;
 	bool HitsObjects;
 	bool Falling;
+	bool Bounces;
 	bool DestroyOnDrop;
 	void (*OutOfRangeFunc)(const struct MobileObject *);
 	void (*DropFunc)(const struct MobileObject *);

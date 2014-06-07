@@ -196,7 +196,6 @@ int MobObjAdd(Vec2i fullpos, int player);
 void MobObjDestroy(int id);
 void AddFireball(const AddFireballEvent e);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
-int UpdateExplosion(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos);
 
 int UpdateSpark(TMobileObject *obj, const int ticks);

@@ -535,36 +535,6 @@ void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 		BLIT_TRANSPARENT);
 }
 
-int UpdateExplosion(TMobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count < 0)
-	{
-		return 1;
-	}
-	if (obj->count > obj->range)
-	{
-		return 0;
-	}
-
-	Vec2i pos =
-		Vec2iScale(Vec2iAdd(Vec2iNew(obj->x, obj->y), obj->vel), ticks);
-	obj->z += obj->dz * ticks;
-	obj->dz = MAX(0, obj->dz - ticks);
-
-	HitItem(obj, pos);
-
-	if (!ShootWall(pos.x >> 8, pos.y >> 8))
-	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(
-			&gMap, &obj->tileItem, Vec2iFull2Real(pos));
-		return 1;
-	}
-	return 0;
-}
-
 int HitItem(TMobileObject *obj, Vec2i pos)
 {
 	TTileItem *item;
