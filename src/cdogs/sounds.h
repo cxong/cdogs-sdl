@@ -91,6 +91,7 @@ typedef enum
 	SND_HIT_GAS,
 	SND_HIT_HARD,
 	SND_HIT_PETRIFY,
+	SND_BOUNCE,
 	SND_FOOTSTEP,
 	SND_SLIDE,
 	SND_HEALTH,
@@ -100,8 +101,8 @@ typedef enum
 
 typedef struct
 {
-	char name[81];
-	int isLoaded;
+	const char *name;
+	bool isLoaded;
 	Mix_Chunk *data;
 } SoundData;
 

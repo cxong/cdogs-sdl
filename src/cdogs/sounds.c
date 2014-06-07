@@ -72,7 +72,7 @@ SoundDevice gSoundDevice =
 	{ 0, 0 },
 	{ 0, 0 },
 	{
-		{"",						0,	NULL},
+		{NULL,						0,	NULL},
 		{"sounds/booom.wav",		0,	NULL},
 		{"sounds/launch.wav",		0,	NULL},
 		{"sounds/mg.wav",			0,	NULL},
@@ -104,6 +104,7 @@ SoundDevice gSoundDevice =
 		{"sounds/hit_gas.wav",		0,	NULL},
 		{"sounds/hit_hard.wav",		0,	NULL},
 		{"sounds/hit_petrify.wav",	0,	NULL},
+		{"sounds/bounce.wav",		0,	NULL},
 		{"sounds/footstep.wav",		0,	NULL},
 		{"sounds/slide.wav",		0,	NULL},
 		{"sounds/health.wav",		0,	NULL},
@@ -138,25 +139,25 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 
 void LoadSound(SoundData *sound)
 {
-	struct stat st;
-
-	sound->isLoaded = 0;
-
-	// Check that file exists
-	if (stat(GetDataFilePath(sound->name), &st) == -1)
+	sound->isLoaded = false;
+	if (sound->name)
 	{
-		printf("Error finding sample '%s'\n", GetDataFilePath(sound->name));
-		return;
-	}
+		// Check that file exists
+		struct stat st;
+		if (stat(GetDataFilePath(sound->name), &st) == -1)
+		{
+			printf("Error finding sample '%s'\n", GetDataFilePath(sound->name));
+			return;
+		}
 
-	// Load file data
-	if ((sound->data = Mix_LoadWAV(GetDataFilePath(sound->name))) == NULL)
-	{
-		printf("Error loading sample '%s'\n", GetDataFilePath(sound->name));
-		return;
+		// Load file data
+		if ((sound->data = Mix_LoadWAV(GetDataFilePath(sound->name))) == NULL)
+		{
+			printf("Error loading sample '%s'\n", GetDataFilePath(sound->name));
+			return;
+		}
 	}
-
-	sound->isLoaded = 1;
+	sound->isLoaded = true;
 }
 
 void SoundInitialize(SoundDevice *device, SoundConfig *config)

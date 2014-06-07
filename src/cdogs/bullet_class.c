@@ -728,6 +728,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_BOUNCE;
 	b->Bounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
@@ -740,6 +741,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_BOUNCE;
 	b->Bounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
@@ -767,6 +769,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_BOUNCE;
 	b->Bounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
@@ -779,6 +782,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_BOUNCE;
 	b->Bounces = true;
 	b->HitsObjects = false;
 	b->Falling = true;
