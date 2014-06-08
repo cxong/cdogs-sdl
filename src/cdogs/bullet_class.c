@@ -592,22 +592,17 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 		obj->y = pos.y;
 	}
 	MapMoveTileItem(&gMap, &obj->tileItem, realPos);
-	return true;
-}
 
-int UpdateBrownBullet(TMobileObject *obj, int ticks)
-{
-	if (UpdateBullet(obj, ticks))
+	if (obj->bulletClass->Erratic)
 	{
-		int i;
-		for (i = 0; i < ticks; i++)
+		for (int i = 0; i < ticks; i++)
 		{
 			obj->vel.x += ((rand() % 3) - 1) * 128;
 			obj->vel.y += ((rand() % 3) - 1) * 128;
 		}
-		return 1;
 	}
-	return 0;
+
+	return true;
 }
 
 int UpdateTriggeredMine(TMobileObject *obj, int ticks)
@@ -698,6 +693,7 @@ void BulletInitialize(void)
 		b->HitFunc = NULL;
 		b->RandomAnimation = false;
 		b->Seeking = false;
+		b->Erratic = false;
 	}
 
 	b = &gBulletClasses[BULLET_MG];
@@ -793,7 +789,6 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_NONE;
 	b->HitsObjects = false;
 	b->Falling = true;
-	b->Bounces = false;
 	b->DestroyOnDrop = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 	b->DropFunc = GrenadeExplode;
@@ -860,7 +855,6 @@ void BulletInitialize(void)
 	b->Seeking = true;
 
 	b = &gBulletClasses[BULLET_BROWN];
-	b->UpdateFunc = UpdateBrownBullet;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -868,6 +862,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 768;
 	b->RangeLow = b->RangeHigh = 45;
 	b->Power = 15;
+	b->Erratic = true;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;

@@ -120,6 +120,7 @@ typedef struct
 	void (*HitFunc)(const struct MobileObject *);
 	bool RandomAnimation;
 	bool Seeking;
+	bool Erratic;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
