@@ -92,6 +92,12 @@ typedef enum
 	BULLET_COUNT
 } BulletType;
 typedef int (*BulletUpdateFunc)(struct MobileObject *, int);
+typedef enum
+{
+	FALLING_TYPE_BOUNCE,
+	FALLING_TYPE_DZ,
+	FALLING_TYPE_Z
+} BulletClassFallingType;
 typedef struct
 {
 	BulletUpdateFunc UpdateFunc;
@@ -112,11 +118,14 @@ typedef struct
 	sound_e WallHitSound;
 	bool WallBounces;
 	bool HitsObjects;
-	bool Falling;
-	bool Bounces;
-	bool DestroyOnDrop;
+	struct
+	{
+		bool Enabled;
+		BulletClassFallingType Type;
+		bool DestroyOnDrop;
+		void(*DropFunc)(const struct MobileObject *);
+	} Falling;
 	void (*OutOfRangeFunc)(const struct MobileObject *);
-	void (*DropFunc)(const struct MobileObject *);
 	void (*HitFunc)(const struct MobileObject *);
 	bool RandomAnimation;
 	bool Seeking;

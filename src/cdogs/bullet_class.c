@@ -218,74 +218,6 @@ static void AddFrag(
 	GameEventsEnqueue(&gGameEvents, sound);
 }
 
-Vec2i UpdateAndGetCloudPosition(TMobileObject *obj, int ticks)
-{
-	Vec2i pos = Vec2iScale(obj->vel, ticks);
-	pos.x += obj->x;
-	pos.y += obj->y;
-	for (int i = 0; i < ticks; i++)
-	{
-		if (obj->vel.x > 0)
-		{
-			obj->vel.x -= 4;
-		}
-		else if (obj->vel.x < 0)
-		{
-			obj->vel.x += 4;
-		}
-
-		if (obj->vel.y > 0)
-		{
-			obj->vel.y -= 3;
-		}
-		else if (obj->vel.y < 0)
-		{
-			obj->vel.y += 3;
-		}
-	}
-
-	return pos;
-}
-
-int UpdateMolotovFlame(struct MobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count > obj->range)
-	{
-		return 0;
-	}
-
-	if ((obj->count & 3) == 0)
-	{
-		obj->state.frame = rand();
-	}
-
-	for (int i = 0; i < ticks; i++)
-	{
-		obj->z += obj->dz / 2;
-		if (obj->z <= 0)
-		{
-			obj->z = 0;
-		}
-		else
-		{
-			obj->dz--;
-		}
-	}
-	Vec2i pos = UpdateAndGetCloudPosition(obj, ticks);
-
-	HitItem(obj, pos);
-
-	if (!ShootWall(pos.x >> 8, pos.y >> 8))
-	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-		MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
-		return 1;
-	} else
-		return 1;
-}
-
 
 static void SetBulletProps(
 	TMobileObject *obj, int z, BulletType type, int flags)
@@ -464,43 +396,60 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
 	// Falling (grenades)
-	bool hasDropped = false;
-	if (obj->bulletClass->Falling)
+	if (obj->bulletClass->Falling.Enabled)
 	{
-		if (obj->bulletClass->Bounces)
+		switch (obj->bulletClass->Falling.Type)
 		{
-			for (int i = 0; i < ticks; i++)
+		case FALLING_TYPE_BOUNCE:
 			{
-				obj->z += obj->dz;
-				if (obj->z <= 0)
+				bool hasDropped = false;
+				for (int i = 0; i < ticks; i++)
 				{
-					if (!hasDropped && obj->bulletClass->DropFunc)
+					obj->z += obj->dz;
+					if (obj->z <= 0)
 					{
-						obj->bulletClass->DropFunc(obj);
+						if (!hasDropped && obj->bulletClass->Falling.DropFunc)
+						{
+							obj->bulletClass->Falling.DropFunc(obj);
+						}
+						hasDropped = true;
+						if (obj->bulletClass->Falling.DestroyOnDrop)
+						{
+							return false;
+						}
+						GameEvent e;
+						e.Type = GAME_EVENT_SOUND_AT;
+						e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
+						e.u.SoundAt.Pos = realPos;
+						GameEventsEnqueue(&gGameEvents, e);
+						obj->z = 0;
+						obj->dz = -obj->dz / 2;
 					}
-					hasDropped = true;
-					if (obj->bulletClass->DestroyOnDrop)
+					else
 					{
-						return false;
+						obj->dz--;
 					}
-					GameEvent e;
-					e.Type = GAME_EVENT_SOUND_AT;
-					e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
-					e.u.SoundAt.Pos = realPos;
-					GameEventsEnqueue(&gGameEvents, e);
-					obj->z = 0;
-					obj->dz = -obj->dz / 2;
-				}
-				else
-				{
-					obj->dz--;
 				}
 			}
-		}
-		else
-		{
+			break;
+		case FALLING_TYPE_DZ:
 			obj->z += obj->dz * ticks;
 			obj->dz = MAX(0, obj->dz - ticks);
+			break;
+		case FALLING_TYPE_Z:
+			obj->z += obj->dz / 2;
+			if (obj->z <= 0)
+			{
+				obj->z = 0;
+			}
+			else
+			{
+				obj->dz--;
+			}
+			break;
+		default:
+			CASSERT(false, "Unknown falling type");
+			break;
 		}
 	}
 	
@@ -685,11 +634,11 @@ void BulletInitialize(void)
 		b->WallHitSound = SND_HIT_WALL;
 		b->WallBounces = false;
 		b->HitsObjects = true;
-		b->Falling = false;
-		b->Bounces = true;
-		b->DestroyOnDrop = false;
+		b->Falling.Enabled = false;
+		b->Falling.Type = FALLING_TYPE_BOUNCE;
+		b->Falling.DestroyOnDrop = false;
+		b->Falling.DropFunc = NULL;
 		b->OutOfRangeFunc = NULL;
-		b->DropFunc = NULL;
 		b->HitFunc = NULL;
 		b->RandomAnimation = false;
 		b->Seeking = false;
@@ -763,7 +712,7 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_BOUNCE;
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling = true;
+	b->Falling.Enabled = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
@@ -776,7 +725,7 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_BOUNCE;
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling = true;
+	b->Falling.Enabled = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
@@ -788,10 +737,10 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_NONE;
 	b->HitsObjects = false;
-	b->Falling = true;
-	b->DestroyOnDrop = true;
+	b->Falling.Enabled = true;
+	b->Falling.DestroyOnDrop = true;
+	b->Falling.DropFunc = GrenadeExplode;
 	b->OutOfRangeFunc = GrenadeExplode;
-	b->DropFunc = GrenadeExplode;
 	b->HitFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
@@ -804,7 +753,7 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_BOUNCE;
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling = true;
+	b->Falling.Enabled = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
@@ -817,7 +766,7 @@ void BulletInitialize(void)
 	b->WallHitSound = SND_BOUNCE;
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling = true;
+	b->Falling.Enabled = true;
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GAS];
@@ -922,8 +871,8 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_NONE;
-	b->Falling = true;
-	b->Bounces = false;
+	b->Falling.Enabled = true;
+	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL2];
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
@@ -935,8 +884,8 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_NONE;
-	b->Falling = true;
-	b->Bounces = false;
+	b->Falling.Enabled = true;
+	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL3];
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
@@ -948,11 +897,10 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_NONE;
-	b->Falling = true;
-	b->Bounces = false;
+	b->Falling.Enabled = true;
+	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
-	b->UpdateFunc = UpdateMolotovFlame;
 	b->GetPicFunc = GetFlame;
 	b->SpeedLow = -256;
 	b->SpeedHigh = 16 * 31 - 256;
@@ -965,9 +913,10 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_FLAME;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
+	b->WallHitSound = SND_HIT_FIRE;
 	b->WallBounces = true;
-	b->Falling = true;
-	b->Bounces = false;
+	b->Falling.Enabled = true;
+	b->Falling.Type = FALLING_TYPE_Z;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
@@ -984,7 +933,6 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_GAS;
 	b->WallBounces = true;
-	b->Bounces = false;
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
@@ -1001,7 +949,6 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 	b->WallHitSound = SND_HIT_GAS;
 	b->WallBounces = true;
-	b->Bounces = false;
 	b->RandomAnimation = true;
 
 
