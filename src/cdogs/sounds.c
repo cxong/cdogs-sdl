@@ -72,43 +72,43 @@ SoundDevice gSoundDevice =
 	{ 0, 0 },
 	{ 0, 0 },
 	{
-		{NULL,						0,	NULL},
-		{"sounds/booom.wav",		0,	NULL},
-		{"sounds/launch.wav",		0,	NULL},
-		{"sounds/mg.wav",			0,	NULL},
-		{"sounds/flamer.wav",		0,	NULL},
-		{"sounds/shotgun.wav",		0,	NULL},
-		{"sounds/fusion.wav",		0,	NULL},
-		{"sounds/switch.wav",		0,	NULL},
-		{"sounds/scream.wav",		0,	NULL},
-		{"sounds/aargh1.wav",		0,	NULL},
-		{"sounds/aargh2.wav",		0,	NULL},
-		{"sounds/aargh3.wav",		0,	NULL},
-		{"sounds/hahaha.wav",		0,	NULL},
-		{"sounds/bang.wav",			0,	NULL},
-		{"sounds/pickup.wav",		0,	NULL},
-		{"sounds/click.wav",		0,	NULL},
-		{"sounds/whistle.wav",		0,	NULL},
-		{"sounds/powergun.wav",		0,	NULL},
-		{"sounds/mg.wav",			0,	NULL},
-		{"sounds/pulse.wav",		0,	NULL},
-		{"sounds/swell.wav",		0,	NULL},
-		{"sounds/shotgun_r.wav",	0,	NULL},
-		{"sounds/powergun_r.wav",	0,	NULL},
-		{"sounds/package_r.wav",	0,	NULL},
-		{"sounds/knife_flesh.wav",	0,	NULL},
-		{"sounds/knife_hard.wav",	0,	NULL},
-		{"sounds/ricochet.wav",		0,	NULL},
-		{"sounds/hit_fire.wav",		0,	NULL},
-		{"sounds/hit_flesh.wav",	0,	NULL},
-		{"sounds/hit_gas.wav",		0,	NULL},
-		{"sounds/hit_hard.wav",		0,	NULL},
-		{"sounds/hit_petrify.wav",	0,	NULL},
-		{"sounds/bounce.wav",		0,	NULL},
-		{"sounds/footstep.wav",		0,	NULL},
-		{"sounds/slide.wav",		0,	NULL},
-		{"sounds/health.wav",		0,	NULL},
-		{"sounds/key.wav",			0,	NULL}
+		{NULL,			false,	NULL},
+		{"booom",		false,	NULL},
+		{"launch",		false,	NULL},
+		{"mg",			false,	NULL},
+		{"flamer",		false,	NULL},
+		{"shotgun",		false,	NULL},
+		{"fusion",		false,	NULL},
+		{"switch",		false,	NULL},
+		{"scream",		false,	NULL},
+		{"aargh1",		false,	NULL},
+		{"aargh2",		false,	NULL},
+		{"aargh3",		false,	NULL},
+		{"hahaha",		false,	NULL},
+		{"bang",		false,	NULL},
+		{"pickup",		false,	NULL},
+		{"click",		false,	NULL},
+		{"whistle",		false,	NULL},
+		{"powergun",	false,	NULL},
+		{"mg",			false,	NULL},
+		{"pulse",		false,	NULL},
+		{"swell",		false,	NULL},
+		{"shotgun_r",	false,	NULL},
+		{"powergun_r",	false,	NULL},
+		{"package_r",	false,	NULL},
+		{"knife_flesh",	false,	NULL},
+		{"knife_hard",	false,	NULL},
+		{"ricochet",	false,	NULL},
+		{"hit_fire",	false,	NULL},
+		{"hit_flesh",	false,	NULL},
+		{"hit_gas",		false,	NULL},
+		{"hit_hard",	false,	NULL},
+		{"hit_petrify",	false,	NULL},
+		{"bounce",		false,	NULL},
+		{"footstep",	false,	NULL},
+		{"slide",		false,	NULL},
+		{"health",		false,	NULL},
+		{"key",			false,	NULL}
 	}
 };
 
@@ -143,17 +143,22 @@ void LoadSound(SoundData *sound)
 	if (sound->name)
 	{
 		// Check that file exists
+		// TODO: support other formats than WAV
+		char buf[CDOGS_PATH_MAX];
+		strcpy(buf, "sounds/");
+		strcat(buf, sound->name);
+		strcat(buf, ".wav");
 		struct stat st;
-		if (stat(GetDataFilePath(sound->name), &st) == -1)
+		if (stat(GetDataFilePath(buf), &st) == -1)
 		{
-			printf("Error finding sample '%s'\n", GetDataFilePath(sound->name));
+			printf("Error finding sample '%s'\n", GetDataFilePath(buf));
 			return;
 		}
 
 		// Load file data
-		if ((sound->data = Mix_LoadWAV(GetDataFilePath(sound->name))) == NULL)
+		if ((sound->data = Mix_LoadWAV(GetDataFilePath(buf))) == NULL)
 		{
-			printf("Error loading sample '%s'\n", GetDataFilePath(sound->name));
+			printf("Error loading sample '%s'\n", GetDataFilePath(buf));
 			return;
 		}
 	}
@@ -381,4 +386,22 @@ sound_e SoundGetHit(special_damage_e damage, int isActor)
 	default:
 		return isActor ? SND_HIT_FLESH : SND_HIT_HARD;
 	}
+}
+
+sound_e StrSound(const char *s)
+{
+	if (s == NULL || strlen(s) == 0)
+	{
+		return SND_NONE;
+	}
+	for (int i = 0; i < SND_COUNT; i++)
+	{
+		if (gSoundDevice.sounds[i].name &&
+			strcmp(gSoundDevice.sounds[i].name, s) == 0)
+		{
+			return (sound_e)i;
+		}
+	}
+	CASSERT(false, "cannot find sound");
+	return SND_NONE;
 }

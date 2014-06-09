@@ -38,6 +38,7 @@ void AddBoolPair(json_t *parent, const char *name, int value);
 void AddStringPair(json_t *parent, const char *name, const char *s);
 void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
+void LoadDouble(double *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
 
 #define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\

@@ -543,24 +543,26 @@ static int GotoObjective(TActor *actor, int objDistance)
 	return cmd;
 }
 
-gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT])
+static bool HasWeapon(const CArray *weapons, const GunDescription *w);
+const GunDescription *AICoopSelectWeapon(int player, const CArray *weapons)
 {
 	// Weapon preferences, for different player indices
 #define NUM_PREFERRED_WEAPONS 5
-	gun_e preferredWeapons[][NUM_PREFERRED_WEAPONS] =
+	const char *preferredWeapons[][NUM_PREFERRED_WEAPONS] =
 	{
-		{ GUN_MG, GUN_SHOTGUN, GUN_POWERGUN, GUN_SNIPER, GUN_FLAMER },
-		{ GUN_FLAMER, GUN_SHOTGUN, GUN_MG, GUN_POWERGUN, GUN_SNIPER },
-		{ GUN_SHOTGUN, GUN_MG, GUN_POWERGUN, GUN_FLAMER, GUN_SNIPER },
-		{ GUN_POWERGUN, GUN_SNIPER, GUN_MG, GUN_SHOTGUN, GUN_FLAMER }
+		{ "Machine gun", "Shotgun", "Powergun", "Sniper rifle", "Flamer" },
+		{ "Flamer", "Shotgun", "Machine gun", "Powergun", "Sniper rifle" },
+		{ "Shotgun", "Machine gun", "Powergun", "Flamer", "Sniper rifle" },
+		{ "Powergun", "Sniper rifle", "Machine gun", "Shotgun", "Flamer" }
 	};
-	int i;
 
 	// First try to select an available weapon
-	for (i = 0; i < NUM_PREFERRED_WEAPONS; i++)
+	for (int i = 0; i < NUM_PREFERRED_WEAPONS; i++)
 	{
-		gun_e preferredWeapon = preferredWeapons[player][i];
-		if (weapons[preferredWeapon])
+		const char *preferredWeaponName = preferredWeapons[player][i];
+		const GunDescription *preferredWeapon =
+			StrGunDescription(preferredWeaponName);
+		if (HasWeapon(weapons, preferredWeapon))
 		{
 			return preferredWeapon;
 		}
@@ -568,5 +570,17 @@ gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT])
 
 	// Preferred weapons unavailable;
 	// give up and select most preferred weapon anyway
-	return preferredWeapons[player][0];
+	return StrGunDescription(preferredWeapons[player][0]);
+}
+static bool HasWeapon(const CArray *weapons, const GunDescription *w)
+{
+	for (int i = 0; i < (int)weapons->size; i++)
+	{
+		const GunDescription **g = CArrayGet(weapons, i);
+		if (w == *g)
+		{
+			return true;
+		}
+	}
+	return false;
 }

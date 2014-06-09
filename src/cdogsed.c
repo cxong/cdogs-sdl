@@ -1127,7 +1127,7 @@ int main(int argc, char *argv[])
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	gConfig.Graphics.IsEditor = 1;
 	BulletInitialize();
-	WeaponInitialize();
+	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
 	PlayerDataInitialize();
 	MapInit(&gMap);
 	if (!PicManagerTryInit(
@@ -1189,6 +1189,7 @@ int main(int argc, char *argv[])
 	EditCampaign();
 
 	MapTerminate(&gMap);
+	WeaponTerminate(&gGunDescriptions);
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);

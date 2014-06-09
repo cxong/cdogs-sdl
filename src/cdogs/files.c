@@ -291,7 +291,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
 	c->bot->actionDelay = b->actionDelay;
-	c->gun = (gun_e)b->gun;
+	c->Gun = CArrayGet(&gGunDescriptions, b->gun);
 	c->looks.skin = b->skinColor;
 	c->looks.arm = b->armColor;
 	c->looks.body = b->bodyColor;
@@ -311,7 +311,15 @@ TBadGuy ConvertTBadGuy(Character *e)
 	b.probabilityToTrack = e->bot->probabilityToTrack;
 	b.probabilityToShoot = e->bot->probabilityToShoot;
 	b.actionDelay = e->bot->actionDelay;
-	b.gun = e->gun;
+	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	{
+		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		if (strcmp(e->Gun->name, g->name) == 0)
+		{
+			b.gun = i;
+			break;
+		}
+	}
 	b.skinColor = e->looks.skin;
 	b.armColor = e->looks.arm;
 	b.bodyColor = e->looks.body;
@@ -375,12 +383,13 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 		CArrayPushBack(&dest->ItemDensities, &n);
 	}
 	dest->EnemyDensity = src->baddieDensity;
-	memset(&dest->Weapons, 0, sizeof dest->Weapons);
+	CArrayClear(&dest->Weapons);
 	for (i = 0; i < WEAPON_MAX; i++)
 	{
 		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
 		{
-			dest->Weapons[i] = 1;
+			GunDescription *g = CArrayGet(&gGunDescriptions, i);
+			CArrayPushBack(&dest->Weapons, &g);
 		}
 	}
 	strcpy(dest->Song, src->song);

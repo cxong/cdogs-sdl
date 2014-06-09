@@ -162,4 +162,6 @@ void SoundPlayAtPlusDistance(
 
 sound_e SoundGetHit(special_damage_e damage, int isActor);
 
+sound_e StrSound(const char *s);
+
 #endif

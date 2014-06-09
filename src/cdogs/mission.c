@@ -98,6 +98,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->Items, sizeof(int));
 	CArrayInit(&m->ItemDensities, sizeof(int));
+	CArrayInit(&m->Weapons, sizeof(const GunDescription *));
 }
 void MissionCopy(Mission *dst, Mission *src)
 {
@@ -137,7 +138,7 @@ void MissionCopy(Mission *dst, Mission *src)
 	CArrayCopy(&dst->ItemDensities, &src->ItemDensities);
 
 	dst->EnemyDensity = src->EnemyDensity;
-	memcpy(dst->Weapons, src->Weapons, sizeof dst->Weapons);
+	CArrayCopy(&dst->Weapons, &src->Weapons);
 
 	memcpy(dst->Song, src->Song, sizeof dst->Song);
 
@@ -178,6 +179,7 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->SpecialChars);
 	CArrayTerminate(&m->Items);
 	CArrayTerminate(&m->ItemDensities);
+	CArrayTerminate(&m->Weapons);
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
@@ -536,16 +538,15 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 	}
 }
 
+static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void CleanupPlayerInventory(
-	struct PlayerData *data, int weapons[GUN_COUNT])
+	struct PlayerData *data, const CArray *weapons)
 {
-	int i;
-	for (i = data->weaponCount - 1; i >= 0; i--)
+	for (int i = data->weaponCount - 1; i >= 0; i--)
 	{
-		if (!weapons[data->weapons[i]])
+		if (!HasWeapon(weapons, data->weapons[i]))
 		{
-			int j;
-			for (j = i + 1; j < data->weaponCount; j++)
+			for (int j = i + 1; j < data->weaponCount; j++)
 			{
 				data->weapons[j - 1] = data->weapons[j];
 			}
@@ -553,13 +554,24 @@ static void CleanupPlayerInventory(
 		}
 	}
 }
+static bool HasWeapon(const CArray *weapons, const GunDescription *w)
+{
+	for (int i = 0; i < (int)weapons->size; i++)
+	{
+		const GunDescription **g = CArrayGet(weapons, i);
+		if (w == *g)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 static void SetupWeapons(
-	struct PlayerData playerDatas[MAX_PLAYERS], int weapons[GUN_COUNT])
+	struct PlayerData playerDatas[MAX_PLAYERS], const CArray *weapons)
 {
-	int i;
 	// Remove unavailable weapons from players inventories
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		CleanupPlayerInventory(&playerDatas[i], weapons);
 	}
@@ -602,7 +614,7 @@ void SetupMission(
 	MobObjsInit();
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
-	SetupWeapons(gPlayerDatas, m->Weapons);
+	SetupWeapons(gPlayerDatas, &m->Weapons);
 	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
 	if (buildTables)
 	{

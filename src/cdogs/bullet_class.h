@@ -100,6 +100,8 @@ typedef enum
 } BulletClassFallingType;
 typedef struct
 {
+	BulletType Type;
+	const char *Name;
 	BulletUpdateFunc UpdateFunc;
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
@@ -132,6 +134,8 @@ typedef struct
 	bool Erratic;
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
+
+BulletType StrBulletType(const char *s);
 
 void BulletInitialize(void);
 

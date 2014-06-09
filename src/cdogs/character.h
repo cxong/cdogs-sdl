@@ -54,7 +54,7 @@ typedef struct
 {
 	CharLooks looks;
 	int speed;
-	gun_e gun;
+	const GunDescription *Gun;
 	int maxHealth;
 	int flags;
 	TranslationTable table;

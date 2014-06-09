@@ -32,6 +32,6 @@
 #include "actors.h"
 
 int AICoopGetCmd(TActor *actor, const int ticks);
-gun_e AICoopSelectWeapon(int player, int weapons[GUN_COUNT]);
+const GunDescription *AICoopSelectWeapon(int player, const CArray *weapons);
 
 #endif

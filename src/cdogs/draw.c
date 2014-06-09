@@ -657,7 +657,7 @@ void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 		if (showGun)
 		{
 			CDogsTextGoto(pos.x - 8, pos.y + 8);
-			CDogsTextString(gGunDescriptions[c->gun].name);
+			CDogsTextString(c->Gun->name);
 		}
 	}
 }

@@ -162,24 +162,24 @@ void PlayerDataInitialize(void)
 		switch (i)
 		{
 			case 0:
-				d->weapons[0] = GUN_SHOTGUN;
-				d->weapons[1] = GUN_MG;
-				d->weapons[2] = GUN_FRAGGRENADE;
+				d->weapons[0] = StrGunDescription("Shotgun");
+				d->weapons[1] = StrGunDescription("Machine gun");
+				d->weapons[2] = StrGunDescription("Shrapnel bombs");
 				break;
 			case 1:
-				d->weapons[0] = GUN_POWERGUN;
-				d->weapons[1] = GUN_FLAMER;
-				d->weapons[2] = GUN_GRENADE;
+				d->weapons[0] = StrGunDescription("Powergun");
+				d->weapons[1] = StrGunDescription("Flamer");
+				d->weapons[2] = StrGunDescription("Grenades");
 				break;
 			case 2:
-				d->weapons[0] = GUN_SNIPER;
-				d->weapons[1] = GUN_KNIFE;
-				d->weapons[2] = GUN_MOLOTOV;
+				d->weapons[0] = StrGunDescription("Sniper rifle");
+				d->weapons[1] = StrGunDescription("Knife");
+				d->weapons[2] = StrGunDescription("Molotovs");
 				break;
 			case 3:
-				d->weapons[0] = GUN_MG;
-				d->weapons[1] = GUN_FLAMER;
-				d->weapons[2] = GUN_DYNAMITE;
+				d->weapons[0] = StrGunDescription("Machine gun");
+				d->weapons[1] = StrGunDescription("Flamer");
+				d->weapons[2] = StrGunDescription("Dynamite");
 				break;
 			default:
 				assert(0 && "unsupported");

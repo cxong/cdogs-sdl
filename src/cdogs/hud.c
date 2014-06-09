@@ -272,10 +272,10 @@ static void DrawWeaponStatus(
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
-		Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-		Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
-		color_t barColor = { 0, 0, 255, 255 };
-		int maxLock = gGunDescriptions[weapon->gun].Lock;
+		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
+		const Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
+		const color_t barColor = { 0, 0, 255, 255 };
+		const int maxLock = weapon->Gun->Lock;
 		int innerWidth;
 		color_t backColor = { 128, 128, 128, 255 };
 		if (maxLock == 0)
@@ -289,7 +289,7 @@ static void DrawWeaponStatus(
 		DrawGauge(
 			device, gaugePos, size, innerWidth, barColor, backColor, textFlags);
 	}
-	CDogsTextStringSpecial(GunGetName(weapon->gun), textFlags, pos.x, pos.y);
+	CDogsTextStringSpecial(weapon->Gun->name, textFlags, pos.x, pos.y);
 }
 
 static void DrawHealth(

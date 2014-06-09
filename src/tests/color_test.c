@@ -243,6 +243,33 @@ FEATURE(3, "Tint")
 	SCENARIO_END
 FEATURE_END
 
+FEATURE(4, "String conversion")
+	SCENARIO("Convert hex")
+		GIVEN("a hex string")
+			const char *str = "6495ED";
+		GIVEN_END
+		WHEN("I convert it into a color")
+			color_t result = StrColor(str);
+		WHEN_END
+		THEN("the result should be the expected color")
+			color_t expected = { 100, 149, 237, 255 };
+			SHOULD_BE_TRUE(ColorEquals(result, expected));
+		THEN_END
+	SCENARIO_END
+	
+	SCENARIO("Convert invalid string")
+		GIVEN("an invalid string")
+			const char *str = "unknown";
+		GIVEN_END
+		WHEN("I convert it into a color")
+			color_t result = StrColor(str);
+		WHEN_END
+		THEN("the result should be black")
+			SHOULD_BE_TRUE(ColorEquals(result, colorBlack));
+		THEN_END
+	SCENARIO_END
+FEATURE_END
+
 int main(void)
 {
 	cbehave_feature features[] =

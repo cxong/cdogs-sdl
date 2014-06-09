@@ -396,7 +396,7 @@ bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 			menus[i].ms.current =
 				CArrayGet(&menus[i].ms.root->u.normal.subMenus, lastMenuIndex);
 			gPlayerDatas[i].weapons[0] = AICoopSelectWeapon(
-				i, gMission.missionData->Weapons);
+				i, &gMission.missionData->Weapons);
 			gPlayerDatas[i].weaponCount = 1;
 			// TODO: select more weapons, or select weapons based on mission
 		}

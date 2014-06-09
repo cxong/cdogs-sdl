@@ -31,9 +31,6 @@
 #include "c_array.h"
 #include "campaigns.h"
 
-int GetNumWeapons(int weapons[GUN_COUNT]);
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int index);
-
 // allocates title
 int MapNewScan(const char *filename, char **title, int *numMissions);
 int MapNewLoad(const char *filename, CampaignSetting *c);

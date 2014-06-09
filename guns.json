@@ -1,0 +1,216 @@
+{
+  "Version": 1,
+  "DefaultGun": {
+	"Pic": "blaster",
+	"Name": "",
+	"Bullet": "",
+	"Cost": 0,
+	"Lock": 0,
+	"ReloadLead": 0,
+	"Sound": "bang",
+	"ReloadSound": "",
+	"SoundLockLength": 0,
+	"Recoil": 0,
+	"SpreadCount": 1,
+	"SpreadWidth": 0,
+	"MuzzleHeight": 10,
+	"MuzzleFlashSprite": "muzzle_flash",
+	"MuzzleFlashColor": "ffff80",
+	"MuzzleFlashDuration": 3,
+	"CanShoot": true
+  },
+  "Guns": [
+    {
+      "Index": 0,
+	  "Pic": "knife",
+      "Name": "Knife",
+      "Cost": 0,
+      "Lock": 10,
+      "Sound": "",
+      "SoundLockLength": 10,
+	  "CanShoot": false
+    },
+    {
+      "Index": 1,
+      "Name": "Machine gun",
+      "Bullet": "mg",
+	  "Cost": 1,
+	  "Lock": 6,
+	  "Sound": "mg",
+	  "Recoil": 0.17,
+	  "MuzzleFlashDuration": 2
+    },
+	{
+	  "Index": 2,
+	  "Pic": "",
+	  "Name": "Grenades",
+	  "Bullet": "grenade",
+	  "Cost": 20,
+	  "Lock": 30,
+	  "Sound": "launch"
+	},
+	{
+	  "Index": 3,
+	  "Name": "Flamer",
+	  "Bullet": "flame",
+	  "Cost": 1,
+	  "Lock": 6,
+	  "Sound": "flamer",
+	  "SoundLockLength": 36,
+	  "MuzzleFlashColor": "ff0000"
+	},
+	{
+	  "Index": 4,
+	  "Name": "Shotgun",
+	  "Bullet": "shotgun",
+	  "Cost": 5,
+	  "Lock": 50,
+	  "ReloadLead": 10,
+	  "Sound": "shotgun",
+	  "ReloadSound": "shotgun_r",
+	  "SpreadCount": 5,
+	  "SpreadWidth": 0.2,
+	  "MuzzleFlashSprite": "muzzle_flash_big",
+	  "MuzzleFlashDuration": 7
+	},
+	{
+	  "Index": 5,
+	  "Name": "Powergun",
+	  "Bullet": "laser",
+	  "Cost": 2,
+	  "Lock": 20,
+	  "Sound": "fusion",
+	  "MuzzleFlashColor": "ff0000",
+	  "MuzzleFlashDuration": 5
+	},
+	{
+	  "Index": 6,
+	  "Pic": "",
+	  "Name": "Shrapnel bombs",
+	  "Bullet": "shrapnelbomb",
+	  "Cost": 20,
+	  "Lock": 30,
+	  "Sound": "launch"
+	},
+	{
+	  "Index": 7,
+	  "Pic": "",
+	  "Name": "Molotovs",
+	  "Bullet": "molotov",
+	  "Cost": 20,
+	  "Lock": 30,
+	  "Sound": "launch"
+	},
+	{
+	  "Index": 8,
+	  "Name": "Sniper rifle",
+	  "Bullet": "sniper",
+	  "Cost": 5,
+	  "Lock": 100,
+	  "ReloadLead": 15,
+	  "Sound": "powergun",
+	  "ReloadSound": "powergun_r",
+	  "MuzzleFlashSprite": "muzzle_flash_big",
+	  "MuzzleFlashColor": "00ffff",
+	  "MuzzleFlashDuration": 10
+	},
+	{
+	  "Index": 9,
+	  "Pic": "",
+	  "Name": "Prox. mine",
+	  "Bullet": "proxmine",
+	  "Cost": 10,
+	  "Lock": 100,
+	  "ReloadLead": 15,
+	  "Sound": "hahaha",
+	  "ReloadSound": "package_r",
+	  "MuzzleHeight": 0
+	},
+	{
+	  "Index": 10,
+	  "Pic": "",
+	  "Name": "Dynamite",
+	  "Bullet": "dynamite",
+	  "Cost": 7,
+	  "Lock": 100,
+	  "ReloadLead": 15,
+	  "Sound": "hahaha",
+	  "ReloadSound": "package_r",
+	  "MuzzleHeight": 0
+	},
+	{
+	  "Index": 11,
+	  "Pic": "",
+	  "Name": "Chemo bombs",
+	  "Bullet": "gasbomb",
+	  "Cost": 7,
+	  "Lock": 30,
+	  "Sound": "launch"
+	},
+	{
+	  "Index": 12,
+	  "Name": "Petrify gun",
+	  "Bullet": "petrifier",
+	  "Cost": 10,
+	  "Lock": 100,
+	  "ReloadLead": 15,
+	  "Sound": "powergun",
+	  "ReloadSound": "powergun_r",
+	  "MuzzleFlashSprite": "muzzle_flash_big",
+	  "MuzzleFlashColor": "ffffff",
+	  "MuzzleFlashDuration": 10
+	},
+	{
+	  "Index": 13,
+	  "Name": "Browny gun",
+	  "Bullet": "brown",
+	  "Cost": 5,
+	  "Lock": 30,
+	  "Sound": "fusion",
+	  "MuzzleFlashColor": "00ffff",
+	  "MuzzleFlashDuration": 5
+	},
+	{
+	  "Index": 14,
+	  "Pic": "",
+	  "Name": "Confusion bombs",
+	  "Bullet": "confusebomb",
+	  "Cost": 10,
+	  "Lock": 30,
+	  "Sound": "launch"
+	},
+	{
+	  "Index": 15,
+	  "Name": "Chemo gun",
+	  "Bullet": "gas",
+	  "Cost": 1,
+	  "Lock": 6,
+	  "Sound": "flamer",
+	  "SoundLockLength": 36,
+	  "MuzzleFlashColor": "00ff00"
+	},
+	{
+	  "Index": 16,
+	  "Name": "Pulse Rifle",
+	  "Bullet": "rapid",
+	  "Cost": 1,
+	  "Lock": 4,
+	  "Sound": "pulse",
+	  "Recoil": 0.37,
+	  "MuzzleFlashSprite": "muzzle_flash_big",
+	  "MuzzleFlashColor": "00ffff",
+	  "MuzzleFlashDuration": 2
+	},
+	{
+	  "Index": 17,
+	  "Name": "Heatseeker",
+	  "Bullet": "heatseeker",
+	  "Cost": 7,
+	  "Lock": 30,
+	  "Sound": "swell",
+	  "MuzzleFlashSprite": "muzzle_flash_big",
+	  "MuzzleFlashColor": "ff0000",
+	  "MuzzleFlashDuration": 5
+	}
+  ]
+}

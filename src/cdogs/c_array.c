@@ -53,7 +53,7 @@ void CArrayCopy(CArray *dst, const CArray *src)
 	}
 }
 
-void CArrayPushBack(CArray *a, void *elem)
+void CArrayPushBack(CArray *a, const void *elem)
 {
 	if (a->size == a->capacity)
 	{

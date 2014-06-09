@@ -339,7 +339,7 @@ void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 		textPos.y += CDogsTextHeight();
 	}
 	else if (data->weaponCount == 1 &&
-		data->weapons[0] == GUN_KNIFE && data->kills > 0)
+		!data->weapons[0]->CanShoot && data->kills > 0)
 	{
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
 		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
@@ -472,7 +472,7 @@ void Bonuses(void)
 				gPlayerDatas[i].totalScore -= 100 * gPlayerDatas[i].friendlies;
 			}
 			else if (gPlayerDatas[i].weaponCount == 1 &&
-				gPlayerDatas[i].weapons[0] == GUN_KNIFE &&
+				!gPlayerDatas[i].weapons[0]->CanShoot &&
 				gPlayerDatas[i].friendlies == 0 &&
 				gPlayerDatas[i].kills > 5)
 			{
@@ -1354,7 +1354,7 @@ int main(int argc, char *argv[])
 	}
 
 	BulletInitialize();
-	WeaponInitialize();
+	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
 	PlayerDataInitialize();
 	MapInit(&gMap);
 	if (!PicManagerTryInit(
@@ -1406,6 +1406,7 @@ int main(int argc, char *argv[])
 bail:
 	debug(D_NORMAL, ">> Shutting down...\n");
 	MapTerminate(&gMap);
+	WeaponTerminate(&gGunDescriptions);
 	MissionOptionsTerminate(&gMission);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);

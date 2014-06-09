@@ -29,6 +29,7 @@
 #include "color.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -157,4 +158,19 @@ color_t ColorTint(color_t c, HSV hsv)
 int ColorEquals(color_t a, color_t b)
 {
 	return a.r == b.r && a.g == b.g && a.b == b.b;
+}
+
+color_t StrColor(const char *s)
+{
+	if (s == NULL || strlen(s) != 6)
+	{
+		return colorBlack;
+	}
+	int hex = (int)strtol(s, NULL, 16);
+	color_t c;
+	c.a = 255;
+	c.r = (hex >> 16) & 255;
+	c.g = (hex >> 8) & 255;
+	c.b = hex & 255;
+	return c;
 }

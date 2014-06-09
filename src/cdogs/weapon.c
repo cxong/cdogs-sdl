@@ -50,12 +50,15 @@
 
 #include <assert.h>
 
+#include <json/json.h>
+
 #include "config.h"
 #include "game_events.h"
+#include "json_utils.h"
 #include "objs.h"
 #include "sounds.h"
 
-GunDescription gGunDescriptions[GUN_COUNT];
+CArray gGunDescriptions;	// of GunDescription
 
 #define RELOAD_DISTANCE_PLUS 300
 
@@ -96,207 +99,165 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 };
 
 // Initialise all the static weapon data
-// TODO: load from data file
-void WeaponInitialize(void)
+#define VERSION 1
+static void LoadGunDescription(
+	GunDescription *g, json_t *node, const GunDescription *defaultGun);
+void WeaponInitialize(CArray *descs, const char *filename)
 {
-	GunDescription *g;
-	int i;
-
-	// Load defaults
-	for (i = 0; i < GUN_COUNT; i++)
+	CArrayInit(descs, sizeof(const GunDescription));
+	FILE *f = fopen(filename, "r");
+	json_t *root = NULL;
+	if (f == NULL)
 	{
-		g = &gGunDescriptions[i];
-		g->pic = GUNPIC_BLASTER;
-		g->ReloadLead = -1;
-		g->ReloadSound = -1;
-		g->SoundLockLength = 0;
-		g->Recoil = 0;
-		g->Spread.Count = 1;
-		g->Spread.Width = 0;
-		g->MuzzleHeight = BULLET_Z;
-		g->MuzzleFlashSpriteName = "muzzle_flash";
-		g->MuzzleFlashColor = colorYellow;
-		g->MuzzleFlashDuration = 3;
+		printf("Error: cannot load guns file %s\n", filename);
+		goto bail;
+	}
+	enum json_error e = json_stream_parse(f, &root);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing guns file %s\n", filename);
+		goto bail;
+	}
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		CASSERT(false, "cannot read guns file version");
+		goto bail;
 	}
 
-	g = &gGunDescriptions[GUN_KNIFE];
-	g->pic = GUNPIC_KNIFE;
-	strcpy(g->name, "Knife");
-	g->Cost = 0;
-	g->Lock = 0;
-	g->Sound = -1;
-	g->SoundLockLength = 10;
+	GunDescription defaultDesc;
+	LoadGunDescription(
+		&defaultDesc, json_find_first_label(root, "DefaultGun")->child, NULL);
+	for (int i = 0; i < GUN_COUNT; i++)
+	{
+		CArrayPushBack(descs, &defaultDesc);
+	}
+	json_t *gunsNode = json_find_first_label(root, "Guns")->child;
+	for (json_t *child = gunsNode->child; child; child = child->next)
+	{
+		GunDescription g;
+		LoadGunDescription(&g, child, &defaultDesc);
+		int idx;
+		LoadInt(&idx, child, "Index");
+		CASSERT(idx >= 0 && idx < GUN_COUNT, "invalid gun index");
+		memcpy(CArrayGet(descs, idx), &g, sizeof g);
+	}
 
-	g = &gGunDescriptions[GUN_MG];
-	strcpy(g->name, "Machine gun");
-	g->Bullet = BULLET_MG;
-	g->Cost = 1;
-	g->Lock = 6;
-	g->Sound = SND_MACHINEGUN;
-	g->Recoil = 7.0 / 256 * 2 * PI;
-	g->MuzzleFlashDuration = 2;
+bail:
+	json_free_value(&root);
+	if (f)
+	{
+		fclose(f);
+	}
+}
+static void LoadGunDescription(
+	GunDescription *g, json_t *node, const GunDescription *defaultGun)
+{
+	memset(g, 0, sizeof *g);
+	if (defaultGun)
+	{
+		memcpy(g, defaultGun, sizeof *g);
+		if (defaultGun->name)
+		{
+			CSTRDUP(g->name, defaultGun->name);
+		}
+		if (defaultGun->MuzzleFlashSpriteName)
+		{
+			CSTRDUP(
+				g->MuzzleFlashSpriteName, defaultGun->MuzzleFlashSpriteName);
+		}
+	}
+	char *tmp;
 
-	g = &gGunDescriptions[GUN_GRENADE];
-	g->pic = -1;
-	strcpy(g->name, "Grenades");
-	g->Bullet = BULLET_GRENADE;
-	g->Cost = 20;
-	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	if (json_find_first_label(node, "Pic"))
+	{
+		tmp = GetString(node, "Pic");
+		if (strcmp(tmp, "blaster") == 0)
+		{
+			g->pic = GUNPIC_BLASTER;
+		}
+		else if (strcmp(tmp, "knife") == 0)
+		{
+			g->pic = GUNPIC_KNIFE;
+		}
+		else
+		{
+			g->pic = -1;
+		}
+		CFREE(tmp);
+	}
 
-	g = &gGunDescriptions[GUN_FLAMER];
-	strcpy(g->name, "Flamer");
-	g->Bullet = BULLET_FLAME;
-	g->Cost = 1;
-	g->Lock = 6;
-	g->Sound = SND_FLAMER;
-	g->SoundLockLength = 36;
-	g->MuzzleFlashColor = colorRed;
+	g->name = GetString(node, "Name");
 
-	g = &gGunDescriptions[GUN_SHOTGUN];
-	strcpy(g->name, "Shotgun");
-	g->Bullet = BULLET_SHOTGUN;
-	g->Cost = 5;
-	g->Lock = 50;
-	g->ReloadLead = 10;
-	g->Sound = SND_SHOTGUN;
-	g->ReloadSound = SND_SHOTGUN_R;
-	g->Spread.Count = 5;
-	g->Spread.Width = 2 * PI / 32;
-	g->MuzzleFlashSpriteName = "muzzle_flash_big";
-	g->MuzzleFlashDuration = 7;
+	if (json_find_first_label(node, "Bullet"))
+	{
+		tmp = GetString(node, "Bullet");
+		g->Bullet = StrBulletType(tmp);
+		CFREE(tmp);
+	}
 
-	g = &gGunDescriptions[GUN_POWERGUN];
-	strcpy(g->name, "Powergun");
-	g->Bullet = BULLET_LASER;
-	g->Cost = 2;
-	g->Lock = 20;
-	g->Sound = SND_POWERGUN;
-	g->MuzzleFlashColor = colorRed;
-	g->MuzzleFlashDuration = 5;
+	LoadInt(&g->Cost, node, "Cost");
 
-	g = &gGunDescriptions[GUN_FRAGGRENADE];
-	g->pic = -1;
-	strcpy(g->name, "Shrapnel bombs");
-	g->Bullet = BULLET_SHRAPNELBOMB;
-	g->Cost = 20;
-	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	LoadInt(&g->Lock, node, "Lock");
 
-	g = &gGunDescriptions[GUN_MOLOTOV];
-	g->pic = -1;
-	strcpy(g->name, "Molotovs");
-	g->Bullet = BULLET_MOLOTOV;
-	g->Cost = 20;
-	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	LoadInt(&g->ReloadLead, node, "ReloadLead");
 
-	g = &gGunDescriptions[GUN_SNIPER];
-	strcpy(g->name, "Sniper rifle");
-	g->Bullet = BULLET_SNIPER;
-	g->Cost = 5;
-	g->Lock = 100;
-	g->ReloadLead = 15;
-	g->Sound = SND_LASER;
-	g->ReloadSound = SND_LASER_R;
-	g->MuzzleFlashSpriteName = "muzzle_flash_big";
-	g->MuzzleFlashColor = colorCyan;
-	g->MuzzleFlashDuration = 10;
+	if (json_find_first_label(node, "Sound"))
+	{
+		tmp = GetString(node, "Sound");
+		g->Sound = StrSound(tmp);
+		CFREE(tmp);
+	}
 
-	g = &gGunDescriptions[GUN_MINE];
-	g->pic = -1;
-	strcpy(g->name, "Prox. mine");
-	g->Bullet = BULLET_PROXMINE;
-	g->Cost = 10;
-	g->Lock = 100;
-	g->ReloadLead = 15;
-	g->Sound = SND_HAHAHA;
-	g->ReloadSound = SND_PACKAGE_R;
-	g->MuzzleHeight = 0;
+	if (json_find_first_label(node, "ReloadSound"))
+	{
+		tmp = GetString(node, "ReloadSound");
+		g->ReloadSound = StrSound(tmp);
+		CFREE(tmp);
+	}
 
-	g = &gGunDescriptions[GUN_DYNAMITE];
-	g->pic = -1;
-	strcpy(g->name, "Dynamite");
-	g->Bullet = BULLET_DYNAMITE;
-	g->Cost = 7;
-	g->Lock = 100;
-	g->ReloadLead = 15;
-	g->Sound = SND_HAHAHA;
-	g->ReloadSound = SND_PACKAGE_R;
-	g->MuzzleHeight = 0;
+	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 
-	g = &gGunDescriptions[GUN_GASBOMB];
-	g->pic = -1;
-	strcpy(g->name, "Chemo bombs");
-	g->Bullet = BULLET_GASBOMB;
-	g->Cost = 7;
-	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	LoadDouble(&g->Recoil, node, "Recoil");
 
-	g = &gGunDescriptions[GUN_PETRIFY];
-	strcpy(g->name, "Petrify gun");
-	g->Bullet = BULLET_PETRIFIER;
-	g->Cost = 10;
-	g->Lock = 100;
-	g->ReloadLead = 15;
-	g->Sound = SND_LASER;
-	g->ReloadSound = SND_LASER_R;
-	g->MuzzleFlashSpriteName = "muzzle_flash_big";
-	g->MuzzleFlashColor = colorWhite;
-	g->MuzzleFlashDuration = 10;
+	LoadInt(&g->Spread.Count, node, "SpreadCount");
 
-	g = &gGunDescriptions[GUN_BROWN];
-	strcpy(g->name, "Browny gun");
-	g->Bullet = BULLET_BROWN;
-	g->Cost = 5;
-	g->Lock = 30;
-	g->Sound = SND_POWERGUN;
-	g->MuzzleFlashColor = colorCyan;
-	g->MuzzleFlashDuration = 5;
+	LoadDouble(&g->Spread.Width, node, "SpreadWidth");
 
-	g = &gGunDescriptions[GUN_CONFUSEBOMB];
-	g->pic = -1;
-	strcpy(g->name, "Confusion bombs");
-	g->Bullet = BULLET_CONFUSEBOMB;
-	g->Cost = 10;
-	g->Lock = 30;
-	g->Sound = SND_LAUNCH;
+	LoadInt(&g->MuzzleHeight, node, "MuzzleHeight");
 
-	g = &gGunDescriptions[GUN_GASGUN];
-	strcpy(g->name, "Chemo gun");
-	g->Bullet = BULLET_GAS;
-	g->Cost = 1;
-	g->Lock = 6;
-	g->Sound = SND_FLAMER;
-	g->SoundLockLength = 36;
-	g->MuzzleFlashColor = colorGreen;
+	if (json_find_first_label(node, "MuzzleFlashSprite"))
+	{
+		g->MuzzleFlashSpriteName = GetString(node, "MuzzleFlashSprite");
+	}
 
-	g = &gGunDescriptions[GUN_PULSERIFLE];
-	strcpy(g->name, "Pulse Rifle");
-	g->Bullet = BULLET_RAPID;
-	g->Cost = 1;
-	g->Lock = 4;
-	g->Sound = SND_PULSE;
-	g->Recoil = 15.0 / 256 * 2 * PI;
-	g->MuzzleFlashSpriteName = "muzzle_flash_big";
-	g->MuzzleFlashColor = colorCyan;
-	g->MuzzleFlashDuration = 2;
+	if (json_find_first_label(node, "MuzzleFlashColor"))
+	{
+		tmp = GetString(node, "MuzzleFlashColor");
+		g->MuzzleFlashColor = StrColor(tmp);
+		CFREE(tmp);
+	}
 
-	g = &gGunDescriptions[GUN_HEATSEEKER];
-	strcpy(g->name, "Heatseeker");
-	g->Bullet = BULLET_HEATSEEKER;
-	g->Cost = 7;
-	g->Lock = 30;
-	g->Sound = SND_SWELL;
-	g->MuzzleFlashSpriteName = "muzzle_flash_big";
-	g->MuzzleFlashColor = colorRed;
-	g->MuzzleFlashDuration = 5;
+	LoadInt(&g->MuzzleFlashDuration, node, "MuzzleFlashDuration");
+
+	LoadBool(&g->CanShoot, node, "CanShoot");
+}
+void WeaponTerminate(CArray *descs)
+{
+	for (int i = 0; i < (int)descs->size; i++)
+	{
+		GunDescription *g = CArrayGet(descs, i);
+		CFREE(g->name);
+		CFREE(g->MuzzleFlashSpriteName);
+	}
+	CArrayTerminate(descs);
 }
 
-Weapon WeaponCreate(gun_e gun)
+Weapon WeaponCreate(const GunDescription *gun)
 {
 	Weapon w;
-	w.gun = gun;
+	w.Gun = gun;
 	w.state = GUNSTATE_READY;
 	w.lock = 0;
 	w.soundLock = 0;
@@ -304,27 +265,19 @@ Weapon WeaponCreate(gun_e gun)
 	return w;
 }
 
-gunpic_e GunGetPic(gun_e gun)
+// TODO: use map structure?
+const GunDescription *StrGunDescription(const char *s)
 {
-	return gGunDescriptions[gun].pic;
-}
-
-const char *GunGetName(gun_e gun)
-{
-	return gGunDescriptions[gun].name;
-}
-gun_e StrGunName(const char *s)
-{
-	gun_e i;
-	for (i = 0; i < GUN_COUNT; i++)
+	for (int i = 0; i < (int)gGunDescriptions.size; i++)
 	{
-		if (strcmp(s, GunGetName(i)) == 0)
+		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		if (strcmp(s, g->name) == 0)
 		{
-			return i;
+			return g;
 		}
 	}
-	assert(0 && "cannot parse gun name");
-	return GUN_KNIFE;
+	CASSERT(false, "cannot parse gun name");
+	return CArrayGet(&gGunDescriptions, 0);
 }
 
 void WeaponSetState(Weapon *w, gunstate_e state);
@@ -333,14 +286,14 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 {
 	// Reload sound
 	if (gConfig.Sound.Reloads &&
-		w->lock > gGunDescriptions[w->gun].ReloadLead &&
-		w->lock - ticks <= gGunDescriptions[w->gun].ReloadLead &&
+		w->lock > w->Gun->ReloadLead &&
+		w->lock - ticks <= w->Gun->ReloadLead &&
 		w->lock > 0 &&
-		(int)gGunDescriptions[w->gun].ReloadSound != -1)
+		w->Gun->ReloadSound != SND_NONE)
 	{
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
-			gGunDescriptions[w->gun].ReloadSound,
+			w->Gun->ReloadSound,
 			tilePosition,
 			RELOAD_DISTANCE_PLUS);
 	}
@@ -375,11 +328,6 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 	}
 }
 
-int GunGetCost(gun_e gun)
-{
-	return gGunDescriptions[gun].Cost;
-}
-
 int WeaponCanFire(Weapon *w)
 {
 	return w->lock <= 0;
@@ -387,32 +335,31 @@ int WeaponCanFire(Weapon *w)
 
 void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 {
-	if (w->soundLock <= 0 && (int)gGunDescriptions[w->gun].Sound != -1)
+	if (w->soundLock <= 0 && (int)w->Gun->Sound != SND_NONE)
 	{
 		SoundPlayAt(
 			&gSoundDevice,
-			gGunDescriptions[w->gun].Sound,
+			w->Gun->Sound,
 			tilePosition);
-		w->soundLock = gGunDescriptions[w->gun].SoundLockLength;
+		w->soundLock = w->Gun->SoundLockLength;
 	}
 }
 
-static bool GunHasMuzzle(gun_e gun);
+static bool GunHasMuzzle(const GunDescription *desc);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
 	{
 		WeaponSetState(w, GUNSTATE_FIRING);
 	}
-	if (w->gun == GUN_KNIFE)
+	if (!w->Gun->CanShoot)
 	{
 		return;
 	}
-	double radians = dir2radians[d];
-	GunDescription *desc = &gGunDescriptions[w->gun];
-	int spreadCount = desc->Spread.Count;
+	const double radians = dir2radians[d];
+	const int spreadCount = w->Gun->Spread.Count;
 	double spreadStartAngle = 0;
-	double spreadWidth = desc->Spread.Width;
+	const double spreadWidth = w->Gun->Spread.Width;
 	if (spreadCount > 1)
 	{
 		// Find the starting angle of the spread (clockwise)
@@ -420,55 +367,56 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		// total spread angle of 2x width
 		spreadStartAngle = -(spreadCount - 1) * spreadWidth / 2;
 	}
-	Vec2i muzzleOffset = GunGetMuzzleOffset(w->gun, d);
-	Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
+	const Vec2i muzzleOffset = GunGetMuzzleOffset(w->Gun, d);
+	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	
 	assert(WeaponCanFire(w));
 	for (int i = 0; i < spreadCount; i++)
 	{
 		double spreadAngle = spreadStartAngle + i * spreadWidth;
 		double recoil = 0;
-		if (desc->Recoil > 0)
+		if (w->Gun->Recoil > 0)
 		{
 			recoil =
-				((double)rand() / RAND_MAX * desc->Recoil) - desc->Recoil / 2;
+				((double)rand() / RAND_MAX * w->Gun->Recoil) -
+				w->Gun->Recoil / 2;
 		}
 		double finalAngle = radians + spreadAngle + recoil;
 		GameEvent e;
 		e.Type = GAME_EVENT_ADD_BULLET;
-		e.u.AddBullet.Bullet = desc->Bullet;
+		e.u.AddBullet.Bullet = w->Gun->Bullet;
 		e.u.AddBullet.MuzzlePos = muzzlePosition;
-		e.u.AddBullet.MuzzleHeight = desc->MuzzleHeight;
+		e.u.AddBullet.MuzzleHeight = w->Gun->MuzzleHeight;
 		e.u.AddBullet.Angle = finalAngle;
 		e.u.AddBullet.Direction = d;
 		e.u.AddBullet.Flags = flags;
 		e.u.AddBullet.PlayerIndex = player;
 		GameEventsEnqueue(&gGameEvents, e);
-		if (GunHasMuzzle(w->gun))
+		if (GunHasMuzzle(w->Gun))
 		{
 			GameEvent m;
 			m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
 			m.u.AddMuzzleFlash.FullPos = muzzlePosition;
-			m.u.AddMuzzleFlash.MuzzleHeight = desc->MuzzleHeight;
-			m.u.AddMuzzleFlash.SpriteName = desc->MuzzleFlashSpriteName;
+			m.u.AddMuzzleFlash.MuzzleHeight = w->Gun->MuzzleHeight;
+			m.u.AddMuzzleFlash.SpriteName = w->Gun->MuzzleFlashSpriteName;
 			m.u.AddMuzzleFlash.Direction = d;
-			m.u.AddMuzzleFlash.Color = desc->MuzzleFlashColor;
-			m.u.AddMuzzleFlash.Duration = desc->MuzzleFlashDuration;
+			m.u.AddMuzzleFlash.Color = w->Gun->MuzzleFlashColor;
+			m.u.AddMuzzleFlash.Duration = w->Gun->MuzzleFlashDuration;
 			GameEventsEnqueue(&gGameEvents, m);
 		}
 	}
 
-	w->lock = gGunDescriptions[w->gun].Lock;
+	w->lock = w->Gun->Lock;
 	WeaponPlaySound(w, Vec2iFull2Real(pos));
 }
 
-Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
+Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
 {
-	if (!GunHasMuzzle(gun))
+	if (!GunHasMuzzle(desc))
 	{
 		return Vec2iZero();
 	}
-	gunpic_e g = GunGetPic(gun);
+	gunpic_e g = desc->pic;
 	CASSERT(g >= 0, "Gun has no pic");
 	int body = (int)g < 0 ? BODY_UNARMED : BODY_ARMED;
 	Vec2i position = Vec2iNew(
@@ -478,7 +426,7 @@ Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir)
 		cGunHandOffset[body][dir].dy +
 		cGunPics[g][dir][GUNSTATE_FIRING].dy +
 		cMuzzleOffset[g][dir].dy + BULLET_Z);
-	return Vec2iScale(position, 256);
+	return Vec2iReal2Full(position);
 }
 
 void WeaponHoldFire(Weapon *w)
@@ -505,61 +453,36 @@ void WeaponSetState(Weapon *w, gunstate_e state)
 	}
 }
 
-int GunIsStatic(gun_e gun)
+static bool GunHasMuzzle(const GunDescription *desc)
 {
-	switch (gun)
-	{
-	case GUN_MINE:
-	case GUN_DYNAMITE:
-		return 1;
-	default:
-		return 0;
-	}
+	return desc->pic == GUNPIC_BLASTER;
 }
-static bool GunHasMuzzle(gun_e gun)
+bool IsHighDPS(const GunDescription *g)
 {
-	return gGunDescriptions[gun].pic == GUNPIC_BLASTER;
+	const BulletClass *b = &gBulletClasses[g->Bullet];
+	// TODO: generalised way of determining explosive bullets
+	// TODO: no longer covers dynamite/mine
+	return b->Falling.DropFunc || b->OutOfRangeFunc || b->HitFunc;
 }
-int IsHighDPS(gun_e gun)
+static int GetEffectiveRange(const GunDescription *g)
 {
-	switch (gun)
+	const BulletClass *b = &gBulletClasses[g->Bullet];
+	const int speed = (b->SpeedLow + b->SpeedHigh) / 2;
+	const int range = (b->RangeLow + b->RangeHigh) / 2;
+	int effectiveRange = speed * range;
+	if (b->Falling.Enabled && b->Falling.DestroyOnDrop)
 	{
-	case GUN_GRENADE:
-	case GUN_FRAGGRENADE:
-	case GUN_MOLOTOV:
-	case GUN_MINE:
-	case GUN_DYNAMITE:
-		return 1;
-	default:
-		return 0;
+		// Halve effective range
+		// TODO: this assumes a certain bouncing range
+		effectiveRange /= 2;
 	}
+	return effectiveRange / 256;
 }
-int IsLongRange(gun_e gun)
+bool IsLongRange(const GunDescription *g)
 {
-	switch (gun)
-	{
-	case GUN_MG:
-	case GUN_POWERGUN:
-	case GUN_SNIPER:
-	case GUN_PETRIFY:
-	case GUN_BROWN:
-		return 1;
-	default:
-		return 0;
-	}
+	return GetEffectiveRange(g) > 130;
 }
-int IsShortRange(gun_e gun)
+bool IsShortRange(const GunDescription *g)
 {
-	switch (gun)
-	{
-	case GUN_KNIFE:
-	case GUN_FLAMER:
-	case GUN_MOLOTOV:
-	case GUN_MINE:
-	case GUN_DYNAMITE:
-	case GUN_GASGUN:
-		return 1;
-	default:
-		return 0;
-	}
+	return GetEffectiveRange(g) < 100;
 }

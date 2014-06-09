@@ -67,7 +67,7 @@ struct PlayerData
 	char name[20];
 	CharLooks looks;
 	int weaponCount;
-	gun_e weapons[MAX_WEAPONS];
+	const GunDescription *weapons[MAX_WEAPONS];
 
 	int score;
 	int totalScore;

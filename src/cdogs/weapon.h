@@ -98,7 +98,7 @@ typedef enum
 typedef struct
 {
 	gunpic_e pic;
-	char name[32];
+	char *name;
 	BulletType Bullet;
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
@@ -113,39 +113,37 @@ typedef struct
 		double Width;	// Width of individual spread, in radians
 	} Spread;
 	int MuzzleHeight;
-	const char *MuzzleFlashSpriteName;
+	char *MuzzleFlashSpriteName;
 	color_t MuzzleFlashColor;
 	int MuzzleFlashDuration;
+	bool CanShoot;
 } GunDescription;
 
 typedef struct
 {
-	gun_e gun;
+	const GunDescription *Gun;
 	gunstate_e state;
 	int lock;
 	int soundLock;
 	int stateCounter;
 } Weapon;
 
-extern GunDescription gGunDescriptions[GUN_COUNT];
+extern CArray gGunDescriptions;	// of GunDescription
 extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 
-void WeaponInitialize(void);
-Weapon WeaponCreate(gun_e gun);
-gunpic_e GunGetPic(gun_e gun);
-const char *GunGetName(gun_e gun);
-gun_e StrGunName(const char *s);
-int GunGetCost(gun_e gun);
-Vec2i GunGetMuzzleOffset(gun_e gun, direction_e dir);
+void WeaponInitialize(CArray *descs, const char *filename);
+void WeaponTerminate(CArray *descs);
+Weapon WeaponCreate(const GunDescription *gun);
+const GunDescription *StrGunDescription(const char *s);
+Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
 void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player);
 void WeaponHoldFire(Weapon *w);
 
-int GunIsStatic(gun_e gun);
-int IsHighDPS(gun_e gun);
-int IsLongRange(gun_e gun);
-int IsShortRange(gun_e gun);
+bool IsHighDPS(const GunDescription *g);
+bool IsLongRange(const GunDescription *g);
+bool IsShortRange(const GunDescription *g);
 
 #endif

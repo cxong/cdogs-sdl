@@ -60,6 +60,24 @@
 BulletClass gBulletClasses[BULLET_COUNT];
 
 
+BulletType StrBulletType(const char *s)
+{
+	if (s == NULL || strlen(s) == 0)
+	{
+		return BULLET_NONE;
+	}
+	for (int i = 0; i < BULLET_COUNT; i++)
+	{
+		if (gBulletClasses[i].Name &&
+			strcmp(gBulletClasses[i].Name, s) == 0)
+		{
+			return gBulletClasses[i].Type;
+		}
+	}
+	CASSERT(false, "cannot find bullet type");
+	return BULLET_NONE;
+}
+
 // Draw functions
 
 static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
@@ -617,11 +635,11 @@ int UpdateDroppedMine(TMobileObject *obj, int ticks)
 void BulletInitialize(void)
 {
 	// Defaults
-	int i;
 	BulletClass *b;
-	for (i = 0; i < BULLET_COUNT; i++)
+	for (int i = 0; i < BULLET_COUNT; i++)
 	{
 		b = &gBulletClasses[i];
+		b->Type = (BulletType)i;
 		b->UpdateFunc = UpdateBullet;
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
@@ -646,6 +664,7 @@ void BulletInitialize(void)
 	}
 
 	b = &gBulletClasses[BULLET_MG];
+	b->Name = "mg";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -655,6 +674,7 @@ void BulletInitialize(void)
 	b->Power = 10;
 
 	b = &gBulletClasses[BULLET_SHOTGUN];
+	b->Name = "shotgun";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -664,6 +684,7 @@ void BulletInitialize(void)
 	b->Power = 15;
 
 	b = &gBulletClasses[BULLET_FLAME];
+	b->Name = "flame";
 	b->GetPicFunc = GetFlame;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 30;
@@ -676,6 +697,7 @@ void BulletInitialize(void)
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_LASER];
+	b->Name = "laser";
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
 	b->DrawData.u.Beam = BEAM_PIC_BEAM;
 	b->SpeedLow = b->SpeedHigh = 1024;
@@ -684,6 +706,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(2, 2);
 
 	b = &gBulletClasses[BULLET_SNIPER];
+	b->Name = "sniper";
 	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
 	b->DrawData.u.Beam = BEAM_PIC_BRIGHT;
 	b->SpeedLow = b->SpeedHigh = 1024;
@@ -691,6 +714,7 @@ void BulletInitialize(void)
 	b->Power = 50;
 
 	b = &gBulletClasses[BULLET_FRAG];
+	b->Name = "frag";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -703,6 +727,7 @@ void BulletInitialize(void)
 	// Grenades
 
 	b = &gBulletClasses[BULLET_GRENADE];
+	b->Name = "grenade";
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -716,6 +741,7 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
+	b->Name = "shrapnelbomb";
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGray;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -729,6 +755,7 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
+	b->Name = "molotov";
 	b->DrawFunc = (TileItemDrawFunc)DrawMolotov;
 	b->DrawData.u.GrenadeColor = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -744,6 +771,7 @@ void BulletInitialize(void)
 	b->HitFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
+	b->Name = "gasbomb";
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorGreen;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -757,6 +785,7 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
+	b->Name = "confusebomb";
 	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
 	b->DrawData.u.GrenadeColor = colorPurple;
 	b->SpeedLow = b->SpeedHigh = 384;
@@ -770,6 +799,7 @@ void BulletInitialize(void)
 	b->OutOfRangeFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GAS];
+	b->Name = "gas";
 	b->DrawFunc = (TileItemDrawFunc)DrawGasCloud;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->Friction = Vec2iNew(4, 3);
@@ -784,6 +814,7 @@ void BulletInitialize(void)
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_RAPID];
+	b->Name = "rapid";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -793,6 +824,7 @@ void BulletInitialize(void)
 	b->Power = 6;
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
+	b->Name = "heatseeker";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -804,6 +836,7 @@ void BulletInitialize(void)
 	b->Seeking = true;
 
 	b = &gBulletClasses[BULLET_BROWN];
+	b->Name = "brown";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -814,6 +847,7 @@ void BulletInitialize(void)
 	b->Erratic = true;
 
 	b = &gBulletClasses[BULLET_PETRIFIER];
+	b->Name = "petrifier";
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
 	b->DrawData.u.Bullet.UseMask = false;
@@ -825,6 +859,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_PETRIFY;
 
 	b = &gBulletClasses[BULLET_PROXMINE];
+	b->Name = "proxmine";
 	b->UpdateFunc = UpdateDroppedMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
@@ -838,6 +873,7 @@ void BulletInitialize(void)
 	b->HitsObjects = false;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
+	b->Name = "dynamite";
 	b->UpdateFunc = UpdateTriggeredMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
@@ -852,6 +888,7 @@ void BulletInitialize(void)
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
+	b->Name = "fireball_wreck";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -862,6 +899,7 @@ void BulletInitialize(void)
 	b->SparkType = BULLET_NONE;
 
 	b = &gBulletClasses[BULLET_FIREBALL1];
+	b->Name = "fireball1";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 256;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -875,6 +913,7 @@ void BulletInitialize(void)
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL2];
+	b->Name = "fireball2";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 192;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -888,6 +927,7 @@ void BulletInitialize(void)
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL3];
+	b->Name = "fireball3";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
 	b->SpeedLow = b->SpeedHigh = 128;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
@@ -901,6 +941,7 @@ void BulletInitialize(void)
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
+	b->Name = "molotov_flame";
 	b->GetPicFunc = GetFlame;
 	b->SpeedLow = -256;
 	b->SpeedHigh = 16 * 31 - 256;
@@ -920,6 +961,7 @@ void BulletInitialize(void)
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
+	b->Name = "gas_cloud_poison";
 	b->DrawFunc = DrawGasCloud;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
@@ -936,6 +978,7 @@ void BulletInitialize(void)
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
+	b->Name = "gas_cloud_confuse";
 	b->DrawFunc = DrawGasCloud;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
@@ -953,6 +996,7 @@ void BulletInitialize(void)
 
 
 	b = &gBulletClasses[BULLET_SPARK];
+	b->Name = "spark";
 	b->UpdateFunc = UpdateSpark;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SPARK;
@@ -963,6 +1007,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_ACTIVEMINE];
+	b->Name = "activemine";
 	b->UpdateFunc = UpdateActiveMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
@@ -976,6 +1021,7 @@ void BulletInitialize(void)
 	b->HitsObjects = false;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
+	b->Name = "triggeredmine";
 	b->UpdateFunc = UpdateTriggeredMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;

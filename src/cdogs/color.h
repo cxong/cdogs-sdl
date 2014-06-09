@@ -77,4 +77,7 @@ color_t ColorTint(color_t c, HSV hsv);
 
 int ColorEquals(color_t a, color_t b);
 
+// Convert hex string to color
+color_t StrColor(const char *s);
+
 #endif

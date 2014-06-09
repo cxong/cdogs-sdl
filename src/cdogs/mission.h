@@ -147,7 +147,7 @@ typedef struct
 	CArray ItemDensities;	// of int
 
 	int EnemyDensity;
-	int Weapons[GUN_COUNT];
+	CArray Weapons;	// of GunDescription *
 
 	char Song[CDOGS_PATH_MAX];
 

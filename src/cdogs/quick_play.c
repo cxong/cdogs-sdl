@@ -121,17 +121,17 @@ static int GenerateQuickPlayParam(
 }
 
 static void SetupQuickPlayEnemy(
-	Character *enemy, const QuickPlayConfig *config, gun_e gun)
+	Character *enemy, const QuickPlayConfig *config, const GunDescription *gun)
 {
 	enemy->looks.face = rand() % FACE_COUNT;
-	enemy->gun = gun;
+	enemy->Gun = gun;
 	enemy->speed =
 		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
-	if (IsShortRange(enemy->gun))
+	if (IsShortRange(enemy->Gun))
 	{
 		enemy->speed = enemy->speed * 4 / 3;
 	}
-	if (IsShortRange(enemy->gun))
+	if (IsShortRange(enemy->Gun))
 	{
 		enemy->bot->probabilityToMove = 35 + (rand() % 35);
 	}
@@ -140,11 +140,11 @@ static void SetupQuickPlayEnemy(
 		enemy->bot->probabilityToMove = 30 + (rand() % 30);
 	}
 	enemy->bot->probabilityToTrack = 10 + (rand() % 60);
-	if (enemy->gun == GUN_KNIFE)
+	if (!enemy->Gun->CanShoot)
 	{
 		enemy->bot->probabilityToShoot = 0;
 	}
-	else if (IsHighDPS(enemy->gun))
+	else if (IsHighDPS(enemy->Gun))
 	{
 		enemy->bot->probabilityToShoot = 1 + (rand() % 3);
 	}
@@ -172,13 +172,13 @@ static void SetupQuickPlayEnemies(
 	int i;
 	for (i = 0; i < numEnemies; i++)
 	{
-		Character *ch;
-		gun_e gun;
+		const GunDescription *gun;
 		CArrayPushBack(&mission->Enemies, &i);
 
 		for (;;)
 		{
-			gun = rand() % GUN_COUNT;
+			gun = CArrayGet(
+				&gGunDescriptions, rand() % (int)gGunDescriptions.size);
 			// make at least one of each type of enemy:
 			// - Short range weapon
 			// - Long range weapon
@@ -202,7 +202,7 @@ static void SetupQuickPlayEnemies(
 			}
 			break;
 		}
-		ch = CharacterStoreAddOther(store);
+		Character *ch = CharacterStoreAddOther(store);
 		SetupQuickPlayEnemy(ch, config, gun);
 		CharacterSetLooks(ch, &ch->looks);
 	}
@@ -269,7 +269,8 @@ void SetupQuickPlayCampaign(
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
 	for (i = 0; i < GUN_COUNT; i++)
 	{
-		m->Weapons[i] = 1;
+		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		CArrayPushBack(&m->Weapons, &g);
 	}
 	m->WallColor = rand() % (GetColorrangeCount() - 1 + 1);
 	m->FloorColor = rand() % (GetColorrangeCount() - 1 + 1);

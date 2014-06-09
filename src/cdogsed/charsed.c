@@ -200,7 +200,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 			    yc == YC_FLAGS && xc == XC_AWAKE);
 		y += CDogsTextHeight();
 
-		DisplayCDogsText(50, y, GunGetName(b->gun), yc == YC_WEAPON);
+		DisplayCDogsText(50, y, b->Gun->name, yc == YC_WEAPON);
 		y += CDogsTextHeight() + 5;
 
 		x = 10;
@@ -361,7 +361,16 @@ static void Change(
 		break;
 
 	case YC_WEAPON:
-		b->gun = (gun_e)CLAMP_OPPOSITE((int)b->gun + d, 0, GUN_COUNT - 1);
+		for (int i = 0; i < (int)gGunDescriptions.size; i++)
+		{
+			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+			if (g == b->Gun)
+			{
+				i = CLAMP_OPPOSITE(i + d, 0, GUN_COUNT - 1);
+				b->Gun = CArrayGet(&gGunDescriptions, i);
+				break;
+			}
+		}
 		break;
 	}
 
@@ -386,7 +395,7 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 		c->looks.leg = SHADE_DKGRAY;
 		c->looks.hair = SHADE_BLACK;
 		c->speed = 256;
-		c->gun = GUN_MG;
+		c->Gun = StrGunDescription("Machine gun");
 		c->maxHealth = 40;
 		c->flags = FLAGS_IMMUNITY;
 		memset(c->table, 0, sizeof c->table);

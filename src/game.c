@@ -119,7 +119,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		int i;
 		for (i = 0; i < data->weaponCount; i++)
 		{
-			if (actor->weapon.gun == (gun_e)data->weapons[i])
+			if (actor->weapon.Gun == data->weapons[i])
 			{
 				break;
 			}
@@ -129,7 +129,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		{
 			i = 0;
 		}
-		actor->weapon.gun = data->weapons[i];
+		actor->weapon.Gun = data->weapons[i];
 		SoundPlayAt(
 			&gSoundDevice,
 			SND_SWITCH,
@@ -587,7 +587,8 @@ int gameloop(void)
 				if (isMatch)
 				{
 					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
-					player->weapon = WeaponCreate(GUN_PULSERIFLE);
+					player->weapon =
+						WeaponCreate(StrGunDescription("Pulse rifle"));
 					SoundPlay(&gSoundDevice, SND_HAHAHA);
 					// Reset to prevent last key from being processed as
 					// normal player commands
@@ -608,7 +609,8 @@ int gameloop(void)
 				if (isMatch)
 				{
 					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
-					player->weapon = WeaponCreate(GUN_HEATSEEKER);
+					player->weapon = WeaponCreate(
+						StrGunDescription("Heatseeker"));
 					SoundPlay(&gSoundDevice, SND_HAHAHA);
 					// Reset to prevent last key from being processed as
 					// normal player commands

@@ -87,6 +87,14 @@ void LoadInt(int *value, json_t *node, const char *name)
 	}
 	*value = atoi(node->text);
 }
+void LoadDouble(double *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = atof(node->text);
+}
 char *GetString(json_t *node, const char *name)
 {
 	return json_unescape(json_find_first_label(node, name)->child->text);

@@ -39,38 +39,6 @@
 #define VERSION 2
 
 
-int GetNumWeapons(int weapons[GUN_COUNT])
-{
-	int i;
-	int num = 0;
-	for (i = 0; i < GUN_COUNT; i++)
-	{
-		if (weapons[i])
-		{
-			num++;
-		}
-	}
-	return num;
-}
-gun_e GetNthAvailableWeapon(int weapons[GUN_COUNT], int idx)
-{
-	int n = 0;
-	for (int i = 0; i < GUN_COUNT; i++)
-	{
-		if (weapons[i])
-		{
-			if (idx == n)
-			{
-				return i;
-			}
-			n++;
-		}
-	}
-	assert(0 && "cannot find available weapon");
-	return GUN_KNIFE;
-}
-
-
 int MapNewScan(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
@@ -183,7 +151,7 @@ bail:
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
 static void LoadIntArray(CArray *a, json_t *node, char *name);
 static void LoadVec2i(Vec2i *v, json_t *node, char *name);
-static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode);
+static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
@@ -212,7 +180,8 @@ static void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadIntArray(&m.Items, child, "Items");
 		LoadIntArray(&m.ItemDensities, child, "ItemDensities");
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
-		LoadWeapons(m.Weapons, json_find_first_label(child, "Weapons")->child);
+		LoadWeapons(
+			&m.Weapons, json_find_first_label(child, "Weapons")->child);
 		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
 		LoadInt(&m.WallColor, child, "WallColor");
 		LoadInt(&m.FloorColor, child, "FloorColor");
@@ -306,7 +275,9 @@ static void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 		LoadInt(&ch->looks.leg, child, "leg");
 		LoadInt(&ch->looks.hair, child, "hair");
 		LoadInt(&ch->speed, child, "speed");
-		JSON_UTILS_LOAD_ENUM(ch->gun, child, "Gun", StrGunName);
+		char *tmp = GetString(child, "Gun");
+		ch->Gun = StrGunDescription(tmp);
+		CFREE(tmp);
 		LoadInt(&ch->maxHealth, child, "maxHealth");
 		LoadInt(&ch->flags, child, "flags");
 		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
@@ -361,24 +332,22 @@ static void LoadVec2i(Vec2i *v, json_t *node, char *name)
 	child = child->next;
 	v->y = atoi(child->text);
 }
-static void LoadWeapons(int weapons[GUN_COUNT], json_t *weaponsNode)
+static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 {
 	if (!weaponsNode->child)
 	{
 		// enable all weapons
-		int i;
-		for (i = 0; i < GUN_COUNT; i++)
+		for (int i = 0; i < GUN_COUNT; i++)
 		{
-			weapons[i] = 1;
+			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+			CArrayPushBack(weapons, &g);
 		}
 	}
 	else
 	{
-		json_t *child;
-		for (child = weaponsNode->child; child; child = child->next)
+		for (json_t *child = weaponsNode->child; child; child = child->next)
 		{
-			gun_e gun = StrGunName(child->text);
-			weapons[gun] = 1;
+			CArrayPushBack(weapons, StrGunDescription(child->text));
 		}
 	}
 }
@@ -658,7 +627,7 @@ int MapNewSave(const char *filename, CampaignSetting *c)
 static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
 static json_t *SaveVec2i(Vec2i v);
-static json_t *SaveWeapons(int weapons[GUN_COUNT]);
+static json_t *SaveWeapons(const CArray *weapons);
 static json_t *SaveClassicRooms(Mission *m);
 static json_t *SaveClassicDoors(Mission *m);
 static json_t *SaveClassicPillars(Mission *m);
@@ -701,7 +670,7 @@ static json_t *SaveMissions(CArray *a)
 
 		AddIntPair(node, "EnemyDensity", mission->EnemyDensity);
 		json_insert_pair_into_object(
-			node, "Weapons", SaveWeapons(mission->Weapons));
+			node, "Weapons", SaveWeapons(&mission->Weapons));
 
 		json_insert_pair_into_object(
 			node, "Song", json_new_string(mission->Song));
@@ -778,7 +747,7 @@ static json_t *SaveCharacters(CharacterStore *s)
 		AddIntPair(node, "hair", c->looks.hair);
 		AddIntPair(node, "speed", c->speed);
 		json_insert_pair_into_object(
-			node, "Gun", json_new_string(GunGetName(c->gun)));
+			node, "Gun", json_new_string(c->Gun->name));
 		AddIntPair(node, "maxHealth", c->maxHealth);
 		AddIntPair(node, "flags", c->flags);
 		AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
@@ -995,16 +964,13 @@ static json_t *SaveVec2i(Vec2i v)
 	return node;
 }
 
-static json_t *SaveWeapons(int weapons[GUN_COUNT])
+static json_t *SaveWeapons(const CArray *weapons)
 {
 	json_t *node = json_new_array();
-	int i;
-	for (i = 0; i < GUN_COUNT; i++)
+	for (int i = 0; i < (int)weapons->size; i++)
 	{
-		if (weapons[i])
-		{
-			json_insert_child(node, json_new_string(GunGetName(i)));
-		}
+		const GunDescription **g = CArrayGet(weapons, i);
+		json_insert_child(node, json_new_string((*g)->name));
 	}
 	return node;
 }

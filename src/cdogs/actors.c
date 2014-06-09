@@ -214,7 +214,7 @@ static ActorPics GetCharacterPics(int id)
 	Character *c = actor->character;
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
-	int g = GunGetPic(actor->weapon.gun);
+	int g = actor->weapon.Gun->pic;
 	gunstate_e gunState = actor->weapon.state;
 
 	TOffsetPic body, head, gun;
@@ -559,7 +559,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			}
 		}
 
-		if (actor->weapon.gun == GUN_KNIFE && actor->health > 0)
+		// TODO: special type for knives
+		if (!actor->weapon.Gun->CanShoot && actor->health > 0)
 		{
 			object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
@@ -576,7 +577,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				if (actor->weapon.soundLock <= 0)
 				{
 					actor->weapon.soundLock +=
-						gGunDescriptions[actor->weapon.gun].SoundLockLength;
+						actor->weapon.Gun->SoundLockLength;
 				}
 				return 0;
 			}
@@ -705,12 +706,12 @@ void Shoot(TActor *actor)
 		actor->Pos,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1);
-	if (actor->pData && GunGetCost(actor->weapon.gun) != 0)
+	if (actor->pData && actor->weapon.Gun->Cost != 0)
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SCORE;
 		e.u.Score.PlayerIndex = actor->pData->playerIndex;
-		e.u.Score.Score = -GunGetCost(actor->weapon.gun);
+		e.u.Score.Score = -actor->weapon.Gun->Cost;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -996,7 +997,7 @@ int ActorAdd(Character *c, struct PlayerData *p)
 		actor = CArrayGet(&gActors, i);
 	}
 	memset(actor, 0, sizeof *actor);
-	actor->weapon = WeaponCreate(c->gun);
+	actor->weapon = WeaponCreate(c->Gun);
 	actor->health = c->maxHealth;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;

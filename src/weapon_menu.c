@@ -37,20 +37,19 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	struct PlayerData *p = d->display.pData;
-	int i;
 
 	// Don't process if we're not selecting a weapon
 	if ((cmd & CMD_BUTTON1) &&
-		menu->u.normal.index < GetNumWeapons(gMission.missionData->Weapons))
+		menu->u.normal.index < (int)gMission.missionData->Weapons.size)
 	{
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
-		gun_e selectedWeapon = GetNthAvailableWeapon(
-			gMission.missionData->Weapons, menu->u.normal.index);
-		for (i = 0; i < p->weaponCount; i++)
+		const GunDescription **selectedWeapon = CArrayGet(
+			&gMission.missionData->Weapons, menu->u.normal.index);
+		for (int i = 0; i < p->weaponCount; i++)
 		{
-			if (p->weapons[i] == selectedWeapon)
+			if (p->weapons[i] == *selectedWeapon)
 			{
 				return;
 			}
@@ -62,7 +61,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 			return;
 		}
 
-		p->weapons[p->weaponCount] = selectedWeapon;
+		p->weapons[p->weaponCount] = *selectedWeapon;
 		p->weaponCount++;
 		MenuPlaySound(MENU_SOUND_ENTER);
 
@@ -80,16 +79,16 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// Remove a weapon
 		if (p->weaponCount > 0)
 		{
-			gun_e removedWeapon;
 			p->weaponCount--;
 			MenuPlaySound(MENU_SOUND_BACK);
 
 			// Re-enable the menu entry for this weapon
-			removedWeapon = p->weapons[p->weaponCount];
-			for (i = 0; i < GetNumWeapons(gMission.missionData->Weapons); i++)
+			const GunDescription *removedWeapon = p->weapons[p->weaponCount];
+			for (int i = 0; i < (int)gMission.missionData->Weapons.size; i++)
 			{
-				if (GetNthAvailableWeapon(gMission.missionData->Weapons, i) ==
-					removedWeapon)
+				const GunDescription **g = CArrayGet(
+					&gMission.missionData->Weapons, i);
+				if (*g == removedWeapon)
 				{
 					MenuEnableSubmenu(menu, i);
 					break;
@@ -122,12 +121,11 @@ static void DisplayEquippedWeapons(
 	}
 	else
 	{
-		int i;
-		for (i = 0; i < d->display.pData->weaponCount; i++)
+		for (int i = 0; i < d->display.pData->weaponCount; i++)
 		{
 			TextString(
 				&gTextManager,
-				gGunDescriptions[d->display.pData->weapons[i]].name,
+				d->display.pData->weapons[i]->name,
 				g,
 				Vec2iAdd(weaponsPos, Vec2iNew(0, i * CDogsTextHeight())));
 		}
@@ -146,7 +144,6 @@ void WeaponMenuCreate(
 	Vec2i size = Vec2iZero();
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
-	int i;
 
 	data->display.c = c;
 	data->display.currentMenu = &ms->current;
@@ -184,21 +181,21 @@ void WeaponMenuCreate(
 		MENU_TYPE_NORMAL,
 		0);
 	ms->root->u.normal.maxItems = 11;
-	for (i = 0; i < GetNumWeapons(gMission.missionData->Weapons); i++)
+	for (int i = 0; i < (int)gMission.missionData->Weapons.size; i++)
 	{
-		const char *gunName = gGunDescriptions[
-			GetNthAvailableWeapon(gMission.missionData->Weapons, i)].name;
-		MenuAddSubmenu(ms->root, MenuCreate(gunName, MENU_TYPE_BASIC));
+		const GunDescription **g = CArrayGet(
+			&gMission.missionData->Weapons, i);
+		MenuAddSubmenu(ms->root, MenuCreate((*g)->name, MENU_TYPE_BASIC));
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon
-	for (i = 0; i < pData->weaponCount; i++)
+	for (int i = 0; i < pData->weaponCount; i++)
 	{
-		int j;
-		for (j = 0; j < GetNumWeapons(gMission.missionData->Weapons); j++)
+		for (int j = 0; j < (int)gMission.missionData->Weapons.size; j++)
 		{
-			if (pData->weapons[i] ==
-				GetNthAvailableWeapon(gMission.missionData->Weapons, j))
+			const GunDescription **g = CArrayGet(
+				&gMission.missionData->Weapons, j);
+			if (pData->weapons[i] == *g)
 			{
 				MenuDisableSubmenu(ms->root, j);
 			}

@@ -610,7 +610,7 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 	UNUSED(v);
 	sprintf(
 		s, "Available weapons (%d/%d)",
-		GetNumWeapons(gMission.missionData->Weapons), GUN_COUNT);
+		(int)gMission.missionData->Weapons.size, (int)gGunDescriptions.size);
 	return s;
 }
 static const char *GetObjectCountStr(UIObject *o, void *v)
@@ -673,17 +673,31 @@ static void MissionDrawMapItem(
 		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->ItemDensities, data->index),
 		UIObjectIsHighlighted(o));
 }
+typedef struct
+{
+	CampaignOptions *co;
+	const GunDescription *Gun;
+} MissionGunData;
 static void MissionDrawWeaponStatus(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
-	int hasWeapon;
-	MissionIndexData *data = vData;
-	if (!CampaignGetCurrentMission(data->co)) return;
-	hasWeapon = CampaignGetCurrentMission(data->co)->Weapons[data->index];
+	const MissionGunData *data = vData;
+	const Mission *currentMission = CampaignGetCurrentMission(data->co);
+	if (currentMission == NULL) return;
+	bool hasWeapon = false;
+	for (int i = 0; i < (int)currentMission->Weapons.size; i++)
+	{
+		const GunDescription **desc = CArrayGet(&currentMission->Weapons, i);
+		if (data->Gun == *desc)
+		{
+			hasWeapon = true;
+			break;
+		}
+	}
 	DisplayFlag(
 		g,
 		Vec2iAdd(pos, o->Pos),
-		gGunDescriptions[data->index].name,
+		data->Gun->name,
 		hasWeapon,
 		UIObjectIsHighlighted(o));
 }
@@ -1178,11 +1192,29 @@ static void MissionChangeSpecialChar(void *vData, int d)
 }
 static void MissionChangeWeapon(void *vData, int d)
 {
-	int hasWeapon;
 	UNUSED(d);
-	MissionIndexData *data = vData;
-	hasWeapon = CampaignGetCurrentMission(data->co)->Weapons[data->index];
-	CampaignGetCurrentMission(data->co)->Weapons[data->index] = !hasWeapon;
+	MissionGunData *data = vData;
+	bool hasWeapon = false;
+	int weaponIndex = -1;
+	Mission *currentMission = CampaignGetCurrentMission(data->co);
+	for (int i = 0; i < (int)currentMission->Weapons.size; i++)
+	{
+		const GunDescription **desc = CArrayGet(&currentMission->Weapons, i);
+		if (data->Gun == *desc)
+		{
+			hasWeapon = true;
+			weaponIndex = i;
+			break;
+		}
+	}
+	if (hasWeapon)
+	{
+		CArrayDelete(&currentMission->Weapons, weaponIndex);
+	}
+	else
+	{
+		CArrayPushBack(&currentMission->Weapons, &data->Gun);
+	}
 }
 static void MissionChangeMapItem(void *vData, int d)
 {
@@ -1903,29 +1935,26 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 }
 static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy)
 {
-	int th = CDogsTextHeight();
-	UIObject *c;
-	UIObject *o;
-	UIObject *o2;
-	int i;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	const int th = CDogsTextHeight();
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
 	o->ChangeFunc = MissionChangeWeapon;
 	o->Flags = UI_LEAVE_YC;
-	o->ChangesData = 1;
-	for (i = 0; i < GUN_COUNT; i++)
+	o->ChangesData = true;
+	for (int i = 0; i < (int)gGunDescriptions.size; i++)
 	{
 		int x = 10 + i / 4 * 90;
 		int y = Y_ABS - dy + (i % 4) * th;
-		o2 = UIObjectCopy(o);
+		UIObject *o2 = UIObjectCopy(o);
 		o2->Id2 = i;
-		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		CMALLOC(o2->Data, sizeof(MissionGunData));
 		o2->IsDynamicData = 1;
-		((MissionIndexData *)o2->Data)->co = co;
-		((MissionIndexData *)o2->Data)->index = i;
+		((MissionGunData *)o2->Data)->co = co;
+		((MissionGunData *)o2->Data)->Gun = CArrayGet(&gGunDescriptions, i);
 		o2->Pos = Vec2iNew(x, y);
 		UIObjectAddChild(c, o2);
 	}
