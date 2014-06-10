@@ -60,8 +60,8 @@ void CArrayPushBack(CArray *a, const void *elem)
 	{
 		CArrayReserve(a, a->capacity * 2);
 	}
-	memcpy(CArrayGet(a, a->size), elem, a->elemSize);
 	a->size++;
+	memcpy(CArrayGet(a, a->size - 1), elem, a->elemSize);
 }
 void CArrayInsert(CArray *a, int idx, void *elem)
 {
