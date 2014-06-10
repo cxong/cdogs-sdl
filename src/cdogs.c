@@ -1343,8 +1343,6 @@ int main(int argc, char *argv[])
 
 	PlayMenuSong();
 
-	CampaignInit(&gCampaign);
-	LoadAllCampaigns(&campaigns);
 	EventInit(&gEventHandlers, NULL, true);
 
 	if (wait)
@@ -1352,11 +1350,6 @@ int main(int argc, char *argv[])
 		printf("Press the enter key to continue...\n");
 		getchar();
 	}
-
-	BulletInitialize();
-	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
-	PlayerDataInitialize();
-	MapInit(&gMap);
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
@@ -1389,6 +1382,17 @@ int main(int argc, char *argv[])
 	{
 		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
+
+		BulletInitialize();
+		WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
+		CampaignInit(&gCampaign);
+		LoadAllCampaigns(&campaigns);
+		PlayerDataInitialize();
+		MapInit(&gMap);
+
+		GrafxMakeRandomBackground(
+			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+
 		debug(D_NORMAL, ">> Entering main loop\n");
 		// Attempt to pre-load campaign if requested
 		if (loadCampaign != NULL)

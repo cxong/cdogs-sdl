@@ -118,6 +118,7 @@ typedef struct
 	{
 		struct
 		{
+			const Pic *Pic;
 			int Ofspic;
 			bool UseMask;
 			color_t Mask;

@@ -101,6 +101,10 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 {
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (gPlayerIds[i] < 0)
+		{
+			continue;
+		}
 		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 		if (IsPlayerAlive(i) && IsFacing(actor->Pos, player->Pos, d))
 		{

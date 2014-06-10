@@ -70,22 +70,28 @@ void CArrayInsert(CArray *a, int idx, void *elem)
 	{
 		CArrayReserve(a, a->capacity * 2);
 	}
-	memmove(
-		CArrayGet(a, idx + 1),
-		CArrayGet(a, idx),
-		a->elemSize * ((int)a->size - idx));
-	memcpy(CArrayGet(a, idx), elem, a->elemSize);
 	a->size++;
+	if (idx < (int)a->size - 1)
+	{
+		memmove(
+			CArrayGet(a, idx + 1),
+			CArrayGet(a, idx),
+			a->elemSize * ((int)a->size - 1 - idx));
+	}
+	memcpy(CArrayGet(a, idx), elem, a->elemSize);
 }
 void CArrayDelete(CArray *a, int idx)
 {
 	CASSERT(a->size != 0, "Cannot delete from empty array");
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	CASSERT(idx >= 0 && idx < (int)a->size, "array index out of bounds");
-	memmove(
-		CArrayGet(a, idx),
-		CArrayGet(a, idx + 1),
-		a->elemSize * ((int)a->size - 1 - idx));
+	if (idx < (int)a->size - 1)
+	{
+		memmove(
+			CArrayGet(a, idx),
+			CArrayGet(a, idx + 1),
+			a->elemSize * ((int)a->size - 1 - idx));
+	}
 	a->size--;
 }
 

@@ -348,11 +348,6 @@ void GraphicsInitialize(
 	device->cachedConfig.Res.x = w;
 	device->cachedConfig.Res.y = h;
 	CDogsSetPalette(palette);
-	// Need to make background here since dimensions use cached config
-	if (!config->IsEditor)
-	{
-		GrafxMakeRandomBackground(device, &gCampaign, &gMission, &gMap);
-	}
 }
 
 void GraphicsTerminate(GraphicsDevice *device)

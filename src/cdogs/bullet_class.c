@@ -84,22 +84,33 @@ static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent bullet");
-	const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
-	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
-	if (data->u.Bullet.UseMask)
+	if (data->u.Bullet.Pic)
 	{
+		pos = Vec2iMinus(pos, Vec2iScaleDiv(data->u.Bullet.Pic->size, 2));
 		BlitMasked(
 			&gGraphicsDevice,
-			PicManagerGetFromOld(&gPicManager, pic->picIndex),
-			pos, data->u.Bullet.Mask, 1);
+			data->u.Bullet.Pic,
+			pos, data->u.Bullet.Mask, true);
 	}
 	else
 	{
-		DrawBTPic(
-			&gGraphicsDevice,
-			PicManagerGetFromOld(&gPicManager, pic->picIndex),
-			pos,
-			&data->u.Bullet.Tint);
+		const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
+		pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
+		if (data->u.Bullet.UseMask)
+		{
+			BlitMasked(
+				&gGraphicsDevice,
+				PicManagerGetFromOld(&gPicManager, pic->picIndex),
+				pos, data->u.Bullet.Mask, 1);
+		}
+		else
+		{
+			DrawBTPic(
+				&gGraphicsDevice,
+				PicManagerGetFromOld(&gPicManager, pic->picIndex),
+				pos,
+				&data->u.Bullet.Tint);
+		}
 	}
 }
 
@@ -621,14 +632,23 @@ int UpdateActiveMine(TMobileObject *obj, int ticks)
 	return 1;
 }
 
-int UpdateDroppedMine(TMobileObject *obj, int ticks)
+void AddActiveMine(const TMobileObject *obj)
 {
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count >= obj->range)
-	{
-		obj->updateFunc = UpdateActiveMine;
-	}
-	return 1;
+	GameEvent e;
+	e.Type = GAME_EVENT_ADD_BULLET;
+	e.u.AddBullet.Bullet = BULLET_ACTIVEMINE;
+	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
+	e.u.AddBullet.MuzzleHeight = obj->z;
+	e.u.AddBullet.Angle = 0;
+	e.u.AddBullet.Direction = DIRECTION_UP;
+	e.u.AddBullet.Flags = obj->flags;
+	e.u.AddBullet.PlayerIndex = obj->player;
+	GameEventsEnqueue(&gGameEvents, e);
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_MINE_ARM;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
+	GameEventsEnqueue(&gGameEvents, sound);
 }
 
 
@@ -643,6 +663,7 @@ void BulletInitialize(void)
 		b->UpdateFunc = UpdateBullet;
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
+		memset(&b->DrawData, 0, sizeof b->DrawData);
 		b->SpeedScale = false;
 		b->Friction = Vec2iZero();
 		b->Size = Vec2iZero();
@@ -860,8 +881,8 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_PROXMINE];
 	b->Name = "proxmine";
-	b->UpdateFunc = UpdateDroppedMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
@@ -869,8 +890,8 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 140;
 	b->Power = 0;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
+	b->OutOfRangeFunc = AddActiveMine;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->Name = "dynamite";
@@ -1010,6 +1031,7 @@ void BulletInitialize(void)
 	b->Name = "activemine";
 	b->UpdateFunc = UpdateActiveMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
@@ -1017,13 +1039,13 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->Name = "triggeredmine";
 	b->UpdateFunc = UpdateTriggeredMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
@@ -1031,7 +1053,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 5;
 	b->Power = 0;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->HitsObjects = false;
 }
 
 void AddGrenade(
@@ -1104,7 +1126,9 @@ void BulletAdd(
 	case BULLET_DYNAMITE:	// fallthrough
 	case BULLET_RAPID:		// fallthrough
 	case BULLET_HEATSEEKER:	// fallthrough
-	case BULLET_FRAG:
+	case BULLET_FRAG:		// fallthrough
+	case BULLET_ACTIVEMINE:	// fallthrough
+	case BULLET_TRIGGEREDMINE:
 		AddBullet(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
 		break;
 

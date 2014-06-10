@@ -1119,17 +1119,9 @@ int main(int argc, char *argv[])
 
 	EditorBrushInit(&brush);
 
-	CampaignInit(&gCampaign);
-	MissionInit(&lastMission);
-	MissionInit(&currentMission);
-
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	gConfig.Graphics.IsEditor = 1;
-	BulletInitialize();
-	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
-	PlayerDataInitialize();
-	MapInit(&gMap);
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
@@ -1153,6 +1145,16 @@ int main(int argc, char *argv[])
 	}
 	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
+
+	BulletInitialize();
+	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
+	CampaignInit(&gCampaign);
+	MissionInit(&lastMission);
+	MissionInit(&currentMission);
+
+	PlayerDataInitialize();
+	MapInit(&gMap);
+
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush, Vec2iNew(320, 240));
