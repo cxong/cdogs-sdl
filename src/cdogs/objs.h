@@ -198,7 +198,7 @@ void AddFireball(const AddFireballEvent e);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos);
 
-int UpdateSpark(TMobileObject *obj, const int ticks);
+bool UpdateMobileObject(TMobileObject *obj, const int ticks);
 void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);
 
 void AddMuzzleFlash(

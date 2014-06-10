@@ -382,14 +382,14 @@ static Vec2i SeekTowards(
 }
 
 
-int UpdateBullet(TMobileObject *obj, int ticks)
+bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count < 0)
 	{
 		return true;
 	}
-	if (obj->count > obj->range)
+	if (obj->range >= 0 && obj->count > obj->range)
 	{
 		if (obj->bulletClass->OutOfRangeFunc)
 		{
@@ -580,10 +580,36 @@ int UpdateBullet(TMobileObject *obj, int ticks)
 		}
 	}
 
+	// Proximity function, destroy
+	// Only check proximity every now and then
+	if (obj->bulletClass->ProximityFunc && !(obj->count & 3))
+	{
+		// Detonate the mine if there are characters in the tiles around it
+		const Vec2i tv =
+			Vec2iToTile(Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
+		Vec2i dv;
+		for (dv.y = -1; dv.y <= 1; dv.y++)
+		{
+			for (dv.x = -1; dv.x <= 1; dv.x++)
+			{
+				const Vec2i dtv = Vec2iAdd(tv, dv);
+				if (!MapIsTileIn(&gMap, dtv))
+				{
+					continue;
+				}
+				if (TileHasCharacter(MapGetTile(&gMap, dtv)))
+				{
+					obj->bulletClass->ProximityFunc(obj);
+					return false;
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
-int UpdateTriggeredMine(TMobileObject *obj, int ticks)
+bool UpdateTriggeredMine(TMobileObject *obj, const int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	if (obj->count >= obj->range)
@@ -594,45 +620,7 @@ int UpdateTriggeredMine(TMobileObject *obj, int ticks)
 	return true;
 }
 
-int UpdateActiveMine(TMobileObject *obj, int ticks)
-{
-	Vec2i tv = Vec2iToTile(Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
-	Vec2i dv;
-
-	MobileObjectUpdate(obj, ticks);
-
-	// Check if the mine is still arming
-	if (obj->count & 3)
-	{
-		return 1;
-	}
-
-	if (!MapIsTileIn(&gMap, tv))
-	{
-		return 0;
-	}
-
-	// Detonate the mine if there are characters in the tiles around it
-	for (dv.y = -1; dv.y <= 1; dv.y++)
-	{
-		for (dv.x = -1; dv.x <= 1; dv.x++)
-		{
-			if (TileHasCharacter(MapGetTile(&gMap, Vec2iAdd(tv, dv))))
-			{
-				SetBulletProps(obj, obj->z, BULLET_TRIGGEREDMINE, obj->flags);
-				obj->count = 0;
-				SoundPlayAt(
-					&gSoundDevice,
-					SND_HAHAHA,
-					Vec2iNew(obj->tileItem.x, obj->tileItem.y));
-				return 1;
-			}
-		}
-	}
-	return 1;
-}
-
-void AddActiveMine(const TMobileObject *obj)
+static void AddActiveMine(const TMobileObject *obj)
 {
 	GameEvent e;
 	e.Type = GAME_EVENT_ADD_BULLET;
@@ -647,6 +635,24 @@ void AddActiveMine(const TMobileObject *obj)
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
 	sound.u.SoundAt.Sound = SND_MINE_ARM;
+	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
+	GameEventsEnqueue(&gGameEvents, sound);
+}
+static void AddTriggeredMine(const TMobileObject *obj)
+{
+	GameEvent e;
+	e.Type = GAME_EVENT_ADD_BULLET;
+	e.u.AddBullet.Bullet = BULLET_TRIGGEREDMINE;
+	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
+	e.u.AddBullet.MuzzleHeight = obj->z;
+	e.u.AddBullet.Angle = 0;
+	e.u.AddBullet.Direction = DIRECTION_UP;
+	e.u.AddBullet.Flags = obj->flags;
+	e.u.AddBullet.PlayerIndex = obj->player;
+	GameEventsEnqueue(&gGameEvents, e);
+	GameEvent sound;
+	sound.Type = GAME_EVENT_SOUND_AT;
+	sound.u.SoundAt.Sound = SND_MINE_TRIGGER;
 	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -1018,7 +1024,7 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_SPARK];
 	b->Name = "spark";
-	b->UpdateFunc = UpdateSpark;
+	b->UpdateFunc = UpdateMobileObject;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_SPARK;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -1029,17 +1035,17 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_ACTIVEMINE];
 	b->Name = "activemine";
-	b->UpdateFunc = UpdateActiveMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
 	b->DrawData.u.Bullet.UseMask = true;
 	b->DrawData.u.Bullet.Mask = colorWhite;
 	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = 5;
+	b->RangeLow = b->RangeHigh = -1;
 	b->Power = 0;
 	b->Persists = true;
 	b->HitsObjects = false;
+	b->ProximityFunc = AddTriggeredMine;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->Name = "triggeredmine";

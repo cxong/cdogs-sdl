@@ -97,6 +97,7 @@ SoundDevice gSoundDevice =
 		{"powergun_r",	false,	NULL},
 		{"package_r",	false,	NULL},
 		{"mine_arm",	false,	NULL},
+		{"mine_trigger",false,	NULL},
 		{"knife_flesh",	false,	NULL},
 		{"knife_hard",	false,	NULL},
 		{"ricochet",	false,	NULL},

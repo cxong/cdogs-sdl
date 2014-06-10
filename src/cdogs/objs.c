@@ -404,12 +404,7 @@ void MobileObjectUpdate(TMobileObject *obj, int ticks)
 	obj->count += ticks;
 	obj->soundLock = MAX(0, obj->soundLock - ticks);
 }
-static int UpdateMobileObject(TMobileObject *obj, int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	return obj->count <= obj->range;
-}
-int UpdateSpark(TMobileObject *obj, const int ticks)
+bool UpdateMobileObject(TMobileObject *obj, const int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
 	return obj->count <= obj->range;
@@ -587,5 +582,5 @@ void AddMuzzleFlash(
 	obj->tileItem.drawData.u.MuzzleFlash.Color = color;
 	obj->tileItem.drawData.u.MuzzleFlash.SpriteName = spriteName;
 	obj->tileItem.drawData.u.MuzzleFlash.Dir = d;
-	obj->updateFunc = UpdateSpark;
+	obj->updateFunc = UpdateMobileObject;
 }

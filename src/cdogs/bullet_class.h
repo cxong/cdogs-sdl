@@ -91,7 +91,7 @@ typedef enum
 
 	BULLET_COUNT
 } BulletType;
-typedef int (*BulletUpdateFunc)(struct MobileObject *, int);
+typedef bool (*BulletUpdateFunc)(struct MobileObject *, int);
 typedef enum
 {
 	FALLING_TYPE_BOUNCE,
@@ -110,6 +110,7 @@ typedef struct
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
 	Vec2i Friction;	// Amount to subtract from velocity per tick
+	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
 	int Power;
@@ -132,6 +133,7 @@ typedef struct
 	bool RandomAnimation;
 	bool Seeking;
 	bool Erratic;
+	void (*ProximityFunc)(const struct MobileObject *);	// Mines
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
