@@ -82,11 +82,11 @@ void CArrayDelete(CArray *a, int idx)
 	CASSERT(a->size != 0, "Cannot delete from empty array");
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	CASSERT(idx >= 0 && idx < (int)a->size, "array index out of bounds");
-	a->size--;
 	memmove(
 		CArrayGet(a, idx),
 		CArrayGet(a, idx + 1),
-		a->elemSize * ((int)a->size - idx));
+		a->elemSize * ((int)a->size - 1 - idx));
+	a->size--;
 }
 
 void *CArrayGet(const CArray *a, int idx)
