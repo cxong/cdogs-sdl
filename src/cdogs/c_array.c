@@ -55,6 +55,7 @@ void CArrayCopy(CArray *dst, const CArray *src)
 
 void CArrayPushBack(CArray *a, const void *elem)
 {
+	CASSERT(a->elemSize > 0, "array has not been initialised");
 	if (a->size == a->capacity)
 	{
 		CArrayReserve(a, a->capacity * 2);
@@ -64,6 +65,7 @@ void CArrayPushBack(CArray *a, const void *elem)
 }
 void CArrayInsert(CArray *a, int idx, void *elem)
 {
+	CASSERT(a->elemSize > 0, "array has not been initialised");
 	if (a->size == a->capacity)
 	{
 		CArrayReserve(a, a->capacity * 2);
@@ -78,6 +80,8 @@ void CArrayInsert(CArray *a, int idx, void *elem)
 void CArrayDelete(CArray *a, int idx)
 {
 	CASSERT(a->size != 0, "Cannot delete from empty array");
+	CASSERT(a->elemSize > 0, "array has not been initialised");
+	CASSERT(idx >= 0 && idx < (int)a->size, "array index out of bounds");
 	a->size--;
 	memmove(
 		CArrayGet(a, idx),
@@ -87,6 +91,8 @@ void CArrayDelete(CArray *a, int idx)
 
 void *CArrayGet(const CArray *a, int idx)
 {
+	CASSERT(a->elemSize > 0, "array has not been initialised");
+	CASSERT(idx >= 0 && idx < (int)a->size, "array index out of bounds");
 	return &((char *)a->data)[idx * a->elemSize];
 }
 
