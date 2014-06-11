@@ -44,6 +44,13 @@ void GameEventsTerminate(CArray *store)
 }
 void GameEventsEnqueue(CArray *store, GameEvent e)
 {
+	// Hack: sometimes trigger events are added by placing enemies
+	// before the game events has been initialised
+	// Just ignore for now
+	if (store->elemSize == 0)
+	{
+		return;
+	}
 	CArrayPushBack(store, &e);
 }
 void GameEventsClear(CArray *store)
