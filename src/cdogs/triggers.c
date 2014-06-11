@@ -171,7 +171,7 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 		return;
 
 	case ACTION_SOUND:
-		SoundPlayAt(&gSoundDevice, a->tileFlags, a->u.pos);
+		SoundPlayAt(&gSoundDevice, a->a.Sound, a->u.pos);
 		break;
 
 	case ACTION_SETTRIGGER:
@@ -201,7 +201,7 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 	case ACTION_CHANGETILE:
 		{
 			Tile *t= MapGetTile(&gMap, a->u.pos);
-			t->flags = a->tileFlags;
+			t->flags = a->a.tileFlags;
 			t->pic = a->tilePic;
 			t->picAlt = a->tilePicAlt;
 		}

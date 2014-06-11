@@ -132,7 +132,7 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		actor->weapon.Gun = data->weapons[i];
 		SoundPlayAt(
 			&gSoundDevice,
-			SND_SWITCH,
+			gSoundDevice.switchSound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 }
@@ -589,7 +589,7 @@ int gameloop(void)
 					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
 					player->weapon =
 						WeaponCreate(StrGunDescription("Pulse rifle"));
-					SoundPlay(&gSoundDevice, SND_HAHAHA);
+					SoundPlay(&gSoundDevice, StrSound("hahaha"));
 					// Reset to prevent last key from being processed as
 					// normal player commands
 					KeyInit(&gEventHandlers.keyboard);
@@ -611,7 +611,7 @@ int gameloop(void)
 					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
 					player->weapon = WeaponCreate(
 						StrGunDescription("Heatseeker"));
-					SoundPlay(&gSoundDevice, SND_HAHAHA);
+					SoundPlay(&gSoundDevice, StrSound("hahaha"));
 					// Reset to prevent last key from being processed as
 					// normal player commands
 					KeyInit(&gEventHandlers.keyboard);

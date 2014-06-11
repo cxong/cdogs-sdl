@@ -746,19 +746,19 @@ void MenuPlaySound(MenuSound s)
 	switch (s)
 	{
 	case MENU_SOUND_ENTER:
-		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+		SoundPlay(&gSoundDevice, StrSound("mg"));
 		break;
 	case MENU_SOUND_BACK:
-		SoundPlay(&gSoundDevice, SND_PICKUP);
+		SoundPlay(&gSoundDevice, StrSound("pickup"));
 		break;
 	case MENU_SOUND_SWITCH:
-		SoundPlay(&gSoundDevice, SND_DOOR);
+		SoundPlay(&gSoundDevice, StrSound("door"));
 		break;
 	case MENU_SOUND_START:
-		SoundPlay(&gSoundDevice, SND_HAHAHA);
+		SoundPlay(&gSoundDevice, StrSound("hahaha"));
 		break;
 	case MENU_SOUND_ERROR:
-		SoundPlay(&gSoundDevice, SND_KILL4);
+		SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 		break;
 	default:
 		break;

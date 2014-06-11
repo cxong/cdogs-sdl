@@ -53,58 +53,15 @@
 
 #include <SDL_mixer.h>
 
+#include "c_array.h"
 #include "defs.h"
+#include "sys_config.h"
 #include "utils.h"
 #include "vector.h"
 
-typedef enum
-{
-	SND_NONE,
-	SND_EXPLOSION,
-	SND_LAUNCH,
-	SND_MACHINEGUN,
-	SND_FLAMER,
-	SND_SHOTGUN,
-	SND_POWERGUN,
-	SND_SWITCH,
-	SND_KILL,
-	SND_KILL2,
-	SND_KILL3,
-	SND_KILL4,
-	SND_HAHAHA,
-	SND_BANG,
-	SND_PICKUP,
-	SND_DOOR,
-	SND_DONE,
-	SND_LASER,
-	SND_MINIGUN,
-	SND_PULSE,
-	SND_SWELL,
-	SND_SHOTGUN_R,
-	SND_LASER_R,
-	SND_PACKAGE_R,
-	SND_MINE_ARM,
-	SND_MINE_TRIGGER,
-	SND_KNIFE_FLESH,
-	SND_KNIFE_HARD,
-	SND_HIT_WALL,
-	SND_HIT_FIRE,
-	SND_HIT_FLESH,
-	SND_HIT_GAS,
-	SND_HIT_HARD,
-	SND_HIT_PETRIFY,
-	SND_BOUNCE,
-	SND_FOOTSTEP,
-	SND_SLIDE,
-	SND_HEALTH,
-	SND_KEY,
-	SND_COUNT
-} sound_e;
-
 typedef struct
 {
-	const char *name;
-	bool isLoaded;
+	char Name[CDOGS_FILENAME_MAX];
 	Mix_Chunk *data;
 } SoundData;
 
@@ -130,7 +87,24 @@ typedef struct
 	Vec2i earRight1;
 	Vec2i earRight2;
 
-	SoundData sounds[SND_COUNT];
+	CArray sounds;	// of SoundData
+
+	// Some commonly-used sounds, store them here for quick access
+	Mix_Chunk *hitFireSound;
+	Mix_Chunk *hitGasSound;
+	Mix_Chunk *hitPetrifySound;
+	Mix_Chunk *hitFleshSound;
+	Mix_Chunk *hitHardSound;
+	Mix_Chunk *knifeFleshSound;
+	Mix_Chunk *knifeHardSound;
+	Mix_Chunk *footstepSound;
+	Mix_Chunk *slideSound;
+	Mix_Chunk *switchSound;
+	Mix_Chunk *pickupSound;
+	Mix_Chunk *healthSound;
+	Mix_Chunk *keySound;
+	Mix_Chunk *wreckSound;
+	CArray screamSounds;	// of Mix_Chunk *
 } SoundDevice;
 
 extern SoundDevice gSoundDevice;
@@ -144,10 +118,11 @@ typedef struct
 	bool Reloads;
 } SoundConfig;
 
-void SoundInitialize(SoundDevice *device, SoundConfig *config);
+void SoundInitialize(
+	SoundDevice *device, SoundConfig *config, const char *path);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
-void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete);
-void SoundPlay(SoundDevice *device, sound_e sound);
+void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
+void SoundPlay(SoundDevice *device, Mix_Chunk *data);
 void SoundSetLeftEars(Vec2i pos);
 void SoundSetRightEars(Vec2i pos);
 void SoundSetLeftEar1(Vec2i pos);
@@ -155,15 +130,17 @@ void SoundSetLeftEar2(Vec2i pos);
 void SoundSetRightEar1(Vec2i pos);
 void SoundSetRightEar2(Vec2i pos);
 void SoundSetEars(Vec2i pos);
-void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos);
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
 void SoundPlayAtPlusDistance(
-	SoundDevice *device, sound_e sound, Vec2i pos, int plusDistance);
+	SoundDevice *device, Mix_Chunk *data,
+	const Vec2i pos, const int plusDistance);
 
-sound_e SoundGetHit(special_damage_e damage, int isActor);
+Mix_Chunk *SoundGetHit(special_damage_e damage, int isActor);
 
-sound_e StrSound(const char *s);
+Mix_Chunk *StrSound(const char *s);
+Mix_Chunk *SoundGetRandomScream(const SoundDevice *device);
 
 #endif

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	{
 		if (selection == strlen(letters))
 		{
-			SoundPlay(&gSoundDevice, SND_LAUNCH);
+			SoundPlay(&gSoundDevice, StrSound("launch"));
 			return 0;
 		}
 
@@ -146,29 +146,29 @@ static int PasswordEntry(int cmd, char *buffer)
 			size_t l = strlen(buffer);
 			buffer[l + 1] = 0;
 			buffer[l] = letters[selection];
-			SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+			SoundPlay(&gSoundDevice, StrSound("mg"));
 		}
 		else
 		{
-			SoundPlay(&gSoundDevice, SND_KILL);
+			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
 		if (buffer[0]) {
 			buffer[strlen(buffer) - 1] = 0;
-			SoundPlay(&gSoundDevice, SND_BANG);
+			SoundPlay(&gSoundDevice, StrSound("bang"));
 		}
 		else
 		{
-			SoundPlay(&gSoundDevice, SND_KILL);
+			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 		}
 	}
 	else if (cmd & CMD_LEFT)
 	{
 		if (selection > 0) {
 			selection--;
-			SoundPlay(&gSoundDevice, SND_DOOR);
+			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
 	else if (cmd & CMD_RIGHT)
@@ -176,12 +176,12 @@ static int PasswordEntry(int cmd, char *buffer)
 		if (selection < strlen(letters))
 		{
 			selection++;
-			SoundPlay(&gSoundDevice, SND_DOOR);
+			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	} else if (cmd & CMD_UP) {
 		if (selection > 9) {
 			selection -= 10;
-			SoundPlay(&gSoundDevice, SND_DOOR);
+			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
 	else if (cmd & CMD_DOWN)
@@ -189,7 +189,7 @@ static int PasswordEntry(int cmd, char *buffer)
 		if (selection < strlen(letters) - 9)
 		{
 			selection += 10;
-			SoundPlay(&gSoundDevice, SND_DOOR);
+			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
 	
@@ -244,7 +244,8 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 					done = 1;
 				else
 				{
-					SoundPlay(&gSoundDevice, SND_KILL2);
+					SoundPlay(
+						&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 				}
 			}
 		}
@@ -272,7 +273,7 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 		BlitFlip(graphics, &gConfig.Graphics);
 	}
 
-	SoundPlay(&gSoundDevice, SND_SWITCH);
+	SoundPlay(&gSoundDevice, StrSound("switch"));
 
 	return mission;
 }

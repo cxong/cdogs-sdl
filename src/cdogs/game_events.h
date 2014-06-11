@@ -83,7 +83,7 @@ typedef struct
 		} Score;
 		struct
 		{
-			sound_e Sound;
+			Mix_Chunk *Sound;
 			Vec2i Pos;
 		} SoundAt;
 		int ShakeAmount;

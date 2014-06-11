@@ -174,7 +174,7 @@ static void DamageObject(
 			GameEventAddFireballWreckage(fullPos);
 			SoundPlayAt(
 				&gSoundDevice,
-				SND_BANG,
+				gSoundDevice.wreckSound,
 				Vec2iNew(object->tileItem.x, object->tileItem.y));
 		}
 		if (object->wreckedPic)

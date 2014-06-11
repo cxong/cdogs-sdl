@@ -213,7 +213,7 @@ void AddExplosion(Vec2i pos, int flags, int player)
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_EXPLOSION;
+	sound.u.SoundAt.Sound = StrSound("explosion");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
 	GameEventsEnqueue(&gGameEvents, sound);
 	GameEvent shake;
@@ -242,7 +242,7 @@ static void AddFrag(
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Sound = StrSound("bang");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(fullPos);
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -281,7 +281,7 @@ void AddFireExplosion(Vec2i pos, int flags, int player)
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Sound = StrSound("bang");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -295,7 +295,7 @@ void AddGasExplosion(
 	}
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_BANG;
+	sound.u.SoundAt.Sound = StrSound("bang");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -634,7 +634,7 @@ static void AddActiveMine(const TMobileObject *obj)
 	GameEventsEnqueue(&gGameEvents, e);
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_MINE_ARM;
+	sound.u.SoundAt.Sound = StrSound("mine_arm");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -652,7 +652,7 @@ static void AddTriggeredMine(const TMobileObject *obj)
 	GameEventsEnqueue(&gGameEvents, e);
 	GameEvent sound;
 	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = SND_MINE_TRIGGER;
+	sound.u.SoundAt.Sound = StrSound("mine_trigger");
 	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
 	GameEventsEnqueue(&gGameEvents, sound);
 }
@@ -676,7 +676,7 @@ void BulletInitialize(void)
 		b->Special = SPECIAL_NONE;
 		b->Persists = false;
 		b->SparkType = BULLET_SPARK;
-		b->WallHitSound = SND_HIT_WALL;
+		b->WallHitSound = StrSound("ricochet");
 		b->WallBounces = false;
 		b->HitsObjects = true;
 		b->Falling.Enabled = false;
@@ -719,7 +719,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_HIT_FIRE;
+	b->WallHitSound = StrSound("hit_fire");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
 
@@ -761,7 +761,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_BOUNCE;
+	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
@@ -775,7 +775,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_BOUNCE;
+	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
@@ -789,7 +789,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_NONE;
+	b->WallHitSound = NULL;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
 	b->Falling.DestroyOnDrop = true;
@@ -805,7 +805,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_BOUNCE;
+	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
@@ -819,7 +819,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_BOUNCE;
+	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
@@ -836,7 +836,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_POISON;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_HIT_GAS;
+	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
 
@@ -935,7 +935,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_NONE;
+	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
@@ -949,7 +949,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_NONE;
+	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
@@ -963,7 +963,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_NONE;
+	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
@@ -981,7 +981,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_FLAME;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_HIT_FIRE;
+	b->WallHitSound = StrSound("hit_fire");
 	b->WallBounces = true;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_Z;
@@ -1000,7 +1000,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_POISON;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_HIT_GAS;
+	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
 
@@ -1017,7 +1017,7 @@ void BulletInitialize(void)
 	b->Special = SPECIAL_CONFUSE;
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
-	b->WallHitSound = SND_HIT_GAS;
+	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
 

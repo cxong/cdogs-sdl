@@ -56,63 +56,13 @@
 
 #include <SDL.h>
 
+#include <tinydir/tinydir.h>
+
 #include "files.h"
 #include "music.h"
 #include "vector.h"
 
-SoundDevice gSoundDevice =
-{
-	0,
-	NULL,
-	MUSIC_OK,
-	"",
-	64,
-	{ 0, 0 },
-	{ 0, 0 },
-	{ 0, 0 },
-	{ 0, 0 },
-	{
-		{NULL,			false,	NULL},
-		{"booom",		false,	NULL},
-		{"launch",		false,	NULL},
-		{"mg",			false,	NULL},
-		{"flamer",		false,	NULL},
-		{"shotgun",		false,	NULL},
-		{"fusion",		false,	NULL},
-		{"switch",		false,	NULL},
-		{"scream",		false,	NULL},
-		{"aargh1",		false,	NULL},
-		{"aargh2",		false,	NULL},
-		{"aargh3",		false,	NULL},
-		{"hahaha",		false,	NULL},
-		{"bang",		false,	NULL},
-		{"pickup",		false,	NULL},
-		{"click",		false,	NULL},
-		{"whistle",		false,	NULL},
-		{"powergun",	false,	NULL},
-		{"mg",			false,	NULL},
-		{"pulse",		false,	NULL},
-		{"swell",		false,	NULL},
-		{"shotgun_r",	false,	NULL},
-		{"powergun_r",	false,	NULL},
-		{"package_r",	false,	NULL},
-		{"mine_arm",	false,	NULL},
-		{"mine_trigger",false,	NULL},
-		{"knife_flesh",	false,	NULL},
-		{"knife_hard",	false,	NULL},
-		{"ricochet",	false,	NULL},
-		{"hit_fire",	false,	NULL},
-		{"hit_flesh",	false,	NULL},
-		{"hit_gas",		false,	NULL},
-		{"hit_hard",	false,	NULL},
-		{"hit_petrify",	false,	NULL},
-		{"bounce",		false,	NULL},
-		{"footstep",	false,	NULL},
-		{"slide",		false,	NULL},
-		{"health",		false,	NULL},
-		{"key",			false,	NULL}
-	}
-};
+SoundDevice gSoundDevice;
 
 
 int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
@@ -139,38 +89,33 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	return 0;
 }
 
-void LoadSound(SoundData *sound)
+void LoadSound(CArray *sounds, const char *name, const char *path)
 {
-	sound->isLoaded = false;
-	if (sound->name)
+	SoundData sound;
+	// Load file data
+	if ((sound.data = Mix_LoadWAV(path)) == NULL)
 	{
-		// Check that file exists
-		// TODO: support other formats than WAV
-		char buf[CDOGS_PATH_MAX];
-		strcpy(buf, "sounds/");
-		strcat(buf, sound->name);
-		strcat(buf, ".wav");
-		struct stat st;
-		if (stat(GetDataFilePath(buf), &st) == -1)
-		{
-			printf("Error finding sample '%s'\n", GetDataFilePath(buf));
-			return;
-		}
-
-		// Load file data
-		if ((sound->data = Mix_LoadWAV(GetDataFilePath(buf))) == NULL)
-		{
-			printf("Error loading sample '%s'\n", GetDataFilePath(buf));
-			return;
-		}
+		return;
 	}
-	sound->isLoaded = true;
+
+	const char *dot = strrchr(name, '.');
+	if (dot)
+	{
+		strncpy(sound.Name, name, dot - name);
+		sound.Name[dot - name] = '\0';
+	}
+	else
+	{
+		strcpy(sound.Name, name);
+	}
+
+	CArrayPushBack(sounds, &sound);
 }
 
-void SoundInitialize(SoundDevice *device, SoundConfig *config)
+void SoundInitialize(
+	SoundDevice *device, SoundConfig *config, const char *path)
 {
-	int i;
-
+	memset(device, 0, sizeof *device);
 	if (OpenAudio(22050, AUDIO_S16, 2, 512) != 0)
 	{
 		return;
@@ -179,10 +124,57 @@ void SoundInitialize(SoundDevice *device, SoundConfig *config)
 	device->channels = 64;
 	SoundReconfigure(device, config);
 
-	for (i = 0; i < SND_COUNT; i++)
+	CArrayInit(&device->sounds, sizeof(SoundData));
+	tinydir_dir dir;
+	if (tinydir_open(&dir, path) == -1)
 	{
-		LoadSound(&device->sounds[i]);
+		perror("Cannot open sound dir");
+		goto bail;
 	}
+	for (; dir.has_next; tinydir_next(&dir))
+	{
+		tinydir_file file;
+		if (tinydir_readfile(&dir, &file) == -1)
+		{
+			perror("Cannot read sound file");
+			goto bail;
+		}
+		if (file.is_reg)
+		{
+			LoadSound(&device->sounds, file.name, file.path);
+		}
+	}
+
+	// Look for commonly used sounds to set our pointers
+	device->hitFireSound = StrSound("hit_fire");
+	device->hitGasSound = StrSound("hit_gas");
+	device->hitPetrifySound = StrSound("hit_petrify");
+	device->hitFleshSound = StrSound("hit_flesh");
+	device->hitHardSound = StrSound("hit_hard");
+	device->knifeFleshSound = StrSound("knife_flesh");
+	device->knifeHardSound = StrSound("knife_hard");
+	device->footstepSound = StrSound("footstep");
+	device->slideSound = StrSound("slide");
+	device->switchSound = StrSound("switch");
+	device->pickupSound = StrSound("pickup");
+	device->healthSound = StrSound("health");
+	device->keySound = StrSound("key");
+	device->wreckSound = StrSound("bang");
+	CArrayInit(&device->screamSounds, sizeof(Mix_Chunk *));
+	for (int i = 0;; i++)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "aargh%d", i);
+		Mix_Chunk *scream = StrSound(buf);
+		if (scream == NULL)
+		{
+			break;
+		}
+		CArrayPushBack(&device->screamSounds, &scream);
+	}
+
+bail:
+	tinydir_close(&dir);
 }
 
 void SoundReconfigure(SoundDevice *device, SoundConfig *config)
@@ -209,30 +201,27 @@ void SoundReconfigure(SoundDevice *device, SoundConfig *config)
 	device->isInitialised = 1;
 }
 
-void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
+void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 {
-	int i;
 	if (!device->isInitialised)
 	{
 		return;
 	}
 
 	debug(D_NORMAL, "shutting down sound\n");
-	if (isWaitingUntilSoundsComplete)
+	if (waitForSoundsComplete)
 	{
 		Uint32 waitStart = SDL_GetTicks();
 		while (Mix_Playing(-1) > 0 &&
 			SDL_GetTicks() - waitStart < 1000);
 	}
 	MusicStop(device);
-	for (i = 0; i < SND_COUNT; i++)
+	for (int i = 0; i < (int)gSoundDevice.sounds.size; i++)
 	{
-		if (device->sounds[i].isLoaded)
-		{
-			Mix_FreeChunk(device->sounds[i].data);
-			device->sounds[i].data = NULL;
-		}
+		SoundData *sound = CArrayGet(&gSoundDevice.sounds, i);
+		Mix_FreeChunk(sound->data);
 	}
+	CArrayTerminate(&device->sounds);
 	while (Mix_Init(0))
 	{
 		Mix_Quit();
@@ -241,9 +230,9 @@ void SoundTerminate(SoundDevice *device, int isWaitingUntilSoundsComplete)
 }
 
 void SoundPlayAtPosition(
-	SoundDevice *device, sound_e sound, int distance, int bearing)
+	SoundDevice *device, Mix_Chunk *data, int distance, int bearing)
 {
-	if (sound == SND_NONE)
+	if (data == NULL)
 	{
 		return;
 	}
@@ -260,13 +249,12 @@ void SoundPlayAtPosition(
 		return;
 	}
 
-	debug(D_VERBOSE, "sound: %d distance: %d bearing: %d\n",
-		sound, distance, bearing);
+	debug(D_VERBOSE, "sound: distance: %d bearing: %d\n", distance, bearing);
 
 	int channel;
 	for (;;)
 	{
-		channel = Mix_PlayChannel(-1, device->sounds[sound].data, 0);
+		channel = Mix_PlayChannel(-1, data, 0);
 		if (channel >= 0)
 		{
 			break;
@@ -282,14 +270,14 @@ void SoundPlayAtPosition(
 	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
 }
 
-void SoundPlay(SoundDevice *device, sound_e sound)
+void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 {
 	if (!device->isInitialised)
 	{
 		return;
 	}
 
-	SoundPlayAtPosition(device, sound, 0, 0);
+	SoundPlayAtPosition(device, data, 0, 0);
 }
 
 
@@ -327,13 +315,14 @@ void SoundSetEars(Vec2i pos)
 	SoundSetRightEars(pos);
 }
 
-void SoundPlayAt(SoundDevice *device, sound_e sound, Vec2i pos)
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
 {
-	SoundPlayAtPlusDistance(device, sound, pos, 0);
+	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
 void SoundPlayAtPlusDistance(
-	SoundDevice *device, sound_e sound, Vec2i pos, int plusDistance)
+	SoundDevice *device, Mix_Chunk *data,
+	const Vec2i pos, const int plusDistance)
 {
 	int distance, bearing;
 	Vec2i closestLeftEar, closestRightEar;
@@ -366,44 +355,52 @@ void SoundPlayAtPlusDistance(
 	origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
 	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
-	SoundPlayAtPosition(&gSoundDevice, sound, distance + plusDistance, bearing);
+	SoundPlayAtPosition(&gSoundDevice, data, distance + plusDistance, bearing);
 }
 
-sound_e SoundGetHit(special_damage_e damage, int isActor)
+Mix_Chunk *SoundGetHit(special_damage_e damage, int isActor)
 {
 	switch (damage)
 	{
 	case SPECIAL_FLAME:
-		return SND_HIT_FIRE;
+		return gSoundDevice.hitFireSound;
 	case SPECIAL_POISON:
-		return SND_HIT_GAS;
+		return gSoundDevice.hitGasSound;
 	case SPECIAL_PETRIFY:
-		return SND_HIT_PETRIFY;
+		return gSoundDevice.hitPetrifySound;
 	case SPECIAL_CONFUSE:
-		return SND_HIT_GAS;
+		return gSoundDevice.hitGasSound;
 	case SPECIAL_KNIFE:
-		return isActor ? SND_KNIFE_FLESH : SND_KNIFE_HARD;
+		return
+			isActor ? gSoundDevice.knifeFleshSound : gSoundDevice.hitHardSound;
 	case SPECIAL_EXPLOSION:
-		return SND_HIT_GAS;
+		return gSoundDevice.hitGasSound;
 	default:
-		return isActor ? SND_HIT_FLESH : SND_HIT_HARD;
+		return
+			isActor ? gSoundDevice.hitFleshSound : gSoundDevice.hitHardSound;
 	}
 }
 
-sound_e StrSound(const char *s)
+Mix_Chunk *StrSound(const char *s)
 {
 	if (s == NULL || strlen(s) == 0)
 	{
-		return SND_NONE;
+		return NULL;
 	}
-	for (int i = 0; i < SND_COUNT; i++)
+	for (int i = 0; i < (int)gSoundDevice.sounds.size; i++)
 	{
-		if (gSoundDevice.sounds[i].name &&
-			strcmp(gSoundDevice.sounds[i].name, s) == 0)
+		SoundData *sound = CArrayGet(&gSoundDevice.sounds, i);
+		if (strcmp(sound->Name, s) == 0)
 		{
-			return (sound_e)i;
+			return sound->data;
 		}
 	}
-	CASSERT(false, "cannot find sound");
-	return SND_NONE;
+	return NULL;
+}
+
+Mix_Chunk *SoundGetRandomScream(const SoundDevice *device)
+{
+	Mix_Chunk **sound = CArrayGet(
+		&device->screamSounds, rand() % device->screamSounds.size);
+	return *sound;
 }

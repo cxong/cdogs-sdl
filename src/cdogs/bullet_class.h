@@ -118,7 +118,7 @@ typedef struct
 	special_damage_e Special;
 	bool Persists;	// remains even after hitting walls/items
 	BulletType SparkType;
-	sound_e WallHitSound;
+	Mix_Chunk *WallHitSound;
 	bool WallBounces;
 	bool HitsObjects;
 	struct

@@ -49,6 +49,8 @@
 #ifndef __TRIGGERS
 #define __TRIGGERS
 
+#include <SDL_mixer.h>
+
 #include "c_array.h"
 #include "pic.h"
 
@@ -73,7 +75,11 @@ typedef struct
 	} u;
 	Pic *tilePic;
 	Pic tilePicAlt;
-	int tileFlags;
+	union
+	{
+		int tileFlags;
+		Mix_Chunk *Sound;
+	} a;
 } Action;
 
 

@@ -692,7 +692,7 @@ static TWatch *CreateCloseDoorWatch(
 	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
 		v.x + dv.x * doorGroupCount / 2,
 		v.y + dv.y * doorGroupCount / 2));
-	a->tileFlags = SND_DOOR;
+	a->a.Sound = StrSound("door");
 
 	// Close doors
 	for (i = 0; i < doorGroupCount; i++)
@@ -708,7 +708,7 @@ static TWatch *CreateCloseDoorWatch(
 			a->tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
-		a->tileFlags = tileFlags;
+		a->a.tileFlags = tileFlags;
 	}
 
 	for (i = 0; i < doorGroupCount; i++)
@@ -772,7 +772,7 @@ static Trigger *CreateOpenDoorTrigger(
 	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
 		v.x + dv.x * doorGroupCount / 2,
 		v.y + dv.y * doorGroupCount / 2));
-	a->tileFlags = SND_DOOR;
+	a->a.Sound = StrSound("door");
 
 	// Deactivate itself
 	a = TriggerAddAction(t);
@@ -803,7 +803,7 @@ static Trigger *CreateOpenDoorTrigger(
 			a->tilePic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
-		a->tileFlags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
+		a->a.tileFlags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
 	}
 
 	// Change tiles below the doors

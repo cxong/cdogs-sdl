@@ -103,8 +103,8 @@ typedef struct
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;
-	sound_e Sound;
-	sound_e ReloadSound;
+	Mix_Chunk *Sound;
+	Mix_Chunk *ReloadSound;
 	int SoundLockLength;
 	double Recoil;		// Random recoil for inaccurate weapons, in radians
 	struct

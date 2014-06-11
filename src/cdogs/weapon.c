@@ -289,7 +289,7 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 		w->lock > w->Gun->ReloadLead &&
 		w->lock - ticks <= w->Gun->ReloadLead &&
 		w->lock > 0 &&
-		w->Gun->ReloadSound != SND_NONE)
+		w->Gun->ReloadSound != NULL)
 	{
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
@@ -335,7 +335,7 @@ int WeaponCanFire(Weapon *w)
 
 void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
 {
-	if (w->soundLock <= 0 && (int)w->Gun->Sound != SND_NONE)
+	if (w->soundLock <= 0 && w->Gun->Sound != NULL)
 	{
 		SoundPlayAt(
 			&gSoundDevice,

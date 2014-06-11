@@ -67,7 +67,11 @@ static void HandleGameEvent(
 			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
 			break;
 		case GAME_EVENT_SOUND_AT:
-			SoundPlayAt(&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
+			if (e->u.SoundAt.Sound)
+			{
+				SoundPlayAt(
+					&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
+			}
 			break;
 		case GAME_EVENT_SCREEN_SHAKE:
 			*shake = ScreenShakeAdd(
@@ -215,7 +219,7 @@ static void HandleGameEvent(
 		case GAME_EVENT_MISSION_PICKUP:
 			gMission.state = MISSION_STATE_PICKUP;
 			gMission.pickupTime = gMission.time;
-			SoundPlay(&gSoundDevice, SND_DONE);
+			SoundPlay(&gSoundDevice, StrSound("whistle"));
 			break;
 		case GAME_EVENT_MISSION_END:
 			gMission.isDone = true;

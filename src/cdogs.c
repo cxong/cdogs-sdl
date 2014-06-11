@@ -177,7 +177,7 @@ int CampaignIntro(GraphicsDevice *device)
 	int result = WaitForAnyKeyOrButton(&gEventHandlers);
 	if (result)
 	{
-		SoundPlay(&gSoundDevice, SND_MACHINEGUN);
+		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
 	return result;
 }
@@ -757,7 +757,7 @@ void Victory(GraphicsDevice *graphics)
 	pos = TextStringMasked(&gTextManager, s, graphics, pos, colorPurple);
 	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
 
-	SoundPlay(&gSoundDevice, SND_HAHAHA);
+	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 
 	BlitFlip(graphics, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gEventHandlers);
@@ -1328,7 +1328,8 @@ int main(int argc, char *argv[])
 
 	if (isSoundEnabled)
 	{
-		SoundInitialize(&gSoundDevice, &gConfig.Sound);
+		SoundInitialize(
+			&gSoundDevice, &gConfig.Sound, GetDataFilePath("sounds"));
 		if (!gSoundDevice.isInitialised)
 		{
 			printf("Sound initialization failed!\n");

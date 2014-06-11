@@ -389,7 +389,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	{
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
-			SND_FOOTSTEP,
+			gSoundDevice.footstepSound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
 			FOOTSTEP_DISTANCE_PLUS);
 		actor->soundLock = SOUND_LOCK_FOOTSTEP;
@@ -440,7 +440,7 @@ static void PickupObject(TActor * actor, TObject * object)
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
 				&gSoundDevice,
-				SND_PICKUP,
+				gSoundDevice.pickupSound,
 				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
 		break;
@@ -456,7 +456,7 @@ static void PickupObject(TActor * actor, TObject * object)
 			e.u.PickupPlayer = actor->pData->playerIndex;
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
-				&gSoundDevice, SND_HEALTH,
+				&gSoundDevice, gSoundDevice.healthSound,
 				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 		}
 		break;
@@ -484,7 +484,7 @@ static void PickupObject(TActor * actor, TObject * object)
 	if (isKey)
 	{
 		SoundPlayAt(
-			&gSoundDevice, SND_KEY,
+			&gSoundDevice, gSoundDevice.keySound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 	UpdateMissionObjective(
@@ -643,20 +643,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	return 1;
 }
 
-void PlayRandomScreamAt(Vec2i pos)
-{
-	#define SCREAM_COUNT 4
-	static sound_e screamTable[SCREAM_COUNT] =
-		{ SND_KILL, SND_KILL2, SND_KILL3, SND_KILL4 };
-	static int screamIndex = 0;
-	SoundPlayAt(&gSoundDevice, screamTable[screamIndex], pos);
-	screamIndex++;
-	if (screamIndex >= SCREAM_COUNT)
-	{
-		screamIndex = 0;
-	}
-}
-
 void ActorHeal(TActor *actor, int health)
 {
 	actor->health += health;
@@ -671,12 +657,16 @@ void InjureActor(TActor * actor, int injury)
 	{
 		actor->stateCounter = 0;
 		Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		PlayRandomScreamAt(pos);
+		GameEvent sound;
+		sound.Type = GAME_EVENT_SOUND_AT;
+		sound.u.SoundAt.Sound = SoundGetRandomScream(&gSoundDevice);
+		sound.u.SoundAt.Pos = pos;
+		GameEventsEnqueue(&gGameEvents, sound);
 		if (actor->pData)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
-				SND_HAHAHA,
+				StrSound("hahaha"),
 				pos);
 		}
 		UpdateMissionObjective(
@@ -851,7 +841,7 @@ void SlideActor(TActor *actor, int cmd)
 	{
 		SoundPlayAt(
 			&gSoundDevice,
-			SND_SLIDE,
+			gSoundDevice.slideSound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 	
@@ -1205,8 +1195,8 @@ void ActorTakeHit(
 	// Hit sound
 	if (isHitSoundEnabled)
 	{
-		sound_e sound = SoundGetHit(damage, 1);
-		if (!isInvulnerable || sound != SND_KNIFE_FLESH)
+		Mix_Chunk *sound = SoundGetHit(damage, 1);
+		if (!isInvulnerable || sound != gSoundDevice.knifeFleshSound)
 		{
 			SoundPlayAt(&gSoundDevice, sound, hitLocation);
 		}
