@@ -886,7 +886,7 @@ menu_t *MenuProcessEscCmd(menu_t *menu)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 			menu->u.normal.index = quitMenuIndex;
 		}
-		else
+		else if (menu->u.normal.subMenus.size > 0)
 		{
 			menuToChange = CArrayGet(&menu->u.normal.subMenus, quitMenuIndex);
 		}

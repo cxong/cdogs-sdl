@@ -134,9 +134,10 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-Pic *GetFlame(int id)
+static Pic *GetFlame(int id)
 {
 	TMobileObject *obj = CArrayGet(&gMobObjs, id);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	if ((obj->count & 3) == 0)
 	{
 		obj->state.frame = rand();
@@ -148,16 +149,17 @@ Pic *GetFlame(int id)
 	return p;
 }
 
-static void DrawBeam(Vec2i pos, TileItemDrawFuncData *data)
+static Pic *GetBeam(int id)
 {
-	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	const TOffsetPic *pic = &cBeamPics[data->u.Beam][obj->state.dir];
-	pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
-	Blit(
-		&gGraphicsDevice,
-		PicManagerGetFromOld(&gPicManager, pic->picIndex),
-		pos);
+	// Calculate direction based on velocity
+	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
+	const TOffsetPic *pic = &cBeamPics[obj->state.Beam][dir];
+	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
+	p->offset.x = pic->dx;
+	p->offset.y = pic->dy - obj->z;
+	return p;
 }
 
 static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
@@ -357,7 +359,7 @@ static void GrenadeExplode(const TMobileObject *obj)
 
 static Vec2i SeekTowards(
 	const Vec2i pos, const Vec2i vel, const double speedMin,
-	const Vec2i targetPos)
+	const Vec2i targetPos, const int seekFactor)
 {
 	// Compensate for bullet's velocity
 	const Vec2i targetVel = Vec2iMinus(Vec2iMinus(targetPos, pos), vel);
@@ -371,7 +373,6 @@ static Vec2i SeekTowards(
 		targetVel.x*targetVel.x + targetVel.y*targetVel.y);
 	const double magnitude = MAX(speedMin,
 		Vec2iEqual(vel, Vec2iZero()) ? speedMin : sqrt(vel.x*vel.x + vel.y*vel.y));
-	const int seekFactor = 20;
 	const double combinedX =
 		vel.x / magnitude * seekFactor + targetVel.x / targetMag;
 	const double combinedY =
@@ -405,7 +406,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 
 	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
 
-	if (obj->bulletClass->Seeking)
+	if (obj->bulletClass->SeekFactor > 0)
 	{
 		// Find the closest target to this bullet and steer towards it
 		TActor *target = AIGetClosestEnemy(
@@ -415,7 +416,9 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			for (int i = 0; i < ticks; i++)
 			{
 				obj->vel = SeekTowards(
-					objPos, obj->vel, obj->bulletClass->SpeedLow, target->Pos);
+					objPos, obj->vel,
+					obj->bulletClass->SpeedLow, target->Pos,
+					obj->bulletClass->SeekFactor);
 			}
 		}
 	}
@@ -686,7 +689,7 @@ void BulletInitialize(void)
 		b->OutOfRangeFunc = NULL;
 		b->HitFunc = NULL;
 		b->RandomAnimation = false;
-		b->Seeking = false;
+		b->SeekFactor = -1;
 		b->Erratic = false;
 	}
 
@@ -725,8 +728,8 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_LASER];
 	b->Name = "laser";
-	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
-	b->DrawData.u.Beam = BEAM_PIC_BEAM;
+	b->GetPicFunc = GetBeam;
+	b->Beam = BEAM_PIC_BEAM;
 	b->SpeedLow = b->SpeedHigh = 1024;
 	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 20;
@@ -734,8 +737,8 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_SNIPER];
 	b->Name = "sniper";
-	b->DrawFunc = (TileItemDrawFunc)DrawBeam;
-	b->DrawData.u.Beam = BEAM_PIC_BRIGHT;
+	b->GetPicFunc = GetBeam;
+	b->Beam = BEAM_PIC_BRIGHT;
 	b->SpeedLow = b->SpeedHigh = 1024;
 	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 50;
@@ -860,7 +863,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 20;
 	b->Size = Vec2iNew(3, 3);
-	b->Seeking = true;
+	b->SeekFactor = 20;
 
 	b = &gBulletClasses[BULLET_BROWN];
 	b->Name = "brown";
@@ -1111,8 +1114,8 @@ void AddBulletDirectional(
 {
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
-	obj->state.dir = dir;
 	SetBulletProps(obj, z, type, flags);
+	obj->state.Beam = obj->bulletClass->Beam;
 }
 
 void BulletAdd(

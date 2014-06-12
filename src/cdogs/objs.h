@@ -140,7 +140,8 @@ typedef struct MobileObject
 	union
 	{
 		int frame;
-		direction_e dir;
+		// For beam bullets; which beam pic to use
+		BeamPic Beam;
 	} state;
 	int range;
 	int flags;

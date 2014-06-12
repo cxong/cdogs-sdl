@@ -156,3 +156,23 @@ Vec2i GetFullVectorsForRadians(double radians)
 		(int)(cos(radians) * scalar),
 		(int)(sin(radians) * scalar * TILE_HEIGHT / TILE_WIDTH));
 }
+double Vec2iToRadians(const Vec2i v)
+{
+	return atan2(v.y, v.x) + PI / 2.0;
+}
+direction_e RadiansToDirection(const double r)
+{
+	// constrain to range [0, 2PI)
+	double radians = r;
+	while (radians < 0)
+	{
+		radians += 2 * PI;
+	}
+	while (radians >= 2 * PI)
+	{
+		radians -= 2 * PI;
+	}
+	return (direction_e)CLAMP_OPPOSITE(
+		floor((radians + PI / 8.0) / (PI / 4.0)),
+		DIRECTION_UP, DIRECTION_UPLEFT);
+}

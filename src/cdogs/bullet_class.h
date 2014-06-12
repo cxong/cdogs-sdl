@@ -106,6 +106,7 @@ typedef struct
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
+	BeamPic Beam;
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
@@ -131,7 +132,7 @@ typedef struct
 	void (*OutOfRangeFunc)(const struct MobileObject *);
 	void (*HitFunc)(const struct MobileObject *);
 	bool RandomAnimation;
-	bool Seeking;
+	int SeekFactor;	// -1 to disable; higher = less seeking
 	bool Erratic;
 	void (*ProximityFunc)(const struct MobileObject *);	// Mines
 } BulletClass;
@@ -152,7 +153,6 @@ void BulletAdd(
 	const int flags, const int playerIndex);
 
 int UpdateMolotovFlame(struct MobileObject *obj, int ticks);
-Pic *GetFlame(int id);
 void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif

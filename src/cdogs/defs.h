@@ -145,6 +145,7 @@ extern double dir2radians[8];
 
 Vec2i GetVectorsForRadians(double radians);
 Vec2i GetFullVectorsForRadians(double radians);
-
+double Vec2iToRadians(const Vec2i v);
+direction_e RadiansToDirection(const double r);
 
 #endif

@@ -124,8 +124,6 @@ typedef struct
 			color_t Mask;
 			HSV Tint;
 		} Bullet;
-		// For beam bullets; which beam pic to use
-		BeamPic Beam;
 		color_t GrenadeColor;
 		// For gas clouds; what tint to use
 		HSV Tint;
