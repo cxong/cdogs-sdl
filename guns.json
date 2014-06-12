@@ -163,7 +163,7 @@
 	{
 	  "Index": 13,
 	  "Name": "Browny gun",
-	  "Bullet": "brown",
+	  "Bullet": "rapid",
 	  "Cost": 5,
 	  "Lock": 30,
 	  "Sound": "fusion",

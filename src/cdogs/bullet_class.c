@@ -875,11 +875,9 @@ void BulletInitialize(void)
 	b->SeekFactor = 20;
 
 	b = &gBulletClasses[BULLET_BROWN];
-	b->Name = "brown";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
+	b->Name = "rapid";
+	b->GetPicFunc = GetBeam;
+	b->DrawData.u.MuzzleFlash.SpriteName = "rapid";
 	b->SpeedLow = b->SpeedHigh = 768;
 	b->RangeLow = b->RangeHigh = 45;
 	b->Power = 15;
