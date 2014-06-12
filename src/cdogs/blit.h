@@ -66,7 +66,7 @@ void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode);
 void BlitBackground(
 	GraphicsDevice *device,
 	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent);
-void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos);
+void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,
 	const Pic *pic,
@@ -75,7 +75,8 @@ void BlitMasked(
 	int isTransparent);
 void BlitBlend(
 	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend);
-void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color);
+void BlitPicHighlight(
+	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color);
 /* DrawPic - simply draws a rectangular picture to screen. I do not
  * remember if this is the one that ignores zero source-pixels or not, but
  * that much should be obvious.

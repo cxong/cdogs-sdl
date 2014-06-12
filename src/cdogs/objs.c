@@ -76,7 +76,7 @@ CArray gMobObjs;
 
 // Draw functions
 
-Pic *GetObjectPic(int id)
+const Pic *GetObjectPic(const int id, Vec2i *offset)
 {
 	const TObject *obj = CArrayGet(&gObjs, id);
 
@@ -95,16 +95,17 @@ Pic *GetObjectPic(int id)
 		{
 			return NULL;
 		}
-		pic->offset = Vec2iScaleDiv(pic->size, -2);
+		*offset = Vec2iScaleDiv(pic->size, -2);
 	}
 	else if (pic == NULL)
 	{
 		// Default old pic
 		pic = PicManagerGetFromOld(&gPicManager, ofpic->picIndex);
+		*offset = pic->offset;
 	}
 	if (ofpic != NULL)
 	{
-		pic->offset = Vec2iNew(ofpic->dx, ofpic->dy);
+		*offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	}
 	return pic;
 }

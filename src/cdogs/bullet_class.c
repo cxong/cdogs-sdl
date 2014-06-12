@@ -134,7 +134,7 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-static Pic *GetFlame(int id)
+static const Pic *GetFlame(int id, Vec2i *offset)
 {
 	TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
@@ -143,22 +143,35 @@ static Pic *GetFlame(int id)
 		obj->state.frame = rand();
 	}
 	const TOffsetPic *pic = &cFlamePics[obj->state.frame & 3];
-	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
-	p->offset.x = pic->dx;
-	p->offset.y = pic->dy - obj->z;
-	return p;
+	offset->x = pic->dx;
+	offset->y = pic->dy - obj->z;
+	return PicManagerGetFromOld(&gPicManager, pic->picIndex);
 }
 
-static Pic *GetBeam(int id)
+static const Pic *GetBeam(int id, Vec2i *offset)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	// Calculate direction based on velocity
 	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
-	const TOffsetPic *pic = &cBeamPics[obj->state.Beam][dir];
-	Pic *p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
-	p->offset.x = pic->dx;
-	p->offset.y = pic->dy - obj->z;
+	const Pic *p;
+	// TODO: don't use SpriteName, don't use MuzzleFlash
+	if (obj->tileItem.drawData.u.MuzzleFlash.SpriteName)
+	{
+		p = PicManagerGetSprite(
+			&gPicManager,
+			obj->tileItem.drawData.u.MuzzleFlash.SpriteName,
+			dir);
+		offset->x = -p->size.x / 2;
+		offset->y = -p->size.y / 2 - obj->z;
+	}
+	else
+	{
+		const TOffsetPic *pic = &cBeamPics[obj->bulletClass->Beam][dir];
+		p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
+		offset->x = pic->dx;
+		offset->y = pic->dy - obj->z;
+	}
 	return p;
 }
 
@@ -855,10 +868,8 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_HEATSEEKER];
 	b->Name = "heatseeker";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorRed;
+	b->GetPicFunc = GetBeam;
+	b->DrawData.u.MuzzleFlash.SpriteName = "rockets";
 	b->SpeedLow = b->SpeedHigh = 512;
 	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 20;
@@ -1115,7 +1126,6 @@ void AddBulletDirectional(
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
 	SetBulletProps(obj, z, type, flags);
-	obj->state.Beam = obj->bulletClass->Beam;
 }
 
 void BulletAdd(

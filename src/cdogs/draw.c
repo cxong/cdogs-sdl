@@ -243,7 +243,9 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
 			{
-				Blit(&gGraphicsDevice, t->getPicFunc(t->id), pos);
+				Vec2i offset;
+				const Pic *pic = t->getPicFunc(t->id, &offset);
+				Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
 			}
 			else
 			{
@@ -302,7 +304,9 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
 			{
-				Blit(&gGraphicsDevice, t->getPicFunc(t->id), picPos);
+				Vec2i offset;
+				const Pic *pic = t->getPicFunc(t->id, &offset);
+				Blit(&gGraphicsDevice, pic, Vec2iAdd(picPos, offset));
 			}
 			else if (t->getActorPicsFunc)
 			{
@@ -433,8 +437,9 @@ static void DrawObjectiveHighlight(
 	color.a = (Uint8)alphaUnscaled;
 	if (ti->getPicFunc != NULL)
 	{
-		BlitPicHighlight(
-			&gGraphicsDevice, ti->getPicFunc(ti->id), pos, color);
+		Vec2i offset;
+		const Pic *pic = ti->getPicFunc(ti->id, &offset);
+		BlitPicHighlight(&gGraphicsDevice, pic, Vec2iAdd(pos, offset), color);
 	}
 	else if (ti->getActorPicsFunc != NULL)
 	{

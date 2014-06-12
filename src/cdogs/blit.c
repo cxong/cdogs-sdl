@@ -135,7 +135,8 @@ void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode)
 	}
 }
 
-void BlitPicHighlight(GraphicsDevice *g, Pic *pic, Vec2i pos, color_t color)
+void BlitPicHighlight(
+	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color)
 {
 	// Draw highlight around the picture
 	int i;
@@ -249,7 +250,7 @@ void BlitBackground(
 	}
 }
 
-void Blit(GraphicsDevice *device, Pic *pic, Vec2i pos)
+void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
 {
 	Uint32 *current = pic->Data;
 	pos = Vec2iAdd(pos, pic->offset);

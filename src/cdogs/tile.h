@@ -96,7 +96,7 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
-typedef Pic *(*TileItemGetPicFunc)(int);
+typedef const Pic *(*TileItemGetPicFunc)(int, Vec2i *);
 
 // For actor drawing
 typedef struct
