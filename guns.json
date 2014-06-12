@@ -191,8 +191,8 @@
 	},
 	{
 	  "Index": 16,
-	  "Name": "Pulse Rifle",
-	  "Bullet": "rapid",
+	  "Name": "Pulse rifle",
+	  "Bullet": "pulse",
 	  "Cost": 1,
 	  "Lock": 4,
 	  "Sound": "pulse",

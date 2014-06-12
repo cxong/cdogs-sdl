@@ -857,11 +857,9 @@ void BulletInitialize(void)
 	b->RandomAnimation = true;
 
 	b = &gBulletClasses[BULLET_RAPID];
-	b->Name = "rapid";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_SNIPERBULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
+	b->Name = "pulse";
+	b->GetPicFunc = GetBeam;
+	b->DrawData.u.MuzzleFlash.SpriteName = "pulse";
 	b->SpeedLow = b->SpeedHigh = 1280;
 	b->RangeLow = b->RangeHigh = 25;
 	b->Power = 6;
