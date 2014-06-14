@@ -155,19 +155,15 @@ static const Pic *GetBeam(int id, Vec2i *offset)
 	// Calculate direction based on velocity
 	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
 	const Pic *p;
-	// TODO: don't use SpriteName, don't use MuzzleFlash
-	if (obj->tileItem.drawData.u.MuzzleFlash.SpriteName)
+	if (obj->bulletClass->Beam.Sprites)
 	{
-		p = PicManagerGetSprite(
-			&gPicManager,
-			obj->tileItem.drawData.u.MuzzleFlash.SpriteName,
-			dir);
+		p = CArrayGet(&obj->bulletClass->Beam.Sprites->pics, dir);
 		offset->x = -p->size.x / 2;
 		offset->y = -p->size.y / 2 - obj->z;
 	}
 	else
 	{
-		const TOffsetPic *pic = &cBeamPics[obj->bulletClass->Beam][dir];
+		const TOffsetPic *pic = &cBeamPics[obj->bulletClass->Beam.Beam][dir];
 		p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
 		offset->x = pic->dx;
 		offset->y = pic->dy - obj->z;
@@ -686,6 +682,7 @@ void BulletInitialize(void)
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
 		memset(&b->DrawData, 0, sizeof b->DrawData);
+		b->Beam.Sprites = NULL;
 		b->SpeedScale = false;
 		b->Friction = Vec2iZero();
 		b->Size = Vec2iZero();
@@ -742,7 +739,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_LASER];
 	b->Name = "laser";
 	b->GetPicFunc = GetBeam;
-	b->Beam = BEAM_PIC_BEAM;
+	b->Beam.Beam = BEAM_PIC_BEAM;
 	b->SpeedLow = b->SpeedHigh = 1024;
 	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 20;
@@ -751,7 +748,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_SNIPER];
 	b->Name = "sniper";
 	b->GetPicFunc = GetBeam;
-	b->Beam = BEAM_PIC_BRIGHT;
+	b->Beam.Beam = BEAM_PIC_BRIGHT;
 	b->SpeedLow = b->SpeedHigh = 1024;
 	b->RangeLow = b->RangeHigh = 90;
 	b->Power = 50;
@@ -859,7 +856,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_RAPID];
 	b->Name = "pulse";
 	b->GetPicFunc = GetBeam;
-	b->DrawData.u.MuzzleFlash.SpriteName = "pulse";
+	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "pulse");
 	b->SpeedLow = b->SpeedHigh = 1280;
 	b->RangeLow = b->RangeHigh = 25;
 	b->Power = 6;
@@ -867,7 +864,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_HEATSEEKER];
 	b->Name = "heatseeker";
 	b->GetPicFunc = GetBeam;
-	b->DrawData.u.MuzzleFlash.SpriteName = "rockets";
+	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "rockets");
 	b->SpeedLow = b->SpeedHigh = 512;
 	b->RangeLow = b->RangeHigh = 60;
 	b->Power = 20;
@@ -877,7 +874,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_BROWN];
 	b->Name = "rapid";
 	b->GetPicFunc = GetBeam;
-	b->DrawData.u.MuzzleFlash.SpriteName = "rapid";
+	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "rapid");
 	b->SpeedLow = b->SpeedHigh = 768;
 	b->RangeLow = b->RangeHigh = 45;
 	b->Power = 15;

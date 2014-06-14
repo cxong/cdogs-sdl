@@ -53,6 +53,7 @@
 
 #include "c_array.h"
 #include "pic.h"
+#include "pic_manager.h"
 #include "pics.h"
 #include "vector.h"
 
@@ -129,7 +130,7 @@ typedef struct
 		HSV Tint;
 		struct
 		{
-			const char *SpriteName;
+			const CArray *Sprites;
 			direction_e Dir;
 			color_t Color;
 		} MuzzleFlash;

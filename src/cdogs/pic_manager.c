@@ -43,7 +43,7 @@ int PicManagerTryInit(
 	int i;
 	memset(pm, 0, sizeof *pm);
 	CArrayInit(&pm->pics, sizeof(NamedPic));
-	CArrayInit(&pm->sprites, sizeof(NamedPic));
+	CArrayInit(&pm->sprites, sizeof(NamedSprites));
 	i = ReadPics(
 		GetDataFilePath(oldGfxFile1), pm->oldPics, PIC_COUNT1, pm->palette);
 	if (!i)
@@ -92,17 +92,16 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	// Special case: if the file name is in the form foobar_WxH.ext,
 	// this is a spritesheet where each sprite is W wide by H high
 	// Load multiple images from this single sheet
-	NamedPic n;
-	n.pic.size = Vec2iNew(image->w, image->h);
+	Vec2i size = Vec2iNew(image->w, image->h);
 	bool isSpritesheet = false;
 	char *underscore = strrchr(buf, '_');
 	const char *x = strrchr(buf, 'x');
 	if (underscore != NULL && x != NULL &&
 		underscore + 1 < x && x + 1 < buf + strlen(buf))
 	{
-		if (sscanf(underscore, "_%dx%d", &n.pic.size.x, &n.pic.size.y) != 2)
+		if (sscanf(underscore, "_%dx%d", &size.x, &size.y) != 2)
 		{
-			n.pic.size = Vec2iNew(image->w, image->h);
+			size = Vec2iNew(image->w, image->h);
 		}
 		else
 		{
@@ -110,7 +109,23 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 			isSpritesheet = true;
 		}
 	}
-	n.pic.offset = Vec2iZero();
+	NamedSprites *nsp = NULL;
+	NamedPic *np = NULL;
+	if (isSpritesheet)
+	{
+		NamedSprites ns;
+		CSTRDUP(ns.name, buf);
+		CArrayInit(&ns.pics, sizeof(Pic));
+		CArrayPushBack(&pm->sprites, &ns);
+		nsp = CArrayGet(&pm->sprites, pm->sprites.size - 1);
+	}
+	else
+	{
+		NamedPic n;
+		CSTRDUP(n.name, buf);
+		CArrayPushBack(&pm->pics, &n);
+		np = CArrayGet(&pm->pics, pm->pics.size - 1);
+	}
 	SDL_LockSurface(image);
 	SDL_Surface *s = SDL_ConvertSurface(
 		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
@@ -119,39 +134,43 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 		assert(0 && "image convert failed");
 		return;
 	}
-	const int picSize = n.pic.size.x * n.pic.size.y * sizeof *n.pic.Data;
+	const int picSize = size.x * size.y * sizeof(((Pic *)0)->Data);
 	SDL_LockSurface(s);
 	Vec2i offset;
-	int spriteIndex = 0;
-	for (offset.y = 0; offset.y < image->h; offset.y += n.pic.size.y)
+	for (offset.y = 0; offset.y < image->h; offset.y += size.y)
 	{
-		for (offset.x = 0; offset.x < image->w; offset.x += n.pic.size.x)
+		for (offset.x = 0; offset.x < image->w; offset.x += size.x)
 		{
-			CSTRDUP(n.name, buf);
-			CMALLOC(n.pic.Data, picSize);
-			n.idx = spriteIndex;
-			// Manually copy the pixels and replace the alpha component,
-			// since our gfx device format has no alpha
-			int srcI = offset.y*image->w + offset.x;
-			for (int i = 0; i < n.pic.size.x * n.pic.size.y; i++, srcI++)
-			{
-				Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
-				Uint32 alpha = ((Uint32 *)image->pixels)[srcI] >> image->format->Ashift;
-				Uint32 rgbMask = s->format->Rmask | s->format->Gmask | s->format->Bmask;
-				n.pic.Data[i] = (pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
-				if ((i + 1) % n.pic.size.x == 0)
-				{
-					srcI += image->w - n.pic.size.x;
-				}
-			}
+			Pic *pic;
 			if (isSpritesheet)
 			{
-				CArrayPushBack(&pm->sprites, &n);
-				spriteIndex++;
+				Pic p;
+				CArrayPushBack(&nsp->pics, &p);
+				pic = CArrayGet(&nsp->pics, nsp->pics.size - 1);
 			}
 			else
 			{
-				CArrayPushBack(&pm->pics, &n);
+				pic = &np->pic;
+			}
+			pic->size = size;
+			pic->offset = Vec2iZero();
+			CMALLOC(pic->Data, picSize);
+			// Manually copy the pixels and replace the alpha component,
+			// since our gfx device format has no alpha
+			int srcI = offset.y*image->w + offset.x;
+			for (int i = 0; i < size.x * size.y; i++, srcI++)
+			{
+				Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
+				Uint32 alpha =
+					((Uint32 *)image->pixels)[srcI] >> image->format->Ashift;
+				Uint32 rgbMask =
+					s->format->Rmask | s->format->Gmask | s->format->Bmask;
+				pic->Data[i] =
+					(pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+				if ((i + 1) % size.x == 0)
+				{
+					srcI += image->w - size.x;
+				}
 			}
 		}
 	}
@@ -272,9 +291,14 @@ void PicManagerTerminate(PicManager *pm)
 	CArrayTerminate(&pm->pics);
 	for (int i = 0; i < (int)pm->sprites.size; i++)
 	{
-		NamedPic *n = CArrayGet(&pm->sprites, i);
+		NamedSprites *n = CArrayGet(&pm->sprites, i);
 		CFREE(n->name);
-		PicFree(&n->pic);
+		for (int j = 0; j < (int)n->pics.size; j++)
+		{
+			Pic *pic = CArrayGet(&n->pics, j);
+			PicFree(pic);
+		}
+		CArrayTerminate(&n->pics);
 	}
 	CArrayTerminate(&pm->pics);
 	IMG_Quit();
@@ -308,18 +332,28 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 	}
 	return NULL;
 }
-const Pic *PicManagerGetSprite(
-	const PicManager *pm, const char *name, const int idx)
+const NamedSprites *PicManagerGetSprites(
+	const PicManager *pm, const char *name)
 {
 	for (int i = 0; i < (int)pm->sprites.size; i++)
 	{
-		NamedPic *n = CArrayGet(&pm->sprites, i);
-		if (strcmp(n->name, name) == 0 && n->idx == idx)
+		const NamedSprites *n = CArrayGet(&pm->sprites, i);
+		if (strcmp(n->name, name) == 0)
 		{
-			return &n->pic;
+			return n;
 		}
 	}
 	return NULL;
+}
+const Pic *PicManagerGetSpritePic(
+	const PicManager *pm, const char *name, const int idx)
+{
+	const NamedSprites *n = PicManagerGetSprites(pm, name);
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	return CArrayGet(&n->pics, idx);
 }
 
 

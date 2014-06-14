@@ -162,11 +162,6 @@ static void LoadGunDescription(
 		{
 			CSTRDUP(g->name, defaultGun->name);
 		}
-		if (defaultGun->MuzzleFlashSpriteName)
-		{
-			CSTRDUP(
-				g->MuzzleFlashSpriteName, defaultGun->MuzzleFlashSpriteName);
-		}
 	}
 	char *tmp;
 
@@ -229,7 +224,11 @@ static void LoadGunDescription(
 
 	if (json_find_first_label(node, "MuzzleFlashSprite"))
 	{
-		g->MuzzleFlashSpriteName = GetString(node, "MuzzleFlashSprite");
+		char *spriteNames = GetString(node, "MuzzleFlashSprite");
+		const NamedSprites *sprites = PicManagerGetSprites(
+			&gPicManager, spriteNames);
+		g->MuzzleFlashSprites = &sprites->pics;
+		CFREE(spriteNames);
 	}
 
 	if (json_find_first_label(node, "MuzzleFlashColor"))
@@ -249,7 +248,6 @@ void WeaponTerminate(CArray *descs)
 	{
 		GunDescription *g = CArrayGet(descs, i);
 		CFREE(g->name);
-		CFREE(g->MuzzleFlashSpriteName);
 	}
 	CArrayTerminate(descs);
 }
@@ -398,7 +396,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 			m.Type = GAME_EVENT_ADD_MUZZLE_FLASH;
 			m.u.AddMuzzleFlash.FullPos = muzzlePosition;
 			m.u.AddMuzzleFlash.MuzzleHeight = w->Gun->MuzzleHeight;
-			m.u.AddMuzzleFlash.SpriteName = w->Gun->MuzzleFlashSpriteName;
+			m.u.AddMuzzleFlash.Sprites = w->Gun->MuzzleFlashSprites;
 			m.u.AddMuzzleFlash.Direction = d;
 			m.u.AddMuzzleFlash.Color = w->Gun->MuzzleFlashColor;
 			m.u.AddMuzzleFlash.Duration = w->Gun->MuzzleFlashDuration;

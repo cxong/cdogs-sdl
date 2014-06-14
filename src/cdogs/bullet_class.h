@@ -100,13 +100,18 @@ typedef enum
 } BulletClassFallingType;
 typedef struct
 {
+	const NamedSprites *Sprites;
+	BeamPic Beam;
+} BeamSprites;
+typedef struct
+{
 	BulletType Type;
 	const char *Name;
 	BulletUpdateFunc UpdateFunc;
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
-	BeamPic Beam;
+	BeamSprites Beam;
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
