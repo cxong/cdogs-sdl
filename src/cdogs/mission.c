@@ -59,6 +59,7 @@
 #include "map_new.h"
 #include "objs.h"
 #include "palette.h"
+#include "particle.h"
 #include "defs.h"
 #include "pic_manager.h"
 #include "actors.h"
@@ -612,6 +613,7 @@ void SetupMission(
 	ActorsInit();
 	ObjsInit();
 	MobObjsInit();
+	ParticlesInit(&gParticles);
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(gPlayerDatas, &m->Weapons);

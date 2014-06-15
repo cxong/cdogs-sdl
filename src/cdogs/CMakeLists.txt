@@ -55,6 +55,7 @@ set(CDOGS_SOURCES
 	net_input_util.c
 	objs.c
 	palette.c
+	particle.c
 	pic.c
 	pic_file.c
 	pic_manager.c
@@ -122,6 +123,7 @@ set(CDOGS_HEADERS
 	net_input_util.h
 	objs.h
 	palette.h
+	particle.h
 	pic.h
 	pic_file.h
 	pic_manager.h

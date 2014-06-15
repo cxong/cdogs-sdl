@@ -71,6 +71,7 @@
 #include <cdogs/music.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
+#include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
 #include <cdogs/screen_shake.h>
@@ -697,6 +698,7 @@ int gameloop(void)
 				
 				UpdateAllActors(ticks);
 				UpdateMobileObjects(ticks);
+				ParticlesUpdate(&gParticles, ticks);
 
 				UpdateWatches(&gMap.triggers);
 

@@ -536,12 +536,14 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		{
 			obj->bulletClass->HitFunc(obj);
 		}
-		if (obj->bulletClass->SparkType != BULLET_NONE)
+		if (obj->bulletClass->Spark != NULL)
 		{
-			SetBulletProps(
-				obj, obj->z, obj->bulletClass->SparkType, obj->flags);
-			obj->count = 0;
-			return true;
+			GameEvent e;
+			e.Type = GAME_EVENT_ADD_PARTICLE;
+			e.u.AddParticle.Class = obj->bulletClass->Spark;
+			e.u.AddParticle.FullPos = pos;
+			e.u.AddParticle.Z = obj->z;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 		if (hitWall || !obj->bulletClass->Persists)
 		{
@@ -681,7 +683,7 @@ void BulletInitialize(void)
 		b->Size = Vec2iZero();
 		b->Special = SPECIAL_NONE;
 		b->Persists = false;
-		b->SparkType = BULLET_SPARK;
+		b->Spark = ParticleClassGet(&gParticleClasses, "spark");
 		b->WallHitSound = StrSound("ricochet");
 		b->WallBounces = false;
 		b->HitsObjects = true;
@@ -724,7 +726,7 @@ void BulletInitialize(void)
 	b->Power = 12;
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_fire");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
@@ -766,7 +768,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
@@ -780,7 +782,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
@@ -794,7 +796,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = NULL;
 	b->HitsObjects = false;
 	b->Falling.Enabled = true;
@@ -810,7 +812,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
@@ -824,7 +826,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->RangeLow = b->RangeHigh = 100;
 	b->Power = 0;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
@@ -841,7 +843,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
@@ -909,7 +911,7 @@ void BulletInitialize(void)
 	b->RangeLow = b->RangeHigh = 210;
 	b->Power = 0;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->HitsObjects = false;
 	b->OutOfRangeFunc = Explode;
 
@@ -923,7 +925,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 
 	b = &gBulletClasses[BULLET_FIREBALL1];
 	b->Name = "fireball1";
@@ -934,7 +936,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
@@ -948,7 +950,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
@@ -962,7 +964,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = NULL;
 	b->Falling.Enabled = true;
 	b->Falling.Type = FALLING_TYPE_DZ;
@@ -980,7 +982,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_fire");
 	b->WallBounces = true;
 	b->Falling.Enabled = true;
@@ -999,7 +1001,7 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
@@ -1016,22 +1018,11 @@ void BulletInitialize(void)
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_CONFUSE;
 	b->Persists = true;
-	b->SparkType = BULLET_NONE;
+	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_gas");
 	b->WallBounces = true;
 	b->RandomAnimation = true;
 
-
-	b = &gBulletClasses[BULLET_SPARK];
-	b->Name = "spark";
-	b->UpdateFunc = UpdateMobileObject;
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_SPARK;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = 0;
-	b->Power = 0;
 
 	b = &gBulletClasses[BULLET_ACTIVEMINE];
 	b->Name = "activemine";

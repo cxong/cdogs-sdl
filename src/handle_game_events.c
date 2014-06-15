@@ -30,6 +30,7 @@
 #include <cdogs/damage.h>
 #include <cdogs/game_events.h>
 #include <cdogs/objs.h>
+#include <cdogs/particle.h>
 #include <cdogs/triggers.h>
 
 
@@ -106,12 +107,22 @@ static void HandleGameEvent(
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;
+		case GAME_EVENT_PARTICLE_REMOVE:
+			ParticleDestroy(&gParticles, e->u.ParticleRemoveId);
+			break;
 		case GAME_EVENT_ADD_BULLET:
 			BulletAdd(
 				e->u.AddBullet.Bullet,
 				e->u.AddBullet.MuzzlePos, e->u.AddBullet.MuzzleHeight,
 				e->u.AddBullet.Angle, e->u.AddBullet.Direction,
 				e->u.AddBullet.Flags, e->u.AddBullet.PlayerIndex);
+			break;
+		case GAME_EVENT_ADD_PARTICLE:
+			ParticleAdd(
+				&gParticles,
+				e->u.AddParticle.Class,
+				e->u.AddParticle.FullPos,
+				e->u.AddParticle.Z);
 			break;
 		case GAME_EVENT_ADD_MUZZLE_FLASH:
 			AddMuzzleFlash(

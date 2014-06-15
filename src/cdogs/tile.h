@@ -84,10 +84,13 @@ typedef enum
 	MAPTILE_OUT_OF_SIGHT	= 0x0400
 } MapTileFlags;
 
-#define KIND_CHARACTER      0
-#define KIND_PIC            1	// TODO: not used yet
-#define KIND_MOBILEOBJECT   2
-#define KIND_OBJECT         3
+typedef enum
+{
+	KIND_CHARACTER,
+	KIND_PARTICLE,
+	KIND_MOBILEOBJECT,
+	KIND_OBJECT
+} TileItemKind;
 
 #define TILEITEM_IMPASSABLE     1
 #define TILEITEM_CAN_BE_SHOT    2
@@ -141,7 +144,7 @@ typedef struct TileItem
 {
 	int x, y;
 	int w, h;
-	int kind;
+	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
 	TileItemGetPicFunc getPicFunc;
@@ -155,7 +158,7 @@ typedef struct TileItem
 typedef struct
 {
 	int Id;
-	int Kind;
+	TileItemKind Kind;
 } ThingId;
 typedef struct
 {

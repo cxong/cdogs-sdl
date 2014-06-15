@@ -52,7 +52,9 @@ typedef enum
 	GAME_EVENT_ADD_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
+	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
+	GAME_EVENT_ADD_PARTICLE,
 	GAME_EVENT_ADD_MUZZLE_FLASH,
 	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
@@ -95,6 +97,7 @@ typedef struct
 		Vec2i AddPos;
 		int PickupPlayer;
 		int MobileObjectRemoveId;
+		int ParticleRemoveId;
 		struct
 		{
 			BulletType Bullet;
@@ -105,6 +108,12 @@ typedef struct
 			int Flags;
 			int PlayerIndex;
 		} AddBullet;
+		struct
+		{
+			const ParticleClass *Class;
+			Vec2i FullPos;
+			int Z;
+		} AddParticle;
 		struct
 		{
 			Vec2i FullPos;

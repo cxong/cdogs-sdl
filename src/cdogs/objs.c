@@ -276,7 +276,7 @@ int DamageSomething(
 			gConfig.Sound.Hits && hasHitSound);
 		break;
 
-	case KIND_PIC:
+	case KIND_PARTICLE:
 	case KIND_MOBILEOBJECT:
 		break;
 	}

@@ -67,6 +67,7 @@
 #include <cdogs/mission_convert.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
+#include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/text.h>
 #include <cdogs/triggers.h>
@@ -1146,6 +1147,7 @@ int main(int argc, char *argv[])
 	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 
+	ParticleClassesInit(&gParticleClasses);
 	BulletInitialize();
 	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
 	CampaignInit(&gCampaign);
@@ -1191,6 +1193,7 @@ int main(int argc, char *argv[])
 	EditCampaign();
 
 	MapTerminate(&gMap);
+	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);

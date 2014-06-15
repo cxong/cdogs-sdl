@@ -134,6 +134,9 @@ TTileItem *ThingIdGetTileItem(ThingId *tid)
 	case KIND_CHARACTER:
 		ti = &((TActor *)CArrayGet(&gActors, tid->Id))->tileItem;
 		break;
+	case KIND_PARTICLE:
+		ti = &((Particle *)CArrayGet(&gParticles, tid->Id))->tileItem;
+		break;
 	case KIND_MOBILEOBJECT:
 		ti = &((TMobileObject *)CArrayGet(
 			&gMobObjs, tid->Id))->tileItem;

@@ -49,6 +49,7 @@
 #ifndef __BULLET_CLASS
 #define __BULLET_CLASS
 
+#include "particle.h"
 #include "sounds.h"
 #include "tile.h"
 
@@ -85,7 +86,6 @@ typedef enum
 	BULLET_GAS_CLOUD_CONFUSE,
 
 	// Pseudo-bullets
-	BULLET_SPARK,
 	BULLET_ACTIVEMINE,
 	BULLET_TRIGGEREDMINE,
 
@@ -123,7 +123,7 @@ typedef struct
 	Vec2i Size;
 	special_damage_e Special;
 	bool Persists;	// remains even after hitting walls/items
-	BulletType SparkType;
+	const ParticleClass *Spark;
 	Mix_Chunk *WallHitSound;
 	bool WallBounces;
 	bool HitsObjects;
