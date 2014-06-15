@@ -381,7 +381,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		GameEventsEnqueue(&gGameEvents, e);
 		if (GunHasMuzzle(w->Gun))
 		{
-			GameEvent e;
 			e.Type = GAME_EVENT_ADD_PARTICLE;
 			e.u.AddParticle.Class = w->Gun->MuzzleFlash;
 			e.u.AddParticle.FullPos = muzzlePosition;
