@@ -330,7 +330,6 @@ void AddGasCloud(
 	obj->kind = MOBOBJ_FIREBALL;
 	obj->vel = vel;
 }
-
 static void GrenadeExplode(const TMobileObject *obj)
 {
 	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
@@ -364,6 +363,11 @@ static void GrenadeExplode(const TMobileObject *obj)
 		CASSERT(false, "Unknown grenade kind");
 		break;
 	}
+}
+static void Explode(const TMobileObject *obj)
+{
+	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
+	AddExplosion(fullPos, obj->flags, obj->player);
 }
 
 static Vec2i SeekTowards(
@@ -618,17 +622,6 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	return true;
-}
-
-bool UpdateTriggeredMine(TMobileObject *obj, const int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	if (obj->count >= obj->range)
-	{
-		AddExplosion(Vec2iNew(obj->x, obj->y), obj->flags, obj->player);
-		return false;
-	}
 	return true;
 }
 
@@ -908,7 +901,6 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->Name = "dynamite";
-	b->UpdateFunc = UpdateTriggeredMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
 	b->DrawData.u.Bullet.UseMask = true;
@@ -919,6 +911,7 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->SparkType = BULLET_NONE;
 	b->HitsObjects = false;
+	b->OutOfRangeFunc = Explode;
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
@@ -1056,7 +1049,6 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->Name = "triggeredmine";
-	b->UpdateFunc = UpdateTriggeredMine;
 	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
 	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
@@ -1067,6 +1059,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Persists = true;
 	b->HitsObjects = false;
+	b->OutOfRangeFunc = Explode;
 }
 
 void AddGrenade(
