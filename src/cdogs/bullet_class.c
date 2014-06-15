@@ -543,6 +543,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			e.u.AddParticle.Class = obj->bulletClass->Spark;
 			e.u.AddParticle.FullPos = pos;
 			e.u.AddParticle.Z = obj->z;
+			e.u.AddParticle.Frame = 0;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		if (hitWall || !obj->bulletClass->Persists)

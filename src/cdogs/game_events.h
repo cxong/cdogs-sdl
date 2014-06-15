@@ -55,7 +55,6 @@ typedef enum
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_ADD_PARTICLE,
-	GAME_EVENT_ADD_MUZZLE_FLASH,
 	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_ACTOR_IMPULSE,
@@ -108,21 +107,7 @@ typedef struct
 			int Flags;
 			int PlayerIndex;
 		} AddBullet;
-		struct
-		{
-			const ParticleClass *Class;
-			Vec2i FullPos;
-			int Z;
-		} AddParticle;
-		struct
-		{
-			Vec2i FullPos;
-			int MuzzleHeight;
-			const CArray *Sprites;
-			direction_e Direction;
-			color_t Color;
-			int Duration;
-		} AddMuzzleFlash;
+		AddParticle AddParticle;
 		AddFireballEvent AddFireball;
 		struct
 		{

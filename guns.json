@@ -14,9 +14,7 @@
 	"SpreadCount": 1,
 	"SpreadWidth": 0,
 	"MuzzleHeight": 10,
-	"MuzzleFlashSprite": "muzzle_flash",
-	"MuzzleFlashColor": "ffff80",
-	"MuzzleFlashDuration": 3,
+	"MuzzleFlashParticle": "muzzle_flash_default",
 	"CanShoot": true
   },
   "Guns": [
@@ -38,7 +36,7 @@
 	  "Lock": 6,
 	  "Sound": "mg",
 	  "Recoil": 0.17,
-	  "MuzzleFlashDuration": 2
+	  "MuzzleFlashParticle": "muzzle_flash_mg"
     },
 	{
 	  "Index": 2,
@@ -57,7 +55,7 @@
 	  "Lock": 6,
 	  "Sound": "flamer",
 	  "SoundLockLength": 36,
-	  "MuzzleFlashColor": "ff0000"
+	  "MuzzleFlashParticle": "muzzle_flash_flamer"
 	},
 	{
 	  "Index": 4,
@@ -70,8 +68,7 @@
 	  "ReloadSound": "shotgun_r",
 	  "SpreadCount": 5,
 	  "SpreadWidth": 0.2,
-	  "MuzzleFlashSprite": "muzzle_flash_big",
-	  "MuzzleFlashDuration": 7
+	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
 	},
 	{
 	  "Index": 5,
@@ -80,8 +77,7 @@
 	  "Cost": 2,
 	  "Lock": 20,
 	  "Sound": "fusion",
-	  "MuzzleFlashColor": "ff0000",
-	  "MuzzleFlashDuration": 5
+	  "MuzzleFlashParticle": "muzzle_flash_powergun"
 	},
 	{
 	  "Index": 6,
@@ -156,9 +152,7 @@
 	  "ReloadLead": 15,
 	  "Sound": "powergun",
 	  "ReloadSound": "powergun_r",
-	  "MuzzleFlashSprite": "muzzle_flash_big",
-	  "MuzzleFlashColor": "ffffff",
-	  "MuzzleFlashDuration": 10
+	  "MuzzleFlashParticle": "muzzle_flash_petrifier"
 	},
 	{
 	  "Index": 13,
@@ -167,8 +161,7 @@
 	  "Cost": 5,
 	  "Lock": 30,
 	  "Sound": "fusion",
-	  "MuzzleFlashColor": "00ffff",
-	  "MuzzleFlashDuration": 5
+	  "MuzzleFlashParticle": "muzzle_flash_browny"
 	},
 	{
 	  "Index": 14,
@@ -187,7 +180,7 @@
 	  "Lock": 6,
 	  "Sound": "flamer",
 	  "SoundLockLength": 36,
-	  "MuzzleFlashColor": "00ff00"
+	  "MuzzleFlashParticle": "muzzle_flash_gasgun"
 	},
 	{
 	  "Index": 16,
@@ -197,9 +190,7 @@
 	  "Lock": 4,
 	  "Sound": "pulse",
 	  "Recoil": 0.37,
-	  "MuzzleFlashSprite": "muzzle_flash_big",
-	  "MuzzleFlashColor": "00ffff",
-	  "MuzzleFlashDuration": 2
+	  "MuzzleFlashParticle": "muzzle_flash_pulse"
 	},
 	{
 	  "Index": 17,
@@ -208,9 +199,7 @@
 	  "Cost": 7,
 	  "Lock": 30,
 	  "Sound": "swell",
-	  "MuzzleFlashSprite": "muzzle_flash_big",
-	  "MuzzleFlashColor": "ff0000",
-	  "MuzzleFlashDuration": 5
+	  "MuzzleFlashParticle": "muzzle_flash_heatseeker"
 	}
   ]
 }

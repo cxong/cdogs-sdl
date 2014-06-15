@@ -28,21 +28,54 @@
 #include "particle.h"
 
 #include "game_events.h"
+#include "json_utils.h"
 
 
 CArray gParticleClasses;
 CArray gParticles;
 
-void ParticleClassesInit(CArray *classes)
+#define VERSION 1
+
+static void LoadParticleClass(ParticleClass *c, json_t *node);
+void ParticleClassesInit(CArray *classes, const char *filename)
 {
 	CArrayInit(classes, sizeof(ParticleClass));
-	ParticleClass c;
 
-	memset(&c, 0, sizeof c);
-	CSTRDUP(c.Name, "spark");
-	c.Pic = PicManagerGetFromOld(
-		&gPicManager, cGeneralPics[OFSPIC_SPARK].picIndex);
-	CArrayPushBack(classes, &c);
+	FILE *f = fopen(filename, "r");
+	json_t *root = NULL;
+	if (f == NULL)
+	{
+		printf("Error: cannot load particles file %s\n", filename);
+		goto bail;
+	}
+	enum json_error e = json_stream_parse(f, &root);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing particles file %s\n", filename);
+		goto bail;
+	}
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		CASSERT(false, "cannot read particles file version");
+		goto bail;
+	}
+
+	json_t *particlesNode = json_find_first_label(root, "Particles")->child;
+	for (json_t *child = particlesNode->child; child; child = child->next)
+	{
+		ParticleClass c;
+		LoadParticleClass(&c, child);
+		CArrayPushBack(classes, &c);
+	}
+
+bail:
+	json_free_value(&root);
+	if (f)
+	{
+		fclose(f);
+	}
 }
 void ParticleClassesTerminate(CArray *classes)
 {
@@ -53,6 +86,38 @@ void ParticleClassesTerminate(CArray *classes)
 	}
 	CArrayTerminate(classes);
 }
+static void LoadParticleClass(ParticleClass *c, json_t *node)
+{
+	memset(c, 0, sizeof *c);
+	c->Mask = colorWhite;
+	char *tmp;
+
+	c->Name = GetString(node, "Name");
+	if (json_find_first_label(node, "Sprites"))
+	{
+		tmp = GetString(node, "Sprites");
+		c->Sprites = PicManagerGetSprites(&gPicManager, tmp);
+		CFREE(tmp);
+	}
+	if (json_find_first_label(node, "OldPic"))
+	{
+		int oldPic;
+		LoadInt(&oldPic, node, "OldPic");
+		c->Pic = PicManagerGetFromOld(&gPicManager, oldPic);
+	}
+	if (json_find_first_label(node, "Mask"))
+	{
+		tmp = GetString(node, "Mask");
+		c->Mask = StrColor(tmp);
+		CFREE(tmp);
+	}
+	if (json_find_first_label(node, "Range"))
+	{
+		LoadInt(&c->RangeLow, node, "Range");
+		c->RangeHigh = c->RangeLow;
+	}
+}
+
 const ParticleClass *ParticleClassGet(const CArray *classes, const char *name)
 {
 	for (int i = 0; i < (int)classes->size; i++)
@@ -112,10 +177,8 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	return p->Count <= p->Range;
 }
 
-static const Pic *GetPic(int id, Vec2i *offset);
-int ParticleAdd(
-	CArray *particles, const ParticleClass *class,
-	const Vec2i fullPos, const int z)
+static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data);
+int ParticleAdd(CArray *particles, const AddParticle add)
 {
 	// Find an empty slot in list
 	Particle *p = NULL;
@@ -139,19 +202,21 @@ int ParticleAdd(
 		p = CArrayGet(particles, i);
 	}
 	memset(p, 0, sizeof *p);
-	p->Class = class;
-	p->Pos = fullPos;
-	p->Z = z;
+	p->Class = add.Class;
+	p->Pos = add.FullPos;
+	p->Z = add.Z;
+	p->Frame = add.Frame;
 	// TODO: speed and velocity
 	/*p->Vel = Vec2iFull2Real(Vec2iScale(
 		obj->vel, RAND_INT(b->SpeedLow, b->SpeedHigh)));*/
-	p->Range = RAND_INT(class->RangeLow, class->RangeHigh);
+	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
 	p->tileItem.x = p->tileItem.y = -1;
 	p->tileItem.kind = KIND_PARTICLE;
 	p->tileItem.id = i;
-	p->tileItem.getPicFunc = GetPic;
-	MapMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(fullPos));
+	p->tileItem.drawFunc = DrawParticle;
+	p->tileItem.drawData.MobObjId = i;
+	MapMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(add.FullPos));
 	return i;
 }
 void ParticleDestroy(CArray *particles, const int id)
@@ -162,11 +227,21 @@ void ParticleDestroy(CArray *particles, const int id)
 	p->isInUse = false;
 }
 
-static const Pic *GetPic(int id, Vec2i *offset)
+static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 {
-	const Particle *p = CArrayGet(&gParticles, id);
+	const Particle *p = CArrayGet(&gParticles, data->MobObjId);
 	CASSERT(p->isInUse, "Cannot draw non-existent particle");
-	offset->x = -p->Class->Pic->size.x / 2;
-	offset->y = -p->Class->Pic->size.y / 2 - p->Z;
-	return p->Class->Pic;
+	const Pic *pic;
+	if (p->Class->Sprites)
+	{
+		pic = CArrayGet(&p->Class->Sprites->pics, p->Frame);
+	}
+	else
+	{
+		pic = p->Class->Pic;
+	}
+	CASSERT(pic != NULL, "particle picture not found");
+	Vec2i picPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+	picPos.y -= p->Z;
+	BlitMasked(&gGraphicsDevice, pic, picPos, p->Class->Mask, true);
 }

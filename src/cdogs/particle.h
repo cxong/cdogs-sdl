@@ -35,17 +35,20 @@ typedef struct
 {
 	char *Name;
 	const Pic *Pic;
+	const NamedSprites *Sprites;
 	int SpeedLow;
 	int SpeedHigh;
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
+	color_t Mask;
 } ParticleClass;
 extern CArray gParticleClasses;	// of ParticleClass
 
 typedef struct
 {
 	const ParticleClass *Class;
+	int Frame;	// for sprite animations / multi-frame sprites
 	// Coordinates are in full
 	Vec2i Pos;
 	int Z;
@@ -58,7 +61,15 @@ typedef struct
 } Particle;
 extern CArray gParticles;	// of Particle
 
-void ParticleClassesInit(CArray *classes);
+typedef struct
+{
+	const ParticleClass *Class;
+	Vec2i FullPos;
+	int Z;
+	int Frame;
+} AddParticle;
+
+void ParticleClassesInit(CArray *classes, const char *filename);
 void ParticleClassesTerminate(CArray *classes);
 const ParticleClass *ParticleClassGet(const CArray *classes, const char *name);
 
@@ -66,9 +77,7 @@ void ParticlesInit(CArray *particles);
 void ParticlesTerminate(CArray *particles);
 void ParticlesUpdate(CArray *particles, const int ticks);
 
-int ParticleAdd(
-	CArray *particles, const ParticleClass *class,
-	const Vec2i fullPos, const int z);
+int ParticleAdd(CArray *particles, const AddParticle add);
 void ParticleDestroy(CArray *particles, const int id);
 
 #endif

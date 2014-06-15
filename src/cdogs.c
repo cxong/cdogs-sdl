@@ -1386,7 +1386,8 @@ int main(int argc, char *argv[])
 		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
 
-		ParticleClassesInit(&gParticleClasses);
+		ParticleClassesInit(
+			&gParticleClasses, GetDataFilePath("particles.json"));
 		BulletInitialize();
 		WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
 		CampaignInit(&gCampaign);

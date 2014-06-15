@@ -118,20 +118,7 @@ static void HandleGameEvent(
 				e->u.AddBullet.Flags, e->u.AddBullet.PlayerIndex);
 			break;
 		case GAME_EVENT_ADD_PARTICLE:
-			ParticleAdd(
-				&gParticles,
-				e->u.AddParticle.Class,
-				e->u.AddParticle.FullPos,
-				e->u.AddParticle.Z);
-			break;
-		case GAME_EVENT_ADD_MUZZLE_FLASH:
-			AddMuzzleFlash(
-				e->u.AddMuzzleFlash.FullPos,
-				e->u.AddMuzzleFlash.MuzzleHeight,
-				e->u.AddMuzzleFlash.Sprites,
-				e->u.AddMuzzleFlash.Direction,
-				e->u.AddMuzzleFlash.Color,
-				e->u.AddMuzzleFlash.Duration);
+			ParticleAdd(&gParticles, e->u.AddParticle);
 			break;
 		case GAME_EVENT_ADD_FIREBALL:
 			AddFireball(e->u.AddFireball);
