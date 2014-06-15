@@ -187,7 +187,7 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 		Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy)), data->u.GrenadeColor, 1);
 }
 
-void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data)
+static void DrawGasCloud(const Vec2i pos, const TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
@@ -835,7 +835,7 @@ void BulletInitialize(void)
 
 	b = &gBulletClasses[BULLET_GAS];
 	b->Name = "gas";
-	b->DrawFunc = (TileItemDrawFunc)DrawGasCloud;
+	b->DrawFunc = DrawGasCloud;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = b->RangeHigh = 35;

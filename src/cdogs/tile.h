@@ -139,7 +139,7 @@ typedef struct
 		} MuzzleFlash;
 	} u;
 } TileItemDrawFuncData;
-typedef void (*TileItemDrawFunc) (Vec2i, TileItemDrawFuncData *);
+typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
 	int x, y;

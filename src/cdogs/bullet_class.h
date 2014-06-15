@@ -157,6 +157,5 @@ void BulletAdd(
 	const int flags, const int playerIndex);
 
 bool UpdateBullet(struct MobileObject *obj, const int ticks);
-void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif
