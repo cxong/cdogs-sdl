@@ -264,7 +264,7 @@ static void SetBulletProps(
 {
 	const BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = b;
-	obj->updateFunc = b->UpdateFunc;
+	obj->updateFunc = UpdateBullet;
 	obj->tileItem.getPicFunc = b->GetPicFunc;
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
@@ -674,7 +674,6 @@ void BulletInitialize(void)
 	{
 		b = &gBulletClasses[i];
 		b->Type = (BulletType)i;
-		b->UpdateFunc = UpdateBullet;
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
 		memset(&b->DrawData, 0, sizeof b->DrawData);

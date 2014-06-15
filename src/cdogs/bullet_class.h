@@ -107,7 +107,6 @@ typedef struct
 {
 	BulletType Type;
 	const char *Name;
-	BulletUpdateFunc UpdateFunc;
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
@@ -157,7 +156,7 @@ void BulletAdd(
 	const double angle, const direction_e d,
 	const int flags, const int playerIndex);
 
-int UpdateMolotovFlame(struct MobileObject *obj, int ticks);
+bool UpdateBullet(struct MobileObject *obj, const int ticks);
 void DrawGasCloud(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif

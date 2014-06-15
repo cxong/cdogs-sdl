@@ -489,7 +489,7 @@ void AddFireball(const AddFireballEvent e)
 		GetFullVectorsForRadians(e.Angle),
 		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
 	obj->dz = e.DZ;
-	obj->updateFunc = e.Class->UpdateFunc;
+	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = e.Class->DrawFunc;
 	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
 	switch (e.Class->Special)
