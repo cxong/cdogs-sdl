@@ -286,8 +286,8 @@ void DrawBufferSortDisplayList(DrawBuffer *buffer)
 }
 static int CompareY(const void *v1, const void *v2)
 {
-	const TTileItem **t1 = v1;
-	const TTileItem **t2 = v2;
+	const TTileItem * const *t1 = v1;
+	const TTileItem * const *t2 = v2;
 	if ((*t1)->y < (*t2)->y)
 	{
 		return -1;

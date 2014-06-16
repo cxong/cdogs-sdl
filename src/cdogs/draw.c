@@ -213,8 +213,6 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 	}
 }
 
-static void AddItemToDisplayList(TTileItem * t, TTileItem **list);
-
 static void DrawDebris(DrawBuffer *b, Vec2i offset)
 {
 	Tile *tile = &b->tiles[0][0];
@@ -259,6 +257,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 	}
 }
 
+static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
 	Vec2i pos;
@@ -305,87 +304,90 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		for (int i = 0; i < (int)b->displaylist.size; i++)
 		{
 			TTileItem **tp = CArrayGet(&b->displaylist, i);
-			TTileItem *t = *tp;
-			Vec2i picPos = Vec2iNew(
-				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
-			if (t->getPicFunc)
+			DrawThing(b, *tp, offset);
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
+{
+	const Vec2i picPos = Vec2iNew(
+		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+	if (t->getPicFunc)
+	{
+		Vec2i picOffset;
+		const Pic *pic = t->getPicFunc(t->id, &picOffset);
+		Blit(&gGraphicsDevice, pic, Vec2iAdd(picPos, picOffset));
+	}
+	else if (t->getActorPicsFunc)
+	{
+		ActorPics pics = t->getActorPicsFunc(t->id);
+		if (pics.IsDead)
+		{
+			if (pics.IsDying)
 			{
-				Vec2i picOffset;
-				const Pic *pic = t->getPicFunc(t->id, &picOffset);
-				Blit(&gGraphicsDevice, pic, Vec2iAdd(picPos, picOffset));
-			}
-			else if (t->getActorPicsFunc)
-			{
-				ActorPics pics = t->getActorPicsFunc(t->id);
-				if (pics.IsDead)
+				int pic = pics.OldPics[0];
+				if (pic == 0)
 				{
-					if (pics.IsDying)
-					{
-						int pic = pics.OldPics[0];
-						if (pic == 0)
-						{
-							continue;
-						}
-						if (pics.IsTransparent)
-						{
-							DrawBTPic(
-								&gGraphicsDevice,
-								PicManagerGetFromOld(&gPicManager, pic),
-								Vec2iAdd(picPos, pics.Pics[0].offset),
-								pics.Tint);
-						}
-						else
-						{
-							DrawTTPic(
-								picPos.x + pics.Pics[0].offset.x,
-								picPos.y + pics.Pics[0].offset.y,
-								PicManagerGetOldPic(&gPicManager, pic),
-								pics.Table);
-						}
-					}
+					return;
 				}
-				else if (pics.IsTransparent)
+				if (pics.IsTransparent)
 				{
-					for (int i = 0; i < 3; i++)
-					{
-						Pic *oldPic = PicManagerGetFromOld(
-							&gPicManager, pics.OldPics[i]);
-						if (oldPic == NULL)
-						{
-							continue;
-						}
-						DrawBTPic(
-							&gGraphicsDevice,
-							oldPic,
-							Vec2iAdd(picPos, pics.Pics[i].offset),
-							pics.Tint);
-					}
+					DrawBTPic(
+						&gGraphicsDevice,
+						PicManagerGetFromOld(&gPicManager, pic),
+						Vec2iAdd(picPos, pics.Pics[0].offset),
+						pics.Tint);
 				}
 				else
 				{
-					DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
-					for (int i = 0; i < 3; i++)
-					{
-						PicPaletted *oldPic = PicManagerGetOldPic(
-							&gPicManager, pics.OldPics[i]);
-						if (oldPic == NULL)
-						{
-							continue;
-						}
-						BlitOld(
-							picPos.x + pics.Pics[i].offset.x,
-							picPos.y + pics.Pics[i].offset.y,
-							oldPic,
-							pics.Table, BLIT_TRANSPARENT);
-					}
+					DrawTTPic(
+						picPos.x + pics.Pics[0].offset.x,
+						picPos.y + pics.Pics[0].offset.y,
+						PicManagerGetOldPic(&gPicManager, pic),
+						pics.Table);
 				}
 			}
-			else
+		}
+		else if (pics.IsTransparent)
+		{
+			for (int i = 0; i < 3; i++)
 			{
-				(*(t->drawFunc))(picPos, &t->drawData);
+				Pic *oldPic = PicManagerGetFromOld(
+					&gPicManager, pics.OldPics[i]);
+				if (oldPic == NULL)
+				{
+					return;
+				}
+				DrawBTPic(
+					&gGraphicsDevice,
+					oldPic,
+					Vec2iAdd(picPos, pics.Pics[i].offset),
+					pics.Tint);
 			}
 		}
-		tile += X_TILES - b->Size.x;
+		else
+		{
+			DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
+			for (int i = 0; i < 3; i++)
+			{
+				PicPaletted *oldPic = PicManagerGetOldPic(
+					&gPicManager, pics.OldPics[i]);
+				if (oldPic == NULL)
+				{
+					return;
+				}
+				BlitOld(
+					picPos.x + pics.Pics[i].offset.x,
+					picPos.y + pics.Pics[i].offset.y,
+					oldPic,
+					pics.Table, BLIT_TRANSPARENT);
+			}
+		}
+	}
+	else
+	{
+		(*(t->drawFunc))(picPos, &t->drawData);
 	}
 }
 
