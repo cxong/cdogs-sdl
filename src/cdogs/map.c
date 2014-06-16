@@ -119,17 +119,11 @@ Tile *MapGetTile(Map *map, Vec2i pos)
 	return CArrayGet(&map->Tiles, pos.y * map->Size.x + pos.x);
 }
 
-int MapIsTileIn(Map *map, Vec2i pos)
+bool MapIsTileIn(const Map *map, const Vec2i pos)
 {
-	UNUSED(map);
 	// Check that the tile pos is within the interior of the map
-	// Note that the map always has a 1-wide perimeter
-	if (pos.x <= 0 || pos.y <= 0 ||
-		pos.x >= map->Size.x - 1 || pos.y >= map->Size.y - 1)
-	{
-		return 0;
-	}
-	return 1;
+	return !(pos.x < 0 || pos.y < 0 ||
+		pos.x > map->Size.x - 1 || pos.y > map->Size.y - 1);
 }
 
 bool MapIsTileInExit(Map *map, TTileItem *tile)
@@ -356,7 +350,7 @@ Vec2i MapGetExitPos(Map *m)
 static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
 {
 	int count = 0;
-	if (MapIsTileIn(map, v))
+	if (v.x > 0 && v.y > 0 && v.x < map->Size.x - 1 && v.y < map->Size.y - 1)
 	{
 		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y))))
 		{
@@ -382,7 +376,7 @@ static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
 static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
 {
 	int count = MapGetNumWallsAdjacentTile(map, v);
-	if (MapIsTileIn(map, v))
+	if (v.x > 0 && v.y > 0 && v.x < map->Size.x - 1 && v.y < map->Size.y - 1)
 	{
 		// Having checked the adjacencies, check the diagonals
 		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y - 1))))

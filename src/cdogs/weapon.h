@@ -114,6 +114,7 @@ typedef struct
 	} Spread;
 	int MuzzleHeight;
 	const ParticleClass *MuzzleFlash;
+	bool HasBrass;
 	bool CanShoot;
 } GunDescription;
 

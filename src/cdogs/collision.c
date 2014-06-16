@@ -146,19 +146,19 @@ bool CollisionIsOnSameTeam(
 TTileItem *GetItemOnTileInCollision(
 	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight)
 {
-	Vec2i tv = Vec2iToTile(pos);
+	const Vec2i tv = Vec2iToTile(pos);
 	Vec2i dv;
-	if (!MapIsTileIn(&gMap, tv))
-	{
-		return NULL;
-	}
-
 	// Check collisions with all other items on this tile, in all 8 directions
 	for (dv.y = -1; dv.y <= 1; dv.y++)
 	{
 		for (dv.x = -1; dv.x <= 1; dv.x++)
 		{
-			CArray *tileThings = &MapGetTile(&gMap, Vec2iAdd(tv, dv))->things;
+			const Vec2i dtv = Vec2iAdd(tv, dv);
+			if (!MapIsTileIn(&gMap, dtv))
+			{
+				continue;
+			}
+			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));

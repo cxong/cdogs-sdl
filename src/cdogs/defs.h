@@ -143,7 +143,7 @@ extern double dir2radians[8];
 #define CmdToDirection(c)   cmd2dir[(c)&15]
 #define DirectionToCmd(d)   dir2cmd[(d)&7]
 
-Vec2i GetVectorsForRadians(double radians);
+void GetVectorsForRadians(const double radians, double *x, double *y);
 Vec2i GetFullVectorsForRadians(double radians);
 double Vec2iToRadians(const Vec2i v);
 direction_e RadiansToDirection(const double r);

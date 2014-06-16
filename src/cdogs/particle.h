@@ -36,12 +36,11 @@ typedef struct
 	char *Name;
 	const Pic *Pic;
 	const NamedSprites *Sprites;
-	int SpeedLow;
-	int SpeedHigh;
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
 	color_t Mask;
+	bool Falling;
 } ParticleClass;
 extern CArray gParticleClasses;	// of ParticleClass
 
@@ -66,6 +65,8 @@ typedef struct
 	const ParticleClass *Class;
 	Vec2i FullPos;
 	int Z;
+	Vec2i Vel;
+	int DZ;
 	int Frame;
 } AddParticle;
 

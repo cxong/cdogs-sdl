@@ -15,6 +15,7 @@
 	"SpreadWidth": 0,
 	"MuzzleHeight": 10,
 	"MuzzleFlashParticle": "muzzle_flash_default",
+	"HasBrass": false,
 	"CanShoot": true
   },
   "Guns": [
@@ -36,7 +37,8 @@
 	  "Lock": 6,
 	  "Sound": "mg",
 	  "Recoil": 0.17,
-	  "MuzzleFlashParticle": "muzzle_flash_mg"
+	  "MuzzleFlashParticle": "muzzle_flash_mg",
+	  "HasBrass": true
     },
 	{
 	  "Index": 2,
@@ -68,7 +70,8 @@
 	  "ReloadSound": "shotgun_r",
 	  "SpreadCount": 5,
 	  "SpreadWidth": 0.2,
-	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
+	  "MuzzleFlashParticle": "muzzle_flash_shotgun",
+	  "HasBrass": true
 	},
 	{
 	  "Index": 5,

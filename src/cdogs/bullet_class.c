@@ -539,11 +539,11 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		if (obj->bulletClass->Spark != NULL)
 		{
 			GameEvent e;
+			memset(&e, 0, sizeof e);
 			e.Type = GAME_EVENT_ADD_PARTICLE;
 			e.u.AddParticle.Class = obj->bulletClass->Spark;
 			e.u.AddParticle.FullPos = pos;
 			e.u.AddParticle.Z = obj->z;
-			e.u.AddParticle.Frame = 0;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		if (hitWall || !obj->bulletClass->Persists)
@@ -1089,8 +1089,9 @@ void AddBullet(
 {
 	if (!Vec2iEqual(gBulletClasses[type].Size, Vec2iZero()))
 	{
-		const Vec2i vel = GetVectorsForRadians(radians);
-		pos = Vec2iAdd(pos, Vec2iNew(vel.x * 4, vel.y * 7));
+		double x, y;
+		GetVectorsForRadians(radians, &x, &y);
+		pos = Vec2iAdd(pos, Vec2iNew((int)round(x * 4), (int)round(y * 7)));
 	}
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
 	obj->vel = GetFullVectorsForRadians(radians);

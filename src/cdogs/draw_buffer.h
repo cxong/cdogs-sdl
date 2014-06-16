@@ -60,6 +60,7 @@ typedef struct
 	Vec2i OrigSize;
 	Vec2i Size;	// size in tiles
 	Tile **tiles;
+	CArray displaylist;	// of TTileItem *, to determine draw order
 } DrawBuffer;
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g);
@@ -68,5 +69,6 @@ void DrawBufferTerminate(DrawBuffer *b);
 void DrawBufferSetFromMap(
 	DrawBuffer *buffer, Map *map, Vec2i origin, int width);
 void DrawBufferLOS(DrawBuffer *buffer, Vec2i center);
+void DrawBufferSortDisplayList(DrawBuffer *buffer);
 
 #endif

@@ -49,6 +49,7 @@
 #include "weapon.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include <json/json.h>
 
@@ -229,6 +230,8 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
+	LoadBool(&g->HasBrass, node, "HasBrass");
+
 	LoadBool(&g->CanShoot, node, "CanShoot");
 }
 void WeaponTerminate(CArray *descs)
@@ -358,6 +361,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	
 	assert(WeaponCanFire(w));
+	GameEvent e;
 	for (int i = 0; i < spreadCount; i++)
 	{
 		double spreadAngle = spreadStartAngle + i * spreadWidth;
@@ -369,7 +373,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 				w->Gun->Recoil / 2;
 		}
 		double finalAngle = radians + spreadAngle + recoil;
-		GameEvent e;
+		memset(&e, 0, sizeof e);
 		e.Type = GAME_EVENT_ADD_BULLET;
 		e.u.AddBullet.Bullet = w->Gun->Bullet;
 		e.u.AddBullet.MuzzlePos = muzzlePosition;
@@ -381,13 +385,33 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		GameEventsEnqueue(&gGameEvents, e);
 		if (GunHasMuzzle(w->Gun))
 		{
+			memset(&e, 0, sizeof e);
 			e.Type = GAME_EVENT_ADD_PARTICLE;
 			e.u.AddParticle.Class = w->Gun->MuzzleFlash;
 			e.u.AddParticle.FullPos = muzzlePosition;
-			e.u.AddParticle.Z = w->Gun->MuzzleHeight;
+			e.u.AddParticle.Z = w->Gun->MuzzleHeight * 16;
 			e.u.AddParticle.Frame = (int)d;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
+	}
+
+	if (w->Gun->HasBrass)
+	{
+		memset(&e, 0, sizeof e);
+		e.Type = GAME_EVENT_ADD_PARTICLE;
+		e.u.AddParticle.Class = ParticleClassGet(&gParticleClasses, "brass");
+		double x, y;
+		GetVectorsForRadians(radians, &x, &y);
+		Vec2i ejectionPortOffset = Vec2iReal2Full(Vec2iScale(Vec2iNew(
+			(int)round(x), (int)round(y)), 7));
+		e.u.AddParticle.FullPos = Vec2iMinus(muzzlePosition, ejectionPortOffset);
+		e.u.AddParticle.Z = w->Gun->MuzzleHeight * 16;
+		e.u.AddParticle.Vel = Vec2iScaleDiv(
+			GetFullVectorsForRadians(radians + PI / 2), 3);
+		e.u.AddParticle.Vel.x += (rand() % 128) - 64;
+		e.u.AddParticle.Vel.y += (rand() % 128) - 64;
+		e.u.AddParticle.DZ = (rand() % 6) + 6;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 
 	w->lock = w->Gun->Lock;

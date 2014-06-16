@@ -64,12 +64,15 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
 	b->g = g;
+	CArrayInit(&b->displaylist, sizeof(TTileItem *));
+	CArrayReserve(&b->displaylist, 32);
 	debug(D_MAX, "Initialised draw buffer %dx%d\n", size.x, size.y);
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
 	CFREE(b->tiles[0]);
 	CFREE(b->tiles);
+	CArrayTerminate(&b->displaylist);
 }
 
 void DrawBufferSetFromMap(
@@ -270,4 +273,28 @@ void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 			SetObstructionVisible(buffer, end, tile);
 		}
 	}
+}
+
+static int CompareY(const void *v1, const void *v2);
+void DrawBufferSortDisplayList(DrawBuffer *buffer)
+{
+	qsort(
+		buffer->displaylist.data,
+		buffer->displaylist.size,
+		buffer->displaylist.elemSize,
+		CompareY);
+}
+static int CompareY(const void *v1, const void *v2)
+{
+	const TTileItem **t1 = v1;
+	const TTileItem **t2 = v2;
+	if ((*t1)->y < (*t2)->y)
+	{
+		return -1;
+	}
+	else if ((*t1)->y >(*t2)->y)
+	{
+		return 1;
+	}
+	return 0;
 }

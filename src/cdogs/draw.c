@@ -220,7 +220,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 	Tile *tile = &b->tiles[0][0];
 	for (int y = 0; y < Y_TILES; y++)
 	{
-		TTileItem *displayList = NULL;
+		CArrayClear(&b->displaylist);
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
 			if (tile->flags & MAPTILE_OUT_OF_SIGHT)
@@ -233,12 +233,15 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 					ThingIdGetTileItem(CArrayGet(&tile->things, i));
 				if (ti->flags & TILEITEM_IS_WRECK)
 				{
-					AddItemToDisplayList(ti, &displayList);
+					CArrayPushBack(&b->displaylist, &ti);
 				}
 			}
 		}
-		for (TTileItem *t = displayList; t; t = t->nextToDisplay)
+		DrawBufferSortDisplayList(b);
+		for (int i = 0; i < (int)b->displaylist.size; i++)
 		{
+			TTileItem **tp = CArrayGet(&b->displaylist, i);
+			TTileItem *t = *tp;
 			Vec2i pos = Vec2iNew(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
@@ -263,7 +266,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 	pos.y = b->dy + cWallOffset.dy + offset.y;
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
-		TTileItem *displayList = NULL;
+		CArrayClear(&b->displaylist);
 		pos.x = b->dx + cWallOffset.dx + offset.x;
 		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
@@ -293,13 +296,16 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 						ThingIdGetTileItem(CArrayGet(&tile->things, i));
 					if (!(ti->flags & TILEITEM_IS_WRECK))
 					{
-						AddItemToDisplayList(ti, &displayList);
+						CArrayPushBack(&b->displaylist, &ti);
 					}
 				}
 			}
 		}
-		for (TTileItem *t = displayList; t; t = t->nextToDisplay)
+		DrawBufferSortDisplayList(b);
+		for (int i = 0; i < (int)b->displaylist.size; i++)
 		{
+			TTileItem **tp = CArrayGet(&b->displaylist, i);
+			TTileItem *t = *tp;
 			Vec2i picPos = Vec2iNew(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->getPicFunc)
@@ -502,31 +508,6 @@ static void DrawAIChatter(const DrawBuffer *b, const Vec2i offset)
 			}
 		}
 		tile += X_TILES - b->Size.x;
-	}
-}
-
-// Add to list to sort by Y and draw in that order
-static void AddItemToDisplayList(TTileItem * t, TTileItem **list)
-{
-	TTileItem *l;
-	TTileItem *lPrev;
-	t->nextToDisplay = NULL;
-	for (lPrev = NULL, l = *list; l; lPrev = l, l = l->nextToDisplay)
-	{
-		// draw in Y order
-		if (l->y >= t->y)
-		{
-			break;
-		}
-	}
-	t->nextToDisplay = l;
-	if (lPrev)
-	{
-		lPrev->nextToDisplay = t;
-	}
-	else
-	{
-		*list = t;
 	}
 }
 

@@ -106,7 +106,7 @@ extern Map gMap;
 unsigned short GetAccessMask(int k);
 
 Tile *MapGetTile(Map *map, Vec2i pos);
-int MapIsTileIn(Map *map, Vec2i pos);
+bool MapIsTileIn(const Map *map, const Vec2i pos);
 bool MapIsTileInExit(Map *map, TTileItem *t);
 
 int MapHasLockedRooms(Map *map);

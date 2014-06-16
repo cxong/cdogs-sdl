@@ -99,7 +99,13 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 		c->Sprites = PicManagerGetSprites(&gPicManager, tmp);
 		CFREE(tmp);
 	}
-	if (json_find_first_label(node, "OldPic"))
+	if (json_find_first_label(node, "Pic"))
+	{
+		tmp = GetString(node, "Pic");
+		c->Pic = PicManagerGetPic(&gPicManager, tmp);
+		CFREE(tmp);
+	}
+	if (c->Pic == NULL && json_find_first_label(node, "OldPic"))
 	{
 		int oldPic;
 		LoadInt(&oldPic, node, "OldPic");
@@ -116,6 +122,17 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 		LoadInt(&c->RangeLow, node, "Range");
 		c->RangeHigh = c->RangeLow;
 	}
+	if (json_find_first_label(node, "RangeLow"))
+	{
+		LoadInt(&c->RangeLow, node, "RangeLow");
+	}
+	if (json_find_first_label(node, "RangeHigh"))
+	{
+		LoadInt(&c->RangeHigh, node, "RangeHigh");
+	}
+	c->RangeLow = MIN(c->RangeLow, c->RangeHigh);
+	c->RangeHigh = MAX(c->RangeLow, c->RangeHigh);
+	LoadBool(&c->Falling, node, "Falling");
 }
 
 const ParticleClass *ParticleClassGet(const CArray *classes, const char *name)
@@ -174,6 +191,38 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
 	p->Count += ticks;
+	for (int i = 0; i < ticks; i++)
+	{
+		p->Pos = Vec2iAdd(p->Pos, p->Vel);
+		p->Z += p->DZ;
+		if (p->Class->Falling)
+		{
+			if (p->Z <= 0)
+			{
+				p->Z = 0;
+				p->DZ = -p->DZ / 2;
+				p->Vel = Vec2iScaleDiv(p->Vel, 2);
+			}
+			else
+			{
+				p->DZ--;
+			}
+			if (p->DZ == 0 && p->Z == 0)
+			{
+				p->Vel = Vec2iZero();
+			}
+		}
+	}
+	const Vec2i realPos = Vec2iFull2Real(p->Pos);
+	if (!MapIsTileIn(&gMap, Vec2iToTile(realPos)))
+	{
+		// Out of map; destroy
+		p->Count = p->Range;
+	}
+	else
+	{
+		MapMoveTileItem(&gMap, &p->tileItem, realPos);
+	}
 	return p->Count <= p->Range;
 }
 
@@ -206,9 +255,8 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->Pos = add.FullPos;
 	p->Z = add.Z;
 	p->Frame = add.Frame;
-	// TODO: speed and velocity
-	/*p->Vel = Vec2iFull2Real(Vec2iScale(
-		obj->vel, RAND_INT(b->SpeedLow, b->SpeedHigh)));*/
+	p->Vel = add.Vel;
+	p->DZ = add.DZ;
 	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
 	p->tileItem.x = p->tileItem.y = -1;
@@ -242,6 +290,6 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 	}
 	CASSERT(pic != NULL, "particle picture not found");
 	Vec2i picPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
-	picPos.y -= p->Z;
+	picPos.y -= p->Z / 16;
 	BlitMasked(&gGraphicsDevice, pic, picPos, p->Class->Mask, true);
 }
