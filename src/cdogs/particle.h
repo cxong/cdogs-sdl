@@ -41,6 +41,7 @@ typedef struct
 	int RangeHigh;
 	color_t Mask;
 	bool Falling;
+	bool HitsWalls;
 } ParticleClass;
 extern CArray gParticleClasses;	// of ParticleClass
 

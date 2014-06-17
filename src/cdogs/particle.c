@@ -27,6 +27,7 @@
 */
 #include "particle.h"
 
+#include "collision.h"
 #include "game_events.h"
 #include "json_utils.h"
 
@@ -133,6 +134,7 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	c->RangeLow = MIN(c->RangeLow, c->RangeHigh);
 	c->RangeHigh = MAX(c->RangeLow, c->RangeHigh);
 	LoadBool(&c->Falling, node, "Falling");
+	LoadBool(&c->HitsWalls, node, "HitsWalls");
 }
 
 const ParticleClass *ParticleClassGet(const CArray *classes, const char *name)
@@ -195,6 +197,7 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
 	p->Count += ticks;
+	const Vec2i startPos = p->Pos;
 	for (int i = 0; i < ticks; i++)
 	{
 		p->Pos = Vec2iAdd(p->Pos, p->Vel);
@@ -216,6 +219,10 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 				p->Spin = 0;
 			}
 		}
+	}
+	if (p->Class->HitsWalls)
+	{
+		p->Pos = GetWallBounceFullPos(startPos, p->Pos, &p->Vel);
 	}
 	const Vec2i realPos = Vec2iFull2Real(p->Pos);
 	if (!MapIsTileIn(&gMap, Vec2iToTile(realPos)))

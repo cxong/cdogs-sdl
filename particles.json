@@ -69,14 +69,16 @@
       "Sprites": "brass",
       "RangeLow": 10000,
       "RangeHigh": 11000,
-      "Falling": true
+      "Falling": true,
+      "HitsWalls": true
     },
     {
       "Name": "shotshell",
       "Sprites": "shotshell",
       "RangeLow": 10000,
       "RangeHigh": 11000,
-      "Falling": true
+      "Falling": true,
+      "HitsWalls": true
     }
   ]
 }

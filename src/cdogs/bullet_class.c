@@ -436,7 +436,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	const Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
+	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
 	const bool hitItem = HitItem(obj, pos);
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
@@ -554,40 +554,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	if (hitWall)
 	{
 		// Bouncing
-		Vec2i objRealPos = Vec2iFull2Real(objPos);
-		if (!ShootWall(objRealPos.x, realPos.y))
-		{
-			obj->y = pos.y;
-			obj->vel.x = -obj->vel.x;
-		}
-		else if (!ShootWall(realPos.x, objRealPos.y))
-		{
-			obj->x = pos.x;
-			obj->vel.y = -obj->vel.y;
-		}
-		else
-		{
-			obj->vel.x = -obj->vel.x;
-			obj->vel.y = -obj->vel.y;
-			// Keep bouncing the bullet back if it's inside a wall
-			objRealPos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
-			while (ShootWall(objRealPos.x, objRealPos.y) &&
-				objRealPos.x >= 0 &&
-				objRealPos.x < gMap.Size.x * TILE_WIDTH &&
-				objRealPos.y >= 0 &&
-				objRealPos.y < gMap.Size.y * TILE_HEIGHT)
-			{
-				obj->x += obj->vel.x;
-				obj->y += obj->vel.y;
-				objRealPos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
-			}
-		}
+		pos = GetWallBounceFullPos(objPos, pos, &obj->vel);
 	}
-	else
-	{
-		obj->x = pos.x;
-		obj->y = pos.y;
-	}
+	obj->x = pos.x;
+	obj->y = pos.y;
 	MapMoveTileItem(&gMap, &obj->tileItem, realPos);
 
 	if (obj->bulletClass->Erratic)
@@ -605,7 +575,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		// Detonate the mine if there are characters in the tiles around it
 		const Vec2i tv =
-			Vec2iToTile(Vec2iFull2Real(Vec2iNew(obj->x, obj->y)));
+			Vec2iToTile(Vec2iFull2Real(pos));
 		Vec2i dv;
 		for (dv.y = -1; dv.y <= 1; dv.y++)
 		{

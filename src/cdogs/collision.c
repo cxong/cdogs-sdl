@@ -178,3 +178,39 @@ TTileItem *GetItemOnTileInCollision(
 
 	return NULL;
 }
+
+Vec2i GetWallBounceFullPos(
+	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull)
+{
+	CASSERT(velFull != NULL, "need velocity for wall bouncing");
+	Vec2i newReal = Vec2iFull2Real(newFull);
+	if (!ShootWall(newReal.x, newReal.y))
+	{
+		return newFull;
+	}
+	Vec2i startRealPos = Vec2iFull2Real(startFull);
+	Vec2i bounceFull = startFull;
+	if (!ShootWall(startRealPos.x, newReal.y))
+	{
+		bounceFull.y = newFull.y;
+		velFull->x *= -1;
+	}
+	else if (!ShootWall(newReal.x, startRealPos.y))
+	{
+		bounceFull.x = newFull.x;
+		velFull->y *= -1;
+	}
+	else
+	{
+		*velFull = Vec2iScale(*velFull, -1);
+		// Keep bouncing back if it's inside a wall
+		Vec2i bounceReal = newReal;
+		while (ShootWall(bounceReal.x, bounceReal.y) &&
+			MapIsTileIn(&gMap, Vec2iToTile(bounceReal)))
+		{
+			bounceFull = Vec2iAdd(bounceFull, *velFull);
+			bounceReal = Vec2iFull2Real(bounceFull);
+		}
+	}
+	return bounceFull;
+}
