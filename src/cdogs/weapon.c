@@ -422,7 +422,6 @@ static void AddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos)
 {
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
-	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
 	GameEvent e;
 	memset(&e, 0, sizeof e);
 	e.Type = GAME_EVENT_ADD_PARTICLE;
