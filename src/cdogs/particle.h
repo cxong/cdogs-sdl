@@ -47,12 +47,13 @@ extern CArray gParticleClasses;	// of ParticleClass
 typedef struct
 {
 	const ParticleClass *Class;
-	int Frame;	// for sprite animations / multi-frame sprites
 	// Coordinates are in full
 	Vec2i Pos;
 	int Z;
+	double Angle;
 	Vec2i Vel;
 	int DZ;
+	double Spin;
 	int Count;
 	int Range;
 	TTileItem tileItem;
@@ -66,8 +67,9 @@ typedef struct
 	Vec2i FullPos;
 	int Z;
 	Vec2i Vel;
+	double Angle;
 	int DZ;
-	int Frame;
+	double Spin;
 } AddParticle;
 
 void ParticleClassesInit(CArray *classes, const char *filename);

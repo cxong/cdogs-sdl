@@ -172,7 +172,14 @@ direction_e RadiansToDirection(const double r)
 	{
 		radians -= 2 * PI;
 	}
-	return (direction_e)CLAMP_OPPOSITE(
-		floor((radians + PI / 8.0) / (PI / 4.0)),
-		DIRECTION_UP, DIRECTION_UPLEFT);
+	int d = (int)floor((radians + PI / 8.0) / (PI / 4.0)) + DIRECTION_RIGHT;;
+	if (d < DIRECTION_UP)
+	{
+		d += DIRECTION_COUNT;
+	}
+	if (d >= DIRECTION_COUNT)
+	{
+		d -= DIRECTION_COUNT;
+	}
+	return (direction_e)d;
 }

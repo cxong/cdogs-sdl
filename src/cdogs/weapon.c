@@ -390,7 +390,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 			e.u.AddParticle.Class = w->Gun->MuzzleFlash;
 			e.u.AddParticle.FullPos = muzzlePosition;
 			e.u.AddParticle.Z = w->Gun->MuzzleHeight * 16;
-			e.u.AddParticle.Frame = (int)d;
+			e.u.AddParticle.Angle = dir2radians[d];
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
@@ -410,7 +410,9 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 			GetFullVectorsForRadians(radians + PI / 2), 3);
 		e.u.AddParticle.Vel.x += (rand() % 128) - 64;
 		e.u.AddParticle.Vel.y += (rand() % 128) - 64;
+		e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
 		e.u.AddParticle.DZ = (rand() % 6) + 6;
+		e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 

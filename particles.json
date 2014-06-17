@@ -66,9 +66,9 @@
     },
     {
       "Name": "brass",
-      "Pic": "brass",
-      "RangeLow": 1000,
-      "RangeHigh": 1100,
+      "Sprites": "brass",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
       "Falling": true
     }
   ]

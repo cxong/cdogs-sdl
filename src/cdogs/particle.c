@@ -201,7 +201,6 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			{
 				p->Z = 0;
 				p->DZ = -p->DZ / 2;
-				p->Vel = Vec2iScaleDiv(p->Vel, 2);
 			}
 			else
 			{
@@ -210,6 +209,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			if (p->DZ == 0 && p->Z == 0)
 			{
 				p->Vel = Vec2iZero();
+				p->Spin = 0;
 			}
 		}
 	}
@@ -222,6 +222,18 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	else
 	{
 		MapMoveTileItem(&gMap, &p->tileItem, realPos);
+	}
+	if (p->Spin != 0)
+	{
+		p->Angle += p->Spin;
+		if (p->Angle > 2 * PI)
+		{
+			p->Angle -= PI * 2;
+		}
+		if (p->Angle < 0)
+		{
+			p->Angle += PI * 2;
+		}
 	}
 	return p->Count <= p->Range;
 }
@@ -254,9 +266,10 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->Class = add.Class;
 	p->Pos = add.FullPos;
 	p->Z = add.Z;
-	p->Frame = add.Frame;
+	p->Angle = add.Angle;
 	p->Vel = add.Vel;
 	p->DZ = add.DZ;
+	p->Spin = add.Spin;
 	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
 	p->tileItem.x = p->tileItem.y = -1;
@@ -282,7 +295,8 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 	const Pic *pic;
 	if (p->Class->Sprites)
 	{
-		pic = CArrayGet(&p->Class->Sprites->pics, p->Frame);
+		pic = CArrayGet(
+			&p->Class->Sprites->pics, (int)RadiansToDirection(p->Angle));
 	}
 	else
 	{
