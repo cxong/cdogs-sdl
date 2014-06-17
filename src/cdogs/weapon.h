@@ -114,7 +114,7 @@ typedef struct
 	} Spread;
 	int MuzzleHeight;
 	const ParticleClass *MuzzleFlash;
-	bool HasBrass;
+	const ParticleClass *Brass;
 	bool CanShoot;
 } GunDescription;
 
@@ -136,7 +136,8 @@ void WeaponTerminate(CArray *descs);
 Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
-void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition);
+void WeaponUpdate(
+	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player);
 void WeaponHoldFire(Weapon *w);

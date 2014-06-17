@@ -70,6 +70,13 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "Falling": true
+    },
+    {
+      "Name": "shotshell",
+      "Sprites": "shotshell",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "Falling": true
     }
   ]
 }

@@ -230,7 +230,12 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
-	LoadBool(&g->HasBrass, node, "HasBrass");
+	if (json_find_first_label(node, "Brass"))
+	{
+		tmp = GetString(node, "Brass");
+		g->Brass = ParticleClassGet(&gParticleClasses, tmp);
+		CFREE(tmp);
+	}
 
 	LoadBool(&g->CanShoot, node, "CanShoot");
 }
@@ -272,7 +277,10 @@ const GunDescription *StrGunDescription(const char *s)
 
 void WeaponSetState(Weapon *w, gunstate_e state);
 
-void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
+static void AddBrass(
+	const GunDescription *g, const direction_e d, const Vec2i pos);
+void WeaponUpdate(
+	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d)
 {
 	// Reload sound
 	if (gConfig.Sound.Reloads &&
@@ -284,8 +292,13 @@ void WeaponUpdate(Weapon *w, int ticks, Vec2i tilePosition)
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
 			w->Gun->ReloadSound,
-			tilePosition,
+			Vec2iFull2Real(fullPos),
 			RELOAD_DISTANCE_PLUS);
+		// Brass shells
+		if (w->Gun->Brass)
+		{
+			AddBrass(w->Gun, d, fullPos);
+		}
 	}
 	w->lock -= ticks;
 	if (w->lock < 0)
@@ -361,7 +374,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	
 	assert(WeaponCanFire(w));
-	GameEvent e;
 	for (int i = 0; i < spreadCount; i++)
 	{
 		double spreadAngle = spreadStartAngle + i * spreadWidth;
@@ -373,6 +385,7 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 				w->Gun->Recoil / 2;
 		}
 		double finalAngle = radians + spreadAngle + recoil;
+		GameEvent e;
 		memset(&e, 0, sizeof e);
 		e.Type = GAME_EVENT_ADD_BULLET;
 		e.u.AddBullet.Bullet = w->Gun->Bullet;
@@ -395,29 +408,43 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		}
 	}
 
-	if (w->Gun->HasBrass)
+	// Brass shells
+	// If we have a reload lead, defer the creation of shells until then
+	if (w->Gun->Brass && w->Gun->ReloadLead == 0)
 	{
-		memset(&e, 0, sizeof e);
-		e.Type = GAME_EVENT_ADD_PARTICLE;
-		e.u.AddParticle.Class = ParticleClassGet(&gParticleClasses, "brass");
-		double x, y;
-		GetVectorsForRadians(radians, &x, &y);
-		Vec2i ejectionPortOffset = Vec2iReal2Full(Vec2iScale(Vec2iNew(
-			(int)round(x), (int)round(y)), 7));
-		e.u.AddParticle.FullPos = Vec2iMinus(muzzlePosition, ejectionPortOffset);
-		e.u.AddParticle.Z = w->Gun->MuzzleHeight * 16;
-		e.u.AddParticle.Vel = Vec2iScaleDiv(
-			GetFullVectorsForRadians(radians + PI / 2), 3);
-		e.u.AddParticle.Vel.x += (rand() % 128) - 64;
-		e.u.AddParticle.Vel.y += (rand() % 128) - 64;
-		e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
-		e.u.AddParticle.DZ = (rand() % 6) + 6;
-		e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
-		GameEventsEnqueue(&gGameEvents, e);
+		AddBrass(w->Gun, d, pos);
 	}
 
 	w->lock = w->Gun->Lock;
 	WeaponPlaySound(w, Vec2iFull2Real(pos));
+}
+
+static void AddBrass(
+	const GunDescription *g, const direction_e d, const Vec2i pos)
+{
+	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
+	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
+	GameEvent e;
+	memset(&e, 0, sizeof e);
+	e.Type = GAME_EVENT_ADD_PARTICLE;
+	e.u.AddParticle.Class = g->Brass;
+	double x, y;
+	const double radians = dir2radians[d];
+	GetVectorsForRadians(radians, &x, &y);
+	const Vec2i ejectionPortOffset = Vec2iReal2Full(Vec2iScale(Vec2iNew(
+		(int)round(x), (int)round(y)), 7));
+	const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
+	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
+	e.u.AddParticle.FullPos = Vec2iMinus(muzzlePosition, ejectionPortOffset);
+	e.u.AddParticle.Z = g->MuzzleHeight * 16;
+	e.u.AddParticle.Vel = Vec2iScaleDiv(
+		GetFullVectorsForRadians(radians + PI / 2), 3);
+	e.u.AddParticle.Vel.x += (rand() % 128) - 64;
+	e.u.AddParticle.Vel.y += (rand() % 128) - 64;
+	e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+	e.u.AddParticle.DZ = (rand() % 6) + 6;
+	e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
+	GameEventsEnqueue(&gGameEvents, e);
 }
 
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)

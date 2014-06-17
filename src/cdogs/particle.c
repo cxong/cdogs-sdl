@@ -137,6 +137,10 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 
 const ParticleClass *ParticleClassGet(const CArray *classes, const char *name)
 {
+	if (name == NULL || strlen(name) == 0)
+	{
+		return NULL;
+	}
 	for (int i = 0; i < (int)classes->size; i++)
 	{
 		ParticleClass *c = CArrayGet(classes, i);

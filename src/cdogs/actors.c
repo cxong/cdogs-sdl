@@ -344,10 +344,7 @@ void SetStateForActor(TActor * actor, int state)
 
 void UpdateActorState(TActor * actor, int ticks)
 {
-	WeaponUpdate(
-		&actor->weapon,
-		ticks,
-		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+	WeaponUpdate(&actor->weapon, ticks, actor->Pos, actor->direction);
 
 	if (actor->health > 0)
 	{
