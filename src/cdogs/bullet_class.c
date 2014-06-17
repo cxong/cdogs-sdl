@@ -196,7 +196,7 @@ static void DrawGasCloud(const Vec2i pos, const TileItemDrawFuncData *data)
 		&gGraphicsDevice,
 		PicManagerGetFromOld(&gPicManager, pic->picIndex),
 		Vec2iNew(pos.x + pic->dx, pos.y + pic->dy - obj->z),
-		&data->u.Tint);
+		&obj->bulletClass->Tint);
 }
 
 
@@ -310,25 +310,6 @@ void AddGasExplosion(
 	GameEventsEnqueue(&gGameEvents, sound);
 }
 
-void AddGasCloud(
-	Vec2i pos, int z, double radians, int flags, int player)
-{
-	const BulletClass *b = &gBulletClasses[BULLET_GAS];
-	Vec2i vel = Vec2iFull2Real(Vec2iScale(
-		GetFullVectorsForRadians(radians),
-		RAND_INT(b->SpeedLow, b->SpeedHigh)));
-	if (b->SpeedScale)
-	{
-		vel.y = vel.y * TILE_HEIGHT / TILE_WIDTH;
-	}
-	pos = Vec2iAdd(pos, Vec2iScale(vel, 6));
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	SetBulletProps(obj, z, BULLET_GAS, flags);
-	obj->tileItem.drawData.u.Tint =
-		b->Special == SPECIAL_CONFUSE ? tintPurple : tintPoison;
-	obj->kind = MOBOBJ_FIREBALL;
-	obj->vel = vel;
-}
 static void GrenadeExplode(const TMobileObject *obj)
 {
 	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
@@ -645,6 +626,7 @@ void BulletInitialize(void)
 		b->DrawFunc = NULL;
 		memset(&b->DrawData, 0, sizeof b->DrawData);
 		b->Beam.Sprites = NULL;
+		b->Tint = tintNone;
 		b->SpeedScale = false;
 		b->Friction = Vec2iZero();
 		b->Size = Vec2iZero();
@@ -803,6 +785,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_GAS];
 	b->Name = "gas";
 	b->DrawFunc = DrawGasCloud;
+	b->Tint = tintPoison;
 	b->SpeedLow = b->SpeedHigh = 384;
 	b->Friction = Vec2iNew(4, 3);
 	b->RangeLow = b->RangeHigh = 35;
@@ -959,6 +942,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
 	b->Name = "gas_cloud_poison";
 	b->DrawFunc = DrawGasCloud;
+	b->Tint = tintPoison;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
 	b->Friction = Vec2iNew(4, 3);
@@ -976,6 +960,7 @@ void BulletInitialize(void)
 	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
 	b->Name = "gas_cloud_confuse";
 	b->DrawFunc = DrawGasCloud;
+	b->Tint = tintPurple;
 	b->SpeedLow = 0;
 	b->SpeedHigh = 255;
 	b->Friction = Vec2iNew(4, 3);
@@ -1054,11 +1039,14 @@ void AddGrenade(
 void AddBulletImpl(const AddBullet add)
 {
 	Vec2i pos = add.MuzzlePos;
-	if (!Vec2iEqual(gBulletClasses[add.Bullet].Size, Vec2iZero()))
+	const BulletClass *b = &gBulletClasses[add.Bullet];
+	if (!Vec2iEqual(b->Size, Vec2iZero()))
 	{
+		const int maxSize = MAX(b->Size.x, b->Size.y);
 		double x, y;
 		GetVectorsForRadians(add.Angle, &x, &y);
-		pos = Vec2iAdd(pos, Vec2iNew((int)round(x * 4), (int)round(y * 7)));
+		pos = Vec2iAdd(pos, Vec2iReal2Full(
+			Vec2iNew((int)round(x * maxSize), (int)round(y * maxSize))));
 	}
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
@@ -1074,6 +1062,7 @@ void BulletAdd(const AddBullet add)
 	case BULLET_FLAME:		// fallthrough
 	case BULLET_LASER:		// fallthrough
 	case BULLET_SNIPER:		// fallthrough
+	case BULLET_GAS:		// fallthrough
 	case BULLET_BROWN:		// fallthrough
 	case BULLET_PETRIFIER:	// fallthrough
 	case BULLET_PROXMINE:	// fallthrough
@@ -1094,12 +1083,6 @@ void BulletAdd(const AddBullet add)
 		AddGrenade(
 			add.MuzzlePos, add.MuzzleHeight,
 			add.Angle, add.Bullet, add.Flags, add.PlayerIndex);
-		break;
-
-	case BULLET_GAS:
-		AddGasCloud(
-			add.MuzzlePos, add.MuzzleHeight,
-			add.Angle, add.Flags, add.PlayerIndex);
 		break;
 
 	default:

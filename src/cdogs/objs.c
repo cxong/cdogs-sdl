@@ -492,18 +492,6 @@ void AddFireball(const AddFireballEvent e)
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = e.Class->DrawFunc;
 	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
-	switch (e.Class->Special)
-	{
-	case SPECIAL_POISON:
-		obj->tileItem.drawData.u.Tint = tintPoison;
-		break;
-	case SPECIAL_CONFUSE:
-		obj->tileItem.drawData.u.Tint = tintPurple;
-		break;
-	default:
-		// do nothing
-		break;
-	}
 	obj->tileItem.w = e.Class->Size.x;
 	obj->tileItem.h = e.Class->Size.y;
 	obj->kind = MOBOBJ_FIREBALL;

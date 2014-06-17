@@ -111,6 +111,7 @@ typedef struct
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
 	BeamSprites Beam;
+	HSV Tint;
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective

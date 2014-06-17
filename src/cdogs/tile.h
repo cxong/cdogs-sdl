@@ -129,8 +129,6 @@ typedef struct
 			HSV Tint;
 		} Bullet;
 		color_t GrenadeColor;
-		// For gas clouds; what tint to use
-		HSV Tint;
 		struct
 		{
 			const CArray *Sprites;
