@@ -132,29 +132,29 @@ int dir2cmd[8] = {
 
 double dir2radians[8] =
 {
-	PI * 1.5,
-	PI * 1.75,
 	0,
 	PI * 0.25,
 	PI * 0.5,
 	PI * 0.75,
 	PI,
-	PI * 1.25
+	PI * 1.25,
+	PI * 1.5,
+	PI * 1.75,
 };
 
 
 void GetVectorsForRadians(const double radians, double *x, double *y)
 {
-	*x = cos(radians);
-	*y = sin(radians) * TILE_HEIGHT / TILE_WIDTH;
+	*x = sin(radians);
+	*y = -cos(radians) * TILE_HEIGHT / TILE_WIDTH;
 }
 Vec2i GetFullVectorsForRadians(double radians)
 {
 	int scalar = 256;
 	// Scale Y so that they match the tile ratios
 	return Vec2iNew(
-		(int)(cos(radians) * scalar),
-		(int)(sin(radians) * scalar * TILE_HEIGHT / TILE_WIDTH));
+		(int)(sin(radians) * scalar),
+		(int)(-cos(radians) * scalar * TILE_HEIGHT / TILE_WIDTH));
 }
 double Vec2iToRadians(const Vec2i v)
 {
@@ -172,7 +172,7 @@ direction_e RadiansToDirection(const double r)
 	{
 		radians -= 2 * PI;
 	}
-	int d = (int)floor((radians + PI / 8.0) / (PI / 4.0)) + DIRECTION_RIGHT;;
+	int d = (int)floor((radians + PI / 8.0) / (PI / 4.0));
 	if (d < DIRECTION_UP)
 	{
 		d += DIRECTION_COUNT;

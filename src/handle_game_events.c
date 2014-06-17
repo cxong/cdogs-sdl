@@ -111,11 +111,7 @@ static void HandleGameEvent(
 			ParticleDestroy(&gParticles, e->u.ParticleRemoveId);
 			break;
 		case GAME_EVENT_ADD_BULLET:
-			BulletAdd(
-				e->u.AddBullet.Bullet,
-				e->u.AddBullet.MuzzlePos, e->u.AddBullet.MuzzleHeight,
-				e->u.AddBullet.Angle, e->u.AddBullet.Direction,
-				e->u.AddBullet.Flags, e->u.AddBullet.PlayerIndex);
+			BulletAdd(e->u.AddBullet);
 			break;
 		case GAME_EVENT_ADD_PARTICLE:
 			ParticleAdd(&gParticles, e->u.AddParticle);

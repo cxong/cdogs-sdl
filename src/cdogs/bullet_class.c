@@ -243,7 +243,6 @@ static void AddFrag(
 	e.u.AddBullet.Bullet = BULLET_FRAG;
 	e.u.AddBullet.MuzzlePos = fullPos;
 	e.u.AddBullet.MuzzleHeight = 0;
-	e.u.AddBullet.Direction = DIRECTION_UP;	// TODO: accurate direction
 	e.u.AddBullet.Flags = flags;
 	e.u.AddBullet.PlayerIndex = playerIndex;
 	for (int i = 0; i < 16; i++)
@@ -606,7 +605,6 @@ static void AddActiveMine(const TMobileObject *obj)
 	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
 	e.u.AddBullet.MuzzleHeight = obj->z;
 	e.u.AddBullet.Angle = 0;
-	e.u.AddBullet.Direction = DIRECTION_UP;
 	e.u.AddBullet.Flags = obj->flags;
 	e.u.AddBullet.PlayerIndex = obj->player;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -624,7 +622,6 @@ static void AddTriggeredMine(const TMobileObject *obj)
 	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
 	e.u.AddBullet.MuzzleHeight = obj->z;
 	e.u.AddBullet.Angle = 0;
-	e.u.AddBullet.Direction = DIRECTION_UP;
 	e.u.AddBullet.Flags = obj->flags;
 	e.u.AddBullet.PlayerIndex = obj->player;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -1054,39 +1051,29 @@ void AddGrenade(
 	obj->z = 0;
 }
 
-void AddBullet(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
+void AddBulletImpl(const AddBullet add)
 {
-	if (!Vec2iEqual(gBulletClasses[type].Size, Vec2iZero()))
+	Vec2i pos = add.MuzzlePos;
+	if (!Vec2iEqual(gBulletClasses[add.Bullet].Size, Vec2iZero()))
 	{
 		double x, y;
-		GetVectorsForRadians(radians, &x, &y);
+		GetVectorsForRadians(add.Angle, &x, &y);
 		pos = Vec2iAdd(pos, Vec2iNew((int)round(x * 4), (int)round(y * 7)));
 	}
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->vel = GetFullVectorsForRadians(radians);
-	SetBulletProps(obj, z, type, flags);
+	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
+	obj->vel = GetFullVectorsForRadians(add.Angle);
+	SetBulletProps(obj, add.MuzzleHeight, add.Bullet, add.Flags);
 }
 
-void AddBulletDirectional(
-	Vec2i pos, int z, direction_e dir, BulletType type, int flags, int player)
+void BulletAdd(const AddBullet add)
 {
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->vel = GetFullVectorsForRadians(dir2radians[dir]);
-	SetBulletProps(obj, z, type, flags);
-}
-
-void BulletAdd(
-	const BulletType bullet,
-	const Vec2i muzzlePos, const int muzzleHeight,
-	const double angle, const direction_e d,
-	const int flags, const int playerIndex)
-{
-	switch (bullet)
+	switch (add.Bullet)
 	{
 	case BULLET_MG:			// fallthrough
 	case BULLET_SHOTGUN:	// fallthrough
 	case BULLET_FLAME:		// fallthrough
+	case BULLET_LASER:		// fallthrough
+	case BULLET_SNIPER:		// fallthrough
 	case BULLET_BROWN:		// fallthrough
 	case BULLET_PETRIFIER:	// fallthrough
 	case BULLET_PROXMINE:	// fallthrough
@@ -1096,7 +1083,7 @@ void BulletAdd(
 	case BULLET_FRAG:		// fallthrough
 	case BULLET_ACTIVEMINE:	// fallthrough
 	case BULLET_TRIGGEREDMINE:
-		AddBullet(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
+		AddBulletImpl(add);
 		break;
 
 	case BULLET_GRENADE:		// fallthrough
@@ -1104,17 +1091,15 @@ void BulletAdd(
 	case BULLET_MOLOTOV:		// fallthrough
 	case BULLET_GASBOMB:		// fallthrough
 	case BULLET_CONFUSEBOMB:
-		AddGrenade(muzzlePos, muzzleHeight, angle, bullet, flags, playerIndex);
-		break;
-
-	case BULLET_LASER:	// fallthrough
-	case BULLET_SNIPER:
-		AddBulletDirectional(
-			muzzlePos, muzzleHeight, d, bullet, flags, playerIndex);
+		AddGrenade(
+			add.MuzzlePos, add.MuzzleHeight,
+			add.Angle, add.Bullet, add.Flags, add.PlayerIndex);
 		break;
 
 	case BULLET_GAS:
-		AddGasCloud(muzzlePos, muzzleHeight, angle, flags, playerIndex);
+		AddGasCloud(
+			add.MuzzlePos, add.MuzzleHeight,
+			add.Angle, add.Flags, add.PlayerIndex);
 		break;
 
 	default:

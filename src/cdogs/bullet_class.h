@@ -150,11 +150,17 @@ void AddExplosion(Vec2i pos, int flags, int player);
 void AddFireExplosion(Vec2i pos, int flags, int player);
 void AddGasExplosion(
 	Vec2i pos, int flags, const BulletClass *class, int player);
-void BulletAdd(
-	const BulletType bullet,
-	const Vec2i muzzlePos, const int muzzleHeight,
-	const double angle, const direction_e d,
-	const int flags, const int playerIndex);
+
+typedef struct
+{
+	BulletType Bullet;
+	Vec2i MuzzlePos;
+	int MuzzleHeight;
+	double Angle;
+	int Flags;
+	int PlayerIndex;
+} AddBullet;
+void BulletAdd(const AddBullet add);
 
 bool UpdateBullet(struct MobileObject *obj, const int ticks);
 

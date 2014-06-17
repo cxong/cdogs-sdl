@@ -97,16 +97,7 @@ typedef struct
 		int PickupPlayer;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
-		struct
-		{
-			BulletType Bullet;
-			Vec2i MuzzlePos;
-			int MuzzleHeight;
-			double Angle;
-			direction_e Direction;
-			int Flags;
-			int PlayerIndex;
-		} AddBullet;
+		AddBullet AddBullet;
 		AddParticle AddParticle;
 		AddFireballEvent AddFireball;
 		struct

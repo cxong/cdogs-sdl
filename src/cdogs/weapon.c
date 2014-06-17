@@ -392,7 +392,6 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 		e.u.AddBullet.MuzzlePos = muzzlePosition;
 		e.u.AddBullet.MuzzleHeight = w->Gun->MuzzleHeight;
 		e.u.AddBullet.Angle = finalAngle;
-		e.u.AddBullet.Direction = d;
 		e.u.AddBullet.Flags = flags;
 		e.u.AddBullet.PlayerIndex = player;
 		GameEventsEnqueue(&gGameEvents, e);
