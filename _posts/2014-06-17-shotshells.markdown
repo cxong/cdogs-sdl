@@ -6,4 +6,4 @@ categories: progress
 ---
 Working on particles, custom weapons and more. Just a little teaser:
 
-![](shotshell.gif)
+![](https://raw2.github.com/cxong/cdogs-sdl/gh-pages/_posts/shotshell.gif)
