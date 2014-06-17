@@ -375,7 +375,7 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 					&gPicManager, pics.OldPics[i]);
 				if (oldPic == NULL)
 				{
-					return;
+					continue;
 				}
 				BlitOld(
 					picPos.x + pics.Pics[i].offset.x,
