@@ -145,6 +145,10 @@ void WeaponInitialize(CArray *descs, const char *filename)
 		{
 			memcpy(CArrayGet(descs, idx), &g, sizeof g);
 		}
+		else
+		{
+			CArrayPushBack(descs, &g);
+		}
 	}
 	json_t *pseudoGunsNode = json_find_first_label(root, "PseudoGuns")->child;
 	for (json_t *child = pseudoGunsNode->child; child; child = child->next)
