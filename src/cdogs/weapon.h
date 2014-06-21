@@ -100,7 +100,7 @@ typedef struct
 {
 	gunpic_e pic;
 	char *name;
-	BulletType Bullet;
+	const BulletClass *Bullet;
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;

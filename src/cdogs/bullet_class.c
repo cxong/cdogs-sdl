@@ -57,25 +57,26 @@
 #include "objs.h"
 #include "screen_shake.h"
 
-BulletClass gBulletClasses[BULLET_COUNT];
+CArray gBulletClasses;
 
 
-BulletType StrBulletType(const char *s)
+// TODO: use map structure?
+BulletClass *StrBulletClass(const char *s)
 {
 	if (s == NULL || strlen(s) == 0)
 	{
-		return BULLET_NONE;
+		return NULL;
 	}
-	for (int i = 0; i < BULLET_COUNT; i++)
+	for (int i = 0; i < (int)gBulletClasses.size; i++)
 	{
-		if (gBulletClasses[i].Name &&
-			strcmp(gBulletClasses[i].Name, s) == 0)
+		BulletClass *b = CArrayGet(&gBulletClasses, i);
+		if (strcmp(s, b->Name) == 0)
 		{
-			return gBulletClasses[i].Type;
+			return b;
 		}
 	}
-	CASSERT(false, "cannot find bullet type");
-	return BULLET_NONE;
+	CASSERT(false, "cannot parse bullet name");
+	return NULL;
 }
 
 // Draw functions
@@ -224,9 +225,9 @@ static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 
 
 static void SetBulletProps(
-	TMobileObject *obj, int z, const int dz, BulletType type, int flags)
+	TMobileObject *obj, const int z, const int dz, const BulletClass *b,
+	const int flags)
 {
-	const BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = b;
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.getPicFunc = b->GetPicFunc;
@@ -490,398 +491,414 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 }
 
 
-void BulletInitialize(void)
+void BulletInitialize(CArray *bullets)
 {
+	CArrayInit(bullets, sizeof(BulletClass));
+
 	// Defaults
-	BulletClass *b;
-	for (int i = 0; i < BULLET_COUNT; i++)
-	{
-		b = &gBulletClasses[i];
-		memset(b, 0, sizeof *b);
-		b->Type = (BulletType)i;
-		b->GetPicFunc = NULL;
-		b->DrawFunc = NULL;
-		b->Beam.Sprites = NULL;
-		b->Tint = tintNone;
-		b->SpeedScale = false;
-		b->Friction = Vec2iZero();
-		b->Size = Vec2iZero();
-		b->Special = SPECIAL_NONE;
-		b->HurtAlways = false;
-		b->Persists = false;
-		b->Spark = ParticleClassGet(&gParticleClasses, "spark");
-		b->WallHitSound = StrSound("ricochet");
-		b->WallBounces = false;
-		b->HitsObjects = true;
-		b->Falling.GravityFactor = 0;
-		b->Falling.Type = FALLING_TYPE_BOUNCE;
-		b->Falling.DestroyOnDrop = false;
-		b->RandomAnimation = false;
-		b->SeekFactor = -1;
-		b->Erratic = false;
-	}
+	BulletClass defaultB;
+	memset(&defaultB, 0, sizeof defaultB);
+	defaultB.Tint = tintNone;
+	defaultB.Friction = Vec2iZero();
+	defaultB.Size = Vec2iZero();
+	defaultB.Special = SPECIAL_NONE;
+	defaultB.Spark = ParticleClassGet(&gParticleClasses, "spark");
+	defaultB.WallHitSound = StrSound("ricochet");
+	defaultB.HitsObjects = true;
+	defaultB.Falling.Type = FALLING_TYPE_BOUNCE;
+	defaultB.SeekFactor = -1;
 
-	b = &gBulletClasses[BULLET_MG];
-	b->Name = "mg";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 768;
-	b->RangeLow = b->RangeHigh = 60;
-	b->Power = 10;
+	BulletClass b;
 
-	b = &gBulletClasses[BULLET_SHOTGUN];
-	b->Name = "shotgun";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 640;
-	b->RangeLow = b->RangeHigh = 50;
-	b->Power = 15;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "mg");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 768;
+	b.RangeLow = b.RangeHigh = 60;
+	b.Power = 10;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_FLAME];
-	b->Name = "flame";
-	b->GetPicFunc = GetFlame;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 30;
-	b->Power = 12;
-	b->Size = Vec2iNew(5, 5);
-	b->Special = SPECIAL_FLAME;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("hit_fire");
-	b->WallBounces = true;
-	b->RandomAnimation = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "shotgun");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 640;
+	b.RangeLow = b.RangeHigh = 50;
+	b.Power = 15;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_LASER];
-	b->Name = "laser";
-	b->GetPicFunc = GetBeam;
-	b->Beam.Beam = BEAM_PIC_BEAM;
-	b->SpeedLow = b->SpeedHigh = 1024;
-	b->RangeLow = b->RangeHigh = 90;
-	b->Power = 20;
-	b->Size = Vec2iNew(2, 2);
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "flame");
+	b.GetPicFunc = GetFlame;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 30;
+	b.Power = 12;
+	b.Size = Vec2iNew(5, 5);
+	b.Special = SPECIAL_FLAME;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("hit_fire");
+	b.WallBounces = true;
+	b.RandomAnimation = true;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_SNIPER];
-	b->Name = "sniper";
-	b->GetPicFunc = GetBeam;
-	b->Beam.Beam = BEAM_PIC_BRIGHT;
-	b->SpeedLow = b->SpeedHigh = 1024;
-	b->RangeLow = b->RangeHigh = 90;
-	b->Power = 50;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "laser");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Beam = BEAM_PIC_BEAM;
+	b.SpeedLow = b.SpeedHigh = 1024;
+	b.RangeLow = b.RangeHigh = 90;
+	b.Power = 20;
+	b.Size = Vec2iNew(2, 2);
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_FRAG];
-	b->Name = "frag";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 640;
-	b->RangeLow = b->RangeHigh = 50;
-	b->Power = 40;
-	b->HurtAlways = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "sniper");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Beam = BEAM_PIC_BRIGHT;
+	b.SpeedLow = b.SpeedHigh = 1024;
+	b.RangeLow = b.RangeHigh = 90;
+	b.Power = 50;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "frag");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 640;
+	b.RangeLow = b.RangeHigh = 50;
+	b.Power = 40;
+	b.HurtAlways = true;
+	CArrayPushBack(bullets, &b);
 
 
 	// Grenades
 
-	b = &gBulletClasses[BULLET_GRENADE];
-	b->Name = "grenade";
-	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
-	b->DrawData.u.GrenadeColor = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 100;
-	b->Power = 0;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("bounce");
-	b->WallBounces = true;
-	b->HitsObjects = false;
-	b->Falling.GravityFactor = 1;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "grenade");
+	b.DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b.DrawData.u.GrenadeColor = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 100;
+	b.Power = 0;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("bounce");
+	b.WallBounces = true;
+	b.HitsObjects = false;
+	b.Falling.GravityFactor = 1;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
-	b->Name = "shrapnelbomb";
-	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
-	b->DrawData.u.GrenadeColor = colorGray;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 100;
-	b->Power = 0;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("bounce");
-	b->WallBounces = true;
-	b->HitsObjects = false;
-	b->Falling.GravityFactor = 1;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "shrapnelbomb");
+	b.DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b.DrawData.u.GrenadeColor = colorGray;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 100;
+	b.Power = 0;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("bounce");
+	b.WallBounces = true;
+	b.HitsObjects = false;
+	b.Falling.GravityFactor = 1;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_MOLOTOV];
-	b->Name = "molotov";
-	b->DrawFunc = (TileItemDrawFunc)DrawMolotov;
-	b->DrawData.u.GrenadeColor = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 100;
-	b->Power = 0;
-	b->Spark = NULL;
-	b->WallHitSound = NULL;
-	b->HitsObjects = false;
-	b->Falling.GravityFactor = 1;
-	b->Falling.DestroyOnDrop = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "molotov");
+	b.DrawFunc = (TileItemDrawFunc)DrawMolotov;
+	b.DrawData.u.GrenadeColor = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 100;
+	b.Power = 0;
+	b.Spark = NULL;
+	b.WallHitSound = NULL;
+	b.HitsObjects = false;
+	b.Falling.GravityFactor = 1;
+	b.Falling.DestroyOnDrop = true;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_GASBOMB];
-	b->Name = "gasbomb";
-	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
-	b->DrawData.u.GrenadeColor = colorGreen;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 100;
-	b->Power = 0;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("bounce");
-	b->WallBounces = true;
-	b->HitsObjects = false;
-	b->Falling.GravityFactor = 1;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "gasbomb");
+	b.DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b.DrawData.u.GrenadeColor = colorGreen;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 100;
+	b.Power = 0;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("bounce");
+	b.WallBounces = true;
+	b.HitsObjects = false;
+	b.Falling.GravityFactor = 1;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_CONFUSEBOMB];
-	b->Name = "confusebomb";
-	b->DrawFunc = (TileItemDrawFunc)DrawGrenade;
-	b->DrawData.u.GrenadeColor = colorPurple;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->RangeLow = b->RangeHigh = 100;
-	b->Power = 0;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("bounce");
-	b->WallBounces = true;
-	b->HitsObjects = false;
-	b->Falling.GravityFactor = 1;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "confusebomb");
+	b.DrawFunc = (TileItemDrawFunc)DrawGrenade;
+	b.DrawData.u.GrenadeColor = colorPurple;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.RangeLow = b.RangeHigh = 100;
+	b.Power = 0;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("bounce");
+	b.WallBounces = true;
+	b.HitsObjects = false;
+	b.Falling.GravityFactor = 1;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_GAS];
-	b->Name = "gas";
-	b->DrawFunc = DrawGasCloud;
-	b->Tint = tintPoison;
-	b->SpeedLow = b->SpeedHigh = 384;
-	b->Friction = Vec2iNew(4, 3);
-	b->RangeLow = b->RangeHigh = 35;
-	b->Power = 0;
-	b->Size = Vec2iNew(10, 10);
-	b->Special = SPECIAL_POISON;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("hit_gas");
-	b->WallBounces = true;
-	b->RandomAnimation = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "gas");
+	b.DrawFunc = DrawGasCloud;
+	b.Tint = tintPoison;
+	b.SpeedLow = b.SpeedHigh = 384;
+	b.Friction = Vec2iNew(4, 3);
+	b.RangeLow = b.RangeHigh = 35;
+	b.Power = 0;
+	b.Size = Vec2iNew(10, 10);
+	b.Special = SPECIAL_POISON;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("hit_gas");
+	b.WallBounces = true;
+	b.RandomAnimation = true;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_RAPID];
-	b->Name = "pulse";
-	b->GetPicFunc = GetBeam;
-	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "pulse");
-	b->SpeedLow = b->SpeedHigh = 1280;
-	b->RangeLow = b->RangeHigh = 25;
-	b->Power = 6;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "pulse");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "pulse");
+	b.SpeedLow = b.SpeedHigh = 1280;
+	b.RangeLow = b.RangeHigh = 25;
+	b.Power = 6;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_HEATSEEKER];
-	b->Name = "heatseeker";
-	b->GetPicFunc = GetBeam;
-	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "rockets");
-	b->SpeedLow = b->SpeedHigh = 512;
-	b->RangeLow = b->RangeHigh = 60;
-	b->Power = 20;
-	b->Size = Vec2iNew(3, 3);
-	b->SeekFactor = 20;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "heatseeker");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rockets");
+	b.SpeedLow = b.SpeedHigh = 512;
+	b.RangeLow = b.RangeHigh = 60;
+	b.Power = 20;
+	b.Size = Vec2iNew(3, 3);
+	b.SeekFactor = 20;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_BROWN];
-	b->Name = "rapid";
-	b->GetPicFunc = GetBeam;
-	b->Beam.Sprites = PicManagerGetSprites(&gPicManager, "rapid");
-	b->SpeedLow = b->SpeedHigh = 768;
-	b->RangeLow = b->RangeHigh = 45;
-	b->Power = 15;
-	b->Erratic = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "rapid");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rapid");
+	b.SpeedLow = b.SpeedHigh = 768;
+	b.RangeLow = b.RangeHigh = 45;
+	b.Power = 15;
+	b.Erratic = true;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_PETRIFIER];
-	b->Name = "petrifier";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
-	b->DrawData.u.Bullet.UseMask = false;
-	b->DrawData.u.Bullet.Tint = tintDarker;
-	b->SpeedLow = b->SpeedHigh = 768;
-	b->RangeLow = b->RangeHigh = 45;
-	b->Power = 0;
-	b->Size = Vec2iNew(5, 5);
-	b->Special = SPECIAL_PETRIFY;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "petrifier");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
+	b.DrawData.u.Bullet.UseMask = false;
+	b.DrawData.u.Bullet.Tint = tintDarker;
+	b.SpeedLow = b.SpeedHigh = 768;
+	b.RangeLow = b.RangeHigh = 45;
+	b.Power = 0;
+	b.Size = Vec2iNew(5, 5);
+	b.Special = SPECIAL_PETRIFY;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_PROXMINE];
-	b->Name = "proxmine";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = 140;
-	b->Power = 0;
-	b->Persists = true;
-	b->HitsObjects = false;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "proxmine");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 0;
+	b.RangeLow = b.RangeHigh = 140;
+	b.Power = 0;
+	b.Persists = true;
+	b.HitsObjects = false;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_DYNAMITE];
-	b->Name = "dynamite";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = 210;
-	b->Power = 0;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->HitsObjects = false;
-
-
-	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
-	b->Name = "fireball_wreck";
-	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
-	b->Delay = -10;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
-	b->Power = 0;
-	b->Size = Vec2iNew(7, 5);
-	b->Special = SPECIAL_EXPLOSION;
-	b->Persists = true;
-	b->Spark = NULL;
-
-	b = &gBulletClasses[BULLET_FIREBALL1];
-	b->Name = "fireball1";
-	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
-	b->SpeedLow = b->SpeedHigh = 256;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
-	b->Power = FIREBALL_POWER;
-	b->Size = Vec2iNew(7, 5);
-	b->Special = SPECIAL_EXPLOSION;
-	b->HurtAlways = true;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = NULL;
-	b->Falling.GravityFactor = 1;
-	b->Falling.Type = FALLING_TYPE_DZ;
-
-	b = &gBulletClasses[BULLET_FIREBALL2];
-	b->Name = "fireball2";
-	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
-	b->Delay = 8;
-	b->SpeedLow = b->SpeedHigh = 192;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1 + b->Delay;
-	b->Power = FIREBALL_POWER;
-	b->Size = Vec2iNew(7, 5);
-	b->Special = SPECIAL_EXPLOSION;
-	b->HurtAlways = true;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = NULL;
-	b->Falling.GravityFactor = 1;
-	b->Falling.Type = FALLING_TYPE_DZ;
-
-	b = &gBulletClasses[BULLET_FIREBALL3];
-	b->Name = "fireball3";
-	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
-	b->Delay = 16;
-	b->SpeedLow = b->SpeedHigh = 128;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1 + b->Delay;
-	b->Power = FIREBALL_POWER;
-	b->Size = Vec2iNew(7, 5);
-	b->Special = SPECIAL_EXPLOSION;
-	b->HurtAlways = true;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = NULL;
-	b->Falling.GravityFactor = 1;
-	b->Falling.Type = FALLING_TYPE_DZ;
-
-	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
-	b->Name = "molotov_flame";
-	b->GetPicFunc = GetFlame;
-	b->SpeedLow = -256;
-	b->SpeedHigh = 16 * 31 - 256;
-	b->SpeedScale = true;
-	b->Friction = Vec2iNew(4, 3);
-	b->RangeLow = FLAME_RANGE * 4;
-	b->RangeHigh = (FLAME_RANGE + 8 - 1) * 4;
-	b->Power = 2;
-	b->Size = Vec2iNew(5, 5);
-	b->Special = SPECIAL_FLAME;
-	b->HurtAlways = true;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = NULL;
-	b->WallBounces = true;
-	b->Falling.GravityFactor = 6;
-	b->Falling.Type = FALLING_TYPE_Z;
-	b->RandomAnimation = true;
-
-	b = &gBulletClasses[BULLET_GAS_CLOUD_POISON];
-	b->Name = "gas_cloud_poison";
-	b->DrawFunc = DrawGasCloud;
-	b->Tint = tintPoison;
-	b->SpeedLow = 0;
-	b->SpeedHigh = 255;
-	b->Friction = Vec2iNew(4, 3);
-	b->RangeLow = 48 * 4 - 1;
-	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
-	b->Power = 0;
-	b->Size = Vec2iNew(10, 10);
-	b->Special = SPECIAL_POISON;
-	b->HurtAlways = true;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("hit_gas");
-	b->WallBounces = true;
-	b->RandomAnimation = true;
-
-	b = &gBulletClasses[BULLET_GAS_CLOUD_CONFUSE];
-	b->Name = "gas_cloud_confuse";
-	b->DrawFunc = DrawGasCloud;
-	b->Tint = tintPurple;
-	b->SpeedLow = 0;
-	b->SpeedHigh = 255;
-	b->Friction = Vec2iNew(4, 3);
-	b->RangeLow = 48 * 4 - 1;
-	b->RangeHigh = (48 - 8 - 1) * 4 - 1;
-	b->Power = 0;
-	b->Size = Vec2iNew(10, 10);
-	b->Special = SPECIAL_CONFUSE;
-	b->Persists = true;
-	b->Spark = NULL;
-	b->WallHitSound = StrSound("hit_gas");
-	b->WallBounces = true;
-	b->RandomAnimation = true;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "dynamite");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 0;
+	b.RangeLow = b.RangeHigh = 210;
+	b.Power = 0;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.HitsObjects = false;
+	CArrayPushBack(bullets, &b);
 
 
-	b = &gBulletClasses[BULLET_ACTIVEMINE];
-	b->Name = "activemine";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = -1;
-	b->Power = 0;
-	b->Persists = true;
-	b->HitsObjects = false;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "fireball_wreck");
+	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.Delay = -10;
+	b.SpeedLow = b.SpeedHigh = 0;
+	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
+	b.Power = 0;
+	b.Size = Vec2iNew(7, 5);
+	b.Special = SPECIAL_EXPLOSION;
+	b.Persists = true;
+	b.Spark = NULL;
+	CArrayPushBack(bullets, &b);
 
-	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
-	b->Name = "triggeredmine";
-	b->DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b->DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b->DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b->DrawData.u.Bullet.UseMask = true;
-	b->DrawData.u.Bullet.Mask = colorWhite;
-	b->SpeedLow = b->SpeedHigh = 0;
-	b->RangeLow = b->RangeHigh = 5;
-	b->Power = 0;
-	b->Persists = true;
-	b->HitsObjects = false;
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "fireball1");
+	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.SpeedLow = b.SpeedHigh = 256;
+	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
+	b.Power = FIREBALL_POWER;
+	b.Size = Vec2iNew(7, 5);
+	b.Special = SPECIAL_EXPLOSION;
+	b.HurtAlways = true;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = NULL;
+	b.Falling.GravityFactor = 1;
+	b.Falling.Type = FALLING_TYPE_DZ;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "fireball2");
+	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.Delay = 8;
+	b.SpeedLow = b.SpeedHigh = 192;
+	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
+	b.Power = FIREBALL_POWER;
+	b.Size = Vec2iNew(7, 5);
+	b.Special = SPECIAL_EXPLOSION;
+	b.HurtAlways = true;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = NULL;
+	b.Falling.GravityFactor = 1;
+	b.Falling.Type = FALLING_TYPE_DZ;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "fireball3");
+	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.Delay = 16;
+	b.SpeedLow = b.SpeedHigh = 128;
+	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
+	b.Power = FIREBALL_POWER;
+	b.Size = Vec2iNew(7, 5);
+	b.Special = SPECIAL_EXPLOSION;
+	b.HurtAlways = true;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = NULL;
+	b.Falling.GravityFactor = 1;
+	b.Falling.Type = FALLING_TYPE_DZ;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "molotov_flame");
+	b.GetPicFunc = GetFlame;
+	b.SpeedLow = -256;
+	b.SpeedHigh = 16 * 31 - 256;
+	b.SpeedScale = true;
+	b.Friction = Vec2iNew(4, 3);
+	b.RangeLow = FLAME_RANGE * 4;
+	b.RangeHigh = (FLAME_RANGE + 8 - 1) * 4;
+	b.Power = 2;
+	b.Size = Vec2iNew(5, 5);
+	b.Special = SPECIAL_FLAME;
+	b.HurtAlways = true;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = NULL;
+	b.WallBounces = true;
+	b.Falling.GravityFactor = 6;
+	b.Falling.Type = FALLING_TYPE_Z;
+	b.RandomAnimation = true;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "gas_cloud_poison");
+	b.DrawFunc = DrawGasCloud;
+	b.Tint = tintPoison;
+	b.SpeedLow = 0;
+	b.SpeedHigh = 255;
+	b.Friction = Vec2iNew(4, 3);
+	b.RangeLow = 48 * 4 - 1;
+	b.RangeHigh = (48 - 8 - 1) * 4 - 1;
+	b.Power = 0;
+	b.Size = Vec2iNew(10, 10);
+	b.Special = SPECIAL_POISON;
+	b.HurtAlways = true;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("hit_gas");
+	b.WallBounces = true;
+	b.RandomAnimation = true;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "gas_cloud_confuse");
+	b.DrawFunc = DrawGasCloud;
+	b.Tint = tintPurple;
+	b.SpeedLow = 0;
+	b.SpeedHigh = 255;
+	b.Friction = Vec2iNew(4, 3);
+	b.RangeLow = 48 * 4 - 1;
+	b.RangeHigh = (48 - 8 - 1) * 4 - 1;
+	b.Power = 0;
+	b.Size = Vec2iNew(10, 10);
+	b.Special = SPECIAL_CONFUSE;
+	b.Persists = true;
+	b.Spark = NULL;
+	b.WallHitSound = StrSound("hit_gas");
+	b.WallBounces = true;
+	b.RandomAnimation = true;
+	CArrayPushBack(bullets, &b);
+
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "activemine");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 0;
+	b.RangeLow = b.RangeHigh = -1;
+	b.Power = 0;
+	b.Persists = true;
+	b.HitsObjects = false;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "triggeredmine");
+	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
+	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
+	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
+	b.DrawData.u.Bullet.UseMask = true;
+	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.SpeedLow = b.SpeedHigh = 0;
+	b.RangeLow = b.RangeHigh = 5;
+	b.Power = 0;
+	b.Persists = true;
+	b.HitsObjects = false;
+	CArrayPushBack(bullets, &b);
 }
-void BulletInitialize2(void)
+void BulletInitialize2(CArray *bullets)
 {
+	UNUSED(bullets);
 	BulletClass *b;
 	const GunDescription *g;
 	
-	b = &gBulletClasses[BULLET_GRENADE];
+	b = StrBulletClass("grenade");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("explosion1");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
@@ -890,12 +907,12 @@ void BulletInitialize2(void)
 	g = StrGunDescription("explosion3");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 	
-	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
+	b = StrBulletClass("shrapnelbomb");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("frag_explosion");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 
-	b = &gBulletClasses[BULLET_MOLOTOV];
+	b = StrBulletClass("molotov");
 	g = StrGunDescription("fire_explosion");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
@@ -904,22 +921,22 @@ void BulletInitialize2(void)
 	CArrayInit(&b->Falling.DropGuns, sizeof(const GunDescription *));
 	CArrayPushBack(&b->Falling.DropGuns, &g);
 
-	b = &gBulletClasses[BULLET_GASBOMB];
+	b = StrBulletClass("gasbomb");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("gas_poison_explosion");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 
-	b = &gBulletClasses[BULLET_CONFUSEBOMB];
+	b = StrBulletClass("confusebomb");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("gas_confuse_explosion");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 
-	b = &gBulletClasses[BULLET_PROXMINE];
+	b = StrBulletClass("proxmine");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("activemine");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 
-	b = &gBulletClasses[BULLET_DYNAMITE];
+	b = StrBulletClass("dynamite");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("explosion1");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
@@ -928,12 +945,12 @@ void BulletInitialize2(void)
 	g = StrGunDescription("explosion3");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 
-	b = &gBulletClasses[BULLET_ACTIVEMINE];
+	b = StrBulletClass("activemine");
 	CArrayInit(&b->ProximityGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("triggeredmine");
 	CArrayPushBack(&b->ProximityGuns, &g);
 
-	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
+	b = StrBulletClass("triggeredmine");
 	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
 	g = StrGunDescription("explosion1");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
@@ -942,16 +959,18 @@ void BulletInitialize2(void)
 	g = StrGunDescription("explosion3");
 	CArrayPushBack(&b->OutOfRangeGuns, &g);
 }
-void BulletTerminate(void)
+void BulletTerminate(CArray *bullets)
 {
-	for (int i = 0; i < BULLET_COUNT; i++)
+	for (int i = 0; i < (int)bullets->size; i++)
 	{
-		BulletClass *b = &gBulletClasses[i];
+		BulletClass *b = CArrayGet(bullets, i);
+		CFREE(b->Name);
 		CArrayTerminate(&b->OutOfRangeGuns);
 		CArrayTerminate(&b->HitGuns);
 		CArrayTerminate(&b->Falling.DropGuns);
 		CArrayTerminate(&b->ProximityGuns);
 	}
+	CArrayTerminate(bullets);
 }
 
 void FireballAdd(const AddFireball e)
@@ -975,10 +994,10 @@ void FireballAdd(const AddFireball e)
 void BulletAdd(const AddBullet add)
 {
 	Vec2i pos = add.MuzzlePos;
-	const BulletClass *b = &gBulletClasses[add.Bullet];
-	if (!Vec2iEqual(b->Size, Vec2iZero()))
+	if (!Vec2iEqual(add.BulletClass->Size, Vec2iZero()))
 	{
-		const int maxSize = MAX(b->Size.x, b->Size.y);
+		const int maxSize = MAX(
+			add.BulletClass->Size.x, add.BulletClass->Size.y);
 		double x, y;
 		GetVectorsForRadians(add.Angle, &x, &y);
 		pos = Vec2iAdd(pos, Vec2iReal2Full(
@@ -987,5 +1006,5 @@ void BulletAdd(const AddBullet add)
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
 	SetBulletProps(
-		obj, add.MuzzleHeight, add.Elevation, add.Bullet, add.Flags);
+		obj, add.MuzzleHeight, add.Elevation, add.BulletClass, add.Flags);
 }

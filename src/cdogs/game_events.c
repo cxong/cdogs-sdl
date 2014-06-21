@@ -95,14 +95,14 @@ void GameEventAddFireball(
 void GameEventAddFireballWreckage(const Vec2i fullPos)
 {
 	GameEvent e = AddFireballEventNormalNew(
-		&gBulletClasses[BULLET_FIREBALL_WRECK], fullPos, 0, -1, 0);
+		StrBulletClass("fireball_wreck"), fullPos, 0, -1, 0);
 	GameEventsEnqueue(&gGameEvents, e);
 }
 void GameEventAddMolotovFlame(
 	const Vec2i fullPos, const int flags, const int playerIndex)
 {
 	GameEvent e = AddFireballEventNew(
-		&gBulletClasses[BULLET_MOLOTOV_FLAME],
+		StrBulletClass("molotov_flame"),
 		fullPos, flags, playerIndex, (double)rand() / RAND_MAX * 2 * PI);
 	e.u.AddFireball.DZ = 4 + rand() % 4;
 	GameEventsEnqueue(&gGameEvents, e);

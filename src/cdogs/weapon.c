@@ -204,7 +204,7 @@ static void LoadGunDescription(
 	if (json_find_first_label(node, "Bullet"))
 	{
 		tmp = GetString(node, "Bullet");
-		g->Bullet = StrBulletType(tmp);
+		g->Bullet = StrBulletClass(tmp);
 		CFREE(tmp);
 	}
 
@@ -293,7 +293,7 @@ const GunDescription *StrGunDescription(const char *s)
 		}
 	}
 	CASSERT(false, "cannot parse gun name");
-	return CArrayGet(&gGunDescriptions, 0);
+	return NULL;
 }
 
 void WeaponSetState(Weapon *w, gunstate_e state);
@@ -423,7 +423,7 @@ void GunAddBullets(
 		GameEvent e;
 		memset(&e, 0, sizeof e);
 		e.Type = GAME_EVENT_ADD_BULLET;
-		e.u.AddBullet.Bullet = g->Bullet;
+		e.u.AddBullet.BulletClass = g->Bullet;
 		e.u.AddBullet.MuzzlePos = fullPos;
 		e.u.AddBullet.MuzzleHeight = z;
 		e.u.AddBullet.Angle = finalAngle;
@@ -531,16 +531,15 @@ static bool GunHasMuzzle(const GunDescription *desc)
 }
 bool IsHighDPS(const GunDescription *g)
 {
-	const BulletClass *b = &gBulletClasses[g->Bullet];
 	// TODO: generalised way of determining explosive bullets
 	return
-		b->Falling.DropGuns.size > 0 ||
-		b->OutOfRangeGuns.size > 0 ||
-		b->HitGuns.size > 0;
+		g->Bullet->Falling.DropGuns.size > 0 ||
+		g->Bullet->OutOfRangeGuns.size > 0 ||
+		g->Bullet->HitGuns.size > 0;
 }
 static int GetEffectiveRange(const GunDescription *g)
 {
-	const BulletClass *b = &gBulletClasses[g->Bullet];
+	const BulletClass *b = g->Bullet;
 	const int speed = (b->SpeedLow + b->SpeedHigh) / 2;
 	const int range = (b->RangeLow + b->RangeHigh) / 2;
 	int effectiveRange = speed * range;

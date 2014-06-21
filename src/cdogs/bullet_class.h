@@ -54,43 +54,6 @@
 #include "tile.h"
 
 struct MobileObject;
-typedef enum
-{
-	BULLET_NONE,
-	BULLET_MG,
-	BULLET_SHOTGUN,
-	BULLET_FLAME,
-	BULLET_LASER,
-	BULLET_SNIPER,
-	BULLET_FRAG,
-	BULLET_GRENADE,
-	BULLET_SHRAPNELBOMB,
-	BULLET_MOLOTOV,
-	BULLET_GASBOMB,
-	BULLET_CONFUSEBOMB,
-	BULLET_GAS,
-	BULLET_RAPID,
-	BULLET_HEATSEEKER,
-	BULLET_BROWN,
-	BULLET_PETRIFIER,
-	BULLET_PROXMINE,
-	BULLET_DYNAMITE,
-	
-	// Fireballs, gas etc
-	BULLET_FIREBALL_WRECK,	// no-damage fireball, for effect only
-	BULLET_FIREBALL1,	// fast, short lived fireball
-	BULLET_FIREBALL2,	// mediocre fireball
-	BULLET_FIREBALL3,	// slow, long lived fireball
-	BULLET_MOLOTOV_FLAME,
-	BULLET_GAS_CLOUD_POISON,
-	BULLET_GAS_CLOUD_CONFUSE,
-
-	// Pseudo-bullets
-	BULLET_ACTIVEMINE,
-	BULLET_TRIGGEREDMINE,
-
-	BULLET_COUNT
-} BulletType;
 typedef bool (*BulletUpdateFunc)(struct MobileObject *, int);
 typedef enum
 {
@@ -105,8 +68,7 @@ typedef struct
 } BeamSprites;
 typedef struct
 {
-	BulletType Type;
-	const char *Name;
+	char *Name;
 	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
@@ -145,14 +107,14 @@ typedef struct
 	CArray HitGuns;	// of const GunDescription *
 	CArray ProximityGuns;	// of const GunDescription *
 } BulletClass;
-extern BulletClass gBulletClasses[BULLET_COUNT];
+extern CArray gBulletClasses;	// of BulletClass
 
-BulletType StrBulletType(const char *s);
+BulletClass *StrBulletClass(const char *s);
 
-void BulletInitialize(void);
+void BulletInitialize(CArray *bullets);
 // 2-step initialisation since bullet and weapon reference each other
-void BulletInitialize2(void);
-void BulletTerminate(void);
+void BulletInitialize2(CArray *bullets);
+void BulletTerminate(CArray *bullets);
 
 typedef struct
 {
@@ -167,7 +129,7 @@ void FireballAdd(const AddFireball e);
 
 typedef struct
 {
-	BulletType Bullet;
+	const BulletClass *BulletClass;
 	Vec2i MuzzlePos;
 	int MuzzleHeight;
 	double Angle;
