@@ -73,6 +73,14 @@
       "HitsWalls": true
     },
     {
+      "Name": "brass_big",
+      "Sprites": "brass_big",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "Falling": true,
+      "HitsWalls": true
+    },
+    {
       "Name": "shotshell",
       "Sprites": "shotshell",
       "RangeLow": 10000,

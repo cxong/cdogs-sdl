@@ -38,7 +38,7 @@
 	  "Sound": "mg",
 	  "Recoil": 0.17,
 	  "MuzzleFlashParticle": "muzzle_flash_mg",
-	  "Brass": "brass"
+	  "Brass": "brass_big"
     },
 	{
 	  "Index": 2,
