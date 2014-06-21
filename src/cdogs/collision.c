@@ -204,12 +204,30 @@ Vec2i GetWallBounceFullPos(
 	{
 		*velFull = Vec2iScale(*velFull, -1);
 		// Keep bouncing back if it's inside a wall
-		Vec2i bounceReal = newReal;
-		while (ShootWall(bounceReal.x, bounceReal.y) &&
-			MapIsTileIn(&gMap, Vec2iToTile(bounceReal)))
+		// However, do not bounce more than half a tile's size
+		if (!Vec2iEqual(*velFull, Vec2iZero()))
 		{
-			bounceFull = Vec2iAdd(bounceFull, *velFull);
-			bounceReal = Vec2iFull2Real(bounceFull);
+			Vec2i bounceReal = newReal;
+			const int maxBounces = MAX(
+				velFull->x / 256 / TILE_WIDTH,
+				velFull->y / 256 / TILE_HEIGHT);
+			for (int i = 0;
+				i < maxBounces &&
+				MapIsTileIn(&gMap, Vec2iToTile(bounceReal)) &&
+				ShootWall(bounceReal.x, bounceReal.y);
+				i++)
+			{
+				bounceFull = Vec2iAdd(bounceFull, *velFull);
+				bounceReal = Vec2iFull2Real(bounceFull);
+			}
+			// If still colliding wall or outside map,
+			// can't recover from this point; zero velocity and return
+			if (!MapIsTileIn(&gMap, Vec2iToTile(bounceReal)) ||
+				ShootWall(bounceReal.x, bounceReal.y))
+			{
+				*velFull = Vec2iZero();
+				return startFull;
+			}
 		}
 	}
 	return bounceFull;

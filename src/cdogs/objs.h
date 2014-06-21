@@ -132,7 +132,6 @@ typedef struct MobileObject
 {
 	int player;	// -1 if not owned by any player
 	const BulletClass *bulletClass;
-	int kind;
 	int x, y, z;
 	Vec2i vel;
 	int dz;
@@ -151,17 +150,6 @@ typedef struct MobileObject
 typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
 extern CArray gMobObjs;	// of TMobileObject
 extern CArray gObjs;	// of TObject
-
-typedef struct
-{
-	const BulletClass *Class;
-	Vec2i FullPos;
-	int Flags;
-	int PlayerIndex;
-	double Angle;
-	int DZ;
-	int Count;
-} AddFireballEvent;
 
 
 int DamageSomething(
@@ -193,11 +181,9 @@ void MobObjsInit(void);
 void MobObjsTerminate(void);
 int MobObjAdd(Vec2i fullpos, int player);
 void MobObjDestroy(int id);
-void AddFireball(const AddFireballEvent e);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
 int HitItem(TMobileObject *obj, Vec2i pos);
 
 bool UpdateMobileObject(TMobileObject *obj, const int ticks);
-void DrawFireball(Vec2i pos, TileItemDrawFuncData *data);
 
 #endif

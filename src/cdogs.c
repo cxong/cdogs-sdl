@@ -1390,6 +1390,7 @@ int main(int argc, char *argv[])
 			&gParticleClasses, GetDataFilePath("particles.json"));
 		BulletInitialize();
 		WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
+		BulletInitialize2();
 		CampaignInit(&gCampaign);
 		LoadAllCampaigns(&campaigns);
 		PlayerDataInitialize();
@@ -1417,6 +1418,7 @@ bail:
 	MapTerminate(&gMap);
 	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);
+	BulletTerminate();
 	MissionOptionsTerminate(&gMission);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);

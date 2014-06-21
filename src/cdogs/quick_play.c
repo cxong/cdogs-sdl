@@ -179,6 +179,10 @@ static void SetupQuickPlayEnemies(
 		{
 			gun = CArrayGet(
 				&gGunDescriptions, rand() % (int)gGunDescriptions.size);
+			if (!gun->IsRealGun)
+			{
+				continue;
+			}
 			// make at least one of each type of enemy:
 			// - Short range weapon
 			// - Long range weapon
@@ -211,9 +215,7 @@ static void SetupQuickPlayEnemies(
 void SetupQuickPlayCampaign(
 	CampaignSetting *setting, const QuickPlayConfig *config)
 {
-	int i;
 	Mission *m;
-	int c;
 	CMALLOC(m, sizeof *m);
 	MissionInit(m);
 	m->WallStyle = rand() % WALL_STYLE_COUNT;
@@ -255,11 +257,11 @@ void SetupQuickPlayCampaign(
 		break;
 	}
 	CharacterStoreInit(&setting->characters);
-	c = GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
+	int c = GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
 	SetupQuickPlayEnemies(m, c, &setting->characters, config);
 
 	c = GenerateQuickPlayParam(config->ItemCount, 0, 2, 5, 10);
-	for (i = 0; i < c; i++)
+	for (int i = 0; i < c; i++)
 	{
 		int n = rand() % (ITEMS_MAX - 1 + 1);
 		CArrayPushBack(&m->Items, &n);
@@ -267,10 +269,13 @@ void SetupQuickPlayCampaign(
 		CArrayPushBack(&m->ItemDensities, &n);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
-	for (i = 0; i < GUN_COUNT; i++)
+	for (int i = 0; i < (int)gGunDescriptions.size; i++)
 	{
 		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
-		CArrayPushBack(&m->Weapons, &g);
+		if (g->IsRealGun)
+		{
+			CArrayPushBack(&m->Weapons, &g);
+		}
 	}
 	m->WallColor = rand() % (GetColorrangeCount() - 1 + 1);
 	m->FloorColor = rand() % (GetColorrangeCount() - 1 + 1);

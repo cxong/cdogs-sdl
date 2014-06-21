@@ -147,27 +147,37 @@ static void DamageObject(
 			shake.u.ShakeAmount = SHAKE_BIG_AMOUNT;
 			GameEventsEnqueue(&gGameEvents, shake);
 		}
-		Vec2i fullPos = Vec2iReal2Full(
+		const Vec2i fullPos = Vec2iReal2Full(
 			Vec2iNew(object->tileItem.x, object->tileItem.y));
 		if (object->flags & OBJFLAG_EXPLOSIVE)
 		{
-			AddExplosion(fullPos, flags, player);
+			GunAddBullets(
+				StrGunDescription("explosion1"), fullPos, 0, 0,
+				flags, player, true);
+			GunAddBullets(
+				StrGunDescription("explosion2"), fullPos, 0, 0,
+				flags, player, true);
+			GunAddBullets(
+				StrGunDescription("explosion3"), fullPos, 0, 0,
+				flags, player, true);
 		}
 		else if (object->flags & OBJFLAG_FLAMMABLE)
 		{
-			AddFireExplosion(fullPos, flags, player);
+			GunAddBullets(
+				StrGunDescription("fire_explosion"), fullPos, 0, 0,
+				flags, player, true);
 		}
 		else if (object->flags & OBJFLAG_POISONOUS)
 		{
-			AddGasExplosion(
-				fullPos, flags,
-				&gBulletClasses[BULLET_GAS_CLOUD_POISON], player);
+			GunAddBullets(
+				StrGunDescription("gas_poison_explosion"), fullPos, 0, 0,
+				flags, player, true);
 		}
 		else if (object->flags & OBJFLAG_CONFUSING)
 		{
-			AddGasExplosion(
-				fullPos, flags,
-				&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], player);
+			GunAddBullets(
+				StrGunDescription("gas_confuse_explosion"), fullPos, 0, 0,
+				flags, player, true);
 		}
 		else
 		{
@@ -478,45 +488,6 @@ void MobObjDestroy(int id)
 	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
 	MapRemoveTileItem(&gMap, &m->tileItem);
 	m->isInUse = false;
-}
-
-void AddFireball(const AddFireballEvent e)
-{
-	TMobileObject *obj =
-		CArrayGet(&gMobObjs, MobObjAdd(e.FullPos, e.PlayerIndex));
-	obj->bulletClass = e.Class;
-	obj->vel = Vec2iFull2Real(Vec2iScale(
-		GetFullVectorsForRadians(e.Angle),
-		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
-	obj->dz = e.DZ;
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = e.Class->DrawFunc;
-	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
-	obj->tileItem.w = e.Class->Size.x;
-	obj->tileItem.h = e.Class->Size.y;
-	obj->kind = MOBOBJ_FIREBALL;
-	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);
-	obj->flags = e.Flags;
-	obj->count = e.Count;
-}
-
-void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
-{
-	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
-	if (obj->count < obj->state.frame)
-	{
-		return;
-	}
-	const TOffsetPic *pic = &cFireBallPics[(obj->count - obj->state.frame) / 4];
-	if (obj->z > 0)
-	{
-		pos.y -= obj->z / 4;
-	}
-	BlitOld(
-		pos.x + pic->dx, pos.y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex),
-		NULL,
-		BLIT_TRANSPARENT);
 }
 
 int HitItem(TMobileObject *obj, Vec2i pos)

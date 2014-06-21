@@ -139,10 +139,20 @@ void WeaponInitialize(CArray *descs, const char *filename)
 	{
 		GunDescription g;
 		LoadGunDescription(&g, child, &defaultDesc);
-		int idx;
+		int idx = -1;
 		LoadInt(&idx, child, "Index");
-		CASSERT(idx >= 0 && idx < GUN_COUNT, "invalid gun index");
-		memcpy(CArrayGet(descs, idx), &g, sizeof g);
+		if (idx >= 0 && idx < GUN_COUNT)
+		{
+			memcpy(CArrayGet(descs, idx), &g, sizeof g);
+		}
+	}
+	json_t *pseudoGunsNode = json_find_first_label(root, "PseudoGuns")->child;
+	for (json_t *child = pseudoGunsNode->child; child; child = child->next)
+	{
+		GunDescription g;
+		LoadGunDescription(&g, child, &defaultDesc);
+		g.IsRealGun = false;
+		CArrayPushBack(descs, &g);
 	}
 
 bail:
@@ -163,6 +173,7 @@ static void LoadGunDescription(
 		{
 			CSTRDUP(g->name, defaultGun->name);
 		}
+		g->MuzzleHeight /= Z_FACTOR;
 	}
 	char *tmp;
 
@@ -218,11 +229,13 @@ static void LoadGunDescription(
 	LoadDouble(&g->Recoil, node, "Recoil");
 
 	LoadInt(&g->Spread.Count, node, "SpreadCount");
-
 	LoadDouble(&g->Spread.Width, node, "SpreadWidth");
+	LoadDouble(&g->AngleOffset, node, "AngleOffset");
 
 	LoadInt(&g->MuzzleHeight, node, "MuzzleHeight");
-
+	g->MuzzleHeight *= Z_FACTOR;
+	LoadInt(&g->ElevationLow, node, "ElevationLow");
+	LoadInt(&g->ElevationHigh, node, "ElevationHigh");
 	if (json_find_first_label(node, "MuzzleFlashParticle"))
 	{
 		tmp = GetString(node, "MuzzleFlashParticle");
@@ -238,6 +251,10 @@ static void LoadGunDescription(
 	}
 
 	LoadBool(&g->CanShoot, node, "CanShoot");
+
+	LoadInt(&g->ShakeAmount, node, "ShakeAmount");
+
+	g->IsRealGun = true;
 }
 void WeaponTerminate(CArray *descs)
 {
@@ -336,18 +353,6 @@ int WeaponCanFire(Weapon *w)
 	return w->lock <= 0;
 }
 
-void WeaponPlaySound(Weapon *w, Vec2i tilePosition)
-{
-	if (w->soundLock <= 0 && w->Gun->Sound != NULL)
-	{
-		SoundPlayAt(
-			&gSoundDevice,
-			w->Gun->Sound,
-			tilePosition);
-		w->soundLock = w->Gun->SoundLockLength;
-	}
-}
-
 static bool GunHasMuzzle(const GunDescription *desc);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
@@ -359,52 +364,19 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	{
 		return;
 	}
+
+	CASSERT(WeaponCanFire(w), "Can't fire weapon");
+
 	const double radians = dir2radians[d];
-	const int spreadCount = w->Gun->Spread.Count;
-	double spreadStartAngle = 0;
-	const double spreadWidth = w->Gun->Spread.Width;
-	if (spreadCount > 1)
-	{
-		// Find the starting angle of the spread (clockwise)
-		// Keep in mind the fencepost problem, i.e. spread of 3 means a
-		// total spread angle of 2x width
-		spreadStartAngle = -(spreadCount - 1) * spreadWidth / 2;
-	}
 	const Vec2i muzzleOffset = GunGetMuzzleOffset(w->Gun, d);
 	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
-	
-	assert(WeaponCanFire(w));
-	for (int i = 0; i < spreadCount; i++)
+	const bool playSound = w->soundLock <= 0;
+	GunAddBullets(
+		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
+		flags, player, playSound);
+	if (playSound)
 	{
-		double spreadAngle = spreadStartAngle + i * spreadWidth;
-		double recoil = 0;
-		if (w->Gun->Recoil > 0)
-		{
-			recoil =
-				((double)rand() / RAND_MAX * w->Gun->Recoil) -
-				w->Gun->Recoil / 2;
-		}
-		double finalAngle = radians + spreadAngle + recoil;
-		GameEvent e;
-		memset(&e, 0, sizeof e);
-		e.Type = GAME_EVENT_ADD_BULLET;
-		e.u.AddBullet.Bullet = w->Gun->Bullet;
-		e.u.AddBullet.MuzzlePos = muzzlePosition;
-		e.u.AddBullet.MuzzleHeight = w->Gun->MuzzleHeight;
-		e.u.AddBullet.Angle = finalAngle;
-		e.u.AddBullet.Flags = flags;
-		e.u.AddBullet.PlayerIndex = player;
-		GameEventsEnqueue(&gGameEvents, e);
-		if (GunHasMuzzle(w->Gun))
-		{
-			memset(&e, 0, sizeof e);
-			e.Type = GAME_EVENT_ADD_PARTICLE;
-			e.u.AddParticle.Class = w->Gun->MuzzleFlash;
-			e.u.AddParticle.FullPos = muzzlePosition;
-			e.u.AddParticle.Z = w->Gun->MuzzleHeight * 16;
-			e.u.AddParticle.Angle = dir2radians[d];
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+		w->soundLock = w->Gun->SoundLockLength;
 	}
 
 	// Brass shells
@@ -415,7 +387,68 @@ void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 	}
 
 	w->lock = w->Gun->Lock;
-	WeaponPlaySound(w, Vec2iFull2Real(pos));
+}
+
+void GunAddBullets(
+	const GunDescription *g, const Vec2i fullPos, const int z,
+	const double radians,
+	const int flags, const int player,
+	const bool playSound)
+{
+	const int spreadCount = g->Spread.Count;
+	double spreadStartAngle = g->AngleOffset;
+	const double spreadWidth = g->Spread.Width;
+	if (spreadCount > 1)
+	{
+		// Find the starting angle of the spread (clockwise)
+		// Keep in mind the fencepost problem, i.e. spread of 3 means a
+		// total spread angle of 2x width
+		spreadStartAngle += -(spreadCount - 1) * spreadWidth / 2;
+	}
+
+	for (int i = 0; i < spreadCount; i++)
+	{
+		double spreadAngle = spreadStartAngle + i * spreadWidth;
+		double recoil = 0;
+		if (g->Recoil > 0)
+		{
+			recoil =
+				((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
+		}
+		double finalAngle = radians + spreadAngle + recoil;
+		GameEvent e;
+		memset(&e, 0, sizeof e);
+		e.Type = GAME_EVENT_ADD_BULLET;
+		e.u.AddBullet.Bullet = g->Bullet;
+		e.u.AddBullet.MuzzlePos = fullPos;
+		e.u.AddBullet.MuzzleHeight = z;
+		e.u.AddBullet.Angle = finalAngle;
+		e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
+		e.u.AddBullet.Flags = flags;
+		e.u.AddBullet.PlayerIndex = player;
+		GameEventsEnqueue(&gGameEvents, e);
+		if (GunHasMuzzle(g))
+		{
+			memset(&e, 0, sizeof e);
+			e.Type = GAME_EVENT_ADD_PARTICLE;
+			e.u.AddParticle.Class = g->MuzzleFlash;
+			e.u.AddParticle.FullPos = fullPos;
+			e.u.AddParticle.Z = z;
+			e.u.AddParticle.Angle = radians;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+	}
+	if (playSound && g->Sound)
+	{
+		SoundPlayAt(&gSoundDevice, g->Sound, Vec2iFull2Real(fullPos));
+	}
+	if (g->ShakeAmount > 0)
+	{
+		GameEvent shake;
+		shake.Type = GAME_EVENT_SCREEN_SHAKE;
+		shake.u.ShakeAmount = g->ShakeAmount;
+		GameEventsEnqueue(&gGameEvents, shake);
+	}
 }
 
 static void AddBrass(
@@ -434,7 +467,7 @@ static void AddBrass(
 	const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
 	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	e.u.AddParticle.FullPos = Vec2iMinus(muzzlePosition, ejectionPortOffset);
-	e.u.AddParticle.Z = g->MuzzleHeight * 16;
+	e.u.AddParticle.Z = g->MuzzleHeight;
 	e.u.AddParticle.Vel = Vec2iScaleDiv(
 		GetFullVectorsForRadians(radians + PI / 2), 3);
 	e.u.AddParticle.Vel.x += (rand() % 128) - 64;
@@ -496,8 +529,10 @@ bool IsHighDPS(const GunDescription *g)
 {
 	const BulletClass *b = &gBulletClasses[g->Bullet];
 	// TODO: generalised way of determining explosive bullets
-	// TODO: no longer covers dynamite/mine
-	return b->Falling.DropFunc || b->OutOfRangeFunc || b->HitFunc;
+	return
+		b->Falling.DropGuns.size > 0 ||
+		b->OutOfRangeGuns.size > 0 ||
+		b->HitGuns.size > 0;
 }
 static int GetEffectiveRange(const GunDescription *g)
 {
@@ -505,7 +540,7 @@ static int GetEffectiveRange(const GunDescription *g)
 	const int speed = (b->SpeedLow + b->SpeedHigh) / 2;
 	const int range = (b->RangeLow + b->RangeHigh) / 2;
 	int effectiveRange = speed * range;
-	if (b->Falling.Enabled && b->Falling.DestroyOnDrop)
+	if (b->Falling.GravityFactor != 0 && b->Falling.DestroyOnDrop)
 	{
 		// Halve effective range
 		// TODO: this assumes a certain bouncing range

@@ -87,6 +87,7 @@ static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 	if (data->u.Bullet.Pic)
 	{
 		pos = Vec2iMinus(pos, Vec2iScaleDiv(data->u.Bullet.Pic->size, 2));
+		pos.y -= obj->z / Z_FACTOR;
 		BlitMasked(
 			&gGraphicsDevice,
 			data->u.Bullet.Pic,
@@ -95,7 +96,8 @@ static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
 	else
 	{
 		const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
-		pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy - obj->z));
+		pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy));
+		pos.y -= obj->z / Z_FACTOR;
 		if (data->u.Bullet.UseMask)
 		{
 			BlitMasked(
@@ -127,7 +129,7 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 	if (obj->z > 0)
 	{
 		DrawGrenadeShadow(&gGraphicsDevice, pos);
-		pos.y -= obj->z / 16;
+		pos.y -= obj->z / Z_FACTOR;
 	}
 	DrawTPic(
 		pos.x + pic->dx, pos.y + pic->dy,
@@ -144,7 +146,7 @@ static const Pic *GetFlame(int id, Vec2i *offset)
 	}
 	const TOffsetPic *pic = &cFlamePics[obj->state.frame & 3];
 	offset->x = pic->dx;
-	offset->y = pic->dy - obj->z;
+	offset->y = pic->dy - obj->z / Z_FACTOR;
 	return PicManagerGetFromOld(&gPicManager, pic->picIndex);
 }
 
@@ -159,15 +161,16 @@ static const Pic *GetBeam(int id, Vec2i *offset)
 	{
 		p = CArrayGet(&obj->bulletClass->Beam.Sprites->pics, dir);
 		offset->x = -p->size.x / 2;
-		offset->y = -p->size.y / 2 - obj->z;
+		offset->y = -p->size.y / 2;
 	}
 	else
 	{
 		const TOffsetPic *pic = &cBeamPics[obj->bulletClass->Beam.Beam][dir];
 		p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
 		offset->x = pic->dx;
-		offset->y = pic->dy - obj->z;
+		offset->y = pic->dy;
 	}
+	offset->y -= obj->z / Z_FACTOR;
 	return p;
 }
 
@@ -179,7 +182,7 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 	if (obj->z > 0)
 	{
 		DrawGrenadeShadow(&gGraphicsDevice, pos);
-		pos.y -= obj->z / 16;
+		pos.y -= obj->z / Z_FACTOR;
 	}
 	BlitMasked(
 		&gGraphicsDevice,
@@ -199,67 +202,29 @@ static void DrawGasCloud(const Vec2i pos, const TileItemDrawFuncData *data)
 		&obj->bulletClass->Tint);
 }
 
-
-void AddExplosion(Vec2i pos, int flags, int player)
+static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
-	int i;
-	flags |= FLAGS_HURTALWAYS;
-	for (i = 0; i < 8; i++)
+	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
+	const int frame = obj->count - obj->bulletClass->Delay - obj->state.frame;
+	if (frame < 0)
 	{
-		GameEventAddFireball(
-			&gBulletClasses[BULLET_FIREBALL1],
-			pos, flags, player, 0, 0, i * 0.25 * PI);
+		return;
 	}
-	for (i = 0; i < 8; i++)
+	const TOffsetPic *pic = &cFireBallPics[MIN(FIREBALL_MAX - 1, frame / 4)];
+	if (obj->z > 0)
 	{
-		GameEventAddFireball(
-			&gBulletClasses[BULLET_FIREBALL2],
-			pos, flags, player, 8, -8, (i * 0.25 + 0.125) * PI);
+		pos.y -= obj->z / 4;
 	}
-	for (i = 0; i < 8; i++)
-	{
-		GameEventAddFireball(
-			&gBulletClasses[BULLET_FIREBALL3],
-			pos, flags, player, 11, -16, i * 0.25 * PI);
-	}
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("explosion");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
-	GameEventsEnqueue(&gGameEvents, sound);
-	GameEvent shake;
-	shake.Type = GAME_EVENT_SCREEN_SHAKE;
-	shake.u.ShakeAmount = SHAKE_SMALL_AMOUNT;
-	GameEventsEnqueue(&gGameEvents, shake);
-}
-
-
-static void AddFrag(
-	const Vec2i fullPos, int flags, const int playerIndex)
-{
-	flags |= FLAGS_HURTALWAYS;
-	GameEvent e;
-	e.Type = GAME_EVENT_ADD_BULLET;
-	e.u.AddBullet.Bullet = BULLET_FRAG;
-	e.u.AddBullet.MuzzlePos = fullPos;
-	e.u.AddBullet.MuzzleHeight = 0;
-	e.u.AddBullet.Flags = flags;
-	e.u.AddBullet.PlayerIndex = playerIndex;
-	for (int i = 0; i < 16; i++)
-	{
-		e.u.AddBullet.Angle = i / 16.0 * 2 * PI;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("bang");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(fullPos);
-	GameEventsEnqueue(&gGameEvents, sound);
+	BlitOld(
+		pos.x + pic->dx, pos.y + pic->dy,
+		PicManagerGetOldPic(&gPicManager, pic->picIndex),
+		NULL,
+		BLIT_TRANSPARENT);
 }
 
 
 static void SetBulletProps(
-	TMobileObject *obj, int z, BulletType type, int flags)
+	TMobileObject *obj, int z, const int dz, BulletType type, int flags)
 {
 	const BulletClass *b = &gBulletClasses[type];
 	obj->bulletClass = b;
@@ -268,10 +233,14 @@ static void SetBulletProps(
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->tileItem.drawData.u = b->DrawData.u;
-	obj->kind = MOBOBJ_BULLET;
 	obj->z = z;
+	obj->dz = dz;
 	obj->range = RAND_INT(b->RangeLow, b->RangeHigh);
 	obj->flags = flags;
+	if (b->HurtAlways)
+	{
+		obj->flags |= FLAGS_HURTALWAYS;
+	}
 	obj->vel = Vec2iFull2Real(Vec2iScale(
 		obj->vel, RAND_INT(b->SpeedLow, b->SpeedHigh)));
 	if (b->SpeedScale)
@@ -280,74 +249,6 @@ static void SetBulletProps(
 	}
 	obj->tileItem.w = b->Size.x;
 	obj->tileItem.h = b->Size.y;
-}
-
-void AddFireExplosion(Vec2i pos, int flags, int player)
-{
-	flags |= FLAGS_HURTALWAYS;
-	for (int i = 0; i < 16; i++)
-	{
-		GameEventAddMolotovFlame(pos, flags, player);
-	}
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("bang");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
-	GameEventsEnqueue(&gGameEvents, sound);
-}
-void AddGasExplosion(
-	Vec2i pos, int flags, const BulletClass *class, int player)
-{
-	flags |= FLAGS_HURTALWAYS;
-	for (int i = 0; i < 8; i++)
-	{
-		GameEventAddGasCloud(class, pos, flags, player);
-	}
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("bang");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(pos);
-	GameEventsEnqueue(&gGameEvents, sound);
-}
-
-static void GrenadeExplode(const TMobileObject *obj)
-{
-	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
-	switch (obj->kind)
-	{
-	case MOBOBJ_GRENADE:
-		AddExplosion(fullPos, obj->flags, obj->player);
-		break;
-
-	case MOBOBJ_FRAGGRENADE:
-		AddFrag(fullPos, obj->flags, obj->player);
-		break;
-
-	case MOBOBJ_MOLOTOV:
-		AddFireExplosion(fullPos, obj->flags, obj->player);
-		break;
-
-	case MOBOBJ_GASBOMB:
-		AddGasExplosion(
-			fullPos, obj->flags,
-			&gBulletClasses[BULLET_GAS_CLOUD_POISON], obj->player);
-		break;
-
-	case MOBOBJ_GASBOMB2:
-		AddGasExplosion(
-			fullPos, obj->flags,
-			&gBulletClasses[BULLET_GAS_CLOUD_CONFUSE], obj->player);
-		break;
-
-	default:
-		CASSERT(false, "Unknown grenade kind");
-		break;
-	}
-}
-static void Explode(const TMobileObject *obj)
-{
-	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
-	AddExplosion(fullPos, obj->flags, obj->player);
 }
 
 static Vec2i SeekTowards(
@@ -376,19 +277,18 @@ static Vec2i SeekTowards(
 }
 
 
+static void FireGuns(const TMobileObject *obj, const CArray *guns);
 bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
 	MobileObjectUpdate(obj, ticks);
-	if (obj->count < 0)
+	if (obj->count < obj->bulletClass->Delay)
 	{
 		return true;
 	}
+
 	if (obj->range >= 0 && obj->count > obj->range)
 	{
-		if (obj->bulletClass->OutOfRangeFunc)
-		{
-			obj->bulletClass->OutOfRangeFunc(obj);
-		}
+		FireGuns(obj, &obj->bulletClass->OutOfRangeGuns);
 		return false;
 	}
 
@@ -421,7 +321,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
 	// Falling (grenades)
-	if (obj->bulletClass->Falling.Enabled)
+	if (obj->bulletClass->Falling.GravityFactor != 0)
 	{
 		switch (obj->bulletClass->Falling.Type)
 		{
@@ -433,9 +333,11 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 					obj->z += obj->dz;
 					if (obj->z <= 0)
 					{
-						if (!hasDropped && obj->bulletClass->Falling.DropFunc)
+						obj->z = 0;
+						obj->dz = -obj->dz / 2;
+						if (!hasDropped)
 						{
-							obj->bulletClass->Falling.DropFunc(obj);
+							FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
 						}
 						hasDropped = true;
 						if (obj->bulletClass->Falling.DestroyOnDrop)
@@ -447,29 +349,28 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 						e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
 						e.u.SoundAt.Pos = realPos;
 						GameEventsEnqueue(&gGameEvents, e);
-						obj->z = 0;
-						obj->dz = -obj->dz / 2;
 					}
 					else
 					{
-						obj->dz--;
+						obj->dz -= obj->bulletClass->Falling.GravityFactor;
 					}
 				}
 			}
 			break;
 		case FALLING_TYPE_DZ:
 			obj->z += obj->dz * ticks;
-			obj->dz = MAX(0, obj->dz - ticks);
+			obj->dz = MAX(
+				0, obj->dz - ticks * obj->bulletClass->Falling.GravityFactor);
 			break;
 		case FALLING_TYPE_Z:
-			obj->z += obj->dz / 2;
+			obj->z += obj->dz * ticks;
 			if (obj->z <= 0)
 			{
 				obj->z = 0;
 			}
 			else
 			{
-				obj->dz--;
+				obj->dz -= obj->bulletClass->Falling.GravityFactor;
 			}
 			break;
 		default:
@@ -500,8 +401,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	const bool hitWall = ShootWall(realPos.x, realPos.y);
-	if (hitWall)
+	const bool hitWall =
+		MapIsTileIn(&gMap, Vec2iToTile(realPos)) &&
+		ShootWall(realPos.x, realPos.y);
+	if (hitWall && !Vec2iEqual(obj->vel, Vec2iZero()))
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SOUND_AT;
@@ -512,10 +415,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	if ((hitWall && !obj->bulletClass->WallBounces) ||
 		(hitItem && obj->bulletClass->HitsObjects))
 	{
-		if (obj->bulletClass->HitFunc)
-		{
-			obj->bulletClass->HitFunc(obj);
-		}
+		FireGuns(obj, &obj->bulletClass->HitGuns);
 		if (obj->bulletClass->Spark != NULL)
 		{
 			GameEvent e;
@@ -531,7 +431,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			return false;
 		}
 	}
-	if (hitWall)
+	if (hitWall && !Vec2iEqual(obj->vel, Vec2iZero()))
 	{
 		// Bouncing
 		pos = GetWallBounceFullPos(objPos, pos, &obj->vel);
@@ -551,7 +451,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 
 	// Proximity function, destroy
 	// Only check proximity every now and then
-	if (obj->bulletClass->ProximityFunc && !(obj->count & 3))
+	if (obj->bulletClass->ProximityGuns.size > 0 && !(obj->count & 3))
 	{
 		// Detonate the mine if there are characters in the tiles around it
 		const Vec2i tv =
@@ -568,7 +468,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 				}
 				if (TileHasCharacter(MapGetTile(&gMap, dtv)))
 				{
-					obj->bulletClass->ProximityFunc(obj);
+					FireGuns(obj, &obj->bulletClass->ProximityGuns);
 					return false;
 				}
 			}
@@ -577,40 +477,16 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 
 	return true;
 }
-
-static void AddActiveMine(const TMobileObject *obj)
+static void FireGuns(const TMobileObject *obj, const CArray *guns)
 {
-	GameEvent e;
-	e.Type = GAME_EVENT_ADD_BULLET;
-	e.u.AddBullet.Bullet = BULLET_ACTIVEMINE;
-	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
-	e.u.AddBullet.MuzzleHeight = obj->z;
-	e.u.AddBullet.Angle = 0;
-	e.u.AddBullet.Flags = obj->flags;
-	e.u.AddBullet.PlayerIndex = obj->player;
-	GameEventsEnqueue(&gGameEvents, e);
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("mine_arm");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
-	GameEventsEnqueue(&gGameEvents, sound);
-}
-static void AddTriggeredMine(const TMobileObject *obj)
-{
-	GameEvent e;
-	e.Type = GAME_EVENT_ADD_BULLET;
-	e.u.AddBullet.Bullet = BULLET_TRIGGEREDMINE;
-	e.u.AddBullet.MuzzlePos = Vec2iNew(obj->x, obj->y);
-	e.u.AddBullet.MuzzleHeight = obj->z;
-	e.u.AddBullet.Angle = 0;
-	e.u.AddBullet.Flags = obj->flags;
-	e.u.AddBullet.PlayerIndex = obj->player;
-	GameEventsEnqueue(&gGameEvents, e);
-	GameEvent sound;
-	sound.Type = GAME_EVENT_SOUND_AT;
-	sound.u.SoundAt.Sound = StrSound("mine_trigger");
-	sound.u.SoundAt.Pos = Vec2iFull2Real(Vec2iNew(obj->x, obj->y));
-	GameEventsEnqueue(&gGameEvents, sound);
+	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
+	const double angle = Vec2iToRadians(obj->vel);
+	for (int i = 0; i < (int)guns->size; i++)
+	{
+		const GunDescription **g = CArrayGet(guns, i);
+		GunAddBullets(
+			*g, fullPos, obj->z, angle, obj->flags, obj->player, true);
+	}
 }
 
 
@@ -621,27 +497,25 @@ void BulletInitialize(void)
 	for (int i = 0; i < BULLET_COUNT; i++)
 	{
 		b = &gBulletClasses[i];
+		memset(b, 0, sizeof *b);
 		b->Type = (BulletType)i;
 		b->GetPicFunc = NULL;
 		b->DrawFunc = NULL;
-		memset(&b->DrawData, 0, sizeof b->DrawData);
 		b->Beam.Sprites = NULL;
 		b->Tint = tintNone;
 		b->SpeedScale = false;
 		b->Friction = Vec2iZero();
 		b->Size = Vec2iZero();
 		b->Special = SPECIAL_NONE;
+		b->HurtAlways = false;
 		b->Persists = false;
 		b->Spark = ParticleClassGet(&gParticleClasses, "spark");
 		b->WallHitSound = StrSound("ricochet");
 		b->WallBounces = false;
 		b->HitsObjects = true;
-		b->Falling.Enabled = false;
+		b->Falling.GravityFactor = 0;
 		b->Falling.Type = FALLING_TYPE_BOUNCE;
 		b->Falling.DestroyOnDrop = false;
-		b->Falling.DropFunc = NULL;
-		b->OutOfRangeFunc = NULL;
-		b->HitFunc = NULL;
 		b->RandomAnimation = false;
 		b->SeekFactor = -1;
 		b->Erratic = false;
@@ -706,6 +580,7 @@ void BulletInitialize(void)
 	b->SpeedLow = b->SpeedHigh = 640;
 	b->RangeLow = b->RangeHigh = 50;
 	b->Power = 40;
+	b->HurtAlways = true;
 
 
 	// Grenades
@@ -721,8 +596,7 @@ void BulletInitialize(void)
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling.Enabled = true;
-	b->OutOfRangeFunc = GrenadeExplode;
+	b->Falling.GravityFactor = 1;
 
 	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
 	b->Name = "shrapnelbomb";
@@ -735,8 +609,7 @@ void BulletInitialize(void)
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling.Enabled = true;
-	b->OutOfRangeFunc = GrenadeExplode;
+	b->Falling.GravityFactor = 1;
 
 	b = &gBulletClasses[BULLET_MOLOTOV];
 	b->Name = "molotov";
@@ -748,11 +621,8 @@ void BulletInitialize(void)
 	b->Spark = NULL;
 	b->WallHitSound = NULL;
 	b->HitsObjects = false;
-	b->Falling.Enabled = true;
+	b->Falling.GravityFactor = 1;
 	b->Falling.DestroyOnDrop = true;
-	b->Falling.DropFunc = GrenadeExplode;
-	b->OutOfRangeFunc = GrenadeExplode;
-	b->HitFunc = GrenadeExplode;
 
 	b = &gBulletClasses[BULLET_GASBOMB];
 	b->Name = "gasbomb";
@@ -765,8 +635,7 @@ void BulletInitialize(void)
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling.Enabled = true;
-	b->OutOfRangeFunc = GrenadeExplode;
+	b->Falling.GravityFactor = 1;
 
 	b = &gBulletClasses[BULLET_CONFUSEBOMB];
 	b->Name = "confusebomb";
@@ -779,8 +648,7 @@ void BulletInitialize(void)
 	b->WallHitSound = StrSound("bounce");
 	b->WallBounces = true;
 	b->HitsObjects = false;
-	b->Falling.Enabled = true;
-	b->OutOfRangeFunc = GrenadeExplode;
+	b->Falling.GravityFactor = 1;
 
 	b = &gBulletClasses[BULLET_GAS];
 	b->Name = "gas";
@@ -849,7 +717,6 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Persists = true;
 	b->HitsObjects = false;
-	b->OutOfRangeFunc = AddActiveMine;
 
 	b = &gBulletClasses[BULLET_DYNAMITE];
 	b->Name = "dynamite";
@@ -863,12 +730,12 @@ void BulletInitialize(void)
 	b->Persists = true;
 	b->Spark = NULL;
 	b->HitsObjects = false;
-	b->OutOfRangeFunc = Explode;
 
 
 	b = &gBulletClasses[BULLET_FIREBALL_WRECK];
 	b->Name = "fireball_wreck";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->Delay = -10;
 	b->SpeedLow = b->SpeedHigh = 0;
 	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
 	b->Power = 0;
@@ -885,38 +752,43 @@ void BulletInitialize(void)
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->HurtAlways = true;
 	b->Persists = true;
 	b->Spark = NULL;
 	b->WallHitSound = NULL;
-	b->Falling.Enabled = true;
+	b->Falling.GravityFactor = 1;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL2];
 	b->Name = "fireball2";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->Delay = 8;
 	b->SpeedLow = b->SpeedHigh = 192;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1 + b->Delay;
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->HurtAlways = true;
 	b->Persists = true;
 	b->Spark = NULL;
 	b->WallHitSound = NULL;
-	b->Falling.Enabled = true;
+	b->Falling.GravityFactor = 1;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_FIREBALL3];
 	b->Name = "fireball3";
 	b->DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b->Delay = 16;
 	b->SpeedLow = b->SpeedHigh = 128;
-	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1;
+	b->RangeLow = b->RangeHigh = FIREBALL_MAX * 4 - 1 + b->Delay;
 	b->Power = FIREBALL_POWER;
 	b->Size = Vec2iNew(7, 5);
 	b->Special = SPECIAL_EXPLOSION;
+	b->HurtAlways = true;
 	b->Persists = true;
 	b->Spark = NULL;
 	b->WallHitSound = NULL;
-	b->Falling.Enabled = true;
+	b->Falling.GravityFactor = 1;
 	b->Falling.Type = FALLING_TYPE_DZ;
 
 	b = &gBulletClasses[BULLET_MOLOTOV_FLAME];
@@ -931,11 +803,12 @@ void BulletInitialize(void)
 	b->Power = 2;
 	b->Size = Vec2iNew(5, 5);
 	b->Special = SPECIAL_FLAME;
+	b->HurtAlways = true;
 	b->Persists = true;
 	b->Spark = NULL;
-	b->WallHitSound = StrSound("hit_fire");
+	b->WallHitSound = NULL;
 	b->WallBounces = true;
-	b->Falling.Enabled = true;
+	b->Falling.GravityFactor = 6;
 	b->Falling.Type = FALLING_TYPE_Z;
 	b->RandomAnimation = true;
 
@@ -951,6 +824,7 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Size = Vec2iNew(10, 10);
 	b->Special = SPECIAL_POISON;
+	b->HurtAlways = true;
 	b->Persists = true;
 	b->Spark = NULL;
 	b->WallHitSound = StrSound("hit_gas");
@@ -988,7 +862,6 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Persists = true;
 	b->HitsObjects = false;
-	b->ProximityFunc = AddTriggeredMine;
 
 	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
 	b->Name = "triggeredmine";
@@ -1002,41 +875,104 @@ void BulletInitialize(void)
 	b->Power = 0;
 	b->Persists = true;
 	b->HitsObjects = false;
-	b->OutOfRangeFunc = Explode;
 }
-
-void AddGrenade(
-	Vec2i pos, int z, double radians, BulletType type, int flags, int player)
+void BulletInitialize2(void)
 {
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, player));
-	obj->vel = GetFullVectorsForRadians(radians);
-	obj->dz = 24;
-	SetBulletProps(obj, z, type, flags);
-	switch (type)
+	BulletClass *b;
+	const GunDescription *g;
+	
+	b = &gBulletClasses[BULLET_GRENADE];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("explosion1");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion2");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion3");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	
+	b = &gBulletClasses[BULLET_SHRAPNELBOMB];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("frag_explosion");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+
+	b = &gBulletClasses[BULLET_MOLOTOV];
+	g = StrGunDescription("fire_explosion");
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	CArrayInit(&b->HitGuns, sizeof(const GunDescription *));
+	CArrayPushBack(&b->HitGuns, &g);
+	CArrayInit(&b->Falling.DropGuns, sizeof(const GunDescription *));
+	CArrayPushBack(&b->Falling.DropGuns, &g);
+
+	b = &gBulletClasses[BULLET_GASBOMB];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("gas_poison_explosion");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+
+	b = &gBulletClasses[BULLET_CONFUSEBOMB];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("gas_confuse_explosion");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+
+	b = &gBulletClasses[BULLET_PROXMINE];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("activemine");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+
+	b = &gBulletClasses[BULLET_DYNAMITE];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("explosion1");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion2");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion3");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+
+	b = &gBulletClasses[BULLET_ACTIVEMINE];
+	CArrayInit(&b->ProximityGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("triggeredmine");
+	CArrayPushBack(&b->ProximityGuns, &g);
+
+	b = &gBulletClasses[BULLET_TRIGGEREDMINE];
+	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
+	g = StrGunDescription("explosion1");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion2");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+	g = StrGunDescription("explosion3");
+	CArrayPushBack(&b->OutOfRangeGuns, &g);
+}
+void BulletTerminate(void)
+{
+	for (int i = 0; i < BULLET_COUNT; i++)
 	{
-	case BULLET_GRENADE:
-		obj->kind = MOBOBJ_GRENADE;
-		break;
-	case BULLET_SHRAPNELBOMB:
-		obj->kind = MOBOBJ_FRAGGRENADE;
-		break;
-	case BULLET_MOLOTOV:
-		obj->kind = MOBOBJ_MOLOTOV;
-		break;
-	case BULLET_GASBOMB:
-		obj->kind = MOBOBJ_GASBOMB;
-		break;
-	case BULLET_CONFUSEBOMB:
-		obj->kind = MOBOBJ_GASBOMB2;
-		break;
-	default:
-		assert(0 && "invalid grenade type");
-		break;
+		BulletClass *b = &gBulletClasses[i];
+		CArrayTerminate(&b->OutOfRangeGuns);
+		CArrayTerminate(&b->HitGuns);
+		CArrayTerminate(&b->Falling.DropGuns);
+		CArrayTerminate(&b->ProximityGuns);
 	}
-	obj->z = 0;
 }
 
-void AddBulletImpl(const AddBullet add)
+void FireballAdd(const AddFireball e)
+{
+	TMobileObject *obj =
+		CArrayGet(&gMobObjs, MobObjAdd(e.FullPos, e.PlayerIndex));
+	obj->bulletClass = e.Class;
+	obj->vel = Vec2iFull2Real(Vec2iScale(
+		GetFullVectorsForRadians(e.Angle),
+		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
+	obj->dz = e.DZ;
+	obj->updateFunc = UpdateBullet;
+	obj->tileItem.drawFunc = e.Class->DrawFunc;
+	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
+	obj->tileItem.w = e.Class->Size.x;
+	obj->tileItem.h = e.Class->Size.y;
+	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);
+	obj->flags = e.Flags;
+}
+
+void BulletAdd(const AddBullet add)
 {
 	Vec2i pos = add.MuzzlePos;
 	const BulletClass *b = &gBulletClasses[add.Bullet];
@@ -1050,44 +986,6 @@ void AddBulletImpl(const AddBullet add)
 	}
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
-	SetBulletProps(obj, add.MuzzleHeight, add.Bullet, add.Flags);
-}
-
-void BulletAdd(const AddBullet add)
-{
-	switch (add.Bullet)
-	{
-	case BULLET_MG:			// fallthrough
-	case BULLET_SHOTGUN:	// fallthrough
-	case BULLET_FLAME:		// fallthrough
-	case BULLET_LASER:		// fallthrough
-	case BULLET_SNIPER:		// fallthrough
-	case BULLET_GAS:		// fallthrough
-	case BULLET_BROWN:		// fallthrough
-	case BULLET_PETRIFIER:	// fallthrough
-	case BULLET_PROXMINE:	// fallthrough
-	case BULLET_DYNAMITE:	// fallthrough
-	case BULLET_RAPID:		// fallthrough
-	case BULLET_HEATSEEKER:	// fallthrough
-	case BULLET_FRAG:		// fallthrough
-	case BULLET_ACTIVEMINE:	// fallthrough
-	case BULLET_TRIGGEREDMINE:
-		AddBulletImpl(add);
-		break;
-
-	case BULLET_GRENADE:		// fallthrough
-	case BULLET_SHRAPNELBOMB:	// fallthrough
-	case BULLET_MOLOTOV:		// fallthrough
-	case BULLET_GASBOMB:		// fallthrough
-	case BULLET_CONFUSEBOMB:
-		AddGrenade(
-			add.MuzzlePos, add.MuzzleHeight,
-			add.Angle, add.Bullet, add.Flags, add.PlayerIndex);
-		break;
-
-	default:
-		// unknown bullet?
-		CASSERT(false, "Unknown bullet");
-		break;
-	}
+	SetBulletProps(
+		obj, add.MuzzleHeight, add.Elevation, add.Bullet, add.Flags);
 }

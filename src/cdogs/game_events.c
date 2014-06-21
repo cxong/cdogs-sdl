@@ -85,19 +85,17 @@ static GameEvent AddFireballEventNormalNew(
 void GameEventAddFireball(
 	const BulletClass *class,
 	const Vec2i fullPos, const int flags, const int playerIndex,
-	const int dz, const int count, const double angle)
+	const int dz, const double angle)
 {
 	GameEvent e = AddFireballEventNormalNew(
 		class, fullPos, flags, playerIndex, angle);
 	e.u.AddFireball.DZ = dz;
-	e.u.AddFireball.Count = count;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 void GameEventAddFireballWreckage(const Vec2i fullPos)
 {
 	GameEvent e = AddFireballEventNormalNew(
 		&gBulletClasses[BULLET_FIREBALL_WRECK], fullPos, 0, -1, 0);
-	e.u.AddFireball.Count = 10;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 void GameEventAddMolotovFlame(

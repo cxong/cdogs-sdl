@@ -55,6 +55,7 @@
 #include "sounds.h"
 #include "utils.h"
 
+// WARNING: used for old-style maps, do not touch
 typedef enum
 {
 	GUN_KNIFE,
@@ -112,10 +113,15 @@ typedef struct
 		int Count;		// Number of bullets in spread
 		double Width;	// Width of individual spread, in radians
 	} Spread;
+	double AngleOffset;
 	int MuzzleHeight;
+	int ElevationLow;
+	int ElevationHigh;
 	const ParticleClass *MuzzleFlash;
 	const ParticleClass *Brass;
 	bool CanShoot;
+	int ShakeAmount;	// Amount of screen shake to produce
+	bool IsRealGun;	// whether this gun can be used as is by players
 } GunDescription;
 
 typedef struct
@@ -140,6 +146,11 @@ void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d);
 int WeaponCanFire(Weapon *w);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player);
+void GunAddBullets(
+	const GunDescription *g, const Vec2i fullPos, const int z,
+	const double radians,
+	const int flags, const int player,
+	const bool playSound);
 void WeaponHoldFire(Weapon *w);
 
 bool IsHighDPS(const GunDescription *g);

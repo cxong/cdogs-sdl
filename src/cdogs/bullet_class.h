@@ -112,6 +112,7 @@ typedef struct
 	TileItemDrawFuncData DrawData;
 	BeamSprites Beam;
 	HSV Tint;
+	int Delay;	// number of frames before moving
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
@@ -122,6 +123,7 @@ typedef struct
 	int Power;
 	Vec2i Size;
 	special_damage_e Special;
+	bool HurtAlways;
 	bool Persists;	// remains even after hitting walls/items
 	const ParticleClass *Spark;
 	Mix_Chunk *WallHitSound;
@@ -129,28 +131,39 @@ typedef struct
 	bool HitsObjects;
 	struct
 	{
-		bool Enabled;
+		int GravityFactor;	// 0 for non-falling bullets
 		BulletClassFallingType Type;
 		bool DestroyOnDrop;
-		void(*DropFunc)(const struct MobileObject *);
+		CArray DropGuns;	// of const GunDescription *
 	} Falling;
-	void (*OutOfRangeFunc)(const struct MobileObject *);
-	void (*HitFunc)(const struct MobileObject *);
 	bool RandomAnimation;
 	int SeekFactor;	// -1 to disable; higher = less seeking
 	bool Erratic;
-	void (*ProximityFunc)(const struct MobileObject *);	// Mines
+
+	// Special weapons to fire if certain events occur
+	CArray OutOfRangeGuns;	// of const GunDescription *
+	CArray HitGuns;	// of const GunDescription *
+	CArray ProximityGuns;	// of const GunDescription *
 } BulletClass;
 extern BulletClass gBulletClasses[BULLET_COUNT];
 
 BulletType StrBulletType(const char *s);
 
 void BulletInitialize(void);
+// 2-step initialisation since bullet and weapon reference each other
+void BulletInitialize2(void);
+void BulletTerminate(void);
 
-void AddExplosion(Vec2i pos, int flags, int player);
-void AddFireExplosion(Vec2i pos, int flags, int player);
-void AddGasExplosion(
-	Vec2i pos, int flags, const BulletClass *class, int player);
+typedef struct
+{
+	const BulletClass *Class;
+	Vec2i FullPos;
+	int Flags;
+	int PlayerIndex;
+	double Angle;
+	int DZ;
+} AddFireball;
+void FireballAdd(const AddFireball e);
 
 typedef struct
 {
@@ -158,6 +171,7 @@ typedef struct
 	Vec2i MuzzlePos;
 	int MuzzleHeight;
 	double Angle;
+	int Elevation;
 	int Flags;
 	int PlayerIndex;
 } AddBullet;

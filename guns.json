@@ -47,7 +47,9 @@
 	  "Bullet": "grenade",
 	  "Cost": 20,
 	  "Lock": 30,
-	  "Sound": "launch"
+	  "Sound": "launch",
+	  "ElevationLow": 24,
+	  "ElevationHigh": 24
 	},
 	{
 	  "Index": 3,
@@ -89,7 +91,9 @@
 	  "Bullet": "shrapnelbomb",
 	  "Cost": 20,
 	  "Lock": 30,
-	  "Sound": "launch"
+	  "Sound": "launch",
+	  "ElevationLow": 24,
+	  "ElevationHigh": 24
 	},
 	{
 	  "Index": 7,
@@ -98,7 +102,9 @@
 	  "Bullet": "molotov",
 	  "Cost": 20,
 	  "Lock": 30,
-	  "Sound": "launch"
+	  "Sound": "launch",
+	  "ElevationLow": 24,
+	  "ElevationHigh": 24
 	},
 	{
 	  "Index": 8,
@@ -144,7 +150,9 @@
 	  "Bullet": "gasbomb",
 	  "Cost": 7,
 	  "Lock": 30,
-	  "Sound": "launch"
+	  "Sound": "launch",
+	  "ElevationLow": 24,
+	  "ElevationHigh": 24
 	},
 	{
 	  "Index": 12,
@@ -173,7 +181,9 @@
 	  "Bullet": "confusebomb",
 	  "Cost": 10,
 	  "Lock": 30,
-	  "Sound": "launch"
+	  "Sound": "launch",
+	  "ElevationLow": 24,
+	  "ElevationHigh": 24
 	},
 	{
 	  "Index": 15,
@@ -203,6 +213,82 @@
 	  "Lock": 30,
 	  "Sound": "swell",
 	  "MuzzleFlashParticle": "muzzle_flash_heatseeker"
+	}
+  ],
+  "PseudoGuns" : [
+	{
+	  "Pic": "",
+	  "Name": "fire_explosion",
+	  "Bullet": "molotov_flame",
+	  "Recoil": 6.28,
+	  "SpreadCount": 16,
+	  "ElevationLow": 8,
+	  "ElevationHigh": 14
+	},
+	{
+	  "Pic": "",
+	  "Name": "gas_poison_explosion",
+	  "Bullet": "gas_cloud_poison",
+	  "Recoil": 6.28,
+	  "SpreadCount": 8
+	},
+	{
+	  "Pic": "",
+	  "Name": "gas_confuse_explosion",
+	  "Bullet": "gas_cloud_confuse",
+	  "Recoil": 6.28,
+	  "SpreadCount": 8
+	},
+	{
+	  "Pic": "",
+	  "Name": "explosion1",
+	  "Bullet": "fireball1",
+	  "Sound": "explosion",
+	  "SpreadCount": 8,
+	  "SpreadWidth": 0.79,
+	  "AngleOffset": 0.39,
+	  "ShakeAmount": 15
+	},
+	{
+	  "Pic": "",
+	  "Name": "explosion2",
+	  "Bullet": "fireball2",
+	  "Sound": "",
+	  "SpreadCount": 8,
+	  "SpreadWidth": 0.79,
+	  "ElevationLow": 7,
+	  "ElevationHigh": 7
+	},
+	{
+	  "Pic": "",
+	  "Name": "explosion3",
+	  "Bullet": "fireball3",
+	  "Sound": "",
+	  "SpreadCount": 8,
+	  "SpreadWidth": 0.79,
+	  "AngleOffset": 0.39,
+	  "ElevationLow": 10,
+	  "ElevationHigh": 10
+	},
+	{
+	  "Pic": "",
+	  "Name": "frag_explosion",
+	  "Bullet": "frag",
+	  "SpreadCount": 16,
+	  "SpreadWidth": 0.39,
+	  "AngleOffset": 0.2
+	},
+	{
+	  "Pic": "",
+	  "Name": "activemine",
+	  "Bullet": "activemine",
+	  "Sound": "mine_arm"
+	},
+	{
+	  "Pic": "",
+	  "Name": "triggeredmine",
+	  "Bullet": "triggeredmine",
+	  "Sound": "mine_trigger"
 	}
   ]
 }

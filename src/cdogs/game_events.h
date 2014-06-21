@@ -99,7 +99,7 @@ typedef struct
 		int ParticleRemoveId;
 		AddBullet AddBullet;
 		AddParticle AddParticle;
-		AddFireballEvent AddFireball;
+		AddFireball AddFireball;
 		struct
 		{
 			int Flags;
@@ -145,7 +145,7 @@ void GameEventsClear(CArray *store);
 void GameEventAddFireball(
 	const BulletClass *class,
 	const Vec2i fullPos, const int flags, const int playerIndex,
-	const int dz, const int count, const double angle);
+	const int dz, const double angle);
 void GameEventAddFireballWreckage(const Vec2i fullPos);
 void GameEventAddMolotovFlame(
 	const Vec2i fullPos, const int flags, const int playerIndex);

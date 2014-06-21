@@ -337,10 +337,13 @@ static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 	if (!weaponsNode->child)
 	{
 		// enable all weapons
-		for (int i = 0; i < GUN_COUNT; i++)
+		for (int i = 0; i < (int)gGunDescriptions.size; i++)
 		{
 			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
-			CArrayPushBack(weapons, &g);
+			if (g->IsRealGun)
+			{
+				CArrayPushBack(weapons, &g);
+			}
 		}
 	}
 	else

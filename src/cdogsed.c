@@ -1151,6 +1151,7 @@ int main(int argc, char *argv[])
 		&gParticleClasses, GetDataFilePath("particles.json"));
 	BulletInitialize();
 	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
+	BulletInitialize2();
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
@@ -1196,6 +1197,7 @@ int main(int argc, char *argv[])
 	MapTerminate(&gMap);
 	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);
+	BulletTerminate();
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);

@@ -315,6 +315,6 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 	}
 	CASSERT(pic != NULL, "particle picture not found");
 	Vec2i picPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
-	picPos.y -= p->Z / 16;
+	picPos.y -= p->Z / Z_FACTOR;
 	BlitMasked(&gGraphicsDevice, pic, picPos, p->Class->Mask, true);
 }

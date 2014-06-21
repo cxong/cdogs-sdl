@@ -135,6 +135,8 @@ typedef enum
 #define STATE_WALKING_4     6
 #define STATE_COUNT         7
 
+#define Z_FACTOR 16	// the number of increments used for Z
+
 
 extern int cmd2dir[16];
 extern int dir2cmd[8];
