@@ -6,6 +6,13 @@
       "OldPic": 111
     },
     {
+      "Name": "boom",
+      "Sprites": "boom",
+      "OldPic": 111,
+      "Range": 7,
+      "TicksPerFrame": 1
+    },
+    {
       "Name": "muzzle_flash_default",
       "Sprites": "muzzle_flash",
       "Mask": "ffff80",

@@ -160,13 +160,22 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 			int srcI = offset.y*image->w + offset.x;
 			for (int i = 0; i < size.x * size.y; i++, srcI++)
 			{
-				Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
-				Uint32 alpha =
+				const Uint32 alpha =
 					((Uint32 *)image->pixels)[srcI] >> image->format->Ashift;
-				Uint32 rgbMask =
-					s->format->Rmask | s->format->Gmask | s->format->Bmask;
-				pic->Data[i] =
-					(pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+				// If completely transparent, replace rgb with black (0) too
+				// This is because transparency blitting checks entire pixel
+				if (alpha == 0)
+				{
+					pic->Data[i] = 0;
+				}
+				else
+				{
+					const Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
+					const Uint32 rgbMask =
+						s->format->Rmask | s->format->Gmask | s->format->Bmask;
+					pic->Data[i] =
+						(pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+				}
 				if ((i + 1) % size.x == 0)
 				{
 					srcI += image->w - size.x;

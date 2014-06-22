@@ -685,6 +685,8 @@ void BulletInitialize(CArray *bullets)
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 20;
 	b.Size = Vec2iNew(3, 3);
+	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
+	b.WallHitSound = StrSound("boom");
 	b.SeekFactor = 20;
 	CArrayPushBack(bullets, &b);
 
@@ -745,10 +747,11 @@ void BulletInitialize(CArray *bullets)
 	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "swarmer");
 	b.SpeedLow = b.SpeedHigh = 700;
 	b.RangeLow = b.RangeHigh = 70;
-	b.Power = 10;
+	b.Power = 12;
 	b.Size = Vec2iNew(3, 3);
+	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
 	b.WallHitSound = StrSound("boom");
-	b.SeekFactor = 18;
+	b.SeekFactor = 30;
 	CArrayPushBack(bullets, &b);
 
 
