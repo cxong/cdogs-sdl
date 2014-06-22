@@ -39,8 +39,9 @@ typedef struct
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
+	int TicksPerFrame;
 	color_t Mask;
-	bool Falling;
+	int GravityFactor;
 	bool HitsWalls;
 } ParticleClass;
 extern CArray gParticleClasses;	// of ParticleClass

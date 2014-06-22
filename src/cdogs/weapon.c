@@ -273,6 +273,7 @@ void WeaponTerminate(CArray *descs)
 Weapon WeaponCreate(const GunDescription *gun)
 {
 	Weapon w;
+	memset(&w, 0, sizeof w);
 	w.Gun = gun;
 	w.state = GUNSTATE_READY;
 	w.lock = 0;
@@ -300,6 +301,7 @@ void WeaponSetState(Weapon *w, gunstate_e state);
 
 static void AddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos);
+static bool GunHasMuzzle(const GunDescription *desc);
 void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d)
 {
@@ -357,7 +359,6 @@ int WeaponCanFire(Weapon *w)
 	return w->lock <= 0;
 }
 
-static bool GunHasMuzzle(const GunDescription *desc);
 void WeaponFire(Weapon *w, direction_e d, Vec2i pos, int flags, int player)
 {
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
@@ -531,6 +532,10 @@ static bool GunHasMuzzle(const GunDescription *desc)
 }
 bool IsHighDPS(const GunDescription *g)
 {
+	if (g->Bullet == NULL)
+	{
+		return false;
+	}
 	// TODO: generalised way of determining explosive bullets
 	return
 		g->Bullet->Falling.DropGuns.size > 0 ||
@@ -540,6 +545,10 @@ bool IsHighDPS(const GunDescription *g)
 static int GetEffectiveRange(const GunDescription *g)
 {
 	const BulletClass *b = g->Bullet;
+	if (b == NULL)
+	{
+		return 0;
+	}
 	const int speed = (b->SpeedLow + b->SpeedHigh) / 2;
 	const int range = (b->RangeLow + b->RangeHigh) / 2;
 	int effectiveRange = speed * range;

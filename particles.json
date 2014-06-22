@@ -66,10 +66,11 @@
     },
     {
       "Name": "brass",
+      
       "Sprites": "brass",
       "RangeLow": 10000,
       "RangeHigh": 11000,
-      "Falling": true,
+      "GravityFactor": 1,
       "HitsWalls": true
     },
     {
@@ -77,7 +78,7 @@
       "Sprites": "brass_big",
       "RangeLow": 10000,
       "RangeHigh": 11000,
-      "Falling": true,
+      "GravityFactor": 1,
       "HitsWalls": true
     },
     {
@@ -85,8 +86,14 @@
       "Sprites": "shotshell",
       "RangeLow": 10000,
       "RangeHigh": 11000,
-      "Falling": true,
+      "GravityFactor": 1,
       "HitsWalls": true
+    },
+    {
+      "Name": "smoke",
+      "Sprites": "smoke",
+      "Range": 29,
+      "TicksPerFrame": 6
     }
   ]
 }

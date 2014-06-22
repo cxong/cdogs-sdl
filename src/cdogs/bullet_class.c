@@ -191,15 +191,16 @@ static void DrawGrenade(Vec2i pos, TileItemDrawFuncData *data)
 		Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy)), data->u.GrenadeColor, 1);
 }
 
-static void DrawGasCloud(const Vec2i pos, const TileItemDrawFuncData *data)
+static void DrawGasCloud(Vec2i pos, const TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state.frame & 3)];
+	pos.y -= obj->z / Z_FACTOR;
 	DrawBTPic(
 		&gGraphicsDevice,
 		PicManagerGetFromOld(&gPicManager, pic->picIndex),
-		Vec2iNew(pos.x + pic->dx, pos.y + pic->dy - obj->z),
+		Vec2iNew(pos.x + pic->dx, pos.y + pic->dy),
 		&obj->bulletClass->Tint);
 }
 
@@ -679,7 +680,7 @@ void BulletInitialize(CArray *bullets)
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "heatseeker");
 	b.GetPicFunc = GetBeam;
-	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rockets");
+	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rocket");
 	b.SpeedLow = b.SpeedHigh = 512;
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 20;
@@ -736,6 +737,18 @@ void BulletInitialize(CArray *bullets)
 	b.Persists = true;
 	b.Spark = NULL;
 	b.HitsObjects = false;
+	CArrayPushBack(bullets, &b);
+
+	memcpy(&b, &defaultB, sizeof b);
+	CSTRDUP(b.Name, "swarmer");
+	b.GetPicFunc = GetBeam;
+	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "swarmer");
+	b.SpeedLow = b.SpeedHigh = 700;
+	b.RangeLow = b.RangeHigh = 70;
+	b.Power = 10;
+	b.Size = Vec2iNew(3, 3);
+	b.WallHitSound = StrSound("boom");
+	b.SeekFactor = 18;
 	CArrayPushBack(bullets, &b);
 
 

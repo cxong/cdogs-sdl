@@ -133,7 +133,8 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	}
 	c->RangeLow = MIN(c->RangeLow, c->RangeHigh);
 	c->RangeHigh = MAX(c->RangeLow, c->RangeHigh);
-	LoadBool(&c->Falling, node, "Falling");
+	LoadInt(&c->TicksPerFrame, node, "TicksPerFrame");
+	LoadInt(&c->GravityFactor, node, "GravityFactor");
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 }
 
@@ -202,7 +203,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	{
 		p->Pos = Vec2iAdd(p->Pos, p->Vel);
 		p->Z += p->DZ;
-		if (p->Class->Falling)
+		if (p->Class->GravityFactor != 0)
 		{
 			if (p->Z <= 0)
 			{
@@ -211,7 +212,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			}
 			else
 			{
-				p->DZ--;
+				p->DZ -= p->Class->GravityFactor;
 			}
 			if (p->DZ == 0 && p->Z == 0)
 			{
@@ -306,8 +307,14 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 	const Pic *pic;
 	if (p->Class->Sprites)
 	{
-		pic = CArrayGet(
-			&p->Class->Sprites->pics, (int)RadiansToDirection(p->Angle));
+		int frame = (int)RadiansToDirection(p->Angle);
+		if (p->Class->TicksPerFrame > 0)
+		{
+			frame = MIN(
+				p->Count / p->Class->TicksPerFrame,
+				(int)p->Class->Sprites->pics.size - 1);
+		}
+		pic = CArrayGet(&p->Class->Sprites->pics, frame);
 	}
 	else
 	{

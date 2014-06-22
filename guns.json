@@ -216,9 +216,9 @@
 	},
 	{
 	  "Name": "Swarmer",
-	  "Bullet": "heatseeker",
-	  "Cost": 20,
-	  "Lock": 50,
+	  "Bullet": "swarmer",
+	  "Cost": 15,
+	  "Lock": 60,
 	  "Recoil": 0.2,
 	  "SpreadCount": 4,
 	  "SpreadWidth": 0.4,
