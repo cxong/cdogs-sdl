@@ -253,6 +253,8 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	PicManagerLoadDirImpl(pm, path, NULL);
 }
 
+static void LoadOldSprites(
+	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
 	int i;
@@ -276,6 +278,31 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
 		}
 	}
+
+	// Load old sprites
+	LoadOldSprites(
+		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
+}
+static void LoadOldSprites(
+	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
+{
+	// Don't use old sprites if new ones are available
+	if (PicManagerGetSprites(pm, name) != NULL)
+	{
+		return;
+	}
+	NamedSprites ns;
+	CSTRDUP(ns.name, name);
+	CArrayInit(&ns.pics, sizeof(Pic));
+	const TOffsetPic *pic = pics;
+	for (int i = 0; i < count; i++, pic++)
+	{
+		Pic p;
+		const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
+		PicCopy(&p, original);
+		CArrayPushBack(&ns.pics, &p);
+	}
+	CArrayPushBack(&pm->sprites, &ns);
 }
 
 void PicManagerTerminate(PicManager *pm)
@@ -353,16 +380,6 @@ const NamedSprites *PicManagerGetSprites(
 		}
 	}
 	return NULL;
-}
-const Pic *PicManagerGetSpritePic(
-	const PicManager *pm, const char *name, const int idx)
-{
-	const NamedSprites *n = PicManagerGetSprites(pm, name);
-	if (n == NULL)
-	{
-		return NULL;
-	}
-	return CArrayGet(&n->pics, idx);
 }
 
 

@@ -44,6 +44,7 @@ typedef struct
 extern Pic picNone;
 
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
+void PicCopy(Pic *dst, const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 

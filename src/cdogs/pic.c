@@ -51,6 +51,15 @@ void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 	}
 }
 
+void PicCopy(Pic *dst, const Pic *src)
+{
+	dst->size = src->size;
+	dst->offset = src->offset;
+	size_t size = dst->size.x * dst->size.y * sizeof *dst->Data;
+	CMALLOC(dst->Data, size);
+	memcpy(dst->Data, src->Data, size);
+}
+
 void PicFree(Pic *pic)
 {
 	CFREE(pic->Data);

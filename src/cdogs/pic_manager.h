@@ -64,8 +64,6 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx);
 Pic *PicManagerGetPic(const PicManager *pm, const char *name);
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name);
-const Pic *PicManagerGetSpritePic(
-	const PicManager *pm, const char *name, const int idx);
 
 
 // Conversion

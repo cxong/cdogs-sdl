@@ -145,10 +145,11 @@ static const Pic *GetFlame(int id, Vec2i *offset)
 	{
 		obj->state.frame = rand();
 	}
-	const TOffsetPic *pic = &cFlamePics[obj->state.frame & 3];
-	offset->x = pic->dx;
-	offset->y = pic->dy - obj->z / Z_FACTOR;
-	return PicManagerGetFromOld(&gPicManager, pic->picIndex);
+	const NamedSprites *ns = PicManagerGetSprites(&gPicManager, "flame");
+	const Pic *pic = CArrayGet(&ns->pics, obj->state.frame & 3);
+	offset->x = pic->size.x / -2;
+	offset->y = pic->size.y / -2 - obj->z / Z_FACTOR;
+	return pic;
 }
 
 static const Pic *GetBeam(int id, Vec2i *offset)
