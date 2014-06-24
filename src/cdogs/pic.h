@@ -75,6 +75,9 @@ typedef struct
 			int TicksPerFrame;
 		} Animated;
 	} u;
+	// Special draw options
+	bool UseMask;
+	HSV Tint;
 } CPic;
 typedef struct
 {

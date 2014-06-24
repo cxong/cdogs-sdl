@@ -263,6 +263,10 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 
 	// Load old pics and sprites
 	LoadOldPic(pm, "bullet", &cGeneralPics[OFSPIC_BULLET]);
+	LoadOldPic(pm, "molotov", &cGeneralPics[OFSPIC_MOLOTOV]);
+	LoadOldPic(pm, "mine_inactive", &cGeneralPics[OFSPIC_MINE]);
+	LoadOldPic(pm, "mine_active", &cGeneralPics[OFSPIC_MINE]);
+	LoadOldPic(pm, "dynamite", &cGeneralPics[OFSPIC_DYNAMITE]);
 	LoadOldSprites(
 		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
 }

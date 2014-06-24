@@ -141,5 +141,15 @@ void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
 	const Vec2i pos, const CPicDrawContext *context)
 {
-	Blit(g, CPicGetPic(p, context->Dir), Vec2iAdd(pos, context->Offset));
+	const Pic *pic = CPicGetPic(p, context->Dir);
+	const Vec2i picPos = Vec2iAdd(pos, context->Offset);
+	if (p->UseMask)
+	{
+		// TODO: RGB mask
+		Blit(g, pic, picPos);
+	}
+	else
+	{
+		BlitBackground(g, pic, picPos, &p->Tint, true);
+	}
 }

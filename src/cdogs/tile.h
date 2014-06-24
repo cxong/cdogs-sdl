@@ -120,14 +120,6 @@ typedef struct
 	int MobObjId;
 	union
 	{
-		struct
-		{
-			const Pic *Pic;
-			int Ofspic;
-			bool UseMask;
-			color_t Mask;
-			HSV Tint;
-		} Bullet;
 		color_t GrenadeColor;
 		struct
 		{

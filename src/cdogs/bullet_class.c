@@ -81,42 +81,6 @@ BulletClass *StrBulletClass(const char *s)
 
 // Draw functions
 
-static void DrawBullet(Vec2i pos, TileItemDrawFuncData *data)
-{
-	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
-	CASSERT(obj->isInUse, "Cannot draw non-existent bullet");
-	if (data->u.Bullet.Pic)
-	{
-		pos = Vec2iMinus(pos, Vec2iScaleDiv(data->u.Bullet.Pic->size, 2));
-		pos.y -= obj->z / Z_FACTOR;
-		BlitMasked(
-			&gGraphicsDevice,
-			data->u.Bullet.Pic,
-			pos, data->u.Bullet.Mask, true);
-	}
-	else
-	{
-		const TOffsetPic *pic = &cGeneralPics[data->u.Bullet.Ofspic];
-		pos = Vec2iAdd(pos, Vec2iNew(pic->dx, pic->dy));
-		pos.y -= obj->z / Z_FACTOR;
-		if (data->u.Bullet.UseMask)
-		{
-			BlitMasked(
-				&gGraphicsDevice,
-				PicManagerGetFromOld(&gPicManager, pic->picIndex),
-				pos, data->u.Bullet.Mask, 1);
-		}
-		else
-		{
-			DrawBTPic(
-				&gGraphicsDevice,
-				PicManagerGetFromOld(&gPicManager, pic->picIndex),
-				pos,
-				&data->u.Bullet.Tint);
-		}
-	}
-}
-
 static void DrawGrenadeShadow(GraphicsDevice *device, Vec2i pos)
 {
 	DrawShadow(device, pos, Vec2iNew(4, 3));
@@ -517,6 +481,7 @@ void BulletInitialize(CArray *bullets)
 	CSTRDUP(b.Name, "mg");
 	b.CPic.Type = PICTYPE_NORMAL;
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPic.UseMask = true;
 	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 60;
@@ -527,6 +492,7 @@ void BulletInitialize(CArray *bullets)
 	CSTRDUP(b.Name, "shotgun");
 	b.CPic.Type = PICTYPE_NORMAL;
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPic.UseMask = true;
 	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
@@ -539,6 +505,7 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.Sprites =
 		&PicManagerGetSprites(&gPicManager, "flame")->pics;
 	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
 	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 30;
@@ -574,6 +541,7 @@ void BulletInitialize(CArray *bullets)
 	CSTRDUP(b.Name, "frag");
 	b.CPic.Type = PICTYPE_NORMAL;
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPic.UseMask = true;
 	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
@@ -705,10 +673,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "petrifier");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_MOLOTOV;
-	b.DrawData.u.Bullet.UseMask = false;
-	b.DrawData.u.Bullet.Tint = tintDarker;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "molotov");
+	b.CPic.UseMask = false;
+	b.CPic.Tint = tintDarker;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 45;
 	b.Power = 0;
@@ -718,11 +687,10 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "proxmine");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
+	b.CPic.UseMask = true;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 140;
 	b.Power = 0;
@@ -732,10 +700,10 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "dynamite");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_DYNAMITE;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "dynamite");
+	b.CPic.UseMask = true;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 210;
 	b.Power = 0;
@@ -827,6 +795,7 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.Sprites =
 		&PicManagerGetSprites(&gPicManager, "flame")->pics;
 	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
 	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = -256;
 	b.SpeedHigh = 16 * 31 - 256;
@@ -889,11 +858,10 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "activemine");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
+	b.CPic.UseMask = true;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = -1;
 	b.Power = 0;
@@ -903,11 +871,10 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "triggeredmine");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_MINE;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
+	b.CPic.UseMask = true;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 5;
 	b.Power = 0;
