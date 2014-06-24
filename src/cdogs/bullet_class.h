@@ -73,6 +73,8 @@ typedef struct
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
 	BeamSprites Beam;
+	CPic CPic;
+	GetDrawContextFunc CPicFunc;
 	HSV Tint;
 	int Delay;	// number of frames before moving
 	int SpeedLow;

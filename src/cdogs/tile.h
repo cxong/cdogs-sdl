@@ -149,6 +149,8 @@ typedef struct TileItem
 	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
+	CPic CPic;
+	GetDrawContextFunc CPicFunc;
 } TTileItem;
 
 

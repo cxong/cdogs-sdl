@@ -311,6 +311,10 @@ void UpdateMobileObjects(int ticks)
 			e.u.MobileObjectRemoveId = i;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
+		else
+		{
+			CPicUpdate(&obj->tileItem.CPic, ticks);
+		}
 	}
 }
 

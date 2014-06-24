@@ -242,7 +242,12 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			TTileItem *t = *tp;
 			Vec2i pos = Vec2iNew(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
-			if (t->getPicFunc)
+			if (t->CPicFunc)
+			{
+				CPicDrawContext c = t->CPicFunc(t->id);
+				CPicDraw(b->g, &t->CPic, pos, &c);
+			}
+			else if (t->getPicFunc)
 			{
 				Vec2i picOffset;
 				const Pic *pic = t->getPicFunc(t->id, &picOffset);
@@ -313,7 +318,12 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
-	if (t->getPicFunc)
+	if (t->CPicFunc)
+	{
+		CPicDrawContext c = t->CPicFunc(t->id);
+		CPicDraw(b->g, &t->CPic, picPos, &c);
+	}
+	else if (t->getPicFunc)
 	{
 		Vec2i picOffset;
 		const Pic *pic = t->getPicFunc(t->id, &picOffset);

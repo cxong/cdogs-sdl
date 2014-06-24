@@ -137,19 +137,18 @@ static void DrawMolotov(Vec2i pos, TileItemDrawFuncData *data)
 		PicManagerGetOldPic(&gPicManager, pic->picIndex));
 }
 
-static const Pic *GetFlame(int id, Vec2i *offset)
+static CPicDrawContext GetBulletDrawContext(const int id)
 {
-	TMobileObject *obj = CArrayGet(&gMobObjs, id);
+	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	if ((obj->count & 3) == 0)
-	{
-		obj->state.frame = rand();
-	}
-	const NamedSprites *ns = PicManagerGetSprites(&gPicManager, "flame");
-	const Pic *pic = CArrayGet(&ns->pics, obj->state.frame & 3);
-	offset->x = pic->size.x / -2;
-	offset->y = pic->size.y / -2 - obj->z / Z_FACTOR;
-	return pic;
+	// Calculate direction based on velocity
+	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
+	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, dir);
+	CPicDrawContext c;
+	c.Dir = dir;
+	c.Offset = Vec2iNew(
+		pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
+	return c;
 }
 
 static const Pic *GetBeam(int id, Vec2i *offset)
@@ -236,6 +235,8 @@ static void SetBulletProps(
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->tileItem.drawData.u = b->DrawData.u;
+	obj->tileItem.CPic = b->CPic;
+	obj->tileItem.CPicFunc = b->CPicFunc;
 	obj->z = z;
 	obj->dz = dz;
 	obj->range = RAND_INT(b->RangeLow, b->RangeHigh);
@@ -536,7 +537,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "flame");
-	b.GetPicFunc = GetFlame;
+	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "flame")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 30;
 	b.Power = 12;
@@ -821,7 +826,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "molotov_flame");
-	b.GetPicFunc = GetFlame;
+	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "flame")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = -256;
 	b.SpeedHigh = 16 * 31 - 256;
 	b.SpeedScale = true;

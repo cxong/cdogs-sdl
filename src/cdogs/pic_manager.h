@@ -33,16 +33,6 @@
 
 typedef struct
 {
-	Pic pic;
-	char *name;
-} NamedPic;
-typedef struct
-{
-	CArray pics;	// of Pic
-	char *name;
-} NamedSprites;
-typedef struct
-{
 	PicPaletted *oldPics[PIC_MAX];
 	Pic picsFromOld[PIC_MAX];
 	TPalette palette;

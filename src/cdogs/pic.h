@@ -30,6 +30,7 @@
 
 #include <SDL_stdinc.h>
 
+#include "defs.h"
 #include "grafx.h"
 #include "pic_file.h"
 #include "vector.h"
@@ -40,6 +41,47 @@ typedef struct
 	Vec2i offset;
 	Uint32 *Data;
 } Pic;
+typedef struct
+{
+	Pic pic;
+	char *name;
+} NamedPic;
+typedef struct
+{
+	CArray pics;	// of Pic
+	char *name;
+} NamedSprites;
+
+typedef enum
+{
+	PICTYPE_NORMAL,
+	PICTYPE_DIRECTIONAL,
+	PICTYPE_ANIMATED,
+	PICTYPE_ANIMATED_RANDOM
+} PicType;
+// Abstract drawable pic, can draw multiple types of pics
+typedef struct
+{
+	PicType Type;
+	union
+	{
+		const Pic *Pic;
+		const CArray *Sprites;	// of Pic
+		struct
+		{
+			const CArray *Sprites;	// of Pic
+			int Count;
+			int Frame;
+			int TicksPerFrame;
+		} Animated;
+	} u;
+} CPic;
+typedef struct
+{
+	direction_e Dir;
+	Vec2i Offset;
+} CPicDrawContext;
+typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 
 extern Pic picNone;
 
@@ -47,5 +89,14 @@ void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
 void PicCopy(Pic *dst, const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
+
+void NamedSpritesInit(NamedSprites *ns, const char *name);
+void NamedSpritesFree(NamedSprites *ns);
+
+void CPicUpdate(CPic *p, const int ticks);
+const Pic *CPicGetPic(const CPic *p, direction_e d);
+void CPicDraw(
+	GraphicsDevice *g, const CPic *p,
+	const Vec2i pos, const CPicDrawContext *context);
 
 #endif

@@ -69,3 +69,77 @@ int PicIsNotNone(Pic *pic)
 {
 	return pic->size.x > 0 && pic->size.y > 0 && pic->Data != NULL;
 }
+
+
+void NamedSpritesInit(NamedSprites *ns, const char *name)
+{
+	CSTRDUP(ns->name, name);
+	CArrayInit(&ns->pics, sizeof(Pic));
+}
+void NamedSpritesFree(NamedSprites *ns)
+{
+	if (ns == NULL)
+	{
+		return;
+	}
+	CFREE(ns->name);
+	for (int i = 0; i < (int)ns->pics.size; i++)
+	{
+		PicFree(CArrayGet(&ns->pics, i));
+	}
+	CArrayTerminate(&ns->pics);
+}
+
+void CPicUpdate(CPic *p, const int ticks)
+{
+	switch (p->Type)
+	{
+	case PICTYPE_ANIMATED:
+		{
+			p->u.Animated.Count += ticks;
+			while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
+			{
+				p->u.Animated.Frame++;
+				p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
+			}
+			while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
+			{
+				p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
+			}
+		}
+		break;
+	case PICTYPE_ANIMATED_RANDOM:
+		p->u.Animated.Count += ticks;
+		if (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
+		{
+			p->u.Animated.Frame = rand() % (int)p->u.Animated.Sprites->size;
+			p->u.Animated.Count = 0;
+		}
+		break;
+	default:
+		// Do nothing
+		break;
+	}
+}
+const Pic *CPicGetPic(const CPic *p, direction_e d)
+{
+	switch (p->Type)
+	{
+	case PICTYPE_NORMAL:
+		return p->u.Pic;
+	case PICTYPE_DIRECTIONAL:
+		return CArrayGet(p->u.Sprites, d);
+	case PICTYPE_ANIMATED:
+	case PICTYPE_ANIMATED_RANDOM:
+		return CArrayGet(p->u.Animated.Sprites, p->u.Animated.Frame);
+	default:
+		CASSERT(false, "unknown pic type");
+		return NULL;
+	}
+}
+void CPicDraw(
+	GraphicsDevice *g, const CPic *p,
+	const Vec2i pos, const CPicDrawContext *context)
+{
+	Blit(g, CPicGetPic(p, context->Dir), Vec2iAdd(pos, context->Offset));
+}

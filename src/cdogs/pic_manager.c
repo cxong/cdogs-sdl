@@ -114,8 +114,7 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	if (isSpritesheet)
 	{
 		NamedSprites ns;
-		CSTRDUP(ns.name, buf);
-		CArrayInit(&ns.pics, sizeof(Pic));
+		NamedSpritesInit(&ns, buf);
 		CArrayPushBack(&pm->sprites, &ns);
 		nsp = CArrayGet(&pm->sprites, pm->sprites.size - 1);
 	}
@@ -243,6 +242,8 @@ static void PicManagerLoadDirImpl(
 bail:
 	tinydir_close(&dir);
 }
+static void LoadOldSprites(
+	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerLoadDir(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
@@ -251,10 +252,37 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		return;
 	}
 	PicManagerLoadDirImpl(pm, path, NULL);
-}
 
+	// Load the old pics anyway;
+	// even though they will be palette swapped later,
+	// this allows us to initialise the data structures so that sprites can be
+	// made.
+	PicManagerGenerateOldPics(pm, &gGraphicsDevice);
+
+	// Load old sprites
+	LoadOldSprites(
+		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
+}
 static void LoadOldSprites(
-	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
+	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
+{
+	// Don't use old sprites if new ones are available
+	if (PicManagerGetSprites(pm, name) != NULL)
+	{
+		return;
+	}
+	NamedSprites ns;
+	NamedSpritesInit(&ns, name);
+	const TOffsetPic *pic = pics;
+	for (int i = 0; i < count; i++, pic++)
+	{
+		Pic p;
+		const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
+		PicCopy(&p, original);
+		CArrayPushBack(&ns.pics, &p);
+	}
+	CArrayPushBack(&pm->sprites, &ns);
+}
 void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
 	int i;
@@ -278,31 +306,6 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
 		}
 	}
-
-	// Load old sprites
-	LoadOldSprites(
-		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
-}
-static void LoadOldSprites(
-	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
-{
-	// Don't use old sprites if new ones are available
-	if (PicManagerGetSprites(pm, name) != NULL)
-	{
-		return;
-	}
-	NamedSprites ns;
-	CSTRDUP(ns.name, name);
-	CArrayInit(&ns.pics, sizeof(Pic));
-	const TOffsetPic *pic = pics;
-	for (int i = 0; i < count; i++, pic++)
-	{
-		Pic p;
-		const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
-		PicCopy(&p, original);
-		CArrayPushBack(&ns.pics, &p);
-	}
-	CArrayPushBack(&pm->sprites, &ns);
 }
 
 void PicManagerTerminate(PicManager *pm)
@@ -327,14 +330,7 @@ void PicManagerTerminate(PicManager *pm)
 	CArrayTerminate(&pm->pics);
 	for (int i = 0; i < (int)pm->sprites.size; i++)
 	{
-		NamedSprites *n = CArrayGet(&pm->sprites, i);
-		CFREE(n->name);
-		for (int j = 0; j < (int)n->pics.size; j++)
-		{
-			Pic *pic = CArrayGet(&n->pics, j);
-			PicFree(pic);
-		}
-		CArrayTerminate(&n->pics);
+		NamedSpritesFree(CArrayGet(&pm->sprites, i));
 	}
 	CArrayTerminate(&pm->pics);
 	IMG_Quit();
