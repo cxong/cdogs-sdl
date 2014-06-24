@@ -515,10 +515,9 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "mg");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 10;
@@ -526,10 +525,9 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "shotgun");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
 	b.Power = 15;
@@ -574,10 +572,9 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "frag");
-	b.DrawFunc = (TileItemDrawFunc)DrawBullet;
-	b.DrawData.u.Bullet.Ofspic = OFSPIC_BULLET;
-	b.DrawData.u.Bullet.UseMask = true;
-	b.DrawData.u.Bullet.Mask = colorWhite;
+	b.CPic.Type = PICTYPE_NORMAL;
+	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
 	b.Power = 40;

@@ -242,6 +242,8 @@ static void PicManagerLoadDirImpl(
 bail:
 	tinydir_close(&dir);
 }
+static void LoadOldPic(
+	PicManager *pm, const char *name, const TOffsetPic *pic);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerLoadDir(PicManager *pm, const char *path)
@@ -259,9 +261,24 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	// made.
 	PicManagerGenerateOldPics(pm, &gGraphicsDevice);
 
-	// Load old sprites
+	// Load old pics and sprites
+	LoadOldPic(pm, "bullet", &cGeneralPics[OFSPIC_BULLET]);
 	LoadOldSprites(
 		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
+}
+static void LoadOldPic(
+	PicManager *pm, const char *name, const TOffsetPic *pic)
+{
+	// Don't use old pics if new ones are available
+	if (PicManagerGetPic(pm, name) != NULL)
+	{
+		return;
+	}
+	NamedPic p;
+	CSTRDUP(p.name, name);
+	const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
+	PicCopy(&p.pic, original);
+	CArrayPushBack(&pm->pics, &p);
 }
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
