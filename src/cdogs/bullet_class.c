@@ -119,19 +119,6 @@ static const Pic *GetBeam(int id, Vec2i *offset)
 	return p;
 }
 
-static void DrawGasCloud(Vec2i pos, const TileItemDrawFuncData *data)
-{
-	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
-	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	const TOffsetPic *pic = &cFireBallPics[8 + (obj->state.frame & 3)];
-	pos.y -= obj->z / Z_FACTOR;
-	DrawBTPic(
-		&gGraphicsDevice,
-		PicManagerGetFromOld(&gPicManager, pic->picIndex),
-		Vec2iNew(pos.x + pic->dx, pos.y + pic->dy),
-		&obj->bulletClass->Tint);
-}
-
 static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
@@ -223,11 +210,6 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		FireGuns(obj, &obj->bulletClass->OutOfRangeGuns);
 		return false;
-	}
-
-	if (obj->bulletClass->RandomAnimation && !(obj->count & 3))
-	{
-		obj->state.frame = rand();
 	}
 
 	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
@@ -483,7 +465,6 @@ void BulletInitialize(CArray *bullets)
 	b.Spark = NULL;
 	b.WallHitSound = StrSound("hit_fire");
 	b.WallBounces = true;
-	b.RandomAnimation = true;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -621,8 +602,13 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "gas");
-	b.DrawFunc = DrawGasCloud;
-	b.Tint = tintPoison;
+	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = false;
+	b.CPic.u1.Tint = tintPoison;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.Friction = Vec2iNew(4, 3);
 	b.RangeLow = b.RangeHigh = 35;
@@ -633,7 +619,6 @@ void BulletInitialize(CArray *bullets)
 	b.Spark = NULL;
 	b.WallHitSound = StrSound("hit_gas");
 	b.WallBounces = true;
-	b.RandomAnimation = true;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -813,13 +798,17 @@ void BulletInitialize(CArray *bullets)
 	b.WallBounces = true;
 	b.Falling.GravityFactor = 6;
 	b.Falling.Type = FALLING_TYPE_Z;
-	b.RandomAnimation = true;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "gas_cloud_poison");
-	b.DrawFunc = DrawGasCloud;
-	b.Tint = tintPoison;
+	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = false;
+	b.CPic.u1.Tint = tintPoison;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = 0;
 	b.SpeedHigh = 255;
 	b.Friction = Vec2iNew(4, 3);
@@ -833,13 +822,17 @@ void BulletInitialize(CArray *bullets)
 	b.Spark = NULL;
 	b.WallHitSound = StrSound("hit_gas");
 	b.WallBounces = true;
-	b.RandomAnimation = true;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "gas_cloud_confuse");
-	b.DrawFunc = DrawGasCloud;
-	b.Tint = tintPurple;
+	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = false;
+	b.CPic.u1.Tint = tintPurple;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = 0;
 	b.SpeedHigh = 255;
 	b.Friction = Vec2iNew(4, 3);
@@ -852,7 +845,6 @@ void BulletInitialize(CArray *bullets)
 	b.Spark = NULL;
 	b.WallHitSound = StrSound("hit_gas");
 	b.WallBounces = true;
-	b.RandomAnimation = true;
 	CArrayPushBack(bullets, &b);
 
 

@@ -101,7 +101,6 @@ typedef struct
 		bool DestroyOnDrop;
 		CArray DropGuns;	// of const GunDescription *
 	} Falling;
-	bool RandomAnimation;
 	int SeekFactor;	// -1 to disable; higher = less seeking
 	bool Erratic;
 

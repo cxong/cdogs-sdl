@@ -272,6 +272,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		sizeof cGrenadePics / sizeof *cGrenadePics);
 	LoadOldSprites(
 		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
+	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 }
 static void LoadOldPic(
 	PicManager *pm, const char *name, const TOffsetPic *pic)
