@@ -95,30 +95,6 @@ static CPicDrawContext GetBulletDrawContext(const int id)
 	return c;
 }
 
-static const Pic *GetBeam(int id, Vec2i *offset)
-{
-	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
-	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	// Calculate direction based on velocity
-	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
-	const Pic *p;
-	if (obj->bulletClass->Beam.Sprites)
-	{
-		p = CArrayGet(&obj->bulletClass->Beam.Sprites->pics, dir);
-		offset->x = -p->size.x / 2;
-		offset->y = -p->size.y / 2;
-	}
-	else
-	{
-		const TOffsetPic *pic = &cBeamPics[obj->bulletClass->Beam.Beam][dir];
-		p = PicManagerGetFromOld(&gPicManager, pic->picIndex);
-		offset->x = pic->dx;
-		offset->y = pic->dy;
-	}
-	offset->y -= obj->z / Z_FACTOR;
-	return p;
-}
-
 static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
@@ -146,7 +122,7 @@ static void SetBulletProps(
 {
 	obj->bulletClass = b;
 	obj->updateFunc = UpdateBullet;
-	obj->tileItem.getPicFunc = b->GetPicFunc;
+	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = b->DrawFunc;
 	obj->tileItem.drawData.u = b->DrawData.u;
@@ -469,8 +445,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "laser");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Beam = BEAM_PIC_BEAM;
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "beam")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1024;
 	b.RangeLow = b.RangeHigh = 90;
 	b.Power = 20;
@@ -479,8 +458,12 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "sniper");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Beam = BEAM_PIC_BRIGHT;
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites =
+		&PicManagerGetSprites(&gPicManager, "beam_bright")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1024;
 	b.RangeLow = b.RangeHigh = 90;
 	b.Power = 50;
@@ -623,8 +606,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "pulse");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "pulse");
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "pulse")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1280;
 	b.RangeLow = b.RangeHigh = 25;
 	b.Power = 6;
@@ -632,8 +618,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "heatseeker");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rocket");
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rocket")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 512;
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 20;
@@ -645,8 +634,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "rapid");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "rapid");
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rapid")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 45;
 	b.Power = 15;
@@ -698,8 +690,11 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "swarmer");
-	b.GetPicFunc = GetBeam;
-	b.Beam.Sprites = PicManagerGetSprites(&gPicManager, "swarmer");
+	b.CPic.Type = PICTYPE_DIRECTIONAL;
+	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "swarmer")->pics;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 700;
 	b.RangeLow = b.RangeHigh = 70;
 	b.Power = 12;
@@ -968,7 +963,7 @@ void FireballAdd(const AddFireball e)
 	obj->dz = e.DZ;
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.drawFunc = e.Class->DrawFunc;
-	obj->tileItem.getPicFunc = e.Class->GetPicFunc;
+	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.w = e.Class->Size.x;
 	obj->tileItem.h = e.Class->Size.y;
 	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);

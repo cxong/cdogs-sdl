@@ -63,16 +63,9 @@ typedef enum
 } BulletClassFallingType;
 typedef struct
 {
-	const NamedSprites *Sprites;
-	BeamPic Beam;
-} BeamSprites;
-typedef struct
-{
 	char *Name;
-	TileItemGetPicFunc GetPicFunc;
 	TileItemDrawFunc DrawFunc;
 	TileItemDrawFuncData DrawData;
-	BeamSprites Beam;
 	CPic CPic;
 	GetDrawContextFunc CPicFunc;
 	HSV Tint;

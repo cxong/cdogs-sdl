@@ -282,15 +282,8 @@ extern const OffsetTable cGunHandOffset[BODY_COUNT];
 extern const OffsetTable cHeadOffset[FACE_COUNT];
 extern const TOffsetPic cGrenadePics[4];
 extern const TOffsetPic cFlamePics[4];
-
-typedef enum
-{
-	BEAM_PIC_BEAM,
-	BEAM_PIC_BRIGHT,
-
-	BEAM_PIC_COUNT
-} BeamPic;
 extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
+#define BEAM_PIC_COUNT 2
 extern const TOffsetPic cBeamPics[BEAM_PIC_COUNT][DIRECTION_COUNT];
 extern const TOffsetPic cGeneralPics[OFSPIC_COUNT];
 extern const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES];
