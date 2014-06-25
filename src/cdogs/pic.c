@@ -145,11 +145,10 @@ void CPicDraw(
 	const Vec2i picPos = Vec2iAdd(pos, context->Offset);
 	if (p->UseMask)
 	{
-		// TODO: RGB mask
-		Blit(g, pic, picPos);
+		BlitMasked(g, pic, picPos, p->u1.Mask, true);
 	}
 	else
 	{
-		BlitBackground(g, pic, picPos, &p->Tint, true);
+		BlitBackground(g, pic, picPos, &p->u1.Tint, true);
 	}
 }

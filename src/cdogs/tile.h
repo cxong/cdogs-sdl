@@ -120,7 +120,6 @@ typedef struct
 	int MobObjId;
 	union
 	{
-		color_t GrenadeColor;
 		struct
 		{
 			const CArray *Sprites;
@@ -143,6 +142,7 @@ typedef struct TileItem
 	TileItemDrawFuncData drawData;
 	CPic CPic;
 	GetDrawContextFunc CPicFunc;
+	Vec2i ShadowSize;
 } TTileItem;
 
 

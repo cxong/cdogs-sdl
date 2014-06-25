@@ -77,7 +77,11 @@ typedef struct
 	} u;
 	// Special draw options
 	bool UseMask;
-	HSV Tint;
+	union
+	{
+		color_t Mask;
+		HSV Tint;
+	} u1;
 } CPic;
 typedef struct
 {

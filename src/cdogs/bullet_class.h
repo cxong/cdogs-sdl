@@ -76,6 +76,7 @@ typedef struct
 	CPic CPic;
 	GetDrawContextFunc CPicFunc;
 	HSV Tint;
+	Vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	int SpeedLow;
 	int SpeedHigh;

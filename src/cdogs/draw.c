@@ -318,6 +318,12 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+
+	if (!Vec2iEqual(t->ShadowSize, Vec2iZero()))
+	{
+		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
+	}
+
 	if (t->CPicFunc)
 	{
 		CPicDrawContext c = t->CPicFunc(t->id);
