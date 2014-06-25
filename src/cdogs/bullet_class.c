@@ -90,29 +90,12 @@ static CPicDrawContext GetBulletDrawContext(const int id)
 	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, dir);
 	CPicDrawContext c;
 	c.Dir = dir;
-	c.Offset = Vec2iNew(
-		pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
+	if (pic != NULL)
+	{
+		c.Offset = Vec2iNew(
+			pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
+	}
 	return c;
-}
-
-static void DrawFireball(Vec2i pos, TileItemDrawFuncData *data)
-{
-	const TMobileObject *obj = CArrayGet(&gMobObjs, data->MobObjId);
-	const int frame = obj->count - obj->bulletClass->Delay - obj->state.frame;
-	if (frame < 0)
-	{
-		return;
-	}
-	const TOffsetPic *pic = &cFireBallPics[MIN(FIREBALL_MAX - 1, frame / 4)];
-	if (obj->z > 0)
-	{
-		pos.y -= obj->z / 4;
-	}
-	BlitOld(
-		pos.x + pic->dx, pos.y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex),
-		NULL,
-		BLIT_TRANSPARENT);
 }
 
 
@@ -124,8 +107,7 @@ static void SetBulletProps(
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = b->DrawFunc;
-	obj->tileItem.drawData.u = b->DrawData.u;
+	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.CPic = b->CPic;
 	obj->tileItem.CPicFunc = b->CPicFunc;
 	obj->z = z;
@@ -388,7 +370,6 @@ void BulletInitialize(CArray *bullets)
 	// Defaults
 	BulletClass defaultB;
 	memset(&defaultB, 0, sizeof defaultB);
-	defaultB.Tint = tintNone;
 	defaultB.Friction = Vec2iZero();
 	defaultB.Size = Vec2iZero();
 	defaultB.Special = SPECIAL_NONE;
@@ -707,10 +688,17 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "fireball_wreck");
-	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.CPic.Type = PICTYPE_ANIMATED;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
+	b.CPic.u.Animated.Count = 10;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = -10;
 	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
+	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
 	b.Power = 0;
 	b.Size = Vec2iNew(7, 5);
 	b.Special = SPECIAL_EXPLOSION;
@@ -720,7 +708,13 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "fireball1");
-	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.CPic.Type = PICTYPE_ANIMATED;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 256;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
 	b.Power = FIREBALL_POWER;
@@ -736,7 +730,14 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "fireball2");
-	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.CPic.Type = PICTYPE_ANIMATED;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
+	b.CPic.u.Animated.Count = -8;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = 8;
 	b.SpeedLow = b.SpeedHigh = 192;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
@@ -753,7 +754,14 @@ void BulletInitialize(CArray *bullets)
 
 	memcpy(&b, &defaultB, sizeof b);
 	CSTRDUP(b.Name, "fireball3");
-	b.DrawFunc = (TileItemDrawFunc)DrawFireball;
+	b.CPic.Type = PICTYPE_ANIMATED;
+	b.CPic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
+	b.CPic.u.Animated.Count = -16;
+	b.CPic.u.Animated.TicksPerFrame = 4;
+	b.CPic.UseMask = true;
+	b.CPic.u1.Mask = colorWhite;
+	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = 16;
 	b.SpeedLow = b.SpeedHigh = 128;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
@@ -791,7 +799,7 @@ void BulletInitialize(CArray *bullets)
 	b.Spark = NULL;
 	b.WallHitSound = NULL;
 	b.WallBounces = true;
-	b.Falling.GravityFactor = 6;
+	b.Falling.GravityFactor = 4;
 	b.Falling.Type = FALLING_TYPE_Z;
 	CArrayPushBack(bullets, &b);
 
@@ -962,8 +970,10 @@ void FireballAdd(const AddFireball e)
 		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
 	obj->dz = e.DZ;
 	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = e.Class->DrawFunc;
+	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.getPicFunc = NULL;
+	obj->tileItem.CPic = e.Class->CPic;
+	obj->tileItem.CPicFunc = e.Class->CPicFunc;
 	obj->tileItem.w = e.Class->Size.x;
 	obj->tileItem.h = e.Class->Size.y;
 	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);

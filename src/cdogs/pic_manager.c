@@ -272,6 +272,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		sizeof cGrenadePics / sizeof *cGrenadePics);
 	LoadOldSprites(
 		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
+	LoadOldSprites(pm, "fireball", cFireBallPics, FIREBALL_MAX);
 	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 	LoadOldSprites(pm, "beam", cBeamPics[0], DIRECTION_COUNT);
 	LoadOldSprites(pm, "beam_bright", cBeamPics[1], DIRECTION_COUNT);

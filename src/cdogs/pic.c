@@ -131,6 +131,11 @@ const Pic *CPicGetPic(const CPic *p, direction_e d)
 		return CArrayGet(p->u.Sprites, d);
 	case PICTYPE_ANIMATED:
 	case PICTYPE_ANIMATED_RANDOM:
+		if (p->u.Animated.Frame < 0 ||
+			p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
+		{
+			return NULL;
+		}
 		return CArrayGet(p->u.Animated.Sprites, p->u.Animated.Frame);
 	default:
 		CASSERT(false, "unknown pic type");
@@ -142,6 +147,10 @@ void CPicDraw(
 	const Vec2i pos, const CPicDrawContext *context)
 {
 	const Pic *pic = CPicGetPic(p, context->Dir);
+	if (pic == NULL)
+	{
+		return;
+	}
 	const Vec2i picPos = Vec2iAdd(pos, context->Offset);
 	if (p->UseMask)
 	{

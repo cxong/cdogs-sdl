@@ -233,8 +233,8 @@
 	  "Bullet": "molotov_flame",
 	  "Recoil": 6.28,
 	  "SpreadCount": 16,
-	  "ElevationLow": 8,
-	  "ElevationHigh": 14
+	  "ElevationLow": 22,
+	  "ElevationHigh": 30
 	},
 	{
 	  "Pic": "",
@@ -267,8 +267,8 @@
 	  "Sound": "",
 	  "SpreadCount": 8,
 	  "SpreadWidth": 0.79,
-	  "ElevationLow": 7,
-	  "ElevationHigh": 7
+	  "ElevationLow": 17,
+	  "ElevationHigh": 15
 	},
 	{
 	  "Pic": "",
@@ -278,8 +278,8 @@
 	  "SpreadCount": 8,
 	  "SpreadWidth": 0.79,
 	  "AngleOffset": 0.39,
-	  "ElevationLow": 10,
-	  "ElevationHigh": 10
+	  "ElevationLow": 21,
+	  "ElevationHigh": 21
 	},
 	{
 	  "Pic": "",

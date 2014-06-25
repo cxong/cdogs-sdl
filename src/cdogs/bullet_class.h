@@ -64,11 +64,8 @@ typedef enum
 typedef struct
 {
 	char *Name;
-	TileItemDrawFunc DrawFunc;
-	TileItemDrawFuncData DrawData;
 	CPic CPic;
 	GetDrawContextFunc CPicFunc;
-	HSV Tint;
 	Vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	int SpeedLow;
