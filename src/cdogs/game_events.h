@@ -55,7 +55,6 @@ typedef enum
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_ADD_PARTICLE,
-	GAME_EVENT_ADD_FIREBALL,
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_DAMAGE_CHARACTER,
@@ -99,7 +98,6 @@ typedef struct
 		int ParticleRemoveId;
 		AddBullet AddBullet;
 		AddParticle AddParticle;
-		AddFireball AddFireball;
 		struct
 		{
 			int Flags;
@@ -141,16 +139,5 @@ void GameEventsInit(CArray *store);
 void GameEventsTerminate(CArray *store);
 void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
-
-void GameEventAddFireball(
-	const BulletClass *class,
-	const Vec2i fullPos, const int flags, const int playerIndex,
-	const int dz, const double angle);
-void GameEventAddFireballWreckage(const Vec2i fullPos);
-void GameEventAddMolotovFlame(
-	const Vec2i fullPos, const int flags, const int playerIndex);
-void GameEventAddGasCloud(
-	const BulletClass *class,
-	const Vec2i fullPos, const int flags, const int playerIndex);
 
 #endif

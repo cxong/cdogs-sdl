@@ -110,17 +110,6 @@ void BulletTerminate(CArray *bullets);
 
 typedef struct
 {
-	const BulletClass *Class;
-	Vec2i FullPos;
-	int Flags;
-	int PlayerIndex;
-	double Angle;
-	int DZ;
-} AddFireball;
-void FireballAdd(const AddFireball e);
-
-typedef struct
-{
 	const BulletClass *BulletClass;
 	Vec2i MuzzlePos;
 	int MuzzleHeight;

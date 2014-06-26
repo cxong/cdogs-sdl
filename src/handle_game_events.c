@@ -116,9 +116,6 @@ static void HandleGameEvent(
 		case GAME_EVENT_ADD_PARTICLE:
 			ParticleAdd(&gParticles, e->u.AddParticle);
 			break;
-		case GAME_EVENT_ADD_FIREBALL:
-			FireballAdd(e->u.AddFireball);
-			break;
 		case GAME_EVENT_HIT_CHARACTER:
 			HitCharacter(
 				e->u.HitCharacter.Flags,

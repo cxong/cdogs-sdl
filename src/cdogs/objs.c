@@ -182,7 +182,17 @@ static void DamageObject(
 		else
 		{
 			// A wreck left after the destruction of this object
-			GameEventAddFireballWreckage(fullPos);
+			GameEvent e;
+			memset(&e, 0, sizeof e);
+			e.Type = GAME_EVENT_ADD_BULLET;
+			e.u.AddBullet.BulletClass = StrBulletClass("fireball_wreck");
+			e.u.AddBullet.MuzzlePos = fullPos;
+			e.u.AddBullet.MuzzleHeight = 0;
+			e.u.AddBullet.Angle = 0;
+			e.u.AddBullet.Elevation = 0;
+			e.u.AddBullet.Flags = 0;
+			e.u.AddBullet.PlayerIndex = -1;
+			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
 				&gSoundDevice,
 				gSoundDevice.wreckSound,

@@ -960,26 +960,6 @@ void BulletTerminate(CArray *bullets)
 	CArrayTerminate(bullets);
 }
 
-void FireballAdd(const AddFireball e)
-{
-	TMobileObject *obj =
-		CArrayGet(&gMobObjs, MobObjAdd(e.FullPos, e.PlayerIndex));
-	obj->bulletClass = e.Class;
-	obj->vel = Vec2iFull2Real(Vec2iScale(
-		GetFullVectorsForRadians(e.Angle),
-		RAND_INT(e.Class->SpeedLow, e.Class->SpeedHigh)));
-	obj->dz = e.DZ;
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.drawFunc = NULL;
-	obj->tileItem.getPicFunc = NULL;
-	obj->tileItem.CPic = e.Class->CPic;
-	obj->tileItem.CPicFunc = e.Class->CPicFunc;
-	obj->tileItem.w = e.Class->Size.x;
-	obj->tileItem.h = e.Class->Size.y;
-	obj->range = RAND_INT(e.Class->RangeLow, e.Class->RangeHigh);
-	obj->flags = e.Flags;
-}
-
 void BulletAdd(const AddBullet add)
 {
 	Vec2i pos = add.MuzzlePos;
