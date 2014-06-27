@@ -112,12 +112,7 @@ const Pic *GetObjectPic(const int id, Vec2i *offset)
 
 
 static void DamageObject(
-	int power,
-	int flags,
-	int player,
-	TTileItem *target,
-	special_damage_e damage,
-	int isHitSoundEnabled)
+	const int power, const int flags, const int player, TTileItem *target)
 {
 	TObject *object = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
@@ -127,11 +122,7 @@ static void DamageObject(
 	}
 
 	object->structure -= power;
-	Vec2i pos = Vec2iNew(target->x, target->y);
-	if (isHitSoundEnabled && power > 0)
-	{
-		SoundPlayAt(&gSoundDevice, SoundGetHit(damage, 0), pos);
-	}
+	const Vec2i pos = Vec2iNew(target->x, target->y);
 
 	// Destroying objects and all the wonderful things that happen
 	if (object->structure <= 0)
@@ -217,14 +208,16 @@ int DamageSomething(
 	int flags,
 	int player,
 	TTileItem *target,
-	special_damage_e special,
-	bool hasHitSound)
+	const special_damage_e special,
+	const HitSounds *hitSounds,
+	const bool allowFriendlyHitSound)
 {
 	if (!target)
 	{
 		return 0;
 	}
 
+	const Vec2i pos = Vec2iNew(target->x, target->y);
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
@@ -237,13 +230,20 @@ int DamageSomething(
 			{
 				GameEvent e;
 				e.Type = GAME_EVENT_HIT_CHARACTER;
-				e.u.HitCharacter.Flags = flags;
-				e.u.HitCharacter.PlayerIndex = player;
 				e.u.HitCharacter.TargetId = actor->tileItem.id;
 				e.u.HitCharacter.Special = special;
-				e.u.HitCharacter.HasHitSound =
-					gConfig.Sound.Hits && hasHitSound;
 				GameEventsEnqueue(&gGameEvents, e);
+				if (gConfig.Sound.Hits && hitSounds != NULL &&
+					!ActorIsImmune(actor, special) &&
+					(allowFriendlyHitSound || !ActorIsInvulnerable(
+					actor, flags, player, gCampaign.Entry.Mode)))
+				{
+					GameEvent es;
+					es.Type = GAME_EVENT_SOUND_AT;
+					es.u.SoundAt.Sound = hitSounds->Flesh;
+					es.u.SoundAt.Pos = pos;
+					GameEventsEnqueue(&gGameEvents, es);
+				}
 				if (gConfig.Game.ShotsPushback)
 				{
 					GameEvent ei;
@@ -291,9 +291,15 @@ int DamageSomething(
 		break;
 
 	case KIND_OBJECT:
-		DamageObject(
-			power, flags, player, target, special,
-			gConfig.Sound.Hits && hasHitSound);
+		DamageObject(power, flags, player, target);
+		if (gConfig.Sound.Hits && hitSounds != NULL && power > 0)
+		{
+			GameEvent es;
+			es.Type = GAME_EVENT_SOUND_AT;
+			es.u.SoundAt.Sound = hitSounds->Object;
+			es.u.SoundAt.Pos = pos;
+			GameEventsEnqueue(&gGameEvents, es);
+		}
 		break;
 
 	case KIND_PARTICLE:
@@ -526,7 +532,8 @@ int HitItem(TMobileObject *obj, Vec2i pos)
 		obj->vel, obj->bulletClass->Power, obj->flags, obj->player,
 		item,
 		obj->bulletClass->Special,
-		obj->soundLock <= 0);
+		&obj->bulletClass->HitSound,
+		true);
 	if (hasHit && obj->soundLock <= 0)
 	{
 		obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;

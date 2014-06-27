@@ -158,8 +158,9 @@ int DamageSomething(
 	int flags,
 	int player,
 	TTileItem *target,
-	special_damage_e damage,
-	bool hasHitSound);
+	const special_damage_e special,
+	const HitSounds *hitSounds,
+	const bool allowFriendlyHitSound);
 
 void ObjsInit(void);
 void ObjsTerminate(void);

@@ -63,23 +63,6 @@ bool CanHitCharacter(int flags, int player, TActor *actor)
 	return true;
 }
 
-void HitCharacter(
-	int flags,
-	int player,
-	TActor *actor,
-	special_damage_e special,
-	bool hasHitSound)
-{
-	bool isInvulnerable = ActorIsInvulnerable(
-		actor, flags, player, gCampaign.Entry.Mode);
-	ActorTakeHit(
-		actor,
-		special,
-		hasHitSound,
-		isInvulnerable,
-		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-}
-
 bool CanDamageCharacter(
 	int flags, int player, TActor *actor, special_damage_e special)
 {

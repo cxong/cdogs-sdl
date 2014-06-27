@@ -563,14 +563,24 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				CArrayGet(&gObjs, target->id) : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
+				// Knife hit sound
+				// Special case: only allow enemy slice sounds
+				// TODO: custom knife sounds
+				HitSounds knifeSounds;
+				knifeSounds.Flesh = actor->weapon.soundLock <= 0 ?
+					StrSound("knife_flesh") : NULL;
+				knifeSounds.Object = actor->weapon.soundLock <= 0 ?
+					StrSound("knife_hard") : NULL;
+				knifeSounds.Wall = NULL;
 				DamageSomething(
 					Vec2iZero(),
 					2,
 					actor->flags,
 					actor->pData ? actor->pData->playerIndex : -1,
 					target,
-					SPECIAL_KNIFE,
-					actor->weapon.soundLock <= 0);
+					SPECIAL_NONE,
+					&knifeSounds,
+					false);
 				if (actor->weapon.soundLock <= 0)
 				{
 					actor->weapon.soundLock +=
@@ -1167,12 +1177,7 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 	}
 }
 
-void ActorTakeHit(
-	TActor *actor,
-	const special_damage_e damage,
-	const bool isHitSoundEnabled,
-	const bool isInvulnerable,
-	const Vec2i hitLocation)
+void ActorTakeHit(TActor *actor, const special_damage_e damage)
 {
 	// Wake up if this is an AI
 	if (actor->aiContext)
@@ -1188,16 +1193,6 @@ void ActorTakeHit(
 		return;
 	}
 	ActorTakeSpecialDamage(actor, damage);
-
-	// Hit sound
-	if (isHitSoundEnabled)
-	{
-		Mix_Chunk *sound = SoundGetHit(damage, 1);
-		if (!isInvulnerable || sound != gSoundDevice.knifeFleshSound)
-		{
-			SoundPlayAt(&gSoundDevice, sound, hitLocation);
-		}
-	}
 }
 
 int ActorIsInvulnerable(

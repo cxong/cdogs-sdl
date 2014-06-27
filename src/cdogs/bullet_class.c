@@ -109,7 +109,7 @@ static void SetBulletProps(
 	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.CPic = b->CPic;
-	obj->tileItem.CPicFunc = b->CPicFunc;
+	obj->tileItem.CPicFunc = GetBulletDrawContext;
 	obj->z = z;
 	obj->dz = dz;
 	obj->range = RAND_INT(b->RangeLow, b->RangeHigh);
@@ -219,7 +219,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 						}
 						GameEvent e;
 						e.Type = GAME_EVENT_SOUND_AT;
-						e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
+						e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
 						e.u.SoundAt.Pos = realPos;
 						GameEventsEnqueue(&gGameEvents, e);
 					}
@@ -281,7 +281,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SOUND_AT;
-		e.u.SoundAt.Sound = obj->bulletClass->WallHitSound;
+		e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
 		e.u.SoundAt.Pos = realPos;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
@@ -370,11 +370,11 @@ void BulletInitialize(CArray *bullets)
 	// Defaults
 	BulletClass defaultB;
 	memset(&defaultB, 0, sizeof defaultB);
-	defaultB.Friction = Vec2iZero();
-	defaultB.Size = Vec2iZero();
 	defaultB.Special = SPECIAL_NONE;
 	defaultB.Spark = ParticleClassGet(&gParticleClasses, "spark");
-	defaultB.WallHitSound = StrSound("ricochet");
+	defaultB.HitSound.Object = StrSound("hit_hard");
+	defaultB.HitSound.Flesh = StrSound("hit_flesh");
+	defaultB.HitSound.Wall = StrSound("ricochet");
 	defaultB.HitsObjects = true;
 	defaultB.Falling.Type = FALLING_TYPE_BOUNCE;
 	defaultB.SeekFactor = -1;
@@ -387,7 +387,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 10;
@@ -399,7 +398,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
 	b.Power = 15;
@@ -413,14 +411,15 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 30;
 	b.Power = 12;
 	b.Size = Vec2iNew(5, 5);
 	b.Special = SPECIAL_FLAME;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("hit_fire");
+	b.HitSound.Object = StrSound("hit_fire");
+	b.HitSound.Flesh = StrSound("hit_fire");
+	b.HitSound.Wall = StrSound("hit_fire");
 	b.WallBounces = true;
 	CArrayPushBack(bullets, &b);
 
@@ -430,7 +429,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "beam")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1024;
 	b.RangeLow = b.RangeHigh = 90;
 	b.Power = 20;
@@ -444,7 +442,6 @@ void BulletInitialize(CArray *bullets)
 		&PicManagerGetSprites(&gPicManager, "beam_bright")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1024;
 	b.RangeLow = b.RangeHigh = 90;
 	b.Power = 50;
@@ -456,7 +453,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 640;
 	b.RangeLow = b.RangeHigh = 50;
 	b.Power = 40;
@@ -474,13 +470,12 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 2;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.ShadowSize = Vec2iNew(4, 3);
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 100;
 	b.Power = 0;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("bounce");
+	b.HitSound.Wall = StrSound("bounce");
 	b.WallBounces = true;
 	b.HitsObjects = false;
 	b.Falling.GravityFactor = 1;
@@ -494,13 +489,12 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 2;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorGray;
-	b.CPicFunc = GetBulletDrawContext;
 	b.ShadowSize = Vec2iNew(4, 3);
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 100;
 	b.Power = 0;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("bounce");
+	b.HitSound.Wall = StrSound("bounce");
 	b.WallBounces = true;
 	b.HitsObjects = false;
 	b.Falling.GravityFactor = 1;
@@ -512,13 +506,12 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "molotov");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.ShadowSize = Vec2iNew(4, 3);
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 100;
 	b.Power = 0;
 	b.Spark = NULL;
-	b.WallHitSound = NULL;
+	b.HitSound.Wall = NULL;
 	b.HitsObjects = false;
 	b.Falling.GravityFactor = 1;
 	b.Falling.DestroyOnDrop = true;
@@ -532,13 +525,12 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 2;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorGreen;
-	b.CPicFunc = GetBulletDrawContext;
 	b.ShadowSize = Vec2iNew(4, 3);
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 100;
 	b.Power = 0;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("bounce");
+	b.HitSound.Wall = StrSound("bounce");
 	b.WallBounces = true;
 	b.HitsObjects = false;
 	b.Falling.GravityFactor = 1;
@@ -552,13 +544,12 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 2;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorPurple;
-	b.CPicFunc = GetBulletDrawContext;
 	b.ShadowSize = Vec2iNew(4, 3);
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.RangeLow = b.RangeHigh = 100;
 	b.Power = 0;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("bounce");
+	b.HitSound.Wall = StrSound("bounce");
 	b.WallBounces = true;
 	b.HitsObjects = false;
 	b.Falling.GravityFactor = 1;
@@ -572,7 +563,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = false;
 	b.CPic.u1.Tint = tintPoison;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 384;
 	b.Friction = Vec2iNew(4, 3);
 	b.RangeLow = b.RangeHigh = 35;
@@ -581,7 +571,9 @@ void BulletInitialize(CArray *bullets)
 	b.Special = SPECIAL_POISON;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("hit_gas");
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = StrSound("hit_gas");
 	b.WallBounces = true;
 	CArrayPushBack(bullets, &b);
 
@@ -591,7 +583,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "pulse")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 1280;
 	b.RangeLow = b.RangeHigh = 25;
 	b.Power = 6;
@@ -603,13 +594,14 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rocket")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 512;
 	b.RangeLow = b.RangeHigh = 60;
 	b.Power = 20;
 	b.Size = Vec2iNew(3, 3);
 	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
-	b.WallHitSound = StrSound("boom");
+	b.HitSound.Object = StrSound("boom");
+	b.HitSound.Flesh = StrSound("boom");
+	b.HitSound.Wall = StrSound("boom");
 	b.SeekFactor = 20;
 	CArrayPushBack(bullets, &b);
 
@@ -619,7 +611,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rapid")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 45;
 	b.Power = 15;
@@ -632,12 +623,13 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "molotov");
 	b.CPic.UseMask = false;
 	b.CPic.u1.Tint = tintDarker;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 768;
 	b.RangeLow = b.RangeHigh = 45;
 	b.Power = 0;
 	b.Size = Vec2iNew(5, 5);
 	b.Special = SPECIAL_PETRIFY;
+	b.HitSound.Object = StrSound("hit_petrify");
+	b.HitSound.Flesh = StrSound("hit_petrify");
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -646,7 +638,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 140;
 	b.Power = 0;
@@ -660,7 +651,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "dynamite");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 210;
 	b.Power = 0;
@@ -675,13 +665,14 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "swarmer")->pics;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 700;
 	b.RangeLow = b.RangeHigh = 70;
 	b.Power = 12;
 	b.Size = Vec2iNew(3, 3);
 	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
-	b.WallHitSound = StrSound("boom");
+	b.HitSound.Object = StrSound("boom");
+	b.HitSound.Flesh = StrSound("boom");
+	b.HitSound.Wall = StrSound("boom");
 	b.SeekFactor = 30;
 	CArrayPushBack(bullets, &b);
 
@@ -695,7 +686,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = -10;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
@@ -704,6 +694,9 @@ void BulletInitialize(CArray *bullets)
 	b.Special = SPECIAL_EXPLOSION;
 	b.Persists = true;
 	b.Spark = NULL;
+	b.HitSound.Object = NULL;
+	b.HitSound.Flesh = NULL;
+	b.HitSound.Wall = NULL;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -714,7 +707,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 256;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
 	b.Power = FIREBALL_POWER;
@@ -723,7 +715,9 @@ void BulletInitialize(CArray *bullets)
 	b.HurtAlways = true;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = NULL;
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
 	b.Falling.Type = FALLING_TYPE_DZ;
 	CArrayPushBack(bullets, &b);
@@ -737,7 +731,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = 8;
 	b.SpeedLow = b.SpeedHigh = 192;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
@@ -747,7 +740,9 @@ void BulletInitialize(CArray *bullets)
 	b.HurtAlways = true;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = NULL;
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
 	b.Falling.Type = FALLING_TYPE_DZ;
 	CArrayPushBack(bullets, &b);
@@ -761,7 +756,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.Delay = 16;
 	b.SpeedLow = b.SpeedHigh = 128;
 	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
@@ -771,7 +765,9 @@ void BulletInitialize(CArray *bullets)
 	b.HurtAlways = true;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = NULL;
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
 	b.Falling.Type = FALLING_TYPE_DZ;
 	CArrayPushBack(bullets, &b);
@@ -784,7 +780,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = -256;
 	b.SpeedHigh = 16 * 31 - 256;
 	b.SpeedScale = true;
@@ -797,7 +792,9 @@ void BulletInitialize(CArray *bullets)
 	b.HurtAlways = true;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = NULL;
+	b.HitSound.Object = StrSound("hit_fire");
+	b.HitSound.Flesh = StrSound("hit_fire");
+	b.HitSound.Wall = NULL;
 	b.WallBounces = true;
 	b.Falling.GravityFactor = 4;
 	b.Falling.Type = FALLING_TYPE_Z;
@@ -811,7 +808,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = false;
 	b.CPic.u1.Tint = tintPoison;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = 0;
 	b.SpeedHigh = 255;
 	b.Friction = Vec2iNew(4, 3);
@@ -823,7 +819,9 @@ void BulletInitialize(CArray *bullets)
 	b.HurtAlways = true;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("hit_gas");
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = StrSound("hit_gas");
 	b.WallBounces = true;
 	CArrayPushBack(bullets, &b);
 
@@ -835,7 +833,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Animated.TicksPerFrame = 4;
 	b.CPic.UseMask = false;
 	b.CPic.u1.Tint = tintPurple;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = 0;
 	b.SpeedHigh = 255;
 	b.Friction = Vec2iNew(4, 3);
@@ -846,7 +843,9 @@ void BulletInitialize(CArray *bullets)
 	b.Special = SPECIAL_CONFUSE;
 	b.Persists = true;
 	b.Spark = NULL;
-	b.WallHitSound = StrSound("hit_gas");
+	b.HitSound.Object = StrSound("hit_gas");
+	b.HitSound.Flesh = StrSound("hit_gas");
+	b.HitSound.Wall = StrSound("hit_gas");
 	b.WallBounces = true;
 	CArrayPushBack(bullets, &b);
 
@@ -857,7 +856,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = -1;
 	b.Power = 0;
@@ -871,7 +869,6 @@ void BulletInitialize(CArray *bullets)
 	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
 	b.CPic.UseMask = true;
 	b.CPic.u1.Mask = colorWhite;
-	b.CPicFunc = GetBulletDrawContext;
 	b.SpeedLow = b.SpeedHigh = 0;
 	b.RangeLow = b.RangeHigh = 5;
 	b.Power = 0;

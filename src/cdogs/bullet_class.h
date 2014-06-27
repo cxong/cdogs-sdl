@@ -65,7 +65,6 @@ typedef struct
 {
 	char *Name;
 	CPic CPic;
-	GetDrawContextFunc CPicFunc;
 	Vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	int SpeedLow;
@@ -81,7 +80,7 @@ typedef struct
 	bool HurtAlways;
 	bool Persists;	// remains even after hitting walls/items
 	const ParticleClass *Spark;
-	Mix_Chunk *WallHitSound;
+	HitSounds HitSound;
 	bool WallBounces;
 	bool HitsObjects;
 	struct

@@ -117,12 +117,9 @@ static void HandleGameEvent(
 			ParticleAdd(&gParticles, e->u.AddParticle);
 			break;
 		case GAME_EVENT_HIT_CHARACTER:
-			HitCharacter(
-				e->u.HitCharacter.Flags,
-				e->u.HitCharacter.PlayerIndex,
+			ActorTakeHit(
 				CArrayGet(&gActors, e->u.HitCharacter.TargetId),
-				e->u.HitCharacter.Special,
-				e->u.HitCharacter.HasHitSound);
+				e->u.HitCharacter.Special);
 			break;
 		case GAME_EVENT_ACTOR_IMPULSE:
 			{

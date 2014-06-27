@@ -54,12 +54,6 @@
 #include "vector.h"
 
 bool CanHitCharacter(int flags, int player, TActor *actor);
-void HitCharacter(
-	int flags,
-	int player,
-	TActor *actor,
-	special_damage_e special,
-	bool hasHitSound);
 bool CanDamageCharacter(
 	int flags, int player, TActor *actor, special_damage_e special);
 void DamageCharacter(int power, int player, TActor *actor);

@@ -190,13 +190,9 @@ int ActorAdd(Character *c, struct PlayerData *p);	// returns id
 void ActorDestroy(int id);
 
 int ActorIsImmune(TActor *actor, special_damage_e damage);
-// Taking a hit only gives the appearance (pushback, special effect) but deals no damage
-void ActorTakeHit(
-	TActor *actor,
-	const special_damage_e damage,
-	const bool isHitSoundEnabled,
-	const bool isInvulnerable,
-	const Vec2i hitLocation);
+// Taking a hit only gives the appearance (pushback, special effect)
+// but deals no damage
+void ActorTakeHit(TActor *actor, const special_damage_e damage);
 int ActorIsInvulnerable(
 	TActor *actor, int flags, int player, campaign_mode_e mode);
 

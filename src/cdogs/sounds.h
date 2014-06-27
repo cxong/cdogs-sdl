@@ -90,13 +90,6 @@ typedef struct
 	CArray sounds;	// of SoundData
 
 	// Some commonly-used sounds, store them here for quick access
-	Mix_Chunk *hitFireSound;
-	Mix_Chunk *hitGasSound;
-	Mix_Chunk *hitPetrifySound;
-	Mix_Chunk *hitFleshSound;
-	Mix_Chunk *hitHardSound;
-	Mix_Chunk *knifeFleshSound;
-	Mix_Chunk *knifeHardSound;
 	Mix_Chunk *footstepSound;
 	Mix_Chunk *slideSound;
 	Mix_Chunk *switchSound;
@@ -118,6 +111,15 @@ typedef struct
 	bool Reloads;
 } SoundConfig;
 
+// DTO for playing certain sounds associated with collision
+// for a bullet or weapon type
+typedef struct
+{
+	Mix_Chunk *Object;
+	Mix_Chunk *Flesh;
+	Mix_Chunk *Wall;
+} HitSounds;
+
 void SoundInitialize(
 	SoundDevice *device, SoundConfig *config, const char *path);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
@@ -137,8 +139,6 @@ void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos);
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
 	const Vec2i pos, const int plusDistance);
-
-Mix_Chunk *SoundGetHit(special_damage_e damage, int isActor);
 
 Mix_Chunk *StrSound(const char *s);
 Mix_Chunk *SoundGetRandomScream(const SoundDevice *device);

@@ -146,13 +146,6 @@ void SoundInitialize(
 	}
 
 	// Look for commonly used sounds to set our pointers
-	device->hitFireSound = StrSound("hit_fire");
-	device->hitGasSound = StrSound("hit_gas");
-	device->hitPetrifySound = StrSound("hit_petrify");
-	device->hitFleshSound = StrSound("hit_flesh");
-	device->hitHardSound = StrSound("hit_hard");
-	device->knifeFleshSound = StrSound("knife_flesh");
-	device->knifeHardSound = StrSound("knife_hard");
 	device->footstepSound = StrSound("footstep");
 	device->slideSound = StrSound("slide");
 	device->switchSound = StrSound("switch");
@@ -356,29 +349,6 @@ void SoundPlayAtPlusDistance(
 		closestLeftEar, closestRightEar, pos);
 	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
 	SoundPlayAtPosition(&gSoundDevice, data, distance + plusDistance, bearing);
-}
-
-Mix_Chunk *SoundGetHit(special_damage_e damage, int isActor)
-{
-	switch (damage)
-	{
-	case SPECIAL_FLAME:
-		return gSoundDevice.hitFireSound;
-	case SPECIAL_POISON:
-		return gSoundDevice.hitGasSound;
-	case SPECIAL_PETRIFY:
-		return gSoundDevice.hitPetrifySound;
-	case SPECIAL_CONFUSE:
-		return gSoundDevice.hitGasSound;
-	case SPECIAL_KNIFE:
-		return
-			isActor ? gSoundDevice.knifeFleshSound : gSoundDevice.hitHardSound;
-	case SPECIAL_EXPLOSION:
-		return gSoundDevice.hitGasSound;
-	default:
-		return
-			isActor ? gSoundDevice.hitFleshSound : gSoundDevice.hitHardSound;
-	}
 }
 
 Mix_Chunk *StrSound(const char *s)

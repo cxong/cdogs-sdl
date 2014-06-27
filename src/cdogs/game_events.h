@@ -100,11 +100,8 @@ typedef struct
 		AddParticle AddParticle;
 		struct
 		{
-			int Flags;
-			int PlayerIndex;
 			int TargetId;
 			special_damage_e Special;
-			bool HasHitSound;
 		} HitCharacter;
 		struct
 		{
