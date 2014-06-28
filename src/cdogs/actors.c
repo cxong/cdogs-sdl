@@ -1016,7 +1016,7 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	if (c->bot)
 	{
 		actor->aiContext = AIContextNew();
-		actor->aiContext->State = AI_STATE_IDLE;
+		AIContextSetState(actor->aiContext, AI_STATE_IDLE);
 	}
 	return i;
 }
@@ -1183,7 +1183,7 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 	if (actor->aiContext)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
-		actor->aiContext->State = AI_STATE_NONE;
+		AIContextSetState(actor->aiContext, AI_STATE_NONE);
 	}
 	// Check immune again
 	// This can happen if multiple damage events overkill this actor,

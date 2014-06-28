@@ -219,6 +219,11 @@ static void LoadInterfaceConfigNode(
 			json_find_first_label(node, "Splitscreen")->child->text);
 	}
 	LoadBool(&config->ShowHUDMap, node, "ShowHUDMap");
+	json_t *n = node;
+	if (TryLoadValue(&n, "AIChatter"))
+	{
+		config->AIChatter = StrAIChatter(n->text);
+	}
 }
 static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 {
@@ -232,6 +237,9 @@ static void AddInterfaceConfigNode(InterfaceConfig *config, json_t *root)
 		json_new_string(SplitscreenStyleStr(config->Splitscreen)));
 	json_insert_pair_into_object(
 		subConfig, "ShowHUDMap", json_new_bool(config->ShowHUDMap));
+	json_insert_pair_into_object(
+		subConfig, "AIChatter",
+		json_new_string(AIChatterStr(config->AIChatter)));
 	json_insert_pair_into_object(root, "Interface", subConfig);
 }
 

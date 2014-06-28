@@ -29,6 +29,7 @@
 #define __AI_CONTEXT
 
 #include "AStar.h"
+#include "config.h"
 #include "mission.h"
 #include "vector.h"
 
@@ -88,6 +89,10 @@ typedef struct
 	// Used to let the AI perform one action for a set amount of time
 	int Delay;
 	AIState State;
+
+	// Counters to moderate amount of chatter
+	int ChatterCounter;
+
 	AIConfusionState ConfusionState;
 	AIObjectiveState ObjectiveState;
 	Vec2i LastTile;
@@ -99,5 +104,7 @@ AIContext *AIContextNew(void);
 void AIContextDestroy(AIContext *c);
 
 const char *AIStateGetChatterText(const AIState s);
+bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f);
+void AIContextSetState(AIContext *c, const AIState s);
 
 #endif

@@ -218,6 +218,45 @@ SplitscreenStyle StrSplitscreenStyle(const char *str)
 		return SPLITSCREEN_NORMAL;
 	}
 }
+const char *AIChatterStr(AIChatterFrequency c)
+{
+	switch (c)
+	{
+	case AICHATTER_NONE:
+		return "None";
+	case AICHATTER_SELDOM:
+		return "Seldom";
+	case AICHATTER_OFTEN:
+		return "Often";
+	case AICHATTER_ALWAYS:
+		return "Always";
+	default:
+		return "";
+	}
+}
+AIChatterFrequency StrAIChatter(const char *str)
+{
+	if (strcmp(str, "None") == 0)
+	{
+		return AICHATTER_NONE;
+	}
+	else if (strcmp(str, "Seldom") == 0)
+	{
+		return AICHATTER_SELDOM;
+	}
+	else if (strcmp(str, "Often") == 0)
+	{
+		return AICHATTER_OFTEN;
+	}
+	else if (strcmp(str, "Always") == 0)
+	{
+		return AICHATTER_ALWAYS;
+	}
+	else
+	{
+		return AICHATTER_NONE;
+	}
+}
 const char *QuickPlayQuantityStr(QuickPlayQuantity q)
 {
 	switch (q)
@@ -353,6 +392,7 @@ void ConfigLoadDefault(Config *config)
 	config->Interface.ShowTime = 0;
 	config->Interface.Splitscreen = SPLITSCREEN_NEVER;
 	config->Interface.ShowHUDMap = 1;
+	config->Interface.AIChatter = AICHATTER_SELDOM;
 	config->Sound.MusicVolume = 64;
 	config->Sound.SoundVolume = 64;
 	config->Sound.Footsteps = 1;

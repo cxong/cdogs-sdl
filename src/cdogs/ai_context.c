@@ -69,3 +69,42 @@ const char *AIStateGetChatterText(const AIState s)
 		return "";
 	}
 }
+
+bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
+{
+	return f != AICHATTER_NONE && c->ChatterCounter <= 0;
+}
+
+static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);
+void AIContextSetState(AIContext *c, const AIState s)
+{
+	const bool isChange = c->State != s;
+	c->State = s;
+	if (isChange)
+	{
+		AIContextSetChatterDelay(c, gConfig.Interface.AIChatter);
+	}
+}
+static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
+{
+	c->ChatterCounter--;
+	if (c->ChatterCounter >= 0)
+	{
+		return;
+	}
+	switch (f)
+	{
+	case AICHATTER_SELDOM:
+		c->ChatterCounter = 10;
+		break;
+	case AICHATTER_OFTEN:
+		c->ChatterCounter = 3;
+		break;
+	case AICHATTER_ALWAYS:
+		c->ChatterCounter = 0;
+		break;
+	default:
+		// do nothing
+		break;
+	}
+}

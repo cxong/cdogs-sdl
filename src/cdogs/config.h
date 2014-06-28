@@ -99,12 +99,23 @@ typedef enum
 const char *SplitscreenStyleStr(SplitscreenStyle s);
 SplitscreenStyle StrSplitscreenStyle(const char *str);
 
+typedef enum
+{
+	AICHATTER_NONE,
+	AICHATTER_SELDOM,
+	AICHATTER_OFTEN,
+	AICHATTER_ALWAYS
+} AIChatterFrequency;
+const char *AIChatterStr(AIChatterFrequency c);
+AIChatterFrequency StrAIChatter(const char *str);
+
 typedef struct
 {
 	bool ShowFPS;
 	bool ShowTime;
 	SplitscreenStyle Splitscreen;
 	bool ShowHUDMap;
+	AIChatterFrequency AIChatter;
 } InterfaceConfig;
 
 typedef enum

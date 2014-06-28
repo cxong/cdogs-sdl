@@ -258,6 +258,13 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			&gConfig.Interface.ShowHUDMap,
 			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
 	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"AI Chatter", (int *)&gConfig.Interface.AIChatter,
+			AICHATTER_NONE, AICHATTER_ALWAYS, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))AIChatterStr));
+	MenuAddSubmenu(
 		menu, MenuCreateOptionSeed("Random seed", &gConfig.Game.RandomSeed));
 	MenuAddSubmenu(
 		menu,

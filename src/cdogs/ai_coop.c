@@ -69,7 +69,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 			}
 			else
 			{
-				actor->aiContext->State = AI_STATE_CONFUSED;
+				AIContextSetState(actor->aiContext, AI_STATE_CONFUSED);
 				s->Type = AI_CONFUSION_CONFUSED;
 				// Generate the confused action
 				s->Cmd = rand() &
@@ -152,7 +152,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
-		actor->aiContext->State = AI_STATE_FOLLOW;
+		AIContextSetState(actor->aiContext, AI_STATE_FOLLOW);
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
@@ -168,7 +168,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
 			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
 		{
-			actor->aiContext->State = AI_STATE_HUNT;
+			AIContextSetState(actor->aiContext, AI_STATE_HUNT);
 			int cmd = AIHunt(actor, closestEnemy->Pos);
 			// only fire if gun is ready
 			if (actor->weapon.lock <= 0)
@@ -191,11 +191,11 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// run into them
 	if (closestPlayer && minDistance2 > 4*4*16*16/3/3)
 	{
-		actor->aiContext->State = AI_STATE_FOLLOW;
+		AIContextSetState(actor->aiContext, AI_STATE_FOLLOW);
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
-	actor->aiContext->State = AI_STATE_IDLE;
+	AIContextSetState(actor->aiContext, AI_STATE_IDLE);
 	return 0;
 }
 // Number of ticks to persist in trying to destroy an obstruction
@@ -315,7 +315,7 @@ static bool TryCompleteNearbyObjective(
 	if (CanCompleteMission(&gMission) && CanGetObjective(
 		exitPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 	{
-		context->State = AI_STATE_NEXT_OBJECTIVE;
+		AIContextSetState(actor->aiContext, AI_STATE_NEXT_OBJECTIVE);
 		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
 		objState->Goal = exitPos;
 		*cmdOut = GotoObjective(actor, 0);
@@ -333,7 +333,7 @@ static bool TryCompleteNearbyObjective(
 		if (CanGetObjective(
 			c->Pos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 		{
-			context->State = AI_STATE_NEXT_OBJECTIVE;
+			AIContextSetState(actor->aiContext, AI_STATE_NEXT_OBJECTIVE);
 			objState->Type = c->Type;
 			objState->IsDestructible = c->IsDestructible;
 			if (c->Type == AI_OBJECTIVE_TYPE_KEY)

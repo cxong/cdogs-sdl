@@ -163,8 +163,6 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset);
 static void DrawAIChatter(const DrawBuffer *b, const Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
-#define AI_CHATTER
-
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 {
 	// First draw the floor tiles (which do not obstruct anything)
@@ -175,9 +173,6 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	DrawWallsAndThings(b, offset);
 	// Draw objective highlights, for visible and always-visible objectives
 	DrawObjectiveHighlights(b, offset);
-#ifdef AI_CHATTER
-	DrawAIChatter(b, offset);
-#endif
 	// Draw editor-only things
 	if (extra)
 	{
@@ -314,6 +309,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
+#define ACTOR_HEIGHT 25
 static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
@@ -399,6 +395,19 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 					oldPic,
 					pics.Table, BLIT_TRANSPARENT);
 			}
+			const TActor *a = CArrayGet(&gActors, t->id);
+			if (!a->aiContext || !AIContextShowChatter(
+				a->aiContext, gConfig.Interface.AIChatter))
+			{
+				return;
+			}
+			const char *text =
+				AIStateGetChatterText(a->aiContext->State);
+			const Vec2i textPos = Vec2iNew(
+				a->tileItem.x - b->xTop + offset.x -
+				TextGetStringWidth(text) / 2,
+				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			TextString(&gTextManager, text, b->g, textPos);
 		}
 	}
 	else
@@ -482,50 +491,6 @@ static void DrawObjectiveHighlight(
 				}
 			}
 		}
-	}
-}
-
-#define ACTOR_HEIGHT 25
-static void DrawAIChatter(const DrawBuffer *b, const Vec2i offset)
-{
-	Vec2i pos;
-	const Tile *tile = &b->tiles[0][0];
-	pos.y = b->dy + cWallOffset.dy + offset.y;
-	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
-	{
-		pos.x = b->dx + cWallOffset.dx + offset.x;
-		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
-		{
-			if (!(tile->flags & MAPTILE_OUT_OF_SIGHT))
-			{
-				// Draw the items that are in LOS
-				for (int i = 0; i < (int)tile->things.size; i++)
-				{
-					const ThingId *tid = CArrayGet(&tile->things, i);
-					if (tid->Kind != KIND_CHARACTER)
-					{
-						continue;
-					}
-					const TActor *a = CArrayGet(&gActors, tid->Id);
-					if (!a->aiContext)
-					{
-						continue;
-					}
-					const char *text =
-						AIStateGetChatterText(a->aiContext->State);
-					Vec2i textPos = Vec2iNew(
-						a->tileItem.x - b->xTop + offset.x -
-							TextGetStringWidth(text) / 2,
-						a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
-					TextString(
-						&gTextManager,
-						AIStateGetChatterText(a->aiContext->State),
-						b->g,
-						textPos);
-				}
-			}
-		}
-		tile += X_TILES - b->Size.x;
 	}
 }
 
