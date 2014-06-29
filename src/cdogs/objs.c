@@ -532,7 +532,7 @@ int HitItem(TMobileObject *obj, Vec2i pos)
 		obj->vel, obj->bulletClass->Power, obj->flags, obj->player,
 		item,
 		obj->bulletClass->Special,
-		&obj->bulletClass->HitSound,
+		obj->soundLock <= 0 ? &obj->bulletClass->HitSound : NULL,
 		true);
 	if (hasHit && obj->soundLock <= 0)
 	{

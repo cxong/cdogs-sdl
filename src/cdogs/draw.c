@@ -160,7 +160,6 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
 static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset);
-static void DrawAIChatter(const DrawBuffer *b, const Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
