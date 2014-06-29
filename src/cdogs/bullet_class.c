@@ -54,10 +54,11 @@
 #include "collision.h"
 #include "drawtools.h"
 #include "game_events.h"
+#include "json_utils.h"
 #include "objs.h"
 #include "screen_shake.h"
 
-CArray gBulletClasses;
+BulletClasses gBulletClasses;
 
 
 // TODO: use map structure?
@@ -67,9 +68,9 @@ BulletClass *StrBulletClass(const char *s)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)gBulletClasses.size; i++)
+	for (int i = 0; i < (int)gBulletClasses.Classes.size; i++)
 	{
-		BulletClass *b = CArrayGet(&gBulletClasses, i);
+		BulletClass *b = CArrayGet(&gBulletClasses.Classes, i);
 		if (strcmp(s, b->Name) == 0)
 		{
 			return b;
@@ -348,598 +349,258 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 }
 
 
-void BulletInitialize(CArray *bullets)
+#define VERSION 1
+static void LoadBullet(
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet);
+void BulletInitialize(BulletClasses *bullets, const char *filename)
 {
-	CArrayInit(bullets, sizeof(BulletClass));
+	CArrayInit(&bullets->Classes, sizeof(BulletClass));
+	FILE *f = fopen(filename, "r");
+	json_t *root = NULL;
+	if (f == NULL)
+	{
+		printf("Error: cannot load bullets file %s\n", filename);
+		goto bail;
+	}
+	const enum json_error e = json_stream_parse(f, &root);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing bullets file %s\n", filename);
+		goto bail;
+	}
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		CASSERT(false, "cannot read bullets file version");
+		goto bail;
+	}
 
 	// Defaults
 	BulletClass defaultB;
-	memset(&defaultB, 0, sizeof defaultB);
-	defaultB.Spark = ParticleClassGet(&gParticleClasses, "spark");
-	defaultB.HitSound.Object = StrSound("hit_hard");
-	defaultB.HitSound.Flesh = StrSound("hit_flesh");
-	defaultB.HitSound.Wall = StrSound("ricochet");
-	defaultB.HitsObjects = true;
-	defaultB.Falling.FallsDown = true;
-	defaultB.Falling.Bounces = true;
-	defaultB.SeekFactor = -1;
-
-	BulletClass b;
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "mg");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 768;
-	b.RangeLow = b.RangeHigh = 60;
-	b.Power = 10;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "shotgun");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 640;
-	b.RangeLow = b.RangeHigh = 50;
-	b.Power = 15;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "flame");
-	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "flame")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 30;
-	b.Power = 12;
-	b.Size = Vec2iNew(5, 5);
-	b.Special = SPECIAL_FLAME;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_fire");
-	b.HitSound.Flesh = StrSound("hit_fire");
-	b.HitSound.Wall = StrSound("hit_fire");
-	b.WallBounces = true;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "laser");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "beam")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 1024;
-	b.RangeLow = b.RangeHigh = 90;
-	b.Power = 20;
-	b.Size = Vec2iNew(2, 2);
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "sniper");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites =
-		&PicManagerGetSprites(&gPicManager, "beam_bright")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 1024;
-	b.RangeLow = b.RangeHigh = 90;
-	b.Power = 50;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "frag");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "bullet");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 640;
-	b.RangeLow = b.RangeHigh = 50;
-	b.Power = 40;
-	b.HurtAlways = true;
-	CArrayPushBack(bullets, &b);
-
-
-	// Grenades
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "grenade");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "grenade")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 2;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.ShadowSize = Vec2iNew(4, 3);
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 100;
-	b.Power = 0;
-	b.Spark = NULL;
-	b.HitSound.Wall = StrSound("bounce");
-	b.WallBounces = true;
-	b.HitsObjects = false;
-	b.Falling.GravityFactor = 1;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "shrapnelbomb");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "grenade")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 2;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorGray;
-	b.ShadowSize = Vec2iNew(4, 3);
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 100;
-	b.Power = 0;
-	b.Spark = NULL;
-	b.HitSound.Wall = StrSound("bounce");
-	b.WallBounces = true;
-	b.HitsObjects = false;
-	b.Falling.GravityFactor = 1;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "molotov");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "molotov");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.ShadowSize = Vec2iNew(4, 3);
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 100;
-	b.Power = 0;
-	b.Spark = NULL;
-	b.HitSound.Wall = NULL;
-	b.HitsObjects = false;
-	b.Falling.GravityFactor = 1;
-	b.Falling.DestroyOnDrop = true;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "gasbomb");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "grenade")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 2;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorGreen;
-	b.ShadowSize = Vec2iNew(4, 3);
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 100;
-	b.Power = 0;
-	b.Spark = NULL;
-	b.HitSound.Wall = StrSound("bounce");
-	b.WallBounces = true;
-	b.HitsObjects = false;
-	b.Falling.GravityFactor = 1;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "confusebomb");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "grenade")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 2;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorPurple;
-	b.ShadowSize = Vec2iNew(4, 3);
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.RangeLow = b.RangeHigh = 100;
-	b.Power = 0;
-	b.Spark = NULL;
-	b.HitSound.Wall = StrSound("bounce");
-	b.WallBounces = true;
-	b.HitsObjects = false;
-	b.Falling.GravityFactor = 1;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "gas");
-	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = false;
-	b.CPic.u1.Tint = tintPoison;
-	b.SpeedLow = b.SpeedHigh = 384;
-	b.Friction = Vec2iNew(4, 3);
-	b.RangeLow = b.RangeHigh = 35;
-	b.Power = 0;
-	b.Size = Vec2iNew(10, 10);
-	b.Special = SPECIAL_POISON;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = StrSound("hit_gas");
-	b.WallBounces = true;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "pulse");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "pulse")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 1280;
-	b.RangeLow = b.RangeHigh = 25;
-	b.Power = 6;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "heatseeker");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rocket")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 512;
-	b.RangeLow = b.RangeHigh = 60;
-	b.Power = 20;
-	b.Size = Vec2iNew(3, 3);
-	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
-	b.HitSound.Object = StrSound("boom");
-	b.HitSound.Flesh = StrSound("boom");
-	b.HitSound.Wall = StrSound("boom");
-	b.SeekFactor = 20;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "rapid");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "rapid")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 768;
-	b.RangeLow = b.RangeHigh = 45;
-	b.Power = 15;
-	b.Erratic = true;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "petrifier");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "molotov");
-	b.CPic.UseMask = false;
-	b.CPic.u1.Tint = tintDarker;
-	b.SpeedLow = b.SpeedHigh = 768;
-	b.RangeLow = b.RangeHigh = 45;
-	b.Power = 0;
-	b.Size = Vec2iNew(5, 5);
-	b.Special = SPECIAL_PETRIFY;
-	b.HitSound.Object = StrSound("hit_petrify");
-	b.HitSound.Flesh = StrSound("hit_petrify");
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "proxmine");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_inactive");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = 140;
-	b.Power = 0;
-	b.Persists = true;
-	b.HitsObjects = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "dynamite");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "dynamite");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = 210;
-	b.Power = 0;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitsObjects = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "swarmer");
-	b.CPic.Type = PICTYPE_DIRECTIONAL;
-	b.CPic.u.Sprites = &PicManagerGetSprites(&gPicManager, "swarmer")->pics;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 700;
-	b.RangeLow = b.RangeHigh = 70;
-	b.Power = 12;
-	b.Size = Vec2iNew(3, 3);
-	b.Spark = ParticleClassGet(&gParticleClasses, "boom");
-	b.HitSound.Object = StrSound("boom");
-	b.HitSound.Flesh = StrSound("boom");
-	b.HitSound.Wall = StrSound("boom");
-	b.SeekFactor = 30;
-	CArrayPushBack(bullets, &b);
-
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "fireball_wreck");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
-	b.CPic.u.Animated.Count = 10;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.Delay = -10;
-	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
-	b.Power = 0;
-	b.Size = Vec2iNew(7, 5);
-	b.Special = SPECIAL_EXPLOSION;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = NULL;
-	b.HitSound.Flesh = NULL;
-	b.HitSound.Wall = NULL;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "fireball1");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 256;
-	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1;
-	b.Power = FIREBALL_POWER;
-	b.Size = Vec2iNew(7, 5);
-	b.Special = SPECIAL_EXPLOSION;
-	b.HurtAlways = true;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = NULL;
-	b.Falling.GravityFactor = 1;
-	b.Falling.FallsDown = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "fireball2");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
-	b.CPic.u.Animated.Count = -8;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.Delay = 8;
-	b.SpeedLow = b.SpeedHigh = 192;
-	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
-	b.Power = FIREBALL_POWER;
-	b.Size = Vec2iNew(7, 5);
-	b.Special = SPECIAL_EXPLOSION;
-	b.HurtAlways = true;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = NULL;
-	b.Falling.GravityFactor = 1;
-	b.Falling.FallsDown = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "fireball3");
-	b.CPic.Type = PICTYPE_ANIMATED;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "fireball")->pics;
-	b.CPic.u.Animated.Count = -16;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.Delay = 16;
-	b.SpeedLow = b.SpeedHigh = 128;
-	b.RangeLow = b.RangeHigh = FIREBALL_MAX * 4 - 1 + b.Delay;
-	b.Power = FIREBALL_POWER;
-	b.Size = Vec2iNew(7, 5);
-	b.Special = SPECIAL_EXPLOSION;
-	b.HurtAlways = true;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = NULL;
-	b.Falling.GravityFactor = 1;
-	b.Falling.FallsDown = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "molotov_flame");
-	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "flame")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = -256;
-	b.SpeedHigh = 16 * 31 - 256;
-	b.SpeedScale = true;
-	b.Friction = Vec2iNew(4, 3);
-	b.RangeLow = FLAME_RANGE * 4;
-	b.RangeHigh = (FLAME_RANGE + 8 - 1) * 4;
-	b.Power = 2;
-	b.Size = Vec2iNew(5, 5);
-	b.Special = SPECIAL_FLAME;
-	b.HurtAlways = true;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_fire");
-	b.HitSound.Flesh = StrSound("hit_fire");
-	b.HitSound.Wall = NULL;
-	b.WallBounces = true;
-	b.Falling.GravityFactor = 4;
-	b.Falling.Bounces = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "gas_cloud_poison");
-	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = false;
-	b.CPic.u1.Tint = tintPoison;
-	b.SpeedLow = 0;
-	b.SpeedHigh = 255;
-	b.Friction = Vec2iNew(4, 3);
-	b.RangeLow = 48 * 4 - 1;
-	b.RangeHigh = (48 - 8 - 1) * 4 - 1;
-	b.Power = 0;
-	b.Size = Vec2iNew(10, 10);
-	b.Special = SPECIAL_POISON;
-	b.HurtAlways = true;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = StrSound("hit_gas");
-	b.WallBounces = true;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "gas_cloud_confuse");
-	b.CPic.Type = PICTYPE_ANIMATED_RANDOM;
-	b.CPic.u.Animated.Sprites =
-		&PicManagerGetSprites(&gPicManager, "gas_cloud")->pics;
-	b.CPic.u.Animated.TicksPerFrame = 4;
-	b.CPic.UseMask = false;
-	b.CPic.u1.Tint = tintPurple;
-	b.SpeedLow = 0;
-	b.SpeedHigh = 255;
-	b.Friction = Vec2iNew(4, 3);
-	b.RangeLow = 48 * 4 - 1;
-	b.RangeHigh = (48 - 8 - 1) * 4 - 1;
-	b.Power = 0;
-	b.Size = Vec2iNew(10, 10);
-	b.Special = SPECIAL_CONFUSE;
-	b.Persists = true;
-	b.Spark = NULL;
-	b.HitSound.Object = StrSound("hit_gas");
-	b.HitSound.Flesh = StrSound("hit_gas");
-	b.HitSound.Wall = StrSound("hit_gas");
-	b.WallBounces = true;
-	CArrayPushBack(bullets, &b);
-
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "activemine");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = -1;
-	b.Power = 0;
-	b.Persists = true;
-	b.HitsObjects = false;
-	CArrayPushBack(bullets, &b);
-
-	memcpy(&b, &defaultB, sizeof b);
-	CSTRDUP(b.Name, "triggeredmine");
-	b.CPic.Type = PICTYPE_NORMAL;
-	b.CPic.u.Pic = PicManagerGetPic(&gPicManager, "mine_active");
-	b.CPic.UseMask = true;
-	b.CPic.u1.Mask = colorWhite;
-	b.SpeedLow = b.SpeedHigh = 0;
-	b.RangeLow = b.RangeHigh = 5;
-	b.Power = 0;
-	b.Persists = true;
-	b.HitsObjects = false;
-	CArrayPushBack(bullets, &b);
-}
-void BulletInitialize2(CArray *bullets)
-{
-	UNUSED(bullets);
-	BulletClass *b;
-	const GunDescription *g;
-	
-	b = StrBulletClass("grenade");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("explosion1");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion2");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion3");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	
-	b = StrBulletClass("shrapnelbomb");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("frag_explosion");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-
-	b = StrBulletClass("molotov");
-	g = StrGunDescription("fire_explosion");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	CArrayInit(&b->HitGuns, sizeof(const GunDescription *));
-	CArrayPushBack(&b->HitGuns, &g);
-	CArrayInit(&b->Falling.DropGuns, sizeof(const GunDescription *));
-	CArrayPushBack(&b->Falling.DropGuns, &g);
-
-	b = StrBulletClass("gasbomb");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("gas_poison_explosion");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-
-	b = StrBulletClass("confusebomb");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("gas_confuse_explosion");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-
-	b = StrBulletClass("proxmine");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("activemine");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-
-	b = StrBulletClass("dynamite");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("explosion1");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion2");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion3");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-
-	b = StrBulletClass("activemine");
-	CArrayInit(&b->ProximityGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("triggeredmine");
-	CArrayPushBack(&b->ProximityGuns, &g);
-
-	b = StrBulletClass("triggeredmine");
-	CArrayInit(&b->OutOfRangeGuns, sizeof(const GunDescription *));
-	g = StrGunDescription("explosion1");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion2");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-	g = StrGunDescription("explosion3");
-	CArrayPushBack(&b->OutOfRangeGuns, &g);
-}
-void BulletTerminate(CArray *bullets)
-{
-	for (int i = 0; i < (int)bullets->size; i++)
+	LoadBullet(
+		&defaultB, json_find_first_label(root, "DefaultBullet")->child, NULL);
+	json_t *bulletsNode = json_find_first_label(root, "Bullets")->child;
+	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
-		BulletClass *b = CArrayGet(bullets, i);
+		BulletClass b;
+		LoadBullet(&b, child, &defaultB);
+		CArrayPushBack(&bullets->Classes, &b);
+	}
+
+bail:
+	bullets->root = root;
+	if (f)
+	{
+		fclose(f);
+	}
+}
+static void LoadBullet(
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
+{
+	if (defaultBullet != NULL)
+	{
+		memcpy(b, defaultBullet, sizeof *b);
+	}
+	else
+	{
+		memset(b, 0, sizeof *b);
+	}
+	char *tmp;
+
+	if (json_find_first_label(node, "Name"))
+	{
+		b->Name = GetString(node, "Name");
+	}
+	if (json_find_first_label(node, "Pic"))
+	{
+		json_t *pic = json_find_first_label(node, "Pic")->child;
+		tmp = GetString(pic, "Type");
+		b->CPic.Type = StrPicType(tmp);
+		CFREE(tmp);
+		switch (b->CPic.Type)
+		{
+		case PICTYPE_NORMAL:
+			tmp = GetString(pic, "Pic");
+			b->CPic.u.Pic = PicManagerGetPic(&gPicManager, tmp);
+			CFREE(tmp);
+			break;
+		case PICTYPE_DIRECTIONAL:
+			tmp = GetString(pic, "Sprites");
+			b->CPic.u.Sprites =
+				&PicManagerGetSprites(&gPicManager, tmp)->pics;
+			CFREE(tmp);
+			break;
+		case PICTYPE_ANIMATED:	// fallthrough
+		case PICTYPE_ANIMATED_RANDOM:
+			tmp = GetString(pic, "Sprites");
+			b->CPic.u.Animated.Sprites =
+				&PicManagerGetSprites(&gPicManager, tmp)->pics;
+			CFREE(tmp);
+			LoadInt(&b->CPic.u.Animated.Count, pic, "Count");
+			LoadInt(&b->CPic.u.Animated.TicksPerFrame, pic, "TicksPerFrame");
+			break;
+		default:
+			CASSERT(false, "unknown pic type");
+			break;
+		}
+		b->CPic.UseMask = true;
+		b->CPic.u1.Mask = colorWhite;
+		if (json_find_first_label(pic, "Mask"))
+		{
+			tmp = GetString(pic, "Mask");
+			b->CPic.u1.Mask = StrColor(tmp);
+			CFREE(tmp);
+		}
+		else if (json_find_first_label(pic, "Tint"))
+		{
+			b->CPic.UseMask = false;
+			json_t *tint = json_find_first_label(pic, "Tint")->child->child;
+			b->CPic.u1.Tint.h = atof(tint->text);
+			tint = tint->next;
+			b->CPic.u1.Tint.s = atof(tint->text);
+			tint = tint->next;
+			b->CPic.u1.Tint.v = atof(tint->text);
+			tint = tint->next;
+		}
+	}
+	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
+	LoadInt(&b->Delay, node, "Delay");
+	if (json_find_first_label(node, "Speed"))
+	{
+		LoadInt(&b->SpeedLow, node, "Speed");
+		b->SpeedHigh = b->SpeedLow;
+	}
+	if (json_find_first_label(node, "SpeedLow"))
+	{
+		LoadInt(&b->SpeedLow, node, "SpeedLow");
+	}
+	if (json_find_first_label(node, "SpeedHigh"))
+	{
+		LoadInt(&b->SpeedHigh, node, "SpeedHigh");
+	}
+	b->SpeedLow = MIN(b->SpeedLow, b->SpeedHigh);
+	b->SpeedHigh = MAX(b->SpeedLow, b->SpeedHigh);
+	LoadBool(&b->SpeedScale, node, "SpeedScale");
+	LoadVec2i(&b->Friction, node, "Friction");
+	if (json_find_first_label(node, "Range"))
+	{
+		LoadInt(&b->RangeLow, node, "Range");
+		b->RangeHigh = b->RangeLow;
+	}
+	if (json_find_first_label(node, "RangeLow"))
+	{
+		LoadInt(&b->RangeLow, node, "RangeLow");
+	}
+	if (json_find_first_label(node, "RangeHigh"))
+	{
+		LoadInt(&b->RangeHigh, node, "RangeHigh");
+	}
+	b->RangeLow = MIN(b->RangeLow, b->RangeHigh);
+	b->RangeHigh = MAX(b->RangeLow, b->RangeHigh);
+	LoadInt(&b->Power, node, "Power");
+	LoadVec2i(&b->Size, node, "Size");
+	if (json_find_first_label(node, "Special"))
+	{
+		tmp = GetString(node, "Special");
+		b->Special = StrSpecialDamage(tmp);
+		CFREE(tmp);
+	}
+	LoadBool(&b->HurtAlways, node, "HurtAlways");
+	LoadBool(&b->Persists, node, "Persists");
+	if (json_find_first_label(node, "Spark"))
+	{
+		tmp = GetString(node, "Spark");
+		b->Spark = ParticleClassGet(&gParticleClasses, tmp);
+		CFREE(tmp);
+	}
+	if (json_find_first_label(node, "HitSounds"))
+	{
+		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
+		if (json_find_first_label(hitSounds, "Object"))
+		{
+			tmp = GetString(hitSounds, "Object");
+			b->HitSound.Object = StrSound(tmp);
+			CFREE(tmp);
+		}
+		if (json_find_first_label(hitSounds, "Flesh"))
+		{
+			tmp = GetString(hitSounds, "Flesh");
+			b->HitSound.Flesh = StrSound(tmp);
+			CFREE(tmp);
+		}
+		if (json_find_first_label(hitSounds, "Wall"))
+		{
+			tmp = GetString(hitSounds, "Wall");
+			b->HitSound.Wall = StrSound(tmp);
+			CFREE(tmp);
+		}
+	}
+	LoadBool(&b->WallBounces, node, "WallBounces");
+	LoadBool(&b->HitsObjects, node, "HitsObjects");
+	if (json_find_first_label(node, "Falling"))
+	{
+		json_t *falling = json_find_first_label(node, "Falling")->child;
+		LoadInt(&b->Falling.GravityFactor, falling, "GravityFactor");
+		LoadBool(&b->Falling.FallsDown, falling, "FallsDown");
+		LoadBool(&b->Falling.DestroyOnDrop, falling, "DestroyOnDrop");
+		LoadBool(&b->Falling.Bounces, falling, "Bounces");
+	}
+	LoadInt(&b->SeekFactor, node, "SeekFactor");
+	LoadBool(&b->Erratic, node, "Erratic");
+
+	b->node = node;
+}
+static void LoadBulletGuns(CArray *guns, json_t *node);
+void BulletInitialize2(BulletClasses *bullets)
+{
+	for (int i = 0; i < (int)bullets->Classes.size; i++)
+	{
+		BulletClass *b = CArrayGet(&bullets->Classes, i);
+		if (json_find_first_label(b->node, "Falling"))
+		{
+			json_t *falling = json_find_first_label(b->node, "Falling")->child;
+			LoadBulletGuns(
+				&b->Falling.DropGuns,
+				json_find_first_label(falling, "DropGuns"));
+		}
+		LoadBulletGuns(
+			&b->OutOfRangeGuns,
+			json_find_first_label(b->node, "OutOfRangeGuns"));
+		LoadBulletGuns(
+			&b->HitGuns,
+			json_find_first_label(b->node, "HitGuns"));
+		LoadBulletGuns(
+			&b->ProximityGuns,
+			json_find_first_label(b->node, "ProximityGuns"));
+	}
+	json_free_value(&bullets->root);
+}
+static void LoadBulletGuns(CArray *guns, json_t *node)
+{
+	if (node == NULL || node->child == NULL)
+	{
+		return;
+	}
+	CArrayInit(guns, sizeof(const GunDescription *));
+	for (json_t *gun = node->child->child; gun; gun = gun->next)
+	{
+		const GunDescription *g = StrGunDescription(gun->text);
+		CArrayPushBack(guns, &g);
+	}
+}
+void BulletTerminate(BulletClasses *bullets)
+{
+	for (int i = 0; i < (int)bullets->Classes.size; i++)
+	{
+		BulletClass *b = CArrayGet(&bullets->Classes, i);
 		CFREE(b->Name);
 		CArrayTerminate(&b->OutOfRangeGuns);
 		CArrayTerminate(&b->HitGuns);
 		CArrayTerminate(&b->Falling.DropGuns);
 		CArrayTerminate(&b->ProximityGuns);
 	}
-	CArrayTerminate(bullets);
+	CArrayTerminate(&bullets->Classes);
 }
 
 void BulletAdd(const AddBullet add)

@@ -49,6 +49,8 @@
 #ifndef __BULLET_CLASS
 #define __BULLET_CLASS
 
+#include <json/json.h>
+
 #include "particle.h"
 #include "sounds.h"
 #include "tile.h"
@@ -92,15 +94,23 @@ typedef struct
 	CArray OutOfRangeGuns;	// of const GunDescription *
 	CArray HitGuns;	// of const GunDescription *
 	CArray ProximityGuns;	// of const GunDescription *
+
+	// Temporary JSON object for two-step bullet loading
+	json_t *node;
 } BulletClass;
-extern CArray gBulletClasses;	// of BulletClass
+typedef struct
+{
+	CArray Classes;	// of BulletClass
+	json_t *root;
+} BulletClasses;
+extern BulletClasses gBulletClasses;
 
 BulletClass *StrBulletClass(const char *s);
 
-void BulletInitialize(CArray *bullets);
+void BulletInitialize(BulletClasses *bullets, const char *filename);
 // 2-step initialisation since bullet and weapon reference each other
-void BulletInitialize2(CArray *bullets);
-void BulletTerminate(CArray *bullets);
+void BulletInitialize2(BulletClasses *bullets);
+void BulletTerminate(BulletClasses *bullets);
 
 typedef struct
 {

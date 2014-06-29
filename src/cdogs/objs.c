@@ -519,8 +519,7 @@ int HitItem(TMobileObject *obj, Vec2i pos)
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
 	if (obj->bulletClass->Power <= 0 &&
-		(obj->bulletClass->Special == SPECIAL_NONE ||
-		obj->bulletClass->Special == SPECIAL_EXPLOSION))
+		obj->bulletClass->Special == SPECIAL_NONE)
 	{
 		return 0;
 	}

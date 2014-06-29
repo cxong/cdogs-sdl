@@ -59,6 +59,7 @@ typedef enum
 	PICTYPE_ANIMATED,
 	PICTYPE_ANIMATED_RANDOM
 } PicType;
+PicType StrPicType(const char *s);
 // Abstract drawable pic, can draw multiple types of pics
 typedef struct
 {

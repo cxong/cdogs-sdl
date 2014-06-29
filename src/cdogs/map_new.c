@@ -150,7 +150,6 @@ bail:
 
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
 static void LoadIntArray(CArray *a, json_t *node, char *name);
-static void LoadVec2i(Vec2i *v, json_t *node, char *name);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
@@ -318,19 +317,6 @@ static void LoadIntArray(CArray *a, json_t *node, char *name)
 		int n = atoi(child->text);
 		CArrayPushBack(a, &n);
 	}
-}
-static void LoadVec2i(Vec2i *v, json_t *node, char *name)
-{
-	json_t *child = json_find_first_label(node, name);
-	if (!child || !child->child)
-	{
-		return;
-	}
-	child = child->child;
-	child = child->child;
-	v->x = atoi(child->text);
-	child = child->next;
-	v->y = atoi(child->text);
 }
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 {

@@ -120,9 +120,9 @@ typedef enum
 	SPECIAL_FLAME,
 	SPECIAL_POISON,
 	SPECIAL_PETRIFY,
-	SPECIAL_CONFUSE,
-	SPECIAL_EXPLOSION
+	SPECIAL_CONFUSE
 } special_damage_e;
+special_damage_e StrSpecialDamage(const char *s);
 
 // States
 #define STATE_IDLE          0

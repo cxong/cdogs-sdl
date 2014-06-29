@@ -100,6 +100,16 @@ int CmdGetReverse(int cmd)
 	return newCmd;
 }
 
+special_damage_e StrSpecialDamage(const char *s)
+{
+	S2T(SPECIAL_FLAME, "Flame");
+	S2T(SPECIAL_POISON, "Poison");
+	S2T(SPECIAL_PETRIFY, "Petrify");
+	S2T(SPECIAL_CONFUSE, "Confuse");
+	CASSERT(false, "unknown special damage type");
+	return SPECIAL_NONE;
+}
+
 int cmd2dir[16] = {
 	0,			// Nothing
 	DIRECTION_LEFT,		// CMD_LEFT

@@ -66,30 +66,6 @@
 #define MOBOBJ_GASBOMB      6
 #define MOBOBJ_GASBOMB2     7
 
-#define LASER_RANGE       90
-#define LASER_SPEED     1024
-#define LASER_POWER       20
-
-#define MG_RANGE          60
-#define MG_SPEED         768
-#define MG_POWER          10
-
-#define SHOTGUN_RANGE     50
-#define SHOTGUN_SPEED    640
-#define SHOTGUN_POWER     15
-
-#define FLAME_RANGE       30
-#define FLAME_SPEED      384
-#define FLAME_POWER       12
-
-#define SNIPER_RANGE      90
-#define SNIPER_SPEED    1024
-#define SNIPER_POWER      50
-
-#define FIREBALL_POWER     5
-
-#define GRENADE_SPEED    384
-
 // Bullet "height"
 #define BULLET_Z   10
 

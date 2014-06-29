@@ -33,6 +33,16 @@
 
 Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
 
+PicType StrPicType(const char *s)
+{
+	S2T(PICTYPE_NORMAL, "Normal");
+	S2T(PICTYPE_DIRECTIONAL, "Directional");
+	S2T(PICTYPE_ANIMATED, "Animated");
+	S2T(PICTYPE_ANIMATED_RANDOM, "AnimatedRandom");
+	CASSERT(false, "unknown pic type");
+	return PICTYPE_NORMAL;
+}
+
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 {
 	int i;

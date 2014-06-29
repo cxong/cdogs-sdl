@@ -1149,7 +1149,7 @@ int main(int argc, char *argv[])
 
 	ParticleClassesInit(
 		&gParticleClasses, GetDataFilePath("particles.json"));
-	BulletInitialize(&gBulletClasses);
+	BulletInitialize(&gBulletClasses, GetDataFilePath("bullets.json"));
 	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
 	BulletInitialize2(&gBulletClasses);
 	CampaignInit(&gCampaign);
