@@ -207,7 +207,14 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 					if (obj->z <= 0)
 					{
 						obj->z = 0;
-						obj->dz = -obj->dz / 2;
+						if (obj->bulletClass->Falling.Bounces)
+						{
+							obj->dz = -obj->dz / 2;
+						}
+						else
+						{
+							obj->dz = 0;
+						}
 						if (!hasDropped)
 						{
 							FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
@@ -234,17 +241,6 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			obj->z += obj->dz * ticks;
 			obj->dz = MAX(
 				0, obj->dz - ticks * obj->bulletClass->Falling.GravityFactor);
-			break;
-		case FALLING_TYPE_Z:
-			obj->z += obj->dz * ticks;
-			if (obj->z <= 0)
-			{
-				obj->z = 0;
-			}
-			else
-			{
-				obj->dz -= obj->bulletClass->Falling.GravityFactor;
-			}
 			break;
 		default:
 			CASSERT(false, "Unknown falling type");
@@ -370,13 +366,13 @@ void BulletInitialize(CArray *bullets)
 	// Defaults
 	BulletClass defaultB;
 	memset(&defaultB, 0, sizeof defaultB);
-	defaultB.Special = SPECIAL_NONE;
 	defaultB.Spark = ParticleClassGet(&gParticleClasses, "spark");
 	defaultB.HitSound.Object = StrSound("hit_hard");
 	defaultB.HitSound.Flesh = StrSound("hit_flesh");
 	defaultB.HitSound.Wall = StrSound("ricochet");
 	defaultB.HitsObjects = true;
 	defaultB.Falling.Type = FALLING_TYPE_BOUNCE;
+	defaultB.Falling.Bounces = true;
 	defaultB.SeekFactor = -1;
 
 	BulletClass b;
@@ -797,7 +793,7 @@ void BulletInitialize(CArray *bullets)
 	b.HitSound.Wall = NULL;
 	b.WallBounces = true;
 	b.Falling.GravityFactor = 4;
-	b.Falling.Type = FALLING_TYPE_Z;
+	b.Falling.Bounces = false;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
