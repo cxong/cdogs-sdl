@@ -196,55 +196,44 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	// Falling (grenades)
 	if (obj->bulletClass->Falling.GravityFactor != 0)
 	{
-		switch (obj->bulletClass->Falling.Type)
+		bool hasDropped = obj->z <= 0;
+		for (int i = 0; i < ticks; i++)
 		{
-		case FALLING_TYPE_BOUNCE:
+			obj->z += obj->dz;
+			if (obj->z <= 0)
 			{
-				bool hasDropped = false;
-				for (int i = 0; i < ticks; i++)
+				obj->z = 0;
+				if (obj->bulletClass->Falling.Bounces)
 				{
-					obj->z += obj->dz;
-					if (obj->z <= 0)
-					{
-						obj->z = 0;
-						if (obj->bulletClass->Falling.Bounces)
-						{
-							obj->dz = -obj->dz / 2;
-						}
-						else
-						{
-							obj->dz = 0;
-						}
-						if (!hasDropped)
-						{
-							FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
-						}
-						hasDropped = true;
-						if (obj->bulletClass->Falling.DestroyOnDrop)
-						{
-							return false;
-						}
-						GameEvent e;
-						e.Type = GAME_EVENT_SOUND_AT;
-						e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
-						e.u.SoundAt.Pos = realPos;
-						GameEventsEnqueue(&gGameEvents, e);
-					}
-					else
-					{
-						obj->dz -= obj->bulletClass->Falling.GravityFactor;
-					}
+					obj->dz = -obj->dz / 2;
 				}
+				else
+				{
+					obj->dz = 0;
+				}
+				if (!hasDropped)
+				{
+					FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
+				}
+				hasDropped = true;
+				if (obj->bulletClass->Falling.DestroyOnDrop)
+				{
+					return false;
+				}
+				GameEvent e;
+				e.Type = GAME_EVENT_SOUND_AT;
+				e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
+				e.u.SoundAt.Pos = realPos;
+				GameEventsEnqueue(&gGameEvents, e);
 			}
-			break;
-		case FALLING_TYPE_DZ:
-			obj->z += obj->dz * ticks;
-			obj->dz = MAX(
-				0, obj->dz - ticks * obj->bulletClass->Falling.GravityFactor);
-			break;
-		default:
-			CASSERT(false, "Unknown falling type");
-			break;
+			else
+			{
+				obj->dz -= obj->bulletClass->Falling.GravityFactor;
+			}
+			if (!obj->bulletClass->Falling.FallsDown)
+			{
+				obj->dz = MAX(0, obj->dz);
+			}
 		}
 	}
 	
@@ -371,7 +360,7 @@ void BulletInitialize(CArray *bullets)
 	defaultB.HitSound.Flesh = StrSound("hit_flesh");
 	defaultB.HitSound.Wall = StrSound("ricochet");
 	defaultB.HitsObjects = true;
-	defaultB.Falling.Type = FALLING_TYPE_BOUNCE;
+	defaultB.Falling.FallsDown = true;
 	defaultB.Falling.Bounces = true;
 	defaultB.SeekFactor = -1;
 
@@ -715,7 +704,7 @@ void BulletInitialize(CArray *bullets)
 	b.HitSound.Flesh = StrSound("hit_gas");
 	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
-	b.Falling.Type = FALLING_TYPE_DZ;
+	b.Falling.FallsDown = false;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -740,7 +729,7 @@ void BulletInitialize(CArray *bullets)
 	b.HitSound.Flesh = StrSound("hit_gas");
 	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
-	b.Falling.Type = FALLING_TYPE_DZ;
+	b.Falling.FallsDown = false;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);
@@ -765,7 +754,7 @@ void BulletInitialize(CArray *bullets)
 	b.HitSound.Flesh = StrSound("hit_gas");
 	b.HitSound.Wall = NULL;
 	b.Falling.GravityFactor = 1;
-	b.Falling.Type = FALLING_TYPE_DZ;
+	b.Falling.FallsDown = false;
 	CArrayPushBack(bullets, &b);
 
 	memcpy(&b, &defaultB, sizeof b);

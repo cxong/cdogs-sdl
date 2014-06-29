@@ -55,11 +55,6 @@
 
 struct MobileObject;
 typedef bool (*BulletUpdateFunc)(struct MobileObject *, int);
-typedef enum
-{
-	FALLING_TYPE_BOUNCE,
-	FALLING_TYPE_DZ
-} BulletClassFallingType;
 typedef struct
 {
 	char *Name;
@@ -85,7 +80,7 @@ typedef struct
 	struct
 	{
 		int GravityFactor;	// 0 for non-falling bullets
-		BulletClassFallingType Type;
+		bool FallsDown;	// if false, DZ is never negative
 		bool DestroyOnDrop;
 		bool Bounces;
 		CArray DropGuns;	// of const GunDescription *
