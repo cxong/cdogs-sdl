@@ -48,8 +48,7 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "ElevationLow": 24,
-	  "ElevationHigh": 24
+	  "Elevation": 24
 	},
 	{
 	  "Index": 3,
@@ -92,8 +91,7 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "ElevationLow": 24,
-	  "ElevationHigh": 24
+	  "Elevation": 24
 	},
 	{
 	  "Index": 7,
@@ -103,8 +101,7 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "ElevationLow": 24,
-	  "ElevationHigh": 24
+	  "Elevation": 24
 	},
 	{
 	  "Index": 8,
@@ -151,8 +148,7 @@
 	  "Cost": 7,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "ElevationLow": 24,
-	  "ElevationHigh": 24
+	  "Elevation": 24
 	},
 	{
 	  "Index": 12,
@@ -182,8 +178,7 @@
 	  "Cost": 10,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "ElevationLow": 24,
-	  "ElevationHigh": 24
+	  "Elevation": 24
 	},
 	{
 	  "Index": 15,
@@ -224,6 +219,23 @@
 	  "SpreadWidth": 0.4,
 	  "Sound": "swarmer",
 	  "MuzzleFlashParticle": "muzzle_flash_heatseeker"
+	},
+	{
+	  "Name": "Launcher",
+	  "Bullet": "rocket",
+	  "Cost": 15,
+	  "Lock": 70,
+	  "Sound": "rocket_launch",
+	  "Elevation": 25,
+	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
+	},
+	{
+	  "Name": "Infinite Grenades",
+	  "Bullet": "infinite_grenade",
+	  "Cost": 0,
+	  "Lock": 1000,
+	  "Sound": "launch",
+	  "Elevation": 24
 	}
   ],
   "PseudoGuns" : [
@@ -267,8 +279,8 @@
 	  "Sound": "",
 	  "SpreadCount": 8,
 	  "SpreadWidth": 0.79,
-	  "ElevationLow": 17,
-	  "ElevationHigh": 15
+	  "ElevationLow": 15,
+	  "ElevationHigh": 17
 	},
 	{
 	  "Pic": "",
@@ -278,8 +290,7 @@
 	  "SpreadCount": 8,
 	  "SpreadWidth": 0.79,
 	  "AngleOffset": 0.39,
-	  "ElevationLow": 21,
-	  "ElevationHigh": 21
+	  "Elevation": 21
 	},
 	{
 	  "Pic": "",
@@ -300,6 +311,12 @@
 	  "Name": "triggeredmine",
 	  "Bullet": "triggeredmine",
 	  "Sound": "mine_trigger"
+	},
+	{
+	  "Pic": "",
+	  "Name": "explosion_small",
+	  "Bullet": "explosion_small",
+	  "Sound": "explosion_small"
 	}
   ]
 }

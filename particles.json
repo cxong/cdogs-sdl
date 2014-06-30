@@ -102,6 +102,12 @@
       "Sprites": "smoke",
       "Range": 29,
       "TicksPerFrame": 6
+    },
+    {
+      "Name": "explosion_small",
+      "Sprites": "explosion_small",
+      "Range": 7,
+      "TicksPerFrame": 4
     }
   ]
 }

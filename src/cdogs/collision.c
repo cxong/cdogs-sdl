@@ -103,7 +103,8 @@ bool IsCollisionWallOrEdge(Map *map, Vec2i pos, Vec2i size)
 	return IsCollisionWithWall(pos, size);
 }
 
-int ItemsCollide(TTileItem *item1, TTileItem *item2, Vec2i pos)
+static bool ItemsCollide(
+	const TTileItem *item1, const TTileItem *item2, const Vec2i pos)
 {
 	int dx = abs(pos.x - item2->x);
 	int dy = abs(pos.y - item2->y);
@@ -177,6 +178,41 @@ TTileItem *GetItemOnTileInCollision(
 	}
 
 	return NULL;
+}
+void CollideAllItems(
+	const TTileItem *item, const Vec2i pos,
+	const int mask, const CollisionTeam team, const bool isDogfight,
+	CollideItemFunc func, void *data)
+{
+	const Vec2i tv = Vec2iToTile(pos);
+	Vec2i dv;
+	// Check collisions with all other items on this tile, in all 8 directions
+	for (dv.y = -1; dv.y <= 1; dv.y++)
+	{
+		for (dv.x = -1; dv.x <= 1; dv.x++)
+		{
+			const Vec2i dtv = Vec2iAdd(tv, dv);
+			if (!MapIsTileIn(&gMap, dtv))
+			{
+				continue;
+			}
+			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
+			for (int i = 0; i < (int)tileThings->size; i++)
+			{
+				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
+				// Don't collide if items are on the same team
+				if (!CollisionIsOnSameTeam(ti, team, isDogfight))
+				{
+					if (item != ti &&
+						(ti->flags & mask) &&
+						ItemsCollide(item, ti, pos))
+					{
+						func(ti, data);
+					}
+				}
+			}
+		}
+	}
 }
 
 Vec2i GetWallBounceFullPos(

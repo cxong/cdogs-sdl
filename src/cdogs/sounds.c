@@ -248,7 +248,7 @@ void SoundPlayAtPosition(
 	for (;;)
 	{
 		channel = Mix_PlayChannel(-1, data, 0);
-		if (channel >= 0)
+		if (channel >= 0 || device->channels > 128)
 		{
 			break;
 		}

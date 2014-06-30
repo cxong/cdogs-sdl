@@ -238,8 +238,15 @@ static void LoadGunDescription(
 
 	LoadInt(&g->MuzzleHeight, node, "MuzzleHeight");
 	g->MuzzleHeight *= Z_FACTOR;
+	if (json_find_first_label(node, "Elevation"))
+	{
+		LoadInt(&g->ElevationLow, node, "Elevation");
+		g->ElevationHigh = g->ElevationLow;
+	}
 	LoadInt(&g->ElevationLow, node, "ElevationLow");
 	LoadInt(&g->ElevationHigh, node, "ElevationHigh");
+	g->ElevationLow = MIN(g->ElevationLow, g->ElevationHigh);
+	g->ElevationHigh = MAX(g->ElevationLow, g->ElevationHigh);
 	if (json_find_first_label(node, "MuzzleFlashParticle"))
 	{
 		tmp = GetString(node, "MuzzleFlashParticle");

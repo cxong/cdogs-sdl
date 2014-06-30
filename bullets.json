@@ -232,7 +232,7 @@
         "Tint": [120.0, 0.33, 2.0]
       },
       "Speed": 384,
-      "Friction": [4, 3],
+      "Friction": 4,
       "Range": 35,
       "Size": [10, 10],
       "Special": "Poison",
@@ -455,7 +455,7 @@
       "SpeedLow": -256,
       "SpeedHigh": 256,
       "SpeedScale": true,
-      "Friction": [4, 3],
+      "Friction": 4,
       "RangeLow": 120,
       "RangeHigh": 148,
       "Power": 2,
@@ -484,7 +484,7 @@
       },
       "SpeedLow": 0,
       "SpeedHigh": 255,
-      "Friction": [4, 3],
+      "Friction": 4,
       "RangeLow": 155,
       "RangeHigh": 191,
       "Size": [10, 10],
@@ -509,7 +509,7 @@
       },
       "SpeedLow": 0,
       "SpeedHigh": 255,
-      "Friction": [4, 3],
+      "Friction": 4,
       "RangeLow": 155,
       "RangeHigh": 191,
       "Size": [10, 10],
@@ -551,6 +551,50 @@
         "explosion1",
         "explosion2",
         "explosion3"
+      ]
+    },
+    {
+      "Name": "explosion_small",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "explosion_small",
+        "TicksPerFrame": 4
+      },
+      "Speed": 0,
+      "Range": 27,
+      "Power": 3,
+      "Size": [32, 32],
+      "Persists": true,
+      "Spark": "",
+      "HitSounds": {
+        "Object": "hit_gas",
+        "Flesh": "hit_gas",
+        "Wall": ""
+      }
+    },
+    {
+      "Name": "rocket",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rocket_blue"
+      },
+      "ShadowSize": [2, 2],
+      "Speed": 250,
+      "Friction": -9,
+      "Range": 120,
+      "Power": 1,
+      "Size": [8, 8],
+      "Spark": "",
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      },
+      "OutOfRangeGuns": [
+        "explosion_small"
+      ],
+      "HitGuns": [
+        "explosion_small"
       ]
     }
   ]

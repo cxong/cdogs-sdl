@@ -510,12 +510,16 @@ void MobObjDestroy(int id)
 	m->isInUse = false;
 }
 
-int HitItem(TMobileObject *obj, Vec2i pos)
+typedef struct
 {
-	TTileItem *item;
-	int hasHit;
-	Vec2i realPos = Vec2iFull2Real(pos);
-
+	bool HasHit;
+	bool MultipleHits;
+	bool HasFirstCollision;
+	TMobileObject *Obj;
+} HitItemData;
+static void HitItemFunc(TTileItem *ti, void *data);
+bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
+{
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
 	if (obj->bulletClass->Power <= 0 &&
@@ -524,18 +528,36 @@ int HitItem(TMobileObject *obj, Vec2i pos)
 		return 0;
 	}
 
-	item = GetItemOnTileInCollision(
-		&obj->tileItem, realPos, TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
-		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
-	hasHit = DamageSomething(
-		obj->vel, obj->bulletClass->Power, obj->flags, obj->player,
-		item,
-		obj->bulletClass->Special,
-		obj->soundLock <= 0 ? &obj->bulletClass->HitSound : NULL,
-		true);
-	if (hasHit && obj->soundLock <= 0)
+	// Get all items that collide
+	HitItemData data;
+	data.HasHit = false;
+	data.MultipleHits = multipleHits;
+	data.HasFirstCollision = false;
+	data.Obj = obj;
+	CollideAllItems(
+		&obj->tileItem, Vec2iFull2Real(pos),
+		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
+		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT,
+		HitItemFunc, &data);
+	return data.HasHit;
+}
+static void HitItemFunc(TTileItem *ti, void *data)
+{
+	HitItemData *hData = data;
+	if (hData->HasFirstCollision && !hData->MultipleHits)
 	{
-		obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+		return;
 	}
-	return hasHit;
+	hData->HasFirstCollision = true;
+	hData->HasHit = DamageSomething(
+		hData->Obj->vel, hData->Obj->bulletClass->Power,
+		hData->Obj->flags, hData->Obj->player,
+		ti,
+		hData->Obj->bulletClass->Special,
+		hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,
+		true);
+	if (hData->HasHit && hData->Obj->soundLock <= 0)
+	{
+		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+	}
 }

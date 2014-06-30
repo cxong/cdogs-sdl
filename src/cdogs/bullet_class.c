@@ -191,7 +191,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
-	const bool hitItem = HitItem(obj, pos);
+	const bool hitItem = HitItem(obj, pos, obj->bulletClass->Persists);
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
 	// Falling (grenades)
@@ -239,24 +239,28 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 	
 	// Friction
+	const bool isDiagonal = obj->vel.x != 0 && obj->vel.y != 0;
+	int frictionComponent = isDiagonal ?
+		(int)round(obj->bulletClass->Friction / sqrt(2)) :
+		obj->bulletClass->Friction;
 	for (int i = 0; i < ticks; i++)
 	{
 		if (obj->vel.x > 0)
 		{
-			obj->vel.x -= obj->bulletClass->Friction.x;
+			obj->vel.x -= frictionComponent;
 		}
 		else if (obj->vel.x < 0)
 		{
-			obj->vel.x += obj->bulletClass->Friction.x;
+			obj->vel.x += frictionComponent;
 		}
 
 		if (obj->vel.y > 0)
 		{
-			obj->vel.y -= obj->bulletClass->Friction.y;
+			obj->vel.y -= frictionComponent;
 		}
 		else if (obj->vel.y < 0)
 		{
-			obj->vel.y += obj->bulletClass->Friction.y;
+			obj->vel.y += frictionComponent;
 		}
 	}
 
@@ -482,7 +486,7 @@ static void LoadBullet(
 	b->SpeedLow = MIN(b->SpeedLow, b->SpeedHigh);
 	b->SpeedHigh = MAX(b->SpeedLow, b->SpeedHigh);
 	LoadBool(&b->SpeedScale, node, "SpeedScale");
-	LoadVec2i(&b->Friction, node, "Friction");
+	LoadInt(&b->Friction, node, "Friction");
 	if (json_find_first_label(node, "Range"))
 	{
 		LoadInt(&b->RangeLow, node, "Range");
@@ -605,16 +609,7 @@ void BulletTerminate(BulletClasses *bullets)
 
 void BulletAdd(const AddBullet add)
 {
-	Vec2i pos = add.MuzzlePos;
-	if (!Vec2iEqual(add.BulletClass->Size, Vec2iZero()))
-	{
-		const int maxSize = MAX(
-			add.BulletClass->Size.x, add.BulletClass->Size.y);
-		double x, y;
-		GetVectorsForRadians(add.Angle, &x, &y);
-		pos = Vec2iAdd(pos, Vec2iReal2Full(
-			Vec2iNew((int)round(x * maxSize), (int)round(y * maxSize))));
-	}
+	const Vec2i pos = add.MuzzlePos;
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
 	SetBulletProps(

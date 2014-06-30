@@ -155,7 +155,7 @@ void MobObjsTerminate(void);
 int MobObjAdd(Vec2i fullpos, int player);
 void MobObjDestroy(int id);
 void MobileObjectUpdate(TMobileObject *obj, int ticks);
-int HitItem(TMobileObject *obj, Vec2i pos);
+bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits);
 
 bool UpdateMobileObject(TMobileObject *obj, const int ticks);
 

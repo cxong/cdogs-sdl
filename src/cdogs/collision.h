@@ -73,6 +73,11 @@ bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isDogfight);
 TTileItem *GetItemOnTileInCollision(
 	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight);
+typedef void (*CollideItemFunc)(TTileItem *, void *);
+void CollideAllItems(
+	const TTileItem *item, const Vec2i pos,
+	const int mask, const CollisionTeam team, const bool isDogfight,
+	CollideItemFunc func, void *data);
 
 // Resolve wall bounces
 Vec2i GetWallBounceFullPos(

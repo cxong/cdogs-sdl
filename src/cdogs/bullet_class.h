@@ -66,7 +66,7 @@ typedef struct
 	int SpeedLow;
 	int SpeedHigh;
 	bool SpeedScale;	// whether to scale X/Y speed based on perspective
-	Vec2i Friction;	// Amount to subtract from velocity per tick
+	int Friction;	// Amount to subtract from velocity per tick
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
