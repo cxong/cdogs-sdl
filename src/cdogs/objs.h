@@ -112,10 +112,6 @@ typedef struct MobileObject
 	Vec2i vel;
 	int dz;
 	int count;
-	union
-	{
-		int frame;
-	} state;
 	int range;
 	int flags;
 	int soundLock;
