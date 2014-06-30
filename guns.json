@@ -230,12 +230,13 @@
 	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
 	},
 	{
-	  "Name": "Infinite Grenades",
-	  "Bullet": "infinite_grenade",
+	  "Name": "Pistol",
+	  "Bullet": "9mm",
 	  "Cost": 0,
-	  "Lock": 1000,
-	  "Sound": "launch",
-	  "Elevation": 24
+	  "Lock": 18,
+	  "Sound": "pistol",
+	  "Recoil": 0.1,
+	  "Brass": "brass"
 	}
   ],
   "PseudoGuns" : [

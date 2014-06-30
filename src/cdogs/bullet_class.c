@@ -100,36 +100,6 @@ static CPicDrawContext GetBulletDrawContext(const int id)
 }
 
 
-static void SetBulletProps(
-	TMobileObject *obj, const int z, const int dz, const BulletClass *b,
-	const int flags)
-{
-	obj->bulletClass = b;
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.getPicFunc = NULL;
-	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = NULL;
-	obj->tileItem.CPic = b->CPic;
-	obj->tileItem.CPicFunc = GetBulletDrawContext;
-	obj->z = z;
-	obj->dz = dz;
-	obj->range = RAND_INT(b->RangeLow, b->RangeHigh);
-	obj->flags = flags;
-	if (b->HurtAlways)
-	{
-		obj->flags |= FLAGS_HURTALWAYS;
-	}
-	obj->vel = Vec2iFull2Real(Vec2iScale(
-		obj->vel, RAND_INT(b->SpeedLow, b->SpeedHigh)));
-	if (b->SpeedScale)
-	{
-		obj->vel.y = obj->vel.y * TILE_HEIGHT / TILE_WIDTH;
-	}
-	obj->tileItem.w = b->Size.x;
-	obj->tileItem.h = b->Size.y;
-	obj->tileItem.ShadowSize = b->ShadowSize;
-}
-
 static Vec2i SeekTowards(
 	const Vec2i pos, const Vec2i vel, const double speedMin,
 	const Vec2i targetPos, const int seekFactor)
@@ -612,6 +582,30 @@ void BulletAdd(const AddBullet add)
 	const Vec2i pos = add.MuzzlePos;
 	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
-	SetBulletProps(
-		obj, add.MuzzleHeight, add.Elevation, add.BulletClass, add.Flags);
+	obj->bulletClass = add.BulletClass;
+	obj->updateFunc = UpdateBullet;
+	obj->tileItem.getPicFunc = NULL;
+	obj->tileItem.getActorPicsFunc = NULL;
+	obj->tileItem.drawFunc = NULL;
+	obj->tileItem.CPic = obj->bulletClass->CPic;
+	obj->tileItem.CPicFunc = GetBulletDrawContext;
+	obj->z = add.MuzzleHeight;
+	obj->dz = add.Elevation;
+	obj->range = RAND_INT(
+		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
+	obj->flags = add.Flags;
+	if (obj->bulletClass->HurtAlways)
+	{
+		obj->flags |= FLAGS_HURTALWAYS;
+	}
+	obj->vel = Vec2iFull2Real(Vec2iScale(
+		obj->vel,
+		RAND_INT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh)));
+	if (obj->bulletClass->SpeedScale)
+	{
+		obj->vel.y = obj->vel.y * TILE_HEIGHT / TILE_WIDTH;
+	}
+	obj->tileItem.w = obj->bulletClass->Size.x;
+	obj->tileItem.h = obj->bulletClass->Size.y;
+	obj->tileItem.ShadowSize = obj->bulletClass->ShadowSize;
 }
