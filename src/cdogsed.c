@@ -390,10 +390,6 @@ static void AdjustXC(int yc, int *xc)
 		}
 		break;
 
-	case YC_WEAPONS:
-		*xc = CLAMP_OPPOSITE(*xc, 0, XC_MAXWEAPONS);
-		break;
-
 	default:
 		if (yc >= YC_OBJECTIVES)
 		{
@@ -659,15 +655,25 @@ static HandleInputResult HandleInput(
 	brush.Pos = GetMouseTile(&gEventHandlers);
 
 	// Find whether the mouse has hovered over a tooltip
-	bool hadTooltip = sTooltipObj != NULL;
-	if (!UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &sTooltipObj) ||
-		!sTooltipObj->Tooltip)
+	const bool hadTooltip = sTooltipObj != NULL;
+	bool isContextMenu = false;
+	sTooltipObj = NULL;
+	if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &sTooltipObj)
+		&& sTooltipObj)
 	{
-		sTooltipObj = NULL;
+		if (sTooltipObj->Parent &&
+			sTooltipObj->Parent->Type == UITYPE_CONTEXT_MENU)
+		{
+			isContextMenu = true;
+		}
+		if (!sTooltipObj->Tooltip)
+		{
+			sTooltipObj = NULL;
+		}
 	}
 	// Need to redraw if we either had a tooltip (draw to remove) or there's a
 	// tooltip to draw
-	if (hadTooltip || sTooltipObj)
+	if (hadTooltip || sTooltipObj || isContextMenu)
 	{
 		result.Redraw = true;
 	}

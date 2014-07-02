@@ -63,7 +63,6 @@
 #define YC_MISSIONDESC      5
 #define YC_CHARACTERS       6
 #define YC_SPECIALS         7
-#define YC_WEAPONS          8
 #define YC_ITEMS            9
 #define YC_OBJECTIVES       10
 
@@ -90,8 +89,6 @@
 #define XC_REQUIRED         2
 #define XC_TOTAL            3
 #define XC_FLAGS            4
-
-#define XC_MAXWEAPONS      10
 
 
 #define YC_APPEARANCE 0

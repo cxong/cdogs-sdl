@@ -170,6 +170,17 @@ static void DisplayPickupItem(Vec2i pos, int pickupItem)
 		pos.x + pic.dx, pos.y + pic.dy,
 		PicManagerGetOldPic(&gPicManager, pic.picIndex));
 }
+static void ActivateBrush(UIObject *o, void *data)
+{
+	UNUSED(o);
+	EditorBrush *b = data;
+	b->IsActive = 1;
+}
+static void DeactivateBrush(void *data)
+{
+	EditorBrush *b = data;
+	b->IsActive = 0;
+}
 
 
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
@@ -196,6 +207,8 @@ UIObject *CreateAddItemObjs(
 	o2->ChangeFunc = BrushSetBrushTypeSetPlayerStart;
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Location where players start");
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -241,6 +254,8 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH/* * 2*/ + 4, TILE_HEIGHT * /*3*/2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
 	o->u.CustomDrawFunc = DrawMapItem;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < MapObjectGetCount(); i++)
@@ -273,6 +288,8 @@ static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddWreck;
 	o->u.CustomDrawFunc = DrawWreck;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < MapObjectGetCount(); i++)
@@ -333,6 +350,8 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddCharacter;
 	o->u.CustomDrawFunc = DrawCharacter;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	Vec2i pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < (int)store->OtherChars.size; i++)
@@ -445,6 +464,8 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddObjective;
 	o->u.CustomDrawFunc = DrawObjective;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	Vec2i pos = Vec2iZero();
 	for (int i = 0; i < (int)m->Objectives.size; i++)
 	{
@@ -500,6 +521,8 @@ static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddKey;
 	o->u.CustomDrawFunc = DrawKey;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	pos = Vec2iZero();
 	int width = 4;
 	for (int i = 0; i < KEY_COUNT; i++)

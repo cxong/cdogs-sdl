@@ -361,6 +361,8 @@ UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeAddItem;
 	CSTRDUP(o2->Tooltip, "Add items\nRight click to remove");
 	o2->Pos = pos;
+	o2->OnFocusFunc = NULL;
+	o2->OnUnfocusFunc = NULL;
 	UIObjectAddChild(o2, CreateAddItemObjs(o2->Size, brush, co));
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
@@ -369,6 +371,8 @@ UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetKey;
 	CSTRDUP(o2->Tooltip, "Set key required for door");
 	o2->Pos = pos;
+	o2->OnFocusFunc = NULL;
+	o2->OnUnfocusFunc = NULL;
 	UIObjectAddChild(o2, CreateSetKeyObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
@@ -454,6 +458,8 @@ static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeSetKey;
 	o->u.CustomDrawFunc = DrawKey;
+	o->OnFocusFunc = ActivateBrush;
+	o->OnUnfocusFunc = DeactivateBrush;
 	pos = Vec2iZero();
 	int width = 4;
 	for (int i = 0; i < KEY_COUNT; i++)

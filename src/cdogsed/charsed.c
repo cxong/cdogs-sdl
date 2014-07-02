@@ -366,8 +366,22 @@ static void Change(
 			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
 			if (g == b->Gun)
 			{
-				i = CLAMP_OPPOSITE(i + d, 0, GUN_COUNT - 1);
-				b->Gun = CArrayGet(&gGunDescriptions, i);
+				for (int j = i + d; j != i; j += d)
+				{
+					if (j >= (int)gGunDescriptions.size)
+					{
+						j -= (int)gGunDescriptions.size;
+					}
+					if (j < 0)
+					{
+						j += (int)gGunDescriptions.size;
+					}
+					b->Gun = CArrayGet(&gGunDescriptions, j);
+					if (b->Gun->IsRealGun)
+					{
+						break;
+					}
+				}
 				break;
 			}
 		}

@@ -608,9 +608,18 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
+	int totalWeapons = 0;
+	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	{
+		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		if (g->IsRealGun)
+		{
+			totalWeapons++;
+		}
+	}
 	sprintf(
 		s, "Available weapons (%d/%d)",
-		(int)gMission.missionData->Weapons.size, (int)gGunDescriptions.size);
+		(int)gMission.missionData->Weapons.size, totalWeapons);
 	return s;
 }
 static const char *GetObjectCountStr(UIObject *o, void *v)
@@ -1300,7 +1309,7 @@ static void MissionChangeObjectiveFlags(void *vData, int d)
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
 static UIObject *CreateMissionObjs(CampaignOptions *co);
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co);
-static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy);
+static UIObject *CreateWeaponObjs(CampaignOptions *co);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy);
 static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy);
 static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
@@ -1664,9 +1673,8 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = GetWeaponCountStr;
 	o2->Data = NULL;
-	o2->Id = YC_WEAPONS;
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateWeaponObjs(co, pos.y));
+	UIObjectAddChild(o2, CreateWeaponObjs(co));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -1933,10 +1941,11 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy)
+static UIObject *CreateWeaponObjs(CampaignOptions *co)
 {
 	const int th = CDogsTextHeight();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(
+		UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	UIObject *o = UIObjectCreate(
@@ -1945,18 +1954,25 @@ static UIObject *CreateWeaponObjs(CampaignOptions *co, int dy)
 	o->ChangeFunc = MissionChangeWeapon;
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = true;
+	const int rows = 10;
+	int idx = 0;
 	for (int i = 0; i < (int)gGunDescriptions.size; i++)
 	{
-		int x = 10 + i / 4 * 90;
-		int y = Y_ABS - dy + (i % 4) * th;
+		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		int x = idx / rows * 90;
+		int y = (idx % rows) * th;
 		UIObject *o2 = UIObjectCopy(o);
-		o2->Id2 = i;
 		CMALLOC(o2->Data, sizeof(MissionGunData));
 		o2->IsDynamicData = 1;
 		((MissionGunData *)o2->Data)->co = co;
-		((MissionGunData *)o2->Data)->Gun = CArrayGet(&gGunDescriptions, i);
+		((MissionGunData *)o2->Data)->Gun = g;
 		o2->Pos = Vec2iNew(x, y);
 		UIObjectAddChild(c, o2);
+		idx++;
 	}
 
 	UIObjectDestroy(o);

@@ -526,11 +526,6 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 	{
 		return false;
 	}
-	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
-	{
-		*out = o;
-		return true;
-	}
 	bool isHighlighted = UIObjectIsHighlighted(o);
 	if (o->Type == UITYPE_TAB)
 	{
@@ -561,6 +556,11 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 				return true;
 			}
 		}
+	}
+	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
+	{
+		*out = o;
+		return true;
 	}
 	return false;
 }

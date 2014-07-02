@@ -336,7 +336,8 @@ static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 	{
 		for (json_t *child = weaponsNode->child; child; child = child->next)
 		{
-			CArrayPushBack(weapons, StrGunDescription(child->text));
+			const GunDescription *g = StrGunDescription(child->text);
+			CArrayPushBack(weapons, &g);
 		}
 	}
 }
