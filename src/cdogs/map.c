@@ -1085,6 +1085,13 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	MapSetupTilesAndWalls(map, mission);
 	MapSetupDoors(map, floor, room);
 
+	// Set exit now since we have set up all the tiles
+	if (Vec2iEqual(map->ExitStart, Vec2iZero()) &&
+		Vec2iEqual(map->ExitEnd, Vec2iZero()))
+	{
+		MapGenerateRandomExitArea(map);
+	}
+
 	for (i = 0; i < (int)mo->MapObjects.size; i++)
 	{
 		int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);

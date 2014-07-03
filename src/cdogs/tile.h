@@ -167,7 +167,7 @@ void TileInit(Tile *t);
 void TileDestroy(Tile *t);
 bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
 bool TileCanSee(Tile *t);
-bool TileCanWalk(Tile *t);
+bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(Tile *t);
 bool TileIsClear(Tile *t);
 bool TileHasCharacter(Tile *t);

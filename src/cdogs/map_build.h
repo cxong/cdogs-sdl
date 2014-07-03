@@ -73,6 +73,6 @@ void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
 void MapSetupTile(Map *map, Vec2i pos, Mission *m);
 
 unsigned short GenerateAccessMask(int *accessLevel);
-void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end);
+void MapGenerateRandomExitArea(Map *map);
 
 #endif

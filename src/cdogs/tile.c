@@ -94,7 +94,7 @@ bool TileCanSee(Tile *t)
 {
 	return !(t->flags & MAPTILE_NO_SEE);
 }
-bool TileCanWalk(Tile *t)
+bool TileCanWalk(const Tile *t)
 {
 	return !(t->flags & MAPTILE_NO_WALK);
 }

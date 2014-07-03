@@ -734,10 +734,19 @@ unsigned short GenerateAccessMask(int *accessLevel)
 	return accessMask;
 }
 
-void GenerateRandomExitArea(Vec2i size, Vec2i *start, Vec2i *end)
+void MapGenerateRandomExitArea(Map *map)
 {
-	start->x = (rand() % (abs(size.x) - EXIT_WIDTH - 1));
-	end->x = start->x + EXIT_WIDTH + 1;
-	start->y = (rand() % (abs(size.y) - EXIT_HEIGHT - 1));
-	end->y = start->y + EXIT_HEIGHT + 1;
+	const Tile *t;
+	do
+	{
+		map->ExitStart.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
+		map->ExitEnd.x = map->ExitStart.x + EXIT_WIDTH + 1;
+		map->ExitStart.y = (rand() % (abs(map->Size.y) - EXIT_HEIGHT - 1));
+		map->ExitEnd.y = map->ExitStart.y + EXIT_HEIGHT + 1;
+		// Check that the exit area is walkable
+		const Vec2i center = Vec2iNew(
+			(map->ExitStart.x + map->ExitEnd.x) / 2,
+			(map->ExitStart.y + map->ExitEnd.y) / 2);
+		t = MapGetTile(map, center);
+	} while (!TileCanWalk(t));
 }

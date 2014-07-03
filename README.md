@@ -1,8 +1,6 @@
 C-Dogs SDL Port v0.5.5.1
 ========================
 
-(based on C-Dogs 1.06)
-
             .--------.
            |  _______|
           /  /  __
@@ -15,6 +13,8 @@ C-Dogs SDL Port v0.5.5.1
     |                |                  SDL
      `---------------'               v0.5.5.1
 
+[![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)
+
 1. Introduction
 2. Tested Environments
 3. Installation
@@ -26,8 +26,9 @@ C-Dogs SDL Port v0.5.5.1
 ---------------
 
 C-Dogs SDL is a classic overhead run-and-gun game, supporting up to 4 players
-in co-op and deathmatch modes. Customize your player, choose from up to 11 weapons,
-and try over 100 user-created campaigns. Have fun!
+in co-op and deathmatch modes. Customize your player, choose from many weapons,
+and blast, slide and slash your way through over 100 user-created campaigns.
+Have fun!
 
 [Releases and release notes](https://github.com/cxong/cdogs-sdl/releases)
 
@@ -39,22 +40,12 @@ For more information about the original C-Dogs read [`original\_readme.txt`](htt
 2.Tested Environments
 ---------------------
 
-C-Dogs SDL has been ported with a Unix development environment.
-In theory, C-Dogs SDL could run on any system that is supported by SDL1.2.
+C-Dogs SDL is built using the SDL 1.2 API.
 See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
 C-Dogs SDL runs on Linux, \*BSD, Windows and Mac OS X.
 
-There are also unofficial ports to GP2X, BeOS/ZETA/Haiku, MorphOS,
-Nintendo DS, and AmigaOS 4 to name a few.
-
-And of course, should you succeed in running C-Dogs SDL on a different
-operating system, platform or toaster please contact us! :-)
-
-C-Dogs SDL is also monitored by the continuous integration service travis,
-You can see the current build status here:
-[![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)
-
+C-Dogs SDL is also monitored by the continuous integration service TravisCI
 
 3. Installation
 ---------------

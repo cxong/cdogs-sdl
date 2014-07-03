@@ -133,8 +133,6 @@ void MapClassicLoad(Map *map, Mission *m)
 		}
 		i++;
 	}
-	
-	GenerateRandomExitArea(map->Size, &map->ExitStart, &map->ExitEnd);
 }
 
 static Vec2i GuessCoords(Map *map);

@@ -143,12 +143,8 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		}
 	}
 	
-	if (Vec2iEqual(m->u.Static.Exit.Start, Vec2iZero()) &&
-		Vec2iEqual(m->u.Static.Exit.End, Vec2iZero()))
-	{
-		GenerateRandomExitArea(map->Size, &map->ExitStart, &map->ExitEnd);
-	}
-	else
+	if (!Vec2iEqual(m->u.Static.Exit.Start, Vec2iZero()) &&
+		!Vec2iEqual(m->u.Static.Exit.End, Vec2iZero()))
 	{
 		map->ExitStart = m->u.Static.Exit.Start;
 		map->ExitEnd = m->u.Static.Exit.End;
