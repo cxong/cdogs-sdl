@@ -7,3 +7,6 @@
 [submodule "src/cdogs/hqx"]
 	path = src/cdogs/hqx
 	url = https://github.com/cxong/hqx.git
+[submodule "src/cdogs/physfs"]
+	path = src/cdogs/physfs
+	url = https://github.com/cxong/physfs

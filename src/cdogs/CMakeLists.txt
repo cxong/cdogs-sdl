@@ -149,4 +149,15 @@ set(HQX_SOURCES
 set(HQX_HEADERS
 	hqx/src/common.h
 	hqx/src/hqx.h)
+
+# Configure and include PhysFS
+set(PHYSFS_ARCHIVE_7Z FALSE CACHE BOOL "Disable 7Z")
+set(PHYSFS_ARCHIVE_GRP FALSE CACHE BOOL "Disable GRP")
+set(PHYSFS_ARCHIVE_WAD FALSE CACHE BOOL "Disable WAD")
+set(PHYSFS_ARCHIVE_HOG FALSE CACHE BOOL "Disable HOG")
+set(PHYSFS_ARCHIVE_MVL FALSE CACHE BOOL "Disable MVL")
+set(PHYSFS_ARCHIVE_QPAK FALSE CACHE BOOL "Disable QPAK")
+set(PHYSFS_BUILD_SHARED FALSE CACHE BOOL "Disable shared library")
+add_subdirectory(physfs)
+
 add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})
