@@ -66,6 +66,7 @@
 
 color_t colorWall = { 72, 152, 72, 255 };
 color_t colorFloor = { 12, 92, 12, 255 };
+color_t colorRoom = { 24, 112, 24, 255 };
 color_t colorDoor = { 172, 172, 172, 255 };
 color_t colorYellowDoor = { 252, 224, 0, 255 };
 color_t colorGreenDoor = { 0, 252, 0, 255 };
@@ -237,9 +238,13 @@ static void DrawMap(
 						{
 							color = DoorColor(x, y);
 						}
-						else
+						else if (tile->flags & MAPTILE_IS_NORMAL_FLOOR)
 						{
 							color = colorFloor;
+						}
+						else
+						{
+							color = colorRoom;
 						}
 						if (!ColorEquals(color, colorBlack))
 						{
