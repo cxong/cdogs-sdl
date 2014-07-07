@@ -419,7 +419,7 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			{
 				CArrayPushBack(&op->Positions, &pos);
 				CArrayPushBack(&op->Indices, &idx2);
-				objectiveIndex = i;
+				objectiveIndex = op->Index;
 				hasAdded = 1;
 				break;
 			}
@@ -431,11 +431,12 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			newOp.Index = idx;
 			CArrayInit(&newOp.Positions, sizeof(Vec2i));
 			CArrayInit(&newOp.Indices, sizeof(int));
-			objectiveIndex = (int)newOp.Positions.size;
 			CArrayPushBack(&newOp.Positions, &pos);
 			CArrayPushBack(&newOp.Indices, &idx2);
+			objectiveIndex = (int)newOp.Positions.size;
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
-			op = CArrayGet(&m->u.Static.Objectives, objectiveIndex);
+			op = CArrayGet(
+				&m->u.Static.Objectives, (int)m->u.Static.Objectives.size - 1);
 		}
 		// If we've added too many, increase number of objectives
 		MissionObjective *mobj = CArrayGet(&m->Objectives, objectiveIndex);

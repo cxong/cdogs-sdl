@@ -181,6 +181,28 @@ static void DeactivateBrush(void *data)
 	EditorBrush *b = data;
 	b->IsActive = 0;
 }
+static void ActivateIndexedEditorBrush(UIObject *o, void *data)
+{
+	UNUSED(o);
+	IndexedEditorBrush *b = data;
+	b->Brush->IsActive = true;
+}
+static void DeactivateIndexedEditorBrush(void *data)
+{
+	IndexedEditorBrush *b = data;
+	b->Brush->IsActive = false;
+}
+static void ActivateEditorBrushAndCampaignBrush(UIObject *o, void *data)
+{
+	UNUSED(o);
+	EditorBrushAndCampaign *b = data;
+	b->Brush.Brush->IsActive = true;
+}
+static void DeactivateEditorBrushAndCampaignBrush(void *data)
+{
+	EditorBrushAndCampaign *b = data;
+	b->Brush.Brush->IsActive = false;
+}
 
 
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
@@ -209,6 +231,7 @@ UIObject *CreateAddItemObjs(
 	CSTRDUP(o2->Tooltip, "Location where players start");
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
+	o2->Data = brush;
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -254,8 +277,8 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH/* * 2*/ + 4, TILE_HEIGHT * /*3*/2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
 	o->u.CustomDrawFunc = DrawMapItem;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateIndexedEditorBrush;
+	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < MapObjectGetCount(); i++)
@@ -288,8 +311,8 @@ static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddWreck;
 	o->u.CustomDrawFunc = DrawWreck;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateIndexedEditorBrush;
+	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < MapObjectGetCount(); i++)
@@ -350,8 +373,8 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddCharacter;
 	o->u.CustomDrawFunc = DrawCharacter;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
+	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
 	Vec2i pos = Vec2iZero();
 	int width = 8;
 	for (int i = 0; i < (int)store->OtherChars.size; i++)
@@ -464,8 +487,8 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddObjective;
 	o->u.CustomDrawFunc = DrawObjective;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
+	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
 	Vec2i pos = Vec2iZero();
 	for (int i = 0; i < (int)m->Objectives.size; i++)
 	{
