@@ -544,8 +544,8 @@ static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddKey;
 	o->u.CustomDrawFunc = DrawKey;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateIndexedEditorBrush;
+	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
 	int width = 4;
 	for (int i = 0; i < KEY_COUNT; i++)
