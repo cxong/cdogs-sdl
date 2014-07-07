@@ -34,8 +34,9 @@
 
 void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
-	Pic *pic = MapObjectGetPic(mo, &gPicManager);
-	Blit(&gGraphicsDevice, pic, pos);
+	Vec2i offset;
+	Pic *pic = MapObjectGetPic(mo, &gPicManager, &offset);
+	Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
 }
 
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
