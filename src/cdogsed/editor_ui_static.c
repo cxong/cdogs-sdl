@@ -282,6 +282,17 @@ static void DeactivateBrush(void *data)
 	EditorBrush *b = data;
 	b->IsActive = 0;
 }
+static void ActivateIndexedEditorBrush(UIObject *o, void *data)
+{
+	UNUSED(o);
+	IndexedEditorBrush *b = data;
+	b->Brush->IsActive = true;
+}
+static void DeactivateIndexedEditorBrush(void *data)
+{
+	IndexedEditorBrush *b = data;
+	b->Brush->IsActive = false;
+}
 
 
 static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush);
@@ -458,8 +469,8 @@ static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
 		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeSetKey;
 	o->u.CustomDrawFunc = DrawKey;
-	o->OnFocusFunc = ActivateBrush;
-	o->OnUnfocusFunc = DeactivateBrush;
+	o->OnFocusFunc = ActivateIndexedEditorBrush;
+	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
 	int width = 4;
 	for (int i = 0; i < KEY_COUNT; i++)
