@@ -35,17 +35,27 @@
 
 #include "files.h"
 #include "json_utils.h"
+#include "physfs/physfs.h"
 
-#define VERSION 2
+#define VERSION 3
 
 
+static json_t *ReadPhysFSJSON(const char *archive, const char *filename);
+
+static int MapNewScanArchive(
+	const char *filename, char **title, int *numMissions);
+static int MapNewScanJSON(json_t *root, char **title, int *numMissions);
 int MapNewScan(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
-	int version;
 	json_t *root = NULL;
-	json_t *missionNode;
 	FILE *f = NULL;
+
+	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
+		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
+	{
+		return MapNewScanArchive(filename, title, numMissions);
+	}
 	if (IsCampaignOldFile(filename))
 	{
 		return ScanCampaignOld(filename, title, numMissions);
@@ -62,19 +72,10 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 		err = -1;
 		goto bail;
 	}
-	LoadInt(&version, root, "Version");
-	if (version > VERSION || version <= 0)
+	err = MapNewScanJSON(root, title, numMissions);
+	if (err < 0)
 	{
-		err = -1;
 		goto bail;
-	}
-	*title = GetString(root, "Title");
-	*numMissions = 0;
-	for (missionNode = json_find_first_label(root, "Missions")->child->child;
-		missionNode;
-		missionNode = missionNode->next)
-	{
-		(*numMissions)++;
 	}
 
 bail:
@@ -85,15 +86,64 @@ bail:
 	json_free_value(&root);
 	return err;
 }
+static int MapNewScanArchive(
+	const char *filename, char **title, int *numMissions)
+{
+	int err = 0;
+	json_t *root = ReadPhysFSJSON(filename, "campaign.json");
+	if (root == NULL)
+	{
+		err = -1;
+		goto bail;
+	}
+	err = MapNewScanJSON(root, title, numMissions);
+	if (err < 0)
+	{
+		goto bail;
+	}
 
+bail:
+	json_free_value(&root);
+	return err;
+}
+static int MapNewScanJSON(json_t *root, char **title, int *numMissions)
+{
+	int err = 0;
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		err = -1;
+		goto bail;
+	}
+	*title = GetString(root, "Title");
+	*numMissions = 0;
+	if (version < 3)
+	{
+		for (json_t *missionNode =
+			json_find_first_label(root, "Missions")->child->child;
+			missionNode;
+			missionNode = missionNode->next)
+		{
+			(*numMissions)++;
+		}
+	}
+	else
+	{
+		LoadInt(numMissions, root, "Missions");
+	}
+
+bail:
+	return err;
+}
+
+static int MapNewLoadArchive(const char *filename, CampaignSetting *c);
+static void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c);
 static void LoadMissions(CArray *missions, json_t *missionsNode, int version);
 static void LoadCharacters(CharacterStore *c, json_t *charactersNode);
 int MapNewLoad(const char *filename, CampaignSetting *c)
 {
-	FILE *f = NULL;
 	int err = 0;
-	json_t *root = NULL;
-	int version;
 
 	if (IsCampaignOldFile(filename))
 	{
@@ -109,8 +159,16 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		return err;
 	}
 
+	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
+		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
+	{
+		return MapNewLoadArchive(filename, c);
+	}
+
 	// try to load the new map format
-	f = fopen(filename, "r");
+	json_t *root = NULL;
+	int version;
+	FILE *f = fopen(filename, "r");
 	if (f == NULL)
 	{
 		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
@@ -124,18 +182,13 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 	LoadInt(&version, root, "Version");
-	if (version > VERSION || version <= 0)
+	if (version > 2 || version <= 0)
 	{
 		assert(0 && "not implemented or unknown campaign");
 		err = -1;
 		goto bail;
 	}
-	CFREE(c->Title);
-	c->Title = GetString(root, "Title");
-	CFREE(c->Author);
-	c->Author = GetString(root, "Author");
-	CFREE(c->Description);
-	c->Description = GetString(root, "Description");
+	MapNewLoadCampaignJSON(root, c);
 	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child, version);
 	LoadCharacters(&c->characters, json_find_first_label(root, "Characters")->child);
 
@@ -146,6 +199,97 @@ bail:
 		fclose(f);
 	}
 	return err;
+}
+static int MapNewLoadArchive(const char *filename, CampaignSetting *c)
+{
+	int err = 0;
+	json_t *root = ReadPhysFSJSON(filename, "campaign.json");
+	if (root == NULL)
+	{
+		err = -1;
+		goto bail;
+	}
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 2)
+	{
+		err = -1;
+		goto bail;
+	}
+	MapNewLoadCampaignJSON(root, c);
+	json_free_value(&root);
+
+	root = ReadPhysFSJSON(filename, "missions.json");
+	if (root == NULL)
+	{
+		err = -1;
+		goto bail;
+	}
+	LoadMissions(
+		&c->Missions, json_find_first_label(root, "Missions")->child, version);
+	json_free_value(&root);
+
+	root = ReadPhysFSJSON(filename, "characters.json");
+	if (root == NULL)
+	{
+		err = -1;
+		goto bail;
+	}
+	LoadCharacters(
+		&c->characters, json_find_first_label(root, "Characters")->child);
+
+bail:
+	json_free_value(&root);
+	return err;
+}
+static void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
+{
+	CFREE(c->Title);
+	c->Title = GetString(root, "Title");
+	CFREE(c->Author);
+	c->Author = GetString(root, "Author");
+	CFREE(c->Description);
+	c->Description = GetString(root, "Description");
+}
+
+static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
+{
+	json_t *root = NULL;
+	PHYSFS_File *f = NULL;
+	char *buf = NULL;
+
+	if (!PHYSFS_addToSearchPath(archive, 0))
+	{
+		printf("Failed to add to search path. reason: %s.\n",
+			PHYSFS_getLastError());
+		goto bail;
+	}
+
+	f = PHYSFS_openRead(filename);
+	if (f == NULL)
+	{
+		printf("failed to open. Reason: [%s].\n", PHYSFS_getLastError());
+		goto bail;
+	}
+
+	// Read into buffer
+	int len = (int)PHYSFS_fileLength(f);
+	CCALLOC(buf, len + 1);
+	if (PHYSFS_read(f, buf, 1, len) < len)
+	{
+		printf("PHYSFS_read() failed: %s.\n", PHYSFS_getLastError());
+		goto bail;
+	}
+	if (json_parse_document(&root, buf) != JSON_OK)
+	{
+		root = NULL;
+		goto bail;
+	}
+
+bail:
+	CFREE(buf);
+	PHYSFS_close(f);
+	return root;
 }
 
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
@@ -567,51 +711,105 @@ static void LoadStaticExit(Mission *m, json_t *node, char *name)
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
+bool TrySaveJSONFile(json_t *node, const char *filename);
 int MapNewSave(const char *filename, CampaignSetting *c)
 {
-	FILE *f;
-	char *text = NULL;
+	int res = 1;
+
+	// Save separate files via physfs
+	if (!PHYSFS_setWriteDir("."))
+	{
+		printf("Failed to set write dir. reason: %s.\n",
+			PHYSFS_getLastError());
+		res = 0;
+		goto bail;
+	}
 	char buf[CDOGS_PATH_MAX];
-	json_t *root;
-	if (strcmp(StrGetFileExt(filename), "cpn") == 0 ||
-		strcmp(StrGetFileExt(filename), "CPN") == 0)
+	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
+		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
 	{
 		strcpy(buf, filename);
 	}
 	else
 	{
-		sprintf(buf, "%s.cpn", filename);
+		sprintf(buf, "%s.cdogscpn", filename);
 	}
-	f = fopen(buf, "w");
-	if (f == NULL)
+	if (!PHYSFS_mkdir(buf))
 	{
-		perror("MapNewSave - couldn't write to file: ");
-		return 0;
+		printf("Failed to make dir. reason: %s.\n", PHYSFS_getLastError());
+		res = 0;
+		goto bail;
 	}
 	setlocale(LC_ALL, "");
 
-	root = json_new_object();
-
-	// Common fields
+	// Campaign
+	json_t *root = json_new_object();
 	AddIntPair(root, "Version", VERSION);
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
+	AddIntPair(root, "Missions", c->Missions.size);
+	char buf2[CDOGS_PATH_MAX];
+	sprintf(buf2, "%s/campaign.json", buf);
+	if (!TrySaveJSONFile(root, buf2))
+	{
+		res = 0;
+		goto bail;
+	}
 
+	json_free_value(&root);
+	root = json_new_object();
 	json_insert_pair_into_object(root, "Missions", SaveMissions(&c->Missions));
+	sprintf(buf2, "%s/missions.json", buf);
+	if (!TrySaveJSONFile(root, buf2))
+	{
+		res = 0;
+		goto bail;
+	}
+
+	json_free_value(&root);
+	root = json_new_object();
 	json_insert_pair_into_object(
 		root, "Characters", SaveCharacters(&c->characters));
+	sprintf(buf2, "%s/characters.json", buf);
+	if (!TrySaveJSONFile(root, buf2))
+	{
+		res = 0;
+		goto bail;
+	}
 
-	json_tree_to_string(root, &text);
-	fputs(json_format_string(text), f);
-
-	// clean up
-	CFREE(text);
+bail:
 	json_free_value(&root);
+	return res;
+}
+bool TrySaveJSONFile(json_t *node, const char *filename)
+{
+	bool res = true;
+	char *text;
+	json_tree_to_string(node, &text);
+	char *ftext = json_format_string(text);
+	PHYSFS_File *pf = PHYSFS_openWrite(filename);
+	if (pf == NULL)
+	{
+		printf("failed to open. Reason: [%s].\n", PHYSFS_getLastError());
+		res = false;
+		goto bail;
+	}
+	size_t writeLen = strlen(ftext);
+	PHYSFS_sint64 rc = PHYSFS_write(pf, ftext, 1, writeLen);
+	if (rc != (int)writeLen)
+	{
+		printf("Wrote (%d) of (%d) bytes. Reason: [%s].\n",
+			(int)rc, (int)writeLen, PHYSFS_getLastError());
+		res = false;
+		goto bail;
+	}
 
-	fclose(f);
-
-	return 1;
+bail:
+	CFREE(text);
+	CFREE(ftext);
+	PHYSFS_close(pf);
+	return res;
 }
 
 static json_t *SaveObjectives(CArray *a);

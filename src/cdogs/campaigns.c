@@ -193,7 +193,10 @@ void LoadCampaignsFromFolder(
 		tinydir_file file;
 		tinydir_readfile_n(&dir, &file, i);
 
-		if (file.is_dir &&
+		const bool isArchive =
+			strcmp(file.extension, "cdogscpn") == 0 ||
+			strcmp(file.extension, "CDOGSCPN") == 0;
+		if (file.is_dir && !isArchive &&
 			strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0)
 		{
 			campaign_list_t subFolder;
@@ -201,7 +204,7 @@ void LoadCampaignsFromFolder(
 			LoadCampaignsFromFolder(&subFolder, file.name, file.path, mode);
 			CArrayPushBack(&list->subFolders, &subFolder);
 		}
-		else if (file.is_reg)
+		else if (file.is_reg || isArchive)
 		{
 			CampaignEntry entry;
 			if (CampaignEntryTryLoad(&entry, file.path, mode))

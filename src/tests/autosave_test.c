@@ -6,9 +6,11 @@
 
 
 // Stub
-int MapNewScan(const char *filename, char **title, int *numMissions)
+int MapNewScan(
+	const char *filename, const bool isArchive, char **title, int *numMissions)
 {
 	UNUSED(filename);
+	UNUSED(isArchive);
 	UNUSED(title);
 	UNUSED(numMissions);
 	return 0;

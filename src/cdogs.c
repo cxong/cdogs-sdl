@@ -81,6 +81,8 @@
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
+#include <cdogs/physfs/physfs.h>
+
 #include "autosave.h"
 #include "credits.h"
 #include "game.h"
@@ -1348,6 +1350,8 @@ int main(int argc, char *argv[])
 
 	EventInit(&gEventHandlers, NULL, true);
 
+	PHYSFS_init(argv[0]);
+
 	if (wait)
 	{
 		printf("Press the enter key to continue...\n");
@@ -1415,6 +1419,7 @@ int main(int argc, char *argv[])
 
 bail:
 	debug(D_NORMAL, ">> Shutting down...\n");
+	PHYSFS_deinit();
 	MapTerminate(&gMap);
 	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);

@@ -73,6 +73,8 @@
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
+#include <cdogs/physfs/physfs.h>
+
 #include <cdogsed/charsed.h>
 #include <cdogsed/editor_ui.h>
 #include <cdogsed/editor_ui_common.h>
@@ -1177,6 +1179,8 @@ int main(int argc, char *argv[])
 
 	EventInit(&gEventHandlers, NULL, false);
 
+	PHYSFS_init(argv[0]);
+
 	for (i = 1; i < argc; i++)
 	{
 		if (!loaded)
@@ -1187,7 +1191,7 @@ int main(int argc, char *argv[])
 			if (strchr(lastFile, '.') == NULL &&
 				sizeof lastFile - strlen(lastFile) > 3)
 			{
-				strcat(lastFile, ".CPN");
+				strcat(lastFile, ".cdogscpn");
 			}
 			if (MapNewLoad(lastFile, &gCampaign.Setting) == 0)
 			{
@@ -1199,6 +1203,8 @@ int main(int argc, char *argv[])
 
 	debug(D_NORMAL, "Starting editor\n");
 	EditCampaign();
+
+	PHYSFS_deinit();
 
 	MapTerminate(&gMap);
 	ParticleClassesTerminate(&gParticleClasses);

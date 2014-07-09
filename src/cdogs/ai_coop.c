@@ -547,13 +547,13 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 const GunDescription *AICoopSelectWeapon(int player, const CArray *weapons)
 {
 	// Weapon preferences, for different player indices
-#define NUM_PREFERRED_WEAPONS 5
+#define NUM_PREFERRED_WEAPONS 7
 	const char *preferredWeapons[][NUM_PREFERRED_WEAPONS] =
 	{
-		{ "Machine gun", "Shotgun", "Powergun", "Sniper rifle", "Flamer" },
-		{ "Flamer", "Shotgun", "Machine gun", "Powergun", "Sniper rifle" },
-		{ "Shotgun", "Machine gun", "Powergun", "Flamer", "Sniper rifle" },
-		{ "Powergun", "Sniper rifle", "Machine gun", "Shotgun", "Flamer" }
+		{ "Machine gun", "Shotgun", "Powergun", "Launcher", "Sniper rifle", "Pistol", "Flamer" },
+		{ "Flamer", "Pistol", "Shotgun", "Machine gun", "Launcher", "Powergun", "Sniper rifle" },
+		{ "Shotgun", "Machine gun", "Launcher", "Powergun", "Pistol", "Flamer", "Sniper rifle" },
+		{ "Powergun", "Sniper rifle", "Machine gun", "Launcher", "Shotgun", "Pistol", "Flamer" }
 	};
 
 	// First try to select an available weapon
