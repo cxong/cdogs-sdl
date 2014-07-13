@@ -736,8 +736,8 @@ unsigned short GenerateAccessMask(int *accessLevel)
 
 void MapGenerateRandomExitArea(Map *map)
 {
-	const Tile *t;
-	do
+	const Tile *t = NULL;
+	for (int i = 0; i < 10000 && (t == NULL ||!TileCanWalk(t)); i++)
 	{
 		map->ExitStart.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
 		map->ExitEnd.x = map->ExitStart.x + EXIT_WIDTH + 1;
@@ -748,5 +748,5 @@ void MapGenerateRandomExitArea(Map *map)
 			(map->ExitStart.x + map->ExitEnd.x) / 2,
 			(map->ExitStart.y + map->ExitEnd.y) / 2);
 		t = MapGetTile(map, center);
-	} while (!TileCanWalk(t));
+	}
 }
