@@ -86,6 +86,37 @@ const char *StrGetFileExt(const char *filename)
 	return dot + 1;
 }
 
+const char *PathGetBasename(const char *path)
+{
+	const char *fslash = strrchr(path, '/');
+	const char *bslash = strrchr(path, '\\');
+	const char *slash =
+		fslash ? (bslash ? MAX(fslash, bslash) : fslash) : bslash;
+	if (slash == NULL)
+	{
+		// no slashes found, simply return path
+		return path;
+	}
+	else
+	{
+		return slash + 1;
+	}
+}
+void PathGetBasenameWithoutExtension(char *buf, const char *path)
+{
+	const char *basename = PathGetBasename(path);
+	const char *dot = strrchr(basename, '.');
+	if (dot)
+	{
+		strncpy(buf, basename, dot - basename);
+		buf[dot - basename] = '\0';
+	}
+	else
+	{
+		strcpy(buf, basename);
+	}
+}
+
 double Round(double x)
 {
 	return floor(x + 0.5);

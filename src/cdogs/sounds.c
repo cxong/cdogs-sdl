@@ -89,27 +89,23 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	return 0;
 }
 
-void LoadSound(CArray *sounds, const char *name, const char *path)
+static void LoadSound(SoundDevice *device, const char *name, const char *path)
 {
-	SoundData sound;
-	// Load file data
-	if ((sound.data = Mix_LoadWAV(path)) == NULL)
+	Mix_Chunk *data = Mix_LoadWAV(path);
+	if (data == NULL)
 	{
 		return;
 	}
-
-	const char *dot = strrchr(name, '.');
-	if (dot)
-	{
-		strncpy(sound.Name, name, dot - name);
-		sound.Name[dot - name] = '\0';
-	}
-	else
-	{
-		strcpy(sound.Name, name);
-	}
-
-	CArrayPushBack(sounds, &sound);
+	char buf[CDOGS_FILENAME_MAX];
+	PathGetBasenameWithoutExtension(buf, name);
+	SoundAdd(device, buf, data);
+}
+void SoundAdd(SoundDevice *device, const char *name, Mix_Chunk *data)
+{
+	SoundData sound;
+	sound.data = data;
+	strcpy(sound.Name, name);
+	CArrayPushBack(&device->sounds, &sound);
 }
 
 void SoundInitialize(
@@ -141,7 +137,7 @@ void SoundInitialize(
 		}
 		if (file.is_reg)
 		{
-			LoadSound(&device->sounds, file.name, file.path);
+			LoadSound(device, file.name, file.path);
 		}
 	}
 

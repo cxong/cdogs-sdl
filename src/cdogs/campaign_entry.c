@@ -73,17 +73,7 @@ bool CampaignEntryTryLoad(
 	char title[256];
 	sprintf(title, "%s (%d)", buf, numMissions);
 	CampaignEntryInit(entry, title, mode);
-	char *fslash = strrchr(path, '/');
-	char *bslash = strrchr(path, '\\');
-	char *slash = fslash ? (bslash ? MAX(fslash, bslash) : fslash) : bslash;
-	if (slash == NULL)
-	{
-		CSTRDUP(entry->Filename, path);
-	}
-	else
-	{
-		CSTRDUP(entry->Filename, slash + 1);
-	}
+	CSTRDUP(entry->Filename, PathGetBasename(path));
 	CSTRDUP(entry->Path, path);
 	entry->IsBuiltin = false;
 	entry->NumMissions = numMissions;

@@ -122,6 +122,7 @@ typedef struct
 
 void SoundInitialize(
 	SoundDevice *device, SoundConfig *config, const char *path);
+void SoundAdd(SoundDevice *device, const char *name, Mix_Chunk *data);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);

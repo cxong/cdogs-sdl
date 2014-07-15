@@ -146,6 +146,10 @@ int MemIsZero(const void *buf, size_t len);
 
 const char *StrGetFileExt(const char *filename);
 
+// Given /path/to/file, return file
+const char *PathGetBasename(const char *path);
+void PathGetBasenameWithoutExtension(char *buf, const char *path);
+
 #define PI 3.14159265
 
 double Round(double x);

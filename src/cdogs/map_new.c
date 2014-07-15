@@ -200,6 +200,8 @@ bail:
 	}
 	return err;
 }
+static void LoadArchiveSounds(
+	SoundDevice *device, const char *archive, const char *dirname);
 static int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
@@ -237,6 +239,9 @@ static int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 	LoadCharacters(
 		&c->characters, json_find_first_label(root, "Characters")->child);
+
+	// Load any custom data
+	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 
 bail:
 	json_free_value(&root);
@@ -290,6 +295,72 @@ bail:
 	CFREE(buf);
 	PHYSFS_close(f);
 	return root;
+}
+
+static void LoadArchiveSounds(
+	SoundDevice *device, const char *archive, const char *dirname)
+{
+	char **rc = NULL;
+	PHYSFS_File *f = NULL;
+	char *buf = NULL;
+
+	if (!PHYSFS_addToSearchPath(archive, 0))
+	{
+		printf("Failed to add to search path. reason: %s.\n",
+			PHYSFS_getLastError());
+		goto bail;
+	}
+	
+	rc = PHYSFS_enumerateFiles(dirname);
+	if (rc == NULL)
+	{
+		return;
+	}
+
+	for (char **i = rc; *i != NULL; i++)
+	{
+		char path[CDOGS_PATH_MAX];
+		sprintf(path, "%s/%s", dirname, *i);
+		f = PHYSFS_openRead(path);
+		if (f == NULL)
+		{
+			printf("failed to open %s. Reason: [%s].\n",
+				path, PHYSFS_getLastError());
+			goto bail;
+		}
+		int len = (int)PHYSFS_fileLength(f);
+		CCALLOC(buf, len + 1);
+		if (PHYSFS_read(f, buf, 1, len) < len)
+		{
+			printf("PHYSFS_read() %s failed: %s.\n",
+				path, PHYSFS_getLastError());
+			goto bail;
+		}
+		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
+		Mix_Chunk *data = Mix_LoadWAV_RW(rwops, 0);
+		if (data != NULL)
+		{
+			const char *archiveName = PathGetBasename(archive);
+			char nameBuf[CDOGS_FILENAME_MAX];
+			sprintf(nameBuf, "%s/%s", archiveName, *i);
+			// Remove extension
+			char *dot = strrchr(nameBuf, '.');
+			if (dot != NULL)
+			{
+				*dot = '\0';
+			}
+			SoundAdd(device, nameBuf, data);
+		}
+		CFREE(buf);
+		buf = NULL;
+		PHYSFS_close(f);
+		f = NULL;
+	}
+
+bail:
+	CFREE(buf);
+	PHYSFS_close(f);
+	PHYSFS_freeList(rc);
 }
 
 static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
