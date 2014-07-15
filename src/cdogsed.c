@@ -63,6 +63,7 @@
 #include <cdogs/files.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
+#include <cdogs/map_archive.h>
 #include <cdogs/mission.h>
 #include <cdogs/mission_convert.h>
 #include <cdogs/objs.h>
@@ -409,7 +410,7 @@ static void Autosave(void)
 		char buf[CDOGS_PATH_MAX];
 		sprintf(buf, "%s~%d", lastFile, sAutosaveIndex);
 		fprintf(stderr, "Autosaving...");
-		MapNewSave(buf, &gCampaign.Setting);
+		MapArchiveSave(buf, &gCampaign.Setting);
 		fprintf(stderr, "done\n");
 		sAutosaveIndex++;
 	}
@@ -575,7 +576,7 @@ static void Save(void)
 			"Saving...", TEXT_XCENTER | TEXT_YCENTER,
 			Vec2iZero(), gGraphicsDevice.cachedConfig.Res, Vec2iZero());
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-		MapNewSave(filename, &gCampaign.Setting);
+		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = 0;
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;

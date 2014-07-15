@@ -25,22 +25,14 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#ifndef __MAP_ARCHIVE
+#define __MAP_ARCHIVE
 
-#include <json/json.h>
-
-#include "c_array.h"
 #include "campaigns.h"
 
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
-int MapNewLoad(const char *filename, CampaignSetting *c);
-
-// Helper methods for loading JSON maps
-int MapNewScanJSON(json_t *root, char **title, int *numMissions);
-void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c);
-void LoadMissions(CArray *missions, json_t *missionsNode, int version);
-void LoadCharacters(CharacterStore *c, json_t *charactersNode);
+int MapNewScanArchive(
+	const char *filename, char **title, int *numMissions);
+int MapNewLoadArchive(const char *filename, CampaignSetting *c);
+int MapArchiveSave(const char *filename, CampaignSetting *c);
 
 #endif
