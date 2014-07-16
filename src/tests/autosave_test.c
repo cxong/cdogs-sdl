@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-// Stub
+// Stubs
 int MapNewScan(
 	const char *filename, const bool isArchive, char **title, int *numMissions)
 {
@@ -14,6 +14,11 @@ int MapNewScan(
 	UNUSED(title);
 	UNUSED(numMissions);
 	return 0;
+}
+Mix_Chunk *StrSound(const char *s)
+{
+	UNUSED(s);
+	return NULL;
 }
 
 

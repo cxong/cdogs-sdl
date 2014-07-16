@@ -4,6 +4,13 @@
 #include <config_json.h>
 #include <config_old.h>
 
+// Stub
+Mix_Chunk *StrSound(const char *s)
+{
+	UNUSED(s);
+	return NULL;
+}
+
 
 FEATURE(1, "Load default config")
 	SCENARIO("Load a default config")
