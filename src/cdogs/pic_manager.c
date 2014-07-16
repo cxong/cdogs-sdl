@@ -44,17 +44,18 @@ int PicManagerTryInit(
 	memset(pm, 0, sizeof *pm);
 	CArrayInit(&pm->pics, sizeof(NamedPic));
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
-	i = ReadPics(
-		GetDataFilePath(oldGfxFile1), pm->oldPics, PIC_COUNT1, pm->palette);
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, oldGfxFile1);
+	i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
 	if (!i)
 	{
-		printf("Unable to read %s\n", GetDataFilePath(oldGfxFile1));
+		printf("Unable to read %s\n", buf);
 		return 0;
 	}
-	if (!AppendPics(
-		GetDataFilePath(oldGfxFile2), pm->oldPics, PIC_COUNT1, PIC_MAX))
+	GetDataFilePath(buf, oldGfxFile2);
+	if (!AppendPics(buf, pm->oldPics, PIC_COUNT1, PIC_MAX))
 	{
-		printf("Unable to read %s\n", GetDataFilePath(oldGfxFile2));
+		printf("Unable to read %s\n", buf);
 		return 0;
 	}
 	pm->palette[0].r = pm->palette[0].g = pm->palette[0].b = 0;

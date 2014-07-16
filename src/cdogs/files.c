@@ -542,12 +542,10 @@ const char *GetHomeDirectory(void)
 }
 
 
-char *GetDataFilePath(const char *path)
+void GetDataFilePath(char *buf, const char *path)
 {
-	static char buf[CDOGS_PATH_MAX];
 	strcpy(buf, CDOGS_DATA_DIR);
 	strcat(buf, path);
-	return buf;
 }
 
 

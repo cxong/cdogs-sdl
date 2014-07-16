@@ -78,25 +78,29 @@ static void LoadQuickPlayEntry(CampaignEntry *entry);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns)
 {
+	char buf[CDOGS_PATH_MAX];
+
 	CampaignListInit(&campaigns->campaignList);
 	CampaignListInit(&campaigns->dogfightList);
 
 	printf("\nCampaigns:\n");
 
 	LoadBuiltinCampaigns(&campaigns->campaignList);
+	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList,
 		"",
-		GetDataFilePath(CDOGS_CAMPAIGN_DIR),
+		buf,
 		CAMPAIGN_MODE_NORMAL);
 
 	printf("\nDogfights:\n");
 
 	LoadBuiltinDogfights(&campaigns->dogfightList);
+	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LoadCampaignsFromFolder(
 		&campaigns->dogfightList,
 		"",
-		GetDataFilePath(CDOGS_DOGFIGHT_DIR),
+		buf,
 		CAMPAIGN_MODE_DOGFIGHT);
 
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);

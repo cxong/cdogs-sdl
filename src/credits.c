@@ -41,17 +41,17 @@
 void LoadCredits(
 	credits_displayer_t *displayer, color_t nameColor, color_t textColor)
 {
-	char buf[1024];
-	char nameBuf[256];
+	char buf[CDOGS_PATH_MAX];
 	int nameOrMessageCounter = 0;
 	FILE *file;
 
 	debug(D_NORMAL, "Reading CREDITS...\n");
 
-	file = fopen(GetDataFilePath("doc/CREDITS"), "r");
+	GetDataFilePath(buf, "doc/CREDITS");
+	file = fopen(buf, "r");
 	if (file == NULL)
 	{
-		printf("Error: cannot load %s\n", GetDataFilePath("doc/CREDITS"));
+		printf("Error: cannot load %s\n", buf);
 		return;
 	}
 
@@ -62,8 +62,9 @@ void LoadCredits(
 	displayer->creditsIndex = 0;
 	displayer->nameColor = nameColor;
 	displayer->textColor = textColor;
-	while (fgets(buf, 1024, file) != NULL)
+	while (fgets(buf, CDOGS_PATH_MAX, file) != NULL)
 	{
+		char nameBuf[256];
 		if (strlen(buf) > 0 && buf[strlen(buf) - 1] == '\n')
 		{
 			buf[strlen(buf) - 1] = '\0';

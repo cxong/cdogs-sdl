@@ -1327,13 +1327,15 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
-	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, "");
+	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
 
 	if (isSoundEnabled)
 	{
-		SoundInitialize(
-			&gSoundDevice, &gConfig.Sound, GetDataFilePath("sounds"));
+		GetDataFilePath(buf, "sounds");
+		SoundInitialize(&gSoundDevice, &gConfig.Sound, buf);
 		if (!gSoundDevice.isInitialised)
 		{
 			printf("Sound initialization failed!\n");
@@ -1364,7 +1366,8 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	TextManagerInit(&gTextManager, GetDataFilePath("graphics/font.px"));
+	GetDataFilePath(buf, "graphics/font.px");
+	TextManagerInit(&gTextManager, buf);
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
@@ -1388,13 +1391,16 @@ int main(int argc, char *argv[])
 	else
 	{
 		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
-		PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
+		GetDataFilePath(buf, "graphics");
+		PicManagerLoadDir(&gPicManager, buf);
 
-		ParticleClassesInit(
-			&gParticleClasses, GetDataFilePath("particles.json"));
-		BulletInitialize(&gBulletClasses, GetDataFilePath("bullets.json"));
-		WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
-		BulletInitialize2(&gBulletClasses);
+		GetDataFilePath(buf, "particles.json");
+		ParticleClassesInit(&gParticleClasses, buf);
+		char buf2[CDOGS_PATH_MAX];
+		GetDataFilePath(buf, "bullets.json");
+		GetDataFilePath(buf2, "guns.json");
+		BulletAndWeaponInitialize(
+			&gBulletClasses, &gGunDescriptions, buf, buf2);
 		CampaignInit(&gCampaign);
 		LoadAllCampaigns(&campaigns);
 		PlayerDataInitialize();

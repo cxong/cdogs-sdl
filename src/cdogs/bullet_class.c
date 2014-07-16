@@ -326,48 +326,40 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 #define VERSION 1
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet);
-void BulletInitialize(BulletClasses *bullets, const char *filename)
+void BulletInitialize(BulletClasses *bullets)
 {
 	CArrayInit(&bullets->Classes, sizeof(BulletClass));
-	FILE *f = fopen(filename, "r");
-	json_t *root = NULL;
-	if (f == NULL)
-	{
-		printf("Error: cannot load bullets file %s\n", filename);
-		goto bail;
-	}
-	const enum json_error e = json_stream_parse(f, &root);
-	if (e != JSON_OK)
-	{
-		printf("Error parsing bullets file %s\n", filename);
-		goto bail;
-	}
+}
+void BulletLoadJSON(
+	BulletClasses *bullets, const BulletClass *defaultB, json_t *bulletNode)
+{
 	int version;
-	LoadInt(&version, root, "Version");
+	LoadInt(&version, bulletNode, "Version");
 	if (version > VERSION || version <= 0)
 	{
 		CASSERT(false, "cannot read bullets file version");
-		goto bail;
+		return;
 	}
 
 	// Defaults
-	BulletClass defaultB;
-	LoadBullet(
-		&defaultB, json_find_first_label(root, "DefaultBullet")->child, NULL);
-	json_t *bulletsNode = json_find_first_label(root, "Bullets")->child;
+	BulletClass defaultBLocal;
+	if (defaultB == NULL)
+	{
+		LoadBullet(
+			&defaultBLocal,
+			json_find_first_label(bulletNode, "DefaultBullet")->child,
+			NULL);
+		defaultB = &defaultBLocal;
+	}
+	json_t *bulletsNode = json_find_first_label(bulletNode, "Bullets")->child;
 	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
 		BulletClass b;
-		LoadBullet(&b, child, &defaultB);
+		LoadBullet(&b, child, defaultB);
 		CArrayPushBack(&bullets->Classes, &b);
 	}
 
-bail:
-	bullets->root = root;
-	if (f)
-	{
-		fclose(f);
-	}
+	bullets->root = bulletNode;
 }
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
@@ -526,7 +518,7 @@ static void LoadBullet(
 	b->node = node;
 }
 static void LoadBulletGuns(CArray *guns, json_t *node);
-void BulletInitialize2(BulletClasses *bullets)
+void BulletLoadWeapons(BulletClasses *bullets)
 {
 	for (int i = 0; i < (int)bullets->Classes.size; i++)
 	{

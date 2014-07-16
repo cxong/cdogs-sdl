@@ -209,7 +209,7 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting);
 
 const char *GetHomeDirectory(void);
 const char *GetConfigFilePath(const char *name);
-char *GetDataFilePath(const char *path);
+void GetDataFilePath(char *buf, const char *path);
 
 void SetupConfigDir(void);
 

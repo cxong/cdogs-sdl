@@ -1124,8 +1124,10 @@ int main(int argc, char *argv[])
 	}
 	SDL_EnableUNICODE(SDL_ENABLE);
 
-	printf("Data directory:\t\t%s\n",	GetDataFilePath(""));
-	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, "");
+	printf("Data directory:\t\t%s\n", buf);
+	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
 
 	EditorBrushInit(&brush);
 
@@ -1139,7 +1141,8 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
-	TextManagerInit(&gTextManager, GetDataFilePath("graphics/font.px"));
+	GetDataFilePath(buf, "graphics/font.px");
+	TextManagerInit(&gTextManager, buf);
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
@@ -1154,13 +1157,15 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
-	PicManagerLoadDir(&gPicManager, GetDataFilePath("graphics"));
+	GetDataFilePath(buf, "graphics");
+	PicManagerLoadDir(&gPicManager, buf);
 
-	ParticleClassesInit(
-		&gParticleClasses, GetDataFilePath("particles.json"));
-	BulletInitialize(&gBulletClasses, GetDataFilePath("bullets.json"));
-	WeaponInitialize(&gGunDescriptions, GetDataFilePath("guns.json"));
-	BulletInitialize2(&gBulletClasses);
+	GetDataFilePath(buf, "particles.json");
+	ParticleClassesInit(&gParticleClasses, buf);
+	char buf2[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, "bullets.json");
+	GetDataFilePath(buf2, "guns.json");
+	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);

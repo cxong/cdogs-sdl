@@ -101,30 +101,20 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 
 // Initialise all the static weapon data
 #define VERSION 1
-static void LoadGunDescription(
-	GunDescription *g, json_t *node, const GunDescription *defaultGun);
-void WeaponInitialize(CArray *descs, const char *filename)
+void WeaponInitialize(CArray *descs)
 {
 	CArrayInit(descs, sizeof(const GunDescription));
-	FILE *f = fopen(filename, "r");
-	json_t *root = NULL;
-	if (f == NULL)
-	{
-		printf("Error: cannot load guns file %s\n", filename);
-		goto bail;
-	}
-	enum json_error e = json_stream_parse(f, &root);
-	if (e != JSON_OK)
-	{
-		printf("Error parsing guns file %s\n", filename);
-		goto bail;
-	}
+}
+static void LoadGunDescription(
+	GunDescription *g, json_t *node, const GunDescription *defaultGun);
+void WeaponLoadJSON(CArray *descs, json_t *root)
+{
 	int version;
 	LoadInt(&version, root, "Version");
 	if (version > VERSION || version <= 0)
 	{
 		CASSERT(false, "cannot read guns file version");
-		goto bail;
+		return;
 	}
 
 	GunDescription defaultDesc;
@@ -157,13 +147,6 @@ void WeaponInitialize(CArray *descs, const char *filename)
 		LoadGunDescription(&g, child, &defaultDesc);
 		g.IsRealGun = false;
 		CArrayPushBack(descs, &g);
-	}
-
-bail:
-	json_free_value(&root);
-	if (f)
-	{
-		fclose(f);
 	}
 }
 static void LoadGunDescription(
@@ -574,4 +557,65 @@ bool IsLongRange(const GunDescription *g)
 bool IsShortRange(const GunDescription *g)
 {
 	return GetEffectiveRange(g) < 100;
+}
+
+void BulletAndWeaponInitialize(
+	BulletClasses *b, CArray *g, const char *bpath, const char *gpath)
+{
+	BulletInitialize(b);
+
+	FILE *bf = NULL;
+	FILE *gf = NULL;
+	json_t *broot = NULL;
+	json_t *groot = NULL;
+	enum json_error e;
+
+	// 2-pass bullet loading will free root for us
+	bool freeBRoot = true;
+	bf = fopen(bpath, "r");
+	if (bf == NULL)
+	{
+		printf("Error: cannot load bullets file %s\n", bpath);
+		goto bail;
+	}
+	e = json_stream_parse(bf, &broot);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing bullets file %s [error %d]\n", bpath, (int)e);
+		goto bail;
+	}
+	BulletLoadJSON(b, NULL, broot);
+
+	WeaponInitialize(g);
+	gf = fopen(gpath, "r");
+	if (gf == NULL)
+	{
+		printf("Error: cannot load guns file %s\n", gpath);
+		goto bail;
+	}
+	e = json_stream_parse(gf, &groot);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing guns file %s [error %d]\n", gpath, (int)e);
+		goto bail;
+	}
+	WeaponLoadJSON(g, groot);
+
+	BulletLoadWeapons(b);
+	freeBRoot = false;
+
+bail:
+	if (bf)
+	{
+		fclose(bf);
+	}
+	if (gf)
+	{
+		fclose(gf);
+	}
+	if (freeBRoot)
+	{
+		json_free_value(&broot);
+	}
+	json_free_value(&groot);
 }

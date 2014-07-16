@@ -269,7 +269,9 @@ void GraphicsInitialize(
 			config->IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
-		device->icon = SDL_LoadBMP(GetDataFilePath("cdogs_icon.bmp"));
+		char buf[CDOGS_PATH_MAX];
+		GetDataFilePath(buf, "cdogs_icon.bmp");
+		device->icon = SDL_LoadBMP(buf);
 		SDL_WM_SetIcon(device->icon, NULL);
 		AddSupportedGraphicsModes(device);
 	}

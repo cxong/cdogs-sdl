@@ -137,7 +137,8 @@ extern CArray gGunDescriptions;	// of GunDescription
 extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 
-void WeaponInitialize(CArray *descs, const char *filename);
+void WeaponInitialize(CArray *descs);
+void WeaponLoadJSON(CArray *descs, json_t *root);
 void WeaponTerminate(CArray *descs);
 Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
@@ -156,5 +157,9 @@ void WeaponHoldFire(Weapon *w);
 bool IsHighDPS(const GunDescription *g);
 bool IsLongRange(const GunDescription *g);
 bool IsShortRange(const GunDescription *g);
+
+// Initialise bullets and weapons in one go
+void BulletAndWeaponInitialize(
+	BulletClasses *b, CArray *g, const char *bpath, const char *gpath);
 
 #endif

@@ -107,9 +107,11 @@ extern BulletClasses gBulletClasses;
 
 BulletClass *StrBulletClass(const char *s);
 
-void BulletInitialize(BulletClasses *bullets, const char *filename);
+void BulletInitialize(BulletClasses *bullets);
+void BulletLoadJSON(
+	BulletClasses *bullets, const BulletClass *defaultB, json_t *bulletNode);
 // 2-step initialisation since bullet and weapon reference each other
-void BulletInitialize2(BulletClasses *bullets);
+void BulletLoadWeapons(BulletClasses *bullets);
 void BulletTerminate(BulletClasses *bullets);
 
 typedef struct
