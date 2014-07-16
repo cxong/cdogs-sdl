@@ -101,6 +101,8 @@ typedef struct
 typedef struct
 {
 	CArray Classes;	// of BulletClass
+	BulletClass Default;
+	CArray CustomClasses;	// of BulletClass
 	json_t *root;
 } BulletClasses;
 extern BulletClasses gBulletClasses;
@@ -109,9 +111,11 @@ BulletClass *StrBulletClass(const char *s);
 
 void BulletInitialize(BulletClasses *bullets);
 void BulletLoadJSON(
-	BulletClasses *bullets, const BulletClass *defaultB, json_t *bulletNode);
+	BulletClasses *bullets, CArray *classes,
+	json_t *bulletNode, const char *archiveName);
 // 2-step initialisation since bullet and weapon reference each other
 void BulletLoadWeapons(BulletClasses *bullets);
+void BulletClassesClear(CArray *classes);
 void BulletTerminate(BulletClasses *bullets);
 
 typedef struct

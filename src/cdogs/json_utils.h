@@ -33,6 +33,7 @@
 
 #include <json/json.h>
 
+#include "sounds.h"
 #include "vector.h"
 
 void AddIntPair(json_t *parent, const char *name, int number);
@@ -43,6 +44,8 @@ void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
 void LoadVec2i(Vec2i *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
+Mix_Chunk *LoadSoundFromNode(
+	json_t *node, const char *name, const char *archiveName);
 
 #define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\
 	json_insert_pair_into_object(\

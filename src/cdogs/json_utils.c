@@ -30,6 +30,9 @@
 
 #include <stdlib.h>
 
+#include "sys_config.h"
+
+
 void AddIntPair(json_t *parent, const char *name, int number)
 {
 	char buf[32];
@@ -109,4 +112,27 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 char *GetString(json_t *node, const char *name)
 {
 	return json_unescape(json_find_first_label(node, name)->child->text);
+}
+Mix_Chunk *LoadSoundFromNode(
+	json_t *node, const char *name, const char *archiveName)
+{
+	if (json_find_first_label(node, name) == NULL)
+	{
+		return NULL;
+	}
+	char *tmp = GetString(node, name);
+	Mix_Chunk *c = NULL;
+	if (archiveName != NULL)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "%s/%s", archiveName, tmp);
+		c = StrSound(buf);
+	}
+	// If custom sound not found, try from built-in sounds
+	if (c == NULL)
+	{
+		c = StrSound(tmp);
+	}
+	CFREE(tmp);
+	return c;
 }

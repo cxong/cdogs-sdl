@@ -291,7 +291,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
 	c->bot->actionDelay = b->actionDelay;
-	c->Gun = CArrayGet(&gGunDescriptions, b->gun);
+	c->Gun = CArrayGet(&gGunDescriptions.Guns, b->gun);
 	c->looks.skin = b->skinColor;
 	c->looks.arm = b->armColor;
 	c->looks.body = b->bodyColor;
@@ -311,9 +311,10 @@ TBadGuy ConvertTBadGuy(Character *e)
 	b.probabilityToTrack = e->bot->probabilityToTrack;
 	b.probabilityToShoot = e->bot->probabilityToShoot;
 	b.actionDelay = e->bot->actionDelay;
-	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		const GunDescription *g = StrGunDescription(e->Gun->name);
+			CArrayGet(&gGunDescriptions.Guns, i);
 		if (strcmp(e->Gun->name, g->name) == 0)
 		{
 			b.gun = i;
@@ -388,7 +389,7 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 	{
 		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
 		{
-			GunDescription *g = CArrayGet(&gGunDescriptions, i);
+			GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
 			CArrayPushBack(&dest->Weapons, &g);
 		}
 	}

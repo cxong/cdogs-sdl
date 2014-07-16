@@ -229,6 +229,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 }
 
+static const GunDescription *GetNextGun(const GunDescription *g, const int d);
 static void Change(
 	CharacterStore *store,
 	int idx,
@@ -361,34 +362,60 @@ static void Change(
 		break;
 
 	case YC_WEAPON:
-		for (int i = 0; i < (int)gGunDescriptions.size; i++)
-		{
-			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
-			if (g == b->Gun)
-			{
-				for (int j = i + d; j != i; j += d)
-				{
-					if (j >= (int)gGunDescriptions.size)
-					{
-						j -= (int)gGunDescriptions.size;
-					}
-					if (j < 0)
-					{
-						j += (int)gGunDescriptions.size;
-					}
-					b->Gun = CArrayGet(&gGunDescriptions, j);
-					if (b->Gun->IsRealGun)
-					{
-						break;
-					}
-				}
-				break;
-			}
-		}
+		b->Gun = GetNextGun(b->Gun, d);
 		break;
 	}
 
 	CharacterSetLooks(b, &b->looks);
+}
+// Look in both built-in guns and custom guns for the next gun
+static const GunDescription *GetNextGun(const GunDescription *g, const int d)
+{
+	const int totalSize =
+		(int)gGunDescriptions.Guns.size +
+		(int)gGunDescriptions.CustomGuns.size;
+	for (int i = 0; i < (int)totalSize; i++)
+	{
+		const GunDescription *gd;
+		if (i < (int)gGunDescriptions.Guns.size)
+		{
+			gd = CArrayGet(&gGunDescriptions.Guns, i);
+		}
+		else
+		{
+			gd = CArrayGet(&gGunDescriptions.CustomGuns,
+				i - (int)gGunDescriptions.Guns.size);
+		}
+		if (gd == g)
+		{
+			for (int j = i + d; j != i; j += d)
+			{
+				if (j >= totalSize)
+				{
+					j -= totalSize;
+				}
+				if (j < 0)
+				{
+					j += totalSize;
+				}
+				if (j < (int)gGunDescriptions.Guns.size)
+				{
+					gd = CArrayGet(&gGunDescriptions.Guns, j);
+				}
+				else
+				{
+					gd = CArrayGet(&gGunDescriptions.CustomGuns,
+						j - (int)gGunDescriptions.Guns.size);
+				}
+				if (gd->IsRealGun)
+				{
+					return gd;
+				}
+			}
+			CASSERT(false, "Unknown error; real gun expected");
+		}
+	}
+	return g;
 }
 
 

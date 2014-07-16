@@ -436,6 +436,16 @@ static void Setup(int buildTables)
 	sHasUnbakedChanges = false;
 }
 
+// Reload UI so that we can load new elements based on custom data etc.
+static void ReloadUI(void)
+{
+	UIObjectDestroy(sObjs);
+	sObjs = CreateMainObjs(&gCampaign, &brush, Vec2iNew(320, 240));
+	CArrayTerminate(&sDrawObjs);
+	sLastHighlightedObj = NULL;
+	sTooltipObj = NULL;
+}
+
 static void Open(void)
 {
 	char filename[CDOGS_PATH_MAX];
@@ -509,6 +519,7 @@ static void Open(void)
 			strcpy(lastFile, filename);
 			done = true;
 			sAutosaveIndex = 0;
+			ReloadUI();
 		}
 		SDL_Delay(10);
 	}
@@ -1202,6 +1213,7 @@ int main(int argc, char *argv[])
 			if (MapNewLoad(lastFile, &gCampaign.Setting) == 0)
 			{
 				loaded = 1;
+				ReloadUI();
 			}
 			debug(D_NORMAL, "Loaded map %s\n", argv[i]);
 		}

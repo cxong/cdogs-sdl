@@ -68,6 +68,14 @@ BulletClass *StrBulletClass(const char *s)
 	{
 		return NULL;
 	}
+	for (int i = 0; i < (int)gBulletClasses.CustomClasses.size; i++)
+	{
+		BulletClass *b = CArrayGet(&gBulletClasses.CustomClasses, i);
+		if (strcmp(s, b->Name) == 0)
+		{
+			return b;
+		}
+	}
 	for (int i = 0; i < (int)gBulletClasses.Classes.size; i++)
 	{
 		BulletClass *b = CArrayGet(&gBulletClasses.Classes, i);
@@ -325,13 +333,17 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 
 #define VERSION 1
 static void LoadBullet(
-	BulletClass *b, json_t *node, const BulletClass *defaultBullet);
+	BulletClass *b, json_t *node,
+	const BulletClass *defaultBullet, const char *archiveName);
 void BulletInitialize(BulletClasses *bullets)
 {
+	memset(bullets, 0, sizeof *bullets);
 	CArrayInit(&bullets->Classes, sizeof(BulletClass));
+	CArrayInit(&bullets->CustomClasses, sizeof(BulletClass));
 }
 void BulletLoadJSON(
-	BulletClasses *bullets, const BulletClass *defaultB, json_t *bulletNode)
+	BulletClasses *bullets, CArray *classes,
+	json_t *bulletNode, const char *archiveName)
 {
 	int version;
 	LoadInt(&version, bulletNode, "Version");
@@ -342,35 +354,30 @@ void BulletLoadJSON(
 	}
 
 	// Defaults
-	BulletClass defaultBLocal;
-	if (defaultB == NULL)
+	BulletClass *defaultB = &bullets->Default;
+	json_t *defaultNode = json_find_first_label(bulletNode, "DefaultBullet");
+	if (defaultNode != NULL)
 	{
-		LoadBullet(
-			&defaultBLocal,
-			json_find_first_label(bulletNode, "DefaultBullet")->child,
-			NULL);
-		defaultB = &defaultBLocal;
+		LoadBullet(&bullets->Default, defaultNode->child, NULL, NULL);
 	}
+
 	json_t *bulletsNode = json_find_first_label(bulletNode, "Bullets")->child;
 	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
 		BulletClass b;
-		LoadBullet(&b, child, defaultB);
-		CArrayPushBack(&bullets->Classes, &b);
+		LoadBullet(&b, child, defaultB, archiveName);
+		CArrayPushBack(classes, &b);
 	}
 
 	bullets->root = bulletNode;
 }
 static void LoadBullet(
-	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
+	BulletClass *b, json_t *node,
+	const BulletClass *defaultBullet, const char *archiveName)
 {
 	if (defaultBullet != NULL)
 	{
 		memcpy(b, defaultBullet, sizeof *b);
-	}
-	else
-	{
-		memset(b, 0, sizeof *b);
 	}
 	char *tmp;
 
@@ -483,24 +490,12 @@ static void LoadBullet(
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		if (json_find_first_label(hitSounds, "Object"))
-		{
-			tmp = GetString(hitSounds, "Object");
-			b->HitSound.Object = StrSound(tmp);
-			CFREE(tmp);
-		}
-		if (json_find_first_label(hitSounds, "Flesh"))
-		{
-			tmp = GetString(hitSounds, "Flesh");
-			b->HitSound.Flesh = StrSound(tmp);
-			CFREE(tmp);
-		}
-		if (json_find_first_label(hitSounds, "Wall"))
-		{
-			tmp = GetString(hitSounds, "Wall");
-			b->HitSound.Wall = StrSound(tmp);
-			CFREE(tmp);
-		}
+		b->HitSound.Object =
+			LoadSoundFromNode(hitSounds, "Object", archiveName);
+		b->HitSound.Flesh =
+			LoadSoundFromNode(hitSounds, "Flesh", archiveName);
+		b->HitSound.Wall =
+			LoadSoundFromNode(hitSounds, "Wall", archiveName);
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
 	LoadBool(&b->HitsObjects, node, "HitsObjects");
@@ -517,12 +512,24 @@ static void LoadBullet(
 
 	b->node = node;
 }
-static void LoadBulletGuns(CArray *guns, json_t *node);
+static void BulletClassesLoadWeapons(CArray *classes);
 void BulletLoadWeapons(BulletClasses *bullets)
 {
-	for (int i = 0; i < (int)bullets->Classes.size; i++)
+	BulletClassesLoadWeapons(&bullets->Classes);
+	BulletClassesLoadWeapons(&bullets->CustomClasses);
+	json_free_value(&bullets->root);
+}
+static void LoadBulletGuns(CArray *guns, json_t *node);
+static void BulletClassesLoadWeapons(CArray *classes)
+{
+	for (int i = 0; i < (int)classes->size; i++)
 	{
-		BulletClass *b = CArrayGet(&bullets->Classes, i);
+		BulletClass *b = CArrayGet(classes, i);
+		if (b->node == NULL)
+		{
+			continue;
+		}
+
 		if (json_find_first_label(b->node, "Falling"))
 		{
 			json_t *falling = json_find_first_label(b->node, "Falling")->child;
@@ -539,8 +546,9 @@ void BulletLoadWeapons(BulletClasses *bullets)
 		LoadBulletGuns(
 			&b->ProximityGuns,
 			json_find_first_label(b->node, "ProximityGuns"));
+
+		b->node = NULL;
 	}
-	json_free_value(&bullets->root);
 }
 static void LoadBulletGuns(CArray *guns, json_t *node)
 {
@@ -557,16 +565,23 @@ static void LoadBulletGuns(CArray *guns, json_t *node)
 }
 void BulletTerminate(BulletClasses *bullets)
 {
-	for (int i = 0; i < (int)bullets->Classes.size; i++)
+	BulletClassesClear(&bullets->Classes);
+	CArrayTerminate(&bullets->Classes);
+	BulletClassesClear(&bullets->CustomClasses);
+	CArrayTerminate(&bullets->CustomClasses);
+}
+void BulletClassesClear(CArray *classes)
+{
+	for (int i = 0; i < (int)classes->size; i++)
 	{
-		BulletClass *b = CArrayGet(&bullets->Classes, i);
+		BulletClass *b = CArrayGet(classes, i);
 		CFREE(b->Name);
 		CArrayTerminate(&b->OutOfRangeGuns);
 		CArrayTerminate(&b->HitGuns);
 		CArrayTerminate(&b->Falling.DropGuns);
 		CArrayTerminate(&b->ProximityGuns);
 	}
-	CArrayTerminate(&bullets->Classes);
+	CArrayClear(classes);
 }
 
 void BulletAdd(const AddBullet add)

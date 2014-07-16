@@ -81,7 +81,7 @@ void UIButtonSetPic(UIObject *o, Pic *pic)
 	}
 }
 
-UIObject *UIObjectCopy(UIObject *o)
+UIObject *UIObjectCopy(const UIObject *o)
 {
 	UIObject *res = UIObjectCreate(o->Type, o->Id, o->Pos, o->Size);
 	res->IsVisible = o->IsVisible;

@@ -79,6 +79,35 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	MapNewLoadCampaignJSON(root, c);
 	json_free_value(&root);
 
+
+	// Unload previous custom data
+	BulletClassesClear(&gBulletClasses.CustomClasses);
+	WeaponClassesClear(&gGunDescriptions.CustomGuns);
+
+	// Load any custom data
+	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
+
+	const char *archiveName = PathGetBasename(filename);
+
+	root = ReadPhysFSJSON(filename, "bullets.json");
+	if (root != NULL)
+	{
+		BulletLoadJSON(
+			&gBulletClasses, &gBulletClasses.CustomClasses, root, archiveName);
+	}
+
+	root = ReadPhysFSJSON(filename, "guns.json");
+	if (root != NULL)
+	{
+		WeaponLoadJSON(
+			&gGunDescriptions, &gGunDescriptions.CustomGuns,
+			root, archiveName);
+		json_free_value(&root);
+	}
+
+	BulletLoadWeapons(&gBulletClasses);
+
+
 	root = ReadPhysFSJSON(filename, "missions.json");
 	if (root == NULL)
 	{
@@ -97,9 +126,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 	LoadCharacters(
 		&c->characters, json_find_first_label(root, "Characters")->child);
-
-	// Load any custom data
-	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 
 bail:
 	json_free_value(&root);

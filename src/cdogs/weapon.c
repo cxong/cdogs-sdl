@@ -59,7 +59,7 @@
 #include "objs.h"
 #include "sounds.h"
 
-CArray gGunDescriptions;	// of GunDescription
+GunClasses gGunDescriptions;
 
 #define RELOAD_DISTANCE_PLUS 300
 
@@ -101,13 +101,17 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 
 // Initialise all the static weapon data
 #define VERSION 1
-void WeaponInitialize(CArray *descs)
+void WeaponInitialize(GunClasses *g)
 {
-	CArrayInit(descs, sizeof(const GunDescription));
+	memset(g, 0, sizeof *g);
+	CArrayInit(&g->Guns, sizeof(const GunDescription));
+	CArrayInit(&g->CustomGuns, sizeof(const GunDescription));
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node, const GunDescription *defaultGun);
-void WeaponLoadJSON(CArray *descs, json_t *root)
+	GunDescription *g, json_t *node,
+	const GunDescription *defaultGun, const char *archiveName);
+void WeaponLoadJSON(
+	GunClasses *g, CArray *classes, json_t *root, const char *archiveName)
 {
 	int version;
 	LoadInt(&version, root, "Version");
@@ -117,40 +121,51 @@ void WeaponLoadJSON(CArray *descs, json_t *root)
 		return;
 	}
 
-	GunDescription defaultDesc;
-	LoadGunDescription(
-		&defaultDesc, json_find_first_label(root, "DefaultGun")->child, NULL);
-	for (int i = 0; i < GUN_COUNT; i++)
+	GunDescription *defaultDesc = &g->Default;
+	json_t *defaultNode = json_find_first_label(root, "DefaultGun");
+	if (defaultNode != NULL)
 	{
-		CArrayPushBack(descs, &defaultDesc);
+		LoadGunDescription(defaultDesc, defaultNode->child, NULL, NULL);
+		for (int i = 0; i < GUN_COUNT; i++)
+		{
+			CArrayPushBack(&g->Guns, defaultDesc);
+		}
 	}
 	json_t *gunsNode = json_find_first_label(root, "Guns")->child;
 	for (json_t *child = gunsNode->child; child; child = child->next)
 	{
-		GunDescription g;
-		LoadGunDescription(&g, child, &defaultDesc);
+		GunDescription gd;
+		LoadGunDescription(&gd, child, defaultDesc, archiveName);
 		int idx = -1;
 		LoadInt(&idx, child, "Index");
 		if (idx >= 0 && idx < GUN_COUNT)
 		{
-			memcpy(CArrayGet(descs, idx), &g, sizeof g);
+			CASSERT(classes == &g->Guns,
+				"Cannot load gun with index as custom gun");
+			memcpy(CArrayGet(&g->Guns, idx), &gd, sizeof gd);
 		}
 		else
 		{
-			CArrayPushBack(descs, &g);
+			CArrayPushBack(classes, &gd);
 		}
 	}
-	json_t *pseudoGunsNode = json_find_first_label(root, "PseudoGuns")->child;
-	for (json_t *child = pseudoGunsNode->child; child; child = child->next)
+	json_t *pseudoGunsNode = json_find_first_label(root, "PseudoGuns");
+	if (pseudoGunsNode != NULL)
 	{
-		GunDescription g;
-		LoadGunDescription(&g, child, &defaultDesc);
-		g.IsRealGun = false;
-		CArrayPushBack(descs, &g);
+		for (json_t *child = pseudoGunsNode->child->child;
+			child;
+			child = child->next)
+		{
+			GunDescription gd;
+			LoadGunDescription(&gd, child, defaultDesc, archiveName);
+			gd.IsRealGun = false;
+			CArrayPushBack(classes, &gd);
+		}
 	}
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node, const GunDescription *defaultGun)
+	GunDescription *g, json_t *node,
+	const GunDescription *defaultGun, const char *archiveName)
 {
 	memset(g, 0, sizeof *g);
 	if (defaultGun)
@@ -197,19 +212,9 @@ static void LoadGunDescription(
 
 	LoadInt(&g->ReloadLead, node, "ReloadLead");
 
-	if (json_find_first_label(node, "Sound"))
-	{
-		tmp = GetString(node, "Sound");
-		g->Sound = StrSound(tmp);
-		CFREE(tmp);
-	}
+	g->Sound = LoadSoundFromNode(node, "Sound", archiveName);
 
-	if (json_find_first_label(node, "ReloadSound"))
-	{
-		tmp = GetString(node, "ReloadSound");
-		g->ReloadSound = StrSound(tmp);
-		CFREE(tmp);
-	}
+	g->ReloadSound = LoadSoundFromNode(node, "ReloadSound", archiveName);
 
 	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 
@@ -250,14 +255,21 @@ static void LoadGunDescription(
 
 	g->IsRealGun = true;
 }
-void WeaponTerminate(CArray *descs)
+void WeaponTerminate(GunClasses *g)
 {
-	for (int i = 0; i < (int)descs->size; i++)
+	WeaponClassesClear(&g->Guns);
+	CArrayTerminate(&g->Guns);
+	WeaponClassesClear(&g->CustomGuns);
+	CArrayTerminate(&g->CustomGuns);
+}
+void WeaponClassesClear(CArray *classes)
+{
+	for (int i = 0; i < (int)classes->size; i++)
 	{
-		GunDescription *g = CArrayGet(descs, i);
-		CFREE(g->name);
+		GunDescription *gd = CArrayGet(classes, i);
+		CFREE(gd->name);
 	}
-	CArrayTerminate(descs);
+	CArrayClear(classes);
 }
 
 Weapon WeaponCreate(const GunDescription *gun)
@@ -275,12 +287,21 @@ Weapon WeaponCreate(const GunDescription *gun)
 // TODO: use map structure?
 const GunDescription *StrGunDescription(const char *s)
 {
-	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
-		if (strcmp(s, g->name) == 0)
+		const GunDescription *gd = CArrayGet(&gGunDescriptions.Guns, i);
+		if (strcmp(s, gd->name) == 0)
 		{
-			return g;
+			return gd;
+		}
+	}
+	for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
+	{
+		const GunDescription *gd =
+			CArrayGet(&gGunDescriptions.CustomGuns, i);
+		if (strcmp(s, gd->name) == 0)
+		{
+			return gd;
 		}
 	}
 	CASSERT(false, "cannot parse gun name");
@@ -560,7 +581,7 @@ bool IsShortRange(const GunDescription *g)
 }
 
 void BulletAndWeaponInitialize(
-	BulletClasses *b, CArray *g, const char *bpath, const char *gpath)
+	BulletClasses *b, GunClasses *g, const char *bpath, const char *gpath)
 {
 	BulletInitialize(b);
 
@@ -584,7 +605,7 @@ void BulletAndWeaponInitialize(
 		printf("Error parsing bullets file %s [error %d]\n", bpath, (int)e);
 		goto bail;
 	}
-	BulletLoadJSON(b, NULL, broot);
+	BulletLoadJSON(b, &b->Classes, broot, NULL);
 
 	WeaponInitialize(g);
 	gf = fopen(gpath, "r");
@@ -599,7 +620,7 @@ void BulletAndWeaponInitialize(
 		printf("Error parsing guns file %s [error %d]\n", gpath, (int)e);
 		goto bail;
 	}
-	WeaponLoadJSON(g, groot);
+	WeaponLoadJSON(g, &g->Guns, groot, NULL);
 
 	BulletLoadWeapons(b);
 	freeBRoot = false;

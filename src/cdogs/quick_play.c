@@ -178,7 +178,8 @@ static void SetupQuickPlayEnemies(
 		for (;;)
 		{
 			gun = CArrayGet(
-				&gGunDescriptions, rand() % (int)gGunDescriptions.size);
+				&gGunDescriptions.Guns,
+				rand() % (int)gGunDescriptions.Guns.size);
 			if (!gun->IsRealGun)
 			{
 				continue;
@@ -269,9 +270,9 @@ void SetupQuickPlayCampaign(
 		CArrayPushBack(&m->ItemDensities, &n);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
-	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
 		if (g->IsRealGun)
 		{
 			CArrayPushBack(&m->Weapons, &g);

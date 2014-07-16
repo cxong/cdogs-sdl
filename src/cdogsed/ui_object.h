@@ -107,7 +107,7 @@ typedef struct _UIObject
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
 void UIButtonSetPic(UIObject *o, Pic *pic);
-UIObject *UIObjectCopy(UIObject *o);
+UIObject *UIObjectCopy(const UIObject *o);
 void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);
 void UITabAddChild(UIObject *o, UIObject *c, char *label);

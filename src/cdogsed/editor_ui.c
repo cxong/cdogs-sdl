@@ -609,9 +609,17 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 	UNUSED(o);
 	UNUSED(v);
 	int totalWeapons = 0;
-	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
+		if (g->IsRealGun)
+		{
+			totalWeapons++;
+		}
+	}
+	for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
+	{
+		const GunDescription *g = CArrayGet(&gGunDescriptions.CustomGuns, i);
 		if (g->IsRealGun)
 		{
 			totalWeapons++;
@@ -1941,6 +1949,9 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
+static void CreateWeaponToggleObjs(
+	CampaignOptions *co, UIObject *c, const UIObject *o,
+	int *idx, const int rows, CArray *guns);
 static UIObject *CreateWeaponObjs(CampaignOptions *co)
 {
 	const int th = CDogsTextHeight();
@@ -1956,27 +1967,33 @@ static UIObject *CreateWeaponObjs(CampaignOptions *co)
 	o->ChangesData = true;
 	const int rows = 10;
 	int idx = 0;
-	for (int i = 0; i < (int)gGunDescriptions.size; i++)
+	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.Guns);
+	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.CustomGuns);
+
+	UIObjectDestroy(o);
+	return c;
+}
+static void CreateWeaponToggleObjs(
+	CampaignOptions *co, UIObject *c, const UIObject *o,
+	int *idx, const int rows, CArray *guns)
+{
+	const int th = CDogsTextHeight();
+	for (int i = 0; i < (int)guns->size; i++)
 	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions, i);
+		const GunDescription *g = CArrayGet(guns, i);
 		if (!g->IsRealGun)
 		{
 			continue;
 		}
-		int x = idx / rows * 90;
-		int y = (idx % rows) * th;
 		UIObject *o2 = UIObjectCopy(o);
 		CMALLOC(o2->Data, sizeof(MissionGunData));
-		o2->IsDynamicData = 1;
+		o2->IsDynamicData = true;
 		((MissionGunData *)o2->Data)->co = co;
 		((MissionGunData *)o2->Data)->Gun = g;
-		o2->Pos = Vec2iNew(x, y);
+		o2->Pos = Vec2iNew(*idx / rows * 90, (*idx % rows) * th);
 		UIObjectAddChild(c, o2);
-		idx++;
+		(*idx)++;
 	}
-
-	UIObjectDestroy(o);
-	return c;
 }
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 {

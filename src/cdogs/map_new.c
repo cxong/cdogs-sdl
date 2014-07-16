@@ -350,25 +350,31 @@ static void LoadIntArray(CArray *a, json_t *node, char *name)
 		CArrayPushBack(a, &n);
 	}
 }
+static void AddWeapon(CArray *weapons, const CArray *guns);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 {
 	if (!weaponsNode->child)
 	{
 		// enable all weapons
-		for (int i = 0; i < (int)gGunDescriptions.size; i++)
-		{
-			const GunDescription *g = CArrayGet(&gGunDescriptions, i);
-			if (g->IsRealGun)
-			{
-				CArrayPushBack(weapons, &g);
-			}
-		}
+		AddWeapon(weapons, &gGunDescriptions.Guns);
+		AddWeapon(weapons, &gGunDescriptions.CustomGuns);
 	}
 	else
 	{
 		for (json_t *child = weaponsNode->child; child; child = child->next)
 		{
 			const GunDescription *g = StrGunDescription(child->text);
+			CArrayPushBack(weapons, &g);
+		}
+	}
+}
+static void AddWeapon(CArray *weapons, const CArray *guns)
+{
+	for (int i = 0; i < (int)guns->size; i++)
+	{
+		const GunDescription *g = CArrayGet(guns, i);
+		if (g->IsRealGun)
+		{
 			CArrayPushBack(weapons, &g);
 		}
 	}

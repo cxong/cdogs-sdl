@@ -123,6 +123,12 @@ typedef struct
 	int ShakeAmount;	// Amount of screen shake to produce
 	bool IsRealGun;	// whether this gun can be used as is by players
 } GunDescription;
+typedef struct
+{
+	CArray Guns;	// of GunDescription
+	GunDescription Default;
+	CArray CustomGuns;	// of GunDescription
+} GunClasses;
 
 typedef struct
 {
@@ -133,13 +139,15 @@ typedef struct
 	int stateCounter;
 } Weapon;
 
-extern CArray gGunDescriptions;	// of GunDescription
+extern GunClasses gGunDescriptions;
 extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 
-void WeaponInitialize(CArray *descs);
-void WeaponLoadJSON(CArray *descs, json_t *root);
-void WeaponTerminate(CArray *descs);
+void WeaponInitialize(GunClasses *g);
+void WeaponLoadJSON(
+	GunClasses *g, CArray *classes, json_t *root, const char *archiveName);
+void WeaponClassesClear(CArray *classes);
+void WeaponTerminate(GunClasses *g);
 Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
@@ -160,6 +168,6 @@ bool IsShortRange(const GunDescription *g);
 
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(
-	BulletClasses *b, CArray *g, const char *bpath, const char *gpath);
+	BulletClasses *b, GunClasses *g, const char *bpath, const char *gpath);
 
 #endif
