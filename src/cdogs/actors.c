@@ -92,6 +92,7 @@ TranslationTable tablePurple;
 
 
 CArray gActors;
+static int sActorUIDs = 0;
 
 static int transitionTable[STATE_COUNT] = {
 	0,
@@ -577,6 +578,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 					2,
 					actor->flags,
 					actor->pData ? actor->pData->playerIndex : -1,
+					actor->uid,
 					target,
 					SPECIAL_NONE,
 					&knifeSounds,
@@ -702,7 +704,8 @@ void Shoot(TActor *actor)
 		actor->direction,
 		actor->Pos,
 		actor->flags,
-		actor->pData ? actor->pData->playerIndex : -1);
+		actor->pData ? actor->pData->playerIndex : -1,
+		actor->uid);
 	if (actor->pData && actor->weapon.Gun->Cost != 0)
 	{
 		GameEvent e;
@@ -1010,6 +1013,7 @@ int ActorAdd(Character *c, struct PlayerData *p)
 	actor->flags = FLAGS_SLEEPING | c->flags;
 	actor->character = c;
 	actor->pData = p;
+	actor->uid = sActorUIDs++;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
 	actor->slideLock = 0;
@@ -1116,7 +1120,7 @@ void BuildTranslationTables(const TPalette palette)
 	}
 }
 
-int ActorIsImmune(TActor *actor, special_damage_e damage)
+bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 {
 	// Fire immunity
 	if (damage == SPECIAL_FLAME && (actor->flags & FLAGS_ASBESTOS))
@@ -1195,8 +1199,9 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 	ActorTakeSpecialDamage(actor, damage);
 }
 
-int ActorIsInvulnerable(
-	TActor *actor, int flags, int player, campaign_mode_e mode)
+bool ActorIsInvulnerable(
+	const TActor *actor, const int flags, const int player,
+	const campaign_mode_e mode)
 {
 	if (actor->flags & FLAGS_INVULNERABLE)
 	{

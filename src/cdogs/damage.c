@@ -52,11 +52,10 @@
 #include "game_events.h"
 
 
-bool CanHitCharacter(int flags, int player, TActor *actor)
+bool CanHitCharacter(const int flags, const int uid, const TActor *actor)
 {
 	// Don't let players hurt themselves
-	if (!(flags & FLAGS_HURTALWAYS) && player >= 0 && actor->pData &&
-		&gPlayerDatas[player] == actor->pData)
+	if (!(flags & FLAGS_HURTALWAYS) && uid == actor->uid)
 	{
 		return false;
 	}
@@ -64,9 +63,10 @@ bool CanHitCharacter(int flags, int player, TActor *actor)
 }
 
 bool CanDamageCharacter(
-	int flags, int player, TActor *actor, special_damage_e special)
+	const int flags, const int player, const int uid,
+	const TActor *actor, const special_damage_e special)
 {
-	if (!CanHitCharacter(flags, player, actor))
+	if (!CanHitCharacter(flags, uid, actor))
 	{
 		return false;
 	}

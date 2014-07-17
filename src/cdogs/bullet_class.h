@@ -127,6 +127,7 @@ typedef struct
 	int Elevation;
 	int Flags;
 	int PlayerIndex;
+	int UID;
 } AddBullet;
 void BulletAdd(const AddBullet add);
 

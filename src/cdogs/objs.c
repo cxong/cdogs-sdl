@@ -112,7 +112,8 @@ const Pic *GetObjectPic(const int id, Vec2i *offset)
 
 
 static void DamageObject(
-	const int power, const int flags, const int player, TTileItem *target)
+	const int power, const int flags, const int player, const int uid,
+	TTileItem *target)
 {
 	TObject *object = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
@@ -144,31 +145,31 @@ static void DamageObject(
 		{
 			GunAddBullets(
 				StrGunDescription("explosion1"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 			GunAddBullets(
 				StrGunDescription("explosion2"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 			GunAddBullets(
 				StrGunDescription("explosion3"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 		}
 		else if (object->flags & OBJFLAG_FLAMMABLE)
 		{
 			GunAddBullets(
 				StrGunDescription("fire_explosion"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 		}
 		else if (object->flags & OBJFLAG_POISONOUS)
 		{
 			GunAddBullets(
 				StrGunDescription("gas_poison_explosion"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 		}
 		else if (object->flags & OBJFLAG_CONFUSING)
 		{
 			GunAddBullets(
 				StrGunDescription("gas_confuse_explosion"), fullPos, 0, 0,
-				flags, player, true);
+				flags, player, uid, true);
 		}
 		else
 		{
@@ -183,6 +184,7 @@ static void DamageObject(
 			e.u.AddBullet.Elevation = 0;
 			e.u.AddBullet.Flags = 0;
 			e.u.AddBullet.PlayerIndex = -1;
+			e.u.AddBullet.UID = -1;
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
 				&gSoundDevice,
@@ -202,11 +204,12 @@ static void DamageObject(
 	}
 }
 
-int DamageSomething(
-	Vec2i hitVector,
-	int power,
-	int flags,
-	int player,
+bool DamageSomething(
+	const Vec2i hitVector,
+	const int power,
+	const int flags,
+	const int player,
+	const int uid,
 	TTileItem *target,
 	const special_damage_e special,
 	const HitSounds *hitSounds,
@@ -225,7 +228,7 @@ int DamageSomething(
 			// Create events: hit, damage, score
 			TActor *actor = CArrayGet(&gActors, target->id);
 			CASSERT(actor->isInUse, "Cannot damage nonexistent player");
-			bool canHit = CanHitCharacter(flags, player, actor);
+			bool canHit = CanHitCharacter(flags, uid, actor);
 			if (canHit)
 			{
 				GameEvent e;
@@ -253,7 +256,7 @@ int DamageSomething(
 						Vec2iScaleDiv(Vec2iScale(hitVector, power), 25);
 					GameEventsEnqueue(&gGameEvents, ei);
 				}
-				if (CanDamageCharacter(flags, player, actor, special))
+				if (CanDamageCharacter(flags, player, uid, actor, special))
 				{
 					GameEvent e1;
 					e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
@@ -291,7 +294,7 @@ int DamageSomething(
 		break;
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, player, target);
+		DamageObject(power, flags, player, uid, target);
 		if (gConfig.Sound.Hits && hitSounds != NULL && power > 0)
 		{
 			GameEvent es;
@@ -463,7 +466,7 @@ void MobObjsTerminate(void)
 	}
 	CArrayTerminate(&gMobObjs);
 }
-int MobObjAdd(Vec2i fullpos, int player)
+int MobObjAdd(const Vec2i fullpos, const int player, const int uid)
 {
 	// Find an empty slot in mobobj list
 	TMobileObject *obj = NULL;
@@ -489,6 +492,7 @@ int MobObjAdd(Vec2i fullpos, int player)
 	obj->x = fullpos.x;
 	obj->y = fullpos.y;
 	obj->player = player;
+	obj->uid = uid;
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.id = i;
 	obj->soundLock = 0;
@@ -551,7 +555,7 @@ static void HitItemFunc(TTileItem *ti, void *data)
 	hData->HasFirstCollision = true;
 	hData->HasHit = DamageSomething(
 		hData->Obj->vel, hData->Obj->bulletClass->Power,
-		hData->Obj->flags, hData->Obj->player,
+		hData->Obj->flags, hData->Obj->player, hData->Obj->uid,
 		ti,
 		hData->Obj->bulletClass->Special,
 		hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,

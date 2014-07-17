@@ -53,9 +53,10 @@
 #include "tile.h"
 #include "vector.h"
 
-bool CanHitCharacter(int flags, int player, TActor *actor);
+bool CanHitCharacter(const int flags, const int uid, const TActor *actor);
 bool CanDamageCharacter(
-	int flags, int player, TActor *actor, special_damage_e special);
+	const int flags, const int player, const int uid,
+	const TActor *actor, const special_damage_e special);
 void DamageCharacter(int power, int player, TActor *actor);
 
 #endif

@@ -168,7 +168,14 @@ static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
 
 bail:
 	CFREE(buf);
-	PHYSFS_close(f);
+	if (f != NULL && !PHYSFS_close(f))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
+	if (!PHYSFS_removeFromSearchPath(archive))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
 	return root;
 }
 
@@ -234,7 +241,14 @@ static void LoadArchiveSounds(
 
 bail:
 	CFREE(buf);
-	PHYSFS_close(f);
+	if (f != NULL && !PHYSFS_close(f))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
+	if (!PHYSFS_removeFromSearchPath(archive))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
 	PHYSFS_freeList(rc);
 }
 

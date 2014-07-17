@@ -329,7 +329,8 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
 		GunAddBullets(
-			*g, fullPos, obj->z, angle, obj->flags, obj->player, true);
+			*g, fullPos, obj->z, angle, obj->flags, obj->player, obj->uid,
+			true);
 	}
 }
 
@@ -590,7 +591,8 @@ void BulletClassesClear(CArray *classes)
 void BulletAdd(const AddBullet add)
 {
 	const Vec2i pos = add.MuzzlePos;
-	TMobileObject *obj = CArrayGet(&gMobObjs, MobObjAdd(pos, add.PlayerIndex));
+	TMobileObject *obj = CArrayGet(
+		&gMobObjs, MobObjAdd(pos, add.PlayerIndex, add.UID));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
 	obj->bulletClass = add.BulletClass;
 	obj->updateFunc = UpdateBullet;

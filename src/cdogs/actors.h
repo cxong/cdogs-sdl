@@ -122,6 +122,7 @@ typedef struct Actor
 	int soundLock;
 	Character *character;
 	struct PlayerData *pData;	// NULL unless a human player
+	int uid;	// unique ID across all actors
 	Weapon weapon;
 
 	int health;
@@ -189,11 +190,12 @@ void ActorsTerminate(void);
 int ActorAdd(Character *c, struct PlayerData *p);	// returns id
 void ActorDestroy(int id);
 
-int ActorIsImmune(TActor *actor, special_damage_e damage);
+bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)
 // but deals no damage
 void ActorTakeHit(TActor *actor, const special_damage_e damage);
-int ActorIsInvulnerable(
-	TActor *actor, int flags, int player, campaign_mode_e mode);
+bool ActorIsInvulnerable(
+	const TActor *actor, const int flags, const int player,
+	const campaign_mode_e mode);
 
 #endif
