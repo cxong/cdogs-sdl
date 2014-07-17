@@ -243,8 +243,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	const bool hitWall =
-		MapIsTileIn(&gMap, Vec2iToTile(realPos)) &&
-		ShootWall(realPos.x, realPos.y);
+		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	if (hitWall && !Vec2iEqual(obj->vel, Vec2iZero()))
 	{
 		GameEvent e;
@@ -277,9 +276,13 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		// Bouncing
 		pos = GetWallBounceFullPos(objPos, pos, &obj->vel);
 	}
+	if (!MapTryMoveTileItem(&gMap, &obj->tileItem, realPos))
+	{
+		obj->count = obj->range;
+		return false;
+	}
 	obj->x = pos.x;
 	obj->y = pos.y;
-	MapMoveTileItem(&gMap, &obj->tileItem, realPos);
 
 	if (obj->bulletClass->Erratic)
 	{

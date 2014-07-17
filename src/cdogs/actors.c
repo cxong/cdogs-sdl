@@ -636,7 +636,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	}
 
 	actor->Pos = pos;
-	MapMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(actor->Pos));
+	MapTryMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(actor->Pos));
 
 	if (MapIsTileInExit(&gMap, &actor->tileItem))
 	{

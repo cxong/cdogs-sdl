@@ -226,14 +226,10 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		p->Pos = GetWallBounceFullPos(startPos, p->Pos, &p->Vel);
 	}
 	const Vec2i realPos = Vec2iFull2Real(p->Pos);
-	if (!MapIsTileIn(&gMap, Vec2iToTile(realPos)))
+	if (!MapTryMoveTileItem(&gMap, &p->tileItem, realPos))
 	{
 		// Out of map; destroy
-		p->Count = p->Range;
-	}
-	else
-	{
-		MapMoveTileItem(&gMap, &p->tileItem, realPos);
+		return false;
 	}
 	if (p->Spin != 0)
 	{
@@ -289,7 +285,7 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->tileItem.id = i;
 	p->tileItem.drawFunc = DrawParticle;
 	p->tileItem.drawData.MobObjId = i;
-	MapMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(add.FullPos));
+	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(add.FullPos));
 	return i;
 }
 void ParticleDestroy(CArray *particles, const int id)

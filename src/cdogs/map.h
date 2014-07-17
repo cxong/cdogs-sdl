@@ -107,13 +107,15 @@ unsigned short GetAccessMask(int k);
 
 Tile *MapGetTile(Map *map, Vec2i pos);
 bool MapIsTileIn(const Map *map, const Vec2i pos);
+bool MapIsRealPosIn(const Map *map, const Vec2i realPos);
 bool MapIsTileInExit(Map *map, TTileItem *t);
 
 int MapHasLockedRooms(Map *map);
 int MapPosIsHighAccess(Map *map, int x, int y);
 int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 
-void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
+// Return false if cannot move to new position
+bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
 void MapRemoveTileItem(Map *map, TTileItem *t);
 
 void MapInit(Map *map);

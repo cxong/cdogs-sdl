@@ -125,6 +125,15 @@ bool MapIsTileIn(const Map *map, const Vec2i pos)
 	return !(pos.x < 0 || pos.y < 0 ||
 		pos.x > map->Size.x - 1 || pos.y > map->Size.y - 1);
 }
+bool MapIsRealPosIn(const Map *map, const Vec2i realPos)
+{
+	// Check that the real pos is within the interior of the map
+	// Note: can't use Vec2iToTile as division will cause small
+	// negative values to appear to be 0 i.e. valid
+	return !(realPos.x < 0 || realPos.y < 0 ||
+		realPos.x / TILE_WIDTH > map->Size.x - 1 ||
+		realPos.y / TILE_HEIGHT > map->Size.y - 1);
+}
 
 bool MapIsTileInExit(Map *map, TTileItem *tile)
 {
@@ -142,25 +151,34 @@ static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
 }
 
 static void AddItemToTile(TTileItem *t, Tile *tile);
-void MapMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
+bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
 {
+	// Check if we can move to new position
+	if (!MapIsRealPosIn(map, pos))
+	{
+		return false;
+	}
 	// When first initialised, position is -1
 	bool doRemove = t->x >= 0 && t->y >= 0;
 	Vec2i t1 = Vec2iToTile(Vec2iNew(t->x, t->y));
 	Vec2i t2 = Vec2iToTile(pos);
+	// If we'll be in the same tile, do nothing
 	if (Vec2iEqual(t1, t2) && doRemove)
 	{
 		t->x = pos.x;
 		t->y = pos.y;
-		return;
+		return true;
 	}
+	// Moving; remove from old tile...
 	if (doRemove)
 	{
 		MapRemoveTileItem(map, t);
 	}
+	// ...move and add to new tile
 	t->x = pos.x;
 	t->y = pos.y;
 	AddItemToTile(t, MapGetTile(map, t2));
+	return true;
 }
 static void AddItemToTile(TTileItem *t, Tile *tile)
 {
@@ -179,6 +197,10 @@ static void AddItemToTile(TTileItem *t, Tile *tile)
 
 void MapRemoveTileItem(Map *map, TTileItem *t)
 {
+	if (!MapIsRealPosIn(map, Vec2iNew(t->x, t->y)))
+	{
+		return;
+	}
 	Tile *tile = MapGetTileOfItem(map, t);
 	for (int i = 0; i < (int)tile->things.size; i++)
 	{

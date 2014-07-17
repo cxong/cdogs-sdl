@@ -362,7 +362,7 @@ void AddObjectOld(
 	o->wreckedPic = NULL;
 	o->structure = 0;
 	o->flags = 0;
-	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
+	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
 }
 int ObjAdd(
 	Vec2i pos, Vec2i size,
@@ -403,7 +403,7 @@ int ObjAdd(
 	o->tileItem.w = size.x;
 	o->tileItem.h = size.y;
 	o->tileItem.id = i;
-	MapMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
+	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
 	o->isInUse = true;
 	return i;
 }
@@ -499,7 +499,7 @@ int MobObjAdd(Vec2i fullpos, int player)
 	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
 	obj->tileItem.drawData.MobObjId = i;
 	obj->updateFunc = UpdateMobileObject;
-	MapMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(fullpos));
+	MapTryMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(fullpos));
 	return i;
 }
 void MobObjDestroy(int id)

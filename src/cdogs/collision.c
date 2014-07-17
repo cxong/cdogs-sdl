@@ -249,7 +249,7 @@ Vec2i GetWallBounceFullPos(
 				velFull->y / 256 / TILE_HEIGHT);
 			for (int i = 0;
 				i < maxBounces &&
-				MapIsTileIn(&gMap, Vec2iToTile(bounceReal)) &&
+				MapIsRealPosIn(&gMap, bounceReal) &&
 				ShootWall(bounceReal.x, bounceReal.y);
 				i++)
 			{
@@ -258,7 +258,7 @@ Vec2i GetWallBounceFullPos(
 			}
 			// If still colliding wall or outside map,
 			// can't recover from this point; zero velocity and return
-			if (!MapIsTileIn(&gMap, Vec2iToTile(bounceReal)) ||
+			if (!MapIsRealPosIn(&gMap, bounceReal) ||
 				ShootWall(bounceReal.x, bounceReal.y))
 			{
 				*velFull = Vec2iZero();
