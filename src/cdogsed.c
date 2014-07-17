@@ -313,23 +313,27 @@ static void AddObjective(Mission *m)
 
 static void DeleteObjective(Mission *m, int idx)
 {
+	idx = CLAMP(idx, 0, (int)m->Objectives.size);
 	CArrayDelete(&m->Objectives, idx);
 }
 
 static void DeleteCharacter(Mission *m, int idx)
 {
+	idx = CLAMP(idx, 0, (int)m->Enemies.size);
 	CArrayDelete(&m->Enemies, idx);
 	CharacterStoreDeleteBaddie(&gCampaign.Setting.characters, idx);
 }
 
 static void DeleteSpecial(Mission *m, int idx)
 {
+	idx = CLAMP(idx, 0, (int)m->SpecialChars.size);
 	CArrayDelete(&m->SpecialChars, idx);
 	CharacterStoreDeleteSpecial(&gCampaign.Setting.characters, idx);
 }
 
 static void DeleteItem(Mission *m, int idx)
 {
+	idx = CLAMP(idx, 0, (int)m->Items.size);
 	CArrayDelete(&m->Items, idx);
 	CArrayDelete(&m->ItemDensities, idx);
 }
