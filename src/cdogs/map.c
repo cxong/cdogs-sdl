@@ -841,11 +841,14 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 	const int tileFlags =
 		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
 		MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC;
+	const unsigned short tileLeftType =
+		IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS;
+	const unsigned short tileRightType =
+		IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS;
 	const bool isHorizontal =
-		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
-		(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR ||
-		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_WALL ||
-		(IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_DOOR;
+		tileLeftType == MAP_WALL || tileRightType == MAP_WALL ||
+		tileLeftType == MAP_DOOR || tileRightType == MAP_DOOR ||
+		tileLeftType == MAP_NOTHING || tileRightType == MAP_NOTHING;
 	const int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
 	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
