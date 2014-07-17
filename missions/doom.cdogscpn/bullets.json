@@ -1,0 +1,25 @@
+{
+  "Version": 1,
+  "Bullets": [
+	{
+      "Name": "fireball",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "grenade",
+        "TicksPerFrame": 6,
+        "Mask": "ff6600"
+      },
+      "Speed": 350,
+      "Range": 200,
+      "Power": 18,
+      "Size": [3, 3],
+      "Special": "Flame",
+      "Spark": "",
+      "HitSounds": {
+        "Object": "hit_fire",
+        "Flesh": "hit_fire",
+        "Wall": "hit_fire"
+      }
+    }
+  ]
+}

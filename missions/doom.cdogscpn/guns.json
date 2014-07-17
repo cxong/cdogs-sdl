@@ -1,0 +1,14 @@
+{
+  "Version": 1,
+  "Guns": [
+	{
+	  "Name": "Imp Fireball",
+	  "Pic": "",
+	  "Bullet": "fireball",
+	  "Cost": 1,
+	  "Lock": 100,
+	  "Sound": "fireball",
+	  "MuzzleFlashParticle": ""
+	}
+  ]
+}
