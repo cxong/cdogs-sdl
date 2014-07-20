@@ -1,4 +1,4 @@
-C-Dogs SDL Port v0.5.5.1
+C-Dogs SDL Port v0.5.6
 ========================
 
             .--------.
@@ -11,7 +11,7 @@ C-Dogs SDL Port v0.5.5.1
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.5.5.1
+     `---------------'               v0.5.6
 
 [![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)
 
