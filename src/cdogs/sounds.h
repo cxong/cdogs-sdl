@@ -88,6 +88,7 @@ typedef struct
 	Vec2i earRight2;
 
 	CArray sounds;	// of SoundData
+	CArray customSounds;	// of SoundData
 
 	// Some commonly-used sounds, store them here for quick access
 	Mix_Chunk *footstepSound;
@@ -122,8 +123,9 @@ typedef struct
 
 void SoundInitialize(
 	SoundDevice *device, SoundConfig *config, const char *path);
-void SoundAdd(SoundDevice *device, const char *name, Mix_Chunk *data);
+void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data);
 void SoundReconfigure(SoundDevice *device, SoundConfig *config);
+void SoundClear(CArray *sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);
 void SoundSetLeftEars(Vec2i pos);

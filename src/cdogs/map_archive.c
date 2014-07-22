@@ -29,6 +29,8 @@
 
 #include <locale.h>
 
+#include <SDL_image.h>
+
 #include "json_utils.h"
 #include "map_new.h"
 #include "physfs/physfs.h"
@@ -60,6 +62,8 @@ bail:
 
 static void LoadArchiveSounds(
 	SoundDevice *device, const char *archive, const char *dirname);
+static void LoadArchivePics(
+	PicManager *pm, const char *archive, const char *dirname);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
@@ -81,27 +85,35 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 
 
 	// Unload previous custom data
+	SoundClear(&gSoundDevice.customSounds);
+	PicManagerClear(&gPicManager.customPics, &gPicManager.customSprites);
+	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
 
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 
-	const char *archiveName = PathGetBasename(filename);
+	LoadArchivePics(&gPicManager, filename, "graphics");
+
+	root = ReadPhysFSJSON(filename, "particles.json");
+	if (root != NULL)
+	{
+		ParticleClassesLoadJSON(&gParticleClasses.CustomClasses, root);
+	}
 
 	root = ReadPhysFSJSON(filename, "bullets.json");
 	if (root != NULL)
 	{
 		BulletLoadJSON(
-			&gBulletClasses, &gBulletClasses.CustomClasses, root, archiveName);
+			&gBulletClasses, &gBulletClasses.CustomClasses, root);
 	}
 
 	root = ReadPhysFSJSON(filename, "guns.json");
 	if (root != NULL)
 	{
 		WeaponLoadJSON(
-			&gGunDescriptions, &gGunDescriptions.CustomGuns,
-			root, archiveName);
+			&gGunDescriptions, &gGunDescriptions.CustomGuns, root);
 		json_free_value(&root);
 	}
 
@@ -222,16 +234,84 @@ static void LoadArchiveSounds(
 		Mix_Chunk *data = Mix_LoadWAV_RW(rwops, 0);
 		if (data != NULL)
 		{
-			const char *archiveName = PathGetBasename(archive);
 			char nameBuf[CDOGS_FILENAME_MAX];
-			sprintf(nameBuf, "%s/%s", archiveName, *i);
+			strcpy(nameBuf, *i);
 			// Remove extension
 			char *dot = strrchr(nameBuf, '.');
 			if (dot != NULL)
 			{
 				*dot = '\0';
 			}
-			SoundAdd(device, nameBuf, data);
+			SoundAdd(&device->customSounds, nameBuf, data);
+		}
+		CFREE(buf);
+		buf = NULL;
+		PHYSFS_close(f);
+		f = NULL;
+	}
+
+bail:
+	CFREE(buf);
+	if (f != NULL && !PHYSFS_close(f))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
+	if (!PHYSFS_removeFromSearchPath(archive))
+	{
+		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
+	}
+	PHYSFS_freeList(rc);
+}
+static void LoadArchivePics(
+	PicManager *pm, const char *archive, const char *dirname)
+{
+	char **rc = NULL;
+	PHYSFS_File *f = NULL;
+	char *buf = NULL;
+
+	if (!PHYSFS_addToSearchPath(archive, 0))
+	{
+		printf("Failed to add to search path. reason: %s.\n",
+			PHYSFS_getLastError());
+		goto bail;
+	}
+
+	rc = PHYSFS_enumerateFiles(dirname);
+	if (rc == NULL)
+	{
+		return;
+	}
+
+	for (char **i = rc; *i != NULL; i++)
+	{
+		char path[CDOGS_PATH_MAX];
+		sprintf(path, "%s/%s", dirname, *i);
+		f = PHYSFS_openRead(path);
+		if (f == NULL)
+		{
+			printf("failed to open %s. Reason: [%s].\n",
+				path, PHYSFS_getLastError());
+			goto bail;
+		}
+		int len = (int)PHYSFS_fileLength(f);
+		CCALLOC(buf, len + 1);
+		if (PHYSFS_read(f, buf, 1, len) < len)
+		{
+			printf("PHYSFS_read() %s failed: %s.\n",
+				path, PHYSFS_getLastError());
+			goto bail;
+		}
+		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
+		bool isPng = IMG_isPNG(rwops);
+		if (isPng)
+		{
+			SDL_Surface *data = IMG_Load_RW(rwops, 0);
+			if (data != NULL)
+			{
+				char nameBuf[CDOGS_FILENAME_MAX];
+				PathGetBasenameWithoutExtension(nameBuf, *i);
+				PicManagerAdd(&pm->customPics, &pm->customSprites, nameBuf, data);
+			}
 		}
 		CFREE(buf);
 		buf = NULL;

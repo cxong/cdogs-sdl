@@ -111,8 +111,7 @@ BulletClass *StrBulletClass(const char *s);
 
 void BulletInitialize(BulletClasses *bullets);
 void BulletLoadJSON(
-	BulletClasses *bullets, CArray *classes,
-	json_t *bulletNode, const char *archiveName);
+	BulletClasses *bullets, CArray *classes, json_t *bulletNode);
 // 2-step initialisation since bullet and weapon reference each other
 void BulletLoadWeapons(BulletClasses *bullets);
 void BulletClassesClear(CArray *classes);

@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Particles": [
+    {
+      "Name": "fireball_hit",
+      "Sprites": "fireball_hit",
+      "Range": 4,
+      "TicksPerFrame": 4
+    }
+  ]
+}

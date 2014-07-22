@@ -337,8 +337,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 
 #define VERSION 1
 static void LoadBullet(
-	BulletClass *b, json_t *node,
-	const BulletClass *defaultBullet, const char *archiveName);
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet);
 void BulletInitialize(BulletClasses *bullets)
 {
 	memset(bullets, 0, sizeof *bullets);
@@ -346,8 +345,7 @@ void BulletInitialize(BulletClasses *bullets)
 	CArrayInit(&bullets->CustomClasses, sizeof(BulletClass));
 }
 void BulletLoadJSON(
-	BulletClasses *bullets, CArray *classes,
-	json_t *bulletNode, const char *archiveName)
+	BulletClasses *bullets, CArray *classes, json_t *bulletNode)
 {
 	int version;
 	LoadInt(&version, bulletNode, "Version");
@@ -362,22 +360,21 @@ void BulletLoadJSON(
 	json_t *defaultNode = json_find_first_label(bulletNode, "DefaultBullet");
 	if (defaultNode != NULL)
 	{
-		LoadBullet(&bullets->Default, defaultNode->child, NULL, NULL);
+		LoadBullet(&bullets->Default, defaultNode->child, NULL);
 	}
 
 	json_t *bulletsNode = json_find_first_label(bulletNode, "Bullets")->child;
 	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
 		BulletClass b;
-		LoadBullet(&b, child, defaultB, archiveName);
+		LoadBullet(&b, child, defaultB);
 		CArrayPushBack(classes, &b);
 	}
 
 	bullets->root = bulletNode;
 }
 static void LoadBullet(
-	BulletClass *b, json_t *node,
-	const BulletClass *defaultBullet, const char *archiveName)
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
 {
 	if (defaultBullet != NULL)
 	{
@@ -488,18 +485,15 @@ static void LoadBullet(
 	if (json_find_first_label(node, "Spark"))
 	{
 		tmp = GetString(node, "Spark");
-		b->Spark = ParticleClassGet(&gParticleClasses, tmp);
+		b->Spark = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		b->HitSound.Object =
-			LoadSoundFromNode(hitSounds, "Object", archiveName);
-		b->HitSound.Flesh =
-			LoadSoundFromNode(hitSounds, "Flesh", archiveName);
-		b->HitSound.Wall =
-			LoadSoundFromNode(hitSounds, "Wall", archiveName);
+		b->HitSound.Object = LoadSoundFromNode(hitSounds, "Object");
+		b->HitSound.Flesh = LoadSoundFromNode(hitSounds, "Flesh");
+		b->HitSound.Wall = LoadSoundFromNode(hitSounds, "Wall");
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
 	LoadBool(&b->HitsObjects, node, "HitsObjects");

@@ -44,6 +44,8 @@ int PicManagerTryInit(
 	memset(pm, 0, sizeof *pm);
 	CArrayInit(&pm->pics, sizeof(NamedPic));
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
+	CArrayInit(&pm->customPics, sizeof(NamedPic));
+	CArrayInit(&pm->customSprites, sizeof(NamedSprites));
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, oldGfxFile1);
 	i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
@@ -61,19 +63,13 @@ int PicManagerTryInit(
 	pm->palette[0].r = pm->palette[0].g = pm->palette[0].b = 0;
 	return 1;
 }
-static void AddPic(PicManager *pm, const char *name, const char *path)
+void PicManagerAdd(
+	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
 {
-	SDL_Surface *image = IMG_Load(path);
-	if (!image)
-	{
-		perror("Cannot load image");
-		fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
-		return;
-	}
 	if (image->format->BytesPerPixel != 4)
 	{
 		perror("Cannot load non-32-bit image");
-		fprintf(stderr, "Only 32-bit depth images supported (%s)\n", path);
+		fprintf(stderr, "Only 32-bit depth images supported (%s)\n", name);
 		SDL_FreeSurface(image);
 		return;
 	}
@@ -116,15 +112,15 @@ static void AddPic(PicManager *pm, const char *name, const char *path)
 	{
 		NamedSprites ns;
 		NamedSpritesInit(&ns, buf);
-		CArrayPushBack(&pm->sprites, &ns);
-		nsp = CArrayGet(&pm->sprites, pm->sprites.size - 1);
+		CArrayPushBack(sprites, &ns);
+		nsp = CArrayGet(sprites, sprites->size - 1);
 	}
 	else
 	{
 		NamedPic n;
 		CSTRDUP(n.name, buf);
-		CArrayPushBack(&pm->pics, &n);
-		np = CArrayGet(&pm->pics, pm->pics.size - 1);
+		CArrayPushBack(pics, &n);
+		np = CArrayGet(pics, pics->size - 1);
 	}
 	SDL_LockSurface(image);
 	SDL_Surface *s = SDL_ConvertSurface(
@@ -210,20 +206,31 @@ static void PicManagerLoadDirImpl(
 		{
 			SDL_RWops *rwops = SDL_RWFromFile(file.path, "rb");
 			bool isPng = IMG_isPNG(rwops);
-			rwops->close(rwops);
 			if (isPng)
 			{
-				if (prefix)
+				SDL_Surface *data = IMG_Load_RW(rwops, 0);
+				if (!data)
 				{
-					char buf[CDOGS_PATH_MAX];
-					sprintf(buf, "%s/%s", prefix, file.name);
-					AddPic(pm, buf, file.path);
+					perror("Cannot load image");
+					fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
 				}
 				else
 				{
-					AddPic(pm, file.name, file.path);
+					char buf[CDOGS_PATH_MAX];
+					if (prefix)
+					{
+						char buf1[CDOGS_PATH_MAX];
+						sprintf(buf1, "%s/%s", prefix, file.name);
+						PathGetWithoutExtension(buf, buf1);
+					}
+					else
+					{
+						PathGetBasenameWithoutExtension(buf, file.name);
+					}
+					PicManagerAdd(&pm->pics, &pm->sprites, buf, data);
 				}
 			}
+			rwops->close(rwops);
 		}
 		else if (file.is_dir && file.name[0] != '.')
 		{
@@ -337,6 +344,21 @@ void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
 	}
 }
 
+void PicManagerClear(CArray *pics, CArray *sprites)
+{
+	for (int i = 0; i < (int)pics->size; i++)
+	{
+		NamedPic *n = CArrayGet(pics, i);
+		CFREE(n->name);
+		PicFree(&n->pic);
+	}
+	CArrayClear(pics);
+	for (int i = 0; i < (int)sprites->size; i++)
+	{
+		NamedSpritesFree(CArrayGet(sprites, i));
+	}
+	CArrayClear(sprites);
+}
 void PicManagerTerminate(PicManager *pm)
 {
 	for (int i = 0; i < PIC_MAX; i++)
@@ -350,18 +372,12 @@ void PicManagerTerminate(PicManager *pm)
 			PicFree(&pm->picsFromOld[i]);
 		}
 	}
-	for (int i = 0; i < (int)pm->pics.size; i++)
-	{
-		NamedPic *n = CArrayGet(&pm->pics, i);
-		CFREE(n->name);
-		PicFree(&n->pic);
-	}
+	PicManagerClear(&pm->pics, &pm->sprites);
 	CArrayTerminate(&pm->pics);
-	for (int i = 0; i < (int)pm->sprites.size; i++)
-	{
-		NamedSpritesFree(CArrayGet(&pm->sprites, i));
-	}
-	CArrayTerminate(&pm->pics);
+	CArrayTerminate(&pm->sprites);
+	PicManagerClear(&pm->customPics, &pm->customSprites);
+	CArrayTerminate(&pm->customPics);
+	CArrayTerminate(&pm->customSprites);
 	IMG_Quit();
 }
 
@@ -383,6 +399,14 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 }
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 {
+	for (int i = 0; i < (int)pm->customPics.size; i++)
+	{
+		NamedPic *n = CArrayGet(&pm->customPics, i);
+		if (strcmp(n->name, name) == 0)
+		{
+			return &n->pic;
+		}
+	}
 	for (int i = 0; i < (int)pm->pics.size; i++)
 	{
 		NamedPic *n = CArrayGet(&pm->pics, i);
@@ -396,6 +420,14 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
 {
+	for (int i = 0; i < (int)pm->customSprites.size; i++)
+	{
+		const NamedSprites *n = CArrayGet(&pm->customSprites, i);
+		if (strcmp(n->name, name) == 0)
+		{
+			return n;
+		}
+	}
 	for (int i = 0; i < (int)pm->sprites.size; i++)
 	{
 		const NamedSprites *n = CArrayGet(&pm->sprites, i);

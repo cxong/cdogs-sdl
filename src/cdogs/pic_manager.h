@@ -38,6 +38,8 @@ typedef struct
 	TPalette palette;
 	CArray pics;	// of NamedPic
 	CArray sprites;	// of NamedSprites
+	CArray customPics;	// of NamedPic
+	CArray customSprites;	// of NamedSprites
 } PicManager;
 
 extern PicManager gPicManager;
@@ -47,6 +49,9 @@ int PicManagerTryInit(
 // Old paletted pics need the palette to be set before using
 void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g);
 void PicManagerLoadDir(PicManager *pm, const char *path);
+void PicManagerAdd(
+	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image);
+void PicManagerClear(CArray *pics, CArray *sprites);
 void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);

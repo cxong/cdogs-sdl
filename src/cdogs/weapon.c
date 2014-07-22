@@ -108,10 +108,8 @@ void WeaponInitialize(GunClasses *g)
 	CArrayInit(&g->CustomGuns, sizeof(const GunDescription));
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node,
-	const GunDescription *defaultGun, const char *archiveName);
-void WeaponLoadJSON(
-	GunClasses *g, CArray *classes, json_t *root, const char *archiveName)
+	GunDescription *g, json_t *node, const GunDescription *defaultGun);
+void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 {
 	int version;
 	LoadInt(&version, root, "Version");
@@ -125,7 +123,7 @@ void WeaponLoadJSON(
 	json_t *defaultNode = json_find_first_label(root, "DefaultGun");
 	if (defaultNode != NULL)
 	{
-		LoadGunDescription(defaultDesc, defaultNode->child, NULL, NULL);
+		LoadGunDescription(defaultDesc, defaultNode->child, NULL);
 		for (int i = 0; i < GUN_COUNT; i++)
 		{
 			CArrayPushBack(&g->Guns, defaultDesc);
@@ -135,7 +133,7 @@ void WeaponLoadJSON(
 	for (json_t *child = gunsNode->child; child; child = child->next)
 	{
 		GunDescription gd;
-		LoadGunDescription(&gd, child, defaultDesc, archiveName);
+		LoadGunDescription(&gd, child, defaultDesc);
 		int idx = -1;
 		LoadInt(&idx, child, "Index");
 		if (idx >= 0 && idx < GUN_COUNT)
@@ -157,15 +155,14 @@ void WeaponLoadJSON(
 			child = child->next)
 		{
 			GunDescription gd;
-			LoadGunDescription(&gd, child, defaultDesc, archiveName);
+			LoadGunDescription(&gd, child, defaultDesc);
 			gd.IsRealGun = false;
 			CArrayPushBack(classes, &gd);
 		}
 	}
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node,
-	const GunDescription *defaultGun, const char *archiveName)
+	GunDescription *g, json_t *node, const GunDescription *defaultGun)
 {
 	memset(g, 0, sizeof *g);
 	if (defaultGun)
@@ -212,9 +209,9 @@ static void LoadGunDescription(
 
 	LoadInt(&g->ReloadLead, node, "ReloadLead");
 
-	g->Sound = LoadSoundFromNode(node, "Sound", archiveName);
+	g->Sound = LoadSoundFromNode(node, "Sound");
 
-	g->ReloadSound = LoadSoundFromNode(node, "ReloadSound", archiveName);
+	g->ReloadSound = LoadSoundFromNode(node, "ReloadSound");
 
 	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 
@@ -238,14 +235,14 @@ static void LoadGunDescription(
 	if (json_find_first_label(node, "MuzzleFlashParticle"))
 	{
 		tmp = GetString(node, "MuzzleFlashParticle");
-		g->MuzzleFlash = ParticleClassGet(&gParticleClasses, tmp);
+		g->MuzzleFlash = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
 
 	if (json_find_first_label(node, "Brass"))
 	{
 		tmp = GetString(node, "Brass");
-		g->Brass = ParticleClassGet(&gParticleClasses, tmp);
+		g->Brass = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
 
@@ -608,7 +605,7 @@ void BulletAndWeaponInitialize(
 		printf("Error parsing bullets file %s [error %d]\n", bpath, (int)e);
 		goto bail;
 	}
-	BulletLoadJSON(b, &b->Classes, broot, NULL);
+	BulletLoadJSON(b, &b->Classes, broot);
 
 	WeaponInitialize(g);
 	gf = fopen(gpath, "r");
@@ -623,7 +620,7 @@ void BulletAndWeaponInitialize(
 		printf("Error parsing guns file %s [error %d]\n", gpath, (int)e);
 		goto bail;
 	}
-	WeaponLoadJSON(g, &g->Guns, groot, NULL);
+	WeaponLoadJSON(g, &g->Guns, groot);
 
 	BulletLoadWeapons(b);
 	freeBRoot = false;

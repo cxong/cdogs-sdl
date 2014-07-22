@@ -28,6 +28,8 @@
 #ifndef __PARTICLE
 #define __PARTICLE
 
+#include <json/json.h>
+
 #include "pic.h"
 #include "tile.h"
 
@@ -44,7 +46,12 @@ typedef struct
 	int GravityFactor;
 	bool HitsWalls;
 } ParticleClass;
-extern CArray gParticleClasses;	// of ParticleClass
+typedef struct
+{
+	CArray Classes;	// of ParticleClass
+	CArray CustomClasses;	// of ParticleClass
+} ParticleClasses;
+extern ParticleClasses gParticleClasses;
 
 typedef struct
 {
@@ -74,9 +81,12 @@ typedef struct
 	double Spin;
 } AddParticle;
 
-void ParticleClassesInit(CArray *classes, const char *filename);
-void ParticleClassesTerminate(CArray *classes);
-const ParticleClass *ParticleClassGet(const CArray *classes, const char *name);
+void ParticleClassesInit(ParticleClasses *classes, const char *filename);
+void ParticleClassesLoadJSON(CArray *classes, json_t *root);
+void ParticleClassesTerminate(ParticleClasses *classes);
+void ParticleClassesClear(CArray *classes);
+const ParticleClass *StrParticleClass(
+	const ParticleClasses *classes, const char *name);
 
 void ParticlesInit(CArray *particles);
 void ParticlesTerminate(CArray *particles);

@@ -98,14 +98,14 @@ static void LoadSound(SoundDevice *device, const char *name, const char *path)
 	}
 	char buf[CDOGS_FILENAME_MAX];
 	PathGetBasenameWithoutExtension(buf, name);
-	SoundAdd(device, buf, data);
+	SoundAdd(&device->sounds, buf, data);
 }
-void SoundAdd(SoundDevice *device, const char *name, Mix_Chunk *data)
+void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
 {
 	SoundData sound;
 	sound.data = data;
 	strcpy(sound.Name, name);
-	CArrayPushBack(&device->sounds, &sound);
+	CArrayPushBack(sounds, &sound);
 }
 
 void SoundInitialize(
@@ -121,6 +121,7 @@ void SoundInitialize(
 	SoundReconfigure(device, config);
 
 	CArrayInit(&device->sounds, sizeof(SoundData));
+	CArrayInit(&device->customSounds, sizeof(SoundData));
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
@@ -190,6 +191,15 @@ void SoundReconfigure(SoundDevice *device, SoundConfig *config)
 	device->isInitialised = 1;
 }
 
+void SoundClear(CArray *sounds)
+{
+	for (int i = 0; i < (int)sounds->size; i++)
+	{
+		SoundData *sound = CArrayGet(sounds, i);
+		Mix_FreeChunk(sound->data);
+	}
+	CArrayClear(sounds);
+}
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 {
 	if (!device->isInitialised)
@@ -205,17 +215,16 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 			SDL_GetTicks() - waitStart < 1000);
 	}
 	MusicStop(device);
-	for (int i = 0; i < (int)gSoundDevice.sounds.size; i++)
-	{
-		SoundData *sound = CArrayGet(&gSoundDevice.sounds, i);
-		Mix_FreeChunk(sound->data);
-	}
-	CArrayTerminate(&device->sounds);
 	while (Mix_Init(0))
 	{
 		Mix_Quit();
 	}
 	Mix_CloseAudio();
+
+	SoundClear(&device->sounds);
+	CArrayTerminate(&device->sounds);
+	SoundClear(&device->customSounds);
+	CArrayTerminate(&device->customSounds);
 }
 
 void SoundPlayAtPosition(
@@ -352,6 +361,14 @@ Mix_Chunk *StrSound(const char *s)
 	if (s == NULL || strlen(s) == 0)
 	{
 		return NULL;
+	}
+	for (int i = 0; i < (int)gSoundDevice.customSounds.size; i++)
+	{
+		SoundData *sound = CArrayGet(&gSoundDevice.customSounds, i);
+		if (strcmp(sound->Name, s) == 0)
+		{
+			return sound->data;
+		}
 	}
 	for (int i = 0; i < (int)gSoundDevice.sounds.size; i++)
 	{

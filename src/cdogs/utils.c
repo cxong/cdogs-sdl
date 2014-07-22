@@ -102,19 +102,23 @@ const char *PathGetBasename(const char *path)
 		return slash + 1;
 	}
 }
-void PathGetBasenameWithoutExtension(char *buf, const char *path)
+void PathGetWithoutExtension(char *buf, const char *path)
 {
-	const char *basename = PathGetBasename(path);
-	const char *dot = strrchr(basename, '.');
+	const char *dot = strrchr(path, '.');
 	if (dot)
 	{
-		strncpy(buf, basename, dot - basename);
-		buf[dot - basename] = '\0';
+		strncpy(buf, path, dot - path);
+		buf[dot - path] = '\0';
 	}
 	else
 	{
-		strcpy(buf, basename);
+		strcpy(buf, path);
 	}
+}
+void PathGetBasenameWithoutExtension(char *buf, const char *path)
+{
+	const char *basename = PathGetBasename(path);
+	PathGetWithoutExtension(buf, basename);
 }
 
 double Round(double x)

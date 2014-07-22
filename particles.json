@@ -74,7 +74,6 @@
     },
     {
       "Name": "brass",
-      
       "Sprites": "brass",
       "RangeLow": 10000,
       "RangeHigh": 11000,

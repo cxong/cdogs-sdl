@@ -32,15 +32,16 @@
 #include "json_utils.h"
 
 
-CArray gParticleClasses;
+ParticleClasses gParticleClasses;
 CArray gParticles;
 
 #define VERSION 1
 
 static void LoadParticleClass(ParticleClass *c, json_t *node);
-void ParticleClassesInit(CArray *classes, const char *filename)
+void ParticleClassesInit(ParticleClasses *classes, const char *filename)
 {
-	CArrayInit(classes, sizeof(ParticleClass));
+	CArrayInit(&classes->Classes, sizeof(ParticleClass));
+	CArrayInit(&classes->CustomClasses, sizeof(ParticleClass));
 
 	FILE *f = fopen(filename, "r");
 	json_t *root = NULL;
@@ -55,12 +56,23 @@ void ParticleClassesInit(CArray *classes, const char *filename)
 		printf("Error parsing particles file %s\n", filename);
 		goto bail;
 	}
+	ParticleClassesLoadJSON(&classes->Classes, root);
+
+bail:
+	if (f != NULL)
+	{
+		fclose(f);
+	}
+	json_free_value(&root);
+}
+void ParticleClassesLoadJSON(CArray *classes, json_t *root)
+{
 	int version;
 	LoadInt(&version, root, "Version");
 	if (version > VERSION || version <= 0)
 	{
 		CASSERT(false, "cannot read particles file version");
-		goto bail;
+		return;
 	}
 
 	json_t *particlesNode = json_find_first_label(root, "Particles")->child;
@@ -70,22 +82,22 @@ void ParticleClassesInit(CArray *classes, const char *filename)
 		LoadParticleClass(&c, child);
 		CArrayPushBack(classes, &c);
 	}
-
-bail:
-	json_free_value(&root);
-	if (f)
-	{
-		fclose(f);
-	}
 }
-void ParticleClassesTerminate(CArray *classes)
+void ParticleClassesTerminate(ParticleClasses *classes)
+{
+	ParticleClassesClear(&classes->Classes);
+	CArrayTerminate(&classes->Classes);
+	ParticleClassesClear(&classes->CustomClasses);
+	CArrayTerminate(&classes->CustomClasses);
+}
+void ParticleClassesClear(CArray *classes)
 {
 	for (int i = 0; i < (int)classes->size; i++)
 	{
 		ParticleClass *c = CArrayGet(classes, i);
 		CFREE(c->Name);
 	}
-	CArrayTerminate(classes);
+	CArrayClear(classes);
 }
 static void LoadParticleClass(ParticleClass *c, json_t *node)
 {
@@ -138,15 +150,24 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 }
 
-const ParticleClass *ParticleClassGet(const CArray *classes, const char *name)
+const ParticleClass *StrParticleClass(
+	const ParticleClasses *classes, const char *name)
 {
 	if (name == NULL || strlen(name) == 0)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)classes->size; i++)
+	for (int i = 0; i < (int)classes->CustomClasses.size; i++)
 	{
-		ParticleClass *c = CArrayGet(classes, i);
+		const ParticleClass *c = CArrayGet(&classes->CustomClasses, i);
+		if (strcmp(c->Name, name) == 0)
+		{
+			return c;
+		}
+	}
+	for (int i = 0; i < (int)classes->Classes.size; i++)
+	{
+		const ParticleClass *c = CArrayGet(&classes->Classes, i);
 		if (strcmp(c->Name, name) == 0)
 		{
 			return c;

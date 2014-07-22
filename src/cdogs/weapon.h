@@ -144,8 +144,7 @@ extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
 extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
 
 void WeaponInitialize(GunClasses *g);
-void WeaponLoadJSON(
-	GunClasses *g, CArray *classes, json_t *root, const char *archiveName);
+void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root);
 void WeaponClassesClear(CArray *classes);
 void WeaponTerminate(GunClasses *g);
 Weapon WeaponCreate(const GunDescription *gun);

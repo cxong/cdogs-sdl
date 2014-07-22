@@ -113,26 +113,14 @@ char *GetString(json_t *node, const char *name)
 {
 	return json_unescape(json_find_first_label(node, name)->child->text);
 }
-Mix_Chunk *LoadSoundFromNode(
-	json_t *node, const char *name, const char *archiveName)
+Mix_Chunk *LoadSoundFromNode(json_t *node, const char *name)
 {
 	if (json_find_first_label(node, name) == NULL)
 	{
 		return NULL;
 	}
 	char *tmp = GetString(node, name);
-	Mix_Chunk *c = NULL;
-	if (archiveName != NULL)
-	{
-		char buf[CDOGS_FILENAME_MAX];
-		sprintf(buf, "%s/%s", archiveName, tmp);
-		c = StrSound(buf);
-	}
-	// If custom sound not found, try from built-in sounds
-	if (c == NULL)
-	{
-		c = StrSound(tmp);
-	}
+	Mix_Chunk *c = StrSound(tmp);
 	CFREE(tmp);
 	return c;
 }
