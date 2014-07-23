@@ -1,0 +1,65 @@
+{
+  "Version": 1,
+  "Guns": [
+	{
+	  "Name": "Spread Gun",
+	  "Bullet": "spreadgun_bullet",
+	  "Cost": 2,
+	  "Lock": 10,
+	  "Sound": "spreadgun",
+	  "SpreadCount": 5,
+	  "SpreadWidth": 0.25
+	},
+	{
+	  "Name": "Vulcan",
+	  "Bullet": "vulcan_bullet",
+	  "Cost": 5,
+	  "Lock": 8,
+	  "Sound": "vulcan",
+	  "SpreadCount": 7,
+	  "SpreadWidth": 0.23
+	},
+	{
+	  "Name": "Chaser2",
+	  "Bullet": "chaser2_bullet",
+	  "Cost": 2,
+	  "Lock": 5,
+	  "Sound": "chaser2",
+	  "Recoil": 0.8,
+	  "MuzzleFlashParticle": "muzzle_flash_chaser2"
+	},
+	{
+	  "Name": "Stick Grenade",
+	  "Pic": "",
+	  "Bullet": "grenade",
+	  "Cost": 5,
+	  "Lock": 20,
+	  "Sound": "",
+	  "Elevation": 24
+	}
+  ],
+  "PseudoGuns" : [
+	{
+	  "Pic": "",
+	  "Name": "grenade_explosion1",
+	  "Bullet": "grenade_fireball1",
+	  "ElevationLow": 14,
+	  "ElevationHigh": 14,
+	  "Sound": "grenade"
+	},
+	{
+	  "Pic": "",
+	  "Name": "grenade_explosion2",
+	  "Bullet": "grenade_fireball2",
+	  "ElevationLow": 22,
+	  "ElevationHigh": 22
+	},
+	{
+	  "Pic": "",
+	  "Name": "grenade_explosion3",
+	  "Bullet": "grenade_fireball3",
+	  "ElevationLow": 30,
+	  "ElevationHigh": 30
+	}
+  ]
+}

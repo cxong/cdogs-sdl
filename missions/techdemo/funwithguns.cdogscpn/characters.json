@@ -1,0 +1,18 @@
+{
+	"Characters": [{
+		"face": 6,
+		"skin": 10,
+		"arm": 6,
+		"body": 6,
+		"leg": 9,
+		"hair": 6,
+		"speed": 128,
+		"Gun": "Grenades",
+		"maxHealth": 40,
+		"flags": 0,
+		"probabilityToMove": 40,
+		"probabilityToTrack": 15,
+		"probabilityToShoot": 0,
+		"actionDelay": 30
+	}]
+}

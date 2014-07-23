@@ -1,0 +1,10 @@
+{
+  "Version": 1,
+  "Particles": [
+    {
+      "Name": "muzzle_flash_chaser2",
+      "Sprites": "muzzle_flash",
+      "Mask": "66ff66"
+    }
+  ]
+}
