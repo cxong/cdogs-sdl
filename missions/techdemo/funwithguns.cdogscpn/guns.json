@@ -42,7 +42,8 @@
 	  "Bullet": "laser_designator",
 	  "Cost": 50,
 	  "Lock": 500,
-	  "Sound": "laser_designator"
+	  "Sound": "laser_designator",
+	  "MuzzleFlashParticle": "muzzle_flash_laser_beam"
 	}
   ],
   "PseudoGuns" : [
@@ -90,7 +91,7 @@
 	  "Bullet": "nuke",
 	  "ElevationLow": -10,
 	  "ElevationHigh": -10,
-	  "Sound": ""
+	  "Sound": "nuke_fall"
 	},
 	{
 	  "Pic": "",

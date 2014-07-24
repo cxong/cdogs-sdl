@@ -5,6 +5,11 @@
       "Name": "muzzle_flash_chaser2",
       "Sprites": "muzzle_flash",
       "Mask": "66ff66"
+    },
+    {
+      "Name": "muzzle_flash_laser_beam",
+      "Sprites": "laser_beam",
+      "Range": 5
     }
   ]
 }
