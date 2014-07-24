@@ -152,6 +152,133 @@
         "GravityFactor": 1,
 		"FallsDown": false
       }
+    },
+	{
+      "Name": "laser_designator",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Speed": 2300,
+      "Range": 20,
+      "Power": 0,
+      "Spark": "",
+	  "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      },
+	  "Falling": {
+        "GravityFactor": 10
+      },
+      "HitsObjects": false,
+	  "OutOfRangeGuns": [
+		"laser_dot"
+	  ]
+    },
+	{
+      "Name": "laser_dot",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "laser_dot",
+		"TicksPerFrame": 1
+      },
+      "Speed": 0,
+      "Range": 300,
+      "Power": 0,
+      "Spark": "",
+      "HitsObjects": false,
+	  "Persists": true,
+	  "OutOfRangeGuns": [
+		"nuke_incoming"
+	  ]
+    },
+	{
+      "Name": "nuke_incoming",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Speed": 0,
+      "Range": 1,
+      "Power": 0,
+      "Spark": "",
+      "HitsObjects": false,
+	  "Persists": true,
+	  "Falling": {
+        "GravityFactor": -1
+      },
+	  "OutOfRangeGuns": [
+		"nuclear_strike"
+	  ]
+    },
+	{
+      "Name": "nuke",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "nuke",
+		"TicksPerFrame": 1
+      },
+	  "ShadowSize": [6, 4],
+      "Speed": 0,
+      "Range": 100,
+      "Power": 0,
+      "Spark": "",
+      "HitsObjects": false,
+	  "Persists": true,
+	  "Falling": {
+        "GravityFactor": 1,
+		"DestroyOnDrop": true,
+        "DropGuns": [
+		  "big_explosion1",
+		  "big_explosion2",
+          "explosion1",
+		  "explosion2",
+		  "explosion3",
+		  "frag_explosion"
+        ]
+      },
+	  "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      }
+    },
+	{
+      "Name": "big_explosion_spawner1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Speed": 800,
+      "Range": 14,
+      "Power": 0,
+      "Spark": "",
+      "HitsObjects": false,
+	  "Persists": true,
+      "OutOfRangeGuns": [
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ]
+    },
+	{
+      "Name": "big_explosion_spawner2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Speed": 800,
+      "Range": 28,
+      "Power": 0,
+      "Spark": "",
+      "HitsObjects": false,
+	  "Persists": true,
+      "OutOfRangeGuns": [
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ]
     }
   ]
 }

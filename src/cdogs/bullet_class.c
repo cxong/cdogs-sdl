@@ -413,6 +413,10 @@ static void LoadBullet(
 			CFREE(tmp);
 			LoadInt(&b->CPic.u.Animated.Count, pic, "Count");
 			LoadInt(&b->CPic.u.Animated.TicksPerFrame, pic, "TicksPerFrame");
+			// Set safe default ticks per frame 1;
+			// if 0 then this leads to infinite loop when animating
+			b->CPic.u.Animated.TicksPerFrame = MAX(
+				b->CPic.u.Animated.TicksPerFrame, 1);
 			break;
 		default:
 			CASSERT(false, "unknown pic type");

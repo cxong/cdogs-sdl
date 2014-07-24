@@ -107,6 +107,7 @@ void CPicUpdate(CPic *p, const int ticks)
 	case PICTYPE_ANIMATED:
 		{
 			p->u.Animated.Count += ticks;
+			CASSERT(p->u.Animated.TicksPerFrame > 0, "0 ticks per frame");
 			while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
 			{
 				p->u.Animated.Frame++;
