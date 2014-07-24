@@ -56,8 +56,8 @@ set(SDL_INDEX 0)
 set(SDLMAIN_LIBRARY "")
 set(INDEX 0)
 foreach(SDL_LIBRARY_ITEM ${SDL_LIBRARY})
-	string(FIND ${SDL_LIBRARY_ITEM} "libSDLmain" SDLMAIN_FIND_INDEX)
-	string(FIND ${SDL_LIBRARY_ITEM} "libSDL.dll" SDL_FIND_INDEX)
+	string(FIND ${SDL_LIBRARY_ITEM} "SDLmain" SDLMAIN_FIND_INDEX)
+	string(FIND ${SDL_LIBRARY_ITEM} "SDL.dll" SDL_FIND_INDEX)
 	if(${SDLMAIN_FIND_INDEX} GREATER -1)
 		SET(SDLMAIN_INDEX ${INDEX})
 		set(SDLMAIN_LIBRARY ${SDL_LIBRARY_ITEM})
@@ -78,8 +78,7 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
-		-Wstrict-prototypes -Wpointer-arith -Wcast-qual
-		-std=c99)
+		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
 		if(DEBUG_PROFILE)
@@ -89,9 +88,10 @@ else()
 		ADD_DEFINITIONS(-O2)
 	endif()
     if(CLANG)
+		add_definitiions(-std=c99)
     else()
         # Probably GCC...
-        add_definitions(-freg-struct-return)
+        add_definitions(-freg-struct-return -std=gnu99)
 		if(NOT APPLE AND NOT BEOS AND NOT HAIKU)
 			add_definitions(-Wshadow)
 		endif()
@@ -175,7 +175,13 @@ INSTALL(DIRECTORY
 	${SOURCE_DIRECTORY}/music
 	${SOURCE_DIRECTORY}/sounds
 	DESTINATION ${INSTALL_PREFIX})
-INSTALL(FILES ${SOURCE_DIRECTORY}/cdogs_icon.bmp ${SOURCE_DIRECTORY}/README.md DESTINATION ${INSTALL_PREFIX})
+INSTALL(FILES
+	${SOURCE_DIRECTORY}/cdogs_icon.bmp
+	${SOURCE_DIRECTORY}/README.md
+	${SOURCE_DIRECTORY}/particles.json
+	${SOURCE_DIRECTORY}/bullets.json
+	${SOURCE_DIRECTORY}/guns.json
+	DESTINATION ${INSTALL_PREFIX})
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${SOURCE_DIRECTORY}/build/linux/cdogs-sdl.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
 	INSTALL(FILES ${SOURCE_DIRECTORY}/cdogs-sdl.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons)
