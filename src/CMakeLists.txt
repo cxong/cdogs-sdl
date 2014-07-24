@@ -46,6 +46,7 @@ elseif(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE cdogs-icon.icns)
 	set_source_files_properties(../build/macosx/SDLMain.m
 		PROPERTIES LANGUAGE C)
+	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
 add_executable(cdogs-sdl MACOSX_BUNDLE ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 if(APPLE)

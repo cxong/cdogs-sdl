@@ -88,7 +88,7 @@ else()
 		ADD_DEFINITIONS(-O2)
 	endif()
     if(CLANG)
-		add_definitiions(-std=c99)
+		add_definitions(-std=c99)
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return -std=gnu99)

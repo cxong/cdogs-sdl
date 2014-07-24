@@ -36,17 +36,17 @@
 #    define PHYSFS_PLATFORM_MACOSX
 #    define PHYSFS_PLATFORM_POSIX
 #  endif
+#  define _GNU_SOURCE
 #elif defined(macintosh)
 #  error Classic Mac OS support was dropped from PhysicsFS 2.0. Move to OS X.
 #elif defined(unix) || defined(__unix__)
 #  define PHYSFS_PLATFORM_UNIX
 #  define PHYSFS_PLATFORM_POSIX
+#  define _POSIX_C_SOURCE 200809L
+#  define _GNU_SOURCE
 #else
 #  error Unknown platform.
 #endif
-
-#define _POSIX_C_SOURCE 200809L
-#define _GNU_SOURCE
 
 #endif  /* include-once blocker. */
 

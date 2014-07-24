@@ -31,6 +31,7 @@ static CFAllocatorRef cfallocator = NULL;
 
 CFStringRef cfallocDesc(const void *info)
 {
+	(void)info;
     return(CFStringCreateWithCString(cfallocator, "PhysicsFS",
                                      kCFStringEncodingASCII));
 } /* cfallocDesc */
@@ -38,12 +39,15 @@ CFStringRef cfallocDesc(const void *info)
 
 static void *cfallocMalloc(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
+	(void)hint;
+	(void)info;
     return allocator.Malloc(allocSize);
 } /* cfallocMalloc */
 
 
 static void cfallocFree(void *ptr, void *info)
 {
+	(void)info;
     allocator.Free(ptr);
 } /* cfallocFree */
 
@@ -51,6 +55,8 @@ static void cfallocFree(void *ptr, void *info)
 static void *cfallocRealloc(void *ptr, CFIndex newsize,
                             CFOptionFlags hint, void *info)
 {
+	(void)hint;
+	(void)info;
     if ((ptr == NULL) || (newsize <= 0))
         return NULL;  /* ADC docs say you should always return NULL here. */
     return allocator.Realloc(ptr, newsize);
@@ -230,6 +236,8 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
     char *cstr = NULL;
     int rc = 0;
 
+	(void)argv0;
+
     BAIL_IF_MACRO(GetProcessBundleLocation(&psn, &fsref) != noErr, NULL, NULL);
     cfurl = CFURLCreateFromFSRef(cfallocator, &fsref);
     BAIL_IF_MACRO(cfurl == NULL, NULL, NULL);
@@ -367,6 +375,7 @@ static void macosxAllocatorFree(void *ptr)
 
 int __PHYSFS_platformSetDefaultAllocator(PHYSFS_Allocator *a)
 {
+	(void)a;
     allocator.Init = macosxAllocatorInit;
     allocator.Deinit = macosxAllocatorDeinit;
     allocator.Malloc = macosxAllocatorMalloc;
