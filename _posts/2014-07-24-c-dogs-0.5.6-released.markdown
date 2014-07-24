@@ -5,13 +5,13 @@ date:   2014-07-24
 categories: release
 ---
 
+![](https://raw2.github.com/cxong/cdogs-sdl/gh-pages/_posts/nuke.jpg)
+
 This release has new and custom weapons, and autonomous co-op AI!
 
 Some of the new weapons are shown in previous posts, and co-op AI is now able to help you complete mission objectives, as well as being a bit smarter than before.
 
 C-Dogs SDL now supports custom weapons, defined as JSON files and loading per-campaign custom data. Take a look at `missions/techdemo/funwithguns.cdogscpn` for an example. Later I will document the file formats, and possibly provide a [weapon editor](https://github.com/cxong/cdogs-sdl/issues/276) - just nag me if you want it!
-
-![](https://raw2.github.com/cxong/cdogs-sdl/gh-pages/_posts/nuke.jpg)
 
 Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
 
