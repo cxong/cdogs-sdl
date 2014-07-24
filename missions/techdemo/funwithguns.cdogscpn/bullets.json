@@ -174,7 +174,10 @@
       "HitsObjects": false,
 	  "OutOfRangeGuns": [
 		"laser_dot"
-	  ]
+	  ],
+      "HitGuns": [
+        "laser_dot"
+      ]
     },
 	{
       "Name": "laser_dot",
