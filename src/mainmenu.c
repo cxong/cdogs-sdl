@@ -61,7 +61,7 @@ menu_t *MenuCreateCampaigns(
 	const char *name,
 	const char *title,
 	campaign_list_t *list);
-menu_t *MenuCreateOptions(const char *name);
+menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
 MenuSystem *MenuCreateAll(
@@ -104,7 +104,7 @@ MenuSystem *MenuCreateAll(
 			"Select a dogfight scenario:",
 			&campaigns->dogfightList));
 #endif
-	MenuAddSubmenu(ms->root, MenuCreateOptions("Options..."));
+	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
 	MenuAddExitType(ms, MENU_TYPE_CAMPAIGN_ITEM);
@@ -203,30 +203,55 @@ menu_t *MenuCreateCampaignItem(CampaignEntry *entry)
 	return menu;
 }
 
-menu_t *MenuCreateOptionsGame(const char *name);
-menu_t *MenuCreateOptionsGraphics(const char *name);
-menu_t *MenuCreateOptionsControls(const char *name);
-menu_t *MenuCreateOptionsSound(const char *name);
-menu_t *MenuCreateOptionsQuickPlay(const char *name);
+menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms);
+menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
+menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
+menu_t *MenuCreateOptionsSound(const char *name, MenuSystem *ms);
+menu_t *MenuCreateOptionsQuickPlay(const char *name, MenuSystem *ms);
 
-menu_t *MenuCreateOptions(const char *name)
+menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
 		"Options:",
 		MENU_TYPE_NORMAL,
 		0);
-	MenuAddSubmenu(menu, MenuCreateOptionsGame("Game..."));
-	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics..."));
-	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls..."));
-	MenuAddSubmenu(menu, MenuCreateOptionsSound("Sound..."));
-	MenuAddSubmenu(menu, MenuCreateOptionsQuickPlay("Quick Play..."));
+	MenuAddSubmenu(menu, MenuCreateOptionsGame("Game...", ms));
+	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", ms));
+	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", ms));
+	MenuAddSubmenu(menu, MenuCreateOptionsSound("Sound...", ms));
+	MenuAddSubmenu(menu, MenuCreateOptionsQuickPlay("Quick Play...", ms));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 	return menu;
 }
 
-menu_t *MenuCreateOptionsGame(const char *name)
+static void PostInputConfigApply(menu_t *menu, int cmd, void *data)
+{
+	UNUSED(menu);
+	UNUSED(cmd);
+	if (!ConfigApply(&gConfig))
+	{
+		printf("Error: cannot apply new config; applying last config\n");
+		gConfig = gLastConfig;
+		if (!ConfigApply(&gConfig))
+		{
+			printf("Error: cannot apply last config!\n");
+			exit(1);
+		}
+	}
+	gLastConfig = gConfig;
+
+	// Update menu system so that resolution changes don't
+	// affect menu positions
+	MenuSystem *ms = data;
+	ms->pos = Vec2iZero();
+	ms->size = Vec2iNew(
+		ms->graphics->cachedConfig.Res.x,
+		ms->graphics->cachedConfig.Res.y);
+}
+
+menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -352,10 +377,11 @@ menu_t *MenuCreateOptionsGame(const char *name)
 			(void (*)(void))AllyCollisionStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
-menu_t *MenuCreateOptionsGraphics(const char *name)
+menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -399,12 +425,13 @@ menu_t *MenuCreateOptionsGraphics(const char *name)
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleModeStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
-menu_t *MenuCreateKeys(const char *name);
+menu_t *MenuCreateKeys(const char *name, MenuSystem *ms);
 
-menu_t *MenuCreateOptionsControls(const char *name)
+menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -412,20 +439,19 @@ menu_t *MenuCreateOptionsControls(const char *name)
 		MENU_TYPE_OPTIONS,
 		0);
 #ifndef __ANDROID__
-	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys..."));
+	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", ms));
 #endif
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionFunc(
-			"Reset joysticks",
-			GJoyReset,
-			NULL, MENU_OPTION_DISPLAY_STYLE_NONE));
+		MenuCreateVoidFunc(
+		"Reset joysticks", JoyReset, &gEventHandlers.joysticks));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
-menu_t *MenuCreateOptionsSound(const char *name)
+menu_t *MenuCreateOptionsSound(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -448,10 +474,11 @@ menu_t *MenuCreateOptionsSound(const char *name)
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
-menu_t *MenuCreateOptionsQuickPlay(const char *name)
+menu_t *MenuCreateOptionsQuickPlay(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -538,6 +565,7 @@ menu_t *MenuCreateOptionsQuickPlay(const char *name)
 			(void (*)(void))QuickPlayQuantityStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
@@ -563,7 +591,7 @@ menu_t *MenuCreateOptionChangeKey(
 	const char *name, key_code_e code,
 	input_keys_t *keys, input_keys_t *keysOther);
 
-menu_t *MenuCreateKeys(const char *name)
+menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
@@ -583,6 +611,7 @@ menu_t *MenuCreateKeys(const char *name)
 			&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 

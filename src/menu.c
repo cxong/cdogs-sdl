@@ -162,8 +162,11 @@ void MenuLoop(MenuSystem *menu)
 		}
 		else
 		{
-			int cmd = GetMenuCmd(menu->handlers, gPlayerDatas);
-			MenuProcessCmd(menu, cmd);
+			const int cmd = GetMenuCmd(menu->handlers, gPlayerDatas);
+			if (cmd)
+			{
+				MenuProcessCmd(menu, cmd);
+			}
 		}
 		if (MenuIsExit(menu) || menu->handlers->HasQuit)
 		{
@@ -408,15 +411,13 @@ menu_t *MenuCreateOptionUpDownFunc(
 	return menu;
 }
 
-menu_t *MenuCreateOptionFunc(
-	const char *name,
-	void(*toggleFunc)(void), int(*getFunc)(void),
-	menu_option_display_style_e style)
+menu_t *MenuCreateVoidFunc(
+	const char *name, void (*func)(void *), void *data)
 {
-	menu_t *menu = MenuCreate(name, MENU_TYPE_VOID_FUNC_VOID);
-	menu->u.option.uHook.toggleFuncs.toggle = toggleFunc;
-	menu->u.option.uHook.toggleFuncs.get = getFunc;
-	menu->u.option.displayStyle = style;
+	menu_t *menu = MenuCreate(name, MENU_TYPE_VOID_FUNC);
+	menu->u.option.uHook.voidFunc.func = func;
+	menu->u.option.uHook.voidFunc.data = data;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_NONE;
 	return menu;
 }
 
@@ -653,8 +654,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
 					subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
 					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
-					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET ||
-					subMenu->type == MENU_TYPE_VOID_FUNC_VOID)
+					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
 				{
 					int optionInt = MenuOptionGetIntValue(subMenu);
 					switch (subMenu->u.option.displayStyle)
@@ -805,12 +805,6 @@ int MenuOptionGetIntValue(menu_t *menu)
 		return (int)*menu->u.option.uHook.seed;
 	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:
 		return menu->u.option.uHook.optionRangeGetSet.getFunc();
-	case MENU_TYPE_VOID_FUNC_VOID:
-		if (menu->u.option.uHook.toggleFuncs.get)
-		{
-			return menu->u.option.uHook.toggleFuncs.get();
-		}
-		return 0;
 	default:
 		return 0;
 	}
@@ -1068,13 +1062,12 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 
 void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 {
-	Config lastConfig = gConfig;
+	UNUSED(ms);
 	MenuPlaySound(MENU_SOUND_SWITCH);
 	switch (menu->type)
 	{
 	case MENU_TYPE_BASIC:
 		// do nothing
-		// TODO: change ConfigApply to a custom hook
 		return;
 	case MENU_TYPE_SET_OPTION_TOGGLE:
 		*menu->u.option.uHook.optionToggle = !*menu->u.option.uHook.optionToggle;
@@ -1194,8 +1187,8 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 			menu->u.option.uHook.optionRangeGetSet.setFunc(option);
 		}
 		break;
-	case MENU_TYPE_VOID_FUNC_VOID:
-		menu->u.option.uHook.toggleFuncs.toggle();
+	case MENU_TYPE_VOID_FUNC:
+		menu->u.option.uHook.voidFunc.func(menu->u.option.uHook.voidFunc.data);
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_KEY:
 		menu->parentMenu->u.normal.changeKeyMenu = menu;
@@ -1205,20 +1198,4 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 		assert(0);
 		break;
 	}
-	if (!ConfigApply(&gConfig))
-	{
-		printf("Error: cannot apply new config; applying last config\n");
-		gConfig = lastConfig;
-		if (!ConfigApply(&gConfig))
-		{
-			printf("Error: cannot apply last config!\n");
-			exit(1);
-		}
-	}
-	// Update menu system
-	// Note: only for the main menu system!
-	ms->pos = Vec2iZero();
-	ms->size = Vec2iNew(
-		ms->graphics->cachedConfig.Res.x,
-		ms->graphics->cachedConfig.Res.y);
 }

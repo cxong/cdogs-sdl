@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2014, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -322,6 +322,10 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	assert(loadMenu);
 	loadMenu->isDisabled = PlayerTemplatesGetCount(gPlayerTemplates) == 0;
 }
+static menu_t *CreateCustomizeMenu(
+	const char *name, PlayerSelectMenuData *data,
+	Character *c, struct PlayerData *p);
+static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
@@ -377,47 +381,10 @@ void PlayerSelectMenusCreate(
 		MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	data->faceData.c = c;
-	data->faceData.pData = p;
-	data->faceData.menuCount = FACE_COUNT;
-	data->faceData.strFunc = IndexToFaceStr;
-	data->faceData.property = &p->looks.face;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Face", &data->faceData));
-
-	data->skinData.c = c;
-	data->skinData.pData = p;
-	data->skinData.menuCount = SHADE_COUNT;
-	data->skinData.strFunc = IndexToShadeStr;
-	data->skinData.property = &p->looks.skin;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Skin", &data->skinData));
-
-	data->hairData.c = c;
-	data->hairData.pData = p;
-	data->hairData.menuCount = SHADE_COUNT;
-	data->hairData.strFunc = IndexToShadeStr;
-	data->hairData.property = &p->looks.hair;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Hair", &data->hairData));
-
-	data->armsData.c = c;
-	data->armsData.pData = p;
-	data->armsData.menuCount = SHADE_COUNT;
-	data->armsData.strFunc = IndexToShadeStr;
-	data->armsData.property = &p->looks.arm;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Arms", &data->armsData));
-
-	data->bodyData.c = c;
-	data->bodyData.pData = p;
-	data->bodyData.menuCount = SHADE_COUNT;
-	data->bodyData.strFunc = IndexToShadeStr;
-	data->bodyData.property = &p->looks.body;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Body", &data->bodyData));
-
-	data->legsData.c = c;
-	data->legsData.pData = p;
-	data->legsData.menuCount = SHADE_COUNT;
-	data->legsData.strFunc = IndexToShadeStr;
-	data->legsData.property = &p->looks.leg;
-	MenuAddSubmenu(ms->root, CreateAppearanceMenu("Legs", &data->legsData));
+	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data, c, p));
+	MenuAddSubmenu(
+		ms->root,
+		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
 
 	MenuAddSubmenu(ms->root, CreateUseTemplateMenu("Load", data));
 	MenuAddSubmenu(ms->root, CreateSaveTemplateMenu("Save", data));
@@ -435,4 +402,73 @@ void PlayerSelectMenusCreate(
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL);
 
 	SetPlayer(c, pData);
+}
+static menu_t *CreateCustomizeMenu(
+	const char *name, PlayerSelectMenuData *data,
+	Character *c, struct PlayerData *p)
+{
+	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
+
+	data->faceData.c = c;
+	data->faceData.pData = p;
+	data->faceData.menuCount = FACE_COUNT;
+	data->faceData.strFunc = IndexToFaceStr;
+	data->faceData.property = &p->looks.face;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Face", &data->faceData));
+
+	data->skinData.c = c;
+	data->skinData.pData = p;
+	data->skinData.menuCount = SHADE_COUNT;
+	data->skinData.strFunc = IndexToShadeStr;
+	data->skinData.property = &p->looks.skin;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Skin", &data->skinData));
+
+	data->hairData.c = c;
+	data->hairData.pData = p;
+	data->hairData.menuCount = SHADE_COUNT;
+	data->hairData.strFunc = IndexToShadeStr;
+	data->hairData.property = &p->looks.hair;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Hair", &data->hairData));
+
+	data->armsData.c = c;
+	data->armsData.pData = p;
+	data->armsData.menuCount = SHADE_COUNT;
+	data->armsData.strFunc = IndexToShadeStr;
+	data->armsData.property = &p->looks.arm;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Arms", &data->armsData));
+
+	data->bodyData.c = c;
+	data->bodyData.pData = p;
+	data->bodyData.menuCount = SHADE_COUNT;
+	data->bodyData.strFunc = IndexToShadeStr;
+	data->bodyData.property = &p->looks.body;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Body", &data->bodyData));
+
+	data->legsData.c = c;
+	data->legsData.pData = p;
+	data->legsData.menuCount = SHADE_COUNT;
+	data->legsData.strFunc = IndexToShadeStr;
+	data->legsData.property = &p->looks.leg;
+	MenuAddSubmenu(menu, CreateAppearanceMenu("Legs", &data->legsData));
+
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Back"));
+
+	return menu;
+}
+static void ShuffleOne(AppearanceMenuData *data);
+static void ShuffleAppearance(void *data)
+{
+	PlayerSelectMenuData *pData = data;
+	ShuffleOne(&pData->faceData);
+	ShuffleOne(&pData->skinData);
+	ShuffleOne(&pData->hairData);
+	ShuffleOne(&pData->armsData);
+	ShuffleOne(&pData->bodyData);
+	ShuffleOne(&pData->legsData);
+}
+static void ShuffleOne(AppearanceMenuData *data)
+{
+	*data->property = rand() % data->menuCount;
+	SetPlayer(data->c, data->pData);
 }

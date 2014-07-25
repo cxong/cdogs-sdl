@@ -154,6 +154,7 @@ typedef struct
 } Config;
 
 extern Config gConfig;
+extern Config gLastConfig;
 
 void ConfigLoad(Config *config, const char *filename);
 void ConfigSave(Config *config, const char *filename);

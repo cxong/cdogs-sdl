@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ typedef enum
 	MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID,	// set option using up/down functions
 	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
 	MENU_TYPE_SET_OPTION_CHANGE_KEY,	// redefine key
-	MENU_TYPE_VOID_FUNC_VOID,		// call a void(*f)(void) function
+	MENU_TYPE_VOID_FUNC,			// call a void (*f)(void *) function
 	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
 	MENU_TYPE_QUIT,
@@ -175,9 +175,9 @@ struct menu
 				} optionRangeGetSet;
 				struct
 				{
-					void (*toggle)(void);
-					int (*get)(void);
-				} toggleFuncs;
+					void (*func)(void *);
+					void *data;
+				} voidFunc;
 				struct
 				{
 					input_device_e *device0;
@@ -282,10 +282,8 @@ menu_t *MenuCreateOptionUpDownFunc(
 	const char *name,
 	void(*upFunc)(void), void(*downFunc)(void),
 	menu_option_display_style_e style, char *(*strFunc)(void));
-menu_t *MenuCreateOptionFunc(
-	const char *name,
-	void(*toggleFunc)(void), int(*getFunc)(void),
-	menu_option_display_style_e style);
+menu_t *MenuCreateVoidFunc(
+	const char *name, void (*func)(void *), void *data);
 menu_t *MenuCreateOptionRangeGetSet(
 	const char *name,
 	int(*getFunc)(void), void(*setFunc)(int),

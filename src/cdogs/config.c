@@ -299,6 +299,7 @@ QuickPlayQuantity StrQuickPlayQuantity(const char *str)
 
 
 Config gConfig;
+Config gLastConfig;
 
 int ConfigGetVersion(FILE *f)
 {

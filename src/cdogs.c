@@ -1229,6 +1229,7 @@ int main(int argc, char *argv[])
 	SetupConfigDir();
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	gLastConfig = gConfig;
 	LoadCredits(&creditsDisplayer, colorPurple, colorDarker);
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
@@ -1377,6 +1378,7 @@ int main(int argc, char *argv[])
 		printf("Cannot initialise video; trying default config\n");
 		ConfigLoadDefault(&defaultConfig);
 		gConfig.Graphics = defaultConfig.Graphics;
+		gLastConfig = gConfig;
 		GraphicsInitialize(
 			&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
 			forceResolution);

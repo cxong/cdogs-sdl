@@ -1148,6 +1148,7 @@ int main(int argc, char *argv[])
 
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	gLastConfig = gConfig;
 	gConfig.Graphics.IsEditor = 1;
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))

@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 
 	ConfigLoadDefault(&gConfig);
 	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	gLastConfig = gConfig;
 	EventInit(&gEventHandlers, NULL, false);
 
 	NetInputClient client;

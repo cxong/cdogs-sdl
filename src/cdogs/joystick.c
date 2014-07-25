@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -75,11 +75,6 @@ void JoyReset(joysticks_t *joys)
 			joys->joys[i].numAxes, joys->joys[i].numButtons, joys->joys[i].numHats);
 	}
 	JoyPoll(joys);
-}
-
-void GJoyReset(void)
-{
-	JoyReset(&gEventHandlers.joysticks);
 }
 
 void JoyTerminate(joysticks_t *joys)

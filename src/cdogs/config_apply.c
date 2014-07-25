@@ -30,14 +30,24 @@
 
 #include "blit.h"
 #include "gamedata.h"
+#include "grafx_bg.h"
 #include "pic_manager.h"
 
 
 int ConfigApply(Config *config)
 {
-	SoundReconfigure(&gSoundDevice, &config->Sound);
-	gCampaign.seed = config->Game.RandomSeed;
-	GraphicsInitialize(
-		&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
+	if (memcmp(&config->Sound, &gLastConfig.Sound, sizeof config->Sound) != 0)
+	{
+		SoundReconfigure(&gSoundDevice, &config->Sound);
+	}
+	if (memcmp(
+		&config->Graphics, &gLastConfig.Graphics, sizeof config->Graphics) != 0)
+	{
+		gCampaign.seed = config->Game.RandomSeed;
+		GraphicsInitialize(
+			&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
+		GrafxMakeRandomBackground(
+			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+	}
 	return gGraphicsDevice.IsInitialized;
 }

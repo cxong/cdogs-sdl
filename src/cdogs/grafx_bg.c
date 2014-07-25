@@ -53,8 +53,7 @@ void GrafxMakeRandomBackground(
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
-		device, &buffer, co, mo, map,
-		tint, 0, 1, Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2)), NULL);
+		device, &buffer, co, mo, map, tint, 0, 1, Vec2iZero(), NULL);
 	DrawBufferTerminate(&buffer);
 	ActorsTerminate();
 	ObjsTerminate();
@@ -91,13 +90,17 @@ void GrafxMakeBackground(
 	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(buildTables, co, mo);
-	MapLoad(&gMap, mo, &co->Setting.characters);
+	MapLoad(map, mo, &co->Setting.characters);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(map);
 	if (isEditor)
 	{
 		MapShowExitArea(map);
+	}
+	else
+	{
+		pos = Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
 	}
 
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
