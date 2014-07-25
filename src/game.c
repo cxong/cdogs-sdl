@@ -90,7 +90,7 @@
 #define MICROSECS_PER_SEC 1000000
 #define MILLISECS_PER_SEC 1000
 
-void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
+static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
 	int isDirectionCmd = cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN);
 	assert(actor);
@@ -115,22 +115,8 @@ void PlayerSpecialCommands(TActor *actor, int cmd, struct PlayerData *data)
 		!(cmd & CMD_BUTTON2) &&
 		!(actor->flags & FLAGS_SPECIAL_USED) &&
 		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && isDirectionCmd) &&
-		data->weaponCount > 1)
+		ActorTrySwitchGun(actor))
 	{
-		int i;
-		for (i = 0; i < data->weaponCount; i++)
-		{
-			if (actor->weapon.Gun == data->weapons[i])
-			{
-				break;
-			}
-		}
-		i++;
-		if (i >= data->weaponCount)
-		{
-			i = 0;
-		}
-		actor->weapon.Gun = data->weapons[i];
 		SoundPlayAt(
 			&gSoundDevice,
 			gSoundDevice.switchSound,
@@ -570,56 +556,6 @@ int gameloop(void)
 				// Map keeps the game paused, reset the time elapsed counter
 				ticksNow += SDL_GetTicks() - ticksBeforeMap;
 			}
-			// Cheat: special weapon activation
-			if (IsPlayerAlive(0))
-			{
-				const char *pulserifle = "sgodc";
-				const char *heatseeker = "miaon";
-				int isMatch = 1;
-				for (i = 0; i < (int)strlen(pulserifle); i++)
-				{
-					if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
-						pulserifle[i])
-					{
-						isMatch = 0;
-						break;
-					}
-				}
-				if (isMatch)
-				{
-					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
-					player->weapon =
-						WeaponCreate(StrGunDescription("Pulse rifle"));
-					SoundPlay(&gSoundDevice, StrSound("hahaha"));
-					// Reset to prevent last key from being processed as
-					// normal player commands
-					KeyInit(&gEventHandlers.keyboard);
-					cmdAll = 0;
-					memset(cmds, 0, sizeof cmds);
-				}
-				isMatch = 1;
-				for (i = 0; i < (int)strlen(heatseeker); i++)
-				{
-					if (gEventHandlers.keyboard.pressedKeysBuffer[i] !=
-						heatseeker[i])
-					{
-						isMatch = 0;
-						break;
-					}
-				}
-				if (isMatch)
-				{
-					TActor *player = CArrayGet(&gActors, gPlayerIds[0]);
-					player->weapon = WeaponCreate(
-						StrGunDescription("Heatseeker"));
-					SoundPlay(&gSoundDevice, StrSound("hahaha"));
-					// Reset to prevent last key from being processed as
-					// normal player commands
-					KeyInit(&gEventHandlers.keyboard);
-					cmdAll = 0;
-					memset(cmds, 0, sizeof cmds);
-				}
-			}
 		}
 
 		if (!isPaused)
@@ -637,7 +573,7 @@ int gameloop(void)
 					{
 						cmds[i] = AICoopGetCmd(player, ticks);
 					}
-					PlayerSpecialCommands(player, cmds[i], &gPlayerDatas[i]);
+					PlayerSpecialCommands(player, cmds[i]);
 					CommandActor(player, cmds[i], ticks);
 				}
 

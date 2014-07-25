@@ -123,7 +123,8 @@ typedef struct Actor
 	Character *character;
 	struct PlayerData *pData;	// NULL unless a human player
 	int uid;	// unique ID across all actors
-	Weapon weapon;
+	CArray guns;	// of Weapon
+	int gunIndex;
 
 	int health;
 	int dead;
@@ -190,6 +191,8 @@ void ActorsTerminate(void);
 int ActorAdd(Character *c, struct PlayerData *p);	// returns id
 void ActorDestroy(int id);
 
+Weapon *ActorGetGun(const TActor *a);
+bool ActorTrySwitchGun(TActor *a);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)
 // but deals no damage

@@ -495,7 +495,7 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		DrawWeaponStatus(device, &p->weapon, pos, textFlags);
+		DrawWeaponStatus(device, ActorGetGun(p), pos, textFlags);
 		pos.y += rowHeight;
 		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
 		pos.y += rowHeight;

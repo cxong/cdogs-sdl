@@ -597,7 +597,8 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 int AIHunt(TActor *actor, Vec2i targetPos)
 {
 	Vec2i fullPos = Vec2iAdd(
-		actor->Pos, GunGetMuzzleOffset(actor->weapon.Gun, actor->direction));
+		actor->Pos,
+		GunGetMuzzleOffset(ActorGetGun(actor)->Gun, actor->direction));
 	const int dx = abs(targetPos.x - fullPos.x);
 	const int dy = abs(targetPos.y - fullPos.y);
 

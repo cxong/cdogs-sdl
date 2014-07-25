@@ -871,7 +871,6 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		gPlayerIds[i] = ActorAdd(
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i]);
 		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-		player->weapon = WeaponCreate(gPlayerDatas[i].weapons[0]);
 		player->health = maxHealth;
 		player->character->maxHealth = maxHealth;
 		

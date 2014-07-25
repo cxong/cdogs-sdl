@@ -215,10 +215,11 @@ static ActorPics GetCharacterPics(int id)
 	Character *c = actor->character;
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
-	int g = actor->weapon.Gun->pic;
-	gunstate_e gunState = actor->weapon.state;
+	const Weapon *gun = ActorGetGun(actor);
+	int g = gun->Gun->pic;
+	gunstate_e gunState = gun->state;
 
-	TOffsetPic body, head, gun;
+	TOffsetPic body, head, gunPic;
 
 	pics.IsTransparent = !!(actor->flags & FLAGS_SEETHROUGH);
 
@@ -283,25 +284,29 @@ static ActorPics GetCharacterPics(int id)
 	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
 	head.picIndex = cHeadPic[f][headDir][headState];
 
-	if (g >= 0) {
-		gun.dx =
+	if (g >= 0)
+	{
+		gunPic.dx =
 		    cGunHandOffset[b][dir].dx +
 		    cGunPics[g][dir][gunState].dx;
-		gun.dy =
+		gunPic.dy =
 		    cGunHandOffset[b][dir].dy +
 		    cGunPics[g][dir][gunState].dy;
-		gun.picIndex = cGunPics[g][dir][gunState].picIndex;
-	} else
-		gun.picIndex = -1;
+		gunPic.picIndex = cGunPics[g][dir][gunState].picIndex;
+	}
+	else
+	{
+		gunPic.picIndex = -1;
+	}
 
 	switch (dir)
 	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
-		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
 		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, body);
-		pics.OldPics[0] = gun.picIndex;
+		pics.OldPics[0] = gunPic.picIndex;
 		pics.OldPics[1] = head.picIndex;
 		pics.OldPics[2] = body.picIndex;
 		break;
@@ -312,18 +317,18 @@ static ActorPics GetCharacterPics(int id)
 	case DIRECTION_DOWNLEFT:
 		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
-		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, gunPic);
 		pics.OldPics[0] = body.picIndex;
 		pics.OldPics[1] = head.picIndex;
-		pics.OldPics[2] = gun.picIndex;
+		pics.OldPics[2] = gunPic.picIndex;
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
-		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gun);
+		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
 		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, body);
 		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, head);
-		pics.OldPics[0] = gun.picIndex;
+		pics.OldPics[0] = gunPic.picIndex;
 		pics.OldPics[1] = body.picIndex;
 		pics.OldPics[2] = head.picIndex;
 		break;
@@ -345,7 +350,8 @@ void SetStateForActor(TActor * actor, int state)
 
 void UpdateActorState(TActor * actor, int ticks)
 {
-	WeaponUpdate(&actor->weapon, ticks, actor->Pos, actor->direction);
+	Weapon *gun = ActorGetGun(actor);
+	WeaponUpdate(gun, ticks, actor->Pos, actor->direction);
 
 	if (actor->health > 0)
 	{
@@ -558,7 +564,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 
 		// TODO: special type for knives
-		if (!actor->weapon.Gun->CanShoot && actor->health > 0)
+		Weapon *gun = ActorGetGun(actor);
+		if (!gun->Gun->CanShoot && actor->health > 0)
 		{
 			object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
@@ -568,9 +575,9 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				// Special case: only allow enemy slice sounds
 				// TODO: custom knife sounds
 				HitSounds knifeSounds;
-				knifeSounds.Flesh = actor->weapon.soundLock <= 0 ?
+				knifeSounds.Flesh = gun->soundLock <= 0 ?
 					StrSound("knife_flesh") : NULL;
-				knifeSounds.Object = actor->weapon.soundLock <= 0 ?
+				knifeSounds.Object = gun->soundLock <= 0 ?
 					StrSound("knife_hard") : NULL;
 				knifeSounds.Wall = NULL;
 				DamageSomething(
@@ -583,10 +590,9 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 					SPECIAL_NONE,
 					&knifeSounds,
 					false);
-				if (actor->weapon.soundLock <= 0)
+				if (gun->soundLock <= 0)
 				{
-					actor->weapon.soundLock +=
-						actor->weapon.Gun->SoundLockLength;
+					gun->soundLock += gun->Gun->SoundLockLength;
 				}
 				return 0;
 			}
@@ -695,23 +701,24 @@ void Score(struct PlayerData *p, int points)
 
 void Shoot(TActor *actor)
 {
-	if (!WeaponCanFire(&actor->weapon))
+	Weapon *gun = ActorGetGun(actor);
+	if (!WeaponCanFire(gun))
 	{
 		return;
 	}
 	WeaponFire(
-		&actor->weapon,
+		gun,
 		actor->direction,
 		actor->Pos,
 		actor->flags,
 		actor->pData ? actor->pData->playerIndex : -1,
 		actor->uid);
-	if (actor->pData && actor->weapon.Gun->Cost != 0)
+	if (actor->pData && gun->Gun->Cost != 0)
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SCORE;
 		e.u.Score.PlayerIndex = actor->pData->playerIndex;
-		e.u.Score.Score = -actor->weapon.Gun->Cost;
+		e.u.Score.Score = -gun->Gun->Cost;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -738,7 +745,7 @@ int ActorTryShoot(TActor *actor, int cmd)
 	}
 	else
 	{
-		WeaponHoldFire(&actor->weapon);
+		WeaponHoldFire(ActorGetGun(actor));
 	}
 	return willShoot;
 }
@@ -997,7 +1004,23 @@ int ActorAdd(Character *c, struct PlayerData *p)
 		actor = CArrayGet(&gActors, i);
 	}
 	memset(actor, 0, sizeof *actor);
-	actor->weapon = WeaponCreate(c->Gun);
+	CArrayInit(&actor->guns, sizeof(Weapon));
+	if (p != NULL)
+	{
+		// Add all player weapons
+		for (int j = 0; j < p->weaponCount; j++)
+		{
+			Weapon gun = WeaponCreate(p->weapons[j]);
+			CArrayPushBack(&actor->guns, &gun);
+		}
+	}
+	else
+	{
+		// Add sole weapon from character type
+		Weapon gun = WeaponCreate(c->Gun);
+		CArrayPushBack(&actor->guns, &gun);
+	}
+	actor->gunIndex = 0;
 	actor->health = c->maxHealth;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;
@@ -1028,6 +1051,7 @@ void ActorDestroy(int id)
 {
 	TActor *actor = CArrayGet(&gActors, id);
 	CASSERT(actor->isInUse, "Destroying in-use actor");
+	CArrayTerminate(&actor->guns);
 	MapRemoveTileItem(&gMap, &actor->tileItem);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -1118,6 +1142,24 @@ void BuildTranslationTables(const TPalette palette)
 			(200 * palette[i].g) / 256,
 			(200 * palette[i].b) / 256);
 	}
+}
+
+Weapon *ActorGetGun(const TActor *a)
+{
+	return CArrayGet(&a->guns, a->gunIndex);
+}
+bool ActorTrySwitchGun(TActor *a)
+{
+	if (a->guns.size < 2)
+	{
+		return false;
+	}
+	a->gunIndex++;
+	if (a->gunIndex >= (int)a->guns.size)
+	{
+		a->gunIndex = 0;
+	}
+	return true;
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)

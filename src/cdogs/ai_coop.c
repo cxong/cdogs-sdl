@@ -171,7 +171,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			AIContextSetState(actor->aiContext, AI_STATE_HUNT);
 			int cmd = AIHunt(actor, closestEnemy->Pos);
 			// only fire if gun is ready
-			if (actor->weapon.lock <= 0)
+			if (ActorGetGun(actor)->lock <= 0)
 			{
 				cmd |= CMD_BUTTON1;
 			}
@@ -226,7 +226,7 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 	{
 		cmd = AIGoto(
 			actor, Vec2iNew(o->tileItem.x, o->tileItem.y), true);
-		if (actor->weapon.lock <= 0)
+		if (ActorGetGun(actor)->lock <= 0)
 		{
 			cmd |= CMD_BUTTON1;
 		}
@@ -535,7 +535,7 @@ static int GotoObjective(TActor *actor, int objDistance)
 	int cmd = SmartGoto(actor, goal, objDistance);
 	if (objState->Type == AI_OBJECTIVE_TYPE_NORMAL &&
 		objState->IsDestructible &&
-		actor->weapon.lock <= 0 &&
+		ActorGetGun(actor)->lock <= 0 &&
 		AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
 	{
 		cmd |= CMD_BUTTON1;

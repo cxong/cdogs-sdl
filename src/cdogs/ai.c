@@ -271,7 +271,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	const CharBot *bot = actor->character->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-		WeaponCanFire(&actor->weapon) &&
+		WeaponCanFire(ActorGetGun(actor)) &&
 		roll < bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
@@ -547,7 +547,7 @@ void CommandBadGuys(int ticks)
 						if ((actor->flags & FLAGS_VISIBLE) == 0)
 						{
 							// I think this is some hack to make sure invisible enemies don't fire so much
-							actor->weapon.lock = 40;
+							ActorGetGun(actor)->lock = 40;
 						}
 						if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
 							(actor->flags & FLAGS_DETOURING) == 0)
