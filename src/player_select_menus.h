@@ -33,6 +33,7 @@
 
 #include "menu.h"
 #include "menu_utils.h"
+#include "namegen.h"
 
 typedef struct
 {
@@ -54,6 +55,7 @@ typedef struct
 	AppearanceMenuData armsData;
 	AppearanceMenuData bodyData;
 	AppearanceMenuData legsData;
+	const NameGen *nameGenerator;
 } PlayerSelectMenuData;
 typedef struct
 {
@@ -65,6 +67,6 @@ void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
 	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig);
+	InputConfig *inputConfig, const NameGen *ng);
 
 #endif

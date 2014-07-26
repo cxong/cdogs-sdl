@@ -72,6 +72,7 @@
 #include <cdogs/utils.h>
 
 #include "player_select_menus.h"
+#include "namegen.h"
 #include "weapon_menu.h"
 
 
@@ -241,12 +242,20 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 {
 	bool hasInputDevice[MAX_PLAYERS];
 	PlayerSelectMenu menus[MAX_PLAYERS];
+	NameGen g;
+	char prefixes[CDOGS_PATH_MAX];
+	char suffixes[CDOGS_PATH_MAX];
+	char suffixnames[CDOGS_PATH_MAX];
+	GetDataFilePath(prefixes, "data/prefixes.txt");
+	GetDataFilePath(suffixes, "data/suffixes.txt");
+	GetDataFilePath(suffixnames, "data/suffixnames.txt");
+	NameGenInit(&g, prefixes, suffixes, suffixnames);
 	for (int i = 0; i < numPlayers; i++)
 	{
 		PlayerSelectMenusCreate(
 			&menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gEventHandlers, graphics, &gConfig.Input);
+			&gEventHandlers, graphics, &gConfig.Input, &g);
 		hasInputDevice[i] = false;
 	}
 
@@ -375,6 +384,7 @@ bail:
 	{
 		MenuSystemTerminate(&menus[i].ms);
 	}
+	NameGenTerminate(&g);
 	return res;
 }
 

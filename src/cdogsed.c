@@ -1176,11 +1176,11 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf, "graphics");
 	PicManagerLoadDir(&gPicManager, buf);
 
-	GetDataFilePath(buf, "particles.json");
+	GetDataFilePath(buf, "data/particles.json");
 	ParticleClassesInit(&gParticleClasses, buf);
 	char buf2[CDOGS_PATH_MAX];
-	GetDataFilePath(buf, "bullets.json");
-	GetDataFilePath(buf2, "guns.json");
+	GetDataFilePath(buf, "data/bullets.json");
+	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);

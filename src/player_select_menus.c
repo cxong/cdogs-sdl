@@ -330,7 +330,7 @@ void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, Character *c, struct PlayerData *pData,
 	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig)
+	InputConfig *inputConfig, const NameGen *ng)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
@@ -346,6 +346,7 @@ void PlayerSelectMenusCreate(
 	data->display.pData = pData;
 	data->controls.inputConfig = inputConfig;
 	data->controls.pData = pData;
+	data->nameGenerator = ng;
 
 	switch (numPlayers)
 	{
@@ -460,6 +461,10 @@ static void ShuffleOne(AppearanceMenuData *data);
 static void ShuffleAppearance(void *data)
 {
 	PlayerSelectMenuData *pData = data;
+	struct PlayerData *p = pData->display.pData;
+	char buf[512];
+	NameGenMake(pData->nameGenerator, buf);
+	strncpy(p->name, buf, 20);
 	ShuffleOne(&pData->faceData);
 	ShuffleOne(&pData->skinData);
 	ShuffleOne(&pData->hairData);
