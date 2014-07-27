@@ -107,6 +107,14 @@
       "Sprites": "explosion_small",
       "Range": 7,
       "TicksPerFrame": 4
+    },
+    {
+      "Name": "blood",
+      "Sprites": "blood",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true
     }
   ]
 }
