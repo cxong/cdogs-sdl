@@ -444,7 +444,7 @@ menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateVoidFunc(
-		"Reset joysticks", JoyReset, &gEventHandlers.joysticks));
+		"Reset joysticks", GJoyReset, &gEventHandlers.joysticks));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
