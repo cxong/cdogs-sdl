@@ -52,6 +52,7 @@ typedef struct
 } joysticks_t;
 
 void JoyInit(joysticks_t *joys);
+void GJoyReset(void *joys);
 void JoyReset(joysticks_t *joys);
 void JoyTerminate(joysticks_t *joys);
 void JoyPoll(joysticks_t *joys);

@@ -42,6 +42,10 @@ void JoyInit(joysticks_t *joys)
 	JoyReset(joys);
 }
 
+void GJoyReset(void *joys)
+{
+	JoyReset(joys);
+}
 void JoyReset(joysticks_t *joys)
 {
 	int i;
