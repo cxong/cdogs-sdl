@@ -204,6 +204,17 @@ static void DamageObject(
 	}
 }
 
+static bool DoDamageCharacter(
+	const Vec2i pos,
+	const Vec2i hitVector,
+	const int power,
+	const int flags,
+	const int player,
+	const int uid,
+	const TTileItem *target,
+	const special_damage_e special,
+	const HitSounds *hitSounds,
+	const bool allowFriendlyHitSound);
 bool DamageSomething(
 	const Vec2i hitVector,
 	const int power,
@@ -224,94 +235,10 @@ bool DamageSomething(
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
-		{
-			// Create events: hit, damage, score
-			TActor *actor = CArrayGet(&gActors, target->id);
-			CASSERT(actor->isInUse, "Cannot damage nonexistent player");
-			bool canHit = CanHitCharacter(flags, uid, actor);
-			if (canHit)
-			{
-				GameEvent e;
-				e.Type = GAME_EVENT_HIT_CHARACTER;
-				e.u.HitCharacter.TargetId = actor->tileItem.id;
-				e.u.HitCharacter.Special = special;
-				GameEventsEnqueue(&gGameEvents, e);
-				if (gConfig.Sound.Hits && hitSounds != NULL &&
-					!ActorIsImmune(actor, special) &&
-					(allowFriendlyHitSound || !ActorIsInvulnerable(
-					actor, flags, player, gCampaign.Entry.Mode)))
-				{
-					GameEvent es;
-					es.Type = GAME_EVENT_SOUND_AT;
-					es.u.SoundAt.Sound = hitSounds->Flesh;
-					es.u.SoundAt.Pos = pos;
-					GameEventsEnqueue(&gGameEvents, es);
-				}
-				if (gConfig.Game.ShotsPushback)
-				{
-					GameEvent ei;
-					ei.Type = GAME_EVENT_ACTOR_IMPULSE;
-					ei.u.ActorImpulse.Id = actor->tileItem.id;
-					ei.u.ActorImpulse.Vel =
-						Vec2iScaleDiv(Vec2iScale(hitVector, power), 25);
-					GameEventsEnqueue(&gGameEvents, ei);
-				}
-				if (CanDamageCharacter(flags, player, uid, actor, special))
-				{
-					GameEvent e1;
-					e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
-					e1.u.DamageCharacter.Power = power;
-					e1.u.DamageCharacter.PlayerIndex = player;
-					e1.u.DamageCharacter.TargetId = actor->tileItem.id;
-					e1.u.DamageCharacter.TargetPlayerIndex = -1;
-					if (actor->pData)
-					{
-						e1.u.DamageCharacter.TargetPlayerIndex =
-							actor->pData->playerIndex;
-					}
-					GameEventsEnqueue(&gGameEvents, e1);
-
-					GameEvent eb;
-					memset(&eb, 0, sizeof eb);
-					eb.Type = GAME_EVENT_ADD_PARTICLE;
-					eb.u.AddParticle.Class = StrParticleClass(&gParticleClasses, "blood");
-					eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
-					eb.u.AddParticle.Z = 10;
-					int bloodPower = power;
-					while (bloodPower > 0)
-					{
-						eb.u.AddParticle.Vel = Vec2iScaleDiv(hitVector, 4);
-						eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
-						eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
-						eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
-						eb.u.AddParticle.DZ = (rand() % 6) + 6;
-						eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
-						GameEventsEnqueue(&gGameEvents, eb);
-						bloodPower = bloodPower * 3 / 4;
-					}
-
-					if (player >= 0 && power != 0)
-					{
-						// Calculate score based on
-						// if they hit a penalty character
-						GameEvent e2;
-						e2.Type = GAME_EVENT_SCORE;
-						e2.u.Score.PlayerIndex = player;
-						if (actor->flags & FLAGS_PENALTY)
-						{
-							e2.u.Score.Score = PENALTY_MULTIPLIER * power;
-						}
-						else
-						{
-							e2.u.Score.Score = power;
-						}
-						GameEventsEnqueue(&gGameEvents, e2);
-					}
-				}
-			}
-			return canHit;
-		}
-		break;
+		return DoDamageCharacter(
+			pos, hitVector,
+			power, flags, player, uid,
+			target, special, hitSounds, allowFriendlyHitSound);
 
 	case KIND_OBJECT:
 		DamageObject(power, flags, player, uid, target);
@@ -331,6 +258,104 @@ bool DamageSomething(
 	}
 
 	return 1;
+}
+static bool DoDamageCharacter(
+	const Vec2i pos,
+	const Vec2i hitVector,
+	const int power,
+	const int flags,
+	const int player,
+	const int uid,
+	const TTileItem *target,
+	const special_damage_e special,
+	const HitSounds *hitSounds,
+	const bool allowFriendlyHitSound)
+{
+	// Create events: hit, damage, score
+	TActor *actor = CArrayGet(&gActors, target->id);
+	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
+	bool canHit = CanHitCharacter(flags, uid, actor);
+	if (canHit)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_HIT_CHARACTER;
+		e.u.HitCharacter.TargetId = actor->tileItem.id;
+		e.u.HitCharacter.Special = special;
+		GameEventsEnqueue(&gGameEvents, e);
+		if (gConfig.Sound.Hits && hitSounds != NULL &&
+			!ActorIsImmune(actor, special) &&
+			(allowFriendlyHitSound || !ActorIsInvulnerable(
+			actor, flags, player, gCampaign.Entry.Mode)))
+		{
+			GameEvent es;
+			es.Type = GAME_EVENT_SOUND_AT;
+			es.u.SoundAt.Sound = hitSounds->Flesh;
+			es.u.SoundAt.Pos = pos;
+			GameEventsEnqueue(&gGameEvents, es);
+		}
+		if (gConfig.Game.ShotsPushback)
+		{
+			GameEvent ei;
+			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+			ei.u.ActorImpulse.Id = actor->tileItem.id;
+			ei.u.ActorImpulse.Vel =
+				Vec2iScaleDiv(Vec2iScale(hitVector, power), 25);
+			GameEventsEnqueue(&gGameEvents, ei);
+		}
+		if (CanDamageCharacter(flags, player, uid, actor, special))
+		{
+			GameEvent e1;
+			e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
+			e1.u.DamageCharacter.Power = power;
+			e1.u.DamageCharacter.PlayerIndex = player;
+			e1.u.DamageCharacter.TargetId = actor->tileItem.id;
+			e1.u.DamageCharacter.TargetPlayerIndex = -1;
+			if (actor->pData)
+			{
+				e1.u.DamageCharacter.TargetPlayerIndex =
+					actor->pData->playerIndex;
+			}
+			GameEventsEnqueue(&gGameEvents, e1);
+
+			GameEvent eb;
+			memset(&eb, 0, sizeof eb);
+			eb.Type = GAME_EVENT_ADD_PARTICLE;
+			eb.u.AddParticle.Class = StrParticleClass(&gParticleClasses, "blood");
+			eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
+			eb.u.AddParticle.Z = 10 * Z_FACTOR;
+			int bloodPower = power * 2;
+			while (bloodPower > 0)
+			{
+				eb.u.AddParticle.Vel = Vec2iScaleDiv(hitVector, 4);
+				eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
+				eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
+				eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+				eb.u.AddParticle.DZ = (rand() % 6) + 6;
+				eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
+				GameEventsEnqueue(&gGameEvents, eb);
+				bloodPower = bloodPower * 3 / 4;
+			}
+
+			if (player >= 0 && power != 0)
+			{
+				// Calculate score based on
+				// if they hit a penalty character
+				GameEvent e2;
+				e2.Type = GAME_EVENT_SCORE;
+				e2.u.Score.PlayerIndex = player;
+				if (actor->flags & FLAGS_PENALTY)
+				{
+					e2.u.Score.Score = PENALTY_MULTIPLIER * power;
+				}
+				else
+				{
+					e2.u.Score.Score = power;
+				}
+				GameEventsEnqueue(&gGameEvents, e2);
+			}
+		}
+	}
+	return canHit;
 }
 
 
