@@ -109,13 +109,34 @@
       "TicksPerFrame": 4
     },
     {
-      "Name": "blood",
-      "Sprites": "blood",
+      "Name": "blood1",
+      "Sprites": "blood1",
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "GravityFactor": 1,
       "HitsWalls": true,
-	  "Bounces": false
+	  "Bounces": false,
+	  "WallBounces": false
+    },
+    {
+      "Name": "blood2",
+      "Sprites": "blood2",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+	  "Bounces": false,
+	  "WallBounces": false
+    },
+    {
+      "Name": "blood3",
+      "Sprites": "blood3",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+	  "Bounces": false,
+	  "WallBounces": false
     }
   ]
 }

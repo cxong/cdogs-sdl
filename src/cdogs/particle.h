@@ -46,6 +46,7 @@ typedef struct
 	int GravityFactor;
 	bool HitsWalls;
 	bool Bounces;
+	bool WallBounces;
 } ParticleClass;
 typedef struct
 {

@@ -320,20 +320,41 @@ static bool DoDamageCharacter(
 			GameEvent eb;
 			memset(&eb, 0, sizeof eb);
 			eb.Type = GAME_EVENT_ADD_PARTICLE;
-			eb.u.AddParticle.Class = StrParticleClass(&gParticleClasses, "blood");
 			eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
 			eb.u.AddParticle.Z = 10 * Z_FACTOR;
 			int bloodPower = power * 2;
+			int bloodSize = 1;
 			while (bloodPower > 0)
 			{
-				eb.u.AddParticle.Vel = Vec2iScaleDiv(hitVector, 4);
+				switch (bloodSize)
+				{
+				case 1:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood1");
+					break;
+				case 2:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood2");
+					break;
+				default:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood3");
+					break;
+				}
+				bloodSize++;
+				if (bloodSize > 3)
+				{
+					bloodSize = 1;
+				}
+				eb.u.AddParticle.Vel =
+					Vec2iScaleDiv(Vec2iScale(hitVector, rand() % 8 + 8), 20);
 				eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
 				eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
 				eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
 				eb.u.AddParticle.DZ = (rand() % 6) + 6;
 				eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 				GameEventsEnqueue(&gGameEvents, eb);
-				bloodPower = bloodPower * 3 / 4;
+				bloodPower /= 2;
 			}
 
 			if (player >= 0 && power != 0)

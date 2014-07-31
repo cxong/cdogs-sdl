@@ -150,6 +150,8 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 	c->Bounces = true;
 	LoadBool(&c->Bounces, node, "Bounces");
+	c->WallBounces = true;
+	LoadBool(&c->WallBounces, node, "WallBounces");
 }
 
 const ParticleClass *StrParticleClass(
@@ -255,7 +257,20 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	}
 	if (p->Class->HitsWalls)
 	{
-		p->Pos = GetWallBounceFullPos(startPos, p->Pos, &p->Vel);
+		const Vec2i realPos = Vec2iFull2Real(p->Pos);
+		const bool hitWall =
+			MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
+		if (hitWall)
+		{
+			if (p->Class->WallBounces)
+			{
+				p->Pos = GetWallBounceFullPos(startPos, p->Pos, &p->Vel);
+			}
+			else
+			{
+				p->Vel = Vec2iZero();
+			}
+		}
 	}
 	const Vec2i realPos = Vec2iFull2Real(p->Pos);
 	if (!MapTryMoveTileItem(&gMap, &p->tileItem, realPos))
