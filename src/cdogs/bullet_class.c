@@ -495,9 +495,9 @@ static void LoadBullet(
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		b->HitSound.Object = LoadSoundFromNode(hitSounds, "Object");
-		b->HitSound.Flesh = LoadSoundFromNode(hitSounds, "Flesh");
-		b->HitSound.Wall = LoadSoundFromNode(hitSounds, "Wall");
+		LoadSoundFromNode(&b->HitSound.Object, hitSounds, "Object");
+		LoadSoundFromNode(&b->HitSound.Flesh, hitSounds, "Flesh");
+		LoadSoundFromNode(&b->HitSound.Wall, hitSounds, "Wall");
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
 	LoadBool(&b->HitsObjects, node, "HitsObjects");

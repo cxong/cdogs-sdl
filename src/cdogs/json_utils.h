@@ -44,7 +44,7 @@ void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
 void LoadVec2i(Vec2i *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
-Mix_Chunk *LoadSoundFromNode(json_t *node, const char *name);
+void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 
 #define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\
 	json_insert_pair_into_object(\

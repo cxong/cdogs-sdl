@@ -113,14 +113,15 @@ char *GetString(json_t *node, const char *name)
 {
 	return json_unescape(json_find_first_label(node, name)->child->text);
 }
-Mix_Chunk *LoadSoundFromNode(json_t *node, const char *name)
+void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name)
 {
 	if (json_find_first_label(node, name) == NULL)
 	{
-		return NULL;
+		return;
 	}
-	char *tmp = GetString(node, name);
-	Mix_Chunk *c = StrSound(tmp);
-	CFREE(tmp);
-	return c;
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = StrSound(node->text);
 }
