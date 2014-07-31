@@ -70,6 +70,17 @@ SwitchMoveStyle StrSwitchMoveStyle(const char *str);
 const char *ScaleModeStr(ScaleMode q);
 ScaleMode StrScaleMode(const char *str);
 
+typedef enum
+{
+	GORE_NONE,
+	GORE_LOW,
+	GORE_MEDIUM,
+	GORE_HIGH
+} GoreAmount;
+
+const char *GoreAmountStr(GoreAmount g);
+GoreAmount StrGoreAmount(const char *str);
+
 typedef struct
 {
 	bool FriendlyFire;
@@ -87,6 +98,7 @@ typedef struct
 	bool ShotsPushback;
 	AllyCollision AllyCollision;
 	bool HealthPickups;
+	GoreAmount Gore;
 } GameConfig;
 
 typedef enum

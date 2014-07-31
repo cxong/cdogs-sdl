@@ -375,6 +375,13 @@ menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 			ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
 			(void (*)(void))AllyCollisionStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Gore", (int *)&gConfig.Game.Gore,
+			GORE_NONE, GORE_HIGH, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))GoreAmountStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);

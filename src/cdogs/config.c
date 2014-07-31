@@ -185,6 +185,26 @@ ScaleMode StrScaleMode(const char *str)
 		return SCALE_MODE_NN;
 	}
 }
+const char *GoreAmountStr(GoreAmount g)
+{
+	switch (g)
+	{
+		T2S(GORE_NONE, "None");
+		T2S(GORE_LOW, "Trickle");
+		T2S(GORE_MEDIUM, "Buckets");
+		T2S(GORE_HIGH, "Torrents");
+	default:
+		return "";
+	}
+}
+GoreAmount StrGoreAmount(const char *s)
+{
+	S2T(GORE_NONE, "None");
+	S2T(GORE_LOW, "Trickle");
+	S2T(GORE_MEDIUM, "Buckets");
+	S2T(GORE_HIGH, "Torrents");
+	return GORE_NONE;
+}
 const char *SplitscreenStyleStr(SplitscreenStyle s)
 {
 	switch (s)
@@ -365,6 +385,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.ShotsPushback = 1;
 	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
 	config->Game.HealthPickups = true;
+	config->Game.Gore = GORE_LOW;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.Res.y = 240;
