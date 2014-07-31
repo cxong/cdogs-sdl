@@ -45,6 +45,7 @@ typedef struct
 	color_t Mask;
 	int GravityFactor;
 	bool HitsWalls;
+	bool Bounces;
 } ParticleClass;
 typedef struct
 {

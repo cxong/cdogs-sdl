@@ -114,7 +114,8 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "GravityFactor": 1,
-      "HitsWalls": true
+      "HitsWalls": true,
+	  "Bounces": false
     }
   ]
 }

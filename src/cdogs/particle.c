@@ -148,6 +148,8 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	LoadInt(&c->TicksPerFrame, node, "TicksPerFrame");
 	LoadInt(&c->GravityFactor, node, "GravityFactor");
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
+	c->Bounces = true;
+	LoadBool(&c->Bounces, node, "Bounces");
 }
 
 const ParticleClass *StrParticleClass(
@@ -229,7 +231,14 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			if (p->Z <= 0)
 			{
 				p->Z = 0;
-				p->DZ = -p->DZ / 2;
+				if (p->Class->Bounces)
+				{
+					p->DZ = -p->DZ / 2;
+				}
+				else
+				{
+					p->DZ = 0;
+				}
 			}
 			else
 			{
@@ -239,6 +248,8 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			{
 				p->Vel = Vec2iZero();
 				p->Spin = 0;
+				// Set as wreck so that it gets drawn last
+				p->tileItem.flags |= TILEITEM_IS_WRECK;
 			}
 		}
 	}
@@ -252,18 +263,18 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		// Out of map; destroy
 		return false;
 	}
-	if (p->Spin != 0)
+
+	// Spin
+	p->Angle += p->Spin;
+	if (p->Angle > 2 * PI)
 	{
-		p->Angle += p->Spin;
-		if (p->Angle > 2 * PI)
-		{
-			p->Angle -= PI * 2;
-		}
-		if (p->Angle < 0)
-		{
-			p->Angle += PI * 2;
-		}
+		p->Angle -= PI * 2;
 	}
+	if (p->Angle < 0)
+	{
+		p->Angle += PI * 2;
+	}
+
 	return p->Count <= p->Range;
 }
 
