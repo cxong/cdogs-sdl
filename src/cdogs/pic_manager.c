@@ -172,7 +172,7 @@ static void PicManagerLoadDirImpl(
 		if (file.is_reg)
 		{
 			SDL_RWops *rwops = SDL_RWFromFile(file.path, "rb");
-			bool isPng = IMG_isPNG(rwops);
+			const bool isPng = IMG_isPNG(rwops);
 			if (isPng)
 			{
 				SDL_Surface *data = IMG_Load_RW(rwops, 0);

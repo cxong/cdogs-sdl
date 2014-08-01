@@ -244,6 +244,7 @@ static void LoadArchiveSounds(
 			}
 			SoundAdd(&device->customSounds, nameBuf, data);
 		}
+		rwops->close(rwops);
 		CFREE(buf);
 		buf = NULL;
 		PHYSFS_close(f);
@@ -313,6 +314,7 @@ static void LoadArchivePics(
 				PicManagerAdd(&pm->customPics, &pm->customSprites, nameBuf, data);
 			}
 		}
+		rwops->close(rwops);
 		CFREE(buf);
 		buf = NULL;
 		PHYSFS_close(f);

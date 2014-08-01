@@ -44,6 +44,9 @@ typedef struct
 	CArray Chars;	// of Pic
 } Font;
 
+extern Font gFont;
+
+void FontLoad(Font *f, const char *imgPath, const char *jsonPath);
 void FontFromImage(Font *f, SDL_Surface *image, json_t *data);
 void FontTerminate(Font *f);
 

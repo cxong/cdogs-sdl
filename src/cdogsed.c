@@ -61,6 +61,7 @@
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
+#include <cdogs/font.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/map_archive.h>
@@ -1139,6 +1140,7 @@ int main(int argc, char *argv[])
 	SDL_EnableUNICODE(SDL_ENABLE);
 
 	char buf[CDOGS_PATH_MAX];
+	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
@@ -1171,13 +1173,15 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
+	GetDataFilePath(buf, "graphics/font.png");
+	GetDataFilePath(buf2, "graphics/font.json");
+	FontLoad(&gFont, buf, buf2);
 	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 	GetDataFilePath(buf, "graphics");
 	PicManagerLoadDir(&gPicManager, buf);
 
 	GetDataFilePath(buf, "data/particles.json");
 	ParticleClassesInit(&gParticleClasses, buf);
-	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "data/bullets.json");
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);

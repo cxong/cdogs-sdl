@@ -62,6 +62,7 @@
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
+#include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/hiscores.h>
@@ -1328,6 +1329,7 @@ int main(int argc, char *argv[])
 	}
 
 	char buf[CDOGS_PATH_MAX];
+	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
@@ -1391,13 +1393,15 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		GetDataFilePath(buf, "graphics/font.png");
+		GetDataFilePath(buf2, "graphics/font.json");
+		FontLoad(&gFont, buf, buf2);
 		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		GetDataFilePath(buf, "graphics");
 		PicManagerLoadDir(&gPicManager, buf);
 
 		GetDataFilePath(buf, "data/particles.json");
 		ParticleClassesInit(&gParticleClasses, buf);
-		char buf2[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, "data/bullets.json");
 		GetDataFilePath(buf2, "data/guns.json");
 		BulletAndWeaponInitialize(
