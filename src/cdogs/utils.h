@@ -81,9 +81,9 @@ extern bool gFalse;
 	volatile bool isOk = _x;\
 	if (!isOk)\
 	{\
-		static char buf[1024];\
+		static char _buf[1024];\
 		sprintf(\
-			buf,\
+			_buf,\
 			"In %s %d:%s: " _errmsg " (" #_x ")",\
 			__FILE__, __LINE__, __func__);\
 		CHALT();\
