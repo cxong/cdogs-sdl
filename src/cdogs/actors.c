@@ -906,7 +906,7 @@ void UpdateAllActors(int ticks)
 						CalcCollisionTeam(1, actor))
 					{
 						Vec2i v = Vec2iMinus(actor->Pos, collidingActor->Pos);
-						if (Vec2iEqual(v, Vec2iZero()))
+						if (Vec2iIsZero(v))
 						{
 							v = Vec2iNew(1, 0);
 						}
@@ -927,7 +927,7 @@ void UpdateAllActors(int ticks)
 }
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
-	if (!Vec2iEqual(actor->Vel, Vec2iZero()))
+	if (!Vec2iIsZero(actor->Vel))
 	{
 		actor->MovePos = Vec2iAdd(
 			actor->MovePos, Vec2iScale(actor->Vel, ticks));
@@ -953,7 +953,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		}
 	}
 
-	if (!Vec2iEqual(actor->MovePos, Vec2iZero()))
+	if (!Vec2iIsZero(actor->MovePos))
 	{
 		TryMoveActor(actor, actor->MovePos);
 		actor->MovePos = Vec2iZero();

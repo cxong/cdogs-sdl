@@ -75,7 +75,7 @@ void UIButtonSetPic(UIObject *o, Pic *pic)
 {
 	assert(o->Type == UITYPE_BUTTON && "invalid UI type");
 	o->u.Button.Pic = pic;
-	if (Vec2iEqual(o->Size, Vec2iZero()))
+	if (Vec2iIsZero(o->Size))
 	{
 		o->Size = o->u.Button.Pic->size;
 	}

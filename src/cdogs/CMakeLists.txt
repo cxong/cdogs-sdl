@@ -29,6 +29,7 @@ set(CDOGS_SOURCES
 	drawtools.c
 	events.c
 	files.c
+	font.c
 	game_events.c
 	gamedata.c
 	grafx.c
@@ -98,6 +99,7 @@ set(CDOGS_HEADERS
 	drawtools.h
 	events.h
 	files.h
+	font.h
 	game_events.h
 	gamedata.h
 	grafx.h

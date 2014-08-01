@@ -45,7 +45,8 @@ Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 // TODO: due to rounding, this will always return unit component vectors
 Vec2i Vec2iNorm(Vec2i v);
-int Vec2iEqual(Vec2i a, Vec2i b);
+bool Vec2iEqual(const Vec2i a, const Vec2i b);
+bool Vec2iIsZero(const Vec2i v);
 Vec2i Vec2iMin(Vec2i a, Vec2i b);	// Get min x and y of both vectors
 Vec2i Vec2iMax(Vec2i a, Vec2i b);	// Get max x and y of both vectors
 Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi);

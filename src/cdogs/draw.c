@@ -314,7 +314,7 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 
-	if (!Vec2iEqual(t->ShadowSize, Vec2iZero()))
+	if (!Vec2iIsZero(t->ShadowSize))
 	{
 		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
 	}
@@ -658,7 +658,7 @@ static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
 			if (gMission.missionData->Type == MAPTYPE_STATIC)
 			{
 				Vec2i start = gMission.missionData->u.Static.Start;
-				if (!Vec2iEqual(start, Vec2iZero()) &&
+				if (!Vec2iIsZero(start) &&
 					Vec2iEqual(start, Vec2iNew(x + b->xStart, y + b->yStart)))
 				{
 					// mission start

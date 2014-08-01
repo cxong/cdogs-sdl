@@ -76,7 +76,7 @@ Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)
 Vec2i Vec2iNorm(Vec2i v)
 {
 	double magnitude;
-	if (Vec2iEqual(v, Vec2iZero()))
+	if (Vec2iIsZero(v))
 	{
 		return v;
 	}
@@ -86,9 +86,13 @@ Vec2i Vec2iNorm(Vec2i v)
 	return v;
 }
 
-int Vec2iEqual(Vec2i a, Vec2i b)
+bool Vec2iEqual(const Vec2i a, const Vec2i b)
 {
 	return a.x == b.x && a.y == b.y;
+}
+bool Vec2iIsZero(const Vec2i v)
+{
+	return Vec2iEqual(v, Vec2iZero());
 }
 
 Vec2i Vec2iMin(Vec2i a, Vec2i b)

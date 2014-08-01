@@ -1111,8 +1111,7 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	MapSetupDoors(map, floor, room);
 
 	// Set exit now since we have set up all the tiles
-	if (Vec2iEqual(map->ExitStart, Vec2iZero()) &&
-		Vec2iEqual(map->ExitEnd, Vec2iZero()))
+	if (Vec2iIsZero(map->ExitStart) && Vec2iIsZero(map->ExitEnd))
 	{
 		MapGenerateRandomExitArea(map);
 	}

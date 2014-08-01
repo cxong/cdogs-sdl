@@ -93,6 +93,9 @@ typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 
 extern Pic picNone;
 
+void PicLoad(
+	Pic *p, const Vec2i size, const Vec2i offset,
+	const SDL_Surface *image, const SDL_Surface *s);
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
 void PicCopy(Pic *dst, const Pic *src);
 void PicFree(Pic *pic);

@@ -142,8 +142,7 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 		Mission *m = gMission.missionData;
 		Vec2i focusTile = Vec2iScaleDiv(m->Size, 2);
 		// Better yet, if the map has a known start position, focus on that
-		if (m->Type == MAPTYPE_STATIC &&
-			!Vec2iEqual(m->u.Static.Start, Vec2iZero()))
+		if (m->Type == MAPTYPE_STATIC && !Vec2iIsZero(m->u.Static.Start))
 		{
 			focusTile = m->u.Static.Start;
 		}
@@ -903,7 +902,7 @@ static HandleInputResult HandleInput(
 
 		case 'v':
 			// Use map size as a proxy to whether there's a valid scrap mission
-			if (!Vec2iEqual(scrap->Size, Vec2iZero()))
+			if (!Vec2iIsZero(scrap->Size))
 			{
 				InsertMission(&gCampaign, scrap, gCampaign.MissionIndex);
 				fileChanged = 1;

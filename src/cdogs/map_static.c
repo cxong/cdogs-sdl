@@ -143,8 +143,8 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		}
 	}
 	
-	if (!Vec2iEqual(m->u.Static.Exit.Start, Vec2iZero()) &&
-		!Vec2iEqual(m->u.Static.Exit.End, Vec2iZero()))
+	if (!Vec2iIsZero(m->u.Static.Exit.Start) &&
+		!Vec2iIsZero(m->u.Static.Exit.End))
 	{
 		map->ExitStart = m->u.Static.Exit.Start;
 		map->ExitEnd = m->u.Static.Exit.End;

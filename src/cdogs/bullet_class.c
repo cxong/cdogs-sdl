@@ -116,7 +116,7 @@ static Vec2i SeekTowards(
 	const Vec2i targetVel = Vec2iMinus(Vec2iMinus(targetPos, pos), vel);
 	// Don't seek if the coordinates are too big
 	if (abs(targetVel.x) > 10000 || abs(targetVel.y) > 10000 ||
-		Vec2iEqual(targetVel, Vec2iZero()))
+		Vec2iIsZero(targetVel))
 	{
 		return vel;
 	}
@@ -244,7 +244,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 
 	const bool hitWall =
 		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
-	if (hitWall && !Vec2iEqual(obj->vel, Vec2iZero()))
+	if (hitWall && !Vec2iIsZero(obj->vel))
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SOUND_AT;
@@ -271,7 +271,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			return false;
 		}
 	}
-	if (hitWall && !Vec2iEqual(obj->vel, Vec2iZero()))
+	if (hitWall && !Vec2iIsZero(obj->vel))
 	{
 		// Bouncing
 		pos = GetWallBounceFullPos(objPos, pos, &obj->vel);

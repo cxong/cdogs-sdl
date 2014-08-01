@@ -43,6 +43,41 @@ PicType StrPicType(const char *s)
 	return PICTYPE_NORMAL;
 }
 
+void PicLoad(
+	Pic *p, const Vec2i size, const Vec2i offset,
+	const SDL_Surface *image, const SDL_Surface *s)
+{
+	p->size = size;
+	p->offset = Vec2iZero();
+	CMALLOC(p->Data, size.x * size.y * sizeof(((Pic *)0)->Data));
+	// Manually copy the pixels and replace the alpha component,
+	// since our gfx device format has no alpha
+	int srcI = offset.y*image->w + offset.x;
+	for (int i = 0; i < size.x * size.y; i++, srcI++)
+	{
+		const Uint32 alpha =
+			((Uint32 *)image->pixels)[srcI] >> image->format->Ashift;
+		// If completely transparent, replace rgb with black (0) too
+		// This is because transparency blitting checks entire pixel
+		if (alpha == 0)
+		{
+			p->Data[i] = 0;
+		}
+		else
+		{
+			const Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
+			const Uint32 rgbMask =
+				s->format->Rmask | s->format->Gmask | s->format->Bmask;
+			p->Data[i] =
+				(pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+		}
+		if ((i + 1) % size.x == 0)
+		{
+			srcI += image->w - size.x;
+		}
+	}
+}
+
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 {
 	int i;

@@ -100,9 +100,8 @@ static bool TryPlacePickup(HealthPickups *h)
 	// Attempt to place one in unexplored area
 	for (int i = 0; i < 100; i++)
 	{
-		Vec2i v = MapGenerateFreePosition(h->map, size);
-		if (!Vec2iEqual(v, Vec2iZero()) &&
-			!MapGetTile(h->map, Vec2iToTile(v))->isVisited)
+		const Vec2i v = MapGenerateFreePosition(h->map, size);
+		if (!Vec2iIsZero(v) && !MapGetTile(h->map, Vec2iToTile(v))->isVisited)
 		{
 			MapPlaceHealth(v);
 			return true;
@@ -111,10 +110,10 @@ static bool TryPlacePickup(HealthPickups *h)
 	// Attempt to place one in out-of-sight area
 	for (int i = 0; i < 100; i++)
 	{
-		Vec2i v = MapGenerateFreePosition(h->map, size);
-		Vec2i fullpos = Vec2iReal2Full(v);
-		TActor *closestPlayer = AIGetClosestPlayer(fullpos);
-		if (!Vec2iEqual(v, Vec2iZero()) &&
+		const Vec2i v = MapGenerateFreePosition(h->map, size);
+		const Vec2i fullpos = Vec2iReal2Full(v);
+		const TActor *closestPlayer = AIGetClosestPlayer(fullpos);
+		if (!Vec2iIsZero(v) &&
 			(!closestPlayer || CHEBYSHEV_DISTANCE(
 			fullpos.x, fullpos.y,
 			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150))
@@ -126,8 +125,8 @@ static bool TryPlacePickup(HealthPickups *h)
 	// Attempt to place one anyway
 	for (int i = 0; i < 100; i++)
 	{
-		Vec2i v = MapGenerateFreePosition(h->map, size);
-		if (!Vec2iEqual(v, Vec2iZero()))
+		const Vec2i v = MapGenerateFreePosition(h->map, size);
+		if (!Vec2iIsZero(v))
 		{
 			MapPlaceHealth(v);
 			return true;

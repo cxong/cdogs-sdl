@@ -241,7 +241,7 @@ Vec2i GetWallBounceFullPos(
 		*velFull = Vec2iScale(*velFull, -1);
 		// Keep bouncing back if it's inside a wall
 		// However, do not bounce more than half a tile's size
-		if (!Vec2iEqual(*velFull, Vec2iZero()))
+		if (!Vec2iIsZero(*velFull))
 		{
 			Vec2i bounceReal = newReal;
 			const int maxBounces = MAX(

@@ -875,7 +875,7 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		player->character->maxHealth = maxHealth;
 		
 		if (gMission.missionData->Type == MAPTYPE_STATIC &&
-			!Vec2iEqual(gMission.missionData->u.Static.Start, Vec2iZero()))
+			!Vec2iIsZero(gMission.missionData->u.Static.Start))
 		{
 			// place players near the start point
 			Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(

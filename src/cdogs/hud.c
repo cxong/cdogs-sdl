@@ -420,7 +420,7 @@ static void DrawRadar(
 		}
 	}
 
-	if (!Vec2iEqual(pos, Vec2iZero()))
+	if (!Vec2iIsZero(pos))
 	{
 		Vec2i playerPos = Vec2iNew(
 			p->tileItem.x / TILE_WIDTH, p->tileItem.y / TILE_HEIGHT);
