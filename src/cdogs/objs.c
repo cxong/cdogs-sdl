@@ -69,6 +69,7 @@
 #include "utils.h"
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
+#define SHOT_IMPULSE_DIVISOR 25
 
 CArray gObjs;
 CArray gMobObjs;
@@ -298,8 +299,8 @@ static bool DoDamageCharacter(
 			GameEvent ei;
 			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
 			ei.u.ActorImpulse.Id = actor->tileItem.id;
-			ei.u.ActorImpulse.Vel =
-				Vec2iScaleDiv(Vec2iScale(hitVector, power), 25);
+			ei.u.ActorImpulse.Vel = Vec2iScaleDiv(
+				Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
 			GameEventsEnqueue(&gGameEvents, ei);
 		}
 		if (CanDamageCharacter(flags, player, uid, actor, special))
@@ -348,8 +349,17 @@ static bool DoDamageCharacter(
 					{
 						bloodSize = 1;
 					}
-					eb.u.AddParticle.Vel =
-						Vec2iScaleDiv(Vec2iScale(hitVector, rand() % 8 + 8), 20);
+					if (gConfig.Game.ShotsPushback)
+					{
+						eb.u.AddParticle.Vel = Vec2iScaleDiv(
+							Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+							15 * SHOT_IMPULSE_DIVISOR);
+					}
+					else
+					{
+						eb.u.AddParticle.Vel = Vec2iScaleDiv(
+							Vec2iScale(hitVector, rand() % 8 + 8), 20);
+					}
 					eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
 					eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
 					eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
