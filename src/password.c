@@ -67,7 +67,6 @@
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/sounds.h>
-#include <cdogs/text.h>
 
 #include "autosave.h"
 #include "menu.h"

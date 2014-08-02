@@ -75,7 +75,6 @@
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
 #include <cdogs/screen_shake.h>
-#include <cdogs/text.h>
 #include <cdogs/triggers.h>
 
 #include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */

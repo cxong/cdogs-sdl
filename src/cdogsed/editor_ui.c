@@ -32,10 +32,10 @@
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
+#include <cdogs/font.h>
 #include <cdogs/mission.h>
 #include <cdogs/mission_convert.h>
 #include <cdogs/pic_manager.h>
-#include <cdogs/text.h>
 
 #include "editor_ui_common.h"
 #include "editor_ui_static.h"
@@ -46,7 +46,6 @@
 static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
-	GraphicsDevice *device,
 	PicPaletted *pic,
 	int idx, int count,
 	int isHighlighted);
@@ -379,6 +378,7 @@ static const char *MissionGetTypeStr(UIObject *o, void *data)
 static void MissionDrawWallStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = WALL_STYLE_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
@@ -386,7 +386,6 @@ static void MissionDrawWallStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
-		g,
 		PicManagerGetOldPic(&gPicManager, cWallPics[idx % count][WALL_SINGLE]),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -394,6 +393,7 @@ static void MissionDrawWallStyle(
 static void MissionDrawFloorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = FLOOR_STYLE_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -404,7 +404,6 @@ static void MissionDrawFloorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
-		g,
 		PicManagerGetOldPic(&gPicManager, cFloorPics[idx % count][FLOOR_NORMAL]),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -412,6 +411,7 @@ static void MissionDrawFloorStyle(
 static void MissionDrawRoomStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = ROOMFLOOR_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -422,7 +422,6 @@ static void MissionDrawRoomStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
-		g,
 		PicManagerGetOldPic(&gPicManager, cRoomPics[idx % count][ROOMFLOOR_NORMAL]),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -430,6 +429,7 @@ static void MissionDrawRoomStyle(
 static void MissionDrawDoorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = GetEditorInfo().doorCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -440,7 +440,6 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Doors",
-		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -448,6 +447,7 @@ static void MissionDrawDoorStyle(
 static void MissionDrawKeyStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = GetEditorInfo().keyCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -458,7 +458,6 @@ static void MissionDrawKeyStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Keys",
-		g,
 		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -466,6 +465,7 @@ static void MissionDrawKeyStyle(
 static void MissionDrawExitStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
+	UNUSED(g);
 	int count = GetEditorInfo().exitCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
@@ -476,7 +476,6 @@ static void MissionDrawExitStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
-		g,
 		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
 		idx, count,
 		UIObjectIsHighlighted(o));
@@ -854,7 +853,6 @@ static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
-	GraphicsDevice *g,
 	PicPaletted *pic,
 	int idx, int count,
 	int isHighlighted)
@@ -872,6 +870,7 @@ static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
 	Vec2i pos, MapObject *mo, int density, int isHighlighted)
 {
+	UNUSED(g);
 	DisplayMapItem(pos, mo);
 	if (isHighlighted)
 	{
@@ -894,6 +893,7 @@ static void GetCharacterHeadPic(
 void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
 {
+	UNUSED(g);
 	color_t labelMask = isHighlighted ? colorRed : colorWhite;
 	pos = FontStrMask(s, pos, labelMask);
 	pos = FontChMask(':', pos, labelMask);

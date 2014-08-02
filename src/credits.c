@@ -35,7 +35,6 @@
 #include <cdogs/config.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/text.h>
 #include <cdogs/utils.h>
 
 

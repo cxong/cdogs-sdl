@@ -175,3 +175,16 @@ color_t ObjectiveTypeColor(ObjectiveType t)
 			return colorYellow;
 	}
 }
+
+char *PercentStr(int p)
+{
+	static char buf[8];
+	sprintf(buf, "%d%%", p);
+	return buf;
+}
+char *Div8Str(int i)
+{
+	static char buf[8];
+	sprintf(buf, "%d", i/8);
+	return buf;
+}

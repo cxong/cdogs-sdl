@@ -30,7 +30,6 @@
 
 #include <cdogs/config.h>
 #include <cdogs/font.h>
-#include <cdogs/text.h>
 
 #include "autosave.h"
 #include "menu.h"

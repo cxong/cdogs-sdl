@@ -66,7 +66,6 @@ set(CDOGS_SOURCES
 	quick_play.c
 	screen_shake.c
 	sounds.c
-	text.c
 	tile.c
 	triggers.c
 	utils.c
@@ -138,7 +137,6 @@ set(CDOGS_HEADERS
 	sounds.h
 	sys_config.h
 	sys_specifics.h
-	text.h
 	tile.h
 	triggers.h
 	utils.h

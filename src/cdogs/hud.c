@@ -59,7 +59,7 @@
 #include "game_events.h"
 #include "mission.h"
 #include "pic_manager.h"
-#include "text.h"
+
 
 // Numeric update for health and score
 // Displays as a small pop-up coloured text overlay
@@ -951,24 +951,22 @@ static void DrawNumUpdate(
 		// Change alpha so that the update fades away
 		color.a = (Uint8)(update->Timer * 255 / update->TimerMax);
 	}
-	
-	int textFlags = TEXT_TOP | TEXT_LEFT;
+
+	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
-		textFlags |= TEXT_RIGHT;
+		opts.HAlign = ALIGN_END;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		textFlags |= TEXT_BOTTOM;
+		opts.VAlign = ALIGN_END;
 		pos.y += BOTTOM_PADDING;
 	}
-
-	Vec2i screenSize = Vec2iNew(
-		gGraphicsDevice.cachedConfig.Res.x,
-		gGraphicsDevice.cachedConfig.Res.y);
-	DrawTextStringSpecialBlend(
-		&gTextManager, s, &gGraphicsDevice, textFlags, Vec2iZero(),
-		screenSize, pos, color);
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	opts.Mask = color;
+	opts.Blend = true;
+	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 static void DrawObjectiveCounts(HUD *hud)

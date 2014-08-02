@@ -68,7 +68,6 @@
 #include <cdogs/music.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
-#include <cdogs/text.h>
 #include <cdogs/utils.h>
 
 #include "autosave.h"

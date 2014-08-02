@@ -32,8 +32,9 @@
 #include <string.h>
 
 #include <cdogs/blit.h>
+#include <cdogs/font.h>
 #include <cdogs/drawtools.h>
-#include <cdogs/text.h>
+
 
 color_t bgColor = { 32, 32, 64, 255 };
 color_t menuBGColor = { 48, 48, 48, 255 };

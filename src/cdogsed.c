@@ -71,7 +71,6 @@
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
-#include <cdogs/text.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
@@ -1159,8 +1158,6 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
-	GetDataFilePath(buf, "graphics/font.px");
-	TextManagerInit(&gTextManager, buf);
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
@@ -1177,7 +1174,6 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf, "graphics/font.png");
 	GetDataFilePath(buf2, "graphics/font.json");
 	FontLoad(&gFont, buf, buf2);
-	TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 	GetDataFilePath(buf, "graphics");
 	PicManagerLoadDir(&gPicManager, buf);
 
@@ -1244,7 +1240,6 @@ int main(int argc, char *argv[])
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
-	TextManagerTerminate(&gTextManager);
 
 	UIObjectDestroy(sObjs);
 	CArrayTerminate(&sDrawObjs);

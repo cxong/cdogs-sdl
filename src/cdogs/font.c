@@ -214,12 +214,26 @@ Vec2i FontCh(const char c, const Vec2i pos)
 {
 	return FontChMask(c, pos, colorWhite);
 }
+static Vec2i FontChColor(
+	const char c, const Vec2i pos, const color_t color, const bool blend);
 Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask)
+{
+	return FontChColor(c, pos, mask, false);
+}
+static Vec2i FontChColor(
+	const char c, const Vec2i pos, const color_t color, const bool blend)
 {
 	CASSERT((int)c >= FIRST_CHAR && (int)c <= LAST_CHAR, "invalid char");
 	const int idx = (int)c - FIRST_CHAR;
-	BlitMasked(
-		&gGraphicsDevice, CArrayGet(&gFont.Chars, idx), pos, mask, true);
+	const Pic *pic = CArrayGet(&gFont.Chars, idx);
+	if (blend)
+	{
+		BlitBlend(&gGraphicsDevice, pic, pos, color);
+	}
+	else
+	{
+		BlitMasked(&gGraphicsDevice, pic, pos, color, true);
+	}
 	// Add 1px of padding between characters
 	return Vec2iNew(pos.x + gFont.Size.x + 1, pos.y);
 }
@@ -227,7 +241,14 @@ Vec2i FontStr(const char *s, Vec2i pos)
 {
 	return FontStrMask(s, pos, colorWhite);
 }
+static Vec2i FontStrColor(
+	const char *s, Vec2i pos, const color_t c, const bool blend);
 Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
+{
+	return FontStrColor(s, pos, mask, false);
+}
+static Vec2i FontStrColor(
+	const char *s, Vec2i pos, const color_t c, const bool blend)
 {
 	int left = pos.x;
 	while (*s)
@@ -239,7 +260,7 @@ Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
 		}
 		else
 		{
-			pos = FontChMask(*s, pos, mask);
+			pos = FontChColor(*s, pos, c, blend);
 		}
 		s++;
 	}
@@ -256,7 +277,7 @@ static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts);
 void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts)
 {
 	pos = GetStrPos(s, pos, opts);
-	FontStrMaskWrap(s, pos, opts.Mask, opts.Width);
+	FontStrMask(s, pos, opts.Mask);
 }
 static int GetAlign(
 	const FontAlign align,

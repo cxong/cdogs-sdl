@@ -59,7 +59,6 @@
 #include "mission.h"
 #include "objs.h"
 #include "pic_manager.h"
-#include "text.h"
 
 
 #define MAP_FACTOR 2

@@ -33,8 +33,8 @@
 
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
+#include <cdogs/font.h>
 #include <cdogs/map.h>
-#include <cdogs/text.h>
 
 #include "editor_ui_common.h"
 

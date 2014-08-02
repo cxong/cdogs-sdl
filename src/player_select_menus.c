@@ -34,7 +34,6 @@
 #include <cdogs/draw.h>
 #include <cdogs/font.h>
 #include <cdogs/player_template.h>
-#include <cdogs/text.h>
 
 
 static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";

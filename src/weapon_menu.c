@@ -31,7 +31,6 @@
 #include <assert.h>
 
 #include <cdogs/font.h>
-#include <cdogs/text.h>
 
 
 static void WeaponSelect(menu_t *menu, int cmd, void *data)

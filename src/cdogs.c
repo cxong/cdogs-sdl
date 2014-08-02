@@ -78,7 +78,6 @@
 #include <cdogs/pics.h>
 #include <cdogs/player_template.h>
 #include <cdogs/sounds.h>
-#include <cdogs/text.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
@@ -1393,8 +1392,6 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	GetDataFilePath(buf, "graphics/font.px");
-	TextManagerInit(&gTextManager, buf);
 	GraphicsInit(&gGraphicsDevice);
 	GraphicsInitialize(
 		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
@@ -1421,7 +1418,6 @@ int main(int argc, char *argv[])
 		GetDataFilePath(buf, "graphics/font.png");
 		GetDataFilePath(buf2, "graphics/font.json");
 		FontLoad(&gFont, buf, buf2);
-		TextManagerGenerateOldPics(&gTextManager, &gGraphicsDevice);
 		GetDataFilePath(buf, "graphics");
 		PicManagerLoadDir(&gPicManager, buf);
 
@@ -1465,7 +1461,6 @@ bail:
 	GraphicsTerminate(&gGraphicsDevice);
 
 	PicManagerTerminate(&gPicManager);
-	TextManagerTerminate(&gTextManager);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));

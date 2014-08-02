@@ -59,7 +59,6 @@
 #include "draw.h"
 #include "blit.h"
 #include "pic_manager.h"
-#include "text.h"
 
 
 void FixBuffer(DrawBuffer *buffer)

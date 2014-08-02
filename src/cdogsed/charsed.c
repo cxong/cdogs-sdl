@@ -60,12 +60,12 @@
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
+#include <cdogs/font.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
 #include <cdogs/palette.h>
 #include <cdogs/pic_manager.h>
-#include <cdogs/text.h>
 #include <cdogs/utils.h>
 
 #include "editor_ui.h"

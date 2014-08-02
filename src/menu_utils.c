@@ -32,7 +32,6 @@
 
 #include <cdogs/draw.h>
 #include <cdogs/font.h>
-#include <cdogs/text.h>
 
 
 // Display a character and the player name above it, with the character

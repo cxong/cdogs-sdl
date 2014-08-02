@@ -28,9 +28,10 @@
 #include "editor_ui_common.h"
 
 #include <cdogs/events.h>
+#include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/palette.h>
-#include <cdogs/text.h>
+
 
 void DisplayMapItem(Vec2i pos, MapObject *mo)
 {

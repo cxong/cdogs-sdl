@@ -67,7 +67,6 @@
 #include "events.h"
 #include "keyboard.h"
 #include "pics.h"
-#include "text.h"
 #include "sounds.h"
 #include "input.h"
 #include "files.h"
