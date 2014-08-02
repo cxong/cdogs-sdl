@@ -43,7 +43,7 @@ void DisplayCharacterAndName(Vec2i pos, Character *c, char *name)
 	// Move the point down a bit since the default character draw point is at
 	// its feet
 	pos.y += 8;
-	namePos = Vec2iAdd(pos, Vec2iNew(-TextGetStringWidth(name) / 2, -30));
+	namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
 	DrawCharacterSimple(
 		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
@@ -98,7 +98,7 @@ void MenuDisplayPlayerControls(
 				SDL_GetKeyName(keys->down),
 				SDL_GetKeyName(keys->button1),
 				SDL_GetKeyName(keys->button2));
-			textWidth = TextGetStringWidth(s);
+			textWidth = FontStrW(s);
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:
@@ -120,7 +120,7 @@ void MenuDisplayPlayerControls(
 	}
 
 	// If the text is too long, split the text with a newline
-	textWidth = TextGetStringWidth(s);
+	textWidth = FontStrW(s);
 	if (textWidth < 125)
 	{
 		textPos.x = pos.x - textWidth / 2;
@@ -140,11 +140,11 @@ void MenuDisplayPlayerControls(
 				break;
 			}
 		}
-		textWidth = TextGetStringWidth(s);
+		textWidth = FontStrW(s);
 		textPos.x = pos.x - textWidth / 2;
 		textPos.y -= FontH();
 		FontStr(s, textPos);
-		textWidth = TextGetStringWidth(secondLine);
+		textWidth = FontStrW(secondLine);
 		textPos.x = pos.x - textWidth / 2;
 		textPos.y += FontH();
 		FontStr(secondLine, textPos);

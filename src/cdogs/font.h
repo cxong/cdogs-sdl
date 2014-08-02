@@ -52,6 +52,10 @@ void FontTerminate(Font *f);
 
 int FontW(const char c);
 int FontH(void);
+int FontStrW(const char *s);
+int FontSubstrW(const char *s, int len);
+int FontStrH(const char *s);
+Vec2i FontStrSize(const char *s);
 
 // Returns updated cursor position
 Vec2i FontCh(const char c, const Vec2i pos);
@@ -59,5 +63,7 @@ Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask);
 Vec2i FontStr(const char *s, Vec2i pos);
 Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask);
 Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width);
+
+void FontSplitLines(const char *text, char *buf, const int width);
 
 #endif

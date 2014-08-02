@@ -324,7 +324,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 			{
 				Vec2i center = Vec2iZero();
 				const char *prompt = "Press Fire to join...";
-				Vec2i offset = Vec2iScaleDiv(TextGetSize(prompt), -2);
+				Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
 				int w = graphics->cachedConfig.Res.x;
 				int h = graphics->cachedConfig.Res.y;
 				switch (numPlayers)

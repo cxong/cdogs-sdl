@@ -79,12 +79,8 @@ bool ConfirmScreen(const char *info, const char *msg)
 	int w = gGraphicsDevice.cachedConfig.Res.x;
 	int h = gGraphicsDevice.cachedConfig.Res.y;
 	ClearScreen(&gGraphicsDevice);
-	FontStr(
-		info,
-		Vec2iNew((w - TextGetStringWidth(info)) / 2, (h - FontH()) / 2));
-	FontStr(
-		msg,
-		Vec2iNew((w - TextGetStringWidth(msg)) / 2, (h + FontH()) / 2));
+	FontStr(info, Vec2iNew((w - FontStrW(info)) / 2, (h - FontH()) / 2));
+	FontStr(msg, Vec2iNew((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 	int c = GetKey(&gEventHandlers);

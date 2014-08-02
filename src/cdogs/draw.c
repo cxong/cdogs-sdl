@@ -405,7 +405,7 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 				AIStateGetChatterText(a->aiContext->State);
 			const Vec2i textPos = Vec2iNew(
 				a->tileItem.x - b->xTop + offset.x -
-				TextGetStringWidth(text) / 2,
+				FontStrW(text) / 2,
 				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
 			FontStr(text, textPos);
 		}

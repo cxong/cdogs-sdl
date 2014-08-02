@@ -151,6 +151,56 @@ int FontH(void)
 {
 	return gFont.Size.y + 1;
 }
+int FontStrW(const char *s)
+{
+	return FontSubstrW(s, strlen(s));
+}
+int FontSubstrW(const char *s, int len)
+{
+	int w = 0;
+	if (len > (int)strlen(s))
+	{
+		len = (int)strlen(s);
+	}
+	for (int i = 0; i < len; i++)
+	{
+		w += FontW(*s++);
+	}
+	return w;
+}
+int FontStrH(const char *s)
+{
+	int lines;
+	for (lines = 0; s != NULL; lines++)
+	{
+		s = strchr(s, '\n');
+		if (s)
+		{
+			s++;
+		}
+	}
+	return lines * (FontH() + 1);
+}
+Vec2i FontStrSize(const char *s)
+{
+	Vec2i size = Vec2iZero();
+	while (*s)
+	{
+		char *lineEnd = strchr(s, '\n');
+		size.y += FontH();
+		if (lineEnd)
+		{
+			size.x = MAX(size.x, FontSubstrW(s, lineEnd - s));
+			s = lineEnd + 1;
+		}
+		else
+		{
+			size.x = MAX(size.x, FontStrW(s));
+			s += strlen(s);
+		}
+	}
+	return size;
+}
 
 Vec2i FontCh(const char c, const Vec2i pos)
 {
@@ -187,16 +237,15 @@ Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
 	}
 	return pos;
 }
-static void SplitLines(const char *text, char *buf, const int width);
 Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width)
 {
 	char buf[1024];
 	CASSERT(strlen(s) < 1024, "string too long to wrap");
-	SplitLines(s, buf, width);
+	FontSplitLines(s, buf, width);
 	return FontStrMask(buf, pos, mask);
 }
 
-static void SplitLines(const char *text, char *buf, const int width)
+void FontSplitLines(const char *text, char *buf, const int width)
 {
 	int ix, x;
 	const char *ws, *word, *s;

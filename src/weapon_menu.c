@@ -111,7 +111,7 @@ static void DisplayEquippedWeapons(
 	UNUSED(g);
 	WeaponMenuData *d = data;
 	Vec2i weaponsPos;
-	Vec2i maxTextSize = TextGetSize("LongestWeaponName");
+	Vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	UNUSED(menu);
 	pos.x -= size.x;	// move to left half of screen
 	weaponsPos = Vec2iNew(

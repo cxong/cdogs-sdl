@@ -866,8 +866,7 @@ static void DrawStyleArea(
 	// Display style index and count, right aligned
 	sprintf(buf, "%d/%d", idx + 1, count);
 	FontStrMask(
-		buf, Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
-		colorGray);
+		buf, Vec2iNew(pos.x + 28 - FontStrW(buf), pos.y + 17), colorGray);
 }
 static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
@@ -1436,7 +1435,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
 	o->Label = "Insert mission";
-	o->Size.x = TextGetStringWidth(o->Label);
+	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
 	o->ChangeFunc = MissionInsertNew;
 	o->Data = &gCampaign;
@@ -1445,7 +1444,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
 	o->Label = "Delete mission";
-	o->Size.x = TextGetStringWidth(o->Label);
+	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
 	o->ChangeFunc = MissionDelete;
 	o->Data = &gCampaign;
@@ -1636,7 +1635,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Label = "Mission description";
 	o2->Id = YC_MISSIONDESC;
 	o2->Pos = pos;
-	o2->Size = TextGetSize(o2->Label);
+	o2->Size = FontStrSize(o2->Label);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
 		Vec2iNew(0, Y_ABS - pos.y), Vec2iNew(295, 5 * th));

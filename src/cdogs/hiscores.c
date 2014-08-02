@@ -137,13 +137,13 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 #define NAME_OFFSET      85
 
 	sprintf(s, "%d.", idx + 1);
-	DisplayAt(x + INDEX_OFFSET - TextGetStringWidth(s), y, s, hilite);
+	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "%d", e->score);
-	DisplayAt(x + SCORE_OFFSET - TextGetStringWidth(s), y, s, hilite);
+	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "%d", e->missions);
-	DisplayAt(x + MISSIONS_OFFSET - TextGetStringWidth(s), y, s, hilite);
+	DisplayAt(x + MISSIONS_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "(%d)", e->lastMission + 1);
-	DisplayAt(x + MISSION_OFFSET - TextGetStringWidth(s), y, s, hilite);
+	DisplayAt(x + MISSION_OFFSET - FontStrW(s), y, s, hilite);
 	DisplayAt(x + NAME_OFFSET, y, e->name, hilite);
 
 	return 1 + FontH();
@@ -153,18 +153,17 @@ static int DisplayPage(
 	const char *title, int idx, struct Entry *e, int highlights[MAX_PLAYERS])
 {
 	int x = 80;
-	int y = 5;
+	int y = 5 + FontH();
 
 	FontStr(title, Vec2iNew(5, 5));
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
-		int isHighlighted = 0;
-		int i;
-		for (i = 0; i < MAX_PLAYERS; i++)
+		bool isHighlighted = false;
+		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
 			if (idx == highlights[i])
 			{
-				isHighlighted = 1;
+				isHighlighted = true;
 				break;
 			}
 		}

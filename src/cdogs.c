@@ -173,7 +173,7 @@ int CampaignIntro(GraphicsDevice *device)
 	sprintf(s, "%s by %s", gCampaign.Setting.Title, gCampaign.Setting.Author);
 	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
 
-	TextSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
+	FontSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
 	x = w / 6 / 2;
 	FontStr(s, Vec2iNew(x, y));
 
@@ -197,8 +197,8 @@ void MissionBriefing(GraphicsDevice *device)
 	char typewriterBuf[1024];
 	int descriptionHeight;
 	
-	TextSplitLines(gMission.missionData->Description, description, w * 5 / 6);
-	descriptionHeight = TextGetSize(description).y;
+	FontSplitLines(gMission.missionData->Description, description, w * 5 / 6);
+	descriptionHeight = FontStrH(description);
 	
 	// Save password if we're not on the first mission
 	if (gMission.index > 0)
@@ -548,7 +548,7 @@ static void ShowPlayerScore(Vec2i pos, Character *c, char *name, int score)
 	char s[10];
 	DisplayCharacterAndName(pos, c, name);
 	sprintf(s, "Score: %d", score);
-	scorePos = Vec2iNew(pos.x - TextGetStringWidth(s) / 2, pos.y + 20);
+	scorePos = Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20);
 	FontStr(s, scorePos);
 }
 
@@ -620,8 +620,8 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 			gPlayerDatas[i].name);
 		if (!isTie && maxScorePlayer == i)
 		{
-			Vec2i msgPos = Vec2iNew(
-				pos.x - TextGetStringWidth(IS_WINNER) / 2, pos.y + 20);
+			Vec2i msgPos =
+				Vec2iNew(pos.x - FontStrW(IS_WINNER) / 2, pos.y + 20);
 			FontStr(IS_WINNER, msgPos);
 		}
 	}
@@ -685,9 +685,9 @@ void Victory(GraphicsDevice *graphics)
 
 	GraphicsBlitBkg(graphics);
 
-	x = 160 - TextGetStringWidth(CONGRATULATIONS) / 2;
+	x = 160 - FontStrW(CONGRATULATIONS) / 2;
 	FontStr(CONGRATULATIONS, Vec2iNew(x, 100));
-	x = 160 - TextGetStringWidth(gCampaign.Setting.Title) / 2;
+	x = 160 - FontStrW(gCampaign.Setting.Title) / 2;
 	FontStrMask(gCampaign.Setting.Title, Vec2iNew(x, 115), colorRed);
 
 	switch (gOptions.numPlayers)
@@ -746,7 +746,7 @@ void Victory(GraphicsDevice *graphics)
 			break;
 	}
 
-	Vec2i pos = Vec2iNew((w - TextGetStringWidth(s)) / 2, h / 2 + 20);
+	Vec2i pos = Vec2iNew((w - FontStrW(s)) / 2, h / 2 + 20);
 	pos = FontChMask('"', pos, colorDarker);
 	pos = FontStrMask(s, pos, colorPurple);
 	pos = FontChMask('"', pos, colorDarker);

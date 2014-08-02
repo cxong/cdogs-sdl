@@ -197,7 +197,7 @@ static int PasswordEntry(int cmd, char *buffer)
 	#define ENTRY_COLS	10
 	#define	ENTRY_SPACING	12
 	
-	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
+	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + FontW('a')));
 	y = (int)CenterY(((FontH() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
@@ -251,14 +251,8 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 			}
 		}
 
-		#define SYMBOL_LEFT	'\020'
-		#define	SYMBOL_RIGHT	'\021'
-
 		Vec2i pos = Vec2iNew(
-			CenterX(
-				TextGetStringWidth(buffer) +
-				CDogsTextCharWidth(SYMBOL_LEFT) +
-				CDogsTextCharWidth(SYMBOL_RIGHT)),
+			CenterX(FontStrW(buffer) + FontW('>') + FontW('<')),
 			graphics->cachedConfig.Res.y / 4);
 		pos = FontCh('>', pos);
 		pos = FontStr(buffer, pos);

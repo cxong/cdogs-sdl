@@ -638,7 +638,7 @@ static void DrawCompassArrow(
 	}
 	if (label && strlen(label) > 0)
 	{
-		Vec2i textSize = TextGetSize(label);
+		Vec2i textSize = FontStrSize(label);
 		// Center the text around the target position
 		textPos.x -= textSize.x / 2;
 		textPos.y -= textSize.y / 2;
@@ -798,7 +798,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		// Draw the message centered, and just below the automap
 		Vec2i pos = Vec2iNew(
 			(hud->device->cachedConfig.Res.x -
-			TextGetStringWidth(hud->message)) / 2,
+			FontStrW(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
 		FontStrMask(hud->message, pos, colorCyan);
 	}
@@ -879,10 +879,10 @@ static void DrawNumUpdate(
 		// Find the position of where the normal text is displayed,
 		// and move to its right
 		sprintf(s, formatText, currentValue);
-		pos.x += TextGetSize(s).x;
+		pos.x += FontStrW(s);
 		// Then find the size of the update, and move left
 		sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
-		pos.x -= TextGetSize(s).x;
+		pos.x -= FontStrW(s);
 		// The final position should ensure the score update's lowest digit
 		// lines up with the normal score's lowest digit
 	}

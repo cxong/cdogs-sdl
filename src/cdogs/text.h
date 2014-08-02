@@ -71,13 +71,6 @@ void TextManagerInit(TextManager *tm, const char *filename);
 void TextManagerGenerateOldPics(TextManager *tm, GraphicsDevice *g);
 void TextManagerTerminate(TextManager *tm);
 void CDogsTextGoto(int x, int y);
-int CDogsTextCharWidth(int c);
-int TextGetSubstringWidth(const char *s, int len);
-int TextGetStringWidth(const char *s);
-
-// Draw character/string with a color mask
-// Returns updated cursor position
-Vec2i TextGetSize(const char *s);
 
 #define TEXT_XCENTER		1
 #define TEXT_YCENTER		2
@@ -97,8 +90,6 @@ void DrawTextStringSpecial(
 	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding);
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);
 #define CDogsTextStringAtCenter(s)	CDogsTextStringSpecial(s, TEXT_XCENTER | TEXT_YCENTER, 0, 0)
-
-void TextSplitLines(const char *text, char *buf, int width);
 
 char *PercentStr(int p);
 char *Div8Str(int i);

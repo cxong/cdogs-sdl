@@ -557,7 +557,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			for (int i = 0; i < iEnd; i++)
 			{
 				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-				int width = TextGetStringWidth(subMenu->name);
+				int width = FontStrW(subMenu->name);
 				if (width > maxWidth)
 				{
 					maxWidth = width;
@@ -629,8 +629,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				switch (menu->u.normal.align)
 				{
 				case MENU_ALIGN_CENTER:
-					pos.x = MS_CENTER_X(
-						*ms, TextGetStringWidth(subMenu->name));
+					pos.x = MS_CENTER_X(*ms, FontStrW(subMenu->name));
 					break;
 				case MENU_ALIGN_LEFT:
 					// Do nothing
@@ -688,7 +687,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 	case MENU_TYPE_KEYS:
 		{
 			int xKeys;
-			x = MS_CENTER_X(*ms, (CDogsTextCharWidth('a') * 10)) / 2;
+			x = MS_CENTER_X(*ms, (FontW('a') * 10)) / 2;
 			xKeys = x * 3;
 			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
 

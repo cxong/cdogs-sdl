@@ -565,7 +565,7 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 
 void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)
 {
-	Vec2i bgSize = TextGetSize(s);
+	Vec2i bgSize = FontStrSize(s);
 	pos = Vec2iAdd(pos, Vec2iNew(10, 10));	// add offset
 	DrawRectangle(
 		device,
