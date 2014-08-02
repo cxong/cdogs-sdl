@@ -250,7 +250,13 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 
 void ShowControls(void)
 {
-	CDogsTextStringSpecial("(use joystick 1 or arrow keys + Enter/Backspace)", TEXT_BOTTOM | TEXT_XCENTER, 0, 10);
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.VAlign = ALIGN_END;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad.y = 10;
+	FontStrOpt(
+		"(use joystick 1 or arrow keys + Enter/Backspace)", Vec2iZero(), opts);
 }
 
 void DisplayMenuItem(
@@ -492,12 +498,11 @@ void MenuDisplay(MenuSystem *ms)
 
 		if (strlen(menu->u.normal.title) != 0)
 		{
-			DrawTextStringSpecial(
-				menu->u.normal.title,
-				TEXT_XCENTER | TEXT_TOP,
-				ms->pos,
-				ms->size,
-				Vec2iNew(0, ms->size.y / 12));
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_CENTER;
+			opts.Area = ms->size;
+			opts.Pad = Vec2iNew(20, 20);
+			FontStrOpt(menu->u.normal.title, ms->pos, opts);
 		}
 
 		MenuDisplaySubmenus(ms);
@@ -528,11 +533,12 @@ void MenuDisplayItems(MenuSystem *ms)
 			MS_CENTER_X(*ms, logo->w),
 			ms->pos.y + ms->size.y / 12,
 			logo);
-		DrawTextStringSpecial(
-			"Version: " CDOGS_SDL_VERSION, TEXT_TOP | TEXT_RIGHT,
-			ms->pos,
-			ms->size,
-			Vec2iNew(20, 20));
+
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_END;
+		opts.Area = ms->size;
+		opts.Pad = Vec2iNew(20, 20);
+		FontStrOpt("Version: " CDOGS_SDL_VERSION, ms->pos, opts);
 	}
 }
 

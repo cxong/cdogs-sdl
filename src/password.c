@@ -258,11 +258,12 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 		pos = FontStr(buffer, pos);
 		pos = FontCh('<', pos);
 
-		CDogsTextStringSpecial(
-			"Enter code",
-			TEXT_XCENTER | TEXT_TOP,
-			0,
-			graphics->cachedConfig.Res.y / 12);
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_CENTER;
+		opts.Area = gGraphicsDevice.cachedConfig.Res;
+		opts.Pad.y = graphics->cachedConfig.Res.y / 12;
+		FontStrOpt("Enter code", Vec2iZero(), opts);
+
 		ShowControls();
 
 		BlitFlip(graphics, &gConfig.Graphics);

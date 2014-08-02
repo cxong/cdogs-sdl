@@ -208,13 +208,6 @@ void DrawTextStringSpecialBlend(
 		tm, s, device, GetSpecialTextPos(s, opts, pos, size, padding), blend);
 	CDogsTextGoto(pos.x, pos.y);
 }
-static void DrawTextStringSpecialMasked(
-	const char *s, unsigned int opts,
-	Vec2i pos, Vec2i size, Vec2i padding, color_t mask)
-{
-	pos = FontStrMask(s, GetSpecialTextPos(s, opts, pos, size, padding), mask);
-	CDogsTextGoto(pos.x, pos.y);
-}
 static Vec2i GetSpecialTextPos(
 	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding)
 {
@@ -233,31 +226,6 @@ static Vec2i GetSpecialTextPos(
 	if (FLAG_SET(opts, TEXT_BOTTOM))	{ y = pos.y + size.y - h - padding.y; }
 
 	return Vec2iNew(x, y);
-}
-
-void DrawTextStringSpecial(
-	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding)
-{
-	if (FLAG_SET(opts, TEXT_FLAMED))
-	{
-		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorRed);
-	}
-	else if (FLAG_SET(opts, TEXT_PURPLE))
-	{
-		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorPurple);
-	}
-	else
-	{
-		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorWhite);
-	}
-}
-
-void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad)
-{
-	int scrw = gGraphicsDevice.cachedConfig.Res.x;
-	int scrh = gGraphicsDevice.cachedConfig.Res.y;
-	DrawTextStringSpecial(
-		s, opts, Vec2iZero(), Vec2iNew(scrw, scrh), Vec2iNew(xpad, ypad));
 }
 
 char *PercentStr(int p)

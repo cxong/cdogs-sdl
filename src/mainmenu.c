@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include <cdogs/config.h>
+#include <cdogs/font.h>
 #include <cdogs/text.h>
 
 #include "autosave.h"
@@ -148,12 +149,13 @@ static void CampaignsDisplayFilename(
 		const char *filename = subMenu->u.campaign.Filename;
 		int isBuiltin = subMenu->u.campaign.IsBuiltin;
 		sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
-		DrawTextStringSpecial(
-			s,
-			TEXT_XCENTER | TEXT_BOTTOM,
-			pos,
-			size,
-			Vec2iNew(size.x / 12, 0));
+
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_CENTER;
+		opts.VAlign = ALIGN_END;
+		opts.Area = size;
+		opts.Pad.x = size.x / 12;
+		FontStrOpt(s, pos, opts);
 	}
 }
 menu_t *MenuCreateCampaigns(

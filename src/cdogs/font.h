@@ -44,7 +44,25 @@ typedef struct
 	CArray Chars;	// of Pic
 } Font;
 
+typedef enum
+{
+	ALIGN_START = 0,
+	ALIGN_CENTER,
+	ALIGN_END
+} FontAlign;
+typedef struct
+{
+	FontAlign HAlign;
+	FontAlign VAlign;
+	Vec2i Area;
+	Vec2i Pad;
+	color_t Mask;
+	int Width;
+} FontOpts;
+
 extern Font gFont;
+
+FontOpts FontOptsNew(void);
 
 void FontLoad(Font *f, const char *imgPath, const char *jsonPath);
 void FontFromImage(Font *f, SDL_Surface *image, json_t *data);
@@ -63,6 +81,8 @@ Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask);
 Vec2i FontStr(const char *s, Vec2i pos);
 Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask);
 Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width);
+void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts);
+void FontStrCenter(const char *s);
 
 void FontSplitLines(const char *text, char *buf, const int width);
 

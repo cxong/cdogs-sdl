@@ -171,7 +171,11 @@ int CampaignIntro(GraphicsDevice *device)
 	y = h / 4;
 
 	sprintf(s, "%s by %s", gCampaign.Setting.Title, gCampaign.Setting.Author);
-	CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad.y = y - 25;
+	FontStrOpt(s, Vec2iZero(), opts);
 
 	FontSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
 	x = w / 6 / 2;
@@ -241,14 +245,22 @@ void MissionBriefing(GraphicsDevice *device)
 		y = h / 4;
 		sprintf(s, "Mission %d: %s",
 			gMission.index + 1, gMission.missionData->Title);
-		CDogsTextStringSpecial(s, TEXT_TOP | TEXT_XCENTER, 0, (y - 25));
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_CENTER;
+		opts.Area = gGraphicsDevice.cachedConfig.Res;
+		opts.Pad.y = y - 25;
+		FontStrOpt(s, Vec2iZero(), opts);
 
 		// Display password
 		if (gMission.index > 0)
 		{
 			char str[512];
 			sprintf(str, "Password: %s", gAutosave.LastMission.Password);
-			CDogsTextStringSpecial(str, TEXT_TOP | TEXT_XCENTER, 0, (y - 15));
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_CENTER;
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad.y = y - 15;
+			FontStrOpt(str, Vec2iZero(), opts);
 		}
 
 		// Display description with typewriter effect
@@ -392,32 +404,54 @@ void Bonuses(void)
 			idx, o->done, mo->Count, mo->Required);
 		if (mo->Required > 0)
 		{
-			CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_TOP, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			FontStrOpt(s, Vec2iZero(), opts);
 		}
 		else
 		{
-			CDogsTextStringSpecial(
-				s, TEXT_LEFT | TEXT_TOP | TEXT_PURPLE, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			opts.Mask = colorPurple;
+			FontStrOpt(s, Vec2iZero(), opts);
 		}
 		if (o->done < mo->Required)
 		{
-			CDogsTextStringSpecial(
-				"Failed", TEXT_RIGHT | TEXT_TOP | TEXT_FLAMED, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_END;
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			opts.Mask = colorRed;
+			FontStrOpt("Failed", Vec2iZero(), opts);
 		}
 		else if (
 			o->done == mo->Count && o->done > mo->Required && AreAnySurvived())
 		{
-			CDogsTextStringSpecial(
-				"Perfect: 500", TEXT_RIGHT | TEXT_TOP, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_END;
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			opts.Mask = colorGreen;
+			FontStrOpt("Perfect: 500", Vec2iZero(), opts);
 			bonus += 500;
 		}
 		else if (mo->Required > 0)
 		{
-			CDogsTextStringSpecial("Done", TEXT_RIGHT | TEXT_TOP, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_END;
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			FontStrOpt("Done", Vec2iZero(), opts);
 		}
 		else
 		{
-			CDogsTextStringSpecial("Bonus!", TEXT_RIGHT | TEXT_TOP, x, y);
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_END;
+			opts.Area = gGraphicsDevice.cachedConfig.Res;
+			opts.Pad = Vec2iNew(x, y);
+			FontStrOpt("Bonus!", Vec2iZero(), opts);
 		}
 
 		y += 15;
@@ -502,11 +536,12 @@ void MissionSummary(GraphicsDevice *device)
 	{
 		char s1[512];
 		sprintf(s1, "Last password: %s", gAutosave.LastMission.Password);
-		CDogsTextStringSpecial(
-			s1,
-			TEXT_BOTTOM | TEXT_XCENTER,
-			0,
-			gGraphicsDevice.cachedConfig.Res.y / 12);
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_CENTER;
+		opts.VAlign = ALIGN_END;
+		opts.Area = gGraphicsDevice.cachedConfig.Res;
+		opts.Pad.y = opts.Area.y / 12;
+		FontStrOpt(s1, Vec2iZero(), opts);
 	}
 
 	switch (gOptions.numPlayers)
@@ -627,7 +662,7 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 	}
 	if (isTie)
 	{
-		CDogsTextStringAtCenter("It's a draw!");
+		FontStrCenter("It's a draw!");
 	}
 	BlitFlip(device, &gConfig.Graphics);
 	WaitForAnyKeyOrButton(&gEventHandlers);

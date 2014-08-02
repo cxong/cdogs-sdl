@@ -99,7 +99,13 @@ void FPSCounterDraw(FPSCounter *counter)
 	char s[50];
 	counter->framesDrawn++;
 	sprintf(s, "FPS: %d", counter->fps);
-	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 5 + FontH());
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_END;
+	opts.VAlign = ALIGN_END;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = Vec2iNew(10, 5 + FontH());
+	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 void WallClockSetTime(WallClock *wc)
@@ -128,7 +134,12 @@ void WallClockDraw(WallClock *wc)
 {
 	char s[50];
 	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
-	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 5 + FontH());
+
+	FontOpts opts = FontOptsNew();
+	opts.VAlign = ALIGN_END;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = Vec2iNew(10, 5 + FontH());
+	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 void HUDInit(
@@ -245,18 +256,18 @@ static void DrawGauge(
 	GraphicsDevice *device,
 	Vec2i pos, Vec2i size, int innerWidth,
 	color_t barColor, color_t backColor,
-	int textFlags)
+	const FontAlign hAlign, const FontAlign vAlign)
 {
 	Vec2i offset = Vec2iUnit();
 	Vec2i barPos = Vec2iAdd(pos, offset);
 	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
-	if (textFlags & TEXT_RIGHT)
+	if (hAlign == ALIGN_END)
 	{
 		int w = device->cachedConfig.Res.x;
 		pos.x = w - pos.x - size.x - offset.x;
 		barPos.x = w - barPos.x - barSize.x - offset.x;
 	}
-	if (textFlags & TEXT_BOTTOM)
+	if (vAlign == ALIGN_END)
 	{
 		int h = device->cachedConfig.Res.y;
 		pos.y = h - pos.y - size.y - offset.y;
@@ -268,7 +279,8 @@ static void DrawGauge(
 
 #define GAUGE_WIDTH 50
 static void DrawWeaponStatus(
-	GraphicsDevice *device, const Weapon *weapon, Vec2i pos, int textFlags)
+	GraphicsDevice *device, const Weapon *weapon, Vec2i pos,
+	const FontAlign hAlign, const FontAlign vAlign)
 {
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
@@ -288,13 +300,20 @@ static void DrawWeaponStatus(
 			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		}
 		DrawGauge(
-			device, gaugePos, size, innerWidth, barColor, backColor, textFlags);
+			device, gaugePos, size, innerWidth, barColor, backColor,
+			hAlign, vAlign);
 	}
-	CDogsTextStringSpecial(weapon->Gun->name, textFlags, pos.x, pos.y);
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = hAlign;
+	opts.VAlign = vAlign;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	FontStrOpt(weapon->Gun->name, Vec2iZero(), opts);
 }
 
 static void DrawHealth(
-	GraphicsDevice *device, TActor *actor, Vec2i pos, int textFlags)
+	GraphicsDevice *device, TActor *actor, Vec2i pos,
+	const FontAlign hAlign, const FontAlign vAlign)
 {
 	char s[50];
 	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
@@ -320,9 +339,16 @@ static void DrawHealth(
 	}
 	barColor = ColorTint(colorWhite, hsv);
 	DrawGauge(
-		device, gaugePos, size, innerWidth, barColor, backColor, textFlags);
+		device, gaugePos, size, innerWidth, barColor, backColor,
+		hAlign, vAlign);
 	sprintf(s, "%d", health);
-	CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = hAlign;
+	opts.VAlign = vAlign;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 #define HUDFLAGS_PLACE_RIGHT	0x01
@@ -471,21 +497,24 @@ static void DrawPlayerStatus(
 	}
 
 	Vec2i pos = Vec2iNew(5, 5);
-	char s[50];
-	int textFlags = TEXT_TOP | TEXT_LEFT;
+
+	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
-		textFlags |= TEXT_RIGHT;
+		opts.HAlign = ALIGN_END;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		textFlags |= TEXT_BOTTOM;
+		opts.VAlign = ALIGN_END;
 		pos.y += BOTTOM_PADDING;
 	}
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	FontStrOpt(data->name, Vec2iZero(), opts);
 
-	CDogsTextStringSpecial(data->name, textFlags, pos.x, pos.y);
 	const int rowHeight = 1 + FontH();
 	pos.y += rowHeight;
+	char s[50];
 	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
 		sprintf(s, "Score: %d", data->score);
@@ -496,15 +525,20 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		DrawWeaponStatus(device, ActorGetGun(p), pos, textFlags);
+		DrawWeaponStatus(
+			device, ActorGetGun(p), pos, opts.HAlign, opts.VAlign);
 		pos.y += rowHeight;
-		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
+
+		opts.Pad = pos;
+		FontStrOpt(s, Vec2iZero(), opts);
+
 		pos.y += rowHeight;
-		DrawHealth(device, p, pos, textFlags);
+		DrawHealth(device, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{
-		CDogsTextStringSpecial(s, textFlags, pos.x, pos.y);
+		opts.Pad = pos;
+		FontStrOpt(s, Vec2iZero(), opts);
 	}
 
 	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
@@ -773,11 +807,11 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 		{
-			CDogsTextStringAtCenter("Game Over!");
+			FontStrCenter("Game Over!");
 		}
 		else
 		{
-			CDogsTextStringAtCenter("Double Kill!");
+			FontStrCenter("Double Kill!");
 		}
 	}
 	else if (hud->mission->state == MISSION_STATE_PICKUP)
@@ -785,12 +819,12 @@ void HUDDraw(HUD *hud, int isPaused)
 		int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
 		sprintf(s, "Pickup in %d seconds\n",
 			(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
-		CDogsTextStringAtCenter(s);
+		FontStrCenter(s);
 	}
 
 	if (isPaused)
 	{
-		CDogsTextStringAtCenter("Press Esc again to quit");
+		FontStrCenter("Press Esc again to quit");
 	}
 
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)
@@ -818,12 +852,12 @@ void HUDDraw(HUD *hud, int isPaused)
 	int missionTimeSeconds = gMission.time / FPS_FRAMELIMIT;
 	sprintf(s, "%d:%02d",
 		missionTimeSeconds / 60, missionTimeSeconds % 60);
-	DrawTextStringSpecial(
-		s, TEXT_TOP | TEXT_XCENTER, Vec2iZero(),
-		Vec2iNew(
-			hud->device->cachedConfig.Res.x,
-			hud->device->cachedConfig.Res.y),
-		Vec2iNew(0, 5));
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.Area = hud->device->cachedConfig.Res;
+	opts.Pad.y = 5;
+	FontStrOpt(s, Vec2iZero(), opts);
 
 	if (HasObjectives(gCampaign.Entry.Mode))
 	{

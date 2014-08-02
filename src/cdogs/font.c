@@ -39,6 +39,14 @@
 Font gFont;
 
 
+FontOpts FontOptsNew(void)
+{
+	FontOpts opts;
+	memset(&opts, 0, sizeof opts);
+	opts.Mask = colorWhite;
+	return opts;
+}
+
 void FontLoad(Font *f, const char *imgPath, const char *jsonPath)
 {
 	FILE *file = NULL;
@@ -244,9 +252,59 @@ Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width)
 	FontSplitLines(s, buf, width);
 	return FontStrMask(buf, pos, mask);
 }
+static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts);
+void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts)
+{
+	pos = GetStrPos(s, pos, opts);
+	FontStrMaskWrap(s, pos, opts.Mask, opts.Width);
+}
+static int GetAlign(
+	const FontAlign align,
+	const int pos, const int pad, const int area, const int size);
+static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts)
+{
+	const Vec2i textSize = FontStrSize(s);
+	return Vec2iNew(
+		GetAlign(opts.HAlign, pos.x, opts.Pad.x, opts.Area.x, textSize.x),
+		GetAlign(opts.VAlign, pos.y, opts.Pad.y, opts.Area.y, textSize.y));
+}
+static int GetAlign(
+	const FontAlign align,
+	const int pos, const int pad, const int area, const int size)
+{
+	switch (align)
+	{
+	case ALIGN_START:
+		return pos + pad;
+		break;
+	case ALIGN_CENTER:
+		return pos + (area - size) / 2;
+		break;
+	case ALIGN_END:
+		return pos + area - size - pad;
+		break;
+	default:
+		CASSERT(false, "unknown align");
+		return pos;
+	}
+}
+
+void FontStrCenter(const char *s)
+{
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.VAlign = ALIGN_CENTER;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	FontStrOpt(s, Vec2iZero(), opts);
+}
 
 void FontSplitLines(const char *text, char *buf, const int width)
 {
+	if (width == 0)
+	{
+		strcpy(buf, text);
+		return;
+	}
 	int ix, x;
 	const char *ws, *word, *s;
 

@@ -507,9 +507,9 @@ static void Open(void)
 		if (doOpen)
 		{
 			ClearScreen(&gGraphicsDevice);
-			DrawTextStringSpecial(
-				"Loading...", TEXT_XCENTER | TEXT_YCENTER,
-				Vec2iZero(), gGraphicsDevice.cachedConfig.Res, Vec2iZero());
+
+			FontStrCenter("Loading...");
+
 			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 			CampaignSettingTerminate(&gCampaign.Setting);
 			CampaignSettingInit(&gCampaign.Setting);
@@ -588,9 +588,9 @@ static void Save(void)
 	if (doSave)
 	{
 		ClearScreen(&gGraphicsDevice);
-		DrawTextStringSpecial(
-			"Saving...", TEXT_XCENTER | TEXT_YCENTER,
-			Vec2iZero(), gGraphicsDevice.cachedConfig.Res, Vec2iZero());
+
+		FontStrCenter("Saving...");
+		
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = 0;
