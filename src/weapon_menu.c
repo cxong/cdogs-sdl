@@ -30,6 +30,7 @@
 
 #include <assert.h>
 
+#include <cdogs/font.h>
 #include <cdogs/text.h>
 
 
@@ -107,6 +108,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 static void DisplayEquippedWeapons(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
+	UNUSED(g);
 	WeaponMenuData *d = data;
 	Vec2i weaponsPos;
 	Vec2i maxTextSize = TextGetSize("LongestWeaponName");
@@ -117,17 +119,15 @@ static void DisplayEquippedWeapons(
 		CENTER_Y(pos, size, 0) + 14);
 	if (d->display.pData->weaponCount == 0)
 	{
-		TextString(&gTextManager, "None selected...", g, weaponsPos);
+		FontStr("None selected...", weaponsPos);
 	}
 	else
 	{
 		for (int i = 0; i < d->display.pData->weaponCount; i++)
 		{
-			TextString(
-				&gTextManager,
+			FontStr(
 				d->display.pData->weapons[i]->name,
-				g,
-				Vec2iAdd(weaponsPos, Vec2iNew(0, i * CDogsTextHeight())));
+				Vec2iAdd(weaponsPos, Vec2iNew(0, i * FontH())));
 		}
 	}
 }

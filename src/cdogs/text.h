@@ -70,29 +70,13 @@ void TextManagerInit(TextManager *tm, const char *filename);
 // Old paletted pics need the palette to be set before using
 void TextManagerGenerateOldPics(TextManager *tm, GraphicsDevice *g);
 void TextManagerTerminate(TextManager *tm);
-void CDogsTextChar(char c);
-void CDogsTextString(const char *s);
 void CDogsTextGoto(int x, int y);
-void CDogsTextStringAt(int x, int y, const char *s);
-void CDogsTextIntAt(int x, int y, int i);
-void CDogsTextFormatAt(int x, int y, const char *fmt, ...);
 int CDogsTextCharWidth(int c);
 int TextGetSubstringWidth(const char *s, int len);
 int TextGetStringWidth(const char *s);
-int CDogsTextHeight(void);
 
 // Draw character/string with a color mask
 // Returns updated cursor position
-Vec2i TextCharMasked(
-	TextManager *tm, char c, GraphicsDevice *device, Vec2i pos, color_t mask);
-Vec2i TextStringMasked(
-	TextManager *tm, const char *s,
-	GraphicsDevice *device, Vec2i pos, color_t mask);
-Vec2i TextString(
-	TextManager *tm, const char *s, GraphicsDevice *device, Vec2i pos);
-Vec2i TextStringMaskedWrapped(
-	TextManager *tm, const char *s, GraphicsDevice *device,
-	Vec2i pos, color_t mask, int width);
 Vec2i TextGetSize(const char *s);
 
 #define TEXT_XCENTER		1
@@ -109,11 +93,6 @@ void DrawTextStringSpecialBlend(
 	GraphicsDevice *device, unsigned int opts,
 	Vec2i pos, Vec2i size, Vec2i padding,
 	color_t blend);
-void DrawTextStringSpecialMasked(
-	TextManager *tm, const char *s,
-	GraphicsDevice *device, unsigned int opts,
-	Vec2i pos, Vec2i size, Vec2i padding,
-	color_t mask);
 void DrawTextStringSpecial(
 	const char *s, unsigned int opts, Vec2i pos, Vec2i size, Vec2i padding);
 void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad, unsigned int ypad);

@@ -58,6 +58,7 @@
 #include <fcntl.h>
 
 #include "config.h"
+#include "font.h"
 #include "gamedata.h"
 #include "grafx.h"
 #include "grafx_bg.h"
@@ -122,7 +123,7 @@ void EnterHighScore(struct PlayerData *data)
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
 	color_t mask = hilite ? colorRed : colorWhite;
-	TextStringMasked(&gTextManager, s, &gGraphicsDevice, Vec2iNew(x, y), mask);
+	FontStrMask(s, Vec2iNew(x, y), mask);
 }
 
 static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
@@ -145,7 +146,7 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 	DisplayAt(x + MISSION_OFFSET - TextGetStringWidth(s), y, s, hilite);
 	DisplayAt(x + NAME_OFFSET, y, e->name, hilite);
 
-	return 1 + CDogsTextHeight();
+	return 1 + FontH();
 }
 
 static int DisplayPage(
@@ -154,7 +155,7 @@ static int DisplayPage(
 	int x = 80;
 	int y = 5;
 
-	CDogsTextStringAt(5, 5, title);
+	FontStr(title, Vec2iNew(5, 5));
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
 		int isHighlighted = 0;
@@ -168,7 +169,7 @@ static int DisplayPage(
 			}
 		}
 		y += DisplayEntry(x, y, idx, &e[idx], isHighlighted);
-		if (y > 198 - CDogsTextHeight())
+		if (y > 198 - FontH())
 		{
 			y = 20;
 			x += 100;

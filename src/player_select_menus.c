@@ -32,6 +32,7 @@
 
 #include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
+#include <cdogs/font.h>
 #include <cdogs/player_template.h>
 #include <cdogs/text.h>
 
@@ -76,7 +77,6 @@ static void SetPlayer(Character *c, struct PlayerData *data)
 static void DrawNameMenu(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
-	int i;
 	PlayerSelectMenuData *d = data;
 
 #define ENTRY_COLS	8
@@ -84,31 +84,26 @@ static void DrawNameMenu(
 
 	int x = pos.x;
 	int y = CENTER_Y(
-		pos, size,
-		CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS));
+		pos, size, FontH() * ((strlen(letters) - 1) / ENTRY_COLS));
 
 	UNUSED(menu);
+	UNUSED(g);
 
+	int i;
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
 		Vec2i menuPos = Vec2iNew(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * CDogsTextHeight());
-
-		if (i == d->nameMenuSelection)
-		{
-			TextCharMasked(&gTextManager, letters[i], g, menuPos, colorRed);
-		}
-		else
-		{
-			TextCharMasked(&gTextManager, letters[i], g, menuPos, colorWhite);
-		}
+			y + (i / ENTRY_COLS) * FontH());
+		FontChMask(
+			letters[i], menuPos,
+			i == d->nameMenuSelection ? colorRed : colorWhite);
 	}
 
 	DisplayMenuItem(
 		Vec2iNew(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * CDogsTextHeight()),
+			y + (i / ENTRY_COLS) * FontH()),
 		"(End)", i == d->nameMenuSelection, 0, colorBlack);
 }
 
@@ -293,6 +288,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 static void SaveTemplateDisplayTitle(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
+	UNUSED(g);
 	PlayerSelectMenuData *d = data;
 	char buf[256];
 
@@ -301,7 +297,7 @@ static void SaveTemplateDisplayTitle(
 
 	// Display "Save <template>..." title
 	sprintf(buf, "Save %s...", d->display.pData->name);
-	TextString(&gTextManager, buf, g, Vec2iAdd(pos, Vec2iNew(0, 0)));
+	FontStr(buf, Vec2iAdd(pos, Vec2iNew(0, 0)));
 }
 
 static menu_t *CreateSaveTemplateMenu(

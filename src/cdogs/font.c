@@ -29,6 +29,7 @@
 
 #include <SDL_image.h>
 
+#include "blit.h"
 #include "pic.h"
 #include "json_utils.h"
 
@@ -139,4 +140,112 @@ void FontTerminate(Font *f)
 		PicFree(p);
 	}
 	CArrayTerminate(&f->Chars);
+}
+
+int FontW(const char c)
+{
+	const Pic *p = CArrayGet(&gFont.Chars, (int)c - FIRST_CHAR);
+	return p->size.x;
+}
+int FontH(void)
+{
+	return gFont.Size.y + 1;
+}
+
+Vec2i FontCh(const char c, const Vec2i pos)
+{
+	return FontChMask(c, pos, colorWhite);
+}
+Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask)
+{
+	CASSERT((int)c >= FIRST_CHAR && (int)c <= LAST_CHAR, "invalid char");
+	const int idx = (int)c - FIRST_CHAR;
+	BlitMasked(
+		&gGraphicsDevice, CArrayGet(&gFont.Chars, idx), pos, mask, true);
+	// Add 1px of padding between characters
+	return Vec2iNew(pos.x + gFont.Size.x + 1, pos.y);
+}
+Vec2i FontStr(const char *s, Vec2i pos)
+{
+	return FontStrMask(s, pos, colorWhite);
+}
+Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
+{
+	int left = pos.x;
+	while (*s)
+	{
+		if (*s == '\n')
+		{
+			pos.x = left;
+			pos.y += FontH();
+		}
+		else
+		{
+			pos = FontChMask(*s, pos, mask);
+		}
+		s++;
+	}
+	return pos;
+}
+static void SplitLines(const char *text, char *buf, const int width);
+Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width)
+{
+	char buf[1024];
+	CASSERT(strlen(s) < 1024, "string too long to wrap");
+	SplitLines(s, buf, width);
+	return FontStrMask(buf, pos, mask);
+}
+
+static void SplitLines(const char *text, char *buf, const int width)
+{
+	int ix, x;
+	const char *ws, *word, *s;
+
+	ix = x = CenterX(width);
+	s = ws = word = text;
+	
+	while (*s)
+	{
+		// Skip spaces
+		ws = s;
+		while (*s == ' ' || *s == '\n')
+		{
+			s++;
+			*buf++ = ' ';
+		}
+
+		// Find word
+		word = s;
+		while (*s != 0 && *s != ' ' && *s != '\n')
+		{
+			s++;
+		}
+		// Calculate width of word
+		int w;
+		const char *p;
+		for (w = 0, p = ws; p < s; p++)
+		{
+			w += FontW(*p) + 1;
+		}
+
+		// Create new line if text too wide
+		if (x + w > width + ix && w < width)
+		{
+			x = ix;
+			ws = word;
+			*buf++ = '\n';
+		}
+		
+		for (p = ws; p < word; p++)
+		{
+			x += FontW(*p) + 1;
+		}
+
+		for (p = word; p < s; p++)
+		{
+			*buf++ = *p;
+			x += FontW(*p) + 1;
+		}
+	}
+	*buf = '\0';
 }

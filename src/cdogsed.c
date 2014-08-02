@@ -230,13 +230,13 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		sprintf(
 			s, "Mission %d/%d",
 			gCampaign.MissionIndex + 1, (int)gCampaign.Setting.Missions.size);
-		TextStringMasked(&gTextManager, 
-			s, g, Vec2iNew(270, y),
+		FontStrMask(
+			s, Vec2iNew(270, y),
 			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		if (brush.LastPos.x)
 		{
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
-			TextString(&gTextManager, s, g, Vec2iNew(w - 40, h - 16));
+			FontStr(s, Vec2iNew(w - 40, h - 16));
 		}
 	}
 	else
@@ -245,8 +245,8 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		if (gCampaign.Setting.Missions.size)
 		{
 			sprintf(s, "End/%d", (int)gCampaign.Setting.Missions.size);
-			TextStringMasked(&gTextManager, 
-				s, g, Vec2iNew(270, y),
+			FontStrMask(
+				s, Vec2iNew(270, y),
 				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		}
 	}
@@ -256,8 +256,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
 	}
 
-	TextString(&gTextManager, 
-		"Press F1 for help", g, Vec2iNew(20, h - 20 - CDogsTextHeight()));
+	FontStr("Press F1 for help", Vec2iNew(20, h - 20 - FontH()));
 
 	y = 150;
 
@@ -458,11 +457,12 @@ static void Open(void)
 	while (!done)
 	{
 		ClearScreen(&gGraphicsDevice);
-		CDogsTextStringAt(125, 50, "Open file:");
-		CDogsTextGoto(125, 50 + CDogsTextHeight());
-		CDogsTextChar('\020');
-		CDogsTextString(filename);
-		CDogsTextChar('\021');
+		Vec2i pos = Vec2iNew(125, 50);
+		FontStr("Open file:", pos);
+		pos.y += FontH();
+		pos = FontCh('>', pos);
+		pos = FontStr(filename, pos);
+		pos = FontCh('<', pos);
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		bool doOpen = false;
@@ -538,11 +538,12 @@ static void Save(void)
 	while (!done)
 	{
 		ClearScreen(&gGraphicsDevice);
-		CDogsTextStringAt(125, 50, "Save as:");
-		CDogsTextGoto(125, 50 + CDogsTextHeight());
-		CDogsTextChar('\020');
-		CDogsTextString(filename);
-		CDogsTextChar('\021');
+		Vec2i pos = Vec2iNew(125, 50);
+		FontStr("Save as:", pos);
+		pos.y += FontH();
+		pos = FontCh('>', pos);
+		pos = FontStr(filename, pos);
+		pos = FontCh('<', pos);
 		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 
 		int c = GetKey(&gEventHandlers);
@@ -626,7 +627,7 @@ static void HelpScreen(void)
 		"Ctrl+M:                         Preview automap\n"
 		"F1:                             This screen\n";
 	ClearScreen(&gGraphicsDevice);
-	TextString(&gTextManager, helpText, &gGraphicsDevice, pos);
+	FontStr(helpText, pos);
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	GetKey(&gEventHandlers);
 }

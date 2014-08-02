@@ -175,7 +175,7 @@ int CampaignIntro(GraphicsDevice *device)
 
 	TextSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
 	x = w / 6 / 2;
-	TextString(&gTextManager, s, device, Vec2iNew(x, y));
+	FontStr(s, Vec2iNew(x, y));
 
 	BlitFlip(device, &gConfig.Graphics);
 	int result = WaitForAnyKeyOrButton(&gEventHandlers);
@@ -255,7 +255,7 @@ void MissionBriefing(GraphicsDevice *device)
 		pos = Vec2iNew(w / 6 / 2, y);
 		strncpy(typewriterBuf, description, typewriterCount);
 		typewriterBuf[typewriterCount] = '\0';
-		TextString(&gTextManager, typewriterBuf, device, pos);
+		FontStr(typewriterBuf, pos);
 		y += descriptionHeight;
 
 		y += h / 10;
@@ -270,8 +270,8 @@ void MissionBriefing(GraphicsDevice *device)
 			{
 				continue;
 			}
-			CDogsTextStringAt(w / 6, y, o->Description);
-			DrawObjectiveInfo(i, w - (w / 6), y + 8, &gMission);
+			FontStr(o->Description, Vec2iNew(w / 6, y));
+			DrawObjectiveInfo(i, w - (w / 6), y + FontH(), &gMission);
 			y += h / 12;
 		}
 
@@ -287,39 +287,35 @@ void MissionBriefing(GraphicsDevice *device)
 void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 {
 	char s[50];
-	int totalTextHeight = CDogsTextHeight() * 7;
+	int totalTextHeight = FontH() * 7;
 	// display text on right half
 	Vec2i textPos = Vec2iNew(
 		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
 
 	DisplayCharacterAndName(
-		&gGraphicsDevice,
 		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
 		&gCampaign.Setting.characters.players[character],
 		data->name);
 
 	if (data->survived)
 	{
-		TextString(
-			&gTextManager, "Completed mission", &gGraphicsDevice, textPos);
+		FontStr("Completed mission", textPos);
 	}
 	else
 	{
-		TextStringMasked(
-			&gTextManager, "Failed mission",
-			&gGraphicsDevice, textPos, colorRed);
+		FontStrMask("Failed mission", textPos, colorRed);
 	}
 
-	textPos.y += 2 * CDogsTextHeight();
+	textPos.y += 2 * FontH();
 	sprintf(s, "Score: %d", data->score);
-	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-	textPos.y += CDogsTextHeight();
+	FontStr(s, textPos);
+	textPos.y += FontH();
 	sprintf(s, "Total: %d", data->totalScore);
-	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-	textPos.y += CDogsTextHeight();
+	FontStr(s, textPos);
+	textPos.y += FontH();
 	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));
-	TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-	textPos.y += CDogsTextHeight();
+	FontStr(s, textPos);
+	textPos.y += FontH();
 
 	if (data->survived && (data->hp > 150 || data->hp <= 0))
 	{
@@ -332,28 +328,28 @@ void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
 		{
 			sprintf(s, "Resurrection fee: %d", -500);
 		}
-		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-		textPos.y += CDogsTextHeight();
+		FontStr(s, textPos);
+		textPos.y += FontH();
 	}
 
 	if (data->friendlies > 0 && data->friendlies > data->kills / 2)
 	{
 		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
-		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-		textPos.y += CDogsTextHeight();
+		FontStr(s, textPos);
+		textPos.y += FontH();
 	}
 	else if (data->weaponCount == 1 &&
 		!data->weapons[0]->CanShoot && data->kills > 0)
 	{
 		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
-		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-		textPos.y += CDogsTextHeight();
+		FontStr(s, textPos);
+		textPos.y += FontH();
 	}
 	else if (data->kills == 0 && data->friendlies == 0)
 	{
 		sprintf(s, "Friendly bonus: %d", 500);
-		TextString(&gTextManager, s, &gGraphicsDevice, textPos);
-		textPos.y += CDogsTextHeight();
+		FontStr(s, textPos);
+		textPos.y += FontH();
 	}
 }
 
@@ -391,7 +387,7 @@ void Bonuses(void)
 			continue;
 		}
 		
-		DrawObjectiveInfo(i, x - 26, y + 8, &gMission);
+		DrawObjectiveInfo(i, x - 26, y + FontH(), &gMission);
 		sprintf(s, "Objective %d: %d of %d, %d required",
 			idx, o->done, mo->Count, mo->Required);
 		if (mo->Required > 0)
@@ -432,8 +428,8 @@ void Bonuses(void)
 	if (access_bonus > 0 && AreAnySurvived())
 	{
 		sprintf(s, "Access bonus: %d", access_bonus);
-		CDogsTextStringAt(x, y, s);
-		y += CDogsTextHeight() + 1;
+		FontStr(s, Vec2iNew(x, y));
+		y += FontH() + 1;
 		bonus += access_bonus;
 	}
 
@@ -445,7 +441,7 @@ void Bonuses(void)
 	{
 		int timeBonus = i * 25;
 		sprintf(s, "Time bonus: %d secs x 25 = %d", i, timeBonus);
-		CDogsTextStringAt(x, y, s);
+		FontStr(s, Vec2iNew(x, y));
 		bonus += timeBonus;
 	}
 
@@ -546,15 +542,14 @@ void MissionSummary(GraphicsDevice *device)
 	WaitForAnyKeyOrButton(&gEventHandlers);
 }
 
-static void ShowPlayerScore(
-	GraphicsDevice *g, Vec2i pos, Character *c, char *name, int score)
+static void ShowPlayerScore(Vec2i pos, Character *c, char *name, int score)
 {
 	Vec2i scorePos;
 	char s[10];
-	DisplayCharacterAndName(g, pos, c, name);
+	DisplayCharacterAndName(pos, c, name);
 	sprintf(s, "Score: %d", score);
 	scorePos = Vec2iNew(pos.x - TextGetStringWidth(s) / 2, pos.y + 20);
-	TextString(&gTextManager, s, g, scorePos);
+	FontStr(s, scorePos);
 }
 
 void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
@@ -575,10 +570,8 @@ void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 		pos.x = w / 4 + (i & 1) * w / 2;
 		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
 		ShowPlayerScore(
-			device, pos,
-			&gCampaign.Setting.characters.players[i],
-			gPlayerDatas[i].name,
-			scores[i]);
+			pos, &gCampaign.Setting.characters.players[i],
+			gPlayerDatas[i].name, scores[i]);
 	}
 
 	BlitFlip(device, &gConfig.Graphics);
@@ -623,14 +616,13 @@ void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
 		pos.x = w / 4 + (i & 1) * w / 2;
 		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
 		DisplayCharacterAndName(
-			device, pos,
-			&gCampaign.Setting.characters.players[i],
+			pos, &gCampaign.Setting.characters.players[i],
 			gPlayerDatas[i].name);
 		if (!isTie && maxScorePlayer == i)
 		{
 			Vec2i msgPos = Vec2iNew(
 				pos.x - TextGetStringWidth(IS_WINNER) / 2, pos.y + 20);
-			TextString(&gTextManager, IS_WINNER, device, msgPos);
+			FontStr(IS_WINNER, msgPos);
 		}
 	}
 	if (isTie)
@@ -694,11 +686,9 @@ void Victory(GraphicsDevice *graphics)
 	GraphicsBlitBkg(graphics);
 
 	x = 160 - TextGetStringWidth(CONGRATULATIONS) / 2;
-	CDogsTextStringAt(x, 100, CONGRATULATIONS);
+	FontStr(CONGRATULATIONS, Vec2iNew(x, 100));
 	x = 160 - TextGetStringWidth(gCampaign.Setting.Title) / 2;
-	TextStringMasked(
-		&gTextManager, gCampaign.Setting.Title,
-		graphics, Vec2iNew(x, 115), colorRed);
+	FontStrMask(gCampaign.Setting.Title, Vec2iNew(x, 115), colorRed);
 
 	switch (gOptions.numPlayers)
 	{
@@ -707,7 +697,7 @@ void Victory(GraphicsDevice *graphics)
 			i = rand() % i;
 			s = finalWords1P[i];
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 4, h / 4),
+				Vec2iNew(w / 4, h / 4),
 				&gCampaign.Setting.characters.players[0],
 				gPlayerDatas[0].name);
 			break;
@@ -717,11 +707,11 @@ void Victory(GraphicsDevice *graphics)
 			s = finalWords2P[i];
 			// side by side
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 8, h / 4),
+				Vec2iNew(w / 8, h / 4),
 				&gCampaign.Setting.characters.players[0],
 				gPlayerDatas[0].name);
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 8 + w / 2, h / 4),
+				Vec2iNew(w / 8 + w / 2, h / 4),
 				&gCampaign.Setting.characters.players[1],
 				gPlayerDatas[1].name);
 			break;
@@ -732,21 +722,21 @@ void Victory(GraphicsDevice *graphics)
 			s = finalWords2P[i];
 			// 2x2
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 8, h / 8),
+				Vec2iNew(w / 8, h / 8),
 				&gCampaign.Setting.characters.players[0],
 				gPlayerDatas[0].name);
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 8 + w / 2, h / 8),
+				Vec2iNew(w / 8 + w / 2, h / 8),
 				&gCampaign.Setting.characters.players[1],
 				gPlayerDatas[1].name);
 			DisplayCharacterAndName(
-				graphics, Vec2iNew(w / 8, h / 8 + h / 4),
+				Vec2iNew(w / 8, h / 8 + h / 4),
 				&gCampaign.Setting.characters.players[2],
 				gPlayerDatas[2].name);
 			if (gOptions.numPlayers == 4)
 			{
 				DisplayCharacterAndName(
-					graphics, Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
+					Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
 					&gCampaign.Setting.characters.players[3],
 					gPlayerDatas[3].name);
 			}
@@ -757,9 +747,9 @@ void Victory(GraphicsDevice *graphics)
 	}
 
 	Vec2i pos = Vec2iNew((w - TextGetStringWidth(s)) / 2, h / 2 + 20);
-	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
-	pos = TextStringMasked(&gTextManager, s, graphics, pos, colorPurple);
-	pos = TextCharMasked(&gTextManager, '"', graphics, pos, colorDarker);
+	pos = FontChMask('"', pos, colorDarker);
+	pos = FontStrMask(s, pos, colorPurple);
+	pos = FontChMask('"', pos, colorDarker);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 

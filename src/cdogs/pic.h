@@ -101,6 +101,8 @@ void PicCopy(Pic *dst, const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 
+bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
+
 void NamedSpritesInit(NamedSprites *ns, const char *name);
 void NamedSpritesFree(NamedSprites *ns);
 

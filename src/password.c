@@ -59,6 +59,7 @@
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
+#include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/grafx_bg.h>
@@ -197,22 +198,22 @@ static int PasswordEntry(int cmd, char *buffer)
 	#define	ENTRY_SPACING	12
 	
 	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + CDogsTextCharWidth('a')));
-	y = (int)CenterY(((CDogsTextHeight() * ((strlen(letters) - 1) / ENTRY_COLS) )));
+	y = (int)CenterY(((FontH() * ((strlen(letters) - 1) / ENTRY_COLS) )));
 	
 	// Draw selection
 	for (i = 0; i < (int)strlen(letters) + 1; i++)
 	{
 		Vec2i pos = Vec2iNew(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * CDogsTextHeight());
+			y + (i / ENTRY_COLS) * FontH());
 		color_t mask = (i == (int)selection) ? colorRed : colorWhite;
 		if (i < (int)strlen(letters))
 		{
-			TextCharMasked(&gTextManager, letters[i], &gGraphicsDevice, pos, mask);
+			FontChMask(letters[i], pos, mask);
 		}
 		else
 		{
-			TextStringMasked(&gTextManager, DONE, &gGraphicsDevice, pos, mask);
+			FontStrMask(DONE, pos, mask);
 		}
 	}
 
@@ -253,15 +254,15 @@ static int EnterCode(GraphicsDevice *graphics, const char *password)
 		#define SYMBOL_LEFT	'\020'
 		#define	SYMBOL_RIGHT	'\021'
 
-		CDogsTextGoto(
+		Vec2i pos = Vec2iNew(
 			CenterX(
 				TextGetStringWidth(buffer) +
 				CDogsTextCharWidth(SYMBOL_LEFT) +
 				CDogsTextCharWidth(SYMBOL_RIGHT)),
-				graphics->cachedConfig.Res.x / 4);
-		CDogsTextChar(SYMBOL_LEFT);
-		CDogsTextString(buffer);
-		CDogsTextChar(SYMBOL_RIGHT);
+			graphics->cachedConfig.Res.y / 4);
+		pos = FontCh('>', pos);
+		pos = FontStr(buffer, pos);
+		pos = FontCh('<', pos);
 
 		CDogsTextStringSpecial(
 			"Enter code",

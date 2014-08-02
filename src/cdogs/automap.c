@@ -54,6 +54,7 @@
 #include "actors.h"
 #include "config.h"
 #include "drawtools.h"
+#include "font.h"
 #include "map.h"
 #include "mission.h"
 #include "objs.h"
@@ -144,7 +145,7 @@ static void DisplaySummary(void)
 	int i;
 	char sScore[20];
 	Vec2i pos;
-	pos.y = gGraphicsDevice.cachedConfig.Res.y - 5 - CDogsTextHeight();
+	pos.y = gGraphicsDevice.cachedConfig.Res.y - 5 - FontH();
 
 	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
@@ -169,13 +170,10 @@ static void DisplaySummary(void)
 			{
 				textColor = colorRed;
 			}
-			pos = TextStringMasked(
-				&gTextManager, mo->Description,
-				&gGraphicsDevice, pos, textColor);
+			pos = FontStrMask(mo->Description, pos, textColor);
 			pos.x += 5;
-			TextStringMasked(
-				&gTextManager, sScore, &gGraphicsDevice, pos, textColor);
-			pos.y -= (CDogsTextHeight() + 1);
+			FontStrMask(sScore, pos, textColor);
+			pos.y -= (FontH() + 1);
 		}
 	}
 }

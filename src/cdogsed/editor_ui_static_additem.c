@@ -215,7 +215,7 @@ static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush);
 UIObject *CreateAddItemObjs(
 	Vec2i pos, EditorBrush *brush, CampaignOptions *co)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *o2;
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 

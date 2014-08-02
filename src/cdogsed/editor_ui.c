@@ -860,15 +860,13 @@ static void DrawStyleArea(
 	int isHighlighted)
 {
 	char buf[16];
-	TextStringMasked(&gTextManager, name, g, pos, isHighlighted ? colorRed : colorWhite);
-	pos.y += CDogsTextHeight();
+	FontStrMask(name, pos, isHighlighted ? colorRed : colorWhite);
+	pos.y += FontH();
 	DrawTPic(pos.x, pos.y, pic);
 	// Display style index and count, right aligned
 	sprintf(buf, "%d/%d", idx + 1, count);
-	TextStringMasked(&gTextManager, 
-		buf,
-		g,
-		Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
+	FontStrMask(
+		buf, Vec2iNew(pos.x + 28 - TextGetStringWidth(buf), pos.y + 17),
 		colorGray);
 }
 static void DisplayMapItemWithDensity(
@@ -878,12 +876,11 @@ static void DisplayMapItemWithDensity(
 	DisplayMapItem(pos, mo);
 	if (isHighlighted)
 	{
-		TextCharMasked(&gTextManager, 
-			'\020', g, Vec2iAdd(pos, Vec2iNew(-8, -4)), colorWhite);
+		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -4)));
 	}
 	char s[10];
 	sprintf(s, "%d", density);
-	TextString(&gTextManager, s, g, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
 }
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t)
@@ -899,16 +896,9 @@ void DisplayFlag(
 	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
 {
 	color_t labelMask = isHighlighted ? colorRed : colorWhite;
-	pos = TextStringMasked(&gTextManager, s, g, pos, labelMask);
-	pos = TextCharMasked(&gTextManager, ':', g, pos, labelMask);
-	if (isOn)
-	{
-		TextStringMasked(&gTextManager, "On", g, pos, colorPurple);
-	}
-	else
-	{
-		TextStringMasked(&gTextManager, "Off", g, pos, colorWhite);
-	}
+	pos = FontStrMask(s, pos, labelMask);
+	pos = FontChMask(':', pos, labelMask);
+	FontStrMask(isOn ? "On" : "Off", pos, isOn ? colorPurple : colorWhite);
 }
 
 
@@ -1413,7 +1403,7 @@ static void DrawBackground(
 }
 static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
@@ -1728,7 +1718,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 }
 static UIObject *CreateCampaignObjs(CampaignOptions *co)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
@@ -1770,7 +1760,7 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 }
 static UIObject *CreateMissionObjs(CampaignOptions *co)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
@@ -1790,7 +1780,7 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 }
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
@@ -1954,7 +1944,7 @@ static void CreateWeaponToggleObjs(
 	int *idx, const int rows, CArray *guns);
 static UIObject *CreateWeaponObjs(CampaignOptions *co)
 {
-	const int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c = UIObjectCreate(
 		UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
@@ -1977,7 +1967,7 @@ static void CreateWeaponToggleObjs(
 	CampaignOptions *co, UIObject *c, const UIObject *o,
 	int *idx, const int rows, CArray *guns)
 {
-	const int th = CDogsTextHeight();
+	const int th = FontH();
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const GunDescription *g = CArrayGet(guns, i);
@@ -2027,7 +2017,7 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 }
 static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
@@ -2177,7 +2167,7 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy)
 
 UIObject *CreateCharEditorObjs(void)
 {
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;

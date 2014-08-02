@@ -55,6 +55,7 @@
 #include "actors.h"
 #include "automap.h"
 #include "drawtools.h"
+#include "font.h"
 #include "game_events.h"
 #include "mission.h"
 #include "pic_manager.h"
@@ -98,7 +99,7 @@ void FPSCounterDraw(FPSCounter *counter)
 	char s[50];
 	counter->framesDrawn++;
 	sprintf(s, "FPS: %d", counter->fps);
-	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 5 + CDogsTextHeight());
+	CDogsTextStringSpecial(s, TEXT_RIGHT | TEXT_BOTTOM, 10, 5 + FontH());
 }
 
 void WallClockSetTime(WallClock *wc)
@@ -127,7 +128,7 @@ void WallClockDraw(WallClock *wc)
 {
 	char s[50];
 	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
-	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 5 + CDogsTextHeight());
+	CDogsTextStringSpecial(s, TEXT_LEFT | TEXT_BOTTOM, 10, 5 + FontH());
 }
 
 void HUDInit(
@@ -273,7 +274,7 @@ static void DrawWeaponStatus(
 	if (weapon->lock > 0)
 	{
 		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-		const Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
+		const Vec2i size = Vec2iNew(GAUGE_WIDTH, FontH() + 1);
 		const color_t barColor = { 0, 0, 255, 255 };
 		const int maxLock = weapon->Gun->Lock;
 		int innerWidth;
@@ -297,7 +298,7 @@ static void DrawHealth(
 {
 	char s[50];
 	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-	Vec2i size = Vec2iNew(GAUGE_WIDTH, CDogsTextHeight() + 1);
+	Vec2i size = Vec2iNew(GAUGE_WIDTH, FontH() + 1);
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
@@ -483,7 +484,7 @@ static void DrawPlayerStatus(
 	}
 
 	CDogsTextStringSpecial(data->name, textFlags, pos.x, pos.y);
-	const int rowHeight = 1 + CDogsTextHeight();
+	const int rowHeight = 1 + FontH();
 	pos.y += rowHeight;
 	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
@@ -647,7 +648,7 @@ static void DrawCompassArrow(
 		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
 		textPos.y = MAX(textPos.y, r.Pos.y + padding);
 		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
-		TextStringMasked(&gTextManager, label, g, textPos, mask);
+		FontStrMask(label, textPos, mask);
 	}
 }
 
@@ -799,8 +800,7 @@ void HUDDraw(HUD *hud, int isPaused)
 			(hud->device->cachedConfig.Res.x -
 			TextGetStringWidth(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
-		TextStringMasked(
-			&gTextManager, hud->message, hud->device, pos, colorCyan);
+		FontStrMask(hud->message, pos, colorCyan);
 	}
 
 	if (hud->config->ShowFPS)
@@ -836,8 +836,8 @@ static void DrawNumUpdate(
 	const char *formatText, int currentValue, Vec2i pos, int flags);
 static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
-	const int rowHeight = 1 + CDogsTextHeight();
-	int y = 5 + 1 + CDogsTextHeight() + rowHeight * 2;
+	const int rowHeight = 1 + FontH();
+	int y = 5 + 1 + FontH() + rowHeight * 2;
 	if (IsPlayerAlive(health->Index))
 	{
 		TActor *player = CArrayGet(&gActors, gPlayerIds[health->Index]);
@@ -850,8 +850,8 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 	{
 		return;
 	}
-	const int rowHeight = 1 + CDogsTextHeight();
-	int y = 5 + 1 + CDogsTextHeight() + rowHeight;
+	const int rowHeight = 1 + FontH();
+	int y = 5 + 1 + FontH() + rowHeight;
 	DrawNumUpdate(
 		score, "Score: %d", gPlayerDatas[score->Index].score,
 		Vec2iNew(5, y), flags);
@@ -940,7 +940,7 @@ static void DrawNumUpdate(
 static void DrawObjectiveCounts(HUD *hud)
 {
 	int x = 5 + GAUGE_WIDTH;
-	int y = hud->device->cachedConfig.Res.y - 5 - CDogsTextHeight();
+	int y = hud->device->cachedConfig.Res.y - 5 - FontH();
 	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
 		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
@@ -973,7 +973,7 @@ static void DrawObjectiveCounts(HUD *hud)
 		{
 			strcpy(s, "Done");
 		}
-		CDogsTextStringAt(x, y, s);
+		FontStr(s, Vec2iNew(x, y));
 
 		for (int j = 0; j < (int)hud->objectiveUpdates.size; j++)
 		{

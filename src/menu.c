@@ -61,6 +61,7 @@
 #include <cdogs/defs.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
+#include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/mission.h>
@@ -257,20 +258,20 @@ void DisplayMenuItem(
 {
 	if (selected)
 	{
-		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, colorRed);
+		FontStrMask(s, pos, colorRed);
 	}
 	else if (isDisabled)
 	{
 		color_t dark = { 64, 64, 64, 255 };
-		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, dark);
+		FontStrMask(s, pos, dark);
 	}
 	else if (!ColorEquals(color, colorBlack))
 	{
-		TextStringMasked(&gTextManager, s, &gGraphicsDevice, pos, color);
+		FontStrMask(s, pos, color);
 	}
 	else
 	{
-		TextString(&gTextManager, s, &gGraphicsDevice, pos);
+		FontStr(s, pos);
 	}
 }
 
@@ -543,9 +544,6 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 	int maxWidth = 0;
 	menu_t *menu = ms->current;
 
-#define ARROW_UP	"\036"
-#define ARROW_DOWN	"\037"
-
 	switch (menu->type)
 	{
 	// TODO: refactor the three menu types (normal, options, campaign) into one
@@ -594,7 +592,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					(int)menu->u.normal.subMenus.size);
 			}
 
-			yStart = MS_CENTER_Y(*ms, (iEnd - iStart) * CDogsTextHeight());
+			yStart = MS_CENTER_Y(*ms, (iEnd - iStart) * FontH());
 			if (menu->u.normal.maxItems > 0)
 			{
 				// Display scroll arrows
@@ -602,9 +600,9 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				{
 					DisplayMenuItem(
 						Vec2iNew(
-							MS_CENTER_X(*ms, TextGetStringWidth(ARROW_UP)),
-							yStart - 2 - CDogsTextHeight()),
-						ARROW_UP,
+							MS_CENTER_X(*ms, FontW('^')),
+							yStart - 2 - FontH()),
+						"^",
 						0, 0,
 						colorBlack);
 				}
@@ -612,9 +610,9 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				{
 					DisplayMenuItem(
 						Vec2iNew(
-							MS_CENTER_X(*ms, TextGetStringWidth(ARROW_DOWN)),
-							yStart + menu->u.normal.maxItems*CDogsTextHeight() + 2),
-						ARROW_DOWN,
+							MS_CENTER_X(*ms, FontW('v')),
+							yStart + menu->u.normal.maxItems*FontH() + 2),
+						"v",
 						0, 0,
 						colorBlack);
 				}
@@ -624,7 +622,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			// Display normal menu items
 			for (int i = iStart; i < iEnd; i++)
 			{
-				int y = yStart + (i - iStart) * CDogsTextHeight();
+				int y = yStart + (i - iStart) * FontH();
 				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 				Vec2i pos = Vec2iNew(x, y);
 
@@ -656,23 +654,29 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
 					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
 				{
-					int optionInt = MenuOptionGetIntValue(subMenu);
+					const int optionInt = MenuOptionGetIntValue(subMenu);
+					const Vec2i pos = Vec2iNew(xOptions, y);
 					switch (subMenu->u.option.displayStyle)
 					{
 					case MENU_OPTION_DISPLAY_STYLE_INT:
-						CDogsTextIntAt(xOptions, y, optionInt);
+						{
+							char buf[32];
+							sprintf(buf, "%d", optionInt);
+							FontStr(buf, pos);
+						}
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_YES_NO:
-						CDogsTextStringAt(xOptions, y, optionInt ? "Yes" : "No");
+						FontStr(optionInt ? "Yes" : "No", pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_ON_OFF:
-						CDogsTextStringAt(xOptions, y, optionInt ? "On" : "Off");
+						FontStr(optionInt ? "On" : "Off", pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-						CDogsTextStringAt(xOptions, y, subMenu->u.option.uFunc.str());
+						FontStr(subMenu->u.option.uFunc.str(), pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
-						CDogsTextStringAt(xOptions, y, subMenu->u.option.uFunc.intToStr(optionInt));
+						FontStr(
+							subMenu->u.option.uFunc.intToStr(optionInt), pos);
 						break;
 					default:
 						break;
@@ -686,11 +690,11 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			int xKeys;
 			x = MS_CENTER_X(*ms, (CDogsTextCharWidth('a') * 10)) / 2;
 			xKeys = x * 3;
-			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (CDogsTextHeight() * 10);
+			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
 
 			for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 			{
-				int y = yStart + i * CDogsTextHeight();
+				int y = yStart + i * FontH();
 				int isSelected = i == menu->u.normal.index;
 				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 
@@ -698,13 +702,11 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 				if (isSelected &&
 					subMenu->type != MENU_TYPE_SET_OPTION_CHANGE_KEY)
 				{
-					TextStringMasked(
-						&gTextManager, name,
-						ms->graphics, Vec2iNew(x, y), colorRed);
+					FontStrMask(name, Vec2iNew(x, y), colorRed);
 				}
 				else
 				{
-					CDogsTextStringAt(x, y, name);
+					FontStr(name, Vec2iNew(x, y));
 				}
 
 				if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)

@@ -56,7 +56,7 @@
 #include "pic_file.h"
 #include "vector.h"
 
-color_t PixelToColor(GraphicsDevice *device, Uint32 pixel);
+color_t PixelToColor(const GraphicsDevice *device, Uint32 pixel);
 Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 
 #define BLIT_TRANSPARENT 1

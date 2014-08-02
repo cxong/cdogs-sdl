@@ -61,6 +61,7 @@
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/files.h>
+#include <cdogs/font.h>
 #include <cdogs/grafx.h>
 #include <cdogs/input.h>
 #include <cdogs/joystick.h>
@@ -346,8 +347,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 					assert(0 && "not implemented");
 					break;
 				}
-				TextString(
-					&gTextManager, prompt, graphics, Vec2iAdd(center, offset));
+				FontStr(prompt, Vec2iAdd(center, offset));
 			}
 		}
 		BlitFlip(graphics, &gConfig.Graphics);

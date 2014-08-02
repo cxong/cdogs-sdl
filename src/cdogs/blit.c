@@ -63,7 +63,7 @@
 #include "utils.h" /* for debug() */
 
 
-color_t PixelToColor(GraphicsDevice *device, Uint32 pixel)
+color_t PixelToColor(const GraphicsDevice *device, Uint32 pixel)
 {
 	SDL_PixelFormat *f = device->screen->format;
 	color_t c;
@@ -171,28 +171,14 @@ void BlitPicHighlight(
 			bool isPixelEmpty =
 				isTopOrBottomEdge || isLeftOrRightEdge ||
 				!PixelToColor(g, *(pic->Data + j + i * pic->size.x)).a;
-			if (isPixelEmpty)
+			if (isPixelEmpty &&
+				PicPxIsEdge(pic, Vec2iNew(j, i), !isPixelEmpty))
 			{
-				bool isLeft =
-					j > 0 && !isTopOrBottomEdge &&
-					PixelToColor(g, *(pic->Data + j - 1 + i * pic->size.x)).a;
-				bool isRight =
-					j < pic->size.x - 1 && !isTopOrBottomEdge &&
-					PixelToColor(g, *(pic->Data + j + 1 + i * pic->size.x)).a;
-				bool isAbove =
-					i > 0 && !isLeftOrRightEdge &&
-					PixelToColor(g, *(pic->Data + j + (i - 1) * pic->size.x)).a;
-				bool isBelow =
-					i < pic->size.y - 1 && !isLeftOrRightEdge &&
-					PixelToColor(g, *(pic->Data + j + (i + 1) * pic->size.x)).a;
-				if (isLeft || isRight || isAbove || isBelow)
-				{
-					Uint32 *target = g->buf + yoff + xoff;
-					color_t targetColor = PixelToColor(g, *target);
-					color_t blendedColor = ColorAlphaBlend(
-						targetColor, color);
-					*target = PixelFromColor(g, blendedColor);
-				}
+				Uint32 *target = g->buf + yoff + xoff;
+				color_t targetColor = PixelToColor(g, *target);
+				color_t blendedColor = ColorAlphaBlend(
+					targetColor, color);
+				*target = PixelFromColor(g, blendedColor);
 			}
 		}
 	}

@@ -300,7 +300,7 @@ UIObject *CreateStaticMapObjs(
 	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
 	int x = pos.x;
-	int th = CDogsTextHeight();
+	const int th = FontH();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o2;
 	// Check whether the map type matches, and set visibility

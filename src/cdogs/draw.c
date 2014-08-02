@@ -54,6 +54,7 @@
 #include "actors.h"
 #include "config.h"
 #include "drawtools.h"
+#include "font.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
@@ -406,7 +407,7 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 				a->tileItem.x - b->xTop + offset.x -
 				TextGetStringWidth(text) / 2,
 				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
-			TextString(&gTextManager, text, b->g, textPos);
+			FontStr(text, textPos);
 		}
 	}
 	else
@@ -595,20 +596,19 @@ void DrawCharacterSimple(
 
 void DisplayPlayer(int x, const char *name, Character *c, int editingName)
 {
-	Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.Res.y / 10);
-	Vec2i playerPos = Vec2iAdd(pos, Vec2iNew(20, 36));
-
+	const Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.Res.y / 10);
 	if (editingName)
 	{
 		char s[22];
 		sprintf(s, "%c%s%c", '\020', name, '\021');
-		CDogsTextStringAt(pos.x, pos.y, s);
+		FontStr(s, pos);
 	}
 	else
 	{
-		CDogsTextStringAt(pos.x, pos.y, name);
+		FontStr(name, pos);
 	}
 
+	const Vec2i playerPos = Vec2iAdd(pos, Vec2iNew(20, 36));
 	DrawCharacterSimple(
 		c, playerPos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
@@ -621,12 +621,10 @@ void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 	if (hilite)
 	{
-		CDogsTextGoto(pos.x - 8, pos.y - 16);
-		CDogsTextChar('\020');
+		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -16)));
 		if (showGun)
 		{
-			CDogsTextGoto(pos.x - 8, pos.y + 8);
-			CDogsTextString(c->Gun->name);
+			FontStr(c->Gun->name, Vec2iAdd(pos, Vec2iNew(-8, 8)));
 		}
 	}
 }

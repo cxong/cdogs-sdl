@@ -115,6 +115,33 @@ int PicIsNotNone(Pic *pic)
 	return pic->size.x > 0 && pic->size.y > 0 && pic->Data != NULL;
 }
 
+bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel)
+{
+	const GraphicsDevice *g = &gGraphicsDevice;
+	const bool isTopOrBottomEdge = pos.y == -1 || pos.y == pic->size.y;
+	const bool isLeftOrRightEdge = pos.x == -1 || pos.x == pic->size.x;
+	const bool isLeft =
+		pos.x > 0 && !isTopOrBottomEdge &&
+		PixelToColor(g, *(pic->Data + pos.x - 1 + pos.y * pic->size.x)).a;
+	const bool isRight =
+		pos.x < pic->size.x - 1 && !isTopOrBottomEdge &&
+		PixelToColor(g, *(pic->Data + pos.x + 1 + pos.y * pic->size.x)).a;
+	const bool isAbove =
+		pos.y > 0 && !isLeftOrRightEdge &&
+		PixelToColor(g, *(pic->Data + pos.x + (pos.y - 1) * pic->size.x)).a;
+	const bool isBelow =
+		pos.y < pic->size.y - 1 && !isLeftOrRightEdge &&
+		PixelToColor(g, *(pic->Data + pos.x + (pos.y + 1) * pic->size.x)).a;
+	if (isPixel)
+	{
+		return !(isLeft && isRight && isAbove && isBelow);
+	}
+	else
+	{
+		return isLeft || isRight || isAbove || isBelow;
+	}
+}
+
 
 void NamedSpritesInit(NamedSprites *ns, const char *name)
 {

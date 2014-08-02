@@ -371,8 +371,7 @@ static void UIObjectDrawAndAddChildren(
 				break;
 			}
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
-			TextStringMaskedWrapped(&gTextManager, 
-				text, g, oPos, textMask, o->Size.x);
+			FontStrMaskWrap(text, oPos, textMask, o->Size.x);
 		}
 		break;
 	case UITYPE_TEXTBOX:
@@ -394,14 +393,13 @@ static void UIObjectDrawAndAddChildren(
 			}
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = TextCharMasked(&gTextManager, '\020', g, oPos, bracketMask);
+				oPos = FontChMask('>', oPos, bracketMask);
 			}
-			oPos = TextStringMaskedWrapped(&gTextManager, 
-				text, g, oPos, textMask,
-				o->Pos.x + o->Size.x - oPosX);
+			oPos = FontStrMaskWrap(
+				text, oPos, textMask, o->Pos.x + o->Size.x - oPosX);
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = TextCharMasked(&gTextManager, '\021', g, oPos, bracketMask);
+				oPos = FontChMask('<', oPos, bracketMask);
 			}
 			oPos.x = oPosX;
 		}
@@ -412,8 +410,8 @@ static void UIObjectDrawAndAddChildren(
 			color_t textMask = isHighlighted ? colorRed : colorWhite;
 			char **labelp = CArrayGet(&o->u.Tab.Labels, o->u.Tab.Index);
 			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
-			TextStringMaskedWrapped(&gTextManager, 
-				*labelp, g, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
+			FontStrMaskWrap(
+				*labelp, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
 			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
@@ -575,5 +573,5 @@ void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)
 		Vec2iAdd(bgSize, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
 		bgColor,
 		0);
-	TextString(&gTextManager, s, device, pos);
+	FontStr(s, pos);
 }

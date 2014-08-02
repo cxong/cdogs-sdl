@@ -55,6 +55,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "font.h"
 #include "grafx.h"
 #include "blit.h"
 #include "actors.h" /* for tableFlamed */
@@ -123,28 +124,6 @@ void TextManagerTerminate(TextManager *tm)
 	}
 }
 
-void CDogsTextChar(char c)
-{
-	int i = CHAR_INDEX(c);
-	if (i >= 0 && i <= CHARS_IN_FONT && gTextManager.oldPics[i])
-	{
-		DrawTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i]);
-		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
-	}
-	else
-	{
-		i = CHAR_INDEX('.');
-		DrawTPic(xCDogsText, yCDogsText, gTextManager.oldPics[i]);
-		xCDogsText += 1 + gTextManager.oldPics[i]->w + dxCDogsText;
-	}
-}
-
-void CDogsTextString(const char *s)
-{
-	while (*s)
-		CDogsTextChar(*s++);
-}
-
 static int GetFontPicIndex(char c)
 {
 	int i = CHAR_INDEX(c);
@@ -164,15 +143,6 @@ Vec2i TextCharBlend(
 	CDogsTextGoto(pos.x, pos.y);
 	return pos;
 }
-Vec2i TextCharMasked(
-	TextManager *tm, char c, GraphicsDevice *device, Vec2i pos, color_t mask)
-{
-	Pic *fontPic = &tm->picsFromOld[GetFontPicIndex(c)];
-	BlitMasked(device, fontPic, pos, mask, 1);
-	pos.x += 1 + fontPic->size.x + dxCDogsText;
-	CDogsTextGoto(pos.x, pos.y);
-	return pos;
-}
 
 
 static Vec2i TextStringFunc(
@@ -186,7 +156,7 @@ static Vec2i TextStringFunc(
 		if (*s == '\n')
 		{
 			pos.x = left;
-			pos.y += CDogsTextHeight();
+			pos.y += FontH();
 		}
 		else
 		{
@@ -202,28 +172,6 @@ Vec2i TextStringBlend(
 {
 	return TextStringFunc(tm, s, device, pos, blend, TextCharBlend);
 }
-Vec2i TextStringMasked(
-	TextManager *tm, const char *s,
-	GraphicsDevice *device, Vec2i pos, color_t mask)
-{
-	return TextStringFunc(tm, s, device, pos, mask, TextCharMasked);
-}
-
-Vec2i TextString(
-	TextManager *tm, const char *s, GraphicsDevice *device, Vec2i pos)
-{
-	return TextStringMasked(tm, s, device, pos, colorWhite);
-}
-
-Vec2i TextStringMaskedWrapped(
-	TextManager *tm, const char *s,
-	GraphicsDevice *device, Vec2i pos, color_t mask, int width)
-{
-	char buf[1024];
-	assert(strlen(s) < 1024);
-	TextSplitLines(s, buf, width);
-	return TextStringMasked(tm, buf, device, pos, mask);
-}
 
 Vec2i TextGetSize(const char *s)
 {
@@ -231,7 +179,7 @@ Vec2i TextGetSize(const char *s)
 	while (*s)
 	{
 		char *lineEnd = strchr(s, '\n');
-		size.y += CDogsTextHeight();
+		size.y += FontH();
 		if (lineEnd)
 		{
 			size.x = MAX(size.x, TextGetSubstringWidth(s, lineEnd - s));
@@ -250,31 +198,6 @@ void CDogsTextGoto(int x, int y)
 {
 	xCDogsText = x;
 	yCDogsText = y;
-}
-
-void CDogsTextStringAt(int x, int y, const char *s)
-{
-	CDogsTextGoto(x, y);
-	CDogsTextString(s);
-}
-
-void CDogsTextIntAt(int x, int y, int i)
-{
-	char s[32];
-	CDogsTextGoto(x, y);
-	sprintf(s, "%d", i);
-	CDogsTextString(s);
-}
-
-void CDogsTextFormatAt(int x, int y, const char *fmt, ...)
-{
-	char s[256];
-	va_list argptr;
-	va_start(argptr, fmt);
-	vsprintf(s, fmt, argptr);
-	va_end(argptr);
-	CDogsTextGoto(x, y);
-	CDogsTextString(s);
 }
 
 int CDogsTextCharWidth(int c)
@@ -323,14 +246,11 @@ void DrawTextStringSpecialBlend(
 		tm, s, device, GetSpecialTextPos(s, opts, pos, size, padding), blend);
 	CDogsTextGoto(pos.x, pos.y);
 }
-void DrawTextStringSpecialMasked(
-	TextManager *tm, const char *s,
-	GraphicsDevice *device, unsigned int opts,
-	Vec2i pos, Vec2i size, Vec2i padding,
-	color_t mask)
+static void DrawTextStringSpecialMasked(
+	const char *s, unsigned int opts,
+	Vec2i pos, Vec2i size, Vec2i padding, color_t mask)
 {
-	pos = TextStringMasked(
-		tm, s, device, GetSpecialTextPos(s, opts, pos, size, padding), mask);
+	pos = FontStrMask(s, GetSpecialTextPos(s, opts, pos, size, padding), mask);
 	CDogsTextGoto(pos.x, pos.y);
 }
 static Vec2i GetSpecialTextPos(
@@ -339,7 +259,7 @@ static Vec2i GetSpecialTextPos(
 	int x = 0;
 	int y = 0;
 	int w = TextGetStringWidth(s);
-	int h = CDogsTextHeight();
+	const int h = FontH();
 
 	if (FLAG_SET(opts, TEXT_XCENTER))	{ x = pos.x + (size.x - w) / 2; }
 	if (FLAG_SET(opts, TEXT_YCENTER))	{ y = pos.y + (size.y - h) / 2; }
@@ -358,21 +278,15 @@ void DrawTextStringSpecial(
 {
 	if (FLAG_SET(opts, TEXT_FLAMED))
 	{
-		DrawTextStringSpecialMasked(
-			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
-			colorRed);
+		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorRed);
 	}
 	else if (FLAG_SET(opts, TEXT_PURPLE))
 	{
-		DrawTextStringSpecialMasked(
-			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
-			colorPurple);
+		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorPurple);
 	}
 	else
 	{
-		DrawTextStringSpecialMasked(
-			&gTextManager, s, &gGraphicsDevice, opts, pos, size, padding,
-			colorWhite);
+		DrawTextStringSpecialMasked(s, opts, pos, size, padding, colorWhite);
 	}
 }
 
@@ -382,12 +296,6 @@ void CDogsTextStringSpecial(const char *s, unsigned int opts, unsigned int xpad,
 	int scrh = gGraphicsDevice.cachedConfig.Res.y;
 	DrawTextStringSpecial(
 		s, opts, Vec2iZero(), Vec2iNew(scrw, scrh), Vec2iNew(xpad, ypad));
-}
-
-int CDogsTextHeight(void)
-{
-	assert(hCDogsText && "text not initialised");
-	return hCDogsText;
 }
 
 void TextSplitLines(const char *text, char *buf, int width)

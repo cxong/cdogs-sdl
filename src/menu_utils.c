@@ -31,13 +31,13 @@
 #include <assert.h>
 
 #include <cdogs/draw.h>
+#include <cdogs/font.h>
 #include <cdogs/text.h>
 
 
 // Display a character and the player name above it, with the character
 // centered around the target position
-void DisplayCharacterAndName(
-	GraphicsDevice *g, Vec2i pos, Character *c, char *name)
+void DisplayCharacterAndName(Vec2i pos, Character *c, char *name)
 {
 	Vec2i namePos;
 	// Move the point down a bit since the default character draw point is at
@@ -47,12 +47,13 @@ void DisplayCharacterAndName(
 	DrawCharacterSimple(
 		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
-	TextString(&gTextManager, name, g, namePos);
+	FontStr(name, namePos);
 }
 
 void MenuDisplayPlayer(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
+	UNUSED(g);
 	MenuDisplayPlayerData *d = data;
 	Vec2i playerPos;
 	char s[22];
@@ -70,15 +71,16 @@ void MenuDisplayPlayer(
 		strcpy(s, d->pData->name);
 	}
 
-	DisplayCharacterAndName(g, playerPos, d->c, s);
+	DisplayCharacterAndName(playerPos, d->c, s);
 }
 
 void MenuDisplayPlayerControls(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
 {
+	UNUSED(g);
 	char s[256];
 	MenuDisplayPlayerControlsData *d = data;
-	Vec2i textPos = Vec2iNew(0, pos.y + size.y - CDogsTextHeight());
+	Vec2i textPos = Vec2iNew(0, pos.y + size.y - FontH());
 	int textWidth = 0;
 
 	UNUSED(menu);
@@ -122,7 +124,7 @@ void MenuDisplayPlayerControls(
 	if (textWidth < 125)
 	{
 		textPos.x = pos.x - textWidth / 2;
-		TextString(&gTextManager, s, g, textPos);
+		FontStr(s, textPos);
 	}
 	else
 	{
@@ -140,11 +142,11 @@ void MenuDisplayPlayerControls(
 		}
 		textWidth = TextGetStringWidth(s);
 		textPos.x = pos.x - textWidth / 2;
-		textPos.y -= CDogsTextHeight();
-		TextString(&gTextManager, s, g, textPos);
+		textPos.y -= FontH();
+		FontStr(s, textPos);
 		textWidth = TextGetStringWidth(secondLine);
 		textPos.x = pos.x - textWidth / 2;
-		textPos.y += CDogsTextHeight();
-		TextString(&gTextManager, secondLine, g, textPos);
+		textPos.y += FontH();
+		FontStr(secondLine, textPos);
 	}
 }

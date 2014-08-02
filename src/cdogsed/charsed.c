@@ -72,9 +72,6 @@
 #include "ui_object.h"
 
 
-#define TH  8
-
-
 int fileChanged = 0;
 extern void *myScreen;
 
@@ -84,12 +81,12 @@ UIObject *sCharEditorObjs;
 
 static int PosToCharacterIndex(Vec2i pos, int *idx)
 {
-	if (pos.y < 10 + 5 * TH + 5)
+	if (pos.y < 10 + 5 * FontH() + 5)
 	{
 		return 0;
 	}
 
-	pos.y -= 10 + 5 * TH + 5;
+	pos.y -= 10 + 5 * FontH() + 5;
 
 	pos.x /= 20;
 	pos.y /= 30;
@@ -100,8 +97,7 @@ static int PosToCharacterIndex(Vec2i pos, int *idx)
 static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 {
 	color_t mask = hilite ? colorRed : colorWhite;
-	TextStringMasked(
-		&gTextManager, text, &gGraphicsDevice, Vec2iNew(x, y), mask);
+	FontStrMask(text, Vec2iNew(x, y), mask);
 }
 
 static void Display(CampaignSetting *setting, int idx, int xc, int yc)
@@ -117,7 +113,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	}
 
 	sprintf(s, "%d", (int)setting->characters.OtherChars.size);
-	CDogsTextStringAt(10, 190, s);
+	FontStr(s, Vec2iNew(10, 190));
 
 	if (idx >= 0 && idx < (int)setting->characters.OtherChars.size)
 	{
@@ -128,7 +124,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		DisplayCDogsText(120, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
 		DisplayCDogsText(150, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
 		DisplayCDogsText(180, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
-		y += CDogsTextHeight();
+		y += FontH();
 
 		sprintf(s, "Speed: %d%%", (100 * b->speed) / 256);
 		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
@@ -142,7 +138,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		DisplayCDogsText(220, y, s, yc == YC_ATTRIBUTES && xc == XC_SHOOT);
 		sprintf(s, "Delay: %d", b->bot->actionDelay);
 		DisplayCDogsText(270, y, s, yc == YC_ATTRIBUTES && xc == XC_DELAY);
-		y += CDogsTextHeight();
+		y += FontH();
 
 		DisplayFlag(
 			&gGraphicsDevice, Vec2iNew(5, y), "Asbestos",
@@ -172,7 +168,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 			&gGraphicsDevice, Vec2iNew(275, y), "Asleep",
 			    (b->flags & FLAGS_SLEEPALWAYS) != 0,
 			    yc == YC_FLAGS && xc == XC_SLEEPING);
-		y += CDogsTextHeight();
+		y += FontH();
 
 		DisplayFlag(
 			&gGraphicsDevice, Vec2iNew(5, y), "Prisoner",
@@ -198,10 +194,10 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 			&gGraphicsDevice, Vec2iNew(230, y), "Awake",
 			    (b->flags & FLAGS_AWAKEALWAYS) != 0,
 			    yc == YC_FLAGS && xc == XC_AWAKE);
-		y += CDogsTextHeight();
+		y += FontH();
 
 		DisplayCDogsText(50, y, b->Gun->name, yc == YC_WEAPON);
-		y += CDogsTextHeight() + 5;
+		y += FontH() + 5;
 
 		x = 10;
 		for (i = 0; i < (int)setting->characters.OtherChars.size; i++)

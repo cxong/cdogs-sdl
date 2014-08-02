@@ -50,4 +50,14 @@ void FontLoad(Font *f, const char *imgPath, const char *jsonPath);
 void FontFromImage(Font *f, SDL_Surface *image, json_t *data);
 void FontTerminate(Font *f);
 
+int FontW(const char c);
+int FontH(void);
+
+// Returns updated cursor position
+Vec2i FontCh(const char c, const Vec2i pos);
+Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask);
+Vec2i FontStr(const char *s, Vec2i pos);
+Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask);
+Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width);
+
 #endif
