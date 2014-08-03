@@ -659,28 +659,29 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
 				{
 					const int optionInt = MenuOptionGetIntValue(subMenu);
-					const Vec2i pos = Vec2iNew(xOptions, y);
+					const Vec2i value_pos = Vec2iNew(xOptions, y);
 					switch (subMenu->u.option.displayStyle)
 					{
 					case MENU_OPTION_DISPLAY_STYLE_INT:
 						{
 							char buf[32];
 							sprintf(buf, "%d", optionInt);
-							FontStr(buf, pos);
+							FontStr(buf, value_pos);
 						}
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_YES_NO:
-						FontStr(optionInt ? "Yes" : "No", pos);
+						FontStr(optionInt ? "Yes" : "No", value_pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_ON_OFF:
-						FontStr(optionInt ? "On" : "Off", pos);
+						FontStr(optionInt ? "On" : "Off", value_pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-						FontStr(subMenu->u.option.uFunc.str(), pos);
+						FontStr(subMenu->u.option.uFunc.str(), value_pos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
 						FontStr(
-							subMenu->u.option.uFunc.intToStr(optionInt), pos);
+							subMenu->u.option.uFunc.intToStr(optionInt),
+                            value_pos);
 						break;
 					default:
 						break;

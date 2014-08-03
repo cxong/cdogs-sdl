@@ -244,22 +244,22 @@ void MissionBriefing(GraphicsDevice *device)
 		y = h / 4;
 		sprintf(s, "Mission %d: %s",
 			gMission.index + 1, gMission.missionData->Title);
-		FontOpts opts = FontOptsNew();
-		opts.HAlign = ALIGN_CENTER;
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
-		opts.Pad.y = y - 25;
-		FontStrOpt(s, Vec2iZero(), opts);
+		FontOpts title_opts = FontOptsNew();
+		title_opts.HAlign = ALIGN_CENTER;
+		title_opts.Area = gGraphicsDevice.cachedConfig.Res;
+		title_opts.Pad.y = y - 25;
+		FontStrOpt(s, Vec2iZero(), title_opts);
 
 		// Display password
 		if (gMission.index > 0)
 		{
 			char str[512];
 			sprintf(str, "Password: %s", gAutosave.LastMission.Password);
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_CENTER;
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad.y = y - 15;
-			FontStrOpt(str, Vec2iZero(), opts);
+			FontOpts pw_opts = FontOptsNew();
+			pw_opts.HAlign = ALIGN_CENTER;
+			pw_opts.Area = gGraphicsDevice.cachedConfig.Res;
+			pw_opts.Pad.y = y - 15;
+			FontStrOpt(str, Vec2iZero(), pw_opts);
 		}
 
 		// Display description with typewriter effect
