@@ -255,7 +255,7 @@ void MissionBriefing(GraphicsDevice *device)
 		{
 			char str[512];
 			sprintf(str, "Password: %s", gAutosave.LastMission.Password);
-			FontOpts opts = FontOptsNew();
+			opts = FontOptsNew();
 			opts.HAlign = ALIGN_CENTER;
 			opts.Area = gGraphicsDevice.cachedConfig.Res;
 			opts.Pad.y = y - 15;
