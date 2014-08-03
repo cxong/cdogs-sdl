@@ -1,5 +1,6 @@
 {
 	"Size": [5, 7],
-	"Stride": 18,
-	"Padding": [1, 1]
+	"Stride": 32,
+	"Padding": [0, 0, 0, 0],
+	"Gap": [-1, 0]
 }

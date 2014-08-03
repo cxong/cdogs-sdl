@@ -40,7 +40,14 @@ typedef struct
 {
 	Vec2i Size;
 	int Stride;
-	Vec2i Padding;
+	struct
+	{
+		int Left;
+		int Top;
+		int Right;
+		int Bottom;
+	} Padding;
+	Vec2i Gap;
 	CArray Chars;	// of Pic
 } Font;
 

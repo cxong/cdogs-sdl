@@ -33,7 +33,7 @@
 #include "pic.h"
 #include "json_utils.h"
 
-#define FIRST_CHAR 32
+#define FIRST_CHAR 0
 #define LAST_CHAR 126
 
 Font gFont;
@@ -99,17 +99,30 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 	LoadVec2i(&f->Size, data, "Size");
 	CASSERT(!Vec2iIsZero(f->Size), "Cannot load font size");
 	LoadInt(&f->Stride, data, "Stride");
-	LoadVec2i(&f->Padding, data, "Padding");
+
+	json_t *paddingNode = json_find_first_label(data, "Padding")->child->child;
+	f->Padding.Left = atoi(paddingNode->text);
+	paddingNode = paddingNode->next;
+	f->Padding.Top = atoi(paddingNode->text);
+	paddingNode = paddingNode->next;
+	f->Padding.Right = atoi(paddingNode->text);
+	paddingNode = paddingNode->next;
+	f->Padding.Bottom = atoi(paddingNode->text);
+
+	LoadVec2i(&f->Gap, data, "Gap");
 
 	// Check that the image is big enough for the dimensions
-	const Vec2i step =
-		Vec2iNew(f->Size.x + 2 * f->Padding.x, f->Size.y + 2 * f->Padding.y);
+	const Vec2i step = Vec2iNew(
+		f->Size.x + f->Padding.Left + f->Padding.Right,
+		f->Size.y + f->Padding.Top + f->Padding.Bottom);
 	if (step.x * f->Stride > image->w || step.y > image->h)
 	{
 		printf("Error: font image not big enough for font data "
-			"Image %dx%d Size %dx%d Stride %d Padding %dx%d\n",
+			"Image %dx%d Size %dx%d Stride %d Padding %d,%d,%d,%d\n",
 			image->w, image->h,
-			f->Size.x, f->Size.y, f->Stride, f->Padding.x, f->Padding.y);
+			f->Size.x, f->Size.y, f->Stride,
+			f->Padding.Left, f->Padding.Top,
+			f->Padding.Right, f->Padding.Bottom);
 		return;
 	}
 
@@ -132,7 +145,10 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 			Pic p;
 			p.size = f->Size;
 			p.offset = Vec2iZero();
-			PicLoad(&p, f->Size, Vec2iAdd(pos, f->Padding), image, s);
+			PicLoad(
+				&p, f->Size,
+				Vec2iAdd(pos, Vec2iNew(f->Padding.Left, f->Padding.Top)),
+				image, s);
 			CArrayPushBack(&f->Chars, &p);
 		}
 	}
@@ -157,7 +173,7 @@ int FontW(const char c)
 }
 int FontH(void)
 {
-	return gFont.Size.y + 1;
+	return gFont.Size.y + gFont.Gap.y;
 }
 int FontStrW(const char *s)
 {
@@ -187,7 +203,7 @@ int FontStrH(const char *s)
 			s++;
 		}
 	}
-	return lines * (FontH() + 1);
+	return lines * FontH();
 }
 Vec2i FontStrSize(const char *s)
 {
@@ -234,8 +250,8 @@ static Vec2i FontChColor(
 	{
 		BlitMasked(&gGraphicsDevice, pic, pos, color, true);
 	}
-	// Add 1px of padding between characters
-	return Vec2iNew(pos.x + gFont.Size.x + 1, pos.y);
+	// Add gap between characters
+	return Vec2iNew(pos.x + gFont.Size.x + gFont.Gap.x, pos.y);
 }
 Vec2i FontStr(const char *s, Vec2i pos)
 {
