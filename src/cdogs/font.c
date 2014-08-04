@@ -239,8 +239,12 @@ Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask)
 static Vec2i FontChColor(
 	const char c, const Vec2i pos, const color_t color, const bool blend)
 {
-	CASSERT((int)c >= FIRST_CHAR && (int)c <= LAST_CHAR, "invalid char");
-	const int idx = (int)c - FIRST_CHAR;
+	int idx = (int)c - FIRST_CHAR;
+	if ((int)c < FIRST_CHAR || (int)c > LAST_CHAR)
+	{
+		fprintf(stderr, "invalid char %d", (int)c);
+		idx = FIRST_CHAR;
+	}
 	const Pic *pic = CArrayGet(&gFont.Chars, idx);
 	if (blend)
 	{
