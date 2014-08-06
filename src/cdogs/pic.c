@@ -80,11 +80,10 @@ void PicLoad(
 
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 {
-	int i;
 	pic->size = Vec2iNew(picP->w, picP->h);
 	pic->offset = Vec2iZero();
 	CMALLOC(pic->Data, pic->size.x * pic->size.y * sizeof *pic->Data);
-	for (i = 0; i < pic->size.x * pic->size.y; i++)
+	for (int i = 0; i < pic->size.x * pic->size.y; i++)
 	{
 		unsigned char palette = *(picP->data + i);
 		pic->Data[i] = PixelFromColor(g, PaletteToColor(palette));
@@ -113,6 +112,61 @@ void PicFree(Pic *pic)
 int PicIsNotNone(Pic *pic)
 {
 	return pic->size.x > 0 && pic->size.y > 0 && pic->Data != NULL;
+}
+
+void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
+{
+	// Scan all pixels looking for the min/max of x and y
+	Vec2i min = pic->size;
+	Vec2i max = Vec2iZero();
+	for (Vec2i pos = Vec2iZero(); pos.y < pic->size.y; pos.y++)
+	{
+		for (pos.x = 0; pos.x < pic->size.x; pos.x++)
+		{
+			const Uint32 pixel = *(pic->Data + pos.x + pos.y * pic->size.x);
+			if (PixelToColor(&gGraphicsDevice, pixel).a > 0)
+			{
+				min.x = MIN(min.x, pos.x);
+				min.y = MIN(min.y, pos.y);
+				max.x = MAX(max.x, pos.x);
+				max.y = MAX(max.y, pos.y);
+			}
+		}
+	}
+	// If no opaque pixels found, don't trim
+	Vec2i newSize = pic->size;
+	Vec2i offset = Vec2iZero();
+	if (min.x < max.x && min.y < max.y)
+	{
+		if (xTrim)
+		{
+			newSize.x = max.x - min.x + 1;
+			offset.x = min.x;
+		}
+		if (yTrim)
+		{
+			newSize.y = max.y - min.y + 1;
+			offset.y = min.y;
+		}
+	}
+	// Trim by copying pixels
+	Uint32 *newData;
+	CMALLOC(newData, newSize.x * newSize.y * sizeof *newData);
+	for (Vec2i pos = Vec2iZero(); pos.y < newSize.y; pos.y++)
+	{
+		for (pos.x = 0; pos.x < newSize.x; pos.x++)
+		{
+			Uint32 *target = newData + pos.x + pos.y * newSize.x;
+			const int srcIdx =
+				pos.x + offset.x + (pos.y + offset.y) * pic->size.x;
+			*target = *(pic->Data + srcIdx);
+		}
+	}
+	// Replace the old data
+	CFREE(pic->Data);
+	pic->Data = newData;
+	pic->size = newSize;
+	pic->offset = Vec2iZero();
 }
 
 bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel)

@@ -110,6 +110,8 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 	f->Padding.Bottom = atoi(paddingNode->text);
 
 	LoadVec2i(&f->Gap, data, "Gap");
+	bool proportional = false;
+	LoadBool(&proportional, data, "Proportional");
 
 	// Check that the image is big enough for the dimensions
 	const Vec2i step = Vec2iNew(
@@ -149,6 +151,10 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 				&p, f->Size,
 				Vec2iAdd(pos, Vec2iNew(f->Padding.Left, f->Padding.Top)),
 				image, s);
+			if (proportional)
+			{
+				PicTrim(&p, true, false);
+			}
 			CArrayPushBack(&f->Chars, &p);
 		}
 	}
@@ -255,7 +261,7 @@ static Vec2i FontChColor(
 		BlitMasked(&gGraphicsDevice, pic, pos, color, true);
 	}
 	// Add gap between characters
-	return Vec2iNew(pos.x + gFont.Size.x + gFont.Gap.x, pos.y);
+	return Vec2iNew(pos.x + pic->size.x + gFont.Gap.x, pos.y);
 }
 Vec2i FontStr(const char *s, Vec2i pos)
 {

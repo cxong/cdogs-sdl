@@ -101,6 +101,9 @@ void PicCopy(Pic *dst, const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 
+// Detect unused edges and update size and offset to fit
+void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
+
 bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
 
 void NamedSpritesInit(NamedSprites *ns, const char *name);
