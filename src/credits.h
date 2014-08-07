@@ -66,8 +66,6 @@ typedef struct
 	color_t textColor;
 } credits_displayer_t;
 
-#define CREDIT_DISPLAY_PERIOD_SECONDS 10.0
-
 void LoadCredits(
 	credits_displayer_t *displayer, color_t nameColor, color_t textColor);
 void UnloadCredits(credits_displayer_t *displayer);

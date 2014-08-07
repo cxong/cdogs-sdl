@@ -109,6 +109,7 @@ void UnloadCredits(credits_displayer_t *displayer)
 	displayer->creditsIndex = 0;
 }
 
+#define CREDIT_DISPLAY_PERIOD_SECONDS 10.0
 void ShowCredits(credits_displayer_t *displayer)
 {
 	CASSERT(displayer != NULL, "null pointer");

@@ -34,7 +34,7 @@
 #include "json_utils.h"
 
 #define FIRST_CHAR 0
-#define LAST_CHAR 126
+#define LAST_CHAR 255
 
 Font gFont;
 
@@ -246,9 +246,13 @@ static Vec2i FontChColor(
 	const char c, const Vec2i pos, const color_t color, const bool blend)
 {
 	int idx = (int)c - FIRST_CHAR;
-	if ((int)c < FIRST_CHAR || (int)c > LAST_CHAR)
+	if (idx < 0)
 	{
-		fprintf(stderr, "invalid char %d", (int)c);
+		idx += 256;
+	}
+	if (idx < FIRST_CHAR || idx > LAST_CHAR)
+	{
+		fprintf(stderr, "invalid char %d\n", idx);
 		idx = FIRST_CHAR;
 	}
 	const Pic *pic = CArrayGet(&gFont.Chars, idx);
