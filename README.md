@@ -1,5 +1,6 @@
-C-Dogs SDL Port v0.5.6
-========================
+C-Dogs SDL Port
+===============
+[![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)[![Release](http://img.shields.io/github/release/cxong/cdogs-sdl.svg)](https://github.com/cxong/cdogs-sdl/releases/latest)[![Project Stats](https://www.openhub.net/p/cdogs-sdl-fork/widgets/project_thin_badge.gif)](https://www.openhub.net/p/cdogs-sdl-fork)
 
             .--------.
            |  _______|
@@ -11,9 +12,7 @@ C-Dogs SDL Port v0.5.6
      |  |   '-------'   '---'  '----''----'
      /  '.___________
     |                |                  SDL
-     `---------------'               v0.5.6
-
-[![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)[![Project Stats](https://www.openhub.net/p/cdogs-sdl-fork/widgets/project_thin_badge.gif)](https://www.openhub.net/p/cdogs-sdl-fork)
+     `---------------'
 
 1. Introduction
 2. Tested Environments
