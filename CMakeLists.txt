@@ -115,7 +115,6 @@ IF(WIN32)
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/windows/cdogs.rc.cmake ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 CONFIGURE_FILE(${SOURCE_DIRECTORY}/src/cdogs/sys_config.h.cmake ${SOURCE_DIRECTORY}/src/cdogs/sys_config.h)
-CONFIGURE_FILE(${SOURCE_DIRECTORY}/README.md.cmake ${SOURCE_DIRECTORY}/README.md)
 
 #Tests
 enable_testing()
