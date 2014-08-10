@@ -63,6 +63,7 @@ target_link_libraries(cdogs-sdl
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
 	${SDLNET_LIBRARY}
+	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
 
 add_executable(cdogs-sdl-editor MACOSX_BUNDLE cdogsed.c ${CDOGS_SDL_EXTRA})
@@ -78,6 +79,7 @@ target_link_libraries(cdogs-sdl-editor
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
 	${SDLNET_LIBRARY}
+	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
 
 add_executable(net_input_client net_input_client.c ${CDOGS_SDL_EXTRA})
@@ -87,4 +89,5 @@ target_link_libraries(net_input_client
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
 	${SDLNET_LIBRARY}
+	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})

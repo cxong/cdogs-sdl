@@ -163,4 +163,8 @@ set(PHYSFS_BUILD_SHARED FALSE CACHE BOOL "Disable shared library")
 set(PHYSFS_INTERNAL_ZLIB TRUE CACHE BOOL "Use internal zlib")
 add_subdirectory(physfs)
 
+# enet
+ADD_SUBDIRECTORY(enet)
+INCLUDE_DIRECTORIES(enet/include)
+
 add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})

@@ -41,6 +41,13 @@ find_package(SDL_image REQUIRED)
 set(USE_NET 0)
 find_package(SDL_net REQUIRED)
 
+SET(ENet_LIBRARY enet)
+IF(WIN32)
+    SET(WINDOWS_ENET_DEPENDENCIES "ws2_32;winmm")
+    SET(ENet_LIBRARIES ${ENet_LIBRARY} ${WINDOWS_ENET_DEPENDENCIES})
+ELSE()
+    SET(ENet_LIBRARIES ${ENet_LIBRARY})
+ENDIF()
 
 execute_process(
 	COMMAND "sdl-config" "--libs"
