@@ -54,4 +54,13 @@ add_library(enet STATIC
         protocol.c
         unix.c
         win32.c
+		include/enet/callbacks.h
+		include/enet/enet.h
+		include/enet/list.h
+		include/enet/protocol.h
+		include/enet/time.h
+		include/enet/types.h
+		include/enet/unix.h
+		include/enet/utility.h
+		include/enet/win32.h
     )

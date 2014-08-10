@@ -17,7 +17,7 @@
     @returns the packet on success, NULL on failure
 */
 ENetPacket *
-enet_packet_create (const void * data, size_t dataLength, enet_uint32 flags)
+enet_packet_create (void * data, size_t dataLength, enet_uint32 flags)
 {
     ENetPacket * packet = (ENetPacket *) enet_malloc (sizeof (ENetPacket));
     if (packet == NULL)
