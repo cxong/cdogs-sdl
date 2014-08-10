@@ -491,7 +491,7 @@ ENET_API int        enet_socket_get_address (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_listen (ENetSocket, int);
 ENET_API ENetSocket enet_socket_accept (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_connect (ENetSocket, const ENetAddress *);
-ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENetBuffer *, size_t);
+ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, ENetBuffer *, size_t);
 ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *, size_t);
 ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
 ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
