@@ -99,19 +99,8 @@ int
 enet_address_set_host (ENetAddress * address, const char * name)
 {
     struct hostent * hostEntry = NULL;
-#ifdef HAS_GETHOSTBYNAME_R
-    struct hostent hostData;
-    char buffer [2048];
-    int errnum;
-
-#if defined(linux) || defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    gethostbyname_r (name, & hostData, buffer, sizeof (buffer), & hostEntry, & errnum);
-#else
-    hostEntry = gethostbyname_r (name, & hostData, buffer, sizeof (buffer), & errnum);
-#endif
-#else
+	// TODO: replace with getaddrinfo()
     hostEntry = gethostbyname (name);
-#endif
 
     if (hostEntry == NULL ||
         hostEntry -> h_addrtype != AF_INET)
@@ -155,23 +144,10 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 {
     struct in_addr in;
     struct hostent * hostEntry = NULL;
-#ifdef HAS_GETHOSTBYADDR_R
-    struct hostent hostData;
-    char buffer [2048];
-    int errnum;
-
-    in.s_addr = address -> host;
-
-#if defined(linux) || defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    gethostbyaddr_r ((char *) & in, sizeof (struct in_addr), AF_INET, & hostData, buffer, sizeof (buffer), & hostEntry, & errnum);
-#else
-    hostEntry = gethostbyaddr_r ((char *) & in, sizeof (struct in_addr), AF_INET, & hostData, buffer, sizeof (buffer), & errnum);
-#endif
-#else
+	// TODO: replace with getaddrinfo()
     in.s_addr = address -> host;
 
     hostEntry = gethostbyaddr ((char *) & in, sizeof (struct in_addr), AF_INET);
-#endif
 
     if (hostEntry == NULL)
       return enet_address_get_host_ip (address, name, nameLength);
