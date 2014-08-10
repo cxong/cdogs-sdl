@@ -612,7 +612,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
          fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
 
        memcpy (startCommand -> packet -> data + fragmentOffset,
-               (enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
+               (const enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
                fragmentLength);
 
         if (startCommand -> fragmentsRemaining <= 0)
@@ -730,7 +730,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
          fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
 
        memcpy (startCommand -> packet -> data + fragmentOffset,
-               (enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
+               (const enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
                fragmentLength);
 
         if (startCommand -> fragmentsRemaining <= 0)
