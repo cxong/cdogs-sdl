@@ -62,7 +62,6 @@ target_link_libraries(cdogs-sdl
 	${SDL_LIBRARY}
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
-	${SDLNET_LIBRARY}
 	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
 
@@ -78,7 +77,6 @@ target_link_libraries(cdogs-sdl-editor
 	${SDL_LIBRARY}
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
-	${SDLNET_LIBRARY}
 	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
 
@@ -88,6 +86,5 @@ target_link_libraries(net_input_client
 	${SDL_LIBRARY}
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}
-	${SDLNET_LIBRARY}
 	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})

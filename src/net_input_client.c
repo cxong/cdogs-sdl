@@ -26,6 +26,8 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#include <SDL.h>
+
 #include <cdogs/config.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
@@ -41,16 +43,16 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
 		return -1;
 	}
-	if (SDLNet_Init() == -1)
-	{
-		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
-		exit(EXIT_FAILURE);
-	}
 	if (!SDL_SetVideoMode(320, 200, 0, 0))
 	{
 		fprintf(stderr, "Could not set video mode: %s\n", SDL_GetError());
 		SDL_Quit();
 		exit(-1);
+	}
+	if (enet_initialize() != 0)
+	{
+		fprintf(stderr, "An error occurred while initializing ENet.\n");
+		return EXIT_FAILURE;
 	}
 
 	ConfigLoadDefault(&gConfig);
@@ -60,7 +62,10 @@ int main(int argc, char *argv[])
 
 	NetInputClient client;
 	NetInputClientInit(&client);
-	NetInputClientConnect(&client, 0x7F000001);	// localhost
+	ENetAddress addr;
+	enet_address_set_host(&addr, "localhost");
+	addr.port = NET_INPUT_PORT;
+	NetInputClientConnect(&client, addr);
 
 	printf("Press esc to exit\n");
 
@@ -77,6 +82,7 @@ int main(int argc, char *argv[])
 			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
 			continue;
 		}
+		NetInputClientUpdate(&client);
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		int cmd = GetOnePlayerCmd(
 			&gEventHandlers,
@@ -103,7 +109,7 @@ int main(int argc, char *argv[])
 
 	NetInputClientTerminate(&client);
 	EventTerminate(&gEventHandlers);
-	SDLNet_Quit();
+	atexit(enet_deinitialize);
 	SDL_Quit();
 	return 0;
 }

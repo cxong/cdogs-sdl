@@ -54,7 +54,6 @@ set(CDOGS_SOURCES
 	music.c
 	net_input.c
 	net_input_client.c
-	net_input_util.c
 	objs.c
 	palette.c
 	particle.c
@@ -165,6 +164,5 @@ add_subdirectory(physfs)
 
 # enet
 ADD_SUBDIRECTORY(enet)
-INCLUDE_DIRECTORIES(enet/include)
 
 add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})

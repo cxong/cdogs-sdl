@@ -35,8 +35,8 @@
 
 typedef struct
 {
-	// TODO: one channel per client, with shared socket
-	NetInputChannel channel;
+	// TODO: track client connections
+	ENetHost *server;
 	int PrevCmd;
 	int Cmd;
 } NetInput;

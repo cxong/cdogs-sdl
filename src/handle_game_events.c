@@ -83,12 +83,7 @@ static void HandleGameEvent(
 				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
 			break;
 		case GAME_EVENT_GAME_START:
-			if (eventHandlers->netInput.channel.state ==
-				CHANNEL_STATE_CONNECTED)
-			{
-				NetInputSendMsg(
-					&eventHandlers->netInput, SERVER_MSG_GAME_START);
-			}
+			NetInputSendMsg(&eventHandlers->netInput, SERVER_MSG_GAME_START);
 			break;
 		case GAME_EVENT_ADD_HEALTH_PICKUP:
 			MapPlaceHealth(e->u.AddPos);

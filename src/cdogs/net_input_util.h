@@ -30,11 +30,11 @@
 #define __NET_INPUT_UTIL
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include <SDL_net.h>
+#include <enet/enet.h>
 
-#define NET_INPUT_UDP_PORT 34219
-#define NET_INPUT_MAX_PACKET_LEN 1024
+#define NET_INPUT_PORT 34219
 
 // Used in printf statements
 #define NET_IP_TO_CIDR_FORMAT(_ip)\
@@ -45,26 +45,10 @@
 
 // Messages
 
-// 3-way handshake
-typedef struct
-{
-	Uint16 seq;
-} NetMsgSyn;
-typedef struct
-{
-	Uint16 seq;
-	Uint16 ack;
-} NetMsgSynAck;
-typedef struct
-{
-	Uint16 ack;
-} NetMsgAck;
-
 // Commands (client to server)
 typedef struct
 {
-	Uint32 ticks;
-	Uint32 cmd;
+	uint32_t cmd;
 } NetMsgCmd;
 
 // Game events (server to client)
@@ -72,39 +56,5 @@ typedef enum
 {
 	SERVER_MSG_GAME_START
 } ServerMsg;
-
-
-typedef enum
-{
-	CHANNEL_STATE_CLOSED,
-	CHANNEL_STATE_DISCONNECTED,
-	CHANNEL_STATE_WAIT_HANDSHAKE,
-	CHANNEL_STATE_CONNECTED
-} NetInputChannelState;
-
-typedef struct
-{
-	UDPsocket sock;
-	NetInputChannelState state;
-	Uint16 otherPort;
-	Uint32 otherHost;
-	Uint16 seq;
-	Uint16 ack;
-
-	Uint8 buf[NET_INPUT_MAX_PACKET_LEN];
-} NetInputChannel;
-
-void NetInputChannelTerminate(NetInputChannel *n);
-
-bool NetInputChannelTryOpen(NetInputChannel *n, Uint16 port, Uint32 host);
-
-UDPpacket NetInputNewPacket(NetInputChannel *n, size_t len);
-bool NetInputTrySendPacket(NetInputChannel *n, UDPpacket packet);
-bool NetInputRecvBlocking(
-	NetInputChannel *n, bool (*tryParseFunc)(UDPpacket *, void *), void *data);
-
-// Returns true only if successfully received expected packet
-bool NetInputRecvNonBlocking(
-	NetInputChannel *n, bool (*tryParseFunc)(UDPpacket *, void *), void *data);
 
 #endif

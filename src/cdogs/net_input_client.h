@@ -29,24 +29,25 @@
 #ifndef __NET_INPUT_CLIENT
 #define __NET_INPUT_CLIENT
 
-#include <stdbool.h>
-
-#include <SDL_net.h>
+#include <time.h>
 
 #include "net_input_util.h"
 
 typedef struct
 {
-	NetInputChannel channel;
-
-	Uint32 ticks;
+	ENetHost *client;
+	ENetPeer *peer;
+	time_t lastMessageSent;
 } NetInputClient;
 
 void NetInputClientInit(NetInputClient *n);
 void NetInputClientTerminate(NetInputClient *n);
 
 // Attempt to connect to a server
-void NetInputClientConnect(NetInputClient *n, Uint32 host);
+void NetInputClientConnect(NetInputClient *n, const ENetAddress addr);
+// Periodically update
+// Note: required since keep-alives must be sent
+void NetInputClientUpdate(NetInputClient *n);
 // Send a command to the server
 void NetInputClientSend(NetInputClient *n, int cmd);
 

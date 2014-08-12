@@ -28,6 +28,7 @@
 */
 #include "net_input.h"
 
+#include "sys_config.h"
 #include "utils.h"
 
 
@@ -37,7 +38,8 @@ void NetInputInit(NetInput *n)
 }
 void NetInputTerminate(NetInput *n)
 {
-	NetInputChannelTerminate(&n->channel);
+	enet_host_destroy(n->server);
+	n->server = NULL;
 }
 void NetInputReset(NetInput *n)
 {
@@ -47,148 +49,99 @@ void NetInputReset(NetInput *n)
 void NetInputOpen(NetInput *n)
 {
 #if USE_NET == 1
-	NetInputChannelTryOpen(&n->channel, NET_INPUT_UDP_PORT, 0);
+	/* Bind the server to the default localhost.     */
+	/* A specific host address can be specified by   */
+	/* enet_address_set_host (& address, "x.x.x.x"); */
+	ENetAddress address;
+	address.host = ENET_HOST_ANY;
+	address.port = NET_INPUT_PORT;
+	n->server = enet_host_create(
+		&address /* the address to bind the server host to */,
+		32      /* allow up to 32 clients and/or outgoing connections */,
+		2      /* allow up to 2 channels to be used, 0 and 1 */,
+		0      /* assume any amount of incoming bandwidth */,
+		0      /* assume any amount of outgoing bandwidth */);
+	if (n->server == NULL)
+	{
+		fprintf(stderr,
+			"An error occurred while trying to create an ENet server host.\n");
+		return;
+	}
 #else
 	UNUSED(n);
 #endif
 }
 
-static bool TryRecvSynAndSendSynAck(NetInput *n);
-static bool TryParseAck(UDPpacket *packet, void *data);
-static void RecvCmd(NetInput *n);
 void NetInputPoll(NetInput *n)
 {
-	if (n->channel.sock == NULL)
+	if (!n->server)
 	{
 		return;
 	}
 
-	switch (n->channel.state)
-	{
-	case CHANNEL_STATE_CLOSED:
-		CASSERT(false, "Unexpected channel state closed");
-		return;
-
-	case CHANNEL_STATE_DISCONNECTED:
-		if (!TryRecvSynAndSendSynAck(n))
-		{
-			return;
-		}
-		n->channel.state = CHANNEL_STATE_WAIT_HANDSHAKE;
-		// fallthrough
-
-	case CHANNEL_STATE_WAIT_HANDSHAKE:
-		// listen for ACK
-		if (!NetInputRecvNonBlocking(&n->channel, TryParseAck, &n->channel))
-		{
-			return;
-		}
-		n->channel.state = CHANNEL_STATE_CONNECTED;
-		// fallthrough
-
-	case CHANNEL_STATE_CONNECTED:
-		RecvCmd(n);
-		break;
-
-	default:
-		CASSERT(false, "Unknown channel state");
-		break;
-	}
-}
-
-static bool TryParseSyn(UDPpacket *packet, void *data);
-static bool TryRecvSynAndSendSynAck(NetInput *n)
-{
-	// listen for SYN
-	if (!NetInputRecvNonBlocking(&n->channel, TryParseSyn, &n->channel))
-	{
-		return false;
-	}
-
-	// Send SYN-ACK
-	bool res = false;
-	UDPpacket packet = NetInputNewPacket(&n->channel, sizeof(NetMsgSynAck));
-	NetMsgSynAck *packetSyn = (NetMsgSynAck *)packet.data;
-	n->channel.seq = rand() & (Uint16)-1;
-	SDLNet_Write16(n->channel.seq, &packetSyn->seq);
-	SDLNet_Write16(n->channel.ack, &packetSyn->ack);
-	if (!NetInputTrySendPacket(&n->channel, packet))
-	{
-		goto bail;
-	}
-	n->channel.seq++;
-	res = true;
-
-bail:
-	CFREE(packet.data);
-	return res;
-}
-
-static bool TryParseSyn(UDPpacket *packet, void *data)
-{
-	if (packet->len != sizeof(NetMsgSyn))
-	{
-		printf("Error: expected SYN, received packet len %d\n",
-			packet->len);
-		return false;
-	}
-	NetMsgSyn *msg = (NetMsgSyn *)packet->data;
-	NetInputChannel *n = data;
-	n->ack = SDLNet_Read16(&msg->seq) + 1;
-	n->otherHost = SDLNet_Read32(&packet->address.host);
-	n->otherPort = SDLNet_Read16(&packet->address.port);
-	printf("Received SYN from %d.%d.%d.%d:%d\n",
-		NET_IP_TO_CIDR_FORMAT(n->otherHost), n->otherPort);
-	return true;
-}
-
-static bool TryParseAck(UDPpacket *packet, void *data)
-{
-	if (packet->len != sizeof(NetMsgAck))
-	{
-		printf("Error: expected ACK, received packet len %d\n",
-			packet->len);
-		return false;
-	}
-	NetMsgAck *msg = (NetMsgAck *)packet->data;
-	Uint16 ack = SDLNet_Read16(&msg->ack);
-	NetInputChannel *n = data;
-	if (ack != n->seq)
-	{
-		printf("Error: received invalid ack %d, expected %d\n",
-			ack, n->seq);
-		return false;
-	}
-	return true;
-}
-
-static bool TryParseCmd(UDPpacket *packet, void *data);
-static void RecvCmd(NetInput *n)
-{
 	n->PrevCmd = n->Cmd;
 	n->Cmd = 0;
-
-	while (NetInputRecvNonBlocking(&n->channel, TryParseCmd, n));
-}
-
-static bool TryParseCmd(UDPpacket *packet, void *data)
-{
-	size_t readlen = sizeof(NetMsgCmd);
-	NetInput *n = data;
-	while (packet->len >= (int)readlen)
+	ENetEvent event;
+	int check;
+	do
 	{
-		NetMsgCmd *msg = (NetMsgCmd *)packet->data;
-		Uint32 cmd = SDLNet_Read32(&msg->cmd);
-		n->Cmd |= cmd;
-		packet->len -= readlen;
-		packet->data += readlen;
-	}
-	return true;
+		check = enet_host_service(n->server, &event, 0);
+		if (check < 0)
+		{
+			fprintf(stderr, "Host check event failure\n");
+			enet_host_destroy(n->server);
+			n->server = NULL;
+			return;
+		}
+		else if (check > 0)
+		{
+			switch (event.type)
+			{
+			case ENET_EVENT_TYPE_CONNECT:
+				printf("A new client connected from %x:%u.\n",
+					event.peer->address.host,
+					event.peer->address.port);
+				/* Store any relevant client information here. */
+				event.peer->data = "Client information";
+				break;
+			case ENET_EVENT_TYPE_RECEIVE:
+				// TODO: detect message type
+				if (event.packet->dataLength > 0)
+				{
+					NetMsgCmd *nc = (NetMsgCmd *)event.packet->data;
+					CASSERT(
+						event.packet->dataLength == sizeof *nc,
+						"unexpected packet size");
+					n->Cmd = nc->cmd;
+				}
+				//printf("A packet of length %u containing %s was received from %s on channel %u.\n",
+				//	event.packet->dataLength,
+				//	event.packet->data,
+				//	event.peer->data,
+				//	event.channelID);
+				/* Clean up the packet now that we're done using it. */
+				enet_packet_destroy(event.packet);
+				break;
+
+			case ENET_EVENT_TYPE_DISCONNECT:
+				printf("%s disconnected.\n", event.peer->data);
+				/* Reset the peer's client information. */
+				event.peer->data = NULL;
+
+			default:
+				CASSERT(false, "Unknown event");
+				break;
+			}
+		}
+	} while (check > 0);
 }
 
 void NetInputSendMsg(NetInput *n, ServerMsg msg)
 {
-	if (n->channel.sock == NULL || n->channel.state != CHANNEL_STATE_CONNECTED)
+	// TODO: send information to clients
+	UNUSED(n);
+	UNUSED(msg);
+	/*if (n->channel.sock == NULL || n->channel.state != CHANNEL_STATE_CONNECTED)
 	{
 		return;
 	}
@@ -205,5 +158,5 @@ void NetInputSendMsg(NetInput *n, ServerMsg msg)
 	default:
 		CASSERT(false, "Unknown server msg type");
 		break;
-	}
+	}*/
 }

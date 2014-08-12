@@ -803,7 +803,7 @@ static void PlaceActor(TActor * actor)
 	while (!MapIsFullPosOKforPlayer(&gMap, pos, false) ||
 		!TryMoveActor(actor, pos));
 }
-static void PlaceActorNear(TActor *actor, Vec2i near, bool allowAllTiles)
+static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 {
 	// Try a concentric rhombus pattern, clockwise from right
 	// That is, start by checking right, below, left, above,
@@ -815,8 +815,8 @@ static void PlaceActorNear(TActor *actor, Vec2i near, bool allowAllTiles)
 	//      7
 #define TRY_LOCATION()\
 	if (MapIsFullPosOKforPlayer(\
-		&gMap, Vec2iAdd(near, Vec2iNew(dx, dy)), allowAllTiles) && \
-		TryMoveActor(actor, Vec2iAdd(near, Vec2iNew(dx, dy))))\
+		&gMap, Vec2iAdd(nearPos, Vec2iNew(dx, dy)), allowAllTiles) && \
+		TryMoveActor(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy))))\
 	{\
 		return;\
 	}
@@ -1345,9 +1345,9 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
-	if (SDLNet_Init() == -1)
+	if (enet_initialize() != 0)
 	{
-		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+		fprintf(stderr, "An error occurred while initializing ENet.\n");
 		err = EXIT_FAILURE;
 		goto bail;
 	}
@@ -1479,7 +1479,6 @@ bail:
 	}
 
 	debug(D_NORMAL, "SDL_Quit()\n");
-	SDLNet_Quit();
 	SDL_Quit();
 
 	exit(err);

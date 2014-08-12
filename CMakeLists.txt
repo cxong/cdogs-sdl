@@ -38,8 +38,7 @@ endif()
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
 find_package(SDL_image REQUIRED)
-set(USE_NET 0)
-find_package(SDL_net REQUIRED)
+set(USE_NET 1)
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)
@@ -48,6 +47,7 @@ IF(WIN32)
 ELSE()
     SET(ENet_LIBRARIES ${ENet_LIBRARY})
 ENDIF()
+INCLUDE_DIRECTORIES(src/cdogs/enet/include)
 
 execute_process(
 	COMMAND "sdl-config" "--libs"
