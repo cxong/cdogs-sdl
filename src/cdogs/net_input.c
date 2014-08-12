@@ -28,6 +28,8 @@
 */
 #include "net_input.h"
 
+#include <string.h>
+
 #include "sys_config.h"
 #include "utils.h"
 
@@ -124,7 +126,9 @@ void NetInputPoll(NetInput *n)
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
-				printf("%s disconnected.\n", event.peer->data);
+				printf("disconnected %x:%u.\n",
+					event.peer->address.host,
+					event.peer->address.port);
 				/* Reset the peer's client information. */
 				event.peer->data = NULL;
 
