@@ -28,6 +28,8 @@
 */
 #include "net_input_client.h"
 
+#include <string.h>
+
 #include "net_input.h"
 #include "utils.h"
 
