@@ -131,6 +131,7 @@ void NetInputPoll(NetInput *n)
 					event.peer->address.port);
 				/* Reset the peer's client information. */
 				event.peer->data = NULL;
+				break;
 
 			default:
 				CASSERT(false, "Unknown event");

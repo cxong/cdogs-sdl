@@ -37,7 +37,6 @@ typedef struct
 {
 	ENetHost *client;
 	ENetPeer *peer;
-	time_t lastMessageSent;
 } NetInputClient;
 
 void NetInputClientInit(NetInputClient *n);

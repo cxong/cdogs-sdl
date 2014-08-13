@@ -93,23 +93,15 @@ bail:
 	enet_host_destroy(n->client);
 }
 
-#define KEEP_ALIVE_INTERVAL_SECONDS 1.0
 void NetInputClientUpdate(NetInputClient *n)
 {
 	if (!n->client || !n->peer)
 	{
 		return;
 	}
-	const time_t now = time(NULL);
-	if (difftime(now, n->lastMessageSent) > KEEP_ALIVE_INTERVAL_SECONDS)
-	{
-		ENetPacket *packet =
-			enet_packet_create(NULL, 0, ENET_PACKET_FLAG_RELIABLE);
-		enet_peer_send(n->peer, 0, packet);
-		enet_host_flush(n->client);
-		n->lastMessageSent = now;
-		printf("Sending heartbeat\n");
-	}
+	// Service the connection
+	ENetEvent event;
+	enet_host_service(n->client, &event, 0);
 }
 
 void NetInputClientSend(NetInputClient *n, int cmd)
@@ -125,5 +117,4 @@ void NetInputClientSend(NetInputClient *n, int cmd)
 		enet_packet_create(&nc, sizeof nc, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(n->peer, 0, packet);
 	enet_host_flush(n->client);
-	n->lastMessageSent = time(NULL);
 }
