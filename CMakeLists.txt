@@ -231,7 +231,7 @@ elseif(APPLE)
 
 	# copy SDL frameworks into app bundle for Mac OS X
 	set(APPS cdogs-sdl cdogs-sdl-editor)
-	set(LIBS SDL SDL_image SDL_mixer SDL_net)
+	set(LIBS SDL SDL_image SDL_mixer)
 	foreach(APP ${APPS})
 		foreach(LIB ${LIBS})
 			install(DIRECTORY /Library/Frameworks/${LIB}.framework
