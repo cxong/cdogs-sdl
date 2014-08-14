@@ -168,7 +168,7 @@ void NetClientPoll(NetClient *n)
 		{
 		case ENET_EVENT_TYPE_RECEIVE:
 			{
-				uint32_t msgType = *(uint32_t *)event.data;
+				uint32_t msgType = *(uint32_t *)event.packet->data;
 				printf("Received message type %u\n", msgType);
 				enet_packet_destroy(event.packet);
 			}
