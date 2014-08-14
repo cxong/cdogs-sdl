@@ -26,28 +26,39 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT_CLIENT
-#define __NET_INPUT_CLIENT
+#ifndef __NET_CLIENT
+#define __NET_CLIENT
 
 #include <time.h>
 
-#include "net_input_util.h"
+#include "net_util.h"
+
+typedef enum
+{
+	NET_STATE_STARTING = 0,
+	NET_STATE_LOADED,
+	NET_STATE_ERROR
+} NetClientState;
 
 typedef struct
 {
 	ENetHost *client;
 	ENetPeer *peer;
-} NetInputClient;
+	NetClientState State;
+} NetClient;
 
-void NetInputClientInit(NetInputClient *n);
-void NetInputClientTerminate(NetInputClient *n);
+extern NetClient gNetClient;
+
+void NetClientInit(NetClient *n);
+void NetClientTerminate(NetClient *n);
 
 // Attempt to connect to a server
-void NetInputClientConnect(NetInputClient *n, const ENetAddress addr);
-// Periodically update
-// Note: required since keep-alives must be sent
-void NetInputClientUpdate(NetInputClient *n);
+void NetClientConnect(NetClient *n, const ENetAddress addr);
+bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def);
+void NetClientPoll(NetClient *n);
 // Send a command to the server
-void NetInputClientSend(NetInputClient *n, int cmd);
+void NetClientSend(NetClient *n, int cmd);
+
+bool NetClientIsConnected(const NetClient *n);
 
 #endif

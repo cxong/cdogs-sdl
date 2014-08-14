@@ -26,35 +26,28 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#ifndef __NET_INPUT_CLIENT
+#define __NET_INPUT_CLIENT
 
-#include <stdbool.h>
+#include <time.h>
 
-#include "c_array.h"
 #include "net_util.h"
 
 typedef struct
 {
-	ENetHost *server;
-	CArray peers;	// of ENetPeer *
-	int PrevCmd;
-	int Cmd;
-	int peerId;	// auto-incrementing id for the next connected peer
-} NetInput;
+	ENetHost *client;
+	ENetPeer *peer;
+} NetInputClient;
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+void NetInputClientInit(NetInputClient *n);
+void NetInputClientTerminate(NetInputClient *n);
 
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
-
-void NetInputSendMsg(
-	NetInput *n, const int peerIndex, ServerMsg msg, const void *data);
-// Send message to all peers
-void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data);
+// Attempt to connect to a server
+void NetInputClientConnect(NetInputClient *n, const ENetAddress addr);
+// Periodically update
+// Note: required since keep-alives must be sent
+void NetInputClientUpdate(NetInputClient *n);
+// Send a command to the server
+void NetInputClientSend(NetInputClient *n, int cmd);
 
 #endif

@@ -26,35 +26,19 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
-
-#include <stdbool.h>
-
-#include "c_array.h"
 #include "net_util.h"
 
-typedef struct
+
+void NetMsgCampaignDefConvert(
+	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode)
 {
-	ENetHost *server;
-	CArray peers;	// of ENetPeer *
-	int PrevCmd;
-	int Cmd;
-	int peerId;	// auto-incrementing id for the next connected peer
-} NetInput;
+	const uint8_t *s = def->Path;
+	char *d = outPath;
+	while (*s)
+	{
+		*d++ = *s++;
+	}
+	*d = '\0';
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
-
-// Open a port and start listening for data
-void NetInputOpen(NetInput *n);
-// Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
-
-void NetInputSendMsg(
-	NetInput *n, const int peerIndex, ServerMsg msg, const void *data);
-// Send message to all peers
-void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data);
-
-#endif
+	*outMode = def->CampaignMode;
+}

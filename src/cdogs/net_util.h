@@ -26,13 +26,16 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT_UTIL
-#define __NET_INPUT_UTIL
+#ifndef __NET_UTIL
+#define __NET_UTIL
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include <enet/enet.h>
+
+#include "sys_config.h"
+#include "utils.h"
 
 #define NET_INPUT_PORT 34219
 
@@ -45,7 +48,15 @@
 
 // Messages
 
+// All messages start with 4 bytes message type followed by the message struct
+#define NET_MSG_SIZE sizeof(uint32_t)
+
 // Commands (client to server)
+typedef enum
+{
+	CLIENT_MSG_CMD
+} ClientMsg;
+
 typedef struct
 {
 	uint32_t cmd;
@@ -54,7 +65,17 @@ typedef struct
 // Game events (server to client)
 typedef enum
 {
+	SERVER_MSG_CAMPAIGN_DEF,
 	SERVER_MSG_GAME_START
 } ServerMsg;
+
+typedef struct
+{
+	uint8_t Path[CDOGS_PATH_MAX];
+	uint32_t CampaignMode;
+} NetMsgCampaignDef;
+
+void NetMsgCampaignDefConvert(
+	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode);
 
 #endif

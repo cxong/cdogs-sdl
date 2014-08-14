@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "campaign_entry.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -37,11 +38,21 @@
 void NetInputInit(NetInput *n)
 {
 	memset(n, 0, sizeof *n);
+	CArrayInit(&n->peers, sizeof(ENetPeer *));
 }
 void NetInputTerminate(NetInput *n)
 {
 	enet_host_destroy(n->server);
 	n->server = NULL;
+	for (int i = 0; i < (int)n->peers.size; i++)
+	{
+		ENetPeer **p = CArrayGet(&n->peers, i);
+		if (*p)
+		{
+			enet_peer_reset(*p);
+		}
+	}
+	CArrayTerminate(&n->peers);
 }
 void NetInputReset(NetInput *n)
 {
@@ -103,18 +114,31 @@ void NetInputPoll(NetInput *n)
 				printf("A new client connected from %x:%u.\n",
 					event.peer->address.host,
 					event.peer->address.port);
+				CArrayPushBack(&n->peers, &event.peer);
 				/* Store any relevant client information here. */
-				event.peer->data = "Client information";
+				event.peer->data = (void *)n->peerId;
+				n->peerId++;
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
-				// TODO: detect message type
 				if (event.packet->dataLength > 0)
 				{
-					NetMsgCmd *nc = (NetMsgCmd *)event.packet->data;
-					CASSERT(
-						event.packet->dataLength == sizeof *nc,
-						"unexpected packet size");
-					n->Cmd = nc->cmd;
+					ClientMsg msg = *(uint32_t *)event.packet->data;
+					switch (msg)
+					{
+					case CLIENT_MSG_CMD:
+						{
+							NetMsgCmd *nc =
+								(NetMsgCmd *)(event.packet->data + NET_MSG_SIZE);
+							CASSERT(
+								event.packet->dataLength == NET_MSG_SIZE + sizeof *nc,
+								"unexpected packet size");
+							n->Cmd = nc->cmd;
+						}
+						break;
+					default:
+						printf("Unknown message type %d\n", msg);
+						break;
+					}
 				}
 				//printf("A packet of length %u containing %s was received from %s on channel %u.\n",
 				//	event.packet->dataLength,
@@ -126,11 +150,26 @@ void NetInputPoll(NetInput *n)
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
-				printf("disconnected %x:%u.\n",
-					event.peer->address.host,
-					event.peer->address.port);
-				/* Reset the peer's client information. */
-				event.peer->data = NULL;
+				{
+					printf("disconnected %x:%u.\n",
+						event.peer->address.host,
+						event.peer->address.port);
+					// Find the peer by id and delete
+					bool found = false;
+					for (int i = 0; i < (int)n->peers.size; i++)
+					{
+						ENetPeer **peer = CArrayGet(&n->peers, i);
+						if ((int)(*peer)->data == (int)event.peer->data)
+						{
+							CArrayDelete(&n->peers, i);
+							found = true;
+							break;
+						}
+					}
+					CASSERT(found, "Cannot find peer by id");
+					/* Reset the peer's client information. */
+					event.peer->data = NULL;
+				}
 				break;
 
 			default:
@@ -141,27 +180,73 @@ void NetInputPoll(NetInput *n)
 	} while (check > 0);
 }
 
-void NetInputSendMsg(NetInput *n, ServerMsg msg)
+static ENetPacket *MakePacket(ServerMsg msg, const void *data);
+
+void NetInputSendMsg(
+	NetInput *n, const int peerIndex, ServerMsg msg, const void *data)
 {
-	// TODO: send information to clients
-	UNUSED(n);
-	UNUSED(msg);
-	/*if (n->channel.sock == NULL || n->channel.state != CHANNEL_STATE_CONNECTED)
+	if (!n->server)
+	{
+		return;
+	}
+	CASSERT(
+		peerIndex >= 0 && peerIndex < (int)n->peers.size,
+		"invalid peer index");
+
+	// Find the peer and send
+	for (int i = 0; i < (int)n->peers.size; i++)
+	{
+		ENetPeer **peer = CArrayGet(&n->peers, i);
+		if ((int)(*peer)->data == peerIndex)
+		{
+			enet_peer_send(*peer, 0, MakePacket(msg, data));
+			enet_host_flush(n->server);
+			return;
+		}
+	}
+	CASSERT(false, "Cannot find peer by id");
+}
+
+void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data)
+{
+	if (!n->server)
 	{
 		return;
 	}
 
+	enet_host_broadcast(n->server, 0, MakePacket(msg, data));
+	enet_host_flush(n->server);
+}
+
+static ENetPacket *MakePacketImpl(ServerMsg msg, const void *data, const int len);
+static ENetPacket *MakePacket(ServerMsg msg, const void *data)
+{
 	switch (msg)
 	{
-	case SERVER_MSG_GAME_START:
+	case SERVER_MSG_CAMPAIGN_DEF:
 		{
-			UDPpacket packet = NetInputNewPacket(&n->channel, sizeof(Uint8));
-			*packet.data = (Uint8)msg;
-			NetInputTrySendPacket(&n->channel, packet);
+			NetMsgCampaignDef def;
+			memset(&def, 0, sizeof def);
+			const CampaignEntry *entry = data;
+			if (entry->Filename)
+			{
+				strcpy((char *)def.Path, entry->Filename);
+			}
+			def.CampaignMode = entry->Mode;
+			return MakePacketImpl(msg, &def, sizeof def);
 		}
 		break;
+	case SERVER_MSG_GAME_START:
+		return MakePacketImpl(msg, NULL, 0);
 	default:
-		CASSERT(false, "Unknown server msg type");
-		break;
-	}*/
+		CASSERT(false, "Unknown message to make into packet");
+		return NULL;
+	}
+}
+static ENetPacket *MakePacketImpl(ServerMsg msg, const void *data, const int len)
+{
+	ENetPacket *packet = enet_packet_create(
+		&msg, NET_MSG_SIZE + len, ENET_PACKET_FLAG_RELIABLE);
+	memcpy(packet->data + NET_MSG_SIZE, data, len);
+	return packet;
 }

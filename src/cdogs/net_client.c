@@ -26,7 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "net_input_client.h"
+#include "net_client.h"
 
 #include <string.h>
 
@@ -34,20 +34,28 @@
 #include "utils.h"
 
 
+NetClient gNetClient;
+
+
 #define CONNECTION_WAIT_MS 5000
 
 
-void NetInputClientInit(NetInputClient *n)
+void NetClientInit(NetClient *n)
 {
 	memset(n, 0, sizeof *n);
 }
-void NetInputClientTerminate(NetInputClient *n)
+void NetClientTerminate(NetClient *n)
 {
-	enet_peer_reset(n->peer);
+	if (n->peer)
+	{
+		enet_peer_reset(n->peer);
+	}
+	n->peer = NULL;
 	enet_host_destroy(n->client);
+	n->client = NULL;
 }
 
-void NetInputClientConnect(NetInputClient *n, const ENetAddress addr)
+void NetClientConnect(NetClient *n, const ENetAddress addr)
 {
 	n->client = enet_host_create(
 		NULL /* create a client host */,
@@ -89,11 +97,58 @@ void NetInputClientConnect(NetInputClient *n, const ENetAddress addr)
 	return;
 
 bail:
-	enet_peer_reset(n->peer);
-	enet_host_destroy(n->client);
+	NetClientTerminate(n);
 }
 
-void NetInputClientUpdate(NetInputClient *n)
+bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def)
+{
+	if (!n->client || !n->peer)
+	{
+		return false;
+	}
+
+	// Service the connection but only accept the CampaignDef message
+	ENetEvent event;
+	int check = enet_host_service(n->client, &event, 0);
+	if (check < 0)
+	{
+		printf("Connection error %d\n", check);
+		return false;
+	}
+	else if (check > 0)
+	{
+		bool success = false;
+		switch (event.type)
+		{
+		case ENET_EVENT_TYPE_RECEIVE:
+			{
+				uint32_t msgType = *(uint32_t *)event.packet->data;
+				switch (msgType)
+				{
+				case SERVER_MSG_CAMPAIGN_DEF:
+					memcpy(def, event.packet->data + NET_MSG_SIZE, sizeof *def);
+					success = true;
+					break;
+				default:
+					printf("Unexpected message type %u\n", msgType);
+					break;
+				}
+				enet_packet_destroy(event.packet);
+			}
+			break;
+		default:
+			printf("Unexpected event type %d\n", event.type);
+			break;
+		}
+		return success;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void NetClientPoll(NetClient *n)
 {
 	if (!n->client || !n->peer)
 	{
@@ -101,10 +156,31 @@ void NetInputClientUpdate(NetInputClient *n)
 	}
 	// Service the connection
 	ENetEvent event;
-	enet_host_service(n->client, &event, 0);
+	int check = enet_host_service(n->client, &event, 0);
+	if (check < 0)
+	{
+		printf("Connection error %d\n", check);
+		return;
+	}
+	else if (check > 0)
+	{
+		switch (event.type)
+		{
+		case ENET_EVENT_TYPE_RECEIVE:
+			{
+				uint32_t msgType = *(uint32_t *)event.data;
+				printf("Received message type %u\n", msgType);
+				enet_packet_destroy(event.packet);
+			}
+			break;
+		default:
+			printf("Unexpected event type %d\n", event.type);
+			break;
+		}
+	}
 }
 
-void NetInputClientSend(NetInputClient *n, int cmd)
+void NetClientSend(NetClient *n, int cmd)
 {
 	if (!n->client || !n->peer)
 	{
@@ -113,8 +189,15 @@ void NetInputClientSend(NetInputClient *n, int cmd)
 
 	NetMsgCmd nc;
 	nc.cmd = cmd;
-	ENetPacket *packet =
-		enet_packet_create(&nc, sizeof nc, ENET_PACKET_FLAG_RELIABLE);
+	ClientMsg msg = CLIENT_MSG_CMD;
+	ENetPacket *packet = enet_packet_create(
+		&msg, NET_MSG_SIZE + sizeof nc, ENET_PACKET_FLAG_RELIABLE);
+	memcpy(&packet->data + NET_MSG_SIZE, &nc, sizeof nc);
 	enet_peer_send(n->peer, 0, packet);
 	enet_host_flush(n->client);
+}
+
+bool NetClientIsConnected(const NetClient *n)
+{
+	return !!n->client;
 }

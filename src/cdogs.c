@@ -54,13 +54,10 @@
 
 #include <SDL.h>
 
-#include <cdogs/actors.h>
 #include <cdogs/ai.h>
-#include <cdogs/blit.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
-#include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
@@ -71,6 +68,7 @@
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
+#include <cdogs/net_client.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
@@ -1189,7 +1187,7 @@ void PrintTitle(void)
 		"under certain conditions; for details see COPYING.\n\n");
 }
 
-void PrintHelp (void)
+static void PrintHelp(void)
 {
 	printf("%s\n",
 		"Video Options:\n"
@@ -1218,6 +1216,11 @@ void PrintHelp (void)
 	);
 
 	printf("%s\n",
+		"Other:\n"
+		"    --connect=host   (Experimental) connect to a game server\n"
+		);
+
+	printf("%s\n",
 		"The DEBUG environment variable can be set to show debug information.");
 
 	printf(
@@ -1236,6 +1239,8 @@ int main(int argc, char *argv[])
 	int forceResolution = 0;
 	int err = 0;
 	const char *loadCampaign = NULL;
+	ENetAddress connectAddr;
+	memset(&connectAddr, 0, sizeof connectAddr);
 
 	srand((unsigned int)time(NULL));
 
@@ -1270,12 +1275,13 @@ int main(int argc, char *argv[])
 			{"nojoystick",	no_argument,		NULL,	'j'},
 			{"wait",		no_argument,		NULL,	'w'},
 			{"shakemult",	required_argument,	NULL,	'm'},
+			{"connect",		required_argument,	NULL,	'x'},
 			{"help",		no_argument,		NULL,	'h'},
 			{0,				0,					NULL,	0}
 		};
 		int opt = 0;
 		int idx = 0;
-		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:h", longopts, &idx)) != -1)
+		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xh", longopts, &idx)) != -1)
 		{
 			switch (opt)
 			{
@@ -1321,6 +1327,16 @@ int main(int argc, char *argv[])
 			case 'h':
 				PrintHelp();
 				goto bail;
+			case 'x':
+				if (enet_address_set_host(&connectAddr, optarg) != 0)
+				{
+					printf("Error: unknown host %s\n", optarg);
+				}
+				else
+				{
+					connectAddr.port = NET_INPUT_PORT;
+				}
+				break;
 			default:
 				PrintHelp();
 				err = EXIT_FAILURE;
@@ -1377,6 +1393,7 @@ int main(int argc, char *argv[])
 	PlayMenuSong();
 
 	EventInit(&gEventHandlers, NULL, true);
+	NetClientInit(&gNetClient);
 
 	PHYSFS_init(argv[0]);
 
@@ -1446,6 +1463,46 @@ int main(int argc, char *argv[])
 				CampaignLoad(&gCampaign, &entry);
 			}
 		}
+		else if (connectAddr.port != 0)
+		{
+			NetClientConnect(&gNetClient, connectAddr);
+			if (!NetClientIsConnected(&gNetClient))
+			{
+				printf("Failed to connect\n");
+			}
+			else
+			{
+				for (int i = 0;
+					i < 30 && gNetClient.State == NET_STATE_STARTING;
+					i++)
+				{
+					printf("Connecting (attempt %d)\n", i);
+					NetMsgCampaignDef def;
+					if (NetClientTryLoadCampaignDef(&gNetClient, &def))
+					{
+						char campaignPath[CDOGS_PATH_MAX];
+						campaign_mode_e campaignMode;
+						NetMsgCampaignDefConvert(
+							&def, campaignPath, &campaignMode);
+						CampaignEntry entry;
+						if (CampaignEntryTryLoad(
+							&entry, campaignPath, campaignMode))
+						{
+							CampaignLoad(&gCampaign, &entry);
+						}
+						else
+						{
+							printf("Error: failed to load campaign def\n");
+						}
+						break;
+					}
+					else
+					{
+						SDL_Delay(1000);
+					}
+				}
+			}
+		}
 		MainLoop(&creditsDisplayer, &campaigns);
 	}
 
@@ -1457,6 +1514,7 @@ bail:
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);
 	MissionOptionsTerminate(&gMission);
+	NetClientTerminate(&gNetClient);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 
@@ -1483,4 +1541,3 @@ bail:
 
 	exit(err);
 }
-

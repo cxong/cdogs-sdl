@@ -52,8 +52,9 @@ set(CDOGS_SOURCES
 	mission_convert.c
 	mouse.c
 	music.c
+	net_client.c
 	net_input.c
-	net_input_client.c
+	net_util.c
 	objs.c
 	palette.c
 	particle.c
@@ -120,9 +121,9 @@ set(CDOGS_HEADERS
 	mission_convert.h
 	mouse.h
 	music.h
+	net_client.h
 	net_input.h
-	net_input_client.h
-	net_input_util.h
+	net_util.h
 	objs.h
 	palette.h
 	particle.h

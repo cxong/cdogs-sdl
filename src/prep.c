@@ -226,11 +226,15 @@ static void AssignPlayerInputDevices(
 				continue;
 			}
 		}
-		if ((handlers->netInput.Cmd & CMD_BUTTON1 & ~handlers->netInput.PrevCmd) &&
-			!assignedNet)
+		if (handlers->netInput.peers.size > 0 && !assignedNet)
 		{
 			hasInputDevice[i] = 1;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
+			// Send the current campaign details over
+			NetInputSendMsg(
+				&handlers->netInput,
+				handlers->netInput.peerId - 1,
+				SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
 			assignedNet = true;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;

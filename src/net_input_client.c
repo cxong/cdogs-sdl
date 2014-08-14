@@ -31,7 +31,7 @@
 #include <cdogs/config.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
-#include <cdogs/net_input_client.h>
+#include <cdogs/net_client.h>
 
 int main(int argc, char *argv[])
 {
@@ -60,12 +60,12 @@ int main(int argc, char *argv[])
 	gLastConfig = gConfig;
 	EventInit(&gEventHandlers, NULL, false);
 
-	NetInputClient client;
-	NetInputClientInit(&client);
+	NetClient client;
+	NetClientInit(&client);
 	ENetAddress addr;
 	enet_address_set_host(&addr, "localhost");
 	addr.port = NET_INPUT_PORT;
-	NetInputClientConnect(&client, addr);
+	NetClientConnect(&client, addr);
 
 	printf("Press esc to exit\n");
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
 			continue;
 		}
-		NetInputClientUpdate(&client);
+		NetClientPoll(&client);
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		int cmd = GetOnePlayerCmd(
 			&gEventHandlers,
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 			printf("Sending %s + %s\n",
 				CmdStr(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)),
 				CmdStr(cmd & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_BUTTON3 | CMD_BUTTON4 | CMD_ESC)));
-			NetInputClientSend(&client, cmd);
+			NetClientSend(&client, cmd);
 		}
 
 		// Check keyboard escape
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 		ticksElapsed -= 1000 / FPS_FRAMELIMIT;
 	}
 
-	NetInputClientTerminate(&client);
+	NetClientTerminate(&client);
 	EventTerminate(&gEventHandlers);
 	atexit(enet_deinitialize);
 	SDL_Quit();
