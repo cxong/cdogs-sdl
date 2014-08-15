@@ -56,7 +56,8 @@
 
 TActor *AIGetClosestPlayer(Vec2i fullpos);
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
-TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer);
+const TActor *AIGetClosestVisibleEnemy(
+	const TActor *from, const bool isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
 int AIReverseDirection(int cmd);
 bool AIHasClearShot(const Vec2i from, const Vec2i to);

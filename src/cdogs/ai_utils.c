@@ -81,7 +81,9 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 	return closestPlayer;
 }
 
-static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
+static TActor *AIGetClosestActor(
+	const Vec2i fromPos, const TActor *from,
+	bool (*compFunc)(const TActor *, const TActor *))
 {
 	// Search all the actors and find the closest one that
 	// satisfies the condition
@@ -99,10 +101,10 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 		{
 			continue;
 		}
-		if (compFunc(a))
+		if (compFunc(a, from))
 		{
-			int distance =
-				CHEBYSHEV_DISTANCE(from.x, from.y, a->Pos.x, a->Pos.y);
+			int distance = CHEBYSHEV_DISTANCE(
+				fromPos.x, fromPos.y, a->Pos.x, a->Pos.y);
 			if (!closest || distance < minDistance)
 			{
 				minDistance = distance;
@@ -113,47 +115,63 @@ static TActor *AIGetClosestActor(Vec2i from, int (*compFunc)(TActor *))
 	return closest;
 }
 
-static int IsGood(TActor *a)
+static bool IsGood(const TActor *a, const TActor *b)
 {
+	UNUSED(b);
 	return a->pData || (a->flags & FLAGS_GOOD_GUY);
 }
-static int IsBad(TActor *a)
+static bool IsBad(const TActor *a, const TActor *b)
 {
-	return !IsGood(a);
+	return !IsGood(a, b);
+}
+static bool IsDifferent(const TActor *a, const TActor *b)
+{
+	return a != b;
 }
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer)
 {
-	if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	{
+		// free for all; look for anybody
+		return AIGetClosestActor(from, NULL, IsDifferent);
+	}
+	else if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
 	{
 		// we are bad; look for good guys
-		return AIGetClosestActor(from, IsGood);
+		return AIGetClosestActor(from, NULL, IsGood);
 	}
 	else
 	{
 		// we are good; look for bad guys
-		return AIGetClosestActor(from, IsBad);
+		return AIGetClosestActor(from, NULL, IsBad);
 	}
 }
 
-static int IsGoodAndVisible(TActor *a)
+static bool IsGoodAndVisible(const TActor *a, const TActor *b)
 {
-	return IsGood(a) && (a->flags & FLAGS_VISIBLE);
+	return IsGood(a, b) && (a->flags & FLAGS_VISIBLE);
 }
-static int IsBadAndVisible(TActor *a)
+static bool IsBadAndVisible(const TActor *a, const TActor *b)
 {
-	return IsBad(a) && (a->flags & FLAGS_VISIBLE);
+	return IsBad(a, b) && (a->flags & FLAGS_VISIBLE);
 }
-TActor *AIGetClosestVisibleEnemy(Vec2i from, int flags, int isPlayer)
+const TActor *AIGetClosestVisibleEnemy(
+	const TActor *from, const bool isPlayer)
 {
-	if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	{
+		// free for all; look for anybody
+		return AIGetClosestActor(from->Pos, from, IsDifferent);
+	}
+	else if (!isPlayer && !(from->flags & FLAGS_GOOD_GUY))
 	{
 		// we are bad; look for good guys
-		return AIGetClosestActor(from, IsGoodAndVisible);
+		return AIGetClosestActor(from->Pos, from, IsGoodAndVisible);
 	}
 	else
 	{
 		// we are good; look for bad guys
-		return AIGetClosestActor(from, IsBadAndVisible);
+		return AIGetClosestActor(from->Pos, from, IsBadAndVisible);
 	}
 }
 
@@ -631,8 +649,7 @@ int AIHuntClosest(TActor *actor)
 
 	if (actor->flags & FLAGS_VISIBLE)
 	{
-		TActor *a = AIGetClosestEnemy(
-			actor->Pos, actor->flags, !!actor->pData);
+		const TActor *a = AIGetClosestVisibleEnemy(actor, !!actor->pData);
 		if (a)
 		{
 			targetPos = a->Pos;

@@ -127,18 +127,21 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// Follow the closest player with a lower ID
 	TActor *closestPlayer = NULL;
 	int minDistance2 = -1;
-	for (int i = 0; i < actor->pData->playerIndex; i++)
+	if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
-		if (!IsPlayerAlive(i))
+		for (int i = 0; i < actor->pData->playerIndex; i++)
 		{
-			continue;
-		}
-		TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
-		int distance2 = DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
-		if (!closestPlayer || distance2 < minDistance2)
-		{
-			minDistance2 = distance2;
-			closestPlayer = p;
+			if (!IsPlayerAlive(i))
+			{
+				continue;
+			}
+			TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
+			int distance2 = DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
+			if (!closestPlayer || distance2 < minDistance2)
+			{
+				minDistance2 = distance2;
+				closestPlayer = p;
+			}
 		}
 	}
 
@@ -157,8 +160,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	}
 
 	// Check if closest enemy is close enough, and visible
-	TActor *closestEnemy =
-		AIGetClosestVisibleEnemy(actor->Pos, actor->flags, 1);
+	const TActor *closestEnemy = AIGetClosestVisibleEnemy(actor, true);
 	if (closestEnemy)
 	{
 		int minEnemyDistance = CHEBYSHEV_DISTANCE(
