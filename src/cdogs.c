@@ -1516,6 +1516,7 @@ bail:
 	BulletTerminate(&gBulletClasses);
 	MissionOptionsTerminate(&gMission);
 	NetClientTerminate(&gNetClient);
+	atexit(enet_deinitialize);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 

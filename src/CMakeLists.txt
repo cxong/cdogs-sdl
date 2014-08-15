@@ -79,12 +79,3 @@ target_link_libraries(cdogs-sdl-editor
 	${SDLMIXER_LIBRARY}
 	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
-
-add_executable(net_input_client net_input_client.c ${CDOGS_SDL_EXTRA})
-target_link_libraries(net_input_client
-	cdogs json physfs-static
-	${SDL_LIBRARY}
-	${SDLIMAGE_LIBRARY}
-	${SDLMIXER_LIBRARY}
-	${ENet_LIBRARIES}
-	${EXTRA_LIBRARIES})
