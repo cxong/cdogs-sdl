@@ -37,11 +37,15 @@
 typedef struct
 {
 	ENetHost *server;
-	CArray peers;	// of ENetPeer *
 	int PrevCmd;
 	int Cmd;
 	int peerId;	// auto-incrementing id for the next connected peer
 } NetInput;
+
+typedef struct
+{
+	int Id;
+} NetPeerData;
 
 void NetInputInit(NetInput *n);
 void NetInputTerminate(NetInput *n);
@@ -53,7 +57,7 @@ void NetInputOpen(NetInput *n);
 void NetInputPoll(NetInput *n);
 
 void NetInputSendMsg(
-	NetInput *n, const int peerIndex, ServerMsg msg, const void *data);
+	NetInput *n, const int peerId, ServerMsg msg, const void *data);
 // Send message to all peers
 void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data);
 

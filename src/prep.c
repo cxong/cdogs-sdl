@@ -226,7 +226,9 @@ static void AssignPlayerInputDevices(
 				continue;
 			}
 		}
-		if (handlers->netInput.peers.size > 0 && !assignedNet)
+		if (handlers->netInput.server &&
+			handlers->netInput.server->connectedPeers > 0 &&
+			!assignedNet)
 		{
 			hasInputDevice[i] = 1;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);

@@ -38,21 +38,11 @@
 void NetInputInit(NetInput *n)
 {
 	memset(n, 0, sizeof *n);
-	CArrayInit(&n->peers, sizeof(ENetPeer *));
 }
 void NetInputTerminate(NetInput *n)
 {
 	enet_host_destroy(n->server);
 	n->server = NULL;
-	for (int i = 0; i < (int)n->peers.size; i++)
-	{
-		ENetPeer **p = CArrayGet(&n->peers, i);
-		if (*p)
-		{
-			enet_peer_reset(*p);
-		}
-	}
-	CArrayTerminate(&n->peers);
 }
 void NetInputReset(NetInput *n)
 {
@@ -114,9 +104,9 @@ void NetInputPoll(NetInput *n)
 				printf("A new client connected from %x:%u.\n",
 					event.peer->address.host,
 					event.peer->address.port);
-				CArrayPushBack(&n->peers, &event.peer);
 				/* Store any relevant client information here. */
-				event.peer->data = (void *)n->peerId;
+				CMALLOC(event.peer->data, sizeof(NetPeerData));
+				((NetPeerData *)event.peer->data)->Id = n->peerId;
 				n->peerId++;
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
@@ -154,21 +144,8 @@ void NetInputPoll(NetInput *n)
 					printf("disconnected %x:%u.\n",
 						event.peer->address.host,
 						event.peer->address.port);
-					// Find the peer by id and delete
-					bool found = false;
-					for (int i = 0; i < (int)n->peers.size; i++)
-					{
-						ENetPeer **peer = CArrayGet(&n->peers, i);
-						if ((int)(*peer)->data == (int)event.peer->data)
-						{
-							CArrayDelete(&n->peers, i);
-							found = true;
-							break;
-						}
-					}
-					CASSERT(found, "Cannot find peer by id");
 					/* Reset the peer's client information. */
-					event.peer->data = NULL;
+					CFREE(event.peer->data);
 				}
 				break;
 
@@ -183,23 +160,20 @@ void NetInputPoll(NetInput *n)
 static ENetPacket *MakePacket(ServerMsg msg, const void *data);
 
 void NetInputSendMsg(
-	NetInput *n, const int peerIndex, ServerMsg msg, const void *data)
+	NetInput *n, const int peerId, ServerMsg msg, const void *data)
 {
 	if (!n->server)
 	{
 		return;
 	}
-	CASSERT(
-		peerIndex >= 0 && peerIndex < (int)n->peers.size,
-		"invalid peer index");
 
 	// Find the peer and send
-	for (int i = 0; i < (int)n->peers.size; i++)
+	for (int i = 0; i < (int)n->server->connectedPeers; i++)
 	{
-		ENetPeer **peer = CArrayGet(&n->peers, i);
-		if ((int)(*peer)->data == peerIndex)
+		ENetPeer *peer = n->server->peers + i;
+		if (((NetPeerData *)peer->data)->Id == peerId)
 		{
-			enet_peer_send(*peer, 0, MakePacket(msg, data));
+			enet_peer_send(peer, 0, MakePacket(msg, data));
 			enet_host_flush(n->server);
 			return;
 		}
@@ -228,9 +202,9 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			NetMsgCampaignDef def;
 			memset(&def, 0, sizeof def);
 			const CampaignEntry *entry = data;
-			if (entry->Filename)
+			if (entry->Path)
 			{
-				strcpy((char *)def.Path, entry->Filename);
+				strcpy((char *)def.Path, entry->Path);
 			}
 			def.CampaignMode = entry->Mode;
 			return MakePacketImpl(msg, &def, sizeof def);
