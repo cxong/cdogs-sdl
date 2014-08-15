@@ -2,7 +2,7 @@ C-Dogs SDL
 ==========
 [![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)[![Release](http://img.shields.io/github/release/cxong/cdogs-sdl.svg)](https://github.com/cxong/cdogs-sdl/releases/latest)[![Project Stats](https://www.openhub.net/p/cdogs-sdl-fork/widgets/project_thin_badge.gif)](https://www.openhub.net/p/cdogs-sdl-fork)
 
-[![logo](http://cxong.github.io/cdogs-sdl/images/title.png)]
+![logo](http://cxong.github.io/cdogs-sdl/images/title.png)
 
 1. Introduction
 2. Tested Environments
