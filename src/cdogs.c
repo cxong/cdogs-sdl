@@ -1078,6 +1078,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 		InitData(&gPlayerDatas[i]);
 	}
 
+	co->MissionIndex = 0;
 	gOptions.badGuys = 0;
 
 	bool run = false;
