@@ -175,7 +175,7 @@ void FontTerminate(Font *f)
 int FontW(const char c)
 {
 	const Pic *p = CArrayGet(&gFont.Chars, (int)c - FIRST_CHAR);
-	return p->size.x;
+	return p->size.x + gFont.Gap.x;
 }
 int FontH(void)
 {
