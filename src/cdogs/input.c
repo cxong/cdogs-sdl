@@ -128,6 +128,8 @@ const char *InputDeviceName(int d, int deviceIndex)
 		return SDL_JoystickName(deviceIndex);
 	case INPUT_DEVICE_NET:
 		return "Net";
+	case INPUT_DEVICE_AI:
+		return "AI";
 	default:
 		return "";
 	}

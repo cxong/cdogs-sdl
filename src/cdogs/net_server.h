@@ -26,8 +26,8 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_INPUT
-#define __NET_INPUT
+#ifndef __NET_SERVER
+#define __NET_SERVER
 
 #include <stdbool.h>
 
@@ -40,25 +40,27 @@ typedef struct
 	int PrevCmd;
 	int Cmd;
 	int peerId;	// auto-incrementing id for the next connected peer
-} NetInput;
+} NetServer;
+
+extern NetServer gNetServer;
 
 typedef struct
 {
 	int Id;
 } NetPeerData;
 
-void NetInputInit(NetInput *n);
-void NetInputTerminate(NetInput *n);
-void NetInputReset(NetInput *n);
+void NetServerInit(NetServer *n);
+void NetServerTerminate(NetServer *n);
+void NetServerReset(NetServer *n);
 
 // Open a port and start listening for data
-void NetInputOpen(NetInput *n);
+void NetServerOpen(NetServer *n);
 // Service the recv buffer; if data is received then activate this device
-void NetInputPoll(NetInput *n);
+void NetServerPoll(NetServer *n);
 
-void NetInputSendMsg(
-	NetInput *n, const int peerId, ServerMsg msg, const void *data);
+void NetServerSendMsg(
+	NetServer *n, const int peerId, ServerMsg msg, const void *data);
 // Send message to all peers
-void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data);
+void NetServerBroadcastMsg(NetServer *n, ServerMsg msg, const void *data);
 
 #endif

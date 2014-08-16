@@ -53,7 +53,7 @@ set(CDOGS_SOURCES
 	mouse.c
 	music.c
 	net_client.c
-	net_input.c
+	net_server.c
 	net_util.c
 	objs.c
 	palette.c
@@ -122,7 +122,7 @@ set(CDOGS_HEADERS
 	mouse.h
 	music.h
 	net_client.h
-	net_input.h
+	net_server.h
 	net_util.h
 	objs.h
 	palette.h

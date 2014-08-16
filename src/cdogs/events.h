@@ -51,14 +51,12 @@
 
 #include "gamedata.h"
 #include "input.h"
-#include "net_input.h"
 
 typedef struct
 {
 	keyboard_t keyboard;
 	joysticks_t joysticks;
 	Mouse mouse;
-	NetInput netInput;
 
 	bool HasResolutionChanged;
 	bool HasQuit;

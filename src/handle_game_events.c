@@ -29,6 +29,7 @@
 
 #include <cdogs/damage.h>
 #include <cdogs/game_events.h>
+#include <cdogs/net_server.h>
 #include <cdogs/objs.h>
 #include <cdogs/particle.h>
 #include <cdogs/triggers.h>
@@ -83,8 +84,8 @@ static void HandleGameEvent(
 				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
 			break;
 		case GAME_EVENT_GAME_START:
-			NetInputBroadcastMsg(
-				&eventHandlers->netInput, SERVER_MSG_GAME_START, NULL);
+			NetServerBroadcastMsg(
+				&gNetServer, SERVER_MSG_GAME_START, NULL);
 			break;
 		case GAME_EVENT_ADD_HEALTH_PICKUP:
 			MapPlaceHealth(e->u.AddPos);

@@ -66,12 +66,10 @@ void EventInit(EventHandlers *handlers, Pic *mouseCursor, bool hideMouse)
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
 	MouseInit(&handlers->mouse, mouseCursor, hideMouse);
-	NetInputInit(&handlers->netInput);
 }
 void EventTerminate(EventHandlers *handlers)
 {
 	JoyTerminate(&handlers->joysticks);
-	NetInputTerminate(&handlers->netInput);
 }
 void EventReset(EventHandlers *handlers, Pic *mouseCursor)
 {
@@ -79,7 +77,6 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor)
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
 	MouseInit(&handlers->mouse, mouseCursor, handlers->mouse.hideMouse);
-	NetInputReset(&handlers->netInput);
 }
 
 void EventPoll(EventHandlers *handlers, Uint32 ticks)
@@ -127,8 +124,6 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	}
 	KeyPostPoll(&handlers->keyboard, ticks);
 	MousePostPoll(&handlers->mouse, ticks);
-
-	NetInputPoll(&handlers->netInput);
 }
 
 static int GetKeyboardCmd(
@@ -233,9 +228,6 @@ int GetGameCmd(
 			&handlers->joysticks.joys[playerData->deviceIndex];
 		cmd = GetJoystickCmd(joystick, false);
 		break;
-	case INPUT_DEVICE_NET:
-		cmd = handlers->netInput.Cmd;
-		break;
 	default:
 		// do nothing
 		break;
@@ -264,13 +256,6 @@ int GetOnePlayerCmd(
 		{
 			joystick_t *joystick = &handlers->joysticks.joys[deviceIndex];
 			cmd = GetJoystickCmd(joystick, isPressed);
-		}
-		break;
-	case INPUT_DEVICE_NET:
-		cmd = handlers->netInput.Cmd;
-		if (isPressed)
-		{
-			cmd &= ~handlers->netInput.PrevCmd;
 		}
 		break;
 	case INPUT_DEVICE_AI:
@@ -339,11 +324,6 @@ int GetMenuCmd(
 	{
 		// Check mouse
 		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_MOUSE, 0);
-	}
-	if (!cmd)
-	{
-		// Check net device
-		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_NET, 0);
 	}
 
 	return cmd;

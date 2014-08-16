@@ -67,6 +67,7 @@
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/music.h>
+#include <cdogs/net_server.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
@@ -156,9 +157,11 @@ static void AssignPlayerInputDevices(
 	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
 	bool assignedMouse = false;
 	bool assignedJoysticks[MAX_JOYSTICKS];
-	bool assignedNet = false;
+	bool assignedNet[MAX_PLAYERS];
+	int numNet = 0;
 	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
 	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
+	memset(assignedNet, 0, sizeof assignedNet);
 
 	for (int i = 0; i < numPlayers; i++)
 	{
@@ -168,16 +171,17 @@ static void AssignPlayerInputDevices(
 			switch (playerDatas[i].inputDevice)
 			{
 			case INPUT_DEVICE_KEYBOARD:
-				assignedKeyboards[playerDatas[i].deviceIndex] = 1;
+				assignedKeyboards[playerDatas[i].deviceIndex] = true;
 				break;
 			case INPUT_DEVICE_MOUSE:
 				assignedMouse = true;
 				break;
 			case INPUT_DEVICE_JOYSTICK:
-				assignedJoysticks[playerDatas[i].deviceIndex] = 1;
+				assignedJoysticks[playerDatas[i].deviceIndex] = true;
 				break;
 			case INPUT_DEVICE_NET:
-				assignedNet = true;
+				assignedNet[playerDatas[i].deviceIndex] = true;
+				numNet++;
 				break;
 			default:
 				// do nothing
@@ -226,18 +230,17 @@ static void AssignPlayerInputDevices(
 				continue;
 			}
 		}
-		if (handlers->netInput.server &&
-			handlers->netInput.server->connectedPeers > 0 &&
-			!assignedNet)
+		if ((int)gNetServer.server->connectedPeers > numNet)
 		{
-			hasInputDevice[i] = 1;
+			hasInputDevice[i] = true;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
 			// Send the current campaign details over
-			NetInputSendMsg(
-				&handlers->netInput,
-				handlers->netInput.peerId - 1,
+			NetServerSendMsg(
+				&gNetServer,
+				gNetServer.peerId - 1,
 				SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
-			assignedNet = true;
+			assignedNet[playerDatas[i].deviceIndex] = true;
+			numNet++;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
 		}
@@ -268,7 +271,7 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 	bool res = true;
 	bool hasNetInput = false;
 	KeyInit(&gEventHandlers.keyboard);
-	NetInputOpen(&gEventHandlers.netInput);
+	NetServerOpen(&gNetServer);
 	for (;;)
 	{
 #ifndef RUN_WITHOUT_APP_FOCUS
@@ -382,7 +385,8 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 bail:
 	if (!hasNetInput)
 	{
-		NetInputTerminate(&gEventHandlers.netInput);
+		// TODO: support net players joining mid-game
+		NetServerTerminate(&gNetServer);
 	}
 
 	for (int i = 0; i < numPlayers; i++)

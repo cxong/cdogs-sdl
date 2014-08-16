@@ -26,7 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "net_input.h"
+#include "net_server.h"
 
 #include <string.h>
 
@@ -34,22 +34,24 @@
 #include "sys_config.h"
 #include "utils.h"
 
+NetServer gNetServer;
 
-void NetInputInit(NetInput *n)
+
+void NetServerInit(NetServer *n)
 {
 	memset(n, 0, sizeof *n);
 }
-void NetInputTerminate(NetInput *n)
+void NetServerTerminate(NetServer *n)
 {
 	enet_host_destroy(n->server);
 	n->server = NULL;
 }
-void NetInputReset(NetInput *n)
+void NetServerReset(NetServer *n)
 {
 	n->PrevCmd = n->Cmd = 0;
 }
 
-void NetInputOpen(NetInput *n)
+void NetServerOpen(NetServer *n)
 {
 #if USE_NET == 1
 	/* Bind the server to the default localhost.     */
@@ -75,7 +77,7 @@ void NetInputOpen(NetInput *n)
 #endif
 }
 
-void NetInputPoll(NetInput *n)
+void NetServerPoll(NetServer *n)
 {
 	if (!n->server)
 	{
@@ -159,8 +161,8 @@ void NetInputPoll(NetInput *n)
 
 static ENetPacket *MakePacket(ServerMsg msg, const void *data);
 
-void NetInputSendMsg(
-	NetInput *n, const int peerId, ServerMsg msg, const void *data)
+void NetServerSendMsg(
+	NetServer *n, const int peerId, ServerMsg msg, const void *data)
 {
 	if (!n->server)
 	{
@@ -181,7 +183,7 @@ void NetInputSendMsg(
 	CASSERT(false, "Cannot find peer by id");
 }
 
-void NetInputBroadcastMsg(NetInput *n, ServerMsg msg, const void *data)
+void NetServerBroadcastMsg(NetServer *n, ServerMsg msg, const void *data)
 {
 	if (!n->server)
 	{

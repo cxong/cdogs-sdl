@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-#include "net_input.h"
+#include "net_server.h"
 #include "utils.h"
 
 
