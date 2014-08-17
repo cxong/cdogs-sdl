@@ -7,7 +7,7 @@
 		"leg": 9,
 		"hair": 6,
 		"speed": 128,
-		"Gun": "Grenades",
+		"Gun": "Dynamite",
 		"maxHealth": 40,
 		"flags": 0,
 		"probabilityToMove": 40,

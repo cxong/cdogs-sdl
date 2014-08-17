@@ -163,6 +163,7 @@ void GunAddBullets(
 	const bool playSound);
 void WeaponHoldFire(Weapon *w);
 
+int GunGetRange(const GunDescription *g);
 bool IsHighDPS(const GunDescription *g);
 bool IsLongRange(const GunDescription *g);
 bool IsShortRange(const GunDescription *g);

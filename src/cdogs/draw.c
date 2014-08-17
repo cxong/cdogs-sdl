@@ -52,6 +52,7 @@
 #include <stdlib.h>
 
 #include "actors.h"
+#include "algorithms.h"
 #include "config.h"
 #include "drawtools.h"
 #include "font.h"
@@ -308,7 +309,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-#define ACTOR_HEIGHT 25
+static void DrawActorPics(
+	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos);
 static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
@@ -332,86 +334,107 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 	}
 	else if (t->getActorPicsFunc)
 	{
-		ActorPics pics = t->getActorPicsFunc(t->id);
-		if (pics.IsDead)
-		{
-			if (pics.IsDying)
-			{
-				int pic = pics.OldPics[0];
-				if (pic == 0)
-				{
-					return;
-				}
-				if (pics.IsTransparent)
-				{
-					DrawBTPic(
-						&gGraphicsDevice,
-						PicManagerGetFromOld(&gPicManager, pic),
-						Vec2iAdd(picPos, pics.Pics[0].offset),
-						pics.Tint);
-				}
-				else
-				{
-					DrawTTPic(
-						picPos.x + pics.Pics[0].offset.x,
-						picPos.y + pics.Pics[0].offset.y,
-						PicManagerGetOldPic(&gPicManager, pic),
-						pics.Table);
-				}
-			}
-		}
-		else if (pics.IsTransparent)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				Pic *oldPic = PicManagerGetFromOld(
-					&gPicManager, pics.OldPics[i]);
-				if (oldPic == NULL)
-				{
-					return;
-				}
-				DrawBTPic(
-					&gGraphicsDevice,
-					oldPic,
-					Vec2iAdd(picPos, pics.Pics[i].offset),
-					pics.Tint);
-			}
-		}
-		else
-		{
-			DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
-			for (int i = 0; i < 3; i++)
-			{
-				PicPaletted *oldPic = PicManagerGetOldPic(
-					&gPicManager, pics.OldPics[i]);
-				if (oldPic == NULL)
-				{
-					continue;
-				}
-				BlitOld(
-					picPos.x + pics.Pics[i].offset.x,
-					picPos.y + pics.Pics[i].offset.y,
-					oldPic,
-					pics.Table, BLIT_TRANSPARENT);
-			}
-			const TActor *a = CArrayGet(&gActors, t->id);
-			if (!a->aiContext || !AIContextShowChatter(
-				a->aiContext, gConfig.Interface.AIChatter))
-			{
-				return;
-			}
-			const char *text =
-				AIStateGetChatterText(a->aiContext->State);
-			const Vec2i textPos = Vec2iNew(
-				a->tileItem.x - b->xTop + offset.x -
-				FontStrW(text) / 2,
-				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
-			FontStr(text, textPos);
-		}
+		DrawActorPics(b, t, offset, picPos);
 	}
 	else
 	{
 		(*(t->drawFunc))(picPos, &t->drawData);
+	}
+}
+#define ACTOR_HEIGHT 25
+static void DrawActorPics(
+	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos)
+{
+	const ActorPics pics = t->getActorPicsFunc(t->id);
+	if (pics.IsDead)
+	{
+		if (pics.IsDying)
+		{
+			int pic = pics.OldPics[0];
+			if (pic == 0)
+			{
+				return;
+			}
+			if (pics.IsTransparent)
+			{
+				DrawBTPic(
+					&gGraphicsDevice,
+					PicManagerGetFromOld(&gPicManager, pic),
+					Vec2iAdd(picPos, pics.Pics[0].offset),
+					pics.Tint);
+			}
+			else
+			{
+				DrawTTPic(
+					picPos.x + pics.Pics[0].offset.x,
+					picPos.y + pics.Pics[0].offset.y,
+					PicManagerGetOldPic(&gPicManager, pic),
+					pics.Table);
+			}
+		}
+	}
+	else if (pics.IsTransparent)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			Pic *oldPic = PicManagerGetFromOld(
+				&gPicManager, pics.OldPics[i]);
+			if (oldPic == NULL)
+			{
+				return;
+			}
+			DrawBTPic(
+				&gGraphicsDevice,
+				oldPic,
+				Vec2iAdd(picPos, pics.Pics[i].offset),
+				pics.Tint);
+		}
+	}
+	else
+	{
+		DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
+		for (int i = 0; i < 3; i++)
+		{
+			PicPaletted *oldPic = PicManagerGetOldPic(
+				&gPicManager, pics.OldPics[i]);
+			if (oldPic == NULL)
+			{
+				continue;
+			}
+			BlitOld(
+				picPos.x + pics.Pics[i].offset.x,
+				picPos.y + pics.Pics[i].offset.y,
+				oldPic,
+				pics.Table, BLIT_TRANSPARENT);
+		}
+
+		const TActor *a = CArrayGet(&gActors, t->id);
+
+		// Draw weapon indicators
+		const GunDescription *g = ActorGetGun(a)->Gun;
+		Vec2i muzzlePos = Vec2iAdd(
+			picPos, Vec2iFull2Real(GunGetMuzzleOffset(g, a->direction)));
+		muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
+		double x, y;
+		GetVectorsForRadians(dir2radians[a->direction], &x, &y);
+		const int range = GunGetRange(g);
+		const Vec2i indicatorEnd = Vec2iAdd(
+			muzzlePos, Vec2iNew((int)round(x * range), (int)round(y * range)));
+		DrawLine(muzzlePos, indicatorEnd, colorCyan);
+
+		// Draw character text
+		if (!a->aiContext || !AIContextShowChatter(
+			a->aiContext, gConfig.Interface.AIChatter))
+		{
+			return;
+		}
+		const char *text =
+			AIStateGetChatterText(a->aiContext->State);
+		const Vec2i textPos = Vec2iNew(
+			a->tileItem.x - b->xTop + offset.x -
+			FontStrW(text) / 2,
+			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+		FontStr(text, textPos);
 	}
 }
 

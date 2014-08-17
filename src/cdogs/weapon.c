@@ -553,7 +553,7 @@ bool IsHighDPS(const GunDescription *g)
 		g->Bullet->OutOfRangeGuns.size > 0 ||
 		g->Bullet->HitGuns.size > 0;
 }
-static int GetEffectiveRange(const GunDescription *g)
+int GunGetRange(const GunDescription *g)
 {
 	const BulletClass *b = g->Bullet;
 	if (b == NULL)
@@ -573,11 +573,11 @@ static int GetEffectiveRange(const GunDescription *g)
 }
 bool IsLongRange(const GunDescription *g)
 {
-	return GetEffectiveRange(g) > 130;
+	return GunGetRange(g) > 130;
 }
 bool IsShortRange(const GunDescription *g)
 {
-	return GetEffectiveRange(g) < 100;
+	return GunGetRange(g) < 100;
 }
 
 void BulletAndWeaponInitialize(

@@ -20,7 +20,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 void Draw_Point(const int x, const int y, color_t c);
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c);
+void DrawLine(const Vec2i from, const Vec2i to, color_t c);
 
 #define PixelIndex(x, y, w, h)		(y * w + x)
 

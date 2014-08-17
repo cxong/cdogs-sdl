@@ -77,7 +77,7 @@
 #include <cdogs/screen_shake.h>
 #include <cdogs/triggers.h>
 
-#include <cdogs/drawtools.h> /* for Draw_Box and Draw_Point */
+#include <cdogs/drawtools.h> /* for Draw_Line */
 
 #include "handle_game_events.h"
 

@@ -47,6 +47,7 @@
 
 #include <stdio.h>
 
+#include "algorithms.h"
 #include "config.h"
 #include "drawtools.h"
 #include "palette.h"
@@ -140,11 +141,19 @@ static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 	return;
 }
 
-/*static void Draw_OtherLine(
-	const int x1, const int y1, const int x2, const int y2, const unsigned char c)
+static void DrawPointFunc(void *data, const Vec2i pos);
+void DrawLine(const Vec2i from, const Vec2i to, color_t c)
 {
-	printf("### Other lines not yet implemented! ###\n");
-}*/
+	AlgoLineDrawData data;
+	data.Draw = DrawPointFunc;
+	data.data = &c;
+	BresenhamLineDraw(from, to, &data);
+}
+static void DrawPointFunc(void *data, const Vec2i pos)
+{
+	const color_t *c = data;
+	Draw_Point(pos.x, pos.y, *c);
+}
 
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c)
