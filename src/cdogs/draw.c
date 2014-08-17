@@ -342,6 +342,7 @@ static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
 	}
 }
 #define ACTOR_HEIGHT 25
+static void DrawLaserSight(const TActor *a, const Vec2i picPos);
 static void DrawActorPics(
 	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos)
 {
@@ -411,16 +412,7 @@ static void DrawActorPics(
 		const TActor *a = CArrayGet(&gActors, t->id);
 
 		// Draw weapon indicators
-		const GunDescription *g = ActorGetGun(a)->Gun;
-		Vec2i muzzlePos = Vec2iAdd(
-			picPos, Vec2iFull2Real(GunGetMuzzleOffset(g, a->direction)));
-		muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
-		double x, y;
-		GetVectorsForRadians(dir2radians[a->direction], &x, &y);
-		const int range = GunGetRange(g);
-		const Vec2i indicatorEnd = Vec2iAdd(
-			muzzlePos, Vec2iNew((int)round(x * range), (int)round(y * range)));
-		DrawLine(muzzlePos, indicatorEnd, colorCyan);
+		DrawLaserSight(a, picPos);
 
 		// Draw character text
 		if (!a->aiContext || !AIContextShowChatter(
@@ -436,6 +428,42 @@ static void DrawActorPics(
 			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
 		FontStr(text, textPos);
 	}
+}
+static void DrawLaserSightSingle(
+	const Vec2i from, const double radians, const int range,
+	const color_t color);
+static void DrawLaserSight(const TActor *a, const Vec2i picPos)
+{
+	// Draw weapon indicators
+	const GunDescription *g = ActorGetGun(a)->Gun;
+	Vec2i muzzlePos = Vec2iAdd(
+		picPos, Vec2iFull2Real(GunGetMuzzleOffset(g, a->direction)));
+	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
+	const double radians = dir2radians[a->direction] + g->AngleOffset;
+	const int range = GunGetRange(g);
+	color_t color = colorCyan;
+	color.a = 64;
+	if (g->Spread.Count > 1)
+	{
+		const double spreadHalf =
+			(g->Spread.Count - 1) * g->Spread.Width / 2;
+		DrawLaserSightSingle(muzzlePos, radians - spreadHalf, range, color);
+		DrawLaserSightSingle(muzzlePos, radians + spreadHalf, range, color);
+	}
+	else
+	{
+		DrawLaserSightSingle(muzzlePos, radians, range, color);
+	}
+}
+static void DrawLaserSightSingle(
+	const Vec2i from, const double radians, const int range,
+	const color_t color)
+{
+	double x, y;
+	GetVectorsForRadians(radians, &x, &y);
+	const Vec2i to = Vec2iAdd(
+		from, Vec2iNew((int)round(x * range), (int)round(y * range)));
+	DrawLine(from, to, color);
 }
 
 static void DrawObjectiveHighlight(
