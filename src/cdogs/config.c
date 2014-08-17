@@ -221,7 +221,7 @@ LaserSight StrLaserSight(const char *s)
 	S2T(LASER_SIGHT_NONE, "None");
 	S2T(LASER_SIGHT_PLAYERS, "Players only");
 	S2T(LASER_SIGHT_ALL, "All");
-	return GORE_NONE;
+	return LASER_SIGHT_NONE;
 }
 const char *SplitscreenStyleStr(SplitscreenStyle s)
 {
