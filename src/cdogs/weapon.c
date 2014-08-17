@@ -410,27 +410,18 @@ void GunAddBullets(
 	const int flags, const int player, const int uid,
 	const bool playSound)
 {
-	const int spreadCount = g->Spread.Count;
-	double spreadStartAngle = g->AngleOffset;
-	const double spreadWidth = g->Spread.Width;
-	if (spreadCount > 1)
-	{
-		// Find the starting angle of the spread (clockwise)
-		// Keep in mind the fencepost problem, i.e. spread of 3 means a
-		// total spread angle of 2x width
-		spreadStartAngle += -(spreadCount - 1) * spreadWidth / 2;
-	}
+	// Find the starting angle of the spread (clockwise)
+	// Keep in mind the fencepost problem, i.e. spread of 3 means a
+	// total spread angle of 2x width
+	const double spreadStartAngle =
+		g->AngleOffset - (g->Spread.Count - 1) * g->Spread.Width / 2;
 
-	for (int i = 0; i < spreadCount; i++)
+	for (int i = 0; i < g->Spread.Count; i++)
 	{
-		double spreadAngle = spreadStartAngle + i * spreadWidth;
-		double recoil = 0;
-		if (g->Recoil > 0)
-		{
-			recoil =
-				((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
-		}
-		double finalAngle = radians + spreadAngle + recoil;
+		const double recoil =
+			((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
+		const double finalAngle =
+			radians + spreadStartAngle + i * g->Spread.Width + recoil;
 		GameEvent e;
 		memset(&e, 0, sizeof e);
 		e.Type = GAME_EVENT_ADD_BULLET;

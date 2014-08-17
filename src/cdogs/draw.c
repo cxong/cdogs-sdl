@@ -443,10 +443,10 @@ static void DrawLaserSight(const TActor *a, const Vec2i picPos)
 	const int range = GunGetRange(g);
 	color_t color = colorCyan;
 	color.a = 64;
-	if (g->Spread.Count > 1)
+	const double spreadHalf =
+		(g->Spread.Count - 1) * g->Spread.Width / 2 + g->Recoil / 2;
+	if (spreadHalf > 0)
 	{
-		const double spreadHalf =
-			(g->Spread.Count - 1) * g->Spread.Width / 2;
 		DrawLaserSightSingle(muzzlePos, radians - spreadHalf, range, color);
 		DrawLaserSightSingle(muzzlePos, radians + spreadHalf, range, color);
 	}
