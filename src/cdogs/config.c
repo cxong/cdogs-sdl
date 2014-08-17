@@ -205,6 +205,24 @@ GoreAmount StrGoreAmount(const char *s)
 	S2T(GORE_HIGH, "Torrents");
 	return GORE_NONE;
 }
+const char *LaserSightStr(LaserSight l)
+{
+	switch (l)
+	{
+		T2S(LASER_SIGHT_NONE, "None");
+		T2S(LASER_SIGHT_PLAYERS, "Players only");
+		T2S(LASER_SIGHT_ALL, "All");
+	default:
+		return "";
+	}
+}
+LaserSight StrLaserSight(const char *s)
+{
+	S2T(LASER_SIGHT_NONE, "None");
+	S2T(LASER_SIGHT_PLAYERS, "Players only");
+	S2T(LASER_SIGHT_ALL, "All");
+	return GORE_NONE;
+}
 const char *SplitscreenStyleStr(SplitscreenStyle s)
 {
 	switch (s)
@@ -386,6 +404,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
 	config->Game.HealthPickups = true;
 	config->Game.Gore = GORE_LOW;
+	config->Game.LaserSight = LASER_SIGHT_NONE;
 	config->Graphics.Brightness = 0;
 	config->Graphics.Fullscreen = 0;
 	config->Graphics.Res.y = 240;

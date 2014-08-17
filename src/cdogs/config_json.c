@@ -66,6 +66,8 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadBool(&config->HealthPickups, node, "HealthPickups");
 	JSON_UTILS_LOAD_ENUM(
 		config->Gore, node, "Gore", StrGoreAmount);
+	JSON_UTILS_LOAD_ENUM(
+		config->LaserSight, node, "LaserSight", StrLaserSight);
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -100,6 +102,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 	json_insert_pair_into_object(root, "Game", subConfig);
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "Gore", config->Gore, GoreAmountStr);
+	JSON_UTILS_ADD_ENUM_PAIR(
+		subConfig, "LaserSight", config->LaserSight, LaserSightStr);
 }
 
 static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)

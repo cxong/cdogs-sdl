@@ -77,9 +77,17 @@ typedef enum
 	GORE_MEDIUM,
 	GORE_HIGH
 } GoreAmount;
-
 const char *GoreAmountStr(GoreAmount g);
-GoreAmount StrGoreAmount(const char *str);
+GoreAmount StrGoreAmount(const char *s);
+
+typedef enum
+{
+	LASER_SIGHT_NONE,
+	LASER_SIGHT_PLAYERS,
+	LASER_SIGHT_ALL
+} LaserSight;
+const char *LaserSightStr(LaserSight l);
+LaserSight StrLaserSight(const char *s);
 
 typedef struct
 {
@@ -99,6 +107,7 @@ typedef struct
 	AllyCollision AllyCollision;
 	bool HealthPickups;
 	GoreAmount Gore;
+	LaserSight LaserSight;
 } GameConfig;
 
 typedef enum

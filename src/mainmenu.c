@@ -383,6 +383,13 @@ menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 			GORE_NONE, GORE_HIGH, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
 			(void (*)(void))GoreAmountStr));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionRange(
+			"Laser sight", (int *)&gConfig.Game.LaserSight,
+			LASER_SIGHT_NONE, LASER_SIGHT_ALL, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))LaserSightStr));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);

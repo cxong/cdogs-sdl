@@ -412,7 +412,11 @@ static void DrawActorPics(
 		const TActor *a = CArrayGet(&gActors, t->id);
 
 		// Draw weapon indicators
-		DrawLaserSight(a, picPos);
+		if (gConfig.Game.LaserSight == LASER_SIGHT_ALL ||
+			(gConfig.Game.LaserSight == LASER_SIGHT_PLAYERS && a->pData))
+		{
+			DrawLaserSight(a, picPos);
+		}
 
 		// Draw character text
 		if (!a->aiContext || !AIContextShowChatter(
