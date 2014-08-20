@@ -82,6 +82,7 @@
 #include <cdogs/physfs/physfs.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
 #include "credits.h"
 #include "game.h"
 #include "mainmenu.h"
@@ -89,705 +90,6 @@
 #include "player_select_menus.h"
 #include "prep.h"
 #include "XGetopt.h"
-
-
-
-static void DrawObjectiveInfo(int idx, int x, int y, struct MissionOptions *mo)
-{
-	TOffsetPic pic;
-	TranslationTable *table = NULL;
-	int i = 0;
-	Character *cd;
-	MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, idx);
-	struct Objective *o = CArrayGet(&mo->Objectives, idx);
-
-	switch (mobj->Type)
-	{
-	case OBJECTIVE_KILL:
-		cd = CharacterStoreGetSpecial(&gCampaign.Setting.characters, 0);
-		i = cd->looks.face;
-		table = &cd->table;
-		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-		break;
-	case OBJECTIVE_RESCUE:
-		cd = CharacterStoreGetPrisoner(&gCampaign.Setting.characters, 0);
-		i = cd->looks.face;
-		table = &cd->table;
-		pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-		pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-		pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-		break;
-	case OBJECTIVE_COLLECT:
-		i = o->pickupItem;
-		pic = cGeneralPics[i];
-		break;
-	case OBJECTIVE_DESTROY:
-		i = o->blowupObject->pic;
-		pic = cGeneralPics[i];
-		break;
-	case OBJECTIVE_INVESTIGATE:
-		pic.dx = pic.dy = 0;
-		pic.picIndex = -1;
-		return;
-	default:
-		i = o->pickupItem;
-		pic = cGeneralPics[i];
-		break;
-	}
-	if (pic.picIndex >= 0)
-	{
-		if (table)
-		{
-			DrawTTPic(
-				x + pic.dx, y + pic.dy,
-				PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
-		}
-		else
-		{
-			DrawTPic(
-				x + pic.dx, y + pic.dy,
-				PicManagerGetOldPic(&gPicManager, pic.picIndex));
-		}
-	}
-}
-
-int CampaignIntro(GraphicsDevice *device)
-{
-	int x;
-	int y;
-	char s[1024];
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-
-	debug(D_NORMAL, "\n");
-
-	GraphicsBlitBkg(device);
-
-	y = h / 4;
-
-	sprintf(s, "%s by %s", gCampaign.Setting.Title, gCampaign.Setting.Author);
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = ALIGN_CENTER;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad.y = y - 25;
-	FontStrOpt(s, Vec2iZero(), opts);
-
-	FontSplitLines(gCampaign.Setting.Description, s, w * 5 / 6);
-	x = w / 6 / 2;
-	FontStr(s, Vec2iNew(x, y));
-
-	BlitFlip(device, &gConfig.Graphics);
-	int result = WaitForAnyKeyOrButton(&gEventHandlers);
-	if (result)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
-	return result;
-}
-
-void MissionBriefing(GraphicsDevice *device)
-{
-	char s[512];
-	int y;
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-	int typewriterCount;
-	char description[1024];
-	char typewriterBuf[1024];
-	int descriptionHeight;
-	
-	FontSplitLines(gMission.missionData->Description, description, w * 5 / 6);
-	descriptionHeight = FontStrH(description);
-	
-	// Save password if we're not on the first mission
-	if (gMission.index > 0)
-	{
-		MissionSave ms;
-		MissionSaveInit(&ms);
-		ms.Campaign = gCampaign.Entry;
-		strcpy(ms.Password, MakePassword(gMission.index, 0));
-		ms.MissionsCompleted = gMission.index;
-		AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
-		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-	}
-	
-	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
-
-	for (typewriterCount = 0;
-		typewriterCount <= (int)strlen(description);
-		typewriterCount++)
-	{
-		Vec2i pos;
-		int i;
-		int cmds[MAX_PLAYERS];
-		
-		// Check for player input; if any then skip to the end of the briefing
-		memset(cmds, 0, sizeof cmds);
-		EventPoll(&gEventHandlers, SDL_GetTicks());
-		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-		for (i = 0; i < MAX_PLAYERS; i++)
-		{
-			if (AnyButton(cmds[i]))
-			{
-				typewriterCount = (int)strlen(description);
-				break;
-			}
-		}
-		
-		GraphicsBlitBkg(device);
-
-		// Mission title
-		y = h / 4;
-		sprintf(s, "Mission %d: %s",
-			gMission.index + 1, gMission.missionData->Title);
-		FontOpts title_opts = FontOptsNew();
-		title_opts.HAlign = ALIGN_CENTER;
-		title_opts.Area = gGraphicsDevice.cachedConfig.Res;
-		title_opts.Pad.y = y - 25;
-		FontStrOpt(s, Vec2iZero(), title_opts);
-
-		// Display password
-		if (gMission.index > 0)
-		{
-			char str[512];
-			sprintf(str, "Password: %s", gAutosave.LastMission.Password);
-			FontOpts pw_opts = FontOptsNew();
-			pw_opts.HAlign = ALIGN_CENTER;
-			pw_opts.Area = gGraphicsDevice.cachedConfig.Res;
-			pw_opts.Pad.y = y - 15;
-			FontStrOpt(str, Vec2iZero(), pw_opts);
-		}
-
-		// Display description with typewriter effect
-		pos = Vec2iNew(w / 6 / 2, y);
-		strncpy(typewriterBuf, description, typewriterCount);
-		typewriterBuf[typewriterCount] = '\0';
-		FontStr(typewriterBuf, pos);
-		y += descriptionHeight;
-
-		y += h / 10;
-
-		// Display objectives
-		for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-		{
-			MissionObjective *o =
-				CArrayGet(&gMission.missionData->Objectives, i);
-			// Do not brief optional objectives
-			if (o->Required == 0)
-			{
-				continue;
-			}
-			FontStr(o->Description, Vec2iNew(w / 6, y));
-			DrawObjectiveInfo(i, w - (w / 6), y + FontH(), &gMission);
-			y += h / 12;
-		}
-
-		BlitFlip(device, &gConfig.Graphics);
-		
-		SDL_Delay(10);
-	}
-	WaitForAnyKeyOrButton(&gEventHandlers);
-}
-
-// Display compact player summary, with player on left half and score summaries
-// on right half
-void Summary(Vec2i pos, Vec2i size, struct PlayerData *data, int character)
-{
-	char s[50];
-	int totalTextHeight = FontH() * 7;
-	// display text on right half
-	Vec2i textPos = Vec2iNew(
-		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
-
-	DisplayCharacterAndName(
-		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
-		&gCampaign.Setting.characters.players[character],
-		data->name);
-
-	if (data->survived)
-	{
-		FontStr("Completed mission", textPos);
-	}
-	else
-	{
-		FontStrMask("Failed mission", textPos, colorRed);
-	}
-
-	textPos.y += 2 * FontH();
-	sprintf(s, "Score: %d", data->score);
-	FontStr(s, textPos);
-	textPos.y += FontH();
-	sprintf(s, "Total: %d", data->totalScore);
-	FontStr(s, textPos);
-	textPos.y += FontH();
-	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));
-	FontStr(s, textPos);
-	textPos.y += FontH();
-
-	if (data->survived && (data->hp > 150 || data->hp <= 0))
-	{
-		int maxHealth = (200 * gConfig.Game.PlayerHP) / 100;
-		if (data->hp > maxHealth - 50)
-		{
-			sprintf(s, "Health bonus: %d", (data->hp + 50 - maxHealth) * 10);
-		}
-		else if (data->hp <= 0)
-		{
-			sprintf(s, "Resurrection fee: %d", -500);
-		}
-		FontStr(s, textPos);
-		textPos.y += FontH();
-	}
-
-	if (data->friendlies > 0 && data->friendlies > data->kills / 2)
-	{
-		sprintf(s, "Butcher penalty: %d", 100 * data->friendlies);
-		FontStr(s, textPos);
-		textPos.y += FontH();
-	}
-	else if (data->weaponCount == 1 &&
-		!data->weapons[0]->CanShoot && data->kills > 0)
-	{
-		sprintf(s, "Ninja bonus: %d", 50 * data->kills);
-		FontStr(s, textPos);
-		textPos.y += FontH();
-	}
-	else if (data->kills == 0 && data->friendlies == 0)
-	{
-		sprintf(s, "Friendly bonus: %d", 500);
-		FontStr(s, textPos);
-		textPos.y += FontH();
-	}
-}
-
-static int AreAnySurvived(void)
-{
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (gPlayerDatas[i].survived)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
-void Bonuses(void)
-{
-	int i;
-	int y = (gGraphicsDevice.cachedConfig.Res.y / 2) + (gGraphicsDevice.cachedConfig.Res.y / 10);
-	int x = gGraphicsDevice.cachedConfig.Res.x / 6;
-	int access_bonus = 0;
-	int idx = 1;
-	char s[100];
-	int bonus = 0;
-
-	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		struct Objective *o = CArrayGet(&gMission.Objectives, i);
-		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-
-		// Do not mention optional objectives with none completed
-		if (o->done == 0 && mo->Required == 0)
-		{
-			continue;
-		}
-		
-		DrawObjectiveInfo(i, x - 26, y + FontH(), &gMission);
-		sprintf(s, "Objective %d: %d of %d, %d required",
-			idx, o->done, mo->Count, mo->Required);
-		if (mo->Required > 0)
-		{
-			FontOpts opts = FontOptsNew();
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			FontStrOpt(s, Vec2iZero(), opts);
-		}
-		else
-		{
-			FontOpts opts = FontOptsNew();
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			opts.Mask = colorPurple;
-			FontStrOpt(s, Vec2iZero(), opts);
-		}
-		if (o->done < mo->Required)
-		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_END;
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			opts.Mask = colorRed;
-			FontStrOpt("Failed", Vec2iZero(), opts);
-		}
-		else if (
-			o->done == mo->Count && o->done > mo->Required && AreAnySurvived())
-		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_END;
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			opts.Mask = colorGreen;
-			FontStrOpt("Perfect: 500", Vec2iZero(), opts);
-			bonus += 500;
-		}
-		else if (mo->Required > 0)
-		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_END;
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			FontStrOpt("Done", Vec2iZero(), opts);
-		}
-		else
-		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_END;
-			opts.Area = gGraphicsDevice.cachedConfig.Res;
-			opts.Pad = Vec2iNew(x, y);
-			FontStrOpt("Bonus!", Vec2iZero(), opts);
-		}
-
-		y += 15;
-		idx++;
-	}
-
-	access_bonus += KeycardCount(gMission.flags) * 50;
-	if (access_bonus > 0 && AreAnySurvived())
-	{
-		sprintf(s, "Access bonus: %d", access_bonus);
-		FontStr(s, Vec2iNew(x, y));
-		y += FontH() + 1;
-		bonus += access_bonus;
-	}
-
-	i = 60 +
-		(int)gMission.missionData->Objectives.size * 30 -
-		gMission.time / FPS_FRAMELIMIT;
-
-	if (i > 0 && AreAnySurvived())
-	{
-		int timeBonus = i * 25;
-		sprintf(s, "Time bonus: %d secs x 25 = %d", i, timeBonus);
-		FontStr(s, Vec2iNew(x, y));
-		bonus += timeBonus;
-	}
-
-	// only survivors get the spoils!
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (gPlayerDatas[i].survived)
-		{
-			gPlayerDatas[i].totalScore += bonus;
-
-			// Other per-player bonuses
-
-			if (gPlayerDatas[i].hp > 150)
-			{
-				// health bonus
-				gPlayerDatas[i].totalScore += (gPlayerDatas[i].hp - 150) * 10;
-			}
-			else if (gPlayerDatas[i].hp <= 0)
-			{
-				// resurrection fee
-				gPlayerDatas[i].totalScore -= 500;
-			}
-
-			if (gPlayerDatas[i].friendlies > 5 &&
-				gPlayerDatas[i].friendlies > gPlayerDatas[i].kills / 2)
-			{
-				// butcher penalty
-				gPlayerDatas[i].totalScore -= 100 * gPlayerDatas[i].friendlies;
-			}
-			else if (gPlayerDatas[i].weaponCount == 1 &&
-				!gPlayerDatas[i].weapons[0]->CanShoot &&
-				gPlayerDatas[i].friendlies == 0 &&
-				gPlayerDatas[i].kills > 5)
-			{
-				// Ninja bonus
-				gPlayerDatas[i].totalScore += 50 * gPlayerDatas[i].kills;
-			}
-			else if (gPlayerDatas[i].kills == 0 &&
-				gPlayerDatas[i].friendlies == 0)
-			{
-				// friendly bonus
-				gPlayerDatas[i].totalScore += 500;
-			}
-		}
-	}
-}
-
-void MissionSummary(GraphicsDevice *device)
-{
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-	Vec2i size;
-	GraphicsBlitBkg(device);
-
-	Bonuses();
-
-	if (strlen(gAutosave.LastMission.Password) > 0)
-	{
-		char s1[512];
-		sprintf(s1, "Last password: %s", gAutosave.LastMission.Password);
-		FontOpts opts = FontOptsNew();
-		opts.HAlign = ALIGN_CENTER;
-		opts.VAlign = ALIGN_END;
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
-		opts.Pad.y = opts.Area.y / 12;
-		FontStrOpt(s1, Vec2iZero(), opts);
-	}
-
-	switch (gOptions.numPlayers)
-	{
-		case 1:
-			size = Vec2iNew(w, h / 2);
-			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
-			break;
-		case 2:
-			// side by side
-			size = Vec2iNew(w / 2, h / 2);
-			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
-			Summary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
-			break;
-		case 3:	// fallthrough
-		case 4:
-			// 2x2
-			size = Vec2iNew(w / 2, h / 4);
-			Summary(Vec2iZero(), size, &gPlayerDatas[0], 0);
-			Summary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
-			Summary(Vec2iNew(0, h / 4), size, &gPlayerDatas[2], 2);
-			if (gOptions.numPlayers == 4)
-			{
-				Summary(Vec2iNew(w / 2, h / 4), size, &gPlayerDatas[3], 3);
-			}
-			break;
-		default:
-			assert(0 && "not implemented");
-			break;
-	}
-
-	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gEventHandlers);
-}
-
-static void ShowPlayerScore(Vec2i pos, Character *c, char *name, int score)
-{
-	Vec2i scorePos;
-	char s[10];
-	DisplayCharacterAndName(pos, c, name);
-	sprintf(s, "Score: %d", score);
-	scorePos = Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20);
-	FontStr(s, scorePos);
-}
-
-void ShowScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
-{
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-	int i;
-
-	GraphicsBlitBkg(device);
-
-	debug(D_NORMAL, "\n");
-
-	assert(gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4 &&
-		"Invalid number of players for dogfight");
-	for (i = 0; i < gOptions.numPlayers; i++)
-	{
-		Vec2i pos = Vec2iZero();
-		pos.x = w / 4 + (i & 1) * w / 2;
-		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
-		ShowPlayerScore(
-			pos, &gCampaign.Setting.characters.players[i],
-			gPlayerDatas[i].name, scores[i]);
-	}
-
-	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gEventHandlers);
-}
-
-void FinalScore(GraphicsDevice *device, int scores[MAX_PLAYERS])
-{
-	int i;
-	int isTie = 0;
-	int maxScore = 0;
-	int maxScorePlayer = 0;
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (scores[i] > maxScore)
-		{
-			maxScore = scores[i];
-			maxScorePlayer = i;
-			isTie = 0;
-		}
-		else if (scores[i] == maxScore)
-		{
-			isTie = 1;
-		}
-	}
-
-	GraphicsBlitBkg(device);
-
-	// Draw players and their names spread evenly around the screen.
-	// If it's a tie, display the message in the centre,
-	// otherwise display the winner just below the winning player
-#define IS_DRAW		"It's a draw!"
-#define IS_WINNER	"Winner!"
-
-	assert(gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4 &&
-		"Invalid number of players for dogfight");
-	for (i = 0; i < gOptions.numPlayers; i++)
-	{
-		Vec2i pos = Vec2iZero();
-		pos.x = w / 4 + (i & 1) * w / 2;
-		pos.y = gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2;
-		DisplayCharacterAndName(
-			pos, &gCampaign.Setting.characters.players[i],
-			gPlayerDatas[i].name);
-		if (!isTie && maxScorePlayer == i)
-		{
-			Vec2i msgPos =
-				Vec2iNew(pos.x - FontStrW(IS_WINNER) / 2, pos.y + 20);
-			FontStr(IS_WINNER, msgPos);
-		}
-	}
-	if (isTie)
-	{
-		FontStrCenter("It's a draw!");
-	}
-	BlitFlip(device, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gEventHandlers);
-}
-
-
-// TODO: move these words into an external file
-static const char *finalWords1P[] = {
-	"Ha, next time I'll use my good hand",
-	"Over already? I was just warming up...",
-	"There's just no good opposition to be found these days!",
-	"Well, maybe I'll just do my monthly reload then",
-	"Woof woof",
-	"I'll just bury the bones in the back yard, he-he",
-	"I just wish they'd let me try bare-handed",
-	"Rambo? Who's Rambo?",
-	"<in Austrian accent:> I'll be back",
-	"Gee, my trigger finger is sore",
-	"I need more practice. I think I missed a few shots at times"
-};
-
-static const char *finalWords2P[] = {
-	"United we stand, divided we conquer",
-	"Nothing like good teamwork, is there?",
-	"Which way is the camera?",
-	"We eat bullets for breakfast and have grenades as dessert",
-	"We're so cool we have to wear mittens",
-};
-
-#define CONGRATULATIONS "Congratulations, you have completed "
-
-void Victory(GraphicsDevice *graphics)
-{
-	int x, i;
-	const char *s = NULL;
-	int w = graphics->cachedConfig.Res.x;
-	int h = graphics->cachedConfig.Res.y;
-
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (gPlayerDatas[i].survived)
-		{
-			gPlayerDatas[i].missions++;
-		}
-	}
-
-	// Save that this mission has been completed
-	MissionSave ms;
-	MissionSaveInit(&ms);
-	ms.Campaign = gCampaign.Entry;
-	strcpy(ms.Password, MakePassword(gMission.index, 0));
-	ms.MissionsCompleted = gMission.index + 1;
-	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
-	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-
-	GraphicsBlitBkg(graphics);
-
-	x = 160 - FontStrW(CONGRATULATIONS) / 2;
-	FontStr(CONGRATULATIONS, Vec2iNew(x, 100));
-	x = 160 - FontStrW(gCampaign.Setting.Title) / 2;
-	FontStrMask(gCampaign.Setting.Title, Vec2iNew(x, 115), colorRed);
-
-	switch (gOptions.numPlayers)
-	{
-		case 1:
-			i = sizeof(finalWords1P) / sizeof(char *);
-			i = rand() % i;
-			s = finalWords1P[i];
-			DisplayCharacterAndName(
-				Vec2iNew(w / 4, h / 4),
-				&gCampaign.Setting.characters.players[0],
-				gPlayerDatas[0].name);
-			break;
-		case 2:
-			i = sizeof(finalWords2P) / sizeof(char *);
-			i = rand() % i;
-			s = finalWords2P[i];
-			// side by side
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 4),
-				&gCampaign.Setting.characters.players[0],
-				gPlayerDatas[0].name);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8 + w / 2, h / 4),
-				&gCampaign.Setting.characters.players[1],
-				gPlayerDatas[1].name);
-			break;
-		case 3:	// fallthrough
-		case 4:
-			i = sizeof(finalWords2P) / sizeof(char *);
-			i = rand() % i;
-			s = finalWords2P[i];
-			// 2x2
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 8),
-				&gCampaign.Setting.characters.players[0],
-				gPlayerDatas[0].name);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8 + w / 2, h / 8),
-				&gCampaign.Setting.characters.players[1],
-				gPlayerDatas[1].name);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 8 + h / 4),
-				&gCampaign.Setting.characters.players[2],
-				gPlayerDatas[2].name);
-			if (gOptions.numPlayers == 4)
-			{
-				DisplayCharacterAndName(
-					Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
-					&gCampaign.Setting.characters.players[3],
-					gPlayerDatas[3].name);
-			}
-			break;
-		default:
-			assert(0 && "not implemented");
-			break;
-	}
-
-	Vec2i pos = Vec2iNew((w - FontStrW(s)) / 2, h / 2 + 20);
-	pos = FontChMask('"', pos, colorDarker);
-	pos = FontStrMask(s, pos, colorPurple);
-	pos = FontChMask('"', pos, colorDarker);
-
-	SoundPlay(&gSoundDevice, StrSound("hahaha"));
-
-	BlitFlip(graphics, &gConfig.Graphics);
-	WaitForAnyKeyOrButton(&gEventHandlers);
-}
 
 
 static void PlaceActor(TActor * actor)
@@ -966,72 +268,79 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		CampaignAndMissionSetup(1, co, &gMission);
 		if (IsMissionBriefingNeeded(co->Entry.Mode))
 		{
-			MissionBriefing(graphics);
+			if (!ScreenMissionBriefing(&gMission))
+			{
+				run = false;
+				goto bail;
+			}
 		}
-		if (PlayerEquip(gOptions.numPlayers, graphics))
+		if (!PlayerEquip(gOptions.numPlayers, graphics))
 		{
-			MapLoad(&gMap, &gMission, &co->Setting.characters);
-			srand((unsigned int)time(NULL));
-			InitializeBadGuys();
-			const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-			InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
-			CreateEnemies();
-			PlayGameSong();
-			run = gameloop();
-
-			const int survivingPlayers = GetNumPlayersAlive();
-			gameOver = survivingPlayers == 0 ||
-				co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
-
-			int i;
-			for (i = 0; i < MAX_PLAYERS; i++)
-			{
-				gPlayerDatas[i].survived = IsPlayerAlive(i);
-				if (IsPlayerAlive(i))
-				{
-					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-					gPlayerDatas[i].hp = player->health;
-				}
-			}
-
-			CleanupMission();
-			PlayMenuSong();
-
-			if (run)
-			{
-				MissionSummary(graphics);
-				// Note: must use cached value because players get cleaned up
-				// in CleanupMission()
-				if (gameOver && survivingPlayers > 0)
-				{
-					Victory(graphics);
-				}
-			}
-
-			bool allTime = false;
-			bool todays = false;
-			for (i = 0; i < gOptions.numPlayers; i++)
-			{
-				if ((run && !gPlayerDatas[i].survived) || gameOver)
-				{
-					EnterHighScore(&gPlayerDatas[i]);
-					allTime |= gPlayerDatas[i].allTime >= 0;
-					todays |= gPlayerDatas[i].today >= 0;
-				}
-				DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
-			}
-			if (allTime)
-			{
-				DisplayAllTimeHighScores(graphics);
-			}
-			if (todays)
-			{
-				DisplayTodaysHighScores(graphics);
-			}
-
-			co->MissionIndex++;
+			run = false;
+			goto bail;
 		}
 
+		MapLoad(&gMap, &gMission, &co->Setting.characters);
+		srand((unsigned int)time(NULL));
+		InitializeBadGuys();
+		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
+		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
+		CreateEnemies();
+		PlayGameSong();
+		run = gameloop();
+
+		const int survivingPlayers = GetNumPlayersAlive();
+		gameOver = survivingPlayers == 0 ||
+			co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			gPlayerDatas[i].survived = IsPlayerAlive(i);
+			if (IsPlayerAlive(i))
+			{
+				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+				gPlayerDatas[i].hp = player->health;
+			}
+		}
+
+		CleanupMission();
+		PlayMenuSong();
+
+		if (run)
+		{
+			ScreenMissionSummary(&gCampaign, &gMission);
+			// Note: must use cached value because players get cleaned up
+			// in CleanupMission()
+			if (gameOver && survivingPlayers > 0)
+			{
+				ScreenVictory(&gCampaign);
+			}
+		}
+
+		bool allTime = false;
+		bool todays = false;
+		for (int i = 0; i < gOptions.numPlayers; i++)
+		{
+			if ((run && !gPlayerDatas[i].survived) || gameOver)
+			{
+				EnterHighScore(&gPlayerDatas[i]);
+				allTime |= gPlayerDatas[i].allTime >= 0;
+				todays |= gPlayerDatas[i].today >= 0;
+			}
+			DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
+		}
+		if (allTime)
+		{
+			DisplayAllTimeHighScores(graphics);
+		}
+		if (todays)
+		{
+			DisplayTodaysHighScores(graphics);
+		}
+
+		co->MissionIndex++;
+
+	bail:
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
 	}
@@ -1110,7 +419,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 
 			if (run)
 			{
-				ShowScore(graphicsDevice, scores);
+				ScreenDogfightScores(scores);
 			}
 		}
 
@@ -1123,7 +432,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 
 	if (run)
 	{
-		FinalScore(graphicsDevice, scores);
+		ScreenDogfightFinalScores(scores);
 	}
 }
 
@@ -1136,7 +445,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Entering campaign\n");
 		if (IsIntroNeeded(gCampaign.Entry.Mode))
 		{
-			if (!CampaignIntro(&gGraphicsDevice))
+			if (!ScreenCampaignIntro(&gCampaign.Setting))
 			{
 				gCampaign.IsLoaded = false;
 				continue;

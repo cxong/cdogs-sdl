@@ -36,13 +36,12 @@
 
 // Display a character and the player name above it, with the character
 // centered around the target position
-void DisplayCharacterAndName(Vec2i pos, Character *c, char *name)
+void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name)
 {
-	Vec2i namePos;
 	// Move the point down a bit since the default character draw point is at
 	// its feet
 	pos.y += 8;
-	namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
+	Vec2i namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
 	DrawCharacterSimple(
 		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);

@@ -52,6 +52,7 @@
 #include <stdbool.h>
 
 #include "config.h"
+#include "objective.h"
 #include "sys_config.h"
 
 #define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
@@ -86,16 +87,6 @@ MapType StrMapType(const char *s);
 #define OBJECTIVE_HIACCESS      4
 #define OBJECTIVE_UNKNOWNCOUNT	8
 #define OBJECTIVE_NOACCESS		16
-
-typedef struct
-{
-	char *Description;
-	ObjectiveType Type;
-	int Index;
-	int Count;
-	int Required;
-	int Flags;
-} MissionObjective;
 
 // Keys that have been collected in this level
 // Applies to all players

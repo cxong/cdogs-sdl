@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@
 
 #include "config.h"
 #include "font.h"
+#include "game_loop.h"
 #include "gamedata.h"
 #include "grafx.h"
 #include "grafx_bg.h"
@@ -177,7 +178,6 @@ static int DisplayPage(
 	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	return idx;
 }
-
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
 	int highlights[MAX_PLAYERS];
@@ -185,17 +185,17 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 	{
 		highlights[i] = gPlayerDatas[i].allTime;
 	}
-	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
 	int idx = 0;
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
 		idx = DisplayPage(
 			"All time high scores:", idx, allTimeHigh, highlights);
-		WaitForAnyKeyOrButton(&gEventHandlers);
+		GameLoopData gData = GameLoopDataNew(
+			NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, NULL);
+		GameLoop(&gData);
 	}
 }
-
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
 	int highlights[MAX_PLAYERS];
@@ -203,14 +203,15 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 	{
 		highlights[i] = gPlayerDatas[i].today;
 	}
-	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
 	int idx = 0;
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
 		idx = DisplayPage(
 			"Today's highest score:", idx, todaysHigh, highlights);
-		WaitForAnyKeyOrButton(&gEventHandlers);
+		GameLoopData gData = GameLoopDataNew(
+			NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, NULL);
+		GameLoop(&gData);
 	}
 }
 

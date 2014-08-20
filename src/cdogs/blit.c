@@ -80,11 +80,11 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
 	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << device->Ashift);
 }
 
-void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode)
+void BlitOld(int x, int y, PicPaletted *pic, const void *table, int mode)
 {
 	int yoff, xoff;
 	unsigned char *current = pic->data;
-	unsigned char *xlate = (unsigned char *)table;
+	const unsigned char *xlate = table;
 
 	int i;
 

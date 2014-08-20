@@ -135,47 +135,6 @@ double ToRadians(double degrees)
 	return degrees * PI / 180.0;
 }
 
-const char *ObjectiveTypeStr(ObjectiveType t)
-{
-	switch (t)
-	{
-		T2S(OBJECTIVE_KILL, "Kill");
-		T2S(OBJECTIVE_COLLECT, "Collect");
-		T2S(OBJECTIVE_DESTROY, "Destroy");
-		T2S(OBJECTIVE_RESCUE, "Rescue");
-		T2S(OBJECTIVE_INVESTIGATE, "Explore");
-	default:
-		return "";
-	}
-}
-ObjectiveType StrObjectiveType(const char *s)
-{
-	S2T(OBJECTIVE_KILL, "Kill");
-	S2T(OBJECTIVE_COLLECT, "Collect");
-	S2T(OBJECTIVE_DESTROY, "Destroy");
-	S2T(OBJECTIVE_RESCUE, "Rescue");
-	S2T(OBJECTIVE_INVESTIGATE, "Explore");
-	assert(0 && "unknown objective name");
-	return OBJECTIVE_KILL;
-}
-color_t ObjectiveTypeColor(ObjectiveType t)
-{
-	switch (t)
-	{
-		case OBJECTIVE_KILL:	// fallthrough
-		case OBJECTIVE_DESTROY:
-			return colorRed;
-		case OBJECTIVE_COLLECT:	// fallthrough
-		case OBJECTIVE_RESCUE:
-			return colorGreen;
-		case OBJECTIVE_INVESTIGATE:
-			return colorCyan;
-		default:
-			// Shouldn't get here but use a different colour in case
-			return colorYellow;
-	}
-}
-
 char *PercentStr(int p)
 {
 	static char buf[8];

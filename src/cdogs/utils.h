@@ -179,23 +179,6 @@ typedef enum
 	CAMPAIGN_MODE_QUICK_PLAY
 } campaign_mode_e;
 
-// Warning: only add to the back of this enum;
-// Used by classic maps
-typedef enum
-{
-	OBJECTIVE_KILL,
-	OBJECTIVE_COLLECT,
-	OBJECTIVE_DESTROY,
-	OBJECTIVE_RESCUE,
-	OBJECTIVE_INVESTIGATE,
-	OBJECTIVE_MAX
-} ObjectiveType;
-#define OBJECTIVE_MAX_OLD 5
-const char *ObjectiveTypeStr(ObjectiveType t);
-ObjectiveType StrObjectiveType(const char *s);
-// Use specific colours for objective types
-color_t ObjectiveTypeColor(ObjectiveType t);
-
 char *PercentStr(int p);
 char *Div8Str(int i);
 

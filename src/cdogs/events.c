@@ -340,47 +340,70 @@ int GetKey(EventHandlers *handlers)
 	return key_pressed;
 }
 
-int WaitForAnyKeyOrButton(EventHandlers *handlers)
+static GameLoopResult WaitResult(
+	GameLoopWaitForAnyKeyOrButtonData *data, const bool result);
+GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 {
-	// Reset to prevent held down keys repeating
-	EventReset(handlers, handlers->mouse.cursor);
-	for (;;)
+	GameLoopWaitForAnyKeyOrButtonData *gData = data;
+	int cmds[MAX_PLAYERS];
+	memset(cmds, 0, sizeof cmds);
+	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		int i;
-		int cmds[MAX_PLAYERS];
-		memset(cmds, 0, sizeof cmds);
-		EventPoll(handlers, SDL_GetTicks());
-		GetPlayerCmds(handlers, &cmds, gPlayerDatas);
-		for (i = 0; i < MAX_PLAYERS; i++)
+		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
 		{
-			if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
-			{
-				return 1;
-			}
-			if (cmds[i] & CMD_BUTTON4)
-			{
-				return 0;
-			}
+			return WaitResult(gData, true);
 		}
-
-		// Check keyboard escape
-		if (KeyIsPressed(&handlers->keyboard, SDLK_ESCAPE) ||
-			handlers->HasQuit)
-		{
-			return 0;
-		}
-
-		// Check menu commands
-		int cmd = GetMenuCmd(handlers, gPlayerDatas);
-		if (cmd & (CMD_BUTTON1 | CMD_BUTTON2))
-		{
-			return 1;
-		}
-		if (cmd & CMD_BUTTON4)
-		{
-			return 0;
-		}
-		SDL_Delay(33);
 	}
-	// should never reach here
+
+	// Check menu commands
+	const int menuCmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
+	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2))
+	{
+		return WaitResult(gData, true);
+	}
+
+	// Check if anyone pressed escape
+	if (EventIsEscape(&gEventHandlers, cmds, menuCmd))
+	{
+		return WaitResult(gData, false);
+	}
+
+	return UPDATE_RESULT_OK;
+}
+static GameLoopResult WaitResult(
+	GameLoopWaitForAnyKeyOrButtonData *data, const bool result)
+{
+	if (data)
+	{
+		data->IsOK = result;
+	}
+	return UPDATE_RESULT_EXIT;
+}
+
+bool EventIsEscape(
+	EventHandlers *handlers,
+	const int cmds[MAX_PLAYERS], const int menuCmd)
+{
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (cmds[i] & CMD_BUTTON4)
+		{
+			return true;
+		}
+	}
+
+	// Check keyboard escape
+	if (KeyIsPressed(&handlers->keyboard, SDLK_ESCAPE) || handlers->HasQuit)
+	{
+		return true;
+	}
+
+	// Check menu commands
+	if (menuCmd & CMD_BUTTON4)
+	{
+		return true;
+	}
+
+	return false;
 }

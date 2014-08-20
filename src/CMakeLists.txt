@@ -7,6 +7,7 @@ add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
 	autosave.c
+	briefing_screens.c
 	cdogs.c
 	credits.c
 	game.c
@@ -22,6 +23,7 @@ set(CDOGS_SDL_SOURCES
 	XGetopt.c)
 set(CDOGS_SDL_HEADERS
 	autosave.h
+	briefing_screens.h
 	credits.h
 	game.h
 	handle_game_events.h

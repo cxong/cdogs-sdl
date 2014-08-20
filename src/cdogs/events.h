@@ -49,6 +49,7 @@
 #ifndef __EVENTS
 #define __EVENTS
 
+#include "game_loop.h"
 #include "gamedata.h"
 #include "input.h"
 
@@ -80,11 +81,19 @@ int GetGameCmd(
 	EventHandlers *handlers, InputConfig *config,
 	struct PlayerData *playerData, Vec2i playerPos);
 int GetKey(EventHandlers *handlers);
-int WaitForAnyKeyOrButton(EventHandlers *handlers);
+typedef struct
+{
+	bool IsOK;
+} GameLoopWaitForAnyKeyOrButtonData;
+GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data);
 void GetPlayerCmds(
 	EventHandlers *handlers,
-	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS]);
+	int (*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS]);
 int GetMenuCmd(
 	EventHandlers *handlers, struct PlayerData playerDatas[MAX_PLAYERS]);
+
+bool EventIsEscape(
+	EventHandlers *handlers,
+	const int cmds[MAX_PLAYERS], const int menuCmd);
 
 #endif

@@ -50,6 +50,6 @@ typedef struct
 void MenuDisplayPlayerControls(
 	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data);
 
-void DisplayCharacterAndName(Vec2i pos, Character *c, char *name);
+void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name);
 
 #endif

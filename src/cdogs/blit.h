@@ -62,7 +62,7 @@ Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
-void BlitOld(int x, int y, PicPaletted *pic, void *table, int mode);
+void BlitOld(int x, int y, PicPaletted *pic, const void *table, int mode);
 void BlitBackground(
 	GraphicsDevice *device,
 	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent);

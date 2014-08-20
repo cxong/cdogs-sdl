@@ -58,8 +58,9 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun);
 void DrawCharacterSimple(
-	Character *c, Vec2i pos,
-	direction_e dir, int state,
-	int gunPic, gunstate_e gunState, TranslationTable *table);
+	const Character *c, const Vec2i pos,
+	const direction_e dir, const int state,
+	const int gunPic, const gunstate_e gunState,
+	const TranslationTable *table);
 
 #endif

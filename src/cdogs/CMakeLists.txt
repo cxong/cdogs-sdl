@@ -31,6 +31,7 @@ set(CDOGS_SOURCES
 	files.c
 	font.c
 	game_events.c
+	game_loop.c
 	gamedata.c
 	grafx.c
 	grafx_bg.c
@@ -55,6 +56,7 @@ set(CDOGS_SOURCES
 	net_client.c
 	net_server.c
 	net_util.c
+	objective.c
 	objs.c
 	palette.c
 	particle.c
@@ -100,6 +102,7 @@ set(CDOGS_HEADERS
 	files.h
 	font.h
 	game_events.h
+	game_loop.h
 	gamedata.h
 	grafx.h
 	grafx_bg.h
@@ -124,6 +127,7 @@ set(CDOGS_HEADERS
 	net_client.h
 	net_server.h
 	net_util.h
+	objective.h
 	objs.h
 	palette.h
 	particle.h

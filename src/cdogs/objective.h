@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+    Copyright (C) 2003 Jeremy Chin 
+    Copyright (C) 2003-2007 Lucas Martin-King 
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,98 +46,46 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAMEDATA
-#define __GAMEDATA
+#ifndef __OBJECTIVE
+#define __OBJECTIVE
 
-#include "campaigns.h"
-#include "character.h"
-#include "input.h"
-#include "map_new.h"
 #include "map_object.h"
-#include "pics.h"
-#include "tile.h"
-#include "weapon.h"
-#include "sys_config.h"
-
-#define MAX_WEAPONS 3
 
 
-struct PlayerData
+// Warning: only add to the back of this enum;
+// Used by classic maps
+typedef enum
 {
-	char name[20];
-	CharLooks looks;
-	int weaponCount;
-	const GunDescription *weapons[MAX_WEAPONS];
+	OBJECTIVE_KILL,
+	OBJECTIVE_COLLECT,
+	OBJECTIVE_DESTROY,
+	OBJECTIVE_RESCUE,
+	OBJECTIVE_INVESTIGATE,
+	OBJECTIVE_MAX
+} ObjectiveType;
+#define OBJECTIVE_MAX_OLD 5
+const char *ObjectiveTypeStr(const ObjectiveType t);
+ObjectiveType StrObjectiveType(const char *s);
+// Use specific colours for objective types
+color_t ObjectiveTypeColor(const ObjectiveType t);
 
-	int score;
-	int totalScore;
-	int survived;
-	int hp;
-	int missions;
-	int lastMission;
-	int allTime, today;
-	int kills;
-	int friendlies;
+typedef struct
+{
+	char *Description;
+	ObjectiveType Type;
+	int Index;
+	int Count;
+	int Required;
+	int Flags;
+} MissionObjective;
 
-	input_device_e inputDevice;
-	int deviceIndex;
-	int playerIndex;
+struct Objective
+{
+	color_t color;
+	int placed;
+	int done;
+	MapObject *blowupObject;
+	int pickupItem;
 };
-
-extern struct PlayerData gPlayerDatas[MAX_PLAYERS];
-
-struct GameOptions {
-	int numPlayers;
-	int badGuys;
-};
-
-struct DoorPic {
-	int horzPic;
-	int vertPic;
-};
-
-// Score penalty for killing a penalty character
-#define PENALTY_MULTIPLIER (-3)
-
-// Score for destroying an objective object
-#define OBJECT_SCORE 50
-
-// Score for picking up an objective
-#define PICKUP_SCORE 10
-
-
-extern struct GameOptions gOptions;
-extern struct MissionOptions gMission;
-
-struct SongDef {
-	char path[255];
-	struct SongDef *next;
-};
-
-extern struct SongDef *gGameSongs;
-extern struct SongDef *gMenuSongs;
-
-void AddSong(struct SongDef **songList, const char *path);
-void ShiftSongs(struct SongDef **songList);
-void FreeSongs(struct SongDef **songList);
-void LoadSongs(void);
-
-void PlayerDataInitialize(void);
-
-void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
-
-void MissionOptionsInit(struct MissionOptions *mo);
-void MissionOptionsTerminate(struct MissionOptions *mo);
-
-int IsIntroNeeded(campaign_mode_e mode);
-int IsScoreNeeded(campaign_mode_e mode);
-int HasObjectives(campaign_mode_e mode);
-int IsAutoMapEnabled(campaign_mode_e mode);
-int IsPasswordAllowed(campaign_mode_e mode);
-int IsMissionBriefingNeeded(campaign_mode_e mode);
-int AreKeysAllowed(campaign_mode_e mode);
-int AreHealthPickupsAllowed(campaign_mode_e mode);
-
-int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
 
 #endif

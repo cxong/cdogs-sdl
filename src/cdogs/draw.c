@@ -549,9 +549,10 @@ static void DrawObjectiveHighlight(
 }
 
 void DrawCharacterSimple(
-	Character *c, Vec2i pos,
-	direction_e dir, int state,
-	int gunPic, gunstate_e gunState, TranslationTable *table)
+	const Character *c, const Vec2i pos,
+	const direction_e dir, const int state,
+	const int gunPic, const gunstate_e gunState,
+	const TranslationTable *table)
 {
 	TOffsetPic body, head, gun;
 	TOffsetPic pic1, pic2, pic3;
