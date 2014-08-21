@@ -231,12 +231,8 @@ a.zip span {
   background: transparent url(../images/zip.png) no-repeat 0 0;
   width: 30px;
   height: 21px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
 }
 
 a.tar,
@@ -244,12 +240,8 @@ a.tar span {
   background: transparent url(../images/tar.png) no-repeat 0 0;
   width: 30px;
   height: 21px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
 }
 
 a.windows,
@@ -257,12 +249,8 @@ a.windows span {
   background: transparent url(../images/windows.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
 }
 
 a.osx,
@@ -270,12 +258,8 @@ a.osx span {
   background: transparent url(../images/osx.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
 }
 
 a.android,
@@ -283,12 +267,8 @@ a.android span {
   background: transparent url(../images/android.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
 }
 
 a.tgz,
@@ -296,11 +276,8 @@ a.tgz span {
   background: transparent url(../images/tgz.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
@@ -309,12 +286,18 @@ a.haiku span {
   background: transparent url(../images/haiku.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
-  opacity: 0.8;
   display: inline-block;
   text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
   -webkit-transition: opacity ease-in-out 0.3s;
+}
+
+a.gcw0,
+a.gcw0 span {
+  background: transparent url(../images/gcwzero.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  text-indent: -10000px;
 }
 
 a.code {
