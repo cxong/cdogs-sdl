@@ -649,7 +649,8 @@ void DrawCharacterSimple(
 	}
 }
 
-void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
+void DisplayCharacter(
+	const Vec2i pos, const Character *c, const bool hilite, const bool showGun)
 {
 	DrawCharacterSimple(
 		c, pos,
