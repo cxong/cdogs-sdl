@@ -55,7 +55,6 @@
 
 void FixBuffer(DrawBuffer *b);
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
-void DisplayPlayer(int x, const char *name, Character *c, int editingName);
 void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun);
 void DrawCharacterSimple(
 	const Character *c, const Vec2i pos,

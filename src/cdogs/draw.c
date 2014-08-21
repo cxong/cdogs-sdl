@@ -649,26 +649,6 @@ void DrawCharacterSimple(
 	}
 }
 
-void DisplayPlayer(int x, const char *name, Character *c, int editingName)
-{
-	const Vec2i pos = Vec2iNew(x, gGraphicsDevice.cachedConfig.Res.y / 10);
-	if (editingName)
-	{
-		char s[22];
-		sprintf(s, "%c%s%c", '\020', name, '\021');
-		FontStr(s, pos);
-	}
-	else
-	{
-		FontStr(name, pos);
-	}
-
-	const Vec2i playerPos = Vec2iAdd(pos, Vec2iNew(20, 36));
-	DrawCharacterSimple(
-		c, playerPos,
-		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
-}
-
 void DisplayCharacter(Vec2i pos, Character *c, int hilite, int showGun)
 {
 	DrawCharacterSimple(
