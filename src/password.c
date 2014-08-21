@@ -118,97 +118,197 @@ static int TestPassword(const char *password)
 	return -1;
 }
 
-static int PasswordEntry(int cmd, char *buffer)
+// Give user an alpha-num entry screen and returns the decoded mission number.
+// If the password is invalid, the screen won't exit.
+// If the user cancels, 0 is returned.
+typedef struct
 {
-	int i, x, y;
-	static const char letters[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-	static size_t selection;
-	static int isFirst = 1;
+	char Buffer[PASSWORD_MAX + 1];
+	int Mission;
+	int Selection;
+} EnterCodeScreenData;
+static GameLoopResult EnterCodeScreenUpdate(void *data);
+static void EnterCodeScreenDraw(const void *data);
+static int EnterCodeScreen(const char *password)
+{
+	EnterCodeScreenData data;
+	memset(&data, 0, sizeof data);
+	data.Selection = -1;
+	strcpy(data.Buffer, password);
 
-	// Kludge since Watcom won't let me initialize selection with a strlen()
-	if (isFirst)
+	GameLoopData gData = GameLoopDataNew(
+		&data, EnterCodeScreenUpdate,
+		&data, EnterCodeScreenDraw);
+	GameLoop(&gData);
+	if (data.Mission > 0)
 	{
-		selection = strlen(letters);
-		isFirst = 0;
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+	else
+	{
+		SoundPlay(&gSoundDevice, StrSound("switch"));
 	}
 
+	return data.Mission;
+}
+#define PASSWORD_ENTRY_COLS	10
+#define PASSWORD_LETTERS "abcdefghijklmnopqrstuvwxyz0123456789"
+static bool PasswordEntry(EnterCodeScreenData *data, const int cmd);
+static GameLoopResult EnterCodeScreenUpdate(void *data)
+{
+	EnterCodeScreenData *eData = data;
+
+	// Check if anyone pressed escape
+	int cmds[MAX_PLAYERS];
+	memset(cmds, 0, sizeof cmds);
+	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	if (EventIsEscape(
+		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	{
+		eData->Mission = 0;
+		return UPDATE_RESULT_EXIT;
+	}
+
+	const int cmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
+	// Returning 1 means we are still entering password
+	if (PasswordEntry(eData, cmd))
+	{
+		return UPDATE_RESULT_DRAW;
+	}
+
+	if (strlen(eData->Buffer) == 0)
+	{
+		// Nothing in the password buffer; exit
+		eData->Mission = 0;
+		return UPDATE_RESULT_EXIT;
+	}
+
+	eData->Mission = TestPassword(eData->Buffer);
+	if (eData->Mission == 0)
+	{
+		// Password doesn't work; play a bad sound
+		SoundPlay(
+			&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
+		return UPDATE_RESULT_OK;
+	}
+
+	// Password works; exit
+	return UPDATE_RESULT_EXIT;
+}
+static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
+{
+	if (data->Selection == -1)
+	{
+		data->Selection = (int)strlen(PASSWORD_LETTERS);
+	}
 
 	if (cmd & CMD_BUTTON1)
 	{
-		if (selection == strlen(letters))
+		if (data->Selection == (int)strlen(PASSWORD_LETTERS))
 		{
-			SoundPlay(&gSoundDevice, StrSound("launch"));
-			return 0;
+			// Done
+			return false;
 		}
 
-		if (strlen(buffer) < PASSWORD_MAX)
+		if (strlen(data->Buffer) < PASSWORD_MAX)
 		{
-			size_t l = strlen(buffer);
-			buffer[l + 1] = 0;
-			buffer[l] = letters[selection];
+			// enter a letter
+			data->Buffer[strlen(data->Buffer)] =
+				PASSWORD_LETTERS[data->Selection];
 			SoundPlay(&gSoundDevice, StrSound("mg"));
 		}
 		else
 		{
+			// Too many letters entered
 			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
-		if (buffer[0]) {
-			buffer[strlen(buffer) - 1] = 0;
+		if (strlen(data->Buffer) > 0)
+		{
+			// Delete a letter
+			data->Buffer[strlen(data->Buffer) - 1] = 0;
 			SoundPlay(&gSoundDevice, StrSound("bang"));
 		}
 		else
 		{
+			// No letters to delete
 			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
 		}
 	}
 	else if (cmd & CMD_LEFT)
 	{
-		if (selection > 0) {
-			selection--;
+		if (data->Selection > 0)
+		{
+			data->Selection--;
 			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
 	else if (cmd & CMD_RIGHT)
 	{
-		if (selection < strlen(letters))
+		if (data->Selection < (int)strlen(PASSWORD_LETTERS))
 		{
-			selection++;
+			data->Selection++;
 			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
-	} else if (cmd & CMD_UP) {
-		if (selection > 9) {
-			selection -= 10;
+	}
+	else if (cmd & CMD_UP)
+	{
+		if (data->Selection >= PASSWORD_ENTRY_COLS)
+		{
+			data->Selection -= PASSWORD_ENTRY_COLS;
 			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (selection < strlen(letters) - 9)
+		if (data->Selection <=
+			(int)strlen(PASSWORD_LETTERS) - PASSWORD_ENTRY_COLS)
 		{
-			selection += 10;
+			data->Selection += PASSWORD_ENTRY_COLS;
 			SoundPlay(&gSoundDevice, StrSound("door"));
 		}
 	}
-	
-	#define ENTRY_COLS	10
-	#define	ENTRY_SPACING	12
-	
-	x = CenterX(((ENTRY_SPACING * (ENTRY_COLS - 1)) + FontW('a')));
-	y = (int)CenterY(((FontH() * ((strlen(letters) - 1) / ENTRY_COLS) )));
-	
-	// Draw selection
-	for (i = 0; i < (int)strlen(letters) + 1; i++)
+
+	return true;
+}
+static void EnterCodeScreenDraw(const void *data)
+{
+	const EnterCodeScreenData *eData = data;
+
+	GraphicsBlitBkg(&gGraphicsDevice);
+
+	// Password display
+	Vec2i pos = Vec2iNew(
+		CenterX(FontStrW(eData->Buffer) + FontW('>') + FontW('<')),
+		gGraphicsDevice.cachedConfig.Res.y / 4);
+	pos = FontCh('>', pos);
+	pos = FontStr(eData->Buffer, pos);
+	pos = FontCh('<', pos);
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad.y = gGraphicsDevice.cachedConfig.Res.y / 12;
+	FontStrOpt("Enter code", Vec2iZero(), opts);
+
+	// Draw password entry letters
+#define	ENTRY_SPACING	12
+
+	const int x =
+		CenterX(ENTRY_SPACING * (PASSWORD_ENTRY_COLS - 1) + FontW('a'));
+	const int y = (int)CenterY(
+		FontH() * ((strlen(PASSWORD_LETTERS) - 1) / PASSWORD_ENTRY_COLS));
+	for (int i = 0; i < (int)strlen(PASSWORD_LETTERS) + 1; i++)
 	{
-		Vec2i pos = Vec2iNew(
-			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * FontH());
-		color_t mask = (i == (int)selection) ? colorRed : colorWhite;
-		if (i < (int)strlen(letters))
+		const Vec2i pos = Vec2iNew(
+			x + (i % PASSWORD_ENTRY_COLS) * ENTRY_SPACING,
+			y + (i / PASSWORD_ENTRY_COLS) * FontH());
+		color_t mask = (i == eData->Selection) ? colorRed : colorWhite;
+		if (i < (int)strlen(PASSWORD_LETTERS))
 		{
-			FontChMask(letters[i], pos, mask);
+			FontChMask(PASSWORD_LETTERS[i], pos, mask);
 		}
 		else
 		{
@@ -216,61 +316,7 @@ static int PasswordEntry(int cmd, char *buffer)
 		}
 	}
 
-	return 1;
-}
-
-static int EnterCode(GraphicsDevice *graphics, const char *password)
-{
-	int mission = 0;
-	int done = 0;
-	char buffer[PASSWORD_MAX + 1];
-
-	strcpy(buffer, password);
-	while (!done)
-	{
-		int cmd;
-		EventPoll(&gEventHandlers, SDL_GetTicks());
-		GraphicsBlitBkg(graphics);
-		cmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
-		if (!PasswordEntry(cmd, buffer))
-		{
-			if (!buffer[0])
-			{
-				mission = 0;
-				done = 1;
-			} else {
-				mission = TestPassword(buffer);
-				if (mission > 0)
-					done = 1;
-				else
-				{
-					SoundPlay(
-						&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
-				}
-			}
-		}
-
-		Vec2i pos = Vec2iNew(
-			CenterX(FontStrW(buffer) + FontW('>') + FontW('<')),
-			graphics->cachedConfig.Res.y / 4);
-		pos = FontCh('>', pos);
-		pos = FontStr(buffer, pos);
-		pos = FontCh('<', pos);
-
-		FontOpts opts = FontOptsNew();
-		opts.HAlign = ALIGN_CENTER;
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
-		opts.Pad.y = graphics->cachedConfig.Res.y / 12;
-		FontStrOpt("Enter code", Vec2iZero(), opts);
-
-		ShowControls();
-
-		BlitFlip(graphics, &gConfig.Graphics);
-	}
-
-	SoundPlay(&gSoundDevice, StrSound("switch"));
-
-	return mission;
+	ShowControls();
 }
 
 typedef enum
@@ -311,7 +357,7 @@ int EnterPassword(GraphicsDevice *graphics, const char *password)
 		}
 		else if (returnCode == RETURN_CODE_ENTER_CODE)
 		{
-			int enteredMission = EnterCode(graphics, password);
+			int enteredMission = EnterCodeScreen(password);
 			if (enteredMission > 0)
 			{
 				res = enteredMission;

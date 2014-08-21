@@ -48,7 +48,7 @@ GameLoopData GameLoopDataNew(
 	return g;
 }
 
-GameLoopResult GameLoop(GameLoopData *data)
+void GameLoop(GameLoopData *data)
 {
 	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
 
@@ -84,5 +84,4 @@ GameLoopResult GameLoop(GameLoopData *data)
 			data->HasDrawnFirst = true;
 		}
 	}
-	return result;
 }

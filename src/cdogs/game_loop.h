@@ -54,6 +54,6 @@ typedef struct
 GameLoopData GameLoopDataNew(
 	void *updateData, GameLoopResult (*updateFunc)(void *),
 	const void *drawData, void (*drawFunc)(const void *));
-GameLoopResult GameLoop(GameLoopData *data);
+void GameLoop(GameLoopData *data);
 
 #endif

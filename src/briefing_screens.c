@@ -115,6 +115,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	CMALLOC(mData.Title, strlen(m->missionData->Title) + 32);
 	sprintf(mData.Title, "Mission %d: %s",
 		m->index + 1, m->missionData->Title);
+	mData.TitleOpts = FontOptsNew();
 	mData.TitleOpts.HAlign = ALIGN_CENTER;
 	mData.TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
 	mData.TitleOpts.Pad.y = y - 25;
