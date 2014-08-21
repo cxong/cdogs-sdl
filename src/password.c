@@ -302,7 +302,7 @@ static void EnterCodeScreenDraw(const void *data)
 		FontH() * ((strlen(PASSWORD_LETTERS) - 1) / PASSWORD_ENTRY_COLS));
 	for (int i = 0; i < (int)strlen(PASSWORD_LETTERS) + 1; i++)
 	{
-		const Vec2i pos = Vec2iNew(
+		pos = Vec2iNew(
 			x + (i % PASSWORD_ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / PASSWORD_ENTRY_COLS) * FontH());
 		color_t mask = (i == eData->Selection) ? colorRed : colorWhite;
