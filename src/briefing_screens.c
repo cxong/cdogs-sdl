@@ -578,16 +578,6 @@ static void DrawPlayerSummary(
 		FontStr(s, textPos);
 	}
 }
-static int ObjectiveGetBonus(
-	const struct Objective *o, const MissionObjective *mo)
-{
-	if (o->done == mo->Count && o->done > mo->Required)
-	{
-		// Perfect
-		return 500;
-	}
-	return 0;
-}
 
 static void DrawObjectiveInfo(
 	const struct MissionOptions *mo, const int idx, const Vec2i pos)
