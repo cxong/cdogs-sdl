@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ int NumPlayersSelection(
 
 // Allow input devices to take control players,
 // and select player name and appearance
-int PlayerSelection(int numPlayers, GraphicsDevice *graphics);
+bool PlayerSelection(const int numPlayers);
 
 bool PlayerEquip(int numPlayers, GraphicsDevice *graphics);
 

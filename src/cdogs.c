@@ -462,7 +462,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection(gOptions.numPlayers, &gGraphicsDevice))
+		if (!PlayerSelection(gOptions.numPlayers))
 		{
 			gCampaign.IsLoaded = false;
 			continue;

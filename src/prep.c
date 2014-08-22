@@ -223,134 +223,60 @@ static void AssignPlayerInputDevices(
 	}
 }
 
-int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
+typedef struct
 {
+	int numPlayers;
 	bool hasInputDevice[MAX_PLAYERS];
 	PlayerSelectMenu menus[MAX_PLAYERS];
 	NameGen g;
 	char prefixes[CDOGS_PATH_MAX];
 	char suffixes[CDOGS_PATH_MAX];
 	char suffixnames[CDOGS_PATH_MAX];
-	GetDataFilePath(prefixes, "data/prefixes.txt");
-	GetDataFilePath(suffixes, "data/suffixes.txt");
-	GetDataFilePath(suffixnames, "data/suffixnames.txt");
-	NameGenInit(&g, prefixes, suffixes, suffixnames);
+	bool IsOK;
+} PlayerSelectionData;
+static GameLoopResult PlayerSelectionUpdate(void *data);
+static void PlayerSelectionDraw(const void *data);
+bool PlayerSelection(const int numPlayers)
+{
+	PlayerSelectionData data;
+	memset(&data, 0, sizeof data);
+	data.numPlayers = numPlayers;
+	data.IsOK = true;
+	GetDataFilePath(data.prefixes, "data/prefixes.txt");
+	GetDataFilePath(data.suffixes, "data/suffixes.txt");
+	GetDataFilePath(data.suffixnames, "data/suffixnames.txt");
+	NameGenInit(&data.g, data.prefixes, data.suffixes, data.suffixnames);
 	for (int i = 0; i < numPlayers; i++)
 	{
 		PlayerSelectMenusCreate(
-			&menus[i], numPlayers, i,
+			&data.menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gEventHandlers, graphics, &gConfig.Input, &g);
-		hasInputDevice[i] = false;
+			&gEventHandlers, &gGraphicsDevice, &gConfig.Input, &data.g);
 	}
 
-	bool res = true;
-	bool hasNetInput = false;
-	KeyInit(&gEventHandlers.keyboard);
 	NetServerOpen(&gNetServer);
-	for (;;)
+	GameLoopData gData = GameLoopDataNew(
+		&data, PlayerSelectionUpdate,
+		&data, PlayerSelectionDraw);
+	GameLoop(&gData);
+
+	if (data.IsOK)
 	{
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
-		int cmds[MAX_PLAYERS];
-		int isDone = 1;
-		int hasAtLeastOneInput = 0;
-		EventPoll(&gEventHandlers, SDL_GetTicks());
-		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
-			gEventHandlers.HasQuit)
-		{
-			res = false;
-			goto bail;
-		}
-		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+		// For any player slots not picked, turn them into AIs
 		for (int i = 0; i < numPlayers; i++)
 		{
-			if (hasInputDevice[i] && !MenuIsExit(&menus[i].ms) && cmds[i])
+			if (!data.hasInputDevice[i])
 			{
-				MenuProcessCmd(&menus[i].ms, cmds[i]);
+				AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
 			}
-		}
-
-		// Conditions for exit: at least one player has selected "Done",
-		// and no other players, if any, are still selecting their player
-		// The "players" with no input device are turned into AIs
-		for (int i = 0; i < numPlayers; i++)
-		{
-			if (hasInputDevice[i])
-			{
-				hasAtLeastOneInput = 1;
-			}
-			if (strcmp(menus[i].ms.current->name, "Done") != 0 &&
-				hasInputDevice[i])
-			{
-				isDone = 0;
-			}
-		}
-		if (isDone && hasAtLeastOneInput)
-		{
-			break;
-		}
-
-		AssignPlayerInputDevices(
-			hasInputDevice, numPlayers,
-			gPlayerDatas, &gEventHandlers, &gConfig.Input);
-
-		GraphicsBlitBkg(graphics);
-		for (int i = 0; i < numPlayers; i++)
-		{
-			if (hasInputDevice[i])
-			{
-				MenuDisplay(&menus[i].ms);
-			}
-			else
-			{
-				Vec2i center = Vec2iZero();
-				const char *prompt = "Press Fire to join...";
-				Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
-				int w = graphics->cachedConfig.Res.x;
-				int h = graphics->cachedConfig.Res.y;
-				switch (numPlayers)
-				{
-				case 1:
-					// Center of screen
-					center = Vec2iNew(w / 2, h / 2);
-					break;
-				case 2:
-					// Side by side
-					center = Vec2iNew(i * w / 2 + w / 4, h / 2);
-					break;
-				case 3:
-				case 4:
-					// Four corners
-					center = Vec2iNew(
-						(i & 1) * w / 2 + w / 4, (i / 2) * h / 2 + h / 4);
-					break;
-				default:
-					assert(0 && "not implemented");
-					break;
-				}
-				FontStr(prompt, Vec2iAdd(center, offset));
-			}
-		}
-		BlitFlip(graphics, &gConfig.Graphics);
-		SDL_Delay(10);
-	}
-
-	// For any player slots not picked, turn them into AIs
-	for (int i = 0; i < numPlayers; i++)
-	{
-		if (!hasInputDevice[i])
-		{
-			AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
 		}
 	}
 
 	// If no net input devices selected, close the connection
+	bool hasNetInput = false;
 	for (int i = 0; i < numPlayers; i++)
 	{
-		if (hasInputDevice[i] &&
+		if (data.hasInputDevice[i] &&
 			gPlayerDatas[i].inputDevice == INPUT_DEVICE_NET)
 		{
 			hasNetInput = true;
@@ -358,7 +284,6 @@ int PlayerSelection(int numPlayers, GraphicsDevice *graphics)
 		}
 	}
 
-bail:
 	if (!hasNetInput)
 	{
 		// TODO: support net players joining mid-game
@@ -367,10 +292,106 @@ bail:
 
 	for (int i = 0; i < numPlayers; i++)
 	{
-		MenuSystemTerminate(&menus[i].ms);
+		MenuSystemTerminate(&data.menus[i].ms);
 	}
-	NameGenTerminate(&g);
-	return res;
+	NameGenTerminate(&data.g);
+	return data.IsOK;
+}
+static GameLoopResult PlayerSelectionUpdate(void *data)
+{
+	PlayerSelectionData *pData = data;
+
+	// Check if anyone pressed escape
+	int cmds[MAX_PLAYERS];
+	memset(cmds, 0, sizeof cmds);
+	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	if (EventIsEscape(
+		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	{
+		pData->IsOK = false;
+		return UPDATE_RESULT_EXIT;
+	}
+
+	// Menu input
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		if (pData->hasInputDevice[i] &&
+			!MenuIsExit(&pData->menus[i].ms) &&
+			cmds[i])
+		{
+			MenuProcessCmd(&pData->menus[i].ms, cmds[i]);
+		}
+	}
+
+	// Conditions for exit: at least one player has selected "Done",
+	// and no other players, if any, are still selecting their player
+	// The "players" with no input device are turned into AIs
+	bool hasAtLeastOneInput = false;
+	bool isDone = true;
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		if (pData->hasInputDevice[i])
+		{
+			hasAtLeastOneInput = true;
+		}
+		if (strcmp(pData->menus[i].ms.current->name, "Done") != 0 &&
+			pData->hasInputDevice[i])
+		{
+			isDone = false;
+		}
+	}
+	if (isDone && hasAtLeastOneInput)
+	{
+		return UPDATE_RESULT_EXIT;
+	}
+
+	AssignPlayerInputDevices(
+		pData->hasInputDevice, pData->numPlayers,
+		gPlayerDatas, &gEventHandlers, &gConfig.Input);
+
+	return UPDATE_RESULT_DRAW;
+}
+static void PlayerSelectionDraw(const void *data)
+{
+	const PlayerSelectionData *pData = data;
+
+	GraphicsBlitBkg(&gGraphicsDevice);
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		if (pData->hasInputDevice[i])
+		{
+			MenuDisplay(&pData->menus[i].ms);
+		}
+		else
+		{
+			Vec2i center = Vec2iZero();
+			const char *prompt = "Press Fire to join...";
+			const Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
+			switch (pData->numPlayers)
+			{
+			case 1:
+				// Center of screen
+				center = Vec2iNew(w / 2, h / 2);
+				break;
+			case 2:
+				// Side by side
+				center = Vec2iNew(i * w / 2 + w / 4, h / 2);
+				break;
+			case 3:
+			case 4:
+				// Four corners
+				center = Vec2iNew(
+					(i & 1) * w / 2 + w / 4, (i / 2) * h / 2 + h / 4);
+				break;
+			default:
+				CASSERT(false, "not implemented");
+				break;
+			}
+			FontStr(prompt, Vec2iAdd(center, offset));
+		}
+	}
 }
 
 bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
