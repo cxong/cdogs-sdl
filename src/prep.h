@@ -61,6 +61,6 @@ int NumPlayersSelection(
 // and select player name and appearance
 bool PlayerSelection(const int numPlayers);
 
-bool PlayerEquip(int numPlayers, GraphicsDevice *graphics);
+bool PlayerEquip(const int numPlayers);
 
 #endif

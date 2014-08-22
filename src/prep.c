@@ -394,23 +394,33 @@ static void PlayerSelectionDraw(const void *data)
 	}
 }
 
-bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
+typedef struct
 {
-	int i;
 	WeaponMenu menus[MAX_PLAYERS];
-	for (i = 0; i < numPlayers; i++)
+	int numPlayers;
+	bool IsOK;
+} PlayerEquipData;
+static GameLoopResult PlayerEquipUpdate(void *data);
+static void PlayerEquipDraw(const void *data);
+bool PlayerEquip(const int numPlayers)
+{
+	PlayerEquipData data;
+	memset(&data, 0, sizeof data);
+	data.numPlayers = numPlayers;
+	data.IsOK = true;
+	for (int i = 0; i < numPlayers; i++)
 	{
 		WeaponMenuCreate(
-			&menus[i], numPlayers, i,
+			&data.menus[i], numPlayers, i,
 			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
-			&gEventHandlers, graphics, &gConfig.Input);
+			&gEventHandlers, &gGraphicsDevice, &gConfig.Input);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
 		{
-			int lastMenuIndex =
-				(int)menus[i].ms.root->u.normal.subMenus.size - 1;
-			menus[i].ms.current =
-				CArrayGet(&menus[i].ms.root->u.normal.subMenus, lastMenuIndex);
+			const int lastMenuIndex =
+				(int)data.menus[i].ms.root->u.normal.subMenus.size - 1;
+			data.menus[i].ms.current = CArrayGet(
+				&data.menus[i].ms.root->u.normal.subMenus, lastMenuIndex);
 			gPlayerDatas[i].weapons[0] = AICoopSelectWeapon(
 				i, &gMission.missionData->Weapons);
 			gPlayerDatas[i].weaponCount = 1;
@@ -418,65 +428,68 @@ bool PlayerEquip(int numPlayers, GraphicsDevice *graphics)
 		}
 	}
 
-	debug(D_NORMAL, "\n");
+	GameLoopData gData = GameLoopDataNew(
+		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
+	GameLoop(&gData);
 
-	bool res = true;
-	for (;;)
+	for (int i = 0; i < numPlayers; i++)
 	{
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
-		int cmds[MAX_PLAYERS];
-		int isDone = 1;
-		EventPoll(&gEventHandlers, SDL_GetTicks());
-		// Check exit
-		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
-			gEventHandlers.HasQuit)
-		{
-			res = false;
-			goto bail;
-		}
-		GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-		for (i = 0; i < numPlayers; i++)
-		{
-			if (!MenuIsExit(&menus[i].ms))
-			{
-				MenuProcessCmd(&menus[i].ms, cmds[i]);
-			}
-			else if (gPlayerDatas[i].weaponCount == 0)
-			{
-				// Check exit condition; must have selected at least one weapon
-				// Otherwise reset the current menu
-				menus[i].ms.current = menus[i].ms.root;
-			}
-		}
-		for (i = 0; i < numPlayers; i++)
-		{
-			if (strcmp(menus[i].ms.current->name, "(End)") != 0)
-			{
-				isDone = 0;
-			}
-		}
-		if (isDone)
-		{
-			break;
-		}
-
-		GraphicsBlitBkg(graphics);
-		for (i = 0; i < numPlayers; i++)
-		{
-			MenuDisplay(&menus[i].ms);
-		}
-		BlitFlip(graphics, &gConfig.Graphics);
-		SDL_Delay(10);
+		MenuSystemTerminate(&data.menus[i].ms);
 	}
 
-bail:
-	for (i = 0; i < numPlayers; i++)
+	return data.IsOK;
+}
+static GameLoopResult PlayerEquipUpdate(void *data)
+{
+	PlayerEquipData *pData = data;
+
+	// Check if anyone pressed escape
+	int cmds[MAX_PLAYERS];
+	memset(cmds, 0, sizeof cmds);
+	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	if (EventIsEscape(
+		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
 	{
-		MenuSystemTerminate(&menus[i].ms);
+		pData->IsOK = false;
+		return UPDATE_RESULT_EXIT;
 	}
 
-	return res;
+	// Update menus
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		if (!MenuIsExit(&pData->menus[i].ms))
+		{
+			MenuProcessCmd(&pData->menus[i].ms, cmds[i]);
+		}
+		else if (gPlayerDatas[i].weaponCount == 0)
+		{
+			// Check exit condition; must have selected at least one weapon
+			// Otherwise reset the current menu
+			pData->menus[i].ms.current = pData->menus[i].ms.root;
+		}
+	}
+
+	bool isDone = true;
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		if (strcmp(pData->menus[i].ms.current->name, "(End)") != 0)
+		{
+			isDone = false;
+		}
+	}
+	if (isDone)
+	{
+		return UPDATE_RESULT_EXIT;
+	}
+
+	return UPDATE_RESULT_DRAW;
+}
+static void PlayerEquipDraw(const void *data)
+{
+	const PlayerEquipData *pData = data;
+	GraphicsBlitBkg(&gGraphicsDevice);
+	for (int i = 0; i < pData->numPlayers; i++)
+	{
+		MenuDisplay(&pData->menus[i].ms);
+	}
 }

@@ -274,7 +274,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 				goto bail;
 			}
 		}
-		if (!PlayerEquip(gOptions.numPlayers, graphics))
+		if (!PlayerEquip(gOptions.numPlayers))
 		{
 			run = false;
 			goto bail;
@@ -373,7 +373,7 @@ int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 #define DOGFIGHT_MAX_SCORE 5
 
-void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
+void DogFight(CampaignOptions *co)
 {
 	int scores[MAX_PLAYERS];
 	int maxScore = 0;
@@ -394,7 +394,7 @@ void DogFight(GraphicsDevice *graphicsDevice, CampaignOptions *co)
 	do
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
-		if (PlayerEquip(gOptions.numPlayers, graphicsDevice))
+		if (PlayerEquip(gOptions.numPlayers))
 		{
 			MapLoad(&gMap, &gMission, &co->Setting.characters);
 			srand((unsigned int)time(NULL));
@@ -471,7 +471,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		debug(D_NORMAL, ">> Starting campaign\n");
 		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
-			DogFight(&gGraphicsDevice, &gCampaign);
+			DogFight(&gCampaign);
 		}
 		else if (Campaign(&gGraphicsDevice, &gCampaign))
 		{
