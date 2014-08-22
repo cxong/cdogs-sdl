@@ -49,16 +49,18 @@ void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name)
 }
 
 void MenuDisplayPlayer(
-	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i pos, const Vec2i size, const void *data)
 {
 	UNUSED(g);
-	MenuDisplayPlayerData *d = data;
+	const MenuDisplayPlayerData *d = data;
 	Vec2i playerPos;
 	char s[22];
 	UNUSED(menu);
-	pos.x -= size.x;	// move to left half of screen
+	Vec2i dPos = pos;
+	dPos.x -= size.x;	// move to left half of screen
 	playerPos = Vec2iNew(
-		pos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(pos, size, 0));
+		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
 
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
@@ -73,11 +75,12 @@ void MenuDisplayPlayer(
 }
 
 void MenuDisplayPlayerControls(
-	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i pos, const Vec2i size, const void *data)
 {
 	UNUSED(g);
 	char s[256];
-	MenuDisplayPlayerControlsData *d = data;
+	const MenuDisplayPlayerControlsData *d = data;
 	Vec2i textPos = Vec2iNew(0, pos.y + size.y - FontH());
 	int textWidth = 0;
 

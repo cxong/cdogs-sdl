@@ -144,40 +144,44 @@ int MenuIsExit(MenuSystem *ms)
 
 void MenuProcessChangeKey(menu_t *menu);
 
+static GameLoopResult MenuUpdate(void *data);
+static void MenuDraw(const void *data);
 void MenuLoop(MenuSystem *menu)
 {
 	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
-	for (;; SDL_Delay(33))
+	GameLoopData gData = GameLoopDataNew(
+		menu, MenuUpdate, menu, MenuDraw);
+	GameLoop(&gData);
+}
+static GameLoopResult MenuUpdate(void *data)
+{
+	MenuSystem *ms = data;
+	if (ms->current->type == MENU_TYPE_KEYS &&
+		ms->current->u.normal.changeKeyMenu != NULL)
 	{
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
-		// Input
-		EventPoll(menu->handlers, SDL_GetTicks());
-		// Update
-		if (menu->current->type == MENU_TYPE_KEYS &&
-			menu->current->u.normal.changeKeyMenu != NULL)
-		{
-			MenuProcessChangeKey(menu->current);
-		}
-		else
-		{
-			const int cmd = GetMenuCmd(menu->handlers, gPlayerDatas);
-			if (cmd)
-			{
-				MenuProcessCmd(menu, cmd);
-			}
-		}
-		if (MenuIsExit(menu) || menu->handlers->HasQuit)
-		{
-			break;
-		}
-		// Draw
-		GraphicsBlitBkg(menu->graphics);
-		ShowControls();
-		MenuDisplay(menu);
-		BlitFlip(menu->graphics, &gConfig.Graphics);
+		MenuProcessChangeKey(ms->current);
 	}
+	else
+	{
+		const int cmd = GetMenuCmd(ms->handlers, gPlayerDatas);
+		if (cmd)
+		{
+			MenuProcessCmd(ms, cmd);
+		}
+	}
+	if (MenuIsExit(ms) || ms->handlers->HasQuit)
+	{
+		return UPDATE_RESULT_EXIT;
+	}
+	return UPDATE_RESULT_DRAW;
+}
+static void MenuDraw(const void *data)
+{
+	const MenuSystem *ms = data;
+	GraphicsBlitBkg(ms->graphics);
+	ShowControls();
+	MenuDisplay(ms);
+	BlitFlip(ms->graphics, &gConfig.Graphics);
 }
 
 void MenuReset(MenuSystem *menu)
@@ -480,12 +484,11 @@ menu_t *MenuCreateCustom(
 }
 
 
-void MenuDisplayItems(MenuSystem *ms);
-void MenuDisplaySubmenus(MenuSystem *ms);
-
-void MenuDisplay(MenuSystem *ms)
+static void MenuDisplayItems(const MenuSystem *ms);
+static void MenuDisplaySubmenus(const MenuSystem *ms);
+void MenuDisplay(const MenuSystem *ms)
 {
-	menu_t *menu = ms->current;
+	const menu_t *menu = ms->current;
 	if (menu->type == MENU_TYPE_CUSTOM)
 	{
 		menu->u.customData.displayFunc(
@@ -517,8 +520,7 @@ void MenuDisplay(MenuSystem *ms)
 			menu, ms->graphics, ms->pos, ms->size, menu->customDisplayData);
 	}
 }
-
-void MenuDisplayItems(MenuSystem *ms)
+static void MenuDisplayItems(const MenuSystem *ms)
 {
 	int d = ms->current->u.normal.displayItems;
 	if ((d & MENU_DISPLAY_ITEMS_CREDITS) && ms->creditsDisplayer != NULL)
@@ -540,14 +542,12 @@ void MenuDisplayItems(MenuSystem *ms)
 		FontStrOpt("Version: " CDOGS_SDL_VERSION, ms->pos, opts);
 	}
 }
-
-int MenuOptionGetIntValue(menu_t *menu);
-
-void MenuDisplaySubmenus(MenuSystem *ms)
+static int MenuOptionGetIntValue(const menu_t *menu);
+static void MenuDisplaySubmenus(const MenuSystem *ms)
 {
 	int x = 0, yStart = 0;
 	int maxWidth = 0;
-	menu_t *menu = ms->current;
+	const menu_t *menu = ms->current;
 
 	switch (menu->type)
 	{
@@ -561,8 +561,8 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			int iEnd = (int)menu->u.normal.subMenus.size;
 			for (int i = 0; i < iEnd; i++)
 			{
-				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-				int width = FontStrW(subMenu->name);
+				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+				const int width = FontStrW(subMenu->name);
 				if (width > maxWidth)
 				{
 					maxWidth = width;
@@ -628,7 +628,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			for (int i = iStart; i < iEnd; i++)
 			{
 				int y = yStart + (i - iStart) * FontH();
-				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 				Vec2i pos = Vec2iNew(x, y);
 
 				switch (menu->u.normal.align)
@@ -701,7 +701,7 @@ void MenuDisplaySubmenus(MenuSystem *ms)
 			{
 				int y = yStart + i * FontH();
 				int isSelected = i == menu->u.normal.index;
-				menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 
 				const char *name = subMenu->name;
 				if (isSelected &&
@@ -800,7 +800,7 @@ void MenuDestroySubmenus(menu_t *menu)
 	}
 }
 
-int MenuOptionGetIntValue(menu_t *menu)
+static int MenuOptionGetIntValue(const menu_t *menu)
 {
 	switch (menu->type)
 	{

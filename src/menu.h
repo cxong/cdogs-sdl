@@ -99,7 +99,7 @@ typedef struct menu menu_t;
 // Callback for drawing custom menu
 // menu, graphics, pos, size, data
 typedef void (*MenuDisplayFunc)(
-	menu_t *, GraphicsDevice *, Vec2i, Vec2i, void *);
+	const menu_t *, GraphicsDevice *, const Vec2i, const Vec2i, const void *);
 // Callback for handling user input
 // cmd, data
 // returns: 0 if stay on menu, 1 if exit from menu
@@ -248,7 +248,7 @@ void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
 void MenuLoop(MenuSystem *menu);
-void MenuDisplay(MenuSystem *ms);
+void MenuDisplay(const MenuSystem *ms);
 void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
 void MenuDisableSubmenu(menu_t *menu, int index);

@@ -136,9 +136,10 @@ menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
 menu_t *MenuCreateCampaignItem(CampaignEntry *entry);
 
 static void CampaignsDisplayFilename(
-	menu_t *menu, GraphicsDevice *g, Vec2i pos, Vec2i size, void *data)
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i pos, const Vec2i size, const void *data)
 {
-	menu_t *subMenu =
+	const menu_t *subMenu =
 		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 	UNUSED(g);
 	UNUSED(data);

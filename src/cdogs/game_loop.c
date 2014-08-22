@@ -79,7 +79,10 @@ void GameLoop(GameLoopData *data)
 		}
 		if (draw)
 		{
-			data->DrawFunc(data->DrawData);
+			if (data->DrawFunc)
+			{
+				data->DrawFunc(data->DrawData);
+			}
 			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 			data->HasDrawnFirst = true;
 		}
