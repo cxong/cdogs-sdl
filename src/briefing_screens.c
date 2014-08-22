@@ -134,7 +134,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	// Split the description, and prepare it for typewriter effect
 	mData.TypewriterCount = 0;
 	// allow some slack for newlines
-	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2);
+	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2 + 1);
 	CCALLOC(mData.TypewriterBuf, strlen(mData.Description) + 1);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
 	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
@@ -311,10 +311,14 @@ static int GetAccessBonus(const struct MissionOptions *m)
 }
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut)
 {
-	const int seconds =
+	int seconds =
 		60 +
 		(int)m->missionData->Objectives.size * 30 -
 		m->time / FPS_FRAMELIMIT;
+	if (seconds < 0)
+	{
+		seconds = 0;
+	}
 	if (secondsOut)
 	{
 		*secondsOut = seconds;
@@ -558,8 +562,11 @@ static void DrawPlayerSummary(
 		{
 			sprintf(s, "Resurrection fee: %d", resurrectionFee);
 		}
-		FontStr(s, textPos);
-		textPos.y += FontH();
+		if (healthBonus != 0 || resurrectionFee != 0)
+		{
+			FontStr(s, textPos);
+			textPos.y += FontH();
+		}
 
 		const int butcherPenalty = GetButcherPenalty(data);
 		if (butcherPenalty != 0)
@@ -576,7 +583,10 @@ static void DrawPlayerSummary(
 		{
 			sprintf(s, "Friendly bonus: %d", friendlyBonus);
 		}
-		FontStr(s, textPos);
+		if (butcherPenalty != 0 || ninjaBonus != 0 || friendlyBonus != 0)
+		{
+			FontStr(s, textPos);
+		}
 	}
 }
 

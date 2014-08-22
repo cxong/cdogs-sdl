@@ -487,8 +487,6 @@ int gameloop(void)
 	start.Type = GAME_EVENT_GAME_START;
 	GameEventsEnqueue(&gGameEvents, start);
 
-	// Check if mission is done already
-	MissionSetMessageIfComplete(&gMission);
 	ticksNow = SDL_GetTicks();
 	while (!gMission.isDone)
 	{
