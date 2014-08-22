@@ -448,7 +448,7 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 }
 
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map);
-int gameloop(void)
+bool RunGame(struct MissionOptions *m, Map *map)
 {
 	DrawBuffer buffer;
 	int is_esc_pressed = 0;
@@ -465,19 +465,19 @@ int gameloop(void)
 	HealthPickups hp;
 
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, &gMission);
+	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, m);
 	GameEventsInit(&gGameEvents);
-	HealthPickupsInit(&hp, &gMap);
+	HealthPickupsInit(&hp, map);
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
 		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
-	gMission.time = 0;
-	gMission.pickupTime = 0;
-	gMission.state = MISSION_STATE_PLAY;
-	gMission.isDone = false;
+	m->time = 0;
+	m->pickupTime = 0;
+	m->state = MISSION_STATE_PLAY;
+	m->isDone = false;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
@@ -488,7 +488,7 @@ int gameloop(void)
 	GameEventsEnqueue(&gGameEvents, start);
 
 	ticksNow = SDL_GetTicks();
-	while (!gMission.isDone)
+	while (!m->isDone)
 	{
 		int cmds[MAX_PLAYERS];
 		int cmdAll = 0;
@@ -515,7 +515,7 @@ int gameloop(void)
 			EventPoll(&gEventHandlers, ticksNow);
 			if (gEventHandlers.HasQuit)
 			{
-				gMission.isDone = true;
+				m->isDone = true;
 			}
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{
@@ -541,7 +541,7 @@ int gameloop(void)
 					GameEventsEnqueue(&gGameEvents, e);
 					// Also explicitly set done
 					// otherwise game will not quit immediately
-					gMission.isDone = true;
+					m->isDone = true;
 				}
 				else
 				{
@@ -633,27 +633,27 @@ int gameloop(void)
 				UpdateMobileObjects(ticks);
 				ParticlesUpdate(&gParticles, ticks);
 
-				UpdateWatches(&gMap.triggers);
+				UpdateWatches(&map->triggers);
 
 				HealthPickupsUpdate(&hp, ticks);
 
 				bool isMissionComplete =
-					GetNumPlayersAlive() > 0 && IsMissionComplete(&gMission);
-				if (gMission.state == MISSION_STATE_PLAY && isMissionComplete)
+					GetNumPlayersAlive() > 0 && IsMissionComplete(m);
+				if (m->state == MISSION_STATE_PLAY && isMissionComplete)
 				{
 					GameEvent e;
 					e.Type = GAME_EVENT_MISSION_PICKUP;
 					GameEventsEnqueue(&gGameEvents, e);
 				}
-				if (gMission.state == MISSION_STATE_PICKUP &&
+				if (m->state == MISSION_STATE_PICKUP &&
 					!isMissionComplete)
 				{
 					GameEvent e;
 					e.Type = GAME_EVENT_MISSION_INCOMPLETE;
 					GameEventsEnqueue(&gGameEvents, e);
 				}
-				if (gMission.state == MISSION_STATE_PICKUP &&
-					gMission.pickupTime + PICKUP_LIMIT <= gMission.time)
+				if (m->state == MISSION_STATE_PICKUP &&
+					m->pickupTime + PICKUP_LIMIT <= m->time)
 				{
 					GameEvent e;
 					e.Type = GAME_EVENT_MISSION_END;
@@ -664,11 +664,11 @@ int gameloop(void)
 					&gGameEvents, &hud, &shake, &hp, &gEventHandlers);
 			}
 
-			gMission.time += ticks;
+			m->time += ticks;
 
 			if (HasObjectives(gCampaign.Entry.Mode))
 			{
-				MissionUpdateObjectives(&gMission, &gMap);
+				MissionUpdateObjectives(m, map);
 			}
 
 			// Check that all players have been destroyed
@@ -733,8 +733,8 @@ int gameloop(void)
 	DrawBufferTerminate(&buffer);
 
 	return
-		gMission.state == MISSION_STATE_PICKUP &&
-		gMission.pickupTime + PICKUP_LIMIT <= gMission.time;
+		m->state == MISSION_STATE_PICKUP &&
+		m->pickupTime + PICKUP_LIMIT <= m->time;
 }
 
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)

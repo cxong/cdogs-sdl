@@ -287,7 +287,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
 		CreateEnemies();
 		PlayGameSong();
-		run = gameloop();
+		run = RunGame(&gMission, &gMap);
 
 		const int survivingPlayers = GetNumPlayersAlive();
 		gameOver = survivingPlayers == 0 ||
@@ -379,7 +379,6 @@ void DogFight(CampaignOptions *co)
 	int maxScore = 0;
 	int numPlayers = gOptions.numPlayers;
 	int i;
-	// TODO: seems like something is doing naughty things to our state
 
 	for (i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -400,7 +399,7 @@ void DogFight(CampaignOptions *co)
 			srand((unsigned int)time(NULL));
 			InitPlayers(gOptions.numPlayers, 500, 0);
 			PlayGameSong();
-			run = gameloop();
+			run = RunGame(&gMission, &gMap);
 
 			for (i = 0; i < MAX_PLAYERS; i++)
 			{

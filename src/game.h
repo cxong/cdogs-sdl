@@ -22,6 +22,11 @@
 #ifndef __GAME
 #define __GAME
 
-int gameloop(void);
+#include <stdbool.h>
+
+#include <cdogs/map.h>
+#include <cdogs/mission.h>
+
+bool RunGame(struct MissionOptions *m, Map *map);
 
 #endif
