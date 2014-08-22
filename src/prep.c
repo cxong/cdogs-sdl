@@ -82,20 +82,19 @@ int NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem ms;
-	int i;
-	int res = 0;
 	MenuSystemInit(
 		&ms, handlers, graphics,
 		Vec2iZero(),
 		Vec2iNew(
 			graphics->cachedConfig.Res.x,
 			graphics->cachedConfig.Res.y));
+	ms.allowAborts = true;
 	ms.root = ms.current = MenuCreateNormal(
 		"",
 		"Select number of players",
 		MENU_TYPE_NORMAL,
 		0);
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		char buf[2];
 		if (mode == CAMPAIGN_MODE_DOGFIGHT && i == 0)
@@ -108,37 +107,14 @@ int NumPlayersSelection(
 	}
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 
-	for (;;)
+	MenuLoop(&ms);
+	const bool ok = !ms.hasAbort;
+	if (ok)
 	{
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
-		int cmd;
-		EventPoll(&gEventHandlers, SDL_GetTicks());
-		if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-			JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4) ||
-			gEventHandlers.HasQuit)
-		{
-			res = 0;
-			break;	// hack to allow exit
-		}
-		cmd = GetMenuCmd(handlers, gPlayerDatas);
-		MenuProcessCmd(&ms, cmd);
-		if (MenuIsExit(&ms))
-		{
-			*numPlayers = ms.current->u.returnCode;
-			res = 1;
-			break;
-		}
-
-		GraphicsBlitBkg(graphics);
-		MenuDisplay(&ms);
-		BlitFlip(graphics, &gConfig.Graphics);
-		SDL_Delay(10);
+		*numPlayers = ms.current->u.returnCode;
 	}
-
 	MenuSystemTerminate(&ms);
-	return res;
+	return ok;
 }
 
 

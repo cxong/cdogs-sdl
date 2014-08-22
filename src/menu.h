@@ -225,6 +225,8 @@ typedef struct
 	Vec2i pos;
 	Vec2i size;
 	MenuAlignStyle align;
+	bool allowAborts;
+	bool hasAbort;
 	CArray customDisplayFuncs;	// of MenuCustomDisplayFunc
 } MenuSystem;
 

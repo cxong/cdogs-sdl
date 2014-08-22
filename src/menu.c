@@ -156,6 +156,7 @@ void MenuLoop(MenuSystem *menu)
 static GameLoopResult MenuUpdate(void *data)
 {
 	MenuSystem *ms = data;
+	int cmd = 0;
 	if (ms->current->type == MENU_TYPE_KEYS &&
 		ms->current->u.normal.changeKeyMenu != NULL)
 	{
@@ -163,13 +164,26 @@ static GameLoopResult MenuUpdate(void *data)
 	}
 	else
 	{
-		const int cmd = GetMenuCmd(ms->handlers, gPlayerDatas);
+		cmd = GetMenuCmd(ms->handlers, gPlayerDatas);
 		if (cmd)
 		{
 			MenuProcessCmd(ms, cmd);
 		}
 	}
-	if (MenuIsExit(ms) || ms->handlers->HasQuit)
+	// Check if anyone pressed escape, or we need a hard exit
+	int cmds[MAX_PLAYERS];
+	memset(cmds, 0, sizeof cmds);
+	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	const bool aborted =
+		ms->allowAborts &&
+		EventIsEscape(
+		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas));
+	if (aborted || ms->handlers->HasQuit)
+	{
+		ms->hasAbort = true;
+		return UPDATE_RESULT_EXIT;
+	}
+	if (MenuIsExit(ms))
 	{
 		return UPDATE_RESULT_EXIT;
 	}
@@ -181,7 +195,6 @@ static void MenuDraw(const void *data)
 	GraphicsBlitBkg(ms->graphics);
 	ShowControls();
 	MenuDisplay(ms);
-	BlitFlip(ms->graphics, &gConfig.Graphics);
 }
 
 void MenuReset(MenuSystem *menu)
