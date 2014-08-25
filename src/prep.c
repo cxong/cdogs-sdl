@@ -235,7 +235,7 @@ typedef struct
 	bool IsOK;
 } PlayerSelectionData;
 static GameLoopResult PlayerSelectionUpdate(void *data);
-static void PlayerSelectionDraw(const void *data);
+static void PlayerSelectionDraw(void *data);
 bool PlayerSelection(const int numPlayers)
 {
 	PlayerSelectionData data;
@@ -351,7 +351,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 
 	return UPDATE_RESULT_DRAW;
 }
-static void PlayerSelectionDraw(const void *data)
+static void PlayerSelectionDraw(void *data)
 {
 	const PlayerSelectionData *pData = data;
 
@@ -401,7 +401,7 @@ typedef struct
 	bool IsOK;
 } PlayerEquipData;
 static GameLoopResult PlayerEquipUpdate(void *data);
-static void PlayerEquipDraw(const void *data);
+static void PlayerEquipDraw(void *data);
 bool PlayerEquip(const int numPlayers)
 {
 	PlayerEquipData data;
@@ -484,7 +484,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 
 	return UPDATE_RESULT_DRAW;
 }
-static void PlayerEquipDraw(const void *data)
+static void PlayerEquipDraw(void *data)
 {
 	const PlayerEquipData *pData = data;
 	GraphicsBlitBkg(&gGraphicsDevice);
