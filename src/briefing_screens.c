@@ -40,8 +40,8 @@
 static void DrawObjectiveInfo(
 	const struct MissionOptions *mo, const int idx, const Vec2i pos);
 
-static void CampaignIntroDraw(const void *data);
-bool ScreenCampaignIntro(const CampaignSetting *c)
+static void CampaignIntroDraw(void *data);
+bool ScreenCampaignIntro(CampaignSetting *c)
 {
 	GameLoopWaitForAnyKeyOrButtonData wData;
 	GameLoopData gData = GameLoopDataNew(
@@ -54,7 +54,7 @@ bool ScreenCampaignIntro(const CampaignSetting *c)
 	}
 	return wData.IsOK;
 }
-static void CampaignIntroDraw(const void *data)
+static void CampaignIntroDraw(void *data)
 {
 	// This will only draw once
 	const CampaignSetting *c = data;
@@ -101,7 +101,7 @@ typedef struct
 	bool IsOK;
 } MissionBriefingData;
 static GameLoopResult MissionBriefingUpdate(void *data);
-static void MissionBriefingDraw(const void *data);
+static void MissionBriefingDraw(void *data);
 bool ScreenMissionBriefing(const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -204,7 +204,7 @@ static GameLoopResult MissionBriefingUpdate(void *data)
 
 	return UPDATE_RESULT_OK;
 }
-static void MissionBriefingDraw(const void *data)
+static void MissionBriefingDraw(void *data)
 {
 	const MissionBriefingData *mData = data;
 
@@ -241,8 +241,8 @@ static bool AreAnySurvived(const struct PlayerData playerDatas[MAX_PLAYERS]);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(struct PlayerData *p, const int bonus);
-static void MissionSummaryDraw(const void *data);
-bool ScreenMissionSummary(CampaignOptions *c, const struct MissionOptions *m)
+static void MissionSummaryDraw(void *data);
+bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 {
 	// Save password
 	MissionSave ms;
@@ -380,7 +380,7 @@ static int GetFriendlyBonus(const struct PlayerData *p)
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size,
 	const struct PlayerData *data, const int character);
-static void MissionSummaryDraw(const void *data)
+static void MissionSummaryDraw(void *data)
 {
 	// This will only draw once
 	const struct MissionOptions *m = data;
@@ -765,8 +765,8 @@ static void VictoryDraw(const void *data)
 	pos = FontChMask('"', pos, colorDarker);
 }
 
-static void DogfightScoresDraw(const void *data);
-void ScreenDogfightScores(const int scores[MAX_PLAYERS])
+static void DogfightScoresDraw(void *data);
+void ScreenDogfightScores(int scores[MAX_PLAYERS])
 {
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
@@ -776,7 +776,7 @@ void ScreenDogfightScores(const int scores[MAX_PLAYERS])
 }
 static void ShowPlayerScore(
 	const Vec2i pos, const Character *c, const char *name, const int score);
-static void DogfightScoresDraw(const void *data)
+static void DogfightScoresDraw(void *data)
 {
 	// This will only draw once
 	const int *scores = data;
@@ -809,8 +809,8 @@ static void ShowPlayerScore(
 	FontStr(s, scorePos);
 }
 
-static void DogfightFinalScoresDraw(const void *data);
-void ScreenDogfightFinalScores(const int scores[MAX_PLAYERS])
+static void DogfightFinalScoresDraw(void *data);
+void ScreenDogfightFinalScores(int scores[MAX_PLAYERS])
 {
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
@@ -818,7 +818,7 @@ void ScreenDogfightFinalScores(const int scores[MAX_PLAYERS])
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
-static void DogfightFinalScoresDraw(const void *data)
+static void DogfightFinalScoresDraw(void *data)
 {
 	// This will only draw once
 	const int *scores = data;

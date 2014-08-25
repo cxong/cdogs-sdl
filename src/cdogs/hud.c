@@ -824,7 +824,8 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	if (isPaused)
 	{
-		FontStrCenter("Press Esc again to quit");
+		FontStrCenter(
+			"<Paused>\nPress Esc again to quit\nPress fire or switch to unpause");
 	}
 
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)

@@ -81,13 +81,7 @@
 
 #include "handle_game_events.h"
 
-#define MAX_FRAMESKIP	(FPS_FRAMELIMIT / 5)
-
 #define SPLIT_PADDING 40
-
-
-#define MICROSECS_PER_SEC 1000000
-#define MILLISECS_PER_SEC 1000
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
@@ -351,61 +345,6 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	return lastPosition;
 }
 
-static int HandleKey(int cmd, int *isPaused, int *hasUsedMap, bool showExit)
-{
-	if (IsAutoMapEnabled(gCampaign.Entry.Mode))
-	{
-		int hasDisplayedAutomap = 0;
-		while (KeyIsDown(
-			&gEventHandlers.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
-			(cmd & CMD_BUTTON3) != 0)
-		{
-			int i;
-			*hasUsedMap = 1;
-			if (!hasDisplayedAutomap)
-			{
-				AutomapDraw(0, showExit);
-				BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-				hasDisplayedAutomap = 1;
-			}
-			SDL_Delay(10);
-			EventPoll(&gEventHandlers, SDL_GetTicks());
-			cmd = 0;
-			for (i = 0; i < MAX_PLAYERS; i++)
-			{
-				cmd |= GetGameCmd(
-					&gEventHandlers, &gConfig.Input,
-					&gPlayerDatas[i], Vec2iZero());
-			}
-		}
-	}
-
-	if (*isPaused && AnyButton(cmd))
-	{
-		*isPaused = 0;
-	}
-
-	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
-	{
-		return 1;
-	}
-	else if (KeyGetPressed(&gEventHandlers.keyboard) ||
-		JoyGetPressed(&gEventHandlers.joysticks.joys[0]))
-	{
-		*isPaused = 0;
-	}
-
-#ifndef RUN_WITHOUT_APP_FOCUS
-	if (!*isPaused && !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
-	{
-		*isPaused = 1;
-	}	
-#endif
-
-	return 0;
-}
-
 Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 {
 	Vec2i center = Vec2iZero();
@@ -448,30 +387,42 @@ Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
 }
 
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map);
+typedef struct
+{
+	struct MissionOptions *m;
+	Map *map;
+	DrawBuffer buffer;
+	HUD hud;
+	int frames;
+	// TODO: turn the following into a screen system?
+	bool isPaused;
+	bool isMap;
+	int cmds[MAX_PLAYERS];
+	HealthPickups hp;
+	ScreenShake shake;
+	Vec2i lastPosition;
+	GameLoopData loop;
+} RunGameData;
+static void RunGameInput(void *data);
+static GameLoopResult RunGameUpdate(void *data);
+static void RunGameDraw(void *data);
 bool RunGame(struct MissionOptions *m, Map *map)
 {
-	DrawBuffer buffer;
-	int is_esc_pressed = 0;
-	int isPaused = 0;
-	HUD hud;
-	Vec2i lastPosition = Vec2iZero();
-	Uint32 ticksNow;
-	Uint32 ticksThen;
-	Uint32 ticksElapsed = 0;
-	Uint32 ticksElapsedDraw = 0;
-	int frames = 0;
-	int framesSkipped = 0;
-	ScreenShake shake = ScreenShakeZero();
-	HealthPickups hp;
+	RunGameData data;
+	memset(&data, 0, sizeof data);
+	data.m = m;
+	data.map = map;
+	data.lastPosition = Vec2iZero();
 
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	HUDInit(&hud, &gConfig.Interface, &gGraphicsDevice, m);
+	DrawBufferInit(&data.buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
+	HUDInit(&data.hud, &gConfig.Interface, &gGraphicsDevice, m);
+	HealthPickupsInit(&data.hp, map);
 	GameEventsInit(&gGameEvents);
-	HealthPickupsInit(&hp, map);
+	data.shake = ScreenShakeZero();
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
-		HUDDisplayMessage(&hud, MusicGetErrorMessage(&gSoundDevice), 140);
+		HUDDisplayMessage(&data.hud, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
 	m->time = 0;
@@ -487,254 +438,257 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	start.Type = GAME_EVENT_GAME_START;
 	GameEventsEnqueue(&gGameEvents, start);
 
-	ticksNow = SDL_GetTicks();
-	while (!m->isDone)
-	{
-		int cmds[MAX_PLAYERS];
-		int cmdAll = 0;
-		int ticks = 1;
-		int i;
-		int hasUsedMap = 0;
-		ticksThen = ticksNow;
-		ticksNow = SDL_GetTicks();
-		ticksElapsed += ticksNow - ticksThen;
-		ticksElapsedDraw += ticksNow - ticksThen;
-		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
-		{
-			SDL_Delay(1);
-			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
-			continue;
-		}
+	data.loop = GameLoopDataNew(
+		&data, RunGameUpdate, &data, RunGameDraw);
+	data.loop.InputData = &data;
+	data.loop.InputFunc = RunGameInput;
+	data.loop.FPS = FPS_FRAMELIMIT;
+	data.loop.InputEverySecondFrame = true;
+	GameLoop(&data.loop);
 
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
-		// Only process input every 2 frames
-		if ((frames & 1) == 0)
-		{
-			EventPoll(&gEventHandlers, ticksNow);
-			if (gEventHandlers.HasQuit)
-			{
-				m->isDone = true;
-			}
-			for (i = 0; i < MAX_PLAYERS; i++)
-			{
-				if (IsPlayerAlive(i))
-				{
-					cmds[i] = GetGameCmd(
-						&gEventHandlers,
-						&gConfig.Input,
-						&gPlayerDatas[i],
-						GetPlayerCenter(&gGraphicsDevice, &buffer, i));
-					cmdAll |= cmds[i];
-				}
-			}
-			Uint32 ticksBeforeMap = SDL_GetTicks();
-			is_esc_pressed = HandleKey(
-				cmdAll, &isPaused, &hasUsedMap, hud.showExit);
-			if (is_esc_pressed)
-			{
-				if (isPaused)
-				{
-					GameEvent e;
-					e.Type = GAME_EVENT_MISSION_END;
-					GameEventsEnqueue(&gGameEvents, e);
-					// Also explicitly set done
-					// otherwise game will not quit immediately
-					m->isDone = true;
-				}
-				else
-				{
-					isPaused = 1;
-				}
-			}
-			if (hasUsedMap)
-			{
-				// Map keeps the game paused, reset the time elapsed counter
-				ticksNow += SDL_GetTicks() - ticksBeforeMap;
-			}
-		}
-
-		if (!isPaused)
-		{
-			if (!gConfig.Game.SlowMotion || (frames & 1) == 0)
-			{
-				for (i = 0; i < gOptions.numPlayers; i++)
-				{
-					if (!IsPlayerAlive(i))
-					{
-						continue;
-					}
-					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-					if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
-					{
-						cmds[i] = AICoopGetCmd(player, ticks);
-					}
-					PlayerSpecialCommands(player, cmds[i]);
-					CommandActor(player, cmds[i], ticks);
-				}
-
-				if (gOptions.badGuys)
-				{
-					CommandBadGuys(ticks);
-				}
-				
-				// If split screen never and players are too close to the
-				// edge of the screen, forcefully pull them towards the center
-				if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
-					IsSingleScreen(
-						&gGraphicsDevice.cachedConfig,
-						gConfig.Interface.Splitscreen))
-				{
-					int w = gGraphicsDevice.cachedConfig.Res.x;
-					int h = gGraphicsDevice.cachedConfig.Res.y;
-					Vec2i screen = Vec2iAdd(
-						PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
-					for (i = 0; i < gOptions.numPlayers; i++)
-					{
-						if (!IsPlayerAlive(i))
-						{
-							continue;
-						}
-						TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
-						int pad = SPLIT_PADDING;
-						GameEvent ei;
-						ei.Type = GAME_EVENT_ACTOR_IMPULSE;
-						ei.u.ActorImpulse.Id = p->tileItem.id;
-						ei.u.ActorImpulse.Vel = p->Vel;
-						if (screen.x + pad > p->tileItem.x &&
-							p->Vel.x < 256)
-						{
-							ei.u.ActorImpulse.Vel.x = 256 - p->Vel.x;
-						}
-						else if (screen.x + w - pad < p->tileItem.x &&
-							p->Vel.x > -256)
-						{
-							ei.u.ActorImpulse.Vel.x = -256 - p->Vel.x;
-						}
-						if (screen.y + pad > p->tileItem.y &&
-							p->Vel.y < 256)
-						{
-							ei.u.ActorImpulse.Vel.y = 256 - p->Vel.y;
-						}
-						else if (screen.y + h - pad < p->tileItem.y &&
-							p->Vel.y > -256)
-						{
-							ei.u.ActorImpulse.Vel.y = -256 - p->Vel.y;
-						}
-						if (!Vec2iEqual(ei.u.ActorImpulse.Vel, p->Vel))
-						{
-							GameEventsEnqueue(&gGameEvents, ei);
-						}
-					}
-				}
-				
-				UpdateAllActors(ticks);
-				UpdateMobileObjects(ticks);
-				ParticlesUpdate(&gParticles, ticks);
-
-				UpdateWatches(&map->triggers);
-
-				HealthPickupsUpdate(&hp, ticks);
-
-				bool isMissionComplete =
-					GetNumPlayersAlive() > 0 && IsMissionComplete(m);
-				if (m->state == MISSION_STATE_PLAY && isMissionComplete)
-				{
-					GameEvent e;
-					e.Type = GAME_EVENT_MISSION_PICKUP;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-				if (m->state == MISSION_STATE_PICKUP &&
-					!isMissionComplete)
-				{
-					GameEvent e;
-					e.Type = GAME_EVENT_MISSION_INCOMPLETE;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-				if (m->state == MISSION_STATE_PICKUP &&
-					m->pickupTime + PICKUP_LIMIT <= m->time)
-				{
-					GameEvent e;
-					e.Type = GAME_EVENT_MISSION_END;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-
-				HandleGameEvents(
-					&gGameEvents, &hud, &shake, &hp, &gEventHandlers);
-			}
-
-			m->time += ticks;
-
-			if (HasObjectives(gCampaign.Entry.Mode))
-			{
-				MissionUpdateObjectives(m, map);
-			}
-
-			// Check that all players have been destroyed
-			// Note: there's a period of time where players are dying
-			// Wait until after this period before ending the game
-			bool allPlayersDestroyed = true;
-			for (i = 0; i < gOptions.numPlayers; i++)
-			{
-				if (gPlayerIds[i] != -1)
-				{
-					allPlayersDestroyed = false;
-					break;
-				}
-			}
-			if (allPlayersDestroyed)
-			{
-				GameEvent e;
-				e.Type = GAME_EVENT_MISSION_END;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-		}
-
-		ticksElapsed -= 1000 / FPS_FRAMELIMIT;
-		frames++;
-		if (frames > FPS_FRAMELIMIT)
-		{
-			frames = 0;
-		}
-		// frame skip
-		if (ticksElapsed > 1000 / FPS_FRAMELIMIT &&
-			framesSkipped < MAX_FRAMESKIP)
-		{
-			framesSkipped++;
-			continue;
-		}
-		framesSkipped = 0;
-
-		// Don't update HUD if paused, only draw
-		if (!isPaused)
-		{
-			shake = ScreenShakeUpdate(shake, ticks);
-
-			HUDUpdate(&hud, ticksElapsedDraw);
-		}
-
-		lastPosition = DrawScreen(&buffer, lastPosition, shake);
-
-		debug(D_VERBOSE, "frames... %d\n", frames);
-
-		HUDDraw(&hud, isPaused);
-		if (GameIsMouseUsed(gPlayerDatas))
-		{
-			MouseDraw(&gEventHandlers.mouse);
-		}
-
-		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-
-		ticksElapsedDraw = 0;
-	}
 	GameEventsTerminate(&gGameEvents);
-	HUDTerminate(&hud);
-	DrawBufferTerminate(&buffer);
+	HUDTerminate(&data.hud);
+	DrawBufferTerminate(&data.buffer);
 
 	return
 		m->state == MISSION_STATE_PICKUP &&
 		m->pickupTime + PICKUP_LIMIT <= m->time;
+}
+static void RunGameInput(void *data)
+{
+	RunGameData *rData = data;
+
+	if (gEventHandlers.HasQuit)
+	{
+		rData->m->isDone = true;
+		return;
+	}
+
+	memset(rData->cmds, 0, sizeof rData->cmds);
+	int cmdAll = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (!IsPlayerAlive(i))
+		{
+			continue;
+		}
+		rData->cmds[i] = GetGameCmd(
+			&gEventHandlers,
+			&gConfig.Input,
+			&gPlayerDatas[i],
+			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, i));
+		cmdAll |= rData->cmds[i];
+	}
+
+	// Check if automap key is pressed by any player
+	rData->isMap =
+		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
+		(KeyIsDown(&gEventHandlers.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
+		(cmdAll & CMD_BUTTON3));
+
+	// Check if escape was pressed
+	// If the game was not paused, enter pause mode
+	// If the game was paused, exit the game
+	if (AnyButton(cmdAll))
+	{
+		rData->isPaused = false;
+	}
+	else if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
+		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
+	{
+		// Escape pressed
+		if (rData->isPaused)
+		{
+			// Exit
+			GameEvent e;
+			e.Type = GAME_EVENT_MISSION_END;
+			GameEventsEnqueue(&gGameEvents, e);
+			// Also explicitly set done
+			// otherwise game will not quit immediately
+			rData->m->isDone = true;
+		}
+		else
+		{
+			// Pause the game
+			rData->isPaused = true;
+		}
+	}
+}
+static GameLoopResult RunGameUpdate(void *data)
+{
+	RunGameData *rData = data;
+
+	// Detect exit
+	if (rData->m->isDone)
+	{
+		return UPDATE_RESULT_EXIT;
+	}
+
+	// Don't update if the game has paused or has automap shown
+	if (rData->isPaused || rData->isMap)
+	{
+		return UPDATE_RESULT_DRAW;
+	}
+
+	// If slow motion, update every other frame
+	if (gConfig.Game.SlowMotion && (rData->loop.Frames & 1))
+	{
+		return UPDATE_RESULT_OK;
+	}
+
+	// Update all the things in the game
+	const int ticksPerFrame = 1;
+
+	for (int i = 0; i < gOptions.numPlayers; i++)
+	{
+		if (!IsPlayerAlive(i))
+		{
+			continue;
+		}
+		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+		{
+			rData->cmds[i] = AICoopGetCmd(player, ticksPerFrame);
+		}
+		PlayerSpecialCommands(player, rData->cmds[i]);
+		CommandActor(player, rData->cmds[i], ticksPerFrame);
+	}
+
+	if (gOptions.badGuys)
+	{
+		CommandBadGuys(ticksPerFrame);
+	}
+
+	// If split screen never and players are too close to the
+	// edge of the screen, forcefully pull them towards the center
+	if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+		IsSingleScreen(
+		&gGraphicsDevice.cachedConfig,
+		gConfig.Interface.Splitscreen))
+	{
+		const int w = gGraphicsDevice.cachedConfig.Res.x;
+		const int h = gGraphicsDevice.cachedConfig.Res.y;
+		const Vec2i screen = Vec2iAdd(
+			PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
+		for (int i = 0; i < gOptions.numPlayers; i++)
+		{
+			if (!IsPlayerAlive(i))
+			{
+				continue;
+			}
+			const TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
+			const int pad = SPLIT_PADDING;
+			GameEvent ei;
+			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+			ei.u.ActorImpulse.Id = p->tileItem.id;
+			ei.u.ActorImpulse.Vel = p->Vel;
+			if (screen.x + pad > p->tileItem.x && p->Vel.x < 256)
+			{
+				ei.u.ActorImpulse.Vel.x = 256 - p->Vel.x;
+			}
+			else if (screen.x + w - pad < p->tileItem.x && p->Vel.x > -256)
+			{
+				ei.u.ActorImpulse.Vel.x = -256 - p->Vel.x;
+			}
+			if (screen.y + pad > p->tileItem.y && p->Vel.y < 256)
+			{
+				ei.u.ActorImpulse.Vel.y = 256 - p->Vel.y;
+			}
+			else if (screen.y + h - pad < p->tileItem.y && p->Vel.y > -256)
+			{
+				ei.u.ActorImpulse.Vel.y = -256 - p->Vel.y;
+			}
+			if (!Vec2iEqual(ei.u.ActorImpulse.Vel, p->Vel))
+			{
+				GameEventsEnqueue(&gGameEvents, ei);
+			}
+		}
+	}
+
+	UpdateAllActors(ticksPerFrame);
+	UpdateMobileObjects(ticksPerFrame);
+	ParticlesUpdate(&gParticles, ticksPerFrame);
+
+	UpdateWatches(&rData->map->triggers);
+
+	HealthPickupsUpdate(&rData->hp, ticksPerFrame);
+
+	const bool isMissionComplete =
+		GetNumPlayersAlive() > 0 && IsMissionComplete(rData->m);
+	if (rData->m->state == MISSION_STATE_PLAY && isMissionComplete)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_PICKUP;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	if (rData->m->state == MISSION_STATE_PICKUP && !isMissionComplete)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_INCOMPLETE;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	if (rData->m->state == MISSION_STATE_PICKUP &&
+		rData->m->pickupTime + PICKUP_LIMIT <= rData->m->time)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_END;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+
+	HandleGameEvents(
+		&gGameEvents, &rData->hud, &rData->shake, &rData->hp, &gEventHandlers);
+
+	rData->m->time += ticksPerFrame;
+
+	if (HasObjectives(gCampaign.Entry.Mode))
+	{
+		MissionUpdateObjectives(rData->m, rData->map);
+	}
+
+	// Check that all players have been destroyed
+	// Note: there's a period of time where players are dying
+	// Wait until after this period before ending the game
+	bool allPlayersDestroyed = true;
+	for (int i = 0; i < gOptions.numPlayers; i++)
+	{
+		if (gPlayerIds[i] != -1)
+		{
+			allPlayersDestroyed = false;
+			break;
+		}
+	}
+	if (allPlayersDestroyed)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_END;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+
+	rData->shake = ScreenShakeUpdate(rData->shake, ticksPerFrame);
+
+	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
+
+	return UPDATE_RESULT_DRAW;
+}
+static void RunGameDraw(void *data)
+{
+	RunGameData *rData = data;
+
+	// Draw everything
+	rData->lastPosition =
+		DrawScreen(&rData->buffer, rData->lastPosition, rData->shake);
+
+	HUDDraw(&rData->hud, rData->isPaused);
+	if (GameIsMouseUsed(gPlayerDatas))
+	{
+		MouseDraw(&gEventHandlers.mouse);
+	}
+
+	// Draw automap if enabled
+	if (rData->isMap)
+	{
+		AutomapDraw(0, rData->hud.showExit);
+	}
 }
 
 static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)

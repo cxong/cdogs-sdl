@@ -30,12 +30,12 @@
 
 // Return values mean whether the user wanted to proceed
 
-bool ScreenCampaignIntro(const CampaignSetting *c);
+bool ScreenCampaignIntro(CampaignSetting *c);
 bool ScreenMissionBriefing(const struct MissionOptions *m);
-bool ScreenMissionSummary(CampaignOptions *c, const struct MissionOptions *m);
+bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
 void ScreenVictory(CampaignOptions *c);
 
-void ScreenDogfightScores(const int scores[MAX_PLAYERS]);
-void ScreenDogfightFinalScores(const int scores[MAX_PLAYERS]);
+void ScreenDogfightScores(int scores[MAX_PLAYERS]);
+void ScreenDogfightFinalScores(int scores[MAX_PLAYERS]);
 
 #endif

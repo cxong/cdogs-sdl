@@ -36,7 +36,7 @@
 
 GameLoopData GameLoopDataNew(
 	void *updateData, GameLoopResult (*updateFunc)(void *),
-	const void *drawData, void (*drawFunc)(const void *))
+	void *drawData, void (*drawFunc)(void *))
 {
 	GameLoopData g;
 	memset(&g, 0, sizeof g);
@@ -44,7 +44,7 @@ GameLoopData GameLoopDataNew(
 	g.UpdateFunc = updateFunc;
 	g.DrawData = drawData;
 	g.DrawFunc = drawFunc;
-	g.FrameDelayMs = 16;
+	g.FPS = 30;
 	return g;
 }
 
@@ -53,13 +53,38 @@ void GameLoop(GameLoopData *data)
 	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
 
 	GameLoopResult result = UPDATE_RESULT_OK;
-	for (; result != UPDATE_RESULT_EXIT; SDL_Delay(data->FrameDelayMs))
+	Uint32 ticksNow = SDL_GetTicks();
+	Uint32 ticksElapsed = 0;
+	int framesSkipped = 0;
+	const int maxFrameskip = data->FPS / 5;
+	for (; result != UPDATE_RESULT_EXIT; )
 	{
+		// Frame rate control
+		const Uint32 ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		ticksElapsed += ticksNow - ticksThen;
+		if ((int)ticksElapsed < 1000 / data->FPS)
+		{
+			SDL_Delay(1);
+			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			continue;
+		}
+
 #ifndef RUN_WITHOUT_APP_FOCUS
 		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 #endif
+
+		// Input
+		if ((data->Frames & 1) || !data->InputEverySecondFrame)
+		{
+			EventPoll(&gEventHandlers, ticksNow);
+			if (data->InputFunc)
+			{
+				data->InputFunc(data->InputData);
+			}
+		}
+
 		// Update
-		EventPoll(&gEventHandlers, SDL_GetTicks());
 		result = data->UpdateFunc(data->UpdateData);
 		bool draw = !data->HasDrawnFirst;
 		switch (result)
@@ -77,6 +102,17 @@ void GameLoop(GameLoopData *data)
 			CASSERT(false, "Unknown loop result");
 			break;
 		}
+		ticksElapsed -= 1000 / data->FPS;
+		data->Frames++;
+		// frame skip
+		if ((int)ticksElapsed > 1000 / data->FPS && framesSkipped < maxFrameskip)
+		{
+			framesSkipped++;
+			continue;
+		}
+		framesSkipped = 0;
+
+		// Draw
 		if (draw)
 		{
 			if (data->DrawFunc)
