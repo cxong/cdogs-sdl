@@ -145,7 +145,7 @@ int MenuIsExit(MenuSystem *ms)
 void MenuProcessChangeKey(menu_t *menu);
 
 static GameLoopResult MenuUpdate(void *data);
-static void MenuDraw(const void *data);
+static void MenuDraw(void *data);
 void MenuLoop(MenuSystem *menu)
 {
 	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
@@ -189,7 +189,7 @@ static GameLoopResult MenuUpdate(void *data)
 	}
 	return UPDATE_RESULT_DRAW;
 }
-static void MenuDraw(const void *data)
+static void MenuDraw(void *data)
 {
 	const MenuSystem *ms = data;
 	GraphicsBlitBkg(ms->graphics);
