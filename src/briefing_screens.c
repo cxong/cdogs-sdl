@@ -650,7 +650,7 @@ static void DrawObjectiveInfo(
 	}
 }
 
-static void VictoryDraw(const void *data);
+static void VictoryDraw(void *data);
 void ScreenVictory(CampaignOptions *c)
 {
 	GameLoopData gData = GameLoopDataNew(
@@ -659,7 +659,7 @@ void ScreenVictory(CampaignOptions *c)
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 }
-static void VictoryDraw(const void *data)
+static void VictoryDraw(void *data)
 {
 	// This will only draw once
 	const CampaignOptions *c = data;
