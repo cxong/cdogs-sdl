@@ -175,7 +175,6 @@ static int DisplayPage(
 		}
 		idx++;
 	}
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 	return idx;
 }
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
