@@ -128,7 +128,7 @@ typedef struct
 	int Selection;
 } EnterCodeScreenData;
 static GameLoopResult EnterCodeScreenUpdate(void *data);
-static void EnterCodeScreenDraw(const void *data);
+static void EnterCodeScreenDraw(void *data);
 static int EnterCodeScreen(const char *password)
 {
 	EnterCodeScreenData data;
@@ -273,7 +273,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 
 	return true;
 }
-static void EnterCodeScreenDraw(const void *data)
+static void EnterCodeScreenDraw(void *data)
 {
 	const EnterCodeScreenData *eData = data;
 
