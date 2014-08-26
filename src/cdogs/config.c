@@ -406,10 +406,18 @@ void ConfigLoadDefault(Config *config)
 	config->Game.Gore = GORE_LOW;
 	config->Game.LaserSight = LASER_SIGHT_NONE;
 	config->Graphics.Brightness = 0;
-	config->Graphics.Fullscreen = 0;
+#ifdef __GCWZERO__
+	config->Graphics.Fullscreen = true;
+#else
+	config->Graphics.Fullscreen = false;
+#endif
 	config->Graphics.Res.y = 240;
 	config->Graphics.Res.x = 320;
+#ifdef __GCWZERO__
+	config->Graphics.ScaleFactor = 1;
+#else
 	config->Graphics.ScaleFactor = 2;
+#endif
 	config->Graphics.ShakeMultiplier = 1;
 	config->Graphics.ScaleMode = SCALE_MODE_NN;
 	config->Graphics.IsEditor = 0;
@@ -417,8 +425,13 @@ void ConfigLoadDefault(Config *config)
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;
 	config->Input.PlayerKeys[0].Keys.up = SDLK_UP;
 	config->Input.PlayerKeys[0].Keys.down = SDLK_DOWN;
+#ifdef __GCWZERO__
+	config->Input.PlayerKeys[0].Keys.button1 = SDLK_LCTRL;
+	config->Input.PlayerKeys[0].Keys.button2 = SDLK_LALT;
+#else
 	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RETURN;
 	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RSHIFT;
+#endif
 	config->Input.PlayerKeys[1].Keys.left = SDLK_KP4;
 	config->Input.PlayerKeys[1].Keys.right = SDLK_KP6;
 	config->Input.PlayerKeys[1].Keys.up = SDLK_KP8;
