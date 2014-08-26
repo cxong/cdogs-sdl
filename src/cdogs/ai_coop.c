@@ -305,9 +305,14 @@ static bool TryCompleteNearbyObjective(
 	// If dogfight, just find the closest enemy and go to them
 	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
+		const TActor *closestEnemy =
+			AIGetClosestVisibleEnemy(actor, true);
+		if (closestEnemy == NULL)
+		{
+			return false;
+		}
 		objState->Type = AI_OBJECTIVE_TYPE_NORMAL;
-		objState->Goal =
-			Vec2iFull2Real(AIGetClosestVisibleEnemy(actor, true)->Pos);
+		objState->Goal = Vec2iFull2Real(closestEnemy->Pos);
 		*cmdOut = GotoObjective(actor, 0);
 		return true;
 	}
