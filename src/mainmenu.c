@@ -417,6 +417,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 			SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
 			(void (*)(void))SplitscreenStyleStr));
+#ifndef __GCWZERO__
 #ifndef __ANDROID__
 	MenuAddSubmenu(
 		menu,
@@ -424,7 +425,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 			"Fullscreen",
 			&gConfig.Graphics.Fullscreen,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-#endif
+#endif	// ANDROID
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
@@ -439,6 +440,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 			"Scale mode", (int *)&gConfig.Graphics.ScaleMode,
 			SCALE_MODE_NN, SCALE_MODE_HQX, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleModeStr));
+#endif	// GCWZERO
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
