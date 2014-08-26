@@ -271,8 +271,13 @@ void ShowControls(void)
 	opts.VAlign = ALIGN_END;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad.y = 10;
+#ifdef __GCWZERO__
+	FontStrOpt(
+		"(use joystick or D pad + START + SELECT)", Vec2iZero(), opts);
+#else
 	FontStrOpt(
 		"(use joystick 1 or arrow keys + Enter/Backspace)", Vec2iZero(), opts);
+#endif
 }
 
 void DisplayMenuItem(
