@@ -505,6 +505,8 @@ static void RunGameInput(void *data)
 			GameEvent e;
 			e.Type = GAME_EVENT_MISSION_END;
 			GameEventsEnqueue(&gGameEvents, e);
+			// Need to unpause to process the quit
+			rData->isPaused = false;
 		}
 		else
 		{
