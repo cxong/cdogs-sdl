@@ -67,6 +67,15 @@ target_link_libraries(cdogs-sdl
 	${ENet_LIBRARIES}
 	${EXTRA_LIBRARIES})
 
+if(GCW0)
+	add_custom_command(TARGET cdogs-sdl
+		POST_BUILD
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../build/gcw-zero/make_opk.sh ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..
+		COMMENT "Building cdogs.opk..."
+	)
+endif()
+
 add_executable(cdogs-sdl-editor MACOSX_BUNDLE cdogsed.c ${CDOGS_SDL_EXTRA})
 if(APPLE)
 	set_target_properties(cdogs-sdl-editor PROPERTIES

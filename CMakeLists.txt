@@ -122,7 +122,11 @@ endif()
 
 set(CMAKE_MACOSX_RPATH 1)
 
-set(CDOGS_DATA_DIR "../")
+if(GCW0)
+	set(CDOGS_DATA_DIR "./")
+else()
+	set(CDOGS_DATA_DIR "../")
+endif()
 set(CDOGS_CFG_DIR ".config/cdogs-sdl/")
 SET(SOURCE_DIRECTORY ".")
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
