@@ -251,7 +251,11 @@ void GraphicsInitialize(
 	GraphicsDevice *device, GraphicsConfig *config, TPalette palette,
 	int force)
 {
-	int sdl_flags = 0;
+#ifdef __GCWZERO__
+	int sdl_flags = SDL_HWSURFACE | SDL_TRIPLEBUF;
+#else
+	int sdl_flags = SDL_SWSURFACE;
+#endif
 	unsigned int w, h = 0;
 	unsigned int rw, rh;
 
@@ -278,7 +282,6 @@ void GraphicsInitialize(
 
 	device->IsInitialized = 0;
 
-	sdl_flags |= SDL_SWSURFACE;
 	sdl_flags |= config->IsEditor ? SDL_RESIZABLE : 0;
 	if (config->Fullscreen)
 	{
