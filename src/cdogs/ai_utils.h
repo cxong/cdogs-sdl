@@ -72,6 +72,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 int AIGoto(TActor *actor, Vec2i target, bool ignoreObjects);
 int AIHunt(TActor *actor, Vec2i targetPos);
 int AIHuntClosest(TActor *actor);
+int AIRetreatFrom(TActor *actor, const Vec2i from);
 
 void AIContextTerminate(void *aiContext);
 

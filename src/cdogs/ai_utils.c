@@ -658,6 +658,13 @@ int AIHuntClosest(TActor *actor)
 	return AIHunt(actor, targetPos);
 }
 
+// Move away from the target
+// Usually used for a simple flee
+int AIRetreatFrom(TActor *actor, const Vec2i from)
+{
+	return AIReverseDirection(AIHunt(actor, from));
+}
+
 void AIContextTerminate(void *aiContext)
 {
 	AIGotoContext *c = aiContext;

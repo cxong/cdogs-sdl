@@ -171,11 +171,32 @@ static int AICoopGetCmdNormal(TActor *actor)
 			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
 		{
 			AIContextSetState(actor->aiContext, AI_STATE_HUNT);
-			int cmd = AIHunt(actor, closestEnemy->Pos);
-			// only fire if gun is ready
-			if (ActorGetGun(actor)->lock <= 0)
+			// Move to the ideal distance for the weapon
+			int cmd = 0;
+			const int gunRange = GunGetRange(ActorGetGun(actor)->Gun);
+			const int distanceSquared = DistanceSquared(
+				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos));
+			const bool canFire = ActorGetGun(actor)->lock <= 0;
+			if (distanceSquared > gunRange * gunRange * 3 / 4)
 			{
-				cmd |= CMD_BUTTON1;
+				// Move towards the enemy, fire if able
+				cmd = AIHunt(actor, closestEnemy->Pos);
+				// But don't bother firing if too far away
+				if (canFire && distanceSquared < gunRange * gunRange * 2)
+				{
+					cmd |= CMD_BUTTON1;
+				}
+			}
+			else if (distanceSquared < gunRange * gunRange / 3 && !canFire)
+			{
+				// Move away from the enemy because we're too close
+				// Only move away if we can't fire; otherwise turn to fire
+				cmd = AIRetreatFrom(actor, closestEnemy->Pos);
+			}
+			else if (canFire)
+			{
+				// We're not too close and not too far; fire if able
+				cmd = AIHunt(actor, closestEnemy->Pos) | CMD_BUTTON1;
 			}
 			return cmd;
 		}
