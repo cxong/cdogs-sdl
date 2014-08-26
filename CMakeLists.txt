@@ -15,6 +15,14 @@ SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 set(DEBUG 0)			#set to 1 to enable debug build
 set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
 
+# check for crosscompiling (defined when using a toolchain file)
+if(CMAKE_CROSSCOMPILING)
+	# check for gcw0
+	if(CMAKE_C_COMPILER MATCHES ".*gcw0-linux.*")
+		set(GCW0 1)
+	endif()
+endif()
+
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
     set(CLANG 1)
 endif()
@@ -93,6 +101,9 @@ else()
 		endif(DEBUG_PROFILE)
 	else()
 		ADD_DEFINITIONS(-O2)
+	endif()
+	if(GCW0)
+		add_definitions(-D__GCWZERO__)
 	endif()
     if(CLANG)
 		add_definitions(-std=c99)
