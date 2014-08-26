@@ -302,6 +302,16 @@ static bool TryCompleteNearbyObjective(
 	AIObjectiveState *objState = &context->ObjectiveState;
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
+	// If dogfight, just find the closest enemy and go to them
+	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	{
+		objState->Type = AI_OBJECTIVE_TYPE_NORMAL;
+		objState->Goal =
+			Vec2iFull2Real(AIGetClosestVisibleEnemy(actor, true)->Pos);
+		*cmdOut = GotoObjective(actor, 0);
+		return true;
+	}
+
 	// Check to see if we are already attempting to complete an objective,
 	// and that it hasn't been updated since we last checked.
 	// If so keep following the path
