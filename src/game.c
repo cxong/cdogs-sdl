@@ -460,7 +460,9 @@ static void RunGameInput(void *data)
 
 	if (gEventHandlers.HasQuit)
 	{
-		rData->m->isDone = true;
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_END;
+		GameEventsEnqueue(&gGameEvents, e);
 		return;
 	}
 
@@ -503,9 +505,6 @@ static void RunGameInput(void *data)
 			GameEvent e;
 			e.Type = GAME_EVENT_MISSION_END;
 			GameEventsEnqueue(&gGameEvents, e);
-			// Also explicitly set done
-			// otherwise game will not quit immediately
-			rData->m->isDone = true;
 		}
 		else
 		{
