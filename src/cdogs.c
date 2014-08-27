@@ -199,7 +199,12 @@ static void InitPlayers(int numPlayers, int maxHealth, int mission)
 		player->health = maxHealth;
 		player->character->maxHealth = maxHealth;
 		
-		if (gMission.missionData->Type == MAPTYPE_STATIC &&
+		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+		{
+			// In a dogfight, always place players apart
+			PlaceActor(player);
+		}
+		else if (gMission.missionData->Type == MAPTYPE_STATIC &&
 			!Vec2iIsZero(gMission.missionData->u.Static.Start))
 		{
 			// place players near the start point
@@ -393,33 +398,33 @@ void DogFight(CampaignOptions *co)
 	do
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
-		if (PlayerEquip(gOptions.numPlayers))
-		{
-			MapLoad(&gMap, &gMission, &co->Setting.characters);
-			srand((unsigned int)time(NULL));
-			InitPlayers(gOptions.numPlayers, 500, 0);
-			PlayGameSong();
-			run = RunGame(&gMission, &gMap);
+		PlayerEquip(gOptions.numPlayers);
+		MapLoad(&gMap, &gMission, &co->Setting.characters);
+		srand((unsigned int)time(NULL));
+		InitPlayers(gOptions.numPlayers, 500, 0);
+		PlayGameSong();
 
-			for (i = 0; i < MAX_PLAYERS; i++)
+		// Don't quit if all players died, that's normal for dogfights
+		run = RunGame(&gMission, &gMap) || GetNumPlayersAlive() == 0;
+
+		for (i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (IsPlayerAlive(i))
 			{
-				if (IsPlayerAlive(i))
+				scores[i]++;
+				if (scores[i] > maxScore)
 				{
-					scores[i]++;
-					if (scores[i] > maxScore)
-					{
-						maxScore = scores[i];
-					}
+					maxScore = scores[i];
 				}
 			}
+		}
 
-			CleanupMission();
-			PlayMenuSong();
+		CleanupMission();
+		PlayMenuSong();
 
-			if (run)
-			{
-				ScreenDogfightScores(scores);
-			}
+		if (run)
+		{
+			ScreenDogfightScores(scores);
 		}
 
 		// Need to terminate the mission later as it is used in calculating scores

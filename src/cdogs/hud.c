@@ -811,7 +811,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		}
 		else
 		{
-			FontStrCenter("Double Kill!");
+			FontStrCenter("All Kill!");
 		}
 	}
 	else if (hud->mission->state == MISSION_STATE_PICKUP)
