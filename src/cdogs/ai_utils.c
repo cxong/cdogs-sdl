@@ -612,6 +612,15 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	}
 }
 
+// Hunt moves an Actor towards a target, using the most efficient direction.
+// That is, given the following octant:
+//       x  A xx
+//      x   xx
+//     x  xx
+//    x xx   B
+//   xxx
+//  xxxxxxxxxx
+// Those in slice A will move down-left and those in slice B will move left.
 int AIHunt(TActor *actor, Vec2i targetPos)
 {
 	Vec2i fullPos = Vec2iAdd(
@@ -663,6 +672,50 @@ int AIHuntClosest(TActor *actor)
 int AIRetreatFrom(TActor *actor, const Vec2i from)
 {
 	return AIReverseDirection(AIHunt(actor, from));
+}
+
+// Track moves an Actor towards a target, but in such a fashion that the Actor
+// will come into 8-axis alignment with the target soonest.
+// That is, given the following octant:
+//       x  A xx
+//      x   xx
+//     x  xx
+//    x xx   B
+//   xxx
+//  xxxxxxxxxx
+// Those in slice A will move left and those in slice B will move down-left.
+int AITrack(TActor *actor, const Vec2i targetPos)
+{
+	const Vec2i fullPos = Vec2iAdd(
+		actor->Pos,
+		GunGetMuzzleOffset(ActorGetGun(actor)->Gun, actor->direction));
+	const int dx = abs(targetPos.x - fullPos.x);
+	const int dy = abs(targetPos.y - fullPos.y);
+
+	int cmd = 0;
+	// Terminology: imagine the compass directions sliced into 16 equal parts,
+	// and labelled in bearing/clock order. That is, the slices on the right
+	// half are labelled 1-8.
+	// In order to construct the movement, note that:
+	// - If the target is to our left, we need to move left...
+	// - Except if they are in slice 2 or 7
+	// Slice 2 and 7 (and 10 and 15) can be found by (dy < 2dx && dy > dx)
+	// - call this X-exception
+	// Repeat this for all 4 cardinal directions.
+	const bool xException = dy < 2 * dx && dy > dx;
+	if (!xException)
+	{
+		if (fullPos.x < targetPos.x)		cmd |= CMD_RIGHT;
+		else if (fullPos.x > targetPos.x)	cmd |= CMD_LEFT;
+	}
+	const bool yException = dx < 2 * dy && dx > dy;
+	if (!yException)
+	{
+		if (fullPos.y < targetPos.y)		cmd |= CMD_DOWN;
+		else if (fullPos.y > targetPos.y)	cmd |= CMD_UP;
+	}
+
+	return cmd;
 }
 
 void AIContextTerminate(void *aiContext)

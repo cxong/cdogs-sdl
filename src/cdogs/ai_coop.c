@@ -180,11 +180,15 @@ static int AICoopGetCmdNormal(TActor *actor)
 			if (distanceSquared > gunRange * gunRange * 3 / 4)
 			{
 				// Move towards the enemy, fire if able
-				cmd = AIHunt(actor, closestEnemy->Pos);
 				// But don't bother firing if too far away
 				if (canFire && distanceSquared < gunRange * gunRange * 2)
 				{
-					cmd |= CMD_BUTTON1;
+					cmd = AIHunt(actor, closestEnemy->Pos) | CMD_BUTTON1;
+				}
+				else
+				{
+					// Track so that we end up in a favorable angle
+					cmd = AITrack(actor, closestEnemy->Pos);
 				}
 			}
 			else if (distanceSquared < gunRange * gunRange / 3 && !canFire)
