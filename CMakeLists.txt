@@ -5,11 +5,12 @@ else()
 endif()
 project(cdogs-sdl C)
 
-SET(VERSION "0.5.6")
-SET(VERSION_RC "0,5,6,0")	# this must be 4 numbers
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "5")
 SET(VERSION_PATCH "6")
+SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+# this must be 4 numbers
+SET(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
 SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 set(DEBUG 0)			#set to 1 to enable debug build
@@ -137,6 +138,7 @@ IF(WIN32)
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/windows/cdogs.rc.cmake ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 CONFIGURE_FILE(${SOURCE_DIRECTORY}/src/cdogs/sys_config.h.cmake ${SOURCE_DIRECTORY}/src/cdogs/sys_config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs)
 
 #Tests
 enable_testing()
