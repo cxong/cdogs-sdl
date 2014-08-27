@@ -138,6 +138,7 @@ IF(WIN32)
 	CONFIGURE_FILE(${SOURCE_DIRECTORY}/build/windows/cdogs.rc.cmake ${SOURCE_DIRECTORY}/build/windows/cdogs.rc)
 ENDIF()
 CONFIGURE_FILE(${SOURCE_DIRECTORY}/src/cdogs/sys_config.h.cmake ${SOURCE_DIRECTORY}/src/cdogs/sys_config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs)
 
 #Tests
 enable_testing()
