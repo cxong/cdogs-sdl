@@ -32,9 +32,9 @@ For more information about the original C-Dogs read [`original\_readme.txt`](htt
 C-Dogs SDL is built using the SDL 1.2 API.
 See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
-C-Dogs SDL runs on Linux, \*BSD, Windows and Mac OS X.
+C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Android and GCW-Zero.
 
-C-Dogs SDL is also monitored by the continuous integration service TravisCI
+C-Dogs SDL is also monitored by the continuous integration service Travis CI.
 
 3. Installation
 ---------------
