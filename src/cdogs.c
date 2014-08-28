@@ -590,12 +590,13 @@ int main(int argc, char *argv[])
 			{"wait",		no_argument,		NULL,	'w'},
 			{"shakemult",	required_argument,	NULL,	'm'},
 			{"connect",		required_argument,	NULL,	'x'},
+			{"debug",		required_argument,	NULL,	'd'},
 			{"help",		no_argument,		NULL,	'h'},
 			{0,				0,					NULL,	0}
 		};
 		int opt = 0;
 		int idx = 0;
-		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xh", longopts, &idx)) != -1)
+		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xdh", longopts, &idx)) != -1)
 		{
 			switch (opt)
 			{
@@ -641,6 +642,13 @@ int main(int argc, char *argv[])
 			case 'h':
 				PrintHelp();
 				goto bail;
+			case 'd':
+				// Set debug level
+				debug = 1;
+				debug_level = atoi(optarg);
+				if (debug_level < 0) debug_level = 0;
+				if (debug_level > D_MAX) debug_level = D_MAX;
+				break;
 			case 'x':
 				if (enet_address_set_host(&connectAddr, optarg) != 0)
 				{
@@ -775,6 +783,10 @@ int main(int argc, char *argv[])
 				&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
 			{
 				CampaignLoad(&gCampaign, &entry);
+			}
+			else
+			{
+				fprintf(stderr, "Failed to load campaign %s\n", loadCampaign);
 			}
 		}
 		else if (connectAddr.port != 0)
