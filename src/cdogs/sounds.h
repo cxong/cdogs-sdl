@@ -99,6 +99,7 @@ typedef struct
 	Mix_Chunk *keySound;
 	Mix_Chunk *wreckSound;
 	CArray screamSounds;	// of Mix_Chunk *
+	int lastScream;
 } SoundDevice;
 
 extern SoundDevice gSoundDevice;
