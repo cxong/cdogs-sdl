@@ -381,7 +381,11 @@ static bool DoDamageCharacter(
 				}
 			}
 
-			if (player >= 0 && power != 0)
+			// Don't score for friendly or player hits
+			const bool isFriendly =
+				(actor->flags & FLAGS_GOOD_GUY) ||
+				(gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT && actor->pData);
+			if (player >= 0 && power != 0 && !isFriendly)
 			{
 				// Calculate score based on
 				// if they hit a penalty character
