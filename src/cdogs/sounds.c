@@ -381,7 +381,7 @@ Mix_Chunk *StrSound(const char *s)
 	return NULL;
 }
 
-Mix_Chunk *SoundGetRandomScream(const SoundDevice *device)
+Mix_Chunk *SoundGetRandomScream(SoundDevice *device)
 {
 	// Don't get the last scream used
 	int idx = device->lastScream;
@@ -390,5 +390,6 @@ Mix_Chunk *SoundGetRandomScream(const SoundDevice *device)
 		idx = rand() % device->screamSounds.size;
 	}
 	Mix_Chunk **sound = CArrayGet(&device->screamSounds, idx);
+	device->lastScream = idx;
 	return *sound;
 }

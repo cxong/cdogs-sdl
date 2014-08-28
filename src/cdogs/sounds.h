@@ -145,6 +145,6 @@ void SoundPlayAtPlusDistance(
 	const Vec2i pos, const int plusDistance);
 
 Mix_Chunk *StrSound(const char *s);
-Mix_Chunk *SoundGetRandomScream(const SoundDevice *device);
+Mix_Chunk *SoundGetRandomScream(SoundDevice *device);
 
 #endif
