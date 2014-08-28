@@ -438,6 +438,9 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	start.Type = GAME_EVENT_GAME_START;
 	GameEventsEnqueue(&gGameEvents, start);
 
+	// Set mission complete and display exit if it is complete
+	MissionSetMessageIfComplete(m);
+
 	data.loop = GameLoopDataNew(
 		&data, RunGameUpdate, &data, RunGameDraw);
 	data.loop.InputData = &data;
