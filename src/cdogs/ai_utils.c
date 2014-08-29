@@ -702,19 +702,19 @@ int AITrack(TActor *actor, const Vec2i targetPos)
 	// Slice 2 and 7 (and 10 and 15) can be found by (dy < 2dx && dy > dx)
 	// - call this X-exception
 	// Repeat this for all 4 cardinal directions.
-	// Furthermore, give a bit of leeway for the diagonals so we don't
-	// fluctuate between vertical/horizontal movement.
+	// Furthermore, give a bit of leeway for the 8 axes so we don't
+	// fluctuate between perpendicular movement vectors.
 	const bool xException = dy < 2 * dx && dy > (int)(dx * 1.1);
 	if (!xException)
 	{
-		if (fullPos.x < targetPos.x)		cmd |= CMD_RIGHT;
-		else if (fullPos.x > targetPos.x)	cmd |= CMD_LEFT;
+		if (fullPos.x - targetPos.x < (int)(dy * 0.1))			cmd |= CMD_RIGHT;
+		else if (fullPos.x - targetPos.x > -(int)(dy * 0.1))	cmd |= CMD_LEFT;
 	}
 	const bool yException = dx < 2 * dy && dx > (int)(dy * 1.1);
 	if (!yException)
 	{
-		if (fullPos.y < targetPos.y)		cmd |= CMD_DOWN;
-		else if (fullPos.y > targetPos.y)	cmd |= CMD_UP;
+		if (fullPos.y - targetPos.y < (int)(dx * 0.1))			cmd |= CMD_DOWN;
+		else if (fullPos.y - targetPos.y > -(int)(dx * 0.1))	cmd |= CMD_UP;
 	}
 
 	return cmd;
