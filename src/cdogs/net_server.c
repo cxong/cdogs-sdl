@@ -215,7 +215,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 	case SERVER_MSG_PLAYER_ID:
 		{
 			NetMsgPlayerId pid;
-			pid.Id = *(int *)data;
+			pid.Id = *(const int *)data;
 			return MakePacketImpl(msg, &pid, sizeof pid);
 		}
 	case SERVER_MSG_PLAYER_DATA:
