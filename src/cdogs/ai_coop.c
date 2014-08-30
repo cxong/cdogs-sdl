@@ -365,6 +365,7 @@ static bool TryCompleteNearbyObjective(
 	}
 
 	// Find all the objective/key locations, sort according to distance
+	// TODO: reuse this array, don't recreate it
 	CArray objectives;
 	FindObjectivesSortedByDistance(&objectives, actorRealPos);
 

@@ -382,7 +382,6 @@ void DogFight(CampaignOptions *co)
 {
 	int scores[MAX_PLAYERS];
 	int maxScore = 0;
-	int numPlayers = gOptions.numPlayers;
 	int i;
 
 	for (i = 0; i < MAX_PLAYERS; i++)
@@ -432,7 +431,6 @@ void DogFight(CampaignOptions *co)
 	} while (run && maxScore < DOGFIGHT_MAX_SCORE);
 
 	gOptions.badGuys = 1;
-	gOptions.numPlayers = numPlayers;
 
 	if (run)
 	{

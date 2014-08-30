@@ -261,8 +261,11 @@ int GetOnePlayerCmd(
 	case INPUT_DEVICE_AI:
 		// Do nothing; AI input is handled separately
 		break;
+	case INPUT_DEVICE_NET:
+		// TODO: implement
+		break;
 	default:
-		assert(0 && "unknown input device");
+		CASSERT(false, "unknown input device");
 		break;
 	}
 	return cmd;

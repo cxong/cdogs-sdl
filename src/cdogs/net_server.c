@@ -125,6 +125,7 @@ void NetServerPoll(NetServer *n)
 								event.packet->dataLength == NET_MSG_SIZE + sizeof *nc,
 								"unexpected packet size");
 							n->Cmd = nc->cmd;
+							debug(D_VERBOSE, "NetServer: receive %d", nc->cmd);
 						}
 						break;
 					default:
@@ -211,7 +212,19 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			def.CampaignMode = entry->Mode;
 			return MakePacketImpl(msg, &def, sizeof def);
 		}
-		break;
+	case SERVER_MSG_PLAYER_ID:
+		{
+			NetMsgPlayerId pid;
+			pid.Id = *(int *)data;
+			return MakePacketImpl(msg, &pid, sizeof pid);
+		}
+	case SERVER_MSG_PLAYER_DATA:
+		{
+			const struct PlayerData *pData = data;
+			// TODO: send
+			UNUSED(pData);
+			return NULL;
+		}
 	case SERVER_MSG_GAME_START:
 		return MakePacketImpl(msg, NULL, 0);
 	default:

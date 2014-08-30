@@ -210,14 +210,31 @@ static void AssignPlayerInputDevices(
 		{
 			hasInputDevice[i] = true;
 			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
+			const int peerId = gNetServer.peerId - 1;
 			// Send the current campaign details over
+			debug(D_VERBOSE, "NetServer: sending campaign entry");
 			NetServerSendMsg(
-				&gNetServer,
-				gNetServer.peerId - 1,
+				&gNetServer, peerId,
 				SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
+			// Send the player index of this player
+			debug(D_VERBOSE, "NetServer: sending player index %d", i);
+			NetServerSendMsg(&gNetServer, peerId, SERVER_MSG_PLAYER_ID, &i);
+			// Send details of all current players
+			for (int j = 0; j < numPlayers; j++)
+			{
+				if (j == i || !hasInputDevice[j])
+				{
+					continue;
+				}
+				debug(D_VERBOSE, "NetServer: sending player data index %d", j);
+				NetServerSendMsg(
+					&gNetServer, peerId,
+					SERVER_MSG_PLAYER_DATA, &playerDatas[j]);
+			}
 			assignedNet[playerDatas[i].deviceIndex] = true;
 			numNet++;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
+			debug(D_VERBOSE, "NetServer: client connection complete");
 			continue;
 		}
 	}

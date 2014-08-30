@@ -66,6 +66,8 @@ typedef struct
 typedef enum
 {
 	SERVER_MSG_CAMPAIGN_DEF,
+	SERVER_MSG_PLAYER_ID,
+	SERVER_MSG_PLAYER_DATA,
 	SERVER_MSG_GAME_START
 } ServerMsg;
 
@@ -74,6 +76,11 @@ typedef struct
 	uint8_t Path[CDOGS_PATH_MAX];
 	uint32_t CampaignMode;
 } NetMsgCampaignDef;
+
+typedef struct
+{
+	uint32_t Id;
+} NetMsgPlayerId;
 
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode);
