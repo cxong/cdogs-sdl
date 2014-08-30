@@ -99,7 +99,6 @@ void MenuDisplayPlayerControls(
 				SDL_GetKeyName(keys->down),
 				SDL_GetKeyName(keys->button1),
 				SDL_GetKeyName(keys->button2));
-			textWidth = FontStrW(s);
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:

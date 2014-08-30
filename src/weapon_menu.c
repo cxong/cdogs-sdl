@@ -141,8 +141,7 @@ void WeaponMenuCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
-	Vec2i pos = Vec2iZero();
-	Vec2i size = Vec2iZero();
+	Vec2i pos, size;
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 

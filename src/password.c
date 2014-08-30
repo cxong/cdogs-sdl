@@ -285,7 +285,7 @@ static void EnterCodeScreenDraw(void *data)
 		gGraphicsDevice.cachedConfig.Res.y / 4);
 	pos = FontCh('>', pos);
 	pos = FontStr(eData->Buffer, pos);
-	pos = FontCh('<', pos);
+	FontCh('<', pos);
 
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;

@@ -226,7 +226,7 @@ static void DrawMap(
 						Vec2i drawPos = Vec2iNew(
 							mapPos.x + x*scale + j,
 							mapPos.y + y*scale + i);
-						color_t color = colorBlack;
+						color_t color = colorRoom;
 						if (tile->flags & MAPTILE_IS_WALL)
 						{
 							color = colorWall;
@@ -238,10 +238,6 @@ static void DrawMap(
 						else if (tile->flags & MAPTILE_IS_NORMAL_FLOOR)
 						{
 							color = colorFloor;
-						}
-						else
-						{
-							color = colorRoom;
 						}
 						if (!ColorEquals(color, colorBlack))
 						{

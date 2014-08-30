@@ -439,7 +439,6 @@ static void LoadBullet(
 			b->CPic.u1.Tint.s = atof(tint->text);
 			tint = tint->next;
 			b->CPic.u1.Tint.v = atof(tint->text);
-			tint = tint->next;
 		}
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");

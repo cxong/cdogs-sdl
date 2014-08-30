@@ -135,7 +135,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	mData.TypewriterCount = 0;
 	// allow some slack for newlines
 	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2 + 1);
-	CCALLOC(mData.TypewriterBuf, strlen(mData.Description) + 1);
+	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) + 1);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
 	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
 	mData.DescriptionPos = Vec2iNew(w / 12, y);
@@ -762,7 +762,7 @@ static void VictoryDraw(void *data)
 	Vec2i pos = Vec2iNew((w - FontStrW(finalWords)) / 2, h / 2 + 20);
 	pos = FontChMask('"', pos, colorDarker);
 	pos = FontStrMask(finalWords, pos, colorPurple);
-	pos = FontChMask('"', pos, colorDarker);
+	FontChMask('"', pos, colorDarker);
 }
 
 static void DogfightScoresDraw(void *data);

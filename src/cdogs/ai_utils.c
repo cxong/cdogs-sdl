@@ -558,6 +558,8 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	Vec2i goalTile = Vec2iToTile(p);
 	AIGotoContext *c = &actor->aiContext->Goto;
 
+	CASSERT(c != NULL, "no AI context");
+
 	// If we are already there, bail
 	// This can happen if AI is trying to track the player,
 	// but the player has died, for example.

@@ -130,7 +130,7 @@ static void AddGraphicsMode(
 {
 	int i = 0;
 	int actualResolutionToAdd = width * height * scaleFactor * scaleFactor;
-	GraphicsMode *mode = &device->validModes[i];
+	GraphicsMode *mode = NULL;
 
 	// Don't add if mode already exists
 	if (FindValidMode(device, width, height, scaleFactor) != -1)

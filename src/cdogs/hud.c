@@ -649,7 +649,6 @@ static void DrawCompassArrow(
 		if (xInt >= -r.Size.x / 2 && xInt <= r.Size.x / 2)
 		{
 			// Intercepts either top or bottom side
-			hasDrawn = true;
 			if (compassV.y > 0)
 			{
 				// bottom edge

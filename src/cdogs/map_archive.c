@@ -610,6 +610,7 @@ static json_t *SaveStaticTiles(Mission *m)
 	char *bigbuf;
 	CCALLOC(bigbuf, size * 6);
 	char *pBuf = bigbuf;
+	CASSERT(pBuf != NULL, "memory error");
 	for (int i = 0; i < size; i++)
 	{
 		char buf[32];

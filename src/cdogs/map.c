@@ -244,6 +244,8 @@ static void PicLoadOffset(Pic *picAlt, int idx)
 {
 	Pic *oldPic =
 		PicManagerGetFromOld(&gPicManager, cGeneralPics[idx].picIndex);
+	CASSERT(oldPic != NULL, "Cannot find pic");
+	CASSERT(picAlt != NULL, "Cannot use null alt pic");
 	picAlt->size = oldPic->size;
 	picAlt->Data = oldPic->Data;
 	picAlt->offset = Vec2iNew(cGeneralPics[idx].dx, cGeneralPics[idx].dy);

@@ -309,9 +309,9 @@ static bool IsActorPositionValid(TActor *actor)
 
 static void PlaceBaddie(TActor *actor)
 {
-	int hasPlaced = 0;
-	int i;
-	for (i = 0; i < 100; i++)	// Don't try forever trying to place baddie
+	bool hasPlaced = false;
+	// Don't try forever trying to place baddie
+	for (int i = 0; i < 100; i++)
 	{
 		// Try spawning out of players' sights
 		actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
@@ -322,19 +322,22 @@ static void PlaceBaddie(TActor *actor)
 			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
 			IsActorPositionValid(actor))
 		{
-			hasPlaced = 1;
+			hasPlaced = true;
 			break;
 		}
 	}
-	// Keep trying, but this time try spawning anywhere, even close to player
-	while (!hasPlaced)
+	if (!hasPlaced)
 	{
-		actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-		actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
-		if (IsActorPositionValid(actor))
+		// Keep trying, but this time try spawning anywhere,
+		// even close to player
+		for (;;)
 		{
-			hasPlaced = 1;
-			break;
+			actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
+			actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
+			if (IsActorPositionValid(actor))
+			{
+				break;
+			}
 		}
 	}
 

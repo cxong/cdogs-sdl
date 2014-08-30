@@ -210,7 +210,6 @@ int GetGameCmd(
 	struct PlayerData *playerData, Vec2i playerPos)
 {
 	int cmd = 0;
-	joystick_t *joystick = &handlers->joysticks.joys[0];
 
 	switch (playerData->inputDevice)
 	{
@@ -224,9 +223,11 @@ int GetGameCmd(
 		cmd = GetMouseCmd(&handlers->mouse, false, 1, playerPos);
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		joystick =
-			&handlers->joysticks.joys[playerData->deviceIndex];
-		cmd = GetJoystickCmd(joystick, false);
+		{
+			joystick_t *joystick =
+				&handlers->joysticks.joys[playerData->deviceIndex];
+			cmd = GetJoystickCmd(joystick, false);
+		}
 		break;
 	default:
 		// do nothing

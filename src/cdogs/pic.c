@@ -49,7 +49,7 @@ void PicLoad(
 {
 	p->size = size;
 	p->offset = Vec2iZero();
-	CMALLOC(p->Data, size.x * size.y * sizeof(((Pic *)0)->Data));
+	CMALLOC(p->Data, size.x * size.y * sizeof *((Pic *)0)->Data);
 	// Manually copy the pixels and replace the alpha component,
 	// since our gfx device format has no alpha
 	int srcI = offset.y*image->w + offset.x;
