@@ -80,7 +80,7 @@ static void CampaignIntroDraw(void *data)
 	CMALLOC(buf, strlen(c->Description) * 2);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
 	FontSplitLines(c->Description, buf, w * 5 / 6);
-	FontStr(buf, Vec2iNew(w / 12, y));
+	FontStr(buf, Vec2iNew(w / 6, y));
 	CFREE(buf);
 }
 
@@ -138,7 +138,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
 	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
-	mData.DescriptionPos = Vec2iNew(w / 12, y);
+	mData.DescriptionPos = Vec2iNew(w / 6, y);
 
 	// Objectives
 	mData.ObjectiveDescPos =
