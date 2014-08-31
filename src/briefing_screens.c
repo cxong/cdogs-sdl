@@ -135,7 +135,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	mData.TypewriterCount = 0;
 	// allow some slack for newlines
 	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2 + 1);
-	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) + 1);
+	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
 	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
 	mData.DescriptionPos = Vec2iNew(w / 12, y);
