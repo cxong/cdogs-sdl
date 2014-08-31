@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/sh
 
 # usage: path/to/make_opk.sh [<binary directory> <data directory>]
 # The parameters are needed, because cmake supports out-of-source builds.
@@ -6,7 +6,7 @@
 
 mydir=`dirname $0`
 
-if [[ -z "$1" || -z "$2" ]]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
   bindir=${mydir}/../../src
   datadir=${mydir}/../..
 else
@@ -16,19 +16,19 @@ fi
 
 cdogsbin="${bindir}/cdogs-sdl"
 
-cdogsdata=("${datadir}/data"
-           "${datadir}/doc"
-           "${datadir}/dogfights"
-           "${datadir}/graphics"
-           "${datadir}/missions"
-           "${datadir}/music"
-           "${datadir}/sounds"
-           "${datadir}/cdogs_icon.bmp")
+cdogsdata="${datadir}/data"
+cdogsdata="${cdogsdata} ${datadir}/doc"
+cdogsdata="${cdogsdata} ${datadir}/dogfights"
+cdogsdata="${cdogsdata} ${datadir}/graphics"
+cdogsdata="${cdogsdata} ${datadir}/missions"
+cdogsdata="${cdogsdata} ${datadir}/music"
+cdogsdata="${cdogsdata} ${datadir}/sounds"
+cdogsdata="${cdogsdata} ${datadir}/cdogs_icon.bmp"
 
-gcwzdata=("${mydir}/default.gcw0.desktop"
-          "${mydir}/readme_gcw.txt"
-          "${mydir}/cdogs-sdl.png")
+gcwzdata="${mydir}/default.gcw0.desktop"
+gcwzdata="${gcwzdata} ${mydir}/readme_gcw.txt"
+gcwzdata="${gcwzdata} ${mydir}/cdogs-sdl.png"
 
-alldata="${gcwzdata[*]} ${cdogsbin} ${cdogsdata[*]}"
+alldata="${gcwzdata} ${cdogsbin} ${cdogsdata}"
 
 mksquashfs ${alldata} cdogs.opk -all-root -noappend -no-exports -no-xattrs
