@@ -107,17 +107,6 @@ MapObject *MapObjectGet(int item)
 {
 	return &mapItems[item];
 }
-MapObject *MapObjectFindByPicId(const int picId)
-{
-	for (int i = 0; i < ITEMS_COUNT; i++)
-	{
-		if (mapItems[i].pic == picId)
-		{
-			return &mapItems[i];
-		}
-	}
-	return NULL;
-}
 int MapObjectGetCount(void)
 {
 	return ITEMS_COUNT;

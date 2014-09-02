@@ -638,9 +638,7 @@ static void DrawObjectiveInfo(
 		{
 			Vec2i picOffset;
 			const Pic *p = MapObjectGetPic(
-				MapObjectFindByPicId(o->blowupObject->pic),
-				&gPicManager,
-				&picOffset);
+				MapObjectGet(mobj->Index), &gPicManager, &picOffset);
 			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
 		}
 		break;
