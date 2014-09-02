@@ -85,6 +85,7 @@ typedef struct
 } MapObject;
 
 MapObject *MapObjectGet(int item);
+MapObject *MapObjectFindByPicId(const int picId);
 int MapObjectGetCount(void);
 int MapObjectGetDestructibleCount(void);
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset);

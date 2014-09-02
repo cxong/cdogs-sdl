@@ -636,9 +636,12 @@ static void DrawObjectiveInfo(
 		break;
 	case OBJECTIVE_DESTROY:
 		{
-			const Pic *p = PicManagerGetFromOld(
-				&gPicManager, cGeneralPics[o->blowupObject->pic].picIndex);
-			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, p->offset));
+			Vec2i picOffset;
+			const Pic *p = MapObjectGetPic(
+				MapObjectFindByPicId(o->blowupObject->pic),
+				&gPicManager,
+				&picOffset);
+			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
 		}
 		break;
 	case OBJECTIVE_INVESTIGATE:
