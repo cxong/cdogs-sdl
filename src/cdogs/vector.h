@@ -54,6 +54,7 @@ Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi);
 // Convert to and from real (i.e. integral) coordinates and full (fractional)
 Vec2i Vec2iFull2Real(Vec2i v);
 Vec2i Vec2iReal2Full(Vec2i v);
+Vec2i Vec2iReal2FullCentered(const Vec2i v);
 
 Vec2i Vec2iToTile(Vec2i v);
 Vec2i Vec2iCenterOfTile(Vec2i v);

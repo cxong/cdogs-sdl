@@ -396,6 +396,37 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	return CArrayGet(&gObjs, item->id);
 }
 
+bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d)
+{
+	const bool isUpperOrLowerOctants =
+		abs(a->Pos.x - targetFull.x) > abs(a->Pos.y - targetFull.y);
+	const bool isRight = a->Pos.x < targetFull.x;
+	const bool isAbove = a->Pos.y > targetFull.y;
+	switch (d)
+	{
+	case DIRECTION_UP:
+		return isAbove && isUpperOrLowerOctants;
+	case DIRECTION_UPLEFT:
+		return !isRight && isAbove;
+	case DIRECTION_LEFT:
+		return !isRight && !isUpperOrLowerOctants;
+	case DIRECTION_DOWNLEFT:
+		return !isRight && !isAbove;
+	case DIRECTION_DOWN:
+		return !isAbove && isUpperOrLowerOctants;
+	case DIRECTION_DOWNRIGHT:
+		return isRight && !isAbove;
+	case DIRECTION_RIGHT:
+		return isRight && !isUpperOrLowerOctants;
+	case DIRECTION_UPRIGHT:
+		return isRight && isAbove;
+	default:
+		CASSERT(false, "invalid direction");
+		break;
+	}
+	return false;
+}
+
 
 typedef struct
 {
@@ -489,7 +520,7 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 	ASPath path = ASPathCreate(&cPathNodeSource, &ac, &fromTile, &toTile);
 	size_t pathCount = ASPathGetCount(path);
 	ASPathDestroy(path);
-	return pathCount > 1;
+	return pathCount >= 1;
 }
 
 static int AIGotoDirect(Vec2i a, Vec2i p)
@@ -616,12 +647,12 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 
 // Hunt moves an Actor towards a target, using the most efficient direction.
 // That is, given the following octant:
-//       x  A xx
-//      x   xx
-//     x  xx
-//    x xx   B
-//   xxx
-//  xxxxxxxxxx
+//            x  A      xxxx
+//          x       xxxx
+//        x     xxxx
+//      x   xxxx      B
+//    x  xxx
+//  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move down-left and those in slice B will move left.
 int AIHunt(TActor *actor, Vec2i targetPos)
 {
@@ -679,12 +710,12 @@ int AIRetreatFrom(TActor *actor, const Vec2i from)
 // Track moves an Actor towards a target, but in such a fashion that the Actor
 // will come into 8-axis alignment with the target soonest.
 // That is, given the following octant:
-//       x  A xx
-//      x   xx
-//     x  xx
-//    x xx   B
-//   xxx
-//  xxxxxxxxxx
+//            x  A      xxxx
+//          x       xxxx
+//        x     xxxx
+//      x   xxxx      B
+//    x  xxx
+//  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move left and those in slice B will move down-left.
 int AITrack(TActor *actor, const Vec2i targetPos)
 {

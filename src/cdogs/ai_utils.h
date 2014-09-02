@@ -65,6 +65,7 @@ bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects);
 bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
+bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d);
 
 // Find path to target
 // destroyObjects - if true, ignore obstructing objects

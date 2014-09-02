@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -91,16 +91,75 @@ bool IsCollisionWithWall(Vec2i pos, Vec2i size)
 	return false;
 }
 
-bool IsCollisionWallOrEdge(Map *map, Vec2i pos, Vec2i size)
+// Check collision with a diamond shape
+// This means that the bounding box could be in collision, but the bounding
+// "radius" is not. The diamond is expressed with a single "radius" - that is,
+// the diamond is the same height and width.
+// This arrangement is used so that axis movement can slide off corners by
+// moving in a diagonal direction.
+// E.g. this is not a collision:
+//       x
+//     x   x
+//   x       x
+// x           x
+//   x       x
+//     x   x wwwww
+//       x   w
+//           w
+// Where 'x' denotes the bounding diamond, and 'w' represents a wall corner.
+bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i size)
 {
-	Vec2i mapSize =
+	const Vec2i mapSize =
 		Vec2iNew(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
-	if (pos.x < 0 || pos.x + size.x >= mapSize.x ||
-		pos.y < 0 || pos.y + size.y >= mapSize.y)
+	if (pos.x - size.x < 0 || pos.x + size.x >= mapSize.x ||
+		pos.y - size.y < 0 || pos.y + size.y >= mapSize.y)
 	{
 		return true;
 	}
-	return IsCollisionWithWall(pos, size);
+
+	// Only support wider-than-taller collision diamonds for now
+	CASSERT(size.x >= size.y, "not implemented, taller than wider diamond");
+	const int radius = size.x;
+
+	// Now we need to check in a diamond pattern that the boundary does not
+	// collide
+	// Top to right
+	for (int i = 0; i < radius; i++)
+	{
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(i, -radius + i));
+		if (HitWall(p.x, p.y))
+		{
+			return true;
+		}
+	}
+	// Right to bottom
+	for (int i = 0; i < radius; i++)
+	{
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(radius - i, i));
+		if (HitWall(p.x, p.y))
+		{
+			return true;
+		}
+	}
+	// Bottom to left
+	for (int i = 0; i < radius; i++)
+	{
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-i, radius - i));
+		if (HitWall(p.x, p.y))
+		{
+			return true;
+		}
+	}
+	// Left to top
+	for (int i = 0; i < radius; i++)
+	{
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-radius + i, -i));
+		if (HitWall(p.x, p.y))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 static bool ItemsCollide(

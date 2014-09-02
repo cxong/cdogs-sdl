@@ -148,5 +148,6 @@ void GetVectorsForRadians(const double radians, double *x, double *y);
 Vec2i GetFullVectorsForRadians(double radians);
 double Vec2iToRadians(const Vec2i v);
 direction_e RadiansToDirection(const double r);
+direction_e DirectionOpposite(const direction_e d);
 
 #endif

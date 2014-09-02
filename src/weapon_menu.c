@@ -170,7 +170,9 @@ void WeaponMenuCreate(
 		size = Vec2iNew(w / 4, h / 2);
 		break;
 	default:
-		assert(0 && "not implemented");
+		CASSERT(false, "not implemented");
+		pos = Vec2iNew(w / 2, 0);
+		size = Vec2iNew(w / 2, h);
 		break;
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);

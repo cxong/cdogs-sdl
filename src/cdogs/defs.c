@@ -193,3 +193,7 @@ direction_e RadiansToDirection(const double r)
 	}
 	return (direction_e)d;
 }
+direction_e DirectionOpposite(const direction_e d)
+{
+	return (direction_e)(((int)d + 4) % DIRECTION_COUNT);
+}

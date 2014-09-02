@@ -141,6 +141,7 @@ extern bool gFalse;
 #define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
 #define CLAMP_OPPOSITE(v, _min, _max)\
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
+#define SIGN(x) ((x) != 0 ? (x) / abs(x) : 1)
 
 int MemIsZero(const void *buf, size_t len);
 

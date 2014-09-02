@@ -118,6 +118,11 @@ Vec2i Vec2iReal2Full(Vec2i v)
 {
 	return Vec2iScale(v, 256);
 }
+Vec2i Vec2iReal2FullCentered(const Vec2i v)
+{
+	return Vec2iAdd(
+		Vec2iScale(v, 256), Vec2iNew(128 * SIGN(v.x), 128 * SIGN(v.y)));
+}
 
 Vec2i Vec2iToTile(Vec2i v)
 {

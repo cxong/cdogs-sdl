@@ -64,7 +64,7 @@ void MenuDisplayPlayer(
 
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
-		sprintf(s, "%c%s%c", '\020', d->pData->name, '\021');
+		sprintf(s, "%c%s%c", '>', d->pData->name, '<');
 	}
 	else
 	{

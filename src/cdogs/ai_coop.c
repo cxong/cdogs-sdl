@@ -574,14 +574,23 @@ static bool IsPosCloseEnoughToPlayer(
 static int GotoObjective(TActor *actor, int objDistance)
 {
 	const AIObjectiveState *objState = &actor->aiContext->ObjectiveState;
-	Vec2i goal = objState->Goal;
-	int cmd = SmartGoto(actor, goal, objDistance);
-	if (objState->Type == AI_OBJECTIVE_TYPE_NORMAL &&
-		objState->IsDestructible &&
-		ActorGetGun(actor)->lock <= 0 &&
-		AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
+	const Vec2i goal = objState->Goal;
+	int cmd = 0;
+	// Check to see if we need to go any closer to the objective
+	const bool isDestruction =
+		objState->Type == AI_OBJECTIVE_TYPE_NORMAL && objState->IsDestructible;
+	if (!isDestruction ||
+		DistanceSquared(Vec2iFull2Real(actor->Pos), goal) > 2 * 16 * 16)
 	{
-		cmd |= CMD_BUTTON1;
+		cmd = SmartGoto(actor, goal, objDistance);
+	}
+	else if (isDestruction && ActorGetGun(actor)->lock <= 0)
+	{
+		cmd = AIHunt(actor, Vec2iReal2FullCentered(goal));
+		if (AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
+		{
+			 cmd |= CMD_BUTTON1;
+		}
 	}
 	return cmd;
 }

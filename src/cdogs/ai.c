@@ -65,38 +65,6 @@ static int gBaddieCount = 0;
 static int gAreGoodGuysPresent = 0;
 
 
-static bool IsFacing(const Vec2i p, const Vec2i target, direction_e d)
-{
-	const bool isUpperOrLowerOctants =
-		abs(p.x - target.x) > abs(p.y - target.y);
-	const bool isRight = p.x < target.x;
-	const bool isAbove = p.y > target.y;
-	switch (d)
-	{
-	case DIRECTION_UP:
-		return isAbove && isUpperOrLowerOctants;
-	case DIRECTION_UPLEFT:
-		return !isRight && isAbove;
-	case DIRECTION_LEFT:
-		return !isRight && !isUpperOrLowerOctants;
-	case DIRECTION_DOWNLEFT:
-		return !isRight && !isAbove;
-	case DIRECTION_DOWN:
-		return !isAbove && isUpperOrLowerOctants;
-	case DIRECTION_DOWNRIGHT:
-		return isRight && !isAbove;
-	case DIRECTION_RIGHT:
-		return isRight && !isUpperOrLowerOctants;
-	case DIRECTION_UPRIGHT:
-		return isRight && isAbove;
-	default:
-		CASSERT(false, "invalid direction");
-		break;
-	}
-	return false;
-}
-
-
 static bool IsFacingPlayer(TActor *actor, direction_e d)
 {
 	for (int i = 0; i < MAX_PLAYERS; i++)
@@ -106,7 +74,7 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 			continue;
 		}
 		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-		if (IsPlayerAlive(i) && IsFacing(actor->Pos, player->Pos, d))
+		if (IsPlayerAlive(i) && AIIsFacing(actor, player->Pos, d))
 		{
 			return true;
 		}
@@ -148,7 +116,7 @@ static bool CanSeeAPlayer(const TActor *a)
 		const bool isClose = distance < 16 * 4;
 		const bool isNotTooFar = distance < 16 * 30;
 		if (isClose ||
-			(isNotTooFar && IsFacing(realPos, playerRealPos, a->direction)))
+			(isNotTooFar && AIIsFacing(a, player->Pos, a->direction)))
 		{
 			return true;
 		}
@@ -159,20 +127,20 @@ static bool CanSeeAPlayer(const TActor *a)
 
 static bool IsPosOK(TActor *actor, Vec2i pos)
 {
-	Vec2i realPos = Vec2iFull2Real(pos);
-	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
-	if (IsCollisionWallOrEdge(&gMap, realPos, size))
+	const Vec2i realPos = Vec2iFull2Real(pos);
+	if (IsCollisionDiamond(
+		&gMap, realPos, Vec2iNew(actor->tileItem.w, actor->tileItem.h)))
 	{
-		return 0;
+		return false;
 	}
 	if (GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
 		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT))
 	{
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
 }
 
 #define STEPSIZE    1024

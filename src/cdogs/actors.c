@@ -501,44 +501,24 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 }
 
+static Vec2i GetConstrainedFullPos(
+	const Map *map, const Vec2i fromFull, const Vec2i toFull,
+	const Vec2i size);
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
-	TTileItem *target;
-	TObject *object;
-	Vec2i realPos = Vec2iFull2Real(pos);
-	Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
-	bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
+	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
+	const bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
+	const Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 
-	// Check collision with wall; try to limit x and y movement if still in
-	// collision in those axes
-	if (IsCollisionWallOrEdge(&gMap, realPos, size))
+	const Vec2i oldPos = actor->Pos;
+	pos = GetConstrainedFullPos(&gMap, actor->Pos, pos, size);
+	if (Vec2iEqual(oldPos, pos))
 	{
-		Vec2i realXPos, realYPos;
-		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-		if (IsCollisionWallOrEdge(&gMap, realYPos, size))
-		{
-			pos.y = actor->Pos.y;
-		}
-		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-		if (IsCollisionWallOrEdge(&gMap, realXPos, size))
-		{
-			pos.x = actor->Pos.x;
-		}
-		if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
-		{
-			// Both x-only or y-only movement are viable,
-			// i.e. we are colliding corner vs corner
-			// Arbitrarily choose x-only movement
-			pos.y = actor->Pos.y;
-		}
-		else if (pos.x == actor->Pos.x && pos.y == actor->Pos.y)
-		{
-			return 0;
-		}
+		return false;
 	}
 
-	realPos = Vec2iFull2Real(pos);
-	target = GetItemOnTileInCollision(
+	Vec2i realPos = Vec2iFull2Real(pos);
+	TTileItem *target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
 		isDogfight);
@@ -567,7 +547,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		Weapon *gun = ActorGetGun(actor);
 		if (!gun->Gun->CanShoot && actor->health > 0)
 		{
-			object = target->kind == KIND_OBJECT ?
+			const TObject *object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
 			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
 			{
@@ -623,9 +603,9 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 		realPos = Vec2iFull2Real(pos);
 		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-			IsCollisionWallOrEdge(&gMap, realPos, size))
+			IsCollisionWithWall(realPos, size))
 		{
-			return 0;
+			return false;
 		}
 	}
 
@@ -656,6 +636,100 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	}
 
 	return 1;
+}
+// Get a movement position that is constrained by collisions
+// May return a position that is the same as the 'from', that is, we cannot
+// move in the direction specified.
+// Note: must use full coordinates to do collisions, despite collisions using
+// real coordinates, because fractional movement will be blocked otherwise
+// since real coordinates are the same.
+static Vec2i GetConstrainedFullPos(
+	const Map *map, const Vec2i fromFull, const Vec2i toFull,
+	const Vec2i size)
+{
+	// Check collision with wall
+	if (!IsCollisionWithWall(Vec2iFull2Real(toFull), size))
+	{
+		// Not in collision; just return where we wanted to go
+		return toFull;
+	}
+	
+	CASSERT(size.x >= size.y, "tall collision not supported");
+	const int xScale =
+		size.x > size.y ? (int)ceil((double)size.x / size.y) : 1;
+	const Vec2i dv = Vec2iMinus(toFull, fromFull);
+
+	// If moving diagonally, use rectangular bounds and
+	// try to move in only x or y directions
+	if (dv.x != 0 && dv.y != 0)
+	{
+		// X-only movement
+		const Vec2i xVec = Vec2iNew(toFull.x, fromFull.y);
+		if (!IsCollisionWithWall(Vec2iFull2Real(xVec), size))
+		{
+			return xVec;
+		}
+		// Y-only movement
+		const Vec2i yVec = Vec2iNew(fromFull.x, toFull.y);
+		if (!IsCollisionWithWall(Vec2iFull2Real(yVec), size))
+		{
+			return yVec;
+		}
+		// If we're still stuck, we're possibly stuck on a corner which is not
+		// in collision with a diamond but is colliding with the box.
+		// If so try x- or y-only movement, but with the benefit of diamond
+		// slipping.
+		const Vec2i xPos = GetConstrainedFullPos(map, fromFull, xVec, size);
+		if (!Vec2iEqual(xPos, fromFull))
+		{
+			return xPos;
+		}
+		const Vec2i yPos = GetConstrainedFullPos(map, fromFull, yVec, size);
+		if (!Vec2iEqual(yPos, fromFull))
+		{
+			return yPos;
+		}
+	}
+
+	// Now check diagonal movement, if we were moving in an x- or y-
+	// only direction
+	// Note: we're moving at extra speed because dx/dy are only magnitude 1;
+	// if we divide then we get 0 which ruins the logic
+	if (dv.x == 0)
+	{
+		// Moving up or down; try moving to the left or right diagonally
+		const Vec2i diag1Vec =
+			Vec2iAdd(fromFull, Vec2iNew(-dv.y * xScale, dv.y));
+		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag1Vec), size))
+		{
+			return diag1Vec;
+		}
+		const Vec2i diag2Vec =
+			Vec2iAdd(fromFull, Vec2iNew(dv.y * xScale, dv.y));
+		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag2Vec), size))
+		{
+			return diag2Vec;
+		}
+	}
+	else if (dv.y == 0)
+	{
+		// Moving left or right; try moving up or down diagonally
+		const Vec2i diag1Vec =
+			Vec2iAdd(fromFull, Vec2iNew(dv.x, -dv.x));
+		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag1Vec), size))
+		{
+			return diag1Vec;
+		}
+		const Vec2i diag2Vec =
+			Vec2iAdd(fromFull, Vec2iNew(dv.x, dv.x));
+		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag2Vec), size))
+		{
+			return diag2Vec;
+		}
+	}
+
+	// All alternative movements are in collision; don't move
+	return fromFull;
 }
 
 void ActorHeal(TActor *actor, int health)
@@ -953,7 +1027,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		}
 	}
 
-	if (!Vec2iIsZero(actor->MovePos))
+	if (!Vec2iEqual(actor->Pos, actor->MovePos))
 	{
 		TryMoveActor(actor, actor->MovePos);
 		actor->MovePos = Vec2iZero();
