@@ -292,12 +292,10 @@ void FreeSongs(struct SongDef **songList)
 
 void LoadSongs(void)
 {
-#ifndef __GCWZERO__
 	debug(D_NORMAL, "loading game music %s\n", CDOGS_GAME_MUSIC_DIR);
 	LoadSongList(&gGameSongs, CDOGS_GAME_MUSIC_DIR);
 	debug(D_NORMAL, "loading menu music %s\n", CDOGS_MENU_MUSIC_DIR);
 	LoadSongList(&gMenuSongs, CDOGS_MENU_MUSIC_DIR);
-#endif
 }
 
 void LoadSongList(struct SongDef **songList, const char *dirPath)
@@ -324,6 +322,12 @@ void LoadSongList(struct SongDef **songList, const char *dirPath)
 		if (!file.is_reg)
 		{
 			debug(D_VERBOSE, "not a regular file %s\n", file.name);
+			continue;
+		}
+		if (strcmp(file.extension, "txt") == 0 ||
+			strcmp(file.extension, "TXT") == 0)
+		{
+			debug(D_VERBOSE, "Skipping text file %s\n", file.name);
 			continue;
 		}
 
