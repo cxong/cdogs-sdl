@@ -547,7 +547,7 @@ bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos)
 	mData.m = m;
 	mData.mask = mask;
 	data.data = &mData;
-	return FloodFill(pos, &data);
+	return CFloodFill(pos, &data);
 }
 static void MissionFillTile(void *data, Vec2i v)
 {

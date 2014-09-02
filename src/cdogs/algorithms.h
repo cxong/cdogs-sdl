@@ -55,6 +55,6 @@ typedef struct
 	bool (*IsSame)(void *, Vec2i);
 	void *data;
 } FloodFillData;
-bool FloodFill(Vec2i v, FloodFillData *data);
+bool CFloodFill(Vec2i v, FloodFillData *data);
 
 #endif

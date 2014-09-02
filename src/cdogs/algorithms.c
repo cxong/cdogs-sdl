@@ -276,15 +276,15 @@ void XiaolinWuLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
 	XiaolinWuLine(from, to, &bData);
 }
 
-bool FloodFill(Vec2i v, FloodFillData *data)
+bool CFloodFill(Vec2i v, FloodFillData *data)
 {
 	if (data->IsSame(data->data, v))
 	{
 		data->Fill(data->data, v);
-		FloodFill(Vec2iNew(v.x - 1, v.y), data);
-		FloodFill(Vec2iNew(v.x + 1, v.y), data);
-		FloodFill(Vec2iNew(v.x, v.y - 1), data);
-		FloodFill(Vec2iNew(v.x, v.y + 1), data);
+		CFloodFill(Vec2iNew(v.x - 1, v.y), data);
+		CFloodFill(Vec2iNew(v.x + 1, v.y), data);
+		CFloodFill(Vec2iNew(v.x, v.y - 1), data);
+		CFloodFill(Vec2iNew(v.x, v.y + 1), data);
 		return true;
 	}
 	return false;

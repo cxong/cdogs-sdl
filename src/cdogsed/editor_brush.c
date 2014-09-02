@@ -359,7 +359,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			pData.fromType = MissionGetTile(m, b->Pos) & MAP_MASKACCESS;
 			pData.toType = b->PaintType;
 			data.data = &pData;
-			if (FloodFill(b->Pos, &data))
+			if (CFloodFill(b->Pos, &data))
 			{
 				return EDITOR_RESULT_CHANGED;
 			}

@@ -58,7 +58,9 @@
 
 #include <tinydir/tinydir.h>
 
+#include "algorithms.h"
 #include "files.h"
+#include "map.h"
 #include "music.h"
 #include "vector.h"
 
@@ -318,6 +320,11 @@ void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
 	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
+#define OUT_OF_SIGHT_DISTANCE_PLUS 200
+static bool IsPosNoSee(void *data, Vec2i pos)
+{
+	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
+}
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
 	const Vec2i pos, const int plusDistance)
@@ -353,6 +360,13 @@ void SoundPlayAtPlusDistance(
 	origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
 	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
+	HasClearLineData lineData;
+	lineData.IsBlocked = IsPosNoSee;
+	lineData.data = &gMap;
+	if (!HasClearLineXiaolinWu(pos, origin, &lineData))
+	{
+		distance += OUT_OF_SIGHT_DISTANCE_PLUS;
+	}
 	SoundPlayAtPosition(&gSoundDevice, data, distance + plusDistance, bearing);
 }
 
