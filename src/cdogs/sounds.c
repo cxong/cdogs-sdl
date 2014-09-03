@@ -229,12 +229,31 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 	CArrayTerminate(&device->customSounds);
 }
 
-void SoundPlayAtPosition(
-	SoundDevice *device, Mix_Chunk *data, int distance, int bearing)
+#define OUT_OF_SIGHT_DISTANCE_PLUS 200
+static void MuffleEffect(int chan, void *stream, int len, void *udata)
+{
+	UNUSED(chan);
+	UNUSED(udata);
+	const int channels = 2;
+	const int chunk = channels * 2;
+	for (int i = 0; i < len / chunk - 2; i++)
+	{
+		int16_t *samples = (int16_t *)((char *)stream + i * chunk);
+		samples[0] = (samples[0] + samples[2] + samples[4]) / 3;
+		samples[1] = (samples[1] + samples[3] + samples[5]) / 3;
+	}
+}
+static void SoundPlayAtPosition(
+	SoundDevice *device, Mix_Chunk *data, int distance, int bearing,
+	const bool isMuffled)
 {
 	if (data == NULL)
 	{
 		return;
+	}
+	if (isMuffled)
+	{
+		distance += OUT_OF_SIGHT_DISTANCE_PLUS;
 	}
 	distance /= 2;
 	// Don't play anything if it's too distant
@@ -268,6 +287,13 @@ void SoundPlayAtPosition(
 		}
 	}
 	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
+	if (isMuffled)
+	{
+		if (!Mix_RegisterEffect(channel, MuffleEffect, NULL, NULL))
+		{
+			fprintf(stderr, "Mix_RegisterEffect: %s\n", Mix_GetError());
+		}
+	}
 }
 
 void SoundPlay(SoundDevice *device, Mix_Chunk *data)
@@ -277,7 +303,7 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 		return;
 	}
 
-	SoundPlayAtPosition(device, data, 0, 0);
+	SoundPlayAtPosition(device, data, 0, 0, false);
 }
 
 
@@ -320,7 +346,6 @@ void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
 	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
-#define OUT_OF_SIGHT_DISTANCE_PLUS 200
 static bool IsPosNoSee(void *data, Vec2i pos)
 {
 	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
@@ -363,11 +388,13 @@ void SoundPlayAtPlusDistance(
 	HasClearLineData lineData;
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
+	bool isMuffled = false;
 	if (!HasClearLineXiaolinWu(pos, origin, &lineData))
 	{
-		distance += OUT_OF_SIGHT_DISTANCE_PLUS;
+		isMuffled = true;
 	}
-	SoundPlayAtPosition(&gSoundDevice, data, distance + plusDistance, bearing);
+	SoundPlayAtPosition(
+		&gSoundDevice, data, distance + plusDistance, bearing, isMuffled);
 }
 
 Mix_Chunk *StrSound(const char *s)
