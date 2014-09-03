@@ -177,11 +177,11 @@ static int AICoopGetCmdNormal(TActor *actor)
 			const int distanceSquared = DistanceSquared(
 				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos));
 			const bool canFire = ActorGetGun(actor)->lock <= 0;
-			if (distanceSquared > gunRange * gunRange * 3 / 4)
+			if (distanceSquared > gunRange * gunRange * 3 * 3 / 4 / 4)
 			{
 				// Move towards the enemy, fire if able
 				// But don't bother firing if too far away
-				if (canFire && distanceSquared < gunRange * gunRange * 2)
+				if (canFire && distanceSquared < gunRange * gunRange * 2 * 2)
 				{
 					cmd = AIHunt(actor, closestEnemy->Pos) | CMD_BUTTON1;
 				}
