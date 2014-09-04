@@ -77,11 +77,14 @@ static void CampaignIntroDraw(void *data)
 
 	// Display campaign description
 	// allow some slack for newlines
-	CMALLOC(buf, strlen(c->Description) * 2);
-	// Pad about 1/6th of the screen width total (1/12th left and right)
-	FontSplitLines(c->Description, buf, w * 5 / 6);
-	FontStr(buf, Vec2iNew(w / 12, y));
-	CFREE(buf);
+	if (strlen(c->Description) > 0)
+	{
+		CMALLOC(buf, strlen(c->Description) * 2);
+		// Pad about 1/6th of the screen width total (1/12th left and right)
+		FontSplitLines(c->Description, buf, w * 5 / 6);
+		FontStr(buf, Vec2iNew(w / 12, y));
+		CFREE(buf);
+	}
 }
 
 typedef struct
