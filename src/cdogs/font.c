@@ -383,7 +383,7 @@ void FontSplitLines(const char *text, char *buf, const int width)
 		const char *p;
 		for (w = 0, p = ws; p < s; p++)
 		{
-			w += FontW(*p) + 1;
+			w += FontW(*p);
 		}
 
 		// Create new line if text too wide
@@ -396,13 +396,13 @@ void FontSplitLines(const char *text, char *buf, const int width)
 		
 		for (p = ws; p < word; p++)
 		{
-			x += FontW(*p) + 1;
+			x += FontW(*p);
 		}
 
 		for (p = word; p < s; p++)
 		{
 			*buf++ = *p;
-			x += FontW(*p) + 1;
+			x += FontW(*p);
 		}
 	}
 	*buf = '\0';
