@@ -119,41 +119,45 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i size)
 
 	// Only support wider-than-taller collision diamonds for now
 	CASSERT(size.x >= size.y, "not implemented, taller than wider diamond");
-	const int radius = size.x;
+	const double gradient = (double)size.y / size.x;
 
 	// Now we need to check in a diamond pattern that the boundary does not
 	// collide
 	// Top to right
-	for (int i = 0; i < radius; i++)
+	for (int i = 0; i < size.x; i++)
 	{
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(i, -radius + i));
+		const int y = (int)Round((-size.x + i)* gradient);
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
 		}
 	}
 	// Right to bottom
-	for (int i = 0; i < radius; i++)
+	for (int i = 0; i < size.x; i++)
 	{
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(radius - i, i));
+		const int y = (int)Round(i * gradient);
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(size.x - i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
 		}
 	}
 	// Bottom to left
-	for (int i = 0; i < radius; i++)
+	for (int i = 0; i < size.x; i++)
 	{
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-i, radius - i));
+		const int y = (int)Round((size.x - i) * gradient);
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
 		}
 	}
 	// Left to top
-	for (int i = 0; i < radius; i++)
+	for (int i = 0; i < size.x; i++)
 	{
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-radius + i, -i));
+		const int y = (int)Round(-i * gradient);
+		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-size.x + i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;

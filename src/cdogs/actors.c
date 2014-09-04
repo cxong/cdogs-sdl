@@ -655,8 +655,6 @@ static Vec2i GetConstrainedFullPos(
 	}
 	
 	CASSERT(size.x >= size.y, "tall collision not supported");
-	const int xScale =
-		size.x > size.y ? (int)ceil((double)size.x / size.y) : 1;
 	const Vec2i dv = Vec2iMinus(toFull, fromFull);
 
 	// If moving diagonally, use rectangular bounds and
@@ -698,6 +696,10 @@ static Vec2i GetConstrainedFullPos(
 	if (dv.x == 0)
 	{
 		// Moving up or down; try moving to the left or right diagonally
+		// Scale X movement because our diamond is wider than tall, so we
+		// may need to scale the diamond wider.
+		const int xScale =
+			size.x > size.y ? (int)ceil((double)size.x / size.y) : 1;
 		const Vec2i diag1Vec =
 			Vec2iAdd(fromFull, Vec2iNew(-dv.y * xScale, dv.y));
 		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag1Vec), size))
