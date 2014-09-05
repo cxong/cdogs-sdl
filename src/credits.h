@@ -29,6 +29,11 @@
 #ifndef __credits
 #define __credits
 
+#ifdef __MINGW32__
+// MinGW time bug
+// http://stackoverflow.com/questions/21015113/difftime-returns-incorrect-value-in-mingw
+#define _USE_32BIT_TIME_T 1
+#endif
 #include <time.h>
 
 #include <cdogs/c_array.h>
