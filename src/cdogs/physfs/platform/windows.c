@@ -47,10 +47,10 @@
     if (str == NULL) \
         w_assignto = NULL; \
     else { \
-        const PHYSFS_uint64 len = (PHYSFS_uint64) ((strlen(str) + 1) * 2); \
-        w_assignto = (WCHAR *) __PHYSFS_smallAlloc(len); \
+        const PHYSFS_uint64 _len = (PHYSFS_uint64) ((strlen(str) + 1) * 2); \
+        w_assignto = (WCHAR *) __PHYSFS_smallAlloc(_len); \
         if (w_assignto != NULL) \
-            PHYSFS_utf8ToUcs2(str, (PHYSFS_uint16 *) w_assignto, len); \
+            PHYSFS_utf8ToUcs2(str, (PHYSFS_uint16 *) w_assignto, _len); \
     } \
 } \
 
@@ -711,11 +711,11 @@ void __PHYSFS_platformEnumerateFiles(const char *dirname,
         dir = pFindFirstFileW(wSearchPath, &entw);
     else
     {
-        const int len = (int) (wStrLen(wSearchPath) + 1);
-        char *cp = (char *) __PHYSFS_smallAlloc(len);
+        const int len1 = (int) (wStrLen(wSearchPath) + 1);
+		char *cp = (char *)__PHYSFS_smallAlloc(len1);
         if (cp != NULL)
         {
-            WideCharToMultiByte(CP_ACP, 0, wSearchPath, len, cp, len, 0, 0);
+			WideCharToMultiByte(CP_ACP, 0, wSearchPath, len1, cp, len1, 0, 0);
             dir = FindFirstFileA(cp, &ent);
             __PHYSFS_smallFree(cp);
         } /* if */
@@ -1379,15 +1379,15 @@ PHYSFS_sint64 __PHYSFS_platformGetLastModTime(const char *fname)
     if (retval == -1)  /* try a fallback... */
     {
         FILETIME ft;
-        BOOL rc;
+        BOOL rc1;
         const char *err;
         WinApiFile *f = (WinApiFile *) __PHYSFS_platformOpenRead(fname);
         BAIL_IF_MACRO(f == NULL, NULL, -1)
-        rc = GetFileTime(f->handle, NULL, NULL, &ft);
+        rc1 = GetFileTime(f->handle, NULL, NULL, &ft);
         err = winApiStrError();
         CloseHandle(f->handle);
         allocator.Free(f);
-        BAIL_IF_MACRO(!rc, err, -1);
+        BAIL_IF_MACRO(!rc1, err, -1);
         retval = FileTimeToPhysfsTime(&ft);
     } /* if */
 
@@ -1398,6 +1398,7 @@ PHYSFS_sint64 __PHYSFS_platformGetLastModTime(const char *fname)
 /* !!! FIXME: Don't use C runtime for allocators? */
 int __PHYSFS_platformSetDefaultAllocator(PHYSFS_Allocator *a)
 {
+	(void)a;
     return(0);  /* just use malloc() and friends. */
 } /* __PHYSFS_platformSetDefaultAllocator */
 

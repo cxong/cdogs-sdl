@@ -59,11 +59,11 @@ ENDIF()
 INCLUDE_DIRECTORIES(src/cdogs/enet/include)
 
 execute_process(
-	COMMAND "sdl-config" "--libs"
+	COMMAND "sh" "sdl-config" "--libs"
 	OUTPUT_VARIABLE SDL_LDFLAGS
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(
-	COMMAND "sdl-config" "--cflags"
+	COMMAND "sh" "sdl-config" "--cflags"
 	OUTPUT_VARIABLE SDL_CFLAGS
 	OUTPUT_STRIP_TRAILING_WHITESPACE)
 # Work-around for CMake SDL bug (need to link SDLmain before SDL)
