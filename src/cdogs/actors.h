@@ -169,8 +169,11 @@ extern TranslationTable tablePurple;
 
 void ActorInit(TActor *actor);
 int GetNumPlayersAlive(void);
+int GetNumHumanPlayersAlive(void);
 bool IsPlayerAlive(int player);
+bool IsPlayerHumanAndAlive(int player);
 TActor *GetFirstAlivePlayer(void);
+TActor *GetFirstAliveHumanPlayer(void);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 

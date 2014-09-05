@@ -580,7 +580,8 @@ static int GotoObjective(TActor *actor, int objDistance)
 	const bool isDestruction =
 		objState->Type == AI_OBJECTIVE_TYPE_NORMAL && objState->IsDestructible;
 	if (!isDestruction ||
-		DistanceSquared(Vec2iFull2Real(actor->Pos), goal) > 3 * 16 * 16)
+		DistanceSquared(Vec2iFull2Real(actor->Pos), goal) > 3 * 16 * 16 ||
+		!AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
 	{
 		cmd = SmartGoto(actor, goal, objDistance);
 	}

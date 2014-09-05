@@ -143,12 +143,35 @@ int GetNumPlayersAlive(void)
 	}
 	return numPlayers;
 }
+int GetNumHumanPlayersAlive(void)
+{
+	int numPlayers = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (IsPlayerHumanAndAlive(i))
+		{
+			numPlayers++;
+		}
+	}
+	return numPlayers;
+}
 
 TActor *GetFirstAlivePlayer(void)
 {
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (IsPlayerAlive(i))
+		{
+			return CArrayGet(&gActors, gPlayerIds[i]);
+		}
+	}
+	return NULL;
+}
+TActor *GetFirstAliveHumanPlayer(void)
+{
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (IsPlayerHumanAndAlive(i))
 		{
 			return CArrayGet(&gActors, gPlayerIds[i]);
 		}
@@ -165,6 +188,12 @@ bool IsPlayerAlive(int player)
 	TActor *p = CArrayGet(&gActors, gPlayerIds[player]);
 	return !p->dead;
 }
+bool IsPlayerHumanAndAlive(int player)
+{
+	return
+		IsPlayerAlive(player) &&
+		gPlayerDatas[player].inputDevice != INPUT_DEVICE_AI;
+}
 
 Vec2i PlayersGetMidpoint(void)
 {
@@ -180,9 +209,10 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 	int isFirst = 1;
 	*min = Vec2iZero();
 	*max = Vec2iZero();
+	const bool humansOnly = GetNumHumanPlayersAlive() > 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (IsPlayerAlive(i))
+		if (humansOnly ? IsPlayerHumanAndAlive(i) : IsPlayerAlive(i))
 		{
 			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
 			TTileItem *p = &player->tileItem;

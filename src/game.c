@@ -163,9 +163,13 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	}
 	else
 	{
-		if (numPlayersAlive == 1)
+		const int numHumanPlayersAlive = GetNumHumanPlayersAlive();
+		if (numHumanPlayersAlive == 1 || numPlayersAlive == 1)
 		{
-			TActor *p = GetFirstAlivePlayer();
+			TActor *p =
+				numHumanPlayersAlive == 1 ?
+				GetFirstAliveHumanPlayer() :
+				GetFirstAlivePlayer();
 			Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
 			DoBuffer(b, center, X_TILES, noise, centerOffset);
 			SoundSetEars(center);
