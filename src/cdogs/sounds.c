@@ -348,7 +348,8 @@ void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
 
 static bool IsPosNoSee(void *data, Vec2i pos)
 {
-	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
+	const Tile *t = MapGetTile(data, Vec2iToTile(pos));
+	return t != NULL && (t->flags & MAPTILE_NO_SEE);
 }
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
