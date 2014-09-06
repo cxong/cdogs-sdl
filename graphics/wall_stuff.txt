@@ -1,0 +1,4 @@
+Adapted from paramecij's vegetation base texture pack by para
+http://opengameart.org/content/paramecijs-vegetation-base-texture-pack
+
+http://creativecommons.org/publicdomain/zero/1.0/

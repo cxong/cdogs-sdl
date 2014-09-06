@@ -76,3 +76,4 @@ tmp
 .cdogs/
 *~*.cpn
 Thumbs.db
+.config/
