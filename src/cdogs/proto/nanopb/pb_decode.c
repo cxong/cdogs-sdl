@@ -14,7 +14,9 @@
 #endif
 
 // Suppress some warnings
+#ifdef _MSC_VER
 #pragma warning (disable: 4127)
+#endif
 
 #include "pb.h"
 #include "pb_decode.h"
