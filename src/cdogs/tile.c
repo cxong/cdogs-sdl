@@ -150,3 +150,8 @@ TTileItem *ThingIdGetTileItem(ThingId *tid)
 	}
 	return ti;
 }
+
+bool TileItemIsDebris(const TTileItem *t)
+{
+	return t->flags & TILEITEM_IS_WRECK;
+}

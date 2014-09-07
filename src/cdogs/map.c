@@ -490,7 +490,7 @@ int MapTryPlaceOneObject(
 		realPos, Vec2iNew(mo->width, mo->height),
 		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic], mo->picName,
 		mo->structure,
-		oFlags, tileFlags | extraFlags);
+		oFlags, tileFlags | extraFlags | MapObjectGetWreckFlags(mo));
 	return 1;
 }
 

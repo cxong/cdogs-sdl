@@ -174,5 +174,6 @@ bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, Pic *p);
 
 TTileItem *ThingIdGetTileItem(ThingId *tid);
+bool TileItemIsDebris(const TTileItem *t);
 
 #endif

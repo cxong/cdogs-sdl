@@ -270,7 +270,7 @@ static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos)
 		{
 			// Check that the object is not a pickup type
 			TObject *o = CArrayGet(&gObjs, tid->Id);
-			if (o->Type == OBJ_NONE && !(o->tileItem.flags & TILEITEM_IS_WRECK))
+			if (o->Type == OBJ_NONE && !TileItemIsDebris(&o->tileItem))
 			{
 				return false;
 			}

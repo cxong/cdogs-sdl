@@ -61,8 +61,8 @@
 #define MAPOBJ_ONEWALL      (1 << 7)
 #define MAPOBJ_ONEWALLPLUS  (1 << 8)
 #define MAPOBJ_NOWALLS      (1 << 9)
-#define MAPOBJ_HIDEINSIDE   (1 << 10)
-#define MAPOBJ_INTERIOR     (1 << 11)
+#define MAPOBJ_HIDEINSIDE   (1 << 10)	// TODO: unused
+#define MAPOBJ_INTERIOR     (1 << 11)	// TODO: unused
 #define MAPOBJ_FLAMMABLE    (1 << 12)
 #define MAPOBJ_POISONOUS    (1 << 13)
 #define MAPOBJ_QUAKE        (1 << 14)
@@ -88,6 +88,7 @@ MapObject *MapObjectGet(int item);
 int MapObjectGetCount(void);
 int MapObjectGetDestructibleCount(void);
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset);
+int MapObjectGetWreckFlags(const MapObject *mo);
 
 int MapObjectIsTileOK(
 	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove);

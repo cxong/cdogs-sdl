@@ -56,6 +56,7 @@
 #include "config.h"
 #include "drawtools.h"
 #include "font.h"
+#include "objs.h"
 #include "pics.h"
 #include "draw.h"
 #include "blit.h"
@@ -222,9 +223,9 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			}
 			for (int i = 0; i < (int)tile->things.size; i++)
 			{
-				TTileItem *ti =
+				const TTileItem *ti =
 					ThingIdGetTileItem(CArrayGet(&tile->things, i));
-				if (ti->flags & TILEITEM_IS_WRECK)
+				if (TileItemIsDebris(ti))
 				{
 					CArrayPushBack(&b->displaylist, &ti);
 				}
@@ -233,8 +234,8 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 		DrawBufferSortDisplayList(b);
 		for (int i = 0; i < (int)b->displaylist.size; i++)
 		{
-			TTileItem **tp = CArrayGet(&b->displaylist, i);
-			TTileItem *t = *tp;
+			const TTileItem **tp = CArrayGet(&b->displaylist, i);
+			const TTileItem *t = *tp;
 			Vec2i pos = Vec2iNew(
 				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
 			if (t->CPicFunc)
@@ -257,7 +258,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 	}
 }
 
-static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset);
+static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
 	Vec2i pos;
@@ -286,24 +287,28 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 					GetTileLOSMask(tile),
 					0);
 			}
-			if (!(tile->flags & MAPTILE_OUT_OF_SIGHT))
+
+			// Draw the items that are in LOS
+			if (tile->flags & MAPTILE_OUT_OF_SIGHT)
 			{
-				// Draw the items that are in LOS
-				for (int i = 0; i < (int)tile->things.size; i++)
+				continue;
+			}
+			for (int i = 0; i < (int)tile->things.size; i++)
+			{
+				const TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+				// Don't draw debris, they are drawn later
+				if (TileItemIsDebris(ti))
 				{
-					TTileItem *ti =
-						ThingIdGetTileItem(CArrayGet(&tile->things, i));
-					if (!(ti->flags & TILEITEM_IS_WRECK))
-					{
-						CArrayPushBack(&b->displaylist, &ti);
-					}
+					continue;
 				}
+				CArrayPushBack(&b->displaylist, &ti);
 			}
 		}
 		DrawBufferSortDisplayList(b);
 		for (int i = 0; i < (int)b->displaylist.size; i++)
 		{
-			TTileItem **tp = CArrayGet(&b->displaylist, i);
+			const TTileItem **tp = CArrayGet(&b->displaylist, i);
 			DrawThing(b, *tp, offset);
 		}
 		tile += X_TILES - b->Size.x;
@@ -311,7 +316,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 }
 static void DrawActorPics(
 	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos);
-static void DrawThing(DrawBuffer *b, TTileItem *t, const Vec2i offset)
+static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);

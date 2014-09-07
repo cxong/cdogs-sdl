@@ -64,7 +64,7 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
 	b->g = g;
-	CArrayInit(&b->displaylist, sizeof(TTileItem *));
+	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
 	CArrayReserve(&b->displaylist, 32);
 	debug(D_MAX, "Initialised draw buffer %dx%d\n", size.x, size.y);
 }

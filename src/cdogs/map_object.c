@@ -146,6 +146,19 @@ defaultPic:
 	return pic;
 }
 
+// Hack to make sure the map objects get added with the right wreck flags
+// Wrecks are considered debris and drawn last; this is useful for objects that
+// are on the ground.
+int MapObjectGetWreckFlags(const MapObject *mo)
+{
+	if (!(mo->flags & MAPOBJ_ON_WALL) && mo->width == 0 && mo->height == 0)
+	{
+		return TILEITEM_IS_WRECK;
+	}
+	return 0;
+}
+
+
 int MapObjectIsTileOK(
 	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove)
 {

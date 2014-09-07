@@ -60,7 +60,7 @@ typedef struct
 	Vec2i OrigSize;
 	Vec2i Size;	// size in tiles
 	Tile **tiles;
-	CArray displaylist;	// of TTileItem *, to determine draw order
+	CArray displaylist;	// of const TTileItem *, to determine draw order
 } DrawBuffer;
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g);
