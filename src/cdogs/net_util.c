@@ -32,13 +32,6 @@
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode)
 {
-	const uint8_t *s = def->Path;
-	char *d = outPath;
-	while (*s)
-	{
-		*d++ = *s++;
-	}
-	*d = '\0';
-
+	strcpy(outPath, def->Path);
 	*outMode = def->CampaignMode;
 }

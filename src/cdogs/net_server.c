@@ -30,6 +30,8 @@
 
 #include <string.h>
 
+#include "proto/client.pb.h"
+
 #include "campaign_entry.h"
 #include "sys_config.h"
 #include "utils.h"
@@ -124,8 +126,8 @@ void NetServerPoll(NetServer *n)
 							CASSERT(
 								event.packet->dataLength == NET_MSG_SIZE + sizeof *nc,
 								"unexpected packet size");
-							n->Cmd = nc->cmd;
-							debug(D_VERBOSE, "NetServer: receive %d", nc->cmd);
+							n->Cmd = nc->Cmd;
+							debug(D_VERBOSE, "NetServer: receive %d", nc->Cmd);
 						}
 						break;
 					default:

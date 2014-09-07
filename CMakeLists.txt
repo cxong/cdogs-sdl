@@ -88,6 +88,8 @@ if(${SDLMAIN_INDEX} GREATER ${SDL_INDEX})
 	list(INSERT SDL_LIBRARY ${SDL_INDEX} ${SDLMAIN_LIBRARY})
 endif()
 
+add_definitions(-DPB_FIELD_16BIT)	# Allow larger field numbers in nanopb
+include_directories(src/cdogs/proto/nanopb)
 if(MSVC)
 	ADD_DEFINITIONS(-W4 -WX -wd"4996")
 else()

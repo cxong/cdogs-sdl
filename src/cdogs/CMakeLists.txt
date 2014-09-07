@@ -155,6 +155,21 @@ set(HQX_SOURCES
 set(HQX_HEADERS
 	hqx/src/common.h
 	hqx/src/hqx.h)
+set(NANOPB_SOURCES
+	proto/client.pb.c
+	proto/server.pb.c
+    proto/nanopb/pb_common.c
+    proto/nanopb/pb_decode.c
+    proto/nanopb/pb_encode.c
+)
+set(NANOPB_HEADERS
+	proto/client.pb.h
+	proto/server.pb.h
+    proto/nanopb/pb.h
+    proto/nanopb/pb_common.h
+    proto/nanopb/pb_decode.h
+    proto/nanopb/pb_encode.h
+)
 
 # Configure and include PhysFS
 set(PHYSFS_ARCHIVE_7Z FALSE CACHE BOOL "Disable 7Z")
@@ -170,4 +185,10 @@ add_subdirectory(physfs)
 # enet
 ADD_SUBDIRECTORY(enet)
 
-add_library(cdogs STATIC ${CDOGS_SOURCES} ${CDOGS_HEADERS} ${HQX_SOURCES} ${HQX_HEADERS})
+# proto
+include_directories(proto/nanopb)
+
+add_library(cdogs STATIC
+	${CDOGS_SOURCES} ${CDOGS_HEADERS}
+	${HQX_SOURCES} ${HQX_HEADERS}
+	${NANOPB_SOURCES} ${NANOPB_HEADERS})

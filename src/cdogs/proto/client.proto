@@ -1,0 +1,3 @@
+message NetMsgCmd {
+    required uint32 Cmd = 1;
+}

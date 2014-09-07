@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "proto/client.pb.h"
 #include "net_server.h"
 #include "utils.h"
 
@@ -188,7 +189,7 @@ void NetClientSend(NetClient *n, int cmd)
 	}
 
 	NetMsgCmd nc;
-	nc.cmd = cmd;
+	nc.Cmd = cmd;
 	ClientMsg msg = CLIENT_MSG_CMD;
 	ENetPacket *packet = enet_packet_create(
 		&msg, NET_MSG_SIZE + sizeof nc, ENET_PACKET_FLAG_RELIABLE);

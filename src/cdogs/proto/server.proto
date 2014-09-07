@@ -1,0 +1,8 @@
+message NetMsgCampaignDef {
+	required string Path = 1;
+	required uint32 CampaignMode = 2;
+}
+
+message NetMsgPlayerId {
+	required uint32 Id = 1;
+}

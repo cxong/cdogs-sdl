@@ -34,6 +34,8 @@
 
 #include <enet/enet.h>
 
+#include "proto/server.pb.h"
+
 #include "sys_config.h"
 #include "utils.h"
 
@@ -57,11 +59,6 @@ typedef enum
 	CLIENT_MSG_CMD
 } ClientMsg;
 
-typedef struct
-{
-	uint32_t cmd;
-} NetMsgCmd;
-
 // Game events (server to client)
 typedef enum
 {
@@ -70,17 +67,6 @@ typedef enum
 	SERVER_MSG_PLAYER_DATA,
 	SERVER_MSG_GAME_START
 } ServerMsg;
-
-typedef struct
-{
-	uint8_t Path[CDOGS_PATH_MAX];
-	uint32_t CampaignMode;
-} NetMsgCampaignDef;
-
-typedef struct
-{
-	uint32_t Id;
-} NetMsgPlayerId;
 
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode);
