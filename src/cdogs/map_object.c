@@ -128,7 +128,8 @@ Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset)
 {
 	const TOffsetPic *ofpic = &cGeneralPics[mo->pic];
 	Pic *pic;
-	if (!mo->picName || mo->picName[0] == '\0')
+	if (!mo->picName || mo->picName[0] == '\0' ||
+		gConfig.Graphics.OriginalPics)
 	{
 		goto defaultPic;
 	}

@@ -420,6 +420,7 @@ void ConfigLoadDefault(Config *config)
 #endif
 	config->Graphics.ShakeMultiplier = 1;
 	config->Graphics.ScaleMode = SCALE_MODE_NN;
+	config->Graphics.OriginalPics = false;
 	config->Graphics.IsEditor = 0;
 	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
 	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;

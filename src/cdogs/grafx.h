@@ -75,6 +75,9 @@ typedef struct
 	int ShakeMultiplier;
 	ScaleMode ScaleMode;
 
+	// Whether to force the usage of original C-Dogs pics
+	bool OriginalPics;
+
 	int IsEditor;
 } GraphicsConfig;
 

@@ -120,6 +120,7 @@ static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)
 	LoadInt(&config->ScaleFactor, node, "ScaleFactor");
 	LoadInt(&config->ShakeMultiplier, node, "ShakeMultiplier");
 	JSON_UTILS_LOAD_ENUM(config->ScaleMode, node, "ScaleMode", StrScaleMode);
+	LoadBool(&config->OriginalPics, node, "OriginalPics");
 }
 static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 {
@@ -132,6 +133,8 @@ static void AddGraphicsConfigNode(GraphicsConfig *config, json_t *root)
 	AddIntPair(subConfig, "ScaleFactor", config->ScaleFactor);
 	AddIntPair(subConfig, "ShakeMultiplier", config->ShakeMultiplier);
 	JSON_UTILS_ADD_ENUM_PAIR(subConfig, "ScaleMode", config->ScaleMode, ScaleModeStr);
+	json_insert_pair_into_object(
+		subConfig, "OriginalPics", json_new_bool(config->OriginalPics));
 	json_insert_pair_into_object(root, "Graphics", subConfig);
 }
 
