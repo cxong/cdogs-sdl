@@ -42,7 +42,7 @@
 #endif
 
 #ifdef _MSC_VER
-#define HOME_DIR_ENV "UserProfile"
+#define HOME_DIR_ENV "AppData"
 #else
 #define HOME_DIR_ENV "HOME"
 #endif
