@@ -302,7 +302,12 @@ static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos)
 }
 static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
 {
-	int tileFlags = MapGetTile(map, pos)->flags;
+	const Tile *tile = MapGetTile(map, pos);
+	if (tile == NULL)
+	{
+		return false;
+	}
+	const int tileFlags = tile->flags;
 	if (!(tileFlags & MAPTILE_NO_WALK))
 	{
 		return true;
