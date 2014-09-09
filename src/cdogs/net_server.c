@@ -33,6 +33,7 @@
 #include "proto/client.pb.h"
 
 #include "campaign_entry.h"
+#include "gamedata.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -222,10 +223,26 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		}
 	case SERVER_MSG_PLAYER_DATA:
 		{
+			NetMsgPlayerData d;
 			const struct PlayerData *pData = data;
-			// TODO: send
-			UNUSED(pData);
-			return NULL;
+			strcpy(d.Name, pData->name);
+			d.Looks.Face = pData->looks.face;
+			d.Looks.Skin = pData->looks.skin;
+			d.Looks.Arm = pData->looks.arm;
+			d.Looks.Body = pData->looks.body;
+			d.Looks.Leg = pData->looks.leg;
+			d.Looks.Hair = pData->looks.hair;
+			d.Weapons_count = (pb_size_t)pData->weaponCount;
+			for (int i = 0; i < (int)d.Weapons_count; i++)
+			{
+				strcpy(d.Weapons[i], pData->weapons[i]->name);
+			}
+			d.Score = pData->score;
+			d.TotalScore = pData->totalScore;
+			d.Kills = pData->kills;
+			d.Friendlies = pData->friendlies;
+			d.PlayerIndex = pData->playerIndex;
+			return MakePacketImpl(msg, &d, sizeof d);
 		}
 	case SERVER_MSG_GAME_START:
 		return MakePacketImpl(msg, NULL, 0);

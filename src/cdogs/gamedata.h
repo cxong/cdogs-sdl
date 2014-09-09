@@ -71,13 +71,15 @@ struct PlayerData
 
 	int score;
 	int totalScore;
+	int kills;
+	int friendlies;
+
+	// Used for end-of-game score tallying
 	int survived;
 	int hp;
 	int missions;
 	int lastMission;
 	int allTime, today;
-	int kills;
-	int friendlies;
 
 	input_device_e inputDevice;
 	int deviceIndex;

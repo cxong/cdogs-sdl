@@ -6,3 +6,22 @@ message NetMsgCampaignDef {
 message NetMsgPlayerId {
 	required uint32 Id = 1;
 }
+
+message NetMsgPlayerData {
+	required string Name = 1;
+	message CharLooks {
+		required int32 Face = 1;
+		required int32 Skin = 2;
+		required int32 Arm = 3;
+		required int32 Body = 4;
+		required int32 Leg = 5;
+		required int32 Hair = 6;
+	}
+	required CharLooks Looks = 2;
+	repeated string Weapons = 3;
+	required int32 Score = 4;
+	required int32 TotalScore = 5;
+	required int32 Kills = 6;
+	required int32 Friendlies = 7;
+	required int32 PlayerIndex = 8;
+}

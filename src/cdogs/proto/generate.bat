@@ -1,0 +1,1 @@
+protoc --nanopb_out=. client.proto server.proto
