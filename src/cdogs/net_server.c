@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "proto/nanopb/pb_encode.h"
 #include "proto/client.pb.h"
 
 #include "campaign_entry.h"
@@ -198,7 +199,8 @@ void NetServerBroadcastMsg(NetServer *n, ServerMsg msg, const void *data)
 	enet_host_flush(n->server);
 }
 
-static ENetPacket *MakePacketImpl(ServerMsg msg, const void *data, const int len);
+static ENetPacket *MakePacketImpl(
+	ServerMsg msg, const void *data, const pb_field_t fields[]);
 static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 {
 	switch (msg)
@@ -213,13 +215,13 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 				strcpy((char *)def.Path, entry->Path);
 			}
 			def.CampaignMode = entry->Mode;
-			return MakePacketImpl(msg, &def, sizeof def);
+			return MakePacketImpl(msg, &def, NetMsgCampaignDef_fields);
 		}
 	case SERVER_MSG_PLAYER_ID:
 		{
 			NetMsgPlayerId pid;
 			pid.Id = *(const int *)data;
-			return MakePacketImpl(msg, &pid, sizeof pid);
+			return MakePacketImpl(msg, &pid, NetMsgPlayerId_fields);
 		}
 	case SERVER_MSG_PLAYER_DATA:
 		{
@@ -242,7 +244,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			d.Kills = pData->kills;
 			d.Friendlies = pData->friendlies;
 			d.PlayerIndex = pData->playerIndex;
-			return MakePacketImpl(msg, &d, sizeof d);
+			return MakePacketImpl(msg, &d, NetMsgPlayerData_fields);
 		}
 	case SERVER_MSG_GAME_START:
 		return MakePacketImpl(msg, NULL, 0);
@@ -251,10 +253,15 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		return NULL;
 	}
 }
-static ENetPacket *MakePacketImpl(ServerMsg msg, const void *data, const int len)
+static ENetPacket *MakePacketImpl(
+	ServerMsg msg, const void *data, const pb_field_t fields[])
 {
+	uint8_t buffer[1024];
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
+	bool status = pb_encode(&stream, fields, data);
+	CASSERT(status, "Failed to encode pb");
 	ENetPacket *packet = enet_packet_create(
-		&msg, NET_MSG_SIZE + len, ENET_PACKET_FLAG_RELIABLE);
-	memcpy(packet->data + NET_MSG_SIZE, data, len);
+		&msg, NET_MSG_SIZE + stream.bytes_written, ENET_PACKET_FLAG_RELIABLE);
+	memcpy(packet->data + NET_MSG_SIZE, buffer, stream.bytes_written);
 	return packet;
 }

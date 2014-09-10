@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "proto/nanopb/pb_decode.h"
 #include "proto/client.pb.h"
 #include "net_server.h"
 #include "utils.h"
@@ -101,6 +102,8 @@ bail:
 	NetClientTerminate(n);
 }
 
+static bool DecodeMessage(
+	ENetPacket *packet, void *dest, const pb_field_t *fields);
 bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def)
 {
 	if (!n->client || !n->peer)
@@ -116,37 +119,33 @@ bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def)
 		printf("Connection error %d\n", check);
 		return false;
 	}
-	else if (check > 0)
-	{
-		bool success = false;
-		switch (event.type)
-		{
-		case ENET_EVENT_TYPE_RECEIVE:
-			{
-				uint32_t msgType = *(uint32_t *)event.packet->data;
-				switch (msgType)
-				{
-				case SERVER_MSG_CAMPAIGN_DEF:
-					memcpy(def, event.packet->data + NET_MSG_SIZE, sizeof *def);
-					success = true;
-					break;
-				default:
-					printf("Unexpected message type %u\n", msgType);
-					break;
-				}
-				enet_packet_destroy(event.packet);
-			}
-			break;
-		default:
-			printf("Unexpected event type %d\n", event.type);
-			break;
-		}
-		return success;
-	}
-	else
+	else if (check == 0)
 	{
 		return false;
 	}
+	if (event.type != ENET_EVENT_TYPE_RECEIVE)
+	{
+		printf("Unexpected event type %d\n", event.type);
+		return false;
+	}
+	uint32_t msgType = *(uint32_t *)event.packet->data;
+	if (msgType != SERVER_MSG_CAMPAIGN_DEF)
+	{
+		printf("Unexpected message type %u\n", msgType);
+		return false;
+	}
+	DecodeMessage(event.packet, def, NetMsgCampaignDef_fields);
+	return true;
+}
+static bool DecodeMessage(
+	ENetPacket *packet, void *dest, const pb_field_t *fields)
+{
+	pb_istream_t stream = pb_istream_from_buffer(
+		packet->data + NET_MSG_SIZE, packet->dataLength - NET_MSG_SIZE);
+	bool status = pb_decode(&stream, fields, dest);
+	CASSERT(status, "Failed to decode pb");
+	enet_packet_destroy(packet);
+	return status;
 }
 
 void NetClientPoll(NetClient *n)
