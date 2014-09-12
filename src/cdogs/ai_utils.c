@@ -184,7 +184,7 @@ Vec2i AIGetClosestPlayerPos(Vec2i pos)
 	}
 	else
 	{
-		return pos;
+		return Vec2iFull2Real(pos);
 	}
 }
 
