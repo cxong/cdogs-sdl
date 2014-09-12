@@ -387,7 +387,7 @@ static void DrawActorPics(
 				&gPicManager, pics.OldPics[i]);
 			if (oldPic == NULL)
 			{
-				return;
+				continue;
 			}
 			DrawBTPic(
 				&gGraphicsDevice,
