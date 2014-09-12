@@ -1109,7 +1109,7 @@ static void MissionChangeType(void *data, int d)
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(1, co, &gMission);
 	memset(&map, 0, sizeof map);
-	MapLoad(&map, &gMission, &co->Setting.characters);
+	MapLoad(&map, &gMission, co, &co->Setting.characters);
 	MissionConvertToType(gMission.missionData, &map, type);
 }
 static void MissionChangeWallStyle(void *data, int d)

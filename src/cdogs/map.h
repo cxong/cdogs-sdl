@@ -51,6 +51,7 @@
 
 #include <stdbool.h>
 
+#include "campaigns.h"
 #include "map_object.h"
 #include "mission.h"
 #include "pic.h"
@@ -120,7 +121,9 @@ void MapRemoveTileItem(Map *map, TTileItem *t);
 
 void MapInit(Map *map);
 void MapTerminate(Map *map);
-void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store);
+void MapLoad(
+	Map *map, struct MissionOptions *mo, const CampaignOptions* co,
+	CharacterStore *store);
 bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles);
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
 void MapShowExitArea(Map *map);

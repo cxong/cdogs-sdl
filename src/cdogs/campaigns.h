@@ -77,7 +77,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
 
 Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
-void CampaignSeedRandom(CampaignOptions *campaign);
+void CampaignSeedRandom(const CampaignOptions *campaign);
 
 void CampaignAndMissionSetup(
 	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo);

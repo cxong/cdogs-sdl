@@ -247,7 +247,7 @@ Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
 	return CArrayGet(&campaign->Setting.Missions, campaign->MissionIndex);
 }
 
-void CampaignSeedRandom(CampaignOptions *campaign)
+void CampaignSeedRandom(const CampaignOptions *campaign)
 {
 	srand(10 * campaign->MissionIndex + campaign->seed);
 }

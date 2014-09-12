@@ -90,7 +90,7 @@ void GrafxMakeBackground(
 	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(buildTables, co, mo);
-	MapLoad(map, mo, &co->Setting.characters);
+	MapLoad(map, mo, co, &co->Setting.characters);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(map);

@@ -51,6 +51,6 @@
 
 #include "map.h"
 
-void MapClassicLoad(Map *map, Mission *m);
+void MapClassicLoad(Map *map, Mission *m, const CampaignOptions* co);
 
 #endif

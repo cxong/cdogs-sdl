@@ -285,8 +285,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
-		MapLoad(&gMap, &gMission, &co->Setting.characters);
-		srand((unsigned int)time(NULL));
+		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		InitializeBadGuys();
 		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
 		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
@@ -398,7 +397,7 @@ void DogFight(CampaignOptions *co)
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
 		PlayerEquip(gOptions.numPlayers);
-		MapLoad(&gMap, &gMission, &co->Setting.characters);
+		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		srand((unsigned int)time(NULL));
 		InitPlayers(gOptions.numPlayers, 500, 0);
 		PlayGameSong();

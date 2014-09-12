@@ -54,6 +54,7 @@
 #include "map_build.h"
 
 
+static void MapSetupPerimeter(Map *map);
 static int MapTryBuildSquare(Map *map);
 static int MapTryBuildRoom(
 	Map *map, Mission *m, int pad,
@@ -61,7 +62,7 @@ static int MapTryBuildRoom(
 static int MapTryBuildPillar(Map *map, Mission *m, int pad);
 static int MapTryBuildWall(
 	Map *map, unsigned short tileType, int pad, int wallLength);
-void MapClassicLoad(Map *map, Mission *m)
+void MapClassicLoad(Map *map, Mission *m, const CampaignOptions* co)
 {
 	// The classic random map generator randomly attempts to place
 	// a configured number of features on the map, in order:
@@ -79,6 +80,11 @@ void MapClassicLoad(Map *map, Mission *m)
 	// Sometimes it's impossible to place features, either because
 	// they overlap with other incompatible features, or it may
 	// create inaccessible areas on the map.
+
+	// Re-seed RNG so results are consistent
+	CampaignSeedRandom(co);
+
+	MapSetupPerimeter(map);
 	
 	// place squares
 	int pad = MAX(m->u.Classic.CorridorWidth, 1);
@@ -132,6 +138,22 @@ void MapClassicLoad(Map *map, Mission *m)
 			count++;
 		}
 		i++;
+	}
+}
+
+static void MapSetupPerimeter(Map *map)
+{
+	Vec2i v;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < map->Size.x; v.x++)
+		{
+			if (v.y == 0 || v.y == map->Size.y - 1 ||
+				v.x == 0 || v.x == map->Size.x - 1)
+			{
+				IMapSet(map, v, MAP_WALL);
+			}
+		}
 	}
 }
 

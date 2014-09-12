@@ -1031,22 +1031,6 @@ static void MapSetupDoors(Map *map, int floor, int room)
 	}
 }
 
-static void MapSetupPerimeter(Map *map)
-{
-	Vec2i v;
-	for (v.y = 0; v.y < map->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < map->Size.x; v.x++)
-		{
-			if (v.y == 0 || v.y == map->Size.y - 1 ||
-				v.x == 0 || v.x == map->Size.x - 1)
-			{
-				IMapSet(map, v, MAP_WALL);
-			}
-		}
-	}
-}
-
 void MapInit(Map *map)
 {
 	memset(map, 0, sizeof *map);
@@ -1074,7 +1058,9 @@ void MapTerminate(Map *map)
 	CArrayTerminate(&map->Tiles);
 	CArrayTerminate(&map->iMap);
 }
-void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
+void MapLoad(
+	Map *map, struct MissionOptions *mo, const CampaignOptions* co,
+	CharacterStore *store)
 {
 	int i, j;
 	Mission *mission = mo->missionData;
@@ -1098,11 +1084,9 @@ void MapLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		}
 	}
 
-	MapSetupPerimeter(map);
-
 	if (mission->Type == MAPTYPE_CLASSIC)
 	{
-		MapClassicLoad(map, mission);
+		MapClassicLoad(map, mission, co);
 	}
 	else
 	{
