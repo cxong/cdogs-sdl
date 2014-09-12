@@ -592,19 +592,21 @@ void SetRange(int start, int range)
 void SetupMission(
 	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex)
 {
-	int i;
-
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
 	mo->missionData = m;
 	mo->doorPics =
 	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
 	mo->keyPics = keyStyles[abs(m->KeyStyle) % KEYSTYLE_COUNT];
-	for (i = 0; i < (int)m->Items.size; i++)
+	for (int i = 0; i < (int)m->Items.size; i++)
 	{
-		CArrayPushBack(
-			&mo->MapObjects,
-			MapObjectGet(*(int32_t *)CArrayGet(&m->Items, i)));
+		int *itemIndex = CArrayGet(&m->Items, i);
+		if (*itemIndex >= (int)mo->MapObjects.size)
+		{
+			debug(D_MAX, "Warning: unknown map object index %d", *itemIndex);
+			continue;
+		}
+		CArrayPushBack(&mo->MapObjects, MapObjectGet(*itemIndex));
 	}
 
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
