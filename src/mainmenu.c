@@ -353,10 +353,11 @@ menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));
 	MenuAddSubmenu(
 		menu,
-		MenuCreateOptionToggle(
-			"Move when shooting",
-			&gConfig.Game.MoveWhenShooting,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+		MenuCreateOptionRange(
+			"Fire and move", (int *)&gConfig.Game.FireMoveStyle,
+			FIREMOVE_STOP, FIREMOVE_STRAFE, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))FireMoveStyleStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(

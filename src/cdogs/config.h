@@ -59,13 +59,21 @@ difficulty_e StrDifficulty(const char *str);
 
 typedef enum
 {
+	FIREMOVE_STOP = 0,
+	FIREMOVE_NORMAL,
+	FIREMOVE_STRAFE
+} FireMoveStyle;
+const char *FireMoveStyleStr(FireMoveStyle s);
+FireMoveStyle StrFireMoveStyle(const char *s);
+
+typedef enum
+{
 	SWITCHMOVE_SLIDE = 0,
 	SWITCHMOVE_STRAFE,
 	SWITCHMOVE_NONE
 } SwitchMoveStyle;
-
 const char *SwitchMoveStyleStr(SwitchMoveStyle s);
-SwitchMoveStyle StrSwitchMoveStyle(const char *str);
+SwitchMoveStyle StrSwitchMoveStyle(const char *s);
 
 const char *ScaleModeStr(ScaleMode q);
 ScaleMode StrScaleMode(const char *str);
@@ -101,7 +109,7 @@ typedef struct
 	bool Fog;
 	int SightRange;
 	bool Shadows;
-	bool MoveWhenShooting;
+	FireMoveStyle FireMoveStyle;
 	SwitchMoveStyle SwitchMoveStyle;
 	bool ShotsPushback;
 	AllyCollision AllyCollision;

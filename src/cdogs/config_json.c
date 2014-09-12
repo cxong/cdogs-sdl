@@ -37,10 +37,11 @@
 #include "json_utils.h"
 #include "keyboard.h"
 
-#define VERSION "4"
+#define VERSION "5"
 
 
-static void LoadGameConfigNode(GameConfig *config, json_t *node)
+static void LoadGameConfigNode(
+	GameConfig *config, json_t *node, const int version)
 {
 	if (node == NULL)
 	{
@@ -57,7 +58,18 @@ static void LoadGameConfigNode(GameConfig *config, json_t *node)
 	LoadBool(&config->Fog, node, "Fog");
 	LoadInt(&config->SightRange, node, "SightRange");
 	LoadBool(&config->Shadows, node, "Shadows");
-	LoadBool(&config->MoveWhenShooting, node, "MoveWhenShooting");
+	if (version >= 5)
+	{
+		JSON_UTILS_LOAD_ENUM(
+			config->FireMoveStyle, node, "FireMoveStyle", StrFireMoveStyle);
+	}
+	else
+	{
+		bool moveWhenShooting;
+		LoadBool(&moveWhenShooting, node, "MoveWhenShooting");
+		config->FireMoveStyle =
+			moveWhenShooting ? FIREMOVE_NORMAL : FIREMOVE_STOP;
+	}
 	JSON_UTILS_LOAD_ENUM(
 		config->SwitchMoveStyle, node, "SwitchMoveStyle", StrSwitchMoveStyle);
 	LoadBool(&config->ShotsPushback, node, "ShotsPushback");
@@ -89,8 +101,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 	AddIntPair(subConfig, "SightRange", config->SightRange);
 	json_insert_pair_into_object(
 		subConfig, "Shadows", json_new_bool(config->Shadows));
-	json_insert_pair_into_object(
-		subConfig, "MoveWhenShooting", json_new_bool(config->MoveWhenShooting));
+	JSON_UTILS_ADD_ENUM_PAIR(
+		subConfig, "FireMoveStyle", config->FireMoveStyle, FireMoveStyleStr);
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "SwitchMoveStyle", config->SwitchMoveStyle, SwitchMoveStyleStr);
 	json_insert_pair_into_object(
@@ -344,7 +356,8 @@ void ConfigLoadJSON(Config *config, const char *filename)
 		goto bail;
 	}
 	LoadInt(&version, root, "Version");
-	LoadGameConfigNode(&config->Game, json_find_first_label(root, "Game"));
+	LoadGameConfigNode(
+		&config->Game, json_find_first_label(root, "Game"), version);
 	LoadGraphicsConfigNode(&config->Graphics, json_find_first_label(root, "Graphics"));
 	LoadInputConfigNode(&config->Input, json_find_first_label(root, "Input"));
 	LoadInterfaceConfigNode(

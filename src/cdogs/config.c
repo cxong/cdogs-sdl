@@ -119,38 +119,41 @@ difficulty_e StrDifficulty(const char *str)
 		return DIFFICULTY_NORMAL;
 	}
 }
-const char *SwitchMoveStyleStr(SwitchMoveStyle s)
+const char *FireMoveStyleStr(FireMoveStyle s)
 {
 	switch (s)
 	{
-	case SWITCHMOVE_SLIDE:
-		return "Slide";
-	case SWITCHMOVE_STRAFE:
-		return "Strafe";
-	case SWITCHMOVE_NONE:
-		return "None";
+		T2S(FIREMOVE_STOP, "Stop");
+		T2S(FIREMOVE_NORMAL, "Normal");
+		T2S(FIREMOVE_STRAFE, "Strafe");
 	default:
 		return "";
 	}
 }
-SwitchMoveStyle StrSwitchMoveStyle(const char *str)
+FireMoveStyle StrFireMoveStyle(const char *s)
 {
-	if (strcmp(str, "Slide") == 0)
+	S2T(FIREMOVE_STOP, "Stop");
+	S2T(FIREMOVE_NORMAL, "Normal");
+	S2T(FIREMOVE_STRAFE, "Strafe");
+	return SWITCHMOVE_SLIDE;
+}
+const char *SwitchMoveStyleStr(SwitchMoveStyle s)
+{
+	switch (s)
 	{
-		return SWITCHMOVE_SLIDE;
+		T2S(SWITCHMOVE_SLIDE, "Slide");
+		T2S(SWITCHMOVE_STRAFE, "Strafe");
+		T2S(SWITCHMOVE_NONE, "None");
+	default:
+		return "";
 	}
-	else if (strcmp(str, "Strafe") == 0)
-	{
-		return SWITCHMOVE_STRAFE;
-	}
-	else if (strcmp(str, "None") == 0)
-	{
-		return SWITCHMOVE_NONE;
-	}
-	else
-	{
-		return SWITCHMOVE_SLIDE;
-	}
+}
+SwitchMoveStyle StrSwitchMoveStyle(const char *s)
+{
+	S2T(SWITCHMOVE_SLIDE, "Slide");
+	S2T(SWITCHMOVE_STRAFE, "Strafe");
+	S2T(SWITCHMOVE_NONE, "None");
+	return SWITCHMOVE_SLIDE;
 }
 const char *ScaleModeStr(ScaleMode s)
 {
@@ -371,6 +374,7 @@ void ConfigLoad(Config *config, const char *filename)
 	case 2:
 	case 3:
 	case 4:
+	case 5:
 		ConfigLoadJSON(config, filename);
 		break;
 	default:
@@ -398,7 +402,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.Fog = 1;
 	config->Game.SightRange = 15;
 	config->Game.Shadows = 1;
-	config->Game.MoveWhenShooting = 0;
+	config->Game.FireMoveStyle = FIREMOVE_STOP;
 	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
 	config->Game.ShotsPushback = 1;
 	config->Game.AllyCollision = ALLYCOLLISION_REPEL;

@@ -829,12 +829,14 @@ void Shoot(TActor *actor)
 	}
 }
 
-int ActorTryChangeDirection(TActor *actor, int cmd)
+static bool ActorTryChangeDirection(
+	TActor *actor, const int cmd, const int prevCmd)
 {
-	int willChangeDirecton =
+	const bool willChangeDirecton =
 		!actor->petrified &&
 		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
-		(!(cmd & CMD_BUTTON2) || gConfig.Game.SwitchMoveStyle != SWITCHMOVE_STRAFE);
+		(!(cmd & CMD_BUTTON2) || gConfig.Game.SwitchMoveStyle != SWITCHMOVE_STRAFE) &&
+		(!(prevCmd & CMD_BUTTON1) || gConfig.Game.FireMoveStyle != FIREMOVE_STRAFE);
 	if (willChangeDirecton)
 	{
 		actor->direction = CmdToDirection(cmd);
@@ -860,7 +862,6 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
 void CommandActor(TActor * actor, int cmd, int ticks)
 {
 	actor->MovePos = actor->Pos;
-	actor->lastCmd = cmd;
 
 	if (actor->confused)
 	{
@@ -870,7 +871,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	if (actor->health > 0)
 	{
 		int hasChangedDirection, hasShot, hasMoved;
-		hasChangedDirection = ActorTryChangeDirection(actor, cmd);
+		hasChangedDirection = ActorTryChangeDirection(actor, cmd, actor->lastCmd);
 		hasShot = ActorTryShoot(actor, cmd);
 		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
 		if (!hasChangedDirection && !hasShot && !hasMoved)
@@ -884,11 +885,13 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 			}
 		}
 	}
+
+	actor->lastCmd = cmd;
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 {
-	int canMoveWhenShooting =
-		gConfig.Game.MoveWhenShooting ||
+	const bool canMoveWhenShooting =
+		gConfig.Game.FireMoveStyle != FIREMOVE_STOP ||
 		!hasShot ||
 		(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_STRAFE &&
 		actor->flags & FLAGS_SPECIAL_USED);
