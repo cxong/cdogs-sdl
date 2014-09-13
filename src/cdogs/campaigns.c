@@ -42,6 +42,7 @@ void CampaignInit(CampaignOptions *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
 	CampaignSettingInit(&campaign->Setting);
+	campaign->seed = gConfig.Game.RandomSeed;
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
@@ -249,7 +250,9 @@ Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
 
 void CampaignSeedRandom(const CampaignOptions *campaign)
 {
-	srand(10 * campaign->MissionIndex + campaign->seed);
+	const unsigned int seed = 10 * campaign->MissionIndex + campaign->seed;
+	debug(D_NORMAL, "Seeding with %u\n", seed);
+	srand(seed);
 }
 
 void CampaignAndMissionSetup(

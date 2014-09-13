@@ -603,7 +603,7 @@ void SetupMission(
 		int *itemIndex = CArrayGet(&m->Items, i);
 		if (*itemIndex >= (int)mo->MapObjects.size)
 		{
-			debug(D_MAX, "Warning: unknown map object index %d", *itemIndex);
+			debug(D_NORMAL, "Warning: unknown map object index %d\n", *itemIndex);
 			continue;
 		}
 		CArrayPushBack(&mo->MapObjects, MapObjectGet(*itemIndex));

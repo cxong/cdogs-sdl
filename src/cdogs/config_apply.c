@@ -36,6 +36,10 @@
 
 int ConfigApply(Config *config)
 {
+	if (config->Game.RandomSeed != gLastConfig.Game.RandomSeed)
+	{
+		gCampaign.seed = config->Game.RandomSeed;
+	}
 	if (memcmp(&config->Sound, &gLastConfig.Sound, sizeof config->Sound) != 0)
 	{
 		SoundReconfigure(&gSoundDevice, &config->Sound);
@@ -43,7 +47,6 @@ int ConfigApply(Config *config)
 	if (memcmp(
 		&config->Graphics, &gLastConfig.Graphics, sizeof config->Graphics) != 0)
 	{
-		gCampaign.seed = config->Game.RandomSeed;
 		GraphicsInitialize(
 			&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
 		GrafxMakeRandomBackground(
