@@ -135,7 +135,7 @@ FireMoveStyle StrFireMoveStyle(const char *s)
 	S2T(FIREMOVE_STOP, "Stop");
 	S2T(FIREMOVE_NORMAL, "Normal");
 	S2T(FIREMOVE_STRAFE, "Strafe");
-	return SWITCHMOVE_SLIDE;
+	return FIREMOVE_STOP;
 }
 const char *SwitchMoveStyleStr(SwitchMoveStyle s)
 {
