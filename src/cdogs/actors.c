@@ -531,6 +531,33 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 }
 
+// Check if the target position is completely clear
+// This includes collisions that make the target illegal, such as walls
+// But it also includes item collisions, whether or not the collisions
+// are legal, e.g. item pickups, friendly collisions
+bool ActorIsPosClear(const TActor *actor, const Vec2i fullPos)
+{
+	// Wall collision
+	const Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
+	if (IsCollisionWithWall(Vec2iFull2Real(fullPos), size))
+	{
+		return false;
+	}
+
+	// Item collision
+	const Vec2i realPos = Vec2iFull2Real(fullPos);
+	const bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
+	if (GetItemOnTileInCollision(
+		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+		CalcCollisionTeam(1, actor),
+		isDogfight) != NULL)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);

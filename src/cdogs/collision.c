@@ -51,7 +51,7 @@
 #include "actors.h"
 #include "config.h"
 
-CollisionTeam CalcCollisionTeam(int isActor, TActor *actor)
+CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 {
 	// Need to have prisoners collide with everything otherwise they will not
 	// be "rescued"
@@ -208,7 +208,8 @@ bool CollisionIsOnSameTeam(
 }
 
 TTileItem *GetItemOnTileInCollision(
-	TTileItem *item, Vec2i pos, int mask, CollisionTeam team, int isDogfight)
+	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
+	const bool isDogfight)
 {
 	const Vec2i tv = Vec2iToTile(pos);
 	Vec2i dv;

@@ -268,13 +268,6 @@ void Detour(TActor * actor)
 		    (CmdToDirection(actor->lastCmd) + 7) % 8;
 }
 
-static bool IsActorPositionValid(TActor *actor)
-{
-	Vec2i pos = actor->Pos;
-	actor->Pos = Vec2iZero();
-	return TryMoveActor(actor, pos);
-}
-
 static void PlaceBaddie(TActor *actor)
 {
 	bool hasPlaced = false;
@@ -282,14 +275,16 @@ static void PlaceBaddie(TActor *actor)
 	for (int i = 0; i < 100; i++)
 	{
 		// Try spawning out of players' sights
-		actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-		actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
-		TActor *closestPlayer = AIGetClosestPlayer(actor->Pos);
+		const Vec2i pos = Vec2iNew(
+			(rand() % (gMap.Size.x * TILE_WIDTH)) << 8,
+			(rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+		const TActor *closestPlayer = AIGetClosestPlayer(pos);
 		if (closestPlayer && CHEBYSHEV_DISTANCE(
-			actor->Pos.x, actor->Pos.y,
+			pos.x, pos.y,
 			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
-			IsActorPositionValid(actor))
+			ActorIsPosClear(actor, pos))
 		{
+			TryMoveActor(actor, pos);
 			hasPlaced = true;
 			break;
 		}
@@ -300,10 +295,12 @@ static void PlaceBaddie(TActor *actor)
 		// even close to player
 		for (;;)
 		{
-			actor->Pos.x = (rand() % (gMap.Size.x * TILE_WIDTH)) << 8;
-			actor->Pos.y = (rand() % (gMap.Size.y * TILE_HEIGHT)) << 8;
-			if (IsActorPositionValid(actor))
+			const Vec2i pos = Vec2iNew(
+				(rand() % (gMap.Size.x * TILE_WIDTH)) << 8,
+				(rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+			if (ActorIsPosClear(actor, pos))
 			{
+				TryMoveActor(actor, pos);
 				break;
 			}
 		}
@@ -319,17 +316,18 @@ static void PlaceBaddie(TActor *actor)
 
 static void PlacePrisoner(TActor *actor)
 {
+	Vec2i pos;
 	do
 	{
 		do
 		{
-			actor->Pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
-			actor->Pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+			pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
+			pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 		}
-		while (!MapPosIsHighAccess(
-			&gMap, actor->Pos.x >> 8, actor->Pos.y >> 8));
+		while (!MapPosIsHighAccess(&gMap, pos.x >> 8, pos.y >> 8));
 	}
-	while (!IsActorPositionValid(actor));
+	while (!ActorIsPosClear(actor, pos));
+	TryMoveActor(actor, pos);
 }
 
 

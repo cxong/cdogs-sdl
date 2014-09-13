@@ -101,7 +101,8 @@ static void PlaceActor(TActor * actor)
 		pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
 	}
 	while (!MapIsFullPosOKforPlayer(&gMap, pos, false) ||
-		!TryMoveActor(actor, pos));
+		!ActorIsPosClear(actor, pos));
+	TryMoveActor(actor, pos);
 }
 static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 {
@@ -116,8 +117,9 @@ static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 #define TRY_LOCATION()\
 	if (MapIsFullPosOKforPlayer(\
 		&gMap, Vec2iAdd(nearPos, Vec2iNew(dx, dy)), allowAllTiles) && \
-		TryMoveActor(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy))))\
+		ActorIsPosClear(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy))))\
 	{\
+		TryMoveActor(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy)));\
 		return;\
 	}
 	int dx = 0;

@@ -179,6 +179,7 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);
+bool ActorIsPosClear(const TActor *actor, const Vec2i fullPos);
 bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
