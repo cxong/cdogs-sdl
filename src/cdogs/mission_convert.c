@@ -433,7 +433,7 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			CArrayInit(&newOp.Indices, sizeof(int));
 			CArrayPushBack(&newOp.Positions, &pos);
 			CArrayPushBack(&newOp.Indices, &idx2);
-			objectiveIndex = (int)newOp.Positions.size;
+			objectiveIndex = (int)newOp.Positions.size - 1;
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
 			op = CArrayGet(
 				&m->u.Static.Objectives, (int)m->u.Static.Objectives.size - 1);
