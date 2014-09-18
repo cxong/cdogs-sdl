@@ -396,7 +396,7 @@ void DogFight(CampaignOptions *co)
 			if (IsPlayerAlive(p))
 			{
 				int *score = CArrayGet(&scores, i);
-				*score++;
+				(*score)++;
 				if (*score > maxScore)
 				{
 					maxScore = *score;
