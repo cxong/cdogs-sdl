@@ -59,8 +59,8 @@ int NumPlayersSelection(
 
 // Allow input devices to take control players,
 // and select player name and appearance
-bool PlayerSelection(const int numPlayers);
+bool PlayerSelection(void);
 
-bool PlayerEquip(const int numPlayers);
+bool PlayerEquip(void);
 
 #endif

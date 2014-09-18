@@ -29,6 +29,7 @@
 #include "ai_coop.h"
 
 #include "ai_utils.h"
+#include "gamedata.h"
 
 // How many ticks to stay in one confusion state
 #define CONFUSION_STATE_TICKS_MIN 25
@@ -125,18 +126,20 @@ static int AICoopGetCmdNormal(TActor *actor)
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
 	// Follow the closest player with a lower ID
-	TActor *closestPlayer = NULL;
+	const TActor *closestPlayer = NULL;
 	int minDistance2 = -1;
 	if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
 		for (int i = 0; i < actor->pData->playerIndex; i++)
 		{
-			if (!IsPlayerAlive(i))
+			const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+			if (!IsPlayerAlive(pd))
 			{
 				continue;
 			}
-			TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
-			int distance2 = DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
+			const TActor *p = CArrayGet(&gActors, pd->Id);
+			const int distance2 =
+				DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
 			if (!closestPlayer || distance2 < minDistance2)
 			{
 				minDistance2 = distance2;

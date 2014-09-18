@@ -30,6 +30,7 @@
 
 #include <SDL_timer.h>
 
+#include "config.h"
 #include "events.h"
 #include "net_server.h"
 #include "sounds.h"

@@ -53,6 +53,7 @@
 
 #include "algorithms.h"
 #include "collision.h"
+#include "gamedata.h"
 #include "map.h"
 #include "objs.h"
 #include "weapon.h"
@@ -63,19 +64,21 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 	int i;
 	int minDistance = -1;
 	TActor *closestPlayer = NULL;
-	for (i = 0; i < gOptions.numPlayers; i++)
+	for (i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (IsPlayerAlive(i))
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(pd))
 		{
-			TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
-			Vec2i pPos = Vec2iFull2Real(p->Pos);
-			int distance = CHEBYSHEV_DISTANCE(
-				fullpos.x, fullpos.y, pPos.x, pPos.y);
-			if (!closestPlayer || distance < minDistance)
-			{
-				closestPlayer = p;
-				minDistance = distance;
-			}
+			continue;
+		}
+		TActor *p = CArrayGet(&gActors, pd->Id);
+		const Vec2i pPos = Vec2iFull2Real(p->Pos);
+		const int distance = CHEBYSHEV_DISTANCE(
+			fullpos.x, fullpos.y, pPos.x, pPos.y);
+		if (!closestPlayer || distance < minDistance)
+		{
+			closestPlayer = p;
+			minDistance = distance;
 		}
 	}
 	return closestPlayer;

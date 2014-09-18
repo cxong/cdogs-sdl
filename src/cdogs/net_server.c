@@ -35,6 +35,7 @@
 
 #include "campaign_entry.h"
 #include "gamedata.h"
+#include "player.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -226,14 +227,16 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 	case SERVER_MSG_PLAYER_DATA:
 		{
 			NetMsgPlayerData d;
-			const struct PlayerData *pData = data;
+			const PlayerData *pData = data;
+			const Character *c = CArrayGet(
+				&gCampaign.Setting.characters.Players, pData->playerIndex);
 			strcpy(d.Name, pData->name);
-			d.Looks.Face = pData->looks.face;
-			d.Looks.Skin = pData->looks.skin;
-			d.Looks.Arm = pData->looks.arm;
-			d.Looks.Body = pData->looks.body;
-			d.Looks.Leg = pData->looks.leg;
-			d.Looks.Hair = pData->looks.hair;
+			d.Looks.Face = c->looks.face;
+			d.Looks.Skin = c->looks.skin;
+			d.Looks.Arm = c->looks.arm;
+			d.Looks.Body = c->looks.body;
+			d.Looks.Leg = c->looks.leg;
+			d.Looks.Hair = c->looks.hair;
 			d.Weapons_count = (pb_size_t)pData->weaponCount;
 			for (int i = 0; i < (int)d.Weapons_count; i++)
 			{
@@ -258,7 +261,7 @@ static ENetPacket *MakePacketImpl(
 {
 	uint8_t buffer[1024];
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
-	bool status = pb_encode(&stream, fields, data);
+	bool status = data ? pb_encode(&stream, fields, data) : true;
 	CASSERT(status, "Failed to encode pb");
 	ENetPacket *packet = enet_packet_create(
 		&msg, NET_MSG_SIZE + stream.bytes_written, ENET_PACKET_FLAG_RELIABLE);

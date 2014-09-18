@@ -63,6 +63,7 @@
 #include "defs.h"
 #include "pic_manager.h"
 #include "actors.h"
+#include "triggers.h"
 
 
 const char *MapTypeStr(MapType t)
@@ -540,8 +541,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 }
 
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
-static void CleanupPlayerInventory(
-	struct PlayerData *data, const CArray *weapons)
+static void CleanupPlayerInventory(PlayerData *data, const CArray *weapons)
 {
 	for (int i = data->weaponCount - 1; i >= 0; i--)
 	{
@@ -568,13 +568,12 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w)
 	return false;
 }
 
-static void SetupWeapons(
-	struct PlayerData playerDatas[MAX_PLAYERS], const CArray *weapons)
+static void SetupWeapons(const CArray *weapons)
 {
 	// Remove unavailable weapons from players inventories
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		CleanupPlayerInventory(&playerDatas[i], weapons);
+		CleanupPlayerInventory(CArrayGet(&gPlayerDatas, i), weapons);
 	}
 }
 
@@ -618,7 +617,7 @@ void SetupMission(
 	ParticlesInit(&gParticles);
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
-	SetupWeapons(gPlayerDatas, &m->Weapons);
+	SetupWeapons(&m->Weapons);
 	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
 	if (buildTables)
 	{
@@ -632,6 +631,20 @@ void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_r
 	SetRange(FLOOR_COLORS, abs(floor_range) % COLORRANGE_COUNT);
 	SetRange(ROOM_COLORS, abs(room_range) % COLORRANGE_COUNT);
 	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
+}
+
+void MissionEnd(void)
+{
+	ActorsTerminate();
+	ObjsTerminate();
+	MobObjsTerminate();
+	ParticlesTerminate(&gParticles);
+	RemoveAllWatches();
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		p->Id = -1;
+	}
 }
 
 void MissionSetMessageIfComplete(struct MissionOptions *options)
@@ -674,11 +687,11 @@ int CanCompleteMission(struct MissionOptions *options)
 	// Death is the only escape from dogfights and quick play
 	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 	{
-		return GetNumPlayersAlive() <= 1;
+		return GetNumPlayers(true, false, false) <= 1;
 	}
 	else if (gCampaign.Entry.Mode == CAMPAIGN_MODE_QUICK_PLAY)
 	{
-		return GetNumPlayersAlive() == 0;
+		return GetNumPlayers(true, false, false) == 0;
 	}
 
 	// Check all objective counts are enough
@@ -699,7 +712,6 @@ int CanCompleteMission(struct MissionOptions *options)
 int IsMissionComplete(struct MissionOptions *options)
 {
 	int rescuesRequired = 0;
-	int i;
 
 	if (!CanCompleteMission(options))
 	{
@@ -708,19 +720,20 @@ int IsMissionComplete(struct MissionOptions *options)
 
 	// Check if dogfight is complete
 	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT &&
-		GetNumPlayersAlive() <= 1)
+		GetNumPlayers(true, false, false) <= 1)
 	{
 		return 1;
 	}
 
 	// Check that all surviving players are in exit zone
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (!IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
-		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		const TActor *player = CArrayGet(&gActors, p->Id);
 		if (!MapIsTileInExit(&gMap, &player->tileItem))
 		{
 			return 0;
@@ -729,7 +742,7 @@ int IsMissionComplete(struct MissionOptions *options)
 
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
-	for (i = 0; i < (int)options->missionData->Objectives.size; i++)
+	for (int i = 0; i < (int)options->missionData->Objectives.size; i++)
 	{
 		MissionObjective *mobj =
 			CArrayGet(&options->missionData->Objectives, i);
@@ -743,7 +756,7 @@ int IsMissionComplete(struct MissionOptions *options)
 	if (rescuesRequired > 0)
 	{
 		int prisonersRescued = 0;
-		for (i = 0; i < (int)gActors.size; i++)
+		for (int i = 0; i < (int)gActors.size; i++)
 		{
 			TActor *a = CArrayGet(&gActors, i);
 			if (!a->isInUse)

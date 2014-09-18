@@ -362,7 +362,7 @@ static void Change(
 		break;
 	}
 
-	CharacterSetLooks(b, &b->looks);
+	CharacterSetColors(b);
 }
 // Look in both built-in guns and custom guns for the next gun
 static const GunDescription *GetNextGun(const GunDescription *g, const int d)
@@ -440,7 +440,7 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 		c->bot->probabilityToTrack = 25;
 		c->bot->probabilityToShoot = 2;
 		c->bot->actionDelay = 15;
-		CharacterSetLooks(c, &c->looks);
+		CharacterSetColors(c);
 	}
 }
 

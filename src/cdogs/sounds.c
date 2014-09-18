@@ -307,38 +307,42 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 }
 
 
-void SoundSetLeftEar1(Vec2i pos)
+void SoundSetEar(const bool isLeft, const int idx, Vec2i pos)
 {
-	gSoundDevice.earLeft1 = pos;
-}
-void SoundSetLeftEar2(Vec2i pos)
-{
-	gSoundDevice.earLeft2 = pos;
-}
-void SoundSetRightEar1(Vec2i pos)
-{
-	gSoundDevice.earRight1 = pos;
-}
-void SoundSetRightEar2(Vec2i pos)
-{
-	gSoundDevice.earRight2 = pos;
+	if (isLeft)
+	{
+		if (idx == 0)
+		{
+			gSoundDevice.earLeft1 = pos;
+		}
+		else
+		{
+			gSoundDevice.earLeft2 = pos;
+		}
+	}
+	else
+	{
+		if (idx == 0)
+		{
+			gSoundDevice.earRight1 = pos;
+		}
+		else
+		{
+			gSoundDevice.earRight2 = pos;
+		}
+	}
 }
 
-void SoundSetLeftEars(Vec2i pos)
+void SoundSetEarsSide(const bool isLeft, const Vec2i pos)
 {
-	SoundSetLeftEar1(pos);
-	SoundSetLeftEar2(pos);
-}
-void SoundSetRightEars(Vec2i pos)
-{
-	SoundSetRightEar1(pos);
-	SoundSetRightEar2(pos);
+	SoundSetEar(isLeft, 0, pos);
+	SoundSetEar(isLeft, 1, pos);
 }
 
 void SoundSetEars(Vec2i pos)
 {
-	SoundSetLeftEars(pos);
-	SoundSetRightEars(pos);
+	SoundSetEarsSide(true, pos);
+	SoundSetEarsSide(false, pos);
 }
 
 void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)

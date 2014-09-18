@@ -94,7 +94,7 @@ static struct Entry allTimeHigh[MAX_ENTRY];
 static struct Entry todaysHigh[MAX_ENTRY];
 
 
-static int EnterTable(struct Entry *table, struct PlayerData *data)
+static int EnterTable(struct Entry *table, PlayerData *data)
 {
 	int i, j;
 
@@ -114,7 +114,7 @@ static int EnterTable(struct Entry *table, struct PlayerData *data)
 	return -1;
 }
 
-void EnterHighScore(struct PlayerData *data)
+void EnterHighScore(PlayerData *data)
 {
 	data->allTime = EnterTable(allTimeHigh, data);
 	data->today = EnterTable(todaysHigh, data);
@@ -150,7 +150,8 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 }
 
 static int DisplayPage(
-	const char *title, int idx, struct Entry *e, int highlights[MAX_PLAYERS])
+	const char *title, int idx, struct Entry *e,
+	int highlights[MAX_LOCAL_PLAYERS])
 {
 	int x = 80;
 	int y = 5 + FontH();
@@ -159,7 +160,7 @@ static int DisplayPage(
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
 		bool isHighlighted = false;
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 		{
 			if (idx == highlights[i])
 			{
@@ -179,12 +180,19 @@ static int DisplayPage(
 }
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
-	int highlights[MAX_PLAYERS];
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		highlights[i] = gPlayerDatas[i].allTime;
-	}
+	int highlights[MAX_LOCAL_PLAYERS];
 	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		highlights[idx] = p->allTime;
+	}
+	idx = 0;
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);
@@ -197,12 +205,19 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 }
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
-	int highlights[MAX_PLAYERS];
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		highlights[i] = gPlayerDatas[i].today;
-	}
+	int highlights[MAX_LOCAL_PLAYERS];
 	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		highlights[idx] = p->today;
+	}
+	idx = 0;
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
 		GraphicsBlitBkg(graphics);

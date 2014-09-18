@@ -61,11 +61,9 @@ typedef struct
 	CharBot *bot;
 } Character;
 
-#define MAX_PLAYERS 4
 typedef struct
 {
-	int playerCount;
-	Character players[MAX_PLAYERS];	// human players
+	CArray Players;	// of Character, human players
 	CArray OtherChars;	// of Character, both normal baddies and special chars
 
 	// References only
@@ -77,7 +75,7 @@ typedef struct
 	Character **specials;
 } CharacterStore;
 
-void CharacterSetLooks(Character *c, const CharLooks *l);
+void CharacterSetColors(Character *c);
 
 void CharacterStoreInit(CharacterStore *store);
 void CharacterStoreTerminate(CharacterStore *store);

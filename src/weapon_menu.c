@@ -36,7 +36,7 @@
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
-	struct PlayerData *p = d->display.pData;
+	PlayerData *p = d->display.pData;
 
 	// Don't process if we're not selecting a weapon
 	if ((cmd & CMD_BUTTON1) &&
@@ -135,7 +135,7 @@ static void DisplayEquippedWeapons(
 
 void WeaponMenuCreate(
 	WeaponMenu *menu,
-	int numPlayers, int player, Character *c, struct PlayerData *pData,
+	int numPlayers, int player, Character *c, PlayerData *pData,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig)
 {

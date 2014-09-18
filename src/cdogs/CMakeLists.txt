@@ -64,6 +64,7 @@ set(CDOGS_SOURCES
 	pic_file.c
 	pic_manager.c
 	pics.c
+	player.c
 	player_template.c
 	quick_play.c
 	screen_shake.c
@@ -135,6 +136,7 @@ set(CDOGS_HEADERS
 	pic_file.h
 	pic_manager.h
 	pics.h
+	player.h
 	player_template.h
 	quick_play.h
 	screen_shake.h

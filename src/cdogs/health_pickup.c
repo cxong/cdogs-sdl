@@ -28,6 +28,7 @@
 #include <math.h>
 
 #include "ai_utils.h"
+#include "gamedata.h"
 
 
 #define SPAWN_TIME (20 * FPS_FRAMELIMIT)
@@ -62,13 +63,15 @@ void HealthPickupsUpdate(HealthPickups *h, int ticks)
 	// Damage taken (find player with lowest health)
 	int minHealth = 200 * gConfig.Game.PlayerHP / 100;
 	int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
-			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-			minHealth = MIN(minHealth, player->health);
+			continue;
 		}
+		const TActor *player = CArrayGet(&gActors, p->Id);
+		minHealth = MIN(minHealth, player->health);
 	}
 	// Double spawn rate if near 0 health
 	scalar *= (minHealth + maxHealth) / (maxHealth * 2.0);

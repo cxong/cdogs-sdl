@@ -67,14 +67,15 @@ static int gAreGoodGuysPresent = 0;
 
 static bool IsFacingPlayer(TActor *actor, direction_e d)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (gPlayerIds[i] < 0)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-		if (IsPlayerAlive(i) && AIIsFacing(actor, player->Pos, d))
+		const TActor *player = CArrayGet(&gActors, p->Id);
+		if (AIIsFacing(actor, player->Pos, d))
 		{
 			return true;
 		}
@@ -96,13 +97,14 @@ static bool IsCloseToPlayer(const Vec2i fullPos, const int fullDistance)
 static bool CanSeeAPlayer(const TActor *a)
 {
 	const Vec2i realPos = Vec2iFull2Real(a->Pos);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (!IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		const TActor *player = CArrayGet(&gActors, p->Id);
 		const Vec2i playerRealPos = Vec2iFull2Real(player->Pos);
 		// Can see player if:
 		// - Clear line of sight, and
@@ -333,15 +335,20 @@ static void PlacePrisoner(TActor *actor)
 
 static bool DidPlayerShoot(void)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
-			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-			return player->lastCmd & CMD_BUTTON1;
+			continue;
+		}
+		const TActor *player = CArrayGet(&gActors, p->Id);
+		if (player->lastCmd & CMD_BUTTON1)
+		{
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 void CommandBadGuys(int ticks)

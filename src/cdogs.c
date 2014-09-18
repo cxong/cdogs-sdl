@@ -69,6 +69,7 @@
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
+#include <cdogs/net_server.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
@@ -151,53 +152,25 @@ static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 	}
 }
 
-void InitData(struct PlayerData *data)
+static void InitPlayers(int maxHealth, int mission)
 {
-	data->totalScore = 0;
-	data->missions = 0;
-}
-
-void DataUpdate(int mission, struct PlayerData *data)
-{
-	if (!data->survived) {
-		data->totalScore = 0;
-		data->missions = 0;
-	} else
-		data->missions++;
-	data->lastMission = mission;
-}
-
-static void CleanupMission(void)
-{
-	ActorsTerminate();
-	ObjsTerminate();
-	MobObjsTerminate();
-	ParticlesTerminate(&gParticles);
-	RemoveAllWatches();
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		gPlayerIds[i] = -1;
-	}
-}
-
-static void InitPlayers(int numPlayers, int maxHealth, int mission)
-{
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		gPlayerDatas[i].score = 0;
-		gPlayerDatas[i].kills = 0;
-		gPlayerDatas[i].friendlies = 0;
-		gPlayerDatas[i].allTime = -1;
-		gPlayerDatas[i].today = -1;
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		p->score = 0;
+		p->kills = 0;
+		p->friendlies = 0;
+		p->allTime = -1;
+		p->today = -1;
 	}
 	TActor *firstPlayer = NULL;
-	for (i = 0; i < numPlayers; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		gPlayerDatas[i].lastMission = mission;
-		gPlayerIds[i] = ActorAdd(
-			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i]);
-		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		p->lastMission = mission;
+		p->Id =
+			ActorAdd(CArrayGet(&gCampaign.Setting.characters.Players, i), p);
+		TActor *player = CArrayGet(&gActors, p->Id);
 		player->health = maxHealth;
 		player->character->maxHealth = maxHealth;
 		
@@ -281,7 +254,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 				goto bail;
 			}
 		}
-		if (!PlayerEquip(gOptions.numPlayers))
+		if (!PlayerEquip())
 		{
 			run = false;
 			goto bail;
@@ -290,26 +263,27 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		InitializeBadGuys();
 		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-		InitPlayers(gOptions.numPlayers, maxHealth, co->MissionIndex);
+		InitPlayers(maxHealth, co->MissionIndex);
 		CreateEnemies();
 		PlayGameSong();
 		run = RunGame(&gMission, &gMap);
 
-		const int survivingPlayers = GetNumPlayersAlive();
+		const int survivingPlayers = GetNumPlayers(true, false, false);
 		gameOver = survivingPlayers == 0 ||
 			co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
 
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			gPlayerDatas[i].survived = IsPlayerAlive(i);
-			if (IsPlayerAlive(i))
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			p->survived = IsPlayerAlive(p);
+			if (IsPlayerAlive(p))
 			{
-				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-				gPlayerDatas[i].hp = player->health;
+				TActor *player = CArrayGet(&gActors, p->Id);
+				p->hp = player->health;
 			}
 		}
 
-		CleanupMission();
+		MissionEnd();
 		PlayMenuSong();
 
 		if (run)
@@ -325,15 +299,26 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 
 		bool allTime = false;
 		bool todays = false;
-		for (int i = 0; i < gOptions.numPlayers; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			if ((run && !gPlayerDatas[i].survived) || gameOver)
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (((run && !p->survived) || gameOver) && p->IsLocal)
 			{
-				EnterHighScore(&gPlayerDatas[i]);
-				allTime |= gPlayerDatas[i].allTime >= 0;
-				todays |= gPlayerDatas[i].today >= 0;
+				EnterHighScore(p);
+				allTime |= p->allTime >= 0;
+				todays |= p->today >= 0;
 			}
-			DataUpdate(co->MissionIndex, &gPlayerDatas[i]);
+
+			if (!p->survived)
+			{
+				p->totalScore = 0;
+				p->missions = 0;
+			}
+			else
+			{
+				p->missions++;
+			}
+			p->lastMission = co->MissionIndex;
 		}
 		if (allTime)
 		{
@@ -356,11 +341,7 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 
 int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		InitData(&gPlayerDatas[i]);
-	}
+	PlayerDataReset(&gPlayerDatas);
 
 	if (IsPasswordAllowed(co->Entry.Mode))
 	{
@@ -381,62 +362,66 @@ int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 void DogFight(CampaignOptions *co)
 {
-	int scores[MAX_PLAYERS];
-	int maxScore = 0;
-	int i;
-
-	for (i = 0; i < MAX_PLAYERS; i++)
+	CArray scores;
+	CArrayInit(&scores, sizeof(int));
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		scores[i] = 0;
-		InitData(&gPlayerDatas[i]);
+		int score = 0;
+		CArrayPushBack(&scores, &score);
 	}
+	int maxScore = 0;
+
+	PlayerDataReset(&gPlayerDatas);
 
 	co->MissionIndex = 0;
-	gOptions.badGuys = 0;
 
 	bool run = false;
 	do
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
-		PlayerEquip(gOptions.numPlayers);
+		PlayerEquip();
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		srand((unsigned int)time(NULL));
-		InitPlayers(gOptions.numPlayers, 500, 0);
+		InitPlayers(500, 0);
 		PlayGameSong();
 
 		// Don't quit if all players died, that's normal for dogfights
-		run = RunGame(&gMission, &gMap) || GetNumPlayersAlive() == 0;
+		run =
+			RunGame(&gMission, &gMap) ||
+			GetNumPlayers(true, false, false) == 0;
 
-		for (i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			if (IsPlayerAlive(i))
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (IsPlayerAlive(p))
 			{
-				scores[i]++;
-				if (scores[i] > maxScore)
+				int *score = CArrayGet(&scores, i);
+				*score++;
+				if (*score > maxScore)
 				{
-					maxScore = scores[i];
+					maxScore = *score;
 				}
 			}
 		}
 
-		CleanupMission();
+		MissionEnd();
 		PlayMenuSong();
 
 		if (run)
 		{
-			ScreenDogfightScores(scores);
+			ScreenDogfightScores(&scores);
 		}
 
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
 	} while (run && maxScore < DOGFIGHT_MAX_SCORE);
 
-	gOptions.badGuys = 1;
-
 	if (run)
 	{
-		ScreenDogfightFinalScores(scores);
+		ScreenDogfightFinalScores(&scores);
 	}
+
+	CArrayTerminate(&scores);
 }
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
@@ -456,16 +441,23 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 
 		debug(D_NORMAL, ">> Select number of players\n");
+		int numPlayers;
 		if (!NumPlayersSelection(
-			&gOptions.numPlayers, gCampaign.Entry.Mode,
+			&numPlayers, gCampaign.Entry.Mode,
 			&gGraphicsDevice, &gEventHandlers))
 		{
 			gCampaign.IsLoaded = false;
 			continue;
 		}
+		PlayerDataTerminate(&gPlayerDatas);
+		PlayerDataInit(&gPlayerDatas);
+		for (int i = 0; i < numPlayers; i++)
+		{
+			PlayerDataAdd(&gPlayerDatas, true);
+		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection(gOptions.numPlayers))
+		if (!PlayerSelection())
 		{
 			gCampaign.IsLoaded = false;
 			continue;
@@ -484,6 +476,9 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		gCampaign.IsLoaded = false;
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
+
+	// Close net connection
+	NetServerTerminate(&gNetServer);
 }
 
 void PrintTitle(void)
@@ -709,7 +704,7 @@ int main(int argc, char *argv[])
 
 	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs();
-	LoadPlayerTemplates(gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 
 	PlayMenuSong();
 
@@ -751,90 +746,90 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
-	else
+	GetDataFilePath(buf, "graphics/font.png");
+	GetDataFilePath(buf2, "graphics/font.json");
+	FontLoad(&gFont, buf, buf2);
+	GetDataFilePath(buf, "graphics");
+	PicManagerLoadDir(&gPicManager, buf);
+
+	GetDataFilePath(buf, "data/particles.json");
+	ParticleClassesInit(&gParticleClasses, buf);
+	GetDataFilePath(buf, "data/bullets.json");
+	GetDataFilePath(buf2, "data/guns.json");
+	BulletAndWeaponInitialize(
+		&gBulletClasses, &gGunDescriptions, buf, buf2);
+	CampaignInit(&gCampaign);
+	LoadAllCampaigns(&campaigns);
+	PlayerDataInit(&gPlayerDatas);
+	// Add at least one player as it is used for menu commands
+	PlayerDataAdd(&gPlayerDatas, true);
+	MapInit(&gMap);
+
+	GrafxMakeRandomBackground(
+		&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+
+	debug(D_NORMAL, ">> Entering main loop\n");
+	// Attempt to pre-load campaign if requested
+	if (loadCampaign != NULL)
 	{
-		GetDataFilePath(buf, "graphics/font.png");
-		GetDataFilePath(buf2, "graphics/font.json");
-		FontLoad(&gFont, buf, buf2);
-		GetDataFilePath(buf, "graphics");
-		PicManagerLoadDir(&gPicManager, buf);
-
-		GetDataFilePath(buf, "data/particles.json");
-		ParticleClassesInit(&gParticleClasses, buf);
-		GetDataFilePath(buf, "data/bullets.json");
-		GetDataFilePath(buf2, "data/guns.json");
-		BulletAndWeaponInitialize(
-			&gBulletClasses, &gGunDescriptions, buf, buf2);
-		CampaignInit(&gCampaign);
-		LoadAllCampaigns(&campaigns);
-		PlayerDataInitialize();
-		MapInit(&gMap);
-
-		GrafxMakeRandomBackground(
-			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
-
-		debug(D_NORMAL, ">> Entering main loop\n");
-		// Attempt to pre-load campaign if requested
-		if (loadCampaign != NULL)
+		CampaignEntry entry;
+		if (CampaignEntryTryLoad(
+			&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
 		{
-			CampaignEntry entry;
-			if (CampaignEntryTryLoad(
-				&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
-			{
-				CampaignLoad(&gCampaign, &entry);
-			}
-			else
-			{
-				fprintf(stderr, "Failed to load campaign %s\n", loadCampaign);
-			}
+			CampaignLoad(&gCampaign, &entry);
 		}
-		else if (connectAddr.port != 0)
+		else
 		{
-			NetClientConnect(&gNetClient, connectAddr);
-			if (!NetClientIsConnected(&gNetClient))
+			fprintf(stderr, "Failed to load campaign %s\n", loadCampaign);
+		}
+	}
+	else if (connectAddr.port != 0)
+	{
+		NetClientConnect(&gNetClient, connectAddr);
+		if (!NetClientIsConnected(&gNetClient))
+		{
+			printf("Failed to connect\n");
+		}
+		else
+		{
+			for (int i = 0;
+				i < 30 && gNetClient.State == NET_STATE_STARTING;
+				i++)
 			{
-				printf("Failed to connect\n");
-			}
-			else
-			{
-				for (int i = 0;
-					i < 30 && gNetClient.State == NET_STATE_STARTING;
-					i++)
+				printf("Connecting (attempt %d)\n", i);
+				NetMsgCampaignDef def;
+				if (NetClientTryLoadCampaignDef(&gNetClient, &def))
 				{
-					printf("Connecting (attempt %d)\n", i);
-					NetMsgCampaignDef def;
-					if (NetClientTryLoadCampaignDef(&gNetClient, &def))
+					char campaignPath[CDOGS_PATH_MAX];
+					campaign_mode_e campaignMode;
+					NetMsgCampaignDefConvert(
+						&def, campaignPath, &campaignMode);
+					CampaignEntry entry;
+					if (CampaignEntryTryLoad(
+						&entry, campaignPath, campaignMode))
 					{
-						char campaignPath[CDOGS_PATH_MAX];
-						campaign_mode_e campaignMode;
-						NetMsgCampaignDefConvert(
-							&def, campaignPath, &campaignMode);
-						CampaignEntry entry;
-						if (CampaignEntryTryLoad(
-							&entry, campaignPath, campaignMode))
-						{
-							CampaignLoad(&gCampaign, &entry);
-						}
-						else
-						{
-							printf("Error: failed to load campaign def\n");
-						}
-						break;
+						CampaignLoad(&gCampaign, &entry);
 					}
 					else
 					{
-						SDL_Delay(1000);
+						printf("Error: failed to load campaign def\n");
 					}
+					break;
+				}
+				else
+				{
+					SDL_Delay(1000);
 				}
 			}
 		}
-		MainLoop(&creditsDisplayer, &campaigns);
 	}
+	MainLoop(&creditsDisplayer, &campaigns);
 
 bail:
 	debug(D_NORMAL, ">> Shutting down...\n");
 	PHYSFS_deinit();
 	MapTerminate(&gMap);
+	PlayerDataTerminate(&gPlayerDatas);
 	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);
@@ -848,7 +843,8 @@ bail:
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	SavePlayerTemplates(gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+	SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+	CArrayTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();

@@ -50,9 +50,9 @@
 #define __ACTORS
 
 #include "ai_context.h"
-#include "gamedata.h"
 #include "grafx.h"
 #include "map.h"
+#include "player.h"
 #include "weapon.h"
 
 
@@ -121,7 +121,7 @@ typedef struct Actor
 	int lastCmd;
 	int soundLock;
 	Character *character;
-	struct PlayerData *pData;	// NULL unless a human player
+	PlayerData *pData;	// NULL unless a human player
 	int uid;	// unique ID across all actors
 	CArray guns;	// of Weapon
 	int gunIndex;
@@ -145,10 +145,6 @@ typedef struct Actor
 	bool isInUse;
 } TActor;
 
-
-// -1 if player is dead
-extern int gPlayerIds[MAX_PLAYERS];
-
 // Store all actors in-line in an array
 // Destroying actors does not modify the array, only switches
 // a boolean flag isInUse to denote whether this instance is
@@ -168,14 +164,6 @@ extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
 void ActorInit(TActor *actor);
-int GetNumPlayersAlive(void);
-int GetNumHumanPlayersAlive(void);
-bool IsPlayerAlive(int player);
-bool IsPlayerHumanAndAlive(int player);
-TActor *GetFirstAlivePlayer(void);
-TActor *GetFirstAliveHumanPlayer(void);
-Vec2i PlayersGetMidpoint(void);
-void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);
@@ -186,13 +174,12 @@ void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(int ticks);
 TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
-void Score(struct PlayerData *p, int points);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
 void ActorsInit(void);
 void ActorsTerminate(void);
-int ActorAdd(Character *c, struct PlayerData *p);	// returns id
+int ActorAdd(Character *c, PlayerData *p);	// returns id
 void ActorDestroy(int id);
 
 Weapon *ActorGetGun(const TActor *a);

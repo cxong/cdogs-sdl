@@ -1,28 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,16 +25,55 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HISCORES
-#define __HISCORES
+#ifndef __PLAYER
+#define __PLAYER
 
-#include "player.h"
-#include "grafx.h"
+#include "character.h"
 
-void EnterHighScore(PlayerData *data);
-void DisplayAllTimeHighScores(GraphicsDevice *graphics);
-void DisplayTodaysHighScores(GraphicsDevice *graphics);
-void SaveHighScores(void);
-void LoadHighScores(void);
+#define MAX_WEAPONS 3
+typedef struct
+{
+	int Id;	// -1 if dead
+	bool IsLocal;	// whether this is a local-machine player
+	char name[20];
+	int weaponCount;
+	const GunDescription *weapons[MAX_WEAPONS];
+
+	int score;
+	int totalScore;
+	int kills;
+	int friendlies;
+
+	// Used for end-of-game score tallying
+	int survived;
+	int hp;
+	int missions;
+	int lastMission;
+	int allTime, today;
+
+	input_device_e inputDevice;
+	int deviceIndex;
+	int playerIndex;
+} PlayerData;
+
+extern CArray gPlayerDatas;	// of PlayerData
+
+#define MAX_LOCAL_PLAYERS 4
+
+
+void PlayerDataInit(CArray *p);
+void PlayerDataAdd(CArray *p, const bool isLocal);
+void PlayerDataReset(CArray *p);
+void PlayerDataTerminate(CArray *p);
+
+int GetNumPlayers(const bool alive, const bool human, const bool local);
+const PlayerData *GetFirstPlayer(
+	const bool alive, const bool human, const bool local);
+bool IsPlayerAlive(const PlayerData *player);
+bool IsPlayerHumanAndAlive(const PlayerData *player);
+Vec2i PlayersGetMidpoint(void);
+void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
+
+void PlayerScore(PlayerData *p, const int points);
 
 #endif

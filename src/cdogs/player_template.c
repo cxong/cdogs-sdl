@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2014, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -78,29 +78,25 @@ const char *IndexToFaceStr(int idx)
 	return faceNames[0];
 }
 
-PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
+CArray gPlayerTemplates;
 
 static void LoadPlayerTemplate(PlayerTemplate *t, json_t *node)
 {
 	strcpy(t->name, json_find_first_label(node, "Name")->child->text);
-	t->face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
-	LoadInt(&t->body, node, "Body");
-	LoadInt(&t->arms, node, "Arms");
-	LoadInt(&t->legs, node, "Legs");
-	LoadInt(&t->skin, node, "Skin");
-	LoadInt(&t->hair, node, "Hair");
+	t->Looks.face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
+	LoadInt(&t->Looks.body, node, "Body");
+	LoadInt(&t->Looks.arm, node, "Arms");
+	LoadInt(&t->Looks.leg, node, "Legs");
+	LoadInt(&t->Looks.skin, node, "Skin");
+	LoadInt(&t->Looks.hair, node, "Hair");
 }
-void LoadPlayerTemplates(
-	PlayerTemplate templates[MAX_TEMPLATE], const char *filename)
+void LoadPlayerTemplates(CArray *templates, const char *filename)
 {
-	int i;
-	FILE *f = fopen(GetConfigFilePath(filename), "r");
 	json_t *root = NULL;
-	json_t *child;
 
 	// initialise templates
-	// templates are zero-delimited
-	memset(templates, 0, sizeof &templates[0] * MAX_TEMPLATE);
+	CArrayInit(templates, sizeof(PlayerTemplate));
+	FILE *f = fopen(GetConfigFilePath(filename), "r");
 	if (!f)
 	{
 		printf("Error loading player templates '%s'\n", filename);
@@ -118,14 +114,13 @@ void LoadPlayerTemplates(
 		printf("Error: unknown player templates format\n");
 		goto bail;
 	}
-	child = json_find_first_label(root, "PlayerTemplates")->child->child;
-	i = 0;
-	while (child != NULL && i < MAX_TEMPLATE)
+	json_t *child = json_find_first_label(root, "PlayerTemplates")->child->child;
+	while (child != NULL)
 	{
-		PlayerTemplate *t = &templates[i];
-		LoadPlayerTemplate(t, child);
+		PlayerTemplate t;
+		LoadPlayerTemplate(&t, child);
 		child = child->next;
-		i++;
+		CArrayPushBack(templates, &t);
 	}
 
 bail:
@@ -141,16 +136,15 @@ static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 	json_t *template = json_new_object();
 	json_insert_pair_into_object(template, "Name", json_new_string(t->name));
 	json_insert_pair_into_object(
-		template, "Face", json_new_string(faceNames[t->face]));
-	AddIntPair(template, "Body", t->body);
-	AddIntPair(template, "Arms", t->arms);
-	AddIntPair(template, "Legs", t->legs);
-	AddIntPair(template, "Skin", t->skin);
-	AddIntPair(template, "Hair", t->hair);
+		template, "Face", json_new_string(faceNames[t->Looks.face]));
+	AddIntPair(template, "Body", t->Looks.body);
+	AddIntPair(template, "Arms", t->Looks.arm);
+	AddIntPair(template, "Legs", t->Looks.leg);
+	AddIntPair(template, "Skin", t->Looks.skin);
+	AddIntPair(template, "Hair", t->Looks.hair);
 	json_insert_child(templates, template);
 }
-void SavePlayerTemplates(
-	PlayerTemplate templates[MAX_TEMPLATE], const char *filename)
+void SavePlayerTemplates(const CArray *templates, const char *filename)
 {
 	FILE *f = fopen(GetConfigFilePath(filename), "w");
 	char *text = NULL;
@@ -168,17 +162,13 @@ void SavePlayerTemplates(
 	setlocale(LC_ALL, "");
 
 	json_insert_pair_into_object(root, "Version", json_new_number("1"));
-	if (PlayerTemplatesGetCount(templates) > 0)
+	json_t *templatesNode = json_new_array();
+	for (int i = 0; i < (int)templates->size; i++)
 	{
-		json_t *templatesNode = json_new_array();
-		int i;
-		for (i = 0; i < PlayerTemplatesGetCount(templates); i++)
-		{
-			PlayerTemplate *t = &templates[i];
-			SavePlayerTemplate(t, templatesNode);
-		}
-		json_insert_pair_into_object(root, "PlayerTemplates", templatesNode);
+		PlayerTemplate *t = CArrayGet(templates, i);
+		SavePlayerTemplate(t, templatesNode);
 	}
+	json_insert_pair_into_object(root, "PlayerTemplates", templatesNode);
 
 	json_tree_to_string(root, &text);
 	formatText = json_format_string(text);
@@ -193,17 +183,4 @@ bail:
 	{
 		fclose(f);
 	}
-}
-
-int PlayerTemplatesGetCount(PlayerTemplate templates[MAX_TEMPLATE])
-{
-	int i;
-	for (i = 0; i < MAX_TEMPLATE; i++)
-	{
-		if (strcmp(templates[i].name, "") == 0)
-		{
-			break;
-		}
-	}
-	return i;
 }

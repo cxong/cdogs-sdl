@@ -315,7 +315,7 @@ void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
 		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
 		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
-		CharacterSetLooks(ch, &ch->looks);
+		CharacterSetColors(ch);
 		child = child->next;
 	}
 }

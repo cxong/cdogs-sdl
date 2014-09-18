@@ -59,39 +59,6 @@
 #include "weapon.h"
 #include "sys_config.h"
 
-#define MAX_WEAPONS 3
-
-
-struct PlayerData
-{
-	char name[20];
-	CharLooks looks;
-	int weaponCount;
-	const GunDescription *weapons[MAX_WEAPONS];
-
-	int score;
-	int totalScore;
-	int kills;
-	int friendlies;
-
-	// Used for end-of-game score tallying
-	int survived;
-	int hp;
-	int missions;
-	int lastMission;
-	int allTime, today;
-
-	input_device_e inputDevice;
-	int deviceIndex;
-	int playerIndex;
-};
-
-extern struct PlayerData gPlayerDatas[MAX_PLAYERS];
-
-struct GameOptions {
-	int numPlayers;
-	int badGuys;
-};
 
 struct DoorPic {
 	int horzPic;
@@ -108,7 +75,6 @@ struct DoorPic {
 #define PICKUP_SCORE 10
 
 
-extern struct GameOptions gOptions;
 extern struct MissionOptions gMission;
 
 struct SongDef {
@@ -124,8 +90,6 @@ void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
 
-void PlayerDataInitialize(void);
-
 void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
 
 void MissionOptionsInit(struct MissionOptions *mo);
@@ -140,6 +104,6 @@ int IsMissionBriefingNeeded(campaign_mode_e mode);
 int AreKeysAllowed(campaign_mode_e mode);
 int AreHealthPickupsAllowed(campaign_mode_e mode);
 
-int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS]);
+bool GameIsMouseUsed(void);
 
 #endif

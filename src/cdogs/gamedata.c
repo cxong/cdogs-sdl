@@ -68,127 +68,13 @@
 #include "sys_config.h"
 #include "utils.h"
 
-
-struct PlayerData gPlayerDatas[MAX_PLAYERS];
-
-struct GameOptions gOptions = {
-	0,	// twoPlayers
-	1	// badGuys
-};
-
 CampaignOptions gCampaign;
 
 struct MissionOptions gMission;
 
-
 struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
-
-void PlayerDataInitialize(void)
-{
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		struct PlayerData *d = &gPlayerDatas[i];
-		memset(d, 0, sizeof *d);
-
-		// Set default player 1 controls, as it's used in menus
-		if (i == 0)
-		{
-			d->inputDevice = INPUT_DEVICE_KEYBOARD;
-			d->deviceIndex = 0;
-		}
-
-		// load from template if available
-		if (PlayerTemplatesGetCount(gPlayerTemplates) > i)
-		{
-			PlayerTemplate *t = &gPlayerTemplates[i];
-			strcpy(d->name, t->name);
-			d->looks.face = t->face;
-			d->looks.skin = t->skin;
-			d->looks.arm = t->arms;
-			d->looks.body = t->body;
-			d->looks.leg = t->legs;
-			d->looks.hair = t->hair;
-		}
-		else
-		{
-			switch (i)
-			{
-			case 0:
-				strcpy(d->name, "Jones");
-				d->looks.face = FACE_JONES;
-				d->looks.skin = SHADE_SKIN;
-				d->looks.arm = SHADE_BLUE;
-				d->looks.body = SHADE_BLUE;
-				d->looks.leg = SHADE_BLUE;
-				d->looks.hair = SHADE_RED;
-				break;
-			case 1:
-				strcpy(d->name, "Ice");
-				d->looks.face = FACE_ICE;
-				d->looks.skin = SHADE_DARKSKIN;
-				d->looks.arm = SHADE_RED;
-				d->looks.body = SHADE_RED;
-				d->looks.leg = SHADE_RED;
-				d->looks.hair = SHADE_RED;
-				break;
-			case 2:
-				strcpy(d->name, "Delta");
-				d->looks.face = FACE_WARBABY;
-				d->looks.skin = SHADE_SKIN;
-				d->looks.arm = SHADE_GREEN;
-				d->looks.body = SHADE_GREEN;
-				d->looks.leg = SHADE_GREEN;
-				d->looks.hair = SHADE_RED;
-				break;
-			case 3:
-				strcpy(d->name, "Hans");
-				d->looks.face = FACE_HAN;
-				d->looks.skin = SHADE_ASIANSKIN;
-				d->looks.arm = SHADE_YELLOW;
-				d->looks.body = SHADE_YELLOW;
-				d->looks.leg = SHADE_YELLOW;
-				d->looks.hair = SHADE_GOLDEN;
-				break;
-			default:
-				assert(0 && "unsupported");
-				break;
-			}
-		}
-
-		// weapons
-		switch (i)
-		{
-			case 0:
-				d->weapons[0] = StrGunDescription("Shotgun");
-				d->weapons[1] = StrGunDescription("Machine gun");
-				d->weapons[2] = StrGunDescription("Shrapnel bombs");
-				break;
-			case 1:
-				d->weapons[0] = StrGunDescription("Powergun");
-				d->weapons[1] = StrGunDescription("Flamer");
-				d->weapons[2] = StrGunDescription("Grenades");
-				break;
-			case 2:
-				d->weapons[0] = StrGunDescription("Sniper rifle");
-				d->weapons[1] = StrGunDescription("Knife");
-				d->weapons[2] = StrGunDescription("Molotovs");
-				break;
-			case 3:
-				d->weapons[0] = StrGunDescription("Machine gun");
-				d->weapons[1] = StrGunDescription("Flamer");
-				d->weapons[2] = StrGunDescription("Dynamite");
-				break;
-			default:
-				assert(0 && "unsupported");
-				break;
-		}
-		d->weaponCount = 3;
-		d->playerIndex = i;
-	}
-}
 
 void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 {
@@ -386,15 +272,15 @@ int AreHealthPickupsAllowed(campaign_mode_e mode)
 }
 
 
-int GameIsMouseUsed(struct PlayerData playerDatas[MAX_PLAYERS])
+bool GameIsMouseUsed(void)
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (playerDatas[i].inputDevice == INPUT_DEVICE_MOUSE)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->inputDevice == INPUT_DEVICE_MOUSE)
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }

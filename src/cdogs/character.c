@@ -73,31 +73,25 @@ void SetShade(TranslationTable * table, int start, int end, int shade)
 		(*table)[i] = colorShades[shade][i - start];
 }
 
-void SetCharacterColors(TranslationTable *t, CharLooks looks)
+void CharacterSetColors(Character *c)
 {
-	int f;
-	for (f = 0; f < 256; f++)
+	TranslationTable *t = &c->table;
+	for (int f = 0; f < 256; f++)
 	{
 		(*t)[f] = f & 0xFF;
 	}
-	SetShade(t, BODY_START, BODY_END, looks.body);
-	SetShade(t, ARMS_START, ARMS_END, looks.arm);
-	SetShade(t, LEGS_START, LEGS_END, looks.leg);
-	SetShade(t, SKIN_START, SKIN_END, looks.skin);
-	SetShade(t, HAIR_START, HAIR_END, looks.hair);
-}
-
-void CharacterSetLooks(Character *c, const CharLooks *l)
-{
-	c->looks = *l;
-	SetCharacterColors(&c->table, c->looks);
+	SetShade(t, BODY_START, BODY_END, c->looks.body);
+	SetShade(t, ARMS_START, ARMS_END, c->looks.arm);
+	SetShade(t, LEGS_START, LEGS_END, c->looks.leg);
+	SetShade(t, SKIN_START, SKIN_END, c->looks.skin);
+	SetShade(t, HAIR_START, HAIR_END, c->looks.hair);
 }
 
 
 void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
-	store->playerCount = MAX_PLAYERS;
+	CArrayInit(&store->Players, sizeof(Character));
 	CArrayInit(&store->OtherChars, sizeof(Character));
 }
 
@@ -108,6 +102,7 @@ void CharacterStoreTerminate(CharacterStore *store)
 		Character *c = CArrayGet(&store->OtherChars, i);
 		CFREE(c->bot);
 	}
+	CArrayTerminate(&store->Players);
 	CArrayTerminate(&store->OtherChars);
 	CFREE(store->prisoners);
 	CFREE(store->baddies);

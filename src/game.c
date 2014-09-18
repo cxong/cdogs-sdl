@@ -144,12 +144,12 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 {
 	Vec2i centerOffset = Vec2iZero();
-	int i;
-	int numPlayersAlive = GetNumPlayersAlive();
-	int w = gGraphicsDevice.cachedConfig.Res.x;
-	int h = gGraphicsDevice.cachedConfig.Res.y;
+	const int numLocalPlayersAlive = GetNumPlayers(true, false, true);
+	const int numLocalPlayers = GetNumPlayers(false, false, true);
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
-	for (i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
+	for (int i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
 		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
 	}
@@ -157,20 +157,21 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	Vec2i noise = ScreenShakeGetDelta(shake);
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (numPlayersAlive == 0)
+	if (numLocalPlayersAlive == 0)
 	{
 		DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
 	}
 	else
 	{
-		const int numHumanPlayersAlive = GetNumHumanPlayersAlive();
-		if (numHumanPlayersAlive == 1 || numPlayersAlive == 1)
+		const int numLocalHumanPlayersAlive = GetNumPlayers(true, true, true);
+		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
 		{
-			TActor *p =
-				numHumanPlayersAlive == 1 ?
-				GetFirstAliveHumanPlayer() :
-				GetFirstAlivePlayer();
-			Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
+			const TActor *p = CArrayGet(
+				&gActors,
+				(numLocalHumanPlayersAlive == 1 ?
+				GetFirstPlayer(true, true, true) :
+				GetFirstPlayer(true, false, true))->Id);
+			const Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
 			DoBuffer(b, center, X_TILES, noise, centerOffset);
 			SoundSetEars(center);
 			lastPosition = center;
@@ -184,11 +185,12 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 
 			DrawBufferSetFromMap(
 				b, &gMap, Vec2iAdd(lastPosition, noise), X_TILES);
-			for (i = 0; i < MAX_PLAYERS; i++)
+			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
-				if (IsPlayerAlive(i))
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				if (IsPlayerAlive(p))
 				{
-					TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
+					const TActor *player = CArrayGet(&gActors, p->Id);
 					DrawBufferLOS(
 						b, Vec2iNew(player->tileItem.x, player->tileItem.y));
 				}
@@ -197,63 +199,75 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 			DrawBufferDraw(b, centerOffset, NULL);
 			SoundSetEars(lastPosition);
 		}
-		else if (gOptions.numPlayers == 2)
+		else if (numLocalPlayers == 2)
 		{
-			assert(numPlayersAlive == 2);
+			CASSERT(
+				numLocalPlayersAlive == 2,
+				"Unexpected number of local players");
 			// side-by-side split
-			for (i = 0; i < 2; i++)
+			int idx = 0;
+			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 			{
-				TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-				Vec2i center = Vec2iNew(
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				if (!p->IsLocal)
+				{
+					idx--;
+					continue;
+				}
+				const TActor *player = CArrayGet(&gActors, p->Id);
+				const Vec2i center = Vec2iNew(
 					player->tileItem.x, player->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
-				int clipLeft = (i & 1) ? w / 2 : 0;
-				int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
+				int clipLeft = (idx & 1) ? w / 2 : 0;
+				int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
 				GraphicsSetBlitClip(
 					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
-				if (i == 1)
+				if (idx == 1)
 				{
 					centerOffsetPlayer.x += w / 2;
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
-				if (i == 0)
-				{
-					SoundSetLeftEars(center);
-					lastPosition = center;
-				}
-				else
-				{
-					SoundSetRightEars(center);
-				}
+				SoundSetEarsSide(idx == 0, center);
+				lastPosition = center;
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
 		}
-		else if (gOptions.numPlayers >= 3 && gOptions.numPlayers <= 4)
+		else if (numLocalPlayers >= 3 && numLocalPlayers <= 4)
 		{
 			// 4 player split screen
-			for (i = 0; i < 4; i++)
+			int idx = 0;
+			bool isLocalPlayerAlive[4];
+			memset(isLocalPlayerAlive, 0, sizeof isLocalPlayerAlive);
+			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 			{
-				Vec2i center;
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				if (!p->IsLocal)
+				{
+					idx--;
+					continue;
+				}
 				Vec2i centerOffsetPlayer = centerOffset;
-				int clipLeft = (i & 1) ? w / 2 : 0;
-				int clipTop = (i < 2) ? 0 : h / 2 - 1;
-				int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
-				int clipBottom = (i < 2) ? h / 2 : h - 1;
-				if (!IsPlayerAlive(i))
+				const int clipLeft = (idx & 1) ? w / 2 : 0;
+				const int clipTop = (idx < 2) ? 0 : h / 2 - 1;
+				const int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
+				const int clipBottom = (idx < 2) ? h / 2 : h - 1;
+				isLocalPlayerAlive[idx] = IsPlayerAlive(p);
+				if (!isLocalPlayerAlive[idx])
 				{
 					continue;
 				}
-				TActor *player = CArrayGet(&gActors, i);
-				center = Vec2iNew(player->tileItem.x, player->tileItem.y);
+				const TActor *player = CArrayGet(&gActors, p->Id);
+				const Vec2i center =
+					Vec2iNew(player->tileItem.x, player->tileItem.y);
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
-				if (i & 1)
+				if (idx & 1)
 				{
 					centerOffsetPlayer.x += w / 2;
 				}
-				if (i < 2)
+				if (idx < 2)
 				{
 					centerOffsetPlayer.y -= h / 4;
 				}
@@ -264,73 +278,28 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 
 				// Set the sound "ears"
-				// If any player is dead, that ear reverts to the other ear
-				// of the same side of the remaining player
-				// If both players of one side are dead, those ears revert
-				// to any of the other remaining players
-				switch (i)
+				if (isLocalPlayerAlive[idx])
 				{
-				case 0:
-					if (IsPlayerAlive(0))
+					const bool isLeft = idx == 0 || idx == 2;
+					const bool isUpper = idx <= 2;
+					SoundSetEar(isLeft, isUpper ? 0 : 1, center);
+					// If any player is dead, that ear reverts to the other ear
+					// of the same side of the remaining player
+					const int otherIdxOnSameSide = idx ^ 2;
+					if (!isLocalPlayerAlive[otherIdxOnSameSide])
 					{
-						SoundSetLeftEar1(center);
-						if (!IsPlayerAlive(2))
-						{
-							SoundSetLeftEar2(center);
-						}
-						else if (!IsPlayerAlive(1) && !IsPlayerAlive(3))
-						{
-							SoundSetRightEars(center);
-						}
+						SoundSetEar(isLeft, !isUpper ? 0 : 1, center);
 					}
-					break;
-				case 1:
-					if (IsPlayerAlive(1))
+					else if (!isLocalPlayerAlive[3 - idx] &&
+						!isLocalPlayerAlive[3 - otherIdxOnSameSide])
 					{
-						SoundSetRightEar1(center);
-						if (!IsPlayerAlive(3))
-						{
-							SoundSetRightEar2(center);
-						}
-						else if (!IsPlayerAlive(0) && !IsPlayerAlive(2))
-						{
-							SoundSetLeftEars(center);
-						}
+						// If both players of one side are dead,
+						// those ears revert to any of the other remaining
+						// players
+						SoundSetEarsSide(!isLeft, center);
 					}
-					break;
-				case 2:
-					if (IsPlayerAlive(2))
-					{
-						SoundSetLeftEar2(center);
-						if (!IsPlayerAlive(0))
-						{
-							SoundSetLeftEar1(center);
-						}
-						else if (!IsPlayerAlive(1) && !IsPlayerAlive(3))
-						{
-							SoundSetRightEars(center);
-						}
-					}
-					break;
-				case 3:
-					if (IsPlayerAlive(3))
-					{
-						SoundSetRightEar2(center);
-						if (!IsPlayerAlive(1))
-						{
-							SoundSetRightEar1(center);
-						}
-						else if (!IsPlayerAlive(0) && !IsPlayerAlive(2))
-						{
-							SoundSetLeftEars(center);
-						}
-					}
-					break;
-				default:
-					assert(0 && "unknown error");
-					break;
 				}
-				if (IsPlayerAlive(i))
+				if (isLocalPlayerAlive[idx])
 				{
 					lastPosition = center;
 				}
@@ -349,40 +318,44 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	return lastPosition;
 }
 
-Vec2i GetPlayerCenter(GraphicsDevice *device, DrawBuffer *b, int player)
+Vec2i GetPlayerCenter(
+	GraphicsDevice *device, DrawBuffer *b,
+	const PlayerData *pData, const int playerIdx)
 {
 	Vec2i center = Vec2iZero();
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
-	if (GetNumPlayersAlive() == 1 ||
+	if (GetNumPlayers(true, true, true) == 1 ||
+		GetNumPlayers(true, false , true) == 1 ||
 		IsSingleScreen(
 			&device->cachedConfig,
 			gConfig.Interface.Splitscreen))
 	{
-		Vec2i pCenter = PlayersGetMidpoint();
-		Vec2i screenCenter = Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
-		TActor *actor = CArrayGet(&gActors, gPlayerIds[player]);
-		TTileItem *pTileItem = &actor->tileItem;
-		Vec2i p = Vec2iNew(pTileItem->x, pTileItem->y);
+		const Vec2i pCenter = PlayersGetMidpoint();
+		const Vec2i screenCenter =
+			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
+		const TActor *actor = CArrayGet(&gActors, pData->Id);
+		const Vec2i p = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 		center = Vec2iAdd(
 			Vec2iAdd(p, Vec2iScale(pCenter, -1)), screenCenter);
 	}
 	else
 	{
-		if (gOptions.numPlayers == 2)
+		const int numLocalPlayers = GetNumPlayers(false, false, true);
+		if (numLocalPlayers == 2)
 		{
-			center.x = player == 0 ? w / 4 : w * 3 / 4;
+			center.x = playerIdx == 0 ? w / 4 : w * 3 / 4;
 			center.y = h / 2;
 		}
-		else if (gOptions.numPlayers >= 3 && gOptions.numPlayers <= 4)
+		else if (numLocalPlayers >= 3 && numLocalPlayers <= 4)
 		{
-			center.x = (player & 1) ? w * 3 / 4 : w / 4;
-			center.y = (player >= 2) ? h * 3 / 4 : h / 4;
+			center.x = (playerIdx & 1) ? w * 3 / 4 : w / 4;
+			center.y = (playerIdx >= 2) ? h * 3 / 4 : h / 4;
 		}
 		else
 		{
-			assert(0 && "invalid number of players");
+			CASSERT(false, "invalid number of players");
 		}
 	}
 	// Add draw buffer offset
@@ -401,7 +374,7 @@ typedef struct
 	// TODO: turn the following into a screen system?
 	bool isPaused;
 	bool isMap;
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	HealthPickups hp;
 	ScreenShake shake;
 	Vec2i lastPosition;
@@ -475,18 +448,21 @@ static void RunGameInput(void *data)
 
 	memset(rData->cmds, 0, sizeof rData->cmds);
 	int cmdAll = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (!IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal || !IsPlayerAlive(p))
 		{
+			idx--;
 			continue;
 		}
-		rData->cmds[i] = GetGameCmd(
+		rData->cmds[idx] = GetGameCmd(
 			&gEventHandlers,
 			&gConfig.Input,
-			&gPlayerDatas[i],
-			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, i));
-		cmdAll |= rData->cmds[i];
+			p,
+			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, p, idx));
+		cmdAll |= rData->cmds[idx];
 	}
 
 	// Check if automap key is pressed by any player
@@ -547,14 +523,15 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Update all the things in the game
 	const int ticksPerFrame = 1;
 
-	for (int i = 0; i < gOptions.numPlayers; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (!IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal || !IsPlayerAlive(p))
 		{
 			continue;
 		}
-		TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+		TActor *player = CArrayGet(&gActors, p->Id);
+		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
 			rData->cmds[i] = AICoopGetCmd(player, ticksPerFrame);
 		}
@@ -562,10 +539,7 @@ static GameLoopResult RunGameUpdate(void *data)
 		CommandActor(player, rData->cmds[i], ticksPerFrame);
 	}
 
-	if (gOptions.badGuys)
-	{
-		CommandBadGuys(ticksPerFrame);
-	}
+	CommandBadGuys(ticksPerFrame);
 
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
@@ -578,13 +552,14 @@ static GameLoopResult RunGameUpdate(void *data)
 		const int h = gGraphicsDevice.cachedConfig.Res.y;
 		const Vec2i screen = Vec2iAdd(
 			PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
-		for (int i = 0; i < gOptions.numPlayers; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			if (!IsPlayerAlive(i))
+			const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+			if (!pd->IsLocal || !IsPlayerAlive(pd))
 			{
 				continue;
 			}
-			const TActor *p = CArrayGet(&gActors, gPlayerIds[i]);
+			const TActor *p = CArrayGet(&gActors, pd->Id);
 			const int pad = SPLIT_PADDING;
 			GameEvent ei;
 			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
@@ -622,7 +597,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	HealthPickupsUpdate(&rData->hp, ticksPerFrame);
 
 	const bool isMissionComplete =
-		GetNumPlayersAlive() > 0 && IsMissionComplete(rData->m);
+		GetNumPlayers(true, false, false) > 0 && IsMissionComplete(rData->m);
 	if (rData->m->state == MISSION_STATE_PLAY && isMissionComplete)
 	{
 		GameEvent e;
@@ -657,9 +632,10 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Note: there's a period of time where players are dying
 	// Wait until after this period before ending the game
 	bool allPlayersDestroyed = true;
-	for (int i = 0; i < gOptions.numPlayers; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (gPlayerIds[i] != -1)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->Id != -1)
 		{
 			allPlayersDestroyed = false;
 			break;
@@ -687,7 +663,7 @@ static void RunGameDraw(void *data)
 		DrawScreen(&rData->buffer, rData->lastPosition, rData->shake);
 
 	HUDDraw(&rData->hud, rData->isPaused);
-	if (GameIsMouseUsed(gPlayerDatas))
+	if (GameIsMouseUsed())
 	{
 		MouseDraw(&gEventHandlers.mouse);
 	}

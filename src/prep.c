@@ -94,7 +94,7 @@ int NumPlayersSelection(
 		"Select number of players",
 		MENU_TYPE_NORMAL,
 		0);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		char buf[2];
 		if (mode == CAMPAIGN_MODE_DOGFIGHT && i == 0)
@@ -119,44 +119,54 @@ int NumPlayersSelection(
 
 
 static void AssignPlayerInputDevice(
-	struct PlayerData *pData, input_device_e d, int idx)
+	PlayerData *pData, const input_device_e d, const int idx)
 {
 	pData->inputDevice = d;
 	pData->deviceIndex = idx;
 }
 
 static void AssignPlayerInputDevices(
-	bool hasInputDevice[MAX_PLAYERS], int numPlayers,
-	struct PlayerData playerDatas[MAX_PLAYERS],
-	EventHandlers *handlers, InputConfig *inputConfig)
+	CArray *hasInputDevices, EventHandlers *handlers,
+	const InputConfig *inputConfig)
 {
 	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
 	bool assignedMouse = false;
 	bool assignedJoysticks[MAX_JOYSTICKS];
-	bool assignedNet[MAX_PLAYERS];
+	CArray assignedNet;
+	CArrayInit(&assignedNet, sizeof(bool));
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		bool assigned = false;
+		CArrayPushBack(&assignedNet, &assigned);
+	}
 	int numNet = 0;
 	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
 	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
-	memset(assignedNet, 0, sizeof assignedNet);
 
-	for (int i = 0; i < numPlayers; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (hasInputDevice[i])
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			continue;
+		}
+		bool *hasInputDevice = CArrayGet(hasInputDevices, i);
+		if (*hasInputDevice)
 		{
 			// Find all the assigned devices
-			switch (playerDatas[i].inputDevice)
+			switch (p->inputDevice)
 			{
 			case INPUT_DEVICE_KEYBOARD:
-				assignedKeyboards[playerDatas[i].deviceIndex] = true;
+				assignedKeyboards[p->deviceIndex] = true;
 				break;
 			case INPUT_DEVICE_MOUSE:
 				assignedMouse = true;
 				break;
 			case INPUT_DEVICE_JOYSTICK:
-				assignedJoysticks[playerDatas[i].deviceIndex] = true;
+				assignedJoysticks[p->deviceIndex] = true;
 				break;
 			case INPUT_DEVICE_NET:
-				assignedNet[playerDatas[i].deviceIndex] = true;
+				*(bool *)CArrayGet(&assignedNet, p->deviceIndex) = true;
 				numNet++;
 				break;
 			default:
@@ -175,19 +185,18 @@ static void AssignPlayerInputDevices(
 				inputConfig->PlayerKeys[j].Keys.button1) &&
 				!assignedKeyboards[j])
 			{
-				hasInputDevice[i] = 1;
-				AssignPlayerInputDevice(
-					&playerDatas[i], INPUT_DEVICE_KEYBOARD, j);
+				*hasInputDevice = true;
+				AssignPlayerInputDevice(p, INPUT_DEVICE_KEYBOARD, j);
 				assignedKeyboards[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
-				continue;
+				break;
 			}
 		}
 		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
 			!assignedMouse)
 		{
-			hasInputDevice[i] = 1;
-			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_MOUSE, 0);
+			*hasInputDevice = true;
+			AssignPlayerInputDevice(p, INPUT_DEVICE_MOUSE, 0);
 			assignedMouse = true;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
@@ -198,18 +207,18 @@ static void AssignPlayerInputDevices(
 				&handlers->joysticks.joys[j], CMD_BUTTON1) &&
 				!assignedJoysticks[j])
 			{
-				hasInputDevice[i] = 1;
-				AssignPlayerInputDevice(
-					&playerDatas[i], INPUT_DEVICE_JOYSTICK, j);
+				*hasInputDevice = true;
+				AssignPlayerInputDevice(p, INPUT_DEVICE_JOYSTICK, j);
 				assignedJoysticks[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
-				continue;
+				break;
 			}
 		}
-		if ((int)gNetServer.server->connectedPeers > numNet)
+		if (gNetServer.server &&
+			(int)gNetServer.server->connectedPeers > numNet)
 		{
-			hasInputDevice[i] = true;
-			AssignPlayerInputDevice(&playerDatas[i], INPUT_DEVICE_NET, 0);
+			*hasInputDevice = true;
+			AssignPlayerInputDevice(p, INPUT_DEVICE_NET, 0);
 			const int peerId = gNetServer.peerId - 1;
 			// Send the current campaign details over
 			debug(D_VERBOSE, "NetServer: sending campaign entry");
@@ -220,31 +229,32 @@ static void AssignPlayerInputDevices(
 			debug(D_VERBOSE, "NetServer: sending player index %d", i);
 			NetServerSendMsg(&gNetServer, peerId, SERVER_MSG_PLAYER_ID, &i);
 			// Send details of all current players
-			for (int j = 0; j < numPlayers; j++)
+			for (int j = 0; j < (int)gPlayerDatas.size; j++)
 			{
-				if (j == i || !hasInputDevice[j])
+				if (j == i)
 				{
 					continue;
 				}
 				debug(D_VERBOSE, "NetServer: sending player data index %d", j);
+				const PlayerData *pOther = CArrayGet(&gPlayerDatas, j);
 				NetServerSendMsg(
-					&gNetServer, peerId,
-					SERVER_MSG_PLAYER_DATA, &playerDatas[j]);
+					&gNetServer, peerId, SERVER_MSG_PLAYER_DATA, pOther);
 			}
-			assignedNet[playerDatas[i].deviceIndex] = true;
+			*(bool *)CArrayGet(&assignedNet, p->deviceIndex) = true;
 			numNet++;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			debug(D_VERBOSE, "NetServer: client connection complete");
 			continue;
 		}
 	}
+
+	CArrayTerminate(&assignedNet);
 }
 
 typedef struct
 {
-	int numPlayers;
-	bool hasInputDevice[MAX_PLAYERS];
-	PlayerSelectMenu menus[MAX_PLAYERS];
+	CArray hasInputDevice;	// of bool
+	PlayerSelectMenu menus[MAX_LOCAL_PLAYERS];
 	NameGen g;
 	char prefixes[CDOGS_PATH_MAX];
 	char suffixes[CDOGS_PATH_MAX];
@@ -253,21 +263,35 @@ typedef struct
 } PlayerSelectionData;
 static GameLoopResult PlayerSelectionUpdate(void *data);
 static void PlayerSelectionDraw(void *data);
-bool PlayerSelection(const int numPlayers)
+bool PlayerSelection(void)
 {
 	PlayerSelectionData data;
 	memset(&data, 0, sizeof data);
-	data.numPlayers = numPlayers;
+	CArrayInit(&data.hasInputDevice, sizeof(bool));
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		bool hasInputDevice = false;
+		CArrayPushBack(&data.hasInputDevice, &hasInputDevice);
+	}
 	data.IsOK = true;
 	GetDataFilePath(data.prefixes, "data/prefixes.txt");
 	GetDataFilePath(data.suffixes, "data/suffixes.txt");
 	GetDataFilePath(data.suffixnames, "data/suffixnames.txt");
 	NameGenInit(&data.g, data.prefixes, data.suffixes, data.suffixnames);
-	for (int i = 0; i < numPlayers; i++)
+
+	// Create selection menus for each local player
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
 		PlayerSelectMenusCreate(
-			&data.menus[i], numPlayers, i,
-			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
+			&data.menus[idx], GetNumPlayers(false, false, true), idx,
+			CArrayGet(&gCampaign.Setting.characters.Players, idx), p,
 			&gEventHandlers, &gGraphicsDevice, &gConfig.Input, &data.g);
 	}
 
@@ -280,34 +304,19 @@ bool PlayerSelection(const int numPlayers)
 	if (data.IsOK)
 	{
 		// For any player slots not picked, turn them into AIs
-		for (int i = 0; i < numPlayers; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			if (!data.hasInputDevice[i])
+			const bool *hasInputDevice = CArrayGet(&data.hasInputDevice, i);
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!*hasInputDevice && p->IsLocal)
 			{
-				AssignPlayerInputDevice(&gPlayerDatas[i], INPUT_DEVICE_AI, 0);
+				AssignPlayerInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
 		}
 	}
 
-	// If no net input devices selected, close the connection
-	bool hasNetInput = false;
-	for (int i = 0; i < numPlayers; i++)
-	{
-		if (data.hasInputDevice[i] &&
-			gPlayerDatas[i].inputDevice == INPUT_DEVICE_NET)
-		{
-			hasNetInput = true;
-			break;
-		}
-	}
-
-	if (!hasNetInput)
-	{
-		// TODO: support net players joining mid-game
-		NetServerTerminate(&gNetServer);
-	}
-
-	for (int i = 0; i < numPlayers; i++)
+	CArrayTerminate(&data.hasInputDevice);
+	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{
 		MenuSystemTerminate(&data.menus[i].ms);
 	}
@@ -319,24 +328,29 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 	PlayerSelectionData *pData = data;
 
 	// Check if anyone pressed escape
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-	if (EventIsEscape(
-		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	GetPlayerCmds(&gEventHandlers, &cmds);
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->IsOK = false;
 		return UPDATE_RESULT_EXIT;
 	}
 
 	// Menu input
-	for (int i = 0; i < pData->numPlayers; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (pData->hasInputDevice[i] &&
-			!MenuIsExit(&pData->menus[i].ms) &&
-			cmds[i])
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
 		{
-			MenuProcessCmd(&pData->menus[i].ms, cmds[i]);
+			idx--;
+			continue;
+		}
+		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
+		if (*hasInputDevice && !MenuIsExit(&pData->menus[idx].ms) && cmds[idx])
+		{
+			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
 		}
 	}
 
@@ -345,16 +359,23 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 	// The "players" with no input device are turned into AIs
 	bool hasAtLeastOneInput = false;
 	bool isDone = true;
-	for (int i = 0; i < pData->numPlayers; i++)
+	idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (pData->hasInputDevice[i])
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
+		if (*hasInputDevice)
 		{
 			hasAtLeastOneInput = true;
-		}
-		if (strcmp(pData->menus[i].ms.current->name, "Done") != 0 &&
-			pData->hasInputDevice[i])
-		{
-			isDone = false;
+			if (strcmp(pData->menus[idx].ms.current->name, "Done") != 0)
+			{
+				isDone = false;
+			}
 		}
 	}
 	if (isDone && hasAtLeastOneInput)
@@ -363,8 +384,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 	}
 
 	AssignPlayerInputDevices(
-		pData->hasInputDevice, pData->numPlayers,
-		gPlayerDatas, &gEventHandlers, &gConfig.Input);
+		&pData->hasInputDevice, &gEventHandlers, &gConfig.Input);
 
 	return UPDATE_RESULT_DRAW;
 }
@@ -375,18 +395,26 @@ static void PlayerSelectionDraw(void *data)
 	GraphicsBlitBkg(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
-	for (int i = 0; i < pData->numPlayers; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (pData->hasInputDevice[i])
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
 		{
-			MenuDisplay(&pData->menus[i].ms);
+			idx--;
+			continue;
+		}
+		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
+		if (*hasInputDevice)
+		{
+			MenuDisplay(&pData->menus[idx].ms);
 		}
 		else
 		{
 			Vec2i center = Vec2iZero();
 			const char *prompt = "Press Fire to join...";
 			const Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
-			switch (pData->numPlayers)
+			switch (GetNumPlayers(false, false, true))
 			{
 			case 1:
 				// Center of screen
@@ -394,13 +422,13 @@ static void PlayerSelectionDraw(void *data)
 				break;
 			case 2:
 				// Side by side
-				center = Vec2iNew(i * w / 2 + w / 4, h / 2);
+				center = Vec2iNew(idx * w / 2 + w / 4, h / 2);
 				break;
 			case 3:
 			case 4:
 				// Four corners
 				center = Vec2iNew(
-					(i & 1) * w / 2 + w / 4, (i / 2) * h / 2 + h / 4);
+					(idx & 1) * w / 2 + w / 4, (idx / 2) * h / 2 + h / 4);
 				break;
 			default:
 				CASSERT(false, "not implemented");
@@ -413,34 +441,38 @@ static void PlayerSelectionDraw(void *data)
 
 typedef struct
 {
-	WeaponMenu menus[MAX_PLAYERS];
-	int numPlayers;
+	WeaponMenu menus[MAX_LOCAL_PLAYERS];
 	bool IsOK;
 } PlayerEquipData;
 static GameLoopResult PlayerEquipUpdate(void *data);
 static void PlayerEquipDraw(void *data);
-bool PlayerEquip(const int numPlayers)
+bool PlayerEquip(void)
 {
 	PlayerEquipData data;
 	memset(&data, 0, sizeof data);
-	data.numPlayers = numPlayers;
 	data.IsOK = true;
-	for (int i = 0; i < numPlayers; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			continue;
+		}
 		WeaponMenuCreate(
-			&data.menus[i], numPlayers, i,
-			&gCampaign.Setting.characters.players[i], &gPlayerDatas[i],
+			&data.menus[idx], GetNumPlayers(false, false, true), i,
+			CArrayGet(&gCampaign.Setting.characters.Players, i), p,
 			&gEventHandlers, &gGraphicsDevice, &gConfig.Input);
 		// For AI players, pre-pick their weapons and go straight to menu end
-		if (gPlayerDatas[i].inputDevice == INPUT_DEVICE_AI)
+		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
 			const int lastMenuIndex =
-				(int)data.menus[i].ms.root->u.normal.subMenus.size - 1;
-			data.menus[i].ms.current = CArrayGet(
-				&data.menus[i].ms.root->u.normal.subMenus, lastMenuIndex);
-			gPlayerDatas[i].weapons[0] = AICoopSelectWeapon(
-				i, &gMission.missionData->Weapons);
-			gPlayerDatas[i].weaponCount = 1;
+				(int)data.menus[idx].ms.root->u.normal.subMenus.size - 1;
+			data.menus[idx].ms.current = CArrayGet(
+				&data.menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
+			p->weapons[0] = AICoopSelectWeapon(
+				idx, &gMission.missionData->Weapons);
+			p->weaponCount = 1;
 			// TODO: select more weapons, or select weapons based on mission
 		}
 	}
@@ -449,7 +481,7 @@ bool PlayerEquip(const int numPlayers)
 		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
 	GameLoop(&gData);
 
-	for (int i = 0; i < numPlayers; i++)
+	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{
 		MenuSystemTerminate(&data.menus[i].ms);
 	}
@@ -461,33 +493,39 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 	PlayerEquipData *pData = data;
 
 	// Check if anyone pressed escape
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-	if (EventIsEscape(
-		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	GetPlayerCmds(&gEventHandlers, &cmds);
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->IsOK = false;
 		return UPDATE_RESULT_EXIT;
 	}
 
 	// Update menus
-	for (int i = 0; i < pData->numPlayers; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (!MenuIsExit(&pData->menus[i].ms))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
 		{
-			MenuProcessCmd(&pData->menus[i].ms, cmds[i]);
+			idx--;
+			continue;
 		}
-		else if (gPlayerDatas[i].weaponCount == 0)
+		if (!MenuIsExit(&pData->menus[idx].ms))
+		{
+			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
+		}
+		else if (p->weaponCount == 0)
 		{
 			// Check exit condition; must have selected at least one weapon
 			// Otherwise reset the current menu
-			pData->menus[i].ms.current = pData->menus[i].ms.root;
+			pData->menus[idx].ms.current = pData->menus[idx].ms.root;
 		}
 	}
 
 	bool isDone = true;
-	for (int i = 0; i < pData->numPlayers; i++)
+	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{
 		if (strcmp(pData->menus[i].ms.current->name, "(End)") != 0)
 		{
@@ -505,7 +543,7 @@ static void PlayerEquipDraw(void *data)
 {
 	const PlayerEquipData *pData = data;
 	GraphicsBlitBkg(&gGraphicsDevice);
-	for (int i = 0; i < pData->numPlayers; i++)
+	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{
 		MenuDisplay(&pData->menus[i].ms);
 	}

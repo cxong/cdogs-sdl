@@ -159,17 +159,16 @@ static GameLoopResult EnterCodeScreenUpdate(void *data)
 	EnterCodeScreenData *eData = data;
 
 	// Check if anyone pressed escape
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-	if (EventIsEscape(
-		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	GetPlayerCmds(&gEventHandlers, &cmds);
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		eData->Mission = 0;
 		return UPDATE_RESULT_EXIT;
 	}
 
-	const int cmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
+	const int cmd = GetMenuCmd(&gEventHandlers);
 	// Returning 1 means we are still entering password
 	if (PasswordEntry(eData, cmd))
 	{

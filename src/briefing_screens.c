@@ -170,10 +170,10 @@ static GameLoopResult MissionBriefingUpdate(void *data)
 	MissionBriefingData *mData = data;
 
 	// Check for player input; if any then skip to the end of the briefing
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	GetPlayerCmds(&gEventHandlers, &cmds);
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		if (AnyButton(cmds[i]))
 		{
@@ -189,8 +189,7 @@ static GameLoopResult MissionBriefingUpdate(void *data)
 		}
 	}
 	// Check if anyone pressed escape
-	if (EventIsEscape(
-		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas)))
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		mData->IsOK = false;
 		return UPDATE_RESULT_EXIT;
@@ -240,10 +239,10 @@ static void MissionBriefingDraw(void *data)
 
 #define PERFECT_BONUS 500
 
-static bool AreAnySurvived(const struct PlayerData playerDatas[MAX_PLAYERS]);
+static bool AreAnySurvived(void);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
-static void ApplyBonuses(struct PlayerData *p, const int bonus);
+static void ApplyBonuses(PlayerData *p, const int bonus);
 static void MissionSummaryDraw(void *data);
 bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 {
@@ -264,7 +263,7 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 
 	// Calculate bonus scores
 	// Bonuses only apply if at least one player has lived
-	if (AreAnySurvived(gPlayerDatas))
+	if (AreAnySurvived())
 	{
 		int bonus = 0;
 		// Objective bonuses
@@ -281,9 +280,10 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		bonus += GetAccessBonus(m);
 		bonus += GetTimeBonus(m, NULL);
 
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			ApplyBonuses(&gPlayerDatas[i], bonus);
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			ApplyBonuses(p, bonus);
 		}
 	}
 	GameLoopWaitForAnyKeyOrButtonData wData;
@@ -297,11 +297,12 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 	}
 	return wData.IsOK;
 }
-static bool AreAnySurvived(const struct PlayerData playerDatas[MAX_PLAYERS])
+static bool AreAnySurvived(void)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (playerDatas[i].survived)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->survived)
 		{
 			return true;
 		}
@@ -328,12 +329,12 @@ static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut)
 	}
 	return seconds * 25;
 }
-static int GetHealthBonus(const struct PlayerData *p);
-static int GetResurrectionFee(const struct PlayerData *p);
-static int GetButcherPenalty(const struct PlayerData *p);
-static int GetNinjaBonus(const struct PlayerData *p);
-static int GetFriendlyBonus(const struct PlayerData *p);
-static void ApplyBonuses(struct PlayerData *p, const int bonus)
+static int GetHealthBonus(const PlayerData *p);
+static int GetResurrectionFee(const PlayerData *p);
+static int GetButcherPenalty(const PlayerData *p);
+static int GetNinjaBonus(const PlayerData *p);
+static int GetFriendlyBonus(const PlayerData *p);
+static void ApplyBonuses(PlayerData *p, const int bonus)
 {
 	// Apply bonuses to surviving players only
 	if (!p->survived)
@@ -350,16 +351,16 @@ static void ApplyBonuses(struct PlayerData *p, const int bonus)
 	p->totalScore += GetNinjaBonus(p);
 	p->totalScore += GetFriendlyBonus(p);
 }
-static int GetHealthBonus(const struct PlayerData *p)
+static int GetHealthBonus(const PlayerData *p)
 {
 	const int maxHealth = (200 * gConfig.Game.PlayerHP) / 100;
 	return p->hp > maxHealth - 50 ? (p->hp + 50 - maxHealth) * 10 : 0;
 }
-static int GetResurrectionFee(const struct PlayerData *p)
+static int GetResurrectionFee(const PlayerData *p)
 {
 	return p->hp <= 0 ? -500 : 0;
 }
-static int GetButcherPenalty(const struct PlayerData *p)
+static int GetButcherPenalty(const PlayerData *p)
 {
 	if (p->friendlies > 5 && p->friendlies > p->kills / 2)
 	{
@@ -367,7 +368,7 @@ static int GetButcherPenalty(const struct PlayerData *p)
 	}
 	return 0;
 }
-static int GetNinjaBonus(const struct PlayerData *p)
+static int GetNinjaBonus(const PlayerData *p)
 {
 	if (p->weaponCount == 1 && !p->weapons[0]->CanShoot &&
 		p->friendlies == 0 && p->kills > 5)
@@ -376,13 +377,13 @@ static int GetNinjaBonus(const struct PlayerData *p)
 	}
 	return 0;
 }
-static int GetFriendlyBonus(const struct PlayerData *p)
+static int GetFriendlyBonus(const PlayerData *p)
 {
 	return (p->kills == 0 && p->friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size,
-	const struct PlayerData *data, const int character);
+	const PlayerData *data, const int character);
 static void MissionSummaryDraw(void *data)
 {
 	// This will only draw once
@@ -447,8 +448,7 @@ static void MissionSummaryDraw(void *data)
 			FontStrOpt("Failed", Vec2iZero(), opts);
 		}
 		else if (
-			o->done == mo->Count && o->done > mo->Required &&
-			AreAnySurvived(gPlayerDatas))
+			o->done == mo->Count && o->done > mo->Required && AreAnySurvived())
 		{
 			opts.Mask = colorGreen;
 			char buf[16];
@@ -469,7 +469,7 @@ static void MissionSummaryDraw(void *data)
 	}
 
 	// Draw other bonuses
-	if (AreAnySurvived(gPlayerDatas))
+	if (AreAnySurvived())
 	{
 		char s[64];
 
@@ -485,29 +485,32 @@ static void MissionSummaryDraw(void *data)
 
 	// Draw per-player summaries
 	Vec2i size;
-	switch (gOptions.numPlayers)
+	switch (gPlayerDatas.size)
 	{
 	case 1:
 		size = Vec2iNew(w, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, &gPlayerDatas[0], 0);
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
 		break;
 	case 2:
 		// side by side
 		size = Vec2iNew(w / 2, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, &gPlayerDatas[0], 0);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
+		DrawPlayerSummary(
+			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1), 1);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
 		size = Vec2iNew(w / 2, h / 4);
-		DrawPlayerSummary(Vec2iZero(), size, &gPlayerDatas[0], 0);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, &gPlayerDatas[1], 1);
-		DrawPlayerSummary(Vec2iNew(0, h / 4), size, &gPlayerDatas[2], 2);
-		if (gOptions.numPlayers == 4)
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
+		DrawPlayerSummary(
+			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1), 1);
+		DrawPlayerSummary(
+			Vec2iNew(0, h / 4), size, CArrayGet(&gPlayerDatas, 2), 2);
+		if (gPlayerDatas.size == 4)
 		{
 			DrawPlayerSummary(
-				Vec2iNew(w / 2, h / 4), size, &gPlayerDatas[3], 3);
+				Vec2iNew(w / 2, h / 4), size, CArrayGet(&gPlayerDatas, 3), 3);
 		}
 		break;
 	default:
@@ -519,7 +522,7 @@ static void MissionSummaryDraw(void *data)
 // on right half
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size,
-	const struct PlayerData *data, const int character)
+	const PlayerData *data, const int character)
 {
 	char s[50];
 	const int totalTextHeight = FontH() * 7;
@@ -529,7 +532,7 @@ static void DrawPlayerSummary(
 
 	DisplayCharacterAndName(
 		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
-		&gCampaign.Setting.characters.players[character],
+		CArrayGet(&gCampaign.Setting.characters.Players, character),
 		data->name);
 
 	if (data->survived)
@@ -684,46 +687,46 @@ static void VictoryDraw(void *data)
 	FontStrOpt(c->Setting.Title, Vec2iNew(0, y), opts);
 
 	// Display players
-	switch (gOptions.numPlayers)
+	switch (gPlayerDatas.size)
 	{
 	case 1:
 		DisplayCharacterAndName(
 			Vec2iNew(w / 4, h / 4),
-			&c->Setting.characters.players[0],
-			gPlayerDatas[0].name);
+			CArrayGet(&c->Setting.characters.Players, 0),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
 		break;
 	case 2:
 		// side by side
 		DisplayCharacterAndName(
 			Vec2iNew(w / 8, h / 4),
-			&c->Setting.characters.players[0],
-			gPlayerDatas[0].name);
+			CArrayGet(&c->Setting.characters.Players, 0),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
 		DisplayCharacterAndName(
 			Vec2iNew(w / 8 + w / 2, h / 4),
-			&c->Setting.characters.players[1],
-			gPlayerDatas[1].name);
+			CArrayGet(&c->Setting.characters.Players, 1),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 1))->name);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
 		DisplayCharacterAndName(
 			Vec2iNew(w / 8, h / 8),
-			&c->Setting.characters.players[0],
-			gPlayerDatas[0].name);
+			CArrayGet(&c->Setting.characters.Players, 0),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
 		DisplayCharacterAndName(
 			Vec2iNew(w / 8 + w / 2, h / 8),
-			&c->Setting.characters.players[1],
-			gPlayerDatas[1].name);
+			CArrayGet(&c->Setting.characters.Players, 1),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 1))->name);
 		DisplayCharacterAndName(
 			Vec2iNew(w / 8, h / 8 + h / 4),
-			&c->Setting.characters.players[2],
-			gPlayerDatas[2].name);
-		if (gOptions.numPlayers == 4)
+			CArrayGet(&c->Setting.characters.Players, 2),
+			((PlayerData *)CArrayGet(&gPlayerDatas, 2))->name);
+		if (gPlayerDatas.size == 4)
 		{
 			DisplayCharacterAndName(
 				Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
-				&c->Setting.characters.players[3],
-				gPlayerDatas[3].name);
+				CArrayGet(&c->Setting.characters.Players, 3),
+				((PlayerData *)CArrayGet(&gPlayerDatas, 3))->name);
 		}
 		break;
 	default:
@@ -753,7 +756,7 @@ static void VictoryDraw(void *data)
 		"We're so cool we have to wear mittens",
 	};
 	const char *finalWords;
-	if (gOptions.numPlayers == 1)
+	if (gPlayerDatas.size == 1)
 	{
 		const int numWords = sizeof finalWordsSingle / sizeof(char *);
 		finalWords = finalWordsSingle[rand() % numWords];
@@ -770,11 +773,10 @@ static void VictoryDraw(void *data)
 }
 
 static void DogfightScoresDraw(void *data);
-void ScreenDogfightScores(int scores[MAX_PLAYERS])
+void ScreenDogfightScores(CArray *scores)
 {
 	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
-		scores, DogfightScoresDraw);
+		NULL, GameLoopWaitForAnyKeyOrButtonFunc, scores, DogfightScoresDraw);
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
@@ -783,7 +785,7 @@ static void ShowPlayerScore(
 static void DogfightScoresDraw(void *data)
 {
 	// This will only draw once
-	const int *scores = data;
+	CArray *scores = data;
 
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
@@ -791,16 +793,18 @@ static void DogfightScoresDraw(void *data)
 	GraphicsBlitBkg(&gGraphicsDevice);
 
 	CASSERT(
-		gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4,
-		"Invalid number of players for dogfight");
-	for (int i = 0; i < gOptions.numPlayers; i++)
+		scores->size >= 2 && scores->size <= 4,
+		"Unimplemented number of players for dogfight");
+	for (int i = 0; i < (int)scores->size; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
-			gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		const int *score = CArrayGet(scores, i);
 		ShowPlayerScore(
-			pos, &gCampaign.Setting.characters.players[i],
-			gPlayerDatas[i].name, scores[i]);
+			pos, CArrayGet(&gCampaign.Setting.characters.Players, i),
+			p->name, *score);
 	}
 }
 static void ShowPlayerScore(
@@ -814,7 +818,7 @@ static void ShowPlayerScore(
 }
 
 static void DogfightFinalScoresDraw(void *data);
-void ScreenDogfightFinalScores(int scores[MAX_PLAYERS])
+void ScreenDogfightFinalScores(CArray *scores)
 {
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
@@ -825,7 +829,7 @@ void ScreenDogfightFinalScores(int scores[MAX_PLAYERS])
 static void DogfightFinalScoresDraw(void *data)
 {
 	// This will only draw once
-	const int *scores = data;
+	CArray *scores = data;
 
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
@@ -835,19 +839,20 @@ static void DogfightFinalScoresDraw(void *data)
 	// Work out who's the winner, or if it's a tie
 	int maxScore = 0;
 	int playersWithMaxScore = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)scores->size; i++)
 	{
-		if (scores[i] > maxScore)
+		const int *score = CArrayGet(scores, i);
+		if (*score > maxScore)
 		{
-			maxScore = scores[i];
+			maxScore = *score;
 			playersWithMaxScore = 1;
 		}
-		else if (scores[i] == maxScore)
+		else if (*score == maxScore)
 		{
 			playersWithMaxScore++;
 		}
 	}
-	const bool isTie = playersWithMaxScore == gOptions.numPlayers;
+	const bool isTie = playersWithMaxScore == (int)scores->size;
 
 	// Draw players and their names spread evenly around the screen.
 	// If it's a tie, display the message in the centre,
@@ -855,17 +860,19 @@ static void DogfightFinalScoresDraw(void *data)
 #define DRAW_TEXT	"It's a draw!"
 #define WINNER_TEXT	"Winner!"
 	CASSERT(
-		gOptions.numPlayers >= 2 && gOptions.numPlayers <= 4,
-		"Invalid number of players for dogfight");
-	for (int i = 0; i < gOptions.numPlayers; i++)
+		scores->size >= 2 && scores->size <= 4,
+		"Unimplemented number of players for dogfight");
+	for (int i = 0; i < (int)scores->size; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
-			gOptions.numPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		const int *score = CArrayGet(scores, i);
 		DisplayCharacterAndName(
-			pos, &gCampaign.Setting.characters.players[i],
-			gPlayerDatas[i].name);
-		if (!isTie && maxScore == scores[i])
+			pos, CArrayGet(&gCampaign.Setting.characters.Players, i),
+			p->name);
+		if (!isTie && maxScore == *score)
 		{
 			FontStr(
 				WINNER_TEXT,

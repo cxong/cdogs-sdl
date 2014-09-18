@@ -209,7 +209,7 @@ static void SetupQuickPlayEnemies(
 		}
 		Character *ch = CharacterStoreAddOther(store);
 		SetupQuickPlayEnemy(ch, config, gun);
-		CharacterSetLooks(ch, &ch->looks);
+		CharacterSetColors(ch);
 	}
 }
 

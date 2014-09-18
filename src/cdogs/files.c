@@ -435,7 +435,7 @@ void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src)
 	{
 		Character *ch = CharacterStoreAddOther(&dest->characters);
 		ConvertCharacter(ch, &src->characters[i]);
-		CharacterSetLooks(ch, &ch->looks);
+		CharacterSetColors(ch);
 	}
 }
 

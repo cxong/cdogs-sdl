@@ -135,13 +135,13 @@ bool MapIsRealPosIn(const Map *map, const Vec2i realPos)
 		realPos.y / TILE_HEIGHT > map->Size.y - 1);
 }
 
-bool MapIsTileInExit(Map *map, TTileItem *tile)
+bool MapIsTileInExit(const Map *map, const TTileItem *ti)
 {
 	return
-		tile->x / TILE_WIDTH >= map->ExitStart.x &&
-		tile->x / TILE_WIDTH <= map->ExitEnd.x &&
-		tile->y / TILE_HEIGHT >= map->ExitStart.y &&
-		tile->y / TILE_HEIGHT <= map->ExitEnd.y;
+		ti->x / TILE_WIDTH >= map->ExitStart.x &&
+		ti->x / TILE_WIDTH <= map->ExitEnd.x &&
+		ti->y / TILE_HEIGHT >= map->ExitStart.y &&
+		ti->y / TILE_HEIGHT <= map->ExitEnd.y;
 }
 
 static Tile *MapGetTileOfItem(Map *map, TTileItem *t)

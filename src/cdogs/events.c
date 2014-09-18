@@ -127,8 +127,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 }
 
 static int GetKeyboardCmd(
-	keyboard_t *keyboard, input_keys_t *keys,
-	bool isPressed)
+	keyboard_t *keyboard, const input_keys_t *keys, const bool isPressed)
 {
 	int cmd = 0;
 	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
@@ -206,8 +205,8 @@ static int GetJoystickCmd(joystick_t *joystick, bool isPressed)
 }
 
 int GetGameCmd(
-	EventHandlers *handlers, InputConfig *config,
-	struct PlayerData *playerData, Vec2i playerPos)
+	EventHandlers *handlers, const InputConfig *config,
+	const PlayerData *playerData, const Vec2i playerPos)
 {
 	int cmd = 0;
 
@@ -272,26 +271,29 @@ int GetOnePlayerCmd(
 	return cmd;
 }
 
-void GetPlayerCmds(
-	EventHandlers *handlers,
-	int(*cmds)[MAX_PLAYERS], struct PlayerData playerDatas[MAX_PLAYERS])
+void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		if (playerDatas[i].inputDevice == INPUT_DEVICE_UNSET)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
 		{
+			idx--;
 			continue;
 		}
-		(*cmds)[i] = GetOnePlayerCmd(
-			handlers,
-			&gConfig.Input.PlayerKeys[playerDatas[i].deviceIndex],
-			true,
-			playerDatas[i].inputDevice, playerDatas[i].deviceIndex);
+		if (p->inputDevice != INPUT_DEVICE_UNSET)
+		{
+			(*cmds)[idx] = GetOnePlayerCmd(
+				handlers,
+				&gConfig.Input.PlayerKeys[p->deviceIndex],
+				true,
+				p->inputDevice, p->deviceIndex);
+		}
 	}
 }
 
-int GetMenuCmd(
-	EventHandlers *handlers, struct PlayerData playerDatas[MAX_PLAYERS])
+int GetMenuCmd(EventHandlers *handlers)
 {
 	int cmd;
 	keyboard_t *kb = &handlers->keyboard;
@@ -301,11 +303,23 @@ int GetMenuCmd(
 		return CMD_ESC;
 	}
 
+	// Get the first local player
+	const PlayerData *p = NULL;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		p = CArrayGet(&gPlayerDatas, i);
+		if (p->IsLocal)
+		{
+			break;
+		}
+	}
+	CASSERT(p != NULL, "Cannot find first local player");
+
 	cmd = GetOnePlayerCmd(
 		handlers,
 		&gConfig.Input.PlayerKeys[0],
 		true,
-		playerDatas[0].inputDevice, playerDatas[0].deviceIndex);
+		p->inputDevice, p->deviceIndex);
 	if (!cmd)
 	{
 		// Check keyboard
@@ -348,29 +362,29 @@ static GameLoopResult WaitResult(
 	GameLoopWaitForAnyKeyOrButtonData *data, const bool result);
 GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 {
-	GameLoopWaitForAnyKeyOrButtonData *gData = data;
-	int cmds[MAX_PLAYERS];
+	GameLoopWaitForAnyKeyOrButtonData *wData = data;
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	GetPlayerCmds(&gEventHandlers, &cmds);
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
 		{
-			return WaitResult(gData, true);
+			return WaitResult(wData, true);
 		}
 	}
 
 	// Check menu commands
-	const int menuCmd = GetMenuCmd(&gEventHandlers, gPlayerDatas);
+	const int menuCmd = GetMenuCmd(&gEventHandlers);
 	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
-		return WaitResult(gData, true);
+		return WaitResult(wData, true);
 	}
 
 	// Check if anyone pressed escape
 	if (EventIsEscape(&gEventHandlers, cmds, menuCmd))
 	{
-		return WaitResult(gData, false);
+		return WaitResult(wData, false);
 	}
 
 	return UPDATE_RESULT_OK;
@@ -387,9 +401,9 @@ static GameLoopResult WaitResult(
 
 bool EventIsEscape(
 	EventHandlers *handlers,
-	const int cmds[MAX_PLAYERS], const int menuCmd)
+	const int cmds[MAX_LOCAL_PLAYERS], const int menuCmd)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		if (cmds[i] & CMD_BUTTON4)
 		{

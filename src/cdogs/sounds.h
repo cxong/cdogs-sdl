@@ -129,12 +129,8 @@ void SoundReconfigure(SoundDevice *device, SoundConfig *config);
 void SoundClear(CArray *sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);
-void SoundSetLeftEars(Vec2i pos);
-void SoundSetRightEars(Vec2i pos);
-void SoundSetLeftEar1(Vec2i pos);
-void SoundSetLeftEar2(Vec2i pos);
-void SoundSetRightEar1(Vec2i pos);
-void SoundSetRightEar2(Vec2i pos);
+void SoundSetEarsSide(const bool isLeft, const Vec2i pos);
+void SoundSetEar(const bool isLeft, const int idx, Vec2i pos);
 void SoundSetEars(Vec2i pos);
 void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos);
 

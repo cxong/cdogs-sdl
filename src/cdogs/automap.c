@@ -55,6 +55,7 @@
 #include "config.h"
 #include "drawtools.h"
 #include "font.h"
+#include "gamedata.h"
 #include "map.h"
 #include "mission.h"
 #include "objs.h"
@@ -76,7 +77,7 @@ color_t colorExit = { 255, 255, 255, 255 };
 
 
 
-static void DisplayPlayer(TActor *player, Vec2i pos, int scale)
+static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 {
 	Vec2i playerPos = Vec2iToTile(
 		Vec2iNew(player->tileItem.x, player->tileItem.y));
@@ -349,12 +350,14 @@ void AutomapDraw(int flags, bool showExit)
 	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
 	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
 
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
-			DisplayPlayer(CArrayGet(&gActors, gPlayerIds[i]), pos, MAP_FACTOR);
+			continue;
 		}
+		DisplayPlayer(CArrayGet(&gActors, p->Id), pos, MAP_FACTOR);
 	}
 
 	if (showExit)
@@ -369,22 +372,22 @@ void AutomapDrawRegion(
 	Vec2i pos, Vec2i size, Vec2i mapCenter,
 	int scale, int flags, bool showExit)
 {
-	Vec2i centerOn;
-	BlitClipping oldClip = gGraphicsDevice.clipping;
-	int i;
+	const BlitClipping oldClip = gGraphicsDevice.clipping;
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,
 		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
 	pos = Vec2iAdd(pos, Vec2iScaleDiv(size, 2));
 	DrawMap(map, pos, mapCenter, size, scale, flags);
-	centerOn = Vec2iAdd(pos, Vec2iScale(mapCenter, -scale));
-	for (i = 0; i < MAX_PLAYERS; i++)
+	const Vec2i centerOn = Vec2iAdd(pos, Vec2iScale(mapCenter, -scale));
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (IsPlayerAlive(i))
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
 		{
-			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-			DisplayPlayer(player, centerOn, scale);
+			continue;
 		}
+		const TActor *player = CArrayGet(&gActors, p->Id);
+		DisplayPlayer(player, centerOn, scale);
 	}
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
 	if (showExit)

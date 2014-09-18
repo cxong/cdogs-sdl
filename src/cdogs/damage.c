@@ -90,14 +90,15 @@ static void TrackKills(int player, TActor *victim)
 {
 	if (player >= 0)
 	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, player);
 		if (victim->pData ||
 			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY)))
 		{
-			gPlayerDatas[player].friendlies++;
+			p->friendlies++;
 		}
 		else
 		{
-			gPlayerDatas[player].kills++;
+			p->kills++;
 		}
 	}
 }

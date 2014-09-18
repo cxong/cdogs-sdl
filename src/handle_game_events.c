@@ -65,8 +65,14 @@ static void HandleGameEvent(
 	switch (e->Type)
 	{
 		case GAME_EVENT_SCORE:
-			Score(&gPlayerDatas[e->u.Score.PlayerIndex], e->u.Score.Score);
-			HUDAddScoreUpdate(hud, e->u.Score.PlayerIndex, e->u.Score.Score);
+			if (e->u.Score.PlayerIndex >= 0)
+			{
+				PlayerData *p =
+					CArrayGet(&gPlayerDatas, e->u.Score.PlayerIndex);
+				PlayerScore(p, e->u.Score.Score);
+				HUDAddScoreUpdate(
+					hud, e->u.Score.PlayerIndex, e->u.Score.Score);
+			}
 			break;
 		case GAME_EVENT_SOUND_AT:
 			if (e->u.SoundAt.Sound)
@@ -91,14 +97,17 @@ static void HandleGameEvent(
 			MapPlaceHealth(e->u.AddPos);
 			break;
 		case GAME_EVENT_TAKE_HEALTH_PICKUP:
-			if (IsPlayerAlive(e->u.PickupPlayer))
 			{
-				TActor *player = CArrayGet(
-					&gActors, gPlayerIds[e->u.PickupPlayer]);
-				ActorHeal(player, HEALTH_PICKUP_HEAL_AMOUNT);
-				HealthPickupsRemoveOne(hp);
-				HUDAddHealthUpdate(
-					hud, e->u.PickupPlayer, HEALTH_PICKUP_HEAL_AMOUNT);
+				const PlayerData *p =
+					CArrayGet(&gPlayerDatas, e->u.PickupPlayer);
+				if (IsPlayerAlive(p))
+				{
+					TActor *player = CArrayGet(&gActors, p->Id);
+					ActorHeal(player, HEALTH_PICKUP_HEAL_AMOUNT);
+					HealthPickupsRemoveOne(hp);
+					HUDAddHealthUpdate(
+						hud, e->u.PickupPlayer, HEALTH_PICKUP_HEAL_AMOUNT);
+				}
 			}
 			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:

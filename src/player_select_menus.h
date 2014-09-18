@@ -42,7 +42,7 @@ typedef struct
 	int menuCount;
 	const char *(*strFunc)(int);
 	Character *c;
-	struct PlayerData *pData;
+	PlayerData *pData;
 } AppearanceMenuData;
 typedef struct
 {
@@ -65,7 +65,7 @@ typedef struct
 
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
-	int numPlayers, int player, Character *c, struct PlayerData *pData,
+	int numPlayers, int player, Character *c, PlayerData *p,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig, const NameGen *ng);
 

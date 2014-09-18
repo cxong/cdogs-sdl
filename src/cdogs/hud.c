@@ -312,7 +312,7 @@ static void DrawWeaponStatus(
 }
 
 static void DrawHealth(
-	GraphicsDevice *device, TActor *actor, Vec2i pos,
+	GraphicsDevice *device, const TActor *actor, const Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	char s[50];
@@ -360,7 +360,8 @@ static void DrawHealth(
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
 static void DrawRadar(
-	GraphicsDevice *device, TActor *p, int scale, int flags, bool showExit)
+	GraphicsDevice *device, const TActor *p,
+	const int scale, const int flags, const bool showExit)
 {
 	Vec2i pos = Vec2iZero();
 	int w = device->cachedConfig.Res.x;
@@ -488,8 +489,8 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	GraphicsDevice *device, struct PlayerData *data, TActor *p, int flags,
-	Rect2i r, bool showExit)
+	GraphicsDevice *device, const PlayerData *data, const TActor *p,
+	const int flags, const Rect2i r, const bool showExit)
 {
 	if (p != NULL)
 	{
@@ -725,8 +726,8 @@ void HUDDraw(HUD *hud, int isPaused)
 {
 	char s[50];
 	int flags = 0;
-	int numPlayersAlive = GetNumPlayersAlive();
-	int i;
+	const int numPlayersAlive = GetNumPlayers(true, false, false);
+	const int numLocalPlayers = GetNumPlayers(false, false, true);
 
 	Rect2i r;
 	r.Size = Vec2iNew(
@@ -740,12 +741,12 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
-	else if (gOptions.numPlayers == 2)
+	else if (numLocalPlayers == 2)
 	{
 		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
-	else if (gOptions.numPlayers == 3 || gOptions.numPlayers == 4)
+	else if (numLocalPlayers == 3 || numLocalPlayers == 4)
 	{
 		r.Size.x /= 2;
 		r.Size.y /= 2;
@@ -756,32 +757,38 @@ void HUDDraw(HUD *hud, int isPaused)
 		assert(0 && "not implemented");
 	}
 
-	for (i = 0; i < gOptions.numPlayers; i++)
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
 		int drawFlags = flags;
 		r.Pos = Vec2iZero();
-		if (i & 1)
+		if (idx & 1)
 		{
 			r.Pos.x = r.Size.x;
 			drawFlags |= HUDFLAGS_PLACE_RIGHT;
 		}
-		if (i >= 2)
+		if (idx >= 2)
 		{
 			r.Pos.y = r.Size.y;
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
 		}
 		TActor *player = NULL;
-		if (IsPlayerAlive(i))
+		if (IsPlayerAlive(p))
 		{
-			player = CArrayGet(&gActors, gPlayerIds[i]);
+			player = CArrayGet(&gActors, p->Id);
 		}
 		DrawPlayerStatus(
-			hud->device, &gPlayerDatas[i], player, drawFlags,
-			r, hud->showExit);
+			hud->device, p, player, drawFlags, r, hud->showExit);
 		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
 		{
 			HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, j);
-			if (health->Index == i)
+			if (health->Index == idx)
 			{
 				DrawHealthUpdate(health, drawFlags);
 			}
@@ -789,7 +796,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
 		{
 			HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, j);
-			if (score->Index == i)
+			if (score->Index == idx)
 			{
 				DrawScoreUpdate(score, drawFlags);
 			}
@@ -872,9 +879,10 @@ static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + FontH();
 	int y = 5 + 1 + FontH() + rowHeight * 2;
-	if (IsPlayerAlive(health->Index))
+	const PlayerData *p = CArrayGet(&gPlayerDatas, health->Index);
+	if (IsPlayerAlive(p))
 	{
-		TActor *player = CArrayGet(&gActors, gPlayerIds[health->Index]);
+		const TActor *player = CArrayGet(&gActors, p->Id);
 		DrawNumUpdate(health, "%d", player->health, Vec2iNew(5, y), flags);
 	}
 }
@@ -886,9 +894,8 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 	}
 	const int rowHeight = 1 + FontH();
 	int y = 5 + 1 + FontH() + rowHeight;
-	DrawNumUpdate(
-		score, "Score: %d", gPlayerDatas[score->Index].score,
-		Vec2iNew(5, y), flags);
+	const PlayerData *p = CArrayGet(&gPlayerDatas, score->Index);
+	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
 }
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:

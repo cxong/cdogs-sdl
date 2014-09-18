@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2014, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -29,27 +29,20 @@
 #ifndef __PLAYER_TEMPLATE
 #define __PLAYER_TEMPLATE
 
+#include "character.h"
+
 typedef struct
 {
 	char name[20];
-	int face;
-	int body;
-	int arms;
-	int legs;
-	int skin;
-	int hair;
+	CharLooks Looks;
 } PlayerTemplate;
 
-#define MAX_TEMPLATE  100
-extern PlayerTemplate gPlayerTemplates[MAX_TEMPLATE];
+extern CArray gPlayerTemplates;	// of PlayerTemplate
 
 #define PLAYER_TEMPLATE_FILE "players.cnf"
 
-void LoadPlayerTemplates(
-	PlayerTemplate templates[MAX_TEMPLATE], const char *filename);
-void SavePlayerTemplates(
-	PlayerTemplate templates[MAX_TEMPLATE], const char *filename);
-int PlayerTemplatesGetCount(PlayerTemplate templates[MAX_TEMPLATE]);
+void LoadPlayerTemplates(CArray *templates, const char *filename);
+void SavePlayerTemplates(const CArray *templates, const char *filename);
 
 const char *IndexToFaceStr(int idx);
 

@@ -156,7 +156,6 @@ void MenuLoop(MenuSystem *menu)
 static GameLoopResult MenuUpdate(void *data)
 {
 	MenuSystem *ms = data;
-	int cmd = 0;
 	if (ms->current->type == MENU_TYPE_KEYS &&
 		ms->current->u.normal.changeKeyMenu != NULL)
 	{
@@ -164,20 +163,19 @@ static GameLoopResult MenuUpdate(void *data)
 	}
 	else
 	{
-		cmd = GetMenuCmd(ms->handlers, gPlayerDatas);
+		const int cmd = GetMenuCmd(ms->handlers);
 		if (cmd)
 		{
 			MenuProcessCmd(ms, cmd);
 		}
 	}
 	// Check if anyone pressed escape, or we need a hard exit
-	int cmds[MAX_PLAYERS];
+	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds, gPlayerDatas);
+	GetPlayerCmds(&gEventHandlers, &cmds);
 	const bool aborted =
 		ms->allowAborts &&
-		EventIsEscape(
-		&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, gPlayerDatas));
+		EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers));
 	if (aborted || ms->handlers->HasQuit)
 	{
 		ms->hasAbort = true;

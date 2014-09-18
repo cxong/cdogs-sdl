@@ -109,7 +109,7 @@ unsigned short GetAccessMask(int k);
 Tile *MapGetTile(Map *map, Vec2i pos);
 bool MapIsTileIn(const Map *map, const Vec2i pos);
 bool MapIsRealPosIn(const Map *map, const Vec2i realPos);
-bool MapIsTileInExit(Map *map, TTileItem *t);
+bool MapIsTileInExit(const Map *map, const TTileItem *ti);
 
 int MapHasLockedRooms(Map *map);
 int MapPosIsHighAccess(Map *map, int x, int y);

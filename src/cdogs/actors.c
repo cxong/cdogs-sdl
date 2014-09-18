@@ -80,7 +80,7 @@
 #define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
 
 
-int gPlayerIds[MAX_PLAYERS];
+CArray gPlayerIds;
 
 TranslationTable tableFlamed;
 TranslationTable tableGreen;
@@ -128,107 +128,6 @@ void ActorInit(TActor *actor)
 	if (actor->flags & FLAGS_AWAKEALWAYS)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
-	}
-}
-
-int GetNumPlayersAlive(void)
-{
-	int numPlayers = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerAlive(i))
-		{
-			numPlayers++;
-		}
-	}
-	return numPlayers;
-}
-int GetNumHumanPlayersAlive(void)
-{
-	int numPlayers = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerHumanAndAlive(i))
-		{
-			numPlayers++;
-		}
-	}
-	return numPlayers;
-}
-
-TActor *GetFirstAlivePlayer(void)
-{
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerAlive(i))
-		{
-			return CArrayGet(&gActors, gPlayerIds[i]);
-		}
-	}
-	return NULL;
-}
-TActor *GetFirstAliveHumanPlayer(void)
-{
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (IsPlayerHumanAndAlive(i))
-		{
-			return CArrayGet(&gActors, gPlayerIds[i]);
-		}
-	}
-	return NULL;
-}
-
-bool IsPlayerAlive(int player)
-{
-	if (gPlayerIds[player] == -1)
-	{
-		return false;
-	}
-	TActor *p = CArrayGet(&gActors, gPlayerIds[player]);
-	return !p->dead;
-}
-bool IsPlayerHumanAndAlive(int player)
-{
-	return
-		IsPlayerAlive(player) &&
-		gPlayerDatas[player].inputDevice != INPUT_DEVICE_AI;
-}
-
-Vec2i PlayersGetMidpoint(void)
-{
-	// for all surviving players, find bounding rectangle, and get center
-	Vec2i min;
-	Vec2i max;
-	PlayersGetBoundingRectangle(&min, &max);
-	return Vec2iScaleDiv(Vec2iAdd(min, max), 2);
-}
-
-void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
-{
-	int isFirst = 1;
-	*min = Vec2iZero();
-	*max = Vec2iZero();
-	const bool humansOnly = GetNumHumanPlayersAlive() > 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		if (humansOnly ? IsPlayerHumanAndAlive(i) : IsPlayerAlive(i))
-		{
-			TActor *player = CArrayGet(&gActors, gPlayerIds[i]);
-			TTileItem *p = &player->tileItem;
-			if (isFirst)
-			{
-				*min = *max = Vec2iNew(p->x, p->y);
-			}
-			else
-			{
-				if (p->x < min->x)	min->x = p->x;
-				if (p->y < min->y)	min->y = p->y;
-				if (p->x > max->x)	max->x = p->x;
-				if (p->y > max->y)	max->y = p->y;
-			}
-			isFirst = 0;
-		}
 	}
 }
 
@@ -823,15 +722,6 @@ void InjureActor(TActor * actor, int injury)
 	}
 }
 
-void Score(struct PlayerData *p, int points)
-{
-	if (p)
-	{
-		p->score += points;
-		p->totalScore += points;
-	}
-}
-
 void Shoot(TActor *actor)
 {
 	Weapon *gun = ActorGetGun(actor);
@@ -1100,10 +990,6 @@ void ActorsInit(void)
 {
 	CArrayInit(&gActors, sizeof(TActor));
 	CArrayReserve(&gActors, 64);
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		gPlayerIds[i] = -1;
-	}
 }
 void ActorsTerminate(void)
 {
@@ -1117,7 +1003,7 @@ void ActorsTerminate(void)
 	}
 	CArrayTerminate(&gActors);
 }
-int ActorAdd(Character *c, struct PlayerData *p)
+int ActorAdd(Character *c, PlayerData *p)
 {
 	// Find an empty slot in actor list
 	TActor *actor = NULL;
@@ -1189,11 +1075,12 @@ void ActorDestroy(int id)
 	CASSERT(actor->isInUse, "Destroying in-use actor");
 	CArrayTerminate(&actor->guns);
 	MapRemoveTileItem(&gMap, &actor->tileItem);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		if (id == gPlayerIds[i])
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (id == p->Id)
 		{
-			gPlayerIds[i] = -1;
+			p->Id = -1;
 			break;
 		}
 	}
@@ -1390,7 +1277,7 @@ bool ActorIsInvulnerable(
 	{
 		// Same player hits
 		if (player >= 0 && actor->pData &&
-			&gPlayerDatas[player] == actor->pData)
+			CArrayGet(&gPlayerDatas, player) == actor->pData)
 		{
 			return 1;
 		}

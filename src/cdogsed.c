@@ -1186,7 +1186,6 @@ int main(int argc, char *argv[])
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
 
-	PlayerDataInitialize();
 	MapInit(&gMap);
 
 	// initialise UI collections
