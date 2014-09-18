@@ -1183,9 +1183,6 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
 	CampaignInit(&gCampaign);
-	PlayerDataInit(&gPlayerDatas);
-	// Add at least one player as it is used for default character data
-	PlayerDataAdd(&gPlayerDatas, true);
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
 
@@ -1232,7 +1229,6 @@ int main(int argc, char *argv[])
 	PHYSFS_deinit();
 
 	MapTerminate(&gMap);
-	PlayerDataTerminate(&gPlayerDatas);
 	ParticleClassesTerminate(&gParticleClasses);
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);

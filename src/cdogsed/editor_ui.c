@@ -733,8 +733,9 @@ static void MissionDrawObjective(
 {
 	MissionIndexData *data = vData;
 	CharacterStore *store = &data->co->Setting.characters;
-	Character *c = CArrayGet(&store->Players, 0);	// default character
 	TOffsetPic pic;
+	pic.dx = pic.dy = 0;
+	pic.picIndex = -1;
 	TranslationTable *table = NULL;
 	struct Objective *obj;
 	UNUSED(g);
@@ -748,16 +749,16 @@ static void MissionDrawObjective(
 	case OBJECTIVE_KILL:
 		if (store->specialCount > 0)
 		{
-			c = CharacterStoreGetSpecial(store, 0);
+			GetCharacterHeadPic(
+				CharacterStoreGetSpecial(store, 0), &pic, &table);
 		}
-		GetCharacterHeadPic(c, &pic, &table);
 		break;
 	case OBJECTIVE_RESCUE:
 		if (store->prisonerCount > 0)
 		{
-			c = CharacterStoreGetPrisoner(store, 0);
+			GetCharacterHeadPic(
+				CharacterStoreGetPrisoner(store, 0), &pic, &table);
 		}
-		GetCharacterHeadPic(c, &pic, &table);
 		break;
 	case OBJECTIVE_COLLECT:
 		pic = cGeneralPics[obj->pickupItem];
@@ -766,8 +767,7 @@ static void MissionDrawObjective(
 		pic = cGeneralPics[obj->blowupObject->pic];
 		break;
 	case OBJECTIVE_INVESTIGATE:
-		pic.dx = pic.dy = 0;
-		pic.picIndex = -1;
+		// no picture
 		break;
 	default:
 		assert(0 && "Unknown objective type");
