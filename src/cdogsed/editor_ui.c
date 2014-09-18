@@ -733,7 +733,7 @@ static void MissionDrawObjective(
 {
 	MissionIndexData *data = vData;
 	CharacterStore *store = &data->co->Setting.characters;
-	Character *c;
+	Character *c = CArrayGet(&store->Players, 0);	// default character
 	TOffsetPic pic;
 	TranslationTable *table = NULL;
 	struct Objective *obj;
@@ -746,22 +746,14 @@ static void MissionDrawObjective(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type)
 	{
 	case OBJECTIVE_KILL:
-		if (store->specialCount == 0)
-		{
-			c = &store->players[0];
-		}
-		else
+		if (store->specialCount > 0)
 		{
 			c = CharacterStoreGetSpecial(store, 0);
 		}
 		GetCharacterHeadPic(c, &pic, &table);
 		break;
 	case OBJECTIVE_RESCUE:
-		if (store->prisonerCount == 0)
-		{
-			c = &store->players[0];
-		}
-		else
+		if (store->prisonerCount > 0)
 		{
 			c = CharacterStoreGetPrisoner(store, 0);
 		}
