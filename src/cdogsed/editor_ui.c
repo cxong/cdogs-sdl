@@ -1681,7 +1681,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	pos.y += 2;
 	objectivesPos = Vec2iNew(0, 7 * th);
 	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(189, th));
+	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(300, th));
 	o->Flags = UI_SELECT_ONLY;
 
 	for (i = 0; i < OBJECTIVE_MAX_OLD; i++)
