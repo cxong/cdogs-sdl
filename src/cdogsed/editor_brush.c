@@ -349,7 +349,9 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		// Use flood fill to change all the tiles of the same type to
 		// another type
 		// Don't paint if target already same type
-		if ((MissionGetTile(m, b->Pos) & MAP_MASKACCESS) != b->PaintType)
+		// Special case: don't flood-fill doors
+		if ((MissionGetTile(m, b->Pos) & MAP_MASKACCESS) != b->PaintType &&
+			b->PaintType != MAP_DOOR)
 		{
 			FloodFillData data;
 			data.Fill = MissionFillTile;
