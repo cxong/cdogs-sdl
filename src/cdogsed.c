@@ -640,14 +640,29 @@ static void Delete(int xc, int yc)
 	switch (yc)
 	{
 	case YC_CHARACTERS:
+		if (xc >= (int)mission->Enemies.size)
+		{
+			// Nothing to delete; do nothing
+			return;
+		}
 		DeleteCharacter(mission, xc);
 		break;
 
 	case YC_SPECIALS:
+		if (xc >= (int)mission->SpecialChars.size)
+		{
+			// Nothing to delete; do nothing
+			return;
+		}
 		DeleteSpecial(mission, xc);
 		break;
 
 	case YC_ITEMS:
+		if (xc >= (int)mission->Items.size)
+		{
+			// Nothing to delete; do nothing
+			return;
+		}
 		DeleteItem(mission, xc);
 		break;
 

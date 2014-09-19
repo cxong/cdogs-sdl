@@ -559,6 +559,11 @@ static void HandleInput(
 			break;
 
 		case SDLK_DELETE:
+			if (*idx >= (int)store->OtherChars.size)
+			{
+				// Nothing to delete, do nothing
+				return;
+			}
 			DeleteCharacter(store, idx);
 			fileChanged = 1;
 			break;
