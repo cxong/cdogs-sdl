@@ -88,6 +88,7 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 	static char s[128];
 	UNUSED(o);
 	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Seed: %u", co->seed);
 	return s;
 }
@@ -607,6 +608,11 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
+	Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (!m)
+	{
+		return NULL;
+	}
 	int totalWeapons = 0;
 	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 	{
@@ -634,6 +640,11 @@ static const char *GetObjectCountStr(UIObject *o, void *v)
 	static char s[128];
 	UNUSED(o);
 	UNUSED(v);
+	Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (!m)
+	{
+		return NULL;
+	}
 	sprintf(s, "Map items (%d)", (int)gMission.MapObjects.size);
 	return s;
 }

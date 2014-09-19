@@ -924,6 +924,10 @@ static HandleInputResult HandleInput(
 			MissionTerminate(scrap);
 			MissionCopy(scrap, mission);
 			Delete(*xc, *yc);
+			// Unhighlight everything (in case this is the last mission)
+			UIObjectUnhighlight(sObjs);
+			CArrayTerminate(&sDrawObjs);
+			sLastHighlightedObj = NULL;
 			break;
 
 		case 'c':
@@ -1053,6 +1057,10 @@ static HandleInputResult HandleInput(
 
 		case SDLK_DELETE:
 			Delete(*xc, *yc);
+			// Unhighlight everything (in case this is the last mission)
+			UIObjectUnhighlight(sObjs);
+			CArrayTerminate(&sDrawObjs);
+			sLastHighlightedObj = NULL;
 			break;
 
 		case SDLK_PAGEUP:
