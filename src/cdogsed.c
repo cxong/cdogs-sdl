@@ -654,6 +654,11 @@ static void Delete(int xc, int yc)
 	default:
 		if (yc >= YC_OBJECTIVES)
 		{
+			if (mission->Objectives.size == 0)
+			{
+				// Nothing to delete; do nothing
+				return;
+			}
 			DeleteObjective(mission, yc - YC_OBJECTIVES);
 		}
 		else
