@@ -663,7 +663,8 @@ static void Delete(int xc, int yc)
 		}
 		else
 		{
-			if (gCampaign.Setting.Missions.size == 0)
+			if (gCampaign.Setting.Missions.size == 0 ||
+				gCampaign.MissionIndex >= (int)gCampaign.Setting.Missions.size)
 			{
 				// Nothing to delete; do nothing
 				return;
