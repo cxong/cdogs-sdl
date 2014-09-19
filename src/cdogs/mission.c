@@ -600,7 +600,7 @@ void SetupMission(
 	for (int i = 0; i < (int)m->Items.size; i++)
 	{
 		int *itemIndex = CArrayGet(&m->Items, i);
-		if (*itemIndex >= (int)mo->MapObjects.size)
+		if (*itemIndex >= MapObjectGetCount())
 		{
 			debug(D_NORMAL, "Warning: unknown map object index %d\n", *itemIndex);
 			continue;
