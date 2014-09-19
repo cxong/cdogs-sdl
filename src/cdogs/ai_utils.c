@@ -407,7 +407,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d)
 {
 	const bool isUpperOrLowerOctants =
-		abs(a->Pos.x - targetFull.x) > abs(a->Pos.y - targetFull.y);
+		abs(a->Pos.x - targetFull.x) < abs(a->Pos.y - targetFull.y);
 	const bool isRight = a->Pos.x < targetFull.x;
 	const bool isAbove = a->Pos.y > targetFull.y;
 	switch (d)
