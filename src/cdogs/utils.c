@@ -86,6 +86,20 @@ const char *StrGetFileExt(const char *filename)
 	return dot + 1;
 }
 
+// Note: includes trailing slash
+void PathGetDirname(char *buf, const char *path)
+{
+	const char *basename = PathGetBasename(path);
+	if (basename == path)
+	{
+		strcpy(buf, "");
+	}
+	else
+	{
+		strncpy(buf, path, basename - path);
+		buf[basename - path] = '\0';
+	}
+}
 const char *PathGetBasename(const char *path)
 {
 	const char *fslash = strrchr(path, '/');

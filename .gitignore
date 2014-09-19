@@ -75,5 +75,6 @@ Makefile.*
 tmp
 .cdogs/
 *~*.cpn
+*~*.cdogscpn
 Thumbs.db
 .config/

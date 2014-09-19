@@ -198,6 +198,9 @@ void LoadCampaignsFromFolder(
 		tinydir_file file;
 		tinydir_readfile_n(&dir, &file, i);
 
+		// Ignore campaigns that start with a ~
+		// These are autosaved
+
 		const bool isArchive =
 			strcmp(file.extension, "cdogscpn") == 0 ||
 			strcmp(file.extension, "CDOGSCPN") == 0;
@@ -209,7 +212,7 @@ void LoadCampaignsFromFolder(
 			LoadCampaignsFromFolder(&subFolder, file.name, file.path, mode);
 			CArrayPushBack(&list->subFolders, &subFolder);
 		}
-		else if (file.is_reg || isArchive)
+		else if ((file.is_reg || isArchive) && file.name[0] != '~')
 		{
 			CampaignEntry entry;
 			if (CampaignEntryTryLoad(&entry, file.path, mode))

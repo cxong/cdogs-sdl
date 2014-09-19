@@ -409,8 +409,11 @@ static void Autosave(void)
 	if (fileChanged && sTicksElapsed > ticksAutosave)
 	{
 		ticksAutosave = sTicksElapsed + AUTOSAVE_INTERVAL_SECONDS * 1000;
+		char dirname[CDOGS_PATH_MAX];
+		PathGetDirname(dirname, lastFile);
 		char buf[CDOGS_PATH_MAX];
-		sprintf(buf, "%s~%d", lastFile, sAutosaveIndex);
+		sprintf(
+			buf, "%s~%d%s", dirname, sAutosaveIndex, PathGetBasename(lastFile));
 		fprintf(stderr, "Autosaving...");
 		MapArchiveSave(buf, &gCampaign.Setting);
 		fprintf(stderr, "done\n");

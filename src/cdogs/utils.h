@@ -147,6 +147,7 @@ int MemIsZero(const void *buf, size_t len);
 
 const char *StrGetFileExt(const char *filename);
 
+void PathGetDirname(char *buf, const char *path);
 // Given /path/to/file, return file
 const char *PathGetBasename(const char *path);
 void PathGetWithoutExtension(char *buf, const char *path);
