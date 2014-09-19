@@ -658,6 +658,11 @@ static void Delete(int xc, int yc)
 		}
 		else
 		{
+			if (gCampaign.Setting.Missions.size == 0)
+			{
+				// Nothing to delete; do nothing
+				return;
+			}
 			DeleteMission(&gCampaign);
 		}
 		AdjustYC(&yc);
