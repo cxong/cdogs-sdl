@@ -277,9 +277,9 @@ static void PlaceBaddie(TActor *actor)
 	for (int i = 0; i < 100; i++)
 	{
 		// Try spawning out of players' sights
-		const Vec2i pos = Vec2iNew(
-			(rand() % (gMap.Size.x * TILE_WIDTH)) << 8,
-			(rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+		const Vec2i pos = Vec2iReal2Full(Vec2iNew(
+			rand() % (gMap.Size.x * TILE_WIDTH),
+			rand() % (gMap.Size.y * TILE_HEIGHT)));
 		const TActor *closestPlayer = AIGetClosestPlayer(pos);
 		if (closestPlayer && CHEBYSHEV_DISTANCE(
 			pos.x, pos.y,
@@ -297,9 +297,9 @@ static void PlaceBaddie(TActor *actor)
 		// even close to player
 		for (;;)
 		{
-			const Vec2i pos = Vec2iNew(
-				(rand() % (gMap.Size.x * TILE_WIDTH)) << 8,
-				(rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
+			const Vec2i pos = Vec2iReal2Full(Vec2iNew(
+				rand() % (gMap.Size.x * TILE_WIDTH),
+				rand() % (gMap.Size.y * TILE_HEIGHT)));
 			if (ActorIsPosClear(actor, pos))
 			{
 				TryMoveActor(actor, pos);

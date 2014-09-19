@@ -261,9 +261,10 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
-		InitializeBadGuys();
+		// Note: place players first, as bad guys are placed away from players
 		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
 		InitPlayers(maxHealth, co->MissionIndex);
+		InitializeBadGuys();
 		CreateEnemies();
 		PlayGameSong();
 		run = RunGame(&gMission, &gMap);
