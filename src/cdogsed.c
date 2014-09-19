@@ -255,6 +255,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
 	}
 
+	FontStr("Press Ctrl+E to edit characters", Vec2iNew(20, h - 20 - FontH() * 2));
 	FontStr("Press F1 for help", Vec2iNew(20, h - 20 - FontH()));
 
 	y = 150;
