@@ -226,7 +226,7 @@ struct MissionOptions
 };
 
 void MissionInit(Mission *m);
-void MissionCopy(Mission *dst, Mission *src);
+void MissionCopy(Mission *dst, const Mission *src);
 void MissionTerminate(Mission *m);
 
 int SetupBuiltinCampaign(int index);

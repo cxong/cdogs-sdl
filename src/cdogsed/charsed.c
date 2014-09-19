@@ -418,7 +418,7 @@ static const GunDescription *GetNextGun(const GunDescription *g, const int d)
 static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 {
 	Character *c = CharacterStoreInsertOther(store, idx);
-	if (data)
+	if (data && data->bot)
 	{
 		memcpy(c, data, sizeof *c);
 	}
@@ -514,13 +514,19 @@ static void HandleInput(
 		switch (c)
 		{
 		case 'x':
-			*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
-			DeleteCharacter(store, idx);
-			fileChanged = 1;
+			if (*idx < (int)store->OtherChars.size)
+			{
+				*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
+				DeleteCharacter(store, idx);
+				fileChanged = 1;
+			}
 			break;
 
 		case 'c':
-			*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
+			if (*idx < (int)store->OtherChars.size)
+			{
+				*scrap = *(Character *)CArrayGet(&store->OtherChars, *idx);
+			}
 			break;
 
 		case 'v':

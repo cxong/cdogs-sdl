@@ -113,8 +113,12 @@ void MissionInit(Mission *m)
 		m->u.Classic.Pillars.Min = m->u.Classic.Pillars.Max = 1;
 	}
 }
-void MissionCopy(Mission *dst, Mission *src)
+void MissionCopy(Mission *dst, const Mission *src)
 {
+	if (src == NULL)
+	{
+		return;
+	}
 	MissionTerminate(dst);
 	MissionInit(dst);
 	if (src->Title)
