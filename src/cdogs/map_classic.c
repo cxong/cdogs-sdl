@@ -305,7 +305,7 @@ static int MapTryBuildRoom(
 		while (i < 100 && count < m->u.Classic.Rooms.Walls)
 		{
 			if (MapTryBuildWall(
-				map, MAP_ROOM, MAX(m->u.Classic.Rooms.WallPad, 2),
+				map, MAP_ROOM, MAX(m->u.Classic.Rooms.WallPad, 1),
 				m->u.Classic.Rooms.WallLength))
 			{
 				count++;

@@ -1028,7 +1028,7 @@ static void MissionChangeRoomWallPad(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad =
-		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad + d, 2, 10);
+		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Rooms.WallPad + d, 1, 10);
 }
 static void MissionChangeSquareCount(void *data, int d)
 {

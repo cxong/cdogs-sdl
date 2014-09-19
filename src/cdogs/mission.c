@@ -101,6 +101,17 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->Items, sizeof(int));
 	CArrayInit(&m->ItemDensities, sizeof(int));
 	CArrayInit(&m->Weapons, sizeof(const GunDescription *));
+
+	// Set some default values for the mission
+	if (m->Type == MAPTYPE_CLASSIC)
+	{
+		m->u.Classic.CorridorWidth = 1;
+		m->u.Classic.Rooms.Min = m->u.Classic.Rooms.Max = 5;
+		m->u.Classic.Rooms.WallLength = 1;
+		m->u.Classic.Rooms.WallPad = 1;
+		m->u.Classic.Doors.Min = m->u.Classic.Doors.Max = 1;
+		m->u.Classic.Pillars.Min = m->u.Classic.Pillars.Max = 1;
+	}
 }
 void MissionCopy(Mission *dst, Mission *src)
 {
