@@ -452,7 +452,7 @@ bool PlayerEquip(void)
 	memset(&data, 0, sizeof data);
 	data.IsOK = true;
 	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)

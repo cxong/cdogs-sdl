@@ -207,7 +207,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
 	int highlights[MAX_LOCAL_PLAYERS];
 	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)
