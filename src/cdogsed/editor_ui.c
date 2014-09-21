@@ -792,7 +792,7 @@ static void MissionDrawObjective(
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
 	}
 }
-static MissionObjective *GetMissionObjective(Mission *m, int idx)
+static MissionObjective *GetMissionObjective(const Mission *m, const int idx)
 {
 	return CArrayGet(&m->Objectives, idx);
 }
@@ -1291,9 +1291,23 @@ static void MissionChangeObjectiveRequired(void *vData, int d)
 static void MissionChangeObjectiveTotal(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MissionObjective *mobj = GetMissionObjective(
-		CampaignGetCurrentMission(data->co), data->index);
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	MissionObjective *mobj = GetMissionObjective(m, data->index);
 	mobj->Count = CLAMP_OPPOSITE(mobj->Count + d, mobj->Required, 100);
+	// Don't let the total reduce to less than static ones we've placed
+	if (m->Type == MAPTYPE_STATIC)
+	{
+		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
+		{
+			const ObjectivePositions *op =
+				CArrayGet(&m->u.Static.Objectives, i);
+			if (op->Index == data->index)
+			{
+				mobj->Count = MAX(mobj->Count, (int)op->Positions.size);
+				break;
+			}
+		}
+	}
 }
 static void MissionChangeObjectiveFlags(void *vData, int d)
 {

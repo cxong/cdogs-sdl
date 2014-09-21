@@ -88,8 +88,9 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 	
 	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
 	{
-		ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
-		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
+		const ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
+		const MissionObjective *mobj =
+			CArrayGet(&mo->missionData->Objectives, op->Index);
 		struct Objective *obj = CArrayGet(&mo->Objectives, op->Index);
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
