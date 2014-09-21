@@ -71,6 +71,7 @@
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
+#include <cdogs/player_template.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
@@ -1236,6 +1237,9 @@ int main(int argc, char *argv[])
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
+	// Not needed by editor; used as work-around for strange OSX linker error
+	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+
 	EventInit(&gEventHandlers, NULL, false);
 
 	PHYSFS_init(argv[0]);
@@ -1265,6 +1269,8 @@ int main(int argc, char *argv[])
 	EditCampaign();
 
 	PHYSFS_deinit();
+
+	CArrayTerminate(&gPlayerTemplates);
 
 	MapTerminate(&gMap);
 	ParticleClassesTerminate(&gParticleClasses);
