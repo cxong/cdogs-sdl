@@ -58,6 +58,16 @@ void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 		Mission defaultMission;
 		MissionInit(&defaultMission);
 		defaultMission.Size = Vec2iNew(48, 48);
+		// Set some default values for the mission
+		defaultMission.u.Classic.CorridorWidth = 1;
+		defaultMission.u.Classic.Rooms.Min =
+			defaultMission.u.Classic.Rooms.Max = 5;
+		defaultMission.u.Classic.Rooms.WallLength = 1;
+		defaultMission.u.Classic.Rooms.WallPad = 1;
+		defaultMission.u.Classic.Doors.Min =
+			defaultMission.u.Classic.Doors.Max = 1;
+		defaultMission.u.Classic.Pillars.Min =
+			defaultMission.u.Classic.Pillars.Max = 1;
 		mission = &defaultMission;
 	}
 	CArrayInsert(&co->Setting.Missions, idx, mission);
