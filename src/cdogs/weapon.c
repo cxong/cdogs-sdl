@@ -172,6 +172,10 @@ static void LoadGunDescription(
 		{
 			CSTRDUP(g->name, defaultGun->name);
 		}
+		if (defaultGun->Description)
+		{
+			CSTRDUP(g->Description, defaultGun->Description);
+		}
 		g->MuzzleHeight /= Z_FACTOR;
 	}
 	char *tmp;
@@ -195,6 +199,11 @@ static void LoadGunDescription(
 	}
 
 	g->name = GetString(node, "Name");
+
+	if (json_find_first_label(node, "Description"))
+	{
+		g->Description = GetString(node, "Description");
+	}
 
 	if (json_find_first_label(node, "Bullet"))
 	{
@@ -265,6 +274,7 @@ void WeaponClassesClear(CArray *classes)
 	{
 		GunDescription *gd = CArrayGet(classes, i);
 		CFREE(gd->name);
+		CFREE(gd->Description);
 	}
 	CArrayClear(classes);
 }

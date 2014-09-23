@@ -23,6 +23,7 @@
       "Index": 0,
 	  "Pic": "knife",
       "Name": "Knife",
+      "Description": "Melee weapon, just run towards enemy",
       "Cost": 0,
       "Lock": 10,
       "Sound": "",
@@ -32,6 +33,7 @@
     {
       "Index": 1,
       "Name": "Machine gun",
+      "Description": "Rapid-fire bullet hose",
       "Bullet": "mg",
 	  "Cost": 1,
 	  "Lock": 6,
@@ -44,6 +46,7 @@
 	  "Index": 2,
 	  "Pic": "",
 	  "Name": "Grenades",
+	  "Description": "Bouncing grenade with a big explosion",
 	  "Bullet": "grenade",
 	  "Cost": 20,
 	  "Lock": 30,
@@ -53,6 +56,7 @@
 	{
 	  "Index": 3,
 	  "Name": "Flamer",
+	  "Description": "Short range, high damage weapon",
 	  "Bullet": "flame",
 	  "Cost": 1,
 	  "Lock": 6,
@@ -63,6 +67,7 @@
 	{
 	  "Index": 4,
 	  "Name": "Shotgun",
+	  "Description": "Slow firing weapon with big spread",
 	  "Bullet": "shotgun",
 	  "Cost": 5,
 	  "Lock": 50,
@@ -77,6 +82,7 @@
 	{
 	  "Index": 5,
 	  "Name": "Powergun",
+	  "Description": "Long range weapon with very fast bullets",
 	  "Bullet": "laser",
 	  "Cost": 2,
 	  "Lock": 20,
@@ -87,6 +93,7 @@
 	  "Index": 6,
 	  "Pic": "",
 	  "Name": "Shrapnel bombs",
+	  "Description": "Bouncing grenade with a large shrapnel explosion",
 	  "Bullet": "shrapnelbomb",
 	  "Cost": 20,
 	  "Lock": 30,
@@ -97,6 +104,7 @@
 	  "Index": 7,
 	  "Pic": "",
 	  "Name": "Molotovs",
+	  "Description": "Short range grenade that explodes in a burst of fire",
 	  "Bullet": "molotov",
 	  "Cost": 20,
 	  "Lock": 30,
@@ -106,6 +114,7 @@
 	{
 	  "Index": 8,
 	  "Name": "Sniper rifle",
+	  "Description": "Very slow firing, high damage",
 	  "Bullet": "sniper",
 	  "Cost": 5,
 	  "Lock": 100,
@@ -120,6 +129,7 @@
 	  "Index": 9,
 	  "Pic": "",
 	  "Name": "Prox. mine",
+	  "Description": "Mines that explode when players are nearby",
 	  "Bullet": "proxmine",
 	  "Cost": 10,
 	  "Lock": 100,
@@ -132,6 +142,7 @@
 	  "Index": 10,
 	  "Pic": "",
 	  "Name": "Dynamite",
+	  "Description": "Timed explosive device",
 	  "Bullet": "dynamite",
 	  "Cost": 7,
 	  "Lock": 100,
@@ -144,6 +155,7 @@
 	  "Index": 11,
 	  "Pic": "",
 	  "Name": "Chemo bombs",
+	  "Description": "Bouncing grenade that bursts into a cloud of poison gas",
 	  "Bullet": "gasbomb",
 	  "Cost": 7,
 	  "Lock": 30,
@@ -153,6 +165,7 @@
 	{
 	  "Index": 12,
 	  "Name": "Petrify gun",
+	  "Description": "Fires projectiles that freeze enemies",
 	  "Bullet": "petrifier",
 	  "Cost": 10,
 	  "Lock": 100,
@@ -164,6 +177,7 @@
 	{
 	  "Index": 13,
 	  "Name": "Browny gun",
+	  "Description": "Fires randomly flying bolts",
 	  "Bullet": "rapid",
 	  "Cost": 5,
 	  "Lock": 30,
@@ -174,6 +188,7 @@
 	  "Index": 14,
 	  "Pic": "",
 	  "Name": "Confusion bombs",
+	  "Description": "Bouncing grenade that produces confusion gas",
 	  "Bullet": "confusebomb",
 	  "Cost": 10,
 	  "Lock": 30,
@@ -183,6 +198,7 @@
 	{
 	  "Index": 15,
 	  "Name": "Chemo gun",
+	  "Description": "Short range poison gas weapon",
 	  "Bullet": "gas",
 	  "Cost": 1,
 	  "Lock": 6,
@@ -193,6 +209,7 @@
 	{
 	  "Index": 16,
 	  "Name": "Pulse rifle",
+	  "Description": "Rapid-fire, short range gun",
 	  "Bullet": "pulse",
 	  "Cost": 1,
 	  "Lock": 4,
@@ -203,6 +220,7 @@
 	{
 	  "Index": 17,
 	  "Name": "Heatseeker",
+	  "Description": "Fires a slow seeking rocket",
 	  "Bullet": "heatseeker",
 	  "Cost": 7,
 	  "Lock": 30,
@@ -211,6 +229,7 @@
 	},
 	{
 	  "Name": "Swarmer",
+	  "Description": "Fires four fast rockets with seeking",
 	  "Bullet": "swarmer",
 	  "Cost": 15,
 	  "Lock": 60,
@@ -222,6 +241,7 @@
 	},
 	{
 	  "Name": "Launcher",
+	  "Description": "Fires a single rocket with very high damage",
 	  "Bullet": "rocket",
 	  "Cost": 15,
 	  "Lock": 70,
@@ -231,6 +251,7 @@
 	},
 	{
 	  "Name": "Pistol",
+	  "Description": "Cheap pea shooter",
 	  "Bullet": "9mm",
 	  "Cost": 0,
 	  "Lock": 18,

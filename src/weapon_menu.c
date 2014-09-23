@@ -187,7 +187,14 @@ void WeaponMenuCreate(
 	{
 		const GunDescription **g = CArrayGet(
 			&gMission.missionData->Weapons, i);
-		MenuAddSubmenu(ms->root, MenuCreate((*g)->name, MENU_TYPE_BASIC));
+		menu_t *gunMenu =
+			MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
+		if ((*g)->Description != NULL)
+		{
+			MenuAddSubmenu(gunMenu, MenuCreateBack((*g)->Description));
+			gunMenu->u.normal.isSubmenusAlt = true;
+		}
+		MenuAddSubmenu(ms->root, gunMenu);
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon

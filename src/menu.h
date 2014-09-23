@@ -136,6 +136,8 @@ struct menu
 		{
 			char title[64];
 			CArray subMenus;	// of menu_t
+			// whether to use alternate control to enter submenus
+			bool isSubmenusAlt;
 			int index;
 			int scroll;
 			int maxItems;	// 0 means unlimited

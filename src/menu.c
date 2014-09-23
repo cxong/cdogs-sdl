@@ -309,13 +309,6 @@ int MenuTypeHasSubMenus(menu_type_e type)
 		type == MENU_TYPE_KEYS;
 }
 
-int MenuTypeLeftRightMoves(menu_type_e type)
-{
-	return
-		type == MENU_TYPE_NORMAL ||
-		type == MENU_TYPE_KEYS;
-}
-
 
 menu_t *MenuCreate(const char *name, menu_type_e type)
 {
@@ -335,6 +328,7 @@ menu_t *MenuCreateNormal(
 {
 	menu_t *menu = MenuCreate(name, type);
 	strcpy(menu->u.normal.title, title);
+	menu->u.normal.isSubmenusAlt = false;
 	menu->u.normal.displayItems = displayItems;
 	menu->u.normal.changeKeyMenu = NULL;
 	menu->u.normal.index = 0;
@@ -346,6 +340,18 @@ menu_t *MenuCreateNormal(
 	return menu;
 }
 
+static void UpdateSubmenuParentPtrs(menu_t *menu)
+{
+	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
+	{
+		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+		subMenu->parentMenu = menu;
+		if (MenuTypeHasSubMenus(subMenu->type))
+		{
+			UpdateSubmenuParentPtrs(subMenu);
+		}
+	}
+}
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
 	CArrayPushBack(&menu->u.normal.subMenus, subMenu);
@@ -355,21 +361,8 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	}
 	CFREE(subMenu);
 
-	// update all parent pointers, in grandchild menus
-	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-	{
-		menu_t *subMenuLoc = CArrayGet(&menu->u.normal.subMenus, i);
-		subMenuLoc->parentMenu = menu;
-		if (MenuTypeHasSubMenus(subMenuLoc->type))
-		{
-			for (int j = 0; j < (int)subMenuLoc->u.normal.subMenus.size; j++)
-			{
-				menu_t *subSubMenu =
-					CArrayGet(&subMenuLoc->u.normal.subMenus, j);
-				subSubMenu->parentMenu = subMenuLoc;
-			}
-		}
-	}
+	// update all parent pointers, in child menus
+	UpdateSubmenuParentPtrs(menu);
 
 	// move cursor in case first menu item(s) are disabled
 	MoveIndexToNextEnabledSubmenu(menu, 1);
@@ -646,11 +639,21 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				int y = yStart + (i - iStart) * FontH();
 				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 				Vec2i pos = Vec2iNew(x, y);
+				char nameBuf[64];
+				if (subMenu->type == MENU_TYPE_NORMAL &&
+					subMenu->u.normal.isSubmenusAlt)
+				{
+					sprintf(nameBuf, "%s >", subMenu->name);
+				}
+				else
+				{
+					strcpy(nameBuf, subMenu->name);
+				}
 
 				switch (menu->u.normal.align)
 				{
 				case MENU_ALIGN_CENTER:
-					pos.x = MS_CENTER_X(*ms, FontStrW(subMenu->name));
+					pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
 					break;
 				case MENU_ALIGN_LEFT:
 					// Do nothing
@@ -662,7 +665,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 
 				DisplayMenuItem(
 					pos,
-					subMenu->name,
+					nameBuf,
 					i == menu->u.normal.index,
 					subMenu->isDisabled,
 					subMenu->color);
@@ -920,8 +923,7 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd);
 
 menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 {
-	if (AnyButton(cmd) ||
-		(!MenuTypeLeftRightMoves(menu->type) && (Left(cmd) || Right(cmd))))
+	if (AnyButton(cmd) || Left(cmd) || Right(cmd))
 	{
 		// Ignore if menu contains no submenus
 		if (menu->u.normal.subMenus.size == 0)
@@ -939,7 +941,8 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_KEYS:
 		case MENU_TYPE_CUSTOM:
-			if (cmd & CMD_BUTTON1)
+			if (subMenu->u.normal.isSubmenusAlt ?
+				(cmd & CMD_RIGHT) : (cmd & CMD_BUTTON1))
 			{
 				return subMenu;
 			}
@@ -1044,15 +1047,13 @@ void MenuProcessChangeKey(menu_t *menu)
 
 void MenuChangeIndex(menu_t *menu, int cmd)
 {
-	int leftRightMoves = MenuTypeLeftRightMoves(menu->type);
-
 	// Ignore if no submenus
 	if (menu->u.normal.subMenus.size == 0)
 	{
 		return;
 	}
 
-	if (Up(cmd) || (leftRightMoves && Left(cmd)))
+	if (Up(cmd))
 	{
 		menu->u.normal.index--;
 		if (menu->u.normal.index == -1)
@@ -1062,7 +1063,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		MoveIndexToNextEnabledSubmenu(menu, 0);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
-	else if (Down(cmd) || (leftRightMoves && Right(cmd)))
+	else if (Down(cmd))
 	{
 		menu->u.normal.index++;
 		if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
