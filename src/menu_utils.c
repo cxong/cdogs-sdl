@@ -62,16 +62,19 @@ void MenuDisplayPlayer(
 	playerPos = Vec2iNew(
 		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
 
+	const PlayerData *pData = CArrayGet(&gPlayerDatas, d->playerIndex);
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
-		sprintf(s, "%c%s%c", '>', d->pData->name, '<');
+		sprintf(s, "%c%s%c", '>', pData->name, '<');
 	}
 	else
 	{
-		strcpy(s, d->pData->name);
+		strcpy(s, pData->name);
 	}
 
-	DisplayCharacterAndName(playerPos, d->c, s);
+	const Character *c =
+		CArrayGet(&gCampaign.Setting.characters.Players, d->playerIndex);
+	DisplayCharacterAndName(playerPos, c, s);
 }
 
 void MenuDisplayPlayerControls(
@@ -86,12 +89,13 @@ void MenuDisplayPlayerControls(
 
 	UNUSED(menu);
 
-	switch (d->pData->inputDevice)
+	const PlayerData *pData = CArrayGet(&gPlayerDatas, d->playerIndex);
+	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		{
 			input_keys_t *keys =
-				&d->inputConfig->PlayerKeys[d->pData->deviceIndex].Keys;
+				&d->inputConfig->PlayerKeys[pData->deviceIndex].Keys;
 			sprintf(s, "(%s, %s, %s, %s, %s and %s)",
 				SDL_GetKeyName(keys->left),
 				SDL_GetKeyName(keys->right),
@@ -106,16 +110,16 @@ void MenuDisplayPlayerControls(
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		sprintf(s, "(%s)",
-			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
+			InputDeviceName(pData->inputDevice, pData->deviceIndex));
 		break;
 	case INPUT_DEVICE_NET:
 		sprintf(s, "(%s #%d)",
-			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex),
-			d->pData->deviceIndex);
+			InputDeviceName(pData->inputDevice, pData->deviceIndex),
+			pData->deviceIndex);
 		break;
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(%s)",
-			InputDeviceName(d->pData->inputDevice, d->pData->deviceIndex));
+			InputDeviceName(pData->inputDevice, pData->deviceIndex));
 		break;
 	default:
 		assert(0 && "unknown device");

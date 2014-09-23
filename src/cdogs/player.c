@@ -39,7 +39,7 @@ void PlayerDataInit(CArray *p)
 	CArrayInit(p, sizeof(PlayerData));
 }
 
-void PlayerDataAdd(CArray *p, const bool isLocal)
+PlayerData *PlayerDataAdd(CArray *p, const bool isLocal)
 {
 	PlayerData d;
 	memset(&d, 0, sizeof d);
@@ -103,7 +103,14 @@ void PlayerDataAdd(CArray *p, const bool isLocal)
 			c.looks.hair = SHADE_GOLDEN;
 			break;
 		default:
-			assert(0 && "unsupported");
+			// Set up player N template
+			sprintf(d.name, "Player %d", i);
+			c.looks.face = FACE_JONES;
+			c.looks.skin = SHADE_SKIN;
+			c.looks.arm = SHADE_BLUE;
+			c.looks.body = SHADE_BLUE;
+			c.looks.leg = SHADE_BLUE;
+			c.looks.hair = SHADE_RED;
 			break;
 		}
 	}
@@ -132,7 +139,9 @@ void PlayerDataAdd(CArray *p, const bool isLocal)
 		d.weapons[2] = StrGunDescription("Dynamite");
 		break;
 	default:
-		assert(0 && "unsupported");
+		d.weapons[0] = StrGunDescription("Shotgun");
+		d.weapons[1] = StrGunDescription("Machine gun");
+		d.weapons[2] = StrGunDescription("Shrapnel bombs");
 		break;
 	}
 	d.weaponCount = 3;
@@ -145,6 +154,7 @@ void PlayerDataAdd(CArray *p, const bool isLocal)
 	CArrayPushBack(&gCampaign.Setting.characters.Players, &c);
 	CASSERT(p->size == gCampaign.Setting.characters.Players.size,
 		"Player data and character sizes inconsistent");
+	return CArrayGet(p, (int)p->size - 1);
 }
 
 void PlayerDataReset(CArray *p)

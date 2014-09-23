@@ -29,6 +29,7 @@
 #include "player_select_menus.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 #include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
@@ -103,7 +104,7 @@ static void DrawNameMenu(
 static int HandleInputNameMenu(int cmd, void *data)
 {
 	PlayerSelectMenuData *d = data;
-	PlayerData *p = d->display.pData;
+	PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -189,8 +190,11 @@ static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
 {
 	AppearanceMenuData *d = data;
 	UNUSED(cmd);
-	*d->property = menu->u.normal.index;
-	CharacterSetColors(d->c);
+	Character *c =
+		CArrayGet(&gCampaign.Setting.characters.Players, d->playerIndex);
+	int *prop = (int *)((char *)&c->looks + d->propertyOffset);
+	*prop = menu->u.normal.index;
+	CharacterSetColors(c);
 }
 
 static menu_t *CreateAppearanceMenu(
@@ -212,13 +216,15 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		PlayerSelectMenuData *d = data;
-		PlayerData *p = d->display.pData;
+		PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
 		const PlayerTemplate *t =
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
-		d->display.c->looks = t->Looks;
-		CharacterSetColors(d->display.c);
+		Character *c = CArrayGet(
+			&gCampaign.Setting.characters.Players, d->display.playerIndex);
+		c->looks = t->Looks;
+		CharacterSetColors(c);
 	}
 }
 
@@ -258,12 +264,14 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		PlayerSelectMenuData *d = data;
-		PlayerData *p = d->display.pData;
+		PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
 		PlayerTemplate *t =
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(t->name, 0, sizeof t->name);
 		strncpy(t->name, p->name, sizeof t->name - 1);
-		d->display.c->looks = t->Looks;
+		Character *c = CArrayGet(
+			&gCampaign.Setting.characters.Players, d->display.playerIndex);
+		c->looks = t->Looks;
 	}
 }
 
@@ -279,7 +287,8 @@ static void SaveTemplateDisplayTitle(
 	UNUSED(size);
 
 	// Display "Save <template>..." title
-	sprintf(buf, "Save %s...", d->display.pData->name);
+	const PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	sprintf(buf, "Save %s...", p->name);
 	FontStr(buf, Vec2iAdd(pos, Vec2iNew(0, 0)));
 }
 
@@ -302,12 +311,11 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	loadMenu->isDisabled = gPlayerTemplates.size == 0;
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data,
-	Character *c, PlayerData *p);
+	const char *name, PlayerSelectMenuData *data, const int playerIndex);
 static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
-	int numPlayers, int player, Character *c, PlayerData *p,
+	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig, const NameGen *ng)
 {
@@ -318,11 +326,10 @@ void PlayerSelectMenusCreate(
 	int h = graphics->cachedConfig.Res.y;
 
 	data->nameMenuSelection = (int)strlen(letters);
-	data->display.c = c;
+	data->display.playerIndex = playerIndex;
 	data->display.currentMenu = &ms->current;
-	data->display.pData = p;
 	data->controls.inputConfig = inputConfig;
-	data->controls.pData = p;
+	data->controls.playerIndex = playerIndex;
 	data->nameGenerator = ng;
 
 	switch (numPlayers)
@@ -361,7 +368,8 @@ void PlayerSelectMenusCreate(
 		MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data, c, p));
+	MenuAddSubmenu(
+		ms->root, CreateCustomizeMenu("Customize...", data, playerIndex));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
@@ -381,54 +389,49 @@ void PlayerSelectMenusCreate(
 	CheckReenableLoadMenu(ms->root, NULL);
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL);
 
+	Character *c =
+		CArrayGet(&gCampaign.Setting.characters.Players, playerIndex);
 	CharacterSetColors(c);
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data,
-	Character *c, PlayerData *p)
+	const char *name, PlayerSelectMenuData *data, const int playerIndex)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
-	data->faceData.c = c;
-	data->faceData.pData = p;
+	data->faceData.playerIndex = playerIndex;
 	data->faceData.menuCount = FACE_COUNT;
 	data->faceData.strFunc = IndexToFaceStr;
-	data->faceData.property = &c->looks.face;
+	data->faceData.propertyOffset = offsetof(CharLooks, face);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Face", &data->faceData));
 
-	data->skinData.c = c;
-	data->skinData.pData = p;
+	data->skinData.playerIndex = playerIndex;
 	data->skinData.menuCount = SHADE_COUNT;
 	data->skinData.strFunc = IndexToShadeStr;
-	data->skinData.property = &c->looks.skin;
+	data->skinData.propertyOffset = offsetof(CharLooks, skin);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Skin", &data->skinData));
 
-	data->hairData.c = c;
-	data->hairData.pData = p;
+	data->hairData.playerIndex = playerIndex;
 	data->hairData.menuCount = SHADE_COUNT;
 	data->hairData.strFunc = IndexToShadeStr;
-	data->hairData.property = &c->looks.hair;
+	data->hairData.propertyOffset = offsetof(CharLooks, hair);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Hair", &data->hairData));
 
-	data->armsData.c = c;
-	data->armsData.pData = p;
+	data->armsData.playerIndex = playerIndex;
 	data->armsData.menuCount = SHADE_COUNT;
 	data->armsData.strFunc = IndexToShadeStr;
-	data->armsData.property = &c->looks.arm;
+	data->armsData.propertyOffset = offsetof(CharLooks, arm);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Arms", &data->armsData));
 
-	data->bodyData.c = c;
-	data->bodyData.pData = p;
+	data->bodyData.playerIndex = playerIndex;
 	data->bodyData.menuCount = SHADE_COUNT;
 	data->bodyData.strFunc = IndexToShadeStr;
-	data->bodyData.property = &c->looks.body;
+	data->bodyData.propertyOffset = offsetof(CharLooks, body);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Body", &data->bodyData));
 
-	data->legsData.c = c;
-	data->legsData.pData = p;
+	data->legsData.playerIndex = playerIndex;
 	data->legsData.menuCount = SHADE_COUNT;
 	data->legsData.strFunc = IndexToShadeStr;
-	data->legsData.property = &c->looks.leg;
+	data->legsData.propertyOffset = offsetof(CharLooks, leg);
 	MenuAddSubmenu(menu, CreateAppearanceMenu("Legs", &data->legsData));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
@@ -442,7 +445,8 @@ static void ShuffleAppearance(void *data)
 	PlayerSelectMenuData *pData = data;
 	char buf[512];
 	NameGenMake(pData->nameGenerator, buf);
-	strncpy(pData->display.pData->name, buf, 20);
+	PlayerData *p = CArrayGet(&gPlayerDatas, pData->display.playerIndex);
+	strncpy(p->name, buf, 20);
 	ShuffleOne(&pData->faceData);
 	ShuffleOne(&pData->skinData);
 	ShuffleOne(&pData->hairData);
@@ -452,6 +456,9 @@ static void ShuffleAppearance(void *data)
 }
 static void ShuffleOne(AppearanceMenuData *data)
 {
-	*data->property = rand() % data->menuCount;
-	CharacterSetColors(data->c);
+	Character *c =
+		CArrayGet(&gCampaign.Setting.characters.Players, data->playerIndex);
+	int *prop = (int *)((char *)&c->looks + data->propertyOffset);
+	*prop = rand() % data->menuCount;
+	CharacterSetColors(c);
 }

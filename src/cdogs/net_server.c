@@ -218,12 +218,6 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			def.CampaignMode = entry->Mode;
 			return MakePacketImpl(msg, &def, NetMsgCampaignDef_fields);
 		}
-	case SERVER_MSG_PLAYER_ID:
-		{
-			NetMsgPlayerId pid;
-			pid.Id = *(const int *)data;
-			return MakePacketImpl(msg, &pid, NetMsgPlayerId_fields);
-		}
 	case SERVER_MSG_PLAYER_DATA:
 		{
 			NetMsgPlayerData d;

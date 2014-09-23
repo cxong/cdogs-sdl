@@ -132,13 +132,6 @@ static void AssignPlayerInputDevices(
 	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
 	bool assignedMouse = false;
 	bool assignedJoysticks[MAX_JOYSTICKS];
-	CArray assignedNet;
-	CArrayInit(&assignedNet, sizeof(bool));
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		bool assigned = false;
-		CArrayPushBack(&assignedNet, &assigned);
-	}
 	int numNet = 0;
 	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
 	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
@@ -146,6 +139,10 @@ static void AssignPlayerInputDevices(
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->inputDevice == INPUT_DEVICE_NET)
+		{
+			numNet++;
+		}
 		if (!p->IsLocal)
 		{
 			continue;
@@ -164,10 +161,6 @@ static void AssignPlayerInputDevices(
 				break;
 			case INPUT_DEVICE_JOYSTICK:
 				assignedJoysticks[p->deviceIndex] = true;
-				break;
-			case INPUT_DEVICE_NET:
-				*(bool *)CArrayGet(&assignedNet, p->deviceIndex) = true;
-				numNet++;
 				break;
 			default:
 				// do nothing
@@ -214,41 +207,45 @@ static void AssignPlayerInputDevices(
 				break;
 			}
 		}
-		if (gNetServer.server &&
-			(int)gNetServer.server->connectedPeers > numNet)
+	}
+
+	// Check net clients
+	if (gNetServer.server &&
+		(int)gNetServer.server->connectedPeers > numNet)
+	{
+		// Add a new player
+		PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
+		const bool hasInputDevice = true;
+		CArrayPushBack(hasInputDevices, &hasInputDevice);
+		AssignPlayerInputDevice(p, INPUT_DEVICE_NET, 0);
+		const int peerId = gNetServer.peerId - 1;
+		// Send the current campaign details over
+		debug(D_VERBOSE, "NetServer: sending campaign entry");
+		NetServerSendMsg(
+			&gNetServer, peerId,
+			SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
+		// Send details of all current players
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			*hasInputDevice = true;
-			AssignPlayerInputDevice(p, INPUT_DEVICE_NET, 0);
-			const int peerId = gNetServer.peerId - 1;
-			// Send the current campaign details over
-			debug(D_VERBOSE, "NetServer: sending campaign entry");
-			NetServerSendMsg(
-				&gNetServer, peerId,
-				SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
-			// Send the player index of this player
-			debug(D_VERBOSE, "NetServer: sending player index %d", i);
-			NetServerSendMsg(&gNetServer, peerId, SERVER_MSG_PLAYER_ID, &i);
-			// Send details of all current players
-			for (int j = 0; j < (int)gPlayerDatas.size; j++)
+			const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+			if (i == (int)gPlayerDatas.size - 1)
 			{
-				if (j == i)
-				{
-					continue;
-				}
-				debug(D_VERBOSE, "NetServer: sending player data index %d", j);
-				const PlayerData *pOther = CArrayGet(&gPlayerDatas, j);
+				debug(
+					D_VERBOSE, "NetServer: broadcast player data index %d", i);
+				NetServerBroadcastMsg(
+					&gNetServer, SERVER_MSG_PLAYER_DATA, pOther);
+			}
+			else
+			{
+				debug(D_VERBOSE, "NetServer: sending player data index %d", i);
 				NetServerSendMsg(
 					&gNetServer, peerId, SERVER_MSG_PLAYER_DATA, pOther);
 			}
-			*(bool *)CArrayGet(&assignedNet, p->deviceIndex) = true;
-			numNet++;
-			SoundPlay(&gSoundDevice, StrSound("hahaha"));
-			debug(D_VERBOSE, "NetServer: client connection complete");
-			continue;
 		}
-	}
 
-	CArrayTerminate(&assignedNet);
+		SoundPlay(&gSoundDevice, StrSound("hahaha"));
+		debug(D_VERBOSE, "NetServer: client connection complete");
+	}
 }
 
 typedef struct
@@ -290,8 +287,7 @@ bool PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data.menus[idx], GetNumPlayers(false, false, true), idx,
-			CArrayGet(&gCampaign.Setting.characters.Players, idx), p,
+			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
 			&gEventHandlers, &gGraphicsDevice, &gConfig.Input, &data.g);
 	}
 
@@ -460,8 +456,7 @@ bool PlayerEquip(void)
 			continue;
 		}
 		WeaponMenuCreate(
-			&data.menus[idx], GetNumPlayers(false, false, true), i,
-			CArrayGet(&gCampaign.Setting.characters.Players, i), p,
+			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
 			&gEventHandlers, &gGraphicsDevice, &gConfig.Input);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)

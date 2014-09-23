@@ -36,7 +36,7 @@
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
-	PlayerData *p = d->display.pData;
+	PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
 
 	// Don't process if we're not selecting a weapon
 	if ((cmd & CMD_BUTTON1) &&
@@ -118,16 +118,17 @@ static void DisplayEquippedWeapons(
 	weaponsPos = Vec2iNew(
 		dPos.x + size.x * 3 / 4 - maxTextSize.x / 2,
 		CENTER_Y(dPos, size, 0) + 14);
-	if (d->display.pData->weaponCount == 0)
+	const PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	if (p->weaponCount == 0)
 	{
 		FontStr("None selected...", weaponsPos);
 	}
 	else
 	{
-		for (int i = 0; i < d->display.pData->weaponCount; i++)
+		for (int i = 0; i < p->weaponCount; i++)
 		{
 			FontStr(
-				d->display.pData->weapons[i]->name,
+				p->weapons[i]->name,
 				Vec2iAdd(weaponsPos, Vec2iNew(0, i * FontH())));
 		}
 	}
@@ -135,7 +136,7 @@ static void DisplayEquippedWeapons(
 
 void WeaponMenuCreate(
 	WeaponMenu *menu,
-	int numPlayers, int player, Character *c, PlayerData *pData,
+	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig)
 {
@@ -145,11 +146,10 @@ void WeaponMenuCreate(
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
-	data->display.c = c;
+	data->display.playerIndex = playerIndex;
 	data->display.currentMenu = &ms->current;
-	data->display.pData = pData;
 	data->controls.inputConfig = inputConfig;
-	data->controls.pData = pData;
+	data->controls.playerIndex = playerIndex;
 
 	switch (numPlayers)
 	{
@@ -191,6 +191,7 @@ void WeaponMenuCreate(
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon
+	PlayerData *pData = CArrayGet(&gPlayerDatas, playerIndex);
 	for (int i = 0; i < pData->weaponCount; i++)
 	{
 		for (int j = 0; j < (int)gMission.missionData->Weapons.size; j++)

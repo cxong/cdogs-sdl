@@ -3,10 +3,6 @@ message NetMsgCampaignDef {
 	required uint32 CampaignMode = 2;
 }
 
-message NetMsgPlayerId {
-	required uint32 Id = 1;
-}
-
 message NetMsgPlayerData {
 	required string Name = 1;
 	message CharLooks {

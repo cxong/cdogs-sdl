@@ -45,7 +45,7 @@ typedef struct
 
 void WeaponMenuCreate(
 	WeaponMenu *menu,
-	int numPlayers, int player, Character *c, PlayerData *pData,
+	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig);
 

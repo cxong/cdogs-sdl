@@ -37,12 +37,11 @@
 
 typedef struct
 {
-	int *property;
+	unsigned long propertyOffset;
 	const char **menu;
 	int menuCount;
 	const char *(*strFunc)(int);
-	Character *c;
-	PlayerData *pData;
+	int playerIndex;
 } AppearanceMenuData;
 typedef struct
 {
@@ -65,7 +64,7 @@ typedef struct
 
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
-	int numPlayers, int player, Character *c, PlayerData *p,
+	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
 	InputConfig *inputConfig, const NameGen *ng);
 

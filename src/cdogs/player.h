@@ -62,7 +62,7 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 
 void PlayerDataInit(CArray *p);
-void PlayerDataAdd(CArray *p, const bool isLocal);
+PlayerData *PlayerDataAdd(CArray *p, const bool isLocal);
 void PlayerDataReset(CArray *p);
 void PlayerDataTerminate(CArray *p);
 

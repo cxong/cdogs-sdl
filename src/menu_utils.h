@@ -35,8 +35,7 @@
 
 typedef struct
 {
-	Character *c;
-	PlayerData *pData;
+	int playerIndex;
 	menu_t **currentMenu;
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(
@@ -45,7 +44,7 @@ void MenuDisplayPlayer(
 
 typedef struct
 {
-	PlayerData *pData;
+	int playerIndex;
 	InputConfig *inputConfig;
 } MenuDisplayPlayerControlsData;
 void MenuDisplayPlayerControls(
