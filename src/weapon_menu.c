@@ -187,12 +187,16 @@ void WeaponMenuCreate(
 	{
 		const GunDescription **g = CArrayGet(
 			&gMission.missionData->Weapons, i);
-		menu_t *gunMenu =
-			MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
+		menu_t *gunMenu;
 		if ((*g)->Description != NULL)
 		{
+			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
 			MenuAddSubmenu(gunMenu, MenuCreateBack((*g)->Description));
 			gunMenu->u.normal.isSubmenusAlt = true;
+		}
+		else
+		{
+			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
 		}
 		MenuAddSubmenu(ms->root, gunMenu);
 	}
