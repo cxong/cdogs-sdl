@@ -118,7 +118,7 @@ typedef enum
 
 struct menu
 {
-	char name[64];
+	char *name;
 	menu_type_e type;
 	struct menu *parentMenu;
 	bool isDisabled;
@@ -260,7 +260,7 @@ void MenuEnableSubmenu(menu_t *menu, int index);
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name);
 
 void ShowControls(void);
-void DisplayMenuItem(
+Vec2i DisplayMenuItem(
 	Vec2i pos, const char *s, int selected, int isDisabled, color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);

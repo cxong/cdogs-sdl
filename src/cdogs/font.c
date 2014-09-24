@@ -187,29 +187,31 @@ int FontStrW(const char *s)
 }
 int FontSubstrW(const char *s, int len)
 {
-	int w = 0;
 	if (len > (int)strlen(s))
 	{
 		len = (int)strlen(s);
 	}
-	for (int i = 0; i < len; i++)
+	// Find the width of the longest line, if this is a multi-line
+	int maxWidth = 0;
+	int w = 0;
+	for (int i = 0; i < len; i++, s++)
 	{
-		w += FontW(*s++);
+		if (*s == '\n')
+		{
+			maxWidth = MAX(maxWidth, w);
+			w = 0;
+		}
+		else
+		{
+			w += FontW(*s);
+		}
 	}
-	return w;
+	maxWidth = MAX(maxWidth, w);
+	return maxWidth;
 }
 int FontStrH(const char *s)
 {
-	int lines;
-	for (lines = 0; s != NULL; lines++)
-	{
-		s = strchr(s, '\n');
-		if (s)
-		{
-			s++;
-		}
-	}
-	return lines * FontH();
+	return FontStrNumLines(s) * FontH();
 }
 Vec2i FontStrSize(const char *s)
 {
@@ -230,6 +232,19 @@ Vec2i FontStrSize(const char *s)
 		}
 	}
 	return size;
+}
+int FontStrNumLines(const char *s)
+{
+	int lines;
+	for (lines = 0; s != NULL; lines++)
+	{
+		s = strchr(s, '\n');
+		if (s)
+		{
+			s++;
+		}
+	}
+	return lines;
 }
 
 Vec2i FontCh(const char c, const Vec2i pos)
@@ -368,8 +383,14 @@ void FontSplitLines(const char *text, char *buf, const int width)
 		ws = s;
 		while (*s == ' ' || *s == '\n')
 		{
+			*buf++ = *s;
+			if (*s == '\n')
+			{
+				// We've already skipped a word, so reset the word count
+				ws = s + 1;
+				x = ix;
+			}
 			s++;
-			*buf++ = ' ';
 		}
 
 		// Find word

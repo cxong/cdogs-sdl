@@ -81,6 +81,7 @@ int FontStrW(const char *s);
 int FontSubstrW(const char *s, int len);
 int FontStrH(const char *s);
 Vec2i FontStrSize(const char *s);
+int FontStrNumLines(const char *s);
 
 // Returns updated cursor position
 Vec2i FontCh(const char c, const Vec2i pos);

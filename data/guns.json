@@ -251,7 +251,7 @@
 	},
 	{
 	  "Name": "Pistol",
-	  "Description": "Cheap pea shooter",
+	  "Description": "A short range, medium rate of fire weapon, the pistol has fast moving bullets for hit-and-run tactics.\nIts 0-cost-per-shot makes this a versatile yet economical weapon, great for picking off lone targets.",
 	  "Bullet": "9mm",
 	  "Cost": 0,
 	  "Lock": 18,

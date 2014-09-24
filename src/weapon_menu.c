@@ -191,7 +191,11 @@ void WeaponMenuCreate(
 		if ((*g)->Description != NULL)
 		{
 			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
-			MenuAddSubmenu(gunMenu, MenuCreateBack((*g)->Description));
+			char *buf;
+			CMALLOC(buf, strlen((*g)->Description) * 2);
+			FontSplitLines((*g)->Description, buf, size.x * 5 / 6);
+			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
+			CFREE(buf);
 			gunMenu->u.normal.isSubmenusAlt = true;
 		}
 		else
