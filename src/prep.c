@@ -118,37 +118,23 @@ int NumPlayersSelection(
 }
 
 
-static void AssignPlayerInputDevice(
-	PlayerData *pData, const input_device_e d, const int idx)
-{
-	pData->inputDevice = d;
-	pData->deviceIndex = idx;
-}
-
 static void AssignPlayerInputDevices(
-	CArray *hasInputDevices, EventHandlers *handlers,
-	const InputConfig *inputConfig)
+	EventHandlers *handlers, const InputConfig *inputConfig)
 {
 	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
 	bool assignedMouse = false;
 	bool assignedJoysticks[MAX_JOYSTICKS];
-	int numNet = 0;
 	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
 	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
 
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->inputDevice == INPUT_DEVICE_NET)
-		{
-			numNet++;
-		}
 		if (!p->IsLocal)
 		{
 			continue;
 		}
-		bool *hasInputDevice = CArrayGet(hasInputDevices, i);
-		if (*hasInputDevice)
+		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
 			// Find all the assigned devices
 			switch (p->inputDevice)
@@ -178,8 +164,7 @@ static void AssignPlayerInputDevices(
 				inputConfig->PlayerKeys[j].Keys.button1) &&
 				!assignedKeyboards[j])
 			{
-				*hasInputDevice = true;
-				AssignPlayerInputDevice(p, INPUT_DEVICE_KEYBOARD, j);
+				PlayerSetInputDevice(p, INPUT_DEVICE_KEYBOARD, j);
 				assignedKeyboards[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
@@ -188,8 +173,7 @@ static void AssignPlayerInputDevices(
 		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
 			!assignedMouse)
 		{
-			*hasInputDevice = true;
-			AssignPlayerInputDevice(p, INPUT_DEVICE_MOUSE, 0);
+			PlayerSetInputDevice(p, INPUT_DEVICE_MOUSE, 0);
 			assignedMouse = true;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
@@ -200,57 +184,17 @@ static void AssignPlayerInputDevices(
 				&handlers->joysticks.joys[j], CMD_BUTTON1) &&
 				!assignedJoysticks[j])
 			{
-				*hasInputDevice = true;
-				AssignPlayerInputDevice(p, INPUT_DEVICE_JOYSTICK, j);
+				PlayerSetInputDevice(p, INPUT_DEVICE_JOYSTICK, j);
 				assignedJoysticks[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
 			}
 		}
 	}
-
-	// Check net clients
-	if (gNetServer.server &&
-		(int)gNetServer.server->connectedPeers > numNet)
-	{
-		// Add a new player
-		PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
-		const bool hasInputDevice = true;
-		CArrayPushBack(hasInputDevices, &hasInputDevice);
-		AssignPlayerInputDevice(p, INPUT_DEVICE_NET, 0);
-		const int peerId = gNetServer.peerId - 1;
-		// Send the current campaign details over
-		debug(D_VERBOSE, "NetServer: sending campaign entry");
-		NetServerSendMsg(
-			&gNetServer, peerId,
-			SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
-		// Send details of all current players
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-			if (i == (int)gPlayerDatas.size - 1)
-			{
-				debug(
-					D_VERBOSE, "NetServer: broadcast player data index %d", i);
-				NetServerBroadcastMsg(
-					&gNetServer, SERVER_MSG_PLAYER_DATA, pOther);
-			}
-			else
-			{
-				debug(D_VERBOSE, "NetServer: sending player data index %d", i);
-				NetServerSendMsg(
-					&gNetServer, peerId, SERVER_MSG_PLAYER_DATA, pOther);
-			}
-		}
-
-		SoundPlay(&gSoundDevice, StrSound("hahaha"));
-		debug(D_VERBOSE, "NetServer: client connection complete");
-	}
 }
 
 typedef struct
 {
-	CArray hasInputDevice;	// of bool
 	PlayerSelectMenu menus[MAX_LOCAL_PLAYERS];
 	NameGen g;
 	char prefixes[CDOGS_PATH_MAX];
@@ -264,12 +208,6 @@ bool PlayerSelection(void)
 {
 	PlayerSelectionData data;
 	memset(&data, 0, sizeof data);
-	CArrayInit(&data.hasInputDevice, sizeof(bool));
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		bool hasInputDevice = false;
-		CArrayPushBack(&data.hasInputDevice, &hasInputDevice);
-	}
 	data.IsOK = true;
 	GetDataFilePath(data.prefixes, "data/prefixes.txt");
 	GetDataFilePath(data.suffixes, "data/suffixes.txt");
@@ -302,16 +240,14 @@ bool PlayerSelection(void)
 		// For any player slots not picked, turn them into AIs
 		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			const bool *hasInputDevice = CArrayGet(&data.hasInputDevice, i);
 			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (!*hasInputDevice && p->IsLocal)
+			if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
 			{
-				AssignPlayerInputDevice(p, INPUT_DEVICE_AI, 0);
+				PlayerSetInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
 		}
 	}
 
-	CArrayTerminate(&data.hasInputDevice);
 	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{
 		MenuSystemTerminate(&data.menus[i].ms);
@@ -343,8 +279,8 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 			idx--;
 			continue;
 		}
-		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
-		if (*hasInputDevice && !MenuIsExit(&pData->menus[idx].ms) && cmds[idx])
+		if (p->inputDevice != INPUT_DEVICE_UNSET &&
+			!MenuIsExit(&pData->menus[idx].ms) && cmds[idx])
 		{
 			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
 		}
@@ -364,8 +300,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 			idx--;
 			continue;
 		}
-		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
-		if (*hasInputDevice)
+		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
 			hasAtLeastOneInput = true;
 			if (strcmp(pData->menus[idx].ms.current->name, "Done") != 0)
@@ -379,8 +314,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 		return UPDATE_RESULT_EXIT;
 	}
 
-	AssignPlayerInputDevices(
-		&pData->hasInputDevice, &gEventHandlers, &gConfig.Input);
+	AssignPlayerInputDevices(&gEventHandlers, &gConfig.Input);
 
 	return UPDATE_RESULT_DRAW;
 }
@@ -400,8 +334,7 @@ static void PlayerSelectionDraw(void *data)
 			idx--;
 			continue;
 		}
-		const bool *hasInputDevice = CArrayGet(&pData->hasInputDevice, i);
-		if (*hasInputDevice)
+		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
 			MenuDisplay(&pData->menus[idx].ms);
 		}

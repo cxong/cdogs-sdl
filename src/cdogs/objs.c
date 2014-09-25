@@ -311,10 +311,10 @@ static bool DoDamageCharacter(
 			e1.u.DamageCharacter.PlayerIndex = player;
 			e1.u.DamageCharacter.TargetId = actor->tileItem.id;
 			e1.u.DamageCharacter.TargetPlayerIndex = -1;
-			if (actor->pData)
+			if (actor->playerIndex >= 0)
 			{
 				e1.u.DamageCharacter.TargetPlayerIndex =
-					actor->pData->playerIndex;
+					actor->playerIndex;
 			}
 			GameEventsEnqueue(&gGameEvents, e1);
 
@@ -384,7 +384,7 @@ static bool DoDamageCharacter(
 			// Don't score for friendly or player hits
 			const bool isFriendly =
 				(actor->flags & FLAGS_GOOD_GUY) ||
-				(gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT && actor->pData);
+				(gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT && actor->playerIndex >= 0);
 			if (player >= 0 && power != 0 && !isFriendly)
 			{
 				// Calculate score based on

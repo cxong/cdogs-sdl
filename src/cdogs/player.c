@@ -269,3 +269,10 @@ void PlayerScore(PlayerData *p, const int points)
 	p->score += points;
 	p->totalScore += points;
 }
+
+void PlayerSetInputDevice(
+	PlayerData *p, const input_device_e d, const int idx)
+{
+	p->inputDevice = d;
+	p->deviceIndex = idx;
+}

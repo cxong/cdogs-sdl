@@ -75,5 +75,7 @@ Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 
 void PlayerScore(PlayerData *p, const int points);
+void PlayerSetInputDevice(
+	PlayerData *p, const input_device_e d, const int idx);
 
 #endif

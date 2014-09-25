@@ -418,7 +418,7 @@ static void DrawActorPics(
 
 		// Draw weapon indicators
 		if (gConfig.Game.LaserSight == LASER_SIGHT_ALL ||
-			(gConfig.Game.LaserSight == LASER_SIGHT_PLAYERS && a->pData))
+			(gConfig.Game.LaserSight == LASER_SIGHT_PLAYERS && a->playerIndex >= 0))
 		{
 			DrawLaserSight(a, picPos);
 		}

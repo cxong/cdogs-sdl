@@ -168,11 +168,11 @@ static void InitPlayers(int maxHealth, int mission)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		p->lastMission = mission;
-		p->Id =
-			ActorAdd(CArrayGet(&gCampaign.Setting.characters.Players, i), p);
+		Character *c = CArrayGet(&gCampaign.Setting.characters.Players, i);
+		p->Id = ActorAdd(c, p->playerIndex);
 		TActor *player = CArrayGet(&gActors, p->Id);
 		player->health = maxHealth;
-		player->character->maxHealth = maxHealth;
+		c->maxHealth = maxHealth;
 		
 		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{

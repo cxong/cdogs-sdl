@@ -767,7 +767,7 @@ int IsMissionComplete(struct MissionOptions *options)
 			{
 				continue;
 			}
-			if (a->character == CharacterStoreGetPrisoner(
+			if (ActorGetCharacter(a) == CharacterStoreGetPrisoner(
 				&gCampaign.Setting.characters, 0) &&
 				MapIsTileInExit(&gMap, &a->tileItem))
 			{

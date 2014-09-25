@@ -79,7 +79,7 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		{
 			Vec2i *pos = CArrayGet(&cp->Positions, j);
 			Character *c = CArrayGet(&store->OtherChars, cp->Index);
-			TActor *a = CArrayGet(&gActors, ActorAdd(c, NULL));
+			TActor *a = CArrayGet(&gActors, ActorAdd(c, -1));
 			Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
 			TryMoveActor(a, fullPos);
 			ActorInit(a);
@@ -103,7 +103,7 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 				case OBJECTIVE_KILL:
 				{
 					TActor *a = CArrayGet(
-						&gActors, ActorAdd(store->specials[*idx], NULL));
+						&gActors, ActorAdd(store->specials[*idx], -1));
 					TryMoveActor(a, fullPos);
 					ActorInit(a);
 				}
@@ -121,7 +121,7 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 				case OBJECTIVE_RESCUE:
 				{
 					TActor *a = CArrayGet(
-						&gActors, ActorAdd(store->prisoners[*idx], NULL));
+						&gActors, ActorAdd(store->prisoners[*idx], -1));
 					TryMoveActor(a, fullPos);
 					ActorInit(a);
 				}

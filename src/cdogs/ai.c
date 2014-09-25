@@ -185,7 +185,7 @@ static bool IsDirectionOK(TActor *a, int dir)
 
 static int BrightWalk(TActor * actor, int roll)
 {
-	const CharBot *bot = actor->character->bot;
+	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if (!!(actor->flags & FLAGS_VISIBLE) && roll < bot->probabilityToTrack)
 	{
 		actor->flags &= ~FLAGS_DETOURING;
@@ -239,7 +239,7 @@ static int BrightWalk(TActor * actor, int roll)
 
 static int WillFire(TActor * actor, int roll)
 {
-	const CharBot *bot = actor->character->bot;
+	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
 		WeaponCanFire(ActorGetGun(actor)) &&
 		roll < bot->probabilityToShoot)
@@ -388,8 +388,8 @@ void CommandBadGuys(int ticks)
 		{
 			continue;
 		}
-		const CharBot *bot = actor->character->bot;
-		if (!(actor->pData || (actor->flags & FLAGS_PRISONER)))
+		const CharBot *bot = ActorGetCharacter(actor)->bot;
+		if (!(actor->playerIndex >= 0 || (actor->flags & FLAGS_PRISONER)))
 		{
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 			{
@@ -550,7 +550,7 @@ void CommandBadGuys(int ticks)
 	{
 		Character *character = CharacterStoreGetRandomBaddie(
 			&gCampaign.Setting.characters);
-		TActor *baddie = CArrayGet(&gActors, ActorAdd(character, NULL));
+		TActor *baddie = CArrayGet(&gActors, ActorAdd(character, -1));
 		PlaceBaddie(baddie);
 		gBaddieCount++;
 	}
@@ -571,7 +571,7 @@ void InitializeBadGuys(void)
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				int id = ActorAdd(CharacterStoreGetRandomSpecial(
-					&gCampaign.Setting.characters), NULL);
+					&gCampaign.Setting.characters), -1);
 				actor = CArrayGet(&gActors, id);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				PlaceBaddie(actor);
@@ -582,7 +582,7 @@ void InitializeBadGuys(void)
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				int id = ActorAdd(CharacterStoreGetPrisoner(
-					&gCampaign.Setting.characters, 0), NULL);
+					&gCampaign.Setting.characters, 0), -1);
 				actor = CArrayGet(&gActors, id);
 				actor->tileItem.flags |= ObjectiveToTileItem(i);
 				if (MapHasLockedRooms(&gMap))
@@ -614,7 +614,7 @@ void CreateEnemies(void)
 		i++)
 	{
 		int id = ActorAdd(CharacterStoreGetRandomBaddie(
-			&gCampaign.Setting.characters), NULL);
+			&gCampaign.Setting.characters), -1);
 		TActor *enemy = CArrayGet(&gActors, id);
 		PlaceBaddie(enemy);
 		gBaddieCount++;

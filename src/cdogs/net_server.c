@@ -82,6 +82,7 @@ void NetServerOpen(NetServer *n)
 #endif
 }
 
+static void OnConnect(NetServer *n, ENetEvent event);
 void NetServerPoll(NetServer *n)
 {
 	if (!n->server)
@@ -108,13 +109,7 @@ void NetServerPoll(NetServer *n)
 			switch (event.type)
 			{
 			case ENET_EVENT_TYPE_CONNECT:
-				printf("A new client connected from %x:%u.\n",
-					event.peer->address.host,
-					event.peer->address.port);
-				/* Store any relevant client information here. */
-				CMALLOC(event.peer->data, sizeof(NetPeerData));
-				((NetPeerData *)event.peer->data)->Id = n->peerId;
-				n->peerId++;
+				OnConnect(n, event);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				if (event.packet->dataLength > 0)
@@ -163,6 +158,43 @@ void NetServerPoll(NetServer *n)
 			}
 		}
 	} while (check > 0);
+}
+static void OnConnect(NetServer *n, ENetEvent event)
+{
+	printf("A new client connected from %x:%u.\n",
+		event.peer->address.host,
+		event.peer->address.port);
+	/* Store any relevant client information here. */
+	CMALLOC(event.peer->data, sizeof(NetPeerData));
+	const int peerId = n->peerId;
+	((NetPeerData *)event.peer->data)->Id = peerId;
+	n->peerId++;
+
+	// Add a new player
+	PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
+	PlayerSetInputDevice(p, INPUT_DEVICE_NET, 0);
+	// Send the current campaign details over
+	debug(D_VERBOSE, "NetServer: sending campaign entry");
+	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
+	// Send details of all current players
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+		if (i == (int)gPlayerDatas.size - 1)
+		{
+			debug(
+				D_VERBOSE, "NetServer: broadcast player data index %d", i);
+			NetServerBroadcastMsg(n, SERVER_MSG_PLAYER_DATA, pOther);
+		}
+		else
+		{
+			debug(D_VERBOSE, "NetServer: sending player data index %d", i);
+			NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
+		}
+	}
+
+	SoundPlay(&gSoundDevice, StrSound("hahaha"));
+	debug(D_VERBOSE, "NetServer: client connection complete");
 }
 
 static ENetPacket *MakePacket(ServerMsg msg, const void *data);

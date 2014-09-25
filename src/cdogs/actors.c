@@ -141,7 +141,7 @@ static ActorPics GetCharacterPics(int id)
 	int state = actor->state;
 	int headState = state;
 
-	Character *c = actor->character;
+	const Character *c = ActorGetCharacter(actor);
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
 	const Weapon *gun = ActorGetGun(actor);
@@ -368,7 +368,7 @@ static void PickupObject(TActor * actor, TObject * object)
 		{
 			GameEvent e;
 			e.Type = GAME_EVENT_SCORE;
-			e.u.Score.PlayerIndex = actor->pData->playerIndex;
+			e.u.Score.PlayerIndex = actor->playerIndex;
 			e.u.Score.Score = PICKUP_SCORE;
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
@@ -381,12 +381,12 @@ static void PickupObject(TActor * actor, TObject * object)
 	case OBJ_HEALTH:
 		// Don't pick up unless taken damage
 		canPickup = false;
-		if (actor->health < actor->character->maxHealth)
+		if (actor->health < ActorGetCharacter(actor)->maxHealth)
 		{
 			canPickup = true;
 			GameEvent e;
 			e.Type = GAME_EVENT_TAKE_HEALTH_PICKUP;
-			e.u.PickupPlayer = actor->pData->playerIndex;
+			e.u.PickupPlayer = actor->playerIndex;
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
 				&gSoundDevice, gSoundDevice.healthSound,
@@ -422,7 +422,7 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 	UpdateMissionObjective(
 		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT,
-		actor->pData->playerIndex,
+		actor->playerIndex,
 		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	if (canPickup)
 	{
@@ -482,7 +482,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	{
 		Vec2i realXPos, realYPos;
 
-		if (actor->pData && target->kind == KIND_CHARACTER)
+		if (actor->playerIndex >= 0 && target->kind == KIND_CHARACTER)
 		{
 			TActor *otherCharacter = CArrayGet(&gActors, target->id);
 			CASSERT(otherCharacter->isInUse, "Cannot find nonexistent player");
@@ -494,7 +494,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 					&gMission,
 					otherCharacter->tileItem.flags,
 					OBJECTIVE_RESCUE,
-					actor->pData->playerIndex,
+					actor->playerIndex,
 					Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 			}
 		}
@@ -520,7 +520,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 					Vec2iZero(),
 					2,
 					actor->flags,
-					actor->pData ? actor->pData->playerIndex : -1,
+					actor->playerIndex,
 					actor->uid,
 					target,
 					SPECIAL_NONE,
@@ -567,7 +567,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 
 	CheckTrigger(Vec2iToTile(realPos));
 
-	if (actor->pData)
+	if (actor->playerIndex >= 0)
 	{
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
@@ -709,7 +709,7 @@ void InjureActor(TActor * actor, int injury)
 		sound.u.SoundAt.Sound = SoundGetRandomScream(&gSoundDevice);
 		sound.u.SoundAt.Pos = pos;
 		GameEventsEnqueue(&gGameEvents, sound);
-		if (actor->pData)
+		if (actor->playerIndex >= 0)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
@@ -734,13 +734,13 @@ void Shoot(TActor *actor)
 		actor->direction,
 		actor->Pos,
 		actor->flags,
-		actor->pData ? actor->pData->playerIndex : -1,
+		actor->playerIndex,
 		actor->uid);
-	if (actor->pData && gun->Gun->Cost != 0)
+	if (actor->playerIndex >= 0 && gun->Gun->Cost != 0)
 	{
 		GameEvent e;
 		e.Type = GAME_EVENT_SCORE;
-		e.u.Score.PlayerIndex = actor->pData->playerIndex;
+		e.u.Score.PlayerIndex = actor->playerIndex;
 		e.u.Score.Score = -gun->Gun->Cost;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
@@ -818,7 +818,7 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		canMoveWhenShooting;
 	if (willMove)
 	{
-		int moveAmount = actor->character->speed * ticks;
+		int moveAmount = ActorGetCharacter(actor)->speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
 			actor->MovePos.x -= moveAmount;
@@ -1003,7 +1003,7 @@ void ActorsTerminate(void)
 	}
 	CArrayTerminate(&gActors);
 }
-int ActorAdd(Character *c, PlayerData *p)
+int ActorAdd(const Character *c, const int playerIndex)
 {
 	// Find an empty slot in actor list
 	TActor *actor = NULL;
@@ -1027,9 +1027,10 @@ int ActorAdd(Character *c, PlayerData *p)
 	}
 	memset(actor, 0, sizeof *actor);
 	CArrayInit(&actor->guns, sizeof(Weapon));
-	if (p != NULL)
+	if (playerIndex >= 0)
 	{
 		// Add all player weapons
+		const PlayerData *p = CArrayGet(&gPlayerDatas, playerIndex);
 		for (int j = 0; j < p->weaponCount; j++)
 		{
 			Weapon gun = WeaponCreate(p->weapons[j]);
@@ -1056,8 +1057,8 @@ int ActorAdd(Character *c, PlayerData *p)
 	actor->tileItem.id = i;
 	actor->isInUse = true;
 	actor->flags = FLAGS_SLEEPING | c->flags;
-	actor->character = c;
-	actor->pData = p;
+	actor->Character = c;
+	actor->playerIndex = playerIndex;
 	actor->uid = sActorUIDs++;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
@@ -1165,6 +1166,16 @@ void BuildTranslationTables(const TPalette palette)
 			(200 * palette[i].g) / 256,
 			(200 * palette[i].b) / 256);
 	}
+}
+
+const Character *ActorGetCharacter(const TActor *a)
+{
+	if (a->playerIndex >= 0)
+	{
+		return CArrayGet(
+			&gCampaign.Setting.characters.Players, a->playerIndex);
+	}
+	return a->Character;
 }
 
 Weapon *ActorGetGun(const TActor *a)
@@ -1276,8 +1287,7 @@ bool ActorIsInvulnerable(
 	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
 	{
 		// Same player hits
-		if (player >= 0 && actor->pData &&
-			CArrayGet(&gPlayerDatas, player) == actor->pData)
+		if (player >= 0 && player == actor->playerIndex)
 		{
 			return 1;
 		}
@@ -1285,13 +1295,13 @@ bool ActorIsInvulnerable(
 		if (mode != CAMPAIGN_MODE_DOGFIGHT &&
 			!gConfig.Game.FriendlyFire &&
 			(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
-			(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
+			(actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
 		{
 			return 1;
 		}
 		// Enemies don't hurt each other
 		if (!(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
-			!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
+			!(actor->playerIndex || (actor->flags & FLAGS_GOOD_GUY)))
 		{
 			return 1;
 		}

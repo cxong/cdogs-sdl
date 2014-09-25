@@ -130,7 +130,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	int minDistance2 = -1;
 	if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
 	{
-		for (int i = 0; i < actor->pData->playerIndex; i++)
+		for (int i = 0; i < actor->playerIndex; i++)
 		{
 			const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
 			if (!IsPlayerAlive(pd))

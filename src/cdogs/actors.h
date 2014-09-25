@@ -120,8 +120,8 @@ typedef struct Actor
 	int stateCounter;
 	int lastCmd;
 	int soundLock;
-	Character *character;
-	PlayerData *pData;	// NULL unless a human player
+	const Character *Character;
+	int playerIndex;	// -1 unless a human player
 	int uid;	// unique ID across all actors
 	CArray guns;	// of Weapon
 	int gunIndex;
@@ -179,9 +179,10 @@ void InjureActor(TActor * actor, int injury);
 
 void ActorsInit(void);
 void ActorsTerminate(void);
-int ActorAdd(Character *c, PlayerData *p);	// returns id
+int ActorAdd(const Character *c, const int playerIndex);	// returns id
 void ActorDestroy(int id);
 
+const Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
 bool ActorTrySwitchGun(TActor *a);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);

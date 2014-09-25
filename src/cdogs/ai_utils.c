@@ -121,7 +121,7 @@ static TActor *AIGetClosestActor(
 static bool IsGood(const TActor *a, const TActor *b)
 {
 	UNUSED(b);
-	return a->pData || (a->flags & FLAGS_GOOD_GUY);
+	return a->playerIndex >= 0 || (a->flags & FLAGS_GOOD_GUY);
 }
 static bool IsBad(const TActor *a, const TActor *b)
 {
@@ -692,14 +692,15 @@ int AIHunt(TActor *actor, Vec2i targetPos)
 int AIHuntClosest(TActor *actor)
 {
 	Vec2i targetPos = actor->Pos;
-	if (!(actor->pData || (actor->flags & FLAGS_GOOD_GUY)))
+	if (!(actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
 	{
 		targetPos = AIGetClosestPlayerPos(actor->Pos);
 	}
 
 	if (actor->flags & FLAGS_VISIBLE)
 	{
-		const TActor *a = AIGetClosestVisibleEnemy(actor, !!actor->pData);
+		const TActor *a =
+			AIGetClosestVisibleEnemy(actor, actor->playerIndex >= 0);
 		if (a)
 		{
 			targetPos = a->Pos;
