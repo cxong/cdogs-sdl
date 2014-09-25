@@ -141,7 +141,12 @@ static ActorPics GetCharacterPics(int id)
 	int state = actor->state;
 	int headState = state;
 
-	Character *c = ActorGetCharacter(actor);
+	Character *c = actor->Character;
+	if (actor->playerIndex >= 0)
+	{
+		c = CArrayGet(
+			&gCampaign.Setting.characters.Players, actor->playerIndex);
+	}
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
 	const Weapon *gun = ActorGetGun(actor);
@@ -1168,7 +1173,7 @@ void BuildTranslationTables(const TPalette palette)
 	}
 }
 
-Character *ActorGetCharacter(const TActor *a)
+const Character *ActorGetCharacter(const TActor *a)
 {
 	if (a->playerIndex >= 0)
 	{
