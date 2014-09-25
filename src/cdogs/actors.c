@@ -141,8 +141,8 @@ static ActorPics GetCharacterPics(int id)
 	int state = actor->state;
 	int headState = state;
 
-	const Character *c = ActorGetCharacter(actor);
-	pics.Table = (const TranslationTable *)c->table;
+	Character *c = ActorGetCharacter(actor);
+	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
 	const Weapon *gun = ActorGetGun(actor);
 	int g = gun->Gun->pic;
@@ -1168,7 +1168,7 @@ void BuildTranslationTables(const TPalette palette)
 	}
 }
 
-const Character *ActorGetCharacter(const TActor *a)
+Character *ActorGetCharacter(const TActor *a)
 {
 	if (a->playerIndex >= 0)
 	{

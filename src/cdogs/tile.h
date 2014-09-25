@@ -110,7 +110,7 @@ typedef struct
 	bool IsDead;
 	bool IsDying;
 	bool IsTransparent;
-	const TranslationTable *Table;
+	TranslationTable *Table;
 	HSV *Tint;
 } ActorPics;
 typedef ActorPics (*TileItemGetPic3Func)(int);

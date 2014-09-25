@@ -182,7 +182,7 @@ void ActorsTerminate(void);
 int ActorAdd(const Character *c, const int playerIndex);	// returns id
 void ActorDestroy(int id);
 
-const Character *ActorGetCharacter(const TActor *a);
+Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
 bool ActorTrySwitchGun(TActor *a);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
