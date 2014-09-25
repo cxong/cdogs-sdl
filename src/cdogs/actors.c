@@ -142,7 +142,7 @@ static ActorPics GetCharacterPics(int id)
 	int headState = state;
 
 	const Character *c = ActorGetCharacter(actor);
-	pics.Table = (TranslationTable *)c->table;
+	pics.Table = (const TranslationTable *)c->table;
 	int f = c->looks.face;
 	const Weapon *gun = ActorGetGun(actor);
 	int g = gun->Gun->pic;
