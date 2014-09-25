@@ -1003,7 +1003,7 @@ void ActorsTerminate(void)
 	}
 	CArrayTerminate(&gActors);
 }
-int ActorAdd(const Character *c, const int playerIndex)
+int ActorAdd(Character *c, const int playerIndex)
 {
 	// Find an empty slot in actor list
 	TActor *actor = NULL;
