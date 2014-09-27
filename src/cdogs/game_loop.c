@@ -32,6 +32,7 @@
 
 #include "config.h"
 #include "events.h"
+#include "net_client.h"
 #include "net_server.h"
 #include "sounds.h"
 
@@ -86,6 +87,7 @@ void GameLoop(GameLoopData *data)
 			}
 		}
 
+		NetClientPoll(&gNetClient);
 		NetServerPoll(&gNetServer);
 
 		// Update

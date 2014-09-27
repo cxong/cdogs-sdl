@@ -125,6 +125,8 @@ struct menu
 	color_t color;
 	MenuFunc customPostEnterFunc;
 	void *customPostEnterData;
+	MenuFunc customPostUpdateFunc;
+	void *customPostUpdateData;
 	MenuPostInputFunc customPostInputFunc;
 	void *customPostInputData;
 	MenuDisplayFunc customDisplayFunc;
@@ -271,6 +273,7 @@ menu_t *MenuCreateNormal(
 	int displayItems);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
 void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data);
+void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data);
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data);
 

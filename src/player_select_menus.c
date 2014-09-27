@@ -190,8 +190,8 @@ static void PostInputAppearanceMenu(menu_t *menu, int cmd, void *data)
 {
 	AppearanceMenuData *d = data;
 	UNUSED(cmd);
-	Character *c =
-		CArrayGet(&gCampaign.Setting.characters.Players, d->playerIndex);
+	PlayerData *p = CArrayGet(&gPlayerDatas, d->playerIndex);
+	Character *c = &p->Char;
 	int *prop = (int *)((char *)&c->looks + d->propertyOffset);
 	*prop = menu->u.normal.index;
 	CharacterSetColors(c);
@@ -221,10 +221,8 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
-		Character *c = CArrayGet(
-			&gCampaign.Setting.characters.Players, d->display.playerIndex);
-		c->looks = t->Looks;
-		CharacterSetColors(c);
+		p->Char.looks = t->Looks;
+		CharacterSetColors(&p->Char);
 	}
 }
 
@@ -269,9 +267,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(t->name, 0, sizeof t->name);
 		strncpy(t->name, p->name, sizeof t->name - 1);
-		Character *c = CArrayGet(
-			&gCampaign.Setting.characters.Players, d->display.playerIndex);
-		c->looks = t->Looks;
+		t->Looks = p->Char.looks;
 	}
 }
 
@@ -389,9 +385,8 @@ void PlayerSelectMenusCreate(
 	CheckReenableLoadMenu(ms->root, NULL);
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL);
 
-	Character *c =
-		CArrayGet(&gCampaign.Setting.characters.Players, playerIndex);
-	CharacterSetColors(c);
+	PlayerData *p = CArrayGet(&gPlayerDatas, playerIndex);
+	CharacterSetColors(&p->Char);
 }
 static menu_t *CreateCustomizeMenu(
 	const char *name, PlayerSelectMenuData *data, const int playerIndex)
@@ -456,8 +451,8 @@ static void ShuffleAppearance(void *data)
 }
 static void ShuffleOne(AppearanceMenuData *data)
 {
-	Character *c =
-		CArrayGet(&gCampaign.Setting.characters.Players, data->playerIndex);
+	PlayerData *p = CArrayGet(&gPlayerDatas, data->playerIndex);
+	Character *c = &p->Char;
 	int *prop = (int *)((char *)&c->looks + data->propertyOffset);
 	*prop = rand() % data->menuCount;
 	CharacterSetColors(c);

@@ -65,6 +65,8 @@ typedef struct
 	unsigned int seed;
 	int MissionIndex;
 	bool IsLoaded;
+	bool IsClient;
+	bool IsError;
 } CampaignOptions;
 extern CampaignOptions gCampaign;
 

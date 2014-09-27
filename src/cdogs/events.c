@@ -258,14 +258,8 @@ int GetOnePlayerCmd(
 			cmd = GetJoystickCmd(joystick, isPressed);
 		}
 		break;
-	case INPUT_DEVICE_AI:
-		// Do nothing; AI input is handled separately
-		break;
-	case INPUT_DEVICE_NET:
-		// TODO: implement
-		break;
 	default:
-		CASSERT(false, "unknown input device");
+		// Do nothing
 		break;
 	}
 	return cmd;
@@ -295,7 +289,6 @@ void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 
 int GetMenuCmd(EventHandlers *handlers)
 {
-	int cmd;
 	keyboard_t *kb = &handlers->keyboard;
 	if (KeyIsPressed(kb, SDLK_ESCAPE) ||
 		JoyIsPressed(&handlers->joysticks.joys[0], CMD_BUTTON4))
@@ -303,23 +296,12 @@ int GetMenuCmd(EventHandlers *handlers)
 		return CMD_ESC;
 	}
 
-	// Get the first local player
-	const PlayerData *p = NULL;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		p = CArrayGet(&gPlayerDatas, i);
-		if (p->IsLocal)
-		{
-			break;
-		}
-	}
-	CASSERT(p != NULL, "Cannot find first local player");
-
-	cmd = GetOnePlayerCmd(
+	// Check first player keyboard
+	int cmd = GetOnePlayerCmd(
 		handlers,
 		&gConfig.Input.PlayerKeys[0],
 		true,
-		p->inputDevice, p->deviceIndex);
+		INPUT_DEVICE_KEYBOARD, 0);
 	if (!cmd)
 	{
 		// Check keyboard

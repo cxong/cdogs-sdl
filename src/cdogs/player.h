@@ -35,6 +35,7 @@ typedef struct
 {
 	int Id;	// -1 if dead
 	bool IsLocal;	// whether this is a local-machine player
+	Character Char;
 	char name[20];
 	int weaponCount;
 	const GunDescription *weapons[MAX_WEAPONS];
@@ -63,6 +64,7 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 void PlayerDataInit(CArray *p);
 PlayerData *PlayerDataAdd(CArray *p, const bool isLocal);
+void PlayerDataSetLocalDefaults(PlayerData *d, const int idx);
 void PlayerDataReset(CArray *p);
 void PlayerDataTerminate(CArray *p);
 

@@ -176,7 +176,24 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 {
 	HUDNumUpdate s;
-	s.Index = playerIndex;
+	s.Index = 0;
+	// Find the local index of this player
+	for (int i = 0; i <= playerIndex; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (i == playerIndex)
+		{
+			if (!p->IsLocal)
+			{
+				// This update was for a non-local player; abort
+				return;
+			}
+		}
+		else if (p->IsLocal)
+		{
+			s.Index++;
+		}
+	}
 	s.Amount = health;
 	s.Timer = NUM_UPDATE_TIMER_MS;
 	s.TimerMax = NUM_UPDATE_TIMER_MS;
@@ -186,7 +203,24 @@ void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
 {
 	HUDNumUpdate s;
-	s.Index = playerIndex;
+	s.Index = 0;
+	// Find the local index of this player
+	for (int i = 0; i <= playerIndex; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (i == playerIndex)
+		{
+			if (!p->IsLocal)
+			{
+				// This update was for a non-local player; abort
+				return;
+			}
+		}
+		else if (p->IsLocal)
+		{
+			s.Index++;
+		}
+	}
 	s.Amount = score;
 	s.Timer = NUM_UPDATE_TIMER_MS;
 	s.TimerMax = NUM_UPDATE_TIMER_MS;

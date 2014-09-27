@@ -382,8 +382,7 @@ static int GetFriendlyBonus(const PlayerData *p)
 	return (p->kills == 0 && p->friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size,
-	const PlayerData *data, const int character);
+	const Vec2i pos, const Vec2i size, const PlayerData *data);
 static void MissionSummaryDraw(void *data)
 {
 	// This will only draw once
@@ -489,28 +488,28 @@ static void MissionSummaryDraw(void *data)
 	{
 	case 1:
 		size = Vec2iNew(w, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
 		break;
 	case 2:
 		// side by side
 		size = Vec2iNew(w / 2, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
 		DrawPlayerSummary(
-			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1), 1);
+			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1));
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
 		size = Vec2iNew(w / 2, h / 4);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0), 0);
+		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
 		DrawPlayerSummary(
-			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1), 1);
+			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1));
 		DrawPlayerSummary(
-			Vec2iNew(0, h / 4), size, CArrayGet(&gPlayerDatas, 2), 2);
+			Vec2iNew(0, h / 4), size, CArrayGet(&gPlayerDatas, 2));
 		if (gPlayerDatas.size == 4)
 		{
 			DrawPlayerSummary(
-				Vec2iNew(w / 2, h / 4), size, CArrayGet(&gPlayerDatas, 3), 3);
+				Vec2iNew(w / 2, h / 4), size, CArrayGet(&gPlayerDatas, 3));
 		}
 		break;
 	default:
@@ -521,8 +520,7 @@ static void MissionSummaryDraw(void *data)
 // Display compact player summary, with player on left half and score summaries
 // on right half
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size,
-	const PlayerData *data, const int character)
+	const Vec2i pos, const Vec2i size, const PlayerData *data)
 {
 	char s[50];
 	const int totalTextHeight = FontH() * 7;
@@ -532,8 +530,7 @@ static void DrawPlayerSummary(
 
 	DisplayCharacterAndName(
 		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
-		CArrayGet(&gCampaign.Setting.characters.Players, character),
-		data->name);
+		&data->Char, data->name);
 
 	if (data->survived)
 	{
@@ -690,43 +687,42 @@ static void VictoryDraw(void *data)
 	switch (gPlayerDatas.size)
 	{
 	case 1:
-		DisplayCharacterAndName(
-			Vec2iNew(w / 4, h / 4),
-			CArrayGet(&c->Setting.characters.Players, 0),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, 0);
+			DisplayCharacterAndName(Vec2iNew(w / 4, h / 4), &p->Char, p->name);
+		}
 		break;
 	case 2:
-		// side by side
-		DisplayCharacterAndName(
-			Vec2iNew(w / 8, h / 4),
-			CArrayGet(&c->Setting.characters.Players, 0),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
-		DisplayCharacterAndName(
-			Vec2iNew(w / 8 + w / 2, h / 4),
-			CArrayGet(&c->Setting.characters.Players, 1),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 1))->name);
+		{
+			// side by side
+			const PlayerData *p1 = CArrayGet(&gPlayerDatas, 0);
+			DisplayCharacterAndName(
+				Vec2iNew(w / 8, h / 4), &p1->Char, p1->name);
+			const PlayerData *p2 = CArrayGet(&gPlayerDatas, 1);
+			DisplayCharacterAndName(
+				Vec2iNew(w / 8 + w / 2, h / 4), &p2->Char, p2->name);
+		}
 		break;
 	case 3:	// fallthrough
 	case 4:
-		// 2x2
-		DisplayCharacterAndName(
-			Vec2iNew(w / 8, h / 8),
-			CArrayGet(&c->Setting.characters.Players, 0),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 0))->name);
-		DisplayCharacterAndName(
-			Vec2iNew(w / 8 + w / 2, h / 8),
-			CArrayGet(&c->Setting.characters.Players, 1),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 1))->name);
-		DisplayCharacterAndName(
-			Vec2iNew(w / 8, h / 8 + h / 4),
-			CArrayGet(&c->Setting.characters.Players, 2),
-			((PlayerData *)CArrayGet(&gPlayerDatas, 2))->name);
-		if (gPlayerDatas.size == 4)
 		{
+			// 2x2
+			const PlayerData *p1 = CArrayGet(&gPlayerDatas, 0);
 			DisplayCharacterAndName(
-				Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
-				CArrayGet(&c->Setting.characters.Players, 3),
-				((PlayerData *)CArrayGet(&gPlayerDatas, 3))->name);
+				Vec2iNew(w / 8, h / 8), &p1->Char, p1->name);
+			const PlayerData *p2 = CArrayGet(&gPlayerDatas, 1);
+			DisplayCharacterAndName(
+				Vec2iNew(w / 8 + w / 2, h / 8), &p2->Char, p2->name);
+			const PlayerData *p3 = CArrayGet(&gPlayerDatas, 2);
+			DisplayCharacterAndName(
+				Vec2iNew(w / 8, h / 8 + h / 4), &p3->Char, p3->name);
+			if (gPlayerDatas.size == 4)
+			{
+				const PlayerData *p4 = CArrayGet(&gPlayerDatas, 3);
+				DisplayCharacterAndName(
+					Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
+					&p4->Char, p4->name);
+			}
 		}
 		break;
 	default:
@@ -802,9 +798,7 @@ static void DogfightScoresDraw(void *data)
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		const int *score = CArrayGet(scores, i);
-		ShowPlayerScore(
-			pos, CArrayGet(&gCampaign.Setting.characters.Players, i),
-			p->name, *score);
+		ShowPlayerScore(pos, &p->Char, p->name, *score);
 	}
 }
 static void ShowPlayerScore(
@@ -869,9 +863,7 @@ static void DogfightFinalScoresDraw(void *data)
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		const int *score = CArrayGet(scores, i);
-		DisplayCharacterAndName(
-			pos, CArrayGet(&gCampaign.Setting.characters.Players, i),
-			p->name);
+		DisplayCharacterAndName(pos, &p->Char, p->name);
 		if (!isTie && maxScore == *score)
 		{
 			FontStr(

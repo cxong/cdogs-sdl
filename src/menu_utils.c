@@ -72,9 +72,7 @@ void MenuDisplayPlayer(
 		strcpy(s, pData->name);
 	}
 
-	const Character *c =
-		CArrayGet(&gCampaign.Setting.characters.Players, d->playerIndex);
-	DisplayCharacterAndName(playerPos, c, s);
+	DisplayCharacterAndName(playerPos, &pData->Char, s);
 }
 
 void MenuDisplayPlayerControls(

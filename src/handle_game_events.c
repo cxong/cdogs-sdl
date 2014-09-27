@@ -138,7 +138,8 @@ static void HandleGameEvent(
 				e->u.DamageCharacter.Power,
 				e->u.DamageCharacter.PlayerIndex,
 				CArrayGet(&gActors, e->u.DamageCharacter.TargetId));
-			if (e->u.DamageCharacter.Power != 0)
+			if (e->u.DamageCharacter.Power != 0 &&
+				e->u.DamageCharacter.TargetPlayerIndex >= 0)
 			{
 				HUDAddHealthUpdate(
 					hud,

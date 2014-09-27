@@ -20,4 +20,5 @@ message NetMsgPlayerData {
 	required int32 Kills = 6;
 	required int32 Friendlies = 7;
 	required int32 PlayerIndex = 8;
+	required int32 TotalPlayers = 9;
 }

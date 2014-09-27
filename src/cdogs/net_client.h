@@ -33,18 +33,10 @@
 
 #include "net_util.h"
 
-typedef enum
-{
-	NET_STATE_STARTING = 0,
-	NET_STATE_LOADED,
-	NET_STATE_ERROR
-} NetClientState;
-
 typedef struct
 {
 	ENetHost *client;
 	ENetPeer *peer;
-	NetClientState State;
 } NetClient;
 
 extern NetClient gNetClient;
@@ -54,7 +46,6 @@ void NetClientTerminate(NetClient *n);
 
 // Attempt to connect to a server
 void NetClientConnect(NetClient *n, const ENetAddress addr);
-bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def);
 void NetClientPoll(NetClient *n);
 // Send a command to the server
 void NetClientSend(NetClient *n, int cmd);

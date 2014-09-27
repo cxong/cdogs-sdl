@@ -67,6 +67,7 @@
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/music.h>
+#include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
@@ -77,17 +78,97 @@
 #include "weapon_menu.h"
 
 
-int NumPlayersSelection(
-	int *numPlayers, campaign_mode_e mode,
-	GraphicsDevice *graphics, EventHandlers *handlers)
+static void CheckCampaignDefComplete(menu_t *menu, void *data);
+bool ScreenWaitForCampaignDef(void)
+{
+	MenuSystem ms;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	ms.allowAborts = true;
+	char buf[256];
+	uint32_t ip = gNetClient.peer->address.host;
+	sprintf(buf, "Connecting to %d.%d.%d.%d:%d...",
+		ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24,
+		gNetClient.peer->address.port);
+	ms.root = ms.current = MenuCreateNormal("", buf, MENU_TYPE_NORMAL, 0);
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuSetPostUpdateFunc(ms.root, CheckCampaignDefComplete, &ms);
+
+	MenuLoop(&ms);
+	const bool ok = !ms.hasAbort;
+	MenuSystemTerminate(&ms);
+	return ok;
+}
+static void CheckCampaignDefComplete(menu_t *menu, void *data)
+{
+	UNUSED(data);
+	if (gCampaign.IsLoaded)
+	{
+		if (gCampaign.IsError)
+		{
+			// Failed to load campaign; signal that we want to abort
+			MenuSystem *ms = data;
+			ms->hasAbort = true;
+		}
+		CASSERT(gCampaign.IsClient, "campaign is not client");
+		// Hack to force the menu to exit
+		menu->type = MENU_TYPE_RETURN;
+	}
+}
+
+
+static void CheckRemotePlayersComplete(menu_t *menu, void *data);
+bool ScreenWaitForRemotePlayers(void)
+{
+	MenuSystem ms;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	ms.allowAborts = true;
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"Waiting for server players...",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuSetPostUpdateFunc(ms.root, CheckRemotePlayersComplete, NULL);
+
+	MenuLoop(&ms);
+	const bool ok = !ms.hasAbort;
+	MenuSystemTerminate(&ms);
+	return ok;
+}
+static void CheckRemotePlayersComplete(menu_t *menu, void *data)
+{
+	UNUSED(data);
+	// Check that we have remote player data,
+	// and that all players have input devices
+	// This signifies that we have received all remote players
+	bool hasAllRemotes = gPlayerDatas.size > 0;
+	for (int i = 0; i < (int)gPlayerDatas.size && hasAllRemotes; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		hasAllRemotes = p->inputDevice != INPUT_DEVICE_UNSET;
+	}
+	if (hasAllRemotes)
+	{
+		// Hack to force the menu to exit
+		menu->type = MENU_TYPE_RETURN;
+	}
+}
+
+
+bool NumPlayersSelection(
+	campaign_mode_e mode, GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem ms;
 	MenuSystemInit(
 		&ms, handlers, graphics,
 		Vec2iZero(),
-		Vec2iNew(
-			graphics->cachedConfig.Res.x,
-			graphics->cachedConfig.Res.y));
+		graphics->cachedConfig.Res);
 	ms.allowAborts = true;
 	ms.root = ms.current = MenuCreateNormal(
 		"",
@@ -111,7 +192,18 @@ int NumPlayersSelection(
 	const bool ok = !ms.hasAbort;
 	if (ok)
 	{
-		*numPlayers = ms.current->u.returnCode;
+		int numPlayers = ms.current->u.returnCode;
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			CASSERT(!p->IsLocal, "unexpected local player");
+		}
+		for (int i = 0; i < numPlayers; i++)
+		{
+			PlayerData *p = PlayerDataAdd(&gPlayerDatas, true);
+			PlayerDataSetLocalDefaults(p, i);
+			p->inputDevice = INPUT_DEVICE_UNSET;
+		}
 	}
 	MenuSystemTerminate(&ms);
 	return ok;
@@ -386,6 +478,7 @@ bool PlayerEquip(void)
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)
 		{
+			idx--;
 			continue;
 		}
 		WeaponMenuCreate(

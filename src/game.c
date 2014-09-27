@@ -523,20 +523,21 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Update all the things in the game
 	const int ticksPerFrame = 1;
 
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal || !IsPlayerAlive(p))
 		{
+			idx--;
 			continue;
 		}
 		TActor *player = CArrayGet(&gActors, p->Id);
 		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
-			rData->cmds[i] = AICoopGetCmd(player, ticksPerFrame);
+			rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
 		}
-		PlayerSpecialCommands(player, rData->cmds[i]);
-		CommandActor(player, rData->cmds[i], ticksPerFrame);
+		PlayerSpecialCommands(player, rData->cmds[idx]);
+		CommandActor(player, rData->cmds[idx], ticksPerFrame);
 	}
 
 	CommandBadGuys(ticksPerFrame);

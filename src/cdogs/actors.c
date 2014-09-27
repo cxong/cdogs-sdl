@@ -144,8 +144,8 @@ static ActorPics GetCharacterPics(int id)
 	Character *c = actor->Character;
 	if (actor->playerIndex >= 0)
 	{
-		c = CArrayGet(
-			&gCampaign.Setting.characters.Players, actor->playerIndex);
+		PlayerData *p = CArrayGet(&gPlayerDatas, actor->playerIndex);
+		c = &p->Char;
 	}
 	pics.Table = (TranslationTable *)c->table;
 	int f = c->looks.face;
@@ -1177,8 +1177,8 @@ const Character *ActorGetCharacter(const TActor *a)
 {
 	if (a->playerIndex >= 0)
 	{
-		return CArrayGet(
-			&gCampaign.Setting.characters.Players, a->playerIndex);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, a->playerIndex);
+		return &p->Char;
 	}
 	return a->Character;
 }
@@ -1296,17 +1296,18 @@ bool ActorIsInvulnerable(
 		{
 			return 1;
 		}
+		const bool isGood = player >= 0 || (flags & FLAGS_GOOD_GUY);
+		const bool isTargetGood =
+			actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY);
 		// Friendly fire (NPCs)
 		if (mode != CAMPAIGN_MODE_DOGFIGHT &&
 			!gConfig.Game.FriendlyFire &&
-			(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
-			(actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
+			isGood && isTargetGood)
 		{
 			return 1;
 		}
 		// Enemies don't hurt each other
-		if (!(player >= 0 || (flags & FLAGS_GOOD_GUY)) &&
-			!(actor->playerIndex || (actor->flags & FLAGS_GOOD_GUY)))
+		if (!isGood && !isTargetGood)
 		{
 			return 1;
 		}

@@ -91,7 +91,6 @@ void CharacterSetColors(Character *c)
 void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
-	CArrayInit(&store->Players, sizeof(Character));
 	CArrayInit(&store->OtherChars, sizeof(Character));
 }
 
@@ -102,7 +101,6 @@ void CharacterStoreTerminate(CharacterStore *store)
 		Character *c = CArrayGet(&store->OtherChars, i);
 		CFREE(c->bot);
 	}
-	CArrayTerminate(&store->Players);
 	CArrayTerminate(&store->OtherChars);
 	CFREE(store->prisoners);
 	CFREE(store->baddies);

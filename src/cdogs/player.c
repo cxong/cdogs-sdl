@@ -43,118 +43,122 @@ PlayerData *PlayerDataAdd(CArray *p, const bool isLocal)
 {
 	PlayerData d;
 	memset(&d, 0, sizeof d);
-	Character c;
-	memset(&c, 0, sizeof c);
 
 	int i = (int)p->size;
 	d.IsLocal = isLocal;
-	// Set default player 1 controls, as it's used in menus
-	if (i == 0)
+	if (!isLocal)
 	{
-		d.inputDevice = INPUT_DEVICE_KEYBOARD;
-		d.deviceIndex = 0;
+		d.inputDevice = INPUT_DEVICE_NET;
+	}
+	d.playerIndex = i;
+
+	d.Char.speed = 256;
+	d.Char.maxHealth = 200;
+
+	CArrayPushBack(p, &d);
+	return CArrayGet(p, (int)p->size - 1);
+}
+
+void PlayerDataSetLocalDefaults(PlayerData *d, const int idx)
+{
+	CASSERT(d->IsLocal, "Cannot set defaults for remote player");
+	// Set default player 1 controls, as it's used in menus
+	if (idx == 0)
+	{
+		d->inputDevice = INPUT_DEVICE_KEYBOARD;
+		d->deviceIndex = 0;
 	}
 
 	// load from template if available
-	if ((int)gPlayerTemplates.size > i)
+	if ((int)gPlayerTemplates.size > idx)
 	{
-		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, i);
-		strcpy(d.name, t->name);
-		c.looks = t->Looks;
+		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
+		strcpy(d->name, t->name);
+		d->Char.looks = t->Looks;
 	}
 	else
 	{
-		switch (i)
+		switch (idx)
 		{
 		case 0:
-			strcpy(d.name, "Jones");
-			c.looks.face = FACE_JONES;
-			c.looks.skin = SHADE_SKIN;
-			c.looks.arm = SHADE_BLUE;
-			c.looks.body = SHADE_BLUE;
-			c.looks.leg = SHADE_BLUE;
-			c.looks.hair = SHADE_RED;
+			strcpy(d->name, "Jones");
+			d->Char.looks.face = FACE_JONES;
+			d->Char.looks.skin = SHADE_SKIN;
+			d->Char.looks.arm = SHADE_BLUE;
+			d->Char.looks.body = SHADE_BLUE;
+			d->Char.looks.leg = SHADE_BLUE;
+			d->Char.looks.hair = SHADE_RED;
 			break;
 		case 1:
-			strcpy(d.name, "Ice");
-			c.looks.face = FACE_ICE;
-			c.looks.skin = SHADE_DARKSKIN;
-			c.looks.arm = SHADE_RED;
-			c.looks.body = SHADE_RED;
-			c.looks.leg = SHADE_RED;
-			c.looks.hair = SHADE_RED;
+			strcpy(d->name, "Ice");
+			d->Char.looks.face = FACE_ICE;
+			d->Char.looks.skin = SHADE_DARKSKIN;
+			d->Char.looks.arm = SHADE_RED;
+			d->Char.looks.body = SHADE_RED;
+			d->Char.looks.leg = SHADE_RED;
+			d->Char.looks.hair = SHADE_RED;
 			break;
 		case 2:
-			strcpy(d.name, "Delta");
-			c.looks.face = FACE_WARBABY;
-			c.looks.skin = SHADE_SKIN;
-			c.looks.arm = SHADE_GREEN;
-			c.looks.body = SHADE_GREEN;
-			c.looks.leg = SHADE_GREEN;
-			c.looks.hair = SHADE_RED;
+			strcpy(d->name, "Delta");
+			d->Char.looks.face = FACE_WARBABY;
+			d->Char.looks.skin = SHADE_SKIN;
+			d->Char.looks.arm = SHADE_GREEN;
+			d->Char.looks.body = SHADE_GREEN;
+			d->Char.looks.leg = SHADE_GREEN;
+			d->Char.looks.hair = SHADE_RED;
 			break;
 		case 3:
-			strcpy(d.name, "Hans");
-			c.looks.face = FACE_HAN;
-			c.looks.skin = SHADE_ASIANSKIN;
-			c.looks.arm = SHADE_YELLOW;
-			c.looks.body = SHADE_YELLOW;
-			c.looks.leg = SHADE_YELLOW;
-			c.looks.hair = SHADE_GOLDEN;
+			strcpy(d->name, "Hans");
+			d->Char.looks.face = FACE_HAN;
+			d->Char.looks.skin = SHADE_ASIANSKIN;
+			d->Char.looks.arm = SHADE_YELLOW;
+			d->Char.looks.body = SHADE_YELLOW;
+			d->Char.looks.leg = SHADE_YELLOW;
+			d->Char.looks.hair = SHADE_GOLDEN;
 			break;
 		default:
 			// Set up player N template
-			sprintf(d.name, "Player %d", i);
-			c.looks.face = FACE_JONES;
-			c.looks.skin = SHADE_SKIN;
-			c.looks.arm = SHADE_BLUE;
-			c.looks.body = SHADE_BLUE;
-			c.looks.leg = SHADE_BLUE;
-			c.looks.hair = SHADE_RED;
+			sprintf(d->name, "Player %d", idx);
+			d->Char.looks.face = FACE_JONES;
+			d->Char.looks.skin = SHADE_SKIN;
+			d->Char.looks.arm = SHADE_BLUE;
+			d->Char.looks.body = SHADE_BLUE;
+			d->Char.looks.leg = SHADE_BLUE;
+			d->Char.looks.hair = SHADE_RED;
 			break;
 		}
 	}
 
 	// weapons
-	switch (i)
+	switch (idx)
 	{
 	case 0:
-		d.weapons[0] = StrGunDescription("Shotgun");
-		d.weapons[1] = StrGunDescription("Machine gun");
-		d.weapons[2] = StrGunDescription("Shrapnel bombs");
+		d->weapons[0] = StrGunDescription("Shotgun");
+		d->weapons[1] = StrGunDescription("Machine gun");
+		d->weapons[2] = StrGunDescription("Shrapnel bombs");
 		break;
 	case 1:
-		d.weapons[0] = StrGunDescription("Powergun");
-		d.weapons[1] = StrGunDescription("Flamer");
-		d.weapons[2] = StrGunDescription("Grenades");
+		d->weapons[0] = StrGunDescription("Powergun");
+		d->weapons[1] = StrGunDescription("Flamer");
+		d->weapons[2] = StrGunDescription("Grenades");
 		break;
 	case 2:
-		d.weapons[0] = StrGunDescription("Sniper rifle");
-		d.weapons[1] = StrGunDescription("Knife");
-		d.weapons[2] = StrGunDescription("Molotovs");
+		d->weapons[0] = StrGunDescription("Sniper rifle");
+		d->weapons[1] = StrGunDescription("Knife");
+		d->weapons[2] = StrGunDescription("Molotovs");
 		break;
 	case 3:
-		d.weapons[0] = StrGunDescription("Machine gun");
-		d.weapons[1] = StrGunDescription("Flamer");
-		d.weapons[2] = StrGunDescription("Dynamite");
+		d->weapons[0] = StrGunDescription("Machine gun");
+		d->weapons[1] = StrGunDescription("Flamer");
+		d->weapons[2] = StrGunDescription("Dynamite");
 		break;
 	default:
-		d.weapons[0] = StrGunDescription("Shotgun");
-		d.weapons[1] = StrGunDescription("Machine gun");
-		d.weapons[2] = StrGunDescription("Shrapnel bombs");
+		d->weapons[0] = StrGunDescription("Shotgun");
+		d->weapons[1] = StrGunDescription("Machine gun");
+		d->weapons[2] = StrGunDescription("Shrapnel bombs");
 		break;
 	}
-	d.weaponCount = 3;
-	d.playerIndex = i;
-
-	c.speed = 256;
-	c.maxHealth = 200;
-
-	CArrayPushBack(p, &d);
-	CArrayPushBack(&gCampaign.Setting.characters.Players, &c);
-	CASSERT(p->size == gCampaign.Setting.characters.Players.size,
-		"Player data and character sizes inconsistent");
-	return CArrayGet(p, (int)p->size - 1);
+	d->weaponCount = 3;
 }
 
 void PlayerDataReset(CArray *p)
@@ -169,6 +173,11 @@ void PlayerDataReset(CArray *p)
 
 void PlayerDataTerminate(CArray *p)
 {
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		PlayerData *pd = CArrayGet(p, i);
+		CFREE(pd->Char.bot);
+	}
 	CArrayTerminate(p);
 }
 

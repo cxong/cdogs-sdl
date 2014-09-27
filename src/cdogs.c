@@ -168,11 +168,10 @@ static void InitPlayers(int maxHealth, int mission)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		p->lastMission = mission;
-		Character *c = CArrayGet(&gCampaign.Setting.characters.Players, i);
-		p->Id = ActorAdd(c, p->playerIndex);
+		p->Id = ActorAdd(&p->Char, p->playerIndex);
 		TActor *player = CArrayGet(&gActors, p->Id);
 		player->health = maxHealth;
-		c->maxHealth = maxHealth;
+		p->Char.maxHealth = maxHealth;
 		
 		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
@@ -441,20 +440,22 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 			}
 		}
 
+		if (gCampaign.IsClient)
+		{
+			debug(D_NORMAL, ">> Waiting for number of players from server\n");
+			if (!ScreenWaitForRemotePlayers())
+			{
+				gCampaign.IsLoaded = false;
+				continue;
+			}
+		}
+
 		debug(D_NORMAL, ">> Select number of players\n");
-		int numPlayers;
 		if (!NumPlayersSelection(
-			&numPlayers, gCampaign.Entry.Mode,
-			&gGraphicsDevice, &gEventHandlers))
+			gCampaign.Entry.Mode, &gGraphicsDevice, &gEventHandlers))
 		{
 			gCampaign.IsLoaded = false;
 			continue;
-		}
-		PlayerDataTerminate(&gPlayerDatas);
-		PlayerDataInit(&gPlayerDatas);
-		for (int i = 0; i < numPlayers; i++)
-		{
-			PlayerDataAdd(&gPlayerDatas, true);
 		}
 
 		debug(D_NORMAL, ">> Entering selection\n");
@@ -480,6 +481,10 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 
 	// Close net connection
 	NetServerTerminate(&gNetServer);
+
+	// Reset player datas
+	PlayerDataTerminate(&gPlayerDatas);
+	PlayerDataInit(&gPlayerDatas);
 }
 
 void PrintTitle(void)
@@ -711,6 +716,7 @@ int main(int argc, char *argv[])
 
 	EventInit(&gEventHandlers, NULL, true);
 	NetClientInit(&gNetClient);
+	NetServerInit(&gNetServer);
 
 	PHYSFS_init(argv[0]);
 
@@ -762,8 +768,6 @@ int main(int argc, char *argv[])
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
 	PlayerDataInit(&gPlayerDatas);
-	// Add at least one player as it is used for menu commands
-	PlayerDataAdd(&gPlayerDatas, true);
 	MapInit(&gMap);
 
 	GrafxMakeRandomBackground(
@@ -793,35 +797,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			for (int i = 0;
-				i < 30 && gNetClient.State == NET_STATE_STARTING;
-				i++)
-			{
-				printf("Connecting (attempt %d)\n", i);
-				NetMsgCampaignDef def;
-				if (NetClientTryLoadCampaignDef(&gNetClient, &def))
-				{
-					char campaignPath[CDOGS_PATH_MAX];
-					campaign_mode_e campaignMode;
-					NetMsgCampaignDefConvert(
-						&def, campaignPath, &campaignMode);
-					CampaignEntry entry;
-					if (CampaignEntryTryLoad(
-						&entry, campaignPath, campaignMode))
-					{
-						CampaignLoad(&gCampaign, &entry);
-					}
-					else
-					{
-						printf("Error: failed to load campaign def\n");
-					}
-					break;
-				}
-				else
-				{
-					SDL_Delay(1000);
-				}
-			}
+			ScreenWaitForCampaignDef();
 		}
 	}
 	MainLoop(&creditsDisplayer, &campaigns);

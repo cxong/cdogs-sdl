@@ -185,6 +185,11 @@ static GameLoopResult MenuUpdate(void *data)
 	{
 		return UPDATE_RESULT_EXIT;
 	}
+	if (ms->current->customPostUpdateFunc)
+	{
+		ms->current->customPostUpdateFunc(
+			ms->current, ms->current->customPostUpdateData);
+	}
 	return UPDATE_RESULT_DRAW;
 }
 static void MenuDraw(void *data)
@@ -378,6 +383,12 @@ void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data)
 {
 	menu->customPostEnterFunc = func;
 	menu->customPostEnterData = data;
+}
+
+void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data)
+{
+	menu->customPostUpdateFunc = func;
+	menu->customPostUpdateData = data;
 }
 
 void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data)

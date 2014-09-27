@@ -63,7 +63,6 @@ typedef struct
 
 typedef struct
 {
-	CArray Players;	// of Character, human players
 	CArray OtherChars;	// of Character, both normal baddies and special chars
 
 	// References only

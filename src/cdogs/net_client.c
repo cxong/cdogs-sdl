@@ -32,7 +32,10 @@
 
 #include "proto/nanopb/pb_decode.h"
 #include "proto/client.pb.h"
+#include "campaigns.h"
+#include "gamedata.h"
 #include "net_server.h"
+#include "player.h"
 #include "utils.h"
 
 
@@ -103,51 +106,16 @@ bail:
 }
 
 static bool DecodeMessage(
-	ENetPacket *packet, void *dest, const pb_field_t *fields);
-bool NetClientTryLoadCampaignDef(NetClient *n, NetMsgCampaignDef *def)
-{
-	if (!n->client || !n->peer)
-	{
-		return false;
-	}
-
-	// Service the connection but only accept the CampaignDef message
-	ENetEvent event;
-	int check = enet_host_service(n->client, &event, 0);
-	if (check < 0)
-	{
-		printf("Connection error %d\n", check);
-		return false;
-	}
-	else if (check == 0)
-	{
-		return false;
-	}
-	if (event.type != ENET_EVENT_TYPE_RECEIVE)
-	{
-		printf("Unexpected event type %d\n", event.type);
-		return false;
-	}
-	uint32_t msgType = *(uint32_t *)event.packet->data;
-	if (msgType != SERVER_MSG_CAMPAIGN_DEF)
-	{
-		printf("Unexpected message type %u\n", msgType);
-		return false;
-	}
-	DecodeMessage(event.packet, def, NetMsgCampaignDef_fields);
-	return true;
-}
-static bool DecodeMessage(
 	ENetPacket *packet, void *dest, const pb_field_t *fields)
 {
 	pb_istream_t stream = pb_istream_from_buffer(
 		packet->data + NET_MSG_SIZE, packet->dataLength - NET_MSG_SIZE);
 	bool status = pb_decode(&stream, fields, dest);
 	CASSERT(status, "Failed to decode pb");
-	enet_packet_destroy(packet);
 	return status;
 }
 
+static void ProcessPacket(ENetEvent event);
 void NetClientPoll(NetClient *n)
 {
 	if (!n->client || !n->peer)
@@ -167,17 +135,83 @@ void NetClientPoll(NetClient *n)
 		switch (event.type)
 		{
 		case ENET_EVENT_TYPE_RECEIVE:
-			{
-				uint32_t msgType = *(uint32_t *)event.packet->data;
-				printf("Received message type %u\n", msgType);
-				enet_packet_destroy(event.packet);
-			}
+			ProcessPacket(event);
 			break;
 		default:
 			printf("Unexpected event type %d\n", event.type);
 			break;
 		}
 	}
+}
+static void ProcessPacket(ENetEvent event)
+{
+	uint32_t msgType = *(uint32_t *)event.packet->data;
+	debug(D_NORMAL, "Received message type %u\n", msgType);
+	switch (msgType)
+	{
+	case SERVER_MSG_CAMPAIGN_DEF:
+		if (gCampaign.IsLoaded)
+		{
+			debug(D_NORMAL, "WARNING: unexpected campaign def msg received");
+		}
+		else
+		{
+			NetMsgCampaignDef def;
+			DecodeMessage(event.packet, &def, NetMsgCampaignDef_fields);
+			char campaignPath[CDOGS_PATH_MAX];
+			campaign_mode_e campaignMode;
+			NetMsgCampaignDefConvert(&def, campaignPath, &campaignMode);
+			CampaignEntry entry;
+			if (CampaignEntryTryLoad(&entry, campaignPath, campaignMode))
+			{
+				CampaignLoad(&gCampaign, &entry);
+				gCampaign.IsClient = true;
+			}
+			else
+			{
+				printf("Error: failed to load campaign def\n");
+				gCampaign.IsError = true;
+			}
+		}
+		break;
+	case SERVER_MSG_PLAYER_DATA:
+		{
+			NetMsgPlayerData pd;
+			DecodeMessage(event.packet, &pd, NetMsgPlayerData_fields);
+			// Add missing players
+			for (int i = (int)gPlayerDatas.size; i < pd.TotalPlayers; i++)
+			{
+				PlayerDataAdd(&gPlayerDatas, false);
+			}
+			// Update the target player
+			PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
+			strcpy(p->name, pd.Name);
+			p->Char.looks.face = pd.Looks.Face;
+			p->Char.looks.skin = pd.Looks.Skin;
+			p->Char.looks.arm = pd.Looks.Arm;
+			p->Char.looks.body = pd.Looks.Body;
+			p->Char.looks.leg = pd.Looks.Leg;
+			p->Char.looks.hair = pd.Looks.Hair;
+			CharacterSetColors(&p->Char);
+			p->weaponCount = pd.Weapons_count;
+			for (int i = 0; i < (int)pd.Weapons_count; i++)
+			{
+				p->weapons[i] = StrGunDescription(pd.Weapons[i]);
+			}
+			p->score = pd.Score;
+			p->totalScore = pd.Score;
+			p->kills = pd.Kills;
+			p->friendlies = pd.Friendlies;
+			p->inputDevice = INPUT_DEVICE_NET;
+			CASSERT(
+				p->playerIndex == pd.PlayerIndex, "unexpected player index");
+		}
+		break;
+	default:
+		CASSERT(false, "unexpected message type");
+		break;
+	}
+	enet_packet_destroy(event.packet);
 }
 
 void NetClientSend(NetClient *n, int cmd)

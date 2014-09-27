@@ -48,7 +48,10 @@ void NetServerInit(NetServer *n)
 }
 void NetServerTerminate(NetServer *n)
 {
-	enet_host_destroy(n->server);
+	if (n->server)
+	{
+		enet_host_destroy(n->server);
+	}
 	n->server = NULL;
 }
 void NetServerReset(NetServer *n)
@@ -170,9 +173,6 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	((NetPeerData *)event.peer->data)->Id = peerId;
 	n->peerId++;
 
-	// Add a new player
-	PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
-	PlayerSetInputDevice(p, INPUT_DEVICE_NET, 0);
 	// Send the current campaign details over
 	debug(D_VERBOSE, "NetServer: sending campaign entry");
 	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
@@ -254,8 +254,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		{
 			NetMsgPlayerData d;
 			const PlayerData *pData = data;
-			const Character *c = CArrayGet(
-				&gCampaign.Setting.characters.Players, pData->playerIndex);
+			const Character *c = &pData->Char;
 			strcpy(d.Name, pData->name);
 			d.Looks.Face = c->looks.face;
 			d.Looks.Skin = c->looks.skin;
@@ -273,6 +272,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			d.Kills = pData->kills;
 			d.Friendlies = pData->friendlies;
 			d.PlayerIndex = pData->playerIndex;
+			d.TotalPlayers = (int32_t)gPlayerDatas.size;
 			return MakePacketImpl(msg, &d, NetMsgPlayerData_fields);
 		}
 	case SERVER_MSG_GAME_START:
