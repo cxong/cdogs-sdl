@@ -3,3 +3,5 @@ NetMsgCampaignDef.Path		max_size:4096
 NetMsgPlayerData.Name		max_size:20
 NetMsgPlayerData.Weapons	max_size:128
 NetMsgPlayerData.Weapons	max_count:3
+
+NetMsgAddPlayers.PlayerIds	max_count:4

@@ -55,6 +55,7 @@
 
 #include <SDL_timer.h>
 
+#include <cdogs/proto/client.pb.h>
 #include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
@@ -144,19 +145,49 @@ bool ScreenWaitForRemotePlayers(void)
 static void CheckRemotePlayersComplete(menu_t *menu, void *data)
 {
 	UNUSED(data);
-	// Check that we have remote player data,
-	// and that all players have input devices
-	// This signifies that we have received all remote players
-	bool hasAllRemotes = gPlayerDatas.size > 0;
-	for (int i = 0; i < (int)gPlayerDatas.size && hasAllRemotes; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		hasAllRemotes = p->inputDevice != INPUT_DEVICE_UNSET;
-	}
-	if (hasAllRemotes)
+	if (gPlayerDatas.size > 0)
 	{
 		// Hack to force the menu to exit
 		menu->type = MENU_TYPE_RETURN;
+	}
+}
+
+static void CheckNewPlayersComplete(menu_t *menu, void *data);
+bool ScreenWaitForNewPlayers(void)
+{
+	MenuSystem ms;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	ms.allowAborts = true;
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"Registering players...",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuSetPostUpdateFunc(ms.root, CheckNewPlayersComplete, NULL);
+
+	MenuLoop(&ms);
+	const bool ok = !ms.hasAbort;
+	MenuSystemTerminate(&ms);
+	return ok;
+}
+static void CheckNewPlayersComplete(menu_t *menu, void *data)
+{
+	UNUSED(data);
+	// Check that we have any local player data
+	// Since we receive local player data in one go, this is adequate.
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->IsLocal)
+		{
+			// Hack to force the menu to exit
+			menu->type = MENU_TYPE_RETURN;
+			break;
+		}
 	}
 }
 
@@ -192,17 +223,29 @@ bool NumPlayersSelection(
 	const bool ok = !ms.hasAbort;
 	if (ok)
 	{
-		int numPlayers = ms.current->u.returnCode;
+		const int numPlayers = ms.current->u.returnCode;
 		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 			CASSERT(!p->IsLocal, "unexpected local player");
 		}
-		for (int i = 0; i < numPlayers; i++)
+		if (NetClientIsConnected(&gNetClient))
 		{
-			PlayerData *p = PlayerDataAdd(&gPlayerDatas, true);
-			PlayerDataSetLocalDefaults(p, i);
-			p->inputDevice = INPUT_DEVICE_UNSET;
+			// Tell the server that we want to add new players
+			NetMsgNewPlayers np;
+			np.ClientId = gNetClient.ClientId;
+			np.NumPlayers = numPlayers;
+			NetClientSendMsg(&gNetClient, CLIENT_MSG_NEW_PLAYERS, &np);
+		}
+		else
+		{
+			// We are the server, just add the players
+			for (int i = 0; i < numPlayers; i++)
+			{
+				PlayerData *p = PlayerDataAdd(&gPlayerDatas, true);
+				PlayerDataSetLocalDefaults(p, i);
+				p->inputDevice = INPUT_DEVICE_UNSET;
+			}
 		}
 	}
 	MenuSystemTerminate(&ms);

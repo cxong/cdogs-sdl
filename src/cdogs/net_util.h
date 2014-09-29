@@ -56,17 +56,22 @@
 // Commands (client to server)
 typedef enum
 {
+	CLIENT_MSG_NEW_PLAYERS,
 	CLIENT_MSG_CMD
 } ClientMsg;
 
 // Game events (server to client)
 typedef enum
 {
+	SERVER_MSG_CLIENT_ID,
 	SERVER_MSG_CAMPAIGN_DEF,
 	SERVER_MSG_PLAYER_DATA,
+	SERVER_MSG_ADD_PLAYERS,
 	SERVER_MSG_GAME_START
 } ServerMsg;
 
+ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);
+bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode);
 

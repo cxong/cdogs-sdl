@@ -1,3 +1,7 @@
+message NetMsgClientId {
+	required int32 Id = 1;
+}
+
 message NetMsgCampaignDef {
 	required string Path = 1;
 	required uint32 CampaignMode = 2;
@@ -21,4 +25,9 @@ message NetMsgPlayerData {
 	required int32 Friendlies = 7;
 	required int32 PlayerIndex = 8;
 	required int32 TotalPlayers = 9;
+}
+
+message NetMsgAddPlayers {
+	required int32 ClientId = 1;
+	repeated int32 PlayerIds = 2;
 }

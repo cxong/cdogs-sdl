@@ -46,10 +46,7 @@ PlayerData *PlayerDataAdd(CArray *p, const bool isLocal)
 
 	int i = (int)p->size;
 	d.IsLocal = isLocal;
-	if (!isLocal)
-	{
-		d.inputDevice = INPUT_DEVICE_NET;
-	}
+	d.inputDevice = INPUT_DEVICE_UNSET;
 	d.playerIndex = i;
 
 	d.Char.speed = 256;

@@ -110,11 +110,6 @@ void MenuDisplayPlayerControls(
 		sprintf(s, "(%s)",
 			InputDeviceName(pData->inputDevice, pData->deviceIndex));
 		break;
-	case INPUT_DEVICE_NET:
-		sprintf(s, "(%s #%d)",
-			InputDeviceName(pData->inputDevice, pData->deviceIndex),
-			pData->deviceIndex);
-		break;
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(%s)",
 			InputDeviceName(pData->inputDevice, pData->deviceIndex));

@@ -86,6 +86,7 @@ void NetServerOpen(NetServer *n)
 }
 
 static void OnConnect(NetServer *n, ENetEvent event);
+static void OnReceive(NetServer *n, ENetEvent event);
 void NetServerPoll(NetServer *n)
 {
 	if (!n->server)
@@ -115,36 +116,8 @@ void NetServerPoll(NetServer *n)
 				OnConnect(n, event);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
-				if (event.packet->dataLength > 0)
-				{
-					ClientMsg msg = *(uint32_t *)event.packet->data;
-					switch (msg)
-					{
-					case CLIENT_MSG_CMD:
-						{
-							NetMsgCmd *nc =
-								(NetMsgCmd *)(event.packet->data + NET_MSG_SIZE);
-							CASSERT(
-								event.packet->dataLength == NET_MSG_SIZE + sizeof *nc,
-								"unexpected packet size");
-							n->Cmd = nc->Cmd;
-							debug(D_VERBOSE, "NetServer: receive %d", nc->Cmd);
-						}
-						break;
-					default:
-						printf("Unknown message type %d\n", msg);
-						break;
-					}
-				}
-				//printf("A packet of length %u containing %s was received from %s on channel %u.\n",
-				//	event.packet->dataLength,
-				//	event.packet->data,
-				//	event.peer->data,
-				//	event.channelID);
-				/* Clean up the packet now that we're done using it. */
-				enet_packet_destroy(event.packet);
+				OnReceive(n, event);
 				break;
-
 			case ENET_EVENT_TYPE_DISCONNECT:
 				{
 					printf("disconnected %x:%u.\n",
@@ -173,6 +146,10 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	((NetPeerData *)event.peer->data)->Id = peerId;
 	n->peerId++;
 
+	// Send the client ID
+	debug(D_VERBOSE, "NetServer: sending client ID %d", peerId);
+	NetServerSendMsg(n, peerId, SERVER_MSG_CLIENT_ID, &peerId);
+
 	// Send the current campaign details over
 	debug(D_VERBOSE, "NetServer: sending campaign entry");
 	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
@@ -195,6 +172,37 @@ static void OnConnect(NetServer *n, ENetEvent event)
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	debug(D_VERBOSE, "NetServer: client connection complete");
+}
+static void OnReceive(NetServer *n, ENetEvent event)
+{
+	uint32_t msgType = *(uint32_t *)event.packet->data;
+	debug(D_NORMAL, "NetServer: Received message from client %d type %u\n",
+		((NetPeerData *)event.peer->data)->Id, msgType);
+	switch (msgType)
+	{
+	case CLIENT_MSG_NEW_PLAYERS:
+		{
+			NetMsgNewPlayers np;
+			NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
+			debug(D_VERBOSE, "NetServer: received new players %d", np.NumPlayers);
+			// Add the players, simultaneously building our broadcast message
+			NetMsgAddPlayers ap;
+			ap.ClientId = np.ClientId;
+			ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
+			for (int i = 0; i < np.NumPlayers; i++)
+			{
+				const PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
+				ap.PlayerIds[i] = p->playerIndex;
+			}
+			// Broadcast the new players to all clients
+			NetServerBroadcastMsg(n, SERVER_MSG_ADD_PLAYERS, &ap);
+		}
+		break;
+	default:
+		CASSERT(false, "unexpected message type");
+		break;
+	}
+	enet_packet_destroy(event.packet);
 }
 
 static ENetPacket *MakePacket(ServerMsg msg, const void *data);
@@ -232,12 +240,16 @@ void NetServerBroadcastMsg(NetServer *n, ServerMsg msg, const void *data)
 	enet_host_flush(n->server);
 }
 
-static ENetPacket *MakePacketImpl(
-	ServerMsg msg, const void *data, const pb_field_t fields[]);
 static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 {
 	switch (msg)
 	{
+	case SERVER_MSG_CLIENT_ID:
+		{
+			NetMsgClientId cid;
+			cid.Id = *(int *)data;
+			return NetEncode((int)msg, &cid, NetMsgClientId_fields);
+		}
 	case SERVER_MSG_CAMPAIGN_DEF:
 		{
 			NetMsgCampaignDef def;
@@ -248,7 +260,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 				strcpy((char *)def.Path, entry->Path);
 			}
 			def.CampaignMode = entry->Mode;
-			return MakePacketImpl(msg, &def, NetMsgCampaignDef_fields);
+			return NetEncode((int)msg, &def, NetMsgCampaignDef_fields);
 		}
 	case SERVER_MSG_PLAYER_DATA:
 		{
@@ -273,24 +285,14 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			d.Friendlies = pData->friendlies;
 			d.PlayerIndex = pData->playerIndex;
 			d.TotalPlayers = (int32_t)gPlayerDatas.size;
-			return MakePacketImpl(msg, &d, NetMsgPlayerData_fields);
+			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
 		}
+	case SERVER_MSG_ADD_PLAYERS:
+		return NetEncode((int)msg, data, NetMsgAddPlayers_fields);
 	case SERVER_MSG_GAME_START:
-		return MakePacketImpl(msg, NULL, 0);
+		return NetEncode((int)msg, NULL, 0);
 	default:
 		CASSERT(false, "Unknown message to make into packet");
 		return NULL;
 	}
-}
-static ENetPacket *MakePacketImpl(
-	ServerMsg msg, const void *data, const pb_field_t fields[])
-{
-	uint8_t buffer[1024];
-	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
-	bool status = data ? pb_encode(&stream, fields, data) : true;
-	CASSERT(status, "Failed to encode pb");
-	ENetPacket *packet = enet_packet_create(
-		&msg, NET_MSG_SIZE + stream.bytes_written, ENET_PACKET_FLAG_RELIABLE);
-	memcpy(packet->data + NET_MSG_SIZE, buffer, stream.bytes_written);
-	return packet;
 }

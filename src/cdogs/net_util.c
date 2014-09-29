@@ -28,10 +28,36 @@
 */
 #include "net_util.h"
 
+#include "proto/nanopb/pb_decode.h"
+#include "proto/nanopb/pb_encode.h"
+
 
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode)
 {
 	strcpy(outPath, def->Path);
 	*outMode = def->CampaignMode;
+}
+
+ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[])
+{
+	uint8_t buffer[1024];
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
+	bool status = data ? pb_encode(&stream, fields, data) : true;
+	CASSERT(status, "Failed to encode pb");
+	ENetPacket *packet = enet_packet_create(
+		&msgId, NET_MSG_SIZE + stream.bytes_written,
+		ENET_PACKET_FLAG_RELIABLE);
+	memcpy(packet->data + NET_MSG_SIZE, buffer, stream.bytes_written);
+	return packet;
+}
+
+bool NetDecode(
+	ENetPacket *packet, void *dest, const pb_field_t *fields)
+{
+	pb_istream_t stream = pb_istream_from_buffer(
+		packet->data + NET_MSG_SIZE, packet->dataLength - NET_MSG_SIZE);
+	bool status = pb_decode(&stream, fields, dest);
+	CASSERT(status, "Failed to decode pb");
+	return status;
 }

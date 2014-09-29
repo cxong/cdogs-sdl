@@ -458,6 +458,16 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 			continue;
 		}
 
+		if (gCampaign.IsClient)
+		{
+			debug(D_NORMAL, ">> Registering new players\n");
+			if (!ScreenWaitForNewPlayers())
+			{
+				gCampaign.IsLoaded = false;
+				continue;
+			}
+		}
+
 		debug(D_NORMAL, ">> Entering selection\n");
 		if (!PlayerSelection())
 		{
@@ -476,15 +486,15 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 			DisplayTodaysHighScores(&gGraphicsDevice);
 		}
 		gCampaign.IsLoaded = false;
+		gCampaign.IsClient = false;	// TODO: select is client from menu
+		// Reset player datas
+		PlayerDataTerminate(&gPlayerDatas);
+		PlayerDataInit(&gPlayerDatas);
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 
 	// Close net connection
 	NetServerTerminate(&gNetServer);
-
-	// Reset player datas
-	PlayerDataTerminate(&gPlayerDatas);
-	PlayerDataInit(&gPlayerDatas);
 }
 
 void PrintTitle(void)

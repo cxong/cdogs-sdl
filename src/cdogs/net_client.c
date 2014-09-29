@@ -48,6 +48,7 @@ NetClient gNetClient;
 void NetClientInit(NetClient *n)
 {
 	memset(n, 0, sizeof *n);
+	n->ClientId = -1;	// -1 is unset
 }
 void NetClientTerminate(NetClient *n)
 {
@@ -105,17 +106,7 @@ bail:
 	NetClientTerminate(n);
 }
 
-static bool DecodeMessage(
-	ENetPacket *packet, void *dest, const pb_field_t *fields)
-{
-	pb_istream_t stream = pb_istream_from_buffer(
-		packet->data + NET_MSG_SIZE, packet->dataLength - NET_MSG_SIZE);
-	bool status = pb_decode(&stream, fields, dest);
-	CASSERT(status, "Failed to decode pb");
-	return status;
-}
-
-static void ProcessPacket(ENetEvent event);
+static void OnReceive(NetClient *n, ENetEvent event);
 void NetClientPoll(NetClient *n)
 {
 	if (!n->client || !n->peer)
@@ -135,7 +126,7 @@ void NetClientPoll(NetClient *n)
 		switch (event.type)
 		{
 		case ENET_EVENT_TYPE_RECEIVE:
-			ProcessPacket(event);
+			OnReceive(n, event);
 			break;
 		default:
 			printf("Unexpected event type %d\n", event.type);
@@ -143,12 +134,23 @@ void NetClientPoll(NetClient *n)
 		}
 	}
 }
-static void ProcessPacket(ENetEvent event)
+static void OnReceive(NetClient *n, ENetEvent event)
 {
 	uint32_t msgType = *(uint32_t *)event.packet->data;
-	debug(D_NORMAL, "Received message type %u\n", msgType);
+	debug(D_NORMAL, "NetClient: Received message type %u\n", msgType);
 	switch (msgType)
 	{
+	case SERVER_MSG_CLIENT_ID:
+		{
+			CASSERT(
+				n->ClientId == -1,
+				"unexpected client ID message, already set");
+			NetMsgClientId cid;
+			NetDecode(event.packet, &cid, NetMsgClientId_fields);
+			debug(D_VERBOSE, "NetClient: received client ID %d", cid.Id);
+			n->ClientId = cid.Id;
+		}
+		break;
 	case SERVER_MSG_CAMPAIGN_DEF:
 		if (gCampaign.IsLoaded)
 		{
@@ -156,8 +158,9 @@ static void ProcessPacket(ENetEvent event)
 		}
 		else
 		{
+			debug(D_VERBOSE, "NetClient: received campaign def, loading...");
 			NetMsgCampaignDef def;
-			DecodeMessage(event.packet, &def, NetMsgCampaignDef_fields);
+			NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
 			char campaignPath[CDOGS_PATH_MAX];
 			campaign_mode_e campaignMode;
 			NetMsgCampaignDefConvert(&def, campaignPath, &campaignMode);
@@ -177,7 +180,9 @@ static void ProcessPacket(ENetEvent event)
 	case SERVER_MSG_PLAYER_DATA:
 		{
 			NetMsgPlayerData pd;
-			DecodeMessage(event.packet, &pd, NetMsgPlayerData_fields);
+			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+			debug(D_VERBOSE,
+				"NetClient: received player data total %d", pd.TotalPlayers);
 			// Add missing players
 			for (int i = (int)gPlayerDatas.size; i < pd.TotalPlayers; i++)
 			{
@@ -202,9 +207,29 @@ static void ProcessPacket(ENetEvent event)
 			p->totalScore = pd.Score;
 			p->kills = pd.Kills;
 			p->friendlies = pd.Friendlies;
-			p->inputDevice = INPUT_DEVICE_NET;
+			p->inputDevice = INPUT_DEVICE_UNSET;
 			CASSERT(
 				p->playerIndex == pd.PlayerIndex, "unexpected player index");
+		}
+		break;
+	case SERVER_MSG_ADD_PLAYERS:
+		{
+			NetMsgAddPlayers ap;
+			NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
+			debug(D_VERBOSE,
+				"NetClient: received new players %d", (int)ap.PlayerIds_count);
+			// Add new players
+			// If they are local players, set them up with defaults
+			// TODO: make sure player IDs match
+			const bool isLocal = ap.ClientId == n->ClientId;
+			for (int i = 0; i < ap.PlayerIds_count; i++)
+			{
+				PlayerData *p = PlayerDataAdd(&gPlayerDatas, isLocal);
+				if (isLocal)
+				{
+					PlayerDataSetLocalDefaults(p, i);
+				}
+			}
 		}
 		break;
 	default:
@@ -214,21 +239,27 @@ static void ProcessPacket(ENetEvent event)
 	enet_packet_destroy(event.packet);
 }
 
-void NetClientSend(NetClient *n, int cmd)
+static ENetPacket *MakePacket(ClientMsg msg, const void *data);
+void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data)
 {
 	if (!n->client || !n->peer)
 	{
 		return;
 	}
 
-	NetMsgCmd nc;
-	nc.Cmd = cmd;
-	ClientMsg msg = CLIENT_MSG_CMD;
-	ENetPacket *packet = enet_packet_create(
-		&msg, NET_MSG_SIZE + sizeof nc, ENET_PACKET_FLAG_RELIABLE);
-	memcpy(&packet->data + NET_MSG_SIZE, &nc, sizeof nc);
-	enet_peer_send(n->peer, 0, packet);
+	enet_peer_send(n->peer, 0, MakePacket(msg, data));
 	enet_host_flush(n->client);
+}
+static ENetPacket *MakePacket(ClientMsg msg, const void *data)
+{
+	switch (msg)
+	{
+	case CLIENT_MSG_NEW_PLAYERS:
+		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
+	default:
+		CASSERT(false, "Unknown message to make into packet");
+		return NULL;
+	}
 }
 
 bool NetClientIsConnected(const NetClient *n)

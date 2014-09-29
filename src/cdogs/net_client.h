@@ -37,6 +37,7 @@ typedef struct
 {
 	ENetHost *client;
 	ENetPeer *peer;
+	int ClientId;
 } NetClient;
 
 extern NetClient gNetClient;
@@ -48,7 +49,7 @@ void NetClientTerminate(NetClient *n);
 void NetClientConnect(NetClient *n, const ENetAddress addr);
 void NetClientPoll(NetClient *n);
 // Send a command to the server
-void NetClientSend(NetClient *n, int cmd);
+void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data);
 
 bool NetClientIsConnected(const NetClient *n);
 

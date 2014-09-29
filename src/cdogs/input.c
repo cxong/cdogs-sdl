@@ -126,8 +126,6 @@ const char *InputDeviceName(int d, int deviceIndex)
 		return "Mouse";
 	case INPUT_DEVICE_JOYSTICK:
 		return SDL_JoystickName(deviceIndex);
-	case INPUT_DEVICE_NET:
-		return "Net";
 	case INPUT_DEVICE_AI:
 		return "AI";
 	default:

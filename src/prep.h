@@ -53,10 +53,16 @@
 #include <cdogs/events.h>
 #include <cdogs/grafx.h>
 
+// Wait for the server to send us the current campaign
 bool ScreenWaitForCampaignDef(void);
 
+// Wait for the server to send us their players
 bool ScreenWaitForRemotePlayers(void);
 
+// Wait for the server to acknowledge our new players and send us their ids
+bool ScreenWaitForNewPlayers(void);
+
+// Screen to select the number of (local) players
 bool NumPlayersSelection(
 	campaign_mode_e mode, GraphicsDevice *graphics, EventHandlers *handlers);
 
