@@ -247,7 +247,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 	case SERVER_MSG_CLIENT_ID:
 		{
 			NetMsgClientId cid;
-			cid.Id = *(int *)data;
+			cid.Id = *(const int *)data;
 			return NetEncode((int)msg, &cid, NetMsgClientId_fields);
 		}
 	case SERVER_MSG_CAMPAIGN_DEF:
