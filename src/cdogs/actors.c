@@ -514,7 +514,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			{
 				// Knife hit sound
 				// Special case: only allow enemy slice sounds
-				// TODO: custom knife sounds
 				HitSounds knifeSounds;
 				knifeSounds.Flesh = gun->soundLock <= 0 ?
 					StrSound("knife_flesh") : NULL;
