@@ -134,6 +134,7 @@ void NetClientPoll(NetClient *n)
 		}
 	}
 }
+static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
 	uint32_t msgType = *(uint32_t *)event.packet->data;
@@ -183,13 +184,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
 			debug(D_VERBOSE,
 				"NetClient: received player data id %d", pd.PlayerIndex);
-			// Add missing players
-			for (int i = (int)gPlayerDatas.size; i <= pd.PlayerIndex; i++)
-			{
-				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-				p->IsUsed = false;
-				p->IsLocal = false;
-			}
+			AddMissingPlayers(pd.PlayerIndex);
 			// Update the target player
 			PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
 			p->IsUsed = true;
@@ -227,13 +222,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			for (int i = 0; i < ap.PlayerIds_count; i++)
 			{
 				const int playerId = (int)ap.PlayerIds[i];
-				// Add missing players
-				for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
-				{
-					PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-					p->IsUsed = false;
-					p->IsLocal = false;
-				}
+				AddMissingPlayers(playerId);
 				PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
 				p->IsLocal = isLocal;
 				p->IsUsed = true;
@@ -249,6 +238,15 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		break;
 	}
 	enet_packet_destroy(event.packet);
+}
+static void AddMissingPlayers(const int playerId)
+{
+	for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
+	{
+		PlayerData *p = PlayerDataAdd(&gPlayerDatas);
+		p->IsUsed = false;
+		p->IsLocal = false;
+	}
 }
 
 static ENetPacket *MakePacket(ClientMsg msg, const void *data);
