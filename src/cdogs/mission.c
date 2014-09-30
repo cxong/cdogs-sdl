@@ -649,6 +649,7 @@ void MissionEnd(void)
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		p->Id = -1;
 	}
+	gMission.HasStarted = false;
 }
 
 void MissionSetMessageIfComplete(struct MissionOptions *options)

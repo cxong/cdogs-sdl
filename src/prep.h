@@ -72,4 +72,7 @@ bool PlayerSelection(void);
 
 bool PlayerEquip(void);
 
+// Wait for the game to start
+bool ScreenWaitForGameStart(void);
+
 #endif

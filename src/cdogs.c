@@ -260,6 +260,15 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
+		if (gCampaign.IsClient)
+		{
+			if (!ScreenWaitForGameStart())
+			{
+				run = false;
+				goto bail;
+			}
+		}
+
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		// Note: place players first, as bad guys are placed away from players
 		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;

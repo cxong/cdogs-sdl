@@ -636,3 +636,35 @@ static void PlayerEquipDraw(void *data)
 		MenuDisplay(&pData->menus[i].ms);
 	}
 }
+
+static void CheckGameStart(menu_t *menu, void *data);
+bool ScreenWaitForGameStart(void)
+{
+	MenuSystem ms;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	ms.allowAborts = true;
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"Waiting for game start...",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuSetPostUpdateFunc(ms.root, CheckGameStart, NULL);
+
+	MenuLoop(&ms);
+	const bool ok = !ms.hasAbort;
+	MenuSystemTerminate(&ms);
+	return ok;
+}
+static void CheckGameStart(menu_t *menu, void *data)
+{
+	UNUSED(data);
+	if (gMission.HasStarted)
+	{
+		// Hack to force the menu to exit
+		menu->type = MENU_TYPE_RETURN;
+	}
+}

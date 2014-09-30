@@ -215,6 +215,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			}
 		}
 		break;
+	case SERVER_MSG_GAME_START:
+		debug(D_VERBOSE, "NetClient: received game start");
+		gMission.HasStarted = true;
+		break;
 	default:
 		CASSERT(false, "unexpected message type");
 		break;

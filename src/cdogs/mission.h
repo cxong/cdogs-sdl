@@ -217,6 +217,7 @@ struct MissionOptions
 	// Time when players first entered pickup area
 	int pickupTime;
 	MissionState state;
+	bool HasStarted;
 	bool isDone;
 
 	CArray MapObjects;	// of MapObject
