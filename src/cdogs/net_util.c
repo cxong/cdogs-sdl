@@ -108,7 +108,10 @@ void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
 	p->totalScore = pd->Score;
 	p->kills = pd->Kills;
 	p->friendlies = pd->Friendlies;
-	p->inputDevice = INPUT_DEVICE_UNSET;
+	if (!p->IsLocal)
+	{
+		p->inputDevice = INPUT_DEVICE_UNSET;
+	}
 	CASSERT(
 		p->playerIndex == pd->PlayerIndex, "unexpected player index");
 }

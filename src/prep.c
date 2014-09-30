@@ -79,8 +79,7 @@
 #include "weapon_menu.h"
 
 
-static void CheckCampaignDefComplete(menu_t *menu, void *data);
-bool ScreenWaitForCampaignDef(void)
+bool ScreenWait(const char *message, void (*checkFunc)(menu_t *, void *))
 {
 	MenuSystem ms;
 	MenuSystemInit(
@@ -88,19 +87,25 @@ bool ScreenWaitForCampaignDef(void)
 		Vec2iZero(),
 		gGraphicsDevice.cachedConfig.Res);
 	ms.allowAborts = true;
-	char buf[256];
-	uint32_t ip = gNetClient.peer->address.host;
-	sprintf(buf, "Connecting to %d.%d.%d.%d:%d...",
-		ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24,
-		gNetClient.peer->address.port);
-	ms.root = ms.current = MenuCreateNormal("", buf, MENU_TYPE_NORMAL, 0);
+	ms.root = ms.current = MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, CheckCampaignDefComplete, &ms);
+	MenuSetPostUpdateFunc(ms.root, checkFunc, &ms);
 
 	MenuLoop(&ms);
 	const bool ok = !ms.hasAbort;
 	MenuSystemTerminate(&ms);
 	return ok;
+}
+
+static void CheckCampaignDefComplete(menu_t *menu, void *data);
+bool ScreenWaitForCampaignDef(void)
+{
+	char buf[256];
+	uint32_t ip = gNetClient.peer->address.host;
+	sprintf(buf, "Connecting to %d.%d.%d.%d:%d...",
+		ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24,
+		gNetClient.peer->address.port);
+	return ScreenWait(buf, CheckCampaignDefComplete);
 }
 static void CheckCampaignDefComplete(menu_t *menu, void *data)
 {
@@ -123,24 +128,8 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 static void CheckRemotePlayersComplete(menu_t *menu, void *data);
 bool ScreenWaitForRemotePlayers(void)
 {
-	MenuSystem ms;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
-		gGraphicsDevice.cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal(
-		"",
-		"Waiting for server players...",
-		MENU_TYPE_NORMAL,
-		0);
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, CheckRemotePlayersComplete, NULL);
-
-	MenuLoop(&ms);
-	const bool ok = !ms.hasAbort;
-	MenuSystemTerminate(&ms);
-	return ok;
+	return ScreenWait(
+		"Waiting for server players...", CheckRemotePlayersComplete);
 }
 static void CheckRemotePlayersComplete(menu_t *menu, void *data)
 {
@@ -155,24 +144,7 @@ static void CheckRemotePlayersComplete(menu_t *menu, void *data)
 static void CheckNewPlayersComplete(menu_t *menu, void *data);
 bool ScreenWaitForNewPlayers(void)
 {
-	MenuSystem ms;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
-		gGraphicsDevice.cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal(
-		"",
-		"Registering players...",
-		MENU_TYPE_NORMAL,
-		0);
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, CheckNewPlayersComplete, NULL);
-
-	MenuLoop(&ms);
-	const bool ok = !ms.hasAbort;
-	MenuSystemTerminate(&ms);
-	return ok;
+	return ScreenWait("Registering players...", CheckNewPlayersComplete);
 }
 static void CheckNewPlayersComplete(menu_t *menu, void *data)
 {
@@ -640,24 +612,7 @@ static void PlayerEquipDraw(void *data)
 static void CheckGameStart(menu_t *menu, void *data);
 bool ScreenWaitForGameStart(void)
 {
-	MenuSystem ms;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
-		gGraphicsDevice.cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal(
-		"",
-		"Waiting for game start...",
-		MENU_TYPE_NORMAL,
-		0);
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, CheckGameStart, NULL);
-
-	MenuLoop(&ms);
-	const bool ok = !ms.hasAbort;
-	MenuSystemTerminate(&ms);
-	return ok;
+	return ScreenWait("Waiting for game start...", CheckGameStart);
 }
 static void CheckGameStart(menu_t *menu, void *data)
 {

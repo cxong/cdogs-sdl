@@ -185,12 +185,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			debug(D_VERBOSE,
 				"NetClient: received player data id %d", pd.PlayerIndex);
 			AddMissingPlayers(pd.PlayerIndex);
-			// Check if this is our player; if so don't bother to update
-			const PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
-			if (!p->IsLocal)
-			{
-				NetMsgPlayerDataUpdate(&pd);
-			}
+			NetMsgPlayerDataUpdate(&pd);
 		}
 		break;
 	case SERVER_MSG_ADD_PLAYERS:

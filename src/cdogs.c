@@ -152,7 +152,21 @@ static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 	}
 }
 
-static void InitPlayers(int maxHealth, int mission)
+static void StartPlayers(const int maxHealth, const int mission)
+{
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsUsed)
+		{
+			return;
+		}
+		PlayerDataStart(p, maxHealth, mission);
+		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_PLAYER_DATA, p);
+	}
+}
+
+static void AddAndPlacePlayers(void)
 {
 	TActor *firstPlayer = NULL;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
@@ -162,17 +176,10 @@ static void InitPlayers(int maxHealth, int mission)
 		{
 			continue;
 		}
-		p->score = 0;
-		p->kills = 0;
-		p->friendlies = 0;
-		p->allTime = -1;
-		p->today = -1;
 
-		p->lastMission = mission;
 		p->Id = ActorAdd(&p->Char, p->playerIndex);
 		TActor *player = CArrayGet(&gActors, p->Id);
-		player->health = maxHealth;
-		p->Char.maxHealth = maxHealth;
+		player->health = p->Char.maxHealth;
 		
 		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
 		{
@@ -272,7 +279,8 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		// Note: place players first, as bad guys are placed away from players
 		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-		InitPlayers(maxHealth, co->MissionIndex);
+		StartPlayers(maxHealth, co->MissionIndex);
+		AddAndPlacePlayers();
 		InitializeBadGuys();
 		CreateEnemies();
 		PlayGameSong();
@@ -351,8 +359,6 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 
 int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	PlayerDataReset(&gPlayerDatas);
-
 	if (IsPasswordAllowed(co->Entry.Mode))
 	{
 		MissionSave m;
@@ -381,8 +387,6 @@ void DogFight(CampaignOptions *co)
 	}
 	int maxScore = 0;
 
-	PlayerDataReset(&gPlayerDatas);
-
 	co->MissionIndex = 0;
 
 	bool run = false;
@@ -392,7 +396,8 @@ void DogFight(CampaignOptions *co)
 		PlayerEquip();
 		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
 		srand((unsigned int)time(NULL));
-		InitPlayers(500, 0);
+		StartPlayers(500, 0);
+		AddAndPlacePlayers();
 		PlayGameSong();
 
 		// Don't quit if all players died, that's normal for dogfights

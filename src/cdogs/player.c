@@ -159,16 +159,6 @@ void PlayerDataSetLocalDefaults(PlayerData *d, const int idx)
 	d->weaponCount = 3;
 }
 
-void PlayerDataReset(CArray *p)
-{
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *pd = CArrayGet(p, i);
-		pd->totalScore = 0;
-		pd->missions = 0;
-	}
-}
-
 void PlayerDataTerminate(CArray *p)
 {
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
@@ -177,6 +167,18 @@ void PlayerDataTerminate(CArray *p)
 		CFREE(pd->Char.bot);
 	}
 	CArrayTerminate(p);
+}
+
+void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
+{
+	p->score = 0;
+	p->kills = 0;
+	p->friendlies = 0;
+	p->allTime = -1;
+	p->today = -1;
+
+	p->lastMission = mission;
+	p->Char.maxHealth = maxHealth;
 }
 
 int GetNumPlayers(const bool alive, const bool human, const bool local)

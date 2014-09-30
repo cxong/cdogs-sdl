@@ -66,8 +66,9 @@ extern CArray gPlayerDatas;	// of PlayerData
 void PlayerDataInit(CArray *p);
 PlayerData *PlayerDataAdd(CArray *p);
 void PlayerDataSetLocalDefaults(PlayerData *d, const int idx);
-void PlayerDataReset(CArray *p);
 void PlayerDataTerminate(CArray *p);
+
+void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission);
 
 int GetNumPlayers(const bool alive, const bool human, const bool local);
 const PlayerData *GetFirstPlayer(
