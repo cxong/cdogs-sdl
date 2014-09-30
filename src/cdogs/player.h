@@ -34,6 +34,7 @@
 typedef struct
 {
 	int Id;	// -1 if dead
+	bool IsUsed;
 	bool IsLocal;	// whether this is a local-machine player
 	Character Char;
 	char name[20];
@@ -63,7 +64,7 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 
 void PlayerDataInit(CArray *p);
-PlayerData *PlayerDataAdd(CArray *p, const bool isLocal);
+PlayerData *PlayerDataAdd(CArray *p);
 void PlayerDataSetLocalDefaults(PlayerData *d, const int idx);
 void PlayerDataReset(CArray *p);
 void PlayerDataTerminate(CArray *p);

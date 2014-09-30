@@ -242,7 +242,7 @@ bool NumPlayersSelection(
 			// We are the server, just add the players
 			for (int i = 0; i < numPlayers; i++)
 			{
-				PlayerData *p = PlayerDataAdd(&gPlayerDatas, true);
+				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
 				PlayerDataSetLocalDefaults(p, i);
 				p->inputDevice = INPUT_DEVICE_UNSET;
 			}

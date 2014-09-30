@@ -182,14 +182,17 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetMsgPlayerData pd;
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
 			debug(D_VERBOSE,
-				"NetClient: received player data total %d", pd.TotalPlayers);
+				"NetClient: received player data id %d", pd.PlayerIndex);
 			// Add missing players
-			for (int i = (int)gPlayerDatas.size; i < pd.TotalPlayers; i++)
+			for (int i = (int)gPlayerDatas.size; i <= pd.PlayerIndex; i++)
 			{
-				PlayerDataAdd(&gPlayerDatas, false);
+				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
+				p->IsUsed = false;
+				p->IsLocal = false;
 			}
 			// Update the target player
 			PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
+			p->IsUsed = true;
 			strcpy(p->name, pd.Name);
 			p->Char.looks.face = pd.Looks.Face;
 			p->Char.looks.skin = pd.Looks.Skin;
@@ -220,11 +223,20 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				"NetClient: received new players %d", (int)ap.PlayerIds_count);
 			// Add new players
 			// If they are local players, set them up with defaults
-			// TODO: make sure player IDs match
 			const bool isLocal = ap.ClientId == n->ClientId;
 			for (int i = 0; i < ap.PlayerIds_count; i++)
 			{
-				PlayerData *p = PlayerDataAdd(&gPlayerDatas, isLocal);
+				const int playerId = (int)ap.PlayerIds[i];
+				// Add missing players
+				for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
+				{
+					PlayerData *p = PlayerDataAdd(&gPlayerDatas);
+					p->IsUsed = false;
+					p->IsLocal = false;
+				}
+				PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
+				p->IsLocal = isLocal;
+				p->IsUsed = true;
 				if (isLocal)
 				{
 					PlayerDataSetLocalDefaults(p, i);

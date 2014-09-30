@@ -191,7 +191,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
 			for (int i = 0; i < np.NumPlayers; i++)
 			{
-				const PlayerData *p = PlayerDataAdd(&gPlayerDatas, false);
+				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
+				p->IsLocal = false;
 				ap.PlayerIds[i] = p->playerIndex;
 			}
 			// Broadcast the new players to all clients
@@ -284,7 +285,6 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			d.Kills = pData->kills;
 			d.Friendlies = pData->friendlies;
 			d.PlayerIndex = pData->playerIndex;
-			d.TotalPlayers = (int32_t)gPlayerDatas.size;
 			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
 		}
 	case SERVER_MSG_ADD_PLAYERS:

@@ -39,13 +39,14 @@ void PlayerDataInit(CArray *p)
 	CArrayInit(p, sizeof(PlayerData));
 }
 
-PlayerData *PlayerDataAdd(CArray *p, const bool isLocal)
+PlayerData *PlayerDataAdd(CArray *p)
 {
 	PlayerData d;
 	memset(&d, 0, sizeof d);
 
 	int i = (int)p->size;
-	d.IsLocal = isLocal;
+	d.IsUsed = true;
+	d.IsLocal = true;
 	d.inputDevice = INPUT_DEVICE_UNSET;
 	d.playerIndex = i;
 
