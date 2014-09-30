@@ -185,29 +185,12 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			debug(D_VERBOSE,
 				"NetClient: received player data id %d", pd.PlayerIndex);
 			AddMissingPlayers(pd.PlayerIndex);
-			// Update the target player
-			PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
-			p->IsUsed = true;
-			strcpy(p->name, pd.Name);
-			p->Char.looks.face = pd.Looks.Face;
-			p->Char.looks.skin = pd.Looks.Skin;
-			p->Char.looks.arm = pd.Looks.Arm;
-			p->Char.looks.body = pd.Looks.Body;
-			p->Char.looks.leg = pd.Looks.Leg;
-			p->Char.looks.hair = pd.Looks.Hair;
-			CharacterSetColors(&p->Char);
-			p->weaponCount = pd.Weapons_count;
-			for (int i = 0; i < (int)pd.Weapons_count; i++)
+			// Check if this is our player; if so don't bother to update
+			const PlayerData *p = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
+			if (!p->IsLocal)
 			{
-				p->weapons[i] = StrGunDescription(pd.Weapons[i]);
+				NetMsgPlayerDataUpdate(&pd);
 			}
-			p->score = pd.Score;
-			p->totalScore = pd.Score;
-			p->kills = pd.Kills;
-			p->friendlies = pd.Friendlies;
-			p->inputDevice = INPUT_DEVICE_UNSET;
-			CASSERT(
-				p->playerIndex == pd.PlayerIndex, "unexpected player index");
 		}
 		break;
 	case SERVER_MSG_ADD_PLAYERS:
@@ -225,7 +208,6 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				AddMissingPlayers(playerId);
 				PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
 				p->IsLocal = isLocal;
-				p->IsUsed = true;
 				if (isLocal)
 				{
 					PlayerDataSetLocalDefaults(p, i);
@@ -244,7 +226,6 @@ static void AddMissingPlayers(const int playerId)
 	for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
 	{
 		PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-		p->IsUsed = false;
 		p->IsLocal = false;
 	}
 }
@@ -266,6 +247,11 @@ static ENetPacket *MakePacket(ClientMsg msg, const void *data)
 	{
 	case CLIENT_MSG_NEW_PLAYERS:
 		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
+	case CLIENT_MSG_PLAYER_DATA:
+		{
+			NetMsgPlayerData d = NetMsgMakePlayerData(data);
+			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
+		}
 	default:
 		CASSERT(false, "Unknown message to make into packet");
 		return NULL;

@@ -350,8 +350,7 @@ bool PlayerSelection(void)
 	NameGenInit(&data.g, data.prefixes, data.suffixes, data.suffixnames);
 
 	// Create selection menus for each local player
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)
@@ -372,11 +371,17 @@ bool PlayerSelection(void)
 
 	if (data.IsOK)
 	{
-		// For any player slots not picked, turn them into AIs
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
 			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+
+			// For any player slots not picked, turn them into AIs
+			if (p->inputDevice == INPUT_DEVICE_UNSET)
 			{
 				PlayerSetInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
@@ -515,8 +520,7 @@ bool PlayerEquip(void)
 	PlayerEquipData data;
 	memset(&data, 0, sizeof data);
 	data.IsOK = true;
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)
@@ -544,6 +548,26 @@ bool PlayerEquip(void)
 	GameLoopData gData = GameLoopDataNew(
 		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
 	GameLoop(&gData);
+
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		// Ready player definitions
+		p->IsUsed = true;
+		if (gCampaign.IsClient)
+		{
+			NetClientSendMsg(&gNetClient, CLIENT_MSG_PLAYER_DATA, p);
+		}
+		else
+		{
+			NetServerBroadcastMsg(&gNetServer, SERVER_MSG_PLAYER_DATA, p);
+		}
+	}
 
 	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
 	{

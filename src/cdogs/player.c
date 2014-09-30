@@ -45,7 +45,7 @@ PlayerData *PlayerDataAdd(CArray *p)
 	memset(&d, 0, sizeof d);
 
 	int i = (int)p->size;
-	d.IsUsed = true;
+	d.IsUsed = false;
 	d.IsLocal = true;
 	d.inputDevice = INPUT_DEVICE_UNSET;
 	d.playerIndex = i;

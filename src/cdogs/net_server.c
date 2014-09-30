@@ -157,17 +157,8 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-		if (i == (int)gPlayerDatas.size - 1)
-		{
-			debug(
-				D_VERBOSE, "NetServer: broadcast player data index %d", i);
-			NetServerBroadcastMsg(n, SERVER_MSG_PLAYER_DATA, pOther);
-		}
-		else
-		{
-			debug(D_VERBOSE, "NetServer: sending player data index %d", i);
-			NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
-		}
+		debug(D_VERBOSE, "NetServer: sending player data index %d", i);
+		NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
 	}
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
@@ -197,6 +188,22 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			}
 			// Broadcast the new players to all clients
 			NetServerBroadcastMsg(n, SERVER_MSG_ADD_PLAYERS, &ap);
+		}
+		break;
+	case CLIENT_MSG_PLAYER_DATA:
+		{
+			NetMsgPlayerData pd;
+			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+			debug(D_VERBOSE,
+				"NetServer: received player data id %d", pd.PlayerIndex);
+			CASSERT(
+				(int)gPlayerDatas.size > (int)pd.PlayerIndex,
+				"unexpected player index");
+			NetMsgPlayerDataUpdate(&pd);
+			// Send it on to all clients
+			NetServerBroadcastMsg(
+				n, SERVER_MSG_PLAYER_DATA,
+				CArrayGet(&gPlayerDatas, pd.PlayerIndex));
 		}
 		break;
 	default:
@@ -265,26 +272,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		}
 	case SERVER_MSG_PLAYER_DATA:
 		{
-			NetMsgPlayerData d;
-			const PlayerData *pData = data;
-			const Character *c = &pData->Char;
-			strcpy(d.Name, pData->name);
-			d.Looks.Face = c->looks.face;
-			d.Looks.Skin = c->looks.skin;
-			d.Looks.Arm = c->looks.arm;
-			d.Looks.Body = c->looks.body;
-			d.Looks.Leg = c->looks.leg;
-			d.Looks.Hair = c->looks.hair;
-			d.Weapons_count = (pb_size_t)pData->weaponCount;
-			for (int i = 0; i < (int)d.Weapons_count; i++)
-			{
-				strcpy(d.Weapons[i], pData->weapons[i]->name);
-			}
-			d.Score = pData->score;
-			d.TotalScore = pData->totalScore;
-			d.Kills = pData->kills;
-			d.Friendlies = pData->friendlies;
-			d.PlayerIndex = pData->playerIndex;
+			NetMsgPlayerData d = NetMsgMakePlayerData(data);
 			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
 		}
 	case SERVER_MSG_ADD_PLAYERS:

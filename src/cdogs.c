@@ -154,19 +154,20 @@ static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
 
 static void InitPlayers(int maxHealth, int mission)
 {
+	TActor *firstPlayer = NULL;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsUsed)
+		{
+			continue;
+		}
 		p->score = 0;
 		p->kills = 0;
 		p->friendlies = 0;
 		p->allTime = -1;
 		p->today = -1;
-	}
-	TActor *firstPlayer = NULL;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+
 		p->lastMission = mission;
 		p->Id = ActorAdd(&p->Char, p->playerIndex);
 		TActor *player = CArrayGet(&gActors, p->Id);

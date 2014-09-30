@@ -36,6 +36,7 @@
 
 #include "proto/server.pb.h"
 
+#include "player.h"
 #include "sys_config.h"
 #include "utils.h"
 
@@ -57,6 +58,7 @@
 typedef enum
 {
 	CLIENT_MSG_NEW_PLAYERS,
+	CLIENT_MSG_PLAYER_DATA,
 	CLIENT_MSG_CMD
 } ClientMsg;
 
@@ -72,7 +74,10 @@ typedef enum
 
 ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
+
+NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode);
+void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd);
 
 #endif

@@ -24,6 +24,7 @@ message NetMsgPlayerData {
 	required int32 Kills = 6;
 	required int32 Friendlies = 7;
 	required int32 PlayerIndex = 8;
+	required bool IsUsed = 9;
 }
 
 message NetMsgAddPlayers {
