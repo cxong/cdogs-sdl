@@ -55,7 +55,6 @@ void HandleGameEvents(
 	}
 	GameEventsClear(store);
 }
-static bool IsServerOnlyEvent(const GameEventType t);
 static void HandleGameEvent(
 	GameEvent *e,
 	HUD *hud,
