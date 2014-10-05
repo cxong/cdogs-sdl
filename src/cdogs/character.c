@@ -182,7 +182,7 @@ bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
 	for (int i = 0; i < (int)store->prisonerIds.size; i++)
 	{
 		const Character *prisoner = CArrayGet(
-			&store->OtherChars, *(int *)CharacterStoreGetPrisonerId(store, i));
+			&store->OtherChars, CharacterStoreGetPrisonerId(store, i));
 		if (prisoner == c)
 		{
 			return true;
