@@ -663,9 +663,11 @@ static void MissionDrawEnemy(
 	{
 		return;
 	}
+	const CharacterStore *store = &data->co->Setting.characters;
+	const int charIndex = *(int *)CArrayGet(&store->baddieIds, data->index);
 	DisplayCharacter(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		data->co->Setting.characters.baddies[data->index],
+		CArrayGet(&store->OtherChars, charIndex),
 		UIObjectIsHighlighted(o), 1);
 }
 static void MissionDrawSpecialChar(
@@ -679,9 +681,11 @@ static void MissionDrawSpecialChar(
 	{
 		return;
 	}
+	const CharacterStore *store = &data->co->Setting.characters;
+	const int charIndex = CharacterStoreGetSpecialId(store, data->index);
 	DisplayCharacter(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		data->co->Setting.characters.specials[data->index],
+		CArrayGet(&store->OtherChars, charIndex),
 		UIObjectIsHighlighted(o), 1);
 }
 static void DisplayMapItemWithDensity(
@@ -758,17 +762,19 @@ static void MissionDrawObjective(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type)
 	{
 	case OBJECTIVE_KILL:
-		if (store->specialCount > 0)
+		if (store->specialIds.size > 0)
 		{
-			GetCharacterHeadPic(
-				CharacterStoreGetSpecial(store, 0), &pic, &table);
+			Character *cd = CArrayGet(
+				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
+			GetCharacterHeadPic(cd, &pic, &table);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
-		if (store->prisonerCount > 0)
+		if (store->prisonerIds.size > 0)
 		{
-			GetCharacterHeadPic(
-				CharacterStoreGetPrisoner(store, 0), &pic, &table);
+			Character *cd = CArrayGet(
+				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
+			GetCharacterHeadPic(cd, &pic, &table);
 		}
 		break;
 	case OBJECTIVE_COLLECT:
@@ -1112,7 +1118,8 @@ static void MissionChangeType(void *data, int d)
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(1, co, &gMission);
 	memset(&map, 0, sizeof map);
-	MapLoad(&map, &gMission, co, &co->Setting.characters);
+	MapLoad(&map, &gMission, co);
+	MapLoadDynamic(&map, &gMission, &co->Setting.characters);
 	MissionConvertToType(gMission.missionData, &map, type);
 }
 static void MissionChangeWallStyle(void *data, int d)
@@ -1184,8 +1191,8 @@ static void MissionChangeEnemy(void *vData, int d)
 		enemy + d, 0, (int)data->co->Setting.characters.OtherChars.size - 1);
 	*(int *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Enemies, data->index) = enemy;
-	data->co->Setting.characters.baddies[data->index] =
-		CArrayGet(&data->co->Setting.characters.OtherChars, enemy);
+	*(int *)CArrayGet(
+		&data->co->Setting.characters.baddieIds, data->index) = enemy;
 }
 static void MissionChangeSpecialChar(void *vData, int d)
 {
@@ -1196,8 +1203,8 @@ static void MissionChangeSpecialChar(void *vData, int d)
 		c + d, 0, (int)data->co->Setting.characters.OtherChars.size - 1);
 	*(int *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->SpecialChars, data->index) = c;
-	data->co->Setting.characters.specials[data->index] =
-		CArrayGet(&data->co->Setting.characters.OtherChars, c);
+	*(int *)CArrayGet(
+		&data->co->Setting.characters.specialIds, data->index) = c;
 }
 static void MissionChangeWeapon(void *vData, int d)
 {

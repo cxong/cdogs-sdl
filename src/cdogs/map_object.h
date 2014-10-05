@@ -90,11 +90,12 @@ int MapObjectGetDestructibleCount(void);
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset);
 int MapObjectGetWreckFlags(const MapObject *mo);
 
-int MapObjectIsTileOK(
-	MapObject *obj, unsigned short tile, int isEmpty, unsigned short tileAbove);
-int MapObjectIsTileOKStrict(
-	MapObject *obj, unsigned short tile, int isEmpty,
-	unsigned short tileAbove, unsigned short tileBelow,
-	int numWallsAdjacent, int numWallsAround);
+bool MapObjectIsTileOK(
+	const MapObject *obj, unsigned short tile, const bool isEmpty,
+	unsigned short tileAbove);
+bool MapObjectIsTileOKStrict(
+	const MapObject *obj, const unsigned short tile, const bool isEmpty,
+	const unsigned short tileAbove, const unsigned short tileBelow,
+	const int numWallsAdjacent, const int numWallsAround);
 
 #endif

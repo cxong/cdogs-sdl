@@ -31,6 +31,7 @@
 #include "ai.h"
 #include "draw.h"
 #include "drawtools.h"
+#include "game_events.h"
 #include "objs.h"
 #include "quick_play.h"
 #include "triggers.h"
@@ -90,7 +91,9 @@ void GrafxMakeBackground(
 	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(buildTables, co, mo);
-	MapLoad(map, mo, co, &co->Setting.characters);
+	GameEventsInit(&gGameEvents);
+	MapLoad(map, mo, co);
+	MapLoadDynamic(map, mo, &co->Setting.characters);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(map);
@@ -104,6 +107,7 @@ void GrafxMakeBackground(
 	}
 
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
+	GameEventsTerminate(&gGameEvents);
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)

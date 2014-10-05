@@ -51,13 +51,18 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "actor_placement.h"
 #include "ai_utils.h"
 #include "collision.h"
 #include "config.h"
 #include "defs.h"
 #include "actors.h"
+#include "events.h"
+#include "game_events.h"
 #include "gamedata.h"
+#include "handle_game_events.h"
 #include "mission.h"
+#include "net_util.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -268,68 +273,6 @@ void Detour(TActor * actor)
 	else
 		actor->direction =
 		    (CmdToDirection(actor->lastCmd) + 7) % 8;
-}
-
-static void PlaceBaddie(TActor *actor)
-{
-	bool hasPlaced = false;
-	// Don't try forever trying to place baddie
-	for (int i = 0; i < 100; i++)
-	{
-		// Try spawning out of players' sights
-		const Vec2i pos = Vec2iReal2Full(Vec2iNew(
-			rand() % (gMap.Size.x * TILE_WIDTH),
-			rand() % (gMap.Size.y * TILE_HEIGHT)));
-		const TActor *closestPlayer = AIGetClosestPlayer(pos);
-		if (closestPlayer && CHEBYSHEV_DISTANCE(
-			pos.x, pos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
-			ActorIsPosClear(actor, pos))
-		{
-			TryMoveActor(actor, pos);
-			hasPlaced = true;
-			break;
-		}
-	}
-	if (!hasPlaced)
-	{
-		// Keep trying, but this time try spawning anywhere,
-		// even close to player
-		for (;;)
-		{
-			const Vec2i pos = Vec2iReal2Full(Vec2iNew(
-				rand() % (gMap.Size.x * TILE_WIDTH),
-				rand() % (gMap.Size.y * TILE_HEIGHT)));
-			if (ActorIsPosClear(actor, pos))
-			{
-				TryMoveActor(actor, pos);
-				break;
-			}
-		}
-	}
-
-	ActorInit(actor);
-	if (!(actor->flags & FLAGS_SLEEPALWAYS) &&
-		rand() % 100 < gBaddieCount)
-	{
-		actor->flags &= ~FLAGS_SLEEPING;
-	}
-}
-
-static void PlacePrisoner(TActor *actor)
-{
-	Vec2i pos;
-	do
-	{
-		do
-		{
-			pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
-			pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
-		}
-		while (!MapPosIsHighAccess(&gMap, pos.x >> 8, pos.y >> 8));
-	}
-	while (!ActorIsPosClear(actor, pos));
-	TryMoveActor(actor, pos);
 }
 
 
@@ -548,19 +491,29 @@ void CommandBadGuys(int ticks)
 		gMission.missionData->EnemyDensity > 0 &&
 		count < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100))
 	{
-		Character *character = CharacterStoreGetRandomBaddie(
+		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		aa.Id = ActorsGetFreeIndex();
+		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
-		TActor *baddie = CArrayGet(&gActors, ActorAdd(character, -1));
-		PlaceBaddie(baddie);
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+		aa.Health = CharacterGetStartingHealth(c, true);
+		aa.FullPos = PlaceBaddie(&gMap);
+		GameEvent e;
+		e.Type = GAME_EVENT_ACTOR_ADD;
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
+
+		// Process the events that actually place the players
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 	}
 }
 
 void InitializeBadGuys(void)
 {
-	int i;
-	TActor *actor;
-	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
 		MissionObjective *mobj =
 			CArrayGet(&gMission.missionData->Objectives, i);
@@ -570,29 +523,53 @@ void InitializeBadGuys(void)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				int id = ActorAdd(CharacterStoreGetRandomSpecial(
-					&gCampaign.Setting.characters), -1);
-				actor = CArrayGet(&gActors, id);
-				actor->tileItem.flags |= ObjectiveToTileItem(i);
-				PlaceBaddie(actor);
+				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				aa.Id = ActorsGetFreeIndex();
+				aa.CharId = CharacterStoreGetRandomSpecialId(
+					&gCampaign.Setting.characters);
+				aa.TileItemFlags = ObjectiveToTileItem(i);
+				aa.Direction = rand() % DIRECTION_COUNT;
+				const Character *c =
+					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+				aa.Health = CharacterGetStartingHealth(c, true);
+				aa.FullPos = PlaceBaddie(&gMap);
+				GameEvent e;
+				e.Type = GAME_EVENT_ACTOR_ADD;
+				e.u.ActorAdd = aa;
+				GameEventsEnqueue(&gGameEvents, e);
+
+				// Process the events that actually place the actors
+				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 			}
 		}
 		else if (mobj->Type == OBJECTIVE_RESCUE)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				int id = ActorAdd(CharacterStoreGetPrisoner(
-					&gCampaign.Setting.characters, 0), -1);
-				actor = CArrayGet(&gActors, id);
-				actor->tileItem.flags |= ObjectiveToTileItem(i);
+				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				aa.Id = ActorsGetFreeIndex();
+				aa.CharId = CharacterStoreGetPrisonerId(
+					&gCampaign.Setting.characters, 0);
+				aa.TileItemFlags = ObjectiveToTileItem(i);
+				aa.Direction = rand() % DIRECTION_COUNT;
+				const Character *c =
+					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+				aa.Health = CharacterGetStartingHealth(c, true);
 				if (MapHasLockedRooms(&gMap))
 				{
-					PlacePrisoner(actor);
+					aa.FullPos = PlacePrisoner(&gMap);
 				}
 				else
 				{
-					PlaceBaddie(actor);
+					aa.FullPos = PlaceBaddie(&gMap);
 				}
+				GameEvent e;
+				e.Type = GAME_EVENT_ACTOR_ADD;
+				e.u.ActorAdd = aa;
+				GameEventsEnqueue(&gGameEvents, e);
+
+				// Process the events that actually place the actors
+				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 			}
 		}
 	}
@@ -603,20 +580,31 @@ void InitializeBadGuys(void)
 
 void CreateEnemies(void)
 {
-	int i;
-	if (gCampaign.Setting.characters.baddieCount <= 0)
+	if (gCampaign.Setting.characters.baddieIds.size == 0)
 	{
 		return;
 	}
 
-	for (i = 0;
+	for (int i = 0;
 		i < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100);
 		i++)
 	{
-		int id = ActorAdd(CharacterStoreGetRandomBaddie(
-			&gCampaign.Setting.characters), -1);
-		TActor *enemy = CArrayGet(&gActors, id);
-		PlaceBaddie(enemy);
+		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		aa.Id = ActorsGetFreeIndex();
+		aa.CharId = CharacterStoreGetRandomBaddieId(
+			&gCampaign.Setting.characters);
+		aa.FullPos = PlaceBaddie(&gMap);
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+		aa.Health = CharacterGetStartingHealth(c, true);
+		GameEvent e;
+		e.Type = GAME_EVENT_ACTOR_ADD;
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
+
+		// Process the events that actually place the actors
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 	}
 }

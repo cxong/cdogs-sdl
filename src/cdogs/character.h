@@ -65,13 +65,10 @@ typedef struct
 {
 	CArray OtherChars;	// of Character, both normal baddies and special chars
 
-	// References only
-	int prisonerCount;
-	Character **prisoners;
-	int baddieCount;
-	Character **baddies;
-	int specialCount;
-	Character **specials;
+	// IDs only (of int)
+	CArray prisonerIds;
+	CArray baddieIds;
+	CArray specialIds;
 } CharacterStore;
 
 void CharacterSetColors(Character *c);
@@ -87,9 +84,13 @@ void CharacterStoreAddBaddie(CharacterStore *store, int character);
 void CharacterStoreAddSpecial(CharacterStore *store, int character);
 void CharacterStoreDeleteBaddie(CharacterStore *store, int idx);
 void CharacterStoreDeleteSpecial(CharacterStore *store, int idx);
-Character *CharacterStoreGetPrisoner(CharacterStore *store, int i);
-Character *CharacterStoreGetSpecial(CharacterStore *store, int i);
-Character *CharacterStoreGetRandomBaddie(CharacterStore *store);
-Character *CharacterStoreGetRandomSpecial(CharacterStore *store);
+int CharacterStoreGetPrisonerId(const CharacterStore *store, const int i);
+int CharacterStoreGetSpecialId(const CharacterStore *store, const int i);
+int CharacterStoreGetRandomBaddieId(const CharacterStore *store);
+int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
+
+bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
+
+int CharacterGetStartingHealth(const Character *c, const bool isNPC);
 
 #endif

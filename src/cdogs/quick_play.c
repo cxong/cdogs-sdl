@@ -100,20 +100,20 @@ static Vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
 
 // Generate a quick play parameter based on the quantity setting, and various
 // thresholds
-// e.g. if qty is "small", generate random number between small and medium
+// e.g. if qty is "low", generate random number between low and medium
 static int GenerateQuickPlayParam(
-	QuickPlayQuantity qty, int small, int medium, int large, int max)
+	QuickPlayQuantity qty, int low, int medium, int high, int max)
 {
 	switch (qty)
 	{
 	case QUICKPLAY_QUANTITY_ANY:
-		return small + (rand() % (max - small + 1));
+		return low + (rand() % (max - low + 1));
 	case QUICKPLAY_QUANTITY_SMALL:
-		return small + (rand() % (medium - small + 1));
+		return low + (rand() % (medium - low + 1));
 	case QUICKPLAY_QUANTITY_MEDIUM:
-		return medium + (rand() % (large - medium + 1));
+		return medium + (rand() % (high - medium + 1));
 	case QUICKPLAY_QUANTITY_LARGE:
-		return large + (rand() % (max - large + 1));
+		return high + (rand() % (max - high + 1));
 	default:
 		assert(0);
 		return 0;

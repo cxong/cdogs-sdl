@@ -599,13 +599,14 @@ static void DrawObjectiveInfo(
 	const MissionObjective *mobj =
 		CArrayGet(&mo->missionData->Objectives, idx);
 	const struct Objective *o = CArrayGet(&mo->Objectives, idx);
+	const CharacterStore *store = &gCampaign.Setting.characters;
 
 	switch (mobj->Type)
 	{
 	case OBJECTIVE_KILL:
 		{
-			const Character *cd =
-				CharacterStoreGetSpecial(&gCampaign.Setting.characters, 0);
+			const Character *cd = CArrayGet(
+				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
 			const int i = cd->looks.face;
 			TOffsetPic pic;
 			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
@@ -618,8 +619,8 @@ static void DrawObjectiveInfo(
 		break;
 	case OBJECTIVE_RESCUE:
 		{
-			const Character *cd =
-				CharacterStoreGetPrisoner(&gCampaign.Setting.characters, 0);
+			const Character *cd = CArrayGet(
+				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
 			const int i = cd->looks.face;
 			TOffsetPic pic;
 			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];

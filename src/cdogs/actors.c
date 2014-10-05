@@ -115,22 +115,6 @@ static int delayTable[STATE_COUNT] = {
 };
 
 
-// Initialise the actor post-placement
-void ActorInit(TActor *actor)
-{
-	actor->direction = rand() % DIRECTION_COUNT;
-
-	actor->health = (actor->health * gConfig.Game.NonPlayerHP) / 100;
-	if (actor->health <= 0)
-	{
-		actor->health = 1;
-	}
-	if (actor->flags & FLAGS_AWAKEALWAYS)
-	{
-		actor->flags &= ~FLAGS_SLEEPING;
-	}
-}
-
 static ActorPics GetCharacterPics(int id)
 {
 	ActorPics pics;
@@ -435,33 +419,6 @@ static void PickupObject(TActor * actor, TObject * object)
 	}
 }
 
-// Check if the target position is completely clear
-// This includes collisions that make the target illegal, such as walls
-// But it also includes item collisions, whether or not the collisions
-// are legal, e.g. item pickups, friendly collisions
-bool ActorIsPosClear(const TActor *actor, const Vec2i fullPos)
-{
-	// Wall collision
-	const Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
-	if (IsCollisionWithWall(Vec2iFull2Real(fullPos), size))
-	{
-		return false;
-	}
-
-	// Item collision
-	const Vec2i realPos = Vec2iFull2Real(fullPos);
-	const bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
-	if (GetItemOnTileInCollision(
-		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor),
-		isDogfight) != NULL)
-	{
-		return false;
-	}
-
-	return true;
-}
-
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);
@@ -583,19 +540,14 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	actor->Pos = pos;
-	MapTryMoveTileItem(&gMap, &actor->tileItem, Vec2iFull2Real(actor->Pos));
+	GameEvent e;
+	e.Type = GAME_EVENT_ACTOR_MOVE;
+	e.u.ActorMove.Id = actor->tileItem.id;
+	e.u.ActorMove.Pos.x = pos.x;
+	e.u.ActorMove.Pos.y = pos.y;
+	GameEventsEnqueue(&gGameEvents, e);
 
-	if (MapIsTileInExit(&gMap, &actor->tileItem))
-	{
-		actor->action = ACTORACTION_EXITING;
-	}
-	else
-	{
-		actor->action = ACTORACTION_MOVING;
-	}
-
-	return 1;
+	return true;
 }
 // Get a movement position that is constrained by collisions
 // May return a position that is the same as the 'from', that is, we cannot
@@ -1007,48 +959,53 @@ void ActorsTerminate(void)
 	}
 	CArrayTerminate(&gActors);
 }
-int ActorAdd(Character *c, const int playerIndex)
+int ActorsGetFreeIndex(void)
 {
 	// Find an empty slot in actor list
-	TActor *actor = NULL;
-	int i;
-	for (i = 0; i < (int)gActors.size; i++)
+	// actors.size if no slot found (i.e. add to end)
+	for (int i = 0; i < (int)gActors.size; i++)
 	{
-		TActor *a = CArrayGet(&gActors, i);
+		const TActor *a = CArrayGet(&gActors, i);
 		if (!a->isInUse)
 		{
-			actor = a;
-			break;
+			return i;
 		}
 	}
-	if (actor == NULL)
+	return (int)gActors.size;
+}
+TActor *ActorAdd(NetMsgActorAdd aa)
+{
+	while (aa.Id >= (int)gActors.size)
 	{
 		TActor a;
 		memset(&a, 0, sizeof a);
 		CArrayPushBack(&gActors, &a);
-		i = (int)gActors.size - 1;
-		actor = CArrayGet(&gActors, i);
 	}
+	TActor *actor = CArrayGet(&gActors, aa.Id);
 	memset(actor, 0, sizeof *actor);
 	CArrayInit(&actor->guns, sizeof(Weapon));
-	if (playerIndex >= 0)
+	Character *c;
+	if (aa.PlayerId >= 0)
 	{
 		// Add all player weapons
-		const PlayerData *p = CArrayGet(&gPlayerDatas, playerIndex);
-		for (int j = 0; j < p->weaponCount; j++)
+		PlayerData *p = CArrayGet(&gPlayerDatas, aa.PlayerId);
+		c = &p->Char;
+		for (int i = 0; i < p->weaponCount; i++)
 		{
-			Weapon gun = WeaponCreate(p->weapons[j]);
+			Weapon gun = WeaponCreate(p->weapons[i]);
 			CArrayPushBack(&actor->guns, &gun);
 		}
+		p->Id = aa.Id;
 	}
 	else
 	{
+		c = CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		// Add sole weapon from character type
 		Weapon gun = WeaponCreate(c->Gun);
 		CArrayPushBack(&actor->guns, &gun);
 	}
 	actor->gunIndex = 0;
-	actor->health = c->maxHealth;
+	actor->health = aa.Health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
@@ -1057,12 +1014,17 @@ int ActorAdd(Character *c, const int playerIndex)
 	actor->tileItem.drawFunc = NULL;
 	actor->tileItem.w = ACTOR_W;
 	actor->tileItem.h = ACTOR_H;
-	actor->tileItem.flags = TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT;
-	actor->tileItem.id = i;
+	actor->tileItem.flags =
+		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
+	actor->tileItem.id = aa.Id;
 	actor->isInUse = true;
 	actor->flags = FLAGS_SLEEPING | c->flags;
+	if (actor->flags & FLAGS_AWAKEALWAYS)
+	{
+		actor->flags &= ~FLAGS_SLEEPING;
+	}
 	actor->Character = c;
-	actor->playerIndex = playerIndex;
+	actor->playerIndex = aa.PlayerId;
 	actor->uid = sActorUIDs++;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
@@ -1072,7 +1034,8 @@ int ActorAdd(Character *c, const int playerIndex)
 		actor->aiContext = AIContextNew();
 		AIContextSetState(actor->aiContext, AI_STATE_IDLE);
 	}
-	return i;
+	TryMoveActor(actor, Vec2iNew(aa.FullPos.x, aa.FullPos.y));
+	return actor;
 }
 void ActorDestroy(int id)
 {

@@ -44,6 +44,7 @@ PlayerData *PlayerDataAdd(CArray *p)
 	PlayerData d;
 	memset(&d, 0, sizeof d);
 
+	d.Id = -1;
 	int i = (int)p->size;
 	d.IsUsed = false;
 	d.IsLocal = true;

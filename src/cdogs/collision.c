@@ -186,6 +186,13 @@ static bool ItemsCollide(
 	}
 	return 0;
 }
+bool AreasCollide(
+	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2)
+{
+	const Vec2i d = Vec2iNew(abs(pos1.x - pos2.x), abs(pos1.y - pos2.y));
+	const Vec2i r = Vec2iAdd(size1, size2);
+	return d.x < r.x && d.y < r.y;
+}
 
 bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isDogfight)

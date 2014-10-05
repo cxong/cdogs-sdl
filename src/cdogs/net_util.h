@@ -69,7 +69,10 @@ typedef enum
 	SERVER_MSG_CAMPAIGN_DEF,
 	SERVER_MSG_PLAYER_DATA,
 	SERVER_MSG_ADD_PLAYERS,
-	SERVER_MSG_GAME_START
+	SERVER_MSG_GAME_START,
+	SERVER_MSG_ACTOR_ADD,
+	SERVER_MSG_ACTOR_MOVE,
+	SERVER_MSG_GAME_END
 } ServerMsg;
 
 ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);

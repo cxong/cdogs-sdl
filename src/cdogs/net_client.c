@@ -33,6 +33,7 @@
 #include "proto/nanopb/pb_decode.h"
 #include "proto/client.pb.h"
 #include "campaigns.h"
+#include "game_events.h"
 #include "gamedata.h"
 #include "net_server.h"
 #include "player.h"
@@ -213,6 +214,28 @@ static void OnReceive(NetClient *n, ENetEvent event)
 	case SERVER_MSG_GAME_START:
 		debug(D_VERBOSE, "NetClient: received game start");
 		gMission.HasStarted = true;
+		break;
+	case SERVER_MSG_ACTOR_ADD:
+		{
+			debug(D_VERBOSE, "NetClient: received actor add");
+			GameEvent e;
+			e.Type = GAME_EVENT_ACTOR_ADD;
+			NetDecode(event.packet, &e.u.ActorAdd, NetMsgActorAdd_fields);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case SERVER_MSG_ACTOR_MOVE:
+		{
+			debug(D_VERBOSE, "NetClient: received actor move");
+			GameEvent e;
+			e.Type = GAME_EVENT_ACTOR_MOVE;
+			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case SERVER_MSG_GAME_END:
+		debug(D_VERBOSE, "NetClient: received game end");
+		gMission.isDone = true;
 		break;
 	default:
 		CASSERT(false, "unexpected message type");

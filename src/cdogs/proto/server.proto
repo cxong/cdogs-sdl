@@ -31,3 +31,23 @@ message NetMsgAddPlayers {
 	required int32 ClientId = 1;
 	repeated int32 PlayerIds = 2;
 }
+
+message NetMsgVec2i {
+	required int32 x = 1;
+	required int32 y = 2;
+}
+
+message NetMsgActorAdd {
+	required int32 Id = 1;
+	required int32 CharId = 2;
+	required int32 Direction = 3;
+	required int32 Health = 4;
+	required int32 PlayerId = 5 [default=-1];
+	required int32 TileItemFlags = 6;
+	required NetMsgVec2i FullPos = 7;
+}
+
+message NetMsgActorMove {
+	required int32 Id = 1;
+	required NetMsgVec2i Pos = 2;
+}

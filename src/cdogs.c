@@ -54,12 +54,14 @@
 
 #include <SDL.h>
 
+#include <cdogs/actor_placement.h>
 #include <cdogs/ai.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
+#include <cdogs/game_events.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/hiscores.h>
@@ -86,71 +88,13 @@
 #include "briefing_screens.h"
 #include "credits.h"
 #include "game.h"
+#include "handle_game_events.h"
 #include "mainmenu.h"
 #include "password.h"
 #include "player_select_menus.h"
 #include "prep.h"
 #include "XGetopt.h"
 
-
-static void PlaceActor(TActor * actor)
-{
-	Vec2i pos;
-	do
-	{
-		pos.x = ((rand() % (gMap.Size.x * TILE_WIDTH)) << 8);
-		pos.y = ((rand() % (gMap.Size.y * TILE_HEIGHT)) << 8);
-	}
-	while (!MapIsFullPosOKforPlayer(&gMap, pos, false) ||
-		!ActorIsPosClear(actor, pos));
-	TryMoveActor(actor, pos);
-}
-static void PlaceActorNear(TActor *actor, Vec2i nearPos, bool allowAllTiles)
-{
-	// Try a concentric rhombus pattern, clockwise from right
-	// That is, start by checking right, below, left, above,
-	// then continue with radius 2 right, below-right, below, below-left...
-	// (start from S:)
-	//      4
-	//  9 3 S 1 5
-	//    8 2 6
-	//      7
-#define TRY_LOCATION()\
-	if (MapIsFullPosOKforPlayer(\
-		&gMap, Vec2iAdd(nearPos, Vec2iNew(dx, dy)), allowAllTiles) && \
-		ActorIsPosClear(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy))))\
-	{\
-		TryMoveActor(actor, Vec2iAdd(nearPos, Vec2iNew(dx, dy)));\
-		return;\
-	}
-	int dx = 0;
-	int dy = 0;
-	TRY_LOCATION();
-	int inc = 1 << 8;
-	for (int radius = 12 << 8;; radius += 12 << 8)
-	{
-		// Going from right to below
-		for (dx = radius, dy = 0; dy < radius; dx -= inc, dy += inc)
-		{
-			TRY_LOCATION();
-		}
-		// below to left
-		for (dx = 0, dy = radius; dy > 0; dx -= inc, dy -= inc)
-		{
-			TRY_LOCATION();
-		}
-		// left to above
-		for (dx = -radius, dy = 0; dx < 0; dx += inc, dy -= inc)
-		{
-			TRY_LOCATION();
-		}
-		// above to right
-		for (dx = 0, dy = -radius; dy < 0; dx += inc, dy += inc)
-		{
-			TRY_LOCATION();
-		}
-	}
-}
 
 static void StartPlayers(const int maxHealth, const int mission)
 {
@@ -168,43 +112,16 @@ static void StartPlayers(const int maxHealth, const int mission)
 
 static void AddAndPlacePlayers(void)
 {
-	TActor *firstPlayer = NULL;
+	Vec2i firstPos = Vec2iZero();
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsUsed)
 		{
 			continue;
 		}
 
-		p->Id = ActorAdd(&p->Char, p->playerIndex);
-		TActor *player = CArrayGet(&gActors, p->Id);
-		player->health = p->Char.maxHealth;
-		
-		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
-		{
-			// In a dogfight, always place players apart
-			PlaceActor(player);
-		}
-		else if (gMission.missionData->Type == MAPTYPE_STATIC &&
-			!Vec2iIsZero(gMission.missionData->u.Static.Start))
-		{
-			// place players near the start point
-			Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
-				gMission.missionData->u.Static.Start));
-			PlaceActorNear(player, startPoint, true);
-		}
-		else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
-			firstPlayer != NULL)
-		{
-			// If never split screen, try to place players near the first player
-			PlaceActorNear(player, firstPlayer->Pos, true);
-		}
-		else
-		{
-			PlaceActor(player);
-		}
-		firstPlayer = player;
+		firstPos = PlacePlayer(&gMap, p, firstPos);
 	}
 }
 
@@ -267,6 +184,10 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
+		// Initialise before waiting for game start;
+		// server will send us messages
+		GameEventsInit(&gGameEvents);
+
 		if (gCampaign.IsClient)
 		{
 			if (!ScreenWaitForGameStart())
@@ -276,15 +197,21 @@ int Game(GraphicsDevice *graphics, CampaignOptions *co)
 			}
 		}
 
-		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
-		// Note: place players first, as bad guys are placed away from players
-		const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-		StartPlayers(maxHealth, co->MissionIndex);
-		AddAndPlacePlayers();
-		InitializeBadGuys();
-		CreateEnemies();
+		MapLoad(&gMap, &gMission, co);
+		if (!gCampaign.IsClient)
+		{
+			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
+			// Note: place players first,
+			// as bad guys are placed away from players
+			const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
+			StartPlayers(maxHealth, co->MissionIndex);
+			AddAndPlacePlayers();
+			InitializeBadGuys();
+			CreateEnemies();
+		}
 		PlayGameSong();
 		run = RunGame(&gMission, &gMap);
+		GameEventsTerminate(&gGameEvents);
 
 		const int survivingPlayers = GetNumPlayers(true, false, false);
 		gameOver = survivingPlayers == 0 ||
@@ -394,16 +321,35 @@ void DogFight(CampaignOptions *co)
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
 		PlayerEquip();
-		MapLoad(&gMap, &gMission, co, &co->Setting.characters);
+
+		// Initialise before waiting for game start;
+		// server will send us messages
+		GameEventsInit(&gGameEvents);
+
+		if (gCampaign.IsClient)
+		{
+			if (!ScreenWaitForGameStart())
+			{
+				run = false;
+				break;
+			}
+		}
+
+		MapLoad(&gMap, &gMission, co);
 		srand((unsigned int)time(NULL));
-		StartPlayers(500, 0);
-		AddAndPlacePlayers();
+		if (!gCampaign.IsClient)
+		{
+			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
+			StartPlayers(500, 0);
+			AddAndPlacePlayers();
+		}
 		PlayGameSong();
 
 		// Don't quit if all players died, that's normal for dogfights
 		run =
 			RunGame(&gMission, &gMap) ||
 			GetNumPlayers(true, false, false) == 0;
+		GameEventsTerminate(&gGameEvents);
 
 		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{

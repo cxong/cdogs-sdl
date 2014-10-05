@@ -685,7 +685,7 @@ void UpdateMissionObjective(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-int CanCompleteMission(struct MissionOptions *options)
+bool CanCompleteMission(const struct MissionOptions *options)
 {
 	int i;
 
@@ -714,7 +714,7 @@ int CanCompleteMission(struct MissionOptions *options)
 	return 1;
 }
 
-int IsMissionComplete(struct MissionOptions *options)
+bool IsMissionComplete(const struct MissionOptions *options)
 {
 	int rescuesRequired = 0;
 
@@ -768,8 +768,7 @@ int IsMissionComplete(struct MissionOptions *options)
 			{
 				continue;
 			}
-			if (ActorGetCharacter(a) == CharacterStoreGetPrisoner(
-				&gCampaign.Setting.characters, 0) &&
+			if (CharacterIsPrisoner(&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
 				MapIsTileInExit(&gMap, &a->tileItem))
 			{
 				prisonersRescued++;

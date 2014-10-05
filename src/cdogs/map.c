@@ -226,7 +226,7 @@ static Vec2i GuessPixelCoords(Map *map)
 		rand() % (map->Size.y * TILE_HEIGHT));
 }
 
-unsigned short IMapGet(Map *map, Vec2i pos)
+unsigned short IMapGet(const Map *map, const Vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
 	{
@@ -251,7 +251,7 @@ static void PicLoadOffset(Pic *picAlt, int idx)
 	picAlt->offset = Vec2iNew(cGeneralPics[idx].dx, cGeneralPics[idx].dy);
 }
 
-static void MapSetupTilesAndWalls(Map *map, Mission *m)
+static void MapSetupTilesAndWalls(Map *map, const Mission *m)
 {
 	Vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -423,8 +423,9 @@ static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
 	return count;
 }
 
-int MapTryPlaceOneObject(
-	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode)
+bool MapTryPlaceOneObject(
+	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
+	const bool isStrictMode)
 {
 	int f = mo->flags;
 	int oFlags = 0;
@@ -524,7 +525,7 @@ int MapPosIsHighAccess(Map *map, int x, int y)
 }
 
 void MapPlaceCollectible(
-	struct MissionOptions *mo, int objective, Vec2i realPos)
+	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
 {
 	struct Objective *o = CArrayGet(&mo->Objectives, objective);
 	Vec2i fullPos = Vec2iReal2Full(realPos);
@@ -536,10 +537,11 @@ void MapPlaceCollectible(
 		TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
 }
 static int MapTryPlaceCollectible(
-	Map *map, Mission *mission, struct MissionOptions *mo, int objective)
+	Map *map, const Mission *mission, const struct MissionOptions *mo,
+	const int objective)
 {
-	MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
-	int hasLockedRooms =
+	const MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
+	const bool hasLockedRooms =
 		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
 	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
@@ -583,11 +585,12 @@ Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
 	return Vec2iZero();
 }
 
-static int MapTryPlaceBlowup(
-	Map *map, Mission *mission, struct MissionOptions *mo, int objective)
+static bool MapTryPlaceBlowup(
+	Map *map, const Mission *mission, const struct MissionOptions *mo,
+	const int objective)
 {
-	MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
-	int hasLockedRooms =
+	const MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
+	const bool hasLockedRooms =
 		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
 	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
@@ -613,7 +616,9 @@ static int MapTryPlaceBlowup(
 	return 0;
 }
 
-void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex)
+void MapPlaceKey(
+	Map *map, const struct MissionOptions *mo, const Vec2i pos,
+	const int keyIndex)
 {
 	UNUSED(map);
 	PickupType card = keyIndex + OBJ_KEYCARD_YELLOW;
@@ -1059,19 +1064,15 @@ void MapTerminate(Map *map)
 	CArrayTerminate(&map->iMap);
 }
 void MapLoad(
-	Map *map, struct MissionOptions *mo, const CampaignOptions* co,
-	CharacterStore *store)
+	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)
 {
-	int i, j;
-	Mission *mission = mo->missionData;
-	int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
-	int room = mission->RoomStyle % ROOMFLOOR_COUNT;
-	Vec2i v;
 
 	PicManagerGenerateOldPics(&gPicManager, &gGraphicsDevice);
 	MapTerminate(map);
 	MapInit(map);
+	const Mission *mission = mo->missionData;
 	map->Size = mission->Size;
+	Vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -1090,10 +1091,12 @@ void MapLoad(
 	}
 	else
 	{
-		MapStaticLoad(map, mo, store);
+		MapStaticLoad(map, mo);
 	}
 
 	MapSetupTilesAndWalls(map, mission);
+	const int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
+	const int room = mission->RoomStyle % ROOMFLOOR_COUNT;
 	MapSetupDoors(map, floor, room);
 
 	// Set exit now since we have set up all the tiles
@@ -1102,12 +1105,39 @@ void MapLoad(
 		MapGenerateRandomExitArea(map);
 	}
 
-	for (i = 0; i < (int)mo->MapObjects.size; i++)
+	// Count total number of reachable tiles, for explored %
+	map->NumExplorableTiles = 0;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
-		int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
-		for (j = 0; j < (itemDensity * map->Size.x * map->Size.y) / 1000; j++)
+		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
-			MapObject *mapObj = CArrayGet(&mo->MapObjects, i);
+			if (!(MapGetTile(map, v)->flags & MAPTILE_NO_WALK))
+			{
+				map->NumExplorableTiles++;
+			}
+		}
+	}
+}
+
+void MapLoadDynamic(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store)
+{
+	const Mission *mission = mo->missionData;
+
+	if (mission->Type == MAPTYPE_STATIC)
+	{
+		MapStaticLoadDynamic(map, mo, store);
+	}
+
+	// Add map objects
+	for (int i = 0; i < (int)mo->MapObjects.size; i++)
+	{
+		const int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
+		for (int j = 0;
+			j < (itemDensity * map->Size.x * map->Size.y) / 1000;
+			j++)
+		{
+			const MapObject *mapObj = CArrayGet(&mo->MapObjects, i);
 			MapTryPlaceOneObject(map, Vec2iNew(
 				rand() % map->Size.x, rand() % map->Size.y), mapObj, 0, 1);
 		}
@@ -1116,7 +1146,7 @@ void MapLoad(
 	// Try to add the objectives
 	// If we are unable to place them all, make sure to reduce the totals
 	// in case we create missions that are impossible to complete
-	for (i = 0, j = 0; i < (int)mission->Objectives.size; i++)
+	for (int i = 0, j = 0; i < (int)mission->Objectives.size; i++)
 	{
 		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
 		if (mobj->Type != OBJECTIVE_COLLECT && mobj->Type != OBJECTIVE_DESTROY)
@@ -1167,22 +1197,10 @@ void MapLoad(
 	{
 		MapPlaceCard(map, 0, 0);
 	}
-
-	// Count total number of reachable tiles, for explored %
-	map->NumExplorableTiles = 0;
-	for (v.y = 0; v.y < map->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < map->Size.x; v.x++)
-		{
-			if (!(MapGetTile(map, v)->flags & MAPTILE_NO_WALK))
-			{
-				map->NumExplorableTiles++;
-			}
-		}
-	}
 }
 
-bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles)
+bool MapIsFullPosOKforPlayer(
+	const Map *map, const Vec2i pos, const bool allowAllTiles)
 {
 	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(pos));
 	unsigned short tile = IMapGet(map, tilePos);
@@ -1195,6 +1213,51 @@ bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles)
 		return tile == MAP_SQUARE || tile == MAP_ROOM;
 	}
 	return false;
+}
+
+// Check if the target position is completely clear
+// This includes collisions that make the target illegal, such as walls
+// But it also includes item collisions, whether or not the collisions
+// are legal, e.g. item pickups, friendly collisions
+bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
+{
+	const Vec2i realPos = Vec2iFull2Real(fullPos);
+
+	// Wall collision
+	if (IsCollisionWithWall(realPos, size))
+	{
+		return false;
+	}
+
+	// Item collision
+	const Vec2i tv = Vec2iToTile(realPos);
+	Vec2i dv;
+	// Check collisions with all other items on this tile, in all 8 directions
+	for (dv.y = -1; dv.y <= 1; dv.y++)
+	{
+		for (dv.x = -1; dv.x <= 1; dv.x++)
+		{
+			const Vec2i dtv = Vec2iAdd(tv, dv);
+			if (!MapIsTileIn(map, dtv))
+			{
+				continue;
+			}
+			const CArray *tileThings = &MapGetTile(map, dtv)->things;
+			for (int i = 0; i < (int)tileThings->size; i++)
+			{
+				const TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(tileThings, i));
+				if (AreasCollide(
+					realPos, Vec2iNew(ti->x, ti->y),
+					size, Vec2iNew(ti->w, ti->h)))
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
 }
 
 void MapMarkAsVisited(Map *map, Vec2i pos)

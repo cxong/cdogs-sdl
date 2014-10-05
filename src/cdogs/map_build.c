@@ -70,7 +70,7 @@ void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
 }
 
 static int MapGetWallPic(Map *m, Vec2i pos);
-void MapSetupTile(Map *map, Vec2i pos, Mission *m)
+void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 {
 	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
 	int wall = m->WallStyle % WALL_STYLE_COUNT;

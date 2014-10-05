@@ -28,11 +28,11 @@
 #ifndef __HANDLE_GAME_EVENTS
 #define __HANDLE_GAME_EVENTS
 
-#include <cdogs/c_array.h>
-#include <cdogs/events.h>
-#include <cdogs/health_pickup.h>
-#include <cdogs/hud.h>
-#include <cdogs/screen_shake.h>
+#include "c_array.h"
+#include "events.h"
+#include "health_pickup.h"
+#include "hud.h"
+#include "screen_shake.h"
 
 void HandleGameEvents(
 	CArray *store,

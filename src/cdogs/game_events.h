@@ -32,6 +32,7 @@
 #include "actors.h"
 #include "c_array.h"
 #include "gamedata.h"
+#include "net_util.h"
 #include "objs.h"
 
 // Game events represent anything that is created within the game but is
@@ -49,6 +50,8 @@ typedef enum
 	// but for networked games it's used to set game ticks 0
 	GAME_EVENT_GAME_START,
 
+	GAME_EVENT_ACTOR_ADD,
+	GAME_EVENT_ACTOR_MOVE,
 	GAME_EVENT_ADD_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
@@ -92,6 +95,8 @@ typedef struct
 			char Message[256];
 			int Ticks;
 		} SetMessage;
+		NetMsgActorAdd ActorAdd;
+		NetMsgActorMove ActorMove;
 		Vec2i AddPos;
 		int PickupPlayer;
 		int MobileObjectRemoveId;

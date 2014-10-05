@@ -80,6 +80,9 @@ void CollideAllItems(
 	const int mask, const CollisionTeam team, const bool isDogfight,
 	CollideItemFunc func, void *data);
 
+bool AreasCollide(
+	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);
+
 // Resolve wall bounces
 Vec2i GetWallBounceFullPos(
 	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull);

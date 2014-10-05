@@ -394,7 +394,6 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	DrawBufferInit(&data.buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&data.hud, &gConfig.Interface, &gGraphicsDevice, m);
 	HealthPickupsInit(&data.hp, map);
-	GameEventsInit(&gGameEvents);
 	data.shake = ScreenShakeZero();
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
@@ -426,7 +425,6 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
 
-	GameEventsTerminate(&gGameEvents);
 	HUDTerminate(&data.hud);
 	DrawBufferTerminate(&data.buffer);
 
@@ -498,6 +496,7 @@ static void RunGameInput(void *data)
 		}
 	}
 }
+static void CheckMissionCompletion(const struct MissionOptions *mo);
 static GameLoopResult RunGameUpdate(void *data)
 {
 	RunGameData *rData = data;
@@ -540,7 +539,10 @@ static GameLoopResult RunGameUpdate(void *data)
 		CommandActor(player, rData->cmds[idx], ticksPerFrame);
 	}
 
-	CommandBadGuys(ticksPerFrame);
+	if (!gCampaign.IsClient)
+	{
+		CommandBadGuys(ticksPerFrame);
+	}
 
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
@@ -597,26 +599,9 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	HealthPickupsUpdate(&rData->hp, ticksPerFrame);
 
-	const bool isMissionComplete =
-		GetNumPlayers(true, false, false) > 0 && IsMissionComplete(rData->m);
-	if (rData->m->state == MISSION_STATE_PLAY && isMissionComplete)
+	if (!gCampaign.IsClient)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_PICKUP;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-	if (rData->m->state == MISSION_STATE_PICKUP && !isMissionComplete)
-	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_INCOMPLETE;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-	if (rData->m->state == MISSION_STATE_PICKUP &&
-		rData->m->pickupTime + PICKUP_LIMIT <= rData->m->time)
-	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_END;
-		GameEventsEnqueue(&gGameEvents, e);
+		CheckMissionCompletion(rData->m);
 	}
 
 	HandleGameEvents(
@@ -627,6 +612,36 @@ static GameLoopResult RunGameUpdate(void *data)
 	if (HasObjectives(gCampaign.Entry.Mode))
 	{
 		MissionUpdateObjectives(rData->m, rData->map);
+	}
+
+	rData->shake = ScreenShakeUpdate(rData->shake, ticksPerFrame);
+
+	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
+
+	return UPDATE_RESULT_DRAW;
+}
+static void CheckMissionCompletion(const struct MissionOptions *mo)
+{
+	const bool isMissionComplete =
+		GetNumPlayers(true, false, false) > 0 && IsMissionComplete(mo);
+	if (mo->state == MISSION_STATE_PLAY && isMissionComplete)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_PICKUP;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	if (mo->state == MISSION_STATE_PICKUP && !isMissionComplete)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_INCOMPLETE;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	if (mo->state == MISSION_STATE_PICKUP &&
+		mo->pickupTime + PICKUP_LIMIT <= mo->time)
+	{
+		GameEvent e;
+		e.Type = GAME_EVENT_MISSION_END;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 
 	// Check that all players have been destroyed
@@ -648,12 +663,6 @@ static GameLoopResult RunGameUpdate(void *data)
 		e.Type = GAME_EVENT_MISSION_END;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-
-	rData->shake = ScreenShakeUpdate(rData->shake, ticksPerFrame);
-
-	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
-
-	return UPDATE_RESULT_DRAW;
 }
 static void RunGameDraw(void *data)
 {

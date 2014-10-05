@@ -56,13 +56,13 @@
 
 static void MapSetupPerimeter(Map *map);
 static int MapTryBuildSquare(Map *map);
-static int MapTryBuildRoom(
-	Map *map, Mission *m, int pad,
-	int doorMin, int doorMax, int hasKeys);
-static int MapTryBuildPillar(Map *map, Mission *m, int pad);
+static bool MapTryBuildRoom(
+	Map *map, const Mission *m, const int pad,
+	const int doorMin, const int doorMax, const bool hasKeys);
+static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad);
 static int MapTryBuildWall(
 	Map *map, unsigned short tileType, int pad, int wallLength);
-void MapClassicLoad(Map *map, Mission *m, const CampaignOptions* co)
+void MapClassicLoad(Map *map, const Mission *m, const CampaignOptions* co)
 {
 	// The classic random map generator randomly attempts to place
 	// a configured number of features on the map, in order:
@@ -172,9 +172,9 @@ static int MapTryBuildSquare(Map *map)
 }
 static void MapFindAvailableDoors(
 	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
-static int MapTryBuildRoom(
-	Map *map, Mission *m, int pad,
-	int doorMin, int doorMax, int hasKeys)
+static bool MapTryBuildRoom(
+	Map *map, const Mission *m, const int pad,
+	const int doorMin, const int doorMax, const bool hasKeys)
 {
 	// Work out dimensions of room
 	// make sure room is large enough to accommodate doors
@@ -317,7 +317,7 @@ static int MapTryBuildRoom(
 	}
 	return 0;
 }
-static int MapTryBuildPillar(Map *map, Mission *m, int pad)
+static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad)
 {
 	int pillarMin = m->u.Classic.Pillars.Min;
 	int pillarMax = m->u.Classic.Pillars.Max;

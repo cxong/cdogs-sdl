@@ -52,6 +52,7 @@
 #include "ai_context.h"
 #include "grafx.h"
 #include "map.h"
+#include "net_util.h"
 #include "player.h"
 #include "weapon.h"
 
@@ -163,11 +164,8 @@ extern TranslationTable tableBlack;
 extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
-void ActorInit(TActor *actor);
-
 void SetStateForActor(TActor * actor, int state);
 void UpdateActorState(TActor * actor, int ticks);
-bool ActorIsPosClear(const TActor *actor, const Vec2i fullPos);
 bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
@@ -179,7 +177,8 @@ void InjureActor(TActor * actor, int injury);
 
 void ActorsInit(void);
 void ActorsTerminate(void);
-int ActorAdd(Character *c, const int playerIndex);	// returns id
+int ActorsGetFreeIndex(void);
+TActor *ActorAdd(NetMsgActorAdd aa);
 void ActorDestroy(int id);
 
 const Character *ActorGetCharacter(const TActor *a);

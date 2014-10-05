@@ -70,7 +70,7 @@ void MapMakeWall(Map *map, Vec2i pos);
 void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
 
 // Set tile properties for a map tile, such as picture to use
-void MapSetupTile(Map *map, Vec2i pos, Mission *m);
+void MapSetupTile(Map *map, const Vec2i pos, const Mission *m);
 
 unsigned short GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

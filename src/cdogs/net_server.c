@@ -33,7 +33,9 @@
 #include "proto/nanopb/pb_encode.h"
 #include "proto/client.pb.h"
 
+#include "actor_placement.h"
 #include "campaign_entry.h"
+#include "game_events.h"
 #include "gamedata.h"
 #include "player.h"
 #include "sys_config.h"
@@ -164,11 +166,14 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	debug(D_VERBOSE, "NetServer: client connection complete");
 }
+static void SendGameStartMessages(
+	NetServer *n, const int peerId, const PlayerData *pData);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	uint32_t msgType = *(uint32_t *)event.packet->data;
+	const int peerId = ((NetPeerData *)event.peer->data)->Id;
 	debug(D_NORMAL, "NetServer: Received message from client %d type %u\n",
-		((NetPeerData *)event.peer->data)->Id, msgType);
+		peerId, msgType);
 	switch (msgType)
 	{
 	case CLIENT_MSG_NEW_PLAYERS:
@@ -201,9 +206,14 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				"unexpected player index");
 			NetMsgPlayerDataUpdate(&pd);
 			// Send it on to all clients
-			NetServerBroadcastMsg(
-				n, SERVER_MSG_PLAYER_DATA,
-				CArrayGet(&gPlayerDatas, pd.PlayerIndex));
+			const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
+			NetServerBroadcastMsg(n, SERVER_MSG_PLAYER_DATA, pData);
+
+			// Send game start messages if we've started already
+			if (gMission.HasStarted)
+			{
+				SendGameStartMessages(n, peerId, pData);
+			}
 		}
 		break;
 	default:
@@ -211,6 +221,39 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		break;
 	}
 	enet_packet_destroy(event.packet);
+}
+static void SendGameStartMessages(
+	NetServer *n, const int peerId, const PlayerData *pData)
+{
+	// Add the player's actor
+	PlacePlayer(&gMap, pData, Vec2iZero());
+
+	// Send all players
+	for (int i = 0; i < (int)gActors.size; i++)
+	{
+		const TActor *a = CArrayGet(&gActors, i);
+		if (!a->isInUse)
+		{
+			continue;
+		}
+		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		aa.Id = a->tileItem.id;
+		if (a->playerIndex < 0)
+		{
+			aa.CharId =
+				a->Character -
+				(Character *)gCampaign.Setting.characters.OtherChars.data;
+		}
+		aa.Health = a->health;
+		aa.Direction = (int32_t)a->direction;
+		aa.PlayerId = a->playerIndex;
+		aa.TileItemFlags = a->tileItem.flags;
+		aa.FullPos.x = a->Pos.x;
+		aa.FullPos.y = a->Pos.y;
+		NetServerSendMsg(&gNetServer, peerId, SERVER_MSG_ACTOR_ADD, &aa);
+	}
+
+	NetServerSendMsg(n, peerId, SERVER_MSG_GAME_START, NULL);
 }
 
 static ENetPacket *MakePacket(ServerMsg msg, const void *data);
@@ -278,6 +321,12 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 	case SERVER_MSG_ADD_PLAYERS:
 		return NetEncode((int)msg, data, NetMsgAddPlayers_fields);
 	case SERVER_MSG_GAME_START:
+		return NetEncode((int)msg, NULL, 0);
+	case SERVER_MSG_ACTOR_ADD:
+		return NetEncode((int)msg, data, NetMsgActorAdd_fields);
+	case SERVER_MSG_ACTOR_MOVE:
+		return NetEncode((int)msg, data, NetMsgActorMove_fields);
+	case SERVER_MSG_GAME_END:
 		return NetEncode((int)msg, NULL, 0);
 	default:
 		CASSERT(false, "Unknown message to make into packet");

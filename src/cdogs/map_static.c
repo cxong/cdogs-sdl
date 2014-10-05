@@ -29,13 +29,19 @@
 
 #include "actors.h"
 #include "campaigns.h"
+#include "events.h"
+#include "game_events.h"
 #include "gamedata.h"
+#include "handle_game_events.h"
 #include "map_build.h"
+#include "net_util.h"
 
 
-void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
+void MapStaticLoad(Map *map, const struct MissionOptions *mo)
 {
-	Mission *m = mo->missionData;
+	const Mission *m = mo->missionData;
+
+	// Tiles
 	Vec2i v;
 	for (v.y = 0; v.y < m->Size.y; v.y++)
 	{
@@ -51,41 +57,71 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 			IMapSet(map, v, tile);
 		}
 	}
+	
+	// Exit area
+	if (!Vec2iIsZero(m->u.Static.Exit.Start) &&
+		!Vec2iIsZero(m->u.Static.Exit.End))
+	{
+		map->ExitStart = m->u.Static.Exit.Start;
+		map->ExitEnd = m->u.Static.Exit.End;
+	}
+}
 
+void MapStaticLoadDynamic(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store)
+{
+	const Mission *m = mo->missionData;
+
+	// Map objects
 	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
 	{
-		MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+		const MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&mop->Positions, j);
+			const Vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapTryPlaceOneObject(map, *pos, MapObjectGet(mop->Index), 0, 0);
 		}
 	}
-	
+
+	// Wrecks
 	for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
 	{
-		MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
+		const MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&mop->Positions, j);
+			const Vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapPlaceWreck(map, *pos, MapObjectGet(mop->Index));
 		}
 	}
 
+	// Characters
 	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
 	{
-		CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+		const CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&cp->Positions, j);
-			Character *c = CArrayGet(&store->OtherChars, cp->Index);
-			TActor *a = CArrayGet(&gActors, ActorAdd(c, -1));
-			Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
-			TryMoveActor(a, fullPos);
-			ActorInit(a);
+			NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+			aa.Id = ActorsGetFreeIndex();
+			aa.CharId = cp->Index;
+			aa.Direction = rand() % DIRECTION_COUNT;
+			const Character *c =
+				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+			aa.Health = CharacterGetStartingHealth(c, true);
+			const Vec2i *pos = CArrayGet(&cp->Positions, j);
+			const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
+			aa.FullPos.x = fullPos.x;
+			aa.FullPos.y = fullPos.y;
+			GameEvent e;
+			e.Type = GAME_EVENT_ACTOR_ADD;
+			e.u.ActorAdd = aa;
+			GameEventsEnqueue(&gGameEvents, e);
+
+			// Process the events that actually place the players
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
-	
+
+	// Objectives
 	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
 	{
 		const ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
@@ -94,60 +130,76 @@ void MapStaticLoad(Map *map, struct MissionOptions *mo, CharacterStore *store)
 		struct Objective *obj = CArrayGet(&mo->Objectives, op->Index);
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&op->Positions, j);
-			int *idx = CArrayGet(&op->Indices, j);
-			Vec2i realPos = Vec2iCenterOfTile(*pos);
-			Vec2i fullPos = Vec2iReal2Full(realPos);
+			const Vec2i *pos = CArrayGet(&op->Positions, j);
+			const int *idx = CArrayGet(&op->Indices, j);
+			const Vec2i realPos = Vec2iCenterOfTile(*pos);
+			const Vec2i fullPos = Vec2iReal2Full(realPos);
+			NetMsgVec2i fullPosNet;
+			fullPosNet.x = fullPos.x;
+			fullPosNet.y = fullPos.y;
 			switch (mobj->Type)
 			{
-				case OBJECTIVE_KILL:
+			case OBJECTIVE_KILL:
 				{
-					TActor *a = CArrayGet(
-						&gActors, ActorAdd(store->specials[*idx], -1));
-					TryMoveActor(a, fullPos);
-					ActorInit(a);
+					NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+					aa.Id = ActorsGetFreeIndex();
+					aa.CharId = CharacterStoreGetSpecialId(store, *idx);
+					aa.Direction = rand() % DIRECTION_COUNT;
+					const Character *c =
+						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+					aa.Health = CharacterGetStartingHealth(c, true);
+					aa.FullPos = fullPosNet;
+					GameEvent e;
+					e.Type = GAME_EVENT_ACTOR_ADD;
+					e.u.ActorAdd = aa;
+					GameEventsEnqueue(&gGameEvents, e);
 				}
-					break;
-				case OBJECTIVE_COLLECT:
-					MapPlaceCollectible(mo, op->Index, realPos);
-					break;
-				case OBJECTIVE_DESTROY:
-					MapTryPlaceOneObject(
-						map,
-						*pos,
-						obj->blowupObject,
-						ObjectiveToTileItem(op->Index), 1);
-					break;
-				case OBJECTIVE_RESCUE:
+				break;
+			case OBJECTIVE_COLLECT:
+				MapPlaceCollectible(mo, op->Index, realPos);
+				break;
+			case OBJECTIVE_DESTROY:
+				MapTryPlaceOneObject(
+					map,
+					*pos,
+					obj->blowupObject,
+					ObjectiveToTileItem(op->Index), 1);
+				break;
+			case OBJECTIVE_RESCUE:
 				{
-					TActor *a = CArrayGet(
-						&gActors, ActorAdd(store->prisoners[*idx], -1));
-					TryMoveActor(a, fullPos);
-					ActorInit(a);
+					NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+					aa.Id = ActorsGetFreeIndex();
+					aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
+					aa.Direction = rand() % DIRECTION_COUNT;
+					const Character *c =
+						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+					aa.Health = CharacterGetStartingHealth(c, true);
+					aa.FullPos = fullPosNet;
+					GameEvent e;
+					e.Type = GAME_EVENT_ACTOR_ADD;
+					e.u.ActorAdd = aa;
+					GameEventsEnqueue(&gGameEvents, e);
 				}
-					break;
-				default:
-					// do nothing
-					break;
+				break;
+			default:
+				// do nothing
+				break;
 			}
 			obj->placed++;
+
+			// Process the events that actually place the objectives
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
-	
+
+	// Keys
 	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
 	{
-		KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+		const KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
 		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&kp->Positions, j);
+			const Vec2i *pos = CArrayGet(&kp->Positions, j);
 			MapPlaceKey(map, mo, *pos, kp->Index);
 		}
-	}
-	
-	if (!Vec2iIsZero(m->u.Static.Exit.Start) &&
-		!Vec2iIsZero(m->u.Static.Exit.End))
-	{
-		map->ExitStart = m->u.Static.Exit.Start;
-		map->ExitEnd = m->u.Static.Exit.End;
 	}
 }

@@ -27,12 +27,12 @@
 */
 #include "handle_game_events.h"
 
-#include <cdogs/damage.h>
-#include <cdogs/game_events.h>
-#include <cdogs/net_server.h>
-#include <cdogs/objs.h>
-#include <cdogs/particle.h>
-#include <cdogs/triggers.h>
+#include "damage.h"
+#include "game_events.h"
+#include "net_server.h"
+#include "objs.h"
+#include "particle.h"
+#include "triggers.h"
 
 
 static void HandleGameEvent(
@@ -55,6 +55,7 @@ void HandleGameEvents(
 	}
 	GameEventsClear(store);
 }
+static bool IsServerOnlyEvent(const GameEventType t);
 static void HandleGameEvent(
 	GameEvent *e,
 	HUD *hud,
@@ -90,8 +91,28 @@ static void HandleGameEvent(
 				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
 			break;
 		case GAME_EVENT_GAME_START:
+			gMission.HasStarted = true;
 			NetServerBroadcastMsg(
 				&gNetServer, SERVER_MSG_GAME_START, NULL);
+			break;
+		case GAME_EVENT_ACTOR_ADD:
+			ActorAdd(e->u.ActorAdd);
+			break;
+		case GAME_EVENT_ACTOR_MOVE:
+			{
+				TActor *a = CArrayGet(&gActors, e->u.ActorMove.Id);
+				a->Pos.x = e->u.ActorMove.Pos.x;
+				a->Pos.y = e->u.ActorMove.Pos.y;
+				MapTryMoveTileItem(&gMap, &a->tileItem, Vec2iFull2Real(a->Pos));
+				if (MapIsTileInExit(&gMap, &a->tileItem))
+				{
+					a->action = ACTORACTION_EXITING;
+				}
+				else
+				{
+					a->action = ACTORACTION_MOVING;
+				}
+			}
 			break;
 		case GAME_EVENT_ADD_HEALTH_PICKUP:
 			MapPlaceHealth(e->u.AddPos);

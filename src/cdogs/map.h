@@ -122,9 +122,12 @@ void MapRemoveTileItem(Map *map, TTileItem *t);
 void MapInit(Map *map);
 void MapTerminate(Map *map);
 void MapLoad(
-	Map *map, struct MissionOptions *mo, const CampaignOptions* co,
-	CharacterStore *store);
-bool MapIsFullPosOKforPlayer(Map *map, Vec2i pos, bool allowAllTiles);
+	Map *map, const struct MissionOptions *mo, const CampaignOptions* co);
+void MapLoadDynamic(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store);
+bool MapIsFullPosOKforPlayer(
+	const Map *map, const Vec2i pos, const bool allowAllTiles);
+bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size);
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
 void MapShowExitArea(Map *map);
 // Returns the center of the tile that's the middle of the exit area
@@ -140,15 +143,18 @@ Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func);
 bool MapTileIsUnexplored(Map *map, Vec2i tile);
 
 // Map construction functions
-unsigned short IMapGet(Map *map, Vec2i pos);
+unsigned short IMapGet(const Map *map, const Vec2i pos);
 void IMapSet(Map *map, Vec2i pos, unsigned short v);
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size);
-int MapTryPlaceOneObject(
-	Map *map, Vec2i v, MapObject *mo, int extraFlags, int isStrictMode);
+bool MapTryPlaceOneObject(
+	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
+	const bool isStrictMode);
 void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo);
 void MapPlaceCollectible(
-	struct MissionOptions *mo, int objective, Vec2i realPos);
+	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
 void MapPlaceHealth(Vec2i pos);
-void MapPlaceKey(Map *map, struct MissionOptions *mo, Vec2i pos, int keyIndex);
+void MapPlaceKey(
+	Map *map, const struct MissionOptions *mo, const Vec2i pos,
+	const int keyIndex);
 
 #endif

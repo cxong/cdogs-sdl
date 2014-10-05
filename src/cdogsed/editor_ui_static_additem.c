@@ -135,13 +135,17 @@ static void DrawObjective(
 	{
 	case OBJECTIVE_KILL:
 		{
-			Character *c = store->specials[data->Brush.Index2];
+			Character *c = CArrayGet(
+				&store->OtherChars,
+				CharacterStoreGetSpecialId(store, data->Brush.Index2));
 			DisplayCharacter(pos, c, 0, 0);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
 		{
-			Character *c = store->prisoners[data->Brush.Index2];
+			Character *c = CArrayGet(
+				&store->OtherChars,
+				CharacterStoreGetPrisonerId(store, data->Brush.Index2));
 			DisplayCharacter(pos, c, 0, 0);
 		}
 		break;
@@ -434,14 +438,14 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		switch (mobj->Type)
 		{
 		case OBJECTIVE_KILL:
-			secondaryCount = store->specialCount;
+			secondaryCount = (int)store->specialIds.size;
 			break;
 		case OBJECTIVE_COLLECT:
 			break;
 		case OBJECTIVE_DESTROY:
 			break;
 		case OBJECTIVE_RESCUE:
-			secondaryCount = store->prisonerCount;
+			secondaryCount = (int)store->prisonerIds.size;
 			break;
 		default:
 			continue;
@@ -498,7 +502,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		switch (mobj->Type)
 		{
 		case OBJECTIVE_KILL:
-			secondaryCount = store->specialCount;
+			secondaryCount = (int)store->specialIds.size;
 			o->Size.y = TILE_HEIGHT * 2 + 4;
 			break;
 		case OBJECTIVE_COLLECT:
@@ -508,7 +512,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 			o->Size.y = TILE_HEIGHT * 2 + 4;
 			break;
 		case OBJECTIVE_RESCUE:
-			secondaryCount = store->prisonerCount;
+			secondaryCount = (int)store->prisonerIds.size;
 			o->Size.y = TILE_HEIGHT * 2 + 4;
 			break;
 		default:

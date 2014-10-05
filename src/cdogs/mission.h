@@ -242,8 +242,8 @@ void MissionSetMessageIfComplete(struct MissionOptions *options);
 void UpdateMissionObjective(
 	struct MissionOptions *options, int flags, ObjectiveType type,
 	int player, Vec2i pos);
-int CanCompleteMission(struct MissionOptions *options);
-int IsMissionComplete(struct MissionOptions *options);
+bool CanCompleteMission(const struct MissionOptions *options);
+bool IsMissionComplete(const struct MissionOptions *options);
 
 // Count the number of keys in the flags
 int KeycardCount(int flags);

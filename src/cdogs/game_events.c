@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "net_server.h"
 #include "utils.h"
 
 CArray gGameEvents;
@@ -44,12 +45,27 @@ void GameEventsTerminate(CArray *store)
 }
 void GameEventsEnqueue(CArray *store, GameEvent e)
 {
-	// Hack: sometimes trigger events are added by placing enemies
-	// before the game events has been initialised
-	// Just ignore for now
 	if (store->elemSize == 0)
 	{
 		return;
+	}
+	// If we're the server, broadcast any events that clients need
+	switch (e.Type)
+	{
+	case GAME_EVENT_ACTOR_ADD:
+		NetServerBroadcastMsg(
+			&gNetServer, SERVER_MSG_ACTOR_ADD, &e.u.ActorAdd);
+		break;
+	case GAME_EVENT_ACTOR_MOVE:
+		NetServerBroadcastMsg(
+			&gNetServer, SERVER_MSG_ACTOR_MOVE, &e.u.ActorMove);
+		break;
+	case GAME_EVENT_MISSION_END:
+		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_GAME_END, NULL);
+		break;
+	default:
+		// do nothing
+		break;
 	}
 	CArrayPushBack(store, &e);
 }

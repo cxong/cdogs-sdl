@@ -92,6 +92,9 @@ void CharacterStoreInit(CharacterStore *store)
 {
 	memset(store, 0, sizeof *store);
 	CArrayInit(&store->OtherChars, sizeof(Character));
+	CArrayInit(&store->prisonerIds, sizeof(int));
+	CArrayInit(&store->baddieIds, sizeof(int));
+	CArrayInit(&store->specialIds, sizeof(int));
 }
 
 void CharacterStoreTerminate(CharacterStore *store)
@@ -102,23 +105,17 @@ void CharacterStoreTerminate(CharacterStore *store)
 		CFREE(c->bot);
 	}
 	CArrayTerminate(&store->OtherChars);
-	CFREE(store->prisoners);
-	CFREE(store->baddies);
-	CFREE(store->specials);
+	CArrayTerminate(&store->prisonerIds);
+	CArrayTerminate(&store->baddieIds);
+	CArrayTerminate(&store->specialIds);
 	memset(store, 0, sizeof *store);
 }
 
 void CharacterStoreResetOthers(CharacterStore *store)
 {
-	CFREE(store->prisoners);
-	store->prisoners = NULL;
-	store->prisonerCount = 0;
-	CFREE(store->baddies);
-	store->baddies = NULL;
-	store->baddieCount = 0;
-	CFREE(store->specials);
-	store->specials = NULL;
-	store->specialCount = 0;
+	CArrayClear(&store->prisonerIds);
+	CArrayClear(&store->baddieIds);
+	CArrayClear(&store->specialIds);
 }
 
 Character *CharacterStoreAddOther(CharacterStore *store)
@@ -140,67 +137,68 @@ void CharacterStoreDeleteOther(CharacterStore *store, int idx)
 
 void CharacterStoreAddPrisoner(CharacterStore *store, int character)
 {
-	store->prisonerCount++;
-	CREALLOC(store->prisoners, store->prisonerCount * sizeof *store->prisoners);
-	store->prisoners[store->prisonerCount - 1] =
-		CArrayGet(&store->OtherChars, character);
+	CArrayPushBack(&store->prisonerIds, &character);
 }
 
 void CharacterStoreAddBaddie(CharacterStore *store, int character)
 {
-	store->baddieCount++;
-	CREALLOC(store->baddies, store->baddieCount * sizeof *store->baddies);
-	store->baddies[store->baddieCount - 1] =
-		CArrayGet(&store->OtherChars, character);
+	CArrayPushBack(&store->baddieIds, &character);
 }
 void CharacterStoreAddSpecial(CharacterStore *store, int character)
 {
-	store->specialCount++;
-	CREALLOC(store->specials, store->specialCount * sizeof *store->specials);
-	store->specials[store->specialCount - 1] =
-		CArrayGet(&store->OtherChars, character);
+	CArrayPushBack(&store->specialIds, &character);
 }
 void CharacterStoreDeleteBaddie(CharacterStore *store, int idx)
 {
-	int i;
-	if (store->baddieCount == 0)
-	{
-		return;
-	}
-	for (i = idx; i < store->baddieCount - 1; i++)
-	{
-		store->baddies[i] = store->baddies[i + 1];
-	}
-	store->baddieCount--;
+	CArrayDelete(&store->baddieIds, idx);
 }
 void CharacterStoreDeleteSpecial(CharacterStore *store, int idx)
 {
-	int i;
-	if (store->specialCount == 0)
-	{
-		return;
-	}
-	for (i = idx; i < store->specialCount - 1; i++)
-	{
-		store->specials[i] = store->specials[i + 1];
-	}
-	store->specialCount--;
+	CArrayDelete(&store->specialIds, idx);
 }
 
-Character *CharacterStoreGetPrisoner(CharacterStore *store, int i)
+int CharacterStoreGetPrisonerId(const CharacterStore *store, const int i)
 {
-	return store->prisoners[i];
+	return *(int *)CArrayGet(&store->prisonerIds, i);
 }
 
-Character *CharacterStoreGetSpecial(CharacterStore *store, int i)
+int CharacterStoreGetSpecialId(const CharacterStore *store, const int i)
 {
-	return store->specials[i];
+	return *(int *)CArrayGet(&store->specialIds, i);
 }
-Character *CharacterStoreGetRandomBaddie(CharacterStore *store)
+int CharacterStoreGetRandomBaddieId(const CharacterStore *store)
 {
-	return store->baddies[rand() % store->baddieCount];
+	return *(int *)CArrayGet(
+		&store->baddieIds, rand() % store->baddieIds.size);
 }
-Character *CharacterStoreGetRandomSpecial(CharacterStore *store)
+int CharacterStoreGetRandomSpecialId(const CharacterStore *store)
 {
-	return store->specials[rand() % store->specialCount];
+	return *(int *)CArrayGet(
+		&store->specialIds, rand() % store->specialIds.size);
+}
+
+bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
+{
+	for (int i = 0; i < (int)store->prisonerIds.size; i++)
+	{
+		const Character *prisoner = CArrayGet(
+			&store->OtherChars, *(int *)CharacterStoreGetPrisonerId(store, i));
+		if (prisoner == c)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+int CharacterGetStartingHealth(const Character *c, const bool isNPC)
+{
+	if (isNPC)
+	{
+		return MAX((c->maxHealth * gConfig.Game.NonPlayerHP) / 100, 1);
+	}
+	else
+	{
+		return c->maxHealth;
+	}
 }

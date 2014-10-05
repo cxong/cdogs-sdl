@@ -2,6 +2,7 @@ add_subdirectory(hqx/src)
 include_directories(hqx/src ${SDL_INCLUDE_DIR})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
+	actor_placement.c
 	actors.c
 	ai.c
 	ai_context.c
@@ -35,6 +36,7 @@ set(CDOGS_SOURCES
 	gamedata.c
 	grafx.c
 	grafx_bg.c
+	handle_game_events.c
 	health_pickup.c
 	hiscores.c
 	hud.c
@@ -75,6 +77,7 @@ set(CDOGS_SOURCES
 	vector.c
 	weapon.c)
 set(CDOGS_HEADERS
+	actor_placement.h
 	actors.h
 	ai.h
 	ai_context.h
@@ -107,6 +110,7 @@ set(CDOGS_HEADERS
 	gamedata.h
 	grafx.h
 	grafx_bg.h
+	handle_game_events.h
 	health_pickup.h
 	hiscores.h
 	hud.h
