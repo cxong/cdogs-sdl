@@ -100,6 +100,10 @@ static void HandleGameEvent(
 		case GAME_EVENT_ACTOR_MOVE:
 			{
 				TActor *a = CArrayGet(&gActors, e->u.ActorMove.Id);
+				if (!a->isInUse)
+				{
+					break;
+				}
 				a->Pos.x = e->u.ActorMove.Pos.x;
 				a->Pos.y = e->u.ActorMove.Pos.y;
 				MapTryMoveTileItem(&gMap, &a->tileItem, Vec2iFull2Real(a->Pos));
@@ -122,8 +126,12 @@ static void HandleGameEvent(
 					CArrayGet(&gPlayerDatas, e->u.PickupPlayer);
 				if (IsPlayerAlive(p))
 				{
-					TActor *player = CArrayGet(&gActors, p->Id);
-					ActorHeal(player, HEALTH_PICKUP_HEAL_AMOUNT);
+					TActor *a = CArrayGet(&gActors, p->Id);
+					if (!a->isInUse)
+					{
+						break;
+					}
+					ActorHeal(a, HEALTH_PICKUP_HEAL_AMOUNT);
 					HealthPickupsRemoveOne(hp);
 					HUDAddHealthUpdate(
 						hud, e->u.PickupPlayer, HEALTH_PICKUP_HEAL_AMOUNT);
@@ -150,6 +158,10 @@ static void HandleGameEvent(
 		case GAME_EVENT_ACTOR_IMPULSE:
 			{
 				TActor *a = CArrayGet(&gActors, e->u.ActorImpulse.Id);
+				if (!a->isInUse)
+				{
+					break;
+				}
 				a->Vel = Vec2iAdd(a->Vel, e->u.ActorImpulse.Vel);
 			}
 			break;

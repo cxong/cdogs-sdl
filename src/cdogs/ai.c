@@ -505,9 +505,6 @@ void CommandBadGuys(int ticks)
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
-
-		// Process the events that actually place the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
 	}
 }
 
