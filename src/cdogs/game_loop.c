@@ -32,6 +32,7 @@
 
 #include "config.h"
 #include "events.h"
+#include "music.h"
 #include "net_client.h"
 #include "net_server.h"
 #include "sounds.h"

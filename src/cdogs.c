@@ -64,6 +64,7 @@
 #include <cdogs/game_events.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
+#include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
 #include <cdogs/input.h>
 #include <cdogs/joystick.h>
@@ -88,7 +89,6 @@
 #include "briefing_screens.h"
 #include "credits.h"
 #include "game.h"
-#include "handle_game_events.h"
 #include "mainmenu.h"
 #include "password.h"
 #include "player_select_menus.h"

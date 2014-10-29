@@ -7,15 +7,9 @@ git submodule init
 git submodule update --init --recursive
 git submodule update --recursive
 
-UNAME_SHORT=`uname -s | cut -c1-5`
-if [ "$UNAME_SHORT" = "MINGW" ] ; then
-	cmake -G"MinGW Makefiles" .
-else
-	cmake .
-fi
-if [ "$UNAME_SHORT" = "MINGW" ] ; then
-	mingw32-make
-else
-	make
-fi
+# For more info: http://github.com/cxong/cdogs-sdl/wiki/Developer-Getting-Started:-GCW-Zero
+mkdir gcw0build
+cd gcw0build
+cmake -DCMAKE_TOOLCHAIN_FILE="/opt/gcw0-toolchain/usr/share/buildroot/toolchainfile.cmake" ..
+make
 

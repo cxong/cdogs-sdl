@@ -31,4 +31,4 @@ gcwzdata="${gcwzdata} ${mydir}/cdogs-sdl.png"
 
 alldata="${gcwzdata} ${cdogsbin} ${cdogsdata}"
 
-mksquashfs ${alldata} cdogs.opk -all-root -noappend -no-exports -no-xattrs
+/opt/gcw0-toolchain/usr/bin/mksquashfs ${alldata} cdogs-sdl.opk -all-root -noappend -no-exports -no-xattrs

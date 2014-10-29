@@ -127,7 +127,10 @@ void SoundInitialize(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
-		perror("Cannot open sound dir");
+		char buf[CDOGS_PATH_MAX + 256];
+		sprintf(buf, "Cannot open sound dir '%s'", path);
+		perror(buf);
+		device->isInitialised = false;
 		goto bail;
 	}
 	for (; dir.has_next; tinydir_next(&dir))

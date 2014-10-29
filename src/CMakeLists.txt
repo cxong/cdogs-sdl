@@ -70,7 +70,7 @@ if(GCW0)
 		POST_BUILD
 		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../build/gcw-zero/make_opk.sh ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..
-		COMMENT "Building cdogs.opk..."
+		COMMENT "Building cdogs-sdl.opk..."
 	)
 endif()
 

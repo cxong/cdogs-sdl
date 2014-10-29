@@ -64,6 +64,7 @@
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
+#include <cdogs/handle_game_events.h>
 #include <cdogs/health_pickup.h>
 #include <cdogs/hud.h>
 #include <cdogs/joystick.h>
@@ -78,8 +79,6 @@
 #include <cdogs/triggers.h>
 
 #include <cdogs/drawtools.h> /* for Draw_Line */
-
-#include "handle_game_events.h"
 
 #define SPLIT_PADDING 40
 
