@@ -609,6 +609,10 @@ static void Bilinear(
 
 static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 {
+	if (brightness == 0)
+	{
+		return;
+	}
 	double f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
 	int m = (int)(0xFF * f);
 	int y;

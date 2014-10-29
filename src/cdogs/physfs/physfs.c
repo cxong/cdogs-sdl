@@ -466,6 +466,7 @@ static int sanitizePlatformIndependentPath(const char *src, char *dst)
     while (*src == '/')  /* skip initial '/' chars... */
         src++;
 
+	char *prev = dst;
     do
     {
         ch = *(src++);
@@ -475,7 +476,9 @@ static int sanitizePlatformIndependentPath(const char *src, char *dst)
 
         if (ch == '/')   /* path separator. */
         {
-            *dst = '\0';
+			*dst = '\0';  /* "." and ".." are illegal pathnames. */
+			if ((strcmp(prev, ".") == 0) || (strcmp(prev, "..") == 0))
+				BAIL_MACRO(ERR_INSECURE_FNAME, 0);
 
             while (*src == '/')   /* chop out doubles... */
                 src++;

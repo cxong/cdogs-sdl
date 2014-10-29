@@ -545,8 +545,9 @@ const char *GetHomeDirectory(void)
 
 void GetDataFilePath(char *buf, const char *path)
 {
-	strcpy(buf, CDOGS_DATA_DIR);
-	strcat(buf, path);
+	char relbuf[CDOGS_PATH_MAX];
+	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
+	realpath(relbuf, buf);
 }
 
 
