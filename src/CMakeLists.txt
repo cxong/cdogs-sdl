@@ -57,13 +57,7 @@ if(APPLE)
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks")
 endif()
-target_link_libraries(cdogs-sdl
-	cdogs json physfs-static
-	${SDL_LIBRARY}
-	${SDLIMAGE_LIBRARY}
-	${SDLMIXER_LIBRARY}
-	${ENet_LIBRARIES}
-	${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl cdogs ${EXTRA_LIBRARIES})
 
 if(GCW0)
 	add_custom_command(TARGET cdogs-sdl
@@ -81,10 +75,4 @@ if(APPLE)
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks")
 endif()
-target_link_libraries(cdogs-sdl-editor
-	cdogsedlib cdogs json physfs-static
-	${SDL_LIBRARY}
-	${SDLIMAGE_LIBRARY}
-	${SDLMIXER_LIBRARY}
-	${ENet_LIBRARIES}
-	${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs ${EXTRA_LIBRARIES})
