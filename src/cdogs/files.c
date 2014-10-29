@@ -547,7 +547,13 @@ void GetDataFilePath(char *buf, const char *path)
 {
 	char relbuf[CDOGS_PATH_MAX];
 	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
-	realpath(relbuf, buf);
+	char *res = realpath(relbuf, buf);
+	if (!res)
+	{
+		fprintf(stderr, "Cannt resolve relative path %s\n", path);
+		// Default to relative path
+		strcpy(buf, relbuf);
+	}
 }
 
 
