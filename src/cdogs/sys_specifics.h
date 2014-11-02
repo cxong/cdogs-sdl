@@ -79,11 +79,6 @@
 
 #ifdef _MSC_VER
 #define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
-#else
-#ifndef _BSD_SOURCE
-// realpath is not in C99 standard
-#define _BSD_SOURCE
-#endif
 #endif
 
 #ifndef __func__
