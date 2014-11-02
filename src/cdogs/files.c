@@ -550,7 +550,7 @@ void GetDataFilePath(char *buf, const char *path)
 	char *res = realpath(relbuf, buf);
 	if (!res)
 	{
-		fprintf(stderr, "Cannt resolve relative path %s\n", path);
+		fprintf(stderr, "Cannot resolve relative path %s\n", path);
 		// Default to relative path
 		strcpy(buf, relbuf);
 	}
