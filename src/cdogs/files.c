@@ -46,8 +46,6 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#define _BSD_SOURCE
-
 #include "files.h"
 
 #include <string.h>
@@ -549,13 +547,7 @@ void GetDataFilePath(char *buf, const char *path)
 {
 	char relbuf[CDOGS_PATH_MAX];
 	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
-	char *res = realpath(relbuf, buf);
-	if (!res)
-	{
-		fprintf(stderr, "Cannot resolve relative path %s\n", path);
-		// Default to relative path
-		strcpy(buf, relbuf);
-	}
+	RealPath(relbuf, buf);
 }
 
 

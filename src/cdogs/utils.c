@@ -46,6 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#define _BSD_SOURCE
 #include "utils.h"
 
 #include <assert.h>
@@ -133,6 +134,29 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 {
 	const char *basename = PathGetBasename(path);
 	PathGetWithoutExtension(buf, basename);
+}
+
+#ifdef _MSC_VER
+#include "sys_config.h"
+#define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
+#endif
+void RealPath(const char *src, char *dest)
+{
+	char *res = realpath(src, dest);
+	if (!res)
+	{
+		fprintf(stderr, "Cannot resolve relative path %s\n", src);
+		// Default to relative path
+		strcpy(dest, src);
+	}
+	// Convert \'s to /'s (for PhysFS's benefit)
+	for (char *c = dest; *c != '\0'; c++)
+	{
+		if (*c == '\\')
+		{
+			*c = '/';
+		}
+	}
 }
 
 double Round(double x)

@@ -152,6 +152,7 @@ void PathGetDirname(char *buf, const char *path);
 const char *PathGetBasename(const char *path);
 void PathGetWithoutExtension(char *buf, const char *path);
 void PathGetBasenameWithoutExtension(char *buf, const char *path);
+void RealPath(const char *src, char *dest);
 
 #define PI 3.14159265
 

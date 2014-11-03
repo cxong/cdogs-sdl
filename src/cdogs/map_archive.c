@@ -340,6 +340,7 @@ bool TrySaveJSONFile(json_t *node, const char *filename);
 int MapArchiveSave(const char *filename, CampaignSetting *c)
 {
 	int res = 1;
+	json_t *root = NULL;
 
 	// Save separate files via physfs
 	if (!PHYSFS_setWriteDir("."))
@@ -349,16 +350,18 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 		res = 0;
 		goto bail;
 	}
-	char buf[CDOGS_PATH_MAX];
+	char relbuf[CDOGS_PATH_MAX];
 	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
 		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
 	{
-		strcpy(buf, filename);
+		strcpy(relbuf, filename);
 	}
 	else
 	{
-		sprintf(buf, "%s.cdogscpn", filename);
+		sprintf(relbuf, "%s.cdogscpn", filename);
 	}
+	char buf[CDOGS_PATH_MAX];
+	RealPath(relbuf, buf);
 	if (!PHYSFS_mkdir(buf))
 	{
 		printf("Failed to make dir. reason: %s.\n", PHYSFS_getLastError());
@@ -368,7 +371,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	setlocale(LC_ALL, "");
 
 	// Campaign
-	json_t *root = json_new_object();
+	root = json_new_object();
 	AddIntPair(root, "Version", VERSION);
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);

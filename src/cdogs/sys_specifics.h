@@ -77,10 +77,6 @@
 #define mkdir(p, a) mkdir(p)
 #endif
 
-#ifdef _MSC_VER
-#define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
-#endif
-
 #ifndef __func__
 #define __func__ __FUNCTION__
 #endif

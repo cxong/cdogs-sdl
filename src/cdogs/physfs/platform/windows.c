@@ -17,6 +17,7 @@
 #endif
 
 #include <windows.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +54,14 @@
             PHYSFS_utf8ToUcs2(str, (PHYSFS_uint16 *) w_assignto, _len); \
     } \
 } \
+
+static bool hasDriveLetter(const char *dirName)
+{
+	return
+		strlen(dirName) >= 2 &&
+		dirName[0] >= 'A' && dirName[0] <= 'Z' &&
+		dirName[1] == ':';
+}
 
 static PHYSFS_uint64 wStrLen(const WCHAR *wstr)
 {
@@ -653,7 +662,7 @@ char *__PHYSFS_platformCvtToDependent(const char *prepend,
 
     BAIL_IF_MACRO(retval == NULL, ERR_OUT_OF_MEMORY, NULL);
 
-    if (prepend)
+	if (prepend && !hasDriveLetter(dirName))
         strcpy(retval, prepend);
     else
         retval[0] = '\0';

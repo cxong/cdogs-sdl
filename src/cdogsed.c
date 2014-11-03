@@ -517,14 +517,16 @@ static void Open(void)
 			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
 			CampaignSettingTerminate(&gCampaign.Setting);
 			CampaignSettingInit(&gCampaign.Setting);
-			if (MapNewLoad(filename, &gCampaign.Setting))
+			char buf[CDOGS_PATH_MAX];
+			RealPath(filename, buf);
+			if (MapNewLoad(buf, &gCampaign.Setting))
 			{
-				printf("Error: cannot load %s\n", lastFile);
+				printf("Error: cannot load %s\n", buf);
 				continue;
 			}
 			fileChanged = 0;
 			Setup(1);
-			strcpy(lastFile, filename);
+			strcpy(lastFile, buf);
 			done = true;
 			sAutosaveIndex = 0;
 			ReloadUI();
@@ -1249,8 +1251,7 @@ int main(int argc, char *argv[])
 		if (!loaded)
 		{
 			debug(D_NORMAL, "Loading map %s\n", argv[i]);
-			memset(lastFile, 0, sizeof(lastFile));
-			strncpy(lastFile, argv[i], sizeof(lastFile) - 1);
+			RealPath(argv[i], lastFile);
 			if (strchr(lastFile, '.') == NULL &&
 				sizeof lastFile - strlen(lastFile) > 3)
 			{
