@@ -246,7 +246,6 @@
 	  "Cost": 15,
 	  "Lock": 70,
 	  "Sound": "rocket_launch",
-	  "Elevation": 25,
 	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
 	},
 	{
