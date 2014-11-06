@@ -10,6 +10,12 @@
       "Name": "muzzle_flash_laser_beam",
       "Sprites": "laser_beam",
       "Range": 5
+    },
+    {
+      "Name": "muzzle_flash_thin",
+      "Sprites": "muzzle_flash_thin",
+      "Mask": "ccccff",
+      "Range": 5
     }
   ]
 }

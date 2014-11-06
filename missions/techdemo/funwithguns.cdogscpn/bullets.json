@@ -282,6 +282,46 @@
         "explosion2",
         "explosion3"
       ]
+    },
+    {
+      "Name": "booby_trap_pod",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "crystal",
+        "TicksPerFrame": 8
+      },
+      "Speed": 400,
+      "Range": 60,
+      "Power": 0,
+      "ShadowSize": [4, 3],
+      "Size": [4, 4],
+      "Spark": "",
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": "bounce"
+      },
+      "WallBounces": true,
+      "HitsObjects": false,
+      "Falling": {
+        "GravityFactor": 1,
+        "Bounces": true
+      },
+      "OutOfRangeGuns": [
+        "booby_trap_deployer"
+      ]
+    },
+    {
+      "Name": "booby_trap",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "health"
+      },
+      "Range": -1,
+      "Persists": true,
+      "ProximityGuns": [
+        "fire_explosion"
+      ]
     }
   ]
 }

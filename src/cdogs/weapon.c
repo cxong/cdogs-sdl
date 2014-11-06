@@ -311,7 +311,7 @@ const GunDescription *StrGunDescription(const char *s)
 			return gd;
 		}
 	}
-	CASSERT(false, "cannot parse gun name");
+	fprintf(stderr, "Cannot parse gun name: %s\n", s);
 	return NULL;
 }
 

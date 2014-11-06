@@ -44,7 +44,19 @@
 	  "Lock": 500,
 	  "Sound": "laser_designator",
 	  "MuzzleFlashParticle": "muzzle_flash_laser_beam"
-	}
+	},
+	{
+      "Name": "Booby Trap",
+      "Bullet": "booby_trap_pod",
+      "Cost": 6,
+      "Lock": 100,
+      "Sound": "bottle_pop",
+      "ReloadSound": "package_r",
+      "ReloadLead": 15,
+      "Recoil": 0.4,
+      "Elevation": 20,
+      "MuzzleFlashParticle": "muzzle_flash_thin"
+    }
   ],
   "PseudoGuns" : [
 	{
@@ -106,6 +118,12 @@
 	  "Bullet": "big_explosion_spawner2",
 	  "SpreadCount": 8,
 	  "SpreadWidth": 0.79
-	}
+	},
+	{
+      "Name": "booby_trap_deployer",
+      "Bullet": "booby_trap",
+      "Sound": "puff",
+      "MuzzleHeight": 0
+    }
   ]
 }

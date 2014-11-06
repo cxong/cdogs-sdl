@@ -471,8 +471,10 @@ static int sanitizePlatformIndependentPath(const char *src, char *dst)
     {
         ch = *(src++);
 
+#ifndef _WIN32
         if ((ch == ':') || (ch == '\\'))  /* illegal chars in a physfs path. */
             BAIL_MACRO(ERR_INSECURE_FNAME, 0);
+#endif
 
         if (ch == '/')   /* path separator. */
         {

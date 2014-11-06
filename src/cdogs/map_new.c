@@ -364,6 +364,10 @@ static void LoadWeapons(CArray *weapons, json_t *weaponsNode)
 		for (json_t *child = weaponsNode->child; child; child = child->next)
 		{
 			const GunDescription *g = StrGunDescription(child->text);
+			if (g == NULL)
+			{
+				continue;
+			}
 			CArrayPushBack(weapons, &g);
 		}
 	}
