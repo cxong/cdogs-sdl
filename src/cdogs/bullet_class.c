@@ -612,7 +612,7 @@ void BulletAdd(const AddBullet add)
 		RAND_INT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh)));
 	if (obj->bulletClass->SpeedScale)
 	{
-		obj->vel.y = obj->vel.y * TILE_HEIGHT / TILE_WIDTH;
+		obj->vel.y = obj->vel.y * TILE_WIDTH / TILE_HEIGHT;
 	}
 	obj->tileItem.w = obj->bulletClass->Size.x;
 	obj->tileItem.h = obj->bulletClass->Size.y;
