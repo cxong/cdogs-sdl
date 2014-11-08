@@ -229,7 +229,7 @@ static void CustomApplicationMain (int argc, char **argv)
 
     /* Create SDLMain and make it the app delegate */
     sdlMain = [[SDLMain alloc] init];
-    [NSApp setDelegate:sdlMain];
+    [NSApp setDelegate:(id<NSFileManagerDelegate>)sdlMain];
     
     /* Start the main event loop */
     [NSApp run];
