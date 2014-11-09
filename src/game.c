@@ -547,8 +547,9 @@ static GameLoopResult RunGameUpdate(void *data)
 	// edge of the screen, forcefully pull them towards the center
 	if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
 		IsSingleScreen(
-		&gGraphicsDevice.cachedConfig,
-		gConfig.Interface.Splitscreen))
+			&gGraphicsDevice.cachedConfig,
+			gConfig.Interface.Splitscreen) &&
+		GetNumPlayers(true, true, true) > 1)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
 		const int h = gGraphicsDevice.cachedConfig.Res.y;
