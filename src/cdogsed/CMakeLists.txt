@@ -16,3 +16,5 @@ set(CDOGSED_HEADERS
 	editor_ui_static_additem.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
+target_link_libraries(cdogsedlib
+	${SDL_LIBRARY})

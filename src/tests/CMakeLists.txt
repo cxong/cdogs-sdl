@@ -22,7 +22,11 @@ add_executable(autosave_test
 	../cdogs/json_utils.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_link_libraries(autosave_test cbehave json ${EXTRA_LIBRARIES})
+target_link_libraries(autosave_test
+	cbehave
+	json
+	${SDL_LIBRARY}
+	${EXTRA_LIBRARIES})
 add_test(NAME autosave_test WORKING_DIRECTORY .
 	COMMAND autosave_test)
 
@@ -58,6 +62,10 @@ add_executable(config_test
 	../cdogs/json_utils.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_link_libraries(config_test cbehave json ${EXTRA_LIBRARIES})
+target_link_libraries(config_test
+	cbehave
+	json
+	${SDL_LIBRARY}
+	${EXTRA_LIBRARIES})
 add_test(NAME config_test WORKING_DIRECTORY .
 	COMMAND config_test)
