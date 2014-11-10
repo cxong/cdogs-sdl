@@ -136,7 +136,7 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 	PathGetWithoutExtension(buf, basename);
 }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include "sys_config.h"
 #define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
 #endif
