@@ -5,7 +5,7 @@ date:   2014-07-24
 categories: release
 ---
 
-![](https://raw2.github.com/cxong/cdogs-sdl/gh-pages/_posts/nuke.jpg)
+![](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/nuke.jpg)
 
 This release has new and custom weapons, and autonomous co-op AI!
 

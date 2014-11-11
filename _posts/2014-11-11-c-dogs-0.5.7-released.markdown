@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 0.5.7 Released!"
+date:   2014-11-11
+categories: release
+---
+
+This release contains a big mix of enhancements and bug fixes. Just check out the news posts, a lot of goodies are there.
+
+Thanks to all the folks who dropped in to contribute code, builds, ports, bug reports, and stay tuned for more!
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.7>
