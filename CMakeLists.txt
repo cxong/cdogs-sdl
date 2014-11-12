@@ -279,7 +279,7 @@ else()
 	# debian specific
 	set(CPACK_DEBIAN_PACKAGE_MAINTAINER "C-Dogs SDL Team")
 	set(CPACK_DEBIAN_PACKAGE_SECTION Games)
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 libsdl-image1.2, libsdl-mixer1.2")
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libsdl-image1.2, libsdl-mixer1.2")
 
 	# fedora/suse specific
 	set(CPACK_RPM_PACKAGE_LICENSE "GPL2")
