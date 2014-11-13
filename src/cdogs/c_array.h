@@ -26,6 +26,7 @@
 #ifndef __C_ARRAY
 #define __C_ARRAY
 
+#include <stdbool.h>
 #include <stddef.h>
 
 // dynamic array
@@ -45,6 +46,7 @@ void CArrayInsert(CArray *a, int index, void *elem);
 void CArrayDelete(CArray *a, int index);
 void *CArrayGet(const CArray *a, int index);	// gets address
 void CArrayClear(CArray *a);
+void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *));
 void CArrayTerminate(CArray *a);
 
 #endif

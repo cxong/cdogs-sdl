@@ -82,12 +82,46 @@ FEATURE(2, "Array delete")
 	SCENARIO_END
 FEATURE_END
 
+static bool LessThan2(const void *elem)
+{
+	return *(const int *)elem < 2;
+}
+
+FEATURE(3, "Array remove if")
+	SCENARIO("Remove if")
+	{
+		CArray a;
+		GIVEN("an array with numbers 0-4")
+			CArrayInit(&a, sizeof(int));
+			for (int i = 0; i < 5; i++)
+			{
+				CArrayPushBack(&a, &i);
+			}
+		GIVEN_END
+
+		WHEN("I remove all elements less than 2")
+			CArrayRemoveIf(&a, LessThan2);
+		WHEN_END
+
+		THEN("the array should contain the numbers >= 2");
+			SHOULD_INT_EQUAL((int)a.size, 3);
+			for (int i = 0; i < (int)a.size; i++)
+			{
+				int *v = CArrayGet(&a, i);
+				SHOULD_INT_GE(*v, 2);
+			}
+		THEN_END
+	}
+	SCENARIO_END
+FEATURE_END
+
 int main(void)
 {
 	cbehave_feature features[] =
 	{
 		{feature_idx(1)},
-		{feature_idx(2)}
+		{feature_idx(2)},
+		{feature_idx(3)}
 	};
 	
 	return cbehave_runner("CArray features are:", features);

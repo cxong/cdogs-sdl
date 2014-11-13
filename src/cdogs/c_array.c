@@ -107,6 +107,28 @@ void CArrayClear(CArray *a)
 	a->size = 0;
 }
 
+void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *))
+{
+	// Note: this is the erase-remove idiom
+	// Check all elements to see if they need to be removed
+	// Move all the elements that don't need to be removed to the head
+	void *dst = a->data;
+	size_t shrunkSize = 0;
+	for (int i = 0; i < (int)a->size; i++)
+	{
+		const void *elem = CArrayGet(a, i);
+		if (!removeIf(elem))
+		{
+			memmove(dst, elem, a->elemSize);
+			dst = (char *)dst + a->elemSize;
+			shrunkSize++;
+		}
+	}
+
+	// Shrink the array to fit
+	a->size = shrunkSize;
+}
+
 void CArrayTerminate(CArray *a)
 {
 	if (!a)
