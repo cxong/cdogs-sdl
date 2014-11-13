@@ -135,8 +135,7 @@ static void DamageObject(
 			player, pos);
 		if (object->flags & OBJFLAG_QUAKE)
 		{
-			GameEvent shake;
-			shake.Type = GAME_EVENT_SCREEN_SHAKE;
+			GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
 			shake.u.ShakeAmount = SHAKE_BIG_AMOUNT;
 			GameEventsEnqueue(&gGameEvents, shake);
 		}
@@ -175,9 +174,7 @@ static void DamageObject(
 		else
 		{
 			// A wreck left after the destruction of this object
-			GameEvent e;
-			memset(&e, 0, sizeof e);
-			e.Type = GAME_EVENT_ADD_BULLET;
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 			e.u.AddBullet.BulletClass = StrBulletClass("fireball_wreck");
 			e.u.AddBullet.MuzzlePos = fullPos;
 			e.u.AddBullet.MuzzleHeight = 0;
@@ -245,8 +242,7 @@ bool DamageSomething(
 		DamageObject(power, flags, player, uid, target);
 		if (gConfig.Sound.Hits && hitSounds != NULL && power > 0)
 		{
-			GameEvent es;
-			es.Type = GAME_EVENT_SOUND_AT;
+			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			es.u.SoundAt.Sound = hitSounds->Object;
 			es.u.SoundAt.Pos = pos;
 			GameEventsEnqueue(&gGameEvents, es);
@@ -278,8 +274,7 @@ static bool DoDamageCharacter(
 	bool canHit = CanHitCharacter(flags, uid, actor);
 	if (canHit)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_HIT_CHARACTER;
+		GameEvent e = GameEventNew(GAME_EVENT_HIT_CHARACTER);
 		e.u.HitCharacter.TargetId = actor->tileItem.id;
 		e.u.HitCharacter.Special = special;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -288,16 +283,14 @@ static bool DoDamageCharacter(
 			(allowFriendlyHitSound || !ActorIsInvulnerable(
 			actor, flags, player, gCampaign.Entry.Mode)))
 		{
-			GameEvent es;
-			es.Type = GAME_EVENT_SOUND_AT;
+			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			es.u.SoundAt.Sound = hitSounds->Flesh;
 			es.u.SoundAt.Pos = pos;
 			GameEventsEnqueue(&gGameEvents, es);
 		}
 		if (gConfig.Game.ShotsPushback)
 		{
-			GameEvent ei;
-			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 			ei.u.ActorImpulse.Id = actor->tileItem.id;
 			ei.u.ActorImpulse.Vel = Vec2iScaleDiv(
 				Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
@@ -305,8 +298,7 @@ static bool DoDamageCharacter(
 		}
 		if (CanDamageCharacter(flags, player, uid, actor, special))
 		{
-			GameEvent e1;
-			e1.Type = GAME_EVENT_DAMAGE_CHARACTER;
+			GameEvent e1 = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
 			e1.u.DamageCharacter.Power = power;
 			e1.u.DamageCharacter.PlayerIndex = player;
 			e1.u.DamageCharacter.TargetId = actor->tileItem.id;
@@ -320,9 +312,7 @@ static bool DoDamageCharacter(
 
 			if (gConfig.Game.Gore != GORE_NONE)
 			{
-				GameEvent eb;
-				memset(&eb, 0, sizeof eb);
-				eb.Type = GAME_EVENT_ADD_PARTICLE;
+				GameEvent eb = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
 				eb.u.AddParticle.Z = 10 * Z_FACTOR;
 				int bloodPower = power * 2;
@@ -389,8 +379,7 @@ static bool DoDamageCharacter(
 			{
 				// Calculate score based on
 				// if they hit a penalty character
-				GameEvent e2;
-				e2.Type = GAME_EVENT_SCORE;
+				GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
 				e2.u.Score.PlayerIndex = player;
 				if (actor->flags & FLAGS_PENALTY)
 				{
@@ -419,8 +408,7 @@ void UpdateMobileObjects(int ticks)
 		}
 		if ((*(obj->updateFunc))(obj, ticks) == 0)
 		{
-			GameEvent e;
-			e.Type = GAME_EVENT_MOBILE_OBJECT_REMOVE;
+			GameEvent e = GameEventNew(GAME_EVENT_MOBILE_OBJECT_REMOVE);
 			e.u.MobileObjectRemoveId = i;
 			GameEventsEnqueue(&gGameEvents, e);
 		}

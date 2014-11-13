@@ -432,9 +432,7 @@ void GunAddBullets(
 			((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
 		const double finalAngle =
 			radians + spreadStartAngle + i * g->Spread.Width + recoil;
-		GameEvent e;
-		memset(&e, 0, sizeof e);
-		e.Type = GAME_EVENT_ADD_BULLET;
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 		e.u.AddBullet.BulletClass = g->Bullet;
 		e.u.AddBullet.MuzzlePos = fullPos;
 		e.u.AddBullet.MuzzleHeight = z;
@@ -461,8 +459,7 @@ void GunAddBullets(
 	}
 	if (g->ShakeAmount > 0)
 	{
-		GameEvent shake;
-		shake.Type = GAME_EVENT_SCREEN_SHAKE;
+		GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
 		shake.u.ShakeAmount = g->ShakeAmount;
 		GameEventsEnqueue(&gGameEvents, shake);
 	}
@@ -472,9 +469,7 @@ static void AddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos)
 {
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
-	GameEvent e;
-	memset(&e, 0, sizeof e);
-	e.Type = GAME_EVENT_ADD_PARTICLE;
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = g->Brass;
 	double x, y;
 	const double radians = dir2radians[d];

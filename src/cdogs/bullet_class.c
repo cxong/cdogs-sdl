@@ -199,8 +199,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 				{
 					return false;
 				}
-				GameEvent e;
-				e.Type = GAME_EVENT_SOUND_AT;
+				GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
 				e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
 				e.u.SoundAt.Pos = realPos;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -246,8 +245,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	if (hitWall && !Vec2iIsZero(obj->vel))
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_SOUND_AT;
+		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
 		e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
 		e.u.SoundAt.Pos = realPos;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -258,9 +256,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		FireGuns(obj, &obj->bulletClass->HitGuns);
 		if (obj->bulletClass->Spark != NULL)
 		{
-			GameEvent e;
-			memset(&e, 0, sizeof e);
-			e.Type = GAME_EVENT_ADD_PARTICLE;
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			e.u.AddParticle.Class = obj->bulletClass->Spark;
 			e.u.AddParticle.FullPos = pos;
 			e.u.AddParticle.Z = obj->z;

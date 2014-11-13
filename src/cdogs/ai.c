@@ -500,8 +500,7 @@ void CommandBadGuys(int ticks)
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
 		aa.FullPos = PlaceBaddie(&gMap);
-		GameEvent e;
-		e.Type = GAME_EVENT_ACTOR_ADD;
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
@@ -530,8 +529,7 @@ void InitializeBadGuys(void)
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
 				aa.FullPos = PlaceBaddie(&gMap);
-				GameEvent e;
-				e.Type = GAME_EVENT_ACTOR_ADD;
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
 
@@ -560,8 +558,7 @@ void InitializeBadGuys(void)
 				{
 					aa.FullPos = PlaceBaddie(&gMap);
 				}
-				GameEvent e;
-				e.Type = GAME_EVENT_ACTOR_ADD;
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
 
@@ -595,8 +592,7 @@ void CreateEnemies(void)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
-		GameEvent e;
-		e.Type = GAME_EVENT_ACTOR_ADD;
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;

@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "actor_placement.h"
 #include "ai_utils.h"
 #include "character.h"
 #include "collision.h"
@@ -338,8 +339,7 @@ static void CheckTrigger(const Vec2i tilePos)
 		Trigger **tp = CArrayGet(&t->triggers, i);
 		if (TriggerCanActivate(*tp, gMission.flags))
 		{
-			GameEvent e;
-			e.Type = GAME_EVENT_TRIGGER;
+			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
 			e.u.Trigger.Id = (*tp)->id;
 			e.u.Trigger.TilePos = tilePos;
 			GameEventsEnqueue(&gGameEvents, e);
@@ -355,8 +355,7 @@ static void PickupObject(TActor * actor, TObject * object)
 	{
 	case OBJ_JEWEL:
 		{
-			GameEvent e;
-			e.Type = GAME_EVENT_SCORE;
+			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 			e.u.Score.PlayerIndex = actor->playerIndex;
 			e.u.Score.Score = PICKUP_SCORE;
 			GameEventsEnqueue(&gGameEvents, e);
@@ -373,8 +372,7 @@ static void PickupObject(TActor * actor, TObject * object)
 		if (actor->health < ActorGetCharacter(actor)->maxHealth)
 		{
 			canPickup = true;
-			GameEvent e;
-			e.Type = GAME_EVENT_TAKE_HEALTH_PICKUP;
+			GameEvent e = GameEventNew(GAME_EVENT_TAKE_HEALTH_PICKUP);
 			e.u.PickupPlayer = actor->playerIndex;
 			GameEventsEnqueue(&gGameEvents, e);
 			SoundPlayAt(
@@ -540,8 +538,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	GameEvent e;
-	e.Type = GAME_EVENT_ACTOR_MOVE;
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 	e.u.ActorMove.Id = actor->tileItem.id;
 	e.u.ActorMove.Pos.x = pos.x;
 	e.u.ActorMove.Pos.y = pos.y;
@@ -660,8 +657,7 @@ void InjureActor(TActor * actor, int injury)
 	{
 		actor->stateCounter = 0;
 		Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		GameEvent sound;
-		sound.Type = GAME_EVENT_SOUND_AT;
+		GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
 		sound.u.SoundAt.Sound = SoundGetRandomScream(&gSoundDevice);
 		sound.u.SoundAt.Pos = pos;
 		GameEventsEnqueue(&gGameEvents, sound);
@@ -694,8 +690,7 @@ void Shoot(TActor *actor)
 		actor->uid);
 	if (actor->playerIndex >= 0 && gun->Gun->Cost != 0)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_SCORE;
+		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 		e.u.Score.PlayerIndex = actor->playerIndex;
 		e.u.Score.Score = -gun->Gun->Cost;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -848,6 +843,7 @@ void SlideActor(TActor *actor, int cmd)
 }
 
 static void ActorUpdatePosition(TActor *actor, int ticks);
+static void ActorDie(TActor *actor, const int idx);
 void UpdateAllActors(int ticks)
 {
 	for (int i = 0; i < (int)gActors.size; i++)
@@ -861,47 +857,38 @@ void UpdateAllActors(int ticks)
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX)
 		{
-			AddObjectOld(
-				actor->Pos.x, actor->Pos.y,
-				Vec2iZero(),
-				&cBloodPics[rand() % BLOOD_MAX],
-				OBJ_NONE,
-				TILEITEM_IS_WRECK);
-			ActorDestroy(i);
+			ActorDie(actor, i);
+			continue;
 		}
-		else
+		// Find actors that are on the same team and colliding,
+		// and repel them
+		if (gConfig.Game.AllyCollision == ALLYCOLLISION_REPEL)
 		{
-			// Find actors that are on the same team and colliding,
-			// and repel them
-			if (gConfig.Game.AllyCollision == ALLYCOLLISION_REPEL)
+			Vec2i realPos = Vec2iFull2Real(actor->Pos);
+			TTileItem *collidingItem = GetItemOnTileInCollision(
+				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+				COLLISIONTEAM_NONE,
+				gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
+			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 			{
-				Vec2i realPos = Vec2iFull2Real(actor->Pos);
-				TTileItem *collidingItem = GetItemOnTileInCollision(
-					&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-					COLLISIONTEAM_NONE,
-					gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
-				if (collidingItem && collidingItem->kind == KIND_CHARACTER)
+				TActor *collidingActor = CArrayGet(
+					&gActors, collidingItem->id);
+				if (CalcCollisionTeam(1, collidingActor) ==
+					CalcCollisionTeam(1, actor))
 				{
-					TActor *collidingActor = CArrayGet(
-						&gActors, collidingItem->id);
-					if (CalcCollisionTeam(1, collidingActor) ==
-						CalcCollisionTeam(1, actor))
+					Vec2i v = Vec2iMinus(actor->Pos, collidingActor->Pos);
+					if (Vec2iIsZero(v))
 					{
-						Vec2i v = Vec2iMinus(actor->Pos, collidingActor->Pos);
-						if (Vec2iIsZero(v))
-						{
-							v = Vec2iNew(1, 0);
-						}
-						v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
-						GameEvent e;
-						e.Type = GAME_EVENT_ACTOR_IMPULSE;
-						e.u.ActorImpulse.Id = actor->tileItem.id;
-						e.u.ActorImpulse.Vel = v;
-						GameEventsEnqueue(&gGameEvents, e);
-						e.u.ActorImpulse.Id = collidingActor->tileItem.id;
-						e.u.ActorImpulse.Vel = Vec2iScale(v, -1);
-						GameEventsEnqueue(&gGameEvents, e);
+						v = Vec2iNew(1, 0);
 					}
+					v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
+					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+					e.u.ActorImpulse.Id = actor->tileItem.id;
+					e.u.ActorImpulse.Vel = v;
+					GameEventsEnqueue(&gGameEvents, e);
+					e.u.ActorImpulse.Id = collidingActor->tileItem.id;
+					e.u.ActorImpulse.Vel = Vec2iScale(v, -1);
+					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}
 		}
@@ -940,6 +927,50 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		TryMoveActor(actor, actor->MovePos);
 		actor->MovePos = Vec2iZero();
 	}
+}
+static void ActorDie(TActor *actor, const int idx)
+{
+	// Check if the player has lives to revive
+	if (actor->playerIndex >= 0)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, actor->playerIndex);
+		p->Lives--;
+		CASSERT(p->Lives >= 0, "Player has died too many times");
+		if (p->Lives > 0)
+		{
+			// Find the first player alive; try to spawn next to that position
+			// if no other suitable position exists
+			Vec2i defaultSpawnPosition = Vec2iZero();
+			for (int i = 0; i < (int)gPlayerDatas.size; i++)
+			{
+				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+				if (IsPlayerAlive(pOther))
+				{
+					const TActor *a = CArrayGet(&gActors, pOther->Id);
+					defaultSpawnPosition = a->Pos;
+					break;
+				}
+			}
+			const Vec2i spawnPos =
+				PlacePlayer(&gMap, p, defaultSpawnPosition, false);
+
+			// Play a spawn sound for players
+			GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
+			// Need to delay it a bit because the camera takes time to update
+			sound.Delay = 1;
+			sound.u.SoundAt.Sound = StrSound("spawn");
+			sound.u.SoundAt.Pos = Vec2iFull2Real(spawnPos);
+			GameEventsEnqueue(&gGameEvents, sound);
+		}
+	}
+	// Add a blood pool
+	AddObjectOld(
+		actor->Pos.x, actor->Pos.y,
+		Vec2iZero(),
+		&cBloodPics[rand() % BLOOD_MAX],
+		OBJ_NONE,
+		TILEITEM_IS_WRECK);
+	ActorDestroy(idx);
 }
 
 void ActorsInit(void)

@@ -656,8 +656,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
 	if (CanCompleteMission(options))
 	{
-		GameEvent msg;
-		msg.Type = GAME_EVENT_MISSION_COMPLETE;
+		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
 }
@@ -676,8 +675,7 @@ void UpdateMissionObjective(
 	{
 		return;
 	}
-	GameEvent e;
-	e.Type = GAME_EVENT_UPDATE_OBJECTIVE;
+	GameEvent e = GameEventNew(GAME_EVENT_UPDATE_OBJECTIVE);
 	e.u.UpdateObjective.ObjectiveIndex = idx;
 	e.u.UpdateObjective.Update = 1;
 	e.u.UpdateObjective.PlayerIndex = player;

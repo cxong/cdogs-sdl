@@ -211,8 +211,7 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 		}
 		if (!ParticleUpdate(p, ticks))
 		{
-			GameEvent e;
-			e.Type = GAME_EVENT_PARTICLE_REMOVE;
+			GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
 			e.u.ParticleRemoveId = i;
 			GameEventsEnqueue(&gGameEvents, e);
 		}

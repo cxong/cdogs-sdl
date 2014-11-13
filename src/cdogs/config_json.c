@@ -55,6 +55,7 @@ static void LoadGameConfigNode(
 	LoadInt(&config->EnemyDensity, node, "EnemyDensity");
 	LoadInt(&config->NonPlayerHP, node, "NonPlayerHP");
 	LoadInt(&config->PlayerHP, node, "PlayerHP");
+	LoadInt(&config->Lives, node, "Lives");
 	LoadBool(&config->Fog, node, "Fog");
 	LoadInt(&config->SightRange, node, "SightRange");
 	LoadBool(&config->Shadows, node, "Shadows");
@@ -96,6 +97,7 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 	AddIntPair(subConfig, "EnemyDensity", config->EnemyDensity);
 	AddIntPair(subConfig, "NonPlayerHP", config->NonPlayerHP);
 	AddIntPair(subConfig, "PlayerHP", config->PlayerHP);
+	AddIntPair(subConfig, "Lives", config->Lives);
 	json_insert_pair_into_object(
 		subConfig, "Fog", json_new_bool(config->Fog));
 	AddIntPair(subConfig, "SightRange", config->SightRange);

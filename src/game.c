@@ -409,8 +409,7 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	crosshair->offset.y = -crosshair->size.y / 2;
 	EventReset(&gEventHandlers, crosshair);
 
-	GameEvent start;
-	start.Type = GAME_EVENT_GAME_START;
+	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
 
 	// Set mission complete and display exit if it is complete
@@ -437,8 +436,7 @@ static void RunGameInput(void *data)
 
 	if (gEventHandlers.HasQuit)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_END;
+		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 		GameEventsEnqueue(&gGameEvents, e);
 		return;
 	}
@@ -482,8 +480,7 @@ static void RunGameInput(void *data)
 		if (rData->isPaused)
 		{
 			// Exit
-			GameEvent e;
-			e.Type = GAME_EVENT_MISSION_END;
+			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
 			rData->isPaused = false;
@@ -564,8 +561,7 @@ static GameLoopResult RunGameUpdate(void *data)
 			}
 			const TActor *p = CArrayGet(&gActors, pd->Id);
 			const int pad = SPLIT_PADDING;
-			GameEvent ei;
-			ei.Type = GAME_EVENT_ACTOR_IMPULSE;
+			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 			ei.u.ActorImpulse.Id = p->tileItem.id;
 			ei.u.ActorImpulse.Vel = p->Vel;
 			if (screen.x + pad > p->tileItem.x && p->Vel.x < 256)
@@ -626,21 +622,18 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		GetNumPlayers(true, false, false) > 0 && IsMissionComplete(mo);
 	if (mo->state == MISSION_STATE_PLAY && isMissionComplete)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_PICKUP;
+		GameEvent e = GameEventNew(GAME_EVENT_MISSION_PICKUP);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	if (mo->state == MISSION_STATE_PICKUP && !isMissionComplete)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_INCOMPLETE;
+		GameEvent e = GameEventNew(GAME_EVENT_MISSION_INCOMPLETE);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	if (mo->state == MISSION_STATE_PICKUP &&
 		mo->pickupTime + PICKUP_LIMIT <= mo->time)
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_END;
+		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -657,10 +650,9 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 			break;
 		}
 	}
-	if (allPlayersDestroyed)
+	if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
 	{
-		GameEvent e;
-		e.Type = GAME_EVENT_MISSION_END;
+		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -696,8 +688,7 @@ static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
 			int update = MapGetExploredPercentage(map) - o->done;
 			if (update > 0)
 			{
-				GameEvent e;
-				e.Type = GAME_EVENT_UPDATE_OBJECTIVE;
+				GameEvent e = GameEventNew(GAME_EVENT_UPDATE_OBJECTIVE);
 				e.u.UpdateObjective.ObjectiveIndex = i;
 				e.u.UpdateObjective.Update = update;
 				GameEventsEnqueue(&gGameEvents, e);

@@ -36,6 +36,7 @@
 NetMsgVec2i PlaceBaddie(Map *map);
 NetMsgVec2i PlacePrisoner(Map *map);
 
-Vec2i PlacePlayer(Map *map, const PlayerData *p, const Vec2i firstPos);
+Vec2i PlacePlayer(
+	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents);
 
 #endif

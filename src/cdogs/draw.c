@@ -553,6 +553,16 @@ static void DrawObjectiveHighlight(
 	}
 }
 
+TOffsetPic GetHeadPic(
+	const int bodyType, const direction_e dir, const int face, const int state)
+{
+	TOffsetPic head;
+	head.dx = cNeckOffset[bodyType][dir].dx + cHeadOffset[face][dir].dx;
+	head.dy = cNeckOffset[bodyType][dir].dy + cHeadOffset[face][dir].dy;
+	head.picIndex = cHeadPic[face][dir][state];
+	return head;
+}
+
 void DrawCharacterSimple(
 	const Character *c, const Vec2i pos,
 	const direction_e dir, const int state,
@@ -582,13 +592,7 @@ void DrawCharacterSimple(
 	body.dy = cBodyOffset[bodyType][dir].dy;
 	body.picIndex = cBodyPic[bodyType][dir][state];
 
-	head.dx =
-		cNeckOffset[bodyType][headDir].dx +
-		cHeadOffset[c->looks.face][headDir].dx;
-	head.dy =
-		cNeckOffset[bodyType][headDir].dy +
-		cHeadOffset[c->looks.face][headDir].dy;
-	head.picIndex = cHeadPic[c->looks.face][headDir][headState];
+	head = GetHeadPic(bodyType, headDir, c->looks.face, headState);
 
 	gun.picIndex = -1;
 	if (gunPic >= 0)

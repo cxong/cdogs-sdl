@@ -121,7 +121,7 @@ static void AddAndPlacePlayers(void)
 			continue;
 		}
 
-		firstPos = PlacePlayer(&gMap, p, firstPos);
+		firstPos = PlacePlayer(&gMap, p, firstPos, true);
 	}
 }
 
@@ -391,6 +391,10 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		gCampaign.IsLoaded ||
 		MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
 	{
+		// Reset player datas
+		PlayerDataTerminate(&gPlayerDatas);
+		PlayerDataInit(&gPlayerDatas);
+
 		debug(D_NORMAL, ">> Entering campaign\n");
 		if (IsIntroNeeded(gCampaign.Entry.Mode))
 		{
@@ -448,9 +452,6 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		}
 		gCampaign.IsLoaded = false;
 		gCampaign.IsClient = false;	// TODO: select is client from menu
-		// Reset player datas
-		PlayerDataTerminate(&gPlayerDatas);
-		PlayerDataInit(&gPlayerDatas);
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 

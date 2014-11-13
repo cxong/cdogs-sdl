@@ -54,6 +54,7 @@
 
 #include "actors.h"
 #include "automap.h"
+#include "draw.h"
 #include "drawtools.h"
 #include "font.h"
 #include "game_events.h"
@@ -385,6 +386,35 @@ static void DrawHealth(
 	FontStrOpt(s, Vec2iZero(), opts);
 }
 
+static void DrawLives(
+	const GraphicsDevice *device, const PlayerData *player, const Vec2i pos,
+	const FontAlign hAlign, const FontAlign vAlign)
+{
+	const int xStep = hAlign == ALIGN_START ? 10 : -10;
+	const Vec2i offset = Vec2iNew(5, 20);
+	Vec2i drawPos = Vec2iAdd(pos, offset);
+	if (hAlign == ALIGN_END)
+	{
+		const int w = device->cachedConfig.Res.x;
+		drawPos.x = w - drawPos.x - offset.x;
+	}
+	if (vAlign == ALIGN_END)
+	{
+		const int h = device->cachedConfig.Res.y;
+		drawPos.y = h - drawPos.y + offset.y + 5;
+	}
+	const TOffsetPic head = GetHeadPic(
+		BODY_ARMED, DIRECTION_DOWN, player->Char.looks.face, STATE_IDLE);
+	for (int i = 0; i < player->Lives; i++)
+	{
+		BlitOld(
+			drawPos.x + head.dx, drawPos.y + head.dy,
+			PicManagerGetOldPic(&gPicManager, head.picIndex),
+			&player->Char.table, BLIT_TRANSPARENT);
+		drawPos.x += xStep;
+	}
+}
+
 #define HUDFLAGS_PLACE_RIGHT	0x01
 #define HUDFLAGS_PLACE_BOTTOM	0x02
 #define HUDFLAGS_HALF_SCREEN	0x04
@@ -560,15 +590,22 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
+		// Weapon
 		DrawWeaponStatus(
 			device, ActorGetGun(p), pos, opts.HAlign, opts.VAlign);
 		pos.y += rowHeight;
 
+		// Player name
 		opts.Pad = pos;
 		FontStrOpt(s, Vec2iZero(), opts);
 
+		// Health
 		pos.y += rowHeight;
 		DrawHealth(device, p, pos, opts.HAlign, opts.VAlign);
+
+		// Lives
+		pos.y += rowHeight;
+		DrawLives(device, data, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{
@@ -845,13 +882,16 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	if (numPlayersAlive == 0)
 	{
-		if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+		if (AreAllPlayersDeadAndNoLives())
 		{
-			FontStrCenter("Game Over!");
-		}
-		else
-		{
-			FontStrCenter("All Kill!");
+			if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+			{
+				FontStrCenter("Game Over!");
+			}
+			else
+			{
+				FontStrCenter("All Kill!");
+			}
 		}
 	}
 	else if (hud->mission->state == MISSION_STATE_PICKUP)

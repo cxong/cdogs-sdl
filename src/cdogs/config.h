@@ -106,6 +106,7 @@ typedef struct
 	int EnemyDensity;
 	int NonPlayerHP;
 	int PlayerHP;
+	int Lives;
 	bool Fog;
 	int SightRange;
 	bool Shadows;

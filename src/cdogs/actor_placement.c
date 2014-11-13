@@ -156,7 +156,8 @@ NetMsgVec2i PlacePrisoner(Map *map)
 	return posNet;
 }
 
-Vec2i PlacePlayer(Map *map, const PlayerData *p, const Vec2i firstPos)
+Vec2i PlacePlayer(
+	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents)
 {
 	NetMsgActorAdd aa = NetMsgActorAdd_init_default;
 	aa.Id = ActorsGetFreeIndex();
@@ -187,13 +188,15 @@ Vec2i PlacePlayer(Map *map, const PlayerData *p, const Vec2i firstPos)
 		aa.FullPos = PlaceActor(map);
 	}
 
-	GameEvent e;
-	e.Type = GAME_EVENT_ACTOR_ADD;
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 	e.u.ActorAdd = aa;
 	GameEventsEnqueue(&gGameEvents, e);
 
-	// Process the events that actually place the players
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+	if (pumpEvents)
+	{
+		// Process the events that actually place the players
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+	}
 
 	return Vec2iNew(aa.FullPos.x, aa.FullPos.y);
 }

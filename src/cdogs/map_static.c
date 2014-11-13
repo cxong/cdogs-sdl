@@ -111,8 +111,7 @@ void MapStaticLoadDynamic(
 			const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
 			aa.FullPos.x = fullPos.x;
 			aa.FullPos.y = fullPos.y;
-			GameEvent e;
-			e.Type = GAME_EVENT_ACTOR_ADD;
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			e.u.ActorAdd = aa;
 			GameEventsEnqueue(&gGameEvents, e);
 
@@ -149,8 +148,7 @@ void MapStaticLoadDynamic(
 						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 					aa.Health = CharacterGetStartingHealth(c, true);
 					aa.FullPos = fullPosNet;
-					GameEvent e;
-					e.Type = GAME_EVENT_ACTOR_ADD;
+					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 					e.u.ActorAdd = aa;
 					GameEventsEnqueue(&gGameEvents, e);
 				}
@@ -175,8 +173,7 @@ void MapStaticLoadDynamic(
 						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 					aa.Health = CharacterGetStartingHealth(c, true);
 					aa.FullPos = fullPosNet;
-					GameEvent e;
-					e.Type = GAME_EVENT_ACTOR_ADD;
+					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 					e.u.ActorAdd = aa;
 					GameEventsEnqueue(&gGameEvents, e);
 				}

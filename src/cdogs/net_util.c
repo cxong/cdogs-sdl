@@ -73,6 +73,7 @@ NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p)
 	{
 		strcpy(d.Weapons[i], p->weapons[i]->name);
 	}
+	d.Lives = p->Lives;
 	d.Score = p->score;
 	d.TotalScore = p->totalScore;
 	d.Kills = p->kills;
@@ -104,6 +105,7 @@ void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
 	{
 		p->weapons[i] = StrGunDescription(pd->Weapons[i]);
 	}
+	p->Lives = pd->Lives;
 	p->score = pd->Score;
 	p->totalScore = pd->Score;
 	p->kills = pd->Kills;

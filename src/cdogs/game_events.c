@@ -69,7 +69,20 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 	}
 	CArrayPushBack(store, &e);
 }
+static bool EventComplete(const void *elem);
 void GameEventsClear(CArray *store)
 {
-	CArrayClear(store);
+	CArrayRemoveIf(store, EventComplete);
+}
+static bool EventComplete(const void *elem)
+{
+	return ((GameEvent *)elem)->Delay < 0;
+}
+
+GameEvent GameEventNew(GameEventType type)
+{
+	GameEvent e;
+	memset(&e, 0, sizeof e);
+	e.Type = type;
+	return e;
 }

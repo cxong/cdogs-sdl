@@ -40,6 +40,7 @@ typedef struct
 	char name[20];
 	int weaponCount;
 	const GunDescription *weapons[MAX_WEAPONS];
+	int Lives;
 
 	int score;
 	int totalScore;
@@ -71,6 +72,7 @@ void PlayerDataTerminate(CArray *p);
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission);
 
 int GetNumPlayers(const bool alive, const bool human, const bool local);
+bool AreAllPlayersDeadAndNoLives(void);
 const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local);
 bool IsPlayerAlive(const PlayerData *player);

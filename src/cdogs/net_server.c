@@ -226,7 +226,7 @@ static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData)
 {
 	// Add the player's actor
-	PlacePlayer(&gMap, pData, Vec2iZero());
+	PlacePlayer(&gMap, pData, Vec2iZero(), true);
 
 	// Send all players
 	for (int i = 0; i < (int)gActors.size; i++)

@@ -172,6 +172,8 @@ void PlayerDataTerminate(CArray *p)
 
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
 {
+	p->Lives = gConfig.Game.Lives;
+
 	p->score = 0;
 	p->kills = 0;
 	p->friendlies = 0;
@@ -196,6 +198,19 @@ int GetNumPlayers(const bool alive, const bool human, const bool local)
 		}
 	}
 	return numPlayers;
+}
+
+bool AreAllPlayersDeadAndNoLives(void)
+{
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (IsPlayerAlive(p) || p->Lives > 0)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 const PlayerData *GetFirstPlayer(

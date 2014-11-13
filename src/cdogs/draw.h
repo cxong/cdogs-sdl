@@ -62,5 +62,7 @@ void DrawCharacterSimple(
 	const direction_e dir, const int state,
 	const int gunPic, const gunstate_e gunState,
 	const TranslationTable *table);
+TOffsetPic GetHeadPic(
+	const int bodyType, const direction_e dir, const int face, const int state);
 
 #endif

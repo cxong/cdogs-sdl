@@ -19,12 +19,13 @@ message NetMsgPlayerData {
 	}
 	required CharLooks Looks = 2;
 	repeated string Weapons = 3;
-	required int32 Score = 4;
-	required int32 TotalScore = 5;
-	required int32 Kills = 6;
-	required int32 Friendlies = 7;
-	required int32 PlayerIndex = 8;
-	required bool IsUsed = 9;
+	required int32 Lives = 4;
+	required int32 Score = 5;
+	required int32 TotalScore = 6;
+	required int32 Kills = 7;
+	required int32 Friendlies = 8;
+	required int32 PlayerIndex = 9;
+	required bool IsUsed = 10;
 }
 
 message NetMsgAddPlayers {

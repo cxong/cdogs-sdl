@@ -62,6 +62,11 @@ static void HandleGameEvent(
 	HealthPickups *hp,
 	EventHandlers *eventHandlers)
 {
+	e->Delay--;
+	if (e->Delay >= 0)
+	{
+		return;
+	}
 	switch (e->Type)
 	{
 		case GAME_EVENT_SCORE:
@@ -205,8 +210,7 @@ static void HandleGameEvent(
 				{
 				case OBJECTIVE_COLLECT:
 					{
-						GameEvent e1;
-						e1.Type = GAME_EVENT_SCORE;
+						GameEvent e1 = GameEventNew(GAME_EVENT_SCORE);
 						e1.u.Score.PlayerIndex =
 							e->u.UpdateObjective.PlayerIndex;
 						e1.u.Score.Score = PICKUP_SCORE;
@@ -215,8 +219,7 @@ static void HandleGameEvent(
 					break;
 				case OBJECTIVE_DESTROY:
 					{
-						GameEvent e1;
-						e1.Type = GAME_EVENT_SCORE;
+						GameEvent e1 = GameEventNew(GAME_EVENT_SCORE);
 						e1.u.Score.PlayerIndex =
 							e->u.UpdateObjective.PlayerIndex;
 						e1.u.Score.Score = OBJECT_SCORE;

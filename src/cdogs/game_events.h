@@ -77,6 +77,7 @@ typedef enum
 typedef struct
 {
 	GameEventType Type;
+	int Delay;
 	union
 	{
 		struct
@@ -141,5 +142,7 @@ void GameEventsInit(CArray *store);
 void GameEventsTerminate(CArray *store);
 void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
+
+GameEvent GameEventNew(GameEventType type);
 
 #endif
