@@ -321,6 +321,11 @@ Vec2i GetPlayerCenter(
 	GraphicsDevice *device, DrawBuffer *b,
 	const PlayerData *pData, const int playerIdx)
 {
+	if (pData->Id < 0)
+	{
+		// Player is dead
+		return Vec2iZero();
+	}
 	Vec2i center = Vec2iZero();
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
@@ -447,7 +452,7 @@ static void RunGameInput(void *data)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal || !IsPlayerAlive(p))
+		if (!p->IsLocal)
 		{
 			idx--;
 			continue;
