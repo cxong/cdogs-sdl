@@ -76,7 +76,7 @@ void GameEventsClear(CArray *store)
 }
 static bool EventComplete(const void *elem)
 {
-	return ((GameEvent *)elem)->Delay < 0;
+	return ((const GameEvent *)elem)->Delay < 0;
 }
 
 GameEvent GameEventNew(GameEventType type)
