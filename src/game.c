@@ -526,9 +526,13 @@ static GameLoopResult RunGameUpdate(void *data)
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal || !IsPlayerAlive(p))
+		if (!p->IsLocal)
 		{
 			idx--;
+			continue;
+		}
+		if (!IsPlayerAlive(p))
+		{
 			continue;
 		}
 		TActor *player = CArrayGet(&gActors, p->Id);
