@@ -73,12 +73,19 @@ void PathCacheInit(PathCache *pc, Map *m)
 }
 void PathCacheTerminate(PathCache *pc)
 {
+	PathCacheClear(pc);
+	CArrayTerminate(&pc->paths);
+}
+
+void PathCacheClear(PathCache *pc)
+{
 	for (int i = 0; i < (int)pc->paths.size; i++)
 	{
 		CachedPath *c = CArrayGet(&pc->paths, i);
 		CachedPathDestroy(c);
 	}
-	CArrayTerminate(&pc->paths);
+	CArrayClear(&pc->paths);
+	pc->head = 0;
 }
 
 typedef struct

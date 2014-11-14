@@ -59,6 +59,11 @@ void CachedPathDestroy(CachedPath *c);
 void PathCacheInit(PathCache *pc, Map *m);
 void PathCacheTerminate(PathCache *pc);
 
+// Clear all entries in cache
+// This is done when the underlying map changes, changing paths
+// e.g. keys
+void PathCacheClear(PathCache *pc);
+
 CachedPath PathCacheCreate(
 	PathCache *pc, Vec2i from, Vec2i to,
 	const bool ignoreObjects, const bool cache);

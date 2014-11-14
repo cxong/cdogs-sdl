@@ -406,6 +406,7 @@ static void PickupObject(TActor * actor, TObject * object)
 		SoundPlayAt(
 			&gSoundDevice, gSoundDevice.keySound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+		PathCacheClear(&gPathCache);
 	}
 	UpdateMissionObjective(
 		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT,
