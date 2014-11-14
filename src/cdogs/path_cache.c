@@ -50,8 +50,8 @@ void CachedPathDestroy(CachedPath *c)
 		return;
 	}
 	(*c->refs)--;
-	CASSERT(c->refs >= 0, "out of sync ref count");
-	if (c->refs == 0)
+	CASSERT(*c->refs >= 0, "out of sync ref count");
+	if (*c->refs == 0)
 	{
 		ASPathDestroy(c->Path);
 		CFREE(c->refs);
