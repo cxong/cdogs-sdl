@@ -1042,16 +1042,16 @@ void MapInit(Map *map)
 	CArrayInit(&map->Tiles, sizeof(Tile));
 	CArrayInit(&map->iMap, sizeof(unsigned short));
 	CArrayInit(&map->triggers, sizeof(Trigger *));
+	PathCacheInit(&gPathCache, map);
 }
 void MapTerminate(Map *map)
 {
-	Vec2i v;
-	int i;
-	for (i = 0; i < (int)map->triggers.size; i++)
+	for (int i = 0; i < (int)map->triggers.size; i++)
 	{
 		TriggerTerminate(*(Trigger **)CArrayGet(&map->triggers, i));
 	}
 	CArrayTerminate(&map->triggers);
+	Vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -1062,6 +1062,7 @@ void MapTerminate(Map *map)
 	}
 	CArrayTerminate(&map->Tiles);
 	CArrayTerminate(&map->iMap);
+	PathCacheTerminate(&gPathCache);
 }
 void MapLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)

@@ -49,13 +49,13 @@
 #include "ai_utils.h"
 
 #include <assert.h>
-#include <math.h>
 
 #include "algorithms.h"
 #include "collision.h"
 #include "gamedata.h"
 #include "map.h"
 #include "objs.h"
+#include "path_cache.h"
 #include "weapon.h"
 
 
@@ -207,9 +207,7 @@ int AIReverseDirection(int cmd)
 typedef bool (*IsBlockedFunc)(void *, Vec2i);
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
-static bool IsTileWalkable(Map *map, Vec2i pos);
 static bool IsPosNoWalk(void *data, Vec2i pos);
-static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos);
 static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos);
 bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects)
@@ -229,7 +227,7 @@ static bool AIHasClearLine(
 	return HasClearLineXiaolinWu(from, to, &data);
 }
 static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos);
-static bool IsTileWalkable(Map *map, Vec2i pos)
+bool IsTileWalkable(Map *map, const Vec2i pos)
 {
 	if (!IsTileWalkableOrOpenable(map, pos))
 	{
@@ -258,7 +256,7 @@ static bool IsPosNoWalk(void *data, Vec2i pos)
 {
 	return !IsTileWalkable(data, Vec2iToTile(pos));
 }
-static bool IsTileWalkableAroundObjects(Map *map, Vec2i pos)
+bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 {
 	if (!IsTileWalkableOrOpenable(map, pos))
 	{
@@ -436,80 +434,6 @@ bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d)
 }
 
 
-typedef struct
-{
-	Map *Map;
-	TileSelectFunc IsTileOk;
-} AStarContext;
-static void AddTileNeighbors(
-	ASNeighborList neighbors, void *node, void *context)
-{
-	Vec2i *v = node;
-	int y;
-	AStarContext *c = context;
-	for (y = v->y - 1; y <= v->y + 1; y++)
-	{
-		int x;
-		if (y < 0 || y >= c->Map->Size.y)
-		{
-			continue;
-		}
-		for (x = v->x - 1; x <= v->x + 1; x++)
-		{
-			float cost;
-			Vec2i neighbor;
-			neighbor.x = x;
-			neighbor.y = y;
-			if (x < 0 || x >= c->Map->Size.x)
-			{
-				continue;
-			}
-			if (x == v->x && y == v->y)
-			{
-				continue;
-			}
-			// if we're moving diagonally,
-			// need to check the axis-aligned neighbours are also clear
-			if (!c->IsTileOk(c->Map, Vec2iNew(x, y)) ||
-				!c->IsTileOk(c->Map, Vec2iNew(v->x, y)) ||
-				!c->IsTileOk(c->Map, Vec2iNew(x, v->y)))
-			{
-				continue;
-			}
-			// Calculate cost of direction
-			// Note that there are different horizontal and vertical costs,
-			// due to the tiles being non-square
-			// Slightly prefer axes instead of diagonals
-			if (x != v->x && y != v->y)
-			{
-				cost = TILE_WIDTH * 1.1f;
-			}
-			else if (x != v->x)
-			{
-				cost = TILE_WIDTH;
-			}
-			else
-			{
-				cost = TILE_HEIGHT;
-			}
-			ASNeighborListAdd(neighbors, &neighbor, cost);
-		}
-	}
-}
-static float AStarHeuristic(void *fromNode, void *toNode, void *context)
-{
-	// Simple Euclidean
-	Vec2i *v1 = fromNode;
-	Vec2i *v2 = toNode;
-	UNUSED(context);
-	return (float)sqrt(DistanceSquared(
-		Vec2iCenterOfTile(*v1), Vec2iCenterOfTile(*v2)));
-}
-static ASPathNodeSource cPathNodeSource =
-{
-	sizeof(Vec2i), AddTileNeighbors, AStarHeuristic, NULL, NULL
-};
-
 // Use pathfinding to check that there is a path between
 // source and destination tiles
 bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
@@ -520,14 +444,14 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 		return true;
 	}
 	// Pathfind
-	AStarContext ac;
-	ac.Map = &gMap;
-	ac.IsTileOk = ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects;
-	Vec2i fromTile = Vec2iToTile(from);
-	Vec2i toTile = MapSearchTileAround(ac.Map, Vec2iToTile(to), ac.IsTileOk);
-	ASPath path = ASPathCreate(&cPathNodeSource, &ac, &fromTile, &toTile);
-	size_t pathCount = ASPathGetCount(path);
-	ASPathDestroy(path);
+	const Vec2i fromTile = Vec2iToTile(from);
+	const Vec2i toTile = MapSearchTileAround(
+		&gMap, Vec2iToTile(to),
+		ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects);
+	CachedPath path = PathCacheCreate(
+		&gPathCache, fromTile, toTile, ignoreObjects, true);
+	const size_t pathCount = ASPathGetCount(path.Path);
+	CachedPathDestroy(&path);
 	return pathCount >= 1;
 }
 
@@ -547,7 +471,7 @@ static int AIGotoDirect(Vec2i a, Vec2i p)
 static int AStarFollow(
 	AIGotoContext *c, Vec2i currentTile, TTileItem *i, Vec2i a)
 {
-	Vec2i *pathTile = ASPathGetNode(c->Path, c->PathIndex);
+	Vec2i *pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
 	c->IsFollowing = 1;
 	// Check if we need to follow the next step in the path
 	// Note: need to make sure the actor is fully within the current tile
@@ -556,7 +480,7 @@ static int AStarFollow(
 		IsTileItemInsideTile(i, currentTile))
 	{
 		c->PathIndex++;
-		pathTile = ASPathGetNode(c->Path, c->PathIndex);
+		pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
 		c->IsFollowing = 0;
 	}
 	// Go directly to the center of the next tile
@@ -570,19 +494,19 @@ static int AStarCloseToPath(
 	Vec2i *pathTile;
 	Vec2i *pathEnd;
 	if (!c ||
-		c->PathIndex >= (int)ASPathGetCount(c->Path) - 1) // at end of path
+		c->PathIndex >= (int)ASPathGetCount(c->Path.Path) - 1) // at end of path
 	{
 		return 0;
 	}
 	// Check if we're too far from the current start of the path
-	pathTile = ASPathGetNode(c->Path, c->PathIndex);
+	pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
 	if (CHEBYSHEV_DISTANCE(
 		currentTile.x, currentTile.y, pathTile->x, pathTile->y) > 2)
 	{
 		return 0;
 	}
 	// Check if we're too far from the end of the path
-	pathEnd = ASPathGetNode(c->Path, ASPathGetCount(c->Path) - 1);
+	pathEnd = ASPathGetNode(c->Path.Path, ASPathGetCount(c->Path.Path) - 1);
 	if (CHEBYSHEV_DISTANCE(
 		goalTile.x, goalTile.y, pathEnd->x, pathEnd->y) > 0)
 	{
@@ -624,22 +548,20 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	{
 		// We need to recalculate A*
 
-		AStarContext ac;
-		ac.Map = &gMap;
-		ac.IsTileOk =
-			ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects;
 		// First, if the goal tile is blocked itself,
 		// find a nearby tile that can be walked to
-		c->Goal = MapSearchTileAround(ac.Map, goalTile, ac.IsTileOk);
+		c->Goal = MapSearchTileAround(
+			&gMap, goalTile,
+			ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects);
 
 		c->PathIndex = 1;	// start navigating to the next path node
-		ASPathDestroy(c->Path);
-		c->Path = ASPathCreate(
-			&cPathNodeSource, &ac, &currentTile, &c->Goal);
+		CachedPathDestroy(&c->Path);
+		c->Path = PathCacheCreate(
+			&gPathCache, currentTile, c->Goal, ignoreObjects, true);
 
 		// In case we can't calculate A* for some reason,
 		// try simple navigation again
-		if (ASPathGetCount(c->Path) <= 1)
+		if (ASPathGetCount(c->Path.Path) <= 1)
 		{
 			debug(
 				D_MAX,
@@ -760,14 +682,4 @@ int AITrack(TActor *actor, const Vec2i targetPos)
 	}
 
 	return cmd;
-}
-
-void AIContextTerminate(void *aiContext)
-{
-	AIGotoContext *c = aiContext;
-	if (c)
-	{
-		ASPathDestroy(c->Path);
-	}
-	CFREE(c);
 }

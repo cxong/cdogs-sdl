@@ -76,6 +76,7 @@ bool AreAllPlayersDeadAndNoLives(void);
 const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local);
 bool IsPlayerAlive(const PlayerData *player);
+bool IsPlayerHuman(const PlayerData *player);
 bool IsPlayerHumanAndAlive(const PlayerData *player);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);

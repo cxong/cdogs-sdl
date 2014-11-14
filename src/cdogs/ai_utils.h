@@ -77,6 +77,8 @@ int AIRetreatFrom(TActor *actor, const Vec2i from);
 // Like Hunt but biases towards 8 axis movement
 int AITrack(TActor *actor, const Vec2i targetPos);
 
-void AIContextTerminate(void *aiContext);
+// Pathfinding helper functions
+bool IsTileWalkable(Map *map, const Vec2i pos);
+bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos);
 
 #endif

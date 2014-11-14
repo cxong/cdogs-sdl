@@ -25,12 +25,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI_CONTEXT
-#define __AI_CONTEXT
+#pragma once
 
-#include "AStar.h"
 #include "config.h"
 #include "mission.h"
+#include "path_cache.h"
 #include "vector.h"
 
 // State data for various AI routines
@@ -79,7 +78,7 @@ typedef struct
 typedef struct
 {
 	Vec2i Goal;
-	ASPath Path;
+	CachedPath Path;
 	int PathIndex;
 	bool IsFollowing;
 } AIGotoContext;
@@ -106,5 +105,3 @@ void AIContextDestroy(AIContext *c);
 const char *AIStateGetChatterText(const AIState s);
 bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f);
 void AIContextSetState(AIContext *c, const AIState s);
-
-#endif

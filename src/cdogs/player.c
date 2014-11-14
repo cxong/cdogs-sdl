@@ -238,9 +238,13 @@ bool IsPlayerAlive(const PlayerData *player)
 	const TActor *p = CArrayGet(&gActors, player->Id);
 	return !p->dead;
 }
+bool IsPlayerHuman(const PlayerData *player)
+{
+	return player->inputDevice != INPUT_DEVICE_AI;
+}
 bool IsPlayerHumanAndAlive(const PlayerData *player)
 {
-	return IsPlayerAlive(player) && player->inputDevice != INPUT_DEVICE_AI;
+	return IsPlayerAlive(player) && IsPlayerHuman(player);
 }
 
 Vec2i PlayersGetMidpoint(void)

@@ -37,7 +37,7 @@ void AIContextDestroy(AIContext *c)
 {
 	if (c)
 	{
-		ASPathDestroy(c->Goto.Path);
+		CachedPathDestroy(&c->Goto.Path);
 	}
 	CFREE(c);
 }
