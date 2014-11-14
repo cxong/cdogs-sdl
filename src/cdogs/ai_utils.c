@@ -481,7 +481,6 @@ static int AStarFollow(
 	{
 		c->PathIndex++;
 		pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
-		c->IsFollowing = 0;
 	}
 	// Go directly to the center of the next tile
 	return AIGotoDirect(a, Vec2iCenterOfTile(*pathTile));

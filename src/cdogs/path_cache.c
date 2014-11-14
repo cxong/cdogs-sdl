@@ -31,7 +31,7 @@
 
 #include "ai_utils.h"
 
-#define PATH_CACHE_MAX 64
+#define PATH_CACHE_MAX 128
 
 PathCache gPathCache;
 

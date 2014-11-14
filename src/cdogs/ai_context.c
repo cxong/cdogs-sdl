@@ -31,6 +31,8 @@ AIContext *AIContextNew(void)
 {
 	AIContext *c;
 	CCALLOC(c, sizeof *c);
+	c->EnemyId = -1;
+	c->GunRangeScalar = 1.0;
 	return c;
 }
 void AIContextDestroy(AIContext *c)

@@ -97,6 +97,8 @@ typedef struct
 	Vec2i LastTile;
 	bool IsStuckTooLong;
 	AIGotoContext Goto;
+	int EnemyId;
+	double GunRangeScalar;
 } AIContext;
 
 AIContext *AIContextNew(void);

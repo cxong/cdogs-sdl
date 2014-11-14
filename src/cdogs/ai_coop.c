@@ -174,13 +174,25 @@ static int AICoopGetCmdNormal(TActor *actor)
 			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
 		{
 			AIContextSetState(actor->aiContext, AI_STATE_HUNT);
+			if (closestEnemy->uid != actor->aiContext->EnemyId)
+			{
+				// Engaging new enemy now
+				actor->aiContext->EnemyId = closestEnemy->uid;
+				actor->aiContext->GunRangeScalar = 1.0;
+			}
+			else
+			{
+				// Still attacking the same enemy; inch closer
+				actor->aiContext->GunRangeScalar *= 0.99;
+			}
 			// Move to the ideal distance for the weapon
 			int cmd = 0;
 			const int gunRange = GunGetRange(ActorGetGun(actor)->Gun);
 			const int distanceSquared = DistanceSquared(
 				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos));
 			const bool canFire = ActorGetGun(actor)->lock <= 0;
-			if (distanceSquared > gunRange * gunRange * 3 * 3 / 4 / 4)
+			if ((double)distanceSquared >
+				gunRange * gunRange * 3 * 3 / 4 / 4 * actor->aiContext->GunRangeScalar)
 			{
 				// Move towards the enemy, fire if able
 				// But don't bother firing if too far away
@@ -194,7 +206,9 @@ static int AICoopGetCmdNormal(TActor *actor)
 					cmd = AITrack(actor, closestEnemy->Pos);
 				}
 			}
-			else if (distanceSquared < gunRange * gunRange / 3 && !canFire)
+			else if ((double)distanceSquared <
+				gunRange * gunRange / 3 * actor->aiContext->GunRangeScalar &&
+				!canFire)
 			{
 				// Move away from the enemy because we're too close
 				// Only move away if we can't fire; otherwise turn to fire
