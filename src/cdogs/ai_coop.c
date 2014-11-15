@@ -513,7 +513,7 @@ static void FindObjectivesSortedByDistance(
 			continue;
 		}
 		struct Objective *o = CArrayGet(&gMission.Objectives, i);
-		if (o->done >= mo->Required)
+		if (o->done >= mo->Required || MapGetExploredPercentage(&gMap) == 100)
 		{
 			continue;
 		}

@@ -1116,6 +1116,10 @@ void MapLoad(
 			{
 				map->NumExplorableTiles++;
 			}
+			else
+			{
+				MapMarkAsVisited(map, v);
+			}
 		}
 	}
 }
