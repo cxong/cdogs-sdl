@@ -1331,5 +1331,6 @@ Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func)
 }
 bool MapTileIsUnexplored(Map *map, Vec2i tile)
 {
-	return !MapGetTile(map, tile)->isVisited;
+	const Tile *t = MapGetTile(map, tile);
+	return !t->isVisited && !(t->flags & MAPTILE_NO_WALK);
 }
