@@ -66,7 +66,6 @@
 
 
 static void Campaign(GraphicsDevice *graphics, CampaignOptions *co);
-static void DogFight(CampaignOptions *co);
 
 void ScreenStart(void)
 {
