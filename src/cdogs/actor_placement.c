@@ -164,9 +164,9 @@ Vec2i PlacePlayer(
 	aa.Health = p->Char.maxHealth;
 	aa.PlayerId = p->playerIndex;
 
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (IsPVP(gCampaign.Entry.Mode))
 	{
-		// In a dogfight, always place players apart
+		// In a PVP mode, always place players apart
 		aa.FullPos = PlaceActor(&gMap);
 	}
 	else if (gMission.missionData->Type == MAPTYPE_STATIC &&

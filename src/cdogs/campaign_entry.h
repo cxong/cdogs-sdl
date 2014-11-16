@@ -29,7 +29,7 @@
 #ifndef __CAMPAIGN_ENTRY
 #define __CAMPAIGN_ENTRY
 
-#include "utils.h"
+#include "game_mode.h"
 
 typedef struct
 {
@@ -37,16 +37,15 @@ typedef struct
 	char *Path;
 	char *Info;
 	bool IsBuiltin;
-	campaign_mode_e Mode;
+	GameMode Mode;
 	int BuiltinIndex;
 	int NumMissions;
 } CampaignEntry;
 
-void CampaignEntryInit(
-	CampaignEntry *entry, const char *title, campaign_mode_e mode);
+void CampaignEntryInit(CampaignEntry *entry, const char *title, GameMode mode);
 void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src);
 bool CampaignEntryTryLoad(
-	CampaignEntry *entry, const char *path, campaign_mode_e mode);
+	CampaignEntry *entry, const char *path, GameMode mode);
 void CampaignEntryTerminate(CampaignEntry *entry);
 
 #endif

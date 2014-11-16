@@ -310,7 +310,7 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 			{
 				strcpy((char *)def.Path, entry->Path);
 			}
-			def.CampaignMode = entry->Mode;
+			def.GameMode = entry->Mode;
 			return NetEncode((int)msg, &def, NetMsgCampaignDef_fields);
 		}
 	case SERVER_MSG_PLAYER_DATA:

@@ -133,7 +133,7 @@ static bool IsDifferent(const TActor *a, const TActor *b)
 }
 TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer)
 {
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// free for all; look for anybody
 		return AIGetClosestActor(from, NULL, IsDifferent);
@@ -161,7 +161,7 @@ static bool IsBadAndVisible(const TActor *a, const TActor *b)
 const TActor *AIGetClosestVisibleEnemy(
 	const TActor *from, const bool isPlayer)
 {
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// free for all; look for anybody
 		return AIGetClosestActor(from->Pos, from, IsDifferent);
@@ -394,7 +394,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 		frontPos,
 		TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, a),
-		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
+		IsPVP(gCampaign.Entry.Mode));
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

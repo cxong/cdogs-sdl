@@ -172,7 +172,7 @@ void PlayerDataTerminate(CArray *p)
 
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
 {
-	p->Lives = gConfig.Game.Lives;
+	p->Lives = ModeLives(gCampaign.Entry.Mode);
 
 	p->score = 0;
 	p->kills = 0;

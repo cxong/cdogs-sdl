@@ -4,7 +4,7 @@ message NetMsgClientId {
 
 message NetMsgCampaignDef {
 	required string Path = 1;
-	required uint32 CampaignMode = 2;
+	required uint32 GameMode = 2;
 }
 
 message NetMsgPlayerData {

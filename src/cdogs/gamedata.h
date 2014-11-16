@@ -95,15 +95,6 @@ void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
 void MissionOptionsInit(struct MissionOptions *mo);
 void MissionOptionsTerminate(struct MissionOptions *mo);
 
-int IsIntroNeeded(campaign_mode_e mode);
-int IsScoreNeeded(campaign_mode_e mode);
-int HasObjectives(campaign_mode_e mode);
-int IsAutoMapEnabled(campaign_mode_e mode);
-int IsPasswordAllowed(campaign_mode_e mode);
-int IsMissionBriefingNeeded(campaign_mode_e mode);
-int AreKeysAllowed(campaign_mode_e mode);
-int AreHealthPickupsAllowed(campaign_mode_e mode);
-
 bool GameIsMouseUsed(void);
 
 #endif

@@ -61,8 +61,8 @@ void HealthPickupsUpdate(HealthPickups *h, int ticks)
 	double scalar = 1.0;
 	// Update time until next spawn based on:
 	// Damage taken (find player with lowest health)
-	int minHealth = 200 * gConfig.Game.PlayerHP / 100;
-	int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
+	int minHealth = ModeMaxHealth(gCampaign.Entry.Mode);
+	int maxHealth = minHealth;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);

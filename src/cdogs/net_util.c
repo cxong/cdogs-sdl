@@ -83,10 +83,10 @@ NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p)
 }
 
 void NetMsgCampaignDefConvert(
-	const NetMsgCampaignDef *def, char *outPath, campaign_mode_e *outMode)
+	const NetMsgCampaignDef *def, char *outPath, GameMode *outMode)
 {
 	strcpy(outPath, def->Path);
-	*outMode = def->CampaignMode;
+	*outMode = def->GameMode;
 }
 void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
 {

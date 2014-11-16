@@ -174,13 +174,6 @@ typedef enum
 	INPUT_DEVICE_COUNT
 } input_device_e;
 
-typedef enum
-{
-	CAMPAIGN_MODE_NORMAL,
-	CAMPAIGN_MODE_DOGFIGHT,
-	CAMPAIGN_MODE_QUICK_PLAY
-} campaign_mode_e;
-
 char *PercentStr(int p);
 char *Div8Str(int i);
 

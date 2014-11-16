@@ -424,7 +424,6 @@ static Vec2i GetConstrainedFullPos(
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
-	const bool isDogfight = gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT;
 	const Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 
 	const Vec2i oldPos = actor->Pos;
@@ -438,7 +437,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	TTileItem *target = GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
-		isDogfight);
+		IsPVP(gCampaign.Entry.Mode));
 	if (target)
 	{
 		Vec2i realXPos, realYPos;
@@ -498,7 +497,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
-			isDogfight))
+			IsPVP(gCampaign.Entry.Mode)))
 		{
 			pos.y = actor->Pos.y;
 		}
@@ -506,7 +505,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		if (GetItemOnTileInCollision(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
-			isDogfight))
+			IsPVP(gCampaign.Entry.Mode)))
 		{
 			pos.x = actor->Pos.x;
 		}
@@ -532,7 +531,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		target = GetItemOnTileInCollision(
 			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
 			CalcCollisionTeam(1, actor),
-			isDogfight);
+			IsPVP(gCampaign.Entry.Mode));
 		if (target && target->kind == KIND_OBJECT)
 		{
 			PickupObject(actor, CArrayGet(&gObjs, target->id));
@@ -647,7 +646,7 @@ static Vec2i GetConstrainedFullPos(
 void ActorHeal(TActor *actor, int health)
 {
 	actor->health += health;
-	actor->health = MIN(actor->health, 200 * gConfig.Game.PlayerHP / 100);
+	actor->health = MIN(actor->health, ModeMaxHealth(gCampaign.Entry.Mode));
 }
 
 void InjureActor(TActor * actor, int injury)
@@ -869,7 +868,7 @@ void UpdateAllActors(int ticks)
 			TTileItem *collidingItem = GetItemOnTileInCollision(
 				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 				COLLISIONTEAM_NONE,
-				gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT);
+				IsPVP(gCampaign.Entry.Mode));
 			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 			{
 				TActor *collidingActor = CArrayGet(
@@ -1276,7 +1275,7 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 
 bool ActorIsInvulnerable(
 	const TActor *actor, const int flags, const int player,
-	const campaign_mode_e mode)
+	const GameMode mode)
 {
 	if (actor->flags & FLAGS_INVULNERABLE)
 	{
@@ -1294,7 +1293,7 @@ bool ActorIsInvulnerable(
 		const bool isTargetGood =
 			actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY);
 		// Friendly fire (NPCs)
-		if (mode != CAMPAIGN_MODE_DOGFIGHT &&
+		if (!IsPVP(mode) &&
 			!gConfig.Game.FriendlyFire &&
 			isGood && isTargetGood)
 		{

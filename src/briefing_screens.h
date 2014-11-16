@@ -35,7 +35,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m);
 bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
 void ScreenVictory(CampaignOptions *c);
 
-void ScreenDogfightScores(CArray *scores);	// of int
-void ScreenDogfightFinalScores(CArray *scores);	// of int
+void ScreenDogfightScores(void);
+void ScreenDogfightFinalScores(void);
 
 #endif

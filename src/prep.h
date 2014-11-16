@@ -64,7 +64,7 @@ bool ScreenWaitForNewPlayers(void);
 
 // Screen to select the number of (local) players
 bool NumPlayersSelection(
-	campaign_mode_e mode, GraphicsDevice *graphics, EventHandlers *handlers);
+	GameMode mode, GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance

@@ -190,6 +190,6 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
 	const TActor *actor, const int flags, const int player,
-	const campaign_mode_e mode);
+	const GameMode mode);
 
 #endif

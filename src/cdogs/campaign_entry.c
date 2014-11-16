@@ -41,8 +41,7 @@ static bool IsCampaignOK(const char *path, char **buf, int *numMissions)
 	return MapNewScan(path, buf, numMissions) == 0;
 }
 
-void CampaignEntryInit(
-	CampaignEntry *entry, const char *title, campaign_mode_e mode)
+void CampaignEntryInit(CampaignEntry *entry, const char *title, GameMode mode)
 {
 	memset(entry, 0, sizeof *entry);
 	CSTRDUP(entry->Info, title);
@@ -56,7 +55,7 @@ void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src)
 	if (src->Info) CSTRDUP(dst->Info, src->Info);
 }
 bool CampaignEntryTryLoad(
-	CampaignEntry *entry, const char *path, campaign_mode_e mode)
+	CampaignEntry *entry, const char *path, GameMode mode)
 {
 	char *buf;
 	int numMissions;

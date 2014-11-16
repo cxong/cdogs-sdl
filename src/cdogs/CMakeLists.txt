@@ -33,6 +33,7 @@ set(CDOGS_SOURCES
 	font.c
 	game_events.c
 	game_loop.c
+	game_mode.c
 	gamedata.c
 	grafx.c
 	grafx_bg.c
@@ -108,6 +109,7 @@ set(CDOGS_HEADERS
 	font.h
 	game_events.h
 	game_loop.h
+	game_mode.h
 	gamedata.h
 	grafx.h
 	grafx_bg.h

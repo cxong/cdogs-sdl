@@ -52,6 +52,9 @@
 #include "sounds.h"
 
 int MusicPlay(SoundDevice *device, const char *path);
+void MusicPlayGame(
+	SoundDevice *device, const char *missionPath, const char *music);
+void MusicPlayMenu(SoundDevice *device);
 void MusicStop(SoundDevice *device);
 void MusicPause(SoundDevice *device);
 void MusicResume(SoundDevice *device);

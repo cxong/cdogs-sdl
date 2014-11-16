@@ -50,19 +50,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
 
 #include <SDL.h>
 
-#include <cdogs/actor_placement.h>
-#include <cdogs/ai.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/game_events.h>
-#include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
@@ -86,304 +81,13 @@
 #include <cdogs/physfs/physfs.h>
 
 #include "autosave.h"
-#include "briefing_screens.h"
 #include "credits.h"
-#include "game.h"
 #include "mainmenu.h"
-#include "password.h"
 #include "player_select_menus.h"
 #include "prep.h"
+#include "screens.h"
 #include "XGetopt.h"
 
-
-static void StartPlayers(const int maxHealth, const int mission)
-{
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsUsed)
-		{
-			return;
-		}
-		PlayerDataStart(p, maxHealth, mission);
-		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_PLAYER_DATA, p);
-	}
-}
-
-static void AddAndPlacePlayers(void)
-{
-	Vec2i firstPos = Vec2iZero();
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsUsed)
-		{
-			continue;
-		}
-
-		firstPos = PlacePlayer(&gMap, p, firstPos, true);
-	}
-}
-
-static void PlayGameSong(void)
-{
-	int success = 0;
-	// Play a tune
-	// Start by trying to play a mission specific song,
-	// otherwise pick one from the general collection...
-	MusicStop(&gSoundDevice);
-	if (strlen(gMission.missionData->Song) > 0)
-	{
-		char buf[CDOGS_PATH_MAX];
-		size_t pathLen = MAX(
-			strrchr(gCampaign.Entry.Path, '\\'),
-			strrchr(gCampaign.Entry.Path, '/')) - gCampaign.Entry.Path;
-		strncpy(buf, gCampaign.Entry.Path, pathLen);
-		buf[pathLen] = '\0';
-
-		strcat(buf, "/");
-		strcat(buf, gMission.missionData->Song);
-		success = !MusicPlay(&gSoundDevice, buf);
-	}
-	if (!success && gGameSongs != NULL)
-	{
-		MusicPlay(&gSoundDevice, gGameSongs->path);
-		ShiftSongs(&gGameSongs);
-	}
-}
-
-static void PlayMenuSong(void)
-{
-	MusicStop(&gSoundDevice);
-	if (gMenuSongs)
-	{
-		MusicPlay(&gSoundDevice, gMenuSongs->path);
-		ShiftSongs(&gMenuSongs);
-	}
-}
-
-
-int Game(GraphicsDevice *graphics, CampaignOptions *co)
-{
-	bool run = false;
-	bool gameOver = true;
-	do
-	{
-		CampaignAndMissionSetup(1, co, &gMission);
-		if (IsMissionBriefingNeeded(co->Entry.Mode))
-		{
-			if (!ScreenMissionBriefing(&gMission))
-			{
-				run = false;
-				goto bail;
-			}
-		}
-		if (!PlayerEquip())
-		{
-			run = false;
-			goto bail;
-		}
-
-		// Initialise before waiting for game start;
-		// server will send us messages
-		GameEventsInit(&gGameEvents);
-
-		if (gCampaign.IsClient)
-		{
-			if (!ScreenWaitForGameStart())
-			{
-				run = false;
-				goto bail;
-			}
-		}
-
-		MapLoad(&gMap, &gMission, co);
-		if (!gCampaign.IsClient)
-		{
-			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
-			// Note: place players first,
-			// as bad guys are placed away from players
-			const int maxHealth = 200 * gConfig.Game.PlayerHP / 100;
-			StartPlayers(maxHealth, co->MissionIndex);
-			AddAndPlacePlayers();
-			InitializeBadGuys();
-			CreateEnemies();
-		}
-		PlayGameSong();
-		run = RunGame(&gMission, &gMap);
-		GameEventsTerminate(&gGameEvents);
-
-		const int survivingPlayers = GetNumPlayers(true, false, false);
-		gameOver = survivingPlayers == 0 ||
-			co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
-
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			p->survived = IsPlayerAlive(p);
-			if (IsPlayerAlive(p))
-			{
-				TActor *player = CArrayGet(&gActors, p->Id);
-				p->hp = player->health;
-			}
-		}
-
-		MissionEnd();
-		PlayMenuSong();
-
-		if (run)
-		{
-			ScreenMissionSummary(&gCampaign, &gMission);
-			// Note: must use cached value because players get cleaned up
-			// in CleanupMission()
-			if (gameOver && survivingPlayers > 0)
-			{
-				ScreenVictory(&gCampaign);
-			}
-		}
-
-		bool allTime = false;
-		bool todays = false;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (((run && !p->survived) || gameOver) && p->IsLocal)
-			{
-				EnterHighScore(p);
-				allTime |= p->allTime >= 0;
-				todays |= p->today >= 0;
-			}
-
-			if (!p->survived)
-			{
-				p->totalScore = 0;
-				p->missions = 0;
-			}
-			else
-			{
-				p->missions++;
-			}
-			p->lastMission = co->MissionIndex;
-		}
-		if (allTime)
-		{
-			DisplayAllTimeHighScores(graphics);
-		}
-		if (todays)
-		{
-			DisplayTodaysHighScores(graphics);
-		}
-
-		co->MissionIndex++;
-
-	bail:
-		// Need to terminate the mission later as it is used in calculating scores
-		MissionOptionsTerminate(&gMission);
-	}
-	while (run && !gameOver);
-	return run;
-}
-
-int Campaign(GraphicsDevice *graphics, CampaignOptions *co)
-{
-	if (IsPasswordAllowed(co->Entry.Mode))
-	{
-		MissionSave m;
-		AutosaveLoadMission(
-			&gAutosave, &m, co->Entry.Path, co->Entry.BuiltinIndex);
-		co->MissionIndex = EnterPassword(graphics, m.Password);
-	}
-	else
-	{
-		co->MissionIndex = 0;
-	}
-
-	return Game(graphics, co);
-}
-
-#define DOGFIGHT_MAX_SCORE 5
-
-void DogFight(CampaignOptions *co)
-{
-	CArray scores;
-	CArrayInit(&scores, sizeof(int));
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		int score = 0;
-		CArrayPushBack(&scores, &score);
-	}
-	int maxScore = 0;
-
-	co->MissionIndex = 0;
-
-	bool run = false;
-	do
-	{
-		CampaignAndMissionSetup(1, co, &gMission);
-		PlayerEquip();
-
-		// Initialise before waiting for game start;
-		// server will send us messages
-		GameEventsInit(&gGameEvents);
-
-		if (gCampaign.IsClient)
-		{
-			if (!ScreenWaitForGameStart())
-			{
-				run = false;
-				break;
-			}
-		}
-
-		MapLoad(&gMap, &gMission, co);
-		srand((unsigned int)time(NULL));
-		if (!gCampaign.IsClient)
-		{
-			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
-			StartPlayers(500, 0);
-			AddAndPlacePlayers();
-		}
-		PlayGameSong();
-
-		// Don't quit if all players died, that's normal for dogfights
-		run =
-			RunGame(&gMission, &gMap) ||
-			GetNumPlayers(true, false, false) == 0;
-		GameEventsTerminate(&gGameEvents);
-
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (IsPlayerAlive(p))
-			{
-				int *score = CArrayGet(&scores, i);
-				(*score)++;
-				if (*score > maxScore)
-				{
-					maxScore = *score;
-				}
-			}
-		}
-
-		MissionEnd();
-		PlayMenuSong();
-
-		if (run)
-		{
-			ScreenDogfightScores(&scores);
-		}
-
-		// Need to terminate the mission later as it is used in calculating scores
-		MissionOptionsTerminate(&gMission);
-	} while (run && maxScore < DOGFIGHT_MAX_SCORE);
-
-	if (run)
-	{
-		ScreenDogfightFinalScores(&scores);
-	}
-
-	CArrayTerminate(&scores);
-}
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
@@ -391,67 +95,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		gCampaign.IsLoaded ||
 		MainMenu(&gGraphicsDevice, creditsDisplayer, campaigns))
 	{
-		// Reset player datas
-		PlayerDataTerminate(&gPlayerDatas);
-		PlayerDataInit(&gPlayerDatas);
-
-		debug(D_NORMAL, ">> Entering campaign\n");
-		if (IsIntroNeeded(gCampaign.Entry.Mode))
-		{
-			if (!ScreenCampaignIntro(&gCampaign.Setting))
-			{
-				gCampaign.IsLoaded = false;
-				continue;
-			}
-		}
-
-		if (gCampaign.IsClient)
-		{
-			debug(D_NORMAL, ">> Waiting for number of players from server\n");
-			if (!ScreenWaitForRemotePlayers())
-			{
-				gCampaign.IsLoaded = false;
-				continue;
-			}
-		}
-
-		debug(D_NORMAL, ">> Select number of players\n");
-		if (!NumPlayersSelection(
-			gCampaign.Entry.Mode, &gGraphicsDevice, &gEventHandlers))
-		{
-			gCampaign.IsLoaded = false;
-			continue;
-		}
-
-		if (gCampaign.IsClient)
-		{
-			debug(D_NORMAL, ">> Registering new players\n");
-			if (!ScreenWaitForNewPlayers())
-			{
-				gCampaign.IsLoaded = false;
-				continue;
-			}
-		}
-
-		debug(D_NORMAL, ">> Entering selection\n");
-		if (!PlayerSelection())
-		{
-			gCampaign.IsLoaded = false;
-			continue;
-		}
-
-		debug(D_NORMAL, ">> Starting campaign\n");
-		if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
-		{
-			DogFight(&gCampaign);
-		}
-		else if (Campaign(&gGraphicsDevice, &gCampaign))
-		{
-			DisplayAllTimeHighScores(&gGraphicsDevice);
-			DisplayTodaysHighScores(&gGraphicsDevice);
-		}
-		gCampaign.IsLoaded = false;
-		gCampaign.IsClient = false;	// TODO: select is client from menu
+		ScreenStart();
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 
@@ -684,7 +328,7 @@ int main(int argc, char *argv[])
 	LoadSongs();
 	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 
-	PlayMenuSong();
+	MusicPlayMenu(&gSoundDevice);
 
 	EventInit(&gEventHandlers, NULL, true);
 	NetClientInit(&gNetClient);
@@ -750,8 +394,7 @@ int main(int argc, char *argv[])
 	if (loadCampaign != NULL)
 	{
 		CampaignEntry entry;
-		if (CampaignEntryTryLoad(
-			&entry, loadCampaign, CAMPAIGN_MODE_NORMAL))
+		if (CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL))
 		{
 			CampaignLoad(&gCampaign, &entry);
 		}

@@ -687,12 +687,12 @@ bool CanCompleteMission(const struct MissionOptions *options)
 {
 	int i;
 
-	// Death is the only escape from dogfights and quick play
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	// Death is the only escape from PVP and quick play
+	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		return GetNumPlayers(true, false, false) <= 1;
 	}
-	else if (gCampaign.Entry.Mode == CAMPAIGN_MODE_QUICK_PLAY)
+	else if (gCampaign.Entry.Mode == GAME_MODE_QUICK_PLAY)
 	{
 		return GetNumPlayers(true, false, false) == 0;
 	}
@@ -722,8 +722,7 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	}
 
 	// Check if dogfight is complete
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT &&
-		GetNumPlayers(true, false, false) <= 1)
+	if (IsPVP(gCampaign.Entry.Mode) && GetNumPlayers(true, false, false) <= 1)
 	{
 		return 1;
 	}

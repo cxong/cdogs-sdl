@@ -164,10 +164,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetMsgCampaignDef def;
 			NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
 			char campaignPath[CDOGS_PATH_MAX];
-			campaign_mode_e campaignMode;
-			NetMsgCampaignDefConvert(&def, campaignPath, &campaignMode);
+			GameMode mode;
+			NetMsgCampaignDefConvert(&def, campaignPath, &mode);
 			CampaignEntry entry;
-			if (CampaignEntryTryLoad(&entry, campaignPath, campaignMode))
+			if (CampaignEntryTryLoad(&entry, campaignPath, mode))
 			{
 				CampaignLoad(&gCampaign, &entry);
 				gCampaign.IsClient = true;

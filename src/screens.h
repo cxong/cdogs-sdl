@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,45 +46,9 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __COLLISION
-#define __COLLISION
+#pragma once
 
-#include "actors.h"
-#include "map.h"
+#include <cdogs/campaigns.h>
+#include <cdogs/grafx.h>
 
-#define HitWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_WALK)
-#define ShootWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_SHOOT)
-
-// Which "team" the actor's on, for collision
-// Actors on the same team don't have to collide
-typedef enum
-{
-	COLLISIONTEAM_NONE,
-	COLLISIONTEAM_GOOD,
-	COLLISIONTEAM_BAD
-} CollisionTeam;
-
-CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor);
-
-bool IsCollisionWithWall(Vec2i pos, Vec2i size);
-// Check collision of an object with a diamond shape
-bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i size);
-bool CollisionIsOnSameTeam(
-	const TTileItem *i, const CollisionTeam team, const bool isPVP);
-TTileItem *GetItemOnTileInCollision(
-	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
-	const bool isPVP);
-typedef void (*CollideItemFunc)(TTileItem *, void *);
-void CollideAllItems(
-	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isPVP,
-	CollideItemFunc func, void *data);
-
-bool AreasCollide(
-	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);
-
-// Resolve wall bounces
-Vec2i GetWallBounceFullPos(
-	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull);
-
-#endif
+void ScreenStart(void);

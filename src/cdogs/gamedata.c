@@ -83,17 +83,17 @@ void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	CampaignSettingInit(&co->Setting);
 	if (entry->IsBuiltin)
 	{
-		if (entry->Mode == CAMPAIGN_MODE_NORMAL)
+		if (entry->Mode == GAME_MODE_NORMAL)
 		{
 			SetupBuiltinCampaign(entry->BuiltinIndex);
 			co->IsLoaded = true;
 		}
-		else if (entry->Mode == CAMPAIGN_MODE_DOGFIGHT)
+		else if (entry->Mode == GAME_MODE_DOGFIGHT)
 		{
 			SetupBuiltinDogfight(entry->BuiltinIndex);
 			co->IsLoaded = true;
 		}
-		else if (entry->Mode == CAMPAIGN_MODE_QUICK_PLAY)
+		else if (entry->Mode == GAME_MODE_QUICK_PLAY)
 		{
 			SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
 			co->IsLoaded = true;
@@ -229,46 +229,6 @@ void LoadSongList(struct SongDef **songList, const char *dirPath)
 
 bail:
 	tinydir_close(&dir);
-}
-
-int IsIntroNeeded(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL;
-}
-
-int IsScoreNeeded(campaign_mode_e mode)
-{
-	return mode != CAMPAIGN_MODE_DOGFIGHT;
-}
-
-int HasObjectives(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL;
-}
-
-int IsAutoMapEnabled(campaign_mode_e mode)
-{
-	return mode != CAMPAIGN_MODE_DOGFIGHT;
-}
-
-int IsPasswordAllowed(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL;
-}
-
-int IsMissionBriefingNeeded(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL;
-}
-
-int AreKeysAllowed(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL;
-}
-
-int AreHealthPickupsAllowed(campaign_mode_e mode)
-{
-	return mode == CAMPAIGN_MODE_NORMAL || mode == CAMPAIGN_MODE_QUICK_PLAY;
 }
 
 

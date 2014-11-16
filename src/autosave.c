@@ -52,7 +52,7 @@ void MissionSaveInit(MissionSave *ms)
 void AutosaveInit(Autosave *autosave)
 {
 	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
-	autosave->LastMission.Campaign.Mode = CAMPAIGN_MODE_NORMAL;
+	autosave->LastMission.Campaign.Mode = GAME_MODE_NORMAL;
 	strcpy(autosave->LastMission.Password, "");
 	CArrayInit(&autosave->Missions, sizeof(MissionSave));
 }
@@ -70,7 +70,7 @@ static void LoadCampaignNode(CampaignEntry *c, json_t *node)
 {
 	CSTRDUP(c->Path, json_find_first_label(node, "Path")->child->text);
 	LoadBool(&c->IsBuiltin, node, "IsBuiltin");
-	c->Mode = CAMPAIGN_MODE_NORMAL;
+	c->Mode = GAME_MODE_NORMAL;
 	c->BuiltinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
 }
 static void AddCampaignNode(CampaignEntry *c, json_t *root)

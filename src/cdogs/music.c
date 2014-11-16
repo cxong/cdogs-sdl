@@ -34,6 +34,7 @@
 #include <SDL_mixer.h>
 
 #include "config.h"
+#include "gamedata.h"
 #include "sounds.h"
 
 
@@ -71,6 +72,38 @@ int MusicPlay(SoundDevice *device, const char *path)
 	}
 
 	return 0;
+}
+
+void MusicPlayGame(
+	SoundDevice *device, const char *missionPath, const char *music)
+{
+	// Play a tune
+	// Start by trying to play a mission specific song,
+	// otherwise pick one from the general collection...
+	MusicStop(device);
+	bool played = false;
+	if (music != NULL && strlen(music) != 0)
+	{
+		char buf[CDOGS_PATH_MAX];
+		PathGetDirname(buf, missionPath);
+		strcat(buf, "/");
+		strcat(buf, music);
+		played = !MusicPlay(device, buf);
+	}
+	if (!played && gGameSongs != NULL)
+	{
+		MusicPlay(device, gGameSongs->path);
+		ShiftSongs(&gGameSongs);
+	}
+}
+void MusicPlayMenu(SoundDevice *device)
+{
+	MusicStop(device);
+	if (gMenuSongs)
+	{
+		MusicPlay(device, gMenuSongs->path);
+		ShiftSongs(&gMenuSongs);
+	}
 }
 
 void MusicStop(SoundDevice *device)

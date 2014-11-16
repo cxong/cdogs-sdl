@@ -124,7 +124,7 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 	Vec2i exitSize = Vec2iAdd(Vec2iMinus(gMap.ExitEnd, exitPos), Vec2iUnit());
 	color_t color = colorExit;
 
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	if (!HasExit(gCampaign.Entry.Mode))
 	{
 		return;
 	}

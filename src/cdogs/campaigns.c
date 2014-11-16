@@ -73,8 +73,9 @@ static void CampaignListInit(campaign_list_t *list);
 static void CampaignListTerminate(campaign_list_t *list);
 void LoadBuiltinCampaigns(campaign_list_t *list);
 void LoadBuiltinDogfights(campaign_list_t *list);
-void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode);
+static void LoadCampaignsFromFolder(
+	campaign_list_t *list, const char *name, const char *path,
+	const GameMode mode);
 static void LoadQuickPlayEntry(CampaignEntry *entry);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns)
@@ -92,7 +93,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		&campaigns->campaignList,
 		"",
 		buf,
-		CAMPAIGN_MODE_NORMAL);
+		GAME_MODE_NORMAL);
 
 	printf("\nDogfights:\n");
 
@@ -102,7 +103,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		&campaigns->dogfightList,
 		"",
 		buf,
-		CAMPAIGN_MODE_DOGFIGHT);
+		GAME_MODE_DOGFIGHT);
 
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
 
@@ -140,10 +141,10 @@ static void CampaignListTerminate(campaign_list_t *list)
 	CArrayTerminate(&list->list);
 }
 
-void AddBuiltinCampaignEntry(
+static void AddBuiltinCampaignEntry(
 	campaign_list_t *list,
 	const char *title,
-	campaign_mode_e mode,
+	const GameMode mode,
 	int numMissions,
 	int builtinIndex);
 
@@ -155,7 +156,7 @@ void LoadBuiltinCampaigns(campaign_list_t *list)
 		AddBuiltinCampaignEntry(
 			list,
 			gCampaign.Setting.Title,
-			CAMPAIGN_MODE_NORMAL,
+			GAME_MODE_NORMAL,
 			gCampaign.Setting.Missions.size,
 			i);
 	}
@@ -166,7 +167,7 @@ void LoadBuiltinDogfights(campaign_list_t *list)
 	for (i = 0; SetupBuiltinDogfight(i); i++)
 	{
 		AddBuiltinCampaignEntry(
-			list, gCampaign.Setting.Title, CAMPAIGN_MODE_DOGFIGHT, 1, i);
+			list, gCampaign.Setting.Title, GAME_MODE_DOGFIGHT, 1, i);
 	}
 }
 
@@ -176,12 +177,13 @@ static void LoadQuickPlayEntry(CampaignEntry *entry)
 	entry->Path = NULL;
 	entry->Info = NULL;
 	entry->IsBuiltin = 1;
-	entry->Mode = CAMPAIGN_MODE_QUICK_PLAY;
+	entry->Mode = GAME_MODE_QUICK_PLAY;
 	entry->BuiltinIndex = 0;
 }
 
-void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path, campaign_mode_e mode)
+static void LoadCampaignsFromFolder(
+	campaign_list_t *list, const char *name, const char *path,
+	const GameMode mode)
 {
 	tinydir_dir dir;
 	int i;
@@ -225,10 +227,10 @@ void LoadCampaignsFromFolder(
 	tinydir_close(&dir);
 }
 
-void AddBuiltinCampaignEntry(
+static void AddBuiltinCampaignEntry(
 	campaign_list_t *list,
 	const char *title,
-	campaign_mode_e mode,
+	const GameMode mode,
 	int numMissions,
 	int builtinIndex)
 {

@@ -374,7 +374,7 @@ static bool DoDamageCharacter(
 			// Don't score for friendly or player hits
 			const bool isFriendly =
 				(actor->flags & FLAGS_GOOD_GUY) ||
-				(gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT && actor->playerIndex >= 0);
+				(!IsPVP(gCampaign.Entry.Mode) && actor->playerIndex >= 0);
 			if (player >= 0 && power != 0 && !isFriendly)
 			{
 				// Calculate score based on
@@ -623,7 +623,7 @@ bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 	CollideAllItems(
 		&obj->tileItem, Vec2iFull2Real(pos),
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
-		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT,
+		IsPVP(gCampaign.Entry.Mode),
 		HitItemFunc, &data);
 	return data.HasHit;
 }

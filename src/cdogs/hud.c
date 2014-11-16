@@ -614,7 +614,7 @@ static void DrawPlayerStatus(
 	}
 
 	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
-		gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
 		DrawRadar(device, p, RADAR_SCALE, flags, showExit);
 	}
@@ -875,7 +875,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	}
 	// Only draw radar once if shared
 	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
-		gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
 	}
@@ -884,7 +884,7 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		if (AreAllPlayersDeadAndNoLives())
 		{
-			if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+			if (!IsPVP(gCampaign.Entry.Mode))
 			{
 				FontStrCenter("Game Over!");
 			}

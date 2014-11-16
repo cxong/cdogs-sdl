@@ -57,7 +57,7 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	// be "rescued"
 	// Also need victims to collide with everyone
 	if (!isActor || (actor->flags & (FLAGS_PRISONER | FLAGS_VICTIM)) ||
-		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+		IsPVP(gCampaign.Entry.Mode))
 	{
 		return COLLISIONTEAM_NONE;
 	}
@@ -195,7 +195,7 @@ bool AreasCollide(
 }
 
 bool CollisionIsOnSameTeam(
-	const TTileItem *i, const CollisionTeam team, const bool isDogfight)
+	const TTileItem *i, const CollisionTeam team, const bool isPVP)
 {
 	if (gConfig.Game.AllyCollision != ALLYCOLLISION_NORMAL)
 	{
@@ -209,14 +209,14 @@ bool CollisionIsOnSameTeam(
 			team != COLLISIONTEAM_NONE &&
 			itemTeam != COLLISIONTEAM_NONE &&
 			team == itemTeam &&
-			!isDogfight;
+			!isPVP;
 	}
 	return 0;
 }
 
 TTileItem *GetItemOnTileInCollision(
 	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
-	const bool isDogfight)
+	const bool isPVP)
 {
 	const Vec2i tv = Vec2iToTile(pos);
 	Vec2i dv;
@@ -235,7 +235,7 @@ TTileItem *GetItemOnTileInCollision(
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
 				// Don't collide if items are on the same team
-				if (!CollisionIsOnSameTeam(ti, team, isDogfight))
+				if (!CollisionIsOnSameTeam(ti, team, isPVP))
 				{
 					if (item != ti &&
 						(ti->flags & mask) &&
@@ -252,7 +252,7 @@ TTileItem *GetItemOnTileInCollision(
 }
 void CollideAllItems(
 	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isDogfight,
+	const int mask, const CollisionTeam team, const bool isPVP,
 	CollideItemFunc func, void *data)
 {
 	const Vec2i tv = Vec2iToTile(pos);
@@ -272,7 +272,7 @@ void CollideAllItems(
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
 				// Don't collide if items are on the same team
-				if (!CollisionIsOnSameTeam(ti, team, isDogfight))
+				if (!CollisionIsOnSameTeam(ti, team, isPVP))
 				{
 					if (item != ti &&
 						(ti->flags & mask) &&

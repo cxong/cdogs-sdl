@@ -143,7 +143,7 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 	if (GetItemOnTileInCollision(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
-		gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT))
+		IsPVP(gCampaign.Entry.Mode)))
 	{
 		return false;
 	}

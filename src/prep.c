@@ -165,7 +165,7 @@ static void CheckNewPlayersComplete(menu_t *menu, void *data)
 
 
 bool NumPlayersSelection(
-	campaign_mode_e mode, GraphicsDevice *graphics, EventHandlers *handlers)
+	GameMode mode, GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem ms;
 	MenuSystemInit(
@@ -181,7 +181,7 @@ bool NumPlayersSelection(
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		char buf[2];
-		if (mode == CAMPAIGN_MODE_DOGFIGHT && i == 0)
+		if (IsMultiplayer(mode) && i == 0)
 		{
 			// At least two players for dogfights
 			continue;

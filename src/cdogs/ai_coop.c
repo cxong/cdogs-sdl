@@ -128,7 +128,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// Follow the closest player with a lower ID
 	const TActor *closestPlayer = NULL;
 	int minDistance2 = -1;
-	if (gCampaign.Entry.Mode != CAMPAIGN_MODE_DOGFIGHT)
+	if (!IsPVP(gCampaign.Entry.Mode))
 	{
 		for (int i = 0; i < actor->playerIndex; i++)
 		{
@@ -323,8 +323,8 @@ static bool TryCompleteNearbyObjective(
 	AIObjectiveState *objState = &context->ObjectiveState;
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
-	// If dogfight, just find the closest enemy and go to them
-	if (gCampaign.Entry.Mode == CAMPAIGN_MODE_DOGFIGHT)
+	// If PVP, just find the closest enemy and go to them
+	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		const TActor *closestEnemy =
 			AIGetClosestVisibleEnemy(actor, true);

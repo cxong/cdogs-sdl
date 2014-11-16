@@ -353,7 +353,7 @@ static void ApplyBonuses(PlayerData *p, const int bonus)
 }
 static int GetHealthBonus(const PlayerData *p)
 {
-	const int maxHealth = (200 * gConfig.Game.PlayerHP) / 100;
+	const int maxHealth = ModeMaxHealth(gCampaign.Entry.Mode);
 	return p->hp > maxHealth - 50 ? (p->hp + 50 - maxHealth) * 10 : 0;
 }
 static int GetResurrectionFee(const PlayerData *p)
@@ -770,10 +770,10 @@ static void VictoryDraw(void *data)
 }
 
 static void DogfightScoresDraw(void *data);
-void ScreenDogfightScores(CArray *scores)
+void ScreenDogfightScores(void)
 {
 	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc, scores, DogfightScoresDraw);
+		NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, DogfightScoresDraw);
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
@@ -781,25 +781,24 @@ static void ShowPlayerScore(
 	const Vec2i pos, const Character *c, const char *name, const int score);
 static void DogfightScoresDraw(void *data)
 {
-	// This will only draw once
-	CArray *scores = data;
+	UNUSED(data);
 
+	// This will only draw once
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
 	GraphicsBlitBkg(&gGraphicsDevice);
 
 	CASSERT(
-		scores->size >= 2 && scores->size <= 4,
+		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
 		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < (int)scores->size; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		const int *score = CArrayGet(scores, i);
-		ShowPlayerScore(pos, &p->Char, p->name, *score);
+		ShowPlayerScore(pos, &p->Char, p->name, p->RoundsWon);
 	}
 }
 static void ShowPlayerScore(
@@ -813,19 +812,19 @@ static void ShowPlayerScore(
 }
 
 static void DogfightFinalScoresDraw(void *data);
-void ScreenDogfightFinalScores(CArray *scores)
+void ScreenDogfightFinalScores(void)
 {
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
-		scores, DogfightFinalScoresDraw);
+		NULL, DogfightFinalScoresDraw);
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
 static void DogfightFinalScoresDraw(void *data)
 {
-	// This will only draw once
-	CArray *scores = data;
+	UNUSED(data);
 
+	// This will only draw once
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
@@ -834,20 +833,20 @@ static void DogfightFinalScoresDraw(void *data)
 	// Work out who's the winner, or if it's a tie
 	int maxScore = 0;
 	int playersWithMaxScore = 0;
-	for (int i = 0; i < (int)scores->size; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		const int *score = CArrayGet(scores, i);
-		if (*score > maxScore)
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->RoundsWon > maxScore)
 		{
-			maxScore = *score;
+			maxScore = p->RoundsWon;
 			playersWithMaxScore = 1;
 		}
-		else if (*score == maxScore)
+		else if (p->RoundsWon == maxScore)
 		{
 			playersWithMaxScore++;
 		}
 	}
-	const bool isTie = playersWithMaxScore == (int)scores->size;
+	const bool isTie = playersWithMaxScore == (int)gPlayerDatas.size;
 
 	// Draw players and their names spread evenly around the screen.
 	// If it's a tie, display the message in the centre,
@@ -855,17 +854,16 @@ static void DogfightFinalScoresDraw(void *data)
 #define DRAW_TEXT	"It's a draw!"
 #define WINNER_TEXT	"Winner!"
 	CASSERT(
-		scores->size >= 2 && scores->size <= 4,
+		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
 		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < (int)scores->size; i++)
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		const int *score = CArrayGet(scores, i);
 		DisplayCharacterAndName(pos, &p->Char, p->name);
-		if (!isTie && maxScore == *score)
+		if (!isTie && maxScore == p->RoundsWon)
 		{
 			FontStr(
 				WINNER_TEXT,
