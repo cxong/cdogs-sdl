@@ -37,5 +37,6 @@ void ScreenVictory(CampaignOptions *c);
 
 void ScreenDogfightScores(void);
 void ScreenDogfightFinalScores(void);
+void ScreenDeathmatchFinalScores(void);
 
 #endif

@@ -91,10 +91,15 @@ static void TrackKills(int player, TActor *victim)
 	if (player >= 0)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, player);
-		if (victim->playerIndex >= 0 ||
-			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY)))
+		if (!IsPVP(gCampaign.Entry.Mode) &&
+			(victim->playerIndex >= 0 ||
+			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY))))
 		{
 			p->friendlies++;
+		}
+		else if (player == victim->playerIndex)
+		{
+			p->suicides++;
 		}
 		else
 		{

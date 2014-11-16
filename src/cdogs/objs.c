@@ -199,6 +199,10 @@ static void DamageObject(
 		{
 			ObjDestroy(object->tileItem.id);
 		}
+
+		// Update pathfinding cache since this object could have blocked a path
+		// before
+		PathCacheClear(&gPathCache);
 	}
 }
 

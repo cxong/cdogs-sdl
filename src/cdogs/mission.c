@@ -724,7 +724,20 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	// Check if dogfight is complete
 	if (IsPVP(gCampaign.Entry.Mode) && GetNumPlayers(true, false, false) <= 1)
 	{
-		return 1;
+		// Also check that only one player has lives left
+		int numPlayersWithLives = 0;
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->Lives > 0)
+			{
+				numPlayersWithLives++;
+			}
+		}
+		if (numPlayersWithLives <= 1)
+		{
+			return true;
+		}
 	}
 
 	// Check that all surviving players are in exit zone

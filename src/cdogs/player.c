@@ -176,6 +176,7 @@ void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
 
 	p->score = 0;
 	p->kills = 0;
+	p->suicides = 0;
 	p->friendlies = 0;
 	p->allTime = -1;
 	p->today = -1;

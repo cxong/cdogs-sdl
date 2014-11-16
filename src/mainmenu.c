@@ -57,10 +57,9 @@ int MainMenu(
 
 menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
 menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
-menu_t *MenuCreateCampaigns(
-	const char *name,
-	const char *title,
-	campaign_list_t *list);
+static menu_t *MenuCreateCampaigns(
+	const char *name, const char *title,
+	campaign_list_t *list, GameMode *mode);
 menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -95,15 +94,22 @@ MenuSystem *MenuCreateAll(
 		MenuCreateCampaigns(
 			"Campaign",
 			"Select a campaign:",
-			&campaigns->campaignList));
-#ifndef __ANDROID__
+			&campaigns->campaignList,
+			&gGameModeNormal));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
 			"Dogfight",
-			"Select a dogfight scenario:",
-			&campaigns->dogfightList));
-#endif
+			"Select a scenario:",
+			&campaigns->dogfightList,
+			&gGameModeDogfight));
+	MenuAddSubmenu(
+		ms->root,
+		MenuCreateCampaigns(
+			"Deathmatch",
+			"Select a scenario:",
+			&campaigns->dogfightList,
+			&gGameModeDeathmatch));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
@@ -119,10 +125,13 @@ MenuSystem *MenuCreateAll(
 }
 
 
+static void MenuSetGameMode(menu_t *menu, void *data);
+
 menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	menu->u.campaign = *entry;
+	MenuSetPostEnterFunc(menu, MenuSetGameMode, &gGameModeNormal);
 	return menu;
 }
 
@@ -130,6 +139,7 @@ menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
 	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
+	MenuSetPostEnterFunc(menu, MenuSetGameMode, &gGameModeQuickPlay);
 	return menu;
 }
 
@@ -158,10 +168,9 @@ static void CampaignsDisplayFilename(
 		FontStrOpt(s, pos, opts);
 	}
 }
-menu_t *MenuCreateCampaigns(
-	const char *name,
-	const char *title,
-	campaign_list_t *list)
+static menu_t *MenuCreateCampaigns(
+	const char *name, const char *title,
+	campaign_list_t *list, GameMode *mode)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 20;
@@ -171,7 +180,8 @@ menu_t *MenuCreateCampaigns(
 		char folderName[CDOGS_FILENAME_MAX];
 		campaign_list_t *subList = CArrayGet(&list->subFolders, i);
 		sprintf(folderName, "%s/", subList->Name);
-		MenuAddSubmenu(menu, MenuCreateCampaigns(folderName, title, subList));
+		MenuAddSubmenu(
+			menu, MenuCreateCampaigns(folderName, title, subList, mode));
 	}
 	for (int i = 0; i < (int)list->list.size; i++)
 	{
@@ -179,7 +189,13 @@ menu_t *MenuCreateCampaigns(
 			menu, MenuCreateCampaignItem(CArrayGet(&list->list, i)));
 	}
 	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
+	MenuSetPostEnterFunc(menu, MenuSetGameMode, mode);
 	return menu;
+}
+static void MenuSetGameMode(menu_t *menu, void *data)
+{
+	UNUSED(menu);
+	gCampaign.Entry.Mode = *(GameMode *)data;
 }
 
 menu_t *MenuCreateCampaignItem(CampaignEntry *entry)

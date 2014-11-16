@@ -30,6 +30,12 @@
 #include "config.h"
 
 
+GameMode gGameModeNormal = GAME_MODE_NORMAL;
+GameMode gGameModeDogfight = GAME_MODE_DOGFIGHT;
+GameMode gGameModeDeathmatch = GAME_MODE_DEATHMATCH;
+GameMode gGameModeQuickPlay = GAME_MODE_QUICK_PLAY;
+
+
 bool IsIntroNeeded(const GameMode mode)
 {
 	return mode == GAME_MODE_NORMAL;
@@ -98,7 +104,7 @@ int ModeMaxRoundsWon(const GameMode mode)
 	case GAME_MODE_DOGFIGHT:
 		return 5;
 	case GAME_MODE_DEATHMATCH:
-		return 10;
+		return 1;
 	default:
 		CASSERT(false, "unknown game mode");
 		return 0;
@@ -111,6 +117,8 @@ int ModeLives(const GameMode mode)
 	{
 	case GAME_MODE_DOGFIGHT:
 		return 1;
+	case GAME_MODE_DEATHMATCH:
+		return 10;
 	default:
 		return gConfig.Game.Lives;
 	}

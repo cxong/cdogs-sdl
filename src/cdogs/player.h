@@ -45,6 +45,7 @@ typedef struct
 	int score;
 	int totalScore;
 	int kills;
+	int suicides;
 	int friendlies;
 
 	// Used for end-of-game score tallying

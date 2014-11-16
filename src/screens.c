@@ -267,6 +267,9 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			case GAME_MODE_DOGFIGHT:
 				ScreenDogfightScores();
 				break;
+			case GAME_MODE_DEATHMATCH:
+				ScreenDeathmatchFinalScores();
+				break;
 			default:
 				ScreenMissionSummary(&gCampaign, &gMission);
 				// Note: must use cached value because players get cleaned up

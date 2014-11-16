@@ -77,6 +77,7 @@ NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p)
 	d.Score = p->score;
 	d.TotalScore = p->totalScore;
 	d.Kills = p->kills;
+	d.Suicides = p->suicides;
 	d.Friendlies = p->friendlies;
 	d.PlayerIndex = p->playerIndex;
 	return d;
@@ -109,6 +110,7 @@ void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
 	p->score = pd->Score;
 	p->totalScore = pd->Score;
 	p->kills = pd->Kills;
+	p->suicides = pd->Suicides;
 	p->friendlies = pd->Friendlies;
 	if (!p->IsLocal)
 	{

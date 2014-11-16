@@ -777,8 +777,7 @@ void ScreenDogfightScores(void)
 	GameLoop(&gData);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
-static void ShowPlayerScore(
-	const Vec2i pos, const Character *c, const char *name, const int score);
+static void ShowPlayerScore(const Vec2i pos, const int score);
 static void DogfightScoresDraw(void *data)
 {
 	UNUSED(data);
@@ -798,13 +797,12 @@ static void DogfightScoresDraw(void *data)
 			w / 4 + (i & 1) * w / 2,
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		ShowPlayerScore(pos, &p->Char, p->name, p->RoundsWon);
+		DisplayCharacterAndName(pos, &p->Char, p->name);
+		ShowPlayerScore(pos, p->RoundsWon);
 	}
 }
-static void ShowPlayerScore(
-	const Vec2i pos, const Character *c, const char *name, const int score)
+static void ShowPlayerScore(const Vec2i pos, const int score)
 {
-	DisplayCharacterAndName(pos, c, name);
 	char s[16];
 	sprintf(s, "Score: %d", score);
 	const Vec2i scorePos = Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20);
@@ -863,15 +861,78 @@ static void DogfightFinalScoresDraw(void *data)
 			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		DisplayCharacterAndName(pos, &p->Char, p->name);
+		ShowPlayerScore(pos, p->RoundsWon);
 		if (!isTie && maxScore == p->RoundsWon)
 		{
-			FontStr(
+			FontStrMask(
 				WINNER_TEXT,
-				Vec2iNew(pos.x - FontStrW(WINNER_TEXT) / 2, pos.y + 20));
+				Vec2iNew(pos.x - FontStrW(WINNER_TEXT) / 2, pos.y + 30),
+				colorGreen);
 		}
 	}
 	if (isTie)
 	{
 		FontStrCenter(DRAW_TEXT);
+	}
+}
+
+static void DeathmatchFinalScoresDraw(void *data);
+void ScreenDeathmatchFinalScores(void)
+{
+	GameLoopData gData = GameLoopDataNew(
+		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
+		NULL, DeathmatchFinalScoresDraw);
+	GameLoop(&gData);
+	SoundPlay(&gSoundDevice, StrSound("mg"));
+}
+static void DeathmatchFinalScoresDraw(void *data)
+{
+	UNUSED(data);
+
+	// This will only draw once
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+
+	GraphicsBlitBkg(&gGraphicsDevice);
+
+	// Work out the highest kills
+	int maxKills = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->kills > maxKills)
+		{
+			maxKills = p->kills;
+		}
+	}
+
+	// Draw players and their names spread evenly around the screen.
+	CASSERT(
+		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
+		"Unimplemented number of players for deathmatch");
+#define LAST_MAN_TEXT	"Last man standing!"
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const Vec2i pos = Vec2iNew(
+			w / 4 + (i & 1) * w / 2,
+			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		DisplayCharacterAndName(pos, &p->Char, p->name);
+		
+		// Kills
+		char s[16];
+		sprintf(s, "Kills: %d", p->kills);
+		FontStrMask(
+			s, Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20),
+			p->kills == maxKills ? colorGreen : colorWhite);
+
+		// Last man standing?
+		if (p->Lives > 0)
+		{
+			FontStrMask(
+				LAST_MAN_TEXT,
+				Vec2iNew(pos.x - FontStrW(LAST_MAN_TEXT) / 2, pos.y + 30),
+				colorGreen);
+		}
 	}
 }
