@@ -658,6 +658,7 @@ static void DrawObjectiveInfo(
 static void VictoryDraw(void *data);
 void ScreenVictory(CampaignOptions *c)
 {
+	SoundPlay(&gSoundDevice, StrSound("victory"));
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
 		c, VictoryDraw);
@@ -812,6 +813,7 @@ static void ShowPlayerScore(const Vec2i pos, const int score)
 static void DogfightFinalScoresDraw(void *data);
 void ScreenDogfightFinalScores(void)
 {
+	SoundPlay(&gSoundDevice, StrSound("victory"));
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
 		NULL, DogfightFinalScoresDraw);
@@ -879,6 +881,7 @@ static void DogfightFinalScoresDraw(void *data)
 static void DeathmatchFinalScoresDraw(void *data);
 void ScreenDeathmatchFinalScores(void)
 {
+	SoundPlay(&gSoundDevice, StrSound("victory"));
 	GameLoopData gData = GameLoopDataNew(
 		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
 		NULL, DeathmatchFinalScoresDraw);
