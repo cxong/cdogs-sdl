@@ -205,6 +205,14 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		MapLoad(&gMap, &gMission, co);
+
+		// Seed random if PVP mode (otherwise players will always spawn in same
+		// position)
+		if (IsPVP(co->Entry.Mode))
+		{
+			srand((unsigned int)time(NULL));
+		}
+
 		if (!gCampaign.IsClient)
 		{
 			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
