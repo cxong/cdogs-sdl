@@ -80,8 +80,9 @@ bool CanDamageCharacter(
 static void TrackKills(int player, TActor *victim);
 void DamageCharacter(int power, int player, TActor *actor)
 {
+	const int startingHealth = actor->health;
 	InjureActor(actor, power);
-	if (actor->health <= 0)
+	if (startingHealth > 0 && actor->health <= 0)
 	{
 		TrackKills(player, actor);
 	}
