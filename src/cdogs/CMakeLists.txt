@@ -67,6 +67,7 @@ set(CDOGS_SOURCES
 	pic.c
 	pic_file.c
 	pic_manager.c
+	pickup.c
 	pics.c
 	player.c
 	player_template.c
@@ -143,6 +144,7 @@ set(CDOGS_HEADERS
 	pic.h
 	pic_file.h
 	pic_manager.h
+	pickup.h
 	pics.h
 	player.h
 	player_template.h

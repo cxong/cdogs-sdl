@@ -60,6 +60,7 @@
 #include "objs.h"
 #include "palette.h"
 #include "particle.h"
+#include "pickup.h"
 #include "defs.h"
 #include "pic_manager.h"
 #include "actors.h"
@@ -618,6 +619,7 @@ void SetupMission(
 	ActorsInit();
 	ObjsInit();
 	MobObjsInit();
+	PickupsInit();
 	ParticlesInit(&gParticles);
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
@@ -642,6 +644,7 @@ void MissionEnd(void)
 	ActorsTerminate();
 	ObjsTerminate();
 	MobObjsTerminate();
+	PickupsTerminate();
 	ParticlesTerminate(&gParticles);
 	RemoveAllWatches();
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)

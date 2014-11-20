@@ -384,6 +384,29 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 	}
 	return NULL;
 }
+Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx)
+{
+	Pic *pic;
+	if (!name || name[0] == '\0' || gConfig.Graphics.OriginalPics)
+	{
+		goto defaultPic;
+	}
+	pic = PicManagerGetPic(pm, name);
+	if (!pic)
+	{
+		goto defaultPic;
+	}
+	return pic;
+
+defaultPic:
+	pic = PicManagerGetFromOld(pm, oldIdx);
+	CASSERT(pic != NULL, "Cannot find pic");
+	if (pic == NULL)
+	{
+		pic = PicManagerGetFromOld(pm, PIC_UZIBULLET);
+	}
+	return pic;
+}
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
 {

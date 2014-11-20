@@ -238,7 +238,7 @@ TTileItem *GetItemOnTileInCollision(
 				if (!CollisionIsOnSameTeam(ti, team, isPVP))
 				{
 					if (item != ti &&
-						(ti->flags & mask) &&
+						(mask == 0 || (ti->flags & mask)) &&
 						ItemsCollide(item, ti, pos))
 					{
 						return ti;

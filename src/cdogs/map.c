@@ -54,10 +54,12 @@
 
 #include "collision.h"
 #include "config.h"
+#include "health_pickup.h"
 #include "map_build.h"
 #include "map_classic.h"
 #include "map_static.h"
 #include "pic_manager.h"
+#include "pickup.h"
 #include "objs.h"
 #include "triggers.h"
 #include "sounds.h"
@@ -70,7 +72,6 @@
 #define KEY_H 5
 #define COLLECTABLE_W 4
 #define COLLECTABLE_H 3
-
 
 Map gMap;
 
@@ -191,7 +192,7 @@ static void AddItemToTile(TTileItem *t, Tile *tile)
 	tid.Id = t->id;
 	tid.Kind = t->kind;
 	CASSERT(tid.Id >= 0, "invalid ThingId");
-	CASSERT(tid.Kind >= 0 && tid.Kind <= KIND_OBJECT, "unknown thing kind");
+	CASSERT(tid.Kind >= 0 && tid.Kind <= KIND_PICKUP, "unknown thing kind");
 	CArrayPushBack(&tile->things, &tid);
 }
 
@@ -527,14 +528,16 @@ int MapPosIsHighAccess(Map *map, int x, int y)
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
 {
-	struct Objective *o = CArrayGet(&mo->Objectives, objective);
-	Vec2i fullPos = Vec2iReal2Full(realPos);
-	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-	AddObjectOld(
-		fullPos.x, fullPos.y, size,
-		&cGeneralPics[o->pickupItem],
-		OBJ_JEWEL,
-		TILEITEM_CAN_BE_TAKEN | ObjectiveToTileItem(objective));
+	const struct Objective *o = CArrayGet(&mo->Objectives, objective);
+	const Vec2i fullPos = Vec2iReal2Full(realPos);
+	const int id = PickupAdd(
+		fullPos,
+		NULL,
+		cGeneralPics[o->pickupItem].picIndex,
+		PICKUP_JEWEL);
+	Pickup *p = CArrayGet(&gPickups, id);
+	p->u.Score = PICKUP_SCORE;
+	p->tileItem.flags = ObjectiveToTileItem(objective);
 }
 static int MapTryPlaceCollectible(
 	Map *map, const Mission *mission, const struct MissionOptions *mo,
@@ -566,10 +569,9 @@ static int MapTryPlaceCollectible(
 
 void MapPlaceHealth(Vec2i pos)
 {
-	Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
-	ObjAdd(
-		Vec2iReal2Full(pos), size,
-		"health", OBJ_HEALTH, TILEITEM_CAN_BE_TAKEN);
+	const int id = PickupAdd(Vec2iReal2Full(pos), "health", 0, PICKUP_HEALTH);
+	Pickup *p = CArrayGet(&gPickups, id);
+	p->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
 }
 
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
@@ -621,14 +623,14 @@ void MapPlaceKey(
 	const int keyIndex)
 {
 	UNUSED(map);
-	PickupType card = keyIndex + OBJ_KEYCARD_YELLOW;
-	Vec2i full = Vec2iReal2Full(Vec2iCenterOfTile(pos));
-	AddObjectOld(
-		full.x, full.y,
-		Vec2iNew(KEY_W, KEY_H),
-		&cGeneralPics[mo->keyPics[keyIndex]],
-		card,
-		(int)TILEITEM_CAN_BE_TAKEN);
+	const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(pos));
+	const int id = PickupAdd(
+		fullPos,
+		NULL,
+		cGeneralPics[mo->keyPics[keyIndex]].picIndex,
+		PICKUP_KEYCARD);
+	Pickup *p = CArrayGet(&gPickups, id);
+	p->u.Keys = 1 << keyIndex;
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)

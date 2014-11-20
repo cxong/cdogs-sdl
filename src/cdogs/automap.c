@@ -60,6 +60,7 @@
 #include "mission.h"
 #include "objs.h"
 #include "pic_manager.h"
+#include "pickup.h"
 
 
 #define MAP_FACTOR 2
@@ -302,24 +303,25 @@ static void DrawTileItem(
 			}
 		}
 	}
-	else if (t->kind == KIND_OBJECT && tile->isVisited)
+	else if (t->kind == KIND_PICKUP && tile->isVisited)
 	{
 		color_t dotColor = colorBlack;
-		switch (((TObject *)CArrayGet(&gObjs, t->id))->Type)
+		switch (((const Pickup *)CArrayGet(&gPickups, t->id))->u.Keys)
 		{
-		case OBJ_KEYCARD_RED:
+		case FLAGS_KEYCARD_RED:
 			dotColor = colorRedDoor;
 			break;
-		case OBJ_KEYCARD_BLUE:
+		case FLAGS_KEYCARD_BLUE:
 			dotColor = colorBlueDoor;
 			break;
-		case OBJ_KEYCARD_GREEN:
+		case FLAGS_KEYCARD_GREEN:
 			dotColor = colorGreenDoor;
 			break;
-		case OBJ_KEYCARD_YELLOW:
+		case FLAGS_KEYCARD_YELLOW:
 			dotColor = colorYellowDoor;
 			break;
 		default:
+			// This isn't a key; ignore
 			break;
 		}
 		if (!ColorEquals(dotColor, colorBlack))

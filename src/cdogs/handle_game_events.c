@@ -128,7 +128,7 @@ static void HandleGameEvent(
 		case GAME_EVENT_TAKE_HEALTH_PICKUP:
 			{
 				const PlayerData *p =
-					CArrayGet(&gPlayerDatas, e->u.PickupPlayer);
+					CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
 				if (IsPlayerAlive(p))
 				{
 					TActor *a = CArrayGet(&gActors, p->Id);
@@ -136,10 +136,10 @@ static void HandleGameEvent(
 					{
 						break;
 					}
-					ActorHeal(a, HEALTH_PICKUP_HEAL_AMOUNT);
+					ActorHeal(a, e->u.Heal.Health);
 					HealthPickupsRemoveOne(hp);
 					HUDAddHealthUpdate(
-						hud, e->u.PickupPlayer, HEALTH_PICKUP_HEAL_AMOUNT);
+						hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
 				}
 			}
 			break;
@@ -209,13 +209,7 @@ static void HandleGameEvent(
 				switch (mo->Type)
 				{
 				case OBJECTIVE_COLLECT:
-					{
-						GameEvent e1 = GameEventNew(GAME_EVENT_SCORE);
-						e1.u.Score.PlayerIndex =
-							e->u.UpdateObjective.PlayerIndex;
-						e1.u.Score.Score = PICKUP_SCORE;
-						HandleGameEvent(&e1, hud, shake, hp, eventHandlers);
-					}
+					// Do nothing (already handled in pickups)
 					break;
 				case OBJECTIVE_DESTROY:
 					{

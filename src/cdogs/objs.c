@@ -77,7 +77,7 @@ CArray gMobObjs;
 
 // Draw functions
 
-const Pic *GetObjectPic(const int id, Vec2i *offset)
+static const Pic *GetObjectPic(const int id, Vec2i *offset)
 {
 	const TObject *obj = CArrayGet(&gObjs, id);
 
@@ -442,22 +442,21 @@ void ObjsTerminate(void)
 	CArrayTerminate(&gObjs);
 }
 void AddObjectOld(
-	int x, int y, Vec2i size,
-	const TOffsetPic * pic, PickupType type, int tileFlags)
+	const Vec2i pos, const Vec2i size,
+	const TOffsetPic * pic, const int tileFlags)
 {
-	TObject *o = CArrayGet(&gObjs, ObjAdd(
-		Vec2iNew(x, y), size, NULL, type, tileFlags));
+	TObject *o = CArrayGet(&gObjs, ObjAdd(pos, size, NULL, tileFlags));
 	o->pic = pic;
 	o->wreckedPic = NULL;
 	o->structure = 0;
 	o->flags = 0;
-	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(Vec2iNew(x, y)));
+	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
 }
 int ObjAdd(
-	Vec2i pos, Vec2i size,
-	const char *picName, PickupType type, int tileFlags)
+	const Vec2i pos, const Vec2i size,
+	const char *picName, const int tileFlags)
 {
-	// Find an empty slot in actor list
+	// Find an empty slot in object list
 	TObject *o = NULL;
 	int i;
 	for (i = 0; i < (int)gObjs.size; i++)
@@ -481,7 +480,6 @@ int ObjAdd(
 	o->pic = NULL;
 	o->wreckedPic = NULL;
 	o->picName = picName;
-	o->Type = type;
 	o->structure = 0;
 	o->flags = 0;
 	o->tileItem.x = o->tileItem.y = -1;
@@ -503,8 +501,7 @@ void ObjAddDestructible(
 	int structure, int objFlags, int tileFlags)
 {
 	Vec2i fullPos = Vec2iReal2Full(pos);
-	TObject *o = CArrayGet(&gObjs, ObjAdd(
-		fullPos, size, picName, OBJ_NONE, tileFlags));
+	TObject *o = CArrayGet(&gObjs, ObjAdd(fullPos, size, picName, tileFlags));
 	o->pic = pic;
 	o->wreckedPic = wreckedPic;
 	o->structure = structure;

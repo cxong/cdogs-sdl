@@ -56,30 +56,8 @@
 #include "vector.h"
 
 
-// Mobile objects
-#define MOBOBJ_BULLET       0
-#define MOBOBJ_GRENADE      1
-#define MOBOBJ_FIREBALL     2
-#define MOBOBJ_SPARK        3
-#define MOBOBJ_FRAGGRENADE  4
-#define MOBOBJ_MOLOTOV      5
-#define MOBOBJ_GASBOMB      6
-#define MOBOBJ_GASBOMB2     7
-
 // Bullet "height"
 #define BULLET_Z   10
-
-// Indices for "pick up" objects
-typedef enum
-{
-	OBJ_NONE,
-	OBJ_JEWEL,
-	OBJ_HEALTH,
-	OBJ_KEYCARD_YELLOW,
-	OBJ_KEYCARD_GREEN,
-	OBJ_KEYCARD_BLUE,
-	OBJ_KEYCARD_RED
-} PickupType;
 
 
 #define OBJFLAG_EXPLOSIVE   1
@@ -97,7 +75,6 @@ typedef struct
 	const TOffsetPic *pic;
 	const TOffsetPic *wreckedPic;
 	const char *picName;
-	PickupType Type;
 	int structure;
 	int flags;
 	TTileItem tileItem;
@@ -140,11 +117,11 @@ bool DamageSomething(
 void ObjsInit(void);
 void ObjsTerminate(void);
 void AddObjectOld(
-	int x, int y, Vec2i size,
-	const TOffsetPic * pic, PickupType type, int tileFlags);
+	const Vec2i pos, const Vec2i size,
+	const TOffsetPic *pic, const int tileFlags);
 int ObjAdd(
-	Vec2i pos, Vec2i size,
-	const char *picName, PickupType type, int tileFlags);
+	const Vec2i pos, const Vec2i size,
+	const char *picName, const int tileFlags);
 void ObjAddDestructible(
 	Vec2i pos, Vec2i size,
 	const TOffsetPic *pic, const TOffsetPic *wreckedPic,

@@ -33,6 +33,7 @@
 #include "drawtools.h"
 #include "game_events.h"
 #include "objs.h"
+#include "pickup.h"
 #include "quick_play.h"
 #include "triggers.h"
 
@@ -45,6 +46,7 @@ void GrafxMakeRandomBackground(
 	ActorsInit();
 	ObjsInit();
 	MobObjsInit();
+	PickupsInit();
 	SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
 	co->seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
@@ -59,6 +61,7 @@ void GrafxMakeRandomBackground(
 	ActorsTerminate();
 	ObjsTerminate();
 	MobObjsTerminate();
+	PickupsTerminate();
 	RemoveAllWatches();
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);

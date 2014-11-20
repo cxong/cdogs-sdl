@@ -64,6 +64,7 @@
 #include "sounds.h"
 #include "defs.h"
 #include "objs.h"
+#include "pickup.h"
 #include "gamedata.h"
 #include "triggers.h"
 #include "hiscores.h"
@@ -347,77 +348,6 @@ static void CheckTrigger(const Vec2i tilePos)
 	}
 }
 
-static void PickupObject(TActor * actor, TObject * object)
-{
-	bool isKey = false;
-	bool canPickup = true;
-	switch (object->Type)
-	{
-	case OBJ_JEWEL:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerIndex = actor->playerIndex;
-			e.u.Score.Score = PICKUP_SCORE;
-			GameEventsEnqueue(&gGameEvents, e);
-			SoundPlayAt(
-				&gSoundDevice,
-				gSoundDevice.pickupSound,
-				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-		}
-		break;
-
-	case OBJ_HEALTH:
-		// Don't pick up unless taken damage
-		canPickup = false;
-		if (actor->health < ActorGetCharacter(actor)->maxHealth)
-		{
-			canPickup = true;
-			GameEvent e = GameEventNew(GAME_EVENT_TAKE_HEALTH_PICKUP);
-			e.u.PickupPlayer = actor->playerIndex;
-			GameEventsEnqueue(&gGameEvents, e);
-			SoundPlayAt(
-				&gSoundDevice, gSoundDevice.healthSound,
-				Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-		}
-		break;
-
-	case OBJ_KEYCARD_RED:
-		gMission.flags |= FLAGS_KEYCARD_RED;
-		isKey = true;
-		break;
-	case OBJ_KEYCARD_BLUE:
-		gMission.flags |= FLAGS_KEYCARD_BLUE;
-		isKey = true;
-		break;
-	case OBJ_KEYCARD_GREEN:
-		gMission.flags |= FLAGS_KEYCARD_GREEN;
-		isKey = true;
-		break;
-	case OBJ_KEYCARD_YELLOW:
-		gMission.flags |= FLAGS_KEYCARD_YELLOW;
-		isKey = true;
-		break;
-	default:
-		CASSERT(false, "unexpected objective");
-		break;
-	}
-	if (isKey)
-	{
-		SoundPlayAt(
-			&gSoundDevice, gSoundDevice.keySound,
-			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-		PathCacheClear(&gPathCache);
-	}
-	UpdateMissionObjective(
-		&gMission, object->tileItem.flags, OBJECTIVE_COLLECT,
-		actor->playerIndex,
-		Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-	if (canPickup)
-	{
-		ObjDestroy(object->tileItem.id);
-	}
-}
-
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);
@@ -529,12 +459,12 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	if (actor->playerIndex >= 0)
 	{
 		target = GetItemOnTileInCollision(
-			&actor->tileItem, realPos, TILEITEM_CAN_BE_TAKEN,
+			&actor->tileItem, realPos, 0,
 			CalcCollisionTeam(1, actor),
 			IsPVP(gCampaign.Entry.Mode));
-		if (target && target->kind == KIND_OBJECT)
+		if (target && target->kind == KIND_PICKUP)
 		{
-			PickupObject(actor, CArrayGet(&gObjs, target->id));
+			PickupPickup(actor, CArrayGet(&gPickups, target->id));
 		}
 	}
 
@@ -965,10 +895,9 @@ static void ActorDie(TActor *actor, const int idx)
 	}
 	// Add a blood pool
 	AddObjectOld(
-		actor->Pos.x, actor->Pos.y,
+		actor->Pos,
 		Vec2iZero(),
 		&cBloodPics[rand() % BLOOD_MAX],
-		OBJ_NONE,
 		TILEITEM_IS_WRECK);
 	ActorDestroy(idx);
 }

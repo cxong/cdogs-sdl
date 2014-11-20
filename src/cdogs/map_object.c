@@ -127,6 +127,7 @@ int MapObjectGetDestructibleCount(void)
 Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset)
 {
 	const TOffsetPic *ofpic = &cGeneralPics[mo->pic];
+	*offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	Pic *pic;
 	if (!mo->picName || mo->picName[0] == '\0' ||
 		gConfig.Graphics.OriginalPics)
@@ -138,12 +139,10 @@ Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset)
 	{
 		goto defaultPic;
 	}
-	*offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	return pic;
 
 defaultPic:
 	pic = PicManagerGetFromOld(pm, ofpic->picIndex);
-	*offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	return pic;
 }
 

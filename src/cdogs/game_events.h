@@ -99,7 +99,11 @@ typedef struct
 		NetMsgActorAdd ActorAdd;
 		NetMsgActorMove ActorMove;
 		Vec2i AddPos;
-		int PickupPlayer;
+		struct
+		{
+			int PlayerIndex;
+			int Health;
+		} Heal;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
 		AddBullet AddBullet;

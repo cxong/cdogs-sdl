@@ -71,9 +71,6 @@ struct DoorPic {
 // Score for destroying an objective object
 #define OBJECT_SCORE 50
 
-// Score for picking up an objective
-#define PICKUP_SCORE 10
-
 
 extern struct MissionOptions gMission;
 

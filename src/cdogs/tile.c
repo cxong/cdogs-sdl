@@ -50,6 +50,7 @@
 
 #include "actors.h"
 #include "objs.h"
+#include "pickup.h"
 #include "triggers.h"
 
 
@@ -143,6 +144,9 @@ TTileItem *ThingIdGetTileItem(ThingId *tid)
 		break;
 	case KIND_OBJECT:
 		ti = &((TObject *)CArrayGet(&gObjs, tid->Id))->tileItem;
+		break;
+	case KIND_PICKUP:
+		ti = &((Pickup *)CArrayGet(&gPickups, tid->Id))->tileItem;
 		break;
 	default:
 		CASSERT(false, "unknown tile item to get");

@@ -90,10 +90,10 @@ MapType StrMapType(const char *s);
 
 // Keys that have been collected in this level
 // Applies to all players
-#define FLAGS_KEYCARD_RED     0x1
-#define FLAGS_KEYCARD_BLUE    0x2
-#define FLAGS_KEYCARD_GREEN   0x4
-#define FLAGS_KEYCARD_YELLOW  0x8
+#define FLAGS_KEYCARD_YELLOW	0x1
+#define FLAGS_KEYCARD_GREEN		0x2
+#define FLAGS_KEYCARD_BLUE		0x4
+#define FLAGS_KEYCARD_RED		0x8
 
 typedef struct
 {

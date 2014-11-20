@@ -30,6 +30,7 @@
 
 #include "ai_utils.h"
 #include "gamedata.h"
+#include "pickup.h"
 
 // How many ticks to stay in one confusion state
 #define CONFUSION_STATE_TICKS_MIN 25
@@ -418,37 +419,26 @@ static void FindObjectivesSortedByDistance(
 {
 	CArrayInit(objectives, sizeof(ClosestObjective));
 
-	// Look for pickups and destructibles
-	for (int i = 0; i < (int)gObjs.size; i++)
+	// Look for pickups
+	for (int i = 0; i < (int)gPickups.size; i++)
 	{
-		const TObject *o = CArrayGet(&gObjs, i);
-		if (!o->isInUse)
+		const Pickup *p = CArrayGet(&gPickups, i);
+		if (!p->isInUse)
 		{
 			continue;
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		co.Pos = Vec2iNew(p->tileItem.x, p->tileItem.y);
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		bool isObjective = false;
-		switch (o->Type)
+		switch (p->Type)
 		{
-		case OBJ_KEYCARD_YELLOW:	// fallthrough
-		case OBJ_KEYCARD_GREEN:	// fallthrough
-		case OBJ_KEYCARD_BLUE:	// fallthrough
-		case OBJ_KEYCARD_RED:	// fallthrough
+		case PICKUP_KEYCARD:	// fallthrough
 			co.Type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
-		case OBJ_JEWEL:
+		case PICKUP_JEWEL:
 			isObjective = true;
-			break;
-		case OBJ_NONE:
-			if (o->tileItem.flags & TILEITEM_OBJECTIVE)
-			{
-				// Destructible objective; go towards it and fire
-				isObjective = true;
-				co.IsDestructible = true;
-			}
 			break;
 		default:
 			// do nothing
@@ -461,7 +451,35 @@ static void FindObjectivesSortedByDistance(
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
-			int objective = ObjectiveFromTileItem(o->tileItem.flags);
+			const int objective = ObjectiveFromTileItem(p->tileItem.flags);
+			co.Objective =
+				CArrayGet(&gMission.Objectives, objective);
+		}
+		CArrayPushBack(objectives, &co);
+	}
+
+	// Look for destructibles
+	for (int i = 0; i < (int)gObjs.size; i++)
+	{
+		const TObject *o = CArrayGet(&gObjs, i);
+		if (!o->isInUse)
+		{
+			continue;
+		}
+		ClosestObjective co;
+		memset(&co, 0, sizeof co);
+		co.Pos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		co.IsDestructible = true;
+		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+		if (!(o->tileItem.flags & TILEITEM_OBJECTIVE))
+		{
+			continue;
+		}
+		// Destructible objective; go towards it and fire
+		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
+		{
+			const int objective = ObjectiveFromTileItem(o->tileItem.flags);
 			co.Objective =
 				CArrayGet(&gMission.Objectives, objective);
 		}

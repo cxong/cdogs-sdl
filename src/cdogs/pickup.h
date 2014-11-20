@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,44 +25,48 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_MANAGER
-#define __PIC_MANAGER
+#pragma once
 
+#include "actors.h"
 #include "pic.h"
-#include "pics.h"
+#include "tile.h"
 
+// Effects for "pick up" objects
+typedef enum
+{
+	PICKUP_NONE,
+	PICKUP_JEWEL,
+	PICKUP_HEALTH,
+	PICKUP_KEYCARD
+} PickupType;
+
+// Pickups are game objects that players can collect, and which have special
+// effects
 typedef struct
 {
-	PicPaletted *oldPics[PIC_MAX];
-	Pic picsFromOld[PIC_MAX];
-	TPalette palette;
-	CArray pics;	// of NamedPic
-	CArray sprites;	// of NamedSprites
-	CArray customPics;	// of NamedPic
-	CArray customSprites;	// of NamedSprites
-} PicManager;
+	const Pic *Pic;
+	PickupType Type;
+	union
+	{
+		int Score;
+		int Health;
+		int Keys;	// Refer to flags in mission.h
+	} u;
+	TTileItem tileItem;
+	bool isInUse;
+} Pickup;
 
-extern PicManager gPicManager;
+extern CArray gPickups;	// of Pickup
 
-int PicManagerTryInit(
-	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
-// Old paletted pics need the palette to be set before using
-void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g);
-void PicManagerLoadDir(PicManager *pm, const char *path);
-void PicManagerAdd(
-	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image);
-void PicManagerClear(CArray *pics, CArray *sprites);
-void PicManagerTerminate(PicManager *pm);
-
-PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
-Pic *PicManagerGetFromOld(PicManager *pm, int idx);
-Pic *PicManagerGetPic(const PicManager *pm, const char *name);
-Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx);
-const NamedSprites *PicManagerGetSprites(
-	const PicManager *pm, const char *name);
+// Score for picking up an objective
+#define PICKUP_SCORE 10
 
 
-// Conversion
-Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);
+void PickupsInit(void);
+void PickupsTerminate(void);
+int PickupAdd(
+	const Vec2i pos, const char *picName, const int oldIdx,
+	const PickupType type);
+void PickupDestroy(const int id);
 
-#endif
+void PickupPickup(const TActor *a, const Pickup *p);
