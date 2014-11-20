@@ -253,8 +253,7 @@ bool DamageSomething(
 		}
 		break;
 
-	case KIND_PARTICLE:
-	case KIND_MOBILEOBJECT:
+	default:
 		break;
 	}
 
