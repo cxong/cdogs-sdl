@@ -3,6 +3,7 @@
   "Guns": [
 	{
 	  "Name": "Spread Gun",
+	  "Description": "The spread gun rapidly fires 5 energy balls per shot in a broad angle.\n\nDamage: 5 per bullet (max. 25)\nRate of fire: 420 round/min\nLifespan: 0.71s\nSpeed: 1000\nCost: 2",
 	  "Bullet": "spreadgun_bullet",
 	  "Cost": 2,
 	  "Lock": 10,
@@ -12,6 +13,7 @@
 	},
 	{
 	  "Name": "Vulcan",
+	  "Description": "The Vulcan is a rather quick gun which fires its projectiles in a broad range, it also is very accurate.\n\nDamage: 3 per bullet (max. 21)\nRate of fire: 525 round/min\nLifespan: 0.71s\nSpeed: 1000\nCost: 5",
 	  "Bullet": "vulcan_bullet",
 	  "Cost": 5,
 	  "Lock": 8,
@@ -21,6 +23,7 @@
 	},
 	{
 	  "Name": "Chaser2",
+	  "Description": "Chaser2 is a rapidly firing energy rifle which fires fast but weak projectiles which will follow and fly towards the nearest enemy. The projectiles are very effective in chasing their targets.\n\nDamage: 3\nRate of fire: 840 round/min\nLifespan: 0.85s\nSpeed: 1200\nCost: 2",
 	  "Bullet": "chaser2_bullet",
 	  "Cost": 2,
 	  "Lock": 5,
@@ -30,6 +33,7 @@
 	},
 	{
 	  "Name": "Stick Grenade",
+	  "Description": "The stick grenade will explode on impact with a player or an object and continously cause massive local damage.\n\nDamage: Local explosion\nRate of fire: 210 round/min\nLifespan: 1.14s\nSpeed: 340\nCost: 5",
 	  "Pic": "",
 	  "Bullet": "grenade",
 	  "Cost": 5,
@@ -38,6 +42,7 @@
 	  "Elevation": 24
 	},
 	{
+	  "Description": "You will order a nuclear strike in a fixed distance from your position into your viewing direction or at least to the nearest wall. A siren will go off and a small red dot designates the impact position. About 4.5 seconds later, a nuclear missile will impact and causes a massive explosion, destruction and death.\n\nDamage: Huge explosion, devastating\nRate of fire: 8.4 round/min\nCost: 50",
 	  "Name": "Nuclear Strike",
 	  "Bullet": "laser_designator",
 	  "Cost": 50,
@@ -47,6 +52,7 @@
 	},
 	{
       "Name": "Booby Trap",
+      "Description": "The booby trap is a weapon which is thrown onto the ground. When on the ground, a visual deception module activates and will make the trap look like a health pack. Any player (including the trapper) in proximity to the fake health pack will trigger the booby trap, which will explode in a ball of hot (and deadly) fire.\n\nDamage: Fire\nRate of fire: 42 round/min\nCost: 6",
       "Bullet": "booby_trap_pod",
       "Cost": 6,
       "Lock": 100,
