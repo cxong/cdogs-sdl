@@ -53,6 +53,7 @@
 
 #include <json/json.h>
 
+#include "ammo.h"
 #include "config.h"
 #include "game_events.h"
 #include "json_utils.h"
@@ -212,6 +213,13 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
+	if (json_find_first_label(node, "Ammo"))
+	{
+		tmp = GetString(node, "Ammo");
+		g->AmmoId = StrAmmoId(tmp);
+		CFREE(tmp);
+	}
+
 	LoadInt(&g->Cost, node, "Cost");
 
 	LoadInt(&g->Lock, node, "Lock");
@@ -351,6 +359,11 @@ void WeaponUpdate(
 	{
 		w->soundLock = 0;
 	}
+	w->clickLock -= ticks;
+	if (w->clickLock < 0)
+	{
+		w->clickLock = 0;
+	}
 	if (w->stateCounter >= 0)
 	{
 		w->stateCounter = MAX(0, w->stateCounter - ticks);
@@ -372,9 +385,9 @@ void WeaponUpdate(
 	}
 }
 
-int WeaponCanFire(Weapon *w)
+bool WeaponIsLocked(const Weapon *w)
 {
-	return w->lock <= 0;
+	return w->lock > 0;
 }
 
 void WeaponFire(
@@ -389,8 +402,6 @@ void WeaponFire(
 	{
 		return;
 	}
-
-	CASSERT(WeaponCanFire(w), "Can't fire weapon");
 
 	const double radians = dir2radians[d];
 	const Vec2i muzzleOffset = GunGetMuzzleOffset(w->Gun, d);

@@ -116,7 +116,8 @@ void MapStaticLoadDynamic(
 			GameEventsEnqueue(&gGameEvents, e);
 
 			// Process the events that actually place the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+			HandleGameEvents(
+				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
 
@@ -185,7 +186,8 @@ void MapStaticLoadDynamic(
 			obj->placed++;
 
 			// Process the events that actually place the objectives
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+			HandleGameEvents(
+				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
 

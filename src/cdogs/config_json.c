@@ -77,6 +77,7 @@ static void LoadGameConfigNode(
 	JSON_UTILS_LOAD_ENUM(
 		config->AllyCollision, node, "AllyCollision", StrAllyCollision);
 	LoadBool(&config->HealthPickups, node, "HealthPickups");
+	LoadBool(&config->Ammo, node, "Ammo");
 	JSON_UTILS_LOAD_ENUM(
 		config->Gore, node, "Gore", StrGoreAmount);
 	JSON_UTILS_LOAD_ENUM(
@@ -113,6 +114,8 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "AllyCollision", config->AllyCollision, AllyCollisionStr);
 	json_insert_pair_into_object(
 		subConfig, "HealthPickups", json_new_bool(config->HealthPickups));
+	json_insert_pair_into_object(
+		subConfig, "Ammo", json_new_bool(config->Ammo));
 	json_insert_pair_into_object(root, "Game", subConfig);
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "Gore", config->Gore, GoreAmountStr);

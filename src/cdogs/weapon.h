@@ -102,6 +102,7 @@ typedef struct
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
+	int AmmoId;
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;
@@ -137,6 +138,7 @@ typedef struct
 	gunstate_e state;
 	int lock;
 	int soundLock;
+	int clickLock;
 	int stateCounter;
 } Weapon;
 
@@ -153,7 +155,7 @@ const GunDescription *StrGunDescription(const char *s);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
 void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d);
-int WeaponCanFire(Weapon *w);
+bool WeaponIsLocked(const Weapon *w);
 void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
 	const int flags, const int player, const int uid);

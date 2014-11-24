@@ -31,6 +31,7 @@
 
 #include <SDL_image.h>
 
+#include "ammo.h"
 #include "json_utils.h"
 #include "map_new.h"
 #include "physfs/physfs.h"
@@ -107,6 +108,13 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	{
 		BulletLoadJSON(
 			&gBulletClasses, &gBulletClasses.CustomClasses, root);
+	}
+
+	root = ReadPhysFSJSON(filename, "ammo.json");
+	if (root != NULL)
+	{
+		AmmoLoadJSON(&gAmmo.CustomAmmo, root);
+		json_free_value(&root);
 	}
 
 	root = ReadPhysFSJSON(filename, "guns.json");

@@ -53,6 +53,7 @@
 #include <time.h>
 
 #include "actors.h"
+#include "ammo.h"
 #include "automap.h"
 #include "draw.h"
 #include "drawtools.h"
@@ -174,10 +175,9 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
-void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
+static int FindLocalPlayerIndex(const int playerIndex)
 {
-	HUDNumUpdate s;
-	s.Index = 0;
+	int idx = 0;
 	// Find the local index of this player
 	for (int i = 0; i <= playerIndex; i++)
 	{
@@ -187,13 +187,25 @@ void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 			if (!p->IsLocal)
 			{
 				// This update was for a non-local player; abort
-				return;
+				return -1;
 			}
 		}
 		else if (p->IsLocal)
 		{
-			s.Index++;
+			idx++;
 		}
+	}
+	return idx;
+}
+
+void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
+{
+	HUDNumUpdate s;
+	s.Index = FindLocalPlayerIndex(playerIndex);
+	if (s.Index < 0)
+	{
+		// This update was for a non-local player; abort
+		return;
 	}
 	s.Amount = health;
 	s.Timer = NUM_UPDATE_TIMER_MS;
@@ -204,23 +216,11 @@ void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
 void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
 {
 	HUDNumUpdate s;
-	s.Index = 0;
-	// Find the local index of this player
-	for (int i = 0; i <= playerIndex; i++)
+	s.Index = FindLocalPlayerIndex(playerIndex);
+	if (s.Index < 0)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (i == playerIndex)
-		{
-			if (!p->IsLocal)
-			{
-				// This update was for a non-local player; abort
-				return;
-			}
-		}
-		else if (p->IsLocal)
-		{
-			s.Index++;
-		}
+		// This update was for a non-local player; abort
+		return;
 	}
 	s.Amount = score;
 	s.Timer = NUM_UPDATE_TIMER_MS;
@@ -238,6 +238,7 @@ void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update)
 	CArrayPushBack(&hud->objectiveUpdates, &u);
 }
 
+static void NumUpdate(CArray *updates, const int ms);
 void HUDUpdate(HUD *hud, int ms)
 {
 	if (hud->messageTicks >= 0)
@@ -250,33 +251,19 @@ void HUDUpdate(HUD *hud, int ms)
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
-	for (int i = 0; i < (int)hud->healthUpdates.size; i++)
+	NumUpdate(&hud->healthUpdates, ms);
+	NumUpdate(&hud->scoreUpdates, ms);
+	NumUpdate(&hud->objectiveUpdates, ms);
+}
+static void NumUpdate(CArray *updates, const int ms)
+{
+	for (int i = 0; i < (int)updates->size; i++)
 	{
-		HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, i);
-		health->Timer -= ms;
-		if (health->Timer <= 0)
-		{
-			CArrayDelete(&hud->healthUpdates, i);
-			i--;
-		}
-	}
-	for (int i = 0; i < (int)hud->scoreUpdates.size; i++)
-	{
-		HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, i);
-		score->Timer -= ms;
-		if (score->Timer <= 0)
-		{
-			CArrayDelete(&hud->scoreUpdates, i);
-			i--;
-		}
-	}
-	for (int i = 0; i < (int)hud->objectiveUpdates.size; i++)
-	{
-		HUDNumUpdate *update = CArrayGet(&hud->objectiveUpdates, i);
+		HUDNumUpdate *update = CArrayGet(updates, i);
 		update->Timer -= ms;
 		if (update->Timer <= 0)
 		{
-			CArrayDelete(&hud->objectiveUpdates, i);
+			CArrayDelete(updates, i);
 			i--;
 		}
 	}
@@ -314,9 +301,10 @@ static void DrawGauge(
 
 #define GAUGE_WIDTH 50
 static void DrawWeaponStatus(
-	GraphicsDevice *device, const Weapon *weapon, Vec2i pos,
+	GraphicsDevice *device, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
+	const Weapon *weapon = ActorGetGun(actor);
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
@@ -343,7 +331,20 @@ static void DrawWeaponStatus(
 	opts.VAlign = vAlign;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = pos;
-	FontStrOpt(weapon->Gun->name, Vec2iZero(), opts);
+	char buf[128];
+	if (gConfig.Game.Ammo)
+	{
+		// Include ammo counter
+		sprintf(buf, "%s %d/%d",
+			weapon->Gun->name,
+			*(int *)CArrayGet(&actor->ammo, weapon->Gun->AmmoId),
+			AmmoGetById(&gAmmo, weapon->Gun->AmmoId)->Max);
+	}
+	else
+	{
+		strcpy(buf, weapon->Gun->name);
+	}
+	FontStrOpt(buf, Vec2iZero(), opts);
 }
 
 static void DrawHealth(
@@ -582,7 +583,15 @@ static void DrawPlayerStatus(
 	char s[50];
 	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
-		sprintf(s, "Score: %d", data->score);
+		if (gConfig.Game.Ammo)
+		{
+			// Display money instead of ammo
+			sprintf(s, "Cash: $%d", data->score);
+		}
+		else
+		{
+			sprintf(s, "Score: %d", data->score);
+		}
 	}
 	else
 	{
@@ -591,8 +600,7 @@ static void DrawPlayerStatus(
 	if (p)
 	{
 		// Weapon
-		DrawWeaponStatus(
-			device, ActorGetGun(p), pos, opts.HAlign, opts.VAlign);
+		DrawWeaponStatus(device, p, pos, opts.HAlign, opts.VAlign);
 		pos.y += rowHeight;
 
 		// Player name
@@ -947,12 +955,12 @@ void HUDDraw(HUD *hud, int isPaused)
 }
 
 static void DrawNumUpdate(
-	HUDNumUpdate *update,
+	const HUDNumUpdate *update,
 	const char *formatText, int currentValue, Vec2i pos, int flags);
 static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + FontH();
-	int y = 5 + 1 + FontH() + rowHeight * 2;
+	int y = 5 + rowHeight * 3;
 	const PlayerData *p = CArrayGet(&gPlayerDatas, health->Index);
 	if (IsPlayerAlive(p))
 	{
@@ -967,7 +975,7 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 		return;
 	}
 	const int rowHeight = 1 + FontH();
-	int y = 5 + 1 + FontH() + rowHeight;
+	int y = 5 + rowHeight * 2;
 	const PlayerData *p = CArrayGet(&gPlayerDatas, score->Index);
 	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
 }
@@ -980,7 +988,7 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 #define NUM_UPDATE_FALL_DOWN_DURATION_MS 100
 #define NUM_UPDATE_POP_UP_HEIGHT 5
 static void DrawNumUpdate(
-	HUDNumUpdate *update,
+	const HUDNumUpdate *update,
 	const char *formatText, int currentValue, Vec2i pos, int flags)
 {
 	CASSERT(update->Amount != 0, "num update with zero amount");

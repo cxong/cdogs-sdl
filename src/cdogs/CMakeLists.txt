@@ -9,6 +9,7 @@ set(CDOGS_SOURCES
 	ai_coop.c
 	ai_utils.c
 	algorithms.c
+	ammo.c
 	AStar.c
 	automap.c
 	blit.c
@@ -38,7 +39,6 @@ set(CDOGS_SOURCES
 	grafx.c
 	grafx_bg.c
 	handle_game_events.c
-	health_pickup.c
 	hiscores.c
 	hud.c
 	input.c
@@ -71,6 +71,7 @@ set(CDOGS_SOURCES
 	pics.c
 	player.c
 	player_template.c
+	powerup.c
 	quick_play.c
 	screen_shake.c
 	sounds.c
@@ -87,6 +88,7 @@ set(CDOGS_HEADERS
 	ai_coop.h
 	ai_utils.h
 	algorithms.h
+	ammo.h
 	AStar.h
 	automap.h
 	blit.h
@@ -115,7 +117,6 @@ set(CDOGS_HEADERS
 	grafx.h
 	grafx_bg.h
 	handle_game_events.h
-	health_pickup.h
 	hiscores.h
 	hud.h
 	input.h
@@ -148,6 +149,7 @@ set(CDOGS_HEADERS
 	pics.h
 	player.h
 	player_template.h
+	powerup.h
 	quick_play.h
 	screen_shake.h
 	sounds.h

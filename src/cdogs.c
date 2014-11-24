@@ -53,6 +53,7 @@
 
 #include <SDL.h>
 
+#include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
@@ -377,6 +378,8 @@ int main(int argc, char *argv[])
 
 	GetDataFilePath(buf, "data/particles.json");
 	ParticleClassesInit(&gParticleClasses, buf);
+	GetDataFilePath(buf, "data/ammo.json");
+	AmmoInitialize(&gAmmo, buf);
 	GetDataFilePath(buf, "data/bullets.json");
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(
@@ -423,6 +426,7 @@ bail:
 	MapTerminate(&gMap);
 	PlayerDataTerminate(&gPlayerDatas);
 	ParticleClassesTerminate(&gParticleClasses);
+	AmmoTerminate(&gAmmo);
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);
 	MissionOptionsTerminate(&gMission);

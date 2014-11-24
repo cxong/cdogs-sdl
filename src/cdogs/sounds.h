@@ -96,6 +96,8 @@ typedef struct
 	Mix_Chunk *switchSound;
 	Mix_Chunk *pickupSound;
 	Mix_Chunk *healthSound;
+	Mix_Chunk *ammoSound;
+	Mix_Chunk *clickSound;
 	Mix_Chunk *keySound;
 	Mix_Chunk *wreckSound;
 	CArray screamSounds;	// of Mix_Chunk *

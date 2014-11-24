@@ -125,6 +125,7 @@ typedef struct Actor
 	int playerIndex;	// -1 unless a human player
 	int uid;	// unique ID across all actors
 	CArray guns;	// of Weapon
+	CArray ammo;	// of int
 	int gunIndex;
 
 	int health;
@@ -175,6 +176,13 @@ void BuildTranslationTables(const TPalette palette);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
+typedef struct
+{
+	int Id;
+	int Amount;
+} AddAmmo;
+void ActorAddAmmo(TActor *actor, AddAmmo a);
+
 void ActorsInit(void);
 void ActorsTerminate(void);
 int ActorsGetFreeIndex(void);
@@ -183,6 +191,7 @@ void ActorDestroy(int id);
 
 const Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
+bool ActorCanFire(const TActor *a);
 bool ActorTrySwitchGun(TActor *a);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)

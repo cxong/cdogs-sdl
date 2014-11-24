@@ -55,6 +55,7 @@
 
 #include "actor_placement.h"
 #include "ai_utils.h"
+#include "ammo.h"
 #include "character.h"
 #include "collision.h"
 #include "config.h"
@@ -80,6 +81,7 @@
 #define SLIDE_Y (TILE_HEIGHT / 3)
 #define VEL_DECAY_X (TILE_WIDTH * 2)
 #define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
+#define SOUND_LOCK_WEAPON_CLICK 20
 
 
 CArray gPlayerIds;
@@ -604,11 +606,34 @@ void InjureActor(TActor * actor, int injury)
 	}
 }
 
+void ActorAddAmmo(TActor *actor, AddAmmo a)
+{
+	int *ammo = CArrayGet(&actor->ammo, a.Id);
+	*ammo += a.Amount;
+	const int ammoMax = AmmoGetById(&gAmmo, a.Id)->Max;
+	*ammo = CLAMP(*ammo, 0, ammoMax);
+}
+
 void Shoot(TActor *actor)
 {
 	Weapon *gun = ActorGetGun(actor);
-	if (!WeaponCanFire(gun))
+	if (!ActorCanFire(actor))
 	{
+		if (!WeaponIsLocked(gun) && gConfig.Game.Ammo)
+		{
+			CASSERT(
+				*(int *)CArrayGet(&actor->ammo, gun->Gun->AmmoId) == 0,
+				"should be out of ammo");
+			// Play a clicking sound if this gun is out of ammo
+			if (gun->clickLock <= 0)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
+				e.u.SoundAt.Pos = Vec2iFull2Real(actor->Pos);
+				e.u.SoundAt.Sound = gSoundDevice.clickSound;
+				GameEventsEnqueue(&gGameEvents, e);
+				gun->clickLock = SOUND_LOCK_WEAPON_CLICK;
+			}
+		}
 		return;
 	}
 	WeaponFire(
@@ -618,12 +643,24 @@ void Shoot(TActor *actor)
 		actor->flags,
 		actor->playerIndex,
 		actor->uid);
-	if (actor->playerIndex >= 0 && gun->Gun->Cost != 0)
+	if (actor->playerIndex >= 0)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-		e.u.Score.PlayerIndex = actor->playerIndex;
-		e.u.Score.Score = -gun->Gun->Cost;
-		GameEventsEnqueue(&gGameEvents, e);
+		if (gConfig.Game.Ammo)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_USE_AMMO);
+			e.u.UseAmmo.PlayerIndex = actor->playerIndex;
+			e.u.UseAmmo.UseAmmo.Id = gun->Gun->AmmoId;
+			e.u.UseAmmo.UseAmmo.Amount = -1;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		else if (gun->Gun->Cost != 0)
+		{
+			// Classic C-Dogs score consumption
+			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+			e.u.Score.PlayerIndex = actor->playerIndex;
+			e.u.Score.Score = -gun->Gun->Cost;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 }
 
@@ -944,6 +981,14 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	TActor *actor = CArrayGet(&gActors, aa.Id);
 	memset(actor, 0, sizeof *actor);
 	CArrayInit(&actor->guns, sizeof(Weapon));
+	CArrayInit(&actor->ammo, sizeof(int));
+	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	{
+		// Initialise with twice the standard ammo amount
+		// TODO: special game modes, keeping track of ammo, ammo persistence
+		int amount = AmmoGetById(&gAmmo, i)->Amount * 2;
+		CArrayPushBack(&actor->ammo, &amount);
+	}
 	Character *c;
 	if (aa.PlayerId >= 0)
 	{
@@ -1002,6 +1047,7 @@ void ActorDestroy(int id)
 	TActor *actor = CArrayGet(&gActors, id);
 	CASSERT(actor->isInUse, "Destroying in-use actor");
 	CArrayTerminate(&actor->guns);
+	CArrayTerminate(&actor->ammo);
 	MapRemoveTileItem(&gMap, &actor->tileItem);
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
@@ -1108,6 +1154,12 @@ const Character *ActorGetCharacter(const TActor *a)
 Weapon *ActorGetGun(const TActor *a)
 {
 	return CArrayGet(&a->guns, a->gunIndex);
+}
+bool ActorCanFire(const TActor *a)
+{
+	const Weapon *w = ActorGetGun(a);
+	const bool hasAmmo = *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId) > 0;
+	return !WeaponIsLocked(w) && (!gConfig.Game.Ammo || hasAmmo);
 }
 bool ActorTrySwitchGun(TActor *a)
 {

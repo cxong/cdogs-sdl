@@ -1,0 +1,77 @@
+{
+  "Version": 1,
+  "Ammo": [
+    {
+      "Name": "Bullets",
+      "Pic": "bullet_pickup",
+      "Amount": 20,
+      "Max": 200
+    },
+    {
+      "Name": "Grenades",
+      "Pic": "grenade_pickup",
+      "Amount": 1,
+      "Max": 5
+    },
+    {
+      "Name": "Gas tank",
+      "Pic": "gas_tank",
+      "Amount": 30,
+      "Max": 300
+    },
+    {
+      "Name": "Shells",
+      "Pic": "shells",
+      "Amount": 5,
+      "Max": 50
+    },
+    {
+      "Name": "Cells",
+      "Pic": "cells",
+      "Amount": 8,
+      "Max": 100
+    },
+    {
+      "Name": "Frag grenades",
+      "Pic": "frag_grenade_pickup",
+      "Amount": 1,
+      "Max": 5
+    },
+    {
+      "Name": "Molotovs",
+      "Pic": "molotov",
+      "Amount": 1,
+      "Max": 5
+    },
+    {
+      "Name": "Mines",
+      "Pic": "mine_pickup",
+      "Amount": 1,
+      "Max": 5
+    },
+    {
+      "Name": "Dynamite",
+      "Pic": "dynamite_pickup",
+      "Amount": 2,
+      "Max": 10
+    },
+    {
+      "Name": "Gas bombs",
+      "Pic": "gas_grenade_pickup",
+      "Amount": 4,
+      "Max": 20
+    },
+    {
+      "Name": "Mini cells",
+      "Pic": "mini_cells",
+      "Amount": 20,
+      "Max": 500
+    },
+    {
+      "Name": "Rockets",
+      "Pic": "rockets",
+      "Amount": 4,
+      "Max": 32
+    }
+  ]
+}

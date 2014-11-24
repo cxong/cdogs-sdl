@@ -54,6 +54,9 @@ typedef enum
 	GAME_EVENT_ACTOR_MOVE,
 	GAME_EVENT_ADD_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
+	GAME_EVENT_ADD_AMMO_PICKUP,
+	GAME_EVENT_TAKE_AMMO_PICKUP,
+	GAME_EVENT_USE_AMMO,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
@@ -99,11 +102,22 @@ typedef struct
 		NetMsgActorAdd ActorAdd;
 		NetMsgActorMove ActorMove;
 		Vec2i AddPos;
+		AddAmmoPickup AddAmmoPickup;
 		struct
 		{
 			int PlayerIndex;
 			int Health;
 		} Heal;
+		struct
+		{
+			int PlayerIndex;
+			AddAmmo AddAmmo;
+		} AddAmmo;
+		struct
+		{
+			int PlayerIndex;
+			AddAmmo UseAmmo;
+		} UseAmmo;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
 		AddBullet AddBullet;

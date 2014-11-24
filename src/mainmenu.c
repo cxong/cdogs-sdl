@@ -358,6 +358,12 @@ menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionToggle(
+			"Ammo",
+			&gConfig.Game.Ammo,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateOptionToggle(
 			"Fog",
 			&gConfig.Game.Fog,
 			MENU_OPTION_DISPLAY_STYLE_YES_NO));

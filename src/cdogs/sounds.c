@@ -153,6 +153,8 @@ void SoundInitialize(
 	device->switchSound = StrSound("switch");
 	device->pickupSound = StrSound("pickup");
 	device->healthSound = StrSound("health");
+	device->ammoSound = StrSound("ammo");
+	device->clickSound = StrSound("click");
 	device->keySound = StrSound("key");
 	device->wreckSound = StrSound("bang");
 	CArrayInit(&device->screamSounds, sizeof(Mix_Chunk *));

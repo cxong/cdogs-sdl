@@ -59,13 +59,13 @@
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
 #include <cdogs/ai_coop.h>
+#include <cdogs/ammo.h>
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/health_pickup.h>
 #include <cdogs/hud.h>
 #include <cdogs/joystick.h>
 #include <cdogs/mission.h>
@@ -75,6 +75,7 @@
 #include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
+#include <cdogs/powerup.h>
 #include <cdogs/screen_shake.h>
 #include <cdogs/triggers.h>
 
@@ -379,7 +380,8 @@ typedef struct
 	bool isPaused;
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
-	HealthPickups hp;
+	PowerupSpawner healthSpawner;
+	CArray ammoSpawners;	// of PowerupSpawner
 	ScreenShake shake;
 	Vec2i lastPosition;
 	GameLoopData loop;
@@ -397,7 +399,14 @@ bool RunGame(struct MissionOptions *m, Map *map)
 
 	DrawBufferInit(&data.buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	HUDInit(&data.hud, &gConfig.Interface, &gGraphicsDevice, m);
-	HealthPickupsInit(&data.hp, map);
+	HealthSpawnerInit(&data.healthSpawner, map);
+	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
+	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	{
+		PowerupSpawner ps;
+		AmmoSpawnerInit(&ps, map, i);
+		CArrayPushBack(&data.ammoSpawners, &ps);
+	}
 	data.shake = ScreenShakeZero();
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
@@ -428,6 +437,12 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
 
+	PowerupSpawnerTerminate(&data.healthSpawner);
+	for (int i = 0; i < (int)data.ammoSpawners.size; i++)
+	{
+		PowerupSpawnerTerminate(CArrayGet(&data.ammoSpawners, i));
+	}
+	CArrayTerminate(&data.ammoSpawners);
 	HUDTerminate(&data.hud);
 	DrawBufferTerminate(&data.buffer);
 
@@ -602,7 +617,11 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	UpdateWatches(&rData->map->triggers);
 
-	HealthPickupsUpdate(&rData->hp, ticksPerFrame);
+	PowerupSpawnerUpdate(&rData->healthSpawner, ticksPerFrame);
+	for (int i = 0; i < (int)rData->ammoSpawners.size; i++)
+	{
+		PowerupSpawnerUpdate(CArrayGet(&rData->ammoSpawners, i), ticksPerFrame);
+	}
 
 	if (!gCampaign.IsClient)
 	{
@@ -610,7 +629,9 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	HandleGameEvents(
-		&gGameEvents, &rData->hud, &rData->shake, &rData->hp, &gEventHandlers);
+		&gGameEvents, &rData->hud, &rData->shake,
+		&rData->healthSpawner, &rData->ammoSpawners,
+		&gEventHandlers);
 
 	rData->m->time += ticksPerFrame;
 

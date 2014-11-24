@@ -156,5 +156,11 @@ void MapPlaceHealth(Vec2i pos);
 void MapPlaceKey(
 	Map *map, const struct MissionOptions *mo, const Vec2i pos,
 	const int keyIndex);
+typedef struct
+{
+	Vec2i Pos;
+	int Id;
+} AddAmmoPickup;
+void MapPlaceAmmo(AddAmmoPickup a);
 
 #endif

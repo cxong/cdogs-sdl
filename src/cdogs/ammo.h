@@ -1,4 +1,6 @@
 /*
+    C-Dogs SDL
+    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2014, Cong Xu
     All rights reserved.
 
@@ -23,24 +25,34 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HEALTH_PICKUP
-#define __HEALTH_PICKUP
+#pragma once
 
-#include "actors.h"
+#include <json/json.h>
 
-#define HEALTH_PICKUP_HEAL_AMOUNT 50
+#include "c_array.h"
+#include "pic.h"
 
 typedef struct
 {
-	Map *map;
-	int timeUntilNextSpawn;
-	int timer;
-	int numPickups;
-	int pickupsSpawned;
-} HealthPickups;
+	char *Name;
+	const Pic *Pic;
+	int Amount;
+	int Max;
+} Ammo;
+typedef struct
+{
+	CArray Ammo;	// of Ammo
+	CArray CustomAmmo;	// of Ammo
+} AmmoClasses;
+extern AmmoClasses gAmmo;
 
-void HealthPickupsInit(HealthPickups *h, Map *map);
-void HealthPickupsUpdate(HealthPickups *h, int ticks);
-void HealthPickupsRemoveOne(HealthPickups *h);
+Ammo *StrAmmo(const char *s);
+int StrAmmoId(const char *s);
 
-#endif
+void AmmoInitialize(AmmoClasses *ammo, const char *path);
+void AmmoLoadJSON(CArray *ammo, json_t *node);
+void AmmoClassesClear(CArray *ammo);
+void AmmoTerminate(AmmoClasses *ammo);
+
+Ammo *AmmoGetById(AmmoClasses *ammo, const int id);
+int AmmoGetNumClasses(const AmmoClasses *ammo);

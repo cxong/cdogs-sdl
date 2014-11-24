@@ -408,6 +408,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.ShotsPushback = 1;
 	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
 	config->Game.HealthPickups = true;
+	config->Game.Ammo = true;
 	config->Game.Gore = GORE_LOW;
 	config->Game.LaserSight = LASER_SIGHT_NONE;
 	config->Graphics.Brightness = 0;

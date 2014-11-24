@@ -30,15 +30,16 @@
 
 #include "c_array.h"
 #include "events.h"
-#include "health_pickup.h"
 #include "hud.h"
+#include "powerup.h"
 #include "screen_shake.h"
 
 void HandleGameEvents(
 	CArray *store,
 	HUD *hud,
 	ScreenShake *shake,
-	HealthPickups *hp,
+	PowerupSpawner *healthSpawner,
+	CArray *ammoSpawners,
 	EventHandlers *eventHandlers);
 
 #endif

@@ -40,7 +40,8 @@
 	  "Sound": "mg",
 	  "Recoil": 0.17,
 	  "MuzzleFlashParticle": "muzzle_flash_mg",
-	  "Brass": "brass_big"
+	  "Brass": "brass_big",
+      "Ammo": "Bullets"
     },
 	{
 	  "Index": 2,
@@ -51,7 +52,8 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "Elevation": 24
+	  "Elevation": 24,
+      "Ammo": "Grenades"
 	},
 	{
 	  "Index": 3,
@@ -62,7 +64,8 @@
 	  "Lock": 6,
 	  "Sound": "flamer",
 	  "SoundLockLength": 36,
-	  "MuzzleFlashParticle": "muzzle_flash_flamer"
+	  "MuzzleFlashParticle": "muzzle_flash_flamer",
+      "Ammo": "Gas tank"
 	},
 	{
 	  "Index": 4,
@@ -77,7 +80,8 @@
 	  "SpreadCount": 5,
 	  "SpreadWidth": 0.2,
 	  "MuzzleFlashParticle": "muzzle_flash_shotgun",
-	  "Brass": "shotshell"
+	  "Brass": "shotshell",
+      "Ammo": "Shells"
 	},
 	{
 	  "Index": 5,
@@ -87,7 +91,8 @@
 	  "Cost": 2,
 	  "Lock": 20,
 	  "Sound": "fusion",
-	  "MuzzleFlashParticle": "muzzle_flash_powergun"
+	  "MuzzleFlashParticle": "muzzle_flash_powergun",
+      "Ammo": "Cells"
 	},
 	{
 	  "Index": 6,
@@ -98,7 +103,8 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "Elevation": 24
+	  "Elevation": 24,
+      "Ammo": "Frag grenades"
 	},
 	{
 	  "Index": 7,
@@ -109,7 +115,8 @@
 	  "Cost": 20,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "Elevation": 24
+	  "Elevation": 24,
+      "Ammo": "Molotovs"
 	},
 	{
 	  "Index": 8,
@@ -123,7 +130,8 @@
 	  "ReloadSound": "powergun_r",
 	  "MuzzleFlashSprite": "muzzle_flash_big",
 	  "MuzzleFlashColor": "00ffff",
-	  "MuzzleFlashDuration": 10
+	  "MuzzleFlashDuration": 10,
+      "Ammo": "Cells"
 	},
 	{
 	  "Index": 9,
@@ -136,7 +144,8 @@
 	  "ReloadLead": 15,
 	  "Sound": "hahaha",
 	  "ReloadSound": "package_r",
-	  "MuzzleHeight": 0
+	  "MuzzleHeight": 0,
+      "Ammo": "Mines"
 	},
 	{
 	  "Index": 10,
@@ -149,7 +158,8 @@
 	  "ReloadLead": 15,
 	  "Sound": "hahaha",
 	  "ReloadSound": "package_r",
-	  "MuzzleHeight": 0
+	  "MuzzleHeight": 0,
+      "Ammo": "Dynamite"
 	},
 	{
 	  "Index": 11,
@@ -160,7 +170,8 @@
 	  "Cost": 7,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "Elevation": 24
+	  "Elevation": 24,
+      "Ammo": "Gas bombs"
 	},
 	{
 	  "Index": 12,
@@ -172,7 +183,8 @@
 	  "ReloadLead": 15,
 	  "Sound": "powergun",
 	  "ReloadSound": "powergun_r",
-	  "MuzzleFlashParticle": "muzzle_flash_petrifier"
+	  "MuzzleFlashParticle": "muzzle_flash_petrifier",
+      "Ammo": "Cells"
 	},
 	{
 	  "Index": 13,
@@ -182,7 +194,8 @@
 	  "Cost": 5,
 	  "Lock": 30,
 	  "Sound": "fusion",
-	  "MuzzleFlashParticle": "muzzle_flash_browny"
+	  "MuzzleFlashParticle": "muzzle_flash_browny",
+      "Ammo": "Cells"
 	},
 	{
 	  "Index": 14,
@@ -193,7 +206,8 @@
 	  "Cost": 10,
 	  "Lock": 30,
 	  "Sound": "launch",
-	  "Elevation": 24
+	  "Elevation": 24,
+      "Ammo": "Gas bombs"
 	},
 	{
 	  "Index": 15,
@@ -204,7 +218,8 @@
 	  "Lock": 6,
 	  "Sound": "flamer",
 	  "SoundLockLength": 36,
-	  "MuzzleFlashParticle": "muzzle_flash_gasgun"
+	  "MuzzleFlashParticle": "muzzle_flash_gasgun",
+      "Ammo": "Gas tank"
 	},
 	{
 	  "Index": 16,
@@ -215,7 +230,8 @@
 	  "Lock": 4,
 	  "Sound": "pulse",
 	  "Recoil": 0.37,
-	  "MuzzleFlashParticle": "muzzle_flash_pulse"
+	  "MuzzleFlashParticle": "muzzle_flash_pulse",
+      "Ammo": "Mini cells"
 	},
 	{
 	  "Index": 17,
@@ -225,7 +241,8 @@
 	  "Cost": 7,
 	  "Lock": 30,
 	  "Sound": "swell",
-	  "MuzzleFlashParticle": "muzzle_flash_heatseeker"
+	  "MuzzleFlashParticle": "muzzle_flash_heatseeker",
+      "Ammo": "Rockets"
 	},
 	{
 	  "Name": "Swarmer",
@@ -237,7 +254,8 @@
 	  "SpreadCount": 4,
 	  "SpreadWidth": 0.4,
 	  "Sound": "swarmer",
-	  "MuzzleFlashParticle": "muzzle_flash_heatseeker"
+	  "MuzzleFlashParticle": "muzzle_flash_heatseeker",
+      "Ammo": "Rockets"
 	},
 	{
 	  "Name": "Launcher",
@@ -246,7 +264,8 @@
 	  "Cost": 15,
 	  "Lock": 70,
 	  "Sound": "rocket_launch",
-	  "MuzzleFlashParticle": "muzzle_flash_shotgun"
+	  "MuzzleFlashParticle": "muzzle_flash_shotgun",
+      "Ammo": "Rockets"
 	},
 	{
 	  "Name": "Pistol",

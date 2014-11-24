@@ -39,19 +39,22 @@ static void HandleGameEvent(
 	GameEvent *e,
 	HUD *hud,
 	ScreenShake *shake,
-	HealthPickups *hp,
+	PowerupSpawner *healthSpawner,
+	CArray *ammoSpawners,
 	EventHandlers *eventHandlers);
 void HandleGameEvents(
 	CArray *store,
 	HUD *hud,
 	ScreenShake *shake,
-	HealthPickups *hp,
+	PowerupSpawner *healthSpawner,
+	CArray *ammoSpawners,
 	EventHandlers *eventHandlers)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
 		GameEvent *e = CArrayGet(store, i);
-		HandleGameEvent(e, hud, shake, hp, eventHandlers);
+		HandleGameEvent(
+			e, hud, shake, healthSpawner, ammoSpawners, eventHandlers);
 	}
 	GameEventsClear(store);
 }
@@ -59,7 +62,8 @@ static void HandleGameEvent(
 	GameEvent *e,
 	HUD *hud,
 	ScreenShake *shake,
-	HealthPickups *hp,
+	PowerupSpawner *healthSpawner,
+	CArray *ammoSpawners,
 	EventHandlers *eventHandlers)
 {
 	e->Delay--;
@@ -137,12 +141,49 @@ static void HandleGameEvent(
 						break;
 					}
 					ActorHeal(a, e->u.Heal.Health);
-					HealthPickupsRemoveOne(hp);
+					PowerupSpawnerRemoveOne(healthSpawner);
 					HUDAddHealthUpdate(
 						hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
 				}
 			}
 			break;
+		case GAME_EVENT_ADD_AMMO_PICKUP:
+			MapPlaceAmmo(e->u.AddAmmoPickup);
+			break;
+		case GAME_EVENT_TAKE_AMMO_PICKUP:
+		{
+			const PlayerData *p =
+				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
+			if (IsPlayerAlive(p))
+			{
+				TActor *a = CArrayGet(&gActors, p->Id);
+				if (!a->isInUse)
+				{
+					break;
+				}
+				ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
+				PowerupSpawnerRemoveOne(
+					CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
+				// TODO: some sort of text effect showing ammo grab
+			}
+		}
+		break;
+		case GAME_EVENT_USE_AMMO:
+		{
+			const PlayerData *p =
+				CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
+			if (IsPlayerAlive(p))
+			{
+				TActor *a = CArrayGet(&gActors, p->Id);
+				if (!a->isInUse)
+				{
+					break;
+				}
+				ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
+				// TODO: some sort of text effect showing ammo usage
+			}
+		}
+		break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;
@@ -217,7 +258,9 @@ static void HandleGameEvent(
 						e1.u.Score.PlayerIndex =
 							e->u.UpdateObjective.PlayerIndex;
 						e1.u.Score.Score = OBJECT_SCORE;
-						HandleGameEvent(&e1, hud, shake, hp, eventHandlers);
+						HandleGameEvent(
+							&e1, hud, shake, healthSpawner, ammoSpawners,
+							eventHandlers);
 					}
 					break;
 				default:

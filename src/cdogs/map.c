@@ -52,14 +52,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "ammo.h"
 #include "collision.h"
 #include "config.h"
-#include "health_pickup.h"
 #include "map_build.h"
 #include "map_classic.h"
 #include "map_static.h"
 #include "pic_manager.h"
 #include "pickup.h"
+#include "powerup.h"
 #include "objs.h"
 #include "triggers.h"
 #include "sounds.h"
@@ -532,8 +533,8 @@ void MapPlaceCollectible(
 	const Vec2i fullPos = Vec2iReal2Full(realPos);
 	const int id = PickupAdd(
 		fullPos,
-		NULL,
-		cGeneralPics[o->pickupItem].picIndex,
+		PicManagerGet(
+			&gPicManager, NULL, cGeneralPics[o->pickupItem].picIndex),
 		PICKUP_JEWEL);
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->u.Score = PICKUP_SCORE;
@@ -569,7 +570,10 @@ static int MapTryPlaceCollectible(
 
 void MapPlaceHealth(Vec2i pos)
 {
-	const int id = PickupAdd(Vec2iReal2Full(pos), "health", 0, PICKUP_HEALTH);
+	const int id = PickupAdd(
+		Vec2iReal2Full(pos),
+		PicManagerGetPic(&gPicManager, "health"),
+		PICKUP_HEALTH);
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
 }
@@ -626,11 +630,20 @@ void MapPlaceKey(
 	const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(pos));
 	const int id = PickupAdd(
 		fullPos,
-		NULL,
-		cGeneralPics[mo->keyPics[keyIndex]].picIndex,
+		PicManagerGet(
+			&gPicManager, NULL, cGeneralPics[mo->keyPics[keyIndex]].picIndex),
 		PICKUP_KEYCARD);
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->u.Keys = 1 << keyIndex;
+}
+
+void MapPlaceAmmo(AddAmmoPickup a)
+{
+	const Ammo *ammo = AmmoGetById(&gAmmo, a.Id);
+	const int id = PickupAdd(Vec2iReal2Full(a.Pos), ammo->Pic, PICKUP_AMMO);
+	Pickup *p = CArrayGet(&gPickups, id);
+	p->u.Ammo.Id = a.Id;
+	p->u.Ammo.Amount = ammo->Amount;
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)

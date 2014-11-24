@@ -246,7 +246,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-		WeaponCanFire(ActorGetGun(actor)) &&
+		ActorCanFire(actor) &&
 		roll < bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
@@ -534,7 +534,8 @@ void InitializeBadGuys(void)
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
-				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+				HandleGameEvents(
+					&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 			}
 		}
 		else if (mobj->Type == OBJECTIVE_RESCUE)
@@ -563,7 +564,8 @@ void InitializeBadGuys(void)
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
-				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+				HandleGameEvents(
+					&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 			}
 		}
 	}
@@ -598,6 +600,7 @@ void CreateEnemies(void)
 		gBaddieCount++;
 
 		// Process the events that actually place the actors
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, &gEventHandlers);
+		HandleGameEvents(
+			&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 	}
 }

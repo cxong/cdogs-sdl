@@ -115,6 +115,7 @@ typedef struct
 	bool ShotsPushback;
 	AllyCollision AllyCollision;
 	bool HealthPickups;
+	bool Ammo;
 	GoreAmount Gore;
 	LaserSight LaserSight;
 } GameConfig;

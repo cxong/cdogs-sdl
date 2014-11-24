@@ -71,6 +71,8 @@ extern Font gFont;
 
 FontOpts FontOptsNew(void);
 
+FontAlign FontAlignOpposite(const FontAlign align);
+
 void FontLoad(Font *f, const char *imgPath, const char *jsonPath);
 void FontFromImage(Font *f, SDL_Surface *image, json_t *data);
 void FontTerminate(Font *f);

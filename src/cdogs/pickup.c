@@ -27,6 +27,7 @@
 */
 #include "pickup.h"
 
+#include "ammo.h"
 #include "game_events.h"
 #include "map.h"
 
@@ -52,9 +53,7 @@ void PickupsTerminate(void)
 	CArrayTerminate(&gPickups);
 }
 static const Pic *GetPickupPic(const int id, Vec2i *offset);
-int PickupAdd(
-	const Vec2i pos, const char *picName, const int oldIdx,
-	const PickupType type)
+int PickupAdd(const Vec2i pos, const Pic *pic, const PickupType type)
 {
 	// Find an empty slot in pickup list
 	Pickup *p = NULL;
@@ -77,7 +76,7 @@ int PickupAdd(
 		p = CArrayGet(&gPickups, i);
 	}
 	memset(p, 0, sizeof *p);
-	p->Pic = PicManagerGet(&gPicManager, picName, oldIdx);
+	p->Pic = pic;
 	p->Type = type;
 	p->tileItem.x = p->tileItem.y = -1;
 	p->tileItem.flags = 0;
@@ -127,6 +126,26 @@ void PickupPickup(const TActor *a, const Pickup *p)
 			e.u.Heal.Health = p->u.Health;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.healthSound;
+		}
+		break;
+
+	case PICKUP_AMMO:
+		{
+			// Don't pickup if ammo full
+			canPickup = false;
+			const int ammoMax = AmmoGetById(&gAmmo, p->u.Ammo.Id)->Max;
+			const int current = *(int *)CArrayGet(&a->ammo, p->u.Ammo.Id);
+			if (current < ammoMax)
+			{
+				canPickup = true;
+				GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
+				e.u.AddAmmo.PlayerIndex = a->playerIndex;
+				e.u.AddAmmo.AddAmmo = p->u.Ammo;
+				// Note: receiving end will prevent ammo from exceeding max
+				GameEventsEnqueue(&gGameEvents, e);
+				// TODO: per-ammo sound
+				sound = gSoundDevice.ammoSound;
+			}
 		}
 		break;
 

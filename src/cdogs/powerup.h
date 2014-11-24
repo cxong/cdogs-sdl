@@ -1,6 +1,4 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2014, Cong Xu
     All rights reserved.
 
@@ -28,45 +26,29 @@
 #pragma once
 
 #include "actors.h"
-#include "pic.h"
-#include "tile.h"
 
-// Effects for "pick up" objects
-typedef enum
-{
-	PICKUP_NONE,
-	PICKUP_JEWEL,
-	PICKUP_HEALTH,
-	PICKUP_AMMO,
-	PICKUP_KEYCARD
-} PickupType;
+#define HEALTH_PICKUP_HEAL_AMOUNT 50
 
-// Pickups are game objects that players can collect, and which have special
-// effects
 typedef struct
 {
-	const Pic *Pic;
-	PickupType Type;
-	union
-	{
-		int Score;
-		int Health;
-		AddAmmo Ammo;
-		int Keys;	// Refer to flags in mission.h
-	} u;
-	TTileItem tileItem;
-	bool isInUse;
-} Pickup;
+	Map *map;
+	int timeUntilNextSpawn;
+	int timer;
+	int numPickups;
+	int pickupsSpawned;
 
-extern CArray gPickups;	// of Pickup
+	bool Enabled;
+	int SpawnTime;
+	double (*RateScaleFunc)(void *);
+	void (*PlaceFunc)(const Vec2i, void *);
+	void *Data;
+} PowerupSpawner;
 
-// Score for picking up an objective
-#define PICKUP_SCORE 10
+void PowerupSpawnerInit(PowerupSpawner *p, Map *map);
+void PowerupSpawnerTerminate(PowerupSpawner *p);
+void PowerupSpawnerUpdate(PowerupSpawner *p, const int ticks);
+void PowerupSpawnerRemoveOne(PowerupSpawner *p);
 
+void HealthSpawnerInit(PowerupSpawner *p, Map *map);
 
-void PickupsInit(void);
-void PickupsTerminate(void);
-int PickupAdd(const Vec2i pos, const Pic *pic, const PickupType type);
-void PickupDestroy(const int id);
-
-void PickupPickup(const TActor *a, const Pickup *p);
+void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId);
