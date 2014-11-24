@@ -89,6 +89,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	SoundClear(&gSoundDevice.customSounds);
 	PicManagerClear(&gPicManager.customPics, &gPicManager.customSprites);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
+	AmmoClassesClear(&gAmmo.CustomAmmo);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
 
@@ -182,6 +183,7 @@ static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
 	}
 	if (json_parse_document(&root, buf) != JSON_OK)
 	{
+		printf("Invalid syntax in JSON file %s.\n", filename);
 		root = NULL;
 		goto bail;
 	}
