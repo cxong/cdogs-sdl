@@ -191,6 +191,8 @@ void ActorDestroy(int id);
 
 const Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
+// Returns -1 if gun does not use ammo
+int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
 bool ActorTrySwitchGun(TActor *a);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);

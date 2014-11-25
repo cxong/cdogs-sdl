@@ -621,9 +621,7 @@ void Shoot(TActor *actor)
 	{
 		if (!WeaponIsLocked(gun) && gConfig.Game.Ammo)
 		{
-			CASSERT(
-				*(int *)CArrayGet(&actor->ammo, gun->Gun->AmmoId) == 0,
-				"should be out of ammo");
+			CASSERT(ActorGunGetAmmo(actor, gun) == 0, "should be out of ammo");
 			// Play a clicking sound if this gun is out of ammo
 			if (gun->clickLock <= 0)
 			{
@@ -645,7 +643,7 @@ void Shoot(TActor *actor)
 		actor->uid);
 	if (actor->playerIndex >= 0)
 	{
-		if (gConfig.Game.Ammo)
+		if (gConfig.Game.Ammo && gun->Gun->AmmoId >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_USE_AMMO);
 			e.u.UseAmmo.PlayerIndex = actor->playerIndex;
@@ -1155,10 +1153,18 @@ Weapon *ActorGetGun(const TActor *a)
 {
 	return CArrayGet(&a->guns, a->gunIndex);
 }
+int ActorGunGetAmmo(const TActor *a, const Weapon *w)
+{
+	if (w->Gun->AmmoId == -1)
+	{
+		return -1;
+	}
+	return *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId);
+}
 bool ActorCanFire(const TActor *a)
 {
 	const Weapon *w = ActorGetGun(a);
-	const bool hasAmmo = *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId) > 0;
+	const bool hasAmmo = ActorGunGetAmmo(a, w) != 0;
 	return !WeaponIsLocked(w) && (!gConfig.Game.Ammo || hasAmmo);
 }
 bool ActorTrySwitchGun(TActor *a)

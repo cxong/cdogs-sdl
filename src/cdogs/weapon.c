@@ -166,6 +166,7 @@ static void LoadGunDescription(
 	GunDescription *g, json_t *node, const GunDescription *defaultGun)
 {
 	memset(g, 0, sizeof *g);
+	g->AmmoId = -1;
 	if (defaultGun)
 	{
 		memcpy(g, defaultGun, sizeof *g);

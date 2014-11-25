@@ -124,6 +124,22 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//     - Attack enemy
 	//   - else
 	//     - Go to nearest player
+
+	// First, check the weapon
+	// If we're out of ammo, switch to one with ammo
+	// Otherwise, switch back to our preferred (first) weapon
+	if (gConfig.Game.Ammo)
+	{
+		const Weapon *preferred = CArrayGet(&actor->guns, 0);
+		const bool preferredWeaponHasAmmo =
+			ActorGunGetAmmo(actor, preferred) != 0;
+		const bool isUsingPreferredWeapon = actor->gunIndex == 0;
+		if (preferredWeaponHasAmmo ^ isUsingPreferredWeapon)
+		{
+			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
+		}
+	}
+
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
 	// Follow the closest player with a lower ID

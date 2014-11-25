@@ -332,12 +332,12 @@ static void DrawWeaponStatus(
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = pos;
 	char buf[128];
-	if (gConfig.Game.Ammo)
+	if (gConfig.Game.Ammo && weapon->Gun->AmmoId >= 0)
 	{
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
 			weapon->Gun->name,
-			*(int *)CArrayGet(&actor->ammo, weapon->Gun->AmmoId),
+			ActorGunGetAmmo(actor, weapon),
 			AmmoGetById(&gAmmo, weapon->Gun->AmmoId)->Max);
 	}
 	else

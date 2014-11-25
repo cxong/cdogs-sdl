@@ -305,27 +305,28 @@ static void DrawTileItem(
 	}
 	else if (t->kind == KIND_PICKUP && tile->isVisited)
 	{
-		color_t dotColor = colorBlack;
-		switch (((const Pickup *)CArrayGet(&gPickups, t->id))->u.Keys)
+		const Pickup *p = CArrayGet(&gPickups, t->id);
+		if (p->Type == PICKUP_KEYCARD)
 		{
-		case FLAGS_KEYCARD_RED:
-			dotColor = colorRedDoor;
-			break;
-		case FLAGS_KEYCARD_BLUE:
-			dotColor = colorBlueDoor;
-			break;
-		case FLAGS_KEYCARD_GREEN:
-			dotColor = colorGreenDoor;
-			break;
-		case FLAGS_KEYCARD_YELLOW:
-			dotColor = colorYellowDoor;
-			break;
-		default:
-			// This isn't a key; ignore
-			break;
-		}
-		if (!ColorEquals(dotColor, colorBlack))
-		{
+			color_t dotColor = colorBlack;
+			switch (((const Pickup *)CArrayGet(&gPickups, t->id))->u.Keys)
+			{
+			case FLAGS_KEYCARD_RED:
+				dotColor = colorRedDoor;
+				break;
+			case FLAGS_KEYCARD_BLUE:
+				dotColor = colorBlueDoor;
+				break;
+			case FLAGS_KEYCARD_GREEN:
+				dotColor = colorGreenDoor;
+				break;
+			case FLAGS_KEYCARD_YELLOW:
+				dotColor = colorYellowDoor;
+				break;
+			default:
+				CASSERT(false, "Unknown key color");
+				break;
+			}
 			DrawDot(t, dotColor, pos, scale);
 		}
 	}

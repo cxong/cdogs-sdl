@@ -102,7 +102,7 @@ typedef struct
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
-	int AmmoId;
+	int AmmoId;			// -1 if the gun does not consume ammo
 	int Cost;			// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;

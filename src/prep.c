@@ -513,6 +513,12 @@ bool PlayerEquip(void)
 			p->weapons[0] = AICoopSelectWeapon(
 				idx, &gMission.missionData->Weapons);
 			p->weaponCount = 1;
+			if (gConfig.Game.Ammo)
+			{
+				// Select pistol as an infinite-ammo backup
+				p->weapons[1] = StrGunDescription("Pistol");
+				p->weaponCount++;
+			}
 			// TODO: select more weapons, or select weapons based on mission
 		}
 	}
