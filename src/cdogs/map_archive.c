@@ -169,7 +169,8 @@ static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
 	f = PHYSFS_openRead(filename);
 	if (f == NULL)
 	{
-		printf("failed to open. Reason: [%s].\n", PHYSFS_getLastError());
+		debug(D_NORMAL, "Did not open file %s: %s.\n",
+			filename, PHYSFS_getLastError());
 		goto bail;
 	}
 

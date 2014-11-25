@@ -145,7 +145,8 @@ void RealPath(const char *src, char *dest)
 	char *res = realpath(src, dest);
 	if (!res)
 	{
-		fprintf(stderr, "Cannot resolve relative path %s\n", src);
+		fprintf(stderr, "Cannot resolve relative path %s: %s\n",
+			src, strerror(errno));
 		// Default to relative path
 		strcpy(dest, src);
 	}

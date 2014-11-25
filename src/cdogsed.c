@@ -603,6 +603,7 @@ static void Save(void)
 		fileChanged = 0;
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
+		printf("Saved to %s\n", filename);
 	}
 }
 
