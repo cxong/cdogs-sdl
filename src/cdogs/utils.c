@@ -50,6 +50,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <string.h>
 
