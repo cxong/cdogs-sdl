@@ -1118,6 +1118,7 @@ json_format_string (const char *text)
 					{
 						rcs_catc (output, '\"');
 						pos++;
+						continue;
 					}
 				}
 				else if (text[pos] == '\"')	/* reached end of string */

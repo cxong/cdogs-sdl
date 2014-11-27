@@ -69,3 +69,16 @@ target_link_libraries(config_test
 	${EXTRA_LIBRARIES})
 add_test(NAME config_test WORKING_DIRECTORY .
 	COMMAND config_test)
+
+add_executable(json_test
+	json_test.c
+	../cdogs/json_utils.c
+	../cdogs/json_utils.h
+	../cdogs/utils.c
+	../cdogs/utils.h)
+target_link_libraries(json_test
+	cbehave
+	json
+	${EXTRA_LIBRARIES})
+add_test(NAME json_test WORKING_DIRECTORY .
+	COMMAND json_test)
