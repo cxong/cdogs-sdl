@@ -516,7 +516,11 @@ bool PlayerEquip(void)
 			if (gConfig.Game.Ammo)
 			{
 				// Select pistol as an infinite-ammo backup
-				p->weapons[1] = StrGunDescription("Pistol");
+				const GunDescription *pistol = StrGunDescription("Pistol");
+				if (p->weapons[0] != pistol)
+				{
+					p->weapons[1] = pistol;
+				}
 				p->weaponCount++;
 			}
 			// TODO: select more weapons, or select weapons based on mission
