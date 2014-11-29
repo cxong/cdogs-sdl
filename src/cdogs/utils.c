@@ -163,8 +163,8 @@ void RealPath(const char *src, char *dest)
 	if (!exists)
 	{
 		// delete the temporary file we created
-		const int res = remove(src);
-		if (res != 0)
+		const int res2 = remove(src);
+		if (res2 != 0)
 		{
 			fprintf(stderr, "Internal error: cannot delete\n");
 		}
