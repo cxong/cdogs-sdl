@@ -54,6 +54,8 @@
 #include <math.h>
 #include <string.h>
 
+#include <tinydir/tinydir.h>
+
 int debug = 0;
 int debug_level = D_NORMAL;
 
@@ -143,7 +145,31 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 #endif
 void RealPath(const char *src, char *dest)
 {
+#ifndef _WIN32
+	// realpath will fail with file does not exist if the file does not
+	// exist; if this is the case then create a file temporarily, return
+	// the canonical path, then remove the temporary file.
+	tinydir_file file;
+	const bool exists = tinydir_file_open(&file, src) == 0;
+	if (!exists)
+	{
+		FILE *f = fopen(src, "ab+");
+		CASSERT(f != NULL, "internal error: cannot create temp file");
+		fclose(f);
+	}
+#endif
 	char *res = realpath(src, dest);
+#ifndef _WIN32
+	if (!exists)
+	{
+		// delete the temporary file we created
+		const int res = remove(src);
+		if (res != 0)
+		{
+			fprintf(stderr, "Internal error: cannot delete\n");
+		}
+	}
+#endif
 	if (!res)
 	{
 		fprintf(stderr, "Cannot resolve relative path %s: %s\n",

@@ -8,6 +8,7 @@ src/tests/autosave_test
 src/tests/c_array_test
 src/tests/color_test
 src/tests/config_test
+src/tests/json_test
 src/cdogs/physfs/test_physfs
 
 # CMake stuff

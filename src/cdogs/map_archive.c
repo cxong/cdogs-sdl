@@ -354,7 +354,11 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	json_t *root = NULL;
 
 	// Save separate files via physfs
+#ifdef _WIN32
 	if (!PHYSFS_setWriteDir("."))
+#else
+	if (!PHYSFS_setWriteDir("/"))
+#endif
 	{
 		printf("Failed to set write dir. reason: %s.\n",
 			PHYSFS_getLastError());
