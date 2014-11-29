@@ -39,7 +39,7 @@
     },
     {
       "Name": "Molotovs",
-      "Pic": "molotov",
+      "Pic": "molotov_pickup",
       "Amount": 1,
       "Max": 5
     },
