@@ -36,6 +36,7 @@ typedef struct
 {
 	char *Name;
 	const Pic *Pic;
+	char *Sound;
 	int Amount;
 	int Max;
 } Ammo;

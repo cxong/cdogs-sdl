@@ -134,9 +134,9 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		{
 			// Don't pickup if ammo full
 			canPickup = false;
-			const int ammoMax = AmmoGetById(&gAmmo, p->u.Ammo.Id)->Max;
+			const Ammo *ammo = AmmoGetById(&gAmmo, p->u.Ammo.Id);
 			const int current = *(int *)CArrayGet(&a->ammo, p->u.Ammo.Id);
-			if (current < ammoMax)
+			if (current < ammo->Max)
 			{
 				canPickup = true;
 				GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
@@ -145,7 +145,7 @@ void PickupPickup(const TActor *a, const Pickup *p)
 				// Note: receiving end will prevent ammo from exceeding max
 				GameEventsEnqueue(&gGameEvents, e);
 				// TODO: per-ammo sound
-				sound = gSoundDevice.ammoSound;
+				sound = StrSound(ammo->Sound);
 			}
 		}
 		break;

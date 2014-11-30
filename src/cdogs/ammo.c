@@ -128,6 +128,7 @@ static void LoadAmmo(Ammo *a, json_t *node)
 	tmp = GetString(node, "Pic");
 	a->Pic = PicManagerGetPic(&gPicManager, tmp);
 	CFREE(tmp);
+	a->Sound = GetString(node, "Sound");
 	LoadInt(&a->Amount, node, "Amount");
 	LoadInt(&a->Max, node, "Max");
 }
@@ -137,6 +138,7 @@ void AmmoClassesClear(CArray *ammo)
 	{
 		Ammo *a = CArrayGet(ammo, i);
 		CFREE(a->Name);
+		CFREE(a->Sound);
 	}
 	CArrayClear(ammo);
 }
