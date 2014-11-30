@@ -96,8 +96,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 			break;
 		}
 		// Don't slide
-		if ((cmd & CMD_BUTTON2) &&
-			(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)))
+		if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
 		{
 			cmd &= ~CMD_BUTTON2;
 		}
@@ -270,7 +269,7 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 {
 	int cmd = AIGoto(actor, realPos, true);
 	// Try to slide if there is a clear path and we are far enough away
-	if ((cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+	if (CMD_HAS_DIRECTION(cmd) &&
 		AIHasClearPath(
 			Vec2iFull2Real(actor->Pos),
 			realPos,
@@ -377,7 +376,7 @@ static bool TryCompleteNearbyObjective(
 			// one possibility is that we've reached where the objective was,
 			// but have nothing to do.
 			// Remember that actor objectives can move around!
-			if (cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
+			if (CMD_HAS_DIRECTION(cmd))
 			{
 				*cmdOut = cmd;
 				return true;

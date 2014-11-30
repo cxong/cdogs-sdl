@@ -62,9 +62,6 @@
 
 #define FLAGS_HURTALWAYS    (1 << 2)
 
-// Players only
-#define FLAGS_SPECIAL_USED  (1 << 4)
-
 // Computer characters only
 #define FLAGS_DETOURING     (1 << 5)
 #define FLAGS_TRYRIGHT      (1 << 6)

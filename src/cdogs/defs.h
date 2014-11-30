@@ -96,6 +96,8 @@ const char *CmdStr(int cmd);
 #define Button1(x)    (((x) & CMD_BUTTON1) != 0)
 #define Button2(x)    (((x) & CMD_BUTTON2) != 0)
 #define AnyButton(x)  (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
+#define CMD_HAS_DIRECTION(x)\
+	((x) & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
 
 // Reverse directions for command
 int CmdGetReverse(int cmd);

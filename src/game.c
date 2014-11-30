@@ -85,29 +85,18 @@
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
-	int isDirectionCmd = cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN);
-	assert(actor);
-	if (!((cmd | actor->lastCmd) & CMD_BUTTON2))
-	{
-		actor->flags &= ~FLAGS_SPECIAL_USED;
-	}
-
-	if ((cmd & CMD_BUTTON2) && isDirectionCmd)
+	if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
 	{
 		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
 		{
 			SlideActor(actor, cmd);
 		}
-		if (gConfig.Game.SwitchMoveStyle != SWITCHMOVE_NONE)
-		{
-			actor->flags |= FLAGS_SPECIAL_USED;
-		}
 	}
 	else if (
 		(actor->lastCmd & CMD_BUTTON2) &&
 		!(cmd & CMD_BUTTON2) &&
-		!(actor->flags & FLAGS_SPECIAL_USED) &&
-		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && isDirectionCmd) &&
+		!CMD_HAS_DIRECTION(actor->lastCmd) &&
+		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
 		ActorTrySwitchGun(actor))
 	{
 		SoundPlayAt(

@@ -667,7 +667,7 @@ static bool ActorTryChangeDirection(
 {
 	const bool willChangeDirecton =
 		!actor->petrified &&
-		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
+		CMD_HAS_DIRECTION(cmd) &&
 		(!(cmd & CMD_BUTTON2) || gConfig.Game.SwitchMoveStyle != SWITCHMOVE_STRAFE) &&
 		(!(prevCmd & CMD_BUTTON1) || gConfig.Game.FireMoveStyle != FIREMOVE_STRAFE);
 	if (willChangeDirecton)
@@ -727,11 +727,9 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		gConfig.Game.FireMoveStyle != FIREMOVE_STOP ||
 		!hasShot ||
 		(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_STRAFE &&
-		actor->flags & FLAGS_SPECIAL_USED);
-	bool willMove =
-		!actor->petrified &&
-		(cmd & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)) &&
-		canMoveWhenShooting;
+		(cmd & CMD_BUTTON2));
+	const bool willMove =
+		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
 	if (willMove)
 	{
 		int moveAmount = ActorGetCharacter(actor)->speed * ticks;
