@@ -568,14 +568,15 @@ static int MapTryPlaceCollectible(
 	return 0;
 }
 
-void MapPlaceHealth(Vec2i pos)
+void MapPlaceHealth(AddHealthPickup a)
 {
 	const int id = PickupAdd(
-		Vec2iReal2Full(pos),
+		Vec2iReal2Full(a.Pos),
 		PicManagerGetPic(&gPicManager, "health"),
 		PICKUP_HEALTH);
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
+	p->IsRandomSpawned = a.IsRandomSpawned;
 }
 
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
@@ -644,6 +645,7 @@ void MapPlaceAmmo(AddAmmoPickup a)
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->u.Ammo.Id = a.Id;
 	p->u.Ammo.Amount = ammo->Amount;
+	p->IsRandomSpawned = a.IsRandomSpawned;
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)

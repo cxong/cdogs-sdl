@@ -893,6 +893,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		actor->MovePos = Vec2iZero();
 	}
 }
+static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorDie(TActor *actor, const int idx)
 {
 	// Check if the player has lives to revive
@@ -928,6 +929,13 @@ static void ActorDie(TActor *actor, const int idx)
 			GameEventsEnqueue(&gGameEvents, sound);
 		}
 	}
+
+	// Add an ammo pickup of the actor's gun
+	if (gConfig.Game.Ammo)
+	{
+		ActorAddAmmoPickup(actor);
+	}
+
 	// Add a blood pool
 	AddObjectOld(
 		actor->Pos,
@@ -935,6 +943,39 @@ static void ActorDie(TActor *actor, const int idx)
 		&cBloodPics[rand() % BLOOD_MAX],
 		TILEITEM_IS_WRECK);
 	ActorDestroy(idx);
+}
+static void ActorAddAmmoPickup(const TActor *actor)
+{
+	// Note: if the actor is AI with no shooting time,
+	// then it's an unarmed actor
+	if (actor->Character->bot != NULL &&
+		actor->Character->bot->probabilityToShoot == 0)
+	{
+		return;
+	}
+
+	// Add ammo pickups for each of the actor's guns
+	for (int i = 0; i < (int)actor->guns.size; i++)
+	{
+		const Weapon *w = CArrayGet(&actor->guns, i);
+
+		// Check if the actor's gun has ammo at all
+		if (w->Gun->AmmoId < 0)
+		{
+			continue;
+		}
+
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
+		// Add a little random offset so the pickups aren't all together
+		const Vec2i offset = Vec2iNew(
+			RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+			RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+		e.u.AddAmmoPickup.Pos =
+			Vec2iAdd(Vec2iFull2Real(actor->Pos), offset);
+		e.u.AddAmmoPickup.Id = w->Gun->AmmoId;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+
 }
 
 void ActorsInit(void)

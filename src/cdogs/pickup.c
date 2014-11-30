@@ -124,6 +124,7 @@ void PickupPickup(const TActor *a, const Pickup *p)
 			GameEvent e = GameEventNew(GAME_EVENT_TAKE_HEALTH_PICKUP);
 			e.u.Heal.PlayerIndex = a->playerIndex;
 			e.u.Heal.Health = p->u.Health;
+			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.healthSound;
 		}

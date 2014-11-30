@@ -162,7 +162,8 @@ static void HealthPlace(const Vec2i pos, void *data)
 {
 	UNUSED(data);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_HEALTH_PICKUP);
-	e.u.AddPos = pos;
+	e.u.AddHealthPickup.Pos = pos;
+	e.u.AddHealthPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -229,5 +230,6 @@ static void AmmoPlace(const Vec2i pos, void *data)
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
 	e.u.AddAmmoPickup.Pos = pos;
 	e.u.AddAmmoPickup.Id = ammoId;
+	e.u.AddAmmoPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }

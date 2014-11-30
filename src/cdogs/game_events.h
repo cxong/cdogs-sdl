@@ -101,17 +101,19 @@ typedef struct
 		} SetMessage;
 		NetMsgActorAdd ActorAdd;
 		NetMsgActorMove ActorMove;
-		Vec2i AddPos;
+		AddHealthPickup AddHealthPickup;
 		AddAmmoPickup AddAmmoPickup;
 		struct
 		{
 			int PlayerIndex;
 			int Health;
+			bool IsRandomSpawned;
 		} Heal;
 		struct
 		{
 			int PlayerIndex;
 			AddAmmo AddAmmo;
+			bool IsRandomSpawned;
 		} AddAmmo;
 		struct
 		{

@@ -127,7 +127,7 @@ static void HandleGameEvent(
 			}
 			break;
 		case GAME_EVENT_ADD_HEALTH_PICKUP:
-			MapPlaceHealth(e->u.AddPos);
+			MapPlaceHealth(e->u.AddHealthPickup);
 			break;
 		case GAME_EVENT_TAKE_HEALTH_PICKUP:
 			{
@@ -141,7 +141,10 @@ static void HandleGameEvent(
 						break;
 					}
 					ActorHeal(a, e->u.Heal.Health);
-					PowerupSpawnerRemoveOne(healthSpawner);
+					if (e->u.Heal.IsRandomSpawned)
+					{
+						PowerupSpawnerRemoveOne(healthSpawner);
+					}
 					HUDAddHealthUpdate(
 						hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
 				}
@@ -162,8 +165,11 @@ static void HandleGameEvent(
 					break;
 				}
 				ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
-				PowerupSpawnerRemoveOne(
-					CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
+				if (e->u.AddAmmo.IsRandomSpawned)
+				{
+					PowerupSpawnerRemoveOne(
+						CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
+				}
 				// TODO: some sort of text effect showing ammo grab
 			}
 		}

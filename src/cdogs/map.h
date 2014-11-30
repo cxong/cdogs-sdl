@@ -152,7 +152,13 @@ bool MapTryPlaceOneObject(
 void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo);
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
-void MapPlaceHealth(Vec2i pos);
+typedef struct
+{
+	Vec2i Pos;
+	// Whether the pickup was placed by the random spawner
+	bool IsRandomSpawned;
+} AddHealthPickup;
+void MapPlaceHealth(AddHealthPickup a);
 void MapPlaceKey(
 	Map *map, const struct MissionOptions *mo, const Vec2i pos,
 	const int keyIndex);
@@ -160,6 +166,8 @@ typedef struct
 {
 	Vec2i Pos;
 	int Id;
+	// Whether the pickup was placed by the random spawner
+	bool IsRandomSpawned;
 } AddAmmoPickup;
 void MapPlaceAmmo(AddAmmoPickup a);
 

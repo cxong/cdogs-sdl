@@ -55,6 +55,7 @@ typedef struct
 		int Keys;	// Refer to flags in mission.h
 	} u;
 	TTileItem tileItem;
+	bool IsRandomSpawned;
 	bool isInUse;
 } Pickup;
 
