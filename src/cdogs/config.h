@@ -118,6 +118,9 @@ typedef struct
 	bool Ammo;
 	GoreAmount Gore;
 	LaserSight LaserSight;
+
+	// In-game options, not accessed via general options menu
+	int DeathmatchLives;
 } GameConfig;
 
 typedef enum

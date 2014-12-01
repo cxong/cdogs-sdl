@@ -82,6 +82,7 @@ static void LoadGameConfigNode(
 		config->Gore, node, "Gore", StrGoreAmount);
 	JSON_UTILS_LOAD_ENUM(
 		config->LaserSight, node, "LaserSight", StrLaserSight);
+	LoadInt(&config->DeathmatchLives, node, "DeathmatchLives");
 }
 static void AddGameConfigNode(GameConfig *config, json_t *root)
 {
@@ -121,6 +122,7 @@ static void AddGameConfigNode(GameConfig *config, json_t *root)
 		subConfig, "Gore", config->Gore, GoreAmountStr);
 	JSON_UTILS_ADD_ENUM_PAIR(
 		subConfig, "LaserSight", config->LaserSight, LaserSightStr);
+	AddIntPair(subConfig, "DeathmatchLives", config->DeathmatchLives);
 }
 
 static void LoadGraphicsConfigNode(GraphicsConfig *config, json_t *node)

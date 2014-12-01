@@ -411,6 +411,7 @@ void ConfigLoadDefault(Config *config)
 	config->Game.Ammo = true;
 	config->Game.Gore = GORE_LOW;
 	config->Game.LaserSight = LASER_SIGHT_NONE;
+	config->Game.DeathmatchLives = 10;
 	config->Graphics.Brightness = 0;
 #ifdef __GCWZERO__
 	config->Graphics.Fullscreen = true;

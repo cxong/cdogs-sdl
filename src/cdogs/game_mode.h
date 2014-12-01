@@ -44,6 +44,7 @@ extern GameMode gGameModeDeathmatch;
 extern GameMode gGameModeQuickPlay;
 
 bool IsIntroNeeded(const GameMode mode);
+bool IsGameOptionsNeeded(const GameMode mode);
 bool IsScoreNeeded(const GameMode mode);
 bool HasObjectives(const GameMode mode);
 bool IsAutoMapEnabled(const GameMode mode);

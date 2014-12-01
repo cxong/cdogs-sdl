@@ -118,6 +118,16 @@ void ScreenStart(void)
 		return;
 	}
 
+	if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
+	{
+		debug(D_NORMAL, ">> Game options\n");
+		if (!GameOptions())
+		{
+			gCampaign.IsLoaded = false;
+			return;
+		}
+	}
+
 	debug(D_NORMAL, ">> Starting campaign\n");
 	Campaign(&gGraphicsDevice, &gCampaign);
 	gCampaign.IsLoaded = false;

@@ -41,6 +41,11 @@ bool IsIntroNeeded(const GameMode mode)
 	return mode == GAME_MODE_NORMAL;
 }
 
+bool IsGameOptionsNeeded(const GameMode mode)
+{
+	return mode == GAME_MODE_DEATHMATCH;
+}
+
 bool IsScoreNeeded(const GameMode mode)
 {
 	return mode != GAME_MODE_DOGFIGHT && mode != GAME_MODE_DEATHMATCH;
@@ -118,7 +123,7 @@ int ModeLives(const GameMode mode)
 	case GAME_MODE_DOGFIGHT:
 		return 1;
 	case GAME_MODE_DEATHMATCH:
-		return 10;
+		return gConfig.Game.DeathmatchLives;
 	default:
 		return gConfig.Game.Lives;
 	}

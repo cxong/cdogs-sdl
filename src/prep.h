@@ -70,6 +70,9 @@ bool NumPlayersSelection(
 // and select player name and appearance
 bool PlayerSelection(void);
 
+// Choose game-mode-specific options
+bool GameOptions(void);
+
 bool PlayerEquip(void);
 
 // Wait for the game to start

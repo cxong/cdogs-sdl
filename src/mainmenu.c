@@ -341,13 +341,14 @@ menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
 			"Player HP",
 			&gConfig.Game.PlayerHP,
 			25, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))PercentStr));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionRange(
 			"Lives",
 			&gConfig.Game.Lives,
-			0, 5, 1,
+			1, 5, 1,
 			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
 	MenuAddSubmenu(
 		menu,

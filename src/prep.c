@@ -480,6 +480,65 @@ static void PlayerSelectionDraw(void *data)
 	}
 }
 
+bool GameOptions(void)
+{
+	// Create selection menus
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+	MenuSystem ms;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(), Vec2iNew(w, h));
+	ms.align = MENU_ALIGN_CENTER;
+	ms.allowAborts = true;
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"",
+		MENU_TYPE_OPTIONS,
+		0);
+	MenuAddSubmenu(
+		ms.current,
+		MenuCreateOptionRange(
+			"Player HP",
+			&gConfig.Game.PlayerHP,
+			25, 200, 25,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))PercentStr));
+	MenuAddSubmenu(
+		ms.current,
+		MenuCreateOptionRange(
+			"Lives",
+			&gConfig.Game.DeathmatchLives,
+			1, 20, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+	MenuAddSubmenu(
+		ms.current,
+		MenuCreateOptionToggle(
+			"Health pickups",
+			&gConfig.Game.HealthPickups,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(
+		ms.current,
+		MenuCreateOptionToggle(
+			"Ammo",
+			&gConfig.Game.Ammo,
+			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+
+	MenuLoop(&ms);
+
+	const bool ok = !ms.hasAbort;
+	if (ok)
+	{
+		// Save options for later
+		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	}
+	MenuSystemTerminate(&ms);
+	return ok;
+}
+
 typedef struct
 {
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
