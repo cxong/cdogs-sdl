@@ -454,6 +454,7 @@ static void ReloadUI(void)
 	sTooltipObj = NULL;
 }
 
+static bool TryOpen(const char *filename);
 static void Open(void)
 {
 	char filename[CDOGS_PATH_MAX];
@@ -516,15 +517,29 @@ static void Open(void)
 			FontStrCenter("Loading...");
 
 			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
-			CampaignSettingTerminate(&gCampaign.Setting);
-			CampaignSettingInit(&gCampaign.Setting);
-			char buf[CDOGS_PATH_MAX];
-			RealPath(filename, buf);
-			if (MapNewLoad(buf, &gCampaign.Setting))
+			// Try original filename
+			if (TryOpen(filename))
 			{
-				printf("Error: cannot load %s\n", buf);
-				continue;
+				goto loaded;
 			}
+			// Try adding .cdogscpn
+			char buf[CDOGS_PATH_MAX];
+			sprintf(buf, "%s.cdogscpn", filename);
+			if (TryOpen(buf))
+			{
+				goto loaded;
+			}
+			// Try adding .cpn
+			sprintf(buf, "%s.cpn", filename);
+			if (TryOpen(filename))
+			{
+				goto loaded;
+			}
+			// All attempts failed
+			printf("Error: cannot load %s\n", buf);
+			continue;
+
+		loaded:
 			fileChanged = 0;
 			Setup(1);
 			strcpy(lastFile, buf);
@@ -534,6 +549,15 @@ static void Open(void)
 		}
 		SDL_Delay(10);
 	}
+}
+static bool TryOpen(const char *filename)
+{
+	// Try opening a campaign
+	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingInit(&gCampaign.Setting);
+	char buf[CDOGS_PATH_MAX];
+	RealPath(filename, buf);
+	return !MapNewLoad(buf, &gCampaign.Setting);
 }
 
 static void Save(void)
