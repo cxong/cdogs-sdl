@@ -117,6 +117,9 @@ typedef struct Actor
 	int state;
 	int stateCounter;
 	int lastCmd;
+	// Whether the last special command was performed with a direction
+	// This differentiates between a special command and weapon switch
+	bool specialCmdDir;
 	int soundLock;
 	Character *Character;
 	int playerIndex;	// -1 unless a human player

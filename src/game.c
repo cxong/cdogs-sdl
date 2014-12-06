@@ -95,7 +95,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	else if (
 		(actor->lastCmd & CMD_BUTTON2) &&
 		!(cmd & CMD_BUTTON2) &&
-		!CMD_HAS_DIRECTION(actor->lastCmd) &&
+		!actor->specialCmdDir &&
 		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
 		ActorTrySwitchGun(actor))
 	{
