@@ -569,20 +569,7 @@ bool PlayerEquip(void)
 				(int)data.menus[idx].ms.root->u.normal.subMenus.size - 1;
 			data.menus[idx].ms.current = CArrayGet(
 				&data.menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
-			p->weapons[0] = AICoopSelectWeapon(
-				idx, &gMission.missionData->Weapons);
-			p->weaponCount = 1;
-			if (gConfig.Game.Ammo)
-			{
-				// Select pistol as an infinite-ammo backup
-				const GunDescription *pistol = StrGunDescription("Pistol");
-				if (p->weapons[0] != pistol)
-				{
-					p->weapons[1] = pistol;
-				}
-				p->weaponCount++;
-			}
-			// TODO: select more weapons, or select weapons based on mission
+			AICoopSelectWeapons(p, idx, &gMission.missionData->Weapons);
 		}
 	}
 

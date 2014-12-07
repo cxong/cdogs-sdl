@@ -126,14 +126,22 @@ static int AICoopGetCmdNormal(TActor *actor)
 
 	// First, check the weapon
 	// If we're out of ammo, switch to one with ammo
-	// Otherwise, switch back to our preferred (first) weapon
+	// Prioritise our selection based on weapon order, i.e.
+	// prefer first weapon over second over third etc.
 	if (gConfig.Game.Ammo)
 	{
-		const Weapon *preferred = CArrayGet(&actor->guns, 0);
-		const bool preferredWeaponHasAmmo =
-			ActorGunGetAmmo(actor, preferred) != 0;
-		const bool isUsingPreferredWeapon = actor->gunIndex == 0;
-		if (preferredWeaponHasAmmo ^ isUsingPreferredWeapon)
+		int mostPreferredWeaponWithAmmo = 0;
+		for (int i = 0; i < (int)actor->guns.size; i++)
+		{
+			const Weapon *w = CArrayGet(&actor->guns, i);
+			const bool hasAmmo = ActorGunGetAmmo(actor, w) != 0;
+			if (hasAmmo)
+			{
+				break;
+			}
+			mostPreferredWeaponWithAmmo++;
+		}
+		if (mostPreferredWeaponWithAmmo != actor->gunIndex)
 		{
 			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
 		}
@@ -646,41 +654,54 @@ static int GotoObjective(TActor *actor, int objDistance)
 	return cmd;
 }
 
-static bool HasWeapon(const CArray *weapons, const GunDescription *w);
-const GunDescription *AICoopSelectWeapon(int player, const CArray *weapons)
+static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w);
+void AICoopSelectWeapons(
+	PlayerData *p, const int player, const CArray *weapons)
 {
-	// Weapon preferences, for different player indices
-#define NUM_PREFERRED_WEAPONS 7
-	const char *preferredWeapons[][NUM_PREFERRED_WEAPONS] =
-	{
-		{ "Machine gun", "Shotgun", "Powergun", "Launcher", "Sniper rifle", "Pistol", "Flamer" },
-		{ "Flamer", "Pistol", "Shotgun", "Machine gun", "Launcher", "Powergun", "Sniper rifle" },
-		{ "Shotgun", "Machine gun", "Launcher", "Powergun", "Pistol", "Flamer", "Sniper rifle" },
-		{ "Powergun", "Sniper rifle", "Machine gun", "Launcher", "Shotgun", "Pistol", "Flamer" }
-	};
+	p->weaponCount = 0;
 
-	// First try to select an available weapon
-	for (int i = 0; i < NUM_PREFERRED_WEAPONS; i++)
+	// Select two weapons from available ones
+	// Offset the starting index a bit so each AI uses different guns
+	const int startIdx = (player * 3) % weapons->size;
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		const char *preferredWeaponName = preferredWeapons[player][i];
-		const GunDescription *preferredWeapon =
-			StrGunDescription(preferredWeaponName);
-		if (HasWeapon(weapons, preferredWeapon))
+		const int idx = (startIdx + i) % weapons->size;
+		if (idx == startIdx && i > 0)
 		{
-			return preferredWeapon;
+			// Not enough weapons
+			break;
 		}
+		const GunDescription **g = CArrayGet(weapons, idx);
+		p->weapons[i] = *g;
+		p->weaponCount++;
 	}
 
-	// Preferred weapons unavailable;
-	// give up and select most preferred weapon anyway
-	return StrGunDescription(preferredWeapons[player][0]);
-}
-static bool HasWeapon(const CArray *weapons, const GunDescription *w)
-{
-	for (int i = 0; i < (int)weapons->size; i++)
+	if (gConfig.Game.Ammo)
 	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		if (w == *g)
+		// Select pistol as an infinite-ammo backup
+		const GunDescription *pistol = StrGunDescription("Pistol");
+		if (!PlayerHasWeapon(p, pistol))
+		{
+			if (p->weaponCount == MAX_WEAPONS)
+			{
+				// Player has full weapons; replace last weapon
+				p->weapons[MAX_WEAPONS - 1] = pistol;
+			}
+			else
+			{
+				// Add the pistol
+				p->weapons[p->weaponCount] = pistol;
+				p->weaponCount++;
+			}
+		}
+	}
+}
+static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		const GunDescription *g = p->weapons[i];
+		if (w == g)
 		{
 			return true;
 		}
