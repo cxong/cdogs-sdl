@@ -28,6 +28,7 @@
 */
 #include "config.h"
 
+#include <limits.h>
 #include <stdio.h>
 
 #include "blit.h"

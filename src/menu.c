@@ -49,7 +49,6 @@
 #include "menu.h"
 
 #include <assert.h>
-#include <limits.h>
 #include <stdarg.h>
 #include <string.h>
 
