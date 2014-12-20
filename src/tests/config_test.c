@@ -31,8 +31,8 @@ FEATURE(1, "Load default config")
 				ConfigGetBool(&config1, "Game.FriendlyFire"),
 				ConfigGetBool(&config2, "Game.FriendlyFire"));
 			SHOULD_INT_EQUAL(
-				ConfigGetBool(&config1, "Graphics.Brightness"),
-				ConfigGetBool(&config2, "Graphics.Brightness"));
+				ConfigGetInt(&config1, "Graphics.Brightness"),
+				ConfigGetInt(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
@@ -58,8 +58,8 @@ FEATURE(2, "Save and load")
 				ConfigGetBool(&config1, "Game.FriendlyFire"),
 				ConfigGetBool(&config2, "Game.FriendlyFire"));
 			SHOULD_INT_EQUAL(
-				ConfigGetBool(&config1, "Graphics.Brightness"),
-				ConfigGetBool(&config2, "Graphics.Brightness"));
+				ConfigGetInt(&config1, "Graphics.Brightness"),
+				ConfigGetInt(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
@@ -91,8 +91,8 @@ FEATURE(3, "Detect config version")
 				ConfigGetBool(&config1, "Game.FriendlyFire"),
 				ConfigGetBool(&config2, "Game.FriendlyFire"));
 			SHOULD_INT_EQUAL(
-				ConfigGetBool(&config1, "Graphics.Brightness"),
-				ConfigGetBool(&config2, "Graphics.Brightness"));
+				ConfigGetInt(&config1, "Graphics.Brightness"),
+				ConfigGetInt(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
