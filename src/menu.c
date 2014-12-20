@@ -1090,11 +1090,11 @@ static bool KeyAvailable(
 {
 	if (key == SDLK_ESCAPE || key == SDLK_F9 || key == SDLK_F10)
 	{
-		return 0;
+		return false;
 	}
-	if (key == ConfigGetInt(&gConfig, "Input.PlayerKeys0.map") && code >= 0)
+	if (key == ConfigGetInt(&gConfig, "Input.PlayerKeys0.map"))
 	{
-		return 0;
+		return false;
 	}
 
 	char buf[256];
