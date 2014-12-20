@@ -25,12 +25,8 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __QUICK_PLAY
-#define __QUICK_PLAY
+#pragma once
 
 #include "campaigns.h"
 
-void SetupQuickPlayCampaign(
-	CampaignSetting *setting, const QuickPlayConfig *config);
-
-#endif
+void SetupQuickPlayCampaign(CampaignSetting *setting);

@@ -66,7 +66,7 @@ int MusicPlay(SoundDevice *device, const char *path)
 	Mix_PlayMusic(device->music, -1);
 	device->musicStatus = MUSIC_PLAYING;
 
-	if (gConfig.Sound.MusicVolume == 0)
+	if (ConfigGetInt(&gConfig, "Sound.MusicVolume") == 0)
 	{
 		MusicPause(device);
 	}

@@ -35,7 +35,7 @@
 typedef struct
 {
 	MenuDisplayPlayerData display;
-	MenuDisplayPlayerControlsData controls;
+	int playerIndex;
 } WeaponMenuData;
 typedef struct
 {
@@ -46,7 +46,6 @@ typedef struct
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, const int playerIndex,
-	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig);
+	EventHandlers *handlers, GraphicsDevice *graphics);
 
 #endif

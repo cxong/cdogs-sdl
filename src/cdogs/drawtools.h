@@ -44,9 +44,9 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef __DRAW_TOOLS
-#define __DRAW_TOOLS
+#include "grafx.h"
 
 void Draw_Point(const int x, const int y, color_t c);
 void Draw_Line(
@@ -80,5 +80,3 @@ void DrawRectangle(
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color);
 
 void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size);
-
-#endif /* __DRAW_TOOLS */

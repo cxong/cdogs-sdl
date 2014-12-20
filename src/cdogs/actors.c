@@ -306,7 +306,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 
 	// Footstep sounds
-	if (gConfig.Sound.Footsteps &&
+	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
 		(actor->state == STATE_WALKING_1 ||
 		actor->state == STATE_WALKING_2 ||
 		actor->state == STATE_WALKING_3 ||
@@ -619,7 +619,7 @@ void Shoot(TActor *actor)
 	Weapon *gun = ActorGetGun(actor);
 	if (!ActorCanFire(actor))
 	{
-		if (!WeaponIsLocked(gun) && gConfig.Game.Ammo)
+		if (!WeaponIsLocked(gun) && ConfigGetBool(&gConfig, "Game.Ammo"))
 		{
 			CASSERT(ActorGunGetAmmo(actor, gun) == 0, "should be out of ammo");
 			// Play a clicking sound if this gun is out of ammo
@@ -643,7 +643,7 @@ void Shoot(TActor *actor)
 		actor->uid);
 	if (actor->playerIndex >= 0)
 	{
-		if (gConfig.Game.Ammo && gun->Gun->AmmoId >= 0)
+		if (ConfigGetBool(&gConfig, "Game.Ammo") && gun->Gun->AmmoId >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_USE_AMMO);
 			e.u.UseAmmo.PlayerIndex = actor->playerIndex;
@@ -668,8 +668,8 @@ static bool ActorTryChangeDirection(
 	const bool willChangeDirecton =
 		!actor->petrified &&
 		CMD_HAS_DIRECTION(cmd) &&
-		(!(cmd & CMD_BUTTON2) || gConfig.Game.SwitchMoveStyle != SWITCHMOVE_STRAFE) &&
-		(!(prevCmd & CMD_BUTTON1) || gConfig.Game.FireMoveStyle != FIREMOVE_STRAFE);
+		(!(cmd & CMD_BUTTON2) || ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") != SWITCHMOVE_STRAFE) &&
+		(!(prevCmd & CMD_BUTTON1) || ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STRAFE);
 	if (willChangeDirecton)
 	{
 		actor->direction = CmdToDirection(cmd);
@@ -724,9 +724,9 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 {
 	const bool canMoveWhenShooting =
-		gConfig.Game.FireMoveStyle != FIREMOVE_STOP ||
+		ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
 		!hasShot ||
-		(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_STRAFE &&
+		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_STRAFE &&
 		(cmd & CMD_BUTTON2));
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
@@ -794,7 +794,7 @@ void SlideActor(TActor *actor, int cmd)
 	else if (cmd & CMD_DOWN)	actor->Vel.y = SLIDE_Y * 256;
 
 	// Slide sound
-	if (gConfig.Sound.Footsteps)
+	if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 	{
 		SoundPlayAt(
 			&gSoundDevice,
@@ -825,7 +825,7 @@ void UpdateAllActors(int ticks)
 		}
 		// Find actors that are on the same team and colliding,
 		// and repel them
-		if (gConfig.Game.AllyCollision == ALLYCOLLISION_REPEL)
+		if (ConfigGetEnum(&gConfig, "Game.AllyCollision") == ALLYCOLLISION_REPEL)
 		{
 			Vec2i realPos = Vec2iFull2Real(actor->Pos);
 			TTileItem *collidingItem = GetItemOnTileInCollision(
@@ -929,7 +929,7 @@ static void ActorDie(TActor *actor, const int idx)
 	}
 
 	// Add an ammo pickup of the actor's gun
-	if (gConfig.Game.Ammo)
+	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
 		ActorAddAmmoPickup(actor);
 	}
@@ -1204,7 +1204,9 @@ bool ActorCanFire(const TActor *a)
 {
 	const Weapon *w = ActorGetGun(a);
 	const bool hasAmmo = ActorGunGetAmmo(a, w) != 0;
-	return !WeaponIsLocked(w) && (!gConfig.Game.Ammo || hasAmmo);
+	return
+		!WeaponIsLocked(w) &&
+		(!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);
 }
 bool ActorTrySwitchGun(TActor *a)
 {
@@ -1320,7 +1322,7 @@ bool ActorIsInvulnerable(
 			actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY);
 		// Friendly fire (NPCs)
 		if (!IsPVP(mode) &&
-			!gConfig.Game.FriendlyFire &&
+			!ConfigGetBool(&gConfig, "Game.FriendlyFire") &&
 			isGood && isTargetGood)
 		{
 			return 1;

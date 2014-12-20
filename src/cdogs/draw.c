@@ -128,7 +128,7 @@ static color_t GetTileLOSMask(Tile *tile)
 	}
 	if (tile->flags & MAPTILE_OUT_OF_SIGHT)
 	{
-		if (gConfig.Game.Fog)
+		if (ConfigGetBool(&gConfig, "Game.Fog"))
 		{
 			color_t mask = { 96, 96, 96, 255 };
 			return mask;
@@ -417,15 +417,15 @@ static void DrawActorPics(
 		const TActor *a = CArrayGet(&gActors, t->id);
 
 		// Draw weapon indicators
-		if (gConfig.Game.LaserSight == LASER_SIGHT_ALL ||
-			(gConfig.Game.LaserSight == LASER_SIGHT_PLAYERS && a->playerIndex >= 0))
+		if (ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_ALL ||
+			(ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_PLAYERS && a->playerIndex >= 0))
 		{
 			DrawLaserSight(a, picPos);
 		}
 
 		// Draw character text
 		if (!a->aiContext || !AIContextShowChatter(
-			a->aiContext, gConfig.Interface.AIChatter))
+			a->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter")))
 		{
 			return;
 		}

@@ -59,26 +59,14 @@
 #include "vector.h"
 #include "sys_specifics.h"
 
-typedef enum
-{
-	SCALE_MODE_NN,
-	SCALE_MODE_BILINEAR,
-	SCALE_MODE_HQX
-} ScaleMode;
-
 typedef struct
 {
-	int Brightness;
 	Vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
-	int ShakeMultiplier;
-	ScaleMode ScaleMode;
+	bool IsEditor;
 
-	// Whether to force the usage of original C-Dogs pics
-	bool OriginalPics;
-
-	int IsEditor;
+	bool needRestart;
 } GraphicsConfig;
 
 typedef struct
@@ -116,12 +104,14 @@ typedef struct
 extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device);
-void GraphicsInitialize(
-	GraphicsDevice *device, GraphicsConfig *config, TPalette palette,
-	int force);
+void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force);
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
+void GraphicsConfigSet(
+	GraphicsConfig *c,
+	const Vec2i res, const bool fullscreen, const int scaleFactor);
+void GraphicsConfigSetFromConfig(GraphicsConfig *c);
 
 void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);

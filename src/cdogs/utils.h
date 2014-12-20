@@ -174,8 +174,11 @@ typedef enum
 	INPUT_DEVICE_COUNT
 } input_device_e;
 
+const char *InputDeviceName(const int d, const int deviceIndex);
+
 char *PercentStr(int p);
 char *Div8Str(int i);
+void CamelToTitle(char *buf, const char *src);
 
 // Helper macros for defining type/str conversion funcs
 #define T2S(_type, _str) case _type: return _str;

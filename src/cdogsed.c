@@ -278,7 +278,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
-	BlitFlip(g, &gConfig.Graphics);
+	BlitFlip(g);
 }
 
 static int Change(UIObject *o, int yc, int d)
@@ -468,7 +468,7 @@ static void Open(void)
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		pos = FontCh('<', pos);
-		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+		BlitFlip(&gGraphicsDevice);
 
 		bool doOpen = false;
 		int c = GetKey(&gEventHandlers);
@@ -515,7 +515,7 @@ static void Open(void)
 
 			FontStrCenter("Loading...");
 
-			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+			BlitFlip(&gGraphicsDevice);
 			CampaignSettingTerminate(&gCampaign.Setting);
 			CampaignSettingInit(&gCampaign.Setting);
 			char buf[CDOGS_PATH_MAX];
@@ -551,7 +551,7 @@ static void Save(void)
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		pos = FontCh('<', pos);
-		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+		BlitFlip(&gGraphicsDevice);
 
 		int c = GetKey(&gEventHandlers);
 		switch (c)
@@ -598,7 +598,7 @@ static void Save(void)
 
 		FontStrCenter("Saving...");
 		
-		BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+		BlitFlip(&gGraphicsDevice);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = 0;
 		strcpy(lastFile, filename);
@@ -636,7 +636,7 @@ static void HelpScreen(void)
 		"F1:                             This screen\n";
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+	BlitFlip(&gGraphicsDevice);
 	GetKey(&gEventHandlers);
 }
 
@@ -1190,10 +1190,8 @@ int main(int argc, char *argv[])
 
 	EditorBrushInit(&brush);
 
-	ConfigLoadDefault(&gConfig);
-	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	gLastConfig = gConfig;
-	gConfig.Graphics.IsEditor = 1;
+	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
+	gGraphicsDevice.cachedConfig.IsEditor = true;
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
@@ -1203,12 +1201,11 @@ int main(int argc, char *argv[])
 	BuildTranslationTables(gPicManager.palette);
 	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
-	gConfig.Graphics.ScaleMode = SCALE_MODE_NN;
-	gConfig.Graphics.ScaleFactor = 2;
-	gConfig.Graphics.Res.x = 400;
-	gConfig.Graphics.Res.y = 300;
-	GraphicsInitialize(
-		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette, 0);
+	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;
+	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
+	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
+	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");

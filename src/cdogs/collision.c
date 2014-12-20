@@ -197,7 +197,7 @@ bool AreasCollide(
 bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isPVP)
 {
-	if (gConfig.Game.AllyCollision != ALLYCOLLISION_NORMAL)
+	if (ConfigGetEnum(&gConfig, "Game.AllyCollision") != ALLYCOLLISION_NORMAL)
 	{
 		CollisionTeam itemTeam = COLLISIONTEAM_NONE;
 		if (i->kind == KIND_CHARACTER)

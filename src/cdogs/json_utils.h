@@ -46,6 +46,10 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 
+// Try to load a JSON node using a slash-delimited "path"
+// If at any point the path fails, NULL is returned.
+json_t *JSONFindNode(json_t *node, const char *path);
+
 #define JSON_UTILS_ADD_ENUM_PAIR(parent, name, value, func)\
 	json_insert_pair_into_object(\
 		(parent), (name), json_new_string(func(value)));

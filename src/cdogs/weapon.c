@@ -333,7 +333,7 @@ void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d)
 {
 	// Reload sound
-	if (gConfig.Sound.Reloads &&
+	if (ConfigGetBool(&gConfig, "Sound.Reloads") &&
 		w->lock > w->Gun->ReloadLead &&
 		w->lock - ticks <= w->Gun->ReloadLead &&
 		w->lock > 0 &&

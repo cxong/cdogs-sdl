@@ -130,7 +130,7 @@ Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset)
 	*offset = Vec2iNew(ofpic->dx, ofpic->dy);
 	Pic *pic;
 	if (!mo->picName || mo->picName[0] == '\0' ||
-		gConfig.Graphics.OriginalPics)
+		ConfigGetBool(&gConfig, "Graphics.OriginalPics"))
 	{
 		goto defaultPic;
 	}

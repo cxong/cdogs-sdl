@@ -387,7 +387,8 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx)
 {
 	Pic *pic;
-	if (!name || name[0] == '\0' || gConfig.Graphics.OriginalPics)
+	if (!name || name[0] == '\0' ||
+		ConfigGetBool(&gConfig, "Graphics.OriginalPics"))
 	{
 		goto defaultPic;
 	}

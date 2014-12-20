@@ -62,7 +62,6 @@
 #include "config.h"
 #include "defs.h"
 #include "keyboard.h"
-#include "input.h"
 #include "player_template.h"
 #include "quick_play.h"
 #include "sys_config.h"
@@ -98,7 +97,7 @@ void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 		}
 		else if (entry->Mode == GAME_MODE_QUICK_PLAY)
 		{
-			SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
+			SetupQuickPlayCampaign(&co->Setting);
 			co->IsLoaded = true;
 		}
 		else

@@ -62,7 +62,6 @@
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
-#include <cdogs/input.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/mission.h>
@@ -167,6 +166,7 @@ int main(int argc, char *argv[])
 	int isSoundEnabled = 1;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
+	memset(&campaigns, 0, sizeof campaigns);
 	int forceResolution = 0;
 	int err = 0;
 	const char *loadCampaign = NULL;
@@ -188,9 +188,7 @@ int main(int argc, char *argv[])
 	}
 
 	SetupConfigDir();
-	ConfigLoadDefault(&gConfig);
-	ConfigLoad(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	gLastConfig = gConfig;
+	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
 	LoadCredits(&creditsDisplayer, colorPurple, colorDarker);
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
@@ -218,18 +216,18 @@ int main(int argc, char *argv[])
 			switch (opt)
 			{
 			case 'f':
-				gConfig.Graphics.Fullscreen = 1;
+				ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value = true;
 				break;
 			case 's':
-				gConfig.Graphics.ScaleFactor = atoi(optarg);
+				ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = atoi(optarg);
 				break;
 			case 'c':
 				sscanf(optarg, "%dx%d",
-					&gConfig.Graphics.Res.x,
-					&gConfig.Graphics.Res.y);
+					&ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value,
+					&ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value);
 				debug(D_NORMAL, "Video mode %dx%d set...\n",
-					gConfig.Graphics.Res.x,
-					gConfig.Graphics.Res.y);
+					ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
+					ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
 				break;
 			case 'o':
 				forceResolution = 1;
@@ -248,12 +246,10 @@ int main(int argc, char *argv[])
 				break;
 			case 'm':
 				{
-					gConfig.Graphics.ShakeMultiplier = atoi(optarg);
-					if (gConfig.Graphics.ShakeMultiplier < 0)
-					{
-						gConfig.Graphics.ShakeMultiplier = 0;
-					}
-					printf("Shake multiplier: %d\n", gConfig.Graphics.ShakeMultiplier);
+					ConfigGet(&gConfig, "Graphics.ShakeMultiplier")->u.Int.Value =
+						MAX(atoi(optarg), 0);
+					printf("Shake multiplier: %d\n",
+						ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 				}
 				break;
 			case 'h':
@@ -316,7 +312,7 @@ int main(int argc, char *argv[])
 	if (isSoundEnabled)
 	{
 		GetDataFilePath(buf, "sounds");
-		SoundInitialize(&gSoundDevice, &gConfig.Sound, buf);
+		SoundInitialize(&gSoundDevice, buf);
 		if (!gSoundDevice.isInitialised)
 		{
 			printf("Sound initialization failed!\n");
@@ -350,19 +346,13 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
 	GraphicsInit(&gGraphicsDevice);
-	GraphicsInitialize(
-		&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
-		forceResolution);
+	GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{
-		Config defaultConfig;
 		printf("Cannot initialise video; trying default config\n");
-		ConfigLoadDefault(&defaultConfig);
-		gConfig.Graphics = defaultConfig.Graphics;
-		gLastConfig = gConfig;
+		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
 		GraphicsInitialize(
-			&gGraphicsDevice, &gConfig.Graphics, gPicManager.palette,
-			forceResolution);
+			&gGraphicsDevice,gPicManager.palette, forceResolution);
 	}
 	if (!gGraphicsDevice.IsInitialized)
 	{

@@ -120,13 +120,12 @@ static int GenerateQuickPlayParam(
 	}
 }
 
-static void SetupQuickPlayEnemy(
-	Character *enemy, const QuickPlayConfig *config, const GunDescription *gun)
+static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 {
 	enemy->looks.face = rand() % FACE_COUNT;
 	enemy->Gun = gun;
-	enemy->speed =
-		GenerateQuickPlayParam(config->EnemySpeed, 64, 112, 160, 256);
+	enemy->speed =GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 64, 112, 160, 256);
 	if (IsShortRange(enemy->Gun))
 	{
 		enemy->speed = enemy->speed * 4 / 3;
@@ -158,16 +157,13 @@ static void SetupQuickPlayEnemy(
 	enemy->looks.body = rand() % SHADE_COUNT;
 	enemy->looks.leg = rand() % SHADE_COUNT;
 	enemy->looks.hair = rand() % SHADE_COUNT;
-	enemy->maxHealth =
-		GenerateQuickPlayParam(config->EnemyHealth, 10, 20, 40, 60);
+	enemy->maxHealth = GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.EnemyHealth"), 10, 20, 40, 60);
 	enemy->flags = 0;
 }
 
 static void SetupQuickPlayEnemies(
-	Mission *mission,
-	int numEnemies,
-	CharacterStore *store,
-	const QuickPlayConfig *config)
+	Mission *mission, const int numEnemies, CharacterStore *store)
 {
 	int i;
 	for (i = 0; i < numEnemies; i++)
@@ -196,25 +192,27 @@ static void SetupQuickPlayEnemies(
 			{
 				continue;
 			}
-			if (i == 2 && config->EnemiesWithExplosives && !IsHighDPS(gun))
+			if (i == 2 &&
+				ConfigGetBool(&gConfig, "QuickPlay.EnemiesWithExplosives") &&
+				!IsHighDPS(gun))
 			{
 				continue;
 			}
 
-			if (!config->EnemiesWithExplosives && IsHighDPS(gun))
+			if (!ConfigGetBool(&gConfig, "QuickPlay.EnemiesWithExplosives") &&
+				IsHighDPS(gun))
 			{
 				continue;
 			}
 			break;
 		}
 		Character *ch = CharacterStoreAddOther(store);
-		SetupQuickPlayEnemy(ch, config, gun);
+		SetupQuickPlayEnemy(ch, gun);
 		CharacterSetColors(ch);
 	}
 }
 
-void SetupQuickPlayCampaign(
-	CampaignSetting *setting, const QuickPlayConfig *config)
+void SetupQuickPlayCampaign(CampaignSetting *setting)
 {
 	Mission *m;
 	CMALLOC(m, sizeof *m);
@@ -225,18 +223,19 @@ void SetupQuickPlayCampaign(
 	m->ExitStyle = rand() % GetExitCount();
 	m->KeyStyle = rand() % GetKeystyleCount();
 	m->DoorStyle = rand() % GetDoorstyleCount();
-	m->Size = GenerateQuickPlayMapSize(config->MapSize);
+	m->Size = GenerateQuickPlayMapSize(
+		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
 	m->Type = MAPTYPE_CLASSIC;	// TODO: generate different map types
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
-		m->u.Classic.Walls =
-			GenerateQuickPlayParam(config->WallCount, 0, 5, 15, 30);
-		m->u.Classic.WallLength =
-			GenerateQuickPlayParam(config->WallLength, 1, 3, 6, 12);
+		m->u.Classic.Walls = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.WallCount"), 0, 5, 15, 30);
+		m->u.Classic.WallLength = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.WallLength"), 1, 3, 6, 12);
 		m->u.Classic.CorridorWidth = rand() % 3 + 1;
-		m->u.Classic.Rooms.Count =
-			GenerateQuickPlayParam(config->RoomCount, 0, 2, 5, 12);
+		m->u.Classic.Rooms.Count = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.RoomCount"), 0, 2, 5, 12);
 		m->u.Classic.Rooms.Min = rand() % 10 + 5;
 		m->u.Classic.Rooms.Max = rand() % 10 + m->u.Classic.Rooms.Min;
 		m->u.Classic.Rooms.Edge = 1;
@@ -244,8 +243,8 @@ void SetupQuickPlayCampaign(
 		m->u.Classic.Rooms.Walls = rand() % 5;
 		m->u.Classic.Rooms.WallLength = rand() % 6 + 1;
 		m->u.Classic.Rooms.WallPad = rand() % 4 + 1;
-		m->u.Classic.Squares =
-			GenerateQuickPlayParam(config->SquareCount, 0, 1, 3, 6);
+		m->u.Classic.Squares = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
 		m->u.Classic.Doors.Enabled = rand() % 2;
 		m->u.Classic.Doors.Min = 1;
 		m->u.Classic.Doors.Max = 6;
@@ -258,15 +257,18 @@ void SetupQuickPlayCampaign(
 		break;
 	}
 	CharacterStoreInit(&setting->characters);
-	int c = GenerateQuickPlayParam(config->EnemyCount, 3, 5, 8, 12);
-	SetupQuickPlayEnemies(m, c, &setting->characters, config);
+	int c = GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.EnemyCount"), 3, 5, 8, 12);
+	SetupQuickPlayEnemies(m, c, &setting->characters);
 
-	c = GenerateQuickPlayParam(config->ItemCount, 0, 2, 5, 10);
+	c = GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
 	for (int i = 0; i < c; i++)
 	{
 		int n = rand() % (ITEMS_MAX - 1 + 1);
 		CArrayPushBack(&m->Items, &n);
-		n = GenerateQuickPlayParam(config->ItemCount, 0, 5, 10, 20);
+		n = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
 		CArrayPushBack(&m->ItemDensities, &n);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;

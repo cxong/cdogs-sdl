@@ -397,6 +397,81 @@ void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data)
 	menu->customDisplayData = data;
 }
 
+menu_t *MenuCreateConfigOptions(
+	const char *name, const char *title, const Config *c, MenuSystem *ms,
+	const bool backOrReturn)
+{
+	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_OPTIONS, 0);
+	CASSERT(c->Type == CONFIG_TYPE_GROUP,
+		"Cannot make menu from non-group config");
+	for (int i = 0; i < (int)c->u.Group.size; i++)
+	{
+		Config *child = CArrayGet(&c->u.Group, i);
+		MenuAddConfigOptionsItem(menu, child);
+	}
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	if (backOrReturn)
+	{
+		MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	}
+	else
+	{
+		MenuAddSubmenu(menu, MenuCreateReturn("Done", 0));
+	}
+	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
+	return menu;
+}
+void MenuAddConfigOptionsItem(menu_t *menu, Config *c)
+{
+	char nameBuf[256];
+	CASSERT(strlen(c->Name) < sizeof nameBuf, "buffer too small");
+	CamelToTitle(nameBuf, c->Name);
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CASSERT(false, "Unimplemented");
+		break;
+	case CONFIG_TYPE_INT:
+		MenuAddSubmenu(
+			menu,
+			MenuCreateOptionRange(
+			nameBuf, (int *)&c->u.Int.Value,
+			c->u.Int.Min, c->u.Int.Max, c->u.Int.Increment,
+			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+		break;
+	case CONFIG_TYPE_FLOAT:
+		CASSERT(false, "Unimplemented");
+		break;
+	case CONFIG_TYPE_BOOL:
+		MenuAddSubmenu(
+			menu, MenuCreateOptionToggle(nameBuf, &c->u.Bool.Value));
+		break;
+	case CONFIG_TYPE_ENUM:
+		MenuAddSubmenu(
+			menu,
+			MenuCreateOptionRange(
+			nameBuf, (int *)&c->u.Enum.Value,
+			c->u.Enum.Min, c->u.Enum.Max, 1,
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void(*)(void))c->u.Enum.EnumToStr));
+		break;
+	case CONFIG_TYPE_GROUP:
+		// Do nothing
+		break;
+	default:
+		CASSERT(false, "Unknown config type");
+		break;
+	}
+}
+
+menu_t *MenuCreateOptionToggle(const char *name, bool *config)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_TOGGLE);
+	menu->u.option.uHook.optionToggle = config;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_NONE;
+	return menu;
+}
+
 menu_t *MenuCreateOptionRange(
 	const char *name,
 	int *config,
@@ -699,40 +774,41 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 					subMenu->color).y + FontH();
 
 				// display option value
-				if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE ||
-					subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
+				const int optionInt = MenuOptionGetIntValue(subMenu);
+				const Vec2i valuePos = Vec2iNew(xOptions, pos.y);
+				if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
 					subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
 					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
 					subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
 				{
-					const int optionInt = MenuOptionGetIntValue(subMenu);
-					const Vec2i value_pos = Vec2iNew(xOptions, pos.y);
 					switch (subMenu->u.option.displayStyle)
 					{
+					case MENU_OPTION_DISPLAY_STYLE_NONE:
+						// Do nothing
+						break;
 					case MENU_OPTION_DISPLAY_STYLE_INT:
 						{
 							char buf[32];
 							sprintf(buf, "%d", optionInt);
-							FontStr(buf, value_pos);
+							FontStr(buf, valuePos);
 						}
 						break;
-					case MENU_OPTION_DISPLAY_STYLE_YES_NO:
-						FontStr(optionInt ? "Yes" : "No", value_pos);
-						break;
-					case MENU_OPTION_DISPLAY_STYLE_ON_OFF:
-						FontStr(optionInt ? "On" : "Off", value_pos);
-						break;
 					case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-						FontStr(subMenu->u.option.uFunc.str(), value_pos);
+						FontStr(subMenu->u.option.uFunc.str(), valuePos);
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
 						FontStr(
 							subMenu->u.option.uFunc.intToStr(optionInt),
-                            value_pos);
+							valuePos);
 						break;
 					default:
+						CASSERT(false, "unknown menu display type");
 						break;
 					}
+				}
+				else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
+				{
+					FontStr(optionInt ? "Yes" : "No", valuePos);
 				}
 
 				pos.y = yNext;
@@ -770,15 +846,13 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 					{
 						keyName = "Press a key";
 					}
-					else if (subMenu->u.changeKey.code == KEY_CODE_MAP)
-					{
-						keyName = SDL_GetKeyName(gConfig.Input.PlayerKeys[0].Keys.map);
-					}
 					else
 					{
-						keyName = SDL_GetKeyName(InputGetKey(
-							subMenu->u.changeKey.keys,
-							subMenu->u.changeKey.code));
+						const int pi = subMenu->u.changeKey.playerIndex;
+						const input_keys_t *keys =
+							&gEventHandlers.keyboard.PlayerKeys[pi];
+						keyName = SDL_GetKeyName(KeyGet(
+							keys, subMenu->u.changeKey.code));
 					}
 					DisplayMenuItem(
 						Vec2iNew(xKeys, y),
@@ -1012,29 +1086,39 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 	return NULL;
 }
 
-int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
+static bool KeyAvailable(
+	const int key, const key_code_e code, const int playerIndex)
 {
-	key_code_e i;
-
 	if (key == SDLK_ESCAPE || key == SDLK_F9 || key == SDLK_F10)
 	{
 		return 0;
 	}
-	if (key == gConfig.Input.PlayerKeys[0].Keys.map && code >= 0)
+	if (key == ConfigGetInt(&gConfig, "Input.PlayerKeys0.map") && code >= 0)
 	{
 		return 0;
 	}
 
-	for (i = 0; i < KEY_CODE_MAP; i++)
-		if ((int)i != code && InputGetKey(keys, i) == key)
-			return 0;
+	char buf[256];
+	sprintf(buf, "Input.PlayerKeys%d", playerIndex);
+	input_keys_t keys;
+	KeyLoadPlayerKeys(&keys, ConfigGet(&gConfig, buf));
+	sprintf(buf, "Input.PlayerKeys%d", 1 - playerIndex);
+	input_keys_t keysOther;
+	KeyLoadPlayerKeys(&keysOther, ConfigGet(&gConfig, buf));
+	for (key_code_e i = 0; i < KEY_CODE_MAP; i++)
+	{
+		if (i != code && KeyGet(&keys, i) == key)
+		{
+			return false;
+		}
+	}
 
-	if (keysOther->left == key ||
-		keysOther->right == key ||
-		keysOther->up == key ||
-		keysOther->down == key ||
-		keysOther->button1 == key ||
-		keysOther->button2 == key)
+	if (keysOther.left == key ||
+		keysOther.right == key ||
+		keysOther.up == key ||
+		keysOther.down == key ||
+		keysOther.button1 == key ||
+		keysOther.button2 == key)
 	{
 		return 0;
 	}
@@ -1044,28 +1128,29 @@ int KeyAvailable(int key, int code, input_keys_t *keys, input_keys_t *keysOther)
 
 void MenuProcessChangeKey(menu_t *menu)
 {
-	int key = GetKey(&gEventHandlers);	// wait until user has pressed a new button
-
+	// wait until user has pressed a new button
+	const int key = GetKey(&gEventHandlers);
+	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
+	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
 	if (key == SDLK_ESCAPE)
 	{
 		MenuPlaySound(MENU_SOUND_BACK);
 	}
-	else if (KeyAvailable(
-		key,
-		menu->u.normal.changeKeyMenu->u.changeKey.code,
-		menu->u.normal.changeKeyMenu->u.changeKey.keys,
-		menu->u.normal.changeKeyMenu->u.changeKey.keysOther))
+	else if (KeyAvailable(key, code, pi))
 	{
-		if (menu->u.normal.changeKeyMenu->u.changeKey.code != KEY_CODE_MAP)
+		if (code != KEY_CODE_MAP)
 		{
-			InputSetKey(
-				menu->u.normal.changeKeyMenu->u.changeKey.keys,
-				key,
-				menu->u.normal.changeKeyMenu->u.changeKey.code);
+			char buf[256];
+			sprintf(buf, "Input.PlayerKeys%d.%s", pi, KeycodeStr(code));
+			ConfigGet(&gConfig, buf)->u.Int.Value = key;
+			sprintf(buf, "Input.PlayerKeys%d", pi);
+			KeyLoadPlayerKeys(
+				&gEventHandlers.keyboard.PlayerKeys[pi],
+				ConfigGet(&gConfig, buf));
 		}
 		else
 		{
-			gConfig.Input.PlayerKeys[0].Keys.map = key;
+			ConfigGet(&gConfig, "Input.PlayerKeys0.map")->u.Int.Value = key;
 		}
 		MenuPlaySound(MENU_SOUND_ENTER);
 	}
@@ -1254,4 +1339,23 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 		assert(0);
 		break;
 	}
+}
+
+void PostInputConfigApply(menu_t *menu, int cmd, void *data)
+{
+	UNUSED(menu);
+	UNUSED(cmd);
+	if (!ConfigApply(&gConfig))
+	{
+		printf("Error: cannot apply new config; using last config\n");
+		ConfigResetChanged(&gConfig);
+	}
+
+	// Update menu system so that resolution changes don't
+	// affect menu positions
+	MenuSystem *ms = data;
+	ms->pos = Vec2iZero();
+	ms->size = Vec2iNew(
+		ms->graphics->cachedConfig.Res.x,
+		ms->graphics->cachedConfig.Res.y);
 }

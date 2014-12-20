@@ -47,7 +47,7 @@ void GrafxMakeRandomBackground(
 	ObjsInit();
 	MobObjsInit();
 	PickupsInit();
-	SetupQuickPlayCampaign(&co->Setting, &gConfig.QuickPlay);
+	SetupQuickPlayCampaign(&co->Setting);
 	co->seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
 	tint.s = rand() * 1.0 / RAND_MAX;
@@ -65,7 +65,7 @@ void GrafxMakeRandomBackground(
 	RemoveAllWatches();
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
-	co->seed = gConfig.Game.RandomSeed;
+	co->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
 }
 
 void GrafxDrawBackground(

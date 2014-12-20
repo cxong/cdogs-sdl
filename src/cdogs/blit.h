@@ -104,7 +104,7 @@ void BlitPicHighlight(
  */
 #define DrawBTPic(g, pic, pos, tint) BlitBackground(g, pic, pos, tint, true)
 
-void BlitFlip(GraphicsDevice *device, GraphicsConfig *config);
+void BlitFlip(GraphicsDevice *g);
 
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10

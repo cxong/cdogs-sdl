@@ -300,7 +300,7 @@ void CommandBadGuys(int ticks)
 	int delayModifier;
 	int rollLimit;
 
-	switch (gConfig.Game.Difficulty)
+	switch (ConfigGetEnum(&gConfig, "Game.Difficulty"))
 	{
 	case DIFFICULTY_VERYEASY:
 		delayModifier = 4;
@@ -489,7 +489,7 @@ void CommandBadGuys(int ticks)
 	}
 	if (gMission.missionData->Enemies.size > 0 &&
 		gMission.missionData->EnemyDensity > 0 &&
-		count < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100))
+		count < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
 	{
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
 		aa.Id = ActorsGetFreeIndex();
@@ -582,7 +582,7 @@ void CreateEnemies(void)
 	}
 
 	for (int i = 0;
-		i < MAX(1, (gMission.missionData->EnemyDensity * gConfig.Game.EnemyDensity) / 100);
+		i < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100);
 		i++)
 	{
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;

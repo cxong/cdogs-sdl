@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,10 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CONFIG_JSON
-#define __CONFIG_JSON
+#pragma once
 
 #include "config.h"
 
 void ConfigLoadJSON(Config *config, const char *filename);
-void ConfigSaveJSON(Config *config, const char *filename);
+void ConfigSaveJSON(const Config *config, const char *filename);
 int ConfigGetJSONVersion(FILE *f);
-
-#endif

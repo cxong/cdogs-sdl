@@ -26,12 +26,9 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CONFIG_OLD
-#define __CONFIG_OLD
+#pragma once
 
-#include "config.h"
+#include <stdbool.h>
+#include <stdio.h>
 
-void ConfigLoadOld(Config *config, const char *filename);
-int ConfigIsOld(FILE *f);
-
-#endif
+bool ConfigIsOld(FILE *f);

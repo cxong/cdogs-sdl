@@ -222,7 +222,7 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	}
 	MouseDraw(&gEventHandlers.mouse);
 
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+	BlitFlip(&gGraphicsDevice);
 }
 
 static const GunDescription *GetNextGun(const GunDescription *g, const int d);

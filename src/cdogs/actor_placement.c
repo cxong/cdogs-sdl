@@ -177,7 +177,8 @@ Vec2i PlacePlayer(
 			gMission.missionData->u.Static.Start));
 		aa.FullPos = PlaceActorNear(map, startPoint, true);
 	}
-	else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+	else if (
+		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
 		!Vec2iIsZero(firstPos))
 	{
 		// If never split screen, try to place players near the first player

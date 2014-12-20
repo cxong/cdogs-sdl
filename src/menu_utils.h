@@ -42,11 +42,6 @@ void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i pos, const Vec2i size, const void *data);
 
-typedef struct
-{
-	int playerIndex;
-	InputConfig *inputConfig;
-} MenuDisplayPlayerControlsData;
 void MenuDisplayPlayerControls(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i pos, const Vec2i size, const void *data);

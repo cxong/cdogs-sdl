@@ -54,6 +54,7 @@
 #include <math.h>
 #include <string.h>
 
+#include <SDL_joystick.h>
 #include <tinydir/tinydir.h>
 
 int debug = 0;
@@ -201,6 +202,23 @@ double ToRadians(double degrees)
 	return degrees * PI / 180.0;
 }
 
+const char *InputDeviceName(const int d, const int deviceIndex)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		return "Keyboard";
+	case INPUT_DEVICE_MOUSE:
+		return "Mouse";
+	case INPUT_DEVICE_JOYSTICK:
+		return SDL_JoystickName(deviceIndex);
+	case INPUT_DEVICE_AI:
+		return "AI";
+	default:
+		return "";
+	}
+}
+
 char *PercentStr(int p)
 {
 	static char buf[8];
@@ -212,4 +230,24 @@ char *Div8Str(int i)
 	static char buf[8];
 	sprintf(buf, "%d", i/8);
 	return buf;
+}
+void CamelToTitle(char *buf, const char *src)
+{
+	const char *first = src;
+#define IS_UPPER(_x) ((_x) >= 'A' && (_x) <= 'Z')
+	while (*src)
+	{
+		// Word boundaries marked by capital letters, as long as:
+		// - It's not the first letter, and
+		// - The previous letter is lower case, or
+		// - The next letter is lower case
+		if (IS_UPPER(*src) &&
+			src != first &&
+			(!IS_UPPER(*(src - 1)) || (*(src + 1) && !IS_UPPER(*(src + 1)))))
+		{
+			*buf++ = ' ';
+		}
+		*buf++ = *src++;
+	}
+	*buf = '\0';
 }

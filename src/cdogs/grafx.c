@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,35 +68,33 @@
 
 GraphicsDevice gGraphicsDevice;
 
-static void Gfx_ModeSet(GraphicsConfig *config, GraphicsMode *mode)
+static void Gfx_ModeSet(const GraphicsMode *mode)
 {
-	config->Res.x = mode->Width;
-	config->Res.y = mode->Height;
-	config->ScaleFactor = mode->ScaleFactor;
+	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->Width;
+	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->Height;
+	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = mode->ScaleFactor;
 }
 
 void Gfx_ModePrev(void)
 {
 	GraphicsDevice *device = &gGraphicsDevice;
-	GraphicsConfig *config = &gConfig.Graphics;
 	device->modeIndex--;
 	if (device->modeIndex < 0)
 	{
 		device->modeIndex = device->numValidModes - 1;
 	}
-	Gfx_ModeSet(config, &device->validModes[device->modeIndex]);
+	Gfx_ModeSet(&device->validModes[device->modeIndex]);
 }
 
 void Gfx_ModeNext(void)
 {
 	GraphicsDevice *device = &gGraphicsDevice;
-	GraphicsConfig *config = &gConfig.Graphics;
 	device->modeIndex++;
 	if (device->modeIndex >= device->numValidModes)
 	{
 		device->modeIndex = 0;
 	}
-	Gfx_ModeSet(config, &device->validModes[device->modeIndex]);
+	Gfx_ModeSet(&device->validModes[device->modeIndex]);
 }
 
 static int FindValidMode(GraphicsDevice *device, int width, int height, int scaleFactor)
@@ -113,16 +111,6 @@ static int FindValidMode(GraphicsDevice *device, int width, int height, int scal
 		}
 	}
 	return -1;
-}
-
-int IsRestartRequiredForConfig(GraphicsDevice *device, GraphicsConfig *config)
-{
-	return
-		!device->IsInitialized ||
-		device->cachedConfig.Fullscreen != config->Fullscreen ||
-		device->cachedConfig.Res.x != config->Res.x ||
-		device->cachedConfig.Res.y != config->Res.y ||
-		device->cachedConfig.ScaleFactor != config->ScaleFactor;
 }
 
 static void AddGraphicsMode(
@@ -189,6 +177,7 @@ void GraphicsInit(GraphicsDevice *device)
 	device->buf = NULL;
 	device->bkg = NULL;
 	hqxInit();
+	GraphicsConfigSetFromConfig(&device->cachedConfig);
 }
 
 void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
@@ -247,9 +236,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
-void GraphicsInitialize(
-	GraphicsDevice *device, GraphicsConfig *config, TPalette palette,
-	int force)
+void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force)
 {
 #ifdef __GCWZERO__
 	int sdl_flags = SDL_HWSURFACE | SDL_TRIPLEBUF;
@@ -259,50 +246,50 @@ void GraphicsInitialize(
 	unsigned int w, h = 0;
 	unsigned int rw, rh;
 
-	if (!IsRestartRequiredForConfig(device, config))
+	if (g->IsInitialized && !g->cachedConfig.needRestart)
 	{
 		return;
 	}
 
-	if (!device->IsWindowInitialized)
+	if (!g->IsWindowInitialized)
 	{
 		/* only do this the first time */
 		char title[32];
 		debug(D_NORMAL, "setting caption and icon...\n");
 		sprintf(title, "C-Dogs SDL %s%s",
-			config->IsEditor ? "Editor " : "",
+			g->cachedConfig.IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
 		SDL_WM_SetCaption(title, NULL);
 		char buf[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, "cdogs_icon.bmp");
-		device->icon = SDL_LoadBMP(buf);
-		SDL_WM_SetIcon(device->icon, NULL);
-		AddSupportedGraphicsModes(device);
+		g->icon = SDL_LoadBMP(buf);
+		SDL_WM_SetIcon(g->icon, NULL);
+		AddSupportedGraphicsModes(g);
 	}
 
-	device->IsInitialized = 0;
+	g->IsInitialized = false;
 
-	sdl_flags |= config->IsEditor ? SDL_RESIZABLE : 0;
-	if (config->Fullscreen)
+	sdl_flags |= g->cachedConfig.IsEditor ? SDL_RESIZABLE : 0;
+	if (g->cachedConfig.Fullscreen)
 	{
 		sdl_flags |= SDL_FULLSCREEN;
 	}
 
-	rw = w = config->Res.x;
-	rh = h = config->Res.y;
+	rw = w = g->cachedConfig.Res.x;
+	rh = h = g->cachedConfig.Res.y;
 
-	if (config->ScaleFactor > 1)
+	if (g->cachedConfig.ScaleFactor > 1)
 	{
-		rw *= config->ScaleFactor;
-		rh *= config->ScaleFactor;
+		rw *= g->cachedConfig.ScaleFactor;
+		rh *= g->cachedConfig.ScaleFactor;
 	}
 
-	if (!force && !config->IsEditor)
+	if (!force && !g->cachedConfig.IsEditor)
 	{
-		device->modeIndex = FindValidMode(device, w, h, config->ScaleFactor);
-		if (device->modeIndex == -1)
+		g->modeIndex = FindValidMode(g, w, h, g->cachedConfig.ScaleFactor);
+		if (g->modeIndex == -1)
 		{
-			device->modeIndex = 0;
+			g->modeIndex = 0;
 			printf("!!! Invalid Video Mode %dx%d\n", w, h);
 			return;
 		}
@@ -316,42 +303,41 @@ void GraphicsInitialize(
 	}
 
 	printf("Graphics mode:\t%dx%d %dx (actual %dx%d)\n",
-		w, h, config->ScaleFactor, rw, rh);
-	SDL_FreeSurface(device->screen);
-	device->screen = SDL_SetVideoMode(rw, rh, 32, sdl_flags);
-	if (device->screen == NULL)
+		w, h, g->cachedConfig.ScaleFactor, rw, rh);
+	SDL_FreeSurface(g->screen);
+	g->screen = SDL_SetVideoMode(rw, rh, 32, sdl_flags);
+	if (g->screen == NULL)
 	{
 		printf("ERROR: InitVideo: %s\n", SDL_GetError());
 		return;
 	}
-	SDL_PixelFormat *f = device->screen->format;
-	device->Amask = -1 & ~(f->Rmask | f->Gmask | f->Bmask);
-	Uint32 aMask = device->Amask;
-	device->Ashift = 0;
+	SDL_PixelFormat *f = g->screen->format;
+	g->Amask = -1 & ~(f->Rmask | f->Gmask | f->Bmask);
+	Uint32 aMask = g->Amask;
+	g->Ashift = 0;
 	while (aMask != 0xff)
 	{
-		device->Ashift += 8;
+		g->Ashift += 8;
 		aMask >>= 8;
 	}
 
-	CFREE(device->buf);
-	CCALLOC(device->buf, GraphicsGetMemSize(config));
-	CFREE(device->bkg);
-	CCALLOC(device->bkg, GraphicsGetMemSize(config));
+	CFREE(g->buf);
+	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
+	CFREE(g->bkg);
+	CCALLOC(g->bkg, GraphicsGetMemSize(&g->cachedConfig));
 
 	debug(D_NORMAL, "Changed video mode...\n");
 
 	GraphicsSetBlitClip(
-		device,
-		0, 0, config->Res.x - 1,config->Res.y - 1);
+		g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
 	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
-		config->Res.x, config->Res.y);
+		g->cachedConfig.Res.x, g->cachedConfig.Res.y);
 
-	device->IsInitialized = 1;
-	device->IsWindowInitialized = 1;
-	device->cachedConfig = *config;
-	device->cachedConfig.Res.x = w;
-	device->cachedConfig.Res.y = h;
+	g->IsInitialized = true;
+	g->IsWindowInitialized = true;
+	g->cachedConfig.Res.x = w;
+	g->cachedConfig.Res.y = h;
+	g->cachedConfig.needRestart = false;
 	CDogsSetPalette(palette);
 }
 
@@ -375,13 +361,42 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 	return GraphicsGetScreenSize(config) * sizeof(Uint32);
 }
 
+void GraphicsConfigSet(
+	GraphicsConfig *c,
+	const Vec2i res, const bool fullscreen, const int scaleFactor)
+{
+	if (!Vec2iEqual(res, c->Res))
+	{
+		c->Res = res;
+		c->needRestart = true;
+	}
+#define SET(_lhs, _rhs) \
+	if ((_lhs) != (_rhs)) \
+	{ \
+		(_lhs) = (_rhs); \
+		c->needRestart = true; \
+	}
+	SET(c->Fullscreen, fullscreen);
+	SET(c->ScaleFactor, scaleFactor);
+}
+void GraphicsConfigSetFromConfig(GraphicsConfig *c)
+{
+	GraphicsConfigSet(
+		c,
+		Vec2iNew(
+			ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
+			ConfigGetInt(&gConfig, "Graphics.ResolutionHeight")),
+		ConfigGetBool(&gConfig, "Graphics.Fullscreen"),
+		ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
+}
+
 char *GrafxGetModeStr(void)
 {
 	static char buf[16];
 	sprintf(buf, "%dx%d %dx",
-		gConfig.Graphics.Res.x,
-		gConfig.Graphics.Res.y,
-		gConfig.Graphics.ScaleFactor);
+		ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
+		ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"),
+		ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
 	return buf;
 }
 

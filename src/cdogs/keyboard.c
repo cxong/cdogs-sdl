@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,22 @@
 #include "utils.h"
 
 
+const char *KeycodeStr(int k)
+{
+	switch (k)
+	{
+		T2S(KEY_CODE_LEFT, "left");
+		T2S(KEY_CODE_RIGHT, "right");
+		T2S(KEY_CODE_UP, "up");
+		T2S(KEY_CODE_DOWN, "down");
+		T2S(KEY_CODE_BUTTON1, "button1");
+		T2S(KEY_CODE_BUTTON2, "button2");
+		T2S(KEY_CODE_MAP, "map");
+	default:
+		return "";
+	}
+}
+
 #define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
 
@@ -43,6 +59,22 @@ void KeyInit(keyboard_t *keyboard)
 	keyboard->ticks = 0;
 	keyboard->repeatedTicks = 0;
 	keyboard->isFirstRepeat = 1;
+	for (int i = 0; i < MAX_KEYBOARD_CONFIGS; i++)
+	{
+		char buf[256];
+		sprintf(buf, "Input.PlayerKeys%d", i);
+		KeyLoadPlayerKeys(&keyboard->PlayerKeys[i], ConfigGet(&gConfig, buf));
+	}
+}
+void KeyLoadPlayerKeys(input_keys_t *keys, Config *c)
+{
+	keys->left = ConfigGetInt(c, "left");
+	keys->right = ConfigGetInt(c, "right");
+	keys->up = ConfigGetInt(c, "up");
+	keys->down = ConfigGetInt(c, "down");
+	keys->button1 = ConfigGetInt(c, "button1");
+	keys->button2 = ConfigGetInt(c, "button2");
+	keys->map = ConfigGetInt(c, "map");
 }
 
 void KeyPrePoll(keyboard_t *keyboard)
@@ -175,4 +207,29 @@ int KeyGetTyped(keyboard_t *keyboard)
 		}
 	}
 	return 0;
+}
+
+int KeyGet(const input_keys_t *keys, const key_code_e keyCode)
+{
+	switch (keyCode)
+	{
+	case KEY_CODE_LEFT:
+		return keys->left;
+	case KEY_CODE_RIGHT:
+		return keys->right;
+	case KEY_CODE_UP:
+		return keys->up;
+	case KEY_CODE_DOWN:
+		return keys->down;
+	case KEY_CODE_BUTTON1:
+		return keys->button1;
+	case KEY_CODE_BUTTON2:
+		return keys->button2;
+	case KEY_CODE_MAP:
+		return keys->map;
+	default:
+		printf("Error unhandled key code %d\n", keyCode);
+		CASSERT(false, "Unhandled key code");
+		return 0;
+	}
 }

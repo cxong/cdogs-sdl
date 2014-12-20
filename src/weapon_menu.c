@@ -137,8 +137,7 @@ static void DisplayEquippedWeapons(
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, const int playerIndex,
-	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig)
+	EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
@@ -148,8 +147,7 @@ void WeaponMenuCreate(
 
 	data->display.playerIndex = playerIndex;
 	data->display.currentMenu = &ms->current;
-	data->controls.inputConfig = inputConfig;
-	data->controls.playerIndex = playerIndex;
+	data->playerIndex = playerIndex;
 
 	switch (numPlayers)
 	{
@@ -231,5 +229,5 @@ void WeaponMenuCreate(
 
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->playerIndex);
 }

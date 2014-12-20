@@ -127,7 +127,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// First, check the weapon
 	// If we're out of ammo, switch to one with ammo
 	// Otherwise, switch back to our preferred (first) weapon
-	if (gConfig.Game.Ammo)
+	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
 		const Weapon *preferred = CArrayGet(&actor->guns, 0);
 		const bool preferredWeaponHasAmmo =

@@ -146,14 +146,12 @@ void WallClockDraw(WallClock *wc)
 
 void HUDInit(
 	HUD *hud,
-	InterfaceConfig *config,
 	GraphicsDevice *device,
 	struct MissionOptions *mission)
 {
 	hud->mission = mission;
 	strcpy(hud->message, "");
 	hud->messageTicks = 0;
-	hud->config = config;
 	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
@@ -301,7 +299,7 @@ static void DrawGauge(
 
 #define GAUGE_WIDTH 50
 static void DrawWeaponStatus(
-	GraphicsDevice *device, const TActor *actor, Vec2i pos,
+	HUD *hud, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *weapon = ActorGetGun(actor);
@@ -323,7 +321,7 @@ static void DrawWeaponStatus(
 			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		}
 		DrawGauge(
-			device, gaugePos, size, innerWidth, barColor, backColor,
+			hud->device, gaugePos, size, innerWidth, barColor, backColor,
 			hAlign, vAlign);
 	}
 	FontOpts opts = FontOptsNew();
@@ -332,7 +330,7 @@ static void DrawWeaponStatus(
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = pos;
 	char buf[128];
-	if (gConfig.Game.Ammo && weapon->Gun->AmmoId >= 0)
+	if (ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0)
 	{
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
@@ -554,12 +552,13 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	GraphicsDevice *device, const PlayerData *data, const TActor *p,
-	const int flags, const Rect2i r, const bool showExit)
+	HUD *hud, const PlayerData *data, const TActor *p,
+	const int flags, const Rect2i r)
 {
 	if (p != NULL)
 	{
-		DrawObjectiveCompass(device, Vec2iFull2Real(p->Pos), r, showExit);
+		DrawObjectiveCompass(
+			hud->device, Vec2iFull2Real(p->Pos), r, hud->showExit);
 	}
 
 	Vec2i pos = Vec2iNew(5, 5);
@@ -583,7 +582,7 @@ static void DrawPlayerStatus(
 	char s[50];
 	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
-		if (gConfig.Game.Ammo)
+		if (ConfigGetBool(&gConfig, "Game.Ammo"))
 		{
 			// Display money instead of ammo
 			sprintf(s, "Cash: $%d", data->score);
@@ -600,7 +599,7 @@ static void DrawPlayerStatus(
 	if (p)
 	{
 		// Weapon
-		DrawWeaponStatus(device, p, pos, opts.HAlign, opts.VAlign);
+		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
 		pos.y += rowHeight;
 
 		// Player name
@@ -609,11 +608,11 @@ static void DrawPlayerStatus(
 
 		// Health
 		pos.y += rowHeight;
-		DrawHealth(device, p, pos, opts.HAlign, opts.VAlign);
+		DrawHealth(hud->device, p, pos, opts.HAlign, opts.VAlign);
 
 		// Lives
 		pos.y += rowHeight;
-		DrawLives(device, data, pos, opts.HAlign, opts.VAlign);
+		DrawLives(hud->device, data, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{
@@ -621,10 +620,11 @@ static void DrawPlayerStatus(
 		FontStrOpt(s, Vec2iZero(), opts);
 	}
 
-	if (gConfig.Interface.ShowHUDMap && !(flags & HUDFLAGS_SHARE_SCREEN) &&
+	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
+		!(flags & HUDFLAGS_SHARE_SCREEN) &&
 		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
-		DrawRadar(device, p, RADAR_SCALE, flags, showExit);
+		DrawRadar(hud->device, p, RADAR_SCALE, flags, hud->showExit);
 	}
 }
 
@@ -816,7 +816,8 @@ void HUDDraw(HUD *hud, int isPaused)
 	{
 		flags = 0;
 	}
-	else if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER)
+	else if (
+		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
@@ -862,8 +863,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		{
 			player = CArrayGet(&gActors, p->Id);
 		}
-		DrawPlayerStatus(
-			hud->device, p, player, drawFlags, r, hud->showExit);
+		DrawPlayerStatus(hud, p, player, drawFlags, r);
 		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
 		{
 			HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, j);
@@ -882,7 +882,8 @@ void HUDDraw(HUD *hud, int isPaused)
 		}
 	}
 	// Only draw radar once if shared
-	if (gConfig.Interface.ShowHUDMap && (flags & HUDFLAGS_SHARE_SCREEN) &&
+	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
+		(flags & HUDFLAGS_SHARE_SCREEN) &&
 		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
@@ -926,11 +927,11 @@ void HUDDraw(HUD *hud, int isPaused)
 		FontStrMask(hud->message, pos, colorCyan);
 	}
 
-	if (hud->config->ShowFPS)
+	if (ConfigGetBool(&gConfig, "Interface.ShowFPS"))
 	{
 		FPSCounterDraw(&hud->fpsCounter);
 	}
-	if (hud->config->ShowTime)
+	if (ConfigGetBool(&gConfig, "Interface.ShowTime"))
 	{
 		WallClockDraw(&hud->clock);
 	}

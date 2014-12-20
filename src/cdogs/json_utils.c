@@ -125,3 +125,27 @@ void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name)
 	}
 	*value = StrSound(node->text);
 }
+
+json_t *JSONFindNode(json_t *node, const char *path)
+{
+	char *pathCopy;
+	CSTRDUP(pathCopy, path);
+	char *pch = strtok(pathCopy, "/");
+	while (pch != NULL)
+	{
+		node = json_find_first_label(node, pch);
+		if (node == NULL)
+		{
+			goto bail;
+		}
+		node = node->child;
+		if (node == NULL)
+		{
+			goto bail;
+		}
+		pch = strtok(NULL, "/");
+	}
+bail:
+	CFREE(pathCopy);
+	return node;
+}

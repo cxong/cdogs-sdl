@@ -50,7 +50,9 @@
 #define __EVENTS
 
 #include "game_loop.h"
-#include "input.h"
+#include "joystick.h"
+#include "keyboard.h"
+#include "mouse.h"
 #include "player.h"
 
 typedef struct
@@ -72,13 +74,10 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor);
 void EventPoll(EventHandlers *handlers, Uint32 ticks);
 
 int GetOnePlayerCmd(
-	EventHandlers *handlers,
-	KeyConfig *config,
-	bool isPressed,
-	input_device_e device,
-	int deviceIndex);
+	EventHandlers *handlers, const bool isPressed,
+	const input_device_e device, const int deviceIndex);
 int GetGameCmd(
-	EventHandlers *handlers, const InputConfig *config,
+	EventHandlers *handlers,
 	const PlayerData *playerData, const Vec2i playerPos);
 int GetKey(EventHandlers *handlers);
 typedef struct

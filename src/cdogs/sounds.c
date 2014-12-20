@@ -110,8 +110,7 @@ void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
 	CArrayPushBack(sounds, &sound);
 }
 
-void SoundInitialize(
-	SoundDevice *device, SoundConfig *config, const char *path)
+void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
 	if (OpenAudio(22050, AUDIO_S16, 2, 512) != 0)
@@ -120,7 +119,7 @@ void SoundInitialize(
 	}
 
 	device->channels = 64;
-	SoundReconfigure(device, config);
+	SoundReconfigure(device);
 
 	CArrayInit(&device->sounds, sizeof(SoundData));
 	CArrayInit(&device->customSounds, sizeof(SoundData));
@@ -173,28 +172,28 @@ bail:
 	tinydir_close(&dir);
 }
 
-void SoundReconfigure(SoundDevice *device, SoundConfig *config)
+void SoundReconfigure(SoundDevice *s)
 {
-	device->isInitialised = 0;
+	s->isInitialised = false;
 
-	if (Mix_AllocateChannels(device->channels) != device->channels)
+	if (Mix_AllocateChannels(s->channels) != s->channels)
 	{
 		printf("Couldn't allocate channels!\n");
 		return;
 	}
 
-	Mix_Volume(-1, config->SoundVolume);
-	Mix_VolumeMusic(config->MusicVolume);
-	if (config->MusicVolume > 0)
+	Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
+	Mix_VolumeMusic(ConfigGetInt(&gConfig, "Sound.MusicVolume"));
+	if (ConfigGetInt(&gConfig, "Sound.MusicVolume") > 0)
 	{
-		MusicResume(device);
+		MusicResume(s);
 	}
 	else
 	{
-		MusicPause(device);
+		MusicPause(s);
 	}
 
-	device->isInitialised = 1;
+	s->isInitialised = true;
 }
 
 void SoundClear(CArray *sounds)

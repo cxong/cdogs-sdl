@@ -130,7 +130,7 @@ void HealthSpawnerInit(PowerupSpawner *p, Map *map)
 	PowerupSpawnerInit(p, map);
 	p->Enabled =
 		AreHealthPickupsAllowed(gCampaign.Entry.Mode) &&
-		gConfig.Game.HealthPickups;
+		ConfigGetBool(&gConfig, "Game.HealthPickups");
 	p->SpawnTime = HEALTH_SPAWN_TIME;
 	p->RateScaleFunc = HealthScale;
 	p->PlaceFunc = HealthPlace;
@@ -176,7 +176,7 @@ void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 {
 	PowerupSpawnerInit(p, map);
 	// TODO: disable ammo spawners if map is deathmatch and contains ammo
-	p->Enabled = gConfig.Game.Ammo;
+	p->Enabled = ConfigGetBool(&gConfig, "Game.Ammo");
 	p->SpawnTime = AMMO_SPAWN_TIME;
 	p->RateScaleFunc = AmmoScale;
 	p->PlaceFunc = AmmoPlace;

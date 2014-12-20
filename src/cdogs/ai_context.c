@@ -84,7 +84,7 @@ void AIContextSetState(AIContext *c, const AIState s)
 	c->State = s;
 	if (isChange)
 	{
-		AIContextSetChatterDelay(c, gConfig.Interface.AIChatter);
+		AIContextSetChatterDelay(c, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
 	}
 }
 static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)

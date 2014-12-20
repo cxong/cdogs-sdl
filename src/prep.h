@@ -71,7 +71,7 @@ bool NumPlayersSelection(
 bool PlayerSelection(void);
 
 // Choose game-mode-specific options
-bool GameOptions(void);
+bool GameOptions(const GameMode gm);
 
 bool PlayerEquip(void);
 

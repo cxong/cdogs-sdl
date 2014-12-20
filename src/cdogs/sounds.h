@@ -123,10 +123,9 @@ typedef struct
 	Mix_Chunk *Wall;
 } HitSounds;
 
-void SoundInitialize(
-	SoundDevice *device, SoundConfig *config, const char *path);
+void SoundInitialize(SoundDevice *device, const char *path);
 void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data);
-void SoundReconfigure(SoundDevice *device, SoundConfig *config);
+void SoundReconfigure(SoundDevice *s);
 void SoundClear(CArray *sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);

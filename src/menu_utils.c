@@ -81,19 +81,19 @@ void MenuDisplayPlayerControls(
 {
 	UNUSED(g);
 	char s[256];
-	const MenuDisplayPlayerControlsData *d = data;
+	const int *playerIndex = data;
 	Vec2i textPos = Vec2iNew(0, pos.y + size.y - FontH());
 	int textWidth = 0;
 
 	UNUSED(menu);
 
-	const PlayerData *pData = CArrayGet(&gPlayerDatas, d->playerIndex);
+	const PlayerData *pData = CArrayGet(&gPlayerDatas, *playerIndex);
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		{
-			input_keys_t *keys =
-				&d->inputConfig->PlayerKeys[pData->deviceIndex].Keys;
+			const input_keys_t *keys =
+				&gEventHandlers.keyboard.PlayerKeys[*playerIndex];
 			sprintf(s, "(%s, %s, %s, %s, %s and %s)",
 				SDL_GetKeyName(keys->left),
 				SDL_GetKeyName(keys->right),

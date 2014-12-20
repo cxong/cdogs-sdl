@@ -92,7 +92,7 @@ bool ConfirmScreen(const char *info, const char *msg)
 	ClearScreen(&gGraphicsDevice);
 	FontStr(info, Vec2iNew((w - FontStrW(info)) / 2, (h - FontH()) / 2));
 	FontStr(msg, Vec2iNew((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
-	BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+	BlitFlip(&gGraphicsDevice);
 
 	int c = GetKey(&gEventHandlers);
 	return (c == 'Y' || c == 'y');

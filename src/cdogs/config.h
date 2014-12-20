@@ -26,12 +26,12 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CONFIG
-#define __CONFIG
+#pragma once
 
-#include "grafx.h"
-#include "input.h"
-#include "sounds.h"
+#include <stdbool.h>
+#include <stdio.h>
+
+#include "c_array.h"
 
 #define CONFIG_FILE "options.cnf"
 
@@ -42,8 +42,8 @@ typedef enum
 	ALLYCOLLISION_NONE
 } AllyCollision;
 
-const char *AllyCollisionStr(AllyCollision a);
-AllyCollision StrAllyCollision(const char *str);
+const char *AllyCollisionStr(int a);
+int StrAllyCollision(const char *str);
 
 typedef enum
 {
@@ -54,8 +54,8 @@ typedef enum
 	DIFFICULTY_VERYHARD
 } difficulty_e;
 
-const char *DifficultyStr(difficulty_e d);
-difficulty_e StrDifficulty(const char *str);
+const char *DifficultyStr(int d);
+int StrDifficulty(const char *str);
 
 typedef enum
 {
@@ -63,8 +63,8 @@ typedef enum
 	FIREMOVE_NORMAL,
 	FIREMOVE_STRAFE
 } FireMoveStyle;
-const char *FireMoveStyleStr(FireMoveStyle s);
-FireMoveStyle StrFireMoveStyle(const char *s);
+const char *FireMoveStyleStr(int s);
+int StrFireMoveStyle(const char *s);
 
 typedef enum
 {
@@ -72,11 +72,17 @@ typedef enum
 	SWITCHMOVE_STRAFE,
 	SWITCHMOVE_NONE
 } SwitchMoveStyle;
-const char *SwitchMoveStyleStr(SwitchMoveStyle s);
-SwitchMoveStyle StrSwitchMoveStyle(const char *s);
+const char *SwitchMoveStyleStr(int s);
+int StrSwitchMoveStyle(const char *s);
 
-const char *ScaleModeStr(ScaleMode q);
-ScaleMode StrScaleMode(const char *str);
+typedef enum
+{
+	SCALE_MODE_NN,
+	SCALE_MODE_BILINEAR,
+	SCALE_MODE_HQX
+} ScaleMode;
+const char *ScaleModeStr(int q);
+int StrScaleMode(const char *str);
 
 typedef enum
 {
@@ -85,8 +91,8 @@ typedef enum
 	GORE_MEDIUM,
 	GORE_HIGH
 } GoreAmount;
-const char *GoreAmountStr(GoreAmount g);
-GoreAmount StrGoreAmount(const char *s);
+const char *GoreAmountStr(int g);
+int StrGoreAmount(const char *s);
 
 typedef enum
 {
@@ -94,34 +100,8 @@ typedef enum
 	LASER_SIGHT_PLAYERS,
 	LASER_SIGHT_ALL
 } LaserSight;
-const char *LaserSightStr(LaserSight l);
-LaserSight StrLaserSight(const char *s);
-
-typedef struct
-{
-	bool FriendlyFire;
-	unsigned int RandomSeed;
-	difficulty_e Difficulty;
-	bool SlowMotion;
-	int EnemyDensity;
-	int NonPlayerHP;
-	int PlayerHP;
-	int Lives;
-	bool Fog;
-	int SightRange;
-	bool Shadows;
-	FireMoveStyle FireMoveStyle;
-	SwitchMoveStyle SwitchMoveStyle;
-	bool ShotsPushback;
-	AllyCollision AllyCollision;
-	bool HealthPickups;
-	bool Ammo;
-	GoreAmount Gore;
-	LaserSight LaserSight;
-
-	// In-game options, not accessed via general options menu
-	int DeathmatchLives;
-} GameConfig;
+const char *LaserSightStr(int l);
+int StrLaserSight(const char *s);
 
 typedef enum
 {
@@ -130,8 +110,8 @@ typedef enum
 	SPLITSCREEN_NEVER
 } SplitscreenStyle;
 
-const char *SplitscreenStyleStr(SplitscreenStyle s);
-SplitscreenStyle StrSplitscreenStyle(const char *str);
+const char *SplitscreenStyleStr(int s);
+int StrSplitscreenStyle(const char *str);
 
 typedef enum
 {
@@ -140,17 +120,8 @@ typedef enum
 	AICHATTER_OFTEN,
 	AICHATTER_ALWAYS
 } AIChatterFrequency;
-const char *AIChatterStr(AIChatterFrequency c);
-AIChatterFrequency StrAIChatter(const char *str);
-
-typedef struct
-{
-	bool ShowFPS;
-	bool ShowTime;
-	SplitscreenStyle Splitscreen;
-	bool ShowHUDMap;
-	AIChatterFrequency AIChatter;
-} InterfaceConfig;
+const char *AIChatterStr(int c);
+int StrAIChatter(const char *str);
 
 typedef enum
 {
@@ -159,42 +130,106 @@ typedef enum
 	QUICKPLAY_QUANTITY_MEDIUM,
 	QUICKPLAY_QUANTITY_LARGE
 } QuickPlayQuantity;
+const char *QuickPlayQuantityStr(int s);
+int StrQuickPlayQuantity(const char *str);
 
-const char *QuickPlayQuantityStr(QuickPlayQuantity s);
-QuickPlayQuantity StrQuickPlayQuantity(const char *str);
+typedef enum
+{
+	CONFIG_TYPE_STRING,
+	CONFIG_TYPE_INT,
+	CONFIG_TYPE_FLOAT,
+	CONFIG_TYPE_BOOL,
+	CONFIG_TYPE_ENUM,
+	CONFIG_TYPE_GROUP
+} ConfigType;
 
+// Generic config entry
 typedef struct
 {
-	QuickPlayQuantity MapSize;
-	QuickPlayQuantity WallCount;
-	QuickPlayQuantity WallLength;
-	QuickPlayQuantity RoomCount;
-	QuickPlayQuantity SquareCount;
-	QuickPlayQuantity EnemyCount;
-	QuickPlayQuantity EnemySpeed;
-	QuickPlayQuantity EnemyHealth;
-	bool EnemiesWithExplosives;
-	QuickPlayQuantity ItemCount;
-} QuickPlayConfig;
-
-typedef struct
-{
-	GameConfig Game;
-	GraphicsConfig Graphics;
-	InputConfig Input;
-	InterfaceConfig Interface;
-	SoundConfig Sound;
-	QuickPlayConfig QuickPlay;
+	char *Name;
+	ConfigType Type;
+	union
+	{
+#define VALUES(_name, _type) \
+		struct \
+		{ \
+			_type Value; \
+			_type Last; \
+			_type Default; \
+			_type Min; \
+			_type Max; \
+			_type Increment; \
+		} _name
+		VALUES(String, char *);
+		VALUES(Int, int);
+		VALUES(Float, double);
+		VALUES(Bool, bool);
+#undef VALUES
+		struct
+		{
+			int Value;
+			int Last;
+			int Default;
+			int Min;
+			int Max;
+			int (*StrToEnum)(const char *);
+			const char *(*EnumToStr)(int);
+		} Enum;
+		CArray Group;	// of Config
+	} u;
 } Config;
 
+Config ConfigNewString(const char *name, const char *defaultValue);
+Config ConfigNewInt(
+	const char *name, const int defaultValue,
+	const int minValue, const int maxValue, const int increment);
+Config ConfigNewFloat(
+	const char *name, const double defaultValue,
+	const double minValue, const double maxValue, const double increment);
+Config ConfigNewBool(const char *name, const bool defaultValue);
+Config ConfigNewEnum(
+	const char *name, const int defaultValue,
+	const int minValue, const int maxValue,
+	int (*strToEnum)(const char *), const char *(*enumToStr)(int));
+Config ConfigNewGroup(const char *name);
+void ConfigDestroy(Config *c);
+bool ConfigChangedAndApply(Config *c);
+
+void ConfigGroupAdd(Config *group, Config child);
+
 extern Config gConfig;
-extern Config gLastConfig;
 
-void ConfigLoad(Config *config, const char *filename);
-void ConfigSave(Config *config, const char *filename);
-int ConfigApply(Config *config);
-void ConfigLoadDefault(Config *config);
+Config ConfigLoad(const char *filename);
+void ConfigSave(const Config *c, const char *filename);
+
+// Find all config entries that begin with a prefix
+// Returns array of ConfigEntry *
+CArray ConfigFind(const Config *c, const char *prefix);
+
+// Get a child config
+// Note: child configs can be searched using dot-separated notation
+// e.g. Foo.Bar.Baz
+Config *ConfigGet(Config *c, const char *name);
+
+// Check if this config, or any of its children, have changed
+bool ConfigChanged(const Config *c);
+// Reset the changed value to the last value
+void ConfigResetChanged(Config *c);
+// Set the last value to the current value
+void ConfigSetChanged(Config *c);
+// Reset the config values to default
+void ConfigResetDefault(Config *c);
+
+// Get the value of a config
+// The type must be correct
+// Note: child configs can be searched using dot-separated notation
+// e.g. Foo.Bar.Baz
+const char *ConfigGetString(Config *c, const char *name);
+int ConfigGetInt(Config *c, const char *name);
+double ConfigGetFloat(Config *c, const char *name);
+bool ConfigGetBool(Config *c, const char *name);
+int ConfigGetEnum(Config *c, const char *name);
+CArray *ConfigGetGroup(Config *c, const char *name);
+
+bool ConfigApply(Config *config);
 int ConfigGetVersion(FILE *f);
-int ConfigIsMouseUsed(InputConfig *config);
-
-#endif

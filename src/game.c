@@ -87,7 +87,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
 	if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
 	{
-		if (gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE)
+		if (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE)
 		{
 			SlideActor(actor, cmd);
 		}
@@ -96,7 +96,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		(actor->lastCmd & CMD_BUTTON2) &&
 		!(cmd & CMD_BUTTON2) &&
 		!CMD_HAS_DIRECTION(actor->lastCmd) &&
-		!(gConfig.Game.SwitchMoveStyle == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
+		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
 		ActorTrySwitchGun(actor))
 	{
 		SoundPlayAt(
@@ -166,8 +166,8 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 			lastPosition = center;
 		}
 		else if (IsSingleScreen(
-				&gGraphicsDevice.cachedConfig,
-				gConfig.Interface.Splitscreen))
+			&gGraphicsDevice.cachedConfig,
+			ConfigGetEnum(&gConfig, "Interface.Splitscreen")))
 		{
 			// One screen
 			lastPosition = PlayersGetMidpoint();
@@ -324,7 +324,7 @@ Vec2i GetPlayerCenter(
 		GetNumPlayers(true, false , true) == 1 ||
 		IsSingleScreen(
 			&device->cachedConfig,
-			gConfig.Interface.Splitscreen))
+			ConfigGetEnum(&gConfig, "Interface.Splitscreen")))
 	{
 		const Vec2i pCenter = PlayersGetMidpoint();
 		const Vec2i screenCenter =
@@ -387,7 +387,7 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	data.lastPosition = Vec2iZero();
 
 	DrawBufferInit(&data.buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	HUDInit(&data.hud, &gConfig.Interface, &gGraphicsDevice, m);
+	HUDInit(&data.hud, &gGraphicsDevice, m);
 	HealthSpawnerInit(&data.healthSpawner, map);
 	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
@@ -463,7 +463,6 @@ static void RunGameInput(void *data)
 		}
 		rData->cmds[idx] = GetGameCmd(
 			&gEventHandlers,
-			&gConfig.Input,
 			p,
 			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, p, idx));
 		cmdAll |= rData->cmds[idx];
@@ -472,7 +471,7 @@ static void RunGameInput(void *data)
 	// Check if automap key is pressed by any player
 	rData->isMap =
 		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
-		(KeyIsDown(&gEventHandlers.keyboard, gConfig.Input.PlayerKeys[0].Keys.map) ||
+		(KeyIsDown(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerKeys0.map")) ||
 		(cmdAll & CMD_BUTTON3));
 
 	// Check if escape was pressed
@@ -519,7 +518,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	// If slow motion, update every other frame
-	if (gConfig.Game.SlowMotion && (rData->loop.Frames & 1))
+	if (ConfigGetBool(&gConfig, "Game.SlowMotion") && (rData->loop.Frames & 1))
 	{
 		return UPDATE_RESULT_OK;
 	}
@@ -555,10 +554,10 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
-	if (gConfig.Interface.Splitscreen == SPLITSCREEN_NEVER &&
+	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
 		IsSingleScreen(
 			&gGraphicsDevice.cachedConfig,
-			gConfig.Interface.Splitscreen) &&
+			ConfigGetEnum(&gConfig, "Interface.Splitscreen")) &&
 		GetNumPlayers(true, true, true) > 1)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;

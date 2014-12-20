@@ -9,6 +9,11 @@ Mix_Chunk *StrSound(const char *s)
 	UNUSED(s);
 	return NULL;
 }
+extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
+{
+	UNUSED(device_index);
+	return "";
+}
 
 
 FEATURE(1, "String format")

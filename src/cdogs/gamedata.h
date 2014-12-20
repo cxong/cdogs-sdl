@@ -51,7 +51,6 @@
 
 #include "campaigns.h"
 #include "character.h"
-#include "input.h"
 #include "map_new.h"
 #include "map_object.h"
 #include "pics.h"

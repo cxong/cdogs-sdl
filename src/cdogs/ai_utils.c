@@ -278,7 +278,7 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 		}
 		else if (tid->Kind == KIND_CHARACTER)
 		{
-			switch (gConfig.Game.AllyCollision)
+			switch (ConfigGetEnum(&gConfig, "Game.AllyCollision"))
 			{
 			case ALLYCOLLISION_NORMAL:
 				return false;

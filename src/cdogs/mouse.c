@@ -51,6 +51,7 @@
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
+#include "blit.h"
 #include "config.h"
 
 #define MOUSE_REPEAT_TICKS 150
@@ -77,8 +78,8 @@ void MousePrePoll(Mouse *mouse)
 		sizeof mouse->previousButtons);
 	mouse->previousPos = mouse->currentPos;
 	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
-	mouse->currentPos =
-		Vec2iScaleDiv(mouse->currentPos, gConfig.Graphics.ScaleFactor);
+	mouse->currentPos = Vec2iScaleDiv(
+		mouse->currentPos, ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
 }
 
 

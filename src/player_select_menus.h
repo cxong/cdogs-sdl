@@ -46,7 +46,7 @@ typedef struct
 typedef struct
 {
 	MenuDisplayPlayerData display;
-	MenuDisplayPlayerControlsData controls;
+	int playerIndex;
 	int nameMenuSelection;
 	AppearanceMenuData faceData;
 	AppearanceMenuData skinData;
@@ -66,6 +66,6 @@ void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig, const NameGen *ng);
+	const NameGen *ng);
 
 #endif

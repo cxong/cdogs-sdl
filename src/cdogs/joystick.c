@@ -33,7 +33,6 @@
 
 #include "defs.h"
 #include "events.h"
-#include "input.h"
 
 
 void JoyInit(joysticks_t *joys)

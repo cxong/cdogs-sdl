@@ -643,18 +643,17 @@ static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 	}
 }
 
-void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
+void BlitFlip(GraphicsDevice *g)
 {
-	Uint32 *pScreen = (Uint32 *)device->screen->pixels;
-	Vec2i screenSize = Vec2iNew(
-		device->cachedConfig.Res.x,
-		device->cachedConfig.Res.y);
-	int scr_size = screenSize.x * screenSize.y;
-	int scalef = config->ScaleFactor;
+	Uint32 *pScreen = (Uint32 *)g->screen->pixels;
+	const Vec2i size = g->cachedConfig.Res;
+	const int memSize = size.x * size.y;
+	const int scalef = g->cachedConfig.ScaleFactor;
 
-	ApplyBrightness(device->buf, screenSize, config->Brightness);
+	ApplyBrightness(
+		g->buf, size, ConfigGetInt(&gConfig, "Graphics.Brightness"));
 
-	if (SDL_LockSurface(device->screen) == -1)
+	if (SDL_LockSurface(g->screen) == -1)
 	{
 		printf("Couldn't lock surface; not drawing\n");
 		return;
@@ -662,24 +661,24 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 
 	if (scalef == 1)
 	{
-		memcpy(pScreen, device->buf, sizeof *pScreen * scr_size);
+		memcpy(pScreen, g->buf, sizeof *pScreen * memSize);
 	}
-	else if (config->ScaleMode == SCALE_MODE_BILINEAR)
+	else if (ConfigGetEnum(&gConfig, "Graphics.ScaleMode") == SCALE_MODE_BILINEAR)
 	{
-		Bilinear(pScreen, device->buf, screenSize.x, screenSize.y, scalef);
+		Bilinear(pScreen, g->buf, size.x, size.y, scalef);
 	}
-	else if (config->ScaleMode == SCALE_MODE_HQX)
+	else if (ConfigGetEnum(&gConfig, "Graphics.ScaleMode") == SCALE_MODE_HQX)
 	{
 		switch (scalef)
 		{
 		case 2:
-			hq2x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			hq2x_32(g->buf, pScreen, size.x, size.y);
 			break;
 		case 3:
-			hq3x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			hq3x_32(g->buf, pScreen, size.x, size.y);
 			break;
 		case 4:
-			hq4x_32(device->buf, pScreen, screenSize.x, screenSize.y);
+			hq4x_32(g->buf, pScreen, size.x, size.y);
 			break;
 		default:
 			assert(0);
@@ -688,9 +687,9 @@ void BlitFlip(GraphicsDevice *device, GraphicsConfig *config)
 	}
 	else
 	{
-		Scale8(pScreen, device->buf, screenSize.x, screenSize.y, scalef);
+		Scale8(pScreen, g->buf, size.x, size.y, scalef);
 	}
 
-	SDL_UnlockSurface(device->screen);
-	SDL_Flip(device->screen);
+	SDL_UnlockSurface(g->screen);
+	SDL_Flip(g->screen);
 }

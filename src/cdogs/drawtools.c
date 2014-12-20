@@ -266,7 +266,7 @@ void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 {
 	Vec2i drawPos;
 	HSV tint = { -1.0, 1.0, 0.0 };
-	if (!gConfig.Game.Shadows)
+	if (!ConfigGetBool(&gConfig, "Game.Shadows"))
 	{
 		return;
 	}

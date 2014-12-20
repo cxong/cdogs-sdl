@@ -92,7 +92,8 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_SCREEN_SHAKE:
 			*shake = ScreenShakeAdd(
-				*shake, e->u.ShakeAmount, gConfig.Graphics.ShakeMultiplier);
+				*shake, e->u.ShakeAmount,
+				ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 			break;
 		case GAME_EVENT_SET_MESSAGE:
 			HUDDisplayMessage(

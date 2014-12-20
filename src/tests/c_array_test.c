@@ -2,6 +2,17 @@
 
 #include <c_array.h>
 
+#include <SDL_joystick.h>
+
+#include <utils.h>
+
+// Stubs
+extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
+{
+	UNUSED(device_index);
+	return "";
+}
+
 
 FEATURE(1, "Array insert")
 	SCENARIO("Insert in middle")

@@ -221,11 +221,8 @@ menu_t *MenuCreateCampaignItem(CampaignEntry *entry)
 	return menu;
 }
 
-menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms);
-menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
-menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
-menu_t *MenuCreateOptionsSound(const char *name, MenuSystem *ms);
-menu_t *MenuCreateOptionsQuickPlay(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
 
 menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 {
@@ -234,197 +231,18 @@ menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 		"Options:",
 		MENU_TYPE_NORMAL,
 		0);
-	MenuAddSubmenu(menu, MenuCreateOptionsGame("Game...", ms));
+	MenuAddSubmenu(menu, MenuCreateConfigOptions(
+		"Game...", "Game Options:", ConfigGet(&gConfig, "Game"), ms, true));
 	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", ms));
 	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", ms));
-	MenuAddSubmenu(menu, MenuCreateOptionsSound("Sound...", ms));
-	MenuAddSubmenu(menu, MenuCreateOptionsQuickPlay("Quick Play...", ms));
+	MenuAddSubmenu(menu, MenuCreateConfigOptions(
+		"Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"), ms,
+		true));
+	MenuAddSubmenu(menu, MenuCreateConfigOptions(
+		"Quick Play...", "Quick Play Options:", ConfigGet(&gConfig, "QuickPlay"), ms,
+		true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
-	return menu;
-}
-
-static void PostInputConfigApply(menu_t *menu, int cmd, void *data)
-{
-	UNUSED(menu);
-	UNUSED(cmd);
-	if (!ConfigApply(&gConfig))
-	{
-		printf("Error: cannot apply new config; applying last config\n");
-		gConfig = gLastConfig;
-		if (!ConfigApply(&gConfig))
-		{
-			printf("Error: cannot apply last config!\n");
-			exit(1);
-		}
-	}
-	gLastConfig = gConfig;
-
-	// Update menu system so that resolution changes don't
-	// affect menu positions
-	MenuSystem *ms = data;
-	ms->pos = Vec2iZero();
-	ms->size = Vec2iNew(
-		ms->graphics->cachedConfig.Res.x,
-		ms->graphics->cachedConfig.Res.y);
-}
-
-menu_t *MenuCreateOptionsGame(const char *name, MenuSystem *ms)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"Game Options:",
-		MENU_TYPE_OPTIONS,
-		0);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Friendly fire",
-			&gConfig.Game.FriendlyFire,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"FPS monitor",
-			&gConfig.Interface.ShowFPS,
-			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Display time",
-			&gConfig.Interface.ShowTime,
-			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Show HUD map",
-			&gConfig.Interface.ShowHUDMap,
-			MENU_OPTION_DISPLAY_STYLE_ON_OFF));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"AI Chatter", (int *)&gConfig.Interface.AIChatter,
-			AICHATTER_NONE, AICHATTER_ALWAYS, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))AIChatterStr));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionSeed("Random seed", &gConfig.Game.RandomSeed));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Difficulty", (int *)&gConfig.Game.Difficulty,
-			DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))DifficultyStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Slowmotion",
-			&gConfig.Game.SlowMotion,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Enemy density",
-			&gConfig.Game.EnemyDensity,
-			25, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Non-player HP",
-			&gConfig.Game.NonPlayerHP,
-			25, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))PercentStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Player HP",
-			&gConfig.Game.PlayerHP,
-			25, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))PercentStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Lives",
-			&gConfig.Game.Lives,
-			1, 5, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Health pickups",
-			&gConfig.Game.HealthPickups,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Ammo",
-			&gConfig.Game.Ammo,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Fog",
-			&gConfig.Game.Fog,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Sight range",
-			&gConfig.Game.SightRange,
-			8, 40, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Shadows",
-			&gConfig.Game.Shadows,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Fire and move", (int *)&gConfig.Game.FireMoveStyle,
-			FIREMOVE_STOP, FIREMOVE_STRAFE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))FireMoveStyleStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Switch move style", (int *)&gConfig.Game.SwitchMoveStyle,
-			SWITCHMOVE_SLIDE, SWITCHMOVE_NONE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))SwitchMoveStyleStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Shots push back",
-			&gConfig.Game.ShotsPushback,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Ally collision", (int *)&gConfig.Game.AllyCollision,
-			ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))AllyCollisionStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Gore", (int *)&gConfig.Game.Gore,
-			GORE_NONE, GORE_HIGH, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))GoreAmountStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Laser sight", (int *)&gConfig.Game.LaserSight,
-			LASER_SIGHT_NONE, LASER_SIGHT_ALL, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))LaserSightStr));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
@@ -435,28 +253,12 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 		"Graphics Options:",
 		MENU_TYPE_OPTIONS,
 		0);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Brightness", (int *)&gConfig.Graphics.Brightness,
-			BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Splitscreen", (int *)&gConfig.Interface.Splitscreen,
-			SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))SplitscreenStyleStr));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Brightness"));
 #ifndef __GCWZERO__
 #ifndef __ANDROID__
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Fullscreen",
-			&gConfig.Graphics.Fullscreen,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Fullscreen"));
 #endif	// ANDROID
+
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
@@ -465,12 +267,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
 			GrafxGetModeStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Scale mode", (int *)&gConfig.Graphics.ScaleMode,
-			SCALE_MODE_NN, SCALE_MODE_HQX, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))ScaleModeStr));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.ScaleMode"));
 #endif	// GCWZERO
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
@@ -500,145 +297,16 @@ menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 	return menu;
 }
 
-menu_t *MenuCreateOptionsSound(const char *name, MenuSystem *ms)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"Configure Sound:",
-		MENU_TYPE_OPTIONS,
-		0);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Sound effects",
-			&gConfig.Sound.SoundVolume,
-			8, 64, 8,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Music",
-			&gConfig.Sound.MusicVolume,
-			0, 64, 8,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC, (void (*)(void))Div8Str));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
-	return menu;
-}
-
-menu_t *MenuCreateOptionsQuickPlay(const char *name, MenuSystem *ms)
-{
-	menu_t *menu = MenuCreateNormal(
-		name,
-		"Quick Play Options:",
-		MENU_TYPE_OPTIONS,
-		0);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Map size",
-			(int *)&gConfig.QuickPlay.MapSize,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Wall count",
-			(int *)&gConfig.QuickPlay.WallCount,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Wall length",
-			(int *)&gConfig.QuickPlay.WallLength,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Room count",
-			(int *)&gConfig.QuickPlay.RoomCount,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Square count",
-			(int *)&gConfig.QuickPlay.SquareCount,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Enemy count",
-			(int *)&gConfig.QuickPlay.EnemyCount,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Enemy speed",
-			(int *)&gConfig.QuickPlay.EnemySpeed,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Enemy health",
-			(int *)&gConfig.QuickPlay.EnemyHealth,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionToggle(
-			"Enemies with explosives",
-			&gConfig.QuickPlay.EnemiesWithExplosives,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionRange(
-			"Item count",
-			(int *)&gConfig.QuickPlay.ItemCount,
-			QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))QuickPlayQuantityStr));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
-	return menu;
-}
-
 menu_t *MenuCreateQuit(const char *name)
 {
 	return MenuCreate(name, MENU_TYPE_QUIT);
 }
 
 
-menu_t *MenuCreateOptionToggle(
-	const char *name, bool *config, menu_option_display_style_e style)
-{
-	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_TOGGLE);
-	menu->u.option.uHook.optionToggle = config;
-	menu->u.option.displayStyle = style;
-	return menu;
-}
-
-void MenuCreateKeysSingleSection(
-	menu_t *menu, const char *sectionName,
-	input_keys_t *keys, input_keys_t *keysOther);
-menu_t *MenuCreateOptionChangeKey(
-	const char *name, key_code_e code,
-	input_keys_t *keys, input_keys_t *keysOther);
+static void MenuCreateKeysSingleSection(
+	menu_t *menu, const char *sectionName, const int playerIndex);
+static menu_t *MenuCreateOptionChangeKey(
+	const key_code_e code, const int playerIndex);
 
 menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 {
@@ -647,61 +315,40 @@ menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 		"",
 		MENU_TYPE_KEYS,
 		0);
-	MenuCreateKeysSingleSection(
-		menu, "Keyboard 1",
-		&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys);
-	MenuCreateKeysSingleSection(
-		menu, "Keyboard 2",
-		&gConfig.Input.PlayerKeys[1].Keys, &gConfig.Input.PlayerKeys[0].Keys);
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Map", KEY_CODE_MAP,
-			&gConfig.Input.PlayerKeys[0].Keys, &gConfig.Input.PlayerKeys[1].Keys));
+	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
+	MenuCreateKeysSingleSection(menu, "Keyboard 2", 1);
+	MenuAddSubmenu(menu, MenuCreateOptionChangeKey(KEY_CODE_MAP, 0));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
 
-void MenuCreateKeysSingleSection(
-	menu_t *menu, const char *sectionName,
-	input_keys_t *keys, input_keys_t *keysOther)
+static void MenuCreateKeysSingleSection(
+	menu_t *menu, const char *sectionName, const int playerIndex)
 {
 	MenuAddSubmenu(menu, MenuCreateSeparator(sectionName));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey("Left", KEY_CODE_LEFT, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_LEFT, playerIndex));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Right", KEY_CODE_RIGHT, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_RIGHT, playerIndex));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Up", KEY_CODE_UP, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_UP, playerIndex));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Down", KEY_CODE_DOWN, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_DOWN, playerIndex));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Fire", KEY_CODE_BUTTON1, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON1, playerIndex));
 	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey(
-			"Switch/slide", KEY_CODE_BUTTON2, keys, keysOther));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON2, playerIndex));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 }
 
-menu_t *MenuCreateOptionChangeKey(
-	const char *name, key_code_e code,
-	input_keys_t *keys, input_keys_t *keysOther)
+static menu_t *MenuCreateOptionChangeKey(
+	const key_code_e code, const int playerIndex)
 {
-	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_CHANGE_KEY);
+	menu_t *menu =
+		MenuCreate(KeycodeStr(code), MENU_TYPE_SET_OPTION_CHANGE_KEY);
 	menu->u.changeKey.code = code;
-	menu->u.changeKey.keys = keys;
-	menu->u.changeKey.keysOther = keysOther;
+	menu->u.changeKey.playerIndex = playerIndex;
 	return menu;
 }

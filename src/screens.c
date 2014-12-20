@@ -121,7 +121,7 @@ void ScreenStart(void)
 	if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
 	{
 		debug(D_NORMAL, ">> Game options\n");
-		if (!GameOptions())
+		if (!GameOptions(gCampaign.Entry.Mode))
 		{
 			gCampaign.IsLoaded = false;
 			return;

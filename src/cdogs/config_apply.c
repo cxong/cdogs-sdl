@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,23 +34,20 @@
 #include "pic_manager.h"
 
 
-int ConfigApply(Config *config)
+bool ConfigApply(Config *config)
 {
-	if (config->Game.RandomSeed != gLastConfig.Game.RandomSeed)
+	gCampaign.seed = ConfigGetInt(config, "Game.RandomSeed");
+	if (ConfigChanged(ConfigGet(config, "Sound")))
 	{
-		gCampaign.seed = config->Game.RandomSeed;
+		SoundReconfigure(&gSoundDevice);
 	}
-	if (memcmp(&config->Sound, &gLastConfig.Sound, sizeof config->Sound) != 0)
+	if (ConfigChanged(ConfigGet(config, "Graphics")))
 	{
-		SoundReconfigure(&gSoundDevice, &config->Sound);
-	}
-	if (memcmp(
-		&config->Graphics, &gLastConfig.Graphics, sizeof config->Graphics) != 0)
-	{
-		GraphicsInitialize(
-			&gGraphicsDevice, &config->Graphics, gPicManager.palette, 0);
+		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig);
+		GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, false);
 		GrafxMakeRandomBackground(
 			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 	}
+	ConfigSetChanged(config);
 	return gGraphicsDevice.IsInitialized;
 }

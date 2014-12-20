@@ -3,6 +3,7 @@
 #include <config.h>
 #include <config_json.h>
 #include <config_old.h>
+#include <sounds.h>
 
 // Stub
 Mix_Chunk *StrSound(const char *s)
@@ -20,12 +21,18 @@ FEATURE(1, "Load default config")
 		GIVEN_END
 
 		WHEN("I load them both with defaults")
-			ConfigLoadDefault(&config1);
-			ConfigLoadDefault(&config2);
+			// Note: default loaded before loading from file
+			config1 = ConfigLoad(NULL);
+			config2 = ConfigLoad(NULL);
 		WHEN_END
 
-		THEN("they should equal each other")
-			SHOULD_MEM_EQUAL(&config1, &config2, sizeof(Config));
+		THEN("the two configs should have the same values")
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Game.FriendlyFire"),
+				ConfigGetBool(&config2, "Game.FriendlyFire"));
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Graphics.Brightness"),
+				ConfigGetBool(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
@@ -36,18 +43,23 @@ FEATURE(2, "Save and load")
 	{
 		Config config1, config2;
 		GIVEN("a config file with some values, and I save the config to a JSON file")
-			ConfigLoadDefault(&config1);
-			config1.Game.FriendlyFire = 1;
-			config1.Graphics.Brightness = 5;
+			config1 = ConfigLoad(NULL);
+			ConfigGet(&config1, "Game.FriendlyFire")->u.Bool.Value = true;
+			ConfigGet(&config1, "Graphics.Brightness")->u.Int.Value = 5;
 			ConfigSave(&config1, "tmp");
 		GIVEN_END
 
 		WHEN("I load a second config from that file")
-			ConfigLoad(&config2, "tmp");
+			config2 = ConfigLoad("tmp");
 		WHEN_END
 
-		THEN("the two configs should be equal")
-			SHOULD_MEM_EQUAL(&config1, &config2, sizeof(Config));
+		THEN("the two configs should have the same values")
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Game.FriendlyFire"),
+				ConfigGetBool(&config2, "Game.FriendlyFire"));
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Graphics.Brightness"),
+				ConfigGetBool(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
@@ -60,9 +72,9 @@ FEATURE(3, "Detect config version")
 		int version;
 		FILE *file;
 		GIVEN("a config file with some values, and I save the config to file in the JSON format")
-			ConfigLoadDefault(&config1);
-			config1.Game.FriendlyFire = 1;
-			config1.Graphics.Brightness = 5;
+			config1 = ConfigLoad(NULL);
+			ConfigGet(&config1, "Game.FriendlyFire")->u.Bool.Value = true;
+			ConfigGet(&config1, "Graphics.Brightness")->u.Int.Value = 5;
 			ConfigSave(&config1, "tmp");
 		GIVEN_END
 
@@ -70,12 +82,17 @@ FEATURE(3, "Detect config version")
 			file = fopen("tmp", "r");
 			version = ConfigGetVersion(file);
 			fclose(file);
-			ConfigLoad(&config2, "tmp");
+			config2 = ConfigLoad("tmp");
 		WHEN_END
 
-		THEN("the version should be 5, and the two configs should be equal")
-			SHOULD_INT_EQUAL(version, 5);
-			SHOULD_MEM_EQUAL(&config1, &config2, sizeof(Config));
+		THEN("the version should be 6, and the two configs should have the same values")
+			SHOULD_INT_EQUAL(version, 6);
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Game.FriendlyFire"),
+				ConfigGetBool(&config2, "Game.FriendlyFire"));
+			SHOULD_INT_EQUAL(
+				ConfigGetBool(&config1, "Graphics.Brightness"),
+				ConfigGetBool(&config2, "Graphics.Brightness"));
 		THEN_END
 	}
 	SCENARIO_END
@@ -88,10 +105,10 @@ FEATURE(4, "Save config as latest format by default")
 		int version;
 		FILE *file;
 		GIVEN("a config file with some values, and I save the config to file")
-			ConfigLoadDefault(&config);
-			config.Game.FriendlyFire = 1;
-			config.Graphics.Brightness = 5;
-			ConfigSaveJSON(&config, "tmp");
+			config = ConfigLoad(NULL);
+			ConfigGet(&config, "Game.FriendlyFire")->u.Bool.Value = true;
+			ConfigGet(&config, "Graphics.Brightness")->u.Int.Value = 5;
+			ConfigSave(&config, "tmp");
 		GIVEN_END
 
 		WHEN("I detect the version")
@@ -100,8 +117,8 @@ FEATURE(4, "Save config as latest format by default")
 			fclose(file);
 		WHEN_END
 
-		THEN("the version should be 5")
-			SHOULD_INT_EQUAL(version, 5);
+		THEN("the version should be 6")
+			SHOULD_INT_EQUAL(version, 6);
 		THEN_END
 	}
 	SCENARIO_END

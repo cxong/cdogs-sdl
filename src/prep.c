@@ -64,7 +64,6 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx.h>
-#include <cdogs/input.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/music.h>
@@ -225,8 +224,7 @@ bool NumPlayersSelection(
 }
 
 
-static void AssignPlayerInputDevices(
-	EventHandlers *handlers, const InputConfig *inputConfig)
+static void AssignPlayerInputDevices(EventHandlers *handlers)
 {
 	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
 	bool assignedMouse = false;
@@ -266,9 +264,9 @@ static void AssignPlayerInputDevices(
 		// For each unassigned player, check if any device has button 1 pressed
 		for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
 		{
-			if (KeyIsPressed(
-				&handlers->keyboard,
-				inputConfig->PlayerKeys[j].Keys.button1) &&
+			char buf[256];
+			sprintf(buf, "Input.PlayerKeys%d.button1", j);
+			if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
 				!assignedKeyboards[j])
 			{
 				PlayerSetInputDevice(p, INPUT_DEVICE_KEYBOARD, j);
@@ -332,7 +330,7 @@ bool PlayerSelection(void)
 		}
 		PlayerSelectMenusCreate(
 			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
-			&gEventHandlers, &gGraphicsDevice, &gConfig.Input, &data.g);
+			&gEventHandlers, &gGraphicsDevice, &data.g);
 	}
 
 	NetServerOpen(&gNetServer);
@@ -426,7 +424,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 		return UPDATE_RESULT_EXIT;
 	}
 
-	AssignPlayerInputDevices(&gEventHandlers, &gConfig.Input);
+	AssignPlayerInputDevices(&gEventHandlers);
 
 	return UPDATE_RESULT_DRAW;
 }
@@ -480,7 +478,7 @@ static void PlayerSelectionDraw(void *data)
 	}
 }
 
-bool GameOptions(void)
+bool GameOptions(const GameMode gm)
 {
 	// Create selection menus
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -491,40 +489,29 @@ bool GameOptions(void)
 		Vec2iZero(), Vec2iNew(w, h));
 	ms.align = MENU_ALIGN_CENTER;
 	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal(
-		"",
-		"",
-		MENU_TYPE_OPTIONS,
-		0);
-	MenuAddSubmenu(
-		ms.current,
-		MenuCreateOptionRange(
-			"Player HP",
-			&gConfig.Game.PlayerHP,
-			25, 200, 25,
-			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
-			(void (*)(void))PercentStr));
-	MenuAddSubmenu(
-		ms.current,
-		MenuCreateOptionRange(
-			"Lives",
-			&gConfig.Game.DeathmatchLives,
-			1, 20, 1,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
-	MenuAddSubmenu(
-		ms.current,
-		MenuCreateOptionToggle(
-			"Health pickups",
-			&gConfig.Game.HealthPickups,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(
-		ms.current,
-		MenuCreateOptionToggle(
-			"Ammo",
-			&gConfig.Game.Ammo,
-			MENU_OPTION_DISPLAY_STYLE_YES_NO));
-	MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+	switch (gm)
+	{
+	case GAME_MODE_DEATHMATCH:
+		ms.root = ms.current = MenuCreateNormal(
+			"",
+			"",
+			MENU_TYPE_OPTIONS,
+			0);
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.PlayerHP"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Deathmatch.Lives"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		break;
+	default:
+		CASSERT(false, "unknown game mode");
+		break;
+	}
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 
 	MenuLoop(&ms);
@@ -532,6 +519,7 @@ bool GameOptions(void)
 	const bool ok = !ms.hasAbort;
 	if (ok)
 	{
+		ConfigApply(&gConfig);
 		// Save options for later
 		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	}
@@ -561,7 +549,7 @@ bool PlayerEquip(void)
 		}
 		WeaponMenuCreate(
 			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
-			&gEventHandlers, &gGraphicsDevice, &gConfig.Input);
+			&gEventHandlers, &gGraphicsDevice);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
@@ -572,7 +560,7 @@ bool PlayerEquip(void)
 			p->weapons[0] = AICoopSelectWeapon(
 				idx, &gMission.missionData->Weapons);
 			p->weaponCount = 1;
-			if (gConfig.Game.Ammo)
+			if (ConfigGetBool(&gConfig, "Game.Ammo"))
 			{
 				// Select pistol as an infinite-ammo backup
 				const GunDescription *pistol = StrGunDescription("Pistol");

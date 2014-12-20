@@ -188,7 +188,8 @@ static void SetObstructionVisible(DrawBuffer *buffer, Vec2i pos, Tile *tile)
 // whenever an obstruction or out-of-range is reached.
 void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
 {
-	int sightRange = gConfig.Game.SightRange;	// Note: can be zero
+	// Note: can be zero
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange");
 	LOSData data;
 	data.b = buffer;
 	data.center.x = center.x / TILE_WIDTH - buffer->xStart;

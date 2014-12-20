@@ -313,7 +313,7 @@ void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
 	int numPlayers, int player, const int playerIndex,
 	EventHandlers *handlers, GraphicsDevice *graphics,
-	InputConfig *inputConfig, const NameGen *ng)
+	const NameGen *ng)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
@@ -324,8 +324,7 @@ void PlayerSelectMenusCreate(
 	data->nameMenuSelection = (int)strlen(letters);
 	data->display.playerIndex = playerIndex;
 	data->display.currentMenu = &ms->current;
-	data->controls.inputConfig = inputConfig;
-	data->controls.playerIndex = playerIndex;
+	data->playerIndex = playerIndex;
 	data->nameGenerator = ng;
 
 	switch (numPlayers)
@@ -378,7 +377,7 @@ void PlayerSelectMenusCreate(
 		ms->root, MenuCreateNormal("Done", "", MENU_TYPE_NORMAL, 0));
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->controls);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->playerIndex);
 
 	// Detect when there have been new player templates created,
 	// to re-enable the load menu

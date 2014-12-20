@@ -126,7 +126,7 @@ void GameLoop(GameLoopData *data)
 			{
 				data->DrawFunc(data->DrawData);
 			}
-			BlitFlip(&gGraphicsDevice, &gConfig.Graphics);
+			BlitFlip(&gGraphicsDevice);
 			data->HasDrawnFirst = true;
 		}
 	}

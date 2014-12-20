@@ -42,7 +42,7 @@ void CampaignInit(CampaignOptions *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
 	CampaignSettingInit(&campaign->Setting);
-	campaign->seed = gConfig.Game.RandomSeed;
+	campaign->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {

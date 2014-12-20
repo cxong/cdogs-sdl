@@ -28,6 +28,7 @@
 #include "game_mode.h"
 
 #include "config.h"
+#include "utils.h"
 
 
 GameMode gGameModeNormal = GAME_MODE_NORMAL;
@@ -123,9 +124,9 @@ int ModeLives(const GameMode mode)
 	case GAME_MODE_DOGFIGHT:
 		return 1;
 	case GAME_MODE_DEATHMATCH:
-		return gConfig.Game.DeathmatchLives;
+		return ConfigGetInt(&gConfig, "Game.DeathmatchLives");
 	default:
-		return gConfig.Game.Lives;
+		return ConfigGetInt(&gConfig, "Game.Lives");
 	}
 }
 
@@ -136,6 +137,6 @@ int ModeMaxHealth(const GameMode mode)
 	case GAME_MODE_DOGFIGHT:
 		return 500;
 	default:
-		return 200 * gConfig.Game.PlayerHP / 100;
+		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}
 }

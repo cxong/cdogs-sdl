@@ -104,14 +104,14 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 			break;
 		case SDL_VIDEORESIZE:
 			{
-				int scale = gConfig.Graphics.ScaleFactor;
-				gConfig.Graphics.Res.x = e.resize.w / scale;
-				gConfig.Graphics.Res.y = e.resize.h / scale;
+				const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+				GraphicsConfigSet(
+					&gGraphicsDevice.cachedConfig,
+					Vec2iNew(e.resize.w / scale, e.resize.h / scale),
+					false,
+					scale);
 				GraphicsInitialize(
-					&gGraphicsDevice,
-					&gConfig.Graphics,
-					gPicManager.palette,
-					0);
+					&gGraphicsDevice, gPicManager.palette, false);
 				handlers->HasResolutionChanged = 1;
 			}
 			break;
@@ -127,10 +127,11 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 }
 
 static int GetKeyboardCmd(
-	keyboard_t *keyboard, const input_keys_t *keys, const bool isPressed)
+	keyboard_t *keyboard, const int kbIndex, const bool isPressed)
 {
 	int cmd = 0;
 	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
+	const input_keys_t *keys = &keyboard->PlayerKeys[kbIndex];
 
 	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
 	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
@@ -205,7 +206,7 @@ static int GetJoystickCmd(joystick_t *joystick, bool isPressed)
 }
 
 int GetGameCmd(
-	EventHandlers *handlers, const InputConfig *config,
+	EventHandlers *handlers,
 	const PlayerData *playerData, const Vec2i playerPos)
 {
 	int cmd = 0;
@@ -214,9 +215,7 @@ int GetGameCmd(
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		cmd = GetKeyboardCmd(
-			&handlers->keyboard,
-			&config->PlayerKeys[playerData->deviceIndex].Keys,
-			false);
+			&handlers->keyboard, playerData->deviceIndex, false);
 		break;
 	case INPUT_DEVICE_MOUSE:
 		cmd = GetMouseCmd(&handlers->mouse, false, 1, playerPos);
@@ -237,17 +236,14 @@ int GetGameCmd(
 }
 
 int GetOnePlayerCmd(
-	EventHandlers *handlers,
-	KeyConfig *config,
-	bool isPressed,
-	input_device_e device,
-	int deviceIndex)
+	EventHandlers *handlers, const bool isPressed,
+	const input_device_e device, const int deviceIndex)
 {
 	int cmd = 0;
 	switch (device)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		cmd = GetKeyboardCmd(&handlers->keyboard, &config->Keys, isPressed);
+		cmd = GetKeyboardCmd(&handlers->keyboard, deviceIndex, isPressed);
 		break;
 	case INPUT_DEVICE_MOUSE:
 		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, Vec2iZero());
@@ -279,10 +275,7 @@ void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
 			(*cmds)[idx] = GetOnePlayerCmd(
-				handlers,
-				&gConfig.Input.PlayerKeys[p->deviceIndex],
-				true,
-				p->inputDevice, p->deviceIndex);
+				handlers, true, p->inputDevice, p->deviceIndex);
 		}
 	}
 }
@@ -297,11 +290,7 @@ int GetMenuCmd(EventHandlers *handlers)
 	}
 
 	// Check first player keyboard
-	int cmd = GetOnePlayerCmd(
-		handlers,
-		&gConfig.Input.PlayerKeys[0],
-		true,
-		INPUT_DEVICE_KEYBOARD, 0);
+	int cmd = GetOnePlayerCmd(handlers, true, INPUT_DEVICE_KEYBOARD, 0);
 	if (!cmd)
 	{
 		// Check keyboard
@@ -318,12 +307,12 @@ int GetMenuCmd(EventHandlers *handlers)
 	if (!cmd && handlers->joysticks.numJoys > 0)
 	{
 		// Check joystick 1
-		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_JOYSTICK, 0);
+		cmd = GetOnePlayerCmd(handlers, true, INPUT_DEVICE_JOYSTICK, 0);
 	}
 	if (!cmd)
 	{
 		// Check mouse
-		cmd = GetOnePlayerCmd(handlers, NULL, true, INPUT_DEVICE_MOUSE, 0);
+		cmd = GetOnePlayerCmd(handlers, true, INPUT_DEVICE_MOUSE, 0);
 	}
 
 	return cmd;

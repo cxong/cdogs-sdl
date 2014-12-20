@@ -244,7 +244,9 @@ bool DamageSomething(
 
 	case KIND_OBJECT:
 		DamageObject(power, flags, player, uid, target);
-		if (gConfig.Sound.Hits && hitSounds != NULL && power > 0)
+		if (ConfigGetBool(&gConfig, "Sound.Hits") &&
+			hitSounds != NULL &&
+			power > 0)
 		{
 			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			es.u.SoundAt.Sound = hitSounds->Object;
@@ -281,7 +283,7 @@ static bool DoDamageCharacter(
 		e.u.HitCharacter.TargetId = actor->tileItem.id;
 		e.u.HitCharacter.Special = special;
 		GameEventsEnqueue(&gGameEvents, e);
-		if (gConfig.Sound.Hits && hitSounds != NULL &&
+		if (ConfigGetBool(&gConfig, "Sound.Hits") && hitSounds != NULL &&
 			!ActorIsImmune(actor, special) &&
 			(allowFriendlyHitSound || !ActorIsInvulnerable(
 			actor, flags, player, gCampaign.Entry.Mode)))
@@ -291,7 +293,7 @@ static bool DoDamageCharacter(
 			es.u.SoundAt.Pos = pos;
 			GameEventsEnqueue(&gGameEvents, es);
 		}
-		if (gConfig.Game.ShotsPushback)
+		if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 		{
 			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 			ei.u.ActorImpulse.Id = actor->tileItem.id;
@@ -313,7 +315,7 @@ static bool DoDamageCharacter(
 			}
 			GameEventsEnqueue(&gGameEvents, e1);
 
-			if (gConfig.Game.Gore != GORE_NONE)
+			if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
 			{
 				GameEvent eb = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
@@ -342,7 +344,7 @@ static bool DoDamageCharacter(
 					{
 						bloodSize = 1;
 					}
-					if (gConfig.Game.ShotsPushback)
+					if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 					{
 						eb.u.AddParticle.Vel = Vec2iScaleDiv(
 							Vec2iScale(hitVector, (rand() % 8 + 8) * power),
@@ -359,7 +361,7 @@ static bool DoDamageCharacter(
 					eb.u.AddParticle.DZ = (rand() % 6) + 6;
 					eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 					GameEventsEnqueue(&gGameEvents, eb);
-					switch (gConfig.Game.Gore)
+					switch (ConfigGetEnum(&gConfig, "Game.Gore"))
 					{
 					case GORE_LOW:
 						bloodPower /= 8;

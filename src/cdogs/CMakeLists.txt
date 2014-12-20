@@ -41,7 +41,6 @@ set(CDOGS_SOURCES
 	handle_game_events.c
 	hiscores.c
 	hud.c
-	input.c
 	joystick.c
 	json_utils.c
 	keyboard.c
@@ -119,7 +118,6 @@ set(CDOGS_HEADERS
 	handle_game_events.h
 	hiscores.h
 	hud.h
-	input.h
 	joystick.h
 	json_utils.h
 	keyboard.h

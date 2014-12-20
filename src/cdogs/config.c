@@ -30,96 +30,57 @@
 
 #include <stdio.h>
 
+#include "blit.h"
 #include "config_json.h"
 #include "config_old.h"
-#include "grafx.h"
 #include "keyboard.h"
 #include "music.h"
 #include "sounds.h"
 #include "utils.h"
 
 
-const char *AllyCollisionStr(AllyCollision a)
+const char *AllyCollisionStr(int a)
 {
 	switch (a)
 	{
-	case ALLYCOLLISION_NORMAL:
-		return "Normal";
-	case ALLYCOLLISION_REPEL:
-		return "Repel";
-	case ALLYCOLLISION_NONE:
-		return "None";
+		T2S(ALLYCOLLISION_NORMAL, "Normal");
+		T2S(ALLYCOLLISION_REPEL, "Repel");
+		T2S(ALLYCOLLISION_NONE, "None");
 	default:
 		return "";
 	}
 }
-AllyCollision StrAllyCollision(const char *str)
+int StrAllyCollision(const char *s)
 {
-	if (strcmp(str, "Normal") == 0)
-	{
-		return ALLYCOLLISION_NORMAL;
-	}
-	else if (strcmp(str, "Repel") == 0)
-	{
-		return ALLYCOLLISION_REPEL;
-	}
-	else 
-		if (strcmp(str, "None") == 0)
-	{
-		return ALLYCOLLISION_NONE;
-	}
-	else
-	{
-		return ALLYCOLLISION_NORMAL;
-	}
+	S2T(ALLYCOLLISION_NORMAL, "Normal");
+	S2T(ALLYCOLLISION_REPEL, "Repel");
+	S2T(ALLYCOLLISION_NONE, "None");
+	return ALLYCOLLISION_NORMAL;
 }
 
-const char *DifficultyStr(difficulty_e d)
+const char *DifficultyStr(int d)
 {
 	switch (d)
 	{
-	case DIFFICULTY_VERYEASY:
-		return "Easiest";
-	case DIFFICULTY_EASY:
-		return "Easy";
-	case DIFFICULTY_NORMAL:
-		return "Normal";
-	case DIFFICULTY_HARD:
-		return "Hard";
-	case DIFFICULTY_VERYHARD:
-		return "Very hard";
+		T2S(DIFFICULTY_VERYEASY, "Easiest");
+		T2S(DIFFICULTY_EASY, "Easy");
+		T2S(DIFFICULTY_NORMAL, "Normal");
+		T2S(DIFFICULTY_HARD, "Hard");
+		T2S(DIFFICULTY_VERYHARD, "Very hard");
 	default:
 		return "";
 	}
 }
-difficulty_e StrDifficulty(const char *str)
+int StrDifficulty(const char *s)
 {
-	if (strcmp(str, "Easiest") == 0)
-	{
-		return DIFFICULTY_VERYEASY;
-	}
-	else if (strcmp(str, "Easy") == 0)
-	{
-		return DIFFICULTY_EASY;
-	}
-	else if (strcmp(str, "Normal") == 0)
-	{
-		return DIFFICULTY_NORMAL;
-	}
-	else if (strcmp(str, "Hard") == 0)
-	{
-		return DIFFICULTY_HARD;
-	}
-	else if (strcmp(str, "Very hard") == 0)
-	{
-		return DIFFICULTY_VERYHARD;
-	}
-	else
-	{
-		return DIFFICULTY_NORMAL;
-	}
+	S2T(DIFFICULTY_VERYEASY, "Easiest");
+	S2T(DIFFICULTY_EASY, "Easy");
+	S2T(DIFFICULTY_NORMAL, "Normal");
+	S2T(DIFFICULTY_HARD, "Hard");
+	S2T(DIFFICULTY_VERYHARD, "Very hard");
+	return DIFFICULTY_NORMAL;
 }
-const char *FireMoveStyleStr(FireMoveStyle s)
+const char *FireMoveStyleStr(int s)
 {
 	switch (s)
 	{
@@ -130,14 +91,14 @@ const char *FireMoveStyleStr(FireMoveStyle s)
 		return "";
 	}
 }
-FireMoveStyle StrFireMoveStyle(const char *s)
+int StrFireMoveStyle(const char *s)
 {
 	S2T(FIREMOVE_STOP, "Stop");
 	S2T(FIREMOVE_NORMAL, "Normal");
 	S2T(FIREMOVE_STRAFE, "Strafe");
 	return FIREMOVE_STOP;
 }
-const char *SwitchMoveStyleStr(SwitchMoveStyle s)
+const char *SwitchMoveStyleStr(int s)
 {
 	switch (s)
 	{
@@ -148,47 +109,32 @@ const char *SwitchMoveStyleStr(SwitchMoveStyle s)
 		return "";
 	}
 }
-SwitchMoveStyle StrSwitchMoveStyle(const char *s)
+int StrSwitchMoveStyle(const char *s)
 {
 	S2T(SWITCHMOVE_SLIDE, "Slide");
 	S2T(SWITCHMOVE_STRAFE, "Strafe");
 	S2T(SWITCHMOVE_NONE, "None");
 	return SWITCHMOVE_SLIDE;
 }
-const char *ScaleModeStr(ScaleMode s)
+const char *ScaleModeStr(int s)
 {
 	switch (s)
 	{
-	case SCALE_MODE_NN:
-		return "Nearest neighbor";
-	case SCALE_MODE_BILINEAR:
-		return "Bilinear";
-	case SCALE_MODE_HQX:
-		return "hqx";
+		T2S(SCALE_MODE_NN, "Nearest neighbor");
+		T2S(SCALE_MODE_BILINEAR, "Bilinear");
+		T2S(SCALE_MODE_HQX, "hqx");
 	default:
 		return "";
 	}
 }
-ScaleMode StrScaleMode(const char *str)
+int StrScaleMode(const char *s)
 {
-	if (strcmp(str, "Nearest neighbor") == 0)
-	{
-		return SCALE_MODE_NN;
-	}
-	else if (strcmp(str, "Bilinear") == 0)
-	{
-		return SCALE_MODE_BILINEAR;
-	}
-	else if (strcmp(str, "hqx") == 0)
-	{
-		return SCALE_MODE_HQX;
-	}
-	else
-	{
-		return SCALE_MODE_NN;
-	}
+	S2T(SCALE_MODE_NN, "Nearest neighbor");
+	S2T(SCALE_MODE_BILINEAR, "Bilinear");
+	S2T(SCALE_MODE_HQX, "hqx");
+	return SCALE_MODE_NN;
 }
-const char *GoreAmountStr(GoreAmount g)
+const char *GoreAmountStr(int g)
 {
 	switch (g)
 	{
@@ -200,7 +146,7 @@ const char *GoreAmountStr(GoreAmount g)
 		return "";
 	}
 }
-GoreAmount StrGoreAmount(const char *s)
+int StrGoreAmount(const char *s)
 {
 	S2T(GORE_NONE, "None");
 	S2T(GORE_LOW, "Trickle");
@@ -208,7 +154,7 @@ GoreAmount StrGoreAmount(const char *s)
 	S2T(GORE_HIGH, "Torrents");
 	return GORE_NONE;
 }
-const char *LaserSightStr(LaserSight l)
+const char *LaserSightStr(int l)
 {
 	switch (l)
 	{
@@ -219,128 +165,160 @@ const char *LaserSightStr(LaserSight l)
 		return "";
 	}
 }
-LaserSight StrLaserSight(const char *s)
+int StrLaserSight(const char *s)
 {
 	S2T(LASER_SIGHT_NONE, "None");
 	S2T(LASER_SIGHT_PLAYERS, "Players only");
 	S2T(LASER_SIGHT_ALL, "All");
 	return LASER_SIGHT_NONE;
 }
-const char *SplitscreenStyleStr(SplitscreenStyle s)
+const char *SplitscreenStyleStr(int s)
 {
 	switch (s)
 	{
-		case SPLITSCREEN_NORMAL:
-			return "Normal";
-		case SPLITSCREEN_ALWAYS:
-			return "Always";
-		case SPLITSCREEN_NEVER:
-			return "Never";
+		T2S(SPLITSCREEN_NORMAL, "Normal");
+		T2S(SPLITSCREEN_ALWAYS, "Always");
+		T2S(SPLITSCREEN_NEVER, "Never");
 		default:
 			return "";
 	}
 }
-SplitscreenStyle StrSplitscreenStyle(const char *str)
+int StrSplitscreenStyle(const char *s)
 {
-	if (strcmp(str, "Normal") == 0)
-	{
-		return SPLITSCREEN_NORMAL;
-	}
-	else if (strcmp(str, "Always") == 0)
-	{
-		return SPLITSCREEN_ALWAYS;
-	}
-	else if (strcmp(str, "Never") == 0)
-	{
-		return SPLITSCREEN_NEVER;
-	}
-	else
-	{
-		return SPLITSCREEN_NORMAL;
-	}
+	S2T(SPLITSCREEN_NORMAL, "Normal");
+	S2T(SPLITSCREEN_ALWAYS, "Always");
+	S2T(SPLITSCREEN_NEVER, "Never");
+	return SPLITSCREEN_NORMAL;
 }
-const char *AIChatterStr(AIChatterFrequency c)
+const char *AIChatterStr(int c)
 {
 	switch (c)
 	{
-	case AICHATTER_NONE:
-		return "None";
-	case AICHATTER_SELDOM:
-		return "Seldom";
-	case AICHATTER_OFTEN:
-		return "Often";
-	case AICHATTER_ALWAYS:
-		return "Always";
+		T2S(AICHATTER_NONE, "None");
+		T2S(AICHATTER_SELDOM, "Seldom");
+		T2S(AICHATTER_OFTEN, "Often");
+		T2S(AICHATTER_ALWAYS, "Always");
 	default:
 		return "";
 	}
 }
-AIChatterFrequency StrAIChatter(const char *str)
+int StrAIChatter(const char *s)
 {
-	if (strcmp(str, "None") == 0)
-	{
-		return AICHATTER_NONE;
-	}
-	else if (strcmp(str, "Seldom") == 0)
-	{
-		return AICHATTER_SELDOM;
-	}
-	else if (strcmp(str, "Often") == 0)
-	{
-		return AICHATTER_OFTEN;
-	}
-	else if (strcmp(str, "Always") == 0)
-	{
-		return AICHATTER_ALWAYS;
-	}
-	else
-	{
-		return AICHATTER_NONE;
-	}
+	S2T(AICHATTER_NONE, "None");
+	S2T(AICHATTER_SELDOM, "Seldom");
+	S2T(AICHATTER_OFTEN, "Often");
+	S2T(AICHATTER_ALWAYS, "Always");
+	return AICHATTER_NONE;
 }
-const char *QuickPlayQuantityStr(QuickPlayQuantity q)
+const char *QuickPlayQuantityStr(int q)
 {
 	switch (q)
 	{
-	case QUICKPLAY_QUANTITY_ANY:
-		return "Any";
-	case QUICKPLAY_QUANTITY_SMALL:
-		return "Small";
-	case QUICKPLAY_QUANTITY_MEDIUM:
-		return "Medium";
-	case QUICKPLAY_QUANTITY_LARGE:
-		return "Large";
+		T2S(QUICKPLAY_QUANTITY_ANY, "Any");
+		T2S(QUICKPLAY_QUANTITY_SMALL, "Small");
+		T2S(QUICKPLAY_QUANTITY_MEDIUM, "Medium");
+		T2S(QUICKPLAY_QUANTITY_LARGE, "Large");
 	default:
 		return "";
 	}
 }
-QuickPlayQuantity StrQuickPlayQuantity(const char *str)
+int StrQuickPlayQuantity(const char *s)
 {
-	if (strcmp(str, "Any") == 0)
-	{
-		return QUICKPLAY_QUANTITY_ANY;
-	}
-	else if (strcmp(str, "Small") == 0)
-	{
-		return QUICKPLAY_QUANTITY_SMALL;
-	}
-	else if (strcmp(str, "Medium") == 0)
-	{
-		return QUICKPLAY_QUANTITY_MEDIUM;
-	}
-	else if (strcmp(str, "Large") == 0)
-	{
-		return QUICKPLAY_QUANTITY_LARGE;
-	}
-	else
-	{
-		return QUICKPLAY_QUANTITY_ANY;
-	}
+	S2T(QUICKPLAY_QUANTITY_ANY, "Any");
+	S2T(QUICKPLAY_QUANTITY_SMALL, "Small");
+	S2T(QUICKPLAY_QUANTITY_MEDIUM, "Medium");
+	S2T(QUICKPLAY_QUANTITY_LARGE, "Large");
+	return QUICKPLAY_QUANTITY_ANY;
 }
 
 
 Config gConfig;
-Config gLastConfig;
+
+static Config ConfigNew(const char *name, const ConfigType type);
+Config ConfigNewString(const char *name, const char *defaultValue)
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_STRING);
+	UNUSED(defaultValue);
+	CASSERT(false, "unimplemented");
+	return c;
+}
+Config ConfigNewInt(
+	const char *name, const int defaultValue,
+	const int minValue, const int maxValue, const int increment)
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_INT);
+	c.u.Int.Default = c.u.Int.Value = c.u.Int.Last = defaultValue;
+	c.u.Int.Min = minValue;
+	c.u.Int.Max = maxValue;
+	c.u.Int.Increment = increment;
+	return c;
+}
+Config ConfigNewFloat(
+	const char *name, const double defaultValue,
+	const double minValue, const double maxValue, const double increment)
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_FLOAT);
+	c.u.Float.Default = c.u.Float.Value = c.u.Float.Last = defaultValue;
+	c.u.Float.Min = minValue;
+	c.u.Float.Max = maxValue;
+	c.u.Float.Increment = increment;
+	return c;
+}
+Config ConfigNewBool(const char *name, const bool defaultValue)
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_BOOL);
+	c.u.Bool.Default = c.u.Bool.Value = c.u.Bool.Last = defaultValue;
+	return c;
+}
+Config ConfigNewEnum(
+	const char *name, const int defaultValue,
+	const int minValue, const int maxValue,
+	int (*strToEnum)(const char *), const char *(*enumToStr)(int))
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_ENUM);
+	c.u.Enum.Default = c.u.Enum.Value = c.u.Enum.Last = defaultValue;
+	c.u.Enum.Min = minValue;
+	c.u.Enum.Max = maxValue;
+	c.u.Enum.StrToEnum = strToEnum;
+	c.u.Enum.EnumToStr = enumToStr;
+	return c;
+}
+Config ConfigNewGroup(const char *name)
+{
+	Config c = ConfigNew(name, CONFIG_TYPE_GROUP);
+	CArrayInit(&c.u.Group, sizeof(Config));
+	return c;
+}
+static Config ConfigNew(const char *name, const ConfigType type)
+{
+	Config c;
+	memset(&c, 0, sizeof c);
+	if (name != NULL)
+	{
+		CSTRDUP(c.Name, name);
+	}
+	c.Type = type;
+	return c;
+}
+
+void ConfigDestroy(Config *c)
+{
+	CFREE(c->Name);
+	if (c->Type == CONFIG_TYPE_GROUP)
+	{
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			ConfigDestroy(CArrayGet(&c->u.Group, i));
+		}
+		CArrayTerminate(&c->u.Group);
+	}
+}
+
+void ConfigGroupAdd(Config *group, Config child)
+{
+	CASSERT(group->Type == CONFIG_TYPE_GROUP, "Invalid config type");
+	CArrayPushBack(&group->u.Group, &child);
+}
 
 int ConfigGetVersion(FILE *f)
 {
@@ -352,122 +330,403 @@ int ConfigGetVersion(FILE *f)
 	return ConfigGetJSONVersion(f);
 }
 
-void ConfigLoad(Config *config, const char *filename)
+static Config ConfigLoadDefault(void);
+Config ConfigLoad(const char *filename)
 {
 	// Load default values first
-	ConfigLoadDefault(config);
-	int configVersion = -1;
+	Config c = ConfigLoadDefault();
+	if (filename == NULL)
+	{
+		// This is equivalent to loading nothing; just exit
+		return c;
+	}
 	FILE *f = fopen(filename, "r");
 	if (f == NULL)
 	{
 		printf("Error loading config '%s'\n", filename);
-		return;
+		return c;
 	}
-	configVersion = ConfigGetVersion(f);
+	const int configVersion = ConfigGetVersion(f);
 	fclose(f);
 	switch (configVersion)
 	{
 	case 0:
-		ConfigLoadOld(config, filename);
+		printf("Classic config is no longer supported\n");
 		break;
 	case 1:
 	case 2:
 	case 3:
 	case 4:
 	case 5:
-		ConfigLoadJSON(config, filename);
+	case 6:
+		ConfigLoadJSON(&c, filename);
 		break;
 	default:
 		printf("Unknown config version\n");
 		break;
 	}
+	ConfigSetChanged(&c);
+	return c;
 }
 
-void ConfigSave(Config *config, const char *filename)
+void ConfigSave(const Config *config, const char *filename)
 {
 	ConfigSaveJSON(config, filename);
 }
 
-void ConfigLoadDefault(Config *config)
+Config *ConfigGet(Config *c, const char *name)
 {
-	int i;
-	memset(config, 0, sizeof(Config));
-	config->Game.Difficulty = DIFFICULTY_NORMAL;
-	config->Game.EnemyDensity = 100;
-	config->Game.FriendlyFire = 0;
-	config->Game.NonPlayerHP = 100;
-	config->Game.PlayerHP = 75;
-	config->Game.Lives = 2;
-	config->Game.RandomSeed = 0;
-	config->Game.SlowMotion = 0;
-	config->Game.Fog = 1;
-	config->Game.SightRange = 15;
-	config->Game.Shadows = 1;
-	config->Game.FireMoveStyle = FIREMOVE_STOP;
-	config->Game.SwitchMoveStyle = SWITCHMOVE_SLIDE;
-	config->Game.ShotsPushback = 1;
-	config->Game.AllyCollision = ALLYCOLLISION_REPEL;
-	config->Game.HealthPickups = true;
-	config->Game.Ammo = true;
-	config->Game.Gore = GORE_LOW;
-	config->Game.LaserSight = LASER_SIGHT_NONE;
-	config->Game.DeathmatchLives = 10;
-	config->Graphics.Brightness = 0;
-#ifdef __GCWZERO__
-	config->Graphics.Fullscreen = true;
-#else
-	config->Graphics.Fullscreen = false;
-#endif
-	config->Graphics.Res.y = 240;
-	config->Graphics.Res.x = 320;
-#ifdef __GCWZERO__
-	config->Graphics.ScaleFactor = 1;
-#else
-	config->Graphics.ScaleFactor = 2;
-#endif
-	config->Graphics.ShakeMultiplier = 1;
-	config->Graphics.ScaleMode = SCALE_MODE_NN;
-	config->Graphics.OriginalPics = false;
-	config->Graphics.IsEditor = 0;
-	config->Input.PlayerKeys[0].Keys.left = SDLK_LEFT;
-	config->Input.PlayerKeys[0].Keys.right = SDLK_RIGHT;
-	config->Input.PlayerKeys[0].Keys.up = SDLK_UP;
-	config->Input.PlayerKeys[0].Keys.down = SDLK_DOWN;
-#ifdef __GCWZERO__
-	config->Input.PlayerKeys[0].Keys.button1 = SDLK_LCTRL;
-	config->Input.PlayerKeys[0].Keys.button2 = SDLK_LALT;
-#else
-	config->Input.PlayerKeys[0].Keys.button1 = SDLK_RETURN;
-	config->Input.PlayerKeys[0].Keys.button2 = SDLK_RSHIFT;
-#endif
-	config->Input.PlayerKeys[1].Keys.left = SDLK_KP4;
-	config->Input.PlayerKeys[1].Keys.right = SDLK_KP6;
-	config->Input.PlayerKeys[1].Keys.up = SDLK_KP8;
-	config->Input.PlayerKeys[1].Keys.down = SDLK_KP2;
-	config->Input.PlayerKeys[1].Keys.button1 = SDLK_KP0;
-	config->Input.PlayerKeys[1].Keys.button2 = SDLK_KP_ENTER;
-	for (i = 0; i < MAX_KEYBOARD_CONFIGS; i++)
+	char *nameCopy;
+	CSTRDUP(nameCopy, name);
+	char *pch = strtok(nameCopy, ".");
+	while (pch != NULL)
 	{
-		config->Input.PlayerKeys[i].Keys.map = SDLK_TAB;
+		if (c->Type != CONFIG_TYPE_GROUP)
+		{
+			CASSERT(false, "Invalid config type");
+			goto bail;
+		}
+		bool found = false;
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			Config *child = CArrayGet(&c->u.Group, i);
+			if (strcmp(child->Name, pch) == 0)
+			{
+				c = child;
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			CASSERT(false, "Config not found");
+			goto bail;
+		}
+		pch = strtok(NULL, ".");
 	}
-	config->Interface.ShowFPS = 0;
-	config->Interface.ShowTime = 0;
-	config->Interface.Splitscreen = SPLITSCREEN_NEVER;
-	config->Interface.ShowHUDMap = 1;
-	config->Interface.AIChatter = AICHATTER_SELDOM;
-	config->Sound.MusicVolume = 64;
-	config->Sound.SoundVolume = 64;
-	config->Sound.Footsteps = 1;
-	config->Sound.Hits = 1;
-	config->Sound.Reloads = 1;
-	config->QuickPlay.MapSize = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.WallCount = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.WallLength = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.RoomCount = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.SquareCount = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.EnemyCount = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.EnemySpeed = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.EnemyHealth = QUICKPLAY_QUANTITY_ANY;
-	config->QuickPlay.EnemiesWithExplosives = 1;
-	config->QuickPlay.ItemCount = QUICKPLAY_QUANTITY_ANY;
+bail:
+	CFREE(nameCopy);
+	return c;
+}
+
+bool ConfigChanged(const Config *c)
+{
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		return strcmp(c->u.String.Value, c->u.String.Last) != 0;
+	case CONFIG_TYPE_INT:
+		return c->u.Int.Value != c->u.Int.Last;
+	case CONFIG_TYPE_FLOAT:
+		return c->u.Float.Value != c->u.Float.Last;
+	case CONFIG_TYPE_BOOL:
+		return c->u.Bool.Value != c->u.Bool.Last;
+	case CONFIG_TYPE_ENUM:
+		return c->u.Enum.Value != c->u.Enum.Last;
+	case CONFIG_TYPE_GROUP:
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			if (ConfigChanged(CArrayGet(&c->u.Group, i)))
+			{
+				return true;
+			}
+		}
+		return false;
+	default:
+		CASSERT(false, "Unknown config type");
+		return false;
+	}
+}
+
+void ConfigResetChanged(Config *c)
+{
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CFREE(c->u.String.Value);
+		CSTRDUP(c->u.String.Value, c->u.String.Last);
+		break;
+	case CONFIG_TYPE_INT:
+		c->u.Int.Value = c->u.Int.Last;
+		break;
+	case CONFIG_TYPE_FLOAT:
+		c->u.Float.Value = c->u.Float.Last;
+		break;
+	case CONFIG_TYPE_BOOL:
+		c->u.Bool.Value = c->u.Bool.Last;
+		break;
+	case CONFIG_TYPE_ENUM:
+		c->u.Enum.Value = c->u.Enum.Last;
+		break;
+	case CONFIG_TYPE_GROUP:
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			ConfigResetChanged(CArrayGet(&c->u.Group, i));
+		}
+		break;
+	default:
+		CASSERT(false, "Unknown config type");
+		break;
+	}
+}
+
+void ConfigSetChanged(Config *c)
+{
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CFREE(c->u.String.Last);
+		CSTRDUP(c->u.String.Last, c->u.String.Value);
+		break;
+	case CONFIG_TYPE_INT:
+		c->u.Int.Last = c->u.Int.Value;
+		break;
+	case CONFIG_TYPE_FLOAT:
+		c->u.Float.Last = c->u.Float.Value;
+		break;
+	case CONFIG_TYPE_BOOL:
+		c->u.Bool.Last = c->u.Bool.Value;
+		break;
+	case CONFIG_TYPE_ENUM:
+		c->u.Enum.Last = c->u.Enum.Value;
+		break;
+	case CONFIG_TYPE_GROUP:
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			ConfigSetChanged(CArrayGet(&c->u.Group, i));
+		}
+		break;
+	default:
+		CASSERT(false, "Unknown config type");
+		break;
+	}
+}
+
+void ConfigResetDefault(Config *c)
+{
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CFREE(c->u.String.Value);
+		CSTRDUP(c->u.String.Value, c->u.String.Default);
+		break;
+	case CONFIG_TYPE_INT:
+		c->u.Int.Value = c->u.Int.Default;
+		break;
+	case CONFIG_TYPE_FLOAT:
+		c->u.Float.Value = c->u.Float.Default;
+		break;
+	case CONFIG_TYPE_BOOL:
+		c->u.Bool.Value = c->u.Bool.Default;
+		break;
+	case CONFIG_TYPE_ENUM:
+		c->u.Enum.Value = c->u.Enum.Default;
+		break;
+	case CONFIG_TYPE_GROUP:
+		for (int i = 0; i < (int)c->u.Group.size; i++)
+		{
+			ConfigResetDefault(CArrayGet(&c->u.Group, i));
+		}
+		break;
+	default:
+		CASSERT(false, "Unknown config type");
+		break;
+	}
+}
+
+const char *ConfigGetString(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_STRING, "wrong config type");
+	return c->u.String.Value;
+}
+int ConfigGetInt(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_INT, "wrong config type");
+	return c->u.Int.Value;
+}
+double ConfigGetFloat(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_FLOAT, "wrong config type");
+	return c->u.Float.Value;
+}
+bool ConfigGetBool(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_BOOL, "wrong config type");
+	return c->u.Bool.Value;
+}
+int ConfigGetEnum(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_ENUM, "wrong config type");
+	return c->u.Enum.Value;
+}
+CArray *ConfigGetGroup(Config *c, const char *name)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_GROUP, "wrong config type");
+	return &c->u.Group;
+}
+
+static Config ConfigLoadDefault(void)
+{
+	Config root = ConfigNewGroup(NULL);
+	
+	Config game = ConfigNewGroup("Game");
+	ConfigGroupAdd(&game, ConfigNewBool("FriendlyFire", false));
+	ConfigGroupAdd(&game, ConfigNewInt("RandomSeed", 0, 0, UINT_MAX, 1));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"Difficulty", DIFFICULTY_NORMAL,
+		DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD,
+		StrDifficulty, DifficultyStr));
+	ConfigGroupAdd(&game, ConfigNewBool("SlowMotion", false));
+	ConfigGroupAdd(&game, ConfigNewInt("EnemyDensity", 100, 25, 200, 25));
+	ConfigGroupAdd(&game, ConfigNewInt("NonPlayerHP", 100, 25, 200, 25));
+	ConfigGroupAdd(&game, ConfigNewInt("PlayerHP", 75, 25, 200, 25));
+	ConfigGroupAdd(&game, ConfigNewInt("Lives", 2, 1, 5, 1));
+	ConfigGroupAdd(&game, ConfigNewBool("HealthPickups", true));
+	ConfigGroupAdd(&game, ConfigNewBool("Ammo", false));
+	ConfigGroupAdd(&game, ConfigNewBool("Fog", true));
+	ConfigGroupAdd(&game, ConfigNewInt("SightRange", 15, 8, 40, 1));
+	ConfigGroupAdd(&game, ConfigNewBool("Shadows", true));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"FireMoveStyle", FIREMOVE_STOP, FIREMOVE_STOP, FIREMOVE_STRAFE,
+		StrFireMoveStyle, FireMoveStyleStr));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"SwitchMoveStyle", SWITCHMOVE_SLIDE,
+		SWITCHMOVE_SLIDE, SWITCHMOVE_NONE,
+		StrSwitchMoveStyle, SwitchMoveStyleStr));
+	ConfigGroupAdd(&game, ConfigNewBool("ShotsPushback", true));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"AllyCollision", ALLYCOLLISION_REPEL,
+		ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE,
+		StrAllyCollision, AllyCollisionStr));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"Gore", GORE_LOW, GORE_NONE, GORE_HIGH, StrGoreAmount, GoreAmountStr));
+	ConfigGroupAdd(&game, ConfigNewEnum(
+		"LaserSight", LASER_SIGHT_NONE, LASER_SIGHT_NONE, LASER_SIGHT_ALL,
+		StrLaserSight, LaserSightStr));
+	ConfigGroupAdd(&root, game);
+
+	Config dm = ConfigNewGroup("Deathmatch");
+	ConfigGroupAdd(&dm, ConfigNewInt("Lives", 10, 1, 20, 1));
+	ConfigGroupAdd(&root, dm);
+
+	Config gfx = ConfigNewGroup("Graphics");
+	ConfigGroupAdd(&gfx, ConfigNewInt(
+		"Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1));
+	ConfigGroupAdd(&gfx, ConfigNewBool("Fullscreen",
+#ifdef __GCWZERO__
+		true
+#else
+		false
+#endif
+		));
+	ConfigGroupAdd(&gfx, ConfigNewInt("ResolutionWidth", 320, 0, 0, 0));
+	ConfigGroupAdd(&gfx, ConfigNewInt("ResolutionHeight", 240, 0, 0, 0));
+	ConfigGroupAdd(&gfx, ConfigNewInt("ScaleFactor",
+#ifdef __GCWZERO__
+		1
+#else
+		2
+#endif
+		, 1, 4, 1));
+	ConfigGroupAdd(&gfx, ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1));
+	ConfigGroupAdd(&gfx, ConfigNewEnum(
+		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_HQX,
+		StrScaleMode, ScaleModeStr));
+	ConfigGroupAdd(&gfx, ConfigNewBool("OriginalPics", false));
+	ConfigGroupAdd(&root, gfx);
+
+	Config input = ConfigNewGroup("Input");
+	Config pk0 = ConfigNewGroup("PlayerKeys0");
+	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDLK_LEFT, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDLK_RIGHT, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDLK_UP, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDLK_DOWN, 0, 0, 0));
+#ifdef __GCWZERO__
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_LCTRL, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_LALT, 0, 0, 0));
+#else
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_RETURN, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_RSHIFT, 0, 0, 0));
+#endif
+	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDLK_TAB, 0, 0, 0));
+	ConfigGroupAdd(&input, pk0);
+	Config pk1 = ConfigNewGroup("PlayerKeys1");
+	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDLK_KP4, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDLK_KP6, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDLK_KP8, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDLK_KP2, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDLK_KP0, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDLK_KP_ENTER, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDLK_KP_PERIOD, 0, 0, 0));
+	ConfigGroupAdd(&input, pk1);
+	ConfigGroupAdd(&root, input);
+
+	Config itf = ConfigNewGroup("Interface");
+	ConfigGroupAdd(&itf, ConfigNewBool("ShowFPS", false));
+	ConfigGroupAdd(&itf, ConfigNewBool("ShowTime", false));
+	ConfigGroupAdd(&itf, ConfigNewBool("ShowHUDMap", true));
+	ConfigGroupAdd(&itf, ConfigNewEnum(
+		"AIChatter", AICHATTER_SELDOM, AICHATTER_NONE, AICHATTER_ALWAYS,
+		StrAIChatter, AIChatterStr));
+	ConfigGroupAdd(&itf, ConfigNewEnum(
+		"Splitscreen", SPLITSCREEN_NEVER,
+		SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER,
+		StrSplitscreenStyle, SplitscreenStyleStr));
+	ConfigGroupAdd(&root, itf);
+
+	Config snd = ConfigNewGroup("Sound");
+	ConfigGroupAdd(&snd, ConfigNewInt("MusicVolume", 32, 0, 64, 8));
+	ConfigGroupAdd(&snd, ConfigNewInt("SoundVolume", 64, 0, 64, 8));
+	ConfigGroupAdd(&snd, ConfigNewBool("Footsteps", true));
+	ConfigGroupAdd(&snd, ConfigNewBool("Hits", true));
+	ConfigGroupAdd(&snd, ConfigNewBool("Reloads", true));
+	ConfigGroupAdd(&root, snd);
+
+	Config qp = ConfigNewGroup("QuickPlay");
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"MapSize", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"WallCount", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"WallLength", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"RoomCount", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"SquareCount", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"EnemyCount", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"EnemySpeed", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"EnemyHealth", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&qp, ConfigNewBool("EnemiesWithExplosives", true));
+	ConfigGroupAdd(&qp, ConfigNewEnum(
+		"ItemCount", QUICKPLAY_QUANTITY_ANY,
+		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
+		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(&root, qp);
+
+	return root;
 }

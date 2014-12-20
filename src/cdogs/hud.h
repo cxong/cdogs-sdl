@@ -59,7 +59,6 @@ typedef struct
 	struct MissionOptions *mission;
 	char message[256];
 	int messageTicks;
-	InterfaceConfig *config;
 	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
@@ -71,7 +70,6 @@ typedef struct
 
 void HUDInit(
 	HUD *hud,
-	InterfaceConfig *config,
 	GraphicsDevice *device,
 	struct MissionOptions *mission);
 void HUDTerminate(HUD *hud);

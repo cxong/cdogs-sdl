@@ -54,7 +54,6 @@
 #include <cdogs/events.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
-#include <cdogs/input.h>
 
 #include "credits.h"
 
@@ -82,8 +81,6 @@ typedef enum
 {
 	MENU_OPTION_DISPLAY_STYLE_NONE,
 	MENU_OPTION_DISPLAY_STYLE_INT,
-	MENU_OPTION_DISPLAY_STYLE_YES_NO,
-	MENU_OPTION_DISPLAY_STYLE_ON_OFF,
 	MENU_OPTION_DISPLAY_STYLE_STR_FUNC,	// use a function that returns string
 	MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,	// function that converts int to string
 } menu_option_display_style_e;
@@ -200,8 +197,7 @@ struct menu
 		struct
 		{
 			key_code_e code;
-			input_keys_t *keys;
-			input_keys_t *keysOther;
+			int playerIndex;
 		} changeKey;
 		int returnCode;
 		struct
@@ -277,8 +273,12 @@ void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data);
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data);
 
-menu_t *MenuCreateOptionToggle(
-	const char *name, bool *config, menu_option_display_style_e style);
+// Make an options menu using a group of configs
+menu_t *MenuCreateConfigOptions(
+	const char *name, const char *title, const Config *c, MenuSystem *ms,
+	const bool backOrReturn);
+void MenuAddConfigOptionsItem(menu_t *menu, Config *c);
+menu_t *MenuCreateOptionToggle(const char *name, bool *config);
 menu_t *MenuCreateOptionRange(
 	const char *name,
 	int *config,
@@ -307,5 +307,7 @@ menu_t *MenuCreateCustom(
 void MenuPlaySound(MenuSound s);
 
 void MenuDestroy(MenuSystem *menu);
+
+void PostInputConfigApply(menu_t *menu, int cmd, void *data);
 
 #endif

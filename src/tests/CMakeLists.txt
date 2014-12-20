@@ -51,6 +51,8 @@ add_test(NAME color_test WORKING_DIRECTORY .
 
 add_executable(config_test
 	config_test.c
+	../cdogs/c_array.h
+	../cdogs/c_array.c
 	../cdogs/color.c
 	../cdogs/config.h
 	../cdogs/config.c

@@ -195,7 +195,9 @@ int CharacterGetStartingHealth(const Character *c, const bool isNPC)
 {
 	if (isNPC)
 	{
-		return MAX((c->maxHealth * gConfig.Game.NonPlayerHP) / 100, 1);
+		return MAX(
+			(c->maxHealth * ConfigGetInt(&gConfig, "Game.NonPlayerHP")) / 100,
+			1);
 	}
 	else
 	{
