@@ -1,6 +1,16 @@
 {
   "Version": 1,
   "Bullets": [
+    {
+      "Name": "10mm",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "9mm"
+      },
+      "Speed": 1100,
+      "Range": 50,
+      "Power": 10
+    },
 	{
       "Name": "fireball",
       "Pic": {

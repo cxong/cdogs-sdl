@@ -23,7 +23,7 @@
 		"leg": 11,
 		"hair": 3,
 		"speed": 192,
-		"Gun": "Pistol",
+		"Gun": "Marine Pistol",
 		"maxHealth": 30,
 		"flags": 1024,
 		"probabilityToMove": 50,

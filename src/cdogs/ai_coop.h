@@ -26,12 +26,10 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI_COOP
-#define __AI_COOP
+#pragma once
 
 #include "actors.h"
 
 int AICoopGetCmd(TActor *actor, const int ticks);
-const GunDescription *AICoopSelectWeapon(int player, const CArray *weapons);
-
-#endif
+void AICoopSelectWeapons(
+	PlayerData *p, const int player, const CArray *weapons);

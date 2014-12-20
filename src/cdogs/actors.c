@@ -720,6 +720,17 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	}
 
 	actor->lastCmd = cmd;
+	if (cmd & CMD_BUTTON2)
+	{
+		if (CMD_HAS_DIRECTION(cmd))
+		{
+			actor->specialCmdDir = true;
+		}
+	}
+	else
+	{
+		actor->specialCmdDir = false;
+	}
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 {
