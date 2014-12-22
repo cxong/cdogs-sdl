@@ -164,7 +164,7 @@ typedef struct
 		VALUES(Float, double);
 		VALUES(Bool, bool);
 #undef VALUES
-#define FORMATTED_VALUES(_name, _type) \
+#define FORMATTED_VALUES(_name, _type, _toStrType) \
 		struct \
 		{ \
 			_type Value; \
@@ -174,10 +174,10 @@ typedef struct
 			_type Max; \
 			_type Increment; \
 			_type (*StrTo##_name)(const char *); \
-			const char *(*_name##ToStr)(_type); \
+			_toStrType *(*_name##ToStr)(_type); \
 		} _name
-		FORMATTED_VALUES(Int, int);
-		FORMATTED_VALUES(Enum, int);
+		FORMATTED_VALUES(Int, int, char);
+		FORMATTED_VALUES(Enum, int, const char);
 #undef FORMATTED_VALUES
 		CArray Group;	// of Config
 	} u;
@@ -187,7 +187,7 @@ Config ConfigNewString(const char *name, const char *defaultValue);
 Config ConfigNewInt(
 	const char *name, const int defaultValue,
 	const int minValue, const int maxValue, const int increment,
-	int (*strToInt)(const char *), const char *(*intToStr)(int));
+	int (*strToInt)(const char *), char *(*intToStr)(int));
 Config ConfigNewFloat(
 	const char *name, const double defaultValue,
 	const double minValue, const double maxValue, const double increment);

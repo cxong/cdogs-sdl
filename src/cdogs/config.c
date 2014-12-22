@@ -246,7 +246,7 @@ Config ConfigNewString(const char *name, const char *defaultValue)
 Config ConfigNewInt(
 	const char *name, const int defaultValue,
 	const int minValue, const int maxValue, const int increment,
-	int (*strToInt)(const char *), const char *(*intToStr)(int))
+	int (*strToInt)(const char *), char *(*intToStr)(int))
 {
 	Config c = ConfigNew(name, CONFIG_TYPE_INT);
 	c.u.Int.Default = c.u.Int.Value = c.u.Int.Last = defaultValue;
