@@ -245,13 +245,16 @@ Config ConfigNewString(const char *name, const char *defaultValue)
 }
 Config ConfigNewInt(
 	const char *name, const int defaultValue,
-	const int minValue, const int maxValue, const int increment)
+	const int minValue, const int maxValue, const int increment,
+	int (*strToInt)(const char *), const char *(*intToStr)(int))
 {
 	Config c = ConfigNew(name, CONFIG_TYPE_INT);
 	c.u.Int.Default = c.u.Int.Value = c.u.Int.Last = defaultValue;
 	c.u.Int.Min = minValue;
 	c.u.Int.Max = maxValue;
 	c.u.Int.Increment = increment;
+	c.u.Int.StrToInt = strToInt ? strToInt : atoi;
+	c.u.Int.IntToStr = intToStr ? intToStr : IntStr;
 	return c;
 }
 Config ConfigNewFloat(
@@ -578,20 +581,26 @@ static Config ConfigLoadDefault(void)
 	
 	Config game = ConfigNewGroup("Game");
 	ConfigGroupAdd(&game, ConfigNewBool("FriendlyFire", false));
-	ConfigGroupAdd(&game, ConfigNewInt("RandomSeed", 0, 0, UINT_MAX, 1));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("RandomSeed", 0, 0, UINT_MAX, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"Difficulty", DIFFICULTY_NORMAL,
 		DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD,
 		StrDifficulty, DifficultyStr));
 	ConfigGroupAdd(&game, ConfigNewBool("SlowMotion", false));
-	ConfigGroupAdd(&game, ConfigNewInt("EnemyDensity", 100, 25, 200, 25));
-	ConfigGroupAdd(&game, ConfigNewInt("NonPlayerHP", 100, 25, 200, 25));
-	ConfigGroupAdd(&game, ConfigNewInt("PlayerHP", 75, 25, 200, 25));
-	ConfigGroupAdd(&game, ConfigNewInt("Lives", 2, 1, 5, 1));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("EnemyDensity", 100, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("NonPlayerHP", 100, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("PlayerHP", 75, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("Lives", 2, 1, 5, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewBool("HealthPickups", true));
 	ConfigGroupAdd(&game, ConfigNewBool("Ammo", false));
 	ConfigGroupAdd(&game, ConfigNewBool("Fog", true));
-	ConfigGroupAdd(&game, ConfigNewInt("SightRange", 15, 8, 40, 1));
+	ConfigGroupAdd(&game,
+		ConfigNewInt("SightRange", 15, 8, 40, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewBool("Shadows", true));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"FireMoveStyle", FIREMOVE_STOP, FIREMOVE_STOP, FIREMOVE_STRAFE,
@@ -613,12 +622,19 @@ static Config ConfigLoadDefault(void)
 	ConfigGroupAdd(&root, game);
 
 	Config dm = ConfigNewGroup("Deathmatch");
-	ConfigGroupAdd(&dm, ConfigNewInt("Lives", 10, 1, 20, 1));
+	ConfigGroupAdd(&dm, ConfigNewInt("Lives", 10, 1, 20, 1, NULL, NULL));
 	ConfigGroupAdd(&root, dm);
+
+	Config df = ConfigNewGroup("Dogfight");
+	ConfigGroupAdd(&df,
+		ConfigNewInt("PlayerHP", 100, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(&df, ConfigNewInt("FirstTo", 5, 1, 10, 1, NULL, NULL));
+	ConfigGroupAdd(&root, df);
 
 	Config gfx = ConfigNewGroup("Graphics");
 	ConfigGroupAdd(&gfx, ConfigNewInt(
-		"Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1));
+		"Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
+		NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewBool("Fullscreen",
 #ifdef __GCWZERO__
 		true
@@ -626,16 +642,19 @@ static Config ConfigLoadDefault(void)
 		false
 #endif
 		));
-	ConfigGroupAdd(&gfx, ConfigNewInt("ResolutionWidth", 320, 0, 0, 0));
-	ConfigGroupAdd(&gfx, ConfigNewInt("ResolutionHeight", 240, 0, 0, 0));
+	ConfigGroupAdd(&gfx,
+		ConfigNewInt("ResolutionWidth", 320, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&gfx,
+		ConfigNewInt("ResolutionHeight", 240, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewInt("ScaleFactor",
 #ifdef __GCWZERO__
 		1
 #else
 		2
 #endif
-		, 1, 4, 1));
-	ConfigGroupAdd(&gfx, ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1));
+		, 1, 4, 1, NULL, NULL));
+	ConfigGroupAdd(&gfx,
+		ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewEnum(
 		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_HQX,
 		StrScaleMode, ScaleModeStr));
@@ -644,27 +663,27 @@ static Config ConfigLoadDefault(void)
 
 	Config input = ConfigNewGroup("Input");
 	Config pk0 = ConfigNewGroup("PlayerKeys0");
-	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDLK_LEFT, 0, 0, 0));
-	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDLK_RIGHT, 0, 0, 0));
-	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDLK_UP, 0, 0, 0));
-	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDLK_DOWN, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDLK_LEFT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDLK_RIGHT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDLK_UP, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDLK_DOWN, 0, 0, 0, NULL, NULL));
 #ifdef __GCWZERO__
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_LCTRL, 0, 0, 0));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_LALT, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_LCTRL, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_LALT, 0, 0, 0, NULL, NULL));
 #else
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_RETURN, 0, 0, 0));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_RSHIFT, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_RETURN, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_RSHIFT, 0, 0, 0, NULL, NULL));
 #endif
-	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDLK_TAB, 0, 0, 0));
+	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDLK_TAB, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk0);
 	Config pk1 = ConfigNewGroup("PlayerKeys1");
-	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDLK_KP4, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDLK_KP6, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDLK_KP8, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDLK_KP2, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDLK_KP0, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDLK_KP_ENTER, 0, 0, 0));
-	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDLK_KP_PERIOD, 0, 0, 0));
+	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDLK_KP4, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDLK_KP6, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDLK_KP8, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDLK_KP2, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDLK_KP0, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDLK_KP_ENTER, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDLK_KP_PERIOD, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk1);
 	ConfigGroupAdd(&root, input);
 
@@ -682,8 +701,10 @@ static Config ConfigLoadDefault(void)
 	ConfigGroupAdd(&root, itf);
 
 	Config snd = ConfigNewGroup("Sound");
-	ConfigGroupAdd(&snd, ConfigNewInt("MusicVolume", 32, 0, 64, 8));
-	ConfigGroupAdd(&snd, ConfigNewInt("SoundVolume", 64, 0, 64, 8));
+	ConfigGroupAdd(&snd,
+		ConfigNewInt("MusicVolume", 32, 0, 64, 8, NULL, Div8Str));
+	ConfigGroupAdd(&snd,
+		ConfigNewInt("SoundVolume", 64, 0, 64, 8, NULL, Div8Str));
 	ConfigGroupAdd(&snd, ConfigNewBool("Footsteps", true));
 	ConfigGroupAdd(&snd, ConfigNewBool("Hits", true));
 	ConfigGroupAdd(&snd, ConfigNewBool("Reloads", true));

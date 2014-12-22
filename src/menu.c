@@ -436,7 +436,8 @@ void MenuAddConfigOptionsItem(menu_t *menu, Config *c)
 			MenuCreateOptionRange(
 			nameBuf, (int *)&c->u.Int.Value,
 			c->u.Int.Min, c->u.Int.Max, c->u.Int.Increment,
-			MENU_OPTION_DISPLAY_STYLE_INT, NULL));
+			MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,
+			(void (*)(void))c->u.Int.IntToStr));
 		break;
 	case CONFIG_TYPE_FLOAT:
 		CASSERT(false, "Unimplemented");
@@ -498,7 +499,7 @@ menu_t *MenuCreateOptionSeed(const char *name, unsigned int *seed)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_SET_OPTION_SEED);
 	menu->u.option.uHook.seed = seed;
-	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT;
+	menu->u.option.displayStyle = MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC;
 	return menu;
 }
 
@@ -784,13 +785,6 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 					{
 					case MENU_OPTION_DISPLAY_STYLE_NONE:
 						// Do nothing
-						break;
-					case MENU_OPTION_DISPLAY_STYLE_INT:
-						{
-							char buf[32];
-							sprintf(buf, "%d", optionInt);
-							FontStr(buf, valuePos);
-						}
 						break;
 					case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
 						FontStr(subMenu->u.option.uFunc.str(), valuePos);

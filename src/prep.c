@@ -508,6 +508,19 @@ bool GameOptions(const GameMode gm)
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
 		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
 		break;
+	case GAME_MODE_DOGFIGHT:
+		ms.root = ms.current = MenuCreateNormal(
+			"",
+			"",
+			MENU_TYPE_OPTIONS,
+			0);
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Dogfight.PlayerHP"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Dogfight.FirstTo"));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		break;
 	default:
 		CASSERT(false, "unknown game mode");
 		break;

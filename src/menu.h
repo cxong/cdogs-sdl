@@ -80,7 +80,6 @@ typedef enum
 typedef enum
 {
 	MENU_OPTION_DISPLAY_STYLE_NONE,
-	MENU_OPTION_DISPLAY_STYLE_INT,
 	MENU_OPTION_DISPLAY_STYLE_STR_FUNC,	// use a function that returns string
 	MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC,	// function that converts int to string
 } menu_option_display_style_e;

@@ -44,7 +44,7 @@ bool IsIntroNeeded(const GameMode mode)
 
 bool IsGameOptionsNeeded(const GameMode mode)
 {
-	return mode == GAME_MODE_DEATHMATCH;
+	return mode == GAME_MODE_DEATHMATCH || mode == GAME_MODE_DOGFIGHT;
 }
 
 bool IsScoreNeeded(const GameMode mode)
@@ -108,7 +108,7 @@ int ModeMaxRoundsWon(const GameMode mode)
 	switch (mode)
 	{
 	case GAME_MODE_DOGFIGHT:
-		return 5;
+		return ConfigGetInt(&gConfig, "Dogfight.FirstTo");
 	case GAME_MODE_DEATHMATCH:
 		return 1;
 	default:
@@ -135,7 +135,7 @@ int ModeMaxHealth(const GameMode mode)
 	switch (mode)
 	{
 	case GAME_MODE_DOGFIGHT:
-		return 500;
+		return 500 * ConfigGetInt(&gConfig, "Dogfight.PlayerHP") / 100;
 	default:
 		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}

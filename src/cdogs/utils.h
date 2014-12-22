@@ -176,6 +176,7 @@ typedef enum
 
 const char *InputDeviceName(const int d, const int deviceIndex);
 
+char *IntStr(int i);
 char *PercentStr(int p);
 char *Div8Str(int i);
 void CamelToTitle(char *buf, const char *src);

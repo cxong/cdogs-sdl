@@ -219,9 +219,15 @@ const char *InputDeviceName(const int d, const int deviceIndex)
 	}
 }
 
+char *IntStr(int i)
+{
+	static char buf[32];
+	sprintf(buf, "%d", i);
+	return buf;
+}
 char *PercentStr(int p)
 {
-	static char buf[8];
+	static char buf[32];
 	sprintf(buf, "%d%%", p);
 	return buf;
 }

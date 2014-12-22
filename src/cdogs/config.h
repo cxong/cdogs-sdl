@@ -161,20 +161,24 @@ typedef struct
 			_type Increment; \
 		} _name
 		VALUES(String, char *);
-		VALUES(Int, int);
 		VALUES(Float, double);
 		VALUES(Bool, bool);
 #undef VALUES
-		struct
-		{
-			int Value;
-			int Last;
-			int Default;
-			int Min;
-			int Max;
-			int (*StrToEnum)(const char *);
-			const char *(*EnumToStr)(int);
-		} Enum;
+#define FORMATTED_VALUES(_name, _type) \
+		struct \
+		{ \
+			_type Value; \
+			_type Last; \
+			_type Default; \
+			_type Min; \
+			_type Max; \
+			_type Increment; \
+			_type (*StrTo##_name)(const char *); \
+			const char *(*_name##ToStr)(_type); \
+		} _name
+		FORMATTED_VALUES(Int, int);
+		FORMATTED_VALUES(Enum, int);
+#undef FORMATTED_VALUES
 		CArray Group;	// of Config
 	} u;
 } Config;
@@ -182,7 +186,8 @@ typedef struct
 Config ConfigNewString(const char *name, const char *defaultValue);
 Config ConfigNewInt(
 	const char *name, const int defaultValue,
-	const int minValue, const int maxValue, const int increment);
+	const int minValue, const int maxValue, const int increment,
+	int (*strToInt)(const char *), const char *(*intToStr)(int));
 Config ConfigNewFloat(
 	const char *name, const double defaultValue,
 	const double minValue, const double maxValue, const double increment);
