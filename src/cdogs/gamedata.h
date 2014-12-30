@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAMEDATA
-#define __GAMEDATA
+#pragma once
 
 #include "campaigns.h"
 #include "character.h"
@@ -87,10 +86,9 @@ void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
 
 void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
+void CampaignUnload(CampaignOptions *co);
 
 void MissionOptionsInit(struct MissionOptions *mo);
 void MissionOptionsTerminate(struct MissionOptions *mo);
 
 bool GameIsMouseUsed(void);
-
-#endif

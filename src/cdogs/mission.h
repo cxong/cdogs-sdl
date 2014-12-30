@@ -212,6 +212,7 @@ struct MissionOptions
 	int flags;
 
 	Mission *missionData;
+	CArray Weapons;	// of GunDescription *
 	CArray Objectives;	// of struct Objective
 	int time;
 	// Time when players first entered pickup area

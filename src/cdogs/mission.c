@@ -545,40 +545,31 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 	}
 }
 
-static bool HasWeapon(const CArray *weapons, const GunDescription *w);
-static void CleanupPlayerInventory(PlayerData *data, const CArray *weapons)
+static void SetupWeapons(CArray *to, CArray *from)
 {
-	for (int i = data->weaponCount - 1; i >= 0; i--)
+	// Set available weapons
+	if (ModeAllowsAllWeapons(gCampaign.Entry.Mode))
 	{
-		if (!HasWeapon(weapons, data->weapons[i]))
+		for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
 		{
-			for (int j = i + 1; j < data->weaponCount; j++)
+			const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
+			if (g->IsRealGun)
 			{
-				data->weapons[j - 1] = data->weapons[j];
+				CArrayPushBack(to, &g);
 			}
-			data->weaponCount--;
 		}
-	}
-}
-static bool HasWeapon(const CArray *weapons, const GunDescription *w)
-{
-	for (int i = 0; i < (int)weapons->size; i++)
-	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		if (w == *g)
+		for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
 		{
-			return true;
+			const GunDescription *g = CArrayGet(&gGunDescriptions.CustomGuns, i);
+			if (g->IsRealGun)
+			{
+				CArrayPushBack(to, &g);
+			}
 		}
 	}
-	return false;
-}
-
-static void SetupWeapons(const CArray *weapons)
-{
-	// Remove unavailable weapons from players inventories
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	else
 	{
-		CleanupPlayerInventory(CArrayGet(&gPlayerDatas, i), weapons);
+		CArrayCopy(to, from);
 	}
 }
 
@@ -623,7 +614,7 @@ void SetupMission(
 	ParticlesInit(&gParticles);
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
-	SetupWeapons(&m->Weapons);
+	SetupWeapons(&mo->Weapons, &m->Weapons);
 	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
 	if (buildTables)
 	{

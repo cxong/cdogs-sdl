@@ -118,20 +118,9 @@ void ScreenStart(void)
 		return;
 	}
 
-	if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
-	{
-		debug(D_NORMAL, ">> Game options\n");
-		if (!GameOptions(gCampaign.Entry.Mode))
-		{
-			gCampaign.IsLoaded = false;
-			return;
-		}
-	}
-
 	debug(D_NORMAL, ">> Starting campaign\n");
 	Campaign(&gGraphicsDevice, &gCampaign);
-	gCampaign.IsLoaded = false;
-	gCampaign.IsClient = false;	// TODO: select is client from menu
+	CampaignUnload(&gCampaign);
 }
 
 static void StartPlayers(const int maxHealth, const int mission)
@@ -184,6 +173,17 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	{
 		CampaignAndMissionSetup(1, co, &gMission);
 
+		if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
+		{
+			debug(D_NORMAL, ">> Game options\n");
+			if (!GameOptions(gCampaign.Entry.Mode))
+			{
+				run = false;
+				goto bail;
+			}
+			gCampaign.OptionsSet = true;
+		}
+
 		// Mission briefing
 		if (IsMissionBriefingNeeded(co->Entry.Mode))
 		{
@@ -195,8 +195,9 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Equip guns
-		if (!PlayerEquip() && !IsPVP(co->Entry.Mode))
+		if (!PlayerEquip())
 		{
+			CASSERT(!IsPVP(co->Entry.Mode), "Cannot cancel weapon selection");
 			run = false;
 			goto bail;
 		}

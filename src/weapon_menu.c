@@ -37,16 +37,16 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	const CArray *weapons = &gMission.Weapons;
 
 	// Don't process if we're not selecting a weapon
-	if ((cmd & CMD_BUTTON1) &&
-		menu->u.normal.index < (int)gMission.missionData->Weapons.size)
+	if ((cmd & CMD_BUTTON1) && menu->u.normal.index < (int)weapons->size)
 	{
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
-		const GunDescription **selectedWeapon = CArrayGet(
-			&gMission.missionData->Weapons, menu->u.normal.index);
+		const GunDescription **selectedWeapon =
+			CArrayGet(weapons, menu->u.normal.index);
 		for (int i = 0; i < p->weaponCount; i++)
 		{
 			if (p->weapons[i] == *selectedWeapon)
@@ -84,10 +84,9 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 			// Re-enable the menu entry for this weapon
 			const GunDescription *removedWeapon = p->weapons[p->weaponCount];
-			for (int i = 0; i < (int)gMission.missionData->Weapons.size; i++)
+			for (int i = 0; i < (int)weapons->size; i++)
 			{
-				const GunDescription **g = CArrayGet(
-					&gMission.missionData->Weapons, i);
+				const GunDescription **g = CArrayGet(weapons, i);
 				if (*g == removedWeapon)
 				{
 					MenuEnableSubmenu(menu, i);
@@ -181,10 +180,10 @@ void WeaponMenuCreate(
 		MENU_TYPE_NORMAL,
 		0);
 	ms->root->u.normal.maxItems = 11;
-	for (int i = 0; i < (int)gMission.missionData->Weapons.size; i++)
+	const CArray *weapons = &gMission.Weapons;
+	for (int i = 0; i < (int)weapons->size; i++)
 	{
-		const GunDescription **g = CArrayGet(
-			&gMission.missionData->Weapons, i);
+		const GunDescription **g = CArrayGet(weapons, i);
 		menu_t *gunMenu;
 		if ((*g)->Description != NULL)
 		{
@@ -207,10 +206,9 @@ void WeaponMenuCreate(
 	PlayerData *pData = CArrayGet(&gPlayerDatas, playerIndex);
 	for (int i = 0; i < pData->weaponCount; i++)
 	{
-		for (int j = 0; j < (int)gMission.missionData->Weapons.size; j++)
+		for (int j = 0; j < (int)weapons->size; j++)
 		{
-			const GunDescription **g = CArrayGet(
-				&gMission.missionData->Weapons, j);
+			const GunDescription **g = CArrayGet(weapons, j);
 			if (pData->weapons[i] == *g)
 			{
 				MenuDisableSubmenu(ms->root, j);

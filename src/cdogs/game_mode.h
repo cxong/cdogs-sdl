@@ -59,3 +59,4 @@ bool HasRounds(const GameMode mode);
 int ModeMaxRoundsWon(const GameMode mode);
 int ModeLives(const GameMode mode);
 int ModeMaxHealth(const GameMode mode);
+bool ModeAllowsAllWeapons(const GameMode mode);

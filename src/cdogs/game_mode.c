@@ -27,6 +27,7 @@
 */
 #include "game_mode.h"
 
+#include "campaigns.h"
 #include "config.h"
 #include "utils.h"
 
@@ -44,7 +45,15 @@ bool IsIntroNeeded(const GameMode mode)
 
 bool IsGameOptionsNeeded(const GameMode mode)
 {
-	return mode == GAME_MODE_DEATHMATCH || mode == GAME_MODE_DOGFIGHT;
+	switch (mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+		return !gCampaign.OptionsSet;
+	case GAME_MODE_DEATHMATCH:
+		return true;
+	default:
+		return false;
+	}
 }
 
 bool IsScoreNeeded(const GameMode mode)
@@ -124,7 +133,7 @@ int ModeLives(const GameMode mode)
 	case GAME_MODE_DOGFIGHT:
 		return 1;
 	case GAME_MODE_DEATHMATCH:
-		return ConfigGetInt(&gConfig, "Game.DeathmatchLives");
+		return ConfigGetInt(&gConfig, "Deathmatch.Lives");
 	default:
 		return ConfigGetInt(&gConfig, "Game.Lives");
 	}
@@ -139,4 +148,9 @@ int ModeMaxHealth(const GameMode mode)
 	default:
 		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}
+}
+
+bool ModeAllowsAllWeapons(const GameMode mode)
+{
+	return mode == GAME_MODE_DOGFIGHT || mode == GAME_MODE_DEATHMATCH;
 }

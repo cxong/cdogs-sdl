@@ -478,6 +478,16 @@ static void PlayerSelectionDraw(void *data)
 	}
 }
 
+typedef struct
+{
+	const CArray *weapons;
+	CArray allowed;	// of bool
+} AllowedWeaponsData;
+static void AllowedWeaponsDataInit(
+	AllowedWeaponsData *data, const CArray *weapons);
+static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data);
+static menu_t *MenuCreateAllowedWeapons(
+	const char *name, AllowedWeaponsData *data);
 bool GameOptions(const GameMode gm)
 {
 	// Create selection menus
@@ -489,6 +499,8 @@ bool GameOptions(const GameMode gm)
 		Vec2iZero(), Vec2iNew(w, h));
 	ms.align = MENU_ALIGN_CENTER;
 	ms.allowAborts = true;
+	AllowedWeaponsData awData;
+	AllowedWeaponsDataInit(&awData, &gMission.Weapons);
 	switch (gm)
 	{
 	case GAME_MODE_DEATHMATCH:
@@ -505,6 +517,8 @@ bool GameOptions(const GameMode gm)
 			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
 		MenuAddConfigOptionsItem(
 			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
+		MenuAddSubmenu(ms.current,
+			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
 		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
 		break;
@@ -518,6 +532,8 @@ bool GameOptions(const GameMode gm)
 			ms.current, ConfigGet(&gConfig, "Dogfight.PlayerHP"));
 		MenuAddConfigOptionsItem(
 			ms.current, ConfigGet(&gConfig, "Dogfight.FirstTo"));
+		MenuAddSubmenu(ms.current,
+			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
 		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
 		break;
@@ -533,13 +549,75 @@ bool GameOptions(const GameMode gm)
 	if (ok)
 	{
 		ConfigApply(&gConfig);
+
 		// Save options for later
 		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+
+		// Set allowed weapons
+		// First check if the player has unwittingly disabled all weapons
+		// if so, enable all weapons
+		bool allDisabled = true;
+		for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
+		{
+			const bool *allowed = CArrayGet(&awData.allowed, i);
+			if (*allowed)
+			{
+				allDisabled = false;
+				break;
+			}
+		}
+		if (!allDisabled)
+		{
+			for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
+			{
+				const bool *allowed = CArrayGet(&awData.allowed, i);
+				if (!*allowed)
+				{
+					CArrayDelete(&gMission.Weapons, j);
+					j--;
+				}
+			}
+		}
 	}
+	AllowedWeaponsDataTerminate(&awData);
 	MenuSystemTerminate(&ms);
 	return ok;
 }
+static void AllowedWeaponsDataInit(
+	AllowedWeaponsData *data, const CArray *weapons)
+{
+	data->weapons = weapons;
+	CArrayInit(&data->allowed, sizeof(bool));
+	for (int i = 0; i < (int)weapons->size; i++)
+	{
+		const bool f = true;
+		CArrayPushBack(&data->allowed, &f);
+	}
+}
+static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data)
+{
+	CArrayTerminate(&data->allowed);
+}
+static menu_t *MenuCreateAllowedWeapons(
+	const char *name, AllowedWeaponsData *data)
+{
+	// Create a menu to choose allowable weapons for this map
+	// The weapons will be chosen from the available weapons
+	menu_t *m =
+		MenuCreateNormal(name, "Available Weapons:", MENU_TYPE_OPTIONS, 0);
+	m->customPostInputData = data;
+	for (int i = 0; i < (int)data->weapons->size; i++)
+	{
+		const GunDescription **g = CArrayGet(data->weapons, i);
+		MenuAddSubmenu(m,
+			MenuCreateOptionToggle((*g)->name, CArrayGet(&data->allowed, i)));
+	}
+	MenuAddSubmenu(m, MenuCreateSeparator(""));
+	MenuAddSubmenu(m, MenuCreateBack("Done"));
+	return m;
+}
 
+static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons);
 typedef struct
 {
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
@@ -560,6 +638,10 @@ bool PlayerEquip(void)
 			idx--;
 			continue;
 		}
+
+		// Remove unavailable weapons from players inventories
+		RemoveUnavailableWeapons(p, &gMission.Weapons);
+
 		WeaponMenuCreate(
 			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
 			&gEventHandlers, &gGraphicsDevice);
@@ -570,13 +652,17 @@ bool PlayerEquip(void)
 				(int)data.menus[idx].ms.root->u.normal.subMenus.size - 1;
 			data.menus[idx].ms.current = CArrayGet(
 				&data.menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
-			AICoopSelectWeapons(p, idx, &gMission.missionData->Weapons);
+			AICoopSelectWeapons(p, idx, &gMission.Weapons);
 		}
 	}
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
-	GameLoop(&gData);
+	// Don't let players cancel if in PVP mode; they must select weapons
+	do
+	{
+		GameLoopData gData = GameLoopDataNew(
+			&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
+		GameLoop(&gData);
+	} while (!data.IsOK && IsPVP(gCampaign.Entry.Mode));
 
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -604,6 +690,33 @@ bool PlayerEquip(void)
 	}
 
 	return data.IsOK;
+}
+static bool HasWeapon(const CArray *weapons, const GunDescription *w);
+static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
+{
+	for (int i = data->weaponCount - 1; i >= 0; i--)
+	{
+		if (!HasWeapon(weapons, data->weapons[i]))
+		{
+			for (int j = i + 1; j < data->weaponCount; j++)
+			{
+				data->weapons[j - 1] = data->weapons[j];
+			}
+			data->weaponCount--;
+		}
+	}
+}
+static bool HasWeapon(const CArray *weapons, const GunDescription *w)
+{
+	for (int i = 0; i < (int)weapons->size; i++)
+	{
+		const GunDescription **g = CArrayGet(weapons, i);
+		if (w == *g)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 static GameLoopResult PlayerEquipUpdate(void *data)
 {
@@ -651,6 +764,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 	}
 	if (isDone)
 	{
+		pData->IsOK = true;
 		return UPDATE_RESULT_EXIT;
 	}
 

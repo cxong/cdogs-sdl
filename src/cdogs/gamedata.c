@@ -78,10 +78,7 @@ struct SongDef *gMenuSongs = NULL;
 void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 {
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
-	// Note: use the mode already set by the menus
-	const GameMode mode = co->Entry.Mode;
 	co->Entry = *entry;
-	co->Entry.Mode = mode;
 	CampaignSettingInit(&co->Setting);
 	if (entry->IsBuiltin)
 	{
@@ -124,15 +121,23 @@ void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 		printf(">> Loaded campaign/dogfight\n");
 	}
 }
+void CampaignUnload(CampaignOptions *co)
+{
+	co->IsLoaded = false;
+	co->IsClient = false;	// TODO: select is client from menu
+	co->OptionsSet = false;
+}
 
 void MissionOptionsInit(struct MissionOptions *mo)
 {
 	memset(mo, 0, sizeof *mo);
+	CArrayInit(&mo->Weapons, sizeof(GunDescription *));
 	CArrayInit(&mo->Objectives, sizeof(struct Objective));
 	CArrayInit(&mo->MapObjects, sizeof(MapObject));
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {
+	CArrayTerminate(&mo->Weapons);
 	CArrayTerminate(&mo->Objectives);
 	CArrayTerminate(&mo->MapObjects);
 	memset(mo, 0, sizeof *mo);

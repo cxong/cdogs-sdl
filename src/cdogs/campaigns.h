@@ -67,6 +67,7 @@ typedef struct
 	bool IsLoaded;
 	bool IsClient;
 	bool IsError;
+	bool OptionsSet;
 } CampaignOptions;
 extern CampaignOptions gCampaign;
 
