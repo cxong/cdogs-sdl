@@ -197,7 +197,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		// Equip guns
 		if (!PlayerEquip())
 		{
-			CASSERT(!IsPVP(co->Entry.Mode), "Cannot cancel weapon selection");
 			run = false;
 			goto bail;
 		}

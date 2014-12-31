@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __UTILS
-#define __UTILS
+#pragma once
 
 #include <assert.h>
 #include <stdbool.h>
@@ -142,6 +141,7 @@ extern bool gFalse;
 #define CLAMP_OPPOSITE(v, _min, _max)\
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
 #define SIGN(x) ((x) != 0 ? (x) / abs(x) : 1)
+#define SQUARED(x) ((x) * (x))
 
 int MemIsZero(const void *buf, size_t len);
 
@@ -187,5 +187,3 @@ void CamelToTitle(char *buf, const char *src);
 
 #define RAND_INT(_low, _high) ((_low) == (_high) ? (_low) : (_low) + (rand() % ((_high) - (_low))))
 #define RAND_DOUBLE(_low, _high) ((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
-
-#endif

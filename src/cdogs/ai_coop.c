@@ -216,11 +216,18 @@ static int AICoopGetCmdNormal(TActor *actor)
 				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos));
 			const bool canFire = ActorGetGun(actor)->lock <= 0;
 			if ((double)distanceSquared >
-				gunRange * gunRange * 3 * 3 / 4 / 4 * actor->aiContext->GunRangeScalar)
+				SQUARED(gunRange * 3 / 4) * actor->aiContext->GunRangeScalar)
 			{
 				// Move towards the enemy, fire if able
 				// But don't bother firing if too far away
-				if (canFire && distanceSquared < gunRange * gunRange * 2 * 2)
+
+#define MINIMUM_GUN_DISTANCE 30
+				// Cap the minimum distance for moving away; if we are extremely
+				// close to the target, fire anyway regardless of the gun range.
+				// This is to prevent us from not firing with a melee-range gun.
+				if (canFire &&
+					(distanceSquared < SQUARED(gunRange * 2) ||
+					distanceSquared > SQUARED(MINIMUM_GUN_DISTANCE)))
 				{
 					cmd = AIHunt(actor, closestEnemy->Pos) | CMD_BUTTON1;
 				}
@@ -231,7 +238,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 				}
 			}
 			else if ((double)distanceSquared <
-				gunRange * gunRange / 3 * actor->aiContext->GunRangeScalar &&
+				SQUARED(gunRange * 3) * actor->aiContext->GunRangeScalar &&
 				!canFire)
 			{
 				// Move away from the enemy because we're too close

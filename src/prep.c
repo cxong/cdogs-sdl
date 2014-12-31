@@ -656,13 +656,9 @@ bool PlayerEquip(void)
 		}
 	}
 
-	// Don't let players cancel if in PVP mode; they must select weapons
-	do
-	{
-		GameLoopData gData = GameLoopDataNew(
-			&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
-		GameLoop(&gData);
-	} while (!data.IsOK && IsPVP(gCampaign.Entry.Mode));
+	GameLoopData gData = GameLoopDataNew(
+		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
+	GameLoop(&gData);
 
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
