@@ -499,7 +499,7 @@ void CommandBadGuys(int ticks)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.FullPos = PlaceBaddie(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -528,7 +528,7 @@ void InitializeBadGuys(void)
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = PlaceBaddie(&gMap);
+				aa.FullPos = PlaceAwayFromPlayers(&gMap);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -557,7 +557,7 @@ void InitializeBadGuys(void)
 				}
 				else
 				{
-					aa.FullPos = PlaceBaddie(&gMap);
+					aa.FullPos = PlaceAwayFromPlayers(&gMap);
 				}
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
@@ -589,7 +589,7 @@ void CreateEnemies(void)
 		aa.Id = ActorsGetFreeIndex();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
-		aa.FullPos = PlaceBaddie(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

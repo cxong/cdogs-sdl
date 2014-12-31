@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014, Cong Xu
+ Copyright (c) 2014-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -101,9 +101,9 @@ static NetMsgVec2i PlaceActorNear(
 	}
 }
 
-NetMsgVec2i PlaceBaddie(Map *map)
+NetMsgVec2i PlaceAwayFromPlayers(Map *map)
 {
-	// Don't try forever trying to place baddie
+	// Don't try forever trying to place
 	for (int i = 0; i < 100; i++)
 	{
 		// Try spawning out of players' sights
@@ -167,7 +167,7 @@ Vec2i PlacePlayer(
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		aa.FullPos = PlaceActor(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap);
 	}
 	else if (gMission.missionData->Type == MAPTYPE_STATIC &&
 		!Vec2iIsZero(gMission.missionData->u.Static.Start))

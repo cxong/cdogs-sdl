@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014, Cong Xu
+ Copyright (c) 2014-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -26,17 +26,14 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __ACTOR_PLACEMENT
-#define __ACTOR_PLACEMENT
+#pragma once
 
 #include "map.h"
 #include "net_util.h"
 
 
-NetMsgVec2i PlaceBaddie(Map *map);
+NetMsgVec2i PlaceAwayFromPlayers(Map *map);
 NetMsgVec2i PlacePrisoner(Map *map);
 
 Vec2i PlacePlayer(
 	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents);
-
-#endif
