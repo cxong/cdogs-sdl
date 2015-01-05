@@ -57,6 +57,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/ammo.h>
 #include <cdogs/automap.h>
+#include <cdogs/collision.h>
 #include <cdogs/config.h>
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
@@ -72,6 +73,7 @@
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
 #include <cdogs/pic_manager.h>
+#include <cdogs/pickup.h>
 #include <cdogs/player_template.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
@@ -1248,6 +1250,9 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf, "data/bullets.json");
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
+	GetDataFilePath(buf, "data/pickups.json");
+	PickupClassesInit(&gPickupClasses, buf, &gAmmo);
+	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
@@ -1299,6 +1304,7 @@ int main(int argc, char *argv[])
 	CArrayTerminate(&gPlayerTemplates);
 
 	MapTerminate(&gMap);
+	PickupClassesTerminate(&gPickupClasses);
 	ParticleClassesTerminate(&gParticleClasses);
 	AmmoTerminate(&gAmmo);
 	WeaponTerminate(&gGunDescriptions);

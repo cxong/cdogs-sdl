@@ -269,7 +269,7 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		// Objective bonuses
 		for (int i = 0; i < (int)m->missionData->Objectives.size; i++)
 		{
-			const struct Objective *o = CArrayGet(&m->Objectives, i);
+			const ObjectiveDef *o = CArrayGet(&m->Objectives, i);
 			const MissionObjective *mo = CArrayGet(&m->missionData->Objectives, i);
 			if (o->done == mo->Count && o->done > mo->Required)
 			{
@@ -410,7 +410,7 @@ static void MissionSummaryDraw(void *data)
 	int idx = 1;
 	for (int i = 0; i < (int)m->missionData->Objectives.size; i++)
 	{
-		const struct Objective *o = CArrayGet(&m->Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&m->Objectives, i);
 		const MissionObjective *mo = CArrayGet(&m->missionData->Objectives, i);
 
 		// Do not mention optional objectives with none completed
@@ -598,7 +598,7 @@ static void DrawObjectiveInfo(
 {
 	const MissionObjective *mobj =
 		CArrayGet(&mo->missionData->Objectives, idx);
-	const struct Objective *o = CArrayGet(&mo->Objectives, idx);
+	const ObjectiveDef *o = CArrayGet(&mo->Objectives, idx);
 	const CharacterStore *store = &gCampaign.Setting.characters;
 
 	switch (mobj->Type)
@@ -633,8 +633,7 @@ static void DrawObjectiveInfo(
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			const Pic *p = PicManagerGetFromOld(
-				&gPicManager, cGeneralPics[o->pickupItem].picIndex);
+			const Pic *p = o->pickupClass->Pic;
 			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, p->offset));
 		}
 		break;

@@ -221,7 +221,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	m->FloorStyle = rand() % FLOOR_STYLE_COUNT;
 	m->RoomStyle = rand() % FLOOR_STYLE_COUNT;
 	m->ExitStyle = rand() % GetExitCount();
-	m->KeyStyle = rand() % GetKeystyleCount();
+	m->KeyStyle = rand() % KEYSTYLE_COUNT;
 	m->DoorStyle = rand() % GetDoorstyleCount();
 	m->Size = GenerateQuickPlayMapSize(
 		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));

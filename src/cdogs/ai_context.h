@@ -28,7 +28,7 @@
 #pragma once
 
 #include "config.h"
-#include "mission.h"
+#include "objective.h"
 #include "path_cache.h"
 #include "vector.h"
 
@@ -71,7 +71,7 @@ typedef struct
 {
 	AIObjectiveType Type;
 	bool IsDestructible;
-	const struct Objective *Obj;
+	const ObjectiveDef *Obj;
 	int LastDone;
 	Vec2i Goal;
 } AIObjectiveState;

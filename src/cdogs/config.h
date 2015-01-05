@@ -37,16 +37,6 @@
 
 typedef enum
 {
-	ALLYCOLLISION_NORMAL,
-	ALLYCOLLISION_REPEL,
-	ALLYCOLLISION_NONE
-} AllyCollision;
-
-const char *AllyCollisionStr(int a);
-int StrAllyCollision(const char *str);
-
-typedef enum
-{
 	DIFFICULTY_VERYEASY = 1,
 	DIFFICULTY_EASY,
 	DIFFICULTY_NORMAL,

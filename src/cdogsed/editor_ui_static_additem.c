@@ -121,7 +121,6 @@ static void DrawCharacter(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		c, 0, 0);
 }
-static void DisplayPickupItem(Vec2i pos, int pickupItem);
 static void DrawObjective(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
@@ -151,9 +150,9 @@ static void DrawObjective(
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			struct Objective *obj =
+			const ObjectiveDef *obj =
 				CArrayGet(&gMission.Objectives, data->Brush.ItemIndex);
-			DisplayPickupItem(pos, obj->pickupItem);
+			Blit(&gGraphicsDevice, obj->pickupClass->Pic, pos);
 		}
 		break;
 	case OBJECTIVE_DESTROY:
@@ -166,13 +165,6 @@ static void DrawObjective(
 		assert(0 && "invalid objective type");
 		break;
 	}
-}
-static void DisplayPickupItem(Vec2i pos, int pickupItem)
-{
-	TOffsetPic pic = cGeneralPics[pickupItem];
-	DrawTPic(
-		pos.x + pic.dx, pos.y + pic.dy,
-		PicManagerGetOldPic(&gPicManager, pic.picIndex));
 }
 static void ActivateBrush(UIObject *o, void *data)
 {

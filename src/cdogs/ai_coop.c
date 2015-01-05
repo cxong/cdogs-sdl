@@ -335,7 +335,7 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 typedef struct
 {
 	int Distance;
-	struct Objective *Objective;
+	const ObjectiveDef *Objective;
 	Vec2i Pos;
 	bool IsDestructible;
 	AIObjectiveType Type;
@@ -463,7 +463,7 @@ static void FindObjectivesSortedByDistance(
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		bool isObjective = false;
-		switch (p->Type)
+		switch (p->class->Type)
 		{
 		case PICKUP_KEYCARD:	// fallthrough
 			co.Type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
@@ -560,7 +560,7 @@ static void FindObjectivesSortedByDistance(
 		{
 			continue;
 		}
-		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
 		if (o->done >= mo->Required || MapGetExploredPercentage(&gMap) == 100)
 		{
 			continue;

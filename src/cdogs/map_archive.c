@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include "json_utils.h"
 #include "map_new.h"
 #include "physfs/physfs.h"
+#include "pickup.h"
 
 #define VERSION 3
 
@@ -92,6 +93,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	AmmoClassesClear(&gAmmo.CustomAmmo);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
+	PickupClassesClear(&gPickupClasses.CustomClasses);
 
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
@@ -127,6 +129,12 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 
 	BulletLoadWeapons(&gBulletClasses);
+
+	root = ReadPhysFSJSON(filename, "pickups.json");
+	if (root != NULL)
+	{
+		PickupClassesLoadJSON(&gPickupClasses.CustomClasses, root);
+	}
 
 
 	root = ReadPhysFSJSON(filename, "missions.json");

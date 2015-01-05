@@ -187,3 +187,9 @@ void CamelToTitle(char *buf, const char *src);
 
 #define RAND_INT(_low, _high) ((_low) == (_high) ? (_low) : (_low) + (rand() % ((_high) - (_low))))
 #define RAND_DOUBLE(_low, _high) ((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
+
+typedef struct
+{
+	int Id;
+	int Amount;
+} AddAmmo;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -670,7 +670,7 @@ static void DrawObjectiveCompass(
 				{
 					continue;
 				}
-				struct Objective *o =
+				const ObjectiveDef *o =
 					CArrayGet(&gMission.Objectives, objective);
 				color_t color = o->color;
 				DrawCompassArrow(
@@ -765,13 +765,6 @@ static void DrawCompassArrow(
 	}
 }
 
-static void DrawKeycard(int x, int y, const TOffsetPic * pic)
-{
-	DrawTPic(
-		x + pic->dx, y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
-}
-
 void DrawKeycards(HUD *hud)
 {
 	int keyFlags[] =
@@ -789,10 +782,11 @@ void DrawKeycards(HUD *hud)
 	{
 		if (hud->mission->flags & keyFlags[i])
 		{
-			DrawKeycard(
-				CenterX(cGeneralPics[hud->mission->keyPics[i]].dx) - xOffset,
-				yOffset,
-				&cGeneralPics[hud->mission->keyPics[i]]);
+			const Pic *pic = KeyPickupClass(hud->mission->keyStyle, i)->Pic;
+			Blit(
+				&gGraphicsDevice,
+				pic,
+				Vec2iNew(CenterX(pic->size.x) - xOffset, yOffset));
 		}
 		xOffset += xOffsetIncr;
 	}
@@ -1066,7 +1060,7 @@ static void DrawObjectiveCounts(HUD *hud)
 	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
 		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
 
 		// Don't draw anything for optional objectives
 		if (mo->Required == 0)

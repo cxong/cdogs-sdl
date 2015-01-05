@@ -513,7 +513,7 @@ void InitializeBadGuys(void)
 	{
 		MissionObjective *mobj =
 			CArrayGet(&gMission.missionData->Objectives, i);
-		struct Objective *obj = CArrayGet(&gMission.Objectives, i);
+		ObjectiveDef *obj = CArrayGet(&gMission.Objectives, i);
 		if (mobj->Type == OBJECTIVE_KILL &&
 			gMission.missionData->SpecialChars.size > 0)
 		{

@@ -32,6 +32,7 @@
 #include <stdio.h>
 
 #include "blit.h"
+#include "collision.h"
 #include "config_json.h"
 #include "config_old.h"
 #include "keyboard.h"
@@ -39,25 +40,6 @@
 #include "sounds.h"
 #include "utils.h"
 
-
-const char *AllyCollisionStr(int a)
-{
-	switch (a)
-	{
-		T2S(ALLYCOLLISION_NORMAL, "Normal");
-		T2S(ALLYCOLLISION_REPEL, "Repel");
-		T2S(ALLYCOLLISION_NONE, "None");
-	default:
-		return "";
-	}
-}
-int StrAllyCollision(const char *s)
-{
-	S2T(ALLYCOLLISION_NORMAL, "Normal");
-	S2T(ALLYCOLLISION_REPEL, "Repel");
-	S2T(ALLYCOLLISION_NONE, "None");
-	return ALLYCOLLISION_NORMAL;
-}
 
 const char *DifficultyStr(int d)
 {

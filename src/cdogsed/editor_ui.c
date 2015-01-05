@@ -46,7 +46,7 @@
 static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
-	PicPaletted *pic,
+	const Pic *pic,
 	int idx, int count,
 	int isHighlighted);
 
@@ -387,7 +387,7 @@ static void MissionDrawWallStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
-		PicManagerGetOldPic(&gPicManager, cWallPics[idx % count][WALL_SINGLE]),
+		PicManagerGetFromOld(&gPicManager, cWallPics[idx % count][WALL_SINGLE]),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -405,7 +405,7 @@ static void MissionDrawFloorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
-		PicManagerGetOldPic(&gPicManager, cFloorPics[idx % count][FLOOR_NORMAL]),
+		PicManagerGetFromOld(&gPicManager, cFloorPics[idx % count][FLOOR_NORMAL]),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -423,7 +423,7 @@ static void MissionDrawRoomStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
-		PicManagerGetOldPic(&gPicManager, cRoomPics[idx % count][ROOMFLOOR_NORMAL]),
+		PicManagerGetFromOld(&gPicManager, cRoomPics[idx % count][ROOMFLOOR_NORMAL]),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -441,7 +441,7 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Doors",
-		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
+		PicManagerGetFromOld(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -459,7 +459,7 @@ static void MissionDrawKeyStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Keys",
-		PicManagerGetOldPic(&gPicManager, cGeneralPics[gMission.keyPics[0]].picIndex),
+		KeyPickupClass(gMission.keyStyle, 0)->Pic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -477,7 +477,7 @@ static void MissionDrawExitStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
-		PicManagerGetOldPic(&gPicManager, gMission.exitPic),
+		PicManagerGetFromOld(&gPicManager, gMission.exitPic),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -752,12 +752,12 @@ static void MissionDrawObjective(
 	pic.dx = pic.dy = 0;
 	pic.picIndex = -1;
 	TranslationTable *table = NULL;
-	struct Objective *obj;
 	UNUSED(g);
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <= data->index) return;
 	// TODO: only one kill and rescue objective allowed
-	obj = CArrayGet(&gMission.Objectives, data->index);
+	const ObjectiveDef *obj = CArrayGet(&gMission.Objectives, data->index);
+	const Pic *newPic = NULL;
 	switch (((MissionObjective *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type)
 	{
@@ -778,7 +778,7 @@ static void MissionDrawObjective(
 		}
 		break;
 	case OBJECTIVE_COLLECT:
-		pic = cGeneralPics[obj->pickupItem];
+		newPic = obj->pickupClass->Pic;
 		break;
 	case OBJECTIVE_DESTROY:
 		pic = cGeneralPics[obj->blowupObject->pic];
@@ -790,12 +790,17 @@ static void MissionDrawObjective(
 		assert(0 && "Unknown objective type");
 		return;
 	}
+	const Vec2i drawPos =
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	if (pic.picIndex >= 0)
 	{
 		DrawTTPic(
-			pos.x + o->Pos.x + o->Size.x / 2 + pic.dx,
-			pos.y + o->Pos.y + o->Size.y / 2 + pic.dy,
+			drawPos.x + pic.dx, drawPos.y + pic.dy,
 			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
+	}
+	else if (newPic != NULL)
+	{
+		Blit(g, newPic, Vec2iAdd(drawPos, newPic->offset));
 	}
 }
 static MissionObjective *GetMissionObjective(const Mission *m, const int idx)
@@ -862,14 +867,14 @@ static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 static void DrawStyleArea(
 	Vec2i pos,
 	const char *name,
-	PicPaletted *pic,
+	const Pic *pic,
 	int idx, int count,
 	int isHighlighted)
 {
 	char buf[16];
 	FontStrMask(name, pos, isHighlighted ? colorRed : colorWhite);
 	pos.y += FontH();
-	DrawTPic(pos.x, pos.y, pic);
+	Blit(&gGraphicsDevice, pic, pos);
 	// Display style index and count, right aligned
 	sprintf(buf, "%d/%d", idx + 1, count);
 	FontStrMask(
@@ -1269,7 +1274,7 @@ static void MissionChangeObjectiveIndex(void *vData, int d)
 	switch (mobj->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		limit = GetEditorInfo().pickupCount - 1;
+		limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
 		break;
 	case OBJECTIVE_DESTROY:
 		limit = MapObjectGetDestructibleCount() - 1;

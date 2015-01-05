@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,26 +27,62 @@
 */
 #pragma once
 
-#include "actors.h"
-#include "pic.h"
-#include "pickup_class.h"
-#include "tile.h"
+#include <json/json.h>
 
-// Pickups are game objects that players can collect, and which have special
-// effects
+#include "ammo.h"
+#include "utils.h"
+
+// Effects for "pick up" objects
+typedef enum
+{
+	PICKUP_NONE,
+	PICKUP_JEWEL,
+	PICKUP_HEALTH,
+	PICKUP_AMMO,
+	PICKUP_KEYCARD
+} PickupType;
+PickupType StrPickupType(const char *s);
+
 typedef struct
 {
-	const PickupClass *class;
-	TTileItem tileItem;
-	bool IsRandomSpawned;
-	bool isInUse;
-} Pickup;
+	char *Name;
+	PickupType Type;
+	union
+	{
+		int Score;
+		int Health;
+		AddAmmo Ammo;
+		int Keys;	// Refer to flags in mission.h
+	} u;
+	const Pic *Pic;
+} PickupClass;
+typedef struct
+{
+	CArray Classes;	// of PickupClass
+	CArray CustomClasses;	// of PickupClass
+} PickupClasses;
+extern PickupClasses gPickupClasses;
 
-extern CArray gPickups;	// of Pickup
 
-void PickupsInit(void);
-void PickupsTerminate(void);
-int PickupAdd(const Vec2i pos, const PickupClass *class);
-void PickupDestroy(const int id);
+PickupClass *StrPickupClass(const char *s);
+// Legacy pickup classes, integer based
+PickupClass *IntPickupClass(const int i);
+// Legacy key classes, style+integer based
+PickupClass *KeyPickupClass(const int style, const int i);
 
-void PickupPickup(const TActor *a, const Pickup *p);
+void PickupClassesInit(
+	PickupClasses *classes, const char *filename, const AmmoClasses *ammo);
+void PickupClassesLoadJSON(CArray *classes, json_t *root);
+// Create ammo pickups for all the types of ammo
+void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses);
+void PickupClassesClear(CArray *classes);
+void PickupClassesTerminate(PickupClasses *classes);
+
+// Count the number of "Score" type pickups
+int PickupClassesGetScoreCount(const PickupClasses *classes);
+
+// Score for picking up an objective
+#define PICKUP_SCORE 10
+
+// TODO: more key styles
+#define KEYSTYLE_COUNT 4

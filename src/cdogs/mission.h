@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MISSION
-#define __MISSION
+#pragma once
 
 #include <stdbool.h>
 
@@ -61,13 +60,11 @@
 #define KEY_COUNT 4
 
 int GetExitCount(void);
-int GetKeystyleCount(void);
 int GetDoorstyleCount(void);
 int GetColorrangeCount(void);
 
 struct EditorInfo
 {
-	int pickupCount;
 	int keyCount;
 	int doorCount;
 	int exitCount;
@@ -94,6 +91,7 @@ MapType StrMapType(const char *s);
 #define FLAGS_KEYCARD_GREEN		0x2
 #define FLAGS_KEYCARD_BLUE		0x4
 #define FLAGS_KEYCARD_RED		0x8
+int StrKeycard(const char *s);
 
 typedef struct
 {
@@ -213,7 +211,7 @@ struct MissionOptions
 
 	Mission *missionData;
 	CArray Weapons;	// of GunDescription *
-	CArray Objectives;	// of struct Objective
+	CArray Objectives;	// of ObjectiveDef
 	int time;
 	// Time when players first entered pickup area
 	int pickupTime;
@@ -222,7 +220,7 @@ struct MissionOptions
 	bool isDone;
 
 	CArray MapObjects;	// of MapObject
-	int *keyPics;
+	int keyStyle;
 	struct DoorPic *doorPics;
 	int exitPic, exitShadow;
 };
@@ -254,5 +252,3 @@ int KeycardCount(int flags);
 
 struct EditorInfo GetEditorInfo(void);
 const char *RangeName(int index);
-
-#endif

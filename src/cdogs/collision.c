@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,33 @@
 
 #include "actors.h"
 #include "config.h"
+
+
+CollisionSystem gCollisionSystem;
+
+const char *AllyCollisionStr(int a)
+{
+	switch (a)
+	{
+		T2S(ALLYCOLLISION_NORMAL, "Normal");
+		T2S(ALLYCOLLISION_REPEL, "Repel");
+		T2S(ALLYCOLLISION_NONE, "None");
+	default:
+		return "";
+	}
+}
+int StrAllyCollision(const char *s)
+{
+	S2T(ALLYCOLLISION_NORMAL, "Normal");
+	S2T(ALLYCOLLISION_REPEL, "Repel");
+	S2T(ALLYCOLLISION_NONE, "None");
+	return ALLYCOLLISION_NORMAL;
+}
+
+void CollisionSystemInit(CollisionSystem *cs)
+{
+	cs->allyCollision = ConfigGetEnum(&gConfig, "Game.AllyCollision");
+}
 
 CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 {
@@ -197,21 +224,21 @@ bool AreasCollide(
 bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isPVP)
 {
-	if (ConfigGetEnum(&gConfig, "Game.AllyCollision") != ALLYCOLLISION_NORMAL)
+	if (gCollisionSystem.allyCollision == ALLYCOLLISION_NORMAL)
 	{
-		CollisionTeam itemTeam = COLLISIONTEAM_NONE;
-		if (i->kind == KIND_CHARACTER)
-		{
-			TActor *a = CArrayGet(&gActors, i->id);
-			itemTeam = CalcCollisionTeam(1, a);
-		}
-		return
-			team != COLLISIONTEAM_NONE &&
-			itemTeam != COLLISIONTEAM_NONE &&
-			team == itemTeam &&
-			!isPVP;
+		return false;
 	}
-	return 0;
+	CollisionTeam itemTeam = COLLISIONTEAM_NONE;
+	if (i->kind == KIND_CHARACTER)
+	{
+		const TActor *a = CArrayGet(&gActors, i->id);
+		itemTeam = CalcCollisionTeam(1, a);
+	}
+	return
+		team != COLLISIONTEAM_NONE &&
+		itemTeam != COLLISIONTEAM_NONE &&
+		team == itemTeam &&
+		!isPVP;
 }
 
 TTileItem *GetItemOnTileInCollision(

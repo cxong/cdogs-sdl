@@ -248,7 +248,7 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_UPDATE_OBJECTIVE:
 			{
-				struct Objective *o = CArrayGet(
+				ObjectiveDef *o = CArrayGet(
 					&gMission.Objectives, e->u.UpdateObjective.ObjectiveIndex);
 				o->done += e->u.UpdateObjective.Update;
 				MissionObjective *mo = CArrayGet(

@@ -699,8 +699,9 @@ static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
 {
 	for (int i = 0; i < (int)mo->missionData->Objectives.size; i++)
 	{
-		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
-		struct Objective *o = CArrayGet(&mo->Objectives, i);
+		const MissionObjective *mobj =
+			CArrayGet(&mo->missionData->Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&mo->Objectives, i);
 		if (mobj->Type == OBJECTIVE_INVESTIGATE)
 		{
 			int update = MapGetExploredPercentage(map) - o->done;

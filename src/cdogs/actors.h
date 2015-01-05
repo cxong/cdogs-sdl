@@ -176,11 +176,6 @@ void BuildTranslationTables(const TPalette palette);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
-typedef struct
-{
-	int Id;
-	int Amount;
-} AddAmmo;
 void ActorAddAmmo(TActor *actor, AddAmmo a);
 
 void ActorsInit(void);

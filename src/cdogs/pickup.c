@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 
 #include "ammo.h"
 #include "game_events.h"
+#include "json_utils.h"
 #include "map.h"
 
 
@@ -53,7 +54,7 @@ void PickupsTerminate(void)
 	CArrayTerminate(&gPickups);
 }
 static const Pic *GetPickupPic(const int id, Vec2i *offset);
-int PickupAdd(const Vec2i pos, const Pic *pic, const PickupType type)
+int PickupAdd(const Vec2i pos, const PickupClass *class)
 {
 	// Find an empty slot in pickup list
 	Pickup *p = NULL;
@@ -76,15 +77,14 @@ int PickupAdd(const Vec2i pos, const Pic *pic, const PickupType type)
 		p = CArrayGet(&gPickups, i);
 	}
 	memset(p, 0, sizeof *p);
-	p->Pic = pic;
-	p->Type = type;
+	p->class = class;
 	p->tileItem.x = p->tileItem.y = -1;
 	p->tileItem.flags = 0;
 	p->tileItem.kind = KIND_PICKUP;
 	p->tileItem.getPicFunc = GetPickupPic;
 	p->tileItem.getActorPicsFunc = NULL;
-	p->tileItem.w = p->Pic->size.x;
-	p->tileItem.h = p->Pic->size.y;
+	p->tileItem.w = p->class->Pic->size.x;
+	p->tileItem.h = p->class->Pic->size.y;
 	p->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(pos));
 	p->isInUse = true;
@@ -103,13 +103,13 @@ void PickupPickup(const TActor *a, const Pickup *p)
 	bool canPickup = true;
 	Mix_Chunk *sound = NULL;
 	const Vec2i actorPos = Vec2iNew(a->tileItem.x, a->tileItem.y);
-	switch (p->Type)
+	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 			e.u.Score.PlayerIndex = a->playerIndex;
-			e.u.Score.Score = p->u.Score;
+			e.u.Score.Score = p->class->u.Score;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.pickupSound;
 		}
@@ -123,7 +123,7 @@ void PickupPickup(const TActor *a, const Pickup *p)
 			canPickup = true;
 			GameEvent e = GameEventNew(GAME_EVENT_TAKE_HEALTH_PICKUP);
 			e.u.Heal.PlayerIndex = a->playerIndex;
-			e.u.Heal.Health = p->u.Health;
+			e.u.Heal.Health = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.healthSound;
@@ -134,14 +134,14 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		{
 			// Don't pickup if ammo full
 			canPickup = false;
-			const Ammo *ammo = AmmoGetById(&gAmmo, p->u.Ammo.Id);
-			const int current = *(int *)CArrayGet(&a->ammo, p->u.Ammo.Id);
+			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+			const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
 			if (current < ammo->Max)
 			{
 				canPickup = true;
 				GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
 				e.u.AddAmmo.PlayerIndex = a->playerIndex;
-				e.u.AddAmmo.AddAmmo = p->u.Ammo;
+				e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
 				// Note: receiving end will prevent ammo from exceeding max
 				GameEventsEnqueue(&gGameEvents, e);
 				// TODO: per-ammo sound
@@ -151,7 +151,7 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		break;
 
 	case PICKUP_KEYCARD:
-		gMission.flags |= p->u.Keys;
+		gMission.flags |= p->class->u.Keys;
 		sound = gSoundDevice.keySound;
 		// Clear cache since we may now have new paths
 		PathCacheClear(&gPathCache);
@@ -174,6 +174,6 @@ void PickupPickup(const TActor *a, const Pickup *p)
 static const Pic *GetPickupPic(const int id, Vec2i *offset)
 {
 	const Pickup *p = CArrayGet(&gPickups, id);
-	*offset = Vec2iScaleDiv(p->Pic->size, -2);
-	return p->Pic;
+	*offset = Vec2iScaleDiv(p->class->Pic->size, -2);
+	return p->class->Pic;
 }

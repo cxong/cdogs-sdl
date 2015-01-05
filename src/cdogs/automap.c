@@ -102,7 +102,7 @@ static void DisplayObjective(
 	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
 {
 	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
-	struct Objective *o = CArrayGet(&gMission.Objectives, objectiveIndex);
+	const ObjectiveDef *o = CArrayGet(&gMission.Objectives, objectiveIndex);
 	color_t color = o->color;
 	pos = Vec2iAdd(pos, Vec2iScale(objectivePos, scale));
 	if (flags & AUTOMAP_FLAGS_MASK)
@@ -150,7 +150,7 @@ static void DisplaySummary(void)
 
 	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
 	{
-		struct Objective *o = CArrayGet(&gMission.Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
 		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
 		if (mo->Required > 0 || o->done > 0)
 		{
@@ -306,10 +306,10 @@ static void DrawTileItem(
 	else if (t->kind == KIND_PICKUP && tile->isVisited)
 	{
 		const Pickup *p = CArrayGet(&gPickups, t->id);
-		if (p->Type == PICKUP_KEYCARD)
+		if (p->class->Type == PICKUP_KEYCARD)
 		{
 			color_t dotColor = colorBlack;
-			switch (((const Pickup *)CArrayGet(&gPickups, t->id))->u.Keys)
+			switch (((const Pickup *)CArrayGet(&gPickups, t->id))->class->u.Keys)
 			{
 			case FLAGS_KEYCARD_RED:
 				dotColor = colorRedDoor;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,29 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __COLLISION
-#define __COLLISION
+#pragma once
 
 #include "actors.h"
 #include "map.h"
+
+typedef enum
+{
+	ALLYCOLLISION_NORMAL,
+	ALLYCOLLISION_REPEL,
+	ALLYCOLLISION_NONE
+} AllyCollision;
+
+const char *AllyCollisionStr(int a);
+int StrAllyCollision(const char *str);
+
+typedef struct
+{
+	AllyCollision allyCollision;
+} CollisionSystem;
+
+extern CollisionSystem gCollisionSystem;
+
+void CollisionSystemInit(CollisionSystem *cs);
 
 #define HitWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_WALK)
 #define ShootWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_SHOOT)
@@ -86,5 +104,3 @@ bool AreasCollide(
 // Resolve wall bounces
 Vec2i GetWallBounceFullPos(
 	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull);
-
-#endif

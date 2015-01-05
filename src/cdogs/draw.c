@@ -516,8 +516,7 @@ static void DrawObjectiveHighlight(
 	}
 	Vec2i pos = Vec2iNew(
 		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
-	struct Objective *o =
-		CArrayGet(&gMission.Objectives, objective);
+	const ObjectiveDef *o = CArrayGet(&gMission.Objectives, objective);
 	color_t color = o->color;
 	int pulsePeriod = FPS_FRAMELIMIT;
 	int alphaUnscaled =

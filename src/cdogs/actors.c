@@ -836,7 +836,7 @@ void UpdateAllActors(int ticks)
 		}
 		// Find actors that are on the same team and colliding,
 		// and repel them
-		if (ConfigGetEnum(&gConfig, "Game.AllyCollision") == ALLYCOLLISION_REPEL)
+		if (gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 		{
 			Vec2i realPos = Vec2iFull2Real(actor->Pos);
 			TTileItem *collidingItem = GetItemOnTileInCollision(

@@ -44,11 +44,10 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
-	PicPaletted *keyPic = PicManagerGetOldPic(
-		&gPicManager,
-		cGeneralPics[gMission.keyPics[data->Brush.ItemIndex]].picIndex);
+	const Pic *pic =
+		KeyPickupClass(gMission.keyStyle, data->Brush.ItemIndex)->Pic;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	DrawTPic(pos.x, pos.y, keyPic);
+	Blit(&gGraphicsDevice, pic, pos);
 }
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx)

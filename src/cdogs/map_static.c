@@ -127,7 +127,7 @@ void MapStaticLoadDynamic(
 		const ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
 		const MissionObjective *mobj =
 			CArrayGet(&mo->missionData->Objectives, op->Index);
-		struct Objective *obj = CArrayGet(&mo->Objectives, op->Index);
+		ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&op->Positions, j);

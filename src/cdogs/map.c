@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,6 @@
 #include "map_static.h"
 #include "pic_manager.h"
 #include "pickup.h"
-#include "powerup.h"
 #include "objs.h"
 #include "triggers.h"
 #include "sounds.h"
@@ -529,15 +528,10 @@ int MapPosIsHighAccess(Map *map, int x, int y)
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
 {
-	const struct Objective *o = CArrayGet(&mo->Objectives, objective);
+	const ObjectiveDef *o = CArrayGet(&mo->Objectives, objective);
 	const Vec2i fullPos = Vec2iReal2Full(realPos);
-	const int id = PickupAdd(
-		fullPos,
-		PicManagerGet(
-			&gPicManager, NULL, cGeneralPics[o->pickupItem].picIndex),
-		PICKUP_JEWEL);
+	const int id = PickupAdd(fullPos, o->pickupClass);
 	Pickup *p = CArrayGet(&gPickups, id);
-	p->u.Score = PICKUP_SCORE;
 	p->tileItem.flags = ObjectiveToTileItem(objective);
 }
 static int MapTryPlaceCollectible(
@@ -570,12 +564,8 @@ static int MapTryPlaceCollectible(
 
 void MapPlaceHealth(AddHealthPickup a)
 {
-	const int id = PickupAdd(
-		Vec2iReal2Full(a.Pos),
-		PicManagerGetPic(&gPicManager, "health"),
-		PICKUP_HEALTH);
+	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass("health"));
 	Pickup *p = CArrayGet(&gPickups, id);
-	p->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
 	p->IsRandomSpawned = a.IsRandomSpawned;
 }
 
@@ -608,7 +598,7 @@ static bool MapTryPlaceBlowup(
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
-			struct Objective *o = CArrayGet(&mo->Objectives, objective);
+			const ObjectiveDef *o = CArrayGet(&mo->Objectives, objective);
 			if (MapTryPlaceOneObject(
 					map,
 					v,
@@ -629,22 +619,16 @@ void MapPlaceKey(
 {
 	UNUSED(map);
 	const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(pos));
-	const int id = PickupAdd(
-		fullPos,
-		PicManagerGet(
-			&gPicManager, NULL, cGeneralPics[mo->keyPics[keyIndex]].picIndex),
-		PICKUP_KEYCARD);
-	Pickup *p = CArrayGet(&gPickups, id);
-	p->u.Keys = 1 << keyIndex;
+	PickupAdd(fullPos, KeyPickupClass(mo->keyStyle, keyIndex));
 }
 
 void MapPlaceAmmo(AddAmmoPickup a)
 {
 	const Ammo *ammo = AmmoGetById(&gAmmo, a.Id);
-	const int id = PickupAdd(Vec2iReal2Full(a.Pos), ammo->Pic, PICKUP_AMMO);
+	char buf[256];
+	sprintf(buf, "ammo_%s", ammo->Name);
+	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass(buf));
 	Pickup *p = CArrayGet(&gPickups, id);
-	p->u.Ammo.Id = a.Id;
-	p->u.Ammo.Amount = ammo->Amount;
 	p->IsRandomSpawned = a.IsRandomSpawned;
 }
 
@@ -1171,7 +1155,7 @@ void MapLoadDynamic(
 		{
 			continue;
 		}
-		struct Objective *obj = CArrayGet(&mo->Objectives, i);
+		ObjectiveDef *obj = CArrayGet(&mo->Objectives, i);
 		if (mobj->Type == OBJECTIVE_COLLECT)
 		{
 			for (j = obj->placed; j < mobj->Count; j++)

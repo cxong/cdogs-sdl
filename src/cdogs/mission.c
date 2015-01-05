@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,15 @@
 #include "actors.h"
 #include "triggers.h"
 
+
+int StrKeycard(const char *s)
+{
+	S2T(FLAGS_KEYCARD_YELLOW, "yellow");
+	S2T(FLAGS_KEYCARD_GREEN, "green");
+	S2T(FLAGS_KEYCARD_BLUE, "blue");
+	S2T(FLAGS_KEYCARD_RED, "red");
+	return 0;
+}
 
 const char *MapTypeStr(MapType t)
 {
@@ -252,64 +261,6 @@ static struct ColorRange cColorRanges[] =
 };
 #define COLORRANGE_COUNT (sizeof cColorRanges / sizeof(struct ColorRange))
 int GetColorrangeCount(void) { return COLORRANGE_COUNT; }
-
-
-// +----------------+
-// |  Pickups info  |
-// +----------------+
-
-
-static int pickupItems[] = {
-	OFSPIC_FOLDER,
-	OFSPIC_DISK1,
-	OFSPIC_DISK2,
-	OFSPIC_DISK3,
-	OFSPIC_BLUEPRINT,
-	OFSPIC_CD,
-	OFSPIC_BAG,
-	OFSPIC_HOLO,
-	OFSPIC_BOTTLE,
-	OFSPIC_RADIO,
-	OFSPIC_CIRCUIT,
-	OFSPIC_PAPER
-};
-#define PICKUPS_COUNT (sizeof( pickupItems)/sizeof( int))
-
-
-// +-------------+
-// |  Keys info  |
-// +-------------+
-
-
-static int officeKeys[KEY_COUNT] =
-    { OFSPIC_KEYCARD_YELLOW, OFSPIC_KEYCARD_GREEN, OFSPIC_KEYCARD_BLUE,
-	OFSPIC_KEYCARD_RED
-};
-
-static int dungeonKeys[KEY_COUNT] =
-    { OFSPIC_KEY_YELLOW, OFSPIC_KEY_GREEN, OFSPIC_KEY_BLUE,
-	OFSPIC_KEY_RED
-};
-
-static int plainKeys[KEY_COUNT] =
-    { OFSPIC_KEY3_YELLOW, OFSPIC_KEY3_GREEN, OFSPIC_KEY3_BLUE,
-	OFSPIC_KEY3_RED
-};
-
-static int cubeKeys[KEY_COUNT] =
-    { OFSPIC_KEY4_YELLOW, OFSPIC_KEY4_GREEN, OFSPIC_KEY4_BLUE,
-	OFSPIC_KEY4_RED
-};
-
-
-static int *keyStyles[] = {
-	officeKeys,
-	dungeonKeys,
-	plainKeys,
-	cubeKeys
-};
-#define KEYSTYLE_COUNT (sizeof keyStyles / sizeof(int *))
-int GetKeystyleCount(void) { return KEYSTYLE_COUNT; }
 
 
 // +-------------+
@@ -534,13 +485,13 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 	for (int i = 0; i < (int)mission->Objectives.size; i++)
 	{
 		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
-		struct Objective o;
+		ObjectiveDef o;
 		memset(&o, 0, sizeof o);
 		assert(i < OBJECTIVE_MAX_OLD);
 		// Set objective colours based on type
 		o.color = ObjectiveTypeColor(mobj->Type);
 		o.blowupObject = MapObjectGet(mobj->Index);
-		o.pickupItem = pickupItems[mobj->Index % PICKUPS_COUNT];
+		o.pickupClass = IntPickupClass(mobj->Index);
 		CArrayPushBack(&mo->Objectives, &o);
 	}
 }
@@ -592,7 +543,7 @@ void SetupMission(
 	mo->missionData = m;
 	mo->doorPics =
 	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
-	mo->keyPics = keyStyles[abs(m->KeyStyle) % KEYSTYLE_COUNT];
+	mo->keyStyle = m->KeyStyle;
 	for (int i = 0; i < (int)m->Items.size; i++)
 	{
 		int *itemIndex = CArrayGet(&m->Items, i);
@@ -694,7 +645,7 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	// Check all objective counts are enough
 	for (i = 0; i < (int)options->Objectives.size; i++)
 	{
-		struct Objective *o = CArrayGet(&options->Objectives, i);
+		const ObjectiveDef *o = CArrayGet(&options->Objectives, i);
 		MissionObjective *mobj =
 			CArrayGet(&options->missionData->Objectives, i);
 		if (o->done < mobj->Required)
@@ -801,7 +752,6 @@ int KeycardCount(int flags)
 struct EditorInfo GetEditorInfo(void)
 {
 	struct EditorInfo ei;
-	ei.pickupCount = PICKUPS_COUNT;
 	ei.keyCount = KEYSTYLE_COUNT;
 	ei.doorCount = DOORSTYLE_COUNT;
 	ei.exitCount = EXIT_COUNT;

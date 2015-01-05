@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,10 +46,10 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __OBJECTIVE
-#define __OBJECTIVE
+#pragma once
 
 #include "map_object.h"
+#include "pickup_class.h"
 
 
 // Warning: only add to the back of this enum;
@@ -79,13 +79,11 @@ typedef struct
 	int Flags;
 } MissionObjective;
 
-struct Objective
+typedef struct
 {
 	color_t color;
 	int placed;
 	int done;
 	MapObject *blowupObject;
-	int pickupItem;
-};
-
-#endif
+	const PickupClass *pickupClass;
+} ObjectiveDef;
