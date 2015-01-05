@@ -88,7 +88,7 @@ PickupClass *IntPickupClass(const int i)
 		"paper"
 	};
 #define PICKUPS_COUNT (sizeof(pickupItems)/sizeof(const char *))
-	if (i < 0 || i >= PICKUPS_COUNT)
+	if (i < 0 || i >= (int)PICKUPS_COUNT)
 	{
 		return NULL;
 	}
@@ -97,7 +97,7 @@ PickupClass *IntPickupClass(const int i)
 PickupClass *KeyPickupClass(const int style, const int i)
 {
 	// Define the key styles and colours
-#define K(_s, _c) "key_"##_s##"_"##_c
+#define K(_s, _c) "key_" _s "_" _c
 #define KS(_s) { K(_s, "yellow"), K(_s, "green"), K(_s, "blue"), K(_s, "red") }
 	static const char *keys[][4] = {
 		KS("office"), KS("dungeon"), KS("plain"), KS("cube")

@@ -176,6 +176,15 @@ typedef enum
 
 const char *InputDeviceName(const int d, const int deviceIndex);
 
+typedef enum
+{
+	ALLYCOLLISION_NORMAL,
+	ALLYCOLLISION_REPEL,
+	ALLYCOLLISION_NONE
+} AllyCollision;
+const char *AllyCollisionStr(int a);
+int StrAllyCollision(const char *str);
+
 char *IntStr(int i);
 char *PercentStr(int p);
 char *Div8Str(int i);

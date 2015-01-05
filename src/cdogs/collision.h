@@ -51,16 +51,6 @@
 #include "actors.h"
 #include "map.h"
 
-typedef enum
-{
-	ALLYCOLLISION_NORMAL,
-	ALLYCOLLISION_REPEL,
-	ALLYCOLLISION_NONE
-} AllyCollision;
-
-const char *AllyCollisionStr(int a);
-int StrAllyCollision(const char *str);
-
 typedef struct
 {
 	AllyCollision allyCollision;
