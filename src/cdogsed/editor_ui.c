@@ -800,7 +800,7 @@ static void MissionDrawObjective(
 	}
 	else if (newPic != NULL)
 	{
-		Blit(g, newPic, Vec2iAdd(drawPos, newPic->offset));
+		Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
 	}
 }
 static MissionObjective *GetMissionObjective(const Mission *m, const int idx)

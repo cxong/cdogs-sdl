@@ -1217,7 +1217,6 @@ int main(int argc, char *argv[])
 	EditorBrushInit(&brush);
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
-	gGraphicsDevice.cachedConfig.IsEditor = true;
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
@@ -1231,6 +1230,7 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	gGraphicsDevice.cachedConfig.IsEditor = true;
 	GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, 0);
 	if (!gGraphicsDevice.IsInitialized)
 	{
