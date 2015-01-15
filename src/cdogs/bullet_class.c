@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -154,8 +154,8 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	if (obj->bulletClass->SeekFactor > 0)
 	{
 		// Find the closest target to this bullet and steer towards it
-		TActor *target = AIGetClosestEnemy(
-			objPos, obj->flags, obj->player >= 0);
+		const TActor *owner = ActorGetByUID(obj->uid);
+		const TActor *target = AIGetClosestEnemy(objPos, owner, obj->flags);
 		if (target && !target->dead)
 		{
 			for (int i = 0; i < ticks; i++)

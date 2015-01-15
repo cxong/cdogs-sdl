@@ -1189,6 +1189,20 @@ void BuildTranslationTables(const TPalette palette)
 	}
 }
 
+TActor *ActorGetByUID(const int uid)
+{
+	for (int i = 0; i < (int)gActors.size; i++)
+	{
+		TActor *a = CArrayGet(&gActors, i);
+		if (a->uid == uid)
+		{
+			return a;
+		}
+	}
+	CASSERT(false, "Cannot find actor by UID");
+	return NULL;
+}
+
 const Character *ActorGetCharacter(const TActor *a)
 {
 	if (a->playerIndex >= 0)

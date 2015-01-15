@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -131,22 +131,23 @@ static bool IsDifferent(const TActor *a, const TActor *b)
 {
 	return a != b;
 }
-TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer)
+const TActor *AIGetClosestEnemy(
+	const Vec2i from, const TActor *a, const int flags)
 {
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
-		// free for all; look for anybody
-		return AIGetClosestActor(from, NULL, IsDifferent);
+		// free for all; look for anybody else
+		return AIGetClosestActor(from, a, IsDifferent);
 	}
-	else if (!isPlayer && !(flags & FLAGS_GOOD_GUY))
+	else if ((!a || a->playerIndex < 0) && !(flags & FLAGS_GOOD_GUY))
 	{
 		// we are bad; look for good guys
-		return AIGetClosestActor(from, NULL, IsGood);
+		return AIGetClosestActor(from, a, IsGood);
 	}
 	else
 	{
 		// we are good; look for bad guys
-		return AIGetClosestActor(from, NULL, IsBad);
+		return AIGetClosestActor(from, a, IsBad);
 	}
 }
 

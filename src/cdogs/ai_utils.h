@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI_UTILS
-#define __AI_UTILS
+#pragma once
 
 // Utility functions for AIs; contains basic behaviour
 
@@ -55,7 +54,8 @@
 #include "objs.h"
 
 TActor *AIGetClosestPlayer(Vec2i fullpos);
-TActor *AIGetClosestEnemy(Vec2i from, int flags, int isPlayer);
+const TActor *AIGetClosestEnemy(
+	const Vec2i from, const TActor *a, const int flags);
 const TActor *AIGetClosestVisibleEnemy(
 	const TActor *from, const bool isPlayer);
 Vec2i AIGetClosestPlayerPos(Vec2i pos);
@@ -80,5 +80,3 @@ int AITrack(TActor *actor, const Vec2i targetPos);
 // Pathfinding helper functions
 bool IsTileWalkable(Map *map, const Vec2i pos);
 bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos);
-
-#endif

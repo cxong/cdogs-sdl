@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __ACTORS
-#define __ACTORS
+#pragma once
 
 #include "ai_context.h"
 #include "grafx.h"
@@ -171,7 +170,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(int ticks);
-TActor *ActorList(void);
 void BuildTranslationTables(const TPalette palette);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
@@ -184,6 +182,7 @@ int ActorsGetFreeIndex(void);
 TActor *ActorAdd(NetMsgActorAdd aa);
 void ActorDestroy(int id);
 
+TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
 // Returns -1 if gun does not use ammo
@@ -197,5 +196,3 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
 	const TActor *actor, const int flags, const int player,
 	const GameMode mode);
-
-#endif
