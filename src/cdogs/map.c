@@ -1250,8 +1250,7 @@ bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
 				const TTileItem *ti =
 					ThingIdGetTileItem(CArrayGet(tileThings, i));
 				if (AreasCollide(
-					realPos, Vec2iNew(ti->x, ti->y),
-					size, Vec2iNew(ti->w, ti->h)))
+						realPos, Vec2iNew(ti->x, ti->y), size, ti->size))
 				{
 					return false;
 				}

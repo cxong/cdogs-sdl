@@ -76,8 +76,9 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	return COLLISIONTEAM_BAD;
 }
 
-bool IsCollisionWithWall(Vec2i pos, Vec2i size)
+bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize)
 {
+	Vec2i size = Vec2iScaleDiv(fullSize, 2);
 	if (pos.x - size.x < 0 ||
 		pos.y - size.y < 0 ||
 		pos.x + size.x >= gMap.Size.x * TILE_WIDTH ||
@@ -115,10 +116,11 @@ bool IsCollisionWithWall(Vec2i pos, Vec2i size)
 //       x   w
 //           w
 // Where 'x' denotes the bounding diamond, and 'w' represents a wall corner.
-bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i size)
+bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 {
 	const Vec2i mapSize =
 		Vec2iNew(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
+	const Vec2i size = Vec2iScaleDiv(fullSize, 2);
 	if (pos.x - size.x < 0 || pos.x + size.x >= mapSize.x ||
 		pos.y - size.y < 0 || pos.y + size.y >= mapSize.y)
 	{
@@ -179,10 +181,9 @@ static bool ItemsCollide(
 {
 	int dx = abs(pos.x - item2->x);
 	int dy = abs(pos.y - item2->y);
-	int rx = item1->w + item2->w;
-	int ry = item1->h + item2->h;
+	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(item1->size, item2->size), 2);
 
-	if (dx < rx && dy < ry)
+	if (dx < r.x && dy < r.y)
 	{
 		int odx = abs(item1->x - item2->x);
 		int ody = abs(item1->y - item2->y);
@@ -198,7 +199,7 @@ bool AreasCollide(
 	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2)
 {
 	const Vec2i d = Vec2iNew(abs(pos1.x - pos2.x), abs(pos1.y - pos2.y));
-	const Vec2i r = Vec2iAdd(size1, size2);
+	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(size1, size2), 2);
 	return d.x < r.x && d.y < r.y;
 }
 

@@ -74,9 +74,9 @@ typedef enum
 
 CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor);
 
-bool IsCollisionWithWall(Vec2i pos, Vec2i size);
+bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize);
 // Check collision of an object with a diamond shape
-bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i size);
+bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
 bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isPVP);
 TTileItem *GetItemOnTileInCollision(

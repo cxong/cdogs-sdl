@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TILE
-#define __TILE
+#pragma once
 
 #include <stdbool.h>
 
@@ -132,7 +131,7 @@ typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
 	int x, y;
-	int w, h;
+	Vec2i size;
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
@@ -175,5 +174,3 @@ void TileSetAlternateFloor(Tile *t, Pic *p);
 
 TTileItem *ThingIdGetTileItem(ThingId *tid);
 bool TileItemIsDebris(const TTileItem *t);
-
-#endif

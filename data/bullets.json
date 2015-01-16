@@ -45,7 +45,7 @@
       "Speed": 384,
       "Range": 30,
       "Power": 12,
-      "Size": [5, 5],
+      "Size": [10, 10],
       "Special": "Flame",
       "Spark": "",
       "HitSounds": {
@@ -64,7 +64,7 @@
       "Speed": 1024,
       "Range": 90,
       "Power": 20,
-      "Size": [2, 2]
+      "Size": [4, 4]
     },
     {
       "Name": "sniper",
@@ -75,7 +75,7 @@
       "Speed": 1024,
       "Range": 90,
       "Power": 50,
-      "Size": [2, 2]
+      "Size": [4, 4]
     },
     {
       "Name": "frag",
@@ -95,7 +95,7 @@
         "Sprites": "grenade",
         "TicksPerFrame": 2
       },
-      "ShadowSize": [4, 3],
+      "ShadowSize": [8, 6],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -123,7 +123,7 @@
         "TicksPerFrame": 2,
         "Mask": "808080"
       },
-      "ShadowSize": [4, 3],
+      "ShadowSize": [8, 6],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -147,7 +147,7 @@
         "Type": "Normal",
         "Pic": "molotov"
       },
-      "ShadowSize": [4, 3],
+      "ShadowSize": [8, 6],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -179,7 +179,7 @@
         "TicksPerFrame": 2,
         "Mask": "00ff00"
       },
-      "ShadowSize": [4, 3],
+      "ShadowSize": [8, 6],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -205,7 +205,7 @@
         "TicksPerFrame": 2,
         "Mask": "c000c0"
       },
-      "ShadowSize": [4, 3],
+      "ShadowSize": [8, 6],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -234,7 +234,7 @@
       "Speed": 384,
       "Friction": 4,
       "Range": 35,
-      "Size": [10, 10],
+      "Size": [20, 20],
       "Special": "Poison",
       "Persists": true,
       "Spark": "",
@@ -264,7 +264,7 @@
       "Speed": 512,
       "Range": 60,
       "Power": 20,
-      "Size": [3, 3],
+      "Size": [6, 6],
       "Spark": "boom",
       "HitSounds": {
         "Object": "boom",
@@ -293,7 +293,7 @@
       },
       "Speed": 768,
       "Range": 45,
-      "Size": [5, 5],
+      "Size": [10, 10],
       "Special": "Petrify",
       "HitSounds": {
         "Object": "hit_petrify",
@@ -340,7 +340,7 @@
       "Speed": 700,
       "Range": 70,
       "Power": 12,
-      "Size": [2, 2],
+      "Size": [4, 4],
       "Spark": "boom",
       "HitSounds": {
         "Object": "boom",
@@ -360,7 +360,7 @@
       "Delay": -10,
       "Speed": 0,
       "Range": 53,
-      "Size": [7, 5],
+      "Size": [14, 10],
       "Persists": true,
       "Spark": "",
       "HitSounds": {
@@ -379,7 +379,7 @@
       "Speed": 256,
       "Range": 53,
       "Power": 5,
-      "Size": [7, 5],
+      "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
@@ -405,7 +405,7 @@
       "Speed": 192,
       "Range": 71,
       "Power": 5,
-      "Size": [7, 5],
+      "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
@@ -431,7 +431,7 @@
       "Speed": 128,
       "Range": 79,
       "Power": 5,
-      "Size": [7, 5],
+      "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
@@ -459,7 +459,7 @@
       "RangeLow": 120,
       "RangeHigh": 148,
       "Power": 2,
-      "Size": [5, 5],
+      "Size": [10, 10],
       "Special": "Flame",
       "HurtAlways": true,
       "Persists": true,
@@ -487,7 +487,7 @@
       "Friction": 4,
       "RangeLow": 155,
       "RangeHigh": 191,
-      "Size": [10, 10],
+      "Size": [20, 20],
       "Special": "Poison",
       "HurtAlways": true,
       "Persists": true,
@@ -512,7 +512,7 @@
       "Friction": 4,
       "RangeLow": 155,
       "RangeHigh": 191,
-      "Size": [10, 10],
+      "Size": [20, 20],
       "Special": "Confuse",
       "Persists": true,
       "Spark": "",
@@ -563,7 +563,7 @@
       "Speed": 0,
       "Range": 27,
       "Power": 3,
-      "Size": [32, 32],
+      "Size": [64, 64],
       "Persists": true,
       "Spark": "",
       "HitSounds": {
@@ -583,7 +583,7 @@
       "Friction": -9,
       "Range": 120,
       "Power": 1,
-      "Size": [8, 8],
+      "Size": [16, 16],
       "Spark": "",
       "HitSounds": {
         "Object": "",

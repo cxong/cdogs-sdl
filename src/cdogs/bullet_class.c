@@ -610,7 +610,6 @@ void BulletAdd(const AddBullet add)
 	{
 		obj->vel.y = obj->vel.y * TILE_WIDTH / TILE_HEIGHT;
 	}
-	obj->tileItem.w = obj->bulletClass->Size.x;
-	obj->tileItem.h = obj->bulletClass->Size.y;
+	obj->tileItem.size = obj->bulletClass->Size;
 	obj->tileItem.ShadowSize = obj->bulletClass->ShadowSize;
 }

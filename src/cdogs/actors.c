@@ -356,10 +356,9 @@ static Vec2i GetConstrainedFullPos(
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
-	const Vec2i size = Vec2iNew(actor->tileItem.w, actor->tileItem.h);
 
 	const Vec2i oldPos = actor->Pos;
-	pos = GetConstrainedFullPos(&gMap, actor->Pos, pos, size);
+	pos = GetConstrainedFullPos(&gMap, actor->Pos, pos, actor->tileItem.size);
 	if (Vec2iEqual(oldPos, pos))
 	{
 		return false;
@@ -450,7 +449,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 		realPos = Vec2iFull2Real(pos);
 		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-			IsCollisionWithWall(realPos, size))
+			IsCollisionWithWall(realPos, actor->tileItem.size))
 		{
 			return false;
 		}
@@ -1065,8 +1064,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.getActorPicsFunc = GetCharacterPics;
 	actor->tileItem.drawFunc = NULL;
-	actor->tileItem.w = ACTOR_W;
-	actor->tileItem.h = ACTOR_H;
+	actor->tileItem.size = Vec2iNew(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =
 		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
 	actor->tileItem.id = aa.Id;

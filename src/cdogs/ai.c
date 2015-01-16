@@ -135,8 +135,7 @@ static bool CanSeeAPlayer(const TActor *a)
 static bool IsPosOK(TActor *actor, Vec2i pos)
 {
 	const Vec2i realPos = Vec2iFull2Real(pos);
-	if (IsCollisionDiamond(
-		&gMap, realPos, Vec2iNew(actor->tileItem.w, actor->tileItem.h)))
+	if (IsCollisionDiamond(&gMap, realPos, actor->tileItem.size))
 	{
 		return false;
 	}

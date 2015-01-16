@@ -56,8 +56,8 @@
 #include "weapon.h"
 
 
-#define ACTOR_W 7
-#define ACTOR_H 5
+#define ACTOR_W 14
+#define ACTOR_H 10
 
 #define FLAGS_HURTALWAYS    (1 << 2)
 

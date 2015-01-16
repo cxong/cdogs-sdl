@@ -85,10 +85,10 @@ void TileDestroy(Tile *t)
 bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
 {
 	return
-		i->x - i->w >= tilePos.x * TILE_WIDTH &&
-		i->x + i->w < (tilePos.x + 1) * TILE_WIDTH &&
-		i->y - i->h >= tilePos.y * TILE_HEIGHT &&
-		i->y + i->h < (tilePos.y + 1) * TILE_HEIGHT;
+		i->x - i->size.x / 2 >= tilePos.x * TILE_WIDTH &&
+		i->x + i->size.x / 2 < (tilePos.x + 1) * TILE_WIDTH &&
+		i->y - i->size.y / 2 >= tilePos.y * TILE_HEIGHT &&
+		i->y + i->size.y / 2 < (tilePos.y + 1) * TILE_HEIGHT;
 }
 
 bool TileCanSee(Tile *t)

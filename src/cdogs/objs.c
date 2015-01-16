@@ -488,8 +488,7 @@ int ObjAdd(
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.getPicFunc = GetObjectPic;
 	o->tileItem.getActorPicsFunc = NULL;
-	o->tileItem.w = size.x;
-	o->tileItem.h = size.y;
+	o->tileItem.size = size;
 	o->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
 	o->isInUse = true;

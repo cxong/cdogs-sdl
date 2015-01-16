@@ -83,8 +83,7 @@ int PickupAdd(const Vec2i pos, const PickupClass *class)
 	p->tileItem.kind = KIND_PICKUP;
 	p->tileItem.getPicFunc = GetPickupPic;
 	p->tileItem.getActorPicsFunc = NULL;
-	p->tileItem.w = p->class->Pic->size.x;
-	p->tileItem.h = p->class->Pic->size.y;
+	p->tileItem.size = p->class->Pic->size;
 	p->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(pos));
 	p->isInUse = true;

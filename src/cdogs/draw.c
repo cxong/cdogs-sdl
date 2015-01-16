@@ -62,6 +62,8 @@
 #include "blit.h"
 #include "pic_manager.h"
 
+//#define DEBUG_DRAW_BOUNDS
+
 
 void FixBuffer(DrawBuffer *buffer)
 {
@@ -209,6 +211,8 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 	}
 }
 
+static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset);
+
 static void DrawDebris(DrawBuffer *b, Vec2i offset)
 {
 	Tile *tile = &b->tiles[0][0];
@@ -236,29 +240,12 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 		{
 			const TTileItem **tp = CArrayGet(&b->displaylist, i);
 			const TTileItem *t = *tp;
-			Vec2i pos = Vec2iNew(
-				t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
-			if (t->CPicFunc)
-			{
-				CPicDrawContext c = t->CPicFunc(t->id);
-				CPicDraw(b->g, &t->CPic, pos, &c);
-			}
-			else if (t->getPicFunc)
-			{
-				Vec2i picOffset;
-				const Pic *pic = t->getPicFunc(t->id, &picOffset);
-				Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, picOffset));
-			}
-			else
-			{
-				(*(t->drawFunc))(pos, &t->drawData);
-			}
+			DrawThing(b, t, offset);
 		}
 		tile += X_TILES - b->Size.x;
 	}
 }
 
-static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
 	Vec2i pos;
@@ -320,6 +307,12 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+#ifdef DEBUG_DRAW_BOUNDS
+	Draw_Box(
+		picPos.x - t->size.x / 2, picPos.y - t->size.y / 2,
+		picPos.x + t->size.x / 2, picPos.y + t->size.y / 2,
+		colorGray);
+#endif
 
 	if (!Vec2iIsZero(t->ShadowSize))
 	{
