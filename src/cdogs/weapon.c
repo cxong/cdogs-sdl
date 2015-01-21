@@ -432,43 +432,48 @@ void GunAddBullets(
 	const int flags, const int player, const int uid,
 	const bool playSound)
 {
-	// Find the starting angle of the spread (clockwise)
-	// Keep in mind the fencepost problem, i.e. spread of 3 means a
-	// total spread angle of 2x width
-	const double spreadStartAngle =
-		g->AngleOffset - (g->Spread.Count - 1) * g->Spread.Width / 2;
-
-	for (int i = 0; i < g->Spread.Count; i++)
+	// Add bullets
+	if (g->Bullet)
 	{
-		const double recoil =
-			((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
-		const double finalAngle =
-			radians + spreadStartAngle + i * g->Spread.Width + recoil;
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-		e.u.AddBullet.BulletClass = g->Bullet;
-		e.u.AddBullet.MuzzlePos = fullPos;
-		e.u.AddBullet.MuzzleHeight = z;
-		e.u.AddBullet.Angle = finalAngle;
-		e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
-		e.u.AddBullet.Flags = flags;
-		e.u.AddBullet.PlayerIndex = player;
-		e.u.AddBullet.UID = uid;
-		GameEventsEnqueue(&gGameEvents, e);
-		if (GunHasMuzzle(g))
+		// Find the starting angle of the spread (clockwise)
+		// Keep in mind the fencepost problem, i.e. spread of 3 means a
+		// total spread angle of 2x width
+		const double spreadStartAngle =
+			g->AngleOffset - (g->Spread.Count - 1) * g->Spread.Width / 2;
+		for (int i = 0; i < g->Spread.Count; i++)
 		{
-			memset(&e, 0, sizeof e);
-			e.Type = GAME_EVENT_ADD_PARTICLE;
-			e.u.AddParticle.Class = g->MuzzleFlash;
-			e.u.AddParticle.FullPos = fullPos;
-			e.u.AddParticle.Z = z;
-			e.u.AddParticle.Angle = radians;
+			const double recoil =
+				((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
+			const double finalAngle =
+				radians + spreadStartAngle + i * g->Spread.Width + recoil;
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+			e.u.AddBullet.BulletClass = g->Bullet;
+			e.u.AddBullet.MuzzlePos = fullPos;
+			e.u.AddBullet.MuzzleHeight = z;
+			e.u.AddBullet.Angle = finalAngle;
+			e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
+			e.u.AddBullet.Flags = flags;
+			e.u.AddBullet.PlayerIndex = player;
+			e.u.AddBullet.UID = uid;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
+	// Add muzzle flash
+	if (GunHasMuzzle(g))
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		e.u.AddParticle.Class = g->MuzzleFlash;
+		e.u.AddParticle.FullPos = fullPos;
+		e.u.AddParticle.Z = z;
+		e.u.AddParticle.Angle = radians;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	// Sound
 	if (playSound && g->Sound)
 	{
 		SoundPlayAt(&gSoundDevice, g->Sound, Vec2iFull2Real(fullPos));
 	}
+	// Screen shake
 	if (g->ShakeAmount > 0)
 	{
 		GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);

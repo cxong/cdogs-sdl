@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
 
 #include <stdlib.h>
 
+#include "config.h"
+#include "weapon.h"
+#include "pic_manager.h"
 #include "sys_config.h"
 
 
@@ -124,6 +127,37 @@ void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name)
 		return;
 	}
 	*value = StrSound(node->text);
+}
+void LoadPic(
+	const Pic **value, json_t *node, const char *name, const char *oldPicName)
+{
+	if (json_find_first_label(node, name))
+	{
+		char *tmp = GetString(node, name);
+		*value = PicManagerGetPic(&gPicManager, tmp);
+		CFREE(tmp);
+	}
+	if ((*value == NULL || ConfigGetBool(&gConfig, "Graphics.OriginalPics")) &&
+		json_find_first_label(node, oldPicName))
+	{
+		int oldPic;
+		LoadInt(&oldPic, node, oldPicName);
+		*value = PicManagerGetFromOld(&gPicManager, oldPic);
+	}
+}
+void LoadBulletGuns(CArray *guns, json_t *node, const char *name)
+{
+	node = json_find_first_label(node, name);
+	if (node == NULL || node->child == NULL)
+	{
+		return;
+	}
+	CArrayInit(guns, sizeof(const GunDescription *));
+	for (json_t *gun = node->child->child; gun; gun = gun->next)
+	{
+		const GunDescription *g = StrGunDescription(gun->text);
+		CArrayPushBack(guns, &g);
+	}
 }
 
 json_t *JSONFindNode(json_t *node, const char *path)

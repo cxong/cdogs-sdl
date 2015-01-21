@@ -112,18 +112,7 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 		c->Sprites = PicManagerGetSprites(&gPicManager, tmp);
 		CFREE(tmp);
 	}
-	if (json_find_first_label(node, "Pic"))
-	{
-		tmp = GetString(node, "Pic");
-		c->Pic = PicManagerGetPic(&gPicManager, tmp);
-		CFREE(tmp);
-	}
-	if (c->Pic == NULL && json_find_first_label(node, "OldPic"))
-	{
-		int oldPic;
-		LoadInt(&oldPic, node, "OldPic");
-		c->Pic = PicManagerGetFromOld(&gPicManager, oldPic);
-	}
+	LoadPic(&c->Pic, node, "Pic", "OldPic");
 	if (json_find_first_label(node, "Mask"))
 	{
 		tmp = GetString(node, "Mask");

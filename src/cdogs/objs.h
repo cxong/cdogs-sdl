@@ -60,23 +60,10 @@
 #define BULLET_Z   10
 
 
-#define OBJFLAG_EXPLOSIVE   1
-#define OBJFLAG_FLAMMABLE   2
-#define OBJFLAG_POISONOUS   4
-#define OBJFLAG_CONFUSING   8
-#define OBJFLAG_PETRIFYING  16	// TODO: not used!
-#define OBJFLAG_QUAKE       32
-
-#define OBJFLAG_DANGEROUS   31
-
-
 typedef struct
 {
-	const TOffsetPic *pic;
-	const TOffsetPic *wreckedPic;
-	const char *picName;
-	int structure;
-	int flags;
+	const MapObject *Class;
+	int Health;
 	TTileItem tileItem;
 	bool isInUse;
 } TObject;
@@ -119,15 +106,11 @@ void ObjsTerminate(void);
 void AddObjectOld(
 	const Vec2i pos, const Vec2i size,
 	const TOffsetPic *pic, const int tileFlags);
-int ObjAdd(
-	const Vec2i pos, const Vec2i size,
-	const char *picName, const int tileFlags);
-void ObjAddDestructible(
-	Vec2i pos, Vec2i size,
-	const TOffsetPic *pic, const TOffsetPic *wreckedPic,
-	const char *picName,
-	int structure, int objFlags, int tileFlags);
+int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags);
 void ObjDestroy(int id);
+
+// Check if this object is dangerous; i.e. on destruction will explode
+bool ObjIsDangerous(const TObject *o);
 
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);

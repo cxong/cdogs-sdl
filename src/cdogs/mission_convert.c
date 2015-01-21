@@ -219,8 +219,8 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 bool MissionStaticTryAddItem(Mission *m, int item, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
-	unsigned short tile = MissionGetTile(m, pos);
-	MapObject *obj = MapObjectGet(item);
+	const unsigned short tile = MissionGetTile(m, pos);
+	const MapObject *obj = IntMapObject(item);
 
 	// Remove any items already there
 	MissionStaticTryRemoveItemAt(m, pos);
@@ -281,7 +281,7 @@ bool MissionStaticTryAddWreck(Mission *m, int wreck, Vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
-	MapObject *obj = MapObjectGet(wreck);
+	MapObject *obj = IntMapObject(wreck);
 	
 	// Remove any items already there
 	MissionStaticTryRemoveWreckAt(m, pos);

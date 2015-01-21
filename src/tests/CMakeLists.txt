@@ -74,6 +74,8 @@ add_test(NAME config_test WORKING_DIRECTORY .
 
 add_executable(json_test
 	json_test.c
+	../cdogs/c_array.h
+	../cdogs/c_array.c
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h
 	../cdogs/utils.c

@@ -516,7 +516,6 @@ void BulletLoadWeapons(BulletClasses *bullets)
 	BulletClassesLoadWeapons(&bullets->CustomClasses);
 	json_free_value(&bullets->root);
 }
-static void LoadBulletGuns(CArray *guns, json_t *node);
 static void BulletClassesLoadWeapons(CArray *classes)
 {
 	for (int i = 0; i < (int)classes->size; i++)
@@ -529,35 +528,16 @@ static void BulletClassesLoadWeapons(CArray *classes)
 
 		if (json_find_first_label(b->node, "Falling"))
 		{
-			json_t *falling = json_find_first_label(b->node, "Falling")->child;
 			LoadBulletGuns(
 				&b->Falling.DropGuns,
-				json_find_first_label(falling, "DropGuns"));
+				json_find_first_label(b->node, "Falling")->child,
+				"DropGuns");
 		}
-		LoadBulletGuns(
-			&b->OutOfRangeGuns,
-			json_find_first_label(b->node, "OutOfRangeGuns"));
-		LoadBulletGuns(
-			&b->HitGuns,
-			json_find_first_label(b->node, "HitGuns"));
-		LoadBulletGuns(
-			&b->ProximityGuns,
-			json_find_first_label(b->node, "ProximityGuns"));
+		LoadBulletGuns(&b->OutOfRangeGuns, b->node, "OutOfRangeGuns");
+		LoadBulletGuns(&b->HitGuns, b->node, "HitGuns");
+		LoadBulletGuns(&b->ProximityGuns, b->node, "ProximityGuns");
 
 		b->node = NULL;
-	}
-}
-static void LoadBulletGuns(CArray *guns, json_t *node)
-{
-	if (node == NULL || node->child == NULL)
-	{
-		return;
-	}
-	CArrayInit(guns, sizeof(const GunDescription *));
-	for (json_t *gun = node->child->child; gun; gun = gun->next)
-	{
-		const GunDescription *g = StrGunDescription(gun->text);
-		CArrayPushBack(guns, &g);
 	}
 }
 void BulletTerminate(BulletClasses *bullets)

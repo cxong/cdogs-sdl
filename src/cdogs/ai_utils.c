@@ -245,8 +245,8 @@ bool IsTileWalkable(Map *map, const Vec2i pos)
 		{
 			continue;
 		}
-		TObject *o = CArrayGet(&gObjs, tid->Id);
-		if (o->flags & OBJFLAG_DANGEROUS)
+		const TObject *o = CArrayGet(&gObjs, tid->Id);
+		if (ObjIsDangerous(o))
 		{
 			return false;
 		}

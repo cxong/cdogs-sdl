@@ -36,7 +36,7 @@
 void DisplayMapItem(Vec2i pos, MapObject *mo)
 {
 	Vec2i offset;
-	Pic *pic = MapObjectGetPic(mo, &gPicManager, &offset);
+	const Pic *pic = MapObjectGetPic(mo, &offset, false);
 	Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
 }
 

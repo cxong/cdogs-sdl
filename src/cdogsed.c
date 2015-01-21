@@ -1252,6 +1252,8 @@ int main(int argc, char *argv[])
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
 	GetDataFilePath(buf, "data/pickups.json");
 	PickupClassesInit(&gPickupClasses, buf, &gAmmo);
+	GetDataFilePath(buf, "data/map_objects.json");
+	MapObjectsInit(&gMapObjects, buf);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
@@ -1304,6 +1306,7 @@ int main(int argc, char *argv[])
 	CArrayTerminate(&gPlayerTemplates);
 
 	MapTerminate(&gMap);
+	MapObjectsTerminate(&gMapObjects);
 	PickupClassesTerminate(&gPickupClasses);
 	ParticleClassesTerminate(&gParticleClasses);
 	AmmoTerminate(&gAmmo);

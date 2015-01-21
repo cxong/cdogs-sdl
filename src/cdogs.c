@@ -378,6 +378,8 @@ int main(int argc, char *argv[])
 		&gBulletClasses, &gGunDescriptions, buf, buf2);
 	GetDataFilePath(buf, "data/pickups.json");
 	PickupClassesInit(&gPickupClasses, buf, &gAmmo);
+	GetDataFilePath(buf, "data/map_objects.json");
+	MapObjectsInit(&gMapObjects, buf);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
@@ -420,6 +422,7 @@ bail:
 	PHYSFS_deinit();
 	MapTerminate(&gMap);
 	PlayerDataTerminate(&gPlayerDatas);
+	MapObjectsTerminate(&gMapObjects);
 	PickupClassesTerminate(&gPickupClasses);
 	ParticleClassesTerminate(&gParticleClasses);
 	AmmoTerminate(&gAmmo);

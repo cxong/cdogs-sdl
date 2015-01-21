@@ -781,7 +781,7 @@ static void MissionDrawObjective(
 		newPic = obj->pickupClass->Pic;
 		break;
 	case OBJECTIVE_DESTROY:
-		pic = cGeneralPics[obj->blowupObject->pic];
+		newPic = obj->blowupObject->Normal.Pic;
 		break;
 	case OBJECTIVE_INVESTIGATE:
 		// no picture
@@ -1251,7 +1251,7 @@ static void MissionChangeMapItem(void *vData, int d)
 	{
 		int i = *(int *)CArrayGet(
 			&CampaignGetCurrentMission(data->co)->Items, data->index);
-		i = CLAMP_OPPOSITE(i + d, 0, MapObjectGetCount() - 1);
+		i = CLAMP_OPPOSITE(i + d, 0, MapObjectsCount(&gMapObjects) - 1);
 		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->Items, data->index) = i;
 	}
 }
@@ -1277,7 +1277,7 @@ static void MissionChangeObjectiveIndex(void *vData, int d)
 		limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
 		break;
 	case OBJECTIVE_DESTROY:
-		limit = MapObjectGetDestructibleCount() - 1;
+		limit = (int)gMapObjects.Destructibles.size - 1;
 		break;
 	case OBJECTIVE_KILL:
 	case OBJECTIVE_INVESTIGATE:

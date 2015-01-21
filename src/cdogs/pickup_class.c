@@ -115,8 +115,8 @@ PickupClass *KeyPickupClass(const int style, const int i)
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename, const AmmoClasses *ammo)
 {
-	CArrayInit(&classes->Classes, sizeof(PickupClasses));
-	CArrayInit(&classes->CustomClasses, sizeof(PickupClasses));
+	CArrayInit(&classes->Classes, sizeof(PickupClass));
+	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
 
 	FILE *f = fopen(filename, "r");
 	json_t *root = NULL;
@@ -167,20 +167,7 @@ static void LoadPickupclass(PickupClass *c, json_t *node)
 	char *tmp;
 
 	c->Name = GetString(node, "Name");
-	if (json_find_first_label(node, "Pic"))
-	{
-		tmp = GetString(node, "Pic");
-		c->Pic = PicManagerGetPic(&gPicManager, tmp);
-		CFREE(tmp);
-	}
-	if ((c->Pic == NULL || ConfigGetBool(&gConfig, "Graphics.OriginalPics")) &&
-		json_find_first_label(node, "OldPic"))
-	{
-		int oldPic;
-		LoadInt(&oldPic, node, "OldPic");
-		c->Pic = PicManagerGetFromOld(
-			&gPicManager, cGeneralPics[oldPic].picIndex);
-	}
+	LoadPic(&c->Pic, node, "Pic", "OldPic");
 	JSON_UTILS_LOAD_ENUM(c->Type, node, "Type", StrPickupType);
 	switch (c->Type)
 	{

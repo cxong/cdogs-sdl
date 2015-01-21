@@ -428,8 +428,6 @@ bool MapTryPlaceOneObject(
 	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode)
 {
-	int f = mo->flags;
-	int oFlags = 0;
 	Vec2i realPos = Vec2iCenterOfTile(v);
 	int tileFlags = 0;
 	Tile *t = MapGetTile(map, v);
@@ -451,52 +449,34 @@ bool MapTryPlaceOneObject(
 		return 0;
 	}
 
-	if (f & MAPOBJ_FREEINFRONT)
+	if (mo->Flags & (1 << PLACEMENT_FREE_IN_FRONT))
 	{
 		IMapSet(map, v, iMap | MAP_LEAVEFREE);
 	}
 
-	if (f & MAPOBJ_EXPLOSIVE)
-	{
-		oFlags |= OBJFLAG_EXPLOSIVE;
-	}
-	if (f & MAPOBJ_FLAMMABLE)
-	{
-		oFlags |= OBJFLAG_FLAMMABLE;
-	}
-	if (f & MAPOBJ_POISONOUS)
-	{
-		oFlags |= OBJFLAG_POISONOUS;
-	}
-	if (f & MAPOBJ_QUAKE)
-	{
-		oFlags |= OBJFLAG_QUAKE;
-	}
-
-	if (f & MAPOBJ_ON_WALL)
+	// For on-wall objects, set their position to the top of the tile
+	// This guarantees that they are drawn last
+	if (mo->Flags & (1 << PLACEMENT_ON_WALL))
 	{
 		realPos.y -= TILE_HEIGHT / 2 + 1;
 	}
 
-	if (f & MAPOBJ_IMPASSABLE)
+	if (MapObjectIsWreck(mo))
 	{
-		tileFlags |= TILEITEM_IMPASSABLE;
+		tileFlags |= TILEITEM_IS_WRECK;
 	}
-
-	if (f & MAPOBJ_CANBESHOT)
+	else if (!(mo->Flags & (1 << PLACEMENT_ON_WALL)))
 	{
+		// TODO: any situation where these two do not coincide?
+		tileFlags |= TILEITEM_IMPASSABLE;
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
 	}
 
-	ObjAddDestructible(
-		realPos, Vec2iNew(mo->width, mo->height),
-		&cGeneralPics[mo->pic], &cGeneralPics[mo->wreckedPic], mo->picName,
-		mo->structure,
-		oFlags, tileFlags | extraFlags | MapObjectGetWreckFlags(mo));
-	return 1;
+	ObjAdd(mo, realPos, tileFlags | extraFlags);
+	return true;
 }
 
-void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo)
+void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
 {
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
@@ -506,11 +486,7 @@ void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo)
 	{
 		return;
 	}
-	ObjAddDestructible(
-		Vec2iCenterOfTile(v), Vec2iNew(mo->width, mo->height),
-		&cGeneralPics[mo->wreckedPic], &cGeneralPics[mo->wreckedPic],
-		mo->picName,
-		0, 0, TILEITEM_IS_WRECK);
+	ObjAdd(mo, Vec2iCenterOfTile(v), TILEITEM_IS_WRECK);
 }
 
 int MapHasLockedRooms(Map *map)

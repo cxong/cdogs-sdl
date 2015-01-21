@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,49 +46,72 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_OBJECT
-#define __MAP_OBJECT
+#pragma once
 
+#include <json/json.h>
 #include "pic_manager.h"
 
-#define MAPOBJ_EXPLOSIVE    (1 << 0)
-#define MAPOBJ_IMPASSABLE   (1 << 1)
-#define MAPOBJ_CANBESHOT    (1 << 2)
-#define MAPOBJ_CANBETAKEN   (1 << 3)
-#define MAPOBJ_ROOMONLY     (1 << 4)
-#define MAPOBJ_NOTINROOM    (1 << 5)
-#define MAPOBJ_FREEINFRONT  (1 << 6)
-#define MAPOBJ_ONEWALL      (1 << 7)
-#define MAPOBJ_ONEWALLPLUS  (1 << 8)
-#define MAPOBJ_NOWALLS      (1 << 9)
-#define MAPOBJ_HIDEINSIDE   (1 << 10)	// TODO: unused
-#define MAPOBJ_INTERIOR     (1 << 11)	// TODO: unused
-#define MAPOBJ_FLAMMABLE    (1 << 12)
-#define MAPOBJ_POISONOUS    (1 << 13)
-#define MAPOBJ_QUAKE        (1 << 14)
-#define MAPOBJ_ON_WALL      (1 << 15)
+typedef enum
+{
+	PLACEMENT_NONE = 0,
+	PLACEMENT_OUTSIDE,
+	PLACEMENT_INSIDE,
+	PLACEMENT_NO_WALLS,
+	PLACEMENT_ONE_WALL,
+	PLACEMENT_ONE_OR_MORE_WALLS,
+	PLACEMENT_FREE_IN_FRONT,
+	PLACEMENT_ON_WALL,
 
-#define MAPOBJ_OUTSIDE (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | \
-                        MAPOBJ_NOTINROOM | MAPOBJ_ONEWALL)
-#define MAPOBJ_INOPEN (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | \
-                        MAPOBJ_NOTINROOM | MAPOBJ_NOWALLS)
-#define MAPOBJ_INSIDE (MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT | MAPOBJ_ROOMONLY)
+	PLACEMENT_COUNT
+} PlacementFlags;
+const char *PlacementFlagStr(const int i);
 
+typedef struct
+{
+	const Pic *Pic;
+	Vec2i Offset;
+} MapObjectPic;
 // A static map object, taking up an entire tile
 typedef struct
 {
-	int pic, wreckedPic;
-	const char *picName;
-	int width, height;
-	int structure;
-	int flags;
+	int Idx;
+	char *Name;
+	MapObjectPic Normal;
+	MapObjectPic Wreck;
+	Vec2i Size;
+	int Health;
+	CArray DestroyGuns;	// of const GunDescription *
+	// Bit field composed of bits shifted by PlacementFlags
+	int Flags;
 } MapObject;
+typedef struct
+{
+	CArray Classes;	// of MapObject
+	CArray CustomClasses;	// of MapObject
+	// Names of special types of map objects; for editor support
+	// Reset on load
+	CArray Destructibles;	// of char *
+	// Map objects that match "blood%d" - left over when actors die
+	CArray Bloods;	// of char *
+} MapObjects;
+extern MapObjects gMapObjects;
 
-MapObject *MapObjectGet(int item);
-int MapObjectGetCount(void);
-int MapObjectGetDestructibleCount(void);
-Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset);
-int MapObjectGetWreckFlags(const MapObject *mo);
+MapObject *StrMapObject(const char *s);
+// Legacy map objects, integer based
+MapObject *IntMapObject(const int m);
+// Get map object by index; used by editor
+MapObject *IndexMapObject(const int i);
+MapObject *RandomBloodMapObject(const MapObjects *mo);
+
+void MapObjectsInit(MapObjects *classes, const char *filename);
+void MapObjectsLoadJSON(CArray *classes, json_t *root);
+void MapObjectsClear(CArray *classes);
+void MapObjectsTerminate(MapObjects *classes);
+int MapObjectsCount(const MapObjects *classes);
+
+const Pic *MapObjectGetPic(
+	const MapObject *mo, Vec2i *offset, const bool isWreck);
+bool MapObjectIsWreck(const MapObject *mo);
 
 bool MapObjectIsTileOK(
 	const MapObject *obj, unsigned short tile, const bool isEmpty,
@@ -97,5 +120,3 @@ bool MapObjectIsTileOKStrict(
 	const MapObject *obj, const unsigned short tile, const bool isEmpty,
 	const unsigned short tileAbove, const unsigned short tileBelow,
 	const int numWallsAdjacent, const int numWallsAround);
-
-#endif

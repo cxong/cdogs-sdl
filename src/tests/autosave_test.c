@@ -20,6 +20,29 @@ Mix_Chunk *StrSound(const char *s)
 	UNUSED(s);
 	return NULL;
 }
+bool ConfigGetBool(Config *c, const char *name)
+{
+	UNUSED(c); UNUSED(name); return false;
+}
+Pic *PicManagerGetFromOld(PicManager *pm, int idx)
+{
+	UNUSED(pm);
+	UNUSED(idx);
+	return NULL;
+}
+Pic *PicManagerGetPic(const PicManager *pm, const char *name)
+{
+	UNUSED(pm);
+	UNUSED(name);
+	return NULL;
+}
+const GunDescription *StrGunDescription(const char *s)
+{
+	UNUSED(s);
+	return NULL;
+}
+Config gConfig;
+PicManager gPicManager;
 
 
 FEATURE(1, "Initialise autosave")

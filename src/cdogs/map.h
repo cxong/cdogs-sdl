@@ -149,7 +149,7 @@ Vec2i MapGenerateFreePosition(Map *map, Vec2i size);
 bool MapTryPlaceOneObject(
 	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode);
-void MapPlaceWreck(Map *map, Vec2i v, MapObject *mo);
+void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo);
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
 typedef struct

@@ -4,73 +4,73 @@
     {
       "Name": "folder",
       "Pic": "folder",
-      "OldPic": 12,
+      "OldPic": 218,
       "Type": "Score"
     },
     {
       "Name": "disk1",
       "Pic": "disk1",
-      "OldPic": 13,
+      "OldPic": 219,
       "Type": "Score"
     },
     {
       "Name": "disk2",
       "Pic": "disk2",
-      "OldPic": 14,
+      "OldPic": 220,
       "Type": "Score"
     },
     {
       "Name": "disk3",
       "Pic": "disk3",
-      "OldPic": 15,
+      "OldPic": 221,
       "Type": "Score"
     },
     {
       "Name": "blueprint",
       "Pic": "blueprint",
-      "OldPic": 87,
+      "OldPic": 504,
       "Type": "Score"
     },
     {
       "Name": "cd",
       "Pic": "cd",
-      "OldPic": 88,
+      "OldPic": 505,
       "Type": "Score"
     },
     {
       "Name": "bag",
       "Pic": "bag",
-      "OldPic": 89,
+      "OldPic": 506,
       "Type": "Score"
     },
     {
       "Name": "holo",
       "Pic": "holo",
-      "OldPic": 90,
+      "OldPic": 507,
       "Type": "Score"
     },
     {
       "Name": "bottle",
       "Pic": "bottle",
-      "OldPic": 91,
+      "OldPic": 508,
       "Type": "Score"
     },
     {
       "Name": "radio",
       "Pic": "radio",
-      "OldPic": 92,
+      "OldPic": 509,
       "Type": "Score"
     },
     {
       "Name": "circuit",
       "Pic": "circuit",
-      "OldPic": 93,
+      "OldPic": 510,
       "Type": "Score"
     },
     {
       "Name": "paper",
       "Pic": "paper",
-      "OldPic": 94,
+      "OldPic": 511,
       "Type": "Score"
     },
     {
@@ -81,112 +81,112 @@
     {
       "Name": "key_office_yellow",
       "Pic": "key_office_yellow",
-      "OldPic": 29,
+      "OldPic": 290,
       "Type": "Key",
       "Key": "yellow"
     },
     {
       "Name": "key_office_green",
       "Pic": "key_office_green",
-      "OldPic": 26,
+      "OldPic": 287,
       "Type": "Key",
       "Key": "green"
     },
     {
       "Name": "key_office_blue",
       "Pic": "key_office_blue",
-      "OldPic": 23,
+      "OldPic": 284,
       "Type": "Key",
       "Key": "blue"
     },
     {
       "Name": "key_office_red",
       "Pic": "key_office_red",
-      "OldPic": 20,
+      "OldPic": 281,
       "Type": "Key",
       "Key": "red"
     },
     {
       "Name": "key_dungeon_yellow",
       "Pic": "key_dungeon_yellow",
-      "OldPic": 56,
+      "OldPic": 353,
       "Type": "Key",
       "Key": "yellow"
     },
     {
       "Name": "key_dungeon_green",
       "Pic": "key_dungeon_green",
-      "OldPic": 53,
+      "OldPic": 354,
       "Type": "Key",
       "Key": "green"
     },
     {
       "Name": "key_dungeon_blue",
       "Pic": "key_dungeon_blue",
-      "OldPic": 50,
+      "OldPic": 355,
       "Type": "Key",
       "Key": "blue"
     },
     {
       "Name": "key_dungeon_red",
       "Pic": "key_dungeon_red",
-      "OldPic": 47,
+      "OldPic": 356,
       "Type": "Key",
       "Key": "red"
     },
     {
       "Name": "key_plain_yellow",
       "Pic": "key_plain_yellow",
-      "OldPic": 115,
+      "OldPic": 543,
       "Type": "Key",
       "Key": "yellow"
     },
     {
       "Name": "key_plain_green",
       "Pic": "key_plain_green",
-      "OldPic": 112,
+      "OldPic": 540,
       "Type": "Key",
       "Key": "green"
     },
     {
       "Name": "key_plain_blue",
       "Pic": "key_plain_blue",
-      "OldPic": 109,
+      "OldPic": 537,
       "Type": "Key",
       "Key": "blue"
     },
     {
       "Name": "key_plain_red",
       "Pic": "key_plain_red",
-      "OldPic": 106,
+      "OldPic": 534,
       "Type": "Key",
       "Key": "red"
     },
     {
       "Name": "key_cube_yellow",
       "Pic": "key_cube_yellow",
-      "OldPic": 129,
+      "OldPic": 558,
       "Type": "Key",
       "Key": "yellow"
     },
     {
       "Name": "key_cube_green",
       "Pic": "key_cube_green",
-      "OldPic": 126,
+      "OldPic": 555,
       "Type": "Key",
       "Key": "green"
     },
     {
       "Name": "key_cube_blue",
       "Pic": "key_cube_blue",
-      "OldPic": 123,
+      "OldPic": 552,
       "Type": "Key",
       "Key": "blue"
     },
     {
       "Name": "key_cube_red",
       "Pic": "key_cube_red",
-      "OldPic": 120,
+      "OldPic": 549,
       "Type": "Key",
       "Key": "red"
     }

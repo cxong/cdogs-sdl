@@ -89,26 +89,21 @@ static void DrawMapItem(
 {
 	UNUSED(g);
 	IndexedEditorBrush *data = vData;
-	MapObject *mo = MapObjectGet(data->ItemIndex);
+	MapObject *mo = IndexMapObject(data->ItemIndex);
 	DisplayMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
 }
-static void DisplayWreck(Vec2i pos, MapObject *mo);
 static void DrawWreck(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(g);
 	IndexedEditorBrush *data = vData;
-	MapObject *mo = MapObjectGet(data->ItemIndex);
-	DisplayWreck(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
-}
-static void DisplayWreck(Vec2i pos, MapObject *mo)
-{
-	const TOffsetPic *pic = &cGeneralPics[mo->wreckedPic];
-	DrawTPic(
-		pos.x + pic->dx, pos.y + pic->dy,
-		PicManagerGetOldPic(&gPicManager, pic->picIndex));
+	const char **name = CArrayGet(&gMapObjects.Destructibles, data->ItemIndex);
+	const MapObject *mo = StrMapObject(*name);
+	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	Vec2i offset;
+	const Pic *pic = MapObjectGetPic(mo, &offset, true);
+	Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
 }
 static void DrawCharacter(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
@@ -159,7 +154,7 @@ static void DrawObjective(
 		break;
 	case OBJECTIVE_DESTROY:
 		{
-			MapObject *mo = MapObjectGet(mobj->Index);
+			MapObject *mo = IndexMapObject(mobj->Index);
 			DisplayMapItem(pos, mo);
 		}
 		break;
@@ -265,6 +260,7 @@ UIObject *CreateAddItemObjs(
 	UIObjectDestroy(o);
 	return c;
 }
+static void AddPlacementFlagTooltip(UIObject *o2, const int idx);
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 {
 	UIObject *o2;
@@ -278,8 +274,8 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
-	int width = 8;
-	for (int i = 0; i < MapObjectGetCount(); i++)
+	const int width = 8;
+	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
 	{
 		o2 = UIObjectCopy(o);
 		o2->IsDynamicData = 1;
@@ -294,10 +290,58 @@ static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 			pos.x = 0;
 			pos.y += o->Size.y;
 		}
+		AddPlacementFlagTooltip(o2, i);
 	}
 
 	UIObjectDestroy(o);
 	return c;
+}
+static void AddPlacementFlagTooltip(UIObject *o2, const int idx)
+{
+	// Add a descriptive tooltip for the map object
+	const MapObject *mo = IndexMapObject(idx);
+	char buf[512];
+	// Construct text representing the placement flags
+	char pfBuf[128];
+	if (mo->Flags == 0)
+	{
+		sprintf(pfBuf, "anywhere\n");
+	}
+	else
+	{
+		sprintf(pfBuf, "");
+		for (int i = 1; i < PLACEMENT_COUNT; i++)
+		{
+			if (mo->Flags & (1 << i))
+			{
+				if (strlen(pfBuf) > 0)
+				{
+					strcat(pfBuf, ", ");
+				}
+				strcat(pfBuf, PlacementFlagStr(i));
+			}
+		}
+	}
+	// Construct text representing explosion guns
+	char exBuf[256];
+	sprintf(exBuf, "");
+	if (mo->DestroyGuns.size > 0)
+	{
+		sprintf(exBuf, "\nExplodes: ");
+		for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
+		{
+			if (i > 0)
+			{
+				strcat(exBuf, ", ");
+			}
+			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
+			strcat(exBuf, (*g)->name);
+		}
+	}
+	sprintf(
+		buf, "%s\nHealth: %d\nPlacement: %s%s",
+		mo->Name, mo->Health, pfBuf, exBuf);
+	CSTRDUP(o2->Tooltip, buf);
 }
 static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 {
@@ -312,8 +356,8 @@ static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
-	int width = 8;
-	for (int i = 0; i < MapObjectGetCount(); i++)
+	const int width = 8;
+	for (int i = 0; i < (int)gMapObjects.Destructibles.size; i++)
 	{
 		o2 = UIObjectCopy(o);
 		o2->IsDynamicData = 1;
@@ -328,6 +372,9 @@ static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 			pos.x = 0;
 			pos.y += o->Size.y;
 		}
+		const char **name = CArrayGet(&gMapObjects.Destructibles, i);
+		const MapObject *mo = StrMapObject(*name);
+		CSTRDUP(o2->Tooltip, mo->Name);
 	}
 
 	UIObjectDestroy(o);

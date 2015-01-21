@@ -490,7 +490,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 		assert(i < OBJECTIVE_MAX_OLD);
 		// Set objective colours based on type
 		o.color = ObjectiveTypeColor(mobj->Type);
-		o.blowupObject = MapObjectGet(mobj->Index);
+		o.blowupObject = IntMapObject(mobj->Index);
 		o.pickupClass = IntPickupClass(mobj->Index);
 		CArrayPushBack(&mo->Objectives, &o);
 	}
@@ -547,12 +547,7 @@ void SetupMission(
 	for (int i = 0; i < (int)m->Items.size; i++)
 	{
 		int *itemIndex = CArrayGet(&m->Items, i);
-		if (*itemIndex >= MapObjectGetCount())
-		{
-			debug(D_NORMAL, "Warning: unknown map object index %d\n", *itemIndex);
-			continue;
-		}
-		CArrayPushBack(&mo->MapObjects, MapObjectGet(*itemIndex));
+		CArrayPushBack(&mo->MapObjects, IntMapObject(*itemIndex));
 	}
 
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];

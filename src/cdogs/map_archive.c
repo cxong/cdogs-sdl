@@ -94,6 +94,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
 	PickupClassesClear(&gPickupClasses.CustomClasses);
+	MapObjectsClear(&gMapObjects.CustomClasses);
 
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
@@ -134,6 +135,12 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	if (root != NULL)
 	{
 		PickupClassesLoadJSON(&gPickupClasses.CustomClasses, root);
+	}
+
+	root = ReadPhysFSJSON(filename, "map_objects.json");
+	if (root != NULL)
+	{
+		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
 	}
 
 

@@ -640,8 +640,8 @@ static void DrawObjectiveInfo(
 	case OBJECTIVE_DESTROY:
 		{
 			Vec2i picOffset;
-			const Pic *p = MapObjectGetPic(
-				MapObjectGet(mobj->Index), &gPicManager, &picOffset);
+			const Pic *p =
+				MapObjectGetPic(IntMapObject(mobj->Index), &picOffset, false);
 			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
 		}
 		break;

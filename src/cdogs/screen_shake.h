@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SCREEN_SHAKE
-#define __SCREEN_SHAKE
+#pragma once
 
 #include "vector.h"
 
@@ -37,12 +36,7 @@
 // time left.
 typedef int ScreenShake;
 
-#define SHAKE_SMALL_AMOUNT 15
-#define SHAKE_BIG_AMOUNT 22
-
 ScreenShake ScreenShakeZero(void);
 ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier);
 Vec2i ScreenShakeGetDelta(ScreenShake s);
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks);
-
-#endif

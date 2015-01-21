@@ -48,114 +48,285 @@
 */
 #include "map_object.h"
 
+#include "json_utils.h"
 #include "map.h"
 #include "pics.h"
 
-// +--------------------+
-// |  Map objects info  |
-// +--------------------+
+
+MapObjects gMapObjects;
 
 
-static MapObject mapItems[] =
+const char *PlacementFlagStr(const int i)
 {
-	{ OFSPIC_BARREL2, OFSPIC_WRECKEDBARREL2, "barrel_blue", 16, 12, 40, MAPOBJ_OUTSIDE },
-	{ OFSPIC_BOX, OFSPIC_WRECKEDBOX, "box", 16, 12, 20, MAPOBJ_INOPEN },
-	{ OFSPIC_BOX2, OFSPIC_WRECKEDBOX, "box2", 16, 12, 20, MAPOBJ_INOPEN },
-	{ OFSPIC_CABINET, OFSPIC_WRECKEDCABINET, "cabinet", 16, 12, 20, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR | MAPOBJ_FREEINFRONT },
-	{ OFSPIC_PLANT, OFSPIC_WRECKEDPLANT, "plant", 8, 6, 20, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS },
-	{ OFSPIC_TABLE, OFSPIC_WRECKEDTABLE, "table", 16, 12, 20, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_CHAIR, OFSPIC_WRECKEDCHAIR, "chair", 8, 6, 20, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_ROD, OFSPIC_WRECKEDCHAIR, "rod", 8, 6, 60, MAPOBJ_INOPEN },
-	{ OFSPIC_SKULLBARREL_WOOD, OFSPIC_WRECKEDBARREL_WOOD, "barrel_skull", 16, 12, 40, MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE },
-	{ OFSPIC_BARREL_WOOD, OFSPIC_WRECKEDBARREL_WOOD, "barrel_wood", 16, 12, 40, MAPOBJ_OUTSIDE },
-	{ OFSPIC_GRAYBOX, OFSPIC_WRECKEDBOX_WOOD, "box_gray", 16, 12, 20, MAPOBJ_OUTSIDE },
-	{ OFSPIC_GREENBOX, OFSPIC_WRECKEDBOX_WOOD, "box_green", 16, 12, 20, MAPOBJ_OUTSIDE },
-	{ OFSPIC_OGRESTATUE, OFSPIC_WRECKEDSAFE, "statue_ogre", 16, 12, 80, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR | MAPOBJ_FREEINFRONT },
-	{ OFSPIC_WOODTABLE_CANDLE, OFSPIC_WRECKEDTABLE, "table_wood_candle", 16, 12, 20, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_WOODTABLE, OFSPIC_WRECKEDBOX_WOOD, "table_wood", 16, 12, 20, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_TREE, OFSPIC_TREE_REMAINS, "tree_dead", 8, 6, 40, MAPOBJ_INOPEN },
-	{ OFSPIC_BOOKSHELF, OFSPIC_WRECKEDBOX_WOOD, "bookshelf", 16, 6, 20, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR | MAPOBJ_FREEINFRONT },
-	{ OFSPIC_WOODENBOX, OFSPIC_WRECKEDBOX_WOOD, "box_wood", 16, 12, 20, MAPOBJ_OUTSIDE },
-	{ OFSPIC_CLOTHEDTABLE, OFSPIC_WRECKEDBOX_WOOD, "table_clothed", 16, 12, 20, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_STEELTABLE, OFSPIC_WRECKEDSAFE, "table_steel", 16, 12, 30, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_AUTUMNTREE, OFSPIC_AUTUMNTREE_REMAINS, "tree_autumn", 8, 6, 40, MAPOBJ_INOPEN },
-	{ OFSPIC_GREENTREE, OFSPIC_GREENTREE_REMAINS, "tree", 16, 12, 40, MAPOBJ_INOPEN },
-
-	// Used-to-be blow-ups
-	{ OFSPIC_BOX3, OFSPIC_WRECKEDBOX3, "box3", 16, 12, 40, MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE | MAPOBJ_QUAKE },
-	{ OFSPIC_SAFE, OFSPIC_WRECKEDSAFE, "safe", 16, 12, 100, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR | MAPOBJ_FREEINFRONT },
-	{ OFSPIC_REDBOX, OFSPIC_WRECKEDBOX_WOOD, "box_red", 16, 12, 40, MAPOBJ_OUTSIDE | MAPOBJ_FLAMMABLE },
-	{ OFSPIC_LABTABLE, OFSPIC_WRECKEDSAFE, "table_lab", 16, 12, 60, MAPOBJ_INSIDE | MAPOBJ_ONEWALLPLUS | MAPOBJ_INTERIOR | MAPOBJ_FREEINFRONT | MAPOBJ_POISONOUS },
-	{ OFSPIC_TERMINAL, OFSPIC_WRECKEDBOX_WOOD, "terminal", 16, 12, 40, MAPOBJ_INSIDE | MAPOBJ_NOWALLS },
-	{ OFSPIC_BARREL, OFSPIC_WRECKEDBARREL, "barrel", 16, 12, 40, MAPOBJ_OUTSIDE | MAPOBJ_FLAMMABLE },
-	{ OFSPIC_ROCKET, OFSPIC_BURN, "rocket", 16, 12, 40, MAPOBJ_OUTSIDE | MAPOBJ_EXPLOSIVE | MAPOBJ_QUAKE },
-	{ OFSPIC_EGG, OFSPIC_EGG_REMAINS, "egg", 16, 12, 30, MAPOBJ_IMPASSABLE | MAPOBJ_CANBESHOT },
-	{ OFSPIC_BLOODSTAIN, 0, "bloodstain", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_WALL_SKULL, 0, "wall_skull", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_BONE_N_BLOOD, 0, "bone_blood", 0, 0, 0, 0 },
-	{ OFSPIC_BULLET_MARKS, 0, "bulletmarks", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_SKULL, 0, "skull", 0, 0, 0, 0 },
-	{ OFSPIC_BLOOD, 0, "blood", 0, 0, 0, 0 },
-	{ OFSPIC_SCRATCH, 0, "scratch", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_WALL_STUFF, 0, "wall_stuff", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_WALL_GOO, 0, "wall_goo", 0, 0, 0, MAPOBJ_ON_WALL },
-	{ OFSPIC_GOO, 0, "goo", 0, 0, 0, 0 }
-};
-#define ITEMS_COUNT (sizeof(mapItems)/sizeof(MapObject))
-
-MapObject *MapObjectGet(int item)
-{
-	return &mapItems[item];
-}
-int MapObjectGetCount(void)
-{
-	return ITEMS_COUNT;
-}
-int MapObjectGetDestructibleCount(void)
-{
-	int i;
-	for (i = 0; i < (int)ITEMS_COUNT; i++)
+	switch (i)
 	{
-		if (!(mapItems[i].flags & MAPOBJ_IMPASSABLE))
+		T2S(PLACEMENT_OUTSIDE, "Outside");
+		T2S(PLACEMENT_INSIDE, "Inside");
+		T2S(PLACEMENT_NO_WALLS, "NoWalls");
+		T2S(PLACEMENT_ONE_WALL, "OneWall");
+		T2S(PLACEMENT_ONE_OR_MORE_WALLS, "OneOrMoreWalls");
+		T2S(PLACEMENT_FREE_IN_FRONT, "FreeInFront");
+		T2S(PLACEMENT_ON_WALL, "OnWall");
+	default:
+		return "";
+	}
+}
+static PlacementFlags StrPlacementFlag(const char *s)
+{
+	S2T(PLACEMENT_OUTSIDE, "Outside");
+	S2T(PLACEMENT_INSIDE, "Inside");
+	S2T(PLACEMENT_NO_WALLS, "NoWalls");
+	S2T(PLACEMENT_ONE_WALL, "OneWall");
+	S2T(PLACEMENT_ONE_OR_MORE_WALLS, "OneOrMoreWalls");
+	S2T(PLACEMENT_FREE_IN_FRONT, "FreeInFront");
+	S2T(PLACEMENT_ON_WALL, "OnWall");
+	return PLACEMENT_NONE;
+}
+
+MapObject *StrMapObject(const char *s)
+{
+	if (s == NULL || strlen(s) == 0)
+	{
+		return NULL;
+	}
+	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++)
+	{
+		MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
+		if (strcmp(s, c->Name) == 0)
+		{
+			return c;
+		}
+	}
+	for (int i = 0; i < (int)gMapObjects.Classes.size; i++)
+	{
+		MapObject *c = CArrayGet(&gMapObjects.Classes, i);
+		if (strcmp(s, c->Name) == 0)
+		{
+			return c;
+		}
+	}
+	return NULL;
+}
+MapObject *IntMapObject(const int m)
+{
+	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++)
+	{
+		MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
+		if (c->Idx == m)
+		{
+			return c;
+		}
+	}
+	for (int i = 0; i < (int)gMapObjects.Classes.size; i++)
+	{
+		MapObject *c = CArrayGet(&gMapObjects.Classes, i);
+		if (c->Idx == m)
+		{
+			return c;
+		}
+	}
+	CASSERT(false, "cannot find map object index");
+	return NULL;
+}
+MapObject *IndexMapObject(const int i)
+{
+	CASSERT(
+		i >= 0 &&
+		i < (int)gMapObjects.Classes.size + (int)gMapObjects.CustomClasses.size,
+		"Map object index out of bounds");
+	if (i < (int)gMapObjects.Classes.size)
+	{
+		return CArrayGet(&gMapObjects.Classes, i);
+	}
+	return CArrayGet(&gMapObjects.CustomClasses, i - gMapObjects.Classes.size);
+}
+MapObject *RandomBloodMapObject(const MapObjects *mo)
+{
+	const int idx = rand() % (int)mo->Bloods.size;
+	const char **name = CArrayGet(&mo->Bloods, idx);
+	return StrMapObject(*name);
+}
+
+#define VERSION 1
+
+void MapObjectsInit(MapObjects *classes, const char *filename)
+{
+	CArrayInit(&classes->Classes, sizeof(MapObject));
+	CArrayInit(&classes->CustomClasses, sizeof(MapObject));
+	CArrayInit(&classes->Destructibles, sizeof(char *));
+	CArrayInit(&classes->Bloods, sizeof(char *));
+
+	FILE *f = fopen(filename, "r");
+	json_t *root = NULL;
+	if (f == NULL)
+	{
+		printf("Error: cannot load map objects file %s\n", filename);
+		goto bail;
+	}
+	enum json_error e = json_stream_parse(f, &root);
+	if (e != JSON_OK)
+	{
+		printf("Error parsing map objects file %s\n", filename);
+		goto bail;
+	}
+	MapObjectsLoadJSON(&classes->Classes, root);
+
+bail:
+	if (f != NULL)
+	{
+		fclose(f);
+	}
+	json_free_value(&root);
+}
+static void LoadMapObject(MapObject *m, json_t *node);
+static void ReloadDestructibles(MapObjects *mo);
+void MapObjectsLoadJSON(CArray *classes, json_t *root)
+{
+	int version;
+	LoadInt(&version, root, "Version");
+	if (version > VERSION || version <= 0)
+	{
+		CASSERT(false, "cannot read map objects file version");
+		return;
+	}
+
+	json_t *pickupsNode = json_find_first_label(root, "MapObjects")->child;
+	for (json_t *child = pickupsNode->child; child; child = child->next)
+	{
+		MapObject m;
+		LoadMapObject(&m, child);
+		CArrayPushBack(classes, &m);
+	}
+
+	ReloadDestructibles(&gMapObjects);
+	// Load blood objects
+	CArrayClear(&gMapObjects.Bloods);
+	for (int i = 0;; i++)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "blood%d", i);
+		if (StrMapObject(buf) == NULL)
 		{
 			break;
 		}
+		char *tmp;
+		CSTRDUP(tmp, buf);
+		CArrayPushBack(&gMapObjects.Bloods, &tmp);
 	}
-	return i;
 }
-
-Pic *MapObjectGetPic(MapObject *mo, PicManager *pm, Vec2i *offset)
+static void LoadMapObject(MapObject *m, json_t *node)
 {
-	const TOffsetPic *ofpic = &cGeneralPics[mo->pic];
-	*offset = Vec2iNew(ofpic->dx, ofpic->dy);
-	Pic *pic;
-	if (!mo->picName || mo->picName[0] == '\0' ||
-		ConfigGetBool(&gConfig, "Graphics.OriginalPics"))
-	{
-		goto defaultPic;
-	}
-	pic = PicManagerGetPic(pm, mo->picName);
-	if (!pic)
-	{
-		goto defaultPic;
-	}
-	return pic;
+	memset(m, 0, sizeof *m);
 
-defaultPic:
-	pic = PicManagerGetFromOld(pm, ofpic->picIndex);
-	return pic;
+	LoadInt(&m->Idx, node, "Index");
+	m->Name = GetString(node, "Name");
+	LoadPic(&m->Normal.Pic, node, "Pic", "OldPic");
+	LoadPic(&m->Wreck.Pic, node, "WreckPic", "OldWreckPic");
+	if (m->Normal.Pic)
+	{
+		// Default offset: centered X, align bottom of tile and sprite
+		m->Normal.Offset = Vec2iNew(
+			-m->Normal.Pic->size.x / 2,
+			TILE_HEIGHT / 2 - m->Normal.Pic->size.y);
+		LoadVec2i(&m->Normal.Offset, node, "Offset");
+	}
+	if (m->Wreck.Pic)
+	{
+		m->Wreck.Offset = Vec2iScaleDiv(m->Wreck.Pic->size, -2);
+		LoadVec2i(&m->Wreck.Offset, node, "WreckOffset");
+	}
+	// Default tile size
+	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+	LoadVec2i(&m->Size, node, "Size");
+	LoadInt(&m->Health, node, "Health");
+	LoadBulletGuns(&m->DestroyGuns, node, "DestroyGuns");
+	json_t *flagsNode = json_find_first_label(node, "Flags");
+	if (flagsNode != NULL && flagsNode->child != NULL)
+	{
+		for (json_t *flagNode = flagsNode->child->child;
+			flagNode;
+			flagNode = flagNode->next)
+		{
+			m->Flags |= 1 << StrPlacementFlag(flagNode->text);
+		}
+	}
+}
+static void AddDestructibles(MapObjects *mo, const CArray *classes);
+static void ReloadDestructibles(MapObjects *mo)
+{
+	for (int i = 0; i < (int)mo->Destructibles.size; i++)
+	{
+		char **s = CArrayGet(&mo->Destructibles, i);
+		CFREE(*s);
+	}
+	CArrayClear(&mo->Destructibles);
+	AddDestructibles(mo, &mo->Classes);
+	AddDestructibles(mo, &mo->CustomClasses);
+}
+static void AddDestructibles(MapObjects *m, const CArray *classes)
+{
+	for (int i = 0; i < (int)classes->size; i++)
+	{
+		const MapObject *mo = CArrayGet(classes, i);
+		if (mo->Health > 0)
+		{
+			char *s;
+			CSTRDUP(s, mo->Name);
+			CArrayPushBack(&m->Destructibles, &s);
+		}
+	}
 }
 
-// Hack to make sure the map objects get added with the right wreck flags
+void MapObjectsClear(CArray *classes)
+{
+	for (int i = 0; i < (int)classes->size; i++)
+	{
+		MapObject *c = CArrayGet(classes, i);
+		CFREE(c->Name);
+		CArrayTerminate(&c->DestroyGuns);
+	}
+	CArrayClear(classes);
+}
+void MapObjectsTerminate(MapObjects *classes)
+{
+	MapObjectsClear(&classes->Classes);
+	CArrayTerminate(&classes->Classes);
+	MapObjectsClear(&classes->CustomClasses);
+	CArrayTerminate(&classes->CustomClasses);
+	for (int i = 0; i < (int)classes->Destructibles.size; i++)
+	{
+		char **s = CArrayGet(&classes->Destructibles, i);
+		CFREE(*s);
+	}
+	CArrayTerminate(&classes->Destructibles);
+	for (int i = 0; i < (int)classes->Bloods.size; i++)
+	{
+		char **s = CArrayGet(&classes->Bloods, i);
+		CFREE(*s);
+	}
+	CArrayTerminate(&classes->Bloods);
+}
+
+int MapObjectsCount(const MapObjects *classes)
+{
+	return (int)classes->Classes.size + (int)classes->CustomClasses.size;
+}
+
+
+const Pic *MapObjectGetPic(
+	const MapObject *mo, Vec2i *offset, const bool isWreck)
+{
+	const bool useWreck = isWreck && mo->Wreck.Pic;
+	*offset = useWreck ? mo->Wreck.Offset : mo->Normal.Offset;
+	return useWreck ? mo->Wreck.Pic : mo->Normal.Pic;
+}
+
+// Make sure the map objects get added with the right wreck flags
 // Wrecks are considered debris and drawn last; this is useful for objects that
 // are on the ground.
-int MapObjectGetWreckFlags(const MapObject *mo)
+bool MapObjectIsWreck(const MapObject *mo)
 {
-	if (!(mo->flags & MAPOBJ_ON_WALL) && mo->width == 0 && mo->height == 0)
-	{
-		return TILEITEM_IS_WRECK;
-	}
-	return 0;
+	return !(mo->Flags & (1 << PLACEMENT_ON_WALL)) && mo->Health == 0;
 }
 
 
@@ -173,7 +344,7 @@ bool MapObjectIsTileOK(
 		return 0;
 	}
 	tileAbove &= MAP_MASKACCESS;
-	if ((obj->flags & MAPOBJ_ON_WALL) && tileAbove != MAP_WALL)
+	if ((obj->Flags & (1 << PLACEMENT_ON_WALL)) && tileAbove != MAP_WALL)
 	{
 		return 0;
 	}
@@ -194,38 +365,33 @@ bool MapObjectIsTileOKStrict(
 		return 0;
 	}
 
-	if ((obj->flags & MAPOBJ_ROOMONLY) && tileAccess != MAP_ROOM)
+	if (obj->Flags & (1 << PLACEMENT_OUTSIDE) && tileAccess == MAP_ROOM)
 	{
-		return 0;
+		return false;
 	}
-
-	if ((obj->flags & MAPOBJ_NOTINROOM) && tileAccess == MAP_ROOM)
+	if ((obj->Flags & (1 << PLACEMENT_INSIDE)) && tileAccess != MAP_ROOM)
 	{
-		return 0;
+		return false;
 	}
-
-	if ((obj->flags & MAPOBJ_FREEINFRONT) != 0 &&
+	if ((obj->Flags & (1 << PLACEMENT_NO_WALLS)) && numWallsAround != 0)
+	{
+		return false;
+	}
+	if ((obj->Flags & (1 << PLACEMENT_ONE_WALL)) && numWallsAdjacent != 1)
+	{
+		return false;
+	}
+	if ((obj->Flags & (1 << PLACEMENT_ONE_OR_MORE_WALLS)) && numWallsAdjacent < 1)
+	{
+		return false;
+	}
+	if ((obj->Flags & (1 << PLACEMENT_FREE_IN_FRONT)) &&
 		(tileBelow & MAP_MASKACCESS) != MAP_FLOOR &&
 		(tileBelow & MAP_MASKACCESS) != MAP_SQUARE &&
 		(tileBelow & MAP_MASKACCESS) != MAP_ROOM)
 	{
-		return 0;
+		return false;
 	}
 
-	if ((obj->flags & MAPOBJ_ONEWALL) && numWallsAdjacent != 1)
-	{
-		return 0;
-	}
-
-	if ((obj->flags & MAPOBJ_ONEWALLPLUS) && numWallsAdjacent < 1)
-	{
-		return 0;
-	}
-
-	if ((obj->flags & MAPOBJ_NOWALLS) && numWallsAround != 0)
-	{
-		return 0;
-	}
-
-	return 1;
+	return true;
 }

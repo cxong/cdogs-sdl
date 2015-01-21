@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __json_utils
-#define __json_utils
+#pragma once
 
 #include <stdbool.h>
 
 #include <json/json.h>
 
+#include "pic.h"
 #include "sounds.h"
 #include "vector.h"
 
@@ -45,6 +45,11 @@ void LoadDouble(double *value, json_t *node, const char *name);
 void LoadVec2i(Vec2i *value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);	// remember to free
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
+// Load a const Pic * based on a name and old pic reference
+void LoadPic(
+	const Pic **value, json_t *node, const char *name, const char *oldPicName);
+// Load an array of const GunDescription *
+void LoadBulletGuns(CArray *guns, json_t *node, const char *name);
 
 // Try to load a JSON node using a slash-delimited "path"
 // If at any point the path fails, NULL is returned.
@@ -63,5 +68,3 @@ int TryLoadValue(json_t **node, const char *name);
 			(value) = func(_node->text);\
 		}\
 	}
-
-#endif

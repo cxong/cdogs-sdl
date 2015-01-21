@@ -296,7 +296,7 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 	// If running into safe object, and we're being blocked, shoot at it
 	TObject *o = AIGetObjectRunningInto(actor, cmd);
 	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(actor->Pos));
-	if (o && !(o->flags & OBJFLAG_DANGEROUS) &&
+	if (o && ObjIsDangerous(o) &&
 		Vec2iEqual(tilePos, actor->aiContext->LastTile))
 	{
 		cmd = AIGoto(

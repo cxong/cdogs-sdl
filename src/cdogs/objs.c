@@ -80,130 +80,79 @@ CArray gMobObjs;
 static const Pic *GetObjectPic(const int id, Vec2i *offset)
 {
 	const TObject *obj = CArrayGet(&gObjs, id);
-
-	Pic *pic = NULL;
-	// Try to get new pic if available
-	if (obj->picName && obj->picName[0] != '\0')
-	{
-		pic = PicManagerGetPic(&gPicManager, obj->picName);
-	}
-	// Use new pic offset if old one unavailable
-	const TOffsetPic *ofpic = obj->pic;
-	if (!ofpic)
-	{
-		// If new one also unavailable, bail
-		if (pic == NULL)
-		{
-			return NULL;
-		}
-		*offset = Vec2iScaleDiv(pic->size, -2);
-	}
-	else if (pic == NULL)
-	{
-		// Default old pic
-		pic = PicManagerGetFromOld(&gPicManager, ofpic->picIndex);
-		*offset = pic->offset;
-	}
-	if (ofpic != NULL)
-	{
-		*offset = Vec2iNew(ofpic->dx, ofpic->dy);
-	}
-	return pic;
+	return MapObjectGetPic(obj->Class, offset, obj->Health == 0);
 }
 
 
+static void DestroyObject(
+	TObject *o, const int flags, const int player, const int uid,
+	const TTileItem *target);
 static void DamageObject(
 	const int power, const int flags, const int player, const int uid,
-	TTileItem *target)
+	const TTileItem *target)
 {
-	TObject *object = CArrayGet(&gObjs, target->id);
+	TObject *o = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
-	if (object->structure <= 0)
+	if (o->Health <= 0)
 	{
 		return;
 	}
 
-	object->structure -= power;
-	const Vec2i pos = Vec2iNew(target->x, target->y);
+	o->Health -= power;
 
 	// Destroying objects and all the wonderful things that happen
-	if (object->structure <= 0)
+	if (o->Health <= 0)
 	{
-		object->structure = 0;
-		UpdateMissionObjective(
-			&gMission, object->tileItem.flags, OBJECTIVE_DESTROY,
-			player, pos);
-		if (object->flags & OBJFLAG_QUAKE)
-		{
-			GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-			shake.u.ShakeAmount = SHAKE_BIG_AMOUNT;
-			GameEventsEnqueue(&gGameEvents, shake);
-		}
-		const Vec2i fullPos = Vec2iReal2Full(
-			Vec2iNew(object->tileItem.x, object->tileItem.y));
-		if (object->flags & OBJFLAG_EXPLOSIVE)
-		{
-			GunAddBullets(
-				StrGunDescription("explosion1"), fullPos, 0, 0,
-				flags, player, uid, true);
-			GunAddBullets(
-				StrGunDescription("explosion2"), fullPos, 0, 0,
-				flags, player, uid, true);
-			GunAddBullets(
-				StrGunDescription("explosion3"), fullPos, 0, 0,
-				flags, player, uid, true);
-		}
-		else if (object->flags & OBJFLAG_FLAMMABLE)
-		{
-			GunAddBullets(
-				StrGunDescription("fire_explosion"), fullPos, 0, 0,
-				flags, player, uid, true);
-		}
-		else if (object->flags & OBJFLAG_POISONOUS)
-		{
-			GunAddBullets(
-				StrGunDescription("gas_poison_explosion"), fullPos, 0, 0,
-				flags, player, uid, true);
-		}
-		else if (object->flags & OBJFLAG_CONFUSING)
-		{
-			GunAddBullets(
-				StrGunDescription("gas_confuse_explosion"), fullPos, 0, 0,
-				flags, player, uid, true);
-		}
-		else
-		{
-			// A wreck left after the destruction of this object
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-			e.u.AddBullet.BulletClass = StrBulletClass("fireball_wreck");
-			e.u.AddBullet.MuzzlePos = fullPos;
-			e.u.AddBullet.MuzzleHeight = 0;
-			e.u.AddBullet.Angle = 0;
-			e.u.AddBullet.Elevation = 0;
-			e.u.AddBullet.Flags = 0;
-			e.u.AddBullet.PlayerIndex = -1;
-			e.u.AddBullet.UID = -1;
-			GameEventsEnqueue(&gGameEvents, e);
-			SoundPlayAt(
-				&gSoundDevice,
-				gSoundDevice.wreckSound,
-				Vec2iNew(object->tileItem.x, object->tileItem.y));
-		}
-		if (object->wreckedPic)
-		{
-			object->tileItem.flags = TILEITEM_IS_WRECK;
-			object->pic = object->wreckedPic;
-			object->picName = "";
-		}
-		else
-		{
-			ObjDestroy(object->tileItem.id);
-		}
-
-		// Update pathfinding cache since this object could have blocked a path
-		// before
-		PathCacheClear(&gPathCache);
+		DestroyObject(o, flags, player, uid, target);
 	}
+}
+static void DestroyObject(
+	TObject *o, const int flags, const int player, const int uid,
+	const TTileItem *target)
+{
+	o->Health = 0;
+
+	// Update objective
+	const Vec2i pos = Vec2iNew(target->x, target->y);
+	UpdateMissionObjective(
+		&gMission, o->tileItem.flags, OBJECTIVE_DESTROY,
+		player, pos);
+
+	// Weapons that go off when this object is destroyed
+	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+	const Vec2i fullPos = Vec2iReal2Full(realPos);
+	for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
+	{
+		const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
+		GunAddBullets(*g, fullPos, 0, 0, flags, player, uid, true);
+	}
+
+	// A wreck left after the destruction of this object
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+	e.u.AddBullet.BulletClass = StrBulletClass("fireball_wreck");
+	e.u.AddBullet.MuzzlePos = fullPos;
+	e.u.AddBullet.MuzzleHeight = 0;
+	e.u.AddBullet.Angle = 0;
+	e.u.AddBullet.Elevation = 0;
+	e.u.AddBullet.Flags = 0;
+	e.u.AddBullet.PlayerIndex = -1;
+	e.u.AddBullet.UID = -1;
+	GameEventsEnqueue(&gGameEvents, e);
+	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
+
+	// Turn the object into a wreck, if available
+	if (o->Class->Wreck.Pic)
+	{
+		o->tileItem.flags = TILEITEM_IS_WRECK;
+	}
+	else
+	{
+		ObjDestroy(o->tileItem.id);
+	}
+
+	// Update pathfinding cache since this object could have blocked a path
+	// before
+	PathCacheClear(&gPathCache);
 }
 
 static bool DoDamageCharacter(
@@ -442,20 +391,7 @@ void ObjsTerminate(void)
 	}
 	CArrayTerminate(&gObjs);
 }
-void AddObjectOld(
-	const Vec2i pos, const Vec2i size,
-	const TOffsetPic * pic, const int tileFlags)
-{
-	TObject *o = CArrayGet(&gObjs, ObjAdd(pos, size, NULL, tileFlags));
-	o->pic = pic;
-	o->wreckedPic = NULL;
-	o->structure = 0;
-	o->flags = 0;
-	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
-}
-int ObjAdd(
-	const Vec2i pos, const Vec2i size,
-	const char *picName, const int tileFlags)
+int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags)
 {
 	// Find an empty slot in object list
 	TObject *o = NULL;
@@ -478,34 +414,18 @@ int ObjAdd(
 		o = CArrayGet(&gObjs, i);
 	}
 	memset(o, 0, sizeof *o);
-	o->pic = NULL;
-	o->wreckedPic = NULL;
-	o->picName = picName;
-	o->structure = 0;
-	o->flags = 0;
+	o->Class = mo;
+	o->Health = mo->Health;
 	o->tileItem.x = o->tileItem.y = -1;
 	o->tileItem.flags = tileFlags;
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.getPicFunc = GetObjectPic;
 	o->tileItem.getActorPicsFunc = NULL;
-	o->tileItem.size = size;
+	o->tileItem.size = mo->Size;
 	o->tileItem.id = i;
-	MapTryMoveTileItem(&gMap, &o->tileItem, Vec2iFull2Real(pos));
+	MapTryMoveTileItem(&gMap, &o->tileItem, pos);
 	o->isInUse = true;
 	return i;
-}
-void ObjAddDestructible(
-	Vec2i pos, Vec2i size,
-	const TOffsetPic *pic, const TOffsetPic *wreckedPic,
-	const char *picName,
-	int structure, int objFlags, int tileFlags)
-{
-	Vec2i fullPos = Vec2iReal2Full(pos);
-	TObject *o = CArrayGet(&gObjs, ObjAdd(fullPos, size, picName, tileFlags));
-	o->pic = pic;
-	o->wreckedPic = wreckedPic;
-	o->structure = structure;
-	o->flags = objFlags;
 }
 void ObjDestroy(int id)
 {
@@ -513,6 +433,12 @@ void ObjDestroy(int id)
 	CASSERT(o->isInUse, "Destroying in-use object");
 	MapRemoveTileItem(&gMap, &o->tileItem);
 	o->isInUse = false;
+}
+
+bool ObjIsDangerous(const TObject *o)
+{
+	// TODO: something more sophisticated? Check if weapon is dangerous
+	return o->Class->DestroyGuns.size > 0;
 }
 
 

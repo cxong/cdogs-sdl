@@ -396,7 +396,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		{
 			const TObject *object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
-			if (!object || (object->flags & OBJFLAG_DANGEROUS) == 0)
+			if (!object || !ObjIsDangerous(object))
 			{
 				// Knife hit sound
 				// Special case: only allow enemy slice sounds
@@ -945,11 +945,8 @@ static void ActorDie(TActor *actor, const int idx)
 	}
 
 	// Add a blood pool
-	AddObjectOld(
-		actor->Pos,
-		Vec2iZero(),
-		&cBloodPics[rand() % BLOOD_MAX],
-		TILEITEM_IS_WRECK);
+	ObjAdd(RandomBloodMapObject(&gMapObjects), Vec2iFull2Real(actor->Pos), 0);
+
 	ActorDestroy(idx);
 }
 static void ActorAddAmmoPickup(const TActor *actor)

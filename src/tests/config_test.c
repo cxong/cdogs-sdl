@@ -5,12 +5,16 @@
 #include <config_old.h>
 #include <sounds.h>
 
-// Stub
+// Stubs
 Mix_Chunk *StrSound(const char *s)
 {
 	UNUSED(s);
 	return NULL;
 }
+int PicManagerGetPic() { return 0; }
+int PicManagerGetFromOld() { return 0; }
+int StrGunDescription() { return 0; }
+int gPicManager;
 
 
 FEATURE(1, "Load default config")
