@@ -14,10 +14,10 @@ extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
 	UNUSED(device_index);
 	return "";
 }
-int ConfigGetBool() { return 0; }
-int PicManagerGetPic() { return 0; }
-int PicManagerGetFromOld() { return 0; }
-int StrGunDescription() { return 0; }
+int ConfigGetBool(void) { return 0; }
+int PicManagerGetPic(void) { return 0; }
+int PicManagerGetFromOld(void) { return 0; }
+int StrGunDescription(void) { return 0; }
 int gConfig;
 int gPicManager;
 
