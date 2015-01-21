@@ -3,7 +3,9 @@
 #include <config.h>
 #include <config_json.h>
 #include <config_old.h>
+#include <pic_manager.h>
 #include <sounds.h>
+#include <weapon.h>
 
 // Stubs
 Mix_Chunk *StrSound(const char *s)
@@ -11,10 +13,24 @@ Mix_Chunk *StrSound(const char *s)
 	UNUSED(s);
 	return NULL;
 }
-int PicManagerGetPic() { return 0; }
-int PicManagerGetFromOld() { return 0; }
-int StrGunDescription() { return 0; }
-int gPicManager;
+Pic *PicManagerGetFromOld(PicManager *pm, int idx)
+{
+	UNUSED(pm);
+	UNUSED(idx);
+	return NULL;
+}
+Pic *PicManagerGetPic(const PicManager *pm, const char *name)
+{
+	UNUSED(pm);
+	UNUSED(name);
+	return NULL;
+}
+const GunDescription *StrGunDescription(const char *s)
+{
+	UNUSED(s);
+	return NULL;
+}
+PicManager gPicManager;
 
 
 FEATURE(1, "Load default config")
