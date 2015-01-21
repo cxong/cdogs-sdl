@@ -309,7 +309,7 @@ static void AddPlacementFlagTooltip(UIObject *o2, const int idx)
 	}
 	else
 	{
-		sprintf(pfBuf, "");
+		strcpy(pfBuf, "");
 		for (int i = 1; i < PLACEMENT_COUNT; i++)
 		{
 			if (mo->Flags & (1 << i))
@@ -324,7 +324,7 @@ static void AddPlacementFlagTooltip(UIObject *o2, const int idx)
 	}
 	// Construct text representing explosion guns
 	char exBuf[256];
-	sprintf(exBuf, "");
+	strcpy(exBuf, "");
 	if (mo->DestroyGuns.size > 0)
 	{
 		sprintf(exBuf, "\nExplodes: ");
