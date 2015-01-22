@@ -5,14 +5,7 @@ C-Dogs SDL
 
 ![logo](http://cxong.github.io/cdogs-sdl/images/title.png)
 
-1. Introduction
-2. Tested Environments
-3. Installation
-4. Command line options
-5. Contact
-
-
-1. Introduction
+![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/radio.png) Introduction
 ---------------
 
 C-Dogs SDL is a classic overhead run-and-gun game, supporting up to 4 players
@@ -27,7 +20,7 @@ For more information about the original C-Dogs read [`original\_readme.txt`](htt
 [C-Dogs SDL mailing list](https://groups.google.com/forum/#!forum/c-dogs-sdl)
 
 
-2.Tested Environments
+![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/terminal.png) Platforms
 ---------------------
 
 C-Dogs SDL is built using the SDL 1.2 API.
@@ -37,14 +30,14 @@ C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Android and GCW-Zero.
 
 C-Dogs SDL is also monitored by the continuous integration service Travis CI.
 
-3. Installation
+![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/cd.png) Installation
 ---------------
 
 Please use the installers for your platform for installing.
 
 Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started) to build on your platform. You will need the SDL development libraries installed.
 
-4. Command line options
+![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/editor/pencil.png) Command line options
 -----------------------
 
 The C-Dogs binary is called "cdogs-sdl". Below are some command line arguments:
@@ -81,7 +74,7 @@ $ cdogs-sdl --fullscreen --screen=400x300
 
 Which will make the game try to run fullscreen at 400x300 resolution.
 
-5. Contact
+![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/circuit.png) Contact
 ----------
 
 If you have an questions, comments, bug reports (yes please), patches (even
