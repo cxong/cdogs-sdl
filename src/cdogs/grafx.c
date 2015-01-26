@@ -294,13 +294,6 @@ void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force)
 			return;
 		}
 	}
-	else
-	{
-		printf("\n");
-		printf("  BIG FAT WARNING: If this blows up in your face,\n");
-		printf("  and mutilates your cat, please don't cry.\n");
-		printf("\n");
-	}
 
 	printf("Graphics mode:\t%dx%d %dx (actual %dx%d)\n",
 		w, h, g->cachedConfig.ScaleFactor, rw, rh);
