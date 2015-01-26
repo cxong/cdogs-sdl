@@ -486,7 +486,10 @@ void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
 	{
 		return;
 	}
-	ObjAdd(mo, Vec2iCenterOfTile(v), TILEITEM_IS_WRECK);
+	TObject *o =
+		CArrayGet(&gObjs, ObjAdd(mo, Vec2iCenterOfTile(v), TILEITEM_IS_WRECK));
+	// Set health to 0 to force into a wreck
+	o->Health = 0;
 }
 
 int MapHasLockedRooms(Map *map)
