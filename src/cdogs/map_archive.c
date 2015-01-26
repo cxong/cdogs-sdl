@@ -508,10 +508,10 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_pair_into_object(
 			node, "SpecialChars", SaveIntArray(&mission->SpecialChars));
 		json_t *modsNode = json_new_array();
-		for (int i = 0; i < (int)mission->MapObjectDensities.size; i++)
+		for (int j = 0; j < (int)mission->MapObjectDensities.size; j++)
 		{
 			const MapObjectDensity *mod =
-				CArrayGet(&mission->MapObjectDensities, i);
+				CArrayGet(&mission->MapObjectDensities, j);
 			json_t *modNode = json_new_object();
 			AddStringPair(modNode, "MapObject", mod->M->Name);
 			AddIntPair(modNode, "Density", mod->Density);
