@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,12 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_NEW
-#define __MAP_NEW
+#pragma once
 
 #include <json/json.h>
 
 #include "c_array.h"
-#include "campaigns.h"
+#include "map_archive.h"
 
 // allocates title
 int MapNewScan(const char *filename, char **title, int *numMissions);
@@ -42,5 +41,3 @@ int MapNewScanJSON(json_t *root, char **title, int *numMissions);
 void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version);
 void LoadCharacters(CharacterStore *c, json_t *charactersNode);
-
-#endif

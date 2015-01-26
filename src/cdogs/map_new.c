@@ -35,8 +35,6 @@
 #include "json_utils.h"
 #include "map_archive.h"
 
-#define VERSION 3
-
 
 int MapNewScan(const char *filename, char **title, int *numMissions)
 {
@@ -84,7 +82,7 @@ int MapNewScanJSON(json_t *root, char **title, int *numMissions)
 	int err = 0;
 	int version;
 	LoadInt(&version, root, "Version");
-	if (version > VERSION || version <= 0)
+	if (version > MAP_VERSION || version <= 0)
 	{
 		err = -1;
 		goto bail;
@@ -208,8 +206,41 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadMissionObjectives(&m.Objectives, json_find_first_label(child, "Objectives")->child);
 		LoadIntArray(&m.Enemies, child, "Enemies");
 		LoadIntArray(&m.SpecialChars, child, "SpecialChars");
-		LoadIntArray(&m.Items, child, "Items");
-		LoadIntArray(&m.ItemDensities, child, "ItemDensities");
+		if (version <= 3)
+		{
+			CArray items;
+			CArrayInit(&items, sizeof(int));
+			LoadIntArray(&items, child, "Items");
+			CArray densities;
+			CArrayInit(&densities, sizeof(int));
+			LoadIntArray(&densities, child, "ItemDensities");
+			for (int i = 0; i < (int)items.size; i++)
+			{
+				MapObjectDensity mod;
+				mod.M = IntMapObject(*(int *)CArrayGet(&items, i));
+				mod.Density = *(int *)CArrayGet(&densities, i);
+				CArrayPushBack(&m.MapObjectDensities, &mod);
+			}
+		}
+		else
+		{
+			json_t *modsNode =
+				json_find_first_label(child, "MapObjectDensities");
+			if (modsNode && modsNode->child)
+			{
+				modsNode = modsNode->child;
+				for (json_t *modNode = modsNode->child;
+					modNode;
+					modNode = modNode->next)
+				{
+					MapObjectDensity mod;
+					mod.M = StrMapObject(
+						json_find_first_label(modNode, "MapObject")->child->text);
+					LoadInt(&mod.Density, modNode, "Density");
+					CArrayPushBack(&m.MapObjectDensities, &mod);
+				}
+			}
+		}
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
 		LoadWeapons(
 			&m.Weapons, json_find_first_label(child, "Weapons")->child);
@@ -243,8 +274,10 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		CArrayPushBack(missions, &m);
 	}
 }
-static void LoadStaticItems(Mission *m, json_t *node, char *name);
-static void LoadStaticWrecks(Mission *m, json_t *node, char *name);
+static void LoadStaticItems(
+	Mission *m, json_t *node, const char *name, const int version);
+static void LoadStaticWrecks(
+	Mission *m, json_t *node, const char *name, const int version);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
 static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
@@ -280,8 +313,8 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 		}
 	}
 
-	LoadStaticItems(m, node, "StaticItems");
-	LoadStaticWrecks(m, node, "StaticWrecks");
+	LoadStaticItems(m, node, "StaticItems", version);
+	LoadStaticWrecks(m, node, "StaticWrecks", version);
 	LoadStaticCharacters(m, node, "StaticCharacters");
 	LoadStaticObjectives(m, node, "StaticObjectives");
 	LoadStaticKeys(m, node, "StaticKeys");
@@ -418,7 +451,9 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name)
 	LoadInt(&m->u.Classic.Doors.Min, child, "Min");
 	LoadInt(&m->u.Classic.Doors.Max, child, "Max");
 }
-static void LoadStaticItems(Mission *m, json_t *node, char *name)
+static const MapObject *LoadMapObjectRef(json_t *node, const int version);
+static void LoadStaticItems(
+	Mission *m, json_t *node, const char *name, const int version)
 {
 	CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
 
@@ -431,7 +466,7 @@ static void LoadStaticItems(Mission *m, json_t *node, char *name)
 	for (items = items->child; items; items = items->next)
 	{
 		MapObjectPositions mop;
-		LoadInt(&mop.Index, items, "Index");
+		mop.M = LoadMapObjectRef(items, version);
 		CArrayInit(&mop.Positions, sizeof(Vec2i));
 		json_t *positions = json_find_first_label(items, "Positions");
 		if (!positions || !positions->child)
@@ -453,7 +488,8 @@ static void LoadStaticItems(Mission *m, json_t *node, char *name)
 		CArrayPushBack(&m->u.Static.Items, &mop);
 	}
 }
-static void LoadStaticWrecks(Mission *m, json_t *node, char *name)
+static void LoadStaticWrecks(
+	Mission *m, json_t *node, const char *name, const int version)
 {
 	CArrayInit(&m->u.Static.Wrecks, sizeof(MapObjectPositions));
 	
@@ -466,7 +502,7 @@ static void LoadStaticWrecks(Mission *m, json_t *node, char *name)
 	for (wrecks = wrecks->child; wrecks; wrecks = wrecks->next)
 	{
 		MapObjectPositions mop;
-		LoadInt(&mop.Index, wrecks, "Index");
+		mop.M = LoadMapObjectRef(wrecks, version);
 		CArrayInit(&mop.Positions, sizeof(Vec2i));
 		json_t *positions = json_find_first_label(wrecks, "Positions");
 		if (!positions || !positions->child)
@@ -486,6 +522,20 @@ static void LoadStaticWrecks(Mission *m, json_t *node, char *name)
 			CArrayPushBack(&mop.Positions, &pos);
 		}
 		CArrayPushBack(&m->u.Static.Wrecks, &mop);
+	}
+}
+static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)
+{
+	if (version <= 3)
+	{
+		int idx;
+		LoadInt(&idx, itemNode, "Index");
+		return IntMapObject(idx);
+	}
+	else
+	{
+		return StrMapObject(
+			json_find_first_label(itemNode, "MapObject")->child->text);
 	}
 }
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name)

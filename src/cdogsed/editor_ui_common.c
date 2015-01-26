@@ -33,7 +33,7 @@
 #include <cdogs/palette.h>
 
 
-void DisplayMapItem(Vec2i pos, MapObject *mo)
+void DisplayMapItem(const Vec2i pos, const MapObject *mo)
 {
 	Vec2i offset;
 	const Pic *pic = MapObjectGetPic(mo, &offset, false);

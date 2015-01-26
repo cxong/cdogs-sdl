@@ -336,9 +336,13 @@ static void DeleteSpecial(Mission *m, int idx)
 
 static void DeleteItem(Mission *m, int idx)
 {
-	idx = CLAMP(idx, 0, (int)m->Items.size);
-	CArrayDelete(&m->Items, idx);
-	CArrayDelete(&m->ItemDensities, idx);
+	if (idx >= (int)m->MapObjectDensities.size)
+	{
+		// Nothing to delete; do nothing
+		return;
+	}
+	idx = CLAMP(idx, 0, (int)m->MapObjectDensities.size);
+	CArrayDelete(&m->MapObjectDensities, idx);
 }
 
 static void AdjustYC(int *yc)
@@ -394,9 +398,10 @@ static void AdjustXC(int yc, int *xc)
 		break;
 
 	case YC_ITEMS:
-		if (mission && mission->Items.size > 0)
+		if (mission && mission->MapObjectDensities.size > 0)
 		{
-			*xc = CLAMP_OPPOSITE(*xc, 0, (int)mission->Items.size - 1);
+			*xc = CLAMP_OPPOSITE(
+				*xc, 0, (int)mission->MapObjectDensities.size - 1);
 		}
 		break;
 
@@ -690,11 +695,6 @@ static void Delete(int xc, int yc)
 		break;
 
 	case YC_ITEMS:
-		if (xc >= (int)mission->Items.size)
-		{
-			// Nothing to delete; do nothing
-			return;
-		}
 		DeleteItem(mission, xc);
 		break;
 
@@ -1064,10 +1064,11 @@ static HandleInputResult HandleInput(
 
 			case YC_ITEMS:
 				{
-					int item = 0;
-					CArrayPushBack(&mission->Items, &item);
-					CArrayPushBack(&mission->ItemDensities, &item);
-					*xc = mission->Items.size - 1;
+					MapObjectDensity mod;
+					mod.M = IndexMapObject(0);
+					mod.Density = 0;
+					CArrayPushBack(&mission->MapObjectDensities, &mod);
+					*xc = mission->MapObjectDensities.size - 1;
 				}
 				break;
 
@@ -1215,6 +1216,7 @@ int main(int argc, char *argv[])
 	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
 
 	EditorBrushInit(&brush);
+	strcpy(lastFile, "");
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
 	if (!PicManagerTryInit(

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -375,13 +375,10 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 	}
 	for (i = 0; i < src->itemCount; i++)
 	{
-		int n = src->items[i];
-		CArrayPushBack(&dest->Items, &n);
-	}
-	for (i = 0; i < src->itemCount; i++)
-	{
-		int n = src->itemDensity[i];
-		CArrayPushBack(&dest->ItemDensities, &n);
+		MapObjectDensity mod;
+		mod.M = IntMapObject(src->items[i]);
+		mod.Density = src->itemDensity[i];
+		CArrayPushBack(&dest->MapObjectDensities, &mod);
 	}
 	dest->EnemyDensity = src->baddieDensity;
 	CArrayClear(&dest->Weapons);

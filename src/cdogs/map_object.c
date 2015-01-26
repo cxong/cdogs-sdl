@@ -140,6 +140,28 @@ MapObject *IndexMapObject(const int i)
 	}
 	return CArrayGet(&gMapObjects.CustomClasses, i - gMapObjects.Classes.size);
 }
+int MapObjectIndex(const MapObject *mo)
+{
+	int idx = 0;
+	for (int i = 0; i < (int)gMapObjects.Classes.size; i++, idx++)
+	{
+		const MapObject *c = CArrayGet(&gMapObjects.Classes, i);
+		if (c == mo)
+		{
+			return idx;
+		}
+	}
+	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++, idx++)
+	{
+		const MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
+		if (c == mo)
+		{
+			return idx;
+		}
+	}
+	CASSERT(false, "cannot find map object");
+	return -1;
+}
 MapObject *RandomBloodMapObject(const MapObjects *mo)
 {
 	const int idx = rand() % (int)mo->Bloods.size;

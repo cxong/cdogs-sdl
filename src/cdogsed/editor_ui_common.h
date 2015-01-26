@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EDITOR_UI_COMMON
-#define __EDITOR_UI_COMMON
+#pragma once
 
 #include <cdogs/campaigns.h>
 #include <cdogs/map_object.h>
@@ -47,7 +46,7 @@ typedef struct
 	CampaignOptions *Campaign;
 } EditorBrushAndCampaign;
 
-void DisplayMapItem(Vec2i pos, MapObject *mo);
+void DisplayMapItem(const Vec2i pos, const MapObject *mo);
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx);
@@ -55,5 +54,3 @@ void DeleteMission(CampaignOptions *co);
 
 bool ConfirmScreen(const char *info, const char *msg);
 void ClearScreen(GraphicsDevice *g);
-
-#endif

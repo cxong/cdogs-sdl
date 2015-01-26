@@ -378,7 +378,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_ITEM:
 		if (isMain)
 		{
-			if (MissionStaticTryAddItem(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTryAddItem(
+				m, IndexMapObject(b->ItemIndex), b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -394,7 +395,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_WRECK:
 		if (isMain)
 		{
-			if (MissionStaticTryAddWreck(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTryAddWreck(
+				m, IndexMapObject(b->ItemIndex), b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}

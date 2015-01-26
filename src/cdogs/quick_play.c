@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -265,11 +265,11 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
 	for (int i = 0; i < c; i++)
 	{
-		int n = rand() % (ITEMS_MAX - 1 + 1);
-		CArrayPushBack(&m->Items, &n);
-		n = GenerateQuickPlayParam(
+		MapObjectDensity mop;
+		mop.M = IndexMapObject(rand() % MapObjectsCount(&gMapObjects));
+		mop.Density = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
-		CArrayPushBack(&m->ItemDensities, &n);
+		CArrayPushBack(&m->MapObjectDensities, &mop);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
 	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)

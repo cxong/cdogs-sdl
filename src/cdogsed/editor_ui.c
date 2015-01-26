@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -645,7 +645,9 @@ static const char *GetObjectCountStr(UIObject *o, void *v)
 	{
 		return NULL;
 	}
-	sprintf(s, "Map items (%d)", (int)gMission.MapObjects.size);
+	sprintf(
+		s, "Map items (%d)",
+		(int)gMission.missionData->MapObjectDensities.size);
 	return s;
 }
 typedef struct
@@ -690,18 +692,20 @@ static void MissionDrawSpecialChar(
 }
 static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
-	Vec2i pos, MapObject *mo, int density, int isHighlighted);
+	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
 static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return;
-	if (data->index >= (int)CampaignGetCurrentMission(data->co)->Items.size) return;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (data->index >= (int)m->MapObjectDensities.size) return;
+	const MapObjectDensity *mod =
+		CArrayGet(&m->MapObjectDensities, data->index);
 	DisplayMapItemWithDensity(
 		g,
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		CArrayGet(&gMission.MapObjects, data->index),
-		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->ItemDensities, data->index),
+		mod,
 		UIObjectIsHighlighted(o));
 }
 typedef struct
@@ -882,16 +886,16 @@ static void DrawStyleArea(
 }
 static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
-	Vec2i pos, MapObject *mo, int density, int isHighlighted)
+	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted)
 {
 	UNUSED(g);
-	DisplayMapItem(pos, mo);
+	DisplayMapItem(pos, mod->M);
 	if (isHighlighted)
 	{
 		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -4)));
 	}
 	char s[10];
-	sprintf(s, "%d", density);
+	sprintf(s, "%d", mod->Density);
 	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
 }
 static void GetCharacterHeadPic(
@@ -1240,19 +1244,17 @@ static void MissionChangeWeapon(void *vData, int d)
 static void MissionChangeMapItem(void *vData, int d)
 {
 	MissionIndexData *data = vData;
+	MapObjectDensity *mod = CArrayGet(
+		&CampaignGetCurrentMission(data->co)->MapObjectDensities, data->index);
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
-		int density = *(int *)CArrayGet(
-			&CampaignGetCurrentMission(data->co)->ItemDensities, data->index);
-		density = CLAMP(density + 5 * d, 0, 512);
-		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->ItemDensities, data->index) = density;
+		mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
 	}
 	else
 	{
-		int i = *(int *)CArrayGet(
-			&CampaignGetCurrentMission(data->co)->Items, data->index);
-		i = CLAMP_OPPOSITE(i + d, 0, MapObjectsCount(&gMapObjects) - 1);
-		*(int *)CArrayGet(&CampaignGetCurrentMission(data->co)->Items, data->index) = i;
+		const int i = CLAMP_OPPOSITE(
+			MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
+		mod->M = IndexMapObject(i);
 	}
 }
 static void MissionChangeObjectiveIndex(void *vData, int d);

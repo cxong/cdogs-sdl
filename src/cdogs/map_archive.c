@@ -37,8 +37,6 @@
 #include "physfs/physfs.h"
 #include "pickup.h"
 
-#define VERSION 3
-
 
 static json_t *ReadPhysFSJSON(const char *archive, const char *filename);
 int MapNewScanArchive(
@@ -77,7 +75,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 	int version;
 	LoadInt(&version, root, "Version");
-	if (version > VERSION || version <= 2)
+	if (version > MAP_VERSION || version <= 2)
 	{
 		err = -1;
 		goto bail;
@@ -402,7 +400,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 
 	// Campaign
 	root = json_new_object();
-	AddIntPair(root, "Version", VERSION);
+	AddIntPair(root, "Version", MAP_VERSION);
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
@@ -509,10 +507,17 @@ static json_t *SaveMissions(CArray *a)
 			node, "Enemies", SaveIntArray(&mission->Enemies));
 		json_insert_pair_into_object(
 			node, "SpecialChars", SaveIntArray(&mission->SpecialChars));
-		json_insert_pair_into_object(
-			node, "Items", SaveIntArray(&mission->Items));
-		json_insert_pair_into_object(
-			node, "ItemDensities", SaveIntArray(&mission->ItemDensities));
+		json_t *modsNode = json_new_array();
+		for (int i = 0; i < (int)mission->MapObjectDensities.size; i++)
+		{
+			const MapObjectDensity *mod =
+				CArrayGet(&mission->MapObjectDensities, i);
+			json_t *modNode = json_new_object();
+			AddStringPair(modNode, "MapObject", mod->M->Name);
+			AddIntPair(modNode, "Density", mod->Density);
+			json_insert_child(modsNode, modNode);
+		}
+		json_insert_pair_into_object(node, "MapObjectDensities", modsNode);
 
 		AddIntPair(node, "EnemyDensity", mission->EnemyDensity);
 		json_insert_pair_into_object(
@@ -669,7 +674,7 @@ static json_t *SaveStaticItems(Mission *m)
 		MapObjectPositions *mop =
 			CArrayGet(&m->u.Static.Items, i);
 		json_t *itemNode = json_new_object();
-		AddIntPair(itemNode, "Index", mop->Index);
+		AddStringPair(itemNode, "MapObject", mop->M->Name);
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
@@ -690,7 +695,7 @@ static json_t *SaveStaticWrecks(Mission *m)
 		MapObjectPositions *mop =
 			CArrayGet(&m->u.Static.Wrecks, i);
 		json_t *wreckNode = json_new_object();
-		AddIntPair(wreckNode, "Index", mop->Index);
+		AddStringPair(wreckNode, "MapObject", mop->M->Name);
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{

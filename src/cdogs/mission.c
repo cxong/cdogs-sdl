@@ -108,8 +108,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->Objectives, sizeof(MissionObjective));
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));
-	CArrayInit(&m->Items, sizeof(int));
-	CArrayInit(&m->ItemDensities, sizeof(int));
+	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
 	CArrayInit(&m->Weapons, sizeof(const GunDescription *));
 }
 void MissionCopy(Mission *dst, const Mission *src)
@@ -150,8 +149,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 	}
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
-	CArrayCopy(&dst->Items, &src->Items);
-	CArrayCopy(&dst->ItemDensities, &src->ItemDensities);
+	CArrayCopy(&dst->MapObjectDensities, &src->MapObjectDensities);
 
 	dst->EnemyDensity = src->EnemyDensity;
 	CArrayCopy(&dst->Weapons, &src->Weapons);
@@ -193,8 +191,7 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Enemies);
 	CArrayTerminate(&m->SpecialChars);
-	CArrayTerminate(&m->Items);
-	CArrayTerminate(&m->ItemDensities);
+	CArrayTerminate(&m->MapObjectDensities);
 	CArrayTerminate(&m->Weapons);
 	switch (m->Type)
 	{
@@ -544,11 +541,6 @@ void SetupMission(
 	mo->doorPics =
 	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
 	mo->keyStyle = m->KeyStyle;
-	for (int i = 0; i < (int)m->Items.size; i++)
-	{
-		int *itemIndex = CArrayGet(&m->Items, i);
-		CArrayPushBack(&mo->MapObjects, IntMapObject(*itemIndex));
-	}
 
 	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
 	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];

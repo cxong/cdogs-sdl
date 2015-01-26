@@ -95,7 +95,12 @@ int StrKeycard(const char *s);
 
 typedef struct
 {
-	int Index;
+	const MapObject *M;
+	int Density;
+} MapObjectDensity;
+typedef struct
+{
+	const MapObject *M;
 	CArray Positions;	// of Vec2i
 } MapObjectPositions;
 typedef struct
@@ -129,11 +134,10 @@ typedef struct
 	int KeyStyle;
 	int DoorStyle;
 
-	CArray Objectives;		// of MissionObjective
-	CArray Enemies;			// of int (character index)
-	CArray SpecialChars;	// of int
-	CArray Items;			// of int
-	CArray ItemDensities;	// of int
+	CArray Objectives;			// of MissionObjective
+	CArray Enemies;				// of int (character index)
+	CArray SpecialChars;		// of int
+	CArray MapObjectDensities;	// of MapObjectDensity
 
 	int EnemyDensity;
 	CArray Weapons;	// of GunDescription *
@@ -219,7 +223,6 @@ struct MissionOptions
 	bool HasStarted;
 	bool isDone;
 
-	CArray MapObjects;	// of MapObject
 	int keyStyle;
 	struct DoorPic *doorPics;
 	int exitPic, exitShadow;

@@ -1108,16 +1108,20 @@ void MapLoadDynamic(
 	}
 
 	// Add map objects
-	for (int i = 0; i < (int)mo->MapObjects.size; i++)
+	for (int i = 0; i < (int)mission->MapObjectDensities.size; i++)
 	{
-		const int itemDensity = *(int *)CArrayGet(&mission->ItemDensities, i);
+		const MapObjectDensity *mod =
+			CArrayGet(&mission->MapObjectDensities, i);
 		for (int j = 0;
-			j < (itemDensity * map->Size.x * map->Size.y) / 1000;
+			j < (mod->Density * map->Size.x * map->Size.y) / 1000;
 			j++)
 		{
-			const MapObject *mapObj = CArrayGet(&mo->MapObjects, i);
-			MapTryPlaceOneObject(map, Vec2iNew(
-				rand() % map->Size.x, rand() % map->Size.y), mapObj, 0, 1);
+			MapTryPlaceOneObject(
+				map,
+				Vec2iNew(rand() % map->Size.x, rand() % map->Size.y),
+				mod->M,
+				0,
+				true);
 		}
 	}
 

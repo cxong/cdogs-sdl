@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,13 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_ARCHIVE
-#define __MAP_ARCHIVE
+#pragma once
 
 #include "campaigns.h"
+
+#define MAP_VERSION 4
 
 int MapNewScanArchive(
 	const char *filename, char **title, int *numMissions);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c);
 int MapArchiveSave(const char *filename, CampaignSetting *c);
-
-#endif

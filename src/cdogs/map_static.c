@@ -79,7 +79,7 @@ void MapStaticLoadDynamic(
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&mop->Positions, j);
-			MapTryPlaceOneObject(map, *pos, IntMapObject(mop->Index), 0, false);
+			MapTryPlaceOneObject(map, *pos, mop->M, 0, false);
 		}
 	}
 
@@ -90,7 +90,7 @@ void MapStaticLoadDynamic(
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&mop->Positions, j);
-			MapPlaceWreck(map, *pos, IntMapObject(mop->Index));
+			MapPlaceWreck(map, *pos, mop->M);
 		}
 	}
 
