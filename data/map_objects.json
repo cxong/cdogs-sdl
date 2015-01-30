@@ -26,7 +26,7 @@
       "Name": "box2",
       "Pic": "box2",
       "OldPic": 191,
-      "WreckPic": "box_wreck",
+      "WreckPic": "box2_wreck",
       "OldWreckPic": 192,
       "Health": 20,
       "Flags": ["Outside", "NoWalls"]
@@ -67,7 +67,7 @@
       "Name": "table_wood",
       "Pic": "table_wood",
       "OldPic": 357,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "table_wood_wreck",
       "OldWreckPic": 339,
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
@@ -77,7 +77,7 @@
       "Name": "table_wood_candle",
       "Pic": "table_wood_candle",
       "OldPic": 358,
-      "WreckPic": "table_wreck",
+      "WreckPic": "table_wood_wreck",
       "OldWreckPic": 300,
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
@@ -87,7 +87,7 @@
       "Name": "table_clothed",
       "Pic": "table_clothed",
       "OldPic": 448,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "table_clothed_wreck",
       "OldWreckPic": 339,
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
@@ -97,7 +97,7 @@
       "Name": "table_steel",
       "Pic": "table_steel",
       "OldPic": 449,
-      "WreckPic": "safe_wreck",
+      "WreckPic": "table_steel_wreck",
       "OldWreckPic": 294,
       "Health": 30,
       "Flags": ["Inside", "NoWalls"]
@@ -139,7 +139,7 @@
       "Name": "box_gray",
       "Pic": "box_gray",
       "OldPic": 336,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "box_gray_wreck",
       "OldWreckPic": 339,
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
@@ -149,7 +149,7 @@
       "Name": "box_green",
       "Pic": "box_green",
       "OldPic": 335,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "box_green_wreck",
       "OldWreckPic": 339,
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
@@ -170,7 +170,7 @@
       "Pic": "bookshelf",
       "OldPic": 445,
       "Offset": [-8, -15],
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "bookshelf_wreck",
       "OldWreckPic": 339,
       "Size": [16, 6],
       "Health": 20,
@@ -181,7 +181,7 @@
       "Name": "terminal",
       "Pic": "terminal",
       "OldPic": 361,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "terminal_wreck",
       "OldWreckPic": 339,
       "Health": 40,
       "Flags": ["Inside", "NoWalls"]
@@ -279,7 +279,7 @@
       "Name": "box3",
       "Pic": "box3",
       "OldPic": 195,
-      "WreckPic": "box3_wreck",
+      "WreckPic": "box_gray_wreck",
       "OldWreckPic": 196,
       "Health": 40,
       "DestroyGuns": [
@@ -295,7 +295,7 @@
       "Name": "box_red",
       "Pic": "box_red",
       "OldPic": 334,
-      "WreckPic": "box_wood_wreck",
+      "WreckPic": "box_red_wreck",
       "OldWreckPic": 339,
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
@@ -306,7 +306,7 @@
       "Name": "table_lab",
       "Pic": "table_lab",
       "OldPic": 359,
-      "WreckPic": "safe_wreck",
+      "WreckPic": "table_lab_wreck",
       "OldWreckPic": 294,
       "Health": 60,
       "DestroyGuns": ["gas_poison_explosion"],
