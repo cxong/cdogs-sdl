@@ -13,9 +13,4 @@ if [ "$UNAME_SHORT" = "MINGW" ] ; then
 else
 	cmake .
 fi
-if [ "$UNAME_SHORT" = "MINGW" ] ; then
-	mingw32-make
-else
-	make
-fi
-
+make
