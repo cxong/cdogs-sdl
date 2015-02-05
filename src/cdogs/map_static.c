@@ -67,6 +67,12 @@ void MapStaticLoad(Map *map, const struct MissionOptions *mo)
 	}
 }
 
+static void AddCharacters(const CArray *characters);
+static void AddObjectives(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
+	const CArray *objectives);
+static void AddKeys(
+	Map *map, const struct MissionOptions *mo, const CArray *keys);
 void MapStaticLoadDynamic(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store)
 {
@@ -94,10 +100,26 @@ void MapStaticLoadDynamic(
 		}
 	}
 
-	// Characters
-	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
+	if (ModeHasNPCs(gCampaign.Entry.Mode))
 	{
-		const CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+		AddCharacters(&m->u.Static.Characters);
+	}
+
+	if (HasObjectives(gCampaign.Entry.Mode))
+	{
+		AddObjectives(map, mo, store, &m->u.Static.Objectives);
+	}
+
+	if (AreKeysAllowed(gCampaign.Entry.Mode))
+	{
+		AddKeys(map, mo, &m->u.Static.Keys);
+	}
+}
+static void AddCharacters(const CArray *characters)
+{
+	for (int i = 0; i < (int)characters->size; i++)
+	{
+		const CharacterPositions *cp = CArrayGet(characters, i);
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
 			NetMsgActorAdd aa = NetMsgActorAdd_init_default;
@@ -120,11 +142,14 @@ void MapStaticLoadDynamic(
 				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
-
-	// Objectives
-	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
+}
+static void AddObjectives(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
+	const CArray *objectives)
+{
+	for (int i = 0; i < (int)objectives->size; i++)
 	{
-		const ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
+		const ObjectivePositions *op = CArrayGet(objectives, i);
 		const MissionObjective *mobj =
 			CArrayGet(&mo->missionData->Objectives, op->Index);
 		ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);
@@ -140,20 +165,20 @@ void MapStaticLoadDynamic(
 			switch (mobj->Type)
 			{
 			case OBJECTIVE_KILL:
-				{
-					NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-					aa.Id = ActorsGetFreeIndex();
-					aa.CharId = CharacterStoreGetSpecialId(store, *idx);
-					aa.Direction = rand() % DIRECTION_COUNT;
-					const Character *c =
-						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-					aa.Health = CharacterGetStartingHealth(c, true);
-					aa.FullPos = fullPosNet;
-					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-					e.u.ActorAdd = aa;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-				break;
+			{
+				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				aa.Id = ActorsGetFreeIndex();
+				aa.CharId = CharacterStoreGetSpecialId(store, *idx);
+				aa.Direction = rand() % DIRECTION_COUNT;
+				const Character *c =
+					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+				aa.Health = CharacterGetStartingHealth(c, true);
+				aa.FullPos = fullPosNet;
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+				e.u.ActorAdd = aa;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			break;
 			case OBJECTIVE_COLLECT:
 				MapPlaceCollectible(mo, op->Index, realPos);
 				break;
@@ -165,20 +190,20 @@ void MapStaticLoadDynamic(
 					ObjectiveToTileItem(op->Index), 1);
 				break;
 			case OBJECTIVE_RESCUE:
-				{
-					NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-					aa.Id = ActorsGetFreeIndex();
-					aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
-					aa.Direction = rand() % DIRECTION_COUNT;
-					const Character *c =
-						CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-					aa.Health = CharacterGetStartingHealth(c, true);
-					aa.FullPos = fullPosNet;
-					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-					e.u.ActorAdd = aa;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-				break;
+			{
+				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				aa.Id = ActorsGetFreeIndex();
+				aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
+				aa.Direction = rand() % DIRECTION_COUNT;
+				const Character *c =
+					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+				aa.Health = CharacterGetStartingHealth(c, true);
+				aa.FullPos = fullPosNet;
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+				e.u.ActorAdd = aa;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			break;
 			default:
 				// do nothing
 				break;
@@ -190,11 +215,13 @@ void MapStaticLoadDynamic(
 				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
 		}
 	}
-
-	// Keys
-	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
+}
+static void AddKeys(
+	Map *map, const struct MissionOptions *mo, const CArray *keys)
+{
+	for (int i = 0; i < (int)keys->size; i++)
 	{
-		const KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+		const KeyPositions *kp = CArrayGet(keys, i);
 		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&kp->Positions, j);

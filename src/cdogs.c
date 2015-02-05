@@ -394,11 +394,8 @@ int main(int argc, char *argv[])
 	if (loadCampaign != NULL)
 	{
 		CampaignEntry entry;
-		if (CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL))
-		{
-			CampaignLoad(&gCampaign, &entry);
-		}
-		else
+		if (!CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL) ||
+			!CampaignLoad(&gCampaign, &entry))
 		{
 			fprintf(stderr, "Failed to load campaign %s\n", loadCampaign);
 		}

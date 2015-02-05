@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SYS_SPECIFICS
-#define __SYS_SPECIFICS
+#pragma once
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996)
@@ -41,7 +40,7 @@
 #define INLINE __inline__
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define HOME_DIR_ENV "AppData"
 #else
 #define HOME_DIR_ENV "HOME"
@@ -79,6 +78,4 @@
 
 #ifndef __func__
 #define __func__ __FUNCTION__
-#endif
-
 #endif

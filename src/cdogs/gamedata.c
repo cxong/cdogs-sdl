@@ -75,7 +75,7 @@ struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
 
-void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
+bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 {
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus
@@ -115,14 +115,18 @@ void CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 			printf("Failed to load campaign %s!\n", entry->Path);
 			CASSERT(false, "Failed to load campaign");
 		}
-		memcpy(&co->Setting, &customSetting, sizeof co->Setting);
-		co->IsLoaded = true;
+		else
+		{
+			memcpy(&co->Setting, &customSetting, sizeof co->Setting);
+			co->IsLoaded = true;
+		}
 	}
 
 	if (co->IsLoaded)
 	{
 		printf(">> Loaded campaign/dogfight\n");
 	}
+	return co->IsLoaded;
 }
 void CampaignUnload(CampaignOptions *co)
 {

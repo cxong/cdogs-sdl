@@ -154,3 +154,8 @@ bool ModeAllowsAllWeapons(const GameMode mode)
 {
 	return mode == GAME_MODE_DOGFIGHT || mode == GAME_MODE_DEATHMATCH;
 }
+
+bool ModeHasNPCs(const GameMode mode)
+{
+	return mode != GAME_MODE_DOGFIGHT && mode != GAME_MODE_DEATHMATCH;
+}

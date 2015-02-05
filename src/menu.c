@@ -1049,7 +1049,11 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_CAMPAIGN_ITEM:
 			if (cmd & CMD_BUTTON1)
 			{
-				CampaignLoad(&gCampaign, &subMenu->u.campaign);
+				if (!CampaignLoad(&gCampaign, &subMenu->u.campaign))
+				{
+					// Failed to load; do nothing
+					return NULL;
+				}
 				return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 			}
 			break;

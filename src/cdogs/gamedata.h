@@ -85,7 +85,7 @@ void ShiftSongs(struct SongDef **songList);
 void FreeSongs(struct SongDef **songList);
 void LoadSongs(void);
 
-void CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
+bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
 void CampaignUnload(CampaignOptions *co);
 
 void MissionOptionsInit(struct MissionOptions *mo);

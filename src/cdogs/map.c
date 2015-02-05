@@ -1100,6 +1100,8 @@ void MapLoad(
 	}
 }
 
+static void AddObjectives(Map *map, const struct MissionOptions *mo);
+static void AddKeys(Map *map);
 void MapLoadDynamic(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store)
 {
@@ -1128,10 +1130,22 @@ void MapLoadDynamic(
 		}
 	}
 
+	if (HasObjectives(gCampaign.Entry.Mode))
+	{
+		AddObjectives(map, mo);
+	}
+
+	if (AreKeysAllowed(gCampaign.Entry.Mode))
+	{
+		AddKeys(map);
+	}
+}
+static void AddObjectives(Map *map, const struct MissionOptions *mo)
+{
 	// Try to add the objectives
 	// If we are unable to place them all, make sure to reduce the totals
 	// in case we create missions that are impossible to complete
-	for (int i = 0, j = 0; i < (int)mission->Objectives.size; i++)
+	for (int i = 0, j = 0; i < (int)mo->missionData->Objectives.size; i++)
 	{
 		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
 		if (mobj->Type != OBJECTIVE_COLLECT && mobj->Type != OBJECTIVE_DESTROY)
@@ -1143,7 +1157,7 @@ void MapLoadDynamic(
 		{
 			for (j = obj->placed; j < mobj->Count; j++)
 			{
-				if (MapTryPlaceCollectible(map, mission, mo, i))
+				if (MapTryPlaceCollectible(map, mo->missionData, mo, i))
 				{
 					obj->placed++;
 				}
@@ -1153,7 +1167,7 @@ void MapLoadDynamic(
 		{
 			for (j = obj->placed; j < mobj->Count; j++)
 			{
-				if (MapTryPlaceBlowup(map, mission, mo, i))
+				if (MapTryPlaceBlowup(map, mo->missionData, mo, i))
 				{
 					obj->placed++;
 				}
@@ -1165,7 +1179,9 @@ void MapLoadDynamic(
 			mobj->Required = mobj->Count;
 		}
 	}
-
+}
+static void AddKeys(Map *map)
+{
 	if (map->keyAccessCount >= 5)
 	{
 		MapPlaceCard(map, 3, MAP_ACCESS_BLUE);

@@ -152,14 +152,13 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		&c->Missions, json_find_first_label(root, "Missions")->child, version);
 	json_free_value(&root);
 
+	// Note: some campaigns don't have characters (e.g. dogfights)
 	root = ReadPhysFSJSON(filename, "characters.json");
-	if (root == NULL)
+	if (root != NULL)
 	{
-		err = -1;
-		goto bail;
+		LoadCharacters(
+			&c->characters, json_find_first_label(root, "Characters")->child);
 	}
-	LoadCharacters(
-		&c->characters, json_find_first_label(root, "Characters")->child);
 
 bail:
 	json_free_value(&root);

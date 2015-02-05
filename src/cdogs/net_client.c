@@ -167,9 +167,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameMode mode;
 			NetMsgCampaignDefConvert(&def, campaignPath, &mode);
 			CampaignEntry entry;
-			if (CampaignEntryTryLoad(&entry, campaignPath, mode))
+			if (CampaignEntryTryLoad(&entry, campaignPath, mode) &&
+				CampaignLoad(&gCampaign, &entry))
 			{
-				CampaignLoad(&gCampaign, &entry);
 				gCampaign.IsClient = true;
 			}
 			else
