@@ -79,6 +79,7 @@
 #include <cdogs/utils.h>
 
 #include <cdogs/physfs/physfs.h>
+#include <tinydir/tinydir.h>
 
 #include <cdogsed/charsed.h>
 #include <cdogsed/editor_ui.h>
@@ -470,12 +471,37 @@ static void Open(void)
 	while (!done)
 	{
 		ClearScreen(&gGraphicsDevice);
-		Vec2i pos = Vec2iNew(125, 50);
+		const int x = 125;
+		Vec2i pos = Vec2iNew(x, 50);
 		FontStr("Open file:", pos);
 		pos.y += FontH();
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		pos = FontCh('<', pos);
+
+		// Based on the filename, print a list of candidates
+		tinydir_dir dir;
+		char buf[CDOGS_PATH_MAX];
+		PathGetDirname(buf, filename);
+		if (!tinydir_open_sorted(&dir, buf))
+		{
+			const char *basename = PathGetBasename(filename);
+			pos.x = x;
+			pos.y += FontH() * 2;
+			for (int i = 0; i < (int)dir.n_files; i++)
+			{
+				tinydir_file file;
+				tinydir_readfile_n(&dir, &file, i);
+				if (strncmp(file.name, basename, strlen(basename)) == 0)
+				{
+					FontStrMask(file.path, pos, colorGray);
+					pos.x = x;
+					pos.y += FontH();
+				}
+			}
+			tinydir_close(&dir);
+		}
+
 		BlitFlip(&gGraphicsDevice);
 
 		bool doOpen = false;
