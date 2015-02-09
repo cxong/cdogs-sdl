@@ -556,7 +556,6 @@ static void Open(void)
 				goto loaded;
 			}
 			// Try adding .cdogscpn
-			char buf[CDOGS_PATH_MAX];
 			sprintf(buf, "%s.cdogscpn", filename);
 			if (TryOpen(buf))
 			{
