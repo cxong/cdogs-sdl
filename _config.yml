@@ -1,4 +1,6 @@
 name: C-Dogs SDL
+description: Classic overhead shoot-em-up game
+url: http://cxong.github.io/cdogs-sdl/
 markdown: redcarpet
 pygments: true
 baseurl: /cdogs-sdl
