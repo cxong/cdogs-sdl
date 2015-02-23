@@ -366,7 +366,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	}
 
 	Vec2i realPos = Vec2iFull2Real(pos);
-	TTileItem *target = GetItemOnTileInCollision(
+	TTileItem *target = CollideGetFirstItem(
 		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 		CalcCollisionTeam(1, actor),
 		IsPVP(gCampaign.Entry.Mode));
@@ -426,7 +426,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 
 		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-		if (GetItemOnTileInCollision(
+		if (CollideGetFirstItem(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
 			IsPVP(gCampaign.Entry.Mode)))
@@ -434,7 +434,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			pos.y = actor->Pos.y;
 		}
 		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-		if (GetItemOnTileInCollision(
+		if (CollideGetFirstItem(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
 			IsPVP(gCampaign.Entry.Mode)))
@@ -565,7 +565,7 @@ static Vec2i GetConstrainedFullPos(
 	return fromFull;
 }
 // Check if the player can pickup any item
-static void CheckPickupFunc(TTileItem *ti, void *data);
+static bool CheckPickupFunc(TTileItem *ti, void *data);
 static void CheckPickups(TActor *actor, const Vec2i realPos)
 {
 	// NPCs can't pickup
@@ -573,17 +573,18 @@ static void CheckPickups(TActor *actor, const Vec2i realPos)
 	{
 		return;
 	}
-	CollideAllItems(
+	CollideTileItems(
 		&actor->tileItem, realPos, 0, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
 }
-static void CheckPickupFunc(TTileItem *ti, void *data)
+static bool CheckPickupFunc(TTileItem *ti, void *data)
 {
 	TActor *actor = data;
 	if (ti->kind == KIND_PICKUP)
 	{
 		PickupPickup(actor, CArrayGet(&gPickups, ti->id));
 	}
+	return true;
 }
 
 void ActorHeal(TActor *actor, int health)
@@ -850,7 +851,7 @@ void UpdateAllActors(int ticks)
 		if (gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 		{
 			Vec2i realPos = Vec2iFull2Real(actor->Pos);
-			TTileItem *collidingItem = GetItemOnTileInCollision(
+			TTileItem *collidingItem = CollideGetFirstItem(
 				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
 				COLLISIONTEAM_NONE,
 				IsPVP(gCampaign.Entry.Mode));

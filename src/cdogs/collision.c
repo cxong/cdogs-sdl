@@ -223,44 +223,7 @@ bool CollisionIsOnSameTeam(
 		!isPVP;
 }
 
-// TODO: refactor away into CollideAllItems, use bool continue on callback
-TTileItem *GetItemOnTileInCollision(
-	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
-	const bool isPVP)
-{
-	const Vec2i tv = Vec2iToTile(pos);
-	Vec2i dv;
-	// Check collisions with all other items on this tile, in all 8 directions
-	for (dv.y = -1; dv.y <= 1; dv.y++)
-	{
-		for (dv.x = -1; dv.x <= 1; dv.x++)
-		{
-			const Vec2i dtv = Vec2iAdd(tv, dv);
-			if (!MapIsTileIn(&gMap, dtv))
-			{
-				continue;
-			}
-			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
-			for (int i = 0; i < (int)tileThings->size; i++)
-			{
-				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
-				// Don't collide if items are on the same team
-				if (!CollisionIsOnSameTeam(ti, team, isPVP))
-				{
-					if (item != ti &&
-						(mask == 0 || (ti->flags & mask)) &&
-						ItemsCollide(item, ti, pos))
-					{
-						return ti;
-					}
-				}
-			}
-		}
-	}
-
-	return NULL;
-}
-void CollideAllItems(
+void CollideTileItems(
 	const TTileItem *item, const Vec2i pos,
 	const int mask, const CollisionTeam team, const bool isPVP,
 	CollideItemFunc func, void *data)
@@ -282,18 +245,36 @@ void CollideAllItems(
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
 				// Don't collide if items are on the same team
-				if (!CollisionIsOnSameTeam(ti, team, isPVP))
+				if (CollisionIsOnSameTeam(ti, team, isPVP)) continue;
+				// No same-item collision
+				if (item == ti) continue;
+				if (mask != 0 && !(ti->flags & mask)) continue;
+				if (!ItemsCollide(item, ti, pos)) continue;
+				// Collision callback and check continue
+				if (!func(ti, data))
 				{
-					if (item != ti &&
-						(mask == 0 || (ti->flags & mask)) &&
-						ItemsCollide(item, ti, pos))
-					{
-						func(ti, data);
-					}
+					return;
 				}
 			}
 		}
 	}
+}
+static bool CollideGetFirstItemCallback(TTileItem *ti, void *data);
+TTileItem *CollideGetFirstItem(
+	const TTileItem *item, const Vec2i pos,
+	const int mask, const CollisionTeam team, const bool isPVP)
+{
+	TTileItem *firstItem = NULL;
+	CollideTileItems(
+		item, pos, mask, team, isPVP, CollideGetFirstItemCallback, &firstItem);
+	return firstItem;
+}
+static bool CollideGetFirstItemCallback(TTileItem *ti, void *data)
+{
+	TTileItem **pFirstItem = data;
+	// Store the first item in custom data and return
+	*pFirstItem = ti;
+	return false;
 }
 
 Vec2i GetWallBounceFullPos(

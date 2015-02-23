@@ -559,10 +559,9 @@ typedef struct
 {
 	bool HasHit;
 	bool MultipleHits;
-	bool HasFirstCollision;
 	TMobileObject *Obj;
 } HitItemData;
-static void HitItemFunc(TTileItem *ti, void *data);
+static bool HitItemFunc(TTileItem *ti, void *data);
 bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
 	// Don't hit if no damage dealt
@@ -577,23 +576,17 @@ bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 	HitItemData data;
 	data.HasHit = false;
 	data.MultipleHits = multipleHits;
-	data.HasFirstCollision = false;
 	data.Obj = obj;
-	CollideAllItems(
+	CollideTileItems(
 		&obj->tileItem, Vec2iFull2Real(pos),
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
 		IsPVP(gCampaign.Entry.Mode),
 		HitItemFunc, &data);
 	return data.HasHit;
 }
-static void HitItemFunc(TTileItem *ti, void *data)
+static bool HitItemFunc(TTileItem *ti, void *data)
 {
 	HitItemData *hData = data;
-	if (hData->HasFirstCollision && !hData->MultipleHits)
-	{
-		return;
-	}
-	hData->HasFirstCollision = true;
 	hData->HasHit = DamageSomething(
 		hData->Obj->vel, hData->Obj->bulletClass->Power,
 		hData->Obj->flags, hData->Obj->player, hData->Obj->uid,
@@ -605,4 +598,6 @@ static void HitItemFunc(TTileItem *ti, void *data)
 	{
 		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
 	}
+	// Whether to produce multiple hits from the same TMobileObject
+	return hData->MultipleHits;
 }

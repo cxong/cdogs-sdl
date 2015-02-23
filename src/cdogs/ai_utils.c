@@ -390,7 +390,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	{
 		frontPos.y++;
 	}
-	item = GetItemOnTileInCollision(
+	item = CollideGetFirstItem(
 		&a->tileItem,
 		frontPos,
 		TILEITEM_IMPASSABLE,

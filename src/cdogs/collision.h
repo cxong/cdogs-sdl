@@ -79,14 +79,18 @@ bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize);
 bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
 bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isPVP);
-TTileItem *GetItemOnTileInCollision(
-	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
-	const bool isPVP);
-typedef void (*CollideItemFunc)(TTileItem *, void *);
-void CollideAllItems(
+
+// Get all TTileItem that collide with a target TTileItem, with callback.
+// The callback returns bool continue, as multiple callbacks can result.
+typedef bool (*CollideItemFunc)(TTileItem *, void *);
+void CollideTileItems(
 	const TTileItem *item, const Vec2i pos,
 	const int mask, const CollisionTeam team, const bool isPVP,
 	CollideItemFunc func, void *data);
+// Get the first TTileItem in collision
+TTileItem *CollideGetFirstItem(
+	const TTileItem *item, const Vec2i pos,
+	const int mask, const CollisionTeam team, const bool isPVP);
 
 bool AreasCollide(
 	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);
