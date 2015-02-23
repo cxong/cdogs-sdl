@@ -396,7 +396,9 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			if (MissionStaticTryAddWreck(
-				m, IndexMapObject(b->ItemIndex), b->Pos))
+				m,
+				StrMapObject(CArrayGet(&gMapObjects.Destructibles, b->ItemIndex)),
+				b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}

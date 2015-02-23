@@ -600,6 +600,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	UpdateAllActors(ticksPerFrame);
+	UpdateObjects(ticksPerFrame);
 	UpdateMobileObjects(ticksPerFrame);
 	ParticlesUpdate(&gParticles, ticksPerFrame);
 

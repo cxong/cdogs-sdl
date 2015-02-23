@@ -70,6 +70,7 @@
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
 #define SHOT_IMPULSE_DIVISOR 25
+#define AMMO_SPAWNER_RESPAWN_TICKS (FPS_FRAMELIMIT * 30)
 
 CArray gObjs;
 CArray gMobObjs;
@@ -439,6 +440,37 @@ bool ObjIsDangerous(const TObject *o)
 {
 	// TODO: something more sophisticated? Check if weapon is dangerous
 	return o->Class->DestroyGuns.size > 0;
+}
+
+void UpdateObjects(const int ticks)
+{
+	for (int i = 0; i < (int)gObjs.size; i++)
+	{
+		TObject *obj = CArrayGet(&gObjs, i);
+		if (!obj->isInUse)
+		{
+			continue;
+		}
+		switch (obj->Class->Type)
+		{
+		case MAP_OBJECT_TYPE_AMMO_SPAWNER:
+			// TODO: move counter only if ammo taken
+			obj->counter -= ticks;
+			if (obj->counter <= 0)
+			{
+				obj->counter += AMMO_SPAWNER_RESPAWN_TICKS;
+				GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
+				e.u.AddAmmoPickup.Pos =
+					Vec2iNew(obj->tileItem.x, obj->tileItem.y);
+				e.u.AddAmmoPickup.Id = obj->Class->u.AmmoPickupId;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			break;
+		default:
+			// Do nothing
+			break;
+		}
+	}
 }
 
 

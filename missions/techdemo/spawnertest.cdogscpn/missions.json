@@ -1,0 +1,101 @@
+{
+	"Missions": [{
+		"Title": "",
+		"Description": "",
+		"Type": "Static",
+		"Width": 16,
+		"Height": 16,
+		"WallStyle": 2,
+		"FloorStyle": 9,
+		"RoomStyle": 9,
+		"ExitStyle": 1,
+		"KeyStyle": 0,
+		"DoorStyle": 0,
+		"Objectives": [],
+		"Enemies": [],
+		"SpecialChars": [],
+		"MapObjectDensities": [],
+		"EnemyDensity": 0,
+		"Weapons": ["Knife",
+		"Machine gun",
+		"Grenades",
+		"Flamer",
+		"Shotgun",
+		"Powergun",
+		"Shrapnel bombs",
+		"Molotovs",
+		"Sniper rifle",
+		"Prox. mine",
+		"Dynamite",
+		"Chemo bombs",
+		"Petrify gun",
+		"Browny gun",
+		"Confusion bombs",
+		"Chemo gun",
+		"Pulse rifle",
+		"Heatseeker",
+		"Swarmer",
+		"Launcher",
+		"Pistol"],
+		"Song": "",
+		"WallColor": 8,
+		"FloorColor": 12,
+		"RoomColor": 8,
+		"AltColor": 9,
+		"Tiles": "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
+		"StaticItems": [{
+			"MapObject": "Bullets spawner",
+			"Positions": [[2,
+			2]]
+		},
+		{
+			"MapObject": "Grenades spawner",
+			"Positions": [[4,
+			2]]
+		},
+		{
+			"MapObject": "Gas tank spawner",
+			"Positions": [[6,
+			2]]
+		},
+		{
+			"MapObject": "Shells spawner",
+			"Positions": [[8,
+			2]]
+		},
+		{
+			"MapObject": "Cells spawner",
+			"Positions": [[10,
+			2]]
+		},
+		{
+			"MapObject": "Frag grenades spawner",
+			"Positions": [[12,
+			2]]
+		},
+		{
+			"MapObject": "Molotovs spawner",
+			"Positions": [[2,
+			4]]
+		},
+		{
+			"MapObject": "Mines spawner",
+			"Positions": [[4,
+			4],
+			[10,
+			4]]
+		}],
+		"StaticWrecks": [],
+		"StaticCharacters": [],
+		"StaticObjectives": [],
+		"StaticKeys": [],
+		"Start": [0,
+		0],
+		"Exit": {
+			"Start": [0,
+			0],
+			"End": [0,
+			0]
+		}
+	}]
+}

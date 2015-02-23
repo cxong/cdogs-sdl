@@ -223,6 +223,7 @@ bool CollisionIsOnSameTeam(
 		!isPVP;
 }
 
+// TODO: refactor away into CollideAllItems, use bool continue on callback
 TTileItem *GetItemOnTileInCollision(
 	const TTileItem *item, Vec2i pos, int mask, CollisionTeam team,
 	const bool isPVP)
@@ -284,7 +285,7 @@ void CollideAllItems(
 				if (!CollisionIsOnSameTeam(ti, team, isPVP))
 				{
 					if (item != ti &&
-						(ti->flags & mask) &&
+						(mask == 0 || (ti->flags & mask)) &&
 						ItemsCollide(item, ti, pos))
 					{
 						func(ti, data);

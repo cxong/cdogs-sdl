@@ -353,6 +353,7 @@ static void CheckTrigger(const Vec2i tilePos)
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);
+static void CheckPickups(TActor *actor, const Vec2i realPos);
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
@@ -457,17 +458,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 
 	CheckTrigger(Vec2iToTile(realPos));
 
-	if (actor->playerIndex >= 0)
-	{
-		target = GetItemOnTileInCollision(
-			&actor->tileItem, realPos, 0,
-			CalcCollisionTeam(1, actor),
-			IsPVP(gCampaign.Entry.Mode));
-		if (target && target->kind == KIND_PICKUP)
-		{
-			PickupPickup(actor, CArrayGet(&gPickups, target->id));
-		}
-	}
+	CheckPickups(actor, realPos);
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 	e.u.ActorMove.Id = actor->tileItem.id;
@@ -572,6 +563,27 @@ static Vec2i GetConstrainedFullPos(
 
 	// All alternative movements are in collision; don't move
 	return fromFull;
+}
+// Check if the player can pickup any item
+static void CheckPickupFunc(TTileItem *ti, void *data);
+static void CheckPickups(TActor *actor, const Vec2i realPos)
+{
+	// NPCs can't pickup
+	if (actor->playerIndex < 0)
+	{
+		return;
+	}
+	CollideAllItems(
+		&actor->tileItem, realPos, 0, CalcCollisionTeam(true, actor),
+		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
+}
+static void CheckPickupFunc(TTileItem *ti, void *data)
+{
+	TActor *actor = data;
+	if (ti->kind == KIND_PICKUP)
+	{
+		PickupPickup(actor, CArrayGet(&gPickups, ti->id));
+	}
 }
 
 void ActorHeal(TActor *actor, int health)

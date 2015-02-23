@@ -433,7 +433,7 @@ bool MapTryPlaceOneObject(
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
 
-	bool isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t);
+	const bool isEmpty = TileIsClear(t);
 	if (isStrictMode && !MapObjectIsTileOKStrict(
 			mo, iMap, isEmpty,
 			IMapGet(map, Vec2iNew(v.x, v.y - 1)),
@@ -480,9 +480,8 @@ void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
 {
 	Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
-	bool isEmpty = !(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t);
 	if (!MapObjectIsTileOK(
-		mo, iMap, isEmpty, IMapGet(map, Vec2iNew(v.x, v.y - 1))))
+		mo, iMap, TileIsClear(t), IMapGet(map, Vec2iNew(v.x, v.y - 1))))
 	{
 		return;
 	}
@@ -604,6 +603,7 @@ void MapPlaceKey(
 void MapPlaceAmmo(AddAmmoPickup a)
 {
 	const Ammo *ammo = AmmoGetById(&gAmmo, a.Id);
+	// TODO: can explicitly link ammo to pickup without string lookup
 	char buf[256];
 	sprintf(buf, "ammo_%s", ammo->Name);
 	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass(buf));
@@ -622,10 +622,10 @@ static void MapPlaceCard(Map *map, int keyIndex, int map_access)
 		t = MapGetTile(map, v);
 		iMap = IMapGet(map, v);
 		tBelow = MapGetTile(map, Vec2iNew(v.x, v.y + 1));
-		if (!(t->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(t) &&
+		if (TileIsClear(t) &&
 			(iMap & 0xF00) == map_access &&
 			(iMap & MAP_MASKACCESS) == MAP_ROOM &&
-			!(tBelow->flags & ~MAPTILE_IS_NORMAL_FLOOR) && TileIsClear(tBelow))
+			TileIsClear(tBelow))
 		{
 			MapPlaceKey(map, &gMission, v, keyIndex);
 			return;

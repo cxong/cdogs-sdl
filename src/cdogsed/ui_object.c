@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -132,6 +132,10 @@ void UIObjectDestroy(UIObject *o)
 
 void UIObjectAddChild(UIObject *o, UIObject *c)
 {
+	if (c == NULL)
+	{
+		return;
+	}
 	CArrayPushBack(&o->Children, &c);
 	c->Parent = o;
 	assert(o->Type != UITYPE_TAB && "need special add child for TAB type");

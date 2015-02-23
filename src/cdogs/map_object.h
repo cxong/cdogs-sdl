@@ -49,6 +49,7 @@
 #pragma once
 
 #include <json/json.h>
+#include "ammo.h"
 #include "pic_manager.h"
 
 typedef enum
@@ -71,6 +72,13 @@ typedef struct
 	const Pic *Pic;
 	Vec2i Offset;
 } MapObjectPic;
+
+typedef enum
+{
+	MAP_OBJECT_TYPE_NORMAL,
+	MAP_OBJECT_TYPE_AMMO_SPAWNER
+} MapObjectType;
+
 // A static map object, taking up an entire tile
 typedef struct
 {
@@ -80,9 +88,17 @@ typedef struct
 	MapObjectPic Wreck;
 	Vec2i Size;
 	int Health;
+	// Guns that are fired when this map object is destroyed
+	// i.e. explosion on destruction
 	CArray DestroyGuns;	// of const GunDescription *
 	// Bit field composed of bits shifted by PlacementFlags
 	int Flags;
+	MapObjectType Type;
+	union
+	{
+		// TODO: custom respawn rate?
+		int AmmoPickupId;
+	} u;
 } MapObject;
 typedef struct
 {
@@ -107,6 +123,7 @@ MapObject *RandomBloodMapObject(const MapObjects *mo);
 
 void MapObjectsInit(MapObjects *classes, const char *filename);
 void MapObjectsLoadJSON(CArray *classes, json_t *root);
+void MapObjectsLoadAmmoSpawners(MapObjects *classes, const AmmoClasses *ammo);
 void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);
@@ -122,3 +139,5 @@ bool MapObjectIsTileOKStrict(
 	const MapObject *obj, const unsigned short tile, const bool isEmpty,
 	const unsigned short tileAbove, const unsigned short tileBelow,
 	const int numWallsAdjacent, const int numWallsAround);
+
+bool MapObjectIsAmmoSpawner(const MapObject *mo);

@@ -64,6 +64,7 @@ typedef struct
 {
 	const MapObject *Class;
 	int Health;
+	int counter;
 	TTileItem tileItem;
 	bool isInUse;
 } TObject;
@@ -111,6 +112,8 @@ void ObjDestroy(int id);
 
 // Check if this object is dangerous; i.e. on destruction will explode
 bool ObjIsDangerous(const TObject *o);
+
+void UpdateObjects(const int ticks);
 
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);

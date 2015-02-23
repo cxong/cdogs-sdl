@@ -128,7 +128,16 @@ static void HandleGameEvent(
 			}
 			break;
 		case GAME_EVENT_ADD_HEALTH_PICKUP:
-			MapPlaceHealth(e->u.AddHealthPickup);
+			{
+				MapPlaceHealth(e->u.AddHealthPickup);
+				// Play a spawn sound
+				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
+				sound.u.SoundAt.Sound = StrSound("spawn_item");
+				sound.u.SoundAt.Pos = e->u.AddHealthPickup.Pos;
+				HandleGameEvent(
+					&sound, hud, shake, healthSpawner, ammoSpawners,
+					eventHandlers);
+			}
 			break;
 		case GAME_EVENT_TAKE_HEALTH_PICKUP:
 			{
@@ -152,45 +161,54 @@ static void HandleGameEvent(
 			}
 			break;
 		case GAME_EVENT_ADD_AMMO_PICKUP:
-			MapPlaceAmmo(e->u.AddAmmoPickup);
+			{
+				MapPlaceAmmo(e->u.AddAmmoPickup);
+				// Play a spawn sound
+				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
+				sound.u.SoundAt.Sound = StrSound("spawn_item");
+				sound.u.SoundAt.Pos = e->u.AddAmmoPickup.Pos;
+				HandleGameEvent(
+					&sound, hud, shake, healthSpawner, ammoSpawners,
+					eventHandlers);
+			}
 			break;
 		case GAME_EVENT_TAKE_AMMO_PICKUP:
-		{
-			const PlayerData *p =
-				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
-			if (IsPlayerAlive(p))
 			{
-				TActor *a = CArrayGet(&gActors, p->Id);
-				if (!a->isInUse)
+				const PlayerData *p =
+					CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
+				if (IsPlayerAlive(p))
 				{
-					break;
+					TActor *a = CArrayGet(&gActors, p->Id);
+					if (!a->isInUse)
+					{
+						break;
+					}
+					ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
+					if (e->u.AddAmmo.IsRandomSpawned)
+					{
+						PowerupSpawnerRemoveOne(
+							CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
+					}
+					// TODO: some sort of text effect showing ammo grab
 				}
-				ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
-				if (e->u.AddAmmo.IsRandomSpawned)
-				{
-					PowerupSpawnerRemoveOne(
-						CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
-				}
-				// TODO: some sort of text effect showing ammo grab
 			}
-		}
-		break;
+			break;
 		case GAME_EVENT_USE_AMMO:
-		{
-			const PlayerData *p =
-				CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
-			if (IsPlayerAlive(p))
 			{
-				TActor *a = CArrayGet(&gActors, p->Id);
-				if (!a->isInUse)
+				const PlayerData *p =
+					CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
+				if (IsPlayerAlive(p))
 				{
-					break;
+					TActor *a = CArrayGet(&gActors, p->Id);
+					if (!a->isInUse)
+					{
+						break;
+					}
+					ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
+					// TODO: some sort of text effect showing ammo usage
 				}
-				ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
-				// TODO: some sort of text effect showing ammo usage
 			}
-		}
-		break;
+			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;

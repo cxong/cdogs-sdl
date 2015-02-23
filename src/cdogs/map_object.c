@@ -239,6 +239,7 @@ void MapObjectsLoadJSON(CArray *classes, json_t *root)
 static void LoadMapObject(MapObject *m, json_t *node)
 {
 	memset(m, 0, sizeof *m);
+	m->Idx = -1;
 
 	LoadInt(&m->Idx, node, "Index");
 	m->Name = GetString(node, "Name");
@@ -296,6 +297,37 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 			CSTRDUP(s, mo->Name);
 			CArrayPushBack(&m->Destructibles, &s);
 		}
+	}
+}
+
+static void LoadAmmoSpawners(
+	MapObjects *classes, const CArray *ammo, const int fromId);
+void MapObjectsLoadAmmoSpawners(MapObjects *classes, const AmmoClasses *ammo)
+{
+	LoadAmmoSpawners(classes, &ammo->Ammo, 0);
+	LoadAmmoSpawners(classes, &ammo->CustomAmmo, ammo->Ammo.size);
+}
+static void LoadAmmoSpawners(
+	MapObjects *classes, const CArray *ammo, const int fromId)
+{
+	for (int i = 0; i < (int)ammo->size; i++)
+	{
+		const Ammo *a = CArrayGet(ammo, i);
+		MapObject m;
+		memset(&m, 0, sizeof m);
+		m.Idx = -1;
+		char buf[256];
+		sprintf(buf, "%s spawner", a->Name);
+		CSTRDUP(m.Name, buf);
+		m.Normal.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
+		m.Normal.Offset = Vec2iNew(
+			-m.Normal.Pic->size.x / 2,
+			TILE_HEIGHT / 2 - m.Normal.Pic->size.y);
+		m.Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+		m.Health = 0;
+		m.Type = MAP_OBJECT_TYPE_AMMO_SPAWNER;
+		m.u.AmmoPickupId = i + fromId;
+		CArrayPushBack(&classes->CustomClasses, &m);
 	}
 }
 
@@ -416,4 +448,9 @@ bool MapObjectIsTileOKStrict(
 	}
 
 	return true;
+}
+
+bool MapObjectIsAmmoSpawner(const MapObject *mo)
+{
+	return mo->Type == MAP_OBJECT_TYPE_AMMO_SPAWNER;
 }

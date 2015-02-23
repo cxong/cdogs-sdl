@@ -105,7 +105,9 @@ bool TileIsNormalFloor(Tile *t)
 }
 bool TileIsClear(Tile *t)
 {
-	return t->things.size == 0;
+	return
+		!(t->flags & ~(MAPTILE_IS_NORMAL_FLOOR | MAPTILE_IS_DRAINAGE)) &&
+		t->things.size == 0;
 }
 bool TileHasCharacter(Tile *t)
 {

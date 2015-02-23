@@ -141,6 +141,8 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
 	}
 
+	MapObjectsLoadAmmoSpawners(&gMapObjects, &gAmmo);
+
 
 	root = ReadPhysFSJSON(filename, "missions.json");
 	if (root == NULL)
