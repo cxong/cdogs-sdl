@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <string.h>
 #include "triggers.h"
 #include "map.h"
+#include "objs.h"
 #include "sounds.h"
 #include "utils.h"
 
@@ -164,18 +165,13 @@ void RemoveAllWatches(void)
 
 static void ActionRun(Action *a, CArray *mapTriggers)
 {
-	int i;
-	switch (a->action)
+	switch (a->Type)
 	{
 	case ACTION_NULL:
 		return;
 
-	case ACTION_SOUND:
-		SoundPlayAt(&gSoundDevice, a->a.Sound, a->u.pos);
-		break;
-
 	case ACTION_SETTRIGGER:
-		for (i = 0; i < (int)mapTriggers->size; i++)
+		for (int i = 0; i < (int)mapTriggers->size; i++)
 		{
 			Trigger *tr = *(Trigger **)CArrayGet(mapTriggers, i);
 			if (tr->id == a->u.index)
@@ -187,7 +183,7 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 		break;
 
 	case ACTION_CLEARTRIGGER:
-		for (i = 0; i < (int)mapTriggers->size; i++)
+		for (int i = 0; i < (int)mapTriggers->size; i++)
 		{
 			Trigger *tr = *(Trigger **)CArrayGet(mapTriggers, i);
 			if (tr->id == a->u.index)
@@ -201,9 +197,9 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 	case ACTION_CHANGETILE:
 		{
 			Tile *t= MapGetTile(&gMap, a->u.pos);
-			t->flags = a->a.tileFlags;
-			t->pic = a->tilePic;
-			t->picAlt = a->tilePicAlt;
+			t->flags = a->a.ChangeTile.Flags;
+			t->pic = a->a.ChangeTile.Pic;
+			t->picAlt = a->a.ChangeTile.PicAlt;
 		}
 		break;
 
@@ -213,6 +209,10 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 
 	case ACTION_DEACTIVATEWATCH:
 		DeactivateWatch(a->u.index);
+		break;
+
+	case ACTION_SOUND:
+		SoundPlayAt(&gSoundDevice, a->a.Sound, a->u.pos);
 		break;
 	}
 }

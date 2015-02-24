@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -70,10 +70,10 @@
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
 #define SHOT_IMPULSE_DIVISOR 25
-#define AMMO_SPAWNER_RESPAWN_TICKS (FPS_FRAMELIMIT * 30)
 
 CArray gObjs;
 CArray gMobObjs;
+static int sObjUIDs = 0;
 
 
 // Draw functions
@@ -415,6 +415,7 @@ int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags)
 		o = CArrayGet(&gObjs, i);
 	}
 	memset(o, 0, sizeof *o);
+	o->uid = sObjUIDs++;
 	o->Class = mo;
 	o->Health = mo->Health;
 	o->tileItem.x = o->tileItem.y = -1;
@@ -454,15 +455,22 @@ void UpdateObjects(const int ticks)
 		switch (obj->Class->Type)
 		{
 		case MAP_OBJECT_TYPE_AMMO_SPAWNER:
-			// TODO: move counter only if ammo taken
+			// If counter -1, it is inactive i.e. already spawned pickup
+			if (obj->counter == -1)
+			{
+				break;
+			}
 			obj->counter -= ticks;
 			if (obj->counter <= 0)
 			{
-				obj->counter += AMMO_SPAWNER_RESPAWN_TICKS;
+				// Deactivate spawner by setting counter to -1
+				// Spawner reactivated only when ammo taken
+				obj->counter = -1;
 				GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
 				e.u.AddAmmoPickup.Pos =
 					Vec2iNew(obj->tileItem.x, obj->tileItem.y);
 				e.u.AddAmmoPickup.Id = obj->Class->u.AmmoPickupId;
+				e.u.AddAmmoPickup.SpawnerUID = obj->uid;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			break;
@@ -471,6 +479,20 @@ void UpdateObjects(const int ticks)
 			break;
 		}
 	}
+}
+
+TObject *ObjGetByUID(const int uid)
+{
+	for (int i = 0; i < (int)gObjs.size; i++)
+	{
+		TObject *o = CArrayGet(&gObjs, i);
+		if (o->uid == uid)
+		{
+			return o;
+		}
+	}
+	CASSERT(false, "Cannot find object by UID");
+	return NULL;
 }
 
 

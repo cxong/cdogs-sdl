@@ -84,5 +84,14 @@ GameEvent GameEventNew(GameEventType type)
 	GameEvent e;
 	memset(&e, 0, sizeof e);
 	e.Type = type;
+	switch (type)
+	{
+	case GAME_EVENT_ADD_AMMO_PICKUP:
+		e.u.AddAmmoPickup.SpawnerUID = -1;
+		break;
+	default:
+		// Do nothing
+		break;
+	}
 	return e;
 }

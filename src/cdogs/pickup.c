@@ -87,6 +87,7 @@ int PickupAdd(const Vec2i pos, const PickupClass *class)
 	p->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(pos));
 	p->isInUse = true;
+	p->SpawnerUID = -1;
 	return i;
 }
 void PickupDestroy(const int id)
@@ -138,12 +139,23 @@ void PickupPickup(const TActor *a, const Pickup *p)
 			if (current < ammo->Max)
 			{
 				canPickup = true;
+
+				// Take ammo
 				GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
 				e.u.AddAmmo.PlayerIndex = a->playerIndex;
 				e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
 				// Note: receiving end will prevent ammo from exceeding max
 				GameEventsEnqueue(&gGameEvents, e);
-				// TODO: per-ammo sound
+
+				// Alert spawner to start respawn process
+				if (p->SpawnerUID >= 0)
+				{
+					e = GameEventNew(GAME_EVENT_OBJECT_SET_COUNTER);
+					e.u.ObjectSetCounter.UID = p->SpawnerUID;
+					e.u.ObjectSetCounter.Count = AMMO_SPAWNER_RESPAWN_TICKS;
+					GameEventsEnqueue(&gGameEvents, e);
+				}
+
 				sound = StrSound(ammo->Sound);
 			}
 		}

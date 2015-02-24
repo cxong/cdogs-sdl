@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAME_EVENTS
-#define __GAME_EVENTS
+#pragma once
 
 #include "actors.h"
 #include "c_array.h"
@@ -57,6 +56,7 @@ typedef enum
 	GAME_EVENT_ADD_AMMO_PICKUP,
 	GAME_EVENT_TAKE_AMMO_PICKUP,
 	GAME_EVENT_USE_AMMO,
+	GAME_EVENT_OBJECT_SET_COUNTER,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
@@ -120,6 +120,11 @@ typedef struct
 			int PlayerIndex;
 			AddAmmo UseAmmo;
 		} UseAmmo;
+		struct
+		{
+			int UID;
+			int Count;
+		} ObjectSetCounter;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
 		AddBullet AddBullet;
@@ -164,5 +169,3 @@ void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
 
 GameEvent GameEventNew(GameEventType type);
-
-#endif

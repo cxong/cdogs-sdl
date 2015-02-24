@@ -209,6 +209,12 @@ static void HandleGameEvent(
 				}
 			}
 			break;
+		case GAME_EVENT_OBJECT_SET_COUNTER:
+			{
+				TObject *o = ObjGetByUID(e->u.ObjectSetCounter.UID);
+				o->counter = e->u.ObjectSetCounter.Count;
+			}
+			break;
 		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
 			MobObjDestroy(e->u.MobileObjectRemoveId);
 			break;

@@ -40,6 +40,8 @@ typedef struct
 	TTileItem tileItem;
 	bool IsRandomSpawned;
 	bool isInUse;
+	// For ammo pickups, the UID of the spawner (-1 otherwise)
+	int SpawnerUID;
 } Pickup;
 
 extern CArray gPickups;	// of Pickup

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,38 +46,43 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __TRIGGERS
-#define __TRIGGERS
+#pragma once
 
 #include <SDL_mixer.h>
 
 #include "c_array.h"
 #include "pic.h"
 
-#define ACTION_NULL             0
-#define ACTION_SETTRIGGER       1
-#define ACTION_CLEARTRIGGER     2
-#define ACTION_CHANGETILE       3
-#define ACTION_ACTIVATEWATCH    4
-#define ACTION_DEACTIVATEWATCH  5
-#define ACTION_SOUND            6
+typedef enum
+{
+	ACTION_NULL,
+	ACTION_SETTRIGGER,
+	ACTION_CLEARTRIGGER,
+	ACTION_CHANGETILE,
+	ACTION_ACTIVATEWATCH,
+	ACTION_DEACTIVATEWATCH,
+	ACTION_SOUND
+} ActionType;
 
 #define CONDITION_TILECLEAR     1
 
 
 typedef struct
 {
-	int action;
+	ActionType Type;
 	union
 	{
 		Vec2i pos;
 		int index;
 	} u;
-	Pic *tilePic;
-	Pic tilePicAlt;
 	union
 	{
-		int tileFlags;
+		struct
+		{
+			int Flags;
+			Pic *Pic;
+			Pic PicAlt;
+		} ChangeTile;
 		Mix_Chunk *Sound;
 	} a;
 } Action;
@@ -118,6 +123,3 @@ TWatch *WatchNew(void);
 Condition *WatchAddCondition(TWatch *w);
 Action *WatchAddAction(TWatch *w);
 void RemoveAllWatches(void);
-
-
-#endif

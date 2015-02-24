@@ -609,6 +609,7 @@ void MapPlaceAmmo(AddAmmoPickup a)
 	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass(buf));
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->IsRandomSpawned = a.IsRandomSpawned;
+	p->SpawnerUID = a.SpawnerUID;
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)
@@ -687,11 +688,11 @@ static TWatch *CreateCloseDoorWatch(
 
 	// Deactivate itself
 	a = WatchAddAction(w);
-	a->action = ACTION_DEACTIVATEWATCH;
+	a->Type = ACTION_DEACTIVATEWATCH;
 	a->u.index = w->index;
 	// play sound at the center of the door group
 	a = WatchAddAction(w);
-	a->action = ACTION_SOUND;
+	a->Type = ACTION_SOUND;
 	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
 		v.x + dv.x * doorGroupCount / 2,
 		v.y + dv.y * doorGroupCount / 2));
@@ -702,16 +703,16 @@ static TWatch *CreateCloseDoorWatch(
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		a = WatchAddAction(w);
-		a->action = ACTION_CHANGETILE;
+		a->Type = ACTION_CHANGETILE;
 		a->u.pos = vI;
-		a->tilePic = PicManagerGetFromOld(&gPicManager, pic);
+		a->a.ChangeTile.Pic = PicManagerGetFromOld(&gPicManager, pic);
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
-			PicLoadOffset(&a->tilePicAlt, pic);
-			a->tilePic = PicManagerGetFromOld(
+			PicLoadOffset(&a->a.ChangeTile.PicAlt, pic);
+			a->a.ChangeTile.Pic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
-		a->a.tileFlags = tileFlags;
+		a->a.ChangeTile.Flags = tileFlags;
 	}
 
 	for (i = 0; i < doorGroupCount; i++)
@@ -721,16 +722,16 @@ static TWatch *CreateCloseDoorWatch(
 		if (isHorizontal)
 		{
 			// Add shadows below doors
-			a->action = ACTION_CHANGETILE;
+			a->Type = ACTION_CHANGETILE;
 			a->u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
 			if (IMapGet(map, a->u.pos) == MAP_FLOOR)
 			{
-				a->tilePic = PicManagerGetFromOld(
+				a->a.ChangeTile.Pic = PicManagerGetFromOld(
 					&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
 			}
 			else
 			{
-				a->tilePic = PicManagerGetFromOld(
+				a->a.ChangeTile.Pic = PicManagerGetFromOld(
 					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 			}
 		}
@@ -771,7 +772,7 @@ static Trigger *CreateOpenDoorTrigger(
 
 	/// play sound at the center of the door group
 	a = TriggerAddAction(t);
-	a->action = ACTION_SOUND;
+	a->Type = ACTION_SOUND;
 	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
 		v.x + dv.x * doorGroupCount / 2,
 		v.y + dv.y * doorGroupCount / 2));
@@ -779,7 +780,7 @@ static Trigger *CreateOpenDoorTrigger(
 
 	// Deactivate itself
 	a = TriggerAddAction(t);
-	a->action = ACTION_CLEARTRIGGER;
+	a->Type = ACTION_CLEARTRIGGER;
 	a->u.index = t->id;
 
 	// Open doors
@@ -787,26 +788,26 @@ static Trigger *CreateOpenDoorTrigger(
 	{
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		a = TriggerAddAction(t);
-		a->action = ACTION_CHANGETILE;
+		a->Type = ACTION_CHANGETILE;
 		a->u.pos = vI;
 		if (isHorizontal)
 		{
-			a->tilePic = PicManagerGetFromOld(&gPicManager, openDoorPic);
+			a->a.ChangeTile.Pic = PicManagerGetFromOld(&gPicManager, openDoorPic);
 		}
 		else if (i == 0)
 		{
 			// special door cavity picture
-			PicLoadOffset(&a->tilePicAlt, openDoorPic);
-			a->tilePic = PicManagerGetFromOld(
+			PicLoadOffset(&a->a.ChangeTile.PicAlt, openDoorPic);
+			a->a.ChangeTile.Pic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
 		else
 		{
 			// room floor pic
-			a->tilePic = PicManagerGetFromOld(
+			a->a.ChangeTile.Pic = PicManagerGetFromOld(
 				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
 		}
-		a->a.tileFlags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
+		a->a.ChangeTile.Flags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
 	}
 
 	// Change tiles below the doors
@@ -818,16 +819,16 @@ static Trigger *CreateOpenDoorTrigger(
 			Vec2i vIAside = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
 			a = TriggerAddAction(t);
 			// Remove shadows below doors
-			a->action = ACTION_CHANGETILE;
+			a->Type = ACTION_CHANGETILE;
 			a->u.pos = vIAside;
 			if (IMapGet(map, vIAside) == MAP_FLOOR)
 			{
-				a->tilePic = PicManagerGetFromOld(
+				a->a.ChangeTile.Pic = PicManagerGetFromOld(
 					&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
 			}
 			else
 			{
-				a->tilePic = PicManagerGetFromOld(
+				a->a.ChangeTile.Pic = PicManagerGetFromOld(
 					&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
 			}
 		}
@@ -933,10 +934,10 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		isHorizontal, doorGroupCount, flags, openDoorPic, floor, room);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
-	a->action = ACTION_ACTIVATEWATCH;
+	a->Type = ACTION_ACTIVATEWATCH;
 	a->u.index = w->index;
 	a = WatchAddAction(w);
-	a->action = ACTION_SETTRIGGER;
+	a->Type = ACTION_SETTRIGGER;
 	a->u.index = t->id;
 
 	// Set tiles on and besides doors free

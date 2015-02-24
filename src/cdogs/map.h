@@ -168,6 +168,10 @@ typedef struct
 	int Id;
 	// Whether the pickup was placed by the random spawner
 	bool IsRandomSpawned;
+	// UID of spawner that created this pickup; this is so that when this ammo
+	// is taken, we can alert the spawner to start its respawn cycle
+	// If no spawner, then -1
+	int SpawnerUID;
 } AddAmmoPickup;
 void MapPlaceAmmo(AddAmmoPickup a);
 

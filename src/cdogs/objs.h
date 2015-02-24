@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __OBJSH
-#define __OBJSH
+#pragma once
 
 #include "actors.h"
 #include "bullet_class.h"
@@ -59,9 +58,12 @@
 // Bullet "height"
 #define BULLET_Z   10
 
+#define AMMO_SPAWNER_RESPAWN_TICKS (FPS_FRAMELIMIT * 30)
+
 
 typedef struct
 {
+	int uid;
 	const MapObject *Class;
 	int Health;
 	int counter;
@@ -115,6 +117,8 @@ bool ObjIsDangerous(const TObject *o);
 
 void UpdateObjects(const int ticks);
 
+TObject *ObjGetByUID(const int uid);
+
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);
 void MobObjsTerminate(void);
@@ -124,5 +128,3 @@ void MobileObjectUpdate(TMobileObject *obj, int ticks);
 bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits);
 
 bool UpdateMobileObject(TMobileObject *obj, const int ticks);
-
-#endif
