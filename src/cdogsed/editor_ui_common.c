@@ -42,13 +42,17 @@ void DisplayMapItem(const Vec2i pos, const MapObject *mo)
 
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
-	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
+	if (data->Brush.ItemIndex == -1)
+	{
+		// No key; don't draw
+		return;
+	}
 	const Pic *pic =
 		KeyPickupClass(gMission.keyStyle, data->Brush.ItemIndex)->Pic;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
-	Blit(&gGraphicsDevice, pic, pos);
+	Blit(g, pic, pos);
 }
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx)

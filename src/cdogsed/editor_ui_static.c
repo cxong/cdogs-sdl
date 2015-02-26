@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -472,8 +472,7 @@ static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	pos = Vec2iZero();
-	int width = 4;
-	for (int i = 0; i < KEY_COUNT; i++)
+	for (int i = -1; i < KEY_COUNT; i++)
 	{
 		o2 = UIObjectCopy(o);
 		o2->IsDynamicData = 1;
@@ -481,13 +480,13 @@ static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
 		((IndexedEditorBrush *)o2->Data)->Brush = brush;
 		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
 		o2->Pos = pos;
+		if (i == -1)
+		{
+			// -1 means no key
+			CSTRDUP(o2->Tooltip, "no key");
+		}
 		UIObjectAddChild(c, o2);
 		pos.x += o->Size.x;
-		if (((i + 1) % width) == 0)
-		{
-			pos.x = 0;
-			pos.y += o->Size.y;
-		}
 	}
 
 	UIObjectDestroy(o);

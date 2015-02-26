@@ -461,7 +461,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		}
 		break;
 	case BRUSHTYPE_SET_KEY:
-		if (isMain)
+		if (isMain || b->ItemIndex > 0)
 		{
 			if (MissionStaticTrySetKey(m, b->ItemIndex, b->Pos))
 			{
