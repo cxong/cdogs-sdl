@@ -454,7 +454,7 @@ void UpdateObjects(const int ticks)
 		}
 		switch (obj->Class->Type)
 		{
-		case MAP_OBJECT_TYPE_AMMO_SPAWNER:
+		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
 			// If counter -1, it is inactive i.e. already spawned pickup
 			if (obj->counter == -1)
 			{
@@ -466,11 +466,13 @@ void UpdateObjects(const int ticks)
 				// Deactivate spawner by setting counter to -1
 				// Spawner reactivated only when ammo taken
 				obj->counter = -1;
-				GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
-				e.u.AddAmmoPickup.Pos =
+				GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+				e.u.AddPickup.Pos =
 					Vec2iNew(obj->tileItem.x, obj->tileItem.y);
-				e.u.AddAmmoPickup.Id = obj->Class->u.AmmoPickupId;
-				e.u.AddAmmoPickup.SpawnerUID = obj->uid;
+				// TODO: no need for string lookup
+				e.u.AddPickup.PickupClassId =
+					StrPickupClassId(obj->Class->u.PickupClass->Name);
+				e.u.AddPickup.SpawnerUID = obj->uid;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			break;

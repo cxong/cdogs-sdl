@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -161,9 +161,10 @@ static double HealthScale(void *data)
 static void HealthPlace(const Vec2i pos, void *data)
 {
 	UNUSED(data);
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_HEALTH_PICKUP);
-	e.u.AddHealthPickup.Pos = pos;
-	e.u.AddHealthPickup.IsRandomSpawned = true;
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.Pos = pos;
+	e.u.AddPickup.PickupClassId = StrPickupClassId("health");
+	e.u.AddPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -175,8 +176,9 @@ static void AmmoPlace(const Vec2i pos, void *data);
 void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 {
 	PowerupSpawnerInit(p, map);
-	// TODO: disable ammo spawners if map is deathmatch and contains ammo
-	p->Enabled = ConfigGetBool(&gConfig, "Game.Ammo");
+	// TODO: disable ammo spawners unless classic mode
+	p->Enabled =
+		!IsPVP(gCampaign.Entry.Mode) && ConfigGetBool(&gConfig, "Game.Ammo");
 	p->SpawnTime = AMMO_SPAWN_TIME;
 	p->RateScaleFunc = AmmoScale;
 	p->PlaceFunc = AmmoPlace;
@@ -227,9 +229,12 @@ static double AmmoScale(void *data)
 static void AmmoPlace(const Vec2i pos, void *data)
 {
 	const int ammoId = *(int *)data;
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
-	e.u.AddAmmoPickup.Pos = pos;
-	e.u.AddAmmoPickup.Id = ammoId;
-	e.u.AddAmmoPickup.IsRandomSpawned = true;
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.Pos = pos;
+	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+	char buf[256];
+	sprintf(buf, "ammo_%s", a->Name);
+	e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
+	e.u.AddPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }

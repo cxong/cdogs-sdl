@@ -51,9 +51,8 @@ typedef enum
 
 	GAME_EVENT_ACTOR_ADD,
 	GAME_EVENT_ACTOR_MOVE,
-	GAME_EVENT_ADD_HEALTH_PICKUP,
+	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
-	GAME_EVENT_ADD_AMMO_PICKUP,
 	GAME_EVENT_TAKE_AMMO_PICKUP,
 	GAME_EVENT_USE_AMMO,
 	GAME_EVENT_OBJECT_SET_COUNTER,
@@ -101,8 +100,7 @@ typedef struct
 		} SetMessage;
 		NetMsgActorAdd ActorAdd;
 		NetMsgActorMove ActorMove;
-		AddHealthPickup AddHealthPickup;
-		AddAmmoPickup AddAmmoPickup;
+		AddPickup AddPickup;
 		struct
 		{
 			int PlayerIndex;

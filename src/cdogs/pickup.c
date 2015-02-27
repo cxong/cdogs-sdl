@@ -147,15 +147,6 @@ void PickupPickup(const TActor *a, const Pickup *p)
 				// Note: receiving end will prevent ammo from exceeding max
 				GameEventsEnqueue(&gGameEvents, e);
 
-				// Alert spawner to start respawn process
-				if (p->SpawnerUID >= 0)
-				{
-					e = GameEventNew(GAME_EVENT_OBJECT_SET_COUNTER);
-					e.u.ObjectSetCounter.UID = p->SpawnerUID;
-					e.u.ObjectSetCounter.Count = AMMO_SPAWNER_RESPAWN_TICKS;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-
 				sound = StrSound(ammo->Sound);
 			}
 		}
@@ -178,6 +169,16 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		UpdateMissionObjective(
 			&gMission, p->tileItem.flags, OBJECTIVE_COLLECT,
 			a->playerIndex, actorPos);
+
+		// Alert spawner to start respawn process
+		if (p->SpawnerUID >= 0)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_OBJECT_SET_COUNTER);
+			e.u.ObjectSetCounter.UID = p->SpawnerUID;
+			e.u.ObjectSetCounter.Count = AMMO_SPAWNER_RESPAWN_TICKS;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+
 		PickupDestroy(p->tileItem.id);
 	}
 }

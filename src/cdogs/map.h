@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP
-#define __MAP
+#pragma once
 
 #include <stdbool.h>
 
@@ -150,29 +149,22 @@ bool MapTryPlaceOneObject(
 	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode);
 void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo);
+// TODO: refactor
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
 typedef struct
 {
 	Vec2i Pos;
+	int PickupClassId;
 	// Whether the pickup was placed by the random spawner
 	bool IsRandomSpawned;
-} AddHealthPickup;
-void MapPlaceHealth(AddHealthPickup a);
-void MapPlaceKey(
-	Map *map, const struct MissionOptions *mo, const Vec2i pos,
-	const int keyIndex);
-typedef struct
-{
-	Vec2i Pos;
-	int Id;
-	// Whether the pickup was placed by the random spawner
-	bool IsRandomSpawned;
-	// UID of spawner that created this pickup; this is so that when this ammo
+	// UID of spawner that created this pickup; this is so that when this
 	// is taken, we can alert the spawner to start its respawn cycle
 	// If no spawner, then -1
 	int SpawnerUID;
-} AddAmmoPickup;
-void MapPlaceAmmo(AddAmmoPickup a);
-
-#endif
+} AddPickup;
+void MapPlacePickup(AddPickup a);
+// TODO: refactor
+void MapPlaceKey(
+	Map *map, const struct MissionOptions *mo, const Vec2i pos,
+	const int keyIndex);

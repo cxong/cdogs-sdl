@@ -109,6 +109,43 @@ PickupClass *KeyPickupClass(const int style, const int i)
 	}
 	return StrPickupClass(keys[style][i]);
 }
+PickupClass *PickupClassGetById(PickupClasses *classes, const int id)
+{
+	if (id < (int)classes->Classes.size)
+	{
+		return CArrayGet(&classes->Classes, id);
+	}
+	else
+	{
+		return CArrayGet(
+			&classes->CustomClasses, id - (int)classes->Classes.size);
+	}
+}
+int StrPickupClassId(const char *s)
+{
+	if (s == NULL || strlen(s) == 0)
+	{
+		return 0;
+	}
+	for (int i = 0; i < (int)gPickupClasses.CustomClasses.size; i++)
+	{
+		Ammo *a = CArrayGet(&gPickupClasses.CustomClasses, i);
+		if (strcmp(s, a->Name) == 0)
+		{
+			return i + (int)gPickupClasses.Classes.size;
+		}
+	}
+	for (int i = 0; i < (int)gPickupClasses.Classes.size; i++)
+	{
+		Ammo *a = CArrayGet(&gPickupClasses.Classes, i);
+		if (strcmp(s, a->Name) == 0)
+		{
+			return i;
+		}
+	}
+	CASSERT(false, "cannot parse pickup class name");
+	return 0;
+}
 
 #define VERSION 1
 

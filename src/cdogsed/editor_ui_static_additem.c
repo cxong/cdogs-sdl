@@ -104,18 +104,16 @@ static void DrawWreck(
 	const Pic *pic = MapObjectGetPic(mo, &offset, true);
 	Blit(g, pic, Vec2iAdd(pos, offset));
 }
-static void DrawAmmo(
+static void DrawPickupSpawner(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	const IndexedEditorBrush *data = vData;
 	const MapObject *mo = IndexMapObject(data->ItemIndex);
 	DisplayMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
-	const Pic *ammoPic = AmmoGetById(&gAmmo, mo->u.AmmoPickupId)->Pic;
-	pos = Vec2iMinus(pos, Vec2iScaleDiv(ammoPic->size, 2));
-	Blit(
-		g, ammoPic,
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)));
+	const Pic *pic = mo->u.PickupClass->Pic;
+	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+	Blit(g, pic, Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)));
 }
 static void DrawCharacter(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
@@ -212,7 +210,8 @@ static void DeactivateEditorBrushAndCampaignBrush(void *data)
 
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush);
 static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush);
-static UIObject *CreateAddAmmoSpawnerObjs(Vec2i pos, EditorBrush *brush);
+static UIObject *CreateAddPickupSpawnerObjs(
+	const Vec2i pos, EditorBrush *brush);
 static UIObject *CreateAddCharacterObjs(
 	Vec2i pos, EditorBrush *brush, CampaignOptions *co);
 static UIObject *CreateAddObjectiveObjs(
@@ -253,9 +252,9 @@ UIObject *CreateAddItemObjs(
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Ammo spawner";
+	o2->Label = "Pickup spawner";
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateAddAmmoSpawnerObjs(o2->Size, brush));
+	UIObjectAddChild(o2, CreateAddPickupSpawnerObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -279,49 +278,28 @@ UIObject *CreateAddItemObjs(
 	UIObjectDestroy(o);
 	return c;
 }
-static void AddPlacementFlagTooltip(const MapObject *mo, UIObject *o2);
+typedef struct
+{
+	MapObjectType Type;
+	Vec2i GridSize;
+	int GridCols;
+	void (*DrawFunc)(struct _UIObject *, GraphicsDevice *g, Vec2i, void *);
+	char *(*AddTooltipFunc)(const MapObject *mo);
+} CreateAddMapItemObjsImplData;
+static UIObject *CreateAddMapItemObjsImpl(
+	Vec2i pos, EditorBrush *brush, CreateAddMapItemObjsImplData data);
+static char *MakePlacementFlagTooltip(const MapObject *mo);
 static UIObject *CreateAddMapItemObjs(Vec2i pos, EditorBrush *brush)
 {
-	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
-
-	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
-	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
-	o->u.CustomDrawFunc = DrawMapItem;
-	o->OnFocusFunc = ActivateIndexedEditorBrush;
-	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	pos = Vec2iZero();
-	const int width = 8;
-	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
-	{
-		// Only add map objects that are not ammo spawners
-		const MapObject *mo = IndexMapObject(i);
-		if (MapObjectIsAmmoSpawner(mo))
-		{
-			continue;
-		}
-		o2 = UIObjectCopy(o);
-		o2->IsDynamicData = 1;
-		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
-		((IndexedEditorBrush *)o2->Data)->Brush = brush;
-		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
-		o2->Pos = pos;
-		UIObjectAddChild(c, o2);
-		pos.x += o->Size.x;
-		if (((i + 1) % width) == 0)
-		{
-			pos.x = 0;
-			pos.y += o->Size.y;
-		}
-		AddPlacementFlagTooltip(mo, o2);
-	}
-
-	UIObjectDestroy(o);
-	return c;
+	CreateAddMapItemObjsImplData data;
+	data.Type = MAP_OBJECT_TYPE_NORMAL;
+	data.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
+	data.GridCols = 8;
+	data.DrawFunc = DrawMapItem;
+	data.AddTooltipFunc = MakePlacementFlagTooltip;
+	return CreateAddMapItemObjsImpl(pos, brush, data);
 }
-static void AddPlacementFlagTooltip(const MapObject *mo, UIObject *o2)
+static char *MakePlacementFlagTooltip(const MapObject *mo)
 {
 	// Add a descriptive tooltip for the map object
 	char buf[512];
@@ -365,7 +343,54 @@ static void AddPlacementFlagTooltip(const MapObject *mo, UIObject *o2)
 	sprintf(
 		buf, "%s\nHealth: %d\nPlacement: %s%s",
 		mo->Name, mo->Health, pfBuf, exBuf);
-	CSTRDUP(o2->Tooltip, buf);
+	char *tmp;
+	CSTRDUP(tmp, buf);
+	return tmp;
+}
+static UIObject *CreateAddMapItemObjsImpl(
+	Vec2i pos, EditorBrush *brush, CreateAddMapItemObjsImplData data)
+{
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+
+	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data.GridSize);
+	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
+	o->u.CustomDrawFunc = data.DrawFunc;
+	o->OnFocusFunc = ActivateIndexedEditorBrush;
+	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
+	pos = Vec2iZero();
+	int count = 0;
+	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
+	{
+		// Only add normal map objects
+		const MapObject *mo = IndexMapObject(i);
+		if (mo->Type != data.Type)
+		{
+			continue;
+		}
+		UIObject *o2 = UIObjectCopy(o);
+		o2->IsDynamicData = true;
+		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
+		((IndexedEditorBrush *)o2->Data)->Brush = brush;
+		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((count + 1) % data.GridCols) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+		o2->Tooltip = data.AddTooltipFunc(mo);
+		count++;
+	}
+
+	UIObjectDestroy(o);
+	if (count == 0)
+	{
+		UIObjectDestroy(c);
+		c = NULL;
+	}
+	return c;
 }
 static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 {
@@ -404,53 +429,23 @@ static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 	UIObjectDestroy(o);
 	return c;
 }
-static UIObject *CreateAddAmmoSpawnerObjs(Vec2i pos, EditorBrush *brush)
+static char *MakePickupTooltip(const MapObject *mo);
+static UIObject *CreateAddPickupSpawnerObjs(
+	const Vec2i pos, EditorBrush *brush)
 {
-	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
-
-	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
-	o->ChangeFunc = BrushSetBrushTypeAddMapItem;
-	o->u.CustomDrawFunc = DrawAmmo;
-	o->OnFocusFunc = ActivateIndexedEditorBrush;
-	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	pos = Vec2iZero();
-	const int width = 4;
-	int count = 0;
-	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
-	{
-		// Only add map objects that are ammo spawners
-		const MapObject *mo = IndexMapObject(i);
-		if (!MapObjectIsAmmoSpawner(mo))
-		{
-			continue;
-		}
-		o2 = UIObjectCopy(o);
-		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
-		((IndexedEditorBrush *)o2->Data)->Brush = brush;
-		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
-		o2->Pos = pos;
-		UIObjectAddChild(c, o2);
-		pos.x += o->Size.x;
-		if (((count + 1) % width) == 0)
-		{
-			pos.x = 0;
-			pos.y += o->Size.y;
-		}
-		CSTRDUP(o2->Tooltip, AmmoGetById(&gAmmo, mo->u.AmmoPickupId)->Name);
-		count++;
-	}
-
-	UIObjectDestroy(o);
-	if (count == 0)
-	{
-		UIObjectDestroy(c);
-		c = NULL;
-	}
-	return c;
+	CreateAddMapItemObjsImplData data;
+	data.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
+	data.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
+	data.GridCols = 4;
+	data.DrawFunc = DrawPickupSpawner;
+	data.AddTooltipFunc = MakePickupTooltip;
+	return CreateAddMapItemObjsImpl(pos, brush, data);
+}
+static char *MakePickupTooltip(const MapObject *mo)
+{
+	char *tmp;
+	CSTRDUP(tmp, mo->u.PickupClass->Name);
+	return tmp;
 }
 static void CreateAddCharacterSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddCharacterObjs(

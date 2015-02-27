@@ -983,14 +983,16 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			continue;
 		}
 
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_AMMO_PICKUP);
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 		// Add a little random offset so the pickups aren't all together
 		const Vec2i offset = Vec2iNew(
 			RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
 			RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-		e.u.AddAmmoPickup.Pos =
-			Vec2iAdd(Vec2iFull2Real(actor->Pos), offset);
-		e.u.AddAmmoPickup.Id = w->Gun->AmmoId;
+		e.u.AddPickup.Pos = Vec2iAdd(Vec2iFull2Real(actor->Pos), offset);
+		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+		char buf[256];
+		sprintf(buf, "ammo_%s", a->Name);
+		e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 

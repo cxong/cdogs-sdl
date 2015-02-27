@@ -83,6 +83,14 @@ static PlacementFlags StrPlacementFlag(const char *s)
 	return PLACEMENT_NONE;
 }
 
+static MapObjectType StrMapObjectType(const char *s)
+{
+	S2T(MAP_OBJECT_TYPE_NORMAL, "Normal");
+	S2T(MAP_OBJECT_TYPE_PICKUP_SPAWNER, "PickupSpawner");
+	CASSERT(false, "unknown map object name");
+	return MAP_OBJECT_TYPE_NORMAL;
+}
+
 MapObject *StrMapObject(const char *s)
 {
 	if (s == NULL || strlen(s) == 0)
@@ -273,6 +281,25 @@ static void LoadMapObject(MapObject *m, json_t *node)
 			m->Flags |= 1 << StrPlacementFlag(flagNode->text);
 		}
 	}
+
+	// Special types
+	JSON_UTILS_LOAD_ENUM(m->Type, node, "Type", StrMapObjectType);
+	switch (m->Type)
+	{
+	case MAP_OBJECT_TYPE_NORMAL:
+		// Do nothing
+		break;
+	case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
+		{
+			char *tmp = GetString(node, "Pickup");
+			m->u.PickupClass = StrPickupClass(tmp);
+			CFREE(tmp);
+		}
+		break;
+	default:
+		CASSERT(false, "unknown error");
+		break;
+	}
 }
 static void AddDestructibles(MapObjects *mo, const CArray *classes);
 static void ReloadDestructibles(MapObjects *mo)
@@ -300,15 +327,13 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 	}
 }
 
-static void LoadAmmoSpawners(
-	MapObjects *classes, const CArray *ammo, const int fromId);
+static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo);
 void MapObjectsLoadAmmoSpawners(MapObjects *classes, const AmmoClasses *ammo)
 {
-	LoadAmmoSpawners(classes, &ammo->Ammo, 0);
-	LoadAmmoSpawners(classes, &ammo->CustomAmmo, ammo->Ammo.size);
+	LoadAmmoSpawners(classes, &ammo->Ammo);
+	LoadAmmoSpawners(classes, &ammo->CustomAmmo);
 }
-static void LoadAmmoSpawners(
-	MapObjects *classes, const CArray *ammo, const int fromId)
+static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
 {
 	for (int i = 0; i < (int)ammo->size; i++)
 	{
@@ -325,8 +350,9 @@ static void LoadAmmoSpawners(
 			TILE_HEIGHT / 2 - m.Normal.Pic->size.y);
 		m.Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 		m.Health = 0;
-		m.Type = MAP_OBJECT_TYPE_AMMO_SPAWNER;
-		m.u.AmmoPickupId = i + fromId;
+		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
+		sprintf(buf, "ammo_%s", a->Name);
+		m.u.PickupClass = StrPickupClass(buf);
 		CArrayPushBack(&classes->CustomClasses, &m);
 	}
 }
@@ -448,9 +474,4 @@ bool MapObjectIsTileOKStrict(
 	}
 
 	return true;
-}
-
-bool MapObjectIsAmmoSpawner(const MapObject *mo)
-{
-	return mo->Type == MAP_OBJECT_TYPE_AMMO_SPAWNER;
 }

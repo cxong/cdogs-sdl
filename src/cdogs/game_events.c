@@ -86,8 +86,8 @@ GameEvent GameEventNew(GameEventType type)
 	e.Type = type;
 	switch (type)
 	{
-	case GAME_EVENT_ADD_AMMO_PICKUP:
-		e.u.AddAmmoPickup.SpawnerUID = -1;
+	case GAME_EVENT_ADD_PICKUP:
+		e.u.AddPickup.SpawnerUID = -1;
 		break;
 	default:
 		// Do nothing

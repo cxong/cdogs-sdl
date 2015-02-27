@@ -127,13 +127,13 @@ static void HandleGameEvent(
 				}
 			}
 			break;
-		case GAME_EVENT_ADD_HEALTH_PICKUP:
+		case GAME_EVENT_ADD_PICKUP:
 			{
-				MapPlaceHealth(e->u.AddHealthPickup);
+				MapPlacePickup(e->u.AddPickup);
 				// Play a spawn sound
 				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
 				sound.u.SoundAt.Sound = StrSound("spawn_item");
-				sound.u.SoundAt.Pos = e->u.AddHealthPickup.Pos;
+				sound.u.SoundAt.Pos = e->u.AddPickup.Pos;
 				HandleGameEvent(
 					&sound, hud, shake, healthSpawner, ammoSpawners,
 					eventHandlers);
@@ -158,18 +158,6 @@ static void HandleGameEvent(
 					HUDAddHealthUpdate(
 						hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
 				}
-			}
-			break;
-		case GAME_EVENT_ADD_AMMO_PICKUP:
-			{
-				MapPlaceAmmo(e->u.AddAmmoPickup);
-				// Play a spawn sound
-				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-				sound.u.SoundAt.Sound = StrSound("spawn_item");
-				sound.u.SoundAt.Pos = e->u.AddAmmoPickup.Pos;
-				HandleGameEvent(
-					&sound, hud, shake, healthSpawner, ammoSpawners,
-					eventHandlers);
 			}
 			break;
 		case GAME_EVENT_TAKE_AMMO_PICKUP:

@@ -427,6 +427,14 @@
       "OldPic": 566,
       "Offset": [-8, -6],
       "Health": 0
+    },
+    {
+      "Name": "health spawner",
+      "Pic": "spawn_pad",
+      "Offset": [-8, -6],
+      "Health": 0,
+      "Type": "PickupSpawner",
+      "Pickup": "health"
     }
   ]
 }

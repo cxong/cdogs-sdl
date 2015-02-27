@@ -69,6 +69,8 @@ PickupClass *StrPickupClass(const char *s);
 PickupClass *IntPickupClass(const int i);
 // Legacy key classes, style+integer based
 PickupClass *KeyPickupClass(const int style, const int i);
+PickupClass *PickupClassGetById(PickupClasses *classes, const int id);
+int StrPickupClassId(const char *s);
 
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename, const AmmoClasses *ammo);

@@ -51,6 +51,7 @@
 #include <json/json.h>
 #include "ammo.h"
 #include "pic_manager.h"
+#include "pickup_class.h"
 
 typedef enum
 {
@@ -76,7 +77,7 @@ typedef struct
 typedef enum
 {
 	MAP_OBJECT_TYPE_NORMAL,
-	MAP_OBJECT_TYPE_AMMO_SPAWNER
+	MAP_OBJECT_TYPE_PICKUP_SPAWNER
 } MapObjectType;
 
 // A static map object, taking up an entire tile
@@ -96,8 +97,7 @@ typedef struct
 	MapObjectType Type;
 	union
 	{
-		// TODO: custom respawn rate?
-		int AmmoPickupId;
+		const PickupClass *PickupClass;
 	} u;
 } MapObject;
 typedef struct
@@ -139,5 +139,3 @@ bool MapObjectIsTileOKStrict(
 	const MapObject *obj, const unsigned short tile, const bool isEmpty,
 	const unsigned short tileAbove, const unsigned short tileBelow,
 	const int numWallsAdjacent, const int numWallsAround);
-
-bool MapObjectIsAmmoSpawner(const MapObject *mo);

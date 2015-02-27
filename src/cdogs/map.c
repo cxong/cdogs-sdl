@@ -540,13 +540,6 @@ static int MapTryPlaceCollectible(
 	return 0;
 }
 
-void MapPlaceHealth(AddHealthPickup a)
-{
-	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass("health"));
-	Pickup *p = CArrayGet(&gPickups, id);
-	p->IsRandomSpawned = a.IsRandomSpawned;
-}
-
 Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
 {
 	for (int i = 0; i < 100; i++)
@@ -600,13 +593,11 @@ void MapPlaceKey(
 	PickupAdd(fullPos, KeyPickupClass(mo->keyStyle, keyIndex));
 }
 
-void MapPlaceAmmo(AddAmmoPickup a)
+void MapPlacePickup(AddPickup a)
 {
-	const Ammo *ammo = AmmoGetById(&gAmmo, a.Id);
-	// TODO: can explicitly link ammo to pickup without string lookup
-	char buf[256];
-	sprintf(buf, "ammo_%s", ammo->Name);
-	const int id = PickupAdd(Vec2iReal2Full(a.Pos), StrPickupClass(buf));
+	const int id = PickupAdd(
+		Vec2iReal2Full(a.Pos),
+		PickupClassGetById(&gPickupClasses, a.PickupClassId));
 	Pickup *p = CArrayGet(&gPickups, id);
 	p->IsRandomSpawned = a.IsRandomSpawned;
 	p->SpawnerUID = a.SpawnerUID;
