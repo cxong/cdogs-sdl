@@ -495,30 +495,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 
 static void SetupWeapons(CArray *to, CArray *from)
 {
-	// Set available weapons
-	if (ModeAllowsAllWeapons(gCampaign.Entry.Mode))
-	{
-		for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
-		{
-			const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
-			if (g->IsRealGun)
-			{
-				CArrayPushBack(to, &g);
-			}
-		}
-		for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
-		{
-			const GunDescription *g = CArrayGet(&gGunDescriptions.CustomGuns, i);
-			if (g->IsRealGun)
-			{
-				CArrayPushBack(to, &g);
-			}
-		}
-	}
-	else
-	{
-		CArrayCopy(to, from);
-	}
+	CArrayCopy(to, from);
 }
 
 void SetRange(int start, int range)

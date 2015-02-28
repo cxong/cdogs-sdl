@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -148,11 +148,6 @@ int ModeMaxHealth(const GameMode mode)
 	default:
 		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}
-}
-
-bool ModeAllowsAllWeapons(const GameMode mode)
-{
-	return mode == GAME_MODE_DOGFIGHT || mode == GAME_MODE_DEATHMATCH;
 }
 
 bool ModeHasNPCs(const GameMode mode)
