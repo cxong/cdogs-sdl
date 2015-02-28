@@ -31,6 +31,7 @@
 
 #include "ammo.h"
 #include "utils.h"
+#include "weapon.h"
 
 // Effects for "pick up" objects
 typedef enum
@@ -39,7 +40,8 @@ typedef enum
 	PICKUP_JEWEL,
 	PICKUP_HEALTH,
 	PICKUP_AMMO,
-	PICKUP_KEYCARD
+	PICKUP_KEYCARD,
+	PICKUP_GUN
 } PickupType;
 PickupType StrPickupType(const char *s);
 
@@ -53,6 +55,7 @@ typedef struct
 		int Health;
 		AddAmmo Ammo;
 		int Keys;	// Refer to flags in mission.h
+		int GunId;
 	} u;
 	const Pic *Pic;
 } PickupClass;
@@ -73,10 +76,11 @@ PickupClass *PickupClassGetById(PickupClasses *classes, const int id);
 int StrPickupClassId(const char *s);
 
 void PickupClassesInit(
-	PickupClasses *classes, const char *filename, const AmmoClasses *ammo);
+	PickupClasses *classes, const char *filename,
+	const AmmoClasses *ammo, const GunClasses *guns);
 void PickupClassesLoadJSON(CArray *classes, json_t *root);
-// Create ammo pickups for all the types of ammo
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses);
+void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses);
 void PickupClassesClear(CArray *classes);
 void PickupClassesTerminate(PickupClasses *classes);
 

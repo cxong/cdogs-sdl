@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __WEAPON
-#define __WEAPON
+#pragma once
 
 #include "bullet_class.h"
 #include "defs.h"
+#include "pic.h"
 #include "pics.h"
 #include "sounds.h"
 #include "utils.h"
@@ -99,6 +99,7 @@ typedef enum
 typedef struct
 {
 	gunpic_e pic;
+	const Pic *Icon;
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
@@ -152,6 +153,8 @@ void WeaponClassesClear(CArray *classes);
 void WeaponTerminate(GunClasses *g);
 Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
+GunDescription *IdGunDescription(const int i);
+int GunDescriptionId(const GunDescription *g);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
 void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d);
@@ -166,6 +169,7 @@ void GunAddBullets(
 	const bool playSound);
 void WeaponHoldFire(Weapon *w);
 
+
 int GunGetRange(const GunDescription *g);
 bool IsHighDPS(const GunDescription *g);
 bool IsLongRange(const GunDescription *g);
@@ -174,5 +178,3 @@ bool IsShortRange(const GunDescription *g);
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(
 	BulletClasses *b, GunClasses *g, const char *bpath, const char *gpath);
-
-#endif

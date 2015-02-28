@@ -134,14 +134,16 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	{
 		PickupClassesLoadJSON(&gPickupClasses.CustomClasses, root);
 	}
+	PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
+	PickupClassesLoadGuns(
+		&gPickupClasses.CustomClasses, &gGunDescriptions.CustomGuns);
 
 	root = ReadPhysFSJSON(filename, "map_objects.json");
 	if (root != NULL)
 	{
 		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
 	}
-
-	MapObjectsLoadAmmoSpawners(&gMapObjects, &gAmmo);
+	MapObjectsLoadAmmoAndGunSpawners(&gMapObjects, &gAmmo, &gGunDescriptions);
 
 
 	root = ReadPhysFSJSON(filename, "missions.json");

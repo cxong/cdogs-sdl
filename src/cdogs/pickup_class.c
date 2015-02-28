@@ -43,6 +43,7 @@ PickupType StrPickupType(const char *s)
 	S2T(PICKUP_HEALTH, "Health");
 	S2T(PICKUP_AMMO, "Ammo");
 	S2T(PICKUP_KEYCARD, "Key");
+	S2T(PICKUP_GUN, "Gun");
 	return PICKUP_NONE;
 }
 
@@ -150,7 +151,8 @@ int StrPickupClassId(const char *s)
 #define VERSION 1
 
 void PickupClassesInit(
-	PickupClasses *classes, const char *filename, const AmmoClasses *ammo)
+	PickupClasses *classes, const char *filename,
+	const AmmoClasses *ammo, const GunClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(PickupClass));
 	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
@@ -169,8 +171,8 @@ void PickupClassesInit(
 		goto bail;
 	}
 	PickupClassesLoadJSON(&classes->Classes, root);
-	// Load the ammo pickups
 	PickupClassesLoadAmmo(&classes->Classes, &ammo->Ammo);
+	PickupClassesLoadGuns(&classes->Classes, &guns->Guns);
 
 bail:
 	if (f != NULL)
@@ -246,6 +248,22 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 		c.Type = PICKUP_AMMO;
 		c.u.Ammo.Id = StrAmmoId(a->Name);
 		c.u.Ammo.Amount = a->Amount;
+		CArrayPushBack(classes, &c);
+	}
+}
+
+void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
+{
+	for (int i = 0; i < (int)gunClasses->size; i++)
+	{
+		const GunDescription *g = CArrayGet(gunClasses, i);
+		PickupClass c;
+		char buf[256];
+		sprintf(buf, "gun_%s", g->name);
+		CSTRDUP(c.Name, buf);
+		c.Pic = g->Icon;
+		c.Type = PICKUP_GUN;
+		c.u.GunId = GunDescriptionId(g);
 		CArrayPushBack(classes, &c);
 	}
 }

@@ -328,10 +328,14 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 }
 
 static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo);
-void MapObjectsLoadAmmoSpawners(MapObjects *classes, const AmmoClasses *ammo)
+static void LoadGunSpawners(MapObjects *classes, const CArray *guns);
+void MapObjectsLoadAmmoAndGunSpawners(
+	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns)
 {
 	LoadAmmoSpawners(classes, &ammo->Ammo);
 	LoadAmmoSpawners(classes, &ammo->CustomAmmo);
+	LoadGunSpawners(classes, &guns->Guns);
+	LoadGunSpawners(classes, &guns->CustomGuns);
 }
 static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
 {
@@ -352,6 +356,33 @@ static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
 		m.Health = 0;
 		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
 		sprintf(buf, "ammo_%s", a->Name);
+		m.u.PickupClass = StrPickupClass(buf);
+		CArrayPushBack(&classes->CustomClasses, &m);
+	}
+}
+static void LoadGunSpawners(MapObjects *classes, const CArray *guns)
+{
+	for (int i = 0; i < (int)guns->size; i++)
+	{
+		const GunDescription *g = CArrayGet(guns, i);
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		MapObject m;
+		memset(&m, 0, sizeof m);
+		m.Idx = -1;
+		char buf[256];
+		sprintf(buf, "%s spawner", g->name);
+		CSTRDUP(m.Name, buf);
+		m.Normal.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
+		m.Normal.Offset = Vec2iNew(
+			-m.Normal.Pic->size.x / 2,
+			TILE_HEIGHT / 2 - m.Normal.Pic->size.y);
+		m.Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+		m.Health = 0;
+		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
+		sprintf(buf, "gun_%s", g->name);
 		m.u.PickupClass = StrPickupClass(buf);
 		CArrayPushBack(&classes->CustomClasses, &m);
 	}

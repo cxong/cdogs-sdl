@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -200,6 +200,13 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
+	if (json_find_first_label(node, "Icon"))
+	{
+		tmp = GetString(node, "Icon");
+		g->Icon = PicManagerGet(&gPicManager, tmp, -1);
+		CFREE(tmp);
+	}
+
 	g->name = GetString(node, "Name");
 
 	if (json_find_first_label(node, "Description"))
@@ -322,6 +329,42 @@ const GunDescription *StrGunDescription(const char *s)
 	}
 	fprintf(stderr, "Cannot parse gun name: %s\n", s);
 	return NULL;
+}
+GunDescription *IdGunDescription(const int i)
+{
+	CASSERT(
+		i >= 0 &&
+		i < (int)gGunDescriptions.Guns.size +
+		(int)gGunDescriptions.CustomGuns.size,
+		"Gun index out of bounds");
+	if (i < (int)gGunDescriptions.Guns.size)
+	{
+		return CArrayGet(&gGunDescriptions.Guns, i);
+	}
+	return CArrayGet(
+		&gGunDescriptions.CustomGuns, i - gGunDescriptions.Guns.size);
+}
+int GunDescriptionId(const GunDescription *g)
+{
+	int idx = 0;
+	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++, idx++)
+	{
+		const GunDescription *c = CArrayGet(&gGunDescriptions.Guns, i);
+		if (c == g)
+		{
+			return idx;
+		}
+	}
+	for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++, idx++)
+	{
+		const GunDescription *c = CArrayGet(&gGunDescriptions.CustomGuns, i);
+		if (c == g)
+		{
+			return idx;
+		}
+	}
+	CASSERT(false, "cannot find gun");
+	return -1;
 }
 
 void WeaponSetState(Weapon *w, gunstate_e state);

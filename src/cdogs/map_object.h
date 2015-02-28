@@ -123,7 +123,8 @@ MapObject *RandomBloodMapObject(const MapObjects *mo);
 
 void MapObjectsInit(MapObjects *classes, const char *filename);
 void MapObjectsLoadJSON(CArray *classes, json_t *root);
-void MapObjectsLoadAmmoSpawners(MapObjects *classes, const AmmoClasses *ammo);
+void MapObjectsLoadAmmoAndGunSpawners(
+	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns);
 void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);

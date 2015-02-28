@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gGunDescriptions, buf, buf2);
 	GetDataFilePath(buf, "data/pickups.json");
-	PickupClassesInit(&gPickupClasses, buf, &gAmmo);
+	PickupClassesInit(&gPickupClasses, buf, &gAmmo, &gGunDescriptions);
 	GetDataFilePath(buf, "data/map_objects.json");
 	MapObjectsInit(&gMapObjects, buf);
 	CollisionSystemInit(&gCollisionSystem);
