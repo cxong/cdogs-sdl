@@ -160,7 +160,7 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		break;
 
 	default:
-		CASSERT(false, "unexpected objective");
+		CASSERT(false, "unexpected pickup type");
 		break;
 	}
 	if (canPickup)

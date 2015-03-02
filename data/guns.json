@@ -23,6 +23,7 @@
     {
       "Index": 0,
       "Pic": "knife",
+      "Icon": "knife",
       "Name": "Knife",
       "Description": "A melee weapon. This weapon is used automatically. Simply walk into and an enemy to slash and cause damage. You will also damage objects when you walk into them, unless they are explosives. Using the attack key just makes you hold your position.\n\nDamage: 2\nAttack rate: 420 slashes/minute\nCost: 0",
       "Cost": 0,
@@ -34,6 +35,7 @@
     {
       "Index": 1,
       "Name": "Machine gun",
+      "Icon": "machine_gun",
       "Description": "A rapidly firing bullet hose. Its bullets have a medium range, and the gun has a slight spread.\n\nDamage: 10\nRate of fire: 700 round/min\nLifespan: 0.85s\nSpeed: 768\nCost: 1",
       "Bullet": "mg",
       "Cost": 1,
@@ -47,6 +49,7 @@
     {
       "Index": 2,
       "Pic": "",
+      "Icon": "grenades",
       "Name": "Grenades",
       "Description": "Throw timed grenades which will bounce off the ground, walls and enemies. Each grenade causes a big explosion after the end of its lifespan. It is very damaging to anyone caught by it - including the thrower! Grenades are quite expensive, so use sparingly if you aim for a high score.\n\nDamage: Large explosion\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 20",
       "Bullet": "grenade",
@@ -59,6 +62,7 @@
     {
       "Index": 3,
       "Name": "Flamer",
+      "Icon": "flamer",
       "Description": "This short-range tactical flamethrower releases flames which burn enemies, causing high damage. The flames can also be reflected by walls. The flamer can be a deadly weapon when used by a skilled close quarters fighter.\n\nDamage: 12\nRate of fire: 700 round/min\nLifespan: 0.42s\nSpeed: 1024\nCost: 1",
       "Bullet": "flame",
       "Cost": 1,
@@ -71,6 +75,7 @@
     {
       "Index": 4,
       "Name": "Shotgun",
+      "Icon": "shotgun",
       "Description": "The shotgun is slow and only has a short range, but it fires 5 bullets per shot in a large spread. The shotgun is most effective in close quarters combat but difficult to use in long range.\n\nDamage: 15 per bullet (max. 75)\nRate of fire: 84 round/min\nLifespan: 0.71s\nSpeed: 640\nCost: 5",
       "Bullet": "shotgun",
       "Cost": 5,
@@ -87,6 +92,7 @@
     {
       "Index": 5,
       "Name": "Powergun",
+      "Icon": "powergun",
       "Description": "This futuristic gun fires very fast and long range energy lasers. The powergun always fires in a perfectly straight line.\n\nDamage: 20\nRate of fire: 210 round/min\nLifespan: 1.28s\nSpeed: 768\nCost: 2",
       "Bullet": "laser",
       "Cost": 2,
@@ -99,6 +105,7 @@
       "Index": 6,
       "Pic": "",
       "Name": "Shrapnel bombs",
+      "Icon": "frag_grenades",
       "Description": "A throwable timed weapon which bounces around for a while. When its lifespan is over, the shrapnel bomb will release 16 dangerous bullets in a circle pattern.\n\nDamage: 40 per bullet (max. 640)\nRate of fire: 140 round/min\nRange of bomb: Medium\nLifespan of bomb: 1.42s\nSpeed of bomb: 384\nCost: 20",
       "Bullet": "shrapnelbomb",
       "Cost": 20,
@@ -111,6 +118,7 @@
       "Index": 7,
       "Pic": "",
       "Name": "Molotovs",
+      "Icon": "molotovs",
       "Description": "A throwable weapon which will burst into fire when it hits the ground, at wall or an enemy. The flames are very hot, so use the molotovs with care!\n\nDamage: Fire\nRate of fire: 140 round/min\nRange: Short\nSpeed: 384\nCost: 20",
       "Bullet": "molotov",
       "Cost": 20,
@@ -122,6 +130,7 @@
     {
       "Index": 8,
       "Name": "Sniper rifle",
+      "Icon": "sniper",
       "Description": "A tactical weapon which fires a strong long-range projectile which makes 50 damage on a hit. Its reload time is rather long. The sniper rifle always fires in a perfecly straight line.\n\nDamage: 50\nRate of fire: 42 round/min\nLifespan: 0.42s\nSpeed: 1024\nCost: 5",
       "Bullet": "sniper",
       "Cost": 5,
@@ -138,6 +147,7 @@
       "Index": 9,
       "Pic": "",
       "Name": "Prox. mine",
+      "Icon": "proxmines",
       "Description": "Proximity mine. You will place a mine on the ground which will become active after 2 seconds. When the mine is active, it will explode as soon as any player (including the placer) is careless enough to walk in proximity to it. So don't wait for too long after you placed a mine.\n\nDamage: Large explosion\nRate of fire: 42 round/min\nCost: 10",
       "Bullet": "proxmine",
       "Cost": 10,
@@ -152,6 +162,7 @@
       "Index": 10,
       "Pic": "",
       "Name": "Dynamite",
+      "Icon": "dynamite",
       "Description": "You will light and place a stick of dynamite on the ground, which will burst in a large explosion after 3 seconds.\n\nDamage: Large explosion\nRate of fire: 42 round/min\nLifespan: 3.00s\nCost: 7",
       "Bullet": "dynamite",
       "Cost": 7,
@@ -166,6 +177,7 @@
       "Index": 11,
       "Pic": "",
       "Name": "Chemo bombs",
+      "Icon": "gas_grenades",
       "Description": "A bouncing grenade that bursts into a cloud of poison gas. Poisoned players lose health constantly for a while.\n\nDamage: Poison\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 7",
       "Bullet": "gasbomb",
       "Cost": 7,
@@ -177,6 +189,7 @@
     {
       "Index": 12,
       "Name": "Petrify gun",
+      "Icon": "petrifier",
       "Description": "This gun fires projectiles that turn enemies into stone for short time, making them unable to walk and shoot. This gun has no spread.\n\nDamage: 0\nRate of fire: 42 round/min\nLifespan: 0.64s\nSpeed: 768\nCost: 10",
       "Bullet": "petrifier",
       "Cost": 10,
@@ -190,6 +203,7 @@
     {
       "Index": 13,
       "Name": "Browny gun",
+      "Icon": "browny_gun",
       "Description": "A weapon of alien origins. As soon as you pull the trigger, a projectile will be released which will take a completely unpredictable path. Hitting something with this strange gun is largely luck-based. It is more likely to hit something when the browny gun is used in close quarters combat.\n\nDamage: 15\nRate of fire: 140 round/min\nLifespan: 0.64s\nSpeed: 768\nCost: 5",
       "Bullet": "rapid",
       "Cost": 5,
@@ -202,6 +216,7 @@
       "Index": 14,
       "Pic": "",
       "Name": "Confusion bombs",
+      "Icon": "confusion_bombs",
       "Description": "A throwable weapon which bounces and bursts in a cloud of confusion gas after its lifespan. Players affected by confusion gas walk in the opposite direction they intended to and the effect wears off after a while.\n\nDamage: 0\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 10",
       "Bullet": "confusebomb",
       "Cost": 10,
@@ -213,6 +228,7 @@
     {
       "Index": 15,
       "Name": "Chemo gun",
+      "Icon": "chemo_gun",
       "Description": "This weapon releases a short line of poison gas clouds. Players which walk into poison clouds will be poisoned and start to constantly health for a short time.\n\nDamage: Poison\nRate of fire: 700 round/min\nLifespan: 0.5s\nSpeed: 384\nCost: 1",
       "Bullet": "gas",
       "Cost": 1,
@@ -225,6 +241,7 @@
     {
       "Index": 16,
       "Name": "Pulse rifle",
+      "Icon": "pulse_rifle",
       "Description": "The pulse rifle fires pulse balls with a stunningly high rate of fire, but in a rather short range and also with a large spread.\n\nDamage: 6\nRate of fire: 1050 round/min\nLifespan: 0.35s\nSpeed: 1280\nCost: 1",
       "Bullet": "pulse",
       "Cost": 1,
@@ -237,6 +254,7 @@
     {
       "Index": 17,
       "Name": "Heatseeker",
+      "Icon": "heatseeker",
       "Description": "This is a rocket launcher which fires a slow heat-seeking rocket which will follow nearby enemies. The rocket can't make turns very quickly and may easily miss a target, so you still have to aim.\n\nDamage: 20\nRate of fire: 140 round/min\nLifespan: 0.85s\nSpeed: 512\nCost: 7",
       "Bullet": "heatseeker",
       "Cost": 7,
@@ -247,6 +265,7 @@
     },
     {
       "Name": "Swarmer",
+      "Icon": "swarmer_gun",
       "Description": "The swarmer fires four fast heat-seeking rockets in one shot. They will follow enemies and cause direct damage on impact. The rockets are able to turn around quickly which may make it easier to hit targets.\n\nDamage: 12 per rocket (max. 48)\nRate of fire: 70 round/min\nLifespan: 1.00s\nSpeed: 700\nCost: 15",
       "Bullet": "swarmer",
       "Cost": 15,
@@ -260,6 +279,7 @@
     },
     {
       "Name": "Launcher",
+      "Icon": "launcher",
       "Description": "A rocket launcher. It fires a single rocket which is slow at the beginning but it will accellerate rapidly. The rocket causes a small but highly damaging explosion on impact.\n\nDamage: Small explosion\nRate of fire: 60 round/min\nLifespan: 1.71s\nInitial speed: 120 (rocket will accellerate)\nCost: 15",
       "Bullet": "rocket",
       "Cost": 15,

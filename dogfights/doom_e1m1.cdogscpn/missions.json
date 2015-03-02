@@ -202,8 +202,6 @@
 			39],
 			[17,
 			39],
-			[34,
-			32],
 			[39,
 			30],
 			[55,
@@ -264,6 +262,23 @@
 			"MapObject": "stimpack spawner",
 			"Positions": [[82,
 			90]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[58,
+			43]]
+		},
+		{
+			"MapObject": "Machine gun spawner",
+			"Positions": [[85,
+			70]]
+		},
+		{
+			"MapObject": "Shotgun spawner",
+			"Positions": [[86,
+			62],
+			[34,
+			32]]
 		}],
 		"StaticWrecks": [],
 		"StaticCharacters": [],
