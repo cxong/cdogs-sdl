@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get install -qq libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-net1.2-dev
+  - sudo apt-get install -qq libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-net1.2-dev rpm
   - if [ "$CC" = "gcc" ]; then sudo apt-get install -qq gcc-4.8; fi
 
 before_script:
@@ -24,3 +24,18 @@ script:
   - cmake .
   - make -j2
   - make test
+before_deploy:
+  - "cd ./src && sudo make package"
+  - "sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*"
+deploy:
+  provider: releases
+  api_key:
+    secure: cJSUi9wKAjJ7LqPQ8UXnMfHoDYwow4lHqQnp+EGAle1BHrbwMYPinfQzzLXRy40rqFrF2b/t0qBsGNJRNGBhI65nSgJElLGsgyAkV3h31uvVop5T4f93eEcuFMPYG74UtUPwTPTmRLB1GxZumELvKgJyne7xF4JHTvUDlsQAqg0=
+  file:
+    - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.deb"
+    - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.tar.gz"
+    - "$TRAVIS_BUILD_DIR/C-Dogs-SDL-$TRAVIS_TAG-Linux.rpm"
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: $CC = gcc
