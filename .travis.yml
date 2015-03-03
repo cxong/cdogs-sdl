@@ -30,7 +30,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: cJSUi9wKAjJ7LqPQ8UXnMfHoDYwow4lHqQnp+EGAle1BHrbwMYPinfQzzLXRy40rqFrF2b/t0qBsGNJRNGBhI65nSgJElLGsgyAkV3h31uvVop5T4f93eEcuFMPYG74UtUPwTPTmRLB1GxZumELvKgJyne7xF4JHTvUDlsQAqg0=
+    secure: 59BXlwvCT1GMuMrx5yf9TjD6BsXbxxC/lAB7ry7sFMdKmNg8v9vs9lH8g31XF2BPPDaH1 sepJjRhn0qHciikQJ3X+ZbN2YpFF6KNKp/FOw3ytx/8SDiWO2BzqVnstE+XihRdki+oR2ntPFKhEMhWs RlS2o9JY+g9pT+0BLtqp4I=
   file:
     - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.deb"
     - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.tar.gz"
