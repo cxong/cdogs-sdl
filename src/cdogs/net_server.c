@@ -237,7 +237,7 @@ static void SendGameStartMessages(
 			continue;
 		}
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-		aa.Id = a->tileItem.id;
+		aa.UID = ActorsGetNextUID();
 		if (a->playerIndex < 0)
 		{
 			aa.CharId =

@@ -159,6 +159,22 @@ void PickupPickup(const TActor *a, const Pickup *p)
 		PathCacheClear(&gPathCache);
 		break;
 
+	case PICKUP_GUN:
+		{
+			// TODO: don't pick up gun automatically
+			canPickup = true;
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+			e.u.ActorReplaceGun.UID = a->uid;
+			e.u.ActorReplaceGun.GunIdx =
+				a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size - 1;
+			e.u.ActorReplaceGun.GunId = p->class->u.GunId;
+			GameEventsEnqueue(&gGameEvents, e);
+
+			// TODO: gun-specific pickup sound
+			sound = gSoundDevice.switchSound;
+		}
+		break;
+
 	default:
 		CASSERT(false, "unexpected pickup type");
 		break;

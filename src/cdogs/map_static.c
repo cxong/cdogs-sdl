@@ -123,7 +123,7 @@ static void AddCharacters(const CArray *characters)
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
 			NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-			aa.Id = ActorsGetFreeIndex();
+			aa.UID = ActorsGetNextUID();
 			aa.CharId = cp->Index;
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
@@ -167,7 +167,7 @@ static void AddObjectives(
 			case OBJECTIVE_KILL:
 			{
 				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-				aa.Id = ActorsGetFreeIndex();
+				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetSpecialId(store, *idx);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =
@@ -192,7 +192,7 @@ static void AddObjectives(
 			case OBJECTIVE_RESCUE:
 			{
 				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-				aa.Id = ActorsGetFreeIndex();
+				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =

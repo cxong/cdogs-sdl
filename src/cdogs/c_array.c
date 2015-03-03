@@ -35,10 +35,15 @@ void CArrayInit(CArray *a, size_t elemSize)
 	a->data = NULL;
 	a->elemSize = elemSize;
 	a->size = 0;
+	a->capacity = 0;
 	CArrayReserve(a, 1);
 }
 void CArrayReserve(CArray *a, size_t capacity)
 {
+	if (a->capacity == capacity)
+	{
+		return;
+	}
 	a->capacity = capacity;
 	CREALLOC(a->data, a->capacity * a->elemSize);
 }

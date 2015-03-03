@@ -229,6 +229,9 @@ static void LoadPickupclass(PickupClass *c, json_t *node)
 	case PICKUP_KEYCARD:
 		JSON_UTILS_LOAD_ENUM(c->u.Keys, node, "Key", StrKeycard);
 		break;
+	case PICKUP_GUN:
+		CASSERT(false, "unimplemented");
+		break;
 	default:
 		CASSERT(false, "Unknown pickup type");
 		break;

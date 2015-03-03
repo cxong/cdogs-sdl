@@ -109,7 +109,7 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_ACTOR_MOVE:
 			{
-				TActor *a = CArrayGet(&gActors, e->u.ActorMove.Id);
+				TActor *a = ActorGetByUID(e->u.ActorMove.UID);
 				if (!a->isInUse)
 				{
 					break;
@@ -125,6 +125,18 @@ static void HandleGameEvent(
 				{
 					a->action = ACTORACTION_MOVING;
 				}
+			}
+			break;
+		case GAME_EVENT_ACTOR_REPLACE_GUN:
+			{
+				TActor *a = ActorGetByUID(e->u.ActorReplaceGun.UID);
+				if (!a->isInUse)
+				{
+					break;
+				}
+				ActorReplaceGun(
+					a, e->u.ActorReplaceGun.GunIdx,
+					IdGunDescription(e->u.ActorReplaceGun.GunId));
 			}
 			break;
 		case GAME_EVENT_ADD_PICKUP:

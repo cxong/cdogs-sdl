@@ -160,7 +160,7 @@ Vec2i PlacePlayer(
 	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents)
 {
 	NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-	aa.Id = ActorsGetFreeIndex();
+	aa.UID = ActorsGetNextUID();
 	aa.Health = p->Char.maxHealth;
 	aa.PlayerId = p->playerIndex;
 

@@ -491,7 +491,7 @@ void CommandBadGuys(int ticks)
 		count < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
 	{
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-		aa.Id = ActorsGetFreeIndex();
+		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
 		aa.Direction = rand() % DIRECTION_COUNT;
@@ -519,7 +519,7 @@ void InitializeBadGuys(void)
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-				aa.Id = ActorsGetFreeIndex();
+				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetRandomSpecialId(
 					&gCampaign.Setting.characters);
 				aa.TileItemFlags = ObjectiveToTileItem(i);
@@ -542,7 +542,7 @@ void InitializeBadGuys(void)
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
 				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-				aa.Id = ActorsGetFreeIndex();
+				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetPrisonerId(
 					&gCampaign.Setting.characters, 0);
 				aa.TileItemFlags = ObjectiveToTileItem(i);
@@ -585,7 +585,7 @@ void CreateEnemies(void)
 		i++)
 	{
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-		aa.Id = ActorsGetFreeIndex();
+		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
 		aa.FullPos = PlaceAwayFromPlayers(&gMap);

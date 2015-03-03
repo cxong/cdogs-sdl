@@ -51,6 +51,7 @@ typedef enum
 
 	GAME_EVENT_ACTOR_ADD,
 	GAME_EVENT_ACTOR_MOVE,
+	GAME_EVENT_ACTOR_REPLACE_GUN,
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_TAKE_HEALTH_PICKUP,
 	GAME_EVENT_TAKE_AMMO_PICKUP,
@@ -100,6 +101,14 @@ typedef struct
 		} SetMessage;
 		NetMsgActorAdd ActorAdd;
 		NetMsgActorMove ActorMove;
+		struct
+		{
+			int UID;
+			// Actor's gun to replace
+			int GunIdx;
+			// ID of GunDescription of new gun
+			int GunId;
+		} ActorReplaceGun;
 		AddPickup AddPickup;
 		struct
 		{

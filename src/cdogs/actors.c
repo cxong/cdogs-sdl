@@ -461,7 +461,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	CheckPickups(actor, realPos);
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
-	e.u.ActorMove.Id = actor->tileItem.id;
+	e.u.ActorMove.UID = actor->uid;
 	e.u.ActorMove.Pos.x = pos.x;
 	e.u.ActorMove.Pos.y = pos.y;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -624,6 +624,19 @@ void ActorAddAmmo(TActor *actor, AddAmmo a)
 	*ammo += a.Amount;
 	const int ammoMax = AmmoGetById(&gAmmo, a.Id)->Max;
 	*ammo = CLAMP(*ammo, 0, ammoMax);
+}
+
+void ActorReplaceGun(
+	TActor *actor, const int gunIdx, const GunDescription *gun)
+{
+	CASSERT(gunIdx >= 0 && gunIdx < MAX_WEAPONS, "invalid gun idx");
+	if ((int)actor->guns.size < gunIdx)
+	{
+		CASSERT(gunIdx < (int)actor->guns.size + 1, "gun idx would leave gap");
+		CArrayReserve(&actor->guns, actor->guns.size + 1);
+	}
+	Weapon w = WeaponCreate(gun);
+	memcpy(CArrayGet(&actor->guns, gunIdx), &w, actor->guns.elemSize);
 }
 
 void Shoot(TActor *actor)
@@ -1015,6 +1028,10 @@ void ActorsTerminate(void)
 	}
 	CArrayTerminate(&gActors);
 }
+int ActorsGetNextUID(void)
+{
+	return sActorUIDs;
+}
 int ActorsGetFreeIndex(void)
 {
 	// Find an empty slot in actor list
@@ -1031,14 +1048,20 @@ int ActorsGetFreeIndex(void)
 }
 TActor *ActorAdd(NetMsgActorAdd aa)
 {
-	while (aa.Id >= (int)gActors.size)
+	const int id = ActorsGetFreeIndex();
+	while (id >= (int)gActors.size)
 	{
 		TActor a;
 		memset(&a, 0, sizeof a);
 		CArrayPushBack(&gActors, &a);
 	}
-	TActor *actor = CArrayGet(&gActors, aa.Id);
+	TActor *actor = CArrayGet(&gActors, id);
 	memset(actor, 0, sizeof *actor);
+	actor->uid = aa.UID;
+	while (aa.UID >= sActorUIDs)
+	{
+		sActorUIDs++;
+	}
 	CArrayInit(&actor->guns, sizeof(Weapon));
 	CArrayInit(&actor->ammo, sizeof(int));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
@@ -1059,7 +1082,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 			Weapon gun = WeaponCreate(p->weapons[i]);
 			CArrayPushBack(&actor->guns, &gun);
 		}
-		p->Id = aa.Id;
+		p->Id = id;
 	}
 	else
 	{
@@ -1079,7 +1102,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	actor->tileItem.size = Vec2iNew(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =
 		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
-	actor->tileItem.id = aa.Id;
+	actor->tileItem.id = id;
 	actor->isInUse = true;
 	actor->flags = FLAGS_SLEEPING | c->flags;
 	if (actor->flags & FLAGS_AWAKEALWAYS)

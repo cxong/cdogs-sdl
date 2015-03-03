@@ -174,9 +174,12 @@ void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
 void ActorAddAmmo(TActor *actor, AddAmmo a);
+void ActorReplaceGun(
+	TActor *actor, const int gunIdx, const GunDescription *gun);
 
 void ActorsInit(void);
 void ActorsTerminate(void);
+int ActorsGetNextUID(void);
 int ActorsGetFreeIndex(void);
 TActor *ActorAdd(NetMsgActorAdd aa);
 void ActorDestroy(int id);

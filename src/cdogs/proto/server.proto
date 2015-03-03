@@ -40,7 +40,7 @@ message NetMsgVec2i {
 }
 
 message NetMsgActorAdd {
-	required int32 Id = 1;
+	required int32 UID = 1;
 	required int32 CharId = 2;
 	required int32 Direction = 3;
 	required int32 Health = 4;
@@ -50,6 +50,6 @@ message NetMsgActorAdd {
 }
 
 message NetMsgActorMove {
-	required int32 Id = 1;
+	required int32 UID = 1;
 	required NetMsgVec2i Pos = 2;
 }
