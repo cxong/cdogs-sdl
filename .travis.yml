@@ -30,12 +30,12 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: 59BXlwvCT1GMuMrx5yf9TjD6BsXbxxC/lAB7ry7sFMdKmNg8v9vs9lH8g31XF2BPPDaH1 sepJjRhn0qHciikQJ3X+ZbN2YpFF6KNKp/FOw3ytx/8SDiWO2BzqVnstE+XihRdki+oR2ntPFKhEMhWs RlS2o9JY+g9pT+0BLtqp4I=
+    secure: 59BXlwvCT1GMuMrx5yf9TjD6BsXbxxC/lAB7ry7sFMdKmNg8v9vs9lH8g31XF2BPPDaH1sepJjRhn0qHciikQJ3X+ZbN2YpFF6KNKp/FOw3ytx/8SDiWO2BzqVnstE+XihRdki+oR2ntPFKhEMhWsRlS2o9JY+g9pT+0BLtqp4I=
   file:
-    - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.deb"
-    - "$TRAVIS_BUILD_DIR/C-Dogs SDL-$TRAVIS_TAG-Linux.tar.gz"
-    - "$TRAVIS_BUILD_DIR/C-Dogs-SDL-$TRAVIS_TAG-Linux.rpm"
+    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.deb"
+    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz"
+    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.rpm"
   skip_cleanup: true
   on:
     tags: true
-    condition: $CC = gcc
+    condition: $CC = gcc-4.8
