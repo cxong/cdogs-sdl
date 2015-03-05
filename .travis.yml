@@ -31,6 +31,7 @@ deploy:
   provider: releases
   api_key:
     secure: Rus8lTl0EnVqM6PXwleQ8cffjMTMY1gHGwVdbGsu8cWaDgAWQ86TFgGBbV+x12z9floDPzI7Z1K/entktkiSWQyRPIa9jQfJBIomNABhIykUvpRsL026Cs8TysI4L4hrTvFev10QI28RFyZvUDBT8yytowFsuU5Pfb4n7kDIisQ=
+  file_glob: true
   file:
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.deb"
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz"
