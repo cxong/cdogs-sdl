@@ -1118,7 +1118,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	if (c->bot)
 	{
 		actor->aiContext = AIContextNew();
-		AIContextSetState(actor->aiContext, AI_STATE_IDLE);
+		AIContextSetState(actor->aiContext, AI_STATE_IDLE, &actor->Chatter);
 	}
 	TryMoveActor(actor, Vec2iNew(aa.FullPos.x, aa.FullPos.y));
 	return actor;
@@ -1232,7 +1232,6 @@ TActor *ActorGetByUID(const int uid)
 			return a;
 		}
 	}
-	CASSERT(false, "Cannot find actor by UID");
 	return NULL;
 }
 
@@ -1347,7 +1346,7 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 	if (actor->aiContext)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
-		AIContextSetState(actor->aiContext, AI_STATE_NONE);
+		AIContextSetState(actor->aiContext, AI_STATE_NONE, &actor->Chatter);
 	}
 	// Check immune again
 	// This can happen if multiple damage events overkill this actor,

@@ -348,7 +348,8 @@ void CommandBadGuys(int ticks)
 				if (CanSeeAPlayer(actor))
 				{
 					actor->flags &= ~FLAGS_SLEEPING;
-					AIContextSetState(actor->aiContext, AI_STATE_NONE);
+					AIContextSetState(
+						actor->aiContext, AI_STATE_NONE, &actor->Chatter);
 				}
 				actor->aiContext->Delay = bot->actionDelay * delayModifier;
 				// Randomly change direction
@@ -371,7 +372,8 @@ void CommandBadGuys(int ticks)
 				if (!IsCloseToPlayer(actor->Pos, (40 * 16) << 8))
 				{
 					actor->flags |= FLAGS_SLEEPING;
-					AIContextSetState(actor->aiContext, AI_STATE_IDLE);
+					AIContextSetState(
+						actor->aiContext, AI_STATE_IDLE, &actor->Chatter);
 				}
 			}
 
@@ -384,13 +386,16 @@ void CommandBadGuys(int ticks)
 					if (IsCloseToPlayer(actor->Pos, 32 << 8))
 					{
 						cmd = 0;
-						AIContextSetState(actor->aiContext, AI_STATE_IDLE);
+						AIContextSetState(
+							actor->aiContext, AI_STATE_IDLE, &actor->Chatter);
 					}
 					else
 					{
 						cmd = AIGoto(
 							actor, AIGetClosestPlayerPos(actor->Pos), true);
-						AIContextSetState(actor->aiContext, AI_STATE_FOLLOW);
+						AIContextSetState(
+							actor->aiContext, AI_STATE_FOLLOW,
+							&actor->Chatter);
 					}
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
@@ -403,13 +408,15 @@ void CommandBadGuys(int ticks)
 						// Turn back and shoot for running away characters
 						cmd = AIReverseDirection(cmd);
 					}
-					bypass = 1;
-					AIContextSetState(actor->aiContext, AI_STATE_HUNT);
+					bypass = true;
+					AIContextSetState(
+						actor->aiContext, AI_STATE_HUNT, &actor->Chatter);
 				}
 				else if (actor->flags & FLAGS_DETOURING)
 				{
 					cmd = BrightWalk(actor, roll);
-					AIContextSetState(actor->aiContext, AI_STATE_TRACK);
+					AIContextSetState(
+						actor->aiContext, AI_STATE_TRACK, &actor->Chatter);
 				}
 				else if (actor->aiContext->Delay > 0)
 				{
@@ -420,12 +427,14 @@ void CommandBadGuys(int ticks)
 					if (roll < bot->probabilityToTrack)
 					{
 						cmd = AIHuntClosest(actor);
-						AIContextSetState(actor->aiContext, AI_STATE_HUNT);
+						AIContextSetState(
+							actor->aiContext, AI_STATE_HUNT, &actor->Chatter);
 					}
 					else if (roll < bot->probabilityToMove)
 					{
 						cmd = DirectionToCmd(rand() & 7);
-						AIContextSetState(actor->aiContext, AI_STATE_TRACK);
+						AIContextSetState(
+							actor->aiContext, AI_STATE_TRACK, &actor->Chatter);
 					}
 					else
 					{
@@ -458,7 +467,8 @@ void CommandBadGuys(int ticks)
 							// Turn back and shoot for running away characters
 							cmd |= AIReverseDirection(AIHuntClosest(actor));
 						}
-						AIContextSetState(actor->aiContext, AI_STATE_HUNT);
+						AIContextSetState(
+							actor->aiContext, AI_STATE_HUNT, &actor->Chatter);
 					}
 					else
 					{
@@ -472,7 +482,9 @@ void CommandBadGuys(int ticks)
 						{
 							Detour(actor);
 							cmd = 0;
-							AIContextSetState(actor->aiContext, AI_STATE_TRACK);
+							AIContextSetState(
+								actor->aiContext, AI_STATE_TRACK,
+								&actor->Chatter);
 						}
 					}
 				}

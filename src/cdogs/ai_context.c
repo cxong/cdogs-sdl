@@ -27,6 +27,7 @@
 */
 #include "ai_context.h"
 
+
 AIContext *AIContextNew(void)
 {
 	AIContext *c;
@@ -77,22 +78,26 @@ bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
 	return f != AICHATTER_NONE && c->ChatterCounter <= 0;
 }
 
-static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);
-void AIContextSetState(AIContext *c, const AIState s)
+static const char *AIContextSetChatterDelay(
+	AIContext *c, const AIChatterFrequency f);
+void AIContextSetState(AIContext *c, const AIState s, const char **chatter)
 {
 	const bool isChange = c->State != s;
 	c->State = s;
 	if (isChange)
 	{
-		AIContextSetChatterDelay(c, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
+		*chatter = AIContextSetChatterDelay(
+			c, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
 	}
 }
-static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
+static const char *AIContextSetChatterDelay(
+	AIContext *c, const AIChatterFrequency f)
 {
 	c->ChatterCounter--;
 	if (c->ChatterCounter >= 0)
 	{
-		return;
+		// Stop saying anything
+		return NULL;
 	}
 	switch (f)
 	{
@@ -107,6 +112,8 @@ static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
 		break;
 	default:
 		// do nothing
-		break;
+		return NULL;
 	}
+	// Say something
+	return AIStateGetChatterText(c->State);
 }

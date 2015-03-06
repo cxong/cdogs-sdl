@@ -138,6 +138,8 @@ typedef struct Actor
 	
 	int slideLock;
 
+	const char *Chatter;
+
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
 	AIContext *aiContext;

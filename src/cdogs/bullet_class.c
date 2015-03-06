@@ -155,6 +155,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		// Find the closest target to this bullet and steer towards it
 		const TActor *owner = ActorGetByUID(obj->uid);
+		if (owner == NULL)
+		{
+			return false;
+		}
 		const TActor *target = AIGetClosestEnemy(objPos, owner, obj->flags);
 		if (target && !target->dead)
 		{

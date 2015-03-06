@@ -417,18 +417,14 @@ static void DrawActorPics(
 		}
 
 		// Draw character text
-		if (!a->aiContext || !AIContextShowChatter(
-			a->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter")))
+		if (a->Chatter != NULL)
 		{
-			return;
+			const Vec2i textPos = Vec2iNew(
+				a->tileItem.x - b->xTop + offset.x -
+				FontStrW(a->Chatter) / 2,
+				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			FontStr(a->Chatter, textPos);
 		}
-		const char *text =
-			AIStateGetChatterText(a->aiContext->State);
-		const Vec2i textPos = Vec2iNew(
-			a->tileItem.x - b->xTop + offset.x -
-			FontStrW(text) / 2,
-			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
-		FontStr(text, textPos);
 	}
 }
 static void DrawLaserSightSingle(
