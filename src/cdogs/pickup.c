@@ -167,7 +167,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 				e.u.ActorReplaceGun.UID = a->uid;
 				e.u.ActorReplaceGun.GunIdx =
 					a->guns.size == MAX_WEAPONS ?
-					a->gunIndex : (int)a->guns.size - 1;
+					a->gunIndex : (int)a->guns.size;
 				e.u.ActorReplaceGun.GunId = p->class->u.GunId;
 				GameEventsEnqueue(&gGameEvents, e);
 
@@ -176,6 +176,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 			}
 			else
 			{
+				a->CanPickupSpecial = true;
 				canPickup = false;
 				// "Say" that the weapon must be picked up using a command
 				a->Chatter = "Switch to pick up";

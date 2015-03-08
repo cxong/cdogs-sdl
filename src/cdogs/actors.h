@@ -141,6 +141,11 @@ typedef struct Actor
 	// Flag to specify whether this actor will pick up anything,
 	// such as weapons which will replace the current weapon.
 	bool PickupAll;
+	// Flag to specify whether this actor is over a special pickup,
+	// such as weapons which will replace the current weapon.
+	// If the player presses switch when in this state, instead of switching
+	// weapons, pick up.
+	bool CanPickupSpecial;
 
 	// What to say (text label appears above actor) and how long to say it
 	const char *Chatter;

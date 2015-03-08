@@ -366,6 +366,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
 
+	actor->CanPickupSpecial = false;
+
 	const Vec2i oldPos = actor->Pos;
 	pos = GetConstrainedFullPos(&gMap, actor->Pos, pos, actor->tileItem.size);
 	if (Vec2iEqual(oldPos, pos))
@@ -634,17 +636,38 @@ void ActorAddAmmo(TActor *actor, AddAmmo a)
 	*ammo = CLAMP(*ammo, 0, ammoMax);
 }
 
+static bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorReplaceGun(
 	TActor *actor, const int gunIdx, const GunDescription *gun)
 {
 	CASSERT(gunIdx >= 0 && gunIdx < MAX_WEAPONS, "invalid gun idx");
-	if ((int)actor->guns.size < gunIdx)
+	// If player already has gun, don't do anything
+	if (ActorHasGun(actor, gun))
 	{
-		CASSERT(gunIdx < (int)actor->guns.size + 1, "gun idx would leave gap");
-		CArrayReserve(&actor->guns, actor->guns.size + 1);
+		return;
 	}
 	Weapon w = WeaponCreate(gun);
-	memcpy(CArrayGet(&actor->guns, gunIdx), &w, actor->guns.elemSize);
+	if ((int)actor->guns.size <= gunIdx)
+	{
+		CASSERT(gunIdx < (int)actor->guns.size + 1, "gun idx would leave gap");
+		CArrayPushBack(&actor->guns, &w);
+	}
+	else
+	{
+		memcpy(CArrayGet(&actor->guns, gunIdx), &w, actor->guns.elemSize);
+	}
+}
+static bool ActorHasGun(const TActor *a, const GunDescription *gun)
+{
+	for (int i = 0; i < (int)a->guns.size; i++)
+	{
+		const Weapon *w = CArrayGet(&a->guns, i);
+		if (w->Gun == gun)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 // Set AI state and possibly say something based on the state
@@ -769,6 +792,15 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		if (CMD_HAS_DIRECTION(cmd))
 		{
 			actor->specialCmdDir = true;
+		}
+		else if (actor->CanPickupSpecial)
+		{
+			actor->PickupAll = true;
+			// Special: check pickups that can only be picked up on demand
+			CheckPickups(actor, Vec2iFull2Real(actor->Pos));
+			actor->PickupAll = false;
+			// Cancel the last cmd having switch
+			actor->lastCmd &= ~CMD_BUTTON2;
 		}
 	}
 	else
