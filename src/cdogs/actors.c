@@ -330,6 +330,14 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Sound lock
 	actor->soundLock = MAX(0, actor->soundLock - ticks);
+
+	// Chatting
+	actor->ChatterCounter = MAX(0, actor->ChatterCounter - ticks);
+	if (actor->ChatterCounter == 0)
+	{
+		// Stop chatting
+		actor->Chatter = NULL;
+	}
 }
 
 
@@ -637,6 +645,17 @@ void ActorReplaceGun(
 	}
 	Weapon w = WeaponCreate(gun);
 	memcpy(CArrayGet(&actor->guns, gunIdx), &w, actor->guns.elemSize);
+}
+
+// Set AI state and possibly say something based on the state
+void ActorSetAIState(TActor *actor, const AIState s)
+{
+	if (AIContextSetState(actor->aiContext, s))
+	{
+		// Say something for two frames
+		actor->Chatter = AIStateGetChatterText(actor->aiContext->State);
+		actor->ChatterCounter = 2;
+	}
 }
 
 void Shoot(TActor *actor)
@@ -1118,7 +1137,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	if (c->bot)
 	{
 		actor->aiContext = AIContextNew();
-		AIContextSetState(actor->aiContext, AI_STATE_IDLE, &actor->Chatter);
+		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
 	TryMoveActor(actor, Vec2iNew(aa.FullPos.x, aa.FullPos.y));
 	return actor;
@@ -1346,7 +1365,7 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 	if (actor->aiContext)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
-		AIContextSetState(actor->aiContext, AI_STATE_NONE, &actor->Chatter);
+		ActorSetAIState(actor, AI_STATE_NONE);
 	}
 	// Check immune again
 	// This can happen if multiple damage events overkill this actor,

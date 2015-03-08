@@ -106,4 +106,4 @@ void AIContextDestroy(AIContext *c);
 
 const char *AIStateGetChatterText(const AIState s);
 bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f);
-void AIContextSetState(AIContext *c, const AIState s, const char **chatter);
+bool AIContextSetState(AIContext *c, const AIState s);

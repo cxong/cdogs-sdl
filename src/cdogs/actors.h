@@ -138,7 +138,13 @@ typedef struct Actor
 	
 	int slideLock;
 
+	// Flag to specify whether this actor will pick up anything,
+	// such as weapons which will replace the current weapon.
+	bool PickupAll;
+
+	// What to say (text label appears above actor) and how long to say it
 	const char *Chatter;
+	int ChatterCounter;
 
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
@@ -178,6 +184,7 @@ void InjureActor(TActor * actor, int injury);
 void ActorAddAmmo(TActor *actor, AddAmmo a);
 void ActorReplaceGun(
 	TActor *actor, const int gunIdx, const GunDescription *gun);
+void ActorSetAIState(TActor *actor, const AIState s);
 
 void ActorsInit(void);
 void ActorsTerminate(void);

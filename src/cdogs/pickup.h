@@ -51,4 +51,4 @@ void PickupsTerminate(void);
 int PickupAdd(const Vec2i pos, const PickupClass *class);
 void PickupDestroy(const int id);
 
-void PickupPickup(const TActor *a, const Pickup *p);
+void PickupPickup(TActor *a, const Pickup *p);

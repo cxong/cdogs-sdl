@@ -98,7 +98,7 @@ void PickupDestroy(const int id)
 	p->isInUse = false;
 }
 
-void PickupPickup(const TActor *a, const Pickup *p)
+void PickupPickup(TActor *a, const Pickup *p)
 {
 	bool canPickup = true;
 	Mix_Chunk *sound = NULL;
@@ -161,17 +161,26 @@ void PickupPickup(const TActor *a, const Pickup *p)
 
 	case PICKUP_GUN:
 		{
-			// TODO: don't pick up gun automatically
-			canPickup = true;
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-			e.u.ActorReplaceGun.UID = a->uid;
-			e.u.ActorReplaceGun.GunIdx =
-				a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size - 1;
-			e.u.ActorReplaceGun.GunId = p->class->u.GunId;
-			GameEventsEnqueue(&gGameEvents, e);
+			if (a->PickupAll)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+				e.u.ActorReplaceGun.UID = a->uid;
+				e.u.ActorReplaceGun.GunIdx =
+					a->guns.size == MAX_WEAPONS ?
+					a->gunIndex : (int)a->guns.size - 1;
+				e.u.ActorReplaceGun.GunId = p->class->u.GunId;
+				GameEventsEnqueue(&gGameEvents, e);
 
-			// TODO: gun-specific pickup sound
-			sound = gSoundDevice.switchSound;
+				// TODO: gun-specific pickup sound
+				sound = gSoundDevice.switchSound;
+			}
+			else
+			{
+				canPickup = false;
+				// "Say" that the weapon must be picked up using a command
+				a->Chatter = "Switch to pick up";
+				a->ChatterCounter = 2;
+			}
 		}
 		break;
 

@@ -78,26 +78,25 @@ bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
 	return f != AICHATTER_NONE && c->ChatterCounter <= 0;
 }
 
-static const char *AIContextSetChatterDelay(
-	AIContext *c, const AIChatterFrequency f);
-void AIContextSetState(AIContext *c, const AIState s, const char **chatter)
+static bool AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);
+bool AIContextSetState(AIContext *c, const AIState s)
 {
 	const bool isChange = c->State != s;
 	c->State = s;
 	if (isChange)
 	{
-		*chatter = AIContextSetChatterDelay(
+		return AIContextSetChatterDelay(
 			c, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
 	}
+	return true;
 }
-static const char *AIContextSetChatterDelay(
-	AIContext *c, const AIChatterFrequency f)
+static bool AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
 {
 	c->ChatterCounter--;
 	if (c->ChatterCounter >= 0)
 	{
 		// Stop saying anything
-		return NULL;
+		return false;
 	}
 	switch (f)
 	{
@@ -112,8 +111,8 @@ static const char *AIContextSetChatterDelay(
 		break;
 	default:
 		// do nothing
-		return NULL;
+		return false;
 	}
 	// Say something
-	return AIStateGetChatterText(c->State);
+	return true;
 }

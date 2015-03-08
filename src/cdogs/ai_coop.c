@@ -71,8 +71,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 			}
 			else
 			{
-				AIContextSetState(
-					actor->aiContext, AI_STATE_CONFUSED, &actor->Chatter);
+				ActorSetAIState(actor, AI_STATE_CONFUSED);
 				s->Type = AI_CONFUSION_CONFUSED;
 				// Generate the confused action
 				s->Cmd = rand() &
@@ -183,7 +182,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestPlayer &&
 		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
 	{
-		AIContextSetState(actor->aiContext, AI_STATE_FOLLOW, &actor->Chatter);
+		ActorSetAIState(actor, AI_STATE_FOLLOW);
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
@@ -198,8 +197,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
 			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
 		{
-			AIContextSetState(
-				actor->aiContext, AI_STATE_HUNT, &actor->Chatter);
+			ActorSetAIState(actor, AI_STATE_HUNT);
 			if (closestEnemy->uid != actor->aiContext->EnemyId)
 			{
 				// Engaging new enemy now
@@ -268,12 +266,12 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// run into them
 	if (closestPlayer && minDistance2 > 4*4*16*16/3/3)
 	{
-		AIContextSetState(actor->aiContext, AI_STATE_FOLLOW, &actor->Chatter);
+		ActorSetAIState(actor, AI_STATE_FOLLOW);
 		return SmartGoto(
 			actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 	}
 
-	AIContextSetState(actor->aiContext, AI_STATE_IDLE, &actor->Chatter);
+	ActorSetAIState(actor, AI_STATE_IDLE);
 	return 0;
 }
 // Number of ticks to persist in trying to destroy an obstruction
@@ -408,8 +406,7 @@ static bool TryCompleteNearbyObjective(
 	if (CanCompleteMission(&gMission) && CanGetObjective(
 		exitPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 	{
-		AIContextSetState(
-			actor->aiContext, AI_STATE_NEXT_OBJECTIVE, &actor->Chatter);
+		ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
 		objState->Goal = exitPos;
 		*cmdOut = GotoObjective(actor, 0);
@@ -428,8 +425,7 @@ static bool TryCompleteNearbyObjective(
 		if (CanGetObjective(
 			c->Pos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 		{
-			AIContextSetState(
-				actor->aiContext, AI_STATE_NEXT_OBJECTIVE, &actor->Chatter);
+			ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 			objState->Type = c->Type;
 			objState->IsDestructible = c->IsDestructible;
 			if (c->Type == AI_OBJECTIVE_TYPE_KEY)
