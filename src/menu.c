@@ -390,7 +390,7 @@ void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data)
 	menu->customPostUpdateData = data;
 }
 
-void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data)
+void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, const void *data)
 {
 	menu->customDisplayFunc = func;
 	menu->customDisplayData = data;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MENU
-#define __MENU
+#pragma once
 
 #include <cdogs/c_array.h>
 #include <cdogs/campaigns.h>
@@ -126,7 +125,7 @@ struct menu
 	MenuPostInputFunc customPostInputFunc;
 	void *customPostInputData;
 	MenuDisplayFunc customDisplayFunc;
-	void *customDisplayData;
+	const void *customDisplayData;
 	union
 	{
 		// normal menu, with sub menus
@@ -270,7 +269,8 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
 void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data);
 void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data);
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
-void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, void *data);
+void MenuSetCustomDisplay(
+	menu_t *menu, MenuDisplayFunc func, const void *data);
 
 // Make an options menu using a group of configs
 menu_t *MenuCreateConfigOptions(
@@ -308,5 +308,3 @@ void MenuPlaySound(MenuSound s);
 void MenuDestroy(MenuSystem *menu);
 
 void PostInputConfigApply(menu_t *menu, int cmd, void *data);
-
-#endif

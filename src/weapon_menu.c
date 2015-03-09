@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, Cong Xu
+	Copyright (c) 2013-2015, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -133,6 +133,12 @@ static void DisplayEquippedWeapons(
 	}
 }
 
+static void DisplayGunIcon(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data);
+static void DisplayDescriptionGunIcon(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, const int playerIndex,
@@ -187,6 +193,7 @@ void WeaponMenuCreate(
 		menu_t *gunMenu;
 		if ((*g)->Description != NULL)
 		{
+			// Gun description menu
 			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
 			char *buf;
 			CMALLOC(buf, strlen((*g)->Description) * 2);
@@ -194,6 +201,7 @@ void WeaponMenuCreate(
 			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
 			CFREE(buf);
 			gunMenu->u.normal.isSubmenusAlt = true;
+			MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *g);
 		}
 		else
 		{
@@ -225,7 +233,40 @@ void WeaponMenuCreate(
 		MenuDisableSubmenu(ms->root, (int)ms->root->u.normal.subMenus.size - 1);
 	}
 
+	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->playerIndex);
+}
+static void DisplayGunIcon(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data)
+{
+	UNUSED(data);
+	if (menu->u.normal.index >= (int)gMission.Weapons.size)
+	{
+		return;
+	}
+	// Display a gun icon next to the currently selected weapon
+	const GunDescription **gun =
+		CArrayGet(&gMission.Weapons, menu->u.normal.index);
+	const int textScroll =
+		-menu->u.normal.maxItems * FontH() / 2 +
+		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
+	const Vec2i iconPos = Vec2iNew(
+		pos.x - (*gun)->Icon->size.x - 4,
+		pos.y + size.y / 2 + textScroll + (FontH() - (*gun)->Icon->size.y) / 2);
+	Blit(g, (*gun)->Icon, iconPos);
+}
+static void DisplayDescriptionGunIcon(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data)
+{
+	UNUSED(menu);
+	UNUSED(size);
+	const GunDescription *gun = data;
+	// Display the gun just to the left of the description text
+	const Vec2i iconPos = Vec2iNew(
+		pos.x - gun->Icon->size.x - 4, pos.y + size.y / 2);
+	Blit(g, gun->Icon, iconPos);
 }
