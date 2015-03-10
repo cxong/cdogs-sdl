@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@ AIContext *AIContextNew(void)
 {
 	AIContext *c;
 	CCALLOC(c, sizeof *c);
+	// Initialise chatter counter so we don't say anything in the background
+	c->ChatterCounter = 2;
 	c->EnemyId = -1;
 	c->GunRangeScalar = 1.0;
 	return c;
@@ -78,41 +80,38 @@ bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
 	return f != AICHATTER_NONE && c->ChatterCounter <= 0;
 }
 
-static bool AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);
+static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);
 bool AIContextSetState(AIContext *c, const AIState s)
 {
 	const bool isChange = c->State != s;
 	c->State = s;
 	if (isChange)
 	{
-		return AIContextSetChatterDelay(
+		AIContextSetChatterDelay(
 			c, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
 	}
-	return true;
+	return isChange;
 }
-static bool AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
+static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f)
 {
 	c->ChatterCounter--;
 	if (c->ChatterCounter >= 0)
 	{
-		// Stop saying anything
-		return false;
+		return;
 	}
 	switch (f)
 	{
 	case AICHATTER_SELDOM:
-		c->ChatterCounter = 10;
+		c->ChatterCounter = 100;
 		break;
 	case AICHATTER_OFTEN:
-		c->ChatterCounter = 3;
+		c->ChatterCounter = 30;
 		break;
 	case AICHATTER_ALWAYS:
 		c->ChatterCounter = 0;
 		break;
 	default:
 		// do nothing
-		return false;
+		break;
 	}
-	// Say something
-	return true;
 }

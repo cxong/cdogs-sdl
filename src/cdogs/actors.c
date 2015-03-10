@@ -673,9 +673,11 @@ static bool ActorHasGun(const TActor *a, const GunDescription *gun)
 // Set AI state and possibly say something based on the state
 void ActorSetAIState(TActor *actor, const AIState s)
 {
-	if (AIContextSetState(actor->aiContext, s))
+	if (AIContextSetState(actor->aiContext, s) &&
+		AIContextShowChatter(
+		actor->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter")))
 	{
-		// Say something for two frames
+		// Say something for a while
 		actor->Chatter = AIStateGetChatterText(actor->aiContext->State);
 		actor->ChatterCounter = 2;
 	}
