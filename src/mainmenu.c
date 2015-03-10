@@ -234,6 +234,9 @@ menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(menu, MenuCreateConfigOptions(
 		"Game...", "Game Options:", ConfigGet(&gConfig, "Game"), ms, true));
 	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", ms));
+	MenuAddSubmenu(menu, MenuCreateConfigOptions(
+		"Interface...", "Interface Options:",
+		ConfigGet(&gConfig, "Interface"), ms, true));
 	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", ms));
 	MenuAddSubmenu(menu, MenuCreateConfigOptions(
 		"Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"), ms,
