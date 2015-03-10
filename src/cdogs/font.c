@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -443,4 +443,34 @@ void FontSplitLines(const char *text, char *buf, const int width)
 		}
 	}
 	*buf = '\0';
+}
+
+Vec2i Vec2iAligned(
+	const Vec2i v, const Vec2i size,
+	const FontAlign hAlign, const FontAlign vAlign, const Vec2i area)
+{
+	Vec2i vAligned = v;
+	switch (hAlign)
+	{
+	case ALIGN_CENTER:
+		vAligned.x += (area.x - size.x) / 2;
+		break;
+	case ALIGN_END:
+		vAligned.x = -v.x + area.x - size.x;
+		break;
+	default:
+		break;
+	}
+	switch (vAlign)
+	{
+	case ALIGN_CENTER:
+		vAligned.y += (area.y - size.y) / 2;
+		break;
+	case ALIGN_END:
+		vAligned.y = -v.y + area.y - size.y;
+		break;
+	default:
+		break;
+	}
+	return vAligned;
 }

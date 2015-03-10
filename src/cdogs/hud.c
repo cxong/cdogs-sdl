@@ -297,17 +297,26 @@ static void DrawGauge(
 	DrawRectangle(device, barPos, barSize, barColor, 0);
 }
 
-#define GAUGE_WIDTH 50
+#define GAUGE_WIDTH 60
 static void DrawWeaponStatus(
 	HUD *hud, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *weapon = ActorGetGun(actor);
+
+	// Draw gun icon, and allocate padding to draw the gun icon
+	const GunDescription *g = ActorGetGun(actor)->Gun;
+	const Vec2i iconPos = Vec2iAligned(
+		Vec2iNew(pos.x - 2, pos.y - 2),
+		g->Icon->size, hAlign, vAlign, gGraphicsDevice.cachedConfig.Res);
+	Blit(&gGraphicsDevice, g->Icon, iconPos);
+	const int iconPad = 10;
+
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
-		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-		const Vec2i size = Vec2iNew(GAUGE_WIDTH, FontH() + 2);
+		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + iconPad, -1));
+		const Vec2i size = Vec2iNew(GAUGE_WIDTH - iconPad, FontH() + 2);
 		const color_t barColor = { 0, 0, 255, 255 };
 		const int maxLock = weapon->Gun->Lock;
 		int innerWidth;
@@ -328,7 +337,7 @@ static void DrawWeaponStatus(
 	opts.HAlign = hAlign;
 	opts.VAlign = vAlign;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
+	opts.Pad = Vec2iNew(pos.x + iconPad, pos.y);
 	char buf[128];
 	if (ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0)
 	{
@@ -598,11 +607,7 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		// Weapon
-		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
-		pos.y += rowHeight;
-
-		// Player name
+		// Score/money
 		opts.Pad = pos;
 		FontStrOpt(s, Vec2iZero(), opts);
 
@@ -613,6 +618,10 @@ static void DrawPlayerStatus(
 		// Lives
 		pos.y += rowHeight;
 		DrawLives(hud->device, data, pos, opts.HAlign, opts.VAlign);
+
+		// Weapon
+		pos.y += rowHeight + 6;
+		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{

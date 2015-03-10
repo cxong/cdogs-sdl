@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __FONT
-#define __FONT
+#pragma once
 
 #include <json/json.h>
 #include <SDL_video.h>
@@ -96,4 +95,6 @@ void FontStrCenter(const char *s);
 
 void FontSplitLines(const char *text, char *buf, const int width);
 
-#endif
+Vec2i Vec2iAligned(
+	const Vec2i v, const Vec2i size,
+	const FontAlign hAlign, const FontAlign vAlign, const Vec2i area);
