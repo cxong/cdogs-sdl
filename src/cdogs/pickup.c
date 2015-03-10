@@ -132,23 +132,40 @@ void PickupPickup(TActor *a, const Pickup *p)
 
 	case PICKUP_AMMO:
 		{
+			// Don't pickup if no guns can use ammo
+			bool hasGunUsingAmmo = false;
+			for (int i = 0; i < (int)a->guns.size; i++)
+			{
+				const Weapon *w = CArrayGet(&a->guns, i);
+				if (w->Gun->AmmoId == p->class->u.Ammo.Id)
+				{
+					hasGunUsingAmmo = true;
+					break;
+				}
+			}
+			if (!hasGunUsingAmmo)
+			{
+				canPickup = false;
+				break;
+			}
+
 			// Don't pickup if ammo full
-			canPickup = false;
 			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
 			const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
-			if (current < ammo->Max)
+			if (current >= ammo->Max)
 			{
-				canPickup = true;
-
-				// Take ammo
-				GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
-				e.u.AddAmmo.PlayerIndex = a->playerIndex;
-				e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
-				// Note: receiving end will prevent ammo from exceeding max
-				GameEventsEnqueue(&gGameEvents, e);
-
-				sound = StrSound(ammo->Sound);
+				canPickup = false;
+				break;
 			}
+
+			// Take ammo
+			GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
+			e.u.AddAmmo.PlayerIndex = a->playerIndex;
+			e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
+			// Note: receiving end will prevent ammo from exceeding max
+			GameEventsEnqueue(&gGameEvents, e);
+
+			sound = StrSound(ammo->Sound);
 		}
 		break;
 
