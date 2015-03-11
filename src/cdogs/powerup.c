@@ -25,6 +25,7 @@
 */
 #include "powerup.h"
 
+#include <float.h>
 #include <math.h>
 
 #include "ai_utils.h"
@@ -62,10 +63,17 @@ void PowerupSpawnerUpdate(PowerupSpawner *p, const int ticks)
 	}
 
 	double scalar = p->RateScaleFunc(p->Data);
-	// Scale down over time
-	scalar *= pow(TIME_DECAY_EXPONENT, p->pickupsSpawned);
+	if (scalar == DBL_MAX)
+	{
+		p->timeUntilNextSpawn = INT_MAX;
+	}
+	else
+	{
+		// Scale down over time
+		scalar *= pow(TIME_DECAY_EXPONENT, p->pickupsSpawned);
 
-	p->timeUntilNextSpawn = (int)floor(scalar * p->SpawnTime);
+		p->timeUntilNextSpawn = (int)floor(scalar * p->SpawnTime);
+	}
 
 	// Update time
 	p->timer += ticks;
@@ -222,8 +230,8 @@ static double AmmoScale(void *data)
 	}
 	else
 	{
-		// No players have guns that use this ammo; spawn very slowly
-		return 5.0;
+		// No players have guns that use this ammo; never spawn
+		return DBL_MAX;
 	}
 }
 static void AmmoPlace(const Vec2i pos, void *data)
