@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -288,6 +288,30 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 			isFirst = false;
 		}
 	}
+}
+
+// Get the number of players that use this ammo
+int PlayersNumUseAmmo(const int ammoId)
+{
+	int numPlayersWithAmmo = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
+		{
+			continue;
+		}
+		const TActor *player = CArrayGet(&gActors, p->Id);
+		for (int j = 0; j < (int)player->guns.size; j++)
+		{
+			const Weapon *w = CArrayGet(&player->guns, j);
+			if (w->Gun->AmmoId == ammoId)
+			{
+				numPlayersWithAmmo++;
+			}
+		}
+	}
+	return numPlayersWithAmmo;
 }
 
 void PlayerScore(PlayerData *p, const int points)

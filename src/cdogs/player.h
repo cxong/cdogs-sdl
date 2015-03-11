@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PLAYER
-#define __PLAYER
+#pragma once
 
 #include "character.h"
 
@@ -82,9 +81,8 @@ bool IsPlayerHuman(const PlayerData *player);
 bool IsPlayerHumanAndAlive(const PlayerData *player);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
+int PlayersNumUseAmmo(const int ammoId);
 
 void PlayerScore(PlayerData *p, const int points);
 void PlayerSetInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);
-
-#endif

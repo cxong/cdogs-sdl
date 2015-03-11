@@ -199,12 +199,18 @@ void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 static double AmmoScale(void *data)
 {
 	const int ammoId = *(int *)data;
+	// Make sure at least one player has a gun that uses this ammo
+	const int numPlayersWithAmmo = PlayersNumUseAmmo(ammoId);
+	if (numPlayersWithAmmo == 0)
+	{
+		// No players have guns that use this ammo; never spawn
+		return DBL_MAX;
+	}
+
 	// Update time until next spawn based on:
 	// Ammo left (find player with lowest ammo)
-	// But make sure at least one player has a gun that uses this ammo
 	int minVal = AmmoGetById(&gAmmo, ammoId)->Max;
 	int maxVal = minVal;
-	int numPlayersWithAmmo = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -213,26 +219,10 @@ static double AmmoScale(void *data)
 			continue;
 		}
 		const TActor *player = CArrayGet(&gActors, p->Id);
-		for (int j = 0; j < (int)player->guns.size; j++)
-		{
-			const Weapon *w = CArrayGet(&player->guns, j);
-			if (w->Gun->AmmoId == ammoId)
-			{
-				numPlayersWithAmmo++;
-			}
-		}
 		minVal = MIN(minVal, *(int *)CArrayGet(&player->ammo, ammoId));
 	}
-	if (numPlayersWithAmmo > 0)
-	{
-		// Double spawn rate if near 0 ammo
-		return (minVal + maxVal) / (maxVal * 2.0) / numPlayersWithAmmo;
-	}
-	else
-	{
-		// No players have guns that use this ammo; never spawn
-		return DBL_MAX;
-	}
+	// Double spawn rate if near 0 ammo
+	return (minVal + maxVal) / (maxVal * 2.0) / numPlayersWithAmmo;
 }
 static void AmmoPlace(const Vec2i pos, void *data)
 {

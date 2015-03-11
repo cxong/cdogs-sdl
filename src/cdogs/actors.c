@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1045,6 +1045,12 @@ static void ActorAddAmmoPickup(const TActor *actor)
 
 		// Check if the actor's gun has ammo at all
 		if (w->Gun->AmmoId < 0)
+		{
+			continue;
+		}
+
+		// Don't spawn ammo if no players use it
+		if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
 		{
 			continue;
 		}
