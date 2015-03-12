@@ -318,8 +318,9 @@
     {
       "Name": "dynamite",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "dynamite"
+        "Type": "Animated",
+        "Sprites": "dynamite_active",
+        "TicksPerFrame": 15
       },
       "Speed": 0,
       "Range": 210,
