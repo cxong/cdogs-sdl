@@ -250,8 +250,10 @@ static void DisplayGunIcon(
 	// Display a gun icon next to the currently selected weapon
 	const GunDescription **gun =
 		CArrayGet(&gMission.Weapons, menu->u.normal.index);
+	const int menuItems = MIN(
+		menu->u.normal.maxItems, (int)menu->u.normal.subMenus.size);
 	const int textScroll =
-		-menu->u.normal.maxItems * FontH() / 2 +
+		-menuItems * FontH() / 2 +
 		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
 	const Vec2i iconPos = Vec2iNew(
 		pos.x - (*gun)->Icon->size.x - 4,

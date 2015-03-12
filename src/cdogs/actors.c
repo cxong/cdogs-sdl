@@ -82,6 +82,7 @@
 #define VEL_DECAY_X (TILE_WIDTH * 2)
 #define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
 #define SOUND_LOCK_WEAPON_CLICK 20
+#define DROP_GUN_CHANCE 0.2
 
 
 CArray gPlayerIds;
@@ -981,6 +982,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 	}
 }
 static void ActorAddAmmoPickup(const TActor *actor);
+static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor, const int idx)
 {
 	// Check if the player has lives to revive
@@ -1023,17 +1025,21 @@ static void ActorDie(TActor *actor, const int idx)
 		ActorAddAmmoPickup(actor);
 	}
 
+	// Random chance to add gun pickup
+	if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
+	{
+		ActorAddGunPickup(actor);
+	}
+
 	// Add a blood pool
 	ObjAdd(RandomBloodMapObject(&gMapObjects), Vec2iFull2Real(actor->Pos), 0);
 
 	ActorDestroy(idx);
 }
+static bool IsUnarmedBot(const TActor *actor);
 static void ActorAddAmmoPickup(const TActor *actor)
 {
-	// Note: if the actor is AI with no shooting time,
-	// then it's an unarmed actor
-	if (actor->Character->bot != NULL &&
-		actor->Character->bot->probabilityToShoot == 0)
+	if (IsUnarmedBot(actor))
 	{
 		return;
 	}
@@ -1068,6 +1074,31 @@ static void ActorAddAmmoPickup(const TActor *actor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
+}
+static void ActorAddGunPickup(const TActor *actor)
+{
+	if (IsUnarmedBot(actor))
+	{
+		return;
+	}
+
+	// Select a gun at random to drop
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.Pos = Vec2iFull2Real(actor->Pos);
+	const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
+	const Weapon *w = CArrayGet(&actor->guns, gunIndex);
+	char buf[256];
+	sprintf(buf, "gun_%s", w->Gun->name);
+	e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
+	GameEventsEnqueue(&gGameEvents, e);
+}
+static bool IsUnarmedBot(const TActor *actor)
+{
+	// Note: if the actor is AI with no shooting time,
+	// then it's an unarmed actor
+	return
+		actor->Character->bot != NULL &&
+		actor->Character->bot->probabilityToShoot == 0;
 }
 
 void ActorsInit(void)
