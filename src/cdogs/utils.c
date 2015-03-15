@@ -157,7 +157,17 @@ void RealPath(const char *src, char *dest)
 	const bool exists = tinydir_file_open(&file, src) == 0;
 	if (!exists)
 	{
-		FILE *f = fopen(src, "ab+");
+		// First, convert slashes
+		char srcBuf[CDOGS_PATH_MAX];
+		strcpy(srcBuf, src);
+		for (char *c = srcBuf; *c != '\0'; c++)
+		{
+			if (*c == '\\')
+			{
+				*c = '/';
+			}
+		}
+		FILE *f = fopen(srcBuf, "ab+");
 		CASSERT(f != NULL, "internal error: cannot create temp file");
 		fclose(f);
 	}

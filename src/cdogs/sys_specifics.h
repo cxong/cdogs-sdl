@@ -67,6 +67,7 @@
 #ifdef _MSC_VER
 #define MKDIR_MODE 0
 #else
+#include <sys/stat.h>
 #define MKDIR_MODE (S_IRUSR | S_IXUSR | S_IWUSR)
 #endif
 

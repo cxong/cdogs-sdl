@@ -5,6 +5,7 @@
 #include <SDL_joystick.h>
 
 #include <sys_config.h>
+#include <sys_specifics.h>
 
 // Stubs
 extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
@@ -56,6 +57,7 @@ FEATURE_END
 
 int main(void)
 {
+	mkdir("/tmp/path", MKDIR_MODE);
 	cbehave_feature features[] =
 	{
 		{feature_idx(1)}
