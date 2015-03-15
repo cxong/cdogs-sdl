@@ -81,8 +81,15 @@ static void AddCampaignNode(CampaignEntry *c, json_t *root)
 	if (c->Path != NULL)
 	{
 		char cwd[CDOGS_PATH_MAX];
-		getcwd(cwd, CDOGS_PATH_MAX);
-		RelPath(path, c->Path, cwd);
+		if (getcwd(cwd, CDOGS_PATH_MAX) == NULL)
+		{
+			printf("Error getting CWD; %s\n", strerror(errno));
+			strcpy(path, c->Path);
+		}
+		else
+		{
+			RelPath(path, c->Path, cwd);
+		}
 	}
 	json_insert_pair_into_object(
 		subConfig, "Path", json_new_string(path));
