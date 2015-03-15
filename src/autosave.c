@@ -28,6 +28,7 @@
  */
 #include "autosave.h"
 
+#include <errno.h>
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
