@@ -224,6 +224,13 @@ void RelPath(char *buf, const char *to, const char *from)
 	}
 	// e.g.: tSlash = "/to", fSlash = "/from/here"
 
+	// Check if one is a complete substring of the other
+	if (!*f)
+	{
+		tSlash = t;
+		fSlash = f;
+	}
+
 	// For every folder in "from", add "..", and finally add "to"
 	strcpy(buf, "");
 	while (*fSlash)
