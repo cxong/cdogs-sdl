@@ -1509,7 +1509,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	pos.y = 10 + 2 * th;
 
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(38, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
 	o->ChangesData = 1;
 
 	pos.x = 20;

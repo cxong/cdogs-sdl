@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,8 @@
  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
- */
-#ifndef __autosave
-#define __autosave
+*/
+#pragma once
 
 #include <stddef.h>
 
@@ -63,5 +62,3 @@ void AutosaveAddMission(
 	Autosave *autosave, MissionSave *mission, int builtinIndex);
 void AutosaveLoadMission(
 	Autosave *autosave, MissionSave *mission, const char *path, int builtinIndex);
-
-#endif

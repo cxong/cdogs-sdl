@@ -76,8 +76,16 @@ static void LoadCampaignNode(CampaignEntry *c, json_t *node)
 static void AddCampaignNode(CampaignEntry *c, json_t *root)
 {
 	json_t *subConfig = json_new_object();
+	// Save relative path so that save files are portable across installs
+	char path[CDOGS_PATH_MAX] = "";
+	if (c->Path != NULL)
+	{
+		char cwd[CDOGS_PATH_MAX];
+		getcwd(cwd, CDOGS_PATH_MAX);
+		RelPath(path, c->Path, cwd);
+	}
 	json_insert_pair_into_object(
-		subConfig, "Path", json_new_string(c->Path ? c->Path : ""));
+		subConfig, "Path", json_new_string(path));
 	json_insert_pair_into_object(
 		subConfig, "IsBuiltin", json_new_bool(c->IsBuiltin));
 	AddIntPair(subConfig, "BuiltinIndex", c->BuiltinIndex);

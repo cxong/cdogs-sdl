@@ -188,6 +188,53 @@ void RealPath(const char *src, char *dest)
 		}
 	}
 }
+// Convert an absolute path to a relative path
+// e.g. /a/path/from/here, /a/path/to -> ../to
+void RelPath(char *buf, const char *to, const char *from)
+{
+	// Make sure both to/from paths were generated using RealPath,
+	// so that common substring means they share part of their paths,
+	// and not due to alternate renderings of the same path like
+	// different path separator chars, or relative paths.
+	char toBuf[CDOGS_PATH_MAX];
+	char fromBuf[CDOGS_PATH_MAX];
+	RealPath(to, toBuf);
+	RealPath(from, fromBuf);
+	
+	// First, find common string prefix
+	const char *t = toBuf;
+	const char *f = fromBuf;
+	const char *tSlash = t;
+	const char *fSlash = f;
+	while (*t && *f)
+	{
+		if (*t != *f)
+		{
+			break;
+		}
+		if (*t == '/')
+		{
+			tSlash = t;
+			fSlash = f;
+		}
+		t++;
+		f++;
+	}
+	// e.g.: tSlash = "/to", fSlash = "/from/here"
+
+	// For every folder in "from", add "..", and finally add "to"
+	strcpy(buf, "");
+	while (*fSlash)
+	{
+		if (*fSlash == '/')
+		{
+			strcat(buf, "../");
+		}
+		fSlash++;
+	}
+	tSlash++;
+	strcat(buf, tSlash);
+}
 
 double Round(double x)
 {
