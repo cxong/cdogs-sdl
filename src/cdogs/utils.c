@@ -58,6 +58,8 @@
 #include <SDL_joystick.h>
 #include <tinydir/tinydir.h>
 
+#include "sys_config.h"
+
 int debug = 0;
 int debug_level = D_NORMAL;
 
