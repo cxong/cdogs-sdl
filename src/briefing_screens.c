@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -257,7 +257,7 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		passwordIndex--;
 	}
 	strcpy(ms.Password, MakePassword(passwordIndex, 0));
-	ms.MissionsCompleted = m->index + 1;
+	ms.MissionsCompleted = MAX(m->index + 1, ms.MissionsCompleted);
 	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
