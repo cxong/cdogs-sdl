@@ -73,7 +73,7 @@ FEATURE(2, "Save and load")
 		GIVEN("an autosave with some values, and I save it to file")
 			AutosaveInit(&autosave1);
 			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "/tmp/mission.cdogscpn");
 			strcpy(mission1.Password, "password");
 			AutosaveAddMission(&autosave1, &mission1, 0);
 			AutosaveSave(&autosave1, "tmp");

@@ -18,12 +18,12 @@ FEATURE(1, "Path functions")
 	{
 		GIVEN("a relative path")
 			char to[CDOGS_PATH_MAX];
-			strcpy(to, "/a/path/to");
+			strcpy(to, "/tmp/path/to");
 		GIVEN_END
 
 		WHEN("I get the relative path from another path")
 			char from[CDOGS_PATH_MAX];
-			strcpy(from, "/a/path/from");
+			strcpy(from, "/tmp/path/from");
 		WHEN_END
 
 		THEN("the result should be a relative path from one to the other");
@@ -37,12 +37,12 @@ FEATURE(1, "Path functions")
 	{
 		GIVEN("a relative path with forward slashes")
 			char to[CDOGS_PATH_MAX];
-			strcpy(to, "/a/path/to");
+			strcpy(to, "/tmp/path/to");
 		GIVEN_END
 
 		WHEN("I get the relative path from another path with back slashes")
 			char from[CDOGS_PATH_MAX];
-			strcpy(from, "\\a\\path\\from");
+			strcpy(from, "\\tmp\\path\\from");
 		WHEN_END
 
 		THEN("the result should be a relative path from one to the other");
