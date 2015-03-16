@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,21 +45,19 @@ int MainMenu(
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns)
 {
-	int doPlay = 0;
 	MenuSystem *menu = MenuCreateAll(campaigns, &gEventHandlers, graphics);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	MenuLoop(menu);
-	doPlay = menu->current->type == MENU_TYPE_CAMPAIGN_ITEM;
 
 	MenuDestroy(menu);
-	return doPlay;
+	return gCampaign.IsLoaded;
 }
 
 menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
 menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title,
-	campaign_list_t *list, GameMode *mode);
+	campaign_list_t *list, const GameMode mode);
 menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -95,25 +93,25 @@ MenuSystem *MenuCreateAll(
 			"Campaign",
 			"Select a campaign:",
 			&campaigns->campaignList,
-			&gGameModeNormal));
+			GAME_MODE_NORMAL));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
 			"Dogfight",
 			"Select a scenario:",
 			&campaigns->dogfightList,
-			&gGameModeDogfight));
+			GAME_MODE_DOGFIGHT));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateCampaigns(
 			"Deathmatch",
 			"Select a scenario:",
 			&campaigns->dogfightList,
-			&gGameModeDeathmatch));
+			GAME_MODE_DEATHMATCH));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
-	MenuAddExitType(ms, MENU_TYPE_CAMPAIGN_ITEM);
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
 	if (strlen(gAutosave.LastMission.Password) == 0 ||
 		!gAutosave.LastMission.IsValid)
@@ -125,25 +123,47 @@ MenuSystem *MenuCreateAll(
 }
 
 
-static void MenuSetGameMode(menu_t *menu, void *data);
+typedef struct
+{
+	GameMode GameMode;
+	CampaignEntry *Entry;
+} StartGameModeData;
+static void StartGameMode(menu_t *menu, void *data);
 
+static menu_t *CreateStartGameMode(
+	const char *name, GameMode mode, CampaignEntry *entry)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
+	menu->enterSound = MENU_SOUND_START;
+	StartGameModeData *data;
+	CCALLOC(data, sizeof *data);
+	data->GameMode = mode;
+	data->Entry = entry;
+	MenuSetPostEnterFunc(menu, StartGameMode, data, true);
+	return menu;
+}
+static void StartGameMode(menu_t *menu, void *data)
+{
+	UNUSED(menu);
+	StartGameModeData *mData = data;
+	gCampaign.Entry.Mode = mData->GameMode;
+	if (!CampaignLoad(&gCampaign, mData->Entry))
+	{
+		// Failed to load
+		printf("Error: cannot load campaign %s\n", mData->Entry->Info);
+	}
+}
 menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
 {
-	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
-	menu->u.campaign = *entry;
-	MenuSetPostEnterFunc(menu, MenuSetGameMode, &gGameModeNormal);
-	return menu;
+	return CreateStartGameMode(name, GAME_MODE_NORMAL, entry);
 }
-
 menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
 {
-	menu_t *menu = MenuCreate(name, MENU_TYPE_CAMPAIGN_ITEM);
-	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
-	MenuSetPostEnterFunc(menu, MenuSetGameMode, &gGameModeQuickPlay);
-	return menu;
+	return CreateStartGameMode(name, GAME_MODE_QUICK_PLAY, entry);
 }
 
-menu_t *MenuCreateCampaignItem(CampaignEntry *entry);
+static menu_t *MenuCreateCampaignItem(
+	CampaignEntry *entry, const GameMode mode);
 
 static void CampaignsDisplayFilename(
 	const menu_t *menu, GraphicsDevice *g,
@@ -153,24 +173,27 @@ static void CampaignsDisplayFilename(
 		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 	UNUSED(g);
 	UNUSED(data);
-	if (subMenu->type == MENU_TYPE_CAMPAIGN_ITEM)
+	if (subMenu->type != MENU_TYPE_BASIC ||
+		subMenu->customPostInputData == NULL)
 	{
-		char s[255];
-		const char *filename = subMenu->u.campaign.Filename;
-		int isBuiltin = subMenu->u.campaign.IsBuiltin;
-		sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
-
-		FontOpts opts = FontOptsNew();
-		opts.HAlign = ALIGN_CENTER;
-		opts.VAlign = ALIGN_END;
-		opts.Area = size;
-		opts.Pad.x = size.x / 12;
-		FontStrOpt(s, pos, opts);
+		return;
 	}
+	const StartGameModeData *mData = subMenu->customPostInputData;
+	char s[255];
+	const char *filename = mData->Entry->Filename;
+	int isBuiltin = mData->Entry->IsBuiltin;
+	sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.VAlign = ALIGN_END;
+	opts.Area = size;
+	opts.Pad.x = size.x / 12;
+	FontStrOpt(s, pos, opts);
 }
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title,
-	campaign_list_t *list, GameMode *mode)
+	campaign_list_t *list, const GameMode mode)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 20;
@@ -186,21 +209,16 @@ static menu_t *MenuCreateCampaigns(
 	for (int i = 0; i < (int)list->list.size; i++)
 	{
 		MenuAddSubmenu(
-			menu, MenuCreateCampaignItem(CArrayGet(&list->list, i)));
+			menu, MenuCreateCampaignItem(CArrayGet(&list->list, i), mode));
 	}
 	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
-	MenuSetPostEnterFunc(menu, MenuSetGameMode, mode);
 	return menu;
 }
-static void MenuSetGameMode(menu_t *menu, void *data)
-{
-	UNUSED(menu);
-	gCampaign.Entry.Mode = *(GameMode *)data;
-}
 
-menu_t *MenuCreateCampaignItem(CampaignEntry *entry)
+static menu_t *MenuCreateCampaignItem(
+	CampaignEntry *entry, const GameMode mode)
 {
-	menu_t *menu = MenuCreate(entry->Info, MENU_TYPE_CAMPAIGN_ITEM);
+	menu_t *menu = CreateStartGameMode(entry->Info, mode, entry);
 	// Special colors:
 	// - Green for new campaigns
 	// - White (normal) for in-progress campaigns
@@ -217,7 +235,7 @@ menu_t *MenuCreateCampaignItem(CampaignEntry *entry)
 		// Campaign in progress
 		menu->color = colorYellow;
 	}
-	memcpy(&menu->u.campaign, entry, sizeof(menu->u.campaign));
+
 	return menu;
 }
 

@@ -69,7 +69,6 @@ typedef enum
 	MENU_TYPE_SET_OPTION_RANGE_GET_SET,	// set option range low-high using get/set functions
 	MENU_TYPE_SET_OPTION_CHANGE_KEY,	// redefine key
 	MENU_TYPE_VOID_FUNC,			// call a void (*f)(void *) function
-	MENU_TYPE_CAMPAIGN_ITEM,
 	MENU_TYPE_BACK,
 	MENU_TYPE_QUIT,
 	MENU_TYPE_RETURN,				// Return with a code
@@ -111,6 +110,15 @@ typedef enum
 	MENU_ALIGN_LEFT
 } MenuAlignStyle;
 
+typedef enum
+{
+	MENU_SOUND_ENTER,
+	MENU_SOUND_BACK,
+	MENU_SOUND_SWITCH,
+	MENU_SOUND_START,
+	MENU_SOUND_ERROR
+} MenuSound;
+
 struct menu
 {
 	char *name;
@@ -124,8 +132,10 @@ struct menu
 	void *customPostUpdateData;
 	MenuPostInputFunc customPostInputFunc;
 	void *customPostInputData;
+	bool isCustomPostInputDataDynamic;
 	MenuDisplayFunc customDisplayFunc;
 	const void *customDisplayData;
+	MenuSound enterSound;
 	union
 	{
 		// normal menu, with sub menus
@@ -190,7 +200,6 @@ struct menu
 				const char *(*intToStr)(int);
 			} uFunc;
 		} option;
-		CampaignEntry campaign;
 		// change key
 		struct
 		{
@@ -228,15 +237,6 @@ typedef struct
 	CArray customDisplayFuncs;	// of MenuCustomDisplayFunc
 } MenuSystem;
 
-typedef enum
-{
-	MENU_SOUND_ENTER,
-	MENU_SOUND_BACK,
-	MENU_SOUND_SWITCH,
-	MENU_SOUND_START,
-	MENU_SOUND_ERROR
-} MenuSound;
-
 
 void MenuSystemInit(
 	MenuSystem *ms,
@@ -266,7 +266,8 @@ menu_t *MenuCreateNormal(
 	menu_type_e type,
 	int displayItems);
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
-void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data);
+void MenuSetPostEnterFunc(
+	menu_t *menu, MenuFunc func, void *data, const bool isDynamicData);
 void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data);
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(

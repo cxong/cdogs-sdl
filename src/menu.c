@@ -321,6 +321,7 @@ menu_t *MenuCreate(const char *name, menu_type_e type)
 	CSTRDUP(menu->name, name);
 	menu->type = type;
 	menu->parentMenu = NULL;
+	menu->enterSound = MENU_SOUND_ENTER;
 	return menu;
 }
 
@@ -378,10 +379,12 @@ void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
 	menu->customPostInputData = data;
 }
 
-void MenuSetPostEnterFunc(menu_t *menu, MenuFunc func, void *data)
+void MenuSetPostEnterFunc(
+	menu_t *menu, MenuFunc func, void *data, const bool isDynamicData)
 {
 	menu->customPostEnterFunc = func;
 	menu->customPostEnterData = data;
+	menu->isCustomPostInputDataDynamic = isDynamicData;
 }
 
 void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data)
@@ -906,6 +909,10 @@ void MenuDestroySubmenus(menu_t *menu)
 		return;
 	}
 	CFREE(menu->name);
+	if (menu->isCustomPostInputDataDynamic)
+	{
+		CFREE(menu->customPostInputData);
+	}
 	if (MenuTypeHasSubMenus(menu->type))
 	{
 		for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
@@ -968,14 +975,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		if (menuToChange != NULL)
 		{
 			debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
-			if (menuToChange->type == MENU_TYPE_CAMPAIGN_ITEM)
-			{
-				MenuPlaySound(MENU_SOUND_START);
-			}
-			else
-			{
-				MenuPlaySound(MENU_SOUND_ENTER);
-			}
+			MenuPlaySound(menuToChange->enterSound);
 			ms->current = menuToChange;
 			goto bail;
 		}
@@ -1044,17 +1044,6 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 				(cmd & CMD_RIGHT) : (cmd & CMD_BUTTON1))
 			{
 				return subMenu;
-			}
-			break;
-		case MENU_TYPE_CAMPAIGN_ITEM:
-			if (cmd & CMD_BUTTON1)
-			{
-				if (!CampaignLoad(&gCampaign, &subMenu->u.campaign))
-				{
-					// Failed to load; do nothing
-					return NULL;
-				}
-				return subMenu;	// caller will check if subMenu type is CAMPAIGN_ITEM
 			}
 			break;
 		case MENU_TYPE_BACK:

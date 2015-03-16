@@ -252,7 +252,7 @@ static menu_t *CreateUseTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gFalse);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gFalse, false);
 	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
 	return menu;
 }
@@ -293,7 +293,7 @@ static menu_t *CreateSaveTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gTrue);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gTrue, false);
 	MenuSetPostInputFunc(menu, PostInputSaveTemplate, data);
 	MenuSetCustomDisplay(menu, SaveTemplateDisplayTitle, data);
 	return menu;
@@ -382,7 +382,7 @@ void PlayerSelectMenusCreate(
 	// Detect when there have been new player templates created,
 	// to re-enable the load menu
 	CheckReenableLoadMenu(ms->root, NULL);
-	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL);
+	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL, false);
 
 	PlayerData *p = CArrayGet(&gPlayerDatas, playerIndex);
 	CharacterSetColors(&p->Char);

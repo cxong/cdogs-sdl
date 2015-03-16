@@ -37,12 +37,6 @@ typedef enum
 	GAME_MODE_QUICK_PLAY
 } GameMode;
 
-// Global variables so their address can be taken (passed into void * funcs)
-extern GameMode gGameModeNormal;
-extern GameMode gGameModeDogfight;
-extern GameMode gGameModeDeathmatch;
-extern GameMode gGameModeQuickPlay;
-
 bool IsIntroNeeded(const GameMode mode);
 bool IsGameOptionsNeeded(const GameMode mode);
 bool IsScoreNeeded(const GameMode mode);

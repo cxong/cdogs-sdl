@@ -32,12 +32,6 @@
 #include "utils.h"
 
 
-GameMode gGameModeNormal = GAME_MODE_NORMAL;
-GameMode gGameModeDogfight = GAME_MODE_DOGFIGHT;
-GameMode gGameModeDeathmatch = GAME_MODE_DEATHMATCH;
-GameMode gGameModeQuickPlay = GAME_MODE_QUICK_PLAY;
-
-
 bool IsIntroNeeded(const GameMode mode)
 {
 	return mode == GAME_MODE_NORMAL;
