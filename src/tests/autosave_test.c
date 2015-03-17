@@ -111,7 +111,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN_END
 
 		WHEN("I attempt to load a mission from it")
-			AutosaveLoadMission(&autosave, &mission, "path/to/mission", 0);
+			AutosaveLoadMission(&autosave, &mission, "mission.cdogscpn", 0);
 		WHEN_END
 		
 		THEN("the mission should be empty");
@@ -128,7 +128,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission")
 			AutosaveInit(&autosave);
 			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission1.Password, "password");
 		GIVEN_END
 
@@ -179,7 +179,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission, and I add the mission to the autosave")
 			AutosaveInit(&autosave);
 			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "path/to/mission");
+			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission1.Password, "password");
 			AutosaveAddMission(&autosave, &mission1, 0);
 		GIVEN_END
@@ -205,7 +205,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN("an autosave and a mission")
 			AutosaveInit(&autosave);
 			memset(&mission, 0, sizeof mission);
-			CSTRDUP(mission.Campaign.Path, "path/to/mission");
+			CSTRDUP(mission.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission.Password, "password");
 		GIVEN_END
 
