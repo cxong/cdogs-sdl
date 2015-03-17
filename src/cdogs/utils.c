@@ -254,6 +254,23 @@ void RelPath(char *buf, const char *to, const char *from)
 	tSlash++;
 	strcat(buf, tSlash);
 }
+void RelPathFromCWD(char *buf, const char *to)
+{
+	if (to == NULL)
+	{
+		return;
+	}
+	char cwd[CDOGS_PATH_MAX];
+	if (getcwd(cwd, CDOGS_PATH_MAX) == NULL)
+	{
+		fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
+		strcpy(buf, to);
+	}
+	else
+	{
+		RelPath(buf, to, cwd);
+	}
+}
 
 double Round(double x)
 {

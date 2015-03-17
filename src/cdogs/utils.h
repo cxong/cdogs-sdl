@@ -154,6 +154,7 @@ void PathGetWithoutExtension(char *buf, const char *path);
 void PathGetBasenameWithoutExtension(char *buf, const char *path);
 void RealPath(const char *src, char *dest);
 void RelPath(char *buf, const char *to, const char *from);
+void RelPathFromCWD(char *buf, const char *to);
 
 #define PI 3.14159265
 

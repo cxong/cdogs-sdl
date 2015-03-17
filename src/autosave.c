@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2015, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -79,19 +79,7 @@ static void AddCampaignNode(CampaignEntry *c, json_t *root)
 	json_t *subConfig = json_new_object();
 	// Save relative path so that save files are portable across installs
 	char path[CDOGS_PATH_MAX] = "";
-	if (c->Path != NULL)
-	{
-		char cwd[CDOGS_PATH_MAX];
-		if (getcwd(cwd, CDOGS_PATH_MAX) == NULL)
-		{
-			printf("Error getting CWD; %s\n", strerror(errno));
-			strcpy(path, c->Path);
-		}
-		else
-		{
-			RelPath(path, c->Path, cwd);
-		}
-	}
+	RelPathFromCWD(path, c->Path);
 	json_insert_pair_into_object(
 		subConfig, "Path", json_new_string(path));
 	json_insert_pair_into_object(
@@ -219,11 +207,15 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 MissionSave *AutosaveFindMission(
 	Autosave *autosave, const char *path, int builtinIndex)
 {
+	// Turn the path into a relative one, since autosave paths are all stored
+	// in this form
+	char relPath[CDOGS_PATH_MAX] = "";
+	RelPathFromCWD(relPath, path);
 	for (int i = 0; i < (int)autosave->Missions.size; i++)
 	{
 		MissionSave *m = CArrayGet(&autosave->Missions, i);
 		const char *campaignPath = m->Campaign.Path;
-		if (path == NULL || strlen(path) == 0)
+		if (strlen(relPath) == 0)
 		{
 			// builtin campaign
 			if (m->Campaign.IsBuiltin &&
@@ -232,7 +224,7 @@ MissionSave *AutosaveFindMission(
 				return m;
 			}
 		}
-		else if (campaignPath != NULL && strcmp(campaignPath, path) == 0)
+		else if (campaignPath != NULL && strcmp(campaignPath, relPath) == 0)
 		{
 			if (!m->Campaign.IsBuiltin)
 			{
