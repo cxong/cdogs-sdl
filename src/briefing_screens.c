@@ -257,7 +257,7 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		passwordIndex--;
 	}
 	strcpy(ms.Password, MakePassword(passwordIndex, 0));
-	ms.MissionsCompleted = MAX(m->index + 1, ms.MissionsCompleted);
+	ms.MissionsCompleted = m->index + 1;
 	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 

@@ -249,8 +249,12 @@ void AutosaveAddMission(
 		CArrayPushBack(&autosave->Missions, mission);
 		existingMission =
 			CArrayGet(&autosave->Missions, autosave->Missions.size - 1);
+		memset(existingMission, 0, sizeof *existingMission);
 	}
+	const int maxMissionsCompleted =
+		MAX(existingMission->MissionsCompleted, mission->MissionsCompleted);
 	memcpy(existingMission, mission, sizeof *existingMission);
+	existingMission->MissionsCompleted = maxMissionsCompleted;
 	CampaignEntryCopy(&existingMission->Campaign, &mission->Campaign);
 	memcpy(&autosave->LastMission, mission, sizeof autosave->LastMission);
 }

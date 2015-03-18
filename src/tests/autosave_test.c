@@ -181,19 +181,22 @@ FEATURE(3, "Mission autosaves")
 			memset(&mission1, 0, sizeof mission1);
 			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission1.Password, "password");
+			mission1.MissionsCompleted = 3;
 			AutosaveAddMission(&autosave, &mission1, 0);
 		GIVEN_END
 
-		WHEN("I add the same mission but with new details")
+		WHEN("I add the same mission but with new details, and less missions completed")
 			strcpy(mission1.Password, "new password");
+			mission1.MissionsCompleted = 2;
 			AutosaveAddMission(&autosave, &mission1, 0);
 		WHEN_END
 		
-		THEN("I should be able to find the mission in the autosave, with the new details");
+		THEN("I should be able to find the mission in the autosave, with the new details, but the greatest missions completed");
 			AutosaveLoadMission(
 				&autosave, &mission2, mission1.Campaign.Path, 0);
 			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
+			SHOULD_INT_EQUAL(mission2.MissionsCompleted, 3);
 		THEN_END
 	}
 	SCENARIO_END
