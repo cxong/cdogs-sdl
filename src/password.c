@@ -319,49 +319,53 @@ static void EnterCodeScreenDraw(void *data)
 
 typedef enum
 {
-	RETURN_CODE_CONTINUE,
-	RETURN_CODE_START,
-	RETURN_CODE_ENTER_CODE
+	RETURN_CODE_CONTINUE = -1,
+	RETURN_CODE_START = -2,
+	RETURN_CODE_ENTER_CODE = -3
 } ReturnCode;
 
-static void MenuCreateStart(MenuSystem *ms, int hasPassword);
-
-int EnterPassword(GraphicsDevice *graphics, const char *password)
+static void MenuCreateStart(
+	MenuSystem *ms, const int mission, const MissionSave *save);
+int EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
 {
 	MenuSystem startMenu;
-	int mission = TestPassword(password);
-	int hasPassword = mission > 0;
+	const int mission = TestPassword(save->Password);
 	int res = 0;
 	MenuSystemInit(
 		&startMenu, &gEventHandlers, graphics, Vec2iZero(),
 		Vec2iNew(
 			graphics->cachedConfig.Res.x,
 			graphics->cachedConfig.Res.y));
-	MenuCreateStart(&startMenu, hasPassword);
+	MenuCreateStart(&startMenu, mission, save);
 	for (;;)
 	{
 		int returnCode;
 		MenuLoop(&startMenu);
 		assert(startMenu.current->type == MENU_TYPE_RETURN);
 		returnCode = startMenu.current->u.returnCode;
-		if (returnCode == RETURN_CODE_CONTINUE)
+		switch (returnCode)
 		{
+		case RETURN_CODE_CONTINUE:
 			res = mission;
 			goto bail;
-		}
-		else if (returnCode == RETURN_CODE_START)
-		{
+		case RETURN_CODE_START:
 			goto bail;
-		}
-		else if (returnCode == RETURN_CODE_ENTER_CODE)
-		{
-			int enteredMission = EnterCodeScreen(password);
-			if (enteredMission > 0)
+		case RETURN_CODE_ENTER_CODE:
 			{
-				res = enteredMission;
-				goto bail;
+				int enteredMission = EnterCodeScreen(save->Password);
+				if (enteredMission > 0)
+				{
+					res = enteredMission;
+					goto bail;
+				}
+				MenuReset(&startMenu);
 			}
-			MenuReset(&startMenu);
+			break;
+		default:
+			// Return code represents the mission to start on
+			CASSERT(returnCode >= 0, "Invalid return code for password menu");
+			res = returnCode;
+			goto bail;
 		}
 	}
 
@@ -369,15 +373,36 @@ bail:
 	MenuSystemTerminate(&startMenu);
 	return res;
 }
-
-static void MenuCreateStart(MenuSystem *ms, int hasPassword)
+static void MenuCreateStart(
+	MenuSystem *ms, const int mission, const MissionSave *save)
 {
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	if (hasPassword)
+
+	menu_t *menuContinue = MenuCreateReturn("Continue", RETURN_CODE_CONTINUE);
+	// Note: mission can be -1
+	menuContinue->isDisabled = mission <= 0;
+	MenuAddSubmenu(ms->root, menuContinue);
+
+	// Create level select menus
+	menu_t *levelSelect = MenuCreateNormal(
+		"Level select...", "Select Level", MENU_TYPE_NORMAL, 0);
+	for (int i = 0;
+		i < MIN(save->MissionsCompleted + 1, (int)gCampaign.Setting.Missions.size);
+		i++)
 	{
-		MenuAddSubmenu(ms->root, MenuCreateReturn("Continue", RETURN_CODE_CONTINUE));
+		const Mission *m = CArrayGet(&gCampaign.Setting.Missions, i);
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "%d: %s", i + 1, m->Title);
+		menu_t *l = MenuCreateReturn(buf, i);
+		l->isDisabled = i > save->MissionsCompleted;
+		MenuAddSubmenu(levelSelect, l);
 	}
+	levelSelect->isDisabled = save->MissionsCompleted == 0;
+	MenuAddSubmenu(ms->root, levelSelect);
+
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Start campaign", RETURN_CODE_START));
+
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Enter code...", RETURN_CODE_ENTER_CODE));
+
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 }

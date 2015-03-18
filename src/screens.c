@@ -160,7 +160,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		MissionSave m;
 		AutosaveLoadMission(
 			&gAutosave, &m, co->Entry.Path, co->Entry.BuiltinIndex);
-		co->MissionIndex = EnterPassword(graphics, m.Password);
+		co->MissionIndex = EnterPassword(graphics, &m);
 	}
 	else
 	{
