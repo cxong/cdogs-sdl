@@ -189,6 +189,24 @@ void PickupPickup(TActor *a, const Pickup *p)
 				e.u.ActorReplaceGun.GunId = p->class->u.GunId;
 				GameEventsEnqueue(&gGameEvents, e);
 
+				// If the player has less ammo than the default amount,
+				// replenish up to this amount
+				const int ammoId = IdGunDescription(p->class->u.GunId)->AmmoId;
+				if (ammoId >= 0)
+				{
+					const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+					const int ammoDeficit =
+						ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
+					if (ammoDeficit > 0)
+					{
+						e = GameEventNew(GAME_EVENT_USE_AMMO);
+						e.u.UseAmmo.PlayerIndex = a->playerIndex;
+						e.u.UseAmmo.UseAmmo.Id = ammoId;
+						e.u.UseAmmo.UseAmmo.Amount = ammoDeficit;
+						GameEventsEnqueue(&gGameEvents, e);
+					}
+				}
+
 				// TODO: gun-specific pickup sound
 				sound = gSoundDevice.switchSound;
 			}
