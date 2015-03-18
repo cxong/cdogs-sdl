@@ -37,7 +37,7 @@
 #define TIME_DECAY_EXPONENT 1.04
 #define HEALTH_W 6
 #define HEALTH_H 6
-#define MAX_TILES_PER_PICKUP 625
+#define MAX_TILES_PER_PICKUP 300
 
 void PowerupSpawnerInit(PowerupSpawner *p, Map *map)
 {
@@ -45,7 +45,6 @@ void PowerupSpawnerInit(PowerupSpawner *p, Map *map)
 	p->map = map;
 	p->timer = 0;
 	p->numPickups = 0;
-	p->pickupsSpawned = 0;
 	p->Enabled = true;
 }
 void PowerupSpawnerTerminate(PowerupSpawner *p)
@@ -70,9 +69,11 @@ void PowerupSpawnerUpdate(PowerupSpawner *p, const int ticks)
 	else
 	{
 		// Scale down over time
-		scalar *= pow(TIME_DECAY_EXPONENT, p->pickupsSpawned);
+		scalar *= pow(TIME_DECAY_EXPONENT, p->numPickups);
 
 		p->timeUntilNextSpawn = (int)floor(scalar * p->SpawnTime);
+		debug(D_NORMAL, "Spawning timer %d next %d spawned %d\n",
+			p->timer, p->timeUntilNextSpawn, p->numPickups);
 	}
 
 	// Update time
@@ -86,7 +87,6 @@ void PowerupSpawnerUpdate(PowerupSpawner *p, const int ticks)
 
 		if (TryPlacePickup(p))
 		{
-			p->pickupsSpawned++;
 			p->numPickups++;
 		}
 	}
@@ -221,8 +221,8 @@ static double AmmoScale(void *data)
 		const TActor *player = CArrayGet(&gActors, p->Id);
 		minVal = MIN(minVal, *(int *)CArrayGet(&player->ammo, ammoId));
 	}
-	// Double spawn rate if near 0 ammo
-	return (minVal + maxVal) / (maxVal * 2.0) / numPlayersWithAmmo;
+	// 10-fold spawn rate if near 0 ammo
+	return (minVal * 9.0 + maxVal) / (maxVal * 10.0) / numPlayersWithAmmo;
 }
 static void AmmoPlace(const Vec2i pos, void *data)
 {

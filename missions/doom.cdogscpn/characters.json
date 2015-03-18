@@ -78,5 +78,21 @@
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
 		"actionDelay": 13
+	},
+	{
+		"face": 7,
+		"skin": 5,
+		"arm": 2,
+		"body": 5,
+		"leg": 10,
+		"hair": 8,
+		"speed": 256,
+		"Gun": "Baron Fireball",
+		"maxHealth": 500,
+		"flags": 33555456,
+		"probabilityToMove": 40,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 12,
+		"actionDelay": 10
 	}]
 }

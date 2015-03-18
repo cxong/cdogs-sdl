@@ -70,7 +70,7 @@ void GameLoop(GameLoopData *data)
 		if ((int)ticksElapsed < 1000 / data->FPS)
 		{
 			SDL_Delay(1);
-			debug(D_MAX, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
+			//debug(D_MAX, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
 			continue;
 		}
 

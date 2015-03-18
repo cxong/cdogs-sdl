@@ -11,7 +11,7 @@
       "Range": 50,
       "Power": 10
     },
-	{
+    {
       "Name": "fireball",
       "Pic": {
         "Type": "Animated",
@@ -24,6 +24,25 @@
       "Size": [3, 3],
       "Special": "Flame",
       "Spark": "fireball_hit",
+      "HitSounds": {
+        "Object": "hit_fire",
+        "Flesh": "hit_fire",
+        "Wall": "hit_fire"
+      }
+    },
+    {
+      "Name": "fireball_green",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball_green",
+        "TicksPerFrame": 4
+      },
+      "Speed": 550,
+      "Range": 300,
+      "Power": 40,
+      "Size": [3, 3],
+      "Special": "Flame",
+      "Spark": "fireball_green_hit",
       "HitSounds": {
         "Object": "hit_fire",
         "Flesh": "hit_fire",

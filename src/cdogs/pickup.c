@@ -162,6 +162,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 			GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
 			e.u.AddAmmo.PlayerIndex = a->playerIndex;
 			e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
+			e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 			// Note: receiving end will prevent ammo from exceeding max
 			GameEventsEnqueue(&gGameEvents, e);
 

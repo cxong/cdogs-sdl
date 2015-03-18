@@ -35,7 +35,6 @@ typedef struct
 	int timeUntilNextSpawn;
 	int timer;
 	int numPickups;
-	int pickupsSpawned;
 
 	bool Enabled;
 	int SpawnTime;

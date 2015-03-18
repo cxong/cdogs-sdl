@@ -6,6 +6,12 @@
       "Sprites": "fireball_hit",
       "Range": 4,
       "TicksPerFrame": 4
+    },
+    {
+      "Name": "fireball_green_hit",
+      "Sprites": "fireball_green_hit",
+      "Range": 4,
+      "TicksPerFrame": 4
     }
   ]
 }

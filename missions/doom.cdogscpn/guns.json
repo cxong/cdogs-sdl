@@ -2,24 +2,33 @@
   "Version": 1,
   "Guns": [
     {
-	  "Name": "Marine Pistol",
-	  "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
-	  "Bullet": "10mm",
-	  "Cost": 0,
-	  "Lock": 18,
-	  "Sound": "pistol",
-	  "Recoil": 0.05,
-	  "Brass": "brass",
+      "Name": "Marine Pistol",
+      "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
+      "Bullet": "10mm",
+      "Cost": 0,
+      "Lock": 18,
+      "Sound": "pistol",
+      "Recoil": 0.05,
+      "Brass": "brass",
       "Ammo": "Bullets"
-	},
-	{
-	  "Name": "Imp Fireball",
-	  "Pic": "",
-	  "Bullet": "fireball",
-	  "Cost": 1,
-	  "Lock": 100,
-	  "Sound": "fireball",
-	  "MuzzleFlashParticle": ""
-	}
+    },
+    {
+      "Name": "Imp Fireball",
+      "Pic": "",
+      "Bullet": "fireball",
+      "Cost": 1,
+      "Lock": 100,
+      "Sound": "fireball",
+      "MuzzleFlashParticle": ""
+    },
+    {
+      "Name": "Baron Fireball",
+      "Pic": "",
+      "Bullet": "fireball_green",
+      "Cost": 5,
+      "Lock": 50,
+      "Sound": "fireball",
+      "MuzzleFlashParticle": ""
+    }
   ]
 }
