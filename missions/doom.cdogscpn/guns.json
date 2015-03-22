@@ -3,6 +3,7 @@
   "Guns": [
     {
       "Name": "Marine Pistol",
+      "Icon": "pistol",
       "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
       "Bullet": "10mm",
       "Cost": 0,

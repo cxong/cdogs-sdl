@@ -30,6 +30,7 @@
 	},
 	{
 	  "Name": "Seven-Seven",
+      "Icon": "seven-seven",
           "Description": "Weapon class: Pistol\nDamage: 10\nRate of fire: 110 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "77_bullet",
 	  "Cost": 1,
@@ -48,6 +49,7 @@
 	},
 	{
 	  "Name": "Desert Hawk",
+      "Icon": "desert_hawk",
           "Description": "Weapon class: Pistol\nDamage: 35\nRate of fire: 105 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "desert_hawk_bullet",
 	  "Cost": 1,
@@ -69,6 +71,7 @@
 	},
 	{
 	  "Name": "MD5",
+      "Icon": "md5",
           "Description": "Weapon class: Sub-machine gun\nDamage: 12\nRate of fire: 600 round/min\nDispersion: 3.6 degrees\nRange: 300\nSpeed: 1000\nCost: 1",
 	  "Bullet": "md5_bullet",
 	  "Cost": 1,
@@ -79,6 +82,7 @@
 	},
 	{
 	  "Name": "Milit",
+      "Icon": "milit",
           "Description": "Weapon class: Sub-machine gun\nDamage: 12\nRate of fire: 700 round/min\nDispersion: 4.6 degrees\nRange: 300\nSpeed: 1000\nCost: 1",
 	  "Bullet": "milit_bullet",
 	  "Cost": 1,
@@ -99,6 +103,7 @@
 	},
 	{
 	  "Name": "X90",
+      "Icon": "x90",
           "Description": "Weapon class: Sub-machine gun\nDamage: 12\nRate of fire: 840 round/min\nDispersion: 9.7 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "x90_bullet",
 	  "Cost": 1,
@@ -149,6 +154,7 @@
 
 	{
 	  "Name": "Poshlinov",
+      "Icon": "poshlinov",
           "Description": "Weapon class: Rifle\nDamage: 23\nRate of fire: 466 round/min\nDispersion: 9.7 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "poshlinov_bullet",
 	  "Cost": 2,
