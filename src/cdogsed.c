@@ -1214,7 +1214,7 @@ static void EditCampaign(void)
 			}
 		}
 		debug(D_MAX, "End loop\n");
-		SDL_Delay(10);
+		sTicksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
 }
 
