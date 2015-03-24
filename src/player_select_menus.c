@@ -239,7 +239,8 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 		}
 		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 		const PlayerTemplate *pt = CArrayGet(&gPlayerTemplates, i);
-		strcpy(subMenu->name, pt->name);
+		CFREE(subMenu->name);
+		CSTRDUP(subMenu->name, pt->name);
 	}
 	if (*isSave && menu->u.normal.subMenus.size == gPlayerTemplates.size)
 	{
@@ -259,16 +260,23 @@ static menu_t *CreateUseTemplateMenu(
 
 static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 {
-	if (cmd & CMD_BUTTON1)
+	if (!(cmd & CMD_BUTTON1))
 	{
-		PlayerSelectMenuData *d = data;
-		PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
-		PlayerTemplate *t =
-			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
-		memset(t->name, 0, sizeof t->name);
-		strncpy(t->name, p->name, sizeof t->name - 1);
-		t->Looks = p->Char.looks;
+		return;
 	}
+	PlayerSelectMenuData *d = data;
+	PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	while (menu->u.normal.index >= (int)gPlayerTemplates.size)
+	{
+		PlayerTemplate empty;
+		memset(&empty, 0, sizeof empty);
+		CArrayPushBack(&gPlayerTemplates, &empty);
+	}
+	PlayerTemplate *t =
+		CArrayGet(&gPlayerTemplates, menu->u.normal.index);
+	memset(t->name, 0, sizeof t->name);
+	strncpy(t->name, p->name, sizeof t->name - 1);
+	t->Looks = p->Char.looks;
 }
 
 static void SaveTemplateDisplayTitle(
