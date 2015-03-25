@@ -96,6 +96,10 @@ static DrawBuffer sDrawBuffer;
 static bool sJustLoaded = true;
 static bool sHasUnbakedChanges = false;
 static int sAutosaveIndex = 0;
+// State for whether to ignore the current mouse click
+// This is to prevent painting immediately after selecting a new tool,
+// but before the user has clicked again.
+static bool sIgnoreMouse = false;
 
 
 // Globals
@@ -811,6 +815,7 @@ static HandleInputResult HandleInput(
 				}
 				sLastHighlightedObj = o;
 				UIObjectHighlight(o);
+				sIgnoreMouse = true;
 			}
 			CArrayTerminate(&sDrawObjs);
 			*xcOld = *xc;
@@ -854,7 +859,8 @@ static HandleInputResult HandleInput(
 	}
 	if (!o &&
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
-		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)))
+		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)) &&
+		!sIgnoreMouse)
 	{
 		result.Redraw = true;
 		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
@@ -1161,6 +1167,11 @@ static HandleInputResult HandleInput(
 		"File has been modified, but not saved", "Quit anyway? (Y/N)")))
 	{
 		result.Done = true;
+	}
+	if (!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) &&
+		!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT))
+	{
+		sIgnoreMouse = false;
 	}
 	return result;
 }
