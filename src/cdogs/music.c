@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -85,10 +85,19 @@ void MusicPlayGame(
 	if (music != NULL && strlen(music) != 0)
 	{
 		char buf[CDOGS_PATH_MAX];
-		PathGetDirname(buf, missionPath);
+		// First, try to play music from the same directory
+		// This may be a new-style directory campaign
+		strcpy(buf, missionPath);
 		strcat(buf, "/");
 		strcat(buf, music);
 		played = !MusicPlay(device, buf);
+		if (!played)
+		{
+			PathGetDirname(buf, missionPath);
+			strcat(buf, "/");
+			strcat(buf, music);
+			played = !MusicPlay(device, buf);
+		}
 	}
 	if (!played && gGameSongs != NULL)
 	{
