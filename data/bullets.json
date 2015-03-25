@@ -16,6 +16,14 @@
   },
   "Bullets": [
     {
+      "Name": "knife",
+      "Power": 2,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "knife_flesh"
+      }
+    },
+    {
       "Name": "mg",
       "Pic": {
         "Type": "Normal",

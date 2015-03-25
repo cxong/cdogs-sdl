@@ -402,7 +402,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			}
 		}
 
-		// TODO: special type for knives
 		Weapon *gun = ActorGetGun(actor);
 		if (!gun->Gun->CanShoot && actor->health > 0)
 		{
@@ -410,23 +409,18 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				CArrayGet(&gObjs, target->id) : NULL;
 			if (!object || !ObjIsDangerous(object))
 			{
-				// Knife hit sound
-				// Special case: only allow enemy slice sounds
-				HitSounds knifeSounds;
-				knifeSounds.Flesh = gun->soundLock <= 0 ?
-					StrSound("knife_flesh") : NULL;
-				knifeSounds.Object = gun->soundLock <= 0 ?
-					StrSound("knife_hard") : NULL;
-				knifeSounds.Wall = NULL;
+				const HitSounds *h =
+					gun->soundLock <= 0 ?
+					&gun->Gun->Bullet->HitSound : NULL;
 				DamageSomething(
 					Vec2iZero(),
-					2,
+					gun->Gun->Bullet->Power,
 					actor->flags,
 					actor->playerIndex,
 					actor->uid,
 					target,
 					SPECIAL_NONE,
-					&knifeSounds,
+					h,
 					false);
 				if (gun->soundLock <= 0)
 				{

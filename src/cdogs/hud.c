@@ -979,7 +979,7 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 		return;
 	}
 	const int rowHeight = 1 + FontH();
-	int y = 5 + rowHeight * 2;
+	const int y = 5 + rowHeight;
 	const PlayerData *p = CArrayGet(&gPlayerDatas, score->Index);
 	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
 }
