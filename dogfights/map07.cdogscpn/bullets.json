@@ -1,0 +1,68 @@
+{
+  "Version": 1,
+  "Bullets": [
+    {
+      "Name": "sshotgun",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bullet"
+      },
+      "Speed": 1280,
+      "Range": 30,
+      "Power": 10
+    },
+    {
+      "Name": "bfg",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "bfg_plasma"
+      },
+      "Speed": 550,
+      "Range": 200,
+      "Power": 50,
+      "Size": [8, 8],
+      "Spark": "",
+      "HitSounds": {
+        "Object": "bfg_hit",
+        "Flesh": "bfg_hit",
+        "Wall": "bfg_hit"
+      },
+      "HitGuns": [
+        "explosion_bfg"
+      ]
+    },
+    {
+      "Name": "bfg_tracer",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bfg_spark"
+      },
+      "Speed": 1280,
+      "Range": 15,
+      "Power": 25,
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      }
+    },
+    {
+      "Name": "chainsaw",
+      "Power": 3,
+      "HitSounds": {
+        "Object": "chainsaw",
+        "Flesh": "chainsaw"
+      }
+    },
+    {
+      "Name": "plasma",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "pulse"
+      },
+      "Speed": 1280,
+      "Range": 40,
+      "Power": 20
+    }
+  ]
+}
