@@ -646,6 +646,8 @@ void ActorReplaceGun(
 	{
 		CASSERT(gunIdx < (int)actor->guns.size + 1, "gun idx would leave gap");
 		CArrayPushBack(&actor->guns, &w);
+		// Switch immediately to picked up gun
+		actor->gunIndex = (int)actor->guns.size - 1;
 	}
 	else
 	{
