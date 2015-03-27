@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -111,8 +111,7 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 {
 	int isRepeating = 0;
 	int areSameKeysPressed = 1;
-	int i;
-	for (i = 0; i < 512; i++)
+	for (int i = 0; i < SDLK_LAST; i++)
 	{
 		if (keyboard->previousKeys[i].isPressed ^
 			keyboard->currentKeys[i].isPressed)
@@ -151,11 +150,16 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 			keyboard->pressedKeys,
 			keyboard->currentKeys,
 			sizeof keyboard->pressedKeys);
-		keyboard->isFirstRepeat = 0;
+		keyboard->isFirstRepeat = false;
+		// Ignore the keys that tend to stay pressed/unpressed
+		// i.e. lock keys
+		keyboard->pressedKeys[SDLK_NUMLOCK].isPressed = false;
+		keyboard->pressedKeys[SDLK_CAPSLOCK].isPressed = false;
+		keyboard->pressedKeys[SDLK_SCROLLOCK].isPressed = false;
 	}
 	else
 	{
-		for (i = 0; i < 512; i++)
+		for (int i = 0; i < SDLK_LAST; i++)
 		{
 			keyboard->pressedKeys[i].isPressed =
 				keyboard->currentKeys[i].isPressed &&
@@ -182,8 +186,7 @@ int KeyIsReleased(keyboard_t *keyboard, int key)
 
 int KeyGetPressed(keyboard_t *keyboard)
 {
-	int i;
-	for (i = 0; i < 512; i++)
+	for (int i = 0; i < SDLK_LAST; i++)
 	{
 		if (KeyIsPressed(keyboard, i))
 		{

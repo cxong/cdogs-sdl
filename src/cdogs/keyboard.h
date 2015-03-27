@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 typedef struct
 {
-	int isPressed;
+	bool isPressed;
 	Uint16 unicode;
 } KeyPress;
 
@@ -66,9 +66,9 @@ const char *KeycodeStr(int k);
 
 typedef struct
 {
-	KeyPress previousKeys[512];
-	KeyPress currentKeys[512];
-	KeyPress pressedKeys[512];
+	KeyPress previousKeys[SDLK_LAST];
+	KeyPress currentKeys[SDLK_LAST];
+	KeyPress pressedKeys[SDLK_LAST];
 	SDLMod modState;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
