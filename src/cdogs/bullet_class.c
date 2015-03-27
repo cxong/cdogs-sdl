@@ -392,18 +392,21 @@ static void LoadBullet(
 		tmp = GetString(pic, "Type");
 		b->CPic.Type = StrPicType(tmp);
 		CFREE(tmp);
+		bool picLoaded = false;
 		switch (b->CPic.Type)
 		{
 		case PICTYPE_NORMAL:
 			tmp = GetString(pic, "Pic");
 			b->CPic.u.Pic = PicManagerGetPic(&gPicManager, tmp);
 			CFREE(tmp);
+			picLoaded = b->CPic.u.Pic != NULL;
 			break;
 		case PICTYPE_DIRECTIONAL:
 			tmp = GetString(pic, "Sprites");
 			b->CPic.u.Sprites =
 				&PicManagerGetSprites(&gPicManager, tmp)->pics;
 			CFREE(tmp);
+			picLoaded = b->CPic.u.Sprites != NULL;
 			break;
 		case PICTYPE_ANIMATED:	// fallthrough
 		case PICTYPE_ANIMATED_RANDOM:
@@ -417,6 +420,7 @@ static void LoadBullet(
 			// if 0 then this leads to infinite loop when animating
 			b->CPic.u.Animated.TicksPerFrame = MAX(
 				b->CPic.u.Animated.TicksPerFrame, 1);
+			picLoaded = b->CPic.u.Animated.Sprites != NULL;
 			break;
 		default:
 			CASSERT(false, "unknown pic type");
@@ -439,6 +443,15 @@ static void LoadBullet(
 			b->CPic.u1.Tint.s = atof(tint->text);
 			tint = tint->next;
 			b->CPic.u1.Tint.v = atof(tint->text);
+		}
+		if ((json_find_first_label(pic, "OldPic") &&
+			ConfigGetBool(&gConfig, "Graphics.OriginalPics")) ||
+			!picLoaded)
+		{
+			int oldPic = PIC_UZIBULLET;
+			LoadInt(&oldPic, pic, "OldPic");
+			b->CPic.Type = PICTYPE_NORMAL;
+			b->CPic.u.Pic = PicManagerGetFromOld(&gPicManager, oldPic);
 		}
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
