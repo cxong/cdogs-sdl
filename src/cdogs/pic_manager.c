@@ -27,8 +27,6 @@
 */
 #include "pic_manager.h"
 
-#include <assert.h>
-
 #include <SDL_image.h>
 
 #include <tinydir/tinydir.h>

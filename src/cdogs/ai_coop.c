@@ -384,6 +384,12 @@ static bool TryCompleteNearbyObjective(
 					target->tileItem.y);
 			}
 			break;
+		case AI_OBJECTIVE_TYPE_PICKUP:
+			{
+				const Pickup *p = PickupGetByUID(objState->u.UID);
+				hasNoUpdates = p != NULL && p->isInUse;
+			}
+			break;
 		default:
 			// Do nothing
 			break;
@@ -441,6 +447,9 @@ static bool TryCompleteNearbyObjective(
 				objState->LastDone = c->u.Objective->done;
 				break;
 			case AI_OBJECTIVE_TYPE_KILL:
+				objState->u.UID = c->u.UID;
+				break;
+			case AI_OBJECTIVE_TYPE_PICKUP:
 				objState->u.UID = c->u.UID;
 				break;
 			default:
@@ -519,7 +528,8 @@ static void FindObjectivesSortedByDistance(
 				const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
 				if (!ActorUsesAmmo(actor, ammoId) ||
 					ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
-					(ActorUsesAmmo(closestPlayer, ammoId) &&
+					(closestPlayer != NULL &&
+					ActorUsesAmmo(closestPlayer, ammoId) &&
 					ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
 				{
 					continue;
@@ -530,6 +540,13 @@ static void FindObjectivesSortedByDistance(
 			break;
 		default:
 			// Not something we want to pick up
+			continue;
+		}
+		// Check if the pickup is actually accessible
+		// This is because random spawning may cause some pickups to be spawned
+		// in inaccessible areas
+		if (MapGetTile(&gMap, Vec2iToTile(co.Pos))->flags & MAPTILE_NO_WALK)
+		{
 			continue;
 		}
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);

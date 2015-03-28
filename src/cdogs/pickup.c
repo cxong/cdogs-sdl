@@ -253,3 +253,16 @@ static const Pic *GetPickupPic(const int id, Vec2i *offset)
 	*offset = Vec2iScaleDiv(p->class->Pic->size, -2);
 	return p->class->Pic;
 }
+
+Pickup *PickupGetByUID(const int uid)
+{
+	for (int i = 0; i < (int)gPickups.size; i++)
+	{
+		Pickup *p = CArrayGet(&gPickups, i);
+		if (p->UID == uid)
+		{
+			return p;
+		}
+	}
+	return NULL;
+}

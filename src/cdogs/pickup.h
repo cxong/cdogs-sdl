@@ -53,3 +53,5 @@ int PickupAdd(const Vec2i pos, const PickupClass *class);
 void PickupDestroy(const int id);
 
 void PickupPickup(TActor *a, const Pickup *p);
+
+Pickup *PickupGetByUID(const int uid);

@@ -523,12 +523,12 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 
 	CASSERT(c != NULL, "no AI context");
 
-	// If we are already there, bail
+	// If we are already there, go directly to the goal
 	// This can happen if AI is trying to track the player,
 	// but the player has died, for example.
 	if (Vec2iEqual(currentTile, goalTile))
 	{
-		return 0;
+		return AIGotoDirect(a, p);
 	}
 
 	// If we are currently following an A* path,
