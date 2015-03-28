@@ -34,6 +34,7 @@
 
 
 CArray gPickups;
+static int sPickupUIDs = 0;
 
 
 void PickupsInit(void)
@@ -77,6 +78,7 @@ int PickupAdd(const Vec2i pos, const PickupClass *class)
 		p = CArrayGet(&gPickups, i);
 	}
 	memset(p, 0, sizeof *p);
+	p->UID = sPickupUIDs++;
 	p->class = class;
 	p->tileItem.x = p->tileItem.y = -1;
 	p->tileItem.flags = 0;

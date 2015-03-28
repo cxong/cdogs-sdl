@@ -187,6 +187,8 @@ void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
 void ActorAddAmmo(TActor *actor, AddAmmo a);
+// Whether the actor has a gun that uses this ammo
+bool ActorUsesAmmo(const TActor *actor, const int ammoId);
 void ActorReplaceGun(
 	TActor *actor, const int gunIdx, const GunDescription *gun);
 void ActorSetAIState(TActor *actor, const AIState s);

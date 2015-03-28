@@ -36,6 +36,7 @@
 // effects
 typedef struct
 {
+	int UID;
 	const PickupClass *class;
 	TTileItem tileItem;
 	bool IsRandomSpawned;

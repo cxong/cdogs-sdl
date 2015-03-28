@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -336,13 +336,17 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 typedef struct
 {
 	int Distance;
-	const ObjectiveDef *Objective;
+	union
+	{
+		const ObjectiveDef *Objective;
+		int UID;
+	} u;
 	Vec2i Pos;
 	bool IsDestructible;
 	AIObjectiveType Type;
 } ClosestObjective;
 static void FindObjectivesSortedByDistance(
-	CArray *objectives, const Vec2i actorRealPos);
+	CArray *objectives, const TActor *actor, const TActor *closestPlayer);
 static bool CanGetObjective(
 	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
 	const int distanceTooFarFromPlayer);
@@ -355,35 +359,34 @@ static bool TryCompleteNearbyObjective(
 	AIObjectiveState *objState = &context->ObjectiveState;
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
-	// If PVP, just find the closest enemy and go to them
-	if (IsPVP(gCampaign.Entry.Mode))
-	{
-		const TActor *closestEnemy =
-			AIGetClosestVisibleEnemy(actor, true);
-		if (closestEnemy == NULL)
-		{
-			return false;
-		}
-		objState->Type = AI_OBJECTIVE_TYPE_NORMAL;
-		objState->Goal = Vec2iFull2Real(closestEnemy->Pos);
-		*cmdOut = GotoObjective(actor, 0);
-		return true;
-	}
-
 	// Check to see if we are already attempting to complete an objective,
 	// and that it hasn't been updated since we last checked.
 	// If so keep following the path
 	if (context->State == AI_STATE_NEXT_OBJECTIVE)
 	{
 		bool hasNoUpdates = true;
-		if (objState->Type == AI_OBJECTIVE_TYPE_KEY)
+		switch (objState->Type)
 		{
+		case AI_OBJECTIVE_TYPE_KEY:
 			hasNoUpdates = objState->LastDone == KeycardCount(gMission.flags);
-		}
-		else if (objState->Type == AI_OBJECTIVE_TYPE_NORMAL)
-		{
+			break;
+		case AI_OBJECTIVE_TYPE_NORMAL:
 			hasNoUpdates =
-				objState->Obj && objState->LastDone == objState->Obj->done;
+				objState->u.Obj && objState->LastDone == objState->u.Obj->done;
+			break;
+		case AI_OBJECTIVE_TYPE_KILL:
+			{
+				const TActor *target = ActorGetByUID(objState->u.UID);
+				hasNoUpdates = target->health > 0;
+				// Update target position
+				objState->Goal = Vec2iNew(
+					target->tileItem.x,
+					target->tileItem.y);
+			}
+			break;
+		default:
+			// Do nothing
+			break;
 		}
 		if (hasNoUpdates)
 		{
@@ -416,7 +419,7 @@ static bool TryCompleteNearbyObjective(
 	// Find all the objective/key locations, sort according to distance
 	// TODO: reuse this array, don't recreate it
 	CArray objectives;
-	FindObjectivesSortedByDistance(&objectives, actorRealPos);
+	FindObjectivesSortedByDistance(&objectives, actor, closestPlayer);
 
 	// Starting from the closest objectives, find one we can go to
 	for (int i = 0; i < (int)objectives.size; i++)
@@ -428,14 +431,21 @@ static bool TryCompleteNearbyObjective(
 			ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 			objState->Type = c->Type;
 			objState->IsDestructible = c->IsDestructible;
-			if (c->Type == AI_OBJECTIVE_TYPE_KEY)
+			switch (c->Type)
 			{
+			case AI_OBJECTIVE_TYPE_KEY:
 				objState->LastDone = KeycardCount(gMission.flags);
-			}
-			else if (c->Type == AI_OBJECTIVE_TYPE_NORMAL)
-			{
-				objState->Obj = c->Objective;
-				objState->LastDone = c->Objective->done;
+				break;
+			case AI_OBJECTIVE_TYPE_NORMAL:
+				objState->u.Obj = c->u.Objective;
+				objState->LastDone = c->u.Objective->done;
+				break;
+			case AI_OBJECTIVE_TYPE_KILL:
+				objState->u.UID = c->u.UID;
+				break;
+			default:
+				// Do nothing
+				break;
 			}
 			objState->Goal = c->Pos;
 			*cmdOut = GotoObjective(actor, c->Distance);
@@ -446,9 +456,30 @@ static bool TryCompleteNearbyObjective(
 }
 static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
-	CArray *objectives, const Vec2i actorRealPos)
+	CArray *objectives, const TActor *actor, const TActor *closestPlayer)
 {
+	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 	CArrayInit(objectives, sizeof(ClosestObjective));
+
+	// If PVP, find the closest enemy and go to them
+	if (IsPVP(gCampaign.Entry.Mode))
+	{
+		const TActor *closestEnemy =
+			AIGetClosestVisibleEnemy(actor, true);
+		if (closestEnemy != NULL)
+		{
+			ClosestObjective co;
+			memset(&co, 0, sizeof co);
+			co.Pos = Vec2iNew(
+				closestEnemy->tileItem.x,
+				closestEnemy->tileItem.y);
+			co.IsDestructible = false;
+			co.Type = AI_OBJECTIVE_TYPE_KILL;
+			co.Distance = DistanceSquared(actorRealPos, co.Pos);
+			co.u.UID = closestEnemy->uid;
+			CArrayPushBack(objectives, &co);
+		}
+	}
 
 	// Look for pickups
 	for (int i = 0; i < (int)gPickups.size; i++)
@@ -463,27 +494,49 @@ static void FindObjectivesSortedByDistance(
 		co.Pos = Vec2iNew(p->tileItem.x, p->tileItem.y);
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		bool isObjective = false;
 		switch (p->class->Type)
 		{
-		case PICKUP_KEYCARD:	// fallthrough
-			co.Type = AI_OBJECTIVE_TYPE_KEY;	// fallthrough
+		case PICKUP_KEYCARD:
+			co.Type = AI_OBJECTIVE_TYPE_KEY;
+			break;
 		case PICKUP_JEWEL:
-			isObjective = true;
+			break;
+		case PICKUP_HEALTH:
+			// Pick up if we are on low health, and lower than lead player
+			if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4)
+			{
+				continue;
+			}
+			co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+			co.u.UID = p->UID;
+			break;
+		case PICKUP_AMMO:
+			{
+				// Pick up if we use this ammo, have less ammo than starting,
+				// and lower than lead player, who uses the ammo
+				const int ammoId = p->class->u.Ammo.Id;
+				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+				const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
+				if (!ActorUsesAmmo(actor, ammoId) ||
+					ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
+					(ActorUsesAmmo(closestPlayer, ammoId) &&
+					ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
+				{
+					continue;
+				}
+				co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+				co.u.UID = p->UID;
+			}
 			break;
 		default:
-			// do nothing
-			break;
-		}
-		if (!isObjective)
-		{
+			// Not something we want to pick up
 			continue;
 		}
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			const int objective = ObjectiveFromTileItem(p->tileItem.flags);
-			co.Objective =
+			co.u.Objective =
 				CArrayGet(&gMission.Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
@@ -511,7 +564,7 @@ static void FindObjectivesSortedByDistance(
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			const int objective = ObjectiveFromTileItem(o->tileItem.flags);
-			co.Objective =
+			co.u.Objective =
 				CArrayGet(&gMission.Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
@@ -549,7 +602,7 @@ static void FindObjectivesSortedByDistance(
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
-		co.Objective = CArrayGet(&gMission.Objectives, objective);
+		co.u.Objective = CArrayGet(&gMission.Objectives, objective);
 		CArrayPushBack(objectives, &co);
 	}
 
@@ -576,7 +629,7 @@ static void FindObjectivesSortedByDistance(
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
-		co.Objective = o;
+		co.u.Objective = o;
 		CArrayPushBack(objectives, &co);
 	}
 

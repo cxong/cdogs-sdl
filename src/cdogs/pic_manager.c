@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -217,8 +217,6 @@ static void PicManagerLoadDirImpl(
 bail:
 	tinydir_close(&dir);
 }
-static void LoadOldPic(
-	PicManager *pm, const char *name, const TOffsetPic *pic);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerLoadDir(PicManager *pm, const char *path)
@@ -246,20 +244,6 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 	LoadOldSprites(pm, "beam", cBeamPics[0], DIRECTION_COUNT);
 	LoadOldSprites(pm, "beam_bright", cBeamPics[1], DIRECTION_COUNT);
-}
-static void LoadOldPic(
-	PicManager *pm, const char *name, const TOffsetPic *pic)
-{
-	// Don't use old pics if new ones are available
-	if (PicManagerGetPic(pm, name) != NULL)
-	{
-		return;
-	}
-	NamedPic p;
-	CSTRDUP(p.name, name);
-	const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
-	PicCopy(&p.pic, original);
-	CArrayPushBack(&pm->pics, &p);
 }
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)

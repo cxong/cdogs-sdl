@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,9 @@ typedef enum
 {
 	AI_OBJECTIVE_TYPE_NORMAL,
 	AI_OBJECTIVE_TYPE_KEY,
-	AI_OBJECTIVE_TYPE_EXIT
+	AI_OBJECTIVE_TYPE_EXIT,
+	AI_OBJECTIVE_TYPE_KILL,
+	AI_OBJECTIVE_TYPE_PICKUP
 } AIObjectiveType;
 // State for AI attempting to complete an objective
 // This is to prevent excessive pathfinding calls
@@ -71,7 +73,11 @@ typedef struct
 {
 	AIObjectiveType Type;
 	bool IsDestructible;
-	const ObjectiveDef *Obj;
+	union
+	{
+		const ObjectiveDef *Obj;
+		int UID;
+	} u;
 	int LastDone;
 	Vec2i Goal;
 } AIObjectiveState;

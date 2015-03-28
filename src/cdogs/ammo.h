@@ -57,3 +57,5 @@ void AmmoTerminate(AmmoClasses *ammo);
 
 Ammo *AmmoGetById(AmmoClasses *ammo, const int id);
 int AmmoGetNumClasses(const AmmoClasses *ammo);
+
+#define AMMO_STARTING_MULTIPLE 2

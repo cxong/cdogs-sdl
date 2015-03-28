@@ -631,6 +631,19 @@ void ActorAddAmmo(TActor *actor, AddAmmo a)
 	*ammo = CLAMP(*ammo, 0, ammoMax);
 }
 
+bool ActorUsesAmmo(const TActor *actor, const int ammoId)
+{
+	for (int i = 0; i < (int)actor->guns.size; i++)
+	{
+		const Weapon *w = CArrayGet(&actor->guns, i);
+		if (w->Gun->AmmoId == ammoId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 static bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorReplaceGun(
 	TActor *actor, const int gunIdx, const GunDescription *gun)
@@ -1156,7 +1169,8 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	{
 		// Initialise with twice the standard ammo amount
 		// TODO: special game modes, keeping track of ammo, ammo persistence
-		int amount = AmmoGetById(&gAmmo, i)->Amount * 2;
+		const int amount =
+			AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 		CArrayPushBack(&actor->ammo, &amount);
 	}
 	Character *c;
