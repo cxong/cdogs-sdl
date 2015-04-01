@@ -3,6 +3,7 @@
   "Guns": [
 	{
 	  "Name": "Piecemarker",
+      "Icon": "piecemarker",
           "Description": "Weapon class: Pistol\nDamage: 12\nRate of fire: 87 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "piecemarker_bullet",
 	  "Cost": 1,
@@ -12,6 +13,7 @@
 	},
 	{
 	  "Name": "PWN3r",
+      "Icon": "pwn3r",
           "Description": "Weapon class: Pistol\nDamage: 12\nRate of fire: 120 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "pwn3r_bullet",
 	  "Cost": 1,
@@ -21,6 +23,7 @@
 	},
 	{
 	  "Name": "Pn-21",
+      "Icon": "pn21",
           "Description": "Weapon class: Pistol\nDamage: 15\nRate of fire: 110 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "pn21_bullet",
 	  "Cost": 1,
@@ -40,6 +43,7 @@
 	},
 	{
 	  "Name": "JB007",
+      "Icon": "jb007",
           "Description": "Weapon class: Pistol\nDamage: 20\nRate of fire: 100 round/min\nDispersion: 0 degrees\nRange: 50\nSpeed: 1000\nCost: 1",
 	  "Bullet": "jb007_bullet",
 	  "Cost": 1,
@@ -61,6 +65,7 @@
 
 	{
 	  "Name": "Mag",
+      "Icon": "mag",
           "Description": "Weapon class: Sub-machine gun\nDamage: 10\nRate of fire: 525 round/min\nDispersion: 2.9 degrees\nRange: 300\nSpeed: 1000\nCost: 1",
 	  "Bullet": "mag_bullet",
 	  "Cost": 1,
@@ -93,6 +98,7 @@
 	},
 	{
 	  "Name": "M500",
+      "Icon": "m500",
           "Description": "Weapon class: Sub-machine gun\nDamage: 12\nRate of Fire: 700 round/min\nDispersion: 5.7 degrees\nRange: 300\nSpeed: 1000\nCost: 1",
 	  "Bullet": "m500_bullet",
 	  "Cost": 1,
@@ -114,6 +120,7 @@
 	},
 	{
 	  "Name": "Angry Rabbit",
+      "Icon": "angry_rabbit",
           "Description": "Weapon class: Sub-machine gun\nDamage: 12\nRate of fire: 700 round/min\nDispersion: 6.9 degrees\nRange: 300\nSpeed: 1000\nCost: 1",
 	  "Bullet": "angry_rabbit_bullet",
 	  "Cost": 1,
@@ -126,6 +133,7 @@
 
 	{
 	  "Name": "SG1",
+      "Icon": "sg1",
           "Description": "Weapon class: Shotgun\nBullets per shot: 5\nDamage: 15 per bullet (max. 75)\nRate of fire: 70 round/min\nBullet spread: 13.2 degrees\nRange: 50\nSpeed: 1000\nCost: 2",
 	  "Bullet": "sg1_bullet",
 	  "Cost": 2,
@@ -139,6 +147,7 @@
 	},
 	{
 	  "Name": "SG2",
+      "Icon": "sg2",
           "Description": "Weapon class: Shotgun\nBullets per shot: 5\nDamage: 17 (max. 85)\nRate of fire: 84 round/min\nBullet spread: 16.0 degrees\nRange: 50\nSpeed: 1000\nCost: 2",
 	  "Bullet": "sg2_bullet",
 	  "Cost": 2,
@@ -165,6 +174,7 @@
 	},
 	{
 	  "Name": "GS-49",
+      "Icon": "gs49",
           "Description": "Weapon class: Rifle\nDamage: 15\nRate of fire: 420 round/min\nDispersion: 11.5 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "gs49_bullet",
 	  "Cost": 2,
@@ -175,6 +185,7 @@
 	},
 	{
 	  "Name": "STORM",
+      "Icon": "storm",
           "Description": "Weapon class: Rifle\nDamage: 14\nRate of fire: 466 round/min\nDispersion: 10.9 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "storm_bullet",
 	  "Cost": 2,
@@ -185,6 +196,7 @@
 	},
 	{
 	  "Name": "GH55b",
+      "Icon": "gh55b",
           "Description": "Weapon class: Rifle\nDamage: 17\nRate of fire: 382 round/min\nDispersion: 11.5 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "gh55b_bullet",
 	  "Cost": 2,
@@ -195,6 +207,7 @@
 	},
 	{
 	  "Name": "POW9",
+      "Icon": "pow9",
           "Description": "Weapon class: Rifle\nDamage: 17\nRate of fire: 267 round/min\nDispersion: 5.7 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "pow9_bullet",
 	  "Cost": 2,
@@ -205,6 +218,7 @@
 	},
 	{
 	  "Name": "Raging Pitbull",
+      "Icon": "raging_pitbull",
           "Description": "Weapon class: Rifle\nDamage: 22\nRate of fire: 525 round/min\nDispersion: 14.3 degrees\nRange: 300\nSpeed: 1000\nCost: 2",
 	  "Bullet": "raging_pitbull_bullet",
 	  "Cost": 2,
@@ -217,6 +231,7 @@
 
 	{
 	  "Name": "HITPRO",
+      "Icon": "hitpro",
           "Description": "Weapon class: Sniper rifle\nDamage: 100\nRate of fire: 42 round/min\nDispersion: 0 degrees\nRange: 500\nSpeed: 2000\nCost: 5",
 	  "Bullet": "hitpro_bullet",
 	  "Cost": 5,
@@ -226,6 +241,7 @@
 	},
 	{
 	  "Name": "SNP6+",
+      "Icon": "snp6plus",
           "Description": "Weapon class: Sniper rifle\nDamage: 140\nRate of fire: 24 round/min\nDispersion: 0 degrees\nRange: 500\nSpeed: 2000\nCost: 5",
 	  "Bullet": "snp6plus_bullet",
 	  "Cost": 5,
@@ -235,6 +251,7 @@
 	},
 	{
 	  "Name": "1S1K",
+      "Icon": "1s1k",
           "Description": "Weapon class: Sniper rifle\nDamage: 200\nRate of fire: 13.8 round/min\nDispersion: 0 degrees\nRange: 500\nSpeed: 2000\nCost: 8",
 	  "Bullet": "1s1k_bullet",
 	  "Cost": 8,
@@ -246,6 +263,7 @@
 
 	{
 	  "Name": "MG5000",
+      "Icon": "mg5000",
           "Description": "Weapon class: Machine gun\nDamage: 5\nRate of fire: 1050 round/min\nDispersion: 28.7 degrees\nRange: 300\nSpeed: 900\nCost: 1",
 	  "Bullet": "mg5000_bullet",
 	  "Cost": 1,
@@ -256,6 +274,7 @@
 	},
 	{
 	  "Name": "MG6000",
+      "Icon": "mg6000",
           "Description": "Weapon class: Machine gun\nDamage: 6\nRate of fire: 2100 round/min\nDispersion: 34.4 degrees\nRange: 300\nSpeed: 900\nCost: 1",
 	  "Bullet": "mg6000_bullet",
 	  "Cost": 1,

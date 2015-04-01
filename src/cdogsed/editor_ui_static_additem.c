@@ -225,7 +225,7 @@ UIObject *CreateAddItemObjs(
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
 	o->Data = brush;
 
 	pos = Vec2iZero();
