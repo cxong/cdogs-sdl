@@ -150,8 +150,8 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 void RealPath(const char *src, char *dest)
 {
 #ifndef _WIN32
-	// realpath will fail with file does not exist if the file does not
-	// exist; if this is the case then create a file temporarily, return
+	// realpath will fail if the file does not exist; if this is the
+	// case then create a file temporarily, return
 	// the canonical path, then remove the temporary file.
 	tinydir_file file;
 	const bool exists = tinydir_file_open(&file, src) == 0;
@@ -256,7 +256,7 @@ void RelPath(char *buf, const char *to, const char *from)
 }
 void RelPathFromCWD(char *buf, const char *to)
 {
-	if (to == NULL)
+	if (to == NULL || strlen(to) == 0)
 	{
 		return;
 	}
