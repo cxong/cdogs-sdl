@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __C_ARRAY
-#define __C_ARRAY
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -49,4 +48,9 @@ void CArrayClear(CArray *a);
 void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *));
 void CArrayTerminate(CArray *a);
 
-#endif
+// Convenience macro for looping through a CArray
+#define CA_FOREACH(_type, _var, _a)\
+	for (int i = 0; i < (int)(_a).size; i++)\
+	{\
+		_type *_var = CArrayGet(&(_a), i);
+#define CA_FOREACH_END() }

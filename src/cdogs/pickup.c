@@ -27,6 +27,7 @@
 */
 #include "pickup.h"
 
+#include "ai_coop.h"
 #include "ammo.h"
 #include "game_events.h"
 #include "json_utils.h"
@@ -219,6 +220,12 @@ void PickupPickup(TActor *a, const Pickup *p)
 				// "Say" that the weapon must be picked up using a command
 				a->Chatter = "Switch to pick up";
 				a->ChatterCounter = 2;
+			}
+
+			// If co-op AI, alert it so it can try to pick the gun up
+			if (a->aiContext != NULL)
+			{
+				AICoopOnPickupGun(a, p->class->u.GunId);
 			}
 		}
 		break;

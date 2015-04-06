@@ -105,6 +105,7 @@ typedef struct
 	AIGotoContext Goto;
 	int EnemyId;
 	double GunRangeScalar;
+	int OnGunId;
 } AIContext;
 
 AIContext *AIContextNew(void);

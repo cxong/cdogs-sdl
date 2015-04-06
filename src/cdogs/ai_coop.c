@@ -125,23 +125,54 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//     - Go to nearest player
 
 	// First, check the weapon
-	// If we're out of ammo, switch to one with ammo
-	// Prioritise our selection based on weapon order, i.e.
-	// prefer first weapon over second over third etc.
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
-		int mostPreferredWeaponWithAmmo = 0;
-		for (int i = 0; i < (int)actor->guns.size; i++)
+		// Check all our weapons
+		int mostPreferredWeaponWithAmmo = -1;
+		// Prefer guns using ammo
+		// This is because unlimited ammo guns tend to be worse
+		bool mostPreferredWeaponHasAmmo = false;
+		int lowAmmoGun = -1;
+		CA_FOREACH(const Weapon, w, actor->guns)
+		const int ammoAmount = ActorGunGetAmmo(actor, w);
+		if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
+			(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
 		{
-			const Weapon *w = CArrayGet(&actor->guns, i);
-			const bool hasAmmo = ActorGunGetAmmo(actor, w) != 0;
-			if (hasAmmo)
-			{
-				break;
-			}
-			mostPreferredWeaponWithAmmo++;
+			// Note: -1 means the gun has unlimited ammo
+			mostPreferredWeaponWithAmmo = i;
+			mostPreferredWeaponHasAmmo = ammoAmount > 0;
 		}
-		if (mostPreferredWeaponWithAmmo != actor->gunIndex)
+		if (w->Gun->AmmoId != -1)
+		{
+			const Ammo *ammo = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+			if (lowAmmoGun == -1 &&
+				ammoAmount < ammo->Amount * AMMO_STARTING_MULTIPLE)
+			{
+				lowAmmoGun = i;
+			}
+		}
+		CA_FOREACH_END()
+
+		// If we're over a weapon pickup, check if we want to pick it up
+		// Pick up if we have a weapon that is low on ammo, or if we have
+		// a free slot
+		if (actor->aiContext->OnGunId != -1)
+		{
+			actor->aiContext->OnGunId = -1;
+			if (lowAmmoGun != -1 || actor->guns.size < MAX_WEAPONS)
+			{
+				// Pick it up
+				// TODO: this will not guarantee the new gun will replace
+				// the low ammo gun; weapon management?
+				return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
+			}
+		}
+
+		// If we're out of ammo, switch to one with ammo
+		// Prioritise our selection based on weapon order, i.e.
+		// prefer first weapon over second over third etc.
+		if (mostPreferredWeaponWithAmmo != -1 &&
+			mostPreferredWeaponWithAmmo != actor->gunIndex)
 		{
 			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
 		}
@@ -538,6 +569,47 @@ static void FindObjectivesSortedByDistance(
 				co.u.UID = p->UID;
 			}
 			break;
+		case PICKUP_GUN:
+			if (ConfigGetBool(&gConfig, "Game.Ammo"))
+			{
+				// Pick up if we have a gun with less ammo than starting,
+				// and lower than lead player, who uses the ammo, or if
+				// there is a free weapon slot
+				bool hasGunLowOnAmmo = false;
+				if (actor->guns.size < MAX_WEAPONS)
+				{
+					hasGunLowOnAmmo = true;
+				}
+				else
+				{
+					CA_FOREACH(const Weapon, w, actor->guns)
+					const int ammoId = w->Gun->AmmoId;
+					if (ammoId < 0)
+					{
+						continue;
+					}
+					const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+					const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
+					if (ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
+						(closestPlayer != NULL &&
+						ActorUsesAmmo(closestPlayer, ammoId) &&
+						ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
+					{
+						continue;
+					}
+					hasGunLowOnAmmo = true;
+					CA_FOREACH_END()
+				}
+
+				if (!hasGunLowOnAmmo)
+				{
+					continue;
+				}
+
+				co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+				co.u.UID = p->UID;
+			}
+			break;
 		default:
 			// Not something we want to pick up
 			continue;
@@ -785,4 +857,11 @@ static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w)
 		}
 	}
 	return false;
+}
+
+void AICoopOnPickupGun(TActor *a, const int gunId)
+{
+	// Remember that we are over a gun pickup;
+	// we will act upon it later (during GetCmd)
+	a->aiContext->OnGunId = gunId;
 }
