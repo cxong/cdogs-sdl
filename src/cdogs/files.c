@@ -341,7 +341,8 @@ static void ConvertMissionObjective(
 	dest->Required = src->required;
 	dest->Flags = src->flags;
 }
-static void ConvertMission(Mission *dest, struct MissionOld *src)
+static void ConvertMission(
+	Mission *dest, struct MissionOld *src, const int charCount)
 {
 	int i;
 	CFREE(dest->Title);
@@ -363,14 +364,15 @@ static void ConvertMission(Mission *dest, struct MissionOld *src)
 		ConvertMissionObjective(&mo, &src->objectives[i]);
 		CArrayPushBack(&dest->Objectives, &mo);
 	}
+	// Note: modulo for compatibility with older, buggy missions
 	for (i = 0; i < src->baddieCount; i++)
 	{
-		int n = src->baddies[i];
+		int n = src->baddies[i] % charCount;
 		CArrayPushBack(&dest->Enemies, &n);
 	}
 	for (i = 0; i < src->specialCount; i++)
 	{
-		int n = src->specials[i];
+		int n = src->specials[i] % charCount;
 		CArrayPushBack(&dest->SpecialChars, &n);
 	}
 	for (i = 0; i < src->itemCount; i++)
@@ -423,7 +425,7 @@ void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src)
 	{
 		Mission m;
 		MissionInit(&m);
-		ConvertMission(&m, &src->missions[i]);
+		ConvertMission(&m, &src->missions[i], src->characterCount);
 		CArrayPushBack(&dest->Missions, &m);
 	}
 	CharacterStoreTerminate(&dest->characters);
