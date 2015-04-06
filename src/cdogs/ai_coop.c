@@ -494,6 +494,9 @@ static bool TryCompleteNearbyObjective(
 	}
 	return false;
 }
+static bool OnClosestPickupGun(
+	ClosestObjective *co, const Pickup *p,
+	const TActor *actor, const TActor *closestPlayer);
 static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const TActor *actor, const TActor *closestPlayer)
@@ -570,44 +573,9 @@ static void FindObjectivesSortedByDistance(
 			}
 			break;
 		case PICKUP_GUN:
-			if (ConfigGetBool(&gConfig, "Game.Ammo"))
+			if (!OnClosestPickupGun(&co, p, actor, closestPlayer))
 			{
-				// Pick up if we have a gun with less ammo than starting,
-				// and lower than lead player, who uses the ammo, or if
-				// there is a free weapon slot
-				bool hasGunLowOnAmmo = false;
-				if (actor->guns.size < MAX_WEAPONS)
-				{
-					hasGunLowOnAmmo = true;
-				}
-				else
-				{
-					CA_FOREACH(const Weapon, w, actor->guns)
-					const int ammoId = w->Gun->AmmoId;
-					if (ammoId < 0)
-					{
-						continue;
-					}
-					const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-					const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
-					if (ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
-						(closestPlayer != NULL &&
-						ActorUsesAmmo(closestPlayer, ammoId) &&
-						ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
-					{
-						continue;
-					}
-					hasGunLowOnAmmo = true;
-					CA_FOREACH_END()
-				}
-
-				if (!hasGunLowOnAmmo)
-				{
-					continue;
-				}
-
-				co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-				co.u.UID = p->UID;
+				continue;
 			}
 			break;
 		default:
@@ -726,6 +694,52 @@ static void FindObjectivesSortedByDistance(
 	qsort(
 		objectives->data,
 		objectives->size, objectives->elemSize, CompareClosestObjective);
+}
+static bool OnClosestPickupGun(
+	ClosestObjective *co, const Pickup *p,
+	const TActor *actor, const TActor *closestPlayer)
+{
+	if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+	{
+		return false;
+	}
+	// Pick up if we have a gun with less ammo than starting,
+	// and lower than lead player, who uses the ammo, or if
+	// there is a free weapon slot
+	bool hasGunLowOnAmmo = false;
+	if (actor->guns.size < MAX_WEAPONS)
+	{
+		hasGunLowOnAmmo = true;
+	}
+	else
+	{
+		CA_FOREACH(const Weapon, w, actor->guns)
+			const int ammoId = w->Gun->AmmoId;
+		if (ammoId < 0)
+		{
+			continue;
+		}
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
+		if (ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
+			(closestPlayer != NULL &&
+			ActorUsesAmmo(closestPlayer, ammoId) &&
+			ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
+		{
+			continue;
+		}
+		hasGunLowOnAmmo = true;
+		CA_FOREACH_END()
+	}
+
+	if (!hasGunLowOnAmmo)
+	{
+		return false;
+	}
+
+	co->Type = AI_OBJECTIVE_TYPE_PICKUP;
+	co->u.UID = p->UID;
+	return true;
 }
 static int CompareClosestObjective(const void *v1, const void *v2)
 {
