@@ -721,7 +721,7 @@ static bool OnClosestPickupGun(
 		}
 		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
-		if (ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
+		if (ammoAmount >= ammo->Amount * AMMO_STARTING_MULTIPLE ||
 			(closestPlayer != NULL &&
 			ActorUsesAmmo(closestPlayer, ammoId) &&
 			ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
