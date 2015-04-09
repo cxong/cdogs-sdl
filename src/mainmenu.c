@@ -40,17 +40,42 @@ MenuSystem *MenuCreateAll(
 	EventHandlers *handlers,
 	GraphicsDevice *graphics);
 
-int MainMenu(
+static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
+void MainMenu(
 	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
-	custom_campaigns_t *campaigns)
+	custom_campaigns_t *campaigns,
+	const GameMode lastGameMode)
 {
 	MenuSystem *menu = MenuCreateAll(campaigns, &gEventHandlers, graphics);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
+	// Auto-enter the submenu corresponding to the last game mode
+	switch (lastGameMode)
+	{
+	case GAME_MODE_NORMAL:
+		menu->current = FindSubmenuByName(menu->root, "Campaign");
+		break;
+	case GAME_MODE_DOGFIGHT:
+		menu->current = FindSubmenuByName(menu->root, "Dogfight");
+		break;
+	case GAME_MODE_DEATHMATCH:
+		menu->current = FindSubmenuByName(menu->root, "Deathmatch");
+		break;
+	default:
+		// Do nothing
+		break;
+	}
 	MenuLoop(menu);
 
 	MenuDestroy(menu);
-	return gCampaign.IsLoaded;
+}
+static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
+{
+	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
+	CA_FOREACH(menu_t, submenu, menu->u.normal.subMenus)
+	if (strcmp(submenu->name, name) == 0) return submenu;
+	CA_FOREACH_END()
+	return menu;
 }
 
 menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
