@@ -148,7 +148,7 @@ typedef struct Actor
 	bool CanPickupSpecial;
 
 	// What to say (text label appears above actor) and how long to say it
-	const char *Chatter;
+	char Chatter[256];
 	int ChatterCounter;
 
 	// Signals to other AIs what this actor is doing

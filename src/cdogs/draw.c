@@ -417,7 +417,7 @@ static void DrawActorPics(
 		}
 
 		// Draw character text
-		if (a->Chatter != NULL)
+		if (strlen(a->Chatter) > 0)
 		{
 			const Vec2i textPos = Vec2iNew(
 				a->tileItem.x - b->xTop + offset.x -

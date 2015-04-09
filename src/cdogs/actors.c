@@ -337,7 +337,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	if (actor->ChatterCounter == 0)
 	{
 		// Stop chatting
-		actor->Chatter = NULL;
+		strcpy(actor->Chatter, "");
 	}
 }
 
@@ -688,7 +688,7 @@ void ActorSetAIState(TActor *actor, const AIState s)
 		actor->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter")))
 	{
 		// Say something for a while
-		actor->Chatter = AIStateGetChatterText(actor->aiContext->State);
+		strcpy(actor->Chatter, AIStateGetChatterText(actor->aiContext->State));
 		actor->ChatterCounter = 2;
 	}
 }

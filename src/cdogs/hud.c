@@ -57,6 +57,7 @@
 #include "automap.h"
 #include "draw.h"
 #include "drawtools.h"
+#include "events.h"
 #include "font.h"
 #include "game_events.h"
 #include "mission.h"
@@ -916,8 +917,14 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	if (isPaused)
 	{
-		FontStrCenter(
-			"<Paused>\nPress Esc again to quit\nPress fire or switch to unpause");
+		char buf[256];
+		sprintf(
+			buf,
+			"<Paused>\nPress %s again to quit\nPress %s or %s to unpause",
+			InputGetButtonName(0, CMD_ESC),
+			InputGetButtonName(0, CMD_BUTTON1),
+			InputGetButtonName(0, CMD_BUTTON2));
+		FontStrCenter(buf);
 	}
 
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)

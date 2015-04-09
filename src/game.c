@@ -472,7 +472,7 @@ static void RunGameInput(void *data)
 	rData->isMap =
 		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
 		(KeyIsDown(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerKeys0.map")) ||
-		(cmdAll & CMD_BUTTON3));
+		(cmdAll & CMD_MAP));
 
 	// Check if escape was pressed
 	// If the game was not paused, enter pause mode
@@ -482,7 +482,7 @@ static void RunGameInput(void *data)
 		rData->isPaused = false;
 	}
 	else if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_BUTTON4))
+		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_ESC))
 	{
 		// Escape pressed
 		if (rData->isPaused)

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef __DEFS
-#define __DEFS
+#pragma once
 
 #include "vector.h"
 
@@ -83,10 +81,8 @@
 #define CMD_DOWN            8
 #define CMD_BUTTON1        16
 #define CMD_BUTTON2        32
-#define CMD_BUTTON3        64
-#define CMD_BUTTON4       128
-#define CMD_ESC           256
-const char *CmdStr(int cmd);
+#define CMD_MAP            64
+#define CMD_ESC           128
 
 // Command macros
 #define Left(x)       (((x) & CMD_LEFT) != 0)
@@ -151,5 +147,3 @@ Vec2i GetFullVectorsForRadians(double radians);
 double Vec2iToRadians(const Vec2i v);
 direction_e RadiansToDirection(const double r);
 direction_e DirectionOpposite(const direction_e d);
-
-#endif

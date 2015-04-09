@@ -91,24 +91,22 @@ void MenuDisplayPlayerControls(
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		{
-			const input_keys_t *keys =
-				&gEventHandlers.keyboard.PlayerKeys[*playerIndex];
-			sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-				SDL_GetKeyName(keys->left),
-				SDL_GetKeyName(keys->right),
-				SDL_GetKeyName(keys->up),
-				SDL_GetKeyName(keys->down),
-				SDL_GetKeyName(keys->button1),
-				SDL_GetKeyName(keys->button2));
-		}
+		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
+			InputGetButtonName(*playerIndex, CMD_LEFT),
+			InputGetButtonName(*playerIndex, CMD_RIGHT),
+			InputGetButtonName(*playerIndex, CMD_UP),
+			InputGetButtonName(*playerIndex, CMD_DOWN),
+			InputGetButtonName(*playerIndex, CMD_BUTTON1),
+			InputGetButtonName(*playerIndex, CMD_BUTTON2));
 		break;
 	case INPUT_DEVICE_MOUSE:
 		sprintf(s, "(mouse wheel to scroll, left and right click)");
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		sprintf(s, "(%s)",
-			InputDeviceName(pData->inputDevice, pData->deviceIndex));
+		sprintf(s, "(%s, %s and %s)",
+			InputDeviceName(pData->inputDevice, pData->deviceIndex),
+			InputGetButtonName(*playerIndex, CMD_BUTTON1),
+			InputGetButtonName(*playerIndex, CMD_BUTTON2));
 		break;
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(%s)",

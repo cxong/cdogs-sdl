@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -178,7 +178,7 @@ static int GetMouseCmd(
 
 	if (mouseFunc(mouse, SDL_BUTTON_LEFT))					cmd |= CMD_BUTTON1;
 	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))					cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_BUTTON3;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_MAP;
 
 	return cmd;
 }
@@ -198,9 +198,9 @@ static int GetJoystickCmd(joystick_t *joystick, bool isPressed)
 
 	if (joyFunc(joystick, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
 
-	if (joyFunc(joystick, CMD_BUTTON3))		cmd |= CMD_BUTTON3;
+	if (joyFunc(joystick, CMD_MAP))			cmd |= CMD_MAP;
 
-	if (joyFunc(joystick, CMD_BUTTON4))		cmd |= CMD_BUTTON4;
+	if (joyFunc(joystick, CMD_ESC))			cmd |= CMD_ESC;
 
 	return cmd;
 }
@@ -284,7 +284,7 @@ int GetMenuCmd(EventHandlers *handlers)
 {
 	keyboard_t *kb = &handlers->keyboard;
 	if (KeyIsPressed(kb, SDLK_ESCAPE) ||
-		JoyIsPressed(&handlers->joysticks.joys[0], CMD_BUTTON4))
+		JoyIsPressed(&handlers->joysticks.joys[0], CMD_ESC))
 	{
 		return CMD_ESC;
 	}
@@ -316,6 +316,66 @@ int GetMenuCmd(EventHandlers *handlers)
 	}
 
 	return cmd;
+}
+
+const char *InputGetButtonName(const int player, const int cmd)
+{
+	const PlayerData *pData = CArrayGet(&gPlayerDatas, player);
+	switch (pData->inputDevice)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		{
+			const input_keys_t *keys =
+				&gEventHandlers.keyboard.PlayerKeys[player];
+			switch (cmd)
+			{
+			case CMD_LEFT: return SDL_GetKeyName(keys->left);
+			case CMD_RIGHT: return SDL_GetKeyName(keys->right);
+			case CMD_UP: return SDL_GetKeyName(keys->up);
+			case CMD_DOWN: return SDL_GetKeyName(keys->down);
+			case CMD_BUTTON1: return SDL_GetKeyName(keys->button1);
+			case CMD_BUTTON2: return SDL_GetKeyName(keys->button2);
+			case CMD_MAP: return SDL_GetKeyName(keys->map);
+			case CMD_ESC: return SDL_GetKeyName(SDLK_ESCAPE);
+			default: CASSERT(false, "unknown button"); return NULL;
+			}
+		}
+		break;
+	case INPUT_DEVICE_MOUSE:
+		switch (cmd)
+		{
+		case CMD_LEFT: return "left";
+		case CMD_RIGHT: return "right";
+		case CMD_UP: return "up";
+		case CMD_DOWN: return "down";
+		case CMD_BUTTON1: return "left click";
+		case CMD_BUTTON2: return "right click";
+		case CMD_MAP: return "middle click";
+		case CMD_ESC: return "";
+		default: CASSERT(false, "unknown button"); return NULL;
+		}
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		// TODO: button names and special colours for popular gamepads
+		switch (cmd)
+		{
+		case CMD_LEFT: return "left";
+		case CMD_RIGHT: return "right";
+		case CMD_UP: return "up";
+		case CMD_DOWN: return "down";
+		case CMD_BUTTON1: return "button 1";
+		case CMD_BUTTON2: return "button 2";
+		case CMD_MAP: return "button 3";
+		case CMD_ESC: return "button 4";
+		default: CASSERT(false, "unknown button"); return NULL;
+		}
+		break;
+	case INPUT_DEVICE_AI:
+		return NULL;
+	default:
+		CASSERT(false, "unknown input device");
+		return NULL;
+	}
 }
 
 int GetKey(EventHandlers *handlers)
@@ -376,7 +436,7 @@ bool EventIsEscape(
 {
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		if (cmds[i] & CMD_BUTTON4)
+		if (cmds[i] & CMD_ESC)
 		{
 			return true;
 		}
@@ -389,7 +449,7 @@ bool EventIsEscape(
 	}
 
 	// Check menu commands
-	if (menuCmd & CMD_BUTTON4)
+	if (menuCmd & CMD_ESC)
 	{
 		return true;
 	}

@@ -29,6 +29,7 @@
 
 #include "ai_coop.h"
 #include "ammo.h"
+#include "events.h"
 #include "game_events.h"
 #include "json_utils.h"
 #include "map.h"
@@ -218,8 +219,15 @@ void PickupPickup(TActor *a, const Pickup *p)
 				a->CanPickupSpecial = true;
 				canPickup = false;
 				// "Say" that the weapon must be picked up using a command
-				a->Chatter = "Switch to pick up";
-				a->ChatterCounter = 2;
+				const char *pickupKey =
+					InputGetButtonName(a->playerIndex, CMD_BUTTON2);
+				if (pickupKey != NULL)
+				{
+					sprintf(a->Chatter, "%s to pick up\n%s",
+						pickupKey,
+						IdGunDescription(p->class->u.GunId)->name);
+					a->ChatterCounter = 2;
+				}
 			}
 
 			// If co-op AI, alert it so it can try to pick the gun up
