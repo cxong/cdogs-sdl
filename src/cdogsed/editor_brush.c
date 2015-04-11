@@ -395,10 +395,10 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_WRECK:
 		if (isMain)
 		{
+			const char **destructibleName =
+				CArrayGet(&gMapObjects.Destructibles, b->ItemIndex);
 			if (MissionStaticTryAddWreck(
-				m,
-				StrMapObject(CArrayGet(&gMapObjects.Destructibles, b->ItemIndex)),
-				b->Pos))
+				m, StrMapObject(*destructibleName), b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
