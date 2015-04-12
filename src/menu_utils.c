@@ -82,8 +82,7 @@ void MenuDisplayPlayerControls(
 	UNUSED(g);
 	char s[256];
 	const int *playerIndex = data;
-	Vec2i textPos = Vec2iNew(0, pos.y + size.y - FontH());
-	int textWidth = 0;
+	const int y = pos.y + size.y - FontH();
 
 	UNUSED(menu);
 
@@ -98,53 +97,40 @@ void MenuDisplayPlayerControls(
 			InputGetButtonName(*playerIndex, CMD_DOWN),
 			InputGetButtonName(*playerIndex, CMD_BUTTON1),
 			InputGetButtonName(*playerIndex, CMD_BUTTON2));
+		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
 		break;
 	case INPUT_DEVICE_MOUSE:
-		sprintf(s, "(mouse wheel to scroll, left and right click)");
+		{
+			const char *text =
+				"(mouse wheel to scroll,\nleft and right click)";
+			FontStr(text, Vec2iNew(pos.x - FontStrW(text) / 2, y - FontH()));
+		}
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		sprintf(s, "(%s, %s and %s)",
-			InputDeviceName(pData->inputDevice, pData->deviceIndex),
-			InputGetButtonName(*playerIndex, CMD_BUTTON1),
-			InputGetButtonName(*playerIndex, CMD_BUTTON2));
+		{
+			sprintf(s, "(%s,",
+				InputDeviceName(pData->inputDevice, pData->deviceIndex));
+			Vec2i textPos = Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH());
+			FontStr(s, textPos);
+			textPos.y += FontH();
+			color_t c;
+			const char *buttonName =
+				InputGetButtonNameColor(*playerIndex, CMD_BUTTON1, &c);
+			textPos = FontStrMask(buttonName, textPos, c);
+			textPos = FontStr(" and ", textPos);
+			buttonName =
+				InputGetButtonNameColor(*playerIndex, CMD_BUTTON2, &c);
+			textPos = FontStrMask(buttonName, textPos, c);
+			FontStr(")", textPos);
+		}
 		break;
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(%s)",
 			InputDeviceName(pData->inputDevice, pData->deviceIndex));
+		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
 		break;
 	default:
 		assert(0 && "unknown device");
 		break;
-	}
-
-	// If the text is too long, split the text with a newline
-	textWidth = FontStrW(s);
-	if (textWidth < 125)
-	{
-		textPos.x = pos.x - textWidth / 2;
-		FontStr(s, textPos);
-	}
-	else
-	{
-		// find the first whitespace before half of the string, split there,
-		// and print two lines
-		char *secondLine;
-		for (secondLine = &s[strlen(s) / 2]; secondLine > s; secondLine--)
-		{
-			if (isspace(*secondLine))
-			{
-				*secondLine = '\0';
-				secondLine++;
-				break;
-			}
-		}
-		textWidth = FontStrW(s);
-		textPos.x = pos.x - textWidth / 2;
-		textPos.y -= FontH();
-		FontStr(s, textPos);
-		textWidth = FontStrW(secondLine);
-		textPos.x = pos.x - textWidth / 2;
-		textPos.y += FontH();
-		FontStr(secondLine, textPos);
 	}
 }

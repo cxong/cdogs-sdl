@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,15 +26,27 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __JOYSTICK
-#define __JOYSTICK
+#pragma once
 
 #include <SDL_joystick.h>
 
+#include "color.h"
+
+
+typedef enum
+{
+	JOY_UNKNOWN,
+	JOY_XBOX_360
+} JoystickType;
 
 typedef struct
 {
 	SDL_Joystick *j;
+	JoystickType Type;
+	int Button1;
+	int Button2;
+	int ButtonMap;
+	int ButtonEsc;
 	int x;
 	int y;
 	int currentButtonsField;
@@ -61,4 +73,6 @@ int JoyIsDown(joystick_t *joystick, int button);
 int JoyIsPressed(joystick_t *joystick, int button);
 int JoyGetPressed(joystick_t *joystick);
 
-#endif
+const char *JoyName(const int deviceIndex);
+const char *JoyButtonNameColor(
+	const int deviceIndex, const int cmd, color_t *color);

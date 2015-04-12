@@ -87,6 +87,8 @@ GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
 int GetMenuCmd(EventHandlers *handlers);
 const char *InputGetButtonName(const int player, const int cmd);
+const char *InputGetButtonNameColor(
+	const int player, const int cmd, color_t *color);
 
 bool EventIsEscape(
 	EventHandlers *handlers,

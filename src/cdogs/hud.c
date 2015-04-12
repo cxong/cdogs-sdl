@@ -917,14 +917,28 @@ void HUDDraw(HUD *hud, int isPaused)
 
 	if (isPaused)
 	{
-		char buf[256];
-		sprintf(
-			buf,
-			"<Paused>\nPress %s again to quit\nPress %s or %s to unpause",
-			InputGetButtonName(0, CMD_ESC),
-			InputGetButtonName(0, CMD_BUTTON1),
-			InputGetButtonName(0, CMD_BUTTON2));
-		FontStrCenter(buf);
+		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
+			gGraphicsDevice.cachedConfig.Res,
+			FontStrSize("Foo\nPress foo or bar to unpause\nBaz")), 2);
+		const int x = pos.x;
+		FontStr("<Paused>", pos);
+
+		pos.y += FontH();
+		pos = FontStr("Press ", pos);
+		color_t c;
+		const char *buttonName = InputGetButtonNameColor(0, CMD_ESC, &c);
+		pos = FontStrMask(buttonName, pos, c);
+		FontStr(" again to quit", pos);
+
+		pos.x = x;
+		pos.y += FontH();
+		pos = FontStr("Press ", pos);
+		buttonName = InputGetButtonNameColor(0, CMD_BUTTON1, &c);
+		pos = FontStrMask(buttonName, pos, c);
+		pos = FontStr(" or ", pos);
+		buttonName = InputGetButtonNameColor(0, CMD_BUTTON2, &c);
+		pos = FontStrMask(buttonName, pos, c);
+		FontStr(" to unpause", pos);
 	}
 
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)

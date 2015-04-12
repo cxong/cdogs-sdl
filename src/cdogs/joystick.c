@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,21 +61,41 @@ void JoyReset(joysticks_t *joys)
 	printf("%d found\n", joys->numJoys);
 	for (i = 0; i < joys->numJoys; i++)
 	{
-		joys->joys[i].j = SDL_JoystickOpen(i);
-
-		if (joys->joys[i].j == NULL)
+		joystick_t *joy = &joys->joys[i];
+		joy->j = SDL_JoystickOpen(i);
+		if (joy->j == NULL)
 		{
 			printf("Failed to open joystick.\n");
+			continue;
 		}
 
-		joys->joys[i].numButtons = SDL_JoystickNumButtons(joys->joys[i].j);
-		joys->joys[i].numAxes = SDL_JoystickNumAxes(joys->joys[i].j);
-		joys->joys[i].numHats = SDL_JoystickNumHats(joys->joys[i].j);
+		// Find joystick-specific fields
+		const char *name = SDL_JoystickName(i);
+		if (strstr(name, "Xbox 360") != NULL)
+		{
+			joy->Type = JOY_XBOX_360;
+			joy->Button1 = 0;	// A
+			joy->Button2 = 1;	// B
+			joy->ButtonMap = 4;	// back
+			joy->ButtonEsc = 5;	// start
+		}
+		else
+		{
+			joy->Type = JOY_UNKNOWN;
+			joy->Button1 = 0;
+			joy->Button2 = 1;
+			joy->ButtonMap = 2;
+			joy->ButtonEsc = 3;
+		}
+
+		joy->numButtons = SDL_JoystickNumButtons(joy->j);
+		joy->numAxes = SDL_JoystickNumAxes(joy->j);
+		joy->numHats = SDL_JoystickNumHats(joy->j);
 
 		printf("Opened Joystick %d\n", i);
-		printf(" -> %s\n", SDL_JoystickName(i));
+		printf(" -> %s\n", JoyName(i));
 		printf(" -> Axes: %d Buttons: %d Hats: %d\n",
-			joys->joys[i].numAxes, joys->joys[i].numButtons, joys->joys[i].numHats);
+			joy->numAxes, joy->numButtons, joy->numHats);
 	}
 	JoyPoll(joys);
 }
@@ -98,35 +118,31 @@ void JoyTerminate(joysticks_t *joys)
 
 void JoyPollOne(joystick_t *joy)
 {
-	int i;
 	joy->previousButtonsField = joy->currentButtonsField;
 	joy->currentButtonsField = 0;
 
 	// Get axes values, convert to direction
-	for (i = 0; i < joy->numAxes; i += 2)
+	const int x = SDL_JoystickGetAxis(joy->j, 0);
+	const int y = SDL_JoystickGetAxis(joy->j, 1);
+	if (x < -JOY_AXIS_THRESHOLD)
 	{
-		int x = SDL_JoystickGetAxis(joy->j, 0);
-		int y = SDL_JoystickGetAxis(joy->j, 1);
-		if (x < -JOY_AXIS_THRESHOLD)
-		{
-			joy->currentButtonsField |= CMD_LEFT;
-		}
-		else if (x > JOY_AXIS_THRESHOLD)
-		{
-			joy->currentButtonsField |= CMD_RIGHT;
-		}
-		if (y < -JOY_AXIS_THRESHOLD)
-		{
-			joy->currentButtonsField |= CMD_UP;
-		}
-		else if (y > JOY_AXIS_THRESHOLD)
-		{
-			joy->currentButtonsField |= CMD_DOWN;
-		}
+		joy->currentButtonsField |= CMD_LEFT;
+	}
+	else if (x > JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_RIGHT;
+	}
+	if (y < -JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_UP;
+	}
+	else if (y > JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_DOWN;
 	}
 
 	// Get hat state, convert to direction
-	for (i = 0; i < joy->numHats; i++)
+	for (int i = 0; i < joy->numHats; i++)
 	{
 		Uint8 hat = SDL_JoystickGetHat(joy->j, i);
 		switch (hat)
@@ -166,12 +182,41 @@ void JoyPollOne(joystick_t *joy)
 	}
 
 	// Get buttons
-	for (i = 0; i < joy->numButtons; i++)
+#define GET_BUTTON(_button, _cmd)\
+	if (SDL_JoystickGetButton(joy->j, _button))\
+	{\
+		joy->currentButtonsField |= _cmd;\
+	}
+	GET_BUTTON(joy->Button1, CMD_BUTTON1);
+	GET_BUTTON(joy->Button2, CMD_BUTTON2);
+	GET_BUTTON(joy->ButtonMap, CMD_MAP);
+	GET_BUTTON(joy->ButtonEsc, CMD_ESC);
+
+	for (int i = 0; i < joy->numAxes; i++)
 	{
-		if (SDL_JoystickGetButton(joy->j, i))
+		int x = SDL_JoystickGetAxis(joy->j, i);
+		if (x < -JOY_AXIS_THRESHOLD || x > JOY_AXIS_THRESHOLD)
 		{
-			joy->currentButtonsField |= CMD_BUTTON1 << i;
+			printf("axis %d value %d\n", i, x);
 		}
+	}
+
+	// Special controls
+	switch (joy->Type)
+	{
+	case JOY_XBOX_360:
+		// Right trigger fire
+		{
+			const int z = SDL_JoystickGetAxis(joy->j, 2);
+			if (z < -JOY_AXIS_THRESHOLD)
+			{
+				joy->currentButtonsField |= CMD_BUTTON1;
+			}
+		}
+		break;
+	default:
+		// do nothing
+		break;
 	}
 }
 
@@ -215,4 +260,49 @@ int JoyGetPressed(joystick_t *joystick)
 		}
 	}
 	return cmd;
+}
+
+const char *JoyName(const int deviceIndex)
+{
+	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
+	{
+	case JOY_XBOX_360:
+		return "Xbox 360 controller";
+	default:
+		return SDL_JoystickName(deviceIndex);
+	}
+}
+
+const char *JoyButtonNameColor(
+	const int deviceIndex, const int cmd, color_t *color)
+{
+	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
+	{
+	case JOY_XBOX_360:
+		switch (cmd)
+		{
+		case CMD_LEFT: return "left";
+		case CMD_RIGHT: return "right";
+		case CMD_UP: return "up";
+		case CMD_DOWN: return "down";
+		case CMD_BUTTON1: *color = colorGreen; return "A";
+		case CMD_BUTTON2: *color = colorRed; return "B";
+		case CMD_MAP: return "Back";
+		case CMD_ESC: return "Start";
+		default: CASSERT(false, "unknown button"); return NULL;
+		}
+	default:
+		switch (cmd)
+		{
+		case CMD_LEFT: return "left";
+		case CMD_RIGHT: return "right";
+		case CMD_UP: return "up";
+		case CMD_DOWN: return "down";
+		case CMD_BUTTON1: return "button 1";
+		case CMD_BUTTON2: return "button 2";
+		case CMD_MAP: return "button 3";
+		case CMD_ESC: return "button 4";
+		default: CASSERT(false, "unknown button"); return NULL;
+		}
+	}
 }

@@ -58,6 +58,7 @@
 #include <SDL_joystick.h>
 #include <tinydir/tinydir.h>
 
+#include "events.h"
 #include "sys_config.h"
 
 int debug = 0;
@@ -295,7 +296,7 @@ const char *InputDeviceName(const int d, const int deviceIndex)
 	case INPUT_DEVICE_MOUSE:
 		return "Mouse";
 	case INPUT_DEVICE_JOYSTICK:
-		return SDL_JoystickName(deviceIndex);
+		return JoyName(deviceIndex);
 	case INPUT_DEVICE_AI:
 		return "AI";
 	default:
