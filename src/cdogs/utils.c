@@ -59,6 +59,7 @@
 #include <tinydir/tinydir.h>
 
 #include "events.h"
+#include "joystick.h"
 #include "sys_config.h"
 
 int debug = 0;

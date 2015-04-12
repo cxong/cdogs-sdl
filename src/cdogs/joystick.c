@@ -116,30 +116,13 @@ void JoyTerminate(joysticks_t *joys)
 
 #define JOY_AXIS_THRESHOLD	16384
 
+static void GetAxis(joystick_t *joy);
 void JoyPollOne(joystick_t *joy)
 {
 	joy->previousButtonsField = joy->currentButtonsField;
 	joy->currentButtonsField = 0;
 
-	// Get axes values, convert to direction
-	const int x = SDL_JoystickGetAxis(joy->j, 0);
-	const int y = SDL_JoystickGetAxis(joy->j, 1);
-	if (x < -JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_LEFT;
-	}
-	else if (x > JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_RIGHT;
-	}
-	if (y < -JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_UP;
-	}
-	else if (y > JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_DOWN;
-	}
+	GetAxis(joy);
 
 	// Get hat state, convert to direction
 	for (int i = 0; i < joy->numHats; i++)
@@ -217,6 +200,28 @@ void JoyPollOne(joystick_t *joy)
 	default:
 		// do nothing
 		break;
+	}
+}
+static void GetAxis(joystick_t *joy)
+{
+	// Get axes values, convert to direction
+	const int x = SDL_JoystickGetAxis(joy->j, 0);
+	const int y = SDL_JoystickGetAxis(joy->j, 1);
+	if (x < -JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_LEFT;
+	}
+	else if (x > JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_RIGHT;
+	}
+	if (y < -JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_UP;
+	}
+	else if (y > JOY_AXIS_THRESHOLD)
+	{
+		joy->currentButtonsField |= CMD_DOWN;
 	}
 }
 
