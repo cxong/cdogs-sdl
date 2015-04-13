@@ -8,10 +8,10 @@
 #include <sys_specifics.h>
 
 // Stubs
-extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
+const char *JoyName(const int deviceIndex)
 {
-	UNUSED(device_index);
-	return "";
+	UNUSED(deviceIndex);
+	return NULL;
 }
 
 FEATURE(1, "Path functions")

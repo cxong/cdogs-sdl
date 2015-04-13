@@ -9,10 +9,10 @@ Mix_Chunk *StrSound(const char *s)
 	UNUSED(s);
 	return NULL;
 }
-extern DECLSPEC const char * SDLCALL SDL_JoystickName(int device_index)
+const char *JoyName(const int deviceIndex)
 {
-	UNUSED(device_index);
-	return "";
+	UNUSED(deviceIndex);
+	return NULL;
 }
 int ConfigGetBool(void) { return 0; }
 int PicManagerGetPic(void) { return 0; }

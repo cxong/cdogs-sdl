@@ -41,6 +41,11 @@ const GunDescription *StrGunDescription(const char *s)
 	UNUSED(s);
 	return NULL;
 }
+const char *JoyName(const int deviceIndex)
+{
+	UNUSED(deviceIndex);
+	return NULL;
+}
 Config gConfig;
 PicManager gPicManager;
 

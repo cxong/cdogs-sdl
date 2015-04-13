@@ -55,7 +55,6 @@
 #include <math.h>
 #include <string.h>
 
-#include <SDL_joystick.h>
 #include <tinydir/tinydir.h>
 
 #include "events.h"
