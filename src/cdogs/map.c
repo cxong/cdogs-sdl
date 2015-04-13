@@ -428,6 +428,13 @@ bool MapTryPlaceOneObject(
 	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode)
 {
+	// Don't place ammo spawners if ammo is disabled
+	if (!ConfigGetBool(&gConfig, "Game.Ammo") &&
+		mo->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER &&
+		mo->u.PickupClass->Type == PICKUP_AMMO)
+	{
+		return false;
+	}
 	Vec2i realPos = Vec2iCenterOfTile(v);
 	int tileFlags = 0;
 	Tile *t = MapGetTile(map, v);

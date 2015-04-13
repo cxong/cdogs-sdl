@@ -124,15 +124,15 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//   - else
 	//     - Go to nearest player
 
-	// First, check the weapon
+	// First, check the weapon for ammo
+	int lowAmmoGun = -1;
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
 		// Check all our weapons
-		int mostPreferredWeaponWithAmmo = -1;
 		// Prefer guns using ammo
 		// This is because unlimited ammo guns tend to be worse
+		int mostPreferredWeaponWithAmmo = -1;
 		bool mostPreferredWeaponHasAmmo = false;
-		int lowAmmoGun = -1;
 		CA_FOREACH(const Weapon, w, actor->guns)
 		const int ammoAmount = ActorGunGetAmmo(actor, w);
 		if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
@@ -153,27 +153,27 @@ static int AICoopGetCmdNormal(TActor *actor)
 		}
 		CA_FOREACH_END()
 
-		// If we're over a weapon pickup, check if we want to pick it up
-		// Pick up if we have a weapon that is low on ammo, or if we have
-		// a free slot
-		if (actor->aiContext->OnGunId != -1)
-		{
-			actor->aiContext->OnGunId = -1;
-			if (lowAmmoGun != -1 || actor->guns.size < MAX_WEAPONS)
-			{
-				// Pick it up
-				// TODO: this will not guarantee the new gun will replace
-				// the low ammo gun; weapon management?
-				return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
-			}
-		}
-
 		// If we're out of ammo, switch to one with ammo
 		// Prioritise our selection based on weapon order, i.e.
 		// prefer first weapon over second over third etc.
 		if (mostPreferredWeaponWithAmmo != -1 &&
 			mostPreferredWeaponWithAmmo != actor->gunIndex)
 		{
+			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
+		}
+	}
+
+	// If we're over a weapon pickup, check if we want to pick it up
+	// Pick up if we have a weapon that is low on ammo, or if we have
+	// a free slot
+	if (actor->aiContext->OnGunId != -1)
+	{
+		actor->aiContext->OnGunId = -1;
+		if (lowAmmoGun != -1 || actor->guns.size < MAX_WEAPONS)
+		{
+			// Pick it up
+			// TODO: this will not guarantee the new gun will replace
+			// the low ammo gun; weapon management?
 			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
 		}
 	}
