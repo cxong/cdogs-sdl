@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -164,6 +164,7 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
 static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset);
+static void DrawChatters(DrawBuffer *b, Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
@@ -176,6 +177,8 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	DrawWallsAndThings(b, offset);
 	// Draw objective highlights, for visible and always-visible objectives
 	DrawObjectiveHighlights(b, offset);
+	// Draw actor chatter
+	DrawChatters(b, offset);
 	// Draw editor-only things
 	if (extra)
 	{
@@ -301,8 +304,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-static void DrawActorPics(
-	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos);
+static void DrawActorPics(const TTileItem *t, const Vec2i picPos);
 static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
@@ -332,7 +334,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	}
 	else if (t->getActorPicsFunc)
 	{
-		DrawActorPics(b, t, offset, picPos);
+		DrawActorPics(t, picPos);
 	}
 	else
 	{
@@ -341,8 +343,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 }
 #define ACTOR_HEIGHT 25
 static void DrawLaserSight(const TActor *a, const Vec2i picPos);
-static void DrawActorPics(
-	DrawBuffer *b, const TTileItem *t, const Vec2i offset, const Vec2i picPos)
+static void DrawActorPics(const TTileItem *t, const Vec2i picPos)
 {
 	const ActorPics pics = t->getActorPicsFunc(t->id);
 	if (pics.IsDead)
@@ -414,16 +415,6 @@ static void DrawActorPics(
 			(ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_PLAYERS && a->playerIndex >= 0))
 		{
 			DrawLaserSight(a, picPos);
-		}
-
-		// Draw character text
-		if (strlen(a->Chatter) > 0)
-		{
-			const Vec2i textPos = Vec2iNew(
-				a->tileItem.x - b->xTop + offset.x -
-				FontStrW(a->Chatter) / 2,
-				a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
-			FontStr(a->Chatter, textPos);
 		}
 	}
 }
@@ -538,6 +529,44 @@ static void DrawObjectiveHighlight(
 				}
 			}
 		}
+	}
+}
+
+static void DrawChatter(
+	const TTileItem *ti, DrawBuffer *b, const Vec2i offset);
+static void DrawChatters(DrawBuffer *b, Vec2i offset)
+{
+	const Tile *tile = &b->tiles[0][0];
+	for (int y = 0; y < Y_TILES; y++)
+	{
+		for (int x = 0; x < b->Size.x; x++, tile++)
+		{
+			for (int i = 0; i < (int)tile->things.size; i++)
+			{
+				const TTileItem *ti =
+					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+				if (ti->getActorPicsFunc == NULL)
+				{
+					continue;
+				}
+				DrawChatter(ti, b, offset);
+			}
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+static void DrawChatter(
+	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
+{
+	const TActor *a = CArrayGet(&gActors, ti->id);
+	// Draw character text
+	if (strlen(a->Chatter) > 0)
+	{
+		const Vec2i textPos = Vec2iNew(
+			a->tileItem.x - b->xTop + offset.x -
+			FontStrW(a->Chatter) / 2,
+			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+		FontStr(a->Chatter, textPos);
 	}
 }
 
