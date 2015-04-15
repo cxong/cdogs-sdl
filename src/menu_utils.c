@@ -113,7 +113,7 @@ void MenuDisplayPlayerControls(
 			Vec2i textPos = Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH());
 			FontStr(s, textPos);
 			textPos.y += FontH();
-			color_t c;
+			color_t c = colorWhite;
 			const char *buttonName =
 				InputGetButtonNameColor(*playerIndex, CMD_BUTTON1, &c);
 			textPos = FontStrMask(buttonName, textPos, c);

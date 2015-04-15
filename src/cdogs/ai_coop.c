@@ -242,10 +242,11 @@ static int AICoopGetCmdNormal(TActor *actor)
 			}
 			// Move to the ideal distance for the weapon
 			int cmd = 0;
-			const int gunRange = GunGetRange(ActorGetGun(actor)->Gun);
+			const GunDescription *gun = ActorGetGun(actor)->Gun;
+			const int gunRange = GunGetRange(gun);
 			const int distanceSquared = DistanceSquared(
 				Vec2iFull2Real(actor->Pos), Vec2iFull2Real(closestEnemy->Pos));
-			const bool canFire = ActorGetGun(actor)->lock <= 0;
+			const bool canFire = gun->CanShoot && ActorGetGun(actor)->lock <= 0;
 			if ((double)distanceSquared >
 				SQUARED(gunRange * 3 / 4) * actor->aiContext->GunRangeScalar)
 			{

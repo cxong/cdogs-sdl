@@ -925,7 +925,7 @@ void HUDDraw(HUD *hud, int isPaused)
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
-		color_t c;
+		color_t c = colorWhite;
 		const char *buttonName = InputGetButtonNameColor(0, CMD_ESC, &c);
 		pos = FontStrMask(buttonName, pos, c);
 		FontStr(" again to quit", pos);
