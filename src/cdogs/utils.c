@@ -170,7 +170,10 @@ void RealPath(const char *src, char *dest)
 		}
 		FILE *f = fopen(srcBuf, "ab+");
 		CASSERT(f != NULL, "internal error: cannot create temp file");
-		fclose(f);
+		if (f != NULL)
+		{
+			fclose(f);
+		}
 	}
 #endif
 	char *res = realpath(src, dest);

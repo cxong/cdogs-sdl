@@ -3,6 +3,7 @@
 src/cdogs-sdl
 src/cdogs-sdl-editor
 src/net_input_client
+cdogs-sdl.opk
 # tests
 src/tests/autosave_test
 src/tests/c_array_test

@@ -42,6 +42,8 @@ SET(LINKDIR /usr/games)
 
 if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
+else()
+	add_definitions(-DNDEBUG)
 endif()
 
 find_package(SDL REQUIRED)
