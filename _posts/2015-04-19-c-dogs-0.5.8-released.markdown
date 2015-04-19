@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "C-Dogs 0.5.8 Released!"
+date:   2015-04-19
+categories: release
+---
+
+This release contains an all-new game mode, **deathmatch**! Duke it out with friends (or AI) in a single round, limited lives, last one standing wins!
+
+There were many features added to support this release, including:
+
+- Ammo
+- Weapon pickups
+- Deathmatch maps
+
+And many more! Details will be coming with future posts...
+
+Downloads: <https://sourceforge.net/projects/c-dogs-sdl/files/>
+
+Full release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.8>
