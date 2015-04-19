@@ -66,6 +66,7 @@ static void LoadArchivePics(
 	PicManager *pm, const char *archive, const char *dirname);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
+	debug(D_NORMAL, "Loading archive map %s\n", filename);
 	int err = 0;
 	json_t *root = ReadPhysFSJSON(filename, "campaign.json");
 	if (root == NULL)
@@ -175,6 +176,8 @@ static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
 	PHYSFS_File *f = NULL;
 	char *buf = NULL;
 
+	debug(D_VERBOSE, "Loading physFS json %s %s\n", archive, filename);
+
 	if (!PHYSFS_addToSearchPath(archive, 0))
 	{
 		printf("Failed to add to search path. reason: %s.\n",
@@ -235,7 +238,7 @@ static void LoadArchiveSounds(
 	rc = PHYSFS_enumerateFiles(dirname);
 	if (rc == NULL)
 	{
-		return;
+		goto bail;
 	}
 
 	for (char **i = rc; *i != NULL; i++)
@@ -307,7 +310,7 @@ static void LoadArchivePics(
 	rc = PHYSFS_enumerateFiles(dirname);
 	if (rc == NULL)
 	{
-		return;
+		goto bail;
 	}
 
 	for (char **i = rc; *i != NULL; i++)

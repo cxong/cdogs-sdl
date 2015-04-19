@@ -112,6 +112,8 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
 
+	debug(D_NORMAL, "Loading map %s\n", filename);
+
 	if (IsCampaignOldFile(filename))
 	{
 		CampaignSettingOld cOld;

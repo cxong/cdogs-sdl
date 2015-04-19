@@ -172,6 +172,8 @@ static void StartGameMode(menu_t *menu, void *data)
 	UNUSED(menu);
 	StartGameModeData *mData = data;
 	gCampaign.Entry.Mode = mData->GameMode;
+	debug(D_NORMAL, "Starting game mode %s %d\n",
+		mData->Entry->Path, (int)mData->GameMode);
 	if (!CampaignLoad(&gCampaign, mData->Entry))
 	{
 		// Failed to load
