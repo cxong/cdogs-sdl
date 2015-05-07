@@ -1,5 +1,5 @@
-add_subdirectory(hqx/src)
-include_directories(hqx/src ${SDL_INCLUDE_DIR})
+add_subdirectory(hqx)
+include_directories(hqx ${SDL_INCLUDE_DIR})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actor_placement.c
@@ -161,14 +161,14 @@ set(CDOGS_HEADERS
 	vector.h
 	weapon.h)
 set(HQX_SOURCES
-	hqx/src/common.c
-	hqx/src/hq2x.c
-	hqx/src/hq3x.c
-	hqx/src/hq4x.c
-	hqx/src/init.c)
+	hqx/common.c
+	hqx/hq2x.c
+	hqx/hq3x.c
+	hqx/hq4x.c
+	hqx/init.c)
 set(HQX_HEADERS
-	hqx/src/common.h
-	hqx/src/hqx.h)
+	hqx/common.h
+	hqx/hqx.h)
 set(NANOPB_SOURCES
 	proto/client.pb.c
 	proto/server.pb.c
