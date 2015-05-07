@@ -109,6 +109,7 @@ typedef struct
 	int ReloadLead;
 	Mix_Chunk *Sound;
 	Mix_Chunk *ReloadSound;
+	Mix_Chunk *SwitchSound;
 	int SoundLockLength;
 	double Recoil;		// Random recoil for inaccurate weapons, in radians
 	struct

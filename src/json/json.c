@@ -1310,11 +1310,11 @@ json_unescape (const char *text)
 							char three = 0x80;	/* 10 000000 */
 							char four = 0x80;	/* 10 000000 */
 
-							if (!text[++r] == '\\')
+							if (text[++r] != '\\')
 							{
 								break;
 							}
-							if (!text[++r] == 'u')
+							if (text[++r] != 'u')
 							{
 								break;
 							}

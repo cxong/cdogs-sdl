@@ -101,7 +101,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	{
 		SoundPlayAt(
 			&gSoundDevice,
-			gSoundDevice.switchSound,
+			ActorGetGun(actor)->Gun->SwitchSound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
 	}
 }

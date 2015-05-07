@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SOUNDS
-#define __SOUNDS
+#pragma once
 
 #include <stdbool.h>
 
@@ -93,7 +92,6 @@ typedef struct
 	// Some commonly-used sounds, store them here for quick access
 	Mix_Chunk *footstepSound;
 	Mix_Chunk *slideSound;
-	Mix_Chunk *switchSound;
 	Mix_Chunk *pickupSound;
 	Mix_Chunk *healthSound;
 	Mix_Chunk *clickSound;
@@ -142,5 +140,3 @@ void SoundPlayAtPlusDistance(
 
 Mix_Chunk *StrSound(const char *s);
 Mix_Chunk *SoundGetRandomScream(SoundDevice *device);
-
-#endif

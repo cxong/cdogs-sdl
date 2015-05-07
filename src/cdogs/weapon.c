@@ -236,8 +236,8 @@ static void LoadGunDescription(
 	LoadInt(&g->ReloadLead, node, "ReloadLead");
 
 	LoadSoundFromNode(&g->Sound, node, "Sound");
-
 	LoadSoundFromNode(&g->ReloadSound, node, "ReloadSound");
+	LoadSoundFromNode(&g->SwitchSound, node, "SwitchSound");
 
 	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 

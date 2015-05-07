@@ -211,8 +211,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 					}
 				}
 
-				// TODO: gun-specific pickup sound
-				sound = gSoundDevice.switchSound;
+				sound = IdGunDescription(p->class->u.GunId)->SwitchSound;
 			}
 			else
 			{

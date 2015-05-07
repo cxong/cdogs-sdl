@@ -10,6 +10,7 @@
     "ReloadLead": 0,
     "Sound": "bang",
     "ReloadSound": "",
+    "SwitchSound": "switch",
     "SoundLockLength": 0,
     "Recoil": 0,
     "SpreadCount": 1,
