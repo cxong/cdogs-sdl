@@ -31,6 +31,7 @@
       "Cost": 0,
       "Lock": 10,
       "Sound": "",
+      "SwitchSound": "knife_switch",
       "SoundLockLength": 10,
       "CanShoot": false
     },
@@ -43,6 +44,7 @@
       "Cost": 1,
       "Lock": 6,
       "Sound": "mg",
+      "SwitchSound": "mg_switch",
       "Recoil": 0.17,
       "MuzzleFlashParticle": "muzzle_flash_mg",
       "Brass": "brass_big",
@@ -58,6 +60,7 @@
       "Cost": 20,
       "Lock": 30,
       "Sound": "launch",
+      "SwitchSound": "grenade_pickup",
       "Elevation": 24,
       "Ammo": "Grenades"
     },
@@ -70,6 +73,7 @@
       "Cost": 1,
       "Lock": 6,
       "Sound": "flamer",
+      "SwitchSound": "flamer_switch",
       "SoundLockLength": 36,
       "MuzzleFlashParticle": "muzzle_flash_flamer",
       "Ammo": "Gas tank"
@@ -85,6 +89,7 @@
       "ReloadLead": 10,
       "Sound": "shotgun",
       "ReloadSound": "shotgun_r",
+      "SwitchSound": "shotgun_r",
       "SpreadCount": 5,
       "SpreadWidth": 0.2,
       "MuzzleFlashParticle": "muzzle_flash_shotgun",
@@ -100,6 +105,7 @@
       "Cost": 2,
       "Lock": 20,
       "Sound": "fusion",
+      "SwitchSound": "powergun_switch",
       "MuzzleFlashParticle": "muzzle_flash_powergun",
       "Ammo": "Cells"
     },
@@ -113,6 +119,7 @@
       "Cost": 20,
       "Lock": 30,
       "Sound": "launch",
+      "SwitchSound": "grenade_pickup",
       "Elevation": 24,
       "Ammo": "Frag grenades"
     },
@@ -126,6 +133,7 @@
       "Cost": 20,
       "Lock": 30,
       "Sound": "launch",
+      "SwitchSound": "molotov_pickup",
       "Elevation": 24,
       "Ammo": "Molotovs"
     },
@@ -140,6 +148,7 @@
       "ReloadLead": 15,
       "Sound": "powergun",
       "ReloadSound": "powergun_r",
+      "SwitchSound": "powergun_r",
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "00ffff",
       "MuzzleFlashDuration": 10,
@@ -157,6 +166,7 @@
       "ReloadLead": 15,
       "Sound": "hahaha",
       "ReloadSound": "package_r",
+      "SwitchSound": "mine_switch",
       "MuzzleHeight": 0,
       "Ammo": "Mines"
     },
@@ -172,6 +182,7 @@
       "ReloadLead": 15,
       "Sound": "hahaha",
       "ReloadSound": "package_r",
+      "SwitchSound": "package_r",
       "MuzzleHeight": 0,
       "Ammo": "Dynamite"
     },
@@ -185,6 +196,7 @@
       "Cost": 7,
       "Lock": 30,
       "Sound": "launch",
+      "SwitchSound": "grenade_pickup",
       "Elevation": 24,
       "Ammo": "Gas bombs"
     },
@@ -199,6 +211,7 @@
       "ReloadLead": 15,
       "Sound": "powergun",
       "ReloadSound": "powergun_r",
+      "SwitchSound": "powergun_r",
       "MuzzleFlashParticle": "muzzle_flash_petrifier",
       "Ammo": "Cells"
     },
@@ -211,6 +224,7 @@
       "Cost": 5,
       "Lock": 30,
       "Sound": "fusion",
+      "SwitchSound": "powergun_r",
       "MuzzleFlashParticle": "muzzle_flash_browny",
       "Ammo": "Cells"
     },
@@ -224,6 +238,7 @@
       "Cost": 10,
       "Lock": 30,
       "Sound": "launch",
+      "SwitchSound": "grenade_pickup",
       "Elevation": 24,
       "Ammo": "Gas bombs"
     },
@@ -236,6 +251,7 @@
       "Cost": 1,
       "Lock": 6,
       "Sound": "flamer",
+      "SwitchSound": "flamer_switch",
       "SoundLockLength": 36,
       "MuzzleFlashParticle": "muzzle_flash_gasgun",
       "Ammo": "Gas tank"
@@ -249,6 +265,7 @@
       "Cost": 1,
       "Lock": 4,
       "Sound": "pulse",
+      "SwitchSound": "pulse_switch",
       "Recoil": 0.37,
       "MuzzleFlashParticle": "muzzle_flash_pulse",
       "Ammo": "Mini cells"
@@ -262,6 +279,7 @@
       "Cost": 7,
       "Lock": 30,
       "Sound": "swell",
+      "SwitchSound": "heatseeker_switch",
       "MuzzleFlashParticle": "muzzle_flash_heatseeker",
       "Ammo": "Rockets"
     },
@@ -276,6 +294,7 @@
       "SpreadCount": 4,
       "SpreadWidth": 0.4,
       "Sound": "swarmer",
+      "SwitchSound": "swarmer_switch",
       "MuzzleFlashParticle": "muzzle_flash_heatseeker",
       "Ammo": "Rockets"
     },
@@ -287,6 +306,7 @@
       "Cost": 15,
       "Lock": 70,
       "Sound": "rocket_launch",
+      "SwitchSound": "launcher_switch",
       "MuzzleFlashParticle": "muzzle_flash_shotgun",
       "Ammo": "Rockets"
     },
@@ -298,6 +318,7 @@
       "Cost": 0,
       "Lock": 18,
       "Sound": "pistol",
+      "SwitchSound": "pistol_switch",
       "Recoil": 0.1,
       "Brass": "brass"
     }
