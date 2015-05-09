@@ -63,7 +63,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 		p->weapons[p->weaponCount] = *selectedWeapon;
 		p->weaponCount++;
-		MenuPlaySound(MENU_SOUND_ENTER);
+		SoundPlay(&gSoundDevice, (*selectedWeapon)->SwitchSound);
 
 		// Note: need to enable before disabling otherwise
 		// menu index is not updated properly
