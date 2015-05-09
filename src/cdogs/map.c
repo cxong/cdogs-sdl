@@ -768,14 +768,6 @@ static Trigger *CreateOpenDoorTrigger(
 
 	t->flags = flags;
 
-	/// play sound at the center of the door group
-	a = TriggerAddAction(t);
-	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
-		v.x + dv.x * doorGroupCount / 2,
-		v.y + dv.y * doorGroupCount / 2));
-	a->a.Sound = StrSound("door");
-
 	// Deactivate itself
 	a = TriggerAddAction(t);
 	a->Type = ACTION_CLEARTRIGGER;
@@ -841,6 +833,14 @@ static Trigger *CreateOpenDoorTrigger(
 		vAside = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
 		TileAddTrigger(MapGetTile(map, vAside), t);
 	}
+
+	/// play sound at the center of the door group
+	a = TriggerAddAction(t);
+	a->Type = ACTION_SOUND;
+	a->u.pos = Vec2iCenterOfTile(Vec2iNew(
+		v.x + dv.x * doorGroupCount / 2,
+		v.y + dv.y * doorGroupCount / 2));
+	a->a.Sound = StrSound("door");
 
 	return t;
 }
