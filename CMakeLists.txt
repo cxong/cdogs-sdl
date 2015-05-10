@@ -258,6 +258,10 @@ elseif(APPLE)
 	set(CPACK_SYSTEM_NAME "OSX")
 	set(CPACK_PACKAGE_ICON
 		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/cdogs-icon.icns")
+	set(CPACK_DMG_BACKGROUND_IMAGE
+		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/dmg_bg.png")
+	set(CPACK_DMG_DS_STORE
+		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/DS_Store")
 
 	# copy SDL frameworks into app bundle for Mac OS X
 	set(APPS cdogs-sdl cdogs-sdl-editor)
