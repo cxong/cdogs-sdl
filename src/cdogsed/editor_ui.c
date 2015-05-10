@@ -1685,7 +1685,8 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = pos;
-	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
+	CSTRDUP(
+		o2->Tooltip, "Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
@@ -1694,7 +1695,8 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Data = co;
 	o2->Id = YC_SPECIALS;
 	o2->Pos = pos;
-	CSTRDUP(o2->Tooltip, "Use Insert, Delete and PageUp/PageDown");
+	CSTRDUP(
+		o2->Tooltip, "Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateSpecialCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
@@ -1711,7 +1713,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Id = YC_ITEMS;
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip,
-		"Use Insert, Delete and PageUp/PageDown\n"
+		"Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown\n"
 		"Shift+click to change amounts");
 	UIObjectAddChild(o2, CreateMapItemObjs(co, pos.y));
 	UIObjectAddChild(c, o2);

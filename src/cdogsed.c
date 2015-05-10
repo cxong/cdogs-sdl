@@ -762,6 +762,8 @@ static void Delete(int xc, int yc)
 	Setup(0);
 }
 
+static void InputInsert(int *xc, const int yc, Mission *mission);
+static void InputDelete(const int xc, const int yc);
 static HandleInputResult HandleInput(
 	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
 {
@@ -954,9 +956,12 @@ static HandleInputResult HandleInput(
 		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
 	}
 	bool hasQuit = false;
-	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (c != 0)
 	{
 		result.Redraw = true;
+	}
+	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	{
 		switch (c)
 		{
 		case 'z':
@@ -1015,6 +1020,14 @@ static HandleInputResult HandleInput(
 			}
 			break;
 
+		case 'i':
+			InputInsert(xc, *yc, mission);
+			break;
+
+		case 'd':
+			InputDelete(*xc, *yc);
+			break;
+
 		case 'q':
 			hasQuit = true;
 			break;
@@ -1052,10 +1065,6 @@ static HandleInputResult HandleInput(
 	}
 	else
 	{
-		if (c != 0)
-		{
-			result.Redraw = true;
-		}
 		switch (c)
 		{
 		case SDLK_F1:
@@ -1079,59 +1088,11 @@ static HandleInputResult HandleInput(
 			break;
 
 		case SDLK_INSERT:
-			switch (*yc)
-			{
-			case YC_CHARACTERS:
-				if (gCampaign.Setting.characters.OtherChars.size > 0)
-				{
-					int ch = 0;
-					CArrayPushBack(&mission->Enemies, &ch);
-					CharacterStoreAddBaddie(&gCampaign.Setting.characters, ch);
-					*xc = mission->Enemies.size - 1;
-				}
-				break;
-
-			case YC_SPECIALS:
-				if (gCampaign.Setting.characters.OtherChars.size > 0)
-				{
-					int ch = 0;
-					CArrayPushBack(&mission->SpecialChars, &ch);
-					CharacterStoreAddSpecial(&gCampaign.Setting.characters, ch);
-					*xc = mission->SpecialChars.size - 1;
-				}
-				break;
-
-			case YC_ITEMS:
-				{
-					MapObjectDensity mod;
-					mod.M = IndexMapObject(0);
-					mod.Density = 0;
-					CArrayPushBack(&mission->MapObjectDensities, &mod);
-					*xc = mission->MapObjectDensities.size - 1;
-				}
-				break;
-
-			default:
-				if (*yc >= YC_OBJECTIVES)
-				{
-					AddObjective(mission);
-				}
-				else
-				{
-					InsertMission(&gCampaign, NULL, gCampaign.MissionIndex);
-				}
-				break;
-			}
-			fileChanged = 1;
-			Setup(0);
+			InputInsert(xc, *yc, mission);
 			break;
 
 		case SDLK_DELETE:
-			Delete(*xc, *yc);
-			// Unhighlight everything (in case this is the last mission)
-			UIObjectUnhighlight(sObjs);
-			CArrayTerminate(&sDrawObjs);
-			sLastHighlightedObj = NULL;
+			InputDelete(*xc, *yc);
 			break;
 
 		case SDLK_PAGEUP:
@@ -1182,6 +1143,62 @@ static HandleInputResult HandleInput(
 		sIgnoreMouse = false;
 	}
 	return result;
+}
+static void InputInsert(int *xc, const int yc, Mission *mission)
+{
+	switch (yc)
+	{
+	case YC_CHARACTERS:
+		if (gCampaign.Setting.characters.OtherChars.size > 0)
+		{
+			int ch = 0;
+			CArrayPushBack(&mission->Enemies, &ch);
+			CharacterStoreAddBaddie(&gCampaign.Setting.characters, ch);
+			*xc = mission->Enemies.size - 1;
+		}
+		break;
+
+	case YC_SPECIALS:
+		if (gCampaign.Setting.characters.OtherChars.size > 0)
+		{
+			int ch = 0;
+			CArrayPushBack(&mission->SpecialChars, &ch);
+			CharacterStoreAddSpecial(&gCampaign.Setting.characters, ch);
+			*xc = mission->SpecialChars.size - 1;
+		}
+		break;
+
+	case YC_ITEMS:
+		{
+			MapObjectDensity mod;
+			mod.M = IndexMapObject(0);
+			mod.Density = 0;
+			CArrayPushBack(&mission->MapObjectDensities, &mod);
+			*xc = mission->MapObjectDensities.size - 1;
+		}
+		break;
+
+	default:
+		if (yc >= YC_OBJECTIVES)
+		{
+			AddObjective(mission);
+		}
+		else
+		{
+			InsertMission(&gCampaign, NULL, gCampaign.MissionIndex);
+		}
+		break;
+	}
+	fileChanged = 1;
+	Setup(0);
+}
+static void InputDelete(const int xc, const int yc)
+{
+	Delete(xc, yc);
+	// Unhighlight everything (in case this is the last mission)
+	UIObjectUnhighlight(sObjs);
+	CArrayTerminate(&sDrawObjs);
+	sLastHighlightedObj = NULL;
 }
 
 static void EditCampaign(void)
