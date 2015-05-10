@@ -57,9 +57,9 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 {
+	Mission defaultMission;
 	if (mission == NULL)
 	{
-		Mission defaultMission;
 		MissionInit(&defaultMission);
 		defaultMission.Size = Vec2iNew(48, 48);
 		// Set some default values for the mission
