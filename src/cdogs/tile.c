@@ -105,9 +105,17 @@ bool TileIsNormalFloor(Tile *t)
 }
 bool TileIsClear(Tile *t)
 {
-	return
-		!(t->flags & ~(MAPTILE_IS_NORMAL_FLOOR | MAPTILE_IS_DRAINAGE)) &&
-		t->things.size == 0;
+	// Check if tile is normal floor
+	const int normalFloorFlags =
+		MAPTILE_IS_NORMAL_FLOOR | MAPTILE_IS_DRAINAGE | MAPTILE_OFFSET_PIC;
+	if (t->flags & ~normalFloorFlags) return false;
+	// Check if tile has no things on it, excluding particles
+	for (int i = 0; i < (int)t->things.size; i++)
+	{
+		const ThingId *tid = CArrayGet(&t->things, i);
+		if (tid->Kind != KIND_PARTICLE) return false;
+	}
+	return true;
 }
 bool TileHasCharacter(Tile *t)
 {

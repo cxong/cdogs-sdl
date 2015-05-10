@@ -713,13 +713,13 @@ static TWatch *CreateCloseDoorWatch(
 		a->a.ChangeTile.Flags = tileFlags;
 	}
 
-	for (i = 0; i < doorGroupCount; i++)
+	// Add shadows below doors
+	if (isHorizontal)
 	{
-		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
-		a = WatchAddAction(w);
-		if (isHorizontal)
+		for (i = 0; i < doorGroupCount; i++)
 		{
-			// Add shadows below doors
+			const Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
+			a = WatchAddAction(w);
 			a->Type = ACTION_CHANGETILE;
 			a->u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
 			if (IMapGet(map, a->u.pos) == MAP_FLOOR)
