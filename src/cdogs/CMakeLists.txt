@@ -185,24 +185,6 @@ set(NANOPB_HEADERS
     proto/nanopb/pb_encode.h
 )
 
-SET(PHYSFS_LINK_NAME physfs)
-IF(NOT PHYSFS_FOUND)
-	# Configure and include PhysFS
-	set(PHYSFS_ARCHIVE_7Z FALSE CACHE BOOL "Disable 7Z")
-	set(PHYSFS_ARCHIVE_GRP FALSE CACHE BOOL "Disable GRP")
-	set(PHYSFS_ARCHIVE_WAD FALSE CACHE BOOL "Disable WAD")
-	set(PHYSFS_ARCHIVE_HOG FALSE CACHE BOOL "Disable HOG")
-	set(PHYSFS_ARCHIVE_MVL FALSE CACHE BOOL "Disable MVL")
-	set(PHYSFS_ARCHIVE_QPAK FALSE CACHE BOOL "Disable QPAK")
-	set(PHYSFS_BUILD_SHARED FALSE CACHE BOOL "Disable shared library")
-	set(PHYSFS_INTERNAL_ZLIB TRUE CACHE BOOL "Use internal zlib")
-	add_subdirectory(physfs)
-	SET(PHYSFS_LINK_NAME physfs-static)
-	MESSAGE("Using internal physfs library")
-ELSE()
-	MESSAGE("Using system physfs library")
-ENDIF()
-
 # enet
 ADD_SUBDIRECTORY(enet)
 
@@ -215,7 +197,6 @@ add_library(cdogs STATIC
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
 target_link_libraries(cdogs
 	json
-	${PHYSFS_LINK_NAME}
 	${SDL_LIBRARY}
 	${SDLIMAGE_LIBRARY}
 	${SDLMIXER_LIBRARY}

@@ -30,20 +30,22 @@
 #include <locale.h>
 
 #include <SDL_image.h>
+#include <tinydir/tinydir.h>
 
 #include "ammo.h"
 #include "json_utils.h"
 #include "map_new.h"
-#include "physfs/physfs.h"
 #include "pickup.h"
 
 
-static json_t *ReadPhysFSJSON(const char *archive, const char *filename);
+static char *ReadFileIntoBuf(const char *path, const char *mode, long *len);
+
+static json_t *ReadArchiveJSON(const char *archive, const char *filename);
 int MapNewScanArchive(
 	const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
-	json_t *root = ReadPhysFSJSON(filename, "campaign.json");
+	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
 	{
 		err = -1;
@@ -68,7 +70,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	debug(D_NORMAL, "Loading archive map %s\n", filename);
 	int err = 0;
-	json_t *root = ReadPhysFSJSON(filename, "campaign.json");
+	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
 	{
 		err = -1;
@@ -100,27 +102,27 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 
 	LoadArchivePics(&gPicManager, filename, "graphics");
 
-	root = ReadPhysFSJSON(filename, "particles.json");
+	root = ReadArchiveJSON(filename, "particles.json");
 	if (root != NULL)
 	{
 		ParticleClassesLoadJSON(&gParticleClasses.CustomClasses, root);
 	}
 
-	root = ReadPhysFSJSON(filename, "bullets.json");
+	root = ReadArchiveJSON(filename, "bullets.json");
 	if (root != NULL)
 	{
 		BulletLoadJSON(
 			&gBulletClasses, &gBulletClasses.CustomClasses, root);
 	}
 
-	root = ReadPhysFSJSON(filename, "ammo.json");
+	root = ReadArchiveJSON(filename, "ammo.json");
 	if (root != NULL)
 	{
 		AmmoLoadJSON(&gAmmo.CustomAmmo, root);
 		json_free_value(&root);
 	}
 
-	root = ReadPhysFSJSON(filename, "guns.json");
+	root = ReadArchiveJSON(filename, "guns.json");
 	if (root != NULL)
 	{
 		WeaponLoadJSON(
@@ -130,7 +132,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 
 	BulletLoadWeapons(&gBulletClasses);
 
-	root = ReadPhysFSJSON(filename, "pickups.json");
+	root = ReadArchiveJSON(filename, "pickups.json");
 	if (root != NULL)
 	{
 		PickupClassesLoadJSON(&gPickupClasses.CustomClasses, root);
@@ -139,7 +141,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	PickupClassesLoadGuns(
 		&gPickupClasses.CustomClasses, &gGunDescriptions.CustomGuns);
 
-	root = ReadPhysFSJSON(filename, "map_objects.json");
+	root = ReadArchiveJSON(filename, "map_objects.json");
 	if (root != NULL)
 	{
 		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
@@ -147,7 +149,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	MapObjectsLoadAmmoAndGunSpawners(&gMapObjects, &gAmmo, &gGunDescriptions);
 
 
-	root = ReadPhysFSJSON(filename, "missions.json");
+	root = ReadArchiveJSON(filename, "missions.json");
 	if (root == NULL)
 	{
 		err = -1;
@@ -158,7 +160,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	json_free_value(&root);
 
 	// Note: some campaigns don't have characters (e.g. dogfights)
-	root = ReadPhysFSJSON(filename, "characters.json");
+	root = ReadArchiveJSON(filename, "characters.json");
 	if (root != NULL)
 	{
 		LoadCharacters(
@@ -170,37 +172,15 @@ bail:
 	return err;
 }
 
-static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
+static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 {
 	json_t *root = NULL;
-	PHYSFS_File *f = NULL;
-	char *buf = NULL;
-
-	debug(D_VERBOSE, "Loading physFS json %s %s\n", archive, filename);
-
-	if (!PHYSFS_addToSearchPath(archive, 0))
-	{
-		printf("Failed to add to search path. reason: %s.\n",
-			PHYSFS_getLastError());
-		goto bail;
-	}
-
-	f = PHYSFS_openRead(filename);
-	if (f == NULL)
-	{
-		debug(D_NORMAL, "Did not open file %s: %s.\n",
-			filename, PHYSFS_getLastError());
-		goto bail;
-	}
-
-	// Read into buffer
-	int len = (int)PHYSFS_fileLength(f);
-	CCALLOC(buf, len + 1);
-	if (PHYSFS_read(f, buf, 1, len) < len)
-	{
-		printf("PHYSFS_read() failed: %s.\n", PHYSFS_getLastError());
-		goto bail;
-	}
+	debug(D_VERBOSE, "Loading archive json %s %s\n", archive, filename);
+	char path[CDOGS_PATH_MAX];
+	sprintf(path, "%s/%s", archive, filename);
+	long len;
+	char *buf = ReadFileIntoBuf(path, "r", &len);
+	if (buf == NULL) goto bail;
 	if (json_parse_document(&root, buf) != JSON_OK)
 	{
 		printf("Invalid syntax in JSON file %s.\n", filename);
@@ -210,62 +190,36 @@ static json_t *ReadPhysFSJSON(const char *archive, const char *filename)
 
 bail:
 	CFREE(buf);
-	if (f != NULL && !PHYSFS_close(f))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
-	if (!PHYSFS_removeFromSearchPath(archive))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
 	return root;
 }
 
 static void LoadArchiveSounds(
 	SoundDevice *device, const char *archive, const char *dirname)
 {
-	char **rc = NULL;
-	PHYSFS_File *f = NULL;
 	char *buf = NULL;
 
-	if (!PHYSFS_addToSearchPath(archive, 0))
+	char path[CDOGS_PATH_MAX];
+	sprintf(path, "%s/%s", archive, dirname);
+	tinydir_dir dir;
+	if (tinydir_open(&dir, path) != 0)
 	{
-		printf("Failed to add to search path. reason: %s.\n",
-			PHYSFS_getLastError());
+		printf("Failed to open folder %s: %s\n", path, strerror(errno));
 		goto bail;
 	}
-	
-	rc = PHYSFS_enumerateFiles(dirname);
-	if (rc == NULL)
+	while (dir.has_next)
 	{
-		goto bail;
-	}
-
-	for (char **i = rc; *i != NULL; i++)
-	{
-		char path[CDOGS_PATH_MAX];
-		sprintf(path, "%s/%s", dirname, *i);
-		f = PHYSFS_openRead(path);
-		if (f == NULL)
-		{
-			printf("failed to open %s. Reason: [%s].\n",
-				path, PHYSFS_getLastError());
-			goto bail;
-		}
-		int len = (int)PHYSFS_fileLength(f);
-		CCALLOC(buf, len + 1);
-		if (PHYSFS_read(f, buf, 1, len) < len)
-		{
-			printf("PHYSFS_read() %s failed: %s.\n",
-				path, PHYSFS_getLastError());
-			goto bail;
-		}
+		tinydir_file file;
+		tinydir_readfile(&dir, &file);
+		if (!file.is_reg) goto nextFile;
+		long len;
+		buf = ReadFileIntoBuf(file.path, "rb", &len);
+		if (buf == NULL) goto nextFile;
 		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
 		Mix_Chunk *data = Mix_LoadWAV_RW(rwops, 0);
 		if (data != NULL)
 		{
 			char nameBuf[CDOGS_FILENAME_MAX];
-			strcpy(nameBuf, *i);
+			strcpy(nameBuf, file.name);
 			// Remove extension
 			char *dot = strrchr(nameBuf, '.');
 			if (dot != NULL)
@@ -275,63 +229,43 @@ static void LoadArchiveSounds(
 			SoundAdd(&device->customSounds, nameBuf, data);
 		}
 		rwops->close(rwops);
+	nextFile:
 		CFREE(buf);
 		buf = NULL;
-		PHYSFS_close(f);
-		f = NULL;
+		if (tinydir_next(&dir) != 0)
+		{
+			printf(
+				"Could not go to next file in dir %s: %s\n",
+				path, strerror(errno));
+			goto bail;
+		}
 	}
 
 bail:
 	CFREE(buf);
-	if (f != NULL && !PHYSFS_close(f))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
-	if (!PHYSFS_removeFromSearchPath(archive))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
-	PHYSFS_freeList(rc);
+	tinydir_close(&dir);
 }
 static void LoadArchivePics(
 	PicManager *pm, const char *archive, const char *dirname)
 {
-	char **rc = NULL;
-	PHYSFS_File *f = NULL;
 	char *buf = NULL;
 
-	if (!PHYSFS_addToSearchPath(archive, 0))
+	char path[CDOGS_PATH_MAX];
+	sprintf(path, "%s/%s", archive, dirname);
+	tinydir_dir dir;
+	if (tinydir_open(&dir, path) != 0)
 	{
-		printf("Failed to add to search path. reason: %s.\n",
-			PHYSFS_getLastError());
+		printf("Failed to open folder %s: %s\n", path, strerror(errno));
 		goto bail;
 	}
-
-	rc = PHYSFS_enumerateFiles(dirname);
-	if (rc == NULL)
+	while (dir.has_next)
 	{
-		goto bail;
-	}
-
-	for (char **i = rc; *i != NULL; i++)
-	{
-		char path[CDOGS_PATH_MAX];
-		sprintf(path, "%s/%s", dirname, *i);
-		f = PHYSFS_openRead(path);
-		if (f == NULL)
-		{
-			printf("failed to open %s. Reason: [%s].\n",
-				path, PHYSFS_getLastError());
-			goto bail;
-		}
-		int len = (int)PHYSFS_fileLength(f);
-		CCALLOC(buf, len + 1);
-		if (PHYSFS_read(f, buf, 1, len) < len)
-		{
-			printf("PHYSFS_read() %s failed: %s.\n",
-				path, PHYSFS_getLastError());
-			goto bail;
-		}
+		tinydir_file file;
+		tinydir_readfile(&dir, &file);
+		if (!file.is_reg) goto nextFile;
+		long len;
+		buf = ReadFileIntoBuf(file.path, "rb", &len);
+		if (buf == NULL) goto nextFile;
 		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
 		bool isPng = IMG_isPNG(rwops);
 		if (isPng)
@@ -340,29 +274,76 @@ static void LoadArchivePics(
 			if (data != NULL)
 			{
 				char nameBuf[CDOGS_FILENAME_MAX];
-				PathGetBasenameWithoutExtension(nameBuf, *i);
+				PathGetBasenameWithoutExtension(nameBuf, file.path);
 				PicManagerAdd(&pm->customPics, &pm->customSprites, nameBuf, data);
 			}
 		}
 		rwops->close(rwops);
+	nextFile:
 		CFREE(buf);
 		buf = NULL;
-		PHYSFS_close(f);
-		f = NULL;
+		if (tinydir_next(&dir) != 0)
+		{
+			printf(
+				"Could not go to next file in dir %s: %s\n",
+				path, strerror(errno));
+			goto bail;
+		}
 	}
 
 bail:
 	CFREE(buf);
-	if (f != NULL && !PHYSFS_close(f))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
-	if (!PHYSFS_removeFromSearchPath(archive))
-	{
-		printf("PHYSFS failure. reason: %s.\n", PHYSFS_getLastError());
-	}
-	PHYSFS_freeList(rc);
+	tinydir_close(&dir);
 }
+
+static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)
+{
+	char *buf = NULL;
+	FILE *f = fopen(path, mode);
+	if (f == NULL)
+	{
+		debug(D_NORMAL, "Did not open file %s: %s.\n", path, strerror(errno));
+		goto bail;
+	}
+
+	// Read into buffer
+	if (fseek(f, 0L, SEEK_END) != 0)
+	{
+		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
+		goto bail;
+	}
+	*len = ftell(f);
+	if (*len == -1)
+	{
+		debug(D_NORMAL, "Cannot tell file %s: %s.\n", path, strerror(errno));
+		goto bail;
+	}
+	CCALLOC(buf, *len + 1);
+	if (fseek(f, 0L, SEEK_SET) != 0)
+	{
+		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
+		goto bail;
+	}
+	if (fread(buf, 1, *len, f) == 0)
+	{
+		debug(D_NORMAL, "Cannot read file %s: %s.\n", path, strerror(errno));
+		goto bail;
+	}
+
+	goto end;
+
+bail:
+	CFREE(buf);
+	buf = NULL;
+
+end:
+	if (f != NULL && fclose(f) != 0)
+	{
+		debug(D_NORMAL, "Cannot close file %s: %s.\n", path, strerror(errno));
+	}
+	return buf;
+}
+
 
 static json_t *SaveMissions(CArray *a);
 static json_t *SaveCharacters(CharacterStore *s);
@@ -372,18 +353,6 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	int res = 1;
 	json_t *root = NULL;
 
-	// Save separate files via physfs
-#ifdef _WIN32
-	if (!PHYSFS_setWriteDir("."))
-#else
-	if (!PHYSFS_setWriteDir("/"))
-#endif
-	{
-		printf("Failed to set write dir. reason: %s.\n",
-			PHYSFS_getLastError());
-		res = 0;
-		goto bail;
-	}
 	char relbuf[CDOGS_PATH_MAX];
 	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
 		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
@@ -396,9 +365,9 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	}
 	char buf[CDOGS_PATH_MAX];
 	RealPath(relbuf, buf);
-	if (!PHYSFS_mkdir(buf))
+	if (mkdir(buf, MKDIR_MODE) != 0)
 	{
-		printf("Failed to make dir. reason: %s.\n", PHYSFS_getLastError());
+		printf("Failed to make dir. reason: %s.\n", strerror(errno));
 		res = 0;
 		goto bail;
 	}
@@ -450,19 +419,19 @@ bool TrySaveJSONFile(json_t *node, const char *filename)
 	char *text;
 	json_tree_to_string(node, &text);
 	char *ftext = json_format_string(text);
-	PHYSFS_File *pf = PHYSFS_openWrite(filename);
-	if (pf == NULL)
+	FILE *f = fopen(filename, "w");
+	if (f == NULL)
 	{
-		printf("failed to open. Reason: [%s].\n", PHYSFS_getLastError());
+		printf("failed to open. Reason: [%s].\n", strerror(errno));
 		res = false;
 		goto bail;
 	}
 	size_t writeLen = strlen(ftext);
-	PHYSFS_sint64 rc = PHYSFS_write(pf, ftext, 1, writeLen);
-	if (rc != (int)writeLen)
+	const size_t rc = fwrite(ftext, 1, writeLen, f);
+	if (rc != writeLen)
 	{
 		printf("Wrote (%d) of (%d) bytes. Reason: [%s].\n",
-			(int)rc, (int)writeLen, PHYSFS_getLastError());
+			(int)rc, (int)writeLen, strerror(errno));
 		res = false;
 		goto bail;
 	}
@@ -470,7 +439,7 @@ bool TrySaveJSONFile(json_t *node, const char *filename)
 bail:
 	CFREE(text);
 	CFREE(ftext);
-	PHYSFS_close(pf);
+	if (f != NULL) fclose(f);
 	return res;
 }
 

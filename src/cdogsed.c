@@ -78,7 +78,6 @@
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
-#include <cdogs/physfs/physfs.h>
 #include <tinydir/tinydir.h>
 
 #include <cdogsed/charsed.h>
@@ -1339,8 +1338,6 @@ int main(int argc, char *argv[])
 
 	EventInit(&gEventHandlers, NULL, false);
 
-	PHYSFS_init(argv[0]);
-
 	for (i = 1; i < argc; i++)
 	{
 		if (!loaded)
@@ -1363,8 +1360,6 @@ int main(int argc, char *argv[])
 
 	debug(D_NORMAL, "Starting editor\n");
 	EditCampaign();
-
-	PHYSFS_deinit();
 
 	CArrayTerminate(&gPlayerTemplates);
 
