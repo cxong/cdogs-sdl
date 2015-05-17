@@ -33,11 +33,7 @@
 #endif
 
 #ifdef _MSC_VER
-/* Windows */
-#define INLINE __inline
-#else
-/* Default / Linux */
-#define INLINE __inline__
+#define inline __inline
 #endif
 
 #ifdef _WIN32

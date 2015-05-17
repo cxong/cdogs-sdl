@@ -54,7 +54,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <hqx.h>
+#include <hqx/hqx.h>
 #include <SDL.h>
 
 #include "config.h"
@@ -392,7 +392,7 @@ void BlitBlend(
 
 #define PixelIndex(x, y, w)		(y * w + x)
 
-static INLINE
+static inline
 void Scale8(Uint32 *d, const Uint32 *s, const int w, const int h, const int sf)
 {
 	int sx;

@@ -53,7 +53,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include <hqx.h>
+#include <hqx/hqx.h>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 

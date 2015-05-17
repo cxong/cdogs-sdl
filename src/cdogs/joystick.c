@@ -180,7 +180,7 @@ void JoyPollOne(joystick_t *joy)
 		int x = SDL_JoystickGetAxis(joy->j, i);
 		if (x < -JOY_AXIS_THRESHOLD || x > JOY_AXIS_THRESHOLD)
 		{
-			printf("axis %d value %d\n", i, x);
+			debug(D_NORMAL, "axis %d value %d\n", i, x);
 		}
 	}
 

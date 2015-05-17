@@ -25,7 +25,6 @@
 */
 #include "c_array.h"
 
-#include <assert.h>
 #include <string.h>
 
 #include "utils.h"
