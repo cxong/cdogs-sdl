@@ -113,7 +113,7 @@ void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
-	if (OpenAudio(22050, AUDIO_S16, 2, 512) != 0)
+	if (OpenAudio(44100, AUDIO_S16, 2, 512) != 0)
 	{
 		return;
 	}
