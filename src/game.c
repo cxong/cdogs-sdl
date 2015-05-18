@@ -366,7 +366,7 @@ typedef struct
 	HUD hud;
 	int frames;
 	// TODO: turn the following into a screen system?
-	bool isPaused;
+	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
 	PowerupSpawner healthSpawner;
@@ -453,6 +453,7 @@ static void RunGameInput(void *data)
 	memset(rData->cmds, 0, sizeof rData->cmds);
 	int cmdAll = 0;
 	int idx = 0;
+	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -466,6 +467,14 @@ static void RunGameInput(void *data)
 			p,
 			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, p, idx));
 		cmdAll |= rData->cmds[idx];
+		if (rData->cmds[idx] & CMD_ESC)
+		{
+			pausingDevice = p->inputDevice;
+		}
+	}
+	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE))
+	{
+		pausingDevice = INPUT_DEVICE_KEYBOARD;
 	}
 
 	// Check if automap key is pressed by any player
@@ -479,24 +488,23 @@ static void RunGameInput(void *data)
 	// If the game was paused, exit the game
 	if (AnyButton(cmdAll))
 	{
-		rData->isPaused = false;
+		rData->pausingDevice = INPUT_DEVICE_UNSET;
 	}
-	else if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE) ||
-		JoyIsPressed(&gEventHandlers.joysticks.joys[0], CMD_ESC))
+	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		// Escape pressed
-		if (rData->isPaused)
+		if (rData->pausingDevice != INPUT_DEVICE_UNSET)
 		{
 			// Exit
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
-			rData->isPaused = false;
+			rData->pausingDevice = INPUT_DEVICE_UNSET;
 		}
 		else
 		{
 			// Pause the game
-			rData->isPaused = true;
+			rData->pausingDevice = pausingDevice;
 		}
 	}
 }
@@ -512,7 +520,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	// Don't update if the game has paused or has automap shown
-	if (rData->isPaused || rData->isMap)
+	if (rData->pausingDevice != INPUT_DEVICE_UNSET || rData->isMap)
 	{
 		return UPDATE_RESULT_DRAW;
 	}
@@ -683,7 +691,7 @@ static void RunGameDraw(void *data)
 	rData->lastPosition =
 		DrawScreen(&rData->buffer, rData->lastPosition, rData->shake);
 
-	HUDDraw(&rData->hud, rData->isPaused);
+	HUDDraw(&rData->hud, rData->pausingDevice);
 	if (GameIsMouseUsed())
 	{
 		MouseDraw(&gEventHandlers.mouse);

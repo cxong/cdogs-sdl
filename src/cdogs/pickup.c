@@ -218,8 +218,10 @@ void PickupPickup(TActor *a, const Pickup *p)
 				a->CanPickupSpecial = true;
 				canPickup = false;
 				// "Say" that the weapon must be picked up using a command
-				const char *pickupKey =
-					InputGetButtonName(a->playerIndex, CMD_BUTTON2);
+				const PlayerData *pData =
+					CArrayGet(&gPlayerDatas, a->playerIndex);
+				const char *pickupKey = InputGetButtonName(
+					pData->inputDevice, pData->deviceIndex, CMD_BUTTON2);
 				if (pickupKey != NULL)
 				{
 					sprintf(a->Chatter, "%s to pick up\n%s",

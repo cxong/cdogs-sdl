@@ -149,22 +149,22 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	n->peerId++;
 
 	// Send the client ID
-	debug(D_VERBOSE, "NetServer: sending client ID %d", peerId);
+	debug(D_VERBOSE, "NetServer: sending client ID %d\n", peerId);
 	NetServerSendMsg(n, peerId, SERVER_MSG_CLIENT_ID, &peerId);
 
 	// Send the current campaign details over
-	debug(D_VERBOSE, "NetServer: sending campaign entry");
+	debug(D_VERBOSE, "NetServer: sending campaign entry\n");
 	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
 	// Send details of all current players
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-		debug(D_VERBOSE, "NetServer: sending player data index %d", i);
+		debug(D_VERBOSE, "NetServer: sending player data index %d\n", i);
 		NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
 	}
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
-	debug(D_VERBOSE, "NetServer: client connection complete");
+	debug(D_VERBOSE, "NetServer: client connection complete\n");
 }
 static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData);

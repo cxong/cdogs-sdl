@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HUD
-#define __HUD
+#pragma once
 
 #include "config.h"
 #include "gamedata.h"
@@ -82,6 +81,5 @@ void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score);
 void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update);
 
 void HUDUpdate(HUD *hud, int ms);
-void HUDDraw(HUD *hud, int isPaused);
-
-#endif
+// INPUT_DEVICE_UNSET if not paused
+void HUDDraw(HUD *hud, const input_device_e pausingDevice);

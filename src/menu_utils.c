@@ -91,12 +91,12 @@ void MenuDisplayPlayerControls(
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			InputGetButtonName(*playerIndex, CMD_LEFT),
-			InputGetButtonName(*playerIndex, CMD_RIGHT),
-			InputGetButtonName(*playerIndex, CMD_UP),
-			InputGetButtonName(*playerIndex, CMD_DOWN),
-			InputGetButtonName(*playerIndex, CMD_BUTTON1),
-			InputGetButtonName(*playerIndex, CMD_BUTTON2));
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_LEFT),
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_RIGHT),
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_UP),
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_DOWN),
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON1),
+			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON2));
 		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
 		break;
 	case INPUT_DEVICE_MOUSE:
@@ -114,12 +114,13 @@ void MenuDisplayPlayerControls(
 			FontStr(s, textPos);
 			textPos.y += FontH();
 			color_t c = colorWhite;
-			const char *buttonName =
-				InputGetButtonNameColor(*playerIndex, CMD_BUTTON1, &c);
+			const PlayerData *pData = CArrayGet(&gPlayerDatas, *playerIndex);
+			const char *buttonName = InputGetButtonNameColor(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, &c);
 			textPos = FontStrMask(buttonName, textPos, c);
 			textPos = FontStr(" and ", textPos);
-			buttonName =
-				InputGetButtonNameColor(*playerIndex, CMD_BUTTON2, &c);
+			buttonName = InputGetButtonNameColor(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, &c);
 			textPos = FontStrMask(buttonName, textPos, c);
 			FontStr(")", textPos);
 		}

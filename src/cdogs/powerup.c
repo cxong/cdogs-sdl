@@ -72,7 +72,7 @@ void PowerupSpawnerUpdate(PowerupSpawner *p, const int ticks)
 		scalar *= pow(TIME_DECAY_EXPONENT, p->numPickups);
 
 		p->timeUntilNextSpawn = (int)floor(scalar * p->SpawnTime);
-		debug(D_NORMAL, "Spawning timer %d next %d spawned %d\n",
+		debug(D_MAX, "Spawning timer %d next %d spawned %d\n",
 			p->timer, p->timeUntilNextSpawn, p->numPickups);
 	}
 

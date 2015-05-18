@@ -319,21 +319,21 @@ int GetMenuCmd(EventHandlers *handlers)
 }
 
 
-const char *InputGetButtonName(const int player, const int cmd)
+const char *InputGetButtonName(
+	const input_device_e d, const int dIndex, const int cmd)
 {
 	color_t c;
-	return InputGetButtonNameColor(player, cmd, &c);
+	return InputGetButtonNameColor(d, dIndex, cmd, &c);
 }
 const char *InputGetButtonNameColor(
-	const int player, const int cmd, color_t *color)
+	const input_device_e d, const int dIndex, const int cmd, color_t *color)
 {
-	const PlayerData *pData = CArrayGet(&gPlayerDatas, player);
-	switch (pData->inputDevice)
+	switch (d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		{
 			const input_keys_t *keys =
-				&gEventHandlers.keyboard.PlayerKeys[pData->deviceIndex];
+				&gEventHandlers.keyboard.PlayerKeys[dIndex];
 			switch (cmd)
 			{
 			case CMD_LEFT: return SDL_GetKeyName(keys->left);
@@ -364,7 +364,7 @@ const char *InputGetButtonNameColor(
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		// TODO: button names and special colours for popular gamepads
-		return JoyButtonNameColor(player, cmd, color);
+		return JoyButtonNameColor(dIndex, cmd, color);
 	case INPUT_DEVICE_AI:
 		return NULL;
 	default:

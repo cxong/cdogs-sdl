@@ -805,7 +805,7 @@ void DrawKeycards(HUD *hud)
 static void DrawHealthUpdate(HUDNumUpdate *health, int flags);
 static void DrawScoreUpdate(HUDNumUpdate *score, int flags);
 static void DrawObjectiveCounts(HUD *hud);
-void HUDDraw(HUD *hud, int isPaused)
+void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 {
 	char s[50];
 	int flags = 0;
@@ -915,7 +915,7 @@ void HUDDraw(HUD *hud, int isPaused)
 		FontStrCenter(s);
 	}
 
-	if (isPaused)
+	if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
 			gGraphicsDevice.cachedConfig.Res,
@@ -926,17 +926,20 @@ void HUDDraw(HUD *hud, int isPaused)
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
 		color_t c = colorWhite;
-		const char *buttonName = InputGetButtonNameColor(0, CMD_ESC, &c);
+		const char *buttonName =
+			InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, &c);
 		pos = FontStrMask(buttonName, pos, c);
 		FontStr(" again to quit", pos);
 
 		pos.x = x;
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
-		buttonName = InputGetButtonNameColor(0, CMD_BUTTON1, &c);
+		buttonName = InputGetButtonNameColor(
+			pausingDevice, 0, CMD_BUTTON1, &c);
 		pos = FontStrMask(buttonName, pos, c);
 		pos = FontStr(" or ", pos);
-		buttonName = InputGetButtonNameColor(0, CMD_BUTTON2, &c);
+		buttonName = InputGetButtonNameColor(
+			pausingDevice, 0, CMD_BUTTON2, &c);
 		pos = FontStrMask(buttonName, pos, c);
 		FontStr(" to unpause", pos);
 	}

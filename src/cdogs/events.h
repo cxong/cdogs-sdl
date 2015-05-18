@@ -86,9 +86,10 @@ typedef struct
 GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
 int GetMenuCmd(EventHandlers *handlers);
-const char *InputGetButtonName(const int player, const int cmd);
+const char *InputGetButtonName(
+	const input_device_e d, const int dIndex, const int cmd);
 const char *InputGetButtonNameColor(
-	const int player, const int cmd, color_t *color);
+	const input_device_e d, const int dIndex, const int cmd, color_t *color);
 
 bool EventIsEscape(
 	EventHandlers *handlers,
