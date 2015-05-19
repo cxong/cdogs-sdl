@@ -114,7 +114,6 @@ void MenuDisplayPlayerControls(
 			FontStr(s, textPos);
 			textPos.y += FontH();
 			color_t c = colorWhite;
-			const PlayerData *pData = CArrayGet(&gPlayerDatas, *playerIndex);
 			const char *buttonName = InputGetButtonNameColor(
 				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, &c);
 			textPos = FontStrMask(buttonName, textPos, c);
