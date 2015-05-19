@@ -62,7 +62,7 @@ int ReadPics(const char *filename, PicPaletted **pics, int maxPics, TPalette pal
 {
 	FILE *f;
 	int is_eof = 0;
-	unsigned short int size;
+	uint16_t size;
 	int i = 0;
 
 	f = fopen(filename, "rb");
