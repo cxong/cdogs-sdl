@@ -110,8 +110,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					Vec2iNew(e.resize.w / scale, e.resize.h / scale),
 					false,
 					scale);
-				GraphicsInitialize(
-					&gGraphicsDevice, gPicManager.palette, false);
+				GraphicsInitialize(&gGraphicsDevice, false);
 				handlers->HasResolutionChanged = 1;
 			}
 			break;

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,13 +28,13 @@
 #include "palette.h"
 
 #include "blit.h"
+#include "pic_manager.h"
 #include "utils.h"
 
-static TPalette gCurrentPalette;
 #define GAMMA 4
 color_t PaletteToColor(unsigned char idx)
 {
-	color_t color = gCurrentPalette[idx];
+	color_t color = gPicManager.palette[idx];
 	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
 	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
 	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
@@ -44,9 +44,4 @@ color_t PaletteToColor(unsigned char idx)
 Uint32 LookupPalette(unsigned char idx)
 {
 	return PixelFromColor(&gGraphicsDevice, PaletteToColor(idx));
-}
-
-void CDogsSetPalette(TPalette palette)
-{
-	memcpy(gCurrentPalette, palette, sizeof gCurrentPalette);
 }

@@ -46,7 +46,7 @@ bool ConfigApply(Config *config)
 	if (ConfigChanged(ConfigGet(config, "Graphics")))
 	{
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig);
-		GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, false);
+		GraphicsInitialize(&gGraphicsDevice, false);
 		GrafxMakeRandomBackground(
 			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 	}

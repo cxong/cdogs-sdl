@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,15 +25,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PALETTE
-#define __PALETTE
+#pragma once
 
 #include <SDL_stdinc.h>
 
-#include "pic_file.h"
+#include "color.h"
 
 color_t PaletteToColor(unsigned char index);
 Uint32 LookupPalette(unsigned char index);
-void CDogsSetPalette(TPalette palette);
-
-#endif

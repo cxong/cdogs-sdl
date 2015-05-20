@@ -35,10 +35,24 @@
 
 PicManager gPicManager;
 
-int PicManagerTryInit(
+// +--------------------+
+// |  Color range info  |
+// +--------------------+
+#define WALL_COLORS       208
+#define FLOOR_COLORS      216
+#define ROOM_COLORS       232
+#define ALT_COLORS        224
+
+static uint8_t cGreyPixelValues[] =
+{
+	33, 28, 23, 18, 15, 12, 10, 8,
+};
+
+
+static void SetupPalette(TPalette palette);
+bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
 {
-	int i;
 	memset(pm, 0, sizeof *pm);
 	CArrayInit(&pm->pics, sizeof(NamedPic));
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
@@ -46,21 +60,53 @@ int PicManagerTryInit(
 	CArrayInit(&pm->customSprites, sizeof(NamedSprites));
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, oldGfxFile1);
-	i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
+	int i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
 	if (!i)
 	{
 		printf("Unable to read %s\n", buf);
-		return 0;
+		return false;
 	}
 	GetDataFilePath(buf, oldGfxFile2);
 	if (!AppendPics(buf, pm->oldPics, PIC_COUNT1, PIC_MAX))
 	{
 		printf("Unable to read %s\n", buf);
-		return 0;
+		return false;
 	}
-	pm->palette[0].r = pm->palette[0].g = pm->palette[0].b = 0;
-	return 1;
+	SetupPalette(pm->palette);
+	return true;
 }
+static void SetPaletteRange(
+	TPalette palette, const int start, const uint8_t channel);
+static void SetupPalette(TPalette palette)
+{
+	palette[0].r = palette[0].g = palette[0].b = 0;
+
+	// Set the coloured palette ranges
+	// Note: alpha used as "channel"
+	// These pics will be recoloured on demand by the PicManager based on
+	// mission-specific colours requested during map load. Some pics will
+	// have an "alt" colour in the same pic, so to differentiate and mask
+	// each colour individually, those converted pics will have pixels with
+	// different alpha values, to signify different recolouring channels.
+	SetPaletteRange(palette, WALL_COLORS, 255);
+	SetPaletteRange(palette, FLOOR_COLORS, 255);
+	SetPaletteRange(palette, ROOM_COLORS, 255);
+	SetPaletteRange(palette, ALT_COLORS, 254);
+}
+static void SetPaletteRange(
+	TPalette palette, const int start, const uint8_t channel)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		const color_t g =
+		{
+			cGreyPixelValues[i], cGreyPixelValues[i], cGreyPixelValues[i],
+			channel
+		};
+		palette[start + i] = g;
+	}
+}
+
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
 {
@@ -215,6 +261,7 @@ static void PicManagerLoadDirImpl(
 bail:
 	tinydir_close(&dir);
 }
+static void GenerateOldPics(PicManager *pm, GraphicsDevice *g);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerLoadDir(PicManager *pm, const char *path)
@@ -225,12 +272,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		return;
 	}
 	PicManagerLoadDirImpl(pm, path, NULL);
-
-	// Load the old pics anyway;
-	// even though they will be palette swapped later,
-	// this allows us to initialise the data structures so that sprites can be
-	// made.
-	PicManagerGenerateOldPics(pm, &gGraphicsDevice);
+	GenerateOldPics(pm, &gGraphicsDevice);
 
 	// Load old pics and sprites
 	LoadOldSprites(
@@ -263,14 +305,13 @@ static void LoadOldSprites(
 	}
 	CArrayPushBack(&pm->sprites, &ns);
 }
-void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g)
+static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
-	int i;
 	// Convert old pics into new format ones
 	// TODO: this is wasteful; better to eliminate old pics altogether
 	// Note: always need to reload in editor since colours could change,
 	// requiring an updating of palettes
-	for (i = 0; i < PIC_MAX; i++)
+	for (int i = 0; i < PIC_MAX; i++)
 	{
 		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
 		if (PicIsNotNone(&pm->picsFromOld[i]))

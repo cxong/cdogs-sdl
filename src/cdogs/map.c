@@ -1046,8 +1046,6 @@ void MapTerminate(Map *map)
 void MapLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)
 {
-
-	PicManagerGenerateOldPics(&gPicManager, &gGraphicsDevice);
 	MapTerminate(map);
 	MapInit(map);
 	const Mission *mission = mo->missionData;

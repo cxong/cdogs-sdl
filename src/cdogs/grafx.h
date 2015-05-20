@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GRAFX
-#define __GRAFX
+#pragma once
 
 #include <stdbool.h>
 
@@ -104,7 +103,7 @@ typedef struct
 extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device);
-void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force);
+void GraphicsInitialize(GraphicsDevice *g, const bool force);
 void GraphicsTerminate(GraphicsDevice *device);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
@@ -129,5 +128,3 @@ void GraphicsResetBlitClip(GraphicsDevice *device);
 
 #define CenterOfRight(w)	CenterOf((gGraphicsDevice.cachedConfig.Res.x / 2), (gGraphicsDevice.cachedConfig.Res.x), w)
 #define CenterOfLeft(w)		CenterOf(0, (gGraphicsDevice.cachedConfig.Res.x / 2), w)
-
-#endif

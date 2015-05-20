@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -236,7 +236,7 @@ void AddSupportedGraphicsModes(GraphicsDevice *device)
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
-void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force)
+void GraphicsInitialize(GraphicsDevice *g, const bool force)
 {
 #ifdef __GCWZERO__
 	int sdl_flags = SDL_HWSURFACE | SDL_TRIPLEBUF;
@@ -331,7 +331,6 @@ void GraphicsInitialize(GraphicsDevice *g, TPalette palette, bool force)
 	g->cachedConfig.Res.x = w;
 	g->cachedConfig.Res.y = h;
 	g->cachedConfig.needRestart = false;
-	CDogsSetPalette(palette);
 }
 
 void GraphicsTerminate(GraphicsDevice *device)

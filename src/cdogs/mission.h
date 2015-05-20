@@ -236,7 +236,6 @@ int SetupBuiltinCampaign(int index);
 int SetupBuiltinDogfight(int index);
 void SetupMission(
 	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex);
-void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range);
 void MissionEnd(void);
 
 void MissionSetMessageIfComplete(struct MissionOptions *options);

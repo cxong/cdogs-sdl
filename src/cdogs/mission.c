@@ -209,17 +209,6 @@ void MissionTerminate(Mission *m)
 }
 
 
-
-// +--------------------+
-// |  Color range info  |
-// +--------------------+
-
-
-#define WALL_COLORS       208
-#define FLOOR_COLORS      216
-#define ROOM_COLORS       232
-#define ALT_COLORS        224
-
 struct ColorRange {
 	char name[20];
 	color_t range[8];
@@ -498,17 +487,6 @@ static void SetupWeapons(CArray *to, CArray *from)
 	CArrayCopy(to, from);
 }
 
-void SetRange(int start, int range)
-{
-	int i;
-
-	for (i = 0; i < 8; i++)
-	{
-		gPicManager.palette[start + i] = cColorRanges[range].range[i];
-	}
-	CDogsSetPalette(gPicManager.palette);
-}
-
 void SetupMission(
 	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex)
 {
@@ -530,19 +508,16 @@ void SetupMission(
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
-	SetPaletteRanges(m->WallColor, m->FloorColor, m->RoomColor, m->AltColor);
+	// TODO: store colours instead and request during map load
+	/*RecolourPics(
+		abs(m->WallColor) % COLORRANGE_COUNT,
+		abs(m->FloorColor) % COLORRANGE_COUNT,
+		abs(m->RoomColor) % COLORRANGE_COUNT,
+		abs(m->AltColor) % COLORRANGE_COUNT);*/
 	if (buildTables)
 	{
 		BuildTranslationTables(gPicManager.palette);
 	}
-}
-
-void SetPaletteRanges(int wall_range, int floor_range, int room_range, int alt_range)
-{
-	SetRange(WALL_COLORS, abs(wall_range) % COLORRANGE_COUNT);
-	SetRange(FLOOR_COLORS, abs(floor_range) % COLORRANGE_COUNT);
-	SetRange(ROOM_COLORS, abs(room_range) % COLORRANGE_COUNT);
-	SetRange(ALT_COLORS, abs(alt_range) % COLORRANGE_COUNT);
 }
 
 void MissionEnd(void)

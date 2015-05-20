@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC_MANAGER
-#define __PIC_MANAGER
+#pragma once
 
 #include "pic.h"
 #include "pics.h"
@@ -44,10 +43,8 @@ typedef struct
 
 extern PicManager gPicManager;
 
-int PicManagerTryInit(
+bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
-// Old paletted pics need the palette to be set before using
-void PicManagerGenerateOldPics(PicManager *pm, GraphicsDevice *g);
 void PicManagerLoadDir(PicManager *pm, const char *path);
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image);
@@ -64,5 +61,3 @@ const NamedSprites *PicManagerGetSprites(
 
 // Conversion
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);
-
-#endif

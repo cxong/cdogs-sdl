@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1293,7 +1293,7 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
 	gGraphicsDevice.cachedConfig.IsEditor = true;
-	GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, 0);
+	GraphicsInitialize(&gGraphicsDevice, false);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");

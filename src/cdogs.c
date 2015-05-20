@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -353,13 +353,12 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
 	GraphicsInit(&gGraphicsDevice);
-	GraphicsInitialize(&gGraphicsDevice, gPicManager.palette, forceResolution);
+	GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Cannot initialise video; trying default config\n");
 		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
-		GraphicsInitialize(
-			&gGraphicsDevice,gPicManager.palette, forceResolution);
+		GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	}
 	if (!gGraphicsDevice.IsInitialized)
 	{
