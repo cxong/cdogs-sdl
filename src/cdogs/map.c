@@ -458,7 +458,7 @@ bool MapTryPlaceOneObject(
 
 	if (mo->Flags & (1 << PLACEMENT_FREE_IN_FRONT))
 	{
-		IMapSet(map, v, iMap | MAP_LEAVEFREE);
+		IMapSet(map, Vec2iNew(v.x, v.y - 1), IMapGet(map, Vec2iNew(v.x, v.y - 1)) | MAP_LEAVEFREE);
 	}
 
 	// For on-wall objects, set their position to the top of the tile
