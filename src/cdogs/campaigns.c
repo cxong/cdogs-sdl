@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -85,8 +85,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	CampaignListInit(&campaigns->campaignList);
 	CampaignListInit(&campaigns->dogfightList);
 
-	printf("\nCampaigns:\n");
-
+	debug(D_NORMAL, "Load campaigns\n");
 	LoadBuiltinCampaigns(&campaigns->campaignList);
 	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
 	LoadCampaignsFromFolder(
@@ -95,8 +94,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		buf,
 		GAME_MODE_NORMAL);
 
-	printf("\nDogfights:\n");
-
+	debug(D_NORMAL, "Load dogfights\n");
 	LoadBuiltinDogfights(&campaigns->dogfightList);
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LoadCampaignsFromFolder(
@@ -105,9 +103,8 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		buf,
 		GAME_MODE_DOGFIGHT);
 
+	debug(D_NORMAL, "Load quick play\n");
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
-
-	printf("\n");
 }
 
 void UnloadAllCampaigns(custom_campaigns_t *campaigns)
