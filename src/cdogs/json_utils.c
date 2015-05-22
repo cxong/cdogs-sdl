@@ -58,6 +58,12 @@ void AddStringPair(json_t *parent, const char *name, const char *s)
 			parent, name, json_new_string(json_escape(s)));
 	}
 }
+void AddColorPair(json_t *parent, const char *name, const color_t c)
+{
+	char buf[8];
+	ColorStr(buf, c);
+	AddStringPair(parent, name, buf);
+}
 
 int TryLoadValue(json_t **node, const char *name)
 {
@@ -158,6 +164,18 @@ void LoadBulletGuns(CArray *guns, json_t *node, const char *name)
 		const GunDescription *g = StrGunDescription(gun->text);
 		CArrayPushBack(guns, &g);
 	}
+}
+void LoadColor(color_t *c, json_t *node, const char *name)
+{
+	if (json_find_first_label(node, name) == NULL)
+	{
+		return;
+	}
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*c = StrColor(node->text);
 }
 
 json_t *JSONFindNode(json_t *node, const char *path)

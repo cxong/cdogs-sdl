@@ -212,6 +212,7 @@ static void SetupQuickPlayEnemies(
 	}
 }
 
+static color_t RandomBGColor(void);
 void SetupQuickPlayCampaign(CampaignSetting *setting)
 {
 	Mission *m;
@@ -280,10 +281,10 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 			CArrayPushBack(&m->Weapons, &g);
 		}
 	}
-	m->WallColor = rand() % (GetColorrangeCount() - 1 + 1);
-	m->FloorColor = rand() % (GetColorrangeCount() - 1 + 1);
-	m->RoomColor = rand() % (GetColorrangeCount() - 1 + 1);
-	m->AltColor = rand() % (GetColorrangeCount() - 1 + 1);
+	m->WallMask = RandomBGColor();
+	m->FloorMask = RandomBGColor();
+	m->RoomMask = RandomBGColor();
+	m->AltMask = RandomBGColor();
 
 	CFREE(setting->Title);
 	CSTRDUP(setting->Title, "Quick play");
@@ -293,4 +294,9 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Description, "");
 	CArrayPushBack(&setting->Missions, m);
 	CFREE(m);
+}
+static color_t RandomBGColor(void)
+{
+	color_t c = { rand() % 128, rand() % 128, rand() % 128, 255 };
+	return c;
 }

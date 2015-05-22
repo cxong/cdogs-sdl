@@ -244,7 +244,7 @@ FEATURE(3, "Tint")
 FEATURE_END
 
 FEATURE(4, "String conversion")
-	SCENARIO("Convert hex")
+	SCENARIO("Convert from hex")
 		GIVEN("a hex string")
 			const char *str = "6495ED";
 		GIVEN_END
@@ -266,6 +266,20 @@ FEATURE(4, "String conversion")
 		WHEN_END
 		THEN("the result should be black")
 			SHOULD_BE_TRUE(ColorEquals(result, colorBlack));
+		THEN_END
+	SCENARIO_END
+
+	SCENARIO("Convert to hex")
+		GIVEN("a colour")
+			color_t c = { 0x64, 0x95, 0xed, 0xff };
+		GIVEN_END
+		WHEN("I convert it to hex")
+			char buf[8];
+			ColorStr(buf, c);
+		WHEN_END
+		THEN("the result should be the expected hex string")
+			const char *expected = "6495ed";
+			SHOULD_STR_EQUAL(buf, expected);
 		THEN_END
 	SCENARIO_END
 FEATURE_END

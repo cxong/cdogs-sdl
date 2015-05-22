@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __COLOR
-#define __COLOR
+#pragma once
 
 #include "sys_specifics.h"
 
@@ -52,6 +51,34 @@ extern color_t colorGray;
 extern color_t colorYellow;
 extern color_t colorMagenta;
 extern color_t colorCyan;
+
+extern color_t colorMaroon;
+extern color_t colorLonestar;
+extern color_t colorRusticRed;
+extern color_t colorOfficeGreen;
+extern color_t colorPakistanGreen;
+extern color_t colorDarkFern;
+extern color_t colorNavyBlue;
+extern color_t colorArapawa;
+extern color_t colorStratos;
+extern color_t colorPatriarch;
+extern color_t colorPompadour;
+extern color_t colorLoulou;
+extern color_t colorBattleshipGrey;
+extern color_t colorDoveGray;
+extern color_t colorGravel;
+extern color_t colorComet;
+extern color_t colorFiord;
+extern color_t colorTuna;
+extern color_t colorHacienda;
+extern color_t colorKumera;
+extern color_t colorHimalaya;
+extern color_t colorChocolate;
+extern color_t colorNutmeg;
+extern color_t colorBracken;
+extern color_t colorTeal;
+extern color_t colorSkobeloff;
+extern color_t colorDeepJungleGreen;
 
 color_t ColorMult(color_t c, color_t m);
 color_t ColorAlphaBlend(color_t a, color_t b);
@@ -79,5 +106,5 @@ int ColorEquals(color_t a, color_t b);
 
 // Convert hex string to color
 color_t StrColor(const char *s);
-
-#endif
+// Convert colour to hex string
+void ColorStr(char *s, const color_t c);

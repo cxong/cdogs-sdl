@@ -501,10 +501,10 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_pair_into_object(
 			node, "Song", json_new_string(mission->Song));
 
-		AddIntPair(node, "WallColor", mission->WallColor);
-		AddIntPair(node, "FloorColor", mission->FloorColor);
-		AddIntPair(node, "RoomColor", mission->RoomColor);
-		AddIntPair(node, "AltColor", mission->AltColor);
+		AddColorPair(node, "WallMask", mission->WallMask);
+		AddColorPair(node, "FloorMask", mission->FloorMask);
+		AddColorPair(node, "RoomMask", mission->RoomMask);
+		AddColorPair(node, "AltMaskr", mission->AltMask);
 
 		switch (mission->Type)
 		{

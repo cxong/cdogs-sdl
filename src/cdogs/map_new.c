@@ -247,10 +247,26 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadWeapons(
 			&m.Weapons, json_find_first_label(child, "Weapons")->child);
 		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
-		LoadInt(&m.WallColor, child, "WallColor");
-		LoadInt(&m.FloorColor, child, "FloorColor");
-		LoadInt(&m.RoomColor, child, "RoomColor");
-		LoadInt(&m.AltColor, child, "AltColor");
+		if (version <= 4)
+		{
+			// Load colour indices
+			int wc, fc, rc, ac;
+			LoadInt(&wc, child, "WallColor");
+			LoadInt(&fc, child, "FloorColor");
+			LoadInt(&rc, child, "RoomColor");
+			LoadInt(&ac, child, "AltColor");
+			m.WallMask = RangeToColor(wc);
+			m.FloorMask = RangeToColor(fc);
+			m.RoomMask = RangeToColor(rc);
+			m.AltMask = RangeToColor(ac);
+		}
+		else
+		{
+			LoadColor(&m.WallMask, child, "WallMask");
+			LoadColor(&m.FloorMask, child, "FloorMask");
+			LoadColor(&m.RoomMask, child, "RoomMask");
+			LoadColor(&m.AltMask, child, "AltMask");
+		}
 		switch (m.Type)
 		{
 		case MAPTYPE_CLASSIC:

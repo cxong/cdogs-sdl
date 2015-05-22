@@ -393,10 +393,10 @@ static void ConvertMission(
 		}
 	}
 	strcpy(dest->Song, src->song);
-	dest->WallColor = src->wallRange;
-	dest->FloorColor = src->floorRange;
-	dest->RoomColor = src->roomRange;
-	dest->AltColor = src->altRange;
+	dest->WallMask = RangeToColor(abs(src->wallRange) % COLORRANGE_COUNT);
+	dest->FloorMask = RangeToColor(abs(src->floorRange) % COLORRANGE_COUNT);
+	dest->RoomMask = RangeToColor(abs(src->roomRange) % COLORRANGE_COUNT);
+	dest->AltMask = RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
 
 	dest->u.Classic.Walls = src->wallCount;
 	dest->u.Classic.WallLength = src->wallLength;
@@ -617,4 +617,38 @@ void SetupConfigDir(void)
 	}
 
 	return;
+}
+
+
+color_t RangeToColor(const int range)
+{
+	const color_t ranges[] =
+	{
+		colorMaroon, colorLonestar, colorRusticRed,
+		colorOfficeGreen, colorPakistanGreen, colorDarkFern,
+		colorNavyBlue, colorArapawa, colorStratos,
+		colorPatriarch, colorPompadour, colorLoulou,
+		colorBattleshipGrey, colorDoveGray, colorGravel,
+		colorComet, colorFiord, colorTuna,
+		colorHacienda, colorKumera, colorHimalaya,
+		colorChocolate, colorNutmeg, colorBracken,
+		colorTeal, colorSkobeloff, colorDeepJungleGreen
+	};
+	return ranges[range];
+}
+const char *ColorRangeName(const int range)
+{
+	const char *names[] =
+	{
+		"Maroon", "Lonestar", "Rustic",
+		"Office", "Pakistan", "Dark Fern",
+		"Navy", "Arapawa", "Stratos",
+		"Patriarch", "Pompadour", "Loulou",
+		"Battleship", "Dove", "Gravel",
+		"Comet", "Fiord", "Tuna",
+		"Hacienda", "Kumera", "Himalaya",
+		"Chocolate", "Nutmeg", "Bracken",
+		"Teal", "Skobeloff", "Deep Jungle"
+	};
+	return names[range];
 }

@@ -39,6 +39,7 @@
 void AddIntPair(json_t *parent, const char *name, int number);
 void AddBoolPair(json_t *parent, const char *name, int value);
 void AddStringPair(json_t *parent, const char *name, const char *s);
+void AddColorPair(json_t *parent, const char *name, const color_t c);
 void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
@@ -50,6 +51,7 @@ void LoadPic(
 	const Pic **value, json_t *node, const char *name, const char *oldPicName);
 // Load an array of const GunDescription *
 void LoadBulletGuns(CArray *guns, json_t *node, const char *name);
+void LoadColor(color_t *c, json_t *node, const char *name);
 
 // Try to load a JSON node using a slash-delimited "path"
 // If at any point the path fails, NULL is returned.

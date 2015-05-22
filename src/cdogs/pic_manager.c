@@ -43,10 +43,7 @@ PicManager gPicManager;
 #define ROOM_COLORS       232
 #define ALT_COLORS        224
 
-static uint8_t cGreyPixelValues[] =
-{
-	33, 28, 23, 18, 15, 12, 10, 8,
-};
+static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
 
 
 static void SetupPalette(TPalette palette);
@@ -100,8 +97,7 @@ static void SetPaletteRange(
 	{
 		const color_t g =
 		{
-			cGreyPixelValues[i], cGreyPixelValues[i], cGreyPixelValues[i],
-			channel
+			cWhiteValues[i], cWhiteValues[i], cWhiteValues[i], channel
 		};
 		palette[start + i] = g;
 	}

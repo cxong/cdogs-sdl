@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __FILES
-#define __FILES
+#pragma once
 
 #include <SDL_endian.h>
 
@@ -214,11 +213,10 @@ void GetDataFilePath(char *buf, const char *path);
 void SetupConfigDir(void);
 
 size_t f_read(FILE *f, void *buf, size_t size);
-#define f_read8(f, b, s)	f_read(f, b, 1)
-size_t f_read32(FILE *f, void *buf, size_t size);
 size_t f_read16(FILE *f, void *buf, size_t size);
 
-void swap32 (void *d);
 void swap16 (void *d);
 
-#endif
+// Convert classic colour range indices to color_t
+color_t RangeToColor(const int range);
+#define COLORRANGE_COUNT 27

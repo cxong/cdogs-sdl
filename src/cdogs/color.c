@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,34 @@ color_t colorGray = { 128, 128, 128, 255 };
 color_t colorYellow = { 255, 255, 128, 255 };
 color_t colorMagenta = { 255, 0, 255, 255 };
 color_t colorCyan = { 0, 255, 255, 255 };
+
+color_t colorMaroon = { 0x84, 0, 0, 255 };
+color_t colorLonestar = { 0x70, 0, 0, 255 };
+color_t colorRusticRed = { 0x48, 0, 0, 255 };
+color_t colorOfficeGreen = { 0, 0x84, 0, 255 };
+color_t colorPakistanGreen = { 0, 0x70, 0, 255 };
+color_t colorDarkFern = { 0, 0x48, 0, 255 };
+color_t colorNavyBlue = { 0, 0, 0x84, 255 };
+color_t colorArapawa = { 0, 0, 0x70, 255 };
+color_t colorStratos = { 0, 0, 0x48, 255 };
+color_t colorPatriarch = { 0x84, 0, 0x84, 255 };
+color_t colorPompadour = { 0x70, 0, 0x70, 255 };
+color_t colorLoulou = { 0x48, 0, 0x48, 255 };
+color_t colorBattleshipGrey = { 0x84, 0x84, 0x84, 255 };
+color_t colorDoveGray = { 0x70, 0x70, 0x70, 255 };
+color_t colorGravel = { 0x48, 0x48, 0x48, 255 };
+color_t colorComet = { 0x5C, 0x5C, 0x84, 255 };
+color_t colorFiord = { 0x48, 0x48, 0x70, 255 };
+color_t colorTuna = { 0x34, 0x34, 0x48, 255 };
+color_t colorHacienda = { 0x94, 0x80, 0x2C, 255 };
+color_t colorKumera = { 0x84, 0x70, 0x24, 255 };
+color_t colorHimalaya = { 0x74, 0x60, 0x1C, 255 };
+color_t colorChocolate = { 0x84, 0x44, 0, 255 };
+color_t colorNutmeg = { 0x70, 0x38, 0, 255 };
+color_t colorBracken = { 0x48, 0x24, 0, 255 };
+color_t colorTeal = { 0, 0x84, 0x84, 255 };
+color_t colorSkobeloff = { 0, 0x70, 0x70, 255 };
+color_t colorDeepJungleGreen = { 0, 0x48, 0x48, 255 };
 
 color_t ColorMult(color_t c, color_t m)
 {
@@ -173,4 +201,8 @@ color_t StrColor(const char *s)
 	c.g = (hex >> 8) & 255;
 	c.b = hex & 255;
 	return c;
+}
+void ColorStr(char *s, const color_t c)
+{
+	sprintf(s, "%02x%02x%02x", c.r, c.g, c.b);
 }

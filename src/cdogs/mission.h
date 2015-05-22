@@ -145,10 +145,10 @@ typedef struct
 	char Song[CDOGS_PATH_MAX];
 
 	// Colour ranges
-	int WallColor;
-	int FloorColor;
-	int RoomColor;
-	int AltColor;
+	color_t WallMask;
+	color_t FloorMask;
+	color_t RoomMask;
+	color_t AltMask;
 
 	union
 	{
@@ -253,4 +253,3 @@ int KeycardCount(int flags);
 // Intended for use with the editor only
 
 struct EditorInfo GetEditorInfo(void);
-const char *RangeName(int index);
