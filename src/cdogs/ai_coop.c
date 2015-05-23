@@ -116,6 +116,8 @@ static bool TryCompleteNearbyObjective(
 static int AICoopGetCmdNormal(TActor *actor)
 {
 	// Use decision tree to command the AI
+	// - Move away from dangerous bullets
+	// - Check weapons and ammo
 	// - If too far away from nearest player
 	//   - Go to nearest player
 	// - else
@@ -124,7 +126,43 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//   - else
 	//     - Go to nearest player
 
-	// First, check the weapon for ammo
+	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
+	const Vec2i actorTilePos = Vec2iToTile(actorRealPos);
+
+	// Look for dangerous bullets in a 1-tile radius
+	// These are bullets with the "HurtAlways" property true
+	Vec2i v;
+	Vec2i dangerBulletFullPos = Vec2iZero();
+	for (v.x = actorTilePos.x - 1;
+		v.x <= actorTilePos.x + 1 && Vec2iIsZero(dangerBulletFullPos);
+		v.x++)
+	{
+		for (v.y = actorTilePos.y - 1;
+			v.y <= actorTilePos.y + 1 && Vec2iIsZero(dangerBulletFullPos);
+			v.y++)
+		{
+			const Tile *t = MapGetTile(&gMap, v);
+			for (int i = 0; i < (int)t->things.size; i++)
+			{
+				const ThingId *tid = CArrayGet(&t->things, i);
+				// Only look for bullets
+				if (tid->Kind != KIND_MOBILEOBJECT) continue;
+				const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
+				if (mo->bulletClass->HurtAlways)
+				{
+					dangerBulletFullPos = Vec2iNew(mo->x, mo->y);
+					break;
+				}
+			}
+		}
+	}
+	// Run away if dangerous bullet found
+	if (!Vec2iIsZero(dangerBulletFullPos))
+	{
+		return AIRetreatFrom(actor, dangerBulletFullPos);
+	}
+
+	// Check the weapon for ammo
 	int lowAmmoGun = -1;
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
@@ -177,8 +215,6 @@ static int AICoopGetCmdNormal(TActor *actor)
 			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
 		}
 	}
-
-	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
 	// Follow the closest player with a lower ID
 	const TActor *closestPlayer = NULL;
