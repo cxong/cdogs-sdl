@@ -58,6 +58,20 @@ Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx);
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name);
 
+// Get a pic that is colour-masked.
+// The name of the pic will be <name>_<mask>_<maskAlt>
+// Due to its dynamic colours, the pic may be generated on request.
+// Used for dynamic map tile pic colours
+Pic *PicManagerGetMaskedPic(
+	PicManager *pm, const char *name,
+	const color_t mask, const color_t maskAlt);
+// Get a masked pic for the styled tiles: walls, floors, rooms
+// Simply calls GetMaskedPic but the name contains the relevant
+// style/type names
+Pic *PicManagerGetMaskedStylePic(
+	PicManager *pm, const char *name, const int style, const int type,
+	const color_t mask, const color_t maskAlt);
+
 
 // Conversion
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);

@@ -220,3 +220,5 @@ void swap16 (void *d);
 // Convert classic colour range indices to color_t
 color_t RangeToColor(const int range);
 #define COLORRANGE_COUNT 27
+const char *ColorRangeName(const int range);
+int ColorToRange(const color_t c);

@@ -46,6 +46,8 @@ PicManager gPicManager;
 static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
 
 
+static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p);
+
 static void SetupPalette(TPalette palette);
 bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
@@ -157,10 +159,7 @@ void PicManagerAdd(
 	}
 	else
 	{
-		NamedPic n;
-		CSTRDUP(n.name, buf);
-		CArrayPushBack(pics, &n);
-		np = CArrayGet(pics, pics->size - 1);
+		np = AddNamedPic(pics, buf, NULL);
 	}
 	SDL_LockSurface(image);
 	SDL_Surface *s = SDL_ConvertSurface(
@@ -304,9 +303,6 @@ static void LoadOldSprites(
 static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
 	// Convert old pics into new format ones
-	// TODO: this is wasteful; better to eliminate old pics altogether
-	// Note: always need to reload in editor since colours could change,
-	// requiring an updating of palettes
 	for (int i = 0; i < PIC_MAX; i++)
 	{
 		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
@@ -323,6 +319,39 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
 		}
 	}
+
+	// For the tile pics, generate named pics from them, since we will be
+	// using them with masks later
+	for (int i = 0; i < WALL_STYLE_COUNT; i++)
+	{
+		for (int j = 0; j < WALL_TYPES; j++)
+		{
+			char buf[256];
+			sprintf(buf, "wall_%s_%s", WallStyleStr(i), WallTypeStr(j));
+			AddNamedPic(
+				&pm->pics, buf, PicManagerGetFromOld(pm, cWallPics[i][j]));
+		}
+	}
+	for (int i = 0; i < FLOOR_STYLE_COUNT; i++)
+	{
+		for (int j = 0; j < FLOOR_TYPES; j++)
+		{
+			char buf[256];
+			sprintf(buf, "floor_%s_%s", FloorStyleStr(i), FloorTypeStr(j));
+			AddNamedPic(
+				&pm->pics, buf, PicManagerGetFromOld(pm, cFloorPics[i][j]));
+		}
+	}
+	for (int i = 0; i < ROOM_STYLE_COUNT; i++)
+	{
+		for (int j = 0; j < ROOMFLOOR_TYPES; j++)
+		{
+			char buf[256];
+			sprintf(buf, "room_%s_%s", RoomStyleStr(i), RoomTypeStr(j));
+			AddNamedPic(
+				&pm->pics, buf, PicManagerGetFromOld(pm, cWallPics[i][j]));
+		}
+	}
 }
 
 void PicManagerClear(CArray *pics, CArray *sprites)
@@ -330,8 +359,8 @@ void PicManagerClear(CArray *pics, CArray *sprites)
 	for (int i = 0; i < (int)pics->size; i++)
 	{
 		NamedPic *n = CArrayGet(pics, i);
-		CFREE(n->name);
 		PicFree(&n->pic);
+		CFREE(n->name);
 	}
 	CArrayClear(pics);
 	for (int i = 0; i < (int)sprites->size; i++)
@@ -442,6 +471,86 @@ const NamedSprites *PicManagerGetSprites(
 		}
 	}
 	return NULL;
+}
+
+Pic *PicManagerGetMaskedPic(
+	PicManager *pm, const char *name,
+	const color_t mask, const color_t maskAlt)
+{
+	char maskedName[256];
+	char maskName[8];
+	ColorStr(maskName, mask);
+	char maskAltName[8];
+	ColorStr(maskAltName, maskAlt);
+	sprintf(maskedName, "%s_%s_%s", name, maskName, maskAltName);
+	// Check if the masked pic already exists
+	Pic *existing = PicManagerGetPic(pm, maskedName);
+	if (existing != NULL) return existing;
+
+	// Check if the original pic is available; if not then it's impossible to
+	// create the masked version
+	Pic *original = PicManagerGetPic(pm, name);
+	if (original == NULL) return NULL;
+
+	// Create the new pic by masking the original pic
+	Pic p = *original;
+	CMALLOC(p.Data, sizeof *p.Data * p.size.x * p.size.y);
+	for (int i = 0; i < p.size.x * p.size.y; i++)
+	{
+		const color_t o = PixelToColor(&gGraphicsDevice, original->Data[i]);
+		color_t c;
+		// Apply mask based on which channel each pixel is
+		if (o.a == 255)
+		{
+			c = ColorMult(o, mask);
+		}
+		else
+		{
+			c = ColorMult(o, maskAlt);
+		}
+		p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
+		// TODO: more channels
+	}
+	return &AddNamedPic(&pm->customPics, maskedName, &p)->pic;
+}
+Pic *PicManagerGetMaskedStylePic(
+	PicManager *pm, const char *name, const int style, const int type,
+	const color_t mask, const color_t maskAlt)
+{
+	const char *styleName;
+	const char *typeName;
+	if (strcmp(name, "wall") == 0)
+	{
+		styleName = WallStyleStr(style);
+		typeName = WallTypeStr(type);
+	}
+	else if (strcmp(name, "floor") == 0)
+	{
+		styleName = FloorStyleStr(style);
+		typeName = FloorTypeStr(type);
+	}
+	else if (strcmp(name, "room") == 0)
+	{
+		styleName = RoomStyleStr(style);
+		typeName = RoomTypeStr(type);
+	}
+	else
+	{
+		CASSERT(false, "Invalid masked style name");
+		return NULL;
+	}
+	char buf[256];
+	sprintf(buf, "%s_%s_%s", name, styleName, typeName);
+	return PicManagerGetMaskedPic(pm, buf, mask, maskAlt);
+}
+
+static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)
+{
+	NamedPic n;
+	if (p != NULL) n.pic = *p;
+	CSTRDUP(n.name, name);
+	CArrayPushBack(pics, &n);
+	return CArrayGet(pics, pics->size - 1);
 }
 
 

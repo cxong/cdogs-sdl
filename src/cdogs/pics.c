@@ -18,16 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
--------------------------------------------------------------------------------
-
- pics.c - sprite functions
- 
- Author: $Author$
- Rev:    $Revision$
- URL:    $HeadURL$
- ID:     $Id$
- 
 */
 
 #include "pics.h"
@@ -592,6 +582,46 @@ const TOffsetPic cBeamPics[BEAM_PIC_COUNT][DIRECTION_COUNT] =
 	}
 };
 
+const char *WallTypeStr(const int w)
+{
+	switch (w)
+	{
+		T2S(WALL_SINGLE, "o");
+		T2S(WALL_LEFT, "w");
+		T2S(WALL_RIGHT, "e");
+		T2S(WALL_TOP, "n");
+		T2S(WALL_BOTTOM, "s");
+		T2S(WALL_TOPLEFT, "nw");
+		T2S(WALL_TOPRIGHT, "ne");
+		T2S(WALL_BOTTOMLEFT, "sw");
+		T2S(WALL_BOTTOMRIGHT, "se");
+		T2S(WALL_LEFT_T, "wt");
+		T2S(WALL_RIGHT_T, "et");
+		T2S(WALL_TOP_T, "nt");
+		T2S(WALL_BOTTOM_T, "st");
+		T2S(WALL_VERTICAL, "v");
+		T2S(WALL_HORIZONTAL, "h");
+		T2S(WALL_CROSS, "x");
+	default:
+		return "";
+	}
+}
+const char *WallStyleStr(const wall_style_e w)
+{
+	switch (w)
+	{
+		T2S(WALL_STYLE_STEEL, "steel");
+		T2S(WALL_STYLE_BRICKS, "brick");
+		T2S(WALL_STYLE_RED, "carbon");
+		T2S(WALL_STYLE_STEEL_N_WOOD, "steelwood");
+		T2S(WALL_STYLE_STONE, "stone");
+		T2S(WALL_STYLE_PLASTEEL, "plasteel");
+		T2S(WALL_STYLE_GRANITE, "granite");
+	default:
+		return "";
+	}
+}
+
 const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES] = {
 	{6, 108, 107, 95, 102, 97, 96, 104,	// "Steel"
 	 103, 101, 100, 98, 105, 99, 106, 94},
@@ -619,6 +649,37 @@ const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES] = {
 	 P2 + 68}	// Granite
 };
 
+const char *FloorTypeStr(const int f)
+{
+	switch (f)
+	{
+		T2S(FLOOR_SHADOW, "shadow");
+		T2S(FLOOR_NORMAL, "normal");
+		T2S(FLOOR_1, "alt1");
+		T2S(FLOOR_2, "alt2");
+	default:
+		return "";
+	}
+}
+const char *FloorStyleStr(const floor_style_e f)
+{
+	switch (f)
+	{
+		T2S(FLOOR_STYLE_GREEN, "recessed");
+		T2S(FLOOR_STYLE_PURPLE, "tile");
+		T2S(FLOOR_STYLE_DIRT, "dirt");
+		T2S(FLOOR_STYLE_BLUE, "flat");
+		T2S(FLOOR_STYLE_STRIPES, "striped");
+		T2S(FLOOR_STYLE_SMALLSQUARES, "smallsquare");
+		T2S(FLOOR_STYLE_STONE, "stone");
+		T2S(FLOOR_STYLE_WOOD, "wood");
+		T2S(FLOOR_STYLE_WHITE, "biggrid");
+		T2S(FLOOR_STYLE_GRID, "grid");
+	default:
+		return "";
+	}
+}
+
 const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES] = {
 	{2, 1, 165, 166},	// Green grid
 
@@ -641,7 +702,38 @@ const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES] = {
 	{P2 + 46, P2 + 45, P2 + 45, P2 + 45}	// Grid
 };
 
-const int cRoomPics[ROOMFLOOR_COUNT][ROOMFLOOR_TYPES] = {
+const char *RoomTypeStr(const int r)
+{
+	switch (r)
+	{
+		T2S(ROOMFLOOR_SHADOW, "shadow");
+		T2S(ROOMFLOOR_NORMAL, "normal");
+	default:
+		return "";
+	}
+}
+const char *RoomStyleStr(const RoomStyle r)
+{
+	switch (r)
+	{
+		T2S(ROOM_STYLE_RECESSED, "recessed");
+		T2S(ROOM_STYLE_TILE, "tile");
+		T2S(ROOM_STYLE_DIRT, "dirt");
+		T2S(ROOM_STYLE_FLAT, "flat");
+		T2S(ROOM_STYLE_STRIPED, "striped");
+		T2S(ROOM_STYLE_SMALLSQUARES, "smallsquare");
+		T2S(ROOM_STYLE_STONE, "stone");
+		T2S(ROOM_STYLE_WOOD, "wood");
+		T2S(ROOM_STYLE_GRID, "grid");
+		T2S(ROOM_STYLE_BIGGRID, "biggrid");
+		T2S(ROOM_STYLE_CHECKER, "biggrid");
+	default:
+		return "";
+	}
+}
+
+const int cRoomPics[ROOM_STYLE_COUNT][ROOMFLOOR_TYPES] =
+{
 	{P2 + 85, P2 + 84},
 	{P2 + 87, P2 + 86},
 	{P2 + 89, P2 + 88},

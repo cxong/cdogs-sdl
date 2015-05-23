@@ -68,7 +68,6 @@ struct EditorInfo
 	int keyCount;
 	int doorCount;
 	int exitCount;
-	int rangeCount;
 };
 
 typedef enum

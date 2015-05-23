@@ -652,3 +652,21 @@ const char *ColorRangeName(const int range)
 	};
 	return names[range];
 }
+// Find the best matching range for a colour
+// TODO: used by editor; replace with colour picker
+int ColorToRange(const color_t c)
+{
+	int bestRange = -1;
+	int bestRangeDiff = 0;
+	for (int i = 0; i < COLORRANGE_COUNT; i++)
+	{
+		const color_t r = RangeToColor(i);
+		const int diff = abs(r.r - c.r) + abs(r.g + c.g) + abs(r.b - c.b);
+		if (bestRange == -1 || diff < bestRangeDiff)
+		{
+			bestRange = i;
+			bestRangeDiff = diff;
+		}
+	}
+	return bestRange;
+}

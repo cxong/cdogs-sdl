@@ -224,6 +224,7 @@
 #define WALL_HORIZONTAL    14
 #define WALL_CROSS         15
 #define WALL_TYPES         16
+const char *WallTypeStr(const int w);
 
 typedef enum
 {
@@ -236,16 +237,19 @@ typedef enum
 	WALL_STYLE_GRANITE,
 	WALL_STYLE_COUNT
 } wall_style_e;
+const char *WallStyleStr(const wall_style_e w);
 
 #define FLOOR_SHADOW       0
 #define FLOOR_NORMAL       1
 #define FLOOR_1            2
 #define FLOOR_2            3
 #define FLOOR_TYPES        4
+const char *FloorTypeStr(const int f);
 
 #define ROOMFLOOR_SHADOW   0
 #define ROOMFLOOR_NORMAL   1
 #define ROOMFLOOR_TYPES    2
+const char *RoomTypeStr(const int r);
 
 typedef enum
 {
@@ -261,8 +265,24 @@ typedef enum
 	FLOOR_STYLE_GRID,
 	FLOOR_STYLE_COUNT
 } floor_style_e;
+const char *FloorStyleStr(const floor_style_e f);
 
-#define ROOMFLOOR_COUNT   11
+typedef enum
+{
+	ROOM_STYLE_RECESSED,
+	ROOM_STYLE_TILE,
+	ROOM_STYLE_DIRT,
+	ROOM_STYLE_FLAT,
+	ROOM_STYLE_STRIPED,
+	ROOM_STYLE_SMALLSQUARES,
+	ROOM_STYLE_STONE,
+	ROOM_STYLE_WOOD,
+	ROOM_STYLE_GRID,
+	ROOM_STYLE_BIGGRID,
+	ROOM_STYLE_CHECKER,
+	ROOM_STYLE_COUNT
+} RoomStyle;
+const char *RoomStyleStr(const RoomStyle r);
 
 
 struct Offset {
@@ -288,7 +308,7 @@ extern const TOffsetPic cBeamPics[BEAM_PIC_COUNT][DIRECTION_COUNT];
 extern const TOffsetPic cGeneralPics[OFSPIC_COUNT];
 extern const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES];
 extern const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES];
-extern const int cRoomPics[ROOMFLOOR_COUNT][ROOMFLOOR_TYPES];
+extern const int cRoomPics[ROOM_STYLE_COUNT][ROOMFLOOR_TYPES];
 extern const struct Offset cWallOffset;
 extern const TOffsetPic cDeathPics[DEATH_MAX];
 extern const TOffsetPic cBloodPics[BLOOD_MAX];

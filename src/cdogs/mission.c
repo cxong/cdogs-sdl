@@ -654,6 +654,5 @@ struct EditorInfo GetEditorInfo(void)
 	ei.keyCount = KEYSTYLE_COUNT;
 	ei.doorCount = DOORSTYLE_COUNT;
 	ei.exitCount = EXIT_COUNT;
-	ei.rangeCount = COLORRANGE_COUNT;
 	return ei;
 }

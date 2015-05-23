@@ -32,6 +32,7 @@
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
+#include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/mission.h>
 #include <cdogs/mission_convert.h>
@@ -413,13 +414,13 @@ static void MissionDrawRoomStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = ROOMFLOOR_COUNT;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		return;
 	}
 	int idx = CampaignGetCurrentMission(co)->RoomStyle;
+	const int count = ROOM_STYLE_COUNT;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
@@ -487,7 +488,8 @@ static const char *MissionGetWallColorStr(UIObject *o, void *data)
 	UNUSED(o);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Walls: %s", RangeName(CampaignGetCurrentMission(co)->WallColor));
+	sprintf(s, "Walls: %s",
+		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->WallMask)));
 	return s;
 }
 static const char *MissionGetFloorColorStr(UIObject *o, void *data)
@@ -496,7 +498,8 @@ static const char *MissionGetFloorColorStr(UIObject *o, void *data)
 	UNUSED(o);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Floor: %s", RangeName(CampaignGetCurrentMission(co)->FloorColor));
+	sprintf(s, "Floor: %s",
+		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->FloorMask)));
 	return s;
 }
 static const char *MissionGeRoomColorStr(UIObject *o, void *data)
@@ -505,7 +508,8 @@ static const char *MissionGeRoomColorStr(UIObject *o, void *data)
 	UNUSED(o);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Rooms: %s", RangeName(CampaignGetCurrentMission(co)->RoomColor));
+	sprintf(s, "Rooms: %s",
+		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->RoomMask)));
 	return s;
 }
 static const char *MissionGeExtraColorStr(UIObject *o, void *data)
@@ -514,7 +518,8 @@ static const char *MissionGeExtraColorStr(UIObject *o, void *data)
 	UNUSED(o);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Extra: %s", RangeName(CampaignGetCurrentMission(co)->AltColor));
+	sprintf(s, "Extra: %s",
+		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->AltMask)));
 	return s;
 }
 static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
@@ -1147,7 +1152,7 @@ static void MissionChangeRoomStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->RoomStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->RoomStyle + d, 0, ROOMFLOOR_COUNT - 1);
+		CampaignGetCurrentMission(co)->RoomStyle + d, 0, ROOM_STYLE_COUNT - 1);
 }
 static void MissionChangeDoorStyle(void *data, int d)
 {
@@ -1170,26 +1175,34 @@ static void MissionChangeExitStyle(void *data, int d)
 static void MissionChangeWallColor(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->WallColor = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->WallColor + d, 0, GetEditorInfo().rangeCount - 1);
+	CampaignGetCurrentMission(co)->WallMask =
+		RangeToColor(CLAMP_OPPOSITE(
+			ColorToRange(CampaignGetCurrentMission(co)->WallMask) + d,
+			0, COLORRANGE_COUNT - 1));
 }
 static void MissionChangeFloorColor(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->FloorColor = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->FloorColor + d, 0, GetEditorInfo().rangeCount - 1);
+	CampaignGetCurrentMission(co)->FloorMask =
+		RangeToColor(CLAMP_OPPOSITE(
+			ColorToRange(CampaignGetCurrentMission(co)->FloorMask) + d,
+			0, COLORRANGE_COUNT - 1));
 }
 static void MissionChangeRoomColor(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->RoomColor = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->RoomColor + d, 0, GetEditorInfo().rangeCount - 1);
+	CampaignGetCurrentMission(co)->RoomMask =
+		RangeToColor(CLAMP_OPPOSITE(
+			ColorToRange(CampaignGetCurrentMission(co)->RoomMask) + d,
+			0, COLORRANGE_COUNT - 1));
 }
 static void MissionChangeExtraColor(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->AltColor = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->AltColor + d, 0, GetEditorInfo().rangeCount - 1);
+	CampaignGetCurrentMission(co)->AltMask =
+		RangeToColor(CLAMP_OPPOSITE(
+			ColorToRange(CampaignGetCurrentMission(co)->AltMask) + d,
+			0, COLORRANGE_COUNT - 1));
 }
 static void MissionChangeEnemy(void *vData, int d)
 {

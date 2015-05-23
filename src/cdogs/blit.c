@@ -284,7 +284,7 @@ void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
 	}
 }
 
-Uint32 PixelMult(Uint32 p, Uint32 m)
+static Uint32 PixelMult(Uint32 p, Uint32 m)
 {
 	return
 		((p & 0xFF) * (m & 0xFF) / 0xFF) |

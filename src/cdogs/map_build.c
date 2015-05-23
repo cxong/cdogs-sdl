@@ -72,9 +72,9 @@ void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
 static int MapGetWallPic(Map *m, Vec2i pos);
 void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 {
-	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
-	int wall = m->WallStyle % WALL_STYLE_COUNT;
-	int room = m->RoomStyle % ROOMFLOOR_COUNT;
+	const int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
+	const int wall = m->WallStyle % WALL_STYLE_COUNT;
+	const int room = m->RoomStyle % ROOM_STYLE_COUNT;
 	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
 	bool canSeeTileAbove = !(tAbove != NULL && !TileCanSee(tAbove));
 	Tile *t = MapGetTile(map, pos);
@@ -86,15 +86,12 @@ void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 	{
 	case MAP_FLOOR:
 	case MAP_SQUARE:
-		if (!canSeeTileAbove)
+		t->pic = PicManagerGetMaskedStylePic(
+			&gPicManager, "floor", floor,
+			canSeeTileAbove ? FLOOR_NORMAL : FLOOR_SHADOW,
+			m->FloorMask, m->AltMask);
+		if (canSeeTileAbove)
 		{
-			t->pic = PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-		}
-		else
-		{
-			t->pic = PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
 			// Normal floor tiles can be replaced randomly with
 			// special floor tiles such as drainage
 			t->flags |= MAPTILE_IS_NORMAL_FLOOR;
@@ -103,22 +100,16 @@ void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 
 	case MAP_ROOM:
 	case MAP_DOOR:
-		if (!canSeeTileAbove)
-		{
-			t->pic = PicManagerGetFromOld(
-				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-		}
-		else
-		{
-			t->pic = PicManagerGetFromOld(
-				&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
-		}
+		t->pic = PicManagerGetMaskedStylePic(
+			&gPicManager, "room", room,
+			canSeeTileAbove ? ROOMFLOOR_NORMAL : ROOMFLOOR_SHADOW,
+			m->RoomMask, m->AltMask);
 		break;
 
 	case MAP_WALL:
-		t->pic = PicManagerGetFromOld(
-			&gPicManager,
-			cWallPics[wall][MapGetWallPic(map, pos)]);
+		t->pic = PicManagerGetMaskedStylePic(
+			&gPicManager, "wall", wall, MapGetWallPic(map, pos),
+			m->WallMask, m->AltMask);
 		t->flags =
 			MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
 			MAPTILE_NO_SEE | MAPTILE_IS_WALL;

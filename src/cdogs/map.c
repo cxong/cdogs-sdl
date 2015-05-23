@@ -1074,7 +1074,7 @@ void MapLoad(
 
 	MapSetupTilesAndWalls(map, mission);
 	const int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
-	const int room = mission->RoomStyle % ROOMFLOOR_COUNT;
+	const int room = mission->RoomStyle % ROOM_STYLE_COUNT;
 	MapSetupDoors(map, floor, room);
 
 	// Set exit now since we have set up all the tiles
