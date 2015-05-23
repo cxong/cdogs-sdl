@@ -681,7 +681,7 @@ int ColorToRange(const color_t c)
 	for (int i = 0; i < COLORRANGE_COUNT; i++)
 	{
 		const color_t r = RangeToColor(i);
-		const int diff = abs(r.r - c.r) + abs(r.g + c.g) + abs(r.b - c.b);
+		const int diff = (int)abs(r.r - c.r) + (int)abs(r.g - c.g) + (int)abs(r.b - c.b);
 		if (bestRange == -1 || diff < bestRangeDiff)
 		{
 			bestRange = i;

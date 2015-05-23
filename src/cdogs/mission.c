@@ -105,6 +105,10 @@ MapType StrMapType(const char *s)
 void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
+	m->WallMask = colorBattleshipGrey;
+	m->FloorMask = colorGravel;
+	m->RoomMask = colorDoveGray;
+	m->AltMask = colorOfficeGreen;
 	CArrayInit(&m->Objectives, sizeof(MissionObjective));
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));

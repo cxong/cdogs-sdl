@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_BUILD
-#define __MAP_BUILD
+#pragma once
 
 #include "map.h"
 
@@ -69,10 +68,7 @@ void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
 void MapMakeWall(Map *map, Vec2i pos);
 void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
 
-// Set tile properties for a map tile, such as picture to use
-void MapSetupTile(Map *map, const Vec2i pos, const Mission *m);
+void MapSetupTilesAndWalls(Map *map, const Mission *m);
 
 unsigned short GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);
-
-#endif

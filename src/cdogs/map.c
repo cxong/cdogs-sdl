@@ -252,56 +252,6 @@ static void PicLoadOffset(Pic *picAlt, int idx)
 	picAlt->offset = Vec2iNew(cGeneralPics[idx].dx, cGeneralPics[idx].dy);
 }
 
-static void MapSetupTilesAndWalls(Map *map, const Mission *m)
-{
-	Vec2i v;
-	for (v.x = 0; v.x < map->Size.x; v.x++)
-	{
-		for (v.y = 0; v.y < map->Size.y; v.y++)
-		{
-			MapSetupTile(map, v, m);
-		}
-	}
-
-	// Randomly change normal floor tiles to drainage tiles
-	for (int i = 0; i < 50; i++)
-	{
-		// Make sure drain tiles aren't next to each other
-		Tile *t = MapGetTile(map, Vec2iNew(
-			(rand() % map->Size.x) & 0xFFFFFE,
-			(rand() % map->Size.y) & 0xFFFFFE));
-		if (TileIsNormalFloor(t))
-		{
-			TileSetAlternateFloor(t, PicManagerGetFromOld(
-				&gPicManager, PIC_DRAINAGE));
-			t->flags |= MAPTILE_IS_DRAINAGE;
-		}
-	}
-
-	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
-	// Randomly change normal floor tiles to alternative floor tiles
-	for (int i = 0; i < 100; i++)
-	{
-		Tile *t = MapGetTile(
-			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
-		if (TileIsNormalFloor(t))
-		{
-			TileSetAlternateFloor(t, PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_1]));
-		}
-	}
-	for (int i = 0; i < 150; i++)
-	{
-		Tile *t = MapGetTile(
-			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
-		if (TileIsNormalFloor(t))
-		{
-			TileSetAlternateFloor(t, PicManagerGetFromOld(
-				&gPicManager, cFloorPics[floor][FLOOR_2]));
-		}
-	}
-}
-
 void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow)
 {
 	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
@@ -657,7 +607,7 @@ static int GetDoorCountInGroup(Map *map, Vec2i v, int isHorizontal)
 }
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
-	Map *map, Vec2i v,
+	Map *map, const Mission *m, Vec2i v,
 	int tileFlags, int isHorizontal, int doorGroupCount,
 	int pic, int floor, int room)
 {
@@ -707,8 +657,9 @@ static TWatch *CreateCloseDoorWatch(
 		if (tileFlags & MAPTILE_OFFSET_PIC)
 		{
 			PicLoadOffset(&a->a.ChangeTile.PicAlt, pic);
-			a->a.ChangeTile.Pic = PicManagerGetFromOld(
-				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+			a->a.ChangeTile.Pic = PicManagerGetMaskedStylePic(
+				&gPicManager, "room", room, ROOMFLOOR_SHADOW,
+				m->RoomMask, m->AltMask);
 		}
 		a->a.ChangeTile.Flags = tileFlags;
 	}
@@ -722,16 +673,13 @@ static TWatch *CreateCloseDoorWatch(
 			a = WatchAddAction(w);
 			a->Type = ACTION_CHANGETILE;
 			a->u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-			if (IMapGet(map, a->u.pos) == MAP_FLOOR)
-			{
-				a->a.ChangeTile.Pic = PicManagerGetFromOld(
-					&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-			}
-			else
-			{
-				a->a.ChangeTile.Pic = PicManagerGetFromOld(
-					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-			}
+			const bool isFloor = IMapGet(map, a->u.pos) == MAP_FLOOR;
+			a->a.ChangeTile.Pic = PicManagerGetMaskedStylePic(
+				&gPicManager,
+				isFloor ? "floor" : "room",
+				isFloor ? floor : room,
+				isFloor ? FLOOR_SHADOW : ROOMFLOOR_SHADOW,
+				isFloor ? m->FloorMask : m->RoomMask, m->AltMask);
 		}
 	}
 
@@ -754,7 +702,7 @@ static void TileAddTrigger(Tile *t, Trigger *tr)
 	CArrayPushBack(&t->triggers, &tr);
 }
 static Trigger *CreateOpenDoorTrigger(
-	Map *map, Vec2i v,
+	Map *map, const Mission *m, Vec2i v,
 	int isHorizontal, int doorGroupCount, int flags,
 	int openDoorPic, int floor, int room)
 {
@@ -788,14 +736,16 @@ static Trigger *CreateOpenDoorTrigger(
 		{
 			// special door cavity picture
 			PicLoadOffset(&a->a.ChangeTile.PicAlt, openDoorPic);
-			a->a.ChangeTile.Pic = PicManagerGetFromOld(
-				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+			a->a.ChangeTile.Pic = PicManagerGetMaskedStylePic(
+				&gPicManager, "room", room, ROOMFLOOR_SHADOW,
+				m->RoomMask, m->AltMask);
 		}
 		else
 		{
 			// room floor pic
-			a->a.ChangeTile.Pic = PicManagerGetFromOld(
-				&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+			a->a.ChangeTile.Pic = PicManagerGetMaskedStylePic(
+				&gPicManager, "room", room, ROOMFLOOR_SHADOW,
+				m->RoomMask, m->AltMask);
 		}
 		a->a.ChangeTile.Flags = (isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
 	}
@@ -811,16 +761,13 @@ static Trigger *CreateOpenDoorTrigger(
 			// Remove shadows below doors
 			a->Type = ACTION_CHANGETILE;
 			a->u.pos = vIAside;
-			if (IMapGet(map, vIAside) == MAP_FLOOR)
-			{
-				a->a.ChangeTile.Pic = PicManagerGetFromOld(
-					&gPicManager, cFloorPics[floor][FLOOR_NORMAL]);
-			}
-			else
-			{
-				a->a.ChangeTile.Pic = PicManagerGetFromOld(
-					&gPicManager, cRoomPics[room][ROOMFLOOR_NORMAL]);
-			}
+			const bool isFloor = IMapGet(map, vIAside) == MAP_FLOOR;
+			a->a.ChangeTile.Pic = PicManagerGetMaskedStylePic(
+				&gPicManager,
+				isFloor ? "floor" : "room",
+				isFloor? floor : room,
+				isFloor ? FLOOR_NORMAL : ROOMFLOOR_NORMAL,
+				isFloor ? m->FloorMask : m->RoomMask, m->AltMask);
 		}
 	}
 
@@ -844,7 +791,8 @@ static Trigger *CreateOpenDoorTrigger(
 
 	return t;
 }
-static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
+static void MapAddDoorGroup(
+	Map *map, const Mission *m, Vec2i v, int floor, int room, int flags)
 {
 	const int tileFlags =
 		MAPTILE_NO_SEE | MAPTILE_NO_WALK |
@@ -899,8 +847,9 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 		Vec2i vI = Vec2iNew(v.x + dv.x * i, v.y + dv.y * i);
 		Tile *tile = MapGetTile(map, vI);
 		PicLoadOffset(&tile->picAlt, pic);
-		tile->pic = PicManagerGetFromOld(
-			&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
+		tile->pic = PicManagerGetMaskedStylePic(
+			&gPicManager, "room", room, ROOMFLOOR_SHADOW,
+			m->RoomMask, m->AltMask);
 		tile->flags = tileFlags;
 		if (isHorizontal)
 		{
@@ -912,23 +861,20 @@ static void MapAddDoorGroup(Map *map, Vec2i v, int floor, int room, int flags)
 			assert(TileCanWalk(tileB) &&
 				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
-			if (IMapGet(map, vB) == MAP_FLOOR)
-			{
-				tileB->pic = PicManagerGetFromOld(
-					&gPicManager, cFloorPics[floor][FLOOR_SHADOW]);
-			}
-			else
-			{
-				tileB->pic = PicManagerGetFromOld(
-					&gPicManager, cRoomPics[room][ROOMFLOOR_SHADOW]);
-			}
+			const bool isFloor = IMapGet(map, vB) == MAP_FLOOR;
+			tileB->pic = PicManagerGetMaskedStylePic(
+				&gPicManager,
+				isFloor ? "floor" : "room",
+				isFloor ? floor : room,
+				isFloor ? FLOOR_SHADOW : ROOMFLOOR_SHADOW,
+				isFloor ? m->FloorMask : m->RoomMask, m->AltMask);
 		}
 	}
 
 	TWatch *w = CreateCloseDoorWatch(
-		map, v, tileFlags, isHorizontal, doorGroupCount, pic, floor, room);
+		map, m, v, tileFlags, isHorizontal, doorGroupCount, pic, floor, room);
 	Trigger *t = CreateOpenDoorTrigger(
-		map, v,
+		map, m, v,
 		isHorizontal, doorGroupCount, flags, openDoorPic, floor, room);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
@@ -995,7 +941,7 @@ static int MapGetAccessFlags(Map *map, int x, int y)
 	return flags;
 }
 
-static void MapSetupDoors(Map *map, int floor, int room)
+static void MapSetupDoors(Map *map, const Mission *m, int floor, int room)
 {
 	Vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -1009,7 +955,7 @@ static void MapSetupDoors(Map *map, int floor, int room)
 				(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
 			{
 				MapAddDoorGroup(
-					map, v, floor, room, MapGetAccessFlags(map, v.x, v.y));
+					map, m, v, floor, room, MapGetAccessFlags(map, v.x, v.y));
 			}
 		}
 	}
@@ -1075,7 +1021,7 @@ void MapLoad(
 	MapSetupTilesAndWalls(map, mission);
 	const int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
 	const int room = mission->RoomStyle % ROOM_STYLE_COUNT;
-	MapSetupDoors(map, floor, room);
+	MapSetupDoors(map, mission, floor, room);
 
 	// Set exit now since we have set up all the tiles
 	if (Vec2iIsZero(map->ExitStart) && Vec2iIsZero(map->ExitEnd))

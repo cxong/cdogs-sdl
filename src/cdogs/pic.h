@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PIC
-#define __PIC
+#pragma once
 
 #include <SDL_stdinc.h>
 
@@ -97,7 +96,7 @@ void PicLoad(
 	Pic *p, const Vec2i size, const Vec2i offset,
 	const SDL_Surface *image, const SDL_Surface *s);
 void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
-void PicCopy(Pic *dst, const Pic *src);
+Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);
 
@@ -114,5 +113,3 @@ const Pic *CPicGetPic(const CPic *p, direction_e d);
 void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
 	const Vec2i pos, const CPicDrawContext *context);
-
-#endif

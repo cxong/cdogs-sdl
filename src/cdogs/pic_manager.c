@@ -292,9 +292,7 @@ static void LoadOldSprites(
 	const TOffsetPic *pic = pics;
 	for (int i = 0; i < count; i++, pic++)
 	{
-		Pic p;
-		const Pic *original = PicManagerGetFromOld(pm, pic->picIndex);
-		PicCopy(&p, original);
+		Pic p = PicCopy(PicManagerGetFromOld(pm, pic->picIndex));
 		CArrayPushBack(&ns.pics, &p);
 	}
 	CArrayPushBack(&pm->sprites, &ns);
@@ -327,8 +325,8 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 		{
 			char buf[256];
 			sprintf(buf, "wall_%s_%s", WallStyleStr(i), WallTypeStr(j));
-			AddNamedPic(
-				&pm->pics, buf, PicManagerGetFromOld(pm, cWallPics[i][j]));
+			Pic p = PicCopy(PicManagerGetFromOld(pm, cWallPics[i][j]));
+			AddNamedPic(&pm->pics, buf, &p);
 		}
 	}
 	for (int i = 0; i < FLOOR_STYLE_COUNT; i++)
@@ -337,8 +335,8 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 		{
 			char buf[256];
 			sprintf(buf, "floor_%s_%s", FloorStyleStr(i), FloorTypeStr(j));
-			AddNamedPic(
-				&pm->pics, buf, PicManagerGetFromOld(pm, cFloorPics[i][j]));
+			Pic p = PicCopy(PicManagerGetFromOld(pm, cFloorPics[i][j]));
+			AddNamedPic(&pm->pics, buf, &p);
 		}
 	}
 	for (int i = 0; i < ROOM_STYLE_COUNT; i++)
@@ -347,8 +345,8 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 		{
 			char buf[256];
 			sprintf(buf, "room_%s_%s", RoomStyleStr(i), RoomTypeStr(j));
-			AddNamedPic(
-				&pm->pics, buf, PicManagerGetFromOld(pm, cRoomPics[i][j]));
+			Pic p = PicCopy(PicManagerGetFromOld(pm, cRoomPics[i][j]));
+			AddNamedPic(&pm->pics, buf, &p);
 		}
 	}
 }
@@ -493,6 +491,8 @@ Pic *PicManagerGetMaskedPic(
 
 	// Create the new pic by masking the original pic
 	Pic p = *original;
+	debug(D_VERBOSE, "Creating new masked pic %s (%d x %d)\n",
+		maskedName, p.size.x, p.size.y);
 	CMALLOC(p.Data, sizeof *p.Data * p.size.x * p.size.y);
 	for (int i = 0; i < p.size.x * p.size.y; i++)
 	{

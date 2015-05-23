@@ -57,6 +57,8 @@ void MapMakeWall(Map *map, Vec2i pos)
 	IMapSet(map, pos, MAP_WALL);
 }
 
+static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m);
+
 void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
 {
 	IMapSet(map, pos, tileType);
@@ -69,8 +71,60 @@ void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
 	MapSetupTile(map, Vec2iNew(pos.x, pos.y + 1), m);
 }
 
+void MapSetupTilesAndWalls(Map *map, const Mission *m)
+{
+	Vec2i v;
+	for (v.x = 0; v.x < map->Size.x; v.x++)
+	{
+		for (v.y = 0; v.y < map->Size.y; v.y++)
+		{
+			MapSetupTile(map, v, m);
+		}
+	}
+
+	// Randomly change normal floor tiles to drainage tiles
+	for (int i = 0; i < 50; i++)
+	{
+		// Make sure drain tiles aren't next to each other
+		Tile *t = MapGetTile(map, Vec2iNew(
+			(rand() % map->Size.x) & 0xFFFFFE,
+			(rand() % map->Size.y) & 0xFFFFFE));
+		if (TileIsNormalFloor(t))
+		{
+			TileSetAlternateFloor(t, PicManagerGetFromOld(
+				&gPicManager, PIC_DRAINAGE));
+			t->flags |= MAPTILE_IS_DRAINAGE;
+		}
+	}
+
+	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
+	// Randomly change normal floor tiles to alternative floor tiles
+	for (int i = 0; i < 100; i++)
+	{
+		Tile *t = MapGetTile(
+			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
+		if (TileIsNormalFloor(t))
+		{
+			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
+				&gPicManager, "floor", floor, FLOOR_1,
+				m->FloorMask, m->AltMask));
+		}
+	}
+	for (int i = 0; i < 150; i++)
+	{
+		Tile *t = MapGetTile(
+			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
+		if (TileIsNormalFloor(t))
+		{
+			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
+				&gPicManager, "floor", floor, FLOOR_2,
+				m->FloorMask, m->AltMask));
+		}
+	}
+}
 static int MapGetWallPic(Map *m, Vec2i pos);
-void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
+// Set tile properties for a map tile, such as picture to use
+static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 {
 	const int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
 	const int wall = m->WallStyle % WALL_STYLE_COUNT;
