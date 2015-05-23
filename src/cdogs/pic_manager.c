@@ -349,7 +349,7 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 			char buf[256];
 			sprintf(buf, "room_%s_%s", RoomStyleStr(i), RoomTypeStr(j));
 			AddNamedPic(
-				&pm->pics, buf, PicManagerGetFromOld(pm, cWallPics[i][j]));
+				&pm->pics, buf, PicManagerGetFromOld(pm, cRoomPics[i][j]));
 		}
 	}
 }

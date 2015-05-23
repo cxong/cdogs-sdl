@@ -76,6 +76,8 @@ add_executable(json_test
 	json_test.c
 	../cdogs/c_array.h
 	../cdogs/c_array.c
+	../cdogs/color.h
+	../cdogs/color.c
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h
 	../cdogs/utils.c
