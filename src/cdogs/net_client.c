@@ -149,18 +149,18 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				"unexpected client ID message, already set");
 			NetMsgClientId cid;
 			NetDecode(event.packet, &cid, NetMsgClientId_fields);
-			debug(D_VERBOSE, "NetClient: received client ID %d", cid.Id);
+			debug(D_VERBOSE, "NetClient: received client ID %d\n", cid.Id);
 			n->ClientId = cid.Id;
 		}
 		break;
 	case SERVER_MSG_CAMPAIGN_DEF:
 		if (gCampaign.IsLoaded)
 		{
-			debug(D_NORMAL, "WARNING: unexpected campaign def msg received");
+			debug(D_NORMAL, "WARNING: unexpected campaign def msg received\n");
 		}
 		else
 		{
-			debug(D_VERBOSE, "NetClient: received campaign def, loading...");
+			debug(D_VERBOSE, "NetClient: received campaign def, loading...\n");
 			NetMsgCampaignDef def;
 			NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
 			char campaignPath[CDOGS_PATH_MAX];
@@ -184,7 +184,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetMsgPlayerData pd;
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
 			debug(D_VERBOSE,
-				"NetClient: received player data id %d", pd.PlayerIndex);
+				"NetClient: received player data id %d\n", pd.PlayerIndex);
 			AddMissingPlayers(pd.PlayerIndex);
 			NetMsgPlayerDataUpdate(&pd);
 		}
@@ -194,7 +194,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetMsgAddPlayers ap;
 			NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
 			debug(D_VERBOSE,
-				"NetClient: received new players %d", (int)ap.PlayerIds_count);
+				"NetClient: received new players %d\n",
+				(int)ap.PlayerIds_count);
 			// Add new players
 			// If they are local players, set them up with defaults
 			const bool isLocal = ap.ClientId == n->ClientId;
@@ -212,12 +213,12 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		}
 		break;
 	case SERVER_MSG_GAME_START:
-		debug(D_VERBOSE, "NetClient: received game start");
+		debug(D_VERBOSE, "NetClient: received game start\n");
 		gMission.HasStarted = true;
 		break;
 	case SERVER_MSG_ACTOR_ADD:
 		{
-			debug(D_VERBOSE, "NetClient: received actor add");
+			debug(D_VERBOSE, "NetClient: received actor add\n");
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			NetDecode(event.packet, &e.u.ActorAdd, NetMsgActorAdd_fields);
 			GameEventsEnqueue(&gGameEvents, e);
@@ -225,14 +226,14 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		break;
 	case SERVER_MSG_ACTOR_MOVE:
 		{
-			debug(D_VERBOSE, "NetClient: received actor move");
+			debug(D_VERBOSE, "NetClient: received actor move\n");
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
 	case SERVER_MSG_GAME_END:
-		debug(D_VERBOSE, "NetClient: received game end");
+		debug(D_VERBOSE, "NetClient: received game end\n");
 		gMission.isDone = true;
 		break;
 	default:
@@ -258,6 +259,7 @@ void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data)
 		return;
 	}
 
+	debug(D_VERBOSE, "NetClient: send msg type %d\n", (int)msg);
 	enet_peer_send(n->peer, 0, MakePacket(msg, data));
 	enet_host_flush(n->client);
 }

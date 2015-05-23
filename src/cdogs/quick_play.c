@@ -297,6 +297,10 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 }
 static color_t RandomBGColor(void)
 {
-	color_t c = { rand() % 128, rand() % 128, rand() % 128, 255 };
+	color_t c;
+	c.r = rand() % 128;
+	c.g = rand() % 128; 
+	c.b = rand() % 128;
+	c.a = 255;
 	return c;
 }

@@ -97,11 +97,10 @@ static void SetPaletteRange(
 {
 	for (int i = 0; i < 8; i++)
 	{
-		const color_t g =
-		{
-			cWhiteValues[i], cWhiteValues[i], cWhiteValues[i], channel
-		};
-		palette[start + i] = g;
+		color_t c;
+		c.r = c.g = c.b = cWhiteValues[i];
+		c.a = channel;
+		palette[start + i] = c;
 	}
 }
 

@@ -622,19 +622,39 @@ void SetupConfigDir(void)
 
 color_t RangeToColor(const int range)
 {
-	const color_t ranges[] =
+	switch (range)
 	{
-		colorMaroon, colorLonestar, colorRusticRed,
-		colorOfficeGreen, colorPakistanGreen, colorDarkFern,
-		colorNavyBlue, colorArapawa, colorStratos,
-		colorPatriarch, colorPompadour, colorLoulou,
-		colorBattleshipGrey, colorDoveGray, colorGravel,
-		colorComet, colorFiord, colorTuna,
-		colorHacienda, colorKumera, colorHimalaya,
-		colorChocolate, colorNutmeg, colorBracken,
-		colorTeal, colorSkobeloff, colorDeepJungleGreen
+	case 0: return colorMaroon;
+	case 1: return colorLonestar;
+	case 2: return colorRusticRed;
+	case 3: return colorOfficeGreen;
+	case 4: return colorPakistanGreen;
+	case 5: return colorDarkFern;
+	case 6: return colorNavyBlue;
+	case 7: return colorArapawa;
+	case 8: return colorStratos;
+	case 9: return colorPatriarch;
+	case 10: return colorPompadour;
+	case 11: return colorLoulou;
+	case 12: return colorBattleshipGrey;
+	case 13: return colorDoveGray;
+	case 14: return colorGravel;
+	case 15: return colorComet;
+	case 16: return colorFiord;
+	case 17: return colorTuna;
+	case 18: return colorHacienda;
+	case 19: return colorKumera;
+	case 20: return colorHimalaya;
+	case 21: return colorChocolate;
+	case 22: return colorNutmeg;
+	case 23: return colorBracken;
+	case 24: return colorTeal;
+	case 25: return colorSkobeloff;
+	case 26: return colorDeepJungleGreen;
+	default:
+		CASSERT(false, "unknown colour range");
+		return colorBlack;
 	};
-	return ranges[range];
 }
 const char *ColorRangeName(const int range)
 {
