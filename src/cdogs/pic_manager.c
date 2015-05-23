@@ -487,6 +487,7 @@ Pic *PicManagerGetMaskedPic(
 	// Check if the original pic is available; if not then it's impossible to
 	// create the masked version
 	Pic *original = PicManagerGetPic(pm, name);
+	CASSERT(original != NULL, "Cannot find original pic for masking\n");
 	if (original == NULL) return NULL;
 
 	// Create the new pic by masking the original pic
