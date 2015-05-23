@@ -297,6 +297,9 @@ static void LoadOldSprites(
 	}
 	CArrayPushBack(&pm->sprites, &ns);
 }
+static void AddMaskBasePic(
+	PicManager *pm, const char *name,
+	const char *styleName, const char *typeName, const int picIdx);
 static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 {
 	// Convert old pics into new format ones
@@ -323,32 +326,47 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 	{
 		for (int j = 0; j < WALL_TYPES; j++)
 		{
-			char buf[256];
-			sprintf(buf, "wall_%s_%s", WallStyleStr(i), WallTypeStr(j));
-			Pic p = PicCopy(PicManagerGetFromOld(pm, cWallPics[i][j]));
-			AddNamedPic(&pm->pics, buf, &p);
+			AddMaskBasePic(
+				pm, "wall", WallStyleStr(i), WallTypeStr(j), cWallPics[i][j]);
 		}
 	}
 	for (int i = 0; i < FLOOR_STYLE_COUNT; i++)
 	{
 		for (int j = 0; j < FLOOR_TYPES; j++)
 		{
-			char buf[256];
-			sprintf(buf, "floor_%s_%s", FloorStyleStr(i), FloorTypeStr(j));
-			Pic p = PicCopy(PicManagerGetFromOld(pm, cFloorPics[i][j]));
-			AddNamedPic(&pm->pics, buf, &p);
+			AddMaskBasePic(
+				pm, "floor", FloorStyleStr(i), FloorTypeStr(j),
+				cFloorPics[i][j]);
 		}
 	}
 	for (int i = 0; i < ROOM_STYLE_COUNT; i++)
 	{
 		for (int j = 0; j < ROOMFLOOR_TYPES; j++)
 		{
-			char buf[256];
-			sprintf(buf, "room_%s_%s", RoomStyleStr(i), RoomTypeStr(j));
-			Pic p = PicCopy(PicManagerGetFromOld(pm, cRoomPics[i][j]));
-			AddNamedPic(&pm->pics, buf, &p);
+			AddMaskBasePic(
+				pm, "room", RoomStyleStr(i), RoomTypeStr(j), cRoomPics[i][j]);
 		}
 	}
+}
+static void AddMaskBasePic(
+	PicManager *pm, const char *name,
+	const char *styleName, const char *typeName, const int picIdx)
+{
+	char buf[256];
+	sprintf(buf, "%s_%s_%s", name, styleName, typeName);
+	const PicPaletted *old = PicManagerGetOldPic(pm, picIdx);
+	Pic p = PicCopy(PicManagerGetFromOld(pm, picIdx));
+	// Detect alt pixels and modify their channel
+	for (int i = 0; i < p.size.x * p.size.y; i++)
+	{
+		if (old->data[i] >= ALT_COLORS && old->data[i] < ALT_COLORS + 8)
+		{
+			color_t c = PixelToColor(&gGraphicsDevice, p.Data[i]);
+			c.a = 254;
+			p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
+		}
+	}
+	AddNamedPic(&pm->pics, buf, &p);
 }
 
 void PicManagerClear(CArray *pics, CArray *sprites)
@@ -491,10 +509,9 @@ Pic *PicManagerGetMaskedPic(
 	if (original == NULL) return NULL;
 
 	// Create the new pic by masking the original pic
-	Pic p = *original;
+	Pic p = PicCopy(original);
 	debug(D_VERBOSE, "Creating new masked pic %s (%d x %d)\n",
 		maskedName, p.size.x, p.size.y);
-	CMALLOC(p.Data, sizeof *p.Data * p.size.x * p.size.y);
 	for (int i = 0; i < p.size.x * p.size.y; i++)
 	{
 		const color_t o = PixelToColor(&gGraphicsDevice, original->Data[i]);
