@@ -488,25 +488,41 @@ const NamedSprites *PicManagerGetSprites(
 	return NULL;
 }
 
+static void GetMaskedName(
+	char *buf, const char *name, const color_t mask, const color_t maskAlt);
+static void GetMaskedStyleName(
+	char *buf, const char *name, const int style, const int type);
+
 Pic *PicManagerGetMaskedPic(
+	const PicManager *pm, const char *name,
+	const color_t mask, const color_t maskAlt)
+{
+	char maskedName[256];
+	GetMaskedName(maskedName, name, mask, maskAlt);
+	return PicManagerGetPic(pm, maskedName);
+}
+Pic *PicManagerGetMaskedStylePic(
+	const PicManager *pm, const char *name, const int style, const int type,
+	const color_t mask, const color_t maskAlt)
+{
+	char buf[256];
+	GetMaskedStyleName(buf, name, style, type);
+	return PicManagerGetMaskedPic(pm, buf, mask, maskAlt);
+}
+
+void PicManagerGenerateMaskedPic(
 	PicManager *pm, const char *name,
 	const color_t mask, const color_t maskAlt)
 {
 	char maskedName[256];
-	char maskName[8];
-	ColorStr(maskName, mask);
-	char maskAltName[8];
-	ColorStr(maskAltName, maskAlt);
-	sprintf(maskedName, "%s_%s_%s", name, maskName, maskAltName);
+	GetMaskedName(maskedName, name, mask, maskAlt);
 	// Check if the masked pic already exists
-	Pic *existing = PicManagerGetPic(pm, maskedName);
-	if (existing != NULL) return existing;
+	if (PicManagerGetPic(pm, maskedName) != NULL) return;
 
 	// Check if the original pic is available; if not then it's impossible to
 	// create the masked version
 	Pic *original = PicManagerGetPic(pm, name);
 	CASSERT(original != NULL, "Cannot find original pic for masking\n");
-	if (original == NULL) return NULL;
 
 	// Create the new pic by masking the original pic
 	Pic p = PicCopy(original);
@@ -528,11 +544,28 @@ Pic *PicManagerGetMaskedPic(
 		p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
 		// TODO: more channels
 	}
-	return &AddNamedPic(&pm->customPics, maskedName, &p)->pic;
+	AddNamedPic(&pm->customPics, maskedName, &p);
 }
-Pic *PicManagerGetMaskedStylePic(
+void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt)
+{
+	char buf[256];
+	GetMaskedStyleName(buf, name, style, type);
+	PicManagerGenerateMaskedPic(pm, buf, mask, maskAlt);
+}
+
+static void GetMaskedName(
+	char *buf, const char *name, const color_t mask, const color_t maskAlt)
+{
+	char maskName[8];
+	ColorStr(maskName, mask);
+	char maskAltName[8];
+	ColorStr(maskAltName, maskAlt);
+	sprintf(buf, "%s_%s_%s", name, maskName, maskAltName);
+}
+static void GetMaskedStyleName(
+	char *buf, const char *name, const int style, const int type)
 {
 	const char *styleName;
 	const char *typeName;
@@ -554,11 +587,9 @@ Pic *PicManagerGetMaskedStylePic(
 	else
 	{
 		CASSERT(false, "Invalid masked style name");
-		return NULL;
+		return;
 	}
-	char buf[256];
 	sprintf(buf, "%s_%s_%s", name, styleName, typeName);
-	return PicManagerGetMaskedPic(pm, buf, mask, maskAlt);
 }
 
 static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)

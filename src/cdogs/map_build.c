@@ -73,6 +73,27 @@ void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
 
 void MapSetupTilesAndWalls(Map *map, const Mission *m)
 {
+	// Pre-load the tile pics that this map will use
+	// TODO: multiple styles and colours
+	// Walls
+	for (int i = 0; i < WALL_TYPES; i++)
+	{
+		PicManagerGenerateMaskedStylePic(
+			&gPicManager, "wall", m->WallStyle, i, m->WallMask, m->AltMask);
+	}
+	// Floors
+	for (int i = 0; i < FLOOR_TYPES; i++)
+	{
+		PicManagerGenerateMaskedStylePic(
+			&gPicManager, "floor", m->FloorStyle, i, m->FloorMask, m->AltMask);
+	}
+	// Rooms
+	for (int i = 0; i < ROOMFLOOR_TYPES; i++)
+	{
+		PicManagerGenerateMaskedStylePic(
+			&gPicManager, "room", m->RoomStyle, i, m->RoomMask, m->AltMask);
+	}
+
 	Vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
