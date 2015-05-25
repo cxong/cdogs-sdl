@@ -1669,7 +1669,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	// mission data
 
 	pos.x = 20;
-	pos.y += th;
+	pos.y += th + 5;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(189, th));

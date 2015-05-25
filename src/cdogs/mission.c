@@ -185,6 +185,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 }
 void MissionTerminate(Mission *m)
 {
+	if (m == NULL) return;
 	CFREE(m->Title);
 	CFREE(m->Description);
 	for (int i = 0; i < (int)m->Objectives.size; i++)
