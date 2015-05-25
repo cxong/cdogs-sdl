@@ -383,12 +383,15 @@ static void MissionDrawWallStyle(
 	UNUSED(g);
 	int count = WALL_STYLE_COUNT;
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return;
-	int idx = CampaignGetCurrentMission(co)->WallStyle;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m) return;
+	int idx = m->WallStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
-		PicManagerGetFromOld(&gPicManager, cWallPics[idx % count][WALL_SINGLE]),
+		PicManagerGetMaskedStylePic(
+			&gPicManager, "wall", idx % count, WALL_SINGLE,
+			m->WallMask, m->AltMask),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -398,15 +401,15 @@ static void MissionDrawFloorStyle(
 	UNUSED(g);
 	int count = FLOOR_STYLE_COUNT;
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return;
-	}
-	int idx = CampaignGetCurrentMission(co)->FloorStyle;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m) return;
+	const int idx = m->FloorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
-		PicManagerGetFromOld(&gPicManager, cFloorPics[idx % count][FLOOR_NORMAL]),
+		PicManagerGetMaskedStylePic(
+			&gPicManager, "floor", idx % count, FLOOR_NORMAL,
+			m->FloorMask, m->AltMask),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -415,16 +418,16 @@ static void MissionDrawRoomStyle(
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return;
-	}
-	int idx = CampaignGetCurrentMission(co)->RoomStyle;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m) return;
+	const int idx = m->RoomStyle;
 	const int count = ROOM_STYLE_COUNT;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
-		PicManagerGetFromOld(&gPicManager, cRoomPics[idx % count][ROOMFLOOR_NORMAL]),
+		PicManagerGetMaskedStylePic(
+			&gPicManager, "room", idx % count, ROOMFLOOR_NORMAL,
+			m->RoomMask, m->AltMask),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
