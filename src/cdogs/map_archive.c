@@ -365,12 +365,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	}
 	char buf[CDOGS_PATH_MAX];
 	RealPath(relbuf, buf);
-	if (mkdir(buf, MKDIR_MODE) != 0)
-	{
-		printf("Failed to make dir. reason: %s.\n", strerror(errno));
-		res = 0;
-		goto bail;
-	}
+	// Make dir but ignore error, as we may be saving over an existing dir
 	setlocale(LC_ALL, "");
 
 	// Campaign
