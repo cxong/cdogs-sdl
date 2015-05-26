@@ -75,7 +75,7 @@ bool PicManagerTryInit(
 	return true;
 }
 static void SetPaletteRange(
-	TPalette palette, const int start, const uint8_t channel);
+	TPalette palette, const int start, const color_t mask);
 static void SetupPalette(TPalette palette)
 {
 	palette[0].r = palette[0].g = palette[0].b = 0;
@@ -85,22 +85,22 @@ static void SetupPalette(TPalette palette)
 	// These pics will be recoloured on demand by the PicManager based on
 	// mission-specific colours requested during map load. Some pics will
 	// have an "alt" colour in the same pic, so to differentiate and mask
-	// each colour individually, those converted pics will have pixels with
-	// different alpha values, to signify different recolouring channels.
-	SetPaletteRange(palette, WALL_COLORS, 255);
-	SetPaletteRange(palette, FLOOR_COLORS, 255);
-	SetPaletteRange(palette, ROOM_COLORS, 255);
-	SetPaletteRange(palette, ALT_COLORS, 254);
+	// each colour individually, those converted pics will use a different
+	// colour mask, to signify different recolouring channels.
+	SetPaletteRange(palette, WALL_COLORS, colorWhite);
+	SetPaletteRange(palette, FLOOR_COLORS, colorWhite);
+	SetPaletteRange(palette, ROOM_COLORS, colorWhite);
+	SetPaletteRange(palette, ALT_COLORS, colorRed);
 }
 static void SetPaletteRange(
-	TPalette palette, const int start, const uint8_t channel)
+	TPalette palette, const int start, const color_t mask)
 {
 	for (int i = 0; i < 8; i++)
 	{
 		color_t c;
 		c.r = c.g = c.b = cWhiteValues[i];
-		c.a = channel;
-		palette[start + i] = c;
+		c.a = 255;
+		palette[start + i] = ColorMult(c, mask);
 	}
 }
 
@@ -530,16 +530,19 @@ void PicManagerGenerateMaskedPic(
 		maskedName, p.size.x, p.size.y);
 	for (int i = 0; i < p.size.x * p.size.y; i++)
 	{
-		const color_t o = PixelToColor(&gGraphicsDevice, original->Data[i]);
+		color_t o = PixelToColor(&gGraphicsDevice, original->Data[i]);
 		color_t c;
 		// Apply mask based on which channel each pixel is
-		if (o.a == 255)
+		if (o.g == 0 && o.b == 0)
 		{
-			c = ColorMult(o, mask);
+			// Restore to white before masking
+			o.g = o.r;
+			o.b = o.r;
+			c = ColorMult(o, maskAlt);
 		}
 		else
 		{
-			c = ColorMult(o, maskAlt);
+			c = ColorMult(o, mask);
 		}
 		p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
 		// TODO: more channels
