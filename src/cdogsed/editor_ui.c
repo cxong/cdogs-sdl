@@ -1567,7 +1567,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	// Mission looks
 	// wall/floor styles etc.
 
-	pos.y += th * 6;
+	pos.y += th * 6 + 2;
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
