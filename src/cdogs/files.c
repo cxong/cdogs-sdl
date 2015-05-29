@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <SDL.h>
 
+#include "log.h"
 #include "map_new.h"
 #include "sys_specifics.h"
 #include "utils.h"
@@ -598,21 +599,23 @@ void SetupConfigDir(void)
 {
 	const char *cfg_p = GetConfigFilePath("");
 
-	printf("Creating Config dir... ");
+	LOG(LM_MAIN, LL_INFO, "Creating Config dir... ");
 
 	if (mkdir_deep(cfg_p) == 0)
 	{
-		if (errno != EEXIST)
-			printf("Config dir created.\n");
-		else
-			printf("No need. Already exists!\n");
-	} else {
-		switch (errno) {
+		if (errno != EEXIST) LOG(LM_MAIN, LL_INFO, "Config dir created.");
+		else LOG(LM_MAIN, LL_INFO, "Config dir already exists.");
+	}
+	else
+	{
+		switch (errno)
+		{
 			case EACCES:
-				printf("Permission denied!\n");
+				LOG(LM_MAIN, LL_WARN, "Permission denied");
 				break;
 			default:
 				perror("Error creating config directory:");
+				break;
 		}
 	}
 

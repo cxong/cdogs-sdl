@@ -61,25 +61,11 @@
 #include "joystick.h"
 #include "sys_config.h"
 
-int debug = 0;
+bool debug = false;
 int debug_level = D_NORMAL;
 
 bool gTrue = true;
 bool gFalse = false;
-
-int MemIsZero(const void *buf, size_t len)
-{
-	const char *bytes = (const char *)buf;
-	size_t i;
-	for (i = 0; i < len; i++)
-	{
-		if (bytes[i])
-		{
-			return 0;
-		}
-	}
-	return 1;
-}
 
 // From answer by ThiefMaster
 // http://stackoverflow.com/a/5309508/2038264

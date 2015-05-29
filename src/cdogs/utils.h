@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,11 +52,12 @@
 #include <stdbool.h>
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
+#include <string.h>
 
 #include "color.h"
 #include "sys_specifics.h"
 
-extern int debug;
+extern bool debug;
 extern int debug_level;
 
 // Global variables so their address can be taken (passed into void * funcs)
@@ -142,8 +143,6 @@ extern bool gFalse;
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
 #define SIGN(x) ((x) != 0 ? (x) / abs(x) : 1)
 #define SQUARED(x) ((x) * (x))
-
-int MemIsZero(const void *buf, size_t len);
 
 const char *StrGetFileExt(const char *filename);
 

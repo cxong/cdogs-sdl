@@ -44,6 +44,7 @@ set(CDOGS_SOURCES
 	joystick.c
 	json_utils.c
 	keyboard.c
+	log.c
 	map.c
 	map_archive.c
 	map_build.c
@@ -122,6 +123,7 @@ set(CDOGS_HEADERS
 	joystick.h
 	json_utils.h
 	keyboard.h
+	log.h
 	map.h
 	map_archive.h
 	map_build.h

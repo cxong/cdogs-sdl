@@ -37,6 +37,7 @@
 #include "campaign_entry.h"
 #include "game_events.h"
 #include "gamedata.h"
+#include "log.h"
 #include "player.h"
 #include "sys_config.h"
 #include "utils.h"
@@ -149,15 +150,15 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	n->peerId++;
 
 	// Send the client ID
-	debug(D_VERBOSE, "NetServer: sending client ID %d\n", peerId);
+	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
 	NetServerSendMsg(n, peerId, SERVER_MSG_CLIENT_ID, &peerId);
 
 	// Send the current campaign details over
-	debug(D_VERBOSE, "NetServer: sending campaign entry\n");
+	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
 	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
-	debug(D_VERBOSE, "NetServer: client connection complete\n");
+	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 }
 static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData);
@@ -165,7 +166,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 {
 	uint32_t msgType = *(uint32_t *)event.packet->data;
 	const int peerId = ((NetPeerData *)event.peer->data)->Id;
-	debug(D_NORMAL, "NetServer: Received message from client %d type %u\n",
+	LOG(LM_NET, LL_INFO, "NetServer: Received message from client %d type %u",
 		peerId, msgType);
 	switch (msgType)
 	{
@@ -174,7 +175,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
 			const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-			debug(D_VERBOSE, "NetServer: sending player data index %d\n", i);
+			LOG(LM_NET, LL_DEBUG, "NetServer: sending player data index %d", i);
 			NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
 		}
 		break;
@@ -182,7 +183,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		{
 			NetMsgNewPlayers np;
 			NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
-			debug(D_VERBOSE, "NetServer: received new players %d", np.NumPlayers);
+			LOG(LM_NET, LL_DEBUG, "NetServer: received new players %d", np.NumPlayers);
 			// Add the players, simultaneously building our broadcast message
 			NetMsgAddPlayers ap;
 			ap.ClientId = np.ClientId;
@@ -201,7 +202,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		{
 			NetMsgPlayerData pd;
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
-			debug(D_VERBOSE,
+			LOG(LM_NET, LL_DEBUG,
 				"NetServer: received player data id %d", pd.PlayerIndex);
 			CASSERT(
 				(int)gPlayerDatas.size > (int)pd.PlayerIndex,

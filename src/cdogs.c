@@ -65,6 +65,7 @@
 #include <cdogs/hiscores.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
+#include <cdogs/log.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
@@ -118,12 +119,7 @@ void PrintTitle(void)
 
 	printf("Original Code Copyright Ronny Wester 1995\n");
 	printf("Game Data Copyright Ronny Wester 1995\n");
-	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2014\n\n");
-	printf("%s%s%s%s",
-		"C-Dogs SDL comes with ABSOLUTELY NO WARRANTY;\n",
-		"see the file COPYING that came with this distibution...\n",
-		"This is free software, and you are welcome to redistribute it\n",
-		"under certain conditions; for details see COPYING.\n\n");
+	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2015\n\n");
 }
 
 static void PrintHelp(void)
@@ -155,6 +151,14 @@ static void PrintHelp(void)
 	);
 
 	printf("%s\n",
+		"Logging: logging is enabled per module and set at certain levels.\n"
+		"Levels can be set between %s and %s\n"
+		"Available modules are: NET\n"
+		"    --log=M,L        Enable logging for module M at level L.\n",
+		LogLevelName(LL_TRACE), LogLevelName(LL_ERROR)
+	);
+
+	printf("%s\n",
 		"Other:\n"
 		"    --connect=host   (Experimental) connect to a game server\n"
 		);
@@ -164,7 +168,7 @@ static void PrintHelp(void)
 
 	printf(
 		"The DEBUG_LEVEL environment variable can be set to between %d and %d.\n", D_NORMAL, D_MAX
-	);
+		);
 }
 
 int main(int argc, char *argv[])
@@ -186,13 +190,13 @@ int main(int argc, char *argv[])
 
 	PrintTitle();
 
+	if (getenv("DEBUG") != NULL)
 	{
+		debug = true;
 		char *dbg;
-		if (getenv("DEBUG") != NULL) debug = 1;
-		if ((dbg = getenv("DEBUG_LEVEL")) != NULL) {
-			debug_level = atoi(dbg);
-			if (debug_level < 0) debug_level = 0;
-			if (debug_level > D_MAX) debug_level = D_MAX;
+		if ((dbg = getenv("DEBUG_LEVEL")) != NULL)
+		{
+			debug_level = CLAMP(atoi(dbg), D_NORMAL, D_MAX);
 		}
 	}
 
@@ -215,12 +219,13 @@ int main(int argc, char *argv[])
 			{"shakemult",	required_argument,	NULL,	'm'},
 			{"connect",		required_argument,	NULL,	'x'},
 			{"debug",		required_argument,	NULL,	'd'},
+			{"log",			required_argument,	NULL,	1000},
 			{"help",		no_argument,		NULL,	'h'},
 			{0,				0,					NULL,	0}
 		};
 		int opt = 0;
 		int idx = 0;
-		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xdh", longopts, &idx)) != -1)
+		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xd\0h", longopts, &idx)) != -1)
 		{
 			switch (opt)
 			{
@@ -266,10 +271,20 @@ int main(int argc, char *argv[])
 				goto bail;
 			case 'd':
 				// Set debug level
-				debug = 1;
-				debug_level = atoi(optarg);
-				if (debug_level < 0) debug_level = 0;
-				if (debug_level > D_MAX) debug_level = D_MAX;
+				debug = true;
+				debug_level = CLAMP(atoi(optarg), D_NORMAL, D_MAX);
+				break;
+			case 1000:
+				{
+					char *comma = strchr(optarg, ',');
+					if (comma)
+					{
+						*comma = '\0';
+					}
+					// Set logging level
+					LogModuleSetLevel(StrLogModule(optarg), StrLogLevel(comma + 1));
+					printf("Logging %s at %s\n", optarg, comma + 1);
+				}
 				break;
 			case 'x':
 				if (enet_address_set_host(&connectAddr, optarg) != 0)
