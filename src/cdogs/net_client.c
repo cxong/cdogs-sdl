@@ -267,6 +267,8 @@ static ENetPacket *MakePacket(ClientMsg msg, const void *data)
 {
 	switch (msg)
 	{
+	case CLIENT_MSG_REQUEST_PLAYERS:
+		return NetEncode((int)msg, NULL, NetMsgRequestPlayers_fields);
 	case CLIENT_MSG_NEW_PLAYERS:
 		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
 	case CLIENT_MSG_PLAYER_DATA:

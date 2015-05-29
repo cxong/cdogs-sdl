@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_UTIL
-#define __NET_UTIL
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -57,6 +56,7 @@
 // Commands (client to server)
 typedef enum
 {
+	CLIENT_MSG_REQUEST_PLAYERS,
 	CLIENT_MSG_NEW_PLAYERS,
 	CLIENT_MSG_PLAYER_DATA,
 	CLIENT_MSG_CMD
@@ -82,5 +82,3 @@ NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, GameMode *outMode);
 void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd);
-
-#endif

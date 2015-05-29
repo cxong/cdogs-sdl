@@ -155,13 +155,6 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	// Send the current campaign details over
 	debug(D_VERBOSE, "NetServer: sending campaign entry\n");
 	NetServerSendMsg(n, peerId, SERVER_MSG_CAMPAIGN_DEF, &gCampaign.Entry);
-	// Send details of all current players
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-		debug(D_VERBOSE, "NetServer: sending player data index %d\n", i);
-		NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
-	}
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	debug(D_VERBOSE, "NetServer: client connection complete\n");
@@ -176,6 +169,15 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		peerId, msgType);
 	switch (msgType)
 	{
+	case CLIENT_MSG_REQUEST_PLAYERS:
+		// Send details of all current players
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+			debug(D_VERBOSE, "NetServer: sending player data index %d\n", i);
+			NetServerSendMsg(n, peerId, SERVER_MSG_PLAYER_DATA, pOther);
+		}
+		break;
 	case CLIENT_MSG_NEW_PLAYERS:
 		{
 			NetMsgNewPlayers np;

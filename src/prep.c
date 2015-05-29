@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -127,6 +127,8 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 static void CheckRemotePlayersComplete(menu_t *menu, void *data);
 bool ScreenWaitForRemotePlayers(void)
 {
+	// Explicitly ask for player definitions
+	NetClientSendMsg(&gNetClient, CLIENT_MSG_REQUEST_PLAYERS, NULL);
 	return ScreenWait(
 		"Waiting for server players...", CheckRemotePlayersComplete);
 }
@@ -333,7 +335,10 @@ bool PlayerSelection(void)
 			&gEventHandlers, &gGraphicsDevice, &data.g);
 	}
 
-	NetServerOpen(&gNetServer);
+	if (!gCampaign.IsClient)
+	{
+		NetServerOpen(&gNetServer);
+	}
 	GameLoopData gData = GameLoopDataNew(
 		&data, PlayerSelectionUpdate,
 		&data, PlayerSelectionDraw);
