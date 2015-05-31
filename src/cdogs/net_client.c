@@ -140,7 +140,7 @@ static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
 	uint32_t msgType = *(uint32_t *)event.packet->data;
-	LOG(LM_NET, LL_INFO, "NetClient: Received message type %u", msgType);
+	LOG(LM_NET, LL_TRACE, "recv msgType(%u)", msgType);
 	switch (msgType)
 	{
 	case SERVER_MSG_CLIENT_ID:
@@ -184,9 +184,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		{
 			NetMsgPlayerData pd;
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
-			LOG(LM_NET, LL_DEBUG,
-				"NetClient: received player data id %d", pd.PlayerIndex);
 			AddMissingPlayers(pd.PlayerIndex);
+			LOG(LM_NET, LL_DEBUG, "recv player data name(%s) id(%d) total(%d)",
+				pd.Name, pd.PlayerIndex, (int)gPlayerDatas.size);
 			NetMsgPlayerDataUpdate(&pd);
 		}
 		break;
@@ -219,9 +219,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		break;
 	case SERVER_MSG_ACTOR_ADD:
 		{
-			LOG(LM_NET, LL_DEBUG, "NetClient: received actor add");
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			NetDecode(event.packet, &e.u.ActorAdd, NetMsgActorAdd_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor add uid(%d) playerId(%d)",
+				e.u.ActorAdd.UID, e.u.ActorAdd.PlayerId);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
@@ -247,6 +248,7 @@ static void AddMissingPlayers(const int playerId)
 {
 	for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
 	{
+		LOG(LM_NET, LL_DEBUG, "add remote playerId(%d)", playerId);
 		PlayerData *p = PlayerDataAdd(&gPlayerDatas);
 		p->IsLocal = false;
 	}

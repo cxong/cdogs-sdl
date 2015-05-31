@@ -61,6 +61,7 @@
 #include "config.h"
 #include "drawtools.h"
 #include "game_events.h"
+#include "log.h"
 #include "pic_manager.h"
 #include "sounds.h"
 #include "defs.h"
@@ -1159,6 +1160,8 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	TActor *actor = CArrayGet(&gActors, id);
 	memset(actor, 0, sizeof *actor);
 	actor->uid = aa.UID;
+	LOG(LM_ACTOR, LL_DEBUG,
+		"add actor uid(%d) playerId(%d)", actor->uid, (int)aa.PlayerId);
 	while (aa.UID >= sActorUIDs)
 	{
 		sActorUIDs++;
@@ -1213,7 +1216,6 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	}
 	actor->Character = c;
 	actor->playerIndex = aa.PlayerId;
-	actor->uid = sActorUIDs++;
 	actor->direction = DIRECTION_DOWN;
 	actor->state = STATE_IDLE;
 	actor->slideLock = 0;

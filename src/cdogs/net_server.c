@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -268,6 +268,8 @@ void NetServerSendMsg(
 	{
 		return;
 	}
+	LOG(LM_NET, LL_DEBUG,
+		"send msg(%d) to peers(%d)", (int)msg, (int)n->server->connectedPeers);
 
 	// Find the peer and send
 	for (int i = 0; i < (int)n->server->connectedPeers; i++)

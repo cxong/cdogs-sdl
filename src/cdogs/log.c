@@ -30,6 +30,8 @@
 
 static LogLevel llMain = LL_INFO;
 static LogLevel llNet = LL_INFO;
+static LogLevel llInput = LL_INFO;
+static LogLevel llActor = LL_INFO;
 
 
 const char *LogModuleName(const LogModule m)
@@ -38,6 +40,8 @@ const char *LogModuleName(const LogModule m)
 	{
 		T2S(LM_MAIN, "MAIN");
 		T2S(LM_NET, "NET");
+		T2S(LM_INPUT, "INPUT");
+		T2S(LM_ACTOR, "ACTOR");
 	default:
 		return "";
 	}
@@ -46,6 +50,8 @@ LogModule StrLogModule(const char *s)
 {
 	S2T(LM_MAIN, "MAIN");
 	S2T(LM_NET, "NET");
+	S2T(LM_INPUT, "INPUT");
+	S2T(LM_ACTOR, "ACTOR");
 	return LM_MAIN;
 }
 
@@ -55,6 +61,8 @@ LogLevel LogModuleGetLevel(const LogModule m)
 	{
 	case LM_MAIN: return llMain;
 	case LM_NET: return llNet;
+	case LM_INPUT: return llInput;
+	case LM_ACTOR: return llActor;
 	default:
 		CASSERT(false, "Unknown log module");
 		return LL_ERROR;
@@ -66,6 +74,8 @@ void LogModuleSetLevel(const LogModule m, const LogLevel l)
 	{
 	case LM_MAIN: llMain = l; break;
 	case LM_NET: llNet = l; break;
+	case LM_INPUT: llInput = l; break;
+	case LM_ACTOR: llActor = l; break;
 	default:
 		CASSERT(false, "Unknown log module");
 		break;

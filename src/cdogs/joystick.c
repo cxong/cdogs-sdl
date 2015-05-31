@@ -33,6 +33,7 @@
 
 #include "defs.h"
 #include "events.h"
+#include "log.h"
 
 
 void JoyInit(joysticks_t *joys)
@@ -51,14 +52,12 @@ void JoyReset(joysticks_t *joys)
 
 	JoyTerminate(joys);
 
-	printf("Checking for joysticks... ");
 	joys->numJoys = SDL_NumJoysticks();
+	LOG(LM_INPUT, LL_DEBUG, "%d joysticks found", joys->numJoys);
 	if (joys->numJoys == 0)
 	{
-		printf("None found.\n");
 		return;
 	}
-	printf("%d found\n", joys->numJoys);
 	for (i = 0; i < joys->numJoys; i++)
 	{
 		joystick_t *joy = &joys->joys[i];

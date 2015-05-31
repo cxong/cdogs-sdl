@@ -152,6 +152,15 @@ static void PrintHelp(void)
 
 	printf("%s\n",
 		"Logging: logging is enabled per module and set at certain levels.\n"
+		"Log modules are: "
+	);
+	for (int i = 0; i < (int)LM_COUNT; i++)
+	{
+		printf("%s", LogModuleName((LogModule)i));
+		if (i < (int)LM_COUNT - 1) printf(", ");
+		else printf("\n");
+	}
+	printf("%s\n",
 		"Levels can be set between %s and %s\n"
 		"Available modules are: NET\n"
 		"    --log=M,L        Enable logging for module M at level L.\n",

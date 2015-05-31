@@ -34,6 +34,8 @@ typedef enum
 {
 	LM_MAIN,
 	LM_NET,
+	LM_INPUT,
+	LM_ACTOR,
 	LM_COUNT
 } LogModule;
 const char *LogModuleName(const LogModule m);
@@ -56,7 +58,7 @@ LogLevel StrLogLevel(const char *s);
 	{\
 		if (_level >= LogModuleGetLevel(_module))\
 		{\
-			fprintf(stderr, "%-5s [%-4s] [%s:%d] %s(): ",\
+			fprintf(stderr, "%-5s [%-5s] [%s:%d] %s(): ",\
 				LogLevelName(_level), LogModuleName(_module),\
 				__FILE__, __LINE__, __FUNCTION__);\
 			fprintf(stderr, __VA_ARGS__);\
