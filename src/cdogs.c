@@ -150,7 +150,7 @@ static void PrintHelp(void)
 		"    --shakemult=n    Screen shaking multiplier (0 = disable).\n"
 	);
 
-	printf("%s\n",
+	printf(
 		"Logging: logging is enabled per module and set at certain levels.\n"
 		"Log modules are: "
 	);
@@ -163,7 +163,7 @@ static void PrintHelp(void)
 	printf("%s\n",
 		"Levels can be set between %s and %s\n"
 		"Available modules are: NET\n"
-		"    --log=M,L        Enable logging for module M at level L.\n",
+		"    --log=M,L        Enable logging for module M at level L.\n\n",
 		LogLevelName(LL_TRACE), LogLevelName(LL_ERROR)
 	);
 
