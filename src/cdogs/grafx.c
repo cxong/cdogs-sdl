@@ -61,6 +61,7 @@
 #include "config.h"
 #include "defs.h"
 #include "grafx_bg.h"
+#include "log.h"
 #include "palette.h"
 #include "files.h"
 #include "utils.h"
@@ -295,7 +296,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		}
 	}
 
-	printf("Graphics mode:\t%dx%d %dx (actual %dx%d)\n",
+	LOG(LM_MAIN, LL_INFO, "graphics mode(%dx%d %dx) actual(%dx%d)",
 		w, h, g->cachedConfig.ScaleFactor, rw, rh);
 	SDL_FreeSurface(g->screen);
 	g->screen = SDL_SetVideoMode(rw, rh, 32, sdl_flags);

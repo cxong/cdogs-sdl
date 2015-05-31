@@ -62,6 +62,7 @@
 #include "config.h"
 #include "defs.h"
 #include "keyboard.h"
+#include "log.h"
 #include "player_template.h"
 #include "quick_play.h"
 #include "sys_config.h"
@@ -124,7 +125,7 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 
 	if (co->IsLoaded)
 	{
-		printf(">> Loaded campaign/dogfight\n");
+		LOG(LM_MAIN, LL_INFO, "loaded campaign/dogfight");
 	}
 	return co->IsLoaded;
 }

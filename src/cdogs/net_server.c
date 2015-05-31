@@ -240,7 +240,7 @@ static void SendGameStartMessages(
 			continue;
 		}
 		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
+		aa.UID = a->uid;
 		if (a->playerIndex < 0)
 		{
 			aa.CharId =
@@ -253,6 +253,8 @@ static void SendGameStartMessages(
 		aa.TileItemFlags = a->tileItem.flags;
 		aa.FullPos.x = a->Pos.x;
 		aa.FullPos.y = a->Pos.y;
+		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerId(%d)",
+			(int)aa.UID, (int)aa.PlayerId);
 		NetServerSendMsg(&gNetServer, peerId, SERVER_MSG_ACTOR_ADD, &aa);
 	}
 

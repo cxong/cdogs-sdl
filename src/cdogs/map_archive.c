@@ -34,6 +34,7 @@
 
 #include "ammo.h"
 #include "json_utils.h"
+#include "log.h"
 #include "map_new.h"
 #include "pickup.h"
 
@@ -203,7 +204,7 @@ static void LoadArchiveSounds(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) != 0)
 	{
-		printf("Failed to open folder %s: %s\n", path, strerror(errno));
+		LOG(LM_MAIN, LL_DEBUG, "no sound dir(%s): %s", path, strerror(errno));
 		goto bail;
 	}
 	while (dir.has_next)
@@ -255,7 +256,7 @@ static void LoadArchivePics(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) != 0)
 	{
-		printf("Failed to open folder %s: %s\n", path, strerror(errno));
+		LOG(LM_MAIN, LL_DEBUG, "no pic dir(%s): %s", path, strerror(errno));
 		goto bail;
 	}
 	while (dir.has_next)

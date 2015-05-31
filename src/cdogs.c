@@ -339,8 +339,8 @@ int main(int argc, char *argv[])
 	char buf[CDOGS_PATH_MAX];
 	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
-	printf("Data directory:\t\t%s\n", buf);
-	printf("Config directory:\t%s\n\n",	GetConfigFilePath(""));
+	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
+	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
 	if (isSoundEnabled)
 	{

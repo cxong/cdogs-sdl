@@ -1151,6 +1151,13 @@ int ActorsGetFreeIndex(void)
 }
 TActor *ActorAdd(NetMsgActorAdd aa)
 {
+	// Don't add if UID exists
+	if (ActorGetByUID(aa.UID) != NULL)
+	{
+		LOG(LM_ACTOR, LL_DEBUG,
+			"actor uid(%d) already exists; not adding", (int)aa.UID);
+		return NULL;
+	}
 	const int id = ActorsGetFreeIndex();
 	while (id >= (int)gActors.size)
 	{
