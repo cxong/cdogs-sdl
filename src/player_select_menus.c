@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, Cong Xu
+	Copyright (c) 2013-2015, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -383,6 +383,8 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(
 		ms->root, MenuCreateNormal("Done", "", MENU_TYPE_NORMAL, 0));
+	// Select "Done"
+	ms->root->u.normal.index = (int)ms->root->u.normal.subMenus.size - 1;
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->playerIndex);

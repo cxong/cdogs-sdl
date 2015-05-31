@@ -1117,6 +1117,7 @@ void ActorsInit(void)
 {
 	CArrayInit(&gActors, sizeof(TActor));
 	CArrayReserve(&gActors, 64);
+	sActorUIDs = 0;
 }
 void ActorsTerminate(void)
 {

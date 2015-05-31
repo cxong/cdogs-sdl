@@ -226,6 +226,8 @@ void WeaponMenuCreate(
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(
 		ms->root, MenuCreateNormal("(End)", "", MENU_TYPE_NORMAL, 0));
+	// Select "(End)"
+	ms->root->u.normal.index = (int)ms->root->u.normal.subMenus.size - 1;
 
 	// Disable "Done" if no weapons selected
 	if (pData->weaponCount == 0)
