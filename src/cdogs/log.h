@@ -53,15 +53,36 @@ void LogModuleSetLevel(const LogModule m, const LogLevel l);
 const char *LogLevelName(const LogLevel l);
 LogLevel StrLogLevel(const char *s);
 
+void LogSetLevelColor(const LogLevel l);
+void LogSetModuleColor(void);
+void LogSetFileColor(void);
+void LogSetFuncColor(void);
+void LogResetColor(void);
+
 #define LOG(_module, _level, ...)\
 	do\
 	{\
 		if (_level >= LogModuleGetLevel(_module))\
 		{\
-			fprintf(stderr, "%-5s [%-5s] [%s:%d] %s(): ",\
-				LogLevelName(_level), LogModuleName(_module),\
-				__FILE__, __LINE__, __FUNCTION__);\
+			LogSetLevelColor(_level);\
+			fprintf(stderr, "%-5s ", LogLevelName(_level));\
+			LogResetColor();\
+			fprintf(stderr, "[");\
+			LogSetModuleColor();\
+			fprintf(stderr, "%-5s", LogModuleName(_module));\
+			LogResetColor();\
+			fprintf(stderr, "] [");\
+			LogSetFileColor();\
+			fprintf(stderr, "%s:%d", __FILE__, __LINE__);\
+			LogResetColor();\
+			fprintf(stderr, "] ");\
+			LogSetFuncColor();\
+			fprintf(stderr, "%s()", __FUNCTION__);\
+			LogResetColor();\
+			fprintf(stderr, ": ");\
+			LogSetLevelColor(_level);\
 			fprintf(stderr, __VA_ARGS__);\
+			LogResetColor();\
 			fprintf(stderr, "\n");\
 		}\
 	} while ((void)0, 0)

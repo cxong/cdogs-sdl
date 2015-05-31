@@ -25,6 +25,8 @@
 */
 #include "log.h"
 
+#include <rlutil/rlutil.h>
+
 #include "utils.h"
 
 
@@ -102,4 +104,33 @@ LogLevel StrLogLevel(const char *s)
 	S2T(LL_WARN, "WARN");
 	S2T(LL_ERROR, "ERROR");
 	return LL_ERROR;
+}
+
+void LogSetLevelColor(const LogLevel l)
+{
+	switch (l)
+	{
+	case LL_TRACE: setColor(GREY); break;
+	case LL_DEBUG: setColor(WHITE); break;
+	case LL_INFO: setColor(GREEN); break;
+	case LL_WARN: setColor(YELLOW); break;
+	case LL_ERROR: setColor(RED); break;
+	default: CASSERT(false, "Unknown log level"); break;
+	}
+}
+void LogSetModuleColor(void)
+{
+	setColor(LIGHTBLUE);
+}
+void LogSetFileColor(void)
+{
+	setColor(BROWN);
+}
+void LogSetFuncColor(void)
+{
+	setColor(CYAN);
+}
+void LogResetColor(void)
+{
+	setColor(GREY);
 }
