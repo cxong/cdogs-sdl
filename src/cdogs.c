@@ -160,7 +160,7 @@ static void PrintHelp(void)
 		if (i < (int)LM_COUNT - 1) printf(", ");
 		else printf("\n");
 	}
-	printf("%s\n",
+	printf(
 		"Levels can be set between %s and %s\n"
 		"Available modules are: NET\n"
 		"    --log=M,L        Enable logging for module M at level L.\n\n",
