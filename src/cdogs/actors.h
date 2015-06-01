@@ -105,6 +105,27 @@ typedef enum
 	ACTORACTION_EXITING
 } ActorAction;
 
+typedef enum
+{
+	ACTORANIMATION_IDLE,
+	ACTORANIMATION_WALKING
+} ActorAnimation;
+
+// TODO: data-driven custom per-character animations
+#define ANIMATION_MAX_FRAMES 4
+typedef struct
+{
+	ActorAnimation Type;
+	int frame;
+	int frames[ANIMATION_MAX_FRAMES];
+	int ticksPerFrame[ANIMATION_MAX_FRAMES];
+	int frameCounter;
+	bool randomFrames;
+	// Flag for whether we entered a new frame
+	// Used for some frame-triggered effects like sounds
+	bool newFrame;
+} Animation;
+
 typedef struct Actor
 {
 	Vec2i Pos;		// These are the full coordinates, including fractions
@@ -112,13 +133,12 @@ typedef struct Actor
 	Vec2i MovePos;
 	Vec2i Vel;
 	direction_e direction;
-	int state;
+	Animation anim;
 	int stateCounter;
 	int lastCmd;
 	// Whether the last special command was performed with a direction
 	// This differentiates between a special command and weapon switch
 	bool specialCmdDir;
-	int soundLock;
 	Character *Character;
 	int playerIndex;	// -1 unless a human player
 	int uid;	// unique ID across all actors
@@ -176,7 +196,7 @@ extern TranslationTable tableBlack;
 extern TranslationTable tableDarker;
 extern TranslationTable tablePurple;
 
-void SetStateForActor(TActor * actor, int state);
+void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor * actor, int ticks);
 bool TryMoveActor(TActor *actor, Vec2i pos);
 void CommandActor(TActor *actor, int cmd, int ticks);

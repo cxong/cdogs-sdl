@@ -53,3 +53,8 @@ message NetMsgActorMove {
 	required int32 UID = 1;
 	required NetMsgVec2i Pos = 2;
 }
+
+message NetMsgActorState {
+	required int32 UID = 1;
+	required int32 State = 2;
+}

@@ -333,6 +333,8 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		return NetEncode((int)msg, data, NetMsgActorAdd_fields);
 	case SERVER_MSG_ACTOR_MOVE:
 		return NetEncode((int)msg, data, NetMsgActorMove_fields);
+	case SERVER_MSG_ACTOR_STATE:
+		return NetEncode((int)msg, data, NetMsgActorState_fields);
 	case SERVER_MSG_GAME_END:
 		return NetEncode((int)msg, NULL, 0);
 	default:

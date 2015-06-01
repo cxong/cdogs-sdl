@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -125,6 +125,16 @@ static void HandleGameEvent(
 				{
 					a->action = ACTORACTION_MOVING;
 				}
+			}
+			break;
+		case GAME_EVENT_ACTOR_STATE:
+			{
+				TActor *a = ActorGetByUID(e->u.ActorState.UID);
+				if (!a->isInUse)
+				{
+					break;
+				}
+				ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
 			}
 			break;
 		case GAME_EVENT_ACTOR_REPLACE_GUN:

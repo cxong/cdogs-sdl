@@ -234,6 +234,15 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
+	case SERVER_MSG_ACTOR_STATE:
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
+				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
 	case SERVER_MSG_GAME_END:
 		LOG(LM_NET, LL_DEBUG, "NetClient: received game end");
 		gMission.isDone = true;

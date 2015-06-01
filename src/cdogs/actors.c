@@ -74,7 +74,6 @@
 #include "game.h"
 #include "utils.h"
 
-#define SOUND_LOCK_FOOTSTEP 4
 #define FOOTSTEP_DISTANCE_PLUS 380
 #define REPEL_STRENGTH 14
 #define SLIDE_LOCK 50
@@ -100,25 +99,68 @@ TranslationTable tablePurple;
 CArray gActors;
 static int sActorUIDs = 0;
 
-static int transitionTable[STATE_COUNT] = {
+static Animation animIdling =
+{
+	ACTORANIMATION_IDLE,
 	0,
-	STATE_IDLE,
-	STATE_IDLE,
-	STATE_WALKING_2,
-	STATE_WALKING_3,
-	STATE_WALKING_4,
-	STATE_WALKING_1
+	{ STATE_IDLE, STATE_IDLELEFT, STATE_IDLERIGHT, -1 },
+	{ 90, 60, 60, -1 },
+	0,
+	true,
+	false
+};
+static Animation animWalking =
+{
+	ACTORANIMATION_WALKING,
+	0,
+	{ STATE_WALKING_1, STATE_WALKING_2, STATE_WALKING_3, STATE_WALKING_4 },
+	{ 4, 4, 4, 4 },
+	0,
+	false,
+	false
 };
 
-static int delayTable[STATE_COUNT] = {
-	90,
-	60,
-	60,
-	4,
-	4,
-	4,
-	4,
-};
+static void AnimationUpdate(Animation *a, const int ticks)
+{
+	a->frameCounter += ticks;
+	a->newFrame = false;
+	if (a->frameCounter > a->ticksPerFrame[a->frame])
+	{
+		a->frameCounter -= a->ticksPerFrame[a->frame];
+		a->newFrame = true;
+		// Advance to next frame
+		if (a->randomFrames)
+		{
+			// If we're not on the first frame, return to first frame
+			// Otherwise, pick a random non-first frame
+			if (a->frame == 0)
+			{
+				// Note: -1 means frame not used, so pick another frame
+				do
+				{
+					a->frame = (rand() % (ANIMATION_MAX_FRAMES - 1)) + 1;
+				} while (a->ticksPerFrame[a->frame] < 0);
+			}
+			else
+			{
+				a->frame = 0;
+			}
+		}
+		else
+		{
+			a->frame++;
+			if (a->frame >= ANIMATION_MAX_FRAMES ||
+				a->ticksPerFrame[a->frame] < 0)
+			{
+				a->frame = 0;
+			}
+		}
+	}
+}
+static int AnimationGetFrame(const Animation *a)
+{
+	return a->frames[a->frame];
+}
 
 
 static ActorPics GetCharacterPics(int id)
@@ -128,8 +170,8 @@ static ActorPics GetCharacterPics(int id)
 	TActor *actor = CArrayGet(&gActors, id);
 	direction_e dir = actor->direction;
 	direction_e headDir = dir;
-	int state = actor->state;
-	int headState = state;
+	const int frame = AnimationGetFrame(&actor->anim);
+	int headFrame = frame;
 
 	Character *c = actor->Character;
 	if (actor->playerIndex >= 0)
@@ -149,7 +191,7 @@ static ActorPics GetCharacterPics(int id)
 
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
 	{
-		headState = STATE_COUNT + gunState - GUNSTATE_FIRING;
+		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
 	}
 
 	if (actor->flamed)
@@ -180,16 +222,14 @@ static ActorPics GetCharacterPics(int id)
 
 	actor->flags |= FLAGS_VISIBLE;
 
-	if (state == STATE_IDLELEFT)
-		headDir = (dir + 7) % 8;
-	else if (state == STATE_IDLERIGHT)
-		headDir = (dir + 1) % 8;
+	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
+	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
 
 	int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
 
 	body.dx = cBodyOffset[b][dir].dx;
 	body.dy = cBodyOffset[b][dir].dy;
-	body.picIndex = cBodyPic[b][dir][state];
+	body.picIndex = cBodyPic[b][dir][frame];
 
 	if (actor->dead)
 	{
@@ -206,7 +246,7 @@ static ActorPics GetCharacterPics(int id)
 
 	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
 	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
-	head.picIndex = cHeadPic[f][headDir][headState];
+	head.picIndex = cHeadPic[f][headDir][headFrame];
 
 	if (g >= 0)
 	{
@@ -266,10 +306,14 @@ bail:
 }
 
 
-void SetStateForActor(TActor * actor, int state)
+void ActorSetState(TActor *actor, const ActorAnimation state)
 {
-	actor->state = state;
-	actor->stateCounter = delayTable[state];
+	switch (state)
+	{
+	case ACTORANIMATION_IDLE: actor->anim = animIdling; break;
+	case ACTORANIMATION_WALKING: actor->anim = animWalking; break;
+	default: CASSERT(false, "Unknown actor state"); break;
+	}
 }
 
 void UpdateActorState(TActor * actor, int ticks)
@@ -308,30 +352,21 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 
 	// Footstep sounds
+	// Step on 1
+	// TODO: custom animation and footstep frames
 	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
-		(actor->state == STATE_WALKING_1 ||
-		actor->state == STATE_WALKING_2 ||
-		actor->state == STATE_WALKING_3 ||
-		actor->state == STATE_WALKING_4) &&
-		actor->soundLock <= 0)
+		AnimationGetFrame(&actor->anim) == STATE_WALKING_1 &&
+		actor->anim.newFrame)
 	{
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
 			gSoundDevice.footstepSound,
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
 			FOOTSTEP_DISTANCE_PLUS);
-		actor->soundLock = SOUND_LOCK_FOOTSTEP;
 	}
 
-	if (actor->state == STATE_IDLE && !actor->petrified)
-		SetStateForActor(actor, ((rand() & 1) != 0 ?
-					 STATE_IDLELEFT :
-					 STATE_IDLERIGHT));
-	else
-		SetStateForActor(actor, transitionTable[actor->state]);
-
-	// Sound lock
-	actor->soundLock = MAX(0, actor->soundLock - ticks);
+	// Animation
+	AnimationUpdate(&actor->anim, ticks);
 
 	// Chatting
 	actor->ChatterCounter = MAX(0, actor->ChatterCounter - ticks);
@@ -790,11 +825,12 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		if (!hasChangedDirection && !hasShot && !hasMoved)
 		{
 			// Idle if player hasn't done anything
-			if (actor->state != STATE_IDLE &&
-				actor->state != STATE_IDLELEFT &&
-				actor->state != STATE_IDLERIGHT)
+			if (actor->anim.Type != ACTORANIMATION_IDLE)
 			{
-				SetStateForActor(actor, STATE_IDLE);
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+				e.u.ActorState.UID = actor->uid;
+				e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
+				GameEventsEnqueue(&gGameEvents, e);
 			}
 		}
 	}
@@ -850,22 +886,22 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 			actor->MovePos.y += moveAmount;
 		}
 
-		if (actor->state != STATE_WALKING_1 &&
-			actor->state != STATE_WALKING_2 &&
-			actor->state != STATE_WALKING_3 &&
-			actor->state != STATE_WALKING_4)
+		if (actor->anim.Type != ACTORANIMATION_WALKING)
 		{
-			SetStateForActor(actor, STATE_WALKING_1);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+			e.u.ActorState.UID = actor->uid;
+			e.u.ActorState.State = (int32_t)ACTORANIMATION_WALKING;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 	else
 	{
-		if (actor->state == STATE_WALKING_1 ||
-			actor->state == STATE_WALKING_2 ||
-			actor->state == STATE_WALKING_3 ||
-			actor->state == STATE_WALKING_4)
+		if (actor->anim.Type != ACTORANIMATION_IDLE)
 		{
-			SetStateForActor(actor, STATE_IDLE);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+			e.u.ActorState.UID = actor->uid;
+			e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 	return willMove;
@@ -1225,7 +1261,7 @@ TActor *ActorAdd(NetMsgActorAdd aa)
 	actor->Character = c;
 	actor->playerIndex = aa.PlayerId;
 	actor->direction = DIRECTION_DOWN;
-	actor->state = STATE_IDLE;
+	ActorSetState(actor, ACTORANIMATION_IDLE);
 	actor->slideLock = 0;
 	if (c->bot)
 	{
