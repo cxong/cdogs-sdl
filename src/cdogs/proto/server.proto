@@ -58,3 +58,8 @@ message NetMsgActorState {
 	required int32 UID = 1;
 	required int32 State = 2;
 }
+
+message NetMsgActorDir {
+	required int32 UID = 1;
+	required int32 Dir = 2;
+}

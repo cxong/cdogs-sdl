@@ -137,6 +137,16 @@ static void HandleGameEvent(
 				ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
 			}
 			break;
+		case GAME_EVENT_ACTOR_DIR:
+			{
+				TActor *a = ActorGetByUID(e->u.ActorDir.UID);
+				if (!a->isInUse)
+				{
+					break;
+				}
+				a->direction = (direction_e)e->u.ActorDir.Dir;
+			}
+			break;
 		case GAME_EVENT_ACTOR_REPLACE_GUN:
 			{
 				TActor *a = ActorGetByUID(e->u.ActorReplaceGun.UID);

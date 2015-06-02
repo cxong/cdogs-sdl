@@ -787,7 +787,10 @@ static bool ActorTryChangeDirection(
 		(!(prevCmd & CMD_BUTTON1) || ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STRAFE);
 	if (willChangeDirecton)
 	{
-		actor->direction = CmdToDirection(cmd);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
+		e.u.ActorDir.UID = actor->uid;
+		e.u.ActorDir.Dir = (int32_t)CmdToDirection(cmd);
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 	return willChangeDirecton;
 }

@@ -64,6 +64,10 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		NetServerBroadcastMsg(
 			&gNetServer, SERVER_MSG_ACTOR_STATE, &e.u.ActorState);
 		break;
+	case GAME_EVENT_ACTOR_DIR:
+		NetServerBroadcastMsg(
+			&gNetServer, SERVER_MSG_ACTOR_DIR, &e.u.ActorDir);
+		break;
 	case GAME_EVENT_MISSION_END:
 		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_GAME_END, NULL);
 		break;

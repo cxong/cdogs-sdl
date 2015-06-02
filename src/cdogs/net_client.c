@@ -116,25 +116,29 @@ void NetClientPoll(NetClient *n)
 		return;
 	}
 	// Service the connection
-	ENetEvent event;
-	int check = enet_host_service(n->client, &event, 0);
-	if (check < 0)
+	int check;
+	do
 	{
-		printf("Connection error %d\n", check);
-		return;
-	}
-	else if (check > 0)
-	{
-		switch (event.type)
+		ENetEvent event;
+		check = enet_host_service(n->client, &event, 0);
+		if (check < 0)
 		{
-		case ENET_EVENT_TYPE_RECEIVE:
-			OnReceive(n, event);
-			break;
-		default:
-			printf("Unexpected event type %d\n", event.type);
-			break;
+			printf("Connection error %d\n", check);
+			return;
 		}
-	}
+		else if (check > 0)
+		{
+			switch (event.type)
+			{
+			case ENET_EVENT_TYPE_RECEIVE:
+				OnReceive(n, event);
+				break;
+			default:
+				printf("Unexpected event type %d\n", event.type);
+				break;
+			}
+		}
+	} while (check > 0);
 }
 static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
@@ -240,6 +244,15 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
 			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
 				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case SERVER_MSG_ACTOR_DIR:
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
+			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) dir(%d)",
+				(int)e.u.ActorDir.UID, (int)e.u.ActorDir.Dir);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;

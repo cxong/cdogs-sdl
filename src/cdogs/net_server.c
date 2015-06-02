@@ -99,10 +99,10 @@ void NetServerPoll(NetServer *n)
 
 	n->PrevCmd = n->Cmd;
 	n->Cmd = 0;
-	ENetEvent event;
 	int check;
 	do
 	{
+		ENetEvent event;
 		check = enet_host_service(n->server, &event, 0);
 		if (check < 0)
 		{
@@ -335,6 +335,8 @@ static ENetPacket *MakePacket(ServerMsg msg, const void *data)
 		return NetEncode((int)msg, data, NetMsgActorMove_fields);
 	case SERVER_MSG_ACTOR_STATE:
 		return NetEncode((int)msg, data, NetMsgActorState_fields);
+	case SERVER_MSG_ACTOR_DIR:
+		return NetEncode((int)msg, data, NetMsgActorDir_fields);
 	case SERVER_MSG_GAME_END:
 		return NetEncode((int)msg, NULL, 0);
 	default:
