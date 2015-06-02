@@ -107,7 +107,7 @@ static Animation animIdling =
 	{ 90, 60, 60, -1 },
 	0,
 	true,
-	false
+	true
 };
 static Animation animWalking =
 {
@@ -117,7 +117,7 @@ static Animation animWalking =
 	{ 4, 4, 4, 4 },
 	0,
 	false,
-	false
+	true
 };
 
 static void AnimationUpdate(Animation *a, const int ticks)
