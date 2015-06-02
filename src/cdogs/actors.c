@@ -1544,3 +1544,17 @@ bool ActorIsInvulnerable(
 
 	return 0;
 }
+
+bool ActorIsLocalPlayer(const int uid)
+{
+	const TActor *a = ActorGetByUID(uid);
+	// Don't accept updates if actor doesn't exist
+	// This can happen in the very first frame, where we haven't yet
+	// processed an actor add message
+	// Otherwise this shouldn't happen
+	if (a == NULL) return true;
+
+	const int pid = a->playerIndex;
+	return pid >= 0 &&
+		((const PlayerData *)CArrayGet(&gPlayerDatas, pid))->IsLocal;
+}

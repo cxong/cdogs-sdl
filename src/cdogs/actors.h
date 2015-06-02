@@ -234,3 +234,5 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
 	const TActor *actor, const int flags, const int player,
 	const GameMode mode);
+
+bool ActorIsLocalPlayer(const int uid);
