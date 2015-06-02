@@ -49,7 +49,7 @@ void NetClientTerminate(NetClient *n);
 void NetClientConnect(NetClient *n, const ENetAddress addr);
 void NetClientPoll(NetClient *n);
 // Send a command to the server
-void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data);
+void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data);
 
 bool NetClientIsConnected(const NetClient *n);
 

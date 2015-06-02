@@ -128,7 +128,7 @@ static void CheckRemotePlayersComplete(menu_t *menu, void *data);
 bool ScreenWaitForRemotePlayers(void)
 {
 	// Explicitly ask for player definitions
-	NetClientSendMsg(&gNetClient, CLIENT_MSG_REQUEST_PLAYERS, NULL);
+	NetClientSendMsg(&gNetClient, MSG_REQUEST_PLAYERS, NULL);
 	return ScreenWait(
 		"Waiting for server players...", CheckRemotePlayersComplete);
 }
@@ -208,7 +208,7 @@ bool NumPlayersSelection(
 			NetMsgNewPlayers np;
 			np.ClientId = gNetClient.ClientId;
 			np.NumPlayers = numPlayers;
-			NetClientSendMsg(&gNetClient, CLIENT_MSG_NEW_PLAYERS, &np);
+			NetClientSendMsg(&gNetClient, MSG_NEW_PLAYERS, &np);
 		}
 		else
 		{
@@ -677,11 +677,11 @@ bool PlayerEquip(void)
 		p->IsUsed = true;
 		if (gCampaign.IsClient)
 		{
-			NetClientSendMsg(&gNetClient, CLIENT_MSG_PLAYER_DATA, p);
+			NetClientSendMsg(&gNetClient, MSG_PLAYER_DATA, p);
 		}
 		else
 		{
-			NetServerBroadcastMsg(&gNetServer, SERVER_MSG_PLAYER_DATA, p);
+			NetServerBroadcastMsg(&gNetServer, MSG_PLAYER_DATA, p);
 		}
 	}
 

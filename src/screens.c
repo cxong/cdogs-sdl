@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -133,7 +133,7 @@ static void StartPlayers(const int maxHealth, const int mission)
 			return;
 		}
 		PlayerDataStart(p, maxHealth, mission);
-		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_PLAYER_DATA, p);
+		NetServerBroadcastMsg(&gNetServer, MSG_PLAYER_DATA, p);
 	}
 }
 

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,22 +54,22 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 	{
 	case GAME_EVENT_ACTOR_ADD:
 		NetServerBroadcastMsg(
-			&gNetServer, SERVER_MSG_ACTOR_ADD, &e.u.ActorAdd);
+			&gNetServer, MSG_ACTOR_ADD, &e.u.ActorAdd);
 		break;
 	case GAME_EVENT_ACTOR_MOVE:
 		NetServerBroadcastMsg(
-			&gNetServer, SERVER_MSG_ACTOR_MOVE, &e.u.ActorMove);
+			&gNetServer, MSG_ACTOR_MOVE, &e.u.ActorMove);
 		break;
 	case GAME_EVENT_ACTOR_STATE:
 		NetServerBroadcastMsg(
-			&gNetServer, SERVER_MSG_ACTOR_STATE, &e.u.ActorState);
+			&gNetServer, MSG_ACTOR_STATE, &e.u.ActorState);
 		break;
 	case GAME_EVENT_ACTOR_DIR:
 		NetServerBroadcastMsg(
-			&gNetServer, SERVER_MSG_ACTOR_DIR, &e.u.ActorDir);
+			&gNetServer, MSG_ACTOR_DIR, &e.u.ActorDir);
 		break;
 	case GAME_EVENT_MISSION_END:
-		NetServerBroadcastMsg(&gNetServer, SERVER_MSG_GAME_END, NULL);
+		NetServerBroadcastMsg(&gNetServer, MSG_GAME_END, NULL);
 		break;
 	default:
 		// do nothing

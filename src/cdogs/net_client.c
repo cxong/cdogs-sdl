@@ -147,7 +147,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 	LOG(LM_NET, LL_TRACE, "recv msgType(%u)", msgType);
 	switch (msgType)
 	{
-	case SERVER_MSG_CLIENT_ID:
+	case MSG_CLIENT_ID:
 		{
 			CASSERT(
 				n->ClientId == -1,
@@ -158,7 +158,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			n->ClientId = cid.Id;
 		}
 		break;
-	case SERVER_MSG_CAMPAIGN_DEF:
+	case MSG_CAMPAIGN_DEF:
 		if (gCampaign.IsLoaded)
 		{
 			LOG(LM_NET, LL_INFO, "WARNING: unexpected campaign def msg received");
@@ -184,7 +184,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			}
 		}
 		break;
-	case SERVER_MSG_PLAYER_DATA:
+	case MSG_PLAYER_DATA:
 		{
 			NetMsgPlayerData pd;
 			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
@@ -194,7 +194,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetMsgPlayerDataUpdate(&pd);
 		}
 		break;
-	case SERVER_MSG_ADD_PLAYERS:
+	case MSG_ADD_PLAYERS:
 		{
 			NetMsgAddPlayers ap;
 			NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
@@ -217,11 +217,11 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			}
 		}
 		break;
-	case SERVER_MSG_GAME_START:
+	case MSG_GAME_START:
 		LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
 		gMission.HasStarted = true;
 		break;
-	case SERVER_MSG_ACTOR_ADD:
+	case MSG_ACTOR_ADD:
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			NetDecode(event.packet, &e.u.ActorAdd, NetMsgActorAdd_fields);
@@ -230,7 +230,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
-	case SERVER_MSG_ACTOR_MOVE:
+	case MSG_ACTOR_MOVE:
 		{
 			LOG(LM_NET, LL_DEBUG, "NetClient: received actor move");
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
@@ -238,7 +238,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
-	case SERVER_MSG_ACTOR_STATE:
+	case MSG_ACTOR_STATE:
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
 			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
@@ -247,7 +247,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
-	case SERVER_MSG_ACTOR_DIR:
+	case MSG_ACTOR_DIR:
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
 			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
@@ -256,7 +256,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
-	case SERVER_MSG_GAME_END:
+	case MSG_GAME_END:
 		LOG(LM_NET, LL_DEBUG, "NetClient: received game end");
 		gMission.isDone = true;
 		break;
@@ -276,8 +276,8 @@ static void AddMissingPlayers(const int playerId)
 	}
 }
 
-static ENetPacket *MakePacket(ClientMsg msg, const void *data);
-void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data)
+static ENetPacket *MakePacket(const NetMsg msg, const void *data);
+void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data)
 {
 	if (!n->client || !n->peer)
 	{
@@ -288,15 +288,15 @@ void NetClientSendMsg(NetClient *n, ClientMsg msg, const void *data)
 	enet_peer_send(n->peer, 0, MakePacket(msg, data));
 	enet_host_flush(n->client);
 }
-static ENetPacket *MakePacket(ClientMsg msg, const void *data)
+static ENetPacket *MakePacket(const NetMsg msg, const void *data)
 {
 	switch (msg)
 	{
-	case CLIENT_MSG_REQUEST_PLAYERS:
+	case MSG_REQUEST_PLAYERS:
 		return NetEncode((int)msg, NULL, NetMsgRequestPlayers_fields);
-	case CLIENT_MSG_NEW_PLAYERS:
+	case MSG_NEW_PLAYERS:
 		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
-	case CLIENT_MSG_PLAYER_DATA:
+	case MSG_PLAYER_DATA:
 		{
 			NetMsgPlayerData d = NetMsgMakePlayerData(data);
 			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);

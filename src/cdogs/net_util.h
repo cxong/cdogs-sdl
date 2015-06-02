@@ -53,29 +53,27 @@
 // All messages start with 4 bytes message type followed by the message struct
 #define NET_MSG_SIZE sizeof(uint32_t)
 
-// Commands (client to server)
+// Commands
 typedef enum
 {
-	CLIENT_MSG_REQUEST_PLAYERS,
-	CLIENT_MSG_NEW_PLAYERS,
-	CLIENT_MSG_PLAYER_DATA,
-	CLIENT_MSG_CMD
-} ClientMsg;
+	// Bidirectional messages
+	MSG_PLAYER_DATA,
+	MSG_ACTOR_MOVE,
+	MSG_ACTOR_STATE,
+	MSG_ACTOR_DIR,
 
-// Game events (server to client)
-typedef enum
-{
-	SERVER_MSG_CLIENT_ID,
-	SERVER_MSG_CAMPAIGN_DEF,
-	SERVER_MSG_PLAYER_DATA,
-	SERVER_MSG_ADD_PLAYERS,
-	SERVER_MSG_GAME_START,
-	SERVER_MSG_ACTOR_ADD,
-	SERVER_MSG_ACTOR_MOVE,
-	SERVER_MSG_ACTOR_STATE,
-	SERVER_MSG_ACTOR_DIR,
-	SERVER_MSG_GAME_END
-} ServerMsg;
+	// Client to server messages
+	MSG_REQUEST_PLAYERS,
+	MSG_NEW_PLAYERS,
+
+	// Server to client messages
+	MSG_CLIENT_ID,
+	MSG_CAMPAIGN_DEF,
+	MSG_ADD_PLAYERS,
+	MSG_GAME_START,
+	MSG_ACTOR_ADD,
+	MSG_GAME_END
+} NetMsg;
 
 ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);

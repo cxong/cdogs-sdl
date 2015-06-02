@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_SERVER
-#define __NET_SERVER
+#pragma once
 
 #include <stdbool.h>
 
@@ -59,8 +58,6 @@ void NetServerOpen(NetServer *n);
 void NetServerPoll(NetServer *n);
 
 void NetServerSendMsg(
-	NetServer *n, const int peerId, ServerMsg msg, const void *data);
+	NetServer *n, const int peerId, const NetMsg msg, const void *data);
 // Send message to all peers
-void NetServerBroadcastMsg(NetServer *n, ServerMsg msg, const void *data);
-
-#endif
+void NetServerBroadcastMsg(NetServer *n, const NetMsg msg, const void *data);
