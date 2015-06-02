@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "net_client.h"
 #include "net_server.h"
 #include "utils.h"
 
@@ -50,6 +51,8 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		return;
 	}
 	// If we're the server, broadcast any events that clients need
+	// If we're the client, pass along to server, but only if it's for a local player
+	// Otherwise we'd ping-pong the same updates from the server
 	switch (e.Type)
 	{
 	case GAME_EVENT_ACTOR_ADD:
@@ -57,16 +60,19 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 			&gNetServer, MSG_ACTOR_ADD, &e.u.ActorAdd);
 		break;
 	case GAME_EVENT_ACTOR_MOVE:
-		NetServerBroadcastMsg(
-			&gNetServer, MSG_ACTOR_MOVE, &e.u.ActorMove);
+		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_MOVE, &e.u.ActorMove);
+		if (ActorIsLocalPlayer(e.u.ActorMove.UID))
+			NetClientSendMsg(&gNetClient, MSG_ACTOR_MOVE, &e.u.ActorMove);
 		break;
 	case GAME_EVENT_ACTOR_STATE:
-		NetServerBroadcastMsg(
-			&gNetServer, MSG_ACTOR_STATE, &e.u.ActorState);
+		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_STATE, &e.u.ActorState);
+		if (ActorIsLocalPlayer(e.u.ActorState.UID))
+			NetClientSendMsg(&gNetClient, MSG_ACTOR_STATE, &e.u.ActorState);
 		break;
 	case GAME_EVENT_ACTOR_DIR:
-		NetServerBroadcastMsg(
-			&gNetServer, MSG_ACTOR_DIR, &e.u.ActorDir);
+		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_DIR, &e.u.ActorDir);
+		if (ActorIsLocalPlayer(e.u.ActorDir.UID))
+			NetClientSendMsg(&gNetClient, MSG_ACTOR_DIR, &e.u.ActorDir);
 		break;
 	case GAME_EVENT_MISSION_END:
 		NetServerBroadcastMsg(&gNetServer, MSG_GAME_END, NULL);

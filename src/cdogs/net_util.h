@@ -77,6 +77,7 @@ typedef enum
 
 ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
+ENetPacket *NetMakePacket(const NetMsg msg, const void *data);
 
 NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
 void NetMsgCampaignDefConvert(

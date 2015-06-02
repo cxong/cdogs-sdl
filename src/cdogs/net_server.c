@@ -219,6 +219,34 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			}
 		}
 		break;
+	case MSG_ACTOR_MOVE:
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
+			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor move UID(%d) pos(%d,%d)",
+				(int)e.u.ActorMove.UID,
+				(int)e.u.ActorMove.Pos.x, (int)e.u.ActorMove.Pos.y);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case MSG_ACTOR_STATE:
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
+				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case MSG_ACTOR_DIR:
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
+			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
+			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) dir(%d)",
+				(int)e.u.ActorDir.UID, (int)e.u.ActorDir.Dir);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
 	default:
 		CASSERT(false, "unexpected message type");
 		break;
@@ -261,8 +289,6 @@ static void SendGameStartMessages(
 	NetServerSendMsg(n, peerId, MSG_GAME_START, NULL);
 }
 
-static ENetPacket *MakePacket(const NetMsg msg, const void *data);
-
 void NetServerSendMsg(
 	NetServer *n, const int peerId, const NetMsg msg, const void *data)
 {
@@ -279,7 +305,7 @@ void NetServerSendMsg(
 		ENetPeer *peer = n->server->peers + i;
 		if (((NetPeerData *)peer->data)->Id == peerId)
 		{
-			enet_peer_send(peer, 0, MakePacket(msg, data));
+			enet_peer_send(peer, 0, NetMakePacket(msg, data));
 			enet_host_flush(n->server);
 			return;
 		}
@@ -294,53 +320,6 @@ void NetServerBroadcastMsg(NetServer *n, const NetMsg msg, const void *data)
 		return;
 	}
 
-	enet_host_broadcast(n->server, 0, MakePacket(msg, data));
+	enet_host_broadcast(n->server, 0, NetMakePacket(msg, data));
 	enet_host_flush(n->server);
-}
-
-static ENetPacket *MakePacket(const NetMsg msg, const void *data)
-{
-	switch (msg)
-	{
-	case MSG_CLIENT_ID:
-		{
-			NetMsgClientId cid;
-			cid.Id = *(const int *)data;
-			return NetEncode((int)msg, &cid, NetMsgClientId_fields);
-		}
-	case MSG_CAMPAIGN_DEF:
-		{
-			NetMsgCampaignDef def;
-			memset(&def, 0, sizeof def);
-			const CampaignEntry *entry = data;
-			if (entry->Path)
-			{
-				strcpy((char *)def.Path, entry->Path);
-			}
-			def.GameMode = entry->Mode;
-			return NetEncode((int)msg, &def, NetMsgCampaignDef_fields);
-		}
-	case MSG_PLAYER_DATA:
-		{
-			NetMsgPlayerData d = NetMsgMakePlayerData(data);
-			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
-		}
-	case MSG_ADD_PLAYERS:
-		return NetEncode((int)msg, data, NetMsgAddPlayers_fields);
-	case MSG_GAME_START:
-		return NetEncode((int)msg, NULL, 0);
-	case MSG_ACTOR_ADD:
-		return NetEncode((int)msg, data, NetMsgActorAdd_fields);
-	case MSG_ACTOR_MOVE:
-		return NetEncode((int)msg, data, NetMsgActorMove_fields);
-	case MSG_ACTOR_STATE:
-		return NetEncode((int)msg, data, NetMsgActorState_fields);
-	case MSG_ACTOR_DIR:
-		return NetEncode((int)msg, data, NetMsgActorDir_fields);
-	case MSG_GAME_END:
-		return NetEncode((int)msg, NULL, 0);
-	default:
-		CASSERT(false, "Unknown message to make into packet");
-		return NULL;
-	}
 }

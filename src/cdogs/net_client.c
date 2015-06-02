@@ -232,10 +232,15 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		break;
 	case MSG_ACTOR_MOVE:
 		{
-			LOG(LM_NET, LL_DEBUG, "NetClient: received actor move");
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
-			GameEventsEnqueue(&gGameEvents, e);
+			LOG(LM_NET, LL_DEBUG, "recv actor move UID(%d) pos(%d,%d)",
+				(int)e.u.ActorMove.UID,
+				(int)e.u.ActorMove.Pos.x, (int)e.u.ActorMove.Pos.y);
+			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
+			{
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		}
 		break;
 	case MSG_ACTOR_STATE:
@@ -244,7 +249,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
 			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
 				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
-			GameEventsEnqueue(&gGameEvents, e);
+			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
+			{
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		}
 		break;
 	case MSG_ACTOR_DIR:
@@ -253,7 +261,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
 			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) dir(%d)",
 				(int)e.u.ActorDir.UID, (int)e.u.ActorDir.Dir);
-			GameEventsEnqueue(&gGameEvents, e);
+			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
+			{
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		}
 		break;
 	case MSG_GAME_END:
@@ -276,7 +287,6 @@ static void AddMissingPlayers(const int playerId)
 	}
 }
 
-static ENetPacket *MakePacket(const NetMsg msg, const void *data);
 void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data)
 {
 	if (!n->client || !n->peer)
@@ -285,26 +295,8 @@ void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data)
 	}
 
 	LOG(LM_NET, LL_DEBUG, "NetClient: send msg type %d", (int)msg);
-	enet_peer_send(n->peer, 0, MakePacket(msg, data));
+	enet_peer_send(n->peer, 0, NetMakePacket(msg, data));
 	enet_host_flush(n->client);
-}
-static ENetPacket *MakePacket(const NetMsg msg, const void *data)
-{
-	switch (msg)
-	{
-	case MSG_REQUEST_PLAYERS:
-		return NetEncode((int)msg, NULL, NetMsgRequestPlayers_fields);
-	case MSG_NEW_PLAYERS:
-		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
-	case MSG_PLAYER_DATA:
-		{
-			NetMsgPlayerData d = NetMsgMakePlayerData(data);
-			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
-		}
-	default:
-		CASSERT(false, "Unknown message to make into packet");
-		return NULL;
-	}
 }
 
 bool NetClientIsConnected(const NetClient *n)

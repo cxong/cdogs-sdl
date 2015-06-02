@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@
 */
 #include "net_util.h"
 
+#include "campaign_entry.h"
+#include "proto/client.pb.h"
 #include "proto/nanopb/pb_decode.h"
 #include "proto/nanopb/pb_encode.h"
 
@@ -53,6 +55,57 @@ bool NetDecode(
 	bool status = pb_decode(&stream, fields, dest);
 	CASSERT(status, "Failed to decode pb");
 	return status;
+}
+
+ENetPacket *NetMakePacket(const NetMsg msg, const void *data)
+{
+	switch (msg)
+	{
+	case MSG_REQUEST_PLAYERS:
+		return NetEncode((int)msg, NULL, NetMsgRequestPlayers_fields);
+	case MSG_NEW_PLAYERS:
+		return NetEncode((int)msg, data, NetMsgNewPlayers_fields);
+	case MSG_PLAYER_DATA:
+		{
+			NetMsgPlayerData d = NetMsgMakePlayerData(data);
+			return NetEncode((int)msg, &d, NetMsgPlayerData_fields);
+		}
+	case MSG_CLIENT_ID:
+		{
+			NetMsgClientId cid;
+			cid.Id = *(const int *)data;
+			return NetEncode((int)msg, &cid, NetMsgClientId_fields);
+		}
+	case MSG_CAMPAIGN_DEF:
+		{
+			NetMsgCampaignDef def;
+			memset(&def, 0, sizeof def);
+			const CampaignEntry *entry = data;
+			if (entry->Path)
+			{
+				strcpy((char *)def.Path, entry->Path);
+			}
+			def.GameMode = entry->Mode;
+			return NetEncode((int)msg, &def, NetMsgCampaignDef_fields);
+		}
+	case MSG_ADD_PLAYERS:
+		return NetEncode((int)msg, data, NetMsgAddPlayers_fields);
+	case MSG_GAME_START:
+		return NetEncode((int)msg, NULL, 0);
+	case MSG_ACTOR_ADD:
+		return NetEncode((int)msg, data, NetMsgActorAdd_fields);
+	case MSG_ACTOR_MOVE:
+		return NetEncode((int)msg, data, NetMsgActorMove_fields);
+	case MSG_ACTOR_STATE:
+		return NetEncode((int)msg, data, NetMsgActorState_fields);
+	case MSG_ACTOR_DIR:
+		return NetEncode((int)msg, data, NetMsgActorDir_fields);
+	case MSG_GAME_END:
+		return NetEncode((int)msg, NULL, 0);
+	default:
+		CASSERT(false, "Unknown message to make into packet");
+		return NULL;
+	}
 }
 
 
