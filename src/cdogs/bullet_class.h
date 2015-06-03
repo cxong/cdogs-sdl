@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,10 +46,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __BULLET_CLASS
-#define __BULLET_CLASS
+#pragma once
 
 #include <json/json.h>
+
+#include "proto/server.pb.h"
 
 #include "particle.h"
 #include "sounds.h"
@@ -117,19 +118,6 @@ void BulletLoadWeapons(BulletClasses *bullets);
 void BulletClassesClear(CArray *classes);
 void BulletTerminate(BulletClasses *bullets);
 
-typedef struct
-{
-	const BulletClass *BulletClass;
-	Vec2i MuzzlePos;
-	int MuzzleHeight;
-	double Angle;
-	int Elevation;
-	int Flags;
-	int PlayerIndex;
-	int UID;
-} AddBullet;
-void BulletAdd(const AddBullet add);
+void BulletAdd(const NetMsgAddBullet add);
 
 bool UpdateBullet(struct MobileObject *obj, const int ticks);
-
-#endif

@@ -63,3 +63,14 @@ message NetMsgActorDir {
 	required int32 UID = 1;
 	required int32 Dir = 2;
 }
+
+message NetMsgAddBullet {
+	required string BulletClass = 1;
+	required NetMsgVec2i MuzzlePos = 2;
+	required int32 MuzzleHeight = 3;
+	required float Angle = 4;
+	required int32 Elevation = 5;
+	required int32 Flags = 6;
+	required int32 PlayerIndex = 7;
+	required int32 UID = 8;
+}

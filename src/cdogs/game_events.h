@@ -31,7 +31,6 @@
 #include "actors.h"
 #include "c_array.h"
 #include "gamedata.h"
-#include "net_util.h"
 #include "objs.h"
 
 // Game events represent anything that is created within the game but is
@@ -40,6 +39,8 @@
 
 typedef enum
 {
+	GAME_EVENT_NONE,
+
 	GAME_EVENT_SCORE,
 	GAME_EVENT_SOUND_AT,
 	GAME_EVENT_SCREEN_SHAKE,
@@ -138,7 +139,7 @@ typedef struct
 		} ObjectSetCounter;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
-		AddBullet AddBullet;
+		NetMsgAddBullet AddBullet;
 		AddParticle AddParticle;
 		struct
 		{

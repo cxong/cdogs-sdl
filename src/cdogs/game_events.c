@@ -74,6 +74,11 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		if (ActorIsLocalPlayer(e.u.ActorDir.UID))
 			NetClientSendMsg(&gNetClient, MSG_ACTOR_DIR, &e.u.ActorDir);
 		break;
+	case GAME_EVENT_ADD_BULLET:
+		NetServerBroadcastMsg(&gNetServer, MSG_ADD_BULLET, &e.u.AddBullet);
+		if (PlayerIsLocal(e.u.AddBullet.PlayerIndex))
+			NetClientSendMsg(&gNetClient, MSG_ADD_BULLET, &e.u.AddBullet);
+		break;
 	case GAME_EVENT_MISSION_END:
 		NetServerBroadcastMsg(&gNetServer, MSG_GAME_END, NULL);
 		break;

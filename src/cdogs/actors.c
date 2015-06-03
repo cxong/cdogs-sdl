@@ -1554,7 +1554,5 @@ bool ActorIsLocalPlayer(const int uid)
 	// Otherwise this shouldn't happen
 	if (a == NULL) return true;
 
-	const int pid = a->playerIndex;
-	return pid >= 0 &&
-		((const PlayerData *)CArrayGet(&gPlayerDatas, pid))->IsLocal;
+	return PlayerIsLocal(a->playerIndex);
 }

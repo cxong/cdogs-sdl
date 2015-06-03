@@ -314,6 +314,12 @@ int PlayersNumUseAmmo(const int ammoId)
 	return numPlayersWithAmmo;
 }
 
+bool PlayerIsLocal(const int pid)
+{
+	return pid >= 0 &&
+		((const PlayerData *)CArrayGet(&gPlayerDatas, pid))->IsLocal;
+}
+
 void PlayerScore(PlayerData *p, const int points)
 {
 	if (p == NULL)

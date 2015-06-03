@@ -151,11 +151,14 @@ static void OnConnect(NetServer *n, ENetEvent event)
 
 	// Send the client ID
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
-	NetServerSendMsg(n, peerId, MSG_CLIENT_ID, &peerId);
+	NetMsgClientId cid;
+	cid.Id = peerId;
+	NetServerSendMsg(n, peerId, MSG_CLIENT_ID, &cid);
 
 	// Send the current campaign details over
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
-	NetServerSendMsg(n, peerId, MSG_CAMPAIGN_DEF, &gCampaign.Entry);
+	NetMsgCampaignDef def = NetMsgMakeCampaignDef(&gCampaign.Entry);
+	NetServerSendMsg(n, peerId, MSG_CAMPAIGN_DEF, &def);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
@@ -164,92 +167,78 @@ static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
-	uint32_t msgType = *(uint32_t *)event.packet->data;
+	const NetMsg msgType = (NetMsg)*(uint32_t *)event.packet->data;
 	const int peerId = ((NetPeerData *)event.peer->data)->Id;
-	LOG(LM_NET, LL_INFO, "NetServer: Received message from client %d type %u",
-		peerId, msgType);
-	switch (msgType)
+	LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
+		peerId, (int)msgType);
+	const NetMsgEntry nme = NetMsgGet(msgType);
+	if (nme.Event != GAME_EVENT_NONE)
 	{
-	case MSG_REQUEST_PLAYERS:
-		// Send details of all current players
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		// Game event message; decode and add to event queue
+		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)nme.Event);
+		GameEvent e = GameEventNew(nme.Event);
+		NetDecode(event.packet, &e.u, nme.Fields);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	else
+	{
+		switch (msgType)
 		{
-			const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-			LOG(LM_NET, LL_DEBUG, "send player data index(%d)", i);
-			NetServerSendMsg(n, peerId, MSG_PLAYER_DATA, pOther);
-		}
-		break;
-	case MSG_NEW_PLAYERS:
-		{
-			NetMsgNewPlayers np;
-			NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
-			LOG(LM_NET, LL_DEBUG, "NetServer: received new players %d", np.NumPlayers);
-			// Add the players, simultaneously building our broadcast message
-			NetMsgAddPlayers ap;
-			ap.ClientId = np.ClientId;
-			ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
-			for (int i = 0; i < np.NumPlayers; i++)
+		case MSG_REQUEST_PLAYERS:
+			// Send details of all current players
+			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
-				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-				p->IsLocal = false;
-				ap.PlayerIds[i] = p->playerIndex;
+				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+				LOG(LM_NET, LL_DEBUG, "send player data index(%d)", i);
+				const NetMsgPlayerData d = NetMsgMakePlayerData(pOther);
+				NetServerSendMsg(n, peerId, MSG_PLAYER_DATA, &d);
 			}
-			// Broadcast the new players to all clients
-			NetServerBroadcastMsg(n, MSG_ADD_PLAYERS, &ap);
-		}
-		break;
-	case MSG_PLAYER_DATA:
-		{
-			NetMsgPlayerData pd;
-			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
-			LOG(LM_NET, LL_DEBUG,
-				"NetServer: received player data id %d", pd.PlayerIndex);
-			CASSERT(
-				(int)gPlayerDatas.size > (int)pd.PlayerIndex,
-				"unexpected player index");
-			NetMsgPlayerDataUpdate(&pd);
-			// Send it on to all clients
-			const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
-			NetServerBroadcastMsg(n, MSG_PLAYER_DATA, pData);
+			break;
+		case MSG_NEW_PLAYERS:
+			{
+				NetMsgNewPlayers np;
+				NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
+				LOG(LM_NET, LL_DEBUG, "NetServer: received new players %d", np.NumPlayers);
+				// Add the players, simultaneously building our broadcast message
+				NetMsgAddPlayers ap;
+				ap.ClientId = np.ClientId;
+				ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
+				for (int i = 0; i < np.NumPlayers; i++)
+				{
+					PlayerData *p = PlayerDataAdd(&gPlayerDatas);
+					p->IsLocal = false;
+					ap.PlayerIds[i] = p->playerIndex;
+				}
+				// Broadcast the new players to all clients
+				NetServerBroadcastMsg(n, MSG_ADD_PLAYERS, &ap);
+			}
+			break;
+		case MSG_PLAYER_DATA:
+			{
+				NetMsgPlayerData pd;
+				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+				LOG(LM_NET, LL_DEBUG,
+					"NetServer: received player data id %d", pd.PlayerIndex);
+				CASSERT(
+					(int)gPlayerDatas.size > (int)pd.PlayerIndex,
+					"unexpected player index");
+				NetMsgPlayerDataUpdate(&pd);
+				// Send it on to all clients
+				const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
+				const NetMsgPlayerData d = NetMsgMakePlayerData(pData);
+				NetServerBroadcastMsg(n, MSG_PLAYER_DATA, &d);
 
-			// Send game start messages if we've started already
-			if (gMission.HasStarted)
-			{
-				SendGameStartMessages(n, peerId, pData);
+				// Send game start messages if we've started already
+				if (gMission.HasStarted)
+				{
+					SendGameStartMessages(n, peerId, pData);
+				}
 			}
+			break;
+		default:
+			CASSERT(false, "unexpected message type");
+			break;
 		}
-		break;
-	case MSG_ACTOR_MOVE:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
-			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor move UID(%d) pos(%d,%d)",
-				(int)e.u.ActorMove.UID,
-				(int)e.u.ActorMove.Pos.x, (int)e.u.ActorMove.Pos.y);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		break;
-	case MSG_ACTOR_STATE:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
-				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		break;
-	case MSG_ACTOR_DIR:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
-			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) dir(%d)",
-				(int)e.u.ActorDir.UID, (int)e.u.ActorDir.Dir);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		break;
-	default:
-		CASSERT(false, "unexpected message type");
-		break;
 	}
 	enet_packet_destroy(event.packet);
 }
@@ -305,7 +294,7 @@ void NetServerSendMsg(
 		ENetPeer *peer = n->server->peers + i;
 		if (((NetPeerData *)peer->data)->Id == peerId)
 		{
-			enet_peer_send(peer, 0, NetMakePacket(msg, data));
+			enet_peer_send(peer, 0, NetEncode(msg, data));
 			enet_host_flush(n->server);
 			return;
 		}
@@ -320,6 +309,6 @@ void NetServerBroadcastMsg(NetServer *n, const NetMsg msg, const void *data)
 		return;
 	}
 
-	enet_host_broadcast(n->server, 0, NetMakePacket(msg, data));
+	enet_host_broadcast(n->server, 0, NetEncode(msg, data));
 	enet_host_flush(n->server);
 }

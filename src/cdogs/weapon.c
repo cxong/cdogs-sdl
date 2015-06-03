@@ -57,6 +57,7 @@
 #include "config.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "net_util.h"
 #include "objs.h"
 #include "sounds.h"
 
@@ -491,10 +492,10 @@ void GunAddBullets(
 			const double finalAngle =
 				radians + spreadStartAngle + i * g->Spread.Width + recoil;
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-			e.u.AddBullet.BulletClass = g->Bullet;
-			e.u.AddBullet.MuzzlePos = fullPos;
+			strcpy(e.u.AddBullet.BulletClass, g->Bullet->Name);
+			e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
 			e.u.AddBullet.MuzzleHeight = z;
-			e.u.AddBullet.Angle = finalAngle;
+			e.u.AddBullet.Angle = (float)finalAngle;
 			e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
 			e.u.AddBullet.Flags = flags;
 			e.u.AddBullet.PlayerIndex = player;

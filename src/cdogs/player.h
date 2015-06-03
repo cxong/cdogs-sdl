@@ -82,6 +82,7 @@ bool IsPlayerHumanAndAlive(const PlayerData *player);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 int PlayersNumUseAmmo(const int ammoId);
+bool PlayerIsLocal(const int pid);
 
 void PlayerScore(PlayerData *p, const int points);
 void PlayerSetInputDevice(

@@ -143,137 +143,134 @@ void NetClientPoll(NetClient *n)
 static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
-	uint32_t msgType = *(uint32_t *)event.packet->data;
-	LOG(LM_NET, LL_TRACE, "recv msgType(%u)", msgType);
-	switch (msgType)
+	const NetMsg msgType = (NetMsg)*(uint32_t *)event.packet->data;
+	LOG(LM_NET, LL_TRACE, "recv msg(%u)", msgType);
+	const NetMsgEntry nme = NetMsgGet(msgType);
+	if (nme.Event != GAME_EVENT_NONE)
 	{
-	case MSG_CLIENT_ID:
+		// Game event message; decode and add to event queue
+		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)nme.Event);
+		GameEvent e = GameEventNew(nme.Event);
+		if (nme.Fields != NULL)
 		{
-			CASSERT(
-				n->ClientId == -1,
-				"unexpected client ID message, already set");
-			NetMsgClientId cid;
-			NetDecode(event.packet, &cid, NetMsgClientId_fields);
-			LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %d", cid.Id);
-			n->ClientId = cid.Id;
+			NetDecode(event.packet, &e.u, nme.Fields);
 		}
-		break;
-	case MSG_CAMPAIGN_DEF:
-		if (gCampaign.IsLoaded)
+
+		// For actor events, check if UID is not for local player
+		int actorUID = -1;
+		bool actorIsLocal = false;
+		switch (nme.Event)
 		{
-			LOG(LM_NET, LL_INFO, "WARNING: unexpected campaign def msg received");
+		case GAME_EVENT_ACTOR_ADD:
+			// Note: ignore checking this event
+			break;
+		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorAdd.UID; break;
+		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorAdd.UID; break;
+		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorAdd.UID; break;
+		case GAME_EVENT_ADD_BULLET:
+			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerIndex);
+			break;
+		default: break;
+		}
+		if (actorUID >= 0)
+		{
+			actorIsLocal = ActorIsLocalPlayer(actorUID);
+		}
+		if (actorIsLocal)
+		{
+			LOG(LM_NET, LL_TRACE, "game event is for local player, ignoring");
 		}
 		else
 		{
-			LOG(LM_NET, LL_DEBUG, "NetClient: received campaign def, loading...");
-			NetMsgCampaignDef def;
-			NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
-			char campaignPath[CDOGS_PATH_MAX];
-			GameMode mode;
-			NetMsgCampaignDefConvert(&def, campaignPath, &mode);
-			CampaignEntry entry;
-			if (CampaignEntryTryLoad(&entry, campaignPath, mode) &&
-				CampaignLoad(&gCampaign, &entry))
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+	}
+	else
+	{
+		switch (msgType)
+		{
+		case MSG_CLIENT_ID:
 			{
-				gCampaign.IsClient = true;
+				CASSERT(
+					n->ClientId == -1,
+					"unexpected client ID message, already set");
+				NetMsgClientId cid;
+				NetDecode(event.packet, &cid, NetMsgClientId_fields);
+				LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %d", cid.Id);
+				n->ClientId = cid.Id;
+			}
+			break;
+		case MSG_CAMPAIGN_DEF:
+			if (gCampaign.IsLoaded)
+			{
+				LOG(LM_NET, LL_INFO, "WARNING: unexpected campaign def msg received");
 			}
 			else
 			{
-				printf("Error: failed to load campaign def\n");
-				gCampaign.IsError = true;
-			}
-		}
-		break;
-	case MSG_PLAYER_DATA:
-		{
-			NetMsgPlayerData pd;
-			NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
-			AddMissingPlayers(pd.PlayerIndex);
-			LOG(LM_NET, LL_DEBUG, "recv player data name(%s) id(%d) total(%d)",
-				pd.Name, pd.PlayerIndex, (int)gPlayerDatas.size);
-			NetMsgPlayerDataUpdate(&pd);
-		}
-		break;
-	case MSG_ADD_PLAYERS:
-		{
-			NetMsgAddPlayers ap;
-			NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
-			LOG(LM_NET, LL_DEBUG,
-				"NetClient: received new players %d",
-				(int)ap.PlayerIds_count);
-			// Add new players
-			// If they are local players, set them up with defaults
-			const bool isLocal = ap.ClientId == n->ClientId;
-			for (int i = 0; i < ap.PlayerIds_count; i++)
-			{
-				const int playerId = (int)ap.PlayerIds[i];
-				AddMissingPlayers(playerId);
-				PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
-				p->IsLocal = isLocal;
-				if (isLocal)
+				LOG(LM_NET, LL_DEBUG, "NetClient: received campaign def, loading...");
+				NetMsgCampaignDef def;
+				NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
+				char campaignPath[CDOGS_PATH_MAX];
+				GameMode mode;
+				NetMsgCampaignDefConvert(&def, campaignPath, &mode);
+				CampaignEntry entry;
+				if (CampaignEntryTryLoad(&entry, campaignPath, mode) &&
+					CampaignLoad(&gCampaign, &entry))
 				{
-					PlayerDataSetLocalDefaults(p, i);
+					gCampaign.IsClient = true;
+				}
+				else
+				{
+					printf("Error: failed to load campaign def\n");
+					gCampaign.IsError = true;
 				}
 			}
-		}
-		break;
-	case MSG_GAME_START:
-		LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
-		gMission.HasStarted = true;
-		break;
-	case MSG_ACTOR_ADD:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			NetDecode(event.packet, &e.u.ActorAdd, NetMsgActorAdd_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor add uid(%d) playerId(%d)",
-				e.u.ActorAdd.UID, e.u.ActorAdd.PlayerId);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		break;
-	case MSG_ACTOR_MOVE:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
-			NetDecode(event.packet, &e.u.ActorMove, NetMsgActorMove_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor move UID(%d) pos(%d,%d)",
-				(int)e.u.ActorMove.UID,
-				(int)e.u.ActorMove.Pos.x, (int)e.u.ActorMove.Pos.y);
-			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
+			break;
+		case MSG_PLAYER_DATA:
 			{
-				GameEventsEnqueue(&gGameEvents, e);
+				NetMsgPlayerData pd;
+				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+				AddMissingPlayers(pd.PlayerIndex);
+				LOG(LM_NET, LL_DEBUG, "recv player data name(%s) id(%d) total(%d)",
+					pd.Name, pd.PlayerIndex, (int)gPlayerDatas.size);
+				NetMsgPlayerDataUpdate(&pd);
 			}
-		}
-		break;
-	case MSG_ACTOR_STATE:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-			NetDecode(event.packet, &e.u.ActorState, NetMsgActorState_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) state(%d)",
-				(int)e.u.ActorState.UID, (int)e.u.ActorState.State);
-			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
+			break;
+		case MSG_ADD_PLAYERS:
 			{
-				GameEventsEnqueue(&gGameEvents, e);
+				NetMsgAddPlayers ap;
+				NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
+				LOG(LM_NET, LL_DEBUG,
+					"NetClient: received new players %d",
+					(int)ap.PlayerIds_count);
+				// Add new players
+				// If they are local players, set them up with defaults
+				const bool isLocal = ap.ClientId == n->ClientId;
+				for (int i = 0; i < ap.PlayerIds_count; i++)
+				{
+					const int playerId = (int)ap.PlayerIds[i];
+					AddMissingPlayers(playerId);
+					PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
+					p->IsLocal = isLocal;
+					if (isLocal)
+					{
+						PlayerDataSetLocalDefaults(p, i);
+					}
+				}
 			}
+			break;
+		case MSG_GAME_START:
+			LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
+			gMission.HasStarted = true;
+			break;
+		case MSG_GAME_END:
+			LOG(LM_NET, LL_DEBUG, "NetClient: received game end");
+			gMission.isDone = true;
+			break;
+		default:
+			CASSERT(false, "unexpected message type");
+			break;
 		}
-		break;
-	case MSG_ACTOR_DIR:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
-			NetDecode(event.packet, &e.u.ActorDir, NetMsgActorDir_fields);
-			LOG(LM_NET, LL_DEBUG, "recv actor UID(%d) dir(%d)",
-				(int)e.u.ActorDir.UID, (int)e.u.ActorDir.Dir);
-			if (!ActorIsLocalPlayer(e.u.ActorMove.UID))
-			{
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-		}
-		break;
-	case MSG_GAME_END:
-		LOG(LM_NET, LL_DEBUG, "NetClient: received game end");
-		gMission.isDone = true;
-		break;
-	default:
-		CASSERT(false, "unexpected message type");
-		break;
 	}
 	enet_packet_destroy(event.packet);
 }
@@ -295,7 +292,7 @@ void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data)
 	}
 
 	LOG(LM_NET, LL_DEBUG, "NetClient: send msg type %d", (int)msg);
-	enet_peer_send(n->peer, 0, NetMakePacket(msg, data));
+	enet_peer_send(n->peer, 0, NetEncode(msg, data));
 	enet_host_flush(n->client);
 }
 

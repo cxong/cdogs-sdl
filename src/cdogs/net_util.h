@@ -35,6 +35,8 @@
 
 #include "proto/server.pb.h"
 
+#include "campaign_entry.h"
+#include "game_events.h"
 #include "game_mode.h"
 #include "player.h"
 #include "sys_config.h"
@@ -61,6 +63,7 @@ typedef enum
 	MSG_ACTOR_MOVE,
 	MSG_ACTOR_STATE,
 	MSG_ACTOR_DIR,
+	MSG_ADD_BULLET,
 
 	// Client to server messages
 	MSG_REQUEST_PLAYERS,
@@ -75,11 +78,23 @@ typedef enum
 	MSG_GAME_END
 } NetMsg;
 
-ENetPacket *NetEncode(int msgId, const void *data, const pb_field_t fields[]);
+
+ENetPacket *NetEncode(const NetMsg msg, const void *data);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
-ENetPacket *NetMakePacket(const NetMsg msg, const void *data);
 
 NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
+NetMsgCampaignDef NetMsgMakeCampaignDef(const CampaignEntry *e);
 void NetMsgCampaignDefConvert(
 	const NetMsgCampaignDef *def, char *outPath, GameMode *outMode);
 void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd);
+
+Vec2i Net2Vec2i(const NetMsgVec2i v);
+NetMsgVec2i Vec2i2Net(const Vec2i v);
+
+typedef struct
+{
+	NetMsg Msg;
+	const pb_field_t *Fields;
+	GameEventType Event;
+} NetMsgEntry;
+NetMsgEntry NetMsgGet(const NetMsg msg);

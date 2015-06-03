@@ -5,3 +5,5 @@ NetMsgPlayerData.Weapons	max_size:128
 NetMsgPlayerData.Weapons	max_count:3
 
 NetMsgAddPlayers.PlayerIds	max_count:4
+
+NetMsgAddBullet.BulletClass max_size:128

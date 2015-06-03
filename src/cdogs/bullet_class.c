@@ -55,6 +55,7 @@
 #include "drawtools.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "net_util.h"
 #include "objs.h"
 #include "screen_shake.h"
 
@@ -578,13 +579,13 @@ void BulletClassesClear(CArray *classes)
 	CArrayClear(classes);
 }
 
-void BulletAdd(const AddBullet add)
+void BulletAdd(const NetMsgAddBullet add)
 {
-	const Vec2i pos = add.MuzzlePos;
+	const Vec2i pos = Net2Vec2i(add.MuzzlePos);
 	TMobileObject *obj = CArrayGet(
 		&gMobObjs, MobObjAdd(pos, add.PlayerIndex, add.UID));
 	obj->vel = GetFullVectorsForRadians(add.Angle);
-	obj->bulletClass = add.BulletClass;
+	obj->bulletClass = StrBulletClass(add.BulletClass);
 	obj->updateFunc = UpdateBullet;
 	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;

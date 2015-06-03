@@ -58,6 +58,7 @@
 #include "damage.h"
 #include "game_events.h"
 #include "map.h"
+#include "net_util.h"
 #include "screen_shake.h"
 #include "blit.h"
 #include "pic_manager.h"
@@ -130,8 +131,8 @@ static void DestroyObject(
 
 	// A wreck left after the destruction of this object
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-	e.u.AddBullet.BulletClass = StrBulletClass("fireball_wreck");
-	e.u.AddBullet.MuzzlePos = fullPos;
+	strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
+	e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
 	e.u.AddBullet.MuzzleHeight = 0;
 	e.u.AddBullet.Angle = 0;
 	e.u.AddBullet.Elevation = 0;

@@ -50,7 +50,6 @@
 
 #include "ai_context.h"
 #include "grafx.h"
-#include "net_util.h"
 #include "player.h"
 #include "weapon.h"
 

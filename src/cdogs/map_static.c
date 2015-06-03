@@ -159,9 +159,6 @@ static void AddObjectives(
 			const int *idx = CArrayGet(&op->Indices, j);
 			const Vec2i realPos = Vec2iCenterOfTile(*pos);
 			const Vec2i fullPos = Vec2iReal2Full(realPos);
-			NetMsgVec2i fullPosNet;
-			fullPosNet.x = fullPos.x;
-			fullPosNet.y = fullPos.y;
 			switch (mobj->Type)
 			{
 			case OBJECTIVE_KILL:
@@ -173,7 +170,7 @@ static void AddObjectives(
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = fullPosNet;
+				aa.FullPos = Vec2i2Net(fullPos);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -198,7 +195,7 @@ static void AddObjectives(
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = fullPosNet;
+				aa.FullPos = Vec2i2Net(fullPos);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);

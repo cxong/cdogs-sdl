@@ -673,15 +673,16 @@ bool PlayerEquip(void)
 			idx--;
 			continue;
 		}
+		const NetMsgPlayerData d = NetMsgMakePlayerData(p);
 		// Ready player definitions
 		p->IsUsed = true;
 		if (gCampaign.IsClient)
 		{
-			NetClientSendMsg(&gNetClient, MSG_PLAYER_DATA, p);
+			NetClientSendMsg(&gNetClient, MSG_PLAYER_DATA, &d);
 		}
 		else
 		{
-			NetServerBroadcastMsg(&gNetServer, MSG_PLAYER_DATA, p);
+			NetServerBroadcastMsg(&gNetServer, MSG_PLAYER_DATA, &d);
 		}
 	}
 

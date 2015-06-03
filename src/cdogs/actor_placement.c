@@ -44,10 +44,7 @@ static NetMsgVec2i PlaceActor(Map *map)
 		pos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
 	} while (!MapIsFullPosOKforPlayer(map, pos, false) ||
 		!MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)));
-	NetMsgVec2i posNet;
-	posNet.x = pos.x;
-	posNet.y = pos.y;
-	return posNet;
+	return Vec2i2Net(pos);
 }
 
 static NetMsgVec2i PlaceActorNear(
@@ -66,10 +63,7 @@ static NetMsgVec2i PlaceActorNear(
 	if (MapIsFullPosOKforPlayer(map, pos, allowAllTiles) && \
 		MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))\
 	{\
-		NetMsgVec2i posNet;\
-		posNet.x = pos.x;\
-		posNet.y = pos.y;\
-		return posNet;\
+		return Vec2i2Net(pos);\
 	}
 	int dx = 0;
 	int dy = 0;
@@ -116,10 +110,7 @@ NetMsgVec2i PlaceAwayFromPlayers(Map *map)
 			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
 			MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
 		{
-			NetMsgVec2i posNet;
-			posNet.x = pos.x;
-			posNet.y = pos.y;
-			return posNet;
+			return Vec2i2Net(pos);
 		}
 	}
 	// Keep trying, but this time try spawning anywhere,
@@ -131,10 +122,7 @@ NetMsgVec2i PlaceAwayFromPlayers(Map *map)
 			rand() % (map->Size.y * TILE_HEIGHT)));
 		if (MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
 		{
-			NetMsgVec2i posNet;
-			posNet.x = pos.x;
-			posNet.y = pos.y;
-			return posNet;
+			return Vec2i2Net(pos);
 		}
 	}
 }
@@ -150,10 +138,7 @@ NetMsgVec2i PlacePrisoner(Map *map)
 			pos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
 		} while (!MapPosIsHighAccess(map, pos.x >> 8, pos.y >> 8));
 	} while (!MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)));
-	NetMsgVec2i posNet;
-	posNet.x = pos.x;
-	posNet.y = pos.y;
-	return posNet;
+	return Vec2i2Net(pos);
 }
 
 Vec2i PlacePlayer(
