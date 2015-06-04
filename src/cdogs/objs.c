@@ -362,7 +362,7 @@ void UpdateMobileObjects(int ticks)
 		{
 			continue;
 		}
-		if ((*(obj->updateFunc))(obj, ticks) == 0)
+		if (!obj->updateFunc(obj, ticks))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_MOBILE_OBJECT_REMOVE);
 			e.u.MobileObjectRemoveId = i;
@@ -499,22 +499,6 @@ TObject *ObjGetByUID(const int uid)
 }
 
 
-void MobileObjectUpdate(TMobileObject *obj, int ticks)
-{
-	obj->count += ticks;
-	obj->soundLock = MAX(0, obj->soundLock - ticks);
-}
-bool UpdateMobileObject(TMobileObject *obj, const int ticks)
-{
-	MobileObjectUpdate(obj, ticks);
-	return obj->count <= obj->range;
-}
-static void BogusDraw(Vec2i pos, TileItemDrawFuncData *data)
-{
-	UNUSED(pos);
-	UNUSED(data);
-}
-
 void MobObjsInit(void)
 {
 	CArrayInit(&gMobObjs, sizeof(TMobileObject));
@@ -566,9 +550,9 @@ int MobObjAdd(const Vec2i fullpos, const int player, const int uid)
 	obj->tileItem.x = obj->tileItem.y = -1;
 	obj->tileItem.getPicFunc = NULL;
 	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = (TileItemDrawFunc)BogusDraw;
+	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.drawData.MobObjId = i;
-	obj->updateFunc = UpdateMobileObject;
+	obj->updateFunc = NULL;
 	MapTryMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(fullpos));
 	return i;
 }

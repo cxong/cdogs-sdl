@@ -150,6 +150,8 @@ NetMsgVec2i Vec2i2Net(const Vec2i v)
 // Indexed by NetMsg
 static NetMsgEntry sNetMsgEntries[] =
 {
+	{ MSG_NONE, NULL, GAME_EVENT_NONE },
+
 	{ MSG_PLAYER_DATA, NetMsgPlayerData_fields, GAME_EVENT_NONE },
 	{ MSG_ACTOR_MOVE, NetMsgActorMove_fields, GAME_EVENT_ACTOR_MOVE },
 	{ MSG_ACTOR_STATE, NetMsgActorState_fields, GAME_EVENT_ACTOR_STATE },

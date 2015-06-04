@@ -138,7 +138,8 @@ static Vec2i SeekTowards(
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
 bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
-	MobileObjectUpdate(obj, ticks);
+	obj->count += ticks;
+	obj->soundLock = MAX(0, obj->soundLock - ticks);
 	if (obj->count < obj->bulletClass->Delay)
 	{
 		return true;

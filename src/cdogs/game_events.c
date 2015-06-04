@@ -44,6 +44,58 @@ void GameEventsTerminate(CArray *store)
 {
 	CArrayTerminate(store);
 }
+
+
+// Which game events should be passed along to server or client
+typedef struct
+{
+	GameEventType Event;
+	bool Broadcast;
+	bool Submit;
+	NetMsg Msg;
+} GameEventEntry;
+// Array indexed by GameEvent
+static GameEventEntry sGameEventEntries[] =
+{
+	{ GAME_EVENT_NONE, false, false, MSG_NONE },
+
+	{ GAME_EVENT_SCORE, false, false, MSG_NONE },
+	{ GAME_EVENT_SOUND_AT, false, false, MSG_NONE },
+	{ GAME_EVENT_SCREEN_SHAKE, false, false, MSG_NONE },
+	{ GAME_EVENT_SET_MESSAGE, false, false, MSG_NONE },
+
+	{ GAME_EVENT_GAME_START, false, false, MSG_NONE },
+
+	{ GAME_EVENT_ACTOR_ADD, true, false, MSG_ACTOR_ADD },
+	{ GAME_EVENT_ACTOR_MOVE, true, true, MSG_ACTOR_MOVE },
+	{ GAME_EVENT_ACTOR_STATE, true, true, MSG_ACTOR_STATE },
+	{ GAME_EVENT_ACTOR_DIR, true, true, MSG_ACTOR_DIR },
+	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, MSG_NONE },
+
+	{ GAME_EVENT_ADD_PICKUP, false, false, MSG_NONE },
+	{ GAME_EVENT_TAKE_HEALTH_PICKUP, false, false, MSG_NONE },
+	{ GAME_EVENT_TAKE_AMMO_PICKUP, false, false, MSG_NONE },
+	{ GAME_EVENT_USE_AMMO, false, false, MSG_NONE },
+
+	{ GAME_EVENT_OBJECT_SET_COUNTER, false, false, MSG_NONE },
+	{ GAME_EVENT_MOBILE_OBJECT_REMOVE, false, false, MSG_NONE },
+	{ GAME_EVENT_PARTICLE_REMOVE, false, false, MSG_NONE },
+	{ GAME_EVENT_ADD_BULLET, true, true, MSG_ADD_BULLET },
+	{ GAME_EVENT_ADD_PARTICLE, false, false, MSG_NONE },
+	{ GAME_EVENT_HIT_CHARACTER, false, false, MSG_NONE },
+	{ GAME_EVENT_ACTOR_IMPULSE, false, false, MSG_NONE },
+	{ GAME_EVENT_DAMAGE_CHARACTER, false, false, MSG_NONE },
+	{ GAME_EVENT_TRIGGER, false, false, MSG_NONE },
+	{ GAME_EVENT_UPDATE_OBJECTIVE, false, false, MSG_NONE },
+
+	{ GAME_EVENT_MISSION_COMPLETE, false, false, MSG_NONE },
+
+	{ GAME_EVENT_MISSION_INCOMPLETE, false, false, MSG_NONE },
+
+	{ GAME_EVENT_MISSION_PICKUP, false, false, MSG_NONE },
+	{ GAME_EVENT_MISSION_END, false, false, MSG_NONE }
+};
+
 void GameEventsEnqueue(CArray *store, GameEvent e)
 {
 	if (store->elemSize == 0)
@@ -53,39 +105,35 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 	// If we're the server, broadcast any events that clients need
 	// If we're the client, pass along to server, but only if it's for a local player
 	// Otherwise we'd ping-pong the same updates from the server
-	switch (e.Type)
+	const GameEventEntry gee = sGameEventEntries[e.Type];
+	if (gee.Broadcast)
 	{
-	case GAME_EVENT_ACTOR_ADD:
-		NetServerBroadcastMsg(
-			&gNetServer, MSG_ACTOR_ADD, &e.u.ActorAdd);
-		break;
-	case GAME_EVENT_ACTOR_MOVE:
-		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_MOVE, &e.u.ActorMove);
-		if (ActorIsLocalPlayer(e.u.ActorMove.UID))
-			NetClientSendMsg(&gNetClient, MSG_ACTOR_MOVE, &e.u.ActorMove);
-		break;
-	case GAME_EVENT_ACTOR_STATE:
-		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_STATE, &e.u.ActorState);
-		if (ActorIsLocalPlayer(e.u.ActorState.UID))
-			NetClientSendMsg(&gNetClient, MSG_ACTOR_STATE, &e.u.ActorState);
-		break;
-	case GAME_EVENT_ACTOR_DIR:
-		NetServerBroadcastMsg(&gNetServer, MSG_ACTOR_DIR, &e.u.ActorDir);
-		if (ActorIsLocalPlayer(e.u.ActorDir.UID))
-			NetClientSendMsg(&gNetClient, MSG_ACTOR_DIR, &e.u.ActorDir);
-		break;
-	case GAME_EVENT_ADD_BULLET:
-		NetServerBroadcastMsg(&gNetServer, MSG_ADD_BULLET, &e.u.AddBullet);
-		if (PlayerIsLocal(e.u.AddBullet.PlayerIndex))
-			NetClientSendMsg(&gNetClient, MSG_ADD_BULLET, &e.u.AddBullet);
-		break;
-	case GAME_EVENT_MISSION_END:
-		NetServerBroadcastMsg(&gNetServer, MSG_GAME_END, NULL);
-		break;
-	default:
-		// do nothing
-		break;
+		NetServerBroadcastMsg(&gNetServer, gee.Msg, &e.u);
 	}
+	if (gee.Submit)
+	{
+		int actorUID = -1;
+		bool actorIsLocal = false;
+		switch (e.Type)
+		{
+		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
+		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
+		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
+		case GAME_EVENT_ADD_BULLET:
+			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerIndex);
+			break;
+		default: break;
+		}
+		if (actorUID >= 0)
+		{
+			actorIsLocal = ActorIsLocalPlayer(actorUID);
+		}
+		if (actorIsLocal)
+		{
+			NetClientSendMsg(&gNetClient, gee.Msg, &e.u);
+		}
+	}
+
 	CArrayPushBack(store, &e);
 }
 static bool EventComplete(const void *elem);

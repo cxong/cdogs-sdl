@@ -164,9 +164,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		case GAME_EVENT_ACTOR_ADD:
 			// Note: ignore checking this event
 			break;
-		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorAdd.UID; break;
-		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorAdd.UID; break;
-		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorAdd.UID; break;
+		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
+		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
+		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
 		case GAME_EVENT_ADD_BULLET:
 			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerIndex);
 			break;

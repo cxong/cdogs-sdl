@@ -58,6 +58,8 @@
 // Commands
 typedef enum
 {
+	MSG_NONE,
+
 	// Bidirectional messages
 	MSG_PLAYER_DATA,
 	MSG_ACTOR_MOVE,
