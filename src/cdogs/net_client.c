@@ -142,9 +142,9 @@ void NetClientPoll(NetClient *n)
 static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
-	const GameEventType e = (GameEventType)*(uint32_t *)event.packet->data;
-	LOG(LM_NET, LL_TRACE, "recv msg(%u)", e);
-	const GameEventEntry gee = GameEventGetEntry(e);
+	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
+	LOG(LM_NET, LL_TRACE, "recv msg(%u)", msg);
+	const GameEventEntry gee = GameEventGetEntry(msg);
 	if (gee.Enqueue)
 	{
 		// Game event message; decode and add to event queue
