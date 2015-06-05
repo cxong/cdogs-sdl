@@ -101,7 +101,6 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_GAME_START:
 			gMission.HasStarted = true;
-			NetServerBroadcastMsg(&gNetServer, MSG_GAME_START, NULL);
 			break;
 		case GAME_EVENT_ACTOR_ADD:
 			ActorAdd(e->u.ActorAdd);

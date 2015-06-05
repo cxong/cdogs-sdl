@@ -28,19 +28,19 @@
 */
 #include "net_util.h"
 
-#include "proto/client.pb.h"
 #include "proto/nanopb/pb_decode.h"
 #include "proto/nanopb/pb_encode.h"
 
 
-ENetPacket *NetEncode(const NetMsg msg, const void *data)
+ENetPacket *NetEncode(const GameEventType e, const void *data)
 {
 	uint8_t buffer[1024];
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
+	const pb_field_t *fields = GameEventGetEntry(e).Fields;
 	const bool status =
-		data ? pb_encode(&stream, NetMsgGet(msg).Fields, data) : true;
+		(data && fields) ? pb_encode(&stream, fields, data) : true;
 	CASSERT(status, "Failed to encode pb");
-	int msgId = (int)msg;
+	int msgId = (int)e;
 	ENetPacket *packet = enet_packet_create(
 		&msgId, NET_MSG_SIZE + stream.bytes_written,
 		ENET_PACKET_FLAG_RELIABLE);
@@ -144,31 +144,4 @@ NetMsgVec2i Vec2i2Net(const Vec2i v)
 	nv.x = v.x;
 	nv.y = v.y;
 	return nv;
-}
-
-// Big array of net message-related fields
-// Indexed by NetMsg
-static NetMsgEntry sNetMsgEntries[] =
-{
-	{ MSG_NONE, NULL, GAME_EVENT_NONE },
-
-	{ MSG_PLAYER_DATA, NetMsgPlayerData_fields, GAME_EVENT_NONE },
-	{ MSG_ACTOR_MOVE, NetMsgActorMove_fields, GAME_EVENT_ACTOR_MOVE },
-	{ MSG_ACTOR_STATE, NetMsgActorState_fields, GAME_EVENT_ACTOR_STATE },
-	{ MSG_ACTOR_DIR, NetMsgActorDir_fields, GAME_EVENT_ACTOR_DIR },
-	{ MSG_ADD_BULLET, NetMsgAddBullet_fields, GAME_EVENT_ADD_BULLET },
-
-	{ MSG_REQUEST_PLAYERS, NetMsgRequestPlayers_fields, GAME_EVENT_NONE },
-	{ MSG_NEW_PLAYERS, NetMsgNewPlayers_fields, GAME_EVENT_NONE },
-
-	{ MSG_CLIENT_ID, NetMsgClientId_fields, GAME_EVENT_NONE },
-	{ MSG_CAMPAIGN_DEF, NetMsgCampaignDef_fields, GAME_EVENT_NONE },
-	{ MSG_ADD_PLAYERS, NetMsgAddPlayers_fields, GAME_EVENT_NONE },
-	{ MSG_GAME_START, NULL, GAME_EVENT_NONE },
-	{ MSG_ACTOR_ADD, NetMsgActorAdd_fields, GAME_EVENT_ACTOR_ADD },
-	{ MSG_GAME_END, NULL, GAME_EVENT_NONE }
-};
-NetMsgEntry NetMsgGet(const NetMsg msg)
-{
-	return sNetMsgEntries[(int)msg];
 }

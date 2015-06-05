@@ -55,7 +55,6 @@
 
 #include <SDL_timer.h>
 
-#include <cdogs/proto/client.pb.h>
 #include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
@@ -128,7 +127,7 @@ static void CheckRemotePlayersComplete(menu_t *menu, void *data);
 bool ScreenWaitForRemotePlayers(void)
 {
 	// Explicitly ask for player definitions
-	NetClientSendMsg(&gNetClient, MSG_REQUEST_PLAYERS, NULL);
+	NetClientSendMsg(&gNetClient, GAME_EVENT_REQUEST_PLAYERS, NULL);
 	return ScreenWait(
 		"Waiting for server players...", CheckRemotePlayersComplete);
 }
@@ -208,7 +207,7 @@ bool NumPlayersSelection(
 			NetMsgNewPlayers np;
 			np.ClientId = gNetClient.ClientId;
 			np.NumPlayers = numPlayers;
-			NetClientSendMsg(&gNetClient, MSG_NEW_PLAYERS, &np);
+			NetClientSendMsg(&gNetClient, GAME_EVENT_NEW_PLAYERS, &np);
 		}
 		else
 		{
@@ -678,11 +677,11 @@ bool PlayerEquip(void)
 		p->IsUsed = true;
 		if (gCampaign.IsClient)
 		{
-			NetClientSendMsg(&gNetClient, MSG_PLAYER_DATA, &d);
+			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &d);
 		}
 		else
 		{
-			NetServerBroadcastMsg(&gNetServer, MSG_PLAYER_DATA, &d);
+			NetServerBroadcastMsg(&gNetServer, GAME_EVENT_PLAYER_DATA, &d);
 		}
 	}
 

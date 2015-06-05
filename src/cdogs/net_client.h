@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __NET_CLIENT
-#define __NET_CLIENT
+#pragma once
 
 #include <time.h>
 
@@ -49,8 +48,6 @@ void NetClientTerminate(NetClient *n);
 void NetClientConnect(NetClient *n, const ENetAddress addr);
 void NetClientPoll(NetClient *n);
 // Send a command to the server
-void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data);
+void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data);
 
 bool NetClientIsConnected(const NetClient *n);
-
-#endif

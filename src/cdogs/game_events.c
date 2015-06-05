@@ -46,55 +46,59 @@ void GameEventsTerminate(CArray *store)
 }
 
 
-// Which game events should be passed along to server or client
-typedef struct
-{
-	GameEventType Event;
-	bool Broadcast;
-	bool Submit;
-	NetMsg Msg;
-} GameEventEntry;
 // Array indexed by GameEvent
 static GameEventEntry sGameEventEntries[] =
 {
-	{ GAME_EVENT_NONE, false, false, MSG_NONE },
+	{ GAME_EVENT_NONE, false, false, false, NULL },
 
-	{ GAME_EVENT_SCORE, false, false, MSG_NONE },
-	{ GAME_EVENT_SOUND_AT, false, false, MSG_NONE },
-	{ GAME_EVENT_SCREEN_SHAKE, false, false, MSG_NONE },
-	{ GAME_EVENT_SET_MESSAGE, false, false, MSG_NONE },
+	{ GAME_EVENT_PLAYER_DATA, false, false, false, NetMsgPlayerData_fields },
+	{ GAME_EVENT_REQUEST_PLAYERS, false, false, false, NetMsgRequestPlayers_fields },
+	{ GAME_EVENT_NEW_PLAYERS, false, false, false, NetMsgNewPlayers_fields },
+	{ GAME_EVENT_CLIENT_ID, false, false, false, NetMsgClientId_fields },
+	{ GAME_EVENT_CAMPAIGN_DEF, false, false, false, NetMsgCampaignDef_fields },
+	{ GAME_EVENT_ADD_PLAYERS, false, false, false, NetMsgAddPlayers_fields },
+	{ GAME_EVENT_NET_GAME_START, false, false, false, NULL },
 
-	{ GAME_EVENT_GAME_START, false, false, MSG_NONE },
+	{ GAME_EVENT_SCORE, false, false, true, NULL },
+	{ GAME_EVENT_SOUND_AT, false, false, true, NULL },
+	{ GAME_EVENT_SCREEN_SHAKE, false, false, true, NULL },
+	{ GAME_EVENT_SET_MESSAGE, false, false, true, NULL },
 
-	{ GAME_EVENT_ACTOR_ADD, true, false, MSG_ACTOR_ADD },
-	{ GAME_EVENT_ACTOR_MOVE, true, true, MSG_ACTOR_MOVE },
-	{ GAME_EVENT_ACTOR_STATE, true, true, MSG_ACTOR_STATE },
-	{ GAME_EVENT_ACTOR_DIR, true, true, MSG_ACTOR_DIR },
-	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, MSG_NONE },
+	{ GAME_EVENT_GAME_START, true, false, true, NULL },
 
-	{ GAME_EVENT_ADD_PICKUP, false, false, MSG_NONE },
-	{ GAME_EVENT_TAKE_HEALTH_PICKUP, false, false, MSG_NONE },
-	{ GAME_EVENT_TAKE_AMMO_PICKUP, false, false, MSG_NONE },
-	{ GAME_EVENT_USE_AMMO, false, false, MSG_NONE },
+	{ GAME_EVENT_ACTOR_ADD, true, false, true, NetMsgActorAdd_fields },
+	{ GAME_EVENT_ACTOR_MOVE, true, true, true, NetMsgActorMove_fields },
+	{ GAME_EVENT_ACTOR_STATE, true, true, true, NetMsgActorState_fields },
+	{ GAME_EVENT_ACTOR_DIR, true, true, true, NetMsgActorDir_fields },
+	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, true, NULL },
 
-	{ GAME_EVENT_OBJECT_SET_COUNTER, false, false, MSG_NONE },
-	{ GAME_EVENT_MOBILE_OBJECT_REMOVE, false, false, MSG_NONE },
-	{ GAME_EVENT_PARTICLE_REMOVE, false, false, MSG_NONE },
-	{ GAME_EVENT_ADD_BULLET, true, true, MSG_ADD_BULLET },
-	{ GAME_EVENT_ADD_PARTICLE, false, false, MSG_NONE },
-	{ GAME_EVENT_HIT_CHARACTER, false, false, MSG_NONE },
-	{ GAME_EVENT_ACTOR_IMPULSE, false, false, MSG_NONE },
-	{ GAME_EVENT_DAMAGE_CHARACTER, false, false, MSG_NONE },
-	{ GAME_EVENT_TRIGGER, false, false, MSG_NONE },
-	{ GAME_EVENT_UPDATE_OBJECTIVE, false, false, MSG_NONE },
+	{ GAME_EVENT_ADD_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_TAKE_HEALTH_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_TAKE_AMMO_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_USE_AMMO, false, false, true, NULL },
 
-	{ GAME_EVENT_MISSION_COMPLETE, false, false, MSG_NONE },
+	{ GAME_EVENT_OBJECT_SET_COUNTER, false, false, true, NULL },
+	{ GAME_EVENT_MOBILE_OBJECT_REMOVE, false, false, true, NULL },
+	{ GAME_EVENT_PARTICLE_REMOVE, false, false, true, NULL },
+	{ GAME_EVENT_ADD_BULLET, true, true, true, NetMsgAddBullet_fields },
+	{ GAME_EVENT_ADD_PARTICLE, false, false, true, NULL },
+	{ GAME_EVENT_HIT_CHARACTER, false, false, true, NULL },
+	{ GAME_EVENT_ACTOR_IMPULSE, false, false, true, NULL },
+	{ GAME_EVENT_DAMAGE_CHARACTER, false, false, true, NULL },
+	{ GAME_EVENT_TRIGGER, false, false, true, NULL },
+	{ GAME_EVENT_UPDATE_OBJECTIVE, false, false, true, NULL },
 
-	{ GAME_EVENT_MISSION_INCOMPLETE, false, false, MSG_NONE },
+	{ GAME_EVENT_MISSION_COMPLETE, false, false, true, NULL },
 
-	{ GAME_EVENT_MISSION_PICKUP, false, false, MSG_NONE },
-	{ GAME_EVENT_MISSION_END, false, false, MSG_NONE }
+	{ GAME_EVENT_MISSION_INCOMPLETE, false, false, true, NULL },
+
+	{ GAME_EVENT_MISSION_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_MISSION_END, false, false, true, NULL }
 };
+GameEventEntry GameEventGetEntry(const GameEventType e)
+{
+	return sGameEventEntries[(int)e];
+}
 
 void GameEventsEnqueue(CArray *store, GameEvent e)
 {
@@ -108,7 +112,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 	const GameEventEntry gee = sGameEventEntries[e.Type];
 	if (gee.Broadcast)
 	{
-		NetServerBroadcastMsg(&gNetServer, gee.Msg, &e.u);
+		NetServerBroadcastMsg(&gNetServer, gee.Type, &e.u);
 	}
 	if (gee.Submit)
 	{
@@ -130,7 +134,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		}
 		if (actorIsLocal)
 		{
-			NetClientSendMsg(&gNetClient, gee.Msg, &e.u);
+			NetClientSendMsg(&gNetClient, gee.Type, &e.u);
 		}
 	}
 

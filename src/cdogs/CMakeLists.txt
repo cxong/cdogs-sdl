@@ -172,15 +172,13 @@ set(HQX_HEADERS
 	hqx/common.h
 	hqx/hqx.h)
 set(NANOPB_SOURCES
-	proto/client.pb.c
-	proto/server.pb.c
+	proto/msg.pb.c
     proto/nanopb/pb_common.c
     proto/nanopb/pb_decode.c
     proto/nanopb/pb_encode.c
 )
 set(NANOPB_HEADERS
-	proto/client.pb.h
-	proto/server.pb.h
+	proto/msg.pb.h
     proto/nanopb/pb.h
     proto/nanopb/pb_common.h
     proto/nanopb/pb_decode.h

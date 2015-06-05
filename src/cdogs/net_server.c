@@ -31,7 +31,6 @@
 #include <string.h>
 
 #include "proto/nanopb/pb_encode.h"
-#include "proto/client.pb.h"
 
 #include "actor_placement.h"
 #include "campaign_entry.h"
@@ -153,12 +152,12 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
 	NetMsgClientId cid;
 	cid.Id = peerId;
-	NetServerSendMsg(n, peerId, MSG_CLIENT_ID, &cid);
+	NetServerSendMsg(n, peerId, GAME_EVENT_CLIENT_ID, &cid);
 
 	// Send the current campaign details over
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
 	NetMsgCampaignDef def = NetMsgMakeCampaignDef(&gCampaign.Entry);
-	NetServerSendMsg(n, peerId, MSG_CAMPAIGN_DEF, &def);
+	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
@@ -167,34 +166,34 @@ static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
-	const NetMsg msgType = (NetMsg)*(uint32_t *)event.packet->data;
+	const GameEventType e = (GameEventType)*(uint32_t *)event.packet->data;
 	const int peerId = ((NetPeerData *)event.peer->data)->Id;
 	LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
-		peerId, (int)msgType);
-	const NetMsgEntry nme = NetMsgGet(msgType);
-	if (nme.Event != GAME_EVENT_NONE)
+		peerId, (int)e);
+	const GameEventEntry gee = GameEventGetEntry(e);
+	if (gee.Enqueue)
 	{
 		// Game event message; decode and add to event queue
-		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)nme.Event);
-		GameEvent e = GameEventNew(nme.Event);
-		NetDecode(event.packet, &e.u, nme.Fields);
+		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)gee.Type);
+		GameEvent e = GameEventNew(gee.Type);
+		NetDecode(event.packet, &e.u, gee.Fields);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	else
 	{
-		switch (msgType)
+		switch (gee.Type)
 		{
-		case MSG_REQUEST_PLAYERS:
+		case GAME_EVENT_REQUEST_PLAYERS:
 			// Send details of all current players
 			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
 				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
 				LOG(LM_NET, LL_DEBUG, "send player data index(%d)", i);
 				const NetMsgPlayerData d = NetMsgMakePlayerData(pOther);
-				NetServerSendMsg(n, peerId, MSG_PLAYER_DATA, &d);
+				NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &d);
 			}
 			break;
-		case MSG_NEW_PLAYERS:
+		case GAME_EVENT_NEW_PLAYERS:
 			{
 				NetMsgNewPlayers np;
 				NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
@@ -210,10 +209,10 @@ static void OnReceive(NetServer *n, ENetEvent event)
 					ap.PlayerIds[i] = p->playerIndex;
 				}
 				// Broadcast the new players to all clients
-				NetServerBroadcastMsg(n, MSG_ADD_PLAYERS, &ap);
+				NetServerBroadcastMsg(n, GAME_EVENT_ADD_PLAYERS, &ap);
 			}
 			break;
-		case MSG_PLAYER_DATA:
+		case GAME_EVENT_PLAYER_DATA:
 			{
 				NetMsgPlayerData pd;
 				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
@@ -226,7 +225,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				// Send it on to all clients
 				const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
 				const NetMsgPlayerData d = NetMsgMakePlayerData(pData);
-				NetServerBroadcastMsg(n, MSG_PLAYER_DATA, &d);
+				NetServerBroadcastMsg(n, GAME_EVENT_PLAYER_DATA, &d);
 
 				// Send game start messages if we've started already
 				if (gMission.HasStarted)
@@ -272,21 +271,21 @@ static void SendGameStartMessages(
 		aa.FullPos.y = a->Pos.y;
 		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerId(%d)",
 			(int)aa.UID, (int)aa.PlayerId);
-		NetServerSendMsg(&gNetServer, peerId, MSG_ACTOR_ADD, &aa);
+		NetServerSendMsg(&gNetServer, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	}
 
-	NetServerSendMsg(n, peerId, MSG_GAME_START, NULL);
+	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 }
 
 void NetServerSendMsg(
-	NetServer *n, const int peerId, const NetMsg msg, const void *data)
+	NetServer *n, const int peerId, const GameEventType e, const void *data)
 {
 	if (!n->server)
 	{
 		return;
 	}
 	LOG(LM_NET, LL_DEBUG,
-		"send msg(%d) to peers(%d)", (int)msg, (int)n->server->connectedPeers);
+		"send msg(%d) to peers(%d)", (int)e, (int)n->server->connectedPeers);
 
 	// Find the peer and send
 	for (int i = 0; i < (int)n->server->connectedPeers; i++)
@@ -294,7 +293,7 @@ void NetServerSendMsg(
 		ENetPeer *peer = n->server->peers + i;
 		if (((NetPeerData *)peer->data)->Id == peerId)
 		{
-			enet_peer_send(peer, 0, NetEncode(msg, data));
+			enet_peer_send(peer, 0, NetEncode(e, data));
 			enet_host_flush(n->server);
 			return;
 		}
@@ -302,13 +301,13 @@ void NetServerSendMsg(
 	CASSERT(false, "Cannot find peer by id");
 }
 
-void NetServerBroadcastMsg(NetServer *n, const NetMsg msg, const void *data)
+void NetServerBroadcastMsg(NetServer *n, const GameEventType e, const void *data)
 {
 	if (!n->server)
 	{
 		return;
 	}
 
-	enet_host_broadcast(n->server, 0, NetEncode(msg, data));
+	enet_host_broadcast(n->server, 0, NetEncode(e, data));
 	enet_host_flush(n->server);
 }

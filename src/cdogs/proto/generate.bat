@@ -1,1 +1,1 @@
-protoc --nanopb_out=. client.proto server.proto
+protoc --nanopb_out=. msg.proto

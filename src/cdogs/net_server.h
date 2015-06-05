@@ -58,6 +58,6 @@ void NetServerOpen(NetServer *n);
 void NetServerPoll(NetServer *n);
 
 void NetServerSendMsg(
-	NetServer *n, const int peerId, const NetMsg msg, const void *data);
+	NetServer *n, const int peerId, const GameEventType e, const void *data);
 // Send message to all peers
-void NetServerBroadcastMsg(NetServer *n, const NetMsg msg, const void *data);
+void NetServerBroadcastMsg(NetServer *n, const GameEventType e, const void *data);

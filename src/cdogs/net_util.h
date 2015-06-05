@@ -33,8 +33,6 @@
 
 #include <enet/enet.h>
 
-#include "proto/server.pb.h"
-
 #include "campaign_entry.h"
 #include "game_events.h"
 #include "game_mode.h"
@@ -55,33 +53,8 @@
 // All messages start with 4 bytes message type followed by the message struct
 #define NET_MSG_SIZE sizeof(uint32_t)
 
-// Commands
-typedef enum
-{
-	MSG_NONE,
 
-	// Bidirectional messages
-	MSG_PLAYER_DATA,
-	MSG_ACTOR_MOVE,
-	MSG_ACTOR_STATE,
-	MSG_ACTOR_DIR,
-	MSG_ADD_BULLET,
-
-	// Client to server messages
-	MSG_REQUEST_PLAYERS,
-	MSG_NEW_PLAYERS,
-
-	// Server to client messages
-	MSG_CLIENT_ID,
-	MSG_CAMPAIGN_DEF,
-	MSG_ADD_PLAYERS,
-	MSG_GAME_START,
-	MSG_ACTOR_ADD,
-	MSG_GAME_END
-} NetMsg;
-
-
-ENetPacket *NetEncode(const NetMsg msg, const void *data);
+ENetPacket *NetEncode(const GameEventType e, const void *data);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 
 NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
@@ -92,11 +65,3 @@ void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd);
 
 Vec2i Net2Vec2i(const NetMsgVec2i v);
 NetMsgVec2i Vec2i2Net(const Vec2i v);
-
-typedef struct
-{
-	NetMsg Msg;
-	const pb_field_t *Fields;
-	GameEventType Event;
-} NetMsgEntry;
-NetMsgEntry NetMsgGet(const NetMsg msg);

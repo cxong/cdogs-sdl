@@ -50,7 +50,7 @@
 
 #include <json/json.h>
 
-#include "proto/server.pb.h"
+#include "proto/msg.pb.h"
 
 #include "particle.h"
 #include "sounds.h"

@@ -31,7 +31,6 @@
 #include <string.h>
 
 #include "proto/nanopb/pb_decode.h"
-#include "proto/client.pb.h"
 #include "campaigns.h"
 #include "game_events.h"
 #include "gamedata.h"
@@ -143,23 +142,23 @@ void NetClientPoll(NetClient *n)
 static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
-	const NetMsg msgType = (NetMsg)*(uint32_t *)event.packet->data;
-	LOG(LM_NET, LL_TRACE, "recv msg(%u)", msgType);
-	const NetMsgEntry nme = NetMsgGet(msgType);
-	if (nme.Event != GAME_EVENT_NONE)
+	const GameEventType e = (GameEventType)*(uint32_t *)event.packet->data;
+	LOG(LM_NET, LL_TRACE, "recv msg(%u)", e);
+	const GameEventEntry gee = GameEventGetEntry(e);
+	if (gee.Enqueue)
 	{
 		// Game event message; decode and add to event queue
-		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)nme.Event);
-		GameEvent e = GameEventNew(nme.Event);
-		if (nme.Fields != NULL)
+		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)gee.Type);
+		GameEvent e = GameEventNew(gee.Type);
+		if (gee.Fields != NULL)
 		{
-			NetDecode(event.packet, &e.u, nme.Fields);
+			NetDecode(event.packet, &e.u, gee.Fields);
 		}
 
 		// For actor events, check if UID is not for local player
 		int actorUID = -1;
 		bool actorIsLocal = false;
-		switch (nme.Event)
+		switch (gee.Type)
 		{
 		case GAME_EVENT_ACTOR_ADD:
 			// Note: ignore checking this event
@@ -187,9 +186,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 	}
 	else
 	{
-		switch (msgType)
+		switch (gee.Type)
 		{
-		case MSG_CLIENT_ID:
+		case GAME_EVENT_CLIENT_ID:
 			{
 				CASSERT(
 					n->ClientId == -1,
@@ -200,7 +199,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				n->ClientId = cid.Id;
 			}
 			break;
-		case MSG_CAMPAIGN_DEF:
+		case GAME_EVENT_CAMPAIGN_DEF:
 			if (gCampaign.IsLoaded)
 			{
 				LOG(LM_NET, LL_INFO, "WARNING: unexpected campaign def msg received");
@@ -226,7 +225,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				}
 			}
 			break;
-		case MSG_PLAYER_DATA:
+		case GAME_EVENT_PLAYER_DATA:
 			{
 				NetMsgPlayerData pd;
 				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
@@ -236,7 +235,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				NetMsgPlayerDataUpdate(&pd);
 			}
 			break;
-		case MSG_ADD_PLAYERS:
+		case GAME_EVENT_ADD_PLAYERS:
 			{
 				NetMsgAddPlayers ap;
 				NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
@@ -259,13 +258,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				}
 			}
 			break;
-		case MSG_GAME_START:
+		case GAME_EVENT_NET_GAME_START:
 			LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
 			gMission.HasStarted = true;
-			break;
-		case MSG_GAME_END:
-			LOG(LM_NET, LL_DEBUG, "NetClient: received game end");
-			gMission.isDone = true;
 			break;
 		default:
 			CASSERT(false, "unexpected message type");
@@ -284,15 +279,15 @@ static void AddMissingPlayers(const int playerId)
 	}
 }
 
-void NetClientSendMsg(NetClient *n, const NetMsg msg, const void *data)
+void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 {
 	if (!n->client || !n->peer)
 	{
 		return;
 	}
 
-	LOG(LM_NET, LL_DEBUG, "NetClient: send msg type %d", (int)msg);
-	enet_peer_send(n->peer, 0, NetEncode(msg, data));
+	LOG(LM_NET, LL_DEBUG, "NetClient: send msg type %d", (int)e);
+	enet_peer_send(n->peer, 0, NetEncode(e, data));
 	enet_host_flush(n->client);
 }
 

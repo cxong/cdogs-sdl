@@ -41,6 +41,15 @@ typedef enum
 {
 	GAME_EVENT_NONE,
 
+	// Net initialisation messages
+	GAME_EVENT_PLAYER_DATA,
+	GAME_EVENT_REQUEST_PLAYERS,
+	GAME_EVENT_NEW_PLAYERS,
+	GAME_EVENT_CLIENT_ID,
+	GAME_EVENT_CAMPAIGN_DEF,
+	GAME_EVENT_ADD_PLAYERS,
+	GAME_EVENT_NET_GAME_START,
+
 	GAME_EVENT_SCORE,
 	GAME_EVENT_SOUND_AT,
 	GAME_EVENT_SCREEN_SHAKE,
@@ -81,6 +90,18 @@ typedef enum
 	GAME_EVENT_MISSION_PICKUP,
 	GAME_EVENT_MISSION_END
 } GameEventType;
+
+// Which game events should be passed along to server or client
+typedef struct
+{
+	GameEventType Type;
+	bool Broadcast;
+	bool Submit;
+	// Whether to simply enqueue as game event; otherwise processed by handler
+	bool Enqueue;
+	const pb_field_t *Fields;
+} GameEventEntry;
+GameEventEntry GameEventGetEntry(const GameEventType e);
 
 typedef struct
 {
