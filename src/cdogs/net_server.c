@@ -166,11 +166,11 @@ static void SendGameStartMessages(
 	NetServer *n, const int peerId, const PlayerData *pData);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
-	const GameEventType e = (GameEventType)*(uint32_t *)event.packet->data;
+	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
 	const int peerId = ((NetPeerData *)event.peer->data)->Id;
 	LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
-		peerId, (int)e);
-	const GameEventEntry gee = GameEventGetEntry(e);
+		peerId, (int)msg);
+	const GameEventEntry gee = GameEventGetEntry(msg);
 	if (gee.Enqueue)
 	{
 		// Game event message; decode and add to event queue
