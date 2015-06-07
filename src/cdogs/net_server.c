@@ -274,6 +274,16 @@ static void SendGameStartMessages(
 		NetServerSendMsg(&gNetServer, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	}
 
+	// Send objective counts
+	for (int i = 0; i < (int)gMission.Objectives.size; i++)
+	{
+		NObjectiveCount oc;
+		oc.ObjectiveId = i;
+		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
+		oc.Count = o->done;
+		NetServerSendMsg(&gNetServer, peerId, GAME_EVENT_OBJECTIVE_COUNT, &oc);
+	}
+
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 }
 

@@ -41,6 +41,11 @@ message NPlayerData {
 	required bool IsUsed = 11;
 }
 
+message NObjectiveCount {
+	required int32 ObjectiveId = 1;
+	required int32 Count = 2;
+}
+
 message NAddPlayers {
 	required int32 ClientId = 1;
 	repeated int32 PlayerIds = 2;

@@ -235,6 +235,17 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				NPlayerDataUpdate(&pd);
 			}
 			break;
+		case GAME_EVENT_OBJECTIVE_COUNT:
+			{
+				NObjectiveCount oc;
+				NetDecode(event.packet, &oc, NObjectiveCount_fields);
+				ObjectiveDef *o =
+					CArrayGet(&gMission.Objectives, oc.ObjectiveId);
+				o->done = oc.Count;
+				LOG(LM_NET, LL_DEBUG, "recv objective count id(%d) done(%d)",
+					oc.ObjectiveId, o->done);
+			}
+			break;
 		case GAME_EVENT_ADD_PLAYERS:
 			{
 				NAddPlayers ap;
