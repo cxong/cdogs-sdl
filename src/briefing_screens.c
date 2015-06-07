@@ -630,7 +630,8 @@ static void DrawObjectiveInfo(
 	case OBJECTIVE_COLLECT:
 		{
 			const Pic *p = o->pickupClass->Pic;
-			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, p->offset));
+			Blit(&gGraphicsDevice, p,
+				Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2)));
 		}
 		break;
 	case OBJECTIVE_DESTROY:

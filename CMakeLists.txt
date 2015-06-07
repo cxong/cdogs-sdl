@@ -49,7 +49,7 @@ endif()
 find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
 find_package(SDL_image REQUIRED)
-set(USE_NET 0)
+set(USE_NET 1)
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)
