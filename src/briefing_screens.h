@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __BRIEFING_SCREENS
-#define __BRIEFING_SCREENS
+#pragma once
 
 #include <cdogs/campaigns.h>
 
@@ -32,11 +31,9 @@
 
 bool ScreenCampaignIntro(CampaignSetting *c);
 bool ScreenMissionBriefing(const struct MissionOptions *m);
-bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
+void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
 void ScreenVictory(CampaignOptions *c);
 
 void ScreenDogfightScores(void);
 void ScreenDogfightFinalScores(void);
 void ScreenDeathmatchFinalScores(void);
-
-#endif

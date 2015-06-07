@@ -244,7 +244,7 @@ static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(PlayerData *p, const int bonus);
 static void MissionSummaryDraw(void *data);
-bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
+void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 {
 	// Save password
 	MissionSave ms;
@@ -291,11 +291,7 @@ bool ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		&wData, GameLoopWaitForAnyKeyOrButtonFunc,
 		m, MissionSummaryDraw);
 	GameLoop(&gData);
-	if (wData.IsOK)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
-	return wData.IsOK;
+	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
 static bool AreAnySurvived(void)
 {

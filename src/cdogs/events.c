@@ -395,7 +395,8 @@ GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 	{
 		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
 		{
-			return WaitResult(wData, true);
+			// Interpret anything other than CMD_BUTTON1 as cancel
+			return WaitResult(wData, cmds[i] & CMD_BUTTON1);
 		}
 	}
 
@@ -403,7 +404,8 @@ GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 	const int menuCmd = GetMenuCmd(&gEventHandlers);
 	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
-		return WaitResult(wData, true);
+		// Interpret anything other than CMD_BUTTON1 as cancel
+		return WaitResult(wData, menuCmd & CMD_BUTTON1);
 	}
 
 	// Check if anyone pressed escape
