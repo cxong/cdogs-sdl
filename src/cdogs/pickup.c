@@ -112,7 +112,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 	case PICKUP_JEWEL:
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerIndex = a->playerIndex;
+			e.u.Score.PlayerId = a->playerIndex;
 			e.u.Score.Score = p->class->u.Score;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.pickupSound;

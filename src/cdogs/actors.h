@@ -216,7 +216,7 @@ void ActorsInit(void);
 void ActorsTerminate(void);
 int ActorsGetNextUID(void);
 int ActorsGetFreeIndex(void);
-TActor *ActorAdd(NetMsgActorAdd aa);
+TActor *ActorAdd(NActorAdd aa);
 void ActorDestroy(int id);
 
 TActor *ActorGetByUID(const int uid);

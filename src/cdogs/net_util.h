@@ -57,11 +57,11 @@
 ENetPacket *NetEncode(const GameEventType e, const void *data);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 
-NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p);
-NetMsgCampaignDef NetMsgMakeCampaignDef(const CampaignEntry *e);
-void NetMsgCampaignDefConvert(
-	const NetMsgCampaignDef *def, char *outPath, GameMode *outMode);
-void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd);
+NPlayerData NMakePlayerData(const PlayerData *p);
+NCampaignDef NMakeCampaignDef(const CampaignEntry *e);
+void NCampaignDefConvert(
+	const NCampaignDef *def, char *outPath, GameMode *outMode);
+void NPlayerDataUpdate(const NPlayerData *pd);
 
-Vec2i Net2Vec2i(const NetMsgVec2i v);
-NetMsgVec2i Vec2i2Net(const Vec2i v);
+Vec2i Net2Vec2i(const NVec2i v);
+NVec2i Vec2i2Net(const Vec2i v);

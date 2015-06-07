@@ -336,7 +336,7 @@ static bool DoDamageCharacter(
 				// Calculate score based on
 				// if they hit a penalty character
 				GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
-				e2.u.Score.PlayerIndex = player;
+				e2.u.Score.PlayerId = player;
 				if (actor->flags & FLAGS_PENALTY)
 				{
 					e2.u.Score.Score = PENALTY_MULTIPLIER * power;

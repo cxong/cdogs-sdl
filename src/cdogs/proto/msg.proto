@@ -1,25 +1,25 @@
-message NetMsgRequestPlayers {
+message NRequestPlayers {
 }
 
-message NetMsgCmd {
+message NCmd {
 	required uint32 Cmd = 1;
 }
 
-message NetMsgNewPlayers {
+message NNewPlayers {
 	required int32 ClientId = 1;
 	required int32 NumPlayers = 2;
 }
 
-message NetMsgClientId {
+message NClientId {
 	required int32 Id = 1;
 }
 
-message NetMsgCampaignDef {
+message NCampaignDef {
 	required string Path = 1;
 	required uint32 GameMode = 2;
 }
 
-message NetMsgPlayerData {
+message NPlayerData {
 	required string Name = 1;
 	message CharLooks {
 		required int32 Face = 1;
@@ -41,44 +41,49 @@ message NetMsgPlayerData {
 	required bool IsUsed = 11;
 }
 
-message NetMsgAddPlayers {
+message NAddPlayers {
 	required int32 ClientId = 1;
 	repeated int32 PlayerIds = 2;
 }
 
-message NetMsgVec2i {
+message NScore {
+	required int32 PlayerId = 1;
+	required int32 Score = 2;
+}
+
+message NVec2i {
 	required int32 x = 1;
 	required int32 y = 2;
 }
 
-message NetMsgActorAdd {
+message NActorAdd {
 	required int32 UID = 1;
 	required int32 CharId = 2;
 	required int32 Direction = 3;
 	required int32 Health = 4;
 	required int32 PlayerId = 5 [default=-1];
 	required int32 TileItemFlags = 6;
-	required NetMsgVec2i FullPos = 7;
+	required NVec2i FullPos = 7;
 }
 
-message NetMsgActorMove {
+message NActorMove {
 	required int32 UID = 1;
-	required NetMsgVec2i Pos = 2;
+	required NVec2i Pos = 2;
 }
 
-message NetMsgActorState {
+message NActorState {
 	required int32 UID = 1;
 	required int32 State = 2;
 }
 
-message NetMsgActorDir {
+message NActorDir {
 	required int32 UID = 1;
 	required int32 Dir = 2;
 }
 
-message NetMsgAddBullet {
+message NAddBullet {
 	required string BulletClass = 1;
-	required NetMsgVec2i MuzzlePos = 2;
+	required NVec2i MuzzlePos = 2;
 	required int32 MuzzleHeight = 3;
 	required float Angle = 4;
 	required int32 Elevation = 5;

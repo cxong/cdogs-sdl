@@ -59,9 +59,9 @@ bool NetDecode(
 }
 
 
-NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p)
+NPlayerData NMakePlayerData(const PlayerData *p)
 {
-	NetMsgPlayerData d;
+	NPlayerData d;
 	const Character *c = &p->Char;
 	d.IsUsed = p->IsUsed;
 	strcpy(d.Name, p->name);
@@ -85,9 +85,9 @@ NetMsgPlayerData NetMsgMakePlayerData(const PlayerData *p)
 	d.PlayerIndex = p->playerIndex;
 	return d;
 }
-NetMsgCampaignDef NetMsgMakeCampaignDef(const CampaignEntry *e)
+NCampaignDef NMakeCampaignDef(const CampaignEntry *e)
 {
-	NetMsgCampaignDef def;
+	NCampaignDef def;
 	memset(&def, 0, sizeof def);
 	if (e->Path)
 	{
@@ -97,13 +97,13 @@ NetMsgCampaignDef NetMsgMakeCampaignDef(const CampaignEntry *e)
 	return def;
 }
 
-void NetMsgCampaignDefConvert(
-	const NetMsgCampaignDef *def, char *outPath, GameMode *outMode)
+void NCampaignDefConvert(
+	const NCampaignDef *def, char *outPath, GameMode *outMode)
 {
 	strcpy(outPath, def->Path);
 	*outMode = def->GameMode;
 }
-void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
+void NPlayerDataUpdate(const NPlayerData *pd)
 {
 	PlayerData *p = CArrayGet(&gPlayerDatas, pd->PlayerIndex);
 	p->IsUsed = pd->IsUsed;
@@ -134,13 +134,13 @@ void NetMsgPlayerDataUpdate(const NetMsgPlayerData *pd)
 		p->playerIndex == pd->PlayerIndex, "unexpected player index");
 }
 
-Vec2i Net2Vec2i(const NetMsgVec2i v)
+Vec2i Net2Vec2i(const NVec2i v)
 {
 	return Vec2iNew(v.x, v.y);
 }
-NetMsgVec2i Vec2i2Net(const Vec2i v)
+NVec2i Vec2i2Net(const Vec2i v)
 {
-	NetMsgVec2i nv;
+	NVec2i nv;
 	nv.x = v.x;
 	nv.y = v.y;
 	return nv;

@@ -193,8 +193,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				CASSERT(
 					n->ClientId == -1,
 					"unexpected client ID message, already set");
-				NetMsgClientId cid;
-				NetDecode(event.packet, &cid, NetMsgClientId_fields);
+				NClientId cid;
+				NetDecode(event.packet, &cid, NClientId_fields);
 				LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %d", cid.Id);
 				n->ClientId = cid.Id;
 			}
@@ -207,11 +207,11 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			else
 			{
 				LOG(LM_NET, LL_DEBUG, "NetClient: received campaign def, loading...");
-				NetMsgCampaignDef def;
-				NetDecode(event.packet, &def, NetMsgCampaignDef_fields);
+				NCampaignDef def;
+				NetDecode(event.packet, &def, NCampaignDef_fields);
 				char campaignPath[CDOGS_PATH_MAX];
 				GameMode mode;
-				NetMsgCampaignDefConvert(&def, campaignPath, &mode);
+				NCampaignDefConvert(&def, campaignPath, &mode);
 				CampaignEntry entry;
 				if (CampaignEntryTryLoad(&entry, campaignPath, mode) &&
 					CampaignLoad(&gCampaign, &entry))
@@ -227,18 +227,18 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			break;
 		case GAME_EVENT_PLAYER_DATA:
 			{
-				NetMsgPlayerData pd;
-				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+				NPlayerData pd;
+				NetDecode(event.packet, &pd, NPlayerData_fields);
 				AddMissingPlayers(pd.PlayerIndex);
 				LOG(LM_NET, LL_DEBUG, "recv player data name(%s) id(%d) total(%d)",
 					pd.Name, pd.PlayerIndex, (int)gPlayerDatas.size);
-				NetMsgPlayerDataUpdate(&pd);
+				NPlayerDataUpdate(&pd);
 			}
 			break;
 		case GAME_EVENT_ADD_PLAYERS:
 			{
-				NetMsgAddPlayers ap;
-				NetDecode(event.packet, &ap, NetMsgAddPlayers_fields);
+				NAddPlayers ap;
+				NetDecode(event.packet, &ap, NAddPlayers_fields);
 				LOG(LM_NET, LL_DEBUG,
 					"NetClient: received new players %d",
 					(int)ap.PlayerIds_count);

@@ -580,7 +580,7 @@ void BulletClassesClear(CArray *classes)
 	CArrayClear(classes);
 }
 
-void BulletAdd(const NetMsgAddBullet add)
+void BulletAdd(const NAddBullet add)
 {
 	const Vec2i pos = Net2Vec2i(add.MuzzlePos);
 	TMobileObject *obj = CArrayGet(

@@ -109,11 +109,7 @@ typedef struct
 	int Delay;
 	union
 	{
-		struct
-		{
-			int PlayerIndex;
-			int Score;
-		} Score;
+		NScore Score;
 		struct
 		{
 			Mix_Chunk *Sound;
@@ -125,10 +121,10 @@ typedef struct
 			char Message[256];
 			int Ticks;
 		} SetMessage;
-		NetMsgActorAdd ActorAdd;
-		NetMsgActorMove ActorMove;
-		NetMsgActorState ActorState;
-		NetMsgActorDir ActorDir;
+		NActorAdd ActorAdd;
+		NActorMove ActorMove;
+		NActorState ActorState;
+		NActorDir ActorDir;
 		struct
 		{
 			int UID;
@@ -162,7 +158,7 @@ typedef struct
 		} ObjectSetCounter;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
-		NetMsgAddBullet AddBullet;
+		NAddBullet AddBullet;
 		AddParticle AddParticle;
 		struct
 		{

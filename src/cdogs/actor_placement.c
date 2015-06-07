@@ -35,7 +35,7 @@
 #include "handle_game_events.h"
 
 
-static NetMsgVec2i PlaceActor(Map *map)
+static NVec2i PlaceActor(Map *map)
 {
 	Vec2i pos;
 	do
@@ -47,7 +47,7 @@ static NetMsgVec2i PlaceActor(Map *map)
 	return Vec2i2Net(pos);
 }
 
-static NetMsgVec2i PlaceActorNear(
+static NVec2i PlaceActorNear(
 	Map *map, const Vec2i nearPos, const bool allowAllTiles)
 {
 	// Try a concentric rhombus pattern, clockwise from right
@@ -95,7 +95,7 @@ static NetMsgVec2i PlaceActorNear(
 	}
 }
 
-NetMsgVec2i PlaceAwayFromPlayers(Map *map)
+NVec2i PlaceAwayFromPlayers(Map *map)
 {
 	// Don't try forever trying to place
 	for (int i = 0; i < 100; i++)
@@ -127,7 +127,7 @@ NetMsgVec2i PlaceAwayFromPlayers(Map *map)
 	}
 }
 
-NetMsgVec2i PlacePrisoner(Map *map)
+NVec2i PlacePrisoner(Map *map)
 {
 	Vec2i pos;
 	do
@@ -144,7 +144,7 @@ NetMsgVec2i PlacePrisoner(Map *map)
 Vec2i PlacePlayer(
 	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents)
 {
-	NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+	NActorAdd aa = NActorAdd_init_default;
 	aa.UID = ActorsGetNextUID();
 	aa.Health = p->Char.maxHealth;
 	aa.PlayerId = p->playerIndex;

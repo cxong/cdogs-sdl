@@ -74,13 +74,11 @@ static void HandleGameEvent(
 	switch (e->Type)
 	{
 		case GAME_EVENT_SCORE:
-			if (e->u.Score.PlayerIndex >= 0)
+			if (e->u.Score.PlayerId >= 0)
 			{
-				PlayerData *p =
-					CArrayGet(&gPlayerDatas, e->u.Score.PlayerIndex);
+				PlayerData *p = CArrayGet(&gPlayerDatas, e->u.Score.PlayerId);
 				PlayerScore(p, e->u.Score.Score);
-				HUDAddScoreUpdate(
-					hud, e->u.Score.PlayerIndex, e->u.Score.Score);
+				HUDAddScoreUpdate(hud, e->u.Score.PlayerId, e->u.Score.Score);
 			}
 			break;
 		case GAME_EVENT_SOUND_AT:
@@ -304,8 +302,7 @@ static void HandleGameEvent(
 				case OBJECTIVE_DESTROY:
 					{
 						GameEvent e1 = GameEventNew(GAME_EVENT_SCORE);
-						e1.u.Score.PlayerIndex =
-							e->u.UpdateObjective.PlayerIndex;
+						e1.u.Score.PlayerId = e->u.UpdateObjective.PlayerIndex;
 						e1.u.Score.Score = OBJECT_SCORE;
 						HandleGameEvent(
 							&e1, hud, shake, healthSpawner, ammoSpawners,

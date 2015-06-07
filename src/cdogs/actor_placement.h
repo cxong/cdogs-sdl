@@ -32,8 +32,8 @@
 #include "net_util.h"
 
 
-NetMsgVec2i PlaceAwayFromPlayers(Map *map);
-NetMsgVec2i PlacePrisoner(Map *map);
+NVec2i PlaceAwayFromPlayers(Map *map);
+NVec2i PlacePrisoner(Map *map);
 
 Vec2i PlacePlayer(
 	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents);

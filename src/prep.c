@@ -204,7 +204,7 @@ bool NumPlayersSelection(
 		if (NetClientIsConnected(&gNetClient))
 		{
 			// Tell the server that we want to add new players
-			NetMsgNewPlayers np;
+			NNewPlayers np;
 			np.ClientId = gNetClient.ClientId;
 			np.NumPlayers = numPlayers;
 			NetClientSendMsg(&gNetClient, GAME_EVENT_NEW_PLAYERS, &np);
@@ -672,7 +672,7 @@ bool PlayerEquip(void)
 			idx--;
 			continue;
 		}
-		const NetMsgPlayerData d = NetMsgMakePlayerData(p);
+		const NPlayerData d = NMakePlayerData(p);
 		// Ready player definitions
 		p->IsUsed = true;
 		if (gCampaign.IsClient)

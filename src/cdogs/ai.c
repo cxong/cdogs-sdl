@@ -490,7 +490,7 @@ void CommandBadGuys(int ticks)
 		gMission.missionData->EnemyDensity > 0 &&
 		count < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
 	{
-		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
@@ -518,7 +518,7 @@ void InitializeBadGuys(void)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				NActorAdd aa = NActorAdd_init_default;
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetRandomSpecialId(
 					&gCampaign.Setting.characters);
@@ -541,7 +541,7 @@ void InitializeBadGuys(void)
 		{
 			for (; obj->placed < mobj->Count; obj->placed++)
 			{
-				NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+				NActorAdd aa = NActorAdd_init_default;
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetPrisonerId(
 					&gCampaign.Setting.characters, 0);
@@ -584,7 +584,7 @@ void CreateEnemies(void)
 		i < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100);
 		i++)
 	{
-		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);

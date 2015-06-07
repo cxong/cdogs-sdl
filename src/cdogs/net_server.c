@@ -150,13 +150,13 @@ static void OnConnect(NetServer *n, ENetEvent event)
 
 	// Send the client ID
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
-	NetMsgClientId cid;
+	NClientId cid;
 	cid.Id = peerId;
 	NetServerSendMsg(n, peerId, GAME_EVENT_CLIENT_ID, &cid);
 
 	// Send the current campaign details over
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
-	NetMsgCampaignDef def = NetMsgMakeCampaignDef(&gCampaign.Entry);
+	NCampaignDef def = NMakeCampaignDef(&gCampaign.Entry);
 	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
@@ -189,17 +189,17 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			{
 				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
 				LOG(LM_NET, LL_DEBUG, "send player data index(%d)", i);
-				const NetMsgPlayerData d = NetMsgMakePlayerData(pOther);
+				const NPlayerData d = NMakePlayerData(pOther);
 				NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &d);
 			}
 			break;
 		case GAME_EVENT_NEW_PLAYERS:
 			{
-				NetMsgNewPlayers np;
-				NetDecode(event.packet, &np, NetMsgNewPlayers_fields);
+				NNewPlayers np;
+				NetDecode(event.packet, &np, NNewPlayers_fields);
 				LOG(LM_NET, LL_DEBUG, "NetServer: received new players %d", np.NumPlayers);
 				// Add the players, simultaneously building our broadcast message
-				NetMsgAddPlayers ap;
+				NAddPlayers ap;
 				ap.ClientId = np.ClientId;
 				ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
 				for (int i = 0; i < np.NumPlayers; i++)
@@ -214,17 +214,17 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			break;
 		case GAME_EVENT_PLAYER_DATA:
 			{
-				NetMsgPlayerData pd;
-				NetDecode(event.packet, &pd, NetMsgPlayerData_fields);
+				NPlayerData pd;
+				NetDecode(event.packet, &pd, NPlayerData_fields);
 				LOG(LM_NET, LL_DEBUG,
 					"NetServer: received player data id %d", pd.PlayerIndex);
 				CASSERT(
 					(int)gPlayerDatas.size > (int)pd.PlayerIndex,
 					"unexpected player index");
-				NetMsgPlayerDataUpdate(&pd);
+				NPlayerDataUpdate(&pd);
 				// Send it on to all clients
 				const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
-				const NetMsgPlayerData d = NetMsgMakePlayerData(pData);
+				const NPlayerData d = NMakePlayerData(pData);
 				NetServerBroadcastMsg(n, GAME_EVENT_PLAYER_DATA, &d);
 
 				// Send game start messages if we've started already
@@ -255,7 +255,7 @@ static void SendGameStartMessages(
 		{
 			continue;
 		}
-		NetMsgActorAdd aa = NetMsgActorAdd_init_default;
+		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = a->uid;
 		if (a->playerIndex < 0)
 		{

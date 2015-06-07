@@ -770,7 +770,7 @@ void Shoot(TActor *actor)
 		{
 			// Classic C-Dogs score consumption
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerIndex = actor->playerIndex;
+			e.u.Score.PlayerId = actor->playerIndex;
 			e.u.Score.Score = -gun->Gun->Cost;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
@@ -1188,7 +1188,7 @@ int ActorsGetFreeIndex(void)
 	}
 	return (int)gActors.size;
 }
-TActor *ActorAdd(NetMsgActorAdd aa)
+TActor *ActorAdd(NActorAdd aa)
 {
 	// Don't add if UID exists
 	if (ActorGetByUID(aa.UID) != NULL)

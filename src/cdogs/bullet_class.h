@@ -118,6 +118,6 @@ void BulletLoadWeapons(BulletClasses *bullets);
 void BulletClassesClear(CArray *classes);
 void BulletTerminate(BulletClasses *bullets);
 
-void BulletAdd(const NetMsgAddBullet add);
+void BulletAdd(const NAddBullet add);
 
 bool UpdateBullet(struct MobileObject *obj, const int ticks);

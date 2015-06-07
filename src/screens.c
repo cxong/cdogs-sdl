@@ -133,7 +133,7 @@ static void StartPlayers(const int maxHealth, const int mission)
 			return;
 		}
 		PlayerDataStart(p, maxHealth, mission);
-		const NetMsgPlayerData d = NetMsgMakePlayerData(p);
+		const NPlayerData d = NMakePlayerData(p);
 		NetServerBroadcastMsg(&gNetServer, GAME_EVENT_PLAYER_DATA, &d);
 	}
 }
