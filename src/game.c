@@ -716,7 +716,7 @@ static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
 			int update = MapGetExploredPercentage(map) - o->done;
 			if (update > 0)
 			{
-				GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_COUNT);
+				GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
 				e.u.ObjectiveUpdate.ObjectiveId = i;
 				e.u.ObjectiveUpdate.Count = update;
 				GameEventsEnqueue(&gGameEvents, e);

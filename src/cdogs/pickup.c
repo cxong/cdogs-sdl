@@ -116,6 +116,8 @@ void PickupPickup(TActor *a, const Pickup *p)
 			e.u.Score.Score = p->class->u.Score;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.pickupSound;
+			UpdateMissionObjective(
+				&gMission, p->tileItem.flags, OBJECTIVE_COLLECT);
 		}
 		break;
 
@@ -246,8 +248,6 @@ void PickupPickup(TActor *a, const Pickup *p)
 	if (canPickup)
 	{
 		SoundPlayAt(&gSoundDevice, sound, actorPos);
-		UpdateMissionObjective(
-			&gMission, p->tileItem.flags, OBJECTIVE_COLLECT);
 
 		// Alert spawner to start respawn process
 		if (p->SpawnerUID >= 0)
