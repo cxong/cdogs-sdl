@@ -286,38 +286,16 @@ static void HandleGameEvent(
 				}
 			}
 			break;
-		case GAME_EVENT_UPDATE_OBJECTIVE:
+		case GAME_EVENT_OBJECTIVE_UPDATE:
 			{
 				ObjectiveDef *o = CArrayGet(
-					&gMission.Objectives, e->u.UpdateObjective.ObjectiveIndex);
-				o->done += e->u.UpdateObjective.Update;
-				MissionObjective *mo = CArrayGet(
-					&gMission.missionData->Objectives,
-					e->u.UpdateObjective.ObjectiveIndex);
-				switch (mo->Type)
-				{
-				case OBJECTIVE_COLLECT:
-					// Do nothing (already handled in pickups)
-					break;
-				case OBJECTIVE_DESTROY:
-					{
-						GameEvent e1 = GameEventNew(GAME_EVENT_SCORE);
-						e1.u.Score.PlayerId = e->u.UpdateObjective.PlayerIndex;
-						e1.u.Score.Score = OBJECT_SCORE;
-						HandleGameEvent(
-							&e1, hud, shake, healthSpawner, ammoSpawners,
-							eventHandlers);
-					}
-					break;
-				default:
-					// No other special objective handling
-					break;
-				}
+					&gMission.Objectives, e->u.ObjectiveUpdate.ObjectiveId);
+				o->done += e->u.ObjectiveUpdate.Count;
 				// Display a text update effect for the objective
 				HUDAddObjectiveUpdate(
 					hud,
-					e->u.UpdateObjective.ObjectiveIndex,
-					e->u.UpdateObjective.Update);
+					e->u.ObjectiveUpdate.ObjectiveId,
+					e->u.ObjectiveUpdate.Count);
 				MissionSetMessageIfComplete(&gMission);
 			}
 			break;

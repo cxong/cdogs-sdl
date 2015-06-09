@@ -80,7 +80,7 @@ typedef enum
 	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_TRIGGER,
-	GAME_EVENT_UPDATE_OBJECTIVE,
+	GAME_EVENT_OBJECTIVE_UPDATE,
 
 	// Can complete mission
 	GAME_EVENT_MISSION_COMPLETE,
@@ -183,13 +183,7 @@ typedef struct
 			int Id;
 			Vec2i TilePos;
 		} Trigger;
-		struct
-		{
-			int ObjectiveIndex;
-			int Update;
-			int PlayerIndex;
-			Vec2i Pos;
-		} UpdateObjective;
+		NObjectiveUpdate ObjectiveUpdate;
 	} u;
 } GameEvent;
 

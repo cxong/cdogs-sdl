@@ -240,8 +240,8 @@ void MissionEnd(void);
 void MissionSetMessageIfComplete(struct MissionOptions *options);
 // If object is a mission objective, send an update event
 void UpdateMissionObjective(
-	struct MissionOptions *options, int flags, ObjectiveType type,
-	int player, Vec2i pos);
+	const struct MissionOptions *options,
+	const int flags, const ObjectiveType type);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool IsMissionComplete(const struct MissionOptions *options);
 

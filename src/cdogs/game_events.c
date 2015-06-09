@@ -87,7 +87,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_IMPULSE, false, false, true, NULL },
 	{ GAME_EVENT_DAMAGE_CHARACTER, false, false, true, NULL },
 	{ GAME_EVENT_TRIGGER, false, false, true, NULL },
-	{ GAME_EVENT_UPDATE_OBJECTIVE, false, false, true, NULL },
+	{ GAME_EVENT_OBJECTIVE_UPDATE, true, true, true, NObjectiveUpdate_fields},
 
 	{ GAME_EVENT_MISSION_COMPLETE, false, false, true, NULL },
 

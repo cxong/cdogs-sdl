@@ -247,8 +247,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 	{
 		SoundPlayAt(&gSoundDevice, sound, actorPos);
 		UpdateMissionObjective(
-			&gMission, p->tileItem.flags, OBJECTIVE_COLLECT,
-			a->playerIndex, actorPos);
+			&gMission, p->tileItem.flags, OBJECTIVE_COLLECT);
 
 		// Alert spawner to start respawn process
 		if (p->SpawnerUID >= 0)

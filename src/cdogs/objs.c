@@ -87,8 +87,7 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 
 
 static void DestroyObject(
-	TObject *o, const int flags, const int player, const int uid,
-	const TTileItem *target);
+	TObject *o, const int flags, const int player, const int uid);
 static void DamageObject(
 	const int power, const int flags, const int player, const int uid,
 	const TTileItem *target)
@@ -105,20 +104,24 @@ static void DamageObject(
 	// Destroying objects and all the wonderful things that happen
 	if (o->Health <= 0)
 	{
-		DestroyObject(o, flags, player, uid, target);
+		DestroyObject(o, flags, player, uid);
 	}
 }
 static void DestroyObject(
-	TObject *o, const int flags, const int player, const int uid,
-	const TTileItem *target)
+	TObject *o, const int flags, const int player, const int uid)
 {
 	o->Health = 0;
 
 	// Update objective
-	const Vec2i pos = Vec2iNew(target->x, target->y);
-	UpdateMissionObjective(
-		&gMission, o->tileItem.flags, OBJECTIVE_DESTROY,
-		player, pos);
+	UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
+	// Extra score if objective
+	if (o->tileItem.flags & TILEITEM_OBJECTIVE)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+		e.u.Score.PlayerId = player;
+		e.u.Score.Score = OBJECT_SCORE;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 
 	// Weapons that go off when this object is destroyed
 	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);

@@ -511,8 +511,8 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 }
 
 void UpdateMissionObjective(
-	struct MissionOptions *options, int flags, ObjectiveType type,
-	int player, Vec2i pos)
+	const struct MissionOptions *options,
+	const int flags, const ObjectiveType type)
 {
 	if (!(flags & TILEITEM_OBJECTIVE))
 	{
@@ -524,11 +524,9 @@ void UpdateMissionObjective(
 	{
 		return;
 	}
-	GameEvent e = GameEventNew(GAME_EVENT_UPDATE_OBJECTIVE);
-	e.u.UpdateObjective.ObjectiveIndex = idx;
-	e.u.UpdateObjective.Update = 1;
-	e.u.UpdateObjective.PlayerIndex = player;
-	e.u.UpdateObjective.Pos = pos;
+	GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+	e.u.ObjectiveUpdate.ObjectiveId = idx;
+	e.u.ObjectiveUpdate.Count = 1;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 

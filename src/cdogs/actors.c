@@ -431,10 +431,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				otherCharacter->flags &= ~FLAGS_PRISONER;
 				UpdateMissionObjective(
 					&gMission,
-					otherCharacter->tileItem.flags,
-					OBJECTIVE_RESCUE,
-					actor->playerIndex,
-					Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+					otherCharacter->tileItem.flags, OBJECTIVE_RESCUE);
 			}
 		}
 
@@ -654,8 +651,7 @@ void InjureActor(TActor * actor, int injury)
 				pos);
 		}
 		UpdateMissionObjective(
-			&gMission, actor->tileItem.flags, OBJECTIVE_KILL,
-			-1, pos);
+			&gMission, actor->tileItem.flags, OBJECTIVE_KILL);
 	}
 }
 

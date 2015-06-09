@@ -96,3 +96,8 @@ message NAddBullet {
 	required int32 PlayerIndex = 7;
 	required int32 UID = 8;
 }
+
+message NObjectiveUpdate {
+	required int32 ObjectiveId = 1;
+	required int32 Count = 2;
+}
