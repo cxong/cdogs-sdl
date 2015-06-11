@@ -532,9 +532,13 @@ static GameLoopResult RunGameUpdate(void *data)
 		}
 		// Calculate LOS for all players alive
 		TActor *player = CArrayGet(&gActors, p->Id);
-		MapCalcLOSFrom(
-			&gMap,
-			Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)));
+		// TODO: split LOS so that drawing LOS is separated from objectives
+		if (!gCampaign.IsClient || p->IsLocal)
+		{
+			MapCalcLOSFrom(
+				&gMap,
+				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)));
+		}
 
 		// Only handle inputs/commands for local players
 		if (!p->IsLocal)
