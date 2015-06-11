@@ -89,6 +89,9 @@ typedef struct
 	// internal data structure to help build the map
 	CArray iMap;	// of unsigned short
 
+	// Array of bools to set lines of sight
+	CArray LOS;	// of bool
+
 	CArray triggers;	// of Trigger *; owner
 	int triggerId;
 
@@ -132,6 +135,10 @@ void MapShowExitArea(Map *map);
 // Returns the center of the tile that's the middle of the exit area
 // Used for compass arrows
 Vec2i MapGetExitPos(Map *m);
+
+void MapResetLOS(Map *map);
+void MapCalcLOSFrom(Map *map, const Vec2i pos);
+bool MapTileIsVisible(Map *map, const Vec2i pos);
 void MapMarkAsVisited(Map *map, Vec2i pos);
 void MapMarkAllAsVisited(Map *map);
 int MapGetExploredPercentage(Map *map);

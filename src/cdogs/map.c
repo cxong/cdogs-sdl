@@ -52,12 +52,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "algorithms.h"
 #include "ammo.h"
 #include "collision.h"
 #include "config.h"
+#include "game_events.h"
 #include "map_build.h"
 #include "map_classic.h"
 #include "map_static.h"
+#include "net_util.h"
 #include "pic_manager.h"
 #include "pickup.h"
 #include "objs.h"
@@ -966,6 +969,7 @@ void MapInit(Map *map)
 	memset(map, 0, sizeof *map);
 	CArrayInit(&map->Tiles, sizeof(Tile));
 	CArrayInit(&map->iMap, sizeof(unsigned short));
+	CArrayInit(&map->LOS, sizeof(bool));
 	CArrayInit(&map->triggers, sizeof(Trigger *));
 	PathCacheInit(&gPathCache, map);
 }
@@ -987,6 +991,7 @@ void MapTerminate(Map *map)
 	}
 	CArrayTerminate(&map->Tiles);
 	CArrayTerminate(&map->iMap);
+	CArrayTerminate(&map->LOS);
 	PathCacheTerminate(&gPathCache);
 }
 void MapLoad(
@@ -1006,6 +1011,8 @@ void MapLoad(
 			TileInit(&t);
 			CArrayPushBack(&map->Tiles, &t);
 			CArrayPushBack(&map->iMap, &tI);
+			const bool f = false;
+			CArrayPushBack(&map->LOS, &f);
 		}
 	}
 
@@ -1203,6 +1210,156 @@ bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
 	return true;
 }
 
+// Reset lines of sight by setting all cells to unseen
+void MapResetLOS(Map *map)
+{
+	CArrayFillZero(&map->LOS);
+}
+typedef struct
+{
+	Map *Map;
+	Vec2i Center;
+	int SightRange2;
+} LOSData;
+// Calculate LOS cells from a certain start position
+// Sight range based on config
+static void SetLOSVisible(Map *map, const Vec2i pos);
+static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos);
+static void SetObstructionVisible(Map *map, const Vec2i pos);
+void MapCalcLOSFrom(Map *map, const Vec2i pos)
+{
+	// Perform LOS by casting rays from the centre to the edges, terminating
+	// whenever an obstruction or out-of-range is reached.
+
+	// First mark center tile and all adjacent tiles as visible
+	// +-+-+-+
+	// |V|V|V|
+	// +-+-+-+
+	// |V|C|V|
+	// +-+-+-+
+	// |V|V|V|  (C=center, V=visible)
+	// +-+-+-+
+	Vec2i end;
+	for (end.x = pos.x - 1; end.x <= pos.x + 1; end.x++)
+	{
+		for (end.y = pos.y - 1; end.y <= pos.y + 1; end.y++)
+		{
+			SetLOSVisible(map, end);
+		}
+	}
+
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange");
+	if (sightRange == 0) return;
+
+	// Limit the perimeter to the sight range
+	const Vec2i origin = Vec2iNew(pos.x - sightRange, pos.y - sightRange);
+	const Vec2i perimSize = Vec2iScale(Vec2iMinus(pos, origin), 2);
+
+	LOSData data;
+	data.Map = map;
+	data.Center = pos;
+	data.SightRange2 = sightRange * sightRange;
+
+	// Start from the top-left cell, and proceed clockwise around
+	end = origin;
+	HasClearLineData lineData;
+	lineData.IsBlocked = IsNextTileBlockedAndSetVisibility;
+	lineData.data = &data;
+	// Top edge
+	for (; end.x < origin.x + perimSize.x; end.x++)
+	{
+		HasClearLineXiaolinWu(pos, end, &lineData);
+	}
+	// right edge
+	for (; end.y < origin.y + perimSize.y; end.y++)
+	{
+		HasClearLineXiaolinWu(pos, end, &lineData);
+	}
+	// bottom edge
+	for (; end.x > origin.x; end.x--)
+	{
+		HasClearLineXiaolinWu(pos, end, &lineData);
+	}
+	// left edge
+	for (; end.y > origin.y; end.y--)
+	{
+		HasClearLineXiaolinWu(pos, end, &lineData);
+	}
+
+	// Second pass: make any non-visible obstructions that are adjacent to
+	// visible non-obstructions visible too
+	// This is to ensure runs of walls stay visible
+	for (end.y = origin.y; end.y < origin.y + perimSize.y; end.y++)
+	{
+		for (end.x = origin.x; end.x < origin.x + perimSize.x; end.x++)
+		{
+			const Tile *tile = MapGetTile(map, end);
+			if (!tile || !(tile->flags & MAPTILE_NO_SEE))
+			{
+				continue;
+			}
+			// Check sight range
+			if (DistanceSquared(pos, end) >= data.SightRange2)
+			{
+				continue;
+			}
+			SetObstructionVisible(map, end);
+		}
+	}
+}
+static void SetLOSVisible(Map *map, const Vec2i pos)
+{
+	const Tile *t = MapGetTile(map, pos);
+	if (t == NULL) return;
+	*((bool *)CArrayGet(&map->LOS, pos.y * map->Size.x + pos.x)) = true;
+	if (!t->isVisited)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILE);
+		e.u.ExploreTile.Tile = Vec2i2Net(pos);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+}
+static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
+{
+	LOSData *lData = data;
+	// Check sight range
+	if (DistanceSquared(lData->Center, pos) >= lData->SightRange2) return true;
+	// Check map range
+	const Tile *t = MapGetTile(lData->Map, pos);
+	if (t == NULL) return true;
+	SetLOSVisible(lData->Map, pos);
+	// Check if this tile is an obstruction
+	return t->flags & MAPTILE_NO_SEE;
+}
+static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos);
+static void SetObstructionVisible(Map *map, const Vec2i pos)
+{
+	Vec2i d;
+	for (d.x = -1; d.x < 2; d.x++)
+	{
+		for (d.y = -1; d.y < 2; d.y++)
+		{
+			if (IsTileVisibleNonObstruction(map, Vec2iAdd(pos, d)))
+			{
+				SetLOSVisible(map, pos);
+				return;
+			}
+		}
+	}
+}
+static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos)
+{
+	const Tile *t = MapGetTile(map, pos);
+	if (t == NULL) return false;
+	return !(t->flags & MAPTILE_NO_SEE) && MapTileIsVisible(map, pos);
+}
+
+bool MapTileIsVisible(Map *map, const Vec2i pos)
+{
+	if (MapGetTile(map, pos) == NULL) return false;
+	return *((bool *)CArrayGet(&map->LOS, pos.y * map->Size.x + pos.x));
+}
+
 void MapMarkAsVisited(Map *map, Vec2i pos)
 {
 	Tile *t = MapGetTile(map, pos);
@@ -1220,7 +1377,9 @@ void MapMarkAllAsVisited(Map *map)
 	{
 		for (pos.x = 0; pos.x < map->Size.x; pos.x++)
 		{
-			MapGetTile(map, pos)->isVisited = true;
+			GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILE);
+			e.u.ExploreTile.Tile = Vec2i2Net(pos);
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 }

@@ -111,8 +111,7 @@ static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
 	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
-	DrawBufferLOS(b, center);
-	FixBuffer(b);
+	DrawBufferFix(b);
 	DrawBufferDraw(b, offset, NULL);
 }
 
@@ -174,17 +173,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 
 			DrawBufferSetFromMap(
 				b, &gMap, Vec2iAdd(lastPosition, noise), X_TILES);
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
-			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (IsPlayerAlive(p))
-				{
-					const TActor *player = CArrayGet(&gActors, p->Id);
-					DrawBufferLOS(
-						b, Vec2iNew(player->tileItem.x, player->tileItem.y));
-				}
-			}
-			FixBuffer(b);
+			DrawBufferFix(b);
 			DrawBufferDraw(b, centerOffset, NULL);
 			SoundSetEars(lastPosition);
 		}
@@ -357,7 +346,6 @@ Vec2i GetPlayerCenter(
 	return center;
 }
 
-static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map);
 typedef struct
 {
 	struct MissionOptions *m;
@@ -534,19 +522,26 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Update all the things in the game
 	const int ticksPerFrame = 1;
 
+	MapResetLOS(&gMap);
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerAlive(p))
+		{
+			continue;
+		}
+		// Calculate LOS for all players alive
+		TActor *player = CArrayGet(&gActors, p->Id);
+		MapCalcLOSFrom(
+			&gMap,
+			Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)));
+
+		// Only handle inputs/commands for local players
 		if (!p->IsLocal)
 		{
 			idx--;
 			continue;
 		}
-		if (!IsPlayerAlive(p))
-		{
-			continue;
-		}
-		TActor *player = CArrayGet(&gActors, p->Id);
 		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
 			rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
@@ -632,11 +627,6 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	rData->m->time += ticksPerFrame;
 
-	if (HasObjectives(gCampaign.Entry.Mode))
-	{
-		MissionUpdateObjectives(rData->m, rData->map);
-	}
-
 	rData->shake = ScreenShakeUpdate(rData->shake, ticksPerFrame);
 
 	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
@@ -701,26 +691,5 @@ static void RunGameDraw(void *data)
 	if (rData->isMap)
 	{
 		AutomapDraw(0, rData->hud.showExit);
-	}
-}
-
-static void MissionUpdateObjectives(struct MissionOptions *mo, Map *map)
-{
-	for (int i = 0; i < (int)mo->missionData->Objectives.size; i++)
-	{
-		const MissionObjective *mobj =
-			CArrayGet(&mo->missionData->Objectives, i);
-		const ObjectiveDef *o = CArrayGet(&mo->Objectives, i);
-		if (mobj->Type == OBJECTIVE_INVESTIGATE)
-		{
-			int update = MapGetExploredPercentage(map) - o->done;
-			if (update > 0)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-				e.u.ObjectiveUpdate.ObjectiveId = i;
-				e.u.ObjectiveUpdate.Count = update;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-		}
 	}
 }

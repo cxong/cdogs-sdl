@@ -68,7 +68,7 @@ void DrawBufferTerminate(DrawBuffer *b);
 
 void DrawBufferSetFromMap(
 	DrawBuffer *buffer, Map *map, Vec2i origin, int width);
-void DrawBufferLOS(DrawBuffer *buffer, Vec2i center);
+void DrawBufferFix(DrawBuffer *buffer);
 void DrawBufferSortDisplayList(DrawBuffer *buffer);
 
 #endif

@@ -56,6 +56,8 @@
 #include "config.h"
 #include "drawtools.h"
 #include "font.h"
+#include "game_events.h"
+#include "net_util.h"
 #include "objs.h"
 #include "pics.h"
 #include "draw.h"
@@ -63,59 +65,6 @@
 #include "pic_manager.h"
 
 //#define DEBUG_DRAW_BOUNDS
-
-
-void FixBuffer(DrawBuffer *buffer)
-{
-	int x, y;
-	Tile *tile, *tileBelow;
-
-	tile = &buffer->tiles[0][0];
-	tileBelow = &buffer->tiles[0][0] + X_TILES;
-	for (y = 0; y < Y_TILES - 1; y++)
-	{
-		for (x = 0; x < buffer->Size.x; x++, tile++, tileBelow++)
-		{
-			if (!(tile->flags & (MAPTILE_IS_WALL |MAPTILE_OFFSET_PIC)) &&
-				(tileBelow->flags & MAPTILE_IS_WALL))
-			{
-				tile->pic = &picNone;
-			}
-			else if ((tile->flags & MAPTILE_IS_WALL) &&
-				(tileBelow->flags & MAPTILE_IS_WALL))
-			{
-				tile->flags |= MAPTILE_DELAY_DRAW;
-			}
-		}
-		tile += X_TILES - buffer->Size.x;
-		tileBelow += X_TILES - buffer->Size.x;
-	}
-
-	tile = &buffer->tiles[0][0];
-	for (y = 0; y < Y_TILES; y++)
-	{
-		for (x = 0; x < buffer->Size.x; x++, tile++)
-		{
-			if (!(tile->flags & MAPTILE_IS_VISIBLE))
-			{
-				tile->flags |= MAPTILE_OUT_OF_SIGHT;
-			}
-			else
-			{
-				Vec2i mapTile =
-					Vec2iNew(x + buffer->xStart, y + buffer->yStart);
-				if (mapTile.x >= 0 && mapTile.x < gMap.Size.x &&
-					mapTile.y >= 0 && mapTile.y < gMap.Size.y)
-				{
-					MapMarkAsVisited(&gMap, mapTile);
-					tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
-					tile->isVisited = true;
-				}
-			}
-		}
-		tile += X_TILES - buffer->Size.x;
-	}
-}
 
 
 // Three types of tile drawing, based on line of sight:

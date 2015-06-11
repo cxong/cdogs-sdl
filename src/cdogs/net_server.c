@@ -271,7 +271,7 @@ static void SendGameStartMessages(
 		aa.FullPos.y = a->Pos.y;
 		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerId(%d)",
 			(int)aa.UID, (int)aa.PlayerId);
-		NetServerSendMsg(&gNetServer, peerId, GAME_EVENT_ACTOR_ADD, &aa);
+		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	}
 
 	// Send objective counts
@@ -281,7 +281,21 @@ static void SendGameStartMessages(
 		oc.ObjectiveId = i;
 		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
 		oc.Count = o->done;
-		NetServerSendMsg(&gNetServer, peerId, GAME_EVENT_OBJECTIVE_COUNT, &oc);
+		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_COUNT, &oc);
+	}
+
+	// Send all the tiles visited so far
+	Vec2i pos;
+	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
+	{
+		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
+		{
+			const Tile *t = MapGetTile(&gMap, pos);
+			if (!t->isVisited) continue;
+			NExploreTile et;
+			et.Tile = Vec2i2Net(pos);
+			NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILE, &et);
+		}
 	}
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);

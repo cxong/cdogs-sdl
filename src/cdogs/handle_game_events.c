@@ -286,6 +286,27 @@ static void HandleGameEvent(
 				}
 			}
 			break;
+		case GAME_EVENT_EXPLORE_TILE:
+			MapMarkAsVisited(&gMap, Net2Vec2i(e->u.ExploreTile.Tile));
+			// Check if we need to update explore objectives
+			for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+			{
+				const MissionObjective *mobj =
+					CArrayGet(&gMission.missionData->Objectives, i);
+				if (mobj->Type != OBJECTIVE_INVESTIGATE) continue;
+				const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
+				const int update = MapGetExploredPercentage(&gMap) - o->done;
+				if (update > 0)
+				{
+					GameEvent ou = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+					ou.u.ObjectiveUpdate.ObjectiveId = i;
+					ou.u.ObjectiveUpdate.Count = update;
+					HandleGameEvent(
+						&ou, hud, shake, healthSpawner, ammoSpawners,
+						eventHandlers);
+				}
+			}
+			break;
 		case GAME_EVENT_OBJECTIVE_UPDATE:
 			{
 				ObjectiveDef *o = CArrayGet(

@@ -45,7 +45,8 @@ void CArrayInsert(CArray *a, int index, void *elem);
 void CArrayDelete(CArray *a, int index);
 void *CArrayGet(const CArray *a, int index);	// gets address
 void CArrayClear(CArray *a);
-void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *));
+void CArrayRemoveIf(CArray *a, bool(*removeIf)(const void *));
+void CArrayFillZero(CArray *a);
 void CArrayTerminate(CArray *a);
 
 // Convenience macro for looping through a CArray

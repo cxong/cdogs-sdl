@@ -121,158 +121,47 @@ void DrawBufferSetFromMap(
 	}
 }
 
-static Tile *GetTile(DrawBuffer *buffer, Vec2i pos)
+// Set visibility and draw order for wall/door columns
+void DrawBufferFix(DrawBuffer *buffer)
 {
-	if (pos.x < 0 || pos.x >= buffer->Size.x ||
-		pos.y < 0 || pos.y >= buffer->Size.y)
+	Tile *tile = &buffer->tiles[0][0];
+	Tile *tileBelow = &buffer->tiles[0][0] + X_TILES;
+	for (int y = 0; y < Y_TILES - 1; y++)
 	{
-		return NULL;
-	}
-	return &buffer->tiles[0][0] + pos.y * buffer->OrigSize.x + pos.x;
-}
-
-typedef struct
-{
-	DrawBuffer *b;
-	Vec2i center;
-	int sightRange2;
-} LOSData;
-static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
-{
-	LOSData *lData = data;
-	// Check sight range
-	if (lData->sightRange2 > 0 &&
-		DistanceSquared(lData->center, pos) >= lData->sightRange2)
-	{
-		return true;
-	}
-	// Check buffer range
-	Tile *tile = GetTile(lData->b, pos);
-	if (!tile)
-	{
-		return true;
-	}
-	tile->flags |= MAPTILE_IS_VISIBLE;
-	// Check if this tile is an obstruction
-	return tile->flags & MAPTILE_NO_SEE;
-}
-
-static bool IsTileVisibleNonObstruction(DrawBuffer *buffer, Vec2i pos)
-{
-	Tile *tile = GetTile(buffer, pos);
-	if (!tile)
-	{
-		return false;
-	}
-	return !(tile->flags & MAPTILE_NO_SEE) &&
-		(tile->flags & MAPTILE_IS_VISIBLE);
-}
-
-static void SetObstructionVisible(DrawBuffer *buffer, Vec2i pos, Tile *tile)
-{
-	Vec2i d;
-	for (d.x = -1; d.x < 2; d.x++)
-	{
-		for (d.y = -1; d.y < 2; d.y++)
+		for (int x = 0; x < buffer->Size.x; x++, tile++, tileBelow++)
 		{
-			if (IsTileVisibleNonObstruction(buffer, Vec2iAdd(pos, d)))
+			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
+				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
-				tile->flags |= MAPTILE_IS_VISIBLE;
-				return;
+				tile->pic = &picNone;
+			}
+			else if ((tile->flags & MAPTILE_IS_WALL) &&
+				(tileBelow->flags & MAPTILE_IS_WALL))
+			{
+				tile->flags |= MAPTILE_DELAY_DRAW;
 			}
 		}
+		tile += X_TILES - buffer->Size.x;
+		tileBelow += X_TILES - buffer->Size.x;
 	}
-}
 
-// Perform LOS by casting rays from the centre to the edges, terminating
-// whenever an obstruction or out-of-range is reached.
-void DrawBufferLOS(DrawBuffer *buffer, Vec2i center)
-{
-	// Note: can be zero
-	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange");
-	LOSData data;
-	data.b = buffer;
-	data.center.x = center.x / TILE_WIDTH - buffer->xStart;
-	data.center.y = center.y / TILE_HEIGHT - buffer->yStart;
-	data.sightRange2 = sightRange * sightRange;
-
-	// First mark center tile and all adjacent tiles as visible
-	// +-+-+-+
-	// |V|V|V|
-	// +-+-+-+
-	// |V|C|V|
-	// +-+-+-+
-	// |V|V|V|  (C=center, V=visible)
-	// +-+-+-+
-	Vec2i end;
-	for (end.x = data.center.x - 1; end.x < data.center.x + 2; end.x++)
+	tile = &buffer->tiles[0][0];
+	for (int y = 0; y < Y_TILES; y++)
 	{
-		for (end.y = data.center.y - 1; end.y < data.center.y + 2; end.y++)
+		for (int x = 0; x < buffer->Size.x; x++, tile++)
 		{
-			Tile *tile = GetTile(buffer, end);
-			if (tile)
+			const Vec2i mapTile =
+				Vec2iNew(x + buffer->xStart, y + buffer->yStart);
+			if (!MapTileIsVisible(&gMap, mapTile))
 			{
-				tile->flags |= MAPTILE_IS_VISIBLE;
+				tile->flags |= MAPTILE_OUT_OF_SIGHT;
+			}
+			else
+			{
+				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
 			}
 		}
-	}
-
-	// Work out the perimeter of the LOS casts
-	Vec2i origin = Vec2iZero();
-	if (sightRange > 0)
-	{
-		// Limit the perimeter to the sight range
-		origin.x = MAX(origin.x, data.center.x - sightRange);
-		origin.y = MAX(origin.y, data.center.y - sightRange);
-	}
-	Vec2i perimSize = Vec2iScale(Vec2iMinus(data.center, origin), 2);
-
-	// Start from the top-left cell, and proceed clockwise around
-	end = origin;
-	HasClearLineData lineData;
-	lineData.IsBlocked = IsNextTileBlockedAndSetVisibility;
-	lineData.data = &data;
-	// Top edge
-	for (; end.x < origin.x + perimSize.x; end.x++)
-	{
-		HasClearLineXiaolinWu(data.center, end, &lineData);
-	}
-	// right edge
-	for (; end.y < origin.y + perimSize.y; end.y++)
-	{
-		HasClearLineXiaolinWu(data.center, end, &lineData);
-	}
-	// bottom edge
-	for (; end.x > origin.x; end.x--)
-	{
-		HasClearLineXiaolinWu(data.center, end, &lineData);
-	}
-	// left edge
-	for (; end.y > origin.y; end.y--)
-	{
-		HasClearLineXiaolinWu(data.center, end, &lineData);
-	}
-
-	// Second pass: make any non-visible obstructions that are adjacent to
-	// visible non-obstructions visible too
-	// This is to ensure runs of walls stay visible
-	for (end.y = origin.y; end.y < origin.y + perimSize.y; end.y++)
-	{
-		for (end.x = origin.x; end.x < origin.x + perimSize.x; end.x++)
-		{
-			Tile *tile = GetTile(buffer, end);
-			if (!tile || !(tile->flags & MAPTILE_NO_SEE))
-			{
-				continue;
-			}
-			// Check sight range
-			if (data.sightRange2 > 0 &&
-				DistanceSquared(data.center, end) >= data.sightRange2)
-			{
-				continue;
-			}
-			SetObstructionVisible(buffer, end, tile);
-		}
+		tile += X_TILES - buffer->Size.x;
 	}
 }
 

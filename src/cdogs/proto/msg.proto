@@ -97,6 +97,10 @@ message NAddBullet {
 	required int32 UID = 8;
 }
 
+message NExploreTile {
+	required NVec2i Tile = 1;
+}
+
 message NObjectiveUpdate {
 	required int32 ObjectiveId = 1;
 	required int32 Count = 2;

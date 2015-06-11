@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -131,6 +131,11 @@ void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *))
 
 	// Shrink the array to fit
 	a->size = shrunkSize;
+}
+
+void CArrayFillZero(CArray *a)
+{
+	memset(a->data, 0, a->size * a->elemSize);
 }
 
 void CArrayTerminate(CArray *a)

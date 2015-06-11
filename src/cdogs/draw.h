@@ -53,7 +53,6 @@
 #include "gamedata.h"
 #include "grafx_bg.h"
 
-void FixBuffer(DrawBuffer *b);
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 void DisplayCharacter(
 	const Vec2i pos, const Character *c, const bool hilite, const bool showGun);
