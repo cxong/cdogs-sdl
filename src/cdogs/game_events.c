@@ -92,10 +92,9 @@ static GameEventEntry sGameEventEntries[] =
 
 	{ GAME_EVENT_MISSION_COMPLETE, false, false, true, NULL },
 
-	{ GAME_EVENT_MISSION_INCOMPLETE, false, false, true, NULL },
-
-	{ GAME_EVENT_MISSION_PICKUP, false, false, true, NULL },
-	{ GAME_EVENT_MISSION_END, false, false, true, NULL }
+	{ GAME_EVENT_MISSION_INCOMPLETE, true, false, true, NULL },
+	{ GAME_EVENT_MISSION_PICKUP, true, false, true, NULL },
+	{ GAME_EVENT_MISSION_END, true, false, true, NULL }
 };
 GameEventEntry GameEventGetEntry(const GameEventType e)
 {
