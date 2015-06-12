@@ -726,7 +726,7 @@ const char *RoomStyleStr(const RoomStyle r)
 		T2S(ROOM_STYLE_WOOD, "wood");
 		T2S(ROOM_STYLE_GRID, "grid");
 		T2S(ROOM_STYLE_BIGGRID, "biggrid");
-		T2S(ROOM_STYLE_CHECKER, "biggrid");
+		T2S(ROOM_STYLE_CHECKER, "checker");
 	default:
 		return "";
 	}

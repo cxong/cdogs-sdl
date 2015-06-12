@@ -1377,9 +1377,7 @@ void MapMarkAllAsVisited(Map *map)
 	{
 		for (pos.x = 0; pos.x < map->Size.x; pos.x++)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILE);
-			e.u.ExploreTile.Tile = Vec2i2Net(pos);
-			GameEventsEnqueue(&gGameEvents, e);
+			MapMarkAsVisited(map, pos);
 		}
 	}
 }

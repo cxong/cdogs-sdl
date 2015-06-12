@@ -140,6 +140,7 @@ void MapResetLOS(Map *map);
 void MapCalcLOSFrom(Map *map, const Vec2i pos);
 bool MapTileIsVisible(Map *map, const Vec2i pos);
 void MapMarkAsVisited(Map *map, Vec2i pos);
+// Note: used by editor
 void MapMarkAllAsVisited(Map *map);
 int MapGetExploredPercentage(Map *map);
 
