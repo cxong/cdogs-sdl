@@ -96,7 +96,7 @@
         "Sprites": "grenade",
         "TicksPerFrame": 2
       },
-      "ShadowSize": [8, 6],
+      "ShadowSize": [6, 4],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -124,7 +124,7 @@
         "TicksPerFrame": 2,
         "Mask": "808080"
       },
-      "ShadowSize": [8, 6],
+      "ShadowSize": [6, 4],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -149,7 +149,7 @@
         "Pic": "molotov",
         "OldPic": 301
       },
-      "ShadowSize": [8, 6],
+      "ShadowSize": [6, 4],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -181,7 +181,7 @@
         "TicksPerFrame": 2,
         "Mask": "00ff00"
       },
-      "ShadowSize": [8, 6],
+      "ShadowSize": [6, 4],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -207,7 +207,7 @@
         "TicksPerFrame": 2,
         "Mask": "c000c0"
       },
-      "ShadowSize": [8, 6],
+      "ShadowSize": [6, 4],
       "Speed": 384,
       "Range": 100,
       "Spark": "",
@@ -586,7 +586,7 @@
         "Type": "Directional",
         "Sprites": "rocket_blue"
       },
-      "ShadowSize": [2, 2],
+      "ShadowSize": [4, 3],
       "Speed": 250,
       "Friction": -9,
       "Range": 120,
