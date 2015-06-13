@@ -38,6 +38,7 @@
 #include <cdogs/mission_convert.h>
 #include <cdogs/pic_manager.h>
 
+#include "editor_ui_color.h"
 #include "editor_ui_common.h"
 #include "editor_ui_static.h"
 
@@ -484,46 +485,6 @@ static void MissionDrawExitStyle(
 		PicManagerGetFromOld(&gPicManager, gMission.exitPic),
 		idx, count,
 		UIObjectIsHighlighted(o));
-}
-static const char *MissionGetWallColorStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Walls: %s",
-		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->WallMask)));
-	return s;
-}
-static const char *MissionGetFloorColorStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Floor: %s",
-		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->FloorMask)));
-	return s;
-}
-static const char *MissionGeRoomColorStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Rooms: %s",
-		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->RoomMask)));
-	return s;
-}
-static const char *MissionGeExtraColorStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Extra: %s",
-		ColorRangeName(ColorToRange(CampaignGetCurrentMission(co)->AltMask)));
-	return s;
 }
 static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 {
@@ -1175,38 +1136,6 @@ static void MissionChangeExitStyle(void *data, int d)
 	CampaignGetCurrentMission(co)->ExitStyle = CLAMP_OPPOSITE(
 		CampaignGetCurrentMission(co)->ExitStyle + d, 0, GetEditorInfo().exitCount - 1);
 }
-static void MissionChangeWallColor(void *data, int d)
-{
-	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->WallMask =
-		RangeToColor(CLAMP_OPPOSITE(
-			ColorToRange(CampaignGetCurrentMission(co)->WallMask) + d,
-			0, COLORRANGE_COUNT - 1));
-}
-static void MissionChangeFloorColor(void *data, int d)
-{
-	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->FloorMask =
-		RangeToColor(CLAMP_OPPOSITE(
-			ColorToRange(CampaignGetCurrentMission(co)->FloorMask) + d,
-			0, COLORRANGE_COUNT - 1));
-}
-static void MissionChangeRoomColor(void *data, int d)
-{
-	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->RoomMask =
-		RangeToColor(CLAMP_OPPOSITE(
-			ColorToRange(CampaignGetCurrentMission(co)->RoomMask) + d,
-			0, COLORRANGE_COUNT - 1));
-}
-static void MissionChangeExtraColor(void *data, int d)
-{
-	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->AltMask =
-		RangeToColor(CLAMP_OPPOSITE(
-			ColorToRange(CampaignGetCurrentMission(co)->AltMask) + d,
-			0, COLORRANGE_COUNT - 1));
-}
 static void MissionChangeEnemy(void *vData, int d)
 {
 	MissionIndexData *data = vData;
@@ -1631,43 +1560,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	// colours
 
 	pos.x = 200;
-
-	UIObjectDestroy(o);
-	o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
-	o->ChangesData = 1;
-
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_COLOR1;
-	o2->u.LabelFunc = MissionGetWallColorStr;
-	o2->Data = co;
-	o2->ChangeFunc = MissionChangeWallColor;
-	o2->Pos = pos;
-	UIObjectAddChild(c, o2);
-	pos.y += th;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_COLOR2;
-	o2->u.LabelFunc = MissionGetFloorColorStr;
-	o2->Data = co;
-	o2->ChangeFunc = MissionChangeFloorColor;
-	o2->Pos = pos;
-	UIObjectAddChild(c, o2);
-	pos.y += th;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_COLOR3;
-	o2->u.LabelFunc = MissionGeRoomColorStr;
-	o2->Data = co;
-	o2->ChangeFunc = MissionChangeRoomColor;
-	o2->Pos = pos;
-	UIObjectAddChild(c, o2);
-	pos.y += th;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_COLOR4;
-	o2->u.LabelFunc = MissionGeExtraColorStr;
-	o2->Data = co;
-	o2->ChangeFunc = MissionChangeExtraColor;
-	o2->Pos = pos;
-	UIObjectAddChild(c, o2);
+	pos = CreateColorObjs(co, c, pos);
 
 	// mission data
 
