@@ -500,7 +500,7 @@ static json_t *SaveMissions(CArray *a)
 		AddColorPair(node, "WallMask", mission->WallMask);
 		AddColorPair(node, "FloorMask", mission->FloorMask);
 		AddColorPair(node, "RoomMask", mission->RoomMask);
-		AddColorPair(node, "AltMaskr", mission->AltMask);
+		AddColorPair(node, "AltMask", mission->AltMask);
 
 		switch (mission->Type)
 		{
