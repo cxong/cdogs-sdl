@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -526,19 +526,18 @@ static GameLoopResult RunGameUpdate(void *data)
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!IsPlayerAlive(p))
-		{
-			continue;
-		}
-		// Calculate LOS for all players alive
+		if (p->Id == -1) continue;
 		TActor *player = CArrayGet(&gActors, p->Id);
-		// TODO: split LOS so that drawing LOS is separated from objectives
+		if (player->dead > DEATH_MAX) continue;
+		// Calculate LOS for all players alive or dying
 		if (!gCampaign.IsClient || p->IsLocal)
 		{
 			MapCalcLOSFrom(
 				&gMap,
 				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)));
 		}
+
+		if (player->dead) continue;
 
 		// Only handle inputs/commands for local players
 		if (!p->IsLocal)
