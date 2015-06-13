@@ -659,37 +659,3 @@ color_t RangeToColor(const int range)
 		return colorBlack;
 	};
 }
-const char *ColorRangeName(const int range)
-{
-	const char *names[] =
-	{
-		"Maroon", "Lonestar", "Rustic",
-		"Office", "Pakistan", "Dark Fern",
-		"Navy", "Arapawa", "Stratos",
-		"Patriarch", "Pompadour", "Loulou",
-		"Battleship", "Dove", "Gravel",
-		"Comet", "Fiord", "Tuna",
-		"Hacienda", "Kumera", "Himalaya",
-		"Chocolate", "Nutmeg", "Bracken",
-		"Teal", "Skobeloff", "Deep Jungle"
-	};
-	return names[range];
-}
-// Find the best matching range for a colour
-// TODO: used by editor; replace with colour picker
-int ColorToRange(const color_t c)
-{
-	int bestRange = -1;
-	int bestRangeDiff = 0;
-	for (int i = 0; i < COLORRANGE_COUNT; i++)
-	{
-		const color_t r = RangeToColor(i);
-		const int diff = (int)abs(r.r - c.r) + (int)abs(r.g - c.g) + (int)abs(r.b - c.b);
-		if (bestRange == -1 || diff < bestRangeDiff)
-		{
-			bestRange = i;
-			bestRangeDiff = diff;
-		}
-	}
-	return bestRange;
-}
