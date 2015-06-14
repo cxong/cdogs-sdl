@@ -455,10 +455,14 @@ void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
 {
 	const ObjectiveDef *o = CArrayGet(&mo->Objectives, objective);
-	const Vec2i fullPos = Vec2iReal2Full(realPos);
-	const int id = PickupAdd(fullPos, o->pickupClass);
-	Pickup *p = CArrayGet(&gPickups, id);
-	p->tileItem.flags = ObjectiveToTileItem(objective);
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = PickupsGetNextUID();
+	strcpy(e.u.AddPickup.PickupClass, o->pickupClass->Name);
+	e.u.AddPickup.IsRandomSpawned = false;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.TileItemFlags = ObjectiveToTileItem(objective);
+	e.u.AddPickup.Pos = Vec2i2Net(realPos);
+	GameEventsEnqueue(&gGameEvents, e);
 }
 static int MapTryPlaceCollectible(
 	Map *map, const Mission *mission, const struct MissionOptions *mo,
@@ -537,18 +541,16 @@ void MapPlaceKey(
 	const int keyIndex)
 {
 	UNUSED(map);
-	const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(pos));
-	PickupAdd(fullPos, KeyPickupClass(mo->keyStyle, keyIndex));
-}
-
-void MapPlacePickup(AddPickup a)
-{
-	const int id = PickupAdd(
-		Vec2iReal2Full(a.Pos),
-		PickupClassGetById(&gPickupClasses, a.PickupClassId));
-	Pickup *p = CArrayGet(&gPickups, id);
-	p->IsRandomSpawned = a.IsRandomSpawned;
-	p->SpawnerUID = a.SpawnerUID;
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = PickupsGetNextUID();
+	strcpy(
+		e.u.AddPickup.PickupClass,
+		KeyPickupClass(mo->keyStyle, keyIndex)->Name);
+	e.u.AddPickup.IsRandomSpawned = false;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.TileItemFlags = 0;
+	e.u.AddPickup.Pos = Vec2i2Net(Vec2iCenterOfTile(pos));
+	GameEventsEnqueue(&gGameEvents, e);
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)

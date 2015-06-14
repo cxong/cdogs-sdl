@@ -157,9 +157,9 @@ static void DrawObjective(
 		{
 			const ObjectiveDef *obj =
 				CArrayGet(&gMission.Objectives, data->Brush.ItemIndex);
-			pos = Vec2iMinus(
-				pos, Vec2iScaleDiv(obj->pickupClass->Pic->size, 2));
-			Blit(&gGraphicsDevice, obj->pickupClass->Pic, pos);
+			const Pic *p = IntPickupClass(obj->PickupClassId);
+			pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
+			Blit(&gGraphicsDevice, p, pos);
 		}
 		break;
 	case OBJECTIVE_DESTROY:

@@ -32,6 +32,7 @@
 #include "ammo.h"
 #include "gamedata.h"
 #include "game_events.h"
+#include "net_util.h"
 
 
 #define TIME_DECAY_EXPONENT 1.04
@@ -170,8 +171,8 @@ static void HealthPlace(const Vec2i pos, void *data)
 {
 	UNUSED(data);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.Pos = pos;
-	e.u.AddPickup.PickupClassId = StrPickupClassId("health");
+	e.u.AddPickup.Pos = Vec2i2Net(pos);
+	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -228,11 +229,9 @@ static void AmmoPlace(const Vec2i pos, void *data)
 {
 	const int ammoId = *(int *)data;
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.Pos = pos;
+	e.u.AddPickup.Pos = Vec2i2Net(pos);
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
-	char buf[256];
-	sprintf(buf, "ammo_%s", a->Name);
-	e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
+	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 	e.u.AddPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
 }

@@ -161,18 +161,6 @@ void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo);
 // TODO: refactor
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
-typedef struct
-{
-	Vec2i Pos;
-	int PickupClassId;
-	// Whether the pickup was placed by the random spawner
-	bool IsRandomSpawned;
-	// UID of spawner that created this pickup; this is so that when this
-	// is taken, we can alert the spawner to start its respawn cycle
-	// If no spawner, then -1
-	int SpawnerUID;
-} AddPickup;
-void MapPlacePickup(AddPickup a);
 // TODO: refactor
 void MapPlaceKey(
 	Map *map, const struct MissionOptions *mo, const Vec2i pos,

@@ -135,7 +135,7 @@ typedef struct
 			// ID of GunDescription of new gun
 			int GunId;
 		} ActorReplaceGun;
-		AddPickup AddPickup;
+		NAddPickup AddPickup;
 		struct
 		{
 			int PlayerIndex;

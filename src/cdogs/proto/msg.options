@@ -7,3 +7,5 @@ NPlayerData.Weapons	max_count:3
 NAddPlayers.PlayerIds	max_count:4
 
 NAddBullet.BulletClass max_size:128
+
+NAddPickup.PickupClass max_size:128

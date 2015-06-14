@@ -32,6 +32,7 @@
 #include "net_server.h"
 #include "objs.h"
 #include "particle.h"
+#include "pickup.h"
 #include "triggers.h"
 
 
@@ -157,11 +158,11 @@ static void HandleGameEvent(
 			break;
 		case GAME_EVENT_ADD_PICKUP:
 			{
-				MapPlacePickup(e->u.AddPickup);
+				PickupAdd(e->u.AddPickup);
 				// Play a spawn sound
 				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
 				sound.u.SoundAt.Sound = StrSound("spawn_item");
-				sound.u.SoundAt.Pos = e->u.AddPickup.Pos;
+				sound.u.SoundAt.Pos = Net2Vec2i(e->u.AddPickup.Pos);
 				HandleGameEvent(
 					&sound, hud, shake, healthSpawner, ammoSpawners,
 					eventHandlers);

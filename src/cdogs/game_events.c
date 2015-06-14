@@ -73,7 +73,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_DIR, true, true, true, NActorDir_fields },
 	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, true, NULL },
 
-	{ GAME_EVENT_ADD_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_ADD_PICKUP, true, false, true, NAddPickup_fields },
 	{ GAME_EVENT_TAKE_HEALTH_PICKUP, false, false, true, NULL },
 	{ GAME_EVENT_TAKE_AMMO_PICKUP, false, false, true, NULL },
 	{ GAME_EVENT_USE_AMMO, false, false, true, NULL },
@@ -156,14 +156,5 @@ GameEvent GameEventNew(GameEventType type)
 	GameEvent e;
 	memset(&e, 0, sizeof e);
 	e.Type = type;
-	switch (type)
-	{
-	case GAME_EVENT_ADD_PICKUP:
-		e.u.AddPickup.SpawnerUID = -1;
-		break;
-	default:
-		// Do nothing
-		break;
-	}
 	return e;
 }

@@ -49,7 +49,8 @@ extern CArray gPickups;	// of Pickup
 
 void PickupsInit(void);
 void PickupsTerminate(void);
-int PickupAdd(const Vec2i pos, const PickupClass *class);
+int PickupsGetNextUID(void);
+void PickupAdd(const NAddPickup ap);
 void PickupDestroy(const int id);
 
 void PickupPickup(TActor *a, const Pickup *p);

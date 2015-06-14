@@ -32,17 +32,19 @@
 #include "events.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "net_util.h"
 #include "map.h"
 
 
 CArray gPickups;
-static int sPickupUIDs = 0;
+static int sPickupUIDs;
 
 
 void PickupsInit(void)
 {
 	CArrayInit(&gPickups, sizeof(Pickup));
 	CArrayReserve(&gPickups, 128);
+	sPickupUIDs = 0;
 }
 void PickupsTerminate(void)
 {
@@ -56,8 +58,12 @@ void PickupsTerminate(void)
 	}
 	CArrayTerminate(&gPickups);
 }
+int PickupsGetNextUID(void)
+{
+	return sPickupUIDs;
+}
 static const Pic *GetPickupPic(const int id, Vec2i *offset);
-int PickupAdd(const Vec2i pos, const PickupClass *class)
+void PickupAdd(const NAddPickup ap)
 {
 	// Find an empty slot in pickup list
 	Pickup *p = NULL;
@@ -80,19 +86,23 @@ int PickupAdd(const Vec2i pos, const PickupClass *class)
 		p = CArrayGet(&gPickups, i);
 	}
 	memset(p, 0, sizeof *p);
-	p->UID = sPickupUIDs++;
-	p->class = class;
+	p->UID = ap.UID;
+	while (ap.UID >= sPickupUIDs)
+	{
+		sPickupUIDs++;
+	}
+	p->class = StrPickupClass(ap.PickupClass);
 	p->tileItem.x = p->tileItem.y = -1;
-	p->tileItem.flags = 0;
+	p->tileItem.flags = ap.TileItemFlags;
 	p->tileItem.kind = KIND_PICKUP;
 	p->tileItem.getPicFunc = GetPickupPic;
 	p->tileItem.getActorPicsFunc = NULL;
 	p->tileItem.size = p->class->Pic->size;
 	p->tileItem.id = i;
-	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(pos));
+	MapTryMoveTileItem(&gMap, &p->tileItem, Net2Vec2i(ap.Pos));
+	p->IsRandomSpawned = ap.IsRandomSpawned;
+	p->SpawnerUID = ap.SpawnerUID;
 	p->isInUse = true;
-	p->SpawnerUID = -1;
-	return i;
 }
 void PickupDestroy(const int id)
 {

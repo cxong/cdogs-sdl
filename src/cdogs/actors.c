@@ -1109,15 +1109,17 @@ static void ActorAddAmmoPickup(const TActor *actor)
 		}
 
 		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+		e.u.AddPickup.UID = PickupsGetNextUID();
+		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+		sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
+		e.u.AddPickup.IsRandomSpawned = false;
+		e.u.AddPickup.SpawnerUID = -1;
+		e.u.AddPickup.TileItemFlags = 0;
 		// Add a little random offset so the pickups aren't all together
 		const Vec2i offset = Vec2iNew(
 			RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
 			RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-		e.u.AddPickup.Pos = Vec2iAdd(Vec2iFull2Real(actor->Pos), offset);
-		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-		char buf[256];
-		sprintf(buf, "ammo_%s", a->Name);
-		e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
+		e.u.AddPickup.Pos = Vec2i2Net(Vec2iAdd(Vec2iFull2Real(actor->Pos), offset));
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -1131,12 +1133,11 @@ static void ActorAddGunPickup(const TActor *actor)
 
 	// Select a gun at random to drop
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.Pos = Vec2iFull2Real(actor->Pos);
+	e.u.AddPickup.UID = PickupsGetNextUID();
 	const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
 	const Weapon *w = CArrayGet(&actor->guns, gunIndex);
-	char buf[256];
-	sprintf(buf, "gun_%s", w->Gun->name);
-	e.u.AddPickup.PickupClassId = StrPickupClassId(buf);
+	sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
+	e.u.AddPickup.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
 	GameEventsEnqueue(&gGameEvents, e);
 }
 static bool IsUnarmedBot(const TActor *actor)

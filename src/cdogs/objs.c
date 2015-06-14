@@ -62,6 +62,7 @@
 #include "screen_shake.h"
 #include "blit.h"
 #include "pic_manager.h"
+#include "pickup.h"
 #include "defs.h"
 #include "actors.h"
 #include "gamedata.h"
@@ -471,12 +472,15 @@ void UpdateObjects(const int ticks)
 				// Spawner reactivated only when ammo taken
 				obj->counter = -1;
 				GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-				e.u.AddPickup.Pos =
-					Vec2iNew(obj->tileItem.x, obj->tileItem.y);
-				// TODO: no need for string lookup
-				e.u.AddPickup.PickupClassId =
-					StrPickupClassId(obj->Class->u.PickupClass->Name);
+				e.u.AddPickup.UID = PickupsGetNextUID();
+				strcpy(
+					e.u.AddPickup.PickupClass,
+					obj->Class->u.PickupClass->Name);
+				e.u.AddPickup.IsRandomSpawned = false;
 				e.u.AddPickup.SpawnerUID = obj->uid;
+				e.u.AddPickup.TileItemFlags = 0;
+				e.u.AddPickup.Pos =
+					Vec2i2Net(Vec2iNew(obj->tileItem.x, obj->tileItem.y));
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			break;

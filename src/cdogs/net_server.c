@@ -37,6 +37,7 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "log.h"
+#include "pickup.h"
 #include "player.h"
 #include "sys_config.h"
 #include "utils.h"
@@ -296,6 +297,21 @@ static void SendGameStartMessages(
 			et.Tile = Vec2i2Net(pos);
 			NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILE, &et);
 		}
+	}
+
+	// Send all pickups
+	for (int i = 0; i < (int)gPickups.size; i++)
+	{
+		const Pickup *p = CArrayGet(&gPickups, i);
+		if (!p->isInUse) continue;
+		NAddPickup ap = NAddPickup_init_default;
+		ap.UID = p->UID;
+		strcpy(ap.PickupClass, p->class->Name);
+		ap.IsRandomSpawned = p->IsRandomSpawned;
+		ap.SpawnerUID = p->SpawnerUID;
+		ap.TileItemFlags = p->tileItem.flags;
+		ap.Pos = Vec2i2Net(Vec2iNew(p->tileItem.x, p->tileItem.y));
+		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &ap);
 	}
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);

@@ -86,6 +86,15 @@ message NActorDir {
 	required int32 Dir = 2;
 }
 
+message NAddPickup {
+	required int32 UID = 1;
+	required string PickupClass = 2;
+	required bool IsRandomSpawned = 3;
+	required int32 SpawnerUID = 4 [default=-1];
+	required int32 TileItemFlags = 5;
+	required NVec2i Pos = 6;
+}
+
 message NAddBullet {
 	required string BulletClass = 1;
 	required NVec2i MuzzlePos = 2;
