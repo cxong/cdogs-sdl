@@ -39,6 +39,8 @@ typedef struct
 	CArray sprites;	// of NamedSprites
 	CArray customPics;	// of NamedPic
 	CArray customSprites;	// of NamedSprites
+
+	CArray drainPics;	// of Pic *
 } PicManager;
 
 extern PicManager gPicManager;
@@ -48,7 +50,7 @@ bool PicManagerTryInit(
 void PicManagerLoadDir(PicManager *pm, const char *path);
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image);
-void PicManagerClear(CArray *pics, CArray *sprites);
+void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
@@ -78,6 +80,7 @@ void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt);
 
+Pic *PicManagerGetRandomDrain(PicManager *pm);
 
 // Conversion
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);

@@ -112,8 +112,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 			(rand() % map->Size.y) & 0xFFFFFE));
 		if (TileIsNormalFloor(t))
 		{
-			TileSetAlternateFloor(t, PicManagerGetFromOld(
-				&gPicManager, PIC_DRAINAGE));
+			TileSetAlternateFloor(t, PicManagerGetRandomDrain(&gPicManager));
 			t->flags |= MAPTILE_IS_DRAINAGE;
 		}
 	}

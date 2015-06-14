@@ -57,6 +57,8 @@ bool PicManagerTryInit(
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
 	CArrayInit(&pm->customPics, sizeof(NamedPic));
 	CArrayInit(&pm->customSprites, sizeof(NamedSprites));
+	CArrayInit(&pm->drainPics, sizeof(Pic *));
+
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, oldGfxFile1);
 	int i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
@@ -188,6 +190,22 @@ void PicManagerAdd(
 	SDL_FreeSurface(s);
 	SDL_UnlockSurface(image);
 	SDL_FreeSurface(image);
+
+	// Scan all pics for drainage pics
+	CArrayClear(&gPicManager.drainPics);
+	for (int i = 0;; i++)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "drains/%d", i);
+		Pic *p = PicManagerGet(&gPicManager, buf, PIC_DRAINAGE);
+		if (p == NULL) break;
+		// Only use the old pic once
+		if (i > 0 && p == PicManagerGetFromOld(&gPicManager, PIC_DRAINAGE))
+		{
+			break;
+		}
+		CArrayPushBack(&gPicManager.drainPics, &p);
+	}
 }
 static void PicManagerLoadDirImpl(
 	PicManager *pm, const char *path, const char *prefix)
@@ -369,20 +387,11 @@ static void AddMaskBasePic(
 	AddNamedPic(&pm->pics, buf, &p);
 }
 
-void PicManagerClear(CArray *pics, CArray *sprites)
+static void PicManagerClear(CArray *pics, CArray *sprites);
+void PicManagerClearCustom(PicManager *pm)
 {
-	for (int i = 0; i < (int)pics->size; i++)
-	{
-		NamedPic *n = CArrayGet(pics, i);
-		PicFree(&n->pic);
-		CFREE(n->name);
-	}
-	CArrayClear(pics);
-	for (int i = 0; i < (int)sprites->size; i++)
-	{
-		NamedSpritesFree(CArrayGet(sprites, i));
-	}
-	CArrayClear(sprites);
+	PicManagerClear(&pm->customPics, &pm->customSprites);
+	CArrayClear(&pm->drainPics);
 }
 void PicManagerTerminate(PicManager *pm)
 {
@@ -400,10 +409,26 @@ void PicManagerTerminate(PicManager *pm)
 	PicManagerClear(&pm->pics, &pm->sprites);
 	CArrayTerminate(&pm->pics);
 	CArrayTerminate(&pm->sprites);
-	PicManagerClear(&pm->customPics, &pm->customSprites);
+	PicManagerClearCustom(pm);
 	CArrayTerminate(&pm->customPics);
 	CArrayTerminate(&pm->customSprites);
+	CArrayTerminate(&pm->drainPics);
 	IMG_Quit();
+}
+static void PicManagerClear(CArray *pics, CArray *sprites)
+{
+	for (int i = 0; i < (int)pics->size; i++)
+	{
+		NamedPic *n = CArrayGet(pics, i);
+		PicFree(&n->pic);
+		CFREE(n->name);
+	}
+	CArrayClear(pics);
+	for (int i = 0; i < (int)sprites->size; i++)
+	{
+		NamedSpritesFree(CArrayGet(sprites, i));
+	}
+	CArrayClear(sprites);
 }
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
@@ -602,6 +627,12 @@ static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)
 	CSTRDUP(n.name, name);
 	CArrayPushBack(pics, &n);
 	return CArrayGet(pics, pics->size - 1);
+}
+
+Pic *PicManagerGetRandomDrain(PicManager *pm)
+{
+	Pic **p = CArrayGet(&pm->drainPics, rand() % pm->drainPics.size);
+	return *p;
 }
 
 

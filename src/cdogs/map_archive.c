@@ -90,7 +90,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 
 	// Unload previous custom data
 	SoundClear(&gSoundDevice.customSounds);
-	PicManagerClear(&gPicManager.customPics, &gPicManager.customSprites);
+	PicManagerClearCustom(&gPicManager);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	AmmoClassesClear(&gAmmo.CustomAmmo);
 	BulletClassesClear(&gBulletClasses.CustomClasses);

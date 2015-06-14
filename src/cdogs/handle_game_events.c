@@ -106,7 +106,7 @@ static void HandleGameEvent(
 		case GAME_EVENT_ACTOR_MOVE:
 			{
 				TActor *a = ActorGetByUID(e->u.ActorMove.UID);
-				if (!a->isInUse)
+				if (a == NULL || !a->isInUse)
 				{
 					break;
 				}
