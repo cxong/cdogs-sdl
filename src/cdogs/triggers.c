@@ -55,8 +55,7 @@
 #include "sounds.h"
 #include "utils.h"
 
-static TWatch *activeWatches = NULL;
-static TWatch *inactiveWatches = NULL;
+CArray gWatches;	// of TWatch
 static int watchIndex = 1;
 
 
@@ -83,19 +82,24 @@ Action *TriggerAddAction(Trigger *t)
 
 TWatch *WatchNew(void)
 {
-	TWatch *t;
-	CCALLOC(t, sizeof(TWatch));
-	t->index = watchIndex++;
-	t->next = inactiveWatches;
-	inactiveWatches = t;
-	CArrayInit(&t->actions, sizeof(Action));
-	CArrayInit(&t->conditions, sizeof(Condition));
-	return t;
+	TWatch t;
+	memset(&t, 0, sizeof(TWatch));
+	t.index = watchIndex++;
+	CArrayInit(&t.actions, sizeof(Action));
+	CArrayInit(&t.conditions, sizeof(Condition));
+	t.active = false;
+	CArrayPushBack(&gWatches, &t);
+	return CArrayGet(&gWatches, gWatches.size - 1);
 }
-Condition *WatchAddCondition(TWatch *w)
+Condition *WatchAddCondition(
+	TWatch *w, const ConditionType type, const int counterMax,
+	const Vec2i pos)
 {
 	Condition c;
 	memset(&c, 0, sizeof c);
+	c.Type = type;
+	c.CounterMax = counterMax;
+	c.Pos = pos;
 	CArrayPushBack(&w->conditions, &c);
 	return CArrayGet(&w->conditions, w->conditions.size - 1);
 }
@@ -109,58 +113,52 @@ Action *WatchAddAction(TWatch *w)
 
 static void ActivateWatch(int idx)
 {
-	TWatch **h = &inactiveWatches;
-	TWatch *t;
+	for (int i = 0; i < (int)gWatches.size; i++)
+	{
+		TWatch *w = CArrayGet(&gWatches, i);
+		if (w->index == idx)
+		{
+			w->active = true;
 
-	while (*h && (*h)->index != idx)
-	{
-		h = &((*h)->next);
+			// Reset all conditions related to watch
+			for (int j = 0; j < (int)w->conditions.size; j++)
+			{
+				Condition *c = CArrayGet(&w->conditions, j);
+				c->Counter = 0;
+			}
+			break;
+		}
 	}
-	if (*h)
-	{
-		t = *h;
-		*h = t->next;
-		t->next = activeWatches;
-		activeWatches = t;
-	}
+	CASSERT(false, "Cannot find watch");
 }
 
 static void DeactivateWatch(int idx)
 {
-	TWatch **h = &activeWatches;
-	TWatch *t;
-
-	while (*h && (*h)->index != idx)
+	for (int i = 0; i < (int)gWatches.size; i++)
 	{
-		h = &((*h)->next);
+		TWatch *w = CArrayGet(&gWatches, i);
+		if (w->index == idx)
+		{
+			w->active = false;
+			break;
+		}
 	}
-	if (*h)
-	{
-		t = *h;
-		*h = t->next;
-		t->next = inactiveWatches;
-		inactiveWatches = t;
-	}
+	CASSERT(false, "Cannot find watch");
 }
 
-void RemoveAllWatches(void)
+void WatchesInit(void)
 {
-	TWatch *t;
-
-	while (activeWatches) {
-		t = activeWatches;
-		activeWatches = t->next;
-		CArrayTerminate(&t->conditions);
-		CArrayTerminate(&t->actions);
-		CFREE(t);
+	CArrayInit(&gWatches, sizeof(TWatch));
+}
+void WatchesTerminate(void)
+{
+	for (int i = 0; i < (int)gWatches.size; i++)
+	{
+		TWatch *w = CArrayGet(&gWatches, i);
+		CArrayTerminate(&w->conditions);
+		CArrayTerminate(&w->actions);
 	}
-	while (inactiveWatches) {
-		t = inactiveWatches;
-		inactiveWatches = t->next;
-		CArrayTerminate(&t->conditions);
-		CArrayTerminate(&t->actions);
-		CFREE(t);
-	}
+	CArrayTerminate(&gWatches);
 }
 
 static void ActionRun(Action *a, CArray *mapTriggers)
@@ -217,23 +215,32 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 	}
 }
 
-static int ConditionsMet(CArray *conditions)
+static bool ConditionsMet(CArray *conditions, const int ticks)
 {
-	int i;
-	for (i = 0; i < (int)conditions->size; i++)
+	bool allConditionsMet = true;
+	for (int i = 0; i < (int)conditions->size; i++)
 	{
 		Condition *c = CArrayGet(conditions, i);
-		switch (c->condition)
+		bool conditionMet = false;
+		switch (c->Type)
 		{
 		case CONDITION_TILECLEAR:
-			if (!TileIsClear(MapGetTile(&gMap, c->pos)))
-			{
-				return 0;
-			}
+			conditionMet = TileIsClear(MapGetTile(&gMap, c->Pos));
 			break;
 		}
+		if (conditionMet)
+		{
+			c->Counter += ticks;
+			allConditionsMet =
+				allConditionsMet && c->Counter >= c->CounterMax;
+		}
+		else
+		{
+			c->Counter = 0;
+			allConditionsMet = false;
+		}
 	}
-	return 1;
+	return allConditionsMet;
 }
 
 bool TriggerCanActivate(const Trigger *t, const int flags)
@@ -249,20 +256,17 @@ void TriggerActivate(Trigger *t, CArray *mapTriggers)
 	}
 }
 
-void UpdateWatches(CArray *mapTriggers)
+void UpdateWatches(CArray *mapTriggers, const int ticks)
 {
-	TWatch *a = activeWatches;
-	TWatch *current;
-
-	while (a) {
-		current = a;
-		a = a->next;
-		if (ConditionsMet(&current->conditions))
+	for (int i = 0; i < (int)gWatches.size; i++)
+	{
+		TWatch *w = CArrayGet(&gWatches, i);
+		if (!w->active) continue;
+		if (ConditionsMet(&w->conditions, ticks))
 		{
-			int i;
-			for (i = 0; i < (int)current->actions.size; i++)
+			for (int j = 0; j < (int)w->actions.size; j++)
 			{
-				ActionRun(CArrayGet(&current->actions, i), mapTriggers);
+				ActionRun(CArrayGet(&w->actions, j), mapTriggers);
 			}
 		}
 	}

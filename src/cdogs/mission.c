@@ -470,15 +470,10 @@ void SetupMission(
 	MobObjsInit();
 	PickupsInit();
 	ParticlesInit(&gParticles);
+	WatchesInit();
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
-	// TODO: store colours instead and request during map load
-	/*RecolourPics(
-		abs(m->WallColor) % COLORRANGE_COUNT,
-		abs(m->FloorColor) % COLORRANGE_COUNT,
-		abs(m->RoomColor) % COLORRANGE_COUNT,
-		abs(m->AltColor) % COLORRANGE_COUNT);*/
 	if (buildTables)
 	{
 		BuildTranslationTables(gPicManager.palette);
@@ -492,7 +487,7 @@ void MissionEnd(void)
 	MobObjsTerminate();
 	PickupsTerminate();
 	ParticlesTerminate(&gParticles);
-	RemoveAllWatches();
+	WatchesTerminate();
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);

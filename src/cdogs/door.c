@@ -194,6 +194,8 @@ static void PicLoadOffset(Pic *picAlt, const int idx)
 	picAlt->Data = oldPic->Data;
 	picAlt->offset = Vec2iNew(cGeneralPics[idx].dx, cGeneralPics[idx].dy);
 }
+// 1 second to close doors
+#define CLOSE_DOOR_TICKS FPS_FRAMELIMIT
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const Vec2i v,
@@ -208,19 +210,13 @@ static TWatch *CreateCloseDoorWatch(
 	for (int i = 0; i < doorGroupCount; i++)
 	{
 		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
-		Condition *c;
 
-		c = WatchAddCondition(w);
-		c->condition = CONDITION_TILECLEAR;
-		c->pos = Vec2iNew(vI.x - dAside.x, vI.y - dAside.y);
-
-		c = WatchAddCondition(w);
-		c->condition = CONDITION_TILECLEAR;
-		c->pos = vI;
-
-		c = WatchAddCondition(w);
-		c->condition = CONDITION_TILECLEAR;
-		c->pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+		WatchAddCondition(
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, Vec2iMinus(vI, dAside));
+		WatchAddCondition(
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, vI);
+		WatchAddCondition(
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, Vec2iAdd(vI, dAside));
 	}
 
 	// Now the actions of the watch once it's triggered
@@ -230,12 +226,12 @@ static TWatch *CreateCloseDoorWatch(
 	a = WatchAddAction(w);
 	a->Type = ACTION_DEACTIVATEWATCH;
 	a->u.index = w->index;
-	// play sound at the center of the door group
+	// play close sound at the center of the door group
 	a = WatchAddAction(w);
 	a->Type = ACTION_SOUND;
 	a->u.pos = Vec2iCenterOfTile(
 		Vec2iAdd(v, Vec2iScale(dv, doorGroupCount / 2)));
-	a->a.Sound = StrSound("door");
+	a->a.Sound = StrSound("door_close");
 
 	// Close doors
 	for (int i = 0; i < doorGroupCount; i++)

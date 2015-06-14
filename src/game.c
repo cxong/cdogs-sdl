@@ -610,7 +610,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	UpdateMobileObjects(ticksPerFrame);
 	ParticlesUpdate(&gParticles, ticksPerFrame);
 
-	UpdateWatches(&rData->map->triggers);
+	UpdateWatches(&rData->map->triggers, ticksPerFrame);
 
 	PowerupSpawnerUpdate(&rData->healthSpawner, ticksPerFrame);
 	for (int i = 0; i < (int)rData->ammoSpawners.size; i++)

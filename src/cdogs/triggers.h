@@ -64,8 +64,6 @@ typedef enum
 	ACTION_SOUND
 } ActionType;
 
-#define CONDITION_TILECLEAR     1
-
 
 typedef struct
 {
@@ -97,29 +95,42 @@ typedef struct
 } Trigger;
 
 
+typedef enum
+{
+	CONDITION_TILECLEAR = 1
+} ConditionType;
 typedef struct
 {
-	int condition;
-	Vec2i pos;
+	ConditionType Type;
+	// How many ticks has this condition been fulfilled
+	// Reset to 0 when condition failed
+	int Counter;
+	int CounterMax;
+	Vec2i Pos;
 } Condition;
 
 
-struct Watch {
+typedef struct
+{
 	int index;
 	CArray conditions;	// of Condition
 	CArray actions;		// of Action
-	struct Watch *next;
-};
-typedef struct Watch TWatch;
+	bool active;
+} TWatch;
 
 
 bool TriggerCanActivate(const Trigger *t, const int flags);
 void TriggerActivate(Trigger *t, CArray *mapTriggers);
-void UpdateWatches(CArray *mapTriggers);
+void UpdateWatches(CArray *mapTriggers, const int ticks);
 Trigger *TriggerNew(void);
 void TriggerTerminate(Trigger *t);
 Action *TriggerAddAction(Trigger *t);
+
+void WatchesInit(void);
+void WatchesTerminate(void);
+
 TWatch *WatchNew(void);
-Condition *WatchAddCondition(TWatch *w);
+Condition *WatchAddCondition(
+	TWatch *w, const ConditionType type, const int counterMax,
+	const Vec2i pos);
 Action *WatchAddAction(TWatch *w);
-void RemoveAllWatches(void);
