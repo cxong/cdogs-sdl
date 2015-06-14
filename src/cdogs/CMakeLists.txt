@@ -26,6 +26,7 @@ set(CDOGS_SOURCES
 	config_old.c
 	damage.c
 	defs.c
+	door.c
 	draw.c
 	draw_buffer.c
 	drawtools.c
@@ -105,6 +106,7 @@ set(CDOGS_HEADERS
 	config_old.h
 	damage.h
 	defs.h
+	door.h
 	draw.h
 	draw_buffer.h
 	drawtools.h

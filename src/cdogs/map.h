@@ -55,6 +55,7 @@
 #include "mission.h"
 #include "pic.h"
 #include "tile.h"
+#include "triggers.h"
 #include "vector.h"
 
 // Values for internal map
@@ -176,3 +177,5 @@ void MapPlacePickup(AddPickup a);
 void MapPlaceKey(
 	Map *map, const struct MissionOptions *mo, const Vec2i pos,
 	const int keyIndex);
+
+Trigger *MapNewTrigger(Map *map);
