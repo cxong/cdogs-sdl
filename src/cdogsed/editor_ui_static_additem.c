@@ -157,7 +157,7 @@ static void DrawObjective(
 		{
 			const ObjectiveDef *obj =
 				CArrayGet(&gMission.Objectives, data->Brush.ItemIndex);
-			const Pic *p = IntPickupClass(obj->PickupClassId);
+			const Pic *p = obj->pickupClass->Pic;
 			pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
 			Blit(&gGraphicsDevice, p, pos);
 		}
