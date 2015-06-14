@@ -1105,17 +1105,17 @@ static void DrawObjectiveCounts(HUD *hud)
 		Draw_Rect(x, y + 3, 2, 2, o->color);
 
 		x += 5;
-		char s[8];
+		char s[32];
 		int itemsLeft = mo->Required - o->done;
 		if (itemsLeft > 0)
 		{
 			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
 			{
-				sprintf(s, "%d", itemsLeft);
+				sprintf(s, "%s: %d", ObjectiveTypeStr(mo->Type), itemsLeft);
 			}
 			else
 			{
-				strcpy(s, "?");
+				sprintf(s, "%s: ?", ObjectiveTypeStr(mo->Type));
 			}
 		}
 		else
@@ -1129,10 +1129,12 @@ static void DrawObjectiveCounts(HUD *hud)
 			HUDNumUpdate *update = CArrayGet(&hud->objectiveUpdates, j);
 			if (update->Index == i)
 			{
-				DrawNumUpdate(update, "%d", o->done, Vec2iNew(x, y), 0);
+				DrawNumUpdate(
+					update, "%d", o->done,
+					Vec2iNew(x + FontStrW(s) - 8, y), 0);
 			}
 		}
 
-		x += 25;
+		x += 40;
 	}
 }

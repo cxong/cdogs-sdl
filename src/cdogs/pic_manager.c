@@ -106,6 +106,7 @@ static void SetPaletteRange(
 	}
 }
 
+static void FindDrainPics(PicManager *pm);
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
 {
@@ -191,8 +192,12 @@ void PicManagerAdd(
 	SDL_UnlockSurface(image);
 	SDL_FreeSurface(image);
 
+	FindDrainPics(&gPicManager);
+}
+static void FindDrainPics(PicManager *pm)
+{
 	// Scan all pics for drainage pics
-	CArrayClear(&gPicManager.drainPics);
+	CArrayClear(&pm->drainPics);
 	for (int i = 0;; i++)
 	{
 		char buf[CDOGS_FILENAME_MAX];
@@ -391,7 +396,7 @@ static void PicManagerClear(CArray *pics, CArray *sprites);
 void PicManagerClearCustom(PicManager *pm)
 {
 	PicManagerClear(&pm->customPics, &pm->customSprites);
-	CArrayClear(&pm->drainPics);
+	FindDrainPics(pm);
 }
 void PicManagerTerminate(PicManager *pm)
 {
