@@ -185,13 +185,21 @@ void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
 	p->Char.maxHealth = maxHealth;
 }
 
-int GetNumPlayers(const bool alive, const bool human, const bool local)
+int GetNumPlayers(
+	const PlayerAliveOptions alive, const bool human, const bool local)
 {
 	int numPlayers = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if ((!alive || IsPlayerAlive(p)) &&
+		bool life = false;
+		switch (alive)
+		{
+		case PLAYER_ANY: life = true; break;
+		case PLAYER_ALIVE: life = IsPlayerAlive(p); break;
+		case PLAYER_ALIVE_OR_DYING: life = IsPlayerAliveOrDying(p); break;
+		}
+		if (life &&
 			(!human || p->inputDevice != INPUT_DEVICE_AI) &&
 			(!local || p->IsLocal))
 		{
@@ -220,7 +228,7 @@ const PlayerData *GetFirstPlayer(
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if ((!alive || IsPlayerAlive(p)) &&
+		if ((!alive || IsPlayerAliveOrDying(p)) &&
 			(!human || p->inputDevice != INPUT_DEVICE_AI) &&
 			(!local || p->IsLocal))
 		{
@@ -247,6 +255,15 @@ bool IsPlayerHumanAndAlive(const PlayerData *player)
 {
 	return IsPlayerAlive(player) && IsPlayerHuman(player);
 }
+bool IsPlayerAliveOrDying(const PlayerData *player)
+{
+	if (player->Id == -1)
+	{
+		return false;
+	}
+	const TActor *p = CArrayGet(&gActors, player->Id);
+	return p->dead <= DEATH_MAX;
+}
 
 Vec2i PlayersGetMidpoint(void)
 {
@@ -262,7 +279,8 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 	bool isFirst = true;
 	*min = Vec2iZero();
 	*max = Vec2iZero();
-	const bool humansOnly = GetNumPlayers(true, true, false) > 0;
+	const bool humansOnly =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, false) > 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);

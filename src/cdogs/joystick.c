@@ -70,13 +70,22 @@ void JoyReset(joysticks_t *joys)
 
 		// Find joystick-specific fields
 		const char *name = SDL_JoystickName(i);
-		if (strstr(name, "Xbox 360") != NULL)
+		if (strstr(name, " 360 Controller") != NULL)
 		{
 			joy->Type = JOY_XBOX_360;
+		#ifdef __APPLE__
+			// TODO: OS X Yosemite driver doesn't detect hats
+			// Find out if this is driver/SDL problem
+			joy->Button1 = 11;	// A
+			joy->Button2 = 12;	// B
+			joy->ButtonMap = 5;	// back
+			joy->ButtonEsc = 4;	// start
+		#else
 			joy->Button1 = 0;	// A
 			joy->Button2 = 1;	// B
 			joy->ButtonMap = 4;	// back
 			joy->ButtonEsc = 5;	// start
+		#endif
 		}
 		else
 		{

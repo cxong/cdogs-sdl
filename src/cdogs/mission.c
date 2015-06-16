@@ -532,11 +532,11 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	// Death is the only escape from PVP and quick play
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
-		return GetNumPlayers(true, false, false) <= 1;
+		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
 	}
 	else if (gCampaign.Entry.Mode == GAME_MODE_QUICK_PLAY)
 	{
-		return GetNumPlayers(true, false, false) == 0;
+		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0;
 	}
 
 	// Check all objective counts are enough
@@ -564,7 +564,8 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	}
 
 	// Check if dogfight is complete
-	if (IsPVP(gCampaign.Entry.Mode) && GetNumPlayers(true, false, false) <= 1)
+	if (IsPVP(gCampaign.Entry.Mode) &&
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1)
 	{
 		// Also check that only one player has lives left
 		int numPlayersWithLives = 0;

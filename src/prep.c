@@ -330,7 +330,7 @@ bool PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
+			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true), idx, i,
 			&gEventHandlers, &gGraphicsDevice, &data.g);
 	}
 
@@ -362,7 +362,7 @@ bool PlayerSelection(void)
 		}
 	}
 
-	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuSystemTerminate(&data.menus[i].ms);
 	}
@@ -647,7 +647,7 @@ bool PlayerEquip(void)
 		RemoveUnavailableWeapons(p, &gMission.Weapons);
 
 		WeaponMenuCreate(
-			&data.menus[idx], GetNumPlayers(false, false, true), idx, i,
+			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true), idx, i,
 			&gEventHandlers, &gGraphicsDevice);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)
@@ -685,7 +685,7 @@ bool PlayerEquip(void)
 		}
 	}
 
-	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuSystemTerminate(&data.menus[i].ms);
 	}
@@ -756,7 +756,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 	}
 
 	bool isDone = true;
-	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		if (strcmp(pData->menus[i].ms.current->name, "(End)") != 0)
 		{
@@ -775,7 +775,7 @@ static void PlayerEquipDraw(void *data)
 {
 	const PlayerEquipData *pData = data;
 	GraphicsBlitBkg(&gGraphicsDevice);
-	for (int i = 0; i < GetNumPlayers(false, false, true); i++)
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuDisplay(&pData->menus[i].ms);
 	}

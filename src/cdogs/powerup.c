@@ -186,8 +186,7 @@ void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 {
 	PowerupSpawnerInit(p, map);
 	// TODO: disable ammo spawners unless classic mode
-	p->Enabled =
-		!IsPVP(gCampaign.Entry.Mode) && ConfigGetBool(&gConfig, "Game.Ammo");
+	p->Enabled = ConfigGetBool(&gConfig, "Game.Ammo");
 	p->SpawnTime = AMMO_SPAWN_TIME;
 	p->RateScaleFunc = AmmoScale;
 	p->PlaceFunc = AmmoPlace;

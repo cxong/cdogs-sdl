@@ -1051,8 +1051,11 @@ static void ActorDie(TActor *actor, const int idx)
 					break;
 				}
 			}
+			// Force pump events so we spawn immediately
+			// This is to prevent screen redraw for one frame with one less
+			// player
 			const Vec2i spawnPos =
-				PlacePlayer(&gMap, p, defaultSpawnPosition, false);
+				PlacePlayer(&gMap, p, defaultSpawnPosition, true);
 
 			// Play a spawn sound for players
 			GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);

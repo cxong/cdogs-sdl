@@ -115,14 +115,14 @@ static void DoBuffer(
 	DrawBufferDraw(b, offset, NULL);
 }
 
-int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
+static bool IsSingleScreen(
+	const GraphicsConfig *config, const SplitscreenStyle splitscreenStyle)
 {
+	if (splitscreenStyle == SPLITSCREEN_ALWAYS) return false;
+	// Always do split screen for PVP
+	if (IsPVP(gCampaign.Entry.Mode)) return false;
 	Vec2i min;
 	Vec2i max;
-	if (splitscreenStyle == SPLITSCREEN_ALWAYS)
-	{
-		return 0;
-	}
 	PlayersGetBoundingRectangle(&min, &max);
 	return
 		max.x - min.x < config->Res.x - SPLIT_PADDING &&
@@ -132,8 +132,9 @@ int IsSingleScreen(GraphicsConfig *config, SplitscreenStyle splitscreenStyle)
 Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 {
 	Vec2i centerOffset = Vec2iZero();
-	const int numLocalPlayersAlive = GetNumPlayers(true, false, true);
-	const int numLocalPlayers = GetNumPlayers(false, false, true);
+	const int numLocalPlayersAlive =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
@@ -151,7 +152,8 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 	}
 	else
 	{
-		const int numLocalHumanPlayersAlive = GetNumPlayers(true, true, true);
+		const int numLocalHumanPlayersAlive =
+			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
 		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
 		{
 			const TActor *p = CArrayGet(
@@ -309,8 +311,8 @@ Vec2i GetPlayerCenter(
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
-	if (GetNumPlayers(true, true, true) == 1 ||
-		GetNumPlayers(true, false , true) == 1 ||
+	if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) == 1 ||
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false , true) == 1 ||
 		IsSingleScreen(
 			&device->cachedConfig,
 			ConfigGetEnum(&gConfig, "Interface.Splitscreen")))
@@ -325,7 +327,7 @@ Vec2i GetPlayerCenter(
 	}
 	else
 	{
-		const int numLocalPlayers = GetNumPlayers(false, false, true);
+		const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 		if (numLocalPlayers == 2)
 		{
 			center.x = playerIdx == 0 ? w / 4 : w * 3 / 4;
@@ -357,6 +359,7 @@ typedef struct
 	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
+	int lastCmds[MAX_LOCAL_PLAYERS];
 	PowerupSpawner healthSpawner;
 	CArray ammoSpawners;	// of PowerupSpawner
 	ScreenShake shake;
@@ -455,10 +458,15 @@ static void RunGameInput(void *data)
 			p,
 			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, p, idx));
 		cmdAll |= rData->cmds[idx];
-		if (rData->cmds[idx] & CMD_ESC)
+
+		// Only allow the first player to escape
+		// Use keypress otherwise the player will quit immediately
+		if (idx == 0 &&
+			(rData->cmds[idx] & CMD_ESC) && !(rData->lastCmds[idx] & CMD_ESC))
 		{
 			pausingDevice = p->inputDevice;
 		}
+		rData->lastCmds[idx] = rData->cmds[idx];
 	}
 	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE))
 	{
@@ -639,7 +647,7 @@ static GameLoopResult RunGameUpdate(void *data)
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {
 	const bool isMissionComplete =
-		GetNumPlayers(true, false, false) > 0 && IsMissionComplete(mo);
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 && IsMissionComplete(mo);
 	if (mo->state == MISSION_STATE_PLAY && isMissionComplete)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_PICKUP);

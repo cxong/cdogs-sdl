@@ -72,13 +72,21 @@ void PlayerDataTerminate(CArray *p);
 
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission);
 
-int GetNumPlayers(const bool alive, const bool human, const bool local);
+typedef enum
+{
+	PLAYER_ANY,
+	PLAYER_ALIVE,
+	PLAYER_ALIVE_OR_DYING
+} PlayerAliveOptions;
+int GetNumPlayers(
+	const PlayerAliveOptions alive, const bool human, const bool local);
 bool AreAllPlayersDeadAndNoLives(void);
 const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local);
 bool IsPlayerAlive(const PlayerData *player);
 bool IsPlayerHuman(const PlayerData *player);
 bool IsPlayerHumanAndAlive(const PlayerData *player);
+bool IsPlayerAliveOrDying(const PlayerData *player);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 int PlayersNumUseAmmo(const int ammoId);

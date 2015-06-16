@@ -809,8 +809,9 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 {
 	char s[50];
 	int flags = 0;
-	const int numPlayersAlive = GetNumPlayers(true, false, false);
-	const int numLocalPlayers = GetNumPlayers(false, false, true);
+	const int numPlayersAlive =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false);
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 
 	Rect2i r;
 	r.Size = Vec2iNew(

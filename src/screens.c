@@ -241,13 +241,15 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			&gSoundDevice, gCampaign.Entry.Path, gMission.missionData->Song);
 		run = RunGame(&gMission, &gMap);
 		// Don't quit if all players died, that's normal for PVP modes
-		if (IsPVP(co->Entry.Mode) && GetNumPlayers(true, false, false) == 0)
+		if (IsPVP(co->Entry.Mode) &&
+			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
 		{
 			run = true;
 		}
 		GameEventsTerminate(&gGameEvents);
 
-		const int survivingPlayers = GetNumPlayers(true, false, false);
+		const int survivingPlayers =
+			GetNumPlayers(PLAYER_ALIVE, false, false);
 		// In co-op (non-PVP) modes, at least one player must survive
 		if (!IsPVP(co->Entry.Mode))
 		{
