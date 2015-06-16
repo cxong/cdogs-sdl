@@ -1140,6 +1140,9 @@ static void ActorAddGunPickup(const TActor *actor)
 	const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
 	const Weapon *w = CArrayGet(&actor->guns, gunIndex);
 	sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
+	e.u.AddPickup.IsRandomSpawned = false;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.TileItemFlags = 0;
 	e.u.AddPickup.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
 	GameEventsEnqueue(&gGameEvents, e);
 }

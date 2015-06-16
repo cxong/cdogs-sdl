@@ -126,7 +126,7 @@ static void ActivateWatch(int idx)
 				Condition *c = CArrayGet(&w->conditions, j);
 				c->Counter = 0;
 			}
-			break;
+			return;
 		}
 	}
 	CASSERT(false, "Cannot find watch");
@@ -140,7 +140,7 @@ static void DeactivateWatch(int idx)
 		if (w->index == idx)
 		{
 			w->active = false;
-			break;
+			return;
 		}
 	}
 	CASSERT(false, "Cannot find watch");

@@ -1321,8 +1321,6 @@ int main(int argc, char *argv[])
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
 
-	MapInit(&gMap);
-
 	// initialise UI collections
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush, Vec2iNew(320, 240));

@@ -51,6 +51,7 @@
 #include <assert.h>
 
 #include "algorithms.h"
+#include "los.h"
 
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
@@ -152,7 +153,7 @@ void DrawBufferFix(DrawBuffer *buffer)
 		{
 			const Vec2i mapTile =
 				Vec2iNew(x + buffer->xStart, y + buffer->yStart);
-			if (!MapTileIsVisible(&gMap, mapTile))
+			if (!LOSTileIsVisible(&gMap, mapTile))
 			{
 				tile->flags |= MAPTILE_OUT_OF_SIGHT;
 			}

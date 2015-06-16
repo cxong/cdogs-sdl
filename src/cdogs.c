@@ -412,7 +412,6 @@ int main(int argc, char *argv[])
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
 	PlayerDataInit(&gPlayerDatas);
-	MapInit(&gMap);
 
 	GrafxMakeRandomBackground(
 		&gGraphicsDevice, &gCampaign, &gMission, &gMap);

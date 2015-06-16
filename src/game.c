@@ -68,6 +68,7 @@
 #include <cdogs/handle_game_events.h>
 #include <cdogs/hud.h>
 #include <cdogs/joystick.h>
+#include <cdogs/los.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/objs.h>
@@ -172,12 +173,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 		{
 			// One screen
 			lastPosition = PlayersGetMidpoint();
-
-			DrawBufferSetFromMap(
-				b, &gMap, Vec2iAdd(lastPosition, noise), X_TILES);
-			DrawBufferFix(b);
-			DrawBufferDraw(b, centerOffset, NULL);
-			SoundSetEars(lastPosition);
+			DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
 		}
 		else if (numLocalPlayers == 2)
 		{
@@ -205,6 +201,13 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				if (idx == 1)
 				{
 					centerOffsetPlayer.x += w / 2;
+				}
+
+				// Redo LOS if PVP, so that each split screen has its own LOS
+				if (IsPVP(gCampaign.Entry.Mode))
+				{
+					LOSReset(&gMap);
+					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 				SoundSetEarsSide(idx == 0, center);
@@ -254,6 +257,12 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				else
 				{
 					centerOffsetPlayer.y += h / 4;
+				}
+				// Redo LOS if PVP, so that each split screen has its own LOS
+				if (IsPVP(gCampaign.Entry.Mode))
+				{
+					LOSReset(&gMap);
+					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 
@@ -530,7 +539,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Update all the things in the game
 	const int ticksPerFrame = 1;
 
-	MapResetLOS(&gMap);
+	LOSReset(&gMap);
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -540,9 +549,10 @@ static GameLoopResult RunGameUpdate(void *data)
 		// Calculate LOS for all players alive or dying
 		if (!gCampaign.IsClient || p->IsLocal)
 		{
-			MapCalcLOSFrom(
+			LOSCalcFrom(
 				&gMap,
-				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)));
+				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
+				true);
 		}
 
 		if (player->dead) continue;

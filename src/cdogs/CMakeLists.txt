@@ -46,6 +46,7 @@ set(CDOGS_SOURCES
 	json_utils.c
 	keyboard.c
 	log.c
+	los.c
 	map.c
 	map_archive.c
 	map_build.c
@@ -126,6 +127,7 @@ set(CDOGS_HEADERS
 	json_utils.h
 	keyboard.h
 	log.h
+	los.h
 	map.h
 	map_archive.h
 	map_build.h

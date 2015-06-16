@@ -229,7 +229,6 @@ static void HandleGameEvent(
 		case GAME_EVENT_OBJECT_SET_COUNTER:
 			{
 				TObject *o = ObjGetByUID(e->u.ObjectSetCounter.UID);
-				if (o == NULL) break;
 				o->counter = e->u.ObjectSetCounter.Count;
 			}
 			break;

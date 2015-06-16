@@ -174,6 +174,8 @@ static void HealthPlace(const Vec2i pos, void *data)
 	e.u.AddPickup.Pos = Vec2i2Net(pos);
 	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.TileItemFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -232,5 +234,7 @@ static void AmmoPlace(const Vec2i pos, void *data)
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 	e.u.AddPickup.IsRandomSpawned = true;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.TileItemFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }

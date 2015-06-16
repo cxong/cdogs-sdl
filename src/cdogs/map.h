@@ -122,7 +122,6 @@ int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
 void MapRemoveTileItem(Map *map, TTileItem *t);
 
-void MapInit(Map *map);
 void MapTerminate(Map *map);
 void MapLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions* co);
@@ -137,9 +136,6 @@ void MapShowExitArea(Map *map);
 // Used for compass arrows
 Vec2i MapGetExitPos(Map *m);
 
-void MapResetLOS(Map *map);
-void MapCalcLOSFrom(Map *map, const Vec2i pos);
-bool MapTileIsVisible(Map *map, const Vec2i pos);
 void MapMarkAsVisited(Map *map, Vec2i pos);
 // Note: used by editor
 void MapMarkAllAsVisited(Map *map);
