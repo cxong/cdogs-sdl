@@ -58,9 +58,7 @@ ENetPacket *NetEncode(const GameEventType e, const void *data);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
-NCampaignDef NMakeCampaignDef(const CampaignEntry *e);
-void NCampaignDefConvert(
-	const NCampaignDef *def, char *outPath, GameMode *outMode);
+NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
 void NPlayerDataUpdate(const NPlayerData *pd);
 
 Vec2i Net2Vec2i(const NVec2i v);

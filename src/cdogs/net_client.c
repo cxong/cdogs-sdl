@@ -195,8 +195,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 					"unexpected client ID message, already set");
 				NClientId cid;
 				NetDecode(event.packet, &cid, NClientId_fields);
-				LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %d", cid.Id);
-				n->ClientId = cid.Id;
+				LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %u", cid.Id);
+				n->ClientId = (int)cid.Id;
 			}
 			break;
 		case GAME_EVENT_CAMPAIGN_DEF:
@@ -209,14 +209,13 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				LOG(LM_NET, LL_DEBUG, "NetClient: received campaign def, loading...");
 				NCampaignDef def;
 				NetDecode(event.packet, &def, NCampaignDef_fields);
-				char campaignPath[CDOGS_PATH_MAX];
-				GameMode mode;
-				NCampaignDefConvert(&def, campaignPath, &mode);
 				CampaignEntry entry;
-				if (CampaignEntryTryLoad(&entry, campaignPath, mode) &&
+				if (CampaignEntryTryLoad(
+						&entry, def.Path, (GameMode)def.GameMode) &&
 					CampaignLoad(&gCampaign, &entry))
 				{
 					gCampaign.IsClient = true;
+					gCampaign.MissionIndex = def.Mission;
 				}
 				else
 				{
@@ -255,7 +254,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 					(int)ap.PlayerIds_count);
 				// Add new players
 				// If they are local players, set them up with defaults
-				const bool isLocal = ap.ClientId == n->ClientId;
+				const bool isLocal = (int)ap.ClientId == n->ClientId;
 				for (int i = 0; i < ap.PlayerIds_count; i++)
 				{
 					const int playerId = (int)ap.PlayerIds[i];

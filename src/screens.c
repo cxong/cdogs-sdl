@@ -156,7 +156,12 @@ static void AddAndPlacePlayers(void)
 
 static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	if (IsPasswordAllowed(co->Entry.Mode))
+	if (co->IsClient)
+	{
+		// If connecting to a server, we've already received the mission index
+		// Do nothing
+	}
+	else if (IsPasswordAllowed(co->Entry.Mode))
 	{
 		MissionSave m;
 		AutosaveLoadMission(

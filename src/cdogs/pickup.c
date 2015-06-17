@@ -37,7 +37,7 @@
 
 
 CArray gPickups;
-static int sPickupUIDs;
+static unsigned int sPickupUIDs;
 
 
 void PickupsInit(void)

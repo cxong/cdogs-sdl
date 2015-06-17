@@ -97,7 +97,7 @@ TranslationTable tablePurple;
 
 
 CArray gActors;
-static int sActorUIDs = 0;
+static unsigned int sActorUIDs = 0;
 
 static Animation animIdling =
 {

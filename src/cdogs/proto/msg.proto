@@ -6,17 +6,18 @@ message NCmd {
 }
 
 message NNewPlayers {
-	required int32 ClientId = 1;
-	required int32 NumPlayers = 2;
+	required uint32 ClientId = 1;
+	required uint32 NumPlayers = 2;
 }
 
 message NClientId {
-	required int32 Id = 1;
+	required uint32 Id = 1;
 }
 
 message NCampaignDef {
 	required string Path = 1;
-	required uint32 GameMode = 2;
+	required int32 GameMode = 2;
+	required uint32 Mission = 3;
 }
 
 message NPlayerData {
@@ -31,28 +32,28 @@ message NPlayerData {
 	}
 	required CharLooks Looks = 2;
 	repeated string Weapons = 3;
-	required int32 Lives = 4;
+	required uint32 Lives = 4;
 	required int32 Score = 5;
 	required int32 TotalScore = 6;
 	required int32 Kills = 7;
 	required int32 Suicides = 8;
 	required int32 Friendlies = 9;
-	required int32 PlayerIndex = 10;
+	required uint32 PlayerIndex = 10;
 	required bool IsUsed = 11;
 }
 
 message NObjectiveCount {
-	required int32 ObjectiveId = 1;
-	required int32 Count = 2;
+	required uint32 ObjectiveId = 1;
+	required uint32 Count = 2;
 }
 
 message NAddPlayers {
-	required int32 ClientId = 1;
-	repeated int32 PlayerIds = 2;
+	required uint32 ClientId = 1;
+	repeated uint32 PlayerIds = 2;
 }
 
 message NScore {
-	required int32 PlayerId = 1;
+	required uint32 PlayerId = 1;
 	required int32 Score = 2;
 }
 
@@ -62,36 +63,36 @@ message NVec2i {
 }
 
 message NActorAdd {
-	required int32 UID = 1;
-	required int32 CharId = 2;
+	required uint32 UID = 1;
+	required uint32 CharId = 2;
 	required int32 Direction = 3;
 	required int32 Health = 4;
 	required int32 PlayerId = 5 [default=-1];
-	required int32 TileItemFlags = 6;
+	required uint32 TileItemFlags = 6;
 	required NVec2i FullPos = 7;
 }
 
 message NActorMove {
-	required int32 UID = 1;
+	required uint32 UID = 1;
 	required NVec2i Pos = 2;
 }
 
 message NActorState {
-	required int32 UID = 1;
+	required uint32 UID = 1;
 	required int32 State = 2;
 }
 
 message NActorDir {
-	required int32 UID = 1;
+	required uint32 UID = 1;
 	required int32 Dir = 2;
 }
 
 message NAddPickup {
-	required int32 UID = 1;
+	required uint32 UID = 1;
 	required string PickupClass = 2;
 	required bool IsRandomSpawned = 3;
 	required int32 SpawnerUID = 4 [default=-1];
-	required int32 TileItemFlags = 5;
+	required uint32 TileItemFlags = 5;
 	required NVec2i Pos = 6;
 }
 
@@ -101,7 +102,7 @@ message NAddBullet {
 	required int32 MuzzleHeight = 3;
 	required float Angle = 4;
 	required int32 Elevation = 5;
-	required int32 Flags = 6;
+	required uint32 Flags = 6;
 	required int32 PlayerIndex = 7;
 	required int32 UID = 8;
 }
@@ -111,6 +112,6 @@ message NExploreTile {
 }
 
 message NObjectiveUpdate {
-	required int32 ObjectiveId = 1;
+	required uint32 ObjectiveId = 1;
 	required int32 Count = 2;
 }

@@ -157,7 +157,7 @@ static void OnConnect(NetServer *n, ENetEvent event)
 
 	// Send the current campaign details over
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
-	NCampaignDef def = NMakeCampaignDef(&gCampaign.Entry);
+	NCampaignDef def = NMakeCampaignDef(&gCampaign);
 	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
@@ -203,7 +203,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				NAddPlayers ap;
 				ap.ClientId = np.ClientId;
 				ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
-				for (int i = 0; i < np.NumPlayers; i++)
+				for (int i = 0; i < (int)np.NumPlayers; i++)
 				{
 					PlayerData *p = PlayerDataAdd(&gPlayerDatas);
 					p->IsLocal = false;

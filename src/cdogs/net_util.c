@@ -85,24 +85,19 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	d.PlayerIndex = p->playerIndex;
 	return d;
 }
-NCampaignDef NMakeCampaignDef(const CampaignEntry *e)
+NCampaignDef NMakeCampaignDef(const CampaignOptions *co)
 {
 	NCampaignDef def;
 	memset(&def, 0, sizeof def);
-	if (e->Path)
+	if (co->Entry.Path)
 	{
-		strcpy((char *)def.Path, e->Path);
+		strcpy((char *)def.Path, co->Entry.Path);
 	}
-	def.GameMode = e->Mode;
+	def.GameMode = co->Entry.Mode;
+	def.Mission = co->MissionIndex;
 	return def;
 }
 
-void NCampaignDefConvert(
-	const NCampaignDef *def, char *outPath, GameMode *outMode)
-{
-	strcpy(outPath, def->Path);
-	*outMode = def->GameMode;
-}
 void NPlayerDataUpdate(const NPlayerData *pd)
 {
 	PlayerData *p = CArrayGet(&gPlayerDatas, pd->PlayerIndex);
@@ -131,7 +126,7 @@ void NPlayerDataUpdate(const NPlayerData *pd)
 		p->inputDevice = INPUT_DEVICE_UNSET;
 	}
 	CASSERT(
-		p->playerIndex == pd->PlayerIndex, "unexpected player index");
+		p->playerIndex == (int)pd->PlayerIndex, "unexpected player index");
 }
 
 Vec2i Net2Vec2i(const NVec2i v)
