@@ -106,10 +106,11 @@ bool DamageSomething(
 
 void ObjsInit(void);
 void ObjsTerminate(void);
+int ObjsGetNextUID(void);
 void AddObjectOld(
 	const Vec2i pos, const Vec2i size,
 	const TOffsetPic *pic, const int tileFlags);
-int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags);
+void ObjAdd(const NAddMapObject amo);
 void ObjDestroy(int id);
 
 // Check if this object is dangerous; i.e. on destruction will explode

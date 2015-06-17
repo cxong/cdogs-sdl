@@ -75,7 +75,7 @@
 
 CArray gObjs;
 CArray gMobObjs;
-static int sObjUIDs = 0;
+static unsigned int sObjUIDs = 0;
 
 
 // Draw functions
@@ -384,6 +384,7 @@ void ObjsInit(void)
 {
 	CArrayInit(&gObjs, sizeof(TObject));
 	CArrayReserve(&gObjs, 1024);
+	sObjUIDs = 0;
 }
 void ObjsTerminate(void)
 {
@@ -397,7 +398,12 @@ void ObjsTerminate(void)
 	}
 	CArrayTerminate(&gObjs);
 }
-int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags)
+int ObjsGetNextUID(void)
+{
+	return sObjUIDs;
+}
+
+void ObjAdd(const NAddMapObject amo)
 {
 	// Find an empty slot in object list
 	TObject *o = NULL;
@@ -420,19 +426,22 @@ int ObjAdd(const MapObject *mo, const Vec2i pos, const int tileFlags)
 		o = CArrayGet(&gObjs, i);
 	}
 	memset(o, 0, sizeof *o);
-	o->uid = sObjUIDs++;
-	o->Class = mo;
-	o->Health = mo->Health;
+	o->uid = amo.UID;
+	while (amo.UID >= sObjUIDs)
+	{
+		sObjUIDs++;
+	}
+	o->Class = StrMapObject(amo.MapObjectClass);
+	o->Health = amo.Health;
 	o->tileItem.x = o->tileItem.y = -1;
-	o->tileItem.flags = tileFlags;
+	o->tileItem.flags = amo.TileItemFlags;
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.getPicFunc = GetObjectPic;
 	o->tileItem.getActorPicsFunc = NULL;
-	o->tileItem.size = mo->Size;
+	o->tileItem.size = o->Class->Size;
 	o->tileItem.id = i;
-	MapTryMoveTileItem(&gMap, &o->tileItem, pos);
+	MapTryMoveTileItem(&gMap, &o->tileItem, Net2Vec2i(amo.Pos));
 	o->isInUse = true;
-	return i;
 }
 void ObjDestroy(int id)
 {

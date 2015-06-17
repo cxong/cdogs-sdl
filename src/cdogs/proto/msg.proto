@@ -52,6 +52,14 @@ message NAddPlayers {
 	repeated uint32 PlayerIds = 2;
 }
 
+message NAddMapObject {
+	required uint32 UID = 1;
+	required string MapObjectClass = 2;
+	required NVec2i Pos = 3;
+	required uint32 TileItemFlags = 4;
+	required int32 Health = 5;
+}
+
 message NScore {
 	required uint32 PlayerId = 1;
 	required int32 Score = 2;

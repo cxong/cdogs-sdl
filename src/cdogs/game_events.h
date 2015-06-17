@@ -48,6 +48,7 @@ typedef enum
 	GAME_EVENT_CLIENT_ID,
 	GAME_EVENT_CAMPAIGN_DEF,
 	GAME_EVENT_ADD_PLAYERS,
+	GAME_EVENT_ADD_MAP_OBJECT,
 	GAME_EVENT_OBJECTIVE_COUNT,
 	GAME_EVENT_NET_GAME_START,
 
@@ -112,6 +113,7 @@ typedef struct
 	int Delay;
 	union
 	{
+		NAddMapObject AddMapObject;
 		NScore Score;
 		struct
 		{

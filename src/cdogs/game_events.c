@@ -57,6 +57,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_CLIENT_ID, false, false, false, NClientId_fields },
 	{ GAME_EVENT_CAMPAIGN_DEF, false, false, false, NCampaignDef_fields },
 	{ GAME_EVENT_ADD_PLAYERS, false, false, false, NAddPlayers_fields },
+	{ GAME_EVENT_ADD_MAP_OBJECT, true, false, true, NAddMapObject_fields },
 	{ GAME_EVENT_OBJECTIVE_COUNT, false, false, false, NObjectiveCount_fields },
 	{ GAME_EVENT_NET_GAME_START, false, false, false, NULL },
 

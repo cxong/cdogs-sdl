@@ -74,274 +74,277 @@ static void HandleGameEvent(
 	}
 	switch (e->Type)
 	{
-		case GAME_EVENT_SCORE:
+	case GAME_EVENT_ADD_MAP_OBJECT:
+		ObjAdd(e->u.AddMapObject);
+		break;
+	case GAME_EVENT_SCORE:
+		{
+			PlayerData *p = CArrayGet(&gPlayerDatas, e->u.Score.PlayerId);
+			PlayerScore(p, e->u.Score.Score);
+			HUDAddScoreUpdate(hud, e->u.Score.PlayerId, e->u.Score.Score);
+		}
+		break;
+	case GAME_EVENT_SOUND_AT:
+		if (e->u.SoundAt.Sound)
+		{
+			SoundPlayAt(
+				&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
+		}
+		break;
+	case GAME_EVENT_SCREEN_SHAKE:
+		*shake = ScreenShakeAdd(
+			*shake, e->u.ShakeAmount,
+			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
+		break;
+	case GAME_EVENT_SET_MESSAGE:
+		HUDDisplayMessage(
+			hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
+		break;
+	case GAME_EVENT_GAME_START:
+		gMission.HasStarted = true;
+		break;
+	case GAME_EVENT_ACTOR_ADD:
+		ActorAdd(e->u.ActorAdd);
+		break;
+	case GAME_EVENT_ACTOR_MOVE:
+		{
+			TActor *a = ActorGetByUID(e->u.ActorMove.UID);
+			if (a == NULL || !a->isInUse)
 			{
-				PlayerData *p = CArrayGet(&gPlayerDatas, e->u.Score.PlayerId);
-				PlayerScore(p, e->u.Score.Score);
-				HUDAddScoreUpdate(hud, e->u.Score.PlayerId, e->u.Score.Score);
+				break;
 			}
-			break;
-		case GAME_EVENT_SOUND_AT:
-			if (e->u.SoundAt.Sound)
+			a->Pos.x = e->u.ActorMove.Pos.x;
+			a->Pos.y = e->u.ActorMove.Pos.y;
+			MapTryMoveTileItem(&gMap, &a->tileItem, Vec2iFull2Real(a->Pos));
+			if (MapIsTileInExit(&gMap, &a->tileItem))
 			{
-				SoundPlayAt(
-					&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
+				a->action = ACTORACTION_EXITING;
 			}
-			break;
-		case GAME_EVENT_SCREEN_SHAKE:
-			*shake = ScreenShakeAdd(
-				*shake, e->u.ShakeAmount,
-				ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
-			break;
-		case GAME_EVENT_SET_MESSAGE:
-			HUDDisplayMessage(
-				hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
-			break;
-		case GAME_EVENT_GAME_START:
-			gMission.HasStarted = true;
-			break;
-		case GAME_EVENT_ACTOR_ADD:
-			ActorAdd(e->u.ActorAdd);
-			break;
-		case GAME_EVENT_ACTOR_MOVE:
+			else
 			{
-				TActor *a = ActorGetByUID(e->u.ActorMove.UID);
-				if (a == NULL || !a->isInUse)
-				{
-					break;
-				}
-				a->Pos.x = e->u.ActorMove.Pos.x;
-				a->Pos.y = e->u.ActorMove.Pos.y;
-				MapTryMoveTileItem(&gMap, &a->tileItem, Vec2iFull2Real(a->Pos));
-				if (MapIsTileInExit(&gMap, &a->tileItem))
-				{
-					a->action = ACTORACTION_EXITING;
-				}
-				else
-				{
-					a->action = ACTORACTION_MOVING;
-				}
+				a->action = ACTORACTION_MOVING;
 			}
-			break;
-		case GAME_EVENT_ACTOR_STATE:
+		}
+		break;
+	case GAME_EVENT_ACTOR_STATE:
+		{
+			TActor *a = ActorGetByUID(e->u.ActorState.UID);
+			if (!a->isInUse)
 			{
-				TActor *a = ActorGetByUID(e->u.ActorState.UID);
+				break;
+			}
+			ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
+		}
+		break;
+	case GAME_EVENT_ACTOR_DIR:
+		{
+			TActor *a = ActorGetByUID(e->u.ActorDir.UID);
+			if (!a->isInUse)
+			{
+				break;
+			}
+			a->direction = (direction_e)e->u.ActorDir.Dir;
+		}
+		break;
+	case GAME_EVENT_ACTOR_REPLACE_GUN:
+		{
+			TActor *a = ActorGetByUID(e->u.ActorReplaceGun.UID);
+			if (!a->isInUse)
+			{
+				break;
+			}
+			ActorReplaceGun(
+				a, e->u.ActorReplaceGun.GunIdx,
+				IdGunDescription(e->u.ActorReplaceGun.GunId));
+		}
+		break;
+	case GAME_EVENT_ADD_PICKUP:
+		{
+			PickupAdd(e->u.AddPickup);
+			// Play a spawn sound
+			GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
+			sound.u.SoundAt.Sound = StrSound("spawn_item");
+			sound.u.SoundAt.Pos = Net2Vec2i(e->u.AddPickup.Pos);
+			HandleGameEvent(
+				&sound, hud, shake, healthSpawner, ammoSpawners,
+				eventHandlers);
+		}
+		break;
+	case GAME_EVENT_TAKE_HEALTH_PICKUP:
+		{
+			const PlayerData *p =
+				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
+			if (IsPlayerAlive(p))
+			{
+				TActor *a = CArrayGet(&gActors, p->Id);
 				if (!a->isInUse)
 				{
 					break;
 				}
-				ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
+				ActorHeal(a, e->u.Heal.Health);
+				// Tell the spawner that we took a health so we can
+				// spawn more (but only if we're the server)
+				if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+				{
+					PowerupSpawnerRemoveOne(healthSpawner);
+				}
+				HUDAddHealthUpdate(
+					hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
 			}
-			break;
-		case GAME_EVENT_ACTOR_DIR:
+		}
+		break;
+	case GAME_EVENT_TAKE_AMMO_PICKUP:
+		{
+			const PlayerData *p =
+				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
+			if (IsPlayerAlive(p))
 			{
-				TActor *a = ActorGetByUID(e->u.ActorDir.UID);
+				TActor *a = CArrayGet(&gActors, p->Id);
 				if (!a->isInUse)
 				{
 					break;
 				}
-				a->direction = (direction_e)e->u.ActorDir.Dir;
+				ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
+				// Tell the spawner that we took a piece of ammo so we can
+				// spawn more (but only if we're the server)
+				if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+				{
+					PowerupSpawnerRemoveOne(
+						CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
+				}
+				// TODO: some sort of text effect showing ammo grab
 			}
-			break;
-		case GAME_EVENT_ACTOR_REPLACE_GUN:
+		}
+		break;
+	case GAME_EVENT_USE_AMMO:
+		{
+			const PlayerData *p =
+				CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
+			if (IsPlayerAlive(p))
 			{
-				TActor *a = ActorGetByUID(e->u.ActorReplaceGun.UID);
+				TActor *a = CArrayGet(&gActors, p->Id);
 				if (!a->isInUse)
 				{
 					break;
 				}
-				ActorReplaceGun(
-					a, e->u.ActorReplaceGun.GunIdx,
-					IdGunDescription(e->u.ActorReplaceGun.GunId));
+				ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
+				// TODO: some sort of text effect showing ammo usage
 			}
-			break;
-		case GAME_EVENT_ADD_PICKUP:
+		}
+		break;
+	case GAME_EVENT_OBJECT_SET_COUNTER:
+		{
+			TObject *o = ObjGetByUID(e->u.ObjectSetCounter.UID);
+			o->counter = e->u.ObjectSetCounter.Count;
+		}
+		break;
+	case GAME_EVENT_MOBILE_OBJECT_REMOVE:
+		MobObjDestroy(e->u.MobileObjectRemoveId);
+		break;
+	case GAME_EVENT_PARTICLE_REMOVE:
+		ParticleDestroy(&gParticles, e->u.ParticleRemoveId);
+		break;
+	case GAME_EVENT_ADD_BULLET:
+		BulletAdd(e->u.AddBullet);
+		break;
+	case GAME_EVENT_ADD_PARTICLE:
+		ParticleAdd(&gParticles, e->u.AddParticle);
+		break;
+	case GAME_EVENT_HIT_CHARACTER:
+		ActorTakeHit(
+			CArrayGet(&gActors, e->u.HitCharacter.TargetId),
+			e->u.HitCharacter.Special);
+		break;
+	case GAME_EVENT_ACTOR_IMPULSE:
+		{
+			TActor *a = CArrayGet(&gActors, e->u.ActorImpulse.Id);
+			if (!a->isInUse)
 			{
-				PickupAdd(e->u.AddPickup);
-				// Play a spawn sound
-				GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-				sound.u.SoundAt.Sound = StrSound("spawn_item");
-				sound.u.SoundAt.Pos = Net2Vec2i(e->u.AddPickup.Pos);
+				break;
+			}
+			a->Vel = Vec2iAdd(a->Vel, e->u.ActorImpulse.Vel);
+		}
+		break;
+	case GAME_EVENT_DAMAGE_CHARACTER:
+		DamageCharacter(
+			e->u.DamageCharacter.Power,
+			e->u.DamageCharacter.PlayerIndex,
+			CArrayGet(&gActors, e->u.DamageCharacter.TargetId));
+		if (e->u.DamageCharacter.Power != 0 &&
+			e->u.DamageCharacter.TargetPlayerIndex >= 0)
+		{
+			HUDAddHealthUpdate(
+				hud,
+				e->u.DamageCharacter.TargetPlayerIndex,
+				-e->u.DamageCharacter.Power);
+		}
+		break;
+	case GAME_EVENT_TRIGGER:
+		{
+			const Tile *t = MapGetTile(&gMap, e->u.Trigger.TilePos);
+			for (int i = 0; i < (int)t->triggers.size; i++)
+			{
+				Trigger **tp = CArrayGet(&t->triggers, i);
+				if ((*tp)->id == e->u.Trigger.Id)
+				{
+					TriggerActivate(*tp, &gMap.triggers);
+					break;
+				}
+			}
+		}
+		break;
+	case GAME_EVENT_EXPLORE_TILE:
+		MapMarkAsVisited(&gMap, Net2Vec2i(e->u.ExploreTile.Tile));
+		// Check if we need to update explore objectives
+		for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
+		{
+			const MissionObjective *mobj =
+				CArrayGet(&gMission.missionData->Objectives, i);
+			if (mobj->Type != OBJECTIVE_INVESTIGATE) continue;
+			const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
+			const int update = MapGetExploredPercentage(&gMap) - o->done;
+			if (update > 0)
+			{
+				GameEvent ou = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+				ou.u.ObjectiveUpdate.ObjectiveId = i;
+				ou.u.ObjectiveUpdate.Count = update;
 				HandleGameEvent(
-					&sound, hud, shake, healthSpawner, ammoSpawners,
+					&ou, hud, shake, healthSpawner, ammoSpawners,
 					eventHandlers);
 			}
-			break;
-		case GAME_EVENT_TAKE_HEALTH_PICKUP:
-			{
-				const PlayerData *p =
-					CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
-				if (IsPlayerAlive(p))
-				{
-					TActor *a = CArrayGet(&gActors, p->Id);
-					if (!a->isInUse)
-					{
-						break;
-					}
-					ActorHeal(a, e->u.Heal.Health);
-					// Tell the spawner that we took a health so we can
-					// spawn more (but only if we're the server)
-					if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
-					{
-						PowerupSpawnerRemoveOne(healthSpawner);
-					}
-					HUDAddHealthUpdate(
-						hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
-				}
-			}
-			break;
-		case GAME_EVENT_TAKE_AMMO_PICKUP:
-			{
-				const PlayerData *p =
-					CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
-				if (IsPlayerAlive(p))
-				{
-					TActor *a = CArrayGet(&gActors, p->Id);
-					if (!a->isInUse)
-					{
-						break;
-					}
-					ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
-					// Tell the spawner that we took a piece of ammo so we can
-					// spawn more (but only if we're the server)
-					if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
-					{
-						PowerupSpawnerRemoveOne(
-							CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
-					}
-					// TODO: some sort of text effect showing ammo grab
-				}
-			}
-			break;
-		case GAME_EVENT_USE_AMMO:
-			{
-				const PlayerData *p =
-					CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
-				if (IsPlayerAlive(p))
-				{
-					TActor *a = CArrayGet(&gActors, p->Id);
-					if (!a->isInUse)
-					{
-						break;
-					}
-					ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
-					// TODO: some sort of text effect showing ammo usage
-				}
-			}
-			break;
-		case GAME_EVENT_OBJECT_SET_COUNTER:
-			{
-				TObject *o = ObjGetByUID(e->u.ObjectSetCounter.UID);
-				o->counter = e->u.ObjectSetCounter.Count;
-			}
-			break;
-		case GAME_EVENT_MOBILE_OBJECT_REMOVE:
-			MobObjDestroy(e->u.MobileObjectRemoveId);
-			break;
-		case GAME_EVENT_PARTICLE_REMOVE:
-			ParticleDestroy(&gParticles, e->u.ParticleRemoveId);
-			break;
-		case GAME_EVENT_ADD_BULLET:
-			BulletAdd(e->u.AddBullet);
-			break;
-		case GAME_EVENT_ADD_PARTICLE:
-			ParticleAdd(&gParticles, e->u.AddParticle);
-			break;
-		case GAME_EVENT_HIT_CHARACTER:
-			ActorTakeHit(
-				CArrayGet(&gActors, e->u.HitCharacter.TargetId),
-				e->u.HitCharacter.Special);
-			break;
-		case GAME_EVENT_ACTOR_IMPULSE:
-			{
-				TActor *a = CArrayGet(&gActors, e->u.ActorImpulse.Id);
-				if (!a->isInUse)
-				{
-					break;
-				}
-				a->Vel = Vec2iAdd(a->Vel, e->u.ActorImpulse.Vel);
-			}
-			break;
-		case GAME_EVENT_DAMAGE_CHARACTER:
-			DamageCharacter(
-				e->u.DamageCharacter.Power,
-				e->u.DamageCharacter.PlayerIndex,
-				CArrayGet(&gActors, e->u.DamageCharacter.TargetId));
-			if (e->u.DamageCharacter.Power != 0 &&
-				e->u.DamageCharacter.TargetPlayerIndex >= 0)
-			{
-				HUDAddHealthUpdate(
-					hud,
-					e->u.DamageCharacter.TargetPlayerIndex,
-					-e->u.DamageCharacter.Power);
-			}
-			break;
-		case GAME_EVENT_TRIGGER:
-			{
-				const Tile *t = MapGetTile(&gMap, e->u.Trigger.TilePos);
-				for (int i = 0; i < (int)t->triggers.size; i++)
-				{
-					Trigger **tp = CArrayGet(&t->triggers, i);
-					if ((*tp)->id == e->u.Trigger.Id)
-					{
-						TriggerActivate(*tp, &gMap.triggers);
-						break;
-					}
-				}
-			}
-			break;
-		case GAME_EVENT_EXPLORE_TILE:
-			MapMarkAsVisited(&gMap, Net2Vec2i(e->u.ExploreTile.Tile));
-			// Check if we need to update explore objectives
-			for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-			{
-				const MissionObjective *mobj =
-					CArrayGet(&gMission.missionData->Objectives, i);
-				if (mobj->Type != OBJECTIVE_INVESTIGATE) continue;
-				const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-				const int update = MapGetExploredPercentage(&gMap) - o->done;
-				if (update > 0)
-				{
-					GameEvent ou = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-					ou.u.ObjectiveUpdate.ObjectiveId = i;
-					ou.u.ObjectiveUpdate.Count = update;
-					HandleGameEvent(
-						&ou, hud, shake, healthSpawner, ammoSpawners,
-						eventHandlers);
-				}
-			}
-			break;
-		case GAME_EVENT_OBJECTIVE_UPDATE:
-			{
-				ObjectiveDef *o = CArrayGet(
-					&gMission.Objectives, e->u.ObjectiveUpdate.ObjectiveId);
-				o->done += e->u.ObjectiveUpdate.Count;
-				// Display a text update effect for the objective
-				HUDAddObjectiveUpdate(
-					hud,
-					e->u.ObjectiveUpdate.ObjectiveId,
-					e->u.ObjectiveUpdate.Count);
-				MissionSetMessageIfComplete(&gMission);
-			}
-			break;
-		case GAME_EVENT_MISSION_COMPLETE:
-			HUDDisplayMessage(hud, "Mission complete", -1);
-			hud->showExit = true;
-			MapShowExitArea(&gMap);
-			break;
-		case GAME_EVENT_MISSION_INCOMPLETE:
-			gMission.state = MISSION_STATE_PLAY;
-			break;
-		case GAME_EVENT_MISSION_PICKUP:
-			gMission.state = MISSION_STATE_PICKUP;
-			gMission.pickupTime = gMission.time;
-			SoundPlay(&gSoundDevice, StrSound("whistle"));
-			break;
-		case GAME_EVENT_MISSION_END:
-			gMission.isDone = true;
-			break;
-		default:
-			assert(0 && "unknown game event");
-			break;
+		}
+		break;
+	case GAME_EVENT_OBJECTIVE_UPDATE:
+		{
+			ObjectiveDef *o = CArrayGet(
+				&gMission.Objectives, e->u.ObjectiveUpdate.ObjectiveId);
+			o->done += e->u.ObjectiveUpdate.Count;
+			// Display a text update effect for the objective
+			HUDAddObjectiveUpdate(
+				hud,
+				e->u.ObjectiveUpdate.ObjectiveId,
+				e->u.ObjectiveUpdate.Count);
+			MissionSetMessageIfComplete(&gMission);
+		}
+		break;
+	case GAME_EVENT_MISSION_COMPLETE:
+		HUDDisplayMessage(hud, "Mission complete", -1);
+		hud->showExit = true;
+		MapShowExitArea(&gMap);
+		break;
+	case GAME_EVENT_MISSION_INCOMPLETE:
+		gMission.state = MISSION_STATE_PLAY;
+		break;
+	case GAME_EVENT_MISSION_PICKUP:
+		gMission.state = MISSION_STATE_PICKUP;
+		gMission.pickupTime = gMission.time;
+		SoundPlay(&gSoundDevice, StrSound("whistle"));
+		break;
+	case GAME_EVENT_MISSION_END:
+		gMission.isDone = true;
+		break;
+	default:
+		assert(0 && "unknown game event");
+		break;
 	}
 }

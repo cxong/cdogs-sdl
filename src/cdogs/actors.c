@@ -1080,9 +1080,13 @@ static void ActorDie(TActor *actor, const int idx)
 	}
 
 	// Add a blood pool
-	ObjAdd(
-		RandomBloodMapObject(&gMapObjects), Vec2iFull2Real(actor->Pos),
-		TILEITEM_IS_WRECK);
+	NAddMapObject amo = NAddMapObject_init_default;
+	amo.UID = ObjsGetNextUID();
+	strcpy(amo.MapObjectClass, RandomBloodMapObject(&gMapObjects)->Name);
+	amo.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
+	amo.TileItemFlags = TILEITEM_IS_WRECK;
+	amo.Health = 0;
+	ObjAdd(amo);
 
 	ActorDestroy(idx);
 }

@@ -314,6 +314,20 @@ static void SendGameStartMessages(
 		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &ap);
 	}
 
+	// Send all map objects
+	for (int i = 0; i < (int)gObjs.size; i++)
+	{
+		const TObject *o = CArrayGet(&gObjs, i);
+		if (!o->isInUse) continue;
+		NAddMapObject amo = NAddMapObject_init_default;
+		amo.UID = o->uid;
+		strcpy(amo.MapObjectClass, o->Class->Name);
+		amo.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
+		amo.TileItemFlags = o->tileItem.flags;
+		amo.Health = o->Health;
+		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_MAP_OBJECT, &amo);
+	}
+
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 }
 

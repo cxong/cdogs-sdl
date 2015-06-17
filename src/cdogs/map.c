@@ -421,7 +421,13 @@ bool MapTryPlaceOneObject(
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
 	}
 
-	ObjAdd(mo, realPos, tileFlags | extraFlags);
+	NAddMapObject amo = NAddMapObject_init_default;
+	amo.UID = ObjsGetNextUID();
+	strcpy(amo.MapObjectClass, mo->Name);
+	amo.Pos = Vec2i2Net(realPos);
+	amo.TileItemFlags = tileFlags | extraFlags;
+	amo.Health = mo->Health;
+	ObjAdd(amo);
 	return true;
 }
 
@@ -434,10 +440,14 @@ void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
 	{
 		return;
 	}
-	TObject *o =
-		CArrayGet(&gObjs, ObjAdd(mo, Vec2iCenterOfTile(v), TILEITEM_IS_WRECK));
+	NAddMapObject amo = NAddMapObject_init_default;
+	amo.UID = ObjsGetNextUID();
+	strcpy(amo.MapObjectClass, mo->Name);
+	amo.Pos = Vec2i2Net(Vec2iCenterOfTile(v));
+	amo.TileItemFlags = TILEITEM_IS_WRECK;
 	// Set health to 0 to force into a wreck
-	o->Health = 0;
+	amo.Health = 0;
+	ObjAdd(amo);
 }
 
 int MapHasLockedRooms(Map *map)
