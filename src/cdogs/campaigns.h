@@ -65,6 +65,8 @@ typedef struct
 	unsigned int seed;
 	int MissionIndex;
 	bool IsLoaded;
+	// TODO: it may be possible to completely remove IsClient and rely on
+	// protocol definitions
 	bool IsClient;
 	bool IsError;
 	bool OptionsSet;
