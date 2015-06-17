@@ -75,7 +75,6 @@ static void HandleGameEvent(
 	switch (e->Type)
 	{
 		case GAME_EVENT_SCORE:
-			if (e->u.Score.PlayerId >= 0)
 			{
 				PlayerData *p = CArrayGet(&gPlayerDatas, e->u.Score.PlayerId);
 				PlayerScore(p, e->u.Score.Score);
@@ -180,7 +179,9 @@ static void HandleGameEvent(
 						break;
 					}
 					ActorHeal(a, e->u.Heal.Health);
-					if (e->u.Heal.IsRandomSpawned)
+					// Tell the spawner that we took a health so we can
+					// spawn more (but only if we're the server)
+					if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
 					{
 						PowerupSpawnerRemoveOne(healthSpawner);
 					}

@@ -120,6 +120,7 @@ void PickupPickup(TActor *a, const Pickup *p)
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
+		if (a->playerIndex >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 			e.u.Score.PlayerId = a->playerIndex;

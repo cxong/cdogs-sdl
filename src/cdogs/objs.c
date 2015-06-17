@@ -116,7 +116,7 @@ static void DestroyObject(
 	// Update objective
 	UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
 	// Extra score if objective
-	if (o->tileItem.flags & TILEITEM_OBJECTIVE)
+	if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && player >= 0)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 		e.u.Score.PlayerId = player;
