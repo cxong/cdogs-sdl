@@ -33,6 +33,7 @@
 #include "gamedata.h"
 #include "game_events.h"
 #include "net_util.h"
+#include "pickup.h"
 
 
 #define TIME_DECAY_EXPONENT 1.04
@@ -139,7 +140,8 @@ void HealthSpawnerInit(PowerupSpawner *p, Map *map)
 	PowerupSpawnerInit(p, map);
 	p->Enabled =
 		AreHealthPickupsAllowed(gCampaign.Entry.Mode) &&
-		ConfigGetBool(&gConfig, "Game.HealthPickups");
+		ConfigGetBool(&gConfig, "Game.HealthPickups") &&
+		!gCampaign.IsClient;
 	p->SpawnTime = HEALTH_SPAWN_TIME;
 	p->RateScaleFunc = HealthScale;
 	p->PlaceFunc = HealthPlace;
@@ -171,6 +173,7 @@ static void HealthPlace(const Vec2i pos, void *data)
 {
 	UNUSED(data);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2i2Net(pos);
 	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
@@ -188,7 +191,9 @@ void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 {
 	PowerupSpawnerInit(p, map);
 	// TODO: disable ammo spawners unless classic mode
-	p->Enabled = ConfigGetBool(&gConfig, "Game.Ammo");
+	p->Enabled =
+		ConfigGetBool(&gConfig, "Game.Ammo") &&
+		!gCampaign.IsClient;
 	p->SpawnTime = AMMO_SPAWN_TIME;
 	p->RateScaleFunc = AmmoScale;
 	p->PlaceFunc = AmmoPlace;
@@ -230,6 +235,7 @@ static void AmmoPlace(const Vec2i pos, void *data)
 {
 	const int ammoId = *(int *)data;
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2i2Net(pos);
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);

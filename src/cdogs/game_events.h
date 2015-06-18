@@ -66,14 +66,13 @@ typedef enum
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
+	GAME_EVENT_ACTOR_HEAL,
+	GAME_EVENT_ACTOR_ADD_AMMO,
 
 	GAME_EVENT_ADD_PICKUP,
-	// TODO: refactor take pickups
-	GAME_EVENT_TAKE_HEALTH_PICKUP,
-	GAME_EVENT_TAKE_AMMO_PICKUP,
+	GAME_EVENT_REMOVE_PICKUP,
 	GAME_EVENT_USE_AMMO,
 
-	GAME_EVENT_OBJECT_SET_COUNTER,
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_ADD_BULLET,
@@ -138,19 +137,10 @@ typedef struct
 			// ID of GunDescription of new gun
 			int GunId;
 		} ActorReplaceGun;
+		NActorHeal Heal;
+		NActorAddAmmo AddAmmo;
 		NAddPickup AddPickup;
-		struct
-		{
-			int PlayerIndex;
-			int Health;
-			bool IsRandomSpawned;
-		} Heal;
-		struct
-		{
-			int PlayerIndex;
-			AddAmmo AddAmmo;
-			bool IsRandomSpawned;
-		} AddAmmo;
+		NRemovePickup RemovePickup;
 		struct
 		{
 			int PlayerIndex;

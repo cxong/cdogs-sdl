@@ -95,6 +95,21 @@ message NActorDir {
 	required int32 Dir = 2;
 }
 
+message NActorHeal {
+	required uint32 UID = 1;
+	required int32 PlayerId = 2 [default=-1];
+	required int32 Amount = 3;
+	required bool IsRandomSpawned = 4;
+}
+
+message NActorAddAmmo {
+	required uint32 UID = 1;
+	required int32 PlayerId = 2 [default=-1];
+	required uint32 AmmoId = 3;
+	required int32 Amount = 4;
+	required bool IsRandomSpawned = 5;
+}
+
 message NAddPickup {
 	required uint32 UID = 1;
 	required string PickupClass = 2;
@@ -102,6 +117,11 @@ message NAddPickup {
 	required int32 SpawnerUID = 4 [default=-1];
 	required uint32 TileItemFlags = 5;
 	required NVec2i Pos = 6;
+}
+
+message NRemovePickup {
+	required uint32 UID = 1;
+	required int32 SpawnerUID = 2 [default=-1];
 }
 
 message NAddBullet {

@@ -158,6 +158,42 @@ static void HandleGameEvent(
 				IdGunDescription(e->u.ActorReplaceGun.GunId));
 		}
 		break;
+	case GAME_EVENT_ACTOR_HEAL:
+		{
+			TActor *a = CArrayGet(&gActors, e->u.Heal.UID);
+			if (!a->isInUse || a->dead) break;
+			ActorHeal(a, e->u.Heal.Amount);
+			// Tell the spawner that we took a health so we can
+			// spawn more (but only if we're the server)
+			if (e->u.Heal.IsRandomSpawned && !gCampaign.IsClient)
+			{
+				PowerupSpawnerRemoveOne(healthSpawner);
+			}
+			if (e->u.Heal.PlayerId >= 0)
+			{
+				HUDAddHealthUpdate(hud, e->u.Heal.PlayerId, e->u.Heal.Amount);
+			}
+		}
+		break;
+	case GAME_EVENT_ACTOR_ADD_AMMO:
+		{
+			TActor *a = CArrayGet(&gActors, e->u.AddAmmo.UID);
+			if (!a->isInUse || a->dead) break;
+			ActorAddAmmo(a, e->u.AddAmmo.AmmoId, e->u.AddAmmo.Amount);
+			// Tell the spawner that we took ammo so we can
+			// spawn more (but only if we're the server)
+			if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+			{
+				printf("Remove ammo id %d\n", e->u.AddAmmo.AmmoId);
+				PowerupSpawnerRemoveOne(
+					CArrayGet(ammoSpawners, e->u.AddAmmo.AmmoId));
+			}
+			if (e->u.Heal.PlayerId >= 0)
+			{
+				// TODO: some sort of text effect showing ammo grab
+			}
+		}
+		break;
 	case GAME_EVENT_ADD_PICKUP:
 		{
 			PickupAdd(e->u.AddPickup);
@@ -170,50 +206,12 @@ static void HandleGameEvent(
 				eventHandlers);
 		}
 		break;
-	case GAME_EVENT_TAKE_HEALTH_PICKUP:
+	case GAME_EVENT_REMOVE_PICKUP:
+		PickupDestroy(e->u.RemovePickup.UID);
+		if (e->u.RemovePickup.SpawnerUID >= 0)
 		{
-			const PlayerData *p =
-				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
-			if (IsPlayerAlive(p))
-			{
-				TActor *a = CArrayGet(&gActors, p->Id);
-				if (!a->isInUse)
-				{
-					break;
-				}
-				ActorHeal(a, e->u.Heal.Health);
-				// Tell the spawner that we took a health so we can
-				// spawn more (but only if we're the server)
-				if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
-				{
-					PowerupSpawnerRemoveOne(healthSpawner);
-				}
-				HUDAddHealthUpdate(
-					hud, e->u.Heal.PlayerIndex, e->u.Heal.Health);
-			}
-		}
-		break;
-	case GAME_EVENT_TAKE_AMMO_PICKUP:
-		{
-			const PlayerData *p =
-				CArrayGet(&gPlayerDatas, e->u.Heal.PlayerIndex);
-			if (IsPlayerAlive(p))
-			{
-				TActor *a = CArrayGet(&gActors, p->Id);
-				if (!a->isInUse)
-				{
-					break;
-				}
-				ActorAddAmmo(a, e->u.AddAmmo.AddAmmo);
-				// Tell the spawner that we took a piece of ammo so we can
-				// spawn more (but only if we're the server)
-				if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
-				{
-					PowerupSpawnerRemoveOne(
-						CArrayGet(ammoSpawners, e->u.AddAmmo.AddAmmo.Id));
-				}
-				// TODO: some sort of text effect showing ammo grab
-			}
+			TObject *o = ObjGetByUID(e->u.RemovePickup.SpawnerUID);
+			o->counter = AMMO_SPAWNER_RESPAWN_TICKS;
 		}
 		break;
 	case GAME_EVENT_USE_AMMO:
@@ -227,15 +225,10 @@ static void HandleGameEvent(
 				{
 					break;
 				}
-				ActorAddAmmo(a, e->u.UseAmmo.UseAmmo);
+				ActorAddAmmo(
+					a, e->u.UseAmmo.UseAmmo.Id, e->u.UseAmmo.UseAmmo.Amount);
 				// TODO: some sort of text effect showing ammo usage
 			}
-		}
-		break;
-	case GAME_EVENT_OBJECT_SET_COUNTER:
-		{
-			TObject *o = ObjGetByUID(e->u.ObjectSetCounter.UID);
-			o->counter = e->u.ObjectSetCounter.Count;
 		}
 		break;
 	case GAME_EVENT_MOBILE_OBJECT_REMOVE:

@@ -205,7 +205,7 @@ void BuildTranslationTables(const TPalette palette);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 
-void ActorAddAmmo(TActor *actor, AddAmmo a);
+void ActorAddAmmo(TActor *actor, const int ammoId, const int amount);
 // Whether the actor has a gun that uses this ammo
 bool ActorUsesAmmo(const TActor *actor, const int ammoId);
 void ActorReplaceGun(

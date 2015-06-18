@@ -53,14 +53,14 @@ void PickupsTerminate(void)
 		const Pickup *p = CArrayGet(&gPickups, i);
 		if (p->isInUse)
 		{
-			PickupDestroy(i);
+			PickupDestroy(p->UID);
 		}
 	}
 	CArrayTerminate(&gPickups);
 }
 int PickupsGetNextUID(void)
 {
-	return sPickupUIDs;
+	return sPickupUIDs++;
 }
 static const Pic *GetPickupPic(const int id, Vec2i *offset);
 void PickupAdd(const NAddPickup ap)
@@ -87,10 +87,6 @@ void PickupAdd(const NAddPickup ap)
 	}
 	memset(p, 0, sizeof *p);
 	p->UID = ap.UID;
-	while (ap.UID >= sPickupUIDs)
-	{
-		sPickupUIDs++;
-	}
 	p->class = StrPickupClass(ap.PickupClass);
 	p->tileItem.x = p->tileItem.y = -1;
 	p->tileItem.flags = ap.TileItemFlags;
@@ -101,19 +97,21 @@ void PickupAdd(const NAddPickup ap)
 	p->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &p->tileItem, Net2Vec2i(ap.Pos));
 	p->IsRandomSpawned = ap.IsRandomSpawned;
+	p->PickedUp = false;
 	p->SpawnerUID = ap.SpawnerUID;
 	p->isInUse = true;
 }
-void PickupDestroy(const int id)
+void PickupDestroy(const int uid)
 {
-	Pickup *p = CArrayGet(&gPickups, id);
+	Pickup *p = PickupGetByUID(uid);
 	CASSERT(p->isInUse, "Destroying not-in-use pickup");
 	MapRemoveTileItem(&gMap, &p->tileItem);
 	p->isInUse = false;
 }
 
-void PickupPickup(TActor *a, const Pickup *p)
+void PickupPickup(TActor *a, Pickup *p)
 {
+	if (p->PickedUp) return;
 	bool canPickup = true;
 	Mix_Chunk *sound = NULL;
 	const Vec2i actorPos = Vec2iNew(a->tileItem.x, a->tileItem.y);
@@ -138,9 +136,10 @@ void PickupPickup(TActor *a, const Pickup *p)
 		if (a->health < ActorGetCharacter(a)->maxHealth)
 		{
 			canPickup = true;
-			GameEvent e = GameEventNew(GAME_EVENT_TAKE_HEALTH_PICKUP);
-			e.u.Heal.PlayerIndex = a->playerIndex;
-			e.u.Heal.Health = p->class->u.Health;
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HEAL);
+			e.u.Heal.UID = a->uid;
+			e.u.Heal.PlayerId = a->playerIndex;
+			e.u.Heal.Amount = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.healthSound;
@@ -176,9 +175,11 @@ void PickupPickup(TActor *a, const Pickup *p)
 			}
 
 			// Take ammo
-			GameEvent e = GameEventNew(GAME_EVENT_TAKE_AMMO_PICKUP);
-			e.u.AddAmmo.PlayerIndex = a->playerIndex;
-			e.u.AddAmmo.AddAmmo = p->class->u.Ammo;
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+			e.u.Heal.UID = a->uid;
+			e.u.AddAmmo.PlayerId = a->playerIndex;
+			e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
+			e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
 			e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 			// Note: receiving end will prevent ammo from exceeding max
 			GameEventsEnqueue(&gGameEvents, e);
@@ -259,17 +260,12 @@ void PickupPickup(TActor *a, const Pickup *p)
 	if (canPickup)
 	{
 		SoundPlayAt(&gSoundDevice, sound, actorPos);
-
-		// Alert spawner to start respawn process
-		if (p->SpawnerUID >= 0)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_OBJECT_SET_COUNTER);
-			e.u.ObjectSetCounter.UID = p->SpawnerUID;
-			e.u.ObjectSetCounter.Count = AMMO_SPAWNER_RESPAWN_TICKS;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-
-		PickupDestroy(p->tileItem.id);
+		GameEvent e = GameEventNew(GAME_EVENT_REMOVE_PICKUP);
+		e.u.RemovePickup.UID = p->UID;
+		e.u.RemovePickup.SpawnerUID = p->SpawnerUID;
+		GameEventsEnqueue(&gGameEvents, e);
+		// Prevent multiple pickups by marking
+		p->PickedUp = true;
 	}
 }
 

@@ -655,11 +655,11 @@ void InjureActor(TActor * actor, int injury)
 	}
 }
 
-void ActorAddAmmo(TActor *actor, AddAmmo a)
+void ActorAddAmmo(TActor *actor, const int ammoId, const int amount)
 {
-	int *ammo = CArrayGet(&actor->ammo, a.Id);
-	*ammo += a.Amount;
-	const int ammoMax = AmmoGetById(&gAmmo, a.Id)->Max;
+	int *ammo = CArrayGet(&actor->ammo, ammoId);
+	*ammo += amount;
+	const int ammoMax = AmmoGetById(&gAmmo, ammoId)->Max;
 	*ammo = CLAMP(*ammo, 0, ammoMax);
 }
 
@@ -1099,35 +1099,38 @@ static void ActorAddAmmoPickup(const TActor *actor)
 	}
 
 	// Add ammo pickups for each of the actor's guns
-	for (int i = 0; i < (int)actor->guns.size; i++)
+	if (!gCampaign.IsClient)
 	{
-		const Weapon *w = CArrayGet(&actor->guns, i);
-
-		// Check if the actor's gun has ammo at all
-		if (w->Gun->AmmoId < 0)
+		for (int i = 0; i < (int)actor->guns.size; i++)
 		{
-			continue;
-		}
+			const Weapon *w = CArrayGet(&actor->guns, i);
 
-		// Don't spawn ammo if no players use it
-		if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
-		{
-			continue;
-		}
+			// Check if the actor's gun has ammo at all
+			if (w->Gun->AmmoId < 0)
+			{
+				continue;
+			}
 
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-		e.u.AddPickup.UID = PickupsGetNextUID();
-		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-		sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
-		e.u.AddPickup.IsRandomSpawned = false;
-		e.u.AddPickup.SpawnerUID = -1;
-		e.u.AddPickup.TileItemFlags = 0;
-		// Add a little random offset so the pickups aren't all together
-		const Vec2i offset = Vec2iNew(
-			RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
-			RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-		e.u.AddPickup.Pos = Vec2i2Net(Vec2iAdd(Vec2iFull2Real(actor->Pos), offset));
-		GameEventsEnqueue(&gGameEvents, e);
+			// Don't spawn ammo if no players use it
+			if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
+			{
+				continue;
+			}
+
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+			e.u.AddPickup.UID = PickupsGetNextUID();
+			const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
+			e.u.AddPickup.IsRandomSpawned = false;
+			e.u.AddPickup.SpawnerUID = -1;
+			e.u.AddPickup.TileItemFlags = 0;
+			// Add a little random offset so the pickups aren't all together
+			const Vec2i offset = Vec2iNew(
+				RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+				RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+			e.u.AddPickup.Pos = Vec2i2Net(Vec2iAdd(Vec2iFull2Real(actor->Pos), offset));
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 
 }
@@ -1139,16 +1142,19 @@ static void ActorAddGunPickup(const TActor *actor)
 	}
 
 	// Select a gun at random to drop
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
-	const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
-	const Weapon *w = CArrayGet(&actor->guns, gunIndex);
-	sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
-	e.u.AddPickup.IsRandomSpawned = false;
-	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = 0;
-	e.u.AddPickup.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
-	GameEventsEnqueue(&gGameEvents, e);
+	if (!gCampaign.IsClient)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+		e.u.AddPickup.UID = PickupsGetNextUID();
+		const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
+		const Weapon *w = CArrayGet(&actor->guns, gunIndex);
+		sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
+		e.u.AddPickup.IsRandomSpawned = false;
+		e.u.AddPickup.SpawnerUID = -1;
+		e.u.AddPickup.TileItemFlags = 0;
+		e.u.AddPickup.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 }
 static bool IsUnarmedBot(const TActor *actor)
 {
@@ -1179,7 +1185,7 @@ void ActorsTerminate(void)
 }
 int ActorsGetNextUID(void)
 {
-	return sActorUIDs;
+	return sActorUIDs++;
 }
 int ActorsGetFreeIndex(void)
 {
@@ -1216,10 +1222,6 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->uid = aa.UID;
 	LOG(LM_ACTOR, LL_DEBUG,
 		"add actor uid(%d) playerId(%d)", actor->uid, (int)aa.PlayerId);
-	while (aa.UID >= sActorUIDs)
-	{
-		sActorUIDs++;
-	}
 	CArrayInit(&actor->guns, sizeof(Weapon));
 	CArrayInit(&actor->ammo, sizeof(int));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)

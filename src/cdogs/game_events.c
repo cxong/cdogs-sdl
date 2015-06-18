@@ -73,13 +73,13 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_STATE, true, true, true, NActorState_fields },
 	{ GAME_EVENT_ACTOR_DIR, true, true, true, NActorDir_fields },
 	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, true, NULL },
+	{ GAME_EVENT_ACTOR_HEAL, true, false, true, NActorHeal_fields },
+	{ GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, NActorAddAmmo_fields },
 
 	{ GAME_EVENT_ADD_PICKUP, true, false, true, NAddPickup_fields },
-	{ GAME_EVENT_TAKE_HEALTH_PICKUP, false, false, true, NULL },
-	{ GAME_EVENT_TAKE_AMMO_PICKUP, false, false, true, NULL },
+	{ GAME_EVENT_REMOVE_PICKUP, true, false, true, NRemovePickup_fields },
 	{ GAME_EVENT_USE_AMMO, false, false, true, NULL },
 
-	{ GAME_EVENT_OBJECT_SET_COUNTER, false, false, true, NULL },
 	{ GAME_EVENT_MOBILE_OBJECT_REMOVE, false, false, true, NULL },
 	{ GAME_EVENT_PARTICLE_REMOVE, false, false, true, NULL },
 	{ GAME_EVENT_ADD_BULLET, true, true, true, NAddBullet_fields },

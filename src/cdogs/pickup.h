@@ -41,6 +41,7 @@ typedef struct
 	TTileItem tileItem;
 	bool IsRandomSpawned;
 	bool isInUse;
+	bool PickedUp;
 	// For spawned pickups, the UID of the spawner (-1 otherwise)
 	int SpawnerUID;
 } Pickup;
@@ -51,8 +52,8 @@ void PickupsInit(void);
 void PickupsTerminate(void);
 int PickupsGetNextUID(void);
 void PickupAdd(const NAddPickup ap);
-void PickupDestroy(const int id);
+void PickupDestroy(const int uid);
 
-void PickupPickup(TActor *a, const Pickup *p);
+void PickupPickup(TActor *a, Pickup *p);
 
 Pickup *PickupGetByUID(const int uid);

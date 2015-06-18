@@ -400,7 +400,7 @@ void ObjsTerminate(void)
 }
 int ObjsGetNextUID(void)
 {
-	return sObjUIDs;
+	return sObjUIDs++;
 }
 
 void ObjAdd(const NAddMapObject amo)
@@ -427,10 +427,6 @@ void ObjAdd(const NAddMapObject amo)
 	}
 	memset(o, 0, sizeof *o);
 	o->uid = amo.UID;
-	while (amo.UID >= sObjUIDs)
-	{
-		sObjUIDs++;
-	}
 	o->Class = StrMapObject(amo.MapObjectClass);
 	o->Health = amo.Health;
 	o->tileItem.x = o->tileItem.y = -1;
@@ -469,6 +465,7 @@ void UpdateObjects(const int ticks)
 		switch (obj->Class->Type)
 		{
 		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
+			if (gCampaign.IsClient) break;
 			// If counter -1, it is inactive i.e. already spawned pickup
 			if (obj->counter == -1)
 			{
