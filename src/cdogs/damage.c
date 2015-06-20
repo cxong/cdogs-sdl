@@ -80,13 +80,12 @@ bool CanDamageCharacter(
 static void TrackKills(PlayerData *pd, const TActor *victim);
 void DamageActor(const ActorDamage ad)
 {
-	PlayerData *pd = PlayerDataGetByUID(ad.PlayerUID);
 	TActor *victim = ActorGetByUID(ad.TargetUID);
 	const int startingHealth = victim->health;
 	InjureActor(victim, ad.Power);
-	if (startingHealth > 0 && victim->health <= 0)
+	if (startingHealth > 0 && victim->health <= 0 && ad.PlayerUID >= 0)
 	{
-		TrackKills(pd, victim);
+		TrackKills(PlayerDataGetByUID(ad.PlayerUID), victim);
 	}
 }
 static void TrackKills(PlayerData *pd, const TActor *victim)

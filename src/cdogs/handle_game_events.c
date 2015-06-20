@@ -143,7 +143,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_ACTOR_HEAL:
 		{
-			TActor *a = CArrayGet(&gActors, e->u.Heal.UID);
+			TActor *a = ActorGetByUID(e->u.Heal.UID);
 			if (!a->isInUse || a->dead) break;
 			ActorHeal(a, e->u.Heal.Amount);
 			// Tell the spawner that we took a health so we can
@@ -160,7 +160,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_ACTOR_ADD_AMMO:
 		{
-			TActor *a = CArrayGet(&gActors, e->u.AddAmmo.UID);
+			TActor *a = ActorGetByUID(e->u.AddAmmo.UID);
 			if (!a->isInUse || a->dead) break;
 			ActorAddAmmo(a, e->u.AddAmmo.AmmoId, e->u.AddAmmo.Amount);
 			// Tell the spawner that we took ammo so we can

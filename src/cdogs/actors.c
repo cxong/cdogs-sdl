@@ -1056,6 +1056,8 @@ static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor, const int idx)
 {
 	// Check if the player has lives to revive
+	bool respawn = false;
+	Vec2i defaultSpawnPosition = Vec2iZero();
 	PlayerData *p = GetPlayerData(actor);
 	if (p != NULL)
 	{
@@ -1065,22 +1067,9 @@ static void ActorDie(TActor *actor, const int idx)
 		{
 			// Find the closest player alive; try to spawn next to that position
 			// if no other suitable position exists
-			Vec2i defaultSpawnPosition = Vec2iZero();
 			const TActor *closestActor = AIGetClosestPlayer(actor->Pos);
 			if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
-			// Force pump events so we spawn immediately
-			// This is to prevent screen redraw for one frame with one less
-			// player
-			const Vec2i spawnPos =
-				PlacePlayer(&gMap, p, defaultSpawnPosition, true);
-
-			// Play a spawn sound for players
-			GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-			// Need to delay it a bit because the camera takes time to update
-			sound.Delay = 1;
-			sound.u.SoundAt.Sound = StrSound("spawn");
-			sound.u.SoundAt.Pos = Vec2iFull2Real(spawnPos);
-			GameEventsEnqueue(&gGameEvents, sound);
+			respawn = true;
 		}
 	}
 
@@ -1106,6 +1095,23 @@ static void ActorDie(TActor *actor, const int idx)
 	ObjAdd(amo);
 
 	ActorDestroy(idx);
+
+	if (respawn)
+	{
+		// Force pump events so we spawn immediately
+		// This is to prevent screen redraw for one frame with one less
+		// player
+		const Vec2i spawnPos =
+			PlacePlayer(&gMap, p, defaultSpawnPosition, true);
+
+		// Play a spawn sound for players
+		GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
+		// Need to delay it a bit because the camera takes time to update
+		sound.Delay = 1;
+		sound.u.SoundAt.Sound = StrSound("spawn");
+		sound.u.SoundAt.Pos = Vec2iFull2Real(spawnPos);
+		GameEventsEnqueue(&gGameEvents, sound);
+	}
 }
 static bool IsUnarmedBot(const TActor *actor);
 static void ActorAddAmmoPickup(const TActor *actor)
