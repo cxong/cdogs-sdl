@@ -250,7 +250,7 @@ bool GameIsMouseUsed(void)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->inputDevice == INPUT_DEVICE_MOUSE)
+		if (p->IsLocal && p->inputDevice == INPUT_DEVICE_MOUSE)
 		{
 			return true;
 		}

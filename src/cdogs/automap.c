@@ -86,7 +86,7 @@ static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 	if (scale >= 2)
 	{
 		const Character *c = ActorGetCharacter(player);
-		int picIdx = cHeadPic[c->looks.face][DIRECTION_DOWN][STATE_IDLE];
+		const int picIdx = cHeadPic[c->looks.Face][DIRECTION_DOWN][STATE_IDLE];
 		PicPaletted *pic = PicManagerGetOldPic(&gPicManager, picIdx);
 		pos.x -= pic->w / 2;
 		pos.y -= pic->h / 2;
@@ -360,7 +360,7 @@ void AutomapDraw(int flags, bool showExit)
 		{
 			continue;
 		}
-		DisplayPlayer(CArrayGet(&gActors, p->Id), pos, MAP_FACTOR);
+		DisplayPlayer(ActorGetByUID(p->ActorUID), pos, MAP_FACTOR);
 	}
 
 	if (showExit)
@@ -389,7 +389,7 @@ void AutomapDrawRegion(
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		DisplayPlayer(player, centerOn, scale);
 	}
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);

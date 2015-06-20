@@ -63,7 +63,7 @@ bool CanHitCharacter(const int flags, const int uid, const TActor *actor)
 }
 
 bool CanDamageCharacter(
-	const int flags, const int player, const int uid,
+	const int flags, const int playerUID, const int uid,
 	const TActor *actor, const special_damage_e special)
 {
 	if (!CanHitCharacter(flags, uid, actor))
@@ -74,37 +74,35 @@ bool CanDamageCharacter(
 	{
 		return false;
 	}
-	return !ActorIsInvulnerable(actor, flags, player, gCampaign.Entry.Mode);
+	return !ActorIsInvulnerable(actor, flags, playerUID, gCampaign.Entry.Mode);
 }
 
-static void TrackKills(int player, TActor *victim);
-void DamageCharacter(int power, int player, TActor *actor)
+static void TrackKills(PlayerData *pd, const TActor *victim);
+void DamageActor(const ActorDamage ad)
 {
-	const int startingHealth = actor->health;
-	InjureActor(actor, power);
-	if (startingHealth > 0 && actor->health <= 0)
+	PlayerData *pd = PlayerDataGetByUID(ad.PlayerUID);
+	TActor *victim = ActorGetByUID(ad.TargetUID);
+	const int startingHealth = victim->health;
+	InjureActor(victim, ad.Power);
+	if (startingHealth > 0 && victim->health <= 0)
 	{
-		TrackKills(player, actor);
+		TrackKills(pd, victim);
 	}
 }
-static void TrackKills(int player, TActor *victim)
+static void TrackKills(PlayerData *pd, const TActor *victim)
 {
-	if (player >= 0)
+	if (!IsPVP(gCampaign.Entry.Mode) &&
+		(victim->PlayerUID >= 0 ||
+		(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY))))
 	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, player);
-		if (!IsPVP(gCampaign.Entry.Mode) &&
-			(victim->playerIndex >= 0 ||
-			(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY))))
-		{
-			p->friendlies++;
-		}
-		else if (player == victim->playerIndex)
-		{
-			p->suicides++;
-		}
-		else
-		{
-			p->kills++;
-		}
+		pd->friendlies++;
+	}
+	else if (pd->UID == victim->PlayerUID)
+	{
+		pd->suicides++;
+	}
+	else
+	{
+		pd->kills++;
 	}
 }

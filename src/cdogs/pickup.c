@@ -118,10 +118,10 @@ void PickupPickup(TActor *a, Pickup *p)
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
-		if (a->playerIndex >= 0)
+		if (a->PlayerUID >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerId = a->playerIndex;
+			e.u.Score.PlayerUID = a->PlayerUID;
 			e.u.Score.Score = p->class->u.Score;
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = gSoundDevice.pickupSound;
@@ -138,7 +138,7 @@ void PickupPickup(TActor *a, Pickup *p)
 			canPickup = true;
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HEAL);
 			e.u.Heal.UID = a->uid;
-			e.u.Heal.PlayerId = a->playerIndex;
+			e.u.Heal.PlayerUID = a->PlayerUID;
 			e.u.Heal.Amount = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
@@ -177,7 +177,7 @@ void PickupPickup(TActor *a, Pickup *p)
 			// Take ammo
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 			e.u.Heal.UID = a->uid;
-			e.u.AddAmmo.PlayerId = a->playerIndex;
+			e.u.AddAmmo.PlayerUID = a->PlayerUID;
 			e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
 			e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
 			e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
@@ -218,7 +218,7 @@ void PickupPickup(TActor *a, Pickup *p)
 					if (ammoDeficit > 0)
 					{
 						e = GameEventNew(GAME_EVENT_USE_AMMO);
-						e.u.UseAmmo.PlayerIndex = a->playerIndex;
+						e.u.UseAmmo.PlayerUID = a->PlayerUID;
 						e.u.UseAmmo.UseAmmo.Id = ammoId;
 						e.u.UseAmmo.UseAmmo.Amount = ammoDeficit;
 						GameEventsEnqueue(&gGameEvents, e);
@@ -232,8 +232,7 @@ void PickupPickup(TActor *a, Pickup *p)
 				a->CanPickupSpecial = true;
 				canPickup = false;
 				// "Say" that the weapon must be picked up using a command
-				const PlayerData *pData =
-					CArrayGet(&gPlayerDatas, a->playerIndex);
+				const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
 				const char *pickupKey = InputGetButtonName(
 					pData->inputDevice, pData->deviceIndex, CMD_BUTTON2);
 				if (pickupKey != NULL)

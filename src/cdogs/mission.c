@@ -491,7 +491,7 @@ void MissionEnd(void)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		p->Id = -1;
+		p->ActorUID = -1;
 	}
 	gMission.HasStarted = false;
 }
@@ -591,7 +591,7 @@ bool IsMissionComplete(const struct MissionOptions *options)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		if (!MapIsTileInExit(&gMap, &player->tileItem))
 		{
 			return 0;

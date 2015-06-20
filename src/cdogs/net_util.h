@@ -59,7 +59,6 @@ bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
 NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
-void NPlayerDataUpdate(const NPlayerData *pd);
 
 Vec2i Net2Vec2i(const NVec2i v);
 NVec2i Vec2i2Net(const Vec2i v);

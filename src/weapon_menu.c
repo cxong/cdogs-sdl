@@ -36,7 +36,7 @@
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
-	PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 	const CArray *weapons = &gMission.Weapons;
 
 	// Don't process if we're not selecting a weapon
@@ -117,7 +117,7 @@ static void DisplayEquippedWeapons(
 	weaponsPos = Vec2iNew(
 		dPos.x + size.x * 3 / 4 - maxTextSize.x / 2,
 		CENTER_Y(dPos, size, 0) + 14);
-	const PlayerData *p = CArrayGet(&gPlayerDatas, d->display.playerIndex);
+	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 	if (p->weaponCount == 0)
 	{
 		FontStr("None selected...", weaponsPos);
@@ -141,7 +141,7 @@ static void DisplayDescriptionGunIcon(
 	const void *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu,
-	int numPlayers, int player, const int playerIndex,
+	int numPlayers, int player, const int playerUID,
 	EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	MenuSystem *ms = &menu->ms;
@@ -150,9 +150,9 @@ void WeaponMenuCreate(
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
-	data->display.playerIndex = playerIndex;
+	data->display.PlayerUID = playerUID;
 	data->display.currentMenu = &ms->current;
-	data->playerIndex = playerIndex;
+	data->PlayerUID = playerUID;
 
 	switch (numPlayers)
 	{
@@ -211,7 +211,7 @@ void WeaponMenuCreate(
 	}
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon
-	PlayerData *pData = CArrayGet(&gPlayerDatas, playerIndex);
+	PlayerData *pData = PlayerDataGetByUID(playerUID);
 	for (int i = 0; i < pData->weaponCount; i++)
 	{
 		for (int j = 0; j < (int)weapons->size; j++)
@@ -238,7 +238,8 @@ void WeaponMenuCreate(
 	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayerControls, &data->playerIndex);
+	MenuSystemAddCustomDisplay(
+		ms, MenuDisplayPlayerControls, &data->PlayerUID);
 }
 static void DisplayGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,

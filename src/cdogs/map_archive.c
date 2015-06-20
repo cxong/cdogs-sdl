@@ -561,12 +561,12 @@ static json_t *SaveCharacters(CharacterStore *s)
 	{
 		json_t *node = json_new_object();
 		Character *c = CArrayGet(&s->OtherChars, i);
-		AddIntPair(node, "face", c->looks.face);
-		AddIntPair(node, "skin", c->looks.skin);
-		AddIntPair(node, "arm", c->looks.arm);
-		AddIntPair(node, "body", c->looks.body);
-		AddIntPair(node, "leg", c->looks.leg);
-		AddIntPair(node, "hair", c->looks.hair);
+		AddIntPair(node, "face", c->looks.Face);
+		AddIntPair(node, "skin", c->looks.Skin);
+		AddIntPair(node, "arm", c->looks.Arm);
+		AddIntPair(node, "body", c->looks.Body);
+		AddIntPair(node, "leg", c->looks.Leg);
+		AddIntPair(node, "hair", c->looks.Hair);
 		AddIntPair(node, "speed", c->speed);
 		json_insert_pair_into_object(
 			node, "Gun", json_new_string(c->Gun->name));

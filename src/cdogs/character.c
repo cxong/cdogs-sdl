@@ -80,11 +80,11 @@ void CharacterSetColors(Character *c)
 	{
 		(*t)[f] = f & 0xFF;
 	}
-	SetShade(t, BODY_START, BODY_END, c->looks.body);
-	SetShade(t, ARMS_START, ARMS_END, c->looks.arm);
-	SetShade(t, LEGS_START, LEGS_END, c->looks.leg);
-	SetShade(t, SKIN_START, SKIN_END, c->looks.skin);
-	SetShade(t, HAIR_START, HAIR_END, c->looks.hair);
+	SetShade(t, BODY_START, BODY_END, c->looks.Body);
+	SetShade(t, ARMS_START, ARMS_END, c->looks.Arm);
+	SetShade(t, LEGS_START, LEGS_END, c->looks.Leg);
+	SetShade(t, SKIN_START, SKIN_END, c->looks.Skin);
+	SetShade(t, HAIR_START, HAIR_END, c->looks.Hair);
 }
 
 

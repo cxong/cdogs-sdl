@@ -286,18 +286,18 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->looks.face = b->facePic;
+	c->looks.Face = b->facePic;
 	c->speed = b->speed;
 	c->bot->probabilityToMove = b->probabilityToMove;
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
 	c->bot->actionDelay = b->actionDelay;
 	c->Gun = CArrayGet(&gGunDescriptions.Guns, b->gun);
-	c->looks.skin = b->skinColor;
-	c->looks.arm = b->armColor;
-	c->looks.body = b->bodyColor;
-	c->looks.leg = b->legColor;
-	c->looks.hair = b->hairColor;
+	c->looks.Skin = b->skinColor;
+	c->looks.Arm = b->armColor;
+	c->looks.Body = b->bodyColor;
+	c->looks.Leg = b->legColor;
+	c->looks.Hair = b->hairColor;
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }
@@ -306,7 +306,7 @@ TBadGuy ConvertTBadGuy(Character *e)
 	TBadGuy b;
 	b.armedBodyPic = BODY_ARMED;
 	b.unarmedBodyPic = BODY_UNARMED;
-	b.facePic = e->looks.face;
+	b.facePic = e->looks.Face;
 	b.speed = e->speed;
 	b.probabilityToMove = e->bot->probabilityToMove;
 	b.probabilityToTrack = e->bot->probabilityToTrack;
@@ -322,11 +322,11 @@ TBadGuy ConvertTBadGuy(Character *e)
 			break;
 		}
 	}
-	b.skinColor = e->looks.skin;
-	b.armColor = e->looks.arm;
-	b.bodyColor = e->looks.body;
-	b.legColor = e->looks.leg;
-	b.hairColor = e->looks.hair;
+	b.skinColor = e->looks.Skin;
+	b.armColor = e->looks.Arm;
+	b.bodyColor = e->looks.Body;
+	b.legColor = e->looks.Leg;
+	b.hairColor = e->looks.Hair;
 	b.health = e->maxHealth;
 	b.flags = e->flags;
 	return b;

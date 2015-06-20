@@ -88,9 +88,9 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 
 
 static void DestroyObject(
-	TObject *o, const int flags, const int player, const int uid);
+	TObject *o, const int flags, const int playerUID, const int uid);
 static void DamageObject(
-	const int power, const int flags, const int player, const int uid,
+	const int power, const int flags, const int playerUID, const int uid,
 	const TTileItem *target)
 {
 	TObject *o = CArrayGet(&gObjs, target->id);
@@ -105,21 +105,21 @@ static void DamageObject(
 	// Destroying objects and all the wonderful things that happen
 	if (o->Health <= 0)
 	{
-		DestroyObject(o, flags, player, uid);
+		DestroyObject(o, flags, playerUID, uid);
 	}
 }
 static void DestroyObject(
-	TObject *o, const int flags, const int player, const int uid)
+	TObject *o, const int flags, const int playerUID, const int uid)
 {
 	o->Health = 0;
 
 	// Update objective
 	UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
 	// Extra score if objective
-	if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && player >= 0)
+	if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && playerUID >= 0)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-		e.u.Score.PlayerId = player;
+		e.u.Score.PlayerUID = playerUID;
 		e.u.Score.Score = OBJECT_SCORE;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
@@ -130,7 +130,7 @@ static void DestroyObject(
 	for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
 	{
 		const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
-		GunAddBullets(*g, fullPos, 0, 0, flags, player, uid, true);
+		GunAddBullets(*g, fullPos, 0, 0, flags, playerUID, uid, true);
 	}
 
 	// A wreck left after the destruction of this object
@@ -141,7 +141,7 @@ static void DestroyObject(
 	e.u.AddBullet.Angle = 0;
 	e.u.AddBullet.Elevation = 0;
 	e.u.AddBullet.Flags = 0;
-	e.u.AddBullet.PlayerIndex = -1;
+	e.u.AddBullet.PlayerUID = -1;
 	e.u.AddBullet.UID = -1;
 	GameEventsEnqueue(&gGameEvents, e);
 	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
@@ -166,7 +166,7 @@ static bool DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
-	const int player,
+	const int playerUID,
 	const int uid,
 	const TTileItem *target,
 	const special_damage_e special,
@@ -176,7 +176,7 @@ bool DamageSomething(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
-	const int player,
+	const int playerUID,
 	const int uid,
 	TTileItem *target,
 	const special_damage_e special,
@@ -194,11 +194,11 @@ bool DamageSomething(
 	case KIND_CHARACTER:
 		return DoDamageCharacter(
 			pos, hitVector,
-			power, flags, player, uid,
+			power, flags, playerUID, uid,
 			target, special, hitSounds, allowFriendlyHitSound);
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, player, uid, target);
+		DamageObject(power, flags, playerUID, uid, target);
 		if (ConfigGetBool(&gConfig, "Sound.Hits") &&
 			hitSounds != NULL &&
 			power > 0)
@@ -221,7 +221,7 @@ static bool DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
-	const int player,
+	const int playerUID,
 	const int uid,
 	const TTileItem *target,
 	const special_damage_e special,
@@ -241,7 +241,7 @@ static bool DoDamageCharacter(
 		if (ConfigGetBool(&gConfig, "Sound.Hits") && hitSounds != NULL &&
 			!ActorIsImmune(actor, special) &&
 			(allowFriendlyHitSound || !ActorIsInvulnerable(
-			actor, flags, player, gCampaign.Entry.Mode)))
+			actor, flags, playerUID, gCampaign.Entry.Mode)))
 		{
 			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			es.u.SoundAt.Sound = hitSounds->Flesh;
@@ -256,18 +256,13 @@ static bool DoDamageCharacter(
 				Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
 			GameEventsEnqueue(&gGameEvents, ei);
 		}
-		if (CanDamageCharacter(flags, player, uid, actor, special))
+		if (CanDamageCharacter(flags, playerUID, uid, actor, special))
 		{
 			GameEvent e1 = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
-			e1.u.DamageCharacter.Power = power;
-			e1.u.DamageCharacter.PlayerIndex = player;
-			e1.u.DamageCharacter.TargetId = actor->tileItem.id;
-			e1.u.DamageCharacter.TargetPlayerIndex = -1;
-			if (actor->playerIndex >= 0)
-			{
-				e1.u.DamageCharacter.TargetPlayerIndex =
-					actor->playerIndex;
-			}
+			e1.u.ActorDamage.Power = power;
+			e1.u.ActorDamage.PlayerUID = playerUID;
+			e1.u.ActorDamage.TargetUID = actor->uid;
+			e1.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
 			GameEventsEnqueue(&gGameEvents, e1);
 
 			if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
@@ -334,13 +329,13 @@ static bool DoDamageCharacter(
 			// Don't score for friendly or player hits
 			const bool isFriendly =
 				(actor->flags & FLAGS_GOOD_GUY) ||
-				(!IsPVP(gCampaign.Entry.Mode) && actor->playerIndex >= 0);
-			if (player >= 0 && power != 0 && !isFriendly)
+				(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
+			if (playerUID >= 0 && power != 0 && !isFriendly)
 			{
 				// Calculate score based on
 				// if they hit a penalty character
 				GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
-				e2.u.Score.PlayerId = player;
+				e2.u.Score.PlayerUID = playerUID;
 				if (actor->flags & FLAGS_PENALTY)
 				{
 					e2.u.Score.Score = PENALTY_MULTIPLIER * power;
@@ -529,46 +524,6 @@ void MobObjsTerminate(void)
 	}
 	CArrayTerminate(&gMobObjs);
 }
-int MobObjAdd(const Vec2i fullpos, const int player, const int uid)
-{
-	// Find an empty slot in mobobj list
-	TMobileObject *obj = NULL;
-	int i;
-	for (i = 0; i < (int)gMobObjs.size; i++)
-	{
-		TMobileObject *m = CArrayGet(&gMobObjs, i);
-		if (!m->isInUse)
-		{
-			obj = m;
-			break;
-		}
-	}
-	if (obj == NULL)
-	{
-		TMobileObject m;
-		memset(&m, 0, sizeof m);
-		CArrayPushBack(&gMobObjs, &m);
-		i = (int)gMobObjs.size - 1;
-		obj = CArrayGet(&gMobObjs, i);
-	}
-	memset(obj, 0, sizeof *obj);
-	obj->x = fullpos.x;
-	obj->y = fullpos.y;
-	obj->player = player;
-	obj->uid = uid;
-	obj->tileItem.kind = KIND_MOBILEOBJECT;
-	obj->tileItem.id = i;
-	obj->soundLock = 0;
-	obj->isInUse = true;
-	obj->tileItem.x = obj->tileItem.y = -1;
-	obj->tileItem.getPicFunc = NULL;
-	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = NULL;
-	obj->tileItem.drawData.MobObjId = i;
-	obj->updateFunc = NULL;
-	MapTryMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(fullpos));
-	return i;
-}
 void MobObjDestroy(int id)
 {
 	TMobileObject *m = CArrayGet(&gMobObjs, id);
@@ -611,7 +566,7 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 	HitItemData *hData = data;
 	hData->HasHit = DamageSomething(
 		hData->Obj->vel, hData->Obj->bulletClass->Power,
-		hData->Obj->flags, hData->Obj->player, hData->Obj->uid,
+		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->uid,
 		ti,
 		hData->Obj->bulletClass->Special,
 		hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,

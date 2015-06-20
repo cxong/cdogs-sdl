@@ -139,7 +139,6 @@ void NetClientPoll(NetClient *n)
 		}
 	} while (check > 0);
 }
-static void AddMissingPlayers(const int playerId);
 static void OnReceive(NetClient *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
@@ -167,7 +166,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
 		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
 		case GAME_EVENT_ADD_BULLET:
-			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerIndex);
+			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
 			break;
 		default: break;
 		}
@@ -195,8 +194,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 					"unexpected client ID message, already set");
 				NClientId cid;
 				NetDecode(event.packet, &cid, NClientId_fields);
-				LOG(LM_NET, LL_DEBUG, "NetClient: received client ID %u", cid.Id);
+				LOG(LM_NET, LL_DEBUG, "recv clientId(%u) uid(%u)",
+					cid.Id, cid.FirstPlayerUID);
 				n->ClientId = (int)cid.Id;
+				n->FirstPlayerUID = (int)cid.FirstPlayerUID;
 			}
 			break;
 		case GAME_EVENT_CAMPAIGN_DEF:
@@ -224,16 +225,6 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				}
 			}
 			break;
-		case GAME_EVENT_PLAYER_DATA:
-			{
-				NPlayerData pd;
-				NetDecode(event.packet, &pd, NPlayerData_fields);
-				AddMissingPlayers(pd.PlayerIndex);
-				LOG(LM_NET, LL_DEBUG, "recv player data name(%s) id(%d) total(%d)",
-					pd.Name, pd.PlayerIndex, (int)gPlayerDatas.size);
-				NPlayerDataUpdate(&pd);
-			}
-			break;
 		case GAME_EVENT_OBJECTIVE_COUNT:
 			{
 				NObjectiveCount oc;
@@ -249,22 +240,18 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			{
 				NAddPlayers ap;
 				NetDecode(event.packet, &ap, NAddPlayers_fields);
-				LOG(LM_NET, LL_DEBUG,
-					"NetClient: received new players %d",
-					(int)ap.PlayerIds_count);
-				// Add new players
-				// If they are local players, set them up with defaults
-				const bool isLocal = (int)ap.ClientId == n->ClientId;
-				for (int i = 0; i < ap.PlayerIds_count; i++)
+				LOG(LM_NET, LL_DEBUG, "recv add players %d",
+					(int)ap.PlayerDatas_count);
+				if (ap.ClientId == n->ClientId)
 				{
-					const int playerId = (int)ap.PlayerIds[i];
-					AddMissingPlayers(playerId);
-					PlayerData *p = CArrayGet(&gPlayerDatas, playerId);
-					p->IsLocal = isLocal;
-					if (isLocal)
-					{
-						PlayerDataSetLocalDefaults(p, i);
-					}
+					LOG(LM_NET, LL_DEBUG, "ignoring; client id same %d",
+						n->ClientId);
+					break;
+				}
+				// Add new players
+				for (int i = 0; i < ap.PlayerDatas_count; i++)
+				{
+					PlayerDataAddOrUpdate(ap.PlayerDatas[i], false);
 				}
 			}
 			break;
@@ -278,15 +265,6 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		}
 	}
 	enet_packet_destroy(event.packet);
-}
-static void AddMissingPlayers(const int playerId)
-{
-	for (int i = (int)gPlayerDatas.size; i <= playerId; i++)
-	{
-		LOG(LM_NET, LL_DEBUG, "add remote playerId(%d)", playerId);
-		PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-		p->IsLocal = false;
-	}
 }
 
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)

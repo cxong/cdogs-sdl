@@ -39,91 +39,103 @@ void PlayerDataInit(CArray *p)
 	CArrayInit(p, sizeof(PlayerData));
 }
 
-PlayerData *PlayerDataAdd(CArray *p)
+void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal)
 {
-	PlayerData d;
-	memset(&d, 0, sizeof d);
+	PlayerData *p = PlayerDataGetByUID(pd.UID);
+	if (p == NULL)
+	{
+		PlayerData pNew;
+		memset(&pNew, 0, sizeof pNew);
+		CArrayPushBack(&gPlayerDatas, &pNew);
+		p = CArrayGet(&gPlayerDatas, (int)gPlayerDatas.size - 1);
 
-	d.Id = -1;
-	int i = (int)p->size;
-	d.IsUsed = false;
-	d.IsLocal = true;
-	d.inputDevice = INPUT_DEVICE_UNSET;
-	d.playerIndex = i;
+		// Set defaults
+		p->ActorUID = -1;
+		p->IsLocal = isLocal;
+		p->inputDevice = INPUT_DEVICE_UNSET;
 
-	d.Char.speed = 256;
-	d.Char.maxHealth = 200;
+		p->Char.speed = 256;
+		p->Char.maxHealth = 200;
+	}
 
-	CArrayPushBack(p, &d);
-	return CArrayGet(p, (int)p->size - 1);
+	p->UID = pd.UID;
+
+	strcpy(p->name, pd.Name);
+	p->Char.looks = pd.Looks;
+	CharacterSetColors(&p->Char);
+	p->weaponCount = pd.Weapons_count;
+	for (int i = 0; i < (int)pd.Weapons_count; i++)
+	{
+		p->weapons[i] = StrGunDescription(pd.Weapons[i]);
+	}
+	p->Lives = pd.Lives;
+	p->score = pd.Score;
+	p->totalScore = pd.Score;
+	p->kills = pd.Kills;
+	p->suicides = pd.Suicides;
+	p->friendlies = pd.Friendlies;
 }
 
-void PlayerDataSetLocalDefaults(PlayerData *d, const int idx)
+NPlayerData PlayerDataDefault(const int idx)
 {
-	CASSERT(d->IsLocal, "Cannot set defaults for remote player");
-	// Set default player 1 controls, as it's used in menus
-	if (idx == 0)
-	{
-		d->inputDevice = INPUT_DEVICE_KEYBOARD;
-		d->deviceIndex = 0;
-	}
+	NPlayerData pd = NPlayerData_init_default;
 
 	// load from template if available
 	if ((int)gPlayerTemplates.size > idx)
 	{
 		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
-		strcpy(d->name, t->name);
-		d->Char.looks = t->Looks;
+		strcpy(pd.Name, t->name);
+		pd.Looks = t->Looks;
 	}
 	else
 	{
 		switch (idx)
 		{
 		case 0:
-			strcpy(d->name, "Jones");
-			d->Char.looks.face = FACE_JONES;
-			d->Char.looks.skin = SHADE_SKIN;
-			d->Char.looks.arm = SHADE_BLUE;
-			d->Char.looks.body = SHADE_BLUE;
-			d->Char.looks.leg = SHADE_BLUE;
-			d->Char.looks.hair = SHADE_RED;
+			strcpy(pd.Name, "Jones");
+			pd.Looks.Face = FACE_JONES;
+			pd.Looks.Skin = SHADE_SKIN;
+			pd.Looks.Arm = SHADE_BLUE;
+			pd.Looks.Body = SHADE_BLUE;
+			pd.Looks.Leg = SHADE_BLUE;
+			pd.Looks.Hair = SHADE_RED;
 			break;
 		case 1:
-			strcpy(d->name, "Ice");
-			d->Char.looks.face = FACE_ICE;
-			d->Char.looks.skin = SHADE_DARKSKIN;
-			d->Char.looks.arm = SHADE_RED;
-			d->Char.looks.body = SHADE_RED;
-			d->Char.looks.leg = SHADE_RED;
-			d->Char.looks.hair = SHADE_RED;
+			strcpy(pd.Name, "Ice");
+			pd.Looks.Face = FACE_ICE;
+			pd.Looks.Skin = SHADE_DARKSKIN;
+			pd.Looks.Arm = SHADE_RED;
+			pd.Looks.Body = SHADE_RED;
+			pd.Looks.Leg = SHADE_RED;
+			pd.Looks.Hair = SHADE_RED;
 			break;
 		case 2:
-			strcpy(d->name, "Delta");
-			d->Char.looks.face = FACE_WARBABY;
-			d->Char.looks.skin = SHADE_SKIN;
-			d->Char.looks.arm = SHADE_GREEN;
-			d->Char.looks.body = SHADE_GREEN;
-			d->Char.looks.leg = SHADE_GREEN;
-			d->Char.looks.hair = SHADE_RED;
+			strcpy(pd.Name, "Delta");
+			pd.Looks.Face = FACE_WARBABY;
+			pd.Looks.Skin = SHADE_SKIN;
+			pd.Looks.Arm = SHADE_GREEN;
+			pd.Looks.Body = SHADE_GREEN;
+			pd.Looks.Leg = SHADE_GREEN;
+			pd.Looks.Hair = SHADE_RED;
 			break;
 		case 3:
-			strcpy(d->name, "Hans");
-			d->Char.looks.face = FACE_HAN;
-			d->Char.looks.skin = SHADE_ASIANSKIN;
-			d->Char.looks.arm = SHADE_YELLOW;
-			d->Char.looks.body = SHADE_YELLOW;
-			d->Char.looks.leg = SHADE_YELLOW;
-			d->Char.looks.hair = SHADE_GOLDEN;
+			strcpy(pd.Name, "Hans");
+			pd.Looks.Face = FACE_HAN;
+			pd.Looks.Skin = SHADE_ASIANSKIN;
+			pd.Looks.Arm = SHADE_YELLOW;
+			pd.Looks.Body = SHADE_YELLOW;
+			pd.Looks.Leg = SHADE_YELLOW;
+			pd.Looks.Hair = SHADE_GOLDEN;
 			break;
 		default:
 			// Set up player N template
-			sprintf(d->name, "Player %d", idx);
-			d->Char.looks.face = FACE_JONES;
-			d->Char.looks.skin = SHADE_SKIN;
-			d->Char.looks.arm = SHADE_BLUE;
-			d->Char.looks.body = SHADE_BLUE;
-			d->Char.looks.leg = SHADE_BLUE;
-			d->Char.looks.hair = SHADE_RED;
+			sprintf(pd.Name, "Player %d", idx);
+			pd.Looks.Face = FACE_JONES;
+			pd.Looks.Skin = SHADE_SKIN;
+			pd.Looks.Arm = SHADE_BLUE;
+			pd.Looks.Body = SHADE_BLUE;
+			pd.Looks.Leg = SHADE_BLUE;
+			pd.Looks.Hair = SHADE_RED;
 			break;
 		}
 	}
@@ -132,32 +144,34 @@ void PlayerDataSetLocalDefaults(PlayerData *d, const int idx)
 	switch (idx)
 	{
 	case 0:
-		d->weapons[0] = StrGunDescription("Shotgun");
-		d->weapons[1] = StrGunDescription("Machine gun");
-		d->weapons[2] = StrGunDescription("Shrapnel bombs");
+		strcpy(pd.Weapons[0], "Shotgun");
+		strcpy(pd.Weapons[1], "Machine gun");
+		strcpy(pd.Weapons[2], "Shrapnel bombs");
 		break;
 	case 1:
-		d->weapons[0] = StrGunDescription("Powergun");
-		d->weapons[1] = StrGunDescription("Flamer");
-		d->weapons[2] = StrGunDescription("Grenades");
+		strcpy(pd.Weapons[0], "Powergun");
+		strcpy(pd.Weapons[1], "Flamer");
+		strcpy(pd.Weapons[2], "Grenades");
 		break;
 	case 2:
-		d->weapons[0] = StrGunDescription("Sniper rifle");
-		d->weapons[1] = StrGunDescription("Knife");
-		d->weapons[2] = StrGunDescription("Molotovs");
+		strcpy(pd.Weapons[0], "Sniper rifle");
+		strcpy(pd.Weapons[1], "Knife");
+		strcpy(pd.Weapons[2], "Molotovs");
 		break;
 	case 3:
-		d->weapons[0] = StrGunDescription("Machine gun");
-		d->weapons[1] = StrGunDescription("Flamer");
-		d->weapons[2] = StrGunDescription("Dynamite");
+		strcpy(pd.Weapons[0], "Machine gun");
+		strcpy(pd.Weapons[1], "Flamer");
+		strcpy(pd.Weapons[2], "Dynamite");
 		break;
 	default:
-		d->weapons[0] = StrGunDescription("Shotgun");
-		d->weapons[1] = StrGunDescription("Machine gun");
-		d->weapons[2] = StrGunDescription("Shrapnel bombs");
+		strcpy(pd.Weapons[0], "Shotgun");
+		strcpy(pd.Weapons[1], "Machine gun");
+		strcpy(pd.Weapons[2], "Shrapnel bombs");
 		break;
 	}
-	d->weaponCount = 3;
+	pd.Weapons_count = 3;
+
+	return pd;
 }
 
 void PlayerDataTerminate(CArray *p)
@@ -168,6 +182,16 @@ void PlayerDataTerminate(CArray *p)
 		CFREE(pd->Char.bot);
 	}
 	CArrayTerminate(p);
+}
+
+PlayerData *PlayerDataGetByUID(const int uid)
+{
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (p->UID == uid) return p;
+	}
+	return NULL;
 }
 
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
@@ -240,11 +264,11 @@ const PlayerData *GetFirstPlayer(
 
 bool IsPlayerAlive(const PlayerData *player)
 {
-	if (player->Id == -1)
+	if (player->ActorUID == -1)
 	{
 		return false;
 	}
-	const TActor *p = CArrayGet(&gActors, player->Id);
+	const TActor *p = ActorGetByUID(player->ActorUID);
 	return !p->dead;
 }
 bool IsPlayerHuman(const PlayerData *player)
@@ -257,11 +281,11 @@ bool IsPlayerHumanAndAlive(const PlayerData *player)
 }
 bool IsPlayerAliveOrDying(const PlayerData *player)
 {
-	if (player->Id == -1)
+	if (player->ActorUID == -1)
 	{
 		return false;
 	}
-	const TActor *p = CArrayGet(&gActors, player->Id);
+	const TActor *p = ActorGetByUID(player->ActorUID);
 	return p->dead <= DEATH_MAX;
 }
 
@@ -290,7 +314,7 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 		}
 		if (humansOnly ? IsPlayerHumanAndAlive(p) : IsPlayerAlive(p))
 		{
-			const TActor *player = CArrayGet(&gActors, p->Id);
+			const TActor *player = ActorGetByUID(p->ActorUID);
 			const TTileItem *ti = &player->tileItem;
 			if (isFirst)
 			{
@@ -319,7 +343,7 @@ int PlayersNumUseAmmo(const int ammoId)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		for (int j = 0; j < (int)player->guns.size; j++)
 		{
 			const Weapon *w = CArrayGet(&player->guns, j);
@@ -332,10 +356,10 @@ int PlayersNumUseAmmo(const int ammoId)
 	return numPlayersWithAmmo;
 }
 
-bool PlayerIsLocal(const int pid)
+bool PlayerIsLocal(const int uid)
 {
-	return pid >= 0 &&
-		((const PlayerData *)CArrayGet(&gPlayerDatas, pid))->IsLocal;
+	const PlayerData *p = PlayerDataGetByUID(uid);
+	return p != NULL && p->IsLocal;
 }
 
 void PlayerScore(PlayerData *p, const int points)

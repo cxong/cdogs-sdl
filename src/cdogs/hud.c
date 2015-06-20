@@ -69,6 +69,7 @@
 typedef struct
 {
 	int Index;	// could be player or objective
+	int PlayerUID;
 	int Amount;
 	// Number of milliseconds that this update will last
 	int TimerMax;
@@ -174,63 +175,52 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
-static int FindLocalPlayerIndex(const int playerIndex)
+static int FindLocalPlayerIndex(const int playerUID)
 {
-	int idx = 0;
-	// Find the local index of this player
-	for (int i = 0; i <= playerIndex; i++)
+	const PlayerData *p = PlayerDataGetByUID(playerUID);
+	if (!p->IsLocal)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (i == playerIndex)
-		{
-			if (!p->IsLocal)
-			{
-				// This update was for a non-local player; abort
-				return -1;
-			}
-		}
-		else if (p->IsLocal)
-		{
-			idx++;
-		}
+		// This update was for a non-local player; abort
+		return -1;
 	}
-	return idx;
+	// Note: player UIDs divided by MAX_LOCAL_PLAYERS per client
+	return playerUID % MAX_LOCAL_PLAYERS;
 }
 
-void HUDAddHealthUpdate(HUD *hud, int playerIndex, int health)
+static void AddNumUpdate(
+	const int playerUID, const int amount, CArray *updates);
+void HUDAddHealthUpdate(HUD *hud, const int playerUID, const int amount)
+{
+	AddNumUpdate(playerUID, amount, &hud->healthUpdates);
+}
+
+void HUDAddScoreUpdate(HUD *hud, const int playerUID, const int amount)
+{
+	AddNumUpdate(playerUID, amount, &hud->scoreUpdates);
+}
+static void AddNumUpdate(
+	const int playerUID, const int amount, CArray *updates)
 {
 	HUDNumUpdate s;
-	s.Index = FindLocalPlayerIndex(playerIndex);
+	s.Index = FindLocalPlayerIndex(playerUID);
 	if (s.Index < 0)
 	{
 		// This update was for a non-local player; abort
 		return;
 	}
-	s.Amount = health;
+	s.PlayerUID = playerUID;
+	s.Amount = amount;
 	s.Timer = NUM_UPDATE_TIMER_MS;
 	s.TimerMax = NUM_UPDATE_TIMER_MS;
-	CArrayPushBack(&hud->healthUpdates, &s);
+	CArrayPushBack(updates, &s);
 }
 
-void HUDAddScoreUpdate(HUD *hud, int playerIndex, int score)
-{
-	HUDNumUpdate s;
-	s.Index = FindLocalPlayerIndex(playerIndex);
-	if (s.Index < 0)
-	{
-		// This update was for a non-local player; abort
-		return;
-	}
-	s.Amount = score;
-	s.Timer = NUM_UPDATE_TIMER_MS;
-	s.TimerMax = NUM_UPDATE_TIMER_MS;
-	CArrayPushBack(&hud->scoreUpdates, &s);
-}
-
+// TODO: refactor into AddNumUpdate
 void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update)
 {
 	HUDNumUpdate u;
 	u.Index = objectiveIndex;
+	u.PlayerUID = -1;
 	u.Amount = update;
 	u.Timer = NUM_UPDATE_TIMER_OBJECTIVE_MS;
 	u.TimerMax = NUM_UPDATE_TIMER_OBJECTIVE_MS;
@@ -413,7 +403,7 @@ static void DrawLives(
 		drawPos.y = h - drawPos.y + offset.y + 5;
 	}
 	const TOffsetPic head = GetHeadPic(
-		BODY_ARMED, DIRECTION_DOWN, player->Char.looks.face, STATE_IDLE);
+		BODY_ARMED, DIRECTION_DOWN, player->Char.looks.Face, STATE_IDLE);
 	for (int i = 0; i < player->Lives; i++)
 	{
 		BlitOld(
@@ -866,7 +856,7 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 		TActor *player = NULL;
 		if (IsPlayerAlive(p))
 		{
-			player = CArrayGet(&gActors, p->Id);
+			player = ActorGetByUID(p->ActorUID);
 		}
 		DrawPlayerStatus(hud, p, player, drawFlags, r);
 		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
@@ -990,10 +980,10 @@ static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + FontH();
 	int y = 5 + rowHeight * 3;
-	const PlayerData *p = CArrayGet(&gPlayerDatas, health->Index);
+	const PlayerData *p = PlayerDataGetByUID(health->PlayerUID);
 	if (IsPlayerAlive(p))
 	{
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		DrawNumUpdate(health, "%d", player->health, Vec2iNew(5, y), flags);
 	}
 }
@@ -1005,7 +995,7 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 	}
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
-	const PlayerData *p = CArrayGet(&gPlayerDatas, score->Index);
+	const PlayerData *p = PlayerDataGetByUID(score->PlayerUID);
 	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
 }
 // Parameters that define how the numeric update is animated

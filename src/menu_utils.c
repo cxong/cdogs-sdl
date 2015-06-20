@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2015, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ void MenuDisplayPlayer(
 	playerPos = Vec2iNew(
 		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
 
-	const PlayerData *pData = CArrayGet(&gPlayerDatas, d->playerIndex);
+	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
 		sprintf(s, "%c%s%c", '>', pData->name, '<');
@@ -81,12 +81,12 @@ void MenuDisplayPlayerControls(
 {
 	UNUSED(g);
 	char s[256];
-	const int *playerIndex = data;
+	const int *playerUID = data;
 	const int y = pos.y + size.y - FontH();
 
 	UNUSED(menu);
 
-	const PlayerData *pData = CArrayGet(&gPlayerDatas, *playerIndex);
+	const PlayerData *pData = PlayerDataGetByUID(*playerUID);
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:

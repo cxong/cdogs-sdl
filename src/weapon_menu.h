@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2015, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __WEAPON_MENUS
-#define __WEAPON_MENUS
+#pragma once
 
 #include "menu.h"
 #include "menu_utils.h"
@@ -35,7 +34,7 @@
 typedef struct
 {
 	MenuDisplayPlayerData display;
-	int playerIndex;
+	int PlayerUID;
 } WeaponMenuData;
 typedef struct
 {
@@ -45,7 +44,5 @@ typedef struct
 
 void WeaponMenuCreate(
 	WeaponMenu *menu,
-	int numPlayers, int player, const int playerIndex,
+	int numPlayers, int player, const int playerUID,
 	EventHandlers *handlers, GraphicsDevice *graphics);
-
-#endif

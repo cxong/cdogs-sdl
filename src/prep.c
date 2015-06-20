@@ -201,23 +201,19 @@ bool NumPlayersSelection(
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 			CASSERT(!p->IsLocal, "unexpected local player");
 		}
-		if (NetClientIsConnected(&gNetClient))
+		// Add the players
+		NAddPlayers ap = NAddPlayers_init_default;
+		for (int i = 0; i < numPlayers; i++)
+		{
+			ap.PlayerDatas[i] = PlayerDataDefault(i);
+			ap.PlayerDatas[i].UID = gNetClient.FirstPlayerUID + i;
+			PlayerDataAddOrUpdate(ap.PlayerDatas[i], true);
+			ap.PlayerDatas_count++;
+		}
+		if (gCampaign.IsClient)
 		{
 			// Tell the server that we want to add new players
-			NNewPlayers np;
-			np.ClientId = gNetClient.ClientId;
-			np.NumPlayers = numPlayers;
-			NetClientSendMsg(&gNetClient, GAME_EVENT_NEW_PLAYERS, &np);
-		}
-		else
-		{
-			// We are the server, just add the players
-			for (int i = 0; i < numPlayers; i++)
-			{
-				PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-				PlayerDataSetLocalDefaults(p, i);
-				p->inputDevice = INPUT_DEVICE_UNSET;
-			}
+			NetClientSendMsg(&gNetClient, GAME_EVENT_ADD_PLAYERS, &ap);
 		}
 	}
 	MenuSystemTerminate(&ms);
@@ -330,7 +326,8 @@ bool PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true), idx, i,
+			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice, &data.g);
 	}
 
@@ -647,7 +644,8 @@ bool PlayerEquip(void)
 		RemoveUnavailableWeapons(p, &gMission.Weapons);
 
 		WeaponMenuCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true), idx, i,
+			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)
@@ -664,6 +662,7 @@ bool PlayerEquip(void)
 		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
 	GameLoop(&gData);
 
+	NAddPlayers ap = NAddPlayers_init_default;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -672,17 +671,16 @@ bool PlayerEquip(void)
 			idx--;
 			continue;
 		}
-		const NPlayerData d = NMakePlayerData(p);
-		// Ready player definitions
-		p->IsUsed = true;
-		if (gCampaign.IsClient)
-		{
-			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &d);
-		}
-		else
-		{
-			NetServerBroadcastMsg(&gNetServer, GAME_EVENT_PLAYER_DATA, &d);
-		}
+		ap.PlayerDatas[idx] = NMakePlayerData(p);
+	}
+	// Update player definitions
+	if (gCampaign.IsClient)
+	{
+		NetClientSendMsg(&gNetClient, GAME_EVENT_ADD_PLAYERS, &ap);
+	}
+	else
+	{
+		NetServerBroadcastMsg(&gNetServer, GAME_EVENT_ADD_PLAYERS, &ap);
 	}
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)

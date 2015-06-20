@@ -79,9 +79,9 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_SCORE:
 		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, e->u.Score.PlayerId);
+			PlayerData *p = PlayerDataGetByUID(e->u.Score.PlayerUID);
 			PlayerScore(p, e->u.Score.Score);
-			HUDAddScoreUpdate(hud, e->u.Score.PlayerId, e->u.Score.Score);
+			HUDAddScoreUpdate(hud, e->u.Score.PlayerUID, e->u.Score.Score);
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
@@ -107,24 +107,7 @@ static void HandleGameEvent(
 		ActorAdd(e->u.ActorAdd);
 		break;
 	case GAME_EVENT_ACTOR_MOVE:
-		{
-			TActor *a = ActorGetByUID(e->u.ActorMove.UID);
-			if (a == NULL || !a->isInUse)
-			{
-				break;
-			}
-			a->Pos.x = e->u.ActorMove.Pos.x;
-			a->Pos.y = e->u.ActorMove.Pos.y;
-			MapTryMoveTileItem(&gMap, &a->tileItem, Vec2iFull2Real(a->Pos));
-			if (MapIsTileInExit(&gMap, &a->tileItem))
-			{
-				a->action = ACTORACTION_EXITING;
-			}
-			else
-			{
-				a->action = ACTORACTION_MOVING;
-			}
-		}
+		ActorMove(e->u.ActorMove);
 		break;
 	case GAME_EVENT_ACTOR_STATE:
 		{
@@ -169,9 +152,9 @@ static void HandleGameEvent(
 			{
 				PowerupSpawnerRemoveOne(healthSpawner);
 			}
-			if (e->u.Heal.PlayerId >= 0)
+			if (e->u.Heal.PlayerUID >= 0)
 			{
-				HUDAddHealthUpdate(hud, e->u.Heal.PlayerId, e->u.Heal.Amount);
+				HUDAddHealthUpdate(hud, e->u.Heal.PlayerUID, e->u.Heal.Amount);
 			}
 		}
 		break;
@@ -184,11 +167,10 @@ static void HandleGameEvent(
 			// spawn more (but only if we're the server)
 			if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
 			{
-				printf("Remove ammo id %d\n", e->u.AddAmmo.AmmoId);
 				PowerupSpawnerRemoveOne(
 					CArrayGet(ammoSpawners, e->u.AddAmmo.AmmoId));
 			}
-			if (e->u.Heal.PlayerId >= 0)
+			if (e->u.AddAmmo.PlayerUID >= 0)
 			{
 				// TODO: some sort of text effect showing ammo grab
 			}
@@ -216,11 +198,10 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_USE_AMMO:
 		{
-			const PlayerData *p =
-				CArrayGet(&gPlayerDatas, e->u.UseAmmo.PlayerIndex);
+			const PlayerData *p = PlayerDataGetByUID(e->u.UseAmmo.PlayerUID);
 			if (IsPlayerAlive(p))
 			{
-				TActor *a = CArrayGet(&gActors, p->Id);
+				TActor *a = ActorGetByUID(p->ActorUID);
 				if (!a->isInUse)
 				{
 					break;
@@ -259,26 +240,23 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_DAMAGE_CHARACTER:
-		DamageCharacter(
-			e->u.DamageCharacter.Power,
-			e->u.DamageCharacter.PlayerIndex,
-			CArrayGet(&gActors, e->u.DamageCharacter.TargetId));
-		if (e->u.DamageCharacter.Power != 0 &&
-			e->u.DamageCharacter.TargetPlayerIndex >= 0)
+		DamageActor(e->u.ActorDamage);
+		if (e->u.ActorDamage.Power != 0 &&
+			e->u.ActorDamage.TargetPlayerUID >= 0)
 		{
 			HUDAddHealthUpdate(
 				hud,
-				e->u.DamageCharacter.TargetPlayerIndex,
-				-e->u.DamageCharacter.Power);
+				e->u.ActorDamage.TargetPlayerUID,
+				-e->u.ActorDamage.Power);
 		}
 		break;
 	case GAME_EVENT_TRIGGER:
 		{
-			const Tile *t = MapGetTile(&gMap, e->u.Trigger.TilePos);
+			const Tile *t = MapGetTile(&gMap, e->u.TriggerEvent.TilePos);
 			for (int i = 0; i < (int)t->triggers.size; i++)
 			{
 				Trigger **tp = CArrayGet(&t->triggers, i);
-				if ((*tp)->id == e->u.Trigger.Id)
+				if ((*tp)->id == e->u.TriggerEvent.Id)
 				{
 					TriggerActivate(*tp, &gMap.triggers);
 					break;

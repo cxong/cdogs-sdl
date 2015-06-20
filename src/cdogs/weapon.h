@@ -162,11 +162,11 @@ void WeaponUpdate(
 bool WeaponIsLocked(const Weapon *w);
 void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
-	const int flags, const int player, const int uid);
+	const int flags, const int playerUID, const int uid);
 void GunAddBullets(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
-	const int flags, const int player, const int uid,
+	const int flags, const int playerUID, const int uid,
 	const bool playSound);
 void WeaponHoldFire(Weapon *w);
 

@@ -361,7 +361,7 @@ static void DrawActorPics(const TTileItem *t, const Vec2i picPos)
 
 		// Draw weapon indicators
 		if (ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_ALL ||
-			(ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_PLAYERS && a->playerIndex >= 0))
+			(ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_PLAYERS && a->PlayerUID >= 0))
 		{
 			DrawLaserSight(a, picPos);
 		}
@@ -558,7 +558,7 @@ void DrawCharacterSimple(
 	body.dy = cBodyOffset[bodyType][dir].dy;
 	body.picIndex = cBodyPic[bodyType][dir][state];
 
-	head = GetHeadPic(bodyType, headDir, c->looks.face, headState);
+	head = GetHeadPic(bodyType, headDir, c->looks.Face, headState);
 
 	gun.picIndex = -1;
 	if (gunPic >= 0)

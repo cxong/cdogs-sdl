@@ -26,15 +26,14 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PLAYER_TEMPLATE
-#define __PLAYER_TEMPLATE
+#pragma once
 
 #include "character.h"
 
 typedef struct
 {
 	char name[20];
-	CharLooks Looks;
+	NCharLooks Looks;
 } PlayerTemplate;
 
 extern CArray gPlayerTemplates;	// of PlayerTemplate
@@ -45,5 +44,3 @@ void LoadPlayerTemplates(CArray *templates, const char *filename);
 void SavePlayerTemplates(const CArray *templates, const char *filename);
 
 const char *IndexToFaceStr(int idx);
-
-#endif

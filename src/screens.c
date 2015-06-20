@@ -125,17 +125,17 @@ void ScreenStart(void)
 
 static void StartPlayers(const int maxHealth, const int mission)
 {
+	NAddPlayers ap = NAddPlayers_init_default;
+	// Update all clients
+	ap.ClientId = -1;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsUsed)
-		{
-			return;
-		}
 		PlayerDataStart(p, maxHealth, mission);
-		const NPlayerData d = NMakePlayerData(p);
-		NetServerBroadcastMsg(&gNetServer, GAME_EVENT_PLAYER_DATA, &d);
+		ap.PlayerDatas[i] = NMakePlayerData(p);
+		ap.PlayerDatas_count++;
 	}
+	NetServerBroadcastMsg(&gNetServer, GAME_EVENT_ADD_PLAYERS, &ap);
 }
 
 static void AddAndPlacePlayers(void)
@@ -144,11 +144,6 @@ static void AddAndPlacePlayers(void)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsUsed)
-		{
-			continue;
-		}
-
 		firstPos = PlacePlayer(&gMap, p, firstPos, true);
 	}
 }
@@ -269,7 +264,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			p->survived = IsPlayerAlive(p);
 			if (IsPlayerAlive(p))
 			{
-				TActor *player = CArrayGet(&gActors, p->Id);
+				TActor *player = ActorGetByUID(p->ActorUID);
 				p->hp = player->health;
 				p->RoundsWon++;
 				maxScore = MAX(maxScore, p->RoundsWon);

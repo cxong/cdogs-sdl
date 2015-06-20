@@ -147,7 +147,7 @@ Vec2i PlacePlayer(
 	NActorAdd aa = NActorAdd_init_default;
 	aa.UID = ActorsGetNextUID();
 	aa.Health = p->Char.maxHealth;
-	aa.PlayerId = p->playerIndex;
+	aa.PlayerUID = p->UID;
 
 	if (IsPVP(gCampaign.Entry.Mode))
 	{

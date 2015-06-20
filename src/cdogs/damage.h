@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,17 +46,22 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __DAMAGE
-#define __DAMAGE
+#pragma once
 
 #include "actors.h"
 #include "tile.h"
 #include "vector.h"
 
+typedef struct
+{
+	int Power;
+	int PlayerUID;
+	int TargetUID;
+	int TargetPlayerUID;
+} ActorDamage;
+
 bool CanHitCharacter(const int flags, const int uid, const TActor *actor);
 bool CanDamageCharacter(
-	const int flags, const int player, const int uid,
+	const int flags, const int playerUID, const int uid,
 	const TActor *actor, const special_damage_e special);
-void DamageCharacter(int power, int player, TActor *actor);
-
-#endif
+void DamageActor(const ActorDamage ad);

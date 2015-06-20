@@ -32,8 +32,7 @@
 #define MAX_WEAPONS 3
 typedef struct
 {
-	int Id;	// -1 if dead
-	bool IsUsed;
+	int ActorUID;	// -1 if dead
 	bool IsLocal;	// whether this is a local-machine player
 	Character Char;
 	char name[20];
@@ -57,7 +56,7 @@ typedef struct
 
 	input_device_e inputDevice;
 	int deviceIndex;
-	int playerIndex;
+	int UID;
 } PlayerData;
 
 extern CArray gPlayerDatas;	// of PlayerData
@@ -66,9 +65,11 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 
 void PlayerDataInit(CArray *p);
-PlayerData *PlayerDataAdd(CArray *p);
-void PlayerDataSetLocalDefaults(PlayerData *d, const int idx);
+void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal);
+NPlayerData PlayerDataDefault(const int idx);
 void PlayerDataTerminate(CArray *p);
+
+PlayerData *PlayerDataGetByUID(const int uid);
 
 void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission);
 
@@ -90,7 +91,7 @@ bool IsPlayerAliveOrDying(const PlayerData *player);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 int PlayersNumUseAmmo(const int ammoId);
-bool PlayerIsLocal(const int pid);
+bool PlayerIsLocal(const int uid);
 
 void PlayerScore(PlayerData *p, const int points);
 void PlayerSetInputDevice(

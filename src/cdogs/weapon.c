@@ -438,7 +438,7 @@ bool WeaponIsLocked(const Weapon *w)
 
 void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
-	const int flags, const int player, const int uid)
+	const int flags, const int playerUID, const int uid)
 {
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
 	{
@@ -455,7 +455,7 @@ void WeaponFire(
 	const bool playSound = w->soundLock <= 0;
 	GunAddBullets(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
-		flags, player, uid, playSound);
+		flags, playerUID, uid, playSound);
 	if (playSound)
 	{
 		w->soundLock = w->Gun->SoundLockLength;
@@ -474,7 +474,7 @@ void WeaponFire(
 void GunAddBullets(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
-	const int flags, const int player, const int uid,
+	const int flags, const int playerUID, const int uid,
 	const bool playSound)
 {
 	// Add bullets
@@ -498,7 +498,7 @@ void GunAddBullets(
 			e.u.AddBullet.Angle = (float)finalAngle;
 			e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
 			e.u.AddBullet.Flags = flags;
-			e.u.AddBullet.PlayerIndex = player;
+			e.u.AddBullet.PlayerUID = playerUID;
 			e.u.AddBullet.UID = uid;
 			GameEventsEnqueue(&gGameEvents, e);
 		}

@@ -122,7 +122,7 @@ static int GenerateQuickPlayParam(
 
 static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 {
-	enemy->looks.face = rand() % FACE_COUNT;
+	enemy->looks.Face = rand() % FACE_COUNT;
 	enemy->Gun = gun;
 	enemy->speed =GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 64, 112, 160, 256);
@@ -152,11 +152,11 @@ static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 		enemy->bot->probabilityToShoot = 1 + (rand() % 6);
 	}
 	enemy->bot->actionDelay = rand() % (50 + 1);
-	enemy->looks.skin = rand() % SHADE_COUNT;
-	enemy->looks.arm = rand() % SHADE_COUNT;
-	enemy->looks.body = rand() % SHADE_COUNT;
-	enemy->looks.leg = rand() % SHADE_COUNT;
-	enemy->looks.hair = rand() % SHADE_COUNT;
+	enemy->looks.Skin = rand() % SHADE_COUNT;
+	enemy->looks.Arm = rand() % SHADE_COUNT;
+	enemy->looks.Body = rand() % SHADE_COUNT;
+	enemy->looks.Leg = rand() % SHADE_COUNT;
+	enemy->looks.Hair = rand() % SHADE_COUNT;
 	enemy->maxHealth = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyHealth"), 10, 20, 40, 60);
 	enemy->flags = 0;

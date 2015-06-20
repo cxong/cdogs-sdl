@@ -37,6 +37,7 @@ typedef struct
 	ENetHost *client;
 	ENetPeer *peer;
 	int ClientId;
+	int FirstPlayerUID;
 } NetClient;
 
 extern NetClient gNetClient;

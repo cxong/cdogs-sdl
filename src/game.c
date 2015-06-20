@@ -157,11 +157,10 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
 		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
 		{
-			const TActor *p = CArrayGet(
-				&gActors,
+			const TActor *p = ActorGetByUID(
 				(numLocalHumanPlayersAlive == 1 ?
 				GetFirstPlayer(true, true, true) :
-				GetFirstPlayer(true, false, true))->Id);
+				GetFirstPlayer(true, false, true))->ActorUID);
 			const Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
 			DoBuffer(b, center, X_TILES, noise, centerOffset);
 			SoundSetEars(center);
@@ -190,7 +189,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 					idx--;
 					continue;
 				}
-				const TActor *player = CArrayGet(&gActors, p->Id);
+				const TActor *player = ActorGetByUID(p->ActorUID);
 				const Vec2i center = Vec2iNew(
 					player->tileItem.x, player->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
@@ -240,7 +239,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				{
 					continue;
 				}
-				const TActor *player = CArrayGet(&gActors, p->Id);
+				const TActor *player = ActorGetByUID(p->ActorUID);
 				const Vec2i center =
 					Vec2iNew(player->tileItem.x, player->tileItem.y);
 				GraphicsSetBlitClip(
@@ -311,7 +310,7 @@ Vec2i GetPlayerCenter(
 	GraphicsDevice *device, DrawBuffer *b,
 	const PlayerData *pData, const int playerIdx)
 {
-	if (pData->Id < 0)
+	if (pData->ActorUID < 0)
 	{
 		// Player is dead
 		return Vec2iZero();
@@ -329,7 +328,7 @@ Vec2i GetPlayerCenter(
 		const Vec2i pCenter = PlayersGetMidpoint();
 		const Vec2i screenCenter =
 			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
-		const TActor *actor = CArrayGet(&gActors, pData->Id);
+		const TActor *actor = ActorGetByUID(pData->ActorUID);
 		const Vec2i p = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 		center = Vec2iAdd(
 			Vec2iAdd(p, Vec2iScale(pCenter, -1)), screenCenter);
@@ -543,8 +542,8 @@ static GameLoopResult RunGameUpdate(void *data)
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->Id == -1) continue;
-		TActor *player = CArrayGet(&gActors, p->Id);
+		if (p->ActorUID == -1) continue;
+		TActor *player = ActorGetByUID(p->ActorUID);
 		if (player->dead > DEATH_MAX) continue;
 		// Calculate LOS for all players alive or dying
 		if (!gCampaign.IsClient || p->IsLocal)
@@ -595,7 +594,7 @@ static GameLoopResult RunGameUpdate(void *data)
 			{
 				continue;
 			}
-			const TActor *p = CArrayGet(&gActors, pd->Id);
+			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = SPLIT_PADDING;
 			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 			ei.u.ActorImpulse.Id = p->tileItem.id;
@@ -682,7 +681,7 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->Id != -1)
+		if (p->ActorUID != -1)
 		{
 			allPlayersDestroyed = false;
 			break;

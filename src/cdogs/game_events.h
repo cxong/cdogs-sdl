@@ -30,6 +30,7 @@
 
 #include "actors.h"
 #include "c_array.h"
+#include "damage.h"
 #include "gamedata.h"
 #include "objs.h"
 
@@ -42,9 +43,7 @@ typedef enum
 	GAME_EVENT_NONE,
 
 	// Net initialisation messages
-	GAME_EVENT_PLAYER_DATA,
 	GAME_EVENT_REQUEST_PLAYERS,
-	GAME_EVENT_NEW_PLAYERS,
 	GAME_EVENT_CLIENT_ID,
 	GAME_EVENT_CAMPAIGN_DEF,
 	GAME_EVENT_ADD_PLAYERS,
@@ -143,7 +142,7 @@ typedef struct
 		NRemovePickup RemovePickup;
 		struct
 		{
-			int PlayerIndex;
+			int PlayerUID;
 			AddAmmo UseAmmo;
 		} UseAmmo;
 		struct
@@ -165,18 +164,12 @@ typedef struct
 			int Id;
 			Vec2i Vel;
 		} ActorImpulse;
-		struct
-		{
-			int Power;
-			int PlayerIndex;
-			int TargetId;
-			int TargetPlayerIndex;
-		} DamageCharacter;
+		ActorDamage ActorDamage;
 		struct
 		{
 			int Id;
 			Vec2i TilePos;
-		} Trigger;
+		} TriggerEvent;
 		NExploreTile ExploreTile;
 		NObjectiveUpdate ObjectiveUpdate;
 	} u;

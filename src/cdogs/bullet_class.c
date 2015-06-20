@@ -331,7 +331,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
 		GunAddBullets(
-			*g, fullPos, obj->z, angle, obj->flags, obj->player, obj->uid,
+			*g, fullPos, obj->z, angle, obj->flags, obj->PlayerUID, obj->uid,
 			true);
 	}
 }
@@ -583,32 +583,66 @@ void BulletClassesClear(CArray *classes)
 void BulletAdd(const NAddBullet add)
 {
 	const Vec2i pos = Net2Vec2i(add.MuzzlePos);
-	TMobileObject *obj = CArrayGet(
-		&gMobObjs, MobObjAdd(pos, add.PlayerIndex, add.UID));
-	obj->vel = GetFullVectorsForRadians(add.Angle);
+
+	// Find an empty slot in mobobj list
+	TMobileObject *obj = NULL;
+	int i;
+	for (i = 0; i < (int)gMobObjs.size; i++)
+	{
+		TMobileObject *m = CArrayGet(&gMobObjs, i);
+		if (!m->isInUse)
+		{
+			obj = m;
+			break;
+		}
+	}
+	if (obj == NULL)
+	{
+		TMobileObject m;
+		memset(&m, 0, sizeof m);
+		CArrayPushBack(&gMobObjs, &m);
+		i = (int)gMobObjs.size - 1;
+		obj = CArrayGet(&gMobObjs, i);
+	}
+	memset(obj, 0, sizeof *obj);
 	obj->bulletClass = StrBulletClass(add.BulletClass);
-	obj->updateFunc = UpdateBullet;
-	obj->tileItem.getPicFunc = NULL;
-	obj->tileItem.getActorPicsFunc = NULL;
-	obj->tileItem.drawFunc = NULL;
-	obj->tileItem.CPic = obj->bulletClass->CPic;
-	obj->tileItem.CPicFunc = GetBulletDrawContext;
+	obj->x = pos.x;
+	obj->y = pos.y;
 	obj->z = add.MuzzleHeight;
 	obj->dz = add.Elevation;
-	obj->range = RAND_INT(
-		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
-	obj->flags = add.Flags;
-	if (obj->bulletClass->HurtAlways)
-	{
-		obj->flags |= FLAGS_HURTALWAYS;
-	}
+
 	obj->vel = Vec2iFull2Real(Vec2iScale(
-		obj->vel,
+		GetFullVectorsForRadians(add.Angle),
 		RAND_INT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh)));
 	if (obj->bulletClass->SpeedScale)
 	{
 		obj->vel.y = obj->vel.y * TILE_WIDTH / TILE_HEIGHT;
 	}
+
+	obj->PlayerUID = add.PlayerUID;
+	obj->uid = add.UID;
+	obj->range = RAND_INT(
+		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
+
+	obj->flags = add.Flags;
+	if (obj->bulletClass->HurtAlways)
+	{
+		obj->flags |= FLAGS_HURTALWAYS;
+	}
+
+	obj->tileItem.kind = KIND_MOBILEOBJECT;
+	obj->tileItem.id = i;
+	obj->soundLock = 0;
+	obj->isInUse = true;
+	obj->tileItem.x = obj->tileItem.y = -1;
+	obj->tileItem.getPicFunc = NULL;
+	obj->tileItem.getActorPicsFunc = NULL;
+	obj->tileItem.drawFunc = NULL;
+	obj->tileItem.drawData.MobObjId = i;
+	obj->tileItem.CPic = obj->bulletClass->CPic;
+	obj->tileItem.CPicFunc = GetBulletDrawContext;
 	obj->tileItem.size = obj->bulletClass->Size;
 	obj->tileItem.ShadowSize = obj->bulletClass->ShadowSize;
+	obj->updateFunc = UpdateBullet;
+	MapTryMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
 }

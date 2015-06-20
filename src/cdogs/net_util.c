@@ -63,14 +63,8 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 {
 	NPlayerData d;
 	const Character *c = &p->Char;
-	d.IsUsed = p->IsUsed;
 	strcpy(d.Name, p->name);
-	d.Looks.Face = c->looks.face;
-	d.Looks.Skin = c->looks.skin;
-	d.Looks.Arm = c->looks.arm;
-	d.Looks.Body = c->looks.body;
-	d.Looks.Leg = c->looks.leg;
-	d.Looks.Hair = c->looks.hair;
+	d.Looks = c->looks;
 	d.Weapons_count = (pb_size_t)p->weaponCount;
 	for (int i = 0; i < (int)d.Weapons_count; i++)
 	{
@@ -82,7 +76,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	d.Kills = p->kills;
 	d.Suicides = p->suicides;
 	d.Friendlies = p->friendlies;
-	d.PlayerIndex = p->playerIndex;
+	d.UID = p->UID;
 	return d;
 }
 NCampaignDef NMakeCampaignDef(const CampaignOptions *co)
@@ -96,37 +90,6 @@ NCampaignDef NMakeCampaignDef(const CampaignOptions *co)
 	def.GameMode = co->Entry.Mode;
 	def.Mission = co->MissionIndex;
 	return def;
-}
-
-void NPlayerDataUpdate(const NPlayerData *pd)
-{
-	PlayerData *p = CArrayGet(&gPlayerDatas, pd->PlayerIndex);
-	p->IsUsed = pd->IsUsed;
-	strcpy(p->name, pd->Name);
-	p->Char.looks.face = pd->Looks.Face;
-	p->Char.looks.skin = pd->Looks.Skin;
-	p->Char.looks.arm = pd->Looks.Arm;
-	p->Char.looks.body = pd->Looks.Body;
-	p->Char.looks.leg = pd->Looks.Leg;
-	p->Char.looks.hair = pd->Looks.Hair;
-	CharacterSetColors(&p->Char);
-	p->weaponCount = pd->Weapons_count;
-	for (int i = 0; i < (int)pd->Weapons_count; i++)
-	{
-		p->weapons[i] = StrGunDescription(pd->Weapons[i]);
-	}
-	p->Lives = pd->Lives;
-	p->score = pd->Score;
-	p->totalScore = pd->Score;
-	p->kills = pd->Kills;
-	p->suicides = pd->Suicides;
-	p->friendlies = pd->Friendlies;
-	if (!p->IsLocal)
-	{
-		p->inputDevice = INPUT_DEVICE_UNSET;
-	}
-	CASSERT(
-		p->playerIndex == (int)pd->PlayerIndex, "unexpected player index");
 }
 
 Vec2i Net2Vec2i(const NVec2i v)

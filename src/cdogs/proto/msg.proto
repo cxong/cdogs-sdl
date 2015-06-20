@@ -5,13 +5,10 @@ message NCmd {
 	required uint32 Cmd = 1;
 }
 
-message NNewPlayers {
-	required uint32 ClientId = 1;
-	required uint32 NumPlayers = 2;
-}
-
 message NClientId {
 	required uint32 Id = 1;
+	// This client's players will use UID from this number
+	required uint32 FirstPlayerUID = 2;
 }
 
 message NCampaignDef {
@@ -20,17 +17,18 @@ message NCampaignDef {
 	required uint32 Mission = 3;
 }
 
+message NCharLooks {
+	required int32 Face = 1;
+	required int32 Skin = 2;
+	required int32 Arm = 3;
+	required int32 Body = 4;
+	required int32 Leg = 5;
+	required int32 Hair = 6;
+}
+
 message NPlayerData {
 	required string Name = 1;
-	message CharLooks {
-		required int32 Face = 1;
-		required int32 Skin = 2;
-		required int32 Arm = 3;
-		required int32 Body = 4;
-		required int32 Leg = 5;
-		required int32 Hair = 6;
-	}
-	required CharLooks Looks = 2;
+	required NCharLooks Looks = 2;
 	repeated string Weapons = 3;
 	required uint32 Lives = 4;
 	required int32 Score = 5;
@@ -38,8 +36,7 @@ message NPlayerData {
 	required int32 Kills = 7;
 	required int32 Suicides = 8;
 	required int32 Friendlies = 9;
-	required uint32 PlayerIndex = 10;
-	required bool IsUsed = 11;
+	required uint32 UID = 10;
 }
 
 message NObjectiveCount {
@@ -48,8 +45,8 @@ message NObjectiveCount {
 }
 
 message NAddPlayers {
-	required uint32 ClientId = 1;
-	repeated uint32 PlayerIds = 2;
+	required int32 ClientId = 1;
+	repeated NPlayerData PlayerDatas = 2;
 }
 
 message NAddMapObject {
@@ -61,7 +58,7 @@ message NAddMapObject {
 }
 
 message NScore {
-	required uint32 PlayerId = 1;
+	required uint32 PlayerUID = 1;
 	required int32 Score = 2;
 }
 
@@ -75,7 +72,7 @@ message NActorAdd {
 	required uint32 CharId = 2;
 	required int32 Direction = 3;
 	required int32 Health = 4;
-	required int32 PlayerId = 5 [default=-1];
+	required int32 PlayerUID = 5 [default=-1];
 	required uint32 TileItemFlags = 6;
 	required NVec2i FullPos = 7;
 }
@@ -97,14 +94,14 @@ message NActorDir {
 
 message NActorHeal {
 	required uint32 UID = 1;
-	required int32 PlayerId = 2 [default=-1];
+	required int32 PlayerUID = 2 [default=-1];
 	required int32 Amount = 3;
 	required bool IsRandomSpawned = 4;
 }
 
 message NActorAddAmmo {
 	required uint32 UID = 1;
-	required int32 PlayerId = 2 [default=-1];
+	required int32 PlayerUID = 2 [default=-1];
 	required uint32 AmmoId = 3;
 	required int32 Amount = 4;
 	required bool IsRandomSpawned = 5;
@@ -131,7 +128,7 @@ message NAddBullet {
 	required float Angle = 4;
 	required int32 Elevation = 5;
 	required uint32 Flags = 6;
-	required int32 PlayerIndex = 7;
+	required int32 PlayerUID = 7;
 	required int32 UID = 8;
 }
 

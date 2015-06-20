@@ -69,7 +69,7 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	{
 		return COLLISIONTEAM_NONE;
 	}
-	if (actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY))
+	if (actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY))
 	{
 		return COLLISIONTEAM_GOOD;
 	}

@@ -51,9 +51,7 @@ static GameEventEntry sGameEventEntries[] =
 {
 	{ GAME_EVENT_NONE, false, false, false, NULL },
 
-	{ GAME_EVENT_PLAYER_DATA, false, false, false, NPlayerData_fields },
 	{ GAME_EVENT_REQUEST_PLAYERS, false, false, false, NRequestPlayers_fields },
-	{ GAME_EVENT_NEW_PLAYERS, false, false, false, NNewPlayers_fields },
 	{ GAME_EVENT_CLIENT_ID, false, false, false, NClientId_fields },
 	{ GAME_EVENT_CAMPAIGN_DEF, false, false, false, NCampaignDef_fields },
 	{ GAME_EVENT_ADD_PLAYERS, false, false, false, NAddPlayers_fields },
@@ -126,7 +124,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
 		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
 		case GAME_EVENT_ADD_BULLET:
-			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerIndex);
+			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
 			break;
 		default: break;
 		}

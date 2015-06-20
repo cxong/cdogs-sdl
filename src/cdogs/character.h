@@ -26,21 +26,10 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CHARACTER
-#define __CHARACTER
+#pragma once
 
 #include "c_array.h"
 #include "weapon.h"
-
-typedef struct
-{
-	int face;
-	int skin;
-	int arm;
-	int body;
-	int leg;
-	int hair;
-} CharLooks;
 
 typedef struct
 {
@@ -52,7 +41,7 @@ typedef struct
 
 typedef struct
 {
-	CharLooks looks;
+	NCharLooks looks;
 	int speed;
 	const GunDescription *Gun;
 	int maxHealth;
@@ -92,5 +81,3 @@ int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
 
 int CharacterGetStartingHealth(const Character *c, const bool isNPC);
-
-#endif

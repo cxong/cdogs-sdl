@@ -350,12 +350,12 @@ void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 	while (child)
 	{
 		Character *ch = CharacterStoreAddOther(c);
-		LoadInt(&ch->looks.face, child, "face");
-		LoadInt(&ch->looks.skin, child, "skin");
-		LoadInt(&ch->looks.arm, child, "arm");
-		LoadInt(&ch->looks.body, child, "body");
-		LoadInt(&ch->looks.leg, child, "leg");
-		LoadInt(&ch->looks.hair, child, "hair");
+		LoadInt(&ch->looks.Face, child, "face");
+		LoadInt(&ch->looks.Skin, child, "skin");
+		LoadInt(&ch->looks.Arm, child, "arm");
+		LoadInt(&ch->looks.Body, child, "body");
+		LoadInt(&ch->looks.Leg, child, "leg");
+		LoadInt(&ch->looks.Hair, child, "hair");
 		LoadInt(&ch->speed, child, "speed");
 		char *tmp = GetString(child, "Gun");
 		ch->Gun = StrGunDescription(tmp);

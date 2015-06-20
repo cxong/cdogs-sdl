@@ -73,7 +73,7 @@ typedef struct
 
 typedef struct MobileObject
 {
-	int player;	// -1 if not owned by any player
+	int PlayerUID;	// -1 if not owned by any player
 	int uid;	// unique ID of actor that owns this object
 				// (prevent self collision)
 	const BulletClass *bulletClass;
@@ -97,7 +97,7 @@ bool DamageSomething(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
-	const int player,
+	const int playerUID,
 	const int uid,
 	TTileItem *target,
 	const special_damage_e special,
@@ -123,6 +123,5 @@ TObject *ObjGetByUID(const int uid);
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);
 void MobObjsTerminate(void);
-int MobObjAdd(const Vec2i fullpos, const int player, const int uid);
 void MobObjDestroy(int id);
 bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits);

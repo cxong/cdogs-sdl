@@ -480,32 +480,40 @@ static void MissionSummaryDraw(void *data)
 
 	// Draw per-player summaries
 	Vec2i size;
-	switch (gPlayerDatas.size)
+	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!pd->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		pds[idx] = pd;
+	}
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
+	switch (numLocalPlayers)
 	{
 	case 1:
 		size = Vec2iNew(w, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
+		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
 		break;
 	case 2:
 		// side by side
 		size = Vec2iNew(w / 2, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
-		DrawPlayerSummary(
-			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1));
+		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
+		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, pds[1]);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
 		size = Vec2iNew(w / 2, h / 4);
-		DrawPlayerSummary(Vec2iZero(), size, CArrayGet(&gPlayerDatas, 0));
-		DrawPlayerSummary(
-			Vec2iNew(w / 2, 0), size, CArrayGet(&gPlayerDatas, 1));
-		DrawPlayerSummary(
-			Vec2iNew(0, h / 4), size, CArrayGet(&gPlayerDatas, 2));
-		if (gPlayerDatas.size == 4)
+		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
+		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, pds[1]);
+		DrawPlayerSummary(Vec2iNew(0, h / 4), size, pds[2]);
+		if (numLocalPlayers == 4)
 		{
-			DrawPlayerSummary(
-				Vec2iNew(w / 2, h / 4), size, CArrayGet(&gPlayerDatas, 3));
+			DrawPlayerSummary(Vec2iNew(w / 2, h / 4), size, pds[3]);
 		}
 		break;
 	default:
@@ -603,7 +611,7 @@ static void DrawObjectiveInfo(
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			const int i = cd->looks.face;
+			const int i = cd->looks.Face;
 			TOffsetPic pic;
 			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 			pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -617,7 +625,7 @@ static void DrawObjectiveInfo(
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			const int i = cd->looks.face;
+			const int i = cd->looks.Face;
 			TOffsetPic pic;
 			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 			pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
@@ -682,45 +690,45 @@ static void VictoryDraw(void *data)
 	FontStrOpt(c->Setting.Title, Vec2iNew(0, y), opts);
 
 	// Display players
-	switch (gPlayerDatas.size)
+	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!pd->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		pds[idx] = pd;
+	}
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
+	switch (numLocalPlayers)
 	{
 	case 1:
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, 0);
-			DisplayCharacterAndName(Vec2iNew(w / 4, h / 4), &p->Char, p->name);
-		}
+		DisplayCharacterAndName(
+			Vec2iNew(w / 4, h / 4), &pds[0]->Char, pds[0]->name);
 		break;
 	case 2:
-		{
-			// side by side
-			const PlayerData *p1 = CArrayGet(&gPlayerDatas, 0);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 4), &p1->Char, p1->name);
-			const PlayerData *p2 = CArrayGet(&gPlayerDatas, 1);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8 + w / 2, h / 4), &p2->Char, p2->name);
-		}
+		// side by side
+		DisplayCharacterAndName(
+			Vec2iNew(w / 8, h / 4), &pds[0]->Char, pds[0]->name);
+		DisplayCharacterAndName(
+			Vec2iNew(w / 8 + w / 2, h / 4), &pds[1]->Char, pds[1]->name);
 		break;
 	case 3:	// fallthrough
 	case 4:
+		// 2x2
+		DisplayCharacterAndName(
+			Vec2iNew(w / 8, h / 8), &pds[0]->Char, pds[0]->name);
+		DisplayCharacterAndName(
+			Vec2iNew(w / 8 + w / 2, h / 8), &pds[1]->Char, pds[1]->name);
+		DisplayCharacterAndName(
+			Vec2iNew(w / 8, h / 8 + h / 4), &pds[2]->Char, pds[2]->name);
+		if (numLocalPlayers == 4)
 		{
-			// 2x2
-			const PlayerData *p1 = CArrayGet(&gPlayerDatas, 0);
 			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 8), &p1->Char, p1->name);
-			const PlayerData *p2 = CArrayGet(&gPlayerDatas, 1);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8 + w / 2, h / 8), &p2->Char, p2->name);
-			const PlayerData *p3 = CArrayGet(&gPlayerDatas, 2);
-			DisplayCharacterAndName(
-				Vec2iNew(w / 8, h / 8 + h / 4), &p3->Char, p3->name);
-			if (gPlayerDatas.size == 4)
-			{
-				const PlayerData *p4 = CArrayGet(&gPlayerDatas, 3);
-				DisplayCharacterAndName(
-					Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
-					&p4->Char, p4->name);
-			}
+				Vec2iNew(w / 8 + w / 2, h / 8 + h / 4),
+				&pds[3]->Char, pds[3]->name);
 		}
 		break;
 	default:
@@ -750,7 +758,7 @@ static void VictoryDraw(void *data)
 		"We're so cool we have to wear mittens",
 	};
 	const char *finalWords;
-	if (gPlayerDatas.size == 1)
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 1)
 	{
 		const int numWords = sizeof finalWordsSingle / sizeof(char *);
 		finalWords = finalWordsSingle[rand() % numWords];
@@ -785,17 +793,28 @@ static void DogfightScoresDraw(void *data)
 
 	GraphicsBlitBkg(&gGraphicsDevice);
 
+	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!pd->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		pds[idx] = pd;
+	}
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	CASSERT(
-		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
+		numLocalPlayers >= 2 && numLocalPlayers <= 4,
 		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < numLocalPlayers; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
-			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		DisplayCharacterAndName(pos, &p->Char, p->name);
-		ShowPlayerScore(pos, p->RoundsWon);
+			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
+		ShowPlayerScore(pos, pds[i]->RoundsWon);
 	}
 }
 static void ShowPlayerScore(const Vec2i pos, const int score)
@@ -849,18 +868,29 @@ static void DogfightFinalScoresDraw(void *data)
 	// otherwise display the winner just below the winning player
 #define DRAW_TEXT	"It's a draw!"
 #define WINNER_TEXT	"Winner!"
+	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!pd->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		pds[idx] = pd;
+	}
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	CASSERT(
-		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
+		numLocalPlayers >= 2 && numLocalPlayers <= 4,
 		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < numLocalPlayers; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
-			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		DisplayCharacterAndName(pos, &p->Char, p->name);
-		ShowPlayerScore(pos, p->RoundsWon);
-		if (!isTie && maxScore == p->RoundsWon)
+			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
+		ShowPlayerScore(pos, pds[i]->RoundsWon);
+		if (!isTie && maxScore == pds[i]->RoundsWon)
 		{
 			FontStrMask(
 				WINNER_TEXT,
@@ -906,27 +936,38 @@ static void DeathmatchFinalScoresDraw(void *data)
 	}
 
 	// Draw players and their names spread evenly around the screen.
+	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		if (!pd->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		pds[idx] = pd;
+	}
+	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	CASSERT(
-		gPlayerDatas.size >= 2 && gPlayerDatas.size <= 4,
+		numLocalPlayers >= 2 && numLocalPlayers <= 4,
 		"Unimplemented number of players for deathmatch");
 #define LAST_MAN_TEXT	"Last man standing!"
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < numLocalPlayers; i++)
 	{
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
-			gPlayerDatas.size == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		DisplayCharacterAndName(pos, &p->Char, p->name);
+			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
 		
 		// Kills
 		char s[16];
-		sprintf(s, "Kills: %d", p->kills);
+		sprintf(s, "Kills: %d", pds[i]->kills);
 		FontStrMask(
 			s, Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20),
-			p->kills == maxKills ? colorGreen : colorWhite);
+			pds[i]->kills == maxKills ? colorGreen : colorWhite);
 
 		// Last man standing?
-		if (p->Lives > 0)
+		if (pds[i]->Lives > 0)
 		{
 			FontStrMask(
 				LAST_MAN_TEXT,

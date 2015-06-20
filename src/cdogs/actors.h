@@ -139,7 +139,7 @@ typedef struct Actor
 	// This differentiates between a special command and weapon switch
 	bool specialCmdDir;
 	Character *Character;
-	int playerIndex;	// -1 unless a human player
+	int PlayerUID;	// -1 unless a human player
 	int uid;	// unique ID across all actors
 	CArray guns;	// of Weapon
 	CArray ammo;	// of int
@@ -198,6 +198,7 @@ extern TranslationTable tablePurple;
 void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor * actor, int ticks);
 bool TryMoveActor(TActor *actor, Vec2i pos);
+void ActorMove(const NActorMove am);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(int ticks);
@@ -231,7 +232,7 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // but deals no damage
 void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
-	const TActor *actor, const int flags, const int player,
+	const TActor *actor, const int flags, const int playerUID,
 	const GameMode mode);
 
 bool ActorIsLocalPlayer(const int uid);

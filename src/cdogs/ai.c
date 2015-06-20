@@ -79,7 +79,7 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		if (AIIsFacing(actor, player->Pos, d))
 		{
 			return true;
@@ -109,7 +109,7 @@ static bool CanSeeAPlayer(const TActor *a)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		const Vec2i playerRealPos = Vec2iFull2Real(player->Pos);
 		// Can see player if:
 		// - Clear line of sight, and
@@ -284,7 +284,7 @@ static bool DidPlayerShoot(void)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		if (player->lastCmd & CMD_BUTTON1)
 		{
 			return true;
@@ -331,7 +331,7 @@ void CommandBadGuys(int ticks)
 			continue;
 		}
 		const CharBot *bot = ActorGetCharacter(actor)->bot;
-		if (!(actor->playerIndex >= 0 || (actor->flags & FLAGS_PRISONER)))
+		if (!(actor->PlayerUID >= 0 || (actor->flags & FLAGS_PRISONER)))
 		{
 			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 			{

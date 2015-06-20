@@ -870,7 +870,7 @@ static void DisplayMapItemWithDensity(
 static void GetCharacterHeadPic(
 	Character *c, TOffsetPic *pic, TranslationTable **t)
 {
-	int i = c->looks.face;
+	const int i = c->looks.Face;
 	*t = &c->table;
 	pic->picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
 	pic->dx = cHeadOffset[i][DIRECTION_DOWN].dx;

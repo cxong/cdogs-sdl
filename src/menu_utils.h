@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013, Cong Xu
+	Copyright (c) 2013-2015, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MENU_UTILS
-#define __MENU_UTILS
+#pragma once
 
 #include <cdogs/character.h>
 
@@ -35,17 +34,16 @@
 
 typedef struct
 {
-	int playerIndex;
+	int PlayerUID;
 	menu_t **currentMenu;
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i pos, const Vec2i size, const void *data);
 
+// Data is PlayerUID
 void MenuDisplayPlayerControls(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i pos, const Vec2i size, const void *data);
 
 void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name);
-
-#endif

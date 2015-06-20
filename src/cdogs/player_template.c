@@ -83,12 +83,12 @@ CArray gPlayerTemplates;
 static void LoadPlayerTemplate(PlayerTemplate *t, json_t *node)
 {
 	strcpy(t->name, json_find_first_label(node, "Name")->child->text);
-	t->Looks.face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
-	LoadInt(&t->Looks.body, node, "Body");
-	LoadInt(&t->Looks.arm, node, "Arms");
-	LoadInt(&t->Looks.leg, node, "Legs");
-	LoadInt(&t->Looks.skin, node, "Skin");
-	LoadInt(&t->Looks.hair, node, "Hair");
+	t->Looks.Face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
+	LoadInt(&t->Looks.Body, node, "Body");
+	LoadInt(&t->Looks.Arm, node, "Arms");
+	LoadInt(&t->Looks.Leg, node, "Legs");
+	LoadInt(&t->Looks.Skin, node, "Skin");
+	LoadInt(&t->Looks.Hair, node, "Hair");
 }
 void LoadPlayerTemplates(CArray *templates, const char *filename)
 {
@@ -136,12 +136,12 @@ static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 	json_t *template = json_new_object();
 	json_insert_pair_into_object(template, "Name", json_new_string(t->name));
 	json_insert_pair_into_object(
-		template, "Face", json_new_string(faceNames[t->Looks.face]));
-	AddIntPair(template, "Body", t->Looks.body);
-	AddIntPair(template, "Arms", t->Looks.arm);
-	AddIntPair(template, "Legs", t->Looks.leg);
-	AddIntPair(template, "Skin", t->Looks.skin);
-	AddIntPair(template, "Hair", t->Looks.hair);
+		template, "Face", json_new_string(faceNames[t->Looks.Face]));
+	AddIntPair(template, "Body", t->Looks.Body);
+	AddIntPair(template, "Arms", t->Looks.Arm);
+	AddIntPair(template, "Legs", t->Looks.Leg);
+	AddIntPair(template, "Skin", t->Looks.Skin);
+	AddIntPair(template, "Hair", t->Looks.Hair);
 	json_insert_child(templates, template);
 }
 void SavePlayerTemplates(const CArray *templates, const char *filename)

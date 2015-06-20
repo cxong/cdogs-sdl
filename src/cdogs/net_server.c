@@ -140,9 +140,8 @@ void NetServerPoll(NetServer *n)
 }
 static void OnConnect(NetServer *n, ENetEvent event)
 {
-	printf("A new client connected from %x:%u.\n",
-		event.peer->address.host,
-		event.peer->address.port);
+	LOG(LM_NET, LL_INFO, "new client connected from %x:%u.\n",
+		event.peer->address.host, event.peer->address.port);
 	/* Store any relevant client information here. */
 	CMALLOC(event.peer->data, sizeof(NetPeerData));
 	const int peerId = n->peerId;
@@ -153,6 +152,7 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
 	NClientId cid;
 	cid.Id = peerId;
+	cid.FirstPlayerUID = (peerId + 1) * MAX_LOCAL_PLAYERS;
 	NetServerSendMsg(n, peerId, GAME_EVENT_CLIENT_ID, &cid);
 
 	// Send the current campaign details over
@@ -164,7 +164,7 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 }
 static void SendGameStartMessages(
-	NetServer *n, const int peerId, const PlayerData *pData);
+	NetServer *n, const int peerId, const NAddPlayers ap);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
@@ -185,53 +185,39 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		switch (gee.Type)
 		{
 		case GAME_EVENT_REQUEST_PLAYERS:
-			// Send details of all current players
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
-				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-				LOG(LM_NET, LL_DEBUG, "send player data index(%d)", i);
-				const NPlayerData d = NMakePlayerData(pOther);
-				NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &d);
+				// Send details of all current players
+				NAddPlayers ap = NAddPlayers_init_default;
+				// Should contain no players for this client
+				ap.ClientId = -1;
+				for (int i = 0; i < (int)gPlayerDatas.size; i++)
+				{
+					const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+					LOG(LM_NET, LL_DEBUG, "send player data uid(%d)", pOther->UID);
+					ap.PlayerDatas[i] = NMakePlayerData(pOther);
+					ap.PlayerDatas_count++;
+				}
+				NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PLAYERS, &ap);
 			}
 			break;
-		case GAME_EVENT_NEW_PLAYERS:
+		case GAME_EVENT_ADD_PLAYERS:
 			{
-				NNewPlayers np;
-				NetDecode(event.packet, &np, NNewPlayers_fields);
-				LOG(LM_NET, LL_DEBUG, "NetServer: received new players %d", np.NumPlayers);
-				// Add the players, simultaneously building our broadcast message
 				NAddPlayers ap;
-				ap.ClientId = np.ClientId;
-				ap.PlayerIds_count = (pb_size_t)np.NumPlayers;
-				for (int i = 0; i < (int)np.NumPlayers; i++)
+				NetDecode(event.packet, &ap, NAddPlayers_fields);
+				LOG(LM_NET, LL_DEBUG, "recv add players %d",
+					(int)ap.PlayerDatas_count);
+				// Add the players
+				for (int i = 0; i < (int)ap.PlayerDatas_count; i++)
 				{
-					PlayerData *p = PlayerDataAdd(&gPlayerDatas);
-					p->IsLocal = false;
-					ap.PlayerIds[i] = p->playerIndex;
+					PlayerDataAddOrUpdate(ap.PlayerDatas[i], false);
 				}
 				// Broadcast the new players to all clients
 				NetServerBroadcastMsg(n, GAME_EVENT_ADD_PLAYERS, &ap);
-			}
-			break;
-		case GAME_EVENT_PLAYER_DATA:
-			{
-				NPlayerData pd;
-				NetDecode(event.packet, &pd, NPlayerData_fields);
-				LOG(LM_NET, LL_DEBUG,
-					"NetServer: received player data id %d", pd.PlayerIndex);
-				CASSERT(
-					(int)gPlayerDatas.size > (int)pd.PlayerIndex,
-					"unexpected player index");
-				NPlayerDataUpdate(&pd);
-				// Send it on to all clients
-				const PlayerData *pData = CArrayGet(&gPlayerDatas, pd.PlayerIndex);
-				const NPlayerData d = NMakePlayerData(pData);
-				NetServerBroadcastMsg(n, GAME_EVENT_PLAYER_DATA, &d);
 
 				// Send game start messages if we've started already
 				if (gMission.HasStarted)
 				{
-					SendGameStartMessages(n, peerId, pData);
+					SendGameStartMessages(n, peerId, ap);
 				}
 			}
 			break;
@@ -243,12 +229,16 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	enet_packet_destroy(event.packet);
 }
 static void SendGameStartMessages(
-	NetServer *n, const int peerId, const PlayerData *pData)
+	NetServer *n, const int peerId, const NAddPlayers ap)
 {
-	// Add the player's actor
-	PlacePlayer(&gMap, pData, Vec2iZero(), true);
+	// Add the client's actors
+	for (int i = 0; i < (int)ap.PlayerDatas_count; i++)
+	{
+		const PlayerData *pData = PlayerDataGetByUID(ap.PlayerDatas[i].UID);
+		PlacePlayer(&gMap, pData, Vec2iZero(), true);
+	}
 
-	// Send all players
+	// Send all actors
 	for (int i = 0; i < (int)gActors.size; i++)
 	{
 		const TActor *a = CArrayGet(&gActors, i);
@@ -258,7 +248,7 @@ static void SendGameStartMessages(
 		}
 		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = a->uid;
-		if (a->playerIndex < 0)
+		if (a->PlayerUID < 0)
 		{
 			aa.CharId =
 				a->Character -
@@ -266,12 +256,12 @@ static void SendGameStartMessages(
 		}
 		aa.Health = a->health;
 		aa.Direction = (int32_t)a->direction;
-		aa.PlayerId = a->playerIndex;
+		aa.PlayerUID = a->PlayerUID;
 		aa.TileItemFlags = a->tileItem.flags;
 		aa.FullPos.x = a->Pos.x;
 		aa.FullPos.y = a->Pos.y;
-		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerId(%d)",
-			(int)aa.UID, (int)aa.PlayerId);
+		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerUID(%d)",
+			(int)aa.UID, (int)aa.PlayerUID);
 		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	}
 

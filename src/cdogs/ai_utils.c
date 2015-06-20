@@ -71,7 +71,7 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 		{
 			continue;
 		}
-		TActor *p = CArrayGet(&gActors, pd->Id);
+		TActor *p = ActorGetByUID(pd->ActorUID);
 		const Vec2i pPos = Vec2iFull2Real(p->Pos);
 		const int distance = CHEBYSHEV_DISTANCE(
 			fullpos.x, fullpos.y, pPos.x, pPos.y);
@@ -121,7 +121,7 @@ static TActor *AIGetClosestActor(
 static bool IsGood(const TActor *a, const TActor *b)
 {
 	UNUSED(b);
-	return a->playerIndex >= 0 || (a->flags & FLAGS_GOOD_GUY);
+	return a->PlayerUID >= 0 || (a->flags & FLAGS_GOOD_GUY);
 }
 static bool IsBad(const TActor *a, const TActor *b)
 {
@@ -139,7 +139,7 @@ const TActor *AIGetClosestEnemy(
 		// free for all; look for anybody else
 		return AIGetClosestActor(from, a, IsDifferent);
 	}
-	else if ((!a || a->playerIndex < 0) && !(flags & FLAGS_GOOD_GUY))
+	else if ((!a || a->PlayerUID < 0) && !(flags & FLAGS_GOOD_GUY))
 	{
 		// we are bad; look for good guys
 		return AIGetClosestActor(from, a, IsGood);
@@ -614,7 +614,7 @@ int AIHunt(TActor *actor, Vec2i targetPos)
 int AIHuntClosest(TActor *actor)
 {
 	Vec2i targetPos = actor->Pos;
-	if (!(actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
+	if (!(actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
 	{
 		targetPos = AIGetClosestPlayerPos(actor->Pos);
 	}
@@ -622,7 +622,7 @@ int AIHuntClosest(TActor *actor)
 	if (actor->flags & FLAGS_VISIBLE)
 	{
 		const TActor *a =
-			AIGetClosestVisibleEnemy(actor, actor->playerIndex >= 0);
+			AIGetClosestVisibleEnemy(actor, actor->PlayerUID >= 0);
 		if (a)
 		{
 			targetPos = a->Pos;

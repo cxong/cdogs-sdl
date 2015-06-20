@@ -163,7 +163,7 @@ static double HealthScale(void *data)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		minHealth = MIN(minHealth, player->health);
 	}
 	// Double spawn rate if near 0 health
@@ -225,7 +225,7 @@ static double AmmoScale(void *data)
 		{
 			continue;
 		}
-		const TActor *player = CArrayGet(&gActors, p->Id);
+		const TActor *player = ActorGetByUID(p->ActorUID);
 		minVal = MIN(minVal, *(int *)CArrayGet(&player->ammo, ammoId));
 	}
 	// 10-fold spawn rate if near 0 ammo

@@ -216,19 +216,16 @@ static int AICoopGetCmdNormal(TActor *actor)
 		}
 	}
 
-	// Follow the closest player with a lower ID
+	// Follow the closest player with a lower UID
 	const TActor *closestPlayer = NULL;
 	int minDistance2 = -1;
 	if (!IsPVP(gCampaign.Entry.Mode))
 	{
-		for (int i = 0; i < actor->playerIndex; i++)
+		for (int uid = 0; uid < actor->PlayerUID; uid++)
 		{
-			const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
-			if (!IsPlayerAlive(pd))
-			{
-				continue;
-			}
-			const TActor *p = CArrayGet(&gActors, pd->Id);
+			const PlayerData *pd = PlayerDataGetByUID(uid);
+			if (pd == NULL || !IsPlayerAlive(pd)) continue;
+			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int distance2 =
 				DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
 			if (!closestPlayer || distance2 < minDistance2)

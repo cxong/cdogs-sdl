@@ -245,27 +245,27 @@ static void Change(
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
-			b->looks.face = CLAMP_OPPOSITE(b->looks.face + d, 0, FACE_COUNT - 1);
+			b->looks.Face = CLAMP_OPPOSITE(b->looks.Face + d, 0, FACE_COUNT - 1);
 			break;
 
 		case XC_SKIN:
-			b->looks.skin = CLAMP_OPPOSITE(b->looks.skin + d, 0, SHADE_COUNT - 1);
+			b->looks.Skin = CLAMP_OPPOSITE(b->looks.Skin + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_HAIR:
-			b->looks.hair = CLAMP_OPPOSITE(b->looks.hair + d, 0, SHADE_COUNT - 1);
+			b->looks.Hair = CLAMP_OPPOSITE(b->looks.Hair + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_BODY:
-			b->looks.body = CLAMP_OPPOSITE(b->looks.body + d, 0, SHADE_COUNT - 1);
+			b->looks.Body = CLAMP_OPPOSITE(b->looks.Body + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_ARMS:
-			b->looks.arm = CLAMP_OPPOSITE(b->looks.arm + d, 0, SHADE_COUNT - 1);
+			b->looks.Arm = CLAMP_OPPOSITE(b->looks.Arm + d, 0, SHADE_COUNT - 1);
 			break;
 
 		case XC_LEGS:
-			b->looks.leg = CLAMP_OPPOSITE(b->looks.leg + d, 0, SHADE_COUNT - 1);
+			b->looks.Leg = CLAMP_OPPOSITE(b->looks.Leg + d, 0, SHADE_COUNT - 1);
 			break;
 		}
 		break;
@@ -425,12 +425,12 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	else
 	{
 		// set up character template
-		c->looks.face = FACE_OGRE;
-		c->looks.skin = SHADE_GREEN;
-		c->looks.arm = SHADE_DKGRAY;
-		c->looks.body = SHADE_DKGRAY;
-		c->looks.leg = SHADE_DKGRAY;
-		c->looks.hair = SHADE_BLACK;
+		c->looks.Face = FACE_OGRE;
+		c->looks.Skin = SHADE_GREEN;
+		c->looks.Arm = SHADE_DKGRAY;
+		c->looks.Body = SHADE_DKGRAY;
+		c->looks.Leg = SHADE_DKGRAY;
+		c->looks.Hair = SHADE_BLACK;
 		c->speed = 256;
 		c->Gun = StrGunDescription("Machine gun");
 		c->maxHealth = 40;

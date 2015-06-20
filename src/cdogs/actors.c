@@ -162,6 +162,11 @@ static int AnimationGetFrame(const Animation *a)
 	return a->frames[a->frame];
 }
 
+static PlayerData *GetPlayerData(TActor *a)
+{
+	if (a->PlayerUID >= 0) return PlayerDataGetByUID(a->PlayerUID);
+	return NULL;
+}
 
 static ActorPics GetCharacterPics(int id)
 {
@@ -174,13 +179,13 @@ static ActorPics GetCharacterPics(int id)
 	int headFrame = frame;
 
 	Character *c = actor->Character;
-	if (actor->playerIndex >= 0)
+	PlayerData *p = GetPlayerData(actor);
+	if (p != NULL)
 	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, actor->playerIndex);
 		c = &p->Char;
 	}
 	pics.Table = (TranslationTable *)c->table;
-	int f = c->looks.face;
+	const int f = c->looks.Face;
 	const Weapon *gun = ActorGetGun(actor);
 	int g = gun->Gun->pic;
 	gunstate_e gunState = gun->state;
@@ -388,8 +393,8 @@ static void CheckTrigger(const Vec2i tilePos)
 		if (TriggerCanActivate(*tp, gMission.flags))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
-			e.u.Trigger.Id = (*tp)->id;
-			e.u.Trigger.TilePos = tilePos;
+			e.u.TriggerEvent.Id = (*tp)->id;
+			e.u.TriggerEvent.TilePos = tilePos;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
@@ -421,7 +426,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	{
 		Vec2i realXPos, realYPos;
 
-		if (actor->playerIndex >= 0 && target->kind == KIND_CHARACTER)
+		if (actor->PlayerUID >= 0 && target->kind == KIND_CHARACTER)
 		{
 			TActor *otherCharacter = CArrayGet(&gActors, target->id);
 			CASSERT(otherCharacter->isInUse, "Cannot find nonexistent player");
@@ -449,7 +454,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 					Vec2iZero(),
 					gun->Gun->Bullet->Power,
 					actor->flags,
-					actor->playerIndex,
+					actor->PlayerUID,
 					actor->uid,
 					target,
 					SPECIAL_NONE,
@@ -493,10 +498,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			return false;
 		}
 	}
-
-	CheckTrigger(Vec2iToTile(realPos));
-
-	CheckPickups(actor, realPos);
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 	e.u.ActorMove.UID = actor->uid;
@@ -602,12 +603,36 @@ static Vec2i GetConstrainedFullPos(
 	// All alternative movements are in collision; don't move
 	return fromFull;
 }
+
+void ActorMove(const NActorMove am)
+{
+	TActor *a = ActorGetByUID(am.UID);
+	if (a == NULL || !a->isInUse) return;
+	a->Pos = Net2Vec2i(am.Pos);
+	const Vec2i realPos = Vec2iFull2Real(a->Pos);
+	MapTryMoveTileItem(&gMap, &a->tileItem, realPos);
+	if (MapIsTileInExit(&gMap, &a->tileItem))
+	{
+		a->action = ACTORACTION_EXITING;
+	}
+	else
+	{
+		a->action = ACTORACTION_MOVING;
+	}
+
+	if (!gCampaign.IsClient)
+	{
+		CheckTrigger(Vec2iToTile(realPos));
+
+		CheckPickups(a, realPos);
+	}
+}
 // Check if the player can pickup any item
 static bool CheckPickupFunc(TTileItem *ti, void *data);
 static void CheckPickups(TActor *actor, const Vec2i realPos)
 {
 	// NPCs can't pickup
-	if (actor->playerIndex < 0)
+	if (actor->PlayerUID < 0)
 	{
 		return;
 	}
@@ -643,7 +668,7 @@ void InjureActor(TActor * actor, int injury)
 		sound.u.SoundAt.Sound = SoundGetRandomScream(&gSoundDevice);
 		sound.u.SoundAt.Pos = pos;
 		GameEventsEnqueue(&gGameEvents, sound);
-		if (actor->playerIndex >= 0)
+		if (actor->PlayerUID >= 0)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
@@ -750,14 +775,14 @@ void Shoot(TActor *actor)
 		actor->direction,
 		actor->Pos,
 		actor->flags,
-		actor->playerIndex,
+		actor->PlayerUID,
 		actor->uid);
-	if (actor->playerIndex >= 0)
+	if (actor->PlayerUID >= 0)
 	{
 		if (ConfigGetBool(&gConfig, "Game.Ammo") && gun->Gun->AmmoId >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_USE_AMMO);
-			e.u.UseAmmo.PlayerIndex = actor->playerIndex;
+			e.u.UseAmmo.PlayerUID = actor->PlayerUID;
 			e.u.UseAmmo.UseAmmo.Id = gun->Gun->AmmoId;
 			e.u.UseAmmo.UseAmmo.Amount = -1;
 			GameEventsEnqueue(&gGameEvents, e);
@@ -766,7 +791,7 @@ void Shoot(TActor *actor)
 		{
 			// Classic C-Dogs score consumption
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerId = actor->playerIndex;
+			e.u.Score.PlayerUID = actor->PlayerUID;
 			e.u.Score.Score = -gun->Gun->Cost;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
@@ -1031,26 +1056,18 @@ static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor, const int idx)
 {
 	// Check if the player has lives to revive
-	if (actor->playerIndex >= 0)
+	PlayerData *p = GetPlayerData(actor);
+	if (p != NULL)
 	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, actor->playerIndex);
 		p->Lives--;
 		CASSERT(p->Lives >= 0, "Player has died too many times");
 		if (p->Lives > 0)
 		{
-			// Find the first player alive; try to spawn next to that position
+			// Find the closest player alive; try to spawn next to that position
 			// if no other suitable position exists
 			Vec2i defaultSpawnPosition = Vec2iZero();
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
-			{
-				const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-				if (IsPlayerAlive(pOther))
-				{
-					const TActor *a = CArrayGet(&gActors, pOther->Id);
-					defaultSpawnPosition = a->Pos;
-					break;
-				}
-			}
+			const TActor *closestActor = AIGetClosestPlayer(actor->Pos);
+			if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
 			// Force pump events so we spawn immediately
 			// This is to prevent screen redraw for one frame with one less
 			// player
@@ -1221,7 +1238,7 @@ TActor *ActorAdd(NActorAdd aa)
 	memset(actor, 0, sizeof *actor);
 	actor->uid = aa.UID;
 	LOG(LM_ACTOR, LL_DEBUG,
-		"add actor uid(%d) playerId(%d)", actor->uid, (int)aa.PlayerId);
+		"add actor uid(%d) playerUID(%d)", actor->uid, aa.PlayerUID);
 	CArrayInit(&actor->guns, sizeof(Weapon));
 	CArrayInit(&actor->ammo, sizeof(int));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
@@ -1233,17 +1250,17 @@ TActor *ActorAdd(NActorAdd aa)
 		CArrayPushBack(&actor->ammo, &amount);
 	}
 	Character *c;
-	if (aa.PlayerId >= 0)
+	if (aa.PlayerUID >= 0)
 	{
 		// Add all player weapons
-		PlayerData *p = CArrayGet(&gPlayerDatas, aa.PlayerId);
+		PlayerData *p = PlayerDataGetByUID(aa.PlayerUID);
 		c = &p->Char;
 		for (int i = 0; i < p->weaponCount; i++)
 		{
 			Weapon gun = WeaponCreate(p->weapons[i]);
 			CArrayPushBack(&actor->guns, &gun);
 		}
-		p->Id = id;
+		p->ActorUID = aa.UID;
 	}
 	else
 	{
@@ -1271,7 +1288,7 @@ TActor *ActorAdd(NActorAdd aa)
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
 	actor->Character = c;
-	actor->playerIndex = aa.PlayerId;
+	actor->PlayerUID = aa.PlayerUID;
 	actor->direction = DIRECTION_DOWN;
 	ActorSetState(actor, ACTORANIMATION_IDLE);
 	actor->slideLock = 0;
@@ -1290,15 +1307,9 @@ void ActorDestroy(int id)
 	CArrayTerminate(&actor->guns);
 	CArrayTerminate(&actor->ammo);
 	MapRemoveTileItem(&gMap, &actor->tileItem);
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (id == p->Id)
-		{
-			p->Id = -1;
-			break;
-		}
-	}
+	// Set PlayerData's ActorUID to -1 to signify actor destruction
+	PlayerData *p = GetPlayerData(actor);
+	if (p != NULL) p->ActorUID = -1;
 	AIContextDestroy(actor->aiContext);
 	actor->isInUse = false;
 }
@@ -1397,10 +1408,9 @@ TActor *ActorGetByUID(const int uid)
 
 const Character *ActorGetCharacter(const TActor *a)
 {
-	if (a->playerIndex >= 0)
+	if (a->PlayerUID >= 0)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, a->playerIndex);
-		return &p->Char;
+		return &PlayerDataGetByUID(a->PlayerUID)->Char;
 	}
 	return a->Character;
 }
@@ -1519,7 +1529,7 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage)
 }
 
 bool ActorIsInvulnerable(
-	const TActor *actor, const int flags, const int player,
+	const TActor *actor, const int flags, const int playerUID,
 	const GameMode mode)
 {
 	if (actor->flags & FLAGS_INVULNERABLE)
@@ -1530,13 +1540,13 @@ bool ActorIsInvulnerable(
 	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
 	{
 		// Same player hits
-		if (player >= 0 && player == actor->playerIndex)
+		if (playerUID >= 0 && playerUID == actor->PlayerUID)
 		{
 			return 1;
 		}
-		const bool isGood = player >= 0 || (flags & FLAGS_GOOD_GUY);
+		const bool isGood = playerUID >= 0 || (flags & FLAGS_GOOD_GUY);
 		const bool isTargetGood =
-			actor->playerIndex >= 0 || (actor->flags & FLAGS_GOOD_GUY);
+			actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY);
 		// Friendly fire (NPCs)
 		if (!IsPVP(mode) &&
 			!ConfigGetBool(&gConfig, "Game.FriendlyFire") &&
@@ -1563,5 +1573,5 @@ bool ActorIsLocalPlayer(const int uid)
 	// Otherwise this shouldn't happen
 	if (a == NULL) return true;
 
-	return PlayerIsLocal(a->playerIndex);
+	return PlayerIsLocal(a->PlayerUID);
 }
