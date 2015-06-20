@@ -294,14 +294,14 @@ static void SendGameStartMessages(
 	{
 		const Pickup *p = CArrayGet(&gPickups, i);
 		if (!p->isInUse) continue;
-		NAddPickup ap = NAddPickup_init_default;
-		ap.UID = p->UID;
-		strcpy(ap.PickupClass, p->class->Name);
-		ap.IsRandomSpawned = p->IsRandomSpawned;
-		ap.SpawnerUID = p->SpawnerUID;
-		ap.TileItemFlags = p->tileItem.flags;
-		ap.Pos = Vec2i2Net(Vec2iNew(p->tileItem.x, p->tileItem.y));
-		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &ap);
+		NAddPickup api = NAddPickup_init_default;
+		api.UID = p->UID;
+		strcpy(api.PickupClass, p->class->Name);
+		api.IsRandomSpawned = p->IsRandomSpawned;
+		api.SpawnerUID = p->SpawnerUID;
+		api.TileItemFlags = p->tileItem.flags;
+		api.Pos = Vec2i2Net(Vec2iNew(p->tileItem.x, p->tileItem.y));
+		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
 	}
 
 	// Send all map objects
