@@ -481,7 +481,8 @@ static void MissionSummaryDraw(void *data)
 	// Draw per-player summaries
 	Vec2i size;
 	const PlayerData *pds[MAX_LOCAL_PLAYERS];
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
 		if (!pd->IsLocal)
