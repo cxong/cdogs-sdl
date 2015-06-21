@@ -72,9 +72,8 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 			continue;
 		}
 		TActor *p = ActorGetByUID(pd->ActorUID);
-		const Vec2i pPos = Vec2iFull2Real(p->Pos);
 		const int distance = CHEBYSHEV_DISTANCE(
-			fullpos.x, fullpos.y, pPos.x, pPos.y);
+			fullpos.x, fullpos.y, p->Pos.x, p->Pos.y);
 		if (!closestPlayer || distance < minDistance)
 		{
 			closestPlayer = p;

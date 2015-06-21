@@ -277,6 +277,44 @@ static bool CollideGetFirstItemCallback(TTileItem *ti, void *data)
 	return false;
 }
 
+// TODO: refactor with Collide functions
+TTileItem *OverlapGetFirstItem(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const int mask, const CollisionTeam team, const bool isPVP)
+{
+	const Vec2i tv = Vec2iToTile(pos);
+	Vec2i dv;
+	// Check collisions with all other items on this tile, in all 8 directions
+	for (dv.y = -1; dv.y <= 1; dv.y++)
+	{
+		for (dv.x = -1; dv.x <= 1; dv.x++)
+		{
+			const Vec2i dtv = Vec2iAdd(tv, dv);
+			if (!MapIsTileIn(&gMap, dtv))
+			{
+				continue;
+			}
+			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
+			for (int i = 0; i < (int)tileThings->size; i++)
+			{
+				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
+				// Don't collide if items are on the same team
+				if (CollisionIsOnSameTeam(ti, team, isPVP)) continue;
+				// No same-item collision
+				if (item == ti) continue;
+				if (mask != 0 && !(ti->flags & mask)) continue;
+				if (!AreasCollide(pos, Vec2iNew(ti->x, ti->y), size, ti->size))
+				{
+					continue;
+				}
+				// Overlaps
+				return ti;
+			}
+		}
+	}
+	return NULL;
+}
+
 Vec2i GetWallBounceFullPos(
 	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull)
 {

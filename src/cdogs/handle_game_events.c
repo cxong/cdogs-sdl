@@ -282,6 +282,15 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_RESCUE_CHARACTER:
+		{
+			TActor *a = ActorGetByUID(e->u.Rescue.UID);
+			if (!a->isInUse) break;
+			a->flags &= ~FLAGS_PRISONER;
+			SoundPlayAt(
+				&gSoundDevice, StrSound("rescue"), Vec2iFull2Real(a->Pos));
+		}
+		break;
 	case GAME_EVENT_OBJECTIVE_UPDATE:
 		{
 			ObjectiveDef *o = CArrayGet(

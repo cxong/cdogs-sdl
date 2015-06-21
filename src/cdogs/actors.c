@@ -382,28 +382,9 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 }
 
-
-static void CheckTrigger(const Vec2i tilePos)
-{
-	const Tile *t = MapGetTile(&gMap, tilePos);
-	int i;
-	for (i = 0; i < (int)t->triggers.size; i++)
-	{
-		Trigger **tp = CArrayGet(&t->triggers, i);
-		if (TriggerCanActivate(*tp, gMission.flags))
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
-			e.u.TriggerEvent.Id = (*tp)->id;
-			e.u.TriggerEvent.TilePos = tilePos;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-	}
-}
-
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);
-static void CheckPickups(TActor *actor, const Vec2i realPos);
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
@@ -424,22 +405,6 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		IsPVP(gCampaign.Entry.Mode));
 	if (target)
 	{
-		Vec2i realXPos, realYPos;
-
-		if (actor->PlayerUID >= 0 && target->kind == KIND_CHARACTER)
-		{
-			TActor *otherCharacter = CArrayGet(&gActors, target->id);
-			CASSERT(otherCharacter->isInUse, "Cannot find nonexistent player");
-			if (otherCharacter
-			    && (otherCharacter->flags & FLAGS_PRISONER) !=
-			    0) {
-				otherCharacter->flags &= ~FLAGS_PRISONER;
-				UpdateMissionObjective(
-					&gMission,
-					otherCharacter->tileItem.flags, OBJECTIVE_RESCUE);
-			}
-		}
-
 		Weapon *gun = ActorGetGun(actor);
 		if (!gun->Gun->CanShoot && actor->health > 0)
 		{
@@ -468,7 +433,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			}
 		}
 
-		realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
+		Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
 		if (CollideGetFirstItem(
 			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
@@ -476,7 +441,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		{
 			pos.y = actor->Pos.y;
 		}
-		realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
+		Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
 		if (CollideGetFirstItem(
 			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
 			CalcCollisionTeam(1, actor),
@@ -604,6 +569,9 @@ static Vec2i GetConstrainedFullPos(
 	return fromFull;
 }
 
+static void CheckTrigger(const Vec2i tilePos);
+static void CheckPickups(TActor *actor);
+static void CheckRescue(const TActor *a);
 void ActorMove(const NActorMove am)
 {
 	TActor *a = ActorGetByUID(am.UID);
@@ -624,12 +592,29 @@ void ActorMove(const NActorMove am)
 	{
 		CheckTrigger(Vec2iToTile(realPos));
 
-		CheckPickups(a, realPos);
+		CheckPickups(a);
+
+		CheckRescue(a);
+	}
+}
+static void CheckTrigger(const Vec2i tilePos)
+{
+	const Tile *t = MapGetTile(&gMap, tilePos);
+	for (int i = 0; i < (int)t->triggers.size; i++)
+	{
+		Trigger **tp = CArrayGet(&t->triggers, i);
+		if (TriggerCanActivate(*tp, gMission.flags))
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
+			e.u.TriggerEvent.Id = (*tp)->id;
+			e.u.TriggerEvent.TilePos = tilePos;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 }
 // Check if the player can pickup any item
 static bool CheckPickupFunc(TTileItem *ti, void *data);
-static void CheckPickups(TActor *actor, const Vec2i realPos)
+static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
 	if (actor->PlayerUID < 0)
@@ -637,7 +622,8 @@ static void CheckPickups(TActor *actor, const Vec2i realPos)
 		return;
 	}
 	CollideTileItems(
-		&actor->tileItem, realPos, 0, CalcCollisionTeam(true, actor),
+		&actor->tileItem, Vec2iFull2Real(actor->Pos), 0,
+		CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
 }
 static bool CheckPickupFunc(TTileItem *ti, void *data)
@@ -648,6 +634,35 @@ static bool CheckPickupFunc(TTileItem *ti, void *data)
 		PickupPickup(actor, CArrayGet(&gPickups, ti->id));
 	}
 	return true;
+}
+static void CheckRescue(const TActor *a)
+{
+	// NPCs can't rescue
+	if (a->PlayerUID < 0) return;
+
+	// Check an area slightly bigger than the actor's size for rescue
+	// objectives
+#define RESCUE_CHECK_PAD 2
+	const TTileItem *target = OverlapGetFirstItem(
+		&a->tileItem, Vec2iFull2Real(a->Pos),
+		Vec2iAdd(a->tileItem.size, Vec2iNew(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
+		TILEITEM_IMPASSABLE,
+		CalcCollisionTeam(true, a),
+		IsPVP(gCampaign.Entry.Mode));
+	if (target != NULL && target->kind == KIND_CHARACTER)
+	{
+		TActor *other = CArrayGet(&gActors, target->id);
+		CASSERT(other->isInUse, "Cannot find nonexistent player");
+		if (other->flags & FLAGS_PRISONER)
+		{
+			other->flags &= ~FLAGS_PRISONER;
+			GameEvent e = GameEventNew(GAME_EVENT_RESCUE_CHARACTER);
+			e.u.Rescue.UID = other->uid;
+			GameEventsEnqueue(&gGameEvents, e);
+			UpdateMissionObjective(
+				&gMission, other->tileItem.flags, OBJECTIVE_RESCUE);
+		}
+	}
 }
 
 void ActorHeal(TActor *actor, int health)
@@ -866,7 +881,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		{
 			actor->PickupAll = true;
 			// Special: check pickups that can only be picked up on demand
-			CheckPickups(actor, Vec2iFull2Real(actor->Pos));
+			CheckPickups(actor);
 			actor->PickupAll = false;
 			// Cancel the last cmd having switch
 			actor->lastCmd &= ~CMD_BUTTON2;

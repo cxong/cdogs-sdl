@@ -140,6 +140,10 @@ message NExploreTile {
 	required NVec2i Tile = 1;
 }
 
+message NRescueCharacter {
+	required uint32 UID = 1;
+}
+
 message NObjectiveUpdate {
 	required uint32 ObjectiveId = 1;
 	required int32 Count = 2;

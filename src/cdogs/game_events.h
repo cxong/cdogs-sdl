@@ -81,6 +81,7 @@ typedef enum
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_TRIGGER,
 	GAME_EVENT_EXPLORE_TILE,
+	GAME_EVENT_RESCUE_CHARACTER,
 	GAME_EVENT_OBJECTIVE_UPDATE,
 
 	// Can complete mission
@@ -167,6 +168,7 @@ typedef struct
 			Vec2i TilePos;
 		} TriggerEvent;
 		NExploreTile ExploreTile;
+		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;
 	} u;
 } GameEvent;

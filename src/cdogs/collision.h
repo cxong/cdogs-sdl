@@ -91,6 +91,11 @@ void CollideTileItems(
 TTileItem *CollideGetFirstItem(
 	const TTileItem *item, const Vec2i pos,
 	const int mask, const CollisionTeam team, const bool isPVP);
+// Get the first TTileItem that overlaps an area
+// This disregards original position
+TTileItem *OverlapGetFirstItem(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const int mask, const CollisionTeam team, const bool isPVP);
 
 bool AreasCollide(
 	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);
