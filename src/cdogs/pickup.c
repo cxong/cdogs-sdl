@@ -217,7 +217,7 @@ void PickupPickup(TActor *a, Pickup *p)
 						ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
 					if (ammoDeficit > 0)
 					{
-						GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+						e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 						e.u.AddAmmo.UID = a->uid;
 						e.u.AddAmmo.PlayerUID = a->PlayerUID;
 						e.u.AddAmmo.AmmoId = ammoId;
