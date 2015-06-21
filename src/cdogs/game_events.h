@@ -67,10 +67,10 @@ typedef enum
 	GAME_EVENT_ACTOR_REPLACE_GUN,
 	GAME_EVENT_ACTOR_HEAL,
 	GAME_EVENT_ACTOR_ADD_AMMO,
+	GAME_EVENT_ACTOR_USE_AMMO,
 
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_REMOVE_PICKUP,
-	GAME_EVENT_USE_AMMO,
 
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_PARTICLE_REMOVE,
@@ -135,13 +135,9 @@ typedef struct
 		} ActorReplaceGun;
 		NActorHeal Heal;
 		NActorAddAmmo AddAmmo;
+		NActorUseAmmo UseAmmo;
 		NAddPickup AddPickup;
 		NRemovePickup RemovePickup;
-		struct
-		{
-			int PlayerUID;
-			AddAmmo UseAmmo;
-		} UseAmmo;
 		struct
 		{
 			int UID;

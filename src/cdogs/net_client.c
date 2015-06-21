@@ -155,6 +155,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		}
 
 		// For actor events, check if UID is not for local player
+		// TODO: repeated code (see game_events.c)
 		int actorUID = -1;
 		bool actorIsLocal = false;
 		switch (gee.Type)
@@ -165,6 +166,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
 		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
 		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
+		case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
 		case GAME_EVENT_ADD_BULLET:
 			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
 			break;

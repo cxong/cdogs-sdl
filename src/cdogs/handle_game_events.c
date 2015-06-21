@@ -178,6 +178,17 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_ACTOR_USE_AMMO:
+		{
+			TActor *a = ActorGetByUID(e->u.UseAmmo.UID);
+			if (!a->isInUse || a->dead) break;
+			ActorAddAmmo(a, e->u.UseAmmo.AmmoId, -(int)e->u.UseAmmo.Amount);
+			if (e->u.UseAmmo.PlayerUID >= 0)
+			{
+				// TODO: some sort of text effect showing ammo use
+			}
+		}
+		break;
 	case GAME_EVENT_ADD_PICKUP:
 		PickupAdd(e->u.AddPickup);
 		// Play a spawn sound
@@ -191,22 +202,6 @@ static void HandleGameEvent(
 		{
 			TObject *o = ObjGetByUID(e->u.RemovePickup.SpawnerUID);
 			o->counter = AMMO_SPAWNER_RESPAWN_TICKS;
-		}
-		break;
-	case GAME_EVENT_USE_AMMO:
-		{
-			const PlayerData *p = PlayerDataGetByUID(e->u.UseAmmo.PlayerUID);
-			if (IsPlayerAlive(p))
-			{
-				TActor *a = ActorGetByUID(p->ActorUID);
-				if (!a->isInUse)
-				{
-					break;
-				}
-				ActorAddAmmo(
-					a, e->u.UseAmmo.UseAmmo.Id, e->u.UseAmmo.UseAmmo.Amount);
-				// TODO: some sort of text effect showing ammo usage
-			}
 		}
 		break;
 	case GAME_EVENT_MOBILE_OBJECT_REMOVE:

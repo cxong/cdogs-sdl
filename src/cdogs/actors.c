@@ -792,10 +792,11 @@ void Shoot(TActor *actor)
 	{
 		if (ConfigGetBool(&gConfig, "Game.Ammo") && gun->Gun->AmmoId >= 0)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_USE_AMMO);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
+			e.u.UseAmmo.UID = actor->uid;
 			e.u.UseAmmo.PlayerUID = actor->PlayerUID;
-			e.u.UseAmmo.UseAmmo.Id = gun->Gun->AmmoId;
-			e.u.UseAmmo.UseAmmo.Amount = -1;
+			e.u.UseAmmo.AmmoId = gun->Gun->AmmoId;
+			e.u.UseAmmo.Amount = 1;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		else if (gun->Gun->Cost != 0)

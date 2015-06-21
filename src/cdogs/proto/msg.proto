@@ -107,8 +107,15 @@ message NActorAddAmmo {
 	required uint32 UID = 1;
 	required int32 PlayerUID = 2 [default=-1];
 	required uint32 AmmoId = 3;
-	required int32 Amount = 4;
+	required uint32 Amount = 4;
 	required bool IsRandomSpawned = 5;
+}
+
+message NActorUseAmmo {
+	required uint32 UID = 1;
+	required int32 PlayerUID = 2 [default=-1];
+	required uint32 AmmoId = 3;
+	required uint32 Amount = 4;
 }
 
 message NAddPickup {
