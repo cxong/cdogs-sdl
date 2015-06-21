@@ -30,57 +30,52 @@
 #include "utils.h"
 
 
-static LogLevel llMain = LL_INFO;
-static LogLevel llNet = LL_INFO;
-static LogLevel llInput = LL_INFO;
-static LogLevel llActor = LL_INFO;
+typedef struct
+{
+	LogLevel Level;
+	const char *Name;
+} LogModuleInfo;
+// Indexed by LogModule
+static LogModuleInfo sModuleInfo[] =
+{
+	{ LL_INFO, "MAIN" },
+	{ LL_INFO, "NET" },
+	{ LL_INFO, "INPUT" },
+	{ LL_INFO, "ACTOR" },
+	{ LL_INFO, "SOUND" },
+};
 
 
 const char *LogModuleName(const LogModule m)
 {
-	switch (m)
-	{
-		T2S(LM_MAIN, "MAIN");
-		T2S(LM_NET, "NET");
-		T2S(LM_INPUT, "INPUT");
-		T2S(LM_ACTOR, "ACTOR");
-	default:
-		return "";
-	}
+	if ((int)m >= 0 && (int)m < LM_COUNT) return sModuleInfo[(int)m].Name;
+	CASSERT(false, "Unknown log module");
+	return "";
 }
 LogModule StrLogModule(const char *s)
 {
-	S2T(LM_MAIN, "MAIN");
-	S2T(LM_NET, "NET");
-	S2T(LM_INPUT, "INPUT");
-	S2T(LM_ACTOR, "ACTOR");
+	for (int i = 0; i < (int)LM_COUNT; i++)
+	{
+		if (strcmp(s, sModuleInfo[i].Name) == 0) return (LogModule)i;
+	}
 	return LM_MAIN;
 }
 
 LogLevel LogModuleGetLevel(const LogModule m)
 {
-	switch (m)
-	{
-	case LM_MAIN: return llMain;
-	case LM_NET: return llNet;
-	case LM_INPUT: return llInput;
-	case LM_ACTOR: return llActor;
-	default:
-		CASSERT(false, "Unknown log module");
-		return LL_ERROR;
-	}
+	if ((int)m >= 0 && (int)m < LM_COUNT) return sModuleInfo[(int)m].Level;
+	CASSERT(false, "Unknown log module");
+	return LL_ERROR;
 }
 void LogModuleSetLevel(const LogModule m, const LogLevel l)
 {
-	switch (m)
+	if ((int)m >= 0 && (int)m < LM_COUNT)
 	{
-	case LM_MAIN: llMain = l; break;
-	case LM_NET: llNet = l; break;
-	case LM_INPUT: llInput = l; break;
-	case LM_ACTOR: llActor = l; break;
-	default:
+		sModuleInfo[(int)m].Level = l;
+	}
+	else
+	{
 		CASSERT(false, "Unknown log module");
-		break;
 	}
 }
 const char *LogLevelName(const LogLevel l)

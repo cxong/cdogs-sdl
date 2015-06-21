@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@
 
 #include "algorithms.h"
 #include "files.h"
+#include "log.h"
 #include "map.h"
 #include "music.h"
 #include "vector.h"
@@ -245,6 +246,7 @@ static void MuffleEffect(int chan, void *stream, int len, void *udata)
 		samples[1] = (samples[1] + samples[3] + samples[5]) / 3;
 	}
 }
+#define DISTANCE_CLOSE 16
 static void SoundPlayAtPosition(
 	SoundDevice *device, Mix_Chunk *data, int distance, int bearing,
 	const bool isMuffled)
@@ -253,6 +255,8 @@ static void SoundPlayAtPosition(
 	{
 		return;
 	}
+	// If distance is very close, don't place any panning on it
+	if (distance < DISTANCE_CLOSE) bearing = 0;
 	if (isMuffled)
 	{
 		distance += OUT_OF_SIGHT_DISTANCE_PLUS;
@@ -270,7 +274,7 @@ static void SoundPlayAtPosition(
 		return;
 	}
 
-	debug(D_VERBOSE, "sound: distance: %d bearing: %d\n", distance, bearing);
+	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)", distance, bearing);
 
 	int channel;
 	for (;;)
