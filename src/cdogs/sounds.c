@@ -150,7 +150,6 @@ void SoundInitialize(SoundDevice *device, const char *path)
 	// Look for commonly used sounds to set our pointers
 	device->footstepSound = StrSound("footstep");
 	device->slideSound = StrSound("slide");
-	device->pickupSound = StrSound("pickup");
 	device->healthSound = StrSound("health");
 	device->clickSound = StrSound("click");
 	device->keySound = StrSound("key");

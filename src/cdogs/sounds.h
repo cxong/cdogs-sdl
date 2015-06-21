@@ -92,7 +92,6 @@ typedef struct
 	// Some commonly-used sounds, store them here for quick access
 	Mix_Chunk *footstepSound;
 	Mix_Chunk *slideSound;
-	Mix_Chunk *pickupSound;
 	Mix_Chunk *healthSound;
 	Mix_Chunk *clickSound;
 	Mix_Chunk *keySound;

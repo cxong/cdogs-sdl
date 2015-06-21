@@ -85,11 +85,9 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
-		if (e->u.SoundAt.Sound)
-		{
-			SoundPlayAt(
-				&gSoundDevice, e->u.SoundAt.Sound, e->u.SoundAt.Pos);
-		}
+		SoundPlayAt(
+			&gSoundDevice,
+			StrSound(e->u.SoundAt.Sound), Net2Vec2i(e->u.SoundAt.Pos));
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
 		*shake = ScreenShakeAdd(
@@ -146,6 +144,10 @@ static void HandleGameEvent(
 			TActor *a = ActorGetByUID(e->u.Heal.UID);
 			if (!a->isInUse || a->dead) break;
 			ActorHeal(a, e->u.Heal.Amount);
+			// Sound of healing
+			SoundPlayAt(
+				&gSoundDevice,
+				gSoundDevice.healthSound, Vec2iFull2Real(a->Pos));
 			// Tell the spawner that we took a health so we can
 			// spawn more (but only if we're the server)
 			if (e->u.Heal.IsRandomSpawned && !gCampaign.IsClient)
@@ -177,16 +179,11 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_ADD_PICKUP:
-		{
-			PickupAdd(e->u.AddPickup);
-			// Play a spawn sound
-			GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-			sound.u.SoundAt.Sound = StrSound("spawn_item");
-			sound.u.SoundAt.Pos = Net2Vec2i(e->u.AddPickup.Pos);
-			HandleGameEvent(
-				&sound, hud, shake, healthSpawner, ammoSpawners,
-				eventHandlers);
-		}
+		PickupAdd(e->u.AddPickup);
+		// Play a spawn sound
+		SoundPlayAt(
+			&gSoundDevice,
+			StrSound("spawn_item"), Net2Vec2i(e->u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
 		PickupDestroy(e->u.RemovePickup.UID);

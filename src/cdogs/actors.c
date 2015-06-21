@@ -663,11 +663,8 @@ void InjureActor(TActor * actor, int injury)
 	if (lastHealth > 0 && actor->health <= 0)
 	{
 		actor->stateCounter = 0;
-		Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-		sound.u.SoundAt.Sound = SoundGetRandomScream(&gSoundDevice);
-		sound.u.SoundAt.Pos = pos;
-		GameEventsEnqueue(&gGameEvents, sound);
+		const Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
+		SoundPlayAt(&gSoundDevice, SoundGetRandomScream(&gSoundDevice), pos);
 		if (actor->PlayerUID >= 0)
 		{
 			SoundPlayAt(
@@ -761,10 +758,9 @@ void Shoot(TActor *actor)
 			// Play a clicking sound if this gun is out of ammo
 			if (gun->clickLock <= 0)
 			{
-				GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-				e.u.SoundAt.Pos = Vec2iFull2Real(actor->Pos);
-				e.u.SoundAt.Sound = gSoundDevice.clickSound;
-				GameEventsEnqueue(&gGameEvents, e);
+				SoundPlayAt(
+					&gSoundDevice,
+					gSoundDevice.clickSound, Vec2iFull2Real(actor->Pos));
 				gun->clickLock = SOUND_LOCK_WEAPON_CLICK;
 			}
 		}
@@ -1101,16 +1097,7 @@ static void ActorDie(TActor *actor, const int idx)
 		// Force pump events so we spawn immediately
 		// This is to prevent screen redraw for one frame with one less
 		// player
-		const Vec2i spawnPos =
-			PlacePlayer(&gMap, p, defaultSpawnPosition, true);
-
-		// Play a spawn sound for players
-		GameEvent sound = GameEventNew(GAME_EVENT_SOUND_AT);
-		// Need to delay it a bit because the camera takes time to update
-		sound.Delay = 1;
-		sound.u.SoundAt.Sound = StrSound("spawn");
-		sound.u.SoundAt.Pos = Vec2iFull2Real(spawnPos);
-		GameEventsEnqueue(&gGameEvents, sound);
+		PlacePlayer(&gMap, p, defaultSpawnPosition, true);
 	}
 }
 static bool IsUnarmedBot(const TActor *actor);
@@ -1303,7 +1290,14 @@ TActor *ActorAdd(NActorAdd aa)
 		actor->aiContext = AIContextNew();
 		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
-	TryMoveActor(actor, Vec2iNew(aa.FullPos.x, aa.FullPos.y));
+	TryMoveActor(actor, Net2Vec2i(aa.FullPos));
+
+	// Spawn sound for player actors
+	if (aa.PlayerUID >= 0)
+	{
+		SoundPlayAt(
+			&gSoundDevice, StrSound("spawn"), Vec2iFull2Real(actor->Pos));
+	}
 	return actor;
 }
 void ActorDestroy(int id)

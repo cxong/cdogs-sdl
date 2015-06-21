@@ -90,8 +90,9 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 static void DestroyObject(
 	TObject *o, const int flags, const int playerUID, const int uid);
 static void DamageObject(
-	const int power, const int flags, const int playerUID, const int uid,
-	const TTileItem *target)
+	const Vec2i pos, const int power, const int flags,
+	const int playerUID, const int uid,
+	const TTileItem *target, const HitSounds *hitSounds)
 {
 	TObject *o = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
@@ -106,6 +107,13 @@ static void DamageObject(
 	if (o->Health <= 0)
 	{
 		DestroyObject(o, flags, playerUID, uid);
+	}
+
+	if (ConfigGetBool(&gConfig, "Sound.Hits") &&
+		hitSounds != NULL &&
+		power > 0)
+	{
+		SoundPlayAt(&gSoundDevice, hitSounds->Object, pos);
 	}
 }
 static void DestroyObject(
@@ -198,16 +206,7 @@ bool DamageSomething(
 			target, special, hitSounds, allowFriendlyHitSound);
 
 	case KIND_OBJECT:
-		DamageObject(power, flags, playerUID, uid, target);
-		if (ConfigGetBool(&gConfig, "Sound.Hits") &&
-			hitSounds != NULL &&
-			power > 0)
-		{
-			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-			es.u.SoundAt.Sound = hitSounds->Object;
-			es.u.SoundAt.Pos = pos;
-			GameEventsEnqueue(&gGameEvents, es);
-		}
+		DamageObject(pos, power, flags, playerUID, uid, target, hitSounds);
 		break;
 
 	default:
@@ -243,10 +242,7 @@ static bool DoDamageCharacter(
 			(allowFriendlyHitSound || !ActorIsInvulnerable(
 			actor, flags, playerUID, gCampaign.Entry.Mode)))
 		{
-			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-			es.u.SoundAt.Sound = hitSounds->Flesh;
-			es.u.SoundAt.Pos = pos;
-			GameEventsEnqueue(&gGameEvents, es);
+			SoundPlayAt(&gSoundDevice, hitSounds->Flesh, pos);
 		}
 		if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 		{

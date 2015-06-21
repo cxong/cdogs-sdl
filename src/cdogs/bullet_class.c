@@ -205,10 +205,8 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 				{
 					return false;
 				}
-				GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-				e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
-				e.u.SoundAt.Pos = realPos;
-				GameEventsEnqueue(&gGameEvents, e);
+				SoundPlayAt(
+					&gSoundDevice, obj->bulletClass->HitSound.Wall, realPos);
 			}
 			else
 			{
@@ -251,10 +249,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	if (hitWall && !Vec2iIsZero(obj->vel))
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-		e.u.SoundAt.Sound = obj->bulletClass->HitSound.Wall;
-		e.u.SoundAt.Pos = realPos;
-		GameEventsEnqueue(&gGameEvents, e);
+		SoundPlayAt(&gSoundDevice, obj->bulletClass->HitSound.Wall, realPos);
 	}
 	if ((hitWall && !obj->bulletClass->WallBounces) ||
 		(hitItem && obj->bulletClass->HitsObjects))

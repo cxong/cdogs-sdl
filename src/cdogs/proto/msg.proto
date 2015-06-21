@@ -61,6 +61,11 @@ message NScore {
 	required int32 Score = 2;
 }
 
+message NSound {
+	required string Sound = 1;
+	required NVec2i Pos = 2;
+}
+
 message NVec2i {
 	required int32 x = 1;
 	required int32 y = 2;

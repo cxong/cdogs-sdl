@@ -113,11 +113,7 @@ typedef struct
 	{
 		NAddMapObject AddMapObject;
 		NScore Score;
-		struct
-		{
-			Mix_Chunk *Sound;
-			Vec2i Pos;
-		} SoundAt;
+		NSound SoundAt;
 		int ShakeAmount;
 		struct
 		{

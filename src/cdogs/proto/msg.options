@@ -8,6 +8,8 @@ NAddPlayers.PlayerDatas	max_count:4
 
 NAddMapObject.MapObjectClass max_size:128
 
-NAddBullet.BulletClass max_size:128
+NSound.Sound max_size:128
 
 NAddPickup.PickupClass max_size:128
+
+NAddBullet.BulletClass max_size:128

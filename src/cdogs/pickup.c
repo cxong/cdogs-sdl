@@ -112,19 +112,19 @@ void PickupDestroy(const int uid)
 void PickupPickup(TActor *a, Pickup *p)
 {
 	if (p->PickedUp) return;
+	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
-	Mix_Chunk *sound = NULL;
+	const char *sound = NULL;
 	const Vec2i actorPos = Vec2iNew(a->tileItem.x, a->tileItem.y);
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
-		if (a->PlayerUID >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 			e.u.Score.PlayerUID = a->PlayerUID;
 			e.u.Score.Score = p->class->u.Score;
 			GameEventsEnqueue(&gGameEvents, e);
-			sound = gSoundDevice.pickupSound;
+			sound = "pickup";
 			UpdateMissionObjective(
 				&gMission, p->tileItem.flags, OBJECTIVE_COLLECT);
 		}
@@ -142,7 +142,6 @@ void PickupPickup(TActor *a, Pickup *p)
 			e.u.Heal.Amount = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
-			sound = gSoundDevice.healthSound;
 		}
 		break;
 
@@ -184,13 +183,14 @@ void PickupPickup(TActor *a, Pickup *p)
 			// Note: receiving end will prevent ammo from exceeding max
 			GameEventsEnqueue(&gGameEvents, e);
 
-			sound = StrSound(ammo->Sound);
+			sound = ammo->Sound;
 		}
 		break;
 
 	case PICKUP_KEYCARD:
 		gMission.flags |= p->class->u.Keys;
-		sound = gSoundDevice.keySound;
+		// TODO: eventify key pickup
+		SoundPlayAt(&gSoundDevice, gSoundDevice.keySound, actorPos);
 		// Clear cache since we may now have new paths
 		PathCacheClear(&gPathCache);
 		break;
@@ -225,7 +225,11 @@ void PickupPickup(TActor *a, Pickup *p)
 					}
 				}
 
-				sound = IdGunDescription(p->class->u.GunId)->SwitchSound;
+				// TODO: eventify gun replace
+				SoundPlayAt(
+					&gSoundDevice,
+					IdGunDescription(p->class->u.GunId)->SwitchSound,
+					actorPos);
 			}
 			else
 			{
@@ -258,7 +262,13 @@ void PickupPickup(TActor *a, Pickup *p)
 	}
 	if (canPickup)
 	{
-		SoundPlayAt(&gSoundDevice, sound, actorPos);
+		if (sound != NULL)
+		{
+			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+			strcpy(es.u.SoundAt.Sound, sound);
+			es.u.SoundAt.Pos = Vec2i2Net(actorPos);
+			GameEventsEnqueue(&gGameEvents, es);
+		}
 		GameEvent e = GameEventNew(GAME_EVENT_REMOVE_PICKUP);
 		e.u.RemovePickup.UID = p->UID;
 		e.u.RemovePickup.SpawnerUID = p->SpawnerUID;
