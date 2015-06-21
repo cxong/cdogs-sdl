@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PREP
-#define __PREP
+#pragma once
 
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
@@ -55,12 +54,6 @@
 
 // Wait for the server to send us the current campaign
 bool ScreenWaitForCampaignDef(void);
-
-// Wait for the server to send us their players
-bool ScreenWaitForRemotePlayers(void);
-
-// Wait for the server to acknowledge our new players and send us their ids
-bool ScreenWaitForNewPlayers(void);
 
 // Screen to select the number of (local) players
 bool NumPlayersSelection(
@@ -77,5 +70,3 @@ bool PlayerEquip(void);
 
 // Wait for the game to start
 bool ScreenWaitForGameStart(void);
-
-#endif

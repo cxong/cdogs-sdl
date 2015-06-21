@@ -45,7 +45,6 @@ message NObjectiveCount {
 }
 
 message NAddPlayers {
-	required int32 ClientId = 1;
 	repeated NPlayerData PlayerDatas = 2;
 }
 

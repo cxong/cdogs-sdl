@@ -242,12 +242,6 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				NetDecode(event.packet, &ap, NAddPlayers_fields);
 				LOG(LM_NET, LL_DEBUG, "recv add players %d",
 					(int)ap.PlayerDatas_count);
-				if (ap.ClientId == n->ClientId)
-				{
-					LOG(LM_NET, LL_DEBUG, "ignoring; client id same %d",
-						n->ClientId);
-					break;
-				}
 				// Add new players
 				for (int i = 0; i < ap.PlayerDatas_count; i++)
 				{

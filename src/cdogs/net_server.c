@@ -163,8 +163,7 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 }
-static void SendGameStartMessages(
-	NetServer *n, const int peerId, const NAddPlayers ap);
+static void SendGameStartMessages(NetServer *n, const int peerId);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
@@ -184,22 +183,6 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	{
 		switch (gee.Type)
 		{
-		case GAME_EVENT_REQUEST_PLAYERS:
-			{
-				// Send details of all current players
-				NAddPlayers ap = NAddPlayers_init_default;
-				// Should contain no players for this client
-				ap.ClientId = -1;
-				for (int i = 0; i < (int)gPlayerDatas.size; i++)
-				{
-					const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-					LOG(LM_NET, LL_DEBUG, "send player data uid(%d)", pOther->UID);
-					ap.PlayerDatas[i] = NMakePlayerData(pOther);
-					ap.PlayerDatas_count++;
-				}
-				NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PLAYERS, &ap);
-			}
-			break;
 		case GAME_EVENT_ADD_PLAYERS:
 			{
 				NAddPlayers ap;
@@ -213,12 +196,23 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				}
 				// Broadcast the new players to all clients
 				NetServerBroadcastMsg(n, GAME_EVENT_ADD_PLAYERS, &ap);
-
-				// Send game start messages if we've started already
-				if (gMission.HasStarted)
+			}
+			break;
+		case GAME_EVENT_CLIENT_READY:
+			// Send game start messages if we've started already
+			if (gMission.HasStarted)
+			{
+				// Add the client's actors
+				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 				{
-					SendGameStartMessages(n, peerId, ap);
+					const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
+					const PlayerData *pData = PlayerDataGetByUID(cid);
+					if (pData != NULL)
+					{
+						PlacePlayer(&gMap, pData, Vec2iZero(), true);
+					}
 				}
+				SendGameStartMessages(n, peerId);
 			}
 			break;
 		default:
@@ -228,15 +222,18 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	}
 	enet_packet_destroy(event.packet);
 }
-static void SendGameStartMessages(
-	NetServer *n, const int peerId, const NAddPlayers ap)
+static void SendGameStartMessages(NetServer *n, const int peerId)
 {
-	// Add the client's actors
-	for (int i = 0; i < (int)ap.PlayerDatas_count; i++)
+	// Send details of all current players
+	NAddPlayers ap = NAddPlayers_init_default;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
-		const PlayerData *pData = PlayerDataGetByUID(ap.PlayerDatas[i].UID);
-		PlacePlayer(&gMap, pData, Vec2iZero(), true);
+		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+		LOG(LM_NET, LL_DEBUG, "send player data uid(%d)", pOther->UID);
+		ap.PlayerDatas[i] = NMakePlayerData(pOther);
+		ap.PlayerDatas_count++;
 	}
+	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PLAYERS, &ap);
 
 	// Send all actors
 	for (int i = 0; i < (int)gActors.size; i++)

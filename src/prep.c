@@ -123,47 +123,6 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 }
 
 
-static void CheckRemotePlayersComplete(menu_t *menu, void *data);
-bool ScreenWaitForRemotePlayers(void)
-{
-	// Explicitly ask for player definitions
-	NetClientSendMsg(&gNetClient, GAME_EVENT_REQUEST_PLAYERS, NULL);
-	return ScreenWait(
-		"Waiting for server players...", CheckRemotePlayersComplete);
-}
-static void CheckRemotePlayersComplete(menu_t *menu, void *data)
-{
-	UNUSED(data);
-	if (gPlayerDatas.size > 0)
-	{
-		// Hack to force the menu to exit
-		menu->type = MENU_TYPE_RETURN;
-	}
-}
-
-static void CheckNewPlayersComplete(menu_t *menu, void *data);
-bool ScreenWaitForNewPlayers(void)
-{
-	return ScreenWait("Registering players...", CheckNewPlayersComplete);
-}
-static void CheckNewPlayersComplete(menu_t *menu, void *data)
-{
-	UNUSED(data);
-	// Check that we have any local player data
-	// Since we receive local player data in one go, this is adequate.
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->IsLocal)
-		{
-			// Hack to force the menu to exit
-			menu->type = MENU_TYPE_RETURN;
-			break;
-		}
-	}
-}
-
-
 bool NumPlayersSelection(
 	GameMode mode, GraphicsDevice *graphics, EventHandlers *handlers)
 {
@@ -782,6 +741,8 @@ static void PlayerEquipDraw(void *data)
 static void CheckGameStart(menu_t *menu, void *data);
 bool ScreenWaitForGameStart(void)
 {
+	// Tell server we're ready
+	NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
 	return ScreenWait("Waiting for game start...", CheckGameStart);
 }
 static void CheckGameStart(menu_t *menu, void *data)

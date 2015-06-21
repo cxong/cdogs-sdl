@@ -83,32 +83,12 @@ void ScreenStart(void)
 		}
 	}
 
-	if (gCampaign.IsClient)
-	{
-		debug(D_NORMAL, ">> Waiting for number of players from server\n");
-		if (!ScreenWaitForRemotePlayers())
-		{
-			gCampaign.IsLoaded = false;
-			return;
-		}
-	}
-
 	debug(D_NORMAL, ">> Select number of players\n");
 	if (!NumPlayersSelection(
 		gCampaign.Entry.Mode, &gGraphicsDevice, &gEventHandlers))
 	{
 		gCampaign.IsLoaded = false;
 		return;
-	}
-
-	if (gCampaign.IsClient)
-	{
-		debug(D_NORMAL, ">> Registering new players\n");
-		if (!ScreenWaitForNewPlayers())
-		{
-			gCampaign.IsLoaded = false;
-			return;
-		}
 	}
 
 	debug(D_NORMAL, ">> Entering selection\n");
@@ -126,8 +106,6 @@ void ScreenStart(void)
 static void StartPlayers(const int maxHealth, const int mission)
 {
 	NAddPlayers ap = NAddPlayers_init_default;
-	// Update all clients
-	ap.ClientId = -1;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
