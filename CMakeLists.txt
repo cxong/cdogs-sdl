@@ -3,6 +3,7 @@ if(APPLE)
 else()
 	cmake_minimum_required(VERSION 2.8)
 endif()
+cmake_policy(SET CMP0054 NEW)
 project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
