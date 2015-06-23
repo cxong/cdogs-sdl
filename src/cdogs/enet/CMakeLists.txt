@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
-cmake_policy(SET CMP0054 NEW)
+if("${CMAKE_VERSION}" VERSION_GREATER 3.1)
+	cmake_policy(SET CMP0054 NEW)
+endif()
 project(enet)
 
 # The "configure" step.
