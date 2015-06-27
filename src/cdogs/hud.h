@@ -77,8 +77,9 @@ typedef struct
 	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
-	HUDNumUpdate healthUpdates[MAX_LOCAL_PLAYERS];
 	HUDNumUpdate scoreUpdates[MAX_LOCAL_PLAYERS];
+	HUDNumUpdate healthUpdates[MAX_LOCAL_PLAYERS];
+	HUDNumUpdate ammoUpdates[MAX_LOCAL_PLAYERS];
 	CArray objectiveUpdates; // of HUDNumUpdate, one per objective
 	bool showExit;
 } HUD;
@@ -96,6 +97,7 @@ typedef enum
 {
 	NUMBER_UPDATE_SCORE,
 	NUMBER_UPDATE_HEALTH,
+	NUMBER_UPDATE_AMMO,
 	NUMBER_UPDATE_OBJECTIVE
 } HUDNumUpdateType;
 // idx is either player UID or objective index

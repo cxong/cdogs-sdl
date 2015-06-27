@@ -187,6 +187,7 @@ void HUDAddUpdate(
 	{
 	case NUMBER_UPDATE_SCORE:
 	case NUMBER_UPDATE_HEALTH:	// fallthrough
+	case NUMBER_UPDATE_AMMO:	// fallthrough
 		if (localPlayerIdx)
 		{
 			// This update was for a non-local player; abort
@@ -209,6 +210,7 @@ void HUDAddUpdate(
 	{
 	case NUMBER_UPDATE_SCORE:
 	case NUMBER_UPDATE_HEALTH:	// fallthrough
+	case NUMBER_UPDATE_AMMO:	// fallthrough
 		s.Timer = NUM_UPDATE_TIMER_MS;
 		s.TimerMax = NUM_UPDATE_TIMER_MS;
 		break;
@@ -229,6 +231,9 @@ void HUDAddUpdate(
 		break;
 	case NUMBER_UPDATE_HEALTH:
 		MergeUpdates(&hud->healthUpdates[localPlayerIdx], s);
+		break;
+	case NUMBER_UPDATE_AMMO:
+		MergeUpdates(&hud->ammoUpdates[localPlayerIdx], s);
 		break;
 	case NUMBER_UPDATE_OBJECTIVE:
 		MergeUpdates(CArrayGet(&hud->objectiveUpdates, s.u.ObjectiveIndex), s);
@@ -270,8 +275,9 @@ void HUDUpdate(HUD *hud, int ms)
 	WallClockUpdate(&hud->clock, ms);
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		NumUpdate(&hud->healthUpdates[i], ms);
 		NumUpdate(&hud->scoreUpdates[i], ms);
+		NumUpdate(&hud->healthUpdates[i], ms);
+		NumUpdate(&hud->ammoUpdates[i], ms);
 	}
 	for (int i = 0; i < (int)hud->objectiveUpdates.size; i++)
 	{
@@ -317,6 +323,7 @@ static void DrawGauge(
 }
 
 #define GAUGE_WIDTH 60
+#define GUN_ICON_PAD 10
 static void DrawWeaponStatus(
 	HUD *hud, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
@@ -329,13 +336,12 @@ static void DrawWeaponStatus(
 		Vec2iNew(pos.x - 2, pos.y - 2),
 		g->Icon->size, hAlign, vAlign, gGraphicsDevice.cachedConfig.Res);
 	Blit(&gGraphicsDevice, g->Icon, iconPos);
-	const int iconPad = 10;
 
 	// don't draw gauge if not reloading
 	if (weapon->lock > 0)
 	{
-		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + iconPad, -1));
-		const Vec2i size = Vec2iNew(GAUGE_WIDTH - iconPad, FontH() + 2);
+		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + GUN_ICON_PAD, -1));
+		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2);
 		const color_t barColor = { 0, 0, 255, 255 };
 		const int maxLock = weapon->Gun->Lock;
 		int innerWidth;
@@ -356,7 +362,7 @@ static void DrawWeaponStatus(
 	opts.HAlign = hAlign;
 	opts.VAlign = vAlign;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = Vec2iNew(pos.x + iconPad, pos.y);
+	opts.Pad = Vec2iNew(pos.x + GUN_ICON_PAD, pos.y);
 	char buf[128];
 	if (ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0)
 	{
@@ -576,6 +582,8 @@ static void DrawSharedRadar(GraphicsDevice *device, int scale, bool showExit)
 // so that it doesn't overlap the objective information, clocks etc.
 #define BOTTOM_PADDING 16
 
+#define LIVES_ROW_EXTRA_Y 6
+
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
 // Draw player's score, health etc.
@@ -639,7 +647,7 @@ static void DrawPlayerStatus(
 		DrawLives(hud->device, data, pos, opts.HAlign, opts.VAlign);
 
 		// Weapon
-		pos.y += rowHeight + 6;
+		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
@@ -820,8 +828,9 @@ void DrawKeycards(HUD *hud)
 	}
 }
 
-static void DrawHealthUpdate(HUDNumUpdate *health, int flags);
-static void DrawScoreUpdate(HUDNumUpdate *score, int flags);
+static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags);
+static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags);
+static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags);
 static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 {
@@ -887,8 +896,9 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 			player = ActorGetByUID(p->ActorUID);
 		}
 		DrawPlayerStatus(hud, p, player, drawFlags, r);
-		DrawHealthUpdate(&hud->healthUpdates[idx], drawFlags);
 		DrawScoreUpdate(&hud->scoreUpdates[idx], drawFlags);
+		DrawHealthUpdate(&hud->healthUpdates[idx], drawFlags);
+		DrawAmmoUpdate(&hud->ammoUpdates[idx], drawFlags);
 	}
 	// Only draw radar once if shared
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -990,27 +1000,39 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 static void DrawNumUpdate(
 	const HUDNumUpdate *update,
 	const char *formatText, int currentValue, Vec2i pos, int flags);
-static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
-{
-	const int rowHeight = 1 + FontH();
-	int y = 5 + rowHeight * 3;
-	const PlayerData *p = PlayerDataGetByUID(health->u.PlayerUID);
-	if (IsPlayerAlive(p))
-	{
-		const TActor *player = ActorGetByUID(p->ActorUID);
-		DrawNumUpdate(health, "%d", player->health, Vec2iNew(5, y), flags);
-	}
-}
-static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
+static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags)
 {
 	if (!IsScoreNeeded(gCampaign.Entry.Mode))
 	{
 		return;
 	}
+	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
+	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
-	const PlayerData *p = PlayerDataGetByUID(score->u.PlayerUID);
-	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
+	DrawNumUpdate(u, "Score: %d", p->score, Vec2iNew(5, y), flags);
+}
+static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags)
+{
+	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
+	if (!IsPlayerAlive(p)) return;
+	const int rowHeight = 1 + FontH();
+	const int y = 5 + rowHeight * 2;
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	DrawNumUpdate(u, "%d", a->health, Vec2iNew(5, y), flags);
+}
+static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags)
+{
+	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
+	if (!IsPlayerAlive(p)) return;
+	const int rowHeight = 1 + FontH();
+	const int y = 5 + rowHeight * 4 + LIVES_ROW_EXTRA_Y;
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	const Weapon *w = ActorGetGun(a);
+	char gunNameBuf[256];
+	sprintf(gunNameBuf, "%s %%d", w->Gun->name);
+	const int ammo = ActorGunGetAmmo(a, w);
+	DrawNumUpdate(u, gunNameBuf, ammo, Vec2iNew(5 + GUN_ICON_PAD, y), flags);
 }
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:

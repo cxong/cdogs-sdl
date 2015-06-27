@@ -184,7 +184,9 @@ static void HandleGameEvent(
 			}
 			if (e->u.AddAmmo.PlayerUID >= 0)
 			{
-				// TODO: some sort of text effect showing ammo grab
+				HUDAddUpdate(
+					hud, NUMBER_UPDATE_AMMO,
+					e->u.AddAmmo.PlayerUID, e->u.AddAmmo.Amount);
 			}
 		}
 		break;
@@ -195,7 +197,9 @@ static void HandleGameEvent(
 			ActorAddAmmo(a, e->u.UseAmmo.AmmoId, -(int)e->u.UseAmmo.Amount);
 			if (e->u.UseAmmo.PlayerUID >= 0)
 			{
-				// TODO: some sort of text effect showing ammo use
+				HUDAddUpdate(
+					hud, NUMBER_UPDATE_AMMO,
+					e->u.UseAmmo.PlayerUID, -(int)e->u.UseAmmo.Amount);
 			}
 		}
 		break;
