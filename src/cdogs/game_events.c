@@ -89,6 +89,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_EXPLORE_TILE, true, false, true, true, NExploreTile_fields },
 	{ GAME_EVENT_RESCUE_CHARACTER, true, false, true, true, NRescueCharacter_fields },
 	{ GAME_EVENT_OBJECTIVE_UPDATE, true, true, true, true, NObjectiveUpdate_fields },
+	{ GAME_EVENT_ADD_KEYS, true, false, true, true, NAddKeys_fields },
 
 	{ GAME_EVENT_MISSION_COMPLETE, false, false, true, true, NULL },
 

@@ -157,3 +157,8 @@ message NObjectiveUpdate {
 	required uint32 ObjectiveId = 1;
 	required int32 Count = 2;
 }
+
+message NAddKeys {
+	required uint32 KeyFlags = 1;
+	required NVec2i Pos = 2;
+}

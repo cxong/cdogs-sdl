@@ -83,6 +83,7 @@ typedef enum
 	GAME_EVENT_EXPLORE_TILE,
 	GAME_EVENT_RESCUE_CHARACTER,
 	GAME_EVENT_OBJECTIVE_UPDATE,
+	GAME_EVENT_ADD_KEYS,
 
 	// Can complete mission
 	GAME_EVENT_MISSION_COMPLETE,
@@ -169,6 +170,7 @@ typedef struct
 		NExploreTile ExploreTile;
 		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;
+		NAddKeys AddKeys;
 	} u;
 } GameEvent;
 

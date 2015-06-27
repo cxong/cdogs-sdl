@@ -311,6 +311,11 @@ static void HandleGameEvent(
 			MissionSetMessageIfComplete(&gMission);
 		}
 		break;
+	case GAME_EVENT_ADD_KEYS:
+		gMission.flags |= e->u.AddKeys.KeyFlags;
+		SoundPlayAt(
+			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e->u.AddKeys.Pos));
+		break;
 	case GAME_EVENT_MISSION_COMPLETE:
 		HUDDisplayMessage(hud, "Mission complete", -1);
 		hud->showExit = true;

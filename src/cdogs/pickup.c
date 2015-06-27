@@ -175,7 +175,7 @@ void PickupPickup(TActor *a, Pickup *p)
 
 			// Take ammo
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
-			e.u.Heal.UID = a->uid;
+			e.u.AddAmmo.UID = a->uid;
 			e.u.AddAmmo.PlayerUID = a->PlayerUID;
 			e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
 			e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
@@ -188,11 +188,14 @@ void PickupPickup(TActor *a, Pickup *p)
 		break;
 
 	case PICKUP_KEYCARD:
-		gMission.flags |= p->class->u.Keys;
-		// TODO: eventify key pickup
-		SoundPlayAt(&gSoundDevice, gSoundDevice.keySound, actorPos);
-		// Clear cache since we may now have new paths
-		PathCacheClear(&gPathCache);
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_KEYS);
+			e.u.AddKeys.KeyFlags = p->class->u.Keys;
+			e.u.AddKeys.Pos = Vec2i2Net(actorPos);
+			GameEventsEnqueue(&gGameEvents, e);
+			// Clear cache since we may now have new paths
+			PathCacheClear(&gPathCache);
+		}
 		break;
 
 	case PICKUP_GUN:
