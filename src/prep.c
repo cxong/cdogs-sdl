@@ -63,6 +63,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx.h>
+#include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/music.h>
@@ -161,19 +162,18 @@ bool NumPlayersSelection(
 			CASSERT(!p->IsLocal, "unexpected local player");
 		}
 		// Add the players
-		NAddPlayers ap = NAddPlayers_init_default;
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
 		for (int i = 0; i < numPlayers; i++)
 		{
-			ap.PlayerDatas[i] = PlayerDataDefault(i);
-			ap.PlayerDatas[i].UID = gNetClient.FirstPlayerUID + i;
-			PlayerDataAddOrUpdate(ap.PlayerDatas[i], true);
-			ap.PlayerDatas_count++;
+			e.u.AddPlayers.PlayerDatas[i] = PlayerDataDefault(i);
+			e.u.AddPlayers.PlayerDatas[i].UID = gNetClient.FirstPlayerUID + i;
+			e.u.AddPlayers.PlayerDatas_count++;
 		}
-		if (gCampaign.IsClient)
-		{
-			// Tell the server that we want to add new players
-			NetClientSendMsg(&gNetClient, GAME_EVENT_ADD_PLAYERS, &ap);
-		}
+		GameEventsEnqueue(&gGameEvents, e);
+		// Process the events to force add the players
+		HandleGameEvents(
+			&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+		// This also causes the client to send player data to the server
 	}
 	MenuSystemTerminate(&ms);
 	return ok;
@@ -267,6 +267,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data);
 static void PlayerSelectionDraw(void *data);
 bool PlayerSelection(void)
 {
+	CASSERT(gPlayerDatas.size > 0, "no players for game");
 	PlayerSelectionData data;
 	memset(&data, 0, sizeof data);
 	data.IsOK = true;
@@ -631,6 +632,7 @@ bool PlayerEquip(void)
 			continue;
 		}
 		ap.PlayerDatas[idx] = NMakePlayerData(p);
+		ap.PlayerDatas_count++;
 	}
 	// Update player definitions
 	if (gCampaign.IsClient)

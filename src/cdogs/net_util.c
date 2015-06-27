@@ -61,7 +61,7 @@ bool NetDecode(
 
 NPlayerData NMakePlayerData(const PlayerData *p)
 {
-	NPlayerData d;
+	NPlayerData d = NPlayerData_init_default;
 	const Character *c = &p->Char;
 	strcpy(d.Name, p->name);
 	d.Looks = c->looks;
@@ -76,6 +76,8 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	d.Kills = p->kills;
 	d.Suicides = p->suicides;
 	d.Friendlies = p->friendlies;
+	d.MaxHealth = p->Char.maxHealth;
+	d.LastMission = p->lastMission;
 	d.UID = p->UID;
 	return d;
 }

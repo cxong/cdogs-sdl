@@ -54,6 +54,7 @@
 #include <cdogs/ai.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/game_events.h>
+#include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
 #include <cdogs/music.h>
 #include <cdogs/net_server.h>
@@ -73,13 +74,16 @@ void ScreenStart(void)
 	PlayerDataTerminate(&gPlayerDatas);
 	PlayerDataInit(&gPlayerDatas);
 
+	// Initialise game events; we need this for init as well as the game
+	GameEventsInit(&gGameEvents);
+
 	debug(D_NORMAL, ">> Entering campaign\n");
 	if (IsIntroNeeded(gCampaign.Entry.Mode))
 	{
 		if (!ScreenCampaignIntro(&gCampaign.Setting))
 		{
 			gCampaign.IsLoaded = false;
-			return;
+			goto bail;
 		}
 	}
 
@@ -88,32 +92,22 @@ void ScreenStart(void)
 		gCampaign.Entry.Mode, &gGraphicsDevice, &gEventHandlers))
 	{
 		gCampaign.IsLoaded = false;
-		return;
+		goto bail;
 	}
 
 	debug(D_NORMAL, ">> Entering selection\n");
 	if (!PlayerSelection())
 	{
 		gCampaign.IsLoaded = false;
-		return;
+		goto bail;
 	}
 
 	debug(D_NORMAL, ">> Starting campaign\n");
 	Campaign(&gGraphicsDevice, &gCampaign);
 	CampaignUnload(&gCampaign);
-}
-
-static void StartPlayers(const int maxHealth, const int mission)
-{
-	NAddPlayers ap = NAddPlayers_init_default;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		PlayerDataStart(p, maxHealth, mission);
-		ap.PlayerDatas[i] = NMakePlayerData(p);
-		ap.PlayerDatas_count++;
-	}
-	NetServerBroadcastMsg(&gNetServer, GAME_EVENT_ADD_PLAYERS, &ap);
+	
+bail:
+	GameEventsTerminate(&gGameEvents);
 }
 
 static void AddAndPlacePlayers(void)
@@ -180,10 +174,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
-		// Initialise before waiting for game start;
-		// server will send us messages
-		GameEventsInit(&gGameEvents);
-
 		if (gCampaign.IsClient)
 		{
 			if (!ScreenWaitForGameStart())
@@ -205,9 +195,22 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		if (!gCampaign.IsClient)
 		{
 			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
+
+			// Reset players for the mission
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
+			for (int i = 0; i < (int)gPlayerDatas.size; i++)
+			{
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				e.u.AddPlayers.PlayerDatas[i] = PlayerDataMissionReset(p);
+				e.u.AddPlayers.PlayerDatas_count++;
+			}
+			GameEventsEnqueue(&gGameEvents, e);
+			// Process the events to force add the players
+			HandleGameEvents(
+				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+
 			// Note: place players first,
 			// as bad guys are placed away from players
-			StartPlayers(ModeMaxHealth(co->Entry.Mode), co->MissionIndex);
 			AddAndPlacePlayers();
 			if (!IsPVP(co->Entry.Mode))
 			{
@@ -224,7 +227,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		{
 			run = true;
 		}
-		GameEventsTerminate(&gGameEvents);
 
 		const int survivingPlayers =
 			GetNumPlayers(PLAYER_ALIVE, false, false);

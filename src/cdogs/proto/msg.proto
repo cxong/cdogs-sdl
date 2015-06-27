@@ -36,7 +36,9 @@ message NPlayerData {
 	required int32 Kills = 7;
 	required int32 Suicides = 8;
 	required int32 Friendlies = 9;
-	required uint32 UID = 10;
+	required uint32 MaxHealth = 10;
+	required uint32 LastMission = 11;
+	required uint32 UID = 12;
 }
 
 message NObjectiveCount {

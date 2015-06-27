@@ -146,43 +146,51 @@ static void OnReceive(NetClient *n, ENetEvent event)
 	const GameEventEntry gee = GameEventGetEntry(msg);
 	if (gee.Enqueue)
 	{
-		// Game event message; decode and add to event queue
-		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)gee.Type);
-		GameEvent e = GameEventNew(gee.Type);
-		if (gee.Fields != NULL)
+		if (gee.GameStart && !gMission.HasStarted)
 		{
-			NetDecode(event.packet, &e.u, gee.Fields);
-		}
-
-		// For actor events, check if UID is not for local player
-		// TODO: repeated code (see game_events.c)
-		int actorUID = -1;
-		bool actorIsLocal = false;
-		switch (gee.Type)
-		{
-		case GAME_EVENT_ACTOR_ADD:
-			// Note: ignore checking this event
-			break;
-		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
-		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
-		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
-		case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
-		case GAME_EVENT_ADD_BULLET:
-			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
-			break;
-		default: break;
-		}
-		if (actorUID >= 0)
-		{
-			actorIsLocal = ActorIsLocalPlayer(actorUID);
-		}
-		if (actorIsLocal)
-		{
-			LOG(LM_NET, LL_TRACE, "game event is for local player, ignoring");
+			LOG(LM_NET, LL_TRACE, "ignore game start gameEvent(%d)",
+				(int)gee.Type);
 		}
 		else
 		{
-			GameEventsEnqueue(&gGameEvents, e);
+			// Game event message; decode and add to event queue
+			LOG(LM_NET, LL_TRACE, "recv gameEvent(%d)", (int)gee.Type);
+			GameEvent e = GameEventNew(gee.Type);
+			if (gee.Fields != NULL)
+			{
+				NetDecode(event.packet, &e.u, gee.Fields);
+			}
+
+			// For actor events, check if UID is not for local player
+			// TODO: repeated code (see game_events.c)
+			int actorUID = -1;
+			bool actorIsLocal = false;
+			switch (gee.Type)
+			{
+			case GAME_EVENT_ACTOR_ADD:
+				// Note: ignore checking this event
+				break;
+			case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
+			case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
+			case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
+			case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
+			case GAME_EVENT_ADD_BULLET:
+				actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
+				break;
+			default: break;
+			}
+			if (actorUID >= 0)
+			{
+				actorIsLocal = ActorIsLocalPlayer(actorUID);
+			}
+			if (actorIsLocal)
+			{
+				LOG(LM_NET, LL_TRACE, "game event is for local player, ignoring");
+			}
+			else
+			{
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		}
 	}
 	else
@@ -236,19 +244,6 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				o->done = oc.Count;
 				LOG(LM_NET, LL_DEBUG, "recv objective count id(%d) done(%d)",
 					oc.ObjectiveId, o->done);
-			}
-			break;
-		case GAME_EVENT_ADD_PLAYERS:
-			{
-				NAddPlayers ap;
-				NetDecode(event.packet, &ap, NAddPlayers_fields);
-				LOG(LM_NET, LL_DEBUG, "recv add players %d",
-					(int)ap.PlayerDatas_count);
-				// Add new players
-				for (int i = 0; i < ap.PlayerDatas_count; i++)
-				{
-					PlayerDataAddOrUpdate(ap.PlayerDatas[i], false);
-				}
 			}
 			break;
 		case GAME_EVENT_NET_GAME_START:

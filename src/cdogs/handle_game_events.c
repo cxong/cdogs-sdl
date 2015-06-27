@@ -74,6 +74,12 @@ static void HandleGameEvent(
 	}
 	switch (e->Type)
 	{
+	case GAME_EVENT_ADD_PLAYERS:
+		for (int i = 0; i < (int)e->u.AddPlayers.PlayerDatas_count; i++)
+		{
+			PlayerDataAddOrUpdate(e->u.AddPlayers.PlayerDatas[i]);
+		}
+		break;
 	case GAME_EVENT_ADD_MAP_OBJECT:
 		ObjAdd(e->u.AddMapObject);
 		break;

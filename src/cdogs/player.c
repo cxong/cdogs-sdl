@@ -28,6 +28,8 @@
 #include "player.h"
 
 #include "actors.h"
+#include "log.h"
+#include "net_client.h"
 #include "player_template.h"
 
 
@@ -39,7 +41,7 @@ void PlayerDataInit(CArray *p)
 	CArrayInit(p, sizeof(PlayerData));
 }
 
-void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal)
+void PlayerDataAddOrUpdate(const NPlayerData pd)
 {
 	PlayerData *p = PlayerDataGetByUID(pd.UID);
 	if (p == NULL)
@@ -51,11 +53,15 @@ void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal)
 
 		// Set defaults
 		p->ActorUID = -1;
-		p->IsLocal = isLocal;
+		p->IsLocal =
+			(int)pd.UID >= gNetClient.FirstPlayerUID &&
+			(int)pd.UID < gNetClient.FirstPlayerUID + MAX_LOCAL_PLAYERS;
 		p->inputDevice = INPUT_DEVICE_UNSET;
 
 		p->Char.speed = 256;
-		p->Char.maxHealth = 200;
+
+		LOG(LM_MAIN, LL_INFO, "add default player UID(%u) local(%s)",
+			pd.UID, p->IsLocal ? "true" : "false");
 	}
 
 	p->UID = pd.UID;
@@ -74,6 +80,11 @@ void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal)
 	p->kills = pd.Kills;
 	p->suicides = pd.Suicides;
 	p->friendlies = pd.Friendlies;
+	p->Char.maxHealth = pd.MaxHealth;
+	p->lastMission = pd.LastMission;
+
+	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d)",
+		p->UID, p->Char.maxHealth);
 }
 
 NPlayerData PlayerDataDefault(const int idx)
@@ -171,6 +182,23 @@ NPlayerData PlayerDataDefault(const int idx)
 	}
 	pd.Weapons_count = 3;
 
+	pd.MaxHealth = 200;
+
+	return pd;
+}
+
+NPlayerData PlayerDataMissionReset(const PlayerData *p)
+{
+	NPlayerData pd = NMakePlayerData(p);
+	pd.Lives = ModeLives(gCampaign.Entry.Mode);
+
+	pd.Score = 0;
+	pd.Kills = 0;
+	pd.Suicides = 0;
+	pd.Friendlies = 0;
+
+	pd.LastMission = gCampaign.MissionIndex;
+	pd.MaxHealth = ModeMaxHealth(gCampaign.Entry.Mode);
 	return pd;
 }
 
@@ -192,21 +220,6 @@ PlayerData *PlayerDataGetByUID(const int uid)
 		if (p->UID == uid) return p;
 	}
 	return NULL;
-}
-
-void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission)
-{
-	p->Lives = ModeLives(gCampaign.Entry.Mode);
-
-	p->score = 0;
-	p->kills = 0;
-	p->suicides = 0;
-	p->friendlies = 0;
-	p->allTime = -1;
-	p->today = -1;
-
-	p->lastMission = mission;
-	p->Char.maxHealth = maxHealth;
 }
 
 int GetNumPlayers(

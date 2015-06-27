@@ -65,13 +65,12 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 
 void PlayerDataInit(CArray *p);
-void PlayerDataAddOrUpdate(const NPlayerData pd, const bool isLocal);
+void PlayerDataAddOrUpdate(const NPlayerData pd);
 NPlayerData PlayerDataDefault(const int idx);
+NPlayerData PlayerDataMissionReset(const PlayerData *p);
 void PlayerDataTerminate(CArray *p);
 
 PlayerData *PlayerDataGetByUID(const int uid);
-
-void PlayerDataStart(PlayerData *p, const int maxHealth, const int mission);
 
 typedef enum
 {

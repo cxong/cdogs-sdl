@@ -668,7 +668,7 @@ static void CheckRescue(const TActor *a)
 void ActorHeal(TActor *actor, int health)
 {
 	actor->health += health;
-	actor->health = MIN(actor->health, ModeMaxHealth(gCampaign.Entry.Mode));
+	actor->health = MIN(actor->health, ActorGetCharacter(actor)->maxHealth);
 }
 
 void InjureActor(TActor * actor, int injury)

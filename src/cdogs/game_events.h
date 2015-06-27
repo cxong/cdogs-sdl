@@ -102,6 +102,8 @@ typedef struct
 	bool Submit;
 	// Whether to simply enqueue as game event; otherwise processed by handler
 	bool Enqueue;
+	// Whether to broadcast these events only after game start
+	bool GameStart;
 	const pb_field_t *Fields;
 } GameEventEntry;
 GameEventEntry GameEventGetEntry(const GameEventType e);
@@ -112,6 +114,7 @@ typedef struct
 	int Delay;
 	union
 	{
+		NAddPlayers AddPlayers;
 		NAddMapObject AddMapObject;
 		NScore Score;
 		NSound SoundAt;
