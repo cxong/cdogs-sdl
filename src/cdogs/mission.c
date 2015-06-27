@@ -188,11 +188,9 @@ void MissionTerminate(Mission *m)
 	if (m == NULL) return;
 	CFREE(m->Title);
 	CFREE(m->Description);
-	for (int i = 0; i < (int)m->Objectives.size; i++)
-	{
-		MissionObjective *mo = CArrayGet(&m->Objectives, i);
+	CA_FOREACH(MissionObjective, mo, m->Objectives)
 		CFREE(mo->Description);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Enemies);
 	CArrayTerminate(&m->SpecialChars);
@@ -365,7 +363,6 @@ static CampaignSettingOld df2 =
 
 static void SetupBadguysForMission(Mission *mission)
 {
-	int i;
 	CharacterStore *s = &gCampaign.Setting.characters;
 
 	CharacterStoreResetOthers(s);
@@ -375,26 +372,21 @@ static void SetupBadguysForMission(Mission *mission)
 		return;
 	}
 
-	for (i = 0; i < (int)mission->Objectives.size; i++)
-	{
-		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
+	CA_FOREACH(const MissionObjective, mobj, mission->Objectives)
 		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
 			CharacterStoreAddPrisoner(s, mobj->Index);
 			break;	// TODO: multiple prisoners
 		}
-	}
+	CA_FOREACH_END()
 
-	for (i = 0; i < (int)mission->Enemies.size; i++)
-	{
-		CharacterStoreAddBaddie(s, *(int *)CArrayGet(&mission->Enemies, i));
-	}
+	CA_FOREACH(int, e, mission->Enemies)
+		CharacterStoreAddBaddie(s, *e);
+	CA_FOREACH_END()
 
-	for (i = 0; i < (int)mission->SpecialChars.size; i++)
-	{
-		CharacterStoreAddSpecial(
-			s, *(int *)CArrayGet(&mission->SpecialChars, i));
-	}
+	CA_FOREACH(int, sc, mission->SpecialChars)
+		CharacterStoreAddSpecial(s, *sc);
+	CA_FOREACH_END()
 }
 
 int SetupBuiltinCampaign(int idx)
@@ -433,9 +425,7 @@ int SetupBuiltinDogfight(int idx)
 
 static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 {
-	for (int i = 0; i < (int)mission->Objectives.size; i++)
-	{
-		MissionObjective *mobj = CArrayGet(&mission->Objectives, i);
+	CA_FOREACH(const MissionObjective, mobj, mission->Objectives)
 		ObjectiveDef o;
 		memset(&o, 0, sizeof o);
 		assert(i < OBJECTIVE_MAX_OLD);
@@ -444,7 +434,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 		o.blowupObject = IntMapObject(mobj->Index);
 		o.pickupClass = IntPickupClass(mobj->Index);
 		CArrayPushBack(&mo->Objectives, &o);
-	}
+	CA_FOREACH_END()
 }
 
 static void SetupWeapons(CArray *to, CArray *from)
@@ -488,21 +478,27 @@ void MissionEnd(void)
 	PickupsTerminate();
 	ParticlesTerminate(&gParticles);
 	WatchesTerminate();
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
 		p->ActorUID = -1;
-	}
+	CA_FOREACH_END()
 	gMission.HasStarted = false;
 }
 
+static bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
-	if (CanCompleteMission(options))
+	if (CanCompleteMission(options) && MissionHasRequiredObjectives(options))
 	{
 		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
+}
+static bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
+{
+	CA_FOREACH(const MissionObjective, o, mo->missionData->Objectives)
+		if (o->Required > 0) return true;
+	CA_FOREACH_END()
+	return false;
 }
 
 void UpdateMissionObjective(
@@ -527,8 +523,6 @@ void UpdateMissionObjective(
 
 bool CanCompleteMission(const struct MissionOptions *options)
 {
-	int i;
-
 	// Death is the only escape from PVP and quick play
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
@@ -540,18 +534,13 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	}
 
 	// Check all objective counts are enough
-	for (i = 0; i < (int)options->Objectives.size; i++)
-	{
-		const ObjectiveDef *o = CArrayGet(&options->Objectives, i);
-		MissionObjective *mobj =
+	CA_FOREACH(const ObjectiveDef, o, options->Objectives)
+		const MissionObjective *mobj =
 			CArrayGet(&options->missionData->Objectives, i);
-		if (o->done < mobj->Required)
-		{
-			return 0;
-		}
-	}
+		if (o->done < mobj->Required) return false;
+	CA_FOREACH_END()
 
-	return 1;
+	return true;
 }
 
 bool IsMissionComplete(const struct MissionOptions *options)
@@ -569,14 +558,9 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	{
 		// Also check that only one player has lives left
 		int numPlayersWithLives = 0;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (p->Lives > 0)
-			{
-				numPlayersWithLives++;
-			}
-		}
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+			if (p->Lives > 0) numPlayersWithLives++;
+		CA_FOREACH_END()
 		if (numPlayersWithLives <= 1)
 		{
 			return true;
@@ -584,49 +568,33 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	}
 
 	// Check that all surviving players are in exit zone
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!IsPlayerAlive(p))
-		{
-			continue;
-		}
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (!IsPlayerAlive(p)) continue;
 		const TActor *player = ActorGetByUID(p->ActorUID);
-		if (!MapIsTileInExit(&gMap, &player->tileItem))
-		{
-			return 0;
-		}
-	}
+		if (!MapIsTileInExit(&gMap, &player->tileItem)) return false;
+	CA_FOREACH_END()
 
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
-	for (int i = 0; i < (int)options->missionData->Objectives.size; i++)
-	{
-		MissionObjective *mobj =
-			CArrayGet(&options->missionData->Objectives, i);
+	CA_FOREACH(const MissionObjective, mobj, options->missionData->Objectives)
 		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
 			rescuesRequired = mobj->Required;
 			break;
 		}
-	}
+	CA_FOREACH_END()
 	// Check that enough prisoners are in exit zone
 	if (rescuesRequired > 0)
 	{
 		int prisonersRescued = 0;
-		for (int i = 0; i < (int)gActors.size; i++)
-		{
-			TActor *a = CArrayGet(&gActors, i);
-			if (!a->isInUse)
-			{
-				continue;
-			}
+		CA_FOREACH(const TActor, a, gActors)
+			if (!a->isInUse) continue;
 			if (CharacterIsPrisoner(&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
 				MapIsTileInExit(&gMap, &a->tileItem))
 			{
 				prisonersRescued++;
 			}
-		}
+		CA_FOREACH_END()
 		if (prisonersRescued < rescuesRequired)
 		{
 			return 0;

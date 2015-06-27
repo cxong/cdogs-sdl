@@ -182,12 +182,13 @@ void HUDAddUpdate(
 	memset(&s, 0, sizeof s);
 
 	// Index
-	const int localPlayerIdx = FindLocalPlayerIndex(idx);
+	int localPlayerIdx = -1;
 	switch (type)
 	{
 	case NUMBER_UPDATE_SCORE:
 	case NUMBER_UPDATE_HEALTH:	// fallthrough
 	case NUMBER_UPDATE_AMMO:	// fallthrough
+		localPlayerIdx = FindLocalPlayerIndex(idx);
 		if (localPlayerIdx)
 		{
 			// This update was for a non-local player; abort
