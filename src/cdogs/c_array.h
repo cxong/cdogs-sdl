@@ -43,6 +43,7 @@ void CArrayCopy(CArray *dst, const CArray *src);
 void CArrayPushBack(CArray *a, const void *elem);	// insert address
 void CArrayInsert(CArray *a, int index, void *elem);
 void CArrayDelete(CArray *a, int index);
+void CArrayResize(CArray *a, const size_t size, const void *value);
 void *CArrayGet(const CArray *a, int index);	// gets address
 void CArrayClear(CArray *a);
 void CArrayRemoveIf(CArray *a, bool(*removeIf)(const void *));

@@ -39,7 +39,7 @@ void CArrayInit(CArray *a, size_t elemSize)
 }
 void CArrayReserve(CArray *a, size_t capacity)
 {
-	if (a->capacity == capacity)
+	if (a->capacity >= capacity)
 	{
 		return;
 	}
@@ -97,6 +97,18 @@ void CArrayDelete(CArray *a, int idx)
 			a->elemSize * ((int)a->size - 1 - idx));
 	}
 	a->size--;
+}
+void CArrayResize(CArray *a, const size_t size, const void *value)
+{
+	CArrayReserve(a, size);
+	if (value != NULL)
+	{
+		while (a->size < size)
+		{
+			CArrayPushBack(a, value);
+		}
+	}
+	a->size = size;
 }
 
 void *CArrayGet(const CArray *a, int idx)

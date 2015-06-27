@@ -64,18 +64,6 @@
 #include "pic_manager.h"
 
 
-// Numeric update for health and score
-// Displays as a small pop-up coloured text overlay
-typedef struct
-{
-	int Index;	// could be player or objective
-	int PlayerUID;
-	int Amount;
-	// Number of milliseconds that this update will last
-	int TimerMax;
-	int Timer;
-} HUDNumUpdate;
-
 // Total number of milliseconds that the numeric update lasts for
 #define NUM_UPDATE_TIMER_MS 500
 
@@ -151,21 +139,20 @@ void HUDInit(
 	GraphicsDevice *device,
 	struct MissionOptions *mission)
 {
+	memset(hud, 0, sizeof *hud);
 	hud->mission = mission;
 	strcpy(hud->message, "");
 	hud->messageTicks = 0;
 	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
-	CArrayInit(&hud->healthUpdates, sizeof(HUDNumUpdate));
-	CArrayInit(&hud->scoreUpdates, sizeof(HUDNumUpdate));
 	CArrayInit(&hud->objectiveUpdates, sizeof(HUDNumUpdate));
+	CArrayResize(&hud->objectiveUpdates, mission->Objectives.size, NULL);
+	CArrayFillZero(&hud->objectiveUpdates);
 	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
 {
-	CArrayTerminate(&hud->healthUpdates);
-	CArrayTerminate(&hud->scoreUpdates);
 	CArrayTerminate(&hud->objectiveUpdates);
 }
 
@@ -187,47 +174,88 @@ static int FindLocalPlayerIndex(const int playerUID)
 	return playerUID % MAX_LOCAL_PLAYERS;
 }
 
-static void AddNumUpdate(
-	const int playerUID, const int amount, CArray *updates);
-void HUDAddHealthUpdate(HUD *hud, const int playerUID, const int amount)
-{
-	AddNumUpdate(playerUID, amount, &hud->healthUpdates);
-}
-
-void HUDAddScoreUpdate(HUD *hud, const int playerUID, const int amount)
-{
-	AddNumUpdate(playerUID, amount, &hud->scoreUpdates);
-}
-static void AddNumUpdate(
-	const int playerUID, const int amount, CArray *updates)
+static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src);
+void HUDAddUpdate(
+	HUD *hud, const HUDNumUpdateType type, const int idx, const int amount)
 {
 	HUDNumUpdate s;
-	s.Index = FindLocalPlayerIndex(playerUID);
-	if (s.Index < 0)
+	memset(&s, 0, sizeof s);
+
+	// Index
+	const int localPlayerIdx = FindLocalPlayerIndex(idx);
+	switch (type)
 	{
-		// This update was for a non-local player; abort
-		return;
+	case NUMBER_UPDATE_SCORE:
+	case NUMBER_UPDATE_HEALTH:	// fallthrough
+		if (localPlayerIdx)
+		{
+			// This update was for a non-local player; abort
+			return;
+		}
+		s.u.PlayerUID = idx;
+		break;
+	case NUMBER_UPDATE_OBJECTIVE:
+		s.u.ObjectiveIndex = idx;
+		break;
+	default:
+		CASSERT(false, "unknown HUD update type");
+		break;
 	}
-	s.PlayerUID = playerUID;
+
 	s.Amount = amount;
-	s.Timer = NUM_UPDATE_TIMER_MS;
-	s.TimerMax = NUM_UPDATE_TIMER_MS;
-	CArrayPushBack(updates, &s);
-}
 
-// TODO: refactor into AddNumUpdate
-void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update)
+	// Timers
+	switch (type)
+	{
+	case NUMBER_UPDATE_SCORE:
+	case NUMBER_UPDATE_HEALTH:	// fallthrough
+		s.Timer = NUM_UPDATE_TIMER_MS;
+		s.TimerMax = NUM_UPDATE_TIMER_MS;
+		break;
+	case NUMBER_UPDATE_OBJECTIVE:
+		s.Timer = NUM_UPDATE_TIMER_OBJECTIVE_MS;
+		s.TimerMax = NUM_UPDATE_TIMER_OBJECTIVE_MS;
+		break;
+	default:
+		CASSERT(false, "unknown HUD update type");
+		break;
+	}
+
+	// Merge with existing updates
+	switch (type)
+	{
+	case NUMBER_UPDATE_SCORE:
+		MergeUpdates(&hud->scoreUpdates[localPlayerIdx], s);
+		break;
+	case NUMBER_UPDATE_HEALTH:
+		MergeUpdates(&hud->healthUpdates[localPlayerIdx], s);
+		break;
+	case NUMBER_UPDATE_OBJECTIVE:
+		MergeUpdates(CArrayGet(&hud->objectiveUpdates, s.u.ObjectiveIndex), s);
+		break;
+	default:
+		CASSERT(false, "unknown HUD update type");
+		break;
+	}
+}
+static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src)
 {
-	HUDNumUpdate u;
-	u.Index = objectiveIndex;
-	u.PlayerUID = -1;
-	u.Amount = update;
-	u.Timer = NUM_UPDATE_TIMER_OBJECTIVE_MS;
-	u.TimerMax = NUM_UPDATE_TIMER_OBJECTIVE_MS;
-	CArrayPushBack(&hud->objectiveUpdates, &u);
+	// Combine update amounts
+	if (dst->Timer <= 0)
+	{
+		// Old update finished; simply replace with new
+		dst->Amount = src.Amount;
+	}
+	else
+	{
+		// Add the updates
+		dst->Amount += src.Amount;
+	}
+	dst->Timer = src.Timer;
+	dst->TimerMax = src.TimerMax;
 }
 
-static void NumUpdate(CArray *updates, const int ms);
+static void NumUpdate(HUDNumUpdate *update, const int ms);
 void HUDUpdate(HUD *hud, int ms)
 {
 	if (hud->messageTicks >= 0)
@@ -240,21 +268,21 @@ void HUDUpdate(HUD *hud, int ms)
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
-	NumUpdate(&hud->healthUpdates, ms);
-	NumUpdate(&hud->scoreUpdates, ms);
-	NumUpdate(&hud->objectiveUpdates, ms);
-}
-static void NumUpdate(CArray *updates, const int ms)
-{
-	for (int i = 0; i < (int)updates->size; i++)
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		HUDNumUpdate *update = CArrayGet(updates, i);
+		NumUpdate(&hud->healthUpdates[i], ms);
+		NumUpdate(&hud->scoreUpdates[i], ms);
+	}
+	for (int i = 0; i < (int)hud->objectiveUpdates.size; i++)
+	{
+		NumUpdate(CArrayGet(&hud->objectiveUpdates, i), ms);
+	}
+}
+static void NumUpdate(HUDNumUpdate *update, const int ms)
+{
+	if (update->Timer > 0)
+	{
 		update->Timer -= ms;
-		if (update->Timer <= 0)
-		{
-			CArrayDelete(updates, i);
-			i--;
-		}
 	}
 }
 
@@ -859,22 +887,8 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 			player = ActorGetByUID(p->ActorUID);
 		}
 		DrawPlayerStatus(hud, p, player, drawFlags, r);
-		for (int j = 0; j < (int)hud->healthUpdates.size; j++)
-		{
-			HUDNumUpdate *health = CArrayGet(&hud->healthUpdates, j);
-			if (health->Index == idx)
-			{
-				DrawHealthUpdate(health, drawFlags);
-			}
-		}
-		for (int j = 0; j < (int)hud->scoreUpdates.size; j++)
-		{
-			HUDNumUpdate *score = CArrayGet(&hud->scoreUpdates, j);
-			if (score->Index == idx)
-			{
-				DrawScoreUpdate(score, drawFlags);
-			}
-		}
+		DrawHealthUpdate(&hud->healthUpdates[idx], drawFlags);
+		DrawScoreUpdate(&hud->scoreUpdates[idx], drawFlags);
 	}
 	// Only draw radar once if shared
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -980,7 +994,7 @@ static void DrawHealthUpdate(HUDNumUpdate *health, int flags)
 {
 	const int rowHeight = 1 + FontH();
 	int y = 5 + rowHeight * 3;
-	const PlayerData *p = PlayerDataGetByUID(health->PlayerUID);
+	const PlayerData *p = PlayerDataGetByUID(health->u.PlayerUID);
 	if (IsPlayerAlive(p))
 	{
 		const TActor *player = ActorGetByUID(p->ActorUID);
@@ -995,7 +1009,7 @@ static void DrawScoreUpdate(HUDNumUpdate *score, int flags)
 	}
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
-	const PlayerData *p = PlayerDataGetByUID(score->PlayerUID);
+	const PlayerData *p = PlayerDataGetByUID(score->u.PlayerUID);
 	DrawNumUpdate(score, "Score: %d", p->score, Vec2iNew(5, y), flags);
 }
 // Parameters that define how the numeric update is animated
@@ -1010,6 +1024,10 @@ static void DrawNumUpdate(
 	const HUDNumUpdate *update,
 	const char *formatText, int currentValue, Vec2i pos, int flags)
 {
+	if (update->Timer <= 0)
+	{
+		return;
+	}
 	CASSERT(update->Amount != 0, "num update with zero amount");
 	color_t color = update->Amount > 0 ? colorGreen : colorRed;
 
@@ -1115,16 +1133,9 @@ static void DrawObjectiveCounts(HUD *hud)
 		}
 		FontStr(s, Vec2iNew(x, y));
 
-		for (int j = 0; j < (int)hud->objectiveUpdates.size; j++)
-		{
-			HUDNumUpdate *update = CArrayGet(&hud->objectiveUpdates, j);
-			if (update->Index == i)
-			{
-				DrawNumUpdate(
-					update, "%d", o->done,
-					Vec2iNew(x + FontStrW(s) - 8, y), 0);
-			}
-		}
+		DrawNumUpdate(
+			CArrayGet(&hud->objectiveUpdates, i), "%d", o->done,
+			Vec2iNew(x + FontStrW(s) - 8, y), 0);
 
 		x += 40;
 	}

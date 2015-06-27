@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "gamedata.h"
+#include "player.h"
 
 typedef struct
 {
@@ -53,6 +54,21 @@ void WallClockInit(WallClock *clock);
 void WallClockUpdate(WallClock *clock, int ms);
 void WallClockDraw(WallClock *clock);
 
+// Numeric update for health and score
+// Displays as a small pop-up coloured text overlay
+typedef struct
+{
+	union
+	{
+		int PlayerUID;
+		int ObjectiveIndex;
+	} u;
+	int Amount;
+	// Number of milliseconds that this update will last
+	int TimerMax;
+	int Timer;
+} HUDNumUpdate;
+
 typedef struct
 {
 	struct MissionOptions *mission;
@@ -61,9 +77,9 @@ typedef struct
 	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
-	CArray healthUpdates;		// of HUDNumUpdate
-	CArray scoreUpdates;		// of HUDNumUpdate
-	CArray objectiveUpdates;	// of HUDNumUpdate
+	HUDNumUpdate healthUpdates[MAX_LOCAL_PLAYERS];
+	HUDNumUpdate scoreUpdates[MAX_LOCAL_PLAYERS];
+	CArray objectiveUpdates; // of HUDNumUpdate, one per objective
 	bool showExit;
 } HUD;
 
@@ -76,9 +92,15 @@ void HUDTerminate(HUD *hud);
 // Set ticks to -1 to display a message indefinitely
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
 
-void HUDAddHealthUpdate(HUD *hud, const int playerUID, const int amount);
-void HUDAddScoreUpdate(HUD *hud, const int playerUID, const int amount);
-void HUDAddObjectiveUpdate(HUD *hud, int objectiveIndex, int update);
+typedef enum
+{
+	NUMBER_UPDATE_SCORE,
+	NUMBER_UPDATE_HEALTH,
+	NUMBER_UPDATE_OBJECTIVE
+} HUDNumUpdateType;
+// idx is either player UID or objective index
+void HUDAddUpdate(
+	HUD *hud, const HUDNumUpdateType type, const int idx, const int amount);
 
 void HUDUpdate(HUD *hud, int ms);
 // INPUT_DEVICE_UNSET if not paused

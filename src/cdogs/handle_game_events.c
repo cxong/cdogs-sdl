@@ -87,7 +87,9 @@ static void HandleGameEvent(
 		{
 			PlayerData *p = PlayerDataGetByUID(e->u.Score.PlayerUID);
 			PlayerScore(p, e->u.Score.Score);
-			HUDAddScoreUpdate(hud, e->u.Score.PlayerUID, e->u.Score.Score);
+			HUDAddUpdate(
+				hud,
+				NUMBER_UPDATE_SCORE, e->u.Score.PlayerUID, e->u.Score.Score);
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
@@ -162,7 +164,9 @@ static void HandleGameEvent(
 			}
 			if (e->u.Heal.PlayerUID >= 0)
 			{
-				HUDAddHealthUpdate(hud, e->u.Heal.PlayerUID, e->u.Heal.Amount);
+				HUDAddUpdate(
+					hud, NUMBER_UPDATE_HEALTH,
+					e->u.Heal.PlayerUID, e->u.Heal.Amount);
 			}
 		}
 		break;
@@ -242,10 +246,9 @@ static void HandleGameEvent(
 		if (e->u.ActorDamage.Power != 0 &&
 			e->u.ActorDamage.TargetPlayerUID >= 0)
 		{
-			HUDAddHealthUpdate(
-				hud,
-				e->u.ActorDamage.TargetPlayerUID,
-				-e->u.ActorDamage.Power);
+			HUDAddUpdate(
+				hud, NUMBER_UPDATE_HEALTH,
+				e->u.ActorDamage.TargetPlayerUID, -e->u.ActorDamage.Power);
 		}
 		break;
 	case GAME_EVENT_TRIGGER:
@@ -298,10 +301,9 @@ static void HandleGameEvent(
 				&gMission.Objectives, e->u.ObjectiveUpdate.ObjectiveId);
 			o->done += e->u.ObjectiveUpdate.Count;
 			// Display a text update effect for the objective
-			HUDAddObjectiveUpdate(
-				hud,
-				e->u.ObjectiveUpdate.ObjectiveId,
-				e->u.ObjectiveUpdate.Count);
+			HUDAddUpdate(
+				hud, NUMBER_UPDATE_OBJECTIVE,
+				e->u.ObjectiveUpdate.ObjectiveId, e->u.ObjectiveUpdate.Count);
 			MissionSetMessageIfComplete(&gMission);
 		}
 		break;
