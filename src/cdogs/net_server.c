@@ -256,12 +256,7 @@ static void SendGameStartMessages(NetServer *n, const int peerId)
 		}
 		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = a->uid;
-		if (a->PlayerUID < 0)
-		{
-			aa.CharId =
-				a->Character -
-				(Character *)gCampaign.Setting.characters.OtherChars.data;
-		}
+		aa.CharId = a->charId;
 		aa.Health = a->health;
 		aa.Direction = (int32_t)a->direction;
 		aa.PlayerUID = a->PlayerUID;

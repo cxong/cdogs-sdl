@@ -138,7 +138,9 @@ typedef struct Actor
 	// Whether the last special command was performed with a direction
 	// This differentiates between a special command and weapon switch
 	bool specialCmdDir;
-	Character *Character;
+	// -1 if human character (get from player data), otherwise index into
+	// CharacterStore OtherChars
+	int charId;
 	int PlayerUID;	// -1 unless a human player
 	int uid;	// unique ID across all actors
 	CArray guns;	// of Weapon

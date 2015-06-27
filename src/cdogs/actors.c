@@ -178,12 +178,7 @@ static ActorPics GetCharacterPics(int id)
 	const int frame = AnimationGetFrame(&actor->anim);
 	int headFrame = frame;
 
-	Character *c = actor->Character;
-	PlayerData *p = GetPlayerData(actor);
-	if (p != NULL)
-	{
-		c = &p->Char;
-	}
+	const Character *c = ActorGetCharacter(actor);
 	pics.Table = (TranslationTable *)c->table;
 	const int f = c->looks.Face;
 	const Weapon *gun = ActorGetGun(actor);
@@ -1186,9 +1181,8 @@ static bool IsUnarmedBot(const TActor *actor)
 {
 	// Note: if the actor is AI with no shooting time,
 	// then it's an unarmed actor
-	return
-		actor->Character->bot != NULL &&
-		actor->Character->bot->probabilityToShoot == 0;
+	const Character *c = ActorGetCharacter(actor);
+	return c->bot != NULL && c->bot->probabilityToShoot == 0;
 }
 
 void ActorsInit(void)
@@ -1258,12 +1252,13 @@ TActor *ActorAdd(NActorAdd aa)
 			AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 		CArrayPushBack(&actor->ammo, &amount);
 	}
-	Character *c;
+	actor->PlayerUID = aa.PlayerUID;
+	actor->charId = aa.CharId;
+	const Character *c = ActorGetCharacter(actor);
 	if (aa.PlayerUID >= 0)
 	{
 		// Add all player weapons
 		PlayerData *p = PlayerDataGetByUID(aa.PlayerUID);
-		c = &p->Char;
 		for (int i = 0; i < p->weaponCount; i++)
 		{
 			Weapon gun = WeaponCreate(p->weapons[i]);
@@ -1273,7 +1268,6 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	else
 	{
-		c = CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		// Add sole weapon from character type
 		Weapon gun = WeaponCreate(c->Gun);
 		CArrayPushBack(&actor->guns, &gun);
@@ -1296,8 +1290,6 @@ TActor *ActorAdd(NActorAdd aa)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
-	actor->Character = c;
-	actor->PlayerUID = aa.PlayerUID;
 	actor->direction = DIRECTION_DOWN;
 	ActorSetState(actor, ACTORANIMATION_IDLE);
 	actor->slideLock = 0;
@@ -1428,7 +1420,7 @@ const Character *ActorGetCharacter(const TActor *a)
 	{
 		return &PlayerDataGetByUID(a->PlayerUID)->Char;
 	}
-	return a->Character;
+	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
 Weapon *ActorGetGun(const TActor *a)
