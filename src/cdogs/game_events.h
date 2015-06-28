@@ -167,6 +167,7 @@ typedef struct
 		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;
 		NAddKeys AddKeys;
+		NMissionComplete MissionComplete;
 	} u;
 } GameEvent;
 

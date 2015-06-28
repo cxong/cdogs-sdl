@@ -316,7 +316,10 @@ static void HandleGameEvent(
 			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e->u.AddKeys.Pos));
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
-		HUDDisplayMessage(hud, "Mission complete", -1);
+		if (e->u.MissionComplete.ShowMsg)
+		{
+			HUDDisplayMessage(hud, "Mission complete", -1);
+		}
 		hud->showExit = true;
 		MapShowExitArea(&gMap);
 		break;

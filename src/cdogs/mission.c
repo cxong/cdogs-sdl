@@ -487,9 +487,10 @@ void MissionEnd(void)
 static bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
-	if (CanCompleteMission(options) && MissionHasRequiredObjectives(options))
+	if (CanCompleteMission(options))
 	{
 		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
+		msg.u.MissionComplete.ShowMsg = MissionHasRequiredObjectives(options);
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
 }
