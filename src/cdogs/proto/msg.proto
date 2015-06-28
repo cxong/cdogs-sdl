@@ -145,6 +145,11 @@ message NAddBullet {
 	required int32 UID = 8;
 }
 
+message NTrigger {
+	required uint32 ID = 1;
+	required NVec2i Tile = 2;
+}
+
 message NExploreTile {
 	required NVec2i Tile = 1;
 }

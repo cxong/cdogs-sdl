@@ -257,16 +257,15 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TRIGGER:
 		{
-			const Tile *t = MapGetTile(&gMap, e->u.TriggerEvent.TilePos);
-			for (int i = 0; i < (int)t->triggers.size; i++)
-			{
-				Trigger **tp = CArrayGet(&t->triggers, i);
-				if ((*tp)->id == e->u.TriggerEvent.Id)
+			const Tile *t =
+				MapGetTile(&gMap, Net2Vec2i(e->u.TriggerEvent.Tile));
+			CA_FOREACH(Trigger *, tp, t->triggers)
+				if ((*tp)->id == (int)e->u.TriggerEvent.ID)
 				{
 					TriggerActivate(*tp, &gMap.triggers);
 					break;
 				}
-			}
+			CA_FOREACH_END()
 		}
 		break;
 	case GAME_EVENT_EXPLORE_TILE:
@@ -312,7 +311,7 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_ADD_KEYS:
-		gMission.flags |= e->u.AddKeys.KeyFlags;
+		gMission.KeyFlags |= e->u.AddKeys.KeyFlags;
 		SoundPlayAt(
 			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e->u.AddKeys.Pos));
 		break;

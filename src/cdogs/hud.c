@@ -817,7 +817,7 @@ void DrawKeycards(HUD *hud)
 	int yOffset = 20;
 	for (i = 0; i < 4; i++)
 	{
-		if (hud->mission->flags & keyFlags[i])
+		if (hud->mission->KeyFlags & keyFlags[i])
 		{
 			const Pic *pic = KeyPickupClass(hud->mission->keyStyle, i)->Pic;
 			Blit(

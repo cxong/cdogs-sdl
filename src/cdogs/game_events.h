@@ -162,11 +162,7 @@ typedef struct
 			Vec2i Vel;
 		} ActorImpulse;
 		ActorDamage ActorDamage;
-		struct
-		{
-			int Id;
-			Vec2i TilePos;
-		} TriggerEvent;
+		NTrigger TriggerEvent;
 		NExploreTile ExploreTile;
 		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;

@@ -322,7 +322,7 @@ static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
 			// Unlocked door
 			return true;
 		}
-		return !!(keycard & gMission.flags);
+		return !!(keycard & gMission.KeyFlags);
 	}
 	// Otherwise, we cannot walk over this tile
 	return false;

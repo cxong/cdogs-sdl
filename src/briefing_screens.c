@@ -307,7 +307,7 @@ static bool AreAnySurvived(void)
 }
 static int GetAccessBonus(const struct MissionOptions *m)
 {
-	return KeycardCount(m->flags) * 50;
+	return KeycardCount(m->KeyFlags) * 50;
 }
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut)
 {

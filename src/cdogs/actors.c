@@ -598,11 +598,11 @@ static void CheckTrigger(const Vec2i tilePos)
 	for (int i = 0; i < (int)t->triggers.size; i++)
 	{
 		Trigger **tp = CArrayGet(&t->triggers, i);
-		if (TriggerCanActivate(*tp, gMission.flags))
+		if (TriggerCanActivate(*tp, gMission.KeyFlags))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
-			e.u.TriggerEvent.Id = (*tp)->id;
-			e.u.TriggerEvent.TilePos = tilePos;
+			e.u.TriggerEvent.ID = (*tp)->id;
+			e.u.TriggerEvent.Tile = Vec2i2Net(tilePos);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}

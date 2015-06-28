@@ -268,6 +268,11 @@ static void SendGameStartMessages(NetServer *n, const int peerId)
 		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	}
 
+	// Send key state
+	NAddKeys ak = NAddKeys_init_default;
+	ak.KeyFlags = gMission.KeyFlags;
+	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_KEYS, &ak);
+
 	// Send objective counts
 	for (int i = 0; i < (int)gMission.Objectives.size; i++)
 	{

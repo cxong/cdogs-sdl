@@ -210,7 +210,7 @@ typedef enum
 struct MissionOptions
 {
 	int index;
-	int flags;
+	int KeyFlags;
 
 	Mission *missionData;
 	CArray Weapons;	// of GunDescription *

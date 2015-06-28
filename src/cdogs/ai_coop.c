@@ -433,7 +433,8 @@ static bool TryCompleteNearbyObjective(
 		switch (objState->Type)
 		{
 		case AI_OBJECTIVE_TYPE_KEY:
-			hasNoUpdates = objState->LastDone == KeycardCount(gMission.flags);
+			hasNoUpdates =
+				objState->LastDone == KeycardCount(gMission.KeyFlags);
 			break;
 		case AI_OBJECTIVE_TYPE_NORMAL:
 			hasNoUpdates =
@@ -505,7 +506,7 @@ static bool TryCompleteNearbyObjective(
 			switch (c->Type)
 			{
 			case AI_OBJECTIVE_TYPE_KEY:
-				objState->LastDone = KeycardCount(gMission.flags);
+				objState->LastDone = KeycardCount(gMission.KeyFlags);
 				break;
 			case AI_OBJECTIVE_TYPE_NORMAL:
 				objState->u.Obj = c->u.Objective;
