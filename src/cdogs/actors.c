@@ -565,7 +565,7 @@ static Vec2i GetConstrainedFullPos(
 }
 
 static void CheckTrigger(const Vec2i tilePos);
-static void CheckPickups(TActor *actor);
+static void CheckPickups(TActor *actor, const bool pickupAll);
 static void CheckRescue(const TActor *a);
 void ActorMove(const NActorMove am)
 {
@@ -587,7 +587,7 @@ void ActorMove(const NActorMove am)
 	{
 		CheckTrigger(Vec2iToTile(realPos));
 
-		CheckPickups(a);
+		CheckPickups(a, false);
 
 		CheckRescue(a);
 	}
@@ -608,25 +608,33 @@ static void CheckTrigger(const Vec2i tilePos)
 	}
 }
 // Check if the player can pickup any item
+typedef struct
+{
+	TActor *Actor;
+	bool PickupAll;
+} CheckPickupData;
 static bool CheckPickupFunc(TTileItem *ti, void *data);
-static void CheckPickups(TActor *actor)
+static void CheckPickups(TActor *actor, const bool pickupAll)
 {
 	// NPCs can't pickup
 	if (actor->PlayerUID < 0)
 	{
 		return;
 	}
+	CheckPickupData d;
+	d.Actor = actor;
+	d.PickupAll = pickupAll;
 	CollideTileItems(
 		&actor->tileItem, Vec2iFull2Real(actor->Pos), 0,
 		CalcCollisionTeam(true, actor),
-		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
+		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, &d);
 }
 static bool CheckPickupFunc(TTileItem *ti, void *data)
 {
-	TActor *actor = data;
+	CheckPickupData *d = data;
 	if (ti->kind == KIND_PICKUP)
 	{
-		PickupPickup(actor, CArrayGet(&gPickups, ti->id));
+		PickupPickup(d->Actor, CArrayGet(&gPickups, ti->id), d->PickupAll);
 	}
 	return true;
 }
@@ -867,6 +875,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	}
 
 	actor->lastCmd = cmd;
+	bool pickupAll = false;
 	if (cmd & CMD_BUTTON2)
 	{
 		if (CMD_HAS_DIRECTION(cmd))
@@ -875,10 +884,8 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		}
 		else if (actor->CanPickupSpecial)
 		{
-			actor->PickupAll = true;
 			// Special: check pickups that can only be picked up on demand
-			CheckPickups(actor);
-			actor->PickupAll = false;
+			pickupAll = true;
 			// Cancel the last cmd having switch
 			actor->lastCmd &= ~CMD_BUTTON2;
 		}
@@ -886,6 +893,12 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	else
 	{
 		actor->specialCmdDir = false;
+	}
+
+	// If we're ready to pick up, always check the pickups
+	if (actor->CanPickupSpecial)
+	{
+		CheckPickups(actor, pickupAll);
 	}
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)

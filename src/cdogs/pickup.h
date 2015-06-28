@@ -54,6 +54,6 @@ int PickupsGetNextUID(void);
 void PickupAdd(const NAddPickup ap);
 void PickupDestroy(const int uid);
 
-void PickupPickup(TActor *a, Pickup *p);
+void PickupPickup(TActor *a, Pickup *p, const bool pickupAll);
 
 Pickup *PickupGetByUID(const int uid);

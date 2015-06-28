@@ -109,7 +109,7 @@ void PickupDestroy(const int uid)
 	p->isInUse = false;
 }
 
-void PickupPickup(TActor *a, Pickup *p)
+void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 {
 	if (p->PickedUp) return;
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
@@ -200,7 +200,7 @@ void PickupPickup(TActor *a, Pickup *p)
 
 	case PICKUP_GUN:
 		{
-			if (a->PickupAll)
+			if (pickupAll)
 			{
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 				e.u.ActorReplaceGun.UID = a->uid;
@@ -249,7 +249,7 @@ void PickupPickup(TActor *a, Pickup *p)
 					sprintf(a->Chatter, "%s to pick up\n%s",
 						pickupKey,
 						IdGunDescription(p->class->u.GunId)->name);
-					a->ChatterCounter = FPS_FRAMELIMIT;
+					a->ChatterCounter = 2;
 				}
 			}
 

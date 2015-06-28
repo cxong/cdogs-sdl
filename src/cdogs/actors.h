@@ -159,9 +159,6 @@ typedef struct Actor
 	
 	int slideLock;
 
-	// Flag to specify whether this actor will pick up anything,
-	// such as weapons which will replace the current weapon.
-	bool PickupAll;
 	// Flag to specify whether this actor is over a special pickup,
 	// such as weapons which will replace the current weapon.
 	// If the player presses switch when in this state, instead of switching
