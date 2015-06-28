@@ -1047,11 +1047,10 @@ static void DrawNumUpdate(
 	const HUDNumUpdate *update,
 	const char *formatText, int currentValue, Vec2i pos, int flags)
 {
-	if (update->Timer <= 0)
+	if (update->Timer <= 0 || update->Amount == 0)
 	{
 		return;
 	}
-	CASSERT(update->Amount != 0, "num update with zero amount");
 	color_t color = update->Amount > 0 ? colorGreen : colorRed;
 
 	char s[50];

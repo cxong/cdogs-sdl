@@ -249,7 +249,7 @@ void PickupPickup(TActor *a, Pickup *p)
 					sprintf(a->Chatter, "%s to pick up\n%s",
 						pickupKey,
 						IdGunDescription(p->class->u.GunId)->name);
-					a->ChatterCounter = 2;
+					a->ChatterCounter = FPS_FRAMELIMIT;
 				}
 			}
 
