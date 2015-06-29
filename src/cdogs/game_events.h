@@ -64,6 +64,7 @@ typedef enum
 	GAME_EVENT_ACTOR_MOVE,
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
+	GAME_EVENT_ACTOR_PICKUP_ALL,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
 	GAME_EVENT_ACTOR_HEAL,
 	GAME_EVENT_ACTOR_ADD_AMMO,
@@ -129,6 +130,7 @@ typedef struct
 		NActorMove ActorMove;
 		NActorState ActorState;
 		NActorDir ActorDir;
+		NActorPickupAll ActorPickupAll;
 		struct
 		{
 			int UID;

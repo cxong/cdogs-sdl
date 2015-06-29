@@ -138,6 +138,15 @@ typedef struct Actor
 	// Whether the last special command was performed with a direction
 	// This differentiates between a special command and weapon switch
 	bool specialCmdDir;
+	// If the actor wants to pick up everything, even those that need to be
+	// manually picked up using special input
+	bool PickupAll;
+	// Flag to specify whether this actor is over a special pickup,
+	// such as weapons which will replace the current weapon.
+	// If the player presses switch when in this state, instead of switching
+	// weapons, pick up.
+	bool CanPickupSpecial;
+
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
@@ -158,12 +167,6 @@ typedef struct Actor
 	int turns;
 	
 	int slideLock;
-
-	// Flag to specify whether this actor is over a special pickup,
-	// such as weapons which will replace the current weapon.
-	// If the player presses switch when in this state, instead of switching
-	// weapons, pick up.
-	bool CanPickupSpecial;
 
 	// What to say (text label appears above actor) and how long to say it
 	char Chatter[256];

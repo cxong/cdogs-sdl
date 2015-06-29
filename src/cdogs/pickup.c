@@ -27,9 +27,7 @@
 */
 #include "pickup.h"
 
-#include "ai_coop.h"
 #include "ammo.h"
-#include "events.h"
 #include "game_events.h"
 #include "json_utils.h"
 #include "net_util.h"
@@ -199,65 +197,45 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		break;
 
 	case PICKUP_GUN:
+		if (pickupAll)
 		{
-			if (pickupAll)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-				e.u.ActorReplaceGun.UID = a->uid;
-				e.u.ActorReplaceGun.GunIdx =
-					a->guns.size == MAX_WEAPONS ?
-					a->gunIndex : (int)a->guns.size;
-				e.u.ActorReplaceGun.GunId = p->class->u.GunId;
-				GameEventsEnqueue(&gGameEvents, e);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+			e.u.ActorReplaceGun.UID = a->uid;
+			e.u.ActorReplaceGun.GunIdx =
+				a->guns.size == MAX_WEAPONS ?
+				a->gunIndex : (int)a->guns.size;
+			e.u.ActorReplaceGun.GunId = p->class->u.GunId;
+			GameEventsEnqueue(&gGameEvents, e);
 
-				// If the player has less ammo than the default amount,
-				// replenish up to this amount
-				const int ammoId = IdGunDescription(p->class->u.GunId)->AmmoId;
-				if (ammoId >= 0)
-				{
-					const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-					const int ammoDeficit =
-						ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
-					if (ammoDeficit > 0)
-					{
-						e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
-						e.u.AddAmmo.UID = a->uid;
-						e.u.AddAmmo.PlayerUID = a->PlayerUID;
-						e.u.AddAmmo.AmmoId = ammoId;
-						e.u.AddAmmo.Amount = ammoDeficit;
-						e.u.AddAmmo.IsRandomSpawned = false;
-						GameEventsEnqueue(&gGameEvents, e);
-					}
-				}
-
-				// TODO: eventify gun replace
-				SoundPlayAt(
-					&gSoundDevice,
-					IdGunDescription(p->class->u.GunId)->SwitchSound,
-					actorPos);
-			}
-			else
+			// If the player has less ammo than the default amount,
+			// replenish up to this amount
+			const int ammoId = IdGunDescription(p->class->u.GunId)->AmmoId;
+			if (ammoId >= 0)
 			{
-				a->CanPickupSpecial = true;
-				canPickup = false;
-				// "Say" that the weapon must be picked up using a command
-				const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
-				const char *pickupKey = InputGetButtonName(
-					pData->inputDevice, pData->deviceIndex, CMD_BUTTON2);
-				if (pickupKey != NULL)
+				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+				const int ammoDeficit =
+					ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
+				if (ammoDeficit > 0)
 				{
-					sprintf(a->Chatter, "%s to pick up\n%s",
-						pickupKey,
-						IdGunDescription(p->class->u.GunId)->name);
-					a->ChatterCounter = 2;
+					e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+					e.u.AddAmmo.UID = a->uid;
+					e.u.AddAmmo.PlayerUID = a->PlayerUID;
+					e.u.AddAmmo.AmmoId = ammoId;
+					e.u.AddAmmo.Amount = ammoDeficit;
+					e.u.AddAmmo.IsRandomSpawned = false;
+					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}
 
-			// If co-op AI, alert it so it can try to pick the gun up
-			if (a->aiContext != NULL)
-			{
-				AICoopOnPickupGun(a, p->class->u.GunId);
-			}
+			// TODO: eventify gun replace
+			SoundPlayAt(
+				&gSoundDevice,
+				IdGunDescription(p->class->u.GunId)->SwitchSound,
+				actorPos);
+		}
+		else
+		{
+			canPickup = false;
 		}
 		break;
 
@@ -280,6 +258,17 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		GameEventsEnqueue(&gGameEvents, e);
 		// Prevent multiple pickups by marking
 		p->PickedUp = true;
+	}
+}
+bool PickupIsManual(const Pickup *p)
+{
+	if (p->PickedUp) return false;
+	switch (p->class->Type)
+	{
+	case PICKUP_GUN:
+		return true;
+	default:
+		return false;
 	}
 }
 

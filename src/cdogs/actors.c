@@ -54,12 +54,14 @@
 #include <string.h>
 
 #include "actor_placement.h"
+#include "ai_coop.h"
 #include "ai_utils.h"
 #include "ammo.h"
 #include "character.h"
 #include "collision.h"
 #include "config.h"
 #include "drawtools.h"
+#include "events.h"
 #include "game_events.h"
 #include "log.h"
 #include "pic_manager.h"
@@ -565,7 +567,7 @@ static Vec2i GetConstrainedFullPos(
 }
 
 static void CheckTrigger(const Vec2i tilePos);
-static void CheckPickups(TActor *actor, const bool pickupAll);
+static void CheckPickups(TActor *actor);
 static void CheckRescue(const TActor *a);
 void ActorMove(const NActorMove am)
 {
@@ -587,7 +589,7 @@ void ActorMove(const NActorMove am)
 	{
 		CheckTrigger(Vec2iToTile(realPos));
 
-		CheckPickups(a, false);
+		CheckPickups(a);
 
 		CheckRescue(a);
 	}
@@ -608,34 +610,25 @@ static void CheckTrigger(const Vec2i tilePos)
 	}
 }
 // Check if the player can pickup any item
-typedef struct
-{
-	TActor *Actor;
-	bool PickupAll;
-} CheckPickupData;
 static bool CheckPickupFunc(TTileItem *ti, void *data);
-static void CheckPickups(TActor *actor, const bool pickupAll)
+static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
 	if (actor->PlayerUID < 0)
 	{
 		return;
 	}
-	CheckPickupData d;
-	d.Actor = actor;
-	d.PickupAll = pickupAll;
 	CollideTileItems(
 		&actor->tileItem, Vec2iFull2Real(actor->Pos), 0,
 		CalcCollisionTeam(true, actor),
-		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, &d);
+		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
 }
 static bool CheckPickupFunc(TTileItem *ti, void *data)
 {
-	CheckPickupData *d = data;
-	if (ti->kind == KIND_PICKUP)
-	{
-		PickupPickup(d->Actor, CArrayGet(&gPickups, ti->id), d->PickupAll);
-	}
+	// Always return true, as we can pickup multiple items in one go
+	if (ti->kind != KIND_PICKUP) return true;
+	TActor *a = data;
+	PickupPickup(a, CArrayGet(&gPickups, ti->id), a->PickupAll);
 	return true;
 }
 static void CheckRescue(const TActor *a)
@@ -875,30 +868,37 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	}
 
 	actor->lastCmd = cmd;
-	bool pickupAll = false;
 	if (cmd & CMD_BUTTON2)
 	{
 		if (CMD_HAS_DIRECTION(cmd))
 		{
 			actor->specialCmdDir = true;
 		}
-		else if (actor->CanPickupSpecial)
+		else
 		{
-			// Special: check pickups that can only be picked up on demand
-			pickupAll = true;
-			// Cancel the last cmd having switch
-			actor->lastCmd &= ~CMD_BUTTON2;
+			// Special: pick up things that can only be picked up on demand
+			if (!actor->PickupAll)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
+				e.u.ActorPickupAll.PickupAll = true;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			actor->PickupAll = true;
 		}
 	}
 	else
 	{
 		actor->specialCmdDir = false;
+		actor->PickupAll = false;
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
+		e.u.ActorPickupAll.PickupAll = false;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 
 	// If we're ready to pick up, always check the pickups
-	if (actor->CanPickupSpecial)
+	if (actor->PickupAll)
 	{
-		CheckPickups(actor, pickupAll);
+		CheckPickups(actor);
 	}
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
@@ -1037,6 +1037,7 @@ void UpdateAllActors(int ticks)
 		}
 	}
 }
+static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
 	if (!Vec2iIsZero(actor->Vel))
@@ -1070,6 +1071,47 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		TryMoveActor(actor, actor->MovePos);
 		actor->MovePos = Vec2iZero();
 	}
+	// Check if we're standing over any manual pickups
+	CheckManualPickups(actor);
+}
+// Check if the actor is over any manual pickups
+static bool CheckManualPickupFunc(TTileItem *ti, void *data);
+static void CheckManualPickups(TActor *a)
+{
+	// NPCs can't pickup
+	if (a->PlayerUID < 0) return;
+	CollideTileItems(
+		&a->tileItem, Vec2iFull2Real(a->Pos), 0,
+		CalcCollisionTeam(true, a),
+		IsPVP(gCampaign.Entry.Mode), CheckManualPickupFunc, a);
+}
+static bool CheckManualPickupFunc(TTileItem *ti, void *data)
+{
+	TActor *a = data;
+	if (ti->kind != KIND_PICKUP) return true;
+	const Pickup *p = CArrayGet(&gPickups, ti->id);
+	if (!PickupIsManual(p)) return true;
+	// "Say" that the weapon must be picked up using a command
+	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
+	if (pData->IsLocal)
+	{
+		const char *pickupKey = InputGetButtonName(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2);
+		if (pickupKey != NULL)
+		{
+			sprintf(a->Chatter, "%s to pick up\n%s",
+				pickupKey,
+				IdGunDescription(p->class->u.GunId)->name);
+			a->ChatterCounter = 2;
+		}
+	}
+	// If co-op AI, alert it so it can try to pick the gun up
+	if (a->aiContext != NULL)
+	{
+		AICoopOnPickupGun(a, p->class->u.GunId);
+	}
+	a->CanPickupSpecial = true;
+	return false;
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);

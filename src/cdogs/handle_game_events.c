@@ -118,21 +118,22 @@ static void HandleGameEvent(
 	case GAME_EVENT_ACTOR_STATE:
 		{
 			TActor *a = ActorGetByUID(e->u.ActorState.UID);
-			if (!a->isInUse)
-			{
-				break;
-			}
+			if (!a->isInUse) break;
 			ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
 		}
 		break;
 	case GAME_EVENT_ACTOR_DIR:
 		{
 			TActor *a = ActorGetByUID(e->u.ActorDir.UID);
-			if (!a->isInUse)
-			{
-				break;
-			}
+			if (!a->isInUse) break;
 			a->direction = (direction_e)e->u.ActorDir.Dir;
+		}
+		break;
+	case GAME_EVENT_ACTOR_PICKUP_ALL:
+		{
+			TActor *a = ActorGetByUID(e->u.ActorPickupAll.UID);
+			if (!a->isInUse) break;
+			a->PickupAll = e->u.ActorPickupAll.PickupAll;
 		}
 		break;
 	case GAME_EVENT_ACTOR_REPLACE_GUN:

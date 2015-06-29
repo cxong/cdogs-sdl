@@ -98,6 +98,11 @@ message NActorDir {
 	required int32 Dir = 2;
 }
 
+message NActorPickupAll {
+	required uint32 UID = 1;
+	required bool PickupAll = 2;
+}
+
 message NActorHeal {
 	required uint32 UID = 1;
 	required int32 PlayerUID = 2 [default=-1];
