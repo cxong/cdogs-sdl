@@ -203,8 +203,8 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 			e.u.ActorReplaceGun.UID = a->uid;
 			e.u.ActorReplaceGun.GunIdx =
-				a->guns.size == MAX_WEAPONS ?
-				(uint32_t)a->gunIndex : a->guns.size;
+				(int)a->guns.size == MAX_WEAPONS ?
+				a->gunIndex : (int)a->guns.size;
 			strcpy(e.u.ActorReplaceGun.Gun, gun->name);
 			GameEventsEnqueue(&gGameEvents, e);
 
