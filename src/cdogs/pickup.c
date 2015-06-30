@@ -199,17 +199,18 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	case PICKUP_GUN:
 		if (pickupAll)
 		{
+			const GunDescription *gun = IdGunDescription(p->class->u.GunId);
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 			e.u.ActorReplaceGun.UID = a->uid;
 			e.u.ActorReplaceGun.GunIdx =
 				a->guns.size == MAX_WEAPONS ?
-				a->gunIndex : (int)a->guns.size;
-			e.u.ActorReplaceGun.GunId = p->class->u.GunId;
+				a->gunIndex : a->guns.size;
+			strcpy(e.u.ActorReplaceGun.Gun, gun->name);
 			GameEventsEnqueue(&gGameEvents, e);
 
 			// If the player has less ammo than the default amount,
 			// replenish up to this amount
-			const int ammoId = IdGunDescription(p->class->u.GunId)->AmmoId;
+			const int ammoId = gun->AmmoId;
 			if (ammoId >= 0)
 			{
 				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
@@ -226,12 +227,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}
-
-			// TODO: eventify gun replace
-			SoundPlayAt(
-				&gSoundDevice,
-				IdGunDescription(p->class->u.GunId)->SwitchSound,
-				actorPos);
 		}
 		else
 		{

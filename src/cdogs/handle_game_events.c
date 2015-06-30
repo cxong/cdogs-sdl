@@ -137,16 +137,7 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_ACTOR_REPLACE_GUN:
-		{
-			TActor *a = ActorGetByUID(e->u.ActorReplaceGun.UID);
-			if (!a->isInUse)
-			{
-				break;
-			}
-			ActorReplaceGun(
-				a, e->u.ActorReplaceGun.GunIdx,
-				IdGunDescription(e->u.ActorReplaceGun.GunId));
-		}
+		ActorReplaceGun(e->u.ActorReplaceGun);
 		break;
 	case GAME_EVENT_ACTOR_HEAL:
 		{

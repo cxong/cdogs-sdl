@@ -71,7 +71,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_STATE, true, true, true, true, NActorState_fields },
 	{ GAME_EVENT_ACTOR_DIR, true, true, true, true, NActorDir_fields },
 	{ GAME_EVENT_ACTOR_PICKUP_ALL, false, true, true, true, NActorPickupAll_fields },
-	{ GAME_EVENT_ACTOR_REPLACE_GUN, false, false, true, true, NULL },
+	{ GAME_EVENT_ACTOR_REPLACE_GUN, true, false, true, true, NActorReplaceGun_fields },
 	{ GAME_EVENT_ACTOR_HEAL, true, false, true, true, NActorHeal_fields },
 	{ GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, true, NActorAddAmmo_fields },
 	{ GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields },

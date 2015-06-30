@@ -131,14 +131,7 @@ typedef struct
 		NActorState ActorState;
 		NActorDir ActorDir;
 		NActorPickupAll ActorPickupAll;
-		struct
-		{
-			int UID;
-			// Actor's gun to replace
-			int GunIdx;
-			// ID of GunDescription of new gun
-			int GunId;
-		} ActorReplaceGun;
+		NActorReplaceGun ActorReplaceGun;
 		NActorHeal Heal;
 		NActorAddAmmo AddAmmo;
 		NActorUseAmmo UseAmmo;

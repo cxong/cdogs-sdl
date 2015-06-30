@@ -318,10 +318,17 @@ void ActorSetState(TActor *actor, const ActorAnimation state)
 	}
 }
 
+static void CheckPickups(TActor *actor);
 void UpdateActorState(TActor * actor, int ticks)
 {
 	Weapon *gun = ActorGetGun(actor);
 	WeaponUpdate(gun, ticks, actor->Pos, actor->direction);
+
+	// If we're ready to pick up, always check the pickups
+	if (actor->PickupAll && !gCampaign.IsClient)
+	{
+		CheckPickups(actor);
+	}
 
 	if (actor->health > 0)
 	{
@@ -567,7 +574,6 @@ static Vec2i GetConstrainedFullPos(
 }
 
 static void CheckTrigger(const Vec2i tilePos);
-static void CheckPickups(TActor *actor);
 static void CheckRescue(const TActor *a);
 void ActorMove(const NActorMove am)
 {
@@ -710,27 +716,31 @@ bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 }
 
 static bool ActorHasGun(const TActor *a, const GunDescription *gun);
-void ActorReplaceGun(
-	TActor *actor, const int gunIdx, const GunDescription *gun)
+void ActorReplaceGun(const NActorReplaceGun rg)
 {
-	CASSERT(gunIdx >= 0 && gunIdx < MAX_WEAPONS, "invalid gun idx");
+	TActor *a = ActorGetByUID(rg.UID);
+	if (!a->isInUse) return;
+	const GunDescription *gun = StrGunDescription(rg.Gun);
+	CASSERT(gun != NULL, "cannot find gun");
 	// If player already has gun, don't do anything
-	if (ActorHasGun(actor, gun))
+	if (ActorHasGun(a, gun))
 	{
 		return;
 	}
 	Weapon w = WeaponCreate(gun);
-	if ((int)actor->guns.size <= gunIdx)
+	if (a->guns.size <= rg.GunIdx)
 	{
-		CASSERT(gunIdx < (int)actor->guns.size + 1, "gun idx would leave gap");
-		CArrayPushBack(&actor->guns, &w);
+		CASSERT(rg.GunIdx < a->guns.size + 1, "gun idx would leave gap");
+		CArrayPushBack(&a->guns, &w);
 		// Switch immediately to picked up gun
-		actor->gunIndex = (int)actor->guns.size - 1;
+		a->gunIndex = (int)a->guns.size - 1;
 	}
 	else
 	{
-		memcpy(CArrayGet(&actor->guns, gunIdx), &w, actor->guns.elemSize);
+		memcpy(CArrayGet(&a->guns, rg.GunIdx), &w, a->guns.elemSize);
 	}
+
+	SoundPlayAt(&gSoundDevice, gun->SwitchSound, Vec2iFull2Real(a->Pos));
 }
 static bool ActorHasGun(const TActor *a, const GunDescription *gun)
 {
@@ -880,6 +890,7 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 			if (!actor->PickupAll)
 			{
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
+				e.u.ActorPickupAll.UID = actor->uid;
 				e.u.ActorPickupAll.PickupAll = true;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
@@ -889,16 +900,14 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 	else
 	{
 		actor->specialCmdDir = false;
+		if (actor->PickupAll)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
+			e.u.ActorPickupAll.UID = actor->uid;
+			e.u.ActorPickupAll.PickupAll = false;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 		actor->PickupAll = false;
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
-		e.u.ActorPickupAll.PickupAll = false;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-
-	// If we're ready to pick up, always check the pickups
-	if (actor->PickupAll)
-	{
-		CheckPickups(actor);
 	}
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)

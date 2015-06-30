@@ -103,6 +103,13 @@ message NActorPickupAll {
 	required bool PickupAll = 2;
 }
 
+message NActorReplaceGun {
+	required uint32 UID = 1;
+	// Index of gun in actor to replace
+	required uint32 GunIdx = 2;
+	required string Gun = 3;
+}
+
 message NActorHeal {
 	required uint32 UID = 1;
 	required int32 PlayerUID = 2 [default=-1];
