@@ -227,7 +227,8 @@ Weapon *ActorGetGun(const TActor *a);
 // Returns -1 if gun does not use ammo
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
-bool ActorTrySwitchGun(TActor *a);
+bool ActorCanSwitchGun(const TActor *a);
+void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)
 // but deals no damage

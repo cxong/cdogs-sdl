@@ -99,12 +99,12 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		!actor->specialCmdDir &&
 		!actor->CanPickupSpecial &&
 		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
-		ActorTrySwitchGun(actor))
+		ActorCanSwitchGun(actor))
 	{
-		SoundPlayAt(
-			&gSoundDevice,
-			ActorGetGun(actor)->Gun->SwitchSound,
-			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+		e.u.ActorSwitchGun.UID = actor->uid;
+		e.u.ActorSwitchGun.GunIdx = (actor->gunIndex + 1) % actor->guns.size;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 

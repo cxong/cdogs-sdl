@@ -1507,18 +1507,19 @@ bool ActorCanFire(const TActor *a)
 		!WeaponIsLocked(w) &&
 		(!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);
 }
-bool ActorTrySwitchGun(TActor *a)
+bool ActorCanSwitchGun(const TActor *a)
 {
-	if (a->guns.size < 2)
-	{
-		return false;
-	}
-	a->gunIndex++;
-	if (a->gunIndex >= (int)a->guns.size)
-	{
-		a->gunIndex = 0;
-	}
-	return true;
+	return a->guns.size > 1;
+}
+void ActorSwitchGun(const NActorSwitchGun sg)
+{
+	TActor *a = ActorGetByUID(sg.UID);
+	if (!a->isInUse) return;
+	a->gunIndex = sg.GunIdx;
+	SoundPlayAt(
+		&gSoundDevice,
+		ActorGetGun(a)->Gun->SwitchSound,
+		Vec2iNew(a->tileItem.x, a->tileItem.y));
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)

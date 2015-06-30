@@ -70,6 +70,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_MOVE, true, true, true, true, NActorMove_fields },
 	{ GAME_EVENT_ACTOR_STATE, true, true, true, true, NActorState_fields },
 	{ GAME_EVENT_ACTOR_DIR, true, true, true, true, NActorDir_fields },
+	{ GAME_EVENT_ACTOR_SWITCH_GUN, true, true, true, true, NActorSwitchGun_fields },
 	{ GAME_EVENT_ACTOR_PICKUP_ALL, false, true, true, true, NActorPickupAll_fields },
 	{ GAME_EVENT_ACTOR_REPLACE_GUN, true, false, true, true, NActorReplaceGun_fields },
 	{ GAME_EVENT_ACTOR_HEAL, true, false, true, true, NActorHeal_fields },
@@ -126,6 +127,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_ACTOR_MOVE: actorUID = e.u.ActorMove.UID; break;
 		case GAME_EVENT_ACTOR_STATE: actorUID = e.u.ActorState.UID; break;
 		case GAME_EVENT_ACTOR_DIR: actorUID = e.u.ActorDir.UID; break;
+		case GAME_EVENT_ACTOR_SWITCH_GUN: actorUID = e.u.ActorSwitchGun.UID; break;
 		case GAME_EVENT_ACTOR_PICKUP_ALL: actorUID = e.u.ActorPickupAll.UID; break;
 		case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
 		case GAME_EVENT_ADD_BULLET:

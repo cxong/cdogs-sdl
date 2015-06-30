@@ -129,6 +129,9 @@ static void HandleGameEvent(
 			a->direction = (direction_e)e->u.ActorDir.Dir;
 		}
 		break;
+	case GAME_EVENT_ACTOR_SWITCH_GUN:
+		ActorSwitchGun(e->u.ActorSwitchGun);
+		break;
 	case GAME_EVENT_ACTOR_PICKUP_ALL:
 		{
 			TActor *a = ActorGetByUID(e->u.ActorPickupAll.UID);
