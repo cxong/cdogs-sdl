@@ -5,6 +5,7 @@ GenericName=Action/Arcade Game
 Version=1.0
 Type=Application
 Categories=Game;ActionGame;
+Keywords=Game;Arcade;Shooter;Retro;
 Comment=Classic overhead run-and-gun game
 TryExec=cdogs-sdl
 Exec=cdogs-sdl
