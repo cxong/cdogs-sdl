@@ -222,9 +222,10 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				LOG(LM_NET, LL_DEBUG, "NetClient: received campaign def, loading...");
 				NCampaignDef def;
 				NetDecode(event.packet, &def, NCampaignDef_fields);
+				gCampaign.Entry.Mode = (GameMode)def.GameMode;
 				CampaignEntry entry;
 				if (CampaignEntryTryLoad(
-						&entry, def.Path, (GameMode)def.GameMode) &&
+						&entry, def.Path, GAME_MODE_NORMAL) &&
 					CampaignLoad(&gCampaign, &entry))
 				{
 					gCampaign.IsClient = true;

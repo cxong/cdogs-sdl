@@ -420,6 +420,9 @@ int main(int argc, char *argv[])
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
+		gCampaign.Entry.Mode =
+			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL ?
+			GAME_MODE_DOGFIGHT : GAME_MODE_NORMAL;
 		CampaignEntry entry;
 		if (!CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL) ||
 			!CampaignLoad(&gCampaign, &entry))
