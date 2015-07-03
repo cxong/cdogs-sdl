@@ -641,7 +641,8 @@ bool PlayerEquip(void)
 	}
 	else
 	{
-		NetServerBroadcastMsg(&gNetServer, GAME_EVENT_ADD_PLAYERS, &ap);
+		NetServerSendMsg(
+			&gNetServer, NET_SERVER_BCAST, GAME_EVENT_ADD_PLAYERS, &ap);
 	}
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)

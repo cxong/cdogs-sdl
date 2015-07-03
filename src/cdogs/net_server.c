@@ -75,7 +75,7 @@ void NetServerOpen(NetServer *n)
 	address.port = NET_INPUT_PORT;
 	n->server = enet_host_create(
 		&address /* the address to bind the server host to */,
-		32      /* allow up to 32 clients and/or outgoing connections */,
+		NET_SERVER_MAX_CLIENTS,
 		2      /* allow up to 2 channels to be used, 0 and 1 */,
 		0      /* assume any amount of incoming bandwidth */,
 		0      /* assume any amount of outgoing bandwidth */);
@@ -165,7 +165,6 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 }
-static void SendGameStartMessages(NetServer *n, const int peerId);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
@@ -210,7 +209,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				// Flush game events to make sure we reset player data
 				HandleGameEvents(
 					&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
-				SendGameStartMessages(n, peerId);
+				NetServerSendGameStartMessages(n, peerId);
 				// Add the client's actors
 				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 				{
@@ -230,7 +229,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	}
 	enet_packet_destroy(event.packet);
 }
-static void SendGameStartMessages(NetServer *n, const int peerId)
+
+void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
 	// Send details of all current players
 	NAddPlayers ap = NAddPlayers_init_default;
@@ -330,34 +330,30 @@ static void SendGameStartMessages(NetServer *n, const int peerId)
 void NetServerSendMsg(
 	NetServer *n, const int peerId, const GameEventType e, const void *data)
 {
-	if (!n->server)
-	{
-		return;
-	}
-	LOG(LM_NET, LL_TRACE, "send msg(%d) to peers(%d)",
-		(int)e, (int)n->server->connectedPeers);
+	if (!n->server) return;
 
-	// Find the peer and send
-	for (int i = 0; i < (int)n->server->connectedPeers; i++)
+	if (peerId >= 0)
 	{
-		ENetPeer *peer = n->server->peers + i;
-		if (((NetPeerData *)peer->data)->Id == peerId)
+		LOG(LM_NET, LL_TRACE, "send msg(%d) to peers(%d)",
+			(int)e, (int)n->server->connectedPeers);
+		// Find the peer and send
+		for (int i = 0; i < (int)n->server->connectedPeers; i++)
 		{
-			enet_peer_send(peer, 0, NetEncode(e, data));
-			enet_host_flush(n->server);
-			return;
+			ENetPeer *peer = n->server->peers + i;
+			if (((NetPeerData *)peer->data)->Id == peerId)
+			{
+				enet_peer_send(peer, 0, NetEncode(e, data));
+				enet_host_flush(n->server);
+				return;
+			}
 		}
+		CASSERT(false, "Cannot find peer by id");
 	}
-	CASSERT(false, "Cannot find peer by id");
-}
-
-void NetServerBroadcastMsg(NetServer *n, const GameEventType e, const void *data)
-{
-	if (!n->server)
+	else
 	{
-		return;
+		LOG(LM_NET, LL_TRACE, "bcast msg(%d) to peers(%d)",
+			(int)e, (int)n->server->connectedPeers);
+		enet_host_broadcast(n->server, 0, NetEncode(e, data));
+		enet_host_flush(n->server);
 	}
-
-	enet_host_broadcast(n->server, 0, NetEncode(e, data));
-	enet_host_flush(n->server);
 }

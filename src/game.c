@@ -71,6 +71,7 @@
 #include <cdogs/los.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
+#include <cdogs/net_server.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
@@ -412,6 +413,7 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	crosshair->offset.y = -crosshair->size.y / 2;
 	EventReset(&gEventHandlers, crosshair);
 
+	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
 

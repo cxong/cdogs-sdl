@@ -33,6 +33,10 @@
 #include "c_array.h"
 #include "net_util.h"
 
+
+#define NET_SERVER_MAX_CLIENTS 32
+#define NET_SERVER_BCAST -1
+
 typedef struct
 {
 	ENetHost *server;
@@ -57,7 +61,8 @@ void NetServerOpen(NetServer *n);
 // Service the recv buffer; if data is received then activate this device
 void NetServerPoll(NetServer *n);
 
+// If peerId is -1, broadcast
 void NetServerSendMsg(
 	NetServer *n, const int peerId, const GameEventType e, const void *data);
-// Send message to all peers
-void NetServerBroadcastMsg(NetServer *n, const GameEventType e, const void *data);
+
+void NetServerSendGameStartMessages(NetServer *n, const int peerId);

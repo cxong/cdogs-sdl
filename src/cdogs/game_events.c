@@ -116,7 +116,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 	const GameEventEntry gee = sGameEventEntries[e.Type];
 	if (gee.Broadcast)
 	{
-		NetServerBroadcastMsg(&gNetServer, gee.Type, &e.u);
+		NetServerSendMsg(&gNetServer, NET_SERVER_BCAST, gee.Type, &e.u);
 	}
 	if (gee.Submit)
 	{
