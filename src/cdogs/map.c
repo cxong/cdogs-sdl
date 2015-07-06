@@ -275,35 +275,31 @@ void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow)
 
 void MapShowExitArea(Map *map)
 {
-	int left, right, top, bottom;
+	const int left = map->ExitStart.x;
+	const int right = map->ExitEnd.x;
+	const int top = map->ExitStart.y;
+	const int bottom = map->ExitEnd.y;
+
 	Vec2i v;
-	Pic *exitPic = PicManagerGetFromOld(&gPicManager, gMission.exitPic);
-	Pic *shadowPic = PicManagerGetFromOld(&gPicManager, gMission.exitShadow);
-
-	left = map->ExitStart.x;
-	right = map->ExitEnd.x;
-	top = map->ExitStart.y;
-	bottom = map->ExitEnd.y;
-
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, exitPic, shadowPic);
+		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
 	}
 	v.y = bottom;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, exitPic, shadowPic);
+		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
 	}
 	v.x = left;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, exitPic, shadowPic);
+		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
 	}
 	v.x = right;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, exitPic, shadowPic);
+		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
 	}
 }
 

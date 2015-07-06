@@ -224,7 +224,8 @@ struct MissionOptions
 
 	int keyStyle;
 	struct DoorPic *doorPics;
-	int exitPic, exitShadow;
+	Pic *exitPic;
+	Pic *exitShadow;
 };
 
 void MissionInit(Mission *m);

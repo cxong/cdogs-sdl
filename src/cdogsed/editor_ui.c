@@ -482,7 +482,7 @@ static void MissionDrawExitStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
-		PicManagerGetFromOld(&gPicManager, gMission.exitPic),
+		gMission.exitPic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }

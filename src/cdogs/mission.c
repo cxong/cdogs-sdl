@@ -271,6 +271,11 @@ static int exitPics[] = {
 	375, 376,	// hazard stripes
 	380, 381	// yellow plates
 };
+// TODO: arbitrary exit tile names
+static const char *exitPicNames[] = {
+	"hazard",
+	"plate"
+};
 
 // Every exit has TWO pics, so actual # of exits == # pics / 2!
 #define EXIT_COUNT (sizeof( exitPics)/sizeof( int)/2)
@@ -452,8 +457,14 @@ void SetupMission(
 	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
 	mo->keyStyle = m->KeyStyle;
 
-	mo->exitPic = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT)];
-	mo->exitShadow = exitPics[2 * (abs(m->ExitStyle) % EXIT_COUNT) + 1];
+	char exitPicBuf[256];
+	const int exitIdx = abs(m->ExitStyle) % EXIT_COUNT;
+	sprintf(exitPicBuf, "exit_%s", exitPicNames[exitIdx]);
+	mo->exitPic =
+		PicManagerGet(&gPicManager, exitPicBuf, exitPics[2 * exitIdx]);
+	sprintf(exitPicBuf, "exit_%s_shadow", exitPicNames[exitIdx]);
+	mo->exitShadow =
+		PicManagerGet(&gPicManager, exitPicBuf, exitPics[2 * exitIdx + 1]);
 
 	ActorsInit();
 	ObjsInit();
