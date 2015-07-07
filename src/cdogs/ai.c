@@ -533,8 +533,7 @@ void InitializeBadGuys(void)
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
-				HandleGameEvents(
-					&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 			}
 		}
 		else if (mobj->Type == OBJECTIVE_RESCUE)
@@ -563,8 +562,7 @@ void InitializeBadGuys(void)
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
-				HandleGameEvents(
-					&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 			}
 		}
 	}
@@ -599,7 +597,6 @@ void CreateEnemies(void)
 		gBaddieCount++;
 
 		// Process the events that actually place the actors
-		HandleGameEvents(
-			&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 	}
 }

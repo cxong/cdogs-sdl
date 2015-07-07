@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,11 +25,9 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HANDLE_GAME_EVENTS
-#define __HANDLE_GAME_EVENTS
+#pragma once
 
 #include "c_array.h"
-#include "events.h"
 #include "hud.h"
 #include "powerup.h"
 #include "screen_shake.h"
@@ -39,7 +37,4 @@ void HandleGameEvents(
 	HUD *hud,
 	ScreenShake *shake,
 	PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners,
-	EventHandlers *eventHandlers);
-
-#endif
+	CArray *ammoSpawners);

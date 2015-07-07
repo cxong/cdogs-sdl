@@ -37,225 +37,221 @@
 
 
 static void HandleGameEvent(
-	GameEvent *e,
+	const GameEvent e,
 	HUD *hud,
 	ScreenShake *shake,
 	PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners,
-	EventHandlers *eventHandlers);
+	CArray *ammoSpawners);
 void HandleGameEvents(
 	CArray *store,
 	HUD *hud,
 	ScreenShake *shake,
 	PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners,
-	EventHandlers *eventHandlers)
+	CArray *ammoSpawners)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
 		GameEvent *e = CArrayGet(store, i);
-		HandleGameEvent(
-			e, hud, shake, healthSpawner, ammoSpawners, eventHandlers);
+		e->Delay--;
+		if (e->Delay >= 0)
+		{
+			continue;
+		}
+		HandleGameEvent(*e, hud, shake, healthSpawner, ammoSpawners);
 	}
 	GameEventsClear(store);
 }
 static void HandleGameEvent(
-	GameEvent *e,
+	const GameEvent e,
 	HUD *hud,
 	ScreenShake *shake,
 	PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners,
-	EventHandlers *eventHandlers)
+	CArray *ammoSpawners)
 {
-	e->Delay--;
-	if (e->Delay >= 0)
-	{
-		return;
-	}
-	switch (e->Type)
+	switch (e.Type)
 	{
 	case GAME_EVENT_ADD_PLAYERS:
-		for (int i = 0; i < (int)e->u.AddPlayers.PlayerDatas_count; i++)
+		for (int i = 0; i < (int)e.u.AddPlayers.PlayerDatas_count; i++)
 		{
-			PlayerDataAddOrUpdate(e->u.AddPlayers.PlayerDatas[i]);
+			PlayerDataAddOrUpdate(e.u.AddPlayers.PlayerDatas[i]);
 		}
 		break;
 	case GAME_EVENT_ADD_MAP_OBJECT:
-		ObjAdd(e->u.AddMapObject);
+		ObjAdd(e.u.AddMapObject);
 		break;
 	case GAME_EVENT_SCORE:
 		{
-			PlayerData *p = PlayerDataGetByUID(e->u.Score.PlayerUID);
-			PlayerScore(p, e->u.Score.Score);
+			PlayerData *p = PlayerDataGetByUID(e.u.Score.PlayerUID);
+			PlayerScore(p, e.u.Score.Score);
 			HUDAddUpdate(
 				hud,
-				NUMBER_UPDATE_SCORE, e->u.Score.PlayerUID, e->u.Score.Score);
+				NUMBER_UPDATE_SCORE, e.u.Score.PlayerUID, e.u.Score.Score);
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
 		SoundPlayAt(
 			&gSoundDevice,
-			StrSound(e->u.SoundAt.Sound), Net2Vec2i(e->u.SoundAt.Pos));
+			StrSound(e.u.SoundAt.Sound), Net2Vec2i(e.u.SoundAt.Pos));
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
 		*shake = ScreenShakeAdd(
-			*shake, e->u.ShakeAmount,
+			*shake, e.u.ShakeAmount,
 			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 		break;
 	case GAME_EVENT_SET_MESSAGE:
 		HUDDisplayMessage(
-			hud, e->u.SetMessage.Message, e->u.SetMessage.Ticks);
+			hud, e.u.SetMessage.Message, e.u.SetMessage.Ticks);
 		break;
 	case GAME_EVENT_GAME_START:
 		gMission.HasStarted = true;
 		break;
 	case GAME_EVENT_ACTOR_ADD:
-		ActorAdd(e->u.ActorAdd);
+		ActorAdd(e.u.ActorAdd);
 		break;
 	case GAME_EVENT_ACTOR_MOVE:
-		ActorMove(e->u.ActorMove);
+		ActorMove(e.u.ActorMove);
 		break;
 	case GAME_EVENT_ACTOR_STATE:
 		{
-			TActor *a = ActorGetByUID(e->u.ActorState.UID);
+			TActor *a = ActorGetByUID(e.u.ActorState.UID);
 			if (!a->isInUse) break;
-			ActorSetState(a, (ActorAnimation)e->u.ActorState.State);
+			ActorSetState(a, (ActorAnimation)e.u.ActorState.State);
 		}
 		break;
 	case GAME_EVENT_ACTOR_DIR:
 		{
-			TActor *a = ActorGetByUID(e->u.ActorDir.UID);
+			TActor *a = ActorGetByUID(e.u.ActorDir.UID);
 			if (!a->isInUse) break;
-			a->direction = (direction_e)e->u.ActorDir.Dir;
+			a->direction = (direction_e)e.u.ActorDir.Dir;
 		}
 		break;
 	case GAME_EVENT_ACTOR_SWITCH_GUN:
-		ActorSwitchGun(e->u.ActorSwitchGun);
+		ActorSwitchGun(e.u.ActorSwitchGun);
 		break;
 	case GAME_EVENT_ACTOR_PICKUP_ALL:
 		{
-			TActor *a = ActorGetByUID(e->u.ActorPickupAll.UID);
+			TActor *a = ActorGetByUID(e.u.ActorPickupAll.UID);
 			if (!a->isInUse) break;
-			a->PickupAll = e->u.ActorPickupAll.PickupAll;
+			a->PickupAll = e.u.ActorPickupAll.PickupAll;
 		}
 		break;
 	case GAME_EVENT_ACTOR_REPLACE_GUN:
-		ActorReplaceGun(e->u.ActorReplaceGun);
+		ActorReplaceGun(e.u.ActorReplaceGun);
 		break;
 	case GAME_EVENT_ACTOR_HEAL:
 		{
-			TActor *a = ActorGetByUID(e->u.Heal.UID);
+			TActor *a = ActorGetByUID(e.u.Heal.UID);
 			if (!a->isInUse || a->dead) break;
-			ActorHeal(a, e->u.Heal.Amount);
+			ActorHeal(a, e.u.Heal.Amount);
 			// Sound of healing
 			SoundPlayAt(
 				&gSoundDevice,
 				gSoundDevice.healthSound, Vec2iFull2Real(a->Pos));
 			// Tell the spawner that we took a health so we can
 			// spawn more (but only if we're the server)
-			if (e->u.Heal.IsRandomSpawned && !gCampaign.IsClient)
+			if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
 			{
 				PowerupSpawnerRemoveOne(healthSpawner);
 			}
-			if (e->u.Heal.PlayerUID >= 0)
+			if (e.u.Heal.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
 					hud, NUMBER_UPDATE_HEALTH,
-					e->u.Heal.PlayerUID, e->u.Heal.Amount);
+					e.u.Heal.PlayerUID, e.u.Heal.Amount);
 			}
 		}
 		break;
 	case GAME_EVENT_ACTOR_ADD_AMMO:
 		{
-			TActor *a = ActorGetByUID(e->u.AddAmmo.UID);
+			TActor *a = ActorGetByUID(e.u.AddAmmo.UID);
 			if (!a->isInUse || a->dead) break;
-			ActorAddAmmo(a, e->u.AddAmmo.AmmoId, e->u.AddAmmo.Amount);
+			ActorAddAmmo(a, e.u.AddAmmo.AmmoId, e.u.AddAmmo.Amount);
 			// Tell the spawner that we took ammo so we can
 			// spawn more (but only if we're the server)
-			if (e->u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+			if (e.u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
 			{
 				PowerupSpawnerRemoveOne(
-					CArrayGet(ammoSpawners, e->u.AddAmmo.AmmoId));
+					CArrayGet(ammoSpawners, e.u.AddAmmo.AmmoId));
 			}
-			if (e->u.AddAmmo.PlayerUID >= 0)
+			if (e.u.AddAmmo.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
 					hud, NUMBER_UPDATE_AMMO,
-					e->u.AddAmmo.PlayerUID, e->u.AddAmmo.Amount);
+					e.u.AddAmmo.PlayerUID, e.u.AddAmmo.Amount);
 			}
 		}
 		break;
 	case GAME_EVENT_ACTOR_USE_AMMO:
 		{
-			TActor *a = ActorGetByUID(e->u.UseAmmo.UID);
+			TActor *a = ActorGetByUID(e.u.UseAmmo.UID);
 			if (!a->isInUse || a->dead) break;
-			ActorAddAmmo(a, e->u.UseAmmo.AmmoId, -(int)e->u.UseAmmo.Amount);
-			if (e->u.UseAmmo.PlayerUID >= 0)
+			ActorAddAmmo(a, e.u.UseAmmo.AmmoId, -(int)e.u.UseAmmo.Amount);
+			if (e.u.UseAmmo.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
 					hud, NUMBER_UPDATE_AMMO,
-					e->u.UseAmmo.PlayerUID, -(int)e->u.UseAmmo.Amount);
+					e.u.UseAmmo.PlayerUID, -(int)e.u.UseAmmo.Amount);
 			}
 		}
 		break;
 	case GAME_EVENT_ADD_PICKUP:
-		PickupAdd(e->u.AddPickup);
+		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound
 		SoundPlayAt(
 			&gSoundDevice,
-			StrSound("spawn_item"), Net2Vec2i(e->u.AddPickup.Pos));
+			StrSound("spawn_item"), Net2Vec2i(e.u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
-		PickupDestroy(e->u.RemovePickup.UID);
-		if (e->u.RemovePickup.SpawnerUID >= 0)
+		PickupDestroy(e.u.RemovePickup.UID);
+		if (e.u.RemovePickup.SpawnerUID >= 0)
 		{
-			TObject *o = ObjGetByUID(e->u.RemovePickup.SpawnerUID);
+			TObject *o = ObjGetByUID(e.u.RemovePickup.SpawnerUID);
 			o->counter = AMMO_SPAWNER_RESPAWN_TICKS;
 		}
 		break;
 	case GAME_EVENT_MOBILE_OBJECT_REMOVE:
-		MobObjDestroy(e->u.MobileObjectRemoveId);
+		MobObjDestroy(e.u.MobileObjectRemoveId);
 		break;
 	case GAME_EVENT_PARTICLE_REMOVE:
-		ParticleDestroy(&gParticles, e->u.ParticleRemoveId);
+		ParticleDestroy(&gParticles, e.u.ParticleRemoveId);
 		break;
 	case GAME_EVENT_ADD_BULLET:
-		BulletAdd(e->u.AddBullet);
+		BulletAdd(e.u.AddBullet);
 		break;
 	case GAME_EVENT_ADD_PARTICLE:
-		ParticleAdd(&gParticles, e->u.AddParticle);
+		ParticleAdd(&gParticles, e.u.AddParticle);
 		break;
 	case GAME_EVENT_HIT_CHARACTER:
 		ActorTakeHit(
-			CArrayGet(&gActors, e->u.HitCharacter.TargetId),
-			e->u.HitCharacter.Special);
+			CArrayGet(&gActors, e.u.HitCharacter.TargetId),
+			e.u.HitCharacter.Special);
 		break;
 	case GAME_EVENT_ACTOR_IMPULSE:
 		{
-			TActor *a = CArrayGet(&gActors, e->u.ActorImpulse.Id);
+			TActor *a = CArrayGet(&gActors, e.u.ActorImpulse.Id);
 			if (!a->isInUse)
 			{
 				break;
 			}
-			a->Vel = Vec2iAdd(a->Vel, e->u.ActorImpulse.Vel);
+			a->Vel = Vec2iAdd(a->Vel, e.u.ActorImpulse.Vel);
 		}
 		break;
 	case GAME_EVENT_DAMAGE_CHARACTER:
-		DamageActor(e->u.ActorDamage);
-		if (e->u.ActorDamage.Power != 0 &&
-			e->u.ActorDamage.TargetPlayerUID >= 0)
+		DamageActor(e.u.ActorDamage);
+		if (e.u.ActorDamage.Power != 0 &&
+			e.u.ActorDamage.TargetPlayerUID >= 0)
 		{
 			HUDAddUpdate(
 				hud, NUMBER_UPDATE_HEALTH,
-				e->u.ActorDamage.TargetPlayerUID, -e->u.ActorDamage.Power);
+				e.u.ActorDamage.TargetPlayerUID, -e.u.ActorDamage.Power);
 		}
 		break;
 	case GAME_EVENT_TRIGGER:
 		{
 			const Tile *t =
-				MapGetTile(&gMap, Net2Vec2i(e->u.TriggerEvent.Tile));
+				MapGetTile(&gMap, Net2Vec2i(e.u.TriggerEvent.Tile));
 			CA_FOREACH(Trigger *, tp, t->triggers)
-				if ((*tp)->id == (int)e->u.TriggerEvent.ID)
+				if ((*tp)->id == (int)e.u.TriggerEvent.ID)
 				{
 					TriggerActivate(*tp, &gMap.triggers);
 					break;
@@ -264,29 +260,11 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_EXPLORE_TILE:
-		MapMarkAsVisited(&gMap, Net2Vec2i(e->u.ExploreTile.Tile));
-		// Check if we need to update explore objectives
-		for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-		{
-			const MissionObjective *mobj =
-				CArrayGet(&gMission.missionData->Objectives, i);
-			if (mobj->Type != OBJECTIVE_INVESTIGATE) continue;
-			const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-			const int update = MapGetExploredPercentage(&gMap) - o->done;
-			if (update > 0)
-			{
-				GameEvent ou = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-				ou.u.ObjectiveUpdate.ObjectiveId = i;
-				ou.u.ObjectiveUpdate.Count = update;
-				HandleGameEvent(
-					&ou, hud, shake, healthSpawner, ammoSpawners,
-					eventHandlers);
-			}
-		}
+		MapMarkAsVisited(&gMap, Net2Vec2i(e.u.ExploreTile.Tile));
 		break;
 	case GAME_EVENT_RESCUE_CHARACTER:
 		{
-			TActor *a = ActorGetByUID(e->u.Rescue.UID);
+			TActor *a = ActorGetByUID(e.u.Rescue.UID);
 			if (!a->isInUse) break;
 			a->flags &= ~FLAGS_PRISONER;
 			SoundPlayAt(
@@ -296,22 +274,22 @@ static void HandleGameEvent(
 	case GAME_EVENT_OBJECTIVE_UPDATE:
 		{
 			ObjectiveDef *o = CArrayGet(
-				&gMission.Objectives, e->u.ObjectiveUpdate.ObjectiveId);
-			o->done += e->u.ObjectiveUpdate.Count;
+				&gMission.Objectives, e.u.ObjectiveUpdate.ObjectiveId);
+			o->done += e.u.ObjectiveUpdate.Count;
 			// Display a text update effect for the objective
 			HUDAddUpdate(
 				hud, NUMBER_UPDATE_OBJECTIVE,
-				e->u.ObjectiveUpdate.ObjectiveId, e->u.ObjectiveUpdate.Count);
+				e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
 			MissionSetMessageIfComplete(&gMission);
 		}
 		break;
 	case GAME_EVENT_ADD_KEYS:
-		gMission.KeyFlags |= e->u.AddKeys.KeyFlags;
+		gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
 		SoundPlayAt(
-			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e->u.AddKeys.Pos));
+			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e.u.AddKeys.Pos));
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
-		if (e->u.MissionComplete.ShowMsg)
+		if (e.u.MissionComplete.ShowMsg)
 		{
 			HUDDisplayMessage(hud, "Mission complete", -1);
 		}

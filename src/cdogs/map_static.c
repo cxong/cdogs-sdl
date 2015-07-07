@@ -138,8 +138,7 @@ static void AddCharacters(const CArray *characters)
 			GameEventsEnqueue(&gGameEvents, e);
 
 			// Process the events that actually place the players
-			HandleGameEvents(
-				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 		}
 	}
 }
@@ -208,8 +207,7 @@ static void AddObjectives(
 			obj->placed++;
 
 			// Process the events that actually place the objectives
-			HandleGameEvents(
-				&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 		}
 	}
 }

@@ -171,8 +171,7 @@ bool NumPlayersSelection(
 		}
 		GameEventsEnqueue(&gGameEvents, e);
 		// Process the events to force add the players
-		HandleGameEvents(
-			&gGameEvents, NULL, NULL, NULL, NULL, &gEventHandlers);
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 		// This also causes the client to send player data to the server
 	}
 	MenuSystemTerminate(&ms);

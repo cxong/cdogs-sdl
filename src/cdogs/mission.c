@@ -498,7 +498,7 @@ void MissionEnd(void)
 static bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
-	if (CanCompleteMission(options))
+	if (!gCampaign.IsClient && CanCompleteMission(options))
 	{
 		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
 		msg.u.MissionComplete.ShowMsg = MissionHasRequiredObjectives(options);
@@ -527,10 +527,13 @@ void UpdateMissionObjective(
 	{
 		return;
 	}
-	GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-	e.u.ObjectiveUpdate.ObjectiveId = idx;
-	e.u.ObjectiveUpdate.Count = 1;
-	GameEventsEnqueue(&gGameEvents, e);
+	if (!gCampaign.IsClient)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+		e.u.ObjectiveUpdate.ObjectiveId = idx;
+		e.u.ObjectiveUpdate.Count = 1;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 }
 
 bool CanCompleteMission(const struct MissionOptions *options)
