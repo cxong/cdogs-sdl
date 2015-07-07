@@ -76,6 +76,7 @@ typedef enum
 
 	GAME_EVENT_MOBILE_OBJECT_REMOVE,
 	GAME_EVENT_PARTICLE_REMOVE,
+	GAME_EVENT_GUN_FIRE,
 	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_ADD_PARTICLE,
 	GAME_EVENT_HIT_CHARACTER,
@@ -146,6 +147,7 @@ typedef struct
 		} ObjectSetCounter;
 		int MobileObjectRemoveId;
 		int ParticleRemoveId;
+		NGunFire GunFire;
 		NAddBullet AddBullet;
 		AddParticle AddParticle;
 		struct

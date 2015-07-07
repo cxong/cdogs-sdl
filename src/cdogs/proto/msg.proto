@@ -151,6 +151,15 @@ message NRemovePickup {
 	required int32 SpawnerUID = 2 [default=-1];
 }
 
+message NGunFire {
+	required int32 PlayerUID = 1 [default=-1];
+	required string Gun = 2;
+	required NVec2i MuzzleFullPos = 3;
+	required int32 Z = 4;
+	required float Angle = 5;
+	required bool Sound = 6;
+}
+
 message NAddBullet {
 	required string BulletClass = 1;
 	required NVec2i MuzzlePos = 2;

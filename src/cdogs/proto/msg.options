@@ -15,3 +15,5 @@ NActorReplaceGun.Gun max_size:128
 NAddPickup.PickupClass max_size:128
 
 NAddBullet.BulletClass max_size:128
+
+NGunFire.Gun max_size:128

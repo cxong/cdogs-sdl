@@ -215,6 +215,36 @@ static void HandleGameEvent(
 	case GAME_EVENT_PARTICLE_REMOVE:
 		ParticleDestroy(&gParticles, e.u.ParticleRemoveId);
 		break;
+	case GAME_EVENT_GUN_FIRE:
+		{
+			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
+			// Add muzzle flash
+			if (GunHasMuzzle(g))
+			{
+				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				ap.u.AddParticle.Class = g->MuzzleFlash;
+				ap.u.AddParticle.FullPos = Net2Vec2i(e.u.GunFire.MuzzleFullPos);
+				ap.u.AddParticle.Z = e.u.GunFire.Z;
+				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
+				GameEventsEnqueue(&gGameEvents, ap);
+			}
+			// Sound
+			if (e.u.GunFire.Sound && g->Sound)
+			{
+				SoundPlayAt(
+					&gSoundDevice,
+					g->Sound,
+					Vec2iFull2Real(Net2Vec2i(e.u.GunFire.MuzzleFullPos)));
+			}
+			// Screen shake
+			if (g->ShakeAmount > 0)
+			{
+				GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
+				shake.u.ShakeAmount = g->ShakeAmount;
+				GameEventsEnqueue(&gGameEvents, shake);
+			}
+		}
+		break;
 	case GAME_EVENT_ADD_BULLET:
 		BulletAdd(e.u.AddBullet);
 		break;

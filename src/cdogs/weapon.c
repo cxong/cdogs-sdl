@@ -373,7 +373,6 @@ void WeaponSetState(Weapon *w, gunstate_e state);
 
 static void AddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos);
-static bool GunHasMuzzle(const GunDescription *desc);
 void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d)
 {
@@ -461,13 +460,6 @@ void WeaponFire(
 		w->soundLock = w->Gun->SoundLockLength;
 	}
 
-	// Brass shells
-	// If we have a reload lead, defer the creation of shells until then
-	if (w->Gun->Brass && w->Gun->ReloadLead == 0)
-	{
-		AddBrass(w->Gun, d, pos);
-	}
-
 	w->lock = w->Gun->Lock;
 }
 
@@ -477,6 +469,7 @@ void GunAddBullets(
 	const int flags, const int playerUID, const int uid,
 	const bool playSound)
 {
+	GameEvent e;
 	// Add bullets
 	if (g->Bullet)
 	{
@@ -491,7 +484,7 @@ void GunAddBullets(
 				((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
 			const double finalAngle =
 				radians + spreadStartAngle + i * g->Spread.Width + recoil;
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+			e = GameEventNew(GAME_EVENT_ADD_BULLET);
 			strcpy(e.u.AddBullet.BulletClass, g->Bullet->Name);
 			e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
 			e.u.AddBullet.MuzzleHeight = z;
@@ -503,27 +496,24 @@ void GunAddBullets(
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
-	// Add muzzle flash
-	if (GunHasMuzzle(g))
+
+	e = GameEventNew(GAME_EVENT_GUN_FIRE);
+	e.u.GunFire.PlayerUID = playerUID;
+	strcpy(e.u.GunFire.Gun, g->name);
+	e.u.GunFire.MuzzleFullPos = Vec2i2Net(fullPos);
+	e.u.GunFire.Z = z;
+	e.u.GunFire.Angle = (float)radians;
+	e.u.GunFire.Sound = playSound;
+	GameEventsEnqueue(&gGameEvents, e);
+
+	// Brass shells
+	// TODO: eventify
+	// If we have a reload lead, defer the creation of shells until then
+	if (g->Brass && g->ReloadLead == 0)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-		e.u.AddParticle.Class = g->MuzzleFlash;
-		e.u.AddParticle.FullPos = fullPos;
-		e.u.AddParticle.Z = z;
-		e.u.AddParticle.Angle = radians;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-	// Sound
-	if (playSound && g->Sound)
-	{
-		SoundPlayAt(&gSoundDevice, g->Sound, Vec2iFull2Real(fullPos));
-	}
-	// Screen shake
-	if (g->ShakeAmount > 0)
-	{
-		GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-		shake.u.ShakeAmount = g->ShakeAmount;
-		GameEventsEnqueue(&gGameEvents, shake);
+		const direction_e d = RadiansToDirection(radians);
+		const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
+		AddBrass(g, d, Vec2iMinus(fullPos, muzzleOffset));
 	}
 }
 
@@ -595,9 +585,9 @@ void WeaponSetState(Weapon *w, gunstate_e state)
 	}
 }
 
-static bool GunHasMuzzle(const GunDescription *desc)
+bool GunHasMuzzle(const GunDescription *g)
 {
-	return desc->pic == GUNPIC_BLASTER;
+	return g->pic == GUNPIC_BLASTER;
 }
 bool IsHighDPS(const GunDescription *g)
 {

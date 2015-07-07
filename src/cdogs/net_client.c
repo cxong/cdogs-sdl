@@ -176,6 +176,9 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			case GAME_EVENT_ACTOR_SWITCH_GUN: actorUID = e.u.ActorSwitchGun.UID; break;
 			case GAME_EVENT_ACTOR_PICKUP_ALL: actorUID = e.u.ActorPickupAll.UID; break;
 			case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
+			case GAME_EVENT_GUN_FIRE:
+				actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
+				break;
 			case GAME_EVENT_ADD_BULLET:
 				actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
 				break;
