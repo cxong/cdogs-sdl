@@ -239,9 +239,9 @@ static void HandleGameEvent(
 			// Screen shake
 			if (g->ShakeAmount > 0)
 			{
-				GameEvent shake = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-				shake.u.ShakeAmount = g->ShakeAmount;
-				GameEventsEnqueue(&gGameEvents, shake);
+				GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
+				s.u.ShakeAmount = g->ShakeAmount;
+				GameEventsEnqueue(&gGameEvents, s);
 			}
 		}
 		break;
