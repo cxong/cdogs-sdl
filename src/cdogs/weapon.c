@@ -63,8 +63,6 @@
 
 GunClasses gGunDescriptions;
 
-#define RELOAD_DISTANCE_PLUS 300
-
 const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT] = {
 	{
 	 {{-2, -10, 86}, {-3, -8, 78}, {-3, -7, 78}},
@@ -371,10 +369,9 @@ int GunDescriptionId(const GunDescription *g)
 
 void WeaponSetState(Weapon *w, gunstate_e state);
 
-static void AddBrass(
-	const GunDescription *g, const direction_e d, const Vec2i pos);
 void WeaponUpdate(
-	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d)
+	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d,
+	const int playerUID)
 {
 	// Reload sound
 	if (ConfigGetBool(&gConfig, "Sound.Reloads") &&
@@ -383,16 +380,12 @@ void WeaponUpdate(
 		w->lock > 0 &&
 		w->Gun->ReloadSound != NULL)
 	{
-		SoundPlayAtPlusDistance(
-			&gSoundDevice,
-			w->Gun->ReloadSound,
-			Vec2iFull2Real(fullPos),
-			RELOAD_DISTANCE_PLUS);
-		// Brass shells
-		if (w->Gun->Brass)
-		{
-			AddBrass(w->Gun, d, fullPos);
-		}
+		GameEvent e = GameEventNew(GAME_EVENT_GUN_RELOAD);
+		e.u.GunReload.PlayerUID = playerUID;
+		strcpy(e.u.GunReload.Gun, w->Gun->name);
+		e.u.GunReload.FullPos = Vec2i2Net(fullPos);
+		e.u.GunReload.Direction = (int)d;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 	w->lock -= ticks;
 	if (w->lock < 0)
@@ -505,19 +498,9 @@ void GunAddBullets(
 	e.u.GunFire.Angle = (float)radians;
 	e.u.GunFire.Sound = playSound;
 	GameEventsEnqueue(&gGameEvents, e);
-
-	// Brass shells
-	// TODO: eventify
-	// If we have a reload lead, defer the creation of shells until then
-	if (g->Brass && g->ReloadLead == 0)
-	{
-		const direction_e d = RadiansToDirection(radians);
-		const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
-		AddBrass(g, d, Vec2iMinus(fullPos, muzzleOffset));
-	}
 }
 
-static void AddBrass(
+void GunAddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos)
 {
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");

@@ -158,7 +158,8 @@ GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
 void WeaponUpdate(
-	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d);
+	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d,
+	const int playerUID);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
@@ -168,6 +169,8 @@ void GunAddBullets(
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound);
+void GunAddBrass(
+	const GunDescription *g, const direction_e d, const Vec2i pos);
 void WeaponHoldFire(Weapon *w);
 
 

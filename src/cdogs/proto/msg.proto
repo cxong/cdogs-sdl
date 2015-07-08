@@ -151,6 +151,13 @@ message NRemovePickup {
 	required int32 SpawnerUID = 2 [default=-1];
 }
 
+message NGunReload {
+	required int32 PlayerUID = 1 [default=-1];
+	required string Gun = 2;
+	required NVec2i FullPos = 3;
+	required int32 Direction = 4;
+}
+
 message NGunFire {
 	required int32 PlayerUID = 1 [default=-1];
 	required string Gun = 2;

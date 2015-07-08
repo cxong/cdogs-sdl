@@ -35,6 +35,7 @@
 #include "pickup.h"
 #include "triggers.h"
 
+#define RELOAD_DISTANCE_PLUS 300
 
 static void HandleGameEvent(
 	const GameEvent e,
@@ -218,12 +219,13 @@ static void HandleGameEvent(
 	case GAME_EVENT_GUN_FIRE:
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
+			const Vec2i fullPos = Net2Vec2i(e.u.GunFire.MuzzleFullPos);
 			// Add muzzle flash
 			if (GunHasMuzzle(g))
 			{
 				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				ap.u.AddParticle.Class = g->MuzzleFlash;
-				ap.u.AddParticle.FullPos = Net2Vec2i(e.u.GunFire.MuzzleFullPos);
+				ap.u.AddParticle.FullPos = fullPos;
 				ap.u.AddParticle.Z = e.u.GunFire.Z;
 				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
 				GameEventsEnqueue(&gGameEvents, ap);
@@ -231,10 +233,7 @@ static void HandleGameEvent(
 			// Sound
 			if (e.u.GunFire.Sound && g->Sound)
 			{
-				SoundPlayAt(
-					&gSoundDevice,
-					g->Sound,
-					Vec2iFull2Real(Net2Vec2i(e.u.GunFire.MuzzleFullPos)));
+				SoundPlayAt(&gSoundDevice, g->Sound, Vec2iFull2Real(fullPos));
 			}
 			// Screen shake
 			if (g->ShakeAmount > 0)
@@ -242,6 +241,30 @@ static void HandleGameEvent(
 				GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
 				s.u.ShakeAmount = g->ShakeAmount;
 				GameEventsEnqueue(&gGameEvents, s);
+			}
+			// Brass shells
+			// If we have a reload lead, defer the creation of shells until then
+			if (g->Brass && g->ReloadLead == 0)
+			{
+				const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
+				const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
+				GunAddBrass(g, d, Vec2iMinus(fullPos, muzzleOffset));
+			}
+		}
+		break;
+	case GAME_EVENT_GUN_RELOAD:
+		{
+			const GunDescription *g = StrGunDescription(e.u.GunReload.Gun);
+			const Vec2i fullPos = Net2Vec2i(e.u.GunReload.FullPos);
+			SoundPlayAtPlusDistance(
+				&gSoundDevice,
+				g->ReloadSound,
+				Vec2iFull2Real(fullPos),
+				RELOAD_DISTANCE_PLUS);
+			// Brass shells
+			if (g->Brass)
+			{
+				GunAddBrass(g, (direction_e)e.u.GunReload.Direction, fullPos);
 			}
 		}
 		break;

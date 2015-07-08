@@ -322,7 +322,7 @@ static void CheckPickups(TActor *actor);
 void UpdateActorState(TActor * actor, int ticks)
 {
 	Weapon *gun = ActorGetGun(actor);
-	WeaponUpdate(gun, ticks, actor->Pos, actor->direction);
+	WeaponUpdate(gun, ticks, actor->Pos, actor->direction, actor->PlayerUID);
 
 	// If we're ready to pick up, always check the pickups
 	if (actor->PickupAll && !gCampaign.IsClient)
