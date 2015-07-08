@@ -268,6 +268,13 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_GUN_STATE:
+		{
+			const TActor *a = CArrayGet(&gActors, e.u.GunState.ActorUID);
+			if (!a->isInUse) break;
+			WeaponSetState(ActorGetGun(a), (gunstate_e)e.u.GunState.State);
+		}
+		break;
 	case GAME_EVENT_ADD_BULLET:
 		BulletAdd(e.u.AddBullet);
 		break;
@@ -282,10 +289,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_ACTOR_IMPULSE:
 		{
 			TActor *a = CArrayGet(&gActors, e.u.ActorImpulse.Id);
-			if (!a->isInUse)
-			{
-				break;
-			}
+			if (!a->isInUse) break;
 			a->Vel = Vec2iAdd(a->Vel, e.u.ActorImpulse.Vel);
 		}
 		break;

@@ -322,7 +322,8 @@ static void CheckPickups(TActor *actor);
 void UpdateActorState(TActor * actor, int ticks)
 {
 	Weapon *gun = ActorGetGun(actor);
-	WeaponUpdate(gun, ticks, actor->Pos, actor->direction, actor->PlayerUID);
+	WeaponUpdate(
+		gun, ticks, actor->Pos, actor->direction, actor->PlayerUID);
 
 	// If we're ready to pick up, always check the pickups
 	if (actor->PickupAll && !gCampaign.IsClient)
@@ -841,9 +842,12 @@ int ActorTryShoot(TActor *actor, int cmd)
 	{
 		Shoot(actor);
 	}
-	else
+	else if (ActorGetGun(actor)->state != GUNSTATE_READY)
 	{
-		WeaponHoldFire(ActorGetGun(actor));
+		GameEvent e = GameEventNew(GAME_EVENT_GUN_STATE);
+		e.u.GunState.ActorUID = actor->uid;
+		e.u.GunState.State = GUNSTATE_READY;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 	return willShoot;
 }

@@ -167,6 +167,11 @@ message NGunFire {
 	required bool Sound = 6;
 }
 
+message NGunState {
+	required uint32 ActorUID = 1;
+	required int32 State = 2;
+}
+
 message NAddBullet {
 	required string BulletClass = 1;
 	required NVec2i MuzzlePos = 2;

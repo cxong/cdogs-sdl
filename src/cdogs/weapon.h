@@ -164,6 +164,7 @@ bool WeaponIsLocked(const Weapon *w);
 void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
 	const int flags, const int playerUID, const int uid);
+void WeaponSetState(Weapon *w, const gunstate_e state);
 void GunAddBullets(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
@@ -171,7 +172,6 @@ void GunAddBullets(
 	const bool playSound);
 void GunAddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos);
-void WeaponHoldFire(Weapon *w);
 
 
 int GunGetRange(const GunDescription *g);

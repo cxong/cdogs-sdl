@@ -84,6 +84,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_PARTICLE_REMOVE, false, false, true, true, NULL },
 	{ GAME_EVENT_GUN_FIRE, true, true, true, true, NGunFire_fields },
 	{ GAME_EVENT_GUN_RELOAD, true, true, true, true, NGunReload_fields },
+	{ GAME_EVENT_GUN_STATE, true, true, true, true, NGunState_fields },
 	{ GAME_EVENT_ADD_BULLET, true, true, true, true, NAddBullet_fields },
 	{ GAME_EVENT_ADD_PARTICLE, false, false, true, true, NULL },
 	{ GAME_EVENT_HIT_CHARACTER, false, false, true, true, NULL },
@@ -138,6 +139,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_GUN_RELOAD:
 			actorIsLocal = PlayerIsLocal(e.u.GunReload.PlayerUID);
 			break;
+		case GAME_EVENT_GUN_STATE: actorUID = e.u.GunState.ActorUID; break;
 		case GAME_EVENT_ADD_BULLET:
 			actorIsLocal = PlayerIsLocal(e.u.AddBullet.PlayerUID);
 			break;

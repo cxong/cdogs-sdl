@@ -367,8 +367,6 @@ int GunDescriptionId(const GunDescription *g)
 	return -1;
 }
 
-void WeaponSetState(Weapon *w, gunstate_e state);
-
 void WeaponUpdate(
 	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d,
 	const int playerUID)
@@ -405,20 +403,9 @@ void WeaponUpdate(
 	if (w->stateCounter >= 0)
 	{
 		w->stateCounter = MAX(0, w->stateCounter - ticks);
-		if (w->stateCounter == 0)
+		if (w->stateCounter == 0 && w->state == GUNSTATE_FIRING)
 		{
-			switch (w->state)
-			{
-			case GUNSTATE_FIRING:
-				WeaponSetState(w, GUNSTATE_RECOIL);
-				break;
-			case GUNSTATE_RECOIL:
-				WeaponSetState(w, GUNSTATE_READY);
-				break;
-			default:
-				assert(0);
-				break;
-			}
+			WeaponSetState(w, GUNSTATE_RECOIL);
 		}
 	}
 }
@@ -434,7 +421,10 @@ void WeaponFire(
 {
 	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
 	{
-		WeaponSetState(w, GUNSTATE_FIRING);
+		GameEvent e = GameEventNew(GAME_EVENT_GUN_STATE);
+		e.u.GunState.ActorUID = uid;
+		e.u.GunState.State = GUNSTATE_FIRING;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 	if (!w->Gun->CanShoot)
 	{
@@ -544,12 +534,7 @@ Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
 	return Vec2iReal2Full(position);
 }
 
-void WeaponHoldFire(Weapon *w)
-{
-	WeaponSetState(w, GUNSTATE_READY);
-}
-
-void WeaponSetState(Weapon *w, gunstate_e state)
+void WeaponSetState(Weapon *w, const gunstate_e state)
 {
 	w->state = state;
 	switch (state)
