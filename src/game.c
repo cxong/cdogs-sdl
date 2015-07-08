@@ -113,7 +113,6 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
-	LOSCalcFrom(&gMap, Vec2iToTile(center), false);
 	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
 	DrawBufferFix(b);
 	DrawBufferDraw(b, offset, NULL);
@@ -209,6 +208,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				if (IsPVP(gCampaign.Entry.Mode))
 				{
 					LOSReset(&gMap);
+					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 				SoundSetEarsSide(idx == 0, center);
@@ -263,6 +263,7 @@ Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
 				if (IsPVP(gCampaign.Entry.Mode))
 				{
 					LOSReset(&gMap);
+					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
 				}
 				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
 
@@ -550,13 +551,10 @@ static GameLoopResult RunGameUpdate(void *data)
 		TActor *player = ActorGetByUID(p->ActorUID);
 		if (player->dead > DEATH_MAX) continue;
 		// Calculate LOS for all players alive or dying
-		if (!gCampaign.IsClient)
-		{
-			LOSCalcFrom(
-				&gMap,
-				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
-				true);
-		}
+		LOSCalcFrom(
+			&gMap,
+			Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
+			!gCampaign.IsClient);
 
 		if (player->dead) continue;
 
