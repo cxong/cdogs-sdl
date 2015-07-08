@@ -323,6 +323,14 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		amo.Health = o->Health;
 		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_MAP_OBJECT, &amo);
 	}
+
+	// If mission complete already, send message
+	if (CanCompleteMission(&gMission))
+	{
+		NMissionComplete mc = NMissionComplete_init_default;
+		mc.ShowMsg = MissionHasRequiredObjectives(&gMission);
+		NetServerSendMsg(n, peerId, GAME_EVENT_MISSION_COMPLETE, &mc);
+	}
 }
 
 void NetServerSendMsg(

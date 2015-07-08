@@ -495,7 +495,6 @@ void MissionEnd(void)
 	gMission.HasStarted = false;
 }
 
-static bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
 	if (!gCampaign.IsClient && CanCompleteMission(options))
@@ -505,7 +504,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
 }
-static bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
+bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
 {
 	CA_FOREACH(const MissionObjective, o, mo->missionData->Objectives)
 		if (o->Required > 0) return true;

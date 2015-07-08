@@ -245,6 +245,7 @@ void UpdateMissionObjective(
 	const int flags, const ObjectiveType type);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool IsMissionComplete(const struct MissionOptions *options);
+bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 
 // Count the number of keys in the flags
 int KeycardCount(int flags);
