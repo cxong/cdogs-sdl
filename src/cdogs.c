@@ -183,9 +183,7 @@ static void PrintHelp(void)
 int main(int argc, char *argv[])
 {
 	int wait = 0;
-	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
-	int isSoundEnabled = 1;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
 	memset(&campaigns, 0, sizeof campaigns);
@@ -256,9 +254,9 @@ int main(int argc, char *argv[])
 				forceResolution = 1;
 				break;
 			case 'n':
-				printf("Sound disabled!\n");
-				snd_flag = 0;
-				isSoundEnabled = 0;
+				LOG(LM_MAIN, LL_INFO, "Sound to 0 volume");
+				ConfigGet(&gConfig, "Sound.SoundVolume")->u.Int.Value = 0;
+				ConfigGet(&gConfig, "Sound.MusicVolume")->u.Int.Value = 0;
 				break;
 			case 'j':
 				debug(D_NORMAL, "nojoystick\n");
@@ -323,7 +321,7 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | snd_flag | SDL_INIT_VIDEO | js_flag) != 0)
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | js_flag) != 0)
 	{
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
 		err = EXIT_FAILURE;
@@ -342,14 +340,11 @@ int main(int argc, char *argv[])
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
-	if (isSoundEnabled)
+	GetDataFilePath(buf, "sounds");
+	SoundInitialize(&gSoundDevice, buf);
+	if (!gSoundDevice.isInitialised)
 	{
-		GetDataFilePath(buf, "sounds");
-		SoundInitialize(&gSoundDevice, buf);
-		if (!gSoundDevice.isInitialised)
-		{
-			printf("Sound initialization failed!\n");
-		}
+		printf("Sound initialization failed!\n");
 	}
 
 	LoadHighScores();
@@ -472,12 +467,8 @@ bail:
 	UnloadCredits(&creditsDisplayer);
 	UnloadAllCampaigns(&campaigns);
 	CampaignTerminate(&gCampaign);
-
-	if (isSoundEnabled)
-	{
-		debug(D_NORMAL, ">> Shutting down sound...\n");
-		SoundTerminate(&gSoundDevice, 1);
-	}
+	debug(D_NORMAL, ">> Shutting down sound...\n");
+	SoundTerminate(&gSoundDevice, true);
 
 	debug(D_NORMAL, "SDL_Quit()\n");
 	SDL_Quit();
