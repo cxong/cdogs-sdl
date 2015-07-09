@@ -164,12 +164,6 @@ static int AnimationGetFrame(const Animation *a)
 	return a->frames[a->frame];
 }
 
-static PlayerData *GetPlayerData(TActor *a)
-{
-	if (a->PlayerUID >= 0) return PlayerDataGetByUID(a->PlayerUID);
-	return NULL;
-}
-
 static ActorPics GetCharacterPics(int id)
 {
 	ActorPics pics;
@@ -999,7 +993,7 @@ void SlideActor(TActor *actor, int cmd)
 }
 
 static void ActorUpdatePosition(TActor *actor, int ticks);
-static void ActorDie(TActor *actor, const int idx);
+static void ActorDie(TActor *actor);
 void UpdateAllActors(int ticks)
 {
 	for (int i = 0; i < (int)gActors.size; i++)
@@ -1013,7 +1007,10 @@ void UpdateAllActors(int ticks)
 		UpdateActorState(actor, ticks);
 		if (actor->dead > DEATH_MAX)
 		{
-			ActorDie(actor, i);
+			if (!gCampaign.IsClient)
+			{
+				ActorDie(actor);
+			}
 			continue;
 		}
 		// Find actors that are on the same team and colliding,
@@ -1128,26 +1125,8 @@ static bool CheckManualPickupFunc(TTileItem *ti, void *data)
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
-static void ActorDie(TActor *actor, const int idx)
+static void ActorDie(TActor *actor)
 {
-	// Check if the player has lives to revive
-	bool respawn = false;
-	Vec2i defaultSpawnPosition = Vec2iZero();
-	PlayerData *p = GetPlayerData(actor);
-	if (p != NULL)
-	{
-		p->Lives--;
-		CASSERT(p->Lives >= 0, "Player has died too many times");
-		if (p->Lives > 0)
-		{
-			// Find the closest player alive; try to spawn next to that position
-			// if no other suitable position exists
-			const TActor *closestActor = AIGetClosestPlayer(actor->Pos);
-			if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
-			respawn = true;
-		}
-	}
-
 	// Add an ammo pickup of the actor's gun
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
@@ -1161,23 +1140,19 @@ static void ActorDie(TActor *actor, const int idx)
 	}
 
 	// Add a blood pool
-	NAddMapObject amo = NAddMapObject_init_default;
-	amo.UID = ObjsGetNextUID();
-	strcpy(amo.MapObjectClass, RandomBloodMapObject(&gMapObjects)->Name);
-	amo.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
-	amo.TileItemFlags = TILEITEM_IS_WRECK;
-	amo.Health = 0;
-	ObjAdd(amo);
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_MAP_OBJECT);
+	e.u.AddMapObject.UID = ObjsGetNextUID();
+	strcpy(
+		e.u.AddMapObject.MapObjectClass,
+		RandomBloodMapObject(&gMapObjects)->Name);
+	e.u.AddMapObject.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
+	e.u.AddMapObject.TileItemFlags = TILEITEM_IS_WRECK;
+	e.u.AddMapObject.Health = 0;
+	GameEventsEnqueue(&gGameEvents, e);
 
-	ActorDestroy(idx);
-
-	if (respawn)
-	{
-		// Force pump events so we spawn immediately
-		// This is to prevent screen redraw for one frame with one less
-		// player
-		PlacePlayer(&gMap, p, defaultSpawnPosition, true);
-	}
+	e = GameEventNew(GAME_EVENT_ACTOR_DIE);
+	e.u.ActorDie.UID = actor->uid;
+	GameEventsEnqueue(&gGameEvents, e);
 }
 static bool IsUnarmedBot(const TActor *actor);
 static void ActorAddAmmoPickup(const TActor *actor)
@@ -1263,11 +1238,9 @@ void ActorsTerminate(void)
 {
 	for (int i = 0; i < (int)gActors.size; i++)
 	{
-		TActor *actor = CArrayGet(&gActors, i);
-		if (actor->isInUse)
-		{
-			ActorDestroy(i);
-		}
+		TActor *a = CArrayGet(&gActors, i);
+		if (!a->isInUse) continue;
+		ActorDestroy(a);
 	}
 	CArrayTerminate(&gActors);
 }
@@ -1376,18 +1349,17 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	return actor;
 }
-void ActorDestroy(int id)
+void ActorDestroy(TActor *a)
 {
-	TActor *actor = CArrayGet(&gActors, id);
-	CASSERT(actor->isInUse, "Destroying in-use actor");
-	CArrayTerminate(&actor->guns);
-	CArrayTerminate(&actor->ammo);
-	MapRemoveTileItem(&gMap, &actor->tileItem);
+	CASSERT(a->isInUse, "Destroying in-use actor");
+	CArrayTerminate(&a->guns);
+	CArrayTerminate(&a->ammo);
+	MapRemoveTileItem(&gMap, &a->tileItem);
 	// Set PlayerData's ActorUID to -1 to signify actor destruction
-	PlayerData *p = GetPlayerData(actor);
+	PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
 	if (p != NULL) p->ActorUID = -1;
-	AIContextDestroy(actor->aiContext);
-	actor->isInUse = false;
+	AIContextDestroy(a->aiContext);
+	a->isInUse = false;
 }
 
 unsigned char BestMatch(const TPalette palette, int r, int g, int b)

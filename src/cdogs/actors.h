@@ -219,7 +219,7 @@ void ActorsTerminate(void);
 int ActorsGetNextUID(void);
 int ActorsGetFreeIndex(void);
 TActor *ActorAdd(NActorAdd aa);
-void ActorDestroy(int id);
+void ActorDestroy(TActor *a);
 
 TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);

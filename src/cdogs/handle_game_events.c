@@ -27,6 +27,8 @@
 */
 #include "handle_game_events.h"
 
+#include "actor_placement.h"
+#include "ai_utils.h"
 #include "damage.h"
 #include "game_events.h"
 #include "net_server.h"
@@ -195,6 +197,31 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_ACTOR_DIE:
+		{
+			TActor *a = ActorGetByUID(e.u.ActorDie.UID);
+			if (!a->isInUse) break;
+
+			// Check if the player has lives to revive
+			Vec2i defaultSpawnPosition = Vec2iZero();
+			PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+			if (p != NULL)
+			{
+				p->Lives--;
+				CASSERT(p->Lives >= 0, "Player has died too many times");
+				if (p->Lives > 0 && !gCampaign.IsClient)
+				{
+					// Find the closest player alive; try to spawn next to that position
+					// if no other suitable position exists
+					const TActor *closestActor = AIGetClosestPlayer(a->Pos);
+					if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
+					PlacePlayer(&gMap, p, defaultSpawnPosition, false);
+				}
+			}
+
+			ActorDestroy(a);
+		}
+		break;
 	case GAME_EVENT_ADD_PICKUP:
 		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound
@@ -270,7 +297,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_GUN_STATE:
 		{
-			const TActor *a = CArrayGet(&gActors, e.u.GunState.ActorUID);
+			const TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
 			if (!a->isInUse) break;
 			WeaponSetState(ActorGetGun(a), (gunstate_e)e.u.GunState.State);
 		}

@@ -137,6 +137,10 @@ message NActorUseAmmo {
 	required uint32 Amount = 4;
 }
 
+message NActorDie {
+	required uint32 UID = 1;
+}
+
 message NAddPickup {
 	required uint32 UID = 1;
 	required string PickupClass = 2;
