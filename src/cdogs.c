@@ -289,8 +289,9 @@ int main(int argc, char *argv[])
 						*comma = '\0';
 					}
 					// Set logging level
-					LogModuleSetLevel(StrLogModule(optarg), StrLogLevel(comma + 1));
-					printf("Logging %s at %s\n", optarg, comma + 1);
+					const LogLevel ll = StrLogLevel(comma + 1);
+					LogModuleSetLevel(StrLogModule(optarg), ll);
+					printf("Logging %s at %s\n", optarg, LogLevelName(ll));
 				}
 				break;
 			case 'x':
