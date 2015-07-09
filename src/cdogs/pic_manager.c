@@ -376,7 +376,7 @@ static void AddMaskBasePic(
 	const char *styleName, const char *typeName, const int picIdx)
 {
 	char buf[256];
-	sprintf(buf, "%s_%s_%s", name, styleName, typeName);
+	sprintf(buf, "%s/%s_%s", name, styleName, typeName);
 	const PicPaletted *old = PicManagerGetOldPic(pm, picIdx);
 	Pic p = PicCopy(PicManagerGetFromOld(pm, picIdx));
 	// Detect alt pixels and modify their channel
@@ -622,7 +622,7 @@ static void GetMaskedStyleName(
 		CASSERT(false, "Invalid masked style name");
 		return;
 	}
-	sprintf(buf, "%s_%s_%s", name, styleName, typeName);
+	sprintf(buf, "%s/%s_%s", name, styleName, typeName);
 }
 
 static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)
