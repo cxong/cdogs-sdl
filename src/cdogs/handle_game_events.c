@@ -203,7 +203,6 @@ static void HandleGameEvent(
 			if (!a->isInUse) break;
 
 			// Check if the player has lives to revive
-			Vec2i defaultSpawnPosition = Vec2iZero();
 			PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
 			if (p != NULL)
 			{
@@ -213,6 +212,7 @@ static void HandleGameEvent(
 				{
 					// Find the closest player alive; try to spawn next to that position
 					// if no other suitable position exists
+					Vec2i defaultSpawnPosition = Vec2iZero();
 					const TActor *closestActor = AIGetClosestPlayer(a->Pos);
 					if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
 					PlacePlayer(&gMap, p, defaultSpawnPosition, false);

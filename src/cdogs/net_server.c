@@ -33,6 +33,7 @@
 #include "proto/nanopb/pb_encode.h"
 
 #include "actor_placement.h"
+#include "ai_utils.h"
 #include "campaign_entry.h"
 #include "events.h"
 #include "game_events.h"
@@ -209,6 +210,12 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			if (gMission.HasStarted)
 			{
 				NetServerSendGameStartMessages(n, peerId);
+
+				// Find a current player to spawn next to
+				Vec2i defaultSpawnPosition = Vec2iZero();
+				const TActor *closestActor = AIGetClosestPlayer(Vec2iZero());
+				if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
+
 				// Add the client's actors
 				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 				{
@@ -216,7 +223,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 					const PlayerData *pData = PlayerDataGetByUID(cid);
 					if (pData != NULL)
 					{
-						PlacePlayer(&gMap, pData, Vec2iZero(), true);
+						defaultSpawnPosition = PlacePlayer(
+							&gMap, pData, defaultSpawnPosition, true);
 					}
 				}
 			}
