@@ -83,6 +83,9 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->Char.maxHealth = pd.MaxHealth;
 	p->lastMission = pd.LastMission;
 
+	// Ready players as well
+	p->Ready = true;
+
 	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d)",
 		p->UID, p->Char.maxHealth);
 }
@@ -204,7 +207,7 @@ NPlayerData PlayerDataMissionReset(const PlayerData *p)
 
 void PlayerDataTerminate(CArray *p)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
+	for (int i = 0; i < (int)p->size; i++)
 	{
 		PlayerData *pd = CArrayGet(p, i);
 		CFREE(pd->Char.bot);

@@ -185,28 +185,29 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		switch (gee.Type)
 		{
 		case GAME_EVENT_CLIENT_READY:
+			// Flush game events to make sure we add the players
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+			// Reset player data
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
+			for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+			{
+				const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
+				const PlayerData *pData = PlayerDataGetByUID(cid);
+				if (pData != NULL)
+				{
+					const int idx = (int)e.u.AddPlayers.PlayerDatas_count;
+					e.u.AddPlayers.PlayerDatas[idx] =
+						PlayerDataMissionReset(pData);
+					e.u.AddPlayers.PlayerDatas_count++;
+				}
+			}
+			GameEventsEnqueue(&gGameEvents, e);
+			// Flush game events to make sure we reset player data
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+
 			// Send game start messages if we've started already
 			if (gMission.HasStarted)
 			{
-				// Flush game events to make sure we add the players
-				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-				// Reset player data
-				GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
-				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-				{
-					const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
-					const PlayerData *pData = PlayerDataGetByUID(cid);
-					if (pData != NULL)
-					{
-						const int idx = (int)e.u.AddPlayers.PlayerDatas_count;
-						e.u.AddPlayers.PlayerDatas[idx] =
-							PlayerDataMissionReset(pData);
-						e.u.AddPlayers.PlayerDatas_count++;
-					}
-				}
-				GameEventsEnqueue(&gGameEvents, e);
-				// Flush game events to make sure we reset player data
-				HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 				NetServerSendGameStartMessages(n, peerId);
 				// Add the client's actors
 				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)

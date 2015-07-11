@@ -34,6 +34,8 @@ typedef struct
 {
 	int ActorUID;	// -1 if dead
 	bool IsLocal;	// whether this is a local-machine player
+	// Whether this player is ready to start, for remote players
+	bool Ready;
 	Character Char;
 	char name[20];
 	int weaponCount;

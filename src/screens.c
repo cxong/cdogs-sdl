@@ -116,6 +116,7 @@ static void AddAndPlacePlayers(void)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->Ready) continue;
 		firstPos = PlacePlayer(&gMap, p, firstPos, true);
 	}
 }
@@ -144,6 +145,13 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	bool gameOver = true;
 	do
 	{
+		// Unready all the players
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			p->Ready = false;
+		}
+
 		CampaignAndMissionSetup(1, co, &gMission);
 
 		if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
@@ -201,6 +209,9 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
 				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				// Only reset for local players; for remote ones wait for the
+				// client ready message
+				if (!p->IsLocal) continue;
 				e.u.AddPlayers.PlayerDatas[i] = PlayerDataMissionReset(p);
 				e.u.AddPlayers.PlayerDatas_count++;
 			}
