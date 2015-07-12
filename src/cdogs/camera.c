@@ -345,6 +345,9 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 	bool drawCameraMode = false;
 	switch (camera->spectateMode)
 	{
+	case SPECTATE_NONE:
+		// do nothing
+		break;
 	case SPECTATE_FOLLOW:
 		{
 			const PlayerData *p = PlayerDataGetByUID(camera->FollowPlayerUID);
@@ -357,12 +360,13 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 		strcpy(cameraNameBuf, "Free-look Mode");
 		drawCameraMode = true;
 		break;
+	default:
+		CASSERT(false, "Unknown spectate mode");
+		break;
 	}
 	if (drawCameraMode)
 	{
 		// Draw the message centered at the bottom
-		const int w = gGraphicsDevice.cachedConfig.Res.x;
-		const int h = gGraphicsDevice.cachedConfig.Res.y;
 		FontStrMask(
 			cameraNameBuf,
 			Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
