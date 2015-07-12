@@ -33,8 +33,11 @@
 #include <cdogs/player.h>
 
 
+#define PAN_SPEED 4
+
 void CameraInit(Camera *camera)
 {
+	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
 		&camera->Buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	camera->lastPosition = Vec2iZero();
@@ -46,11 +49,57 @@ void CameraTerminate(Camera *camera)
 	DrawBufferTerminate(&camera->Buffer);
 }
 
-void CameraUpdate(Camera *camera, const int ticks)
+void CameraUpdate(Camera *camera, const int player1Cmd, const int ticks)
 {
 	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
+	// Control the camera
+	if (camera->spectateMode != SPECTATE_NONE)
+	{
+		// Arrows: pan camera
+		// CMD1/2: choose next player to follow
+		if (CMD_HAS_DIRECTION(player1Cmd))
+		{
+			camera->spectateMode = SPECTATE_FREE;
+			const int pan = PAN_SPEED * ticks;
+			if (player1Cmd & CMD_LEFT) camera->lastPosition.x -= pan;
+			else if (player1Cmd & CMD_RIGHT) camera->lastPosition.x += pan;
+			if (player1Cmd & CMD_UP) camera->lastPosition.y -= pan;
+			else if (player1Cmd & CMD_DOWN) camera->lastPosition.y += pan;
+		}
+		else if (AnyButton(player1Cmd))
+		{
+			camera->spectateMode = SPECTATE_FOLLOW;
+			// Find index of player
+			int playerIndex = -1;
+			for (int i = 0; i < (int)gPlayerDatas.size; i++)
+			{
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				if (p->UID == camera->FollowPlayerUID)
+				{
+					playerIndex = i;
+					break;
+				}
+			}
+			CASSERT(playerIndex >= 0, "Cannot find player");
+			// Get the next player by index that has an actor in the game
+			const int d = (player1Cmd & CMD_BUTTON1) ? 1 : -1;
+			for (int i = playerIndex + d; ; i += d)
+			{
+				i = CLAMP_OPPOSITE(i, 0, (int)gPlayerDatas.size - 1);
+				// Check if clamping made us hit the termination condition
+				if (i == playerIndex) break;
+				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				if (p->ActorUID >= 0)
+				{
+					// Follow this player
+					camera->FollowPlayerUID = p->UID;
+				}
+			}
+		}
+	}
 }
 
+void FollowPlayer(Vec2i *pos, const int playerUID);
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
 void CameraDraw(Camera *camera)
@@ -72,6 +121,53 @@ void CameraDraw(Camera *camera)
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (numLocalPlayersAlive == 0)
 	{
+		// Count the number of local players with lives left
+		// If there are none, then try to spectate if there are remote players
+		int firstRemotePlayerUID = -1;
+		bool hasLocalPlayerLives = false;
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->Lives > 0)
+			{
+				if (p->IsLocal)
+				{
+					hasLocalPlayerLives = true;
+					break;
+				}
+				else
+				{
+					firstRemotePlayerUID = p->UID;
+				}
+			}
+		}
+		if (!hasLocalPlayerLives)
+		{
+			if (camera->spectateMode == SPECTATE_NONE)
+			{
+				// Enter spectator mode
+				// If there are remote players, follow them
+				if (firstRemotePlayerUID != -1)
+				{
+					camera->spectateMode = SPECTATE_FOLLOW;
+					camera->FollowPlayerUID = firstRemotePlayerUID;
+				}
+				else
+				{
+					// Free-look mode
+					camera->spectateMode = SPECTATE_FREE;
+				}
+			}
+		}
+		else
+		{
+			// Don't spectate
+			camera->spectateMode = SPECTATE_NONE;
+		}
+		if (camera->spectateMode == SPECTATE_FOLLOW)
+		{
+			FollowPlayer(&camera->lastPosition, camera->FollowPlayerUID);
+		}
 		DoBuffer(
 			&camera->Buffer,
 			camera->lastPosition,
@@ -79,6 +175,8 @@ void CameraDraw(Camera *camera)
 	}
 	else
 	{
+		// Don't spectate
+		camera->spectateMode = SPECTATE_NONE;
 		const int numLocalHumanPlayersAlive =
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
 		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
@@ -233,6 +331,15 @@ void CameraDraw(Camera *camera)
 		}
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
+}
+// Try to follow a player
+void FollowPlayer(Vec2i *pos, const int playerUID)
+{
+	const PlayerData *p = PlayerDataGetByUID(playerUID);
+	if (p == NULL) return;
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a == NULL) return;
+	*pos = Vec2iFull2Real(a->Pos);
 }
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)

@@ -31,17 +31,27 @@
 
 #define CAMERA_SPLIT_PADDING 40
 
+typedef enum
+{
+	SPECTATE_NONE,
+	SPECTATE_FOLLOW,
+	SPECTATE_FREE
+} SpectateMode;
+
 typedef struct
 {
 	DrawBuffer Buffer;
 	Vec2i lastPosition;
 	ScreenShake shake;
+	SpectateMode spectateMode;
+	// UID of player to follow; only used if camera is in follow mode
+	int FollowPlayerUID;
 } Camera;
 
 void CameraInit(Camera *camera);
 void CameraTerminate(Camera *camera);
 
-void CameraUpdate(Camera *camera, const int ticks);
+void CameraUpdate(Camera *camera, const int player1Cmd, const int ticks);
 void CameraDraw(Camera *camera);
 
 bool CameraIsSingleScreen(void);

@@ -439,7 +439,7 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	rData->m->time += ticksPerFrame;
 
-	CameraUpdate(&rData->Camera, ticksPerFrame);
+	CameraUpdate(&rData->Camera, rData->cmds[0], ticksPerFrame);
 
 	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
 
