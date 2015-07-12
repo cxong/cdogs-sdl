@@ -62,7 +62,6 @@
 #include <cdogs/ammo.h>
 #include <cdogs/automap.h>
 #include <cdogs/config.h>
-#include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
@@ -78,12 +77,10 @@
 #include <cdogs/pic_manager.h>
 #include <cdogs/pics.h>
 #include <cdogs/powerup.h>
-#include <cdogs/screen_shake.h>
 #include <cdogs/triggers.h>
 
-#include <cdogs/drawtools.h> /* for Draw_Line */
+#include "camera.h"
 
-#define SPLIT_PADDING 40
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
@@ -110,206 +107,9 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 }
 
 
-static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
-{
-	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
-	DrawBufferFix(b);
-	DrawBufferDraw(b, offset, NULL);
-}
-
-static bool IsSingleScreen(
-	const GraphicsConfig *config, const SplitscreenStyle splitscreenStyle)
-{
-	if (splitscreenStyle == SPLITSCREEN_ALWAYS) return false;
-	// Always do split screen for PVP
-	if (IsPVP(gCampaign.Entry.Mode)) return false;
-	Vec2i min;
-	Vec2i max;
-	PlayersGetBoundingRectangle(&min, &max);
-	return
-		max.x - min.x < config->Res.x - SPLIT_PADDING &&
-		max.y - min.y < config->Res.y - SPLIT_PADDING;
-}
-
-Vec2i DrawScreen(DrawBuffer *b, Vec2i lastPosition, ScreenShake shake)
-{
-	Vec2i centerOffset = Vec2iZero();
-	const int numLocalPlayersAlive =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	for (int i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
-	{
-		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
-	}
-
-	Vec2i noise = ScreenShakeGetDelta(shake);
-
-	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (numLocalPlayersAlive == 0)
-	{
-		DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
-	}
-	else
-	{
-		const int numLocalHumanPlayersAlive =
-			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
-		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
-		{
-			const TActor *p = ActorGetByUID(
-				(numLocalHumanPlayersAlive == 1 ?
-				GetFirstPlayer(true, true, true) :
-				GetFirstPlayer(true, false, true))->ActorUID);
-			const Vec2i center = Vec2iNew(p->tileItem.x, p->tileItem.y);
-			DoBuffer(b, center, X_TILES, noise, centerOffset);
-			SoundSetEars(center);
-			lastPosition = center;
-		}
-		else if (IsSingleScreen(
-			&gGraphicsDevice.cachedConfig,
-			ConfigGetEnum(&gConfig, "Interface.Splitscreen")))
-		{
-			// One screen
-			lastPosition = PlayersGetMidpoint();
-			DoBuffer(b, lastPosition, X_TILES, noise, centerOffset);
-		}
-		else if (numLocalPlayers == 2)
-		{
-			CASSERT(
-				numLocalPlayersAlive == 2,
-				"Unexpected number of local players");
-			// side-by-side split
-			int idx = 0;
-			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!p->IsLocal)
-				{
-					idx--;
-					continue;
-				}
-				const TActor *player = ActorGetByUID(p->ActorUID);
-				const Vec2i center = Vec2iNew(
-					player->tileItem.x, player->tileItem.y);
-				Vec2i centerOffsetPlayer = centerOffset;
-				int clipLeft = (idx & 1) ? w / 2 : 0;
-				int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
-				GraphicsSetBlitClip(
-					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
-				if (idx == 1)
-				{
-					centerOffsetPlayer.x += w / 2;
-				}
-
-				// Redo LOS if PVP, so that each split screen has its own LOS
-				if (IsPVP(gCampaign.Entry.Mode))
-				{
-					LOSReset(&gMap);
-					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
-				}
-				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
-				SoundSetEarsSide(idx == 0, center);
-				lastPosition = center;
-			}
-			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
-			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
-		}
-		else if (numLocalPlayers >= 3 && numLocalPlayers <= 4)
-		{
-			// 4 player split screen
-			int idx = 0;
-			bool isLocalPlayerAlive[4];
-			memset(isLocalPlayerAlive, 0, sizeof isLocalPlayerAlive);
-			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!p->IsLocal)
-				{
-					idx--;
-					continue;
-				}
-				Vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (idx & 1) ? w / 2 : 0;
-				const int clipTop = (idx < 2) ? 0 : h / 2 - 1;
-				const int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
-				const int clipBottom = (idx < 2) ? h / 2 : h - 1;
-				isLocalPlayerAlive[idx] = IsPlayerAlive(p);
-				if (!isLocalPlayerAlive[idx])
-				{
-					continue;
-				}
-				const TActor *player = ActorGetByUID(p->ActorUID);
-				const Vec2i center =
-					Vec2iNew(player->tileItem.x, player->tileItem.y);
-				GraphicsSetBlitClip(
-					&gGraphicsDevice,
-					clipLeft, clipTop, clipRight, clipBottom);
-				if (idx & 1)
-				{
-					centerOffsetPlayer.x += w / 2;
-				}
-				if (idx < 2)
-				{
-					centerOffsetPlayer.y -= h / 4;
-				}
-				else
-				{
-					centerOffsetPlayer.y += h / 4;
-				}
-				// Redo LOS if PVP, so that each split screen has its own LOS
-				if (IsPVP(gCampaign.Entry.Mode))
-				{
-					LOSReset(&gMap);
-					LOSCalcFrom(&gMap, Vec2iToTile(center), false);
-				}
-				DoBuffer(b, center, X_TILES_HALF, noise, centerOffsetPlayer);
-
-				// Set the sound "ears"
-				if (isLocalPlayerAlive[idx])
-				{
-					const bool isLeft = idx == 0 || idx == 2;
-					const bool isUpper = idx <= 2;
-					SoundSetEar(isLeft, isUpper ? 0 : 1, center);
-					// If any player is dead, that ear reverts to the other ear
-					// of the same side of the remaining player
-					const int otherIdxOnSameSide = idx ^ 2;
-					if (!isLocalPlayerAlive[otherIdxOnSameSide])
-					{
-						SoundSetEar(isLeft, !isUpper ? 0 : 1, center);
-					}
-					else if (!isLocalPlayerAlive[3 - idx] &&
-						!isLocalPlayerAlive[3 - otherIdxOnSameSide])
-					{
-						// If both players of one side are dead,
-						// those ears revert to any of the other remaining
-						// players
-						SoundSetEarsSide(!isLeft, center);
-					}
-				}
-				if (isLocalPlayerAlive[idx])
-				{
-					lastPosition = center;
-				}
-			}
-			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
-			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
-			Draw_Line(0, h / 2 - 1, w - 1, h / 2 - 1, colorBlack);
-			Draw_Line(0, h / 2, w - 1, h / 2, colorBlack);
-		}
-		else
-		{
-			assert(0 && "not implemented yet");
-		}
-	}
-	GraphicsResetBlitClip(&gGraphicsDevice);
-	return lastPosition;
-}
-
+// TODO: reimplement in camera
 Vec2i GetPlayerCenter(
-	GraphicsDevice *device, DrawBuffer *b,
+	GraphicsDevice *device, const Camera *camera,
 	const PlayerData *pData, const int playerIdx)
 {
 	if (pData->ActorUID < 0)
@@ -323,11 +123,9 @@ Vec2i GetPlayerCenter(
 
 	if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) == 1 ||
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false , true) == 1 ||
-		IsSingleScreen(
-			&device->cachedConfig,
-			ConfigGetEnum(&gConfig, "Interface.Splitscreen")))
+		CameraIsSingleScreen())
 	{
-		const Vec2i pCenter = PlayersGetMidpoint();
+		const Vec2i pCenter = camera->lastPosition;
 		const Vec2i screenCenter =
 			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
 		const TActor *actor = ActorGetByUID(pData->ActorUID);
@@ -354,15 +152,14 @@ Vec2i GetPlayerCenter(
 		}
 	}
 	// Add draw buffer offset
-	center = Vec2iMinus(center, Vec2iNew(b->dx, b->dy));
-	return center;
+	return Vec2iMinus(center, Vec2iNew(camera->Buffer.dx, camera->Buffer.dy));
 }
 
 typedef struct
 {
 	struct MissionOptions *m;
 	Map *map;
-	DrawBuffer buffer;
+	Camera Camera;
 	HUD hud;
 	int frames;
 	// TODO: turn the following into a screen system?
@@ -372,8 +169,6 @@ typedef struct
 	int lastCmds[MAX_LOCAL_PLAYERS];
 	PowerupSpawner healthSpawner;
 	CArray ammoSpawners;	// of PowerupSpawner
-	ScreenShake shake;
-	Vec2i lastPosition;
 	GameLoopData loop;
 } RunGameData;
 static void RunGameInput(void *data);
@@ -385,9 +180,8 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	memset(&data, 0, sizeof data);
 	data.m = m;
 	data.map = map;
-	data.lastPosition = Vec2iZero();
 
-	DrawBufferInit(&data.buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
+	CameraInit(&data.Camera);
 	HUDInit(&data.hud, &gGraphicsDevice, m);
 	HealthSpawnerInit(&data.healthSpawner, map);
 	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
@@ -397,7 +191,6 @@ bool RunGame(struct MissionOptions *m, Map *map)
 		AmmoSpawnerInit(&ps, map, i);
 		CArrayPushBack(&data.ammoSpawners, &ps);
 	}
-	data.shake = ScreenShakeZero();
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
@@ -435,7 +228,7 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	}
 	CArrayTerminate(&data.ammoSpawners);
 	HUDTerminate(&data.hud);
-	DrawBufferTerminate(&data.buffer);
+	CameraTerminate(&data.Camera);
 
 	return
 		m->state == MISSION_STATE_PICKUP &&
@@ -467,7 +260,7 @@ static void RunGameInput(void *data)
 		rData->cmds[idx] = GetGameCmd(
 			&gEventHandlers,
 			p,
-			GetPlayerCenter(&gGraphicsDevice, &rData->buffer, p, idx));
+			GetPlayerCenter(&gGraphicsDevice, &rData->Camera, p, idx));
 		cmdAll |= rData->cmds[idx];
 
 		// Only allow the first player to escape
@@ -580,9 +373,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
 	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
-		IsSingleScreen(
-			&gGraphicsDevice.cachedConfig,
-			ConfigGetEnum(&gConfig, "Interface.Splitscreen")) &&
+		CameraIsSingleScreen() &&
 		GetNumPlayers(true, true, true) > 1)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -597,7 +388,7 @@ static GameLoopResult RunGameUpdate(void *data)
 				continue;
 			}
 			const TActor *p = ActorGetByUID(pd->ActorUID);
-			const int pad = SPLIT_PADDING;
+			const int pad = CAMERA_SPLIT_PADDING;
 			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 			ei.u.ActorImpulse.Id = p->tileItem.id;
 			ei.u.ActorImpulse.Vel = p->Vel;
@@ -643,12 +434,12 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	HandleGameEvents(
-		&gGameEvents, &rData->hud, &rData->shake,
+		&gGameEvents, &rData->hud, &rData->Camera.shake,
 		&rData->healthSpawner, &rData->ammoSpawners);
 
 	rData->m->time += ticksPerFrame;
 
-	rData->shake = ScreenShakeUpdate(rData->shake, ticksPerFrame);
+	CameraUpdate(&rData->Camera, ticksPerFrame);
 
 	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
 
@@ -716,8 +507,7 @@ static void RunGameDraw(void *data)
 	RunGameData *rData = data;
 
 	// Draw everything
-	rData->lastPosition =
-		DrawScreen(&rData->buffer, rData->lastPosition, rData->shake);
+	CameraDraw(&rData->Camera);
 
 	HUDDraw(&rData->hud, rData->pausingDevice);
 	if (GameIsMouseUsed())
