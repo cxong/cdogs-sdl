@@ -187,7 +187,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		{
 		case GAME_EVENT_CLIENT_READY:
 			// Flush game events to make sure we add the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 			// Reset player data
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
 			for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
@@ -204,7 +204,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			}
 			GameEventsEnqueue(&gGameEvents, e);
 			// Flush game events to make sure we reset player data
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
 			// Send game start messages if we've started already
 			if (gMission.HasStarted)

@@ -371,6 +371,32 @@ const char *InputGetButtonNameColor(
 		return NULL;
 	}
 }
+void InputGetDirectionNames(
+	char *buf, const input_device_e d, const int dIndex)
+{
+	strcpy(buf, "");
+	switch (d)
+	{
+	case INPUT_DEVICE_KEYBOARD:
+		sprintf(buf, "%s, %s, %s, %s",
+			InputGetButtonName(d, dIndex, CMD_LEFT),
+			InputGetButtonName(d, dIndex, CMD_RIGHT),
+			InputGetButtonName(d, dIndex, CMD_UP),
+			InputGetButtonName(d, dIndex, CMD_DOWN));
+		break;
+	case INPUT_DEVICE_MOUSE:
+		strcpy(buf, "mouse wheel");
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		strcpy(buf, "directions");
+		break;
+	case INPUT_DEVICE_AI:
+		break;
+	default:
+		CASSERT(false, "unknown device");
+		break;
+	}
+}
 
 int GetKey(EventHandlers *handlers)
 {

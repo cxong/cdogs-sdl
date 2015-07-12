@@ -87,24 +87,21 @@ void MenuDisplayPlayerControls(
 	UNUSED(menu);
 
 	const PlayerData *pData = PlayerDataGetByUID(*playerUID);
+	char directionNames[256];
+	InputGetDirectionNames(
+		directionNames, pData->inputDevice, pData->deviceIndex);
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		sprintf(s, "(%s, %s, %s, %s, %s and %s)",
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_LEFT),
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_RIGHT),
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_UP),
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_DOWN),
+		sprintf(s, "(%s, %s and %s)",
+			directionNames,
 			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON1),
 			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON2));
 		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
 		break;
 	case INPUT_DEVICE_MOUSE:
-		{
-			const char *text =
-				"(mouse wheel to scroll,\nleft and right click)";
-			FontStr(text, Vec2iNew(pos.x - FontStrW(text) / 2, y - FontH()));
-		}
+		sprintf(s, "(%s to scroll,\nleft and right click)", directionNames);
+		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH()));
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		{

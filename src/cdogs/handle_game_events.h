@@ -28,13 +28,11 @@
 #pragma once
 
 #include "c_array.h"
-#include "hud.h"
+#include "camera.h"
 #include "powerup.h"
-#include "screen_shake.h"
 
 void HandleGameEvents(
 	CArray *store,
-	HUD *hud,
-	ScreenShake *shake,
+	Camera *camera,
 	PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners);

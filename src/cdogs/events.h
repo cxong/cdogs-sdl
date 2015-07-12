@@ -90,6 +90,9 @@ const char *InputGetButtonName(
 	const input_device_e d, const int dIndex, const int cmd);
 const char *InputGetButtonNameColor(
 	const input_device_e d, const int dIndex, const int cmd, color_t *color);
+// Return a string that shows the direction controls for an input device
+void InputGetDirectionNames(
+	char *buf, const input_device_e d, const int dIndex);
 
 bool EventIsEscape(
 	EventHandlers *handlers,

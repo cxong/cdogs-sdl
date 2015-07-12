@@ -8,7 +8,6 @@ add_subdirectory(tests)
 set(CDOGS_SDL_SOURCES
 	autosave.c
 	briefing_screens.c
-	camera.c
 	cdogs.c
 	credits.c
 	game.c
@@ -25,7 +24,6 @@ set(CDOGS_SDL_SOURCES
 set(CDOGS_SDL_HEADERS
 	autosave.h
 	briefing_screens.h
-	camera.h
 	credits.h
 	game.h
 	mainmenu.h

@@ -41,14 +41,12 @@
 
 static void HandleGameEvent(
 	const GameEvent e,
-	HUD *hud,
-	ScreenShake *shake,
+	Camera *camera,
 	PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners);
 void HandleGameEvents(
 	CArray *store,
-	HUD *hud,
-	ScreenShake *shake,
+	Camera *camera,
 	PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners)
 {
@@ -60,14 +58,13 @@ void HandleGameEvents(
 		{
 			continue;
 		}
-		HandleGameEvent(*e, hud, shake, healthSpawner, ammoSpawners);
+		HandleGameEvent(*e, camera, healthSpawner, ammoSpawners);
 	}
 	GameEventsClear(store);
 }
 static void HandleGameEvent(
 	const GameEvent e,
-	HUD *hud,
-	ScreenShake *shake,
+	Camera *camera,
 	PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners)
 {
@@ -87,7 +84,7 @@ static void HandleGameEvent(
 			PlayerData *p = PlayerDataGetByUID(e.u.Score.PlayerUID);
 			PlayerScore(p, e.u.Score.Score);
 			HUDAddUpdate(
-				hud,
+				&camera->HUD,
 				NUMBER_UPDATE_SCORE, e.u.Score.PlayerUID, e.u.Score.Score);
 		}
 		break;
@@ -97,13 +94,13 @@ static void HandleGameEvent(
 			StrSound(e.u.SoundAt.Sound), Net2Vec2i(e.u.SoundAt.Pos));
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
-		*shake = ScreenShakeAdd(
-			*shake, e.u.ShakeAmount,
+		camera->shake = ScreenShakeAdd(
+			camera->shake, e.u.ShakeAmount,
 			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 		break;
 	case GAME_EVENT_SET_MESSAGE:
 		HUDDisplayMessage(
-			hud, e.u.SetMessage.Message, e.u.SetMessage.Ticks);
+			&camera->HUD, e.u.SetMessage.Message, e.u.SetMessage.Ticks);
 		break;
 	case GAME_EVENT_GAME_START:
 		gMission.HasStarted = true;
@@ -159,7 +156,7 @@ static void HandleGameEvent(
 			if (e.u.Heal.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
-					hud, NUMBER_UPDATE_HEALTH,
+					&camera->HUD, NUMBER_UPDATE_HEALTH,
 					e.u.Heal.PlayerUID, e.u.Heal.Amount);
 			}
 		}
@@ -179,7 +176,7 @@ static void HandleGameEvent(
 			if (e.u.AddAmmo.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
-					hud, NUMBER_UPDATE_AMMO,
+					&camera->HUD, NUMBER_UPDATE_AMMO,
 					e.u.AddAmmo.PlayerUID, e.u.AddAmmo.Amount);
 			}
 		}
@@ -192,7 +189,7 @@ static void HandleGameEvent(
 			if (e.u.UseAmmo.PlayerUID >= 0)
 			{
 				HUDAddUpdate(
-					hud, NUMBER_UPDATE_AMMO,
+					&camera->HUD, NUMBER_UPDATE_AMMO,
 					e.u.UseAmmo.PlayerUID, -(int)e.u.UseAmmo.Amount);
 			}
 		}
@@ -326,7 +323,7 @@ static void HandleGameEvent(
 			e.u.ActorDamage.TargetPlayerUID >= 0)
 		{
 			HUDAddUpdate(
-				hud, NUMBER_UPDATE_HEALTH,
+				&camera->HUD, NUMBER_UPDATE_HEALTH,
 				e.u.ActorDamage.TargetPlayerUID, -e.u.ActorDamage.Power);
 		}
 		break;
@@ -362,7 +359,7 @@ static void HandleGameEvent(
 			o->done += e.u.ObjectiveUpdate.Count;
 			// Display a text update effect for the objective
 			HUDAddUpdate(
-				hud, NUMBER_UPDATE_OBJECTIVE,
+				&camera->HUD, NUMBER_UPDATE_OBJECTIVE,
 				e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
 			MissionSetMessageIfComplete(&gMission);
 		}
@@ -375,9 +372,9 @@ static void HandleGameEvent(
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (e.u.MissionComplete.ShowMsg)
 		{
-			HUDDisplayMessage(hud, "Mission complete", -1);
+			HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
 		}
-		hud->showExit = true;
+		camera->HUD.showExit = true;
 		MapShowExitArea(&gMap);
 		break;
 	case GAME_EVENT_MISSION_INCOMPLETE:

@@ -181,7 +181,7 @@ Vec2i PlacePlayer(
 	if (pumpEvents)
 	{
 		// Process the events that actually place the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	}
 
 	return Vec2iNew(aa.FullPos.x, aa.FullPos.y);

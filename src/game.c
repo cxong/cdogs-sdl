@@ -61,11 +61,11 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/ammo.h>
 #include <cdogs/automap.h>
+#include <cdogs/camera.h>
 #include <cdogs/config.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/hud.h>
 #include <cdogs/joystick.h>
 #include <cdogs/los.h>
 #include <cdogs/mission.h>
@@ -78,8 +78,6 @@
 #include <cdogs/pics.h>
 #include <cdogs/powerup.h>
 #include <cdogs/triggers.h>
-
-#include "camera.h"
 
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
@@ -160,7 +158,6 @@ typedef struct
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
-	HUD hud;
 	int frames;
 	// TODO: turn the following into a screen system?
 	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
@@ -182,7 +179,6 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	data.map = map;
 
 	CameraInit(&data.Camera);
-	HUDInit(&data.hud, &gGraphicsDevice, m);
 	HealthSpawnerInit(&data.healthSpawner, map);
 	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
@@ -194,7 +190,8 @@ bool RunGame(struct MissionOptions *m, Map *map)
 
 	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
 	{
-		HUDDisplayMessage(&data.hud, MusicGetErrorMessage(&gSoundDevice), 140);
+		HUDDisplayMessage(
+			&data.Camera.HUD, MusicGetErrorMessage(&gSoundDevice), 140);
 	}
 
 	m->time = 0;
@@ -227,7 +224,6 @@ bool RunGame(struct MissionOptions *m, Map *map)
 		PowerupSpawnerTerminate(CArrayGet(&data.ammoSpawners, i));
 	}
 	CArrayTerminate(&data.ammoSpawners);
-	HUDTerminate(&data.hud);
 	CameraTerminate(&data.Camera);
 
 	return
@@ -434,14 +430,13 @@ static GameLoopResult RunGameUpdate(void *data)
 	}
 
 	HandleGameEvents(
-		&gGameEvents, &rData->hud, &rData->Camera.shake,
+		&gGameEvents, &rData->Camera,
 		&rData->healthSpawner, &rData->ammoSpawners);
 
 	rData->m->time += ticksPerFrame;
 
-	CameraUpdate(&rData->Camera, rData->cmds[0], ticksPerFrame);
-
-	HUDUpdate(&rData->hud, 1000 / rData->loop.FPS);
+	CameraUpdate(
+		&rData->Camera, rData->cmds[0], ticksPerFrame, 1000 / rData->loop.FPS);
 
 	return UPDATE_RESULT_DRAW;
 }
@@ -507,9 +502,8 @@ static void RunGameDraw(void *data)
 	RunGameData *rData = data;
 
 	// Draw everything
-	CameraDraw(&rData->Camera);
+	CameraDraw(&rData->Camera, rData->pausingDevice);
 
-	HUDDraw(&rData->hud, rData->pausingDevice);
 	if (GameIsMouseUsed())
 	{
 		MouseDraw(&gEventHandlers.mouse);
@@ -518,6 +512,6 @@ static void RunGameDraw(void *data)
 	// Draw automap if enabled
 	if (rData->isMap)
 	{
-		AutomapDraw(0, rData->hud.showExit);
+		AutomapDraw(0, rData->Camera.HUD.showExit);
 	}
 }

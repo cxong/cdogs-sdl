@@ -26,8 +26,9 @@
 */
 #pragma once
 
-#include <cdogs/draw_buffer.h>
-#include <cdogs/screen_shake.h>
+#include "draw_buffer.h"
+#include "hud.h"
+#include "screen_shake.h"
 
 #define CAMERA_SPLIT_PADDING 40
 
@@ -42,6 +43,7 @@ typedef struct
 {
 	DrawBuffer Buffer;
 	Vec2i lastPosition;
+	HUD HUD;
 	ScreenShake shake;
 	SpectateMode spectateMode;
 	// UID of player to follow; only used if camera is in follow mode
@@ -51,7 +53,8 @@ typedef struct
 void CameraInit(Camera *camera);
 void CameraTerminate(Camera *camera);
 
-void CameraUpdate(Camera *camera, const int player1Cmd, const int ticks);
-void CameraDraw(Camera *camera);
+void CameraUpdate(
+	Camera *camera, const int player1Cmd, const int ticks, const int ms);
+void CameraDraw(Camera *camera, const input_device_e pausingDevice);
 
 bool CameraIsSingleScreen(void);

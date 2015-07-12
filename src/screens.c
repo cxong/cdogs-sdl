@@ -217,7 +217,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			}
 			GameEventsEnqueue(&gGameEvents, e);
 			// Process the events to force add the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
 			// Note: place players first,
 			// as bad guys are placed away from players

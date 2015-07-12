@@ -26,11 +26,13 @@
 */
 #include "camera.h"
 
-#include <cdogs/actors.h>
-#include <cdogs/draw.h>
-#include <cdogs/drawtools.h>
-#include <cdogs/los.h>
-#include <cdogs/player.h>
+#include "actors.h"
+#include "draw.h"
+#include "drawtools.h"
+#include "events.h"
+#include "font.h"
+#include "los.h"
+#include "player.h"
 
 
 #define PAN_SPEED 4
@@ -41,16 +43,20 @@ void CameraInit(Camera *camera)
 	DrawBufferInit(
 		&camera->Buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	camera->lastPosition = Vec2iZero();
+	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();
 }
 
 void CameraTerminate(Camera *camera)
 {
 	DrawBufferTerminate(&camera->Buffer);
+	HUDTerminate(&camera->HUD);
 }
 
-void CameraUpdate(Camera *camera, const int player1Cmd, const int ticks)
+void CameraUpdate(
+	Camera *camera, const int player1Cmd, const int ticks, const int ms)
 {
+	HUDUpdate(&camera->HUD, ms);
 	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
 	// Control the camera
 	if (camera->spectateMode != SPECTATE_NONE)
@@ -102,7 +108,7 @@ void CameraUpdate(Camera *camera, const int player1Cmd, const int ticks)
 void FollowPlayer(Vec2i *pos, const int playerUID);
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
-void CameraDraw(Camera *camera)
+void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 {
 	Vec2i centerOffset = Vec2iZero();
 	const int numLocalPlayersAlive =
@@ -331,6 +337,53 @@ void CameraDraw(Camera *camera)
 		}
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
+
+	HUDDraw(&camera->HUD, pausingDevice);
+
+	// Draw camera mode
+	char cameraNameBuf[256];
+	bool drawCameraMode = false;
+	switch (camera->spectateMode)
+	{
+	case SPECTATE_FOLLOW:
+		{
+			const PlayerData *p = PlayerDataGetByUID(camera->FollowPlayerUID);
+			if (p == NULL) break;
+			sprintf(cameraNameBuf, "Following %s", p->name);
+			drawCameraMode = true;
+		}
+		break;
+	case SPECTATE_FREE:
+		strcpy(cameraNameBuf, "Free-look Mode");
+		drawCameraMode = true;
+		break;
+	}
+	if (drawCameraMode)
+	{
+		// Draw the message centered at the bottom
+		const int w = gGraphicsDevice.cachedConfig.Res.x;
+		const int h = gGraphicsDevice.cachedConfig.Res.y;
+		FontStrMask(
+			cameraNameBuf,
+			Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
+			colorYellow);
+
+		// Show camera controls
+		const PlayerData *p = GetFirstPlayer(false, true, true);
+		CASSERT(p != NULL, "No human local players");
+		char directionNames[256];
+		InputGetDirectionNames(
+			directionNames, p->inputDevice, p->deviceIndex);
+		char controlsBuf[256];
+		sprintf(controlsBuf, "%s/%s to follow player, %s to free-look",
+			InputGetButtonName(p->inputDevice, p->deviceIndex, CMD_BUTTON1),
+			InputGetButtonName(p->inputDevice, p->deviceIndex, CMD_BUTTON2),
+			directionNames);
+		FontStrMask(
+			controlsBuf,
+			Vec2iNew((w - FontStrW(controlsBuf)) / 2, h - FontH()),
+			colorYellow);
+	}
 }
 // Try to follow a player
 void FollowPlayer(Vec2i *pos, const int playerUID)
