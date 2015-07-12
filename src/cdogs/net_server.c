@@ -283,11 +283,11 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	// Send objective counts
 	for (int i = 0; i < (int)gMission.Objectives.size; i++)
 	{
-		NObjectiveCount oc;
-		oc.ObjectiveId = i;
+		NObjectiveUpdate ou = NObjectiveUpdate_init_default;
+		ou.ObjectiveId = i;
 		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-		oc.Count = o->done;
-		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_COUNT, &oc);
+		ou.Count = o->done;
+		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
 	}
 
 	// Send all the tiles visited so far

@@ -41,11 +41,6 @@ message NPlayerData {
 	required uint32 UID = 12;
 }
 
-message NObjectiveCount {
-	required uint32 ObjectiveId = 1;
-	required uint32 Count = 2;
-}
-
 message NAddPlayers {
 	repeated NPlayerData PlayerDatas = 2;
 }
