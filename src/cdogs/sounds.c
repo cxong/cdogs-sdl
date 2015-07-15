@@ -290,6 +290,8 @@ static void SoundPlayAtPosition(
 			printf("Couldn't allocate channels!\n");
 			return;
 		}
+		// When allocating new channels, need to reset their volume
+		Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
 	}
 	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
 	if (isMuffled)
