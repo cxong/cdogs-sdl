@@ -41,6 +41,8 @@ bool IsGameOptionsNeeded(const GameMode mode)
 {
 	switch (mode)
 	{
+	case GAME_MODE_NORMAL:
+		return !gCampaign.OptionsSet;
 	case GAME_MODE_DOGFIGHT:
 		return !gCampaign.OptionsSet;
 	case GAME_MODE_DEATHMATCH:

@@ -463,6 +463,44 @@ bool GameOptions(const GameMode gm)
 	AllowedWeaponsDataInit(&awData, &gMission.Weapons);
 	switch (gm)
 	{
+	case GAME_MODE_NORMAL:
+		ms.root = ms.current = MenuCreateNormal(
+			"",
+			"",
+			MENU_TYPE_OPTIONS,
+			0);
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.Difficulty"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.EnemyDensity"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.NonPlayerHP"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.PlayerHP"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.Lives"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		break;
+	case GAME_MODE_DOGFIGHT:
+		ms.root = ms.current = MenuCreateNormal(
+			"",
+			"",
+			MENU_TYPE_OPTIONS,
+			0);
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Dogfight.PlayerHP"));
+		MenuAddConfigOptionsItem(
+			ms.current, ConfigGet(&gConfig, "Dogfight.FirstTo"));
+		MenuAddSubmenu(ms.current,
+			MenuCreateAllowedWeapons("Weapons...", &awData));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		break;
 	case GAME_MODE_DEATHMATCH:
 		ms.root = ms.current = MenuCreateNormal(
 			"",
@@ -477,21 +515,6 @@ bool GameOptions(const GameMode gm)
 			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
 		MenuAddConfigOptionsItem(
 			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
-		MenuAddSubmenu(ms.current,
-			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
-		break;
-	case GAME_MODE_DOGFIGHT:
-		ms.root = ms.current = MenuCreateNormal(
-			"",
-			"",
-			MENU_TYPE_OPTIONS,
-			0);
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Dogfight.PlayerHP"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Dogfight.FirstTo"));
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
