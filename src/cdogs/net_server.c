@@ -67,13 +67,17 @@ void NetServerReset(NetServer *n)
 
 void NetServerOpen(NetServer *n)
 {
+	if (n->server)
+	{
+		return;
+	}
 #if USE_NET == 1
 	/* Bind the server to the default localhost.     */
 	/* A specific host address can be specified by   */
 	/* enet_address_set_host (& address, "x.x.x.x"); */
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
-	address.port = NET_INPUT_PORT;
+	address.port = NET_PORT;
 	n->server = enet_host_create(
 		&address /* the address to bind the server host to */,
 		NET_SERVER_MAX_CLIENTS,
@@ -82,12 +86,9 @@ void NetServerOpen(NetServer *n)
 		0      /* assume any amount of outgoing bandwidth */);
 	if (n->server == NULL)
 	{
-		fprintf(stderr,
-			"An error occurred while trying to create an ENet server host.\n");
+		LOG(LM_NET, LL_ERROR, "cannot create server host");
 		return;
 	}
-#else
-	UNUSED(n);
 #endif
 }
 

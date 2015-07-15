@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					connectAddr.port = NET_INPUT_PORT;
+					connectAddr.port = NET_PORT;
 				}
 				break;
 			default:

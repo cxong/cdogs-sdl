@@ -39,7 +39,7 @@
 #include "player.h"
 #include "sys_config.h"
 
-#define NET_INPUT_PORT 34219
+#define NET_PORT 34219
 
 // Used in printf statements
 #define NET_IP_TO_CIDR_FORMAT(_ip)\
