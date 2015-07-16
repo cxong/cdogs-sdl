@@ -39,6 +39,9 @@ bool IsIntroNeeded(const GameMode mode)
 
 bool IsGameOptionsNeeded(const GameMode mode)
 {
+	// Clients can't set game options
+	if (gCampaign.IsClient) return false;
+
 	switch (mode)
 	{
 	case GAME_MODE_NORMAL:

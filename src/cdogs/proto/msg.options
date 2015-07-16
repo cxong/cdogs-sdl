@@ -4,7 +4,8 @@ NPlayerData.Name		max_size:20
 NPlayerData.Weapons	max_size:128
 NPlayerData.Weapons	max_count:3
 
-NAddPlayers.PlayerDatas	max_count:4
+# Limit is max clients times max local players
+NAddPlayers.PlayerDatas	max_count:128
 
 NAddMapObject.MapObjectClass max_size:128
 
