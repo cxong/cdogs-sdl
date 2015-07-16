@@ -525,6 +525,8 @@ bool GameOptions(const GameMode gm)
 		break;
 	}
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	// Select "Done"
+	ms.root->u.normal.index = (int)ms.root->u.normal.subMenus.size - 1;
 
 	MenuLoop(&ms);
 
