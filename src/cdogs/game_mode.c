@@ -47,7 +47,10 @@ bool IsGameOptionsNeeded(const GameMode mode)
 		return !gCampaign.OptionsSet;
 	case GAME_MODE_DEATHMATCH:
 		return true;
+	case GAME_MODE_QUICK_PLAY:
+		return true;
 	default:
+		CASSERT(false, "unknown game mode");
 		return false;
 	}
 }

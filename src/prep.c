@@ -461,69 +461,57 @@ bool GameOptions(const GameMode gm)
 	ms.allowAborts = true;
 	AllowedWeaponsData awData;
 	AllowedWeaponsDataInit(&awData, &gMission.Weapons);
+	ms.root = ms.current = MenuCreateNormal(
+		"",
+		"",
+		MENU_TYPE_OPTIONS,
+		0);
+#define I(_config)\
+	MenuAddConfigOptionsItem(ms.current, ConfigGet(&gConfig, _config));
 	switch (gm)
 	{
 	case GAME_MODE_NORMAL:
-		ms.root = ms.current = MenuCreateNormal(
-			"",
-			"",
-			MENU_TYPE_OPTIONS,
-			0);
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.Difficulty"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.EnemyDensity"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.NonPlayerHP"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.PlayerHP"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.Lives"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		I("Game.Difficulty");
+		I("Game.EnemyDensity");
+		I("Game.NonPlayerHP");
+		I("Game.PlayerHP");
+		I("Game.Lives");
+		I("Game.HealthPickups");
+		I("Game.Ammo");
 		break;
 	case GAME_MODE_DOGFIGHT:
-		ms.root = ms.current = MenuCreateNormal(
-			"",
-			"",
-			MENU_TYPE_OPTIONS,
-			0);
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Dogfight.PlayerHP"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Dogfight.FirstTo"));
+		I("Dogfight.PlayerHP");
+		I("Dogfight.FirstTo");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
 		break;
 	case GAME_MODE_DEATHMATCH:
-		ms.root = ms.current = MenuCreateNormal(
-			"",
-			"",
-			MENU_TYPE_OPTIONS,
-			0);
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.PlayerHP"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Deathmatch.Lives"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.HealthPickups"));
-		MenuAddConfigOptionsItem(
-			ms.current, ConfigGet(&gConfig, "Game.Ammo"));
+		I("Game.PlayerHP");
+		I("Deathmatch.Lives");
+		I("Game.HealthPickups");
+		I("Game.Ammo");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-		MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
+		break;
+	case GAME_MODE_QUICK_PLAY:
+		I("QuickPlay.MapSize");
+		I("QuickPlay.WallCount");
+		I("QuickPlay.WallLength");
+		I("QuickPlay.RoomCount");
+		I("QuickPlay.SquareCount");
+		I("QuickPlay.EnemyCount");
+		I("QuickPlay.EnemySpeed");
+		I("QuickPlay.EnemyHealth");
+		I("QuickPlay.EnemiesWithExplosives");
+		I("QuickPlay.ItemCount");
 		break;
 	default:
 		CASSERT(false, "unknown game mode");
 		break;
 	}
+#undef I
+	MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	// Select "Done"
 	ms.root->u.normal.index = (int)ms.root->u.normal.subMenus.size - 1;
