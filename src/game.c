@@ -315,13 +315,13 @@ static GameLoopResult RunGameUpdate(void *data)
 		return UPDATE_RESULT_EXIT;
 	}
 
-#if USE_NET != 1
-	// Don't update if the game has paused or has automap shown
-	if (rData->pausingDevice != INPUT_DEVICE_UNSET || rData->isMap)
+	// If we're not hosting a net game,
+	// don't update if the game has paused or has automap shown
+	if ((gCampaign.IsClient || !ConfigGetBool(&gConfig, "StartServer")) &&
+		(rData->pausingDevice != INPUT_DEVICE_UNSET || rData->isMap))
 	{
 		return UPDATE_RESULT_DRAW;
 	}
-#endif
 
 	// If slow motion, update every other frame
 	if (ConfigGetBool(&gConfig, "Game.SlowMotion") && (rData->loop.Frames & 1))

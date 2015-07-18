@@ -58,6 +58,7 @@ void NetServerReset(NetServer *n);
 
 // Open a port and start listening for data
 void NetServerOpen(NetServer *n);
+void NetServerClose(NetServer *n);
 // Service the recv buffer; if data is received then activate this device
 void NetServerPoll(NetServer *n);
 

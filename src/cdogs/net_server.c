@@ -54,11 +54,7 @@ void NetServerInit(NetServer *n)
 }
 void NetServerTerminate(NetServer *n)
 {
-	if (n->server)
-	{
-		enet_host_destroy(n->server);
-	}
-	n->server = NULL;
+	NetServerClose(n);
 }
 void NetServerReset(NetServer *n)
 {
@@ -71,7 +67,6 @@ void NetServerOpen(NetServer *n)
 	{
 		return;
 	}
-#if USE_NET == 1
 	/* Bind the server to the default localhost.     */
 	/* A specific host address can be specified by   */
 	/* enet_address_set_host (& address, "x.x.x.x"); */
@@ -89,7 +84,17 @@ void NetServerOpen(NetServer *n)
 		LOG(LM_NET, LL_ERROR, "cannot create server host");
 		return;
 	}
-#endif
+	LOG(LM_NET, LL_INFO, "starting server on %u.%u.%u.%u:%d",
+		NET_IP_TO_CIDR_FORMAT(n->server->address.host),
+		(int)n->server->address.port);
+}
+void NetServerClose(NetServer *n)
+{
+	if (n->server)
+	{
+		enet_host_destroy(n->server);
+	}
+	n->server = NULL;
 }
 
 static void OnConnect(NetServer *n, ENetEvent event);
@@ -190,20 +195,17 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			// Flush game events to make sure we add the players
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 			// Reset player data
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
 			for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 			{
 				const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
 				const PlayerData *pData = PlayerDataGetByUID(cid);
 				if (pData != NULL)
 				{
-					const int idx = (int)e.u.AddPlayers.PlayerDatas_count;
-					e.u.AddPlayers.PlayerDatas[idx] =
-						PlayerDataMissionReset(pData);
-					e.u.AddPlayers.PlayerDatas_count++;
+					GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+					e.u.PlayerData = PlayerDataMissionReset(pData);
+					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}
-			GameEventsEnqueue(&gGameEvents, e);
 			// Flush game events to make sure we reset player data
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
@@ -241,16 +243,14 @@ static void OnReceive(NetServer *n, ENetEvent event)
 void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
 	// Send details of all current players
-	NAddPlayers ap = NAddPlayers_init_default;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++)
 	{
 		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
-		ap.PlayerDatas[i] = NMakePlayerData(pOther);
-		ap.PlayerDatas_count++;
+		NPlayerData pd = NMakePlayerData(pOther);
+		NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &pd);
 		LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
-			(int)ap.PlayerDatas[i].UID, (int)ap.PlayerDatas[i].MaxHealth);
+			(int)pd.UID, (int)pd.MaxHealth);
 	}
-	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PLAYERS, &ap);
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 

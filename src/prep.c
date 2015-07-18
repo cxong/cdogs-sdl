@@ -162,14 +162,13 @@ bool NumPlayersSelection(
 			CASSERT(!p->IsLocal, "unexpected local player");
 		}
 		// Add the players
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
 		for (int i = 0; i < numPlayers; i++)
 		{
-			e.u.AddPlayers.PlayerDatas[i] = PlayerDataDefault(i);
-			e.u.AddPlayers.PlayerDatas[i].UID = gNetClient.FirstPlayerUID + i;
-			e.u.AddPlayers.PlayerDatas_count++;
+			GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+			e.u.PlayerData = PlayerDataDefault(i);
+			e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
-		GameEventsEnqueue(&gGameEvents, e);
 		// Process the events to force add the players
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 		// This also causes the client to send player data to the server
@@ -290,10 +289,6 @@ bool PlayerSelection(void)
 			&gEventHandlers, &gGraphicsDevice, &data.g);
 	}
 
-	if (!gCampaign.IsClient)
-	{
-		NetServerOpen(&gNetServer);
-	}
 	GameLoopData gData = GameLoopDataNew(
 		&data, PlayerSelectionUpdate,
 		&data, PlayerSelectionDraw);
@@ -478,12 +473,16 @@ bool GameOptions(const GameMode gm)
 		I("Game.Lives");
 		I("Game.HealthPickups");
 		I("Game.Ammo");
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		I("StartServer");
 		break;
 	case GAME_MODE_DOGFIGHT:
 		I("Dogfight.PlayerHP");
 		I("Dogfight.FirstTo");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		I("StartServer");
 		break;
 	case GAME_MODE_DEATHMATCH:
 		I("Game.PlayerHP");
@@ -492,6 +491,8 @@ bool GameOptions(const GameMode gm)
 		I("Game.Ammo");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
+		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		I("StartServer");
 		break;
 	case GAME_MODE_QUICK_PLAY:
 		I("QuickPlay.MapSize");
@@ -634,27 +635,25 @@ bool PlayerEquip(void)
 		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
 	GameLoop(&gData);
 
-	NAddPlayers ap = NAddPlayers_init_default;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 		if (!p->IsLocal)
 		{
 			idx--;
 			continue;
 		}
-		ap.PlayerDatas[idx] = NMakePlayerData(p);
-		ap.PlayerDatas_count++;
-	}
-	// Update player definitions
-	if (gCampaign.IsClient)
-	{
-		NetClientSendMsg(&gNetClient, GAME_EVENT_ADD_PLAYERS, &ap);
-	}
-	else
-	{
-		NetServerSendMsg(
-			&gNetServer, NET_SERVER_BCAST, GAME_EVENT_ADD_PLAYERS, &ap);
+		NPlayerData pd = NMakePlayerData(p);
+		// Update player definitions
+		if (gCampaign.IsClient)
+		{
+			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
+		}
+		else
+		{
+			NetServerSendMsg(
+				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
+		}
 	}
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)

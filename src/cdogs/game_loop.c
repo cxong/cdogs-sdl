@@ -74,9 +74,11 @@ void GameLoop(GameLoopData *data)
 			continue;
 		}
 
-#ifndef RUN_WITHOUT_APP_FOCUS
-		MusicSetPlaying(&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
-#endif
+		if (gCampaign.IsClient || !ConfigGetBool(&gConfig, "StartServer"))
+		{
+			MusicSetPlaying(
+				&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
+		}
 
 		// Input
 		if ((data->Frames & 1) || !data->InputEverySecondFrame)

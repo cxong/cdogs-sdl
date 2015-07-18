@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __SYS_CONFIG
-#define __SYS_CONFIG
+#pragma once
 
 #define CDOGS_SDL_VERSION "v@VERSION@"
 
@@ -48,12 +47,3 @@
 
 #define FPS_FRAMELIMIT 70
 #define PICKUP_LIMIT (FPS_FRAMELIMIT * 5)
-
-#define USE_NET @USE_NET@
-// Whether to keep running the game if window lost focus
-// For debugging
-#if USE_NET == 1
-	#define RUN_WITHOUT_APP_FOCUS
-#endif
-
-#endif

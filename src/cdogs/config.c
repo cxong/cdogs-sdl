@@ -731,6 +731,8 @@ static Config ConfigLoadDefault(void)
 		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
 		StrQuickPlayQuantity, QuickPlayQuantityStr));
 	ConfigGroupAdd(&root, qp);
+	
+	ConfigGroupAdd(&root, ConfigNewBool("StartServer", false));
 
 	return root;
 }

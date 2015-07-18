@@ -163,6 +163,12 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				goto bail;
 			}
 			gCampaign.OptionsSet = true;
+
+			// If enabled, start net server
+			if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+			{
+				NetServerOpen(&gNetServer);
+			}
 		}
 
 		// Mission briefing
@@ -205,17 +211,16 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
 
 			// Reset players for the mission
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_PLAYERS);
 			for (int i = 0; i < (int)gPlayerDatas.size; i++)
 			{
 				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 				// Only reset for local players; for remote ones wait for the
 				// client ready message
 				if (!p->IsLocal) continue;
-				e.u.AddPlayers.PlayerDatas[i] = PlayerDataMissionReset(p);
-				e.u.AddPlayers.PlayerDatas_count++;
+				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+				e.u.PlayerData = PlayerDataMissionReset(p);
+				GameEventsEnqueue(&gGameEvents, e);
 			}
-			GameEventsEnqueue(&gGameEvents, e);
 			// Process the events to force add the players
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
@@ -350,4 +355,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			break;
 		}
 	}
+
+	NetServerClose(&gNetServer);
 }
