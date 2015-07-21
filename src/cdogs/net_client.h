@@ -48,6 +48,7 @@ void NetClientTerminate(NetClient *n);
 // Attempt to connect to a server
 void NetClientConnect(NetClient *n, const ENetAddress addr);
 void NetClientPoll(NetClient *n);
+void NetClientFlush(NetClient *n);
 // Send a command to the server
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data);
 

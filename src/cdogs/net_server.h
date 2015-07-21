@@ -61,6 +61,7 @@ void NetServerOpen(NetServer *n);
 void NetServerClose(NetServer *n);
 // Service the recv buffer; if data is received then activate this device
 void NetServerPoll(NetServer *n);
+void NetServerFlush(NetServer *n);
 
 // If peerId is -1, broadcast
 void NetServerSendMsg(

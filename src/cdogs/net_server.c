@@ -182,7 +182,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	if (gee.Enqueue)
 	{
 		// Game event message; decode and add to event queue
-		LOG(LM_NET, LL_DEBUG, "recv gameEvent(%d)", (int)gee.Type);
+		LOG(LM_NET, LL_TRACE, "recv gameEvent(%d)", (int)gee.Type);
 		GameEvent e = GameEventNew(gee.Type);
 		NetDecode(event.packet, &e.u, gee.Fields);
 		GameEventsEnqueue(&gGameEvents, e);
@@ -238,6 +238,12 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		}
 	}
 	enet_packet_destroy(event.packet);
+}
+
+void NetServerFlush(NetServer *n)
+{
+	if (n->server == NULL) return;
+	enet_host_flush(n->server);
 }
 
 void NetServerSendGameStartMessages(NetServer *n, const int peerId)
@@ -359,7 +365,6 @@ void NetServerSendMsg(
 			if (((NetPeerData *)peer->data)->Id == peerId)
 			{
 				enet_peer_send(peer, 0, NetEncode(e, data));
-				enet_host_flush(n->server);
 				return;
 			}
 		}
@@ -370,6 +375,6 @@ void NetServerSendMsg(
 		LOG(LM_NET, LL_TRACE, "bcast msg(%d) to peers(%d)",
 			(int)e, (int)n->server->connectedPeers);
 		enet_host_broadcast(n->server, 0, NetEncode(e, data));
-		enet_host_flush(n->server);
 	}
+	NetServerFlush(n);
 }

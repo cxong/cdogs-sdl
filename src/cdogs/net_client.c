@@ -257,6 +257,12 @@ static void OnReceive(NetClient *n, ENetEvent event)
 	enet_packet_destroy(event.packet);
 }
 
+void NetClientFlush(NetClient *n)
+{
+	if (n->client == NULL) return;
+	enet_host_flush(n->client);
+}
+
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 {
 	if (!n->client || !n->peer)
@@ -264,9 +270,9 @@ void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 		return;
 	}
 
-	LOG(LM_NET, LL_DEBUG, "NetClient: send msg type %d", (int)e);
+	LOG(LM_NET, LL_TRACE, "NetClient: send msg type %d", (int)e);
 	enet_peer_send(n->peer, 0, NetEncode(e, data));
-	enet_host_flush(n->client);
+	NetClientFlush(n);
 }
 
 bool NetClientIsConnected(const NetClient *n)
