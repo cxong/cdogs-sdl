@@ -44,6 +44,7 @@ NetClient gNetClient;
 
 
 #define CONNECTION_WAIT_MS 5000
+#define TIMEOUT_MS 5000
 
 
 void NetClientInit(NetClient *n)
@@ -101,6 +102,10 @@ void NetClientConnect(NetClient *n, const ENetAddress addr)
 		fprintf(stderr, "Connection failed.\n");
 		goto bail;
 	}
+
+	// Set disconnect timeout ms
+	enet_peer_timeout(n->peer, 0, 0, TIMEOUT_MS);
+
 	return;
 
 bail:
