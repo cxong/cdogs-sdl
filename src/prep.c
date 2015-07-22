@@ -761,10 +761,16 @@ bool ScreenWaitForGameStart(void)
 }
 static void CheckGameStart(menu_t *menu, void *data)
 {
-	UNUSED(data);
 	if (gMission.HasStarted)
 	{
 		// Hack to force the menu to exit
+		menu->type = MENU_TYPE_RETURN;
+	}
+	// Check disconnections
+	if (!NetClientIsConnected(&gNetClient))
+	{
+		MenuSystem *ms = data;
+		ms->hasAbort = true;
 		menu->type = MENU_TYPE_RETURN;
 	}
 }

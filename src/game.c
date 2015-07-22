@@ -70,6 +70,7 @@
 #include <cdogs/los.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
+#include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
@@ -427,6 +428,11 @@ static GameLoopResult RunGameUpdate(void *data)
 	if (!gCampaign.IsClient)
 	{
 		CheckMissionCompletion(rData->m);
+	}
+	else if (!NetClientIsConnected(&gNetClient))
+	{
+		// Check if disconnected from server; end mission
+		rData->m->isDone = true;
 	}
 
 	HandleGameEvents(

@@ -122,7 +122,8 @@ void NetClientPoll(NetClient *n)
 		check = enet_host_service(n->client, &event, 0);
 		if (check < 0)
 		{
-			printf("Connection error %d\n", check);
+			LOG(LM_NET, LL_ERROR, "connection error(%d)", check);
+			NetClientTerminate(n);
 			return;
 		}
 		else if (check > 0)
@@ -132,8 +133,12 @@ void NetClientPoll(NetClient *n)
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
 				break;
+			case ENET_EVENT_TYPE_DISCONNECT:
+				LOG(LM_NET, LL_WARN, "disconnected");
+				NetClientTerminate(n);
+				return;
 			default:
-				printf("Unexpected event type %d\n", event.type);
+				LOG(LM_NET, LL_ERROR, "Unexpected event type(%d)", (int)event.type);
 				break;
 			}
 		}
