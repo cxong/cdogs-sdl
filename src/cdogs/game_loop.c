@@ -74,7 +74,7 @@ void GameLoop(GameLoopData *data)
 			continue;
 		}
 
-		if (gCampaign.IsClient || !ConfigGetBool(&gConfig, "StartServer"))
+		if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
 		{
 			MusicSetPlaying(
 				&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
