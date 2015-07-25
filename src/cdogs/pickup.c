@@ -191,8 +191,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			e.u.AddKeys.KeyFlags = p->class->u.Keys;
 			e.u.AddKeys.Pos = Vec2i2Net(actorPos);
 			GameEventsEnqueue(&gGameEvents, e);
-			// Clear cache since we may now have new paths
-			PathCacheClear(&gPathCache);
 		}
 		break;
 

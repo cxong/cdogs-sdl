@@ -92,9 +92,8 @@ static void DestroyObject(
 static void DamageObject(
 	const Vec2i pos, const int power, const int flags,
 	const int playerUID, const int uid,
-	const TTileItem *target, const HitSounds *hitSounds)
+	TObject *o, const HitSounds *hitSounds)
 {
-	TObject *o = CArrayGet(&gObjs, target->id);
 	// Don't bother if object already destroyed
 	if (o->Health <= 0)
 	{
@@ -176,7 +175,7 @@ static bool DoDamageCharacter(
 	const int flags,
 	const int playerUID,
 	const int uid,
-	const TTileItem *target,
+	TActor *actor,
 	const special_damage_e special,
 	const HitSounds *hitSounds,
 	const bool allowFriendlyHitSound);
@@ -203,10 +202,13 @@ bool DamageSomething(
 		return DoDamageCharacter(
 			pos, hitVector,
 			power, flags, playerUID, uid,
-			target, special, hitSounds, allowFriendlyHitSound);
+			CArrayGet(&gActors, target->id), special,
+			hitSounds, allowFriendlyHitSound);
 
 	case KIND_OBJECT:
-		DamageObject(pos, power, flags, playerUID, uid, target, hitSounds);
+		DamageObject(
+			pos, power, flags, playerUID, uid, CArrayGet(&gObjs, target->id),
+			hitSounds);
 		break;
 
 	default:
@@ -222,13 +224,12 @@ static bool DoDamageCharacter(
 	const int flags,
 	const int playerUID,
 	const int uid,
-	const TTileItem *target,
+	TActor *actor,
 	const special_damage_e special,
 	const HitSounds *hitSounds,
 	const bool allowFriendlyHitSound)
 {
 	// Create events: hit, damage, score
-	TActor *actor = CArrayGet(&gActors, target->id);
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
 	bool canHit = CanHitCharacter(flags, uid, actor);
 	if (canHit)

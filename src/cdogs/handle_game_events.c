@@ -365,6 +365,8 @@ static void HandleGameEvent(
 		gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
 		SoundPlayAt(
 			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e.u.AddKeys.Pos));
+		// Clear cache since we may now have new paths
+		PathCacheClear(&gPathCache);
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (e.u.MissionComplete.ShowMsg)
