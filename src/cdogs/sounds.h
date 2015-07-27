@@ -115,9 +115,9 @@ typedef struct
 // for a bullet or weapon type
 typedef struct
 {
-	Mix_Chunk *Object;
-	Mix_Chunk *Flesh;
-	Mix_Chunk *Wall;
+	char *Object;
+	char *Flesh;
+	char *Wall;
 } HitSounds;
 
 void SoundInitialize(SoundDevice *device, const char *path);

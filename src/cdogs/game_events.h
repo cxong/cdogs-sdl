@@ -70,6 +70,7 @@ typedef enum
 	GAME_EVENT_ACTOR_ADD_AMMO,
 	GAME_EVENT_ACTOR_USE_AMMO,
 	GAME_EVENT_ACTOR_DIE,
+	GAME_EVENT_ACTOR_MELEE,
 
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_REMOVE_PICKUP,
@@ -141,6 +142,7 @@ typedef struct
 		NActorAddAmmo AddAmmo;
 		NActorUseAmmo UseAmmo;
 		NActorDie ActorDie;
+		NActorMelee Melee;
 		NAddPickup AddPickup;
 		NRemovePickup RemovePickup;
 		struct

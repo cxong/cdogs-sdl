@@ -10,6 +10,8 @@ NSound.Sound max_size:128
 
 NActorReplaceGun.Gun max_size:128
 
+NActorMelee.BulletClass max_size:128
+
 NAddPickup.PickupClass max_size:128
 
 NAddBullet.BulletClass max_size:128

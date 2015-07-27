@@ -90,7 +90,7 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 static void DestroyObject(
 	TObject *o, const int flags, const int playerUID, const int uid);
 static void DamageObject(
-	const Vec2i pos, const int power, const int flags,
+	const int power, const int flags,
 	const int playerUID, const int uid,
 	TObject *o, const HitSounds *hitSounds)
 {
@@ -108,11 +108,13 @@ static void DamageObject(
 		DestroyObject(o, flags, playerUID, uid);
 	}
 
-	if (ConfigGetBool(&gConfig, "Sound.Hits") &&
-		hitSounds != NULL &&
-		power > 0)
+	if (hitSounds != NULL && power > 0)
 	{
-		SoundPlayAt(&gSoundDevice, hitSounds->Object, pos);
+		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
+		strcpy(e.u.SoundAt.Sound, hitSounds->Object);
+		e.u.SoundAt.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
+		e.u.SoundAt.IsHit = true;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 static void DestroyObject(
@@ -168,8 +170,22 @@ static void DestroyObject(
 	PathCacheClear(&gPathCache);
 }
 
-static bool DoDamageCharacter(
-	const Vec2i pos,
+bool CanHit(const int flags, const int uid, const TTileItem *target)
+{
+	switch (target->kind)
+	{
+	case KIND_CHARACTER:
+		return CanHitCharacter(flags, uid, CArrayGet(&gActors, target->id));
+	case KIND_OBJECT:
+		return true;
+	default:
+		CASSERT(false, "cannot damage tile item kind");
+		break;
+	}
+	return false;
+}
+
+static void DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
@@ -179,46 +195,37 @@ static bool DoDamageCharacter(
 	const special_damage_e special,
 	const HitSounds *hitSounds,
 	const bool allowFriendlyHitSound);
-bool DamageSomething(
+void Damage(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
 	const int playerUID,
 	const int uid,
-	TTileItem *target,
+	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special,
 	const HitSounds *hitSounds,
 	const bool allowFriendlyHitSound)
 {
-	if (!target)
-	{
-		return 0;
-	}
-
-	const Vec2i pos = Vec2iNew(target->x, target->y);
-	switch (target->kind)
+	switch (targetKind)
 	{
 	case KIND_CHARACTER:
-		return DoDamageCharacter(
-			pos, hitVector,
+		DoDamageCharacter(
+			hitVector,
 			power, flags, playerUID, uid,
-			CArrayGet(&gActors, target->id), special,
+			ActorGetByUID(targetUID), special,
 			hitSounds, allowFriendlyHitSound);
-
+		break;
 	case KIND_OBJECT:
 		DamageObject(
-			pos, power, flags, playerUID, uid, CArrayGet(&gObjs, target->id),
+			power, flags, playerUID, uid, ObjGetByUID(targetUID),
 			hitSounds);
 		break;
-
 	default:
+		CASSERT(false, "cannot damage tile item kind");
 		break;
 	}
-
-	return 1;
 }
-static bool DoDamageCharacter(
-	const Vec2i pos,
+static void DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
 	const int flags,
@@ -231,121 +238,122 @@ static bool DoDamageCharacter(
 {
 	// Create events: hit, damage, score
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
-	bool canHit = CanHitCharacter(flags, uid, actor);
-	if (canHit)
+	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
+	const Vec2i realPos = Vec2iFull2Real(actor->Pos);
+	GameEvent e = GameEventNew(GAME_EVENT_HIT_CHARACTER);
+	e.u.HitCharacter.TargetId = actor->tileItem.id;
+	e.u.HitCharacter.Special = special;
+	GameEventsEnqueue(&gGameEvents, e);
+	if (hitSounds != NULL &&
+		!ActorIsImmune(actor, special) &&
+		(allowFriendlyHitSound || !ActorIsInvulnerable(
+		actor, flags, playerUID, gCampaign.Entry.Mode)))
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_HIT_CHARACTER);
-		e.u.HitCharacter.TargetId = actor->tileItem.id;
-		e.u.HitCharacter.Special = special;
+		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
+		strcpy(e.u.SoundAt.Sound, hitSounds->Flesh);
+		e.u.SoundAt.Pos = Vec2i2Net(realPos);
+		e.u.SoundAt.IsHit = true;
 		GameEventsEnqueue(&gGameEvents, e);
-		if (ConfigGetBool(&gConfig, "Sound.Hits") && hitSounds != NULL &&
-			!ActorIsImmune(actor, special) &&
-			(allowFriendlyHitSound || !ActorIsInvulnerable(
-			actor, flags, playerUID, gCampaign.Entry.Mode)))
-		{
-			SoundPlayAt(&gSoundDevice, hitSounds->Flesh, pos);
-		}
-		if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
-		{
-			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-			ei.u.ActorImpulse.Id = actor->tileItem.id;
-			ei.u.ActorImpulse.Vel = Vec2iScaleDiv(
-				Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
-			GameEventsEnqueue(&gGameEvents, ei);
-		}
-		if (CanDamageCharacter(flags, playerUID, uid, actor, special))
-		{
-			GameEvent e1 = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
-			e1.u.ActorDamage.Power = power;
-			e1.u.ActorDamage.PlayerUID = playerUID;
-			e1.u.ActorDamage.TargetUID = actor->uid;
-			e1.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
-			GameEventsEnqueue(&gGameEvents, e1);
+	}
+	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
+	{
+		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+		ei.u.ActorImpulse.Id = actor->tileItem.id;
+		ei.u.ActorImpulse.Vel = Vec2iScaleDiv(
+			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
+		GameEventsEnqueue(&gGameEvents, ei);
+	}
+	if (CanDamageCharacter(flags, playerUID, uid, actor, special))
+	{
+		GameEvent e1 = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
+		e1.u.ActorDamage.Power = power;
+		e1.u.ActorDamage.PlayerUID = playerUID;
+		e1.u.ActorDamage.TargetUID = actor->uid;
+		e1.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
+		GameEventsEnqueue(&gGameEvents, e1);
 
-			if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
+		if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
+		{
+			GameEvent eb = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			eb.u.AddParticle.FullPos = actor->Pos;
+			eb.u.AddParticle.Z = 10 * Z_FACTOR;
+			int bloodPower = power * 2;
+			int bloodSize = 1;
+			while (bloodPower > 0)
 			{
-				GameEvent eb = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				eb.u.AddParticle.FullPos = Vec2iReal2Full(pos);
-				eb.u.AddParticle.Z = 10 * Z_FACTOR;
-				int bloodPower = power * 2;
-				int bloodSize = 1;
-				while (bloodPower > 0)
+				switch (bloodSize)
 				{
-					switch (bloodSize)
-					{
-					case 1:
-						eb.u.AddParticle.Class =
-							StrParticleClass(&gParticleClasses, "blood1");
-						break;
-					case 2:
-						eb.u.AddParticle.Class =
-							StrParticleClass(&gParticleClasses, "blood2");
-						break;
-					default:
-						eb.u.AddParticle.Class =
-							StrParticleClass(&gParticleClasses, "blood3");
-						break;
-					}
-					bloodSize++;
-					if (bloodSize > 3)
-					{
-						bloodSize = 1;
-					}
-					if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
-					{
-						eb.u.AddParticle.Vel = Vec2iScaleDiv(
-							Vec2iScale(hitVector, (rand() % 8 + 8) * power),
-							15 * SHOT_IMPULSE_DIVISOR);
-					}
-					else
-					{
-						eb.u.AddParticle.Vel = Vec2iScaleDiv(
-							Vec2iScale(hitVector, rand() % 8 + 8), 20);
-					}
-					eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
-					eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
-					eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
-					eb.u.AddParticle.DZ = (rand() % 6) + 6;
-					eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
-					GameEventsEnqueue(&gGameEvents, eb);
-					switch (ConfigGetEnum(&gConfig, "Game.Gore"))
-					{
-					case GORE_LOW:
-						bloodPower /= 8;
-						break;
-					case GORE_MEDIUM:
-						bloodPower /= 2;
-						break;
-					default:
-						bloodPower = bloodPower * 7 / 8;
-						break;
-					}
+				case 1:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood1");
+					break;
+				case 2:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood2");
+					break;
+				default:
+					eb.u.AddParticle.Class =
+						StrParticleClass(&gParticleClasses, "blood3");
+					break;
 				}
-			}
-
-			// Don't score for friendly or player hits
-			const bool isFriendly =
-				(actor->flags & FLAGS_GOOD_GUY) ||
-				(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
-			if (playerUID >= 0 && power != 0 && !isFriendly)
-			{
-				// Calculate score based on
-				// if they hit a penalty character
-				GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
-				e2.u.Score.PlayerUID = playerUID;
-				if (actor->flags & FLAGS_PENALTY)
+				bloodSize++;
+				if (bloodSize > 3)
 				{
-					e2.u.Score.Score = PENALTY_MULTIPLIER * power;
+					bloodSize = 1;
+				}
+				if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
+				{
+					eb.u.AddParticle.Vel = Vec2iScaleDiv(
+						Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+						15 * SHOT_IMPULSE_DIVISOR);
 				}
 				else
 				{
-					e2.u.Score.Score = power;
+					eb.u.AddParticle.Vel = Vec2iScaleDiv(
+						Vec2iScale(hitVector, rand() % 8 + 8), 20);
 				}
-				GameEventsEnqueue(&gGameEvents, e2);
+				eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
+				eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
+				eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+				eb.u.AddParticle.DZ = (rand() % 6) + 6;
+				eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
+				GameEventsEnqueue(&gGameEvents, eb);
+				switch (ConfigGetEnum(&gConfig, "Game.Gore"))
+				{
+				case GORE_LOW:
+					bloodPower /= 8;
+					break;
+				case GORE_MEDIUM:
+					bloodPower /= 2;
+					break;
+				default:
+					bloodPower = bloodPower * 7 / 8;
+					break;
+				}
 			}
 		}
+
+		// Don't score for friendly or player hits
+		const bool isFriendly =
+			(actor->flags & FLAGS_GOOD_GUY) ||
+			(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
+		if (playerUID >= 0 && power != 0 && !isFriendly)
+		{
+			// Calculate score based on
+			// if they hit a penalty character
+			GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
+			e2.u.Score.PlayerUID = playerUID;
+			if (actor->flags & FLAGS_PENALTY)
+			{
+				e2.u.Score.Score = PENALTY_MULTIPLIER * power;
+			}
+			else
+			{
+				e2.u.Score.Score = power;
+			}
+			GameEventsEnqueue(&gGameEvents, e2);
+		}
 	}
-	return canHit;
 }
 
 
@@ -561,16 +569,33 @@ bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 static bool HitItemFunc(TTileItem *ti, void *data)
 {
 	HitItemData *hData = data;
-	hData->HasHit = DamageSomething(
-		hData->Obj->vel, hData->Obj->bulletClass->Power,
-		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->uid,
-		ti,
-		hData->Obj->bulletClass->Special,
-		hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,
-		true);
-	if (hData->HasHit && hData->Obj->soundLock <= 0)
+	hData->HasHit = CanHit(hData->Obj->flags, hData->Obj->uid, ti);
+	if (hData->HasHit)
 	{
-		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+		int targetUID = -1;
+		switch (ti->kind)
+		{
+		case KIND_CHARACTER:
+			targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
+			break;
+		case KIND_OBJECT:
+			targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
+			break;
+		default:
+			CASSERT(false, "cannot damage target kind");
+			break;
+		}
+		Damage(
+			hData->Obj->vel, hData->Obj->bulletClass->Power,
+			hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->uid,
+			ti->kind, targetUID,
+			hData->Obj->bulletClass->Special,
+			hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,
+			true);
+		if (hData->Obj->soundLock <= 0)
+		{
+			hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+		}
 	}
 	// Whether to produce multiple hits from the same TMobileObject
 	return hData->MultipleHits;

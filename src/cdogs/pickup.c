@@ -243,6 +243,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			strcpy(es.u.SoundAt.Sound, sound);
 			es.u.SoundAt.Pos = Vec2i2Net(actorPos);
+			es.u.SoundAt.IsHit = false;
 			GameEventsEnqueue(&gGameEvents, es);
 		}
 		GameEvent e = GameEventNew(GAME_EVENT_REMOVE_PICKUP);

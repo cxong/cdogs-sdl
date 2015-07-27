@@ -209,10 +209,7 @@ static void LoadGunDescription(
 
 	g->name = GetString(node, "Name");
 
-	if (json_find_first_label(node, "Description"))
-	{
-		g->Description = GetString(node, "Description");
-	}
+	LoadStr(&g->Description, node, "Description");
 
 	if (json_find_first_label(node, "Bullet"))
 	{

@@ -120,10 +120,7 @@ void AmmoLoadJSON(CArray *ammo, json_t *node)
 }
 static void LoadAmmo(Ammo *a, json_t *node)
 {
-	if (json_find_first_label(node, "Name"))
-	{
-		a->Name = GetString(node, "Name");
-	}
+	a->Name = GetString(node, "Name");
 	char *tmp;
 	tmp = GetString(node, "Pic");
 	a->Pic = PicManagerGetPic(&gPicManager, tmp);

@@ -118,6 +118,14 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 	node = node->next;
 	value->y = atoi(node->text);
 }
+void LoadStr(char **value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = json_unescape(node->text);
+}
 char *GetString(json_t *node, const char *name)
 {
 	return json_unescape(json_find_first_label(node, name)->child->text);

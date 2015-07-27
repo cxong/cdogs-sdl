@@ -206,7 +206,8 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 					return false;
 				}
 				SoundPlayAt(
-					&gSoundDevice, obj->bulletClass->HitSound.Wall, realPos);
+					&gSoundDevice,
+					StrSound(obj->bulletClass->HitSound.Wall), realPos);
 			}
 			else
 			{
@@ -249,7 +250,8 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	if (hitWall && !Vec2iIsZero(obj->vel))
 	{
-		SoundPlayAt(&gSoundDevice, obj->bulletClass->HitSound.Wall, realPos);
+		SoundPlayAt(
+			&gSoundDevice, StrSound(obj->bulletClass->HitSound.Wall), realPos);
 	}
 	if ((hitWall && !obj->bulletClass->WallBounces) ||
 		(hitItem && obj->bulletClass->HitsObjects))
@@ -341,6 +343,7 @@ void BulletInitialize(BulletClasses *bullets)
 	CArrayInit(&bullets->Classes, sizeof(BulletClass));
 	CArrayInit(&bullets->CustomClasses, sizeof(BulletClass));
 }
+static void BulletClassFree(BulletClass *b);
 void BulletLoadJSON(
 	BulletClasses *bullets, CArray *classes, json_t *bulletNode)
 {
@@ -368,21 +371,32 @@ void BulletLoadJSON(
 		CArrayPushBack(classes, &b);
 	}
 
+	BulletClassFree(defaultB);
 	bullets->root = bulletNode;
 }
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
 {
+	memset(b, 0, sizeof *b);
 	if (defaultBullet != NULL)
 	{
 		memcpy(b, defaultBullet, sizeof *b);
+		if (defaultBullet->HitSound.Object != NULL)
+		{
+			CSTRDUP(b->HitSound.Object, defaultBullet->HitSound.Object);
+		}
+		if (defaultBullet->HitSound.Flesh != NULL)
+		{
+			CSTRDUP(b->HitSound.Flesh, defaultBullet->HitSound.Flesh);
+		}
+		if (defaultBullet->HitSound.Wall != NULL)
+		{
+			CSTRDUP(b->HitSound.Wall, defaultBullet->HitSound.Wall);
+		}
 	}
 	char *tmp;
 
-	if (json_find_first_label(node, "Name"))
-	{
-		b->Name = GetString(node, "Name");
-	}
+	LoadStr(&b->Name, node, "Name");
 	if (json_find_first_label(node, "Pic"))
 	{
 		json_t *pic = json_find_first_label(node, "Pic")->child;
@@ -504,9 +518,15 @@ static void LoadBullet(
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		LoadSoundFromNode(&b->HitSound.Object, hitSounds, "Object");
-		LoadSoundFromNode(&b->HitSound.Flesh, hitSounds, "Flesh");
-		LoadSoundFromNode(&b->HitSound.Wall, hitSounds, "Wall");
+		CFREE(b->HitSound.Object);
+		b->HitSound.Object = NULL;
+		LoadStr(&b->HitSound.Object, hitSounds, "Object");
+		CFREE(b->HitSound.Flesh);
+		b->HitSound.Flesh = NULL;
+		LoadStr(&b->HitSound.Flesh, hitSounds, "Flesh");
+		CFREE(b->HitSound.Wall);
+		b->HitSound.Wall = NULL;
+		LoadStr(&b->HitSound.Wall, hitSounds, "Wall");
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
 	LoadBool(&b->HitsObjects, node, "HitsObjects");
@@ -565,14 +585,20 @@ void BulletClassesClear(CArray *classes)
 {
 	for (int i = 0; i < (int)classes->size; i++)
 	{
-		BulletClass *b = CArrayGet(classes, i);
-		CFREE(b->Name);
-		CArrayTerminate(&b->OutOfRangeGuns);
-		CArrayTerminate(&b->HitGuns);
-		CArrayTerminate(&b->Falling.DropGuns);
-		CArrayTerminate(&b->ProximityGuns);
+		BulletClassFree(CArrayGet(classes, i));
 	}
 	CArrayClear(classes);
+}
+static void BulletClassFree(BulletClass *b)
+{
+	CFREE(b->Name);
+	CFREE(b->HitSound.Object);
+	CFREE(b->HitSound.Flesh);
+	CFREE(b->HitSound.Wall);
+	CArrayTerminate(&b->OutOfRangeGuns);
+	CArrayTerminate(&b->HitGuns);
+	CArrayTerminate(&b->Falling.DropGuns);
+	CArrayTerminate(&b->ProximityGuns);
 }
 
 void BulletAdd(const NAddBullet add)

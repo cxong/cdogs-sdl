@@ -57,6 +57,7 @@ message NScore {
 message NSound {
 	required string Sound = 1;
 	required NVec2i Pos = 2;
+	required bool IsHit = 3;
 }
 
 message NVec2i {
@@ -130,6 +131,14 @@ message NActorUseAmmo {
 
 message NActorDie {
 	required uint32 UID = 1;
+}
+
+message NActorMelee {
+	required uint32 UID = 1;
+	required string BulletClass = 2;
+	required bool HitSounds = 3;
+	required int32 TargetKind = 4;
+	required uint32 TargetUID = 5;
 }
 
 message NAddPickup {

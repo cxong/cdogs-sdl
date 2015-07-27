@@ -86,9 +86,12 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
-		SoundPlayAt(
-			&gSoundDevice,
-			StrSound(e.u.SoundAt.Sound), Net2Vec2i(e.u.SoundAt.Pos));
+		if (!e.u.SoundAt.IsHit || ConfigGetBool(&gConfig, "Sound.Hits"))
+		{
+			SoundPlayAt(
+				&gSoundDevice,
+				StrSound(e.u.SoundAt.Sound), Net2Vec2i(e.u.SoundAt.Pos));
+		}
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
 		camera->shake = ScreenShakeAdd(
@@ -194,7 +197,6 @@ static void HandleGameEvent(
 	case GAME_EVENT_ACTOR_DIE:
 		{
 			TActor *a = ActorGetByUID(e.u.ActorDie.UID);
-			if (!a->isInUse) break;
 
 			// Check if the player has lives to revive
 			PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
@@ -214,6 +216,21 @@ static void HandleGameEvent(
 			}
 
 			ActorDestroy(a);
+		}
+		break;
+	case GAME_EVENT_ACTOR_MELEE:
+		{
+			const TActor *a = ActorGetByUID(e.u.Melee.UID);
+			if (!a->isInUse) break;
+			const BulletClass *b = StrBulletClass(e.u.Melee.BulletClass);
+			Damage(
+				Vec2iZero(),
+				b->Power,
+				a->flags, a->PlayerUID, a->uid,
+				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
+				SPECIAL_NONE,
+				e.u.Melee.HitSounds ? &b->HitSound : NULL,
+				false);
 		}
 		break;
 	case GAME_EVENT_ADD_PICKUP:

@@ -76,6 +76,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, true, NActorAddAmmo_fields },
 	{ GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields },
 	{ GAME_EVENT_ACTOR_DIE, true, false, true, true, NActorDie_fields },
+	{ GAME_EVENT_ACTOR_MELEE, false, true, true, true, NActorMelee_fields },
 
 	{ GAME_EVENT_ADD_PICKUP, true, false, true, true, NAddPickup_fields },
 	{ GAME_EVENT_REMOVE_PICKUP, true, false, true, true, NRemovePickup_fields },
@@ -133,6 +134,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_ACTOR_SWITCH_GUN: actorUID = e.u.ActorSwitchGun.UID; break;
 		case GAME_EVENT_ACTOR_PICKUP_ALL: actorUID = e.u.ActorPickupAll.UID; break;
 		case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
+		case GAME_EVENT_ACTOR_MELEE: actorUID = e.u.Melee.UID; break;
 		case GAME_EVENT_GUN_FIRE:
 			actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
 			break;

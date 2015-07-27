@@ -93,13 +93,12 @@ extern CArray gMobObjs;	// of TMobileObject
 extern CArray gObjs;	// of TObject
 
 
-bool DamageSomething(
+bool CanHit(const int flags, const int uid, const TTileItem *target);
+void Damage(
 	const Vec2i hitVector,
 	const int power,
-	const int flags,
-	const int playerUID,
-	const int uid,
-	TTileItem *target,
+	const int flags, const int playerUID, const int uid,
+	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special,
 	const HitSounds *hitSounds,
 	const bool allowFriendlyHitSound);

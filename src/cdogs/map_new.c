@@ -329,6 +329,7 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 			CArrayPushBack(&m->u.Static.Tiles, &n);
 			pch = strtok(NULL, ",");
 		}
+		CFREE(tileCSV);
 	}
 
 	LoadStaticItems(m, node, "StaticItems", version);

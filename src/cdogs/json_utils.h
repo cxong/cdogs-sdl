@@ -44,7 +44,11 @@ void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
 void LoadVec2i(Vec2i *value, json_t *node, const char *name);
-char *GetString(json_t *node, const char *name);	// remember to free
+
+// remember to free
+void LoadStr(char **value, json_t *node, const char *name);
+char *GetString(json_t *node, const char *name);
+
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 // Load a const Pic * based on a name and old pic reference
 void LoadPic(
