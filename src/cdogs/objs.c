@@ -249,7 +249,7 @@ static void DoDamageCharacter(
 		(allowFriendlyHitSound || !ActorIsInvulnerable(
 		actor, flags, playerUID, gCampaign.Entry.Mode)))
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
+		e = GameEventNew(GAME_EVENT_SOUND_AT);
 		strcpy(e.u.SoundAt.Sound, hitSounds->Flesh);
 		e.u.SoundAt.Pos = Vec2i2Net(realPos);
 		e.u.SoundAt.IsHit = true;
@@ -257,26 +257,26 @@ static void DoDamageCharacter(
 	}
 	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 	{
-		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-		ei.u.ActorImpulse.Id = actor->tileItem.id;
-		ei.u.ActorImpulse.Vel = Vec2iScaleDiv(
+		e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+		e.u.ActorImpulse.Id = actor->tileItem.id;
+		e.u.ActorImpulse.Vel = Vec2iScaleDiv(
 			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
-		GameEventsEnqueue(&gGameEvents, ei);
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 	if (CanDamageCharacter(flags, playerUID, uid, actor, special))
 	{
-		GameEvent e1 = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
-		e1.u.ActorDamage.Power = power;
-		e1.u.ActorDamage.PlayerUID = playerUID;
-		e1.u.ActorDamage.TargetUID = actor->uid;
-		e1.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
-		GameEventsEnqueue(&gGameEvents, e1);
+		e = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
+		e.u.ActorDamage.Power = power;
+		e.u.ActorDamage.PlayerUID = playerUID;
+		e.u.ActorDamage.TargetUID = actor->uid;
+		e.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
+		GameEventsEnqueue(&gGameEvents, e);
 
 		if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
 		{
-			GameEvent eb = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-			eb.u.AddParticle.FullPos = actor->Pos;
-			eb.u.AddParticle.Z = 10 * Z_FACTOR;
+			e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			e.u.AddParticle.FullPos = actor->Pos;
+			e.u.AddParticle.Z = 10 * Z_FACTOR;
 			int bloodPower = power * 2;
 			int bloodSize = 1;
 			while (bloodPower > 0)
@@ -284,15 +284,15 @@ static void DoDamageCharacter(
 				switch (bloodSize)
 				{
 				case 1:
-					eb.u.AddParticle.Class =
+					e.u.AddParticle.Class =
 						StrParticleClass(&gParticleClasses, "blood1");
 					break;
 				case 2:
-					eb.u.AddParticle.Class =
+					e.u.AddParticle.Class =
 						StrParticleClass(&gParticleClasses, "blood2");
 					break;
 				default:
-					eb.u.AddParticle.Class =
+					e.u.AddParticle.Class =
 						StrParticleClass(&gParticleClasses, "blood3");
 					break;
 				}
@@ -303,21 +303,21 @@ static void DoDamageCharacter(
 				}
 				if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 				{
-					eb.u.AddParticle.Vel = Vec2iScaleDiv(
+					e.u.AddParticle.Vel = Vec2iScaleDiv(
 						Vec2iScale(hitVector, (rand() % 8 + 8) * power),
 						15 * SHOT_IMPULSE_DIVISOR);
 				}
 				else
 				{
-					eb.u.AddParticle.Vel = Vec2iScaleDiv(
+					e.u.AddParticle.Vel = Vec2iScaleDiv(
 						Vec2iScale(hitVector, rand() % 8 + 8), 20);
 				}
-				eb.u.AddParticle.Vel.x += (rand() % 128) - 64;
-				eb.u.AddParticle.Vel.y += (rand() % 128) - 64;
-				eb.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
-				eb.u.AddParticle.DZ = (rand() % 6) + 6;
-				eb.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
-				GameEventsEnqueue(&gGameEvents, eb);
+				e.u.AddParticle.Vel.x += (rand() % 128) - 64;
+				e.u.AddParticle.Vel.y += (rand() % 128) - 64;
+				e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+				e.u.AddParticle.DZ = (rand() % 6) + 6;
+				e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
+				GameEventsEnqueue(&gGameEvents, e);
 				switch (ConfigGetEnum(&gConfig, "Game.Gore"))
 				{
 				case GORE_LOW:
@@ -341,17 +341,17 @@ static void DoDamageCharacter(
 		{
 			// Calculate score based on
 			// if they hit a penalty character
-			GameEvent e2 = GameEventNew(GAME_EVENT_SCORE);
-			e2.u.Score.PlayerUID = playerUID;
+			e = GameEventNew(GAME_EVENT_SCORE);
+			e.u.Score.PlayerUID = playerUID;
 			if (actor->flags & FLAGS_PENALTY)
 			{
-				e2.u.Score.Score = PENALTY_MULTIPLIER * power;
+				e.u.Score.Score = PENALTY_MULTIPLIER * power;
 			}
 			else
 			{
-				e2.u.Score.Score = power;
+				e.u.Score.Score = power;
 			}
-			GameEventsEnqueue(&gGameEvents, e2);
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 }
