@@ -78,6 +78,7 @@ message NActorAdd {
 message NActorMove {
 	required uint32 UID = 1;
 	required NVec2i Pos = 2;
+	required NVec2i MoveVel = 3;
 }
 
 message NActorState {

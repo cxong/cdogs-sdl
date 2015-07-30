@@ -128,8 +128,8 @@ typedef struct
 typedef struct Actor
 {
 	Vec2i Pos;		// These are the full coordinates, including fractions
-	// Position that the player is attempting to move to, based on input
-	Vec2i MovePos;
+	// Vector that the player is attempting to move in, based on input
+	Vec2i MoveVel;
 	Vec2i Vel;
 	direction_e direction;
 	Animation anim;

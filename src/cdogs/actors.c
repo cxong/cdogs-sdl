@@ -384,6 +384,7 @@ void UpdateActorState(TActor * actor, int ticks)
 static Vec2i GetConstrainedFullPos(
 	const Map *map, const Vec2i fromFull, const Vec2i toFull,
 	const Vec2i size);
+static void OnMove(TActor *a);
 bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
@@ -472,11 +473,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		}
 	}
 
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
-	e.u.ActorMove.UID = actor->uid;
-	e.u.ActorMove.Pos.x = pos.x;
-	e.u.ActorMove.Pos.y = pos.y;
-	GameEventsEnqueue(&gGameEvents, e);
+	actor->Pos = pos;
+	OnMove(actor);
 
 	return true;
 }
@@ -577,13 +575,18 @@ static Vec2i GetConstrainedFullPos(
 	return fromFull;
 }
 
-static void CheckTrigger(const Vec2i tilePos);
-static void CheckRescue(const TActor *a);
 void ActorMove(const NActorMove am)
 {
 	TActor *a = ActorGetByUID(am.UID);
 	if (a == NULL || !a->isInUse) return;
 	a->Pos = Net2Vec2i(am.Pos);
+	a->MoveVel = Net2Vec2i(am.MoveVel);
+	OnMove(a);
+}
+static void CheckTrigger(const Vec2i tilePos);
+static void CheckRescue(const TActor *a);
+static void OnMove(TActor *a)
+{
 	const Vec2i realPos = Vec2iFull2Real(a->Pos);
 	MapTryMoveTileItem(&gMap, &a->tileItem, realPos);
 	if (MapIsTileInExit(&gMap, &a->tileItem))
@@ -828,11 +831,12 @@ static bool ActorTryChangeDirection(
 		CMD_HAS_DIRECTION(cmd) &&
 		(!(cmd & CMD_BUTTON2) || ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") != SWITCHMOVE_STRAFE) &&
 		(!(prevCmd & CMD_BUTTON1) || ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STRAFE);
-	if (willChangeDirecton)
+	const direction_e dir = CmdToDirection(cmd);
+	if (willChangeDirecton && dir != actor->direction)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIR);
 		e.u.ActorDir.UID = actor->uid;
-		e.u.ActorDir.Dir = (int32_t)CmdToDirection(cmd);
+		e.u.ActorDir.Dir = (int32_t)dir;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	return willChangeDirecton;
@@ -858,8 +862,6 @@ int ActorTryShoot(TActor *actor, int cmd)
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
 void CommandActor(TActor * actor, int cmd, int ticks)
 {
-	actor->MovePos = actor->Pos;
-
 	if (actor->confused)
 	{
 		cmd = CmdGetReverse(cmd);
@@ -926,24 +928,25 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		(cmd & CMD_BUTTON2));
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
+	actor->MoveVel = Vec2iZero();
 	if (willMove)
 	{
-		int moveAmount = ActorGetCharacter(actor)->speed * ticks;
+		const int moveAmount = ActorGetCharacter(actor)->speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
-			actor->MovePos.x -= moveAmount;
+			actor->MoveVel.x -= moveAmount;
 		}
 		else if (cmd & CMD_RIGHT)
 		{
-			actor->MovePos.x += moveAmount;
+			actor->MoveVel.x += moveAmount;
 		}
 		if (cmd & CMD_UP)
 		{
-			actor->MovePos.y -= moveAmount;
+			actor->MoveVel.y -= moveAmount;
 		}
 		else if (cmd & CMD_DOWN)
 		{
-			actor->MovePos.y += moveAmount;
+			actor->MoveVel.y += moveAmount;
 		}
 
 		if (actor->anim.Type != ACTORANIMATION_WALKING)
@@ -964,6 +967,17 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
+
+	// If we have changed our move commands, send the move event
+	if (cmd != actor->lastCmd)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
+		e.u.ActorMove.UID = actor->uid;
+		e.u.ActorMove.Pos = Vec2i2Net(actor->Pos);
+		e.u.ActorMove.MoveVel = Vec2i2Net(actor->MoveVel);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+
 	return willMove;
 }
 
@@ -1059,10 +1073,10 @@ void UpdateAllActors(int ticks)
 static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
+	Vec2i newPos = Vec2iAdd(actor->Pos, actor->MoveVel);
 	if (!Vec2iIsZero(actor->Vel))
 	{
-		actor->MovePos = Vec2iAdd(
-			actor->MovePos, Vec2iScale(actor->Vel, ticks));
+		newPos = Vec2iAdd(newPos, Vec2iScale(actor->Vel, ticks));
 
 		for (int i = 0; i < ticks; i++)
 		{
@@ -1085,10 +1099,9 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		}
 	}
 
-	if (!Vec2iEqual(actor->Pos, actor->MovePos))
+	if (!Vec2iEqual(actor->Pos, newPos))
 	{
-		TryMoveActor(actor, actor->MovePos);
-		actor->MovePos = Vec2iZero();
+		TryMoveActor(actor, newPos);
 	}
 	// Check if we're standing over any manual pickups
 	CheckManualPickups(actor);
