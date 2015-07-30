@@ -840,12 +840,14 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 	const int numPlayersAlive =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false);
 	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
+	const int numLocalPlayersAlive =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
 
 	Rect2i r;
 	r.Size = Vec2iNew(
 		hud->device->cachedConfig.Res.x,
 		hud->device->cachedConfig.Res.y);
-	if (numPlayersAlive <= 1)
+	if (numLocalPlayersAlive <= 1)
 	{
 		flags = 0;
 	}

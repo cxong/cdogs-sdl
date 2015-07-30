@@ -90,6 +90,40 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->UID, p->Char.maxHealth);
 }
 
+static void PlayerTerminate(PlayerData *p);
+void PlayerRemove(const int uid)
+{
+	// Find the player so we can remove by index
+	PlayerData *p = NULL;
+	int i;
+	for (i = 0; i < (int)gPlayerDatas.size; i++)
+	{
+		PlayerData *pi = CArrayGet(&gPlayerDatas, i);
+		if (pi->UID == uid)
+		{
+			p = pi;
+			break;
+		}
+	}
+	if (p == NULL)
+	{
+		return;
+	}
+	if (p->ActorUID >= 0)
+	{
+		ActorDestroy(ActorGetByUID(p->ActorUID));
+	}
+	PlayerTerminate(p);
+	CArrayDelete(&gPlayerDatas, i);
+
+	LOG(LM_MAIN, LL_INFO, "remove player UID(%d)", uid);
+}
+
+static void PlayerTerminate(PlayerData *p)
+{
+	CFREE(p->Char.bot);
+}
+
 NPlayerData PlayerDataDefault(const int idx)
 {
 	NPlayerData pd = NPlayerData_init_default;
@@ -209,8 +243,7 @@ void PlayerDataTerminate(CArray *p)
 {
 	for (int i = 0; i < (int)p->size; i++)
 	{
-		PlayerData *pd = CArrayGet(p, i);
-		CFREE(pd->Char.bot);
+		PlayerTerminate(CArrayGet(p, i));
 	}
 	CArrayTerminate(p);
 }

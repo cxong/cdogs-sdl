@@ -132,11 +132,18 @@ void NetServerPoll(NetServer *n)
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				{
-					printf("disconnected %x:%u.\n",
+					const int peerId = ((NetPeerData *)event.peer->data)->Id;
+					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %x:%u",
+						peerId,
 						event.peer->address.host,
 						event.peer->address.port);
-					/* Reset the peer's client information. */
 					CFREE(event.peer->data);
+					// Remove client's players
+					for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+					{
+						const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
+						PlayerRemove(cid);
+					}
 				}
 				break;
 
@@ -199,12 +206,10 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			{
 				const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
 				const PlayerData *pData = PlayerDataGetByUID(cid);
-				if (pData != NULL)
-				{
-					GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-					e.u.PlayerData = PlayerDataMissionReset(pData);
-					GameEventsEnqueue(&gGameEvents, e);
-				}
+				if (pData == NULL) continue;
+				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+				e.u.PlayerData = PlayerDataMissionReset(pData);
+				GameEventsEnqueue(&gGameEvents, e);
 			}
 			// Flush game events to make sure we reset player data
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);

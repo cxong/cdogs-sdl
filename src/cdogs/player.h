@@ -68,6 +68,7 @@ extern CArray gPlayerDatas;	// of PlayerData
 
 void PlayerDataInit(CArray *p);
 void PlayerDataAddOrUpdate(const NPlayerData pd);
+void PlayerRemove(const int uid);
 NPlayerData PlayerDataDefault(const int idx);
 NPlayerData PlayerDataMissionReset(const PlayerData *p);
 void PlayerDataTerminate(CArray *p);
