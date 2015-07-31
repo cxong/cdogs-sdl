@@ -258,9 +258,10 @@ static void DoDamageCharacter(
 	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 	{
 		e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-		e.u.ActorImpulse.Id = actor->tileItem.id;
-		e.u.ActorImpulse.Vel = Vec2iScaleDiv(
-			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR);
+		e.u.ActorImpulse.UID = actor->uid;
+		e.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScaleDiv(
+			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR));
+		e.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	if (CanDamageCharacter(flags, playerUID, uid, actor, special))

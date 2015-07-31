@@ -96,6 +96,12 @@ message NActorSlide {
 	required NVec2i Vel = 2;
 }
 
+message NActorImpulse {
+	required uint32 UID = 1;
+	required NVec2i Vel = 2;
+	required NVec2i Pos = 3;
+}
+
 message NActorSwitchGun {
 	required uint32 UID = 1;
 	required uint32 GunIdx = 2;

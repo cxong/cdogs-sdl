@@ -386,27 +386,29 @@ static GameLoopResult RunGameUpdate(void *data)
 			}
 			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = CAMERA_SPLIT_PADDING;
-			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-			ei.u.ActorImpulse.Id = p->tileItem.id;
-			ei.u.ActorImpulse.Vel = p->Vel;
+			Vec2i vel = p->Vel;
 			if (screen.x + pad > p->tileItem.x && p->Vel.x < 256)
 			{
-				ei.u.ActorImpulse.Vel.x = 256 - p->Vel.x;
+				vel.x = MAX(256 - p->Vel.x, 1024);
 			}
 			else if (screen.x + w - pad < p->tileItem.x && p->Vel.x > -256)
 			{
-				ei.u.ActorImpulse.Vel.x = -256 - p->Vel.x;
+				vel.x = MIN(-256 - p->Vel.x, -1024);
 			}
 			if (screen.y + pad > p->tileItem.y && p->Vel.y < 256)
 			{
-				ei.u.ActorImpulse.Vel.y = 256 - p->Vel.y;
+				vel.y = MAX(256 - p->Vel.y, 1024);
 			}
 			else if (screen.y + h - pad < p->tileItem.y && p->Vel.y > -256)
 			{
-				ei.u.ActorImpulse.Vel.y = -256 - p->Vel.y;
+				vel.y = MIN(-256 - p->Vel.y, -1024);
 			}
-			if (!Vec2iEqual(ei.u.ActorImpulse.Vel, p->Vel))
+			if (!Vec2iEqual(vel, p->Vel))
 			{
+				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+				ei.u.ActorImpulse.UID = p->uid;
+				ei.u.ActorImpulse.Vel = Vec2i2Net(vel);
+				ei.u.ActorImpulse.Pos = Vec2i2Net(p->Pos);
 				GameEventsEnqueue(&gGameEvents, ei);
 			}
 		}

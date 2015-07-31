@@ -64,6 +64,7 @@ typedef enum
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
 	GAME_EVENT_ACTOR_SLIDE,
+	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_ACTOR_SWITCH_GUN,
 	GAME_EVENT_ACTOR_PICKUP_ALL,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
@@ -84,7 +85,6 @@ typedef enum
 	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_ADD_PARTICLE,
 	GAME_EVENT_HIT_CHARACTER,
-	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_TRIGGER,
 	GAME_EVENT_EXPLORE_TILE,
@@ -137,6 +137,7 @@ typedef struct
 		NActorState ActorState;
 		NActorDir ActorDir;
 		NActorSlide ActorSlide;
+		NActorImpulse ActorImpulse;
 		NActorSwitchGun ActorSwitchGun;
 		NActorPickupAll ActorPickupAll;
 		NActorReplaceGun ActorReplaceGun;
@@ -164,11 +165,6 @@ typedef struct
 			int TargetId;
 			special_damage_e Special;
 		} HitCharacter;
-		struct
-		{
-			int Id;
-			Vec2i Vel;
-		} ActorImpulse;
 		ActorDamage ActorDamage;
 		NTrigger TriggerEvent;
 		NExploreTile ExploreTile;

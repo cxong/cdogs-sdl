@@ -1033,7 +1033,8 @@ void UpdateAllActors(int ticks)
 		}
 		// Find actors that are on the same team and colliding,
 		// and repel them
-		if (gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
+		if (!gCampaign.IsClient &&
+			gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 		{
 			Vec2i realPos = Vec2iFull2Real(actor->Pos);
 			TTileItem *collidingItem = CollideGetFirstItem(
@@ -1054,11 +1055,13 @@ void UpdateAllActors(int ticks)
 					}
 					v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
 					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-					e.u.ActorImpulse.Id = actor->tileItem.id;
-					e.u.ActorImpulse.Vel = v;
+					e.u.ActorImpulse.UID = actor->uid;
+					e.u.ActorImpulse.Vel = Vec2i2Net(v);
+					e.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
-					e.u.ActorImpulse.Id = collidingActor->tileItem.id;
-					e.u.ActorImpulse.Vel = Vec2iScale(v, -1);
+					e.u.ActorImpulse.UID = collidingActor->uid;
+					e.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(v, -1));
+					e.u.ActorImpulse.Pos = Vec2i2Net(collidingActor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}

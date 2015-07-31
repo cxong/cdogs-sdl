@@ -140,6 +140,14 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_ACTOR_IMPULSE:
+		{
+			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
+			if (!a->isInUse) break;
+			a->Vel = Vec2iAdd(a->Vel, Net2Vec2i(e.u.ActorImpulse.Vel));
+			a->Pos = Net2Vec2i(e.u.ActorImpulse.Pos);
+		}
+		break;
 	case GAME_EVENT_ACTOR_SWITCH_GUN:
 		ActorSwitchGun(e.u.ActorSwitchGun);
 		break;
@@ -338,13 +346,6 @@ static void HandleGameEvent(
 		ActorTakeHit(
 			CArrayGet(&gActors, e.u.HitCharacter.TargetId),
 			e.u.HitCharacter.Special);
-		break;
-	case GAME_EVENT_ACTOR_IMPULSE:
-		{
-			TActor *a = CArrayGet(&gActors, e.u.ActorImpulse.Id);
-			if (!a->isInUse) break;
-			a->Vel = Vec2iAdd(a->Vel, e.u.ActorImpulse.Vel);
-		}
 		break;
 	case GAME_EVENT_DAMAGE_CHARACTER:
 		DamageActor(e.u.ActorDamage);
