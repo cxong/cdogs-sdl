@@ -91,6 +91,11 @@ message NActorDir {
 	required int32 Dir = 2;
 }
 
+message NActorSlide {
+	required uint32 UID = 1;
+	required NVec2i Vel = 2;
+}
+
 message NActorSwitchGun {
 	required uint32 UID = 1;
 	required uint32 GunIdx = 2;

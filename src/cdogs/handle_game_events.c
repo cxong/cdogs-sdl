@@ -125,6 +125,21 @@ static void HandleGameEvent(
 			a->direction = (direction_e)e.u.ActorDir.Dir;
 		}
 		break;
+	case GAME_EVENT_ACTOR_SLIDE:
+		{
+			TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
+			if (!a->isInUse) break;
+			a->Vel = Net2Vec2i(e.u.ActorSlide.Vel);
+			// Slide sound
+			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
+			{
+				SoundPlayAt(
+					&gSoundDevice,
+					gSoundDevice.slideSound,
+					Vec2iNew(a->tileItem.x, a->tileItem.y));
+			}
+		}
+		break;
 	case GAME_EVENT_ACTOR_SWITCH_GUN:
 		ActorSwitchGun(e.u.ActorSwitchGun);
 		break;

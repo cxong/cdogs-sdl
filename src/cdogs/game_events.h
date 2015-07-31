@@ -63,6 +63,7 @@ typedef enum
 	GAME_EVENT_ACTOR_MOVE,
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
+	GAME_EVENT_ACTOR_SLIDE,
 	GAME_EVENT_ACTOR_SWITCH_GUN,
 	GAME_EVENT_ACTOR_PICKUP_ALL,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
@@ -135,6 +136,7 @@ typedef struct
 		NActorMove ActorMove;
 		NActorState ActorState;
 		NActorDir ActorDir;
+		NActorSlide ActorSlide;
 		NActorSwitchGun ActorSwitchGun;
 		NActorPickupAll ActorPickupAll;
 		NActorReplaceGun ActorReplaceGun;

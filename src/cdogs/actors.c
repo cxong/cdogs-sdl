@@ -997,20 +997,15 @@ void SlideActor(TActor *actor, int cmd)
 		cmd = CmdGetReverse(cmd);
 	}
 
-	actor->Vel = Vec2iZero();
-	if (cmd & CMD_LEFT)			actor->Vel.x = -SLIDE_X * 256;
-	else if (cmd & CMD_RIGHT)	actor->Vel.x = SLIDE_X * 256;
-	if (cmd & CMD_UP)			actor->Vel.y = -SLIDE_Y * 256;
-	else if (cmd & CMD_DOWN)	actor->Vel.y = SLIDE_Y * 256;
-
-	// Slide sound
-	if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
-	{
-		SoundPlayAt(
-			&gSoundDevice,
-			gSoundDevice.slideSound,
-			Vec2iNew(actor->tileItem.x, actor->tileItem.y));
-	}
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SLIDE);
+	e.u.ActorSlide.UID = actor->uid;
+	Vec2i vel = Vec2iZero();
+	if (cmd & CMD_LEFT)			vel.x = -SLIDE_X * 256;
+	else if (cmd & CMD_RIGHT)	vel.x = SLIDE_X * 256;
+	if (cmd & CMD_UP)			vel.y = -SLIDE_Y * 256;
+	else if (cmd & CMD_DOWN)	vel.y = SLIDE_Y * 256;
+	e.u.ActorSlide.Vel = Vec2i2Net(vel);
+	GameEventsEnqueue(&gGameEvents, e);
 	
 	actor->slideLock = SLIDE_LOCK;
 }
