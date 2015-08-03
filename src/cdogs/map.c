@@ -666,7 +666,7 @@ void MapTerminate(Map *map)
 	}
 	CArrayTerminate(&map->Tiles);
 	CArrayTerminate(&map->iMap);
-	LOSTerminate(map);
+	LOSTerminate(&map->LOS);
 	PathCacheTerminate(&gPathCache);
 }
 void MapLoad(

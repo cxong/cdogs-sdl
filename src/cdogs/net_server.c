@@ -40,6 +40,7 @@
 #include "gamedata.h"
 #include "handle_game_events.h"
 #include "log.h"
+#include "los.h"
 #include "pickup.h"
 #include "player.h"
 #include "sys_config.h"
@@ -303,17 +304,28 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	}
 
 	// Send all the tiles visited so far
+	NExploreTiles et = NExploreTiles_init_default;
+	et.Runs_count = 0;
+	et.Runs[0].Run = 0;
+	bool run = false;
 	Vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
 		{
 			const Tile *t = MapGetTile(&gMap, pos);
-			if (!t->isVisited) continue;
-			NExploreTile et;
-			et.Tile = Vec2i2Net(pos);
-			NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILE, &et);
+			if (LOSAddRun(&et, &run, pos, t->isVisited))
+			{
+				NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILES, &et);
+				et.Runs_count = 0;
+				et.Runs[0].Run = 0;
+				run = false;
+			}
 		}
+	}
+	if (et.Runs_count > 0)
+	{
+		NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILES, &et);
 	}
 
 	// Send all pickups

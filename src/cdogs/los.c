@@ -34,26 +34,30 @@
 
 void LOSInit(Map *map, const Vec2i size)
 {
-	CArrayInit(&map->LOS, sizeof(bool));
+	CArrayInit(&map->LOS.LOS, sizeof(bool));
+	CArrayInit(&map->LOS.Explored, sizeof(bool));
 	Vec2i v;
 	for (v.y = 0; v.y < size.y; v.y++)
 	{
 		for (v.x = 0; v.x < size.x; v.x++)
 		{
 			const bool f = false;
-			CArrayPushBack(&map->LOS, &f);
+			CArrayPushBack(&map->LOS.LOS, &f);
+			CArrayPushBack(&map->LOS.Explored, &f);
 		}
 	}
 }
-void LOSTerminate(Map *map)
+void LOSTerminate(LineOfSight *los)
 {
-	CArrayTerminate(&map->LOS);
+	CArrayTerminate(&los->LOS);
+	CArrayTerminate(&los->Explored);
 }
 
 // Reset lines of sight by setting all cells to unseen
-void LOSReset(Map *map)
+void LOSReset(LineOfSight *los)
 {
-	CArrayFillZero(&map->LOS);
+	CArrayFillZero(&los->LOS);
+	CArrayFillZero(&los->Explored);
 }
 typedef struct
 {
@@ -72,6 +76,8 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 {
 	// Perform LOS by casting rays from the centre to the edges, terminating
 	// whenever an obstruction or out-of-range is reached.
+
+	CArrayFillZero(&map->LOS.Explored);
 
 	// First mark center tile and all adjacent tiles as visible
 	// +-+-+-+
@@ -149,17 +155,42 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 			SetObstructionVisible(map, end, explore);
 		}
 	}
+
+	// Find all the newly visible tiles and set events for them
+	GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILES);
+	e.u.ExploreTiles.Runs_count = 0;
+	e.u.ExploreTiles.Runs[0].Run = 0;
+	bool run = false;
+	for (end.y = 0; end.y < map->Size.y; end.y++)
+	{
+		for (end.x = 0; end.x < map->Size.x; end.x++)
+		{
+			if (LOSAddRun(
+				&e.u.ExploreTiles, &run, end,
+				*((bool *)CArrayGet(&map->LOS.Explored, end.y * map->Size.x + end.x))))
+			{
+				GameEventsEnqueue(&gGameEvents, e);
+				e.u.ExploreTiles.Runs_count = 0;
+				e.u.ExploreTiles.Runs[0].Run = 0;
+				run = false;
+			}
+		}
+	}
+	if (e.u.ExploreTiles.Runs_count > 0)
+	{
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	CArrayFillZero(&map->LOS.Explored);
 }
 static void SetLOSVisible(Map *map, const Vec2i pos, const bool explore)
 {
 	const Tile *t = MapGetTile(map, pos);
 	if (t == NULL) return;
-	*((bool *)CArrayGet(&map->LOS, pos.y * map->Size.x + pos.x)) = true;
+	*((bool *)CArrayGet(&map->LOS.LOS, pos.y * map->Size.x + pos.x)) = true;
 	if (!t->isVisited && explore)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILE);
-		e.u.ExploreTile.Tile = Vec2i2Net(pos);
-		GameEventsEnqueue(&gGameEvents, e);
+		// Cache the newly explored tile
+		*((bool *)CArrayGet(&map->LOS.Explored, pos.y * map->Size.x + pos.x)) = true;
 	}
 }
 static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
@@ -198,8 +229,36 @@ static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos)
 	return !(t->flags & MAPTILE_NO_SEE) && LOSTileIsVisible(map, pos);
 }
 
+bool LOSAddRun(
+	NExploreTiles *runs, bool *run, const Vec2i tile, const bool explored)
+{
+	if (explored)
+	{
+		if (!*run)
+		{
+			// Start of new run
+			runs->Runs_count++;
+			runs->Runs[runs->Runs_count - 1].Tile = Vec2i2Net(tile);
+			runs->Runs[runs->Runs_count - 1].Run = 0;
+		}
+		runs->Runs[runs->Runs_count - 1].Run++;
+		*run = true;
+	}
+	else
+	{
+		// End of run
+		// If we have too many runs, send off the event and start a new one
+		if (runs->Runs_count == sizeof runs->Runs / sizeof runs->Runs[0])
+		{
+			return true;
+		}
+		*run = false;
+	}
+	return false;
+}
+
 bool LOSTileIsVisible(Map *map, const Vec2i pos)
 {
 	if (MapGetTile(map, pos) == NULL) return false;
-	return *((bool *)CArrayGet(&map->LOS, pos.y * map->Size.x + pos.x));
+	return *((bool *)CArrayGet(&map->LOS.LOS, pos.y * map->Size.x + pos.x));
 }

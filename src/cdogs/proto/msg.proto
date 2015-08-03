@@ -204,8 +204,13 @@ message NTrigger {
 	required NVec2i Tile = 2;
 }
 
-message NExploreTile {
-	required NVec2i Tile = 1;
+message NExploreTiles {
+	// RLE explore tiles
+	message Run {
+		required NVec2i Tile = 1;
+		required int32 Run = 2;
+	}
+	repeated Run Runs = 1;
 }
 
 message NRescueCharacter {

@@ -33,7 +33,12 @@
 
 
 void LOSInit(Map *map, const Vec2i size);
-void LOSTerminate(Map *map);
-void LOSReset(Map *map);
+void LOSTerminate(LineOfSight *los);
+void LOSReset(LineOfSight *los);
 void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore);
+
+// Helper function for populating explore tiles runs
+// Returns true if the runs have filled
+bool LOSAddRun(
+	NExploreTiles *runs, bool *run, const Vec2i tile, const bool explored);
 bool LOSTileIsVisible(Map *map, const Vec2i pos);

@@ -238,7 +238,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				// Redo LOS if PVP, so that each split screen has its own LOS
 				if (IsPVP(gCampaign.Entry.Mode))
 				{
-					LOSReset(&gMap);
+					LOSReset(&gMap.LOS);
 					LOSCalcFrom(
 						&gMap, Vec2iToTile(camera->lastPosition), false);
 				}
@@ -296,7 +296,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				// Redo LOS if PVP, so that each split screen has its own LOS
 				if (IsPVP(gCampaign.Entry.Mode))
 				{
-					LOSReset(&gMap);
+					LOSReset(&gMap.LOS);
 					LOSCalcFrom(
 						&gMap, Vec2iToTile(camera->lastPosition), false);
 				}

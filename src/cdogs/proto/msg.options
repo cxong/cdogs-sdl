@@ -16,6 +16,8 @@ NAddPickup.PickupClass max_size:128
 
 NAddBullet.BulletClass max_size:128
 
+NExploreTiles.Runs max_count:16
+
 NGunFire.Gun max_size:128
 
 NGunReload.Gun max_size:128

@@ -370,8 +370,22 @@ static void HandleGameEvent(
 			CA_FOREACH_END()
 		}
 		break;
-	case GAME_EVENT_EXPLORE_TILE:
-		MapMarkAsVisited(&gMap, Net2Vec2i(e.u.ExploreTile.Tile));
+	case GAME_EVENT_EXPLORE_TILES:
+		// Process runs of explored tiles
+		for (int i = 0; i < (int)e.u.ExploreTiles.Runs_count; i++)
+		{
+			Vec2i tile = Net2Vec2i(e.u.ExploreTiles.Runs[i].Tile);
+			for (int j = 0; j < e.u.ExploreTiles.Runs[i].Run; j++)
+			{
+				MapMarkAsVisited(&gMap, tile);
+				tile.x++;
+				if (tile.x == gMap.Size.x)
+				{
+					tile.x = 0;
+					tile.y++;
+				}
+			}
+		}
 		break;
 	case GAME_EVENT_RESCUE_CHARACTER:
 		{

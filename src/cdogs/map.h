@@ -84,14 +84,22 @@ IMapType StrIMapType(const char *s);
 
 typedef struct
 {
+	// Array of bools to set lines of sight
+	CArray LOS;	// of bool
+
+	// Array of bools for tracking new tiles in line of sight, for delayed messaging
+	CArray Explored; // of bool
+} LineOfSight;
+
+typedef struct
+{
 	CArray Tiles;	// of Tile
 	Vec2i Size;
 
 	// internal data structure to help build the map
 	CArray iMap;	// of unsigned short
 
-	// Array of bools to set lines of sight
-	CArray LOS;	// of bool
+	LineOfSight LOS;
 
 	CArray triggers;	// of Trigger *; owner
 	int triggerId;

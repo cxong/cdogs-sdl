@@ -87,7 +87,7 @@ typedef enum
 	GAME_EVENT_HIT_CHARACTER,
 	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_TRIGGER,
-	GAME_EVENT_EXPLORE_TILE,
+	GAME_EVENT_EXPLORE_TILES,
 	GAME_EVENT_RESCUE_CHARACTER,
 	GAME_EVENT_OBJECTIVE_UPDATE,
 	GAME_EVENT_ADD_KEYS,
@@ -167,7 +167,7 @@ typedef struct
 		} HitCharacter;
 		ActorDamage ActorDamage;
 		NTrigger TriggerEvent;
-		NExploreTile ExploreTile;
+		NExploreTiles ExploreTiles;
 		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;
 		NAddKeys AddKeys;
