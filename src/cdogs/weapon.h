@@ -165,7 +165,7 @@ void WeaponFire(
 	Weapon *w, const direction_e d, const Vec2i pos,
 	const int flags, const int playerUID, const int uid);
 void WeaponSetState(Weapon *w, const gunstate_e state);
-void GunAddBullets(
+void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,

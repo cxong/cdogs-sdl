@@ -139,10 +139,11 @@ static void DestroyObject(
 	for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
 	{
 		const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
-		GunAddBullets(*g, fullPos, 0, 0, flags, playerUID, uid, true);
+		GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true);
 	}
 
 	// A wreck left after the destruction of this object
+	// TODO: doesn't need to be network event
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 	strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
 	e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);

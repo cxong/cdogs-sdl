@@ -147,7 +147,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 
 	if (obj->range >= 0 && obj->count > obj->range)
 	{
-		FireGuns(obj, &obj->bulletClass->OutOfRangeGuns);
+		if (!gCampaign.IsClient)
+		{
+			FireGuns(obj, &obj->bulletClass->OutOfRangeGuns);
+		}
 		return false;
 	}
 
@@ -175,7 +178,11 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
-	const bool hitItem = HitItem(obj, pos, obj->bulletClass->Persists);
+	bool hitItem = false;
+	if (!gCampaign.IsClient)
+	{
+		hitItem = HitItem(obj, pos, obj->bulletClass->Persists);
+	}
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
 	// Falling (grenades)
@@ -198,7 +205,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 				}
 				if (!hasDropped)
 				{
-					FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
+					if (!gCampaign.IsClient)
+					{
+						FireGuns(obj, &obj->bulletClass->Falling.DropGuns);
+					}
 				}
 				hasDropped = true;
 				if (obj->bulletClass->Falling.DestroyOnDrop)
@@ -256,7 +266,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	if ((hitWall && !obj->bulletClass->WallBounces) ||
 		(hitItem && obj->bulletClass->HitsObjects))
 	{
-		FireGuns(obj, &obj->bulletClass->HitGuns);
+		if (!gCampaign.IsClient)
+		{
+			FireGuns(obj, &obj->bulletClass->HitGuns);
+		}
 		if (obj->bulletClass->Spark != NULL)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
@@ -296,23 +309,26 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	// Only check proximity every now and then
 	if (obj->bulletClass->ProximityGuns.size > 0 && !(obj->count & 3))
 	{
-		// Detonate the mine if there are characters in the tiles around it
-		const Vec2i tv =
-			Vec2iToTile(Vec2iFull2Real(pos));
-		Vec2i dv;
-		for (dv.y = -1; dv.y <= 1; dv.y++)
+		if (!gCampaign.IsClient)
 		{
-			for (dv.x = -1; dv.x <= 1; dv.x++)
+			// Detonate the mine if there are characters in the tiles around it
+			const Vec2i tv =
+				Vec2iToTile(Vec2iFull2Real(pos));
+			Vec2i dv;
+			for (dv.y = -1; dv.y <= 1; dv.y++)
 			{
-				const Vec2i dtv = Vec2iAdd(tv, dv);
-				if (!MapIsTileIn(&gMap, dtv))
+				for (dv.x = -1; dv.x <= 1; dv.x++)
 				{
-					continue;
-				}
-				if (TileHasCharacter(MapGetTile(&gMap, dtv)))
-				{
-					FireGuns(obj, &obj->bulletClass->ProximityGuns);
-					return false;
+					const Vec2i dtv = Vec2iAdd(tv, dv);
+					if (!MapIsTileIn(&gMap, dtv))
+					{
+						continue;
+					}
+					if (TileHasCharacter(MapGetTile(&gMap, dtv)))
+					{
+						FireGuns(obj, &obj->bulletClass->ProximityGuns);
+						return false;
+					}
 				}
 			}
 		}
@@ -327,7 +343,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
-		GunAddBullets(
+		GunFire(
 			*g, fullPos, obj->z, angle, obj->flags, obj->PlayerUID, obj->uid,
 			true);
 	}

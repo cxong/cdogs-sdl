@@ -432,7 +432,7 @@ void WeaponFire(
 	const Vec2i muzzleOffset = GunGetMuzzleOffset(w->Gun, d);
 	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
 	const bool playSound = w->soundLock <= 0;
-	GunAddBullets(
+	GunFire(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
 		flags, playerUID, uid, playSound);
 	if (playSound)
@@ -443,47 +443,21 @@ void WeaponFire(
 	w->lock = w->Gun->Lock;
 }
 
-void GunAddBullets(
+void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound)
 {
-	GameEvent e;
-	// Add bullets
-	if (g->Bullet)
-	{
-		// Find the starting angle of the spread (clockwise)
-		// Keep in mind the fencepost problem, i.e. spread of 3 means a
-		// total spread angle of 2x width
-		const double spreadStartAngle =
-			g->AngleOffset - (g->Spread.Count - 1) * g->Spread.Width / 2;
-		for (int i = 0; i < g->Spread.Count; i++)
-		{
-			const double recoil =
-				((double)rand() / RAND_MAX * g->Recoil) - g->Recoil / 2;
-			const double finalAngle =
-				radians + spreadStartAngle + i * g->Spread.Width + recoil;
-			e = GameEventNew(GAME_EVENT_ADD_BULLET);
-			strcpy(e.u.AddBullet.BulletClass, g->Bullet->Name);
-			e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
-			e.u.AddBullet.MuzzleHeight = z;
-			e.u.AddBullet.Angle = (float)finalAngle;
-			e.u.AddBullet.Elevation = RAND_INT(g->ElevationLow, g->ElevationHigh);
-			e.u.AddBullet.Flags = flags;
-			e.u.AddBullet.PlayerUID = playerUID;
-			e.u.AddBullet.UID = uid;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-	}
-
-	e = GameEventNew(GAME_EVENT_GUN_FIRE);
+	GameEvent e = GameEventNew(GAME_EVENT_GUN_FIRE);
+	e.u.GunFire.UID = uid;
 	e.u.GunFire.PlayerUID = playerUID;
 	strcpy(e.u.GunFire.Gun, g->name);
 	e.u.GunFire.MuzzleFullPos = Vec2i2Net(fullPos);
 	e.u.GunFire.Z = z;
 	e.u.GunFire.Angle = (float)radians;
 	e.u.GunFire.Sound = playSound;
+	e.u.GunFire.Flags = flags;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 

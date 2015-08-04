@@ -175,12 +175,14 @@ message NGunReload {
 }
 
 message NGunFire {
-	required int32 PlayerUID = 1 [default=-1];
-	required string Gun = 2;
-	required NVec2i MuzzleFullPos = 3;
-	required int32 Z = 4;
-	required float Angle = 5;
-	required bool Sound = 6;
+	required int32 UID = 1 [default=-1];
+	required int32 PlayerUID = 2 [default=-1];
+	required string Gun = 3;
+	required NVec2i MuzzleFullPos = 4;
+	required int32 Z = 5;
+	required float Angle = 6;
+	required bool Sound = 7;
+	required uint32 Flags = 8;
 }
 
 message NGunState {

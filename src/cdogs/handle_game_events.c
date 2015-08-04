@@ -281,6 +281,38 @@ static void HandleGameEvent(
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
 			const Vec2i fullPos = Net2Vec2i(e.u.GunFire.MuzzleFullPos);
+
+			// Add bullets
+			if (g->Bullet && !gCampaign.IsClient)
+			{
+				// Find the starting angle of the spread (clockwise)
+				// Keep in mind the fencepost problem, i.e. spread of 3 means a
+				// total spread angle of 2x width
+				const double spreadStartAngle =
+					g->AngleOffset -
+					(g->Spread.Count - 1) * g->Spread.Width / 2;
+				for (int i = 0; i < g->Spread.Count; i++)
+				{
+					const double recoil =
+						((double)rand() / RAND_MAX * g->Recoil) -
+						g->Recoil / 2;
+					const double finalAngle =
+						e.u.GunFire.Angle + spreadStartAngle +
+						i * g->Spread.Width + recoil;
+					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
+					strcpy(ab.u.AddBullet.BulletClass, g->Bullet->Name);
+					ab.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
+					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
+					ab.u.AddBullet.Angle = (float)finalAngle;
+					ab.u.AddBullet.Elevation =
+						RAND_INT(g->ElevationLow, g->ElevationHigh);
+					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
+					ab.u.AddBullet.PlayerUID = e.u.GunFire.PlayerUID;
+					ab.u.AddBullet.UID = e.u.GunFire.UID;
+					GameEventsEnqueue(&gGameEvents, ab);
+				}
+			}
+
 			// Add muzzle flash
 			if (GunHasMuzzle(g))
 			{
