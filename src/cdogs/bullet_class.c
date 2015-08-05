@@ -256,37 +256,45 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	const bool hitWall =
-		MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
-	if (hitWall && !Vec2iIsZero(obj->vel))
+	bool hitWall = false;
+	if (!gCampaign.IsClient)
 	{
-		SoundPlayAt(
-			&gSoundDevice, StrSound(obj->bulletClass->HitSound.Wall), realPos);
+		hitWall =
+			MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	}
-	if ((hitWall && !obj->bulletClass->WallBounces) ||
-		(hitItem && obj->bulletClass->HitsObjects))
+	if (hitWall || hitItem)
 	{
-		if (!gCampaign.IsClient)
+		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
+		b.u.BulletBounce.UID = obj->UID;
+		b.u.BulletBounce.HitWall = hitWall && !Vec2iIsZero(obj->vel);
+		bool alive = true;
+		if ((hitWall && !obj->bulletClass->WallBounces) ||
+			(hitItem && obj->bulletClass->HitsObjects))
 		{
+			b.u.BulletBounce.Spark = true;
+			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
 			FireGuns(obj, &obj->bulletClass->HitGuns);
+			if (hitWall || !obj->bulletClass->Persists)
+			{
+				alive = false;
+			}
 		}
-		if (obj->bulletClass->Spark != NULL)
+		b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
+		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->vel);
+		if (hitWall && !Vec2iIsZero(obj->vel))
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-			e.u.AddParticle.Class = obj->bulletClass->Spark;
-			e.u.AddParticle.FullPos = pos;
-			e.u.AddParticle.Z = obj->z;
-			GameEventsEnqueue(&gGameEvents, e);
+			// Bouncing
+			Vec2i bounceVel = obj->vel;
+			pos = GetWallBounceFullPos(objPos, pos, &bounceVel);
+			b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
+			b.u.BulletBounce.BounceVel = Vec2i2Net(bounceVel);
+			obj->vel = bounceVel;
 		}
-		if (hitWall || !obj->bulletClass->Persists)
+		GameEventsEnqueue(&gGameEvents, b);
+		if (!alive)
 		{
 			return false;
 		}
-	}
-	if (hitWall && !Vec2iIsZero(obj->vel))
-	{
-		// Bouncing
-		pos = GetWallBounceFullPos(objPos, pos, &obj->vel);
 	}
 	if (!MapTryMoveTileItem(&gMap, &obj->tileItem, realPos))
 	{

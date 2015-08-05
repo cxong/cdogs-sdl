@@ -167,6 +167,14 @@ message NRemovePickup {
 	required int32 SpawnerUID = 2 [default=-1];
 }
 
+message NBulletBounce {
+	required uint32 UID = 1;
+	required bool HitWall = 2;
+	required bool Spark = 3;
+	required NVec2i BouncePos = 4;
+	required NVec2i BounceVel = 5;
+}
+
 message NRemoveBullet {
 	required uint32 UID = 1;
 }

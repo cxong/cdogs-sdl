@@ -77,6 +77,7 @@ typedef enum
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_REMOVE_PICKUP,
 
+	GAME_EVENT_BULLET_BOUNCE,
 	GAME_EVENT_REMOVE_BULLET,
 	GAME_EVENT_PARTICLE_REMOVE,
 	GAME_EVENT_GUN_FIRE,
@@ -153,6 +154,7 @@ typedef struct
 			int UID;
 			int Count;
 		} ObjectSetCounter;
+		NBulletBounce BulletBounce;
 		NRemoveBullet RemoveBullet;
 		int ParticleRemoveId;
 		NGunFire GunFire;

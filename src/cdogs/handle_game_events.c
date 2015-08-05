@@ -271,10 +271,34 @@ static void HandleGameEvent(
 			o->counter = AMMO_SPAWNER_RESPAWN_TICKS;
 		}
 		break;
+	case GAME_EVENT_BULLET_BOUNCE:
+		{
+			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
+			if (o == NULL || !o->isInUse) break;
+			const Vec2i pos = Net2Vec2i(e.u.BulletBounce.BouncePos);
+			if (e.u.BulletBounce.HitWall)
+			{
+				SoundPlayAt(
+					&gSoundDevice, StrSound(o->bulletClass->HitSound.Wall),
+					Vec2iFull2Real(pos));
+			}
+			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
+			{
+				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				s.u.AddParticle.Class = o->bulletClass->Spark;
+				s.u.AddParticle.FullPos = pos;
+				s.u.AddParticle.Z = o->z;
+				GameEventsEnqueue(&gGameEvents, s);
+			}
+			o->x = pos.x;
+			o->y = pos.y;
+			o->vel = Net2Vec2i(e.u.BulletBounce.BounceVel);
+		}
+		break;
 	case GAME_EVENT_REMOVE_BULLET:
 		{
 			TMobileObject *o = MobObjGetByUID(e.u.RemoveBullet.UID);
-			if (o == NULL || !o->isInUse) return;
+			if (o == NULL || !o->isInUse) break;
 			MobObjDestroy(o);
 		}
 		break;
