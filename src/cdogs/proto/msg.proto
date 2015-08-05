@@ -167,6 +167,10 @@ message NRemovePickup {
 	required int32 SpawnerUID = 2 [default=-1];
 }
 
+message NRemoveBullet {
+	required uint32 UID = 1;
+}
+
 message NGunReload {
 	required int32 PlayerUID = 1 [default=-1];
 	required string Gun = 2;
@@ -191,14 +195,15 @@ message NGunState {
 }
 
 message NAddBullet {
-	required string BulletClass = 1;
-	required NVec2i MuzzlePos = 2;
-	required int32 MuzzleHeight = 3;
-	required float Angle = 4;
-	required int32 Elevation = 5;
-	required uint32 Flags = 6;
-	required int32 PlayerUID = 7;
-	required int32 UID = 8;
+	required uint32 UID = 1;
+	required string BulletClass = 2;
+	required NVec2i MuzzlePos = 3;
+	required int32 MuzzleHeight = 4;
+	required float Angle = 5;
+	required int32 Elevation = 6;
+	required uint32 Flags = 7;
+	required int32 PlayerUID = 8 [default=-1];
+	required int32 ActorUID = 9 [default=-1];
 }
 
 message NTrigger {

@@ -271,8 +271,12 @@ static void HandleGameEvent(
 			o->counter = AMMO_SPAWNER_RESPAWN_TICKS;
 		}
 		break;
-	case GAME_EVENT_MOBILE_OBJECT_REMOVE:
-		MobObjDestroy(e.u.MobileObjectRemoveId);
+	case GAME_EVENT_REMOVE_BULLET:
+		{
+			TMobileObject *o = MobObjGetByUID(e.u.RemoveBullet.UID);
+			if (o == NULL || !o->isInUse) return;
+			MobObjDestroy(o);
+		}
 		break;
 	case GAME_EVENT_PARTICLE_REMOVE:
 		ParticleDestroy(&gParticles, e.u.ParticleRemoveId);
@@ -300,6 +304,7 @@ static void HandleGameEvent(
 						e.u.GunFire.Angle + spreadStartAngle +
 						i * g->Spread.Width + recoil;
 					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
+					ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
 					strcpy(ab.u.AddBullet.BulletClass, g->Bullet->Name);
 					ab.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
 					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
@@ -308,7 +313,7 @@ static void HandleGameEvent(
 						RAND_INT(g->ElevationLow, g->ElevationHigh);
 					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
 					ab.u.AddBullet.PlayerUID = e.u.GunFire.PlayerUID;
-					ab.u.AddBullet.UID = e.u.GunFire.UID;
+					ab.u.AddBullet.ActorUID = e.u.GunFire.UID;
 					GameEventsEnqueue(&gGameEvents, ab);
 				}
 			}

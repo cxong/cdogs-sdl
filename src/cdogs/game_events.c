@@ -83,7 +83,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ADD_PICKUP, true, false, true, true, NAddPickup_fields },
 	{ GAME_EVENT_REMOVE_PICKUP, true, false, true, true, NRemovePickup_fields },
 
-	{ GAME_EVENT_MOBILE_OBJECT_REMOVE, false, false, true, true, NULL },
+	{ GAME_EVENT_REMOVE_BULLET, true, false, true, true, NRemoveBullet_fields },
 	{ GAME_EVENT_PARTICLE_REMOVE, false, false, true, true, NULL },
 	{ GAME_EVENT_GUN_FIRE, true, true, true, true, NGunFire_fields },
 	{ GAME_EVENT_GUN_RELOAD, true, true, true, true, NGunReload_fields },

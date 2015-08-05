@@ -159,7 +159,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	if (obj->bulletClass->SeekFactor > 0)
 	{
 		// Find the closest target to this bullet and steer towards it
-		const TActor *owner = ActorGetByUID(obj->uid);
+		const TActor *owner = ActorGetByUID(obj->ActorUID);
 		if (owner == NULL)
 		{
 			return false;
@@ -344,7 +344,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
 		GunFire(
-			*g, fullPos, obj->z, angle, obj->flags, obj->PlayerUID, obj->uid,
+			*g, fullPos, obj->z, angle, obj->flags, obj->PlayerUID, obj->ActorUID,
 			true);
 	}
 }
@@ -642,6 +642,7 @@ void BulletAdd(const NAddBullet add)
 		obj = CArrayGet(&gMobObjs, i);
 	}
 	memset(obj, 0, sizeof *obj);
+	obj->UID = add.UID;
 	obj->bulletClass = StrBulletClass(add.BulletClass);
 	obj->x = pos.x;
 	obj->y = pos.y;
@@ -657,7 +658,7 @@ void BulletAdd(const NAddBullet add)
 	}
 
 	obj->PlayerUID = add.PlayerUID;
-	obj->uid = add.UID;
+	obj->ActorUID = add.ActorUID;
 	obj->range = RAND_INT(
 		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
 

@@ -76,6 +76,7 @@
 CArray gObjs;
 CArray gMobObjs;
 static unsigned int sObjUIDs = 0;
+static unsigned int sMobObjUIDs = 0;
 
 
 // Draw functions
@@ -145,6 +146,7 @@ static void DestroyObject(
 	// A wreck left after the destruction of this object
 	// TODO: doesn't need to be network event
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+	e.u.AddBullet.UID = MobObjsObjsGetNextUID();
 	strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
 	e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
 	e.u.AddBullet.MuzzleHeight = 0;
@@ -152,7 +154,7 @@ static void DestroyObject(
 	e.u.AddBullet.Elevation = 0;
 	e.u.AddBullet.Flags = 0;
 	e.u.AddBullet.PlayerUID = -1;
-	e.u.AddBullet.UID = -1;
+	e.u.AddBullet.ActorUID = -1;
 	GameEventsEnqueue(&gGameEvents, e);
 	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
 
@@ -368,16 +370,14 @@ void UpdateMobileObjects(int ticks)
 		{
 			continue;
 		}
-		if (!obj->updateFunc(obj, ticks))
+		if (!obj->updateFunc(obj, ticks) && !gCampaign.IsClient)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_MOBILE_OBJECT_REMOVE);
-			e.u.MobileObjectRemoveId = i;
+			GameEvent e = GameEventNew(GAME_EVENT_REMOVE_BULLET);
+			e.u.RemoveBullet.UID = obj->UID;
 			GameEventsEnqueue(&gGameEvents, e);
+			continue;
 		}
-		else
-		{
-			CPicUpdate(&obj->tileItem.CPic, ticks);
-		}
+		CPicUpdate(&obj->tileItem.CPic, ticks);
 	}
 }
 
@@ -518,6 +518,7 @@ void MobObjsInit(void)
 {
 	CArrayInit(&gMobObjs, sizeof(TMobileObject));
 	CArrayReserve(&gMobObjs, 1024);
+	sMobObjUIDs = 0;
 }
 void MobObjsTerminate(void)
 {
@@ -526,14 +527,29 @@ void MobObjsTerminate(void)
 		TMobileObject *m = CArrayGet(&gMobObjs, i);
 		if (m->isInUse)
 		{
-			MobObjDestroy(i);
+			MobObjDestroy(m);
 		}
 	}
 	CArrayTerminate(&gMobObjs);
 }
-void MobObjDestroy(int id)
+int MobObjsObjsGetNextUID(void)
 {
-	TMobileObject *m = CArrayGet(&gMobObjs, id);
+	return sMobObjUIDs++;
+}
+TMobileObject *MobObjGetByUID(const int uid)
+{
+	for (int i = 0; i < (int)gMobObjs.size; i++)
+	{
+		TMobileObject *o = CArrayGet(&gMobObjs, i);
+		if (o->UID == uid)
+		{
+			return o;
+		}
+	}
+	return NULL;
+}
+void MobObjDestroy(TMobileObject *m)
+{
 	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
 	MapRemoveTileItem(&gMap, &m->tileItem);
 	m->isInUse = false;
@@ -571,7 +587,7 @@ bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 static bool HitItemFunc(TTileItem *ti, void *data)
 {
 	HitItemData *hData = data;
-	hData->HasHit = CanHit(hData->Obj->flags, hData->Obj->uid, ti);
+	hData->HasHit = CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti);
 	if (hData->HasHit)
 	{
 		int targetUID = -1;
@@ -589,7 +605,7 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 		}
 		Damage(
 			hData->Obj->vel, hData->Obj->bulletClass->Power,
-			hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->uid,
+			hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
 			ti->kind, targetUID,
 			hData->Obj->bulletClass->Special,
 			hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,
