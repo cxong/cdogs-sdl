@@ -148,7 +148,7 @@ message NActorDie {
 message NActorMelee {
 	required uint32 UID = 1;
 	required string BulletClass = 2;
-	required bool HitSounds = 3;
+	required int32 HitType = 3;
 	required int32 TargetKind = 4;
 	required uint32 TargetUID = 5;
 }
@@ -169,7 +169,7 @@ message NRemovePickup {
 
 message NBulletBounce {
 	required uint32 UID = 1;
-	required bool HitWall = 2;
+	required int32 HitType = 2;
 	required bool Spark = 3;
 	required NVec2i BouncePos = 4;
 	required NVec2i BounceVel = 5;

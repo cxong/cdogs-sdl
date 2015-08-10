@@ -121,3 +121,13 @@ void BulletTerminate(BulletClasses *bullets);
 void BulletAdd(const NAddBullet add);
 
 bool UpdateBullet(struct MobileObject *obj, const int ticks);
+
+// Type of material that the bullet hit
+typedef enum
+{
+	HIT_NONE,
+	HIT_WALL,
+	HIT_OBJECT,
+	HIT_FLESH
+} HitType;
+void PlayHitSound(const HitSounds *h, const HitType t, const Vec2i realPos);

@@ -417,27 +417,32 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
 				e.u.Melee.UID = actor->uid;
 				strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
-				e.u.Melee.HitSounds = gun->soundLock <= 0;
 				e.u.Melee.TargetKind = target->kind;
 				switch (target->kind)
 				{
 				case KIND_CHARACTER:
 					e.u.Melee.TargetUID =
 						((const TActor *)CArrayGet(&gActors, target->id))->uid;
+					e.u.Melee.HitType = HIT_FLESH;
 					break;
 				case KIND_OBJECT:
 					e.u.Melee.TargetUID =
 						((const TObject *)CArrayGet(&gObjs, target->id))->uid;
+					e.u.Melee.HitType = HIT_OBJECT;
 					break;
 				default:
 					CASSERT(false, "cannot damage target kind");
 					break;
 				}
-				GameEventsEnqueue(&gGameEvents, e);
 				if (gun->soundLock <= 0)
 				{
 					gun->soundLock += gun->Gun->SoundLockLength;
 				}
+				else
+				{
+					e.u.Melee.HitType = (int)HIT_NONE;
+				}
+				GameEventsEnqueue(&gGameEvents, e);
 			}
 			return false;
 		}

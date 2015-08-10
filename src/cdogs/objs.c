@@ -70,7 +70,6 @@
 #include "game.h"
 #include "utils.h"
 
-#define SOUND_LOCK_MOBILE_OBJECT 12
 #define SHOT_IMPULSE_DIVISOR 25
 
 CArray gObjs;
@@ -93,7 +92,7 @@ static void DestroyObject(
 static void DamageObject(
 	const int power, const int flags,
 	const int playerUID, const int uid,
-	TObject *o, const HitSounds *hitSounds)
+	TObject *o)
 {
 	// Don't bother if object already destroyed
 	if (o->Health <= 0)
@@ -107,15 +106,6 @@ static void DamageObject(
 	if (o->Health <= 0)
 	{
 		DestroyObject(o, flags, playerUID, uid);
-	}
-
-	if (hitSounds != NULL && power > 0)
-	{
-		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-		strcpy(e.u.SoundAt.Sound, hitSounds->Object);
-		e.u.SoundAt.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
-		e.u.SoundAt.IsHit = true;
-		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 static void DestroyObject(
@@ -187,6 +177,29 @@ bool CanHit(const int flags, const int uid, const TTileItem *target)
 	}
 	return false;
 }
+bool HasHitSound(
+	const int power, const int flags, const int playerUID,
+	const TileItemKind targetKind, const int targetUID,
+	const special_damage_e special, const bool allowFriendlyHitSound)
+{
+	switch (targetKind)
+	{
+	case KIND_CHARACTER:
+		{
+			const TActor *a = ActorGetByUID(targetUID);
+			return
+				!ActorIsImmune(a, special) &&
+				(allowFriendlyHitSound || !ActorIsInvulnerable(
+					a, flags, playerUID, gCampaign.Entry.Mode));
+		}
+	case KIND_OBJECT:
+		return power > 0;
+	default:
+		CASSERT(false, "cannot damage tile item kind");
+		break;
+	}
+	return false;
+}
 
 static void DoDamageCharacter(
 	const Vec2i hitVector,
@@ -195,9 +208,7 @@ static void DoDamageCharacter(
 	const int playerUID,
 	const int uid,
 	TActor *actor,
-	const special_damage_e special,
-	const HitSounds *hitSounds,
-	const bool allowFriendlyHitSound);
+	const special_damage_e special);
 void Damage(
 	const Vec2i hitVector,
 	const int power,
@@ -205,9 +216,7 @@ void Damage(
 	const int playerUID,
 	const int uid,
 	const TileItemKind targetKind, const int targetUID,
-	const special_damage_e special,
-	const HitSounds *hitSounds,
-	const bool allowFriendlyHitSound)
+	const special_damage_e special)
 {
 	switch (targetKind)
 	{
@@ -215,13 +224,11 @@ void Damage(
 		DoDamageCharacter(
 			hitVector,
 			power, flags, playerUID, uid,
-			ActorGetByUID(targetUID), special,
-			hitSounds, allowFriendlyHitSound);
+			ActorGetByUID(targetUID), special);
 		break;
 	case KIND_OBJECT:
 		DamageObject(
-			power, flags, playerUID, uid, ObjGetByUID(targetUID),
-			hitSounds);
+			power, flags, playerUID, uid, ObjGetByUID(targetUID));
 		break;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
@@ -235,29 +242,15 @@ static void DoDamageCharacter(
 	const int playerUID,
 	const int uid,
 	TActor *actor,
-	const special_damage_e special,
-	const HitSounds *hitSounds,
-	const bool allowFriendlyHitSound)
+	const special_damage_e special)
 {
 	// Create events: hit, damage, score
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
 	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
-	const Vec2i realPos = Vec2iFull2Real(actor->Pos);
 	GameEvent e = GameEventNew(GAME_EVENT_HIT_CHARACTER);
 	e.u.HitCharacter.TargetId = actor->tileItem.id;
 	e.u.HitCharacter.Special = special;
 	GameEventsEnqueue(&gGameEvents, e);
-	if (hitSounds != NULL &&
-		!ActorIsImmune(actor, special) &&
-		(allowFriendlyHitSound || !ActorIsInvulnerable(
-		actor, flags, playerUID, gCampaign.Entry.Mode)))
-	{
-		e = GameEventNew(GAME_EVENT_SOUND_AT);
-		strcpy(e.u.SoundAt.Sound, hitSounds->Flesh);
-		e.u.SoundAt.Pos = Vec2i2Net(realPos);
-		e.u.SoundAt.IsHit = true;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
 	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 	{
 		e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
@@ -553,68 +546,4 @@ void MobObjDestroy(TMobileObject *m)
 	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
 	MapRemoveTileItem(&gMap, &m->tileItem);
 	m->isInUse = false;
-}
-
-typedef struct
-{
-	bool HasHit;
-	bool MultipleHits;
-	TMobileObject *Obj;
-} HitItemData;
-static bool HitItemFunc(TTileItem *ti, void *data);
-bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits)
-{
-	// Don't hit if no damage dealt
-	// This covers non-damaging debris explosions
-	if (obj->bulletClass->Power <= 0 &&
-		obj->bulletClass->Special == SPECIAL_NONE)
-	{
-		return 0;
-	}
-
-	// Get all items that collide
-	HitItemData data;
-	data.HasHit = false;
-	data.MultipleHits = multipleHits;
-	data.Obj = obj;
-	CollideTileItems(
-		&obj->tileItem, Vec2iFull2Real(pos),
-		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
-		IsPVP(gCampaign.Entry.Mode),
-		HitItemFunc, &data);
-	return data.HasHit;
-}
-static bool HitItemFunc(TTileItem *ti, void *data)
-{
-	HitItemData *hData = data;
-	hData->HasHit = CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti);
-	if (hData->HasHit)
-	{
-		int targetUID = -1;
-		switch (ti->kind)
-		{
-		case KIND_CHARACTER:
-			targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
-			break;
-		case KIND_OBJECT:
-			targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
-			break;
-		default:
-			CASSERT(false, "cannot damage target kind");
-			break;
-		}
-		Damage(
-			hData->Obj->vel, hData->Obj->bulletClass->Power,
-			hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
-			ti->kind, targetUID,
-			hData->Obj->bulletClass->Special,
-			hData->Obj->soundLock <= 0 ? &hData->Obj->bulletClass->HitSound : NULL,
-			true);
-		if (hData->Obj->soundLock <= 0)
-		{
-			hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
-		}
-	}
-	// Whether to produce multiple hits from the same TMobileObject
-	return hData->MultipleHits;
 }

@@ -95,14 +95,16 @@ extern CArray gObjs;	// of TObject
 
 
 bool CanHit(const int flags, const int uid, const TTileItem *target);
+bool HasHitSound(
+	const int power, const int flags, const int playerUID,
+	const TileItemKind targetKind, const int targetUID,
+	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
 	const Vec2i hitVector,
 	const int power,
 	const int flags, const int playerUID, const int uid,
 	const TileItemKind targetKind, const int targetUID,
-	const special_damage_e special,
-	const HitSounds *hitSounds,
-	const bool allowFriendlyHitSound);
+	const special_damage_e special);
 
 void ObjsInit(void);
 void ObjsTerminate(void);
@@ -126,4 +128,3 @@ void MobObjsTerminate(void);
 int MobObjsObjsGetNextUID(void);
 TMobileObject *MobObjGetByUID(const int uid);
 void MobObjDestroy(TMobileObject *m);
-bool HitItem(TMobileObject *obj, const Vec2i pos, const bool multipleHits);

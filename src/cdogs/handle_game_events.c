@@ -246,14 +246,21 @@ static void HandleGameEvent(
 			const TActor *a = ActorGetByUID(e.u.Melee.UID);
 			if (!a->isInUse) break;
 			const BulletClass *b = StrBulletClass(e.u.Melee.BulletClass);
+			if ((HitType)e.u.Melee.HitType != HIT_NONE &&
+				HasHitSound(b->Power, a->flags, a->PlayerUID,
+				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
+				SPECIAL_NONE, false))
+			{
+				PlayHitSound(
+					&b->HitSound, (HitType)e.u.Melee.HitType,
+					Vec2iFull2Real(a->Pos));
+			}
 			Damage(
 				Vec2iZero(),
 				b->Power,
 				a->flags, a->PlayerUID, a->uid,
 				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
-				SPECIAL_NONE,
-				e.u.Melee.HitSounds ? &b->HitSound : NULL,
-				false);
+				SPECIAL_NONE);
 		}
 		break;
 	case GAME_EVENT_ADD_PICKUP:
@@ -276,12 +283,9 @@ static void HandleGameEvent(
 			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
 			if (o == NULL || !o->isInUse) break;
 			const Vec2i pos = Net2Vec2i(e.u.BulletBounce.BouncePos);
-			if (e.u.BulletBounce.HitWall)
-			{
-				SoundPlayAt(
-					&gSoundDevice, StrSound(o->bulletClass->HitSound.Wall),
-					Vec2iFull2Real(pos));
-			}
+			PlayHitSound(
+				&o->bulletClass->HitSound, (HitType)e.u.BulletBounce.HitType,
+				Vec2iFull2Real(pos));
 			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);

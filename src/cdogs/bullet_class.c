@@ -61,6 +61,8 @@
 
 BulletClasses gBulletClasses;
 
+#define SOUND_LOCK_MOBILE_OBJECT 12
+
 
 // TODO: use map structure?
 BulletClass *StrBulletClass(const char *s)
@@ -136,6 +138,8 @@ static Vec2i SeekTowards(
 
 
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
+static HitType HitItem(
+	TMobileObject *obj, const Vec2i pos, const bool multipleHits);
 bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
 	obj->count += ticks;
@@ -178,7 +182,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
-	bool hitItem = false;
+	HitType hitItem = HIT_NONE;
 	if (!gCampaign.IsClient)
 	{
 		hitItem = HitItem(obj, pos, obj->bulletClass->Persists);
@@ -257,19 +261,26 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	bool hitWall = false;
-	if (!gCampaign.IsClient)
+	if (!gCampaign.IsClient && hitItem == HIT_NONE)
 	{
 		hitWall =
 			MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	}
-	if (hitWall || hitItem)
+	if (hitWall || hitItem != HIT_NONE)
 	{
 		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
 		b.u.BulletBounce.UID = obj->UID;
-		b.u.BulletBounce.HitWall = hitWall && !Vec2iIsZero(obj->vel);
+		if (hitWall && !Vec2iIsZero(obj->vel))
+		{
+			b.u.BulletBounce.HitType = (int)HIT_WALL;
+		}
+		else
+		{
+			b.u.BulletBounce.HitType = (int)hitItem;
+		}
 		bool alive = true;
 		if ((hitWall && !obj->bulletClass->WallBounces) ||
-			(hitItem && obj->bulletClass->HitsObjects))
+			((hitItem != HIT_NONE) && obj->bulletClass->HitsObjects))
 		{
 			b.u.BulletBounce.Spark = true;
 			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
@@ -356,6 +367,80 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 			true);
 	}
 }
+typedef struct
+{
+	HitType HitType;
+	bool MultipleHits;
+	TMobileObject *Obj;
+} HitItemData;
+static bool HitItemFunc(TTileItem *ti, void *data);
+static HitType HitItem(
+	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
+{
+	// Don't hit if no damage dealt
+	// This covers non-damaging debris explosions
+	if (obj->bulletClass->Power <= 0 &&
+		obj->bulletClass->Special == SPECIAL_NONE)
+	{
+		return HIT_NONE;
+	}
+
+	// Get all items that collide
+	HitItemData data;
+	data.HitType = HIT_NONE;
+	data.MultipleHits = multipleHits;
+	data.Obj = obj;
+	CollideTileItems(
+		&obj->tileItem, Vec2iFull2Real(pos),
+		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
+		IsPVP(gCampaign.Entry.Mode),
+		HitItemFunc, &data);
+	return data.HitType;
+}
+static bool HitItemFunc(TTileItem *ti, void *data)
+{
+	HitItemData *hData = data;
+	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti))
+	{
+		goto bail;
+	}
+	int targetUID = -1;
+	switch (ti->kind)
+	{
+	case KIND_CHARACTER:
+		hData->HitType = HIT_FLESH;
+		targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
+		break;
+	case KIND_OBJECT:
+		hData->HitType = HIT_OBJECT;
+		targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
+		break;
+	default:
+		CASSERT(false, "cannot damage target kind");
+		break;
+	}
+	if (hData->Obj->soundLock > 0 ||
+		!HasHitSound(
+		hData->Obj->bulletClass->Power, hData->Obj->flags, hData->Obj->PlayerUID,
+		ti->kind, targetUID, hData->Obj->bulletClass->Special, true))
+	{
+		hData->HitType = HIT_NONE;
+	}
+	Damage(
+		hData->Obj->vel, hData->Obj->bulletClass->Power,
+		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
+		ti->kind, targetUID,
+		hData->Obj->bulletClass->Special);
+	if (hData->Obj->soundLock <= 0)
+	{
+		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+	}
+
+bail:
+	// Whether to produce multiple hits from the same TMobileObject
+	return hData->MultipleHits;
+}
+
 
 
 #define VERSION 1
@@ -691,4 +776,26 @@ void BulletAdd(const NAddBullet add)
 	obj->tileItem.ShadowSize = obj->bulletClass->ShadowSize;
 	obj->updateFunc = UpdateBullet;
 	MapTryMoveTileItem(&gMap, &obj->tileItem, Vec2iFull2Real(pos));
+}
+
+void PlayHitSound(const HitSounds *h, const HitType t, const Vec2i realPos)
+{
+	switch (t)
+	{
+	case HIT_NONE:
+		// Do nothing
+		break;
+	case HIT_WALL:
+		SoundPlayAt(&gSoundDevice, StrSound(h->Wall), realPos);
+		break;
+	case HIT_OBJECT:
+		SoundPlayAt(&gSoundDevice, StrSound(h->Object), realPos);
+		break;
+	case HIT_FLESH:
+		SoundPlayAt(&gSoundDevice, StrSound(h->Flesh), realPos);
+		break;
+	default:
+		CASSERT(false, "unknown hit type")
+			break;
+	}
 }
