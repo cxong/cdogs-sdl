@@ -73,8 +73,11 @@ static void HandleGameEvent(
 	case GAME_EVENT_PLAYER_DATA:
 		PlayerDataAddOrUpdate(e.u.PlayerData);
 		break;
-	case GAME_EVENT_ADD_MAP_OBJECT:
-		ObjAdd(e.u.AddMapObject);
+	case GAME_EVENT_MAP_OBJECT_ADD:
+		ObjAdd(e.u.MapObjectAdd);
+		break;
+	case GAME_EVENT_MAP_OBJECT_DAMAGE:
+		DamageObject(e.u.MapObjectDamage);
 		break;
 	case GAME_EVENT_SCORE:
 		{

@@ -417,7 +417,7 @@ bool MapTryPlaceOneObject(
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
 	}
 
-	NAddMapObject amo = NAddMapObject_init_default;
+	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
 	amo.Pos = Vec2i2Net(realPos);
@@ -436,7 +436,7 @@ void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
 	{
 		return;
 	}
-	NAddMapObject amo = NAddMapObject_init_default;
+	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
 	amo.Pos = Vec2i2Net(Vec2iCenterOfTile(v));

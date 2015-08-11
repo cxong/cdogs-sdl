@@ -46,7 +46,8 @@ typedef enum
 	GAME_EVENT_CLIENT_ID,
 	GAME_EVENT_CAMPAIGN_DEF,
 	GAME_EVENT_PLAYER_DATA,
-	GAME_EVENT_ADD_MAP_OBJECT,
+	GAME_EVENT_MAP_OBJECT_ADD,
+	GAME_EVENT_MAP_OBJECT_DAMAGE,
 	GAME_EVENT_CLIENT_READY,
 	GAME_EVENT_NET_GAME_START,
 
@@ -124,7 +125,8 @@ typedef struct
 	union
 	{
 		NPlayerData PlayerData;
-		NAddMapObject AddMapObject;
+		NMapObjectAdd MapObjectAdd;
+		NMapObjectDamage MapObjectDamage;
 		NScore Score;
 		NSound SoundAt;
 		int ShakeAmount;

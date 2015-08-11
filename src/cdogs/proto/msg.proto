@@ -1,10 +1,3 @@
-message NRequestPlayers {
-}
-
-message NCmd {
-	required uint32 Cmd = 1;
-}
-
 message NClientId {
 	required uint32 Id = 1;
 	// This client's players will use UID from this number
@@ -41,12 +34,20 @@ message NPlayerData {
 	required uint32 UID = 12;
 }
 
-message NAddMapObject {
+message NMapObjectAdd {
 	required uint32 UID = 1;
 	required string MapObjectClass = 2;
 	required NVec2i Pos = 3;
 	required uint32 TileItemFlags = 4;
 	required int32 Health = 5;
+}
+
+message NMapObjectDamage {
+	required uint32 UID = 1;
+	required int32 Power = 2;
+	required int32 ActorUID = 3;
+	required int32 PlayerUID = 4;
+	required uint32 Flags = 5;
 }
 
 message NScore {

@@ -89,23 +89,21 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 
 static void DestroyObject(
 	TObject *o, const int flags, const int playerUID, const int uid);
-static void DamageObject(
-	const int power, const int flags,
-	const int playerUID, const int uid,
-	TObject *o)
+void DamageObject(const NMapObjectDamage mod)
 {
+	TObject *o = ObjGetByUID(mod.UID);
 	// Don't bother if object already destroyed
 	if (o->Health <= 0)
 	{
 		return;
 	}
 
-	o->Health -= power;
+	o->Health -= mod.Power;
 
 	// Destroying objects and all the wonderful things that happen
 	if (o->Health <= 0)
 	{
-		DestroyObject(o, flags, playerUID, uid);
+		DestroyObject(o, mod.Flags, mod.PlayerUID, mod.UID);
 	}
 }
 static void DestroyObject(
@@ -113,39 +111,44 @@ static void DestroyObject(
 {
 	o->Health = 0;
 
-	// Update objective
-	UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
-	// Extra score if objective
-	if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && playerUID >= 0)
+	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+
+	if (!gCampaign.IsClient)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-		e.u.Score.PlayerUID = playerUID;
-		e.u.Score.Score = OBJECT_SCORE;
+		// Update objective
+		UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
+		// Extra score if objective
+		if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && playerUID >= 0)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+			e.u.Score.PlayerUID = playerUID;
+			e.u.Score.Score = OBJECT_SCORE;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+
+		// Weapons that go off when this object is destroyed
+		const Vec2i fullPos = Vec2iReal2Full(realPos);
+		for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
+		{
+			const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
+			GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true);
+		}
+
+		// A wreck left after the destruction of this object
+		// TODO: doesn't need to be network event
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+		e.u.AddBullet.UID = MobObjsObjsGetNextUID();
+		strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
+		e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
+		e.u.AddBullet.MuzzleHeight = 0;
+		e.u.AddBullet.Angle = 0;
+		e.u.AddBullet.Elevation = 0;
+		e.u.AddBullet.Flags = 0;
+		e.u.AddBullet.PlayerUID = -1;
+		e.u.AddBullet.ActorUID = -1;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	// Weapons that go off when this object is destroyed
-	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
-	const Vec2i fullPos = Vec2iReal2Full(realPos);
-	for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
-	{
-		const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
-		GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true);
-	}
-
-	// A wreck left after the destruction of this object
-	// TODO: doesn't need to be network event
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-	e.u.AddBullet.UID = MobObjsObjsGetNextUID();
-	strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
-	e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
-	e.u.AddBullet.MuzzleHeight = 0;
-	e.u.AddBullet.Angle = 0;
-	e.u.AddBullet.Elevation = 0;
-	e.u.AddBullet.Flags = 0;
-	e.u.AddBullet.PlayerUID = -1;
-	e.u.AddBullet.ActorUID = -1;
-	GameEventsEnqueue(&gGameEvents, e);
 	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
 
 	// Turn the object into a wreck, if available
@@ -227,8 +230,15 @@ void Damage(
 			ActorGetByUID(targetUID), special);
 		break;
 	case KIND_OBJECT:
-		DamageObject(
-			power, flags, playerUID, uid, ObjGetByUID(targetUID));
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_DAMAGE);
+			e.u.MapObjectDamage.UID = targetUID;
+			e.u.MapObjectDamage.Power = power;
+			e.u.MapObjectDamage.ActorUID = uid;
+			e.u.MapObjectDamage.PlayerUID = playerUID;
+			e.u.MapObjectDamage.Flags = flags;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 		break;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
@@ -398,7 +408,7 @@ int ObjsGetNextUID(void)
 	return sObjUIDs++;
 }
 
-void ObjAdd(const NAddMapObject amo)
+void ObjAdd(const NMapObjectAdd amo)
 {
 	// Find an empty slot in object list
 	TObject *o = NULL;

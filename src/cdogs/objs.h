@@ -112,7 +112,7 @@ int ObjsGetNextUID(void);
 void AddObjectOld(
 	const Vec2i pos, const Vec2i size,
 	const TOffsetPic *pic, const int tileFlags);
-void ObjAdd(const NAddMapObject amo);
+void ObjAdd(const NMapObjectAdd amo);
 void ObjDestroy(int id);
 
 // Check if this object is dangerous; i.e. on destruction will explode
@@ -121,6 +121,8 @@ bool ObjIsDangerous(const TObject *o);
 void UpdateObjects(const int ticks);
 
 TObject *ObjGetByUID(const int uid);
+
+void DamageObject(const NMapObjectDamage mod);
 
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);
