@@ -364,7 +364,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 		const GunDescription **g = CArrayGet(guns, i);
 		GunFire(
 			*g, fullPos, obj->z, angle, obj->flags, obj->PlayerUID, obj->ActorUID,
-			true);
+			true, false);
 	}
 }
 typedef struct

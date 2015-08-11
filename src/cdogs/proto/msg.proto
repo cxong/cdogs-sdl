@@ -196,6 +196,8 @@ message NGunFire {
 	required float Angle = 6;
 	required bool Sound = 7;
 	required uint32 Flags = 8;
+	// Whether the shot was from a real player-gun, or a derived gun e.g. explode
+	required bool IsGun = 9;
 }
 
 message NGunState {

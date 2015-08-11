@@ -131,7 +131,7 @@ static void DestroyObject(
 		for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
 		{
 			const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
-			GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true);
+			GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true, false);
 		}
 
 		// A wreck left after the destruction of this object

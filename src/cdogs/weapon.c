@@ -434,7 +434,7 @@ void WeaponFire(
 	const bool playSound = w->soundLock <= 0;
 	GunFire(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
-		flags, playerUID, uid, playSound);
+		flags, playerUID, uid, playSound, true);
 	if (playSound)
 	{
 		w->soundLock = w->Gun->SoundLockLength;
@@ -447,7 +447,7 @@ void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
-	const bool playSound)
+	const bool playSound, const bool isGun)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_GUN_FIRE);
 	e.u.GunFire.UID = uid;
@@ -458,6 +458,7 @@ void GunFire(
 	e.u.GunFire.Angle = (float)radians;
 	e.u.GunFire.Sound = playSound;
 	e.u.GunFire.Flags = flags;
+	e.u.GunFire.IsGun = isGun;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 

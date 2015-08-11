@@ -169,7 +169,7 @@ void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
-	const bool playSound);
+	const bool playSound, const bool isGun);
 void GunAddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos);
 

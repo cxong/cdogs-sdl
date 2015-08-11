@@ -140,7 +140,10 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
 		case GAME_EVENT_ACTOR_MELEE: actorUID = e.u.Melee.UID; break;
 		case GAME_EVENT_GUN_FIRE:
-			actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
+			if (e.u.GunFire.IsGun)
+			{
+				actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
+			}
 			break;
 		case GAME_EVENT_GUN_RELOAD:
 			actorIsLocal = PlayerIsLocal(e.u.GunReload.PlayerUID);
