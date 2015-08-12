@@ -350,6 +350,7 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	if (actor->health <= 0) {
 		actor->dead++;
+		actor->MoveVel = Vec2iZero();
 		actor->stateCounter = 4;
 		actor->tileItem.flags = 0;
 		return;
