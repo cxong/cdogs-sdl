@@ -52,16 +52,8 @@
 #include "tile.h"
 #include "vector.h"
 
-typedef struct
-{
-	int Power;
-	int PlayerUID;
-	int TargetUID;
-	int TargetPlayerUID;
-} ActorDamage;
-
 bool CanHitCharacter(const int flags, const int uid, const TActor *actor);
 bool CanDamageCharacter(
 	const int flags, const int playerUID, const int uid,
 	const TActor *actor, const special_damage_e special);
-void DamageActor(const ActorDamage ad);
+void DamageActor(TActor *victim, const int power, const int hitterPlayerUID);

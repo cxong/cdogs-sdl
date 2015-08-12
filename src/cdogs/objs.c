@@ -70,8 +70,6 @@
 #include "game.h"
 #include "utils.h"
 
-#define SHOT_IMPULSE_DIVISOR 25
-
 CArray gObjs;
 CArray gMobObjs;
 static unsigned int sObjUIDs = 0;
@@ -257,89 +255,31 @@ static void DoDamageCharacter(
 	// Create events: hit, damage, score
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
 	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
-	GameEvent e = GameEventNew(GAME_EVENT_HIT_CHARACTER);
-	e.u.HitCharacter.TargetId = actor->tileItem.id;
-	e.u.HitCharacter.Special = special;
-	GameEventsEnqueue(&gGameEvents, e);
+
 	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
 	{
-		e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-		e.u.ActorImpulse.UID = actor->uid;
-		e.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScaleDiv(
+		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+		ei.u.ActorImpulse.UID = actor->uid;
+		ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScaleDiv(
 			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR));
-		e.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
-		GameEventsEnqueue(&gGameEvents, e);
+		ei.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
+		GameEventsEnqueue(&gGameEvents, ei);
 	}
-	if (CanDamageCharacter(flags, playerUID, uid, actor, special))
+
+	const bool canDamage =
+		CanDamageCharacter(flags, playerUID, uid, actor, special);
+
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HIT);
+	e.u.ActorHit.UID = actor->uid;
+	e.u.ActorHit.PlayerUID = actor->PlayerUID;
+	e.u.ActorHit.HitterPlayerUID = playerUID;
+	e.u.ActorHit.Special = special;
+	e.u.ActorHit.Power = canDamage ? power : 0;
+	e.u.ActorHit.HitVector = Vec2i2Net(hitVector);
+	GameEventsEnqueue(&gGameEvents, e);
+
+	if (canDamage)
 	{
-		e = GameEventNew(GAME_EVENT_DAMAGE_CHARACTER);
-		e.u.ActorDamage.Power = power;
-		e.u.ActorDamage.PlayerUID = playerUID;
-		e.u.ActorDamage.TargetUID = actor->uid;
-		e.u.ActorDamage.TargetPlayerUID = actor->PlayerUID;
-		GameEventsEnqueue(&gGameEvents, e);
-
-		if (ConfigGetEnum(&gConfig, "Game.Gore") != GORE_NONE)
-		{
-			e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-			e.u.AddParticle.FullPos = actor->Pos;
-			e.u.AddParticle.Z = 10 * Z_FACTOR;
-			int bloodPower = power * 2;
-			int bloodSize = 1;
-			while (bloodPower > 0)
-			{
-				switch (bloodSize)
-				{
-				case 1:
-					e.u.AddParticle.Class =
-						StrParticleClass(&gParticleClasses, "blood1");
-					break;
-				case 2:
-					e.u.AddParticle.Class =
-						StrParticleClass(&gParticleClasses, "blood2");
-					break;
-				default:
-					e.u.AddParticle.Class =
-						StrParticleClass(&gParticleClasses, "blood3");
-					break;
-				}
-				bloodSize++;
-				if (bloodSize > 3)
-				{
-					bloodSize = 1;
-				}
-				if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
-				{
-					e.u.AddParticle.Vel = Vec2iScaleDiv(
-						Vec2iScale(hitVector, (rand() % 8 + 8) * power),
-						15 * SHOT_IMPULSE_DIVISOR);
-				}
-				else
-				{
-					e.u.AddParticle.Vel = Vec2iScaleDiv(
-						Vec2iScale(hitVector, rand() % 8 + 8), 20);
-				}
-				e.u.AddParticle.Vel.x += (rand() % 128) - 64;
-				e.u.AddParticle.Vel.y += (rand() % 128) - 64;
-				e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
-				e.u.AddParticle.DZ = (rand() % 6) + 6;
-				e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
-				GameEventsEnqueue(&gGameEvents, e);
-				switch (ConfigGetEnum(&gConfig, "Game.Gore"))
-				{
-				case GORE_LOW:
-					bloodPower /= 8;
-					break;
-				case GORE_MEDIUM:
-					bloodPower /= 2;
-					break;
-				default:
-					bloodPower = bloodPower * 7 / 8;
-					break;
-				}
-			}
-		}
-
 		// Don't score for friendly or player hits
 		const bool isFriendly =
 			(actor->flags & FLAGS_GOOD_GUY) ||

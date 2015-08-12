@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __PARTICLE
-#define __PARTICLE
+#pragma once
 
 #include <json/json.h>
 
@@ -97,4 +96,5 @@ void ParticlesUpdate(CArray *particles, const int ticks);
 int ParticleAdd(CArray *particles, const AddParticle add);
 void ParticleDestroy(CArray *particles, const int id);
 
-#endif
+void AddBloodSplatter(
+	const Vec2i fullPos, const int power, const Vec2i hitVector);

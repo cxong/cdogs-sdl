@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -355,4 +355,69 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 	Vec2i picPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
 	picPos.y -= p->Z / Z_FACTOR;
 	BlitMasked(&gGraphicsDevice, pic, picPos, p->Class->Mask, true);
+}
+
+void AddBloodSplatter(
+	const Vec2i fullPos, const int power, const Vec2i hitVector)
+{
+	const GoreAmount ga = ConfigGetEnum(&gConfig, "Game.Gore");
+	if (ga == GORE_NONE) return;
+
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+	e.u.AddParticle.FullPos = fullPos;
+	e.u.AddParticle.Z = 10 * Z_FACTOR;
+	int bloodPower = power * 2;
+	int bloodSize = 1;
+	while (bloodPower > 0)
+	{
+		switch (bloodSize)
+		{
+		case 1:
+			e.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "blood1");
+			break;
+		case 2:
+			e.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "blood2");
+			break;
+		default:
+			e.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "blood3");
+			break;
+		}
+		bloodSize++;
+		if (bloodSize > 3)
+		{
+			bloodSize = 1;
+		}
+		if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
+		{
+			e.u.AddParticle.Vel = Vec2iScaleDiv(
+				Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+				15 * SHOT_IMPULSE_DIVISOR);
+		}
+		else
+		{
+			e.u.AddParticle.Vel = Vec2iScaleDiv(
+				Vec2iScale(hitVector, rand() % 8 + 8), 20);
+		}
+		e.u.AddParticle.Vel.x += (rand() % 128) - 64;
+		e.u.AddParticle.Vel.y += (rand() % 128) - 64;
+		e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+		e.u.AddParticle.DZ = (rand() % 6) + 6;
+		e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
+		GameEventsEnqueue(&gGameEvents, e);
+		switch (ga)
+		{
+		case GORE_LOW:
+			bloodPower /= 8;
+			break;
+		case GORE_MEDIUM:
+			bloodPower /= 2;
+			break;
+		default:
+			bloodPower = bloodPower * 7 / 8;
+			break;
+		}
+	}
 }

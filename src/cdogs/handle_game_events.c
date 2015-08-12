@@ -410,19 +410,26 @@ static void HandleGameEvent(
 	case GAME_EVENT_ADD_PARTICLE:
 		ParticleAdd(&gParticles, e.u.AddParticle);
 		break;
-	case GAME_EVENT_HIT_CHARACTER:
-		ActorTakeHit(
-			CArrayGet(&gActors, e.u.HitCharacter.TargetId),
-			e.u.HitCharacter.Special);
-		break;
-	case GAME_EVENT_DAMAGE_CHARACTER:
-		DamageActor(e.u.ActorDamage);
-		if (e.u.ActorDamage.Power != 0 &&
-			e.u.ActorDamage.TargetPlayerUID >= 0)
+	case GAME_EVENT_ACTOR_HIT:
 		{
-			HUDAddUpdate(
-				&camera->HUD, NUMBER_UPDATE_HEALTH,
-				e.u.ActorDamage.TargetPlayerUID, -e.u.ActorDamage.Power);
+			TActor *a = ActorGetByUID(e.u.ActorHit.UID);
+			if (!a->isInUse) break;
+			ActorTakeHit(a, e.u.ActorHit.Special);
+			if (e.u.ActorHit.Power > 0)
+			{
+				DamageActor(
+					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
+				if (e.u.ActorHit.PlayerUID >= 0)
+				{
+					HUDAddUpdate(
+						&camera->HUD, NUMBER_UPDATE_HEALTH,
+						e.u.ActorHit.PlayerUID, -e.u.ActorHit.Power);
+				}
+
+				AddBloodSplatter(
+					a->Pos, e.u.ActorHit.Power,
+					Net2Vec2i(e.u.ActorHit.HitVector));
+			}
 		}
 		break;
 	case GAME_EVENT_TRIGGER:

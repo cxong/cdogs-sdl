@@ -65,11 +65,14 @@ typedef enum
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
 	GAME_EVENT_ACTOR_SLIDE,
+	// TODO: event only used by actor hit and screen boundaries
+	// If the latter is removed, it can be incorporated into actor hit
 	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_ACTOR_SWITCH_GUN,
 	GAME_EVENT_ACTOR_PICKUP_ALL,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
 	GAME_EVENT_ACTOR_HEAL,
+	GAME_EVENT_ACTOR_HIT,
 	GAME_EVENT_ACTOR_ADD_AMMO,
 	GAME_EVENT_ACTOR_USE_AMMO,
 	GAME_EVENT_ACTOR_DIE,
@@ -86,8 +89,6 @@ typedef enum
 	GAME_EVENT_GUN_STATE,
 	GAME_EVENT_ADD_BULLET,
 	GAME_EVENT_ADD_PARTICLE,
-	GAME_EVENT_HIT_CHARACTER,
-	GAME_EVENT_DAMAGE_CHARACTER,
 	GAME_EVENT_TRIGGER,
 	GAME_EVENT_EXPLORE_TILES,
 	GAME_EVENT_RESCUE_CHARACTER,
@@ -145,6 +146,7 @@ typedef struct
 		NActorPickupAll ActorPickupAll;
 		NActorReplaceGun ActorReplaceGun;
 		NActorHeal Heal;
+		NActorHit ActorHit;
 		NActorAddAmmo AddAmmo;
 		NActorUseAmmo UseAmmo;
 		NActorDie ActorDie;
@@ -164,12 +166,6 @@ typedef struct
 		NGunState GunState;
 		NAddBullet AddBullet;
 		AddParticle AddParticle;
-		struct
-		{
-			int TargetId;
-			special_damage_e Special;
-		} HitCharacter;
-		ActorDamage ActorDamage;
 		NTrigger TriggerEvent;
 		NExploreTiles ExploreTiles;
 		NRescueCharacter Rescue;

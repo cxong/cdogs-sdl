@@ -60,6 +60,8 @@
 
 #define AMMO_SPAWNER_RESPAWN_TICKS (FPS_FRAMELIMIT * 30)
 
+#define SHOT_IMPULSE_DIVISOR 25
+
 
 typedef struct
 {

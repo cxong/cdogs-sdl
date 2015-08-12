@@ -1587,7 +1587,7 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 void ActorTakeHit(TActor *actor, const special_damage_e damage)
 {
 	// Wake up if this is an AI
-	if (actor->aiContext)
+	if (!gCampaign.IsClient && actor->aiContext)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 		ActorSetAIState(actor, AI_STATE_NONE);

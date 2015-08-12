@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -78,14 +78,13 @@ bool CanDamageCharacter(
 }
 
 static void TrackKills(PlayerData *pd, const TActor *victim);
-void DamageActor(const ActorDamage ad)
+void DamageActor(TActor *victim, const int power, const int hitterPlayerUID)
 {
-	TActor *victim = ActorGetByUID(ad.TargetUID);
 	const int startingHealth = victim->health;
-	InjureActor(victim, ad.Power);
-	if (startingHealth > 0 && victim->health <= 0 && ad.PlayerUID >= 0)
+	InjureActor(victim, power);
+	if (startingHealth > 0 && victim->health <= 0 && hitterPlayerUID >= 0)
 	{
-		TrackKills(PlayerDataGetByUID(ad.PlayerUID), victim);
+		TrackKills(PlayerDataGetByUID(hitterPlayerUID), victim);
 	}
 }
 static void TrackKills(PlayerData *pd, const TActor *victim)

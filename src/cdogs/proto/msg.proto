@@ -127,6 +127,15 @@ message NActorHeal {
 	required bool IsRandomSpawned = 4;
 }
 
+message NActorHit {
+	required uint32 UID = 1;
+	required int32 PlayerUID = 2 [default=-1];
+	required int32 HitterPlayerUID = 3 [default=-1];
+	required int32 Special = 4;
+	required int32 Power = 5;
+	required NVec2i Vel = 6;
+}
+
 message NActorAddAmmo {
 	required uint32 UID = 1;
 	required int32 PlayerUID = 2 [default=-1];
