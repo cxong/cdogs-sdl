@@ -501,8 +501,6 @@ static void LoadBullet(
 		{
 			CSTRDUP(b->HitSound.Wall, defaultBullet->HitSound.Wall);
 		}
-		// TODO: enable default bullet pic?
-		memset(&b->CPic, 0, sizeof b->CPic);
 		// TODO: enable default bullet guns?
 		memset(&b->Falling.DropGuns, 0, sizeof b->Falling.DropGuns);
 		memset(&b->OutOfRangeGuns, 0, sizeof b->OutOfRangeGuns);
