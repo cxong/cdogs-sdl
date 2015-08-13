@@ -154,6 +154,8 @@ void NetServerPoll(NetServer *n)
 			}
 		}
 	} while (check > 0);
+
+	NetServerFlush(n);
 }
 static void OnConnect(NetServer *n, ENetEvent event)
 {
@@ -179,6 +181,8 @@ static void OnConnect(NetServer *n, ENetEvent event)
 
 	SoundPlay(&gSoundDevice, StrSound("hahaha"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
+
+	NetServerFlush(n);
 }
 static void OnReceive(NetServer *n, ENetEvent event)
 {
@@ -237,6 +241,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 					}
 				}
 			}
+
+			NetServerFlush(n);
 			break;
 		default:
 			CASSERT(false, "unexpected message type");
@@ -393,5 +399,4 @@ void NetServerSendMsg(
 			(int)e, (int)n->server->connectedPeers);
 		enet_host_broadcast(n->server, 0, NetEncode(e, data));
 	}
-	NetServerFlush(n);
 }
