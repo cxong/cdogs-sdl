@@ -465,10 +465,10 @@ void BulletLoadJSON(
 	}
 
 	// Defaults
-	BulletClass *defaultB = &bullets->Default;
 	json_t *defaultNode = json_find_first_label(bulletNode, "DefaultBullet");
 	if (defaultNode != NULL)
 	{
+		BulletClassFree(&bullets->Default);
 		LoadBullet(&bullets->Default, defaultNode->child, NULL);
 	}
 
@@ -476,11 +476,10 @@ void BulletLoadJSON(
 	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
 		BulletClass b;
-		LoadBullet(&b, child, defaultB);
+		LoadBullet(&b, child, &bullets->Default);
 		CArrayPushBack(classes, &b);
 	}
 
-	BulletClassFree(defaultB);
 	bullets->root = bulletNode;
 }
 static void LoadBullet(
@@ -502,6 +501,13 @@ static void LoadBullet(
 		{
 			CSTRDUP(b->HitSound.Wall, defaultBullet->HitSound.Wall);
 		}
+		// TODO: enable default bullet pic?
+		memset(&b->CPic, 0, sizeof b->CPic);
+		// TODO: enable default bullet guns?
+		memset(&b->Falling.DropGuns, 0, sizeof b->Falling.DropGuns);
+		memset(&b->OutOfRangeGuns, 0, sizeof b->OutOfRangeGuns);
+		memset(&b->HitGuns, 0, sizeof b->HitGuns);
+		memset(&b->ProximityGuns, 0, sizeof b->ProximityGuns);
 	}
 	char *tmp;
 
@@ -685,6 +691,7 @@ static void BulletClassesLoadWeapons(CArray *classes)
 }
 void BulletTerminate(BulletClasses *bullets)
 {
+	BulletClassFree(&bullets->Default);
 	BulletClassesClear(&bullets->Classes);
 	CArrayTerminate(&bullets->Classes);
 	BulletClassesClear(&bullets->CustomClasses);
