@@ -93,6 +93,11 @@ void NetServerClose(NetServer *n)
 {
 	if (n->server)
 	{
+		for (int i = 0; i < (int)n->server->connectedPeers; i++)
+		{
+			ENetPeer *peer = n->server->peers + i;
+			enet_peer_disconnect_now(peer, 0);
+		}
 		enet_host_destroy(n->server);
 	}
 	n->server = NULL;
@@ -139,6 +144,7 @@ void NetServerPoll(NetServer *n)
 						event.peer->address.host,
 						event.peer->address.port);
 					CFREE(event.peer->data);
+					event.peer->data = NULL;
 					// Remove client's players
 					for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 					{

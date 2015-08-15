@@ -56,7 +56,7 @@ void NetClientTerminate(NetClient *n)
 {
 	if (n->peer)
 	{
-		enet_peer_reset(n->peer);
+		enet_peer_disconnect_now(n->peer, 0);
 	}
 	n->peer = NULL;
 	enet_host_destroy(n->client);
