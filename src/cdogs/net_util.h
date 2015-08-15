@@ -43,10 +43,10 @@
 
 // Used in printf statements
 #define NET_IP_TO_CIDR_FORMAT(_ip)\
-	((_ip) >> 24) & 0xFF,\
-	((_ip) >> 16) & 0xFF,\
+	(_ip)& 0xFF,\
 	((_ip) >> 8) & 0xFF,\
-	(_ip)& 0xFF
+	((_ip) >> 16) & 0xFF, \
+	((_ip) >> 24) & 0xFF
 
 // Messages
 
