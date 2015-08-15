@@ -30,6 +30,7 @@
 
 #include <cdogs/config.h>
 #include <cdogs/font.h>
+#include <cdogs/net_client.h>
 
 #include "autosave.h"
 #include "menu.h"
@@ -51,7 +52,6 @@ void MainMenu(
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(menu->root, "Start");
-	CASSERT(startMenu != NULL, "Start menu missing");
 	switch (lastGameMode)
 	{
 	case GAME_MODE_NORMAL:
@@ -81,7 +81,7 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 }
 
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns);
+	const char *name, custom_campaigns_t *campaigns);
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -104,7 +104,7 @@ MenuSystem *MenuCreateAll(
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(ms->root,MenuCreateStart("Start", ms, campaigns));
+	MenuAddSubmenu(ms->root,MenuCreateStart("Start", campaigns));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
@@ -113,19 +113,24 @@ MenuSystem *MenuCreateAll(
 	return ms;
 }
 
+typedef struct
+{
+	int MenuJoinIndex;
+} CheckLANServerData;
 static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title,
 	campaign_list_t *list, const GameMode mode);
+static void CheckLANServers(menu_t *menu, void *data);
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns)
+	const char *name, custom_campaigns_t *campaigns)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(
 		menu,
 		MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-	int menuContinueIndex = (int)ms->root->u.normal.subMenus.size - 1;
+	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		menu,
 		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
@@ -150,6 +155,10 @@ static menu_t *MenuCreateStart(
 		"Select a scenario:",
 		&campaigns->dogfightList,
 		GAME_MODE_DEATHMATCH));
+	MenuAddSubmenu(menu, MenuCreateBack("Join LAN game"));
+	CheckLANServerData *cdata;
+	CMALLOC(cdata, sizeof *cdata);
+	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
@@ -158,6 +167,10 @@ static menu_t *MenuCreateStart(
 	{
 		MenuDisableSubmenu(menu, menuContinueIndex);
 	}
+
+	MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
+	// Periodically check if LAN servers are available
+	MenuSetPostUpdateFunc(menu, CheckLANServers, cdata, true);
 
 	return menu;
 }
@@ -278,6 +291,22 @@ static menu_t *MenuCreateCampaignItem(
 	}
 
 	return menu;
+}
+
+static void CheckLANServers(menu_t *menu, void *data)
+{
+	CheckLANServerData *cdata = data;
+	if (gNetClient.FoundLANServer)
+	{
+		MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
+		NetClientFindLANServers(&gNetClient);
+	}
+	else if (!gNetClient.FindingLANServer)
+	{
+		// We've finished looking for LAN servers and haven't found any
+		MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
+		NetClientFindLANServers(&gNetClient);
+	}
 }
 
 static menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);

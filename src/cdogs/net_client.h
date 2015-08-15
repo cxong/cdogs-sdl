@@ -38,6 +38,8 @@ typedef struct
 	ENetPeer *peer;
 	int ClientId;
 	int FirstPlayerUID;
+	bool FoundLANServer;
+	bool FindingLANServer;
 } NetClient;
 
 extern NetClient gNetClient;
@@ -45,6 +47,9 @@ extern NetClient gNetClient;
 void NetClientInit(NetClient *n);
 void NetClientTerminate(NetClient *n);
 
+// Start searching for LAN servers; note that the result will be returned in
+// NetClient's boolean
+void NetClientFindLANServers(NetClient *n);
 // Attempt to connect to a server
 void NetClientConnect(NetClient *n, const ENetAddress addr);
 void NetClientPoll(NetClient *n);

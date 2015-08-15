@@ -130,6 +130,7 @@ struct menu
 	void *customPostEnterData;
 	MenuFunc customPostUpdateFunc;
 	void *customPostUpdateData;
+	bool isCustomPostUpdateDataDynamic;
 	MenuPostInputFunc customPostInputFunc;
 	void *customPostInputData;
 	bool isCustomPostInputDataDynamic;
@@ -268,7 +269,8 @@ menu_t *MenuCreateNormal(
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu);
 void MenuSetPostEnterFunc(
 	menu_t *menu, MenuFunc func, void *data, const bool isDynamicData);
-void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data);
+void MenuSetPostUpdateFunc(
+	menu_t *menu, MenuFunc func, void *data, const bool isDynamicData);
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(
 	menu_t *menu, MenuDisplayFunc func, const void *data);

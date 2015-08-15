@@ -131,7 +131,10 @@ void NetServerPoll(NetServer *n)
 			switch (event.type)
 			{
 			case ENET_EVENT_TYPE_CONNECT:
-				OnConnect(n, event);
+				// Do nothing; this may just be clients scanning the server
+				LOG(LM_NET, LL_INFO, "client connection from %u.%u.%u.%u:%d",
+					NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
+					(int)event.peer->address.port);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
@@ -139,10 +142,10 @@ void NetServerPoll(NetServer *n)
 			case ENET_EVENT_TYPE_DISCONNECT:
 				{
 					const int peerId = ((NetPeerData *)event.peer->data)->Id;
-					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %x:%u",
+					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %u.%u.%u.%u:%d",
 						peerId,
-						event.peer->address.host,
-						event.peer->address.port);
+						NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
+						(int)event.peer->address.port);
 					CFREE(event.peer->data);
 					event.peer->data = NULL;
 					// Remove client's players
@@ -165,8 +168,9 @@ void NetServerPoll(NetServer *n)
 }
 static void OnConnect(NetServer *n, ENetEvent event)
 {
-	LOG(LM_NET, LL_INFO, "new client connected from %x:%u.\n",
-		event.peer->address.host, event.peer->address.port);
+	LOG(LM_NET, LL_INFO, "new client connected from %u.%u.%u.%u:%d",
+		NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
+		(int)event.peer->address.port);
 	/* Store any relevant client information here. */
 	CMALLOC(event.peer->data, sizeof(NetPeerData));
 	const int peerId = n->peerId;
@@ -209,6 +213,9 @@ static void OnReceive(NetServer *n, ENetEvent event)
 	{
 		switch (gee.Type)
 		{
+		case GAME_EVENT_CLIENT_CONNECT:
+			OnConnect(n, event);
+			break;
 		case GAME_EVENT_CLIENT_READY:
 			// Flush game events to make sure we add the players
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);

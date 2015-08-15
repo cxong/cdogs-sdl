@@ -88,7 +88,7 @@ bool ScreenWait(const char *message, void (*checkFunc)(menu_t *, void *))
 	ms.allowAborts = true;
 	ms.root = ms.current = MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, checkFunc, &ms);
+	MenuSetPostUpdateFunc(ms.root, checkFunc, &ms, false);
 
 	MenuLoop(&ms);
 	const bool ok = !ms.hasAbort;
@@ -100,15 +100,13 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data);
 bool ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
-	uint32_t ip = gNetClient.peer->address.host;
-	sprintf(buf, "Connecting to %d.%d.%d.%d:%d...",
-		ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24,
+	sprintf(buf, "Connecting to %u.%u.%u.%u:%u...",
+		NET_IP_TO_CIDR_FORMAT(gNetClient.peer->address.host),
 		gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete);
 }
 static void CheckCampaignDefComplete(menu_t *menu, void *data)
 {
-	UNUSED(data);
 	if (gCampaign.IsLoaded)
 	{
 		if (gCampaign.IsError)

@@ -387,10 +387,12 @@ void MenuSetPostEnterFunc(
 	menu->isCustomPostInputDataDynamic = isDynamicData;
 }
 
-void MenuSetPostUpdateFunc(menu_t *menu, MenuFunc func, void *data)
+void MenuSetPostUpdateFunc(
+	menu_t *menu, MenuFunc func, void *data, const bool isDynamicData)
 {
 	menu->customPostUpdateFunc = func;
 	menu->customPostUpdateData = data;
+	menu->isCustomPostUpdateDataDynamic = isDynamicData;
 }
 
 void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, const void *data)
@@ -909,6 +911,10 @@ void MenuDestroySubmenus(menu_t *menu)
 		return;
 	}
 	CFREE(menu->name);
+	if (menu->isCustomPostUpdateDataDynamic)
+	{
+		CFREE(menu->customPostUpdateData);
+	}
 	if (menu->isCustomPostInputDataDynamic)
 	{
 		CFREE(menu->customPostInputData);
