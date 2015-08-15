@@ -50,16 +50,18 @@ void MainMenu(
 	MenuSystem *menu = MenuCreateAll(campaigns, &gEventHandlers, graphics);
 	MenuSetCreditsDisplayer(menu, creditsDisplayer);
 	// Auto-enter the submenu corresponding to the last game mode
+	menu_t *startMenu = FindSubmenuByName(menu->root, "Start");
+	CASSERT(startMenu != NULL, "Start menu missing");
 	switch (lastGameMode)
 	{
 	case GAME_MODE_NORMAL:
-		menu->current = FindSubmenuByName(menu->root, "Campaign");
+		menu->current = FindSubmenuByName(startMenu, "Campaign");
 		break;
 	case GAME_MODE_DOGFIGHT:
-		menu->current = FindSubmenuByName(menu->root, "Dogfight");
+		menu->current = FindSubmenuByName(startMenu, "Dogfight");
 		break;
 	case GAME_MODE_DEATHMATCH:
-		menu->current = FindSubmenuByName(menu->root, "Deathmatch");
+		menu->current = FindSubmenuByName(startMenu, "Deathmatch");
 		break;
 	default:
 		// Do nothing
@@ -78,12 +80,9 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 	return menu;
 }
 
-menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
-menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
-static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title,
-	campaign_list_t *list, const GameMode mode);
-menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateStart(
+	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns);
+static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
 MenuSystem *MenuCreateAll(
@@ -105,48 +104,63 @@ MenuSystem *MenuCreateAll(
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
-	int menuContinueIndex = (int)ms->root->u.normal.subMenus.size - 1;
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCampaigns(
-			"Campaign",
-			"Select a campaign:",
-			&campaigns->campaignList,
-			GAME_MODE_NORMAL));
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCampaigns(
-			"Dogfight",
-			"Select a scenario:",
-			&campaigns->dogfightList,
-			GAME_MODE_DOGFIGHT));
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCampaigns(
-			"Deathmatch",
-			"Select a scenario:",
-			&campaigns->dogfightList,
-			GAME_MODE_DEATHMATCH));
+	MenuAddSubmenu(ms->root,MenuCreateStart("Start", ms, campaigns));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
-	if (strlen(gAutosave.LastMission.Password) == 0 ||
-		!gAutosave.LastMission.IsValid)
-	{
-		MenuDisableSubmenu(ms->root, menuContinueIndex);
-	}
-
 	return ms;
 }
 
+static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
+static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
+static menu_t *MenuCreateCampaigns(
+	const char *name, const char *title,
+	campaign_list_t *list, const GameMode mode);
+static menu_t *MenuCreateStart(
+	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns)
+{
+	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
+	MenuAddSubmenu(
+		menu,
+		MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
+	int menuContinueIndex = (int)ms->root->u.normal.subMenus.size - 1;
+	MenuAddSubmenu(
+		menu,
+		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+		"Campaign",
+		"Select a campaign:",
+		&campaigns->campaignList,
+		GAME_MODE_NORMAL));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+		"Dogfight",
+		"Select a scenario:",
+		&campaigns->dogfightList,
+		GAME_MODE_DOGFIGHT));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateCampaigns(
+		"Deathmatch",
+		"Select a scenario:",
+		&campaigns->dogfightList,
+		GAME_MODE_DEATHMATCH));
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Back"));
+
+	if (strlen(gAutosave.LastMission.Password) == 0 ||
+		!gAutosave.LastMission.IsValid)
+	{
+		MenuDisableSubmenu(menu, menuContinueIndex);
+	}
+
+	return menu;
+}
 
 typedef struct
 {
@@ -180,11 +194,11 @@ static void StartGameMode(menu_t *menu, void *data)
 		printf("Error: cannot load campaign %s\n", mData->Entry->Info);
 	}
 }
-menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
+static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, GAME_MODE_NORMAL, entry);
 }
-menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
+static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, GAME_MODE_QUICK_PLAY, entry);
 }
@@ -269,7 +283,7 @@ static menu_t *MenuCreateCampaignItem(
 static menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
 static menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
 
-menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
+static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
 		name,
