@@ -96,8 +96,7 @@ FEATURE(2, "Save and load")
 			SHOULD_STR_EQUAL(
 				autosave2.LastMission.Password,
 				autosave1.LastMission.Password);
-			AutosaveLoadMission(
-				&autosave2, &mission2, mission1.Campaign.Path, 0);
+			AutosaveLoadMission(&autosave2, &mission2, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(
 				mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
@@ -116,7 +115,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN_END
 
 		WHEN("I attempt to load a mission from it")
-			AutosaveLoadMission(&autosave, &mission, "mission.cdogscpn", 0);
+			AutosaveLoadMission(&autosave, &mission, "mission.cdogscpn");
 		WHEN_END
 		
 		THEN("the mission should be empty");
@@ -142,8 +141,7 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave");
-			AutosaveLoadMission(
-				&autosave, &mission2, mission1.Campaign.Path, 0);
+			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
@@ -170,8 +168,7 @@ FEATURE(3, "Mission autosaves")
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave, with the new details, but the greatest missions completed");
-			AutosaveLoadMission(
-				&autosave, &mission2, mission1.Campaign.Path, 0);
+			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 			SHOULD_INT_EQUAL(mission2.MissionsCompleted, 3);
