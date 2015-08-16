@@ -33,6 +33,7 @@
 #include <tinydir/tinydir.h>
 
 #include "ammo.h"
+#include "files.h"
 #include "json_utils.h"
 #include "log.h"
 #include "map_new.h"
@@ -180,11 +181,13 @@ static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, filename);
 	long len;
-	char *buf = ReadFileIntoBuf(path, "r", &len);
+	char *buf = ReadFileIntoBuf(path, "rb", &len);
 	if (buf == NULL) goto bail;
-	if (json_parse_document(&root, buf) != JSON_OK)
+	const enum json_error e = json_parse_document(&root, buf);
+	if (e != JSON_OK)
 	{
-		printf("Invalid syntax in JSON file %s.\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Invalid syntax in JSON file (%s) error(%d)",
+			filename, (int)e);
 		root = NULL;
 		goto bail;
 	}
@@ -367,6 +370,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	char buf[CDOGS_PATH_MAX];
 	RealPath(relbuf, buf);
 	// Make dir but ignore error, as we may be saving over an existing dir
+	mkdir_deep(buf);
 	setlocale(LC_ALL, "");
 
 	// Campaign

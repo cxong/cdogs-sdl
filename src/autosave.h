@@ -58,7 +58,6 @@ void AutosaveInit(Autosave *autosave);
 void AutosaveTerminate(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
-void AutosaveAddMission(
-	Autosave *autosave, MissionSave *mission, int builtinIndex);
+void AutosaveAddMission(Autosave *autosave, MissionSave *mission);
 void AutosaveLoadMission(
-	Autosave *autosave, MissionSave *mission, const char *path, int builtinIndex);
+	Autosave *autosave, MissionSave *mission, const char *path);

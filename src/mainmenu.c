@@ -236,10 +236,8 @@ static void CampaignsDisplayFilename(
 		return;
 	}
 	const StartGameModeData *mData = subMenu->customPostInputData;
-	char s[255];
-	const char *filename = mData->Entry->Filename;
-	int isBuiltin = mData->Entry->IsBuiltin;
-	sprintf(s, "( %s )", isBuiltin ? "Internal" : filename);
+	char s[CDOGS_FILENAME_MAX];
+	sprintf(s, "( %s )", mData->Entry->Filename);
 
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
@@ -281,7 +279,7 @@ static menu_t *MenuCreateCampaignItem(
 	// - White (normal) for in-progress campaigns
 	// - Grey for complete campaigns
 	MissionSave m;
-	AutosaveLoadMission(&gAutosave, &m, entry->Path, entry->BuiltinIndex);
+	AutosaveLoadMission(&gAutosave, &m, entry->Path);
 	if (m.MissionsCompleted == entry->NumMissions)
 	{
 		// Completed campaign

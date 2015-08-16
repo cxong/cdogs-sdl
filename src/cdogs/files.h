@@ -220,3 +220,5 @@ void swap16 (void *d);
 // Convert classic colour range indices to color_t
 color_t RangeToColor(const int range);
 #define COLORRANGE_COUNT 27
+
+bool mkdir_deep(const char *path);

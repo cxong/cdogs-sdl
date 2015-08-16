@@ -74,7 +74,6 @@ bool CampaignEntryTryLoad(
 	CampaignEntryInit(entry, title, mode);
 	CSTRDUP(entry->Filename, PathGetBasename(path));
 	CSTRDUP(entry->Path, path);
-	entry->IsBuiltin = false;
 	entry->NumMissions = numMissions;
 	CFREE(buf);
 	return true;

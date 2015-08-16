@@ -282,86 +282,6 @@ static const char *exitPicNames[] = {
 int GetExitCount(void) { return EXIT_COUNT; }
 
 
-// +----------------+
-// |  Mission info  |
-// +----------------+
-
-
-struct MissionOld dogFight1 = {
-	"",
-	"",
-	WALL_STYLE_STONE, FLOOR_STYLE_STONE, FLOOR_STYLE_WOOD, 0, 1, 1,
-	32, 32,
-	50, 25,
-	4, 2,
-	0, 0, 0, 0,
-	0,
-	{
-	 {"", 0, 0, 0, 0, 0}
-	 },
-
-	0, {0},
-	0, {0},
-	8,
-	{8, 9, 10, 11, 12, 13, 14, 15},
-	{10, 10, 10, 10, 10, 10, 10, 10},
-
-	0, 0,
-	"", "",
-	14, 13, 22, 1
-};
-
-struct MissionOld dogFight2 = {
-	"",
-	"",
-	WALL_STYLE_STEEL, FLOOR_STYLE_BLUE, FLOOR_STYLE_WHITE, 0, 0, 0,
-	64, 64,
-	50, 50,
-	10, 3,
-	0, 0, 0, 0,
-	0,
-	{
-	 {"", 0, 0, 0, 0, 0}
-	 },
-
-	0, {0},
-	0, {0},
-	8,
-	{0, 1, 2, 3, 4, 5, 6, 7},
-	{10, 10, 10, 10, 10, 10, 10, 10},
-
-	0, 0,
-	"", "",
-	5, 2, 9, 4
-};
-
-
-// +-----------------+
-// |  Campaign info  |
-// +-----------------+
-
-#include "files.h"
-#include <missions/bem.h>
-#include <missions/ogre.h>
-
-
-static CampaignSettingOld df1 =
-{
-	"Dogfight in the dungeon",
-	"", "",
-	1, &dogFight1,
-	0, NULL
-};
-
-static CampaignSettingOld df2 =
-{
-	"Cubicle wars",
-	"", "",
-	1, &dogFight2,
-	0, NULL
-};
-
-
 // +-----------------------+
 // |  And now the code...  |
 // +-----------------------+
@@ -392,40 +312,6 @@ static void SetupBadguysForMission(Mission *mission)
 	CA_FOREACH(int, sc, mission->SpecialChars)
 		CharacterStoreAddSpecial(s, *sc);
 	CA_FOREACH_END()
-}
-
-int SetupBuiltinCampaign(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		ConvertCampaignSetting(&gCampaign.Setting, &BEM_campaign);
-		break;
-	case 1:
-		ConvertCampaignSetting(&gCampaign.Setting, &OGRE_campaign);
-		break;
-	default:
-		ConvertCampaignSetting(&gCampaign.Setting, &OGRE_campaign);
-		return 0;
-	}
-	return 1;
-}
-
-int SetupBuiltinDogfight(int idx)
-{
-	switch (idx)
-	{
-	case 0:
-		ConvertCampaignSetting(&gCampaign.Setting, &df1);
-		break;
-	case 1:
-		ConvertCampaignSetting(&gCampaign.Setting, &df2);
-		break;
-	default:
-		ConvertCampaignSetting(&gCampaign.Setting, &df1);
-		return 0;
-	}
-	return 1;
 }
 
 static void SetupObjectives(struct MissionOptions *mo, Mission *mission)

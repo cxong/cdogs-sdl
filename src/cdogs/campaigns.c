@@ -33,6 +33,7 @@
 #include <tinydir/tinydir.h>
 
 #include <cdogs/files.h>
+#include <cdogs/log.h>
 #include <cdogs/map_new.h>
 #include <cdogs/mission.h>
 #include <cdogs/utils.h>
@@ -71,8 +72,6 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 
 static void CampaignListInit(campaign_list_t *list);
 static void CampaignListTerminate(campaign_list_t *list);
-void LoadBuiltinCampaigns(campaign_list_t *list);
-void LoadBuiltinDogfights(campaign_list_t *list);
 static void LoadCampaignsFromFolder(
 	campaign_list_t *list, const char *name, const char *path,
 	const GameMode mode);
@@ -85,8 +84,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	CampaignListInit(&campaigns->campaignList);
 	CampaignListInit(&campaigns->dogfightList);
 
-	debug(D_NORMAL, "Load campaigns\n");
-	LoadBuiltinCampaigns(&campaigns->campaignList);
+	LOG(LM_MAIN, LL_INFO, "Load campaigns");
 	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList,
@@ -94,8 +92,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 		buf,
 		GAME_MODE_NORMAL);
 
-	debug(D_NORMAL, "Load dogfights\n");
-	LoadBuiltinDogfights(&campaigns->dogfightList);
+	LOG(LM_MAIN, LL_INFO, "Load dogfights");
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LoadCampaignsFromFolder(
 		&campaigns->dogfightList,
@@ -138,44 +135,12 @@ static void CampaignListTerminate(campaign_list_t *list)
 	CArrayTerminate(&list->list);
 }
 
-static void AddBuiltinCampaignEntry(
-	campaign_list_t *list,
-	const char *title,
-	const GameMode mode,
-	int numMissions,
-	int builtinIndex);
-
-void LoadBuiltinCampaigns(campaign_list_t *list)
-{
-	int i = 0;
-	for (i = 0; SetupBuiltinCampaign(i); i++)
-	{
-		AddBuiltinCampaignEntry(
-			list,
-			gCampaign.Setting.Title,
-			GAME_MODE_NORMAL,
-			gCampaign.Setting.Missions.size,
-			i);
-	}
-}
-void LoadBuiltinDogfights(campaign_list_t *list)
-{
-	int i = 0;
-	for (i = 0; SetupBuiltinDogfight(i); i++)
-	{
-		AddBuiltinCampaignEntry(
-			list, gCampaign.Setting.Title, GAME_MODE_DOGFIGHT, 1, i);
-	}
-}
-
 static void LoadQuickPlayEntry(CampaignEntry *entry)
 {
 	entry->Filename = NULL;
 	entry->Path = NULL;
 	entry->Info = NULL;
-	entry->IsBuiltin = 1;
 	entry->Mode = GAME_MODE_QUICK_PLAY;
-	entry->BuiltinIndex = 0;
 }
 
 static void LoadCampaignsFromFolder(
@@ -222,23 +187,6 @@ static void LoadCampaignsFromFolder(
 	}
 
 	tinydir_close(&dir);
-}
-
-static void AddBuiltinCampaignEntry(
-	campaign_list_t *list,
-	const char *title,
-	const GameMode mode,
-	int numMissions,
-	int builtinIndex)
-{
-	CampaignEntry entry;
-	CampaignEntryInit(&entry, title, mode);
-	CArrayPushBack(&list->list, &entry);
-	CampaignEntry *pEntry =
-		CArrayGet(&list->list, (int)list->list.size - 1);
-	pEntry->IsBuiltin = true;
-	pEntry->BuiltinIndex = builtinIndex;
-	pEntry->NumMissions = numMissions;
 }
 
 Mission *CampaignGetCurrentMission(CampaignOptions *campaign)

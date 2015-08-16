@@ -134,8 +134,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	else if (IsPasswordAllowed(co->Entry.Mode))
 	{
 		MissionSave m;
-		AutosaveLoadMission(
-			&gAutosave, &m, co->Entry.Path, co->Entry.BuiltinIndex);
+		AutosaveLoadMission(&gAutosave, &m, co->Entry.Path);
 		co->MissionIndex = EnterPassword(graphics, &m);
 	}
 	else

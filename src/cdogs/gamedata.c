@@ -84,27 +84,10 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	co->Entry = *entry;
 	co->Entry.Mode = mode;
 	CampaignSettingInit(&co->Setting);
-	if (entry->IsBuiltin)
+	if (entry->Mode == GAME_MODE_QUICK_PLAY)
 	{
-		if (entry->Mode == GAME_MODE_NORMAL)
-		{
-			SetupBuiltinCampaign(entry->BuiltinIndex);
-			co->IsLoaded = true;
-		}
-		else if (entry->Mode == GAME_MODE_DOGFIGHT)
-		{
-			SetupBuiltinDogfight(entry->BuiltinIndex);
-			co->IsLoaded = true;
-		}
-		else if (entry->Mode == GAME_MODE_QUICK_PLAY)
-		{
-			SetupQuickPlayCampaign(&co->Setting);
-			co->IsLoaded = true;
-		}
-		else
-		{
-			CASSERT(false, "Unknown game mode");
-		}
+		SetupQuickPlayCampaign(&co->Setting);
+		co->IsLoaded = true;
 	}
 	else
 	{

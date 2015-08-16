@@ -70,9 +70,7 @@ void AutosaveTerminate(Autosave *autosave)
 static void LoadCampaignNode(CampaignEntry *c, json_t *node)
 {
 	CSTRDUP(c->Path, json_find_first_label(node, "Path")->child->text);
-	LoadBool(&c->IsBuiltin, node, "IsBuiltin");
 	c->Mode = GAME_MODE_NORMAL;
-	c->BuiltinIndex = atoi(json_find_first_label(node, "BuiltinIndex")->child->text);
 }
 static void AddCampaignNode(CampaignEntry *c, json_t *root)
 {
@@ -82,9 +80,6 @@ static void AddCampaignNode(CampaignEntry *c, json_t *root)
 	RelPathFromCWD(path, c->Path);
 	json_insert_pair_into_object(
 		subConfig, "Path", json_new_string(path));
-	json_insert_pair_into_object(
-		subConfig, "IsBuiltin", json_new_bool(c->IsBuiltin));
-	AddIntPair(subConfig, "BuiltinIndex", c->BuiltinIndex);
 	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 
@@ -94,12 +89,8 @@ static void LoadMissionNode(MissionSave *m, json_t *node)
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
 	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
-	m->IsValid = 1;
-	// If the campaign is from a file, check that file exists
-	if (!m->Campaign.IsBuiltin)
-	{
-		m->IsValid = access(m->Campaign.Path, F_OK | R_OK) != -1;
-	}
+	// Check that file exists
+	m->IsValid = access(m->Campaign.Path, F_OK | R_OK) != -1;
 }
 static json_t *CreateMissionNode(MissionSave *m)
 {
@@ -122,7 +113,7 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 	{
 		MissionSave m;
 		LoadMissionNode(&m, child);
-		AutosaveAddMission(a, &m, m.Campaign.BuiltinIndex);
+		AutosaveAddMission(a, &m);
 		child = child->next;
 	}
 }
@@ -204,9 +195,13 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	fclose(f);
 }
 
-MissionSave *AutosaveFindMission(
-	Autosave *autosave, const char *path, int builtinIndex)
+MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)
 {
+	if (strlen(path) == 0)
+	{
+		return NULL;
+	}
+
 	// Turn the path into a relative one, since autosave paths are all stored
 	// in this form
 	char relPath[CDOGS_PATH_MAX] = "";
@@ -215,31 +210,18 @@ MissionSave *AutosaveFindMission(
 	{
 		MissionSave *m = CArrayGet(&autosave->Missions, i);
 		const char *campaignPath = m->Campaign.Path;
-		if (strlen(relPath) == 0)
+		if (campaignPath != NULL && strcmp(campaignPath, relPath) == 0)
 		{
-			// builtin campaign
-			if (m->Campaign.IsBuiltin &&
-				m->Campaign.BuiltinIndex == builtinIndex)
-			{
-				return m;
-			}
-		}
-		else if (campaignPath != NULL && strcmp(campaignPath, relPath) == 0)
-		{
-			if (!m->Campaign.IsBuiltin)
-			{
-				return m;
-			}
+			return m;
 		}
 	}
 	return NULL;
 }
 
-void AutosaveAddMission(
-	Autosave *autosave, MissionSave *mission, int builtinIndex)
+void AutosaveAddMission(Autosave *autosave, MissionSave *mission)
 {
 	MissionSave *existingMission = AutosaveFindMission(
-		autosave, mission->Campaign.Path, builtinIndex);
+		autosave, mission->Campaign.Path);
 	if (existingMission != NULL)
 	{
 		CampaignEntryTerminate(&existingMission->Campaign);
@@ -260,10 +242,9 @@ void AutosaveAddMission(
 }
 
 void AutosaveLoadMission(
-	Autosave *autosave, MissionSave *mission, const char *path, int builtinIndex)
+	Autosave *autosave, MissionSave *mission, const char *path)
 {
-	MissionSave *existingMission = AutosaveFindMission(
-		autosave, path, builtinIndex);
+	MissionSave *existingMission = AutosaveFindMission(autosave, path);
 	MissionSaveInit(mission);
 	if (existingMission != NULL)
 	{

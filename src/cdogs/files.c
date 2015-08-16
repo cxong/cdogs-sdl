@@ -568,31 +568,42 @@ const char *GetConfigFilePath(const char *name)
 	return cfpath;
 }
 
-int mkdir_deep(const char *path)
+static bool doMkdir(const char *path)
 {
-	int i;
-	char part[255];
-
-	debug(D_NORMAL, "mkdir_deep path: %s\n", path);
-
-	for (i = 0; i < (int)strlen(path); i++)
+	if (mkdir(path, MKDIR_MODE) != -1)
+	{
+		return true;
+	}
+	int e = errno;
+	(void)e;
+	// Mac OS X 10.4 returns EISDIR instead of EEXIST
+	// if a dir already exists...
+	return
+		errno == EEXIST ||
+		errno == EISDIR ||
+		errno == EACCES;
+}
+bool mkdir_deep(const char *path)
+{
+	for (int i = 0; i < (int)strlen(path); i++)
 	{
 		if (path[i] == '\0') break;
-		if (path[i] == '/') {
-			strncpy(part, path, i + 1);
-			part[i+1] = '\0';
-
-			if (mkdir(part, MKDIR_MODE) == -1)
+		if (path[i] == '/')
+		{
+			char buf[CDOGS_PATH_MAX];
+			strncpy(buf, path, i + 1);
+			buf[i + 1] = '\0';
+			if (!doMkdir(buf))
 			{
-				/* Mac OS X 10.4 returns EISDIR instead of EEXIST
-				 * if a dir already exists... */
-				if (errno == EEXIST || errno == EISDIR) continue;
-				else return 1;
+				return false;
 			}
 		}
 	}
-
-	return 0;
+	if (path[strlen(path) - 1] != '/' && !doMkdir(path))
+	{
+		return false;
+	}
+	return true;
 }
 
 void SetupConfigDir(void)
@@ -601,7 +612,7 @@ void SetupConfigDir(void)
 
 	LOG(LM_MAIN, LL_INFO, "Creating Config dir... ");
 
-	if (mkdir_deep(cfg_p) == 0)
+	if (mkdir_deep(cfg_p))
 	{
 		if (errno != EEXIST) LOG(LM_MAIN, LL_INFO, "Config dir created.");
 		else LOG(LM_MAIN, LL_INFO, "Config dir already exists.");

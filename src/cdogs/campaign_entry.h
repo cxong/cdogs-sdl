@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CAMPAIGN_ENTRY
-#define __CAMPAIGN_ENTRY
+#pragma once
 
 #include "game_mode.h"
 
@@ -36,9 +35,7 @@ typedef struct
 	char *Filename;
 	char *Path;
 	char *Info;
-	bool IsBuiltin;
 	GameMode Mode;
-	int BuiltinIndex;
 	int NumMissions;
 } CampaignEntry;
 
@@ -47,5 +44,3 @@ void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src);
 bool CampaignEntryTryLoad(
 	CampaignEntry *entry, const char *path, GameMode mode);
 void CampaignEntryTerminate(CampaignEntry *entry);
-
-#endif

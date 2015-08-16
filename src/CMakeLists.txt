@@ -35,9 +35,7 @@ set(CDOGS_SDL_HEADERS
 	prep.h
 	screens.h
 	weapon_menu.h
-	XGetopt.h
-	missions/bem.h
-	missions/ogre.h)
+	XGetopt.h)
 set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ../build/windows/cdogs.rc)

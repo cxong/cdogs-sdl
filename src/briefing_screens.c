@@ -258,7 +258,7 @@ void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 	}
 	strcpy(ms.Password, MakePassword(passwordIndex, 0));
 	ms.MissionsCompleted = m->index + 1;
-	AutosaveAddMission(&gAutosave, &ms, ms.Campaign.BuiltinIndex);
+	AutosaveAddMission(&gAutosave, &ms);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	// Calculate bonus scores

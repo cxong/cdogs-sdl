@@ -80,7 +80,7 @@ FEATURE(2, "Save and load")
 			memset(&mission1, 0, sizeof mission1);
 			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission1.Password, "password");
-			AutosaveAddMission(&autosave1, &mission1, 0);
+			AutosaveAddMission(&autosave1, &mission1);
 			AutosaveSave(&autosave1, "tmp");
 		GIVEN_END
 		
@@ -138,40 +138,13 @@ FEATURE(3, "Mission autosaves")
 		GIVEN_END
 
 		WHEN("I add a new mission autosave to it")
-			AutosaveAddMission(&autosave, &mission1, 0);
+			AutosaveAddMission(&autosave, &mission1);
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave");
 			AutosaveLoadMission(
 				&autosave, &mission2, mission1.Campaign.Path, 0);
 			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
-			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
-		THEN_END
-	}
-	SCENARIO_END
-
-	SCENARIO("Add builtin mission autosave")
-	{
-		Autosave autosave;
-		MissionSave mission1, mission2;
-		int builtinIndex = 3;
-		GIVEN("an autosave and a builtin mission")
-			AutosaveInit(&autosave);
-			memset(&mission1, 0, sizeof mission1);
-			mission1.Campaign.IsBuiltin = true;
-			mission1.Campaign.BuiltinIndex = builtinIndex;
-			strcpy(mission1.Password, "password");
-		GIVEN_END
-
-		WHEN("I add a new mission autosave to it")
-			AutosaveAddMission(&autosave, &mission1, 0);
-		WHEN_END
-
-		THEN("I should be able to find the mission in the autosave");
-			AutosaveLoadMission(
-				&autosave, &mission2, mission1.Campaign.Path, builtinIndex);
-			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
-			SHOULD_INT_EQUAL(mission2.Campaign.BuiltinIndex, builtinIndex);
 			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
 		THEN_END
 	}
@@ -187,13 +160,13 @@ FEATURE(3, "Mission autosaves")
 			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
 			strcpy(mission1.Password, "password");
 			mission1.MissionsCompleted = 3;
-			AutosaveAddMission(&autosave, &mission1, 0);
+			AutosaveAddMission(&autosave, &mission1);
 		GIVEN_END
 
 		WHEN("I add the same mission but with new details, and less missions completed")
 			strcpy(mission1.Password, "new password");
 			mission1.MissionsCompleted = 2;
-			AutosaveAddMission(&autosave, &mission1, 0);
+			AutosaveAddMission(&autosave, &mission1);
 		WHEN_END
 		
 		THEN("I should be able to find the mission in the autosave, with the new details, but the greatest missions completed");
@@ -218,7 +191,7 @@ FEATURE(3, "Mission autosaves")
 		GIVEN_END
 
 		WHEN("I add a new mission autosave to it")
-			AutosaveAddMission(&autosave, &mission, 0);
+			AutosaveAddMission(&autosave, &mission);
 		WHEN_END
 		
 		THEN("the last mission will be the same as the new mission");
