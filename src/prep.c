@@ -107,7 +107,7 @@ bool ScreenWaitForCampaignDef(void)
 }
 static void CheckCampaignDefComplete(menu_t *menu, void *data)
 {
-	if (gCampaign.IsLoaded)
+	if (gCampaign.IsLoaded || gCampaign.IsError)
 	{
 		if (gCampaign.IsError)
 		{
@@ -115,7 +115,10 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 			MenuSystem *ms = data;
 			ms->hasAbort = true;
 		}
-		CASSERT(gCampaign.IsClient, "campaign is not client");
+		else
+		{
+			CASSERT(gCampaign.IsClient, "campaign is not client");
+		}
 		// Hack to force the menu to exit
 		menu->type = MENU_TYPE_RETURN;
 	}

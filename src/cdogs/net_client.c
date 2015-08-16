@@ -299,7 +299,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				}
 				else
 				{
-					printf("Error: failed to load campaign def\n");
+					LOG(LM_NET, LL_ERROR, "failed to load campaign def");
 					gCampaign.IsError = true;
 				}
 			}
@@ -331,7 +331,6 @@ void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 
 	LOG(LM_NET, LL_TRACE, "NetClient: send msg type %d", (int)e);
 	enet_peer_send(n->peer, 0, NetEncode(e, data));
-	NetClientFlush(n);
 }
 
 bool NetClientIsConnected(const NetClient *n)

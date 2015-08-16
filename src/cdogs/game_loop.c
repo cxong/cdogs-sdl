@@ -96,6 +96,7 @@ void GameLoop(GameLoopData *data)
 		// Update
 		result = data->UpdateFunc(data->UpdateData);
 		NetServerFlush(&gNetServer);
+		NetClientFlush(&gNetClient);
 		bool draw = !data->HasDrawnFirst;
 		switch (result)
 		{
