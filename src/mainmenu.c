@@ -30,10 +30,12 @@
 
 #include <cdogs/config.h>
 #include <cdogs/font.h>
+#include <cdogs/log.h>
 #include <cdogs/net_client.h>
 
 #include "autosave.h"
 #include "menu.h"
+#include "prep.h"
 
 
 MenuSystem *MenuCreateAll(
@@ -81,7 +83,7 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 }
 
 static menu_t *MenuCreateStart(
-	const char *name, custom_campaigns_t *campaigns);
+	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns);
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -104,7 +106,7 @@ MenuSystem *MenuCreateAll(
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(ms->root,MenuCreateStart("Start", campaigns));
+	MenuAddSubmenu(ms->root,MenuCreateStart("Start", ms, campaigns));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
@@ -122,9 +124,10 @@ static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title,
 	campaign_list_t *list, const GameMode mode);
+static menu_t *CreateJoinLANGame(const char *name, MenuSystem *ms);
 static void CheckLANServers(menu_t *menu, void *data);
 static menu_t *MenuCreateStart(
-	const char *name, custom_campaigns_t *campaigns)
+	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(
@@ -155,7 +158,7 @@ static menu_t *MenuCreateStart(
 		"Select a scenario:",
 		&campaigns->dogfightList,
 		GAME_MODE_DEATHMATCH));
-	MenuAddSubmenu(menu, MenuCreateBack("Join LAN game"));
+	MenuAddSubmenu(menu, CreateJoinLANGame("Join LAN game", ms));
 	CheckLANServerData *cdata;
 	CMALLOC(cdata, sizeof *cdata);
 	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
@@ -293,18 +296,48 @@ static menu_t *MenuCreateCampaignItem(
 	return menu;
 }
 
+static void JoinLANGame(menu_t *menu, void *data);
+static menu_t *CreateJoinLANGame(const char *name, MenuSystem *ms)
+{
+	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
+	menu->enterSound = MENU_SOUND_START;
+	MenuSetPostEnterFunc(menu, JoinLANGame, ms, false);
+	return menu;
+}
+static void JoinLANGame(menu_t *menu, void *data)
+{
+	MenuSystem *ms = data;
+	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
+	NetClientConnect(&gNetClient, NetClientLANAddress());
+	if (!NetClientIsConnected(&gNetClient))
+	{
+		LOG(LM_MAIN, LL_INFO, "failed to connect to LAN game");
+	}
+	else
+	{
+		ScreenWaitForCampaignDef();
+	}
+	if (!gCampaign.IsLoaded)
+	{
+		// Don't activate the menu item
+		ms->current = menu->parentMenu;
+	}
+}
 static void CheckLANServers(menu_t *menu, void *data)
 {
 	CheckLANServerData *cdata = data;
-	if (gNetClient.FoundLANServer)
+	if (!gNetClient.FindingLANServer || !NetClientIsConnected(&gNetClient))
 	{
-		MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
-		NetClientFindLANServers(&gNetClient);
-	}
-	else if (!gNetClient.FindingLANServer)
-	{
-		// We've finished looking for LAN servers and haven't found any
-		MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
+		if (gNetClient.FoundLANServer)
+		{
+			MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
+		}
+		else
+		{
+			// We've finished looking for LAN servers and haven't found any
+			MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
+		}
+		LOG(LM_MAIN, LL_DEBUG, "finding LAN server...");
 		NetClientFindLANServers(&gNetClient);
 	}
 }

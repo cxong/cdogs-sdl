@@ -57,6 +57,7 @@
 #include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
 #include <cdogs/music.h>
+#include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 
 #include "autosave.h"
@@ -107,6 +108,7 @@ void ScreenStart(void)
 	CampaignUnload(&gCampaign);
 	
 bail:
+	NetClientDisconnect(&gNetClient);
 	GameEventsTerminate(&gGameEvents);
 }
 

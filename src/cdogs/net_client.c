@@ -44,6 +44,7 @@ NetClient gNetClient;
 
 
 #define CONNECTION_WAIT_MS 5000
+#define FIND_CONNECTION_WAIT_MS 1000
 #define TIMEOUT_MS 5000
 
 
@@ -61,10 +62,7 @@ void NetClientInit(NetClient *n)
 }
 void NetClientTerminate(NetClient *n)
 {
-	if (n->peer)
-	{
-		enet_peer_disconnect_now(n->peer, 0);
-	}
+	NetClientDisconnect(n);
 	n->peer = NULL;
 	enet_host_destroy(n->client);
 	n->client = NULL;
@@ -88,34 +86,25 @@ void NetClientFindLANServers(NetClient *n)
 	n->FindingLANServer = true;
 	n->FoundLANServer = false;
 
-	ENetAddress addr;
-	if (enet_address_set_host(&addr, "127.0.0.1") != 0)
-	{
-		CASSERT(false, "failed to set host");
-		return;
-	}
-	addr.port = NET_PORT;
+	ENetAddress addr = NetClientLANAddress();
 	n->peer = enet_host_connect(n->client, &addr, 2, 0);
 	if (n->peer == NULL)
 	{
 		LOG(LM_NET, LL_INFO, "failed to connect to LAN servers");
 	}
+	enet_peer_timeout(n->peer, 0, 0, FIND_CONNECTION_WAIT_MS);
 }
 
 void NetClientConnect(NetClient *n, const ENetAddress addr)
 {
-	if (n->peer)
-	{
-		LOG(LM_NET, LL_INFO, "disconnecting peer");
-		// Note: we can be connected from searching for servers
-		enet_peer_disconnect_now(n->peer, 0);
-	}
+	// Note: we can be connected from searching for servers
+	NetClientDisconnect(n);
+
 	/* Initiate the connection, allocating the two channels 0 and 1. */
 	n->peer = enet_host_connect(n->client, &addr, 2, 0);
 	if (n->peer == NULL)
 	{
-		fprintf(stderr,
-			"No available peers for initiating an ENet connection.\n");
+		LOG(LM_NET, LL_WARN, "No server connection found");
 		goto bail;
 	}
 
@@ -131,7 +120,7 @@ void NetClientConnect(NetClient *n, const ENetAddress addr)
 		/* Either the 5 seconds are up or a disconnect event was */
 		/* received. Reset the peer in the event the 5 seconds   */
 		/* had run out without any significant event.            */
-		fprintf(stderr, "Connection failed.\n");
+		LOG(LM_NET, LL_WARN, "connection failed");
 		goto bail;
 	}
 
@@ -144,7 +133,17 @@ void NetClientConnect(NetClient *n, const ENetAddress addr)
 	return;
 
 bail:
-	NetClientTerminate(n);
+	NetClientDisconnect(n);
+}
+void NetClientDisconnect(NetClient *n)
+{
+	if (n->peer)
+	{
+		LOG(LM_NET, LL_INFO, "disconnecting peer");
+		enet_peer_disconnect_now(n->peer, 0);
+		n->peer = NULL;
+	}
+	n->ClientId = -1;	// -1 is unset
 }
 
 static void OnReceive(NetClient *n, ENetEvent event);
@@ -178,8 +177,8 @@ void NetClientPoll(NetClient *n)
 						"found server; disconnecting %u.%u.%u.%u:%d",
 						NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
 						(int)event.peer->address.port);
-					enet_peer_disconnect_now(n->peer, 0);
-					n->FindingLANServer = false;
+					// Disconnect politely and wait for the disconnection event
+					enet_peer_disconnect(n->peer, 0);
 				}
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
@@ -187,13 +186,8 @@ void NetClientPoll(NetClient *n)
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				LOG(LM_NET, LL_INFO, "disconnected");
-				enet_peer_disconnect_now(n->peer, 0);
-				if (n->FindingLANServer)
-				{
-					n->FoundLANServer = false;
-				}
+				NetClientDisconnect(n);
 				n->FindingLANServer = false;
-				n->peer = NULL;
 				return;
 			default:
 				LOG(LM_NET, LL_ERROR, "Unexpected event type(%d)", (int)event.type);
@@ -330,7 +324,7 @@ void NetClientFlush(NetClient *n)
 
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 {
-	if (!n->client || !n->peer)
+	if (!NetClientIsConnected(n))
 	{
 		return;
 	}
@@ -342,5 +336,16 @@ void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 
 bool NetClientIsConnected(const NetClient *n)
 {
-	return !!n->client;
+	return n->client && n->peer;
+}
+
+ENetAddress NetClientLANAddress(void)
+{
+	ENetAddress addr;
+	if (enet_address_set_host(&addr, "127.0.0.1") != 0)
+	{
+		CASSERT(false, "failed to set host");
+	}
+	addr.port = NET_PORT;
+	return addr;
 }

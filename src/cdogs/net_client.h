@@ -52,9 +52,12 @@ void NetClientTerminate(NetClient *n);
 void NetClientFindLANServers(NetClient *n);
 // Attempt to connect to a server
 void NetClientConnect(NetClient *n, const ENetAddress addr);
+void NetClientDisconnect(NetClient *n);
 void NetClientPoll(NetClient *n);
 void NetClientFlush(NetClient *n);
 // Send a command to the server
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data);
 
 bool NetClientIsConnected(const NetClient *n);
+
+ENetAddress NetClientLANAddress(void);

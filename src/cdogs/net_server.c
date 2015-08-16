@@ -141,13 +141,17 @@ void NetServerPoll(NetServer *n)
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				{
-					const int peerId = ((NetPeerData *)event.peer->data)->Id;
+					int peerId = -1;
+					if (event.peer->data != NULL)
+					{
+						peerId = ((NetPeerData *)event.peer->data)->Id;
+						CFREE(event.peer->data);
+						event.peer->data = NULL;
+					}
 					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %u.%u.%u.%u:%d",
 						peerId,
 						NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
 						(int)event.peer->address.port);
-					CFREE(event.peer->data);
-					event.peer->data = NULL;
 					// Remove client's players
 					for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 					{
@@ -197,9 +201,14 @@ static void OnConnect(NetServer *n, ENetEvent event)
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
-	const int peerId = ((NetPeerData *)event.peer->data)->Id;
-	LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
-		peerId, (int)msg);
+	int peerId = -1;
+	if (event.peer->data != NULL)
+	{
+		// We may not have assigned peer ID
+		peerId = ((NetPeerData *)event.peer->data)->Id;
+		LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
+			peerId, (int)msg);
+	}
 	const GameEventEntry gee = GameEventGetEntry(msg);
 	if (gee.Enqueue)
 	{
