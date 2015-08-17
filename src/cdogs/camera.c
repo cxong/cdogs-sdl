@@ -178,6 +178,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 			&camera->Buffer,
 			camera->lastPosition,
 			X_TILES, noise, centerOffset);
+		SoundSetEars(camera->lastPosition);
 	}
 	else
 	{
@@ -206,6 +207,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				&camera->Buffer,
 				camera->lastPosition,
 				X_TILES, noise, centerOffset);
+			SoundSetEars(camera->lastPosition);
 		}
 		else if (numLocalPlayers == 2)
 		{
