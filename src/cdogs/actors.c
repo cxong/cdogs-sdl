@@ -844,6 +844,8 @@ static bool ActorTryChangeDirection(
 		e.u.ActorDir.UID = actor->uid;
 		e.u.ActorDir.Dir = (int32_t)dir;
 		GameEventsEnqueue(&gGameEvents, e);
+		// Change direction immediately because this affects shooting
+		actor->direction = dir;
 	}
 	return willChangeDirecton;
 }
