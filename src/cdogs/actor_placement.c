@@ -154,6 +154,13 @@ Vec2i PlacePlayer(
 		// In a PVP mode, always place players apart
 		aa.FullPos = PlaceAwayFromPlayers(&gMap);
 	}
+	else if (
+		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
+		!Vec2iIsZero(firstPos))
+	{
+		// If never split screen, try to place players near the first player
+		aa.FullPos = PlaceActorNear(map, firstPos, true);
+	}
 	else if (gMission.missionData->Type == MAPTYPE_STATIC &&
 		!Vec2iIsZero(gMission.missionData->u.Static.Start))
 	{
@@ -161,13 +168,6 @@ Vec2i PlacePlayer(
 		Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
 			gMission.missionData->u.Static.Start));
 		aa.FullPos = PlaceActorNear(map, startPoint, true);
-	}
-	else if (
-		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
-		!Vec2iIsZero(firstPos))
-	{
-		// If never split screen, try to place players near the first player
-		aa.FullPos = PlaceActorNear(map, firstPos, true);
 	}
 	else
 	{
