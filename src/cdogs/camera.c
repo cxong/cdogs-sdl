@@ -190,6 +190,13 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 		camera->spectateMode = SPECTATE_NONE;
 		const int numLocalHumanPlayersAlive =
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
+		// Redo LOS if PVP, so that each split screen has its own LOS
+		if (IsPVP(gCampaign.Entry.Mode))
+		{
+			LOSReset(&gMap.LOS);
+			LOSCalcFrom(
+				&gMap, Vec2iToTile(camera->lastPosition), false);
+		}
 		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
 		{
 			const TActor *p = ActorGetByUID(
@@ -241,13 +248,6 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 					centerOffsetPlayer.x += w / 2;
 				}
 
-				// Redo LOS if PVP, so that each split screen has its own LOS
-				if (IsPVP(gCampaign.Entry.Mode))
-				{
-					LOSReset(&gMap.LOS);
-					LOSCalcFrom(
-						&gMap, Vec2iToTile(camera->lastPosition), false);
-				}
 				DoBuffer(
 					&camera->Buffer,
 					camera->lastPosition,
@@ -298,13 +298,6 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				else
 				{
 					centerOffsetPlayer.y += h / 4;
-				}
-				// Redo LOS if PVP, so that each split screen has its own LOS
-				if (IsPVP(gCampaign.Entry.Mode))
-				{
-					LOSReset(&gMap.LOS);
-					LOSCalcFrom(
-						&gMap, Vec2iToTile(camera->lastPosition), false);
 				}
 				DoBuffer(
 					&camera->Buffer,
