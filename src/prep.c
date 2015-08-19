@@ -757,6 +757,7 @@ static void CheckGameStart(menu_t *menu, void *data);
 bool ScreenWaitForGameStart(void)
 {
 	// Tell server we're ready
+	gNetClient.Ready = true;
 	NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
 	return ScreenWait("Waiting for game start...", CheckGameStart);
 }

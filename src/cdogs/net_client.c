@@ -144,6 +144,7 @@ void NetClientDisconnect(NetClient *n)
 		n->peer = NULL;
 	}
 	n->ClientId = -1;	// -1 is unset
+	n->Ready = false;
 }
 
 static void OnReceive(NetClient *n, ENetEvent event);
@@ -306,7 +307,11 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			break;
 		case GAME_EVENT_NET_GAME_START:
 			LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
-			gMission.HasStarted = true;
+			// Don't ready-up unless we're ready
+			if (n->Ready)
+			{
+				gMission.HasStarted = true;
+			}
 			break;
 		default:
 			CASSERT(false, "unexpected message type");

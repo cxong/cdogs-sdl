@@ -53,56 +53,60 @@ void CameraTerminate(Camera *camera)
 	HUDTerminate(&camera->HUD);
 }
 
-void CameraUpdate(
-	Camera *camera, const int player1Cmd, const int ticks, const int ms)
+void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 {
-	HUDUpdate(&camera->HUD, ms);
-	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
 	// Control the camera
-	if (camera->spectateMode != SPECTATE_NONE)
+	if (camera->spectateMode == SPECTATE_NONE)
 	{
-		// Arrows: pan camera
-		// CMD1/2: choose next player to follow
-		if (CMD_HAS_DIRECTION(player1Cmd))
+		return;
+	}
+	// Arrows: pan camera
+	// CMD1/2: choose next player to follow
+	if (CMD_HAS_DIRECTION(cmd))
+	{
+		camera->spectateMode = SPECTATE_FREE;
+		const int pan = PAN_SPEED;
+		if (cmd & CMD_LEFT)	camera->lastPosition.x -= pan;
+		else if (cmd & CMD_RIGHT)	camera->lastPosition.x += pan;
+		if (cmd & CMD_UP)		camera->lastPosition.y -= pan;
+		else if (cmd & CMD_DOWN)	camera->lastPosition.y += pan;
+	}
+	else if (AnyButton(cmd) && !AnyButton(lastCmd))
+	{
+		camera->spectateMode = SPECTATE_FOLLOW;
+		// Find index of player
+		int playerIndex = -1;
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
 		{
-			camera->spectateMode = SPECTATE_FREE;
-			const int pan = PAN_SPEED * ticks;
-			if (player1Cmd & CMD_LEFT) camera->lastPosition.x -= pan;
-			else if (player1Cmd & CMD_RIGHT) camera->lastPosition.x += pan;
-			if (player1Cmd & CMD_UP) camera->lastPosition.y -= pan;
-			else if (player1Cmd & CMD_DOWN) camera->lastPosition.y += pan;
-		}
-		else if (AnyButton(player1Cmd))
-		{
-			camera->spectateMode = SPECTATE_FOLLOW;
-			// Find index of player
-			int playerIndex = -1;
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->UID == camera->FollowPlayerUID)
 			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (p->UID == camera->FollowPlayerUID)
-				{
-					playerIndex = i;
-					break;
-				}
+				playerIndex = i;
+				break;
 			}
-			CASSERT(playerIndex >= 0, "Cannot find player");
-			// Get the next player by index that has an actor in the game
-			const int d = (player1Cmd & CMD_BUTTON1) ? 1 : -1;
-			for (int i = playerIndex + d; ; i += d)
+		}
+		CASSERT(playerIndex >= 0, "Cannot find player");
+		// Get the next player by index that has an actor in the game
+		const int d = (cmd & CMD_BUTTON1) ? 1 : -1;
+		for (int i = playerIndex + d;; i += d)
+		{
+			i = CLAMP_OPPOSITE(i, 0, (int)gPlayerDatas.size - 1);
+			// Check if clamping made us hit the termination condition
+			if (i == playerIndex) break;
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->ActorUID >= 0)
 			{
-				i = CLAMP_OPPOSITE(i, 0, (int)gPlayerDatas.size - 1);
-				// Check if clamping made us hit the termination condition
-				if (i == playerIndex) break;
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (p->ActorUID >= 0)
-				{
-					// Follow this player
-					camera->FollowPlayerUID = p->UID;
-				}
+				// Follow this player
+				camera->FollowPlayerUID = p->UID;
 			}
 		}
 	}
+}
+
+void CameraUpdate(Camera *camera, const int ticks, const int ms)
+{
+	HUDUpdate(&camera->HUD, ms);
+	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
 }
 
 void FollowPlayer(Vec2i *pos, const int playerUID);

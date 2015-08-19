@@ -242,6 +242,10 @@ static void RunGameInput(void *data)
 		return;
 	}
 
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	{
+		rData->lastCmds[i] = rData->cmds[i];
+	}
 	memset(rData->cmds, 0, sizeof rData->cmds);
 	int cmdAll = 0;
 	int idx = 0;
@@ -267,7 +271,6 @@ static void RunGameInput(void *data)
 		{
 			pausingDevice = p->inputDevice;
 		}
-		rData->lastCmds[idx] = rData->cmds[idx];
 	}
 	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE))
 	{
@@ -304,6 +307,8 @@ static void RunGameInput(void *data)
 			rData->pausingDevice = pausingDevice;
 		}
 	}
+
+	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo);
 static GameLoopResult RunGameUpdate(void *data)
@@ -443,8 +448,7 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	rData->m->time += ticksPerFrame;
 
-	CameraUpdate(
-		&rData->Camera, rData->cmds[0], ticksPerFrame, 1000 / rData->loop.FPS);
+	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / rData->loop.FPS);
 
 	return UPDATE_RESULT_DRAW;
 }

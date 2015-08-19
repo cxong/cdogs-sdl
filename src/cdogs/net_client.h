@@ -38,6 +38,7 @@ typedef struct
 	ENetPeer *peer;
 	int ClientId;
 	int FirstPlayerUID;
+	bool Ready;
 	bool FoundLANServer;
 	bool FindingLANServer;
 } NetClient;

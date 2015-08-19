@@ -53,8 +53,8 @@ typedef struct
 void CameraInit(Camera *camera);
 void CameraTerminate(Camera *camera);
 
-void CameraUpdate(
-	Camera *camera, const int player1Cmd, const int ticks, const int ms);
+void CameraInput(Camera *camera, const int cmd, const int lastCmd);
+void CameraUpdate(Camera *camera, const int ticks, const int ms);
 void CameraDraw(Camera *camera, const input_device_e pausingDevice);
 
 bool CameraIsSingleScreen(void);
