@@ -148,7 +148,11 @@ static void HandleGameEvent(
 			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
 			if (!a->isInUse) break;
 			a->Vel = Vec2iAdd(a->Vel, Net2Vec2i(e.u.ActorImpulse.Vel));
-			a->Pos = Net2Vec2i(e.u.ActorImpulse.Pos);
+			const Vec2i pos = Net2Vec2i(e.u.ActorImpulse.Pos);
+			if (!Vec2iIsZero(pos))
+			{
+				a->Pos = pos;
+			}
 		}
 		break;
 	case GAME_EVENT_ACTOR_SWITCH_GUN:
