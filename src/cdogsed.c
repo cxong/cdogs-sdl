@@ -1286,12 +1286,12 @@ int main(int argc, char *argv[])
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
 	BuildTranslationTables(gPicManager.palette);
-	GraphicsInit(&gGraphicsDevice);
 	// Hardcode config settings
 	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	GraphicsInit(&gGraphicsDevice);
 	gGraphicsDevice.cachedConfig.IsEditor = true;
 	GraphicsInitialize(&gGraphicsDevice, false);
 	if (!gGraphicsDevice.IsInitialized)
