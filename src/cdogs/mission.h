@@ -58,6 +58,21 @@
 #define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
 
 #define KEY_COUNT 4
+typedef struct
+{
+	int H;
+	int V;
+} DoorPic;
+
+typedef struct
+{
+	DoorPic Normal;
+	DoorPic Yellow;
+	DoorPic Green;
+	DoorPic Blue;
+	DoorPic Red;
+	DoorPic Open;
+} DoorPics;
 
 int GetExitCount(void);
 int GetDoorstyleCount(void);
@@ -223,7 +238,7 @@ struct MissionOptions
 	bool isDone;
 
 	int keyStyle;
-	struct DoorPic *doorPics;
+	const DoorPics *doorPics;
 	Pic *exitPic;
 	Pic *exitShadow;
 };

@@ -82,36 +82,36 @@ void MapAddDoorGroup(
 	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
 
-	const struct DoorPic *dp;
+	const DoorPic *dp;
 	switch (keyFlags)
 	{
 	case FLAGS_KEYCARD_RED:
-		dp = &mo->doorPics[4];
+		dp = &mo->doorPics->Red;
 		break;
 	case FLAGS_KEYCARD_BLUE:
-		dp = &mo->doorPics[3];
+		dp = &mo->doorPics->Blue;
 		break;
 	case FLAGS_KEYCARD_GREEN:
-		dp = &mo->doorPics[2];
+		dp = &mo->doorPics->Green;
 		break;
 	case FLAGS_KEYCARD_YELLOW:
-		dp = &mo->doorPics[1];
+		dp = &mo->doorPics->Yellow;
 		break;
 	default:
-		dp = &mo->doorPics[0];
+		dp = &mo->doorPics->Normal;
 		break;
 	}
 	int pic;
 	int openDoorPic;
 	if (isHorizontal)
 	{
-		pic = dp->horzPic;
-		openDoorPic = mo->doorPics[5].horzPic;
+		pic = dp->H;
+		openDoorPic = mo->doorPics->Open.H;
 	}
 	else
 	{
-		pic = dp->vertPic;
-		openDoorPic = mo->doorPics[5].vertPic;
+		pic = dp->V;
+		openDoorPic = mo->doorPics->Open.V;
 	}
 
 	// set up the door pics

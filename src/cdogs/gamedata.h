@@ -58,11 +58,6 @@
 #include "sys_config.h"
 
 
-struct DoorPic {
-	int horzPic;
-	int vertPic;
-};
-
 // Score penalty for killing a penalty character
 #define PENALTY_MULTIPLIER (-3)
 

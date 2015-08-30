@@ -216,49 +216,48 @@ void MissionTerminate(Mission *m)
 // |  Door info  |
 // +-------------+
 
-// note that the horz pic in the last pair is a TILE pic, not an offset pic!
-
-static struct DoorPic officeDoors[6] = { {OFSPIC_DOOR, OFSPIC_VDOOR},
-{OFSPIC_HDOOR_YELLOW, OFSPIC_VDOOR_YELLOW},
-{OFSPIC_HDOOR_GREEN, OFSPIC_VDOOR_GREEN},
-{OFSPIC_HDOOR_BLUE, OFSPIC_VDOOR_BLUE},
-{OFSPIC_HDOOR_RED, OFSPIC_VDOOR_RED},
-{109, OFSPIC_VDOOR_OPEN}
+// note that the H pic in the last pair is a TILE pic, not an offset pic!
+static DoorPics doorStyles[] =
+{
+	// Office doors
+	{
+		{OFSPIC_DOOR, OFSPIC_VDOOR},
+		{OFSPIC_HDOOR_YELLOW, OFSPIC_VDOOR_YELLOW},
+		{OFSPIC_HDOOR_GREEN, OFSPIC_VDOOR_GREEN},
+		{OFSPIC_HDOOR_BLUE, OFSPIC_VDOOR_BLUE},
+		{OFSPIC_HDOOR_RED, OFSPIC_VDOOR_RED},
+		{109, OFSPIC_VDOOR_OPEN}
+	},
+	// Dungeon doors
+	{
+		{OFSPIC_DOOR2, OFSPIC_VDOOR2},
+		{OFSPIC_HDOOR2_YELLOW, OFSPIC_VDOOR2_YELLOW},
+		{OFSPIC_HDOOR2_GREEN, OFSPIC_VDOOR2_GREEN},
+		{OFSPIC_HDOOR2_BLUE, OFSPIC_VDOOR2_BLUE},
+		{OFSPIC_HDOOR2_RED, OFSPIC_VDOOR2_RED},
+		{342, OFSPIC_VDOOR2_OPEN}
+	},
+	// "Pansar" doors
+	{
+		{OFSPIC_HDOOR3, OFSPIC_VDOOR3},
+		{OFSPIC_HDOOR3_YELLOW, OFSPIC_VDOOR3_YELLOW},
+		{OFSPIC_HDOOR3_GREEN, OFSPIC_VDOOR3_GREEN},
+		{OFSPIC_HDOOR3_BLUE, OFSPIC_VDOOR3_BLUE},
+		{OFSPIC_HDOOR3_RED, OFSPIC_VDOOR3_RED},
+		{P2 + 148, OFSPIC_VDOOR2_OPEN}
+	},
+	// Alien doors
+	{
+		{OFSPIC_HDOOR4, OFSPIC_VDOOR4},
+		{OFSPIC_HDOOR4_YELLOW, OFSPIC_VDOOR4_YELLOW},
+		{OFSPIC_HDOOR4_GREEN, OFSPIC_VDOOR4_GREEN},
+		{OFSPIC_HDOOR4_BLUE, OFSPIC_VDOOR4_BLUE},
+		{OFSPIC_HDOOR4_RED, OFSPIC_VDOOR4_RED},
+		{P2 + 163, OFSPIC_VDOOR2_OPEN}
+	}
 };
 
-static struct DoorPic dungeonDoors[6] = { {OFSPIC_DOOR2, OFSPIC_VDOOR2},
-{OFSPIC_HDOOR2_YELLOW, OFSPIC_VDOOR2_YELLOW},
-{OFSPIC_HDOOR2_GREEN, OFSPIC_VDOOR2_GREEN},
-{OFSPIC_HDOOR2_BLUE, OFSPIC_VDOOR2_BLUE},
-{OFSPIC_HDOOR2_RED, OFSPIC_VDOOR2_RED},
-{342, OFSPIC_VDOOR2_OPEN}
-};
-
-static struct DoorPic pansarDoors[6] = { {OFSPIC_HDOOR3, OFSPIC_VDOOR3},
-{OFSPIC_HDOOR3_YELLOW, OFSPIC_VDOOR3_YELLOW},
-{OFSPIC_HDOOR3_GREEN, OFSPIC_VDOOR3_GREEN},
-{OFSPIC_HDOOR3_BLUE, OFSPIC_VDOOR3_BLUE},
-{OFSPIC_HDOOR3_RED, OFSPIC_VDOOR3_RED},
-{P2 + 148, OFSPIC_VDOOR2_OPEN}
-};
-
-static struct DoorPic alienDoors[6] = { {OFSPIC_HDOOR4, OFSPIC_VDOOR4},
-{OFSPIC_HDOOR4_YELLOW, OFSPIC_VDOOR4_YELLOW},
-{OFSPIC_HDOOR4_GREEN, OFSPIC_VDOOR4_GREEN},
-{OFSPIC_HDOOR4_BLUE, OFSPIC_VDOOR4_BLUE},
-{OFSPIC_HDOOR4_RED, OFSPIC_VDOOR4_RED},
-{P2 + 163, OFSPIC_VDOOR2_OPEN}
-};
-
-
-static struct DoorPic *doorStyles[] = {
-	officeDoors,
-	dungeonDoors,
-	pansarDoors,
-	alienDoors
-};
-
-#define DOORSTYLE_COUNT (sizeof doorStyles / sizeof(struct DoorPic *))
+#define DOORSTYLE_COUNT (sizeof doorStyles / sizeof(DoorPics))
 int GetDoorstyleCount(void) { return DOORSTYLE_COUNT; }
 
 
@@ -339,8 +338,7 @@ void SetupMission(
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
 	mo->missionData = m;
-	mo->doorPics =
-	    doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
+	mo->doorPics = &doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
 	mo->keyStyle = m->KeyStyle;
 
 	char exitPicBuf[256];

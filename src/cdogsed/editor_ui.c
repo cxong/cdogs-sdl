@@ -446,7 +446,8 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Doors",
-		PicManagerGetFromOld(&gPicManager, cGeneralPics[gMission.doorPics[0].horzPic].picIndex),
+		PicManagerGetFromOld(
+			&gPicManager, cGeneralPics[gMission.doorPics->Normal.H].picIndex),
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
