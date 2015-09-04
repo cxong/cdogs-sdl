@@ -474,7 +474,7 @@ static json_t *SaveMissions(CArray *a)
 		AddIntPair(node, "RoomStyle", mission->RoomStyle);
 		AddIntPair(node, "ExitStyle", mission->ExitStyle);
 		AddIntPair(node, "KeyStyle", mission->KeyStyle);
-		AddIntPair(node, "DoorStyle", mission->DoorStyle);
+		AddStringPair(node, "DoorStyle", mission->DoorStyle);
 
 		json_insert_pair_into_object(
 			node, "Objectives", SaveObjectives(&mission->Objectives));
