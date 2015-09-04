@@ -98,7 +98,7 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 	{
 		BlitMasked(
 			&gGraphicsDevice,
-			tile->pic,
+			&tile->pic->pic,
 			pos,
 			GetTileLOSMask(tile),
 			0);
@@ -148,12 +148,12 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 			x < b->Size.x;
 			x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (tile->pic != NULL && PicIsNotNone(tile->pic) &&
+			if (tile->pic != NULL && tile->pic->pic.Data != NULL &&
 				!(tile->flags & MAPTILE_IS_WALL))
 			{
 				BlitMasked(
 					&gGraphicsDevice,
-					tile->pic,
+					&tile->pic->pic,
 					pos,
 					GetTileLOSMask(tile),
 					0);
@@ -221,7 +221,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				// Drawing doors
 				BlitMasked(
 					&gGraphicsDevice,
-					&tile->picAlt,
+					&tile->picAlt->pic,
 					pos,
 					GetTileLOSMask(tile),
 					0);

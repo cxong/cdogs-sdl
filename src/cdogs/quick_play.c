@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include "actors.h"
+#include "door.h"
 #include "files.h"
 
 
@@ -223,7 +224,8 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	m->RoomStyle = rand() % FLOOR_STYLE_COUNT;
 	m->ExitStyle = rand() % GetExitCount();
 	m->KeyStyle = rand() % KEYSTYLE_COUNT;
-	m->DoorStyle = rand() % GetDoorstyleCount();
+	strcpy(
+		m->DoorStyle, DoorStyleStr(rand() % gPicManager.doorStyleNames.size));
 	m->Size = GenerateQuickPlayMapSize(
 		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
 	m->Type = MAPTYPE_CLASSIC;	// TODO: generate different map types

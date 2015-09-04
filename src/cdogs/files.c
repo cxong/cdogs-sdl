@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <SDL.h>
 
+#include "door.h"
 #include "log.h"
 #include "map_new.h"
 #include "sys_specifics.h"
@@ -357,7 +358,7 @@ static void ConvertMission(
 	dest->RoomStyle = src->roomStyle;
 	dest->ExitStyle = src->exitStyle;
 	dest->KeyStyle = src->keyStyle;
-	dest->DoorStyle = src->doorStyle;
+	strcpy(dest->DoorStyle, DoorStyleStr(src->doorStyle));
 	for (i = 0; i < src->objectiveCount; i++)
 	{
 		MissionObjective mo;

@@ -52,6 +52,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "door.h"
 #include "files.h"
 #include "game_events.h"
 #include "gamedata.h"
@@ -139,7 +140,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->RoomStyle = src->RoomStyle;
 	dst->ExitStyle = src->ExitStyle;
 	dst->KeyStyle = src->KeyStyle;
-	dst->DoorStyle = src->DoorStyle;
+	strcpy(dst->DoorStyle, src->DoorStyle);
 
 	CArrayCopy(&dst->Objectives, &src->Objectives);
 	for (int i = 0; i < (int)src->Objectives.size; i++)
@@ -213,63 +214,14 @@ void MissionTerminate(Mission *m)
 
 
 // +-------------+
-// |  Door info  |
-// +-------------+
-
-// note that the H pic in the last pair is a TILE pic, not an offset pic!
-static DoorPics doorStyles[] =
-{
-	// Office doors
-	{
-		{OFSPIC_DOOR, OFSPIC_VDOOR},
-		{OFSPIC_HDOOR_YELLOW, OFSPIC_VDOOR_YELLOW},
-		{OFSPIC_HDOOR_GREEN, OFSPIC_VDOOR_GREEN},
-		{OFSPIC_HDOOR_BLUE, OFSPIC_VDOOR_BLUE},
-		{OFSPIC_HDOOR_RED, OFSPIC_VDOOR_RED},
-		{109, OFSPIC_VDOOR_OPEN}
-	},
-	// Dungeon doors
-	{
-		{OFSPIC_DOOR2, OFSPIC_VDOOR2},
-		{OFSPIC_HDOOR2_YELLOW, OFSPIC_VDOOR2_YELLOW},
-		{OFSPIC_HDOOR2_GREEN, OFSPIC_VDOOR2_GREEN},
-		{OFSPIC_HDOOR2_BLUE, OFSPIC_VDOOR2_BLUE},
-		{OFSPIC_HDOOR2_RED, OFSPIC_VDOOR2_RED},
-		{342, OFSPIC_VDOOR2_OPEN}
-	},
-	// "Pansar" doors
-	{
-		{OFSPIC_HDOOR3, OFSPIC_VDOOR3},
-		{OFSPIC_HDOOR3_YELLOW, OFSPIC_VDOOR3_YELLOW},
-		{OFSPIC_HDOOR3_GREEN, OFSPIC_VDOOR3_GREEN},
-		{OFSPIC_HDOOR3_BLUE, OFSPIC_VDOOR3_BLUE},
-		{OFSPIC_HDOOR3_RED, OFSPIC_VDOOR3_RED},
-		{P2 + 148, OFSPIC_VDOOR2_OPEN}
-	},
-	// Alien doors
-	{
-		{OFSPIC_HDOOR4, OFSPIC_VDOOR4},
-		{OFSPIC_HDOOR4_YELLOW, OFSPIC_VDOOR4_YELLOW},
-		{OFSPIC_HDOOR4_GREEN, OFSPIC_VDOOR4_GREEN},
-		{OFSPIC_HDOOR4_BLUE, OFSPIC_VDOOR4_BLUE},
-		{OFSPIC_HDOOR4_RED, OFSPIC_VDOOR4_RED},
-		{P2 + 163, OFSPIC_VDOOR2_OPEN}
-	}
-};
-
-#define DOORSTYLE_COUNT (sizeof doorStyles / sizeof(DoorPics))
-int GetDoorstyleCount(void) { return DOORSTYLE_COUNT; }
-
-
-// +-------------+
 // |  Exit info  |
 // +-------------+
 
 
-static int exitPics[] = {
+/*static int exitPics[] = {
 	375, 376,	// hazard stripes
 	380, 381	// yellow plates
-};
+};*/
 // TODO: arbitrary exit tile names
 static const char *exitPicNames[] = {
 	"hazard",
@@ -277,7 +229,8 @@ static const char *exitPicNames[] = {
 };
 
 // Every exit has TWO pics, so actual # of exits == # pics / 2!
-#define EXIT_COUNT (sizeof( exitPics)/sizeof( int)/2)
+//#define EXIT_COUNT (sizeof( exitPics)/sizeof( int)/2)
+#define EXIT_COUNT 2
 int GetExitCount(void) { return EXIT_COUNT; }
 
 
@@ -338,17 +291,14 @@ void SetupMission(
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
 	mo->missionData = m;
-	mo->doorPics = &doorStyles[abs(m->DoorStyle) % DOORSTYLE_COUNT];
 	mo->keyStyle = m->KeyStyle;
 
 	char exitPicBuf[256];
 	const int exitIdx = abs(m->ExitStyle) % EXIT_COUNT;
 	sprintf(exitPicBuf, "exit_%s", exitPicNames[exitIdx]);
-	mo->exitPic =
-		PicManagerGet(&gPicManager, exitPicBuf, exitPics[2 * exitIdx]);
+	mo->exitPic = PicManagerGetNamedPic(&gPicManager, exitPicBuf);
 	sprintf(exitPicBuf, "exit_%s_shadow", exitPicNames[exitIdx]);
-	mo->exitShadow =
-		PicManagerGet(&gPicManager, exitPicBuf, exitPics[2 * exitIdx + 1]);
+	mo->exitShadow = PicManagerGetNamedPic(&gPicManager, exitPicBuf);
 
 	ActorsInit();
 	ObjsInit();
@@ -517,7 +467,6 @@ struct EditorInfo GetEditorInfo(void)
 {
 	struct EditorInfo ei;
 	ei.keyCount = KEYSTYLE_COUNT;
-	ei.doorCount = DOORSTYLE_COUNT;
 	ei.exitCount = EXIT_COUNT;
 	return ei;
 }

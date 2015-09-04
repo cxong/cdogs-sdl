@@ -134,7 +134,7 @@ void DrawBufferFix(DrawBuffer *buffer)
 			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))
 			{
-				tile->pic = &picNone;
+				tile->pic = NULL;
 			}
 			else if ((tile->flags & MAPTILE_IS_WALL) &&
 				(tileBelow->flags & MAPTILE_IS_WALL))

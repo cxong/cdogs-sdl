@@ -432,7 +432,7 @@ static void HandleGameEvent(
 
 				AddBloodSplatter(
 					a->Pos, e.u.ActorHit.Power,
-					Net2Vec2i(e.u.ActorHit.HitVector));
+					Net2Vec2i(e.u.ActorHit.Vel));
 			}
 		}
 		break;

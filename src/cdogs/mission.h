@@ -58,30 +58,13 @@
 #define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
 
 #define KEY_COUNT 4
-typedef struct
-{
-	int H;
-	int V;
-} DoorPic;
-
-typedef struct
-{
-	DoorPic Normal;
-	DoorPic Yellow;
-	DoorPic Green;
-	DoorPic Blue;
-	DoorPic Red;
-	DoorPic Open;
-} DoorPics;
 
 int GetExitCount(void);
-int GetDoorstyleCount(void);
 int GetColorrangeCount(void);
 
 struct EditorInfo
 {
 	int keyCount;
-	int doorCount;
 	int exitCount;
 };
 
@@ -146,7 +129,7 @@ typedef struct
 	int RoomStyle;
 	int ExitStyle;
 	int KeyStyle;
-	int DoorStyle;
+	char DoorStyle[CDOGS_FILENAME_MAX];
 
 	CArray Objectives;			// of MissionObjective
 	CArray Enemies;				// of int (character index)
@@ -238,9 +221,8 @@ struct MissionOptions
 	bool isDone;
 
 	int keyStyle;
-	const DoorPics *doorPics;
-	Pic *exitPic;
-	Pic *exitShadow;
+	NamedPic *exitPic;
+	NamedPic *exitShadow;
 };
 
 void MissionInit(Mission *m);

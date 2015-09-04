@@ -29,6 +29,7 @@
 
 #include <assert.h>
 
+#include <cdogs/door.h>
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
@@ -390,9 +391,9 @@ static void MissionDrawWallStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
-		PicManagerGetMaskedStylePic(
+		&PicManagerGetMaskedStylePic(
 			&gPicManager, "wall", idx % count, WALL_SINGLE,
-			m->WallMask, m->AltMask),
+			m->WallMask, m->AltMask)->pic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -408,9 +409,9 @@ static void MissionDrawFloorStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
-		PicManagerGetMaskedStylePic(
+		&PicManagerGetMaskedStylePic(
 			&gPicManager, "floor", idx % count, FLOOR_NORMAL,
-			m->FloorMask, m->AltMask),
+			m->FloorMask, m->AltMask)->pic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -426,9 +427,9 @@ static void MissionDrawRoomStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
-		PicManagerGetMaskedStylePic(
+		&PicManagerGetMaskedStylePic(
 			&gPicManager, "room", idx % count, ROOMFLOOR_NORMAL,
-			m->RoomMask, m->AltMask),
+			m->RoomMask, m->AltMask)->pic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -436,19 +437,17 @@ static void MissionDrawDoorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = GetEditorInfo().doorCount;
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co))
 	{
 		return;
 	}
-	int idx = CampaignGetCurrentMission(co)->DoorStyle;
+	const char *doorStyle = CampaignGetCurrentMission(co)->DoorStyle;
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
-		"Doors",
-		PicManagerGetFromOld(
-			&gPicManager, cGeneralPics[gMission.doorPics->Normal.H].picIndex),
-		idx, count,
+		"Doors", &GetDoorPic(&gPicManager, doorStyle, "normal", true)->pic,
+		PicManagerGetDoorStyleIndex(&gPicManager, doorStyle),
+		(int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
@@ -483,7 +482,7 @@ static void MissionDrawExitStyle(
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
-		gMission.exitPic,
+		&gMission.exitPic->pic,
 		idx, count,
 		UIObjectIsHighlighted(o));
 }
@@ -1122,8 +1121,13 @@ static void MissionChangeRoomStyle(void *data, int d)
 static void MissionChangeDoorStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->DoorStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->DoorStyle + d, 0, GetEditorInfo().doorCount - 1);
+	const char *doorStyle = CampaignGetCurrentMission(co)->DoorStyle;
+	const int newIdx = CLAMP_OPPOSITE(
+		PicManagerGetDoorStyleIndex(&gPicManager, doorStyle) + d,
+		0, (int)gPicManager.doorStyleNames.size - 1);
+	const char **newDoorStyle =
+		CArrayGet(&gPicManager.doorStyleNames, newIdx);
+	strcpy(CampaignGetCurrentMission(co)->DoorStyle, *newDoorStyle);
 }
 static void MissionChangeKeyStyle(void *data, int d)
 {

@@ -40,7 +40,9 @@ typedef struct
 	CArray customPics;	// of NamedPic
 	CArray customSprites;	// of NamedSprites
 
-	CArray drainPics;	// of Pic *
+	CArray drainPics;	// of NamedPic *
+
+	CArray doorStyleNames;	// of char *, for editor
 } PicManager;
 
 extern PicManager gPicManager;
@@ -55,21 +57,17 @@ void PicManagerTerminate(PicManager *pm);
 
 PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
 Pic *PicManagerGetFromOld(PicManager *pm, int idx);
+// Note: return ptr to NamedPic so we can store that instead of the name
+NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name);
 Pic *PicManagerGetPic(const PicManager *pm, const char *name);
 Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx);
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name);
 
-// Get a pic that is colour-masked.
-// The name of the pic will be <name>_<mask>_<maskAlt>
-// Used for dynamic map tile pic colours
-Pic *PicManagerGetMaskedPic(
-	const PicManager *pm, const char *name,
-	const color_t mask, const color_t maskAlt);
 // Get a masked pic for the styled tiles: walls, floors, rooms
 // Simply calls GetMaskedPic but the name contains the relevant
 // style/type names
-Pic *PicManagerGetMaskedStylePic(
+NamedPic *PicManagerGetMaskedStylePic(
 	const PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt);
 // To support dynamic colours, generate pics on request.
@@ -80,7 +78,8 @@ void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt);
 
-Pic *PicManagerGetRandomDrain(PicManager *pm);
+NamedPic *PicManagerGetRandomDrain(PicManager *pm);
+int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style);
 
 // Conversion
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);

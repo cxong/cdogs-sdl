@@ -196,8 +196,10 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 		{
 			Tile *t= MapGetTile(&gMap, a->u.pos);
 			t->flags = a->a.ChangeTile.Flags;
-			t->pic = a->a.ChangeTile.Pic;
-			t->picAlt = a->a.ChangeTile.PicAlt;
+			t->pic = PicManagerGetNamedPic(
+				&gPicManager, a->a.ChangeTile.PicName);
+			t->picAlt = PicManagerGetNamedPic(
+				&gPicManager, a->a.ChangeTile.PicAltName);
 		}
 		break;
 

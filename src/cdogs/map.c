@@ -244,7 +244,8 @@ void IMapSet(Map *map, Vec2i pos, unsigned short v)
 	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
-void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow)
+void MapChangeFloor(
+	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow)
 {
 	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
 	int canSeeTileAbove = !(pos.y > 0 && !TileCanSee(tAbove));
@@ -641,7 +642,7 @@ static void MapSetupDoors(Map *map, const Mission *m, int floor, int room)
 				(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
 			{
 				MapAddDoorGroup(
-					map, m, &gMission, v, floor, room,
+					map, m, v, floor, room,
 					MapGetAccessFlags(map, v.x, v.y));
 			}
 		}

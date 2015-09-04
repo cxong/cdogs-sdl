@@ -4,6 +4,9 @@ NPlayerData.Name		max_size:20
 NPlayerData.Weapons	max_size:128
 NPlayerData.Weapons	max_count:3
 
+NTileSet.PicName    max_size:128
+NTileSet.PicAltName max_size:128
+
 NMapObjectAdd.MapObjectClass max_size:128
 
 NSound.Sound max_size:128

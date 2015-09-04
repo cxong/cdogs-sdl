@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include <locale.h>
 #include <stdio.h>
 
+#include "door.h"
 #include "files.h"
 #include "json_utils.h"
 #include "map_archive.h"
@@ -204,7 +205,18 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadInt(&m.RoomStyle, child, "RoomStyle");
 		LoadInt(&m.ExitStyle, child, "ExitStyle");
 		LoadInt(&m.KeyStyle, child, "KeyStyle");
-		LoadInt(&m.DoorStyle, child, "DoorStyle");
+		if (version <= 5)
+		{
+			int doorStyle;
+			LoadInt(&doorStyle, child, "DoorStyle");
+			strcpy(m.DoorStyle, DoorStyleStr(doorStyle));
+		}
+		else
+		{
+			char *tmp = GetString(child, "DoorStyle");
+			strcpy(m.DoorStyle, tmp);
+			CFREE(tmp);
+		}
 		LoadMissionObjectives(&m.Objectives, json_find_first_label(child, "Objectives")->child);
 		LoadIntArray(&m.Enemies, child, "Enemies");
 		LoadIntArray(&m.SpecialChars, child, "SpecialChars");

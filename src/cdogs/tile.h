@@ -151,8 +151,9 @@ typedef struct
 } ThingId;
 typedef struct
 {
-	Pic *pic;
-	Pic picAlt;
+	// Note: use NamedPic so we can serialise over net using name
+	NamedPic *pic;
+	NamedPic *picAlt;
 	int flags;
 	bool isVisited;
 	CArray triggers;	// of Trigger *
@@ -169,7 +170,7 @@ bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(Tile *t);
 bool TileIsClear(Tile *t);
 bool TileHasCharacter(Tile *t);
-void TileSetAlternateFloor(Tile *t, Pic *p);
+void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
 TTileItem *ThingIdGetTileItem(ThingId *tid);
 bool TileItemIsDebris(const TTileItem *t);

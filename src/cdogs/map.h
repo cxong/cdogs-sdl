@@ -138,7 +138,8 @@ void MapLoadDynamic(
 bool MapIsFullPosOKforPlayer(
 	const Map *map, const Vec2i pos, const bool allowAllTiles);
 bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size);
-void MapChangeFloor(Map *map, Vec2i pos, Pic *normal, Pic *shadow);
+void MapChangeFloor(
+	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow);
 void MapShowExitArea(Map *map);
 // Returns the center of the tile that's the middle of the exit area
 // Used for compass arrows

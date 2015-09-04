@@ -57,7 +57,8 @@ bool PicManagerTryInit(
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
 	CArrayInit(&pm->customPics, sizeof(NamedPic));
 	CArrayInit(&pm->customSprites, sizeof(NamedSprites));
-	CArrayInit(&pm->drainPics, sizeof(Pic *));
+	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
+	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, oldGfxFile1);
@@ -107,6 +108,7 @@ static void SetPaletteRange(
 }
 
 static void FindDrainPics(PicManager *pm);
+static void FindDoorPics(PicManager *pm);
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
 {
@@ -193,6 +195,7 @@ void PicManagerAdd(
 	SDL_FreeSurface(image);
 
 	FindDrainPics(&gPicManager);
+	FindDoorPics(&gPicManager);
 }
 static void FindDrainPics(PicManager *pm)
 {
@@ -202,16 +205,53 @@ static void FindDrainPics(PicManager *pm)
 	{
 		char buf[CDOGS_FILENAME_MAX];
 		sprintf(buf, "drains/%d", i);
-		Pic *p = PicManagerGet(&gPicManager, buf, PIC_DRAINAGE);
+		NamedPic *p = PicManagerGetNamedPic(&gPicManager, buf);
 		if (p == NULL) break;
-		// Only use the old pic once
-		if (i > 0 && p == PicManagerGetFromOld(&gPicManager, PIC_DRAINAGE))
-		{
-			break;
-		}
 		CArrayPushBack(&gPicManager.drainPics, &p);
 	}
 }
+static void MaybeAddDoorPicName(PicManager *pm, const char *picName);
+static void FindDoorPics(PicManager *pm)
+{
+	// Scan all pics for door pics
+	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
+		CFREE(*doorStyleName);
+	CA_FOREACH_END()
+	CArrayClear(&pm->doorStyleNames);
+	CA_FOREACH(NamedPic, p, pm->customPics)
+		MaybeAddDoorPicName(pm, p->name);
+	CA_FOREACH_END()
+	CA_FOREACH(NamedPic, p, pm->pics)
+		MaybeAddDoorPicName(pm, p->name);
+	CA_FOREACH_END()
+}
+static void MaybeAddDoorPicName(PicManager *pm, const char *picName)
+{
+	// Use the "wall" pic name
+	if (strncmp(picName, "door/", strlen("door/")) != 0 ||
+		strcmp(picName + strlen(picName) - strlen("_wall"), "_wall") != 0)
+	{
+		return;
+	}
+	char buf[CDOGS_FILENAME_MAX];
+	const size_t len = strlen(picName) - strlen("door/") - strlen("_wall");
+	strncpy(buf, picName + strlen("door/"), len);
+	buf[len] = '\0';
+	// Check if we already have the door pic name
+	// This can happen if a custom door pic uses the same name as a built in
+	// one
+	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
+		if (strcmp(*doorStyleName, buf) == 0)
+		{
+			return;
+		}
+	CA_FOREACH_END()
+
+	char *s;
+	CSTRDUP(s, buf);
+	CArrayPushBack(&pm->doorStyleNames, &s);
+}
+
 static void PicManagerLoadDirImpl(
 	PicManager *pm, const char *path, const char *prefix)
 {
@@ -418,6 +458,10 @@ void PicManagerTerminate(PicManager *pm)
 	CArrayTerminate(&pm->customPics);
 	CArrayTerminate(&pm->customSprites);
 	CArrayTerminate(&pm->drainPics);
+	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
+		CFREE(*doorStyleName);
+	CA_FOREACH_END()
+	CArrayTerminate(&pm->doorStyleNames);
 	IMG_Quit();
 }
 static void PicManagerClear(CArray *pics, CArray *sprites)
@@ -452,14 +496,14 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 	}
 	return &pm->picsFromOld[idx];
 }
-Pic *PicManagerGetPic(const PicManager *pm, const char *name)
+NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 {
 	for (int i = 0; i < (int)pm->customPics.size; i++)
 	{
 		NamedPic *n = CArrayGet(&pm->customPics, i);
 		if (strcmp(n->name, name) == 0)
 		{
-			return &n->pic;
+			return n;
 		}
 	}
 	for (int i = 0; i < (int)pm->pics.size; i++)
@@ -467,9 +511,15 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 		NamedPic *n = CArrayGet(&pm->pics, i);
 		if (strcmp(n->name, name) == 0)
 		{
-			return &n->pic;
+			return n;
 		}
 	}
+	return NULL;
+}
+Pic *PicManagerGetPic(const PicManager *pm, const char *name)
+{
+	NamedPic *n = PicManagerGetNamedPic(pm, name);
+	if (n != NULL) return &n->pic;
 	return NULL;
 }
 Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx)
@@ -523,15 +573,18 @@ static void GetMaskedName(
 static void GetMaskedStyleName(
 	char *buf, const char *name, const int style, const int type);
 
-Pic *PicManagerGetMaskedPic(
+// Get a pic that is colour-masked.
+// The name of the pic will be <name>_<mask>_<maskAlt>
+// Used for dynamic map tile pic colours
+static NamedPic *PicManagerGetMaskedPic(
 	const PicManager *pm, const char *name,
 	const color_t mask, const color_t maskAlt)
 {
 	char maskedName[256];
 	GetMaskedName(maskedName, name, mask, maskAlt);
-	return PicManagerGetPic(pm, maskedName);
+	return PicManagerGetNamedPic(pm, maskedName);
 }
-Pic *PicManagerGetMaskedStylePic(
+NamedPic *PicManagerGetMaskedStylePic(
 	const PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt)
 {
@@ -634,12 +687,24 @@ static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)
 	return CArrayGet(pics, pics->size - 1);
 }
 
-Pic *PicManagerGetRandomDrain(PicManager *pm)
+NamedPic *PicManagerGetRandomDrain(PicManager *pm)
 {
-	Pic **p = CArrayGet(&pm->drainPics, rand() % pm->drainPics.size);
+	NamedPic **p = CArrayGet(&pm->drainPics, rand() % pm->drainPics.size);
 	return *p;
 }
 
+int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style)
+{
+	int idx = 0;
+	CA_FOREACH(const char *, doorStyleName, pm->doorStyleNames)
+		if (strcmp(style, *doorStyleName) == 0)
+		{
+			break;
+		}
+		idx++;
+	CA_FOREACH_END()
+	return idx;
+}
 
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op)
 {

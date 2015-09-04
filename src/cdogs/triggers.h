@@ -52,6 +52,7 @@
 
 #include "c_array.h"
 #include "pic.h"
+#include "proto/msg.pb.h"
 
 typedef enum
 {
@@ -65,6 +66,7 @@ typedef enum
 } ActionType;
 
 
+// TODO: eliminate Action, replace with standard game events
 typedef struct
 {
 	ActionType Type;
@@ -75,12 +77,7 @@ typedef struct
 	} u;
 	union
 	{
-		struct
-		{
-			int Flags;
-			Pic *Pic;
-			Pic PicAlt;
-		} ChangeTile;
+		NTileSet ChangeTile;
 		Mix_Chunk *Sound;
 	} a;
 } Action;

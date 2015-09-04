@@ -58,7 +58,7 @@ Tile TileNone(void)
 {
 	Tile t;
 	memset(&t, 0, sizeof t);
-	t.pic = &picNone;
+	t.pic = NULL;
 	t.flags = MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
 	return t;
 }
@@ -67,8 +67,8 @@ void TileInit(Tile *t)
 	memset(t, 0, sizeof *t);
 	// lazy initialise the arrays of triggers
 	// it's very slow to do 128x128 mallocs!
-	t->pic = &picNone;
-	t->picAlt = picNone;
+	t->pic = NULL;
+	t->picAlt = NULL;
 }
 void TileDestroy(Tile *t)
 {
@@ -130,7 +130,7 @@ bool TileHasCharacter(Tile *t)
 	return false;
 }
 
-void TileSetAlternateFloor(Tile *t, Pic *p)
+void TileSetAlternateFloor(Tile *t, NamedPic *p)
 {
 	t->pic = p;
 	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;

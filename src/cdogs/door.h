@@ -52,5 +52,14 @@
 
 
 void MapAddDoorGroup(
-	Map *map, const Mission *m, const struct MissionOptions *mo,
+	Map *map, const Mission *m,
 	const Vec2i v, const int floor, const int room, const int keyFlags);
+
+// Get the picture of a door
+// style: office/dungeon/blast/alien, or custom
+// key: normal/yellow/green/blue/red/wall/open
+NamedPic *GetDoorPic(
+	PicManager *pm, const char *style, const char *key,
+	const bool isHorizontal);
+
+const char *DoorStyleStr(const int style);
