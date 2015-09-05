@@ -427,7 +427,7 @@ NamedPic *GetDoorPic(
 	// If the key is "wall", it doesn't include orientation
 	sprintf(
 		buf, "door/%s_%s%s", style, key,
-		strcmp(key, "wall") ? "" : (isHorizontal ? "_h" : "_v"));
+		strcmp(key, "wall") == 0 ? "" : (isHorizontal ? "_h" : "_v"));
 /*
 	// TODO: support using original pics
 	// Requires original pics accessible via name, i.e. using the NamedPic
