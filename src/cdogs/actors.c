@@ -85,6 +85,7 @@
 #define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
+#define DRAW_RADIAN_SPEED (PI/16)
 
 
 CArray gPlayerIds;
@@ -169,7 +170,7 @@ static ActorPics GetCharacterPics(int id)
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
 	TActor *actor = CArrayGet(&gActors, id);
-	direction_e dir = actor->direction;
+	const direction_e dir = RadiansToDirection(actor->DrawRadians);
 	direction_e headDir = dir;
 	const int frame = AnimationGetFrame(&actor->anim);
 	int headFrame = frame;
@@ -355,6 +356,14 @@ void UpdateActorState(TActor * actor, int ticks)
 		actor->tileItem.flags = 0;
 		return;
 	}
+
+	// Draw rotation interpolation
+	const float targetRadians = (float)dir2radians[actor->direction];
+	if (actor->DrawRadians - targetRadians > PI) actor->DrawRadians -= 2*PI;
+	if (actor->DrawRadians - targetRadians < -PI) actor->DrawRadians += 2*PI;
+	const float dr = actor->DrawRadians - targetRadians;
+	if (dr < 0) actor->DrawRadians += MIN(DRAW_RADIAN_SPEED*ticks, -dr);
+	else if (dr > 0) actor->DrawRadians -= MIN(DRAW_RADIAN_SPEED*ticks, dr);
 
 	// Footstep sounds
 	// Step on 1

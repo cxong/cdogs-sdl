@@ -132,6 +132,9 @@ typedef struct Actor
 	Vec2i MoveVel;
 	Vec2i Vel;
 	direction_e direction;
+	// Rotation used to draw the actor, which will lag behind the actual
+	// rotation in order to show smooth rotation
+	float DrawRadians;
 	Animation anim;
 	int stateCounter;
 	int lastCmd;
