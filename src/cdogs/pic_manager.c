@@ -107,8 +107,7 @@ static void SetPaletteRange(
 	}
 }
 
-static void FindDrainPics(PicManager *pm);
-static void FindDoorPics(PicManager *pm);
+static void AfterAdd(PicManager *pm);
 void PicManagerAdd(
 	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
 {
@@ -194,62 +193,7 @@ void PicManagerAdd(
 	SDL_UnlockSurface(image);
 	SDL_FreeSurface(image);
 
-	FindDrainPics(&gPicManager);
-	FindDoorPics(&gPicManager);
-}
-static void FindDrainPics(PicManager *pm)
-{
-	// Scan all pics for drainage pics
-	CArrayClear(&pm->drainPics);
-	for (int i = 0;; i++)
-	{
-		char buf[CDOGS_FILENAME_MAX];
-		sprintf(buf, "drains/%d", i);
-		NamedPic *p = PicManagerGetNamedPic(pm, buf);
-		if (p == NULL) break;
-		CArrayPushBack(&pm->drainPics, &p);
-	}
-}
-static void MaybeAddDoorPicName(PicManager *pm, const char *picName);
-static void FindDoorPics(PicManager *pm)
-{
-	// Scan all pics for door pics
-	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
-		CFREE(*doorStyleName);
-	CA_FOREACH_END()
-	CArrayClear(&pm->doorStyleNames);
-	CA_FOREACH(NamedPic, p, pm->customPics)
-		MaybeAddDoorPicName(pm, p->name);
-	CA_FOREACH_END()
-	CA_FOREACH(NamedPic, p, pm->pics)
-		MaybeAddDoorPicName(pm, p->name);
-	CA_FOREACH_END()
-}
-static void MaybeAddDoorPicName(PicManager *pm, const char *picName)
-{
-	// Use the "wall" pic name
-	if (strncmp(picName, "door/", strlen("door/")) != 0 ||
-		strcmp(picName + strlen(picName) - strlen("_wall"), "_wall") != 0)
-	{
-		return;
-	}
-	char buf[CDOGS_FILENAME_MAX];
-	const size_t len = strlen(picName) - strlen("door/") - strlen("_wall");
-	strncpy(buf, picName + strlen("door/"), len);
-	buf[len] = '\0';
-	// Check if we already have the door pic name
-	// This can happen if a custom door pic uses the same name as a built in
-	// one
-	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
-		if (strcmp(*doorStyleName, buf) == 0)
-		{
-			return;
-		}
-	CA_FOREACH_END()
-
-	char *s;
-	CSTRDUP(s, buf);
-	CArrayPushBack(&pm->doorStyleNames, &s);
+	AfterAdd(&gPicManager);
 }
 
 static void PicManagerLoadDirImpl(
@@ -430,6 +374,71 @@ static void AddMaskBasePic(
 		}
 	}
 	AddNamedPic(&pm->pics, buf, &p);
+
+	AfterAdd(pm);
+}
+
+
+static void FindDrainPics(PicManager *pm);
+static void FindDoorPics(PicManager *pm);
+static void AfterAdd(PicManager *pm)
+{
+	FindDrainPics(pm);
+	FindDoorPics(pm);
+}
+static void FindDrainPics(PicManager *pm)
+{
+	// Scan all pics for drainage pics
+	CArrayClear(&pm->drainPics);
+	for (int i = 0;; i++)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "drains/%d", i);
+		NamedPic *p = PicManagerGetNamedPic(pm, buf);
+		if (p == NULL) break;
+		CArrayPushBack(&pm->drainPics, &p);
+	}
+}
+static void MaybeAddDoorPicName(PicManager *pm, const char *picName);
+static void FindDoorPics(PicManager *pm)
+{
+	// Scan all pics for door pics
+	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
+		CFREE(*doorStyleName);
+	CA_FOREACH_END()
+	CArrayClear(&pm->doorStyleNames);
+	CA_FOREACH(NamedPic, p, pm->customPics)
+		MaybeAddDoorPicName(pm, p->name);
+	CA_FOREACH_END()
+	CA_FOREACH(NamedPic, p, pm->pics)
+		MaybeAddDoorPicName(pm, p->name);
+	CA_FOREACH_END()
+}
+static void MaybeAddDoorPicName(PicManager *pm, const char *picName)
+{
+	// Use the "wall" pic name
+	if (strncmp(picName, "door/", strlen("door/")) != 0 ||
+		strcmp(picName + strlen(picName) - strlen("_wall"), "_wall") != 0)
+	{
+		return;
+	}
+	char buf[CDOGS_FILENAME_MAX];
+	const size_t len = strlen(picName) - strlen("door/") - strlen("_wall");
+	strncpy(buf, picName + strlen("door/"), len);
+	buf[len] = '\0';
+	// Check if we already have the door pic name
+	// This can happen if a custom door pic uses the same name as a built in
+	// one
+	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
+		if (strcmp(*doorStyleName, buf) == 0)
+		{
+			return;
+		}
+	CA_FOREACH_END()
+
+	char *s;
+	CSTRDUP(s, buf);
+	CArrayPushBack(&pm->doorStyleNames, &s);
 }
 
 static void PicManagerClear(CArray *pics, CArray *sprites);
@@ -631,6 +640,8 @@ void PicManagerGenerateMaskedPic(
 		// TODO: more channels
 	}
 	AddNamedPic(&pm->customPics, maskedName, &p);
+
+	AfterAdd(pm);
 }
 void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const int style, const int type,
