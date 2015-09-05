@@ -205,9 +205,9 @@ static void FindDrainPics(PicManager *pm)
 	{
 		char buf[CDOGS_FILENAME_MAX];
 		sprintf(buf, "drains/%d", i);
-		NamedPic *p = PicManagerGetNamedPic(&gPicManager, buf);
+		NamedPic *p = PicManagerGetNamedPic(pm, buf);
 		if (p == NULL) break;
-		CArrayPushBack(&gPicManager.drainPics, &p);
+		CArrayPushBack(&pm->drainPics, &p);
 	}
 }
 static void MaybeAddDoorPicName(PicManager *pm, const char *picName);
