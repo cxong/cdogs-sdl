@@ -219,10 +219,19 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			else if (tile->flags & MAPTILE_OFFSET_PIC)
 			{
 				// Drawing doors
+				// Doors may be offset; vertical doors are drawn centered
+				// horizontal doors are bottom aligned
+				Vec2i doorPos = pos;
+				doorPos.x += (TILE_WIDTH - tile->picAlt->pic.size.x) / 2;
+				if (tile->picAlt->pic.size.y > 16)
+				{
+					doorPos.y +=
+						TILE_HEIGHT - (tile->picAlt->pic.size.y % TILE_HEIGHT);
+				}
 				BlitMasked(
 					&gGraphicsDevice,
 					&tile->picAlt->pic,
-					pos,
+					doorPos,
 					GetTileLOSMask(tile),
 					0);
 			}
