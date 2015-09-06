@@ -73,6 +73,16 @@ static void HandleGameEvent(
 	case GAME_EVENT_PLAYER_DATA:
 		PlayerDataAddOrUpdate(e.u.PlayerData);
 		break;
+	case GAME_EVENT_TILE_SET:
+		{
+			Tile *t = MapGetTile(&gMap, Net2Vec2i(e.u.TileSet.Pos));
+			t->flags = e.u.TileSet.Flags;
+			t->pic = PicManagerGetNamedPic(
+				&gPicManager, e.u.TileSet.PicName);
+			t->picAlt = PicManagerGetNamedPic(
+				&gPicManager, e.u.TileSet.PicAltName);
+		}
+		break;
 	case GAME_EVENT_MAP_OBJECT_ADD:
 		ObjAdd(e.u.MapObjectAdd);
 		break;

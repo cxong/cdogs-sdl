@@ -28,11 +28,10 @@
 */
 #pragma once
 
-#include "actors.h"
 #include "c_array.h"
-#include "damage.h"
-#include "gamedata.h"
-#include "objs.h"
+#include "particle.h"
+#include "proto/msg.pb.h"
+
 
 // Game events represent anything that is created within the game but is
 // required by outside systems, e.g. sound events
@@ -47,6 +46,7 @@ typedef enum
 	GAME_EVENT_CLIENT_ID,
 	GAME_EVENT_CAMPAIGN_DEF,
 	GAME_EVENT_PLAYER_DATA,
+	GAME_EVENT_TILE_SET,
 	GAME_EVENT_MAP_OBJECT_ADD,
 	GAME_EVENT_MAP_OBJECT_DAMAGE,
 	GAME_EVENT_CLIENT_READY,
@@ -127,6 +127,7 @@ typedef struct
 	union
 	{
 		NPlayerData PlayerData;
+		NTileSet TileSet;
 		NMapObjectAdd MapObjectAdd;
 		NMapObjectDamage MapObjectDamage;
 		NScore Score;

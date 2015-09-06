@@ -30,9 +30,11 @@
 
 #include <string.h>
 
+#include "actors.h"
 #include "net_client.h"
 #include "net_server.h"
 #include "utils.h"
+
 
 CArray gGameEvents;
 
@@ -55,6 +57,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_CLIENT_ID, false, false, false, false, NClientId_fields },
 	{ GAME_EVENT_CAMPAIGN_DEF, false, false, false, false, NCampaignDef_fields },
 	{ GAME_EVENT_PLAYER_DATA, true, false, true, false, NPlayerData_fields },
+	{ GAME_EVENT_TILE_SET, true, false, true, true, NTileSet_fields },
 	{ GAME_EVENT_MAP_OBJECT_ADD, true, false, true, true, NMapObjectAdd_fields },
 	{ GAME_EVENT_MAP_OBJECT_DAMAGE, true, false, true, true, NMapObjectDamage_fields },
 	{ GAME_EVENT_CLIENT_READY, false, false, false, false, NULL },

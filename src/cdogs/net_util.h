@@ -33,11 +33,9 @@
 
 #include <enet/enet.h>
 
-#include "campaign_entry.h"
+#include "campaigns.h"
 #include "game_events.h"
-#include "game_mode.h"
 #include "player.h"
-#include "sys_config.h"
 
 #define NET_PORT 34219
 

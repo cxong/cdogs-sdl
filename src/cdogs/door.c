@@ -216,17 +216,16 @@ static TWatch *CreateCloseDoorWatch(
 		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
 
 		a = WatchAddAction(w);
-		a->Type = ACTION_CHANGETILE;
-		a->u.pos = vI;
-		a->a.ChangeTile.Pos = Vec2i2Net(vI);
-		a->a.ChangeTile.Flags = DOOR_TILE_FLAGS;
+		a->Type = ACTION_EVENT;
+		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
+		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		a->a.Event.u.TileSet.Flags = DOOR_TILE_FLAGS;
 		strcpy(
-			a->a.ChangeTile.PicName,
+			a->a.Event.u.TileSet.PicName,
 			PicManagerGetMaskedStylePic(
 				&gPicManager, "room", room, ROOMFLOOR_SHADOW,
 				m->RoomMask, m->AltMask)->name);
-		strcpy(a->a.ChangeTile.PicAltName, picAltName);
-		a->a.ChangeTile.Flags = DOOR_TILE_FLAGS;
+		strcpy(a->a.Event.u.TileSet.PicAltName, picAltName);
 	}
 
 	// Add shadows below doors
@@ -237,13 +236,13 @@ static TWatch *CreateCloseDoorWatch(
 			const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
 			
 			a = WatchAddAction(w);
-			a->Type = ACTION_CHANGETILE;
-			a->u.pos = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
-			const bool isFloor = IMapGet(map, a->u.pos) == MAP_FLOOR;
-			a->a.ChangeTile.Pos = Vec2i2Net(a->u.pos);
-			a->a.ChangeTile.Flags = 0;
+			a->Type = ACTION_EVENT;
+			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
+			const Vec2i vI2 = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
+			const bool isFloor = IMapGet(map, vI2) == MAP_FLOOR;
 			strcpy(
-				a->a.ChangeTile.PicName,
+				a->a.Event.u.TileSet.PicName,
 				PicManagerGetMaskedStylePic(
 					&gPicManager,
 					isFloor ? "floor" : "room",
@@ -251,7 +250,6 @@ static TWatch *CreateCloseDoorWatch(
 					isFloor ? FLOOR_SHADOW : ROOMFLOOR_SHADOW,
 					isFloor ? m->FloorMask : m->RoomMask,
 					m->AltMask)->name);
-			strcpy(a->a.ChangeTile.PicAltName, "");
 		}
 	}
 
@@ -282,18 +280,16 @@ static Trigger *CreateOpenDoorTrigger(
 	{
 		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
 		a = TriggerAddAction(t);
-		a->Type = ACTION_CHANGETILE;
-		a->u.pos = vI;
-		a->a.ChangeTile.Pos = Vec2i2Net(vI);
-		a->a.ChangeTile.Flags =
+		a->Type = ACTION_EVENT;
+		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
+		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		a->a.Event.u.TileSet.Flags =
 			(isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
-		strcpy(a->a.ChangeTile.PicName, "");
-		strcpy(a->a.ChangeTile.PicAltName, "");
-		strcpy(a->a.ChangeTile.PicName, openDoorPicName);
+		strcpy(a->a.Event.u.TileSet.PicName, openDoorPicName);
 		if (!isHorizontal && i == 0)
 		{
 			// special door cavity picture
-			strcpy(a->a.ChangeTile.PicAltName, wallDoorPicName);
+			strcpy(a->a.Event.u.TileSet.PicAltName, wallDoorPicName);
 		}
 	}
 
@@ -306,13 +302,12 @@ static Trigger *CreateOpenDoorTrigger(
 			const Vec2i vIAside = Vec2iAdd(vI, dAside);
 			a = TriggerAddAction(t);
 			// Remove shadows below doors
-			a->Type = ACTION_CHANGETILE;
-			a->u.pos = vIAside;
+			a->Type = ACTION_EVENT;
+			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const bool isFloor = IMapGet(map, vIAside) == MAP_FLOOR;
-			a->a.ChangeTile.Pos = Vec2i2Net(vIAside);
-			a->a.ChangeTile.Flags = 0;
+			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			strcpy(
-				a->a.ChangeTile.PicName,
+				a->a.Event.u.TileSet.PicName,
 				PicManagerGetMaskedStylePic(
 					&gPicManager,
 					isFloor ? "floor" : "room",
@@ -320,7 +315,6 @@ static Trigger *CreateOpenDoorTrigger(
 					isFloor ? FLOOR_NORMAL : ROOMFLOOR_NORMAL,
 					isFloor ? m->FloorMask : m->RoomMask,
 					m->AltMask)->name);
-			strcpy(a->a.ChangeTile.PicAltName, "");
 		}
 	}
 

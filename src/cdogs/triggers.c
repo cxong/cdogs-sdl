@@ -192,15 +192,8 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 		}
 		break;
 
-	case ACTION_CHANGETILE:
-		{
-			Tile *t= MapGetTile(&gMap, a->u.pos);
-			t->flags = a->a.ChangeTile.Flags;
-			t->pic = PicManagerGetNamedPic(
-				&gPicManager, a->a.ChangeTile.PicName);
-			t->picAlt = PicManagerGetNamedPic(
-				&gPicManager, a->a.ChangeTile.PicAltName);
-		}
+	case ACTION_EVENT:
+		GameEventsEnqueue(&gGameEvents, a->a.Event);
 		break;
 
 	case ACTION_ACTIVATEWATCH:

@@ -51,6 +51,7 @@
 #include <SDL_mixer.h>
 
 #include "c_array.h"
+#include "game_events.h"
 #include "pic.h"
 #include "proto/msg.pb.h"
 
@@ -59,7 +60,7 @@ typedef enum
 	ACTION_NULL,
 	ACTION_SETTRIGGER,
 	ACTION_CLEARTRIGGER,
-	ACTION_CHANGETILE,
+	ACTION_EVENT,
 	ACTION_ACTIVATEWATCH,
 	ACTION_DEACTIVATEWATCH,
 	ACTION_SOUND
@@ -77,7 +78,7 @@ typedef struct
 	} u;
 	union
 	{
-		NTileSet ChangeTile;
+		GameEvent Event;
 		Mix_Chunk *Sound;
 	} a;
 } Action;

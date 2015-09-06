@@ -58,6 +58,7 @@
 #include "config.h"
 #include "door.h"
 #include "game_events.h"
+#include "gamedata.h"
 #include "los.h"
 #include "map_build.h"
 #include "map_classic.h"

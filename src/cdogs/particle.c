@@ -30,6 +30,7 @@
 #include "collision.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "objs.h"
 
 
 ParticleClasses gParticleClasses;

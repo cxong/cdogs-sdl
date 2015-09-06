@@ -29,6 +29,7 @@
 
 #include "ammo.h"
 #include "game_events.h"
+#include "gamedata.h"
 #include "json_utils.h"
 #include "net_util.h"
 #include "map.h"

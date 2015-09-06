@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "proto/nanopb/pb_decode.h"
+#include "actors.h"
 #include "campaigns.h"
 #include "game_events.h"
 #include "gamedata.h"
