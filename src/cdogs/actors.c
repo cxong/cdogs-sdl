@@ -359,11 +359,23 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Draw rotation interpolation
 	const float targetRadians = (float)dir2radians[actor->direction];
-	if (actor->DrawRadians - targetRadians > PI) actor->DrawRadians -= 2*PI;
-	if (actor->DrawRadians - targetRadians < -PI) actor->DrawRadians += 2*PI;
+	if (actor->DrawRadians - targetRadians > PI)
+	{
+		actor->DrawRadians -= 2 * (float)PI;
+	}
+	if (actor->DrawRadians - targetRadians < -PI)
+	{
+		actor->DrawRadians += 2 * (float)PI;
+	}
 	const float dr = actor->DrawRadians - targetRadians;
-	if (dr < 0) actor->DrawRadians += MIN(DRAW_RADIAN_SPEED*ticks, -dr);
-	else if (dr > 0) actor->DrawRadians -= MIN(DRAW_RADIAN_SPEED*ticks, dr);
+	if (dr < 0)
+	{
+		actor->DrawRadians += (float)MIN(DRAW_RADIAN_SPEED*ticks, -dr);
+	}
+	else if (dr > 0)
+	{
+		actor->DrawRadians -= (float)MIN(DRAW_RADIAN_SPEED*ticks, dr);
+	}
 
 	// Footstep sounds
 	// Step on 1

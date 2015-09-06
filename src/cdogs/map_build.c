@@ -104,7 +104,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	}
 
 	// Randomly change normal floor tiles to drainage tiles
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < map->Size.x*map->Size.y / 45; i++)
 	{
 		// Make sure drain tiles aren't next to each other
 		Tile *t = MapGetTile(map, Vec2iNew(
@@ -119,7 +119,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 
 	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
 	// Randomly change normal floor tiles to alternative floor tiles
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < map->Size.x*map->Size.y / 22; i++)
 	{
 		Tile *t = MapGetTile(
 			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
@@ -130,7 +130,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 				m->FloorMask, m->AltMask));
 		}
 	}
-	for (int i = 0; i < 150; i++)
+	for (int i = 0; i < map->Size.x*map->Size.y / 16; i++)
 	{
 		Tile *t = MapGetTile(
 			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
