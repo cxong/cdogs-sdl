@@ -386,7 +386,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	{
 		SoundPlayAtPlusDistance(
 			&gSoundDevice,
-			gSoundDevice.footstepSound,
+			SoundGetRandomFootstep(&gSoundDevice),
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
 			FOOTSTEP_DISTANCE_PLUS);
 	}

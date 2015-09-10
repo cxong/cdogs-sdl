@@ -90,7 +90,7 @@ typedef struct
 	CArray customSounds;	// of SoundData
 
 	// Some commonly-used sounds, store them here for quick access
-	Mix_Chunk *footstepSound;
+	CArray footstepSounds;	// of Mix_Chunk *
 	Mix_Chunk *slideSound;
 	Mix_Chunk *healthSound;
 	Mix_Chunk *clickSound;
@@ -138,4 +138,5 @@ void SoundPlayAtPlusDistance(
 	const Vec2i pos, const int plusDistance);
 
 Mix_Chunk *StrSound(const char *s);
+Mix_Chunk *SoundGetRandomFootstep(SoundDevice *device);
 Mix_Chunk *SoundGetRandomScream(SoundDevice *device);

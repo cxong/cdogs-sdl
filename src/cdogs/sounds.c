@@ -100,7 +100,7 @@ static void LoadSound(SoundDevice *device, const char *name, const char *path)
 		return;
 	}
 	char buf[CDOGS_FILENAME_MAX];
-	PathGetBasenameWithoutExtension(buf, name);
+	PathGetWithoutExtension(buf, name);
 	SoundAdd(&device->sounds, buf, data);
 }
 void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
@@ -111,6 +111,8 @@ void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
 	CArrayPushBack(sounds, &sound);
 }
 
+static void SoundLoadDirImpl(
+	SoundDevice *s, const char *path, const char *prefix);
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
@@ -124,31 +126,18 @@ void SoundInitialize(SoundDevice *device, const char *path)
 
 	CArrayInit(&device->sounds, sizeof(SoundData));
 	CArrayInit(&device->customSounds, sizeof(SoundData));
-	tinydir_dir dir;
-	if (tinydir_open(&dir, path) == -1)
-	{
-		char buf[CDOGS_PATH_MAX + 256];
-		sprintf(buf, "Cannot open sound dir '%s'", path);
-		perror(buf);
-		device->isInitialised = false;
-		goto bail;
-	}
-	for (; dir.has_next; tinydir_next(&dir))
-	{
-		tinydir_file file;
-		if (tinydir_readfile(&dir, &file) == -1)
-		{
-			perror("Cannot read sound file");
-			goto bail;
-		}
-		if (file.is_reg)
-		{
-			LoadSound(device, file.name, file.path);
-		}
-	}
+	SoundLoadDirImpl(device, path, NULL);
 
 	// Look for commonly used sounds to set our pointers
-	device->footstepSound = StrSound("footstep");
+	CArrayInit(&device->footstepSounds, sizeof(Mix_Chunk *));
+	for (int i = 0;; i++)
+	{
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "footsteps/%d", i);
+		Mix_Chunk *s = StrSound(buf);
+		if (s == NULL) break;
+		CArrayPushBack(&device->footstepSounds, &s);
+	}
 	device->slideSound = StrSound("slide");
 	device->healthSound = StrSound("health");
 	device->clickSound = StrSound("click");
@@ -165,6 +154,42 @@ void SoundInitialize(SoundDevice *device, const char *path)
 			break;
 		}
 		CArrayPushBack(&device->screamSounds, &scream);
+	}
+}
+static void SoundLoadDirImpl(
+	SoundDevice *s, const char *path, const char *prefix)
+{
+	tinydir_dir dir;
+	if (tinydir_open(&dir, path) == -1)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Cannot open sound dir '%s'", path);
+		goto bail;
+	}
+	for (; dir.has_next; tinydir_next(&dir))
+	{
+		tinydir_file file;
+		if (tinydir_readfile(&dir, &file) == -1)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Cannot read sound file '%s'", file.path);
+			continue;
+		}
+		char buf[CDOGS_PATH_MAX];
+		if (prefix != NULL)
+		{
+			sprintf(buf, "%s/%s", prefix, file.name);
+		}
+		else
+		{
+			strcpy(buf, file.name);
+		}
+		if (file.is_reg)
+		{
+			LoadSound(s, buf, file.path);
+		}
+		else if (file.is_dir && file.name[0] != '.')
+		{
+			SoundLoadDirImpl(s, file.path, buf);
+		}
 	}
 
 bail:
@@ -432,6 +457,13 @@ Mix_Chunk *StrSound(const char *s)
 		}
 	}
 	return NULL;
+}
+
+Mix_Chunk *SoundGetRandomFootstep(SoundDevice *device)
+{
+	Mix_Chunk **sound = CArrayGet(
+		&device->footstepSounds, rand() % device->footstepSounds.size);
+	return *sound;
 }
 
 Mix_Chunk *SoundGetRandomScream(SoundDevice *device)
