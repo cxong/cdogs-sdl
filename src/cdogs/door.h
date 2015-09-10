@@ -59,7 +59,7 @@ void MapAddDoorGroup(
 // style: office/dungeon/blast/alien, or custom
 // key: normal/yellow/green/blue/red/wall/open
 NamedPic *GetDoorPic(
-	PicManager *pm, const char *style, const char *key,
+	const PicManager *pm, const char *style, const char *key,
 	const bool isHorizontal);
 
 const char *DoorStyleStr(const int style);

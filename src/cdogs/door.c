@@ -58,6 +58,8 @@
 
 static int GetDoorCountInGroup(
 	const Map *map, const Vec2i v, const bool isHorizontal);
+static NamedPic *GetDoorBasePic(
+	const PicManager *pm, const char *style, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const Vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
@@ -65,9 +67,7 @@ static TWatch *CreateCloseDoorWatch(
 static Trigger *CreateOpenDoorTrigger(
 	Map *map, const Mission *m, const Vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *openDoorPicName, const char *wallDoorPicName,
-	const int floor, const int room,
-	const int keyFlags);
+	const int floor, const int room, const int keyFlags);
 void MapAddDoorGroup(
 	Map *map, const Mission *m,
 	const Vec2i v, const int floor, const int room, const int keyFlags)
@@ -102,9 +102,7 @@ void MapAddDoorGroup(
 		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
 		Tile *tile = MapGetTile(map, vI);
 		tile->picAlt = doorPic;
-		tile->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "room", room, ROOMFLOOR_SHADOW,
-			m->RoomMask, m->AltMask);
+		tile->pic = GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal);
 		tile->flags = DOOR_TILE_FLAGS;
 		if (isHorizontal)
 		{
@@ -128,14 +126,9 @@ void MapAddDoorGroup(
 
 	TWatch *w = CreateCloseDoorWatch(
 		map, m, v, isHorizontal, doorGroupCount, doorPic->name, floor, room);
-	const char *openDoorPicName =
-		GetDoorPic(&gPicManager, m->DoorStyle, "open", isHorizontal)->name;
-	const char *wallDoorPicName =
-		GetDoorPic(&gPicManager, m->DoorStyle, "wall", false)->name;
 	Trigger *t = CreateOpenDoorTrigger(
 		map, m, v, isHorizontal, doorGroupCount,
-		openDoorPicName, wallDoorPicName, floor, room,
-		keyFlags);
+		floor, room, keyFlags);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
 	a->Type = ACTION_ACTIVATEWATCH;
@@ -222,9 +215,7 @@ static TWatch *CreateCloseDoorWatch(
 		a->a.Event.u.TileSet.Flags = DOOR_TILE_FLAGS;
 		strcpy(
 			a->a.Event.u.TileSet.PicName,
-			PicManagerGetMaskedStylePic(
-				&gPicManager, "room", room, ROOMFLOOR_SHADOW,
-				m->RoomMask, m->AltMask)->name);
+			GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal)->name);
 		strcpy(a->a.Event.u.TileSet.PicAltName, picAltName);
 	}
 
@@ -259,9 +250,7 @@ static void TileAddTrigger(Tile *t, Trigger *tr);
 static Trigger *CreateOpenDoorTrigger(
 	Map *map, const Mission *m, const Vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *openDoorPicName, const char *wallDoorPicName,
-	const int floor, const int room,
-	const int keyFlags)
+	const int floor, const int room, const int keyFlags)
 {
 	// All tiles on either side of the door group use the same trigger
 	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -285,11 +274,15 @@ static Trigger *CreateOpenDoorTrigger(
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		a->a.Event.u.TileSet.Flags =
 			(isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
-		strcpy(a->a.Event.u.TileSet.PicName, openDoorPicName);
+		strcpy(
+			a->a.Event.u.TileSet.PicName,
+			GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal)->name);
 		if (!isHorizontal && i == 0)
 		{
 			// special door cavity picture
-			strcpy(a->a.Event.u.TileSet.PicAltName, wallDoorPicName);
+			strcpy(
+				a->a.Event.u.TileSet.PicAltName,
+				GetDoorPic(&gPicManager, m->DoorStyle, "wall", false)->name);
 		}
 	}
 
@@ -344,6 +337,12 @@ static void TileAddTrigger(Tile *t, Trigger *tr)
 		CArrayInit(&t->triggers, sizeof(Trigger *));
 	}
 	CArrayPushBack(&t->triggers, &tr);
+}
+
+static NamedPic *GetDoorBasePic(
+	const PicManager *pm, const char *style, const bool isHorizontal)
+{
+	return GetDoorPic(pm, style, "open", isHorizontal);
 }
 
 
@@ -413,7 +412,7 @@ typedef struct
 #define DOORSTYLE_COUNT 4
 
 NamedPic *GetDoorPic(
-	PicManager *pm, const char *style, const char *key,
+	const PicManager *pm, const char *style, const char *key,
 	const bool isHorizontal)
 {
 	char buf[CDOGS_FILENAME_MAX];
