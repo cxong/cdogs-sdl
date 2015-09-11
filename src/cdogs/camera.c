@@ -109,7 +109,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
 }
 
-void FollowPlayer(Vec2i *pos, const int playerUID);
+static void FollowPlayer(Vec2i *pos, const int playerUID);
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
 void CameraDraw(Camera *camera, const input_device_e pausingDevice)
@@ -191,34 +191,68 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 		const int numLocalHumanPlayersAlive =
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
 		// Redo LOS if PVP, so that each split screen has its own LOS
-		if (IsPVP(gCampaign.Entry.Mode))
+		if (IsPVP(gCampaign.Entry.Mode) && numLocalHumanPlayersAlive > 0)
 		{
 			LOSReset(&gMap.LOS);
-			LOSCalcFrom(
-				&gMap, Vec2iToTile(camera->lastPosition), false);
 		}
-		if (numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1)
+		const bool onePlayer =
+			numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1;
+		const bool singleScreen = CameraIsSingleScreen();
+		if (onePlayer || singleScreen)
 		{
-			const TActor *p = ActorGetByUID(
-				(numLocalHumanPlayersAlive == 1 ?
-				GetFirstPlayer(true, true, true) :
-				GetFirstPlayer(true, false, true))->ActorUID);
-			camera->lastPosition = Vec2iNew(p->tileItem.x, p->tileItem.y);
+			// Single camera screen
+			if (onePlayer)
+			{
+				const TActor *p = ActorGetByUID(
+					(numLocalHumanPlayersAlive == 1 ?
+					GetFirstPlayer(true, true, true) :
+					GetFirstPlayer(true, false, true))->ActorUID);
+				camera->lastPosition = Vec2iNew(p->tileItem.x, p->tileItem.y);
+			}
+			else if (singleScreen)
+			{
+				// One screen
+				camera->lastPosition = PlayersGetMidpoint();
+			}
+
+			// Special case: if map is smaller than screen, center the camera
+			// However, it is important to keep the ear positions unmodified
+			// so that sounds don't get muffled just because there's a wall
+			// between player and camera center
+			const Vec2i earPos = camera->lastPosition;
+			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
+			{
+				camera->lastPosition.x = gMap.Size.x * TILE_WIDTH / 2;
+			}
+			if (gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y)
+			{
+				camera->lastPosition.y = gMap.Size.y * TILE_HEIGHT / 2;
+			}
+
+			// Redo LOS for every local human player
+			if (IsPVP(gCampaign.Entry.Mode))
+			{
+				for (int i = 0; i < (int)gPlayerDatas.size; i++)
+				{
+					const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+					if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
+						!IsPlayerHuman(p))
+					{
+						continue;
+					}
+					const TActor *a = ActorGetByUID(p->ActorUID);
+					LOSCalcFrom(
+						&gMap,
+						Vec2iToTile(Vec2iNew(a->tileItem.x, a->tileItem.y)),
+						false);
+				}
+			}
+
 			DoBuffer(
 				&camera->Buffer,
 				camera->lastPosition,
 				X_TILES, noise, centerOffset);
-			SoundSetEars(camera->lastPosition);
-		}
-		else if (CameraIsSingleScreen())
-		{
-			// One screen
-			camera->lastPosition = PlayersGetMidpoint();
-			DoBuffer(
-				&camera->Buffer,
-				camera->lastPosition,
-				X_TILES, noise, centerOffset);
-			SoundSetEars(camera->lastPosition);
+			SoundSetEars(earPos);
 		}
 		else if (numLocalPlayers == 2)
 		{
@@ -235,9 +269,8 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 					idx--;
 					continue;
 				}
-				const TActor *player = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = Vec2iNew(
-					player->tileItem.x, player->tileItem.y);
+				const TActor *a = ActorGetByUID(p->ActorUID);
+				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
 				int clipLeft = (idx & 1) ? w / 2 : 0;
 				int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
@@ -248,6 +281,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 					centerOffsetPlayer.x += w / 2;
 				}
 
+				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
 				DoBuffer(
 					&camera->Buffer,
 					camera->lastPosition,
@@ -276,14 +310,13 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				const int clipTop = (idx < 2) ? 0 : h / 2 - 1;
 				const int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
 				const int clipBottom = (idx < 2) ? h / 2 : h - 1;
-				isLocalPlayerAlive[idx] = IsPlayerAlive(p);
+				isLocalPlayerAlive[idx] = IsPlayerAliveOrDying(p);
 				if (!isLocalPlayerAlive[idx])
 				{
 					continue;
 				}
-				const TActor *player = ActorGetByUID(p->ActorUID);
-				camera->lastPosition =
-					Vec2iNew(player->tileItem.x, player->tileItem.y);
+				const TActor *a = ActorGetByUID(p->ActorUID);
+				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
@@ -299,6 +332,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 				{
 					centerOffsetPlayer.y += h / 4;
 				}
+				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
 				DoBuffer(
 					&camera->Buffer,
 					camera->lastPosition,
@@ -389,7 +423,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 	}
 }
 // Try to follow a player
-void FollowPlayer(Vec2i *pos, const int playerUID)
+static void FollowPlayer(Vec2i *pos, const int playerUID)
 {
 	const PlayerData *p = PlayerDataGetByUID(playerUID);
 	if (p == NULL) return;
@@ -411,8 +445,15 @@ bool CameraIsSingleScreen(void)
 	{
 		return false;
 	}
-	// Always do split screen for PVP
-	if (IsPVP(gCampaign.Entry.Mode)) return false;
+	// Do split screen for PVP, unless whole map fits on camera, or there
+	// are no human players alive or dying, then just do single screen
+	if (IsPVP(gCampaign.Entry.Mode) &&
+		(gMap.Size.x * TILE_WIDTH >= gGraphicsDevice.cachedConfig.Res.x ||
+		gMap.Size.y * TILE_HEIGHT >= gGraphicsDevice.cachedConfig.Res.y) &&
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) > 0)
+	{
+		return false;
+	}
 	Vec2i min;
 	Vec2i max;
 	PlayersGetBoundingRectangle(&min, &max);
