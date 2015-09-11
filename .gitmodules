@@ -1,3 +1,0 @@
-[submodule "src/tests/cbehave"]
-	path = src/tests/cbehave
-	url = https://github.com/cxong/cbehave.git
