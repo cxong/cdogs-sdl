@@ -1,6 +1,3 @@
-[submodule "src/tinydir"]
-	path = src/tinydir
-	url = https://github.com/cxong/tinydir
 [submodule "src/tests/cbehave"]
 	path = src/tests/cbehave
 	url = https://github.com/cxong/cbehave.git
