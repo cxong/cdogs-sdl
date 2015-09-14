@@ -333,6 +333,8 @@ void MapMakeRoom(Map *map, int xOrigin, int yOrigin, int width, int height)
 		}
 	}
 }
+static bool TryPlaceDoorTile(
+	Map *map, const Vec2i v, const Vec2i d, const unsigned short t);
 void MapPlaceDoors(
 	Map *map, Vec2i pos, Vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
@@ -364,10 +366,9 @@ void MapPlaceDoors(
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x, pos.y + size.y / 2 + i);
-			if (IMapGet(map, Vec2iNew(v.x + 1, v.y)) != MAP_WALL &&
-				IMapGet(map, Vec2iNew(v.x - 1, v.y)) != MAP_WALL)
+			if (!TryPlaceDoorTile(map, v, Vec2iNew(1, 0), doorTile))
 			{
-				IMapSet(map, v, doorTile);
+				break;
 			}
 		}
 	}
@@ -379,10 +380,9 @@ void MapPlaceDoors(
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x - 1, pos.y + size.y / 2 + i);
-			if (IMapGet(map, Vec2iNew(v.x + 1, v.y)) != MAP_WALL &&
-				IMapGet(map, Vec2iNew(v.x - 1, v.y)) != MAP_WALL)
+			if (!TryPlaceDoorTile(map, v, Vec2iNew(1, 0), doorTile))
 			{
-				IMapSet(map, v, doorTile);
+				break;
 			}
 		}
 	}
@@ -394,10 +394,9 @@ void MapPlaceDoors(
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y);
-			if (IMapGet(map, Vec2iNew(v.x, v.y + 1)) != MAP_WALL &&
-				IMapGet(map, Vec2iNew(v.x, v.y - 1)) != MAP_WALL)
+			if (!TryPlaceDoorTile(map, v, Vec2iNew(0, 1), doorTile))
 			{
-				IMapSet(map, v, doorTile);
+				break;
 			}
 		}
 	}
@@ -409,13 +408,24 @@ void MapPlaceDoors(
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y + size.y - 1);
-			if (IMapGet(map, Vec2iNew(v.x, v.y + 1)) != MAP_WALL &&
-				IMapGet(map, Vec2iNew(v.x, v.y - 1)) != MAP_WALL)
+			if (!TryPlaceDoorTile(map, v, Vec2iNew(0, 1), doorTile))
 			{
-				IMapSet(map, v, doorTile);
+				break;
 			}
 		}
 	}
+}
+static bool TryPlaceDoorTile(
+	Map *map, const Vec2i v, const Vec2i d, const unsigned short t)
+{
+	if (IMapGet(map, v) == MAP_WALL &&
+		IMapGet(map, Vec2iAdd(v, d)) != MAP_WALL &&
+		IMapGet(map, Vec2iMinus(v, d)) != MAP_WALL)
+	{
+		IMapSet(map, v, t);
+		return true;
+	}
+	return false;
 }
 
 int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)

@@ -504,24 +504,9 @@ static Vec2i GuessCoords(Map *map)
 	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
 }
 
-static int MapFindWallRun(Map *map, Vec2i start, Vec2i d, int len)
-{
-	int wallRun = 0;
-	Vec2i v;
-	int i;
-	for (i = 0, v = start; i < len; i++, v = Vec2iAdd(v, d))
-	{
-		// Check if this is a wall so we can add a door here
-		// Also check if the two tiles aside are not walls
-		if (IMapGet(map, v) == MAP_WALL &&
-			IMapGet(map, Vec2iNew(v.x + d.y, v.y + d.x)) != MAP_WALL &&
-			IMapGet(map, Vec2iNew(v.x - d.y, v.y - d.x)) != MAP_WALL)
-		{
-			wallRun++;
-		}
-	}
-	return wallRun;
-}
+// Find the maximum door size for a wall
+static int FindWallRun(
+	const Map *map, const Vec2i mid, const Vec2i d, const int len);
 static void MapFindAvailableDoors(
 	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4])
 {
@@ -535,9 +520,9 @@ static void MapFindAvailableDoors(
 	{
 		doors[0] = 0;
 	}
-	if (MapFindWallRun(
+	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x, pos.y + 1),
+		Vec2iNew(pos.x, pos.y + size.y / 2),
 		Vec2iNew(0, 1),
 		size.y - 2) < doorMin)
 	{
@@ -548,9 +533,9 @@ static void MapFindAvailableDoors(
 	{
 		doors[1] = 0;
 	}
-	if (MapFindWallRun(
+	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + size.x - 1, pos.y + 1),
+		Vec2iNew(pos.x + size.x - 1, pos.y + size.y / 2),
 		Vec2iNew(0, 1),
 		size.y - 2) < doorMin)
 	{
@@ -561,9 +546,9 @@ static void MapFindAvailableDoors(
 	{
 		doors[2] = 0;
 	}
-	if (MapFindWallRun(
+	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + 1, pos.y),
+		Vec2iNew(pos.x + size.x / 2, pos.y),
 		Vec2iNew(1, 0),
 		size.x - 2) < doorMin)
 	{
@@ -574,12 +559,48 @@ static void MapFindAvailableDoors(
 	{
 		doors[3] = 0;
 	}
-	if (MapFindWallRun(
+	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + size.x - 1, pos.y),
+		Vec2iNew(pos.x + size.x / 2, pos.y + size.y - 1),
 		Vec2iNew(1, 0),
 		size.x - 2) < doorMin)
 	{
 		doors[3] = 0;
 	}
+}
+static int FindWallRun(
+	const Map *map, const Vec2i mid, const Vec2i d, const int len)
+{
+	int run = 0;
+	Vec2i v = mid;
+	int next = 0;
+	bool plus = false;
+	// Find the wall run by starting from a midpoint and expanding outwards in
+	// both directions, in a series 0, 1, -1, 2, -2...
+	for (int i = 0; i < len; i++, run++)
+	{
+		// Check if this is a wall so we can add a door here
+		// Also check if the two tiles aside are not walls
+
+		// Note: we must look for runs
+
+		if (plus)
+		{
+			next += i;
+		}
+		else
+		{
+			next -= i;
+		}
+		v = Vec2iAdd(mid, Vec2iScale(d, next));
+		plus = !plus;
+
+		if (IMapGet(map, v) != MAP_WALL ||
+			IMapGet(map, Vec2iNew(v.x + d.y, v.y + d.x)) == MAP_WALL ||
+			IMapGet(map, Vec2iNew(v.x - d.y, v.y - d.x)) == MAP_WALL)
+		{
+			break;
+		}
+	}
+	return run;
 }
