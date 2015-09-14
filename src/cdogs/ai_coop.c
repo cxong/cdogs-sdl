@@ -124,7 +124,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//   - If closest enemy is close enough
 	//     - Attack enemy
 	//   - else
-	//     - Go to nearest player
+	//     - Go to nearest player if too far, or away if too close
 
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 	const Vec2i actorTilePos = Vec2iToTile(actorRealPos);
@@ -243,8 +243,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	{
 		distanceTooFarFromPlayer = 2;
 	}
-	if (closestPlayer &&
-		minDistance2 > distanceTooFarFromPlayer*distanceTooFarFromPlayer*16*16)
+	if (closestPlayer && minDistance2 > SQUARED(distanceTooFarFromPlayer*16))
 	{
 		ActorSetAIState(actor, AI_STATE_FOLLOW);
 		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
@@ -328,12 +327,20 @@ static int AICoopGetCmdNormal(TActor *actor)
 	}
 
 	// Otherwise, just go towards the closest player as long as we don't
-	// run into them
-	if (closestPlayer && minDistance2 > 4*4*16*16/3/3)
+	// run into them, but keep away if we're too close
+	if (closestPlayer)
 	{
 		ActorSetAIState(actor, AI_STATE_FOLLOW);
-		return SmartGoto(
-			actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
+		if (minDistance2 > SQUARED(2*16))
+		{
+			return SmartGoto(
+				actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
+		}
+		else if (minDistance2 < SQUARED(4*16/3))
+		{
+			return
+				CmdGetReverse(AIGotoDirect(actor->Pos, closestPlayer->Pos));
+		}
 	}
 
 	ActorSetAIState(actor, AI_STATE_IDLE);

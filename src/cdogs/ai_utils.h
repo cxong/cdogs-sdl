@@ -71,6 +71,7 @@ bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d);
 // destroyObjects - if true, ignore obstructing objects
 //                - if false, will pathfind around them
 int AIGoto(TActor *actor, Vec2i target, bool ignoreObjects);
+int AIGotoDirect(const Vec2i a, const Vec2i p);
 int AIHunt(TActor *actor, Vec2i targetPos);
 int AIHuntClosest(TActor *actor);
 int AIRetreatFrom(TActor *actor, const Vec2i from);

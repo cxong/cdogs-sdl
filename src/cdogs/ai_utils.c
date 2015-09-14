@@ -455,7 +455,7 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 	return pathCount >= 1;
 }
 
-static int AIGotoDirect(Vec2i a, Vec2i p)
+int AIGotoDirect(const Vec2i a, const Vec2i p)
 {
 	int cmd = 0;
 
@@ -467,6 +467,7 @@ static int AIGotoDirect(Vec2i a, Vec2i p)
 
 	return cmd;
 }
+
 // Follow the current A* path
 static int AStarFollow(
 	AIGotoContext *c, Vec2i currentTile, TTileItem *i, Vec2i a)
