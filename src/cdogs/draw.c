@@ -456,7 +456,7 @@ static void DrawObjectiveHighlight(
 		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
 	const ObjectiveDef *o = CArrayGet(&gMission.Objectives, objective);
 	color_t color = o->color;
-	int pulsePeriod = FPS_FRAMELIMIT;
+	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
 	int alphaUnscaled =
 		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
 	if (alphaUnscaled > 255)

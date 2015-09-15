@@ -569,7 +569,7 @@ static Config ConfigLoadDefault(void)
 		"Difficulty", DIFFICULTY_NORMAL,
 		DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD,
 		StrDifficulty, DifficultyStr));
-	ConfigGroupAdd(&game, ConfigNewBool("SlowMotion", false));
+	ConfigGroupAdd(&game, ConfigNewInt("FPS", 70, 10, 120, 10, NULL, NULL));
 	ConfigGroupAdd(&game,
 		ConfigNewInt("EnemyDensity", 100, 25, 200, 25, NULL, PercentStr));
 	ConfigGroupAdd(&game,

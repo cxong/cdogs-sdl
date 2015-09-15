@@ -215,7 +215,7 @@ bool RunGame(struct MissionOptions *m, Map *map)
 		&data, RunGameUpdate, &data, RunGameDraw);
 	data.loop.InputData = &data;
 	data.loop.InputFunc = RunGameInput;
-	data.loop.FPS = FPS_FRAMELIMIT;
+	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
 
@@ -327,12 +327,6 @@ static GameLoopResult RunGameUpdate(void *data)
 		(rData->pausingDevice != INPUT_DEVICE_UNSET || rData->isMap))
 	{
 		return UPDATE_RESULT_DRAW;
-	}
-
-	// If slow motion, update every other frame
-	if (ConfigGetBool(&gConfig, "Game.SlowMotion") && (rData->loop.Frames & 1))
-	{
-		return UPDATE_RESULT_OK;
 	}
 
 	// Update all the things in the game

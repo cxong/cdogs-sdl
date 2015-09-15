@@ -30,10 +30,11 @@
 
 #include <string.h>
 
+#include "config.h"
 #include "sys_config.h"
 
-#define MAX_SHAKE (100 * FPS_FRAMELIMIT / 100)
-#define SHAKE_STANDARD (70 * 1 * FPS_FRAMELIMIT / 100)
+#define MAX_SHAKE (100 * ConfigGetInt(&gConfig, "Game.FPS") / 100)
+#define SHAKE_STANDARD (70 * 1 * ConfigGetInt(&gConfig, "Game.FPS") / 100)
 
 
 ScreenShake ScreenShakeZero(void)
@@ -45,7 +46,8 @@ ScreenShake ScreenShakeZero(void)
 
 ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier)
 {
-	int extra = force * multiplier * FPS_FRAMELIMIT / 100;
+	const int extra =
+		force * multiplier * ConfigGetInt(&gConfig, "Game.FPS") / 100;
 	s += extra;
 	/* So we don't shake too much :) */
 	s = MIN(s, MAX_SHAKE);
