@@ -129,8 +129,7 @@ Vec2i GetPlayerCenter(
 			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
 		const TActor *actor = ActorGetByUID(pData->ActorUID);
 		const Vec2i p = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		center = Vec2iAdd(
-			Vec2iAdd(p, Vec2iScale(pCenter, -1)), screenCenter);
+		center = Vec2iAdd(Vec2iMinus(p, pCenter), screenCenter);
 	}
 	else
 	{
@@ -150,8 +149,7 @@ Vec2i GetPlayerCenter(
 			CASSERT(false, "invalid number of players");
 		}
 	}
-	// Add draw buffer offset
-	return Vec2iMinus(center, Vec2iNew(camera->Buffer.dx, camera->Buffer.dy));
+	return center;
 }
 
 typedef struct
@@ -202,7 +200,9 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
-	EventReset(&gEventHandlers, crosshair);
+	EventReset(
+		&gEventHandlers, crosshair,
+		PicManagerGetPic(&gPicManager, "crosshair_trail"));
 
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);

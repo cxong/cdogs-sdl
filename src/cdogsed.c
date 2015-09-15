@@ -1334,7 +1334,7 @@ int main(int argc, char *argv[])
 	// Not needed by editor; used as work-around for strange OSX linker error
 	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 
-	EventInit(&gEventHandlers, NULL, false);
+	EventInit(&gEventHandlers, NULL, NULL, false);
 
 	for (i = 1; i < argc; i++)
 	{

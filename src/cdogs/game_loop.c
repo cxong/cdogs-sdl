@@ -54,8 +54,9 @@ GameLoopData GameLoopDataNew(
 
 void GameLoop(GameLoopData *data)
 {
-	EventReset(&gEventHandlers, gEventHandlers.mouse.cursor);
-
+	EventReset(
+		&gEventHandlers,
+		gEventHandlers.mouse.cursor, gEventHandlers.mouse.trail);
 	GameLoopResult result = UPDATE_RESULT_OK;
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;

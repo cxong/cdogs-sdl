@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MOUSE
-#define __MOUSE
+#pragma once
 
 #include <SDL_stdinc.h>
 
@@ -42,13 +41,15 @@ typedef struct
 	Vec2i previousPos;
 	Vec2i currentPos;
 	Pic *cursor;
+	Pic *trail;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 
 	bool hideMouse;
+	Vec2i mouseMovePos;
 } Mouse;
 
-void MouseInit(Mouse *mouse, Pic *cursor, bool hideMouse);
+void MouseInit(Mouse *mouse, Pic *cursor, Pic *trail, const bool hideMouse);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);
@@ -57,6 +58,7 @@ int MouseHasMoved(Mouse *mouse);
 int MouseGetPressed(Mouse *mouse);
 int MouseIsDown(Mouse *mouse, int button);
 int MouseIsPressed(Mouse *mouse, int button);
-void MouseDraw(Mouse *mouse);
-
-#endif
+// Get mouse movement from a screen position
+// Note: also sets whether the mouse trail is drawn, and from where
+int MouseGetMove(Mouse *mouse, const Vec2i pos);
+void MouseDraw(const Mouse *mouse);

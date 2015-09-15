@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
 
 	MusicPlayMenu(&gSoundDevice);
 
-	EventInit(&gEventHandlers, NULL, true);
+	EventInit(&gEventHandlers, NULL, NULL, true);
 	NetClientInit(&gNetClient);
 	NetServerInit(&gNetServer);
 

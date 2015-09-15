@@ -60,23 +60,26 @@
 
 EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, Pic *mouseCursor, bool hideMouse)
+void EventInit(
+	EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail,
+	const bool hideMouse)
 {
 	memset(handlers, 0, sizeof *handlers);
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, mouseCursor, hideMouse);
+	MouseInit(&handlers->mouse, mouseCursor, mouseTrail, hideMouse);
 }
 void EventTerminate(EventHandlers *handlers)
 {
 	JoyTerminate(&handlers->joysticks);
 }
-void EventReset(EventHandlers *handlers, Pic *mouseCursor)
+void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 {
 	handlers->HasResolutionChanged = 0;
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, mouseCursor, handlers->mouse.hideMouse);
+	MouseInit(
+		&handlers->mouse, mouseCursor, mouseTrail, handlers->mouse.hideMouse);
 }
 
 void EventPoll(EventHandlers *handlers, Uint32 ticks)
@@ -144,7 +147,6 @@ static int GetKeyboardCmd(
 
 	return cmd;
 }
-#define MOUSE_MOVE_DEAD_ZONE 12
 static int GetMouseCmd(
 	Mouse *mouse, bool isPressed, int useMouseMove, Vec2i pos)
 {
@@ -153,21 +155,7 @@ static int GetMouseCmd(
 
 	if (useMouseMove)
 	{
-		int dx = abs(mouse->currentPos.x - pos.x);
-		int dy = abs(mouse->currentPos.y - pos.y);
-		if (dx > MOUSE_MOVE_DEAD_ZONE || dy > MOUSE_MOVE_DEAD_ZONE)
-		{
-			if (2 * dx > dy)
-			{
-				if (pos.x < mouse->currentPos.x)			cmd |= CMD_RIGHT;
-				else if (pos.x > mouse->currentPos.x)		cmd |= CMD_LEFT;
-			}
-			if (2 * dy > dx)
-			{
-				if (pos.y < mouse->currentPos.y)			cmd |= CMD_DOWN;
-				else if (pos.y > mouse->currentPos.y)		cmd |= CMD_UP;
-			}
-		}
+		cmd |= MouseGetMove(mouse, pos);
 	}
 	else
 	{
