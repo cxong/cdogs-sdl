@@ -38,6 +38,30 @@
 static NVec2i PlaceActor(Map *map)
 {
 	Vec2i pos;
+
+	if (HasExit(gCampaign.Entry.Mode))
+	{
+		// First, try to place at least half the map away from the exit
+		const int halfMap =
+			MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
+		const Vec2i exitPos = MapGetExitPos(map);
+		// Don't try forever trying to place
+		for (int i = 0; i < 100; i++)
+		{
+			const Vec2i realPos = Vec2iNew(
+				rand() % (map->Size.x * TILE_WIDTH),
+				rand() % (map->Size.y * TILE_HEIGHT));
+			pos = Vec2iFull2Real(realPos);
+			if (abs(realPos.x - exitPos.x) > halfMap &&
+				abs(realPos.y - exitPos.y) > halfMap &&
+				MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
+			{
+				return Vec2i2Net(pos);
+			}
+		}
+	}
+
+	// Try to place randomly
 	do
 	{
 		pos.x = ((rand() % (map->Size.x * TILE_WIDTH)) << 8);

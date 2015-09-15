@@ -142,8 +142,7 @@ void MapChangeFloor(
 	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow);
 void MapShowExitArea(Map *map);
 // Returns the center of the tile that's the middle of the exit area
-// Used for compass arrows
-Vec2i MapGetExitPos(Map *m);
+Vec2i MapGetExitPos(const Map *m);
 
 void MapMarkAsVisited(Map *map, Vec2i pos);
 // Note: used by editor

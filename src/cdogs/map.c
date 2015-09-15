@@ -305,7 +305,7 @@ void MapShowExitArea(Map *map)
 	}
 }
 
-Vec2i MapGetExitPos(Map *m)
+Vec2i MapGetExitPos(const Map *m)
 {
 	return Vec2iCenterOfTile(
 		Vec2iScaleDiv(Vec2iAdd(m->ExitStart, m->ExitEnd), 2));
