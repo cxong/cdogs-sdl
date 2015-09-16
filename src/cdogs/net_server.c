@@ -331,12 +331,28 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
 	}
 
+	// Send all tiles
+	// TODO: RLE?
+	Vec2i pos;
+	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
+	{
+		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
+		{
+			const Tile *t = MapGetTile(&gMap, pos);
+			NTileSet ts = NTileSet_init_default;
+			ts.Pos = Vec2i2Net(pos);
+			if (t->pic != NULL) strcpy(ts.PicName, t->pic->name);
+			if (t->picAlt != NULL) strcpy(ts.PicAltName, t->picAlt->name);
+			ts.Flags = t->flags;
+			NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
+		}
+	}
+
 	// Send all the tiles visited so far
 	NExploreTiles et = NExploreTiles_init_default;
 	et.Runs_count = 0;
 	et.Runs[0].Run = 0;
 	bool run = false;
-	Vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
