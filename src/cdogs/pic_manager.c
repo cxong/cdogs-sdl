@@ -32,6 +32,7 @@
 #include <tinydir/tinydir.h>
 
 #include "files.h"
+#include "log.h"
 
 PicManager gPicManager;
 
@@ -223,8 +224,8 @@ static void PicManagerLoadDirImpl(
 				SDL_Surface *data = IMG_Load_RW(rwops, 0);
 				if (!data)
 				{
-					perror("Cannot load image");
-					fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
+					LOG(LM_MAIN, LL_ERROR, "Cannot load image");
+					LOG(LM_MAIN, LL_ERROR, "IMG_Load: %s", IMG_GetError());
 				}
 				else
 				{
