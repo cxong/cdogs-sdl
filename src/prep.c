@@ -506,6 +506,9 @@ bool GameOptions(const GameMode gm)
 		I("QuickPlay.EnemyHealth");
 		I("QuickPlay.EnemiesWithExplosives");
 		I("QuickPlay.ItemCount");
+		// Force start server to be false - we don't support multiplayer with
+		// this game mode
+		ConfigGet(&gConfig, "StartServer")->u.Bool.Value = false;
 		break;
 	default:
 		CASSERT(false, "unknown game mode");
