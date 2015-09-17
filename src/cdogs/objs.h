@@ -87,6 +87,8 @@ typedef struct MobileObject
 	int range;
 	int flags;
 	int soundLock;
+	// Don't trigger special effects too frequently
+	int specialLock;
 	TTileItem tileItem;
 	BulletUpdateFunc updateFunc;
 	bool isInUse;

@@ -62,6 +62,7 @@
 BulletClasses gBulletClasses;
 
 #define SOUND_LOCK_MOBILE_OBJECT 12
+#define SPECIAL_LOCK 12
 
 
 // TODO: use map structure?
@@ -144,6 +145,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
 	obj->count += ticks;
 	obj->soundLock = MAX(0, obj->soundLock - ticks);
+	obj->specialLock = MAX(0, obj->specialLock - ticks);
 	if (obj->count < obj->bulletClass->Delay)
 	{
 		return true;
@@ -380,7 +382,7 @@ static HitType HitItem(
 	// Don't hit if no damage dealt
 	// This covers non-damaging debris explosions
 	if (obj->bulletClass->Power <= 0 &&
-		obj->bulletClass->Special == SPECIAL_NONE)
+		(obj->specialLock > 0 || obj->bulletClass->Special == SPECIAL_NONE))
 	{
 		return HIT_NONE;
 	}
@@ -434,6 +436,10 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 	if (hData->Obj->soundLock <= 0)
 	{
 		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+	}
+	if (hData->Obj->specialLock <= 0)
+	{
+		hData->Obj->specialLock += SPECIAL_LOCK;
 	}
 
 bail:
@@ -768,7 +774,6 @@ void BulletAdd(const NAddBullet add)
 
 	obj->tileItem.kind = KIND_MOBILEOBJECT;
 	obj->tileItem.id = i;
-	obj->soundLock = 0;
 	obj->isInUse = true;
 	obj->tileItem.x = obj->tileItem.y = -1;
 	obj->tileItem.getPicFunc = NULL;
