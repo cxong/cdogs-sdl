@@ -165,7 +165,7 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 static int FindLocalPlayerIndex(const int playerUID)
 {
 	const PlayerData *p = PlayerDataGetByUID(playerUID);
-	if (!p->IsLocal)
+	if (p == NULL || !p->IsLocal)
 	{
 		// This update was for a non-local player; abort
 		return -1;
