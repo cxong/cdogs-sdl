@@ -420,83 +420,90 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		return false;
 	}
 
-	Vec2i realPos = Vec2iFull2Real(pos);
-	TTileItem *target = CollideGetFirstItem(
-		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor),
-		IsPVP(gCampaign.Entry.Mode));
-	if (target)
+	// Check for object collisions
+	// Only do this if we are the owner of the actor, since this may lead to
+	// melee damage
+	if ((!gCampaign.IsClient && actor->PlayerUID < 0) ||
+		ActorIsLocalPlayer(actor->uid))
 	{
-		Weapon *gun = ActorGetGun(actor);
-		const TObject *object = target->kind == KIND_OBJECT ?
-			CArrayGet(&gObjs, target->id) : NULL;
-		if (!gun->Gun->CanShoot && actor->health > 0 &&
-			(!object || !ObjIsDangerous(object)))
+		Vec2i realPos = Vec2iFull2Real(pos);
+		TTileItem *target = CollideGetFirstItem(
+			&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
+			CalcCollisionTeam(1, actor),
+			IsPVP(gCampaign.Entry.Mode));
+		if (target)
 		{
-			if (CanHit(actor->flags, actor->uid, target))
+			Weapon *gun = ActorGetGun(actor);
+			const TObject *object = target->kind == KIND_OBJECT ?
+				CArrayGet(&gObjs, target->id) : NULL;
+			if (!gun->Gun->CanShoot && actor->health > 0 &&
+				(!object || !ObjIsDangerous(object)))
 			{
-				// Tell the server that we want to melee something
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
-				e.u.Melee.UID = actor->uid;
-				strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
-				e.u.Melee.TargetKind = target->kind;
-				switch (target->kind)
+				if (CanHit(actor->flags, actor->uid, target))
 				{
-				case KIND_CHARACTER:
-					e.u.Melee.TargetUID =
-						((const TActor *)CArrayGet(&gActors, target->id))->uid;
-					e.u.Melee.HitType = HIT_FLESH;
-					break;
-				case KIND_OBJECT:
-					e.u.Melee.TargetUID =
-						((const TObject *)CArrayGet(&gObjs, target->id))->uid;
-					e.u.Melee.HitType = HIT_OBJECT;
-					break;
-				default:
-					CASSERT(false, "cannot damage target kind");
-					break;
+					// Tell the server that we want to melee something
+					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
+					e.u.Melee.UID = actor->uid;
+					strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
+					e.u.Melee.TargetKind = target->kind;
+					switch (target->kind)
+					{
+					case KIND_CHARACTER:
+						e.u.Melee.TargetUID =
+							((const TActor *)CArrayGet(&gActors, target->id))->uid;
+						e.u.Melee.HitType = HIT_FLESH;
+						break;
+					case KIND_OBJECT:
+						e.u.Melee.TargetUID =
+							((const TObject *)CArrayGet(&gObjs, target->id))->uid;
+						e.u.Melee.HitType = HIT_OBJECT;
+						break;
+					default:
+						CASSERT(false, "cannot damage target kind");
+						break;
+					}
+					if (gun->soundLock <= 0)
+					{
+						gun->soundLock += gun->Gun->SoundLockLength;
+					}
+					else
+					{
+						e.u.Melee.HitType = (int)HIT_NONE;
+					}
+					GameEventsEnqueue(&gGameEvents, e);
 				}
-				if (gun->soundLock <= 0)
-				{
-					gun->soundLock += gun->Gun->SoundLockLength;
-				}
-				else
-				{
-					e.u.Melee.HitType = (int)HIT_NONE;
-				}
-				GameEventsEnqueue(&gGameEvents, e);
+				return false;
 			}
-			return false;
-		}
 
-		Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-		if (CollideGetFirstItem(
-			&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor),
-			IsPVP(gCampaign.Entry.Mode)))
-		{
-			pos.y = actor->Pos.y;
-		}
-		Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-		if (CollideGetFirstItem(
-			&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor),
-			IsPVP(gCampaign.Entry.Mode)))
-		{
-			pos.x = actor->Pos.x;
-		}
-		if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
-		{
-			// Both x-only or y-only movement are viable,
-			// i.e. we are colliding corner vs corner
-			// Arbitrarily choose x-only movement
-			pos.y = actor->Pos.y;
-		}
-		realPos = Vec2iFull2Real(pos);
-		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-			IsCollisionWithWall(realPos, actor->tileItem.size))
-		{
-			return false;
+			Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
+			if (CollideGetFirstItem(
+				&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
+				CalcCollisionTeam(1, actor),
+				IsPVP(gCampaign.Entry.Mode)))
+			{
+				pos.y = actor->Pos.y;
+			}
+			Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
+			if (CollideGetFirstItem(
+				&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
+				CalcCollisionTeam(1, actor),
+				IsPVP(gCampaign.Entry.Mode)))
+			{
+				pos.x = actor->Pos.x;
+			}
+			if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
+			{
+				// Both x-only or y-only movement are viable,
+				// i.e. we are colliding corner vs corner
+				// Arbitrarily choose x-only movement
+				pos.y = actor->Pos.y;
+			}
+			realPos = Vec2iFull2Real(pos);
+			if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
+				IsCollisionWithWall(realPos, actor->tileItem.size))
+			{
+				return false;
+			}
 		}
 	}
 
