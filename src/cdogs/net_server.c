@@ -226,6 +226,7 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			OnConnect(n, event);
 			break;
 		case GAME_EVENT_CLIENT_READY:
+			CASSERT(peerId >= 0, "peer id unset");
 			// Flush game events to make sure we add the players
 			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 			// Reset player data

@@ -219,6 +219,9 @@ bool RunGame(struct MissionOptions *m, Map *map)
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
 
+	// Flush events
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+
 	PowerupSpawnerTerminate(&data.healthSpawner);
 	for (int i = 0; i < (int)data.ammoSpawners.size; i++)
 	{
