@@ -93,7 +93,7 @@ void NetServerClose(NetServer *n)
 {
 	if (n->server)
 	{
-		for (int i = 0; i < (int)n->server->connectedPeers; i++)
+		for (int i = 0; i < (int)n->server->peerCount; i++)
 		{
 			ENetPeer *peer = n->server->peers + i;
 			enet_peer_disconnect_now(peer, 0);
@@ -421,10 +421,11 @@ void NetServerSendMsg(
 		LOG(LM_NET, LL_TRACE, "send msg(%d) to peers(%d)",
 			(int)e, (int)n->server->connectedPeers);
 		// Find the peer and send
-		for (int i = 0; i < (int)n->server->connectedPeers; i++)
+		for (int i = 0; i < (int)n->server->peerCount; i++)
 		{
 			ENetPeer *peer = n->server->peers + i;
-			if (((NetPeerData *)peer->data)->Id == peerId)
+			if (peer->data != NULL &&
+				((NetPeerData *)peer->data)->Id == peerId)
 			{
 				enet_peer_send(peer, 0, NetEncode(e, data));
 				return;
