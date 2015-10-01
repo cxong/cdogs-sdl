@@ -330,9 +330,9 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// run into them, but keep away if we're too close
 	if (closestPlayer)
 	{
-		ActorSetAIState(actor, AI_STATE_FOLLOW);
 		if (minDistance2 > SQUARED(2*16))
 		{
+			ActorSetAIState(actor, AI_STATE_FOLLOW);
 			return SmartGoto(
 				actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
 		}
