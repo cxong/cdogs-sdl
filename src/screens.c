@@ -50,7 +50,6 @@
 
 #include <time.h>
 
-#include <cdogs/actor_placement.h>
 #include <cdogs/ai.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/game_events.h>
@@ -112,17 +111,6 @@ bail:
 	GameEventsTerminate(&gGameEvents);
 }
 
-static void AddAndPlacePlayers(void)
-{
-	Vec2i firstPos = Vec2iZero();
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->Ready) continue;
-		firstPos = PlacePlayer(&gMap, p, firstPos, true);
-	}
-}
-
 
 static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 {
@@ -155,18 +143,18 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 		CampaignAndMissionSetup(1, co, &gMission);
 
-		if (IsGameOptionsNeeded(gCampaign.Entry.Mode))
+		if (IsGameOptionsNeeded(co->Entry.Mode))
 		{
 			debug(D_NORMAL, ">> Game options\n");
-			if (!GameOptions(gCampaign.Entry.Mode))
+			if (!GameOptions(co->Entry.Mode))
 			{
 				run = false;
 				goto bail;
 			}
-			gCampaign.OptionsSet = true;
+			co->OptionsSet = true;
 
 			// If enabled, start net server
-			if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+			if (!co->IsClient && ConfigGetBool(&gConfig, "StartServer"))
 			{
 				NetServerOpen(&gNetServer);
 			}
@@ -189,7 +177,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
-		if (gCampaign.IsClient)
+		if (co->IsClient)
 		{
 			if (!ScreenWaitForGameStart())
 			{
@@ -198,45 +186,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			}
 		}
 
-		MapLoad(&gMap, &gMission, co);
-
-		// Seed random if PVP mode (otherwise players will always spawn in same
-		// position)
-		if (IsPVP(co->Entry.Mode))
-		{
-			srand((unsigned int)time(NULL));
-		}
-
-		if (!gCampaign.IsClient)
-		{
-			MapLoadDynamic(&gMap, &gMission, &co->Setting.characters);
-
-			// Reset players for the mission
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
-			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				// Only reset for local players; for remote ones wait for the
-				// client ready message
-				if (!p->IsLocal) continue;
-				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-				e.u.PlayerData = PlayerDataMissionReset(p);
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			// Process the events to force add the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
-
-			// Note: place players first,
-			// as bad guys are placed away from players
-			AddAndPlacePlayers();
-			if (!IsPVP(co->Entry.Mode))
-			{
-				InitializeBadGuys();
-				CreateEnemies();
-			}
-		}
-		MusicPlayGame(
-			&gSoundDevice, gCampaign.Entry.Path, gMission.missionData->Song);
-		run = RunGame(&gMission, &gMap);
+		run = RunGame(co, &gMission, &gMap);
 		// Don't quit if all players died, that's normal for PVP modes
 		if (IsPVP(co->Entry.Mode) &&
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)

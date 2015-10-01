@@ -64,8 +64,14 @@ int PickupsGetNextUID(void)
 static const Pic *GetPickupPic(const int id, Vec2i *offset);
 void PickupAdd(const NAddPickup ap)
 {
+	// Check if existing pickup
+	Pickup *p = PickupGetByUID(ap.UID);
+	if (p != NULL && p->isInUse)
+	{
+		PickupDestroy(ap.UID);
+	}
 	// Find an empty slot in pickup list
-	Pickup *p = NULL;
+	p = NULL;
 	int i;
 	for (i = 0; i < (int)gPickups.size; i++)
 	{

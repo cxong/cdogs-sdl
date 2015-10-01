@@ -78,7 +78,13 @@
 #include "weapon_menu.h"
 
 
-bool ScreenWait(const char *message, void (*checkFunc)(menu_t *, void *))
+typedef struct
+{
+	MenuSystem *ms;
+	void *data;
+} ScreenWaitData;
+static bool ScreenWait(
+	const char *message, void (*checkFunc)(menu_t *, void *), void *data)
 {
 	MenuSystem ms;
 	MenuSystemInit(
@@ -88,7 +94,11 @@ bool ScreenWait(const char *message, void (*checkFunc)(menu_t *, void *))
 	ms.allowAborts = true;
 	ms.root = ms.current = MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSetPostUpdateFunc(ms.root, checkFunc, &ms, false);
+	ScreenWaitData *swData;
+	CMALLOC(swData, sizeof *swData);
+	swData->ms = &ms;
+	swData->data = data;
+	MenuSetPostUpdateFunc(ms.root, checkFunc, swData, true);
 
 	MenuLoop(&ms);
 	const bool ok = !ms.hasAbort;
@@ -103,7 +113,7 @@ bool ScreenWaitForCampaignDef(void)
 	sprintf(buf, "Connecting to %u.%u.%u.%u:%u...",
 		NET_IP_TO_CIDR_FORMAT(gNetClient.peer->address.host),
 		gNetClient.peer->address.port);
-	return ScreenWait(buf, CheckCampaignDefComplete);
+	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
 static void CheckCampaignDefComplete(menu_t *menu, void *data)
 {
@@ -112,8 +122,8 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 		if (gCampaign.IsError)
 		{
 			// Failed to load campaign; signal that we want to abort
-			MenuSystem *ms = data;
-			ms->hasAbort = true;
+			ScreenWaitData *swData = data;
+			swData->ms->hasAbort = true;
 		}
 		else
 		{
@@ -759,10 +769,13 @@ static void PlayerEquipDraw(void *data)
 static void CheckGameStart(menu_t *menu, void *data);
 bool ScreenWaitForGameStart(void)
 {
-	// Tell server we're ready
 	gNetClient.Ready = true;
-	NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
-	return ScreenWait("Waiting for game start...", CheckGameStart);
+	if (!gMission.HasStarted)
+	{
+		// Tell server we're ready
+		NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
+	}
+	return ScreenWait("Waiting for game start...", CheckGameStart, NULL);
 }
 static void CheckGameStart(menu_t *menu, void *data)
 {
@@ -774,8 +787,8 @@ static void CheckGameStart(menu_t *menu, void *data)
 	// Check disconnections
 	if (!NetClientIsConnected(&gNetClient))
 	{
-		MenuSystem *ms = data;
-		ms->hasAbort = true;
+		ScreenWaitData *swData = data;
+		swData->ms->hasAbort = true;
 		menu->type = MENU_TYPE_RETURN;
 	}
 }

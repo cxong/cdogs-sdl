@@ -56,6 +56,7 @@
 
 #include <SDL.h>
 
+#include <cdogs/actor_placement.h>
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
 #include <cdogs/ai_coop.h>
@@ -170,8 +171,52 @@ typedef struct
 static void RunGameInput(void *data);
 static GameLoopResult RunGameUpdate(void *data);
 static void RunGameDraw(void *data);
-bool RunGame(struct MissionOptions *m, Map *map)
+bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
+	MapLoad(map, m, co);
+
+	// Seed random if PVP mode (otherwise players will always spawn in same
+	// position)
+	if (IsPVP(co->Entry.Mode))
+	{
+		srand((unsigned int)time(NULL));
+	}
+
+	if (!co->IsClient)
+	{
+		MapLoadDynamic(map, m, &co->Setting.characters);
+
+		// Reset players for the mission
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			// Only reset for local players; for remote ones wait for the
+			// client ready message
+			if (!p->IsLocal) continue;
+			GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+			e.u.PlayerData = PlayerDataMissionReset(p);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		// Process the events to force add the players
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+
+		// Note: place players first,
+		// as bad guys are placed away from players
+		Vec2i firstPos = Vec2iZero();
+		for (int i = 0; i < (int)gPlayerDatas.size; i++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->Ready) continue;
+			firstPos = PlacePlayer(&gMap, p, firstPos, true);
+		}
+		if (!IsPVP(co->Entry.Mode))
+		{
+			InitializeBadGuys();
+			CreateEnemies();
+		}
+	}
+	MusicPlayGame(&gSoundDevice, co->Entry.Path, m->missionData->Song);
+
 	RunGameData data;
 	memset(&data, 0, sizeof data);
 	data.m = m;
