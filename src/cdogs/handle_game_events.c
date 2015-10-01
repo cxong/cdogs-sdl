@@ -272,12 +272,15 @@ static void HandleGameEvent(
 					&b->HitSound, (HitType)e.u.Melee.HitType,
 					Vec2iFull2Real(a->Pos));
 			}
-			Damage(
-				Vec2iZero(),
-				b->Power,
-				a->flags, a->PlayerUID, a->uid,
-				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
-				SPECIAL_NONE);
+			if (!gCampaign.IsClient)
+			{
+				Damage(
+					Vec2iZero(),
+					b->Power,
+					a->flags, a->PlayerUID, a->uid,
+					(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
+					SPECIAL_NONE);
+			}
 		}
 		break;
 	case GAME_EVENT_ADD_PICKUP:

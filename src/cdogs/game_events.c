@@ -84,7 +84,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, true, NActorAddAmmo_fields },
 	{ GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields },
 	{ GAME_EVENT_ACTOR_DIE, true, false, true, true, NActorDie_fields },
-	{ GAME_EVENT_ACTOR_MELEE, false, true, true, true, NActorMelee_fields },
+	{ GAME_EVENT_ACTOR_MELEE, true, true, true, true, NActorMelee_fields },
 
 	{ GAME_EVENT_ADD_PICKUP, true, false, true, true, NAddPickup_fields },
 	{ GAME_EVENT_REMOVE_PICKUP, true, false, true, true, NRemovePickup_fields },
