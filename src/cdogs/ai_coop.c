@@ -829,8 +829,10 @@ static bool IsPosCloseEnoughToPlayer(
 	{
 		return true;
 	}
-	return DistanceSquared(realPos, Vec2iFull2Real(player->Pos)) <
-		distanceTooFarFromPlayer*distanceTooFarFromPlayer * 16 * 16;
+	const int distanceFromPlayer2 =
+		DistanceSquared(realPos, Vec2iFull2Real(player->Pos));
+	const int distanceMax2 = SQUARED(distanceTooFarFromPlayer * 16);
+	return distanceFromPlayer2 < distanceMax2;
 }
 // Navigate to the current objective
 // If the objective is destructible and it makes sense to shoot it,
