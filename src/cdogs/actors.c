@@ -411,6 +411,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 {
 	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
 
+	actor->hasCollided = true;
 	actor->CanPickupSpecial = false;
 
 	const Vec2i oldPos = actor->Pos;
@@ -510,6 +511,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	actor->Pos = pos;
 	OnMove(actor);
 
+	actor->hasCollided = false;
 	return true;
 }
 // Get a movement position that is constrained by collisions
@@ -1005,7 +1007,7 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 	}
 
 	// If we have changed our move commands, send the move event
-	if (cmd != actor->lastCmd)
+	if (cmd != actor->lastCmd || actor->hasCollided)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 		e.u.ActorMove.UID = actor->uid;
