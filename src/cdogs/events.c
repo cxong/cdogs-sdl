@@ -315,24 +315,24 @@ const char *InputGetButtonName(
 const char *InputGetButtonNameColor(
 	const input_device_e d, const int dIndex, const int cmd, color_t *color)
 {
-#ifdef __GCWZERO__
-	*color = colorBlue;
-	switch (cmd)
-	{
-	case CMD_LEFT: return "left";
-	case CMD_RIGHT: return "right";
-	case CMD_UP: return "up";
-	case CMD_DOWN: return "down";
-	case CMD_BUTTON1: return "A";
-	case CMD_BUTTON2: return "B";
-	case CMD_MAP: *color = colorGray; return "L";
-	case CMD_ESC: return "SELECT";
-	default: CASSERT(false, "unknown button"); return NULL;
-	}
-#else
 	switch (d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
+	#ifdef __GCWZERO__
+		*color = colorBlue;
+		switch (cmd)
+		{
+			case CMD_LEFT: return "left";
+			case CMD_RIGHT: return "right";
+			case CMD_UP: return "up";
+			case CMD_DOWN: return "down";
+			case CMD_BUTTON1: return "A";
+			case CMD_BUTTON2: return "B";
+			case CMD_MAP: *color = colorGray; return "L";
+			case CMD_ESC: return "SELECT";
+			default: CASSERT(false, "unknown button"); return NULL;
+		}
+	#else
 		{
 			const input_keys_t *keys =
 				&gEventHandlers.keyboard.PlayerKeys[dIndex];
@@ -349,6 +349,7 @@ const char *InputGetButtonNameColor(
 			default: CASSERT(false, "unknown button"); return NULL;
 			}
 		}
+	#endif
 		break;
 	case INPUT_DEVICE_MOUSE:
 		switch (cmd)
@@ -373,7 +374,6 @@ const char *InputGetButtonNameColor(
 		CASSERT(false, "unknown input device");
 		return NULL;
 	}
-#endif
 }
 void InputGetDirectionNames(
 	char *buf, const input_device_e d, const int dIndex)
