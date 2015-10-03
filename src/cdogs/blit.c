@@ -54,11 +54,11 @@
 #include <string.h>
 #include <math.h>
 
-#include <hqx/hqx.h>
 #include <SDL.h>
 
 #include "config.h"
 #include "grafx.h"
+#include "hqx/hqx.h"
 #include "palette.h"
 #include "utils.h" /* for debug() */
 

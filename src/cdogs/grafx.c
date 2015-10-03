@@ -53,7 +53,6 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
-#include <hqx/hqx.h>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 
@@ -61,6 +60,7 @@
 #include "config.h"
 #include "defs.h"
 #include "grafx_bg.h"
+#include "hqx/hqx.h"
 #include "log.h"
 #include "palette.h"
 #include "files.h"
