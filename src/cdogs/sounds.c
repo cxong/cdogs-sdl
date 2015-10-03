@@ -116,7 +116,7 @@ static void SoundLoadDirImpl(
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
-	if (OpenAudio(44100, AUDIO_S16, 2, 512) != 0)
+	if (OpenAudio(44100, AUDIO_S16, 2, 2048) != 0)
 	{
 		return;
 	}
