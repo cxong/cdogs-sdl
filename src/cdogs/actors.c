@@ -165,6 +165,7 @@ static int AnimationGetFrame(const Animation *a)
 	return a->frames[a->frame];
 }
 
+static Character *ActorGetCharacterMutable(TActor *a);
 static ActorPics GetCharacterPics(int id)
 {
 	ActorPics pics;
@@ -175,7 +176,7 @@ static ActorPics GetCharacterPics(int id)
 	const int frame = AnimationGetFrame(&actor->anim);
 	int headFrame = frame;
 
-	const Character *c = ActorGetCharacter(actor);
+	Character *c = ActorGetCharacterMutable(actor);
 	pics.Table = (TranslationTable *)&c->table;
 	const int f = c->looks.Face;
 	const Weapon *gun = ActorGetGun(actor);
@@ -300,6 +301,14 @@ static ActorPics GetCharacterPics(int id)
 
 bail:
 	return pics;
+}
+static Character *ActorGetCharacterMutable(TActor *a)
+{
+	if (a->PlayerUID >= 0)
+	{
+		return &PlayerDataGetByUID(a->PlayerUID)->Char;
+	}
+	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
 
