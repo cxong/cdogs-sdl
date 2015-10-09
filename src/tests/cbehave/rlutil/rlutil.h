@@ -207,7 +207,7 @@ RLUTIL_INLINE RLUTIL_STRING_T getANSIColor(const int c) {
 /// Change color specified by number (Windows / QBasic colors).
 ///
 /// See <Color Codes>
-RLUTIL_INLINE void setColor(int c) {
+static RLUTIL_INLINE void setColor(int c) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hConsole, (WORD)c);
