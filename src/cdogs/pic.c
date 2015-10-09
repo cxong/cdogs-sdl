@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,27 @@ PicType StrPicType(const char *s)
 	return PICTYPE_NORMAL;
 }
 
+
+color_t PixelToColor(
+	const SDL_PixelFormat *f, const int aShift, const Uint32 pixel)
+{
+	color_t c;
+	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);
+	// Manually apply the alpha as SDL seems to always set it to 0
+	c.a = (Uint8)((pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> aShift);
+	return c;
+}
+Uint32 ColorToPixel(
+	const SDL_PixelFormat *f, const int aShift, const color_t color)
+{
+	const Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
+	// Manually apply the alpha as SDL seems to always set it to 0
+	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << aShift);
+}
+
+
 void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset,
-	const SDL_Surface *image, const SDL_Surface *s)
+	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image)
 {
 	p->size = size;
 	p->offset = Vec2iZero();
@@ -55,21 +73,19 @@ void PicLoad(
 	int srcI = offset.y*image->w + offset.x;
 	for (int i = 0; i < size.x * size.y; i++, srcI++)
 	{
-		const Uint32 alpha =
-			((Uint32 *)image->pixels)[srcI] >> image->format->Ashift;
+		const Uint32 pixel = ((Uint32 *)image->pixels)[srcI];
+		color_t c;
+		SDL_GetRGB(pixel, image->format, &c.r, &c.g, &c.b);
 		// If completely transparent, replace rgb with black (0) too
 		// This is because transparency blitting checks entire pixel
-		if (alpha == 0)
+		//if (c.a == 0)
+		if (c.r == c.g == c.b == 0)
 		{
 			p->Data[i] = 0;
 		}
 		else
 		{
-			const Uint32 pixel = ((Uint32 *)s->pixels)[srcI];
-			const Uint32 rgbMask =
-				s->format->Rmask | s->format->Gmask | s->format->Bmask;
-			p->Data[i] =
-				(pixel & rgbMask) | (alpha << gGraphicsDevice.Ashift);
+			p->Data[i] = COLOR2PIXEL(c);
 		}
 		if ((i + 1) % size.x == 0)
 		{
@@ -78,7 +94,7 @@ void PicLoad(
 	}
 }
 
-void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
+void PicFromPicPaletted(Pic *pic, const PicPaletted *picP)
 {
 	pic->size = Vec2iNew(picP->w, picP->h);
 	pic->offset = Vec2iZero();
@@ -86,7 +102,7 @@ void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP)
 	for (int i = 0; i < pic->size.x * pic->size.y; i++)
 	{
 		unsigned char palette = *(picP->data + i);
-		pic->Data[i] = PixelFromColor(g, PaletteToColor(palette));
+		pic->Data[i] = COLOR2PIXEL(PaletteToColor(palette));
 		// Special case: if the palette colour is 0, it's transparent
 		if (palette == 0)
 		{
@@ -124,7 +140,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 		for (pos.x = 0; pos.x < pic->size.x; pos.x++)
 		{
 			const Uint32 pixel = *(pic->Data + pos.x + pos.y * pic->size.x);
-			if (PixelToColor(&gGraphicsDevice, pixel).a > 0)
+			if (PIXEL2COLOR(pixel).a > 0)
 			{
 				min.x = MIN(min.x, pos.x);
 				min.y = MIN(min.y, pos.y);
@@ -171,21 +187,20 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 
 bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel)
 {
-	const GraphicsDevice *g = &gGraphicsDevice;
 	const bool isTopOrBottomEdge = pos.y == -1 || pos.y == pic->size.y;
 	const bool isLeftOrRightEdge = pos.x == -1 || pos.x == pic->size.x;
 	const bool isLeft =
 		pos.x > 0 && !isTopOrBottomEdge &&
-		PixelToColor(g, *(pic->Data + pos.x - 1 + pos.y * pic->size.x)).a;
+		PIXEL2COLOR(*(pic->Data + pos.x - 1 + pos.y * pic->size.x)).a;
 	const bool isRight =
 		pos.x < pic->size.x - 1 && !isTopOrBottomEdge &&
-		PixelToColor(g, *(pic->Data + pos.x + 1 + pos.y * pic->size.x)).a;
+		PIXEL2COLOR(*(pic->Data + pos.x + 1 + pos.y * pic->size.x)).a;
 	const bool isAbove =
 		pos.y > 0 && !isLeftOrRightEdge &&
-		PixelToColor(g, *(pic->Data + pos.x + (pos.y - 1) * pic->size.x)).a;
+		PIXEL2COLOR(*(pic->Data + pos.x + (pos.y - 1) * pic->size.x)).a;
 	const bool isBelow =
 		pos.y < pic->size.y - 1 && !isLeftOrRightEdge &&
-		PixelToColor(g, *(pic->Data + pos.x + (pos.y + 1) * pic->size.x)).a;
+		PIXEL2COLOR(*(pic->Data + pos.x + (pos.y + 1) * pic->size.x)).a;
 	if (isPixel)
 	{
 		return !(isLeft && isRight && isAbove && isBelow);

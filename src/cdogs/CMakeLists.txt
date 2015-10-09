@@ -23,6 +23,7 @@ set(CDOGS_SOURCES
 	color.c
 	config.c
 	config_apply.c
+	config_io.c
 	config_json.c
 	config_old.c
 	damage.c
@@ -105,6 +106,7 @@ set(CDOGS_HEADERS
 	collision.h
 	color.h
 	config.h
+	config_io.h
 	config_json.h
 	config_old.h
 	damage.h

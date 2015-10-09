@@ -1,7 +1,8 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,22 +26,10 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "palette.h"
+#pragma once
 
-#include "pic_manager.h"
-#include "utils.h"
+#include "config.h"
 
-#define GAMMA 4
-color_t PaletteToColor(unsigned char idx)
-{
-	color_t color = gPicManager.palette[idx];
-	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
-	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
-	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
-	color.a = 255;
-	return color;
-}
-Uint32 LookupPalette(unsigned char idx)
-{
-	return COLOR2PIXEL(PaletteToColor(idx));
-}
+
+Config ConfigLoad(const char *filename);
+void ConfigSave(const Config *c, const char *filename);

@@ -89,6 +89,41 @@ target_link_libraries(json_test
 add_test(NAME json_test WORKING_DIRECTORY .
 	COMMAND json_test)
 
+set(PIC_TEST_EXTRA)
+if(APPLE)
+	set(PIC_TEST_EXTRA
+		../../build/macosx/SDLMain.m
+		../../build/macosx/SDLMain.h)
+	set_source_files_properties(../../build/macosx/SDLMain.m
+		PROPERTIES LANGUAGE C)
+endif()
+add_executable(pic_test
+	pic_test.c
+	../cdogs/c_array.c
+	../cdogs/c_array.h
+	../cdogs/color.c
+	../cdogs/color.h
+	../cdogs/config.c
+	../cdogs/config.h
+	../cdogs/grafx.c
+	../cdogs/grafx.h
+	../cdogs/log.c
+	../cdogs/log.h
+	../cdogs/pic.c
+	../cdogs/pic.h
+	../cdogs/utils.c
+	../cdogs/utils.h
+	../cdogs/vector.c
+	../cdogs/vector.h
+	${PIC_TEST_EXTRA})
+target_link_libraries(pic_test
+	cbehave
+	${SDL_LIBRARY}
+	${SDLIMAGE_LIBRARY}
+	${EXTRA_LIBRARIES})
+add_test(NAME pic_test WORKING_DIRECTORY .
+	COMMAND pic_test)
+
 add_executable(utils_test
 	utils_test.c
 	../cdogs/utils.c

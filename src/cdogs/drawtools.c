@@ -73,13 +73,12 @@ void Draw_Point(const int x, const int y, color_t c)
 	}
 	if (c.a == 255)
 	{
-		screen[idx] = PixelFromColor(&gGraphicsDevice, c);
+		screen[idx] = COLOR2PIXEL(c);
 	}
 	else
 	{
-		color_t existing = PixelToColor(&gGraphicsDevice, screen[idx]);
-		screen[idx] =
-			PixelFromColor(&gGraphicsDevice, ColorAlphaBlend(existing, c));
+		const color_t existing = PIXEL2COLOR(screen[idx]);
+		screen[idx] = COLOR2PIXEL(ColorAlphaBlend(existing, c));
 	}
 }
 
@@ -185,9 +184,9 @@ void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask)
 	{
 		return;
 	}
-	c = PixelToColor(device, screen[idx]);
+	c = PIXEL2COLOR(screen[idx]);
 	c = ColorMult(c, mask);
-	screen[idx] = PixelFromColor(device, c);
+	screen[idx] = COLOR2PIXEL(c);
 }
 
 void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
@@ -203,9 +202,9 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 	{
 		return;
 	}
-	c = PixelToColor(device, screen[idx]);
+	c = PIXEL2COLOR(screen[idx]);
 	c = ColorTint(c, tint);
-	screen[idx] = PixelFromColor(device, c);
+	screen[idx] = COLOR2PIXEL(c);
 }
 
 void DrawRectangle(
@@ -252,7 +251,7 @@ void DrawRectangle(
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 {
 	Uint32 *screen = device->buf;
-	Uint32 pixel = PixelFromColor(device, color);
+	const Uint32 pixel = COLOR2PIXEL(color);
 	screen += x;
 	screen += y * gGraphicsDevice.cachedConfig.Res.x;
 	*screen = pixel;

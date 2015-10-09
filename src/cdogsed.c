@@ -160,7 +160,7 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	// Clear background first
 	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 	{
-		g->buf[i] = PixelFromColor(g, colorBlack);
+		g->buf[i] = COLOR2PIXEL(colorBlack);
 	}
 	GrafxDrawExtra extra;
 	extra.guideImage = brush.GuideImageSurface;
@@ -205,7 +205,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 			// Clear background first
 			for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 			{
-				g->buf[i] = PixelFromColor(g, colorBlack);
+				g->buf[i] = COLOR2PIXEL(colorBlack);
 			}
 			brush.IsGuideImageNew = false;
 			GrafxDrawExtra extra;
@@ -1291,7 +1291,7 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
-	GraphicsInit(&gGraphicsDevice);
+	GraphicsInit(&gGraphicsDevice, &gConfig);
 	gGraphicsDevice.cachedConfig.IsEditor = true;
 	GraphicsInitialize(&gGraphicsDevice, false);
 	if (!gGraphicsDevice.IsInitialized)

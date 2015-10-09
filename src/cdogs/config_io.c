@@ -1,7 +1,8 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+
+    Copyright (c) 2013-2014, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,22 +26,50 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "palette.h"
+#include "config_io.h"
 
-#include "pic_manager.h"
-#include "utils.h"
+#include "config_json.h"
 
-#define GAMMA 4
-color_t PaletteToColor(unsigned char idx)
+
+Config ConfigLoad(const char *filename)
 {
-	color_t color = gPicManager.palette[idx];
-	color.r = (uint8_t)CLAMP(color.r * GAMMA, 0, 255);
-	color.g = (uint8_t)CLAMP(color.g * GAMMA, 0, 255);
-	color.b = (uint8_t)CLAMP(color.b * GAMMA, 0, 255);
-	color.a = 255;
-	return color;
+	// Load default values first
+	Config c = ConfigDefault();
+	if (filename == NULL)
+	{
+		// This is equivalent to loading nothing; just exit
+		return c;
+	}
+	FILE *f = fopen(filename, "r");
+	if (f == NULL)
+	{
+		printf("Error loading config '%s'\n", filename);
+		return c;
+	}
+	const int configVersion = ConfigGetVersion(f);
+	fclose(f);
+	switch (configVersion)
+	{
+	case 0:
+		printf("Classic config is no longer supported\n");
+		break;
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+		ConfigLoadJSON(&c, filename);
+		break;
+	default:
+		printf("Unknown config version\n");
+		break;
+	}
+	ConfigSetChanged(&c);
+	return c;
 }
-Uint32 LookupPalette(unsigned char idx)
+
+void ConfigSave(const Config *config, const char *filename)
 {
-	return COLOR2PIXEL(PaletteToColor(idx));
+	ConfigSaveJSON(config, filename);
 }

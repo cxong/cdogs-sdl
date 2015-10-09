@@ -63,23 +63,6 @@
 #include "utils.h" /* for debug() */
 
 
-color_t PixelToColor(const GraphicsDevice *device, Uint32 pixel)
-{
-	SDL_PixelFormat *f = device->screen->format;
-	color_t c;
-	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);
-	// Manually apply the alpha as SDL seems to always set it to 0
-	c.a = (Uint8)((pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> device->Ashift);
-	return c;
-}
-Uint32 PixelFromColor(GraphicsDevice *device, color_t color)
-{
-	SDL_PixelFormat *f = device->screen->format;
-	Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
-	// Manually apply the alpha as SDL seems to always set it to 0
-	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << device->Ashift);
-}
-
 void BlitOld(int x, int y, PicPaletted *pic, const void *table, int mode)
 {
 	int yoff, xoff;
@@ -170,15 +153,15 @@ void BlitPicHighlight(
 			bool isLeftOrRightEdge = j == -1 || j == pic->size.x;
 			bool isPixelEmpty =
 				isTopOrBottomEdge || isLeftOrRightEdge ||
-				!PixelToColor(g, *(pic->Data + j + i * pic->size.x)).a;
+				!PIXEL2COLOR(*(pic->Data + j + i * pic->size.x)).a;
 			if (isPixelEmpty &&
 				PicPxIsEdge(pic, Vec2iNew(j, i), !isPixelEmpty))
 			{
 				Uint32 *target = g->buf + yoff + xoff;
-				color_t targetColor = PixelToColor(g, *target);
-				color_t blendedColor = ColorAlphaBlend(
+				const color_t targetColor = PIXEL2COLOR(*target);
+				const color_t blendedColor = ColorAlphaBlend(
 					targetColor, color);
-				*target = PixelFromColor(g, blendedColor);
+				*target = COLOR2PIXEL(blendedColor);
 			}
 		}
 	}
@@ -221,10 +204,9 @@ void BlitBackground(
 				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
 				if (tint != NULL)
 				{
-					color_t targetColor =
-						PixelToColor(&gGraphicsDevice, *target);
-					color_t blendedColor = ColorTint(targetColor, *tint);
-					*target = PixelFromColor(&gGraphicsDevice, blendedColor);
+					const color_t targetColor = PIXEL2COLOR(*target);
+					const color_t blendedColor = ColorTint(targetColor, *tint);
+					*target = COLOR2PIXEL(blendedColor);
 				}
 				else
 				{
@@ -269,11 +251,6 @@ void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
 			}
 			if ((*current & device->Amask) == 0)
 			{
-				/*
-				// hack to blit transparent background as hot pink
-				target = device->buf + yoff + xoff;
-				*target = PixelFromColor(device, colorMagenta);
-				*/
 				current++;
 				continue;
 			}
@@ -300,7 +277,7 @@ void BlitMasked(
 	int isTransparent)
 {
 	Uint32 *current = pic->Data;
-	Uint32 maskPixel = PixelFromColor(device, mask);
+	const Uint32 maskPixel = COLOR2PIXEL(mask);
 	int i;
 	pos = Vec2iAdd(pos, pic->offset);
 	for (i = 0; i < pic->size.y; i++)
@@ -378,13 +355,13 @@ void BlitBlend(
 				continue;
 			}
 			Uint32 *target = g->buf + yoff + xoff;
-			color_t currentColor = PixelToColor(g, *current);
+			const color_t currentColor = PIXEL2COLOR(*current);
 			color_t blendedColor = ColorMult(
 				currentColor, blend);
 			blendedColor.a = blend.a;
-			color_t targetColor = PixelToColor(g, *target);
+			const color_t targetColor = PIXEL2COLOR(*target);
 			blendedColor = ColorAlphaBlend(targetColor, blendedColor);
-			*target = PixelFromColor(g, blendedColor);
+			*target = COLOR2PIXEL(blendedColor);
 			current++;
 		}
 	}

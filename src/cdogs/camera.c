@@ -123,7 +123,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 
 	for (int i = 0; i < GraphicsGetScreenSize(&gGraphicsDevice.cachedConfig); i++)
 	{
-		gGraphicsDevice.buf[i] = PixelFromColor(&gGraphicsDevice, colorBlack);
+		gGraphicsDevice.buf[i] = COLOR2PIXEL(colorBlack);
 	}
 
 	const Vec2i noise = ScreenShakeGetDelta(camera->shake);

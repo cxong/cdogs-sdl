@@ -92,10 +92,18 @@ typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 
 extern Pic picNone;
 
+color_t PixelToColor(
+	const SDL_PixelFormat *f, const int aShift, const Uint32 pixel);
+Uint32 ColorToPixel(
+	const SDL_PixelFormat *f, const int aShift, const color_t color);
+#define PIXEL2COLOR(_p) \
+	PixelToColor(gGraphicsDevice.screen->format, gGraphicsDevice.Ashift, _p)
+#define COLOR2PIXEL(_c) \
+	ColorToPixel(gGraphicsDevice.screen->format, gGraphicsDevice.Ashift, _c)
+
 void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset,
-	const SDL_Surface *image, const SDL_Surface *s);
-void PicFromPicPaletted(GraphicsDevice *g, Pic *pic, PicPaletted *picP);
+	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
+void PicFromPicPaletted(Pic *pic, const PicPaletted *picP);
 Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
 int PicIsNotNone(Pic *pic);

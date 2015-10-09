@@ -157,7 +157,7 @@ static void AddGraphicsMode(
 	mode->ScaleFactor = scaleFactor;
 }
 
-void GraphicsInit(GraphicsDevice *device)
+void GraphicsInit(GraphicsDevice *device, Config *c)
 {
 	device->IsInitialized = 0;
 	device->IsWindowInitialized = 0;
@@ -178,7 +178,13 @@ void GraphicsInit(GraphicsDevice *device)
 	device->buf = NULL;
 	device->bkg = NULL;
 	hqxInit();
-	GraphicsConfigSetFromConfig(&device->cachedConfig);
+	GraphicsConfigSet(
+		&device->cachedConfig,
+		Vec2iNew(
+			ConfigGetInt(c, "Graphics.ResolutionWidth"),
+			ConfigGetInt(c, "Graphics.ResolutionHeight")),
+		ConfigGetBool(c, "Graphics.Fullscreen"),
+		ConfigGetInt(c, "Graphics.ScaleFactor"));
 }
 
 void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
@@ -291,7 +297,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		if (g->modeIndex == -1)
 		{
 			g->modeIndex = 0;
-			printf("!!! Invalid Video Mode %dx%d\n", w, h);
+			LOG(LM_MAIN, LL_ERROR, "invalid Video Mode %dx%d\n", w, h);
 			return;
 		}
 	}
@@ -371,16 +377,6 @@ void GraphicsConfigSet(
 	}
 	SET(c->Fullscreen, fullscreen);
 	SET(c->ScaleFactor, scaleFactor);
-}
-void GraphicsConfigSetFromConfig(GraphicsConfig *c)
-{
-	GraphicsConfigSet(
-		c,
-		Vec2iNew(
-			ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
-			ConfigGetInt(&gConfig, "Graphics.ResolutionHeight")),
-		ConfigGetBool(&gConfig, "Graphics.Fullscreen"),
-		ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
 }
 
 char *GrafxGetModeStr(void)

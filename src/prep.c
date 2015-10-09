@@ -58,7 +58,7 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
-#include <cdogs/config.h>
+#include <cdogs/config_io.h>
 #include <cdogs/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>

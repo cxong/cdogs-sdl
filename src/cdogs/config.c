@@ -316,50 +316,6 @@ int ConfigGetVersion(FILE *f)
 	return ConfigGetJSONVersion(f);
 }
 
-static Config ConfigLoadDefault(void);
-Config ConfigLoad(const char *filename)
-{
-	// Load default values first
-	Config c = ConfigLoadDefault();
-	if (filename == NULL)
-	{
-		// This is equivalent to loading nothing; just exit
-		return c;
-	}
-	FILE *f = fopen(filename, "r");
-	if (f == NULL)
-	{
-		printf("Error loading config '%s'\n", filename);
-		return c;
-	}
-	const int configVersion = ConfigGetVersion(f);
-	fclose(f);
-	switch (configVersion)
-	{
-	case 0:
-		printf("Classic config is no longer supported\n");
-		break;
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-		ConfigLoadJSON(&c, filename);
-		break;
-	default:
-		printf("Unknown config version\n");
-		break;
-	}
-	ConfigSetChanged(&c);
-	return c;
-}
-
-void ConfigSave(const Config *config, const char *filename)
-{
-	ConfigSaveJSON(config, filename);
-}
-
 Config *ConfigGet(Config *c, const char *name)
 {
 	char *nameCopy;
@@ -557,7 +513,7 @@ CArray *ConfigGetGroup(Config *c, const char *name)
 	return &c->u.Group;
 }
 
-static Config ConfigLoadDefault(void)
+Config ConfigDefault(void)
 {
 	Config root = ConfigNewGroup(NULL);
 	

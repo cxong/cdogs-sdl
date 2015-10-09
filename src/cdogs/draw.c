@@ -709,7 +709,7 @@ static void DrawGuideImage(
 			{
 				int imgIndex = y * guideImage->w + x;
 				Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
-				color_t c = PixelToColor(b->g, p);
+				color_t c = PIXEL2COLOR(p);
 				c.a = alpha;
 				Draw_Point(i, j, c);
 			}

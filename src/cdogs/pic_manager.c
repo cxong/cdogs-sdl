@@ -166,10 +166,6 @@ void PicManagerAdd(
 		np = AddNamedPic(pics, buf, NULL);
 	}
 	SDL_LockSurface(image);
-	SDL_Surface *s = SDL_ConvertSurface(
-		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
-	CASSERT(s, "image convert failed");
-	SDL_LockSurface(s);
 	Vec2i offset;
 	for (offset.y = 0; offset.y < image->h; offset.y += size.y)
 	{
@@ -186,11 +182,9 @@ void PicManagerAdd(
 			{
 				pic = &np->pic;
 			}
-			PicLoad(pic, size, offset, image, s);
+			PicLoad(pic, size, offset, image);
 		}
 	}
-	SDL_UnlockSurface(s);
-	SDL_FreeSurface(s);
 	SDL_UnlockSurface(image);
 	SDL_FreeSurface(image);
 
@@ -263,7 +257,7 @@ static void PicManagerLoadDirImpl(
 bail:
 	tinydir_close(&dir);
 }
-static void GenerateOldPics(PicManager *pm, GraphicsDevice *g);
+static void GenerateOldPics(PicManager *pm);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 void PicManagerLoadDir(PicManager *pm, const char *path)
@@ -274,7 +268,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		return;
 	}
 	PicManagerLoadDirImpl(pm, path, NULL);
-	GenerateOldPics(pm, &gGraphicsDevice);
+	GenerateOldPics(pm);
 
 	// Load old pics and sprites
 	LoadOldSprites(
@@ -308,7 +302,7 @@ static void LoadOldSprites(
 static void AddMaskBasePic(
 	PicManager *pm, const char *name,
 	const char *styleName, const char *typeName, const int picIdx);
-static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
+static void GenerateOldPics(PicManager *pm)
 {
 	// Convert old pics into new format ones
 	for (int i = 0; i < PIC_MAX; i++)
@@ -324,7 +318,7 @@ static void GenerateOldPics(PicManager *pm, GraphicsDevice *g)
 		}
 		else
 		{
-			PicFromPicPaletted(g, &pm->picsFromOld[i], oldPic);
+			PicFromPicPaletted(&pm->picsFromOld[i], oldPic);
 		}
 	}
 
@@ -369,9 +363,9 @@ static void AddMaskBasePic(
 	{
 		if (old->data[i] >= ALT_COLORS && old->data[i] < ALT_COLORS + 8)
 		{
-			color_t c = PixelToColor(&gGraphicsDevice, p.Data[i]);
+			color_t c = PIXEL2COLOR(p.Data[i]);
 			c.a = 254;
-			p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
+			p.Data[i] = COLOR2PIXEL(c);
 		}
 	}
 	AddNamedPic(&pm->pics, buf, &p);
@@ -623,7 +617,7 @@ void PicManagerGenerateMaskedPic(
 		maskedName, p.size.x, p.size.y);
 	for (int i = 0; i < p.size.x * p.size.y; i++)
 	{
-		color_t o = PixelToColor(&gGraphicsDevice, original->Data[i]);
+		color_t o = PIXEL2COLOR(original->Data[i]);
 		color_t c;
 		// Apply mask based on which channel each pixel is
 		if (o.g == 0 && o.b == 0)
@@ -637,7 +631,7 @@ void PicManagerGenerateMaskedPic(
 		{
 			c = ColorMult(o, mask);
 		}
-		p.Data[i] = PixelFromColor(&gGraphicsDevice, c);
+		p.Data[i] = COLOR2PIXEL(c);
 		// TODO: more channels
 	}
 	AddNamedPic(&pm->customPics, maskedName, &p);

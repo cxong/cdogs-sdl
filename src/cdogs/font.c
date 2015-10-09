@@ -146,10 +146,6 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 
 	// Load letters from image file
 	SDL_LockSurface(image);
-	SDL_Surface *s = SDL_ConvertSurface(
-		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
-	CASSERT(s, "image convert failed");
-	SDL_LockSurface(s);
 	int chars = 0;
 	for (Vec2i pos = Vec2iZero();
 		pos.y + step.y <= image->h && chars < LAST_CHAR - FIRST_CHAR + 1;
@@ -166,7 +162,7 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 			PicLoad(
 				&p, f->Size,
 				Vec2iAdd(pos, Vec2iNew(f->Padding.Left, f->Padding.Top)),
-				image, s);
+				image);
 			if (proportional)
 			{
 				PicTrim(&p, true, false);
@@ -174,8 +170,6 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 			CArrayPushBack(&f->Chars, &p);
 		}
 	}
-	SDL_UnlockSurface(s);
-	SDL_FreeSurface(s);
 	SDL_UnlockSurface(image);
 }
 void FontTerminate(Font *f)

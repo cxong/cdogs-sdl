@@ -194,8 +194,7 @@ void ConfigGroupAdd(Config *group, Config child);
 
 extern Config gConfig;
 
-Config ConfigLoad(const char *filename);
-void ConfigSave(const Config *c, const char *filename);
+Config ConfigDefault(void);
 
 // Find all config entries that begin with a prefix
 // Returns array of ConfigEntry *

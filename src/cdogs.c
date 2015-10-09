@@ -56,7 +56,7 @@
 #include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/collision.h>
-#include <cdogs/config.h>
+#include <cdogs/config_io.h>
 #include <cdogs/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
-	GraphicsInit(&gGraphicsDevice);
+	GraphicsInit(&gGraphicsDevice, &gConfig);
 	GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{

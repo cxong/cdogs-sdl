@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __BLIT
-#define __BLIT
+#pragma once
 
 #include <SDL_stdinc.h>
 
@@ -55,9 +54,6 @@
 #include "pic.h"
 #include "pic_file.h"
 #include "vector.h"
-
-color_t PixelToColor(const GraphicsDevice *device, Uint32 pixel);
-Uint32 PixelFromColor(GraphicsDevice *device, color_t color);
 
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
@@ -108,5 +104,3 @@ void BlitFlip(GraphicsDevice *g);
 
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10
-
-#endif
