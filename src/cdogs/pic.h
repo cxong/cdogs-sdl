@@ -95,7 +95,7 @@ extern Pic picNone;
 color_t PixelToColor(
 	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
 Uint32 ColorToPixel(
-	const SDL_PixelFormat *f, const int aShift, const color_t color);
+	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color);
 #define PIXEL2COLOR(_p) \
 	PixelToColor(gGraphicsDevice.screen->format, gGraphicsDevice.Ashift, _p)
 #define COLOR2PIXEL(_c) \

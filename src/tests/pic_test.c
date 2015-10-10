@@ -85,7 +85,7 @@ FEATURE(1, "Pic load")
 
 		THEN("the loaded pic should have values that match");
 			const color_t c = PixelToColor(
-				image->format, image->format->Ashift, p.Data);
+				image->format, image->format->Ashift, p.Data[0]);
 			SHOULD_INT_EQUAL(c.r, 64);
 			SHOULD_INT_EQUAL(c.r, 128);
 			SHOULD_INT_EQUAL(c.r, 192);

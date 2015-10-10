@@ -54,7 +54,7 @@ color_t PixelToColor(
 	return c;
 }
 Uint32 ColorToPixel(
-	const SDL_PixelFormat *f, const int aShift, const color_t color)
+	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color)
 {
 	const Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
 	// Manually apply the alpha as SDL seems to always set it to 0
