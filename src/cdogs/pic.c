@@ -45,7 +45,7 @@ PicType StrPicType(const char *s)
 
 
 color_t PixelToColor(
-	const SDL_PixelFormat *f, const int aShift, const Uint32 pixel)
+	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel)
 {
 	color_t c;
 	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);

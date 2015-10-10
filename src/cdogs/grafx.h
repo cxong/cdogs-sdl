@@ -91,7 +91,7 @@ typedef struct
 	SDL_Surface *icon;
 	SDL_Surface *screen;
 	Uint32 Amask;
-	int Ashift;
+	Uint8 Ashift;
 	GraphicsConfig cachedConfig;
 	GraphicsMode *validModes;
 	BlitClipping clipping;

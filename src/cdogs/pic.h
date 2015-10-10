@@ -93,7 +93,7 @@ typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 extern Pic picNone;
 
 color_t PixelToColor(
-	const SDL_PixelFormat *f, const int aShift, const Uint32 pixel);
+	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
 Uint32 ColorToPixel(
 	const SDL_PixelFormat *f, const int aShift, const color_t color);
 #define PIXEL2COLOR(_p) \
