@@ -58,7 +58,7 @@
 #include <cdogs/ammo.h>
 #include <cdogs/automap.h>
 #include <cdogs/collision.h>
-#include <cdogs/config.h>
+#include <cdogs/config_io.h>
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
