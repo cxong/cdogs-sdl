@@ -16,8 +16,8 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 SET(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
 SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
-set(DEBUG 0)			#set to 1 to enable debug build
-set(DEBUG_PROFILE 0)	# set to 1 to enable debug profile build
+option(DEBUG "Enable debug build" OFF)
+option(DEBUG_PROFILE "Enable debug profile build" OFF)
 
 # check for crosscompiling (defined when using a toolchain file)
 if(CMAKE_CROSSCOMPILING)
