@@ -111,7 +111,7 @@ int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
 	const Vec2i res, const bool fullscreen, const int scaleFactor);
-void GraphicsConfigSetFromConfig(GraphicsConfig *c);
+void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 
 void Gfx_ModePrev(void);
 void Gfx_ModeNext(void);

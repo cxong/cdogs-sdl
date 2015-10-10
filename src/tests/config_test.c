@@ -1,6 +1,6 @@
 #include <cbehave/cbehave.h>
 
-#include <config.h>
+#include <config_io.h>
 #include <config_json.h>
 #include <config_old.h>
 #include <pic_manager.h>

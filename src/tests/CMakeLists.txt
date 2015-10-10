@@ -54,8 +54,11 @@ add_executable(config_test
 	../cdogs/c_array.h
 	../cdogs/c_array.c
 	../cdogs/color.c
-	../cdogs/config.h
+	../cdogs/color.h
 	../cdogs/config.c
+	../cdogs/config.h
+	../cdogs/config_io.c
+	../cdogs/config_io.h
 	../cdogs/config_json.c
 	../cdogs/config_json.h
 	../cdogs/config_old.c

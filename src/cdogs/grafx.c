@@ -178,13 +178,7 @@ void GraphicsInit(GraphicsDevice *device, Config *c)
 	device->buf = NULL;
 	device->bkg = NULL;
 	hqxInit();
-	GraphicsConfigSet(
-		&device->cachedConfig,
-		Vec2iNew(
-			ConfigGetInt(c, "Graphics.ResolutionWidth"),
-			ConfigGetInt(c, "Graphics.ResolutionHeight")),
-		ConfigGetBool(c, "Graphics.Fullscreen"),
-		ConfigGetInt(c, "Graphics.ScaleFactor"));
+	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
 }
 
 void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
@@ -377,6 +371,17 @@ void GraphicsConfigSet(
 	}
 	SET(c->Fullscreen, fullscreen);
 	SET(c->ScaleFactor, scaleFactor);
+}
+
+void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
+{
+	GraphicsConfigSet(
+		gc,
+		Vec2iNew(
+			ConfigGetInt(c, "Graphics.ResolutionWidth"),
+			ConfigGetInt(c, "Graphics.ResolutionHeight")),
+		ConfigGetBool(c, "Graphics.Fullscreen"),
+		ConfigGetInt(c, "Graphics.ScaleFactor"));
 }
 
 char *GrafxGetModeStr(void)
