@@ -262,6 +262,13 @@ void RelPathFromCWD(char *buf, const char *to)
 	}
 }
 
+void GetDataFilePath(char *buf, const char *path)
+{
+	char relbuf[CDOGS_PATH_MAX];
+	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
+	RealPath(relbuf, buf);
+}
+
 double Round(double x)
 {
 	return floor(x + 0.5);

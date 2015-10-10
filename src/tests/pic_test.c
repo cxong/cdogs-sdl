@@ -1,9 +1,9 @@
 #include <cbehave/cbehave.h>
 
-#include <config.h>
 #include <pic.h>
 
 #include <SDL_image.h>
+#include <config.h>
 
 
 // Stubs
@@ -49,11 +49,6 @@ bool ConfigIsOld(FILE *f)
 {
 	UNUSED(f);
 	return false;
-}
-void GetDataFilePath(char *buf, const char *path)
-{
-	UNUSED(buf);
-	UNUSED(path);
 }
 void hqxInit(void)
 {

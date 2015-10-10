@@ -544,14 +544,6 @@ const char *GetHomeDirectory(void)
 }
 
 
-void GetDataFilePath(char *buf, const char *path)
-{
-	char relbuf[CDOGS_PATH_MAX];
-	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
-	RealPath(relbuf, buf);
-}
-
-
 /* GetConfigFilePath()
  *
  * returns a full path to a data file...
