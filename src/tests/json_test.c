@@ -14,11 +14,16 @@ const char *JoyName(const int deviceIndex)
 	UNUSED(deviceIndex);
 	return NULL;
 }
-int ConfigGetBool(void) { return 0; }
+bool ConfigGetBool(Config *c, const char *name)
+{
+	UNUSED(c);
+	UNUSED(name);
+	return false;
+}
 int PicManagerGetPic(void) { return 0; }
 int PicManagerGetFromOld(void) { return 0; }
 int StrGunDescription(void) { return 0; }
-int gConfig;
+Config gConfig;
 int gPicManager;
 
 
