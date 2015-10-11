@@ -79,11 +79,10 @@ FEATURE(1, "Pic load")
 		WHEN_END
 
 		THEN("the loaded pic should have values that match");
-			const color_t c = PixelToColor(
-				image->format, image->format->Ashift, p.Data[0]);
+			const color_t c = PIXEL2COLOR(p.Data[0]);
 			SHOULD_INT_EQUAL(c.r, 64);
-			SHOULD_INT_EQUAL(c.r, 128);
-			SHOULD_INT_EQUAL(c.r, 192);
+			SHOULD_INT_EQUAL(c.g, 128);
+			SHOULD_INT_EQUAL(c.b, 192);
 		THEN_END
 		SDL_UnlockSurface(image);
 		SDL_FreeSurface(image);
