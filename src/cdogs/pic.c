@@ -74,7 +74,8 @@ void PicLoad(
 	for (int i = 0; i < size.x * size.y; i++, srcI++)
 	{
 		const Uint32 pixel = ((Uint32 *)image->pixels)[srcI];
-		color_t c = PixelToColor(image->format, image->format->Ashift, pixel);
+		color_t c;
+		SDL_GetRGBA(pixel, image->format, &c.r, &c.g, &c.b, &c.a);
 		// If completely transparent, replace rgb with black (0) too
 		// This is because transparency blitting checks entire pixel
 		if (c.a == 0)
