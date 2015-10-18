@@ -8,7 +8,7 @@ The next release of C-Dogs SDL, version 0.6, is being delayed :(
 
 An OS X bug with SDL image 1.2 means that it is unusable, as it creates corrupted images like this:
 
-![](sdl_image_corruption.png)
+![](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sdl_image_corruption.png)
 
 Which means the [port to SDL 2](https://github.com/cxong/cdogs-sdl/issues/169) has to be moved ahead, delaying the next release.
 
