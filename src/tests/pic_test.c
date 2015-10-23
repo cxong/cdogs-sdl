@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include <cbehave/cbehave.h>
 
 #include <pic.h>

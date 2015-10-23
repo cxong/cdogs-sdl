@@ -48,7 +48,7 @@ color_t PixelToColor(
 	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel)
 {
 	color_t c;
-	SDL_GetRGB(pixel, f, &c.r, &c.g, &c.b);
+	SDL_GetRGBA(pixel, f, &c.r, &c.g, &c.b, &c.a);
 	// Manually apply the alpha as SDL seems to always set it to 0
 	c.a = (Uint8)((pixel & ~(f->Rmask | f->Gmask | f->Bmask)) >> aShift);
 	return c;
@@ -58,7 +58,7 @@ Uint32 ColorToPixel(
 {
 	const Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
 	// Manually apply the alpha as SDL seems to always set it to 0
-	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << aShift);
+	return (pixel & (f->Rmask | f->Gmask| f->Bmask)) | (color.a << aShift);
 }
 
 

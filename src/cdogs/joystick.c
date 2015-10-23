@@ -69,7 +69,7 @@ void JoyReset(joysticks_t *joys)
 		}
 
 		// Find joystick-specific fields
-		const char *name = SDL_JoystickName(i);
+		const char *name = SDL_JoystickName(joy->j);
 		if (strstr(name, " 360 Controller") != NULL)
 		{
 			joy->Type = JOY_XBOX_360;
@@ -277,12 +277,13 @@ int JoyGetPressed(joystick_t *joystick)
 
 const char *JoyName(const int deviceIndex)
 {
-	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
+	const joystick_t *joy = &gEventHandlers.joysticks.joys[deviceIndex];
+	switch (joy->Type)
 	{
 	case JOY_XBOX_360:
 		return "Xbox 360 controller";
 	default:
-		return SDL_JoystickName(deviceIndex);
+		return SDL_JoystickName(joy->j);
 	}
 }
 

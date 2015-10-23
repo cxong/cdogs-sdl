@@ -1,4 +1,4 @@
-include_directories(. ${SDL_INCLUDE_DIR})
+include_directories(. ${SDL2_INCLUDE_DIR})
 
 add_subdirectory(cdogs)
 add_subdirectory(cdogsed)
@@ -40,17 +40,14 @@ set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ../build/windows/cdogs.rc)
 elseif(APPLE)
-	set(CDOGS_SDL_EXTRA
-		../build/macosx/cdogs-icon.icns
-		../build/macosx/SDLMain.m
-		../build/macosx/SDLMain.h)
-	set_source_files_properties(../build/macosx/cdogs-icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+	set(CDOGS_SDL_EXTRA ../build/macosx/cdogs-icon.icns)
+	set_source_files_properties(../build/macosx/cdogs-icon.icns
+		PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(MACOSX_BUNDLE_ICON_FILE cdogs-icon.icns)
-	set_source_files_properties(../build/macosx/SDLMain.m
-		PROPERTIES LANGUAGE C)
 	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
-add_executable(cdogs-sdl MACOSX_BUNDLE ${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
+add_executable(cdogs-sdl MACOSX_BUNDLE
+	${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 if(APPLE)
 	set_target_properties(cdogs-sdl PROPERTIES
 		MACOSX_RPATH 1

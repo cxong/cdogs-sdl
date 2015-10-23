@@ -116,8 +116,8 @@ add_executable(pic_test
 	${PIC_TEST_EXTRA})
 target_link_libraries(pic_test
 	cbehave
-	${SDL_LIBRARY}
-	${SDLIMAGE_LIBRARY}
+	${SDL2_LIBRARY}
+	${SDL2_IMAGE_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME pic_test COMMAND pic_test)
 

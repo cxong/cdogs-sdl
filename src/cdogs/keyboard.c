@@ -86,23 +86,19 @@ void KeyPrePoll(keyboard_t *keyboard)
 	keyboard->modState = SDL_GetModState();
 }
 
-void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s)
+void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s)
 {
-	keyboard->currentKeys[s.sym].isPressed = 1;
-	if (s.unicode >= (Uint16)' ' && s.unicode <= (Uint16)'~')
+	keyboard->currentKeys[s.scancode].isPressed = true;
+	if (s.sym >= (SDL_Keycode)' ' && s.sym <= (SDL_Keycode)'z')
 	{
-		keyboard->currentKeys[s.sym].unicode = s.unicode;
+		keyboard->currentKeys[s.scancode].keycode = s.sym;
 	}
 	else
 	{
-		keyboard->currentKeys[s.sym].unicode = 0;
+		keyboard->currentKeys[s.scancode].keycode = 0;
 	}
-	memmove(
-		keyboard->pressedKeysBuffer + 1, keyboard->pressedKeysBuffer,
-		sizeof *keyboard->pressedKeysBuffer * (8 - 1));
-	keyboard->pressedKeysBuffer[0] = s.sym;
 }
-void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s)
+void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s)
 {
 	keyboard->currentKeys[s.sym].isPressed = 0;
 }
@@ -111,7 +107,7 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 {
 	int isRepeating = 0;
 	int areSameKeysPressed = 1;
-	for (int i = 0; i < SDLK_LAST; i++)
+	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
 	{
 		if (keyboard->previousKeys[i].isPressed ^
 			keyboard->currentKeys[i].isPressed)
@@ -153,13 +149,13 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 		keyboard->isFirstRepeat = false;
 		// Ignore the keys that tend to stay pressed/unpressed
 		// i.e. lock keys
-		keyboard->pressedKeys[SDLK_NUMLOCK].isPressed = false;
-		keyboard->pressedKeys[SDLK_CAPSLOCK].isPressed = false;
-		keyboard->pressedKeys[SDLK_SCROLLOCK].isPressed = false;
+		keyboard->pressedKeys[SDL_SCANCODE_NUMLOCKCLEAR].isPressed = false;
+		keyboard->pressedKeys[SDL_SCANCODE_CAPSLOCK].isPressed = false;
+		keyboard->pressedKeys[SDL_SCANCODE_SCROLLLOCK].isPressed = false;
 	}
 	else
 	{
-		for (int i = 0; i < SDLK_LAST; i++)
+		for (int i = 0; i < SDL_NUM_SCANCODES; i++)
 		{
 			keyboard->pressedKeys[i].isPressed =
 				keyboard->currentKeys[i].isPressed &&
@@ -169,26 +165,26 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 	keyboard->ticks = ticks;
 }
 
-int KeyIsDown(keyboard_t *keyboard, int key)
+bool KeyIsDown(const keyboard_t *k, const int key)
 {
-	return keyboard->currentKeys[key].isPressed;
+	return k->currentKeys[key].isPressed;
 }
 
-int KeyIsPressed(keyboard_t *keyboard, int key)
+bool KeyIsPressed(const keyboard_t *k, const int key)
 {
-	return keyboard->pressedKeys[key].isPressed;
+	return k->pressedKeys[key].isPressed;
 }
 
-int KeyIsReleased(keyboard_t *keyboard, int key)
+bool KeyIsReleased(const keyboard_t *k, const int key)
 {
-	return !KeyIsDown(keyboard, key) && keyboard->previousKeys[key].isPressed;
+	return !KeyIsDown(k, key) && k->previousKeys[key].isPressed;
 }
 
-int KeyGetPressed(keyboard_t *keyboard)
+int KeyGetPressed(const keyboard_t *k)
 {
-	for (int i = 0; i < SDLK_LAST; i++)
+	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
 	{
-		if (KeyIsPressed(keyboard, i))
+		if (KeyIsPressed(k, i))
 		{
 			return i;
 		}
@@ -196,17 +192,16 @@ int KeyGetPressed(keyboard_t *keyboard)
 	return 0;
 }
 
-int KeyGetTyped(keyboard_t *keyboard)
+int KeyGetTyped(const keyboard_t *k)
 {
-	int i;
-	for (i = 0; i < 128; i++)
+	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
 	{
-		Uint16 unicode = keyboard->currentKeys[i].unicode;
-		if (KeyIsPressed(keyboard, i) &&
-			unicode >= (Uint16)' ' &&
-			unicode <= (Uint16)'~')
+		const SDL_Keycode keycode = k->currentKeys[i].keycode;
+		if (KeyIsPressed(k, i) &&
+			keycode >= (SDL_Keycode)' ' &&
+			keycode <= (SDL_Keycode)'z')
 		{
-			return unicode;
+			return (int)keycode;
 		}
 	}
 	return 0;

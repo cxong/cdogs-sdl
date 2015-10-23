@@ -545,26 +545,26 @@ static void HandleInput(
 	{
 		switch (c)
 		{
-		case SDLK_HOME:
+		case SDL_SCANCODE_HOME:
 			if (*idx > 0)
 			{
 				(*idx)--;
 			}
 			break;
 
-		case SDLK_END:
+		case SDL_SCANCODE_END:
 			if (*idx < (int)store->OtherChars.size - 1)
 			{
 				(*idx)++;
 			}
 			break;
 
-		case SDLK_INSERT:
+		case SDL_SCANCODE_INSERT:
 			InsertCharacter(store, *idx, NULL);
 			fileChanged = 1;
 			break;
 
-		case SDLK_DELETE:
+		case SDL_SCANCODE_DELETE:
 			if (*idx >= (int)store->OtherChars.size)
 			{
 				// Nothing to delete, do nothing
@@ -574,39 +574,39 @@ static void HandleInput(
 			fileChanged = 1;
 			break;
 
-		case SDLK_UP:
+		case SDL_SCANCODE_UP:
 			(*yc)--;
 			AdjustYC(yc);
 			AdjustXC(*yc, xc);
 			break;
 
-		case SDLK_DOWN:
+		case SDL_SCANCODE_DOWN:
 			(*yc)++;
 			AdjustYC(yc);
 			AdjustXC(*yc, xc);
 			break;
 
-		case SDLK_LEFT:
+		case SDL_SCANCODE_LEFT:
 			(*xc)--;
 			AdjustXC(*yc, xc);
 			break;
 
-		case SDLK_RIGHT:
+		case SDL_SCANCODE_RIGHT:
 			(*xc)++;
 			AdjustXC(*yc, xc);
 			break;
 
-		case SDLK_PAGEUP:
+		case SDL_SCANCODE_PAGEUP:
 			Change(store, *idx, *yc, *xc, 1);
 			fileChanged = 1;
 			break;
 
-		case SDLK_PAGEDOWN:
+		case SDL_SCANCODE_PAGEDOWN:
 			Change(store, *idx, *yc, *xc, -1);
 			fileChanged = 1;
 			break;
 
-		case SDLK_ESCAPE:
+		case SDL_SCANCODE_ESCAPE:
 			*done = 1;
 			break;
 		}
@@ -663,14 +663,14 @@ void EditCharacters(CampaignSetting *setting)
 				}
 				isSameSelection = xc == xcOld && yc == ycOld;
 				if (m == SDL_BUTTON_LEFT ||
-					(m == SDL_BUTTON_WHEELUP && isSameSelection))
+					(MouseWheel(&gEventHandlers.mouse).y > 0 && isSameSelection))
 				{
-					c = SDLK_PAGEUP;
+					c = SDL_SCANCODE_PAGEUP;
 				}
 				else if (m == SDL_BUTTON_RIGHT ||
-					(m == SDL_BUTTON_WHEELDOWN && isSameSelection))
+					(MouseWheel(&gEventHandlers.mouse).y < 0 && isSameSelection))
 				{
-					c = SDLK_PAGEDOWN;
+					c = SDL_SCANCODE_PAGEDOWN;
 				}
 			}
 		}

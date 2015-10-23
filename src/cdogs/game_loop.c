@@ -32,7 +32,6 @@
 
 #include "config.h"
 #include "events.h"
-#include "music.h"
 #include "net_client.h"
 #include "net_server.h"
 #include "sounds.h"
@@ -73,12 +72,6 @@ void GameLoop(GameLoopData *data)
 			SDL_Delay(1);
 			//debug(D_MAX, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
 			continue;
-		}
-
-		if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
-		{
-			MusicSetPlaying(
-				&gSoundDevice, SDL_GetAppState() & SDL_APPINPUTFOCUS);
 		}
 
 		// Input

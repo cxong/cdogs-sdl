@@ -519,40 +519,40 @@ static void Open(void)
 		int c = GetKey(&gEventHandlers);
 		switch (c)
 		{
-			case SDLK_RETURN:
-			case SDLK_KP_ENTER:
-				if (!filename[0])
-				{
-					break;
-				}
-				doOpen = true;
+		case SDL_SCANCODE_RETURN:
+		case SDL_SCANCODE_KP_ENTER:
+			if (!filename[0])
+			{
 				break;
+			}
+			doOpen = true;
+			break;
 				
-			case SDLK_ESCAPE:
-				done = true;
-				break;
+		case SDL_SCANCODE_ESCAPE:
+			done = true;
+			break;
 				
-			case SDLK_BACKSPACE:
-				if (filename[0])
-					filename[strlen(filename) - 1] = 0;
-				break;
+		case SDL_SCANCODE_BACKSPACE:
+			if (filename[0])
+				filename[strlen(filename) - 1] = 0;
+			break;
 				
-			default:
-				if (strlen(filename) == sizeof(filename) - 1)
-				{
-					break;
-				}
-				c = KeyGetTyped(&gEventHandlers.keyboard);
-				if (c && c != '*' &&
-					(strlen(filename) > 1 || c != '-') &&
-					c != ':' && c != '<' && c != '>' && c != '?' &&
-					c != '|')
-				{
-					size_t si = strlen(filename);
-					filename[si + 1] = 0;
-					filename[si] = (char)c;
-				}
+		default:
+			if (strlen(filename) == sizeof(filename) - 1)
+			{
 				break;
+			}
+			c = KeyGetTyped(&gEventHandlers.keyboard);
+			if (c && c != '*' &&
+				(strlen(filename) > 1 || c != '-') &&
+				c != ':' && c != '<' && c != '>' && c != '?' &&
+				c != '|')
+			{
+				size_t si = strlen(filename);
+				filename[si + 1] = 0;
+				filename[si] = (char)c;
+			}
+			break;
 		}
 		if (doOpen)
 		{
@@ -623,8 +623,8 @@ static void Save(void)
 		int c = GetKey(&gEventHandlers);
 		switch (c)
 		{
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
+		case SDL_SCANCODE_RETURN:
+		case SDL_SCANCODE_KP_ENTER:
 			if (!filename[0])
 			{
 				break;
@@ -633,10 +633,10 @@ static void Save(void)
 			done = true;
 			break;
 
-		case SDLK_ESCAPE:
+		case SDL_SCANCODE_ESCAPE:
 			break;
 
-		case SDLK_BACKSPACE:
+		case SDL_SCANCODE_BACKSPACE:
 			if (filename[0])
 				filename[strlen(filename) - 1] = 0;
 			break;
@@ -811,7 +811,7 @@ static HandleInputResult HandleInput(
 
 	if (m &&
 		(m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
-		m == SDL_BUTTON_WHEELUP || m == SDL_BUTTON_WHEELDOWN))
+		MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
 		result.Redraw = true;
 		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
@@ -846,13 +846,15 @@ static HandleInputResult HandleInput(
 			if (!(o->Flags & UI_SELECT_ONLY) &&
 				(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
 			{
-				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_WHEELUP)
+				if (m == SDL_BUTTON_LEFT ||
+					MouseWheel(&gEventHandlers.mouse).y > 0)
 				{
-					c = SDLK_PAGEUP;
+					c = SDL_SCANCODE_PAGEUP;
 				}
-				else if (m == SDL_BUTTON_RIGHT || m == SDL_BUTTON_WHEELDOWN)
+				else if (m == SDL_BUTTON_RIGHT ||
+					MouseWheel(&gEventHandlers.mouse).y < 0)
 				{
-					c = SDLK_PAGEDOWN;
+					c = SDL_SCANCODE_PAGEDOWN;
 				}
 			}
 		}
@@ -923,22 +925,22 @@ static HandleInputResult HandleInput(
 	// Pan the camera based on keyboard cursor keys
 	if (mission)
 	{
-		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_LEFT))
+		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_LEFT))
 		{
 			camera.x -= CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
-		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_RIGHT))
+		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_RIGHT))
 		{
 			camera.x += CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
-		if (KeyIsDown(&gEventHandlers.keyboard, SDLK_UP))
+		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_UP))
 		{
 			camera.y -= CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
-		else if (KeyIsDown(&gEventHandlers.keyboard, SDLK_DOWN))
+		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_DOWN))
 		{
 			camera.y += CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
@@ -1066,11 +1068,11 @@ static HandleInputResult HandleInput(
 	{
 		switch (c)
 		{
-		case SDLK_F1:
+		case SDL_SCANCODE_F1:
 			HelpScreen();
 			break;
 
-		case SDLK_HOME:
+		case SDL_SCANCODE_HOME:
 			if (gCampaign.MissionIndex > 0)
 			{
 				gCampaign.MissionIndex--;
@@ -1078,7 +1080,7 @@ static HandleInputResult HandleInput(
 			Setup(0);
 			break;
 
-		case SDLK_END:
+		case SDL_SCANCODE_END:
 			if (gCampaign.MissionIndex < (int)gCampaign.Setting.Missions.size)
 			{
 				gCampaign.MissionIndex++;
@@ -1086,15 +1088,15 @@ static HandleInputResult HandleInput(
 			Setup(0);
 			break;
 
-		case SDLK_INSERT:
+		case SDL_SCANCODE_INSERT:
 			InputInsert(xc, *yc, mission);
 			break;
 
-		case SDLK_DELETE:
+		case SDL_SCANCODE_DELETE:
 			InputDelete(*xc, *yc);
 			break;
 
-		case SDLK_PAGEUP:
+		case SDL_SCANCODE_PAGEUP:
 			if (Change(o, *yc, 1))
 			{
 				fileChanged = 1;
@@ -1102,7 +1104,7 @@ static HandleInputResult HandleInput(
 			Setup(0);
 			break;
 
-		case SDLK_PAGEDOWN:
+		case SDL_SCANCODE_PAGEDOWN:
 			if (Change(o, *yc, -1))
 			{
 				fileChanged = 1;
@@ -1110,11 +1112,11 @@ static HandleInputResult HandleInput(
 			Setup(0);
 			break;
 
-		case SDLK_ESCAPE:
+		case SDL_SCANCODE_ESCAPE:
 			hasQuit = true;
 			break;
 
-		case SDLK_BACKSPACE:
+		case SDL_SCANCODE_BACKSPACE:
 			fileChanged |= UIObjectDelChar(sObjs);
 			break;
 
@@ -1210,7 +1212,6 @@ static void EditCampaign(void)
 	gCampaign.seed = 0;
 	Setup(1);
 
-	SDL_EnableKeyRepeat(0, 0);
 	Uint32 ticksNow = SDL_GetTicks();
 	sTicksElapsed = 0;
 	ticksAutosave = AUTOSAVE_INTERVAL_SECONDS * 1000;
@@ -1267,7 +1268,6 @@ int main(int argc, char *argv[])
 		printf("Failed to start SDL!\n");
 		return -1;
 	}
-	SDL_EnableUNICODE(SDL_ENABLE);
 
 	char buf[CDOGS_PATH_MAX];
 	char buf2[CDOGS_PATH_MAX];

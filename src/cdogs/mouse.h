@@ -35,11 +35,12 @@
 
 typedef struct
 {
-	char previousButtons[8];
-	char currentButtons[8];
-	char pressedButtons[8];
+	bool previousButtons[8];
+	bool currentButtons[8];
+	bool pressedButtons[8];
 	Vec2i previousPos;
 	Vec2i currentPos;
+	Vec2i wheel;
 	Pic *cursor;
 	Pic *trail;
 	Uint32 ticks;
@@ -53,11 +54,14 @@ void MouseInit(Mouse *mouse, Pic *cursor, Pic *trail, const bool hideMouse);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);
+void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y);
 void MousePostPoll(Mouse *mouse, Uint32 ticks);
-int MouseHasMoved(Mouse *mouse);
-int MouseGetPressed(Mouse *mouse);
-int MouseIsDown(Mouse *mouse, int button);
-int MouseIsPressed(Mouse *mouse, int button);
+bool MouseHasMoved(const Mouse *m);
+bool MouseGetPressed(const Mouse *m);
+bool MouseIsDown(const Mouse *m, const int button);
+bool MouseIsPressed(const Mouse *m, const int button);
+// Get wheel movement since last poll
+Vec2i MouseWheel(const Mouse *m);
 // Get mouse movement from a screen position
 // Note: also sets whether the mouse trail is drawn, and from where
 int MouseGetMove(Mouse *mouse, const Vec2i pos);

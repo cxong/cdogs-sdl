@@ -54,17 +54,25 @@
 #include <sys/types.h>
 
 #include <SDL_events.h>
+#include <SDL_image.h>
 #include <SDL_mouse.h>
 
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
 #include "grafx_bg.h"
-#include "hqx/hqx.h"
 #include "log.h"
 #include "palette.h"
 #include "files.h"
 #include "utils.h"
+
+
+typedef struct
+{
+	int Width;
+	int Height;
+	int ScaleFactor;
+} GraphicsMode;
 
 
 GraphicsDevice gGraphicsDevice;
@@ -82,31 +90,30 @@ void Gfx_ModePrev(void)
 	device->modeIndex--;
 	if (device->modeIndex < 0)
 	{
-		device->modeIndex = device->numValidModes - 1;
+		device->modeIndex = (int)device->validModes.size - 1;
 	}
-	Gfx_ModeSet(&device->validModes[device->modeIndex]);
+	Gfx_ModeSet(CArrayGet(&device->validModes, device->modeIndex));
 }
 
 void Gfx_ModeNext(void)
 {
 	GraphicsDevice *device = &gGraphicsDevice;
 	device->modeIndex++;
-	if (device->modeIndex >= device->numValidModes)
+	if (device->modeIndex >= (int)device->validModes.size)
 	{
 		device->modeIndex = 0;
 	}
-	Gfx_ModeSet(&device->validModes[device->modeIndex]);
+	Gfx_ModeSet(CArrayGet(&device->validModes, device->modeIndex));
 }
 
-static int FindValidMode(GraphicsDevice *device, int width, int height, int scaleFactor)
+static int FindValidMode(
+	GraphicsDevice *device, const int w, const int h, const int scale)
 {
-	int i;
-	for (i = 0; i < device->numValidModes; i++)
+	for (int i = 0; i < (int)device->validModes.size; i++)
 	{
-		GraphicsMode *mode = &device->validModes[i];
-		if (mode->Width == width &&
-			mode->Height == height &&
-			mode->ScaleFactor == scaleFactor)
+		const GraphicsMode *mode = CArrayGet(&device->validModes, i);
+		if (mode->Width == w && mode->Height == h &&
+			mode->ScaleFactor == scale)
 		{
 			return i;
 		}
@@ -115,46 +122,32 @@ static int FindValidMode(GraphicsDevice *device, int width, int height, int scal
 }
 
 static void AddGraphicsMode(
-	GraphicsDevice *device, int width, int height, int scaleFactor)
+	GraphicsDevice *device, const int w, const int h, const int scale)
 {
-	int i = 0;
-	int actualResolutionToAdd = width * height * scaleFactor * scaleFactor;
-	GraphicsMode *mode = NULL;
-
 	// Don't add if mode already exists
-	if (FindValidMode(device, width, height, scaleFactor) != -1)
+	if (FindValidMode(device, w, h, scale) != -1)
 	{
 		return;
 	}
 
-	for (; i < device->numValidModes; i++)
+	const int size = w * h * scale * scale;
+	int i;
+	for (i = 0; i < (int)device->validModes.size; i++)
 	{
 		// Ordered by actual resolution ascending and scale descending
-		int actualResolution;
-		mode = &device->validModes[i];
-		actualResolution =
-			mode->Width * mode->Height * mode->ScaleFactor * mode->ScaleFactor;
-		if (actualResolution > actualResolutionToAdd ||
-			(actualResolution == actualResolutionToAdd &&
-			mode->ScaleFactor < scaleFactor))
+		const GraphicsMode *mode = CArrayGet(&device->validModes, i);
+		const int actualResolution = mode->Width * mode->Height;
+		if (actualResolution > size ||
+			(actualResolution == size && mode->ScaleFactor < scale))
 		{
 			break;
 		}
 	}
-	device->numValidModes++;
-	CREALLOC(device->validModes, device->numValidModes * sizeof *device->validModes);
-	// If inserting, move later modes one place further
-	if (i < device->numValidModes - 1)
-	{
-		memmove(
-			device->validModes + i + 1,
-			device->validModes + i,
-			(device->numValidModes - 1 - i) * sizeof *device->validModes);
-	}
-	mode = &device->validModes[i];
-	mode->Width = width;
-	mode->Height = height;
-	mode->ScaleFactor = scaleFactor;
+	GraphicsMode mode;
+	mode.Width = w;
+	mode.Height = h;
+	mode.ScaleFactor = scale;
+	CArrayInsert(&device->validModes, i, &mode);
 }
 
 void GraphicsInit(GraphicsDevice *device, Config *c)
@@ -162,14 +155,15 @@ void GraphicsInit(GraphicsDevice *device, Config *c)
 	device->IsInitialized = 0;
 	device->IsWindowInitialized = 0;
 	device->screen = NULL;
+	device->renderer = NULL;
+	device->window = NULL;
 	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
-	device->validModes = NULL;
+	CArrayInit(&device->validModes, sizeof(GraphicsMode));
+	device->modeIndex = 0;
 	device->clipping.left = 0;
 	device->clipping.top = 0;
 	device->clipping.right = 0;
 	device->clipping.bottom = 0;
-	device->numValidModes = 0;
-	device->modeIndex = 0;
 	// Add default modes
 	AddGraphicsMode(device, 320, 240, 1);
 	AddGraphicsMode(device, 400, 300, 1);
@@ -177,47 +171,42 @@ void GraphicsInit(GraphicsDevice *device, Config *c)
 	AddGraphicsMode(device, 320, 240, 2);
 	device->buf = NULL;
 	device->bkg = NULL;
-	hqxInit();
 	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
 }
 
-void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
+static void AddSupportedGraphicsModes(GraphicsDevice *device)
 {
-	SDL_Rect** modes;
-	SDL_PixelFormat fmt;
-	int i;
-	memset(&fmt, 0, sizeof fmt);
-	fmt.BitsPerPixel = (Uint8)bpp;
-
-	modes = SDL_ListModes(&fmt, SDL_FULLSCREEN);
-	if (modes == (SDL_Rect**)0)
+	// TODO: multiple window support?
+	const int numDisplayModes = SDL_GetNumDisplayModes(0);
+	if (numDisplayModes < 1)
 	{
+		LOG(LM_MAIN, LL_ERROR, "no valid display modes: %s\n", SDL_GetError());
 		return;
 	}
-	if (modes == (SDL_Rect**)-1)
+	for (int i = 0; i < numDisplayModes; i++)
 	{
-		return;
-	}
-
-	for (i = 0; modes[i]; i++)
-	{
-		int validScaleFactors[] = { 1, 2, 3, 4 };
-		int j;
-		for (j = 0; j < 4; j++)
+		SDL_DisplayMode mode;
+		if (SDL_GetDisplayMode(0, i, &mode) != 0)
 		{
-			int scaleFactor = validScaleFactors[j];
-			int w, h;
-			if (modes[i]->w % scaleFactor || modes[i]->h % scaleFactor)
+			LOG(LM_MAIN, LL_ERROR, "cannot get display mode: %s\n",
+				SDL_GetError());
+			continue;
+		}
+		int validScaleFactors[] = { 1, 2, 3, 4 };
+		for (int j = 0; j < 4; j++)
+		{
+			const int scaleFactor = validScaleFactors[j];
+			if (mode.w % scaleFactor || mode.h % scaleFactor)
 			{
 				continue;
 			}
-			if (modes[i]->w % 4)
+			if (mode.w % 4)
 			{
 				// TODO: why does width have to be divisible by 4? 1366x768 doesn't work
 				continue;
 			}
-			w = modes[i]->w / scaleFactor;
-			h = modes[i]->h / scaleFactor;
+			const int w = mode.w / scaleFactor;
+			const int h = mode.h / scaleFactor;
 			if (w < 320 || h < 240)
 			{
 				break;
@@ -227,26 +216,11 @@ void AddSupportedModesForBPP(GraphicsDevice *device, int bpp)
 	}
 }
 
-void AddSupportedGraphicsModes(GraphicsDevice *device)
-{
-	AddSupportedModesForBPP(device, 16);
-	AddSupportedModesForBPP(device, 24);
-	AddSupportedModesForBPP(device, 32);
-}
-
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
 void GraphicsInitialize(GraphicsDevice *g, const bool force)
 {
-#ifdef __GCWZERO__
-	int sdl_flags = SDL_HWSURFACE | SDL_TRIPLEBUF;
-#else
-	int sdl_flags = SDL_SWSURFACE;
-#endif
-	unsigned int w, h = 0;
-	unsigned int rw, rh;
-
 	if (g->IsInitialized && !g->cachedConfig.needRestart)
 	{
 		return;
@@ -254,36 +228,23 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	if (!g->IsWindowInitialized)
 	{
-		/* only do this the first time */
-		char title[32];
-		debug(D_NORMAL, "setting caption and icon...\n");
-		sprintf(title, "C-Dogs SDL %s%s",
-			g->cachedConfig.IsEditor ? "Editor " : "",
-			CDOGS_SDL_VERSION);
-		SDL_WM_SetCaption(title, NULL);
 		char buf[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, "cdogs_icon.bmp");
-		g->icon = SDL_LoadBMP(buf);
-		SDL_WM_SetIcon(g->icon, NULL);
+		g->icon = IMG_Load(buf);
 		AddSupportedGraphicsModes(g);
+		g->IsWindowInitialized = true;
 	}
 
 	g->IsInitialized = false;
 
-	sdl_flags |= g->cachedConfig.IsEditor ? SDL_RESIZABLE : 0;
+	int sdlFlags = SDL_WINDOW_RESIZABLE;
 	if (g->cachedConfig.Fullscreen)
 	{
-		sdl_flags |= SDL_FULLSCREEN;
+		sdlFlags |= SDL_WINDOW_FULLSCREEN;
 	}
 
-	rw = w = g->cachedConfig.Res.x;
-	rh = h = g->cachedConfig.Res.y;
-
-	if (g->cachedConfig.ScaleFactor > 1)
-	{
-		rw *= g->cachedConfig.ScaleFactor;
-		rh *= g->cachedConfig.ScaleFactor;
-	}
+	const int w = g->cachedConfig.Res.x;
+	const int h = g->cachedConfig.Res.y;
 
 	if (!force && !g->cachedConfig.IsEditor)
 	{
@@ -296,24 +257,50 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		}
 	}
 
-	LOG(LM_MAIN, LL_INFO, "graphics mode(%dx%d %dx) actual(%dx%d)",
-		w, h, g->cachedConfig.ScaleFactor, rw, rh);
-	SDL_FreeSurface(g->screen);
-	g->screen = SDL_SetVideoMode(rw, rh, 32, sdl_flags);
-	if (g->screen == NULL)
+	LOG(LM_MAIN, LL_INFO, "graphics mode(%dx%d %dx)",
+		w, h, g->cachedConfig.ScaleFactor);
+	SDL_DestroyTexture(g->screen);
+	SDL_DestroyRenderer(g->renderer);
+	SDL_FreeFormat(g->Format);
+	SDL_DestroyWindow(g->window);
+	SDL_CreateWindowAndRenderer(w, h, sdlFlags, &g->window, &g->renderer);
+	if (g->window == NULL || g->renderer == NULL)
 	{
-		printf("ERROR: InitVideo: %s\n", SDL_GetError());
+		LOG(LM_MAIN, LL_ERROR, "cannot create window or renderer: %s\n",
+			SDL_GetError());
 		return;
 	}
-	SDL_PixelFormat *f = g->screen->format;
-	g->Amask = -1 & ~(f->Rmask | f->Gmask | f->Bmask);
-	Uint32 aMask = g->Amask;
-	g->Ashift = 0;
-	while (aMask != 0xff)
+	char title[32];
+	debug(D_NORMAL, "setting caption and icon...\n");
+	sprintf(title, "C-Dogs SDL %s%s",
+		g->cachedConfig.IsEditor ? "Editor " : "",
+		CDOGS_SDL_VERSION);
+	SDL_SetWindowTitle(g->window, title);
+	SDL_SetWindowIcon(g->window, g->icon);
+	g->Format = SDL_AllocFormat(SDL_GetWindowPixelFormat(g->window));
+	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"))
 	{
-		g->Ashift += 8;
-		aMask >>= 8;
+		LOG(LM_MAIN, LL_WARN, "cannot set render quality hint: %s\n",
+			SDL_GetError());
 	}
+	if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot set renderer logical size: %s\n",
+			SDL_GetError());
+		return;
+	}
+	g->screen = SDL_CreateTexture(
+		g->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+		w, h);
+	if (g->screen == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot create screen texture: %s\n",
+			SDL_GetError());
+		return;
+	}
+	// Values for ARGB8888
+	g->Amask = 0xFF000000;
+	g->Ashift = 24;
 
 	CFREE(g->buf);
 	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
@@ -328,20 +315,23 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		g->cachedConfig.Res.x, g->cachedConfig.Res.y);
 
 	g->IsInitialized = true;
-	g->IsWindowInitialized = true;
 	g->cachedConfig.Res.x = w;
 	g->cachedConfig.Res.y = h;
 	g->cachedConfig.needRestart = false;
 }
 
-void GraphicsTerminate(GraphicsDevice *device)
+void GraphicsTerminate(GraphicsDevice *g)
 {
 	debug(D_NORMAL, "Shutting down video...\n");
-	SDL_FreeSurface(device->icon);
-	SDL_FreeSurface(device->screen);
+	CArrayTerminate(&g->validModes);
+	SDL_FreeSurface(g->icon);
+	SDL_DestroyTexture(g->screen);
+	SDL_DestroyRenderer(g->renderer);
+	SDL_FreeFormat(g->Format);
+	SDL_DestroyWindow(g->window);
 	SDL_VideoQuit();
-	CFREE(device->buf);
-	CFREE(device->bkg);
+	CFREE(g->buf);
+	CFREE(g->bkg);
 }
 
 int GraphicsGetScreenSize(GraphicsConfig *config)

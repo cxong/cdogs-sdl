@@ -320,7 +320,7 @@ static void RunGameInput(void *data)
 			pausingDevice = p->inputDevice;
 		}
 	}
-	if (KeyIsPressed(&gEventHandlers.keyboard, SDLK_ESCAPE))
+	if (KeyIsPressed(&gEventHandlers.keyboard, SDL_SCANCODE_ESCAPE))
 	{
 		pausingDevice = INPUT_DEVICE_KEYBOARD;
 	}

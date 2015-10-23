@@ -1081,7 +1081,8 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 static bool KeyAvailable(
 	const int key, const key_code_e code, const int playerIndex)
 {
-	if (key == SDLK_ESCAPE || key == SDLK_F9 || key == SDLK_F10)
+	if (key == SDL_SCANCODE_ESCAPE ||
+		key == SDL_SCANCODE_F9 || key == SDL_SCANCODE_F10)
 	{
 		return false;
 	}
@@ -1124,7 +1125,7 @@ void MenuProcessChangeKey(menu_t *menu)
 	const int key = GetKey(&gEventHandlers);
 	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
 	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
-	if (key == SDLK_ESCAPE)
+	if (key == SDL_SCANCODE_ESCAPE)
 	{
 		MenuPlaySound(MENU_SOUND_BACK);
 	}

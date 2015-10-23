@@ -1,5 +1,4 @@
-add_subdirectory(hqx)
-include_directories(hqx ${SDL_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actor_placement.c
@@ -170,15 +169,6 @@ set(CDOGS_HEADERS
 	utils.h
 	vector.h
 	weapon.h)
-set(HQX_SOURCES
-	hqx/common.c
-	hqx/hq2x.c
-	hqx/hq3x.c
-	hqx/hq4x.c
-	hqx/init.c)
-set(HQX_HEADERS
-	hqx/common.h
-	hqx/hqx.h)
 set(NANOPB_SOURCES
 	proto/msg.pb.c
     proto/nanopb/pb_common.c
@@ -201,11 +191,17 @@ include_directories(proto/nanopb)
 
 add_library(cdogs STATIC
 	${CDOGS_SOURCES} ${CDOGS_HEADERS}
-	${HQX_SOURCES} ${HQX_HEADERS}
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
+
+# libSDLMain comes with libSDL if needed on certain platforms
+if(NOT SDLMAIN_LIBRARY)
+  set(SDLMAIN_LIBRARY "")
+endif()
+
 target_link_libraries(cdogs
 	json
-	${SDL_LIBRARY}
-	${SDLIMAGE_LIBRARY}
-	${SDLMIXER_LIBRARY}
+	${SDL2_LIBRARY}
+	${SDL2_IMAGE_LIBRARY}
+	${SDL2_MIXER_LIBRARY}
+	${SDLMAIN_LIBRARY}
 	${ENet_LIBRARIES})

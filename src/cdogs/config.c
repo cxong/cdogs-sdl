@@ -601,27 +601,27 @@ Config ConfigDefault(void)
 
 	Config input = ConfigNewGroup("Input");
 	Config pk0 = ConfigNewGroup("PlayerKeys0");
-	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDLK_LEFT, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDLK_RIGHT, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDLK_UP, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDLK_DOWN, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDL_SCANCODE_LEFT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDL_SCANCODE_RIGHT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDL_SCANCODE_UP, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDL_SCANCODE_DOWN, 0, 0, 0, NULL, NULL));
 #ifdef __GCWZERO__
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_LCTRL, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_LALT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_LCTRL, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_LALT, 0, 0, 0, NULL, NULL));
 #else
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDLK_RETURN, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDLK_RSHIFT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_RETURN, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_RSHIFT, 0, 0, 0, NULL, NULL));
 #endif
-	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDLK_TAB, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk0);
 	Config pk1 = ConfigNewGroup("PlayerKeys1");
-	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDLK_KP4, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDLK_KP6, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDLK_KP8, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDLK_KP2, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDLK_KP0, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDLK_KP_ENTER, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDLK_KP_PERIOD, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDL_SCANCODE_KP_4, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDL_SCANCODE_KP_6, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDL_SCANCODE_KP_8, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDL_SCANCODE_KP_2, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDL_SCANCODE_KP_0, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDL_SCANCODE_KP_ENTER, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDL_SCANCODE_KP_PERIOD, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk1);
 	ConfigGroupAdd(&root, input);
 

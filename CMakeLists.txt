@@ -52,9 +52,11 @@ else()
 	add_definitions(-DNDEBUG)
 endif()
 
-find_package(SDL REQUIRED)
-find_package(SDL_mixer REQUIRED)
-find_package(SDL_image REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/cmake")
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+find_package(SDL2_image REQUIRED)
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)
@@ -64,36 +66,6 @@ ELSE()
     SET(ENet_LIBRARIES ${ENet_LIBRARY})
 ENDIF()
 INCLUDE_DIRECTORIES(src/cdogs/enet/include)
-
-execute_process(
-	COMMAND "sh" "sdl-config" "--libs"
-	OUTPUT_VARIABLE SDL_LDFLAGS
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(
-	COMMAND "sh" "sdl-config" "--cflags"
-	OUTPUT_VARIABLE SDL_CFLAGS
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
-# Work-around for CMake SDL bug (need to link SDLmain before SDL)
-set(SDLMAIN_INDEX 0)
-set(SDL_INDEX 0)
-set(SDLMAIN_LIBRARY "")
-set(INDEX 0)
-foreach(SDL_LIBRARY_ITEM ${SDL_LIBRARY})
-	string(FIND ${SDL_LIBRARY_ITEM} "SDLmain" SDLMAIN_FIND_INDEX)
-	string(FIND ${SDL_LIBRARY_ITEM} "SDL.dll" SDL_FIND_INDEX)
-	if(${SDLMAIN_FIND_INDEX} GREATER -1)
-		SET(SDLMAIN_INDEX ${INDEX})
-		set(SDLMAIN_LIBRARY ${SDL_LIBRARY_ITEM})
-	endif()
-	if(${SDL_FIND_INDEX} GREATER -1)
-		SET(SDL_INDEX ${INDEX})
-	endif()
-	math(EXPR INDEX "${INDEX} + 1")
-endforeach()
-if(${SDLMAIN_INDEX} GREATER ${SDL_INDEX})
-	list(REMOVE_AT SDL_LIBRARY ${SDLMAIN_INDEX})
-	list(INSERT SDL_LIBRARY ${SDL_INDEX} ${SDLMAIN_LIBRARY})
-endif()
 
 add_definitions(-DPB_FIELD_16BIT)	# Allow larger field numbers in nanopb
 include_directories(src/cdogs/proto/nanopb)
@@ -164,14 +136,6 @@ enable_testing()
 add_subdirectory(src)
 
 # Build the shared library next to cdogs-sdl
-set_target_properties(hqx PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
-	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
-	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
-	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
-	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
-)
 set_target_properties(cdogs-sdl PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -269,7 +233,7 @@ elseif(APPLE)
 
 	# copy SDL frameworks into app bundle for Mac OS X
 	set(APPS cdogs-sdl cdogs-sdl-editor)
-	set(LIBS SDL SDL_image SDL_mixer)
+	set(LIBS SDL2 SDL2_image SDL2_mixer)
 	foreach(APP ${APPS})
 		foreach(LIB ${LIBS})
 			install(DIRECTORY /Library/Frameworks/${LIB}.framework
@@ -289,12 +253,12 @@ else()
 	# debian specific
 	set(CPACK_DEBIAN_PACKAGE_MAINTAINER "C-Dogs SDL Team")
 	set(CPACK_DEBIAN_PACKAGE_SECTION Games)
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libsdl-image1.2, libsdl-mixer1.2")
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libsdl-image2, libsdl-mixer2")
 
 	# fedora/suse specific
 	set(CPACK_RPM_PACKAGE_LICENSE "GPL2")
 	set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games/Action/Arcade")
-	set(CPACK_RPM_PACKAGE_REQUIRES "sdl_image >= 1.2, sdl_mixer >= 1.2")
+	set(CPACK_RPM_PACKAGE_REQUIRES "sdl_image >= 2, sdl_mixer >= 2")
 
 endif()
 include(CPack)

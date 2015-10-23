@@ -130,25 +130,12 @@ static void BrushLoadGuideImage(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->IsGuideImageNew = true;
-	SDL_Surface *image = IMG_Load(b->GuideImage);
-	if (!image)
+	SDL_FreeSurface(b->GuideImageSurface);
+	b->GuideImageSurface = IMG_Load(b->GuideImage);
+	if (b->GuideImageSurface == NULL)
 	{
-		// If new guide image is empty, unload last image anyway
-		if (strlen(b->GuideImage) == 0)
-		{
-			SDL_FreeSurface(b->GuideImageSurface);
-			b->GuideImageSurface = NULL;
-		}
 		return;
 	}
-	if (b->GuideImageSurface)
-	{
-		SDL_FreeSurface(b->GuideImageSurface);
-		b->GuideImageSurface = NULL;
-	}
-	b->GuideImageSurface = SDL_ConvertSurface(
-		image, gGraphicsDevice.screen->format, SDL_SWSURFACE);
-	SDL_FreeSurface(image);
 }
 static void BrushChangeGuideImageAlpha(void *data, int d)
 {

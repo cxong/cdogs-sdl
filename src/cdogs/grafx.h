@@ -50,7 +50,7 @@
 
 #include <stdbool.h>
 
-#include <SDL_video.h>
+#include <SDL.h>
 
 #include "c_array.h"
 #include "color.h"
@@ -71,13 +71,6 @@ typedef struct
 
 typedef struct
 {
-	int Width;
-	int Height;
-	int ScaleFactor;
-} GraphicsMode;
-
-typedef struct
-{
 	int left;
 	int top;
 	int right;
@@ -89,14 +82,16 @@ typedef struct
 	int IsInitialized;
 	int IsWindowInitialized;
 	SDL_Surface *icon;
-	SDL_Surface *screen;
+	SDL_Texture *screen;
+	SDL_Renderer *renderer;
+	SDL_Window *window;
+	SDL_PixelFormat *Format;
 	Uint32 Amask;
 	Uint8 Ashift;
 	GraphicsConfig cachedConfig;
-	GraphicsMode *validModes;
-	BlitClipping clipping;
-	int numValidModes;
+	CArray validModes;	// of GraphicsMode
 	int modeIndex;
+	BlitClipping clipping;
 	Uint32 *buf;
 	Uint32 *bkg;
 } GraphicsDevice;
@@ -105,7 +100,7 @@ extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device, Config *c);
 void GraphicsInitialize(GraphicsDevice *g, const bool force);
-void GraphicsTerminate(GraphicsDevice *device);
+void GraphicsTerminate(GraphicsDevice *g);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(

@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get install -qq libsdl-image1.2-dev libsdl-mixer1.2-dev rpm
+  - sudo apt-get install -qq libsdl-image2-dev libsdl-mixer2-dev rpm
   - if [ "$CC" = "gcc" ]; then sudo apt-get install -qq gcc-4.8; fi
 
 before_script:

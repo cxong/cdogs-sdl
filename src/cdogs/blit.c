@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@
 
 #include "config.h"
 #include "grafx.h"
-#include "hqx/hqx.h"
+#include "log.h"
 #include "palette.h"
 #include "utils.h" /* for debug() */
 
@@ -622,51 +622,16 @@ static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
 
 void BlitFlip(GraphicsDevice *g)
 {
-	Uint32 *pScreen = (Uint32 *)g->screen->pixels;
-	const Vec2i size = g->cachedConfig.Res;
-	const int memSize = size.x * size.y;
-	const int scalef = g->cachedConfig.ScaleFactor;
-
 	ApplyBrightness(
-		g->buf, size, ConfigGetInt(&gConfig, "Graphics.Brightness"));
+		g->buf, g->cachedConfig.Res,
+		ConfigGetInt(&gConfig, "Graphics.Brightness"));
 
-	if (SDL_LockSurface(g->screen) == -1)
+	SDL_UpdateTexture(
+		g->screen, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	if (SDL_RenderCopy(g->renderer, g->screen, NULL, NULL) != 0)
 	{
-		printf("Couldn't lock surface; not drawing\n");
+		LOG(LM_MAIN, LL_ERROR, "Failed to blit surface: %s\n", SDL_GetError());
 		return;
 	}
-
-	if (scalef == 1)
-	{
-		memcpy(pScreen, g->buf, sizeof *pScreen * memSize);
-	}
-	else if (ConfigGetEnum(&gConfig, "Graphics.ScaleMode") == SCALE_MODE_BILINEAR)
-	{
-		Bilinear(pScreen, g->buf, size.x, size.y, scalef);
-	}
-	else if (ConfigGetEnum(&gConfig, "Graphics.ScaleMode") == SCALE_MODE_HQX)
-	{
-		switch (scalef)
-		{
-		case 2:
-			hq2x_32(g->buf, pScreen, size.x, size.y);
-			break;
-		case 3:
-			hq3x_32(g->buf, pScreen, size.x, size.y);
-			break;
-		case 4:
-			hq4x_32(g->buf, pScreen, size.x, size.y);
-			break;
-		default:
-			assert(0);
-			break;
-		}
-	}
-	else
-	{
-		Scale8(pScreen, g->buf, size.x, size.y, scalef);
-	}
-
-	SDL_UnlockSurface(g->screen);
-	SDL_Flip(g->screen);
+	SDL_RenderPresent(g->renderer);
 }

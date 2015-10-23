@@ -55,6 +55,7 @@
 
 #include "config.h"
 #include "gamedata.h"
+#include "music.h"
 #include "pic_manager.h"
 
 
@@ -94,6 +95,10 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		switch (e.type)
 		{
 		case SDL_KEYDOWN:
+			if (e.key.repeat)
+			{
+				break;
+			}
 			KeyOnKeyDown(&handlers->keyboard, e.key.keysym);
 			break;
 		case SDL_KEYUP:
@@ -105,16 +110,29 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		case SDL_MOUSEBUTTONUP:
 			MouseOnButtonUp(&handlers->mouse, e.button.button);
 			break;
-		case SDL_VIDEORESIZE:
+		case SDL_MOUSEWHEEL:
+			MouseOnWheel(&handlers->mouse, e.wheel.x, e.wheel.y);
+			break;
+		case SDL_WINDOWEVENT_FOCUS_GAINED:
+			MusicSetPlaying(&gSoundDevice, true);
+			break;
+		case SDL_WINDOWEVENT_FOCUS_LOST:
+			if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
+			{
+				MusicSetPlaying(&gSoundDevice, false);
+			}
+			break;
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			handlers->HasResolutionChanged = true;
+			if (gGraphicsDevice.cachedConfig.IsEditor)
 			{
 				const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
 				GraphicsConfigSet(
 					&gGraphicsDevice.cachedConfig,
-					Vec2iNew(e.resize.w / scale, e.resize.h / scale),
+					Vec2iNew(e.window.data1 / scale, e.window.data2 / scale),
 					false,
 					scale);
 				GraphicsInitialize(&gGraphicsDevice, false);
-				handlers->HasResolutionChanged = 1;
 			}
 			break;
 		case SDL_QUIT:
@@ -132,7 +150,8 @@ static int GetKeyboardCmd(
 	keyboard_t *keyboard, const int kbIndex, const bool isPressed)
 {
 	int cmd = 0;
-	int (*keyFunc)(keyboard_t *, int) = isPressed ? KeyIsPressed : KeyIsDown;
+	bool (*keyFunc)(const keyboard_t *, const int) =
+		isPressed ? KeyIsPressed : KeyIsDown;
 	const input_keys_t *keys = &keyboard->PlayerKeys[kbIndex];
 
 	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
@@ -151,7 +170,8 @@ static int GetMouseCmd(
 	Mouse *mouse, bool isPressed, int useMouseMove, Vec2i pos)
 {
 	int cmd = 0;
-	int (*mouseFunc)(Mouse *, int) = isPressed ? MouseIsPressed : MouseIsDown;
+	bool (*mouseFunc)(const Mouse *, const int) =
+		isPressed ? MouseIsPressed : MouseIsDown;
 
 	if (useMouseMove)
 	{
@@ -159,13 +179,13 @@ static int GetMouseCmd(
 	}
 	else
 	{
-		if (mouseFunc(mouse, SDL_BUTTON_WHEELUP))			cmd |= CMD_UP;
-		else if (mouseFunc(mouse, SDL_BUTTON_WHEELDOWN))	cmd |= CMD_DOWN;
+		if (MouseWheel(mouse).y > 0)			cmd |= CMD_UP;
+		else if (MouseWheel(mouse).y < 0)		cmd |= CMD_DOWN;
 	}
 
-	if (mouseFunc(mouse, SDL_BUTTON_LEFT))					cmd |= CMD_BUTTON1;
-	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))					cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))				cmd |= CMD_MAP;
+	if (mouseFunc(mouse, SDL_BUTTON_LEFT))		cmd |= CMD_BUTTON1;
+	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))		cmd |= CMD_BUTTON2;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))	cmd |= CMD_MAP;
 
 	return cmd;
 }
@@ -270,7 +290,7 @@ void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 int GetMenuCmd(EventHandlers *handlers)
 {
 	keyboard_t *kb = &handlers->keyboard;
-	if (KeyIsPressed(kb, SDLK_ESCAPE) ||
+	if (KeyIsPressed(kb, SDL_SCANCODE_ESCAPE) ||
 		JoyIsPressed(&handlers->joysticks.joys[0], CMD_ESC))
 	{
 		return CMD_ESC;
@@ -281,15 +301,15 @@ int GetMenuCmd(EventHandlers *handlers)
 	if (!cmd)
 	{
 		// Check keyboard
-		if (KeyIsPressed(kb, SDLK_LEFT))		cmd |= CMD_LEFT;
-		else if (KeyIsPressed(kb, SDLK_RIGHT))	cmd |= CMD_RIGHT;
+		if (KeyIsPressed(kb, SDL_SCANCODE_LEFT))		cmd |= CMD_LEFT;
+		else if (KeyIsPressed(kb, SDL_SCANCODE_RIGHT))	cmd |= CMD_RIGHT;
 
-		if (KeyIsPressed(kb, SDLK_UP))			cmd |= CMD_UP;
-		else if (KeyIsPressed(kb, SDLK_DOWN))	cmd |= CMD_DOWN;
+		if (KeyIsPressed(kb, SDL_SCANCODE_UP))			cmd |= CMD_UP;
+		else if (KeyIsPressed(kb, SDL_SCANCODE_DOWN))	cmd |= CMD_DOWN;
 
-		if (KeyIsPressed(kb, SDLK_RETURN))		cmd |= CMD_BUTTON1;
+		if (KeyIsPressed(kb, SDL_SCANCODE_RETURN))		cmd |= CMD_BUTTON1;
 
-		if (KeyIsPressed(kb, SDLK_BACKSPACE))	cmd |= CMD_BUTTON2;
+		if (KeyIsPressed(kb, SDL_SCANCODE_BACKSPACE))	cmd |= CMD_BUTTON2;
 	}
 	if (!cmd && handlers->joysticks.numJoys > 0)
 	{
@@ -345,7 +365,7 @@ const char *InputGetButtonNameColor(
 			case CMD_BUTTON1: return SDL_GetKeyName(keys->button1);
 			case CMD_BUTTON2: return SDL_GetKeyName(keys->button2);
 			case CMD_MAP: return SDL_GetKeyName(keys->map);
-			case CMD_ESC: return SDL_GetKeyName(SDLK_ESCAPE);
+			case CMD_ESC: return SDL_GetKeyName(SDL_SCANCODE_ESCAPE);
 			default: CASSERT(false, "unknown button"); return NULL;
 			}
 		}
@@ -469,7 +489,8 @@ bool EventIsEscape(
 	}
 
 	// Check keyboard escape
-	if (KeyIsPressed(&handlers->keyboard, SDLK_ESCAPE) || handlers->HasQuit)
+	if (KeyIsPressed(&handlers->keyboard, SDL_SCANCODE_ESCAPE) ||
+		handlers->HasQuit)
 	{
 		return true;
 	}

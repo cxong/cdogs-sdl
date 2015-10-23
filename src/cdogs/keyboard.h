@@ -29,14 +29,15 @@
 #pragma once
 
 #include <SDL_events.h>
-#include <SDL_keysym.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
 #include "config.h"
 
 typedef struct
 {
 	bool isPressed;
-	Uint16 unicode;
+	SDL_Keycode keycode;
 } KeyPress;
 
 typedef struct
@@ -66,27 +67,26 @@ const char *KeycodeStr(int k);
 
 typedef struct
 {
-	KeyPress previousKeys[SDLK_LAST];
-	KeyPress currentKeys[SDLK_LAST];
-	KeyPress pressedKeys[SDLK_LAST];
-	SDLMod modState;
+	KeyPress previousKeys[SDL_NUM_SCANCODES];
+	KeyPress currentKeys[SDL_NUM_SCANCODES];
+	KeyPress pressedKeys[SDL_NUM_SCANCODES];
+	SDL_Keymod modState;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
-	int isFirstRepeat;
-	int pressedKeysBuffer[8];
+	bool isFirstRepeat;
 	input_keys_t PlayerKeys[MAX_KEYBOARD_CONFIGS];
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);
 void KeyLoadPlayerKeys(input_keys_t *keys, Config *c);
 void KeyPrePoll(keyboard_t *keyboard);
-void KeyOnKeyDown(keyboard_t *keyboard, SDL_keysym s);
-void KeyOnKeyUp(keyboard_t *keyboard, SDL_keysym s);
+void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s);
+void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s);
 void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks);
-int KeyIsDown(keyboard_t *keyboard, int key);
-int KeyIsPressed(keyboard_t *keyboard, int key);
-int KeyIsReleased(keyboard_t *keyboard, int key);
-int KeyGetPressed(keyboard_t *keyboard);
-int KeyGetTyped(keyboard_t *keyboard);
+bool KeyIsDown(const keyboard_t *k, const int key);
+bool KeyIsPressed(const keyboard_t *k, const int key);
+bool KeyIsReleased(const keyboard_t *k, const int key);
+int KeyGetPressed(const keyboard_t *k);
+int KeyGetTyped(const keyboard_t *k);
 
 int KeyGet(const input_keys_t *keys, const key_code_e keyCode);

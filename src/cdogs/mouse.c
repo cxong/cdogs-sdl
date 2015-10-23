@@ -80,6 +80,7 @@ void MousePrePoll(Mouse *mouse)
 		mouse->previousButtons,
 		mouse->currentButtons,
 		sizeof mouse->previousButtons);
+	mouse->wheel = Vec2iZero();
 	mouse->previousPos = mouse->currentPos;
 	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
 	mouse->currentPos = Vec2iScaleDiv(
@@ -100,6 +101,10 @@ void MouseOnButtonUp(Mouse *mouse, Uint8 button)
 		mouse->pressedButtons[button] = 1;
 	}
 	mouse->currentButtons[button] = 0;
+}
+void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y)
+{
+	m->wheel = Vec2iNew(x, y);
 }
 
 void MousePostPoll(Mouse *mouse, Uint32 ticks)
@@ -148,17 +153,16 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 	mouse->ticks = ticks;
 }
 
-int MouseHasMoved(Mouse *mouse)
+bool MouseHasMoved(const Mouse *m)
 {
-	return !Vec2iEqual(mouse->previousPos, mouse->currentPos);
+	return !Vec2iEqual(m->previousPos, m->currentPos);
 }
 
-int MouseGetPressed(Mouse *mouse)
+bool MouseGetPressed(const Mouse *m)
 {
-	int i;
-	for (i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)
 	{
-		if (mouse->pressedButtons[i])
+		if (m->pressedButtons[i])
 		{
 			return i;
 		}
@@ -166,14 +170,19 @@ int MouseGetPressed(Mouse *mouse)
 	return 0;
 }
 
-int MouseIsPressed(Mouse *mouse, int button)
+bool MouseIsPressed(const Mouse *m, const int button)
 {
-	return mouse->pressedButtons[button];
+	return m->pressedButtons[button];
 }
 
-int MouseIsDown(Mouse *mouse, int button)
+bool MouseIsDown(const Mouse *m, const int button)
 {
-	return mouse->currentButtons[button];
+	return m->currentButtons[button];
+}
+
+Vec2i MouseWheel(const Mouse *m)
+{
+	return m->wheel;
 }
 
 int MouseGetMove(Mouse *mouse, const Vec2i pos)
