@@ -1,25 +1,27 @@
+sudo: false
+
 language: c
 
 compiler:
   - gcc
   - clang
 
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
+addons:
+  apt:
+    packages:
+    - rpm
 
 install:
-  - if [ "$CC" = "gcc" ]; then sudo apt-get install -qq gcc-4.8; fi
   # SDL2
   - curl -O http://www.libsdl.org/release/SDL2-2.0.3.tar.gz
   - tar -xzvf SDL2-2.0.3.tar.gz
-  - (cd SDL2-2.0.3 && ./configure && make && sudo make install)
+  - cd SDL2-2.0.3 && ./configure --prefix=$HOME/sdl2 && make && make install
   - curl -O https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.0.tar.gz
   - tar -xzvf SDL2_image-2.0.0.tar.gz
-  - (cd SDL2_image-2.0.0 && ./configure && make && sudo make install)
+  - cd SDL2_image-2.0.0 && ./configure --prefix=$HOME/sdl2_image && make && make install
   - curl -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.0.tar.gz
   - tar -xzvf SDL2_mixer-2.0.0.tar.gz
-  - (cd SDL2_mixer-2.0.0 && ./configure && make && sudo make install)
+  - cd SDL2_mixer-2.0.0 && ./configure --prefix=$HOME/sdl2_mixer && make && make install
 before_script:
     # force newer gcc version
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
@@ -29,12 +31,11 @@ before_script:
   - git submodule update --init --recursive
 
 script:
-  - cmake .
+  - cmake -DCMAKE_INSTALL_PREFIX=. .
   - make -j2
   - make test
 before_deploy:
-  - "cd ./src && sudo make package"
-  - "sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*"
+  - make package
 deploy:
   provider: releases
   api_key:
