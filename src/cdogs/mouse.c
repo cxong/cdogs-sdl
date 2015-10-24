@@ -158,7 +158,7 @@ bool MouseHasMoved(const Mouse *m)
 	return !Vec2iEqual(m->previousPos, m->currentPos);
 }
 
-bool MouseGetPressed(const Mouse *m)
+int MouseGetPressed(const Mouse *m)
 {
 	for (int i = 0; i < 8; i++)
 	{

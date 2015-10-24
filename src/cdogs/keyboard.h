@@ -87,6 +87,6 @@ bool KeyIsDown(const keyboard_t *k, const int key);
 bool KeyIsPressed(const keyboard_t *k, const int key);
 bool KeyIsReleased(const keyboard_t *k, const int key);
 SDL_Scancode KeyGetPressed(const keyboard_t *k);
-int KeyGetTyped(const keyboard_t *k);
+SDL_Keycode KeyGetTyped(const keyboard_t *k);
 
 SDL_Scancode KeyGet(const InputKeys *keys, const key_code_e keyCode);

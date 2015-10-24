@@ -57,7 +57,7 @@ void MouseOnButtonUp(Mouse *mouse, Uint8 button);
 void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y);
 void MousePostPoll(Mouse *mouse, Uint32 ticks);
 bool MouseHasMoved(const Mouse *m);
-bool MouseGetPressed(const Mouse *m);
+int MouseGetPressed(const Mouse *m);
 bool MouseIsDown(const Mouse *m, const int button);
 bool MouseIsPressed(const Mouse *m, const int button);
 // Get wheel movement since last poll

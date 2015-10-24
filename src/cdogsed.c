@@ -181,8 +181,6 @@ typedef struct
 	bool WillDisplayAutomap;
 	bool Done;
 } HandleInputResult;
-static HandleInputResult HandleInput(
-	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap);
 
 static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 {
@@ -764,7 +762,8 @@ static void Delete(int xc, int yc)
 static void InputInsert(int *xc, const int yc, Mission *mission);
 static void InputDelete(const int xc, const int yc);
 static HandleInputResult HandleInput(
-	int c, int m, int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
+	SDL_Scancode sc, const int m,
+	int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
 {
 	HandleInputResult result = { false, false, false, false };
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
@@ -849,12 +848,12 @@ static HandleInputResult HandleInput(
 				if (m == SDL_BUTTON_LEFT ||
 					MouseWheel(&gEventHandlers.mouse).y > 0)
 				{
-					c = SDL_SCANCODE_PAGEUP;
+					sc = SDL_SCANCODE_PAGEUP;
 				}
 				else if (m == SDL_BUTTON_RIGHT ||
 					MouseWheel(&gEventHandlers.mouse).y < 0)
 				{
-					c = SDL_SCANCODE_PAGEDOWN;
+					sc = SDL_SCANCODE_PAGEDOWN;
 				}
 			}
 		}
@@ -957,13 +956,14 @@ static HandleInputResult HandleInput(
 		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
 	}
 	bool hasQuit = false;
-	if (c != 0)
+	if (sc != SDL_SCANCODE_UNKNOWN)
 	{
 		result.Redraw = true;
 	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
-		switch (c)
+		const SDL_Keycode kc = SDL_GetKeyFromScancode(sc);
+		switch (kc)
 		{
 		case 'z':
 			// Undo
@@ -1066,7 +1066,7 @@ static HandleInputResult HandleInput(
 	}
 	else
 	{
-		switch (c)
+		switch (sc)
 		{
 		case SDL_SCANCODE_F1:
 			HelpScreen();
@@ -1121,10 +1121,12 @@ static HandleInputResult HandleInput(
 			break;
 
 		default:
-			c = KeyGetTyped(&gEventHandlers.keyboard);
-			if (c)
 			{
-				fileChanged |= UIObjectAddChar(sObjs, (char)c);
+				SDL_Keycode kc = KeyGetTyped(&gEventHandlers.keyboard);
+				if (kc)
+				{
+					fileChanged |= UIObjectAddChar(sObjs, (char)kc);
+				}
 			}
 			break;
 		}
@@ -1229,12 +1231,12 @@ static void EditCampaign(void)
 
 		debug(D_MAX, "Polling for input\n");
 		EventPoll(&gEventHandlers, SDL_GetTicks());
-		int c = KeyGetPressed(&gEventHandlers.keyboard);
-		int m = MouseGetPressed(&gEventHandlers.mouse);
+		const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
+		const int m = MouseGetPressed(&gEventHandlers.mouse);
 
 		debug(D_MAX, "Handling input\n");
 		HandleInputResult result = HandleInput(
-			c, m, &xc, &yc, &xcOld, &ycOld, &scrap);
+			sc, m, &xc, &yc, &xcOld, &ycOld, &scrap);
 		if (result.Done)
 		{
 			break;

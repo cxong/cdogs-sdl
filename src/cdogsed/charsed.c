@@ -506,12 +506,13 @@ void RestoreBkg(int x, int y, unsigned int *bkg)
 }
 
 static void HandleInput(
-	int c, int *xc, int *yc,
+	const SDL_Scancode sc, int *xc, int *yc,
 	int *idx, CharacterStore *store, Character *scrap, int *done)
 {
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
-		switch (c)
+		const SDL_Keycode kc = SDL_GetKeyFromScancode(sc);
+		switch (kc)
 		{
 		case 'x':
 			if (*idx < (int)store->OtherChars.size)
@@ -543,7 +544,7 @@ static void HandleInput(
 	}
 	else
 	{
-		switch (c)
+		switch (sc)
 		{
 		case SDL_SCANCODE_HOME:
 			if (*idx > 0)
@@ -628,10 +629,9 @@ void EditCharacters(CampaignSetting *setting)
 
 	while (!done)
 	{
-		int c, m;
 		EventPoll(&gEventHandlers, SDL_GetTicks());
-		c = KeyGetPressed(&gEventHandlers.keyboard);
-		m = MouseGetPressed(&gEventHandlers.mouse);
+		SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
+		const int m = MouseGetPressed(&gEventHandlers.mouse);
 		if (m)
 		{
 			UIObject *o;
@@ -665,17 +665,17 @@ void EditCharacters(CampaignSetting *setting)
 				if (m == SDL_BUTTON_LEFT ||
 					(MouseWheel(&gEventHandlers.mouse).y > 0 && isSameSelection))
 				{
-					c = SDL_SCANCODE_PAGEUP;
+					sc = SDL_SCANCODE_PAGEUP;
 				}
 				else if (m == SDL_BUTTON_RIGHT ||
 					(MouseWheel(&gEventHandlers.mouse).y < 0 && isSameSelection))
 				{
-					c = SDL_SCANCODE_PAGEDOWN;
+					sc = SDL_SCANCODE_PAGEDOWN;
 				}
 			}
 		}
 
-		HandleInput(c, &xc, &yc, &idx, &setting->characters, &scrap, &done);
+		HandleInput(sc, &xc, &yc, &idx, &setting->characters, &scrap, &done);
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}

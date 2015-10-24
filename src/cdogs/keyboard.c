@@ -195,7 +195,7 @@ SDL_Scancode KeyGetPressed(const keyboard_t *k)
 	return 0;
 }
 
-int KeyGetTyped(const keyboard_t *k)
+SDL_Keycode KeyGetTyped(const keyboard_t *k)
 {
 	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
 	{
@@ -204,7 +204,7 @@ int KeyGetTyped(const keyboard_t *k)
 			keycode >= (SDL_Keycode)' ' &&
 			keycode <= (SDL_Keycode)'z')
 		{
-			return (int)keycode;
+			return keycode;
 		}
 	}
 	return 0;
