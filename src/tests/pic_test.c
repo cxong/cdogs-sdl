@@ -59,7 +59,11 @@ void hqxInit(void)
 
 FEATURE(1, "Pic load")
 	SCENARIO("Load png")
-		ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, 1);
+		if (SDL_Init(SDL_INIT_VIDEO) != 0)
+		{
+			printf("Failed to init SDL: %s\n", SDL_GetError());
+			ASSERT(false, 1);
+		}
 		gConfig = ConfigDefault();
 		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
 		GraphicsInit(&gGraphicsDevice, &gConfig);
