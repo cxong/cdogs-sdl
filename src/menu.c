@@ -847,9 +847,9 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 					else
 					{
 						const int pi = subMenu->u.changeKey.playerIndex;
-						const input_keys_t *keys =
+						const InputKeys *keys =
 							&gEventHandlers.keyboard.PlayerKeys[pi];
-						keyName = SDL_GetKeyName(KeyGet(
+						keyName = SDL_GetScancodeName(KeyGet(
 							keys, subMenu->u.changeKey.code));
 					}
 					DisplayMenuItem(
@@ -1079,7 +1079,7 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 }
 
 static bool KeyAvailable(
-	const int key, const key_code_e code, const int playerIndex)
+	const SDL_Scancode key, const key_code_e code, const int playerIndex)
 {
 	if (key == SDL_SCANCODE_ESCAPE ||
 		key == SDL_SCANCODE_F9 || key == SDL_SCANCODE_F10)
@@ -1091,13 +1091,10 @@ static bool KeyAvailable(
 		return false;
 	}
 
+	// Check if the key is being used by another control
 	char buf[256];
 	sprintf(buf, "Input.PlayerKeys%d", playerIndex);
-	input_keys_t keys;
-	KeyLoadPlayerKeys(&keys, ConfigGet(&gConfig, buf));
-	sprintf(buf, "Input.PlayerKeys%d", 1 - playerIndex);
-	input_keys_t keysOther;
-	KeyLoadPlayerKeys(&keysOther, ConfigGet(&gConfig, buf));
+	InputKeys keys = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	for (key_code_e i = 0; i < KEY_CODE_MAP; i++)
 	{
 		if (i != code && KeyGet(&keys, i) == key)
@@ -1106,6 +1103,9 @@ static bool KeyAvailable(
 		}
 	}
 
+	// Check if the other player is using the key
+	sprintf(buf, "Input.PlayerKeys%d", 1 - playerIndex);
+	InputKeys keysOther = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	if (keysOther.left == key ||
 		keysOther.right == key ||
 		keysOther.up == key ||
@@ -1113,16 +1113,16 @@ static bool KeyAvailable(
 		keysOther.button1 == key ||
 		keysOther.button2 == key)
 	{
-		return 0;
+		return false;
 	}
 
-	return 1;
+	return true;
 }
 
 void MenuProcessChangeKey(menu_t *menu)
 {
 	// wait until user has pressed a new button
-	const int key = GetKey(&gEventHandlers);
+	const SDL_Scancode key = GetKey(&gEventHandlers);
 	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
 	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
 	if (key == SDL_SCANCODE_ESCAPE)
@@ -1137,13 +1137,13 @@ void MenuProcessChangeKey(menu_t *menu)
 			sprintf(buf, "Input.PlayerKeys%d.%s", pi, KeycodeStr(code));
 			ConfigGet(&gConfig, buf)->u.Int.Value = key;
 			sprintf(buf, "Input.PlayerKeys%d", pi);
-			KeyLoadPlayerKeys(
-				&gEventHandlers.keyboard.PlayerKeys[pi],
+			gEventHandlers.keyboard.PlayerKeys[pi] = KeyLoadPlayerKeys(
 				ConfigGet(&gConfig, buf));
 		}
 		else
 		{
 			ConfigGet(&gConfig, "Input.PlayerKeys0.map")->u.Int.Value = key;
+			gEventHandlers.keyboard.PlayerKeys[0].map = key;
 		}
 		MenuPlaySound(MENU_SOUND_ENTER);
 	}

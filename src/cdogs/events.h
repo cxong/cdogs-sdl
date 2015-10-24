@@ -80,7 +80,7 @@ int GetOnePlayerCmd(
 int GetGameCmd(
 	EventHandlers *handlers,
 	const PlayerData *playerData, const Vec2i playerPos);
-int GetKey(EventHandlers *handlers);
+SDL_Scancode GetKey(EventHandlers *handlers);
 typedef struct
 {
 	bool IsOK;

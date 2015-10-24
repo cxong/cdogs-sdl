@@ -152,7 +152,7 @@ static int GetKeyboardCmd(
 	int cmd = 0;
 	bool (*keyFunc)(const keyboard_t *, const int) =
 		isPressed ? KeyIsPressed : KeyIsDown;
-	const input_keys_t *keys = &keyboard->PlayerKeys[kbIndex];
+	const InputKeys *keys = &keyboard->PlayerKeys[kbIndex];
 
 	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
 	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
@@ -354,18 +354,18 @@ const char *InputGetButtonNameColor(
 		}
 	#else
 		{
-			const input_keys_t *keys =
+			const InputKeys *keys =
 				&gEventHandlers.keyboard.PlayerKeys[dIndex];
 			switch (cmd)
 			{
-			case CMD_LEFT: return SDL_GetKeyName(keys->left);
-			case CMD_RIGHT: return SDL_GetKeyName(keys->right);
-			case CMD_UP: return SDL_GetKeyName(keys->up);
-			case CMD_DOWN: return SDL_GetKeyName(keys->down);
-			case CMD_BUTTON1: return SDL_GetKeyName(keys->button1);
-			case CMD_BUTTON2: return SDL_GetKeyName(keys->button2);
-			case CMD_MAP: return SDL_GetKeyName(keys->map);
-			case CMD_ESC: return SDL_GetKeyName(SDL_SCANCODE_ESCAPE);
+			case CMD_LEFT: return SDL_GetScancodeName(keys->left);
+			case CMD_RIGHT: return SDL_GetScancodeName(keys->right);
+			case CMD_UP: return SDL_GetScancodeName(keys->up);
+			case CMD_DOWN: return SDL_GetScancodeName(keys->down);
+			case CMD_BUTTON1: return SDL_GetScancodeName(keys->button1);
+			case CMD_BUTTON2: return SDL_GetScancodeName(keys->button2);
+			case CMD_MAP: return SDL_GetScancodeName(keys->map);
+			case CMD_ESC: return SDL_GetScancodeName(SDL_SCANCODE_ESCAPE);
 			default: CASSERT(false, "unknown button"); return NULL;
 			}
 		}
@@ -422,15 +422,15 @@ void InputGetDirectionNames(
 	}
 }
 
-int GetKey(EventHandlers *handlers)
+SDL_Scancode GetKey(EventHandlers *handlers)
 {
-	int key_pressed = 0;
+	SDL_Scancode k = SDL_SCANCODE_UNKNOWN;
 	do
 	{
 		EventPoll(handlers, SDL_GetTicks());
-		key_pressed = KeyGetPressed(&handlers->keyboard);
-	} while (!key_pressed);
-	return key_pressed;
+		k = KeyGetPressed(&handlers->keyboard);
+	} while (k == SDL_SCANCODE_UNKNOWN);
+	return k;
 }
 
 static GameLoopResult WaitResult(

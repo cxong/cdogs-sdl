@@ -30,6 +30,7 @@
 
 #include <string.h>
 
+#include "log.h"
 #include "utils.h"
 
 
@@ -63,18 +64,20 @@ void KeyInit(keyboard_t *keyboard)
 	{
 		char buf[256];
 		sprintf(buf, "Input.PlayerKeys%d", i);
-		KeyLoadPlayerKeys(&keyboard->PlayerKeys[i], ConfigGet(&gConfig, buf));
+		keyboard->PlayerKeys[i] = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	}
 }
-void KeyLoadPlayerKeys(input_keys_t *keys, Config *c)
+InputKeys KeyLoadPlayerKeys(Config *c)
 {
-	keys->left = ConfigGetInt(c, "left");
-	keys->right = ConfigGetInt(c, "right");
-	keys->up = ConfigGetInt(c, "up");
-	keys->down = ConfigGetInt(c, "down");
-	keys->button1 = ConfigGetInt(c, "button1");
-	keys->button2 = ConfigGetInt(c, "button2");
-	keys->map = ConfigGetInt(c, "map");
+	InputKeys k;
+	k.left = (SDL_Scancode)ConfigGetInt(c, "left");
+	k.right = (SDL_Scancode)ConfigGetInt(c, "right");
+	k.up = (SDL_Scancode)ConfigGetInt(c, "up");
+	k.down = (SDL_Scancode)ConfigGetInt(c, "down");
+	k.button1 = (SDL_Scancode)ConfigGetInt(c, "button1");
+	k.button2 = (SDL_Scancode)ConfigGetInt(c, "button2");
+	k.map = (SDL_Scancode)ConfigGetInt(c, "map");
+	return k;
 }
 
 void KeyPrePoll(keyboard_t *keyboard)
@@ -100,7 +103,7 @@ void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s)
 }
 void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s)
 {
-	keyboard->currentKeys[s.sym].isPressed = 0;
+	keyboard->currentKeys[s.scancode].isPressed = 0;
 }
 
 void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
@@ -180,9 +183,9 @@ bool KeyIsReleased(const keyboard_t *k, const int key)
 	return !KeyIsDown(k, key) && k->previousKeys[key].isPressed;
 }
 
-int KeyGetPressed(const keyboard_t *k)
+SDL_Scancode KeyGetPressed(const keyboard_t *k)
 {
-	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+	for (SDL_Scancode i = 0; i < SDL_NUM_SCANCODES; i++)
 	{
 		if (KeyIsPressed(k, i))
 		{
@@ -207,7 +210,7 @@ int KeyGetTyped(const keyboard_t *k)
 	return 0;
 }
 
-int KeyGet(const input_keys_t *keys, const key_code_e keyCode)
+SDL_Scancode KeyGet(const InputKeys *keys, const key_code_e keyCode)
 {
 	switch (keyCode)
 	{
@@ -226,8 +229,7 @@ int KeyGet(const input_keys_t *keys, const key_code_e keyCode)
 	case KEY_CODE_MAP:
 		return keys->map;
 	default:
-		printf("Error unhandled key code %d\n", keyCode);
-		CASSERT(false, "Unhandled key code");
-		return 0;
+		LOG(LM_MAIN, LL_ERROR, "Unhandled key code %d\n", (int)keyCode);
+		return SDL_SCANCODE_UNKNOWN;
 	}
 }

@@ -42,14 +42,14 @@ typedef struct
 
 typedef struct
 {
-	int left;
-	int right;
-	int up;
-	int down;
-	int button1;
-	int button2;
-	int map;
-} input_keys_t;
+	SDL_Scancode left;
+	SDL_Scancode right;
+	SDL_Scancode up;
+	SDL_Scancode down;
+	SDL_Scancode button1;
+	SDL_Scancode button2;
+	SDL_Scancode map;
+} InputKeys;
 #define MAX_KEYBOARD_CONFIGS 2
 
 typedef enum
@@ -74,11 +74,11 @@ typedef struct
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
-	input_keys_t PlayerKeys[MAX_KEYBOARD_CONFIGS];
+	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);
-void KeyLoadPlayerKeys(input_keys_t *keys, Config *c);
+InputKeys KeyLoadPlayerKeys(Config *c);
 void KeyPrePoll(keyboard_t *keyboard);
 void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s);
 void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s);
@@ -86,7 +86,7 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks);
 bool KeyIsDown(const keyboard_t *k, const int key);
 bool KeyIsPressed(const keyboard_t *k, const int key);
 bool KeyIsReleased(const keyboard_t *k, const int key);
-int KeyGetPressed(const keyboard_t *k);
+SDL_Scancode KeyGetPressed(const keyboard_t *k);
 int KeyGetTyped(const keyboard_t *k);
 
-int KeyGet(const input_keys_t *keys, const key_code_e keyCode);
+SDL_Scancode KeyGet(const InputKeys *keys, const key_code_e keyCode);

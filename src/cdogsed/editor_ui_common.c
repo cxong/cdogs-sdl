@@ -98,8 +98,8 @@ bool ConfirmScreen(const char *info, const char *msg)
 	FontStr(msg, Vec2iNew((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
 	BlitFlip(&gGraphicsDevice);
 
-	int c = GetKey(&gEventHandlers);
-	return (c == 'Y' || c == 'y');
+	SDL_Keycode k = SDL_GetKeyFromScancode(GetKey(&gEventHandlers));
+	return k == SDLK_y;
 }
 
 void ClearScreen(GraphicsDevice *g)
