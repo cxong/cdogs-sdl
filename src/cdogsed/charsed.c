@@ -540,6 +540,10 @@ static void HandleInput(
 			*idx = store->OtherChars.size - 1;
 			fileChanged = 1;
 			break;
+
+		default:
+			// do nothing
+			break;
 		}
 	}
 	else
@@ -609,6 +613,10 @@ static void HandleInput(
 
 		case SDL_SCANCODE_ESCAPE:
 			*done = 1;
+			break;
+
+		default:
+			// do nothing
 			break;
 		}
 	}

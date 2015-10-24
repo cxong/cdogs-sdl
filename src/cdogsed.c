@@ -1062,6 +1062,10 @@ static HandleInputResult HandleInput(
 			UIObjectUnhighlight(sObjs);
 			CArrayTerminate(&sDrawObjs);
 			break;
+
+		default:
+			// do nothing
+			break;
 		}
 	}
 	else
