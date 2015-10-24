@@ -90,7 +90,7 @@ typedef struct
 	Uint32 Amask;
 	Uint8 Ashift;
 	GraphicsConfig cachedConfig;
-	CArray validModes;	// of GraphicsMode
+	CArray validModes;	// of Vec2i, w x h
 	int modeIndex;
 	BlitClipping clipping;
 	Uint32 *buf;

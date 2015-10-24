@@ -67,21 +67,12 @@
 #include "utils.h"
 
 
-typedef struct
-{
-	int Width;
-	int Height;
-	int ScaleFactor;
-} GraphicsMode;
-
-
 GraphicsDevice gGraphicsDevice;
 
-static void Gfx_ModeSet(const GraphicsMode *mode)
+static void Gfx_ModeSet(const Vec2i *mode)
 {
-	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->Width;
-	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->Height;
-	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = mode->ScaleFactor;
+	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->x;
+	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->y;
 }
 
 void Gfx_ModePrev(void)
@@ -106,14 +97,12 @@ void Gfx_ModeNext(void)
 	Gfx_ModeSet(CArrayGet(&device->validModes, device->modeIndex));
 }
 
-static int FindValidMode(
-	GraphicsDevice *device, const int w, const int h, const int scale)
+static int FindValidMode(GraphicsDevice *device, const int w, const int h)
 {
 	for (int i = 0; i < (int)device->validModes.size; i++)
 	{
-		const GraphicsMode *mode = CArrayGet(&device->validModes, i);
-		if (mode->Width == w && mode->Height == h &&
-			mode->ScaleFactor == scale)
+		const Vec2i *mode = CArrayGet(&device->validModes, i);
+		if (mode->x == w && mode->y == h)
 		{
 			return i;
 		}
@@ -121,32 +110,27 @@ static int FindValidMode(
 	return -1;
 }
 
-static void AddGraphicsMode(
-	GraphicsDevice *device, const int w, const int h, const int scale)
+static void AddGraphicsMode(GraphicsDevice *device, const int w, const int h)
 {
 	// Don't add if mode already exists
-	if (FindValidMode(device, w, h, scale) != -1)
+	if (FindValidMode(device, w, h) != -1)
 	{
 		return;
 	}
 
-	const int size = w * h * scale * scale;
+	const int size = w * h;
 	int i;
 	for (i = 0; i < (int)device->validModes.size; i++)
 	{
 		// Ordered by actual resolution ascending and scale descending
-		const GraphicsMode *mode = CArrayGet(&device->validModes, i);
-		const int actualResolution = mode->Width * mode->Height;
-		if (actualResolution > size ||
-			(actualResolution == size && mode->ScaleFactor < scale))
+		const Vec2i *mode = CArrayGet(&device->validModes, i);
+		const int actualResolution = mode->x * mode->y;
+		if (actualResolution >= size)
 		{
 			break;
 		}
 	}
-	GraphicsMode mode;
-	mode.Width = w;
-	mode.Height = h;
-	mode.ScaleFactor = scale;
+	Vec2i mode = Vec2iNew(w, h);
 	CArrayInsert(&device->validModes, i, &mode);
 }
 
@@ -158,17 +142,16 @@ void GraphicsInit(GraphicsDevice *device, Config *c)
 	device->renderer = NULL;
 	device->window = NULL;
 	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
-	CArrayInit(&device->validModes, sizeof(GraphicsMode));
+	CArrayInit(&device->validModes, sizeof(Vec2i));
 	device->modeIndex = 0;
 	device->clipping.left = 0;
 	device->clipping.top = 0;
 	device->clipping.right = 0;
 	device->clipping.bottom = 0;
 	// Add default modes
-	AddGraphicsMode(device, 320, 240, 1);
-	AddGraphicsMode(device, 400, 300, 1);
-	AddGraphicsMode(device, 640, 480, 1);
-	AddGraphicsMode(device, 320, 240, 2);
+	AddGraphicsMode(device, 320, 240);
+	AddGraphicsMode(device, 400, 300);
+	AddGraphicsMode(device, 640, 480);
 	device->buf = NULL;
 	device->bkg = NULL;
 	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
@@ -192,27 +175,16 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 				SDL_GetError());
 			continue;
 		}
-		int validScaleFactors[] = { 1, 2, 3, 4 };
-		for (int j = 0; j < 4; j++)
+		if (mode.w % 4)
 		{
-			const int scaleFactor = validScaleFactors[j];
-			if (mode.w % scaleFactor || mode.h % scaleFactor)
-			{
-				continue;
-			}
-			if (mode.w % 4)
-			{
-				// TODO: why does width have to be divisible by 4? 1366x768 doesn't work
-				continue;
-			}
-			const int w = mode.w / scaleFactor;
-			const int h = mode.h / scaleFactor;
-			if (w < 320 || h < 240)
-			{
-				break;
-			}
-			AddGraphicsMode(device, w, h, scaleFactor);
+			// TODO: why does width have to be divisible by 4? 1366x768 doesn't work
+			continue;
 		}
+		if (mode.w < 320 || mode.h < 240)
+		{
+			break;
+		}
+		AddGraphicsMode(device, mode.w, mode.h);
 	}
 }
 
@@ -248,7 +220,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	if (!force && !g->cachedConfig.IsEditor)
 	{
-		g->modeIndex = FindValidMode(g, w, h, g->cachedConfig.ScaleFactor);
+		g->modeIndex = FindValidMode(g, w, h);
 		if (g->modeIndex == -1)
 		{
 			g->modeIndex = 0;
@@ -259,11 +231,19 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	LOG(LM_MAIN, LL_INFO, "graphics mode(%dx%d %dx)",
 		w, h, g->cachedConfig.ScaleFactor);
+	// Get the previous window's size and recreate it
+	Vec2i windowSize = Vec2iNew(
+		w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
+	if (g->window)
+	{
+		SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
+	}
 	SDL_DestroyTexture(g->screen);
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);
 	SDL_DestroyWindow(g->window);
-	SDL_CreateWindowAndRenderer(w, h, sdlFlags, &g->window, &g->renderer);
+	SDL_CreateWindowAndRenderer(
+		windowSize.x, windowSize.y, sdlFlags, &g->window, &g->renderer);
 	if (g->window == NULL || g->renderer == NULL)
 	{
 		LOG(LM_MAIN, LL_ERROR, "cannot create window or renderer: %s\n",
@@ -396,10 +376,9 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 char *GrafxGetModeStr(void)
 {
 	static char buf[16];
-	sprintf(buf, "%dx%d %dx",
+	sprintf(buf, "%dx%d",
 		ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
-		ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"),
-		ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
+		ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
 	return buf;
 }
 

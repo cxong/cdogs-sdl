@@ -384,7 +384,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(
 		menu,
 		MenuCreateOptionUpDownFunc(
-			"Video mode",
+			"Resolution",
 			Gfx_ModePrev,
 			Gfx_ModeNext,
 			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
