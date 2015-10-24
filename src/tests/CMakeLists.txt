@@ -119,7 +119,8 @@ target_link_libraries(pic_test
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${EXTRA_LIBRARIES})
-add_test(NAME pic_test COMMAND pic_test)
+# TODO: test disabled since Travis-CI fails with "No available video device"
+#add_test(NAME pic_test COMMAND pic_test)
 
 add_executable(utils_test
 	utils_test.c

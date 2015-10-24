@@ -13,7 +13,6 @@ addons:
     packages:
     - gcc-4.8
     - rpm
-    - ia32-libs-sdl
 
 before_install:
   - bash build/travis-ci/install-sdl2.sh
