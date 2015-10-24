@@ -1086,7 +1086,7 @@ static bool KeyAvailable(
 	{
 		return false;
 	}
-	if (key == ConfigGetInt(&gConfig, "Input.PlayerKeys0.map"))
+	if (key == (SDL_Scancode)ConfigGetInt(&gConfig, "Input.PlayerKeys0.map"))
 	{
 		return false;
 	}
@@ -1094,7 +1094,7 @@ static bool KeyAvailable(
 	// Check if the key is being used by another control
 	char buf[256];
 	sprintf(buf, "Input.PlayerKeys%d", playerIndex);
-	InputKeys keys = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
+	const InputKeys keys = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	for (key_code_e i = 0; i < KEY_CODE_MAP; i++)
 	{
 		if (i != code && KeyGet(&keys, i) == key)
@@ -1105,7 +1105,7 @@ static bool KeyAvailable(
 
 	// Check if the other player is using the key
 	sprintf(buf, "Input.PlayerKeys%d", 1 - playerIndex);
-	InputKeys keysOther = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
+	const InputKeys keysOther = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	if (keysOther.left == key ||
 		keysOther.right == key ||
 		keysOther.up == key ||
