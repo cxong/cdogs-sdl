@@ -131,11 +131,10 @@ static void BrushLoadGuideImage(void *data, int d)
 	EditorBrush *b = data;
 	b->IsGuideImageNew = true;
 	SDL_FreeSurface(b->GuideImageSurface);
-	b->GuideImageSurface = IMG_Load(b->GuideImage);
-	if (b->GuideImageSurface == NULL)
-	{
-		return;
-	}
+	SDL_Surface *s = IMG_Load(b->GuideImage);
+	if (s == NULL) return;
+	b->GuideImageSurface = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
+	SDL_FreeSurface(s);
 }
 static void BrushChangeGuideImageAlpha(void *data, int d)
 {
