@@ -64,6 +64,7 @@ typedef struct
 	Vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
+	ScaleMode ScaleMode;
 	bool IsEditor;
 
 	bool needRestart;
@@ -105,7 +106,8 @@ int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen, const int scaleFactor);
+	const Vec2i res, const bool fullscreen,
+	const int scaleFactor, const ScaleMode scaleMode);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 
 void Gfx_ModePrev(void);

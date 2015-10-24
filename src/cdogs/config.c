@@ -105,7 +105,6 @@ const char *ScaleModeStr(int s)
 	{
 		T2S(SCALE_MODE_NN, "Nearest neighbor");
 		T2S(SCALE_MODE_BILINEAR, "Bilinear");
-		T2S(SCALE_MODE_HQX, "hqx");
 	default:
 		return "";
 	}
@@ -114,7 +113,6 @@ int StrScaleMode(const char *s)
 {
 	S2T(SCALE_MODE_NN, "Nearest neighbor");
 	S2T(SCALE_MODE_BILINEAR, "Bilinear");
-	S2T(SCALE_MODE_HQX, "hqx");
 	return SCALE_MODE_NN;
 }
 const char *GoreAmountStr(int g)
@@ -594,7 +592,7 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&gfx,
 		ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewEnum(
-		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_HQX,
+		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_BILINEAR,
 		StrScaleMode, ScaleModeStr));
 	ConfigGroupAdd(&gfx, ConfigNewBool("OriginalPics", false));
 	ConfigGroupAdd(&root, gfx);

@@ -68,8 +68,7 @@ int StrSwitchMoveStyle(const char *s);
 typedef enum
 {
 	SCALE_MODE_NN,
-	SCALE_MODE_BILINEAR,
-	SCALE_MODE_HQX
+	SCALE_MODE_BILINEAR
 } ScaleMode;
 const char *ScaleModeStr(int q);
 int StrScaleMode(const char *str);

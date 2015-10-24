@@ -278,11 +278,27 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	SDL_SetWindowTitle(g->window, title);
 	SDL_SetWindowIcon(g->window, g->icon);
 	g->Format = SDL_AllocFormat(SDL_GetWindowPixelFormat(g->window));
-	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"))
+
+	// Set render scale mode
+	const char *renderScaleQuality = "nearest";
+	switch ((ScaleMode)ConfigGetEnum(&gConfig, "Graphics.ScaleMode"))
+	{
+	case SCALE_MODE_NN:
+		renderScaleQuality = "nearest";
+		break;
+	case SCALE_MODE_BILINEAR:
+		renderScaleQuality = "linear";
+		break;
+	default:
+		CASSERT(false, "unknown scale mode");
+		break;
+	}
+	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, renderScaleQuality))
 	{
 		LOG(LM_MAIN, LL_WARN, "cannot set render quality hint: %s\n",
 			SDL_GetError());
 	}
+
 	if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "cannot set renderer logical size: %s\n",
@@ -346,7 +362,8 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen, const int scaleFactor)
+	const Vec2i res, const bool fullscreen,
+	const int scaleFactor, const ScaleMode scaleMode)
 {
 	if (!Vec2iEqual(res, c->Res))
 	{
@@ -361,6 +378,7 @@ void GraphicsConfigSet(
 	}
 	SET(c->Fullscreen, fullscreen);
 	SET(c->ScaleFactor, scaleFactor);
+	SET(c->ScaleMode, scaleMode);
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
@@ -371,7 +389,8 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 			ConfigGetInt(c, "Graphics.ResolutionWidth"),
 			ConfigGetInt(c, "Graphics.ResolutionHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),
-		ConfigGetInt(c, "Graphics.ScaleFactor"));
+		ConfigGetInt(c, "Graphics.ScaleFactor"),
+		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"));
 }
 
 char *GrafxGetModeStr(void)

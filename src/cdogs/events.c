@@ -131,7 +131,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					&gGraphicsDevice.cachedConfig,
 					Vec2iNew(e.window.data1 / scale, e.window.data2 / scale),
 					false,
-					scale);
+					scale,
+					gGraphicsDevice.cachedConfig.ScaleMode);
 				GraphicsInitialize(&gGraphicsDevice, false);
 			}
 			break;
