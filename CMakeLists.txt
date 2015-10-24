@@ -49,6 +49,10 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/cmake")
 
+find_package(PkgConfig)
+pkg_search_module(SDL2 sdl2)
+pkg_search_module(SDL2_mixer sdl2)
+pkg_search_module(SDL2_image sdl2)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(SDL2_image REQUIRED)
