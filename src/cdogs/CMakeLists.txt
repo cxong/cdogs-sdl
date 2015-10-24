@@ -201,7 +201,7 @@ endif()
 target_link_libraries(cdogs
 	json
 	${SDL2_LIBRARY}
-	${SDL2_IMAGE_LIBRARY}
-	${SDL2_MIXER_LIBRARY}
+	${SDL2_IMAGE_LIBRARIES}
+	${SDL2_MIXER_LIBRARIES}
 	${SDLMAIN_LIBRARY}
 	${ENet_LIBRARIES})
