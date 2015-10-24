@@ -87,6 +87,7 @@ void KeyPrePoll(keyboard_t *keyboard)
 		keyboard->currentKeys,
 		sizeof keyboard->previousKeys);
 	keyboard->modState = SDL_GetModState();
+	keyboard->Typed[0] = '\0';
 }
 
 void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s)
@@ -190,21 +191,6 @@ SDL_Scancode KeyGetPressed(const keyboard_t *k)
 		if (KeyIsPressed(k, i))
 		{
 			return i;
-		}
-	}
-	return 0;
-}
-
-SDL_Keycode KeyGetTyped(const keyboard_t *k)
-{
-	for (int i = 0; i < SDL_NUM_SCANCODES; i++)
-	{
-		const SDL_Keycode keycode = k->currentKeys[i].keycode;
-		if (KeyIsPressed(k, i) &&
-			keycode >= (SDL_Keycode)' ' &&
-			keycode <= (SDL_Keycode)'z')
-		{
-			return keycode;
 		}
 	}
 	return 0;

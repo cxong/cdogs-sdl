@@ -463,6 +463,8 @@ static void ReloadUI(void)
 	sTooltipObj = NULL;
 }
 
+static void GetTextInput(char *buf);
+
 static bool TryOpen(const char *filename);
 static void Open(void)
 {
@@ -514,8 +516,8 @@ static void Open(void)
 		BlitFlip(&gGraphicsDevice);
 
 		bool doOpen = false;
-		int c = GetKey(&gEventHandlers);
-		switch (c)
+		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
+		switch (sc)
 		{
 		case SDL_SCANCODE_RETURN:
 		case SDL_SCANCODE_KP_ENTER:
@@ -536,22 +538,10 @@ static void Open(void)
 			break;
 				
 		default:
-			if (strlen(filename) == sizeof(filename) - 1)
-			{
-				break;
-			}
-			c = KeyGetTyped(&gEventHandlers.keyboard);
-			if (c && c != '*' &&
-				(strlen(filename) > 1 || c != '-') &&
-				c != ':' && c != '<' && c != '>' && c != '?' &&
-				c != '|')
-			{
-				size_t si = strlen(filename);
-				filename[si + 1] = 0;
-				filename[si] = (char)c;
-			}
+			// Do nothing
 			break;
 		}
+		GetTextInput(filename);
 		if (doOpen)
 		{
 			ClearScreen(&gGraphicsDevice);
@@ -618,8 +608,8 @@ static void Save(void)
 		pos = FontCh('<', pos);
 		BlitFlip(&gGraphicsDevice);
 
-		int c = GetKey(&gEventHandlers);
-		switch (c)
+		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
+		switch (sc)
 		{
 		case SDL_SCANCODE_RETURN:
 		case SDL_SCANCODE_KP_ENTER:
@@ -640,21 +630,10 @@ static void Save(void)
 			break;
 
 		default:
-			if (strlen(filename) == sizeof(filename) - 1)
-			{
-				break;
-			}
-			c = KeyGetTyped(&gEventHandlers.keyboard);
-			if (c && c != '*' &&
-				(strlen(filename) > 1 || c != '-') &&
-				c != ':' && c != '<' && c != '>' && c != '?' &&
-				c != '|')
-			{
-				size_t si = strlen(filename);
-				filename[si + 1] = 0;
-				filename[si] = (char)c;
-			}
+			// Do nothing
+			break;
 		}
+		GetTextInput(filename);
 		SDL_Delay(10);
 	}
 	if (doSave)
@@ -669,6 +648,28 @@ static void Save(void)
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
 		printf("Saved to %s\n", filename);
+	}
+}
+
+// Collect keyboard text input into buffer
+// Only support ASCII and limited characters
+static void GetTextInput(char *buf)
+{
+	// Get the filename typed, ASCII only
+	char *c = gEventHandlers.keyboard.Typed;
+	while (c && strlen(buf) < CDOGS_PATH_MAX - 1 && *c >= ' ' && *c <= '~')
+	{
+		// Prohibit some characters bad for filenames and/or not in font
+		if (*c != '*' &&
+			(strlen(buf) > 1 || *c != '-') &&
+			*c != ':' && *c != '<' && *c != '>' && *c != '?' &&
+			*c != '|')
+		{
+			const size_t si = strlen(buf);
+			buf[si + 1] = 0;
+			buf[si] = *c;
+		}
+		c++;
 	}
 }
 
@@ -1125,14 +1126,15 @@ static HandleInputResult HandleInput(
 			break;
 
 		default:
-			{
-				SDL_Keycode kc = KeyGetTyped(&gEventHandlers.keyboard);
-				if (kc)
-				{
-					fileChanged |= UIObjectAddChar(sObjs, (char)kc);
-				}
-			}
+			// Do nothing
 			break;
+		}
+		// Get text input, ASCII only
+		char *c = gEventHandlers.keyboard.Typed;
+		while (c && *c >= ' ' && *c <= '~')
+		{
+			fileChanged |= UIObjectAddChar(sObjs, *c);
+			c++;
 		}
 	}
 	if (gEventHandlers.HasQuit)
@@ -1221,6 +1223,7 @@ static void EditCampaign(void)
 	Uint32 ticksNow = SDL_GetTicks();
 	sTicksElapsed = 0;
 	ticksAutosave = AUTOSAVE_INTERVAL_SECONDS * 1000;
+	SDL_StartTextInput();
 	for (;;)
 	{
 		Uint32 ticksThen = ticksNow;
@@ -1258,6 +1261,7 @@ static void EditCampaign(void)
 		debug(D_MAX, "End loop\n");
 		sTicksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
+	SDL_StopTextInput();
 }
 
 

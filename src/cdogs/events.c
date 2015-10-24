@@ -104,6 +104,9 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		case SDL_KEYUP:
 			KeyOnKeyUp(&handlers->keyboard, e.key.keysym);
 			break;
+		case SDL_TEXTINPUT:
+			strcpy(handlers->keyboard.Typed, e.text.text);
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 			MouseOnButtonDown(&handlers->mouse, e.button.button);
 			break;
@@ -439,6 +442,17 @@ SDL_Scancode GetKey(EventHandlers *handlers)
 		EventPoll(handlers, SDL_GetTicks());
 		k = KeyGetPressed(&handlers->keyboard);
 	} while (k == SDL_SCANCODE_UNKNOWN);
+	return k;
+}
+
+SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers)
+{
+	SDL_Scancode k = SDL_SCANCODE_UNKNOWN;
+	do
+	{
+		EventPoll(handlers, SDL_GetTicks());
+		k = KeyGetPressed(&handlers->keyboard);
+	} while (k == SDL_SCANCODE_UNKNOWN && handlers->keyboard.Typed[0] == '\0');
 	return k;
 }
 

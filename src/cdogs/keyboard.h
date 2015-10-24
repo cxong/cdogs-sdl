@@ -71,6 +71,7 @@ typedef struct
 	KeyPress currentKeys[SDL_NUM_SCANCODES];
 	KeyPress pressedKeys[SDL_NUM_SCANCODES];
 	SDL_Keymod modState;
+	char Typed[32];
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
@@ -87,6 +88,5 @@ bool KeyIsDown(const keyboard_t *k, const int key);
 bool KeyIsPressed(const keyboard_t *k, const int key);
 bool KeyIsReleased(const keyboard_t *k, const int key);
 SDL_Scancode KeyGetPressed(const keyboard_t *k);
-SDL_Keycode KeyGetTyped(const keyboard_t *k);
 
 SDL_Scancode KeyGet(const InputKeys *keys, const key_code_e keyCode);

@@ -81,6 +81,8 @@ int GetGameCmd(
 	EventHandlers *handlers,
 	const PlayerData *playerData, const Vec2i playerPos);
 SDL_Scancode GetKey(EventHandlers *handlers);
+// Wait until there is a key press or text input
+SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers);
 typedef struct
 {
 	bool IsOK;
