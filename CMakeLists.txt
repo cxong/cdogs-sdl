@@ -62,6 +62,7 @@ endif()
 if(NOT ${SDL2_MIXER_FOUND})
 	find_package(SDL2_mixer REQUIRED)
 endif()
+link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)

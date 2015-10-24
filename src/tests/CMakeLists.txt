@@ -25,7 +25,7 @@ add_executable(autosave_test
 target_link_libraries(autosave_test
 	cbehave
 	json
-	${SDL_LIBRARY}
+	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME autosave_test COMMAND autosave_test)
 
@@ -67,7 +67,7 @@ add_executable(config_test
 target_link_libraries(config_test
 	cbehave
 	json
-	${SDL_LIBRARY}
+	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME config_test COMMAND config_test)
 
@@ -117,7 +117,7 @@ add_executable(pic_test
 target_link_libraries(pic_test
 	cbehave
 	${SDL2_LIBRARY}
-	${SDL2_IMAGE_LIBRARY}
+	${SDL2_IMAGE_LIBRARIES}
 	${EXTRA_LIBRARIES})
 add_test(NAME pic_test COMMAND pic_test)
 
