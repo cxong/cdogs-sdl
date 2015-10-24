@@ -113,27 +113,35 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		case SDL_MOUSEWHEEL:
 			MouseOnWheel(&handlers->mouse, e.wheel.x, e.wheel.y);
 			break;
-		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			MusicSetPlaying(&gSoundDevice, true);
-			break;
-		case SDL_WINDOWEVENT_FOCUS_LOST:
-			if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
+		case SDL_WINDOWEVENT:
+			switch (e.window.event)
 			{
-				MusicSetPlaying(&gSoundDevice, false);
-			}
-			break;
-		case SDL_WINDOWEVENT_SIZE_CHANGED:
-			handlers->HasResolutionChanged = true;
-			if (gGraphicsDevice.cachedConfig.IsEditor)
-			{
-				const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
-				GraphicsConfigSet(
-					&gGraphicsDevice.cachedConfig,
-					Vec2iNew(e.window.data1 / scale, e.window.data2 / scale),
-					false,
-					scale,
-					gGraphicsDevice.cachedConfig.ScaleMode);
-				GraphicsInitialize(&gGraphicsDevice, false);
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				MusicSetPlaying(&gSoundDevice, true);
+				break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
+				{
+					MusicSetPlaying(&gSoundDevice, false);
+				}
+				break;
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				handlers->HasResolutionChanged = true;
+				if (gGraphicsDevice.cachedConfig.IsEditor)
+				{
+					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+					GraphicsConfigSet(
+						&gGraphicsDevice.cachedConfig,
+						Vec2iNew(e.window.data1 / scale, e.window.data2 / scale),
+						false,
+						scale,
+						gGraphicsDevice.cachedConfig.ScaleMode);
+					GraphicsInitialize(&gGraphicsDevice, false);
+				}
+				break;
+			default:
+				// do nothing
+				break;
 			}
 			break;
 		case SDL_QUIT:
