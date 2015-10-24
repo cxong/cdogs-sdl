@@ -1,4 +1,4 @@
-include_directories(${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actor_placement.c

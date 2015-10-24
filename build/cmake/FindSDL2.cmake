@@ -2,7 +2,7 @@
 # This module defines
 #  SDL2_LIBRARY, the name of the library to link against
 #  SDL2_FOUND, if false, do not try to link to SDL
-#  SDL2_INCLUDE_DIR, where to find SDL.h
+#  SDL2_INCLUDE_DIRS, where to find SDL.h
 #  SDL2_VERSION_STRING, human-readable string containing the version of SDL2
 #
 # This module responds to the the flag:
@@ -38,7 +38,7 @@
 # See the License for more information.
 #=============================================================================
 
-find_path(SDL2_INCLUDE_DIR SDL.h
+find_path(SDL2_INCLUDE_DIRS SDL.h
   HINTS
     ENV SDLDIR
   PATH_SUFFIXES include/SDL2 include
@@ -52,7 +52,7 @@ find_library(SDL2_LIBRARY_TEMP
 )
 
 if(NOT SDL2_BUILDING_LIBRARY)
-  if(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
+  if(NOT ${SDL2_INCLUDE_DIRS} MATCHES ".framework")
     # Non-OS X framework versions expect you to also dynamically link to
     # SDLmain. This is mainly for Windows and OS X. Other (Unix) platforms
     # seem to provide SDLmain for compatibility even though they don't
@@ -124,10 +124,10 @@ if(SDL2_LIBRARY_TEMP)
   set(SDL2_LIBRARY_TEMP "${SDL2_LIBRARY_TEMP}" CACHE INTERNAL "")
 endif()
 
-if(SDL2_INCLUDE_DIR AND EXISTS "${SDL2_INCLUDE_DIR}/SDL_version.h")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MAJOR_LINE REGEX "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+[0-9]+$")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MINOR_LINE REGEX "^#define[ \t]+SDL_MINOR_VERSION[ \t]+[0-9]+$")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_PATCH_LINE REGEX "^#define[ \t]+SDL_PATCHLEVEL[ \t]+[0-9]+$")
+if(SDL2_INCLUDE_DIRS AND EXISTS "${SDL2_INCLUDE_DIRS}/SDL_version.h")
+  file(STRINGS "${SDL2_INCLUDE_DIRS}/SDL_version.h" SDL2_VERSION_MAJOR_LINE REGEX "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+[0-9]+$")
+  file(STRINGS "${SDL2_INCLUDE_DIRS}/SDL_version.h" SDL2_VERSION_MINOR_LINE REGEX "^#define[ \t]+SDL_MINOR_VERSION[ \t]+[0-9]+$")
+  file(STRINGS "${SDL2_INCLUDE_DIRS}/SDL_version.h" SDL2_VERSION_PATCH_LINE REGEX "^#define[ \t]+SDL_PATCHLEVEL[ \t]+[0-9]+$")
   string(REGEX REPLACE "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MAJOR "${SDL2_VERSION_MAJOR_LINE}")
   string(REGEX REPLACE "^#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MINOR "${SDL2_VERSION_MINOR_LINE}")
   string(REGEX REPLACE "^#define[ \t]+SDL_PATCHLEVEL[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_PATCH "${SDL2_VERSION_PATCH_LINE}")
@@ -143,5 +143,5 @@ endif()
 include(FindPackageHandleStandardArgs)
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2
-                                  REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR
+                                  REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIRS
                                   VERSION_VAR SDL2_VERSION_STRING)

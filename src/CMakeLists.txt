@@ -1,4 +1,4 @@
-include_directories(. ${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS})
+include_directories(. ${SDL2_INCLUDE_DIRS})
 
 add_subdirectory(cdogs)
 add_subdirectory(cdogsed)
