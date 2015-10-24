@@ -16,7 +16,7 @@ addons:
 
 install:
   # SDL2
-  - export SDL_PREFIX=$PWD/sdl2
+  - export SDL_PREFIX=$HOME/sdl2
   - export PKG_CONFIG_PATH=$SDL_PREFIX/lib/pkgconfig
   - export PATH=$PATH:$SDL_PREFIX/bin/
   - curl -O http://www.libsdl.org/release/SDL2-2.0.3.tar.gz
@@ -28,6 +28,9 @@ install:
   - curl -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.0.tar.gz
   - tar -xzvf SDL2_mixer-2.0.0.tar.gz
   - (cd SDL2_mixer-2.0.0 && ./configure --prefix=$SDL_PREFIX && make && make install)
+cache:
+  directories:
+  - $HOME/sdl2
 before_script:
     # force newer gcc version
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
