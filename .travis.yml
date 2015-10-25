@@ -24,7 +24,7 @@ install:
 cache:
   directories:
   - $HOME/sdl2
-  - /opt/gcw0-toolchain
+  #- /opt/gcw0-toolchain
 before_script:
     # force newer gcc version
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
@@ -40,8 +40,8 @@ script:
 before_deploy:
   - make package
   # GCW-Zero
-  - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sh make_gcw0.sh
+  #- bash build/travis-ci/install-gcw0-toolchain.sh
+  #- sh make_gcw0.sh
 deploy:
   provider: releases
   api_key:
@@ -49,7 +49,7 @@ deploy:
   file_glob: true
   file:
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz"
-    - "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
+    #- "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
   skip_cleanup: true
   on:
     tags: true
