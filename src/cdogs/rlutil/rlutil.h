@@ -31,12 +31,8 @@
 #define RLUTIL_STRING_T char*
 #endif
 
-#ifndef RLUTIL_INLINE
-	#ifdef _MSC_VER
-		#define RLUTIL_INLINE __inline
-	#else
-		#define RLUTIL_INLINE __inline__
-	#endif
+#ifdef _MSC_VER
+#define inline __inline
 #endif
 
 #ifdef __cplusplus
@@ -49,7 +45,7 @@
 		void locate(int x, int y);
 	}
 #else
-	RLUTIL_INLINE void locate(int x, int y); // Forward declare for C to avoid warnings
+	inline void locate(int x, int y); // Forward declare for C to avoid warnings
 #endif // __cplusplus
 
 #ifdef _WIN32
@@ -62,7 +58,7 @@
 #ifndef gotoxy
 /// Function: gotoxy
 /// Same as <rlutil.locate>.
-RLUTIL_INLINE void gotoxy(int x, int y) {
+inline void gotoxy(int x, int y) {
 	#ifdef __cplusplus
 	rlutil::
 	#endif
@@ -160,29 +156,29 @@ enum {
  * ANSI_LIGHTCYAN - Light cyan
  * ANSI_WHITE - White (bright)
  */
-static const RLUTIL_STRING_T ANSI_CLS = "\033[2J";
-static const RLUTIL_STRING_T ANSI_BLACK = "\033[22;30m";
-static const RLUTIL_STRING_T ANSI_RED = "\033[22;31m";
-static const RLUTIL_STRING_T ANSI_GREEN = "\033[22;32m";
-static const RLUTIL_STRING_T ANSI_BROWN = "\033[22;33m";
-static const RLUTIL_STRING_T ANSI_BLUE = "\033[22;34m";
-static const RLUTIL_STRING_T ANSI_MAGENTA = "\033[22;35m";
-static const RLUTIL_STRING_T ANSI_CYAN = "\033[22;36m";
-static const RLUTIL_STRING_T ANSI_GREY = "\033[22;37m";
-static const RLUTIL_STRING_T ANSI_DARKGREY = "\033[01;30m";
-static const RLUTIL_STRING_T ANSI_LIGHTRED = "\033[01;31m";
-static const RLUTIL_STRING_T ANSI_LIGHTGREEN = "\033[01;32m";
-static const RLUTIL_STRING_T ANSI_YELLOW = "\033[01;33m";
-static const RLUTIL_STRING_T ANSI_LIGHTBLUE = "\033[01;34m";
-static const RLUTIL_STRING_T ANSI_LIGHTMAGENTA = "\033[01;35m";
-static const RLUTIL_STRING_T ANSI_LIGHTCYAN = "\033[01;36m";
-static const RLUTIL_STRING_T ANSI_WHITE = "\033[01;37m";
+#define ANSI_CLS "\033[2J";
+#define ANSI_BLACK "\033[22;30m"
+#define ANSI_RED "\033[22;31m"
+#define ANSI_GREEN "\033[22;32m"
+#define ANSI_BROWN "\033[22;33m"
+#define ANSI_BLUE "\033[22;34m"
+#define ANSI_MAGENTA "\033[22;35m"
+#define ANSI_CYAN "\033[22;36m"
+#define ANSI_GREY "\033[22;37m"
+#define ANSI_DARKGREY "\033[01;30m"
+#define ANSI_LIGHTRED "\033[01;31m"
+#define ANSI_LIGHTGREEN "\033[01;32m"
+#define ANSI_YELLOW "\033[01;33m"
+#define ANSI_LIGHTBLUE "\033[01;34m"
+#define ANSI_LIGHTMAGENTA "\033[01;35m"
+#define ANSI_LIGHTCYAN "\033[01;36m"
+#define ANSI_WHITE "\033[01;37m"
 
 /// Function: getANSIColor
 /// Return ANSI color escape sequence for specified number 0-15.
 ///
 /// See <Color Codes>
-static RLUTIL_INLINE RLUTIL_STRING_T getANSIColor(const int c) {
+static inline RLUTIL_STRING_T getANSIColor(const int c) {
 	switch (c) {
 		case 0 : return ANSI_BLACK;
 		case 1 : return ANSI_BLUE; // non-ANSI
@@ -208,9 +204,9 @@ static RLUTIL_INLINE RLUTIL_STRING_T getANSIColor(const int c) {
 /// Change color specified by number (Windows / QBasic colors).
 ///
 /// See <Color Codes>
-static RLUTIL_INLINE void setColor(int c) {
+static inline void setColor(int c) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hConsole GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hConsole, (WORD)c);
 #else
 	RLUTIL_PRINT(getANSIColor(c));
@@ -219,7 +215,7 @@ static RLUTIL_INLINE void setColor(int c) {
 
 /// Function: cls
 /// Clears screen and moves cursor home.
-RLUTIL_INLINE void cls(void) {
+inline void cls(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	// TODO: This is cheating...
 	system("cls");
@@ -230,11 +226,11 @@ RLUTIL_INLINE void cls(void) {
 
 /// Function: locate
 /// Sets the cursor position to 1-based x,y.
-RLUTIL_INLINE void locate(int x, int y) {
+inline void locate(int x, int y) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	COORD coord;
-	coord.X = (SHORT)x-1;
-	coord.Y = (SHORT)y-1; // Windows uses 0-based coordinates
+	coord.X (SHORT)x-1;
+	coord.Y (SHORT)y-1; // Windows uses 0-based coordinates
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 #else // _WIN32 || USE_ANSI
 	#ifdef __cplusplus
@@ -251,13 +247,13 @@ RLUTIL_INLINE void locate(int x, int y) {
 
 /// Function: hidecursor
 /// Hides the cursor.
-RLUTIL_INLINE void hidecursor(void) {
+inline void hidecursor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsoleOutput;
 	CONSOLE_CURSOR_INFO structCursorInfo;
-	hConsoleOutput = GetStdHandle( STD_OUTPUT_HANDLE );
+	hConsoleOutput GetStdHandle( STD_OUTPUT_HANDLE );
 	GetConsoleCursorInfo( hConsoleOutput, &structCursorInfo ); // Get current cursor size
-	structCursorInfo.bVisible = FALSE;
+	structCursorInfo.bVisible FALSE;
 	SetConsoleCursorInfo( hConsoleOutput, &structCursorInfo );
 #else // _WIN32 || USE_ANSI
 	RLUTIL_PRINT("\033[?25l");
@@ -266,13 +262,13 @@ RLUTIL_INLINE void hidecursor(void) {
 
 /// Function: showcursor
 /// Shows the cursor.
-RLUTIL_INLINE void showcursor(void) {
+inline void showcursor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsoleOutput;
 	CONSOLE_CURSOR_INFO structCursorInfo;
-	hConsoleOutput = GetStdHandle( STD_OUTPUT_HANDLE );
+	hConsoleOutput GetStdHandle( STD_OUTPUT_HANDLE );
 	GetConsoleCursorInfo( hConsoleOutput, &structCursorInfo ); // Get current cursor size
-	structCursorInfo.bVisible = TRUE;
+	structCursorInfo.bVisible TRUE;
 	SetConsoleCursorInfo( hConsoleOutput, &structCursorInfo );
 #else // _WIN32 || USE_ANSI
 	RLUTIL_PRINT("\033[?25h");
@@ -281,7 +277,7 @@ RLUTIL_INLINE void showcursor(void) {
 
 /// Function: trows
 /// Get the number of rows in the terminal window or -1 on error.
-RLUTIL_INLINE int trows(void) {
+inline int trows(void) {
 #ifdef _WIN32
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
@@ -306,7 +302,7 @@ RLUTIL_INLINE int trows(void) {
 
 /// Function: tcols
 /// Get the number of columns in the terminal window or -1 on error.
-RLUTIL_INLINE int tcols(void) {
+inline int tcols(void) {
 #ifdef _WIN32
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
@@ -327,9 +323,7 @@ RLUTIL_INLINE int tcols(void) {
 	return -1;
 #endif // TIOCGSIZE
 #endif // _WIN32
-}	
-	
-// TODO: Allow optional message for anykey()?
+}
 
 #ifndef min
 /// Function: min
