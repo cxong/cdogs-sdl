@@ -59,6 +59,8 @@ typedef struct
 	keyboard_t keyboard;
 	joysticks_t joysticks;
 	Mouse mouse;
+	// Filename received via drag and drop
+	char *DropFile;
 
 	bool HasResolutionChanged;
 	bool HasQuit;

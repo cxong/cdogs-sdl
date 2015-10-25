@@ -206,7 +206,7 @@ static inline RLUTIL_STRING_T getANSIColor(const int c) {
 /// See <Color Codes>
 static inline void setColor(int c) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
-	HANDLE hConsole GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hConsole, (WORD)c);
 #else
 	RLUTIL_PRINT(getANSIColor(c));
@@ -229,8 +229,8 @@ inline void cls(void) {
 inline void locate(int x, int y) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	COORD coord;
-	coord.X (SHORT)x-1;
-	coord.Y (SHORT)y-1; // Windows uses 0-based coordinates
+	coord.X = (SHORT)x-1;
+	coord.Y = (SHORT)y - 1; // Windows uses 0-based coordinates
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 #else // _WIN32 || USE_ANSI
 	#ifdef __cplusplus
@@ -251,9 +251,9 @@ inline void hidecursor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsoleOutput;
 	CONSOLE_CURSOR_INFO structCursorInfo;
-	hConsoleOutput GetStdHandle( STD_OUTPUT_HANDLE );
+	hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleCursorInfo( hConsoleOutput, &structCursorInfo ); // Get current cursor size
-	structCursorInfo.bVisible FALSE;
+	structCursorInfo.bVisible = FALSE;
 	SetConsoleCursorInfo( hConsoleOutput, &structCursorInfo );
 #else // _WIN32 || USE_ANSI
 	RLUTIL_PRINT("\033[?25l");
@@ -266,9 +266,9 @@ inline void showcursor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsoleOutput;
 	CONSOLE_CURSOR_INFO structCursorInfo;
-	hConsoleOutput GetStdHandle( STD_OUTPUT_HANDLE );
+	hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleCursorInfo( hConsoleOutput, &structCursorInfo ); // Get current cursor size
-	structCursorInfo.bVisible TRUE;
+	structCursorInfo.bVisible = TRUE;
 	SetConsoleCursorInfo( hConsoleOutput, &structCursorInfo );
 #else // _WIN32 || USE_ANSI
 	RLUTIL_PRINT("\033[?25h");

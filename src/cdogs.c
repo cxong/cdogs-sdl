@@ -328,6 +328,7 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
+	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 	if (enet_initialize() != 0)
 	{
 		fprintf(stderr, "An error occurred while initializing ENet.\n");

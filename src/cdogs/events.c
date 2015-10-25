@@ -90,6 +90,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	KeyPrePoll(&handlers->keyboard);
 	JoyPoll(&handlers->joysticks);
 	MousePrePoll(&handlers->mouse);
+	SDL_free(handlers->DropFile);
+	handlers->DropFile = NULL;
 	while (SDL_PollEvent(&e))
 	{
 		switch (e.type)
@@ -127,6 +129,9 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 				{
 					MusicSetPlaying(&gSoundDevice, false);
 				}
+				// Reset input handlers
+				EventReset(
+					handlers, handlers->mouse.cursor, handlers->mouse.trail);
 				break;
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				handlers->HasResolutionChanged = true;
@@ -149,6 +154,9 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 			break;
 		case SDL_QUIT:
 			handlers->HasQuit = true;
+			break;
+		case SDL_DROPFILE:
+			handlers->DropFile = e.drop.file;
 			break;
 		default:
 			break;

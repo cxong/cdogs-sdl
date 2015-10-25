@@ -466,6 +466,7 @@ static void ReloadUI(void)
 static void GetTextInput(char *buf);
 
 static bool TryOpen(const char *filename);
+static void ShowFailedToOpenMsg(const char *filename);
 static void Open(void)
 {
 	char filename[CDOGS_PATH_MAX];
@@ -552,31 +553,25 @@ static void Open(void)
 			// Try original filename
 			if (TryOpen(filename))
 			{
-				goto loaded;
+				done = true;
+				break;
 			}
 			// Try adding .cdogscpn
 			sprintf(buf, "%s.cdogscpn", filename);
 			if (TryOpen(buf))
 			{
-				goto loaded;
+				done = true;
+				break;
 			}
 			// Try adding .cpn
 			sprintf(buf, "%s.cpn", filename);
 			if (TryOpen(filename))
 			{
-				goto loaded;
+				done = true;
+				break;
 			}
 			// All attempts failed
-			printf("Error: cannot load %s\n", buf);
-			continue;
-
-		loaded:
-			fileChanged = 0;
-			Setup(1);
-			strcpy(lastFile, buf);
-			done = true;
-			sAutosaveIndex = 0;
-			ReloadUI();
+			ShowFailedToOpenMsg(filename);
 		}
 		SDL_Delay(10);
 	}
@@ -588,7 +583,23 @@ static bool TryOpen(const char *filename)
 	CampaignSettingInit(&gCampaign.Setting);
 	char buf[CDOGS_PATH_MAX];
 	RealPath(filename, buf);
-	return !MapNewLoad(buf, &gCampaign.Setting);
+	if (!MapNewLoad(buf, &gCampaign.Setting))
+	{
+		fileChanged = 0;
+		Setup(1);
+		strcpy(lastFile, filename);
+		sAutosaveIndex = 0;
+		ReloadUI();
+		return true;
+	}
+	return false;
+}
+static void ShowFailedToOpenMsg(const char *filename)
+{
+	char msgBuf[CDOGS_PATH_MAX];
+	sprintf(msgBuf, "Failed to open file %s", filename);
+	SDL_ShowSimpleMessageBox(
+		SDL_MESSAGEBOX_ERROR, "Error", msgBuf, gGraphicsDevice.window);
 }
 
 static void Save(void)
@@ -647,7 +658,11 @@ static void Save(void)
 		fileChanged = 0;
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
-		printf("Saved to %s\n", filename);
+		char msgBuf[CDOGS_PATH_MAX];
+		sprintf(msgBuf, "Saved to %s", filename);
+		SDL_ShowSimpleMessageBox(
+			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved",
+			msgBuf, gGraphicsDevice.window);
 	}
 }
 
@@ -1137,6 +1152,15 @@ static HandleInputResult HandleInput(
 			c++;
 		}
 	}
+	if (gEventHandlers.DropFile != NULL &&
+		(!fileChanged || ConfirmScreen(
+		"File has been modified, but not saved", "Open anyway? (Y/N)")))
+	{
+		if (!TryOpen(gEventHandlers.DropFile))
+		{
+			ShowFailedToOpenMsg(gEventHandlers.DropFile);
+		}
+	}
 	if (gEventHandlers.HasQuit)
 	{
 		hasQuit = true;
@@ -1273,7 +1297,7 @@ int main(int argc, char *argv[])
 	printf("C-Dogs SDL Editor\n");
 
 	debug(D_NORMAL, "Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0)
 	{
 		printf("Failed to start SDL!\n");
 		return -1;
