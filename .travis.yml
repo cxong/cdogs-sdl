@@ -13,6 +13,7 @@ addons:
     packages:
     - gcc-4.8
     - rpm
+    - ia32-libs-multiarch
     - ia32-libs
 
 before_install:
