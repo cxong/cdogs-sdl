@@ -40,7 +40,7 @@ before_deploy:
   - make package
   # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sh make_gcw0.sh ..
+  - sh make_gcw0.sh $PWD/build/travis-ci/toolchainfile.cmake
 deploy:
   provider: releases
   api_key:

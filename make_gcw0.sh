@@ -1,9 +1,9 @@
 #!/bin/sh
 
-TOOLCHAIN_DIR=$1
+TOOLCHAIN_FILE=$1
 if [ "$1" = "" ]
 then
-    TOOLCHAIN_DIR=/opt
+    TOOLCHAIN_FILE=/opt/gcw0-toolchain/usr/share/buildroot/toolchainfile.cmake
 fi
 
 # To create a debug build, run `cmake -D CMAKE_BUILD_TYPE=Debug .` instead
@@ -18,5 +18,5 @@ rm CMakeCache.txt
 rm gcw0build -rf
 mkdir gcw0build
 cd gcw0build
-cmake -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_DIR/gcw0-toolchain/usr/share/buildroot/toolchainfile.cmake" ..
+cmake -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" ..
 make
