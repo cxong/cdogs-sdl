@@ -14,6 +14,7 @@ git submodule update --init --recursive
 git submodule update --recursive
 
 # For more info: http://github.com/cxong/cdogs-sdl/wiki/Developer-Getting-Started:-GCW-Zero
+rm CMakeCache.txt
 rm gcw0build -rf
 mkdir gcw0build
 cd gcw0build

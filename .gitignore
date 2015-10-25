@@ -68,6 +68,7 @@ CMakeScripts/
 
 # GCW-Zero
 gcw0build/
+gcw0-toolchain/
 
 # Other
 *.lnk
