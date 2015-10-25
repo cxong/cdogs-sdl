@@ -9,7 +9,11 @@ endif()
 
 add_subdirectory(cbehave)
 
-include_directories(. ../cdogs ${SDL_INCLUDE_DIR})
+include_directories(
+	. ../cdogs
+	${SDL2_INCLUDE_DIRS}
+	${SDL2_IMAGE_INCLUDE_DIRS}
+	${SDL2_MIXER_INCLUDE_DIRS})
 
 add_executable(autosave_test
 	autosave_test.c
@@ -87,14 +91,6 @@ target_link_libraries(json_test
 	${EXTRA_LIBRARIES})
 add_test(NAME json_test COMMAND json_test)
 
-set(PIC_TEST_EXTRA)
-if(APPLE)
-	set(PIC_TEST_EXTRA
-		../../build/macosx/SDLMain.m
-		../../build/macosx/SDLMain.h)
-	set_source_files_properties(../../build/macosx/SDLMain.m
-		PROPERTIES LANGUAGE C)
-endif()
 add_executable(pic_test
 	pic_test.c
 	../cdogs/c_array.c
@@ -112,12 +108,12 @@ add_executable(pic_test
 	../cdogs/utils.c
 	../cdogs/utils.h
 	../cdogs/vector.c
-	../cdogs/vector.h
-	${PIC_TEST_EXTRA})
+	../cdogs/vector.h)
 target_link_libraries(pic_test
 	cbehave
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
+	${SDLMAIN_LIBRARY}
 	${EXTRA_LIBRARIES})
 # TODO: test disabled since Travis-CI fails with "No available video device"
 #add_test(NAME pic_test COMMAND pic_test)
