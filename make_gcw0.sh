@@ -1,5 +1,11 @@
 #!/bin/sh
 
+TOOLCHAIN_DIR=$1
+if [ "$1" = "" ]
+then
+    TOOLCHAIN_FILE=/opt
+fi
+
 # To create a debug build, run `cmake -D CMAKE_BUILD_TYPE=Debug .` instead
 
 # Update repo properly (should be handled by most git GUI clients)
@@ -11,6 +17,5 @@ git submodule update --recursive
 rm gcw0build -rf
 mkdir gcw0build
 cd gcw0build
-cmake -DCMAKE_TOOLCHAIN_FILE="/opt/gcw0-toolchain/usr/share/buildroot/toolchainfile.cmake" ..
+cmake -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_DIR/gcw0-toolchain/usr/share/buildroot/toolchainfile.cmake ..
 make
-

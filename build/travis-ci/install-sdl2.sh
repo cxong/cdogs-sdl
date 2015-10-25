@@ -13,5 +13,5 @@ if [ ! -d "$SDL_PREFIX" ]; then
   tar -xzvf SDL2_mixer-2.0.0.tar.gz
   (cd SDL2_mixer-2.0.0 && ./configure --prefix=$SDL_PREFIX && make && make install)
 else
-  echo "Using cached directory."
+  echo "Using cached sdl2 directory."
 fi
