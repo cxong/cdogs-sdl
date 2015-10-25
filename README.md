@@ -40,7 +40,7 @@ So what are you waiting for? Download C-Dogs SDL today and have a blast!
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/terminal.png) Platforms
 ---------------------
 
-C-Dogs SDL is built using the SDL 1.2 API.
+C-Dogs SDL is built using the SDL2 API.
 See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
 C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Android and GCW-Zero.
@@ -50,7 +50,7 @@ C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Android and GCW-Zero.
 
 Please use the installers for your platform for installing.
 
-Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started) to build on your platform. You will need the SDL development libraries installed.
+Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started) to build on your platform. You will need the SDL2 development libraries installed.
 
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/barrel_skull.png) License
 ---------------
