@@ -38,7 +38,6 @@ script:
   - make -j2
   - make test
 before_deploy:
-  sudo: true
   - make package
   # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
