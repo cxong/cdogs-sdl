@@ -24,6 +24,7 @@ install:
 cache:
   directories:
   - $HOME/sdl2
+  - /opt/gcw0-toolchain
 before_script:
     # force newer gcc version
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
@@ -37,10 +38,11 @@ script:
   - make -j2
   - make test
 before_deploy:
+  sudo: true
   - make package
   # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sh make_gcw0.sh $PWD/build/travis-ci/toolchainfile.cmake
+  - sh make_gcw0.sh
 deploy:
   provider: releases
   api_key:
