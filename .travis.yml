@@ -30,8 +30,6 @@ before_script:
   - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
     # show which tests failed
   - export CTEST_OUTPUT_ON_FAILURE=1
-    # pull all sub modules recursively
-  - git submodule update --init --recursive
 
 script:
   - cmake -DCMAKE_INSTALL_PREFIX=. .
