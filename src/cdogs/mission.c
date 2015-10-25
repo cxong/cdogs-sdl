@@ -106,6 +106,8 @@ MapType StrMapType(const char *s)
 void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
+	// Give a default door style otherwise it causes editor crashes
+	strcpy(m->DoorStyle, DoorStyleStr(0));
 	m->WallMask = colorBattleshipGrey;
 	m->FloorMask = colorGravel;
 	m->RoomMask = colorDoveGray;
