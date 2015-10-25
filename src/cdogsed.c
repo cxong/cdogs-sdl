@@ -1152,13 +1152,18 @@ static HandleInputResult HandleInput(
 			c++;
 		}
 	}
-	if (gEventHandlers.DropFile != NULL &&
-		(!fileChanged || ConfirmScreen(
-		"File has been modified, but not saved", "Open anyway? (Y/N)")))
+	if (gEventHandlers.DropFile != NULL)
 	{
-		if (!TryOpen(gEventHandlers.DropFile))
+		// Copy to buf because ConfirmScreen will cause the DropFile to be lost
+		char buf[CDOGS_PATH_MAX];
+		strcpy(buf, gEventHandlers.DropFile);
+		if (!fileChanged || ConfirmScreen(
+			"File has been modified, but not saved", "Open anyway? (Y/N)"))
 		{
-			ShowFailedToOpenMsg(gEventHandlers.DropFile);
+			if (!TryOpen(buf))
+			{
+				ShowFailedToOpenMsg(buf);
+			}
 		}
 	}
 	if (gEventHandlers.HasQuit)
