@@ -42,43 +42,22 @@ void JoyInit(CArray *joys)
 
 	// Detect all current controllers
 	const int n = SDL_NumJoysticks();
-	LOG(LM_INPUT, LL_DEBUG, "%d controllers found", n);
+	LOG(LM_INPUT, LL_INFO, "%d controllers found", n);
 	if (n == 0)
 	{
 		return;
 	}
-	Joystick j;
-	memset(&j, 0, sizeof j);
 	for (int i = 0; i < n; i++)
 	{
-		if (!SDL_IsGameController(i))
-		{
-			continue;
-		}
-
-		j.gc = SDL_GameControllerOpen(i);
-		if (j.gc == NULL)
-		{
-			LOG(LM_INPUT, LL_ERROR, "Failed to open game controller: %s",
-				SDL_GetError());
-			continue;
-		}
-		j.j = SDL_GameControllerGetJoystick(j.gc);
-		if (j.j == NULL)
-		{
-			LOG(LM_INPUT, LL_ERROR, "Failed to open joystick: %s",
-				SDL_GetError());
-			continue;
-		}
-		j.id = SDL_JoystickInstanceID(j.j);
-		if (j.id == -1)
-		{
-			LOG(LM_INPUT, LL_ERROR, "Failed to get joystick instance ID: %s",
-				SDL_GetError());
-			continue;
-		}
-		CArrayPushBack(joys, &j);
+		JoyAdded(i);
 	}
+}
+
+void JoyReset(CArray *joys)
+{
+	CA_FOREACH(Joystick, j, *joys)
+		j->currentCmd = j->pressedCmd = j->previousCmd = 0;
+	CA_FOREACH_END()
 }
 
 void JoyTerminate(CArray *joys)
@@ -125,13 +104,49 @@ void JoyPrePoll(CArray *joys)
 
 void JoyAdded(const Sint32 which)
 {
-	LOG(LM_INPUT, LL_DEBUG, "Added joystick index %d", which);
-	// TODO: implement
+	if (!SDL_IsGameController(which))
+	{
+		return;
+	}
+
+	Joystick j;
+	memset(&j, 0, sizeof j);
+	j.gc = SDL_GameControllerOpen(which);
+	if (j.gc == NULL)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to open game controller: %s",
+			SDL_GetError());
+		return;
+	}
+	j.j = SDL_GameControllerGetJoystick(j.gc);
+	if (j.j == NULL)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to open joystick: %s",
+			SDL_GetError());
+		return;
+	}
+	j.id = SDL_JoystickInstanceID(j.j);
+	if (j.id == -1)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to get joystick instance ID: %s",
+			SDL_GetError());
+		return;
+	}
+	CArrayPushBack(&gEventHandlers.joysticks, &j);
+	LOG(LM_INPUT, LL_INFO, "Added joystick index %d id %d", which, j.id);
 }
 void JoyRemoved(const Sint32 which)
 {
-	LOG(LM_INPUT, LL_DEBUG, "Removed joystick index %d", which);
-	// TODO: implement
+	LOG(LM_INPUT, LL_INFO, "Removed joystick id %d", which);
+	CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
+		if (j->id == which)
+		{
+			SDL_GameControllerClose(j->gc);
+			CArrayDelete(&gEventHandlers.joysticks, i);
+			return;
+		}
+	CA_FOREACH_END()
+	CASSERT(false, "Cannot find joystick");
 }
 int ControllerButtonToCmd(const Uint8 button);
 void JoyOnButtonDown(const SDL_ControllerButtonEvent e)

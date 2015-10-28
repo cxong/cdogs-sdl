@@ -48,6 +48,7 @@ typedef struct
 } Joystick;
 
 void JoyInit(CArray *joys);
+void JoyReset(CArray *joys);
 void JoyTerminate(CArray *joys);
 
 bool JoyIsDown(const SDL_JoystickID id, const int cmd);

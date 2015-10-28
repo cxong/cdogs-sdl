@@ -78,7 +78,7 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 {
 	handlers->HasResolutionChanged = 0;
 	KeyInit(&handlers->keyboard);
-	JoyInit(&handlers->joysticks);
+	JoyReset(&handlers->joysticks);
 	MouseInit(
 		&handlers->mouse, mouseCursor, mouseTrail, handlers->mouse.hideMouse);
 }
