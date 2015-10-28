@@ -409,10 +409,6 @@ menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 #ifndef __ANDROID__
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", ms));
 #endif
-	MenuAddSubmenu(
-		menu,
-		MenuCreateVoidFunc(
-		"Reset joysticks", GJoyReset, &gEventHandlers.joysticks));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);

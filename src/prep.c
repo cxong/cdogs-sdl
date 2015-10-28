@@ -189,39 +189,13 @@ bool NumPlayersSelection(
 }
 
 
+static bool IsPlayerAssignedDevice(
+	const input_device_e d, const int deviceIndex);
 static void AssignPlayerInputDevices(EventHandlers *handlers)
 {
-	bool assignedKeyboards[MAX_KEYBOARD_CONFIGS];
-	bool assignedMouse = false;
-	bool assignedJoysticks[MAX_JOYSTICKS];
-	memset(assignedKeyboards, 0, sizeof assignedKeyboards);
-	memset(assignedJoysticks, 0, sizeof assignedJoysticks);
-
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
 		if (!p->IsLocal)
 		{
-			continue;
-		}
-		if (p->inputDevice != INPUT_DEVICE_UNSET)
-		{
-			// Find all the assigned devices
-			switch (p->inputDevice)
-			{
-			case INPUT_DEVICE_KEYBOARD:
-				assignedKeyboards[p->deviceIndex] = true;
-				break;
-			case INPUT_DEVICE_MOUSE:
-				assignedMouse = true;
-				break;
-			case INPUT_DEVICE_JOYSTICK:
-				assignedJoysticks[p->deviceIndex] = true;
-				break;
-			default:
-				// do nothing
-				break;
-			}
 			continue;
 		}
 
@@ -232,35 +206,38 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 			char buf[256];
 			sprintf(buf, "Input.PlayerKeys%d.button1", j);
 			if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
-				!assignedKeyboards[j])
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
 			{
-				PlayerSetInputDevice(p, INPUT_DEVICE_KEYBOARD, j);
-				assignedKeyboards[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
 			}
 		}
 		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
-			!assignedMouse)
+			PlayerTrySetInputDevice(p, INPUT_DEVICE_MOUSE, 0))
 		{
-			PlayerSetInputDevice(p, INPUT_DEVICE_MOUSE, 0);
-			assignedMouse = true;
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
 		}
-		for (int j = 0; j < handlers->joysticks.numJoys; j++)
-		{
-			if (JoyIsPressed(
-				&handlers->joysticks.joys[j], CMD_BUTTON1) &&
-				!assignedJoysticks[j])
+		CA_FOREACH(const Joystick, j, handlers->joysticks)
+			if (JoyIsPressed(j->id, CMD_BUTTON1) &&
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, j->id))
 			{
-				PlayerSetInputDevice(p, INPUT_DEVICE_JOYSTICK, j);
-				assignedJoysticks[j] = true;
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
 			}
+		CA_FOREACH_END()
+	CA_FOREACH_END()
+}
+static bool IsPlayerAssignedDevice(
+	const input_device_e d, const int deviceIndex)
+{
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (p->inputDevice == d && p->deviceIndex == deviceIndex)
+		{
+			return true;
 		}
-	}
+	CA_FOREACH_END()
+	return false;
 }
 
 typedef struct
@@ -319,7 +296,7 @@ bool PlayerSelection(void)
 			// For any player slots not picked, turn them into AIs
 			if (p->inputDevice == INPUT_DEVICE_UNSET)
 			{
-				PlayerSetInputDevice(p, INPUT_DEVICE_AI, 0);
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
 		}
 	}

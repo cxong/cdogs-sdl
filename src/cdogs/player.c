@@ -421,9 +421,14 @@ void PlayerScore(PlayerData *p, const int points)
 	p->totalScore += points;
 }
 
-void PlayerSetInputDevice(
+bool PlayerTrySetInputDevice(
 	PlayerData *p, const input_device_e d, const int idx)
 {
+	if (p->inputDevice == d && p->deviceIndex == idx)
+	{
+		return false;
+	}
 	p->inputDevice = d;
 	p->deviceIndex = idx;
+	return true;
 }

@@ -28,51 +28,40 @@
 */
 #pragma once
 
-#include <SDL_joystick.h>
+#include <stdbool.h>
 
+#include <SDL_events.h>
+#include <SDL_gamecontroller.h>
+
+#include "c_array.h"
 #include "color.h"
 
 
-typedef enum
-{
-	JOY_UNKNOWN,
-	JOY_XBOX_360
-} JoystickType;
-
 typedef struct
 {
+	SDL_GameController *gc;
 	SDL_Joystick *j;
-	JoystickType Type;
-	int Button1;
-	int Button2;
-	int ButtonMap;
-	int ButtonEsc;
-	int x;
-	int y;
-	int currentButtonsField;
-	int previousButtonsField;
-	int numButtons;
-	int numAxes;
-	int numHats;
-} joystick_t;
+	SDL_JoystickID id;
+	int currentCmd;
+	int previousCmd;
+	int pressedCmd;
+} Joystick;
 
-#define MAX_JOYSTICKS 10
-typedef struct
-{
-	int numJoys;
-	joystick_t joys[MAX_JOYSTICKS];
-} joysticks_t;
+void JoyInit(CArray *joys);
+void JoyTerminate(CArray *joys);
 
-void JoyInit(joysticks_t *joys);
-void GJoyReset(void *joys);
-void JoyReset(joysticks_t *joys);
-void JoyTerminate(joysticks_t *joys);
-void JoyPoll(joysticks_t *joys);
+bool JoyIsDown(const SDL_JoystickID id, const int cmd);
+bool JoyIsPressed(const SDL_JoystickID id, const int cmd);
+int JoyGetPressed(const SDL_JoystickID id);
 
-int JoyIsDown(joystick_t *joystick, int button);
-int JoyIsPressed(joystick_t *joystick, int button);
-int JoyGetPressed(joystick_t *joystick);
+void JoyPrePoll(CArray *joys);
 
-const char *JoyName(const int deviceIndex);
+void JoyAdded(const Sint32 which);
+void JoyRemoved(const Sint32 which);
+void JoyOnButtonDown(const SDL_ControllerButtonEvent e);
+void JoyOnButtonUp(const SDL_ControllerButtonEvent e);
+void JoyOnAxis(const SDL_ControllerAxisEvent e);
+
+const char *JoyName(const SDL_JoystickID id);
 const char *JoyButtonNameColor(
-	const int deviceIndex, const int cmd, color_t *color);
+	const SDL_JoystickID id, const int cmd, color_t *color);

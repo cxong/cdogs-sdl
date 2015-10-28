@@ -88,8 +88,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	SDL_Event e;
 	handlers->HasResolutionChanged = 0;
 	KeyPrePoll(&handlers->keyboard);
-	JoyPoll(&handlers->joysticks);
 	MousePrePoll(&handlers->mouse);
+	JoyPrePoll(&handlers->joysticks);
 	SDL_free(handlers->DropFile);
 	handlers->DropFile = NULL;
 	while (SDL_PollEvent(&e))
@@ -109,6 +109,27 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 		case SDL_TEXTINPUT:
 			strcpy(handlers->keyboard.Typed, e.text.text);
 			break;
+
+		case SDL_CONTROLLERDEVICEADDED:
+			JoyAdded(e.cdevice.which);
+			break;
+
+		case SDL_CONTROLLERDEVICEREMOVED:
+			JoyRemoved(e.cdevice.which);
+			break;
+
+		case SDL_CONTROLLERBUTTONDOWN:
+			JoyOnButtonDown(e.cbutton);
+			break;
+
+		case SDL_CONTROLLERBUTTONUP:
+			JoyOnButtonUp(e.cbutton);
+			break;
+
+		case SDL_CONTROLLERAXISMOTION:
+			JoyOnAxis(e.caxis);
+			break;
+
 		case SDL_MOUSEBUTTONDOWN:
 			MouseOnButtonDown(&handlers->mouse, e.button.button);
 			break;
@@ -210,24 +231,25 @@ static int GetMouseCmd(
 	return cmd;
 }
 
-static int GetJoystickCmd(joystick_t *joystick, bool isPressed)
+static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 {
 	int cmd = 0;
-	int (*joyFunc)(joystick_t *, int) = isPressed ? JoyIsPressed : JoyIsDown;
+	bool (*joyFunc)(const SDL_JoystickID, const int) =
+		isPressed ? JoyIsPressed : JoyIsDown;
 
-	if (joyFunc(joystick, CMD_LEFT))		cmd |= CMD_LEFT;
-	else if (joyFunc(joystick, CMD_RIGHT))	cmd |= CMD_RIGHT;
+	if (joyFunc(id, CMD_LEFT))			cmd |= CMD_LEFT;
+	else if (joyFunc(id, CMD_RIGHT))	cmd |= CMD_RIGHT;
 
-	if (joyFunc(joystick, CMD_UP))			cmd |= CMD_UP;
-	else if (joyFunc(joystick, CMD_DOWN))	cmd |= CMD_DOWN;
+	if (joyFunc(id, CMD_UP))			cmd |= CMD_UP;
+	else if (joyFunc(id, CMD_DOWN))		cmd |= CMD_DOWN;
 
-	if (joyFunc(joystick, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
+	if (joyFunc(id, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
 
-	if (joyFunc(joystick, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
+	if (joyFunc(id, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
 
-	if (joyFunc(joystick, CMD_MAP))			cmd |= CMD_MAP;
+	if (joyFunc(id, CMD_MAP))			cmd |= CMD_MAP;
 
-	if (joyFunc(joystick, CMD_ESC))			cmd |= CMD_ESC;
+	if (joyFunc(id, CMD_ESC))			cmd |= CMD_ESC;
 
 	return cmd;
 }
@@ -248,11 +270,7 @@ int GetGameCmd(
 		cmd = GetMouseCmd(&handlers->mouse, false, 1, playerPos);
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		{
-			joystick_t *joystick =
-				&handlers->joysticks.joys[playerData->deviceIndex];
-			cmd = GetJoystickCmd(joystick, false);
-		}
+		cmd = GetJoystickCmd(playerData->deviceIndex, false);
 		break;
 	default:
 		// do nothing
@@ -276,10 +294,7 @@ int GetOnePlayerCmd(
 		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, Vec2iZero());
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		{
-			joystick_t *joystick = &handlers->joysticks.joys[deviceIndex];
-			cmd = GetJoystickCmd(joystick, isPressed);
-		}
+		cmd = GetJoystickCmd(deviceIndex, isPressed);
 		break;
 	default:
 		// Do nothing
@@ -310,8 +325,15 @@ void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 int GetMenuCmd(EventHandlers *handlers)
 {
 	keyboard_t *kb = &handlers->keyboard;
-	if (KeyIsPressed(kb, SDL_SCANCODE_ESCAPE) ||
-		JoyIsPressed(&handlers->joysticks.joys[0], CMD_ESC))
+	bool firstJoyPressedEsc = false;
+	SDL_JoystickID firstJoyId = 0;
+	if (handlers->joysticks.size > 0)
+	{
+		const Joystick *firstJoy = CArrayGet(&handlers->joysticks, 0);
+		firstJoyId = firstJoy->id;
+		firstJoyPressedEsc = JoyIsPressed(firstJoyId, CMD_ESC);
+	}
+	if (KeyIsPressed(kb, SDL_SCANCODE_ESCAPE) || firstJoyPressedEsc)
 	{
 		return CMD_ESC;
 	}
@@ -331,10 +353,11 @@ int GetMenuCmd(EventHandlers *handlers)
 
 		if (KeyIsPressed(kb, SDL_SCANCODE_BACKSPACE))	cmd |= CMD_BUTTON2;
 	}
-	if (!cmd && handlers->joysticks.numJoys > 0)
+	if (!cmd && handlers->joysticks.size > 0)
 	{
 		// Check joystick 1
-		cmd = GetOnePlayerCmd(handlers, true, INPUT_DEVICE_JOYSTICK, 0);
+		cmd = GetOnePlayerCmd(
+			handlers, true, INPUT_DEVICE_JOYSTICK, firstJoyId);
 	}
 	if (!cmd)
 	{

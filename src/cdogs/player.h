@@ -96,5 +96,6 @@ int PlayersNumUseAmmo(const int ammoId);
 bool PlayerIsLocal(const int uid);
 
 void PlayerScore(PlayerData *p, const int points);
-void PlayerSetInputDevice(
+// Return false if player already assigned this input device
+bool PlayerTrySetInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);

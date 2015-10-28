@@ -36,260 +36,158 @@
 #include "log.h"
 
 
-void JoyInit(joysticks_t *joys)
+void JoyInit(CArray *joys)
 {
-	memset(joys->joys, 0, sizeof(joys->joys));
-	JoyReset(joys);
-}
+	CArrayInit(joys, sizeof(Joystick));
 
-void GJoyReset(void *joys)
-{
-	JoyReset(joys);
-}
-void JoyReset(joysticks_t *joys)
-{
-	int i;
-
-	JoyTerminate(joys);
-
-	joys->numJoys = SDL_NumJoysticks();
-	LOG(LM_INPUT, LL_DEBUG, "%d joysticks found", joys->numJoys);
-	if (joys->numJoys == 0)
+	// Detect all current controllers
+	const int n = SDL_NumJoysticks();
+	LOG(LM_INPUT, LL_DEBUG, "%d controllers found", n);
+	if (n == 0)
 	{
 		return;
 	}
-	for (i = 0; i < joys->numJoys; i++)
+	Joystick j;
+	memset(&j, 0, sizeof j);
+	for (int i = 0; i < n; i++)
 	{
-		joystick_t *joy = &joys->joys[i];
-		joy->j = SDL_JoystickOpen(i);
-		if (joy->j == NULL)
+		if (!SDL_IsGameController(i))
 		{
-			printf("Failed to open joystick.\n");
 			continue;
 		}
 
-		// Find joystick-specific fields
-		const char *name = SDL_JoystickName(joy->j);
-		if (strstr(name, " 360 Controller") != NULL)
+		j.gc = SDL_GameControllerOpen(i);
+		if (j.gc == NULL)
 		{
-			joy->Type = JOY_XBOX_360;
-		#ifdef __APPLE__
-			// TODO: OS X Yosemite driver doesn't detect hats
-			// Find out if this is driver/SDL problem
-			joy->Button1 = 11;	// A
-			joy->Button2 = 12;	// B
-			joy->ButtonMap = 5;	// back
-			joy->ButtonEsc = 4;	// start
-		#else
-			joy->Button1 = 0;	// A
-			joy->Button2 = 1;	// B
-			joy->ButtonMap = 4;	// back
-			joy->ButtonEsc = 5;	// start
-		#endif
+			LOG(LM_INPUT, LL_ERROR, "Failed to open game controller: %s",
+				SDL_GetError());
+			continue;
 		}
-		else
+		j.j = SDL_GameControllerGetJoystick(j.gc);
+		if (j.j == NULL)
 		{
-			joy->Type = JOY_UNKNOWN;
-			joy->Button1 = 0;
-			joy->Button2 = 1;
-			joy->ButtonMap = 2;
-			joy->ButtonEsc = 3;
+			LOG(LM_INPUT, LL_ERROR, "Failed to open joystick: %s",
+				SDL_GetError());
+			continue;
 		}
-
-		joy->numButtons = SDL_JoystickNumButtons(joy->j);
-		joy->numAxes = SDL_JoystickNumAxes(joy->j);
-		joy->numHats = SDL_JoystickNumHats(joy->j);
-
-		printf("Opened Joystick %d\n", i);
-		printf(" -> %s\n", JoyName(i));
-		printf(" -> Axes: %d Buttons: %d Hats: %d\n",
-			joy->numAxes, joy->numButtons, joy->numHats);
-	}
-	JoyPoll(joys);
-}
-
-void JoyTerminate(joysticks_t *joys)
-{
-	int i;
-	for (i = 0; i < MAX_JOYSTICKS; i++)
-	{
-		if (joys->joys[i].j != NULL)
+		j.id = SDL_JoystickInstanceID(j.j);
+		if (j.id == -1)
 		{
-			printf("Closing joystick.\n");
-			SDL_JoystickClose(joys->joys[i].j);
-			joys->joys[i].j = NULL;
+			LOG(LM_INPUT, LL_ERROR, "Failed to get joystick instance ID: %s",
+				SDL_GetError());
+			continue;
 		}
+		CArrayPushBack(joys, &j);
 	}
 }
 
-#define JOY_AXIS_THRESHOLD	16384
-
-static void GetAxis(joystick_t *joy);
-void JoyPollOne(joystick_t *joy)
+void JoyTerminate(CArray *joys)
 {
-	joy->previousButtonsField = joy->currentButtonsField;
-	joy->currentButtonsField = 0;
-
-	GetAxis(joy);
-
-	// Get hat state, convert to direction
-	for (int i = 0; i < joy->numHats; i++)
-	{
-		Uint8 hat = SDL_JoystickGetHat(joy->j, i);
-		switch (hat)
-		{
-		case SDL_HAT_UP:
-			joy->currentButtonsField |= CMD_UP;
-			break;
-		case SDL_HAT_RIGHT:
-			joy->currentButtonsField |= CMD_RIGHT;
-			break;
-		case SDL_HAT_DOWN:
-			joy->currentButtonsField |= CMD_DOWN;
-			break;
-		case SDL_HAT_LEFT:
-			joy->currentButtonsField |= CMD_LEFT;
-			break;
-		case SDL_HAT_RIGHTUP:
-			joy->currentButtonsField |= CMD_RIGHT;
-			joy->currentButtonsField |= CMD_UP;
-			break;
-		case SDL_HAT_RIGHTDOWN:
-			joy->currentButtonsField |= CMD_RIGHT;
-			joy->currentButtonsField |= CMD_DOWN;
-			break;
-		case SDL_HAT_LEFTUP:
-			joy->currentButtonsField |= CMD_LEFT;
-			joy->currentButtonsField |= CMD_UP;
-			break;
-		case SDL_HAT_LEFTDOWN:
-			joy->currentButtonsField |= CMD_LEFT;
-			joy->currentButtonsField |= CMD_DOWN;
-			break;
-		case SDL_HAT_CENTERED:
-		default:
-			break;
-		}
-	}
-
-	// Get buttons
-#define GET_BUTTON(_button, _cmd)\
-	if (SDL_JoystickGetButton(joy->j, _button))\
-	{\
-		joy->currentButtonsField |= _cmd;\
-	}
-	GET_BUTTON(joy->Button1, CMD_BUTTON1);
-	GET_BUTTON(joy->Button2, CMD_BUTTON2);
-	GET_BUTTON(joy->ButtonMap, CMD_MAP);
-	GET_BUTTON(joy->ButtonEsc, CMD_ESC);
-
-	for (int i = 0; i < joy->numAxes; i++)
-	{
-		int x = SDL_JoystickGetAxis(joy->j, i);
-		if (x < -JOY_AXIS_THRESHOLD || x > JOY_AXIS_THRESHOLD)
-		{
-			debug(D_NORMAL, "axis %d value %d\n", i, x);
-		}
-	}
-
-	// Special controls
-	switch (joy->Type)
-	{
-	case JOY_XBOX_360:
-		// Right trigger fire
-		{
-			const int z = SDL_JoystickGetAxis(joy->j, 2);
-			if (z < -JOY_AXIS_THRESHOLD)
-			{
-				joy->currentButtonsField |= CMD_BUTTON1;
-			}
-		}
-		break;
-	default:
-		// do nothing
-		break;
-	}
-}
-static void GetAxis(joystick_t *joy)
-{
-	// Get axes values, convert to direction
-	const int x = SDL_JoystickGetAxis(joy->j, 0);
-	const int y = SDL_JoystickGetAxis(joy->j, 1);
-	if (x < -JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_LEFT;
-	}
-	else if (x > JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_RIGHT;
-	}
-	if (y < -JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_UP;
-	}
-	else if (y > JOY_AXIS_THRESHOLD)
-	{
-		joy->currentButtonsField |= CMD_DOWN;
-	}
+	CA_FOREACH(Joystick, j, *joys)
+		SDL_GameControllerClose(j->gc);
+	CA_FOREACH_END()
+	CArrayTerminate(joys);
 }
 
-void JoyPoll(joysticks_t *joys)
+static Joystick *GetJoystick(const SDL_JoystickID id)
 {
-	int i;
-	if (joys->numJoys == 0)
-	{
-		return;
-	}
-	SDL_JoystickUpdate();
-	for (i = 0; i < joys->numJoys; i++)
-	{
-		if (joys->joys[i].j != NULL)
-		{
-			JoyPollOne(&joys->joys[i]);
-		}
-	}
+	CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
+		if (j->id == id) return j;
+	CA_FOREACH_END()
+	CASSERT(false, "Cannot find joystick");
+	return NULL;
 }
 
-int JoyIsDown(joystick_t *joystick, int button)
+bool JoyIsDown(const SDL_JoystickID id, const int cmd)
 {
-	return !!(joystick->currentButtonsField & button);
+	return !!(GetJoystick(id)->currentCmd & cmd);
 }
 
-int JoyIsPressed(joystick_t *joystick, int button)
+bool JoyIsPressed(const SDL_JoystickID id, const int cmd)
 {
-	return JoyIsDown(joystick, button) && !(joystick->previousButtonsField & button);
+	return JoyIsDown(id, cmd) && !(GetJoystick(id)->previousCmd & cmd);
 }
 
-int JoyGetPressed(joystick_t *joystick)
+int JoyGetPressed(const SDL_JoystickID id)
 {
-	int cmd = 0;
-	int i;
-	for (i = 0; i < joystick->numButtons; i++)
+	const Joystick *j = GetJoystick(id);
+	// Pressed is current and not previous, so take bitwise complement
+	return j->currentCmd & ~j->previousCmd;
+}
+
+void JoyPrePoll(CArray *joys)
+{
+	CA_FOREACH(Joystick, j, *joys)
+		j->pressedCmd = 0;
+		j->previousCmd = j->currentCmd;
+	CA_FOREACH_END()
+}
+
+void JoyAdded(const Sint32 which)
+{
+	LOG(LM_INPUT, LL_DEBUG, "Added joystick index %d", which);
+	// TODO: implement
+}
+void JoyRemoved(const Sint32 which)
+{
+	LOG(LM_INPUT, LL_DEBUG, "Removed joystick index %d", which);
+	// TODO: implement
+}
+int ControllerButtonToCmd(const Uint8 button);
+void JoyOnButtonDown(const SDL_ControllerButtonEvent e)
+{
+	LOG(LM_INPUT, LL_DEBUG, "Joystick %d button down %d", e.which, e.button);
+	Joystick *j = GetJoystick(e.which);
+	j->currentCmd |= ControllerButtonToCmd(e.button);
+}
+void JoyOnButtonUp(const SDL_ControllerButtonEvent e)
+{
+	LOG(LM_INPUT, LL_DEBUG, "Joystick %d button up %d", e.which, e.button);
+	Joystick *j = GetJoystick(e.which);
+	const int cmd = ControllerButtonToCmd(e.button);
+	if ((j->currentCmd & cmd) && !(j->previousCmd & cmd))
 	{
-		int mask = 1 << i;
-		if (JoyIsPressed(joystick, mask))
-		{
-			cmd |= mask;
-		}
+		j->pressedCmd |= cmd;
 	}
-	return cmd;
+	j->currentCmd &= ~cmd;
+}
+int ControllerButtonToCmd(const Uint8 button)
+{
+	switch (button)
+	{
+	case SDL_CONTROLLER_BUTTON_A: return CMD_BUTTON1;
+	case SDL_CONTROLLER_BUTTON_B: return CMD_BUTTON2;
+	case SDL_CONTROLLER_BUTTON_BACK: return CMD_MAP;
+	case SDL_CONTROLLER_BUTTON_START: return CMD_ESC;
+	case SDL_CONTROLLER_BUTTON_DPAD_UP: return CMD_UP;
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return CMD_DOWN;
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return CMD_LEFT;
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return CMD_RIGHT;
+	default: return 0;
+	}
+	// TODO: check button mappings
+}
+void JoyOnAxis(const SDL_ControllerAxisEvent e)
+{
+	LOG(LM_INPUT, LL_DEBUG, "Joystick %d received axis %d, %d",
+		e.which, e.axis, e.value);
+	// TODO: implement
 }
 
-const char *JoyName(const int deviceIndex)
+const char *JoyName(const SDL_JoystickID id)
 {
-	const joystick_t *joy = &gEventHandlers.joysticks.joys[deviceIndex];
-	switch (joy->Type)
-	{
-	case JOY_XBOX_360:
-		return "Xbox 360 controller";
-	default:
-		return SDL_JoystickName(joy->j);
-	}
+	return SDL_GameControllerName(GetJoystick(id)->gc);
 }
 
 const char *JoyButtonNameColor(
-	const int deviceIndex, const int cmd, color_t *color)
+	const SDL_JoystickID id, const int cmd, color_t *color)
 {
+	// TODO: implement
+	UNUSED(id);
+	UNUSED(cmd);
+	*color = colorGray;
+	return "FIZZ";
+	/*
 	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
 	{
 	case JOY_XBOX_360:
@@ -318,5 +216,5 @@ const char *JoyButtonNameColor(
 		case CMD_ESC: return "button 4";
 		default: CASSERT(false, "unknown button"); return NULL;
 		}
-	}
+	}*/
 }

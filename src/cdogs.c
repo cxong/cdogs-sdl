@@ -183,7 +183,7 @@ static void PrintHelp(void)
 int main(int argc, char *argv[])
 {
 	int wait = 0;
-	int js_flag = SDL_INIT_JOYSTICK;
+	int controllerFlag = SDL_INIT_GAMECONTROLLER;
 	credits_displayer_t creditsDisplayer;
 	custom_campaigns_t campaigns;
 	memset(&campaigns, 0, sizeof campaigns);
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
 				break;
 			case 'j':
 				debug(D_NORMAL, "nojoystick\n");
-				js_flag = 0;
+				controllerFlag = 0;
 				break;
 			case 'w':
 				wait = 1;
@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | js_flag) != 0)
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | controllerFlag) != 0)
 	{
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
 		err = EXIT_FAILURE;
