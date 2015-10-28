@@ -189,8 +189,6 @@ bool NumPlayersSelection(
 }
 
 
-static bool IsPlayerAssignedDevice(
-	const input_device_e d, const int deviceIndex);
 static void AssignPlayerInputDevices(EventHandlers *handlers)
 {
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -218,26 +216,17 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
 		}
-		CA_FOREACH(const Joystick, j, handlers->joysticks)
-			if (JoyIsPressed(j->id, CMD_BUTTON1) &&
-				PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, j->id))
+		for (int j = 0; j < (int)handlers->joysticks.size; j++)
+		{
+			const Joystick *joy = CArrayGet(&handlers->joysticks, j);
+			if (JoyIsPressed(joy->id, CMD_BUTTON1) &&
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
 			{
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
 			}
-		CA_FOREACH_END()
-	CA_FOREACH_END()
-}
-static bool IsPlayerAssignedDevice(
-	const input_device_e d, const int deviceIndex)
-{
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->inputDevice == d && p->deviceIndex == deviceIndex)
-		{
-			return true;
 		}
 	CA_FOREACH_END()
-	return false;
 }
 
 typedef struct
