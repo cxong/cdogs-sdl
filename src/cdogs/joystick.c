@@ -38,6 +38,14 @@
 
 void JoyInit(CArray *joys)
 {
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, "data/gamecontrollerdb.txt");
+	if (SDL_GameControllerAddMappingsFromFile(buf) == -1)
+	{
+		LOG(LM_INPUT, LL_ERROR, "cannot load controller mappings file: %s",
+			SDL_GetError());
+	}
+
 	CArrayInit(joys, sizeof(Joystick));
 
 	// Detect all current controllers
@@ -194,6 +202,7 @@ const char *JoyName(const SDL_JoystickID id)
 	return SDL_GameControllerName(GetJoystick(id)->gc);
 }
 
+static int CmdToControllerButton(const int cmd);
 const char *JoyButtonNameColor(
 	const SDL_JoystickID id, const int cmd, color_t *color)
 {
@@ -201,7 +210,17 @@ const char *JoyButtonNameColor(
 	UNUSED(id);
 	UNUSED(cmd);
 	*color = colorGray;
-	return "FIZZ";
+	const int button = CmdToControllerButton(cmd);
+	if (button == SDL_CONTROLLER_BUTTON_INVALID)
+	{
+		return "?";
+	}
+	const char *name = SDL_GameControllerGetStringForButton(button);
+	if (name == NULL)
+	{
+		return "?";
+	}
+	return name;
 	/*
 	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
 	{
@@ -232,4 +251,19 @@ const char *JoyButtonNameColor(
 		default: CASSERT(false, "unknown button"); return NULL;
 		}
 	}*/
+}
+static int CmdToControllerButton(const int cmd)
+{
+	switch (cmd)
+	{
+	case CMD_BUTTON1: return SDL_CONTROLLER_BUTTON_A;
+	case CMD_BUTTON2: return SDL_CONTROLLER_BUTTON_B;
+	case CMD_MAP: return SDL_CONTROLLER_BUTTON_BACK;
+	case CMD_ESC: return SDL_CONTROLLER_BUTTON_START;
+	case CMD_UP: return SDL_CONTROLLER_BUTTON_DPAD_UP;
+	case CMD_DOWN: return SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+	case CMD_LEFT: return SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+	case CMD_RIGHT: return SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+	default: return SDL_CONTROLLER_BUTTON_INVALID;
+	}
 }
