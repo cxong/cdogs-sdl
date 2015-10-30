@@ -156,23 +156,19 @@ void JoyRemoved(const Sint32 which)
 	CA_FOREACH_END()
 	CASSERT(false, "Cannot find joystick");
 }
+
+static void JoyOnCmd(Joystick *j, const int cmd, const bool isDown);
+
 int ControllerButtonToCmd(const Uint8 button);
 void JoyOnButtonDown(const SDL_ControllerButtonEvent e)
 {
 	LOG(LM_INPUT, LL_DEBUG, "Joystick %d button down %d", e.which, e.button);
-	Joystick *j = GetJoystick(e.which);
-	j->currentCmd |= ControllerButtonToCmd(e.button);
+	JoyOnCmd(GetJoystick(e.which), ControllerButtonToCmd(e.button), true);
 }
 void JoyOnButtonUp(const SDL_ControllerButtonEvent e)
 {
 	LOG(LM_INPUT, LL_DEBUG, "Joystick %d button up %d", e.which, e.button);
-	Joystick *j = GetJoystick(e.which);
-	const int cmd = ControllerButtonToCmd(e.button);
-	if ((j->currentCmd & cmd) && !(j->previousCmd & cmd))
-	{
-		j->pressedCmd |= cmd;
-	}
-	j->currentCmd &= ~cmd;
+	JoyOnCmd(GetJoystick(e.which), ControllerButtonToCmd(e.button), false);
 }
 int ControllerButtonToCmd(const Uint8 button)
 {
@@ -190,11 +186,47 @@ int ControllerButtonToCmd(const Uint8 button)
 	}
 	// TODO: check button mappings
 }
+#define DEADZONE 16384
 void JoyOnAxis(const SDL_ControllerAxisEvent e)
 {
 	LOG(LM_INPUT, LL_DEBUG, "Joystick %d received axis %d, %d",
 		e.which, e.axis, e.value);
-	// TODO: implement
+	Joystick *j = GetJoystick(e.which);
+	switch (e.axis)
+	{
+	case SDL_CONTROLLER_AXIS_LEFTX:
+		JoyOnCmd(j, CMD_LEFT, e.value < -DEADZONE);
+		JoyOnCmd(j, CMD_RIGHT, e.value > DEADZONE);
+		break;
+	case SDL_CONTROLLER_AXIS_LEFTY:
+		JoyOnCmd(j, CMD_UP, e.value < -DEADZONE);
+		JoyOnCmd(j, CMD_DOWN, e.value > DEADZONE);
+		break;
+	case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+		// Right trigger fire
+		JoyOnCmd(j, CMD_BUTTON1, e.value > DEADZONE);
+		break;
+	default:
+		// Ignore axis
+		break;
+	}
+	// TODO: check other controllers
+}
+
+static void JoyOnCmd(Joystick *j, const int cmd, const bool isDown)
+{
+	if (isDown)
+	{
+		j->currentCmd |= cmd;
+	}
+	else
+	{
+		if ((j->currentCmd & cmd) && !(j->previousCmd & cmd))
+		{
+			j->pressedCmd |= cmd;
+		}
+		j->currentCmd &= ~cmd;
+	}
 }
 
 const char *JoyName(const SDL_JoystickID id)
