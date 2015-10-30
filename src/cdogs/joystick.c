@@ -199,7 +199,16 @@ void JoyOnAxis(const SDL_ControllerAxisEvent e)
 
 const char *JoyName(const SDL_JoystickID id)
 {
-	return SDL_GameControllerName(GetJoystick(id)->gc);
+	const Joystick *j = GetJoystick(id);
+	const char *controllerName = SDL_GameControllerName(j->gc);
+	const char *joystickName = SDL_JoystickName(j->j);
+	// Try to use the more specific name
+	if (joystickName != NULL &&
+		strcmp(controllerName, "Generic DirectInput Controller") == 0)
+	{
+		return joystickName;
+	}
+	return controllerName;
 }
 
 static int CmdToControllerButton(const int cmd);
