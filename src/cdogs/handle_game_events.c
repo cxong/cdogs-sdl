@@ -30,7 +30,9 @@
 #include "actor_placement.h"
 #include "ai_utils.h"
 #include "damage.h"
+#include "events.h"
 #include "game_events.h"
+#include "joystick.h"
 #include "net_server.h"
 #include "objs.h"
 #include "particle.h"
@@ -110,6 +112,10 @@ static void HandleGameEvent(
 		camera->shake = ScreenShakeAdd(
 			camera->shake, e.u.ShakeAmount,
 			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
+		// Weak rumble for all joysticks
+		CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
+			JoyRumble(j->id, 0.3f, 500);
+		CA_FOREACH_END()
 		break;
 	case GAME_EVENT_SET_MESSAGE:
 		HUDDisplayMessage(
@@ -446,6 +452,16 @@ static void HandleGameEvent(
 				AddBloodSplatter(
 					a->Pos, e.u.ActorHit.Power,
 					Net2Vec2i(e.u.ActorHit.Vel));
+
+				// Rumble if taking hit
+				if (a->PlayerUID >= 0)
+				{
+					const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+					if (p->inputDevice == INPUT_DEVICE_JOYSTICK)
+					{
+						JoyImpact(p->deviceIndex);
+					}
+				}
 			}
 		}
 		break;

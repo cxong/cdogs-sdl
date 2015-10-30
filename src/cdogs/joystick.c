@@ -68,10 +68,16 @@ void JoyReset(CArray *joys)
 	CA_FOREACH_END()
 }
 
+static void JoyTerminateOne(Joystick *j)
+{
+	SDL_GameControllerClose(j->gc);
+	SDL_HapticClose(j->haptic);
+}
+
 void JoyTerminate(CArray *joys)
 {
 	CA_FOREACH(Joystick, j, *joys)
-		SDL_GameControllerClose(j->gc);
+		JoyTerminateOne(j);
 	CA_FOREACH_END()
 	CArrayTerminate(joys);
 }
@@ -119,6 +125,7 @@ void JoyAdded(const Sint32 which)
 
 	Joystick j;
 	memset(&j, 0, sizeof j);
+	j.hapticEffectId = -1;
 	j.gc = SDL_GameControllerOpen(which);
 	if (j.gc == NULL)
 	{
@@ -140,6 +147,44 @@ void JoyAdded(const Sint32 which)
 			SDL_GetError());
 		return;
 	}
+	const int isHaptic = SDL_JoystickIsHaptic(j.j);
+	if (isHaptic > 0)
+	{
+		j.haptic = SDL_HapticOpenFromJoystick(j.j);
+		if (j.haptic == NULL)
+		{
+			LOG(LM_INPUT, LL_ERROR, "Failed to open haptic: %s",
+				SDL_GetError());
+		}
+		else
+		{
+			if (SDL_HapticRumbleInit(j.haptic) != 0)
+			{
+				LOG(LM_INPUT, LL_ERROR, "Failed to init rumble: %s",
+					SDL_GetError());
+			}
+			const int hapticQuery = SDL_HapticQuery(j.haptic);
+			LOG(LM_INPUT, LL_INFO, "Haptic support: %x", hapticQuery);
+			if (hapticQuery & SDL_HAPTIC_CONSTANT)
+			{
+				SDL_HapticEffect he;
+				memset(&he, 0, sizeof he);
+				he.type = SDL_HAPTIC_CONSTANT;
+				he.constant.length = 100;
+				he.constant.level = 20000; // 20000/32767 strength
+				j.hapticEffectId = SDL_HapticNewEffect(j.haptic, &he);
+				if (j.hapticEffectId == -1)
+				{
+					LOG(LM_INPUT, LL_ERROR,
+						"Failed to create haptic effect: %s", SDL_GetError());
+				}
+			}
+		}
+	}
+	else if (isHaptic < 0)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to query haptic: %s", SDL_GetError());
+	}
 	CArrayPushBack(&gEventHandlers.joysticks, &j);
 	LOG(LM_INPUT, LL_INFO, "Added joystick index %d id %d", which, j.id);
 }
@@ -149,7 +194,7 @@ void JoyRemoved(const Sint32 which)
 	CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
 		if (j->id == which)
 		{
-			SDL_GameControllerClose(j->gc);
+			JoyTerminateOne(j);
 			CArrayDelete(&gEventHandlers.joysticks, i);
 			return;
 		}
@@ -184,7 +229,6 @@ int ControllerButtonToCmd(const Uint8 button)
 	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return CMD_RIGHT;
 	default: return 0;
 	}
-	// TODO: check button mappings
 }
 #define DEADZONE 16384
 void JoyOnAxis(const SDL_ControllerAxisEvent e)
@@ -210,7 +254,6 @@ void JoyOnAxis(const SDL_ControllerAxisEvent e)
 		// Ignore axis
 		break;
 	}
-	// TODO: check other controllers
 }
 
 static void JoyOnCmd(Joystick *j, const int cmd, const bool isDown)
@@ -226,6 +269,27 @@ static void JoyOnCmd(Joystick *j, const int cmd, const bool isDown)
 			j->pressedCmd |= cmd;
 		}
 		j->currentCmd &= ~cmd;
+	}
+}
+
+void JoyRumble(
+	const SDL_JoystickID id, const float strength, const Uint32 length)
+{
+	Joystick *j = GetJoystick(id);
+	if (j->haptic == NULL) return;
+	if (SDL_HapticRumblePlay(j->haptic, strength, length) < 0)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to rumble: %s", SDL_GetError());
+	}
+}
+void JoyImpact(const SDL_JoystickID id)
+{
+	Joystick *j = GetJoystick(id);
+	if (j->hapticEffectId != -1 &&
+		SDL_HapticRunEffect(j->haptic, j->hapticEffectId, 1) != 0)
+	{
+		LOG(LM_INPUT, LL_ERROR, "Failed to run haptic effect: %s",
+			SDL_GetError());
 	}
 }
 

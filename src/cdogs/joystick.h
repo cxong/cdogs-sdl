@@ -32,6 +32,7 @@
 
 #include <SDL_events.h>
 #include <SDL_gamecontroller.h>
+#include <SDL_haptic.h>
 
 #include "c_array.h"
 #include "color.h"
@@ -42,6 +43,8 @@ typedef struct
 	SDL_GameController *gc;
 	SDL_Joystick *j;
 	SDL_JoystickID id;
+	SDL_Haptic *haptic;
+	int hapticEffectId;
 	int currentCmd;
 	int previousCmd;
 	int pressedCmd;
@@ -62,6 +65,10 @@ void JoyRemoved(const Sint32 which);
 void JoyOnButtonDown(const SDL_ControllerButtonEvent e);
 void JoyOnButtonUp(const SDL_ControllerButtonEvent e);
 void JoyOnAxis(const SDL_ControllerAxisEvent e);
+
+void JoyRumble(
+	const SDL_JoystickID id, const float strength, const Uint32 length);
+void JoyImpact(const SDL_JoystickID id);
 
 const char *JoyName(const SDL_JoystickID id);
 const char *JoyButtonNameColor(

@@ -322,7 +322,9 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | controllerFlag) != 0)
+	const int sdlFlags =
+		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC;
+	if (SDL_Init(sdlFlags | controllerFlag) != 0)
 	{
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
 		err = EXIT_FAILURE;
