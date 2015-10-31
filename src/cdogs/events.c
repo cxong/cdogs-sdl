@@ -112,7 +112,24 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 			break;
 
 		case SDL_CONTROLLERDEVICEADDED:
-			JoyAdded(e.cdevice.which);
+			{
+				const SDL_JoystickID jid = JoyAdded(e.cdevice.which);
+				if (jid == -1)
+				{
+					break;
+				}
+				// If there are players with unset devices,
+				// set this controller to them
+				CA_FOREACH(PlayerData, p, gPlayerDatas)
+					if (p->inputDevice == INPUT_DEVICE_UNSET)
+					{
+						PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, jid);
+						LOG(LM_INPUT, LL_INFO,
+							"Joystick %d assigned to player %d", jid, p->UID);
+						break;
+					}
+				CA_FOREACH_END()
+			}
 			break;
 
 		case SDL_CONTROLLERDEVICEREMOVED:
@@ -126,6 +143,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					PlayerTrySetInputDevice(p, INPUT_DEVICE_UNSET, 0);
 					LOG(LM_INPUT, LL_WARN, "Joystick for player %d removed",
 						p->UID);
+					break;
 				}
 			CA_FOREACH_END()
 			break;

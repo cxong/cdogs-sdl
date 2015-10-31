@@ -115,17 +115,17 @@ void JoyPrePoll(CArray *joys)
 	CA_FOREACH_END()
 }
 
-void JoyAdded(const Sint32 which)
+SDL_JoystickID JoyAdded(const Sint32 which)
 {
 	// Don't add the same controller twice
 	if (GetJoystick(which) != NULL)
 	{
-		return;
+		return -1;
 	}
 
 	if (!SDL_IsGameController(which))
 	{
-		return;
+		return -1;
 	}
 
 	Joystick j;
@@ -136,21 +136,21 @@ void JoyAdded(const Sint32 which)
 	{
 		LOG(LM_INPUT, LL_ERROR, "Failed to open game controller: %s",
 			SDL_GetError());
-		return;
+		return -1;
 	}
 	j.j = SDL_GameControllerGetJoystick(j.gc);
 	if (j.j == NULL)
 	{
 		LOG(LM_INPUT, LL_ERROR, "Failed to open joystick: %s",
 			SDL_GetError());
-		return;
+		return -1;
 	}
 	j.id = SDL_JoystickInstanceID(j.j);
 	if (j.id == -1)
 	{
 		LOG(LM_INPUT, LL_ERROR, "Failed to get joystick instance ID: %s",
 			SDL_GetError());
-		return;
+		return -1;
 	}
 	const int isHaptic = SDL_JoystickIsHaptic(j.j);
 	if (isHaptic > 0)
@@ -192,6 +192,7 @@ void JoyAdded(const Sint32 which)
 	}
 	CArrayPushBack(&gEventHandlers.joysticks, &j);
 	LOG(LM_INPUT, LL_INFO, "Added joystick index %d id %d", which, j.id);
+	return j.id;
 }
 void JoyRemoved(const Sint32 which)
 {

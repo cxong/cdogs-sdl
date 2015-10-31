@@ -60,7 +60,7 @@ int JoyGetPressed(const SDL_JoystickID id);
 
 void JoyPrePoll(CArray *joys);
 
-void JoyAdded(const Sint32 which);
+SDL_JoystickID JoyAdded(const Sint32 which);
 void JoyRemoved(const Sint32 which);
 void JoyOnButtonDown(const SDL_ControllerButtonEvent e);
 void JoyOnButtonUp(const SDL_ControllerButtonEvent e);
