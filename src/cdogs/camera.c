@@ -112,7 +112,9 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 static void FollowPlayer(Vec2i *pos, const int playerUID);
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
-void CameraDraw(Camera *camera, const input_device_e pausingDevice)
+void CameraDraw(
+	Camera *camera, const input_device_e pausingDevice,
+	const bool controllerUnplugged)
 {
 	Vec2i centerOffset = Vec2iZero();
 	const int numLocalPlayersAlive =
@@ -371,7 +373,7 @@ void CameraDraw(Camera *camera, const input_device_e pausingDevice)
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
 
-	HUDDraw(&camera->HUD, pausingDevice);
+	HUDDraw(&camera->HUD, pausingDevice, controllerUnplugged);
 
 	// Draw camera mode
 	char cameraNameBuf[256];

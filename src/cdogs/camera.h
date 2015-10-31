@@ -55,6 +55,8 @@ void CameraTerminate(Camera *camera);
 
 void CameraInput(Camera *camera, const int cmd, const int lastCmd);
 void CameraUpdate(Camera *camera, const int ticks, const int ms);
-void CameraDraw(Camera *camera, const input_device_e pausingDevice);
+void CameraDraw(
+	Camera *camera, const input_device_e pausingDevice,
+	const bool controllerUnplugged);
 
 bool CameraIsSingleScreen(void);

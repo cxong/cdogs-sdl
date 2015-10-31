@@ -833,7 +833,9 @@ static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags);
 static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags);
 static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags);
 static void DrawObjectiveCounts(HUD *hud);
-void HUDDraw(HUD *hud, const input_device_e pausingDevice)
+void HUDDraw(
+	HUD *hud, const input_device_e pausingDevice,
+	const bool controllerUnplugged)
 {
 	char s[50];
 	int flags = 0;
@@ -933,7 +935,23 @@ void HUDDraw(HUD *hud, const input_device_e pausingDevice)
 		FontStrCenter(s);
 	}
 
-	if (pausingDevice != INPUT_DEVICE_UNSET)
+	if (controllerUnplugged)
+	{
+		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
+			gGraphicsDevice.cachedConfig.Res,
+			FontStrSize("<Paused>\nFoobar\nPlease reconnect controller")), 2);
+		FontStr("<Paused>", pos);
+
+		pos.y += FontH();
+		char buf[256];
+		sprintf(buf, "Press %s to quit",
+			InputGetButtonNameColor(INPUT_DEVICE_KEYBOARD, 0, CMD_ESC, NULL));
+		FontStr(buf, pos);
+
+		pos.y += FontH();
+		FontStr("Please reconnect controller", pos);
+	}
+	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
 			gGraphicsDevice.cachedConfig.Res,

@@ -106,4 +106,6 @@ void HUDAddUpdate(
 
 void HUDUpdate(HUD *hud, int ms);
 // INPUT_DEVICE_UNSET if not paused
-void HUDDraw(HUD *hud, const input_device_e pausingDevice);
+void HUDDraw(
+	HUD *hud, const input_device_e pausingDevice,
+	const bool controllerUnplugged);

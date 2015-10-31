@@ -161,6 +161,7 @@ typedef struct
 	int frames;
 	// TODO: turn the following into a screen system?
 	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
+	bool controllerUnplugged;
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
 	int lastCmds[MAX_LOCAL_PLAYERS];
@@ -325,6 +326,16 @@ static void RunGameInput(void *data)
 		pausingDevice = INPUT_DEVICE_KEYBOARD;
 	}
 
+	// Check if any controllers are unplugged
+	rData->controllerUnplugged = false;
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (p->inputDevice == INPUT_DEVICE_UNSET)
+		{
+			rData->controllerUnplugged = true;
+			break;
+		}
+	CA_FOREACH_END()
+
 	// Check if automap key is pressed by any player
 	rData->isMap =
 		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
@@ -341,13 +352,15 @@ static void RunGameInput(void *data)
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		// Escape pressed
-		if (rData->pausingDevice != INPUT_DEVICE_UNSET)
+		if (rData->pausingDevice != INPUT_DEVICE_UNSET ||
+			rData->controllerUnplugged)
 		{
 			// Exit
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
 			rData->pausingDevice = INPUT_DEVICE_UNSET;
+			rData->controllerUnplugged = false;
 		}
 		else
 		{
@@ -371,8 +384,13 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	// If we're not hosting a net game,
 	// don't update if the game has paused or has automap shown
-	if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer") &&
-		(rData->pausingDevice != INPUT_DEVICE_UNSET || rData->isMap))
+	const bool paused =
+		rData->pausingDevice != INPUT_DEVICE_UNSET ||
+		rData->controllerUnplugged ||
+		rData->isMap;
+	if (!gCampaign.IsClient &&
+		!ConfigGetBool(&gConfig, "StartServer") &&
+		paused)
 	{
 		return UPDATE_RESULT_DRAW;
 	}
@@ -556,7 +574,8 @@ static void RunGameDraw(void *data)
 	RunGameData *rData = data;
 
 	// Draw everything
-	CameraDraw(&rData->Camera, rData->pausingDevice);
+	CameraDraw(
+		&rData->Camera, rData->pausingDevice, rData->controllerUnplugged);
 
 	if (GameIsMouseUsed())
 	{
