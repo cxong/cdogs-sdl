@@ -126,8 +126,12 @@ void MenuDisplayPlayerControls(
 			InputDeviceName(pData->inputDevice, pData->deviceIndex));
 		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
 		break;
+	case INPUT_DEVICE_UNSET:
+		strcpy(s, "(no device; plug in a controller)");
+		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+		break;
 	default:
-		assert(0 && "unknown device");
+		CASSERT(false, "unknown device");
 		break;
 	}
 }

@@ -87,7 +87,6 @@ static Joystick *GetJoystick(const SDL_JoystickID id)
 	CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
 		if (j->id == id) return j;
 	CA_FOREACH_END()
-	CASSERT(false, "Cannot find joystick");
 	return NULL;
 }
 
@@ -118,6 +117,12 @@ void JoyPrePoll(CArray *joys)
 
 void JoyAdded(const Sint32 which)
 {
+	// Don't add the same controller twice
+	if (GetJoystick(which) != NULL)
+	{
+		return;
+	}
+
 	if (!SDL_IsGameController(which))
 	{
 		return;

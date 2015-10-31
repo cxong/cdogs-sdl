@@ -55,6 +55,7 @@
 
 #include "config.h"
 #include "gamedata.h"
+#include "log.h"
 #include "music.h"
 #include "pic_manager.h"
 
@@ -116,6 +117,17 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 
 		case SDL_CONTROLLERDEVICEREMOVED:
 			JoyRemoved(e.cdevice.which);
+			// If there was a player using this joystick,
+			// set their input device to nothing
+			CA_FOREACH(PlayerData, p, gPlayerDatas)
+				if (p->inputDevice == INPUT_DEVICE_JOYSTICK &&
+					p->deviceIndex == e.cdevice.which)
+				{
+					PlayerTrySetInputDevice(p, INPUT_DEVICE_UNSET, 0);
+					LOG(LM_INPUT, LL_WARN, "Joystick for player %d removed",
+						p->UID);
+				}
+			CA_FOREACH_END()
 			break;
 
 		case SDL_CONTROLLERBUTTONDOWN:
@@ -458,6 +470,8 @@ void InputGetDirectionNames(
 		strcpy(buf, "directions");
 		break;
 	case INPUT_DEVICE_AI:
+		break;
+	case INPUT_DEVICE_UNSET:
 		break;
 	default:
 		CASSERT(false, "unknown device");
