@@ -399,31 +399,29 @@ int GetMenuCmd(EventHandlers *handlers)
 }
 
 
-const char *InputGetButtonName(
-	const input_device_e d, const int dIndex, const int cmd)
-{
-	color_t c;
-	return InputGetButtonNameColor(d, dIndex, cmd, &c);
-}
-const char *InputGetButtonNameColor(
-	const input_device_e d, const int dIndex, const int cmd, color_t *color)
+void InputGetButtonNameColor(
+	const input_device_e d, const int dIndex, const int cmd,
+	char *buf, color_t *color)
 {
 	switch (d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 	#ifdef __GCWZERO__
-		*color = colorBlue;
+		if (color != NULL)
+		{
+			*color = colorBlue;
+		}
 		switch (cmd)
 		{
-			case CMD_LEFT: return "left";
-			case CMD_RIGHT: return "right";
-			case CMD_UP: return "up";
-			case CMD_DOWN: return "down";
-			case CMD_BUTTON1: return "A";
-			case CMD_BUTTON2: return "B";
-			case CMD_MAP: *color = colorGray; return "L";
-			case CMD_ESC: return "SELECT";
-			default: CASSERT(false, "unknown button"); return NULL;
+			case CMD_LEFT: strcpy(buf, "left"); return;
+			case CMD_RIGHT: strcpy(buf, "right"); return;
+			case CMD_UP: strcpy(buf, "up"); return;
+			case CMD_DOWN:strcpy(buf, "down"); return;
+			case CMD_BUTTON1: strcpy(buf, "A"); return;
+			case CMD_BUTTON2: strcpy(buf, "B"); return;
+			case CMD_MAP: *color = colorGray; strcpy(buf, "L"); return;
+			case CMD_ESC: strcpy(buf, "SELECT"); return;
+			default: CASSERT(false, "unknown button"); return;
 		}
 	#else
 		{
@@ -431,15 +429,15 @@ const char *InputGetButtonNameColor(
 				&gEventHandlers.keyboard.PlayerKeys[dIndex];
 			switch (cmd)
 			{
-			case CMD_LEFT: return SDL_GetScancodeName(keys->left);
-			case CMD_RIGHT: return SDL_GetScancodeName(keys->right);
-			case CMD_UP: return SDL_GetScancodeName(keys->up);
-			case CMD_DOWN: return SDL_GetScancodeName(keys->down);
-			case CMD_BUTTON1: return SDL_GetScancodeName(keys->button1);
-			case CMD_BUTTON2: return SDL_GetScancodeName(keys->button2);
-			case CMD_MAP: return SDL_GetScancodeName(keys->map);
-			case CMD_ESC: return SDL_GetScancodeName(SDL_SCANCODE_ESCAPE);
-			default: CASSERT(false, "unknown button"); return NULL;
+			case CMD_LEFT: strcpy(buf, SDL_GetScancodeName(keys->left)); return;
+			case CMD_RIGHT: strcpy(buf, SDL_GetScancodeName(keys->right)); return;
+			case CMD_UP: strcpy(buf, SDL_GetScancodeName(keys->up)); return;
+			case CMD_DOWN: strcpy(buf, SDL_GetScancodeName(keys->down)); return;
+			case CMD_BUTTON1: strcpy(buf, SDL_GetScancodeName(keys->button1)); return;
+			case CMD_BUTTON2: strcpy(buf, SDL_GetScancodeName(keys->button2)); return;
+			case CMD_MAP: strcpy(buf, SDL_GetScancodeName(keys->map)); return;
+			case CMD_ESC: strcpy(buf, SDL_GetScancodeName(SDL_SCANCODE_ESCAPE)); return;
+			default: CASSERT(false, "unknown button"); return;
 			}
 		}
 	#endif
@@ -447,25 +445,25 @@ const char *InputGetButtonNameColor(
 	case INPUT_DEVICE_MOUSE:
 		switch (cmd)
 		{
-		case CMD_LEFT: return "left";
-		case CMD_RIGHT: return "right";
-		case CMD_UP: return "up";
-		case CMD_DOWN: return "down";
-		case CMD_BUTTON1: return "left click";
-		case CMD_BUTTON2: return "right click";
-		case CMD_MAP: return "middle click";
-		case CMD_ESC: return "";
-		default: CASSERT(false, "unknown button"); return NULL;
+		case CMD_LEFT: strcpy(buf, "left"); return;
+		case CMD_RIGHT: strcpy(buf, "right"); return;
+		case CMD_UP: strcpy(buf, "up"); return;
+		case CMD_DOWN: strcpy(buf, "down"); return;
+		case CMD_BUTTON1: strcpy(buf, "left click"); return;
+		case CMD_BUTTON2: strcpy(buf, "right click"); return;
+		case CMD_MAP: strcpy(buf, "middle click"); return;
+		case CMD_ESC: strcpy(buf, ""); return;
+		default: CASSERT(false, "unknown button"); return;
 		}
 		break;
 	case INPUT_DEVICE_JOYSTICK:
-		// TODO: button names and special colours for popular gamepads
-		return JoyButtonNameColor(dIndex, cmd, color);
+		JoyButtonNameColor(dIndex, cmd, buf, color);
+		return;
 	case INPUT_DEVICE_AI:
-		return NULL;
+		return;
 	default:
 		CASSERT(false, "unknown input device");
-		return NULL;
+		return;
 	}
 }
 void InputGetDirectionNames(
@@ -475,11 +473,14 @@ void InputGetDirectionNames(
 	switch (d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		sprintf(buf, "%s, %s, %s, %s",
-			InputGetButtonName(d, dIndex, CMD_LEFT),
-			InputGetButtonName(d, dIndex, CMD_RIGHT),
-			InputGetButtonName(d, dIndex, CMD_UP),
-			InputGetButtonName(d, dIndex, CMD_DOWN));
+		{
+			char left[256], right[256], up[256], down[256];
+			InputGetButtonName(d, dIndex, CMD_LEFT, left);
+			InputGetButtonName(d, dIndex, CMD_RIGHT, right),
+			InputGetButtonName(d, dIndex, CMD_UP, up),
+			InputGetButtonName(d, dIndex, CMD_DOWN, down);
+			sprintf(buf, "%s, %s, %s, %s", left, right, up, down);
+		}
 		break;
 	case INPUT_DEVICE_MOUSE:
 		strcpy(buf, "mouse wheel");

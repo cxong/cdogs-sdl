@@ -92,10 +92,11 @@ typedef struct
 GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
 int GetMenuCmd(EventHandlers *handlers);
-const char *InputGetButtonName(
-	const input_device_e d, const int dIndex, const int cmd);
-const char *InputGetButtonNameColor(
-	const input_device_e d, const int dIndex, const int cmd, color_t *color);
+void InputGetButtonNameColor(
+	const input_device_e d, const int dIndex, const int cmd,
+	char *buf, color_t *color);
+#define InputGetButtonName(_d, _dIndex, _cmd, _buf)\
+	InputGetButtonNameColor(_d, _dIndex, _cmd, _buf, NULL)
 // Return a string that shows the direction controls for an input device
 void InputGetDirectionNames(
 	char *buf, const input_device_e d, const int dIndex);

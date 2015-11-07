@@ -1170,17 +1170,15 @@ static bool CheckManualPickupFunc(TTileItem *ti, void *data)
 	if (!PickupIsManual(p)) return true;
 	// "Say" that the weapon must be picked up using a command
 	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
-	if (pData->IsLocal)
+	if (pData->IsLocal && IsPlayerHuman(pData))
 	{
-		const char *pickupKey = InputGetButtonName(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2);
-		if (pickupKey != NULL)
-		{
-			sprintf(a->Chatter, "%s to pick up\n%s",
-				pickupKey,
-				IdGunDescription(p->class->u.GunId)->name);
-			a->ChatterCounter = 2;
-		}
+		char buf[256];
+		strcpy(buf, "");
+		InputGetButtonName(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buf);
+		sprintf(a->Chatter, "%s to pick up\n%s",
+			buf, IdGunDescription(p->class->u.GunId)->name);
+		a->ChatterCounter = 2;
 	}
 	// If co-op AI, alert it so it can try to pick the gun up
 	if (a->aiContext != NULL)

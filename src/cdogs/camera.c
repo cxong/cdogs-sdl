@@ -410,18 +410,24 @@ void CameraDraw(
 		// Show camera controls
 		const PlayerData *p = GetFirstPlayer(false, true, true);
 		CASSERT(p != NULL, "No human local players");
-		char directionNames[256];
+		Vec2i pos = Vec2iNew(
+			(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
+			h - FontH());
+		char buf[256];
+		color_t c = colorYellow;
+		InputGetButtonNameColor(
+			p->inputDevice, p->deviceIndex, CMD_BUTTON1, buf, &c);
+		pos = FontStrMask(buf, pos, c);
+		pos = FontStrMask("/", pos, colorYellow);
+		c = colorYellow;
+		InputGetButtonNameColor(
+			p->inputDevice, p->deviceIndex, CMD_BUTTON2, buf, &c);
+		pos = FontStrMask(buf, pos, c);
+		pos = FontStrMask(" to follow player, ", pos, colorYellow);
 		InputGetDirectionNames(
-			directionNames, p->inputDevice, p->deviceIndex);
-		char controlsBuf[256];
-		sprintf(controlsBuf, "%s/%s to follow player, %s to free-look",
-			InputGetButtonName(p->inputDevice, p->deviceIndex, CMD_BUTTON1),
-			InputGetButtonName(p->inputDevice, p->deviceIndex, CMD_BUTTON2),
-			directionNames);
-		FontStrMask(
-			controlsBuf,
-			Vec2iNew((w - FontStrW(controlsBuf)) / 2, h - FontH()),
-			colorYellow);
+			buf, p->inputDevice, p->deviceIndex);
+		pos = FontStrMask(buf, pos, colorYellow);
+		pos = FontStrMask(" to free-look", pos, colorYellow);
 	}
 }
 // Try to follow a player

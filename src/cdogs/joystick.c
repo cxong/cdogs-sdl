@@ -34,6 +34,7 @@
 #include "defs.h"
 #include "events.h"
 #include "log.h"
+#include "SDL_JoystickButtonNames/SDL_joystickbuttonnames.h"
 
 
 void JoyInit(CArray *joys)
@@ -44,6 +45,12 @@ void JoyInit(CArray *joys)
 	{
 		LOG(LM_INPUT, LL_ERROR, "cannot load controller mappings file: %s",
 			SDL_GetError());
+	}
+	GetDataFilePath(buf, "data/gamecontrollerbuttondb.txt");
+	if (SDLJBN_AddMappingsFromFile(buf) == -1)
+	{
+		LOG(LM_INPUT, LL_ERROR, "cannot load button mappings file: %s",
+			SDLJBN_GetError());
 	}
 
 	CArrayInit(joys, sizeof(Joystick));
@@ -314,54 +321,27 @@ const char *JoyName(const SDL_JoystickID id)
 }
 
 static int CmdToControllerButton(const int cmd);
-const char *JoyButtonNameColor(
-	const SDL_JoystickID id, const int cmd, color_t *color)
+void JoyButtonNameColor(
+	const SDL_JoystickID id, const int cmd, char *buf, color_t *color)
 {
-	// TODO: implement
-	UNUSED(id);
-	UNUSED(cmd);
-	*color = colorGray;
+	Joystick *j = GetJoystick(id);
 	const int button = CmdToControllerButton(cmd);
-	if (button == SDL_CONTROLLER_BUTTON_INVALID)
+	int res;
+	if (color != NULL)
 	{
-		return "?";
+		res = SDLJBN_GetButtonNameAndColor(
+			j->j, button, buf, &color->r, &color->g, &color->b);
 	}
-	const char *name = SDL_GameControllerGetStringForButton(button);
-	if (name == NULL)
+	else
 	{
-		return "?";
+		res = SDLJBN_GetButtonName(j->j, button, buf);
 	}
-	return name;
-	/*
-	switch (gEventHandlers.joysticks.joys[deviceIndex].Type)
+	if (res < 0)
 	{
-	case JOY_XBOX_360:
-		switch (cmd)
-		{
-		case CMD_LEFT: return "left";
-		case CMD_RIGHT: return "right";
-		case CMD_UP: return "up";
-		case CMD_DOWN: return "down";
-		case CMD_BUTTON1: *color = colorGreen; return "A";
-		case CMD_BUTTON2: *color = colorRed; return "B";
-		case CMD_MAP: return "Back";
-		case CMD_ESC: return "Start";
-		default: CASSERT(false, "unknown button"); return NULL;
-		}
-	default:
-		switch (cmd)
-		{
-		case CMD_LEFT: return "left";
-		case CMD_RIGHT: return "right";
-		case CMD_UP: return "up";
-		case CMD_DOWN: return "down";
-		case CMD_BUTTON1: return "button 1";
-		case CMD_BUTTON2: return "button 2";
-		case CMD_MAP: return "button 3";
-		case CMD_ESC: return "button 4";
-		default: CASSERT(false, "unknown button"); return NULL;
-		}
-	}*/
+		LOG(LM_INPUT, LL_WARN, "Could not get button name/colour: %s",
+			SDLJBN_GetError());
+		strcpy(buf, "?");
+	}
 }
 static int CmdToControllerButton(const int cmd)
 {

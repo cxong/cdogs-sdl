@@ -71,5 +71,5 @@ void JoyRumble(
 void JoyImpact(const SDL_JoystickID id);
 
 const char *JoyName(const SDL_JoystickID id);
-const char *JoyButtonNameColor(
-	const SDL_JoystickID id, const int cmd, color_t *color);
+void JoyButtonNameColor(
+	const SDL_JoystickID id, const int cmd, char *buf, color_t *color);

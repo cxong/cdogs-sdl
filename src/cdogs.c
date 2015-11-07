@@ -78,6 +78,7 @@
 #include <cdogs/pics.h>
 #include <cdogs/player_template.h>
 #include <cdogs/sounds.h>
+#include <cdogs/SDL_JoystickButtonNames/SDL_joystickbuttonnames.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
@@ -232,7 +233,7 @@ int main(int argc, char *argv[])
 		};
 		int opt = 0;
 		int idx = 0;
-		while ((opt = getopt_long(argc, argv,"fs:c:onjwm:xd\0h", longopts, &idx)) != -1)
+		while ((opt = getopt_long(argc, argv, "fs:c:onjwm:xd\0h", longopts, &idx)) != -1)
 		{
 			switch (opt)
 			{
@@ -327,6 +328,13 @@ int main(int argc, char *argv[])
 	if (SDL_Init(sdlFlags | controllerFlag) != 0)
 	{
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
+		err = EXIT_FAILURE;
+		goto bail;
+	}
+	if (SDLJBN_Init() != 0)
+	{
+		fprintf(stderr, "Could not initialise SDLJBN: %s\n",
+			SDLJBN_GetError());
 		err = EXIT_FAILURE;
 		goto bail;
 	}
@@ -471,10 +479,9 @@ bail:
 	UnloadCredits(&creditsDisplayer);
 	UnloadAllCampaigns(&campaigns);
 	CampaignTerminate(&gCampaign);
-	debug(D_NORMAL, ">> Shutting down sound...\n");
 	SoundTerminate(&gSoundDevice, true);
 
-	debug(D_NORMAL, "SDL_Quit()\n");
+	SDLJBN_Quit();
 	SDL_Quit();
 
 	exit(err);

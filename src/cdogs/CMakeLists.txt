@@ -192,6 +192,8 @@ ADD_SUBDIRECTORY(enet)
 # proto
 include_directories(proto/nanopb)
 
+add_subdirectory(SDL_JoystickButtonNames)
+
 add_library(cdogs STATIC
 	${CDOGS_SOURCES} ${CDOGS_HEADERS}
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
@@ -203,6 +205,7 @@ endif()
 
 target_link_libraries(cdogs
 	json
+	SDL_joystickbuttonnames
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${SDL2_MIXER_LIBRARIES}

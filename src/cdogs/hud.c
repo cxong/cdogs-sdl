@@ -940,14 +940,18 @@ void HUDDraw(
 		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
 			gGraphicsDevice.cachedConfig.Res,
 			FontStrSize("<Paused>\nFoobar\nPlease reconnect controller")), 2);
+		const int x = pos.x;
 		FontStr("<Paused>", pos);
 
 		pos.y += FontH();
+		pos = FontStr("Press ", pos);
 		char buf[256];
-		sprintf(buf, "Press %s to quit",
-			InputGetButtonNameColor(INPUT_DEVICE_KEYBOARD, 0, CMD_ESC, NULL));
-		FontStr(buf, pos);
+		color_t c = colorWhite;
+		InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, buf, &c);
+		pos = FontStrMask(buf, pos, c);
+		FontStr(" to quit", pos);
 
+		pos.x = x;
 		pos.y += FontH();
 		FontStr("Please reconnect controller", pos);
 	}
@@ -961,22 +965,22 @@ void HUDDraw(
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
+		char buf[256];
 		color_t c = colorWhite;
-		const char *buttonName =
-			InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, &c);
-		pos = FontStrMask(buttonName, pos, c);
+		InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, buf, &c);
+		pos = FontStrMask(buf, pos, c);
 		FontStr(" again to quit", pos);
 
 		pos.x = x;
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
-		buttonName = InputGetButtonNameColor(
-			pausingDevice, 0, CMD_BUTTON1, &c);
-		pos = FontStrMask(buttonName, pos, c);
+		c = colorWhite;
+		InputGetButtonNameColor(pausingDevice, 0, CMD_BUTTON1, buf, &c);
+		pos = FontStrMask(buf, pos, c);
 		pos = FontStr(" or ", pos);
-		buttonName = InputGetButtonNameColor(
-			pausingDevice, 0, CMD_BUTTON2, &c);
-		pos = FontStrMask(buttonName, pos, c);
+		c = colorWhite;
+		InputGetButtonNameColor(pausingDevice, 0, CMD_BUTTON2, buf, &c);
+		pos = FontStrMask(buf, pos, c);
 		FontStr(" to unpause", pos);
 	}
 

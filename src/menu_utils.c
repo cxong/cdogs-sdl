@@ -93,11 +93,15 @@ void MenuDisplayPlayerControls(
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-		sprintf(s, "(%s, %s and %s)",
-			directionNames,
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON1),
-			InputGetButtonName(pData->inputDevice, pData->deviceIndex, CMD_BUTTON2));
-		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+		{
+			char button1[256], button2[256];
+			InputGetButtonName(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, button1);
+			InputGetButtonName(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, button2);
+			sprintf(s, "(%s, %s and %s)", directionNames, button1, button2);
+			FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+		}
 		break;
 	case INPUT_DEVICE_MOUSE:
 		sprintf(s, "(%s to scroll,\nleft and right click)", directionNames);
@@ -111,13 +115,14 @@ void MenuDisplayPlayerControls(
 			FontStr(s, textPos);
 			textPos.y += FontH();
 			color_t c = colorWhite;
-			const char *buttonName = InputGetButtonNameColor(
-				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, &c);
-			textPos = FontStrMask(buttonName, textPos, c);
+			InputGetButtonNameColor(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, s, &c);
+			textPos = FontStrMask(s, textPos, c);
 			textPos = FontStr(" and ", textPos);
-			buttonName = InputGetButtonNameColor(
-				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, &c);
-			textPos = FontStrMask(buttonName, textPos, c);
+			c = colorWhite;
+			InputGetButtonNameColor(
+				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, s, &c);
+			textPos = FontStrMask(s, textPos, c);
 			FontStr(")", textPos);
 		}
 		break;
