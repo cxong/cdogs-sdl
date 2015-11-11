@@ -40,7 +40,9 @@ add_executable(c_array_test
 	../cdogs/color.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_link_libraries(c_array_test cbehave ${EXTRA_LIBRARIES})
+target_link_libraries(c_array_test
+	cbehave
+	${SDL2_LIBRARY} ${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME c_array_test COMMAND c_array_test)
 
 add_executable(color_test
@@ -88,6 +90,8 @@ add_executable(json_test
 target_link_libraries(json_test
 	cbehave
 	json
+	${SDL2_LIBRARY}
+	${SDLMAIN_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME json_test COMMAND json_test)
 
@@ -122,5 +126,7 @@ add_executable(utils_test
 	utils_test.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
-target_link_libraries(utils_test cbehave ${EXTRA_LIBRARIES})
+target_link_libraries(utils_test
+	cbehave
+	${SDL2_LIBRARY} ${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME utils_test COMMAND utils_test)

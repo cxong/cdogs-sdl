@@ -1,4 +1,7 @@
-include_directories(${SDL_INCLUDE_DIR})
+include_directories(
+	${SDL2_INCLUDE_DIRS}
+	${SDL2_IMAGE_INCLUDE_DIRS}
+	${SDL2_MIXER_INCLUDE_DIRS})
 set(CDOGSED_SOURCES
 	charsed.c
 	editor_brush.c
@@ -19,4 +22,4 @@ set(CDOGSED_HEADERS
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
 target_link_libraries(cdogsedlib
-	${SDL_LIBRARY})
+	${SDL2_LIBRARY})
