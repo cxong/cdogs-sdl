@@ -181,14 +181,6 @@ void RealPath(const char *src, char *dest)
 		// Default to relative path
 		strcpy(dest, src);
 	}
-	// Convert \'s to /'s (for PhysFS's benefit)
-	for (char *c = dest; *c != '\0'; c++)
-	{
-		if (*c == '\\')
-		{
-			*c = '/';
-		}
-	}
 }
 // Convert an absolute path to a relative path
 // e.g. /a/path/from/here, /a/path/to -> ../to
@@ -262,10 +254,25 @@ void RelPathFromCWD(char *buf, const char *to)
 	}
 }
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 void GetDataFilePath(char *buf, const char *path)
 {
 	char relbuf[CDOGS_PATH_MAX];
+#ifdef __APPLE__
+	// App bundle PWD is unpredictable; get the executable path explicitly and
+	// find the bundle's location
+	char exebuf[CDOGS_PATH_MAX];
+	uint32_t size = sizeof exebuf;
+	_NSGetExecutablePath(exebuf, &size);
+	// This gives us the executable path; find the dirname
+	*strrchr(exebuf, '/') = '\0';
+	// The executable is under *.app/Content/MacOS, so cd up thrice
+	sprintf(relbuf, "%s/../../../%s%s", exebuf, CDOGS_DATA_DIR, path);
+#else
 	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
+#endif
 	RealPath(relbuf, buf);
 }
 
