@@ -153,6 +153,7 @@ void PathGetWithoutExtension(char *buf, const char *path);
 void PathGetBasenameWithoutExtension(char *buf, const char *path);
 void RealPath(const char *src, char *dest);
 void RelPath(char *buf, const char *to, const char *from);
+char *CDogsGetCWD(char *buf);
 void RelPathFromCWD(char *buf, const char *to);
 void GetDataFilePath(char *buf, const char *path);
 

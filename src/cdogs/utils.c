@@ -142,10 +142,10 @@ void RealPath(const char *src, char *dest)
 	// the canonical path, then remove the temporary file.
 	tinydir_file file;
 	const bool exists = tinydir_file_open(&file, src) == 0;
+	char srcBuf[CDOGS_PATH_MAX];
 	if (!exists)
 	{
 		// First, convert slashes
-		char srcBuf[CDOGS_PATH_MAX];
 		strcpy(srcBuf, src);
 		for (char *c = srcBuf; *c != '\0'; c++)
 		{
@@ -160,6 +160,7 @@ void RealPath(const char *src, char *dest)
 		{
 			fclose(f);
 		}
+		src = srcBuf;
 	}
 #endif
 	char *res = realpath(src, dest);
@@ -180,6 +181,14 @@ void RealPath(const char *src, char *dest)
 			src, strerror(errno));
 		// Default to relative path
 		strcpy(dest, src);
+	}
+	// Convert \'s to /'s (for consistency)
+	for (char *c = dest; *c != '\0'; c++)
+	{
+		if (*c == '\\')
+		{
+			*c = '/';
+		}
 	}
 }
 // Convert an absolute path to a relative path
@@ -236,6 +245,24 @@ void RelPath(char *buf, const char *to, const char *from)
 	tSlash++;
 	strcat(buf, tSlash);
 }
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+char *CDogsGetCWD(char *buf)
+{
+#ifdef __APPLE__
+	char cwd[CDOGS_PATH_MAX];
+	uint32_t size = sizeof cwd;
+	_NSGetExecutablePath(cwd, &size);
+	// This gives us the executable path; find the dirname
+	*strrchr(cwd, '/') = '\0';
+	// The executable is under *.app/Content/MacOS, so cd up thrice
+	sprintf(buf, "%s/../../../", cwd);
+	return buf;
+#else
+	return getcwd(buf, CDOGS_PATH_MAX);
+#endif
+}
 void RelPathFromCWD(char *buf, const char *to)
 {
 	if (to == NULL || strlen(to) == 0)
@@ -243,7 +270,8 @@ void RelPathFromCWD(char *buf, const char *to)
 		return;
 	}
 	char cwd[CDOGS_PATH_MAX];
-	if (getcwd(cwd, CDOGS_PATH_MAX) == NULL)
+	CASSERT(CDogsGetCWD(cwd) != NULL, "error");
+	if (CDogsGetCWD(cwd) == NULL)
 	{
 		fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
 		strcpy(buf, to);
@@ -254,25 +282,16 @@ void RelPathFromCWD(char *buf, const char *to)
 	}
 }
 
-#ifdef __APPLE__
-#include <mach-o/dyld.h>
-#endif
 void GetDataFilePath(char *buf, const char *path)
 {
 	char relbuf[CDOGS_PATH_MAX];
-#ifdef __APPLE__
-	// App bundle PWD is unpredictable; get the executable path explicitly and
-	// find the bundle's location
-	char exebuf[CDOGS_PATH_MAX];
-	uint32_t size = sizeof exebuf;
-	_NSGetExecutablePath(exebuf, &size);
-	// This gives us the executable path; find the dirname
-	*strrchr(exebuf, '/') = '\0';
-	// The executable is under *.app/Content/MacOS, so cd up thrice
-	sprintf(relbuf, "%s/../../../%s%s", exebuf, CDOGS_DATA_DIR, path);
-#else
-	sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
-#endif
+	char cwd[CDOGS_PATH_MAX];
+	if (CDogsGetCWD(cwd) == NULL)
+	{
+		fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
+		strcpy(cwd, "");
+	}
+	sprintf(relbuf, "%s%s%s", cwd, CDOGS_DATA_DIR, path);
 	RealPath(relbuf, buf);
 }
 
