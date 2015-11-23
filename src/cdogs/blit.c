@@ -411,6 +411,12 @@ void BlitFlip(GraphicsDevice *g)
 
 	SDL_UpdateTexture(
 		g->screen, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	if (SDL_RenderClear(g->renderer) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s\n",
+			SDL_GetError());
+		return;
+	}
 	if (SDL_RenderCopy(g->renderer, g->screen, NULL, NULL) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to blit surface: %s\n", SDL_GetError());
