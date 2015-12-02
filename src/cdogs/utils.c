@@ -155,8 +155,12 @@ void RealPath(const char *src, char *dest)
 			}
 		}
 		FILE *f = fopen(srcBuf, "ab+");
-		CASSERT(f != NULL, "internal error: cannot create temp file");
-		if (f != NULL)
+		if (f == NULL)
+		{
+			fprintf(stderr, "internal error: cannot create temp file %s\n",
+				srcBuf);
+		}
+		else
 		{
 			fclose(f);
 		}
@@ -168,10 +172,10 @@ void RealPath(const char *src, char *dest)
 	if (!exists)
 	{
 		// delete the temporary file we created
-		const int res2 = remove(src);
-		if (res2 != 0)
+		if (remove(src) != 0)
 		{
-			fprintf(stderr, "Internal error: cannot delete\n");
+			fprintf(stderr, "Internal error: cannot delete temp file %s\n",
+				srcBuf);
 		}
 	}
 #endif
