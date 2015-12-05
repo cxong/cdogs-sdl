@@ -8,6 +8,7 @@ cell
 chaos
 con
 chrome
+claw
 crash
 cron
 cycle
@@ -20,6 +21,7 @@ factor
 flash
 flux
 forge
+fury
 gear
 grid
 gun
@@ -62,9 +64,11 @@ sphere
 steel
 sys
 tech
+tex
 trance
 trix
 tron
+type
 war
 web
 wolf

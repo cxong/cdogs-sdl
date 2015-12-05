@@ -19,13 +19,16 @@ Dex
 Digi
 Dyna
 Electro
+Execu
 Gamma
+Gene
 Giga
 Hex
 Hyper
 Ice
 Infra
 Inter
+Jam
 Laser
 Macro
 Mag
@@ -43,6 +46,7 @@ Omni
 Over
 Plas
 Plasma
+Proto
 Psy
 Psycho
 Quad
@@ -50,6 +54,7 @@ Quantum
 Re
 Retro
 Rez
+Rip
 Robo
 Servo
 Shadow
@@ -61,6 +66,7 @@ System
 Tech
 Techno
 Tetra
+Tri
 Turbo
 Ultra
 War
