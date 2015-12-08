@@ -48,6 +48,7 @@ elseif(APPLE)
 	set_source_files_properties(../build/macosx/cdogs-icon.icns
 		PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(MACOSX_BUNDLE_ICON_FILE cdogs-icon.icns)
+	set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VERSION}")
 	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
 add_executable(cdogs-sdl MACOSX_BUNDLE

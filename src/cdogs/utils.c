@@ -143,6 +143,7 @@ void RealPath(const char *src, char *dest)
 	tinydir_file file;
 	const bool exists = tinydir_file_open(&file, src) == 0;
 	char srcBuf[CDOGS_PATH_MAX];
+	char *res;
 	if (!exists)
 	{
 		// First, convert slashes
@@ -164,15 +165,16 @@ void RealPath(const char *src, char *dest)
 		{
 			fclose(f);
 		}
-		src = srcBuf;
+		res = realpath(srcBuf, dest);
 	}
+	else
 #endif
-	char *res = realpath(src, dest);
+	res = realpath(src, dest);
 #ifndef _WIN32
 	if (!exists)
 	{
 		// delete the temporary file we created
-		if (remove(src) != 0)
+		if (remove(srcBuf) != 0)
 		{
 			fprintf(stderr, "Internal error: cannot delete temp file %s\n",
 				srcBuf);
