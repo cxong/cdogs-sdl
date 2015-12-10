@@ -69,6 +69,7 @@
 #include <cdogs/map_archive.h>
 #include <cdogs/mission.h>
 #include <cdogs/mission_convert.h>
+#include <cdogs/log.h>
 #include <cdogs/objs.h>
 #include <cdogs/palette.h>
 #include <cdogs/particle.h>
@@ -1299,6 +1300,7 @@ int main(int argc, char *argv[])
 	int i;
 	int loaded = 0;
 
+	LogInit();
 	printf("C-Dogs SDL Editor\n");
 
 	debug(D_NORMAL, "Initialising SDL...\n");

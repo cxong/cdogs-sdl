@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
 	memset(&connectAddr, 0, sizeof connectAddr);
 
 	srand((unsigned int)time(NULL));
+	LogInit();
 
 	PrintTitle();
 
@@ -306,9 +307,15 @@ int main(int argc, char *argv[])
 				}
 				break;
 			default:
+				// Note: Apple app bundle passes "-psn" to command line,
+				// ignore it
+			#ifdef __APPLE__
+				break;
+			#else
 				PrintHelp();
 				err = EXIT_FAILURE;
 				goto bail;
+			#endif
 			}
 		}
 		if (optind < argc)
@@ -327,13 +334,13 @@ int main(int argc, char *argv[])
 		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC;
 	if (SDL_Init(sdlFlags | controllerFlag) != 0)
 	{
-		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
+		LOG(LM_MAIN, LL_ERROR, "Could not initialise SDL: %s", SDL_GetError());
 		err = EXIT_FAILURE;
 		goto bail;
 	}
 	if (SDLJBN_Init() != 0)
 	{
-		fprintf(stderr, "Could not initialise SDLJBN: %s\n",
+		LOG(LM_MAIN, LL_ERROR, "Could not initialise SDLJBN: %s",
 			SDLJBN_GetError());
 		err = EXIT_FAILURE;
 		goto bail;
@@ -341,7 +348,7 @@ int main(int argc, char *argv[])
 	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 	if (enet_initialize() != 0)
 	{
-		fprintf(stderr, "An error occurred while initializing ENet.\n");
+		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
 		err = EXIT_FAILURE;
 		goto bail;
 	}
@@ -356,7 +363,7 @@ int main(int argc, char *argv[])
 	SoundInitialize(&gSoundDevice, buf);
 	if (!gSoundDevice.isInitialised)
 	{
-		printf("Sound initialization failed!\n");
+		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
 	LoadHighScores();
@@ -379,6 +386,7 @@ int main(int argc, char *argv[])
 	if (!PicManagerTryInit(
 		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
 	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to initialize graphics");
 		err = EXIT_FAILURE;
 		goto bail;
 	}
@@ -387,13 +395,14 @@ int main(int argc, char *argv[])
 	GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)
 	{
-		printf("Cannot initialise video; trying default config\n");
+		LOG(LM_MAIN, LL_WARN, "Cannot initialise video; trying default config");
 		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
+		GraphicsInit(&gGraphicsDevice, &gConfig);
 		GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	}
 	if (!gGraphicsDevice.IsInitialized)
 	{
-		printf("Video didn't init!\n");
+		LOG(LM_MAIN, LL_ERROR, "Video didn't init!");
 		err = EXIT_FAILURE;
 		goto bail;
 	}

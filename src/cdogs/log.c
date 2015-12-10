@@ -100,6 +100,19 @@ LogLevel StrLogLevel(const char *s)
 	return LL_ERROR;
 }
 
+#ifdef __APPLE__
+#include <asl.h>
+#endif
+void LogInit(void)
+{
+#ifdef __APPLE__
+	asl_log_descriptor(
+		NULL, NULL, ASL_LEVEL_INFO, STDOUT_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
+	asl_log_descriptor(
+		NULL, NULL, ASL_LEVEL_NOTICE, STDERR_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
+#endif
+}
+
 void LogSetLevelColor(const LogLevel l)
 {
 	switch (l)

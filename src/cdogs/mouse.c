@@ -63,8 +63,9 @@ void MousePrePoll(Mouse *mouse)
 	mouse->wheel = Vec2iZero();
 	mouse->previousPos = mouse->currentPos;
 	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
-	mouse->currentPos = Vec2iScaleDiv(
-		mouse->currentPos, ConfigGetInt(&gConfig, "Graphics.ScaleFactor"));
+	int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+	if (scale == 0) scale = 1;
+	mouse->currentPos = Vec2iScaleDiv(mouse->currentPos, scale);
 }
 
 

@@ -54,6 +54,7 @@ void LogModuleSetLevel(const LogModule m, const LogLevel l);
 const char *LogLevelName(const LogLevel l);
 LogLevel StrLogLevel(const char *s);
 
+void LogInit(void);
 void LogSetLevelColor(const LogLevel l);
 void LogSetModuleColor(void);
 void LogSetFileColor(void);

@@ -122,9 +122,15 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 		break;
 	case CONFIG_TYPE_INT:
 		LoadInt(&c->u.Int.Value, node, c->Name);
+		if (c->u.Int.Min <= c->u.Int.Max)
+		{
+			c->u.Int.Value = CLAMP(c->u.Int.Value, c->u.Int.Min, c->u.Int.Max);
+		}
 		break;
 	case CONFIG_TYPE_FLOAT:
 		LoadDouble(&c->u.Float.Value, node, c->Name);
+		c->u.Float.Value = CLAMP(
+			c->u.Float.Value, c->u.Float.Min, c->u.Float.Max);
 		break;
 	case CONFIG_TYPE_BOOL:
 		LoadBool(&c->u.Bool.Value, node, c->Name);
@@ -132,6 +138,7 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 	case CONFIG_TYPE_ENUM:
 		JSON_UTILS_LOAD_ENUM(
 			c->u.Enum.Value, node, c->Name, c->u.Enum.StrToEnum);
+		c->u.Enum.Value = CLAMP(c->u.Enum.Value, c->u.Enum.Min, c->u.Enum.Max);
 		break;
 	case CONFIG_TYPE_GROUP:
 		{
