@@ -603,7 +603,7 @@ void SetupConfigDir(void)
 {
 	const char *cfg_p = GetConfigFilePath("");
 
-	LOG(LM_MAIN, LL_INFO, "Creating Config dir... ");
+	LOG(LM_MAIN, LL_INFO, "Creating config dir %s... ", cfg_p);
 
 	if (mkdir_deep(cfg_p))
 	{

@@ -61,6 +61,7 @@ void LogSetFileColor(void);
 void LogSetFuncColor(void);
 void LogResetColor(void);
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define LOG(_module, _level, ...)\
 	do\
 	{\
@@ -75,7 +76,7 @@ void LogResetColor(void);
 			LogResetColor();\
 			fprintf(stderr, "] [");\
 			LogSetFileColor();\
-			fprintf(stderr, "%s:%d", __FILE__, __LINE__);\
+			fprintf(stderr, "%s:%d", __FILENAME__, __LINE__);\
 			LogResetColor();\
 			fprintf(stderr, "] ");\
 			LogSetFuncColor();\
