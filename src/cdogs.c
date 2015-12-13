@@ -215,6 +215,15 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
+	// Print command line
+	char buf[CDOGS_PATH_MAX];
+	buf[0] = '\0';
+	for (int i = 0; i < argc; i++)
+	{
+		strcat(buf, " ");
+		strcat(buf, argv[i]);
+	}
+	LOG(LM_MAIN, LL_INFO, "Command line (%d args):%s", argc, buf);
 	{
 		struct option longopts[] =
 		{
@@ -248,7 +257,7 @@ int main(int argc, char *argv[])
 				sscanf(optarg, "%dx%d",
 					&ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value,
 					&ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value);
-				debug(D_NORMAL, "Video mode %dx%d set...\n",
+				LOG(LM_MAIN, LL_DEBUG, "Video mode %dx%d set...",
 					ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
 					ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
 				break;
@@ -353,7 +362,6 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
-	char buf[CDOGS_PATH_MAX];
 	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
@@ -493,5 +501,5 @@ bail:
 	SDLJBN_Quit();
 	SDL_Quit();
 
-	exit(err);
+	return err;
 }

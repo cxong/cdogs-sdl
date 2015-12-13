@@ -122,7 +122,7 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 		break;
 	case CONFIG_TYPE_INT:
 		LoadInt(&c->u.Int.Value, node, c->Name);
-		if (c->u.Int.Min <= c->u.Int.Max)
+		if (c->u.Int.Min < c->u.Int.Max)
 		{
 			c->u.Int.Value = CLAMP(c->u.Int.Value, c->u.Int.Min, c->u.Int.Max);
 		}
