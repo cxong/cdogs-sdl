@@ -815,9 +815,8 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		break;
 	case MENU_TYPE_KEYS:
 		{
-			int xKeys;
 			x = MS_CENTER_X(*ms, (FontW('a') * 10)) / 2;
-			xKeys = x * 3;
+			const int xKeys = x * 3;
 			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
 
 			for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
@@ -849,8 +848,13 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 						const int pi = subMenu->u.changeKey.playerIndex;
 						const InputKeys *keys =
 							&gEventHandlers.keyboard.PlayerKeys[pi];
-						keyName = SDL_GetScancodeName(KeyGet(
-							keys, subMenu->u.changeKey.code));
+						const SDL_Scancode sc = KeyGet(
+							keys, subMenu->u.changeKey.code);
+						keyName = SDL_GetScancodeName(sc);
+						if (sc == SDL_SCANCODE_UNKNOWN || keyName == NULL)
+						{
+							keyName = "<Unset>";
+						}
 					}
 					DisplayMenuItem(
 						Vec2iNew(xKeys, y),
