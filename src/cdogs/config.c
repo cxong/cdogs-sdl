@@ -511,6 +511,17 @@ CArray *ConfigGetGroup(Config *c, const char *name)
 	return &c->u.Group;
 }
 
+void ConfigSetInt(Config *c, const char *name, const int value)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_INT, "wrong config type");
+	c->u.Int.Value = value;
+	if (c->u.Int.Min > 0)
+		c->u.Int.Value = MAX(c->u.Int.Value, c->u.Int.Min);
+	if (c->u.Int.Max > 0)
+		c->u.Int.Value = MIN(c->u.Int.Value, c->u.Int.Max);
+}
+
 Config ConfigDefault(void)
 {
 	Config root = ConfigNewGroup(NULL);

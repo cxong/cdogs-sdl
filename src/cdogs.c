@@ -221,6 +221,14 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < argc; i++)
 	{
 		strcat(buf, " ");
+		// HACK: for OS X, blank out the -psn_XXXX argument so that it doesn't
+		// break arg parsing
+	#ifdef __APPLE__
+		if (strncmp(argv[i], "-psn", strlen("-psn")) == 0)
+		{
+			argv[i] = "";
+		}
+	#endif
 		strcat(buf, argv[i]);
 	}
 	LOG(LM_MAIN, LL_INFO, "Command line (%d args):%s", argc, buf);
@@ -251,7 +259,7 @@ int main(int argc, char *argv[])
 				ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value = true;
 				break;
 			case 's':
-				ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = atoi(optarg);
+				ConfigSetInt(&gConfig, "Graphics.ScaleFactor", atoi(optarg));
 				break;
 			case 'c':
 				sscanf(optarg, "%dx%d",
@@ -316,15 +324,9 @@ int main(int argc, char *argv[])
 				}
 				break;
 			default:
-				// Note: Apple app bundle passes "-psn" to command line,
-				// ignore it
-			#ifdef __APPLE__
-				break;
-			#else
 				PrintHelp();
 				err = EXIT_FAILURE;
 				goto bail;
-			#endif
 			}
 		}
 		if (optind < argc)
@@ -444,6 +446,7 @@ int main(int argc, char *argv[])
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
+		LOG(LM_MAIN, LL_INFO, "Loading campaign %s...", loadCampaign);
 		gCampaign.Entry.Mode =
 			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL ?
 			GAME_MODE_DOGFIGHT : GAME_MODE_NORMAL;
@@ -451,7 +454,7 @@ int main(int argc, char *argv[])
 		if (!CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL) ||
 			!CampaignLoad(&gCampaign, &entry))
 		{
-			fprintf(stderr, "Failed to load campaign %s\n", loadCampaign);
+			LOG(LM_MAIN, LL_ERROR, "Failed to load campaign %s", loadCampaign);
 		}
 	}
 	else if (connectAddr.port != 0)
@@ -466,6 +469,7 @@ int main(int argc, char *argv[])
 			ScreenWaitForCampaignDef();
 		}
 	}
+	LOG(LM_MAIN, LL_INFO, "Starting game");
 	MainLoop(&creditsDisplayer, &campaigns);
 
 bail:

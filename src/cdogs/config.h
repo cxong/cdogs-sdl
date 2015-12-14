@@ -224,5 +224,9 @@ bool ConfigGetBool(Config *c, const char *name);
 int ConfigGetEnum(Config *c, const char *name);
 CArray *ConfigGetGroup(Config *c, const char *name);
 
+// Set config value
+// Min/max range is also checked and enforced
+void ConfigSetInt(Config *c, const char *name, const int value);
+
 bool ConfigApply(Config *config);
 int ConfigGetVersion(FILE *f);

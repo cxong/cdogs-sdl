@@ -122,15 +122,17 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 		break;
 	case CONFIG_TYPE_INT:
 		LoadInt(&c->u.Int.Value, node, c->Name);
-		if (c->u.Int.Min < c->u.Int.Max)
-		{
-			c->u.Int.Value = CLAMP(c->u.Int.Value, c->u.Int.Min, c->u.Int.Max);
-		}
+		if (c->u.Int.Min > 0)
+			c->u.Int.Value = MAX(c->u.Int.Value, c->u.Int.Min);
+		if (c->u.Int.Max > 0)
+			c->u.Int.Value = MIN(c->u.Int.Value, c->u.Int.Max);
 		break;
 	case CONFIG_TYPE_FLOAT:
 		LoadDouble(&c->u.Float.Value, node, c->Name);
-		c->u.Float.Value = CLAMP(
-			c->u.Float.Value, c->u.Float.Min, c->u.Float.Max);
+		if (c->u.Float.Min > 0)
+			c->u.Float.Value = MAX(c->u.Float.Value, c->u.Float.Min);
+		if (c->u.Float.Max > 0)
+			c->u.Float.Value = MIN(c->u.Float.Value, c->u.Float.Max);
 		break;
 	case CONFIG_TYPE_BOOL:
 		LoadBool(&c->u.Bool.Value, node, c->Name);
@@ -138,7 +140,10 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 	case CONFIG_TYPE_ENUM:
 		JSON_UTILS_LOAD_ENUM(
 			c->u.Enum.Value, node, c->Name, c->u.Enum.StrToEnum);
-		c->u.Enum.Value = CLAMP(c->u.Enum.Value, c->u.Enum.Min, c->u.Enum.Max);
+		if (c->u.Enum.Min > 0)
+			c->u.Enum.Value = MAX(c->u.Enum.Value, c->u.Enum.Min);
+		if (c->u.Enum.Max > 0)
+			c->u.Enum.Value = MIN(c->u.Enum.Value, c->u.Enum.Max);
 		break;
 	case CONFIG_TYPE_GROUP:
 		{

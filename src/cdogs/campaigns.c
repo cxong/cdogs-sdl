@@ -84,23 +84,23 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	CampaignListInit(&campaigns->campaignList);
 	CampaignListInit(&campaigns->dogfightList);
 
-	LOG(LM_MAIN, LL_INFO, "Load campaigns");
 	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
+	LOG(LM_MAIN, LL_INFO, "Load campaigns from dir %s...", buf);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList,
 		"",
 		buf,
 		GAME_MODE_NORMAL);
 
-	LOG(LM_MAIN, LL_INFO, "Load dogfights");
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
+	LOG(LM_MAIN, LL_INFO, "Load dogfights from dir %s...", buf);
 	LoadCampaignsFromFolder(
 		&campaigns->dogfightList,
 		"",
 		buf,
 		GAME_MODE_DOGFIGHT);
 
-	debug(D_NORMAL, "Load quick play\n");
+	LOG(LM_MAIN, LL_INFO, "Load quick play...");
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
 }
 

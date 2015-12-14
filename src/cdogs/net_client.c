@@ -101,6 +101,9 @@ void NetClientConnect(NetClient *n, const ENetAddress addr)
 	// Note: we can be connected from searching for servers
 	NetClientDisconnect(n);
 
+	LOG(LM_NET, LL_INFO, "Connecting client to %u.%u.%u.%u:%d...",
+		NET_IP_TO_CIDR_FORMAT(addr.host), (int)addr.port);
+
 	/* Initiate the connection, allocating the two channels 0 and 1. */
 	n->peer = enet_host_connect(n->client, &addr, 2, 0);
 	if (n->peer == NULL)
