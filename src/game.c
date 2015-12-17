@@ -329,7 +329,7 @@ static void RunGameInput(void *data)
 	// Check if any controllers are unplugged
 	rData->controllerUnplugged = false;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->inputDevice == INPUT_DEVICE_UNSET)
+		if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
 		{
 			rData->controllerUnplugged = true;
 			break;
