@@ -136,6 +136,7 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 #endif
 void RealPath(const char *src, char *dest)
 {
+	char *res;
 #ifndef _WIN32
 	// realpath will fail if the file does not exist; if this is the
 	// case then create a file temporarily, return
@@ -143,7 +144,6 @@ void RealPath(const char *src, char *dest)
 	tinydir_file file;
 	const bool exists = tinydir_file_open(&file, src) == 0;
 	char srcBuf[CDOGS_PATH_MAX];
-	char *res;
 	if (!exists)
 	{
 		// First, convert slashes
@@ -297,7 +297,7 @@ void GetDataFilePath(char *buf, const char *path)
 		fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
 		strcpy(cwd, "");
 	}
-	sprintf(relbuf, "%s%s%s", cwd, CDOGS_DATA_DIR, path);
+	sprintf(relbuf, "%s/%s%s", cwd, CDOGS_DATA_DIR, path);
 	RealPath(relbuf, buf);
 }
 

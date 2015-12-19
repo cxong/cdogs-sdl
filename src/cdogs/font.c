@@ -116,6 +116,7 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 	CASSERT(!Vec2iIsZero(f->Size), "Cannot load font size");
 	LoadInt(&f->Stride, data, "Stride");
 
+	// Padding order is: left/top/right/bottom
 	json_t *paddingNode = json_find_first_label(data, "Padding")->child->child;
 	f->Padding.Left = atoi(paddingNode->text);
 	paddingNode = paddingNode->next;
