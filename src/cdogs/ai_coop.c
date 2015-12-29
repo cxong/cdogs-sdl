@@ -142,9 +142,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			v.y++)
 		{
 			const Tile *t = MapGetTile(&gMap, v);
-			for (int i = 0; i < (int)t->things.size; i++)
-			{
-				const ThingId *tid = CArrayGet(&t->things, i);
+			CA_FOREACH(const ThingId, tid, t->things)
 				// Only look for bullets
 				if (tid->Kind != KIND_MOBILEOBJECT) continue;
 				const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
@@ -153,7 +151,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 					dangerBulletFullPos = Vec2iNew(mo->x, mo->y);
 					break;
 				}
-			}
+			CA_FOREACH_END()
 		}
 	}
 	// Run away if dangerous bullet found
@@ -177,7 +175,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
 		{
 			// Note: -1 means the gun has unlimited ammo
-			mostPreferredWeaponWithAmmo = i;
+			mostPreferredWeaponWithAmmo = _ca_index;
 			mostPreferredWeaponHasAmmo = ammoAmount > 0;
 		}
 		if (w->Gun->AmmoId != -1)
@@ -186,7 +184,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			if (lowAmmoGun == -1 &&
 				ammoAmount < ammo->Amount * AMMO_STARTING_MULTIPLE)
 			{
-				lowAmmoGun = i;
+				lowAmmoGun = _ca_index;
 			}
 		}
 		CA_FOREACH_END()
@@ -501,9 +499,7 @@ static bool TryCompleteNearbyObjective(
 	FindObjectivesSortedByDistance(&objectives, actor, closestPlayer);
 
 	// Starting from the closest objectives, find one we can go to
-	for (int i = 0; i < (int)objectives.size; i++)
-	{
-		ClosestObjective *c = CArrayGet(&objectives, i);
+	CA_FOREACH(ClosestObjective, c, objectives)
 		if (CanGetObjective(
 			c->Pos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
 		{
@@ -533,7 +529,7 @@ static bool TryCompleteNearbyObjective(
 			*cmdOut = GotoObjective(actor, c->Distance);
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 static bool OnClosestPickupGun(
@@ -567,9 +563,7 @@ static void FindObjectivesSortedByDistance(
 	}
 
 	// Look for pickups
-	for (int i = 0; i < (int)gPickups.size; i++)
-	{
-		const Pickup *p = CArrayGet(&gPickups, i);
+	CA_FOREACH(const Pickup, p, gPickups)
 		if (!p->isInUse)
 		{
 			continue;
@@ -639,12 +633,10 @@ static void FindObjectivesSortedByDistance(
 				CArrayGet(&gMission.Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
-	}
+	CA_FOREACH_END()
 
 	// Look for destructibles
-	for (int i = 0; i < (int)gObjs.size; i++)
-	{
-		const TObject *o = CArrayGet(&gObjs, i);
+	CA_FOREACH(const TObject, o, gObjs)
 		if (!o->isInUse)
 		{
 			continue;
@@ -667,12 +659,10 @@ static void FindObjectivesSortedByDistance(
 				CArrayGet(&gMission.Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
-	}
+	CA_FOREACH_END()
 
 	// Look for kill or rescue objectives
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		const TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(const TActor, a, gActors)
 		if (!a->isInUse)
 		{
 			continue;
@@ -703,7 +693,7 @@ static void FindObjectivesSortedByDistance(
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
 		co.u.Objective = CArrayGet(&gMission.Objectives, objective);
 		CArrayPushBack(objectives, &co);
-	}
+	CA_FOREACH_END()
 
 	// Look for explore objectives
 	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)

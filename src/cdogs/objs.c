@@ -126,11 +126,9 @@ static void DestroyObject(
 
 		// Weapons that go off when this object is destroyed
 		const Vec2i fullPos = Vec2iReal2Full(realPos);
-		for (int i = 0; i < (int)o->Class->DestroyGuns.size; i++)
-		{
-			const GunDescription **g = CArrayGet(&o->Class->DestroyGuns, i);
+		CA_FOREACH(const GunDescription *, g, o->Class->DestroyGuns)
 			GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true, false);
-		}
+		CA_FOREACH_END()
 
 		// A wreck left after the destruction of this object
 		// TODO: doesn't need to be network event
@@ -306,9 +304,7 @@ static void DoDamageCharacter(
 
 void UpdateMobileObjects(int ticks)
 {
-	for (int i = 0; i < (int)gMobObjs.size; i++)
-	{
-		TMobileObject *obj = CArrayGet(&gMobObjs, i);
+	CA_FOREACH(TMobileObject, obj, gMobObjs)
 		if (!obj->isInUse)
 		{
 			continue;
@@ -321,7 +317,7 @@ void UpdateMobileObjects(int ticks)
 			continue;
 		}
 		CPicUpdate(&obj->tileItem.CPic, ticks);
-	}
+	CA_FOREACH_END()
 }
 
 
@@ -333,14 +329,12 @@ void ObjsInit(void)
 }
 void ObjsTerminate(void)
 {
-	for (int i = 0; i < (int)gObjs.size; i++)
-	{
-		TObject *o = CArrayGet(&gObjs, i);
+	CA_FOREACH(TObject, o, gObjs)
 		if (o->isInUse)
 		{
-			ObjDestroy(i);
+			ObjDestroy(_ca_index);
 		}
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&gObjs);
 }
 int ObjsGetNextUID(void)
@@ -400,9 +394,7 @@ bool ObjIsDangerous(const TObject *o)
 
 void UpdateObjects(const int ticks)
 {
-	for (int i = 0; i < (int)gObjs.size; i++)
-	{
-		TObject *obj = CArrayGet(&gObjs, i);
+	CA_FOREACH(TObject, obj, gObjs)
 		if (!obj->isInUse)
 		{
 			continue;
@@ -439,19 +431,17 @@ void UpdateObjects(const int ticks)
 			// Do nothing
 			break;
 		}
-	}
+	CA_FOREACH_END()
 }
 
 TObject *ObjGetByUID(const int uid)
 {
-	for (int i = 0; i < (int)gObjs.size; i++)
-	{
-		TObject *o = CArrayGet(&gObjs, i);
+	CA_FOREACH(TObject, o, gObjs)
 		if (o->uid == uid)
 		{
 			return o;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "Cannot find object by UID");
 	return NULL;
 }
@@ -465,14 +455,12 @@ void MobObjsInit(void)
 }
 void MobObjsTerminate(void)
 {
-	for (int i = 0; i < (int)gMobObjs.size; i++)
-	{
-		TMobileObject *m = CArrayGet(&gMobObjs, i);
+	CA_FOREACH(TMobileObject, m, gMobObjs)
 		if (m->isInUse)
 		{
 			MobObjDestroy(m);
 		}
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&gMobObjs);
 }
 int MobObjsObjsGetNextUID(void)
@@ -481,14 +469,12 @@ int MobObjsObjsGetNextUID(void)
 }
 TMobileObject *MobObjGetByUID(const int uid)
 {
-	for (int i = 0; i < (int)gMobObjs.size; i++)
-	{
-		TMobileObject *o = CArrayGet(&gMobObjs, i);
+	CA_FOREACH(TMobileObject, o, gMobObjs)
 		if (o->UID == uid)
 		{
 			return o;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 void MobObjDestroy(TMobileObject *m)

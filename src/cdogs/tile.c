@@ -110,23 +110,19 @@ bool TileIsClear(Tile *t)
 		MAPTILE_IS_NORMAL_FLOOR | MAPTILE_IS_DRAINAGE | MAPTILE_OFFSET_PIC;
 	if (t->flags & ~normalFloorFlags) return false;
 	// Check if tile has no things on it, excluding particles
-	for (int i = 0; i < (int)t->things.size; i++)
-	{
-		const ThingId *tid = CArrayGet(&t->things, i);
+	CA_FOREACH(const ThingId, tid, t->things)
 		if (tid->Kind != KIND_PARTICLE) return false;
-	}
+	CA_FOREACH_END()
 	return true;
 }
 bool TileHasCharacter(Tile *t)
 {
-	for (int i = 0; i < (int)t->things.size; i++)
-	{
-		ThingId *tid = CArrayGet(&t->things, i);
+	CA_FOREACH(const ThingId, tid, t->things)
 		if (tid->Kind == KIND_CHARACTER)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 

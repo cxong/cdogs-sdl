@@ -76,15 +76,13 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		camera->spectateMode = SPECTATE_FOLLOW;
 		// Find index of player
 		int playerIndex = -1;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (p->UID == camera->FollowPlayerUID)
 			{
-				playerIndex = i;
+				playerIndex = _ca_index;
 				break;
 			}
-		}
+		CA_FOREACH_END()
 		CASSERT(playerIndex >= 0, "Cannot find player");
 		// Get the next player by index that has an actor in the game
 		const int d = (cmd & CMD_BUTTON1) ? 1 : -1;
@@ -137,9 +135,7 @@ void CameraDraw(
 		// If there are none, then try to spectate if there are remote players
 		int firstRemotePlayerUID = -1;
 		bool hasLocalPlayerLives = false;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (p->Lives > 0)
 			{
 				if (p->IsLocal)
@@ -152,7 +148,7 @@ void CameraDraw(
 					firstRemotePlayerUID = p->UID;
 				}
 			}
-		}
+		CA_FOREACH_END()
 		if (!hasLocalPlayerLives)
 		{
 			if (camera->spectateMode == SPECTATE_NONE)
@@ -234,9 +230,7 @@ void CameraDraw(
 			// Redo LOS for every local human player
 			if (IsPVP(gCampaign.Entry.Mode))
 			{
-				for (int i = 0; i < (int)gPlayerDatas.size; i++)
-				{
-					const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+				CA_FOREACH(const PlayerData, p, gPlayerDatas)
 					if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
 						!IsPlayerHuman(p))
 					{
@@ -247,7 +241,7 @@ void CameraDraw(
 						&gMap,
 						Vec2iToTile(Vec2iNew(a->tileItem.x, a->tileItem.y)),
 						false);
-				}
+				CA_FOREACH_END()
 			}
 
 			DoBuffer(

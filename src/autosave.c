@@ -59,11 +59,9 @@ void AutosaveInit(Autosave *autosave)
 }
 void AutosaveTerminate(Autosave *autosave)
 {
-	for (int i = 0; i < (int)autosave->Missions.size; i++)
-	{
-		MissionSave *m = CArrayGet(&autosave->Missions, i);
+	CA_FOREACH(MissionSave, m, autosave->Missions)
 		CampaignEntryTerminate(&m->Campaign);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&autosave->Missions);
 }
 
@@ -120,11 +118,9 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 static void AddMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 {
 	json_t *missions = json_new_array();
-	for (int i = 0; i < (int)a->Missions.size; i++)
-	{
-		json_insert_child(
-			missions, CreateMissionNode(CArrayGet(&a->Missions, i)));
-	}
+	CA_FOREACH(MissionSave, m, a->Missions)
+		json_insert_child(missions, CreateMissionNode(m));
+	CA_FOREACH_END()
 	json_insert_pair_into_object(root, nodeName, missions);
 }
 
@@ -206,15 +202,13 @@ MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)
 	// in this form
 	char relPath[CDOGS_PATH_MAX] = "";
 	RelPathFromCWD(relPath, path);
-	for (int i = 0; i < (int)autosave->Missions.size; i++)
-	{
-		MissionSave *m = CArrayGet(&autosave->Missions, i);
+	CA_FOREACH(MissionSave, m, autosave->Missions)
 		const char *campaignPath = m->Campaign.Path;
 		if (campaignPath != NULL && strcmp(campaignPath, relPath) == 0)
 		{
 			return m;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 

@@ -187,7 +187,6 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 {
 	char s[128];
 	int y = 5;
-	int i;
 	int w = g->cachedConfig.Res.x;
 	int h = g->cachedConfig.Res.y;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
@@ -219,9 +218,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		{
 			EditorBrushSetHighlightedTiles(&brush);
 		}
-		for (i = 0; i < (int)brush.HighlightedTiles.size; i++)
-		{
-			Vec2i *pos = CArrayGet(&brush.HighlightedTiles, i);
+		CA_FOREACH(Vec2i, pos, brush.HighlightedTiles)
 			Vec2i screenPos = GetScreenPos(*pos);
 			if (screenPos.x >= 0 && screenPos.x < w &&
 				screenPos.y >= 0 && screenPos.y < h)
@@ -231,7 +228,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 					screenPos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
 					colorWhite, DRAW_FLAG_LINE);
 			}
-		}
+		CA_FOREACH_END()
 
 		sprintf(
 			s, "Mission %d/%d",

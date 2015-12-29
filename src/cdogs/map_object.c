@@ -97,42 +97,34 @@ MapObject *StrMapObject(const char *s)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++)
-	{
-		MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
+	CA_FOREACH(MapObject, c, gMapObjects.CustomClasses)
 		if (strcmp(s, c->Name) == 0)
 		{
 			return c;
 		}
-	}
-	for (int i = 0; i < (int)gMapObjects.Classes.size; i++)
-	{
-		MapObject *c = CArrayGet(&gMapObjects.Classes, i);
+	CA_FOREACH_END()
+	CA_FOREACH(MapObject, c, gMapObjects.Classes)
 		if (strcmp(s, c->Name) == 0)
 		{
 			return c;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 MapObject *IntMapObject(const int m)
 {
-	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++)
-	{
-		MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
+	CA_FOREACH(MapObject, c, gMapObjects.CustomClasses)
 		if (c->Idx == m)
 		{
 			return c;
 		}
-	}
-	for (int i = 0; i < (int)gMapObjects.Classes.size; i++)
-	{
-		MapObject *c = CArrayGet(&gMapObjects.Classes, i);
+	CA_FOREACH_END()
+	CA_FOREACH(MapObject, c, gMapObjects.Classes)
 		if (c->Idx == m)
 		{
 			return c;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "cannot find map object index");
 	return NULL;
 }
@@ -304,11 +296,9 @@ static void LoadMapObject(MapObject *m, json_t *node)
 static void AddDestructibles(MapObjects *mo, const CArray *classes);
 static void ReloadDestructibles(MapObjects *mo)
 {
-	for (int i = 0; i < (int)mo->Destructibles.size; i++)
-	{
-		char **s = CArrayGet(&mo->Destructibles, i);
+	CA_FOREACH(char *, s, mo->Destructibles)
 		CFREE(*s);
-	}
+	CA_FOREACH_END()
 	CArrayClear(&mo->Destructibles);
 	AddDestructibles(mo, &mo->Classes);
 	AddDestructibles(mo, &mo->CustomClasses);
@@ -404,17 +394,13 @@ void MapObjectsTerminate(MapObjects *classes)
 	CArrayTerminate(&classes->Classes);
 	MapObjectsClear(&classes->CustomClasses);
 	CArrayTerminate(&classes->CustomClasses);
-	for (int i = 0; i < (int)classes->Destructibles.size; i++)
-	{
-		char **s = CArrayGet(&classes->Destructibles, i);
+	CA_FOREACH(char *, s, classes->Destructibles)
 		CFREE(*s);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&classes->Destructibles);
-	for (int i = 0; i < (int)classes->Bloods.size; i++)
-	{
-		char **s = CArrayGet(&classes->Bloods, i);
+	CA_FOREACH(char *, s, classes->Bloods)
 		CFREE(*s);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&classes->Bloods);
 }
 

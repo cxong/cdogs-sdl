@@ -99,14 +99,12 @@ void Gfx_ModeNext(void)
 
 static int FindValidMode(GraphicsDevice *device, const int w, const int h)
 {
-	for (int i = 0; i < (int)device->validModes.size; i++)
-	{
-		const Vec2i *mode = CArrayGet(&device->validModes, i);
+	CA_FOREACH(const Vec2i, mode, device->validModes)
 		if (mode->x == w && mode->y == h)
 		{
-			return i;
+			return _ca_index;
 		}
-	}
+	CA_FOREACH_END()
 	return -1;
 }
 

@@ -52,7 +52,7 @@ void CArrayTerminate(CArray *a);
 
 // Convenience macro for looping through a CArray
 #define CA_FOREACH(_type, _var, _a)\
-	for (int i = 0; i < (int)(_a).size; i++)\
+	for (int _ca_index = 0; _ca_index < (int)(_a).size; _ca_index++)\
 	{\
-		_type *_var = CArrayGet(&(_a), i);
+		_type *_var = CArrayGet(&(_a), _ca_index);
 #define CA_FOREACH_END() }

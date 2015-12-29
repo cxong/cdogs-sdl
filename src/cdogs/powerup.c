@@ -156,16 +156,14 @@ static double HealthScale(void *data)
 	// Damage taken (find player with lowest health)
 	int minHealth = ModeMaxHealth(gCampaign.Entry.Mode);
 	int maxHealth = minHealth;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
 		minHealth = MIN(minHealth, player->health);
-	}
+	CA_FOREACH_END()
 	// Double spawn rate if near 0 health
 	return (minHealth + maxHealth) / (maxHealth * 2.0);
 }
@@ -218,16 +216,14 @@ static double AmmoScale(void *data)
 	// Ammo left (find player with lowest ammo)
 	int minVal = AmmoGetById(&gAmmo, ammoId)->Max;
 	int maxVal = minVal;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
 		minVal = MIN(minVal, *(int *)CArrayGet(&player->ammo, ammoId));
-	}
+	CA_FOREACH_END()
 	// 10-fold spawn rate if near 0 ammo
 	return (minVal * 9.0 + maxVal) / (maxVal * 10.0) / numPlayersWithAmmo;
 }

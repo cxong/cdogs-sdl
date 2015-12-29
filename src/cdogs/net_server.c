@@ -284,21 +284,17 @@ void NetServerFlush(NetServer *n)
 void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
 	// Send details of all current players
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *pOther = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
 		NPlayerData pd = NMakePlayerData(pOther);
 		NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &pd);
 		LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
 			(int)pd.UID, (int)pd.MaxHealth);
-	}
+	CA_FOREACH_END()
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 
 	// Send all actors
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		const TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(const TActor, a, gActors)
 		if (!a->isInUse)
 		{
 			continue;
@@ -315,7 +311,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerUID(%d)",
 			(int)aa.UID, (int)aa.PlayerUID);
 		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
-	}
+	CA_FOREACH_END()
 
 	// Send key state
 	NAddKeys ak = NAddKeys_init_default;
@@ -323,14 +319,12 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_KEYS, &ak);
 
 	// Send objective counts
-	for (int i = 0; i < (int)gMission.Objectives.size; i++)
-	{
+	CA_FOREACH(const ObjectiveDef, o, gMission.Objectives)
 		NObjectiveUpdate ou = NObjectiveUpdate_init_default;
-		ou.ObjectiveId = i;
-		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
+		ou.ObjectiveId = _ca_index;
 		ou.Count = o->done;
 		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
-	}
+	CA_FOREACH_END()
 
 	// Send all tiles
 	// TODO: RLE?
@@ -374,9 +368,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	}
 
 	// Send all pickups
-	for (int i = 0; i < (int)gPickups.size; i++)
-	{
-		const Pickup *p = CArrayGet(&gPickups, i);
+	CA_FOREACH(const Pickup, p, gPickups)
 		if (!p->isInUse) continue;
 		NAddPickup api = NAddPickup_init_default;
 		api.UID = p->UID;
@@ -386,12 +378,10 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		api.TileItemFlags = p->tileItem.flags;
 		api.Pos = Vec2i2Net(Vec2iNew(p->tileItem.x, p->tileItem.y));
 		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
-	}
+	CA_FOREACH_END()
 
 	// Send all map objects
-	for (int i = 0; i < (int)gObjs.size; i++)
-	{
-		const TObject *o = CArrayGet(&gObjs, i);
+	CA_FOREACH(const TObject, o, gObjs)
 		if (!o->isInUse) continue;
 		NMapObjectAdd amo = NMapObjectAdd_init_default;
 		amo.UID = o->uid;
@@ -400,7 +390,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		amo.TileItemFlags = o->tileItem.flags;
 		amo.Health = o->Health;
 		NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &amo);
-	}
+	CA_FOREACH_END()
 
 	// If mission complete already, send message
 	if (CanCompleteMission(&gMission))

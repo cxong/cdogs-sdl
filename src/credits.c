@@ -99,12 +99,10 @@ void LoadCredits(
 void UnloadCredits(credits_displayer_t *displayer)
 {
 	CASSERT(displayer != NULL, "null pointer");
-	for (int i = 0; i < (int)displayer->credits.size; i++)
-	{
-		credit_t *credit = CArrayGet(&displayer->credits, i);
+	CA_FOREACH(credit_t, credit, displayer->credits)
 		CFREE(credit->name);
 		CFREE(credit->message);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&displayer->credits);
 	displayer->creditsIndex = 0;
 }

@@ -79,26 +79,22 @@ void MapStaticLoadDynamic(
 	const Mission *m = mo->missionData;
 
 	// Map objects
-	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
-	{
-		const MapObjectPositions *mop = CArrayGet(&m->u.Static.Items, i);
+	CA_FOREACH(const MapObjectPositions, mop, m->u.Static.Items)
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapTryPlaceOneObject(map, *pos, mop->M, 0, false);
 		}
-	}
+	CA_FOREACH_END()
 
 	// Wrecks
-	for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
-	{
-		const MapObjectPositions *mop = CArrayGet(&m->u.Static.Wrecks, i);
+	CA_FOREACH(const MapObjectPositions, mop, m->u.Static.Wrecks)
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
 			const Vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapPlaceWreck(map, *pos, mop->M);
 		}
-	}
+	CA_FOREACH_END()
 
 	if (ModeHasNPCs(gCampaign.Entry.Mode))
 	{

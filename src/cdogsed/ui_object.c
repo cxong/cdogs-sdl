@@ -103,13 +103,10 @@ UIObject *UIObjectCopy(const UIObject *o)
 
 void UIObjectDestroy(UIObject *o)
 {
-	size_t i;
-	UIObject **objs = o->Children.data;
 	CFREE(o->Tooltip);
-	for (i = 0; i < o->Children.size; i++, objs++)
-	{
-		UIObjectDestroy(*objs);
-	}
+	CA_FOREACH(UIObject *, obj, o->Children)
+		UIObjectDestroy(*obj);
+	CA_FOREACH_END()
 	CArrayTerminate(&o->Children);
 	if (o->IsDynamicData)
 	{
@@ -168,18 +165,16 @@ void UIObjectHighlight(UIObject *o)
 		o->OnFocusFunc(o, o->Data);
 	}
 	// Show any context menu children
-	UIObject **childPtr = o->Children.data;
-	for (int i = 0; i < (int)o->Children.size; i++, childPtr++)
-	{
-		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
+	CA_FOREACH(UIObject *, obj, o->Children)
+		if ((*obj)->Type == UITYPE_CONTEXT_MENU)
 		{
-			(*childPtr)->IsVisible = true;
-			if ((*childPtr)->OnFocusFunc)
+			(*obj)->IsVisible = true;
+			if ((*obj)->OnFocusFunc)
 			{
-				(*childPtr)->OnFocusFunc(*childPtr, (*childPtr)->Data);
+				(*obj)->OnFocusFunc(*obj, (*obj)->Data);
 			}
 		}
-	}
+	CA_FOREACH_END()
 }
 
 int UIObjectIsHighlighted(UIObject *o)
@@ -203,18 +198,16 @@ void UIObjectUnhighlight(UIObject *o)
 	{
 		o->IsVisible = false;
 	}
-	UIObject **childPtr = o->Children.data;
-	for (int i = 0; i < (int)o->Children.size; i++, childPtr++)
-	{
-		if ((*childPtr)->Type == UITYPE_CONTEXT_MENU)
+	CA_FOREACH(UIObject *, obj, o->Children)
+		if ((*obj)->Type == UITYPE_CONTEXT_MENU)
 		{
-			(*childPtr)->IsVisible = false;
-			if ((*childPtr)->OnUnfocusFunc)
+			(*obj)->IsVisible = false;
+			if ((*obj)->OnUnfocusFunc)
 			{
-				(*childPtr)->OnUnfocusFunc((*childPtr)->Data);
+				(*obj)->OnUnfocusFunc((*obj)->Data);
 			}
 		}
-	}
+	CA_FOREACH_END()
 }
 
 static void DisableContextMenuParents(UIObject *o);
@@ -442,9 +435,7 @@ static void UIObjectDrawAndAddChildren(
 				menuBGColor,
 				0);
 			// Find if mouse over any children, and draw highlight
-			for (int i = 0; i < (int)o->Children.size; i++)
-			{
-				UIObject *child = *(UIObject **)CArrayGet(&o->Children, i);
+			CA_FOREACH(UIObject *, child, o->Children)
 				if (IsInside(mouse, Vec2iAdd(oPos, child->Pos), child->Size))
 				{
 					DrawRectangle(
@@ -454,7 +445,7 @@ static void UIObjectDrawAndAddChildren(
 						hiliteColor,
 						0);
 				}
-			}
+			CA_FOREACH_END()
 		}
 		break;
 	case UITYPE_CUSTOM:
@@ -469,19 +460,16 @@ static void UIObjectDrawAndAddChildren(
 	// Note: tab type draws its own children (one)
 	if (o->Type != UITYPE_TAB && objs != NULL)
 	{
-		size_t i;
-		UIObject **childPtr = o->Children.data;
-		for (i = 0; i < o->Children.size; i++, childPtr++)
-		{
-			if (!((*childPtr)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+		CA_FOREACH(UIObject *, obj, o->Children)
+			if (!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted)
 			{
 				UIObjectDrawContext c;
-				c.obj = *childPtr;
+				c.obj = *obj;
 				c.pos = oPos;
 				CArrayPushBack(objs, &c);
 			}
-		}
+		CA_FOREACH_END()
 	}
 }
 void UIObjectDraw(
@@ -547,18 +535,15 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 	}
 	else
 	{
-		size_t i;
-		UIObject **objs = o->Children.data;
-		for (i = 0; i < o->Children.size; i++, objs++)
-		{
-			if ((!((*objs)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+		CA_FOREACH(UIObject *, obj, o->Children)
+			if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted) &&
-				(*objs)->IsVisible &&
-				UITryGetObject(*objs, Vec2iMinus(pos, o->Pos), out))
+				(*obj)->IsVisible &&
+				UITryGetObject(*obj, Vec2iMinus(pos, o->Pos), out))
 			{
 				return true;
 			}
-		}
+		CA_FOREACH_END()
 	}
 	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
 	{

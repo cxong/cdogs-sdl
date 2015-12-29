@@ -655,9 +655,7 @@ static void OnMove(TActor *a)
 static void CheckTrigger(const Vec2i tilePos)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
-	for (int i = 0; i < (int)t->triggers.size; i++)
-	{
-		Trigger **tp = CArrayGet(&t->triggers, i);
+	CA_FOREACH(Trigger *, tp, t->triggers)
 		if (TriggerCanActivate(*tp, gMission.KeyFlags))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
@@ -665,7 +663,7 @@ static void CheckTrigger(const Vec2i tilePos)
 			e.u.TriggerEvent.Tile = Vec2i2Net(tilePos);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-	}
+	CA_FOREACH_END()
 }
 // Check if the player can pickup any item
 static bool CheckPickupFunc(TTileItem *ti, void *data);
@@ -756,14 +754,12 @@ void ActorAddAmmo(TActor *actor, const int ammoId, const int amount)
 
 bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 {
-	for (int i = 0; i < (int)actor->guns.size; i++)
-	{
-		const Weapon *w = CArrayGet(&actor->guns, i);
+	CA_FOREACH(const Weapon, w, actor->guns)
 		if (w->Gun->AmmoId == ammoId)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -796,14 +792,12 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 }
 static bool ActorHasGun(const TActor *a, const GunDescription *gun)
 {
-	for (int i = 0; i < (int)a->guns.size; i++)
-	{
-		const Weapon *w = CArrayGet(&a->guns, i);
+	CA_FOREACH(const Weapon, w, a->guns)
 		if (w->Gun == gun)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -1061,9 +1055,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks);
 static void ActorDie(TActor *actor);
 void UpdateAllActors(int ticks)
 {
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		TActor *actor = CArrayGet(&gActors, i);
+	CA_FOREACH(TActor, actor, gActors)
 		if (!actor->isInUse)
 		{
 			continue;
@@ -1113,7 +1105,7 @@ void UpdateAllActors(int ticks)
 				}
 			}
 		}
-	}
+	CA_FOREACH_END()
 }
 static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
@@ -1230,10 +1222,7 @@ static void ActorAddAmmoPickup(const TActor *actor)
 	// Add ammo pickups for each of the actor's guns
 	if (!gCampaign.IsClient)
 	{
-		for (int i = 0; i < (int)actor->guns.size; i++)
-		{
-			const Weapon *w = CArrayGet(&actor->guns, i);
-
+		CA_FOREACH(const Weapon, w, actor->guns)
 			// Check if the actor's gun has ammo at all
 			if (w->Gun->AmmoId < 0)
 			{
@@ -1259,7 +1248,7 @@ static void ActorAddAmmoPickup(const TActor *actor)
 				RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
 			e.u.AddPickup.Pos = Vec2i2Net(Vec2iAdd(Vec2iFull2Real(actor->Pos), offset));
 			GameEventsEnqueue(&gGameEvents, e);
-		}
+		CA_FOREACH_END()
 	}
 
 }
@@ -1301,12 +1290,10 @@ void ActorsInit(void)
 }
 void ActorsTerminate(void)
 {
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(TActor, a, gActors)
 		if (!a->isInUse) continue;
 		ActorDestroy(a);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&gActors);
 }
 int ActorsGetNextUID(void)
@@ -1317,14 +1304,12 @@ int ActorsGetFreeIndex(void)
 {
 	// Find an empty slot in actor list
 	// actors.size if no slot found (i.e. add to end)
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		const TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(const TActor, a, gActors)
 		if (!a->isInUse)
 		{
-			return i;
+			return _ca_index;
 		}
-	}
+	CA_FOREACH_END()
 	return (int)gActors.size;
 }
 TActor *ActorAdd(NActorAdd aa)
@@ -1508,14 +1493,12 @@ void BuildTranslationTables(const TPalette palette)
 
 TActor *ActorGetByUID(const int uid)
 {
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(TActor, a, gActors)
 		if (a->uid == uid)
 		{
 			return a;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 

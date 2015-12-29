@@ -47,14 +47,12 @@ void PickupsInit(void)
 }
 void PickupsTerminate(void)
 {
-	for (int i = 0; i < (int)gPickups.size; i++)
-	{
-		const Pickup *p = CArrayGet(&gPickups, i);
+	CA_FOREACH(const Pickup, p, gPickups)
 		if (p->isInUse)
 		{
 			PickupDestroy(p->UID);
 		}
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&gPickups);
 }
 int PickupsGetNextUID(void)
@@ -154,15 +152,13 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		{
 			// Don't pickup if no guns can use ammo
 			bool hasGunUsingAmmo = false;
-			for (int i = 0; i < (int)a->guns.size; i++)
-			{
-				const Weapon *w = CArrayGet(&a->guns, i);
+			CA_FOREACH(const Weapon, w, a->guns)
 				if (w->Gun->AmmoId == p->class->u.Ammo.Id)
 				{
 					hasGunUsingAmmo = true;
 					break;
 				}
-			}
+			CA_FOREACH_END()
 			if (!hasGunUsingAmmo)
 			{
 				canPickup = false;
@@ -282,13 +278,11 @@ static const Pic *GetPickupPic(const int id, Vec2i *offset)
 
 Pickup *PickupGetByUID(const int uid)
 {
-	for (int i = 0; i < (int)gPickups.size; i++)
-	{
-		Pickup *p = CArrayGet(&gPickups, i);
+	CA_FOREACH(Pickup, p, gPickups)
 		if (p->UID == uid)
 		{
 			return p;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }

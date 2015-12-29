@@ -440,22 +440,18 @@ Mix_Chunk *StrSound(const char *s)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)gSoundDevice.customSounds.size; i++)
-	{
-		SoundData *sound = CArrayGet(&gSoundDevice.customSounds, i);
+	CA_FOREACH(SoundData, sound, gSoundDevice.customSounds)
 		if (strcmp(sound->Name, s) == 0)
 		{
 			return sound->data;
 		}
-	}
-	for (int i = 0; i < (int)gSoundDevice.sounds.size; i++)
-	{
-		SoundData *sound = CArrayGet(&gSoundDevice.sounds, i);
+	CA_FOREACH_END()
+	CA_FOREACH(SoundData, sound, gSoundDevice.sounds)
 		if (strcmp(sound->Name, s) == 0)
 		{
 			return sound->data;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 

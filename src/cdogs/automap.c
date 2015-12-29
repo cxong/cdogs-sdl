@@ -274,12 +274,10 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 		for (int x = 0; x < map->Size.x; x++)
 		{
 			Tile *tile = MapGetTile(map, Vec2iNew(x, y));
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				ThingId *tid = CArrayGet(&tile->things, i);
+			CA_FOREACH(ThingId, tid, tile->things)
 				DrawTileItem(
 					ThingIdGetTileItem(tid), tile, pos, scale, flags);
-			}
+			CA_FOREACH_END()
 		}
 	}
 }
@@ -353,15 +351,13 @@ void AutomapDraw(int flags, bool showExit)
 	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
 	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
 
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
 		DisplayPlayer(ActorGetByUID(p->ActorUID), pos, MAP_FACTOR);
-	}
+	CA_FOREACH_END()
 
 	if (showExit)
 	{
@@ -382,16 +378,14 @@ void AutomapDrawRegion(
 	pos = Vec2iAdd(pos, Vec2iScaleDiv(size, 2));
 	DrawMap(map, pos, mapCenter, size, scale, flags);
 	const Vec2i centerOn = Vec2iAdd(pos, Vec2iScale(mapCenter, -scale));
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
 		DisplayPlayer(player, centerOn, scale);
-	}
+	CA_FOREACH_END()
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
 	if (showExit)
 	{

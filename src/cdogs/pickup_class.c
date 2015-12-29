@@ -53,22 +53,18 @@ PickupClass *StrPickupClass(const char *s)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)gPickupClasses.CustomClasses.size; i++)
-	{
-		PickupClass *c = CArrayGet(&gPickupClasses.CustomClasses, i);
+	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
 		if (strcmp(s, c->Name) == 0)
 		{
 			return c;
 		}
-	}
-	for (int i = 0; i < (int)gPickupClasses.Classes.size; i++)
-	{
-		PickupClass *c = CArrayGet(&gPickupClasses.Classes, i);
+	CA_FOREACH_END()
+	CA_FOREACH(PickupClass, c, gPickupClasses.Classes)
 		if (strcmp(s, c->Name) == 0)
 		{
 			return c;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "cannot parse bullet name");
 	return NULL;
 }
@@ -128,22 +124,18 @@ int StrPickupClassId(const char *s)
 	{
 		return 0;
 	}
-	for (int i = 0; i < (int)gPickupClasses.CustomClasses.size; i++)
-	{
-		Ammo *a = CArrayGet(&gPickupClasses.CustomClasses, i);
-		if (strcmp(s, a->Name) == 0)
+	CA_FOREACH(const PickupClass, c, gPickupClasses.CustomClasses)
+		if (strcmp(s, c->Name) == 0)
 		{
-			return i + (int)gPickupClasses.Classes.size;
+			return _ca_index + (int)gPickupClasses.Classes.size;
 		}
-	}
-	for (int i = 0; i < (int)gPickupClasses.Classes.size; i++)
-	{
-		Ammo *a = CArrayGet(&gPickupClasses.Classes, i);
-		if (strcmp(s, a->Name) == 0)
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
+		if (strcmp(s, c->Name) == 0)
 		{
-			return i;
+			return _ca_index;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "cannot parse pickup class name");
 	return 0;
 }
@@ -291,21 +283,17 @@ void PickupClassesTerminate(PickupClasses *classes)
 int PickupClassesGetScoreCount(const PickupClasses *classes)
 {
 	int count = 0;
-	for (int i = 0; i < (int)classes->Classes.size; i++)
-	{
-		const PickupClass *c = CArrayGet(&classes->Classes, i);
+	CA_FOREACH(const PickupClass, c, classes->Classes)
 		if (c->Type == PICKUP_JEWEL)
 		{
 			count++;
 		}
-	}
-	for (int i = 0; i < (int)classes->CustomClasses.size; i++)
-	{
-		const PickupClass *c = CArrayGet(&classes->CustomClasses, i);
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, c, classes->CustomClasses)
 		if (c->Type == PICKUP_JEWEL)
 		{
 			count++;
 		}
-	}
+	CA_FOREACH_END()
 	return count;
 }

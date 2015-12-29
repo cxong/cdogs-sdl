@@ -48,22 +48,18 @@ int StrAmmoId(const char *s)
 	{
 		return 0;
 	}
-	for (int i = 0; i < (int)gAmmo.CustomAmmo.size; i++)
-	{
-		Ammo *a = CArrayGet(&gAmmo.CustomAmmo, i);
+	CA_FOREACH(Ammo, a, gAmmo.CustomAmmo)
 		if (strcmp(s, a->Name) == 0)
 		{
-			return i + (int)gAmmo.Ammo.size;
+			return _ca_index + (int)gAmmo.Ammo.size;
 		}
-	}
-	for (int i = 0; i < (int)gAmmo.Ammo.size; i++)
-	{
-		Ammo *a = CArrayGet(&gAmmo.Ammo, i);
+	CA_FOREACH_END()
+	CA_FOREACH(Ammo, a, gAmmo.Ammo)
 		if (strcmp(s, a->Name) == 0)
 		{
-			return i;
+			return _ca_index;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "cannot parse ammo name");
 	return 0;
 }

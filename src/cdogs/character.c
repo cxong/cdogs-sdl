@@ -99,11 +99,9 @@ void CharacterStoreInit(CharacterStore *store)
 
 void CharacterStoreTerminate(CharacterStore *store)
 {
-	for (int i = 0; i < (int)store->OtherChars.size; i++)
-	{
-		Character *c = CArrayGet(&store->OtherChars, i);
+	CA_FOREACH(Character, c, store->OtherChars)
 		CFREE(c->bot);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&store->OtherChars);
 	CArrayTerminate(&store->prisonerIds);
 	CArrayTerminate(&store->baddieIds);

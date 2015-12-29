@@ -72,22 +72,18 @@ BulletClass *StrBulletClass(const char *s)
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)gBulletClasses.CustomClasses.size; i++)
-	{
-		BulletClass *b = CArrayGet(&gBulletClasses.CustomClasses, i);
+	CA_FOREACH(BulletClass, b, gBulletClasses.CustomClasses)
 		if (strcmp(s, b->Name) == 0)
 		{
 			return b;
 		}
-	}
-	for (int i = 0; i < (int)gBulletClasses.Classes.size; i++)
-	{
-		BulletClass *b = CArrayGet(&gBulletClasses.Classes, i);
+	CA_FOREACH_END()
+	CA_FOREACH(BulletClass, b, gBulletClasses.Classes)
 		if (strcmp(s, b->Name) == 0)
 		{
 			return b;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "cannot parse bullet name");
 	return NULL;
 }

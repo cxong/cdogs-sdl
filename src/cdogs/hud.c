@@ -280,10 +280,9 @@ void HUDUpdate(HUD *hud, int ms)
 		NumUpdate(&hud->healthUpdates[i], ms);
 		NumUpdate(&hud->ammoUpdates[i], ms);
 	}
-	for (int i = 0; i < (int)hud->objectiveUpdates.size; i++)
-	{
-		NumUpdate(CArrayGet(&hud->objectiveUpdates, i), ms);
-	}
+	CA_FOREACH(HUDNumUpdate, hnu, hud->objectiveUpdates)
+		NumUpdate(hnu, ms);
+	CA_FOREACH_END()
 }
 static void NumUpdate(HUDNumUpdate *update, const int ms)
 {
@@ -687,10 +686,8 @@ static void DrawObjectiveCompass(
 		for (tilePos.x = 0; tilePos.x < map->Size.x; tilePos.x++)
 		{
 			Tile *tile = MapGetTile(map, tilePos);
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+			CA_FOREACH(ThingId, tid, tile->things)
+				TTileItem *ti = ThingIdGetTileItem(tid);
 				if (!(ti->flags & TILEITEM_OBJECTIVE))
 				{
 					continue;
@@ -712,7 +709,7 @@ static void DrawObjectiveCompass(
 				color_t color = o->color;
 				DrawCompassArrow(
 					g, r, Vec2iNew(ti->x, ti->y), playerPos, color, NULL);
-			}
+			CA_FOREACH_END()
 		}
 	}
 }

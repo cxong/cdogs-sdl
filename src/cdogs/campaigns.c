@@ -61,10 +61,9 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	CFREE(setting->Title);
 	CFREE(setting->Author);
 	CFREE(setting->Description);
-	for (int i = 0; i < (int)setting->Missions.size; i++)
-	{
-		MissionTerminate(CArrayGet(&setting->Missions, i));
-	}
+	CA_FOREACH(Mission, m, setting->Missions)
+		MissionTerminate(m);
+	CA_FOREACH_END()
 	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
 	memset(setting, 0, sizeof *setting);
@@ -122,16 +121,13 @@ static void CampaignListInit(campaign_list_t *list)
 static void CampaignListTerminate(campaign_list_t *list)
 {
 	CFREE(list->Name);
-	for (int i = 0; i < (int)list->subFolders.size; i++)
-	{
-		campaign_list_t *sublist = CArrayGet(&list->subFolders, i);
+	CA_FOREACH(campaign_list_t, sublist, list->subFolders)
 		CampaignListTerminate(sublist);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&list->subFolders);
-	for (int i = 0; i < (int)list->list.size; i++)
-	{
-		CampaignEntryTerminate(CArrayGet(&list->list, i));
-	}
+	CA_FOREACH(CampaignEntry, e, list->list)
+		CampaignEntryTerminate(e);
+	CA_FOREACH_END()
 	CArrayTerminate(&list->list);
 }
 

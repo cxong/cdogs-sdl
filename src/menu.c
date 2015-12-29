@@ -108,13 +108,12 @@ void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDispl
 
 int MenuHasExitType(MenuSystem *menu, menu_type_e exitType)
 {
-	for (int i = 0; i < (int)menu->exitTypes.size; i++)
-	{
-		if (*(menu_type_e *)CArrayGet(&menu->exitTypes, i) == exitType)
+	CA_FOREACH(menu_type_e, m, menu->exitTypes)
+		if (*m == exitType)
 		{
 			return 1;
 		}
-	}
+	CA_FOREACH_END()
 	return 0;
 }
 
@@ -255,14 +254,12 @@ void MenuEnableSubmenu(menu_t *menu, int idx)
 
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 {
-	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-	{
-		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
 		if (strcmp(subMenu->name, name) == 0)
 		{
 			return subMenu;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 
@@ -347,15 +344,13 @@ menu_t *MenuCreateNormal(
 
 static void UpdateSubmenuParentPtrs(menu_t *menu)
 {
-	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-	{
-		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
 		subMenu->parentMenu = menu;
 		if (MenuTypeHasSubMenus(subMenu->type))
 		{
 			UpdateSubmenuParentPtrs(subMenu);
 		}
-	}
+	CA_FOREACH_END()
 }
 void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
@@ -408,11 +403,9 @@ menu_t *MenuCreateConfigOptions(
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_OPTIONS, 0);
 	CASSERT(c->Type == CONFIG_TYPE_GROUP,
 		"Cannot make menu from non-group config");
-	for (int i = 0; i < (int)c->u.Group.size; i++)
-	{
-		Config *child = CArrayGet(&c->u.Group, i);
+	CA_FOREACH(Config, child, c->u.Group)
 		MenuAddConfigOptionsItem(menu, child);
-	}
+	CA_FOREACH_END()
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	if (backOrReturn)
 	{
@@ -609,11 +602,9 @@ void MenuDisplay(const MenuSystem *ms)
 
 		MenuDisplaySubmenus(ms);
 	}
-	for (int i = 0; i < (int)ms->customDisplayFuncs.size; i++)
-	{
-		MenuCustomDisplayFunc *cdf = CArrayGet(&ms->customDisplayFuncs, i);
+	CA_FOREACH(MenuCustomDisplayFunc, cdf, ms->customDisplayFuncs)
 		cdf->Func(NULL, ms->graphics, ms->pos, ms->size, cdf->Data);
-	}
+	CA_FOREACH_END()
 	if (menu->customDisplayFunc)
 	{
 		menu->customDisplayFunc(
@@ -685,15 +676,13 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			}
 
 			int maxWidth = 0;
-			for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-			{
-				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+			CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
 				const int width = FontStrW(subMenu->name);
 				if (width > maxWidth)
 				{
 					maxWidth = width;
 				}
-			}
+			CA_FOREACH_END()
 			// Limit max width if it is larger than the menu system size
 			maxWidth = MIN(ms->size.x, maxWidth);
 			const bool isCentered = menu->type == MENU_TYPE_NORMAL;
@@ -819,11 +808,9 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			const int xKeys = x * 3;
 			yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
 
-			for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-			{
-				int y = yStart + i * FontH();
-				int isSelected = i == menu->u.normal.index;
-				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+			CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+				int y = yStart + _ca_index * FontH();
+				bool isSelected = _ca_index == menu->u.normal.index;
 
 				const char *name = subMenu->name;
 				if (isSelected &&
@@ -863,7 +850,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 						0,
 						colorBlack);
 				}
-			}
+			CA_FOREACH_END()
 		}
 		break;
 	default:
@@ -925,11 +912,9 @@ void MenuDestroySubmenus(menu_t *menu)
 	}
 	if (MenuTypeHasSubMenus(menu->type))
 	{
-		for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-		{
-			menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+		CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
 			MenuDestroySubmenus(subMenu);
-		}
+		CA_FOREACH_END()
 		CArrayTerminate(&menu->u.normal.subMenus);
 	}
 }

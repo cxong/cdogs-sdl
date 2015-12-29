@@ -302,36 +302,6 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }
-TBadGuy ConvertTBadGuy(Character *e)
-{
-	TBadGuy b;
-	b.armedBodyPic = BODY_ARMED;
-	b.unarmedBodyPic = BODY_UNARMED;
-	b.facePic = e->looks.Face;
-	b.speed = e->speed;
-	b.probabilityToMove = e->bot->probabilityToMove;
-	b.probabilityToTrack = e->bot->probabilityToTrack;
-	b.probabilityToShoot = e->bot->probabilityToShoot;
-	b.actionDelay = e->bot->actionDelay;
-	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
-	{
-		const GunDescription *g = StrGunDescription(e->Gun->name);
-			CArrayGet(&gGunDescriptions.Guns, i);
-		if (strcmp(e->Gun->name, g->name) == 0)
-		{
-			b.gun = i;
-			break;
-		}
-	}
-	b.skinColor = e->looks.Skin;
-	b.armColor = e->looks.Arm;
-	b.bodyColor = e->looks.Body;
-	b.legColor = e->looks.Leg;
-	b.hairColor = e->looks.Hair;
-	b.health = e->maxHealth;
-	b.flags = e->flags;
-	return b;
-}
 static void ConvertMissionObjective(
 	MissionObjective *dest, struct MissionObjectiveOld *src)
 {

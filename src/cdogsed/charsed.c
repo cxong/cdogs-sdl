@@ -200,18 +200,14 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		y += FontH() + 5;
 
 		x = 10;
-		for (i = 0; i < (int)setting->characters.OtherChars.size; i++)
-		{
-			DisplayCharacter(
-				Vec2iNew(x, y + 20),
-				CArrayGet(&setting->characters.OtherChars, i), idx == i, 0);
+		CA_FOREACH(const Character, c, setting->characters.OtherChars)			DisplayCharacter(Vec2iNew(x, y + 20), c idx == _ca_index, 0);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.Res.x)
 			{
 				x = 10;
 				y += 30;
 			}
-		}
+		CA_FOREACH_END()
 	}
 
 	if (UITryGetObject(sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&

@@ -253,19 +253,15 @@ static menu_t *MenuCreateCampaigns(
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 20;
 	menu->u.normal.align = MENU_ALIGN_CENTER;
-	for (int i = 0; i < (int)list->subFolders.size; i++)
-	{
+	CA_FOREACH(campaign_list_t, subList, list->subFolders)
 		char folderName[CDOGS_FILENAME_MAX];
-		campaign_list_t *subList = CArrayGet(&list->subFolders, i);
 		sprintf(folderName, "%s/", subList->Name);
 		MenuAddSubmenu(
 			menu, MenuCreateCampaigns(folderName, title, subList, mode));
-	}
-	for (int i = 0; i < (int)list->list.size; i++)
-	{
-		MenuAddSubmenu(
-			menu, MenuCreateCampaignItem(CArrayGet(&list->list, i), mode));
-	}
+	CA_FOREACH_END()
+	CA_FOREACH(CampaignEntry, e, list->list)
+		MenuAddSubmenu(menu, MenuCreateCampaignItem(e, mode));
+	CA_FOREACH_END()
 	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
 	return menu;
 }

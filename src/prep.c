@@ -167,11 +167,9 @@ bool NumPlayersSelection(
 	if (ok)
 	{
 		const int numPlayers = ms.current->u.returnCode;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			CASSERT(!p->IsLocal, "unexpected local player");
-		}
+		CA_FOREACH_END()
 		// Add the players
 		for (int i = 0; i < numPlayers; i++)
 		{

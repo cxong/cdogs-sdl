@@ -207,15 +207,13 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 		return;
 	}
 	Tile *tile = MapGetTileOfItem(map, t);
-	for (int i = 0; i < (int)tile->things.size; i++)
-	{
-		ThingId *tid = CArrayGet(&tile->things, i);
+	CA_FOREACH(ThingId, tid, tile->things)
 		if (tid->Id == t->id && tid->Kind == t->kind)
 		{
-			CArrayDelete(&tile->things, i);
+			CArrayDelete(&tile->things, _ca_index);
 			return;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "Did not find element to delete");
 }
 
@@ -652,10 +650,9 @@ static void MapSetupDoors(Map *map, const Mission *m, int floor, int room)
 
 void MapTerminate(Map *map)
 {
-	for (int i = 0; i < (int)map->triggers.size; i++)
-	{
-		TriggerTerminate(*(Trigger **)CArrayGet(&map->triggers, i));
-	}
+	CA_FOREACH(Trigger *, t, map->triggers)
+		TriggerTerminate(*t);
+	CA_FOREACH_END()
 	CArrayTerminate(&map->triggers);
 	Vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
@@ -746,10 +743,7 @@ void MapLoadDynamic(
 	}
 
 	// Add map objects
-	for (int i = 0; i < (int)mission->MapObjectDensities.size; i++)
-	{
-		const MapObjectDensity *mod =
-			CArrayGet(&mission->MapObjectDensities, i);
+	CA_FOREACH(const MapObjectDensity, mod, mission->MapObjectDensities)
 		for (int j = 0;
 			j < (mod->Density * map->Size.x * map->Size.y) / 1000;
 			j++)
@@ -761,7 +755,7 @@ void MapLoadDynamic(
 				0,
 				true);
 		}
-	}
+	CA_FOREACH_END()
 
 	if (HasObjectives(gCampaign.Entry.Mode))
 	{

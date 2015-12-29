@@ -586,11 +586,9 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 
 	// Recreate the child UI objects
 	c->Highlighted = NULL;
-	UIObject **objs = c->Children.data;
-	for (int i = 0; i < (int)c->Children.size; i++, objs++)
-	{
-		UIObjectDestroy(*objs);
-	}
+	CA_FOREACH(UIObject *, obj, c->Children)
+		UIObjectDestroy(*obj);
+	CA_FOREACH_END()
 	CArrayTerminate(&c->Children);
 	CArrayInit(&c->Children, sizeof c);
 

@@ -79,11 +79,9 @@ void PathCacheTerminate(PathCache *pc)
 
 void PathCacheClear(PathCache *pc)
 {
-	for (int i = 0; i < (int)pc->paths.size; i++)
-	{
-		CachedPath *c = CArrayGet(&pc->paths, i);
+	CA_FOREACH(CachedPath, c, pc->paths)
 		CachedPathDestroy(c);
-	}
+	CA_FOREACH_END()
 	CArrayClear(&pc->paths);
 	pc->head = 0;
 }
@@ -108,15 +106,13 @@ CachedPath PathCacheCreate(
 		from.x, from.y, to.x, to.y);
 
 	// Search through existing cache for path
-	for (int i = 0; i < (int)pc->paths.size; i++)
-	{
-		CachedPath *c = CArrayGet(&pc->paths, i);
+	CA_FOREACH(CachedPath, c, pc->paths)
 		if (CachedPathMatches(c, from, to))
 		{
 			debug(D_NORMAL, "returning cached path\n");
 			return CachedPathCopy(c);
 		}
-	}
+	CA_FOREACH_END()
 
 	debug(D_NORMAL, "pathfinding\n");
 

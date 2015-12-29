@@ -61,12 +61,9 @@
 
 TActor *AIGetClosestPlayer(Vec2i fullpos)
 {
-	int i;
 	int minDistance = -1;
 	TActor *closestPlayer = NULL;
-	for (i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 		if (!IsPlayerAlive(pd))
 		{
 			continue;
@@ -79,7 +76,7 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 			closestPlayer = p;
 			minDistance = distance;
 		}
-	}
+	CA_FOREACH_END()
 	return closestPlayer;
 }
 
@@ -91,9 +88,7 @@ static TActor *AIGetClosestActor(
 	// satisfies the condition
 	TActor *closest = NULL;
 	int minDistance = -1;
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		TActor *a = CArrayGet(&gActors, i);
+	CA_FOREACH(TActor, a, gActors)
 		if (!a->isInUse || a->dead)
 		{
 			continue;
@@ -113,7 +108,7 @@ static TActor *AIGetClosestActor(
 				closest = a;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return closest;
 }
 
@@ -236,9 +231,7 @@ bool IsTileWalkable(Map *map, const Vec2i pos)
 	// Check if tile has a dangerous (explosive) item on it
 	// For AI, we don't want to shoot it, so just walk around
 	Tile *t = MapGetTile(map, pos);
-	for (int i = 0; i < (int)t->things.size; i++)
-	{
-		ThingId *tid = CArrayGet(&t->things, i);
+	CA_FOREACH(ThingId, tid, t->things)
 		// Only look for explosive objects
 		if (tid->Kind != KIND_OBJECT)
 		{
@@ -249,7 +242,7 @@ bool IsTileWalkable(Map *map, const Vec2i pos)
 		{
 			return false;
 		}
-	}
+	CA_FOREACH_END()
 	return true;
 }
 static bool IsPosNoWalk(void *data, Vec2i pos)
@@ -264,9 +257,7 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 	}
 	// Check if tile has any item on it
 	Tile *t = MapGetTile(map, pos);
-	for (int i = 0; i < (int)t->things.size; i++)
-	{
-		ThingId *tid = CArrayGet(&t->things, i);
+	CA_FOREACH(ThingId, tid, t->things)
 		if (tid->Kind == KIND_OBJECT)
 		{
 			// Check that the object is not debris
@@ -294,7 +285,7 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 				break;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return true;
 }
 static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos)

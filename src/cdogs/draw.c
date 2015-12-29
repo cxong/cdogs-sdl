@@ -177,23 +177,18 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			{
 				continue;
 			}
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				const TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+			CA_FOREACH(ThingId, tid, tile->things)
+				const TTileItem *ti = ThingIdGetTileItem(tid);
 				if (TileItemIsDebris(ti))
 				{
 					CArrayPushBack(&b->displaylist, &ti);
 				}
-			}
+			CA_FOREACH_END()
 		}
 		DrawBufferSortDisplayList(b);
-		for (int i = 0; i < (int)b->displaylist.size; i++)
-		{
-			const TTileItem **tp = CArrayGet(&b->displaylist, i);
-			const TTileItem *t = *tp;
-			DrawThing(b, t, offset);
-		}
+		CA_FOREACH(const TTileItem *, tp, b->displaylist)
+			DrawThing(b, *tp, offset);
+		CA_FOREACH_END()
 		tile += X_TILES - b->Size.x;
 	}
 }
@@ -241,24 +236,20 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			{
 				continue;
 			}
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				const TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+			CA_FOREACH(ThingId, tid, tile->things)
+				const TTileItem *ti = ThingIdGetTileItem(tid);
 				// Don't draw debris, they are drawn later
 				if (TileItemIsDebris(ti))
 				{
 					continue;
 				}
 				CArrayPushBack(&b->displaylist, &ti);
-			}
+			CA_FOREACH_END()
 		}
 		DrawBufferSortDisplayList(b);
-		for (int i = 0; i < (int)b->displaylist.size; i++)
-		{
-			const TTileItem **tp = CArrayGet(&b->displaylist, i);
+		CA_FOREACH(const TTileItem *, tp, b->displaylist)
 			DrawThing(b, *tp, offset);
-		}
+		CA_FOREACH_END()
 		tile += X_TILES - b->Size.x;
 	}
 }
@@ -423,12 +414,10 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
 			// Draw the items that are in LOS
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+			CA_FOREACH(ThingId, tid, tile->things)
+				TTileItem *ti = ThingIdGetTileItem(tid);
 				DrawObjectiveHighlight(ti, tile, b, offset);
-			}
+			CA_FOREACH_END()
 		}
 		tile += X_TILES - b->Size.x;
 	}
@@ -499,16 +488,14 @@ static void DrawChatters(DrawBuffer *b, Vec2i offset)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
-			for (int i = 0; i < (int)tile->things.size; i++)
-			{
-				const TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(&tile->things, i));
+			CA_FOREACH(ThingId, tid, tile->things)
+				const TTileItem *ti = ThingIdGetTileItem(tid);
 				if (ti->getActorPicsFunc == NULL)
 				{
 					continue;
 				}
 				DrawChatter(ti, b, offset);
-			}
+			CA_FOREACH_END()
 		}
 		tile += X_TILES - b->Size.x;
 	}

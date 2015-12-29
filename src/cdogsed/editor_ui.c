@@ -583,22 +583,18 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 		return NULL;
 	}
 	int totalWeapons = 0;
-	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
-	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
 		if (g->IsRealGun)
 		{
 			totalWeapons++;
 		}
-	}
-	for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
-	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions.CustomGuns, i);
+	CA_FOREACH_END()
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
 		if (g->IsRealGun)
 		{
 			totalWeapons++;
 		}
-	}
+	CA_FOREACH_END()
 	sprintf(
 		s, "Available weapons (%d/%d)",
 		(int)gMission.missionData->Weapons.size, totalWeapons);
@@ -689,15 +685,13 @@ static void MissionDrawWeaponStatus(
 	const Mission *currentMission = CampaignGetCurrentMission(data->co);
 	if (currentMission == NULL) return;
 	bool hasWeapon = false;
-	for (int i = 0; i < (int)currentMission->Weapons.size; i++)
-	{
-		const GunDescription **desc = CArrayGet(&currentMission->Weapons, i);
+	CA_FOREACH(const GunDescription *, desc, currentMission->Weapons)
 		if (data->Gun == *desc)
 		{
 			hasWeapon = true;
 			break;
 		}
-	}
+	CA_FOREACH_END()
 	DisplayFlag(
 		g,
 		Vec2iAdd(pos, o->Pos),
@@ -1172,16 +1166,14 @@ static void MissionChangeWeapon(void *vData, int d)
 	bool hasWeapon = false;
 	int weaponIndex = -1;
 	Mission *currentMission = CampaignGetCurrentMission(data->co);
-	for (int i = 0; i < (int)currentMission->Weapons.size; i++)
-	{
-		const GunDescription **desc = CArrayGet(&currentMission->Weapons, i);
+	CA_FOREACH(const GunDescription *, desc, currentMission->Weapons)
 		if (data->Gun == *desc)
 		{
 			hasWeapon = true;
 			weaponIndex = i;
 			break;
 		}
-	}
+	CA_FOREACH_END()
 	if (hasWeapon)
 	{
 		CArrayDelete(&currentMission->Weapons, weaponIndex);
@@ -1261,16 +1253,13 @@ static void MissionChangeObjectiveTotal(void *vData, int d)
 	// Don't let the total reduce to less than static ones we've placed
 	if (m->Type == MAPTYPE_STATIC)
 	{
-		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
-		{
-			const ObjectivePositions *op =
-				CArrayGet(&m->u.Static.Objectives, i);
+		CA_FOREACH(const ObjectivePositions, op, m->u.Static.Objectives)
 			if (op->Index == data->index)
 			{
 				mobj->Count = MAX(mobj->Count, (int)op->Positions.size);
 				break;
 			}
-		}
+		CA_FOREACH_END()
 	}
 }
 static void MissionChangeObjectiveFlags(void *vData, int d)

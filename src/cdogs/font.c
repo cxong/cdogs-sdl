@@ -175,11 +175,9 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 }
 void FontTerminate(Font *f)
 {
-	for (int i = 0; i < (int)f->Chars.size; i++)
-	{
-		Pic *p = CArrayGet(&f->Chars, i);
+	CA_FOREACH(Pic, p, f->Chars)
 		PicFree(p);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&f->Chars);
 }
 

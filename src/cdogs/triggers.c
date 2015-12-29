@@ -113,9 +113,7 @@ Action *WatchAddAction(TWatch *w)
 
 static void ActivateWatch(int idx)
 {
-	for (int i = 0; i < (int)gWatches.size; i++)
-	{
-		TWatch *w = CArrayGet(&gWatches, i);
+	CA_FOREACH(TWatch, w, gWatches)
 		if (w->index == idx)
 		{
 			w->active = true;
@@ -128,21 +126,19 @@ static void ActivateWatch(int idx)
 			}
 			return;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "Cannot find watch");
 }
 
 static void DeactivateWatch(int idx)
 {
-	for (int i = 0; i < (int)gWatches.size; i++)
-	{
-		TWatch *w = CArrayGet(&gWatches, i);
+	CA_FOREACH(TWatch, w, gWatches)
 		if (w->index == idx)
 		{
 			w->active = false;
 			return;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "Cannot find watch");
 }
 
@@ -152,12 +148,10 @@ void WatchesInit(void)
 }
 void WatchesTerminate(void)
 {
-	for (int i = 0; i < (int)gWatches.size; i++)
-	{
-		TWatch *w = CArrayGet(&gWatches, i);
+	CA_FOREACH(TWatch, w, gWatches)
 		CArrayTerminate(&w->conditions);
 		CArrayTerminate(&w->actions);
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&gWatches);
 }
 
@@ -245,17 +239,14 @@ bool TriggerCanActivate(const Trigger *t, const int flags)
 
 void TriggerActivate(Trigger *t, CArray *mapTriggers)
 {
-	for (int i = 0; i < (int)t->actions.size; i++)
-	{
-		ActionRun(CArrayGet(&t->actions, i), mapTriggers);
-	}
+	CA_FOREACH(Action, a, t->actions)
+		ActionRun(a, mapTriggers);
+	CA_FOREACH_END()
 }
 
 void UpdateWatches(CArray *mapTriggers, const int ticks)
 {
-	for (int i = 0; i < (int)gWatches.size; i++)
-	{
-		TWatch *w = CArrayGet(&gWatches, i);
+	CA_FOREACH(TWatch, w, gWatches)
 		if (!w->active) continue;
 		if (ConditionsMet(&w->conditions, ticks))
 		{
@@ -264,5 +255,5 @@ void UpdateWatches(CArray *mapTriggers, const int ticks)
 				ActionRun(CArrayGet(&w->actions, j), mapTriggers);
 			}
 		}
-	}
+	CA_FOREACH_END()
 }

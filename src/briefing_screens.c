@@ -280,11 +280,9 @@ void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 		bonus += GetAccessBonus(m);
 		bonus += GetTimeBonus(m, NULL);
 
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			ApplyBonuses(p, bonus);
-		}
+		CA_FOREACH_END()
 	}
 	GameLoopWaitForAnyKeyOrButtonData wData;
 	GameLoopData gData = GameLoopDataNew(
@@ -295,14 +293,12 @@ void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 }
 static bool AreAnySurvived(void)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (p->survived)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 static int GetAccessBonus(const struct MissionOptions *m)
@@ -482,16 +478,14 @@ static void MissionSummaryDraw(void *data)
 	Vec2i size;
 	const PlayerData *pds[MAX_LOCAL_PLAYERS];
 	idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 		if (!pd->IsLocal)
 		{
 			idx--;
 			continue;
 		}
 		pds[idx] = pd;
-	}
+	CA_FOREACH_END()
 	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	switch (numLocalPlayers)
 	{
@@ -849,9 +843,7 @@ static void DogfightFinalScoresDraw(void *data)
 	// Work out who's the winner, or if it's a tie
 	int maxScore = 0;
 	int playersWithMaxScore = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (p->RoundsWon > maxScore)
 		{
 			maxScore = p->RoundsWon;
@@ -861,7 +853,7 @@ static void DogfightFinalScoresDraw(void *data)
 		{
 			playersWithMaxScore++;
 		}
-	}
+	CA_FOREACH_END()
 	const bool isTie = playersWithMaxScore == (int)gPlayerDatas.size;
 
 	// Draw players and their names spread evenly around the screen.
@@ -927,14 +919,12 @@ static void DeathmatchFinalScoresDraw(void *data)
 
 	// Work out the highest kills
 	int maxKills = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (p->kills > maxKills)
 		{
 			maxKills = p->kills;
 		}
-	}
+	CA_FOREACH_END()
 
 	// Draw players and their names spread evenly around the screen.
 	const PlayerData *pds[MAX_LOCAL_PLAYERS];

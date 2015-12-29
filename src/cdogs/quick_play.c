@@ -275,14 +275,12 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		CArrayPushBack(&m->MapObjectDensities, &mop);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
-	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
-	{
-		const GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
 		if (g->IsRealGun)
 		{
 			CArrayPushBack(&m->Weapons, &g);
 		}
-	}
+	CA_FOREACH_END()
 	m->WallMask = RandomBGColor();
 	m->FloorMask = RandomBGColor();
 	m->RoomMask = RandomBGColor();

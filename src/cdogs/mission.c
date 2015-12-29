@@ -386,7 +386,7 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	// Check all objective counts are enough
 	CA_FOREACH(const ObjectiveDef, o, options->Objectives)
 		const MissionObjective *mobj =
-			CArrayGet(&options->missionData->Objectives, i);
+			CArrayGet(&options->missionData->Objectives, _ca_index);
 		if (o->done < mobj->Required) return false;
 	CA_FOREACH_END()
 

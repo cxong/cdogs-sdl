@@ -135,11 +135,9 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	do
 	{
 		// Unready all the players
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			p->Ready = false;
-		}
+		CA_FOREACH_END()
 
 		CampaignAndMissionSetup(1, co, &gMission);
 
@@ -204,9 +202,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		int maxScore = 0;
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			p->survived = IsPlayerAlive(p);
 			if (IsPlayerAlive(p))
 			{
@@ -215,7 +211,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				p->RoundsWon++;
 				maxScore = MAX(maxScore, p->RoundsWon);
 			}
-		}
+		CA_FOREACH_END()
 		if (IsPVP(co->Entry.Mode))
 		{
 			gameOver = maxScore == ModeMaxRoundsWon(co->Entry.Mode);
@@ -253,9 +249,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		{
 			bool allTime = false;
 			bool todays = false;
-			for (int i = 0; i < (int)gPlayerDatas.size; i++)
-			{
-				PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			CA_FOREACH(PlayerData, p, gPlayerDatas)
 				if (((run && !p->survived) || gameOver) && p->IsLocal)
 				{
 					EnterHighScore(p);
@@ -273,7 +267,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 					p->missions++;
 				}
 				p->lastMission = co->MissionIndex;
-			}
+			CA_FOREACH_END()
 			if (allTime)
 			{
 				DisplayAllTimeHighScores(graphics);

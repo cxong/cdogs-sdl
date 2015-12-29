@@ -161,10 +161,9 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 				}
 				node = node->child;
 			}
-			for (int i = 0; i < (int)c->u.Group.size; i++)
-			{
-				ConfigLoadVisit(CArrayGet(&c->u.Group, i), node);
-			}
+			CA_FOREACH(Config, child, c->u.Group)
+				ConfigLoadVisit(child, node);
+			CA_FOREACH_END()
 		}
 		break;
 	default:
@@ -234,10 +233,9 @@ static void ConfigSaveVisit(const Config *c, json_t *node)
 			{
 				child = json_new_object();
 			}
-			for (int i = 0; i < (int)c->u.Group.size; i++)
-			{
-				ConfigSaveVisit(CArrayGet(&c->u.Group, i), child);
-			}
+			CA_FOREACH(Config, cg, c->u.Group)
+				ConfigSaveVisit(cg, child);
+			CA_FOREACH_END()
 			if (c->Name != NULL)
 			{
 				json_insert_pair_into_object(node, c->Name, child);

@@ -188,28 +188,24 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 		MapLoadDynamic(map, m, &co->Setting.characters);
 
 		// Reset players for the mission
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			// Only reset for local players; for remote ones wait for the
 			// client ready message
 			if (!p->IsLocal) continue;
 			GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
 			e.u.PlayerData = PlayerDataMissionReset(p);
 			GameEventsEnqueue(&gGameEvents, e);
-		}
+		CA_FOREACH_END()
 		// Process the events to force add the players
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
 		// Note: place players first,
 		// as bad guys are placed away from players
 		Vec2i firstPos = Vec2iZero();
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (!p->Ready) continue;
 			firstPos = PlacePlayer(&gMap, p, firstPos, true);
-		}
+		CA_FOREACH_END()
 		if (!IsPVP(co->Entry.Mode))
 		{
 			InitializeBadGuys();
@@ -269,10 +265,9 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
 	PowerupSpawnerTerminate(&data.healthSpawner);
-	for (int i = 0; i < (int)data.ammoSpawners.size; i++)
-	{
-		PowerupSpawnerTerminate(CArrayGet(&data.ammoSpawners, i));
-	}
+	CA_FOREACH(PowerupSpawner, a, data.ammoSpawners)
+		PowerupSpawnerTerminate(a);
+	CA_FOREACH_END()
 	CArrayTerminate(&data.ammoSpawners);
 	CameraTerminate(&data.Camera);
 
@@ -442,9 +437,7 @@ static GameLoopResult RunGameUpdate(void *data)
 		const int h = gGraphicsDevice.cachedConfig.Res.y;
 		const Vec2i screen = Vec2iAdd(
 			PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
-		for (int i = 0; i < (int)gPlayerDatas.size; i++)
-		{
-			const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
+		CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 			if (!pd->IsLocal || !IsPlayerAlive(pd))
 			{
 				continue;
@@ -476,7 +469,7 @@ static GameLoopResult RunGameUpdate(void *data)
 				ei.u.ActorImpulse.Pos = Vec2i2Net(Vec2iZero());
 				GameEventsEnqueue(&gGameEvents, ei);
 			}
-		}
+		CA_FOREACH_END()
 	}
 
 	UpdateAllActors(ticksPerFrame);
@@ -487,10 +480,9 @@ static GameLoopResult RunGameUpdate(void *data)
 	UpdateWatches(&rData->map->triggers, ticksPerFrame);
 
 	PowerupSpawnerUpdate(&rData->healthSpawner, ticksPerFrame);
-	for (int i = 0; i < (int)rData->ammoSpawners.size; i++)
-	{
-		PowerupSpawnerUpdate(CArrayGet(&rData->ammoSpawners, i), ticksPerFrame);
-	}
+	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
+		PowerupSpawnerUpdate(a, ticksPerFrame);
+	CA_FOREACH_END()
 
 	if (!gCampaign.IsClient)
 	{
@@ -554,15 +546,13 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 	// Note: there's a period of time where players are dying
 	// Wait until after this period before ending the game
 	bool allPlayersDestroyed = true;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (p->ActorUID != -1)
 		{
 			allPlayersDestroyed = false;
 			break;
 		}
-	}
+	CA_FOREACH_END()
 	if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);

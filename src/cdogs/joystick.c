@@ -208,7 +208,7 @@ void JoyRemoved(const Sint32 which)
 		if (j->id == which)
 		{
 			JoyTerminateOne(j);
-			CArrayDelete(&gEventHandlers.joysticks, i);
+			CArrayDelete(&gEventHandlers.joysticks, _ca_indesx);
 			return;
 		}
 	CA_FOREACH_END()

@@ -250,11 +250,9 @@ void PlayerDataTerminate(CArray *p)
 
 PlayerData *PlayerDataGetByUID(const int uid)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
 		if (p->UID == uid) return p;
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 
@@ -262,9 +260,7 @@ int GetNumPlayers(
 	const PlayerAliveOptions alive, const bool human, const bool local)
 {
 	int numPlayers = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		bool life = false;
 		switch (alive)
 		{
@@ -278,36 +274,32 @@ int GetNumPlayers(
 		{
 			numPlayers++;
 		}
-	}
+	CA_FOREACH_END()
 	return numPlayers;
 }
 
 bool AreAllPlayersDeadAndNoLives(void)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (IsPlayerAlive(p) || p->Lives > 0)
 		{
 			return false;
 		}
-	}
+	CA_FOREACH_END()
 	return true;
 }
 
 const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if ((!alive || IsPlayerAliveOrDying(p)) &&
 			(!human || p->inputDevice != INPUT_DEVICE_AI) &&
 			(!local || p->IsLocal))
 		{
 			return p;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 
@@ -354,9 +346,7 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 	*max = Vec2iZero();
 	const bool humansOnly =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, false) > 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!p->IsLocal)
 		{
 			continue;
@@ -378,16 +368,14 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 			}
 			isFirst = false;
 		}
-	}
+	CA_FOREACH_END()
 }
 
 // Get the number of players that use this ammo
 int PlayersNumUseAmmo(const int ammoId)
 {
 	int numPlayersWithAmmo = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
@@ -401,7 +389,7 @@ int PlayersNumUseAmmo(const int ammoId)
 				numPlayersWithAmmo++;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return numPlayersWithAmmo;
 }
 

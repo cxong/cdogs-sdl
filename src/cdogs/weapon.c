@@ -307,23 +307,18 @@ Weapon WeaponCreate(const GunDescription *gun)
 // TODO: use map structure?
 const GunDescription *StrGunDescription(const char *s)
 {
-	for (int i = 0; i < (int)gGunDescriptions.Guns.size; i++)
-	{
-		const GunDescription *gd = CArrayGet(&gGunDescriptions.Guns, i);
+	CA_FOREACH(const GunDescription, gd, gGunDescriptions.Guns)
 		if (strcmp(s, gd->name) == 0)
 		{
 			return gd;
 		}
-	}
-	for (int i = 0; i < (int)gGunDescriptions.CustomGuns.size; i++)
-	{
-		const GunDescription *gd =
-			CArrayGet(&gGunDescriptions.CustomGuns, i);
+	CA_FOREACH_END()
+	CA_FOREACH(const GunDescription, gd, gGunDescriptions.CustomGuns)
 		if (strcmp(s, gd->name) == 0)
 		{
 			return gd;
 		}
-	}
+	CA_FOREACH_END()
 	fprintf(stderr, "Cannot parse gun name: %s\n", s);
 	return NULL;
 }

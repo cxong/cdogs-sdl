@@ -223,10 +223,9 @@ void NamedSpritesFree(NamedSprites *ns)
 		return;
 	}
 	CFREE(ns->name);
-	for (int i = 0; i < (int)ns->pics.size; i++)
-	{
-		PicFree(CArrayGet(&ns->pics, i));
-	}
+	CA_FOREACH(Pic, p, ns->pics)
+		PicFree(p);
+	CA_FOREACH_END()
 	CArrayTerminate(&ns->pics);
 }
 

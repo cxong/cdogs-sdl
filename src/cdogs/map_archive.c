@@ -560,11 +560,8 @@ static json_t *SaveMissions(CArray *a)
 static json_t *SaveCharacters(CharacterStore *s)
 {
 	json_t *charNode = json_new_array();
-	int i;
-	for (i = 0; i < (int)s->OtherChars.size; i++)
-	{
+	CA_FOREACH(Character, c, s->OtherChars)
 		json_t *node = json_new_object();
-		Character *c = CArrayGet(&s->OtherChars, i);
 		AddIntPair(node, "face", c->looks.Face);
 		AddIntPair(node, "skin", c->looks.Skin);
 		AddIntPair(node, "arm", c->looks.Arm);
@@ -581,7 +578,7 @@ static json_t *SaveCharacters(CharacterStore *s)
 		AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
 		AddIntPair(node, "actionDelay", c->bot->actionDelay);
 		json_insert_child(charNode, node);
-	}
+	CA_FOREACH_END()
 	return charNode;
 }
 static json_t *SaveClassicRooms(Mission *m)
@@ -644,10 +641,7 @@ static json_t *SaveStaticTiles(Mission *m)
 static json_t *SaveStaticItems(Mission *m)
 {
 	json_t *items = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Items.size; i++)
-	{
-		MapObjectPositions *mop =
-			CArrayGet(&m->u.Static.Items, i);
+	CA_FOREACH(MapObjectPositions, mop, m->u.Static.Items)
 		json_t *itemNode = json_new_object();
 		AddStringPair(itemNode, "MapObject", mop->M->Name);
 		json_t *positions = json_new_array();
@@ -659,16 +653,13 @@ static json_t *SaveStaticItems(Mission *m)
 		json_insert_pair_into_object(
 			itemNode, "Positions", positions);
 		json_insert_child(items, itemNode);
-	}
+	CA_FOREACH_END()
 	return items;
 }
 static json_t *SaveStaticWrecks(Mission *m)
 {
 	json_t *wrecks = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Wrecks.size; i++)
-	{
-		MapObjectPositions *mop =
-			CArrayGet(&m->u.Static.Wrecks, i);
+	CA_FOREACH(MapObjectPositions, mop, m->u.Static.Wrecks)
 		json_t *wreckNode = json_new_object();
 		AddStringPair(wreckNode, "MapObject", mop->M->Name);
 		json_t *positions = json_new_array();
@@ -680,16 +671,13 @@ static json_t *SaveStaticWrecks(Mission *m)
 		json_insert_pair_into_object(
 			wreckNode, "Positions", positions);
 		json_insert_child(wrecks, wreckNode);
-	}
+	CA_FOREACH_END()
 	return wrecks;
 }
 static json_t *SaveStaticCharacters(Mission *m)
 {
 	json_t *chars = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
-	{
-		CharacterPositions *cp =
-			CArrayGet(&m->u.Static.Characters, i);
+	CA_FOREACH(CharacterPositions, cp, m->u.Static.Characters)
 		json_t *charNode = json_new_object();
 		AddIntPair(charNode, "Index", cp->Index);
 		json_t *positions = json_new_array();
@@ -701,16 +689,13 @@ static json_t *SaveStaticCharacters(Mission *m)
 		json_insert_pair_into_object(
 			charNode, "Positions", positions);
 		json_insert_child(chars, charNode);
-	}
+	CA_FOREACH_END()
 	return chars;
 }
 static json_t *SaveStaticObjectives(Mission *m)
 {
 	json_t *objs = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
-	{
-		ObjectivePositions *op =
-		CArrayGet(&m->u.Static.Objectives, i);
+	CA_FOREACH(ObjectivePositions, op, m->u.Static.Objectives)
 		json_t *objNode = json_new_object();
 		AddIntPair(objNode, "Index", op->Index);
 		json_t *positions = json_new_array();
@@ -724,16 +709,13 @@ static json_t *SaveStaticObjectives(Mission *m)
 		json_insert_pair_into_object(
 			objNode, "Indices", SaveIntArray(&op->Indices));
 		json_insert_child(objs, objNode);
-	}
+	CA_FOREACH_END()
 	return objs;
 }
 static json_t *SaveStaticKeys(Mission *m)
 {
 	json_t *keys = json_new_array();
-	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
-	{
-		KeyPositions *kp =
-		CArrayGet(&m->u.Static.Keys, i);
+	CA_FOREACH(KeyPositions, kp, m->u.Static.Keys)
 		json_t *keyNode = json_new_object();
 		AddIntPair(keyNode, "Index", kp->Index);
 		json_t *positions = json_new_array();
@@ -745,7 +727,7 @@ static json_t *SaveStaticKeys(Mission *m)
 		json_insert_pair_into_object(
 			keyNode, "Positions", positions);
 		json_insert_child(keys, keyNode);
-	}
+	CA_FOREACH_END()
 	return keys;
 }
 

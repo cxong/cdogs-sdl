@@ -151,22 +151,18 @@ const ParticleClass *StrParticleClass(
 	{
 		return NULL;
 	}
-	for (int i = 0; i < (int)classes->CustomClasses.size; i++)
-	{
-		const ParticleClass *c = CArrayGet(&classes->CustomClasses, i);
+	CA_FOREACH(const ParticleClass, c, classes->CustomClasses)
 		if (strcmp(c->Name, name) == 0)
 		{
 			return c;
 		}
-	}
-	for (int i = 0; i < (int)classes->Classes.size; i++)
-	{
-		const ParticleClass *c = CArrayGet(&classes->Classes, i);
+	CA_FOREACH_END()
+	CA_FOREACH(const ParticleClass, c, classes->Classes)
 		if (strcmp(c->Name, name) == 0)
 		{
 			return c;
 		}
-	}
+	CA_FOREACH_END()
 	CASSERT(false, "Cannot find particle class");
 	return NULL;
 }

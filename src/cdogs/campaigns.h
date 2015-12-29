@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __CAMPAIGNS
-#define __CAMPAIGNS
+#pragma once
 
 #include "c_array.h"
 #include "campaign_entry.h"
@@ -39,7 +38,7 @@ typedef struct campaign_list
 {
 	char *Name;
 	CArray subFolders;	// of campaign_list_t
-	CArray list;		// of campaign_entry_t
+	CArray list;		// of CampaignEntry
 } campaign_list_t;
 
 typedef struct
@@ -86,5 +85,3 @@ void CampaignSeedRandom(const CampaignOptions *campaign);
 
 void CampaignAndMissionSetup(
 	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo);
-
-#endif

@@ -290,10 +290,9 @@ void ConfigDestroy(Config *c)
 	CFREE(c->Name);
 	if (c->Type == CONFIG_TYPE_GROUP)
 	{
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			ConfigDestroy(CArrayGet(&c->u.Group, i));
-		}
+		CA_FOREACH(Config, child, c->u.Group)
+			ConfigDestroy(child);
+		CA_FOREACH_END()
 		CArrayTerminate(&c->u.Group);
 	}
 }
@@ -327,16 +326,14 @@ Config *ConfigGet(Config *c, const char *name)
 			goto bail;
 		}
 		bool found = false;
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			Config *child = CArrayGet(&c->u.Group, i);
+		CA_FOREACH(Config, child, c->u.Group)
 			if (strcmp(child->Name, pch) == 0)
 			{
 				c = child;
 				found = true;
 				break;
 			}
-		}
+		CA_FOREACH_END()
 		if (!found)
 		{
 			CASSERT(false, "Config not found");
@@ -364,13 +361,12 @@ bool ConfigChanged(const Config *c)
 	case CONFIG_TYPE_ENUM:
 		return c->u.Enum.Value != c->u.Enum.Last;
 	case CONFIG_TYPE_GROUP:
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			if (ConfigChanged(CArrayGet(&c->u.Group, i)))
+		CA_FOREACH(Config, child, c->u.Group)
+			if (ConfigChanged(child))
 			{
 				return true;
 			}
-		}
+		CA_FOREACH_END()
 		return false;
 	default:
 		CASSERT(false, "Unknown config type");
@@ -399,10 +395,9 @@ void ConfigResetChanged(Config *c)
 		c->u.Enum.Value = c->u.Enum.Last;
 		break;
 	case CONFIG_TYPE_GROUP:
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			ConfigResetChanged(CArrayGet(&c->u.Group, i));
-		}
+		CA_FOREACH(Config, child, c->u.Group)
+			ConfigResetChanged(child);
+		CA_FOREACH_END()
 		break;
 	default:
 		CASSERT(false, "Unknown config type");
@@ -431,10 +426,9 @@ void ConfigSetChanged(Config *c)
 		c->u.Enum.Last = c->u.Enum.Value;
 		break;
 	case CONFIG_TYPE_GROUP:
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			ConfigSetChanged(CArrayGet(&c->u.Group, i));
-		}
+		CA_FOREACH(Config, child, c->u.Group)
+			ConfigSetChanged(child);
+		CA_FOREACH_END()
 		break;
 	default:
 		CASSERT(false, "Unknown config type");
@@ -463,10 +457,9 @@ void ConfigResetDefault(Config *c)
 		c->u.Enum.Value = c->u.Enum.Default;
 		break;
 	case CONFIG_TYPE_GROUP:
-		for (int i = 0; i < (int)c->u.Group.size; i++)
-		{
-			ConfigResetDefault(CArrayGet(&c->u.Group, i));
-		}
+		CA_FOREACH(Config, child, c->u.Group)
+			ConfigResetDefault(child);
+		CA_FOREACH_END()
 		break;
 	default:
 		CASSERT(false, "Unknown config type");

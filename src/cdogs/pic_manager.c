@@ -502,22 +502,18 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 }
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 {
-	for (int i = 0; i < (int)pm->customPics.size; i++)
-	{
-		NamedPic *n = CArrayGet(&pm->customPics, i);
+	CA_FOREACH(NamedPic, n, pm->customPics)
 		if (strcmp(n->name, name) == 0)
 		{
 			return n;
 		}
-	}
-	for (int i = 0; i < (int)pm->pics.size; i++)
-	{
-		NamedPic *n = CArrayGet(&pm->pics, i);
+	CA_FOREACH_END()
+	CA_FOREACH(NamedPic, n, pm->pics)
 		if (strcmp(n->name, name) == 0)
 		{
 			return n;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
@@ -553,22 +549,18 @@ defaultPic:
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
 {
-	for (int i = 0; i < (int)pm->customSprites.size; i++)
-	{
-		const NamedSprites *n = CArrayGet(&pm->customSprites, i);
+	CA_FOREACH(const NamedSprites, n, pm->customSprites)
 		if (strcmp(n->name, name) == 0)
 		{
 			return n;
 		}
-	}
-	for (int i = 0; i < (int)pm->sprites.size; i++)
-	{
-		const NamedSprites *n = CArrayGet(&pm->sprites, i);
+	CA_FOREACH_END()
+	CA_FOREACH(const NamedSprites, n, pm->sprites)
 		if (strcmp(n->name, name) == 0)
 		{
 			return n;
 		}
-	}
+	CA_FOREACH_END()
 	return NULL;
 }
 

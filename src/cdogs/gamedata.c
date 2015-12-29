@@ -230,13 +230,11 @@ bail:
 
 bool GameIsMouseUsed(void)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (p->IsLocal && p->inputDevice == INPUT_DEVICE_MOUSE)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }

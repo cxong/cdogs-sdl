@@ -72,9 +72,7 @@ static int gAreGoodGuysPresent = 0;
 
 static bool IsFacingPlayer(TActor *actor, direction_e d)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
@@ -84,7 +82,7 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -102,9 +100,7 @@ static bool IsCloseToPlayer(const Vec2i fullPos, const int fullDistance)
 static bool CanSeeAPlayer(const TActor *a)
 {
 	const Vec2i realPos = Vec2iFull2Real(a->Pos);
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
@@ -127,7 +123,7 @@ static bool CanSeeAPlayer(const TActor *a)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -277,9 +273,7 @@ void Detour(TActor * actor)
 
 static bool DidPlayerShoot(void)
 {
-	for (int i = 0; i < (int)gPlayerDatas.size; i++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
@@ -289,7 +283,7 @@ static bool DidPlayerShoot(void)
 		{
 			return true;
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -323,9 +317,7 @@ void CommandBadGuys(int ticks)
 		break;
 	}
 
-	for (int i = 0; i < (int)gActors.size; i++)
-	{
-		TActor *actor = CArrayGet(&gActors, i);
+	CA_FOREACH(TActor, actor, gActors)
 		if (!actor->isInUse)
 		{
 			continue;
@@ -485,7 +477,7 @@ void CommandBadGuys(int ticks)
 		{
 			CommandActor(actor, 0, ticks);
 		}
-	}
+	CA_FOREACH_END()
 	if (gMission.missionData->Enemies.size > 0 &&
 		gMission.missionData->EnemyDensity > 0 &&
 		count < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))

@@ -308,17 +308,15 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 	{
 		// Check if the character already has an entry, and add to its list
 		// of positions
-		int hasAdded = 0;
-		for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
-		{
-			CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+		bool hasAdded = false;
+		CA_FOREACH(CharacterPositions, cp, m->u.Static.Characters)
 			if (cp->Index == ch)
 			{
 				CArrayPushBack(&cp->Positions, &pos);
-				hasAdded = 1;
+				hasAdded = true;
 				break;
 			}
-		}
+		CA_FOREACH_END()
 		// If not, create a new entry
 		if (!hasAdded)
 		{
@@ -334,9 +332,7 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 }
 bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 {
-	for (int i = 0; i < (int)m->u.Static.Characters.size; i++)
-	{
-		CharacterPositions *cp = CArrayGet(&m->u.Static.Characters, i);
+	CA_FOREACH(CharacterPositions, cp, m->u.Static.Characters)
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
 			Vec2i *cpPos = CArrayGet(&cp->Positions, j);
@@ -346,12 +342,12 @@ bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 				if (cp->Positions.size == 0)
 				{
 					CArrayTerminate(&cp->Positions);
-					CArrayDelete(&m->u.Static.Characters, i);
+					CArrayDelete(&m->u.Static.Characters, _ca_index);
 				}
 				return true;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -405,9 +401,7 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 }
 bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 {
-	for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
-	{
-		ObjectivePositions *op = CArrayGet(&m->u.Static.Objectives, i);
+	CA_FOREACH(ObjectivePositions, op, m->u.Static.Objectives)
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
 			Vec2i *opPos = CArrayGet(&op->Positions, j);
@@ -419,12 +413,12 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 				{
 					CArrayTerminate(&op->Positions);
 					CArrayTerminate(&op->Indices);
-					CArrayDelete(&m->u.Static.Objectives, i);
+					CArrayDelete(&m->u.Static.Objectives, _ca_index);
 				}
 				return true;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -441,16 +435,14 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 		// Check if the item already has an entry, and add to its list
 		// of positions
 		bool hasAdded = false;
-		for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
-		{
-			KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+		CA_FOREACH(KeyPositions, kp, m->u.Static.Keys)
 			if (kp->Index == k)
 			{
 				CArrayPushBack(&kp->Positions, &pos);
 				hasAdded = true;
 				break;
 			}
-		}
+		CA_FOREACH_END()
 		// If not, create a new entry
 		if (!hasAdded)
 		{
@@ -466,9 +458,7 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 }
 bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
 {
-	for (int i = 0; i < (int)m->u.Static.Keys.size; i++)
-	{
-		KeyPositions *kp = CArrayGet(&m->u.Static.Keys, i);
+	CA_FOREACH(KeyPositions, kp, m->u.Static.Keys)
 		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
 			Vec2i *kpPos = CArrayGet(&kp->Positions, j);
@@ -478,12 +468,12 @@ bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
 				if (kp->Positions.size == 0)
 				{
 					CArrayTerminate(&kp->Positions);
-					CArrayDelete(&m->u.Static.Keys, i);
+					CArrayDelete(&m->u.Static.Keys, _ca_index);
 				}
 				return true;
 			}
 		}
-	}
+	CA_FOREACH_END()
 	return false;
 }
 
