@@ -173,11 +173,6 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 				SDL_GetError());
 			continue;
 		}
-		if (mode.w % 4)
-		{
-			// TODO: why does width have to be divisible by 4? 1366x768 doesn't work
-			continue;
-		}
 		if (mode.w < 320 || mode.h < 240)
 		{
 			break;
