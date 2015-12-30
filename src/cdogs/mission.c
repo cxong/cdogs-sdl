@@ -219,11 +219,6 @@ void MissionTerminate(Mission *m)
 // |  Exit info  |
 // +-------------+
 
-
-/*static int exitPics[] = {
-	375, 376,	// hazard stripes
-	380, 381	// yellow plates
-};*/
 // TODO: arbitrary exit tile names
 static const char *exitPicNames[] = {
 	"hazard",

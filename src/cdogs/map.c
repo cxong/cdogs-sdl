@@ -412,7 +412,6 @@ bool MapTryPlaceOneObject(
 	}
 	else if (!(mo->Flags & (1 << PLACEMENT_ON_WALL)))
 	{
-		// TODO: any situation where these two do not coincide?
 		tileFlags |= TILEITEM_IMPASSABLE;
 		tileFlags |= TILEITEM_CAN_BE_SHOT;
 	}
