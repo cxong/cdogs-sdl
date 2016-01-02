@@ -268,7 +268,7 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 	CA_FOREACH(const MissionObjective, mobj, mission->Objectives)
 		ObjectiveDef o;
 		memset(&o, 0, sizeof o);
-		assert(i < OBJECTIVE_MAX_OLD);
+		CASSERT(_ca_index < OBJECTIVE_MAX_OLD, "too many objectives");
 		// Set objective colours based on type
 		o.color = ObjectiveTypeColor(mobj->Type);
 		o.blowupObject = IntMapObject(mobj->Index);

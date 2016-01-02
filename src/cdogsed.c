@@ -201,7 +201,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
 			// Clear background first
-			for (i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
+			for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 			{
 				g->buf[i] = COLOR2PIXEL(colorBlack);
 			}

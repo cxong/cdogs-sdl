@@ -1170,7 +1170,7 @@ static void MissionChangeWeapon(void *vData, int d)
 		if (data->Gun == *desc)
 		{
 			hasWeapon = true;
-			weaponIndex = i;
+			weaponIndex = _ca_index;
 			break;
 		}
 	CA_FOREACH_END()

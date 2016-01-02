@@ -436,12 +436,12 @@ static void UIObjectDrawAndAddChildren(
 				0);
 			// Find if mouse over any children, and draw highlight
 			CA_FOREACH(UIObject *, child, o->Children)
-				if (IsInside(mouse, Vec2iAdd(oPos, child->Pos), child->Size))
+				if (IsInside(mouse, Vec2iAdd(oPos, (*child)->Pos), (*child)->Size))
 				{
 					DrawRectangle(
 						g,
-						Vec2iAdd(oPos, child->Pos),
-						child->Size,
+						Vec2iAdd(oPos, (*child)->Pos),
+						(*child)->Size,
 						hiliteColor,
 						0);
 				}
