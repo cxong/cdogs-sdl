@@ -1,6 +1,4 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
@@ -27,21 +25,14 @@
 */
 #include "pic.h"
 
-#include "blit.h"
-#include "palette.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include "defs.h"
+#include "grafx.h"
 #include "utils.h"
 
 Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
-
-PicType StrPicType(const char *s)
-{
-	S2T(PICTYPE_NORMAL, "Normal");
-	S2T(PICTYPE_DIRECTIONAL, "Directional");
-	S2T(PICTYPE_ANIMATED, "Animated");
-	S2T(PICTYPE_ANIMATED_RANDOM, "AnimatedRandom");
-	CASSERT(false, "unknown pic type");
-	return PICTYPE_NORMAL;
-}
 
 
 color_t PixelToColor(
@@ -58,7 +49,7 @@ Uint32 ColorToPixel(
 {
 	const Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
 	// Manually apply the alpha as SDL seems to always set it to 0
-	return (pixel & (f->Rmask | f->Gmask| f->Bmask)) | (color.a << aShift);
+	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << aShift);
 }
 
 
@@ -93,23 +84,6 @@ void PicLoad(
 	}
 }
 
-void PicFromPicPaletted(Pic *pic, const PicPaletted *picP)
-{
-	pic->size = Vec2iNew(picP->w, picP->h);
-	pic->offset = Vec2iZero();
-	CMALLOC(pic->Data, pic->size.x * pic->size.y * sizeof *pic->Data);
-	for (int i = 0; i < pic->size.x * pic->size.y; i++)
-	{
-		unsigned char palette = *(picP->data + i);
-		pic->Data[i] = COLOR2PIXEL(PaletteToColor(palette));
-		// Special case: if the palette colour is 0, it's transparent
-		if (palette == 0)
-		{
-			pic->Data[i] = 0;
-		}
-	}
-}
-
 Pic PicCopy(const Pic *src)
 {
 	Pic p = *src;
@@ -139,7 +113,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 		for (pos.x = 0; pos.x < pic->size.x; pos.x++)
 		{
 			const Uint32 pixel = *(pic->Data + pos.x + pos.y * pic->size.x);
-			if (PIXEL2COLOR(pixel).a > 0)
+			if (pixel > 0)
 			{
 				min.x = MIN(min.x, pos.x);
 				min.y = MIN(min.y, pos.y);
@@ -207,97 +181,5 @@ bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel)
 	else
 	{
 		return isLeft || isRight || isAbove || isBelow;
-	}
-}
-
-
-void NamedSpritesInit(NamedSprites *ns, const char *name)
-{
-	CSTRDUP(ns->name, name);
-	CArrayInit(&ns->pics, sizeof(Pic));
-}
-void NamedSpritesFree(NamedSprites *ns)
-{
-	if (ns == NULL)
-	{
-		return;
-	}
-	CFREE(ns->name);
-	CA_FOREACH(Pic, p, ns->pics)
-		PicFree(p);
-	CA_FOREACH_END()
-	CArrayTerminate(&ns->pics);
-}
-
-void CPicUpdate(CPic *p, const int ticks)
-{
-	switch (p->Type)
-	{
-	case PICTYPE_ANIMATED:
-		{
-			p->u.Animated.Count += ticks;
-			CASSERT(p->u.Animated.TicksPerFrame > 0, "0 ticks per frame");
-			while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
-			{
-				p->u.Animated.Frame++;
-				p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
-			}
-			while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
-			{
-				p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
-			}
-		}
-		break;
-	case PICTYPE_ANIMATED_RANDOM:
-		p->u.Animated.Count += ticks;
-		if (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
-		{
-			p->u.Animated.Frame = rand() % (int)p->u.Animated.Sprites->size;
-			p->u.Animated.Count = 0;
-		}
-		break;
-	default:
-		// Do nothing
-		break;
-	}
-}
-const Pic *CPicGetPic(const CPic *p, direction_e d)
-{
-	switch (p->Type)
-	{
-	case PICTYPE_NORMAL:
-		return p->u.Pic;
-	case PICTYPE_DIRECTIONAL:
-		return CArrayGet(p->u.Sprites, d);
-	case PICTYPE_ANIMATED:
-	case PICTYPE_ANIMATED_RANDOM:
-		if (p->u.Animated.Frame < 0 ||
-			p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
-		{
-			return NULL;
-		}
-		return CArrayGet(p->u.Animated.Sprites, p->u.Animated.Frame);
-	default:
-		CASSERT(false, "unknown pic type");
-		return NULL;
-	}
-}
-void CPicDraw(
-	GraphicsDevice *g, const CPic *p,
-	const Vec2i pos, const CPicDrawContext *context)
-{
-	const Pic *pic = CPicGetPic(p, context->Dir);
-	if (pic == NULL)
-	{
-		return;
-	}
-	const Vec2i picPos = Vec2iAdd(pos, context->Offset);
-	if (p->UseMask)
-	{
-		BlitMasked(g, pic, picPos, p->u1.Mask, true);
-	}
-	else
-	{
-		BlitBackground(g, pic, picPos, &p->u1.Tint, true);
 	}
 }

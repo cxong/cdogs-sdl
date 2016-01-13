@@ -1,7 +1,5 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,11 +25,15 @@
 */
 #include "font.h"
 
+#include <stdio.h>
+#include <string.h>
+
 #include <SDL_image.h>
 
 #include "blit.h"
 #include "pic.h"
-#include "json_utils.h"
+#include "utils.h"
+
 
 #define FIRST_CHAR 0
 #define LAST_CHAR 255
@@ -63,72 +65,24 @@ FontAlign FontAlignOpposite(const FontAlign align)
 	}
 }
 
-void FontLoad(Font *f, const char *imgPath, const char *jsonPath)
+void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 {
-	FILE *file = NULL;
-	json_t *root = NULL;
-
 	SDL_RWops *rwops = SDL_RWFromFile(imgPath, "rb");
 	CASSERT(IMG_isPNG(rwops), "Error: font file is not PNG");
-	SDL_Surface *data = IMG_Load_RW(rwops, 0);
-	if (!data)
+	SDL_Surface *image = IMG_Load_RW(rwops, 0);
+	if (!image)
 	{
 		fprintf(stderr, "Cannot load font image: %s\n", IMG_GetError());
 		goto bail;
 	}
-
-	file = fopen(jsonPath, "r");
-	if (file == NULL)
-	{
-		printf("Error loading font JSON file '%s'\n", jsonPath);
-		goto bail;
-	}
-	if (json_stream_parse(file, &root) != JSON_OK)
-	{
-		printf("Error parsing font JSON '%s'\n", jsonPath);
-		goto bail;
-	}
-
-	FontFromImage(f, data, root);
-
-bail:
-	if (file)
-	{
-		fclose(file);
-	}
-	SDL_FreeSurface(data);
-	rwops->close(rwops);
-}
-void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
-{
-	memset(f, 0, sizeof *f);
-	CArrayInit(&f->Chars, sizeof(Pic));
-
 	if (image->format->BytesPerPixel != 4)
 	{
 		perror("Cannot load non-32-bit image");
 		fprintf(stderr, "Only 32-bit depth images supported\n");
-		return;
+		goto bail;
 	}
 
-	// Load definitions from JSON data
-	LoadVec2i(&f->Size, data, "Size");
-	CASSERT(!Vec2iIsZero(f->Size), "Cannot load font size");
-	LoadInt(&f->Stride, data, "Stride");
-
-	// Padding order is: left/top/right/bottom
-	json_t *paddingNode = json_find_first_label(data, "Padding")->child->child;
-	f->Padding.Left = atoi(paddingNode->text);
-	paddingNode = paddingNode->next;
-	f->Padding.Top = atoi(paddingNode->text);
-	paddingNode = paddingNode->next;
-	f->Padding.Right = atoi(paddingNode->text);
-	paddingNode = paddingNode->next;
-	f->Padding.Bottom = atoi(paddingNode->text);
-
-	LoadVec2i(&f->Gap, data, "Gap");
-	bool proportional = false;
-	LoadBool(&proportional, data, "Proportional");
+	CArrayInit(&f->Chars, sizeof(Pic));
 
 	// Check that the image is big enough for the dimensions
 	const Vec2i step = Vec2iNew(
@@ -136,13 +90,14 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 		f->Size.y + f->Padding.Top + f->Padding.Bottom);
 	if (step.x * f->Stride > image->w || step.y > image->h)
 	{
-		printf("Error: font image not big enough for font data "
+		fprintf(stderr,
+			"Error: font image not big enough for font data "
 			"Image %dx%d Size %dx%d Stride %d Padding %d,%d,%d,%d\n",
 			image->w, image->h,
 			f->Size.x, f->Size.y, f->Stride,
 			f->Padding.Left, f->Padding.Top,
 			f->Padding.Right, f->Padding.Bottom);
-		return;
+		goto bail;
 	}
 
 	// Load letters from image file
@@ -164,7 +119,7 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 				&p, f->Size,
 				Vec2iAdd(pos, Vec2iNew(f->Padding.Left, f->Padding.Top)),
 				image);
-			if (proportional)
+			if (isProportional)
 			{
 				PicTrim(&p, true, false);
 			}
@@ -172,6 +127,10 @@ void FontFromImage(Font *f, SDL_Surface *image, json_t *data)
 		}
 	}
 	SDL_UnlockSurface(image);
+
+bail:
+	SDL_FreeSurface(image);
+	rwops->close(rwops);
 }
 void FontTerminate(Font *f)
 {

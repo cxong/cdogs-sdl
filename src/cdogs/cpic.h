@@ -1,4 +1,6 @@
 /*
+    C-Dogs SDL
+    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
@@ -25,35 +27,68 @@
 */
 #pragma once
 
-#include <SDL_surface.h>
-
-#include "vector.h"
+#include "defs.h"
+#include "grafx.h"
+#include "pic_file.h"
+#include "pic.h"
 
 typedef struct
 {
-	Vec2i size;
-	Vec2i offset;
-	Uint32 *Data;
-} Pic;
+	Pic pic;
+	char *name;
+} NamedPic;
+typedef struct
+{
+	CArray pics;	// of Pic
+	char *name;
+} NamedSprites;
 
-extern Pic picNone;
+typedef enum
+{
+	PICTYPE_NORMAL,
+	PICTYPE_DIRECTIONAL,
+	PICTYPE_ANIMATED,
+	PICTYPE_ANIMATED_RANDOM
+} PicType;
+PicType StrPicType(const char *s);
+// Abstract drawable pic, can draw multiple types of pics
+typedef struct
+{
+	PicType Type;
+	union
+	{
+		const Pic *Pic;
+		const CArray *Sprites;	// of Pic
+		struct
+		{
+			const CArray *Sprites;	// of Pic
+			int Count;
+			int Frame;
+			int TicksPerFrame;
+		} Animated;
+	} u;
+	// Special draw options
+	bool UseMask;
+	union
+	{
+		color_t Mask;
+		HSV Tint;
+	} u1;
+} CPic;
+typedef struct
+{
+	direction_e Dir;
+	Vec2i Offset;
+} CPicDrawContext;
+typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 
-color_t PixelToColor(
-	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
-Uint32 ColorToPixel(
-	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color);
-#define PIXEL2COLOR(_p) \
-	PixelToColor(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _p)
-#define COLOR2PIXEL(_c) \
-	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _c)
+void PicFromPicPaletted(Pic *pic, const PicPaletted *picP);
 
-void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
-Pic PicCopy(const Pic *src);
-void PicFree(Pic *pic);
-int PicIsNotNone(Pic *pic);
+void NamedSpritesInit(NamedSprites *ns, const char *name);
+void NamedSpritesFree(NamedSprites *ns);
 
-// Detect unused edges and update size and offset to fit
-void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
-
-bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
+void CPicUpdate(CPic *p, const int ticks);
+const Pic *CPicGetPic(const CPic *p, direction_e d);
+void CPicDraw(
+	GraphicsDevice *g, const CPic *p,
+	const Vec2i pos, const CPicDrawContext *context);

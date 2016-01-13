@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -23,37 +23,41 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+#include "font_utils.h"
 
-#include <SDL_surface.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "vector.h"
+#include "yajl_utils.h"
 
-typedef struct
+
+void FontLoadFromJSON(Font *f, const char *imgPath, const char *jsonPath)
 {
-	Vec2i size;
-	Vec2i offset;
-	Uint32 *Data;
-} Pic;
+	yajl_val node = YAJLReadFile(jsonPath);
+	if (node == NULL)
+	{
+		fprintf(stderr, "Error parsing font JSON '%s'\n", jsonPath);
+		goto bail;
+	}
 
-extern Pic picNone;
+	memset(f, 0, sizeof *f);
+	// Load definitions from JSON data
+	YAJLVec2i(&f->Size, node, "Size");
+	YAJLInt(&f->Stride, node, "Stride");
 
-color_t PixelToColor(
-	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
-Uint32 ColorToPixel(
-	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color);
-#define PIXEL2COLOR(_p) \
-	PixelToColor(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _p)
-#define COLOR2PIXEL(_c) \
-	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _c)
+	// Padding order is: left/top/right/bottom
+	const yajl_val paddingNode = YAJLFindNode(node, "Padding");
+	f->Padding.Left = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[0]);
+	f->Padding.Top = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[1]);
+	f->Padding.Right = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[2]);
+	f->Padding.Bottom = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[3]);
 
-void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
-Pic PicCopy(const Pic *src);
-void PicFree(Pic *pic);
-int PicIsNotNone(Pic *pic);
+	YAJLVec2i(&f->Gap, node, "Gap");
+	bool proportional = false;
+	YAJLBool(&proportional, node, "Proportional");
 
-// Detect unused edges and update size and offset to fit
-void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
+	FontLoad(f, imgPath, proportional);
 
-bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
+bail:
+	yajl_tree_free(node);
+}

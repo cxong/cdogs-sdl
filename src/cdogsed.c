@@ -63,7 +63,7 @@
 #include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
-#include <cdogs/font.h>
+#include <cdogs/font_utils.h>
 #include <cdogs/grafx.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/map_archive.h>
@@ -1338,7 +1338,7 @@ int main(int argc, char *argv[])
 	}
 	GetDataFilePath(buf, "graphics/font.png");
 	GetDataFilePath(buf2, "graphics/font.json");
-	FontLoad(&gFont, buf, buf2);
+	FontLoadFromJSON(&gFont, buf, buf2);
 	GetDataFilePath(buf, "graphics");
 	PicManagerLoadDir(&gPicManager, buf);
 

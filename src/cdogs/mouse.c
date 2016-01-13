@@ -33,6 +33,7 @@
 
 #include "blit.h"
 #include "config.h"
+#include "defs.h"
 
 #define MOUSE_REPEAT_TICKS 150
 #define MOUSE_MOVE_DEAD_ZONE 12

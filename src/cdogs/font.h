@@ -1,6 +1,4 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
     Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
@@ -27,8 +25,7 @@
 */
 #pragma once
 
-#include <json/json.h>
-#include <SDL_video.h>
+#include <SDL_surface.h>
 
 #include "c_array.h"
 #include "vector.h"
@@ -72,8 +69,7 @@ FontOpts FontOptsNew(void);
 
 FontAlign FontAlignOpposite(const FontAlign align);
 
-void FontLoad(Font *f, const char *imgPath, const char *jsonPath);
-void FontFromImage(Font *f, SDL_Surface *image, json_t *data);
+void FontLoad(Font *f, const char *imgPath, const bool isProportional);
 void FontTerminate(Font *f);
 
 int FontW(const char c);

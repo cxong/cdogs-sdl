@@ -27,7 +27,7 @@
 */
 #pragma once
 
-#include "pic.h"
+#include "cpic.h"
 #include "pics.h"
 
 typedef struct

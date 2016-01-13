@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2014-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,35 +25,6 @@
 */
 #pragma once
 
-#include <SDL_surface.h>
+#include "font.h"
 
-#include "vector.h"
-
-typedef struct
-{
-	Vec2i size;
-	Vec2i offset;
-	Uint32 *Data;
-} Pic;
-
-extern Pic picNone;
-
-color_t PixelToColor(
-	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
-Uint32 ColorToPixel(
-	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color);
-#define PIXEL2COLOR(_p) \
-	PixelToColor(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _p)
-#define COLOR2PIXEL(_c) \
-	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _c)
-
-void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
-Pic PicCopy(const Pic *src);
-void PicFree(Pic *pic);
-int PicIsNotNone(Pic *pic);
-
-// Detect unused edges and update size and offset to fit
-void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
-
-bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
+void FontLoadFromJSON(Font *f, const char *imgPath, const char *jsonPath);

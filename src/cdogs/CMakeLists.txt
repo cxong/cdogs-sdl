@@ -28,6 +28,7 @@ set(CDOGS_SOURCES
 	config_io.c
 	config_json.c
 	config_old.c
+	cpic.c
 	damage.c
 	defs.c
 	door.c
@@ -37,6 +38,7 @@ set(CDOGS_SOURCES
 	events.c
 	files.c
 	font.c
+	font_utils.c
 	game_events.c
 	game_loop.c
 	game_mode.c
@@ -86,7 +88,8 @@ set(CDOGS_SOURCES
 	triggers.c
 	utils.c
 	vector.c
-	weapon.c)
+	weapon.c
+	yajl_utils.c)
 set(CDOGS_HEADERS
 	actor_placement.h
 	actors.h
@@ -111,6 +114,7 @@ set(CDOGS_HEADERS
 	config_io.h
 	config_json.h
 	config_old.h
+	cpic.h
 	damage.h
 	defs.h
 	door.h
@@ -120,6 +124,7 @@ set(CDOGS_HEADERS
 	events.h
 	files.h
 	font.h
+	font_utils.h
 	game_events.h
 	game_loop.h
 	game_mode.h
@@ -171,7 +176,8 @@ set(CDOGS_HEADERS
 	triggers.h
 	utils.h
 	vector.h
-	weapon.h)
+	weapon.h
+	yajl_utils.h)
 set(NANOPB_SOURCES
 	proto/msg.pb.c
     proto/nanopb/pb_common.c
@@ -194,6 +200,8 @@ include_directories(proto/nanopb)
 
 add_subdirectory(SDL_JoystickButtonNames)
 
+add_subdirectory(yajl)
+
 add_library(cdogs STATIC
 	${CDOGS_SOURCES} ${CDOGS_HEADERS}
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
@@ -206,6 +214,7 @@ endif()
 target_link_libraries(cdogs
 	json
 	SDL_joystickbuttonnames
+	yajl_s
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${SDL2_MIXER_LIBRARIES}

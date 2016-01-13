@@ -84,3 +84,5 @@ tmp
 *~*.cdogscpn
 Thumbs.db
 .config/
+src/cdogs/include/
+src/cdogs/share/
