@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,13 +38,7 @@
 #include "player.h"
 
 #define NET_PORT 34219
-
-// Used in printf statements
-#define NET_IP_TO_CIDR_FORMAT(_ip)\
-	(_ip)& 0xFF,\
-	((_ip) >> 8) & 0xFF,\
-	((_ip) >> 16) & 0xFF, \
-	((_ip) >> 24) & 0xFF
+#define NET_LISTEN_PORT 34220
 
 // Messages
 

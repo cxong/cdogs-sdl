@@ -20,7 +20,7 @@ CMakeFiles/
 Makefile
 .metadata/
 RemoteSystemsTempFiles/
-cdogs-sdl.dir/
+*.dir/
 CPack*
 _CPack_Packages/
 CTestTestfile.cmake

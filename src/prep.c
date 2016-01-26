@@ -110,9 +110,10 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data);
 bool ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
-	sprintf(buf, "Connecting to %u.%u.%u.%u:%u...",
-		NET_IP_TO_CIDR_FORMAT(gNetClient.peer->address.host),
-		gNetClient.peer->address.port);
+	char ipbuf[256];
+	enet_address_get_host_ip(&gNetClient.peer->address, ipbuf, sizeof ipbuf);
+	sprintf(buf, "Connecting to %s:%u...",
+		ipbuf, gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
 static void CheckCampaignDefComplete(menu_t *menu, void *data)

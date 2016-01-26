@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,13 @@ typedef struct
 	int ClientId;
 	int FirstPlayerUID;
 	bool Ready;
-	bool FoundLANServer;
-	bool FindingLANServer;
+	// Socket used to scan for LAN servers
+	ENetSocket scanner;
+	// Only scan for a period; if > 0 then we are scanning
+	int ScanTicks;
+	// Address of scanned LAN server
+	// TODO: handle multiple scanned addresses - menu to select?
+	ENetAddress ScannedAddr;
 } NetClient;
 
 extern NetClient gNetClient;
@@ -60,5 +65,3 @@ void NetClientFlush(NetClient *n);
 void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data);
 
 bool NetClientIsConnected(const NetClient *n);
-
-ENetAddress NetClientLANAddress(void);

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@
 typedef struct
 {
 	ENetHost *server;
+	// The socket for listening and responding to client scans
+	ENetSocket listen;
 	int PrevCmd;
 	int Cmd;
 	int peerId;	// auto-incrementing id for the next connected peer

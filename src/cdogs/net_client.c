@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@ NetClient gNetClient;
 
 
 #define CONNECTION_WAIT_MS 5000
-#define FIND_CONNECTION_WAIT_MS 1000
+#define FIND_CONNECTION_WAIT_SECONDS 1
 #define TIMEOUT_MS 5000
 
 
@@ -53,6 +53,7 @@ void NetClientInit(NetClient *n)
 {
 	memset(n, 0, sizeof *n);
 	n->ClientId = -1;	// -1 is unset
+	n->scanner = ENET_SOCKET_NULL;
 	n->client = enet_host_create(NULL, 1, 2,
 		57600 / 8 /* 56K modem with 56 Kbps downstream bandwidth */,
 		14400 / 8 /* 56K modem with 14 Kbps upstream bandwidth */);
@@ -67,42 +68,69 @@ void NetClientTerminate(NetClient *n)
 	n->peer = NULL;
 	enet_host_destroy(n->client);
 	n->client = NULL;
+	if (n->scanner != ENET_SOCKET_NULL)
+	{
+		if (enet_socket_shutdown(n->scanner, ENET_SOCKET_SHUTDOWN_READ_WRITE) != 0)
+		{
+			LOG(LM_NET, LL_ERROR, "Failed to shutdown listen socket");
+		}
+		enet_socket_destroy(n->scanner);
+		n->scanner = ENET_SOCKET_NULL;
+	}
 }
 
 void NetClientFindLANServers(NetClient *n)
 {
-	if (n->client == NULL)
+	// Create scanner socket if it has not been created yet
+	if (n->scanner == ENET_SOCKET_NULL)
 	{
-		LOG(LM_NET, LL_ERROR, "cannot look for LAN servers; host not created");
-		return;
-	}
-	if (n->peer)
-	{
-		LOG(LM_NET, LL_TRACE, "cannot look for LAN servers when connected");
-		return;
+		n->scanner = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+		if (enet_socket_set_option(n->scanner, ENET_SOCKOPT_BROADCAST, 1) != 0)
+		{
+			LOG(LM_NET, LL_ERROR, "Failed to enable broadcast socket");
+			goto bail;
+		}
 	}
 
-	// Set to finding mode; here we only connect and disconnect as soon as
-	// it is successful
-	n->FindingLANServer = true;
-	n->FoundLANServer = false;
-
-	ENetAddress addr = NetClientLANAddress();
-	n->peer = enet_host_connect(n->client, &addr, 2, 0);
-	if (n->peer == NULL)
+	// If we've already begun scanning, wait for that to finish
+	if (n->ScanTicks > 0)
 	{
-		LOG(LM_NET, LL_INFO, "failed to connect to LAN servers");
+		return;
 	}
-	enet_peer_timeout(n->peer, 0, 0, FIND_CONNECTION_WAIT_MS);
+	n->ScanTicks = FIND_CONNECTION_WAIT_SECONDS * FPS_FRAMELIMIT;
+	n->ScannedAddr.host = 0;
+	n->ScannedAddr.port = 0;
+
+	// Send the broadcast message
+	ENetAddress addr;
+	addr.host = ENET_HOST_BROADCAST;
+	addr.port = NET_LISTEN_PORT;
+	// Send a dummy payload
+	char data = 42;
+	ENetBuffer sendbuf;
+	sendbuf.data = &data;
+	sendbuf.dataLength = 1;
+	if (enet_socket_send(n->scanner, &addr, &sendbuf, 1) !=
+		(int)sendbuf.dataLength)
+	{
+		LOG(LM_NET, LL_ERROR, "Failed to scan for LAN server");
+		goto bail;
+	}
+
+	return;
+
+bail:
+	enet_socket_destroy(n->scanner);
+	n->scanner = ENET_SOCKET_NULL;
 }
 
 void NetClientConnect(NetClient *n, const ENetAddress addr)
 {
-	// Note: we can be connected from searching for servers
 	NetClientDisconnect(n);
 
-	LOG(LM_NET, LL_INFO, "Connecting client to %u.%u.%u.%u:%d...",
-		NET_IP_TO_CIDR_FORMAT(addr.host), (int)addr.port);
+	char buf[256];
+	enet_address_get_host_ip(&addr, buf, sizeof buf);
+	LOG(LM_NET, LL_INFO, "Connecting client to %s:%u...", buf, addr.port);
 
 	/* Initiate the connection, allocating the two channels 0 and 1. */
 	n->peer = enet_host_connect(n->client, &addr, 2, 0);
@@ -152,12 +180,17 @@ void NetClientDisconnect(NetClient *n)
 }
 
 static void OnReceive(NetClient *n, ENetEvent event);
+static void Scanning(NetClient *n);
 void NetClientPoll(NetClient *n)
 {
+	// Check to see if LAN servers have been scanned
+	Scanning(n);
+
 	if (!n->client || !n->peer)
 	{
 		return;
 	}
+
 	// Service the connection
 	int check;
 	do
@@ -174,25 +207,12 @@ void NetClientPoll(NetClient *n)
 		{
 			switch (event.type)
 			{
-			case ENET_EVENT_TYPE_CONNECT:
-				n->FoundLANServer = true;
-				if (n->FindingLANServer)
-				{
-					LOG(LM_NET, LL_INFO,
-						"found server; disconnecting %u.%u.%u.%u:%d",
-						NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
-						(int)event.peer->address.port);
-					// Disconnect politely and wait for the disconnection event
-					enet_peer_disconnect(n->peer, 0);
-				}
-				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				LOG(LM_NET, LL_INFO, "disconnected");
 				NetClientDisconnect(n);
-				n->FindingLANServer = false;
 				return;
 			default:
 				LOG(LM_NET, LL_ERROR, "Unexpected event type(%d)", (int)event.type);
@@ -200,6 +220,43 @@ void NetClientPoll(NetClient *n)
 			}
 		}
 	} while (check > 0);
+}
+static void Scanning(NetClient *n)
+{
+	// If it's been too long, stop scanning
+	if (n->ScanTicks <= 0)
+	{
+		return;
+	}
+	n->ScanTicks--;
+
+	// Check for the reply, which will give us the server address
+	ENetSocketSet set;
+	ENET_SOCKETSET_EMPTY(set);
+	ENET_SOCKETSET_ADD(set, n->scanner);
+	if (enet_socketset_select(n->scanner, &set, NULL, 0) <= 0)
+	{
+		return;
+	}
+
+	// Receive the reply
+	enet_uint16 recvport;
+	ENetBuffer recvbuf;
+	recvbuf.data = &recvport;
+	recvbuf.dataLength = sizeof recvport;
+	const int recvlen = enet_socket_receive(
+		n->scanner, &n->ScannedAddr, &recvbuf, 1);
+	if (recvlen <= 0)
+	{
+		return;
+	}
+	n->ScannedAddr.port = NET_PORT;
+	char ipbuf[256];
+	enet_address_get_host_ip(&n->ScannedAddr, ipbuf, sizeof ipbuf);
+	LOG(LM_NET, LL_DEBUG, "Found server at %s:%u", ipbuf, n->ScannedAddr.port);
+
+	// Stop scanning
+	n->ScanTicks = 0;
 }
 static void OnReceive(NetClient *n, ENetEvent event)
 {
@@ -345,15 +402,4 @@ void NetClientSendMsg(NetClient *n, const GameEventType e, const void *data)
 bool NetClientIsConnected(const NetClient *n)
 {
 	return n->client && n->peer;
-}
-
-ENetAddress NetClientLANAddress(void)
-{
-	ENetAddress addr;
-	if (enet_address_set_host(&addr, "127.0.0.1") != 0)
-	{
-		CASSERT(false, "failed to set host");
-	}
-	addr.port = NET_PORT;
-	return addr;
 }

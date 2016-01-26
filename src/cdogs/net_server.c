@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -62,33 +62,67 @@ void NetServerReset(NetServer *n)
 	n->PrevCmd = n->Cmd = 0;
 }
 
+static ENetHost *HostOpen(void);
+static bool ListenSocketTryOpen(ENetSocket *listen);
 void NetServerOpen(NetServer *n)
 {
 	if (n->server)
 	{
 		return;
 	}
-	/* Bind the server to the default localhost.     */
-	/* A specific host address can be specified by   */
-	/* enet_address_set_host (& address, "x.x.x.x"); */
+	
+	n->server = HostOpen();
+	if (n->server == NULL)
+	{
+		return;
+	}
+
+	// Start listen socket, to respond to UDP scans
+	if (!ListenSocketTryOpen(&n->listen))
+	{
+		return;
+	}
+}
+static ENetHost *HostOpen(void)
+{
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
 	address.port = NET_PORT;
-	n->server = enet_host_create(
-		&address /* the address to bind the server host to */,
-		NET_SERVER_MAX_CLIENTS,
-		2      /* allow up to 2 channels to be used, 0 and 1 */,
-		0      /* assume any amount of incoming bandwidth */,
-		0      /* assume any amount of outgoing bandwidth */);
-	if (n->server == NULL)
+	ENetHost *host = enet_host_create(&address, NET_SERVER_MAX_CLIENTS, 2, 0, 0);
+	if (host == NULL)
 	{
 		LOG(LM_NET, LL_ERROR, "cannot create server host");
-		return;
+		return NULL;
 	}
-	LOG(LM_NET, LL_INFO, "starting server on %u.%u.%u.%u:%d",
-		NET_IP_TO_CIDR_FORMAT(n->server->address.host),
-		(int)n->server->address.port);
+	else
+	{
+		char buf[256];
+		enet_address_get_host_ip(&host->address, buf, sizeof buf);
+		LOG(LM_NET, LL_INFO, "starting server on %s:%u",
+			buf, host->address.port);
+	}
+	return host;
 }
+static bool ListenSocketTryOpen(ENetSocket *listen)
+{
+	*listen = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+	ENetAddress addr;
+	addr.host = ENET_HOST_ANY;
+	addr.port = NET_LISTEN_PORT;
+	if (enet_socket_bind(*listen, &addr) != 0)
+	{
+		LOG(LM_NET, LL_ERROR, "failed to bind listen socket");
+		return false;
+	}
+	if (enet_socket_get_address(*listen, &addr) != 0)
+	{
+		LOG(LM_NET, LL_ERROR, "cannot get listen socket address");
+		return false;
+	}
+	LOG(LM_NET, LL_INFO, "listening for scans on port %u", addr.port);
+	return true;
+}
+
 void NetServerClose(NetServer *n)
 {
 	if (n->server)
@@ -103,7 +137,7 @@ void NetServerClose(NetServer *n)
 	n->server = NULL;
 }
 
-static void OnConnect(NetServer *n, ENetEvent event);
+static void PollListener(NetServer *n);
 static void OnReceive(NetServer *n, ENetEvent event);
 void NetServerPoll(NetServer *n)
 {
@@ -111,6 +145,9 @@ void NetServerPoll(NetServer *n)
 	{
 		return;
 	}
+
+	// Check our listening socket for scanning clients
+	PollListener(n);
 
 	n->PrevCmd = n->Cmd;
 	n->Cmd = 0;
@@ -128,13 +165,14 @@ void NetServerPoll(NetServer *n)
 		}
 		else if (check > 0)
 		{
+			char buf[256];
 			switch (event.type)
 			{
 			case ENET_EVENT_TYPE_CONNECT:
-				// Do nothing; this may just be clients scanning the server
-				LOG(LM_NET, LL_INFO, "client connection from %u.%u.%u.%u:%d",
-					NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
-					(int)event.peer->address.port);
+				enet_address_get_host_ip(
+					&event.peer->address, buf, sizeof buf);
+				LOG(LM_NET, LL_INFO, "client connection from %s:%u",
+					buf, event.peer->address.port);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
@@ -148,10 +186,10 @@ void NetServerPoll(NetServer *n)
 						CFREE(event.peer->data);
 						event.peer->data = NULL;
 					}
-					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %u.%u.%u.%u:%d",
-						peerId,
-						NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
-						(int)event.peer->address.port);
+					enet_address_get_host_ip(
+						&event.peer->address, buf, sizeof buf);
+					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %s:%u",
+						peerId, buf, event.peer->address.port);
 					// Remove client's players
 					for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 					{
@@ -170,34 +208,39 @@ void NetServerPoll(NetServer *n)
 
 	NetServerFlush(n);
 }
-static void OnConnect(NetServer *n, ENetEvent event)
+static void PollListener(NetServer *n)
 {
-	LOG(LM_NET, LL_INFO, "new client connected from %u.%u.%u.%u:%d",
-		NET_IP_TO_CIDR_FORMAT(event.peer->address.host),
-		(int)event.peer->address.port);
-	/* Store any relevant client information here. */
-	CMALLOC(event.peer->data, sizeof(NetPeerData));
-	const int peerId = n->peerId;
-	((NetPeerData *)event.peer->data)->Id = peerId;
-	n->peerId++;
+	// Check for data to recv
+	ENetSocketSet set;
+	ENET_SOCKETSET_EMPTY(set);
+	ENET_SOCKETSET_ADD(set, n->listen);
+	if (enet_socketset_select(n->listen, &set, NULL, 0) <= 0)
+	{
+		return;
+	}
 
-	// Send the client ID
-	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
-	NClientId cid;
-	cid.Id = peerId;
-	cid.FirstPlayerUID = (peerId + 1) * MAX_LOCAL_PLAYERS;
-	NetServerSendMsg(n, peerId, GAME_EVENT_CLIENT_ID, &cid);
-
-	// Send the current campaign details over
-	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
-	NCampaignDef def = NMakeCampaignDef(&gCampaign);
-	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
-
-	SoundPlay(&gSoundDevice, StrSound("hahaha"));
-	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
-
-	NetServerFlush(n);
+	ENetAddress addr;
+	char buf;
+	ENetBuffer recvbuf;
+	recvbuf.data = &buf;
+	recvbuf.dataLength = 1;
+	const int recvlen = enet_socket_receive(n->listen, &addr, &recvbuf, 1);
+	if (recvlen <= 0)
+	{
+		return;
+	}
+	char addrbuf[256];
+	enet_address_get_host_ip(&addr, addrbuf, sizeof addrbuf);
+	LOG(LM_NET, LL_DEBUG, "listener received from %s:%u", addrbuf, addr.port);
+	// Reply to scanner client with the port of the server host
+	recvbuf.data = &n->server->address.port;
+	recvbuf.dataLength = sizeof n->server->address.port;
+	if (enet_socket_send(n->listen, &addr, &recvbuf, 1) != (int)recvbuf.dataLength)
+	{
+		LOG(LM_NET, LL_ERROR, "Failed to reply to scanner");
+	}
 }
+static void OnConnect(NetServer *n, ENetEvent event);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
 	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
@@ -273,6 +316,35 @@ static void OnReceive(NetServer *n, ENetEvent event)
 		}
 	}
 	enet_packet_destroy(event.packet);
+}
+static void OnConnect(NetServer *n, ENetEvent event)
+{
+	char buf[256];
+	enet_address_get_host_ip(&event.peer->address, buf, sizeof buf);
+	LOG(LM_NET, LL_INFO, "new client connected from %s:%u",
+		buf, event.peer->address.port);
+	/* Store any relevant client information here. */
+	CMALLOC(event.peer->data, sizeof(NetPeerData));
+	const int peerId = n->peerId;
+	((NetPeerData *)event.peer->data)->Id = peerId;
+	n->peerId++;
+
+	// Send the client ID
+	LOG(LM_NET, LL_DEBUG, "NetServer: sending client ID %d", peerId);
+	NClientId cid;
+	cid.Id = peerId;
+	cid.FirstPlayerUID = (peerId + 1) * MAX_LOCAL_PLAYERS;
+	NetServerSendMsg(n, peerId, GAME_EVENT_CLIENT_ID, &cid);
+
+	// Send the current campaign details over
+	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
+	NCampaignDef def = NMakeCampaignDef(&gCampaign);
+	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
+
+	SoundPlay(&gSoundDevice, StrSound("hahaha"));
+	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
+
+	NetServerFlush(n);
 }
 
 void NetServerFlush(NetServer *n)

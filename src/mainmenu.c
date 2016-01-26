@@ -302,7 +302,7 @@ static void JoinLANGame(menu_t *menu, void *data)
 {
 	MenuSystem *ms = data;
 	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
-	NetClientConnect(&gNetClient, NetClientLANAddress());
+	NetClientConnect(&gNetClient, gNetClient.ScannedAddr);
 	if (!NetClientIsConnected(&gNetClient))
 	{
 		LOG(LM_MAIN, LL_INFO, "failed to connect to LAN game");
@@ -320,9 +320,9 @@ static void JoinLANGame(menu_t *menu, void *data)
 static void CheckLANServers(menu_t *menu, void *data)
 {
 	CheckLANServerData *cdata = data;
-	if (!gNetClient.FindingLANServer || !NetClientIsConnected(&gNetClient))
+	if (gNetClient.ScanTicks <= 0)
 	{
-		if (gNetClient.FoundLANServer)
+		if (gNetClient.ScannedAddr.host != 0)
 		{
 			MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
 		}
