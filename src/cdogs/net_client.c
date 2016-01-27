@@ -299,13 +299,7 @@ static void Scanning(NetClient *n)
 	n->ScanTicks--;
 
 	// Check to see if we have received the scan reply
-	if (!TryRecvScanForServerPort(n, 0, &n->ScannedAddr))
-	{
-		return;
-	}
-
-	// Stop scanning
-	n->ScanTicks = 0;
+	TryRecvScanForServerPort(n, 0, &n->ScannedAddr);
 }
 static void OnReceive(NetClient *n, ENetEvent event)
 {

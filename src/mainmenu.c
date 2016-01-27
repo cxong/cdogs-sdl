@@ -319,13 +319,13 @@ static void JoinLANGame(menu_t *menu, void *data)
 static void CheckLANServers(menu_t *menu, void *data)
 {
 	CheckLANServerData *cdata = data;
+	if (gNetClient.ScannedAddr.host != 0)
+	{
+		MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
+	}
 	if (gNetClient.ScanTicks <= 0)
 	{
-		if (gNetClient.ScannedAddr.host != 0)
-		{
-			MenuEnableSubmenu(menu, cdata->MenuJoinIndex);
-		}
-		else
+		if (gNetClient.ScannedAddr.host == 0)
 		{
 			// We've finished looking for LAN servers and haven't found any
 			MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
