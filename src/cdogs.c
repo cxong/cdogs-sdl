@@ -120,7 +120,7 @@ void PrintTitle(void)
 
 	printf("Original Code Copyright Ronny Wester 1995\n");
 	printf("Game Data Copyright Ronny Wester 1995\n");
-	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2015\n\n");
+	printf("SDL Port by Jeremy Chin, Lucas Martin-King and Cong Xu, Copyright 2003-2016\n\n");
 }
 
 static void PrintHelp(void)
@@ -318,10 +318,6 @@ int main(int argc, char *argv[])
 				{
 					printf("Error: unknown host %s\n", optarg);
 				}
-				else
-				{
-					connectAddr.port = NET_PORT;
-				}
 				break;
 			default:
 				PrintHelp();
@@ -457,16 +453,15 @@ int main(int argc, char *argv[])
 			LOG(LM_MAIN, LL_ERROR, "Failed to load campaign %s", loadCampaign);
 		}
 	}
-	else if (connectAddr.port != 0)
+	else if (connectAddr.host != 0)
 	{
-		NetClientConnect(&gNetClient, connectAddr);
-		if (!NetClientIsConnected(&gNetClient))
+		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
-			printf("Failed to connect\n");
+			ScreenWaitForCampaignDef();
 		}
 		else
 		{
-			ScreenWaitForCampaignDef();
+			printf("Failed to connect\n");
 		}
 	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");

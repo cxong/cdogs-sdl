@@ -57,7 +57,9 @@ void NetClientTerminate(NetClient *n);
 // NetClient's boolean
 void NetClientFindLANServers(NetClient *n);
 // Attempt to connect to a server
-void NetClientConnect(NetClient *n, const ENetAddress addr);
+bool NetClientTryConnect(NetClient *n, const ENetAddress addr);
+// Attempt to scan a host for a game server and connect
+bool NetClientTryScanAndConnect(NetClient *n, const enet_uint32 host);
 void NetClientDisconnect(NetClient *n);
 void NetClientPoll(NetClient *n);
 void NetClientFlush(NetClient *n);

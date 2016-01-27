@@ -37,8 +37,7 @@
 #include "game_events.h"
 #include "player.h"
 
-#define NET_PORT 34219
-#define NET_LISTEN_PORT 34220
+#define NET_LISTEN_PORT 34219
 
 // Messages
 

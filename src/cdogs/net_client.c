@@ -79,12 +79,36 @@ void NetClientTerminate(NetClient *n)
 	}
 }
 
+static bool TryScanHost(NetClient *n, const enet_uint32 host);
 void NetClientFindLANServers(NetClient *n)
+{
+	// If we've already begun scanning, wait for that to finish
+	if (n->ScanTicks > 0)
+	{
+		return;
+	}
+
+	// Scan for servers on LAN using broadcast host
+	if (!TryScanHost(n, ENET_HOST_BROADCAST))
+	{
+		return;
+	}
+
+	n->ScanTicks = FIND_CONNECTION_WAIT_SECONDS * FPS_FRAMELIMIT;
+	n->ScannedAddr.host = 0;
+	n->ScannedAddr.port = 0;
+}
+static bool TryScanHost(NetClient *n, const enet_uint32 host)
 {
 	// Create scanner socket if it has not been created yet
 	if (n->scanner == ENET_SOCKET_NULL)
 	{
 		n->scanner = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+		if (n->scanner == ENET_SOCKET_NULL)
+		{
+			LOG(LM_NET, LL_ERROR, "Failed to create socket");
+			goto bail;
+		}
 		if (enet_socket_set_option(n->scanner, ENET_SOCKOPT_BROADCAST, 1) != 0)
 		{
 			LOG(LM_NET, LL_ERROR, "Failed to enable broadcast socket");
@@ -92,18 +116,9 @@ void NetClientFindLANServers(NetClient *n)
 		}
 	}
 
-	// If we've already begun scanning, wait for that to finish
-	if (n->ScanTicks > 0)
-	{
-		return;
-	}
-	n->ScanTicks = FIND_CONNECTION_WAIT_SECONDS * FPS_FRAMELIMIT;
-	n->ScannedAddr.host = 0;
-	n->ScannedAddr.port = 0;
-
-	// Send the broadcast message
+	// Send the scanning message
 	ENetAddress addr;
-	addr.host = ENET_HOST_BROADCAST;
+	addr.host = host;
 	addr.port = NET_LISTEN_PORT;
 	// Send a dummy payload
 	char data = 42;
@@ -113,18 +128,19 @@ void NetClientFindLANServers(NetClient *n)
 	if (enet_socket_send(n->scanner, &addr, &sendbuf, 1) !=
 		(int)sendbuf.dataLength)
 	{
-		LOG(LM_NET, LL_ERROR, "Failed to scan for LAN server");
+		LOG(LM_NET, LL_ERROR, "Failed to scan for server");
 		goto bail;
 	}
 
-	return;
+	return true;
 
 bail:
 	enet_socket_destroy(n->scanner);
 	n->scanner = ENET_SOCKET_NULL;
+	return false;
 }
 
-void NetClientConnect(NetClient *n, const ENetAddress addr)
+bool NetClientTryConnect(NetClient *n, const ENetAddress addr)
 {
 	NetClientDisconnect(n);
 
@@ -162,11 +178,63 @@ void NetClientConnect(NetClient *n, const ENetAddress addr)
 	// Tell the server that this is a proper connection request
 	NetClientSendMsg(n, GAME_EVENT_CLIENT_CONNECT, NULL);
 
-	return;
+	return NetClientIsConnected(n);
 
 bail:
 	NetClientDisconnect(n);
+	return false;
 }
+
+static bool TryRecvScanForServerPort(
+	NetClient *n, const int timeoutMs, ENetAddress *outAddr);
+bool NetClientTryScanAndConnect(NetClient *n, const enet_uint32 host)
+{
+	if (!TryScanHost(n, host))
+	{
+		return false;
+	}
+
+	// Wait for the scan to return
+	ENetAddress addr;
+	if (!TryRecvScanForServerPort(n, CONNECTION_WAIT_MS, &addr))
+	{
+		return false;
+	}
+
+	// Connect to address
+	return NetClientTryConnect(n, addr);
+}
+static bool TryRecvScanForServerPort(
+	NetClient *n, const int timeoutMs, ENetAddress *outAddr)
+{
+	CASSERT(n->scanner != ENET_SOCKET_NULL,
+		"cannot recv scans without scanner");
+	// Check for the reply, which will give us the server address
+	ENetSocketSet set;
+	ENET_SOCKETSET_EMPTY(set);
+	ENET_SOCKETSET_ADD(set, n->scanner);
+	if (enet_socketset_select(n->scanner, &set, NULL, timeoutMs) <= 0)
+	{
+		return false;
+	}
+
+	// Receive the reply
+	enet_uint16 recvport;
+	ENetBuffer recvbuf;
+	recvbuf.data = &recvport;
+	recvbuf.dataLength = sizeof recvport;
+	const int recvlen = enet_socket_receive(n->scanner, outAddr, &recvbuf, 1);
+	if (recvlen <= 0)
+	{
+		return false;
+	}
+	outAddr->port = recvport;
+	char ipbuf[256];
+	enet_address_get_host_ip(outAddr, ipbuf, sizeof ipbuf);
+	LOG(LM_NET, LL_DEBUG, "Found server at %s:%u", ipbuf, outAddr->port);
+	return true;
+}
+
 void NetClientDisconnect(NetClient *n)
 {
 	if (n->peer)
@@ -230,30 +298,11 @@ static void Scanning(NetClient *n)
 	}
 	n->ScanTicks--;
 
-	// Check for the reply, which will give us the server address
-	ENetSocketSet set;
-	ENET_SOCKETSET_EMPTY(set);
-	ENET_SOCKETSET_ADD(set, n->scanner);
-	if (enet_socketset_select(n->scanner, &set, NULL, 0) <= 0)
+	// Check to see if we have received the scan reply
+	if (!TryRecvScanForServerPort(n, 0, &n->ScannedAddr))
 	{
 		return;
 	}
-
-	// Receive the reply
-	enet_uint16 recvport;
-	ENetBuffer recvbuf;
-	recvbuf.data = &recvport;
-	recvbuf.dataLength = sizeof recvport;
-	const int recvlen = enet_socket_receive(
-		n->scanner, &n->ScannedAddr, &recvbuf, 1);
-	if (recvlen <= 0)
-	{
-		return;
-	}
-	n->ScannedAddr.port = NET_PORT;
-	char ipbuf[256];
-	enet_address_get_host_ip(&n->ScannedAddr, ipbuf, sizeof ipbuf);
-	LOG(LM_NET, LL_DEBUG, "Found server at %s:%u", ipbuf, n->ScannedAddr.port);
 
 	// Stop scanning
 	n->ScanTicks = 0;

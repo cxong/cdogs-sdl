@@ -87,7 +87,7 @@ static ENetHost *HostOpen(void)
 {
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
-	address.port = NET_PORT;
+	address.port = ENET_PORT_ANY;
 	ENetHost *host = enet_host_create(&address, NET_SERVER_MAX_CLIENTS, 2, 0, 0);
 	if (host == NULL)
 	{
@@ -106,6 +106,16 @@ static ENetHost *HostOpen(void)
 static bool ListenSocketTryOpen(ENetSocket *listen)
 {
 	*listen = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+	if (*listen == ENET_SOCKET_NULL)
+	{
+		LOG(LM_NET, LL_ERROR, "Failed to create socket");
+		return false;
+	}
+	if (enet_socket_set_option(*listen, ENET_SOCKOPT_REUSEADDR, 1) != 0)
+	{
+		LOG(LM_NET, LL_ERROR, "Failed to enable reuse address");
+		return false;
+	}
 	ENetAddress addr;
 	addr.host = ENET_HOST_ANY;
 	addr.port = NET_LISTEN_PORT;

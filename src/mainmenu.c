@@ -302,14 +302,13 @@ static void JoinLANGame(menu_t *menu, void *data)
 {
 	MenuSystem *ms = data;
 	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
-	NetClientConnect(&gNetClient, gNetClient.ScannedAddr);
-	if (!NetClientIsConnected(&gNetClient))
+	if (NetClientTryConnect(&gNetClient, gNetClient.ScannedAddr))
 	{
-		LOG(LM_MAIN, LL_INFO, "failed to connect to LAN game");
+		ScreenWaitForCampaignDef();
 	}
 	else
 	{
-		ScreenWaitForCampaignDef();
+		LOG(LM_MAIN, LL_INFO, "failed to connect to LAN game");
 	}
 	if (!gCampaign.IsLoaded)
 	{
