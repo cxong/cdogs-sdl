@@ -242,9 +242,17 @@ static void PollListener(NetServer *n)
 	char addrbuf[256];
 	enet_address_get_host_ip(&addr, addrbuf, sizeof addrbuf);
 	LOG(LM_NET, LL_DEBUG, "listener received from %s:%u", addrbuf, addr.port);
-	// Reply to scanner client with the port of the server host
-	recvbuf.data = &n->server->address.port;
-	recvbuf.dataLength = sizeof n->server->address.port;
+	// Reply to scanner client with our server host/address
+	ServerInfo sinfo;
+	if (enet_address_get_host(
+		&n->server->address, sinfo.Hostname, sizeof sinfo.Hostname) != 0)
+	{
+		LOG(LM_NET, LL_WARN, "Failed to get hostname");
+		sinfo.Hostname[0] = '\0';
+	}
+	sinfo.Addr.port = n->server->address.port;
+	recvbuf.data = &sinfo;
+	recvbuf.dataLength = sizeof sinfo;
 	if (enet_socket_send(n->listen, &addr, &recvbuf, 1) != (int)recvbuf.dataLength)
 	{
 		LOG(LM_NET, LL_ERROR, "Failed to reply to scanner");

@@ -43,9 +43,10 @@ typedef struct
 	ENetSocket scanner;
 	// Only scan for a period; if > 0 then we are scanning
 	int ScanTicks;
-	// Address of scanned LAN server
-	// TODO: handle multiple scanned addresses - menu to select?
-	ENetAddress ScannedAddr;
+	// Addresses of scanned LAN servers
+	CArray ScannedAddrs;		// of ServerInfo
+	// Buffer of scanned addresses - new ones will be scanned here
+	CArray scannedAddrBuf;	// of ServerInfo
 } NetClient;
 
 extern NetClient gNetClient;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -90,11 +90,11 @@ void MenuSystemInit(
 	ms->align = MENU_ALIGN_CENTER;
 }
 
-void MenuDestroySubmenus(menu_t *menu);
+static void MenuTerminate(menu_t *menu);
 
 void MenuSystemTerminate(MenuSystem *ms)
 {
-	MenuDestroySubmenus(ms->root);
+	MenuTerminate(ms->root);
 	CFREE(ms->root);
 	CArrayTerminate(&ms->exitTypes);
 	CArrayTerminate(&ms->customDisplayFuncs);
@@ -203,14 +203,18 @@ void MenuReset(MenuSystem *menu)
 	menu->current = menu->root;
 }
 
-static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
+static void MoveIndexToNextEnabledSubmenu(menu_t *menu, const bool isDown)
 {
-	int firstIndex = menu->u.normal.index;
-	int isFirst = 1;
+	if (menu->u.normal.index >= (int)menu->u.normal.subMenus.size)
+	{
+		menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
+	}
+	const int firstIndex = menu->u.normal.index;
+	bool isFirst = true;
 	// Move the selection to the next non-disabled submenu
 	for (;;)
 	{
-		menu_t *currentSubmenu =
+		const menu_t *currentSubmenu =
 			CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 		if (!currentSubmenu->isDisabled)
 		{
@@ -220,7 +224,7 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, int isDown)
 		{
 			break;
 		}
-		isFirst = 0;
+		isFirst = false;
 		if (isDown)
 		{
 			menu->u.normal.index++;
@@ -244,7 +248,7 @@ void MenuDisableSubmenu(menu_t *menu, int idx)
 {
 	menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
 	subMenu->isDisabled = true;
-	MoveIndexToNextEnabledSubmenu(menu, 1);
+	MoveIndexToNextEnabledSubmenu(menu, true);
 }
 void MenuEnableSubmenu(menu_t *menu, int idx)
 {
@@ -365,7 +369,7 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 	UpdateSubmenuParentPtrs(menu);
 
 	// move cursor in case first menu item(s) are disabled
-	MoveIndexToNextEnabledSubmenu(menu, 1);
+	MoveIndexToNextEnabledSubmenu(menu, true);
 }
 
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
@@ -884,18 +888,8 @@ void MenuPlaySound(MenuSound s)
 	}
 }
 
-
-void MenuDestroy(MenuSystem *menu)
-{
-	if (menu == NULL || menu->root == NULL)
-	{
-		return;
-	}
-	MenuSystemTerminate(menu);
-	CFREE(menu);
-}
-
-void MenuDestroySubmenus(menu_t *menu)
+static void MenuTerminateSubmenus(menu_t *menu);
+static void MenuTerminate(menu_t *menu)
 {
 	if (menu == NULL)
 	{
@@ -910,13 +904,29 @@ void MenuDestroySubmenus(menu_t *menu)
 	{
 		CFREE(menu->customPostInputData);
 	}
-	if (MenuTypeHasSubMenus(menu->type))
+	MenuTerminateSubmenus(menu);
+}
+static void MenuTerminateSubmenus(menu_t *menu)
+{
+	if (!MenuTypeHasSubMenus(menu->type))
 	{
-		CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
-			MenuDestroySubmenus(subMenu);
-		CA_FOREACH_END()
-		CArrayTerminate(&menu->u.normal.subMenus);
+		return;
 	}
+	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
+		MenuTerminate(subMenu);
+	CA_FOREACH_END()
+	CArrayTerminate(&menu->u.normal.subMenus);
+}
+
+void MenuClearSubmenus(menu_t *menu)
+{
+	if (!MenuTypeHasSubMenus(menu->type))
+	{
+		CASSERT(false, "attempt to clear submenus for invalid menu type");
+		return;
+	}
+	MenuTerminateSubmenus(menu);
+	CArrayInit(&menu->u.normal.subMenus, sizeof(menu_t));
 }
 
 static int MenuOptionGetIntValue(const menu_t *menu)
@@ -1159,7 +1169,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		{
 			menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
 		}
-		MoveIndexToNextEnabledSubmenu(menu, 0);
+		MoveIndexToNextEnabledSubmenu(menu, false);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	else if (Down(cmd))
@@ -1169,7 +1179,7 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		{
 			menu->u.normal.index = 0;
 		}
-		MoveIndexToNextEnabledSubmenu(menu, 1);
+		MoveIndexToNextEnabledSubmenu(menu, true);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 	menu->u.normal.scroll =
