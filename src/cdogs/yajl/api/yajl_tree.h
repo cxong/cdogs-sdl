@@ -85,7 +85,7 @@ struct yajl_val_s
             unsigned int flags;
         } number;
         struct {
-            const char **keys; /*< Array of keys */
+			char **keys; /*< Array of keys */
             yajl_val *values; /*< Array of values. */
             size_t len; /*< Number of key-value-pairs. */
         } object;

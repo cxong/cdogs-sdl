@@ -435,7 +435,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				}
 				else
 				{
-					LOG(LM_NET, LL_ERROR, "failed to load campaign def");
+					LOG(LM_NET, LL_ERROR, "failed to load campaign def %s",
+						def.Path);
 					gCampaign.IsError = true;
 				}
 			}

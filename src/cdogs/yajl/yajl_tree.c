@@ -76,7 +76,7 @@ static void yajl_object_free (yajl_val v)
 
     for (i = 0; i < v->u.object.len; i++)
     {
-        free((char *) v->u.object.keys[i]);
+        free(v->u.object.keys[i]);
         v->u.object.keys[i] = NULL;
         yajl_tree_free (v->u.object.values[i]);
         v->u.object.values[i] = NULL;
@@ -152,7 +152,7 @@ static yajl_val context_pop(context_t *ctx)
 static int object_add_keyval(context_t *ctx,
                              yajl_val obj, char *key, yajl_val value)
 {
-    const char **tmpk;
+	char **tmpk;
     yajl_val *tmpv;
 
     /* We're checking for NULL in "context_add_value" or its callers. */
@@ -433,7 +433,7 @@ yajl_val yajl_tree_parse (const char *input,
     yajl_config(handle, yajl_allow_comments, 1);
 
     status = yajl_parse(handle,
-                        (unsigned char *) input,
+                        (const unsigned char *) input,
                         strlen (input));
     status = yajl_complete_parse (handle);
     if (status != yajl_status_ok) {
