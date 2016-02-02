@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,12 @@ void LogSetFileColor(void);
 void LogSetFuncColor(void);
 void LogResetColor(void);
 
+// Only log the file base name
+#ifdef _WIN32
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
 #define LOG(_module, _level, ...)\
 	do\
 	{\
