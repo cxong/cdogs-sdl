@@ -225,7 +225,7 @@ void LoadColor(color_t *c, json_t *node, const char *name)
 yajl_val YAJLFindNode(yajl_val node, const char *path)
 {
 	// max 256 levels
-	const char *pathSplit[256];
+	char *pathSplit[256];
 	memset(pathSplit, 0, sizeof pathSplit);
 	char *pathCopy = strdup(path);
 	char *pch = strtok(pathCopy, "/");
