@@ -1,3 +1,15 @@
+// Message returned to client when scanning a game server's listen port
+message NServerInfo {
+	required int32 ProtocolVersion = 1;
+	required uint32 ENetPort = 2;
+	required string Hostname = 3;
+	required int32 GameMode = 4;
+	required string CampaignName = 5;
+	required int32 MissionNumber = 6;
+	required int32 NumPlayers = 7;
+	required int32 MaxPlayers = 8;
+}
+
 message NClientId {
 	required uint32 Id = 1;
 	// This client's players will use UID from this number

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ typedef enum
 	GAME_MODE_DEATHMATCH,
 	GAME_MODE_QUICK_PLAY
 } GameMode;
+const char *GameModeStr(const GameMode g);
 
 bool IsIntroNeeded(const GameMode mode);
 bool IsGameOptionsNeeded(const GameMode mode);

@@ -1,3 +1,6 @@
+NServerInfo.HostName		max_size:32
+NServerInfo.CampaignName	max_size:32
+
 NCampaignDef.Path		max_size:4096
 
 NPlayerData.Name		max_size:20

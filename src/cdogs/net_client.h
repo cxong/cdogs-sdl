@@ -32,6 +32,14 @@
 
 #include "net_util.h"
 
+// Stored information about game servers scanned
+typedef struct
+{
+	NServerInfo ServerInfo;
+	ENetAddress Addr;
+	int LatencyMS;
+} ScanInfo;
+
 typedef struct
 {
 	ENetHost *client;
@@ -44,9 +52,9 @@ typedef struct
 	// Only scan for a period; if > 0 then we are scanning
 	int ScanTicks;
 	// Addresses of scanned LAN servers
-	CArray ScannedAddrs;		// of ServerInfo
+	CArray ScannedAddrs;		// of ScanInfo
 	// Buffer of scanned addresses - new ones will be scanned here
-	CArray scannedAddrBuf;	// of ServerInfo
+	CArray scannedAddrBuf;	// of ScanInfo
 } NetClient;
 
 extern NetClient gNetClient;

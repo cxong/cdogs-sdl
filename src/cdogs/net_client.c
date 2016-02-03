@@ -61,8 +61,8 @@ void NetClientInit(NetClient *n)
 	{
 		LOG(LM_NET, LL_ERROR, "cannot create ENet client host");
 	}
-	CArrayInit(&n->ScannedAddrs, sizeof(ServerInfo));
-	CArrayInit(&n->scannedAddrBuf, sizeof(ServerInfo));
+	CArrayInit(&n->ScannedAddrs, sizeof(ScanInfo));
+	CArrayInit(&n->scannedAddrBuf, sizeof(ScanInfo));
 }
 void NetClientTerminate(NetClient *n)
 {
@@ -194,7 +194,8 @@ bail:
 }
 
 static bool TryRecvScanForServerPort(
-	NetClient *n, const int timeoutMs, ServerInfo *outInfo);
+	NetClient *n, const int timeoutMs,
+	NServerInfo *outInfo, ENetAddress *outAddr);
 bool NetClientTryScanAndConnect(NetClient *n, const enet_uint32 host)
 {
 	if (!TryScanHost(n, host))
@@ -203,17 +204,19 @@ bool NetClientTryScanAndConnect(NetClient *n, const enet_uint32 host)
 	}
 
 	// Wait for the scan to return
-	ServerInfo sinfo;
-	if (!TryRecvScanForServerPort(n, CONNECTION_WAIT_MS, &sinfo))
+	NServerInfo sinfo;
+	ENetAddress addr;
+	if (!TryRecvScanForServerPort(n, CONNECTION_WAIT_MS, &sinfo, &addr))
 	{
 		return false;
 	}
 
 	// Connect to address
-	return NetClientTryConnect(n, sinfo.Addr);
+	return NetClientTryConnect(n, addr);
 }
 static bool TryRecvScanForServerPort(
-	NetClient *n, const int timeoutMs, ServerInfo *outInfo)
+	NetClient *n, const int timeoutMs,
+	NServerInfo *outInfo, ENetAddress *outAddr)
 {
 	CASSERT(n->scanner != ENET_SOCKET_NULL,
 		"cannot recv scans without scanner");
@@ -227,22 +230,32 @@ static bool TryRecvScanForServerPort(
 	}
 
 	// Receive the reply
+	uint8_t buf[1024];
 	ENetBuffer recvbuf;
-	recvbuf.data = outInfo;
-	recvbuf.dataLength = sizeof *outInfo;
-	ENetAddress addr;
-	const int recvlen = enet_socket_receive(n->scanner, &addr, &recvbuf, 1);
+	recvbuf.data = buf;
+	recvbuf.dataLength = sizeof buf;
+	const int recvlen = enet_socket_receive(n->scanner, outAddr, &recvbuf, 1);
 	if (recvlen <= 0)
 	{
 		return false;
 	}
-	// Note: it's important to get the host from ENet directly,
-	// and not from the server
-	// (the server's host is different to it than to us)
-	outInfo->Addr.host = addr.host;
+	pb_istream_t stream = pb_istream_from_buffer(buf, recvlen);
+	if (!pb_decode(&stream, NServerInfo_fields, outInfo))
+	{
+		LOG(LM_NET, LL_ERROR, "Failed to decode scan reply");
+		return false;
+	}
+	// Check the protocol version, if it doesn't match we can't connect
+	if (outInfo->ProtocolVersion != NET_PROTOCOL_VERSION)
+	{
+		LOG(LM_NET, LL_DEBUG, "Protocol mismatch; %d (theirs) != %d",
+			outInfo->ProtocolVersion, NET_PROTOCOL_VERSION);
+		return false;
+	}
+	outAddr->port = (enet_uint16)outInfo->ENetPort;
 	char ipbuf[256];
-	enet_address_get_host_ip(&outInfo->Addr, ipbuf, sizeof ipbuf);
-	LOG(LM_NET, LL_DEBUG, "Found server at %s:%u", ipbuf, outInfo->Addr.port);
+	enet_address_get_host_ip(outAddr, ipbuf, sizeof ipbuf);
+	LOG(LM_NET, LL_DEBUG, "Found server at %s:%u", ipbuf, outInfo->ENetPort);
 	return true;
 }
 
@@ -310,17 +323,20 @@ static void Scanning(NetClient *n)
 	n->ScanTicks--;
 
 	// Check to see if we have received the scan reply
-	ServerInfo sinfo;
-	while (TryRecvScanForServerPort(n, 0, &sinfo))
+	ScanInfo sinfo;
+	while (TryRecvScanForServerPort(n, 0, &sinfo.ServerInfo, &sinfo.Addr))
 	{
-		// Scan them into our buffer
+		// Save them into our buffer
+		// Calculate latency based on ticks
+		sinfo.LatencyMS =
+			(FIND_CONNECTION_WAIT_SECONDS * FPS_FRAMELIMIT - n->ScanTicks) *
+			1000 / FPS_FRAMELIMIT;
 		CArrayPushBack(&n->scannedAddrBuf, &sinfo);
 		// Also add them to the main collection, so we can find servers quickly
 		bool found = false;
-		CA_FOREACH(ServerInfo, si, n->ScannedAddrs)
+		CA_FOREACH(const ScanInfo, si, n->ScannedAddrs)
 			if (si->Addr.host == sinfo.Addr.host &&
-				si->Addr.port == sinfo.Addr.port &&
-				strcmp(si->Hostname, sinfo.Hostname) == 0)
+				si->Addr.port == sinfo.Addr.port)
 			{
 				found = true;
 				break;

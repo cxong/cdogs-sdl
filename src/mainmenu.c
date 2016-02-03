@@ -315,17 +315,22 @@ static void CreateLANServerMenuItems(menu_t *menu, void *data)
 
 	// Clear and recreate all menu items
 	MenuClearSubmenus(menu);
-	CA_FOREACH(ServerInfo, si, gNetClient.ScannedAddrs)
-		char buf[256];
-		// Limit the length of the host name
-		si->Hostname[230] = '\0';
-		// TODO: game mode, campaign/map, number of players
+	CA_FOREACH(ScanInfo, si, gNetClient.ScannedAddrs)
+		char buf[512];
 		char ipbuf[256];
 		if (enet_address_get_host_ip(&si->Addr, ipbuf, sizeof ipbuf) < 0)
 		{
 			LOG(LM_MAIN, LL_WARN, "cannot find host ip");
+			ipbuf[0] = '?';
+			ipbuf[1] = '\0';
 		};
-		sprintf(buf, "%s (%s:%u)", si->Hostname, ipbuf, si->Addr.port);
+		// e.g. "Bob's Server (123.45.67.89:12345) - Campaign: Ogre Rampage #4, p: 4/16 350ms"
+		sprintf(buf, "%s (%s:%u) - %s: %s (# %d), p: %d/%d %dms",
+			si->ServerInfo.Hostname, ipbuf, si->Addr.port,
+			GameModeStr(si->ServerInfo.GameMode),
+			si->ServerInfo.CampaignName, si->ServerInfo.MissionNumber,
+			si->ServerInfo.NumPlayers, si->ServerInfo.MaxPlayers,
+			si->LatencyMS);
 		menu_t *serverMenu = MenuCreate(buf, MENU_TYPE_RETURN);
 		serverMenu->enterSound = MENU_SOUND_START;
 		JoinLANGameData *jdata;
@@ -345,9 +350,9 @@ static void JoinLANGame(menu_t *menu, void *data)
 	{
 		goto bail;
 	}
-	const ServerInfo *sinfo = CArrayGet(
+	const ScanInfo *sinfo = CArrayGet(
 		&gNetClient.ScannedAddrs, jdata->AddrIndex);
-	LOG(LM_MAIN, LL_INFO, "joining LAN game (%s)...", sinfo->Hostname);
+	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
 	if (NetClientTryConnect(&gNetClient, sinfo->Addr))
 	{
 		ScreenWaitForCampaignDef();

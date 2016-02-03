@@ -183,6 +183,8 @@ set(NANOPB_SOURCES
     proto/nanopb/pb_common.c
     proto/nanopb/pb_decode.c
     proto/nanopb/pb_encode.c
+	proto/msg.options
+	proto/msg.proto
 )
 set(NANOPB_HEADERS
 	proto/msg.pb.h

@@ -39,14 +39,7 @@
 
 #define NET_LISTEN_PORT 34219
 
-// The reply that the server will send to the client scan
-// Note that numeric types should be set to network byte order
-// TODO: some more server information, like game mode, campaign/map, number of players
-typedef struct
-{
-	char Hostname[1024];
-	ENetAddress Addr;
-} ServerInfo;
+#define NET_PROTOCOL_VERSION 0
 
 // Messages
 

@@ -75,7 +75,7 @@ bool CampaignEntryTryLoad(
 	CSTRDUP(entry->Filename, PathGetBasename(path));
 	// Get relative path for the campaign entry, so when we transmit it to
 	// network clients they can load it regardless of install path
-	char pathBuf[CDOGS_FILENAME_MAX];
+	char pathBuf[CDOGS_PATH_MAX];
 	RelPathFromCWD(pathBuf, path);
 	CSTRDUP(entry->Path, pathBuf);
 	entry->NumMissions = numMissions;

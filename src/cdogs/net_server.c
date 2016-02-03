@@ -82,6 +82,15 @@ void NetServerOpen(NetServer *n)
 	{
 		return;
 	}
+
+	// Save limited length hostname for LAN scanners
+	// This is because getting hostname locally is much faster
+	if (enet_address_get_host(
+		&n->server->address, n->hostname, sizeof n->hostname) != 0)
+	{
+		LOG(LM_NET, LL_WARN, "Failed to get hostname");
+		n->hostname[0] = '\0';
+	}
 }
 static ENetHost *HostOpen(void)
 {
@@ -243,16 +252,27 @@ static void PollListener(NetServer *n)
 	enet_address_get_host_ip(&addr, addrbuf, sizeof addrbuf);
 	LOG(LM_NET, LL_DEBUG, "listener received from %s:%u", addrbuf, addr.port);
 	// Reply to scanner client with our server host/address
-	ServerInfo sinfo;
-	if (enet_address_get_host(
-		&n->server->address, sinfo.Hostname, sizeof sinfo.Hostname) != 0)
-	{
-		LOG(LM_NET, LL_WARN, "Failed to get hostname");
-		sinfo.Hostname[0] = '\0';
-	}
-	sinfo.Addr.port = n->server->address.port;
-	recvbuf.data = &sinfo;
-	recvbuf.dataLength = sizeof sinfo;
+	NServerInfo sinfo;
+	sinfo.ProtocolVersion = NET_PROTOCOL_VERSION;
+	sinfo.ENetPort = n->server->address.port;
+	sinfo.Hostname[0] = '\0';
+	strncat(sinfo.Hostname, n->hostname, sizeof sinfo.Hostname - 1);
+	sinfo.GameMode = gCampaign.Entry.Mode;
+	sinfo.CampaignName[0] = '\0';
+	strncat(sinfo.CampaignName, gCampaign.Entry.Info,
+		sizeof sinfo.CampaignName - 1);
+	sinfo.MissionNumber = gCampaign.MissionIndex + 1;
+	sinfo.NumPlayers = GetNumPlayers(PLAYER_ANY, false, false);
+	sinfo.MaxPlayers =
+		NET_SERVER_MAX_CLIENTS * MAX_LOCAL_PLAYERS +
+		GetNumPlayers(PLAYER_ANY, false, true);
+	// Encode our packet
+	uint8_t encbuf[1024];
+	pb_ostream_t stream = pb_ostream_from_buffer(encbuf, sizeof encbuf);
+	const bool status = pb_encode(&stream, NServerInfo_fields, &sinfo);
+	CASSERT(status, "Failed to encode pb");
+	recvbuf.data = encbuf;
+	recvbuf.dataLength = stream.bytes_written;
 	if (enet_socket_send(n->listen, &addr, &recvbuf, 1) != (int)recvbuf.dataLength)
 	{
 		LOG(LM_NET, LL_ERROR, "Failed to reply to scanner");
