@@ -208,11 +208,6 @@ add_library(cdogs STATIC
 	${CDOGS_SOURCES} ${CDOGS_HEADERS}
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
 
-# libSDLMain comes with libSDL if needed on certain platforms
-if(NOT SDLMAIN_LIBRARY)
-  set(SDLMAIN_LIBRARY "")
-endif()
-
 target_link_libraries(cdogs
 	json
 	SDL_joystickbuttonnames
@@ -220,5 +215,4 @@ target_link_libraries(cdogs
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${SDL2_MIXER_LIBRARIES}
-	${SDLMAIN_LIBRARY}
 	${ENet_LIBRARIES})

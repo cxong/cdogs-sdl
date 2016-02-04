@@ -5,6 +5,7 @@
 
 #include <SDL_image.h>
 #include <config.h>
+#include <grafx.h>
 
 
 // Stubs

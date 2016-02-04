@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -98,4 +98,8 @@ bool PlayerIsLocal(const int uid);
 void PlayerScore(PlayerData *p, const int points);
 // Return false if player already assigned this input device
 bool PlayerTrySetInputDevice(
+	PlayerData *p, const input_device_e d, const int idx);
+// Return false if player already assigned a device,
+// or this device/index is already used by another player
+bool PlayerTrySetUnusedInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);

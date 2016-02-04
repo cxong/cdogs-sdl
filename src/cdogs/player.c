@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -419,4 +419,19 @@ bool PlayerTrySetInputDevice(
 	p->inputDevice = d;
 	p->deviceIndex = idx;
 	return true;
+}
+
+bool PlayerTrySetUnusedInputDevice(
+	PlayerData *p, const input_device_e d, const int idx)
+{
+	// Check that player's input device is unassigned
+	if (p->inputDevice != INPUT_DEVICE_UNSET) return false;
+	// Check that no players use this input device
+	CA_FOREACH(PlayerData, pOther, gPlayerDatas)
+		if (pOther->inputDevice == d && p->deviceIndex == idx)
+		{
+			return false;
+		}
+	CA_FOREACH_END()
+	return PlayerTrySetInputDevice(p, d, idx);
 }

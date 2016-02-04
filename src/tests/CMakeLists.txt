@@ -42,7 +42,7 @@ add_executable(c_array_test
 	../cdogs/utils.h)
 target_link_libraries(c_array_test
 	cbehave
-	${SDL2_LIBRARY} ${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
+	${SDL2_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME c_array_test COMMAND c_array_test)
 
 add_executable(color_test
@@ -91,7 +91,6 @@ target_link_libraries(json_test
 	cbehave
 	json
 	${SDL2_LIBRARY}
-	${SDLMAIN_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME json_test COMMAND json_test)
 
@@ -117,10 +116,27 @@ target_link_libraries(pic_test
 	cbehave
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
-	${SDLMAIN_LIBRARY}
 	${EXTRA_LIBRARIES})
 # TODO: test disabled since Travis-CI fails with "No available video device"
 #add_test(NAME pic_test COMMAND pic_test)
+
+add_executable(player_test
+	player_test.c
+	../cdogs/c_array.c
+	../cdogs/c_array.h
+	../cdogs/log.c
+	../cdogs/log.h
+	../cdogs/player.c
+	../cdogs/player.h
+	../cdogs/vector.c
+	../cdogs/vector.h
+	../cdogs/utils.c
+	../cdogs/utils.h)
+target_link_libraries(player_test
+	cbehave
+	${SDL2_LIBRARY}
+	${EXTRA_LIBRARIES})
+add_test(NAME player_test COMMAND player_test)
 
 add_executable(utils_test
 	utils_test.c
@@ -128,5 +144,5 @@ add_executable(utils_test
 	../cdogs/utils.h)
 target_link_libraries(utils_test
 	cbehave
-	${SDL2_LIBRARY} ${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
+	${SDL2_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME utils_test COMMAND utils_test)

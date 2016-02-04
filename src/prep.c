@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -198,19 +198,20 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 
 		// Try to assign devices to players
 		// For each unassigned player, check if any device has button 1 pressed
+		// If so, and that input device wasn't used, assign it to that player
 		for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
 		{
 			char buf[256];
 			sprintf(buf, "Input.PlayerKeys%d.button1", j);
 			if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
-				PlayerTrySetInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
+				PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
 			{
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;
 			}
 		}
 		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
-			PlayerTrySetInputDevice(p, INPUT_DEVICE_MOUSE, 0))
+			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0))
 		{
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
 			continue;
@@ -219,7 +220,7 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 		{
 			const Joystick *joy = CArrayGet(&handlers->joysticks, j);
 			if (JoyIsPressed(joy->id, CMD_BUTTON1) &&
-				PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
+				PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
 			{
 				SoundPlay(&gSoundDevice, StrSound("hahaha"));
 				break;

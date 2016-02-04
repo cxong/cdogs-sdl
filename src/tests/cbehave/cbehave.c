@@ -23,6 +23,9 @@
 
 #include "cbehave.h"
 
+
+cbehave_scope_e cbehave_scope;
+
 static cbehave_symbol_head_t _symbol_list;
 
 static cbehave_symbol_t* lookup_symbol(const char *symbol_name, int obj_type);
@@ -160,32 +163,33 @@ void should_mem_equal(const void *actual, const void *expected, size_t size, voi
     setColor(DEFAULT_COLOR);
 }
 
-void should_be_true(int actual, void *state, const char *file, int line) {
+void should_be_bool(bool actual, bool expected, void *state, const char *file, int line) {
     int *_scenario_state = (int*)state;
-    if (!actual) { 
+    if (actual != expected) {
         (*_scenario_state) = 1;
         setColor(RED);
-        printf("\t\t\t%s:%d: Failed: actual[%d] is not a true value.\n",
+        printf("\t\t\t%s:%d: Failed: actual[%d] is not a %s value.\n",
                 file,
                 line,
-                actual);
+                actual,
+                expected ? "true" : "false");
         setColor(DEFAULT_COLOR);
     }
 }
 
-void cbehave_given_entry(const char *str, void *state) {
+void cbehave_given_entry(const char *prompt, const char *str, void *state) {
     (void)(state);
-    printf("\t\tGiven: %s\n", str);
+    printf("\t\t%s %s\n", prompt, str);
 }
 
-void cbehave_when_entry(const char *str, void *state) {
+void cbehave_when_entry(const char *prompt, const char *str, void *state) {
     (void)(state);
-    printf("\t\tWhen: %s\n", str);
+	printf("\t\t%s %s\n", prompt, str);
 }
 
-void cbehave_then_entry(const char *str, void *state) {
+void cbehave_then_entry(const char *prompt, const char *str, void *state) {
     (void)(state);
-    printf("\t\tThen: %s\n", str);
+	printf("\t\t%s %s\n", prompt, str);
 }
 
 void cbehave_scenario_entry(const char *str, void *state) {

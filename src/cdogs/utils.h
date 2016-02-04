@@ -57,6 +57,7 @@
 #include "color.h"
 #include "sys_specifics.h"
 
+// TODO: remove these, deprecated to be replaced by the LOG module
 extern bool debug;
 extern int debug_level;
 

@@ -26,6 +26,10 @@
 extern "C" {
 #endif
 
+#ifndef _cplusplus
+#include <stdbool.h>
+#endif
+
 #include "apr_ring.h"
 
 #define CBEHAVE_LOGO \
@@ -43,26 +47,63 @@ typedef struct cbehave_state {
     int failed_scenarios;
 } cbehave_state;
 
-#define GIVEN(x) \
-    cbehave_given_entry(x, _state);
-#define GIVEN_END \
-    cbehave_given_exit(_state);
+typedef enum {
+	CBEHAVE_SCOPE_NONE,
+	CBEHAVE_SCOPE_GIVEN,
+	CBEHAVE_SCOPE_WHEN,
+	CBEHAVE_SCOPE_THEN
+} cbehave_scope_e;
+extern cbehave_scope_e cbehave_scope;
 
-#define WHEN(x) \
-    cbehave_when_entry(x, _state);
-#define WHEN_END \
-    cbehave_when_exit(_state);
+#define GIVEN_IMPL(x, _prompt) \
+    if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
+        cbehave_given_exit(_state); \
+    } \
+    cbehave_scope = CBEHAVE_SCOPE_GIVEN; \
+    cbehave_given_entry(_prompt, x, _state);
+#define GIVEN(x) GIVEN_IMPL(x, "Given")
+#define GIVEN_END
 
-#define THEN(x) \
-    cbehave_then_entry(x, _state);
-#define THEN_END \
-    cbehave_then_exit(_state);
+#define WHEN_IMPL(x, _prompt) \
+    if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
+        cbehave_given_exit(_state); \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
+        cbehave_when_exit(_state); \
+    } \
+    cbehave_scope = CBEHAVE_SCOPE_WHEN; \
+    cbehave_when_entry(_prompt, x, _state);
+#define WHEN(x) WHEN_IMPL(x, "When")
+#define WHEN_END
+
+#define THEN_IMPL(x, _prompt) \
+    if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
+        cbehave_when_exit(_state); \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
+        cbehave_then_exit(_state); \
+    } \
+    cbehave_scope = CBEHAVE_SCOPE_THEN; \
+    cbehave_then_entry(_prompt, x, _state);
+#define THEN(x) THEN_IMPL(x, "Then")
+#define THEN_END
+
+#define AND(x) \
+    if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
+        GIVEN_IMPL(x, "And") \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
+        WHEN_IMPL(x, "And") \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
+        THEN_IMPL(x, "And") \
+    }
 
 #define SCENARIO(x) { \
     int _scenario_state = 0; \
-    cbehave_scenario_entry(x, _state);
+    cbehave_scenario_entry(x, _state); \
+    cbehave_scope = CBEHAVE_SCOPE_NONE;
 
 #define SCENARIO_END \
+    if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
+        cbehave_then_exit(_state); \
+    } \
     cbehave_scenario_exit(&_scenario_state, _state); \
 }
 
@@ -112,7 +153,11 @@ if (!(cond)) {\
 } while(0)
 
 #define SHOULD_BE_TRUE(actual) do { \
-    should_be_true((actual), &_scenario_state, __FILE__, __LINE__); \
+    should_be_bool((actual), true, &_scenario_state, __FILE__, __LINE__); \
+} while(0)
+
+#define SHOULD_BE_FALSE(actual) do { \
+    should_be_bool((actual), false, &_scenario_state, __FILE__, __LINE__); \
 } while(0)
 
 #define cbehave_runner(str, features) \
@@ -142,11 +187,11 @@ void should_str_equal(const char *actual, const char *expected, void *state,
                       const char *file, int line);
 void should_mem_equal(const void *actual, const void *expected, size_t size, void *state,
                       const char *file, int line);
-void should_be_true(int actual, void *state, const char *file, int line);
+void should_be_bool(bool actual, bool expected, void *state, const char *file, int line);
 
-void cbehave_given_entry(const char *str, void *state);
-void cbehave_when_entry(const char *str, void *state);
-void cbehave_then_entry(const char *str, void *state);
+void cbehave_given_entry(const char *prompt, const char *str, void *state);
+void cbehave_when_entry(const char *prompt, const char *str, void *state);
+void cbehave_then_entry(const char *prompt, const char *str, void *state);
 void cbehave_scenario_entry(const char *str, void *state);
 void cbehave_feature_entry(const char *str, void *old_state, void *state);
 
