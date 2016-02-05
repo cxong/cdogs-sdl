@@ -267,7 +267,9 @@ void NetClientDisconnect(NetClient *n)
 		enet_peer_disconnect_now(n->peer, 0);
 		n->peer = NULL;
 	}
-	n->ClientId = -1;	// -1 is unset
+	// Reset IDs so that when we start a server, we use our own IDs
+	n->ClientId = -1;
+	n->FirstPlayerUID = 0;
 	n->Ready = false;
 }
 
