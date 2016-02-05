@@ -88,8 +88,7 @@ void ScreenStart(void)
 	}
 
 	debug(D_NORMAL, ">> Select number of players\n");
-	if (!NumPlayersSelection(
-		gCampaign.Entry.Mode, &gGraphicsDevice, &gEventHandlers))
+	if (!NumPlayersSelection(&gGraphicsDevice, &gEventHandlers))
 	{
 		gCampaign.IsLoaded = false;
 		goto bail;

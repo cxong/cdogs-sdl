@@ -226,7 +226,7 @@ yajl_val YAJLFindNode(yajl_val node, const char *path)
 {
 	// max 256 levels
 	const char *pathSplit[256];
-	memset(pathSplit, 0, sizeof pathSplit);
+	memset((char **)pathSplit, 0, sizeof pathSplit);
 	char *pathCopy = strdup(path);
 	char *pch = strtok(pathCopy, "/");
 	int i = 0;

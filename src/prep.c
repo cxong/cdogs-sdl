@@ -136,8 +136,7 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 }
 
 
-bool NumPlayersSelection(
-	GameMode mode, GraphicsDevice *graphics, EventHandlers *handlers)
+bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem ms;
 	MenuSystemInit(
@@ -153,11 +152,6 @@ bool NumPlayersSelection(
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		char buf[2];
-		if (IsMultiplayer(mode) && i == 0)
-		{
-			// At least two players for dogfights
-			continue;
-		}
 		sprintf(buf, "%d", i + 1);
 		MenuAddSubmenu(ms.current, MenuCreateReturn(buf, i + 1));
 	}

@@ -371,7 +371,11 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	// Death is the only escape from PVP and quick play
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
-		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
+		// If we're in deathmatch with 1 player only, never complete the game
+		// Instead we'll be showing a "waiting for players..." message
+		return
+			GetNumPlayers(PLAYER_ANY, false, false) > 1 &&
+			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
 	}
 	else if (gCampaign.Entry.Mode == GAME_MODE_QUICK_PLAY)
 	{

@@ -56,8 +56,7 @@
 bool ScreenWaitForCampaignDef(void);
 
 // Screen to select the number of (local) players
-bool NumPlayersSelection(
-	GameMode mode, GraphicsDevice *graphics, EventHandlers *handlers);
+bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance
