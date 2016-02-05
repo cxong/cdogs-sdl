@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,7 @@
 
 #include <cdogs/campaigns.h>
 
-// Return values mean whether the user wanted to proceed
-
-bool ScreenCampaignIntro(CampaignSetting *c);
-bool ScreenMissionBriefing(const struct MissionOptions *m);
-void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
+void ScreenVictory(CampaignOptions *c);
+void ScreenDogfightScores(void);
+void ScreenDogfightFinalScores(void);
+void ScreenDeathmatchFinalScores(void);

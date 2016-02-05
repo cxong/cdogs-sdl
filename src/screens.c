@@ -64,6 +64,7 @@
 #include "game.h"
 #include "password.h"
 #include "prep.h"
+#include "screens_end.h"
 
 
 static void Campaign(GraphicsDevice *graphics, CampaignOptions *co);
