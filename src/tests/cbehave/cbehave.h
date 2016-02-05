@@ -55,32 +55,30 @@ typedef enum {
 } cbehave_scope_e;
 extern cbehave_scope_e cbehave_scope;
 
-#define GIVEN_IMPL(x, _prompt) \
+#define END_SCOPE \
     if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
         cbehave_given_exit(_state); \
-    } \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
+        cbehave_when_exit(_state); \
+    } else if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
+        cbehave_then_exit(_state); \
+    }
+#define GIVEN_IMPL(x, _prompt) \
+    END_SCOPE \
     cbehave_scope = CBEHAVE_SCOPE_GIVEN; \
     cbehave_given_entry(_prompt, x, _state);
 #define GIVEN(x) GIVEN_IMPL(x, "Given")
 #define GIVEN_END
 
 #define WHEN_IMPL(x, _prompt) \
-    if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
-        cbehave_given_exit(_state); \
-    } else if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
-        cbehave_when_exit(_state); \
-    } \
+    END_SCOPE \
     cbehave_scope = CBEHAVE_SCOPE_WHEN; \
     cbehave_when_entry(_prompt, x, _state);
 #define WHEN(x) WHEN_IMPL(x, "When")
 #define WHEN_END
 
 #define THEN_IMPL(x, _prompt) \
-    if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
-        cbehave_when_exit(_state); \
-    } else if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
-        cbehave_then_exit(_state); \
-    } \
+    END_SCOPE \
     cbehave_scope = CBEHAVE_SCOPE_THEN; \
     cbehave_then_entry(_prompt, x, _state);
 #define THEN(x) THEN_IMPL(x, "Then")
@@ -101,9 +99,7 @@ extern cbehave_scope_e cbehave_scope;
     cbehave_scope = CBEHAVE_SCOPE_NONE;
 
 #define SCENARIO_END \
-    if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
-        cbehave_then_exit(_state); \
-    } \
+    END_SCOPE \
     cbehave_scenario_exit(&_scenario_state, _state); \
 }
 
