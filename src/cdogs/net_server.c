@@ -259,7 +259,7 @@ static void PollListener(NetServer *n)
 	strncat(sinfo.Hostname, n->hostname, sizeof sinfo.Hostname - 1);
 	sinfo.GameMode = gCampaign.Entry.Mode;
 	sinfo.CampaignName[0] = '\0';
-	strncat(sinfo.CampaignName, gCampaign.Entry.Info,
+	strncat(sinfo.CampaignName, gCampaign.Setting.Title,
 		sizeof sinfo.CampaignName - 1);
 	sinfo.MissionNumber = gCampaign.MissionIndex + 1;
 	sinfo.NumPlayers = GetNumPlayers(PLAYER_ANY, false, false);
