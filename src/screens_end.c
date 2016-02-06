@@ -45,7 +45,10 @@ typedef struct
 	int scroll;
 	void (*drawFunc)(void *);
 	void *data;
+	// Store player UIDs so we can display the list in a certain order
+	CArray playerUIDs;	// of int
 } PlayerList;
+static int ComparePlayerScores(const void *v1, const void *v2);
 static PlayerList PlayerListNew(void (*drawFunc)(void *), void *data)
 {
 	PlayerList pl;
@@ -54,7 +57,31 @@ static PlayerList PlayerListNew(void (*drawFunc)(void *), void *data)
 	pl.scroll = 0;
 	pl.drawFunc = drawFunc;
 	pl.data = data;
+	CArrayInit(&pl.playerUIDs, sizeof(int));
+	// Collect all players, then order by score descending
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		CArrayPushBack(&pl.playerUIDs, &p->UID);
+	CA_FOREACH_END()
+	qsort(
+		pl.playerUIDs.data,
+		pl.playerUIDs.size,
+		pl.playerUIDs.elemSize,
+		ComparePlayerScores);
 	return pl;
+}
+static int ComparePlayerScores(const void *v1, const void *v2)
+{
+	const PlayerData *p1 = PlayerDataGetByUID(*(const int *)v1);
+	const PlayerData *p2 = PlayerDataGetByUID(*(const int *)v2);
+	if (p1->totalScore > p2->totalScore)
+	{
+		return -1;
+	}
+	else if (p1->totalScore < p2->totalScore)
+	{
+		return 1;
+	}
+	return 0;
 }
 static void PlayerListDraw(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
@@ -73,6 +100,8 @@ static void PlayerListLoop(PlayerList *pl)
 	ms.allowAborts = true;
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	MenuLoop(&ms);
+	// Free ourselves at the end
+	CArrayTerminate(&pl->playerUIDs);
 }
 static int PlayerListMaxScroll(const PlayerList *pl);
 static int PlayerListMaxRows(const PlayerList *pl);
@@ -96,10 +125,15 @@ static void PlayerListDraw(
 	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
 	// Then draw the player list
 	for (int i = pl->scroll;
-		i < MIN((int)gPlayerDatas.size, pl->scroll + PlayerListMaxRows(pl));
+		i < MIN((int)pl->playerUIDs.size, pl->scroll + PlayerListMaxRows(pl));
 		i++)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		const int *playerUID = CArrayGet(&pl->playerUIDs, i);
+		const PlayerData *p = PlayerDataGetByUID(*playerUID);
+		if (p == NULL)
+		{
+			continue;
+		}
 		x = xStart;
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
@@ -134,6 +168,18 @@ static int PlayerListInput(int cmd, void *data)
 	// Input: up/down scrolls list
 	// CMD 1/2: exit
 	PlayerList *pl = data;
+
+	// Note: players can leave due to network disconnection
+	// Update our lists
+	CA_FOREACH(const int, playerUID, pl->playerUIDs)
+		const PlayerData *p = PlayerDataGetByUID(*playerUID);
+		if (p == NULL)
+		{
+			CArrayDelete(&pl->playerUIDs, _ca_index);
+			_ca_index--;
+		}
+	CA_FOREACH_END()
+
 	if (cmd == CMD_DOWN)
 	{
 		SoundPlay(&gSoundDevice, StrSound("door"));
@@ -155,7 +201,7 @@ static int PlayerListInput(int cmd, void *data)
 }
 static int PlayerListMaxScroll(const PlayerList *pl)
 {
-	return MAX((int)gPlayerDatas.size - PlayerListMaxRows(pl), 0);
+	return MAX((int)pl->playerUIDs.size - PlayerListMaxRows(pl), 0);
 }
 static int PlayerListMaxRows(const PlayerList *pl)
 {
