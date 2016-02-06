@@ -328,6 +328,22 @@ static void Scanning(NetClient *n)
 	ScanInfo sinfo;
 	while (TryRecvScanForServerPort(n, 0, &sinfo.ServerInfo, &sinfo.Addr))
 	{
+		// Check if we've seen this scan before
+		// This can happen occasionally, especially if the network is flaky
+		bool found = false;
+		CA_FOREACH(const ScanInfo, si, n->scannedAddrBuf)
+			if (si->Addr.host == sinfo.Addr.host &&
+				si->Addr.port == sinfo.Addr.port)
+			{
+				found = true;
+				break;
+			}
+		CA_FOREACH_END()
+		if (found)
+		{
+			continue;
+		}
+
 		// Save them into our buffer
 		// Calculate latency based on ticks
 		sinfo.LatencyMS =
@@ -335,7 +351,7 @@ static void Scanning(NetClient *n)
 			1000 / FPS_FRAMELIMIT;
 		CArrayPushBack(&n->scannedAddrBuf, &sinfo);
 		// Also add them to the main collection, so we can find servers quickly
-		bool found = false;
+		found = false;
 		CA_FOREACH(const ScanInfo, si, n->ScannedAddrs)
 			if (si->Addr.host == sinfo.Addr.host &&
 				si->Addr.port == sinfo.Addr.port)
