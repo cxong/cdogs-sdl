@@ -135,13 +135,15 @@ static void PlayerListDraw(
 			continue;
 		}
 		x = xStart;
+		// Highlight local players using different coloured text
+		const color_t textColor = p->IsLocal ? colorPurple : colorWhite;
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
-			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, p->name);
+			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, p->name, textColor);
 		x += 100;
 		char buf[256];
 		sprintf(buf, "%d", p->totalScore);
-		FontStr(buf, Vec2iNew(x, y));
+		FontStrMask(buf, Vec2iNew(x, y), textColor);
 		y += PLAYER_LIST_ROW_HEIGHT;
 	}
 
@@ -320,7 +322,7 @@ static void DogfightScoresDraw(void *data)
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
 			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
 		ShowPlayerScore(pos, pds[i]->RoundsWon);
 	}
 }
@@ -393,7 +395,7 @@ static void DogfightFinalScoresDraw(void *data)
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
 			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
 		ShowPlayerScore(pos, pds[i]->RoundsWon);
 		if (!isTie && maxScore == pds[i]->RoundsWon)
 		{
@@ -460,7 +462,7 @@ static void DeathmatchFinalScoresDraw(void *data)
 		const Vec2i pos = Vec2iNew(
 			w / 4 + (i & 1) * w / 2,
 			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name);
+		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
 		
 		// Kills
 		char s[16];

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, Cong Xu
+	Copyright (c) 2013-2016, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,8 @@
 
 // Display a character and the player name above it, with the character
 // centered around the target position
-void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name)
+void DisplayCharacterAndName(
+	Vec2i pos, const Character *c, const char *name, const color_t color)
 {
 	// Move the point down a bit since the default character draw point is at
 	// its feet
@@ -45,7 +46,7 @@ void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name)
 	DrawCharacterSimple(
 		c, pos,
 		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
-	FontStr(name, namePos);
+	FontStrMask(name, namePos, color);
 }
 
 void MenuDisplayPlayer(
@@ -72,7 +73,7 @@ void MenuDisplayPlayer(
 		strcpy(s, pData->name);
 	}
 
-	DisplayCharacterAndName(playerPos, &pData->Char, s);
+	DisplayCharacterAndName(playerPos, &pData->Char, s, colorWhite);
 }
 
 void MenuDisplayPlayerControls(

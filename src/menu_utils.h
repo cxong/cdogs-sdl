@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, Cong Xu
+	Copyright (c) 2013-2016, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -46,4 +46,5 @@ void MenuDisplayPlayerControls(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i pos, const Vec2i size, const void *data);
 
-void DisplayCharacterAndName(Vec2i pos, const Character *c, const char *name);
+void DisplayCharacterAndName(
+	Vec2i pos, const Character *c, const char *name, const color_t color);
