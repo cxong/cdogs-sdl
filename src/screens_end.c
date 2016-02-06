@@ -37,37 +37,143 @@
 // on a row. This is to support any number of players, since there could be
 // many players especially from network multiplayer.
 
+#define PLAYER_LIST_ROW_HEIGHT 16
+typedef struct
+{
+	Vec2i pos;
+	Vec2i size;
+	int scroll;
+	void (*drawFunc)(void *);
+	void *data;
+} PlayerList;
+static PlayerList PlayerListNew(void (*drawFunc)(void *), void *data)
+{
+	PlayerList pl;
+	pl.pos = Vec2iZero();
+	pl.size = gGraphicsDevice.cachedConfig.Res;
+	pl.scroll = 0;
+	pl.drawFunc = drawFunc;
+	pl.data = data;
+	return pl;
+}
+static void PlayerListDraw(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data);
+static int PlayerListInput(int cmd, void *data);
+static void PlayerListLoop(PlayerList *pl)
+{
+	MenuSystem ms;
+	MenuSystemInit(&ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
+	ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	MenuAddSubmenu(
+		ms.root,
+		MenuCreateCustom("View Scores", PlayerListDraw, PlayerListInput, pl));
+	MenuAddSubmenu(ms.root, MenuCreateReturn("Finish", 0));
+	ms.current = MenuGetSubmenuByName(ms.root, "View Scores");
+	ms.allowAborts = true;
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuLoop(&ms);
+}
+static int PlayerListMaxScroll(const PlayerList *pl);
+static int PlayerListMaxRows(const PlayerList *pl);
+static void PlayerListDraw(
+	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const void *data)
+{
+	UNUSED(menu);
+	UNUSED(g);
+	// Draw players starting from the index
+	// TODO: custom columns
+	const PlayerList *pl = data;
+
+	// First draw the headers
+	const int xStart = pos.x + 100 + (size.x - 320) / 2;
+	int x = xStart;
+	int y = pos.y;
+	FontStrMask("Player", Vec2iNew(x, y), colorPurple);
+	x += 100;
+	FontStrMask("Score", Vec2iNew(x, y), colorPurple);
+	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
+	// Then draw the player list
+	for (int i = pl->scroll;
+		i < MIN((int)gPlayerDatas.size, pl->scroll + PlayerListMaxRows(pl));
+		i++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		x = xStart;
+		// Draw the players offset on alternate rows
+		DisplayCharacterAndName(
+			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, p->name);
+		x += 100;
+		char buf[256];
+		sprintf(buf, "%d", p->totalScore);
+		FontStr(buf, Vec2iNew(x, y));
+		y += PLAYER_LIST_ROW_HEIGHT;
+	}
+
+	// Draw indicator arrows if there's enough to scroll
+	if (pl->scroll > 0)
+	{
+		FontStr("^", Vec2iNew(
+			CENTER_X(pos, size, FontStrW("^")), pos.y + FontH()));
+	}
+	if (pl->scroll < PlayerListMaxScroll(pl))
+	{
+		FontStr("v", Vec2iNew(
+			CENTER_X(pos, size, FontStrW("v")), pos.y + size.y - FontH()));
+	}
+
+	// Finally draw any custom stuff
+	if (pl->drawFunc)
+	{
+		pl->drawFunc(pl->data);
+	}
+}
+static int PlayerListInput(int cmd, void *data)
+{
+	// Input: up/down scrolls list
+	// CMD 1/2: exit
+	PlayerList *pl = data;
+	if (cmd == CMD_DOWN)
+	{
+		SoundPlay(&gSoundDevice, StrSound("door"));
+		pl->scroll++;
+	}
+	else if (cmd == CMD_UP)
+	{
+		SoundPlay(&gSoundDevice, StrSound("door"));
+		pl->scroll--;
+	}
+	else if (AnyButton(cmd))
+	{
+		SoundPlay(&gSoundDevice, StrSound("pickup"));
+		return 1;
+	}
+	// Scroll wrap-around
+	pl->scroll = CLAMP_OPPOSITE(pl->scroll, 0, PlayerListMaxScroll(pl));
+	return 0;
+}
+static int PlayerListMaxScroll(const PlayerList *pl)
+{
+	return MAX((int)gPlayerDatas.size - PlayerListMaxRows(pl), 0);
+}
+static int PlayerListMaxRows(const PlayerList *pl)
+{
+	return (pl->size.y - FontH() * 3) / PLAYER_LIST_ROW_HEIGHT - 2;
+}
+
+
+typedef struct
+{
+	const CampaignOptions *Campaign;
+	const char *FinalWords;
+} VictoryData;
 static void VictoryDraw(void *data);
 void ScreenVictory(CampaignOptions *c)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
-		c, VictoryDraw);
-	GameLoop(&gData);
-	SoundPlay(&gSoundDevice, StrSound("hahaha"));
-}
-static void VictoryDraw(void *data)
-{
-	// This will only draw once
-	const CampaignOptions *c = data;
-
-	GraphicsBlitBkg(&gGraphicsDevice);
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = ALIGN_CENTER;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	int y = 30;
-
-	// Congratulations text
-#define CONGRATULATIONS "Congratulations, you have completed "
-	FontStrOpt(CONGRATULATIONS, Vec2iNew(0, y), opts);
-	y += 15;
-	opts.Mask = colorRed;
-	FontStrOpt(c->Setting.Title, Vec2iNew(0, y), opts);
-	y += 15;
-
-	// Final words
+	VictoryData data;
+	data.Campaign = c;
 	const char *finalWordsSingle[] = {
 		"Ha, next time I'll use my good hand",
 		"Over already? I was just warming up...",
@@ -88,42 +194,45 @@ static void VictoryDraw(void *data)
 		"We eat bullets for breakfast and have grenades as dessert",
 		"We're so cool we have to wear mittens",
 	};
-	const char *finalWords;
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 1)
 	{
 		const int numWords = sizeof finalWordsSingle / sizeof(char *);
-		finalWords = finalWordsSingle[rand() % numWords];
+		data.FinalWords = finalWordsSingle[rand() % numWords];
 	}
 	else
 	{
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
-		finalWords = finalWordsMulti[rand() % numWords];
+		data.FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	Vec2i pos = Vec2iNew((w - FontStrW(finalWords)) / 2, y);
-	pos = FontChMask('"', pos, colorDarker);
-	pos = FontStrMask(finalWords, pos, colorPurple);
-	FontChMask('"', pos, colorDarker);
+	PlayerList pl = PlayerListNew(VictoryDraw, &data);
+	pl.pos.y = 75;
+	pl.size.y -= pl.pos.y;
+	PlayerListLoop(&pl);
+	SoundPlay(&gSoundDevice, StrSound("hahaha"));
+}
+static void VictoryDraw(void *data)
+{
+	const VictoryData *vd = data;
+
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	int y = 30;
+
+	// Congratulations text
+#define CONGRATULATIONS "Congratulations, you have completed "
+	FontStrOpt(CONGRATULATIONS, Vec2iNew(0, y), opts);
+	y += 15;
+	opts.Mask = colorRed;
+	FontStrOpt(vd->Campaign->Setting.Title, Vec2iNew(0, y), opts);
 	y += 15;
 
-	// Display players
-	const int xStart = 100 + (w - 320) / 2;
-	int x = xStart;
-	// Draw headers
-	FontStrMask("Player", Vec2iNew(x, y), colorPurple);
-	x += 100;
-	FontStrMask("Score", Vec2iNew(x, y), colorPurple);
-	y += FontH() + 20;
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		x = xStart;
-		// Draw the players offset on alternate rows
-		DisplayCharacterAndName(
-			Vec2iNew(x + (_ca_index & 1) * 16, y + 4), &p->Char, p->name);
-		x += 100;
-		char buf[256];
-		sprintf(buf, "%d", p->totalScore);
-		FontStr(buf, Vec2iNew(x, y));
-		y += 16;
-	CA_FOREACH_END()
+	// Final words
+	Vec2i pos = Vec2iNew((w - FontStrW(vd->FinalWords)) / 2, y);
+	pos = FontChMask('"', pos, colorDarker);
+	pos = FontStrMask(vd->FinalWords, pos, colorPurple);
+	FontChMask('"', pos, colorDarker);
 }
 
 static void DogfightScoresDraw(void *data);
