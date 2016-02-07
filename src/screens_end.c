@@ -49,12 +49,14 @@ typedef struct
 	// Useful for final screens where we want to view the scores without
 	// accidentally quitting
 	bool hasMenu;
+	bool showWinners;
 	// Store player UIDs so we can display the list in a certain order
 	CArray playerUIDs;	// of int
 } PlayerList;
 static int ComparePlayerScores(const void *v1, const void *v2);
 static PlayerList PlayerListNew(
-	void (*drawFunc)(void *), void *data, const bool hasMenu)
+	void (*drawFunc)(void *), void *data,
+	const bool hasMenu, const bool showWinners)
 {
 	PlayerList pl;
 	pl.pos = Vec2iZero();
@@ -63,6 +65,7 @@ static PlayerList PlayerListNew(
 	pl.drawFunc = drawFunc;
 	pl.data = data;
 	pl.hasMenu = hasMenu;
+	pl.showWinners = showWinners;
 	CArrayInit(&pl.playerUIDs, sizeof(int));
 	// Collect all players, then order by score descending
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -137,6 +140,7 @@ static void PlayerListDraw(
 	FontStrMask("Score", Vec2iNew(x, y), colorPurple);
 	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
 	// Then draw the player list
+	int maxScore = -1;
 	for (int i = pl->scroll;
 		i < MIN((int)pl->playerUIDs.size, pl->scroll + PlayerListMaxRows(pl));
 		i++)
@@ -147,16 +151,35 @@ static void PlayerListDraw(
 		{
 			continue;
 		}
+		if (maxScore < p->totalScore)
+		{
+			maxScore = p->totalScore;
+		}
+
 		x = xStart;
 		// Highlight local players using different coloured text
 		const color_t textColor = p->IsLocal ? colorPurple : colorWhite;
+
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
 			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, p->name, textColor);
+
+		// Draw score
 		x += 100;
 		char buf[256];
 		sprintf(buf, "%d", p->totalScore);
 		FontStrMask(buf, Vec2iNew(x, y), textColor);
+
+		// Draw winner text
+		if (pl->showWinners)
+		{
+			x += 40;
+			if (p->totalScore == maxScore)
+			{
+				FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
+			}
+		}
+
 		y += PLAYER_LIST_ROW_HEIGHT;
 	}
 
@@ -265,7 +288,7 @@ void ScreenVictory(CampaignOptions *c)
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
 		data.FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList pl = PlayerListNew(VictoryDraw, &data, true);
+	PlayerList pl = PlayerListNew(VictoryDraw, &data, true, false);
 	pl.pos.y = 75;
 	pl.size.y -= pl.pos.y;
 	PlayerListLoop(&pl);
@@ -298,95 +321,21 @@ static void VictoryDraw(void *data)
 
 void ScreenDogfightScores(void)
 {
-	PlayerList pl = PlayerListNew(NULL, NULL, false);
+	PlayerList pl = PlayerListNew(NULL, NULL, false, false);
 	pl.pos.y = 24;
 	pl.size.y -= pl.pos.y;
 	PlayerListLoop(&pl);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
-static void ShowPlayerScore(const Vec2i pos, const int score)
-{
-	char s[16];
-	sprintf(s, "Score: %d", score);
-	const Vec2i scorePos = Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20);
-	FontStr(s, scorePos);
-}
 
-static void DogfightFinalScoresDraw(void *data);
 void ScreenDogfightFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
-		NULL, DogfightFinalScoresDraw);
-	GameLoop(&gData);
+	PlayerList pl = PlayerListNew(NULL, NULL, false, true);
+	pl.pos.y = 24;
+	pl.size.y -= pl.pos.y;
+	PlayerListLoop(&pl);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
-}
-static void DogfightFinalScoresDraw(void *data)
-{
-	UNUSED(data);
-
-	// This will only draw once
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	GraphicsBlitBkg(&gGraphicsDevice);
-
-	// Work out who's the winner, or if it's a tie
-	int maxScore = 0;
-	int playersWithMaxScore = 0;
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->totalScore > maxScore)
-		{
-			maxScore = p->totalScore;
-			playersWithMaxScore = 1;
-		}
-		else if (p->totalScore == maxScore)
-		{
-			playersWithMaxScore++;
-		}
-	CA_FOREACH_END()
-	const bool isTie = playersWithMaxScore == (int)gPlayerDatas.size;
-
-	// Draw players and their names spread evenly around the screen.
-	// If it's a tie, display the message in the centre,
-	// otherwise display the winner just below the winning player
-#define DRAW_TEXT	"It's a draw!"
-#define WINNER_TEXT	"Winner!"
-	const PlayerData *pds[MAX_LOCAL_PLAYERS];
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
-		if (!pd->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		pds[idx] = pd;
-	}
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	CASSERT(
-		numLocalPlayers >= 2 && numLocalPlayers <= 4,
-		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < numLocalPlayers; i++)
-	{
-		const Vec2i pos = Vec2iNew(
-			w / 4 + (i & 1) * w / 2,
-			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
-		ShowPlayerScore(pos, pds[i]->totalScore);
-		if (!isTie && maxScore == pds[i]->totalScore)
-		{
-			FontStrMask(
-				WINNER_TEXT,
-				Vec2iNew(pos.x - FontStrW(WINNER_TEXT) / 2, pos.y + 30),
-				colorGreen);
-		}
-	}
-	if (isTie)
-	{
-		FontStrCenter(DRAW_TEXT);
-	}
 }
 
 static void DeathmatchFinalScoresDraw(void *data);
