@@ -76,7 +76,7 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	}
 	p->Lives = pd.Lives;
 	p->score = pd.Score;
-	p->totalScore = pd.Score;
+	p->totalScore = pd.TotalScore;
 	p->kills = pd.Kills;
 	p->suicides = pd.Suicides;
 	p->friendlies = pd.Friendlies;
