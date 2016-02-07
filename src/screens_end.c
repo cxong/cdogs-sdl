@@ -45,11 +45,16 @@ typedef struct
 	int scroll;
 	void (*drawFunc)(void *);
 	void *data;
+	// Whether to use a confirmation "Finish" menu at the end
+	// Useful for final screens where we want to view the scores without
+	// accidentally quitting
+	bool hasMenu;
 	// Store player UIDs so we can display the list in a certain order
 	CArray playerUIDs;	// of int
 } PlayerList;
 static int ComparePlayerScores(const void *v1, const void *v2);
-static PlayerList PlayerListNew(void (*drawFunc)(void *), void *data)
+static PlayerList PlayerListNew(
+	void (*drawFunc)(void *), void *data, const bool hasMenu)
 {
 	PlayerList pl;
 	pl.pos = Vec2iZero();
@@ -57,6 +62,7 @@ static PlayerList PlayerListNew(void (*drawFunc)(void *), void *data)
 	pl.scroll = 0;
 	pl.drawFunc = drawFunc;
 	pl.data = data;
+	pl.hasMenu = hasMenu;
 	CArrayInit(&pl.playerUIDs, sizeof(int));
 	// Collect all players, then order by score descending
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -91,12 +97,19 @@ static void PlayerListLoop(PlayerList *pl)
 {
 	MenuSystem ms;
 	MenuSystemInit(&ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
-	ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	MenuAddSubmenu(
-		ms.root,
-		MenuCreateCustom("View Scores", PlayerListDraw, PlayerListInput, pl));
-	MenuAddSubmenu(ms.root, MenuCreateReturn("Finish", 0));
-	ms.current = MenuGetSubmenuByName(ms.root, "View Scores");
+	menu_t *menuScores = MenuCreateCustom(
+		"View Scores", PlayerListDraw, PlayerListInput, pl);
+	if (pl->hasMenu)
+	{
+		ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+		MenuAddSubmenu(ms.root, menuScores);
+		MenuAddSubmenu(ms.root, MenuCreateReturn("Finish", 0));
+		ms.current = MenuGetSubmenuByName(ms.root, "View Scores");
+	}
+	else
+	{
+		ms.root = ms.current = menuScores;
+	}
 	ms.allowAborts = true;
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	MenuLoop(&ms);
@@ -252,7 +265,7 @@ void ScreenVictory(CampaignOptions *c)
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
 		data.FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList pl = PlayerListNew(VictoryDraw, &data);
+	PlayerList pl = PlayerListNew(VictoryDraw, &data, true);
 	pl.pos.y = 75;
 	pl.size.y -= pl.pos.y;
 	PlayerListLoop(&pl);
@@ -283,48 +296,13 @@ static void VictoryDraw(void *data)
 	FontChMask('"', pos, colorDarker);
 }
 
-static void DogfightScoresDraw(void *data);
 void ScreenDogfightScores(void)
 {
-	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, DogfightScoresDraw);
-	GameLoop(&gData);
+	PlayerList pl = PlayerListNew(NULL, NULL, false);
+	pl.pos.y = 24;
+	pl.size.y -= pl.pos.y;
+	PlayerListLoop(&pl);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
-}
-static void ShowPlayerScore(const Vec2i pos, const int score);
-static void DogfightScoresDraw(void *data)
-{
-	UNUSED(data);
-
-	// This will only draw once
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	GraphicsBlitBkg(&gGraphicsDevice);
-
-	const PlayerData *pds[MAX_LOCAL_PLAYERS];
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
-		if (!pd->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		pds[idx] = pd;
-	}
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	CASSERT(
-		numLocalPlayers >= 2 && numLocalPlayers <= 4,
-		"Unimplemented number of players for dogfight");
-	for (int i = 0; i < numLocalPlayers; i++)
-	{
-		const Vec2i pos = Vec2iNew(
-			w / 4 + (i & 1) * w / 2,
-			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
-		ShowPlayerScore(pos, pds[i]->RoundsWon);
-	}
 }
 static void ShowPlayerScore(const Vec2i pos, const int score)
 {
@@ -358,12 +336,12 @@ static void DogfightFinalScoresDraw(void *data)
 	int maxScore = 0;
 	int playersWithMaxScore = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->RoundsWon > maxScore)
+		if (p->totalScore > maxScore)
 		{
-			maxScore = p->RoundsWon;
+			maxScore = p->totalScore;
 			playersWithMaxScore = 1;
 		}
-		else if (p->RoundsWon == maxScore)
+		else if (p->totalScore == maxScore)
 		{
 			playersWithMaxScore++;
 		}
@@ -396,8 +374,8 @@ static void DogfightFinalScoresDraw(void *data)
 			w / 4 + (i & 1) * w / 2,
 			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
 		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
-		ShowPlayerScore(pos, pds[i]->RoundsWon);
-		if (!isTie && maxScore == pds[i]->RoundsWon)
+		ShowPlayerScore(pos, pds[i]->totalScore);
+		if (!isTie && maxScore == pds[i]->totalScore)
 		{
 			FontStrMask(
 				WINNER_TEXT,

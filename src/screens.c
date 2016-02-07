@@ -208,8 +208,8 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 			{
 				TActor *player = ActorGetByUID(p->ActorUID);
 				p->hp = player->health;
-				p->RoundsWon++;
-				maxScore = MAX(maxScore, p->RoundsWon);
+				p->totalScore++;
+				maxScore = MAX(maxScore, p->totalScore);
 			}
 		CA_FOREACH_END()
 		if (IsPVP(co->Entry.Mode))

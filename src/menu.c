@@ -137,7 +137,7 @@ void MenuSystemAddCustomDisplay(
 
 int MenuIsExit(MenuSystem *ms)
 {
-	return MenuHasExitType(ms, ms->current->type);
+	return ms->current == NULL || MenuHasExitType(ms, ms->current->type);
 }
 
 void MenuProcessChangeKey(menu_t *menu);

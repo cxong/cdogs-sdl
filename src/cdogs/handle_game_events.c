@@ -92,6 +92,8 @@ static void HandleGameEvent(
 		DamageObject(e.u.MapObjectDamage);
 		break;
 	case GAME_EVENT_SCORE:
+		// No score for dogfight
+		if (gCampaign.Entry.Mode != GAME_MODE_DOGFIGHT)
 		{
 			PlayerData *p = PlayerDataGetByUID(e.u.Score.PlayerUID);
 			PlayerScore(p, e.u.Score.Score);

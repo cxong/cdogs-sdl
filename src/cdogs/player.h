@@ -43,7 +43,7 @@ typedef struct
 	int Lives;
 
 	int score;
-	int totalScore;
+	int totalScore;	// also rounds won for dogfight
 	int kills;
 	int suicides;
 	int friendlies;
@@ -54,7 +54,6 @@ typedef struct
 	int missions;
 	int lastMission;
 	int allTime, today;
-	int RoundsWon;	// for dogfight
 
 	input_device_e inputDevice;
 	int deviceIndex;
