@@ -209,7 +209,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				p->hp = player->health;
 			}
 		CA_FOREACH_END()
-		if (IsPVP(co->Entry.Mode))
+		if (co->Entry.Mode == GAME_MODE_DOGFIGHT)
 		{
 			// Calculate PVP rounds won
 			int maxScore = 0;

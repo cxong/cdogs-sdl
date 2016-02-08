@@ -50,6 +50,7 @@ typedef struct
 	// accidentally quitting
 	bool hasMenu;
 	bool showWinners;
+	bool showLastMan;
 	// Store player UIDs so we can display the list in a certain order
 	CArray playerUIDs;	// of int
 } PlayerList;
@@ -68,25 +69,42 @@ static PlayerList PlayerListNew(
 	pl.showWinners = showWinners;
 	CArrayInit(&pl.playerUIDs, sizeof(int));
 	// Collect all players, then order by score descending
+	int playersAlive = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		CArrayPushBack(&pl.playerUIDs, &p->UID);
+		if (p->Lives > 0)
+		{
+			playersAlive++;
+		}
 	CA_FOREACH_END()
 	qsort(
 		pl.playerUIDs.data,
 		pl.playerUIDs.size,
 		pl.playerUIDs.elemSize,
 		ComparePlayerScores);
+	pl.showLastMan = playersAlive == 1;
 	return pl;
+}
+static int GetModeScore(const PlayerData *p)
+{
+	// For deathmatch, we count kills instead of score
+	if (gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH)
+	{
+		return p->Totals.Kills;
+	}
+	return p->Totals.Score;
 }
 static int ComparePlayerScores(const void *v1, const void *v2)
 {
 	const PlayerData *p1 = PlayerDataGetByUID(*(const int *)v1);
 	const PlayerData *p2 = PlayerDataGetByUID(*(const int *)v2);
-	if (p1->Totals.Score > p2->Totals.Score)
+	int p1s = GetModeScore(p1);
+	int p2s = GetModeScore(p2);
+	if (p1s > p2s)
 	{
 		return -1;
 	}
-	else if (p1->Totals.Score < p2->Totals.Score)
+	else if (p1s < p2s)
 	{
 		return 1;
 	}
@@ -132,12 +150,14 @@ static void PlayerListDraw(
 	const PlayerList *pl = data;
 
 	// First draw the headers
-	const int xStart = pos.x + 100 + (size.x - 320) / 2;
+	const int xStart = pos.x + 80 + (size.x - 320) / 2;
 	int x = xStart;
 	int y = pos.y;
 	FontStrMask("Player", Vec2iNew(x, y), colorPurple);
 	x += 100;
 	FontStrMask("Score", Vec2iNew(x, y), colorPurple);
+	x += 32;
+	FontStrMask("Kills", Vec2iNew(x, y), colorPurple);
 	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
 	// Then draw the player list
 	int maxScore = -1;
@@ -151,9 +171,9 @@ static void PlayerListDraw(
 		{
 			continue;
 		}
-		if (maxScore < p->Totals.Score)
+		if (maxScore < GetModeScore(p))
 		{
-			maxScore = p->Totals.Score;
+			maxScore = GetModeScore(p);
 		}
 
 		x = xStart;
@@ -170,14 +190,20 @@ static void PlayerListDraw(
 		sprintf(buf, "%d", p->Totals.Score);
 		FontStrMask(buf, Vec2iNew(x, y), textColor);
 
-		// Draw winner text
-		if (pl->showWinners)
+		// Draw kills
+		x += 32;
+		sprintf(buf, "%d", p->Totals.Kills);
+		FontStrMask(buf, Vec2iNew(x, y), textColor);
+
+		// Draw winner/award text
+		x += 32;
+		if (pl->showWinners && GetModeScore(p) == maxScore)
 		{
-			x += 40;
-			if (p->Totals.Score == maxScore)
-			{
-				FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
-			}
+			FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
+		}
+		else if (pl->showLastMan && p->Lives > 0)
+		{
+			FontStrMask("Last man standing!", Vec2iNew(x, y), colorGreen);
 		}
 
 		y += PLAYER_LIST_ROW_HEIGHT;
@@ -331,80 +357,19 @@ void ScreenDogfightScores(void)
 void ScreenDogfightFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	PlayerList pl = PlayerListNew(NULL, NULL, false, true);
+	PlayerList pl = PlayerListNew(NULL, NULL, true, true);
 	pl.pos.y = 24;
 	pl.size.y -= pl.pos.y;
 	PlayerListLoop(&pl);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
 
-static void DeathmatchFinalScoresDraw(void *data);
 void ScreenDeathmatchFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	GameLoopData gData = GameLoopDataNew(
-		NULL, GameLoopWaitForAnyKeyOrButtonFunc,
-		NULL, DeathmatchFinalScoresDraw);
-	GameLoop(&gData);
+	PlayerList pl = PlayerListNew(NULL, NULL, true, true);
+	pl.pos.y = 24;
+	pl.size.y -= pl.pos.y;
+	PlayerListLoop(&pl);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
-}
-static void DeathmatchFinalScoresDraw(void *data)
-{
-	UNUSED(data);
-
-	// This will only draw once
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	GraphicsBlitBkg(&gGraphicsDevice);
-
-	// Work out the highest kills
-	int maxKills = 0;
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->Totals.Kills > maxKills)
-		{
-			maxKills = p->Totals.Kills;
-		}
-	CA_FOREACH_END()
-
-	// Draw players and their names spread evenly around the screen.
-	const PlayerData *pds[MAX_LOCAL_PLAYERS];
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *pd = CArrayGet(&gPlayerDatas, i);
-		if (!pd->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		pds[idx] = pd;
-	}
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	CASSERT(
-		numLocalPlayers >= 2 && numLocalPlayers <= 4,
-		"Unimplemented number of players for deathmatch");
-#define LAST_MAN_TEXT	"Last man standing!"
-	for (int i = 0; i < numLocalPlayers; i++)
-	{
-		const Vec2i pos = Vec2iNew(
-			w / 4 + (i & 1) * w / 2,
-			numLocalPlayers == 2 ? h / 2 : h / 4 + (i / 2) * h / 2);
-		DisplayCharacterAndName(pos, &pds[i]->Char, pds[i]->name, colorWhite);
-		
-		// Kills
-		char s[16];
-		sprintf(s, "Kills: %d", pds[i]->Totals.Kills);
-		FontStrMask(
-			s, Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20),
-			pds[i]->Totals.Kills == maxKills ? colorGreen : colorWhite);
-
-		// Last man standing?
-		if (pds[i]->Lives > 0)
-		{
-			FontStrMask(
-				LAST_MAN_TEXT,
-				Vec2iNew(pos.x - FontStrW(LAST_MAN_TEXT) / 2, pos.y + 30),
-				colorGreen);
-		}
-	}
 }
