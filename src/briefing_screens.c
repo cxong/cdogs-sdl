@@ -334,14 +334,14 @@ static void ApplyBonuses(PlayerData *p, const int bonus)
 		return;
 	}
 
-	p->totalScore += bonus;
+	p->Totals.Score += bonus;
 
 	// Other per-player bonuses
-	p->totalScore += GetHealthBonus(p);
-	p->totalScore += GetResurrectionFee(p);
-	p->totalScore += GetButcherPenalty(p);
-	p->totalScore += GetNinjaBonus(p);
-	p->totalScore += GetFriendlyBonus(p);
+	p->Totals.Score += GetHealthBonus(p);
+	p->Totals.Score += GetResurrectionFee(p);
+	p->Totals.Score += GetButcherPenalty(p);
+	p->Totals.Score += GetNinjaBonus(p);
+	p->Totals.Score += GetFriendlyBonus(p);
 }
 static int GetHealthBonus(const PlayerData *p)
 {
@@ -354,24 +354,25 @@ static int GetResurrectionFee(const PlayerData *p)
 }
 static int GetButcherPenalty(const PlayerData *p)
 {
-	if (p->friendlies > 5 && p->friendlies > p->kills / 2)
+	if (p->Stats.Friendlies > 5 && p->Stats.Friendlies > p->Stats.Kills / 2)
 	{
-		return -100 * p->friendlies;
+		return -100 * p->Stats.Friendlies;
 	}
 	return 0;
 }
+// TODO: amend ninja bonus to check if no shots fired
 static int GetNinjaBonus(const PlayerData *p)
 {
 	if (p->weaponCount == 1 && !p->weapons[0]->CanShoot &&
-		p->friendlies == 0 && p->kills > 5)
+		p->Stats.Friendlies == 0 && p->Stats.Kills > 5)
 	{
-		return 50 * p->kills;
+		return 50 * p->Stats.Kills;
 	}
 	return 0;
 }
 static int GetFriendlyBonus(const PlayerData *p)
 {
-	return (p->kills == 0 && p->friendlies == 0) ? 500 : 0;
+	return (p->Stats.Kills == 0 && p->Stats.Friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size, const PlayerData *data);
@@ -542,10 +543,10 @@ static void DrawPlayerSummary(
 	}
 
 	textPos.y += 2 * FontH();
-	sprintf(s, "Score: %d", data->score);
+	sprintf(s, "Score: %d", data->Stats.Score);
 	FontStr(s, textPos);
 	textPos.y += FontH();
-	sprintf(s, "Total: %d", data->totalScore);
+	sprintf(s, "Total: %d", data->Totals.Score);
 	FontStr(s, textPos);
 	textPos.y += FontH();
 	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));

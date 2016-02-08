@@ -75,11 +75,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->weapons[i] = StrGunDescription(pd.Weapons[i]);
 	}
 	p->Lives = pd.Lives;
-	p->score = pd.Score;
-	p->totalScore = pd.TotalScore;
-	p->kills = pd.Kills;
-	p->suicides = pd.Suicides;
-	p->friendlies = pd.Friendlies;
+	p->Stats = pd.Stats;
+	p->Totals = pd.Totals;
 	p->Char.maxHealth = pd.MaxHealth;
 	p->lastMission = pd.LastMission;
 
@@ -229,10 +226,7 @@ NPlayerData PlayerDataMissionReset(const PlayerData *p)
 	NPlayerData pd = NMakePlayerData(p);
 	pd.Lives = ModeLives(gCampaign.Entry.Mode);
 
-	pd.Score = 0;
-	pd.Kills = 0;
-	pd.Suicides = 0;
-	pd.Friendlies = 0;
+	memset(&pd.Stats, 0, sizeof pd.Stats);
 
 	pd.LastMission = gCampaign.MissionIndex;
 	pd.MaxHealth = ModeMaxHealth(gCampaign.Entry.Mode);
@@ -250,6 +244,10 @@ void PlayerDataTerminate(CArray *p)
 
 PlayerData *PlayerDataGetByUID(const int uid)
 {
+	if (uid == -1)
+	{
+		return NULL;
+	}
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
 		if (p->UID == uid) return p;
 	CA_FOREACH_END()
@@ -405,8 +403,8 @@ void PlayerScore(PlayerData *p, const int points)
 	{
 		return;
 	}
-	p->score += points;
-	p->totalScore += points;
+	p->Stats.Score += points;
+	p->Totals.Score += points;
 }
 
 bool PlayerTrySetInputDevice(

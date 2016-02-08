@@ -621,11 +621,11 @@ static void DrawPlayerStatus(
 		if (ConfigGetBool(&gConfig, "Game.Ammo"))
 		{
 			// Display money instead of ammo
-			sprintf(s, "Cash: $%d", data->score);
+			sprintf(s, "Cash: $%d", data->Stats.Score);
 		}
 		else
 		{
-			sprintf(s, "Score: %d", data->score);
+			sprintf(s, "Score: %d", data->Stats.Score);
 		}
 	}
 	else
@@ -1032,7 +1032,7 @@ static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags)
 	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
-	DrawNumUpdate(u, "Score: %d", p->score, Vec2iNew(5, y), flags);
+	DrawNumUpdate(u, "Score: %d", p->Stats.Score, Vec2iNew(5, y), flags);
 }
 static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags)
 {

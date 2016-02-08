@@ -95,15 +95,17 @@ static struct Entry todaysHigh[MAX_ENTRY];
 
 static int EnterTable(struct Entry *table, PlayerData *data)
 {
-	int i, j;
-
-	for (i = 0; i < MAX_ENTRY; i++) {
-		if (data->totalScore > table[i].score) {
-			for (j = MAX_ENTRY - 1; j > i; j--)
+	for (int i = 0; i < MAX_ENTRY; i++)
+	{
+		if (data->Totals.Score > table[i].score)
+		{
+			for (int j = MAX_ENTRY - 1; j > i; j--)
+			{
 				table[j] = table[j - 1];
+			}
 
 			strcpy(table[i].name, data->name);
-			table[i].score = data->totalScore;
+			table[i].score = data->Totals.Score;
 			table[i].missions = data->missions;
 			table[i].lastMission = data->lastMission;
 

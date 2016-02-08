@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -201,19 +201,25 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
 		}
 
-		int maxScore = 0;
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			p->survived = IsPlayerAlive(p);
 			if (IsPlayerAlive(p))
 			{
-				TActor *player = ActorGetByUID(p->ActorUID);
+				const TActor *player = ActorGetByUID(p->ActorUID);
 				p->hp = player->health;
-				p->totalScore++;
-				maxScore = MAX(maxScore, p->totalScore);
 			}
 		CA_FOREACH_END()
 		if (IsPVP(co->Entry.Mode))
 		{
+			// Calculate PVP rounds won
+			int maxScore = 0;
+			CA_FOREACH(PlayerData, p, gPlayerDatas)
+				if (IsPlayerAlive(p))
+				{
+					p->Totals.Score++;
+					maxScore = MAX(maxScore, p->Totals.Score);
+				}
+			CA_FOREACH_END()
 			gameOver = maxScore == ModeMaxRoundsWon(co->Entry.Mode);
 			CASSERT(maxScore <= ModeMaxRoundsWon(co->Entry.Mode),
 				"score exceeds max rounds won");
@@ -259,7 +265,8 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 				if (!p->survived)
 				{
-					p->totalScore = 0;
+					// Reset scores because we died :(
+					memset(&p->Totals, 0, sizeof p->Totals);
 					p->missions = 0;
 				}
 				else

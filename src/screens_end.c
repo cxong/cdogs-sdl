@@ -82,11 +82,11 @@ static int ComparePlayerScores(const void *v1, const void *v2)
 {
 	const PlayerData *p1 = PlayerDataGetByUID(*(const int *)v1);
 	const PlayerData *p2 = PlayerDataGetByUID(*(const int *)v2);
-	if (p1->totalScore > p2->totalScore)
+	if (p1->Totals.Score > p2->Totals.Score)
 	{
 		return -1;
 	}
-	else if (p1->totalScore < p2->totalScore)
+	else if (p1->Totals.Score < p2->Totals.Score)
 	{
 		return 1;
 	}
@@ -151,9 +151,9 @@ static void PlayerListDraw(
 		{
 			continue;
 		}
-		if (maxScore < p->totalScore)
+		if (maxScore < p->Totals.Score)
 		{
-			maxScore = p->totalScore;
+			maxScore = p->Totals.Score;
 		}
 
 		x = xStart;
@@ -167,14 +167,14 @@ static void PlayerListDraw(
 		// Draw score
 		x += 100;
 		char buf[256];
-		sprintf(buf, "%d", p->totalScore);
+		sprintf(buf, "%d", p->Totals.Score);
 		FontStrMask(buf, Vec2iNew(x, y), textColor);
 
 		// Draw winner text
 		if (pl->showWinners)
 		{
 			x += 40;
-			if (p->totalScore == maxScore)
+			if (p->Totals.Score == maxScore)
 			{
 				FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
 			}
@@ -361,9 +361,9 @@ static void DeathmatchFinalScoresDraw(void *data)
 	// Work out the highest kills
 	int maxKills = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->kills > maxKills)
+		if (p->Totals.Kills > maxKills)
 		{
-			maxKills = p->kills;
+			maxKills = p->Totals.Kills;
 		}
 	CA_FOREACH_END()
 
@@ -393,10 +393,10 @@ static void DeathmatchFinalScoresDraw(void *data)
 		
 		// Kills
 		char s[16];
-		sprintf(s, "Kills: %d", pds[i]->kills);
+		sprintf(s, "Kills: %d", pds[i]->Totals.Kills);
 		FontStrMask(
 			s, Vec2iNew(pos.x - FontStrW(s) / 2, pos.y + 20),
-			pds[i]->kills == maxKills ? colorGreen : colorWhite);
+			pds[i]->Totals.Kills == maxKills ? colorGreen : colorWhite);
 
 		// Last man standing?
 		if (pds[i]->Lives > 0)

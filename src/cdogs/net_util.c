@@ -71,11 +71,8 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 		strcpy(d.Weapons[i], p->weapons[i]->name);
 	}
 	d.Lives = p->Lives;
-	d.Score = p->score;
-	d.TotalScore = p->totalScore;
-	d.Kills = p->kills;
-	d.Suicides = p->suicides;
-	d.Friendlies = p->friendlies;
+	d.Stats = p->Stats;
+	d.Totals = p->Totals;
 	d.MaxHealth = p->Char.maxHealth;
 	d.LastMission = p->lastMission;
 	d.UID = p->UID;

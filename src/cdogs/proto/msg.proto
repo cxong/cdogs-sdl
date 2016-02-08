@@ -31,19 +31,23 @@ message NCharLooks {
 	required int32 Hair = 6;
 }
 
+message NPlayerStats {
+	required int32 Score = 1;
+	required int32 Kills = 2;
+	required int32 Suicides = 3;
+	required int32 Friendlies = 4;
+}
+
 message NPlayerData {
 	required string Name = 1;
 	required NCharLooks Looks = 2;
 	repeated string Weapons = 3;
 	required uint32 Lives = 4;
-	required int32 Score = 5;
-	required int32 TotalScore = 6;
-	required int32 Kills = 7;
-	required int32 Suicides = 8;
-	required int32 Friendlies = 9;
-	required uint32 MaxHealth = 10;
-	required uint32 LastMission = 11;
-	required uint32 UID = 12;
+	required NPlayerStats Stats = 5;
+	required NPlayerStats Totals = 6;
+	required uint32 MaxHealth = 7;
+	required uint32 LastMission = 8;
+	required uint32 UID = 9;
 }
 
 message NTileSet {

@@ -30,6 +30,9 @@
 #include "character.h"
 
 #define MAX_WEAPONS 3
+// TODO: track accuracy
+// this requires sending the bullet type with the ActorHit event,
+// since we want to exclude melee and explosives from accuracy calcuation
 typedef struct
 {
 	int ActorUID;	// -1 if dead
@@ -42,11 +45,8 @@ typedef struct
 	const GunDescription *weapons[MAX_WEAPONS];
 	int Lives;
 
-	int score;
-	int totalScore;	// also rounds won for dogfight
-	int kills;
-	int suicides;
-	int friendlies;
+	NPlayerStats Stats;
+	NPlayerStats Totals;
 
 	// Used for end-of-game score tallying
 	int survived;

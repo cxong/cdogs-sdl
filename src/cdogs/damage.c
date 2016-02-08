@@ -93,14 +93,17 @@ static void TrackKills(PlayerData *pd, const TActor *victim)
 		(victim->PlayerUID >= 0 ||
 		(victim->flags & (FLAGS_GOOD_GUY | FLAGS_PENALTY))))
 	{
-		pd->friendlies++;
+		pd->Stats.Friendlies++;
+		pd->Totals.Friendlies++;
 	}
 	else if (pd->UID == victim->PlayerUID)
 	{
-		pd->suicides++;
+		pd->Stats.Suicides++;
+		pd->Totals.Suicides++;
 	}
 	else
 	{
-		pd->kills++;
+		pd->Stats.Kills++;
+		pd->Totals.Kills++;
 	}
 }
