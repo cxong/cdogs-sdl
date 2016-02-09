@@ -418,7 +418,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		aa.TileItemFlags = a->tileItem.flags;
 		aa.FullPos.x = a->Pos.x;
 		aa.FullPos.y = a->Pos.y;
-		LOG(LM_NET, LL_DEBUG, "send add player UID(%d) playerUID(%d)",
+		LOG(LM_NET, LL_DEBUG, "send add actor UID(%d) playerUID(%d)",
 			(int)aa.UID, (int)aa.PlayerUID);
 		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
 	CA_FOREACH_END()

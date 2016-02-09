@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -72,6 +72,10 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	JoyPrePoll(&handlers->joysticks);
 	SDL_free(handlers->DropFile);
 	handlers->DropFile = NULL;
+	// Don't process mouse events if focus just regained this cycle
+	// This is to prevent bogus click events outside the window, e.g. in the
+	// title bar
+	bool regainedFocus = false;
 	while (SDL_PollEvent(&e))
 	{
 		switch (e.type)
@@ -140,18 +144,22 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+			if (regainedFocus) break;
 			MouseOnButtonDown(&handlers->mouse, e.button.button);
 			break;
 		case SDL_MOUSEBUTTONUP:
+			if (regainedFocus) break;
 			MouseOnButtonUp(&handlers->mouse, e.button.button);
 			break;
 		case SDL_MOUSEWHEEL:
+			if (regainedFocus) break;
 			MouseOnWheel(&handlers->mouse, e.wheel.x, e.wheel.y);
 			break;
 		case SDL_WINDOWEVENT:
 			switch (e.window.event)
 			{
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				regainedFocus = true;
 				MusicSetPlaying(&gSoundDevice, true);
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
