@@ -14,11 +14,6 @@ addons:
 
 before_install:
   - bash build/travis-ci/install-sdl2.sh
-install:
-  # SDL2
-  - export SDL_PREFIX=$HOME/sdl2
-  - export PKG_CONFIG_PATH=$SDL_PREFIX/lib/pkgconfig
-  - export PATH=$PATH:$SDL_PREFIX/bin/
 cache:
   directories:
   - /opt/gcw0-toolchain
