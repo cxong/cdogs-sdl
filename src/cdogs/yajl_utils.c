@@ -27,7 +27,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 
 static char *ReadFile(const char *filename);
@@ -228,7 +227,8 @@ yajl_val YAJLFindNode(yajl_val node, const char *path)
 	// max 256 levels
 	const char *pathSplit[256];
 	for (int i = 0; i < 256; i++) pathSplit[i] = NULL;
-	char *pathCopy = strdup(path);
+	char *pathCopy;
+	CSTRDUP(pathCopy, path);
 	char *pch = strtok(pathCopy, "/");
 	int i = 0;
 	yajl_val out = NULL;
@@ -246,6 +246,6 @@ yajl_val YAJLFindNode(yajl_val node, const char *path)
 	out = yajl_tree_get(node, pathSplit, yajl_t_any);
 
 bail:
-	free(pathCopy);
+	CFREE(pathCopy);
 	return out;
 }
