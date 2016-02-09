@@ -63,7 +63,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_CLIENT_READY, false, false, false, false, NULL },
 	{ GAME_EVENT_NET_GAME_START, false, false, false, false, NULL },
 
-	{ GAME_EVENT_SCORE, true, true, true, true, NULL },
+	{ GAME_EVENT_SCORE, true, true, true, true, NScore_fields },
 	{ GAME_EVENT_SOUND_AT, true, false, true, true, NSound_fields },
 	{ GAME_EVENT_SCREEN_SHAKE, false, false, true, true, NULL },
 	{ GAME_EVENT_SET_MESSAGE, false, false, true, true, NULL },
