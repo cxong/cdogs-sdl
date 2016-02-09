@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include <cbehave/cbehave.h>
 
 #include <player.h>
@@ -113,9 +114,8 @@ FEATURE(1, "Assign unused input device")
 	PlayerDataTerminate(&gPlayerDatas);
 FEATURE_END
 
-int main(int argc, char *argv[])
+int main(void)
 {
-	UNUSED(argc && argv);
 	cbehave_feature features[] =
 	{
 		{feature_idx(1)}
