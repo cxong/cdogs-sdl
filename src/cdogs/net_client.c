@@ -271,6 +271,9 @@ void NetClientDisconnect(NetClient *n)
 	n->ClientId = -1;
 	n->FirstPlayerUID = 0;
 	n->Ready = false;
+	// Also reset the scanned address buffer
+	CArrayClear(&n->ScannedAddrs);
+	CArrayClear(&n->scannedAddrBuf);
 }
 
 static void OnReceive(NetClient *n, ENetEvent event);
