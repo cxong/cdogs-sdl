@@ -201,8 +201,10 @@ static void PlayerListDraw(
 		{
 			FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
 		}
-		else if (pl->showLastMan && p->Lives > 0)
+		else if (pl->showLastMan && p->Lives > 0 &&
+			gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH)
 		{
+			// Only show last man standing on deathmatch mode
 			FontStrMask("Last man standing!", Vec2iNew(x, y), colorGreen);
 		}
 
