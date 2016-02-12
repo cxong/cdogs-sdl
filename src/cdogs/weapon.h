@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -124,6 +124,7 @@ typedef struct
 	const ParticleClass *MuzzleFlash;
 	const ParticleClass *Brass;
 	bool CanShoot;
+	bool CanDrop;	// whether this gun can be dropped to be picked up
 	int ShakeAmount;	// Amount of screen shake to produce
 	bool IsRealGun;	// whether this gun can be used as is by players
 } GunDescription;

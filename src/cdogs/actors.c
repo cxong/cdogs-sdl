@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1262,10 +1262,14 @@ static void ActorAddGunPickup(const TActor *actor)
 	// Select a gun at random to drop
 	if (!gCampaign.IsClient)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-		e.u.AddPickup.UID = PickupsGetNextUID();
 		const int gunIndex = RAND_INT(0, (int)actor->guns.size - 1);
 		const Weapon *w = CArrayGet(&actor->guns, gunIndex);
+		if (!w->Gun->CanDrop)
+		{
+			return;
+		}
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+		e.u.AddPickup.UID = PickupsGetNextUID();
 		sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
 		e.u.AddPickup.IsRandomSpawned = false;
 		e.u.AddPickup.SpawnerUID = -1;

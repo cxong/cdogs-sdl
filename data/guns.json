@@ -18,7 +18,8 @@
     "MuzzleHeight": 10,
     "MuzzleFlashParticle": "muzzle_flash_default",
     "Brass": "",
-    "CanShoot": true
+    "CanShoot": true,
+    "CanDrop": true
   },
   "Guns": [
     {

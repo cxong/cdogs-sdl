@@ -20,7 +20,8 @@
       "Cost": 1,
       "Lock": 100,
       "Sound": "fireball",
-      "MuzzleFlashParticle": ""
+      "MuzzleFlashParticle": "",
+      "CanDrop": false
     },
     {
       "Name": "Baron Fireball",
@@ -29,7 +30,8 @@
       "Cost": 5,
       "Lock": 50,
       "Sound": "fireball",
-      "MuzzleFlashParticle": ""
+      "MuzzleFlashParticle": "",
+      "CanDrop": false
     }
   ]
 }

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -269,6 +269,8 @@ static void LoadGunDescription(
 	}
 
 	LoadBool(&g->CanShoot, node, "CanShoot");
+
+	LoadBool(&g->CanDrop, node, "CanDrop");
 
 	LoadInt(&g->ShakeAmount, node, "ShakeAmount");
 
