@@ -417,8 +417,10 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	}
 
 	// Check that all surviving players are in exit zone
+	// Note: players are still in the exit area if they are dying there;
+	// this is the basis for the "resurrection penalty"
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (!IsPlayerAlive(p)) continue;
+		if (!IsPlayerAliveOrDying(p)) continue;
 		const TActor *player = ActorGetByUID(p->ActorUID);
 		if (!MapIsTileInExit(&gMap, &player->tileItem)) return false;
 	CA_FOREACH_END()
