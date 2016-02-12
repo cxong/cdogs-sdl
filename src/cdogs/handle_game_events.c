@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -77,12 +77,22 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TILE_SET:
 		{
-			Tile *t = MapGetTile(&gMap, Net2Vec2i(e.u.TileSet.Pos));
-			t->flags = e.u.TileSet.Flags;
-			t->pic = PicManagerGetNamedPic(
-				&gPicManager, e.u.TileSet.PicName);
-			t->picAlt = PicManagerGetNamedPic(
-				&gPicManager, e.u.TileSet.PicAltName);
+			Vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+			for (int i = 0; i <= e.u.TileSet.RunLength; i++)
+			{
+				Tile *t = MapGetTile(&gMap, pos);
+				t->flags = e.u.TileSet.Flags;
+				t->pic = PicManagerGetNamedPic(
+					&gPicManager, e.u.TileSet.PicName);
+				t->picAlt = PicManagerGetNamedPic(
+					&gPicManager, e.u.TileSet.PicAltName);
+				pos.x++;
+				if (pos.x == gMap.Size.x)
+				{
+					pos.x = 0;
+					pos.y++;
+				}
+			}
 		}
 		break;
 	case GAME_EVENT_MAP_OBJECT_ADD:

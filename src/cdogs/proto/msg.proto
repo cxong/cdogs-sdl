@@ -55,6 +55,7 @@ message NTileSet {
 	required uint32 Flags = 2;
 	required string PicName = 3;
 	required string PicAltName = 4;
+	required int32 RunLength = 5;
 }
 
 message NMapObjectAdd {

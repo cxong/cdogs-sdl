@@ -436,22 +436,41 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
 	CA_FOREACH_END()
 
-	// Send all tiles
-	// TODO: RLE?
+	// Send all tiles, RLE
+	const Tile *tLast = NULL;
+	NTileSet ts = NTileSet_init_default;
 	Vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
 		{
 			const Tile *t = MapGetTile(&gMap, pos);
-			NTileSet ts = NTileSet_init_default;
-			ts.Pos = Vec2i2Net(pos);
-			if (t->pic != NULL) strcpy(ts.PicName, t->pic->name);
-			if (t->picAlt != NULL) strcpy(ts.PicAltName, t->picAlt->name);
-			ts.Flags = t->flags;
-			NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
+			// Use RLE, so check if the current tile is the same as the last
+			if (tLast != NULL &&
+				t->pic == tLast->pic && t->picAlt == tLast->picAlt &&
+				t->flags == tLast->flags)
+			{
+				ts.RunLength++;
+			}
+			else
+			{
+				// Send the last run
+				if (tLast != NULL)
+				{
+					NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
+				}
+				// Begin the next run
+				memset(&ts, 0, sizeof ts);
+				ts.Pos = Vec2i2Net(pos);
+				if (t->pic != NULL) strcpy(ts.PicName, t->pic->name);
+				if (t->picAlt != NULL) strcpy(ts.PicAltName, t->picAlt->name);
+				ts.Flags = t->flags;
+				ts.RunLength = 0;
+			}
+			tLast = t;
 		}
 	}
+	NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
 
 	// Send all the tiles visited so far
 	NExploreTiles et = NExploreTiles_init_default;
