@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,6 @@ void GameLoop(GameLoopData *data)
 		if ((int)ticksElapsed < 1000 / data->FPS)
 		{
 			SDL_Delay(1);
-			//debug(D_MAX, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, ticksElapsed);
 			continue;
 		}
 
@@ -110,10 +109,18 @@ void GameLoop(GameLoopData *data)
 		ticksElapsed -= 1000 / data->FPS;
 		data->Frames++;
 		// frame skip
-		if ((int)ticksElapsed > 1000 / data->FPS && framesSkipped < maxFrameskip)
+		if ((int)ticksElapsed > 1000 / data->FPS)
 		{
 			framesSkipped++;
-			continue;
+			if (framesSkipped == maxFrameskip)
+			{
+				// We've skipped too many frames; give up
+				ticksElapsed = 0;
+			}
+			else
+			{
+				continue;
+			}
 		}
 		framesSkipped = 0;
 
