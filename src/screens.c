@@ -134,11 +134,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	bool gameOver = true;
 	do
 	{
-		// Unready all the players
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			p->Ready = false;
-		CA_FOREACH_END()
-
 		CampaignAndMissionSetup(1, co, &gMission);
 
 		if (IsGameOptionsNeeded(co->Entry.Mode))
@@ -185,6 +180,12 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		run = RunGame(co, &gMission, &gMap);
+
+		// Unready all the players
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+			p->Ready = false;
+		CA_FOREACH_END()
+
 		// Don't quit if all players died, that's normal for PVP modes
 		if (IsPVP(co->Entry.Mode) &&
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
