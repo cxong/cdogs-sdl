@@ -76,6 +76,7 @@ gcw0-toolchain/
 *.o
 *.a
 *.so
+*.so.*
 *.swp
 Makefile.*
 *.tar.gz

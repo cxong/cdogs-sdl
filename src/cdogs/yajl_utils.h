@@ -27,9 +27,8 @@
 
 #include <stdbool.h>
 
-#include <yajl/api/yajl_tree.h>
-
 #include "vector.h"
+#include "yajl/api/yajl_tree.h"
 
 
 yajl_val YAJLReadFile(const char *filename);
