@@ -10,6 +10,7 @@ src/tests/color_test
 src/tests/config_test
 src/tests/json_test
 src/tests/pic_test
+src/tests/player_test
 src/tests/utils_test
 src/cdogs/physfs/test_physfs
 
