@@ -406,7 +406,9 @@ static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(menu, MenuCreateConfigOptions(
 		"Interface...", "Interface Options:",
 		ConfigGet(&gConfig, "Interface"), ms, true));
+#if !defined(__ANDROID__) && !defined(__GCWZERO__)
 	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", ms));
+#endif
 	MenuAddSubmenu(menu, MenuCreateConfigOptions(
 		"Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"), ms,
 		true));
@@ -456,9 +458,7 @@ menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 		"Configure Controls:",
 		MENU_TYPE_OPTIONS,
 		0);
-#ifndef __ANDROID__
 	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", ms));
-#endif
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
