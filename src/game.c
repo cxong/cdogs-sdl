@@ -334,7 +334,7 @@ static void RunGameInput(void *data)
 	// Check if automap key is pressed by any player
 	rData->isMap =
 		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
-		(KeyIsDown(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerKeys0.map")) ||
+		(KeyIsDown(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerCodes0.map")) ||
 		(cmdAll & CMD_MAP));
 
 	// Check if escape was pressed

@@ -1085,14 +1085,14 @@ static bool KeyAvailable(
 	{
 		return false;
 	}
-	if (key == (SDL_Scancode)ConfigGetInt(&gConfig, "Input.PlayerKeys0.map"))
+	if (key == (SDL_Scancode)ConfigGetInt(&gConfig, "Input.PlayerCodes0.map"))
 	{
 		return false;
 	}
 
 	// Check if the key is being used by another control
 	char buf[256];
-	sprintf(buf, "Input.PlayerKeys%d", playerIndex);
+	sprintf(buf, "Input.PlayerCodes%d", playerIndex);
 	const InputKeys keys = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	for (key_code_e i = 0; i < KEY_CODE_MAP; i++)
 	{
@@ -1103,7 +1103,7 @@ static bool KeyAvailable(
 	}
 
 	// Check if the other player is using the key
-	sprintf(buf, "Input.PlayerKeys%d", 1 - playerIndex);
+	sprintf(buf, "Input.PlayerCodes%d", 1 - playerIndex);
 	const InputKeys keysOther = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	if (keysOther.left == key ||
 		keysOther.right == key ||
@@ -1133,15 +1133,15 @@ void MenuProcessChangeKey(menu_t *menu)
 		if (code != KEY_CODE_MAP)
 		{
 			char buf[256];
-			sprintf(buf, "Input.PlayerKeys%d.%s", pi, KeycodeStr(code));
+			sprintf(buf, "Input.PlayerCodes%d.%s", pi, KeycodeStr(code));
 			ConfigGet(&gConfig, buf)->u.Int.Value = key;
-			sprintf(buf, "Input.PlayerKeys%d", pi);
+			sprintf(buf, "Input.PlayerCodes%d", pi);
 			gEventHandlers.keyboard.PlayerKeys[pi] = KeyLoadPlayerKeys(
 				ConfigGet(&gConfig, buf));
 		}
 		else
 		{
-			ConfigGet(&gConfig, "Input.PlayerKeys0.map")->u.Int.Value = key;
+			ConfigGet(&gConfig, "Input.PlayerCodes0.map")->u.Int.Value = key;
 			gEventHandlers.keyboard.PlayerKeys[0].map = key;
 		}
 		MenuPlaySound(MENU_SOUND_ENTER);

@@ -63,7 +63,7 @@ void KeyInit(keyboard_t *keyboard)
 	for (int i = 0; i < MAX_KEYBOARD_CONFIGS; i++)
 	{
 		char buf[256];
-		sprintf(buf, "Input.PlayerKeys%d", i);
+		sprintf(buf, "Input.PlayerCodes%d", i);
 		keyboard->PlayerKeys[i] = KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
 	}
 }

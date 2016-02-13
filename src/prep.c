@@ -196,7 +196,7 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 		for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
 		{
 			char buf[256];
-			sprintf(buf, "Input.PlayerKeys%d.button1", j);
+			sprintf(buf, "Input.PlayerCodes%d.button1", j);
 			if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
 				PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
 			{

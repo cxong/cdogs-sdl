@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 #include "config_io.h"
 
 #include "config_json.h"
+#include "log.h"
 
 
 Config ConfigLoad(const char *filename)
@@ -59,10 +60,11 @@ Config ConfigLoad(const char *filename)
 	case 4:
 	case 5:
 	case 6:
+	case 7:
 		ConfigLoadJSON(&c, filename);
 		break;
 	default:
-		printf("Unknown config version\n");
+		LOG(LM_MAIN, LL_ERROR, "Unknown config version");
 		break;
 	}
 	ConfigSetChanged(&c);

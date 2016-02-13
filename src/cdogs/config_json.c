@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,9 @@
 #include "config.h"
 #include "json_utils.h"
 #include "keyboard.h"
+#include "log.h"
 
-#define VERSION "6"
+#define VERSION "7"
 
 static void ConfigLoadVisit(Config *c, json_t *node);
 void ConfigLoadJSON(Config *config, const char *filename)
@@ -72,21 +73,6 @@ void ConfigLoadJSON(Config *config, const char *filename)
 			c->u.Enum.Value = moveWhenShooting ? FIREMOVE_NORMAL : FIREMOVE_STOP;
 		}
 	}
-	if (version < 6)
-	{
-		json_t *node = JSONFindNode(root, "Input/Keys");
-		if (node != NULL)
-		{
-			for (int i = 0; i < 2 && node != NULL; i++)
-			{
-				char buf[256];
-				sprintf(buf, "Input.PlayerKeys%d", i);
-				Config *c = ConfigGet(config, buf);
-				ConfigLoadVisit(c, node->child);
-				node = node->next;
-			}
-		}
-	}
 	if (version < 4)
 	{
 		json_t *node = JSONFindNode(root, "Interface");
@@ -111,7 +97,7 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 {
 	if (node == NULL)
 	{
-		fprintf(stderr, "Error loading config: node %s not found\n",
+		LOG(LM_MAIN, LL_WARN, "Error loading config: node %s not found",
 			c->Name);
 		return;
 	}
@@ -155,8 +141,8 @@ static void ConfigLoadVisit(Config *c, json_t *node)
 				node = json_find_first_label(node, c->Name);
 				if (node == NULL)
 				{
-					fprintf(stderr, "Error loading config: node %s not found\n",
-						c->Name);
+					LOG(LM_MAIN, LL_WARN,
+						"Error loading config: node %s not found", c->Name);
 					return;
 				}
 				node = node->child;

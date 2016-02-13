@@ -602,7 +602,7 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&root, gfx);
 
 	Config input = ConfigNewGroup("Input");
-	Config pk0 = ConfigNewGroup("PlayerKeys0");
+	Config pk0 = ConfigNewGroup("PlayerCodes0");
 	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDL_SCANCODE_LEFT, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDL_SCANCODE_RIGHT, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDL_SCANCODE_UP, 0, 0, 0, NULL, NULL));
@@ -616,7 +616,7 @@ Config ConfigDefault(void)
 #endif
 	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk0);
-	Config pk1 = ConfigNewGroup("PlayerKeys1");
+	Config pk1 = ConfigNewGroup("PlayerCodes1");
 	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDL_SCANCODE_KP_4, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDL_SCANCODE_KP_6, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDL_SCANCODE_KP_8, 0, 0, 0, NULL, NULL));

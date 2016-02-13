@@ -26,6 +26,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "sys_specifics.h"
 
