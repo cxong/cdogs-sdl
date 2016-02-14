@@ -38,7 +38,6 @@
 #include "keyboard.h"
 #include "log.h"
 
-#define VERSION "7"
 
 static void ConfigLoadVisit(Config *c, json_t *node);
 void ConfigLoadJSON(Config *config, const char *filename)
@@ -174,7 +173,8 @@ void ConfigSaveJSON(const Config *config, const char *filename)
 	setlocale(LC_ALL, "");
 
 	root = json_new_object();
-	json_insert_pair_into_object(root, "Version", json_new_number(VERSION));
+	json_insert_pair_into_object(
+		root, "Version", json_new_number(TOSTRING(CONFIG_VERSION)));
 	ConfigSaveVisit(config, root);
 
 	json_tree_to_string(root, &text);

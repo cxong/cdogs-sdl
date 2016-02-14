@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,9 @@ extern int debug_level;
 // Global variables so their address can be taken (passed into void * funcs)
 extern bool gTrue;
 extern bool gFalse;
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 #define D_NORMAL	0
 #define D_VERBOSE	1
