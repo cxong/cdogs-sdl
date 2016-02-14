@@ -68,6 +68,8 @@ add_executable(config_test
 	../cdogs/config_old.h
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h
+	../cdogs/log.c
+	../cdogs/log.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(config_test

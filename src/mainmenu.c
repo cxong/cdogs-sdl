@@ -391,7 +391,9 @@ static void CheckLANServers(menu_t *menu, void *data)
 }
 
 static menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
+#if !defined(__ANDROID__) && !defined(__GCWZERO__)
 static menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
+#endif
 
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 {
@@ -451,6 +453,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 
 menu_t *MenuCreateKeys(const char *name, MenuSystem *ms);
 
+#if !defined(__ANDROID__) && !defined(__GCWZERO__)
 menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 {
 	menu_t *menu = MenuCreateNormal(
@@ -464,6 +467,7 @@ menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
 	return menu;
 }
+#endif
 
 menu_t *MenuCreateQuit(const char *name)
 {
