@@ -14,6 +14,7 @@ addons:
 
 before_install:
   - bash build/travis-ci/install-sdl2.sh
+  - bash build/travis-ci/setup-travis.sh
 cache:
   directories:
   - /opt/gcw0-toolchain
