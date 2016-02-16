@@ -71,6 +71,10 @@ CMakeScripts/
 gcw0build/
 gcw0-toolchain/
 
+# Ninja
+.ninja*
+*.ninja
+
 # Other
 *.lnk
 *.o

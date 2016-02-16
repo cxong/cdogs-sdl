@@ -1,7 +1,7 @@
 if(APPLE)
 	cmake_minimum_required(VERSION 2.8.12)
 else()
-	cmake_minimum_required(VERSION 2.8.2)
+	cmake_minimum_required(VERSION 2.8.8)
 endif()
 if("${CMAKE_VERSION}" VERSION_GREATER 3.1)
 	cmake_policy(SET CMP0054 NEW)
