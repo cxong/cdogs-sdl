@@ -10,6 +10,7 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - gcc-4.8
+    - ia32-libs-multiarch
     - ia32-libs
     - rpm
 
