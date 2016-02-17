@@ -11,6 +11,8 @@ addons:
     packages:
     - gcc-4.8
     - gcc-multilib
+    - libstdc++6:i386
+    - libc6:i386
     - rpm
 
 before_install:
