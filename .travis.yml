@@ -31,7 +31,7 @@ before_deploy:
   - sudo make package
   # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sudo sh make_gcw0.sh
+  - sh make_gcw0.sh
 deploy:
   provider: releases
   api_key:
