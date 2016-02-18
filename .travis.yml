@@ -32,6 +32,7 @@ script:
   - make test
 before_deploy:
   - sudo make package
+  - "sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*"
   # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
   - sh make_gcw0.sh
