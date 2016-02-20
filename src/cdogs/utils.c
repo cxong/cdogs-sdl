@@ -197,8 +197,10 @@ void RealPath(const char *src, char *dest)
 		}
 	}
 }
+
 // Convert an absolute path to a relative path
 // e.g. /a/path/from/here, /a/path/to -> ../to
+static void TrimSlashes(char *s);
 void RelPath(char *buf, const char *to, const char *from)
 {
 	// Make sure both to/from paths were generated using RealPath,
@@ -209,6 +211,10 @@ void RelPath(char *buf, const char *to, const char *from)
 	char fromBuf[CDOGS_PATH_MAX];
 	RealPath(to, toBuf);
 	RealPath(from, fromBuf);
+
+	// Remove trailing slashes
+	TrimSlashes(toBuf);
+	TrimSlashes(fromBuf);
 	
 	// First, find common string prefix
 	const char *t = toBuf;
@@ -251,6 +257,16 @@ void RelPath(char *buf, const char *to, const char *from)
 	tSlash++;
 	strcat(buf, tSlash);
 }
+static void TrimSlashes(char *s)
+{
+	char *end = s + strlen(s) - 1;
+	while (end > s && *end == '/')
+	{
+		end--;
+	}
+	*(end + 1) = '\0';
+}
+
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif

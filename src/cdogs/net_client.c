@@ -462,9 +462,11 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				NCampaignDef def;
 				NetDecode(event.packet, &def, NCampaignDef_fields);
 				gCampaign.Entry.Mode = (GameMode)def.GameMode;
+				// Normalise the path
+				char buf[CDOGS_PATH_MAX];
+				GetDataFilePath(buf, def.Path);
 				CampaignEntry entry;
-				if (CampaignEntryTryLoad(
-						&entry, def.Path, GAME_MODE_NORMAL) &&
+				if (CampaignEntryTryLoad(&entry, buf, GAME_MODE_NORMAL) &&
 					CampaignLoad(&gCampaign, &entry))
 				{
 					gCampaign.IsClient = true;

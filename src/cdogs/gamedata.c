@@ -93,10 +93,12 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	{
 		CampaignSetting customSetting;
 		CampaignSettingInit(&customSetting);
-
-		if (MapNewLoad(entry->Path, &customSetting))
+		// Normalise the path
+		char buf[CDOGS_PATH_MAX];
+		GetDataFilePath(buf, entry->Path);
+		if (MapNewLoad(buf, &customSetting))
 		{
-			printf("Failed to load campaign %s!\n", entry->Path);
+			LOG(LM_MAIN, LL_ERROR, "failed to load campaign %s!", buf);
 			CASSERT(false, "Failed to load campaign");
 		}
 		else
