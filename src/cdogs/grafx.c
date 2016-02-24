@@ -161,7 +161,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 	const int numDisplayModes = SDL_GetNumDisplayModes(0);
 	if (numDisplayModes < 1)
 	{
-		LOG(LM_MAIN, LL_ERROR, "no valid display modes: %s\n", SDL_GetError());
+		LOG(LM_MAIN, LL_ERROR, "no valid display modes: %s", SDL_GetError());
 		return;
 	}
 	for (int i = 0; i < numDisplayModes; i++)
@@ -169,7 +169,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 		SDL_DisplayMode mode;
 		if (SDL_GetDisplayMode(0, i, &mode) != 0)
 		{
-			LOG(LM_MAIN, LL_ERROR, "cannot get display mode: %s\n",
+			LOG(LM_MAIN, LL_ERROR, "cannot get display mode: %s",
 				SDL_GetError());
 			continue;
 		}
@@ -217,7 +217,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		if (g->modeIndex == -1)
 		{
 			g->modeIndex = 0;
-			LOG(LM_MAIN, LL_ERROR, "invalid Video Mode %dx%d\n", w, h);
+			LOG(LM_MAIN, LL_ERROR, "invalid Video Mode %dx%d", w, h);
 			return;
 		}
 	}
@@ -239,7 +239,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		windowSize.x, windowSize.y, sdlFlags, &g->window, &g->renderer);
 	if (g->window == NULL || g->renderer == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot create window or renderer: %s\n",
+		LOG(LM_MAIN, LL_ERROR, "cannot create window or renderer: %s",
 			SDL_GetError());
 		return;
 	}
@@ -268,13 +268,13 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	}
 	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, renderScaleQuality))
 	{
-		LOG(LM_MAIN, LL_WARN, "cannot set render quality hint: %s\n",
+		LOG(LM_MAIN, LL_WARN, "cannot set render quality hint: %s",
 			SDL_GetError());
 	}
 
 	if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot set renderer logical size: %s\n",
+		LOG(LM_MAIN, LL_ERROR, "cannot set renderer logical size: %s",
 			SDL_GetError());
 		return;
 	}
@@ -283,7 +283,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		w, h);
 	if (g->screen == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot create screen texture: %s\n",
+		LOG(LM_MAIN, LL_ERROR, "cannot create screen texture: %s",
 			SDL_GetError());
 		return;
 	}
@@ -292,6 +292,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	g->Amask =
 		0xffffffff & ~(g->Format->Rmask | g->Format->Gmask | g->Format->Bmask);
 	g->Ashift = 48 - g->Format->Rshift - g->Format->Gshift - g->Format->Bshift;
+	LOG(LM_MAIN, LL_INFO, "Amask(%08x) Ashift(%d)", g->Amask, g->Ashift);
 
 	CFREE(g->buf);
 	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
