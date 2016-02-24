@@ -287,9 +287,11 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 			SDL_GetError());
 		return;
 	}
-	// Values for ARGB8888
-	g->Amask = 0xFF000000;
-	g->Ashift = 24;
+	// The display pixel format doesn't have A, but we need it to convert from
+	// colours to pixel values, so replace them here
+	g->Amask =
+		0xffffffff & ~(g->Format->Rmask | g->Format->Gmask | g->Format->Bmask);
+	g->Ashift = 48 - g->Format->Rshift - g->Format->Gshift - g->Format->Bshift;
 
 	CFREE(g->buf);
 	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
