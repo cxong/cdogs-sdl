@@ -250,7 +250,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		CDOGS_SDL_VERSION);
 	SDL_SetWindowTitle(g->window, title);
 	SDL_SetWindowIcon(g->window, g->icon);
-	g->Format = SDL_AllocFormat(SDL_GetWindowPixelFormat(g->window));
+	g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
 
 	// Set render scale mode
 	const char *renderScaleQuality = "nearest";
