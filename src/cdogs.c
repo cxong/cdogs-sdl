@@ -131,7 +131,6 @@ static void PrintHelp(void)
 		"    --scale=n        Scale the window resolution up by a factor of n\n"
 		"                       Factors: 2, 3, 4\n"
 		"    --screen=WxH     Set virtual screen width to W x H\n"
-		"                       Modes: 320x200, 320x240, 400x300, 640x480, 800x600, 1024x768\n"
 		"    --forcemode      Don't check video mode sanity\n"
 	);
 

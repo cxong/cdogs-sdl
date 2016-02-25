@@ -208,8 +208,10 @@ static inline void setColor(int c) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hConsole, (WORD)c);
-#else
+#elif !defined(__GCWZERO__)
 	RLUTIL_PRINT(getANSIColor(c));
+#else
+	(void)c;
 #endif
 }
 
