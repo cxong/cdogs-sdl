@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -403,23 +403,29 @@ void CameraDraw(
 
 		// Show camera controls
 		const PlayerData *p = GetFirstPlayer(false, true, true);
-		CASSERT(p != NULL, "No human local players");
+		// Use default keyboard controls
+		input_device_e inputDevice = INPUT_DEVICE_KEYBOARD;
+		int deviceIndex = 0;
+		if (p != NULL)
+		{
+			inputDevice = p->inputDevice;
+			deviceIndex = p->deviceIndex;
+		}
 		Vec2i pos = Vec2iNew(
 			(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
 			h - FontH());
 		char buf[256];
 		color_t c = colorYellow;
 		InputGetButtonNameColor(
-			p->inputDevice, p->deviceIndex, CMD_BUTTON1, buf, &c);
+			inputDevice, deviceIndex, CMD_BUTTON1, buf, &c);
 		pos = FontStrMask(buf, pos, c);
 		pos = FontStrMask("/", pos, colorYellow);
 		c = colorYellow;
 		InputGetButtonNameColor(
-			p->inputDevice, p->deviceIndex, CMD_BUTTON2, buf, &c);
+			inputDevice, deviceIndex, CMD_BUTTON2, buf, &c);
 		pos = FontStrMask(buf, pos, c);
 		pos = FontStrMask(" to follow player, ", pos, colorYellow);
-		InputGetDirectionNames(
-			buf, p->inputDevice, p->deviceIndex);
+		InputGetDirectionNames(buf, inputDevice, deviceIndex);
 		pos = FontStrMask(buf, pos, colorYellow);
 		pos = FontStrMask(" to free-look", pos, colorYellow);
 	}
@@ -437,7 +443,10 @@ static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
 {
 	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
-	DrawBufferFix(b);
+	if (gPlayerDatas.size > 0)
+	{
+		DrawBufferFix(b);
+	}
 	DrawBufferDraw(b, offset, NULL);
 }
 

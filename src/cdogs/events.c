@@ -204,7 +204,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	MousePostPoll(&handlers->mouse, ticks);
 }
 
-static int GetKeyboardCmd(
+int GetKeyboardCmd(
 	keyboard_t *keyboard, const int kbIndex, const bool isPressed)
 {
 	int cmd = 0;

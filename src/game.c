@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,7 @@
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
+#include <cdogs/log.h>
 #include <cdogs/los.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
@@ -220,6 +221,14 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	data.map = map;
 
 	CameraInit(&data.Camera);
+	// If there are no players, show the full map before starting
+	if (gPlayerDatas.size == 0)
+	{
+		CASSERT(!co->IsClient, "Client cannot have no players");
+		MapMarkAllAsVisited(map);
+		data.Camera.lastPosition =
+			Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
+	}
 	HealthSpawnerInit(&data.healthSpawner, map);
 	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
@@ -260,6 +269,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
+	LOG(LM_MAIN, LL_INFO, "Game finished");
 
 	// Flush events
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
@@ -294,26 +304,35 @@ static void RunGameInput(void *data)
 	int cmdAll = 0;
 	int idx = 0;
 	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	if (gPlayerDatas.size == 0)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
+		// If no players, allow default keyboard to control camera
+		rData->cmds[0] = GetKeyboardCmd(
+			&gEventHandlers.keyboard, 0, false);
+	}
+	else
+	{
+		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
-			idx--;
-			continue;
-		}
-		rData->cmds[idx] = GetGameCmd(
-			&gEventHandlers,
-			p,
-			GetPlayerCenter(&gGraphicsDevice, &rData->Camera, p, idx));
-		cmdAll |= rData->cmds[idx];
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			rData->cmds[idx] = GetGameCmd(
+				&gEventHandlers,
+				p,
+				GetPlayerCenter(&gGraphicsDevice, &rData->Camera, p, idx));
+			cmdAll |= rData->cmds[idx];
 
-		// Only allow the first player to escape
-		// Use keypress otherwise the player will quit immediately
-		if (idx == 0 &&
-			(rData->cmds[idx] & CMD_ESC) && !(rData->lastCmds[idx] & CMD_ESC))
-		{
-			pausingDevice = p->inputDevice;
+			// Only allow the first player to escape
+			// Use keypress otherwise the player will quit immediately
+			if (idx == 0 &&
+				(rData->cmds[idx] & CMD_ESC) && !(rData->lastCmds[idx] & CMD_ESC))
+			{
+				pausingDevice = p->inputDevice;
+			}
 		}
 	}
 	if (KeyIsPressed(&gEventHandlers.keyboard, SDL_SCANCODE_ESCAPE))
@@ -393,33 +412,36 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Update all the things in the game
 	const int ticksPerFrame = 1;
 
-	LOSReset(&gMap.LOS);
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	if (gPlayerDatas.size > 0)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (p->ActorUID == -1) continue;
-		TActor *player = ActorGetByUID(p->ActorUID);
-		if (player->dead > DEATH_MAX) continue;
-		// Calculate LOS for all players alive or dying
-		LOSCalcFrom(
-			&gMap,
-			Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
-			!gCampaign.IsClient);
-
-		if (player->dead) continue;
-
-		// Only handle inputs/commands for local players
-		if (!p->IsLocal)
+		LOSReset(&gMap.LOS);
+		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
-			idx--;
-			continue;
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->ActorUID == -1) continue;
+			TActor *player = ActorGetByUID(p->ActorUID);
+			if (player->dead > DEATH_MAX) continue;
+			// Calculate LOS for all players alive or dying
+			LOSCalcFrom(
+				&gMap,
+				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
+				!gCampaign.IsClient);
+
+			if (player->dead) continue;
+
+			// Only handle inputs/commands for local players
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			if (p->inputDevice == INPUT_DEVICE_AI)
+			{
+				rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
+			}
+			PlayerSpecialCommands(player, rData->cmds[idx]);
+			CommandActor(player, rData->cmds[idx], ticksPerFrame);
 		}
-		if (p->inputDevice == INPUT_DEVICE_AI)
-		{
-			rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
-		}
-		PlayerSpecialCommands(player, rData->cmds[idx]);
-		CommandActor(player, rData->cmds[idx], ticksPerFrame);
 	}
 
 	if (!gCampaign.IsClient)
@@ -543,20 +565,24 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 	}
 
 	// Check that all players have been destroyed
-	// Note: there's a period of time where players are dying
-	// Wait until after this period before ending the game
-	bool allPlayersDestroyed = true;
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->ActorUID != -1)
-		{
-			allPlayersDestroyed = false;
-			break;
-		}
-	CA_FOREACH_END()
-	if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
+	// If the server has no players at all, wait for a player to join
+	if (gPlayerDatas.size > 0)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-		GameEventsEnqueue(&gGameEvents, e);
+		// Note: there's a period of time where players are dying
+		// Wait until after this period before ending the game
+		bool allPlayersDestroyed = true;
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+			if (p->ActorUID != -1)
+			{
+				allPlayersDestroyed = false;
+				break;
+			}
+		CA_FOREACH_END()
+		if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 }
 static void RunGameDraw(void *data)

@@ -149,6 +149,7 @@ bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers)
 		"Select number of players",
 		MENU_TYPE_NORMAL,
 		0);
+	MenuAddSubmenu(ms.current, MenuCreateReturn("(No local players)", 0));
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		char buf[2];
@@ -156,6 +157,8 @@ bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers)
 		MenuAddSubmenu(ms.current, MenuCreateReturn(buf, i + 1));
 	}
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	// Select 1 player default
+	ms.current->u.normal.index = 1;
 
 	MenuLoop(&ms);
 	const bool ok = !ms.hasAbort;
