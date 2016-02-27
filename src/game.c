@@ -225,7 +225,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	if (gPlayerDatas.size == 0)
 	{
 		CASSERT(!co->IsClient, "Client cannot have no players");
-		MapMarkAllAsVisited(map);
+		LOSSetAllVisible(&map->LOS);
 		data.Camera.lastPosition =
 			Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
 	}
@@ -304,7 +304,7 @@ static void RunGameInput(void *data)
 	int cmdAll = 0;
 	int idx = 0;
 	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
-	if (gPlayerDatas.size == 0)
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		// If no players, allow default keyboard to control camera
 		rData->cmds[0] = GetKeyboardCmd(

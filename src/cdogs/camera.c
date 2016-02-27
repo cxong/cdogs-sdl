@@ -73,9 +73,14 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	}
 	else if (AnyButton(cmd) && !AnyButton(lastCmd))
 	{
+		// Can't follow if there are no players
+		if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
+		{
+			return;
+		}
 		camera->spectateMode = SPECTATE_FOLLOW;
 		// Find index of player
-		int playerIndex = -1;
+		int playerIndex = 0;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (p->UID == camera->FollowPlayerUID)
 			{
@@ -83,7 +88,6 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 				break;
 			}
 		CA_FOREACH_END()
-		CASSERT(playerIndex >= 0, "Cannot find player");
 		// Get the next player by index that has an actor in the game
 		const int d = (cmd & CMD_BUTTON1) ? 1 : -1;
 		for (int i = playerIndex + d;; i += d)
@@ -92,7 +96,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 			// Check if clamping made us hit the termination condition
 			if (i == playerIndex) break;
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (p->ActorUID >= 0)
+			if (IsPlayerAliveOrDying(p))
 			{
 				// Follow this player
 				camera->FollowPlayerUID = p->UID;
