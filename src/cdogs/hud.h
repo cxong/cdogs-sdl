@@ -102,7 +102,8 @@ typedef enum
 } HUDNumUpdateType;
 // idx is either player UID or objective index
 void HUDAddUpdate(
-	HUD *hud, const HUDNumUpdateType type, const int idx, const int amount);
+	HUD *hud, const HUDNumUpdateType type,
+	const int idxOrUID, const int amount);
 
 void HUDUpdate(HUD *hud, int ms);
 // INPUT_DEVICE_UNSET if not paused

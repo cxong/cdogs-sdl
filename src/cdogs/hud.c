@@ -176,7 +176,8 @@ static int FindLocalPlayerIndex(const int playerUID)
 
 static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src);
 void HUDAddUpdate(
-	HUD *hud, const HUDNumUpdateType type, const int idx, const int amount)
+	HUD *hud, const HUDNumUpdateType type,
+	const int idxOrUID, const int amount)
 {
 	HUDNumUpdate s;
 	memset(&s, 0, sizeof s);
@@ -188,16 +189,16 @@ void HUDAddUpdate(
 	case NUMBER_UPDATE_SCORE:
 	case NUMBER_UPDATE_HEALTH:	// fallthrough
 	case NUMBER_UPDATE_AMMO:	// fallthrough
-		localPlayerIdx = FindLocalPlayerIndex(idx);
+		localPlayerIdx = FindLocalPlayerIndex(idxOrUID);
 		if (localPlayerIdx)
 		{
 			// This update was for a non-local player; abort
 			return;
 		}
-		s.u.PlayerUID = idx;
+		s.u.PlayerUID = idxOrUID;
 		break;
 	case NUMBER_UPDATE_OBJECTIVE:
-		s.u.ObjectiveIndex = idx;
+		s.u.ObjectiveIndex = idxOrUID;
 		break;
 	default:
 		CASSERT(false, "unknown HUD update type");
@@ -259,6 +260,7 @@ static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src)
 	}
 	dst->Timer = src.Timer;
 	dst->TimerMax = src.TimerMax;
+	dst->u.PlayerUID = src.u.PlayerUID;
 }
 
 static void NumUpdate(HUDNumUpdate *update, const int ms);
@@ -1032,6 +1034,10 @@ static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags)
 	{
 		return;
 	}
+	if (u->Amount == 0)
+	{
+		return;
+	}
 	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
 	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
@@ -1040,6 +1046,10 @@ static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags)
 }
 static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags)
 {
+	if (u->Amount == 0)
+	{
+		return;
+	}
 	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
 	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
@@ -1049,6 +1059,10 @@ static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags)
 }
 static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags)
 {
+	if (u->Amount == 0)
+	{
+		return;
+	}
 	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
 	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
