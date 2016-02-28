@@ -96,7 +96,7 @@ void ScreenStart(void)
 	}
 
 	debug(D_NORMAL, ">> Entering selection\n");
-	if (gPlayerDatas.size > 0 && !PlayerSelection())
+	if (GetNumPlayers(PLAYER_ANY, false, true) > 0 && !PlayerSelection())
 	{
 		gCampaign.IsLoaded = false;
 		goto bail;
@@ -154,7 +154,8 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Mission briefing
-		if (gPlayerDatas.size > 0 && IsMissionBriefingNeeded(co->Entry.Mode))
+		if (GetNumPlayers(PLAYER_ANY, false, true) > 0 &&
+			IsMissionBriefingNeeded(co->Entry.Mode))
 		{
 			if (!ScreenMissionBriefing(&gMission))
 			{
@@ -164,7 +165,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Equip guns
-		if (gPlayerDatas.size > 0 && !PlayerEquip())
+		if (GetNumPlayers(PLAYER_ANY, false, true) > 0 && !PlayerEquip())
 		{
 			run = false;
 			goto bail;
@@ -229,7 +230,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		MissionEnd();
 		MusicPlayMenu(&gSoundDevice);
 
-		if (run)
+		if (run && GetNumPlayers(PLAYER_ANY, false, true) > 0)
 		{
 			switch (co->Entry.Mode)
 			{
@@ -252,7 +253,8 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Check if any scores exceeded high scores, if we're not a PVP mode
-		if (!IsPVP(co->Entry.Mode))
+		if (!IsPVP(co->Entry.Mode) &&
+			GetNumPlayers(PLAYER_ANY, false, true) > 0)
 		{
 			bool allTime = false;
 			bool todays = false;

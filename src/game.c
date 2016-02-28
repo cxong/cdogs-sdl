@@ -222,9 +222,8 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 
 	CameraInit(&data.Camera);
 	// If there are no players, show the full map before starting
-	if (gPlayerDatas.size == 0)
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
-		CASSERT(!co->IsClient, "Client cannot have no players");
 		LOSSetAllVisible(&map->LOS);
 		data.Camera.lastPosition =
 			Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
