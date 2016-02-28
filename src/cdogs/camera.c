@@ -80,7 +80,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		}
 		camera->spectateMode = SPECTATE_FOLLOW;
 		// Find index of player
-		int playerIndex = 0;
+		int playerIndex = -1;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (p->UID == camera->FollowPlayerUID)
 			{
@@ -100,6 +100,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 			{
 				// Follow this player
 				camera->FollowPlayerUID = p->UID;
+				break;
 			}
 		}
 	}
