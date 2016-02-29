@@ -35,6 +35,7 @@
 
 #include "campaigns.h"
 #include "game_events.h"
+#include "map.h"
 #include "player.h"
 
 #define NET_LISTEN_PORT 34219
@@ -52,6 +53,8 @@ bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
 NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
+NMissionComplete NMakeMissionComplete(
+	const struct MissionOptions *mo, const Map *map);
 
 Vec2i Net2Vec2i(const NVec2i v);
 NVec2i Vec2i2Net(const Vec2i v);

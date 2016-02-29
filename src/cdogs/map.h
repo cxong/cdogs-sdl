@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -140,7 +140,7 @@ bool MapIsFullPosOKforPlayer(
 bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size);
 void MapChangeFloor(
 	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow);
-void MapShowExitArea(Map *map);
+void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd);
 // Returns the center of the tile that's the middle of the exit area
 Vec2i MapGetExitPos(const Map *m);
 

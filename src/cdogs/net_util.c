@@ -90,6 +90,15 @@ NCampaignDef NMakeCampaignDef(const CampaignOptions *co)
 	def.Mission = co->MissionIndex;
 	return def;
 }
+NMissionComplete NMakeMissionComplete(
+	const struct MissionOptions *mo, const Map *map)
+{
+	NMissionComplete mc;
+	mc.ShowMsg = MissionHasRequiredObjectives(mo);
+	mc.ExitStart = Vec2i2Net(map->ExitStart);
+	mc.ExitEnd = Vec2i2Net(map->ExitEnd);
+	return mc;
+}
 
 Vec2i Net2Vec2i(const NVec2i v)
 {

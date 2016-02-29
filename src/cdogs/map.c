@@ -273,12 +273,12 @@ void MapChangeFloor(
 	}
 }
 
-void MapShowExitArea(Map *map)
+void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
 {
-	const int left = map->ExitStart.x;
-	const int right = map->ExitEnd.x;
-	const int top = map->ExitStart.y;
-	const int bottom = map->ExitEnd.y;
+	const int left = exitStart.x;
+	const int right = exitEnd.x;
+	const int top = exitStart.y;
+	const int bottom = exitEnd.y;
 
 	Vec2i v;
 	v.y = top;

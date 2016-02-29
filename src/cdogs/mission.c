@@ -58,6 +58,7 @@
 #include "gamedata.h"
 #include "map.h"
 #include "map_new.h"
+#include "net_util.h"
 #include "objs.h"
 #include "palette.h"
 #include "particle.h"
@@ -331,7 +332,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 	if (!gCampaign.IsClient && CanCompleteMission(options))
 	{
 		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
-		msg.u.MissionComplete.ShowMsg = MissionHasRequiredObjectives(options);
+		msg.u.MissionComplete = NMakeMissionComplete(options, &gMap);
 		GameEventsEnqueue(&gGameEvents, msg);
 	}
 }

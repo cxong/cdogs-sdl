@@ -103,7 +103,7 @@ void GrafxMakeBackground(
 	MapMarkAllAsVisited(map);
 	if (isEditor)
 	{
-		MapShowExitArea(map);
+		MapShowExitArea(map, map->ExitStart, map->ExitEnd);
 	}
 	else
 	{

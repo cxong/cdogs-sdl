@@ -280,4 +280,6 @@ message NAddKeys {
 
 message NMissionComplete {
 	required bool ShowMsg = 1;
+	required NVec2i ExitStart = 2;
+	required NVec2i ExitEnd = 3;
 }

@@ -524,8 +524,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	// If mission complete already, send message
 	if (CanCompleteMission(&gMission))
 	{
-		NMissionComplete mc = NMissionComplete_init_default;
-		mc.ShowMsg = MissionHasRequiredObjectives(&gMission);
+		NMissionComplete mc = NMakeMissionComplete(&gMission, &gMap);
 		NetServerSendMsg(n, peerId, GAME_EVENT_MISSION_COMPLETE, &mc);
 	}
 }

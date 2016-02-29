@@ -541,7 +541,10 @@ static void HandleGameEvent(
 			HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
 		}
 		camera->HUD.showExit = true;
-		MapShowExitArea(&gMap);
+		MapShowExitArea(
+			&gMap,
+			Net2Vec2i(e.u.MissionComplete.ExitStart),
+			Net2Vec2i(e.u.MissionComplete.ExitEnd));
 		break;
 	case GAME_EVENT_MISSION_INCOMPLETE:
 		gMission.state = MISSION_STATE_PLAY;
