@@ -75,6 +75,14 @@ static void HandleGameEvent(
 	case GAME_EVENT_PLAYER_DATA:
 		PlayerDataAddOrUpdate(e.u.PlayerData);
 		break;
+	case GAME_EVENT_PLAYER_REMOVE:
+		PlayerRemove(e.u.PlayerRemove.UID);
+		if (gPlayerDatas.size == 0)
+		{
+			// Waiting for players to join, follow the first one
+			camera->FollowNextPlayer = true;
+		}
+		break;
 	case GAME_EVENT_TILE_SET:
 		{
 			Vec2i pos = Net2Vec2i(e.u.TileSet.Pos);

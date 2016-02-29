@@ -71,7 +71,8 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		if (cmd & CMD_UP)		camera->lastPosition.y -= pan;
 		else if (cmd & CMD_DOWN)	camera->lastPosition.y += pan;
 	}
-	else if (AnyButton(cmd) && !AnyButton(lastCmd))
+	else if ((AnyButton(cmd) && !AnyButton(lastCmd)) ||
+		camera->FollowNextPlayer)
 	{
 		// Can't follow if there are no players
 		if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
@@ -100,6 +101,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 			{
 				// Follow this player
 				camera->FollowPlayerUID = p->UID;
+				camera->FollowNextPlayer = false;
 				break;
 			}
 		}

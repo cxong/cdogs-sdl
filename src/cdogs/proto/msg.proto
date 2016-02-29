@@ -50,6 +50,10 @@ message NPlayerData {
 	required uint32 UID = 9;
 }
 
+message NPlayerRemove {
+	required uint32 UID = 1;
+}
+
 message NTileSet {
 	required NVec2i Pos = 1;
 	required uint32 Flags = 2;

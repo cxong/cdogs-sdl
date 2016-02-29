@@ -227,6 +227,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 		LOSSetAllVisible(&map->LOS);
 		data.Camera.lastPosition =
 			Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
+		data.Camera.FollowNextPlayer = true;
 	}
 	HealthSpawnerInit(&data.healthSpawner, map);
 	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));

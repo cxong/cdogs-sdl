@@ -158,6 +158,7 @@ void NetServerClose(NetServer *n)
 
 static void PollListener(NetServer *n);
 static void OnReceive(NetServer *n, ENetEvent event);
+static void OnDisconnect(const ENetEvent event);
 void NetServerPoll(NetServer *n)
 {
 	if (!n->server)
@@ -184,40 +185,23 @@ void NetServerPoll(NetServer *n)
 		}
 		else if (check > 0)
 		{
-			char buf[256];
 			switch (event.type)
 			{
 			case ENET_EVENT_TYPE_CONNECT:
-				enet_address_get_host_ip(
-					&event.peer->address, buf, sizeof buf);
-				LOG(LM_NET, LL_INFO, "client connection from %s:%u",
-					buf, event.peer->address.port);
+				{
+					char buf[256];
+					enet_address_get_host_ip(
+						&event.peer->address, buf, sizeof buf);
+					LOG(LM_NET, LL_INFO, "client connection from %s:%u",
+						buf, event.peer->address.port);
+				}
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
-				{
-					int peerId = -1;
-					if (event.peer->data != NULL)
-					{
-						peerId = ((NetPeerData *)event.peer->data)->Id;
-						CFREE(event.peer->data);
-						event.peer->data = NULL;
-					}
-					enet_address_get_host_ip(
-						&event.peer->address, buf, sizeof buf);
-					LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %s:%u",
-						peerId, buf, event.peer->address.port);
-					// Remove client's players
-					for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-					{
-						const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
-						PlayerRemove(cid);
-					}
-				}
+				OnDisconnect(event);
 				break;
-
 			default:
 				CASSERT(false, "Unknown event");
 				break;
@@ -383,6 +367,28 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 
 	NetServerFlush(n);
+}
+static void OnDisconnect(const ENetEvent event)
+{
+	int peerId = -1;
+	if (event.peer->data != NULL)
+	{
+		peerId = ((NetPeerData *)event.peer->data)->Id;
+		CFREE(event.peer->data);
+		event.peer->data = NULL;
+	}
+	CASSERT(peerId >= 0, "Cannot find disconnected peer id");
+	char buf[256];
+	enet_address_get_host_ip(&event.peer->address, buf, sizeof buf);
+	LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %s:%u",
+		peerId, buf, event.peer->address.port);
+	// Remove client's players
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_PLAYER_REMOVE);
+		e.u.PlayerRemove.UID = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 }
 
 void NetServerFlush(NetServer *n)
