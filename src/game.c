@@ -296,9 +296,11 @@ static void RunGameInput(void *data)
 		return;
 	}
 
+	int lastCmdAll = 0;
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		rData->lastCmds[i] = rData->cmds[i];
+		lastCmdAll |= rData->lastCmds[i];
 	}
 	memset(rData->cmds, 0, sizeof rData->cmds);
 	int cmdAll = 0;
@@ -351,10 +353,13 @@ static void RunGameInput(void *data)
 	CA_FOREACH_END()
 
 	// Check if automap key is pressed by any player
-	rData->isMap =
-		IsAutoMapEnabled(gCampaign.Entry.Mode) &&
-		(KeyIsDown(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerCodes0.map")) ||
-		(cmdAll & CMD_MAP));
+	// Toggle
+	if (IsAutoMapEnabled(gCampaign.Entry.Mode) &&
+		(KeyIsPressed(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerCodes0.map")) ||
+		((cmdAll & CMD_MAP) && !(lastCmdAll & CMD_MAP))))
+	{
+		rData->isMap = !rData->isMap;
+	}
 
 	// Check if escape was pressed
 	// If the game was not paused, enter pause mode
