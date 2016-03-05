@@ -56,7 +56,6 @@ void EventTerminate(EventHandlers *handlers)
 }
 void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 {
-	handlers->HasResolutionChanged = 0;
 	KeyInit(&handlers->keyboard);
 	JoyReset(&handlers->joysticks);
 	MouseInit(
