@@ -524,6 +524,9 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		amo.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
 		amo.TileItemFlags = o->tileItem.flags;
 		amo.Health = o->Health;
+		LOG(LM_NET, LL_DEBUG,
+			"send add map object UID(%d) pos(%d, %d) flags(%x) health(%d)",
+			(int)amo.UID, amo.Pos.x, amo.Pos.y, amo.TileItemFlags, amo.Health);
 		NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &amo);
 	CA_FOREACH_END()
 

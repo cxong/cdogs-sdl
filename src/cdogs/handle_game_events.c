@@ -109,6 +109,9 @@ static void HandleGameEvent(
 	case GAME_EVENT_MAP_OBJECT_DAMAGE:
 		DamageObject(e.u.MapObjectDamage);
 		break;
+	case GAME_EVENT_MAP_OBJECT_REMOVE:
+		ObjRemove(e.u.MapObjectRemove);
+		break;
 	case GAME_EVENT_SCORE:
 		// No score for dogfight
 		if (gCampaign.Entry.Mode != GAME_MODE_DOGFIGHT)

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 #include "config.h"
 #include "damage.h"
 #include "game_events.h"
+#include "log.h"
 #include "map.h"
 #include "net_util.h"
 #include "screen_shake.h"
@@ -85,8 +86,6 @@ static const Pic *GetObjectPic(const int id, Vec2i *offset)
 }
 
 
-static void DestroyObject(
-	TObject *o, const int flags, const int playerUID, const int uid);
 void DamageObject(const NMapObjectDamage mod)
 {
 	TObject *o = ObjGetByUID(mod.UID);
@@ -99,14 +98,20 @@ void DamageObject(const NMapObjectDamage mod)
 	o->Health -= mod.Power;
 
 	// Destroying objects and all the wonderful things that happen
-	if (o->Health <= 0)
+	if (o->Health <= 0 && !gCampaign.IsClient)
 	{
-		DestroyObject(o, mod.Flags, mod.PlayerUID, mod.UID);
+		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_REMOVE);
+		e.u.MapObjectRemove.UID = o->uid;
+		e.u.MapObjectRemove.ActorUID = mod.UID;
+		e.u.MapObjectRemove.PlayerUID = mod.PlayerUID;
+		e.u.MapObjectRemove.Flags = mod.Flags;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
-static void DestroyObject(
-	TObject *o, const int flags, const int playerUID, const int uid)
+
+void ObjRemove(const NMapObjectRemove mor)
 {
+	TObject *o = ObjGetByUID(mor.UID);
 	o->Health = 0;
 
 	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
@@ -116,10 +121,10 @@ static void DestroyObject(
 		// Update objective
 		UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
 		// Extra score if objective
-		if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && playerUID >= 0)
+		if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && mor.PlayerUID >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = playerUID;
+			e.u.Score.PlayerUID = mor.PlayerUID;
 			e.u.Score.Score = OBJECT_SCORE;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
@@ -127,7 +132,9 @@ static void DestroyObject(
 		// Weapons that go off when this object is destroyed
 		const Vec2i fullPos = Vec2iReal2Full(realPos);
 		CA_FOREACH(const GunDescription *, g, o->Class->DestroyGuns)
-			GunFire(*g, fullPos, 0, 0, flags, playerUID, uid, true, false);
+			GunFire(
+				*g, fullPos, 0, 0, mor.Flags, mor.PlayerUID, mor.ActorUID,
+				true, false);
 		CA_FOREACH_END()
 
 		// A wreck left after the destruction of this object
@@ -154,7 +161,7 @@ static void DestroyObject(
 	}
 	else
 	{
-		ObjDestroy(o->tileItem.id);
+		ObjDestroy(o);
 	}
 
 	// Update pathfinding cache since this object could have blocked a path
@@ -332,7 +339,7 @@ void ObjsTerminate(void)
 	CA_FOREACH(TObject, o, gObjs)
 		if (o->isInUse)
 		{
-			ObjDestroy(_ca_index);
+			ObjDestroy(o);
 		}
 	CA_FOREACH_END()
 	CArrayTerminate(&gObjs);
@@ -344,6 +351,13 @@ int ObjsGetNextUID(void)
 
 void ObjAdd(const NMapObjectAdd amo)
 {
+	// Don't add if UID exists
+	if (ObjGetByUID(amo.UID) != NULL)
+	{
+		LOG(LM_MAIN, LL_DEBUG,
+			"object uid(%d) already exists; not adding", (int)amo.UID);
+		return;
+	}
 	// Find an empty slot in object list
 	TObject *o = NULL;
 	int i;
@@ -377,10 +391,12 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &o->tileItem, Net2Vec2i(amo.Pos));
 	o->isInUse = true;
+	LOG(LM_MAIN, LL_DEBUG,
+		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
+		(int)amo.UID, amo.MapObjectClass, amo.Health, amo.Pos.x, amo.Pos.y);
 }
-void ObjDestroy(int id)
+void ObjDestroy(TObject *o)
 {
-	TObject *o = CArrayGet(&gObjs, id);
 	CASSERT(o->isInUse, "Destroying in-use object");
 	MapRemoveTileItem(&gMap, &o->tileItem);
 	o->isInUse = false;
@@ -442,7 +458,6 @@ TObject *ObjGetByUID(const int uid)
 			return o;
 		}
 	CA_FOREACH_END()
-	CASSERT(false, "Cannot find object by UID");
 	return NULL;
 }
 

@@ -50,6 +50,7 @@ typedef enum
 	GAME_EVENT_TILE_SET,
 	GAME_EVENT_MAP_OBJECT_ADD,
 	GAME_EVENT_MAP_OBJECT_DAMAGE,
+	GAME_EVENT_MAP_OBJECT_REMOVE,
 	GAME_EVENT_CLIENT_READY,
 	GAME_EVENT_NET_GAME_START,
 
@@ -132,6 +133,7 @@ typedef struct
 		NTileSet TileSet;
 		NMapObjectAdd MapObjectAdd;
 		NMapObjectDamage MapObjectDamage;
+		NMapObjectRemove MapObjectRemove;
 		NScore Score;
 		NSound SoundAt;
 		int ShakeAmount;

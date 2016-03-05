@@ -78,6 +78,13 @@ message NMapObjectDamage {
 	required uint32 Flags = 5;
 }
 
+message NMapObjectRemove {
+	required uint32 UID = 1;
+	required int32 ActorUID = 2;
+	required int32 PlayerUID = 3;
+	required uint32 Flags = 4;
+}
+
 message NScore {
 	required uint32 PlayerUID = 1;
 	required int32 Score = 2;

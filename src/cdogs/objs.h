@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -117,7 +117,8 @@ void AddObjectOld(
 	const Vec2i pos, const Vec2i size,
 	const TOffsetPic *pic, const int tileFlags);
 void ObjAdd(const NMapObjectAdd amo);
-void ObjDestroy(int id);
+void ObjRemove(const NMapObjectRemove mor);
+void ObjDestroy(TObject *o);
 
 // Check if this object is dangerous; i.e. on destruction will explode
 bool ObjIsDangerous(const TObject *o);

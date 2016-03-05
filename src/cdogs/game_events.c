@@ -61,6 +61,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_TILE_SET, true, false, true, true, NTileSet_fields },
 	{ GAME_EVENT_MAP_OBJECT_ADD, true, false, true, true, NMapObjectAdd_fields },
 	{ GAME_EVENT_MAP_OBJECT_DAMAGE, true, false, true, true, NMapObjectDamage_fields },
+	{ GAME_EVENT_MAP_OBJECT_REMOVE, true, false, true, true, NMapObjectRemove_fields },
 	{ GAME_EVENT_CLIENT_READY, false, false, false, false, NULL },
 	{ GAME_EVENT_NET_GAME_START, false, false, false, false, NULL },
 

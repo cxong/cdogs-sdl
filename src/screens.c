@@ -186,6 +186,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			p->Ready = false;
 		CA_FOREACH_END()
+		gNetClient.Ready = false;
 
 		// Don't quit if all players died, that's normal for PVP modes
 		if (IsPVP(co->Entry.Mode) &&

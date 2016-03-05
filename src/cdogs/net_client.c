@@ -481,7 +481,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			}
 			break;
 		case GAME_EVENT_NET_GAME_START:
-			LOG(LM_NET, LL_DEBUG, "NetClient: received game start");
+			LOG(LM_NET, LL_DEBUG, "recv game start ready(%s)",
+				n->Ready ? "yes" : "no");
 			// Don't ready-up unless we're ready
 			if (n->Ready)
 			{
