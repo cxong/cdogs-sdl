@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2015, Cong Xu
+ Copyright (c) 2013-2016, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -88,7 +88,9 @@ static void LoadMissionNode(MissionSave *m, json_t *node)
 	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
 	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
 	// Check that file exists
-	m->IsValid = access(m->Campaign.Path, F_OK | R_OK) != -1;
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, m->Campaign.Path);
+	m->IsValid = access(buf, F_OK | R_OK) != -1;
 }
 static json_t *CreateMissionNode(MissionSave *m)
 {
