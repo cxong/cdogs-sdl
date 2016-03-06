@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -110,113 +110,119 @@ void MapStaticLoadDynamic(
 	{
 		AddKeys(map, mo, &m->u.Static.Keys);
 	}
+
+	// Process the events to place dynamic objects
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 }
+static void AddCharacter(const CharacterPositions *cp);
 static void AddCharacters(const CArray *characters)
 {
-	for (int i = 0; i < (int)characters->size; i++)
-	{
-		const CharacterPositions *cp = CArrayGet(characters, i);
-		for (int j = 0; j < (int)cp->Positions.size; j++)
-		{
-			NActorAdd aa = NActorAdd_init_default;
-			aa.UID = ActorsGetNextUID();
-			aa.CharId = cp->Index;
-			aa.Direction = rand() % DIRECTION_COUNT;
-			const Character *c =
-				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-			aa.Health = CharacterGetStartingHealth(c, true);
-			const Vec2i *pos = CArrayGet(&cp->Positions, j);
-			const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
-			aa.FullPos.x = fullPos.x;
-			aa.FullPos.y = fullPos.y;
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			e.u.ActorAdd = aa;
-			GameEventsEnqueue(&gGameEvents, e);
-
-			// Process the events that actually place the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
-		}
-	}
+	CA_FOREACH(const CharacterPositions, cp, *characters)
+		AddCharacter(cp);
+	CA_FOREACH_END()
 }
+static void AddCharacter(const CharacterPositions *cp)
+{
+	NActorAdd aa = NActorAdd_init_default;
+	aa.CharId = cp->Index;
+	const Character *c =
+		CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+	aa.Health = CharacterGetStartingHealth(c, true);
+	CA_FOREACH(const Vec2i, pos, cp->Positions)
+		aa.UID = ActorsGetNextUID();
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
+		aa.FullPos = Vec2i2Net(fullPos);
+
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
+	CA_FOREACH_END()
+}
+static void AddObjective(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
+	const ObjectivePositions *op);
 static void AddObjectives(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
 	const CArray *objectives)
 {
-	for (int i = 0; i < (int)objectives->size; i++)
-	{
-		const ObjectivePositions *op = CArrayGet(objectives, i);
-		const MissionObjective *mobj =
-			CArrayGet(&mo->missionData->Objectives, op->Index);
-		ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);
-		for (int j = 0; j < (int)op->Positions.size; j++)
-		{
-			const Vec2i *pos = CArrayGet(&op->Positions, j);
-			const int *idx = CArrayGet(&op->Indices, j);
-			const Vec2i realPos = Vec2iCenterOfTile(*pos);
-			const Vec2i fullPos = Vec2iReal2Full(realPos);
-			switch (mobj->Type)
-			{
-			case OBJECTIVE_KILL:
-			{
-				NActorAdd aa = NActorAdd_init_default;
-				aa.UID = ActorsGetNextUID();
-				aa.CharId = CharacterStoreGetSpecialId(store, *idx);
-				aa.Direction = rand() % DIRECTION_COUNT;
-				const Character *c =
-					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = Vec2i2Net(fullPos);
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-				e.u.ActorAdd = aa;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			break;
-			case OBJECTIVE_COLLECT:
-				MapPlaceCollectible(mo, op->Index, realPos);
-				break;
-			case OBJECTIVE_DESTROY:
-				MapTryPlaceOneObject(
-					map,
-					*pos,
-					obj->blowupObject,
-					ObjectiveToTileItem(op->Index), 1);
-				break;
-			case OBJECTIVE_RESCUE:
-			{
-				NActorAdd aa = NActorAdd_init_default;
-				aa.UID = ActorsGetNextUID();
-				aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
-				aa.Direction = rand() % DIRECTION_COUNT;
-				const Character *c =
-					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = Vec2i2Net(fullPos);
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-				e.u.ActorAdd = aa;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			break;
-			default:
-				// do nothing
-				break;
-			}
-			obj->placed++;
-
-			// Process the events that actually place the objectives
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
-		}
-	}
+	CA_FOREACH(const ObjectivePositions, op, *objectives)
+		AddObjective(map, mo, store, op);
+	CA_FOREACH_END()
 }
+static void AddObjective(
+	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
+	const ObjectivePositions *op)
+{
+	const MissionObjective *mobj =
+		CArrayGet(&mo->missionData->Objectives, op->Index);
+	ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);
+	CA_FOREACH(const Vec2i, pos, op->Positions)
+		const int *idx = CArrayGet(&op->Indices, _ca_index);
+		const Vec2i realPos = Vec2iCenterOfTile(*pos);
+		const Vec2i fullPos = Vec2iReal2Full(realPos);
+		switch (mobj->Type)
+		{
+		case OBJECTIVE_KILL:
+		{
+			NActorAdd aa = NActorAdd_init_default;
+			aa.UID = ActorsGetNextUID();
+			aa.CharId = CharacterStoreGetSpecialId(store, *idx);
+			aa.Direction = rand() % DIRECTION_COUNT;
+			const Character *c =
+				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+			aa.Health = CharacterGetStartingHealth(c, true);
+			aa.FullPos = Vec2i2Net(fullPos);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+			e.u.ActorAdd = aa;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+		case OBJECTIVE_COLLECT:
+			MapPlaceCollectible(mo, op->Index, realPos);
+			break;
+		case OBJECTIVE_DESTROY:
+			MapTryPlaceOneObject(
+				map,
+				*pos,
+				obj->blowupObject,
+				ObjectiveToTileItem(op->Index), 1);
+			break;
+		case OBJECTIVE_RESCUE:
+		{
+			NActorAdd aa = NActorAdd_init_default;
+			aa.UID = ActorsGetNextUID();
+			aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
+			aa.Direction = rand() % DIRECTION_COUNT;
+			const Character *c =
+				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+			aa.Health = CharacterGetStartingHealth(c, true);
+			aa.FullPos = Vec2i2Net(fullPos);
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+			e.u.ActorAdd = aa;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+		default:
+			// do nothing
+			break;
+		}
+		obj->placed++;
+	CA_FOREACH_END()
+}
+static void AddKey(
+	Map *map, const struct MissionOptions *mo, const KeyPositions *kp);
 static void AddKeys(
 	Map *map, const struct MissionOptions *mo, const CArray *keys)
 {
-	for (int i = 0; i < (int)keys->size; i++)
-	{
-		const KeyPositions *kp = CArrayGet(keys, i);
-		for (int j = 0; j < (int)kp->Positions.size; j++)
-		{
-			const Vec2i *pos = CArrayGet(&kp->Positions, j);
-			MapPlaceKey(map, mo, *pos, kp->Index);
-		}
-	}
+	CA_FOREACH(const KeyPositions, kp, *keys)
+		AddKey(map, mo, kp);
+	CA_FOREACH_END()
+}
+static void AddKey(
+	Map *map, const struct MissionOptions *mo, const KeyPositions *kp)
+{
+	CA_FOREACH(const Vec2i, pos, kp->Positions)
+		MapPlaceKey(map, mo, *pos, kp->Index);
+	CA_FOREACH_END()
 }
