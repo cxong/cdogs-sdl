@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #include "draw.h"
 #include "drawtools.h"
 #include "game_events.h"
+#include "handle_game_events.h"
 #include "objs.h"
 #include "pickup.h"
 #include "quick_play.h"
@@ -109,7 +110,8 @@ void GrafxMakeBackground(
 	{
 		pos = Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
 	}
-
+	// Process the events that place dynamic objects
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
 	GameEventsTerminate(&gGameEvents);
 }
