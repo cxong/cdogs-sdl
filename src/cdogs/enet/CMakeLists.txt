@@ -16,7 +16,7 @@ check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" H
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
- 
+
 if(HAS_FCNTL)
     add_definitions(-DHAS_FCNTL=1)
 endif()
@@ -35,9 +35,9 @@ endif()
 if(HAS_SOCKLEN_T)
     add_definitions(-DHAS_SOCKLEN_T=1)
 endif()
- 
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
- 
+
 add_library(enet STATIC
         callbacks.c
         compress.c
@@ -48,6 +48,8 @@ add_library(enet STATIC
         protocol.c
         unix.c
         win32.c
+        inet_pton_mingw.c
+				inet_pton_mingw.h
 		include/enet/callbacks.h
 		include/enet/enet.h
 		include/enet/list.h

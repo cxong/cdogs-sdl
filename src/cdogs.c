@@ -52,6 +52,10 @@
 #include <stdio.h>
 
 #include <SDL.h>
+#ifdef __MINGW32__
+// HACK: MinGW complains about redefinition of main
+#undef main
+#endif
 
 #include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>

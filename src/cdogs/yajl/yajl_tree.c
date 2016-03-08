@@ -25,7 +25,7 @@
 
 #include "yajl_parser.h"
 
-#if defined(_WIN32) || defined(WIN32)
+#ifdef _MSC_VER
 #define snprintf sprintf_s
 #endif
 

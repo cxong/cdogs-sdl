@@ -53,6 +53,10 @@
 #include <ctype.h>
 
 #include <SDL.h>
+#ifdef __MINGW32__
+// HACK: MinGW complains about redefinition of main
+#undef main
+#endif
 
 #include <cdogs/actors.h>
 #include <cdogs/ammo.h>
@@ -526,16 +530,16 @@ static void Open(void)
 			}
 			doOpen = true;
 			break;
-				
+
 		case SDL_SCANCODE_ESCAPE:
 			done = true;
 			break;
-				
+
 		case SDL_SCANCODE_BACKSPACE:
 			if (filename[0])
 				filename[strlen(filename) - 1] = 0;
 			break;
-				
+
 		default:
 			// Do nothing
 			break;
@@ -650,7 +654,7 @@ static void Save(void)
 		ClearScreen(&gGraphicsDevice);
 
 		FontStrCenter("Saving...");
-		
+
 		BlitFlip(&gGraphicsDevice);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = 0;
@@ -1053,7 +1057,7 @@ static HandleInputResult HandleInput(
 			fileChanged = 1;
 			Setup(0);
 			break;
-				
+
 		case 'o':
 			if (!fileChanged || ConfirmScreen(
 				"File has been modified, but not saved", "Open anyway? (Y/N)"))
