@@ -172,8 +172,7 @@ static void PrintHelp(void)
 		else printf("\n");
 	}
 	printf(
-		"    --log=M,L        Enable logging for module M at level L.\n\n",
-		LogLevelName(LL_TRACE), LogLevelName(LL_ERROR)
+		"    --log=M,L        Enable logging for module M at level L.\n\n"
 	);
 	printf(
 		"    --log=L          Enable logging for all modules at level L.\n\n"
