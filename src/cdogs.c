@@ -218,6 +218,8 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
+	NetClientInit(&gNetClient);
+
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
 	buf[0] = '\0';
@@ -384,7 +386,6 @@ int main(int argc, char *argv[])
 	MusicPlayMenu(&gSoundDevice);
 
 	EventInit(&gEventHandlers, NULL, NULL, true);
-	NetClientInit(&gNetClient);
 	NetServerInit(&gNetServer);
 
 	if (wait)
