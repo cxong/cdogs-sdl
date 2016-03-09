@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -161,7 +161,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 	const int numDisplayModes = SDL_GetNumDisplayModes(0);
 	if (numDisplayModes < 1)
 	{
-		LOG(LM_MAIN, LL_ERROR, "no valid display modes: %s", SDL_GetError());
+		LOG(LM_GFX, LL_ERROR, "no valid display modes: %s", SDL_GetError());
 		return;
 	}
 	for (int i = 0; i < numDisplayModes; i++)
@@ -169,7 +169,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 		SDL_DisplayMode mode;
 		if (SDL_GetDisplayMode(0, i, &mode) != 0)
 		{
-			LOG(LM_MAIN, LL_ERROR, "cannot get display mode: %s",
+			LOG(LM_GFX, LL_ERROR, "cannot get display mode: %s",
 				SDL_GetError());
 			continue;
 		}
@@ -217,12 +217,12 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		if (g->modeIndex == -1)
 		{
 			g->modeIndex = 0;
-			LOG(LM_MAIN, LL_ERROR, "invalid Video Mode %dx%d", w, h);
+			LOG(LM_GFX, LL_ERROR, "invalid Video Mode %dx%d", w, h);
 			return;
 		}
 	}
 
-	LOG(LM_MAIN, LL_INFO, "graphics mode(%dx%d %dx)",
+	LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
 		w, h, g->cachedConfig.ScaleFactor);
 	// Get the previous window's size and recreate it
 	Vec2i windowSize = Vec2iNew(
@@ -231,23 +231,26 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	{
 		SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
 	}
+	LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
 	SDL_DestroyTexture(g->screen);
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);
 	SDL_DestroyWindow(g->window);
+	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%x)",
+		windowSize.x, windowSize.y, sdlFlags);
 	SDL_CreateWindowAndRenderer(
 		windowSize.x, windowSize.y, sdlFlags, &g->window, &g->renderer);
 	if (g->window == NULL || g->renderer == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot create window or renderer: %s",
+		LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
 			SDL_GetError());
 		return;
 	}
 	char title[32];
-	debug(D_NORMAL, "setting caption and icon...\n");
 	sprintf(title, "C-Dogs SDL %s%s",
 		g->cachedConfig.IsEditor ? "Editor " : "",
 		CDOGS_SDL_VERSION);
+	LOG(LM_GFX, LL_DEBUG, "setting title(%s) and icon", title);
 	SDL_SetWindowTitle(g->window, title);
 	SDL_SetWindowIcon(g->window, g->icon);
 	g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
@@ -266,15 +269,16 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		CASSERT(false, "unknown scale mode");
 		break;
 	}
+	LOG(LM_GFX, LL_DEBUG, "setting scale quality %s", renderScaleQuality);
 	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, renderScaleQuality))
 	{
-		LOG(LM_MAIN, LL_WARN, "cannot set render quality hint: %s",
+		LOG(LM_GFX, LL_WARN, "cannot set render quality hint: %s",
 			SDL_GetError());
 	}
 
 	if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot set renderer logical size: %s",
+		LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
 			SDL_GetError());
 		return;
 	}
@@ -283,7 +287,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		w, h);
 	if (g->screen == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot create screen texture: %s",
+		LOG(LM_GFX, LL_ERROR, "cannot create screen texture: %s",
 			SDL_GetError());
 		return;
 	}
@@ -292,7 +296,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	g->Amask =
 		0xffffffff & ~(g->Format->Rmask | g->Format->Gmask | g->Format->Bmask);
 	g->Ashift = 48 - g->Format->Rshift - g->Format->Gshift - g->Format->Bshift;
-	LOG(LM_MAIN, LL_INFO, "Amask(%08x) Ashift(%d)", g->Amask, g->Ashift);
+	LOG(LM_GFX, LL_INFO, "Amask(%08x) Ashift(%d)", g->Amask, g->Ashift);
 
 	CFREE(g->buf);
 	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));

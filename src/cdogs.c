@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 						const LogLevel ll = StrLogLevel(optarg);
 						for (int i = 0; i < (int)LM_COUNT; i++)
 						{
-							LogModuleSetLevel(StrLogModule((LogModule)i), ll);
+							LogModuleSetLevel((LogModule)i, ll);
 						}
 						printf("Logging everything at %s\n", LogLevelName(ll));
 					}

@@ -42,6 +42,7 @@ static LogModuleInfo sModuleInfo[] =
 	{ LL_INFO, "INPUT" },
 	{ LL_INFO, "ACTOR" },
 	{ LL_INFO, "SOUND" },
+	{ LL_INFO, "LM_GFX" },
 };
 
 

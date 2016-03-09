@@ -38,6 +38,7 @@ typedef enum
 	LM_INPUT,
 	LM_ACTOR,
 	LM_SOUND,
+	LM_GFX,
 	LM_COUNT
 } LogModule;
 const char *LogModuleName(const LogModule m);
