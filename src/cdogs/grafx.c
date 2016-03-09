@@ -202,7 +202,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	g->IsInitialized = false;
 
-	int sdlFlags = SDL_WINDOW_RESIZABLE;
+	Uint32 sdlFlags = SDL_WINDOW_RESIZABLE;
 	if (g->cachedConfig.Fullscreen)
 	{
 		sdlFlags |= SDL_WINDOW_FULLSCREEN;
@@ -236,11 +236,12 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);
 	SDL_DestroyWindow(g->window);
-	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%x)",
+	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
 		windowSize.x, windowSize.y, sdlFlags);
-	SDL_CreateWindowAndRenderer(
-		windowSize.x, windowSize.y, sdlFlags, &g->window, &g->renderer);
-	if (g->window == NULL || g->renderer == NULL)
+	if (SDL_CreateWindowAndRenderer(
+			windowSize.x, windowSize.y, sdlFlags,
+			&g->window, &g->renderer) == -1 ||
+		g->window == NULL || g->renderer == NULL)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
 			SDL_GetError());
