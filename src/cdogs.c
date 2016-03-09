@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -164,9 +164,14 @@ static void PrintHelp(void)
 		if (i < (int)LM_COUNT - 1) printf(", ");
 		else printf("\n");
 	}
+	printf("Log levels are: ");
+	for (int i = 0; i < (int)LL_COUNT; i++)
+	{
+		printf("%s", LogLevelName((LogLevel)i));
+		if (i < (int)LL_COUNT - 1) printf(", ");
+		else printf("\n");
+	}
 	printf(
-		"Levels can be set between %s and %s\n"
-		"Available modules are: NET\n"
 		"    --log=M,L        Enable logging for module M at level L.\n\n",
 		LogLevelName(LL_TRACE), LogLevelName(LL_ERROR)
 	);

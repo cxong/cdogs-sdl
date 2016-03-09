@@ -48,7 +48,8 @@ typedef enum
 	LL_DEBUG,
 	LL_INFO,
 	LL_WARN,
-	LL_ERROR
+	LL_ERROR,
+	LL_COUNT
 } LogLevel;
 LogLevel LogModuleGetLevel(const LogModule m);
 void LogModuleSetLevel(const LogModule m, const LogLevel l);
