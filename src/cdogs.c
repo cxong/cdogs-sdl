@@ -175,6 +175,9 @@ static void PrintHelp(void)
 		"    --log=M,L        Enable logging for module M at level L.\n\n",
 		LogLevelName(LL_TRACE), LogLevelName(LL_ERROR)
 	);
+	printf(
+		"    --log=L          Enable logging for all modules at level L.\n\n"
+	);
 
 	printf("%s\n",
 		"Other:\n"
@@ -315,12 +318,23 @@ int main(int argc, char *argv[])
 					char *comma = strchr(optarg, ',');
 					if (comma)
 					{
+						// Set logging level for a single module
+						// The module and level are comma separated
 						*comma = '\0';
+						const LogLevel ll = StrLogLevel(comma + 1);
+						LogModuleSetLevel(StrLogModule(optarg), ll);
+						printf("Logging %s at %s\n", optarg, LogLevelName(ll));
 					}
-					// Set logging level
-					const LogLevel ll = StrLogLevel(comma + 1);
-					LogModuleSetLevel(StrLogModule(optarg), ll);
-					printf("Logging %s at %s\n", optarg, LogLevelName(ll));
+					else
+					{
+						// Set logging level for all modules
+						const LogLevel ll = StrLogLevel(optarg);
+						for (int i = 0; i < (int)LM_COUNT; i++)
+						{
+							LogModuleSetLevel(StrLogModule((LogModule)i), ll);
+						}
+						printf("Logging everything at %s\n", LogLevelName(ll));
+					}
 				}
 				break;
 			case 'x':
