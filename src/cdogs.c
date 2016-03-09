@@ -225,6 +225,12 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
+	if (enet_initialize() != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
+		err = EXIT_FAILURE;
+		goto bail;
+	}
 	NetClientInit(&gNetClient);
 
 	// Print command line
@@ -376,12 +382,6 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
-	if (enet_initialize() != 0)
-	{
-		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
-		err = EXIT_FAILURE;
-		goto bail;
-	}
 
 	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
