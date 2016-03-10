@@ -1,0 +1,26 @@
+---
+layout: post
+title:  "C-Dogs 0.6.0 Released!"
+date:   2016-03-11
+categories: release
+---
+
+After an extended development period, C-Dogs SDL 0.6.0 is finally ready!
+
+The biggest features in this release are:
+
+- LAN multiplayer
+- Replaced tileset
+- Replaced sounds
+
+But the most significant changes were reworking the internal systems, which also explains the unusually long time to make this release (0.5.8 was almost 1 year ago!) C-Dogs SDL has some pretty new and cool tech behind the scenes:
+
+- SDL2, which allows modern features like joystick hot-plugging, accelerated graphics, joystick rumble and more
+- ENet, for reliable yet low latency networking
+- Nanopb, a super low-overhead protocol buffers implementation
+
+But as one may expect with major releases like this one, there's plenty of room for bugs, so please try the game out and send in the bug reports and feedback!
+
+The next release should be much less ambitious (and come much sooner). Watch the [issue milestones](https://github.com/cxong/cdogs-sdl/milestones) to keep track of the next release plans!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.0>
