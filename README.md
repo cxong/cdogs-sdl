@@ -69,5 +69,4 @@ If you have an questions, comments, bug reports, patches or anything else relate
 
 - [Raise an issue](https://github.com/cxong/cdogs-sdl/issues)
 - Drop by `#freegamer` on [freenode](irc://irc.freenode.net/freenode) (http://freegamedev.net/irc/)
-- Check out the mailing list: https://groups.google.com/forum/#!forum/c-dogs-sdl
 - Email: Cong <congusbongus@gmail.com>
