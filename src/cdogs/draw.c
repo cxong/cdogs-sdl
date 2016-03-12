@@ -253,7 +253,9 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-static void DrawActorPics(const TTileItem *t, const Vec2i picPos);
+static void DrawActorPics(const ActorPics *pics, const Vec2i picPos);
+static void DrawLaserSight(
+	const ActorPics *pics, const TActor *a, const Vec2i picPos);
 static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
@@ -283,51 +285,52 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	}
 	else if (t->getActorPicsFunc)
 	{
-		DrawActorPics(t, picPos);
+		const ActorPics pics = t->getActorPicsFunc(t->id);
+		DrawActorPics(&pics, picPos);
+		// Draw weapon indicators
+		const TActor *a = CArrayGet(&gActors, t->id);
+		DrawLaserSight(&pics, a, picPos);
 	}
 	else
 	{
 		(*(t->drawFunc))(picPos, &t->drawData);
 	}
 }
-#define ACTOR_HEIGHT 25
-static void DrawLaserSight(const TActor *a, const Vec2i picPos);
-static void DrawActorPics(const TTileItem *t, const Vec2i picPos)
+static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 {
-	const ActorPics pics = t->getActorPicsFunc(t->id);
-	if (pics.IsDead)
+	if (pics->IsDead)
 	{
-		if (pics.IsDying)
+		if (pics->IsDying)
 		{
-			int pic = pics.OldPics[0];
+			int pic = pics->OldPics[0];
 			if (pic == 0)
 			{
 				return;
 			}
-			if (pics.IsTransparent)
+			if (pics->IsTransparent)
 			{
 				DrawBTPic(
 					&gGraphicsDevice,
 					PicManagerGetFromOld(&gPicManager, pic),
-					Vec2iAdd(picPos, pics.Pics[0].offset),
-					pics.Tint);
+					Vec2iAdd(picPos, pics->Pics[0].offset),
+					pics->Tint);
 			}
 			else
 			{
 				DrawTTPic(
-					picPos.x + pics.Pics[0].offset.x,
-					picPos.y + pics.Pics[0].offset.y,
+					picPos.x + pics->Pics[0].offset.x,
+					picPos.y + pics->Pics[0].offset.y,
 					PicManagerGetOldPic(&gPicManager, pic),
-					pics.Table);
+					pics->Table);
 			}
 		}
 	}
-	else if (pics.IsTransparent)
+	else if (pics->IsTransparent)
 	{
 		for (int i = 0; i < 3; i++)
 		{
 			Pic *oldPic = PicManagerGetFromOld(
-				&gPicManager, pics.OldPics[i]);
+				&gPicManager, pics->OldPics[i]);
 			if (oldPic == NULL)
 			{
 				continue;
@@ -335,8 +338,8 @@ static void DrawActorPics(const TTileItem *t, const Vec2i picPos)
 			DrawBTPic(
 				&gGraphicsDevice,
 				oldPic,
-				Vec2iAdd(picPos, pics.Pics[i].offset),
-				pics.Tint);
+				Vec2iAdd(picPos, pics->Pics[i].offset),
+				pics->Tint);
 		}
 	}
 	else
@@ -345,33 +348,34 @@ static void DrawActorPics(const TTileItem *t, const Vec2i picPos)
 		for (int i = 0; i < 3; i++)
 		{
 			PicPaletted *oldPic = PicManagerGetOldPic(
-				&gPicManager, pics.OldPics[i]);
+				&gPicManager, pics->OldPics[i]);
 			if (oldPic == NULL)
 			{
 				continue;
 			}
 			BlitOld(
-				picPos.x + pics.Pics[i].offset.x,
-				picPos.y + pics.Pics[i].offset.y,
+				picPos.x + pics->Pics[i].offset.x,
+				picPos.y + pics->Pics[i].offset.y,
 				oldPic,
-				pics.Table, BLIT_TRANSPARENT);
-		}
-
-		const TActor *a = CArrayGet(&gActors, t->id);
-
-		// Draw weapon indicators
-		if (ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_ALL ||
-			(ConfigGetEnum(&gConfig, "Game.LaserSight") == LASER_SIGHT_PLAYERS && a->PlayerUID >= 0))
-		{
-			DrawLaserSight(a, picPos);
+				pics->Table, BLIT_TRANSPARENT);
 		}
 	}
 }
 static void DrawLaserSightSingle(
 	const Vec2i from, const double radians, const int range,
 	const color_t color);
-static void DrawLaserSight(const TActor *a, const Vec2i picPos)
+static void DrawLaserSight(
+	const ActorPics *pics, const TActor *a, const Vec2i picPos)
 {
+	// Don't draw if dead or transparent
+	if (pics->IsDead || pics->IsTransparent) return;
+	// Check config
+	const LaserSight ls = ConfigGetEnum(&gConfig, "Game.LaserSight");
+	if (ls != LASER_SIGHT_ALL &&
+		!(ls == LASER_SIGHT_PLAYERS && a->PlayerUID >= 0))
+	{
+		return;
+	}
 	// Draw weapon indicators
 	const GunDescription *g = ActorGetGun(a)->Gun;
 	Vec2i muzzlePos = Vec2iAdd(
@@ -500,6 +504,7 @@ static void DrawChatters(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
+#define ACTOR_HEIGHT 25
 static void DrawChatter(
 	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
 {
