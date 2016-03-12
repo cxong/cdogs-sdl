@@ -22,35 +22,35 @@ title: C-Dogs SDL
   <a href="http://www.youtube.com/watch?v=DysXfUyw58M">
     <img src="http://img.youtube.com/vi/DysXfUyw58M/0.jpg" alt="Youtube screenshot"/>
   </a>
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/hqx_new.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/hqx_new.png"
     data-title="Game Screen"
     data-description=""
     alt="HQX graphics"
   />
-  <img 
+  <img
       src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/4p_split_osx.png"
       data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/4p_split_osx.png"
       data-title="4-player split screen on OSX"
       data-description="Play with up to 3 friends locally, co-op or deathmatch"
       alt="4 player split screen"
   />
-  <img 
+  <img
       src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/menu_with_quick_play.png"
       data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/menu_with_quick_play.png"
       data-title="Main menu"
       data-description="Try different game modes - Quick Play, 1 or 2 player co-op campaign, and 2 player Dogfight"
       alt="Main menu"
   />
-  <img 
+  <img
       src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/4pjoys.png"
       data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/4pjoys.png"
       data-title="Weapon selection screen"
       data-description="Choose from a fun and devastating arsenal"
       alt="4 players"
   />
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png"
     data-title="Quick Play"
@@ -60,35 +60,35 @@ title: C-Dogs SDL
   <a href="http://www.youtube.com/watch?v=AY4Ujdl68HI">
     <img src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play_youtube.png" alt="Youtube quick play"/>
   </a>
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/android.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/android.png"
     data-title="Android"
     data-description="Play C-Dogs on your Android device! Find it in the Play Store"
     alt="Android screenshot"
   />
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/widescreen1.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/widescreen1.png"
     data-title="Widescreen"
     data-description="C-Dogs supports any resolution available on your platform"
     alt="Widescreen"
   />
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/split_screen.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/split_screen.png"
     data-title="Split screen"
     data-description="Play with a friend in split screen"
     alt="Split screen"
   />
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/dogfight.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/dogfight.png"
     data-title="Dogfight"
     data-description="...or shot the living daylights out of each other in the dogfight mode!"
     alt="Dogfight"
   />
-  <img 
+  <img
     src="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/editor1.png"
     data-big="https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/editor1.png"
     data-title="Editor"
@@ -101,11 +101,11 @@ title: C-Dogs SDL
   <ul class="posts">
     {% for post in paginator.posts %}
       <h5><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | markdownify | strip_html | trim }}</a></h5>
-      {{ post.content | truncatewords:75}}<br />
+      {{ post.content }}<br />
       <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize | remove: ' ' | remove: '.' | remove: '!' }}">Read more...</a><br /><br />
     {% endfor %}
   </ul>
-  
+
   <!-- Pagination links -->
   {% if paginator.total_pages > 1 %}
   <div class="pagination">
