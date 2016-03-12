@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "C-Dogs 0.6.0 Released!"
-date:   2016-03-11
+date:   2016-03-10
 categories: release
 ---
 
