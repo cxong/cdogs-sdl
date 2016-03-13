@@ -102,224 +102,10 @@ TranslationTable tablePurple;
 CArray gActors;
 static unsigned int sActorUIDs = 0;
 
-static Animation animIdling =
-{
-	ACTORANIMATION_IDLE,
-	0,
-	{ STATE_IDLE, STATE_IDLELEFT, STATE_IDLERIGHT, -1 },
-	{ 90, 60, 60, -1 },
-	0,
-	true,
-	true
-};
-static Animation animWalking =
-{
-	ACTORANIMATION_WALKING,
-	0,
-	{ STATE_WALKING_1, STATE_WALKING_2, STATE_WALKING_3, STATE_WALKING_4 },
-	{ 4, 4, 4, 4 },
-	0,
-	false,
-	true
-};
-
-static void AnimationUpdate(Animation *a, const int ticks)
-{
-	a->frameCounter += ticks;
-	a->newFrame = false;
-	if (a->frameCounter > a->ticksPerFrame[a->frame])
-	{
-		a->frameCounter -= a->ticksPerFrame[a->frame];
-		a->newFrame = true;
-		// Advance to next frame
-		if (a->randomFrames)
-		{
-			// If we're not on the first frame, return to first frame
-			// Otherwise, pick a random non-first frame
-			if (a->frame == 0)
-			{
-				// Note: -1 means frame not used, so pick another frame
-				do
-				{
-					a->frame = (rand() % (ANIMATION_MAX_FRAMES - 1)) + 1;
-				} while (a->ticksPerFrame[a->frame] < 0);
-			}
-			else
-			{
-				a->frame = 0;
-			}
-		}
-		else
-		{
-			a->frame++;
-			if (a->frame >= ANIMATION_MAX_FRAMES ||
-				a->ticksPerFrame[a->frame] < 0)
-			{
-				a->frame = 0;
-			}
-		}
-	}
-}
-static int AnimationGetFrame(const Animation *a)
-{
-	return a->frames[a->frame];
-}
-
-static Character *ActorGetCharacterMutable(TActor *a);
-static ActorPics GetCharacterPics(int id)
-{
-	ActorPics pics;
-	memset(&pics, 0, sizeof pics);
-	TActor *actor = CArrayGet(&gActors, id);
-	const direction_e dir = RadiansToDirection(actor->DrawRadians);
-	direction_e headDir = dir;
-	const int frame = AnimationGetFrame(&actor->anim);
-	int headFrame = frame;
-
-	Character *c = ActorGetCharacterMutable(actor);
-	pics.Table = (TranslationTable *)&c->table;
-	const int f = c->looks.Face;
-	const Weapon *gun = ActorGetGun(actor);
-	int g = gun->Gun->pic;
-	gunstate_e gunState = gun->state;
-
-	TOffsetPic body, head, gunPic;
-
-	pics.IsTransparent = !!(actor->flags & FLAGS_SEETHROUGH);
-
-	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
-	{
-		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
-	}
-
-	if (actor->flamed)
-	{
-		pics.Table = &tableFlamed;
-		pics.Tint = &tintRed;
-	}
-	else if (actor->poisoned)
-	{
-		pics.Table = &tableGreen;
-		pics.Tint = &tintPoison;
-	}
-	else if (actor->petrified)
-	{
-		pics.Table = &tableGray;
-		pics.Tint = &tintGray;
-	}
-	else if (actor->confused)
-	{
-		pics.Table = &tablePurple;
-		pics.Tint = &tintPurple;
-	}
-	else if (pics.IsTransparent)
-	{
-		pics.Table = &tableDarker;
-		pics.Tint = &tintDarker;
-	}
-
-	actor->flags |= FLAGS_VISIBLE;
-
-	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
-	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
-
-	int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
-
-	body.dx = cBodyOffset[b][dir].dx;
-	body.dy = cBodyOffset[b][dir].dy;
-	body.picIndex = cBodyPic[b][dir][frame];
-
-	if (actor->dead)
-	{
-		pics.IsDead = true;
-		if (actor->dead <= DEATH_MAX)
-		{
-			pics.IsDying = true;
-			body = cDeathPics[actor->dead - 1];
-			pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-			pics.OldPics[0] = body.picIndex;
-		}
-		goto bail;
-	}
-
-	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
-	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
-	head.picIndex = cHeadPic[f][headDir][headFrame];
-
-	if (g >= 0)
-	{
-		gunPic.dx =
-		    cGunHandOffset[b][dir].dx +
-		    cGunPics[g][dir][gunState].dx;
-		gunPic.dy =
-		    cGunHandOffset[b][dir].dy +
-		    cGunPics[g][dir][gunState].dy;
-		gunPic.picIndex = cGunPics[g][dir][gunState].picIndex;
-	}
-	else
-	{
-		gunPic.picIndex = -1;
-	}
-
-	switch (dir)
-	{
-	case DIRECTION_UP:
-	case DIRECTION_UPRIGHT:
-		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
-		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, body);
-		pics.OldPics[0] = gunPic.picIndex;
-		pics.OldPics[1] = head.picIndex;
-		pics.OldPics[2] = body.picIndex;
-		break;
-
-	case DIRECTION_RIGHT:
-	case DIRECTION_DOWNRIGHT:
-	case DIRECTION_DOWN:
-	case DIRECTION_DOWNLEFT:
-		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, head);
-		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics.OldPics[0] = body.picIndex;
-		pics.OldPics[1] = head.picIndex;
-		pics.OldPics[2] = gunPic.picIndex;
-		break;
-
-	case DIRECTION_LEFT:
-	case DIRECTION_UPLEFT:
-		pics.Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics.Pics[1] = PicFromTOffsetPic(&gPicManager, body);
-		pics.Pics[2] = PicFromTOffsetPic(&gPicManager, head);
-		pics.OldPics[0] = gunPic.picIndex;
-		pics.OldPics[1] = body.picIndex;
-		pics.OldPics[2] = head.picIndex;
-		break;
-	default:
-		assert(0 && "invalid direction");
-		goto bail;
-	}
-
-bail:
-	return pics;
-}
-static Character *ActorGetCharacterMutable(TActor *a)
-{
-	if (a->PlayerUID >= 0)
-	{
-		return &PlayerDataGetByUID(a->PlayerUID)->Char;
-	}
-	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
-}
-
 
 void ActorSetState(TActor *actor, const ActorAnimation state)
 {
-	switch (state)
-	{
-	case ACTORANIMATION_IDLE: actor->anim = animIdling; break;
-	case ACTORANIMATION_WALKING: actor->anim = animWalking; break;
-	default: CASSERT(false, "Unknown actor state"); break;
-	}
+	actor->anim = AnimationGetActorAnimation(state);
 }
 
 static void CheckPickups(TActor *actor);
@@ -1373,7 +1159,6 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.getPicFunc = NULL;
-	actor->tileItem.getActorPicsFunc = GetCharacterPics;
 	actor->tileItem.drawFunc = NULL;
 	actor->tileItem.size = Vec2iNew(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =
@@ -1386,7 +1171,7 @@ TActor *ActorAdd(NActorAdd aa)
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
 	actor->direction = DIRECTION_DOWN;
-	ActorSetState(actor, ACTORANIMATION_IDLE);
+	actor->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 	actor->slideLock = 0;
 	if (c->bot)
 	{

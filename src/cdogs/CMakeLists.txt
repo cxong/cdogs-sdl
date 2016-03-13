@@ -12,6 +12,7 @@ set(CDOGS_SOURCES
 	ai_utils.c
 	algorithms.c
 	ammo.c
+	animation.c
 	AStar.c
 	automap.c
 	blit.c
@@ -99,6 +100,7 @@ set(CDOGS_HEADERS
 	ai_utils.h
 	algorithms.h
 	ammo.h
+	animation.h
 	AStar.h
 	automap.h
 	blit.h

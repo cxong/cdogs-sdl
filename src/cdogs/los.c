@@ -27,6 +27,7 @@
 */
 #include "los.h"
 
+#include "actors.h"
 #include "algorithms.h"
 #include "game_events.h"
 #include "net_util.h"
@@ -199,6 +200,16 @@ static void SetLOSVisible(Map *map, const Vec2i pos, const bool explore)
 		// Cache the newly explored tile
 		*((bool *)CArrayGet(&map->LOS.Explored, pos.y * map->Size.x + pos.x)) = true;
 	}
+	// Mark any actors on this tile as visible
+	// This affects some AI
+	CA_FOREACH(ThingId, tid, t->things)
+		const TTileItem *ti = ThingIdGetTileItem(tid);
+		if (ti->kind == KIND_CHARACTER)
+		{
+			TActor *a = CArrayGet(&gActors, ti->id);
+			a->flags |= FLAGS_VISIBLE;
+		}
+	CA_FOREACH_END()
 }
 static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
 {

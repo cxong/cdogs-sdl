@@ -386,7 +386,6 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->tileItem.flags = amo.TileItemFlags;
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.getPicFunc = GetObjectPic;
-	o->tileItem.getActorPicsFunc = NULL;
 	o->tileItem.size = o->Class->Size;
 	o->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &o->tileItem, Net2Vec2i(amo.Pos));

@@ -111,7 +111,6 @@ typedef struct
 	TranslationTable *Table;
 	HSV *Tint;
 } ActorPics;
-typedef ActorPics (*TileItemGetPic3Func)(int);
 
 typedef struct
 {
@@ -135,7 +134,6 @@ typedef struct TileItem
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
 	TileItemGetPicFunc getPicFunc;
-	TileItemGetPic3Func getActorPicsFunc;
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
 	CPic CPic;

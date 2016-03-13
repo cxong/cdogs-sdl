@@ -1,5 +1,5 @@
 // Author: Paul Vixie 1996
-#ifdef _WIN32
+#ifdef __MINGW32__
 
 #include <ctype.h>
 #include <stdint.h>

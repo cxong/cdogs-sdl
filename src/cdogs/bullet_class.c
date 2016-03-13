@@ -773,7 +773,6 @@ void BulletAdd(const NAddBullet add)
 	obj->isInUse = true;
 	obj->tileItem.x = obj->tileItem.y = -1;
 	obj->tileItem.getPicFunc = NULL;
-	obj->tileItem.getActorPicsFunc = NULL;
 	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.drawData.MobObjId = i;
 	obj->tileItem.CPic = obj->bulletClass->CPic;

@@ -38,25 +38,29 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-add_library(enet STATIC
-        callbacks.c
-        compress.c
-        host.c
-        list.c
-        packet.c
-        peer.c
-        protocol.c
-        unix.c
-        win32.c
-        inet_pton_mingw.c
-				inet_pton_mingw.h
-		include/enet/callbacks.h
-		include/enet/enet.h
-		include/enet/list.h
-		include/enet/protocol.h
-		include/enet/time.h
-		include/enet/types.h
-		include/enet/unix.h
-		include/enet/utility.h
-		include/enet/win32.h
-    )
+set(ENET_SOURCES
+	callbacks.c
+	compress.c
+	host.c
+	list.c
+	packet.c
+	peer.c
+	protocol.c
+	unix.c
+	win32.c
+	include/enet/callbacks.h
+	include/enet/enet.h
+	include/enet/list.h
+	include/enet/protocol.h
+	include/enet/time.h
+	include/enet/types.h
+	include/enet/unix.h
+	include/enet/utility.h
+	include/enet/win32.h)
+if(MINGW)
+	set(ENET_SOURCES ${ENET_SOURCES}
+		inet_pton_mingw.c
+		inet_pton_mingw.h)
+endif()
+
+add_library(enet STATIC ${ENET_SOURCES})

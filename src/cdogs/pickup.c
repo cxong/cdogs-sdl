@@ -95,7 +95,6 @@ void PickupAdd(const NAddPickup ap)
 	p->tileItem.flags = ap.TileItemFlags;
 	p->tileItem.kind = KIND_PICKUP;
 	p->tileItem.getPicFunc = GetPickupPic;
-	p->tileItem.getActorPicsFunc = NULL;
 	p->tileItem.size = p->class->Pic->size;
 	p->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &p->tileItem, Net2Vec2i(ap.Pos));

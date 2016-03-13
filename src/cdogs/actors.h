@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #pragma once
 
 #include "ai_context.h"
+#include "animation.h"
 #include "grafx.h"
 #include "player.h"
 #include "weapon.h"
@@ -103,27 +104,6 @@ typedef enum
 	ACTORACTION_MOVING,
 	ACTORACTION_EXITING
 } ActorAction;
-
-typedef enum
-{
-	ACTORANIMATION_IDLE,
-	ACTORANIMATION_WALKING
-} ActorAnimation;
-
-// TODO: data-driven custom per-character animations
-#define ANIMATION_MAX_FRAMES 4
-typedef struct
-{
-	ActorAnimation Type;
-	int frame;
-	int frames[ANIMATION_MAX_FRAMES];
-	int ticksPerFrame[ANIMATION_MAX_FRAMES];
-	int frameCounter;
-	bool randomFrames;
-	// Flag for whether we entered a new frame
-	// Used for some frame-triggered effects like sounds
-	bool newFrame;
-} Animation;
 
 typedef struct Actor
 {

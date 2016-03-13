@@ -157,7 +157,8 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorState.UID);
 			if (!a->isInUse) break;
-			ActorSetState(a, (ActorAnimation)e.u.ActorState.State);
+			a->anim = AnimationGetActorAnimation(
+				(ActorAnimation)e.u.ActorState.State);
 		}
 		break;
 	case GAME_EVENT_ACTOR_DIR:

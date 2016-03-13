@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -253,6 +253,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
+static void GetCharacterPics(ActorPics *pics, TActor *a);
 static void DrawActorPics(const ActorPics *pics, const Vec2i picPos);
 static void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const Vec2i picPos);
@@ -283,18 +284,159 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 		const Pic *pic = t->getPicFunc(t->id, &picOffset);
 		Blit(&gGraphicsDevice, pic, Vec2iAdd(picPos, picOffset));
 	}
-	else if (t->getActorPicsFunc)
+	else if (t->kind == KIND_CHARACTER)
 	{
-		const ActorPics pics = t->getActorPicsFunc(t->id);
+		TActor *a = CArrayGet(&gActors, t->id);
+		ActorPics pics;
+		GetCharacterPics(&pics, a);
 		DrawActorPics(&pics, picPos);
 		// Draw weapon indicators
-		const TActor *a = CArrayGet(&gActors, t->id);
 		DrawLaserSight(&pics, a, picPos);
 	}
 	else
 	{
 		(*(t->drawFunc))(picPos, &t->drawData);
 	}
+}
+static Character *ActorGetCharacterMutable(TActor *a);
+static void GetCharacterPics(ActorPics *pics, TActor *a)
+{
+	memset(pics, 0, sizeof *pics);
+	const direction_e dir = RadiansToDirection(a->DrawRadians);
+	direction_e headDir = dir;
+	const int frame = AnimationGetFrame(&a->anim);
+	int headFrame = frame;
+
+	Character *c = ActorGetCharacterMutable(a);
+	pics->Table = (TranslationTable *)&c->table;
+	const int f = c->looks.Face;
+	const Weapon *gun = ActorGetGun(a);
+	int g = gun->Gun->pic;
+	gunstate_e gunState = gun->state;
+
+	TOffsetPic body, head, gunPic;
+
+	pics->IsTransparent = !!(a->flags & FLAGS_SEETHROUGH);
+
+	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
+	{
+		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
+	}
+
+	if (a->flamed)
+	{
+		pics->Table = &tableFlamed;
+		pics->Tint = &tintRed;
+	}
+	else if (a->poisoned)
+	{
+		pics->Table = &tableGreen;
+		pics->Tint = &tintPoison;
+	}
+	else if (a->petrified)
+	{
+		pics->Table = &tableGray;
+		pics->Tint = &tintGray;
+	}
+	else if (a->confused)
+	{
+		pics->Table = &tablePurple;
+		pics->Tint = &tintPurple;
+	}
+	else if (pics->IsTransparent)
+	{
+		pics->Table = &tableDarker;
+		pics->Tint = &tintDarker;
+	}
+
+	a->flags |= FLAGS_VISIBLE;
+
+	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
+	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
+
+	int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
+
+	body.dx = cBodyOffset[b][dir].dx;
+	body.dy = cBodyOffset[b][dir].dy;
+	body.picIndex = cBodyPic[b][dir][frame];
+
+	if (a->dead)
+	{
+		pics->IsDead = true;
+		if (a->dead <= DEATH_MAX)
+		{
+			pics->IsDying = true;
+			body = cDeathPics[a->dead - 1];
+			pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
+			pics->OldPics[0] = body.picIndex;
+		}
+		return;
+	}
+
+	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
+	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
+	head.picIndex = cHeadPic[f][headDir][headFrame];
+
+	if (g >= 0)
+	{
+		gunPic.dx =
+			cGunHandOffset[b][dir].dx +
+			cGunPics[g][dir][gunState].dx;
+		gunPic.dy =
+			cGunHandOffset[b][dir].dy +
+			cGunPics[g][dir][gunState].dy;
+		gunPic.picIndex = cGunPics[g][dir][gunState].picIndex;
+	}
+	else
+	{
+		gunPic.picIndex = -1;
+	}
+
+	switch (dir)
+	{
+	case DIRECTION_UP:
+	case DIRECTION_UPRIGHT:
+		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
+		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, body);
+		pics->OldPics[0] = gunPic.picIndex;
+		pics->OldPics[1] = head.picIndex;
+		pics->OldPics[2] = body.picIndex;
+		break;
+
+	case DIRECTION_RIGHT:
+	case DIRECTION_DOWNRIGHT:
+	case DIRECTION_DOWN:
+	case DIRECTION_DOWNLEFT:
+		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
+		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, gunPic);
+		pics->OldPics[0] = body.picIndex;
+		pics->OldPics[1] = head.picIndex;
+		pics->OldPics[2] = gunPic.picIndex;
+		break;
+
+	case DIRECTION_LEFT:
+	case DIRECTION_UPLEFT:
+		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
+		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, body);
+		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, head);
+		pics->OldPics[0] = gunPic.picIndex;
+		pics->OldPics[1] = body.picIndex;
+		pics->OldPics[2] = head.picIndex;
+		break;
+	default:
+		assert(0 && "invalid direction");
+		return;
+	}
+}
+static Character *ActorGetCharacterMutable(TActor *a)
+{
+	if (a->PlayerUID >= 0)
+	{
+		return &PlayerDataGetByUID(a->PlayerUID)->Char;
+	}
+	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 {
@@ -464,9 +606,11 @@ static void DrawObjectiveHighlight(
 		BlitPicHighlight(
 			&gGraphicsDevice, pic, Vec2iAdd(pos, picOffset), color);
 	}
-	else if (ti->getActorPicsFunc != NULL)
+	else if (ti->kind == KIND_CHARACTER)
 	{
-		ActorPics pics = ti->getActorPicsFunc(ti->id);
+		TActor *a = CArrayGet(&gActors, ti->id);
+		ActorPics pics;
+		GetCharacterPics(&pics, a);
 		// Do not highlight dead, dying or transparent characters
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
@@ -494,7 +638,7 @@ static void DrawChatters(DrawBuffer *b, Vec2i offset)
 		{
 			CA_FOREACH(ThingId, tid, tile->things)
 				const TTileItem *ti = ThingIdGetTileItem(tid);
-				if (ti->getActorPicsFunc == NULL)
+				if (ti->kind != KIND_CHARACTER)
 				{
 					continue;
 				}
