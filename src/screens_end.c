@@ -166,7 +166,7 @@ static void PlayerListDraw(
 		i++)
 	{
 		const int *playerUID = CArrayGet(&pl->playerUIDs, i);
-		const PlayerData *p = PlayerDataGetByUID(*playerUID);
+		PlayerData *p = PlayerDataGetByUID(*playerUID);
 		if (p == NULL)
 		{
 			continue;

@@ -37,7 +37,7 @@
 // Display a character and the player name above it, with the character
 // centered around the target position
 void DisplayCharacterAndName(
-	Vec2i pos, const Character *c, const char *name, const color_t color)
+	Vec2i pos, Character *c, const char *name, const color_t color)
 {
 	// Move the point down a bit since the default character draw point is at
 	// its feet
@@ -63,7 +63,7 @@ void MenuDisplayPlayer(
 	playerPos = Vec2iNew(
 		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
 
-	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
+	PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)
 	{
 		sprintf(s, "%c%s%c", '>', pData->name, '<');

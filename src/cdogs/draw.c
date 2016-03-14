@@ -301,7 +301,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 static Character *ActorGetCharacterMutable(TActor *a);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
-	const gunpic_e g, const gunstate_e gunState,
+	const int g, const gunstate_e gunState,
 	const bool isTransparent,
 	TranslationTable *table, HSV *tint,
 	const int deadPic);
@@ -340,7 +340,7 @@ static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 }
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
-	const gunpic_e g, const gunstate_e gunState,
+	const int g, const gunstate_e gunState,
 	const bool isTransparent,
 	TranslationTable *table, HSV *tint,
 	const int deadPic)
@@ -695,102 +695,19 @@ TOffsetPic GetHeadPic(
 }
 
 void DrawCharacterSimple(
-	const Character *c, const Vec2i pos,
+	Character *c, const Vec2i pos,
 	const direction_e dir, const int state,
 	const int gunPic, const gunstate_e gunState,
-	const TranslationTable *table)
+	TranslationTable *table)
 {
-	TOffsetPic body, head, gun;
-	TOffsetPic pic1, pic2, pic3;
-	direction_e headDir = dir;
-	int headState = state;
-	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
-	{
-		headState = STATE_COUNT + gunState - GUNSTATE_FIRING;
-	}
-	if (state == STATE_IDLELEFT)
-	{
-		headDir = (direction_e)((dir + 7) % 8);
-	}
-	else if (state == STATE_IDLERIGHT)
-	{
-		headDir = (direction_e)((dir + 1) % 8);
-	}
-
-	int bodyType = gunPic < 0 ? BODY_UNARMED : BODY_ARMED;
-
-	body.dx = cBodyOffset[bodyType][dir].dx;
-	body.dy = cBodyOffset[bodyType][dir].dy;
-	body.picIndex = cBodyPic[bodyType][dir][state];
-
-	head = GetHeadPic(bodyType, headDir, c->looks.Face, headState);
-
-	gun.picIndex = -1;
-	if (gunPic >= 0)
-	{
-		gun.dx =
-		    cGunHandOffset[bodyType][dir].dx +
-		    cGunPics[gunPic][dir][gunState].dx;
-		gun.dy =
-		    cGunHandOffset[bodyType][dir].dy +
-		    cGunPics[gunPic][dir][gunState].dy;
-		gun.picIndex = cGunPics[gunPic][dir][gunState].picIndex;
-	}
-
-	switch (dir)
-	{
-	case DIRECTION_UP:
-	case DIRECTION_UPRIGHT:
-		pic1 = gun;
-		pic2 = head;
-		pic3 = body;
-		break;
-
-	case DIRECTION_RIGHT:
-	case DIRECTION_DOWNRIGHT:
-	case DIRECTION_DOWN:
-	case DIRECTION_DOWNLEFT:
-		pic1 = body;
-		pic2 = head;
-		pic3 = gun;
-		break;
-
-	case DIRECTION_LEFT:
-	case DIRECTION_UPLEFT:
-		pic1 = gun;
-		pic2 = body;
-		pic3 = head;
-		break;
-	default:
-		assert(0 && "invalid direction");
-		return;
-	}
-
-	if (pic1.picIndex >= 0)
-	{
-		BlitOld(
-			pos.x + pic1.dx, pos.y + pic1.dy,
-			PicManagerGetOldPic(&gPicManager, pic1.picIndex),
-			table, BLIT_TRANSPARENT);
-	}
-	if (pic2.picIndex >= 0)
-	{
-		BlitOld(
-			pos.x + pic2.dx, pos.y + pic2.dy,
-			PicManagerGetOldPic(&gPicManager, pic2.picIndex),
-			table, BLIT_TRANSPARENT);
-	}
-	if (pic3.picIndex >= 0)
-	{
-		BlitOld(
-			pos.x + pic3.dx, pos.y + pic3.dy,
-			PicManagerGetOldPic(&gPicManager, pic3.picIndex),
-			table, BLIT_TRANSPARENT);
-	}
+	ActorPics pics;
+	GetCharacterPics(
+		&pics, c, dir, state, gunPic, gunState, false, table, NULL, 0);
+	DrawActorPics(&pics, pos);
 }
 
 void DisplayCharacter(
-	const Vec2i pos, const Character *c, const bool hilite, const bool showGun)
+	const Vec2i pos, Character *c, const bool hilite, const bool showGun)
 {
 	DrawCharacterSimple(
 		c, pos,

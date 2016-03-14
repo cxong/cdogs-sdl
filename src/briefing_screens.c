@@ -375,7 +375,7 @@ static int GetFriendlyBonus(const PlayerData *p)
 	return (p->Stats.Kills == 0 && p->Stats.Friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size, const PlayerData *data);
+	const Vec2i pos, const Vec2i size, PlayerData *data);
 static void MissionSummaryDraw(void *data)
 {
 	// This will only draw once
@@ -477,9 +477,9 @@ static void MissionSummaryDraw(void *data)
 
 	// Draw per-player summaries
 	Vec2i size;
-	const PlayerData *pds[MAX_LOCAL_PLAYERS];
+	PlayerData *pds[MAX_LOCAL_PLAYERS];
 	idx = 0;
-	CA_FOREACH(const PlayerData, pd, gPlayerDatas)
+	CA_FOREACH(PlayerData, pd, gPlayerDatas)
 		if (!pd->IsLocal)
 		{
 			idx--;
@@ -521,7 +521,7 @@ static void MissionSummaryDraw(void *data)
 // Display compact player summary, with player on left half and score summaries
 // on right half
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size, const PlayerData *data)
+	const Vec2i pos, const Vec2i size, PlayerData *data)
 {
 	char s[50];
 	const int totalTextHeight = FontH() * 7;

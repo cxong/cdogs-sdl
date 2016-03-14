@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __DRAW
-#define __DRAW
+#pragma once
 
 #include "draw_buffer.h"
 #include "gamedata.h"
@@ -55,13 +54,11 @@
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 void DisplayCharacter(
-	const Vec2i pos, const Character *c, const bool hilite, const bool showGun);
+	const Vec2i pos, Character *c, const bool hilite, const bool showGun);
 void DrawCharacterSimple(
-	const Character *c, const Vec2i pos,
+	Character *c, const Vec2i pos,
 	const direction_e dir, const int state,
 	const int gunPic, const gunstate_e gunState,
-	const TranslationTable *table);
+	TranslationTable *table);
 TOffsetPic GetHeadPic(
 	const int bodyType, const direction_e dir, const int face, const int state);
-
-#endif

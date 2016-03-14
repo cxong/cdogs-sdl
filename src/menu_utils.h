@@ -47,4 +47,4 @@ void MenuDisplayPlayerControls(
 	const Vec2i pos, const Vec2i size, const void *data);
 
 void DisplayCharacterAndName(
-	Vec2i pos, const Character *c, const char *name, const color_t color);
+	Vec2i pos, Character *c, const char *name, const color_t color);
