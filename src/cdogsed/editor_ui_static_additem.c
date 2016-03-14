@@ -122,9 +122,10 @@ static void DrawCharacter(
 	EditorBrushAndCampaign *data = vData;
 	CharacterStore *store = &data->Campaign->Setting.characters;
 	Character *c = CArrayGet(&store->OtherChars, data->Brush.ItemIndex);
-	DisplayCharacter(
+	DrawCharacterSimple(
+		c,
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		c, 0, 0);
+		false, false);
 }
 static void DrawObjective(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
@@ -142,7 +143,7 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetSpecialId(store, data->Brush.Index2));
-			DisplayCharacter(pos, c, 0, 0);
+			DrawCharacterSimple(c, pos, false, false);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
@@ -150,7 +151,7 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetPrisonerId(store, data->Brush.Index2));
-			DisplayCharacter(pos, c, 0, 0);
+			DrawCharacterSimple(c, pos, false, false);
 		}
 		break;
 	case OBJECTIVE_COLLECT:

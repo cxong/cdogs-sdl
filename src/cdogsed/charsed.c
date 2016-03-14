@@ -201,7 +201,8 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 
 		x = 10;
 		CA_FOREACH(Character, c, setting->characters.OtherChars)
-			DisplayCharacter(Vec2iNew(x, y + 20), c, idx == _ca_index, 0);
+			DrawCharacterSimple(
+				c, Vec2iNew(x, y + 20), idx == _ca_index, false);
 			x += 20;
 			if (x > gGraphicsDevice.cachedConfig.Res.x)
 			{

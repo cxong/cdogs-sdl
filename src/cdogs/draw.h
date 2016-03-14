@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,12 +53,7 @@
 #include "grafx_bg.h"
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
-void DisplayCharacter(
-	const Vec2i pos, Character *c, const bool hilite, const bool showGun);
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos,
-	const direction_e dir, const int state,
-	const int gunPic, const gunstate_e gunState,
-	TranslationTable *table);
+	Character *c, const Vec2i pos, const bool hilite, const bool showGun);
 TOffsetPic GetHeadPic(
 	const int bodyType, const direction_e dir, const int face, const int state);

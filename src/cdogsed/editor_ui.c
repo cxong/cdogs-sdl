@@ -632,10 +632,10 @@ static void MissionDrawEnemy(
 	}
 	const CharacterStore *store = &data->co->Setting.characters;
 	const int charIndex = *(int *)CArrayGet(&store->baddieIds, data->index);
-	DisplayCharacter(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
-		UIObjectIsHighlighted(o), 1);
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawSpecialChar(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
@@ -650,10 +650,10 @@ static void MissionDrawSpecialChar(
 	}
 	const CharacterStore *store = &data->co->Setting.characters;
 	const int charIndex = CharacterStoreGetSpecialId(store, data->index);
-	DisplayCharacter(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
-		UIObjectIsHighlighted(o), 1);
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		UIObjectIsHighlighted(o), true);
 }
 static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,

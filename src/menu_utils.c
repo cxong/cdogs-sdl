@@ -43,9 +43,7 @@ void DisplayCharacterAndName(
 	// its feet
 	pos.y += 8;
 	Vec2i namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
-	DrawCharacterSimple(
-		c, pos,
-		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
+	DrawCharacterSimple(c, pos, false, false);
 	FontStrMask(name, namePos, color);
 }
 

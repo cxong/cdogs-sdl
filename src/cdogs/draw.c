@@ -695,23 +695,13 @@ TOffsetPic GetHeadPic(
 }
 
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos,
-	const direction_e dir, const int state,
-	const int gunPic, const gunstate_e gunState,
-	TranslationTable *table)
+	Character *c, const Vec2i pos, const bool hilite, const bool showGun)
 {
 	ActorPics pics;
 	GetCharacterPics(
-		&pics, c, dir, state, gunPic, gunState, false, table, NULL, 0);
+		&pics, c, DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, false,
+		NULL, NULL, 0);
 	DrawActorPics(&pics, pos);
-}
-
-void DisplayCharacter(
-	const Vec2i pos, Character *c, const bool hilite, const bool showGun)
-{
-	DrawCharacterSimple(
-		c, pos,
-		DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, &c->table);
 	if (hilite)
 	{
 		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -16)));
