@@ -253,7 +253,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-static void GetCharacterPics(ActorPics *pics, TActor *a);
+static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a);
 static void DrawActorPics(const ActorPics *pics, const Vec2i picPos);
 static void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const Vec2i picPos);
@@ -288,7 +288,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics;
-		GetCharacterPics(&pics, a);
+		GetCharacterPicsFromActor(&pics, a);
 		DrawActorPics(&pics, picPos);
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
@@ -299,74 +299,94 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	}
 }
 static Character *ActorGetCharacterMutable(TActor *a);
-static void GetCharacterPics(ActorPics *pics, TActor *a)
+static void GetCharacterPics(
+	ActorPics *pics, Character *c, const direction_e dir, const int frame,
+	const gunpic_e g, const gunstate_e gunState,
+	const bool isTransparent,
+	TranslationTable *table, HSV *tint,
+	const int deadPic);
+static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
+{
+	const Weapon *gun = ActorGetGun(a);
+	TranslationTable *table = NULL;
+	HSV *tint = NULL;
+	if (a->flamed)
+	{
+		table = &tableFlamed;
+		tint = &tintRed;
+	}
+	else if (a->poisoned)
+	{
+		table = &tableGreen;
+		tint = &tintPoison;
+	}
+	else if (a->petrified)
+	{
+		table = &tableGray;
+		tint = &tintGray;
+	}
+	else if (a->confused)
+	{
+		table = &tablePurple;
+		tint = &tintPurple;
+	}
+	GetCharacterPics(
+		pics, ActorGetCharacterMutable(a),
+		RadiansToDirection(a->DrawRadians), AnimationGetFrame(&a->anim),
+		gun->Gun->pic, gun->state,
+		!!(a->flags & FLAGS_SEETHROUGH),
+		table, tint,
+		a->dead);
+}
+static void GetCharacterPics(
+	ActorPics *pics, Character *c, const direction_e dir, const int frame,
+	const gunpic_e g, const gunstate_e gunState,
+	const bool isTransparent,
+	TranslationTable *table, HSV *tint,
+	const int deadPic)
 {
 	memset(pics, 0, sizeof *pics);
-	const direction_e dir = RadiansToDirection(a->DrawRadians);
 	direction_e headDir = dir;
-	const int frame = AnimationGetFrame(&a->anim);
 	int headFrame = frame;
 
-	Character *c = ActorGetCharacterMutable(a);
 	pics->Table = (TranslationTable *)&c->table;
 	const int f = c->looks.Face;
-	const Weapon *gun = ActorGetGun(a);
-	int g = gun->Gun->pic;
-	gunstate_e gunState = gun->state;
 
 	TOffsetPic body, head, gunPic;
 
-	pics->IsTransparent = !!(a->flags & FLAGS_SEETHROUGH);
+	pics->IsTransparent = isTransparent;
+	if (pics->IsTransparent)
+	{
+		pics->Table = &tableDarker;
+		pics->Tint = &tintDarker;
+	}
+	else if (table != NULL)
+	{
+		pics->Table = table;
+		pics->Tint = tint;
+	}
 
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
 	{
 		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
 	}
 
-	if (a->flamed)
-	{
-		pics->Table = &tableFlamed;
-		pics->Tint = &tintRed;
-	}
-	else if (a->poisoned)
-	{
-		pics->Table = &tableGreen;
-		pics->Tint = &tintPoison;
-	}
-	else if (a->petrified)
-	{
-		pics->Table = &tableGray;
-		pics->Tint = &tintGray;
-	}
-	else if (a->confused)
-	{
-		pics->Table = &tablePurple;
-		pics->Tint = &tintPurple;
-	}
-	else if (pics->IsTransparent)
-	{
-		pics->Table = &tableDarker;
-		pics->Tint = &tintDarker;
-	}
-
-	a->flags |= FLAGS_VISIBLE;
-
 	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
 	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
 
-	int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
+	const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
 
 	body.dx = cBodyOffset[b][dir].dx;
 	body.dy = cBodyOffset[b][dir].dy;
 	body.picIndex = cBodyPic[b][dir][frame];
 
-	if (a->dead)
+	pics->IsDead = deadPic > 0;
+	if (pics->IsDead)
 	{
-		pics->IsDead = true;
-		if (a->dead <= DEATH_MAX)
+		if (deadPic < DEATH_MAX)
 		{
 			pics->IsDying = true;
-			body = cDeathPics[a->dead - 1];
+			body = cDeathPics[deadPic - 1];
 			pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
 			pics->OldPics[0] = body.picIndex;
 		}
@@ -610,7 +630,7 @@ static void DrawObjectiveHighlight(
 	{
 		TActor *a = CArrayGet(&gActors, ti->id);
 		ActorPics pics;
-		GetCharacterPics(&pics, a);
+		GetCharacterPicsFromActor(&pics, a);
 		// Do not highlight dead, dying or transparent characters
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
