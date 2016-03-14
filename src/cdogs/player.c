@@ -416,6 +416,8 @@ bool PlayerTrySetInputDevice(
 	}
 	p->inputDevice = d;
 	p->deviceIndex = idx;
+	LOG(LM_MAIN, LL_DEBUG, "playerUID(%d) assigned input device(%d %d)",
+		p->UID, (int)d, idx);
 	return true;
 }
 
@@ -425,8 +427,8 @@ bool PlayerTrySetUnusedInputDevice(
 	// Check that player's input device is unassigned
 	if (p->inputDevice != INPUT_DEVICE_UNSET) return false;
 	// Check that no players use this input device
-	CA_FOREACH(PlayerData, pOther, gPlayerDatas)
-		if (pOther->inputDevice == d && p->deviceIndex == idx)
+	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
+		if (pOther->inputDevice == d && pOther->deviceIndex == idx)
 		{
 			return false;
 		}
