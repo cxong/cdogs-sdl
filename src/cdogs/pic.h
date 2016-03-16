@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ void PicLoad(
 	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
 Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
-int PicIsNotNone(Pic *pic);
+bool PicIsNone(const Pic *pic);
 
 // Detect unused edges and update size and offset to fit
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);

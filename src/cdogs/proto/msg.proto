@@ -22,13 +22,16 @@ message NCampaignDef {
 	required uint32 Mission = 3;
 }
 
-message NCharLooks {
-	required int32 Face = 1;
-	required int32 Skin = 2;
-	required int32 Arm = 3;
-	required int32 Body = 4;
-	required int32 Leg = 5;
-	required int32 Hair = 6;
+message NColor {
+	required int32 RGBA = 1;
+}
+
+message NCharColors {
+	required NColor Skin = 1;
+	required NColor Arms = 2;
+	required NColor Body = 3;
+	required NColor Legs = 4;
+	required NColor Hair = 5;
 }
 
 message NPlayerStats {
@@ -40,14 +43,15 @@ message NPlayerStats {
 
 message NPlayerData {
 	required string Name = 1;
-	required NCharLooks Looks = 2;
-	repeated string Weapons = 3;
-	required uint32 Lives = 4;
-	required NPlayerStats Stats = 5;
-	required NPlayerStats Totals = 6;
-	required uint32 MaxHealth = 7;
-	required uint32 LastMission = 8;
-	required uint32 UID = 9;
+	required int32 Face = 2;
+	required NCharColors Colors = 3;
+	repeated string Weapons = 4;
+	required uint32 Lives = 5;
+	required NPlayerStats Stats = 6;
+	required NPlayerStats Totals = 7;
+	required uint32 MaxHealth = 8;
+	required uint32 LastMission = 9;
+	required uint32 UID = 10;
 }
 
 message NPlayerRemove {

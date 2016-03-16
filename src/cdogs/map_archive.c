@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -166,7 +166,8 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	if (root != NULL)
 	{
 		LoadCharacters(
-			&c->characters, json_find_first_label(root, "Characters")->child);
+			&c->characters, json_find_first_label(root, "Characters")->child,
+			version);
 	}
 
 bail:
@@ -562,12 +563,12 @@ static json_t *SaveCharacters(CharacterStore *s)
 	json_t *charNode = json_new_array();
 	CA_FOREACH(Character, c, s->OtherChars)
 		json_t *node = json_new_object();
-		AddIntPair(node, "face", c->looks.Face);
-		AddIntPair(node, "skin", c->looks.Skin);
-		AddIntPair(node, "arm", c->looks.Arm);
-		AddIntPair(node, "body", c->looks.Body);
-		AddIntPair(node, "leg", c->looks.Leg);
-		AddIntPair(node, "hair", c->looks.Hair);
+		AddIntPair(node, "Face", c->Face);
+		AddColorPair(node, "Skin", c->Colors.Skin);
+		AddColorPair(node, "Arms", c->Colors.Arms);
+		AddColorPair(node, "Body", c->Colors.Body);
+		AddColorPair(node, "Legs", c->Colors.Legs);
+		AddColorPair(node, "Hair", c->Colors.Hair);
 		AddIntPair(node, "speed", c->speed);
 		json_insert_pair_into_object(
 			node, "Gun", json_new_string(c->Gun->name));

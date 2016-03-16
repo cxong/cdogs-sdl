@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
 */
 #include "briefing_screens.h"
 
+#include <cdogs/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
@@ -608,28 +609,14 @@ static void DrawObjectiveInfo(
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			const int i = cd->looks.Face;
-			TOffsetPic pic;
-			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-			pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-			pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-			DrawTTPic(
-				pos.x + pic.dx, pos.y + pic.dy,
-				PicManagerGetOldPic(&gPicManager, pic.picIndex), &cd->table);
+			DrawHead(BODY_UNARMED, DIRECTION_DOWN, cd->Face, STATE_IDLE, pos);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			const int i = cd->looks.Face;
-			TOffsetPic pic;
-			pic.picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-			pic.dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-			pic.dy = cHeadOffset[i][DIRECTION_DOWN].dy;
-			DrawTTPic(
-				pos.x + pic.dx, pos.y + pic.dy,
-				PicManagerGetOldPic(&gPicManager, pic.picIndex), &cd->table);
+			DrawHead(BODY_UNARMED, DIRECTION_DOWN, cd->Face, STATE_IDLE, pos);
 		}
 		break;
 	case OBJECTIVE_COLLECT:

@@ -55,5 +55,6 @@
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 void DrawCharacterSimple(
 	Character *c, const Vec2i pos, const bool hilite, const bool showGun);
-TOffsetPic GetHeadPic(
-	const int bodyType, const direction_e dir, const int face, const int state);
+void DrawHead(
+	const int bodyType, const direction_e dir, const int face,
+	const int state, const Vec2i pos);

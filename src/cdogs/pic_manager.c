@@ -308,10 +308,7 @@ static void GenerateOldPics(PicManager *pm)
 	for (int i = 0; i < PIC_MAX; i++)
 	{
 		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
-		if (PicIsNotNone(&pm->picsFromOld[i]))
-		{
-			PicFree(&pm->picsFromOld[i]);
-		}
+		PicFree(&pm->picsFromOld[i]);
 		if (oldPic == NULL)
 		{
 			memcpy(&pm->picsFromOld[i], &picNone, sizeof picNone);
@@ -450,10 +447,7 @@ void PicManagerTerminate(PicManager *pm)
 		{
 			CFREE(pm->oldPics[i]);
 		}
-		if (PicIsNotNone(&pm->picsFromOld[i]))
-		{
-			PicFree(&pm->picsFromOld[i]);
-		}
+		PicFree(&pm->picsFromOld[i]);
 	}
 	PicManagerClear(&pm->pics, &pm->sprites);
 	CArrayTerminate(&pm->pics);

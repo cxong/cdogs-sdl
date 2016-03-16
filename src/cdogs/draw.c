@@ -64,7 +64,16 @@
 #include "blit.h"
 #include "pic_manager.h"
 
-//#define DEBUG_DRAW_BOUNDS
+// For actor drawing
+typedef struct
+{
+	Pic Pics[3];	// TODO: only used for offsets and highlights for now
+	bool IsDead;
+	bool IsDying;
+	bool IsTransparent;
+	HSV *Tint;
+} ActorPics;
+// TODO: colours
 
 
 // Three types of tile drawing, based on line of sight:
@@ -261,12 +270,6 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
 		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
-#ifdef DEBUG_DRAW_BOUNDS
-	Draw_Box(
-		picPos.x - t->size.x / 2, picPos.y - t->size.y / 2,
-		picPos.x + t->size.x / 2, picPos.y + t->size.y / 2,
-		colorGray);
-#endif
 
 	if (!Vec2iIsZero(t->ShadowSize))
 	{
@@ -302,32 +305,26 @@ static Character *ActorGetCharacterMutable(TActor *a);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
-	const bool isTransparent,
-	TranslationTable *table, HSV *tint,
+	const bool isTransparent, HSV *tint,
 	const int deadPic);
 static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 {
 	const Weapon *gun = ActorGetGun(a);
-	TranslationTable *table = NULL;
 	HSV *tint = NULL;
 	if (a->flamed)
 	{
-		table = &tableFlamed;
 		tint = &tintRed;
 	}
 	else if (a->poisoned)
 	{
-		table = &tableGreen;
 		tint = &tintPoison;
 	}
 	else if (a->petrified)
 	{
-		table = &tableGray;
 		tint = &tintGray;
 	}
 	else if (a->confused)
 	{
-		table = &tablePurple;
 		tint = &tintPurple;
 	}
 	GetCharacterPics(
@@ -335,34 +332,32 @@ static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 		RadiansToDirection(a->DrawRadians), AnimationGetFrame(&a->anim),
 		gun->Gun->pic, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
-		table, tint,
+		tint,
 		a->dead);
 }
+static Pic GetHeadPic(
+	const int bodyType, const direction_e dir, const int face, const int state);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
-	const bool isTransparent,
-	TranslationTable *table, HSV *tint,
+	const bool isTransparent, HSV *tint,
 	const int deadPic)
 {
 	memset(pics, 0, sizeof *pics);
 	direction_e headDir = dir;
 	int headFrame = frame;
 
-	pics->Table = (TranslationTable *)&c->table;
-	const int f = c->looks.Face;
+	const int f = c->Face;
 
-	TOffsetPic body, head, gunPic;
+	TOffsetPic body, gunPic;
 
 	pics->IsTransparent = isTransparent;
 	if (pics->IsTransparent)
 	{
-		pics->Table = &tableDarker;
 		pics->Tint = &tintDarker;
 	}
-	else if (table != NULL)
+	else if (tint != NULL)
 	{
-		pics->Table = table;
 		pics->Tint = tint;
 	}
 
@@ -388,14 +383,11 @@ static void GetCharacterPics(
 			pics->IsDying = true;
 			body = cDeathPics[deadPic - 1];
 			pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-			pics->OldPics[0] = body.picIndex;
 		}
 		return;
 	}
 
-	head.dx = cNeckOffset[b][dir].dx + cHeadOffset[f][headDir].dx;
-	head.dy = cNeckOffset[b][dir].dy + cHeadOffset[f][headDir].dy;
-	head.picIndex = cHeadPic[f][headDir][headFrame];
+	Pic head = GetHeadPic(b, headDir, f, headFrame);
 
 	if (g >= 0)
 	{
@@ -417,11 +409,8 @@ static void GetCharacterPics(
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
 		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics->Pics[1] = head;
 		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, body);
-		pics->OldPics[0] = gunPic.picIndex;
-		pics->OldPics[1] = head.picIndex;
-		pics->OldPics[2] = body.picIndex;
 		break;
 
 	case DIRECTION_RIGHT:
@@ -429,21 +418,15 @@ static void GetCharacterPics(
 	case DIRECTION_DOWN:
 	case DIRECTION_DOWNLEFT:
 		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, head);
+		pics->Pics[1] = head;
 		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics->OldPics[0] = body.picIndex;
-		pics->OldPics[1] = head.picIndex;
-		pics->OldPics[2] = gunPic.picIndex;
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
 		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
 		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, body);
-		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, head);
-		pics->OldPics[0] = gunPic.picIndex;
-		pics->OldPics[1] = body.picIndex;
-		pics->OldPics[2] = head.picIndex;
+		pics->Pics[2] = head;
 		break;
 	default:
 		assert(0 && "invalid direction");
@@ -464,62 +447,36 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 	{
 		if (pics->IsDying)
 		{
-			int pic = pics->OldPics[0];
-			if (pic == 0)
-			{
-				return;
-			}
-			if (pics->IsTransparent)
-			{
-				DrawBTPic(
-					&gGraphicsDevice,
-					PicManagerGetFromOld(&gPicManager, pic),
-					Vec2iAdd(picPos, pics->Pics[0].offset),
-					pics->Tint);
-			}
-			else
-			{
-				DrawTTPic(
-					picPos.x + pics->Pics[0].offset.x,
-					picPos.y + pics->Pics[0].offset.y,
-					PicManagerGetOldPic(&gPicManager, pic),
-					pics->Table);
-			}
-		}
-	}
-	else if (pics->IsTransparent)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			Pic *oldPic = PicManagerGetFromOld(
-				&gPicManager, pics->OldPics[i]);
-			if (oldPic == NULL)
-			{
-				continue;
-			}
-			DrawBTPic(
-				&gGraphicsDevice,
-				oldPic,
-				Vec2iAdd(picPos, pics->Pics[i].offset),
-				pics->Tint);
+			const Pic *pic = &pics->Pics[0];
+			CASSERT(pic != NULL, "cannot find dying pic");
+			BlitBackground(&gGraphicsDevice, pic, picPos, pics->Tint, true);
 		}
 	}
 	else
 	{
-		DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
+		// Draw shadow
+		if (!pics->IsTransparent)
+		{
+			DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
+		}
 		for (int i = 0; i < 3; i++)
 		{
-			PicPaletted *oldPic = PicManagerGetOldPic(
-				&gPicManager, pics->OldPics[i]);
-			if (oldPic == NULL)
+			if (PicIsNone(&pics->Pics[i]))
 			{
 				continue;
 			}
-			BlitOld(
-				picPos.x + pics->Pics[i].offset.x,
-				picPos.y + pics->Pics[i].offset.y,
-				oldPic,
-				pics->Table, BLIT_TRANSPARENT);
+			// TODO: colours
+			if (pics->IsTransparent)
+			{
+				BlitBlend(
+					&gGraphicsDevice, &pics->Pics[i], picPos, colorWhite);
+			}
+			else
+			{
+				BlitMasked(
+					&gGraphicsDevice, &pics->Pics[i], picPos,
+					colorWhite, true);
+			}
 		}
 	}
 }
@@ -636,12 +593,11 @@ static void DrawObjectiveHighlight(
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				if (PicIsNotNone(&pics.Pics[i]))
+				if (PicIsNone(&pics.Pics[i]))
 				{
-					BlitPicHighlight(
-						&gGraphicsDevice,
-						&pics.Pics[i], pos, color);
+					continue;
 				}
+				BlitPicHighlight(&gGraphicsDevice, &pics.Pics[i], pos, color);
 			}
 		}
 	}
@@ -684,14 +640,14 @@ static void DrawChatter(
 	}
 }
 
-TOffsetPic GetHeadPic(
+static Pic GetHeadPic(
 	const int bodyType, const direction_e dir, const int face, const int state)
 {
 	TOffsetPic head;
 	head.dx = cNeckOffset[bodyType][dir].dx + cHeadOffset[face][dir].dx;
 	head.dy = cNeckOffset[bodyType][dir].dy + cHeadOffset[face][dir].dy;
 	head.picIndex = cHeadPic[face][dir][state];
-	return head;
+	return PicFromTOffsetPic(&gPicManager, head);
 }
 
 void DrawCharacterSimple(
@@ -700,7 +656,7 @@ void DrawCharacterSimple(
 	ActorPics pics;
 	GetCharacterPics(
 		&pics, c, DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, false,
-		NULL, NULL, 0);
+		NULL, 0);
 	DrawActorPics(&pics, pos);
 	if (hilite)
 	{
@@ -710,6 +666,16 @@ void DrawCharacterSimple(
 			FontStr(c->Gun->name, Vec2iAdd(pos, Vec2iNew(-8, 8)));
 		}
 	}
+}
+
+void DrawHead(
+	const int bodyType, const direction_e dir, const int face,
+	const int state, const Vec2i pos)
+{
+	Pic head = GetHeadPic(bodyType, dir, face, state);
+	// Note: ignore offset as we are only drawing the head
+	// TODO: colours
+	BlitMasked(&gGraphicsDevice, &head, pos, colorWhite, true);
 }
 
 

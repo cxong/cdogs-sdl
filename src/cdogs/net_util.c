@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,8 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	NPlayerData d = NPlayerData_init_default;
 	const Character *c = &p->Char;
 	strcpy(d.Name, p->name);
-	d.Looks = c->looks;
+	d.Face = c->Face;
+	d.Colors = CharColors2Net(c->Colors);
 	d.Weapons_count = (pb_size_t)p->weaponCount;
 	for (int i = 0; i < (int)d.Weapons_count; i++)
 	{
@@ -110,4 +111,39 @@ NVec2i Vec2i2Net(const Vec2i v)
 	nv.x = v.x;
 	nv.y = v.y;
 	return nv;
+}
+color_t Net2Color(const NColor c)
+{
+	color_t co;
+	co.r = (uint8_t)((c.RGBA & 0xff000000) >> 24);
+	co.g = (uint8_t)((c.RGBA & 0x00ff0000) >> 16);
+	co.b = (uint8_t)((c.RGBA & 0x0000ff00) >> 8);
+	co.a = (uint8_t)(c.RGBA & 0x000000ff);
+	return co;
+}
+NColor Color2Net(const color_t c)
+{
+	NColor co;
+	co.RGBA = (c.r << 24) | (c.g << 16) | (c.b << 8) | c.a;
+	return co;
+}
+NCharColors CharColors2Net(const CharColors c)
+{
+	NCharColors co;
+	co.Skin = Color2Net(c.Skin);
+	co.Arms = Color2Net(c.Arms);
+	co.Body = Color2Net(c.Body);
+	co.Legs = Color2Net(c.Legs);
+	co.Hair = Color2Net(c.Hair);
+	return co;
+}
+CharColors Net2CharColors(const NCharColors c)
+{
+	CharColors co;
+	co.Skin = Net2Color(c.Skin);
+	co.Arms = Net2Color(c.Arms);
+	co.Body = Net2Color(c.Body);
+	co.Legs = Net2Color(c.Legs);
+	co.Hair = Net2Color(c.Hair);
+	return co;
 }

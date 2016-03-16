@@ -38,8 +38,6 @@ typedef struct
 {
 	unsigned long propertyOffset;
 	const char **menu;
-	int menuCount;
-	const char *(*strFunc)(int);
 	int PlayerUID;
 } AppearanceMenuData;
 typedef struct
@@ -47,7 +45,6 @@ typedef struct
 	MenuDisplayPlayerData display;
 	int PlayerUID;
 	int nameMenuSelection;
-	AppearanceMenuData faceData;
 	AppearanceMenuData skinData;
 	AppearanceMenuData hairData;
 	AppearanceMenuData armsData;

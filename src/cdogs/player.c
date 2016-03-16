@@ -67,8 +67,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->UID = pd.UID;
 
 	strcpy(p->name, pd.Name);
-	p->Char.looks = pd.Looks;
-	CharacterSetColors(&p->Char);
+	p->Char.Face = pd.Face;
+	p->Char.Colors = Net2CharColors(pd.Colors);
 	p->weaponCount = pd.Weapons_count;
 	for (int i = 0; i < (int)pd.Weapons_count; i++)
 	{
@@ -130,7 +130,8 @@ NPlayerData PlayerDataDefault(const int idx)
 	{
 		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
 		strcpy(pd.Name, t->name);
-		pd.Looks = t->Looks;
+		pd.Face = t->Face;
+		pd.Colors = CharColors2Net(t->Colors);
 	}
 	else
 	{
@@ -138,49 +139,49 @@ NPlayerData PlayerDataDefault(const int idx)
 		{
 		case 0:
 			strcpy(pd.Name, "Jones");
-			pd.Looks.Face = FACE_JONES;
-			pd.Looks.Skin = SHADE_SKIN;
-			pd.Looks.Arm = SHADE_BLUE;
-			pd.Looks.Body = SHADE_BLUE;
-			pd.Looks.Leg = SHADE_BLUE;
-			pd.Looks.Hair = SHADE_RED;
+			pd.Face = FACE_JONES;
+			pd.Colors.Skin = Color2Net(colorSkin);
+			pd.Colors.Arms = Color2Net(colorBlue);
+			pd.Colors.Body = Color2Net(colorBlue);
+			pd.Colors.Legs = Color2Net(colorBlue);
+			pd.Colors.Hair = Color2Net(colorBlue);
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");
-			pd.Looks.Face = FACE_ICE;
-			pd.Looks.Skin = SHADE_DARKSKIN;
-			pd.Looks.Arm = SHADE_RED;
-			pd.Looks.Body = SHADE_RED;
-			pd.Looks.Leg = SHADE_RED;
-			pd.Looks.Hair = SHADE_RED;
+			pd.Face = FACE_ICE;
+			pd.Colors.Skin = Color2Net(colorDarkSkin);
+			pd.Colors.Arms = Color2Net(colorRed);
+			pd.Colors.Body = Color2Net(colorRed);
+			pd.Colors.Legs = Color2Net(colorRed);
+			pd.Colors.Hair = Color2Net(colorRed);
 			break;
 		case 2:
-			strcpy(pd.Name, "Delta");
-			pd.Looks.Face = FACE_WARBABY;
-			pd.Looks.Skin = SHADE_SKIN;
-			pd.Looks.Arm = SHADE_GREEN;
-			pd.Looks.Body = SHADE_GREEN;
-			pd.Looks.Leg = SHADE_GREEN;
-			pd.Looks.Hair = SHADE_RED;
+			strcpy(pd.Name, "Warbaby");
+			pd.Face = FACE_WARBABY;
+			pd.Colors.Skin = Color2Net(colorSkin);
+			pd.Colors.Arms = Color2Net(colorGreen);
+			pd.Colors.Body = Color2Net(colorGreen);
+			pd.Colors.Legs = Color2Net(colorGreen);
+			pd.Colors.Hair = Color2Net(colorGreen);
 			break;
 		case 3:
-			strcpy(pd.Name, "Hans");
-			pd.Looks.Face = FACE_HAN;
-			pd.Looks.Skin = SHADE_ASIANSKIN;
-			pd.Looks.Arm = SHADE_YELLOW;
-			pd.Looks.Body = SHADE_YELLOW;
-			pd.Looks.Leg = SHADE_YELLOW;
-			pd.Looks.Hair = SHADE_GOLDEN;
+			strcpy(pd.Name, "Han");
+			pd.Face = FACE_HAN;
+			pd.Colors.Skin = Color2Net(colorAsianSkin);
+			pd.Colors.Arms = Color2Net(colorYellow);
+			pd.Colors.Body = Color2Net(colorYellow);
+			pd.Colors.Legs = Color2Net(colorYellow);
+			pd.Colors.Hair = Color2Net(colorYellow);
 			break;
 		default:
 			// Set up player N template
 			sprintf(pd.Name, "Player %d", idx);
-			pd.Looks.Face = FACE_JONES;
-			pd.Looks.Skin = SHADE_SKIN;
-			pd.Looks.Arm = SHADE_BLUE;
-			pd.Looks.Body = SHADE_BLUE;
-			pd.Looks.Leg = SHADE_BLUE;
-			pd.Looks.Hair = SHADE_RED;
+			pd.Face = FACE_JONES;
+			pd.Colors.Skin = Color2Net(colorSkin);
+			pd.Colors.Arms = Color2Net(colorBlue);
+			pd.Colors.Body = Color2Net(colorBlue);
+			pd.Colors.Legs = Color2Net(colorBlue);
+			pd.Colors.Hair = Color2Net(colorBlue);
 			break;
 		}
 	}

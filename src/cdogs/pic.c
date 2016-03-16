@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -98,9 +98,9 @@ void PicFree(Pic *pic)
 	CFREE(pic->Data);
 }
 
-int PicIsNotNone(Pic *pic)
+bool PicIsNone(const Pic *pic)
 {
-	return pic->size.x > 0 && pic->size.y > 0 && pic->Data != NULL;
+	return pic->size.x == 0 || pic->size.y == 0 || pic->Data == NULL;
 }
 
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)

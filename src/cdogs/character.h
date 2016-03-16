@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,12 +41,21 @@ typedef struct
 
 typedef struct
 {
-	NCharLooks looks;
+	color_t Skin;
+	color_t Arms;
+	color_t Body;
+	color_t Legs;
+	color_t Hair;
+} CharColors;
+
+typedef struct
+{
+	int Face;
 	int speed;
 	const GunDescription *Gun;
 	int maxHealth;
 	int flags;
-	TranslationTable table;
+	CharColors Colors;
 	CharBot *bot;
 } Character;
 
@@ -59,8 +68,6 @@ typedef struct
 	CArray baddieIds;
 	CArray specialIds;
 } CharacterStore;
-
-void CharacterSetColors(Character *c);
 
 void CharacterStoreInit(CharacterStore *store);
 void CharacterStoreTerminate(CharacterStore *store);
@@ -81,3 +88,4 @@ int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
 
 int CharacterGetStartingHealth(const Character *c, const bool isNPC);
+void CharacterShuffleAppearance(Character *c);

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,7 @@
 
 #include "actors.h"
 #include "config.h"
+#include "draw.h"
 #include "drawtools.h"
 #include "font.h"
 #include "gamedata.h"
@@ -86,11 +87,7 @@ static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 	if (scale >= 2)
 	{
 		const Character *c = ActorGetCharacter(player);
-		const int picIdx = cHeadPic[c->looks.Face][DIRECTION_DOWN][STATE_IDLE];
-		PicPaletted *pic = PicManagerGetOldPic(&gPicManager, picIdx);
-		pos.x -= pic->w / 2;
-		pos.y -= pic->h / 2;
-		DrawTTPic(pos.x, pos.y, pic, c->table);
+		DrawHead(BODY_UNARMED, DIRECTION_DOWN, c->Face, STATE_IDLE, pos);
 	}
 	else
 	{

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@
 #include "door.h"
 #include "log.h"
 #include "map_new.h"
+#include "palette.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -265,6 +266,35 @@ static void load_mission(FILE *f, struct MissionOld *m)
 }
 
 
+// Taken from the 5th colour in the old ColorShades
+// See original character.c
+static unsigned char cShadePalettes[] =
+{
+	56,
+	6,
+	72,
+	88,
+	104,
+	120,
+	136,
+	36,
+	40,
+	45,
+	148,
+	8,
+	1,
+	20
+};
+void ConvertCharacterColors(
+	const int skin, const int arm, const int body, const int leg,
+	const int hair, CharColors *c)
+{
+	c->Skin = PaletteToColor(cShadePalettes[skin]);
+	c->Arms = PaletteToColor(cShadePalettes[arm]);
+	c->Body = PaletteToColor(cShadePalettes[body]);
+	c->Legs = PaletteToColor(cShadePalettes[leg]);
+	c->Hair = PaletteToColor(cShadePalettes[hair]);
+}
 
 void load_character(FILE *f, TBadGuy *b)
 {
@@ -287,18 +317,16 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->looks.Face = b->facePic;
+	c->Face = b->facePic;
 	c->speed = b->speed;
 	c->bot->probabilityToMove = b->probabilityToMove;
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
 	c->bot->actionDelay = b->actionDelay;
 	c->Gun = CArrayGet(&gGunDescriptions.Guns, b->gun);
-	c->looks.Skin = b->skinColor;
-	c->looks.Arm = b->armColor;
-	c->looks.Body = b->bodyColor;
-	c->looks.Leg = b->legColor;
-	c->looks.Hair = b->hairColor;
+	ConvertCharacterColors(
+		b->skinColor, b->armColor, b->bodyColor, b->legColor, b->hairColor,
+		&c->Colors);
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }
@@ -406,7 +434,6 @@ void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src)
 	{
 		Character *ch = CharacterStoreAddOther(&dest->characters);
 		ConvertCharacter(ch, &src->characters[i]);
-		CharacterSetColors(ch);
 	}
 }
 

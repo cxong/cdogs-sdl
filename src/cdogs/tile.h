@@ -100,18 +100,6 @@ typedef enum
 
 typedef const Pic *(*TileItemGetPicFunc)(int, Vec2i *);
 
-// For actor drawing
-typedef struct
-{
-	Pic Pics[3];	// TODO: only used for offsets and highlights for now
-	int OldPics[3];
-	bool IsDead;
-	bool IsDying;
-	bool IsTransparent;
-	TranslationTable *Table;
-	HSV *Tint;
-} ActorPics;
-
 typedef struct
 {
 	int MobObjId;

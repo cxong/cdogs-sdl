@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,61 +31,6 @@
 #include <assert.h>
 
 #include "actors.h"
-
-// Color range defines
-#define SKIN_START 2
-#define SKIN_END   9
-#define BODY_START 52
-#define BODY_END   61
-#define ARMS_START 68
-#define ARMS_END   77
-#define LEGS_START 84
-#define LEGS_END   93
-#define HAIR_START 132
-#define HAIR_END   135
-
-typedef unsigned char ColorShade[10];
-
-static ColorShade colorShades[SHADE_COUNT] =
-{
-	{52, 53, 54, 55, 56, 57, 58, 59, 60, 61},
-	{2, 3, 4, 5, 6, 7, 8, 9, 9, 9},
-	{68, 69, 70, 71, 72, 73, 74, 75, 76, 77},
-	{84, 85, 86, 87, 88, 89, 90, 91, 92, 93},
-	{100, 101, 102, 103, 104, 105, 106, 107, 107, 107},
-	{116, 117, 118, 119, 120, 121, 122, 123, 124, 125},
-	{132, 133, 134, 135, 136, 137, 138, 139, 140, 141},
-	{32, 33, 34, 35, 36, 37, 38, 39, 40, 41},
-	{36, 37, 38, 39, 40, 41, 42, 43, 44, 45},
-	{41, 42, 43, 44, 45, 46, 47, 47, 47, 47},
-	{144, 145, 146, 147, 148, 149, 150, 151, 151, 151},
-	{4, 5, 6, 7, 8, 9, 9, 9, 9, 9},
-	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	{16, 17, 18, 19, 20, 21, 22, 23, 24, 25}
-};
-
-
-void SetShade(TranslationTable * table, int start, int end, int shade)
-{
-	int i;
-
-	for (i = start; i <= end; i++)
-		(*table)[i] = colorShades[shade][i - start];
-}
-
-void CharacterSetColors(Character *c)
-{
-	TranslationTable *t = &c->table;
-	for (int f = 0; f < 256; f++)
-	{
-		(*t)[f] = f & 0xFF;
-	}
-	SetShade(t, BODY_START, BODY_END, c->looks.Body);
-	SetShade(t, ARMS_START, ARMS_END, c->looks.Arm);
-	SetShade(t, LEGS_START, LEGS_END, c->looks.Leg);
-	SetShade(t, SKIN_START, SKIN_END, c->looks.Skin);
-	SetShade(t, HAIR_START, HAIR_END, c->looks.Hair);
-}
 
 
 void CharacterStoreInit(CharacterStore *store)
@@ -201,4 +146,24 @@ int CharacterGetStartingHealth(const Character *c, const bool isNPC)
 	{
 		return c->maxHealth;
 	}
+}
+
+static color_t RandomColor(void);
+void CharacterShuffleAppearance(Character *c)
+{
+	c->Face = rand() % FACE_COUNT;
+	c->Colors.Skin = RandomColor();
+	c->Colors.Arms = RandomColor();
+	c->Colors.Body = RandomColor();
+	c->Colors.Legs = RandomColor();
+	c->Colors.Hair = RandomColor();
+}
+static color_t RandomColor(void)
+{
+	color_t c;
+	c.r = rand() & 255;
+	c.g = rand() & 255;
+	c.b = rand() & 255;
+	c.a = 255;
+	return c;
 }

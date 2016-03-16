@@ -82,23 +82,6 @@
 #define FLAGS_AWAKEALWAYS     (1 << 25)
 
 
-#define SHADE_BLUE          0
-#define SHADE_SKIN          1
-#define SHADE_BROWN         2
-#define SHADE_GREEN         3
-#define SHADE_YELLOW        4
-#define SHADE_PURPLE        5
-#define SHADE_RED           6
-#define SHADE_LTGRAY        7
-#define SHADE_GRAY          8
-#define SHADE_DKGRAY        9
-#define SHADE_ASIANSKIN     10
-#define SHADE_DARKSKIN      11
-#define SHADE_BLACK         12
-#define SHADE_GOLDEN        13
-#define SHADE_COUNT         14
-
-
 typedef enum
 {
 	ACTORACTION_MOVING,

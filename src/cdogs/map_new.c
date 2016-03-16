@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -160,7 +160,9 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	}
 	MapNewLoadCampaignJSON(root, c);
 	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child, version);
-	LoadCharacters(&c->characters, json_find_first_label(root, "Characters")->child);
+	LoadCharacters(
+		&c->characters, json_find_first_label(root, "Characters")->child,
+		version);
 
 bail:
 	json_free_value(&root);
@@ -355,7 +357,8 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 
 	return true;
 }
-void LoadCharacters(CharacterStore *c, json_t *charactersNode)
+void LoadCharacters(
+	CharacterStore *c, json_t *charactersNode, const int version)
 {
 	json_t *child = charactersNode->child;
 	CharacterStoreTerminate(c);
@@ -363,12 +366,27 @@ void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 	while (child)
 	{
 		Character *ch = CharacterStoreAddOther(c);
-		LoadInt(&ch->looks.Face, child, "face");
-		LoadInt(&ch->looks.Skin, child, "skin");
-		LoadInt(&ch->looks.Arm, child, "arm");
-		LoadInt(&ch->looks.Body, child, "body");
-		LoadInt(&ch->looks.Leg, child, "leg");
-		LoadInt(&ch->looks.Hair, child, "hair");
+		if (version < 7)
+		{
+			// Old version stored character looks as palette indices
+			LoadInt(&ch->Face, child, "face");
+			int skin, arm, body, leg, hair;
+			LoadInt(&skin, child, "skin");
+			LoadInt(&arm, child, "arm");
+			LoadInt(&body, child, "body");
+			LoadInt(&leg, child, "leg");
+			LoadInt(&hair, child, "hair");
+			ConvertCharacterColors(skin, arm, body, leg, hair, &ch->Colors);
+		}
+		else
+		{
+			LoadInt(&ch->Face, child, "Face");
+			LoadColor(&ch->Colors.Skin, child, "Skin");
+			LoadColor(&ch->Colors.Arms, child, "Arms");
+			LoadColor(&ch->Colors.Body, child, "Body");
+			LoadColor(&ch->Colors.Legs, child, "Legs");
+			LoadColor(&ch->Colors.Hair, child, "Hair");
+		}
 		LoadInt(&ch->speed, child, "speed");
 		char *tmp = GetString(child, "Gun");
 		ch->Gun = StrGunDescription(tmp);
@@ -379,7 +397,6 @@ void LoadCharacters(CharacterStore *c, json_t *charactersNode)
 		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
 		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
 		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
-		CharacterSetColors(ch);
 		child = child->next;
 	}
 }

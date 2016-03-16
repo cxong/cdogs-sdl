@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -123,7 +123,7 @@ static int GenerateQuickPlayParam(
 
 static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 {
-	enemy->looks.Face = rand() % FACE_COUNT;
+	CharacterShuffleAppearance(enemy);
 	enemy->Gun = gun;
 	enemy->speed =GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 64, 112, 160, 256);
@@ -153,11 +153,6 @@ static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 		enemy->bot->probabilityToShoot = 1 + (rand() % 6);
 	}
 	enemy->bot->actionDelay = rand() % (50 + 1);
-	enemy->looks.Skin = rand() % SHADE_COUNT;
-	enemy->looks.Arm = rand() % SHADE_COUNT;
-	enemy->looks.Body = rand() % SHADE_COUNT;
-	enemy->looks.Leg = rand() % SHADE_COUNT;
-	enemy->looks.Hair = rand() % SHADE_COUNT;
 	enemy->maxHealth = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyHealth"), 10, 20, 40, 60);
 	enemy->flags = 0;
@@ -209,7 +204,6 @@ static void SetupQuickPlayEnemies(
 		}
 		Character *ch = CharacterStoreAddOther(store);
 		SetupQuickPlayEnemy(ch, gun);
-		CharacterSetColors(ch);
 	}
 }
 

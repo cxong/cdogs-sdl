@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, Cong Xu
+	Copyright (c) 2013-2014, 2016 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,8 @@
 #include <cdogs/character.h>
 #include <cdogs/files.h>
 #include <cdogs/json_utils.h>
+
+#define VERSION 2
 
 
 static const char *faceNames[] =
@@ -80,19 +82,35 @@ const char *IndexToFaceStr(int idx)
 
 CArray gPlayerTemplates;
 
-static void LoadPlayerTemplate(PlayerTemplate *t, json_t *node)
+static void LoadPlayerTemplate(
+	PlayerTemplate *t, json_t *node, const int version)
 {
 	strcpy(t->name, json_find_first_label(node, "Name")->child->text);
-	t->Looks.Face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
-	LoadInt(&t->Looks.Body, node, "Body");
-	LoadInt(&t->Looks.Arm, node, "Arms");
-	LoadInt(&t->Looks.Leg, node, "Legs");
-	LoadInt(&t->Looks.Skin, node, "Skin");
-	LoadInt(&t->Looks.Hair, node, "Hair");
+	t->Face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
+	if (version == 1)
+	{
+		// Version 1 used integer palettes
+		int skin, arms, body, legs, hair;
+		LoadInt(&skin, node, "Skin");
+		LoadInt(&arms, node, "Arms");
+		LoadInt(&body, node, "Body");
+		LoadInt(&legs, node, "Legs");
+		LoadInt(&hair, node, "Hair");
+		ConvertCharacterColors(skin, arms, body, legs, hair, &t->Colors);
+	}
+	else
+	{
+		LoadColor(&t->Colors.Skin, node, "Skin");
+		LoadColor(&t->Colors.Arms, node, "Arms");
+		LoadColor(&t->Colors.Body, node, "Body");
+		LoadColor(&t->Colors.Legs, node, "Legs");
+		LoadColor(&t->Colors.Hair, node, "Hair");
+	}
 }
 void LoadPlayerTemplates(CArray *templates, const char *filename)
 {
 	json_t *root = NULL;
+	int version = 1;
 
 	// initialise templates
 	CArrayInit(templates, sizeof(PlayerTemplate));
@@ -109,6 +127,8 @@ void LoadPlayerTemplates(CArray *templates, const char *filename)
 		goto bail;
 	}
 
+	LoadInt(&version, root, "Version");
+
 	if (json_find_first_label(root, "PlayerTemplates") == NULL)
 	{
 		printf("Error: unknown player templates format\n");
@@ -118,7 +138,7 @@ void LoadPlayerTemplates(CArray *templates, const char *filename)
 	while (child != NULL)
 	{
 		PlayerTemplate t;
-		LoadPlayerTemplate(&t, child);
+		LoadPlayerTemplate(&t, child, version);
 		child = child->next;
 		CArrayPushBack(templates, &t);
 	}
@@ -136,12 +156,12 @@ static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 	json_t *template = json_new_object();
 	json_insert_pair_into_object(template, "Name", json_new_string(t->name));
 	json_insert_pair_into_object(
-		template, "Face", json_new_string(faceNames[t->Looks.Face]));
-	AddIntPair(template, "Body", t->Looks.Body);
-	AddIntPair(template, "Arms", t->Looks.Arm);
-	AddIntPair(template, "Legs", t->Looks.Leg);
-	AddIntPair(template, "Skin", t->Looks.Skin);
-	AddIntPair(template, "Hair", t->Looks.Hair);
+		template, "Face", json_new_string(faceNames[t->Face]));
+	AddColorPair(template, "Body", t->Colors.Body);
+	AddColorPair(template, "Arms", t->Colors.Arms);
+	AddColorPair(template, "Legs", t->Colors.Legs);
+	AddColorPair(template, "Skin", t->Colors.Skin);
+	AddColorPair(template, "Hair", t->Colors.Hair);
 	json_insert_child(templates, template);
 }
 void SavePlayerTemplates(const CArray *templates, const char *filename)
@@ -161,7 +181,8 @@ void SavePlayerTemplates(const CArray *templates, const char *filename)
 
 	setlocale(LC_ALL, "");
 
-	json_insert_pair_into_object(root, "Version", json_new_number("1"));
+	json_insert_pair_into_object(
+		root, "Version", json_new_number(TOSTRING(VERSION)));
 	json_t *templatesNode = json_new_array();
 	for (int i = 0; i < (int)templates->size; i++)
 	{

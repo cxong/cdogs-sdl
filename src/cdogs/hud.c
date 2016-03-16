@@ -438,14 +438,11 @@ static void DrawLives(
 		const int h = device->cachedConfig.Res.y;
 		drawPos.y = h - drawPos.y + offset.y + 5;
 	}
-	const TOffsetPic head = GetHeadPic(
-		BODY_ARMED, DIRECTION_DOWN, player->Char.looks.Face, STATE_IDLE);
 	for (int i = 0; i < player->Lives; i++)
 	{
-		BlitOld(
-			drawPos.x + head.dx, drawPos.y + head.dy,
-			PicManagerGetOldPic(&gPicManager, head.picIndex),
-			&player->Char.table, BLIT_TRANSPARENT);
+		DrawHead(
+			BODY_UNARMED, DIRECTION_DOWN, player->Char.Face, STATE_IDLE,
+			drawPos);
 		drawPos.x += xStep;
 	}
 }
