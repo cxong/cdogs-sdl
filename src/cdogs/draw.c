@@ -64,16 +64,17 @@
 #include "blit.h"
 #include "pic_manager.h"
 
+
 // For actor drawing
 typedef struct
 {
 	Pic Pics[3];	// TODO: only used for offsets and highlights for now
+	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
 	bool IsTransparent;
 	HSV *Tint;
 } ActorPics;
-// TODO: colours
 
 
 // Three types of tile drawing, based on line of sight:
@@ -344,6 +345,7 @@ static void GetCharacterPics(
 	const int deadPic)
 {
 	memset(pics, 0, sizeof *pics);
+	pics->Colors = &c->Colors;
 	direction_e headDir = dir;
 	int headFrame = frame;
 
@@ -449,6 +451,7 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 		{
 			const Pic *pic = &pics->Pics[0];
 			CASSERT(pic != NULL, "cannot find dying pic");
+			// TODO: tinting doesn't work
 			BlitBackground(&gGraphicsDevice, pic, picPos, pics->Tint, true);
 		}
 	}
@@ -465,17 +468,16 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 			{
 				continue;
 			}
-			// TODO: colours
 			if (pics->IsTransparent)
 			{
+				// TODO: tinting doesn't work
 				BlitBlend(
 					&gGraphicsDevice, &pics->Pics[i], picPos, colorWhite);
 			}
 			else
 			{
-				BlitMasked(
-					&gGraphicsDevice, &pics->Pics[i], picPos,
-					colorWhite, true);
+				BlitCharMultichannel(
+					&gGraphicsDevice, &pics->Pics[i], picPos, pics->Colors);
 			}
 		}
 	}
@@ -669,13 +671,12 @@ void DrawCharacterSimple(
 }
 
 void DrawHead(
-	const int bodyType, const direction_e dir, const int face,
+	const Character *c, const int bodyType, const direction_e dir,
 	const int state, const Vec2i pos)
 {
-	Pic head = GetHeadPic(bodyType, dir, face, state);
+	Pic head = GetHeadPic(bodyType, dir, c->Face, state);
 	// Note: ignore offset as we are only drawing the head
-	// TODO: colours
-	BlitMasked(&gGraphicsDevice, &head, pos, colorWhite, true);
+	BlitCharMultichannel(&gGraphicsDevice, &head, pos, &c->Colors);
 }
 
 

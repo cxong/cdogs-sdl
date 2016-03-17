@@ -213,17 +213,6 @@ static inline void setColor(int c) {
 #endif
 }
 
-/// Function: cls
-/// Clears screen and moves cursor home.
-inline void cls(void) {
-#if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
-	// TODO: This is cheating...
-	system("cls");
-#else
-	RLUTIL_PRINT("\033[2J\033[H");
-#endif
-}
-
 /// Function: locate
 /// Sets the cursor position to 1-based x,y.
 inline void locate(int x, int y) {

@@ -41,15 +41,6 @@ typedef struct
 
 typedef struct
 {
-	color_t Skin;
-	color_t Arms;
-	color_t Body;
-	color_t Legs;
-	color_t Hair;
-} CharColors;
-
-typedef struct
-{
 	int Face;
 	int speed;
 	const GunDescription *Gun;

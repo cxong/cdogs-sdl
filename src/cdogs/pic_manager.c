@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,18 @@ PicManager gPicManager;
 #define FLOOR_COLORS      216
 #define ROOM_COLORS       232
 #define ALT_COLORS        224
+
+// Color range defines
+#define SKIN_START 2
+#define SKIN_END   9
+#define BODY_START 52
+#define BODY_END   61
+#define ARMS_START 68
+#define ARMS_END   77
+#define LEGS_START 84
+#define LEGS_END   93
+#define HAIR_START 132
+#define HAIR_END   135
 
 static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
 
@@ -344,6 +356,115 @@ static void GenerateOldPics(PicManager *pm)
 		{
 			AddMaskBasePic(
 				pm, "room", RoomStyleStr(i), RoomTypeStr(j), cRoomPics[i][j]);
+		}
+	}
+
+	// For actor pics, convert them to greyscale since we'll be masking them with
+	// colours later
+	// For each channel, use a different alpha value
+	// When drawing, we'll use the alpha value (starting from 255 and counting
+	// down) to determine which custom colour mask to use
+
+	// Head/hair: detect the skin/hair pixels and put them on a different channel
+	for (int f = 0; f < FACE_COUNT; f++)
+	{
+		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
+		{
+			for (int s = 0; s < STATE_COUNT + 2; s++)
+			{
+				const PicPaletted *old = PicManagerGetOldPic(
+					pm, cHeadPic[f][d][s]);
+				Pic *pic = PicManagerGetFromOld(pm, cHeadPic[f][d][s]);
+				for (int i = 0; i < pic->size.x * pic->size.y; i++)
+				{
+					color_t c = PIXEL2COLOR(pic->Data[i]);
+					const uint8_t value =
+						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
+					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 254;
+					}
+					else if (old->data[i] >= HAIR_START &&
+						old->data[i] <= HAIR_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 250;
+					}
+					pic->Data[i] = COLOR2PIXEL(c);
+				}
+			}
+		}
+	}
+
+	// Body: detect arms, body, legs and skin
+	for (int b = 0; b < BODY_COUNT; b++)
+	{
+		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
+		{
+			for (int s = 0; s < STATE_COUNT + 2; s++)
+			{
+				const PicPaletted *old = PicManagerGetOldPic(
+					pm, cBodyPic[b][d][s]);
+				Pic *pic = PicManagerGetFromOld(pm, cBodyPic[b][d][s]);
+				for (int i = 0; i < pic->size.x * pic->size.y; i++)
+				{
+					color_t c = PIXEL2COLOR(pic->Data[i]);
+					const uint8_t value =
+						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
+					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 254;
+					}
+					else if (old->data[i] >= ARMS_START &&
+						old->data[i] <= ARMS_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 253;
+					}
+					else if (old->data[i] >= BODY_START &&
+						old->data[i] <= BODY_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 252;
+					}
+					else if (old->data[i] >= LEGS_START &&
+						old->data[i] <= LEGS_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 251;
+					}
+					pic->Data[i] = COLOR2PIXEL(c);
+				}
+			}
+		}
+	}
+
+	// Gun: detect skin
+	for (gunpic_e g = 0; g < GUNPIC_COUNT; g++)
+	{
+		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
+		{
+			for (gunstate_e s = 0; s < GUNSTATE_COUNT; s++)
+			{
+				const PicPaletted *old = PicManagerGetOldPic(
+					pm, cGunPics[g][d][s].picIndex);
+				Pic *pic = PicManagerGetFromOld(
+					pm, cGunPics[g][d][s].picIndex);
+				for (int i = 0; i < pic->size.x * pic->size.y; i++)
+				{
+					color_t c = PIXEL2COLOR(pic->Data[i]);
+					const uint8_t value =
+						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
+					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
+					{
+						c.r = c.g = c.b = value;
+						c.a = 254;
+					}
+					pic->Data[i] = COLOR2PIXEL(c);
+				}
+			}
 		}
 	}
 }

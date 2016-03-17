@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -316,6 +316,73 @@ void BlitMasked(
 			*target = PixelMult(*current, maskPixel);
 			current++;
 		}
+	}
+}
+static color_t CharColorsGetChannelMask(
+	const CharColors *c, const uint8_t alpha);
+void BlitCharMultichannel(
+	GraphicsDevice *device,
+	const Pic *pic,
+	const Vec2i pos,
+	const CharColors *masks)
+{
+	Uint32 *current = pic->Data;
+	Vec2i v = Vec2iAdd(pos, pic->offset);
+	for (int i = 0; i < pic->size.y; i++)
+	{
+		int yoff = i + v.y;
+		if (yoff > device->clipping.bottom)
+		{
+			break;
+		}
+		if (yoff < device->clipping.top)
+		{
+			current += pic->size.x;
+			continue;
+		}
+		yoff *= device->cachedConfig.Res.x;
+		for (int j = 0; j < pic->size.x; j++)
+		{
+			Uint32 *target;
+			const int xoff = j + v.x;
+			if (xoff < device->clipping.left)
+			{
+				current++;
+				continue;
+			}
+			if (xoff > device->clipping.right)
+			{
+				current += pic->size.x - j;
+				break;
+			}
+			if (*current == 0)
+			{
+				current++;
+				continue;
+			}
+			target = device->buf + yoff + xoff;
+			const color_t color = PIXEL2COLOR(*current);
+			*target = PixelMult(
+				*current,
+				COLOR2PIXEL(CharColorsGetChannelMask(masks, color.a)));
+			current++;
+		}
+	}
+}
+static color_t CharColorsGetChannelMask(
+	const CharColors *c, const uint8_t alpha)
+{
+	switch (alpha)
+	{
+	case 255: return colorWhite;
+	case 254: return c->Skin;
+	case 253: return c->Arms;
+	case 252: return c->Body;
+	case 251: return c->Legs;
+	case 250: return c->Hair;
+	default:
+		CASSERT(false, "Unknown alpha channel");
+		return colorWhite;
 	}
 }
 void BlitBlend(

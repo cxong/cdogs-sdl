@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,16 @@
 #include "pic_file.h"
 #include "vector.h"
 
+typedef struct
+{
+	color_t Skin;
+	color_t Arms;
+	color_t Body;
+	color_t Legs;
+	color_t Hair;
+} CharColors;
+#define CHAR_COLOR_COUNT 5	// number of colours in CharColors
+
 #define BLIT_TRANSPARENT 1
 #define BLIT_BACKGROUND 2
 
@@ -69,6 +79,11 @@ void BlitMasked(
 	Vec2i pos,
 	color_t mask,
 	int isTransparent);
+void BlitCharMultichannel(
+	GraphicsDevice *device,
+	const Pic *pic,
+	const Vec2i pos,
+	const CharColors *masks);
 void BlitBlend(
 	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend);
 void BlitPicHighlight(
