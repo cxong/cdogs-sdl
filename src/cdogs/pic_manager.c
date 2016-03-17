@@ -402,7 +402,7 @@ static void GenerateOldPics(PicManager *pm)
 	{
 		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
 		{
-			for (int s = 0; s < STATE_COUNT + 2; s++)
+			for (int s = 0; s < STATE_COUNT; s++)
 			{
 				const PicPaletted *old = PicManagerGetOldPic(
 					pm, cBodyPic[b][d][s]);

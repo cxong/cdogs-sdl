@@ -126,6 +126,8 @@ add_executable(player_test
 	player_test.c
 	../cdogs/c_array.c
 	../cdogs/c_array.h
+	../cdogs/color.c
+	../cdogs/color.h
 	../cdogs/log.c
 	../cdogs/log.h
 	../cdogs/player.c

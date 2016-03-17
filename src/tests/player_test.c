@@ -27,6 +27,18 @@ void CharacterSetColors(Character *c)
 {
 	UNUSED(c);
 }
+NCharColors CharColors2Net(const CharColors c)
+{
+	UNUSED(c);
+	NCharColors co = NCharColors_init_default;
+	return co;
+}
+NColor Color2Net(const color_t c)
+{
+	NColor co;
+	co.RGBA = (c.r << 24) | (c.g << 16) | (c.b << 8) | c.a;
+	return co;
+}
 const char *JoyName(const int deviceIndex)
 {
 	UNUSED(deviceIndex);
@@ -41,6 +53,13 @@ int ModeMaxHealth(const GameMode mode)
 {
 	UNUSED(mode);
 	return 0;
+}
+CharColors Net2CharColors(const NCharColors c)
+{
+	UNUSED(c);
+	CharColors co;
+	memset(&co, 0, sizeof co);
+	return co;
 }
 NPlayerData NMakePlayerData(const PlayerData *p)
 {
