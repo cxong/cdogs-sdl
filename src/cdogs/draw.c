@@ -74,6 +74,7 @@ typedef struct
 	bool IsDying;
 	bool IsTransparent;
 	HSV *Tint;
+	color_t *Mask;
 } ActorPics;
 
 
@@ -306,34 +307,39 @@ static Character *ActorGetCharacterMutable(TActor *a);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
-	const bool isTransparent, HSV *tint,
+	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
 static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 {
 	const Weapon *gun = ActorGetGun(a);
 	HSV *tint = NULL;
+	color_t *mask = NULL;
 	if (a->flamed)
 	{
 		tint = &tintRed;
+		mask = &colorRed;
 	}
 	else if (a->poisoned)
 	{
 		tint = &tintPoison;
+		mask = &colorPoison;
 	}
 	else if (a->petrified)
 	{
 		tint = &tintGray;
+		mask = &colorGray;
 	}
 	else if (a->confused)
 	{
 		tint = &tintPurple;
+		mask = &colorPurple;
 	}
 	GetCharacterPics(
 		pics, ActorGetCharacterMutable(a),
 		RadiansToDirection(a->DrawRadians), AnimationGetFrame(&a->anim),
 		gun->Gun->pic, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
-		tint,
+		tint, mask,
 		a->dead);
 }
 static Pic GetHeadPic(
@@ -341,7 +347,7 @@ static Pic GetHeadPic(
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
-	const bool isTransparent, HSV *tint,
+	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic)
 {
 	memset(pics, 0, sizeof *pics);
@@ -361,6 +367,7 @@ static void GetCharacterPics(
 	else if (tint != NULL)
 	{
 		pics->Tint = tint;
+		pics->Mask = mask;
 	}
 
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
@@ -451,7 +458,6 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 		{
 			const Pic *pic = &pics->Pics[0];
 			CASSERT(pic != NULL, "cannot find dying pic");
-			// TODO: tinting doesn't work
 			BlitBackground(&gGraphicsDevice, pic, picPos, pics->Tint, true);
 		}
 	}
@@ -470,9 +476,15 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 			}
 			if (pics->IsTransparent)
 			{
-				// TODO: tinting doesn't work
-				BlitBlend(
-					&gGraphicsDevice, &pics->Pics[i], picPos, colorWhite);
+				BlitBackground(
+					&gGraphicsDevice, &pics->Pics[i], picPos, pics->Tint,
+					true);
+			}
+			else if (pics->Mask != NULL)
+			{
+				BlitMasked(
+					&gGraphicsDevice, &pics->Pics[i], picPos, *pics->Mask,
+					true);
 			}
 			else
 			{
@@ -658,7 +670,7 @@ void DrawCharacterSimple(
 	ActorPics pics;
 	GetCharacterPics(
 		&pics, c, DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, false,
-		NULL, 0);
+		NULL, NULL, 0);
 	DrawActorPics(&pics, pos);
 	if (hilite)
 	{
