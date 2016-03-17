@@ -161,7 +161,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 }
 
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data);
-static menu_t *CreateFaceMenu(const int playerUID)
+static menu_t *CreateFaceMenu(int *playerUID)
 {
 	menu_t *menu = MenuCreateNormal("Face", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
@@ -169,16 +169,16 @@ static menu_t *CreateFaceMenu(const int playerUID)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack(IndexToFaceStr(i)));
 	}
-	MenuSetPostInputFunc(menu, PostInputFaceMenu, (void *)playerUID);
+	MenuSetPostInputFunc(menu, PostInputFaceMenu, playerUID);
 	return menu;
 }
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 {
-	const int playerUID = (int)data;
+	int *playerUID = data;
 	UNUSED(cmd);
-	PlayerData *p = PlayerDataGetByUID(playerUID);
+	PlayerData *p = PlayerDataGetByUID(*playerUID);
 	Character *c = &p->Char;
-	c->flags = menu->u.normal.index;
+	c->Face = menu->u.normal.index;
 }
 
 // TODO: colour picker
@@ -191,7 +191,7 @@ static menu_t *CreateColorMenu(
 	for (int i = 0; i < 5; i++)
 	{
 		char buf[256];
-		sprintf(buf, "Color %d\n", i);
+		sprintf(buf, "Color %d", i);
 		MenuAddSubmenu(menu, MenuCreateBack(buf));
 	}
 	MenuSetPostInputFunc(menu, PostInputColorMenu, data);
@@ -315,7 +315,7 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	loadMenu->isDisabled = gPlayerTemplates.size == 0;
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data, const int playerUID);
+	const char *name, PlayerSelectMenuData *data);
 static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
@@ -371,8 +371,7 @@ void PlayerSelectMenusCreate(
 		MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	MenuAddSubmenu(
-		ms->root, CreateCustomizeMenu("Customize...", data, playerUID));
+	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
@@ -396,29 +395,29 @@ void PlayerSelectMenusCreate(
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL, false);
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data, const int playerUID)
+	const char *name, PlayerSelectMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
-	MenuAddSubmenu(menu, CreateFaceMenu(playerUID));
+	MenuAddSubmenu(menu, CreateFaceMenu(&data->PlayerUID));
 
-	data->skinData.PlayerUID = playerUID;
+	data->skinData.PlayerUID = data->PlayerUID;
 	data->skinData.propertyOffset = offsetof(CharColors, Skin);
 	MenuAddSubmenu(menu, CreateColorMenu("Skin", &data->skinData));
 
-	data->hairData.PlayerUID = playerUID;
+	data->hairData.PlayerUID = data->PlayerUID;
 	data->hairData.propertyOffset = offsetof(CharColors, Hair);
 	MenuAddSubmenu(menu, CreateColorMenu("Hair", &data->hairData));
 
-	data->armsData.PlayerUID = playerUID;
+	data->armsData.PlayerUID = data->PlayerUID;
 	data->armsData.propertyOffset = offsetof(CharColors, Arms);
 	MenuAddSubmenu(menu, CreateColorMenu("Arms", &data->armsData));
 
-	data->bodyData.PlayerUID = playerUID;
+	data->bodyData.PlayerUID = data->PlayerUID;
 	data->bodyData.propertyOffset = offsetof(CharColors, Body);
 	MenuAddSubmenu(menu, CreateColorMenu("Body", &data->bodyData));
 
-	data->legsData.PlayerUID = playerUID;
+	data->legsData.PlayerUID = data->PlayerUID;
 	data->legsData.propertyOffset = offsetof(CharColors, Legs);
 	MenuAddSubmenu(menu, CreateColorMenu("Legs", &data->legsData));
 
