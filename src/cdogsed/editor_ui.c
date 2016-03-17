@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -708,17 +708,12 @@ static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
 	return ObjectiveTypeStr(((MissionObjective *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type);
 }
-static void GetCharacterHeadPic(
-	Character *c, TOffsetPic *pic, TranslationTable **t);
 static void MissionDrawObjective(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	CharacterStore *store = &data->co->Setting.characters;
-	TOffsetPic pic;
-	pic.dx = pic.dy = 0;
-	pic.picIndex = -1;
-	TranslationTable *table = NULL;
+	const Character *c = NULL;
 	UNUSED(g);
 	if (!CampaignGetCurrentMission(data->co)) return;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <= data->index) return;
@@ -731,17 +726,15 @@ static void MissionDrawObjective(
 	case OBJECTIVE_KILL:
 		if (store->specialIds.size > 0)
 		{
-			Character *cd = CArrayGet(
+			c = CArrayGet(
 				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			GetCharacterHeadPic(cd, &pic, &table);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
 		if (store->prisonerIds.size > 0)
 		{
-			Character *cd = CArrayGet(
+			c = CArrayGet(
 				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			GetCharacterHeadPic(cd, &pic, &table);
 		}
 		break;
 	case OBJECTIVE_COLLECT:
@@ -759,11 +752,9 @@ static void MissionDrawObjective(
 	}
 	const Vec2i drawPos =
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	if (pic.picIndex >= 0)
+	if (c != NULL)
 	{
-		DrawTTPic(
-			drawPos.x + pic.dx, drawPos.y + pic.dy,
-			PicManagerGetOldPic(&gPicManager, pic.picIndex), table);
+		DrawHead(c, BODY_UNARMED, DIRECTION_DOWN, STATE_IDLE, drawPos);
 	}
 	else if (newPic != NULL)
 	{
@@ -860,15 +851,6 @@ static void DisplayMapItemWithDensity(
 	char s[10];
 	sprintf(s, "%d", mod->Density);
 	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
-}
-static void GetCharacterHeadPic(
-	Character *c, TOffsetPic *pic, TranslationTable **t)
-{
-	const int i = c->looks.Face;
-	*t = &c->table;
-	pic->picIndex = cHeadPic[i][DIRECTION_DOWN][STATE_IDLE];
-	pic->dx = cHeadOffset[i][DIRECTION_DOWN].dx;
-	pic->dy = cHeadOffset[i][DIRECTION_DOWN].dy;
 }
 
 void DisplayFlag(

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -243,27 +243,33 @@ static void Change(
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
-			b->looks.Face = CLAMP_OPPOSITE(b->looks.Face + d, 0, FACE_COUNT - 1);
+			b->Face = CLAMP_OPPOSITE(b->Face + d, 0, FACE_COUNT - 1);
 			break;
 
+			// TODO: colour pickers
 		case XC_SKIN:
-			b->looks.Skin = CLAMP_OPPOSITE(b->looks.Skin + d, 0, SHADE_COUNT - 1);
+			b->Colors.Skin.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Skin.r + d * 20, 0, 255);
+			b->Colors.Skin.g = b->Colors.Skin.b = b->Colors.Skin.r;
 			break;
 
 		case XC_HAIR:
-			b->looks.Hair = CLAMP_OPPOSITE(b->looks.Hair + d, 0, SHADE_COUNT - 1);
+			b->Colors.Hair.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Hair.r + d * 20, 0, 255);
+			b->Colors.Hair.g = b->Colors.Hair.b = b->Colors.Hair.r;
 			break;
 
 		case XC_BODY:
-			b->looks.Body = CLAMP_OPPOSITE(b->looks.Body + d, 0, SHADE_COUNT - 1);
+			b->Colors.Body.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Body.r + d * 20, 0, 255);
+			b->Colors.Body.g = b->Colors.Body.b = b->Colors.Body.r;
 			break;
 
 		case XC_ARMS:
-			b->looks.Arm = CLAMP_OPPOSITE(b->looks.Arm + d, 0, SHADE_COUNT - 1);
+			b->Colors.Arms.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Arms.r + d * 20, 0, 255);
+			b->Colors.Arms.g = b->Colors.Arms.b = b->Colors.Arms.r;
 			break;
 
 		case XC_LEGS:
-			b->looks.Leg = CLAMP_OPPOSITE(b->looks.Leg + d, 0, SHADE_COUNT - 1);
+			b->Colors.Legs.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Legs.r + d * 20, 0, 255);
+			b->Colors.Legs.g = b->Colors.Legs.b = b->Colors.Legs.r;
 			break;
 		}
 		break;
@@ -359,8 +365,6 @@ static void Change(
 		b->Gun = GetNextGun(b->Gun, d);
 		break;
 	}
-
-	CharacterSetColors(b);
 }
 // Look in both built-in guns and custom guns for the next gun
 static const GunDescription *GetNextGun(const GunDescription *g, const int d)
@@ -423,22 +427,20 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	else
 	{
 		// set up character template
-		c->looks.Face = FACE_OGRE;
-		c->looks.Skin = SHADE_GREEN;
-		c->looks.Arm = SHADE_DKGRAY;
-		c->looks.Body = SHADE_DKGRAY;
-		c->looks.Leg = SHADE_DKGRAY;
-		c->looks.Hair = SHADE_BLACK;
+		c->Face = FACE_OGRE;
+		c->Colors.Skin = colorGreen;
+		c->Colors.Arms = colorGray;
+		c->Colors.Body = colorGray;
+		c->Colors.Legs = colorGray;
+		c->Colors.Hair = colorBlack;
 		c->speed = 256;
 		c->Gun = StrGunDescription("Machine gun");
 		c->maxHealth = 40;
 		c->flags = FLAGS_IMMUNITY;
-		memset(c->table, 0, sizeof c->table);
 		c->bot->probabilityToMove = 50;
 		c->bot->probabilityToTrack = 25;
 		c->bot->probabilityToShoot = 2;
 		c->bot->actionDelay = 15;
-		CharacterSetColors(c);
 	}
 }
 
