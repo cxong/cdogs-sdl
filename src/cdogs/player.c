@@ -141,10 +141,10 @@ NPlayerData PlayerDataDefault(const int idx)
 			strcpy(pd.Name, "Jones");
 			pd.Face = FACE_JONES;
 			pd.Colors.Skin = Color2Net(colorSkin);
-			pd.Colors.Arms = Color2Net(colorBlue);
-			pd.Colors.Body = Color2Net(colorBlue);
-			pd.Colors.Legs = Color2Net(colorBlue);
-			pd.Colors.Hair = Color2Net(colorBlue);
+			pd.Colors.Arms = Color2Net(colorLightBlue);
+			pd.Colors.Body = Color2Net(colorLightBlue);
+			pd.Colors.Legs = Color2Net(colorLightBlue);
+			pd.Colors.Hair = Color2Net(colorLightBlue);
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");

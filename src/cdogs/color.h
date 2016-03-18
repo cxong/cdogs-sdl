@@ -84,6 +84,8 @@ extern color_t colorSkin;
 extern color_t colorDarkSkin;
 extern color_t colorAsianSkin;
 
+extern color_t colorLightBlue;
+
 color_t ColorMult(color_t c, color_t m);
 color_t ColorAlphaBlend(color_t a, color_t b);
 
