@@ -314,6 +314,7 @@ static void LoadOldSprites(
 static void AddMaskBasePic(
 	PicManager *pm, const char *name,
 	const char *styleName, const char *typeName, const int picIdx);
+static void ProcessMultichannelPic(PicManager *pm, const int picIdx);
 static void GenerateOldPics(PicManager *pm)
 {
 	// Convert old pics into new format ones
@@ -372,27 +373,7 @@ static void GenerateOldPics(PicManager *pm)
 		{
 			for (int s = 0; s < STATE_COUNT + 2; s++)
 			{
-				const PicPaletted *old = PicManagerGetOldPic(
-					pm, cHeadPic[f][d][s]);
-				Pic *pic = PicManagerGetFromOld(pm, cHeadPic[f][d][s]);
-				for (int i = 0; i < pic->size.x * pic->size.y; i++)
-				{
-					color_t c = PIXEL2COLOR(pic->Data[i]);
-					const uint8_t value =
-						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
-					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 254;
-					}
-					else if (old->data[i] >= HAIR_START &&
-						old->data[i] <= HAIR_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 250;
-					}
-					pic->Data[i] = COLOR2PIXEL(c);
-				}
+				ProcessMultichannelPic(pm, cHeadPic[f][d][s]);
 			}
 		}
 	}
@@ -404,39 +385,7 @@ static void GenerateOldPics(PicManager *pm)
 		{
 			for (int s = 0; s < STATE_COUNT; s++)
 			{
-				const PicPaletted *old = PicManagerGetOldPic(
-					pm, cBodyPic[b][d][s]);
-				Pic *pic = PicManagerGetFromOld(pm, cBodyPic[b][d][s]);
-				for (int i = 0; i < pic->size.x * pic->size.y; i++)
-				{
-					color_t c = PIXEL2COLOR(pic->Data[i]);
-					const uint8_t value =
-						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
-					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 254;
-					}
-					else if (old->data[i] >= ARMS_START &&
-						old->data[i] <= ARMS_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 253;
-					}
-					else if (old->data[i] >= BODY_START &&
-						old->data[i] <= BODY_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 252;
-					}
-					else if (old->data[i] >= LEGS_START &&
-						old->data[i] <= LEGS_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 251;
-					}
-					pic->Data[i] = COLOR2PIXEL(c);
-				}
+				ProcessMultichannelPic(pm, cBodyPic[b][d][s]);
 			}
 		}
 	}
@@ -448,22 +397,7 @@ static void GenerateOldPics(PicManager *pm)
 		{
 			for (gunstate_e s = 0; s < GUNSTATE_COUNT; s++)
 			{
-				const PicPaletted *old = PicManagerGetOldPic(
-					pm, cGunPics[g][d][s].picIndex);
-				Pic *pic = PicManagerGetFromOld(
-					pm, cGunPics[g][d][s].picIndex);
-				for (int i = 0; i < pic->size.x * pic->size.y; i++)
-				{
-					color_t c = PIXEL2COLOR(pic->Data[i]);
-					const uint8_t value =
-						(uint8_t)(((int)c.r + (int)c.g + (int)c.b) / 3);
-					if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
-					{
-						c.r = c.g = c.b = value;
-						c.a = 254;
-					}
-					pic->Data[i] = COLOR2PIXEL(c);
-				}
+				ProcessMultichannelPic(pm, cGunPics[g][d][s].picIndex);
 			}
 		}
 	}
@@ -489,6 +423,46 @@ static void AddMaskBasePic(
 	AddNamedPic(&pm->pics, buf, &p);
 
 	AfterAdd(pm);
+}
+static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
+{
+	const PicPaletted *old = PicManagerGetOldPic(pm, picIdx);
+	Pic *pic = PicManagerGetFromOld(pm, picIdx);
+	for (int i = 0; i < pic->size.x * pic->size.y; i++)
+	{
+		color_t c = PIXEL2COLOR(pic->Data[i]);
+		const uint8_t value = MAX(MAX(c.r, c.g), c.b);
+		if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
+		{
+			c.r = c.g = c.b = value;
+			c.a = 254;
+		}
+		else if (old->data[i] >= ARMS_START &&
+			old->data[i] <= ARMS_END)
+		{
+			c.r = c.g = c.b = value;
+			c.a = 253;
+		}
+		else if (old->data[i] >= BODY_START &&
+			old->data[i] <= BODY_END)
+		{
+			c.r = c.g = c.b = value;
+			c.a = 252;
+		}
+		else if (old->data[i] >= LEGS_START &&
+			old->data[i] <= LEGS_END)
+		{
+			c.r = c.g = c.b = value;
+			c.a = 251;
+		}
+		else if (old->data[i] >= HAIR_START &&
+			old->data[i] <= HAIR_END)
+		{
+			c.r = c.g = c.b = value;
+			c.a = 250;
+		}
+		pic->Data[i] = COLOR2PIXEL(c);
+	}
 }
 
 
