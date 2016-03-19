@@ -123,7 +123,7 @@ bool MapIsRealPosIn(const Map *map, const Vec2i realPos);
 bool MapIsTileInExit(const Map *map, const TTileItem *ti);
 
 int MapHasLockedRooms(Map *map);
-int MapPosIsHighAccess(Map *map, int x, int y);
+bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos);
 int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 
 // Return false if cannot move to new position

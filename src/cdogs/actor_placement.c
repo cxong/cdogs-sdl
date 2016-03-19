@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014-2015, Cong Xu
+ Copyright (c) 2014-2016, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -153,16 +153,16 @@ NVec2i PlaceAwayFromPlayers(Map *map)
 
 NVec2i PlacePrisoner(Map *map)
 {
-	Vec2i pos;
+	Vec2i fullPos;
 	do
 	{
 		do
 		{
-			pos.x = ((rand() % (map->Size.x * TILE_WIDTH)) << 8);
-			pos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
-		} while (!MapPosIsHighAccess(map, pos.x >> 8, pos.y >> 8));
-	} while (!MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)));
-	return Vec2i2Net(pos);
+			fullPos.x = ((rand() % (map->Size.x * TILE_WIDTH)) << 8);
+			fullPos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
+		} while (!MapPosIsInLockedRoom(map, Vec2iFull2Real(fullPos)));
+	} while (!MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)));
+	return Vec2i2Net(fullPos);
 }
 
 Vec2i PlacePlayer(

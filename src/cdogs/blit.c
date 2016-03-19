@@ -57,10 +57,7 @@
 #include <SDL.h>
 
 #include "config.h"
-#include "grafx.h"
 #include "log.h"
-#include "palette.h"
-#include "utils.h" /* for debug() */
 
 
 void BlitPicHighlight(

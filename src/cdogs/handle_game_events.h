@@ -31,6 +31,7 @@
 #include "camera.h"
 #include "powerup.h"
 
+// TODO: This whole module can be replaced with a event/listener pattern
 void HandleGameEvents(
 	CArray *store,
 	Camera *camera,

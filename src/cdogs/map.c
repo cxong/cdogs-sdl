@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -450,10 +450,9 @@ int MapHasLockedRooms(Map *map)
 	return map->keyAccessCount > 1;
 }
 
-// TODO: rename this function
-int MapPosIsHighAccess(Map *map, int x, int y)
+bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos)
 {
-	Vec2i tilePos = Vec2iToTile(Vec2iNew(x, y));
+	const Vec2i tilePos = Vec2iToTile(pos);
 	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
@@ -486,8 +485,8 @@ static int MapTryPlaceCollectible(
 		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
 		if (!IsCollisionWithWall(v, size))
 		{
-			if ((!hasLockedRooms || MapPosIsHighAccess(map, v.x, v.y)) &&
-				(!noaccess || !MapPosIsHighAccess(map, v.x, v.y)))
+			if ((!hasLockedRooms || MapPosIsInLockedRoom(map, v)) &&
+				(!noaccess || !MapPosIsInLockedRoom(map, v)))
 			{
 				MapPlaceCollectible(mo, objective, v);
 				return 1;

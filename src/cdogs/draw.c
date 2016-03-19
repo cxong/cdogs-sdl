@@ -68,7 +68,7 @@
 // For actor drawing
 typedef struct
 {
-	Pic Pics[3];	// TODO: only used for offsets and highlights for now
+	Pic Pics[3];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
