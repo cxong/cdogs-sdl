@@ -624,11 +624,10 @@ static void MenuDisplayItems(const MenuSystem *ms)
 	}
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
-		PicPaletted *logo = PicManagerGetOldPic(&gPicManager, PIC_LOGO);
-		DrawTPic(
-			MS_CENTER_X(*ms, logo->w),
-			ms->pos.y + ms->size.y / 12,
-			logo);
+		const Pic *logo = PicManagerGetFromOld(&gPicManager, PIC_LOGO);
+		const Vec2i pos = Vec2iNew(
+			MS_CENTER_X(*ms, logo->size.x), ms->pos.y + ms->size.y / 12);
+		Blit(&gGraphicsDevice, logo, pos);
 
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_END;

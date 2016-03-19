@@ -260,7 +260,9 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 
 	if (fileChanged)
 	{
-		DrawTPic(10, y, PicManagerGetOldPic(&gPicManager, 221));
+		// Display a disk icon to show the game needs saving
+		const Pic *pic = PicManagerGetFromOld(&gPicManager, 221);
+		Blit(&gGraphicsDevice, pic, Vec2iNew(10, y));
 	}
 
 	FontStr("Press Ctrl+E to edit characters", Vec2iNew(20, h - 20 - FontH() * 2));

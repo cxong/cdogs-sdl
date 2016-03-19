@@ -63,61 +63,6 @@
 #include "utils.h" /* for debug() */
 
 
-void BlitOld(int x, int y, PicPaletted *pic, const void *table, int mode)
-{
-	int yoff, xoff;
-	unsigned char *current = pic->data;
-	const unsigned char *xlate = table;
-
-	int i;
-
-	assert(!(mode & BLIT_BACKGROUND));
-
-	for (i = 0; i < pic->h; i++)
-	{
-		int j;
-
-		yoff = i + y;
-		if (yoff > gGraphicsDevice.clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < gGraphicsDevice.clipping.top)
-		{
-			current += pic->w;
-			continue;
-		}
-		yoff *= gGraphicsDevice.cachedConfig.Res.x;
-		for (j = 0; j < pic->w; j++)
-		{
-			xoff = j + x;
-			if (xoff < gGraphicsDevice.clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > gGraphicsDevice.clipping.right)
-			{
-				current += pic->w - j;
-				break;
-			}
-			if ((mode & BLIT_TRANSPARENT && *current) || !(mode & BLIT_TRANSPARENT))
-			{
-				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
-				if (table != NULL)
-				{
-					*target = LookupPalette(xlate[*current]);
-				}
-				else
-				{
-					*target = LookupPalette(*current);
-				}
-			}
-			current++;
-		}
-	}
-}
-
 void BlitPicHighlight(
 	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color)
 {

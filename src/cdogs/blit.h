@@ -65,10 +65,6 @@ typedef struct
 } CharColors;
 #define CHAR_COLOR_COUNT 5	// number of colours in CharColors
 
-#define BLIT_TRANSPARENT 1
-#define BLIT_BACKGROUND 2
-
-void BlitOld(int x, int y, PicPaletted *pic, const void *table, int mode);
 void BlitBackground(
 	GraphicsDevice *device,
 	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent);
@@ -88,11 +84,6 @@ void BlitBlend(
 	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend);
 void BlitPicHighlight(
 	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color);
-/* 
- * DrawTPic - I think the T here stands for transparent, ie ignore zero
- * source pixels when copying data.
- */
-#define DrawTPic(x, y, pic) (BlitOld(x, y, pic, NULL, BLIT_TRANSPARENT))
 
 void BlitFlip(GraphicsDevice *g);
 
