@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,113 +33,29 @@
 #include "editor_ui.h"
 
 
-typedef enum
-{
-	MISSION_COLOR_WALL,
-	MISSION_COLOR_FLOOR,
-	MISSION_COLOR_ROOM,
-	MISSION_COLOR_EXTRA,
-	MISSION_COLOR_COUNT
-} MissionColorType;
-typedef struct
-{
-	CampaignOptions *C;
-	MissionColorType Type;
-	color_t Color;
-} MissionColorData;
-static const char *MissionGetColorStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	const MissionColorData *mc = data;
-	const Mission *m = CampaignGetCurrentMission(mc->C);
-	if (m == NULL) return NULL;
-	static const char *colourTypeNames[] =
-	{
-		"Walls", "Floors", "Rooms", "Extra"
-	};
-	char c[8];
-	switch (mc->Type)
-	{
-	case MISSION_COLOR_WALL: ColorStr(c, m->WallMask); break;
-	case MISSION_COLOR_FLOOR: ColorStr(c, m->FloorMask); break;
-	case MISSION_COLOR_ROOM: ColorStr(c, m->RoomMask); break;
-	case MISSION_COLOR_EXTRA: ColorStr(c, m->AltMask); break;
-	default:
-		CASSERT(false, "Unexpected mission colour");
-		break;
-	}
-	sprintf(s, "%s: #%s", colourTypeNames[(int)mc->Type], c);
-	return s;
-}
-static void MissionChangeColor(void *data, int d)
-{
-	UNUSED(d);
-	MissionColorData *mc = data;
-	Mission *m = CampaignGetCurrentMission(mc->C);
-	switch (mc->Type)
-	{
-	case MISSION_COLOR_WALL: m->WallMask = mc->Color; break;
-	case MISSION_COLOR_FLOOR: m->FloorMask = mc->Color; break;
-	case MISSION_COLOR_ROOM: m->RoomMask = mc->Color; break;
-	case MISSION_COLOR_EXTRA: m->AltMask = mc->Color; break;
-	default:
-		CASSERT(false, "Unexpected mission colour");
-		break;
-	}
-}
 #define SWATCH_SIZE() Vec2iNew(6, 6)
 #define SWATCH_PAD() Vec2iNew(2, 2)
-static void DrawSwatch(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+typedef struct
 {
-	UNUSED(o);
-	const MissionColorData *data = vData;
-	DrawRectangle(
-		g,
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(SWATCH_PAD(), 2)),
-		SWATCH_SIZE(),
-		data->Color,
-		0);
-}
-
-static UIObject *CreateSelectColorObjs(
-	CampaignOptions *co, const MissionColorType type, const Vec2i pos);
-Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
-{
-	const int th = FontH();
-
-	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
-	o->ChangesData = true;
-	o->u.LabelFunc = MissionGetColorStr;
-
-	for (int i = 0; i < (int)MISSION_COLOR_COUNT; i++)
-	{
-		UIObject *o2 = UIObjectCopy(o);
-		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, sizeof(MissionColorData));
-		((MissionColorData *)o2->Data)->C = co;
-		((MissionColorData *)o2->Data)->Type = (MissionColorType)i;
-		o2->Pos = pos;
-		UIObjectAddChild(
-			o2, CreateSelectColorObjs(co, (MissionColorType)i, Vec2iZero()));
-		UIObjectAddChild(c, o2);
-		pos.y += th;
-	}
-
-	UIObjectDestroy(o);
-	return pos;
-}
-static UIObject *CreateSelectColorObjs(
-	CampaignOptions *co, const MissionColorType type, const Vec2i pos)
+	color_t Color;
+	void *Data;
+	ColorPickerChangeFunc ChangeFunc;
+} ColorPickerData;
+static void ColorPickerChange(void *data, int d);
+static void ColorPickerDrawSwatch(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+UIObject *CreateColorPicker(
+	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc)
 {
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	c->IsDynamicData = true;
+	c->Data = data;
 
 	// Create 4x4 colour squares
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(SWATCH_SIZE(), SWATCH_PAD()));
-	o->ChangeFunc = MissionChangeColor;
-	o->u.CustomDrawFunc = DrawSwatch;
+	o->ChangeFunc = ColorPickerChange;
+	o->u.CustomDrawFunc = ColorPickerDrawSwatch;
 	Vec2i v = Vec2iZero();
 	// Create palette
 	// 4 levels for R, G and B
@@ -152,10 +68,10 @@ static UIObject *CreateSelectColorObjs(
 	{
 		UIObject *o2 = UIObjectCopy(o);
 		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, sizeof(MissionColorData));
-		((MissionColorData *)o2->Data)->C = co;
-		((MissionColorData *)o2->Data)->Type = type;
-		((MissionColorData *)o2->Data)->Color = colour;
+		CMALLOC(o2->Data, sizeof(ColorPickerData));
+		((ColorPickerData *)o2->Data)->Color = colour;
+		((ColorPickerData *)o2->Data)->Data = data;
+		((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
 		o2->Pos = v;
 		UIObjectAddChild(c, o2);
 		v.x += o->Size.x;
@@ -184,4 +100,110 @@ static UIObject *CreateSelectColorObjs(
 
 	UIObjectDestroy(o);
 	return c;
+}
+static void ColorPickerChange(void *data, int d)
+{
+	UNUSED(d);
+	ColorPickerData *mc = data;
+	mc->ChangeFunc(mc->Color, mc->Data);
+}
+static void ColorPickerDrawSwatch(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+{
+	UNUSED(o);
+	const ColorPickerData *cpd = data;
+	DrawRectangle(
+		g,
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(SWATCH_PAD(), 2)),
+		SWATCH_SIZE(),
+		cpd->Color,
+		0);
+}
+
+
+typedef enum
+{
+	MISSION_COLOR_WALL,
+	MISSION_COLOR_FLOOR,
+	MISSION_COLOR_ROOM,
+	MISSION_COLOR_EXTRA,
+	MISSION_COLOR_COUNT
+} MissionColorType;
+typedef struct
+{
+	CampaignOptions *C;
+	MissionColorType Type;
+} MissionColorData;
+static const char *MissionGetColorStr(UIObject *o, void *data);
+static void MissionColorChange(const color_t c, void *data);
+Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
+{
+	const int th = FontH();
+
+	UIObject *o = UIObjectCreate(
+		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
+	o->ChangesData = true;
+	o->u.LabelFunc = MissionGetColorStr;
+
+	for (int i = 0; i < (int)MISSION_COLOR_COUNT; i++)
+	{
+		UIObject *o2 = UIObjectCopy(o);
+		o2->IsDynamicData = true;
+		CMALLOC(o2->Data, sizeof(MissionColorData));
+		((MissionColorData *)o2->Data)->C = co;
+		((MissionColorData *)o2->Data)->Type = (MissionColorType)i;
+		o2->Pos = pos;
+
+		MissionColorData *mcd;
+		CMALLOC(mcd, sizeof *mcd);
+		mcd->C = co;
+		mcd->Type = (MissionColorType)i;
+		UIObjectAddChild(
+			o2, CreateColorPicker(Vec2iZero(), mcd, MissionColorChange));
+		UIObjectAddChild(c, o2);
+		pos.y += th;
+	}
+
+	UIObjectDestroy(o);
+	return pos;
+}
+static const char *MissionGetColorStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	const MissionColorData *mc = data;
+	const Mission *m = CampaignGetCurrentMission(mc->C);
+	if (m == NULL) return NULL;
+	static const char *colourTypeNames[] =
+	{
+		"Walls", "Floors", "Rooms", "Extra"
+	};
+	char c[8];
+	switch (mc->Type)
+	{
+	case MISSION_COLOR_WALL: ColorStr(c, m->WallMask); break;
+	case MISSION_COLOR_FLOOR: ColorStr(c, m->FloorMask); break;
+	case MISSION_COLOR_ROOM: ColorStr(c, m->RoomMask); break;
+	case MISSION_COLOR_EXTRA: ColorStr(c, m->AltMask); break;
+	default:
+		CASSERT(false, "Unexpected mission colour");
+		break;
+	}
+	sprintf(s, "%s: #%s", colourTypeNames[(int)mc->Type], c);
+	return s;
+}
+static void MissionColorChange(const color_t c, void *data)
+{
+	MissionColorData *mcd = data;
+	Mission *m = CampaignGetCurrentMission(mcd->C);
+	switch (mcd->Type)
+	{
+	case MISSION_COLOR_WALL: m->WallMask = c; break;
+	case MISSION_COLOR_FLOOR: m->FloorMask = c; break;
+	case MISSION_COLOR_ROOM: m->RoomMask = c; break;
+	case MISSION_COLOR_EXTRA: m->AltMask = c; break;
+	default:
+		CASSERT(false, "Unexpected mission colour");
+		break;
+	}
 }

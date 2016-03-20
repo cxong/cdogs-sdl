@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,5 +31,9 @@
 
 #include "ui_object.h"
 
+
+typedef void (*ColorPickerChangeFunc)(const color_t c, void *data);
+UIObject *CreateColorPicker(
+	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc);
 
 Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos);
