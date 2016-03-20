@@ -111,3 +111,12 @@ void ClearScreen(GraphicsDevice *g)
 		g->buf[i] = pixel;
 	}
 }
+
+void DisplayFlag(
+	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted)
+{
+	color_t labelMask = isHighlighted ? colorRed : colorWhite;
+	Vec2i p = FontStrMask(s, pos, labelMask);
+	p = FontChMask(':', p, labelMask);
+	FontStrMask(isOn ? "On" : "Off", p, isOn ? colorPurple : colorWhite);
+}

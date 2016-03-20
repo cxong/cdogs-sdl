@@ -250,10 +250,11 @@ static void MissionDrawEdgeRooms(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(o);
+	UNUSED(g);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, Vec2iAdd(pos, o->Pos), "Edge rooms",
+		Vec2iAdd(pos, o->Pos), "Edge rooms",
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
@@ -261,11 +262,12 @@ static void MissionDrawRoomsOverlap(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(o);
+	UNUSED(g);
 	UNUSED(pos);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, Vec2iAdd(pos, o->Pos), "Room overlap",
+		Vec2iAdd(pos, o->Pos), "Room overlap",
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
@@ -309,10 +311,11 @@ static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(o);
+	UNUSED(g);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		g, Vec2iAdd(pos, o->Pos), "Doors",
+		Vec2iAdd(pos, o->Pos), "Doors",
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
@@ -681,6 +684,7 @@ typedef struct
 static void MissionDrawWeaponStatus(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
+	UNUSED(g);
 	const MissionGunData *data = vData;
 	const Mission *currentMission = CampaignGetCurrentMission(data->co);
 	if (currentMission == NULL) return;
@@ -693,7 +697,6 @@ static void MissionDrawWeaponStatus(
 		}
 	CA_FOREACH_END()
 	DisplayFlag(
-		g,
 		Vec2iAdd(pos, o->Pos),
 		data->Gun->name,
 		hasWeapon,
@@ -851,16 +854,6 @@ static void DisplayMapItemWithDensity(
 	char s[10];
 	sprintf(s, "%d", mod->Density);
 	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
-}
-
-void DisplayFlag(
-	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted)
-{
-	UNUSED(g);
-	color_t labelMask = isHighlighted ? colorRed : colorWhite;
-	pos = FontStrMask(s, pos, labelMask);
-	pos = FontChMask(':', pos, labelMask);
-	FontStrMask(isOn ? "On" : "Off", pos, isOn ? colorPurple : colorWhite);
 }
 
 
@@ -2079,186 +2072,5 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy)
 	}
 
 	UIObjectDestroy(o);
-	return c;
-}
-
-UIObject *CreateCharEditorObjs(void)
-{
-	const int th = FontH();
-	UIObject *c;
-	UIObject *o;
-	UIObject *o2;
-	int x;
-	int y;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
-
-	// Appearance
-
-	y = 10;
-	o = UIObjectCreate(
-		UITYPE_NONE, YC_APPEARANCE, Vec2iZero(), Vec2iNew(40, th));
-
-	x = 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_FACE;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SKIN;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_HAIR;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_BODY;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_ARMS;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_LEGS;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-
-	// Character attributes
-
-	y += th;
-	UIObjectDestroy(o);
-	o = UIObjectCreate(
-		UITYPE_NONE, YC_ATTRIBUTES, Vec2iZero(), Vec2iNew(40, th));
-
-	x = 20;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SPEED;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 50;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_HEALTH;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 50;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_MOVE;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 50;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_TRACK;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip,
-		"Looking towards the player\n"
-		"Useless for friendly characters");
-	UIObjectAddChild(c, o2);
-	x += 50;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SHOOT;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 50;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_DELAY;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Frames before making another decision");
-	UIObjectAddChild(c, o2);
-
-	// Character flags
-
-	y += th;
-	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_NONE, YC_FLAGS, Vec2iZero(), Vec2iNew(40, th));
-
-	x = 5;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_ASBESTOS;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_IMMUNITY;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Immune to poison");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SEETHROUGH;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_RUNS_AWAY;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Runs away from player");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SNEAKY;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Shoots back when player shoots");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_GOOD_GUY;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SLEEPING;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Doesn't move unless seen");
-	UIObjectAddChild(c, o2);
-
-	y += th;
-	x = 5;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_PRISONER;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Doesn't move until touched");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_INVULNERABLE;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_FOLLOWER;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_PENALTY;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Large score penalty when shot");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_VICTIM;
-	o2->Pos = Vec2iNew(x, y);
-	CSTRDUP(o2->Tooltip, "Takes damage from everyone");
-	UIObjectAddChild(c, o2);
-	x += 45;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_AWAKE;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-
-	// Weapon
-
-	y += th;
-	UIObjectDestroy(o);
-	o = UIObjectCreate(
-		UITYPE_NONE, YC_WEAPON, Vec2iNew(50, y), Vec2iNew(210, th));
-	UIObjectAddChild(c, o);
-
 	return c;
 }

@@ -68,7 +68,8 @@
 #include <cdogs/pic_manager.h>
 #include <cdogs/utils.h>
 
-#include "editor_ui.h"
+#include "editor_ui_chared.h"
+#include "editor_ui_common.h"
 #include "ui_object.h"
 
 
@@ -147,59 +148,46 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		y += FontH();
 
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(5, y), "Asbestos",
-			    (b->flags & FLAGS_ASBESTOS) != 0,
-			    yc == YC_FLAGS && xc == XC_ASBESTOS);
+			Vec2iNew(5, y), "Asbestos", (b->flags & FLAGS_ASBESTOS) != 0,
+			yc == YC_FLAGS && xc == XC_ASBESTOS);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(50, y), "Immunity",
-			    (b->flags & FLAGS_IMMUNITY) != 0,
-			    yc == YC_FLAGS && xc == XC_IMMUNITY);
+			Vec2iNew(50, y), "Immunity", (b->flags & FLAGS_IMMUNITY) != 0,
+			yc == YC_FLAGS && xc == XC_IMMUNITY);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(95, y), "C-thru",
-			    (b->flags & FLAGS_SEETHROUGH) != 0,
-			    yc == YC_FLAGS && xc == XC_SEETHROUGH);
+			Vec2iNew(95, y), "C-thru", (b->flags & FLAGS_SEETHROUGH) != 0,
+			yc == YC_FLAGS && xc == XC_SEETHROUGH);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(140, y), "Run-away",
-			    (b->flags & FLAGS_RUNS_AWAY) != 0,
-			    yc == YC_FLAGS && xc == XC_RUNS_AWAY);
+			Vec2iNew(140, y), "Run-away", (b->flags & FLAGS_RUNS_AWAY) != 0,
+			yc == YC_FLAGS && xc == XC_RUNS_AWAY);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(185, y), "Sneaky",
-			    (b->flags & FLAGS_SNEAKY) != 0, yc == YC_FLAGS
-			    && xc == XC_SNEAKY);
+			Vec2iNew(185, y), "Sneaky", (b->flags & FLAGS_SNEAKY) != 0,
+			yc == YC_FLAGS && xc == XC_SNEAKY);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(230, y), "Good guy",
-			    (b->flags & FLAGS_GOOD_GUY) != 0,
-			    yc == YC_FLAGS && xc == XC_GOOD_GUY);
+			Vec2iNew(230, y), "Good guy", (b->flags & FLAGS_GOOD_GUY) != 0,
+			yc == YC_FLAGS && xc == XC_GOOD_GUY);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(275, y), "Asleep",
-			    (b->flags & FLAGS_SLEEPALWAYS) != 0,
-			    yc == YC_FLAGS && xc == XC_SLEEPING);
+			Vec2iNew(275, y), "Asleep", (b->flags & FLAGS_SLEEPALWAYS) != 0,
+			yc == YC_FLAGS && xc == XC_SLEEPING);
 		y += FontH();
 
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(5, y), "Prisoner",
-			    (b->flags & FLAGS_PRISONER) != 0,
-			    yc == YC_FLAGS && xc == XC_PRISONER);
+			Vec2iNew(5, y), "Prisoner", (b->flags & FLAGS_PRISONER) != 0,
+			yc == YC_FLAGS && xc == XC_PRISONER);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(50, y), "Invuln.",
-			    (b->flags & FLAGS_INVULNERABLE) != 0,
-			    yc == YC_FLAGS && xc == XC_INVULNERABLE);
+			Vec2iNew(50, y), "Invuln.", (b->flags & FLAGS_INVULNERABLE) != 0,
+			yc == YC_FLAGS && xc == XC_INVULNERABLE);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(95, y), "Follower",
-			    (b->flags & FLAGS_FOLLOWER) != 0,
-			    yc == YC_FLAGS && xc == XC_FOLLOWER);
+			Vec2iNew(95, y), "Follower", (b->flags & FLAGS_FOLLOWER) != 0,
+			yc == YC_FLAGS && xc == XC_FOLLOWER);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(140, y), "Penalty",
-			    (b->flags & FLAGS_PENALTY) != 0,
-			    yc == YC_FLAGS && xc == XC_PENALTY);
+			Vec2iNew(140, y), "Penalty", (b->flags & FLAGS_PENALTY) != 0,
+			yc == YC_FLAGS && xc == XC_PENALTY);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(185, y), "Victim",
-			    (b->flags & FLAGS_VICTIM) != 0,
-				yc == YC_FLAGS && xc == XC_VICTIM);
+			Vec2iNew(185, y), "Victim", (b->flags & FLAGS_VICTIM) != 0,
+			yc == YC_FLAGS && xc == XC_VICTIM);
 		DisplayFlag(
-			&gGraphicsDevice, Vec2iNew(230, y), "Awake",
-			    (b->flags & FLAGS_AWAKEALWAYS) != 0,
-			    yc == YC_FLAGS && xc == XC_AWAKE);
+			Vec2iNew(230, y), "Awake", (b->flags & FLAGS_AWAKEALWAYS) != 0,
+			yc == YC_FLAGS && xc == XC_AWAKE);
 		y += FontH();
 
 		DisplayCDogsText(50, y, b->Gun->name, yc == YC_WEAPON);

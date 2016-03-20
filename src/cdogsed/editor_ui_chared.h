@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2013-2014 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,33 +27,39 @@
 */
 #pragma once
 
-#include <cdogs/campaigns.h>
-#include <cdogs/map_object.h>
-#include <cdogs/vector.h>
-
-#include "editor_brush.h"
 #include "ui_object.h"
 
-typedef struct
-{
-	EditorBrush *Brush;
-	int ItemIndex;
-	int Index2;
-} IndexedEditorBrush;
-typedef struct
-{
-	IndexedEditorBrush Brush;
-	CampaignOptions *Campaign;
-} EditorBrushAndCampaign;
+#define YC_APPEARANCE 0
+#define YC_ATTRIBUTES 1
+#define YC_FLAGS      2
+#define YC_WEAPON     3
 
-void DisplayMapItem(const Vec2i pos, const MapObject *mo);
-void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+#define XC_FACE       0
+#define XC_SKIN       1
+#define XC_HAIR       2
+#define XC_BODY       3
+#define XC_ARMS       4
+#define XC_LEGS       5
 
-void InsertMission(CampaignOptions *co, Mission *mission, int idx);
-void DeleteMission(CampaignOptions *co);
+#define XC_SPEED      0
+#define XC_HEALTH     1
+#define XC_MOVE       2
+#define XC_TRACK      3
+#define XC_SHOOT      4
+#define XC_DELAY      5
 
-bool ConfirmScreen(const char *info, const char *msg);
-void ClearScreen(GraphicsDevice *g);
+#define XC_ASBESTOS      0
+#define XC_IMMUNITY      1
+#define XC_SEETHROUGH    2
+#define XC_RUNS_AWAY     3
+#define XC_SNEAKY        4
+#define XC_GOOD_GUY      5
+#define XC_SLEEPING      6
+#define XC_PRISONER      7
+#define XC_INVULNERABLE  8
+#define XC_FOLLOWER      9
+#define XC_PENALTY       10
+#define XC_VICTIM        11
+#define XC_AWAKE         12
 
-void DisplayFlag(
-	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
+UIObject *CreateCharEditorObjs(void);

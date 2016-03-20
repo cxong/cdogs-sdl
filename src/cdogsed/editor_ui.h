@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EDITOR_UI
-#define __EDITOR_UI
+#pragma once
 
 #include "ui_object.h"
 
@@ -91,45 +90,4 @@
 #define XC_FLAGS            4
 
 
-#define YC_APPEARANCE 0
-#define YC_ATTRIBUTES 1
-#define YC_FLAGS      2
-#define YC_WEAPON     3
-
-#define XC_FACE       0
-#define XC_SKIN       1
-#define XC_HAIR       2
-#define XC_BODY       3
-#define XC_ARMS       4
-#define XC_LEGS       5
-
-#define XC_SPEED      0
-#define XC_HEALTH     1
-#define XC_MOVE       2
-#define XC_TRACK      3
-#define XC_SHOOT      4
-#define XC_DELAY      5
-
-#define XC_ASBESTOS      0
-#define XC_IMMUNITY      1
-#define XC_SEETHROUGH    2
-#define XC_RUNS_AWAY     3
-#define XC_SNEAKY        4
-#define XC_GOOD_GUY      5
-#define XC_SLEEPING      6
-#define XC_PRISONER      7
-#define XC_INVULNERABLE  8
-#define XC_FOLLOWER      9
-#define XC_PENALTY       10
-#define XC_VICTIM        11
-#define XC_AWAKE         12
-
-
-void DisplayFlag(
-	GraphicsDevice *g, Vec2i pos, const char *s, int isOn, int isHighlighted);
-
 UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size);
-
-UIObject *CreateCharEditorObjs(void);
-
-#endif
