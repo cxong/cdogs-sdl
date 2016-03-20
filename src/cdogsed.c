@@ -1173,11 +1173,16 @@ static HandleInputResult HandleInput(
 	if (gEventHandlers.HasQuit)
 	{
 		hasQuit = true;
+		// Don't let the program quit yet; wait for confirmation screen
+		gEventHandlers.HasQuit = false;
 	}
-	if (hasQuit && (!fileChanged || ConfirmScreen(
-		"File has been modified, but not saved", "Quit anyway? (Y/N)")))
+	if (hasQuit)
 	{
-		result.Done = true;
+		// Make sure we redraw so if the user has cancelled the quit confirm
+		// the editor reappears
+		result.Redraw = true;
+		result.Done = !fileChanged || ConfirmScreen(
+			"File has been modified, but not saved", "Quit anyway? (Y/N)");
 	}
 	if (!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) &&
 		!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT))
