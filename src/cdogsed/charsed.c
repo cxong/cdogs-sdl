@@ -644,6 +644,11 @@ void EditCharacters(CampaignSetting *setting)
 	while (!done)
 	{
 		EventPoll(&gEventHandlers, SDL_GetTicks());
+		if (gEventHandlers.HasQuit)
+		{
+			done = true;
+			break;
+		}
 		SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 		const int m = MouseGetPressed(&gEventHandlers.mouse);
 		if (m)
