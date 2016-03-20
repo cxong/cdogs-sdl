@@ -437,26 +437,22 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 			c.r = c.g = c.b = value;
 			c.a = 254;
 		}
-		else if (old->data[i] >= ARMS_START &&
-			old->data[i] <= ARMS_END)
+		else if (old->data[i] >= ARMS_START && old->data[i] <= ARMS_END)
 		{
 			c.r = c.g = c.b = value;
 			c.a = 253;
 		}
-		else if (old->data[i] >= BODY_START &&
-			old->data[i] <= BODY_END)
+		else if (old->data[i] >= BODY_START && old->data[i] <= BODY_END)
 		{
 			c.r = c.g = c.b = value;
 			c.a = 252;
 		}
-		else if (old->data[i] >= LEGS_START &&
-			old->data[i] <= LEGS_END)
+		else if (old->data[i] >= LEGS_START && old->data[i] <= LEGS_END)
 		{
 			c.r = c.g = c.b = value;
 			c.a = 251;
 		}
-		else if (old->data[i] >= HAIR_START &&
-			old->data[i] <= HAIR_END)
+		else if (old->data[i] >= HAIR_START && old->data[i] <= HAIR_END)
 		{
 			c.r = c.g = c.b = value;
 			c.a = 250;

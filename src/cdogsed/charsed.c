@@ -102,7 +102,6 @@ static void DisplayCDogsText(int x, int y, const char *text, int hilite)
 
 static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 {
-	int x, y = 10;
 	char s[50];
 	int i;
 	UIObject *o;
@@ -117,15 +116,22 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 
 	if (idx >= 0 && idx < (int)setting->characters.OtherChars.size)
 	{
-		const Character *b = CArrayGet(&setting->characters.OtherChars, idx);
-		DisplayCDogsText(30, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
-		DisplayCDogsText(60, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
-		DisplayCDogsText(90, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
-		DisplayCDogsText(120, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
-		DisplayCDogsText(150, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
-		DisplayCDogsText(180, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
+		int x = 40;
+		int y = 10;
+		DisplayCDogsText(x, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
+		x += 30;
+		DisplayCDogsText(x, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
+		x += 30;
+		DisplayCDogsText(x, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
+		x += 30;
+		DisplayCDogsText(x, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
+		x += 30;
+		DisplayCDogsText(x, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
+		x += 30;
+		DisplayCDogsText(x, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
 		y += FontH();
 
+		const Character *b = CArrayGet(&setting->characters.OtherChars, idx);
 		sprintf(s, "Speed: %d%%", (100 * b->speed) / 256);
 		DisplayCDogsText(20, y, s, yc == YC_ATTRIBUTES && xc == XC_SPEED);
 		sprintf(s, "Hp: %d", b->maxHealth);
