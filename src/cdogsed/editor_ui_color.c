@@ -88,8 +88,8 @@ static void MissionChangeColor(void *data, int d)
 		break;
 	}
 }
-#define SWATCH_SIZE() Vec2iNew(8, 8)
-#define SWATCH_PAD() Vec2iNew(4, 4)
+#define SWATCH_SIZE() Vec2iNew(6, 6)
+#define SWATCH_PAD() Vec2iNew(2, 2)
 static void DrawSwatch(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	UNUSED(o);
@@ -141,15 +141,14 @@ static UIObject *CreateSelectColorObjs(
 	o->ChangeFunc = MissionChangeColor;
 	o->u.CustomDrawFunc = DrawSwatch;
 	Vec2i v = Vec2iZero();
-	// Create 64-colour palette
+	// Create palette
 	// 4 levels for R, G and B
-#define PALETTE_SIZE 64
 #define WIDTH 16
 #define MIN_VALUE 32
 #define INCREMENT 32
 #define MAX_VALUE (INCREMENT * 4)
 	color_t colour = { MIN_VALUE, MIN_VALUE, MIN_VALUE, 255 };
-	for (int i = 0; i < PALETTE_SIZE; i++)
+	for (int i = 0; ; i++)
 	{
 		UIObject *o2 = UIObjectCopy(o);
 		o2->IsDynamicData = true;
@@ -157,6 +156,14 @@ static UIObject *CreateSelectColorObjs(
 		((MissionColorData *)o2->Data)->C = co;
 		((MissionColorData *)o2->Data)->Type = type;
 		((MissionColorData *)o2->Data)->Color = colour;
+		o2->Pos = v;
+		UIObjectAddChild(c, o2);
+		v.x += o->Size.x;
+		if (((i + 1) % WIDTH) == 0)
+		{
+			v.x = 0;
+			v.y += o->Size.y;
+		}
 		// Get next colour: increment B first, then R, then G
 		colour.b += INCREMENT;
 		if (colour.b > MAX_VALUE)
@@ -167,15 +174,11 @@ static UIObject *CreateSelectColorObjs(
 			{
 				colour.r = MIN_VALUE;
 				colour.g += INCREMENT;
+				if (colour.g > MAX_VALUE)
+				{
+					break;
+				}
 			}
-		}
-		o2->Pos = v;
-		UIObjectAddChild(c, o2);
-		v.x += o->Size.x;
-		if (((i + 1) % WIDTH) == 0)
-		{
-			v.x = 0;
-			v.y += o->Size.y;
 		}
 	}
 
