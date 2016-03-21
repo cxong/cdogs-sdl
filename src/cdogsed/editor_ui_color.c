@@ -33,11 +33,11 @@
 #include "editor_ui.h"
 
 
-#define SWATCH_SIZE() Vec2iNew(6, 6)
-#define SWATCH_PAD() Vec2iNew(2, 2)
 typedef struct
 {
 	color_t Color;
+	Vec2i SwatchSize;
+	Vec2i SwatchPad;
 	void *Data;
 	ColorPickerChangeFunc ChangeFunc;
 } ColorPickerData;
@@ -45,56 +45,69 @@ static void ColorPickerChange(void *data, int d);
 static void ColorPickerDrawSwatch(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
 UIObject *CreateColorPicker(
-	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc)
+	const Vec2i pos,
+	const uint8_t increment, const int levels, const int stride,
+	const Vec2i swatchSize, const Vec2i swatchPad,
+	void *data, ColorPickerChangeFunc changeFunc)
 {
+	CASSERT(increment * levels <= 255, "too many levels for colour picker");
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 	c->IsDynamicData = true;
 	c->Data = data;
 
 	// Create 4x4 colour squares
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(SWATCH_SIZE(), SWATCH_PAD()));
+		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(swatchSize, swatchPad));
 	o->ChangeFunc = ColorPickerChange;
 	o->u.CustomDrawFunc = ColorPickerDrawSwatch;
 	Vec2i v = Vec2iZero();
 	// Create palette
-	// 4 levels for R, G and B
-#define WIDTH 16
-#define MIN_VALUE 32
-#define INCREMENT 32
-#define MAX_VALUE (INCREMENT * 4)
-	color_t colour = { MIN_VALUE, MIN_VALUE, MIN_VALUE, 255 };
+	const uint8_t minValue = (uint8_t)increment;
+	const uint8_t maxValue = (uint8_t)(increment * levels);
+	color_t colour = colorBlack;
+	colour.r = colour.g = colour.b = minValue;
 	for (int i = 0; ; i++)
 	{
 		UIObject *o2 = UIObjectCopy(o);
 		o2->IsDynamicData = true;
 		CMALLOC(o2->Data, sizeof(ColorPickerData));
 		((ColorPickerData *)o2->Data)->Color = colour;
+		((ColorPickerData *)o2->Data)->SwatchSize = swatchSize;
+		((ColorPickerData *)o2->Data)->SwatchPad = swatchPad;
 		((ColorPickerData *)o2->Data)->Data = data;
 		((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
 		o2->Pos = v;
 		UIObjectAddChild(c, o2);
 		v.x += o->Size.x;
-		if (((i + 1) % WIDTH) == 0)
+		if (((i + 1) % stride) == 0)
 		{
 			v.x = 0;
 			v.y += o->Size.y;
 		}
 		// Get next colour: increment B first, then R, then G
-		colour.b += INCREMENT;
-		if (colour.b > MAX_VALUE)
+		if (colour.b >= maxValue)
 		{
-			colour.b = MIN_VALUE;
-			colour.r += INCREMENT;
-			if (colour.r > MAX_VALUE)
+			colour.b = minValue;
+			if (colour.r >= maxValue)
 			{
-				colour.r = MIN_VALUE;
-				colour.g += INCREMENT;
-				if (colour.g > MAX_VALUE)
+				colour.r = minValue;
+				if (colour.g >= maxValue)
 				{
 					break;
 				}
+				else
+				{
+					colour.g += (uint8_t)increment;
+				}
 			}
+			else
+			{
+				colour.r += (uint8_t)increment;
+			}
+		}
+		else
+		{
+			colour.b += (uint8_t)increment;
 		}
 	}
 
@@ -114,8 +127,8 @@ static void ColorPickerDrawSwatch(
 	const ColorPickerData *cpd = data;
 	DrawRectangle(
 		g,
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(SWATCH_PAD(), 2)),
-		SWATCH_SIZE(),
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(cpd->SwatchPad, 2)),
+		cpd->SwatchSize,
 		cpd->Color,
 		0);
 }
@@ -158,8 +171,9 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 		CMALLOC(mcd, sizeof *mcd);
 		mcd->C = co;
 		mcd->Type = (MissionColorType)i;
-		UIObjectAddChild(
-			o2, CreateColorPicker(Vec2iZero(), mcd, MissionColorChange));
+		UIObjectAddChild(o2, CreateColorPicker(
+			Vec2iZero(), 32, 4, 16, Vec2iNew(6, 6), Vec2iNew(2, 2),
+			mcd, MissionColorChange));
 		UIObjectAddChild(c, o2);
 		pos.y += th;
 	}
