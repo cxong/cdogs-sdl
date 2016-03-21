@@ -77,7 +77,9 @@ int fileChanged = 0;
 extern void *myScreen;
 
 
-UIObject *sCharEditorObjs;
+static UIObject *sCharEditorObjs;
+static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
+static UIObject *sLastHighlightedObj = NULL;
 
 
 static int PosToCharacterIndex(Vec2i pos, int *idx)
@@ -120,16 +122,6 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		int x = 40;
 		int y = 10;
 		DisplayCDogsText(x, y, "Face", yc == YC_APPEARANCE && xc == XC_FACE);
-		x += 30;
-		DisplayCDogsText(x, y, "Skin", yc == YC_APPEARANCE && xc == XC_SKIN);
-		x += 30;
-		DisplayCDogsText(x, y, "Hair", yc == YC_APPEARANCE && xc == XC_HAIR);
-		x += 30;
-		DisplayCDogsText(x, y, "Body", yc == YC_APPEARANCE && xc == XC_BODY);
-		x += 30;
-		DisplayCDogsText(x, y, "Arms", yc == YC_APPEARANCE && xc == XC_ARMS);
-		x += 30;
-		DisplayCDogsText(x, y, "Legs", yc == YC_APPEARANCE && xc == XC_LEGS);
 		y += FontH();
 
 		const Character *b = CArrayGet(&setting->characters.OtherChars, idx);
@@ -206,6 +198,10 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 		CA_FOREACH_END()
 	}
 
+	UIObjectDraw(
+		sCharEditorObjs, &gGraphicsDevice, Vec2iZero(),
+		gEventHandlers.mouse.currentPos, &sDrawObjs);
+
 	if (UITryGetObject(sCharEditorObjs, gEventHandlers.mouse.currentPos, &o) &&
 		o->Tooltip)
 	{
@@ -218,53 +214,25 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 }
 
 static const GunDescription *GetNextGun(const GunDescription *g, const int d);
-static void Change(
-	CharacterStore *store,
+static bool Change(
+	UIObject *o, CharacterStore *store,
 	int idx,
 	int yc, int xc,
 	int d)
 {
-	Character *b;
-
 	if (idx < 0 || idx >= (int)store->OtherChars.size)
 	{
-		return;
+		return false;
 	}
 
-	b = CArrayGet(&store->OtherChars, idx);
+	Character *b = CArrayGet(&store->OtherChars, idx);
 	switch (yc)
 	{
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
 			b->Face = CLAMP_OPPOSITE(b->Face + d, 0, FACE_COUNT - 1);
-			break;
-
-			// TODO: colour pickers
-		case XC_SKIN:
-			b->Colors.Skin.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Skin.r + d * 20, 0, 255);
-			b->Colors.Skin.g = b->Colors.Skin.b = b->Colors.Skin.r;
-			break;
-
-		case XC_HAIR:
-			b->Colors.Hair.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Hair.r + d * 20, 0, 255);
-			b->Colors.Hair.g = b->Colors.Hair.b = b->Colors.Hair.r;
-			break;
-
-		case XC_BODY:
-			b->Colors.Body.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Body.r + d * 20, 0, 255);
-			b->Colors.Body.g = b->Colors.Body.b = b->Colors.Body.r;
-			break;
-
-		case XC_ARMS:
-			b->Colors.Arms.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Arms.r + d * 20, 0, 255);
-			b->Colors.Arms.g = b->Colors.Arms.b = b->Colors.Arms.r;
-			break;
-
-		case XC_LEGS:
-			b->Colors.Legs.r = (uint8_t)CLAMP_OPPOSITE((int)b->Colors.Legs.r + d * 20, 0, 255);
-			b->Colors.Legs.g = b->Colors.Legs.b = b->Colors.Legs.r;
-			break;
+			return true;
 		}
 		break;
 
@@ -272,30 +240,30 @@ static void Change(
 		switch (xc) {
 		case XC_SPEED:
 			b->speed = CLAMP(b->speed + d * 64, 0, 512);
-			break;
+			return true;
 
 		case XC_HEALTH:
 			b->maxHealth = CLAMP(b->maxHealth + d * 10, 10, 500);
-			break;
+			return true;
 
 		case XC_MOVE:
 			b->bot->probabilityToMove =
 				CLAMP(b->bot->probabilityToMove + d * 5, 0, 100);
-			break;
+			return true;
 
 		case XC_TRACK:
 			b->bot->probabilityToTrack =
 				CLAMP(b->bot->probabilityToTrack + d * 5, 0, 100);
-			break;
+			return true;
 
 		case XC_SHOOT:
 			b->bot->probabilityToShoot =
 				CLAMP(b->bot->probabilityToShoot + d * 5, 0, 100);
-			break;
+			return true;
 
 		case XC_DELAY:
 			b->bot->actionDelay = CLAMP(b->bot->actionDelay + d, 0, 50);
-			break;
+			return true;
 		}
 		break;
 
@@ -303,62 +271,68 @@ static void Change(
 		switch (xc) {
 		case XC_ASBESTOS:
 			b->flags ^= FLAGS_ASBESTOS;
-			break;
+			return true;
 
 		case XC_IMMUNITY:
 			b->flags ^= FLAGS_IMMUNITY;
-			break;
+			return true;
 
 		case XC_SEETHROUGH:
 			b->flags ^= FLAGS_SEETHROUGH;
-			break;
+			return true;
 
 		case XC_RUNS_AWAY:
 			b->flags ^= FLAGS_RUNS_AWAY;
-			break;
+			return true;
 
 		case XC_SNEAKY:
 			b->flags ^= FLAGS_SNEAKY;
-			break;
+			return true;
 
 		case XC_GOOD_GUY:
 			b->flags ^= FLAGS_GOOD_GUY;
-			break;
+			return true;
 
 		case XC_SLEEPING:
 			b->flags ^= FLAGS_SLEEPALWAYS;
-			break;
+			return true;
 
 		case XC_PRISONER:
 			b->flags ^= FLAGS_PRISONER;
-			break;
+			return true;
 
 		case XC_INVULNERABLE:
 			b->flags ^= FLAGS_INVULNERABLE;
-			break;
+			return true;
 
 		case XC_FOLLOWER:
 			b->flags ^= FLAGS_FOLLOWER;
-			break;
+			return true;
 
 		case XC_PENALTY:
 			b->flags ^= FLAGS_PENALTY;
-			break;
+			return true;
 
 		case XC_VICTIM:
 			b->flags ^= FLAGS_VICTIM;
-			break;
+			return true;
 
 		case XC_AWAKE:
 			b->flags ^= FLAGS_AWAKEALWAYS;
-			break;
+			return true;
 		}
 		break;
 
 	case YC_WEAPON:
 		b->Gun = GetNextGun(b->Gun, d);
-		break;
+		return true;
 	}
+
+	if (o)
+	{
+		return UIObjectChange(o, d);
+	}
+	return false;
 }
 // Look in both built-in guns and custom guns for the next gun
 static const GunDescription *GetNextGun(const GunDescription *g, const int d)
@@ -454,11 +428,8 @@ static void AdjustYC(int *yc)
 
 static void AdjustXC(int yc, int *xc)
 {
-	switch (yc) {
-	case YC_APPEARANCE:
-		*xc = CLAMP_OPPOSITE(*xc, 0, XC_LEGS);
-		break;
-
+	switch (yc)
+	{
 	case YC_ATTRIBUTES:
 		*xc = CLAMP_OPPOSITE(*xc, 0, XC_DELAY);
 		break;
@@ -469,40 +440,68 @@ static void AdjustXC(int yc, int *xc)
 	}
 }
 
-void RestoreBkg(int x, int y, unsigned int *bkg)
-{
-	PicPaletted *bgPic = PicManagerGetOldPic(&gPicManager, 145);
-	int w = bgPic->w;
-	int h = bgPic->h;
-	int xMax = x + w - 1;
-	int yMax = y + h - 1;
-	int i;
-	int offset;
-	unsigned int *dstBase = (unsigned int *) 0xA0000;
-
-	if (xMax > 319)
-		xMax = 319;
-	if (yMax > 199)
-		yMax = 199;
-
-	x = x / 4;
-	w = (xMax / 4) - x + 1;
-
-	while (y <= yMax) {
-		offset = y * 80 + x;
-		i = w;
-		while (i--) {
-			*(dstBase + offset) = *(bkg + offset);
-			offset++;
-		}
-		y++;
-	}
-}
-
 static void HandleInput(
-	const SDL_Scancode sc, int *xc, int *yc,
+	int *xc, int *yc, int *xcOld, int *ycOld,
 	int *idx, CharacterStore *store, Character *scrap, int *done)
 {
+	UIObject *o = NULL;
+	SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
+	const int m = MouseGetPressed(&gEventHandlers.mouse);
+	if (m)
+	{
+		int charIdx;
+		*xcOld = *xc;
+		*ycOld = *yc;
+		// Only change selection on left/right click
+		if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
+			PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
+		{
+			if (charIdx >= 0 &&
+				charIdx < (int)store->OtherChars.size)
+			{
+				*idx = charIdx;
+			}
+		}
+		else if (UITryGetObject(
+			sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
+		{
+			if (!o->DoNotHighlight)
+			{
+				if (sLastHighlightedObj)
+				{
+					UIObjectUnhighlight(sLastHighlightedObj);
+				}
+				sLastHighlightedObj = o;
+				UIObjectHighlight(o);
+			}
+			CArrayTerminate(&sDrawObjs);
+			bool isSameSelection;
+			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+			{
+				*yc = o->Id;
+				*xc = o->Id2;
+				if (o->Id >= 0)
+				{
+					AdjustYC(yc);
+					if (o->Id2 >= 0)
+					{
+						AdjustXC(*yc, xc);
+					}
+				}
+			}
+			isSameSelection = *xc == *xcOld && *yc == *ycOld;
+			if (m == SDL_BUTTON_LEFT ||
+				(MouseWheel(&gEventHandlers.mouse).y > 0 && isSameSelection))
+			{
+				sc = SDL_SCANCODE_PAGEUP;
+			}
+			else if (m == SDL_BUTTON_RIGHT ||
+				(MouseWheel(&gEventHandlers.mouse).y < 0 && isSameSelection))
+			{
+				sc = SDL_SCANCODE_PAGEDOWN;
+			}
+		}
+	}
 	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
 	{
 		const SDL_Keycode kc = SDL_GetKeyFromScancode(sc);
@@ -596,13 +595,11 @@ static void HandleInput(
 			break;
 
 		case SDL_SCANCODE_PAGEUP:
-			Change(store, *idx, *yc, *xc, 1);
-			fileChanged = 1;
+			fileChanged = Change(o, store, *idx, *yc, *xc, 1);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
-			Change(store, *idx, *yc, *xc, -1);
-			fileChanged = 1;
+			fileChanged = Change(o, store, *idx, *yc, *xc, -1);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:
@@ -627,7 +624,8 @@ void EditCharacters(CampaignSetting *setting)
 	memset(&scrap, 0, sizeof(scrap));
 
 	// Initialise UI elements
-	sCharEditorObjs = CreateCharEditorObjs();
+	sCharEditorObjs = CreateCharEditorObjs(&idx, &setting->characters);
+	memset(&sDrawObjs, 0, sizeof sDrawObjs);
 
 	while (!done)
 	{
@@ -637,55 +635,15 @@ void EditCharacters(CampaignSetting *setting)
 			done = true;
 			break;
 		}
-		SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
-		const int m = MouseGetPressed(&gEventHandlers.mouse);
-		if (m)
-		{
-			UIObject *o;
-			int charIdx;
-			xcOld = xc;
-			ycOld = yc;
-			// Only change selection on left/right click
-			if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
-				PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
-			{
-				if (charIdx >= 0 &&
-					charIdx < (int)setting->characters.OtherChars.size)
-				{
-					idx = charIdx;
-				}
-			}
-			else if (UITryGetObject(
-				sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
-			{
-				int isSameSelection;
-				xcOld = xc;
-				ycOld = yc;
-				if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
-				{
-					xc = o->Id2;
-					yc = o->Id;
-					AdjustYC(&yc);
-					AdjustXC(yc, &xc);
-				}
-				isSameSelection = xc == xcOld && yc == ycOld;
-				if (m == SDL_BUTTON_LEFT ||
-					(MouseWheel(&gEventHandlers.mouse).y > 0 && isSameSelection))
-				{
-					sc = SDL_SCANCODE_PAGEUP;
-				}
-				else if (m == SDL_BUTTON_RIGHT ||
-					(MouseWheel(&gEventHandlers.mouse).y < 0 && isSameSelection))
-				{
-					sc = SDL_SCANCODE_PAGEDOWN;
-				}
-			}
-		}
 
-		HandleInput(sc, &xc, &yc, &idx, &setting->characters, &scrap, &done);
+		HandleInput(
+			&xc, &yc, &xcOld, &ycOld, &idx, &setting->characters, &scrap,
+			&done);
 		Display(setting, idx, xc, yc);
 		SDL_Delay(10);
 	}
 
 	UIObjectDestroy(sCharEditorObjs);
+	CArrayTerminate(&sDrawObjs);
+	sLastHighlightedObj = NULL;
 }

@@ -144,11 +144,11 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
 	o->ChangesData = true;
 	o->u.LabelFunc = MissionGetColorStr;
+	o->IsDynamicData = true;
 
 	for (int i = 0; i < (int)MISSION_COLOR_COUNT; i++)
 	{
 		UIObject *o2 = UIObjectCopy(o);
-		o2->IsDynamicData = true;
 		CMALLOC(o2->Data, sizeof(MissionColorData));
 		((MissionColorData *)o2->Data)->C = co;
 		((MissionColorData *)o2->Data)->Type = (MissionColorType)i;

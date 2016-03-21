@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014 Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,19 +27,17 @@
 */
 #pragma once
 
+#include <cdogs/character.h>
+
 #include "ui_object.h"
 
-#define YC_APPEARANCE 0
-#define YC_ATTRIBUTES 1
-#define YC_FLAGS      2
-#define YC_WEAPON     3
+#define YC_NONE       0
+#define YC_APPEARANCE 1
+#define YC_ATTRIBUTES 2
+#define YC_FLAGS      3
+#define YC_WEAPON     4
 
 #define XC_FACE       0
-#define XC_SKIN       1
-#define XC_HAIR       2
-#define XC_BODY       3
-#define XC_ARMS       4
-#define XC_LEGS       5
 
 #define XC_SPEED      0
 #define XC_HEALTH     1
@@ -62,4 +60,4 @@
 #define XC_VICTIM        11
 #define XC_AWAKE         12
 
-UIObject *CreateCharEditorObjs(void);
+UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars);

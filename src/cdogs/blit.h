@@ -63,7 +63,6 @@ typedef struct
 	color_t Legs;
 	color_t Hair;
 } CharColors;
-#define CHAR_COLOR_COUNT 5	// number of colours in CharColors
 
 void BlitBackground(
 	GraphicsDevice *device,

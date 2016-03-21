@@ -29,8 +29,27 @@
 
 #include <cdogs/font.h>
 
+#include "editor_ui_color.h"
 
-UIObject *CreateCharEditorObjs(void)
+
+typedef enum
+{
+	CHAR_COLOR_SKIN,
+	CHAR_COLOR_ARMS,
+	CHAR_COLOR_BODY,
+	CHAR_COLOR_LEGS,
+	CHAR_COLOR_HAIR,
+	CHAR_COLOR_COUNT
+} CharColorType;
+typedef struct
+{
+	int *CharIdx;
+	CharacterStore *Chars;
+	CharColorType Type;
+} CharColorData;
+static const char *CharGetColorStr(UIObject *o, void *data);
+static void CharColorChange(const color_t c, void *data);
+UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 {
 	const int th = FontH();
 	UIObject *c;
@@ -44,7 +63,7 @@ UIObject *CreateCharEditorObjs(void)
 
 	y = 10;
 	o = UIObjectCreate(
-		UITYPE_NONE, YC_APPEARANCE, Vec2iZero(), Vec2iNew(40, th));
+		UITYPE_NONE, YC_APPEARANCE, Vec2iZero(), Vec2iNew(35, th));
 
 	x = 30;
 	o2 = UIObjectCopy(o);
@@ -52,30 +71,33 @@ UIObject *CreateCharEditorObjs(void)
 	o2->Pos = Vec2iNew(x, y);
 	UIObjectAddChild(c, o2);
 	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_SKIN;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_HAIR;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_BODY;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_ARMS;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
-	x += 30;
-	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_LEGS;
-	o2->Pos = Vec2iNew(x, y);
-	UIObjectAddChild(c, o2);
+
+	// Create colour pickers
+	UIObject *oColour = UIObjectCreate(
+		UITYPE_LABEL, YC_NONE, Vec2iZero(), Vec2iNew(60, th));
+	oColour->ChangesData = true;
+	oColour->u.LabelFunc = CharGetColorStr;
+	oColour->IsDynamicData = true;
+	oColour->Id2 = -1;
+	for (int i = 0; i < (int)CHAR_COLOR_COUNT; i++)
+	{
+		UIObject *oc = UIObjectCopy(oColour);
+		CMALLOC(oc->Data, sizeof(CharColorData));
+		((CharColorData *)oc->Data)->CharIdx = charIdx;
+		((CharColorData *)oc->Data)->Chars = chars;
+		((CharColorData *)oc->Data)->Type = (CharColorType)i;
+		oc->Pos = Vec2iNew(x, y);
+
+		CharColorData *cd;
+		CMALLOC(cd, sizeof *cd);
+		cd->CharIdx = charIdx;
+		cd->Chars = chars;
+		cd->Type = (CharColorType)i;
+		UIObjectAddChild(
+			oc, CreateColorPicker(Vec2iZero(), cd, CharColorChange));
+		UIObjectAddChild(c, oc);
+		x += oColour->Size.x;
+	}
 
 	// Character attributes
 
@@ -209,4 +231,49 @@ UIObject *CreateCharEditorObjs(void)
 	UIObjectAddChild(c, o);
 
 	return c;
+}
+static const char *CharGetColorStr(UIObject *o, void *data)
+{
+	static char s[32];
+	UNUSED(o);
+	const CharColorData *cc = data;
+	if (*cc->CharIdx < 0 || *cc->CharIdx >= (int)cc->Chars->OtherChars.size)
+	{
+		return NULL;
+	}
+	const Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
+	static const char *colourTypeNames[] =
+	{
+		"Skin", "Arms", "Body", "Legs", "Hair"
+	};
+	char c[8];
+	switch (cc->Type)
+	{
+	case CHAR_COLOR_SKIN: ColorStr(c, ch->Colors.Skin); break;
+	case CHAR_COLOR_ARMS: ColorStr(c, ch->Colors.Arms); break;
+	case CHAR_COLOR_BODY: ColorStr(c, ch->Colors.Body); break;
+	case CHAR_COLOR_LEGS: ColorStr(c, ch->Colors.Legs); break;
+	case CHAR_COLOR_HAIR: ColorStr(c, ch->Colors.Hair); break;
+	default:
+		CASSERT(false, "Unexpected colour");
+		break;
+	}
+	sprintf(s, "%s: #%s", colourTypeNames[(int)cc->Type], c);
+	return s;
+}
+static void CharColorChange(const color_t c, void *data)
+{
+	const CharColorData *cc = data;
+	Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
+	switch (cc->Type)
+	{
+	case CHAR_COLOR_SKIN: ch->Colors.Skin = c; break;
+	case CHAR_COLOR_ARMS: ch->Colors.Arms = c; break;
+	case CHAR_COLOR_BODY: ch->Colors.Body = c; break;
+	case CHAR_COLOR_LEGS: ch->Colors.Legs = c; break;
+	case CHAR_COLOR_HAIR: ch->Colors.Hair = c; break;
+	default:
+		CASSERT(false, "Unexpected colour");
+		break;
+	}
 }
