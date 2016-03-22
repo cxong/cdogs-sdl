@@ -77,11 +77,11 @@ UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 		UITYPE_LABEL, YC_NONE, Vec2iZero(), Vec2iNew(60, th));
 	oColour->ChangesData = true;
 	oColour->u.LabelFunc = CharGetColorStr;
-	oColour->IsDynamicData = true;
 	oColour->Id2 = -1;
 	for (int i = 0; i < (int)CHAR_COLOR_COUNT; i++)
 	{
 		UIObject *oc = UIObjectCopy(oColour);
+		oc->IsDynamicData = true;
 		CMALLOC(oc->Data, sizeof(CharColorData));
 		((CharColorData *)oc->Data)->CharIdx = charIdx;
 		((CharColorData *)oc->Data)->Chars = chars;
