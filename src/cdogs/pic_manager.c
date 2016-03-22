@@ -431,7 +431,16 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 	for (int i = 0; i < pic->size.x * pic->size.y; i++)
 	{
 		color_t c = PIXEL2COLOR(pic->Data[i]);
+		// Don't bother if the alpha has already been modified; it means
+		// we have already processed this pixel
+		if (c.a != 255)
+		{
+			continue;
+		}
+		// Note: the shades for arms, body, legs are slightly less bright than
+		// the other parts, so increase their shade to compensate
 		const uint8_t value = MAX(MAX(c.r, c.g), c.b);
+		const uint8_t value2 = (uint8_t)CLAMP(value * 1.7, 0, 255);
 		if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
 		{
 			c.r = c.g = c.b = value;
@@ -439,17 +448,17 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 		}
 		else if (old->data[i] >= ARMS_START && old->data[i] <= ARMS_END)
 		{
-			c.r = c.g = c.b = value;
+			c.r = c.g = c.b = value2;
 			c.a = 253;
 		}
 		else if (old->data[i] >= BODY_START && old->data[i] <= BODY_END)
 		{
-			c.r = c.g = c.b = value;
+			c.r = c.g = c.b = value2;
 			c.a = 252;
 		}
 		else if (old->data[i] >= LEGS_START && old->data[i] <= LEGS_END)
 		{
-			c.r = c.g = c.b = value;
+			c.r = c.g = c.b = value2;
 			c.a = 251;
 		}
 		else if (old->data[i] >= HAIR_START && old->data[i] <= HAIR_END)

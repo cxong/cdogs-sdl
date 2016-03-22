@@ -78,7 +78,7 @@ color_t colorSkin = { 0xF4, 0x94, 0x4C, 255 };
 color_t colorDarkSkin = { 0x93, 0x5D, 0x37, 255 };
 color_t colorAsianSkin = { 0xFF, 0xCC, 0x99, 255 };
 
-color_t colorLightBlue = { 160, 160, 255, 255 };
+color_t colorLightBlue = { 80, 80, 160, 255 };
 
 color_t ColorMult(color_t c, color_t m)
 {

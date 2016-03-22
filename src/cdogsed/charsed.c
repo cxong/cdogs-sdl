@@ -397,9 +397,10 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 		// set up character template
 		c->Face = FACE_OGRE;
 		c->Colors.Skin = colorGreen;
-		c->Colors.Arms = colorGray;
-		c->Colors.Body = colorGray;
-		c->Colors.Legs = colorGray;
+		const color_t darkGray = {64, 64, 64, 255};
+		c->Colors.Arms = darkGray;
+		c->Colors.Body = darkGray;
+		c->Colors.Legs = darkGray;
 		c->Colors.Hair = colorBlack;
 		c->speed = 256;
 		c->Gun = StrGunDescription("Machine gun");

@@ -289,11 +289,13 @@ void ConvertCharacterColors(
 	const int skin, const int arm, const int body, const int leg,
 	const int hair, CharColors *c)
 {
-	c->Skin = PaletteToColor(cShadePalettes[skin]);
-	c->Arms = PaletteToColor(cShadePalettes[arm]);
-	c->Body = PaletteToColor(cShadePalettes[body]);
-	c->Legs = PaletteToColor(cShadePalettes[leg]);
-	c->Hair = PaletteToColor(cShadePalettes[hair]);
+	// Brighten the shades to be compatible with new system
+	const HSV tint = {-1.0, 1.0, 1.7};
+	c->Skin = ColorTint(PaletteToColor(cShadePalettes[skin]), tint);
+	c->Arms = ColorTint(PaletteToColor(cShadePalettes[arm]), tint);
+	c->Body = ColorTint(PaletteToColor(cShadePalettes[body]), tint);
+	c->Legs = ColorTint(PaletteToColor(cShadePalettes[leg]), tint);
+	c->Hair = ColorTint(PaletteToColor(cShadePalettes[hair]), tint);
 }
 
 void load_character(FILE *f, TBadGuy *b)
