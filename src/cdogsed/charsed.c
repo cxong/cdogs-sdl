@@ -453,17 +453,7 @@ static void HandleInput(
 		int charIdx;
 		*xcOld = *xc;
 		*ycOld = *yc;
-		// Only change selection on left/right click
-		if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
-			PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
-		{
-			if (charIdx >= 0 &&
-				charIdx < (int)store->OtherChars.size)
-			{
-				*idx = charIdx;
-			}
-		}
-		else if (UITryGetObject(
+		if (UITryGetObject(
 			sCharEditorObjs, gEventHandlers.mouse.currentPos, &o))
 		{
 			if (!o->DoNotHighlight)
@@ -500,6 +490,16 @@ static void HandleInput(
 				(MouseWheel(&gEventHandlers.mouse).y < 0 && isSameSelection))
 			{
 				sc = SDL_SCANCODE_PAGEDOWN;
+			}
+		}
+		else if ((m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT) &&
+			PosToCharacterIndex(gEventHandlers.mouse.currentPos, &charIdx))
+		{
+			// Only change selection on left/right click
+			if (charIdx >= 0 &&
+				charIdx < (int)store->OtherChars.size)
+			{
+				*idx = charIdx;
 			}
 		}
 	}
