@@ -34,9 +34,6 @@
 
 typedef void (*ColorPickerChangeFunc)(const color_t c, void *data);
 UIObject *CreateColorPicker(
-	const Vec2i pos,
-	const uint8_t increment, const int levels, const int stride,
-	const Vec2i swatchSize, const Vec2i swatchPad,
-	void *data, ColorPickerChangeFunc changeFunc);
+	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc);
 
 Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos);

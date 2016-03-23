@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __VECTOR
-#define __VECTOR
+#pragma once
 
 #include "utils.h"
 
@@ -41,6 +40,8 @@ Vec2i Vec2iZero(void);
 Vec2i Vec2iUnit(void);	// (1, 1)
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iMinus(Vec2i a, Vec2i b);
+// Multiply the components of two Vec2is together
+Vec2i Vec2iMult(const Vec2i a, const Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 // TODO: due to rounding, this will always return unit component vectors
@@ -74,5 +75,3 @@ typedef struct
 	Vec2i Pos;
 	Vec2i Size;
 } Rect2i;
-
-#endif

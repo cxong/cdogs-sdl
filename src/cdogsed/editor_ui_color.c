@@ -44,70 +44,43 @@ typedef struct
 static void ColorPickerChange(void *data, int d);
 static void ColorPickerDrawSwatch(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+// Create a colour picker using the C-Dogs palette
 UIObject *CreateColorPicker(
-	const Vec2i pos,
-	const uint8_t increment, const int levels, const int stride,
-	const Vec2i swatchSize, const Vec2i swatchPad,
-	void *data, ColorPickerChangeFunc changeFunc)
+	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc)
 {
-	CASSERT(increment * levels <= 255, "too many levels for colour picker");
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 	c->IsDynamicData = true;
 	c->Data = data;
 
-	// Create 4x4 colour squares
+	// Create colour squares from the palette
+	const Vec2i swatchSize = Vec2iNew(5, 5);
+	const Vec2i swatchPad = Vec2iNew(2, 2);
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(swatchSize, swatchPad));
 	o->ChangeFunc = ColorPickerChange;
 	o->u.CustomDrawFunc = ColorPickerDrawSwatch;
-	Vec2i v = Vec2iZero();
-	// Create palette
-	const uint8_t minValue = (uint8_t)increment;
-	const uint8_t maxValue = (uint8_t)(increment * levels);
-	color_t colour = colorBlack;
-	colour.r = colour.g = colour.b = minValue;
-	for (int i = 0; ; i++)
+	const Pic *palette = PicManagerGetPic(&gPicManager, "palette");
+	Vec2i v;
+	for (v.y = 0; v.y < palette->size.y; v.y++)
 	{
-		UIObject *o2 = UIObjectCopy(o);
-		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, sizeof(ColorPickerData));
-		((ColorPickerData *)o2->Data)->Color = colour;
-		((ColorPickerData *)o2->Data)->SwatchSize = swatchSize;
-		((ColorPickerData *)o2->Data)->SwatchPad = swatchPad;
-		((ColorPickerData *)o2->Data)->Data = data;
-		((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
-		o2->Pos = v;
-		UIObjectAddChild(c, o2);
-		v.x += o->Size.x;
-		if (((i + 1) % stride) == 0)
+		for (v.x = 0; v.x < palette->size.x; v.x++)
 		{
-			v.x = 0;
-			v.y += o->Size.y;
-		}
-		// Get next colour: increment B first, then R, then G
-		if (colour.b >= maxValue)
-		{
-			colour.b = minValue;
-			if (colour.r >= maxValue)
+			const color_t colour = PIXEL2COLOR(
+				palette->Data[v.x + v.y * palette->size.x]);
+			if (colour.a == 0)
 			{
-				colour.r = minValue;
-				if (colour.g >= maxValue)
-				{
-					break;
-				}
-				else
-				{
-					colour.g += (uint8_t)increment;
-				}
+				continue;
 			}
-			else
-			{
-				colour.r += (uint8_t)increment;
-			}
-		}
-		else
-		{
-			colour.b += (uint8_t)increment;
+			UIObject *o2 = UIObjectCopy(o);
+			o2->IsDynamicData = true;
+			CMALLOC(o2->Data, sizeof(ColorPickerData));
+			((ColorPickerData *)o2->Data)->Color = colour;
+			((ColorPickerData *)o2->Data)->SwatchSize = swatchSize;
+			((ColorPickerData *)o2->Data)->SwatchPad = swatchPad;
+			((ColorPickerData *)o2->Data)->Data = data;
+			((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
+			o2->Pos = Vec2iMult(v, o->Size);
+			UIObjectAddChild(c, o2);
 		}
 	}
 
@@ -171,9 +144,8 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 		CMALLOC(mcd, sizeof *mcd);
 		mcd->C = co;
 		mcd->Type = (MissionColorType)i;
-		UIObjectAddChild(o2, CreateColorPicker(
-			Vec2iZero(), 32, 4, 16, Vec2iNew(6, 6), Vec2iNew(2, 2),
-			mcd, MissionColorChange));
+		UIObjectAddChild(
+			o2, CreateColorPicker(Vec2iZero(), mcd, MissionColorChange));
 		UIObjectAddChild(c, o2);
 		pos.y += th;
 	}

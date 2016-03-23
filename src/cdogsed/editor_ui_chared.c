@@ -84,9 +84,8 @@ UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 		cd->CharIdx = charIdx;
 		cd->Chars = chars;
 		cd->Type = (CharColorType)i;
-		UIObjectAddChild(oc, CreateColorPicker(
-			Vec2iZero(), 31, 8, 64, Vec2iNew(3, 3), Vec2iZero(),
-			cd, CharColorChange));
+		UIObjectAddChild(
+			oc, CreateColorPicker(Vec2iZero(), cd, CharColorChange));
 		UIObjectAddChild(c, oc);
 		x += oColour->Size.x;
 	}
