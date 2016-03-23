@@ -366,9 +366,7 @@ void PlayerSelectMenusCreate(
 		"",
 		MENU_TYPE_NORMAL,
 		0);
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCustom(
+	MenuAddSubmenu(ms->root, MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
 	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));

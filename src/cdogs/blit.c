@@ -60,6 +60,22 @@
 #include "log.h"
 
 
+color_t *CharColorGetByType(CharColors *c, const CharColorType t)
+{
+	switch (t)
+	{
+	case CHAR_COLOR_SKIN: return &c->Skin;
+	case CHAR_COLOR_ARMS: return &c->Arms;
+	case CHAR_COLOR_BODY: return &c->Body;
+	case CHAR_COLOR_LEGS: return &c->Legs;
+	case CHAR_COLOR_HAIR: return &c->Hair;
+	default:
+		CASSERT(false, "Unexpected colour");
+		return &c->Skin;
+	}
+}
+
+
 void BlitPicHighlight(
 	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color)
 {

@@ -32,15 +32,6 @@
 #include "editor_ui_color.h"
 
 
-typedef enum
-{
-	CHAR_COLOR_SKIN,
-	CHAR_COLOR_ARMS,
-	CHAR_COLOR_BODY,
-	CHAR_COLOR_LEGS,
-	CHAR_COLOR_HAIR,
-	CHAR_COLOR_COUNT
-} CharColorType;
 typedef struct
 {
 	int *CharIdx;
@@ -237,28 +228,18 @@ static const char *CharGetColorStr(UIObject *o, void *data)
 {
 	static char s[32];
 	UNUSED(o);
-	const CharColorData *cc = data;
+	CharColorData *cc = data;
 	if (*cc->CharIdx < 0 || *cc->CharIdx >= (int)cc->Chars->OtherChars.size)
 	{
 		return NULL;
 	}
-	const Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
+	Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
 	static const char *colourTypeNames[] =
 	{
 		"Skin", "Arms", "Body", "Legs", "Hair"
 	};
 	char c[8];
-	switch (cc->Type)
-	{
-	case CHAR_COLOR_SKIN: ColorStr(c, ch->Colors.Skin); break;
-	case CHAR_COLOR_ARMS: ColorStr(c, ch->Colors.Arms); break;
-	case CHAR_COLOR_BODY: ColorStr(c, ch->Colors.Body); break;
-	case CHAR_COLOR_LEGS: ColorStr(c, ch->Colors.Legs); break;
-	case CHAR_COLOR_HAIR: ColorStr(c, ch->Colors.Hair); break;
-	default:
-		CASSERT(false, "Unexpected colour");
-		break;
-	}
+	ColorStr(c, *CharColorGetByType(&ch->Colors, cc->Type));
 	sprintf(s, "%s: #%s", colourTypeNames[(int)cc->Type], c);
 	return s;
 }
@@ -266,15 +247,5 @@ static void CharColorChange(const color_t c, void *data)
 {
 	const CharColorData *cc = data;
 	Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
-	switch (cc->Type)
-	{
-	case CHAR_COLOR_SKIN: ch->Colors.Skin = c; break;
-	case CHAR_COLOR_ARMS: ch->Colors.Arms = c; break;
-	case CHAR_COLOR_BODY: ch->Colors.Body = c; break;
-	case CHAR_COLOR_LEGS: ch->Colors.Legs = c; break;
-	case CHAR_COLOR_HAIR: ch->Colors.Hair = c; break;
-	default:
-		CASSERT(false, "Unexpected colour");
-		break;
-	}
+	*CharColorGetByType(&ch->Colors, cc->Type) = c;
 }

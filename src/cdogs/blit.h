@@ -63,6 +63,16 @@ typedef struct
 	color_t Legs;
 	color_t Hair;
 } CharColors;
+typedef enum
+{
+	CHAR_COLOR_SKIN,
+	CHAR_COLOR_ARMS,
+	CHAR_COLOR_BODY,
+	CHAR_COLOR_LEGS,
+	CHAR_COLOR_HAIR,
+	CHAR_COLOR_COUNT
+} CharColorType;
+color_t *CharColorGetByType(CharColors *c, const CharColorType t);
 
 void BlitBackground(
 	GraphicsDevice *device,
