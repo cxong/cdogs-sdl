@@ -31,8 +31,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <cdogs/actors.h>	// for shades
 #include <cdogs/draw.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/font.h>
 #include <cdogs/player_template.h>
 
@@ -181,33 +181,113 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 	c->Face = menu->u.normal.index;
 }
 
-// TODO: colour picker
-static void PostInputColorMenu(menu_t *menu, int cmd, void *data);
+static void DrawColorMenu(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i pos, const Vec2i size, const void *data);
+static int HandleInputColorMenu(int cmd, void *data);
 static menu_t *CreateColorMenu(
-	const char *name, AppearanceMenuData *data)
+	const char *name, ColorMenuData *data,
+	const CharColorType type, const int playerUID)
 {
-	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
-	menu->u.normal.maxItems = 11;
-	for (int i = 0; i < 5; i++)
+	data->Type = type;
+	data->PlayerUID = playerUID;
+	data->palette = PicManagerGetPic(&gPicManager, "palette");
+	// Find the closest palette colour available, and select it
+	// Use least squares method
+	int errorLowest = -1;
+	PlayerData *p = PlayerDataGetByUID(playerUID);
+	const color_t currentColour = *CharColorGetByType(&p->Char.Colors, type);
+	Vec2i v;
+	for (v.y = 0; v.y < data->palette->size.y; v.y++)
 	{
-		char buf[256];
-		sprintf(buf, "Color %d", i);
-		MenuAddSubmenu(menu, MenuCreateBack(buf));
+		for (v.x = 0; v.x < data->palette->size.x; v.x++)
+		{
+			const color_t colour = PIXEL2COLOR(
+				data->palette->Data[v.x + v.y * data->palette->size.x]);
+			if (colour.a == 0)
+			{
+				continue;
+			}
+			const int er = (int)colour.r - currentColour.r;
+			const int eg = (int)colour.g - currentColour.g;
+			const int eb = (int)colour.b - currentColour.b;
+			const int error = er*er + eg*eg + eb*eb;
+			if (errorLowest == -1 || error < errorLowest)
+			{
+				errorLowest = error;
+				data->selectedColor = v;
+			}
+		}
 	}
-	MenuSetPostInputFunc(menu, PostInputColorMenu, data);
-	return menu;
+	return MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
 }
-static void PostInputColorMenu(menu_t *menu, int cmd, void *data)
+static void DrawColorMenu(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i pos, const Vec2i size, const void *data)
 {
-	AppearanceMenuData *d = data;
-	UNUSED(cmd);
-	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-	Character *c = &p->Char;
-	// TODO: colour picker
-	color_t *prop = (color_t *)((char *)&c->Colors + d->propertyOffset);
-	prop->r = (uint8_t)(menu->u.normal.index * 0x30);
-	prop->g = (uint8_t)(menu->u.normal.index * 0x30);
-	prop->b = (uint8_t)(menu->u.normal.index * 0x30);
+	UNUSED(menu);
+	const ColorMenuData *d = data;
+	// Draw colour squares from the palette
+	const Vec2i swatchSize = Vec2iNew(4, 4);
+	const Vec2i drawPos = Vec2iNew(
+		pos.x, CENTER_Y(pos, size, d->palette->size.y * swatchSize.y));
+	Vec2i v;
+	for (v.y = 0; v.y < d->palette->size.y; v.y++)
+	{
+		for (v.x = 0; v.x < d->palette->size.x; v.x++)
+		{
+			const color_t colour = PIXEL2COLOR(
+				d->palette->Data[v.x + v.y * d->palette->size.x]);
+			if (colour.a == 0)
+			{
+				continue;
+			}
+			DrawRectangle(
+				g, Vec2iAdd(drawPos, Vec2iMult(v, swatchSize)), swatchSize,
+				colour, 0);
+		}
+	}
+	// Draw a highlight around the selected colour
+	DrawRectangle(
+		g,
+		Vec2iAdd(
+			drawPos,
+			Vec2iMinus(
+				Vec2iMult(d->selectedColor, swatchSize), Vec2iNew(1, 1))),
+		Vec2iAdd(swatchSize, Vec2iNew(2, 2)),
+		colorWhite, DRAW_FLAG_LINE);
+}
+static int HandleInputColorMenu(int cmd, void *data)
+{
+	ColorMenuData *d = data;
+	Vec2i selected = d->selectedColor;
+	switch (cmd)
+	{
+	case CMD_LEFT: selected.x--; break;
+	case CMD_RIGHT: selected.x++; break;
+	case CMD_UP: selected.y--; break;
+	case CMD_DOWN: selected.y++; break;
+	case CMD_BUTTON1:
+	case CMD_BUTTON2:	// fallthrough
+		MenuPlaySound(MENU_SOUND_ENTER);
+		return cmd;
+	default:
+		break;
+	}
+	if (selected.x >= 0 && selected.x < d->palette->size.x &&
+		selected.y >= 0 && selected.y < d->palette->size.y)
+	{
+		const color_t colour = PIXEL2COLOR(
+			d->palette->Data[selected.x + selected.y * d->palette->size.x]);
+		if (colour.a != 0)
+		{
+			d->selectedColor = selected;
+			PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+			*CharColorGetByType(&p->Char.Colors, d->Type) = colour;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	return 0;
 }
 
 static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
@@ -315,7 +395,7 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	loadMenu->isDisabled = gPlayerTemplates.size == 0;
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data);
+	const char *name, PlayerSelectMenuData *data, int *playerUID);
 static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
@@ -332,7 +412,6 @@ void PlayerSelectMenusCreate(
 	data->nameMenuSelection = (int)strlen(letters);
 	data->display.PlayerUID = playerUID;
 	data->display.currentMenu = &ms->current;
-	data->PlayerUID = playerUID;
 	data->nameGenerator = ng;
 
 	switch (numPlayers)
@@ -369,7 +448,9 @@ void PlayerSelectMenusCreate(
 	MenuAddSubmenu(ms->root, MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));
+	MenuAddSubmenu(
+		ms->root,
+		CreateCustomizeMenu("Customize...", data, &data->display.PlayerUID));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
@@ -385,7 +466,7 @@ void PlayerSelectMenusCreate(
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
 	MenuSystemAddCustomDisplay(
-		ms, MenuDisplayPlayerControls, &data->PlayerUID);
+		ms, MenuDisplayPlayerControls, &data->display.PlayerUID);
 
 	// Detect when there have been new player templates created,
 	// to re-enable the load menu
@@ -393,31 +474,27 @@ void PlayerSelectMenusCreate(
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL, false);
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data)
+	const char *name, PlayerSelectMenuData *data, int *playerUID)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
-	MenuAddSubmenu(menu, CreateFaceMenu(&data->PlayerUID));
+	MenuAddSubmenu(menu, CreateFaceMenu(playerUID));
 
-	data->skinData.PlayerUID = data->PlayerUID;
-	data->skinData.propertyOffset = offsetof(CharColors, Skin);
-	MenuAddSubmenu(menu, CreateColorMenu("Skin", &data->skinData));
-
-	data->hairData.PlayerUID = data->PlayerUID;
-	data->hairData.propertyOffset = offsetof(CharColors, Hair);
-	MenuAddSubmenu(menu, CreateColorMenu("Hair", &data->hairData));
-
-	data->armsData.PlayerUID = data->PlayerUID;
-	data->armsData.propertyOffset = offsetof(CharColors, Arms);
-	MenuAddSubmenu(menu, CreateColorMenu("Arms", &data->armsData));
-
-	data->bodyData.PlayerUID = data->PlayerUID;
-	data->bodyData.propertyOffset = offsetof(CharColors, Body);
-	MenuAddSubmenu(menu, CreateColorMenu("Body", &data->bodyData));
-
-	data->legsData.PlayerUID = data->PlayerUID;
-	data->legsData.propertyOffset = offsetof(CharColors, Legs);
-	MenuAddSubmenu(menu, CreateColorMenu("Legs", &data->legsData));
+	MenuAddSubmenu(
+		menu,
+		CreateColorMenu("Skin", &data->skinData, CHAR_COLOR_SKIN, *playerUID));
+	MenuAddSubmenu(
+		menu,
+		CreateColorMenu("Hair", &data->hairData, CHAR_COLOR_HAIR, *playerUID));
+	MenuAddSubmenu(
+		menu,
+		CreateColorMenu("Arms", &data->armsData, CHAR_COLOR_ARMS, *playerUID));
+	MenuAddSubmenu(
+		menu,
+		CreateColorMenu("Body", &data->bodyData, CHAR_COLOR_BODY, *playerUID));
+	MenuAddSubmenu(
+		menu,
+		CreateColorMenu("Legs", &data->legsData, CHAR_COLOR_LEGS, *playerUID));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));

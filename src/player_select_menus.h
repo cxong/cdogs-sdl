@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, Cong Xu
+	Copyright (c) 2013-2016, Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,20 +36,20 @@
 
 typedef struct
 {
-	unsigned long propertyOffset;
-	const char **menu;
+	CharColorType Type;
 	int PlayerUID;
-} AppearanceMenuData;
+	const Pic *palette;
+	Vec2i selectedColor;
+} ColorMenuData;
 typedef struct
 {
 	MenuDisplayPlayerData display;
-	int PlayerUID;
 	int nameMenuSelection;
-	AppearanceMenuData skinData;
-	AppearanceMenuData hairData;
-	AppearanceMenuData armsData;
-	AppearanceMenuData bodyData;
-	AppearanceMenuData legsData;
+	ColorMenuData skinData;
+	ColorMenuData hairData;
+	ColorMenuData armsData;
+	ColorMenuData bodyData;
+	ColorMenuData legsData;
 	const NameGen *nameGenerator;
 } PlayerSelectMenuData;
 typedef struct
