@@ -67,7 +67,7 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->UID = pd.UID;
 
 	strcpy(p->name, pd.Name);
-	p->Char.Face = pd.Face;
+	p->Char.Class = StrCharacterClass(pd.CharacterClass);
 	p->Char.Colors = Net2CharColors(pd.Colors);
 	p->weaponCount = pd.Weapons_count;
 	for (int i = 0; i < (int)pd.Weapons_count; i++)
@@ -130,7 +130,7 @@ NPlayerData PlayerDataDefault(const int idx)
 	{
 		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
 		strcpy(pd.Name, t->name);
-		pd.Face = t->Face;
+		strcpy(pd.CharacterClass, t->Class->Name);
 		pd.Colors = CharColors2Net(t->Colors);
 	}
 	else
@@ -139,7 +139,7 @@ NPlayerData PlayerDataDefault(const int idx)
 		{
 		case 0:
 			strcpy(pd.Name, "Jones");
-			pd.Face = FACE_JONES;
+			strcpy(pd.CharacterClass, "Jones");
 			pd.Colors.Skin = Color2Net(colorSkin);
 			pd.Colors.Arms = Color2Net(colorLightBlue);
 			pd.Colors.Body = Color2Net(colorLightBlue);
@@ -148,7 +148,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");
-			pd.Face = FACE_ICE;
+			strcpy(pd.CharacterClass, "Ice");
 			pd.Colors.Skin = Color2Net(colorDarkSkin);
 			pd.Colors.Arms = Color2Net(colorRed);
 			pd.Colors.Body = Color2Net(colorRed);
@@ -157,7 +157,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 2:
 			strcpy(pd.Name, "Warbaby");
-			pd.Face = FACE_WARBABY;
+			strcpy(pd.CharacterClass, "WarBaby");
 			pd.Colors.Skin = Color2Net(colorSkin);
 			pd.Colors.Arms = Color2Net(colorGreen);
 			pd.Colors.Body = Color2Net(colorGreen);
@@ -166,7 +166,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 3:
 			strcpy(pd.Name, "Han");
-			pd.Face = FACE_HAN;
+			strcpy(pd.CharacterClass, "Dragon");
 			pd.Colors.Skin = Color2Net(colorAsianSkin);
 			pd.Colors.Arms = Color2Net(colorYellow);
 			pd.Colors.Body = Color2Net(colorYellow);
@@ -176,7 +176,7 @@ NPlayerData PlayerDataDefault(const int idx)
 		default:
 			// Set up player N template
 			sprintf(pd.Name, "Player %d", idx);
-			pd.Face = FACE_JONES;
+			strcpy(pd.CharacterClass, "Jones");
 			pd.Colors.Skin = Color2Net(colorSkin);
 			pd.Colors.Arms = Color2Net(colorLightBlue);
 			pd.Colors.Body = Color2Net(colorLightBlue);

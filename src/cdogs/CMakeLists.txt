@@ -22,6 +22,7 @@ set(CDOGS_SOURCES
 	campaign_entry.c
 	campaigns.c
 	character.c
+	character_class.c
 	collision.c
 	color.c
 	config.c
@@ -110,6 +111,7 @@ set(CDOGS_HEADERS
 	campaign_entry.h
 	campaigns.h
 	character.h
+	character_class.h
 	collision.h
 	color.h
 	config.h

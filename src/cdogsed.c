@@ -61,6 +61,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/ammo.h>
 #include <cdogs/automap.h>
+#include <cdogs/character_class.h>
 #include <cdogs/collision.h>
 #include <cdogs/config_io.h>
 #include <cdogs/draw.h>
@@ -1361,6 +1362,8 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
 	GetDataFilePath(buf, "data/pickups.json");
+	GetDataFilePath(buf, "data/characters.json");
+	CharacterClassesInitialize(&gCharacterClasses, buf);
 	PickupClassesInit(&gPickupClasses, buf, &gAmmo, &gGunDescriptions);
 	GetDataFilePath(buf, "data/map_objects.json");
 	MapObjectsInit(&gMapObjects, buf);
@@ -1378,9 +1381,6 @@ int main(int argc, char *argv[])
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
-
-	// Not needed by editor; used as work-around for strange OSX linker error
-	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 
 	EventInit(&gEventHandlers, NULL, NULL, false);
 
@@ -1416,6 +1416,7 @@ int main(int argc, char *argv[])
 	AmmoTerminate(&gAmmo);
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);
+	CharacterClassesTerminate(&gCharacterClasses);
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);

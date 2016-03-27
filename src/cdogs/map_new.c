@@ -369,7 +369,9 @@ void LoadCharacters(
 		if (version < 7)
 		{
 			// Old version stored character looks as palette indices
-			LoadInt(&ch->Face, child, "face");
+			int face;
+			LoadInt(&face, child, "face");
+			ch->Class = IntCharacterClass(face);
 			int skin, arm, body, leg, hair;
 			LoadInt(&skin, child, "skin");
 			LoadInt(&arm, child, "arm");
@@ -380,7 +382,9 @@ void LoadCharacters(
 		}
 		else
 		{
-			LoadInt(&ch->Face, child, "Face");
+			char *tmp = GetString(child, "Face");
+			ch->Class = StrCharacterClass(tmp);
+			CFREE(tmp);
 			LoadColor(&ch->Colors.Skin, child, "Skin");
 			LoadColor(&ch->Colors.Arms, child, "Arms");
 			LoadColor(&ch->Colors.Body, child, "Body");

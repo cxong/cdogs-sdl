@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,8 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
+
+#include <json/json.h>
 
 #include "defs.h"
 #include "grafx.h"
@@ -87,6 +89,7 @@ void PicFromPicPaletted(Pic *pic, const PicPaletted *picP);
 void NamedSpritesInit(NamedSprites *ns, const char *name);
 void NamedSpritesFree(NamedSprites *ns);
 
+void CPicLoadJSON(CPic *p, json_t *node);
 void CPicUpdate(CPic *p, const int ticks);
 const Pic *CPicGetPic(const CPic *p, direction_e d);
 void CPicDraw(

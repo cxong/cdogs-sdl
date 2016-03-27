@@ -29,6 +29,7 @@
 #pragma once
 
 #include "c_array.h"
+#include "character_class.h"
 #include "weapon.h"
 
 typedef struct
@@ -41,7 +42,7 @@ typedef struct
 
 typedef struct
 {
-	int Face;
+	const CharacterClass *Class;
 	int speed;
 	const GunDescription *Gun;
 	int maxHealth;

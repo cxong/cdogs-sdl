@@ -33,6 +33,7 @@
 #include <tinydir/tinydir.h>
 
 #include "ammo.h"
+#include "character_class.h"
 #include "files.h"
 #include "json_utils.h"
 #include "log.h"
@@ -94,6 +95,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	PicManagerClearCustom(&gPicManager);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	AmmoClassesClear(&gAmmo.CustomAmmo);
+	CharacterClassesClear(&gCharacterClasses.CustomClasses);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
 	PickupClassesClear(&gPickupClasses.CustomClasses);
@@ -108,6 +110,13 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	if (root != NULL)
 	{
 		ParticleClassesLoadJSON(&gParticleClasses.CustomClasses, root);
+	}
+
+	root = ReadArchiveJSON(filename, "characters.json");
+	if (root != NULL)
+	{
+		CharacterClassesLoadJSON(
+			&gCharacterClasses.CustomClasses, root);
 	}
 
 	root = ReadArchiveJSON(filename, "bullets.json");
@@ -563,7 +572,7 @@ static json_t *SaveCharacters(CharacterStore *s)
 	json_t *charNode = json_new_array();
 	CA_FOREACH(Character, c, s->OtherChars)
 		json_t *node = json_new_object();
-		AddIntPair(node, "Face", c->Face);
+		AddStringPair(node, "Class", c->Class->Name);
 		AddColorPair(node, "Skin", c->Colors.Skin);
 		AddColorPair(node, "Arms", c->Colors.Arms);
 		AddColorPair(node, "Body", c->Colors.Body);

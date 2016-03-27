@@ -59,6 +59,7 @@
 
 #include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>
+#include <cdogs/character_class.h>
 #include <cdogs/collision.h>
 #include <cdogs/config_io.h>
 #include <cdogs/draw.h>
@@ -399,7 +400,6 @@ int main(int argc, char *argv[])
 
 	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs();
-	LoadPlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 
 	MusicPlayMenu(&gSoundDevice);
 
@@ -448,6 +448,10 @@ int main(int argc, char *argv[])
 	GetDataFilePath(buf2, "data/guns.json");
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gGunDescriptions, buf, buf2);
+	GetDataFilePath(buf, "data/characters.json");
+	CharacterClassesInitialize(&gCharacterClasses, buf);
+	LoadPlayerTemplates(
+		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
 	GetDataFilePath(buf, "data/pickups.json");
 	PickupClassesInit(&gPickupClasses, buf, &gAmmo, &gGunDescriptions);
 	GetDataFilePath(buf, "data/map_objects.json");
@@ -499,6 +503,7 @@ bail:
 	AmmoTerminate(&gAmmo);
 	WeaponTerminate(&gGunDescriptions);
 	BulletTerminate(&gBulletClasses);
+	CharacterClassesTerminate(&gCharacterClasses);
 	MissionOptionsTerminate(&gMission);
 	NetClientTerminate(&gNetClient);
 	atexit(enet_deinitialize);

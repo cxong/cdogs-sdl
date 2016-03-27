@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016 Cong Xu
+	Copyright (c) 2016 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,29 @@
 */
 #pragma once
 
-#include "character.h"
-#include "character_class.h"
+#include "cpic.h"
+#include "defs.h"
+#include "json/json.h"
+
 
 typedef struct
 {
-	char name[20];
-	const CharacterClass *Class;
-	CharColors Colors;
-} PlayerTemplate;
+	char *Name;
+	CPic IdlePics;
+	CPic *FiringPics;
+} CharacterClass;
+typedef struct
+{
+	CArray Classes;	// of CharacterClass
+	CArray CustomClasses;	// of CharacterClass
+} CharacterClasses;
+extern CharacterClasses gCharacterClasses;
 
-extern CArray gPlayerTemplates;	// of PlayerTemplate
+const CharacterClass *StrCharacterClass(const char *s);
+// Legacy character class from "face" index
+const CharacterClass *IntCharacterClass(const int face);
 
-#define PLAYER_TEMPLATE_FILE "players.cnf"
-
-void LoadPlayerTemplates(
-	CArray *templates, const CharacterClasses *classes, const char *filename);
-void SavePlayerTemplates(const CArray *templates, const char *filename);
+void CharacterClassesInitialize(CharacterClasses *c, const char *filename);
+void CharacterClassesLoadJSON(CArray *classes, json_t *root);
+void CharacterClassesClear(CArray *classes);
+void CharacterClassesTerminate(CharacterClasses *c);

@@ -86,9 +86,7 @@ static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
 	if (scale >= 2)
 	{
-		DrawHead(
-			ActorGetCharacter(player),
-			BODY_UNARMED, DIRECTION_DOWN, STATE_IDLE, pos);
+		DrawHead(ActorGetCharacter(player), DIRECTION_DOWN, STATE_IDLE, pos);
 	}
 	else
 	{

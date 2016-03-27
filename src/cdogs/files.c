@@ -319,7 +319,7 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->Face = b->facePic;
+	c->Class = IntCharacterClass(b->facePic);
 	c->speed = b->speed;
 	c->bot->probabilityToMove = b->probabilityToMove;
 	c->bot->probabilityToTrack = b->probabilityToTrack;

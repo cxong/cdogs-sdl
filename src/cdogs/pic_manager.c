@@ -57,6 +57,66 @@ PicManager gPicManager;
 #define HAIR_END   135
 
 static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
+static const char *faceNames[] =
+{
+	"jones",
+	"ice",
+	"ogre",
+	"dragon",
+	"warbaby",
+	"bugeye",
+	"smith",
+	"ogreboss",
+	"grunt",
+	"professor",
+	"snake",
+	"wolf",
+	"bob",
+	"madbugeye",
+	"cyborg",
+	"robot",
+	"lady"
+};
+static int facePicsIdle[][DIRECTION_COUNT] =
+{
+	{ 26, 27, 28, 29, 30, 31, 32, 33 },
+	{ 129, 130, 131, 132, 133, 134, 135, 136 },
+	{ 121, 122, 123, 124, 125, 126, 127, 128 },
+	{ 228, 227, 226, 225, 224, 223, 222, 229 },
+	{ 236, 235, 234, 233, 232, 231, 230, 237 },
+	{ 249, 248, 247, 246, 245, 244, 243, 250 },
+	{ 272, 271, 270, 269, 268, 267, 266, 273 },
+	{ 308, 307, 306, 305, 304, 303, 302, 309 },
+	{ 372, 371, 370, 369, 368, 367, 366, 373 },
+	{ 396, 395, 394, 393, 392, 391, 390, 397 },
+	{ 404, 403, 402, 401, 400, 399, 398, 405 },
+	{ 412, 411, 410, 409, 408, 407, 406, 413 },
+	{ 420, 419, 418, 417, 416, 415, 414, 421 },
+	{ 428, 427, 426, 425, 424, 423, 422, 429 },
+	{ 436, 435, 434, 433, 432, 431, 430, 437 },
+	{ 527, 526, 525, 524, 523, 522, 521, 528 },
+	{ 573, 572, 571, 570, 569, 568, 567, 574 }
+};
+static int facePicsFiring[][DIRECTION_COUNT] =
+{
+	{ 26, 27, 137, 138, 139, 140, 141, 33 },
+	{ 129, 130, 146, 147, 148, 149, 150, 136 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ 228, 227, 265, 264, 263, 262, 261, 229 },
+	{ 236, 235, 242, 241, 240, 239, 238, 237 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ 272, 271, 278, 277, 276, 275, 274, 273 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 },
+	{ -1, -1, -1, -1, -1, -1, -1, -1 }
+};
 
 
 static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p);
@@ -66,6 +126,7 @@ bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
 {
 	memset(pm, 0, sizeof *pm);
+	CArrayInit(&pm->oldSprites, sizeof(NamedSprites));
 	CArrayInit(&pm->pics, sizeof(NamedPic));
 	CArrayInit(&pm->sprites, sizeof(NamedSprites));
 	CArrayInit(&pm->customPics, sizeof(NamedPic));
@@ -73,6 +134,7 @@ bool PicManagerTryInit(
 	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 
+	// Load old pics
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, oldGfxFile1);
 	int i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
@@ -272,6 +334,8 @@ bail:
 static void GenerateOldPics(PicManager *pm);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
+static void LoadOldFacePics(
+	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT]);
 void PicManagerLoadDir(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
@@ -292,6 +356,10 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 	LoadOldSprites(pm, "beam", cBeamPics[0], DIRECTION_COUNT);
 	LoadOldSprites(pm, "beam_bright", cBeamPics[1], DIRECTION_COUNT);
+	// Load old sprites, like the directional sprites
+	// Faces
+	LoadOldFacePics(pm, "idle", facePicsIdle);
+	LoadOldFacePics(pm, "firing", facePicsFiring);
 }
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
@@ -311,6 +379,29 @@ static void LoadOldSprites(
 	}
 	CArrayPushBack(&pm->sprites, &ns);
 }
+static void LoadOldFacePics(
+	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT])
+{
+	for (int i = 0; i < FACE_COUNT; i++)
+	{
+		char buf[256];
+		sprintf(buf, "faces/%s_%s", faceNames[i], spritesName);
+		NamedSprites ns;
+		NamedSpritesInit(&ns, buf);
+		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
+		{
+			const int facePic = facePics[i][d];
+			if (facePic < 0)
+			{
+				continue;
+			}
+			Pic p = PicCopy(PicManagerGetFromOld(pm, facePic));
+			CArrayPushBack(&ns.pics, &p);
+		}
+		CArrayPushBack(&pm->sprites, &ns);
+	}
+}
+static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
 static void AddMaskBasePic(
 	PicManager *pm, const char *name,
 	const char *styleName, const char *typeName, const int picIdx);
@@ -549,6 +640,10 @@ void PicManagerTerminate(PicManager *pm)
 		}
 		PicFree(&pm->picsFromOld[i]);
 	}
+	CA_FOREACH(NamedSprites, ns, pm->oldSprites)
+		NamedSpritesFree(ns);
+	CA_FOREACH_END()
+	CArrayTerminate(&pm->oldSprites);
 	PicManagerClear(&pm->pics, &pm->sprites);
 	CArrayTerminate(&pm->pics);
 	CArrayTerminate(&pm->sprites);
@@ -578,7 +673,7 @@ static void PicManagerClear(CArray *pics, CArray *sprites)
 	CArrayClear(sprites);
 }
 
-PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
+static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
 {
 	if (idx < 0)
 	{

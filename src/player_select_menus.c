@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include <cdogs/character_class.h>
 #include <cdogs/draw.h>
 #include <cdogs/drawtools.h>
 #include <cdogs/font.h>
@@ -165,10 +166,12 @@ static menu_t *CreateFaceMenu(int *playerUID)
 {
 	menu_t *menu = MenuCreateNormal("Face", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	for (int i = 0; i < FACE_COUNT; i++)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack(IndexToFaceStr(i)));
-	}
+	CA_FOREACH(const CharacterClass, c, gCharacterClasses.Classes)
+		MenuAddSubmenu(menu, MenuCreateBack(c->Name));
+	CA_FOREACH_END()
+	CA_FOREACH(const CharacterClass, c, gCharacterClasses.CustomClasses)
+		MenuAddSubmenu(menu, MenuCreateBack(c->Name));
+	CA_FOREACH_END()
 	MenuSetPostInputFunc(menu, PostInputFaceMenu, playerUID);
 	return menu;
 }
@@ -178,7 +181,16 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 	UNUSED(cmd);
 	PlayerData *p = PlayerDataGetByUID(*playerUID);
 	Character *c = &p->Char;
-	c->Face = menu->u.normal.index;
+	if (menu->u.normal.index < (int)gCharacterClasses.Classes.size)
+	{
+		c->Class = CArrayGet(&gCharacterClasses.Classes, menu->u.normal.index);
+	}
+	else
+	{
+		c->Class = CArrayGet(
+			&gCharacterClasses.CustomClasses,
+			menu->u.normal.index - (int)gCharacterClasses.Classes.size);
+	}
 }
 
 static void DrawColorMenu(
@@ -300,7 +312,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
-		p->Char.Face = t->Face;
+		p->Char.Class = t->Class;
 		p->Char.Colors = t->Colors;
 	}
 }
@@ -355,7 +367,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 		CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 	memset(t->name, 0, sizeof t->name);
 	strncpy(t->name, p->name, sizeof t->name - 1);
-	t->Face = p->Char.Face;
+	t->Class = p->Char.Class;
 	t->Colors = p->Char.Colors;
 }
 

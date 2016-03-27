@@ -151,7 +151,21 @@ int CharacterGetStartingHealth(const Character *c, const bool isNPC)
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
-	c->Face = rand() % FACE_COUNT;
+	// Choose a random character class
+	const int numCharClasses =
+		(int)gCharacterClasses.Classes.size +
+		(int)gCharacterClasses.CustomClasses.size;
+	const int charClass = rand() % numCharClasses;
+	if (charClass < (int)gCharacterClasses.Classes.size)
+	{
+		c->Class = CArrayGet(&gCharacterClasses.Classes, charClass);
+	}
+	else
+	{
+		c->Class = CArrayGet(
+			&gCharacterClasses.Classes,
+			charClass - gCharacterClasses.Classes.size);
+	}
 	c->Colors.Skin = RandomColor();
 	c->Colors.Arms = RandomColor();
 	c->Colors.Body = RandomColor();

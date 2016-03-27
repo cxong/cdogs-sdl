@@ -757,7 +757,7 @@ static void MissionDrawObjective(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	if (c != NULL)
 	{
-		DrawHead(c, BODY_UNARMED, DIRECTION_DOWN, STATE_IDLE, drawPos);
+		DrawHead(c, DIRECTION_DOWN, STATE_IDLE, drawPos);
 	}
 	else if (newPic != NULL)
 	{

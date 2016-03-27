@@ -104,8 +104,8 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 void WeaponInitialize(GunClasses *g)
 {
 	memset(g, 0, sizeof *g);
-	CArrayInit(&g->Guns, sizeof(const GunDescription));
-	CArrayInit(&g->CustomGuns, sizeof(const GunDescription));
+	CArrayInit(&g->Guns, sizeof(GunDescription));
+	CArrayInit(&g->CustomGuns, sizeof(GunDescription));
 }
 static void LoadGunDescription(
 	GunDescription *g, json_t *node, const GunDescription *defaultGun);
@@ -309,13 +309,13 @@ Weapon WeaponCreate(const GunDescription *gun)
 // TODO: use map structure?
 const GunDescription *StrGunDescription(const char *s)
 {
-	CA_FOREACH(const GunDescription, gd, gGunDescriptions.Guns)
+	CA_FOREACH(const GunDescription, gd, gGunDescriptions.CustomGuns)
 		if (strcmp(s, gd->name) == 0)
 		{
 			return gd;
 		}
 	CA_FOREACH_END()
-	CA_FOREACH(const GunDescription, gd, gGunDescriptions.CustomGuns)
+	CA_FOREACH(const GunDescription, gd, gGunDescriptions.Guns)
 		if (strcmp(s, gd->name) == 0)
 		{
 			return gd;

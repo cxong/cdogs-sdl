@@ -509,76 +509,11 @@ static void LoadBullet(
 		memset(&b->HitGuns, 0, sizeof b->HitGuns);
 		memset(&b->ProximityGuns, 0, sizeof b->ProximityGuns);
 	}
-	char *tmp;
 
 	LoadStr(&b->Name, node, "Name");
 	if (json_find_first_label(node, "Pic"))
 	{
-		json_t *pic = json_find_first_label(node, "Pic")->child;
-		tmp = GetString(pic, "Type");
-		b->CPic.Type = StrPicType(tmp);
-		CFREE(tmp);
-		bool picLoaded = false;
-		switch (b->CPic.Type)
-		{
-		case PICTYPE_NORMAL:
-			tmp = GetString(pic, "Pic");
-			b->CPic.u.Pic = PicManagerGetPic(&gPicManager, tmp);
-			CFREE(tmp);
-			picLoaded = b->CPic.u.Pic != NULL;
-			break;
-		case PICTYPE_DIRECTIONAL:
-			tmp = GetString(pic, "Sprites");
-			b->CPic.u.Sprites =
-				&PicManagerGetSprites(&gPicManager, tmp)->pics;
-			CFREE(tmp);
-			picLoaded = b->CPic.u.Sprites != NULL;
-			break;
-		case PICTYPE_ANIMATED:	// fallthrough
-		case PICTYPE_ANIMATED_RANDOM:
-			tmp = GetString(pic, "Sprites");
-			b->CPic.u.Animated.Sprites =
-				&PicManagerGetSprites(&gPicManager, tmp)->pics;
-			CFREE(tmp);
-			LoadInt(&b->CPic.u.Animated.Count, pic, "Count");
-			LoadInt(&b->CPic.u.Animated.TicksPerFrame, pic, "TicksPerFrame");
-			// Set safe default ticks per frame 1;
-			// if 0 then this leads to infinite loop when animating
-			b->CPic.u.Animated.TicksPerFrame = MAX(
-				b->CPic.u.Animated.TicksPerFrame, 1);
-			picLoaded = b->CPic.u.Animated.Sprites != NULL;
-			break;
-		default:
-			CASSERT(false, "unknown pic type");
-			break;
-		}
-		b->CPic.UseMask = true;
-		b->CPic.u1.Mask = colorWhite;
-		if (json_find_first_label(pic, "Mask"))
-		{
-			tmp = GetString(pic, "Mask");
-			b->CPic.u1.Mask = StrColor(tmp);
-			CFREE(tmp);
-		}
-		else if (json_find_first_label(pic, "Tint"))
-		{
-			b->CPic.UseMask = false;
-			json_t *tint = json_find_first_label(pic, "Tint")->child->child;
-			b->CPic.u1.Tint.h = atof(tint->text);
-			tint = tint->next;
-			b->CPic.u1.Tint.s = atof(tint->text);
-			tint = tint->next;
-			b->CPic.u1.Tint.v = atof(tint->text);
-		}
-		if ((json_find_first_label(pic, "OldPic") &&
-			ConfigGetBool(&gConfig, "Graphics.OriginalPics")) ||
-			!picLoaded)
-		{
-			int oldPic = PIC_UZIBULLET;
-			LoadInt(&oldPic, pic, "OldPic");
-			b->CPic.Type = PICTYPE_NORMAL;
-			b->CPic.u.Pic = PicManagerGetFromOld(&gPicManager, oldPic);
-		}
+		CPicLoadJSON(&b->CPic, json_find_first_label(node, "Pic")->child);
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
 	LoadInt(&b->Delay, node, "Delay");
@@ -618,7 +553,7 @@ static void LoadBullet(
 	LoadVec2i(&b->Size, node, "Size");
 	if (json_find_first_label(node, "Special"))
 	{
-		tmp = GetString(node, "Special");
+		char *tmp = GetString(node, "Special");
 		b->Special = StrSpecialDamage(tmp);
 		CFREE(tmp);
 	}
@@ -626,7 +561,7 @@ static void LoadBullet(
 	LoadBool(&b->Persists, node, "Persists");
 	if (json_find_first_label(node, "Spark"))
 	{
-		tmp = GetString(node, "Spark");
+		char *tmp = GetString(node, "Spark");
 		b->Spark = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}

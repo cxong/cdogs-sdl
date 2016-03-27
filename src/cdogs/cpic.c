@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,9 @@
 #include "cpic.h"
 
 #include "blit.h"
+#include "json_utils.h"
 #include "palette.h"
+#include "pic_manager.h"
 #include "utils.h"
 
 
@@ -80,6 +82,71 @@ void NamedSpritesFree(NamedSprites *ns)
 	CArrayTerminate(&ns->pics);
 }
 
+void CPicLoadJSON(CPic *p, json_t *node)
+{
+	char *tmp = GetString(node, "Type");
+	p->Type = StrPicType(tmp);
+	CFREE(tmp);
+	bool picLoaded = false;
+	switch (p->Type)
+	{
+	case PICTYPE_NORMAL:
+		tmp = GetString(node, "Pic");
+		p->u.Pic = PicManagerGetPic(&gPicManager, tmp);
+		CFREE(tmp);
+		picLoaded = p->u.Pic != NULL;
+		break;
+	case PICTYPE_DIRECTIONAL:
+		tmp = GetString(node, "Sprites");
+		p->u.Sprites = &PicManagerGetSprites(&gPicManager, tmp)->pics;
+		CFREE(tmp);
+		picLoaded = p->u.Sprites != NULL;
+		break;
+	case PICTYPE_ANIMATED:	// fallthrough
+	case PICTYPE_ANIMATED_RANDOM:
+		tmp = GetString(node, "Sprites");
+		p->u.Animated.Sprites =
+			&PicManagerGetSprites(&gPicManager, tmp)->pics;
+		CFREE(tmp);
+		LoadInt(&p->u.Animated.Count, node, "Count");
+		LoadInt(&p->u.Animated.TicksPerFrame, node, "TicksPerFrame");
+		// Set safe default ticks per frame 1;
+		// if 0 then this leads to infinite loop when animating
+		p->u.Animated.TicksPerFrame = MAX(p->u.Animated.TicksPerFrame, 1);
+		picLoaded = p->u.Animated.Sprites != NULL;
+		break;
+	default:
+		CASSERT(false, "unknown pic type");
+		break;
+	}
+	p->UseMask = true;
+	p->u1.Mask = colorWhite;
+	if (json_find_first_label(node, "Mask"))
+	{
+		tmp = GetString(node, "Mask");
+		p->u1.Mask = StrColor(tmp);
+		CFREE(tmp);
+	}
+	else if (json_find_first_label(node, "Tint"))
+	{
+		p->UseMask = false;
+		json_t *tint = json_find_first_label(node, "Tint")->child->child;
+		p->u1.Tint.h = atof(tint->text);
+		tint = tint->next;
+		p->u1.Tint.s = atof(tint->text);
+		tint = tint->next;
+		p->u1.Tint.v = atof(tint->text);
+	}
+	if ((json_find_first_label(node, "OldPic") &&
+		ConfigGetBool(&gConfig, "Graphics.OriginalPics")) ||
+		!picLoaded)
+	{
+		int oldPic = PIC_UZIBULLET;
+		LoadInt(&oldPic, node, "OldPic");
+		p->Type = PICTYPE_NORMAL;
+		p->u.Pic = PicManagerGetFromOld(&gPicManager, oldPic);
+	}
+}
 void CPicUpdate(CPic *p, const int ticks)
 {
 	switch (p->Type)

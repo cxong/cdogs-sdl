@@ -39,54 +39,15 @@
 #define VERSION 2
 
 
-static const char *faceNames[] =
-{
-	"Jones",
-	"Ice",
-	"Ogre",
-	"Dragon",
-	"WarBaby",
-	"Bug-eye",
-	"Smith",
-	"Ogre Boss",
-	"Grunt",
-	"Professor",
-	"Snake",
-	"Wolf",
-	"Bob",
-	"Mad bug-eye",
-	"Cyborg",
-	"Robot",
-	"Lady"
-};
-static int StrFaceIndex(const char *s)
-{
-	int i;
-	for (i = 0; i < FACE_COUNT; i++)
-	{
-		if (strcmp(s, faceNames[i]) == 0)
-		{
-			return i;
-		}
-	}
-	return 0;
-}
-const char *IndexToFaceStr(int idx)
-{
-	if (idx >= 0 && idx < FACE_COUNT)
-	{
-		return faceNames[idx];
-	}
-	return faceNames[0];
-}
-
 CArray gPlayerTemplates;
 
 static void LoadPlayerTemplate(
 	PlayerTemplate *t, json_t *node, const int version)
 {
 	strcpy(t->name, json_find_first_label(node, "Name")->child->text);
-	t->Face = StrFaceIndex(json_find_first_label(node, "Face")->child->text);
+	t->Class = StrCharacterClass(
+		json_find_first_label(node, "Face")->child->text);
+	CASSERT(t->Class != NULL, "cannot find character class");
 	if (version == 1)
 	{
 		// Version 1 used integer palettes
@@ -107,8 +68,12 @@ static void LoadPlayerTemplate(
 		LoadColor(&t->Colors.Hair, node, "Hair");
 	}
 }
-void LoadPlayerTemplates(CArray *templates, const char *filename)
+void LoadPlayerTemplates(
+	CArray *templates, const CharacterClasses *classes, const char *filename)
 {
+	// Note: not used, but included in function to express dependency
+	CASSERT(classes->Classes.size > 0,
+		"cannot load player templates without character classes");
 	json_t *root = NULL;
 	int version = 1;
 
@@ -154,9 +119,8 @@ bail:
 static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 {
 	json_t *template = json_new_object();
-	json_insert_pair_into_object(template, "Name", json_new_string(t->name));
-	json_insert_pair_into_object(
-		template, "Face", json_new_string(faceNames[t->Face]));
+	AddStringPair(template, "Name", t->name);
+	AddStringPair(template, "Face", t->Class->Name);
 	AddColorPair(template, "Body", t->Colors.Body);
 	AddColorPair(template, "Arms", t->Colors.Arms);
 	AddColorPair(template, "Legs", t->Colors.Legs);

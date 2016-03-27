@@ -68,7 +68,10 @@
 // For actor drawing
 typedef struct
 {
-	Pic Pics[3];
+	const Pic *Head;
+	TOffsetPic Body;
+	TOffsetPic Gun;
+	int DrawOrder[3];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
@@ -342,8 +345,8 @@ static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 		tint, mask,
 		a->dead);
 }
-static Pic GetHeadPic(
-	const int bodyType, const direction_e dir, const int face, const int state);
+static const Pic *GetHeadPic(
+	const CharacterClass *c, const direction_e dir, const int state);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
@@ -351,13 +354,22 @@ static void GetCharacterPics(
 	const int deadPic)
 {
 	memset(pics, 0, sizeof *pics);
+	pics->DrawOrder[0] = pics->DrawOrder[1] = pics->DrawOrder[2] = -1;
 	pics->Colors = &c->Colors;
-	direction_e headDir = dir;
-	int headFrame = frame;
 
-	const int f = c->Face;
+	// If the actor is dead, simply draw a dying animation
+	pics->IsDead = deadPic > 0;
+	if (pics->IsDead)
+	{
+		if (deadPic < DEATH_MAX)
+		{
+			pics->IsDying = true;
+			pics->Body = cDeathPics[deadPic - 1];
+			pics->DrawOrder[0] = 1;
+		}
+		return;
+	}
 
-	TOffsetPic body, gunPic;
 
 	pics->IsTransparent = isTransparent;
 	if (pics->IsTransparent)
@@ -370,75 +382,68 @@ static void GetCharacterPics(
 		pics->Mask = mask;
 	}
 
+	// Head
+	direction_e headDir = dir;
+	int headFrame = frame;
+	// If firing, draw the firing head pic
 	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
 	{
 		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
 	}
-
+	// If idle, turn head left/right on occasion
 	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
 	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
 
+	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
+
+	// Body
 	const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
 
-	body.dx = cBodyOffset[b][dir].dx;
-	body.dy = cBodyOffset[b][dir].dy;
-	body.picIndex = cBodyPic[b][dir][frame];
+	pics->Body.dx = cBodyOffset[b][dir].dx;
+	pics->Body.dy = cBodyOffset[b][dir].dy;
+	pics->Body.picIndex = cBodyPic[b][dir][frame];
 
-	pics->IsDead = deadPic > 0;
-	if (pics->IsDead)
-	{
-		if (deadPic < DEATH_MAX)
-		{
-			pics->IsDying = true;
-			body = cDeathPics[deadPic - 1];
-			pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-		}
-		return;
-	}
-
-	Pic head = GetHeadPic(b, headDir, f, headFrame);
-
+	// Gun
+	pics->Gun.picIndex = -1;
 	if (g >= 0)
 	{
-		gunPic.dx =
+		pics->Gun.dx =
 			cGunHandOffset[b][dir].dx +
 			cGunPics[g][dir][gunState].dx;
-		gunPic.dy =
+		pics->Gun.dy =
 			cGunHandOffset[b][dir].dy +
 			cGunPics[g][dir][gunState].dy;
-		gunPic.picIndex = cGunPics[g][dir][gunState].picIndex;
-	}
-	else
-	{
-		gunPic.picIndex = -1;
+		pics->Gun.picIndex = cGunPics[g][dir][gunState].picIndex;
 	}
 
+	// Determine draw order based on the direction the player is facing
+	// Order is: 0: head, 1: body, 2: gun
 	switch (dir)
 	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
-		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics->Pics[1] = head;
-		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, body);
+		pics->DrawOrder[0] = 2;
+		pics->DrawOrder[1] = 0;
+		pics->DrawOrder[2] = 1;
 		break;
 
 	case DIRECTION_RIGHT:
 	case DIRECTION_DOWNRIGHT:
 	case DIRECTION_DOWN:
 	case DIRECTION_DOWNLEFT:
-		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, body);
-		pics->Pics[1] = head;
-		pics->Pics[2] = PicFromTOffsetPic(&gPicManager, gunPic);
+		pics->DrawOrder[0] = 1;
+		pics->DrawOrder[1] = 0;
+		pics->DrawOrder[2] = 2;
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
-		pics->Pics[0] = PicFromTOffsetPic(&gPicManager, gunPic);
-		pics->Pics[1] = PicFromTOffsetPic(&gPicManager, body);
-		pics->Pics[2] = head;
+		pics->DrawOrder[0] = 2;
+		pics->DrawOrder[1] = 1;
+		pics->DrawOrder[2] = 0;
 		break;
 	default:
-		assert(0 && "invalid direction");
+		CASSERT(false, "invalid direction");
 		return;
 	}
 }
@@ -456,9 +461,8 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 	{
 		if (pics->IsDying)
 		{
-			const Pic *pic = &pics->Pics[0];
-			CASSERT(pic != NULL, "cannot find dying pic");
-			BlitBackground(&gGraphicsDevice, pic, picPos, pics->Tint, true);
+			const Pic pic = PicFromTOffsetPic(&gPicManager, pics->Body);
+			BlitBackground(&gGraphicsDevice, &pic, picPos, pics->Tint, true);
 		}
 	}
 	else
@@ -470,26 +474,40 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 		}
 		for (int i = 0; i < 3; i++)
 		{
-			if (PicIsNone(&pics->Pics[i]))
+			Pic pic;
+			const Pic *picp = &pic;
+			switch (pics->DrawOrder[i])
+			{
+			case 0:
+				// head
+				picp = pics->Head;
+				break;
+			case 1:
+				// body
+				pic = PicFromTOffsetPic(&gPicManager, pics->Body);
+				break;
+			case 2:
+				// gun
+				pic = PicFromTOffsetPic(&gPicManager, pics->Gun);
+				break;
+			}
+			if (PicIsNone(picp))
 			{
 				continue;
 			}
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
-					&gGraphicsDevice, &pics->Pics[i], picPos, pics->Tint,
-					true);
+					&gGraphicsDevice, picp, picPos, pics->Tint, true);
 			}
 			else if (pics->Mask != NULL)
 			{
-				BlitMasked(
-					&gGraphicsDevice, &pics->Pics[i], picPos, *pics->Mask,
-					true);
+				BlitMasked(&gGraphicsDevice, picp, picPos, *pics->Mask, true);
 			}
 			else
 			{
 				BlitCharMultichannel(
-					&gGraphicsDevice, &pics->Pics[i], picPos, pics->Colors);
+					&gGraphicsDevice, picp, picPos, pics->Colors);
 			}
 		}
 	}
@@ -605,13 +623,16 @@ static void DrawObjectiveHighlight(
 		// Do not highlight dead, dying or transparent characters
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
-			for (int i = 0; i < 3; i++)
+			BlitPicHighlight(&gGraphicsDevice, pics.Head, pos, color);
+			if (pics.Body.picIndex >= 0)
 			{
-				if (PicIsNone(&pics.Pics[i]))
-				{
-					continue;
-				}
-				BlitPicHighlight(&gGraphicsDevice, &pics.Pics[i], pos, color);
+				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Body);
+				BlitPicHighlight(&gGraphicsDevice, &pic, pos, color);
+			}
+			if (pics.Gun.picIndex >= 0)
+			{
+				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Gun);
+				BlitPicHighlight(&gGraphicsDevice, &pic, pos, color);
 			}
 		}
 	}
@@ -654,14 +675,15 @@ static void DrawChatter(
 	}
 }
 
-static Pic GetHeadPic(
-	const int bodyType, const direction_e dir, const int face, const int state)
+static const Pic *GetHeadPic(
+	const CharacterClass *c, const direction_e dir, const int state)
 {
-	TOffsetPic head;
-	head.dx = cNeckOffset[bodyType][dir].dx + cHeadOffset[face][dir].dx;
-	head.dy = cNeckOffset[bodyType][dir].dy + cHeadOffset[face][dir].dy;
-	head.picIndex = cHeadPic[face][dir][state];
-	return PicFromTOffsetPic(&gPicManager, head);
+	const CPic *p = &c->IdlePics;
+	if (state >= STATE_COUNT && c->FiringPics != NULL)
+	{
+		p = c->FiringPics;
+	}
+	return CPicGetPic(p, dir);
 }
 
 void DrawCharacterSimple(
@@ -683,12 +705,12 @@ void DrawCharacterSimple(
 }
 
 void DrawHead(
-	const Character *c, const int bodyType, const direction_e dir,
+	const Character *c, const direction_e dir,
 	const int state, const Vec2i pos)
 {
-	Pic head = GetHeadPic(bodyType, dir, c->Face, state);
+	const Pic *head = GetHeadPic(c->Class, dir, state);
 	// Note: ignore offset as we are only drawing the head
-	BlitCharMultichannel(&gGraphicsDevice, &head, pos, &c->Colors);
+	BlitCharMultichannel(&gGraphicsDevice, head, pos, &c->Colors);
 }
 
 

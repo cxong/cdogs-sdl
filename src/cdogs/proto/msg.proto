@@ -43,7 +43,7 @@ message NPlayerStats {
 
 message NPlayerData {
 	required string Name = 1;
-	required int32 Face = 2;
+	required string CharacterClass = 2;
 	required NCharColors Colors = 3;
 	repeated string Weapons = 4;
 	required uint32 Lives = 5;

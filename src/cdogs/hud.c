@@ -440,8 +440,7 @@ static void DrawLives(
 	}
 	for (int i = 0; i < player->Lives; i++)
 	{
-		DrawHead(
-			&player->Char, BODY_UNARMED, DIRECTION_DOWN, STATE_IDLE, drawPos);
+		DrawHead(&player->Char, DIRECTION_DOWN, STATE_IDLE, drawPos);
 		drawPos.x += xStep;
 	}
 }
