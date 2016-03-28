@@ -311,14 +311,14 @@ static void DrawGauge(
 	if (hAlign == ALIGN_END)
 	{
 		int w = device->cachedConfig.Res.x;
-		pos.x = w - pos.x - size.x - offset.x;
-		barPos.x = w - barPos.x - barSize.x - offset.x;
+		pos.x = w - pos.x - size.x;
+		barPos.x = w - barPos.x - barSize.x;
 	}
 	if (vAlign == ALIGN_END)
 	{
 		int h = device->cachedConfig.Res.y;
-		pos.y = h - pos.y - size.y - offset.y;
-		barPos.y = h - barPos.y - barSize.y - offset.y;
+		pos.y = h - pos.y - size.y;
+		barPos.y = h - barPos.y - barSize.y;
 	}
 	DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
 	DrawRectangle(device, barPos, barSize, barColor, 0);
@@ -426,17 +426,17 @@ static void DrawLives(
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const int xStep = hAlign == ALIGN_START ? 10 : -10;
-	const Vec2i offset = Vec2iNew(5, 20);
+	const Vec2i offset = Vec2iNew(0, 1);
 	Vec2i drawPos = Vec2iAdd(pos, offset);
 	if (hAlign == ALIGN_END)
 	{
 		const int w = device->cachedConfig.Res.x;
-		drawPos.x = w - drawPos.x - offset.x;
+		drawPos.x = w - drawPos.x + xStep;
 	}
 	if (vAlign == ALIGN_END)
 	{
 		const int h = device->cachedConfig.Res.y;
-		drawPos.y = h - drawPos.y + offset.y + 5;
+		drawPos.y = h - drawPos.y - 9;
 	}
 	for (int i = 0; i < player->Lives; i++)
 	{
