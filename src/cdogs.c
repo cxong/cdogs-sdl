@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gGunDescriptions,
 		"data/bullets.json", "data/guns.json");
-	CharacterClassesInitialize(&gCharacterClasses, "data/characters.json");
+	CharacterClassesInitialize(&gCharacterClasses, "data/character_classes.json");
 	LoadPlayerTemplates(
 		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
 	PickupClassesInit(

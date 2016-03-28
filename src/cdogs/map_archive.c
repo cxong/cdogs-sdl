@@ -112,7 +112,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		ParticleClassesLoadJSON(&gParticleClasses.CustomClasses, root);
 	}
 
-	root = ReadArchiveJSON(filename, "characters.json");
+	root = ReadArchiveJSON(filename, "character_classes.json");
 	if (root != NULL)
 	{
 		CharacterClassesLoadJSON(

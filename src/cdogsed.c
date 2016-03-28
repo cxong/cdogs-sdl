@@ -1355,7 +1355,8 @@ int main(int argc, char *argv[])
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gGunDescriptions,
 		"data/bullets.json", "data/guns.json");
-	CharacterClassesInitialize(&gCharacterClasses, "data/characters.json");
+	CharacterClassesInitialize(
+		&gCharacterClasses, "data/character_classes.json");
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
 	MapObjectsInit(&gMapObjects, "data/map_objects.json");
