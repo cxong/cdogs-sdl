@@ -72,6 +72,11 @@ const GunDescription *StrGunDescription(const char *s)
 	UNUSED(s);
 	return NULL;
 }
+const CharacterClass *StrCharacterClass(const char *s)
+{
+	UNUSED(s);
+	return NULL;
+}
 
 
 FEATURE(1, "Assign unused input device")

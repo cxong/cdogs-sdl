@@ -214,6 +214,8 @@ static void Display(CampaignSetting *setting, int idx, int xc, int yc)
 	BlitFlip(&gGraphicsDevice);
 }
 
+static const CharacterClass *GetNextCharacterClass(
+	const CharacterClass *c, const int d);
 static const GunDescription *GetNextGun(const GunDescription *g, const int d);
 static bool Change(
 	UIObject *o, CharacterStore *store,
@@ -232,7 +234,7 @@ static bool Change(
 	case YC_APPEARANCE:
 		switch (xc) {
 		case XC_FACE:
-			b->Face = CLAMP_OPPOSITE(b->Face + d, 0, FACE_COUNT - 1);
+			b->Class = GetNextCharacterClass(b->Class, d);
 			return true;
 		}
 		break;
@@ -384,6 +386,42 @@ static const GunDescription *GetNextGun(const GunDescription *g, const int d)
 	}
 	return g;
 }
+// Look in both built-in classes and custom classes for the next class
+static const CharacterClass *GetNextCharacterClass(
+	const CharacterClass *c, const int d)
+{
+	const int totalSize =
+		(int)gCharacterClasses.Classes.size +
+		(int)gCharacterClasses.CustomClasses.size;
+	for (int i = 0; i < (int)totalSize; i++)
+	{
+		const CharacterClass *cc;
+		if (i < (int)gCharacterClasses.Classes.size)
+		{
+			cc = CArrayGet(&gCharacterClasses.Classes, i);
+		}
+		else
+		{
+			cc = CArrayGet(&gCharacterClasses.CustomClasses,
+				i - (int)gCharacterClasses.Classes.size);
+		}
+		if (cc == c)
+		{
+			const int idx = CLAMP_OPPOSITE(i + d, 0, totalSize - 1);
+			if (idx < (int)gCharacterClasses.Classes.size)
+			{
+				cc = CArrayGet(&gCharacterClasses.Classes, idx);
+			}
+			else
+			{
+				cc = CArrayGet(&gCharacterClasses.CustomClasses,
+					idx - (int)gCharacterClasses.Classes.size);
+			}
+			return cc;
+		}
+	}
+	return c;
+}
 
 
 static void InsertCharacter(CharacterStore *store, int idx, Character *data)
@@ -396,7 +434,7 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	else
 	{
 		// set up character template
-		c->Face = FACE_OGRE;
+		c->Class = StrCharacterClass("Ogre");
 		c->Colors.Skin = colorGreen;
 		const color_t darkGray = {64, 64, 64, 255};
 		c->Colors.Arms = darkGray;

@@ -638,7 +638,7 @@ static void MissionDrawEnemy(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawSpecialChar(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
@@ -656,7 +656,7 @@ static void MissionDrawSpecialChar(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
-		UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void DisplayMapItemWithDensity(
 	GraphicsDevice *g,
