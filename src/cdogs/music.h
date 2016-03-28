@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,12 +46,11 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MUSIC
-#define __MUSIC
+#pragma once
 
 #include "sounds.h"
 
-int MusicPlay(SoundDevice *device, const char *path);
+
 void MusicPlayGame(
 	SoundDevice *device, const char *missionPath, const char *music);
 void MusicPlayMenu(SoundDevice *device);
@@ -61,5 +60,3 @@ void MusicResume(SoundDevice *device);
 void MusicSetPlaying(SoundDevice *device, int isPlaying);
 int MusicGetStatus(SoundDevice *device);
 const char *MusicGetErrorMessage(SoundDevice *device);
-
-#endif

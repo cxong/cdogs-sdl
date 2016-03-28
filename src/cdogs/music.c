@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,23 @@
 
 #include "config.h"
 #include "gamedata.h"
+#include "log.h"
 #include "sounds.h"
 
 
-int MusicPlay(SoundDevice *device, const char *path)
+static bool MusicPlay(SoundDevice *device, const char *path)
 {
 	if (!device->isInitialised)
 	{
-		return 0;
+		return true;
 	}
 
 	debug(D_NORMAL, "Attempting to play song: %s\n", path);
 
 	if (path == NULL || strlen(path) == 0)
 	{
-		debug(D_NORMAL, "Attempting to play song with empty name\n");
-		return 1;
+		LOG(LM_SOUND, LL_WARN, "Attempting to play song with empty name");
+		return false;
 	}
 
 	device->music = Mix_LoadMUS(path);
@@ -58,7 +59,7 @@ int MusicPlay(SoundDevice *device, const char *path)
 	{
 		strcpy(device->musicErrorMessage, SDL_GetError());
 		device->musicStatus = MUSIC_NOLOAD;
-		return 1;
+		return false;
 	}
 
 	debug(D_NORMAL, "Playing song: %s\n", path);
@@ -71,7 +72,7 @@ int MusicPlay(SoundDevice *device, const char *path)
 		MusicPause(device);
 	}
 
-	return 0;
+	return true;
 }
 
 void MusicPlayGame(
@@ -87,16 +88,17 @@ void MusicPlayGame(
 		char buf[CDOGS_PATH_MAX];
 		// First, try to play music from the same directory
 		// This may be a new-style directory campaign
-		strcpy(buf, missionPath);
+		GetDataFilePath(buf, missionPath);
 		strcat(buf, "/");
 		strcat(buf, music);
-		played = !MusicPlay(device, buf);
+		played = MusicPlay(device, buf);
 		if (!played)
 		{
-			PathGetDirname(buf, missionPath);
-			strcat(buf, "/");
+			char buf2[CDOGS_PATH_MAX];
+			GetDataFilePath(buf2, missionPath);
+			PathGetDirname(buf, buf2);
 			strcat(buf, music);
-			played = !MusicPlay(device, buf);
+			played = MusicPlay(device, buf);
 		}
 	}
 	if (!played && gGameSongs != NULL)
