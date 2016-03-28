@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,15 +28,19 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "log.h"
+#include "sys_config.h"
 #include "yajl_utils.h"
 
 
 void FontLoadFromJSON(Font *f, const char *imgPath, const char *jsonPath)
 {
-	yajl_val node = YAJLReadFile(jsonPath);
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, jsonPath);
+	yajl_val node = YAJLReadFile(buf);
 	if (node == NULL)
 	{
-		fprintf(stderr, "Error parsing font JSON '%s'\n", jsonPath);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing font JSON '%s'", buf);
 		goto bail;
 	}
 

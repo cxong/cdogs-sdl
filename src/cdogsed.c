@@ -1320,7 +1320,6 @@ int main(int argc, char *argv[])
 	}
 
 	char buf[CDOGS_PATH_MAX];
-	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
@@ -1348,25 +1347,18 @@ int main(int argc, char *argv[])
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
 	}
-	GetDataFilePath(buf, "graphics/font.png");
-	GetDataFilePath(buf2, "graphics/font.json");
-	FontLoadFromJSON(&gFont, buf, buf2);
-	GetDataFilePath(buf, "graphics");
-	PicManagerLoadDir(&gPicManager, buf);
+	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
+	PicManagerLoadDir(&gPicManager, "graphics");
 
-	GetDataFilePath(buf, "data/particles.json");
-	ParticleClassesInit(&gParticleClasses, buf);
-	GetDataFilePath(buf, "data/ammo.json");
-	AmmoInitialize(&gAmmo, buf);
-	GetDataFilePath(buf, "data/bullets.json");
-	GetDataFilePath(buf2, "data/guns.json");
-	BulletAndWeaponInitialize(&gBulletClasses, &gGunDescriptions, buf, buf2);
-	GetDataFilePath(buf, "data/characters.json");
-	CharacterClassesInitialize(&gCharacterClasses, buf);
-	GetDataFilePath(buf, "data/pickups.json");
-	PickupClassesInit(&gPickupClasses, buf, &gAmmo, &gGunDescriptions);
-	GetDataFilePath(buf, "data/map_objects.json");
-	MapObjectsInit(&gMapObjects, buf);
+	ParticleClassesInit(&gParticleClasses, "data/particles.json");
+	AmmoInitialize(&gAmmo, "data/ammo.json");
+	BulletAndWeaponInitialize(
+		&gBulletClasses, &gGunDescriptions,
+		"data/bullets.json", "data/guns.json");
+	CharacterClassesInitialize(&gCharacterClasses, "data/characters.json");
+	PickupClassesInit(
+		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
+	MapObjectsInit(&gMapObjects, "data/map_objects.json");
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);

@@ -86,17 +86,19 @@ void CharacterClassesInitialize(CharacterClasses *c, const char *filename)
 	CArrayInit(&c->Classes, sizeof(CharacterClass));
 	CArrayInit(&c->CustomClasses, sizeof(CharacterClass));
 
-	FILE *f = fopen(filename, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, filename);
+	FILE *f = fopen(buf, "r");
 	json_t *root = NULL;
 	if (f == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "cannot load characters file %s", filename);
+		LOG(LM_MAIN, LL_ERROR, "cannot load characters file %s", buf);
 		goto bail;
 	}
 	enum json_error e = json_stream_parse(f, &root);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "error parsing characters file %s", filename);
+		LOG(LM_MAIN, LL_ERROR, "error parsing characters file %s", buf);
 		goto bail;
 	}
 	CharacterClassesLoadJSON(&c->Classes, root);

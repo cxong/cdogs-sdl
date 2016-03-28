@@ -32,6 +32,7 @@
 
 #include "blit.h"
 #include "pic.h"
+#include "sys_config.h"
 #include "utils.h"
 
 
@@ -67,7 +68,9 @@ FontAlign FontAlignOpposite(const FontAlign align)
 
 void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 {
-	SDL_RWops *rwops = SDL_RWFromFile(imgPath, "rb");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, imgPath);
+	SDL_RWops *rwops = SDL_RWFromFile(buf, "rb");
 	CASSERT(IMG_isPNG(rwops), "Error: font file is not PNG");
 	SDL_Surface *image = IMG_Load_RW(rwops, 0);
 	if (!image)

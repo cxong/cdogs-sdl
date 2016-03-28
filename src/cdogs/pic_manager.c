@@ -343,7 +343,9 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 		perror("Cannot initialise SDL_Image");
 		return;
 	}
-	PicManagerLoadDirImpl(pm, path, NULL);
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, path);
+	PicManagerLoadDirImpl(pm, buf, NULL);
 	GenerateOldPics(pm);
 
 	// Load old pics and sprites

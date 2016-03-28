@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include "ammo.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "log.h"
 #include "map.h"
 #include "powerup.h"
 
@@ -149,17 +150,19 @@ void PickupClassesInit(
 	CArrayInit(&classes->Classes, sizeof(PickupClass));
 	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
 
-	FILE *f = fopen(filename, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, filename);
+	FILE *f = fopen(buf, "r");
 	json_t *root = NULL;
 	if (f == NULL)
 	{
-		printf("Error: cannot load pickups file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load pickups file %s", buf);
 		goto bail;
 	}
 	enum json_error e = json_stream_parse(f, &root);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing pickups file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing pickups file %s", buf);
 		goto bail;
 	}
 	PickupClassesLoadJSON(&classes->Classes, root);

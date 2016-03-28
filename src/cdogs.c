@@ -384,13 +384,11 @@ int main(int argc, char *argv[])
 	}
 	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 
-	char buf2[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
-	GetDataFilePath(buf, "sounds");
-	SoundInitialize(&gSoundDevice, buf);
+	SoundInitialize(&gSoundDevice, "sounds");
 	if (!gSoundDevice.isInitialised)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
@@ -434,28 +432,20 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
-	GetDataFilePath(buf, "graphics/font.png");
-	GetDataFilePath(buf2, "graphics/font.json");
-	FontLoadFromJSON(&gFont, buf, buf2);
-	GetDataFilePath(buf, "graphics");
-	PicManagerLoadDir(&gPicManager, buf);
+	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
+	PicManagerLoadDir(&gPicManager, "graphics");
 
-	GetDataFilePath(buf, "data/particles.json");
-	ParticleClassesInit(&gParticleClasses, buf);
-	GetDataFilePath(buf, "data/ammo.json");
-	AmmoInitialize(&gAmmo, buf);
-	GetDataFilePath(buf, "data/bullets.json");
-	GetDataFilePath(buf2, "data/guns.json");
+	ParticleClassesInit(&gParticleClasses, "data/particles.json");
+	AmmoInitialize(&gAmmo, "data/ammo.json");
 	BulletAndWeaponInitialize(
-		&gBulletClasses, &gGunDescriptions, buf, buf2);
-	GetDataFilePath(buf, "data/characters.json");
-	CharacterClassesInitialize(&gCharacterClasses, buf);
+		&gBulletClasses, &gGunDescriptions,
+		"data/bullets.json", "data/guns.json");
+	CharacterClassesInitialize(&gCharacterClasses, "data/characters.json");
 	LoadPlayerTemplates(
 		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
-	GetDataFilePath(buf, "data/pickups.json");
-	PickupClassesInit(&gPickupClasses, buf, &gAmmo, &gGunDescriptions);
-	GetDataFilePath(buf, "data/map_objects.json");
-	MapObjectsInit(&gMapObjects, buf);
+	PickupClassesInit(
+		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
+	MapObjectsInit(&gMapObjects, "data/map_objects.json");
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #include "map_object.h"
 
 #include "json_utils.h"
+#include "log.h"
 #include "map.h"
 #include "pics.h"
 
@@ -178,17 +179,19 @@ void MapObjectsInit(MapObjects *classes, const char *filename)
 	CArrayInit(&classes->Destructibles, sizeof(char *));
 	CArrayInit(&classes->Bloods, sizeof(char *));
 
-	FILE *f = fopen(filename, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, filename);
+	FILE *f = fopen(buf, "r");
 	json_t *root = NULL;
 	if (f == NULL)
 	{
-		printf("Error: cannot load map objects file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load map objects file %s", buf);
 		goto bail;
 	}
 	enum json_error e = json_stream_parse(f, &root);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing map objects file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing map objects file %s", buf);
 		goto bail;
 	}
 	MapObjectsLoadJSON(&classes->Classes, root);

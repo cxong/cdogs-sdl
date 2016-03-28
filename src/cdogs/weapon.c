@@ -57,6 +57,7 @@
 #include "config.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "log.h"
 #include "net_util.h"
 #include "objs.h"
 #include "sounds.h"
@@ -578,31 +579,36 @@ void BulletAndWeaponInitialize(
 
 	// 2-pass bullet loading will free root for us
 	bool freeBRoot = true;
-	bf = fopen(bpath, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, bpath);
+	bf = fopen(buf, "r");
 	if (bf == NULL)
 	{
-		printf("Error: cannot load bullets file %s\n", bpath);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load bullets file %s", buf);
 		goto bail;
 	}
 	e = json_stream_parse(bf, &broot);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing bullets file %s [error %d]\n", bpath, (int)e);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing bullets file %s [error %d]",
+			buf, (int)e);
 		goto bail;
 	}
 	BulletLoadJSON(b, &b->Classes, broot);
 
 	WeaponInitialize(g);
-	gf = fopen(gpath, "r");
+	GetDataFilePath(buf, gpath);
+	gf = fopen(buf, "r");
 	if (gf == NULL)
 	{
-		printf("Error: cannot load guns file %s\n", gpath);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load guns file %s", buf);
 		goto bail;
 	}
 	e = json_stream_parse(gf, &groot);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing guns file %s [error %d]\n", gpath, (int)e);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing guns file %s [error %d]",
+			buf, (int)e);
 		goto bail;
 	}
 	WeaponLoadJSON(g, &g->Guns, groot);

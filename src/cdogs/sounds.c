@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -126,7 +126,9 @@ void SoundInitialize(SoundDevice *device, const char *path)
 
 	CArrayInit(&device->sounds, sizeof(SoundData));
 	CArrayInit(&device->customSounds, sizeof(SoundData));
-	SoundLoadDirImpl(device, path, NULL);
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, path);
+	SoundLoadDirImpl(device, buf, NULL);
 
 	// Look for commonly used sounds to set our pointers
 	CArrayInit(&device->footstepSounds, sizeof(Mix_Chunk *));

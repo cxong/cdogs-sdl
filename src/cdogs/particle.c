@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include "collision.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "log.h"
 #include "objs.h"
 
 
@@ -44,17 +45,19 @@ void ParticleClassesInit(ParticleClasses *classes, const char *filename)
 	CArrayInit(&classes->Classes, sizeof(ParticleClass));
 	CArrayInit(&classes->CustomClasses, sizeof(ParticleClass));
 
-	FILE *f = fopen(filename, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, filename);
+	FILE *f = fopen(buf, "r");
 	json_t *root = NULL;
 	if (f == NULL)
 	{
-		printf("Error: cannot load particles file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load particles file %s", buf);
 		goto bail;
 	}
 	enum json_error e = json_stream_parse(f, &root);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing particles file %s\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing particles file %s", buf);
 		goto bail;
 	}
 	ParticleClassesLoadJSON(&classes->Classes, root);

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "json_utils.h"
+#include "log.h"
 #include "pic_manager.h"
 #include "utils.h"
 
@@ -75,16 +76,19 @@ void AmmoInitialize(AmmoClasses *ammo, const char *path)
 	json_t *root = NULL;
 	enum json_error e;
 
-	FILE *f = fopen(path, "r");
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, path);
+	FILE *f = fopen(buf, "r");
 	if (f == NULL)
 	{
-		printf("Error: cannot load ammo file %s\n", path);
+		LOG(LM_MAIN, LL_ERROR, "Error: cannot load ammo file %s", buf);
 		goto bail;
 	}
 	e = json_stream_parse(f, &root);
 	if (e != JSON_OK)
 	{
-		printf("Error parsing ammo file %s [error %d]\n", path, (int)e);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing ammo file %s [error %d]",
+			buf, (int)e);
 		goto bail;
 	}
 	AmmoLoadJSON(&ammo->Ammo, root);
