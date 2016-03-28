@@ -161,8 +161,10 @@ static int HandleInputNameMenu(int cmd, void *data)
 	return 0;
 }
 
+static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data);
+
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data);
-static menu_t *CreateFaceMenu(int *playerUID)
+static menu_t *CreateFaceMenu(MenuDisplayPlayerData *data)
 {
 	menu_t *menu = MenuCreateNormal("Face", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
@@ -172,14 +174,14 @@ static menu_t *CreateFaceMenu(int *playerUID)
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.CustomClasses)
 		MenuAddSubmenu(menu, MenuCreateBack(c->Name));
 	CA_FOREACH_END()
-	MenuSetPostInputFunc(menu, PostInputFaceMenu, playerUID);
+	MenuSetPostInputFunc(menu, PostInputFaceMenu, data);
 	return menu;
 }
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 {
-	int *playerUID = data;
-	UNUSED(cmd);
-	PlayerData *p = PlayerDataGetByUID(*playerUID);
+	const MenuDisplayPlayerData *d = data;
+	// Change player face based on current menu selection
+	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 	Character *c = &p->Char;
 	if (menu->u.normal.index < (int)gCharacterClasses.Classes.size)
 	{
@@ -191,6 +193,7 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 			&gCharacterClasses.CustomClasses,
 			menu->u.normal.index - (int)gCharacterClasses.Classes.size);
 	}
+	PostInputRotatePlayer(menu, cmd, data);
 }
 
 static void DrawColorMenu(
@@ -407,7 +410,7 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	loadMenu->isDisabled = gPlayerTemplates.size == 0;
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data, int *playerUID);
+	const char *name, PlayerSelectMenuData *data);
 static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
 	PlayerSelectMenu *menu,
@@ -424,6 +427,7 @@ void PlayerSelectMenusCreate(
 	data->nameMenuSelection = (int)strlen(letters);
 	data->display.PlayerUID = playerUID;
 	data->display.currentMenu = &ms->current;
+	data->display.Dir = DIRECTION_DOWN;
 	data->nameGenerator = ng;
 
 	switch (numPlayers)
@@ -457,12 +461,11 @@ void PlayerSelectMenusCreate(
 		"",
 		MENU_TYPE_NORMAL,
 		0);
+	MenuSetPostInputFunc(ms->root, PostInputRotatePlayer, &data->display);
 	MenuAddSubmenu(ms->root, MenuCreateCustom(
 		"Name", DrawNameMenu, HandleInputNameMenu, data));
 
-	MenuAddSubmenu(
-		ms->root,
-		CreateCustomizeMenu("Customize...", data, &data->display.PlayerUID));
+	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));
 	MenuAddSubmenu(
 		ms->root,
 		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
@@ -476,7 +479,7 @@ void PlayerSelectMenusCreate(
 	// Select "Done"
 	ms->root->u.normal.index = (int)ms->root->u.normal.subMenus.size - 1;
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
-	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, data);
+	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->display.PlayerUID);
 
@@ -486,30 +489,27 @@ void PlayerSelectMenusCreate(
 	MenuSetPostEnterFunc(ms->root, CheckReenableLoadMenu, NULL, false);
 }
 static menu_t *CreateCustomizeMenu(
-	const char *name, PlayerSelectMenuData *data, int *playerUID)
+	const char *name, PlayerSelectMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
-	MenuAddSubmenu(menu, CreateFaceMenu(playerUID));
+	MenuAddSubmenu(menu, CreateFaceMenu(&data->display));
 
-	MenuAddSubmenu(
-		menu,
-		CreateColorMenu("Skin", &data->skinData, CHAR_COLOR_SKIN, *playerUID));
-	MenuAddSubmenu(
-		menu,
-		CreateColorMenu("Hair", &data->hairData, CHAR_COLOR_HAIR, *playerUID));
-	MenuAddSubmenu(
-		menu,
-		CreateColorMenu("Arms", &data->armsData, CHAR_COLOR_ARMS, *playerUID));
-	MenuAddSubmenu(
-		menu,
-		CreateColorMenu("Body", &data->bodyData, CHAR_COLOR_BODY, *playerUID));
-	MenuAddSubmenu(
-		menu,
-		CreateColorMenu("Legs", &data->legsData, CHAR_COLOR_LEGS, *playerUID));
+	MenuAddSubmenu(menu, CreateColorMenu(
+		"Skin", &data->skinData, CHAR_COLOR_SKIN, data->display.PlayerUID));
+	MenuAddSubmenu(menu, CreateColorMenu(
+		"Hair", &data->hairData, CHAR_COLOR_HAIR, data->display.PlayerUID));
+	MenuAddSubmenu(menu, CreateColorMenu(
+		"Arms", &data->armsData, CHAR_COLOR_ARMS, data->display.PlayerUID));
+	MenuAddSubmenu(menu, CreateColorMenu(
+		"Body", &data->bodyData, CHAR_COLOR_BODY, data->display.PlayerUID));
+	MenuAddSubmenu(menu, CreateColorMenu(
+		"Legs", &data->legsData, CHAR_COLOR_LEGS, data->display.PlayerUID));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
+
+	MenuSetPostInputFunc(menu, PostInputRotatePlayer, &data->display);
 
 	return menu;
 }
@@ -522,4 +522,18 @@ static void ShuffleAppearance(void *data)
 	strncpy(p->name, buf, 20);
 	Character *c = &p->Char;
 	CharacterShuffleAppearance(c);
+}
+
+static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
+{
+	UNUSED(menu);
+	MenuDisplayPlayerData *d = data;
+	// Rotate player using left/right keys
+	const int dx = (cmd & CMD_LEFT) ? 1 : ((cmd & CMD_RIGHT) ? -1 : 0);
+	if (dx != 0)
+	{
+		d->Dir = (direction_e)CLAMP_OPPOSITE(
+			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
+		SoundPlay(&gSoundDevice, SoundGetRandomFootstep(&gSoundDevice));
+	}
 }

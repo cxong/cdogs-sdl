@@ -54,7 +54,8 @@
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos, const bool hilite, const bool showGun);
+	Character *c, const Vec2i pos, const direction_e d,
+	const bool hilite, const bool showGun);
 void DrawHead(
 	const Character *c, const direction_e dir,
 	const int state, const Vec2i pos);

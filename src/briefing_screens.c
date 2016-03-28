@@ -532,7 +532,7 @@ static void DrawPlayerSummary(
 
 	DisplayCharacterAndName(
 		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
-		&data->Char, data->name, colorWhite);
+		&data->Char, DIRECTION_DOWN, data->name, colorWhite);
 
 	if (data->survived)
 	{

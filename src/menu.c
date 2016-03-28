@@ -1320,7 +1320,11 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 		}
 		break;
 	case MENU_TYPE_VOID_FUNC:
-		menu->u.option.uHook.voidFunc.func(menu->u.option.uHook.voidFunc.data);
+		if (AnyButton(cmd))
+		{
+			menu->u.option.uHook.voidFunc.func(
+				menu->u.option.uHook.voidFunc.data);
+		}
 		break;
 	case MENU_TYPE_SET_OPTION_CHANGE_KEY:
 		menu->parentMenu->u.normal.changeKeyMenu = menu;

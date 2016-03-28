@@ -68,7 +68,7 @@
 // For actor drawing
 typedef struct
 {
-	const Pic *Head;
+	Pic Head;
 	TOffsetPic Body;
 	TOffsetPic Gun;
 	int DrawOrder[3];
@@ -394,11 +394,15 @@ static void GetCharacterPics(
 	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
 	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
 
-	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
+	const Pic *head = GetHeadPic(c->Class, headDir, headFrame);
+	pics->Head.size = head->size;
+	pics->Head.offset = Vec2iAdd(
+		head->offset,
+		Vec2iNew(-pics->Head.size.x / 2, -14 - pics->Head.size.y / 2));
+	pics->Head.Data = head->Data;
 
 	// Body
 	const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
-
 	pics->Body.dx = cBodyOffset[b][dir].dx;
 	pics->Body.dy = cBodyOffset[b][dir].dy;
 	pics->Body.picIndex = cBodyPic[b][dir][frame];
@@ -480,7 +484,7 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 			{
 			case 0:
 				// head
-				picp = pics->Head;
+				picp = &pics->Head;
 				break;
 			case 1:
 				// body
@@ -623,7 +627,7 @@ static void DrawObjectiveHighlight(
 		// Do not highlight dead, dying or transparent characters
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
-			BlitPicHighlight(&gGraphicsDevice, pics.Head, pos, color);
+			BlitPicHighlight(&gGraphicsDevice, &pics.Head, pos, color);
 			if (pics.Body.picIndex >= 0)
 			{
 				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Body);
@@ -687,12 +691,12 @@ static const Pic *GetHeadPic(
 }
 
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos, const bool hilite, const bool showGun)
+	Character *c, const Vec2i pos, const direction_e d,
+	const bool hilite, const bool showGun)
 {
 	ActorPics pics;
 	GetCharacterPics(
-		&pics, c, DIRECTION_DOWN, STATE_IDLE, -1, GUNSTATE_READY, false,
-		NULL, NULL, 0);
+		&pics, c, d, STATE_IDLE, -1, GUNSTATE_READY, false, NULL, NULL, 0);
 	DrawActorPics(&pics, pos);
 	if (hilite)
 	{

@@ -182,7 +182,8 @@ static void PlayerListDraw(
 
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
-			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, p->name, textColor);
+			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN,
+			p->name, textColor);
 
 		// Draw score
 		x += 100;

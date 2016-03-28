@@ -152,6 +152,7 @@ void WeaponMenuCreate(
 
 	data->display.PlayerUID = playerUID;
 	data->display.currentMenu = &ms->current;
+	data->display.Dir = DIRECTION_DOWN;
 	data->PlayerUID = playerUID;
 
 	switch (numPlayers)

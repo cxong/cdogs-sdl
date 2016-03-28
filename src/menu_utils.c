@@ -37,13 +37,14 @@
 // Display a character and the player name above it, with the character
 // centered around the target position
 void DisplayCharacterAndName(
-	Vec2i pos, Character *c, const char *name, const color_t color)
+	Vec2i pos, Character *c, const direction_e d,
+	const char *name, const color_t color)
 {
 	// Move the point down a bit since the default character draw point is at
 	// its feet
 	pos.y += 8;
 	Vec2i namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
-	DrawCharacterSimple(c, pos, false, false);
+	DrawCharacterSimple(c, pos, d, false, false);
 	FontStrMask(name, namePos, color);
 }
 
@@ -71,7 +72,7 @@ void MenuDisplayPlayer(
 		strcpy(s, pData->name);
 	}
 
-	DisplayCharacterAndName(playerPos, &pData->Char, s, colorWhite);
+	DisplayCharacterAndName(playerPos, &pData->Char, d->Dir, s, colorWhite);
 }
 
 void MenuDisplayPlayerControls(

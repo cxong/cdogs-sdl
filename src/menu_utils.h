@@ -36,6 +36,7 @@ typedef struct
 {
 	int PlayerUID;
 	menu_t **currentMenu;
+	direction_e Dir;
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
@@ -47,4 +48,5 @@ void MenuDisplayPlayerControls(
 	const Vec2i pos, const Vec2i size, const void *data);
 
 void DisplayCharacterAndName(
-	Vec2i pos, Character *c, const char *name, const color_t color);
+	Vec2i pos, Character *c, const direction_e d,
+	const char *name, const color_t color);
