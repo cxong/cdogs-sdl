@@ -134,7 +134,6 @@ void SoundInitialize(SoundDevice *device, const char *path)
 	CArrayInit(&device->footstepSounds, sizeof(Mix_Chunk *));
 	for (int i = 0;; i++)
 	{
-		char buf[CDOGS_FILENAME_MAX];
 		sprintf(buf, "footsteps/%d", i);
 		Mix_Chunk *s = StrSound(buf);
 		if (s == NULL) break;
@@ -148,7 +147,6 @@ void SoundInitialize(SoundDevice *device, const char *path)
 	CArrayInit(&device->screamSounds, sizeof(Mix_Chunk *));
 	for (int i = 0;; i++)
 	{
-		char buf[CDOGS_FILENAME_MAX];
 		sprintf(buf, "aargh%d", i);
 		Mix_Chunk *scream = StrSound(buf);
 		if (scream == NULL)
