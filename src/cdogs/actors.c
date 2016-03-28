@@ -1170,7 +1170,8 @@ TActor *ActorAdd(NActorAdd aa)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
-	actor->direction = DIRECTION_DOWN;
+	actor->direction = aa.Direction;
+	actor->DrawRadians = (float)dir2radians[actor->direction];
 	actor->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 	actor->slideLock = 0;
 	if (c->bot)

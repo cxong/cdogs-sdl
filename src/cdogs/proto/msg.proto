@@ -108,7 +108,7 @@ message NVec2i {
 message NActorAdd {
 	required uint32 UID = 1;
 	required uint32 CharId = 2;
-	required int32 Direction = 3;
+	required int32 Direction = 3 [default=4];
 	required int32 Health = 4;
 	required int32 PlayerUID = 5 [default=-1];
 	required uint32 TileItemFlags = 6;
