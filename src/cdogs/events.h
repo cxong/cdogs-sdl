@@ -43,6 +43,7 @@ typedef struct
 
 	bool HasResolutionChanged;
 	bool HasQuit;
+	bool HasLostFocus;
 } EventHandlers;
 
 extern EventHandlers gEventHandlers;

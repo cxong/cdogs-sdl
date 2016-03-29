@@ -65,7 +65,8 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 void EventPoll(EventHandlers *handlers, Uint32 ticks)
 {
 	SDL_Event e;
-	handlers->HasResolutionChanged = 0;
+	handlers->HasResolutionChanged = false;
+	handlers->HasLostFocus = false;
 	KeyPrePoll(&handlers->keyboard);
 	MousePrePoll(&handlers->mouse);
 	JoyPrePoll(&handlers->joysticks);
@@ -165,6 +166,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 				if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
 				{
 					MusicSetPlaying(&gSoundDevice, false);
+					handlers->HasLostFocus = true;
 				}
 				// Reset input handlers
 				EventReset(

@@ -306,11 +306,13 @@ static void RunGameInput(void *data)
 	int cmdAll = 0;
 	int idx = 0;
 	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
+	input_device_e firstPausingDevice = INPUT_DEVICE_UNSET;
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		// If no players, allow default keyboard to control camera
 		rData->cmds[0] = GetKeyboardCmd(
 			&gEventHandlers.keyboard, 0, false);
+		firstPausingDevice = INPUT_DEVICE_KEYBOARD;
 	}
 	else
 	{
@@ -321,6 +323,10 @@ static void RunGameInput(void *data)
 			{
 				idx--;
 				continue;
+			}
+			if (firstPausingDevice == INPUT_DEVICE_UNSET)
+			{
+				firstPausingDevice = p->inputDevice;
 			}
 			rData->cmds[idx] = GetGameCmd(
 				&gEventHandlers,
@@ -361,20 +367,26 @@ static void RunGameInput(void *data)
 		rData->isMap = !rData->isMap;
 	}
 
-	// Check if escape was pressed
+	// Check if:
+	// - escape was pressed, or
+	// - window lost focus
+	// - controller unplugged
 	// If the game was not paused, enter pause mode
-	// If the game was paused, exit the game
+	// If the game was paused and escape was pressed, exit the game
 	if (AnyButton(cmdAll))
 	{
 		rData->pausingDevice = INPUT_DEVICE_UNSET;
 	}
+	else if (rData->controllerUnplugged || gEventHandlers.HasLostFocus)
+	{
+		// Pause the game
+		rData->pausingDevice = firstPausingDevice;
+	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		// Escape pressed
-		if (rData->pausingDevice != INPUT_DEVICE_UNSET ||
-			rData->controllerUnplugged)
+		if (rData->pausingDevice != INPUT_DEVICE_UNSET)
 		{
-			// Exit
+			// Already paused; exit
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
