@@ -238,10 +238,15 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 		CArrayPushBack(&data.ammoSpawners, &ps);
 	}
 
-	if (MusicGetStatus(&gSoundDevice) != MUSIC_OK)
+	if (MusicGetStatus(&gSoundDevice) == MUSIC_NOLOAD)
 	{
-		HUDDisplayMessage(
-			&data.Camera.HUD, MusicGetErrorMessage(&gSoundDevice), 140);
+		// Display music error message for 2 seconds
+		GameEvent e = GameEventNew(GAME_EVENT_SET_MESSAGE);
+		strncat(
+			e.u.SetMessage.Message, MusicGetErrorMessage(&gSoundDevice),
+			sizeof e.u.SetMessage.Message - 1);
+		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 
 	m->time = 0;

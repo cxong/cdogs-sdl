@@ -72,6 +72,8 @@ static bool MusicPlay(SoundDevice *device, const char *path)
 		MusicPause(device);
 	}
 
+	device->musicErrorMessage[0] = '\0';
+
 	return true;
 }
 
