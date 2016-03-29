@@ -93,7 +93,7 @@ static int PosToCharacterIndex(Vec2i pos, int *idx)
 
 	pos.x /= 20;
 	pos.y /= 30;
-	*idx = 16 * pos.y + pos.x;
+	*idx = (10 + gGraphicsDevice.cachedConfig.Res.x) / 20 * pos.y + pos.x;
 	return 1;
 }
 
