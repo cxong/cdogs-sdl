@@ -426,17 +426,17 @@ static void DrawLives(
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const int xStep = hAlign == ALIGN_START ? 10 : -10;
-	const Vec2i offset = Vec2iNew(0, 1);
+	const Vec2i offset = Vec2iNew(2, 5);
 	Vec2i drawPos = Vec2iAdd(pos, offset);
 	if (hAlign == ALIGN_END)
 	{
 		const int w = device->cachedConfig.Res.x;
-		drawPos.x = w - drawPos.x + xStep;
+		drawPos.x = w - drawPos.x - offset.x;
 	}
 	if (vAlign == ALIGN_END)
 	{
 		const int h = device->cachedConfig.Res.y;
-		drawPos.y = h - drawPos.y - 9;
+		drawPos.y = h - drawPos.y - 1;
 	}
 	for (int i = 0; i < player->Lives; i++)
 	{

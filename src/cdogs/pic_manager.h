@@ -48,6 +48,8 @@ typedef struct
 
 extern PicManager gPicManager;
 
+#define NECK_OFFSET (-14)
+
 bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
 void PicManagerLoadDir(PicManager *pm, const char *path);

@@ -68,7 +68,7 @@
 // For actor drawing
 typedef struct
 {
-	Pic Head;
+	const Pic *Head;
 	TOffsetPic Body;
 	TOffsetPic Gun;
 	int DrawOrder[3];
@@ -394,12 +394,7 @@ static void GetCharacterPics(
 	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
 	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
 
-	const Pic *head = GetHeadPic(c->Class, headDir, headFrame);
-	pics->Head.size = head->size;
-	pics->Head.offset = Vec2iAdd(
-		head->offset,
-		Vec2iNew(-pics->Head.size.x / 2, -14 - pics->Head.size.y / 2));
-	pics->Head.Data = head->Data;
+	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
 
 	// Body
 	const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
@@ -484,7 +479,7 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 			{
 			case 0:
 				// head
-				picp = &pics->Head;
+				picp = pics->Head;
 				break;
 			case 1:
 				// body
@@ -627,7 +622,7 @@ static void DrawObjectiveHighlight(
 		// Do not highlight dead, dying or transparent characters
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
-			BlitPicHighlight(&gGraphicsDevice, &pics.Head, pos, color);
+			BlitPicHighlight(&gGraphicsDevice, pics.Head, pos, color);
 			if (pics.Body.picIndex >= 0)
 			{
 				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Body);
@@ -713,8 +708,9 @@ void DrawHead(
 	const int state, const Vec2i pos)
 {
 	const Pic *head = GetHeadPic(c->Class, dir, state);
-	// Note: ignore offset as we are only drawing the head
-	BlitCharMultichannel(&gGraphicsDevice, head, pos, &c->Colors);
+	// Note: undo neck offset as we are only drawing the head
+	const Vec2i drawPos = Vec2iNew(pos.x, pos.y - NECK_OFFSET);
+	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
 }
 
 

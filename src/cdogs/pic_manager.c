@@ -469,7 +469,11 @@ static void LoadOldFacePics(
 				continue;
 			}
 			Pic p = PicCopy(PicManagerGetFromOld(pm, facePic));
-			p.offset = faceOffsets[i][d];
+			// Add offset so we're drawing the head centered horizontally and
+			// taking into account the neck offset
+			p.offset = Vec2iAdd(
+				faceOffsets[i][d],
+				Vec2iNew(-p.size.x / 2, NECK_OFFSET - p.size.y / 2));
 			CArrayPushBack(&ns.pics, &p);
 		}
 		CArrayPushBack(&pm->sprites, &ns);
