@@ -414,6 +414,7 @@ void UpdateObjects(const int ticks)
 		{
 			continue;
 		}
+		TileItemUpdate(&obj->tileItem, ticks);
 		switch (obj->Class->Type)
 		{
 		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:

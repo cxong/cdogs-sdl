@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,9 @@ typedef struct TileItem
 	CPic CPic;
 	GetDrawContextFunc CPicFunc;
 	Vec2i ShadowSize;
+	int SoundLock;
 } TTileItem;
+#define SOUND_LOCK_TILE_OBJECT 12
 
 
 typedef struct
@@ -157,6 +159,8 @@ bool TileIsNormalFloor(Tile *t);
 bool TileIsClear(Tile *t);
 bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);
+
+void TileItemUpdate(TTileItem *t, const int ticks);
 
 TTileItem *ThingIdGetTileItem(ThingId *tid);
 bool TileItemIsDebris(const TTileItem *t);

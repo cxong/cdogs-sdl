@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -130,6 +130,11 @@ void TileSetAlternateFloor(Tile *t, NamedPic *p)
 {
 	t->pic = p;
 	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+}
+
+void TileItemUpdate(TTileItem *t, const int ticks)
+{
+	t->SoundLock = MAX(0, t->SoundLock - ticks);
 }
 
 

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,6 @@
 
 BulletClasses gBulletClasses;
 
-#define SOUND_LOCK_MOBILE_OBJECT 12
 #define SPECIAL_LOCK 12
 
 
@@ -139,8 +138,8 @@ static HitType HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits);
 bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
+	TileItemUpdate(&obj->tileItem, ticks);
 	obj->count += ticks;
-	obj->soundLock = MAX(0, obj->soundLock - ticks);
 	obj->specialLock = MAX(0, obj->specialLock - ticks);
 	if (obj->count < obj->bulletClass->Delay)
 	{
@@ -395,6 +394,8 @@ static HitType HitItem(
 		HitItemFunc, &data);
 	return data.HitType;
 }
+static HitType GetHitType(
+	const TTileItem *ti, const TMobileObject *bullet, int *targetUID);
 static bool HitItemFunc(TTileItem *ti, void *data)
 {
 	HitItemData *hData = data;
@@ -403,35 +404,19 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 		goto bail;
 	}
 	int targetUID = -1;
-	switch (ti->kind)
-	{
-	case KIND_CHARACTER:
-		hData->HitType = HIT_FLESH;
-		targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
-		break;
-	case KIND_OBJECT:
-		hData->HitType = HIT_OBJECT;
-		targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
-		break;
-	default:
-		CASSERT(false, "cannot damage target kind");
-		break;
-	}
-	if (hData->Obj->soundLock > 0 ||
-		!HasHitSound(
-		hData->Obj->bulletClass->Power, hData->Obj->flags, hData->Obj->PlayerUID,
-		ti->kind, targetUID, hData->Obj->bulletClass->Special, true))
-	{
-		hData->HitType = HIT_NONE;
-	}
+	hData->HitType = GetHitType(ti, hData->Obj, &targetUID);
 	Damage(
 		hData->Obj->vel, hData->Obj->bulletClass->Power,
 		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
 		ti->kind, targetUID,
 		hData->Obj->bulletClass->Special);
-	if (hData->Obj->soundLock <= 0)
+	if (hData->Obj->tileItem.SoundLock <= 0)
 	{
-		hData->Obj->soundLock += SOUND_LOCK_MOBILE_OBJECT;
+		hData->Obj->tileItem.SoundLock += SOUND_LOCK_TILE_OBJECT;
+	}
+	if (ti->SoundLock <= 0)
+	{
+		ti->SoundLock += SOUND_LOCK_TILE_OBJECT;
 	}
 	if (hData->Obj->specialLock <= 0)
 	{
@@ -441,6 +426,34 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 bail:
 	// Whether to produce multiple hits from the same TMobileObject
 	return hData->MultipleHits;
+}
+static HitType GetHitType(
+	const TTileItem *ti, const TMobileObject *bullet, int *targetUID)
+{
+	*targetUID = -1;
+	HitType ht = HIT_NONE;
+	switch (ti->kind)
+	{
+	case KIND_CHARACTER:
+		ht = HIT_FLESH;
+		*targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
+		break;
+	case KIND_OBJECT:
+		ht = HIT_OBJECT;
+		*targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
+		break;
+	default:
+		CASSERT(false, "cannot damage target kind");
+		break;
+	}
+	if (bullet->tileItem.SoundLock > 0 ||
+		!HasHitSound(
+		bullet->bulletClass->Power, bullet->flags, bullet->PlayerUID,
+		ti->kind, *targetUID, bullet->bulletClass->Special, true))
+	{
+		ht = HIT_NONE;
+	}
+	return ht;
 }
 
 

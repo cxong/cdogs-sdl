@@ -138,6 +138,8 @@ void UpdateActorState(TActor * actor, int ticks)
 	
 	actor->slideLock = MAX(0, actor->slideLock - ticks);
 
+	TileItemUpdate(&actor->tileItem, ticks);
+
 	actor->stateCounter = MAX(0, actor->stateCounter - ticks);
 	if (actor->stateCounter > 0)
 	{
