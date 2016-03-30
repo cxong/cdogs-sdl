@@ -168,6 +168,7 @@ static void AddObjective(
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
 			aa.CharId = CharacterStoreGetSpecialId(store, *idx);
+			aa.TileItemFlags = ObjectiveToTileItem(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
@@ -193,6 +194,7 @@ static void AddObjective(
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
 			aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
+			aa.TileItemFlags = ObjectiveToTileItem(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
