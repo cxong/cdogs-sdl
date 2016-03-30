@@ -366,6 +366,7 @@ void LoadCharacters(
 	while (child)
 	{
 		Character *ch = CharacterStoreAddOther(c);
+		char *tmp;
 		if (version < 7)
 		{
 			// Old version stored character looks as palette indices
@@ -382,7 +383,7 @@ void LoadCharacters(
 		}
 		else
 		{
-			char *tmp = GetString(child, "Face");
+			tmp = GetString(child, "Face");
 			ch->Class = StrCharacterClass(tmp);
 			CFREE(tmp);
 			LoadColor(&ch->Colors.Skin, child, "Skin");
@@ -392,7 +393,7 @@ void LoadCharacters(
 			LoadColor(&ch->Colors.Hair, child, "Hair");
 		}
 		LoadInt(&ch->speed, child, "speed");
-		char *tmp = GetString(child, "Gun");
+		tmp = GetString(child, "Gun");
 		ch->Gun = StrGunDescription(tmp);
 		CFREE(tmp);
 		LoadInt(&ch->maxHealth, child, "maxHealth");
