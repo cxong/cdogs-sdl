@@ -420,13 +420,15 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	// If we're not hosting a net game,
 	// don't update if the game has paused or has automap shown
+	// Important: don't consider paused if we are trying to quit
 	const bool paused =
 		rData->pausingDevice != INPUT_DEVICE_UNSET ||
 		rData->controllerUnplugged ||
 		rData->isMap;
 	if (!gCampaign.IsClient &&
 		!ConfigGetBool(&gConfig, "StartServer") &&
-		paused)
+		paused &&
+		!gEventHandlers.HasQuit)
 	{
 		return UPDATE_RESULT_DRAW;
 	}
