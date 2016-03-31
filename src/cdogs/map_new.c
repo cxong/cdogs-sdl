@@ -383,7 +383,7 @@ void LoadCharacters(
 		}
 		else
 		{
-			tmp = GetString(child, "Face");
+			tmp = GetString(child, "Class");
 			ch->Class = StrCharacterClass(tmp);
 			CFREE(tmp);
 			LoadColor(&ch->Colors.Skin, child, "Skin");
