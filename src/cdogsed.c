@@ -1400,8 +1400,6 @@ int main(int argc, char *argv[])
 	debug(D_NORMAL, "Starting editor\n");
 	EditCampaign();
 
-	CArrayTerminate(&gPlayerTemplates);
-
 	MapTerminate(&gMap);
 	MapObjectsTerminate(&gMapObjects);
 	PickupClassesTerminate(&gPickupClasses);
