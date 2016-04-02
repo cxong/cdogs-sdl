@@ -351,8 +351,8 @@ int main(int argc, char *argv[])
 				break;
 			default:
 				PrintHelp();
-				err = EXIT_FAILURE;
-				goto bail;
+				// Ignore unknown arguments
+				break;
 			}
 		}
 		if (optind < argc)
