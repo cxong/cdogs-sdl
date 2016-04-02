@@ -47,7 +47,6 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 #define _DEFAULT_SOURCE
-#define _BSD_SOURCE
 #include "utils.h"
 
 #include <assert.h>

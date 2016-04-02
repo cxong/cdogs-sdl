@@ -1,5 +1,8 @@
 /*
-Copyright (c) 2013-2016, Cong Xu, Baudouin Feildel
+Copyright (c) 2013-2016, tinydir authors:
+- Cong Xu
+- Baudouin Feildel
+- Andargor <andargor@yahoo.com>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,6 +43,7 @@ extern "C" {
 # include <dirent.h>
 # include <libgen.h>
 # include <sys/stat.h>
+# include <stddef.h>
 #endif
 
 
@@ -56,8 +60,34 @@ extern "C" {
 
 #ifdef _MSC_VER
 # define _TINYDIR_FUNC static __inline
-#else
+#elif !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
 # define _TINYDIR_FUNC static __inline__
+#else
+# define _TINYDIR_FUNC static inline
+#endif
+
+/* readdir_r is a POSIX-only function, and may not be available under various
+ * environments/settings, e.g. MinGW. Use readdir fallback */
+#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _BSD_SOURCE || _SVID_SOURCE ||\
+	_POSIX_SOURCE
+# define _TINYDIR_HAS_READDIR_R
+#endif
+#if _POSIX_C_SOURCE >= 200112L
+# define _TINYDIR_HAS_FPATHCONF
+# include <unistd.h>
+#endif
+#if _BSD_SOURCE || _SVID_SOURCE || \
+	(_POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700)
+# define _TINYDIR_HAS_DIRFD
+# include <sys/types.h>
+#endif
+#if defined _TINYDIR_HAS_FPATHCONF && defined _TINYDIR_HAS_DIRFD &&\
+	defined _PC_NAME_MAX
+# define _TINYDIR_USE_FPATHCONF
+#endif
+#if defined __MINGW32__ || !defined _TINYDIR_HAS_READDIR_R ||\
+	!(defined _TINYDIR_USE_FPATHCONF || defined NAME_MAX)
+# define _TINYDIR_USE_READDIR
 #endif
 
 /* Allow user to use a custom allocator by defining _TINYDIR_MALLOC and _TINYDIR_FREE. */
@@ -70,9 +100,9 @@ extern "C" {
 #if !defined(_TINYDIR_MALLOC)
 	#define _TINYDIR_MALLOC(_size) malloc(_size)
 	#define _TINYDIR_FREE(_ptr)    free(_ptr)
-#endif //!defined(_TINYDIR_MALLOC)
+#endif /* !defined(_TINYDIR_MALLOC) */
 
-typedef struct
+typedef struct tinydir_file
 {
 	char path[_TINYDIR_PATH_MAX];
 	char name[_TINYDIR_FILENAME_MAX];
@@ -85,7 +115,7 @@ typedef struct
 #endif
 } tinydir_file;
 
-typedef struct
+typedef struct tinydir_dir
 {
 	char path[_TINYDIR_PATH_MAX];
 	int has_next;
@@ -98,6 +128,9 @@ typedef struct
 #else
 	DIR *_d;
 	struct dirent *_e;
+#ifndef _TINYDIR_USE_READDIR
+	struct dirent *_ep;
+#endif
 #endif
 } tinydir_dir;
 
@@ -124,6 +157,12 @@ _TINYDIR_FUNC
 void _tinydir_get_ext(tinydir_file *file);
 _TINYDIR_FUNC
 int _tinydir_file_cmp(const void *a, const void *b);
+#ifndef _MSC_VER
+#ifndef _TINYDIR_USE_READDIR
+_TINYDIR_FUNC
+size_t _tinydir_dirent_buf_size(DIR *dirp);
+#endif
+#endif
 
 
 /* definitions*/
@@ -131,6 +170,16 @@ int _tinydir_file_cmp(const void *a, const void *b);
 _TINYDIR_FUNC
 int tinydir_open(tinydir_dir *dir, const char *path)
 {
+#ifndef _MSC_VER
+#ifndef _TINYDIR_USE_READDIR
+	int error;
+	int size;	/* using int size */
+#endif
+#else
+	char path_buf[_TINYDIR_PATH_MAX];
+#endif
+	char *pathp;
+
 	if (dir == NULL || path == NULL || strlen(path) == 0)
 	{
 		errno = EINVAL;
@@ -148,28 +197,50 @@ int tinydir_open(tinydir_dir *dir, const char *path)
 	dir->_h = INVALID_HANDLE_VALUE;
 #else
 	dir->_d = NULL;
+#ifndef _TINYDIR_USE_READDIR
+	dir->_ep = NULL;
+#endif
 #endif
 	tinydir_close(dir);
 
 	strcpy(dir->path, path);
+	/* Remove trailing slashes */
+	pathp = &dir->path[strlen(dir->path) - 1];
+	while (pathp != dir->path && (*pathp == '\\' || *pathp == '/'))
+	{
+		*pathp = '\0';
+		pathp++;
+	}
 #ifdef _MSC_VER
-	strcat(dir->path, "\\*");
-	dir->_h = FindFirstFileA(dir->path, &dir->_f);
-	dir->path[strlen(dir->path) - 2] = '\0';
+	strcpy(path_buf, dir->path);
+	strcat(path_buf, "\\*");
+	dir->_h = FindFirstFileA(path_buf, &dir->_f);
 	if (dir->_h == INVALID_HANDLE_VALUE)
+	{
+		errno = ENOENT;
 #else
 	dir->_d = opendir(path);
 	if (dir->_d == NULL)
-#endif
 	{
-		errno = ENOENT;
+#endif
 		goto bail;
 	}
 
 	/* read first file */
 	dir->has_next = 1;
 #ifndef _MSC_VER
+#ifdef _TINYDIR_USE_READDIR
 	dir->_e = readdir(dir->_d);
+#else
+	/* allocate dirent buffer for readdir_r */
+	size = _tinydir_dirent_buf_size(dir->_d); /* conversion to int */
+	if (size == -1) return -1;
+	dir->_ep = (struct dirent*)_TINYDIR_MALLOC(size);
+	if (dir->_ep == NULL) return -1;
+
+	error = readdir_r(dir->_d, dir->_ep, &dir->_e);
+	if (error != 0) return -1;
+#endif
 	if (dir->_e == NULL)
 	{
 		dir->has_next = 0;
@@ -211,7 +282,6 @@ int tinydir_open_sorted(tinydir_dir *dir, const char *path)
 	dir->_files = (tinydir_file *)_TINYDIR_MALLOC(sizeof *dir->_files * n_files);
 	if (dir->_files == NULL)
 	{
-		errno = ENOMEM;
 		goto bail;
 	}
 	while (dir->has_next)
@@ -258,10 +328,7 @@ void tinydir_close(tinydir_dir *dir)
 	memset(dir->path, 0, sizeof(dir->path));
 	dir->has_next = 0;
 	dir->n_files = 0;
-	if (dir->_files != NULL)
-	{
-		_TINYDIR_FREE(dir->_files);
-	}
+	_TINYDIR_FREE(dir->_files);
 	dir->_files = NULL;
 #ifdef _MSC_VER
 	if (dir->_h != INVALID_HANDLE_VALUE)
@@ -276,6 +343,10 @@ void tinydir_close(tinydir_dir *dir)
 	}
 	dir->_d = NULL;
 	dir->_e = NULL;
+#ifndef _TINYDIR_USE_READDIR
+	_TINYDIR_FREE(dir->_ep);
+	dir->_ep = NULL;
+#endif
 #endif
 }
 
@@ -296,7 +367,18 @@ int tinydir_next(tinydir_dir *dir)
 #ifdef _MSC_VER
 	if (FindNextFileA(dir->_h, &dir->_f) == 0)
 #else
+#ifdef _TINYDIR_USE_READDIR
 	dir->_e = readdir(dir->_d);
+#else
+	if (dir->_ep == NULL)
+	{
+		return -1;
+	}
+	if (readdir_r(dir->_d, dir->_ep, &dir->_e) != 0)
+	{
+		return -1;
+	}
+#endif
 	if (dir->_e == NULL)
 #endif
 	{
@@ -559,6 +641,47 @@ int _tinydir_file_cmp(const void *a, const void *b)
 	}
 	return strncmp(fa->name, fb->name, _TINYDIR_FILENAME_MAX);
 }
+
+#ifndef _MSC_VER
+#ifndef _TINYDIR_USE_READDIR
+/*
+The following authored by Ben Hutchings <ben@decadent.org.uk>
+from https://womble.decadent.org.uk/readdir_r-advisory.html
+*/
+/* Calculate the required buffer size (in bytes) for directory      *
+* entries read from the given directory handle.  Return -1 if this  *
+* this cannot be done.                                              *
+*                                                                   *
+* This code does not trust values of NAME_MAX that are less than    *
+* 255, since some systems (including at least HP-UX) incorrectly    *
+* define it to be a smaller value.                                  */
+_TINYDIR_FUNC
+size_t _tinydir_dirent_buf_size(DIR *dirp)
+{
+	long name_max;
+	size_t name_end;
+	/* parameter may be unused */
+	(void)dirp;
+
+#if defined _TINYDIR_USE_FPATHCONF
+	name_max = fpathconf(dirfd(dirp), _PC_NAME_MAX);
+	if (name_max == -1)
+#if defined(NAME_MAX)
+		name_max = (NAME_MAX > 255) ? NAME_MAX : 255;
+#else
+		return (size_t)(-1);
+#endif
+#elif defined(NAME_MAX)
+ 	name_max = (NAME_MAX > 255) ? NAME_MAX : 255;
+#else
+#error "buffer size for readdir_r cannot be determined"
+#endif
+	name_end = (size_t)offsetof(struct dirent, d_name) + name_max + 1;
+	return (name_end > sizeof(struct dirent) ?
+		name_end : sizeof(struct dirent));
+}
+#endif
+#endif
 
 #ifdef __cplusplus
 }
