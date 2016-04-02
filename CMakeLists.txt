@@ -97,7 +97,7 @@ else()
 		add_definitions(-D__GCWZERO__)
 	endif()
     if(CLANG)
-		add_definitions(-std=c99)
+		add_definitions(-std=gnu99)
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return -std=gnu99)
