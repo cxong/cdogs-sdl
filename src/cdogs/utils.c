@@ -46,12 +46,13 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#define _DEFAULT_SOURCE
 #include "utils.h"
 
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <tinydir/tinydir.h>
