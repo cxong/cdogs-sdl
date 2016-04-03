@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,10 @@ void CArrayReserve(CArray *a, size_t capacity)
 		return;
 	}
 	a->capacity = capacity;
-	CREALLOC(a->data, a->capacity * a->elemSize);
+	if (a->capacity > 0)
+	{
+		CREALLOC(a->data, a->capacity * a->elemSize);
+	}
 }
 void CArrayCopy(CArray *dst, const CArray *src)
 {
