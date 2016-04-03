@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2015, Cong Xu
+ Copyright (c) 2013-2016, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -152,7 +152,7 @@ void LoadPic(
 		CFREE(tmp);
 	}
 	if ((*value == NULL || ConfigGetBool(&gConfig, "Graphics.OriginalPics")) &&
-		json_find_first_label(node, oldPicName))
+		oldPicName != NULL && json_find_first_label(node, oldPicName))
 	{
 		int oldPic;
 		LoadInt(&oldPic, node, oldPicName);

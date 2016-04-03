@@ -201,11 +201,11 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
-	if (json_find_first_label(node, "Icon"))
+	const Pic *icon;
+	LoadPic(&icon, node, "Icon", NULL);
+	if (icon != NULL)
 	{
-		tmp = GetString(node, "Icon");
-		g->Icon = PicManagerGet(&gPicManager, tmp, -1);
-		CFREE(tmp);
+		g->Icon = icon;
 	}
 
 	g->name = GetString(node, "Name");
