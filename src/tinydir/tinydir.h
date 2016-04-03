@@ -601,7 +601,7 @@ int tinydir_file_open(tinydir_file *file, const char *path)
 		{
 			/* File found */
 			found = 1;
-			goto bail;
+			break;
 		}
 		tinydir_next(&dir);
 	}

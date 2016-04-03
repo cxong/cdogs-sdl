@@ -572,7 +572,6 @@ static int FindWallRun(
 	const Map *map, const Vec2i mid, const Vec2i d, const int len)
 {
 	int run = 0;
-	Vec2i v = mid;
 	int next = 0;
 	bool plus = false;
 	// Find the wall run by starting from a midpoint and expanding outwards in
@@ -592,7 +591,7 @@ static int FindWallRun(
 		{
 			next -= i;
 		}
-		v = Vec2iAdd(mid, Vec2iScale(d, next));
+		const Vec2i v = Vec2iAdd(mid, Vec2iScale(d, next));
 		plus = !plus;
 
 		if (IMapGet(map, v) != MAP_WALL ||

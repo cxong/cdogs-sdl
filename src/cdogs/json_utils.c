@@ -152,11 +152,14 @@ void LoadPic(
 		CFREE(tmp);
 	}
 	if ((*value == NULL || ConfigGetBool(&gConfig, "Graphics.OriginalPics")) &&
-		oldPicName != NULL && json_find_first_label(node, oldPicName))
+		oldPicName != NULL)
 	{
-		int oldPic;
+		int oldPic = -1;
 		LoadInt(&oldPic, node, oldPicName);
-		*value = PicManagerGetFromOld(&gPicManager, oldPic);
+		if (oldPic >= 0)
+		{
+			*value = PicManagerGetFromOld(&gPicManager, oldPic);
+		}
 	}
 }
 void LoadBulletGuns(CArray *guns, json_t *node, const char *name)

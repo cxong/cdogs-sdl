@@ -434,7 +434,7 @@ void CameraDraw(
 		pos = FontStrMask(" to follow player, ", pos, colorYellow);
 		InputGetDirectionNames(buf, inputDevice, deviceIndex);
 		pos = FontStrMask(buf, pos, colorYellow);
-		pos = FontStrMask(" to free-look", pos, colorYellow);
+		FontStrMask(" to free-look", pos, colorYellow);
 	}
 }
 // Try to follow a player

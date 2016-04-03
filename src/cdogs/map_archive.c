@@ -275,7 +275,11 @@ static void LoadArchivePics(
 	while (dir.has_next)
 	{
 		tinydir_file file;
-		tinydir_readfile(&dir, &file);
+		if (tinydir_readfile(&dir, &file) != 0)
+		{
+			LOG(LM_MAIN, LL_WARN, "cannot read file: %s", strerror(errno));
+			break;
+		}
 		if (!file.is_reg) goto nextFile;
 		long len;
 		buf = ReadFileIntoBuf(file.path, "rb", &len);
