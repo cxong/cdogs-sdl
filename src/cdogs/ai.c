@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -570,9 +570,10 @@ void CreateEnemies(void)
 		return;
 	}
 
-	for (int i = 0;
-		i < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100);
-		i++)
+	const int density =
+		gMission.missionData->EnemyDensity *
+		ConfigGetInt(&gConfig, "Game.EnemyDensity");
+	for (int i = 0; i < density / 100; i++)
 	{
 		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = ActorsGetNextUID();
