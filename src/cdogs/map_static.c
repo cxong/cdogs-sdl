@@ -33,6 +33,7 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "handle_game_events.h"
+#include "log.h"
 #include "map_build.h"
 #include "net_util.h"
 
@@ -154,6 +155,12 @@ static void AddObjective(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
 	const ObjectivePositions *op)
 {
+	if (op->Index >= (int)mo->missionData->Objectives.size)
+	{
+		LOG(LM_MAP, LL_ERROR, "cannot add objective; objective #%d missing",
+			op->Index);
+		return;
+	}
 	const MissionObjective *mobj =
 		CArrayGet(&mo->missionData->Objectives, op->Index);
 	ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);

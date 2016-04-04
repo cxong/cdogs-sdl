@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ static LogModuleInfo sModuleInfo[] =
 	{ LL_INFO, "ACTOR" },
 	{ LL_INFO, "SOUND" },
 	{ LL_INFO, "LM_GFX" },
+	{ LL_WARN, "LM_MAP" },
 };
 
 
