@@ -213,6 +213,7 @@ void MissionTerminate(Mission *m)
 		CArrayTerminate(&m->u.Static.Keys);
 		break;
 	}
+	memset(m, 0, sizeof *m);
 }
 
 
