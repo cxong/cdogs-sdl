@@ -231,10 +231,14 @@ static void MissionBriefingDraw(void *data)
 		{
 			continue;
 		}
-		const Vec2i yInc = Vec2iNew(0, i * mData->ObjectiveHeight);
-		FontStr(o->Description, Vec2iAdd(mData->ObjectiveDescPos, yInc));
+		Vec2i offset = Vec2iNew(0, i * mData->ObjectiveHeight);
+		FontStr(o->Description, Vec2iAdd(mData->ObjectiveDescPos, offset));
+		// Draw the icons slightly offset so that tall icons don't overlap each
+		// other
+		offset.x = -16 * (i & 1);
 		DrawObjectiveInfo(
-			mData->MissionOptions, i, Vec2iAdd(mData->ObjectiveInfoPos, yInc));
+			mData->MissionOptions, i,
+			Vec2iAdd(mData->ObjectiveInfoPos, offset));
 	}
 }
 
