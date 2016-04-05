@@ -465,13 +465,22 @@ bool CameraIsSingleScreen(void)
 	}
 	// Do split screen for PVP, unless whole map fits on camera, or there
 	// are no human players alive or dying, then just do single screen
+	const bool mapFitsInScreen =
+		gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x &&
+		gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y;
 	if (IsPVP(gCampaign.Entry.Mode) &&
-		(gMap.Size.x * TILE_WIDTH >= gGraphicsDevice.cachedConfig.Res.x ||
-		gMap.Size.y * TILE_HEIGHT >= gGraphicsDevice.cachedConfig.Res.y) &&
+		!mapFitsInScreen &&
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) > 0)
 	{
 		return false;
 	}
+	// Otherwise, if we are forcing never splitscreen, use single screen
+	// regardless of whether the players are within camera range
+	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER)
+	{
+		return true;
+	}
+	// Finally, use split screen if players don't fit on camera
 	Vec2i min;
 	Vec2i max;
 	PlayersGetBoundingRectangle(&min, &max);

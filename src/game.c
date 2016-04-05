@@ -476,7 +476,6 @@ static GameLoopResult RunGameUpdate(void *data)
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
 	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
-		CameraIsSingleScreen() &&
 		GetNumPlayers(true, true, true) > 1)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
