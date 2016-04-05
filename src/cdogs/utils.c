@@ -160,7 +160,7 @@ void RealPath(const char *src, char *dest)
 		char cLast = '\0';
 		for (const char *c = srcBuf; *c != '\0'; c++)
 		{
-			if (*c == '.')
+			if (*c == '.' && (cLast == '.' || cLast == '/'))
 			{
 				if (cLast == '.')
 				{
@@ -180,6 +180,10 @@ void RealPath(const char *src, char *dest)
 							cOut++;
 						}
 					}
+				}
+				else if (cLast == '/')
+				{
+					// ignore for now
 				}
 			}
 			else if (*c == '/' && (cLast == '/' || cLast == '.'))
