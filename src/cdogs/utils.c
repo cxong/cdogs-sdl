@@ -156,7 +156,8 @@ void RealPath(const char *src, char *dest)
 		}
 		// Then, copy the path one level at a time, ignoring '//'s, '.'s and
 		// resolving '..'s to the parent level
-		char *cOut = dest;
+		char resolveBuf[CDOGS_PATH_MAX];
+		char *cOut = resolveBuf;
 		char cLast = '\0';
 		for (const char *c = srcBuf; *c != '\0'; c++)
 		{
@@ -199,6 +200,22 @@ void RealPath(const char *src, char *dest)
 		}
 		// Write terminating char
 		*cOut = '\0';
+
+		// Finally, add on the CWD if the path is not absolute
+#ifdef _WIN32
+		if (strlen(resolveBuf) > 1 && resolveBuf[1] == ':')
+#else
+		if (resolveBuf[0] == '/')
+#endif
+		{
+			strcpy(dest, resolveBuf);
+		}
+		else
+		{
+			CDogsGetCWD(dest);
+			strcat(dest, "/");
+			strcat(dest, resolveBuf);
+		}
 		res = dest;
 	}
 	else
@@ -277,7 +294,10 @@ void RelPath(char *buf, const char *to, const char *from)
 		}
 		fSlash++;
 	}
-	tSlash++;
+	if (*tSlash == '/')
+	{
+		tSlash++;
+	}
 	strcat(buf, tSlash);
 }
 static void TrimSlashes(char *s)
@@ -302,7 +322,7 @@ char *CDogsGetCWD(char *buf)
 	// This gives us the executable path; find the dirname
 	*strrchr(cwd, '/') = '\0';
 	// The executable is under *.app/Content/MacOS, so cd up thrice
-	sprintf(buf, "%s/../../../", cwd);
+	sprintf(buf, "%s/../../..", cwd);
 	return buf;
 #else
 	return getcwd(buf, CDOGS_PATH_MAX);
