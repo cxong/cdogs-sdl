@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -139,13 +139,12 @@ void RealPath(const char *src, char *dest)
 	char *res;
 #ifndef _WIN32
 	// realpath will fail if the file does not exist; if this is the
-	// case then create a file temporarily, return
-	// the canonical path, then remove the temporary file.
+	// case then resolve the path ourselves
 	tinydir_file file;
 	const bool exists = tinydir_file_open(&file, src) == 0;
-	char srcBuf[CDOGS_PATH_MAX];
 	if (!exists)
 	{
+		char srcBuf[CDOGS_PATH_MAX];
 		// First, convert slashes
 		strcpy(srcBuf, src);
 		for (char *c = srcBuf; *c != '\0'; c++)
@@ -155,32 +154,53 @@ void RealPath(const char *src, char *dest)
 				*c = '/';
 			}
 		}
-		FILE *f = fopen(srcBuf, "ab+");
-		if (f == NULL)
+		// Then, copy the path one level at a time, ignoring '//'s, '.'s and
+		// resolving '..'s to the parent level
+		char resolveBuf[CDOGS_PATH_MAX];
+		char *cOut = resolveBuf;
+		char cLast = '\0';
+		for (const char *c = srcBuf; *c != '\0'; c++)
 		{
-			fprintf(stderr, "internal error: cannot create temp file %s\n",
-				srcBuf);
+			if (*c == '.')
+			{
+				if (cLast == '.')
+				{
+					// '..' parent dir
+					// Rewind the out ptr to the last path separator
+					if (cOut > resolveBuf + 1)
+					{
+						// Skip past the last slash
+						cOut -= 2;
+						while (*cOut != '/' && cOut > resolveBuf)
+						{
+							cOut--;
+						}
+						// Go back in front of the slash
+						if (*cOut == '/')
+						{
+							cOut++;
+						}
+					}
+				}
+			}
+			else if (*c == '/' && (cLast == '/' || cLast == '.'))
+			{
+				// Double slash; ignore
+			}
+			else
+			{
+				*cOut = *c;
+				cOut++;
+			}
+			cLast = *c;
 		}
-		else
-		{
-			fclose(f);
-		}
-		res = realpath(srcBuf, dest);
+		// Write terminating char
+		*cOut = '\0';
+		res = realpath(resolveBuf, dest);
 	}
 	else
 #endif
 	res = realpath(src, dest);
-#ifndef _WIN32
-	if (!exists)
-	{
-		// delete the temporary file we created
-		if (remove(srcBuf) != 0)
-		{
-			fprintf(stderr, "Internal error: cannot delete temp file %s\n",
-				srcBuf);
-		}
-	}
-#endif
 	if (!res)
 	{
 		fprintf(stderr, "Cannot resolve relative path %s: %s\n",
