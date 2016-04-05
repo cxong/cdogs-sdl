@@ -511,7 +511,7 @@ static GameLoopResult RunGameUpdate(void *data)
 			{
 				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 				ei.u.ActorImpulse.UID = p->uid;
-				ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(vel, 64));
+				ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(vel, -64));
 				ei.u.ActorImpulse.Pos = Vec2i2Net(Vec2iZero());
 				GameEventsEnqueue(&gGameEvents, ei);
 			}
