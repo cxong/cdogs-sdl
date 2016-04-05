@@ -156,8 +156,7 @@ void RealPath(const char *src, char *dest)
 		}
 		// Then, copy the path one level at a time, ignoring '//'s, '.'s and
 		// resolving '..'s to the parent level
-		char resolveBuf[CDOGS_PATH_MAX];
-		char *cOut = resolveBuf;
+		char *cOut = dest;
 		char cLast = '\0';
 		for (const char *c = srcBuf; *c != '\0'; c++)
 		{
@@ -167,11 +166,11 @@ void RealPath(const char *src, char *dest)
 				{
 					// '..' parent dir
 					// Rewind the out ptr to the last path separator
-					if (cOut > resolveBuf + 1)
+					if (cOut > dest + 1)
 					{
 						// Skip past the last slash
 						cOut -= 2;
-						while (*cOut != '/' && cOut > resolveBuf)
+						while (*cOut != '/' && cOut > dest)
 						{
 							cOut--;
 						}
@@ -196,7 +195,7 @@ void RealPath(const char *src, char *dest)
 		}
 		// Write terminating char
 		*cOut = '\0';
-		res = realpath(resolveBuf, dest);
+		res = dest;
 	}
 	else
 #endif
