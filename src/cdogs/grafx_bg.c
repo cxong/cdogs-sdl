@@ -49,7 +49,6 @@ void GrafxMakeRandomBackground(
 	ObjsInit();
 	MobObjsInit();
 	PickupsInit();
-	WatchesInit();
 	SetupQuickPlayCampaign(&co->Setting);
 	co->seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
@@ -65,7 +64,6 @@ void GrafxMakeRandomBackground(
 	ObjsTerminate();
 	MobObjsTerminate();
 	PickupsTerminate();
-	WatchesTerminate();
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
 	co->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
@@ -115,6 +113,7 @@ void GrafxMakeBackground(
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
 	GameEventsTerminate(&gGameEvents);
+	MissionEnd();
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)
