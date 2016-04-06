@@ -110,7 +110,10 @@ int SDLJBN_AddMappingsFromFile(const char *file)
 	ret = ReadMappingsString(s);
 
 bail:
-	SDL_RWclose(rwops);
+	if (rwops != NULL)
+	{
+		SDL_RWclose(rwops);
+	}
 	SDL_free(s);
 	return ret;
 }

@@ -197,6 +197,7 @@ int main(int argc, char *argv[])
 	int wait = 0;
 	int controllerFlag = SDL_INIT_GAMECONTROLLER;
 	credits_displayer_t creditsDisplayer;
+	memset(&creditsDisplayer, 0, sizeof creditsDisplayer);
 	custom_campaigns_t campaigns;
 	memset(&campaigns, 0, sizeof campaigns);
 	int forceResolution = 0;
