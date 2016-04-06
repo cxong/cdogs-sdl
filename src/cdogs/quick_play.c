@@ -253,6 +253,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		assert(0 && "unknown map type");
 		break;
 	}
+	CharacterStoreTerminate(&setting->characters);
 	CharacterStoreInit(&setting->characters);
 	int c = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyCount"), 3, 5, 8, 12);
