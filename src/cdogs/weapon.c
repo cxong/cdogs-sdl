@@ -211,9 +211,20 @@ static void LoadGunDescription(
 		g->Icon = icon;
 	}
 
-	g->name = GetString(node, "Name");
+	tmp = GetString(node, "Name");
+	if (tmp != NULL)
+	{
+		CFREE(g->name);
+		g->name = tmp;
+	}
 
-	LoadStr(&g->Description, node, "Description");
+	tmp = NULL;
+	LoadStr(&tmp, node, "Description");
+	if (tmp != NULL)
+	{
+		CFREE(g->Description);
+		g->Description = tmp;
+	}
 
 	if (json_find_first_label(node, "Bullet"))
 	{
