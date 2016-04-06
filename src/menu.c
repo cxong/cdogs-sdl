@@ -383,7 +383,7 @@ void MenuSetPostEnterFunc(
 {
 	menu->customPostEnterFunc = func;
 	menu->customPostEnterData = data;
-	menu->isCustomPostInputDataDynamic = isDynamicData;
+	menu->isCustomPostEnterDataDynamic = isDynamicData;
 }
 
 void MenuSetPostUpdateFunc(
@@ -899,9 +899,9 @@ static void MenuTerminate(menu_t *menu)
 	{
 		CFREE(menu->customPostUpdateData);
 	}
-	if (menu->isCustomPostInputDataDynamic)
+	if (menu->isCustomPostEnterDataDynamic)
 	{
-		CFREE(menu->customPostInputData);
+		CFREE(menu->customPostEnterData);
 	}
 	MenuTerminateSubmenus(menu);
 }

@@ -128,12 +128,12 @@ struct menu
 	color_t color;
 	MenuFunc customPostEnterFunc;
 	void *customPostEnterData;
+	bool isCustomPostEnterDataDynamic;
 	MenuFunc customPostUpdateFunc;
 	void *customPostUpdateData;
 	bool isCustomPostUpdateDataDynamic;
 	MenuPostInputFunc customPostInputFunc;
 	void *customPostInputData;
-	bool isCustomPostInputDataDynamic;
 	MenuDisplayFunc customDisplayFunc;
 	const void *customDisplayData;
 	MenuSound enterSound;

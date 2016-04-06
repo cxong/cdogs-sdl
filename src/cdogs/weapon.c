@@ -298,6 +298,7 @@ static void GunDescriptionTerminate(GunDescription *g)
 {
 	CFREE(g->name);
 	CFREE(g->Description);
+	memset(g, 0, sizeof *g);
 }
 
 Weapon WeaponCreate(const GunDescription *gun)
