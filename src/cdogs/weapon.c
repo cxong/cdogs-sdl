@@ -110,6 +110,7 @@ void WeaponInitialize(GunClasses *g)
 }
 static void LoadGunDescription(
 	GunDescription *g, json_t *node, const GunDescription *defaultGun);
+static void GunDescriptionTerminate(GunDescription *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 {
 	int version;
@@ -124,9 +125,9 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 	json_t *defaultNode = json_find_first_label(root, "DefaultGun");
 	if (defaultNode != NULL)
 	{
-		LoadGunDescription(defaultDesc, defaultNode->child, NULL);
 		for (int i = 0; i < GUN_COUNT; i++)
 		{
+			LoadGunDescription(defaultDesc, defaultNode->child, NULL);
 			CArrayPushBack(&g->Guns, defaultDesc);
 		}
 	}
@@ -142,7 +143,9 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 			"Cannot load gun with index as custom gun");
 		if (idx >= 0 && idx < GUN_COUNT && classes == &g->Guns)
 		{
-			memcpy(CArrayGet(&g->Guns, idx), &gd, sizeof gd);
+			GunDescription *gExisting = CArrayGet(&g->Guns, idx);
+			GunDescriptionTerminate(gExisting);
+			memcpy(gExisting, &gd, sizeof gd);
 		}
 		else
 		{
@@ -201,7 +204,7 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
-	const Pic *icon;
+	const Pic *icon = NULL;
 	LoadPic(&icon, node, "Icon", NULL);
 	if (icon != NULL)
 	{
@@ -286,13 +289,15 @@ void WeaponTerminate(GunClasses *g)
 }
 void WeaponClassesClear(CArray *classes)
 {
-	for (int i = 0; i < (int)classes->size; i++)
-	{
-		GunDescription *gd = CArrayGet(classes, i);
-		CFREE(gd->name);
-		CFREE(gd->Description);
-	}
+	CA_FOREACH(GunDescription, g, *classes)
+		GunDescriptionTerminate(g);
+	CA_FOREACH_END()
 	CArrayClear(classes);
+}
+static void GunDescriptionTerminate(GunDescription *g)
+{
+	CFREE(g->name);
+	CFREE(g->Description);
 }
 
 Weapon WeaponCreate(const GunDescription *gun)
