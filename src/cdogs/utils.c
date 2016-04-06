@@ -167,11 +167,11 @@ void RealPath(const char *src, char *dest)
 				{
 					// '..' parent dir
 					// Rewind the out ptr to the last path separator
-					if (cOut > dest + 1)
+					if (cOut > resolveBuf + 1)
 					{
 						// Skip past the last slash
 						cOut -= 2;
-						while (*cOut != '/' && cOut > dest)
+						while (*cOut != '/' && cOut > resolveBuf)
 						{
 							cOut--;
 						}
