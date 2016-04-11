@@ -59,11 +59,8 @@ void GrafxMakeRandomBackground(
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
 		device, &buffer, co, mo, map, tint, 0, 1, Vec2iZero(), NULL);
+	MissionEnd();
 	DrawBufferTerminate(&buffer);
-	ActorsTerminate();
-	ObjsTerminate();
-	MobObjsTerminate();
-	PickupsTerminate();
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
 	co->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
@@ -113,7 +110,6 @@ void GrafxMakeBackground(
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
 	GameEventsTerminate(&gGameEvents);
-	MissionEnd();
 }
 
 void GraphicsBlitBkg(GraphicsDevice *device)
