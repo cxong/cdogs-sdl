@@ -137,11 +137,12 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 		GunDescription gd;
 		LoadGunDescription(&gd, child, defaultDesc);
 		int idx = -1;
-		LoadInt(&idx, child, "Index");
-		CASSERT(
-			!(idx >= 0 && idx < GUN_COUNT && classes != &g->Guns),
-			"Cannot load gun with index as custom gun");
-		if (idx >= 0 && idx < GUN_COUNT && classes == &g->Guns)
+		// Only allow index for non-custom guns
+		if (classes == &g->Guns)
+		{
+			LoadInt(&idx, child, "Index");
+		}
+		if (idx >= 0 && idx < GUN_COUNT)
 		{
 			GunDescription *gExisting = CArrayGet(&g->Guns, idx);
 			GunDescriptionTerminate(gExisting);
