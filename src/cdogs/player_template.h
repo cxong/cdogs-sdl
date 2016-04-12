@@ -38,8 +38,6 @@ typedef struct
 	CharColors Colors;
 } PlayerTemplate;
 
-extern CArray gPlayerTemplates;	// of PlayerTemplate
-
 #define PLAYER_TEMPLATE_FILE "players.cnf"
 
 void LoadPlayerTemplates(

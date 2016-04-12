@@ -34,6 +34,9 @@
 
 
 CArray gPlayerDatas;
+// Templates stored here as it is used by player
+// TODO: 
+CArray gPlayerTemplates;
 
 
 void PlayerDataInit(CArray *p)

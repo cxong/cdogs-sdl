@@ -39,8 +39,6 @@
 #define VERSION 2
 
 
-CArray gPlayerTemplates;
-
 static void LoadPlayerTemplate(
 	PlayerTemplate *t, json_t *node, const int version)
 {
