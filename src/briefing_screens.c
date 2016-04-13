@@ -493,8 +493,7 @@ static void MissionSummaryDraw(void *data)
 		pds[idx] = pd;
 		idx++;
 	CA_FOREACH_END()
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	switch (numLocalPlayers)
+	switch (idx)
 	{
 	case 1:
 		size = Vec2iNew(w, h / 2);
@@ -513,7 +512,7 @@ static void MissionSummaryDraw(void *data)
 		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
 		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, pds[1]);
 		DrawPlayerSummary(Vec2iNew(0, h / 4), size, pds[2]);
-		if (numLocalPlayers == 4)
+		if (idx == 4)
 		{
 			DrawPlayerSummary(Vec2iNew(w / 2, h / 4), size, pds[3]);
 		}

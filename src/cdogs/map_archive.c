@@ -630,7 +630,11 @@ static json_t *SaveStaticTiles(Mission *m)
 	// Create a text buffer for CSV
 	// The buffer will contain n*5 chars (tiles, allow 5 chars each),
 	// and n - 1 commas, so 6n total
-	int size = (int)m->u.Static.Tiles.size;
+	const int size = (int)m->u.Static.Tiles.size;
+	if (size == 0)
+	{
+		return json_new_string("");
+	}
 	char *bigbuf;
 	CCALLOC(bigbuf, size * 6);
 	char *pBuf = bigbuf;
