@@ -45,10 +45,6 @@ void GrafxMakeRandomBackground(
 	HSV tint;
 	CampaignSettingTerminate(&co->Setting);
 	CampaignSettingInit(&co->Setting);
-	ActorsInit();
-	ObjsInit();
-	MobObjsInit();
-	PickupsInit();
 	SetupQuickPlayCampaign(&co->Setting);
 	co->seed = rand();
 	tint.h = rand() * 360.0 / RAND_MAX;
