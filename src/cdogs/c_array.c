@@ -46,9 +46,10 @@ void CArrayReserve(CArray *a, size_t capacity)
 		return;
 	}
 	a->capacity = capacity;
-	if (a->capacity > 0)
+	const size_t size = a->capacity * a->elemSize;
+	if (size)
 	{
-		CREALLOC(a->data, a->capacity * a->elemSize);
+		CREALLOC(a->data, size);
 	}
 }
 void CArrayCopy(CArray *dst, const CArray *src)

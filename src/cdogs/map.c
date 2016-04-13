@@ -869,6 +869,10 @@ bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
 				continue;
 			}
 			const CArray *tileThings = &MapGetTile(map, dtv)->things;
+			if (tileThings == NULL)
+			{
+				continue;
+			}
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
 				const TTileItem *ti =

@@ -51,10 +51,13 @@ void FontLoadFromJSON(Font *f, const char *imgPath, const char *jsonPath)
 
 	// Padding order is: left/top/right/bottom
 	const yajl_val paddingNode = YAJLFindNode(node, "Padding");
-	f->Padding.Left = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[0]);
-	f->Padding.Top = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[1]);
-	f->Padding.Right = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[2]);
-	f->Padding.Bottom = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[3]);
+	if (YAJL_GET_ARRAY(paddingNode) != NULL)
+	{
+		f->Padding.Left = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[0]);
+		f->Padding.Top = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[1]);
+		f->Padding.Right = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[2]);
+		f->Padding.Bottom = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(paddingNode)->values[3]);
+	}
 
 	YAJLVec2i(&f->Gap, node, "Gap");
 	bool proportional = false;

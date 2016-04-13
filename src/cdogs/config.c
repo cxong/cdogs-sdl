@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -380,7 +380,10 @@ void ConfigResetChanged(Config *c)
 	{
 	case CONFIG_TYPE_STRING:
 		CFREE(c->u.String.Value);
-		CSTRDUP(c->u.String.Value, c->u.String.Last);
+		if (c->u.String.Last != NULL)
+		{
+			CSTRDUP(c->u.String.Value, c->u.String.Last);
+		}
 		break;
 	case CONFIG_TYPE_INT:
 		c->u.Int.Value = c->u.Int.Last;
@@ -411,7 +414,10 @@ void ConfigSetChanged(Config *c)
 	{
 	case CONFIG_TYPE_STRING:
 		CFREE(c->u.String.Last);
-		CSTRDUP(c->u.String.Last, c->u.String.Value);
+		if (c->u.String.Value != NULL)
+		{
+			CSTRDUP(c->u.String.Last, c->u.String.Value);
+		}
 		break;
 	case CONFIG_TYPE_INT:
 		c->u.Int.Last = c->u.Int.Value;
@@ -442,7 +448,10 @@ void ConfigResetDefault(Config *c)
 	{
 	case CONFIG_TYPE_STRING:
 		CFREE(c->u.String.Value);
-		CSTRDUP(c->u.String.Value, c->u.String.Default);
+		if (c->u.String.Default != NULL)
+		{
+			CSTRDUP(c->u.String.Value, c->u.String.Default);
+		}
 		break;
 	case CONFIG_TYPE_INT:
 		c->u.Int.Value = c->u.Int.Default;

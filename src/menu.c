@@ -649,7 +649,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 	case MENU_TYPE_OPTIONS:
 		{
 			int iStart = 0;
-			int iEnd = (int)menu->u.normal.subMenus.size;
+			int iEnd;
 			int numMenuLines = 0;
 			int maxIEnd = (int)menu->u.normal.subMenus.size;
 			if (menu->u.normal.maxItems > 0)
@@ -769,6 +769,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 					i == menu->u.normal.index,
 					subMenu->isDisabled,
 					subMenu->color).y + FontH();
+				CFREE(nameBuf);
 
 				// display option value
 				const int optionInt = MenuOptionGetIntValue(subMenu);

@@ -146,7 +146,8 @@ void RealPath(const char *src, char *dest)
 	{
 		char srcBuf[CDOGS_PATH_MAX];
 		// First, convert slashes
-		strcpy(srcBuf, src);
+		srcBuf[0] = '\0';
+		strncat(srcBuf, src, CDOGS_PATH_MAX - 1);
 		for (char *c = srcBuf; *c != '\0'; c++)
 		{
 			if (*c == '\\')

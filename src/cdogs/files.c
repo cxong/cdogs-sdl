@@ -346,7 +346,6 @@ static void ConvertMissionObjective(
 static void ConvertMission(
 	Mission *dest, struct MissionOld *src, const int charCount)
 {
-	int i;
 	CFREE(dest->Title);
 	CSTRDUP(dest->Title, src->title);
 	CFREE(dest->Description);
@@ -359,7 +358,7 @@ static void ConvertMission(
 	dest->ExitStyle = src->exitStyle;
 	dest->KeyStyle = src->keyStyle;
 	strcpy(dest->DoorStyle, DoorStyleStr(src->doorStyle));
-	for (i = 0; i < src->objectiveCount; i++)
+	for (int i = 0; i < src->objectiveCount; i++)
 	{
 		MissionObjective mo;
 		memset(&mo, 0, sizeof mo);
@@ -367,17 +366,17 @@ static void ConvertMission(
 		CArrayPushBack(&dest->Objectives, &mo);
 	}
 	// Note: modulo for compatibility with older, buggy missions
-	for (i = 0; i < src->baddieCount; i++)
+	for (int i = 0; i < src->baddieCount; i++)
 	{
 		int n = src->baddies[i] % charCount;
 		CArrayPushBack(&dest->Enemies, &n);
 	}
-	for (i = 0; i < src->specialCount; i++)
+	for (int i = 0; i < src->specialCount; i++)
 	{
 		int n = src->specials[i] % charCount;
 		CArrayPushBack(&dest->SpecialChars, &n);
 	}
-	for (i = 0; i < src->itemCount; i++)
+	for (int i = 0; i < src->itemCount; i++)
 	{
 		MapObjectDensity mod;
 		mod.M = IntMapObject(src->items[i]);
@@ -386,7 +385,7 @@ static void ConvertMission(
 	}
 	dest->EnemyDensity = src->baddieDensity;
 	CArrayClear(&dest->Weapons);
-	for (i = 0; i < WEAPON_MAX; i++)
+	for (int i = 0; i < WEAPON_MAX; i++)
 	{
 		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
 		{

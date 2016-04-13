@@ -98,7 +98,10 @@ void LoadCredits(
 
 void UnloadCredits(credits_displayer_t *displayer)
 {
-	CASSERT(displayer != NULL, "null pointer");
+	if (displayer == NULL)
+	{
+		return;
+	}
 	CA_FOREACH(credit_t, credit, displayer->credits)
 		CFREE(credit->name);
 		CFREE(credit->message);

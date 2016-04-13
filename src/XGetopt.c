@@ -360,8 +360,6 @@ getnextopt(int argc, char **argv, const char *optstring,
     /* OK, it's some sort of option, junk the first '-' */
     optarg++;
 
-    /* prime for "option not found" */
-    c = -1;
     /* test the next character - another '-' means it's a long option */
     if (longopts && *optarg == '-')
     {
