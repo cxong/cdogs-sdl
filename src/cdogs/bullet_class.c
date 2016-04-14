@@ -55,6 +55,7 @@
 #include "drawtools.h"
 #include "game_events.h"
 #include "json_utils.h"
+#include "log.h"
 #include "net_util.h"
 #include "objs.h"
 #include "screen_shake.h"
@@ -471,6 +472,7 @@ static void BulletClassFree(BulletClass *b);
 void BulletLoadJSON(
 	BulletClasses *bullets, CArray *classes, json_t *bulletNode)
 {
+	LOG(LM_MAP, LL_DEBUG, "loading bullets");
 	int version;
 	LoadInt(&version, bulletNode, "Version");
 	if (version > VERSION || version <= 0)
@@ -504,6 +506,10 @@ static void LoadBullet(
 	if (defaultBullet != NULL)
 	{
 		memcpy(b, defaultBullet, sizeof *b);
+		if (defaultBullet->Name != NULL)
+		{
+			CSTRDUP(b->Name, defaultBullet->Name);
+		}
 		if (defaultBullet->HitSound.Object != NULL)
 		{
 			CSTRDUP(b->HitSound.Object, defaultBullet->HitSound.Object);
@@ -523,7 +529,15 @@ static void LoadBullet(
 		memset(&b->ProximityGuns, 0, sizeof b->ProximityGuns);
 	}
 
-	LoadStr(&b->Name, node, "Name");
+	char *tmp;
+
+	tmp = NULL;
+	LoadStr(&tmp, node, "Name");
+	if (tmp != NULL)
+	{
+		CFREE(b->Name);
+		b->Name = tmp;
+	}
 	if (json_find_first_label(node, "Pic"))
 	{
 		CPicLoadJSON(&b->CPic, json_find_first_label(node, "Pic")->child);
@@ -535,14 +549,8 @@ static void LoadBullet(
 		LoadInt(&b->SpeedLow, node, "Speed");
 		b->SpeedHigh = b->SpeedLow;
 	}
-	if (json_find_first_label(node, "SpeedLow"))
-	{
-		LoadInt(&b->SpeedLow, node, "SpeedLow");
-	}
-	if (json_find_first_label(node, "SpeedHigh"))
-	{
-		LoadInt(&b->SpeedHigh, node, "SpeedHigh");
-	}
+	LoadInt(&b->SpeedLow, node, "SpeedLow");
+	LoadInt(&b->SpeedHigh, node, "SpeedHigh");
 	b->SpeedLow = MIN(b->SpeedLow, b->SpeedHigh);
 	b->SpeedHigh = MAX(b->SpeedLow, b->SpeedHigh);
 	LoadBool(&b->SpeedScale, node, "SpeedScale");
@@ -552,29 +560,25 @@ static void LoadBullet(
 		LoadInt(&b->RangeLow, node, "Range");
 		b->RangeHigh = b->RangeLow;
 	}
-	if (json_find_first_label(node, "RangeLow"))
-	{
-		LoadInt(&b->RangeLow, node, "RangeLow");
-	}
-	if (json_find_first_label(node, "RangeHigh"))
-	{
-		LoadInt(&b->RangeHigh, node, "RangeHigh");
-	}
+	LoadInt(&b->RangeLow, node, "RangeLow");
+	LoadInt(&b->RangeHigh, node, "RangeHigh");
 	b->RangeLow = MIN(b->RangeLow, b->RangeHigh);
 	b->RangeHigh = MAX(b->RangeLow, b->RangeHigh);
 	LoadInt(&b->Power, node, "Power");
 	LoadVec2i(&b->Size, node, "Size");
-	if (json_find_first_label(node, "Special"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Special");
+	if (tmp != NULL)
 	{
-		char *tmp = GetString(node, "Special");
 		b->Special = StrSpecialDamage(tmp);
 		CFREE(tmp);
 	}
 	LoadBool(&b->HurtAlways, node, "HurtAlways");
 	LoadBool(&b->Persists, node, "Persists");
-	if (json_find_first_label(node, "Spark"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Spark");
+	if (tmp != NULL)
 	{
-		char *tmp = GetString(node, "Spark");
 		b->Spark = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
@@ -605,6 +609,40 @@ static void LoadBullet(
 	LoadBool(&b->Erratic, node, "Erratic");
 
 	b->node = node;
+
+	LOG(LM_MAP, LL_DEBUG,
+		"loaded bullet name(%s) shadowSize(%d, %d) delay(%d) speed(%d-%d)...",
+		b->Name, b->ShadowSize.x, b->ShadowSize.y, b->Delay,
+		b->SpeedLow, b->SpeedHigh);
+	LOG(LM_MAP, LL_DEBUG,
+		"...speedScale(%s) friction(%d) range(%d-%d) power(%d)...",
+		b->SpeedScale ? "true" : "false", b->Friction,
+		b->RangeLow, b->RangeHigh, b->Power);
+	LOG(LM_MAP, LL_DEBUG,
+		"...size(%d, %d) hurtAlways(%s) persists(%s) spark(%s)...",
+		b->Size.x, b->Size.y, b->HurtAlways ? "true" : "false",
+		b->Persists ? "true" : "false",
+		b->Spark != NULL ? b->Spark->Name : "");
+	LOG(LM_MAP, LL_DEBUG,
+		"...hitSounds(object(%s), flesh(%s), wall(%s)) wallBounces(%s)...",
+		b->HitSound.Object != NULL ? b->HitSound.Object : "",
+		b->HitSound.Flesh != NULL ? b->HitSound.Flesh : "",
+		b->HitSound.Wall != NULL ? b->HitSound.Wall : "",
+		b->WallBounces ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG,
+		"...hitsObjects(%s) gravity(%d) fallsDown(%s) destroyOnDrop(%s)...",
+		b->HitsObjects ? "true" : "false", b->Falling.GravityFactor,
+		b->Falling.FallsDown ? "true" : "false",
+		b->Falling.DestroyOnDrop ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG,
+		"...dropGuns(%d) seekFactor(%d) erratic(%s)...",
+		(int)b->Falling.DropGuns.size, b->SeekFactor,
+		b->Erratic ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG,
+		"...outOfRangeGuns(%d) hitGuns(%d) proximityGuns(%d)",
+		(int)b->OutOfRangeGuns.size,
+		(int)b->HitGuns.size,
+		(int)b->ProximityGuns.size);
 }
 static void BulletClassesLoadWeapons(CArray *classes);
 void BulletLoadWeapons(BulletClasses *bullets)

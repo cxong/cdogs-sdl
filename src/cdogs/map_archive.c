@@ -71,7 +71,7 @@ static void LoadArchivePics(
 	PicManager *pm, const char *archive, const char *dirname);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
-	debug(D_NORMAL, "Loading archive map %s\n", filename);
+	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
 	int err = 0;
 	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
@@ -196,7 +196,7 @@ static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 	const enum json_error e = json_parse_document(&root, buf);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Invalid syntax in JSON file (%s) error(%d)",
+		LOG(LM_MAP, LL_ERROR, "Invalid syntax in JSON file (%s) error(%d)",
 			filename, (int)e);
 		root = NULL;
 		goto bail;
@@ -217,7 +217,7 @@ static void LoadArchiveSounds(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) != 0)
 	{
-		LOG(LM_MAIN, LL_DEBUG, "no sound dir(%s): %s", path, strerror(errno));
+		LOG(LM_MAP, LL_DEBUG, "no sound dir(%s): %s", path, strerror(errno));
 		goto bail;
 	}
 	while (dir.has_next)
@@ -269,7 +269,7 @@ static void LoadArchivePics(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) != 0)
 	{
-		LOG(LM_MAIN, LL_DEBUG, "no pic dir(%s): %s", path, strerror(errno));
+		LOG(LM_MAP, LL_DEBUG, "no pic dir(%s): %s", path, strerror(errno));
 		goto bail;
 	}
 	while (dir.has_next)
@@ -277,7 +277,7 @@ static void LoadArchivePics(
 		tinydir_file file;
 		if (tinydir_readfile(&dir, &file) != 0)
 		{
-			LOG(LM_MAIN, LL_WARN, "cannot read file: %s", strerror(errno));
+			LOG(LM_MAP, LL_WARN, "cannot read file: %s", strerror(errno));
 			break;
 		}
 		if (!file.is_reg) goto nextFile;

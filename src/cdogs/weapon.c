@@ -113,6 +113,7 @@ static void LoadGunDescription(
 static void GunDescriptionTerminate(GunDescription *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 {
+	LOG(LM_MAP, LL_DEBUG, "loading weapons");
 	int version;
 	LoadInt(&version, root, "Version");
 	if (version > VERSION || version <= 0)
@@ -187,9 +188,10 @@ static void LoadGunDescription(
 	}
 	char *tmp;
 
-	if (json_find_first_label(node, "Pic"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Pic");
+	if (tmp != NULL)
 	{
-		tmp = GetString(node, "Pic");
 		if (strcmp(tmp, "blaster") == 0)
 		{
 			g->pic = GUNPIC_BLASTER;
@@ -212,7 +214,8 @@ static void LoadGunDescription(
 		g->Icon = icon;
 	}
 
-	tmp = GetString(node, "Name");
+	tmp = NULL;
+	LoadStr(&tmp, node, "Name");
 	if (tmp != NULL)
 	{
 		CFREE(g->name);
@@ -227,16 +230,18 @@ static void LoadGunDescription(
 		g->Description = tmp;
 	}
 
-	if (json_find_first_label(node, "Bullet"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Bullet");
+	if (tmp != NULL)
 	{
-		tmp = GetString(node, "Bullet");
 		g->Bullet = StrBulletClass(tmp);
 		CFREE(tmp);
 	}
 
-	if (json_find_first_label(node, "Ammo"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Ammo");
+	if (tmp != NULL)
 	{
-		tmp = GetString(node, "Ammo");
 		g->AmmoId = StrAmmoId(tmp);
 		CFREE(tmp);
 	}
@@ -270,16 +275,18 @@ static void LoadGunDescription(
 	LoadInt(&g->ElevationHigh, node, "ElevationHigh");
 	g->ElevationLow = MIN(g->ElevationLow, g->ElevationHigh);
 	g->ElevationHigh = MAX(g->ElevationLow, g->ElevationHigh);
-	if (json_find_first_label(node, "MuzzleFlashParticle"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "MuzzleFlashParticle");
+	if (tmp != NULL)
 	{
-		tmp = GetString(node, "MuzzleFlashParticle");
 		g->MuzzleFlash = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
 
-	if (json_find_first_label(node, "Brass"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Brass");
+	if (tmp != NULL)
 	{
-		tmp = GetString(node, "Brass");
 		g->Brass = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
@@ -291,6 +298,26 @@ static void LoadGunDescription(
 	LoadInt(&g->ShakeAmount, node, "ShakeAmount");
 
 	g->IsRealGun = true;
+
+	LOG(LM_MAP, LL_DEBUG,
+		"loaded gun name(%s) bullet(%s) ammo(%d) cost(%dd) lock(%d)...",
+		g->name, g->Bullet != NULL ? g->Bullet->Name : "", g->AmmoId, g->Cost,
+		g->Lock);
+	LOG(LM_MAP, LL_DEBUG,
+		"...reloadLead(%d) soundLockLength(%d) recoil(%f)...",
+		g->ReloadLead, g->SoundLockLength, g->Recoil);
+	LOG(LM_MAP, LL_DEBUG,
+		"...spread(%frad x%d) angleOffset(%f) muzzleHeight(%d)...",
+		g->Spread.Width, g->Spread.Count, g->AngleOffset, g->MuzzleHeight);
+	LOG(LM_MAP, LL_DEBUG,
+		"...elevation(%d-%d) muzzleFlash(%s) brass(%s) canShoot(%s)...",
+		g->ElevationLow, g->ElevationHigh,
+		g->MuzzleFlash != NULL ? g->MuzzleFlash->Name : "",
+		g->Brass != NULL ? g->Brass->Name : "",
+		g->CanShoot ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG,
+		"...canDrop(%s) shakeAmount(%d)",
+		g->CanDrop ? "true" : "false", g->ShakeAmount);
 }
 void WeaponTerminate(GunClasses *g)
 {
@@ -602,13 +629,13 @@ void BulletAndWeaponInitialize(
 	bf = fopen(buf, "r");
 	if (bf == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Error: cannot load bullets file %s", buf);
+		LOG(LM_MAP, LL_ERROR, "Error: cannot load bullets file %s", buf);
 		goto bail;
 	}
 	e = json_stream_parse(bf, &broot);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Error parsing bullets file %s [error %d]",
+		LOG(LM_MAP, LL_ERROR, "Error parsing bullets file %s [error %d]",
 			buf, (int)e);
 		goto bail;
 	}
@@ -619,13 +646,13 @@ void BulletAndWeaponInitialize(
 	gf = fopen(buf, "r");
 	if (gf == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Error: cannot load guns file %s", buf);
+		LOG(LM_MAP, LL_ERROR, "Error: cannot load guns file %s", buf);
 		goto bail;
 	}
 	e = json_stream_parse(gf, &groot);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Error parsing guns file %s [error %d]",
+		LOG(LM_MAP, LL_ERROR, "Error parsing guns file %s [error %d]",
 			buf, (int)e);
 		goto bail;
 	}
