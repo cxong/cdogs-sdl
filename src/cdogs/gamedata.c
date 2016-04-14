@@ -91,19 +91,16 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	}
 	else
 	{
-		CampaignSetting customSetting;
-		CampaignSettingInit(&customSetting);
 		// Normalise the path
 		char buf[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, entry->Path);
-		if (MapNewLoad(buf, &customSetting))
+		if (MapNewLoad(buf, &co->Setting))
 		{
 			LOG(LM_MAIN, LL_ERROR, "failed to load campaign %s!", buf);
 			CASSERT(false, "Failed to load campaign");
 		}
 		else
 		{
-			memcpy(&co->Setting, &customSetting, sizeof co->Setting);
 			co->IsLoaded = true;
 		}
 	}

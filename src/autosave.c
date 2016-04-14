@@ -67,7 +67,11 @@ void AutosaveTerminate(Autosave *autosave)
 
 static void LoadCampaignNode(CampaignEntry *c, json_t *node)
 {
-	CSTRDUP(c->Path, json_find_first_label(node, "Path")->child->text);
+	const char *path = json_find_first_label(node, "Path")->child->text;
+	if (path != NULL)
+	{
+		CSTRDUP(c->Path, path);
+	}
 	c->Mode = GAME_MODE_NORMAL;
 }
 static void AddCampaignNode(CampaignEntry *c, json_t *root)
@@ -234,7 +238,9 @@ void AutosaveAddMission(Autosave *autosave, MissionSave *mission)
 	memcpy(existingMission, mission, sizeof *existingMission);
 	existingMission->MissionsCompleted = maxMissionsCompleted;
 	CampaignEntryCopy(&existingMission->Campaign, &mission->Campaign);
+	CampaignEntryTerminate(&autosave->LastMission.Campaign);
 	memcpy(&autosave->LastMission, mission, sizeof autosave->LastMission);
+	CampaignEntryCopy(&autosave->LastMission.Campaign, &mission->Campaign);
 }
 
 void AutosaveLoadMission(
@@ -245,5 +251,6 @@ void AutosaveLoadMission(
 	if (existingMission != NULL)
 	{
 		memcpy(mission, existingMission, sizeof *mission);
+		CampaignEntryCopy(&mission->Campaign, &existingMission->Campaign);
 	}
 }
