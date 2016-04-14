@@ -56,11 +56,11 @@ Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#gettin
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/barrel_skull.png) License
 ---------------
 
+tl;dr: **GPLv2** for code, **CC0/CC-BY/CC-BY-SA** for assets. Significant amounts of **BSD 2-clause** code.
+
 Code is licensed under GPL version 2, with significant portions under BSD 2-clause. The code is free software; you can use, modify and redistribute for any purpose, as long as you follow the GPL and BSD licenses!
 
-Data license is mixed. The original C-Dogs data is freeware; it cannot be modified and redistributed. New data is licensed as CC0 if not specified; some are under various free licenses like CC-BY and CC-BY-SA. You are free to use, modify and redistribute these for any purpose, as long as you follow their licenses.
-
-There is an ongoing effort to [replace the original data](https://github.com/cxong/cdogs-sdl/issues/336) with free and open equivalents.
+Data is licensed under various free terms, including CC0, CC-BY and CC-BY-SA. [The original C-Dogs data is also under CC-BY](https://raw.githubusercontent.com/cxong/cdogs-sdl/master/doc/README_DATA.md). New data is licensed as CC0 if not specified. You are free to use, modify and redistribute these for any purpose, as long as you follow their licenses.
 
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/circuit.png) Contact
 ----------
