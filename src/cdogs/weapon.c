@@ -123,13 +123,31 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 	}
 
 	GunDescription *defaultDesc = &g->Default;
-	json_t *defaultNode = json_find_first_label(root, "DefaultGun");
-	if (defaultNode != NULL)
+	// Only load default gun from main game data
+	if (classes == &g->Guns)
 	{
-		for (int i = 0; i < GUN_COUNT; i++)
+		json_t *defaultNode = json_find_first_label(root, "DefaultGun");
+		if (defaultNode != NULL)
 		{
 			LoadGunDescription(defaultDesc, defaultNode->child, NULL);
-			CArrayPushBack(&g->Guns, defaultDesc);
+		}
+		else
+		{
+			memset(defaultDesc, 0, sizeof *defaultDesc);
+		}
+		CASSERT(g->Guns.size == 0, "guns not empty");
+		for (int i = 0; i < GUN_COUNT; i++)
+		{
+			GunDescription gd;
+			if (defaultNode != NULL)
+			{
+				LoadGunDescription(&gd, defaultNode->child, NULL);
+			}
+			else
+			{
+				memset(&gd, 0, sizeof gd);
+			}
+			CArrayPushBack(&g->Guns, &gd);
 		}
 	}
 	json_t *gunsNode = json_find_first_label(root, "Guns")->child;
@@ -325,6 +343,7 @@ void WeaponTerminate(GunClasses *g)
 	CArrayTerminate(&g->Guns);
 	WeaponClassesClear(&g->CustomGuns);
 	CArrayTerminate(&g->CustomGuns);
+	GunDescriptionTerminate(&g->Default);
 }
 void WeaponClassesClear(CArray *classes)
 {
