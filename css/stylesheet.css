@@ -349,16 +349,8 @@ a.download-button span {
 }
 
 footer {
-  margin-bottom: 60px;
+  margin-bottom: 10px;
   padding-bottom: 60px;
-}
-
-footer .owner {
-  background: #222;
-  border: 5px solid #444;
-  padding: 5px 15px;
-  margin: -67px -10px 35px;
-  color: #d6d6d6;
 }
 
 footer .creds small {
@@ -366,6 +358,7 @@ footer .creds small {
   font-size: 10px;
   text-align: right;
   margin-left: 15px;
+  color: gray;
 }
 
 footer .owner .avatar {
