@@ -126,7 +126,7 @@ MapObject *IntMapObject(const int m)
 			return c;
 		}
 	CA_FOREACH_END()
-	CASSERT(false, "cannot find map object index");
+	LOG(LM_MAIN, LL_ERROR, "cannot find map object %d", m);
 	return NULL;
 }
 MapObject *IndexMapObject(const int i)

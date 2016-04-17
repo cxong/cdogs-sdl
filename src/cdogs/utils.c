@@ -134,6 +134,7 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 #include "sys_config.h"
 #define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
 #endif
+static bool IsAbsolutePath(const char *path);
 void RealPath(const char *src, char *dest)
 {
 	char *res;
@@ -203,11 +204,7 @@ void RealPath(const char *src, char *dest)
 		*cOut = '\0';
 
 		// Finally, add on the CWD if the path is not absolute
-#ifdef _WIN32
-		if (strlen(resolveBuf) > 1 && resolveBuf[1] == ':')
-#else
-		if (resolveBuf[0] == '/')
-#endif
+		if (IsAbsolutePath(resolveBuf))
 		{
 			strcpy(dest, resolveBuf);
 		}
@@ -351,14 +348,31 @@ void RelPathFromCWD(char *buf, const char *to)
 void GetDataFilePath(char *buf, const char *path)
 {
 	char relbuf[CDOGS_PATH_MAX];
-	char cwd[CDOGS_PATH_MAX];
-	if (CDogsGetCWD(cwd) == NULL)
+	// Don't bother prepending CWD if data dir already an absolute path
+	if (IsAbsolutePath(CDOGS_DATA_DIR))
 	{
-		fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
-		strcpy(cwd, "");
+		sprintf(relbuf, "%s%s", CDOGS_DATA_DIR, path);
 	}
-	sprintf(relbuf, "%s/%s%s", cwd, CDOGS_DATA_DIR, path);
+	else
+	{
+		char cwd[CDOGS_PATH_MAX];
+		if (CDogsGetCWD(cwd) == NULL)
+		{
+			fprintf(stderr, "Error getting CWD; %s\n", strerror(errno));
+			strcpy(cwd, "");
+		}
+		sprintf(relbuf, "%s/%s%s", cwd, CDOGS_DATA_DIR, path);
+	}
 	RealPath(relbuf, buf);
+}
+
+static bool IsAbsolutePath(const char *path)
+{
+#ifdef _WIN32
+	return strlen(path) > 1 && path[1] == ':';
+#else
+	return path[0] == '/';
+#endif
 }
 
 double Round(double x)
