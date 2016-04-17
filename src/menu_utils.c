@@ -99,8 +99,8 @@ void MenuDisplayPlayerControls(
 				pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, button1);
 			InputGetButtonName(
 				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, button2);
-			sprintf(s, "(%s, %s and %s)", directionNames, button1, button2);
-			FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+			sprintf(s, "(%s,\n%s and %s)", directionNames, button1, button2);
+			FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH()));
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:
