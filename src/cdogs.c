@@ -502,6 +502,7 @@ bail:
 	GraphicsTerminate(&gGraphicsDevice);
 
 	PicManagerTerminate(&gPicManager);
+	FontTerminate(&gFont);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
@@ -514,6 +515,7 @@ bail:
 	UnloadAllCampaigns(&campaigns);
 	CampaignTerminate(&gCampaign);
 	SoundTerminate(&gSoundDevice, true);
+	ConfigDestroy(&gConfig);
 
 	SDLJBN_Quit();
 	SDL_Quit();

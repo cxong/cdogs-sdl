@@ -1415,10 +1415,13 @@ int main(int argc, char *argv[])
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(&gGraphicsDevice);
 	PicManagerTerminate(&gPicManager);
+	FontTerminate(&gFont);
 
 	UIObjectDestroy(sObjs);
 	CArrayTerminate(&sDrawObjs);
 	EditorBrushTerminate(&brush);
+
+	ConfigDestroy(&gConfig);
 
 	SDL_Quit();
 
