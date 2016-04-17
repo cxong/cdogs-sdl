@@ -283,7 +283,7 @@ a.tgz span {
 
 a.downloads,
 a.downloads span {
-  background: transparent url(../images/downloads.png) no-repeat 0 0;
+  background: transparent url(../images/download.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
   display: inline-block;
