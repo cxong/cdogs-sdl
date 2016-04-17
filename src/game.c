@@ -497,7 +497,7 @@ static GameLoopResult RunGameUpdate(void *data)
 			}
 			else if (screen.x + w - pad < p->tileItem.x && p->Vel.x > -256)
 			{
-				vel.x = p->tileItem.x - (screen.x + w - pad);
+				vel.x = screen.x + w - pad - p->tileItem.x;
 			}
 			if (screen.y + pad > p->tileItem.y && p->Vel.y < 256)
 			{
@@ -505,15 +505,19 @@ static GameLoopResult RunGameUpdate(void *data)
 			}
 			else if (screen.y + h - pad < p->tileItem.y && p->Vel.y > -256)
 			{
-				vel.y = p->tileItem.y - (screen.y + h - pad);
+				vel.y = screen.y + h - pad - p->tileItem.y;
 			}
 			if (!Vec2iIsZero(vel))
 			{
 				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 				ei.u.ActorImpulse.UID = p->uid;
-				ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(vel, -64));
+				ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(vel, 64));
 				ei.u.ActorImpulse.Pos = Vec2i2Net(Vec2iZero());
 				GameEventsEnqueue(&gGameEvents, ei);
+				LOG(LM_MAIN, LL_TRACE,
+					"playerUID(%d) pos(%d, %d) screen(%d, %d) impulse(%d, %d)",
+					p->uid, p->tileItem.x, p->tileItem.y, screen.x, screen.y,
+					ei.u.ActorImpulse.Vel.x, ei.u.ActorImpulse.Vel.y);
 			}
 		CA_FOREACH_END()
 	}
