@@ -58,10 +58,10 @@
 		"Gun": "AArms Pulse MG",
 		"maxHealth": 40,
 		"flags": 2753536,
-		"probabilityToMove": 60,
-		"probabilityToTrack": 15,
-		"probabilityToShoot": 15,
-		"actionDelay": 15
+		"probabilityToMove": 40,
+		"probabilityToTrack": 5,
+		"probabilityToShoot": 5,
+		"actionDelay": 25
 	},
 	{
 		"Class": "Wolf",
@@ -77,7 +77,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Robot",
@@ -93,7 +93,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 6
+		"actionDelay": 10
 	},
 	{
 		"Class": "Ice",
@@ -106,10 +106,10 @@
 		"Gun": "XTech BounceRifle",
 		"maxHealth": 40,
 		"flags": 2753536,
-		"probabilityToMove": 75,
+		"probabilityToMove": 50,
 		"probabilityToTrack": 0,
-		"probabilityToShoot": 25,
-		"actionDelay": 16
+		"probabilityToShoot": 5,
+		"actionDelay": 25
 	},
 	{
 		"Class": "Lady",
@@ -125,7 +125,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Jones",
@@ -141,7 +141,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Bob",
@@ -157,7 +157,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 27
+		"actionDelay": 32
 	},
 	{
 		"Class": "Bug-eye",
@@ -173,7 +173,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Lady",
@@ -189,7 +189,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Ogre",
@@ -205,7 +205,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Smith",
@@ -221,7 +221,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Professor",
@@ -234,10 +234,10 @@
 		"Gun": "AArms Pulse MG",
 		"maxHealth": 40,
 		"flags": 36307968,
-		"probabilityToMove": 55,
-		"probabilityToTrack": 25,
+		"probabilityToMove": 40,
+		"probabilityToTrack": 10,
 		"probabilityToShoot": 5,
-		"actionDelay": 15
+		"actionDelay": 25
 	},
 	{
 		"Class": "Lady",
@@ -250,10 +250,10 @@
 		"Gun": "Zeild Particle Shotgun V5",
 		"maxHealth": 40,
 		"flags": 36308480,
-		"probabilityToMove": 65,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 10,
-		"actionDelay": 15
+		"probabilityToMove": 45,
+		"probabilityToTrack": 10,
+		"probabilityToShoot": 5,
+		"actionDelay": 25
 	},
 	{
 		"Class": "Bug-eye",
@@ -266,10 +266,10 @@
 		"Gun": "AArms Pulse MG",
 		"maxHealth": 40,
 		"flags": 2753536,
-		"probabilityToMove": 55,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 15,
-		"actionDelay": 15
+		"probabilityToMove": 40,
+		"probabilityToTrack": 10,
+		"probabilityToShoot": 5,
+		"actionDelay": 25
 	},
 	{
 		"Class": "Ogre Boss",
@@ -285,7 +285,7 @@
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"actionDelay": 20
 	},
 	{
 		"Class": "Dragon",
@@ -326,7 +326,7 @@
 		"Body": "363636",
 		"Legs": "9c9c9c",
 		"Hair": "363636",
-		"speed": 512,
+		"speed": 384,
 		"Gun": "Pistol",
 		"maxHealth": 50,
 		"flags": 16778240,
@@ -348,7 +348,7 @@
 		"flags": 16778240,
 		"probabilityToMove": 20,
 		"probabilityToTrack": 55,
-		"probabilityToShoot": 60,
+		"probabilityToShoot": 40,
 		"actionDelay": 17
 	},
 	{
@@ -406,7 +406,7 @@
 		"Body": "363636",
 		"Legs": "9c9c9c",
 		"Hair": "58589c",
-		"speed": 512,
+		"speed": 448,
 		"Gun": "Laser Pistol",
 		"maxHealth": 50,
 		"flags": 33555456,
