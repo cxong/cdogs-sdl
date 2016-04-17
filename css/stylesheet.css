@@ -88,7 +88,8 @@ h1.title {
 }
 
 p.tagline {
-  padding: 20px 20px 0;
+  padding: 10px 10px 0;
+  margin-bottom: -10px;
   color: #fff;
   font-size: 17px;
 }
