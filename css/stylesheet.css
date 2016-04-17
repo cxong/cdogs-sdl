@@ -281,9 +281,9 @@ a.tgz span {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
-a.haiku,
-a.haiku span {
-  background: transparent url(../images/haiku.png) no-repeat 0 0;
+a.downloads,
+a.downloads span {
+  background: transparent url(../images/downloads.png) no-repeat 0 0;
   width: 24px;
   height: 24px;
   display: inline-block;
