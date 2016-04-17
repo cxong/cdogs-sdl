@@ -612,8 +612,8 @@ static void LoadBullet(
 
 	LOG(LM_MAP, LL_DEBUG,
 		"loaded bullet name(%s) shadowSize(%d, %d) delay(%d) speed(%d-%d)...",
-		b->Name, b->ShadowSize.x, b->ShadowSize.y, b->Delay,
-		b->SpeedLow, b->SpeedHigh);
+		b->Name != NULL ? b->Name : "", b->ShadowSize.x, b->ShadowSize.y,
+		b->Delay, b->SpeedLow, b->SpeedHigh);
 	LOG(LM_MAP, LL_DEBUG,
 		"...speedScale(%s) friction(%d) range(%d-%d) power(%d)...",
 		b->SpeedScale ? "true" : "false", b->Friction,

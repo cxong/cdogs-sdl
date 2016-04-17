@@ -84,6 +84,8 @@ void LoadPlayerTemplates(
 		goto bail;
 	}
 
+	setlocale(LC_ALL, "");
+
 	if (json_stream_parse(f, &root) != JSON_OK)
 	{
 		printf("Error parsing player templates '%s'\n", filename);

@@ -73,6 +73,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
 	int err = 0;
+	setlocale(LC_ALL, "");
 	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
 	{

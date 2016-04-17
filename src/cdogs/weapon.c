@@ -318,7 +318,7 @@ static void LoadGunDescription(
 	g->IsRealGun = true;
 
 	LOG(LM_MAP, LL_DEBUG,
-		"loaded gun name(%s) bullet(%s) ammo(%d) cost(%dd) lock(%d)...",
+		"loaded gun name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",
 		g->name, g->Bullet != NULL ? g->Bullet->Name : "", g->AmmoId, g->Cost,
 		g->Lock);
 	LOG(LM_MAP, LL_DEBUG,
